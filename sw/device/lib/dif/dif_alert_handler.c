@@ -30,26 +30,20 @@ static_assert(ALERT_HANDLER_PARAM_N_LOC_ALERT == 7,
 OT_WARN_UNUSED_RESULT
 static bool class_to_uint32(dif_alert_handler_class_t alert_class,
                             uint32_t *classification) {
+#define ALERT_CLASS_REGS_CASE_(class_, value_)                              \
+  case kDifAlertHandlerClass##class_:                                       \
+    *classification =                                                       \
+        ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASS##class_; \
+    break;
+
   switch (alert_class) {
-    case kDifAlertHandlerClassA:
-      *classification =
-          ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSA;
-      break;
-    case kDifAlertHandlerClassB:
-      *classification =
-          ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSB;
-      break;
-    case kDifAlertHandlerClassC:
-      *classification =
-          ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSC;
-      break;
-    case kDifAlertHandlerClassD:
-      *classification =
-          ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSD;
-      break;
+    LIST_OF_CLASSES(ALERT_CLASS_REGS_CASE_)
     default:
       return false;
   }
+
+#undef ALERT_CLASS_REGS_CASE_
+
   return true;
 }
 
@@ -124,6 +118,19 @@ dif_result_t dif_alert_handler_configure_local_alert(
     return kDifBadArg;
   }
 
+#define LOC_ALERT_REGS_CASE_(loc_alert_, value_)                                     \
+  case loc_alert_:                                                                   \
+    enable_reg_offset =                                                              \
+        ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_##value_##_REG_OFFSET;                   \
+    enable_bit =                                                                     \
+        ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_##value_##_EN_LA_##value_##_BIT;         \
+    class_reg_offset =                                                               \
+        ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_##value_##_REG_OFFSET;                \
+    class_field =                                                                    \
+        ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_##value_##_CLASS_LA_##value_##_FIELD; \
+    regwen_offset = ALERT_HANDLER_LOC_ALERT_REGWEN_##value_##_REG_OFFSET;            \
+    break;
+
   // Get register/field offsets for local alert type.
   ptrdiff_t enable_reg_offset;
   bitfield_bit32_index_t enable_bit;
@@ -131,58 +138,12 @@ dif_result_t dif_alert_handler_configure_local_alert(
   bitfield_field32_t class_field;
   ptrdiff_t regwen_offset;
   switch (local_alert) {
-    case kDifAlertHandlerLocalAlertAlertPingFail:
-      enable_reg_offset = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_REG_OFFSET;
-      enable_bit = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_EN_LA_0_BIT;
-      class_reg_offset = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET;
-      class_field = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_FIELD;
-      regwen_offset = ALERT_HANDLER_LOC_ALERT_REGWEN_0_REG_OFFSET;
-      break;
-    case kDifAlertHandlerLocalAlertEscalationPingFail:
-      enable_reg_offset = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_1_REG_OFFSET;
-      enable_bit = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_1_EN_LA_1_BIT;
-      class_reg_offset = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_1_REG_OFFSET;
-      class_field = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_1_CLASS_LA_1_FIELD;
-      regwen_offset = ALERT_HANDLER_LOC_ALERT_REGWEN_1_REG_OFFSET;
-      break;
-    case kDifAlertHandlerLocalAlertAlertIntegrityFail:
-      enable_reg_offset = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_2_REG_OFFSET;
-      enable_bit = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_2_EN_LA_2_BIT;
-      class_reg_offset = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_2_REG_OFFSET;
-      class_field = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_2_CLASS_LA_2_FIELD;
-      regwen_offset = ALERT_HANDLER_LOC_ALERT_REGWEN_2_REG_OFFSET;
-      break;
-    case kDifAlertHandlerLocalAlertEscalationIntegrityFail:
-      enable_reg_offset = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_3_REG_OFFSET;
-      enable_bit = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_3_EN_LA_3_BIT;
-      class_reg_offset = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_3_REG_OFFSET;
-      class_field = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_3_CLASS_LA_3_FIELD;
-      regwen_offset = ALERT_HANDLER_LOC_ALERT_REGWEN_3_REG_OFFSET;
-      break;
-    case kDifAlertHandlerLocalAlertBusIntegrityFail:
-      enable_reg_offset = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_4_REG_OFFSET;
-      enable_bit = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_4_EN_LA_4_BIT;
-      class_reg_offset = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_4_REG_OFFSET;
-      class_field = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_4_CLASS_LA_4_FIELD;
-      regwen_offset = ALERT_HANDLER_LOC_ALERT_REGWEN_4_REG_OFFSET;
-      break;
-    case kDifAlertHandlerLocalAlertShadowedUpdateError:
-      enable_reg_offset = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_5_REG_OFFSET;
-      enable_bit = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_5_EN_LA_5_BIT;
-      class_reg_offset = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_5_REG_OFFSET;
-      class_field = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_5_CLASS_LA_5_FIELD;
-      regwen_offset = ALERT_HANDLER_LOC_ALERT_REGWEN_5_REG_OFFSET;
-      break;
-    case kDifAlertHandlerLocalAlertShadowedStorageError:
-      enable_reg_offset = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_6_REG_OFFSET;
-      enable_bit = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_6_EN_LA_6_BIT;
-      class_reg_offset = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_6_REG_OFFSET;
-      class_field = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_6_CLASS_LA_6_FIELD;
-      regwen_offset = ALERT_HANDLER_LOC_ALERT_REGWEN_6_REG_OFFSET;
-      break;
+    LIST_OF_LOC_ALERTS(LOC_ALERT_REGS_CASE_)
     default:
       return kDifBadArg;
   }
+
+#undef LOC_ALERT_ENUM_INIT_
 
   // Check if configuration is locked.
   if (!mmio_region_read32(alert_handler->base_addr, regwen_offset)) {
@@ -223,6 +184,26 @@ dif_result_t dif_alert_handler_configure_class(
     return kDifBadArg;
   }
 
+#define ALERT_CLASS_CONFIG_REGS_CASE_(class_, value_)                         \
+  case kDifAlertHandlerClass##class_:                                         \
+    class_regwen_offset = ALERT_HANDLER_CLASS##class_##_REGWEN_REG_OFFSET;    \
+    ctrl_reg_offset = ALERT_HANDLER_CLASS##class_##_CTRL_SHADOWED_REG_OFFSET; \
+    accum_thresh_reg_offset =                                                 \
+        ALERT_HANDLER_CLASS##class_##_ACCUM_THRESH_SHADOWED_REG_OFFSET;       \
+    irq_deadline_reg_offset =                                                 \
+        ALERT_HANDLER_CLASS##class_##_TIMEOUT_CYC_SHADOWED_REG_OFFSET;        \
+    phase0_cycles_reg_offset =                                                \
+        ALERT_HANDLER_CLASS##class_##_PHASE0_CYC_SHADOWED_REG_OFFSET;         \
+    phase1_cycles_reg_offset =                                                \
+        ALERT_HANDLER_CLASS##class_##_PHASE1_CYC_SHADOWED_REG_OFFSET;         \
+    phase2_cycles_reg_offset =                                                \
+        ALERT_HANDLER_CLASS##class_##_PHASE2_CYC_SHADOWED_REG_OFFSET;         \
+    phase3_cycles_reg_offset =                                                \
+        ALERT_HANDLER_CLASS##class_##_PHASE3_CYC_SHADOWED_REG_OFFSET;         \
+    crashdump_phase_reg_offset =                                              \
+        ALERT_HANDLER_CLASS##class_##_CRASHDUMP_TRIGGER_SHADOWED_REG_OFFSET;  \
+    break;
+
   ptrdiff_t class_regwen_offset;
   ptrdiff_t ctrl_reg_offset;
   ptrdiff_t accum_thresh_reg_offset;
@@ -233,81 +214,12 @@ dif_result_t dif_alert_handler_configure_class(
   ptrdiff_t phase3_cycles_reg_offset;
   ptrdiff_t crashdump_phase_reg_offset;
   switch (alert_class) {
-    case kDifAlertHandlerClassA:
-      class_regwen_offset = ALERT_HANDLER_CLASSA_REGWEN_REG_OFFSET;
-      ctrl_reg_offset = ALERT_HANDLER_CLASSA_CTRL_SHADOWED_REG_OFFSET;
-      accum_thresh_reg_offset =
-          ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED_REG_OFFSET;
-      irq_deadline_reg_offset =
-          ALERT_HANDLER_CLASSA_TIMEOUT_CYC_SHADOWED_REG_OFFSET;
-      phase0_cycles_reg_offset =
-          ALERT_HANDLER_CLASSA_PHASE0_CYC_SHADOWED_REG_OFFSET;
-      phase1_cycles_reg_offset =
-          ALERT_HANDLER_CLASSA_PHASE1_CYC_SHADOWED_REG_OFFSET;
-      phase2_cycles_reg_offset =
-          ALERT_HANDLER_CLASSA_PHASE2_CYC_SHADOWED_REG_OFFSET;
-      phase3_cycles_reg_offset =
-          ALERT_HANDLER_CLASSA_PHASE3_CYC_SHADOWED_REG_OFFSET;
-      crashdump_phase_reg_offset =
-          ALERT_HANDLER_CLASSA_CRASHDUMP_TRIGGER_SHADOWED_REG_OFFSET;
-      break;
-    case kDifAlertHandlerClassB:
-      class_regwen_offset = ALERT_HANDLER_CLASSB_REGWEN_REG_OFFSET;
-      ctrl_reg_offset = ALERT_HANDLER_CLASSB_CTRL_SHADOWED_REG_OFFSET;
-      accum_thresh_reg_offset =
-          ALERT_HANDLER_CLASSB_ACCUM_THRESH_SHADOWED_REG_OFFSET;
-      irq_deadline_reg_offset =
-          ALERT_HANDLER_CLASSB_TIMEOUT_CYC_SHADOWED_REG_OFFSET;
-      phase0_cycles_reg_offset =
-          ALERT_HANDLER_CLASSB_PHASE0_CYC_SHADOWED_REG_OFFSET;
-      phase1_cycles_reg_offset =
-          ALERT_HANDLER_CLASSB_PHASE1_CYC_SHADOWED_REG_OFFSET;
-      phase2_cycles_reg_offset =
-          ALERT_HANDLER_CLASSB_PHASE2_CYC_SHADOWED_REG_OFFSET;
-      phase3_cycles_reg_offset =
-          ALERT_HANDLER_CLASSB_PHASE3_CYC_SHADOWED_REG_OFFSET;
-      crashdump_phase_reg_offset =
-          ALERT_HANDLER_CLASSB_CRASHDUMP_TRIGGER_SHADOWED_REG_OFFSET;
-      break;
-    case kDifAlertHandlerClassC:
-      class_regwen_offset = ALERT_HANDLER_CLASSC_REGWEN_REG_OFFSET;
-      ctrl_reg_offset = ALERT_HANDLER_CLASSC_CTRL_SHADOWED_REG_OFFSET;
-      accum_thresh_reg_offset =
-          ALERT_HANDLER_CLASSC_ACCUM_THRESH_SHADOWED_REG_OFFSET;
-      irq_deadline_reg_offset =
-          ALERT_HANDLER_CLASSC_TIMEOUT_CYC_SHADOWED_REG_OFFSET;
-      phase0_cycles_reg_offset =
-          ALERT_HANDLER_CLASSC_PHASE0_CYC_SHADOWED_REG_OFFSET;
-      phase1_cycles_reg_offset =
-          ALERT_HANDLER_CLASSC_PHASE1_CYC_SHADOWED_REG_OFFSET;
-      phase2_cycles_reg_offset =
-          ALERT_HANDLER_CLASSC_PHASE2_CYC_SHADOWED_REG_OFFSET;
-      phase3_cycles_reg_offset =
-          ALERT_HANDLER_CLASSC_PHASE3_CYC_SHADOWED_REG_OFFSET;
-      crashdump_phase_reg_offset =
-          ALERT_HANDLER_CLASSC_CRASHDUMP_TRIGGER_SHADOWED_REG_OFFSET;
-      break;
-    case kDifAlertHandlerClassD:
-      class_regwen_offset = ALERT_HANDLER_CLASSD_REGWEN_REG_OFFSET;
-      ctrl_reg_offset = ALERT_HANDLER_CLASSD_CTRL_SHADOWED_REG_OFFSET;
-      accum_thresh_reg_offset =
-          ALERT_HANDLER_CLASSD_ACCUM_THRESH_SHADOWED_REG_OFFSET;
-      irq_deadline_reg_offset =
-          ALERT_HANDLER_CLASSD_TIMEOUT_CYC_SHADOWED_REG_OFFSET;
-      phase0_cycles_reg_offset =
-          ALERT_HANDLER_CLASSD_PHASE0_CYC_SHADOWED_REG_OFFSET;
-      phase1_cycles_reg_offset =
-          ALERT_HANDLER_CLASSD_PHASE1_CYC_SHADOWED_REG_OFFSET;
-      phase2_cycles_reg_offset =
-          ALERT_HANDLER_CLASSD_PHASE2_CYC_SHADOWED_REG_OFFSET;
-      phase3_cycles_reg_offset =
-          ALERT_HANDLER_CLASSD_PHASE3_CYC_SHADOWED_REG_OFFSET;
-      crashdump_phase_reg_offset =
-          ALERT_HANDLER_CLASSD_CRASHDUMP_TRIGGER_SHADOWED_REG_OFFSET;
-      break;
+    LIST_OF_CLASSES(ALERT_CLASS_CONFIG_REGS_CASE_)
     default:
       return kDifBadArg;
   }
+
+#undef ALERT_CLASS_CONFIG_REGS_CASE_
 
   // Check if class configuration is locked.
   uint32_t class_regwen =
@@ -422,6 +334,7 @@ dif_result_t dif_alert_handler_configure_class(
   return kDifOk;
 }
 
+// TODO(#9899): make this a testutil function.
 dif_result_t dif_alert_handler_configure(
     const dif_alert_handler_t *alert_handler, dif_alert_handler_config_t config,
     dif_toggle_t locked) {

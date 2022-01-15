@@ -24,6 +24,25 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * Helper X macro for defining enums and case statements related to alert
+ * classes. If an additional class is ever added to the hardware, this list can
+ * be updated.
+ */
+#define LIST_OF_CLASSES(X) \
+  X(A, 0)                  \
+  X(B, 1)                  \
+  X(C, 2)                  \
+  X(D, 3)
+
+/**
+ * Helper macro for defining a `dif_alert_handler_class_t` enumeration constant.
+ * @name_ Name of the enumeration constant.
+ * @value Value of the enumeration constant.
+ */
+#define ALERT_CLASS_ENUM_INIT_(class_, value_) \
+  kDifAlertHandlerClass##class_ = value_,
+
+/**
  * An alert class.
  *
  * An alert class roughly specifies how to deal with an alert. The class
@@ -36,22 +55,7 @@ extern "C" {
  * serviced by the processor (if enabled).
  */
 typedef enum dif_alert_handler_class {
-  /**
-   * Alert class "A".
-   */
-  kDifAlertHandlerClassA = 0,
-  /**
-   * Alert class "B".
-   */
-  kDifAlertHandlerClassB = 1,
-  /**
-   * Alert class "C".
-   */
-  kDifAlertHandlerClassC = 2,
-  /**
-   * Alert class "D".
-   */
-  kDifAlertHandlerClassD = 3,
+  LIST_OF_CLASSES(ALERT_CLASS_ENUM_INIT_)
 } dif_alert_handler_class_t;
 
 /**
@@ -67,6 +71,27 @@ typedef enum dif_alert_handler_class {
 typedef uint32_t dif_alert_handler_alert_t;
 
 /**
+ * Helper X macro for defining enums and case statements related to local
+ * alerts. If an additional class is ever added to the hardware, this list can
+ * be updated.
+ */
+#define LIST_OF_LOC_ALERTS(X)                             \
+  X(kDifAlertHandlerLocalAlertAlertPingFail, 0)           \
+  X(kDifAlertHandlerLocalAlertEscalationPingFail, 1)      \
+  X(kDifAlertHandlerLocalAlertAlertIntegrityFail, 2)      \
+  X(kDifAlertHandlerLocalAlertEscalationIntegrityFail, 3) \
+  X(kDifAlertHandlerLocalAlertBusIntegrityFail, 4)        \
+  X(kDifAlertHandlerLocalAlertShadowedUpdateError, 5)     \
+  X(kDifAlertHandlerLocalAlertShadowedStorageError, 6)
+
+/**
+ * Helper macro for defining a `dif_alert_handler_local_alert_t` enumeration
+ * constant.
+ * @name_ Name of the enumeration constant.
+ */
+#define LOC_ALERT_ENUM_INIT_(name_, value_) name_ = value_,
+
+/**
  * A local alert originating from within the alert handler itself.
  *
  * A local alert is exactly the same as a normal `dif_alert_handler_alert_t`,
@@ -74,13 +99,7 @@ typedef uint32_t dif_alert_handler_alert_t;
  * for getting causes.
  */
 typedef enum dif_alert_handler_local_alert {
-  kDifAlertHandlerLocalAlertAlertPingFail,
-  kDifAlertHandlerLocalAlertEscalationPingFail,
-  kDifAlertHandlerLocalAlertAlertIntegrityFail,
-  kDifAlertHandlerLocalAlertEscalationIntegrityFail,
-  kDifAlertHandlerLocalAlertBusIntegrityFail,
-  kDifAlertHandlerLocalAlertShadowedUpdateError,
-  kDifAlertHandlerLocalAlertShadowedStorageError,
+  LIST_OF_LOC_ALERTS(LOC_ALERT_ENUM_INIT_)
 } dif_alert_handler_local_alert_t;
 
 /**
@@ -367,7 +386,7 @@ dif_result_t dif_alert_handler_configure_local_alert(
  * @param config The escalation protocol configuration.
  * @param enabled The enablement state of the class escalation protocol.
  * @param locked The locked state to configure the class in.
- * @ return The result of the operation.
+ * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT dif_result_t
 dif_alert_handler_configure_class(const dif_alert_handler_t *alert_handler,
