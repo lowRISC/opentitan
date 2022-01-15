@@ -294,13 +294,12 @@ During this state:
 *   I/O power domains may or may not be off.
     *   The state of the IO power domain has no impact on the digital core’s power budget, e.g. the IO power being off does not cause the accompanying digital logic in pads or elsewhere to leak more.
 
-## Life Cycle and Debug
+## Debug
 
-This item is TBD
+When performing TAP debug, it is important for the debugging software to prevent the system from going to low power.
+If the system enters low power during live debug, the debug session will be broken.
+There is currently no standardized way to do this, so it is up to the debugging agent to perform the correct steps.
 
-Life cycle and TAP debug are two functions that may need to prevent the device from going into a low power state (imagine software is running and a TAP connection is made for specific debug).
-In these scenarios, it must be possible for the life cycle and debug functions to set a bit that prevents the power controller from entering sleep even if instructed to do so by software.
-The life cycle controller can maintain one such bit that is accessible from the life cycle TAP, while the normal debug TAP should maintain something similar.
 
 # Programmers Guide
 
