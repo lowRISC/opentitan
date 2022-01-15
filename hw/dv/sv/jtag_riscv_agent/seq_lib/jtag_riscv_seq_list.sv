@@ -4,3 +4,4 @@
 
 `include "jtag_riscv_base_seq.sv"
 `include "jtag_riscv_csr_seq.sv"
+`include "jtag_riscv_dm_activation_seq.sv"

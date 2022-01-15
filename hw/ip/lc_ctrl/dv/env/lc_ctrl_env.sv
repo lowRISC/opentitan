@@ -25,6 +25,7 @@ class lc_ctrl_env extends cip_base_env #(
 
     m_jtag_riscv_reg_adapter = jtag_riscv_reg_adapter::type_id::
         create("m_jtag_riscv_reg_adapter",null,this.get_full_name());
+    m_jtag_riscv_reg_adapter.cfg = cfg.m_jtag_riscv_agent_cfg;
 
     // config power manager pin
     if (!uvm_config_db#(pwr_lc_vif)::get(this, "", "pwr_lc_vif", cfg.pwr_lc_vif)) begin
