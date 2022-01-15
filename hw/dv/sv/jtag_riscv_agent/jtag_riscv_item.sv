@@ -14,8 +14,10 @@ class jtag_riscv_item extends uvm_sequence_item;
   // DMI variables
   rand logic [  DMI_OPW-1:0] op;  // operation or status
   rand logic [DMI_DATAW-1:0] data;
-  rand logic [DMI_ADDRW-1:0] addr;  // word address
+  rand logic [DMI_DATAW-1:0] addr;  // csr/bus address, may not be DMI_ADDR in rv_dm mode
   logic      [  DMI_OPW-1:0] status;  // status of DMI operation
+
+  rand bit activate_rv_dm; // Special sequqnce to activate RV_DM.
 
   constraint ir_len_c {ir_len <= JTAG_IRW;}
 
@@ -30,6 +32,7 @@ class jtag_riscv_item extends uvm_sequence_item;
     `uvm_field_int(data, UVM_DEFAULT)
     `uvm_field_int(addr, UVM_DEFAULT)
     `uvm_field_int(status, UVM_DEFAULT)
+    `uvm_field_int(activate_rv_dm, UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new

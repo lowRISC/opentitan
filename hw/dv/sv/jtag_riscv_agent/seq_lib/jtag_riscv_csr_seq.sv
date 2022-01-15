@@ -7,7 +7,8 @@ class jtag_riscv_csr_seq extends jtag_riscv_base_seq;
 
   rand bit [  DMI_OPW-1:0] op;
   rand bit [DMI_DATAW-1:0] data;
-  rand bit [DMI_ADDRW+1:0] addr;  // Need to convert from csr(byte) address to word address
+  // Need to convert from csr(byte) address to word address if not in rv_dm mode.
+  rand bit [DMI_ADDRW+1:0] addr;
   rand bit                 do_write;
 
   constraint op_c {
@@ -34,7 +35,8 @@ class jtag_riscv_csr_seq extends jtag_riscv_base_seq;
       op   == local::op;
       // convert byte address to word address
       addr == (cfg.is_rv_dm ? local::addr : (local::addr >> DMI_WORD_SHIFT));
-      data == local::data;)
+      data == local::data;
+      activate_rv_dm == 0;)
 
     finish_item(req);
     get_response(rsp);

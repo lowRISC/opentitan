@@ -99,45 +99,4 @@ package jtag_riscv_agent_pkg;
     jtag_csr_seq.start(seqr);
   endtask
 
-  task automatic activate_rv_dm_jtag(jtag_riscv_sequencer seqr);
-    bit [bus_params_pkg::BUS_DW-1:0] dmctrl_val, sbcs_val;
-
-    // Set dmcontrol's dmactive bit.
-    while (dmctrl_val == 0) begin
-      jtag_write_csr(DmControl, seqr, 1);
-      jtag_read_csr(DmControl, seqr, dmctrl_val);
-    end
-
-    // Read system bus access control and status register.
-    // Once the sbcs value is not 0, then RV_DM jtag is ready.
-    while (sbcs_val == 0) jtag_read_csr(Sbcs, seqr, sbcs_val);
-
-    // Ensure the RV_DM is set to correct bus width.
-    `DV_CHECK_EQ(sbcs_val[SbAccess32], 1, "expect SBA width to be 32 bits!", error, msg_id)
-  endtask
-
-  // Do not set cfg.rv_dm_csr_with_jtag_adapter when using this task.
-  task automatic rv_dm_jtag_read_csr(bit [bus_params_pkg::BUS_AW-1:0] csr_addr,
-                                     jtag_riscv_sequencer seqr,
-                                     output bit [bus_params_pkg::BUS_DW-1:0] csr_val);
-    // Write to Sbcs register to set the busy bit.
-    jtag_write_csr(Sbcs, seqr, ('b1 << SbBusy | 'b1 << SbReadOnAddr));
-    jtag_write_csr(SbAddress0, seqr, csr_addr);
-    jtag_read_csr(SbData0, seqr, csr_val);
-    `uvm_info(msg_id, $sformatf("rv_dm_jtag_read_csr addr: %0h, val: %0h", csr_addr, csr_val),
-              UVM_MEDIUM)
-  endtask
-
-  // Do not set cfg.rv_dm_csr_with_jtag_adapter when using this task.
-  task automatic rv_dm_jtag_write_csr(bit [bus_params_pkg::BUS_AW-1:0] csr_addr,
-                                      jtag_riscv_sequencer seqr,
-                                      bit [bus_params_pkg::BUS_DW-1:0] csr_val);
-    // Write to Sbcs register to set the busy bit.
-    jtag_write_csr(Sbcs, seqr, 'b1 << SbBusy);
-    jtag_write_csr(SbAddress0, seqr, csr_addr);
-    jtag_write_csr(SbData0, seqr, csr_val);
-    `uvm_info(msg_id, $sformatf("rv_dm_jtag_write_csr addr: %0h, val: %0h", csr_addr, csr_val),
-              UVM_MEDIUM)
-  endtask
-
 endpackage: jtag_riscv_agent_pkg
