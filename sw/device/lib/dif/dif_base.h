@@ -149,6 +149,66 @@ inline dif_toggle_t dif_multi_bit_bool_to_toggle(multi_bit_bool_t val) {
   }
 }
 
+/**
+ * Converts a `dif_toggle_t` to a `multi_bit_bool_t` of 4 bits.
+ *
+ * @param val A `dif_toggle_t` value.
+ * @return Corresponding `multi_bit_bool_t` value. Invalid values resolve to
+ * "false".
+ */
+inline multi_bit_bool_t dif_toggle_to_multi_bit_bool4(dif_toggle_t val) {
+  if (val == kDifToggleEnabled) {
+    return kMultiBitBool4True;
+  } else {
+    return kMultiBitBool4False;
+  }
+}
+
+/**
+ * Converts a `dif_toggle_t` to a `multi_bit_bool_t` of 8 bits.
+ *
+ * @param val A `dif_toggle_t` value.
+ * @return Corresponding `multi_bit_bool_t` value. Invalid values resolve to
+ * "false".
+ */
+inline multi_bit_bool_t dif_toggle_to_multi_bit_bool8(dif_toggle_t val) {
+  if (val == kDifToggleEnabled) {
+    return kMultiBitBool8True;
+  } else {
+    return kMultiBitBool8False;
+  }
+}
+
+/**
+ * Converts a `dif_toggle_t` to a `multi_bit_bool_t` of 12 bits.
+ *
+ * @param val A `dif_toggle_t` value.
+ * @return Corresponding `multi_bit_bool_t` value. Invalid values resolve to
+ * "false".
+ */
+inline multi_bit_bool_t dif_toggle_to_multi_bit_bool12(dif_toggle_t val) {
+  if (val == kDifToggleEnabled) {
+    return kMultiBitBool12True;
+  } else {
+    return kMultiBitBool12False;
+  }
+}
+
+/**
+ * Converts a `dif_toggle_t` to a `multi_bit_bool_t` of 16 bits.
+ *
+ * @param val A `dif_toggle_t` value.
+ * @return Corresponding `multi_bit_bool_t` value. Invalid values resolve to
+ * "false".
+ */
+inline multi_bit_bool_t dif_toggle_to_multi_bit_bool16(dif_toggle_t val) {
+  if (val == kDifToggleEnabled) {
+    return kMultiBitBool16True;
+  } else {
+    return kMultiBitBool16False;
+  }
+}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
