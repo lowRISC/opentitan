@@ -10,9 +10,10 @@ class chip_env extends cip_base_env #(
   );
   `uvm_component_utils(chip_env)
 
-  uart_agent          m_uart_agents[NUM_UARTS];
-  jtag_riscv_agent    m_jtag_riscv_agent;
-  spi_agent           m_spi_agent;
+  uart_agent             m_uart_agents[NUM_UARTS];
+  jtag_riscv_agent       m_jtag_riscv_agent;
+  jtag_riscv_reg_adapter m_jtag_riscv_reg_adapter;
+  spi_agent              m_spi_agent;
 
   `uvm_component_new
 
@@ -86,6 +87,10 @@ class chip_env extends cip_base_env #(
     uvm_config_db#(jtag_riscv_agent_cfg)::set(this, "m_jtag_riscv_agent*", "cfg",
                    cfg.m_jtag_riscv_agent_cfg);
 
+    m_jtag_riscv_reg_adapter = jtag_riscv_reg_adapter::type_id::
+        create("m_jtag_riscv_reg_adapter",null,this.get_full_name());
+    m_jtag_riscv_reg_adapter.cfg = cfg.m_jtag_riscv_agent_cfg;
+
     m_spi_agent = spi_agent::type_id::create("m_spi_agent", this);
     uvm_config_db#(spi_agent_cfg)::set(this, "m_spi_agent*", "cfg", cfg.m_spi_agent_cfg);
 
@@ -121,6 +126,16 @@ class chip_env extends cip_base_env #(
 
   virtual function void end_of_elaboration_phase(uvm_phase phase);
     super.end_of_elaboration_phase(phase);
+
+    if (cfg.jtag_riscv_map != null) begin
+      cfg.jtag_riscv_map.set_sequencer(m_jtag_riscv_agent.sequencer, m_jtag_riscv_reg_adapter);
+
+      `uvm_info(`gfn, "Setting jtag_riscv_map as default map", UVM_MEDIUM)
+      foreach (cfg.ral_models[i]) begin
+        cfg.ral_models[i].set_default_map_w_subblks(cfg.jtag_riscv_map);
+        `uvm_info(`gfn, cfg.ral_models[i].sprint(), UVM_HIGH)
+      end
+    end
   endfunction
 
 endclass

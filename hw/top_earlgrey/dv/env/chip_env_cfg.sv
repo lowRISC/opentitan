@@ -125,6 +125,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // Apply RAL fixes before it is locked.
   protected virtual function void post_build_ral_settings(dv_base_reg_block ral);
     RAL_T chip_ral;
+    super.post_build_ral_settings(ral);
     if (!$cast(chip_ral, ral)) return;
     // Out of reset, the link is in disconnected state.
     chip_ral.usbdev.intr_state.disconnected.set_reset(1'b1);

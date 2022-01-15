@@ -493,7 +493,7 @@
             - Accesses to CSRs external to `rv_dm` go through RV_DM SBA interface into the `xbar`.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_jtag_csr_rw"]
     }
     {
       name: chip_rv_dm_cpu_debug_mem_not_accessable
