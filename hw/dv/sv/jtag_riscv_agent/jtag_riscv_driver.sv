@@ -76,7 +76,7 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
     end else begin
       if (cfg.is_rv_dm) begin
         bit [DMI_DATAW-1:0] sbcs_val = 'b1<<SbBusy;
-        `DV_CHECK_FATAL(!rv_dm_activated, "Please activate rm_dm before accessing CSRs!")
+        `DV_CHECK_FATAL(rv_dm_activated, "Please activate rm_dm before accessing CSRs!")
 
         // If using rv_dm to access csr, need to send the following seq:
         // 1). Set busy bit in sbcs.
