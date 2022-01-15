@@ -14,3 +14,7 @@ extern bool dif_is_valid_toggle(dif_toggle_t val);
 extern bool dif_toggle_to_bool(dif_toggle_t val);
 extern dif_toggle_t dif_bool_to_toggle(bool val);
 extern dif_toggle_t dif_multi_bit_bool_to_toggle(multi_bit_bool_t val);
+extern multi_bit_bool_t dif_toggle_to_multi_bit_bool4(dif_toggle_t val);
+extern multi_bit_bool_t dif_toggle_to_multi_bit_bool8(dif_toggle_t val);
+extern multi_bit_bool_t dif_toggle_to_multi_bit_bool12(dif_toggle_t val);
+extern multi_bit_bool_t dif_toggle_to_multi_bit_bool16(dif_toggle_t val);
