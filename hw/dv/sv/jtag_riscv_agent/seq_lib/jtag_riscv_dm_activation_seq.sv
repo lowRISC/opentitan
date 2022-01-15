@@ -5,6 +5,9 @@
 // A RM_DM jtag sequence to activate DM mode.
 class jtag_riscv_dm_activation_seq extends jtag_riscv_base_seq;
 
+  `uvm_object_utils_begin(jtag_riscv_dm_activation_seq)
+  `uvm_object_utils_end
+
   function new(string name = "");
     super.new(name);
   endfunction

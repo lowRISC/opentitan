@@ -13,7 +13,8 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
   virtual task pre_start();
     super.pre_start();
     // Deselect JTAG interface.
-    cfg.tap_straps_vif.drive(DeselectJtagTap);
+    if (cfg.jtag_riscv_map != null) cfg.tap_straps_vif.drive(SelectRVJtagTap);
+    else                            cfg.tap_straps_vif.drive(DeselectJtagTap);
     enable_asserts_in_hw_reset_rand_wr = 0;
 
     // In top-level uart RX pin may be selected in pinmux. CSR tests may randomly enable line
@@ -44,7 +45,7 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
     // make sure jtag rst triggers
     cfg.tap_straps_vif.drive(SelectRVJtagTap);
     super.dut_init(reset_kind);
-    cfg.tap_straps_vif.drive(DeselectJtagTap);
+    if (cfg.jtag_riscv_map == null) cfg.tap_straps_vif.drive(DeselectJtagTap);
   endtask
 
 endclass

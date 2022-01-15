@@ -309,4 +309,11 @@ class dv_base_reg_block extends uvm_reg_block;
                                 .map(map));
   endfunction
 
+  // Set default map for this block and all its sub-blocks.
+  function void set_default_map_w_subblks(uvm_reg_map map);
+    dv_base_reg_block subblks[$];
+    set_default_map(map);
+    get_dv_base_reg_blocks(subblks);
+    foreach (subblks[i]) subblks[i].set_default_map_w_subblks(map);
+  endfunction
 endclass
