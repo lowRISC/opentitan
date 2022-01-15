@@ -22,7 +22,8 @@ module rstmgr_cnsty_chk
   input parent_rst_ni,
   input sw_rst_req_i,
   output logic sw_rst_req_clr_o,
-  output logic err_o
+  output logic err_o,
+  output logic fsm_err_o
 );
 
   localparam int MaxSyncDelay = 2;
@@ -73,26 +74,57 @@ module rstmgr_cnsty_chk
     .q_o(sync_child_rst)
   );
 
-
-  typedef enum logic [2:0] {
-    Reset,
-    Idle,
-    WaitForParent,
-    WaitForChild,
-    WaitForSrcRelease,
-    WaitForChildRelease,
-    Error
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 7 -n 10 \
+  //      -s 2487617215 --language=sv --avoid-zero
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: --
+  //  4: --
+  //  5: |||||||||||||||||||| (47.62%)
+  //  6: |||||||||||||||||| (42.86%)
+  //  7: |||| (9.52%)
+  //  8: --
+  //  9: --
+  // 10: --
+  //
+  // Minimum Hamming distance: 5
+  // Maximum Hamming distance: 7
+  // Minimum Hamming weight: 5
+  // Maximum Hamming weight: 8
+  //
+  localparam int StateWidth = 10;
+  typedef enum logic [StateWidth-1:0] {
+    Reset               = 10'b0111001001,
+    Idle                = 10'b1010110101,
+    WaitForParent       = 10'b0000101111,
+    WaitForChild        = 10'b1001011011,
+    WaitForSrcRelease   = 10'b0110010110,
+    WaitForChildRelease = 10'b1111101110,
+    Error               = 10'b1100111000
   } state_e;
 
   state_e state_q, state_d;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      state_q <= Reset;
-    end else begin
-      state_q <= state_d;
-    end
-  end
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  logic [StateWidth-1:0] state_raw_q;
+  assign state_q = state_e'(state_raw_q);
+  //SEC_CM: FSM.SPARSE
+  prim_sparse_fsm_flop #(
+    .StateEnumT(state_e),
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(Reset))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .state_i ( state_d     ),
+    .state_o ( state_raw_q )
+  );
 
   logic timeout;
   logic cnt_inc;
@@ -123,6 +155,7 @@ module rstmgr_cnsty_chk
   always_comb begin
     state_d = state_q;
     err_o = '0;
+    fsm_err_o = '0;
     cnt_inc = '0;
     cnt_clr = '0;
     sw_rst_req_clr_o = '0;
@@ -221,7 +254,7 @@ module rstmgr_cnsty_chk
       end
 
       default: begin
-        state_d = Error;
+        fsm_err_o = 1'b1;
       end
     endcase // unique case (state_q)
   end // always_comb

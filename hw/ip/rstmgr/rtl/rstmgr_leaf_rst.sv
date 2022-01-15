@@ -21,7 +21,8 @@ module rstmgr_leaf_rst
   input scan_sel,
   output mubi4_t rst_en_o,
   output logic leaf_rst_o,
-  output logic err_o
+  output logic err_o,
+  output logic fsm_err_o
 );
 
   logic leaf_rst_sync;
@@ -66,7 +67,8 @@ module rstmgr_leaf_rst
     .parent_rst_ni,
     .sw_rst_req_i(sw_rst_req_q | ~sw_rst_req_ni),
     .sw_rst_req_clr_o(clr_sw_rst_req),
-    .err_o
+    .err_o,
+    .fsm_err_o
   );
 
   // reset asserted indication for alert handler
