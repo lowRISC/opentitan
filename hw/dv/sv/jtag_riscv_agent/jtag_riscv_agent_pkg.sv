@@ -61,8 +61,9 @@ package jtag_riscv_agent_pkg;
   } jtag_dm_csr_e;
 
   typedef enum bit [4:0] {
-    SbAccess32 = 'd2,
-    SbBusy     = 'd21
+    SbAccess32   = 'd2,
+    SbReadOnAddr = 'd20,
+    SbBusy       = 'd21
   } sbcs_field_e;
 
   // forward declare classes to allow typedefs below
@@ -115,17 +116,19 @@ package jtag_riscv_agent_pkg;
     `DV_CHECK_EQ(sbcs_val[SbAccess32], 1, "expect SBA width to be 32 bits!", error, msg_id)
   endtask
 
+  // Do not set cfg.rv_dm_csr_with_jtag_adapter when using this task.
   task automatic rv_dm_jtag_read_csr(bit [bus_params_pkg::BUS_AW-1:0] csr_addr,
                                      jtag_riscv_sequencer seqr,
                                      output bit [bus_params_pkg::BUS_DW-1:0] csr_val);
     // Write to Sbcs register to set the busy bit.
-    jtag_write_csr(Sbcs, seqr, 'b1 << SbBusy);
+    jtag_write_csr(Sbcs, seqr, ('b1 << SbBusy | 'b1 << SbReadOnAddr));
     jtag_write_csr(SbAddress0, seqr, csr_addr);
     jtag_read_csr(SbData0, seqr, csr_val);
     `uvm_info(msg_id, $sformatf("rv_dm_jtag_read_csr addr: %0h, val: %0h", csr_addr, csr_val),
               UVM_MEDIUM)
   endtask
 
+  // Do not set cfg.rv_dm_csr_with_jtag_adapter when using this task.
   task automatic rv_dm_jtag_write_csr(bit [bus_params_pkg::BUS_AW-1:0] csr_addr,
                                       jtag_riscv_sequencer seqr,
                                       bit [bus_params_pkg::BUS_DW-1:0] csr_val);
