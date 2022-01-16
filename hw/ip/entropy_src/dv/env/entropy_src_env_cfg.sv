@@ -17,6 +17,8 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   rand push_pull_agent_cfg#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))
        m_csrng_agent_cfg;
 
+  // Additional reset interface for the csrng.
+  virtual clk_rst_if    csrng_rst_vif;
   virtual pins_if#(8)   otp_en_es_fw_read_vif;
   virtual pins_if#(8)   otp_en_es_fw_over_vif;
 

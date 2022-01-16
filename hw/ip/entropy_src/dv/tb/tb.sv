@@ -14,6 +14,16 @@ module tb;
   `include "dv_macros.svh"
 
   wire clk, rst_n, devmode;
+  //
+  // An additional local reset for the csrng pull agent
+  //
+  // This is needed in particular for this pull agent as
+  // the entropy source may (by design!) become unable to provide
+  // seeds to the CSRNG under certain conditions.  This reset
+  // communicates to the agent that it is time to cleanly exit.
+  // By using a reset, the VIF is allowed to clear REQ, within
+  // triggering an assertion.
+  wire csrng_rst_n;
   wire intr_entropy_valid, intr_health_test_failed, intr_ebus_check_failed,
        intr_observe_fifo_ready, intr_fatal_err;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
@@ -21,6 +31,7 @@ module tb;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
+  clk_rst_if csrng_rst_if(.clk(), .rst_n(csrng_rst_n));
   pins_if#(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if#(1) devmode_if(devmode);
   pins_if#(8) otp_en_es_fw_read_if(otp_en_es_fw_read);
@@ -29,7 +40,7 @@ module tb;
   push_pull_if#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH))
       rng_if(.clk(clk), .rst_n(rst_n));
   push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
-      csrng_if(.clk(clk), .rst_n(rst_n));
+      csrng_if(.clk(clk), .rst_n(rst_n & csrng_rst_n));
 
   `DV_ALERT_IF_CONNECT
 
@@ -82,7 +93,9 @@ module tb;
     // Drive clk and rst_n from clk_if
     // Set interfaces in config_db
     clk_rst_if.set_active();
+    csrng_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "csrng_rst_vif", csrng_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual pins_if#(8))::set(null, "*.env", "otp_en_es_fw_read_vif",

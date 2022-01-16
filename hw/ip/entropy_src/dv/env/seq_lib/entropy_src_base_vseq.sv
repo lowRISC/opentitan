@@ -57,15 +57,31 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_rd(.ptr(    ral.extht_fail_counts), .value(val));
   endtask
 
+  virtual task apply_reset(string kind = "HARD");
+    if (kind == "CSRNG_ONLY") begin
+      cfg.csrng_rst_vif.apply_reset();
+    end else begin
+      super.apply_reset(kind);
+    end
+  endtask
+
   virtual task dut_shutdown();
     bit seeds_found;
     // check for pending entropy_src operations and wait for them to complete
+    `uvm_info(`gfn, "Shutting down", UVM_LOW)
     do begin
       #( 1us);
+      `uvm_info(`gfn, "Polling for remaining data (clear entropy_data interrupt)", UVM_LOW)
       do_entropy_data_read(-1, seeds_found);
+      `uvm_info(`gfn, $sformatf("Found %01d seeds", seeds_found), UVM_HIGH)
     end while (seeds_found > 0);
 
-     check_ht_diagnostics();
+    check_ht_diagnostics();
+
+    super.dut_shutdown();
+    // Special feature related to entropy_src virtual sequences:
+    // We notify the environment that we are complete.
+    apply_reset("CSRNG_ONLY");
   endtask
 
   // setup basic entropy_src features

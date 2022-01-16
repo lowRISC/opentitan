@@ -33,7 +33,8 @@ class entropy_src_smoke_vseq extends entropy_src_base_vseq;
           // Update the count of remaining seeds to read
           seed_cnt -= available_seeds;
         end while (seed_cnt > 0);
-        m_rng_push_seq.stop();
+        m_rng_push_seq.stop(.hard(0));
+        m_rng_push_seq.wait_for_sequence_state(UVM_FINISHED);
       end
     join
 
