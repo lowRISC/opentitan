@@ -74,11 +74,12 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
         // shutting down the the AST/RNG.  Otherwise the CSRNG pull agent
         // will stall waiting for entropy.
         `uvm_info(`gfn, "Stopping CSRNG seq", UVM_LOW)
-         m_csrng_pull_seq.stop();
-         m_csrng_pull_seq.wait_for_sequence_state(UVM_FINISHED);
-         `uvm_info(`gfn, "Stopping RNG seq", UVM_LOW)
-         m_rng_push_seq.stop();
-         m_rng_push_seq.wait_for_sequence_state(UVM_FINISHED);
+        m_csrng_pull_seq.stop(.hard(1));
+        m_csrng_pull_seq.wait_for_sequence_state(UVM_FINISHED);
+        `uvm_info(`gfn, "Stopping RNG seq", UVM_LOW)
+        m_rng_push_seq.stop(.hard(0));
+        m_rng_push_seq.wait_for_sequence_state(UVM_FINISHED);
+        `uvm_info(`gfn, "Exiting test body.", UVM_LOW)
       end
     join
   endtask : body

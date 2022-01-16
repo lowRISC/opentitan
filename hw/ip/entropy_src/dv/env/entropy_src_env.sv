@@ -10,13 +10,19 @@ class entropy_src_env extends cip_base_env #(
   );
   `uvm_component_utils(entropy_src_env)
 
-   push_pull_agent#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH))         m_rng_agent;
-   push_pull_agent#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))  m_csrng_agent;
+  push_pull_agent#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH))         m_rng_agent;
+  push_pull_agent#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))  m_csrng_agent;
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+
+    // Lookup the CSRNG auxiliary reset. (Is only applied at end-of-sim)
+    if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "csrng_rst_vif", cfg.csrng_rst_vif))
+      begin
+        `uvm_fatal(`gfn, "failed to get csrng_rst_if from uvm_config_db")
+      end
 
     m_rng_agent = push_pull_agent#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH))::type_id::
                   create("m_rng_agent", this);
@@ -30,8 +36,8 @@ class entropy_src_env extends cip_base_env #(
     cfg.m_rng_agent_cfg.host_delay_min = 6;
     cfg.m_rng_agent_cfg.host_delay_max = 12;
 
-    m_csrng_agent = push_pull_agent#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))::type_id::
-                    create("m_csrng_agent", this);
+    m_csrng_agent = push_pull_agent#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))::
+                    type_id::create("m_csrng_agent", this);
     uvm_config_db#(push_pull_agent_cfg#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)))::set
                   (this, "m_csrng_agent*", "cfg", cfg.m_csrng_agent_cfg);
     cfg.m_csrng_agent_cfg.agent_type = push_pull_agent_pkg::PullAgent;
