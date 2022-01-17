@@ -106,11 +106,10 @@
     {
       name: stress_all
       desc: '''
-            Run multiple sequences back-to-back while making invalid TL
-            accesses at the same time.
+            Run assorted sequences back-to-back.
             '''
       milestone: V2
-      tests: []
+      tests: ["otbn_stress_all"]
     }
     {
       name: lc_escalation
