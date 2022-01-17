@@ -30,7 +30,7 @@ interface spi_if
   endtask : wait_for_clks
 
   task automatic get_data_from_sio(spi_agent_pkg::spi_mode_e mode, output bit sio_bits[]);
-    unique case (mode)
+    case (mode)
       Standard: sio_bits = {>> 1 {sio[0]}};
       Dual:     sio_bits = {>> 1 {sio[1:0]}};
       Quad:     sio_bits = {>> 1 {sio[3:0]}};

@@ -64,7 +64,7 @@ class spi_device_driver extends spi_driver;
   endtask : send_rx_item
 
   virtual task send_data_to_sio(spi_mode_e mode, input logic [3:0] sio_bits);
-    unique case (mode)
+    case (mode)
       Standard: cfg.vif.sio[1]   <= sio_bits[0];
       Dual:     cfg.vif.sio[1:0] <= sio_bits[1:0];
       default:  cfg.vif.sio      <= sio_bits;
