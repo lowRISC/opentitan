@@ -22,6 +22,7 @@
 #include "keymgr_regs.h"
 #include "lc_ctrl_regs.h"
 #include "otp_ctrl_regs.h"
+#include "rv_core_ibex_regs.h"
 #include "sram_ctrl_regs.h"
 
 static_assert(ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT <=
@@ -273,10 +274,10 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
 }
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_software_escalate(void)) {
-  // TODO(lowRISC/opentitan#7148): Use a software alert when available.
-  // For now, signal a fatal_intg_error from SRAM.
-  enum { kBase = TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR };
-  abs_mmio_write32(kBase + SRAM_CTRL_ALERT_TEST_REG_OFFSET, 1);
+  enum { kBase = TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR };
+  //  Setting rv_core_ibex.SW_FATAL_ERR (rw0c) to any value other than
+  // `kMultiBitBool4False` will continuously cause alert events.
+  abs_mmio_write32(kBase + RV_CORE_IBEX_SW_FATAL_ERR_REG_OFFSET, 0);
 }
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_keymgr_kill(void)) {

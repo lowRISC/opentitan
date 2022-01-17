@@ -106,6 +106,7 @@ sw_silicon_creator_lib_shutdown = declare_dependency(
       hw_ip_keymgr_reg_h,
       hw_ip_sram_ctrl_reg_h,
       hw_ip_flash_ctrl_reg_h,
+      hw_ip_ibex_reg_h,
       'shutdown.c',
     ],
     dependencies: [
@@ -172,6 +173,7 @@ test('sw_silicon_creator_lib_shutdown_unittest', executable(
       hw_ip_keymgr_reg_h,
       hw_ip_sram_ctrl_reg_h,
       hw_ip_flash_ctrl_reg_h,
+      hw_ip_ibex_reg_h,
       'shutdown.c',
       'shutdown_unittest.cc',
     ],
