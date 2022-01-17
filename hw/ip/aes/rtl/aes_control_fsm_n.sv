@@ -207,6 +207,7 @@ module aes_control_fsm_n
   logic                                    ctrl_err_storage;
   aes_op_e                                 op;
   aes_mode_e                               mode;
+  logic                                    cipher_op_raw;
   ciph_op_e                                cipher_op;
   logic                                    sideload;
   prs_rate_e                               prng_reseed_rate;
@@ -241,7 +242,7 @@ module aes_control_fsm_n
           ctrl_err_storage,
           op,
           mode,
-          cipher_op,
+          cipher_op_raw,
           sideload,
           prng_reseed_rate,
           manual_operation,
@@ -270,6 +271,8 @@ module aes_control_fsm_n
           prng_data_ack,
           prng_reseed_ack,
           output_lost_in_buf} = in_buf;
+
+  assign cipher_op = ciph_op_e'(cipher_op_raw);
 
   // Intermediate output signals
   logic                                    ctrl_we;
