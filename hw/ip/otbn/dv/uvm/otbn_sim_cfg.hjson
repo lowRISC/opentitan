@@ -179,16 +179,25 @@ name:
       en_run_modes: ["build_otbn_multi_err_binaries_mode"]
       reseed: 1
     }
+
     {
       name: "otbn_imem_err"
       uvm_test_seq: "otbn_imem_err_vseq"
       en_run_modes: ["build_otbn_rig_binary_mode"]
       reseed: 5
     }
+
     {
       name: "otbn_dmem_err"
       uvm_test_seq: "otbn_dmem_err_vseq"
       en_run_modes: ["build_otbn_rig_binary_mode"]
+      reseed: 5
+    }
+
+    {
+      name: "otbn_stress_all"
+      uvm_test_seq: "otbn_stress_all_vseq"
+      en_run_modes: ["build_otbn_rig_binaries_mode"]
       reseed: 5
     }
 
@@ -204,7 +213,9 @@ name:
     {
       name: "core"
       tests: [
-        "otbn_smoke", "otbn_single", "otbn_multi", "otbn_reset", "otbn_multi_err", "otbn_imem_err", "otbn_dmem_err"
+        "otbn_smoke", "otbn_single", "otbn_multi", "otbn_reset",
+         "otbn_multi_err", "otbn_imem_err", "otbn_dmem_err",
+         "otbn_stress_all"
       ]
     }
   ]

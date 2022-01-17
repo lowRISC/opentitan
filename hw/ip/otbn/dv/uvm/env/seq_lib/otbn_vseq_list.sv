@@ -11,3 +11,4 @@
 `include "otbn_smoke_vseq.sv"
 `include "otbn_imem_err_vseq.sv"
 `include "otbn_dmem_err_vseq.sv"
+`include "otbn_stress_all_vseq.sv"
