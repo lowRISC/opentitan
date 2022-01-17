@@ -118,7 +118,9 @@ module kmac
     KmacDigest = 6'b100001
 
   } kmac_st_e;
-  kmac_st_e kmac_st, kmac_st_d;
+
+  logic [StateWidth-1:0] kmac_st_raw;
+  kmac_st_e              kmac_st, kmac_st_d;
 
   /////////////
   // Signals //
@@ -641,9 +643,10 @@ module kmac
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .state_i ( kmac_st_d ),
-    .state_o ( kmac_st   )
+    .state_i (kmac_st_d),
+    .state_o (kmac_st_raw)
   );
+  assign kmac_st = kmac_st_e'(kmac_st_raw);
 
   always_comb begin
     // Default value
