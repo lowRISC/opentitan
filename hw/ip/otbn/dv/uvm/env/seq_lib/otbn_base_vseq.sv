@@ -29,6 +29,12 @@ class otbn_base_vseq extends cip_base_vseq #(
   // should allow an absent key (in which case, we have to disable end-address checking).
   protected bit absent_key_allowed = 1'b0;
 
+  // This counter is set in run_otbn() if our operation has finished and we're trying to stop. It's
+  // used by the code in _run_sideload_sequence() to spot that we should stop sending sideload keys
+  // and that it should exit. (Note that we can't just use something like 'disable fork' because the
+  // sideload sequencer will get upset if we kill a process that's waiting for a grant from it).
+  protected int unsigned stop_tokens = 0;
+
   // Load the contents of an ELF file into the DUT's memories, either by a DPI backdoor (if backdoor
   // is true) or with TL transactions. Also, pass loop warp rules to the ISS through the model.
   protected task load_elf(string path, bit backdoor);
@@ -171,15 +177,24 @@ class otbn_base_vseq extends cip_base_vseq #(
     // Explode here if that happens, which should be easier to debug than two concurrent run_otbn()
     // processes fighting over the interface.
     `DV_CHECK_FATAL(!running_)
+    `DV_CHECK_FATAL(stop_tokens == 0)
     running_ = 1'b1;
 
     fork : isolation_fork
       begin
         fork
+          // Only _run_otbn will complete
           _run_otbn();
           _run_loop_warps();
           _run_sideload_sequence();
         join_any
+
+        // Consumed by _run_sideload_sequence()
+        stop_tokens = 1;
+
+        wait (!stop_tokens);
+
+        // Kill any processes that didn't use the stop token mechanism
         disable fork;
       end
     join
@@ -334,24 +349,23 @@ class otbn_base_vseq extends cip_base_vseq #(
     // sequence and then will be checked at the end of run_otbn().
     absent_key_allowed = $urandom_range(100) <= cfg.allow_no_sideload_key_pct;
 
-    // If absent keys are allowed, the default sideload sequence (which should be running already)
-    // will work just fine. If not, we want to generate our own sequence that doesn't allow keys to
-    // be invalid. Use the grab() method on the sequencer to inject our sequence. Note that this
-    // task will be killed by the "disable fork" in run_otbn(), so we can't be sure we'll ungrab the
-    // sequencer here. Instead, we set the sideload_sequence member variable to something non-null,
-    // which run_otbn() can use to ungrab things.
-    if (!absent_key_allowed) begin
+    if (absent_key_allowed) begin
+      // If absent keys are allowed, the default sideload sequence (which should be running already)
+      // will work just fine. Wait until we're told to stop and then exit.
+      wait (stop_tokens != 0);
+    end else begin
+      // If absent keys are not allowed, we want to generate our own sequence that doesn't allow
+      // keys to be invalid. We send it with a higher priority to override the default sequence.
       key_sideload_set_seq sideload_seq;
       `uvm_create_on(sideload_seq, p_sequencer.key_sideload_sequencer_h)
-      forever begin
+      while (stop_tokens == 0) begin
         `DV_CHECK_RANDOMIZE_WITH_FATAL(sideload_seq, sideload_key.valid == 1'b1;)
         `uvm_send_pri(sideload_seq, 200)
       end
     end
 
-    // Run forever. This ensures that if absent keys are allowed then the task still hangs
-    // indefinitely (otherwise the join_any in run_otbn would finish early)
-    wait(0);
+    `DV_CHECK_FATAL(stop_tokens > 0);
+    stop_tokens -= 1;
   endtask
 
   virtual protected function string pick_elf_path();
