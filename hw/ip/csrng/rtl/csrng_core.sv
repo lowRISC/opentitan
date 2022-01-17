@@ -19,7 +19,7 @@ module csrng_core import csrng_pkg::*; #(
   output csrng_reg_pkg::csrng_hw2reg_t hw2reg,
 
   // Efuse Interface
-  input efuse_sw_app_enable_i,
+  input  prim_mubi_pkg::mubi8_t otp_en_csrng_sw_app_read_i,
 
   // Lifecycle broadcast inputs
   input  lc_ctrl_pkg::lc_tx_t  lc_hw_debug_en_i,
@@ -68,6 +68,9 @@ module csrng_core import csrng_pkg::*; #(
   localparam int MaxClen = 12;
   localparam int ADataDepthWidth = SeedLen/AppCmdWidth;
   localparam unsigned ADataDepthClog = $clog2(ADataDepthWidth)+1;
+  localparam int CsEnableCopies = 55;
+  localparam int LcHwDebugCopies = 5;
+  localparam int Flag0Copies = 3;
 
   // signals
   // interrupt signals
@@ -75,8 +78,8 @@ module csrng_core import csrng_pkg::*; #(
   logic       event_cs_entropy_req;
   logic       event_cs_hw_inst_exc;
   logic       event_cs_fatal_err;
-  logic       cs_enable;
-  logic       cs_enable_pfe;
+  logic [CsEnableCopies-1:1] cs_enable_fo;
+  logic [Flag0Copies-1:0]    flag0_fo;
   logic       cs_enable_pfa;
   logic       sw_app_enable;
   logic       sw_app_enable_pfe;
@@ -291,6 +294,8 @@ module csrng_core import csrng_pkg::*; #(
   logic [NApps-1:0]          cmd_stage_sfifo_genbits_err_st;
   logic [NApps-1:0]          cmd_gen_cnt_err;
   logic [NApps-1:0]          cmd_stage_sm_err;
+  logic                      ctr_drbg_upd_v_ctr_err;
+  logic                      ctr_drbg_gen_v_ctr_err;
 
   logic [NApps-1:0]          cmd_stage_vld;
   logic [StateId-1:0]        cmd_stage_shid[NApps];
@@ -320,7 +325,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                    genbits_stage_fips_sw;
 
   logic [14:0]             hw_exception_sts;
-  logic                    lc_hw_debug_on;
+  logic [LcHwDebugCopies-1:0] lc_hw_debug_on_fo;
   logic                    state_db_is_dump_en;
   logic                    state_db_reg_rd_sel;
   logic                    state_db_reg_rd_id_pulse;
@@ -339,16 +344,25 @@ module csrng_core import csrng_pkg::*; #(
   logic                    cs_rdata_capt_vld;
   logic                    cs_bus_cmp_alert;
   logic                    cmd_rdy;
+  logic [1:0]              efuse_sw_app_enable;
 
   logic                    unused_err_code_test_bit;
   logic                    unused_reg2hw_genbits;
   logic                    unused_int_state_val;
 
+  import prim_mubi_pkg::mubi4_t;
+  import prim_mubi_pkg::mubi4_test_true_strict;
+  import prim_mubi_pkg::mubi4_test_invalid;
+
+  prim_mubi_pkg::mubi8_t [1:0] en_csrng_sw_app_read;
+  prim_mubi_pkg::mubi4_t [CsEnableCopies-1:0] mubi_cs_enable_fanout;
+  prim_mubi_pkg::mubi4_t [Flag0Copies-1:0] mubi_flag0_fanout;
+
   // flops
   logic [2:0]  acmd_q, acmd_d;
   logic [3:0]  shid_q, shid_d;
   logic        gen_last_q, gen_last_d;
-  logic        flag0_q, flag0_d;
+  mubi4_t      flag0_q, flag0_d;
   logic [$clog2(NApps)-1:0] cmd_arb_idx_q, cmd_arb_idx_d;
   logic        statedb_wr_select_q, statedb_wr_select_d;
   logic        genbits_stage_fips_sw_q, genbits_stage_fips_sw_d;
@@ -366,7 +380,7 @@ module csrng_core import csrng_pkg::*; #(
       acmd_q  <= '0;
       shid_q  <= '0;
       gen_last_q <= '0;
-      flag0_q <= '0;
+      flag0_q <= prim_mubi_pkg::MuBi4False;
       cmd_arb_idx_q <= '0;
       statedb_wr_select_q <= '0;
       genbits_stage_fips_sw_q <= '0;
@@ -464,7 +478,7 @@ module csrng_core import csrng_pkg::*; #(
   );
 
   // set the interrupt sources
-  assign event_cs_fatal_err = (cs_enable  && (
+  assign event_cs_fatal_err = (cs_enable_fo[1]  && (
          (|cmd_stage_sfifo_cmd_err_sum) ||
          (|cmd_stage_sfifo_genbits_err_sum) ||
          ctr_drbg_cmd_sfifo_cmdreq_err_sum ||
@@ -533,8 +547,8 @@ module csrng_core import csrng_pkg::*; #(
          err_code_test_bit[24];
   assign aes_cipher_sm_err_sum = aes_cipher_sm_err ||
          err_code_test_bit[25];
-  assign cmd_gen_cnt_err_sum = (|cmd_gen_cnt_err) ||
-         err_code_test_bit[26];
+  assign cmd_gen_cnt_err_sum = (|cmd_gen_cnt_err) || ctr_drbg_gen_v_ctr_err ||
+         ctr_drbg_upd_v_ctr_err || err_code_test_bit[26];
   assign fifo_write_err_sum =
          block_encrypt_sfifo_blkenc_err[2] ||
          ctr_drbg_gen_sfifo_ggenbits_err[2] ||
@@ -592,70 +606,92 @@ module csrng_core import csrng_pkg::*; #(
 
   // set the err code source bits
   assign hw2reg.err_code.sfifo_cmd_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_cmd_err.de = cs_enable && (|cmd_stage_sfifo_cmd_err_sum);
+  assign hw2reg.err_code.sfifo_cmd_err.de = cs_enable_fo[2] &&
+         (|cmd_stage_sfifo_cmd_err_sum);
 
   assign hw2reg.err_code.sfifo_genbits_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_genbits_err.de = cs_enable && (|cmd_stage_sfifo_genbits_err_sum);
+  assign hw2reg.err_code.sfifo_genbits_err.de = cs_enable_fo[3] &&
+         (|cmd_stage_sfifo_genbits_err_sum);
 
   assign hw2reg.err_code.sfifo_cmdreq_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_cmdreq_err.de = cs_enable && ctr_drbg_cmd_sfifo_cmdreq_err_sum;
+  assign hw2reg.err_code.sfifo_cmdreq_err.de = cs_enable_fo[4] &&
+         ctr_drbg_cmd_sfifo_cmdreq_err_sum;
 
   assign hw2reg.err_code.sfifo_rcstage_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_rcstage_err.de = cs_enable && ctr_drbg_cmd_sfifo_rcstage_err_sum;
+  assign hw2reg.err_code.sfifo_rcstage_err.de = cs_enable_fo[5] &&
+         ctr_drbg_cmd_sfifo_rcstage_err_sum;
 
   assign hw2reg.err_code.sfifo_keyvrc_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_keyvrc_err.de = cs_enable && ctr_drbg_cmd_sfifo_keyvrc_err_sum;
+  assign hw2reg.err_code.sfifo_keyvrc_err.de = cs_enable_fo[6] &&
+         ctr_drbg_cmd_sfifo_keyvrc_err_sum;
 
   assign hw2reg.err_code.sfifo_updreq_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_updreq_err.de = cs_enable && ctr_drbg_upd_sfifo_updreq_err_sum;
+  assign hw2reg.err_code.sfifo_updreq_err.de = cs_enable_fo[7] &&
+         ctr_drbg_upd_sfifo_updreq_err_sum;
 
   assign hw2reg.err_code.sfifo_bencreq_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_bencreq_err.de = cs_enable && ctr_drbg_upd_sfifo_bencreq_err_sum;
+  assign hw2reg.err_code.sfifo_bencreq_err.de = cs_enable_fo[8] &&
+         ctr_drbg_upd_sfifo_bencreq_err_sum;
 
   assign hw2reg.err_code.sfifo_bencack_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_bencack_err.de = cs_enable && ctr_drbg_upd_sfifo_bencack_err_sum;
+  assign hw2reg.err_code.sfifo_bencack_err.de = cs_enable_fo[9] &&
+         ctr_drbg_upd_sfifo_bencack_err_sum;
 
   assign hw2reg.err_code.sfifo_pdata_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_pdata_err.de = cs_enable && ctr_drbg_upd_sfifo_pdata_err_sum;
+  assign hw2reg.err_code.sfifo_pdata_err.de = cs_enable_fo[10] &&
+         ctr_drbg_upd_sfifo_pdata_err_sum;
 
   assign hw2reg.err_code.sfifo_final_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_final_err.de = cs_enable && ctr_drbg_upd_sfifo_final_err_sum;
+  assign hw2reg.err_code.sfifo_final_err.de = cs_enable_fo[11] &&
+         ctr_drbg_upd_sfifo_final_err_sum;
 
   assign hw2reg.err_code.sfifo_gbencack_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_gbencack_err.de = cs_enable && ctr_drbg_gen_sfifo_gbencack_err_sum;
+  assign hw2reg.err_code.sfifo_gbencack_err.de = cs_enable_fo[12] &&
+         ctr_drbg_gen_sfifo_gbencack_err_sum;
 
   assign hw2reg.err_code.sfifo_grcstage_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_grcstage_err.de = cs_enable && ctr_drbg_gen_sfifo_grcstage_err_sum;
+  assign hw2reg.err_code.sfifo_grcstage_err.de = cs_enable_fo[13] &&
+         ctr_drbg_gen_sfifo_grcstage_err_sum;
 
   assign hw2reg.err_code.sfifo_ggenreq_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_ggenreq_err.de = cs_enable && ctr_drbg_gen_sfifo_ggenreq_err_sum;
+  assign hw2reg.err_code.sfifo_ggenreq_err.de = cs_enable_fo[14] &&
+         ctr_drbg_gen_sfifo_ggenreq_err_sum;
 
   assign hw2reg.err_code.sfifo_gadstage_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_gadstage_err.de = cs_enable && ctr_drbg_gen_sfifo_gadstage_err_sum;
+  assign hw2reg.err_code.sfifo_gadstage_err.de = cs_enable_fo[15] &&
+         ctr_drbg_gen_sfifo_gadstage_err_sum;
 
   assign hw2reg.err_code.sfifo_ggenbits_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_ggenbits_err.de = cs_enable && ctr_drbg_gen_sfifo_ggenbits_err_sum;
+  assign hw2reg.err_code.sfifo_ggenbits_err.de = cs_enable_fo[16] &&
+         ctr_drbg_gen_sfifo_ggenbits_err_sum;
 
   assign hw2reg.err_code.sfifo_blkenc_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_blkenc_err.de = cs_enable && block_encrypt_sfifo_blkenc_err_sum;
+  assign hw2reg.err_code.sfifo_blkenc_err.de = cs_enable_fo[17] &&
+         block_encrypt_sfifo_blkenc_err_sum;
 
   assign hw2reg.err_code.cmd_stage_sm_err.d = 1'b1;
-  assign hw2reg.err_code.cmd_stage_sm_err.de = cs_enable && cmd_stage_sm_err_sum;
+  assign hw2reg.err_code.cmd_stage_sm_err.de = cs_enable_fo[18] &&
+         cmd_stage_sm_err_sum;
 
   assign hw2reg.err_code.main_sm_err.d = 1'b1;
-  assign hw2reg.err_code.main_sm_err.de = cs_enable && main_sm_err_sum;
+  assign hw2reg.err_code.main_sm_err.de = cs_enable_fo[19] &&
+         main_sm_err_sum;
 
   assign hw2reg.err_code.drbg_gen_sm_err.d = 1'b1;
-  assign hw2reg.err_code.drbg_gen_sm_err.de = cs_enable && drbg_gen_sm_err_sum;
+  assign hw2reg.err_code.drbg_gen_sm_err.de = cs_enable_fo[20] &&
+         drbg_gen_sm_err_sum;
 
   assign hw2reg.err_code.drbg_updbe_sm_err.d = 1'b1;
-  assign hw2reg.err_code.drbg_updbe_sm_err.de = cs_enable && drbg_updbe_sm_err_sum;
+  assign hw2reg.err_code.drbg_updbe_sm_err.de = cs_enable_fo[21] &&
+         drbg_updbe_sm_err_sum;
 
   assign hw2reg.err_code.drbg_updob_sm_err.d = 1'b1;
-  assign hw2reg.err_code.drbg_updob_sm_err.de = cs_enable && drbg_updob_sm_err_sum;
+  assign hw2reg.err_code.drbg_updob_sm_err.de = cs_enable_fo[22] &&
+         drbg_updob_sm_err_sum;
 
   assign hw2reg.err_code.aes_cipher_sm_err.d = 1'b1;
-  assign hw2reg.err_code.aes_cipher_sm_err.de = cs_enable && aes_cipher_sm_err_sum;
+  assign hw2reg.err_code.aes_cipher_sm_err.de = cs_enable_fo[23] &&
+         aes_cipher_sm_err_sum;
 
   assign hw2reg.err_code.cmd_gen_cnt_err.d = 1'b1;
   assign hw2reg.err_code.cmd_gen_cnt_err.de = cmd_gen_cnt_err_sum;
@@ -663,13 +699,13 @@ module csrng_core import csrng_pkg::*; #(
 
  // set the err code type bits
   assign hw2reg.err_code.fifo_write_err.d = 1'b1;
-  assign hw2reg.err_code.fifo_write_err.de = cs_enable && fifo_write_err_sum;
+  assign hw2reg.err_code.fifo_write_err.de = cs_enable_fo[24] && fifo_write_err_sum;
 
   assign hw2reg.err_code.fifo_read_err.d = 1'b1;
-  assign hw2reg.err_code.fifo_read_err.de = cs_enable && fifo_read_err_sum;
+  assign hw2reg.err_code.fifo_read_err.de = cs_enable_fo[25] && fifo_read_err_sum;
 
   assign hw2reg.err_code.fifo_state_err.d = 1'b1;
-  assign hw2reg.err_code.fifo_state_err.de = cs_enable && fifo_status_err_sum;
+  assign hw2reg.err_code.fifo_state_err.de = cs_enable_fo[26] && fifo_status_err_sum;
 
   // Error forcing
   for (genvar i = 0; i < 31; i = i+1) begin : gen_err_code_test_bit
@@ -698,39 +734,69 @@ module csrng_core import csrng_pkg::*; #(
   assign recov_alert_o = recov_alert_event;
 
 
-  import prim_mubi_pkg::mubi4_t;
-  import prim_mubi_pkg::mubi4_test_true_strict;
-  import prim_mubi_pkg::mubi4_test_invalid;
-
   // check for illegal enable field states, and set alert if detected
 
   // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_cs_enable;
   assign mubi_cs_enable = mubi4_t'(reg2hw.ctrl.enable.q);
-  assign cs_enable_pfe = mubi4_test_true_strict(mubi_cs_enable);
-  assign cs_enable_pfa = mubi4_test_invalid(mubi_cs_enable);
+  assign cs_enable_pfa = mubi4_test_invalid(mubi_cs_enable_fanout[0]);
   assign hw2reg.recov_alert_sts.enable_field_alert.de = cs_enable_pfa;
   assign hw2reg.recov_alert_sts.enable_field_alert.d  = cs_enable_pfa;
 
+  for (genvar i = 1; i < CsEnableCopies; i = i+1) begin : gen_mubi_en_copies
+    assign cs_enable_fo[i] = mubi4_test_true_strict(mubi_cs_enable_fanout[i]);
+  end : gen_mubi_en_copies
+
+  prim_mubi4_sync #(
+    .NumCopies(CsEnableCopies),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_cs_enable (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_cs_enable),
+    .mubi_o(mubi_cs_enable_fanout)
+  );
+
   // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_sw_app_enable;
+  mubi4_t [1:0] mubi_sw_app_enable_fanout;
   assign mubi_sw_app_enable = mubi4_t'(reg2hw.ctrl.sw_app_enable.q);
-  assign sw_app_enable_pfe = mubi4_test_true_strict(mubi_sw_app_enable);
-  assign sw_app_enable_pfa = mubi4_test_invalid(mubi_sw_app_enable);
+  assign sw_app_enable_pfe = mubi4_test_true_strict(mubi_sw_app_enable_fanout[0]);
+  assign sw_app_enable_pfa = mubi4_test_invalid(mubi_sw_app_enable_fanout[1]);
   assign hw2reg.recov_alert_sts.sw_app_enable_field_alert.de = sw_app_enable_pfa;
   assign hw2reg.recov_alert_sts.sw_app_enable_field_alert.d  = sw_app_enable_pfa;
 
+  prim_mubi4_sync #(
+    .NumCopies(2),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_sw_app_enable (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_sw_app_enable),
+    .mubi_o(mubi_sw_app_enable_fanout)
+  );
+
   // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_read_int_state;
+  mubi4_t [1:0] mubi_read_int_state_fanout;
   assign mubi_read_int_state = mubi4_t'(reg2hw.ctrl.read_int_state.q);
-  assign read_int_state_pfe = mubi4_test_true_strict(mubi_read_int_state);
-  assign read_int_state_pfa = mubi4_test_invalid(mubi_read_int_state);
+  assign read_int_state_pfe = mubi4_test_true_strict(mubi_read_int_state_fanout[0]);
+  assign read_int_state_pfa = mubi4_test_invalid(mubi_read_int_state_fanout[1]);
   assign hw2reg.recov_alert_sts.read_int_state_field_alert.de = read_int_state_pfa;
   assign hw2reg.recov_alert_sts.read_int_state_field_alert.d  = read_int_state_pfa;
 
+  prim_mubi4_sync #(
+    .NumCopies(2),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_read_int_state (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_read_int_state),
+    .mubi_o(mubi_read_int_state_fanout)
+  );
+
 
   // master module enable
-  assign cs_enable = cs_enable_pfe;
   assign sw_app_enable = sw_app_enable_pfe;
   assign read_int_state = read_int_state_pfe;
 
@@ -752,7 +818,7 @@ module csrng_core import csrng_pkg::*; #(
     ) u_csrng_cmd_stage (
       .clk_i               (clk_i),
       .rst_ni              (rst_ni),
-      .cs_enable_i         (cs_enable),
+      .cs_enable_i         (cs_enable_fo[27]),
       .cmd_stage_vld_i     (cmd_stage_vld[ai]),
       .cmd_stage_shid_i    (cmd_stage_shid[ai]),
       .cmd_stage_bus_i     (cmd_stage_bus[ai]),
@@ -791,7 +857,7 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.sw_cmd_sts.cmd_rdy.d = cmd_rdy;
   assign cmd_rdy = !cmd_stage_vld[NApps-1] && sw_rdy_sts_q;
   assign sw_rdy_sts_d =
-         !cs_enable ? 1'b1 :
+         !cs_enable_fo[28] ? 1'b1 :
          cmd_stage_vld[NApps-1] ? 1'b0 :
          cmd_stage_rdy[NApps-1] ? 1'b1 :
          sw_rdy_sts_q;
@@ -802,9 +868,21 @@ module csrng_core import csrng_pkg::*; #(
   // genbits
   assign hw2reg.genbits_vld.genbits_vld.d = genbits_stage_vldo_sw;
   assign hw2reg.genbits_vld.genbits_fips.d = genbits_stage_fips_sw;
-  assign hw2reg.genbits.d = (sw_app_enable && efuse_sw_app_enable_i) ? genbits_stage_bus_sw : '0;
+  assign hw2reg.genbits.d = (sw_app_enable && efuse_sw_app_enable[0]) ? genbits_stage_bus_sw : '0;
   assign genbits_stage_bus_rd_sw = reg2hw.genbits.re;
 
+  assign efuse_sw_app_enable[0] = prim_mubi_pkg::mubi8_test_true_strict(en_csrng_sw_app_read[0]);
+  assign efuse_sw_app_enable[1] = prim_mubi_pkg::mubi8_test_true_strict(en_csrng_sw_app_read[1]);
+
+  prim_mubi8_sync #(
+    .NumCopies(2),
+    .AsyncOn(0)
+  ) u_prim_mubi8_sync_sw_app_read (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(otp_en_csrng_sw_app_read_i),
+    .mubi_o(en_csrng_sw_app_read)
+  );
 
   // pack the gen bits into a 32 bit register sized word
 
@@ -815,7 +893,7 @@ module csrng_core import csrng_pkg::*; #(
   ) u_prim_packer_fifo_sw_genbits (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
-    .clr_i      (!cs_enable),
+    .clr_i      (!cs_enable_fo[29]),
     .wvalid_i   (genbits_stage_vld[NApps-1]),
     .wdata_i    (genbits_stage_bus[NApps-1]),
     .wready_o   (genbits_stage_rdy[NApps-1]),
@@ -827,7 +905,7 @@ module csrng_core import csrng_pkg::*; #(
 
   // flops for SW fips status
   assign genbits_stage_fips_sw_d =
-         (!cs_enable) ? 1'b0 :
+         (!cs_enable_fo[30]) ? 1'b0 :
          (genbits_stage_rdy[NApps-1] && genbits_stage_vld[NApps-1]) ? genbits_stage_fips[NApps-1] :
          genbits_stage_fips_sw_q;
 
@@ -849,7 +927,7 @@ module csrng_core import csrng_pkg::*; #(
   assign cs_rdata_capt_d = cs_rdata_capt_vld ? genbits_stage_bus[NApps-1][63:0] : cs_rdata_capt_q;
 
   assign cs_rdata_capt_vld_d =
-         !cs_enable ? 1'b0 :
+         !cs_enable_fo[31] ? 1'b0 :
          cs_rdata_capt_vld ? 1'b1 :
          cs_rdata_capt_vld_q;
 
@@ -941,37 +1019,58 @@ module csrng_core import csrng_pkg::*; #(
   assign gen_last = acmd_bus[16];
 
   assign acmd_d =
-         (!cs_enable) ? '0 :
+         (!cs_enable_fo[32]) ? '0 :
          acmd_sop ? acmd_bus[2:0] :
          acmd_q;
 
   assign shid_d =
-         (!cs_enable) ? '0 :
+         (!cs_enable_fo[33]) ? '0 :
          acmd_sop ? shid :
          shid_q;
 
   assign gen_last_d =
-         (!cs_enable) ? '0 :
+         (!cs_enable_fo[34]) ? '0 :
          acmd_sop ? gen_last :
          gen_last_q;
 
   assign flag0_d =
-         (!cs_enable) ? '0 :
-         acmd_sop ? flag0 :
+         (!cs_enable_fo[35]) ? prim_mubi_pkg::MuBi4False :
+         (acmd_sop && flag0) ? prim_mubi_pkg::MuBi4True :
+         (acmd_sop && !flag0) ? prim_mubi_pkg::MuBi4False :
          flag0_q;
 
+  // SEC_CM: CTRL.MUBI
+  mubi4_t mubi_flag0;
+  assign mubi_flag0 = flag0_q;
+
+  for (genvar i = 0; i < Flag0Copies; i = i+1) begin : gen_mubi_flag0_copies
+    assign flag0_fo[i] = mubi4_test_true_strict(mubi_flag0_fanout[i]);
+  end : gen_mubi_flag0_copies
+
+  prim_mubi4_sync #(
+    .NumCopies(Flag0Copies),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_flag0 (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_flag0),
+    .mubi_o(mubi_flag0_fanout)
+  );
+
   // sm to process all instantiation requests
+  // SEC_CM: MAIN_SM.CTR.LOCAL_ESC
+  // SEC_CM: MAIN_SM.FSM.SPARSE
   csrng_main_sm u_csrng_main_sm (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .enable_i(cs_enable),
+    .enable_i(cs_enable_fo[36]),
     .acmd_avail_i(acmd_avail),
     .acmd_accept_o(acmd_accept),
     .acmd_hdr_capt_o(acmd_hdr_capt),
     .acmd_i(acmd_hold),
     .acmd_eop_i(acmd_eop),
     .ctr_drbg_cmd_req_rdy_i(ctr_drbg_cmd_req_rdy),
-    .flag0_i(flag0_q),
+    .flag0_i(flag0_fo[0]),
     .cmd_entropy_req_o(cmd_entropy_req),
     .cmd_entropy_avail_i(cmd_entropy_avail),
     .instant_req_o(instant_req),
@@ -981,6 +1080,7 @@ module csrng_core import csrng_pkg::*; #(
     .uninstant_req_o(uninstant_req),
     .clr_adata_packer_o(clr_adata_packer),
     .cmd_complete_i(state_db_wr_req),
+    .local_escalate_i(cmd_gen_cnt_err_sum),
     .main_sm_err_o(main_sm_err)
   );
 
@@ -1012,7 +1112,7 @@ module csrng_core import csrng_pkg::*; #(
   ) u_prim_packer_fifo_adata (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
-    .clr_i      (!cs_enable || packer_adata_clr),
+    .clr_i      (!cs_enable_fo[37] || packer_adata_clr),
     .wvalid_i   (acmd_mop),
     .wdata_i    (acmd_bus),
     .wready_o   (),
@@ -1022,10 +1122,10 @@ module csrng_core import csrng_pkg::*; #(
     .depth_o    (packer_adata_depth)
   );
 
-  assign packer_adata_pop = cs_enable &&
+  assign packer_adata_pop = cs_enable_fo[38] &&
          clr_adata_packer && (packer_adata_depth == ADataDepthClog'(MaxClen));
 
-  assign packer_adata_clr = cs_enable &&
+  assign packer_adata_clr = cs_enable_fo[39] &&
          clr_adata_packer && (packer_adata_depth < ADataDepthClog'(MaxClen));
 
   //-------------------------------------
@@ -1042,7 +1142,7 @@ module csrng_core import csrng_pkg::*; #(
   assign state_db_reg_rd_id = reg2hw.int_state_num.q;
   assign state_db_reg_rd_id_pulse = reg2hw.int_state_num.qe;
   assign hw2reg.int_state_val.d = state_db_reg_rd_val;
-  assign state_db_is_dump_en = cs_enable && read_int_state && efuse_sw_app_enable_i;
+  assign state_db_is_dump_en = cs_enable_fo[40] && read_int_state && efuse_sw_app_enable[1];
 
 
   csrng_state_db #(
@@ -1055,7 +1155,7 @@ module csrng_core import csrng_pkg::*; #(
   ) u_csrng_state_db (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .state_db_enable_i(cs_enable),
+    .state_db_enable_i(cs_enable_fo[41]),
     .state_db_rd_inst_id_i(shid_q),
     .state_db_rd_key_o(state_db_rd_key),
     .state_db_rd_v_o(state_db_rd_v),
@@ -1084,7 +1184,7 @@ module csrng_core import csrng_pkg::*; #(
   );
 
   assign statedb_wr_select_d =
-         (!cs_enable) ? '0 :
+         (!cs_enable_fo[42]) ? '0 :
          !statedb_wr_select_q;
 
   assign cmd_blk_select = !statedb_wr_select_q;
@@ -1110,22 +1210,23 @@ module csrng_core import csrng_pkg::*; #(
   //--------------------------------------------
   // Basic interface logic with the entropy_src block
 
-  assign entropy_src_hw_if_o.es_req = cs_enable &&
+  assign entropy_src_hw_if_o.es_req = cs_enable_fo[43] &&
          cmd_entropy_req;
 
 
-  assign seed_diversification = lc_hw_debug_on ? RndCnstCsKeymgrDivNonProduction :
-                                                 RndCnstCsKeymgrDivProduction;
+  // SEC_CM: CONSTANTS.LC_GATED
+  assign seed_diversification = lc_hw_debug_on_fo[0] ? RndCnstCsKeymgrDivNonProduction :
+                                                       RndCnstCsKeymgrDivProduction;
 
   // Capture entropy from entropy_src
   assign entropy_src_seed_d =
          cmd_req_dly_q ? '0 :                  // reset after every cmd
-         (cmd_entropy_avail && flag0_q) ? '0 : // special case where zero is used
+         (cmd_entropy_avail && flag0_fo[1]) ? '0 : // special case where zero is used
          cmd_entropy_avail ? (entropy_src_hw_if_i.es_bits ^ seed_diversification) :
          entropy_src_seed_q;
   assign entropy_src_fips_d =
          cmd_req_dly_q ? '0 :                  // reset after every cmd
-         (cmd_entropy_avail && flag0_q) ? '0 : // special case where zero is used
+         (cmd_entropy_avail && flag0_fo[2]) ? '0 : // special case where zero is used
          cmd_entropy_avail ? entropy_src_hw_if_i.es_fips :
          entropy_src_fips_q;
 
@@ -1160,14 +1261,14 @@ module csrng_core import csrng_pkg::*; #(
 
 
   assign cmd_req_ccmd_dly_d =
-         (!cs_enable) ? '0 :
+         (!cs_enable_fo[44]) ? '0 :
          acmd_hold;
 
   assign ctr_drbg_cmd_ccmd = cmd_req_ccmd_dly_q;
 
 
   assign cmd_req_dly_d =
-         (!cs_enable) ? '0 :
+         (!cs_enable_fo[45]) ? '0 :
          (instant_req || reseed_req || generate_req || update_req || uninstant_req);
 
   assign ctr_drbg_cmd_req = cmd_req_dly_q;
@@ -1182,7 +1283,7 @@ module csrng_core import csrng_pkg::*; #(
   ) u_csrng_ctr_drbg_cmd (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .ctr_drbg_cmd_enable_i(cs_enable),
+    .ctr_drbg_cmd_enable_i(cs_enable_fo[46]),
     .ctr_drbg_cmd_req_i(ctr_drbg_cmd_req),
     .ctr_drbg_cmd_rdy_o(ctr_drbg_cmd_req_rdy),
     .ctr_drbg_cmd_ccmd_i(ctr_drbg_cmd_ccmd),
@@ -1251,7 +1352,7 @@ module csrng_core import csrng_pkg::*; #(
   ) u_csrng_ctr_drbg_upd (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .ctr_drbg_upd_enable_i(cs_enable),
+    .ctr_drbg_upd_enable_i(cs_enable_fo[47]),
     .ctr_drbg_upd_req_i(updblk_arb_vld),
     .ctr_drbg_upd_rdy_o(updblk_arb_rdy),
     .ctr_drbg_upd_ack_o(updblk_ack),
@@ -1281,6 +1382,7 @@ module csrng_core import csrng_pkg::*; #(
     .block_encrypt_ccmd_i(benblk_cmd),
     .block_encrypt_inst_id_i(benblk_inst_id),
     .block_encrypt_v_i(benblk_v),
+    .ctr_drbg_upd_v_ctr_err_o(ctr_drbg_upd_v_ctr_err),
     .ctr_drbg_upd_sfifo_updreq_err_o(ctr_drbg_upd_sfifo_updreq_err),
     .ctr_drbg_upd_sfifo_bencreq_err_o(ctr_drbg_upd_sfifo_bencreq_err),
     .ctr_drbg_upd_sfifo_bencack_err_o(ctr_drbg_upd_sfifo_bencack_err),
@@ -1332,10 +1434,10 @@ module csrng_core import csrng_pkg::*; #(
   // provide control logic to determine
   // how certain debug features are controlled.
 
-  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_out;
+  lc_ctrl_pkg::lc_tx_t [LcHwDebugCopies-1:0] lc_hw_debug_en_out;
 
   prim_lc_sync #(
-    .NumCopies(1)
+    .NumCopies(LcHwDebugCopies)
   ) u_prim_lc_sync (
     .clk_i,
     .rst_ni,
@@ -1343,7 +1445,9 @@ module csrng_core import csrng_pkg::*; #(
     .lc_en_o({lc_hw_debug_en_out})
   );
 
-  assign      lc_hw_debug_on = (lc_hw_debug_en_out == lc_ctrl_pkg::On);
+  for (genvar i = 0; i < LcHwDebugCopies; i = i+1) begin : gen_lc_dbg_copies
+    assign lc_hw_debug_on_fo[i] = (lc_hw_debug_en_out[i] == lc_ctrl_pkg::On);
+  end : gen_lc_dbg_copies
 
 
   //-------------------------------------
@@ -1365,7 +1469,7 @@ module csrng_core import csrng_pkg::*; #(
   ) u_csrng_block_encrypt (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .block_encrypt_enable_i(cs_enable),
+    .block_encrypt_enable_i(cs_enable_fo[48]),
     .block_encrypt_req_i(benblk_arb_vld),
     .block_encrypt_rdy_o(benblk_arb_rdy),
     .block_encrypt_key_i(benblk_arb_key),
@@ -1434,7 +1538,7 @@ module csrng_core import csrng_pkg::*; #(
   ) u_csrng_ctr_drbg_gen (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .ctr_drbg_gen_enable_i(cs_enable),
+    .ctr_drbg_gen_enable_i(cs_enable_fo[49]),
     .ctr_drbg_gen_req_i(ctr_drbg_gen_req),
     .ctr_drbg_gen_rdy_o(ctr_drbg_gen_req_rdy),
     .ctr_drbg_gen_ccmd_i(cmd_result_ccmd),
@@ -1489,6 +1593,7 @@ module csrng_core import csrng_pkg::*; #(
     .block_encrypt_inst_id_i(benblk_inst_id),
     .block_encrypt_v_i(benblk_v),
 
+    .ctr_drbg_gen_v_ctr_err_o(ctr_drbg_gen_v_ctr_err),
     .ctr_drbg_gen_sfifo_gbencack_err_o(ctr_drbg_gen_sfifo_gbencack_err),
     .ctr_drbg_gen_sfifo_grcstage_err_o(ctr_drbg_gen_sfifo_grcstage_err),
     .ctr_drbg_gen_sfifo_ggenreq_err_o(ctr_drbg_gen_sfifo_ggenreq_err),
@@ -1575,10 +1680,11 @@ module csrng_core import csrng_pkg::*; #(
 
   assign sel_track_sm_grp = reg2hw.sel_tracking_sm.q;
 
-  assign hw2reg.tracking_sm_obs.tracking_sm_obs0.de = cs_enable && lc_hw_debug_on;
-  assign hw2reg.tracking_sm_obs.tracking_sm_obs1.de = cs_enable && lc_hw_debug_on;
-  assign hw2reg.tracking_sm_obs.tracking_sm_obs2.de = cs_enable && lc_hw_debug_on;
-  assign hw2reg.tracking_sm_obs.tracking_sm_obs3.de = cs_enable && lc_hw_debug_on;
+  // SEC_CM: FSM.LC_GATED
+  assign hw2reg.tracking_sm_obs.tracking_sm_obs0.de = cs_enable_fo[50] && lc_hw_debug_on_fo[1];
+  assign hw2reg.tracking_sm_obs.tracking_sm_obs1.de = cs_enable_fo[51] && lc_hw_debug_on_fo[2];
+  assign hw2reg.tracking_sm_obs.tracking_sm_obs2.de = cs_enable_fo[52] && lc_hw_debug_on_fo[3];
+  assign hw2reg.tracking_sm_obs.tracking_sm_obs3.de = cs_enable_fo[53] && lc_hw_debug_on_fo[4];
 
   assign hw2reg.tracking_sm_obs.tracking_sm_obs3.d =
          (sel_track_sm_grp == 2'h3) ? track_sm[15] :
@@ -1609,7 +1715,7 @@ module csrng_core import csrng_pkg::*; #(
   //--------------------------------------------
   // Misc status
 
-  assign hw2reg.hw_exc_sts.de = cs_enable;
+  assign hw2reg.hw_exc_sts.de = cs_enable_fo[54];
   assign hw2reg.hw_exc_sts.d  = hw_exception_sts;
 
   // unused signals

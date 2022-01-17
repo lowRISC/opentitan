@@ -27,6 +27,7 @@ module csrng_main_sm import csrng_pkg::*; (
   output logic               uninstant_req_o,
   output logic               clr_adata_packer_o,
   input logic                cmd_complete_i,
+  input logic                local_escalate_i,
   output logic               main_sm_err_o
 );
 // Encoding generated with:
@@ -77,7 +78,6 @@ module csrng_main_sm import csrng_pkg::*; (
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
 
-  // SEC_CM: FSM.SPARSE
   prim_sparse_fsm_flop #(
     .StateEnumT(state_e),
     .Width(StateWidth),
@@ -265,6 +265,9 @@ module csrng_main_sm import csrng_pkg::*; (
       end
       default: state_d = Error;
     endcase
+    if (local_escalate_i) begin
+      state_d = Error;
+    end
   end
 
 endmodule
