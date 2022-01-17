@@ -174,6 +174,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
          cmd_gen_1st_req ? {sfifo_cmd_rdata[11:0]} :
          cmd_gen_cmd_q;
 
+  // SEC_CM: CTR.REDUN
   prim_count #(
     .Width(GenBitsCntrWidth),
     .OutSelDnCnt(1'b1), // count down

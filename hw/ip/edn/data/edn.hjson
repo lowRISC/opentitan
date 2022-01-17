@@ -51,16 +51,22 @@
     }
   ],
   countermeasures: [
+    { name: "CONFIG.REGWEN"
+      desc: "Registers are protected from writes."
+    }
+    { name: "CONFIG.MUBI"
+      desc: "Registers have multi-bit encoded fields."
+    }
     { name: "FSM.SPARSE"
       desc: "Sparse state machine implementation."
     }
     { name: "CTR.REDUN"
       desc: "Counter hardening on the generate command maximum requests counter."
     }
-    { name: "LOGIC.INTEGRITY"
+    { name: "CS_RDATA.BUS.CONSISTENCY"
       desc: "Comparison on successive bus values for genbits returned from csrng that will destribute over the endpoint buses."
     }
-    { name: "BUS.INTEGRITY"
+    { name: "TILE_LINK.BUS.INTEGRITY"
       desc: "Tilelink end-to-end bus integrity scheme."
     }
   ],

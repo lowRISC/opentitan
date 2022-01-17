@@ -1780,6 +1780,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.alert_summary_fail_counts.d = any_fail_count;
 
   // signal an alert
+  // SEC_CM: CONFIG.REDUN
   assign alert_threshold = reg2hw.alert_threshold.alert_threshold.q;
   assign alert_threshold_inv = reg2hw.alert_threshold.alert_threshold_inv.q;
   assign es_thresh_cfg_alert = (~alert_threshold_inv != alert_threshold);
@@ -2241,7 +2242,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //   an alert for sw to handle
   //--------------------------------------------
 
-  // SEC_CM: ESFINAL_RDATA.BUS.INTEGRITY
+  // SEC_CM: ESFINAL_RDATA.BUS.CONSISTENCY
 
   // capture a copy of the entropy data
   assign es_rdata_capt_vld = (sfifo_esfinal_pop && sfifo_esfinal_not_empty);
