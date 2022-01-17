@@ -11,7 +11,7 @@ virtual function void otp_write_lc_partition_state(lc_ctrl_state_pkg::lc_state_e
   end
 endfunction
 
-virtual function otp_write_lc_partition_cnt(lc_ctrl_state_pkg::lc_cnt_e lc_cnt);
+virtual function void otp_write_lc_partition_cnt(lc_ctrl_state_pkg::lc_cnt_e lc_cnt);
   for (int i = 0; i < LcTransitionCntSize; i+=4) begin
     write32(i + LcTransitionCntOffset, lc_cnt[i*8+:32]);
   end
