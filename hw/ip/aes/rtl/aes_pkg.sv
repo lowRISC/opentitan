@@ -349,7 +349,7 @@ typedef struct packed {
 parameter ctrl_reg_t CTRL_RESET = '{
   force_zero_masks: aes_reg_pkg::AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_RESVAL,
   manual_operation: aes_reg_pkg::AES_CTRL_SHADOWED_MANUAL_OPERATION_RESVAL,
-  prng_reseed_rate: aes_reg_pkg::AES_CTRL_SHADOWED_PRNG_RESEED_RATE_RESVAL,
+  prng_reseed_rate: prs_rate_e'(aes_reg_pkg::AES_CTRL_SHADOWED_PRNG_RESEED_RATE_RESVAL),
   sideload:         aes_reg_pkg::AES_CTRL_SHADOWED_SIDELOAD_RESVAL,
   key_len:          key_len_e'(aes_reg_pkg::AES_CTRL_SHADOWED_KEY_LEN_RESVAL),
   mode:             aes_mode_e'(aes_reg_pkg::AES_CTRL_SHADOWED_MODE_RESVAL),
