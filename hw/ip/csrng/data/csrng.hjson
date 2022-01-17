@@ -95,17 +95,68 @@
     { name: "INTERSIG.MUBI"
       desc: "OTP signal used to enable software access to registers."
     }
-    { name: "FSM.SPARSE"
-      desc: "Sparse state machine implementation."
+    { name: "MAIN_SM.FSM.SPARSE"
+      desc: "The CSRNG main state machine uses a sparse state encoding."
     }
-    { name: "CTR.REDUN"
-      desc: "Counter hardening for generate command counter."
+    { name: "UPDATE.FSM.SPARSE"
+      desc: "The CSRNG update state machine uses a sparse state encoding."
+    }
+    { name: "BLK_ENC.FSM.SPARSE"
+      desc: "The CSRNG block encrypt state machine uses a sparse state encoding."
+    }
+    { name: "OUTBLK.FSM.SPARSE"
+      desc: "The CSRNG block output state machine uses a sparse state encoding."
+    }
+    { name: "GEN_CMD.CTR.REDUN"
+     desc: "The generate command uses a counter that is protected by a second counter that counts in the opposite direction."
+    }
+    { name: "DRBG_UPD.CTR.REDUN"
+     desc: "The ctr_drbg update algorthm uses a counter that is protected by a second counter that counts in the opposite direction."
+    }
+    { name: "DRBG_GEN.CTR.REDUN"
+     desc: "The ctr_drbg generate algorthm uses a counter that is protected by a second counter that counts in the opposite direction."
+    }
+    { name: "CTRL.MUBI"
+      desc: "Multi-bit field used for selection control."
+    }
+    { name: "MAIN_SM.CTR.LOCAL_ESC"
+      desc: "A mismatch detected inside any CSRNG counter moves the  main state machine into a terminal error state."
+    }
+    { name: "CONSTANTS.LC_GATED"
+      desc: "Seed diversification based on the lifecycle state."
+    }
+    { name: "FSM.LC_GATED"
+      desc: "Debug state machines are gated with lifecycle state."
     }
     { name: "SW_GENBITS.BUS.CONSISTENCY"
       desc: "Comparison on successive bus values for genbits returned on the software channel."
     }
     { name: "TILE_LINK.BUS.INTEGRITY"
       desc: "Tilelink end-to-end bus integrity scheme."
+    }
+    { name: "AES_CIPHER.FSM.SPARSE",
+      desc: "See the AES module documentation for details."
+    }
+    { name: "AES_CIPHER.FSM.REDUN",
+      desc: "See the AES module documentation for details."
+    }
+    { name: "AES_CIPHER.FSM.LOCAL_ESC",
+      desc: "See the AES module documentation for details."
+    }
+    { name: "AES_CIPHER.CTR.REDUN",
+      desc: "See the AES module documentation for details."
+    }
+    { name: "AES_CIPHER.CTR.LOCAL_ESC",
+      desc: "See the AES module documentation for details."
+    }
+    { name: "AES_CIPHER.CTRL.SPARSE",
+      desc: "See the AES module documentation for details."
+    }
+    { name: "AES_CIPHER.CTRL.LOCAL_ESC",
+      desc: "See the AES module documentation for details."
+    }
+    { name: "AES_CIPHER.DATA_REG.LOCAL_ESC",
+      desc: "See the AES module documentation for details."
     }
   ],
 

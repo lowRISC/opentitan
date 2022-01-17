@@ -33,7 +33,6 @@ module tb;
   push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
       entropy_src_if(.clk(clk), .rst_n(rst_n));
 
-//  assign otp_en_csrng_sw_app_read = 1 ? otp_ctrl_pkg::Enabled : '0;
   `DV_ALERT_IF_CONNECT
 
   // dut

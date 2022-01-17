@@ -86,7 +86,15 @@ module csrng_block_encrypt import csrng_pkg::*; #(
   assign cipher_in_valid = (aes_cipher_core_enable && block_encrypt_req_i) ?
       aes_pkg::SP2V_HIGH : aes_pkg::SP2V_LOW;
 
-  // Cipher core
+  // SEC_CM: AES_CIPHER.FSM.SPARSE
+  // SEC_CM: AES_CIPHER.FSM.REDUN
+  // SEC_CM: AES_CIPHER.FSM.LOCAL_ESC
+  // SEC_CM: AES_CIPHER.CTR.REDUN
+  // SEC_CM: AES_CIPHER.CTR.LOCAL_ESC
+  // SEC_CM: AES_CIPHER.CTRL.SPARSE
+  // SEC_CM: AES_CIPHER.CTRL.LOCAL_ESC
+  // SEC_CM: AES_CIPHER.DATA_REG.LOCAL_ESC
+
   aes_cipher_core #(
     .AES192Enable ( 1'b0 ),  // AES192Enable disabled
     .Masking      ( 1'b0 ),  // Masking disable

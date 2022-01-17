@@ -92,6 +92,18 @@ However, if used unqualified, the term "entropy" should be understood to refer t
 That is either physical entropy, or the output of a DRNG which itself has been seeded (and possibly reseeded) with physical entropy.
 In CC terms, "entropy strings" (when used in this document without a qualifier) should be understood to come from either a PTG.2 or PTG.3 class RNG.
 
+### Security
+
+All module assets and countermeasures performed by hardware are listed in the hjson countermeasures section.
+Labels for each instance of asset and coutermeasure are located throughout the RTL source code.
+
+The bus integrity checking for genbits is different for software and hardware.
+Only the application interface software port will have a hardware check on the genbits data bus.
+This is done to make sure repeated values are not occurring.
+Only 64 bits (out of 128 bits) are checked, since this is statistically significant, and more checking would cost more silicon.
+The application interface hardware port will not have this check.
+It is expected that the requesting block (EDN) will do an additional hardware check on the genbits data bus.
+
 ## Compatibility
 None.
 

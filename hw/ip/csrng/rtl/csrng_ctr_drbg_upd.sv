@@ -49,6 +49,7 @@ module csrng_ctr_drbg_upd #(
   input logic [Cmd-1:0]      block_encrypt_ccmd_i,
   input logic [StateId-1:0]  block_encrypt_inst_id_i,
   input logic [BlkLen-1:0]   block_encrypt_v_i,
+  output logic               ctr_drbg_upd_v_ctr_err_o,
   output logic [2:0]         ctr_drbg_upd_sfifo_updreq_err_o,
   output logic [2:0]         ctr_drbg_upd_sfifo_bencreq_err_o,
   output logic [2:0]         ctr_drbg_upd_sfifo_bencack_err_o,
@@ -144,9 +145,9 @@ module csrng_ctr_drbg_upd #(
   logic               concat_ctr_done;
   logic               concat_ctr_inc;
   logic [SeedLen+BlkLen-1:0] concat_outblk_shifted_value;
+  logic [CtrLen-1:0]         v_ctr;
 
   // flops
-  logic [CtrLen-1:0]  v_ctr_q, v_ctr_d;
   logic [1:0]         interate_ctr_q, interate_ctr_d;
   logic [1:0]         concat_ctr_q, concat_ctr_d;
   logic [SeedLen-1:0] concat_outblk_q, concat_outblk_d;
@@ -187,7 +188,7 @@ module csrng_ctr_drbg_upd #(
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
 
-  // SEC_CM: FSM.SPARSE
+  // SEC_CM: BLK_ENC.FSM.SPARSE
   prim_sparse_fsm_flop #(
     .StateEnumT(blk_enc_state_e),
     .Width(BlkEncStateWidth),
@@ -236,7 +237,7 @@ module csrng_ctr_drbg_upd #(
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
 
-  // SEC_CM: FSM.SPARSE
+  // SEC_CM: OUTBLK.FSM.SPARSE
   prim_sparse_fsm_flop #(
     .StateEnumT(outblk_state_e),
     .Width(OutBlkStateWidth),
@@ -252,14 +253,12 @@ module csrng_ctr_drbg_upd #(
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
-      v_ctr_q            <= '0;
       interate_ctr_q     <= '0;
       concat_ctr_q       <= '0;
       concat_outblk_q    <= '0;
       concat_ccmd_q      <= '0;
       concat_inst_id_q   <= '0;
     end else begin
-      v_ctr_q            <= v_ctr_d;
       interate_ctr_q     <= interate_ctr_d;
       concat_ctr_q       <= concat_ctr_d;
       concat_outblk_q    <= concat_outblk_d;
@@ -316,13 +315,24 @@ module csrng_ctr_drbg_upd #(
     assign v_first = sfifo_updreq_v + 1;
   end
 
-  assign v_ctr_d =
-                  (!ctr_drbg_upd_enable_i) ? '0 :
-                  v_ctr_load ? v_first[CtrLen-1:0] :
-                  v_ctr_inc  ? (v_ctr_q + 1) :
-                  v_ctr_q;
+  // SEC_CM: DRBG_UPD.CTR.REDUN
+  prim_count #(
+    .Width(CtrLen),
+    .OutSelDnCnt(1'b0), // count up
+    .CntStyle(prim_count_pkg::DupCnt)
+  ) u_prim_count_ctr_drbg (
+    .clk_i,
+    .rst_ni,
+    .clr_i(!ctr_drbg_upd_enable_i),
+    .set_i(v_ctr_load),
+    .set_cnt_i(v_first[CtrLen-1:0]),
+    .en_i(v_ctr_inc),
+    .step_i(CtrLen'(1)),
+    .cnt_o(v_ctr),
+    .err_o(ctr_drbg_upd_v_ctr_err_o)
+  );
 
-  assign     v_sized = {v_first[BlkLen-1:CtrLen],v_ctr_q};
+  assign     v_sized = {v_first[BlkLen-1:CtrLen],v_ctr};
 
   // interation counter
   assign     interate_ctr_d =

@@ -53,9 +53,6 @@ module csrng
   output logic    intr_cs_fatal_err_o
 );
 
-  logic efuse_sw_app_enable;
-  assign efuse_sw_app_enable = prim_mubi_pkg::mubi8_test_true_strict(otp_en_csrng_sw_app_read_i);
-
   csrng_reg2hw_t reg2hw;
   csrng_hw2reg_t hw2reg;
 
@@ -91,7 +88,7 @@ module csrng
     .hw2reg,
 
     // misc inputs
-    .efuse_sw_app_enable_i(efuse_sw_app_enable),
+    .otp_en_csrng_sw_app_read_i(otp_en_csrng_sw_app_read_i),
     .lc_hw_debug_en_i,
 
     // Entropy Interface
@@ -162,6 +159,14 @@ module csrng
   `ASSERT_KNOWN(IntrCsEntropyReqKnownO_A, intr_cs_entropy_req_o)
   `ASSERT_KNOWN(IntrCsHwInstExcKnownO_A, intr_cs_hw_inst_exc_o)
   `ASSERT_KNOWN(IntrCsFatalErrKnownO_A, intr_cs_fatal_err_o)
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrDrbgUpdAlertCheck_A,
+    u_csrng_core.u_csrng_ctr_drbg_upd.u_prim_count_ctr_drbg,
+    alert_tx_o[1])
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrDrbgGenAlertCheck_A,
+    u_csrng_core.u_csrng_ctr_drbg_gen.u_prim_count_ctr_drbg,
+    alert_tx_o[1])
 
   for (genvar i = 0; i < NHwApps + 1; i++) begin : gen_cnt_asserts
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
