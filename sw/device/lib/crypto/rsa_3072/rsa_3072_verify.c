@@ -168,17 +168,23 @@ otbn_error_t rsa_3072_verify(const rsa_3072_int_t *signature,
                              const rsa_3072_public_key_t *public_key,
                              const rsa_3072_constants_t *constants,
                              hardened_bool_t *result) {
-  otbn_t otbn;
-  rsa_3072_int_t recoveredMessage;
+  // Initially set the result to false in case of early returns due to invalid
+  // arguments.
+  *result = kHardenedBoolFalse;
 
   // Only the F4 modulus is supported.
   if (public_key->e != 65537) {
     return kOtbnErrorInvalidArgument;
   }
 
-  // TODO: Check that s < n, reject signature otherwise
+  // Reject the signature if it is too large (n <= sig): RFC 8017, section
+  // 5.2.2, step 1.
+  if (memrcmp(public_key->n.data, signature->data, kRsa3072NumBytes) <= 0) {
+    return kOtbnErrorInvalidArgument;
+  }
 
   // Initialize OTBN and load the RSA app.
+  otbn_t otbn;
   otbn_init(&otbn);
   OTBN_RETURN_IF_ERROR(otbn_load_app(&otbn, kOtbnAppRsa));
 
@@ -209,6 +215,7 @@ otbn_error_t rsa_3072_verify(const rsa_3072_int_t *signature,
   OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done(&otbn));
 
   // Read recovered message out of OTBN dmem.
+  rsa_3072_int_t recoveredMessage;
   OTBN_RETURN_IF_ERROR(
       read_rsa_3072_int_from_otbn(&otbn, kOtbnVarRsaOutBuf, &recoveredMessage));
 

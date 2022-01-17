@@ -76,7 +76,8 @@ enum module_ {
   X(kErrorSigverifyBadEncodedMessage, ERROR_(1, kModuleSigverify, kInvalidArgument)), \
   X(kErrorSigverifyBadKey,            ERROR_(2, kModuleSigverify, kInvalidArgument)), \
   X(kErrorSigverifyBadOtpValue,       ERROR_(3, kModuleSigverify, kInternal)), \
-  X(kErrorSigverifyBadLcState,        ERROR_(4, kModuleSigverify, kInternal)), \
+  X(kErrorSigverifyBadSignature,      ERROR_(4, kModuleSigverify, kInvalidArgument)), \
+  X(kErrorSigverifyBadLcState,        ERROR_(5, kModuleSigverify, kInternal)), \
   X(kErrorKeymgrInternal,             ERROR_(1, kModuleKeymgr, kInternal)), \
   X(kErrorManifestBadEntryPoint,      ERROR_(1, kModuleManifest, kInternal)), \
   X(kErrorManifestBadCodeRegion,      ERROR_(2, kModuleManifest, kInternal)), \

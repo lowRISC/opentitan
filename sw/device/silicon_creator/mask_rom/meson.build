@@ -327,6 +327,7 @@ test('sw_silicon_creator_mask_rom_sigverify_keys_unittest', executable(
       sw_vendor_gtest,
       sw_lib_testing_bitfield,
       sw_lib_testing_hardened,
+      sw_lib_testing_memory,
     ],
     native: true,
     c_args: ['-DOT_OFF_TARGET_TEST'],

@@ -166,6 +166,12 @@ static void calc_r_square(const sigverify_rsa_key_t *key,
 rom_error_t sigverify_mod_exp_ibex(const sigverify_rsa_key_t *key,
                                    const sigverify_rsa_buffer_t *sig,
                                    sigverify_rsa_buffer_t *result) {
+  // Reject the signature if it is too large (n <= sig): RFC 8017, section
+  // 5.2.2, step 1.
+  if (greater_equal_modulus(key, sig)) {
+    return kErrorSigverifyBadSignature;
+  }
+
   sigverify_rsa_buffer_t buf;
 
   // result = R^2 mod n
