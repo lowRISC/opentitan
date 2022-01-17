@@ -10,6 +10,9 @@
 #include <ftw.h>
 #include <iomanip>
 #include <iostream>
+#ifdef __MACH__
+#include <libproc.h>
+#endif
 #include <memory>
 #include <regex>
 #include <signal.h>
@@ -113,11 +116,26 @@ static std::string find_repo_top() {
   if (from_env)
     return std::string(from_env);
 
-  // No environment variable. Work from /proc/self/exe.
-  c_str_ptr self_path(realpath("/proc/self/exe", NULL));
+  // No environment variable. Work from current executable path.
+  const char *real_self_path;
+
+#ifndef __MACH__
+  real_self_path = "/proc/self/exe";
+#else
+  char pathbuf[PROC_PIDPATHINFO_MAXSIZE];
+
+  if (proc_pidpath(getpid(), pathbuf, sizeof(pathbuf)) <= 0) {
+    std::ostringstream oss;
+    oss << "Cannot resolve path: " << strerror(errno);
+    throw std::runtime_error(oss.str());
+  }
+  real_self_path = pathbuf;
+#endif
+
+  c_str_ptr self_path(realpath(real_self_path, NULL));
   if (!self_path) {
     std::ostringstream oss;
-    oss << "Cannot resolve /proc/self/exe: " << strerror(errno);
+    oss << "Cannot resolve executable path: " << strerror(errno);
     throw std::runtime_error(oss.str());
   }
 
@@ -227,11 +245,15 @@ ISSWrapper::ISSWrapper() : tmpdir(new TmpDir()) {
   // drop all the fds when it execs.
   int fds[4];
   for (int i = 0; i < 2; ++i) {
-    if (pipe2(fds + 2 * i, O_CLOEXEC)) {
+    // We are using pipe and fcntl instead of pipe2 to support both MacOS and
+    // Linux
+    if (pipe(fds + 2 * i)) {
       std::ostringstream oss;
       oss << "Failed to open pipe " << i << " for ISS: " << strerror(errno);
       throw std::runtime_error(oss.str());
     }
+    fcntl(fds[2 * i], F_SETFD, FD_CLOEXEC);
+    fcntl(fds[2 * i + 1], F_SETFD, FD_CLOEXEC);
   }
 
   // fds[0] and fds[2] are the read ends of two pipes, with write ends at

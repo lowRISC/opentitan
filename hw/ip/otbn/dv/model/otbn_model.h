@@ -12,7 +12,7 @@
 
 #include "otbn_memutil.h"
 
-class ISSWrapper;
+struct ISSWrapper;
 
 class OtbnModel {
  public:
