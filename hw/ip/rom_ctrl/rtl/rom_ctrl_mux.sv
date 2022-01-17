@@ -55,23 +55,26 @@ module rom_ctrl_mux
   //
   // We also have a version that's delayed by a single cycle to allow a check that sel_bus_q is
   // never reset from True to False.
-  mubi4_t sel_bus_q, sel_bus_qq;
+  logic [3:0] sel_bus_q_raw, sel_bus_qq_raw;
+  mubi4_t     sel_bus_q, sel_bus_qq;
 
   prim_flop #(.Width (4), .ResetValue ({MuBi4False}))
   u_sel_bus_q_flop (
     .clk_i,
     .rst_ni,
     .d_i (mubi4_or_hi(sel_bus_q, sel_bus_i)),
-    .q_o (sel_bus_q)
+    .q_o (sel_bus_q_raw)
   );
+  assign sel_bus_q = mubi4_t'(sel_bus_q_raw);
 
   prim_flop #(.Width (4), .ResetValue ({MuBi4False}))
   u_sel_bus_qq_flop (
     .clk_i,
     .rst_ni,
     .d_i (sel_bus_q),
-    .q_o (sel_bus_qq)
+    .q_o (sel_bus_qq_raw)
   );
+  assign sel_bus_qq = mubi4_t'(sel_bus_qq_raw);
 
   // Spot if the sel_bus_i signal or its register version has a corrupt value.
   logic sel_invalid;
