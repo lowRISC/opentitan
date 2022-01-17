@@ -205,6 +205,21 @@ A full twelve 32-bit words need to be read at a time.
 The hardware entropy interface will move entropy bits out of the ENTROPY FIFO when it is not empty, and the downstream hardware is ready.
 If firmware is not currently reading entropy bits, all processed entropy bits will flow to the hardware entropy interface.
 
+### Security
+
+All module assets and countermeasures performed by hardware are listed in the hjson countermeasures section.
+Labels for each instance of asset and coutermeasure are located throughout the RTL source code.
+
+For all of the health test threshold registers, these registers could be protected with shadow registers.
+A design choice was made here to not use shadow registers and save on silicon cost.
+The threshold registers are protected by software.
+It is expected that software will read the threshold registers on a periodic basis, and compare these values to what was originally programmed into the threshold registers.
+
+Bus integrity checking is performed for the final seed delivery to CSRNG.
+This is done to make sure repeated values are not occurring.
+Only 64 bits (out of 384 bits) are checked, since this is statistically significant, and more checking would cost more silicon.
+
+
 
 ### Interrupts
 

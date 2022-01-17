@@ -13,6 +13,7 @@ module entropy_src_ack_sm (
   input logic                req_i,
   output logic               ack_o,
   input logic                fifo_not_empty_i,
+  input logic                local_escalate_i,
   output logic               fifo_pop_o,
   output logic               ack_sm_err_o
 );
@@ -52,7 +53,6 @@ module entropy_src_ack_sm (
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
 
-  // SEC_CM: FSM.SPARSE
   prim_sparse_fsm_flop #(
     .StateEnumT(state_e),
     .Width(StateWidth),
@@ -104,6 +104,9 @@ module entropy_src_ack_sm (
       end
       default: state_d = Error;
     endcase
+    if (local_escalate_i) begin
+      state_d = Error;
+    end
   end
 
 endmodule

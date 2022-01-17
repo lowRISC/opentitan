@@ -76,8 +76,9 @@
     }
     { name: "fatal_alert",
       desc: '''
-            This alert triggers (i) if an illegal state machine state is reached, or
-            (ii) if a fatal integrity failure is detected on the TL-UL bus.
+            This alert triggers for any condition detected in the !!ERROR_CODE register,
+            which includes FIFO errors, COUNTER errors, FSM state errors,
+            and also when integrity failures are detected on the TL-UL bus.
             ''',
     }
   ],
@@ -94,8 +95,11 @@
     { name: "INTERSIG.MUBI"
       desc: "OTP signal used to enable software access to registers."
     }
-    { name: "FSM.SPARSE"
-      desc: "Sparse state machine implementation."
+    { name: "MAIN_SM.FSM.SPARSE"
+      desc: "The ENTROPY_SRC main state machine uses a sparse state encoding."
+    }
+    { name: "ACK_SM.FSM.SPARSE"
+      desc: "The ENTROPY_SRC ack state machine uses a sparse state encoding."
     }
     { name: "RNG.BKGN_CHK"
       desc: "Random number generator is protected with continuous background health checks."
@@ -103,12 +107,16 @@
     { name: "CTR.REDUN"
       desc: "Counter hardening for all health test counters."
     }
+    { name: "CTR.LOCAL_ESC"
+      desc: "Redundant counter failures will cause a local escalation to the main state machine."
+    }
     { name: "ESFINAL_RDATA.BUS.CONSISTENCY"
       desc: "Comparison on successive bus values for the post-conditioned entropy seed bus."
     }
     { name: "TILE_LINK.BUS.INTEGRITY"
       desc: "Tilelink end-to-end bus integrity scheme."
     }
+    // See the KMAC/SHA3 module documentation for additional countermeasures provided by that design"
   ],
 
   regwidth: "32",
