@@ -24,15 +24,19 @@ typedef struct rsa_3072_verify_test_vector_t {
   uint8_t *msg;                     // Message bytes
 } rsa_3072_verify_test_vector_t;
 
-static const size_t RSA_3072_VERIFY_NUM_TESTS = 2;
+static const size_t RSA_3072_VERIFY_NUM_TESTS = 3;
 
 // Static message arrays.
 static uint8_t msg0[12] = {0x74, 0x65, 0x73, 0x74, 0x20, 0x6d,
                            0x65, 0x73, 0x73, 0x61, 0x67, 0x65};
 static uint8_t msg1[12] = {0x74, 0x65, 0x73, 0x74, 0x20, 0x6d,
                            0x65, 0x73, 0x73, 0x61, 0x67, 0x65};
+static uint8_t msg2[32] = {0xc4, 0x2f, 0x59, 0xf6, 0x1e, 0x50, 0x5a, 0x7c,
+                           0x84, 0x63, 0xe5, 0xd6, 0x92, 0xd1, 0xc2, 0x70,
+                           0xea, 0x93, 0x1e, 0xad, 0x89, 0xa4, 0x67, 0x2d,
+                           0x95, 0x30, 0x40, 0xcf, 0x72, 0x04, 0x74, 0x80};
 
-static const rsa_3072_verify_test_vector_t rsa_3072_verify_tests[2] = {
+static const rsa_3072_verify_test_vector_t rsa_3072_verify_tests[3] = {
     {
         .publicKey =
             {
@@ -154,6 +158,68 @@ static const rsa_3072_verify_test_vector_t rsa_3072_verify_tests[2] = {
         .msgLen = 12,
         .valid = false,
         .comment = "Hardcoded test with invalid signature",
+    },
+    {
+        .publicKey =
+            {
+                .n = {.data =
+                          {
+                              0x32c568cd, 0x3a81bc0c, 0xad5847b9, 0xedb76504,
+                              0x2f0d02f5, 0x03044773, 0x7f1c6bff, 0xe8708ac1,
+                              0x9f0d7b31, 0x3c648f7a, 0xada6a4fc, 0xecdc29ab,
+                              0x474884cf, 0x51a5f385, 0x4c3b1278, 0xb1e274d2,
+                              0x860e59b1, 0xe5aabf53, 0x2815b3f0, 0xb95ad176,
+                              0x4da65e9d, 0x52284e2e, 0x4ae7117f, 0x9c7d12f9,
+                              0xde53d4bd, 0x6e9559d0, 0x7ec9cd47, 0x1faa89bf,
+                              0x490ea30f, 0x8053e91e, 0x12b1dc3e, 0xbbfedfb8,
+                              0x5299a4ec, 0x745a82c7, 0x3d0d819d, 0x228744c8,
+                              0x37afdd10, 0x41329f3a, 0x8c3e1b8d, 0xada22aad,
+                              0xa472411c, 0x65ca6225, 0x575e9e44, 0x6bff3e31,
+                              0x39aac6a1, 0x0bea5a9a, 0x77fd5b07, 0xd7ff2ba6,
+                              0x453584c6, 0xb551b513, 0x2cf22f4e, 0xf2f630d3,
+                              0xe56c73e8, 0x06141ded, 0xb3062d74, 0x6b0fabb7,
+                              0x9780ee80, 0x505ba8b1, 0x27db87c4, 0x012e2538,
+                              0x5d6dd850, 0xe0b70dba, 0xf43a06db, 0x2f4f5878,
+                              0xd5fbf256, 0xb74befdf, 0x6349eafb, 0x946b8745,
+                              0x88086254, 0x79b6a233, 0x91d41da8, 0xcfc7f621,
+                              0xa77172ce, 0x15b87cf8, 0xbe1e916d, 0xfde33ce3,
+                              0xd79c8cd0, 0x220c1b3a, 0x64bd4f6f, 0x19ae502b,
+                              0xcd5818c5, 0xa43a5154, 0xfc8d427b, 0x0a646574,
+                              0x5485eddc, 0x2edf0727, 0x79f397e4, 0x2af37759,
+                              0xf09bed2a, 0xc577cd95, 0x1761c259, 0x970728d6,
+                              0x1477a8e2, 0x7b448b03, 0xfdca72d7, 0xd2581ea6,
+                          }},
+                .e = 0x10001,
+            },
+        .signature =
+            {.data =
+                 {
+                     0xa9f067cc, 0x3f2349d3, 0x34668d60, 0xba82aded, 0x3cafbfd6,
+                     0x8fe6a6fb, 0xdd53028e, 0xa0e4b12f, 0x40874ce1, 0xb14ed6d3,
+                     0x67fd15ad, 0x8db7a4a0, 0x25fa423a, 0xee50d328, 0xca5839ae,
+                     0x6198a0e2, 0xc42f5efd, 0x84f8095a, 0x59daa989, 0xe1c58330,
+                     0x59b8e331, 0x90181239, 0x7dabff83, 0x7d505901, 0x30af7475,
+                     0x25496257, 0x30efcd58, 0xb46e1110, 0x7ee27949, 0x50b2a34a,
+                     0xb7ce133e, 0xedbd930a, 0xa58e4836, 0x187bdc7a, 0x12fd60b5,
+                     0x28a0daf4, 0xcb9db82b, 0xafb86d69, 0x4a85ea56, 0x5acb1344,
+                     0xd41ab9c1, 0x6f34838d, 0x8c31cf3d, 0x56f5823c, 0xca91b93b,
+                     0x45be3a2b, 0xbefd7420, 0x6fd1c713, 0xe031bc8d, 0xc099cfd8,
+                     0xdc1b95dd, 0xa35f3f36, 0xc7089da6, 0x67a01994, 0x18cc7576,
+                     0x3b58ed39, 0x77e422cb, 0x9f4ecd02, 0x23d70fce, 0x3bf865d4,
+                     0xb4c12e18, 0x46217bb2, 0x53ab5ae6, 0x4a76f95b, 0x03946ee9,
+                     0x171d6302, 0x6a3ad6fc, 0x0753cdf5, 0xaac1c363, 0x47a98000,
+                     0xc47fae17, 0x7cb997ed, 0x06357bca, 0x2bccdd86, 0xd9593e20,
+                     0xc486f4ee, 0xbb321fd0, 0x21a7aa5d, 0xee39dbea, 0x05afed01,
+                     0x1f884406, 0xf8dc2c8f, 0xf613c553, 0x323430d1, 0xca281978,
+                     0x760193bf, 0x66ed8521, 0x4ad28df6, 0x31faafca, 0x0252f63f,
+                     0xce4499c5, 0xb7be3141, 0x72f67bbb, 0xfe61257b, 0x4f2e4822,
+                     0xe0ac83dc,
+                 }},
+        .msg = msg2,
+        .msgLen = 32,
+        .valid = false,
+        .comment = "Hardcoded test with invalid signature (signature > n; "
+                   "specifically, the signature is the valid signature + n)",
     },
 };
 
