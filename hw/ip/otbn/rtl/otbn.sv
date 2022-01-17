@@ -94,8 +94,7 @@ module otbn
 
   logic start_d, start_q;
   logic busy_execute_d, busy_execute_q;
-  logic done;
-  logic locked;
+  logic done, locked, idle;
   logic illegal_bus_access_d, illegal_bus_access_q;
 
   logic recoverable_err;
@@ -121,10 +120,17 @@ module otbn
   tlul_pkg::tl_h2d_t tl_win_h2d[2];
   tlul_pkg::tl_d2h_t tl_win_d2h[2];
 
+  // The clock can be gated and some registers can be updated as long as OTBN isn't currently
+  // running. Other registers can only be updated when OTBN is in the Idle state (which also implies
+  // !locked).
+  logic is_not_running;
+  assign is_not_running = ~busy_execute_q;
+
   // Inter-module signals ======================================================
 
-  // TODO: Use STATUS == IDLE here.
-  assign idle_o = ~busy_execute_q;
+  // Note: This is not the same thing as STATUS == IDLE. For example, we want to allow clock gating
+  // when locked.
+  assign idle_o = is_not_running;
 
   // TODO: These two signals aren't technically in the same clock domain. Sort out how we do the
   // signalling properly.
@@ -619,7 +625,7 @@ module otbn
 
   // CMD register
   // start is flopped to avoid long timing paths from the TL fabric into OTBN internals.
-  assign start_d = reg2hw.cmd.qe & (reg2hw.cmd.q == CmdExecute);
+  assign start_d = reg2hw.cmd.qe & (reg2hw.cmd.q == CmdExecute) & idle;
   assign illegal_bus_access_d = dmem_illegal_bus_access | imem_illegal_bus_access;
 
   // Flop `illegal_bus_access_q` so we know an illegal bus access has happened and to break a timing
@@ -639,18 +645,21 @@ module otbn
     unique case (1'b1)
       busy_execute_q: hw2reg.status.d = StatusBusyExecute;
       locked:         hw2reg.status.d = StatusLocked;
-      // TODO: Add other busy flags, and assert onehot encoding.
-      default:        hw2reg.status.d = StatusIdle;
+      idle:           hw2reg.status.d = StatusIdle;
+      // TODO: Add other busy flags
+
+      // Default case should not be reachable (checked by OtbnStatesOneHot assertion below)
+      default:        hw2reg.status.d = StatusLocked;
     endcase
   end
   assign hw2reg.status.de = 1'b1;
 
-  `ASSERT(OtbnStatesOneHot, $onehot0({busy_execute_q, locked}))
+  `ASSERT(OtbnStatesOneHot, $onehot({busy_execute_q, locked, idle}))
 
   // CTRL register
   assign software_errs_fatal_d =
-    reg2hw.ctrl.qe && (hw2reg.status.d == StatusIdle) ? reg2hw.ctrl.q :
-                                                        software_errs_fatal_q;
+    reg2hw.ctrl.qe && idle ? reg2hw.ctrl.q :
+                             software_errs_fatal_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -681,7 +690,7 @@ module otbn
   assign hw2reg.err_bits.lifecycle_escalation.d = err_bits_q.lifecycle_escalation;
   assign hw2reg.err_bits.fatal_software.d = err_bits_q.fatal_software;
 
-  assign err_bits_clear = reg2hw.err_bits.bad_data_addr.qe & ~busy_execute_q;
+  assign err_bits_clear = reg2hw.err_bits.bad_data_addr.qe & is_not_running;
   assign err_bits_d = err_bits_clear ? '0 : err_bits;
   assign err_bits_en = err_bits_clear | done;
 
@@ -736,7 +745,7 @@ module otbn
   logic        insn_cnt_clear;
   logic        unused_insn_cnt_q;
   assign hw2reg.insn_cnt.d = insn_cnt;
-  assign insn_cnt_clear = (reg2hw.insn_cnt.qe & ~busy_execute_q) | lifecycle_escalation;
+  assign insn_cnt_clear = (reg2hw.insn_cnt.qe & is_not_running) | lifecycle_escalation;
   // Ignore all write data to insn_cnt. All writes zero the register.
   assign unused_insn_cnt_q = ^reg2hw.insn_cnt.q;
 
@@ -1035,6 +1044,9 @@ module otbn
       .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}})
     );
   `endif
+
+  // We're idle if we're neither busy executing something nor locked
+  assign idle = ~(busy_execute_q | locked);
 
   // The core can never signal a write to IMEM
   assign imem_write_core = 1'b0;
