@@ -15,8 +15,18 @@ rom_error_t sigverify_mod_exp_ibex_test(void) {
   sigverify_test_vector_t testvec = sigverify_tests[test_index];
 
   sigverify_rsa_buffer_t recovered_message;
-  RETURN_IF_ERROR(
-      sigverify_mod_exp_ibex(&testvec.key, &testvec.sig, &recovered_message));
+  rom_error_t err =
+      sigverify_mod_exp_ibex(&testvec.key, &testvec.sig, &recovered_message);
+  if (err != kErrorOk) {
+    if (testvec.valid) {
+      LOG_ERROR("Error on a valid signature.");
+      LOG_INFO("Test notes: %s", testvec.comment);
+      return err;
+    } else {
+      // If a test vector is marked invalid, it's okay to return an error
+      return kErrorOk;
+    }
+  }
 
   bool passed = memcmp(testvec.encoded_msg, recovered_message.data,
                        sizeof(testvec.encoded_msg)) == 0;

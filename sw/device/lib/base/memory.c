@@ -36,13 +36,13 @@ void *memset(void *dest, int value, size_t len) {
 }
 #endif  // !defined(HOST_BUILD)
 
-#if !defined(HOST_BUILD)
 enum {
   kMemCmpEq = 0,
   kMemCmpLt = -42,
   kMemCmpGt = 42,
 };
 
+#if !defined(HOST_BUILD)
 int memcmp(const void *lhs, const void *rhs, size_t len) {
   const uint8_t *lhs8 = (uint8_t *)lhs;
   const uint8_t *rhs8 = (uint8_t *)rhs;
@@ -56,6 +56,21 @@ int memcmp(const void *lhs, const void *rhs, size_t len) {
   return kMemCmpEq;
 }
 #endif  // !defined(HOST_BUILD)
+
+int memrcmp(const void *lhs, const void *rhs, size_t len) {
+  const uint8_t *lhs8 = (uint8_t *)lhs;
+  const uint8_t *rhs8 = (uint8_t *)rhs;
+  size_t j;
+  for (size_t i = 0; i < len; ++i) {
+    j = len - 1 - i;
+    if (lhs8[j] < rhs8[j]) {
+      return kMemCmpLt;
+    } else if (lhs8[j] > rhs8[j]) {
+      return kMemCmpGt;
+    }
+  }
+  return kMemCmpEq;
+}
 
 #if !defined(HOST_BUILD)
 void *memchr(const void *ptr, int value, size_t len) {

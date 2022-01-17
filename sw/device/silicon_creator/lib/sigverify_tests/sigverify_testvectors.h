@@ -251,7 +251,6 @@ static const sigverify_test_vector_t sigverify_tests[3] = {
                         0x4252aac5,
                         0x63dccfd3,
                     },
-                .exponent = 0x10001,
             },
         .sig =
             {.data =

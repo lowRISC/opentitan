@@ -19,8 +19,10 @@ extern "C" {
 enum {
   /* Length of the RSA-3072 modulus is 3072 bits */
   kRsa3072NumBits = 3072,
+  /* Length of the RSA-3072 modulus in bytes */
+  kRsa3072NumBytes = kRsa3072NumBits / 8,
   /* Length of the RSA-3072 modulus in words */
-  kRsa3072NumWords = kRsa3072NumBits / (sizeof(uint32_t) * 8),
+  kRsa3072NumWords = kRsa3072NumBytes / sizeof(uint32_t),
 };
 
 /**

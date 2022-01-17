@@ -33,14 +33,12 @@ bool rsa_3072_verify_test(const rsa_3072_verify_test_vector_t *testvec) {
   hardened_bool_t result;
   err = rsa_3072_verify(&testvec->signature, &encodedMessage,
                         &testvec->publicKey, &constants, &result);
-  if (err != kOtbnErrorOk) {
-    LOG_ERROR("Error from OTBN during signature verification: 0x%08x.", err);
-    return false;
-  }
 
   if (testvec->valid) {
+    CHECK(err == kOtbnErrorOk);
     CHECK(result == kHardenedBoolTrue);
   } else {
+    CHECK(err == kOtbnErrorOk || err == kOtbnErrorInvalidArgument);
     CHECK(result == kHardenedBoolFalse);
   }
 

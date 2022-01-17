@@ -127,6 +127,22 @@ void *memset(void *dest, int value, size_t len);
 int memcmp(const void *lhs, const void *rhs, size_t len);
 
 /**
+ * Compare two (potentially overlapping) regions of memory for reverse
+ * byte-wise lexicographic order (i.e. the same as memcmp, but starting from
+ * the end of the memory regions).
+ *
+ * Can be used for arithmetic comparison of little-endian buffers.
+ *
+ * @param lhs the left-hand-side of the comparison.
+ * @param rhs the right-hand-side of the comparison.
+ * @param len the length of both regions, in bytes.
+ * @return a zero, positive, or negative integer, corresponding to the
+ * contingencies of `lhs == rhs`, `lhs > rhs`, and `lhs < rhs` (as buffers, not
+ * pointers), respectively.
+ */
+int memrcmp(const void *lhs, const void *rhs, size_t len);
+
+/**
  * Search a region of memory for the first occurence of a particular byte value.
  *
  * This function conforms to the semantics defined in ISO C11 S7.24.5.1.

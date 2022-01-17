@@ -219,6 +219,7 @@ test('sw_silicon_creator_mask_rom_sigverify_mod_exp_ibex_unittest', executable(
     ],
     dependencies: [
       sw_vendor_gtest,
+      sw_lib_testing_memory,
     ],
     native: true,
   ),
