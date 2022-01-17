@@ -186,6 +186,8 @@ module csrng_ctr_drbg_upd #(
 
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
+
+  // SEC_CM: FSM.SPARSE
   prim_sparse_fsm_flop #(
     .StateEnumT(blk_enc_state_e),
     .Width(BlkEncStateWidth),
@@ -233,6 +235,8 @@ module csrng_ctr_drbg_upd #(
 
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
+
+  // SEC_CM: FSM.SPARSE
   prim_sparse_fsm_flop #(
     .StateEnumT(outblk_state_e),
     .Width(OutBlkStateWidth),
