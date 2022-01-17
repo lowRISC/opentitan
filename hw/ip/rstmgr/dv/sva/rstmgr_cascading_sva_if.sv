@@ -105,7 +105,7 @@ interface rstmgr_cascading_sva_if (
           clk_aon_i, disable_sva)
 
   logic scan_reset_n;
-  always_comb scan_reset_n = scan_rst_ni || (scanmode_i != lc_ctrl_pkg::On);
+  always_comb scan_reset_n = scan_rst_ni || prim_mubi_pkg::mubi4_test_true_strict(scanmode_i);
 
   logic [rstmgr_pkg::PowerDomains-1:0] effective_aon_rst;
   always_comb effective_aon_rst = resets_o.rst_por_aon_n & {rstmgr_pkg::PowerDomains{scan_reset_n}};
