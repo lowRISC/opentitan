@@ -15,8 +15,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   output entropy_src_reg_pkg::entropy_src_hw2reg_t hw2reg,
 
   // Efuse Interface
-  input logic efuse_es_sw_reg_en_i,
-  input logic efuse_es_sw_ov_en_i,
+  input prim_mubi_pkg::mubi8_t otp_en_entropy_src_fw_read_i,
+  input prim_mubi_pkg::mubi8_t otp_en_entropy_src_fw_over_i,
 
   // RNG Interface
   output logic rng_fips_o,
@@ -62,9 +62,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
   localparam int ObserveFifoDepth = 64;
   localparam int PreCondWidth = 64;
   localparam int Clog2ObserveFifoDepth = $clog2(ObserveFifoDepth);
+  localparam int EsEnableCopies = 40;
 
   //-----------------------
-  // SHA3 parameters
+  // SHA3parameters
   //-----------------------
   // Do not enable masking
   localparam bit Sha3EnMasking = 0;
@@ -83,15 +84,12 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [ObserveFifoWidth-1:0] fw_ov_wr_data;
   logic       fw_ov_fifo_rd_pulse;
   logic       fw_ov_fifo_wr_pulse;
-  logic       es_enable;
-  logic       es_enable_pfe;
   logic       es_enable_pfa;
   logic       es_enable_early;
 
   logic       fips_enable_pfe;
   logic       fips_enable_pfa;
 
-  logic       es_enable_rng;
   logic       rng_bit_en;
   logic       rng_bit_enable_pfe;
   logic       rng_bit_enable_pfa;
@@ -143,6 +141,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                   main_stage_push;
   logic                   bypass_stage_pop;
   logic [HalfRegWidth-1:0] any_fail_count;
+  logic                    any_fails_cntr_err;
   logic                    alert_threshold_fail;
   logic [HalfRegWidth-1:0] alert_threshold;
   logic [HalfRegWidth-1:0] alert_threshold_inv;
@@ -192,6 +191,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [FullRegWidth-1:0] repcnt_total_fails;
   logic [EighthRegWidth-1:0] repcnt_fail_count;
   logic                     repcnt_fail_pulse;
+  logic                     repcnt_fails_cntr_err;
+  logic                     repcnt_alert_cntr_err;
 
   logic [HalfRegWidth-1:0] repcnts_fips_threshold;
   logic [HalfRegWidth-1:0] repcnts_fips_threshold_oneway;
@@ -206,6 +207,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [FullRegWidth-1:0] repcnts_total_fails;
   logic [EighthRegWidth-1:0] repcnts_fail_count;
   logic                     repcnts_fail_pulse;
+  logic                     repcnts_fails_cntr_err;
+  logic                     repcnts_alert_cntr_err;
 
   logic [HalfRegWidth-1:0] adaptp_hi_fips_threshold;
   logic [HalfRegWidth-1:0] adaptp_hi_fips_threshold_oneway;
@@ -232,6 +235,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [EighthRegWidth-1:0] adaptp_lo_fail_count;
   logic                     adaptp_hi_fail_pulse;
   logic                     adaptp_lo_fail_pulse;
+  logic                     adaptp_hi_fails_cntr_err;
+  logic                     adaptp_lo_fails_cntr_err;
+  logic                     adaptp_hi_alert_cntr_err;
+  logic                     adaptp_lo_alert_cntr_err;
 
   logic [HalfRegWidth-1:0] bucket_fips_threshold;
   logic [HalfRegWidth-1:0] bucket_fips_threshold_oneway;
@@ -246,6 +253,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [FullRegWidth-1:0] bucket_total_fails;
   logic [EighthRegWidth-1:0] bucket_fail_count;
   logic                     bucket_fail_pulse;
+  logic                     bucket_fails_cntr_err;
+  logic                     bucket_alert_cntr_err;
 
   logic [HalfRegWidth-1:0] markov_hi_fips_threshold;
   logic [HalfRegWidth-1:0] markov_hi_fips_threshold_oneway;
@@ -273,6 +282,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [EighthRegWidth-1:0] markov_lo_fail_count;
   logic                     markov_hi_fail_pulse;
   logic                     markov_lo_fail_pulse;
+  logic                     markov_hi_fails_cntr_err;
+  logic                     markov_lo_fails_cntr_err;
+  logic                     markov_hi_alert_cntr_err;
+  logic                     markov_lo_alert_cntr_err;
 
   logic [HalfRegWidth-1:0] extht_hi_fips_threshold;
   logic [HalfRegWidth-1:0] extht_hi_fips_threshold_oneway;
@@ -299,6 +312,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [EighthRegWidth-1:0] extht_lo_fail_count;
   logic                     extht_hi_fail_pulse;
   logic                     extht_lo_fail_pulse;
+  logic                     extht_hi_fails_cntr_err;
+  logic                     extht_lo_fails_cntr_err;
+  logic                     extht_hi_alert_cntr_err;
+  logic                     extht_lo_alert_cntr_err;
 
 
   logic                     pfifo_esbit_wdata;
@@ -388,6 +405,12 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    markov_cntr_err;
   logic                    es_cntr_err;
   logic                    es_cntr_err_sum;
+  logic                    efuse_es_sw_reg_en;
+  logic                    efuse_es_sw_ov_en;
+
+  logic                    sha3_state_error;
+  logic                    sha3_count_error;
+  logic [EsEnableCopies-1:0] es_enable_q_fo;
 
   logic                    unused_err_code_test_bit;
   logic                    unused_sha3_state;
@@ -395,8 +418,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    unused_fw_ov_rd_data;
   logic                    unused_health_test_clr_pfe;
 
-  logic                    sha3_state_error;
-  logic                    sha3_count_error;
+  prim_mubi_pkg::mubi8_t en_entropy_src_fw_read;
+  prim_mubi_pkg::mubi8_t en_entropy_src_fw_over;
+  prim_mubi_pkg::mubi4_t [EsEnableCopies-1:0] mubi_es_enable_q_fanout;
 
   // flops
   logic [RngBusWidth-1:0] ht_esbus_dly_q, ht_esbus_dly_d;
@@ -408,7 +432,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    sha3_msg_rdy_q, sha3_msg_rdy_d;
   logic                    sha3_err_q, sha3_err_d;
   logic        cs_aes_halt_q, cs_aes_halt_d;
-  logic        es_enable_q, es_enable_d;
   logic [63:0] es_rdata_capt_q, es_rdata_capt_d;
   logic        es_rdata_capt_vld_q, es_rdata_capt_vld_d;
 
@@ -423,7 +446,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
       sha3_msg_rdy_q        <= '0;
       sha3_err_q            <= '0;
       cs_aes_halt_q         <= '0;
-      es_enable_q           <= '0;
       es_rdata_capt_q       <= '0;
       es_rdata_capt_vld_q   <= '0;
     end else begin
@@ -436,7 +458,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
       sha3_msg_rdy_q        <= sha3_msg_rdy_d;
       sha3_err_q            <= sha3_err_d;
       cs_aes_halt_q         <= cs_aes_halt_d;
-      es_enable_q           <= es_enable_d;
       es_rdata_capt_q       <= es_rdata_capt_d;
       es_rdata_capt_vld_q   <= es_rdata_capt_vld_d;
     end
@@ -453,58 +474,135 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_module_en;
+  mubi4_t [3:0] mubi_module_en_fanout;
   assign mubi_module_en  = mubi4_t'(reg2hw.module_enable.q);
-  assign es_enable_pfe = mubi4_test_true_strict(mubi_module_en);
-  assign es_enable_pfa = mubi4_test_invalid(mubi_module_en);
+  assign es_enable_pfa = mubi4_test_invalid(mubi_module_en_fanout[0]);
   assign hw2reg.recov_alert_sts.module_enable_field_alert.de = es_enable_pfa;
   assign hw2reg.recov_alert_sts.module_enable_field_alert.d  = es_enable_pfa;
 
+  prim_mubi4_sync #(
+    .NumCopies(4),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_entropy_module_en (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_module_en),
+    .mubi_o(mubi_module_en_fanout)
+  );
+
+  for (genvar i = 0; i < EsEnableCopies; i = i+1) begin : gen_mubi_en_copies
+    assign es_enable_q_fo[i] = mubi4_test_true_strict(mubi_es_enable_q_fanout[i]);
+  end : gen_mubi_en_copies
+
+  prim_mubi4_sync #(
+    .NumCopies(EsEnableCopies),
+    .AsyncOn(1)
+  ) u_prim_mubi4_sync_es_enable (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_module_en_fanout[1]),
+    .mubi_o(mubi_es_enable_q_fanout)
+  );
+
   mubi4_t mubi_fips_en;
+  mubi4_t [1:0] mubi_fips_en_fanout;
   assign mubi_fips_en  = mubi4_t'(reg2hw.conf.fips_enable.q);
-  assign fips_enable_pfe = mubi4_test_true_strict(mubi_fips_en);
-  assign fips_enable_pfa = mubi4_test_invalid(mubi_fips_en);
+  assign fips_enable_pfe = mubi4_test_true_strict(mubi_fips_en_fanout[0]);
+  assign fips_enable_pfa = mubi4_test_invalid(mubi_fips_en_fanout[1]);
   assign hw2reg.recov_alert_sts.fips_enable_field_alert.de = fips_enable_pfa;
   assign hw2reg.recov_alert_sts.fips_enable_field_alert.d  = fips_enable_pfa;
 
+  prim_mubi4_sync #(
+    .NumCopies(2),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_entropy_fips_en (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_fips_en),
+    .mubi_o(mubi_fips_en_fanout)
+  );
+
   // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_entropy_reg_en;
+  mubi4_t [1:0] mubi_entropy_reg_en_fanout;
   assign mubi_entropy_reg_en = mubi4_t'(reg2hw.conf.entropy_data_reg_enable.q);
-  assign entropy_data_reg_en_pfe = mubi4_test_true_strict(mubi_entropy_reg_en);
-  assign entropy_data_reg_en_pfa = mubi4_test_invalid(mubi_entropy_reg_en);
+  assign entropy_data_reg_en_pfe = mubi4_test_true_strict(mubi_entropy_reg_en_fanout[0]);
+  assign entropy_data_reg_en_pfa = mubi4_test_invalid(mubi_entropy_reg_en_fanout[1]);
   assign hw2reg.recov_alert_sts.entropy_data_reg_en_field_alert.de = entropy_data_reg_en_pfa;
   assign hw2reg.recov_alert_sts.entropy_data_reg_en_field_alert.d =  entropy_data_reg_en_pfa;
 
-  assign es_enable_d = es_enable_pfe;
-  assign es_enable_early = es_enable_pfe;
-  assign es_enable = (es_enable_q);
-  assign es_enable_rng = es_enable_q;
+  prim_mubi4_sync #(
+    .NumCopies(2),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_entropy_data_reg_en (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_entropy_reg_en),
+    .mubi_o(mubi_entropy_reg_en_fanout)
+  );
+
+  assign es_enable_early = mubi4_test_true_strict(mubi_module_en_fanout[2]);
   assign observe_fifo_thresh = reg2hw.observe_fifo_thresh.q;
 
   // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_fw_ov_mode;
+  mubi4_t [1:0] mubi_fw_ov_mode_fanout;
   assign mubi_fw_ov_mode = mubi4_t'(reg2hw.fw_ov_control.fw_ov_mode.q);
-  assign fw_ov_mode_pfe = mubi4_test_true_strict(mubi_fw_ov_mode);
-  assign fw_ov_mode_pfa = mubi4_test_invalid(mubi_fw_ov_mode);
+  assign fw_ov_mode_pfe = mubi4_test_true_strict(mubi_fw_ov_mode_fanout[0]);
+  assign fw_ov_mode_pfa = mubi4_test_invalid(mubi_fw_ov_mode_fanout[1]);
   assign hw2reg.recov_alert_sts.fw_ov_mode_field_alert.de = fw_ov_mode_pfa;
   assign hw2reg.recov_alert_sts.fw_ov_mode_field_alert.d  = fw_ov_mode_pfa;
 
+  prim_mubi4_sync #(
+    .NumCopies(2),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_fw_ov_mode (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_fw_ov_mode),
+    .mubi_o(mubi_fw_ov_mode_fanout)
+  );
+
   // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_fw_ov_entropy_insert;
+  mubi4_t [1:0] mubi_fw_ov_entropy_insert_fanout;
   assign mubi_fw_ov_entropy_insert = mubi4_t'(reg2hw.fw_ov_control.fw_ov_entropy_insert.q);
-  assign fw_ov_entropy_insert_pfe = mubi4_test_true_strict(mubi_fw_ov_entropy_insert);
-  assign fw_ov_entropy_insert_pfa = mubi4_test_invalid(mubi_fw_ov_entropy_insert);
+  assign fw_ov_entropy_insert_pfe = mubi4_test_true_strict(mubi_fw_ov_entropy_insert_fanout[0]);
+  assign fw_ov_entropy_insert_pfa = mubi4_test_invalid(mubi_fw_ov_entropy_insert_fanout[1]);
   assign hw2reg.recov_alert_sts.fw_ov_entropy_insert_field_alert.de = fw_ov_entropy_insert_pfa;
   assign hw2reg.recov_alert_sts.fw_ov_entropy_insert_field_alert.d  = fw_ov_entropy_insert_pfa;
 
+  prim_mubi4_sync #(
+    .NumCopies(2),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_fw_ov_entropy_insert (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_fw_ov_entropy_insert),
+    .mubi_o(mubi_fw_ov_entropy_insert_fanout)
+  );
+
   // firmware override controls
-  assign fw_ov_mode = efuse_es_sw_ov_en_i && fw_ov_mode_pfe;
+  assign fw_ov_mode = efuse_es_sw_ov_en && fw_ov_mode_pfe;
   assign fw_ov_entropy_insert = fw_ov_entropy_insert_pfe;
   assign fw_ov_fifo_rd_pulse = reg2hw.fw_ov_rd_data.re;
   assign hw2reg.fw_ov_rd_data.d = sfifo_observe_rdata;
   assign fw_ov_fifo_wr_pulse = reg2hw.fw_ov_wr_data.qe;
   assign fw_ov_wr_data = reg2hw.fw_ov_wr_data.q;
 
-  assign entropy_src_rng_o.rng_enable = es_enable_rng;
+  assign efuse_es_sw_ov_en = prim_mubi_pkg::mubi8_test_true_strict(en_entropy_src_fw_over);
+
+  prim_mubi8_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_prim_mubi8_sync_es_fw_over (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(otp_en_entropy_src_fw_over_i),
+    .mubi_o(en_entropy_src_fw_over)
+  );
+
+  assign entropy_src_rng_o.rng_enable = es_enable_q_fo[0];
 
   assign es_rng_src_valid = entropy_src_rng_i.rng_valid;
   assign es_rng_bus = entropy_src_rng_i.rng_b;
@@ -585,14 +683,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
 
   // set the interrupt sources
-  assign event_es_fatal_err = (es_enable && (
+  assign event_es_fatal_err = (es_enable_q_fo[1] && (
                                              sfifo_esrng_err_sum ||
                                              sfifo_observe_err_sum ||
                                              sfifo_esfinal_err_sum ||
                                              es_ack_sm_err_sum ||
                                              es_main_sm_err_sum)) ||
                                              es_cntr_err_sum || // prim_count err is always active
-                                             sha3_count_error ||
                                              sha3_state_error;
 
   // set fifo errors that are single instances of source
@@ -626,19 +723,19 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // set the err code source bits
   assign hw2reg.err_code.sfifo_esrng_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_esrng_err.de =  es_enable && sfifo_esrng_err_sum;
+  assign hw2reg.err_code.sfifo_esrng_err.de =  es_enable_q_fo[2] && sfifo_esrng_err_sum;
 
   assign hw2reg.err_code.sfifo_observe_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_observe_err.de =  es_enable && sfifo_observe_err_sum;
+  assign hw2reg.err_code.sfifo_observe_err.de =  es_enable_q_fo[3] && sfifo_observe_err_sum;
 
   assign hw2reg.err_code.sfifo_esfinal_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_esfinal_err.de =  es_enable && sfifo_esfinal_err_sum;
+  assign hw2reg.err_code.sfifo_esfinal_err.de =  es_enable_q_fo[4] && sfifo_esfinal_err_sum;
 
   assign hw2reg.err_code.es_ack_sm_err.d = 1'b1;
-  assign hw2reg.err_code.es_ack_sm_err.de = es_enable && es_ack_sm_err_sum;
+  assign hw2reg.err_code.es_ack_sm_err.de = es_ack_sm_err_sum;
 
   assign hw2reg.err_code.es_main_sm_err.d = 1'b1;
-  assign hw2reg.err_code.es_main_sm_err.de = es_enable && es_main_sm_err_sum;
+  assign hw2reg.err_code.es_main_sm_err.de = es_main_sm_err_sum;
 
   assign hw2reg.err_code.es_cntr_err.d = 1'b1;
   assign hw2reg.err_code.es_cntr_err.de = es_cntr_err_sum;
@@ -646,13 +743,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
  // set the err code type bits
   assign hw2reg.err_code.fifo_write_err.d = 1'b1;
-  assign hw2reg.err_code.fifo_write_err.de = es_enable && fifo_write_err_sum;
+  assign hw2reg.err_code.fifo_write_err.de = es_enable_q_fo[5] && fifo_write_err_sum;
 
   assign hw2reg.err_code.fifo_read_err.d = 1'b1;
-  assign hw2reg.err_code.fifo_read_err.de = es_enable && fifo_read_err_sum;
+  assign hw2reg.err_code.fifo_read_err.de = es_enable_q_fo[6] && fifo_read_err_sum;
 
   assign hw2reg.err_code.fifo_state_err.d = 1'b1;
-  assign hw2reg.err_code.fifo_state_err.de = es_enable && fifo_status_err_sum;
+  assign hw2reg.err_code.fifo_state_err.de = es_enable_q_fo[7] && fifo_status_err_sum;
 
   // Error forcing
   for (genvar i = 0; i < 31; i = i+1) begin : gen_err_code_test_bit
@@ -682,7 +779,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.debug_status.sha3_err.d = sha3_err_q;
 
   assign sha3_err_d =
-         es_enable ? 1'b0 :
+         es_enable_q_fo[8] ? 1'b0 :
          {|sha3_err} ? 1'b1 :
          sha3_err_q;
 
@@ -714,11 +811,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   // fifo controls
-  assign sfifo_esrng_push = (es_enable_rng && es_rng_src_valid);
+  assign sfifo_esrng_push = (es_enable_q_fo[9] && es_rng_src_valid);
 
-  assign sfifo_esrng_clr  = !es_enable;
+  assign sfifo_esrng_clr  = !es_enable_q_fo[10];
   assign sfifo_esrng_wdata = es_rng_bus;
-  assign sfifo_esrng_pop = es_enable_rng && sfifo_esrng_not_empty;
+  assign sfifo_esrng_pop = es_enable_q_fo[11] && sfifo_esrng_not_empty;
 
   // fifo err
   assign sfifo_esrng_err =
@@ -731,11 +828,22 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_rng_bit_en;
+  mubi4_t [1:0] mubi_rng_bit_en_fanout;
   assign mubi_rng_bit_en = mubi4_t'(reg2hw.conf.rng_bit_enable.q);
-  assign rng_bit_enable_pfe = mubi4_test_true_strict(mubi_rng_bit_en);
-  assign rng_bit_enable_pfa = mubi4_test_invalid(mubi_rng_bit_en);
+  assign rng_bit_enable_pfe = mubi4_test_true_strict(mubi_rng_bit_en_fanout[0]);
+  assign rng_bit_enable_pfa = mubi4_test_invalid(mubi_rng_bit_en_fanout[1]);
   assign hw2reg.recov_alert_sts.rng_bit_enable_field_alert.de = rng_bit_enable_pfa;
   assign hw2reg.recov_alert_sts.rng_bit_enable_field_alert.d  = rng_bit_enable_pfa;
+
+  prim_mubi4_sync #(
+    .NumCopies(2),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_rng_bit_en (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_rng_bit_en),
+    .mubi_o(mubi_rng_bit_en_fanout)
+  );
 
 
   assign rng_bit_en = rng_bit_enable_pfe;
@@ -759,7 +867,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   assign pfifo_esbit_push = rng_bit_en && sfifo_esrng_pop;
-  assign pfifo_esbit_clr = !es_enable;
+  assign pfifo_esbit_clr = !es_enable_q_fo[12];
   assign pfifo_esbit_pop = rng_bit_en && pfifo_esbit_not_empty && sfifo_esrng_push;
   assign pfifo_esbit_wdata =
          (rng_bit_sel == 2'h0) ? sfifo_esrng_rdata[0] :
@@ -771,23 +879,23 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // select source for health testing
 
   assign health_test_esbus =
-         (es_enable_rng && rng_bit_en) ? pfifo_esbit_rdata :
+         (es_enable_q_fo[13] && rng_bit_en) ? pfifo_esbit_rdata :
          sfifo_esrng_rdata;
 
   assign health_test_esbus_vld =
-         (es_enable_rng && rng_bit_en) ? pfifo_esbit_pop :
+         (es_enable_q_fo[14] && rng_bit_en) ? pfifo_esbit_pop :
          sfifo_esrng_pop;
 
-  assign ht_esbus_vld_dly_d = es_enable && health_test_esbus_vld;
-  assign ht_esbus_dly_d     = es_enable ? health_test_esbus : '0;
-  assign ht_esbus_vld_dly2_d = es_enable && ht_esbus_vld_dly_q;
+  assign ht_esbus_vld_dly_d = es_enable_q_fo[15] && health_test_esbus_vld;
+  assign ht_esbus_dly_d     = es_enable_q_fo[16] ? health_test_esbus : '0;
+  assign ht_esbus_vld_dly2_d = es_enable_q_fo[17] && ht_esbus_vld_dly_q;
 
-  assign repcnt_active = es_enable;
-  assign repcnts_active = es_enable;
-  assign adaptp_active = es_enable;
-  assign bucket_active = es_enable;
-  assign markov_active = es_enable;
-  assign extht_active = es_enable;
+  assign repcnt_active = es_enable_q_fo[18];
+  assign repcnts_active = es_enable_q_fo[19];
+  assign adaptp_active = es_enable_q_fo[20];
+  assign bucket_active = es_enable_q_fo[21];
+  assign markov_active = es_enable_q_fo[22];
+  assign extht_active = es_enable_q_fo[23];
 
   // TODO: Remove health_test_clr bit
   // SEC_CM: CONFIG.MUBI
@@ -798,7 +906,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.recov_alert_sts.health_test_clr_field_alert.de = health_test_clr_pfa;
   assign hw2reg.recov_alert_sts.health_test_clr_field_alert.d  = health_test_clr_pfa;
 
-  assign health_test_clr = es_enable_pfe && !es_enable_q;
+  assign health_test_clr = mubi4_test_true_strict(mubi_module_en_fanout[3]) && !es_enable_q_fo[24];
 
   assign health_test_fips_window = reg2hw.health_test_windows.fips_window.q;
   assign health_test_bypass_window = reg2hw.health_test_windows.bypass_window.q;
@@ -1151,20 +1259,43 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_es_route;
+  mubi4_t [1:0] mubi_es_route_fanout;
   assign mubi_es_route = mubi4_t'(reg2hw.entropy_control.es_route.q);
-  assign es_route_pfe = mubi4_test_true_strict(mubi_es_route);
-  assign es_route_pfa = mubi4_test_invalid(mubi_es_route);
+  assign es_route_pfe = mubi4_test_true_strict(mubi_es_route_fanout[0]);
+  assign es_route_pfa = mubi4_test_invalid(mubi_es_route_fanout[1]);
   assign hw2reg.recov_alert_sts.es_route_field_alert.de = es_route_pfa;
   assign hw2reg.recov_alert_sts.es_route_field_alert.d  = es_route_pfa;
 
+  prim_mubi4_sync #(
+    .NumCopies(2),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_es_route (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_es_route),
+    .mubi_o(mubi_es_route_fanout)
+  );
+
   // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_es_type;
+  mubi4_t [1:0] mubi_es_type_fanout;
   assign mubi_es_type = mubi4_t'(reg2hw.entropy_control.es_type.q);
-  assign es_type_pfe = mubi4_test_true_strict(mubi_es_type);
-  assign es_type_pfa = mubi4_test_invalid(mubi_es_type);
+  assign es_type_pfe = mubi4_test_true_strict(mubi_es_type_fanout[0]);
+  assign es_type_pfa = mubi4_test_invalid(mubi_es_type_fanout[1]);
   assign hw2reg.recov_alert_sts.es_type_field_alert.de = es_type_pfa;
   assign hw2reg.recov_alert_sts.es_type_field_alert.d  = es_type_pfa;
 
+  prim_mubi4_sync #(
+    .NumCopies(2),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_es_type (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_es_type),
+    .mubi_o(mubi_es_type_fanout)
+  );
+
+  // TODO: Remove boot_bypass_disable Issue #9853
   // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_boot_byp_dis;
   assign mubi_boot_byp_dis = mubi4_t'(reg2hw.conf.boot_bypass_disable.q);
@@ -1201,7 +1332,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     ) u_prim_count_window_cntr (
       .clk_i,
       .rst_ni,
-      .clr_i(!es_enable || health_test_clr),
+      .clr_i(!es_enable_q_fo[25] || health_test_clr),
       .set_i(health_test_done_pulse),
       .set_cnt_i(HalfRegWidth'(0)),
       .en_i(health_test_esbus_vld),
@@ -1211,16 +1342,36 @@ module entropy_src_core import entropy_src_pkg::*; #(
     );
 
   // Window wrap condition
-  assign health_test_done_pulse = (window_cntr == health_test_window);
+  assign health_test_done_pulse = (window_cntr >= health_test_window);
 
   // Summary of counter errors
   assign es_cntr_err =
          (window_cntr_err ||
-         repcnt_cntr_err ||
-         repcnts_cntr_err ||
-         adaptp_cntr_err ||
-         bucket_cntr_err ||
-         markov_cntr_err);
+          repcnt_cntr_err ||
+          repcnts_cntr_err ||
+          adaptp_cntr_err ||
+          bucket_cntr_err ||
+          markov_cntr_err ||
+          repcnt_fails_cntr_err ||
+          repcnt_alert_cntr_err ||
+          repcnts_fails_cntr_err ||
+          repcnts_alert_cntr_err ||
+          adaptp_hi_fails_cntr_err ||
+          adaptp_lo_fails_cntr_err ||
+          adaptp_hi_alert_cntr_err ||
+          adaptp_lo_alert_cntr_err ||
+          bucket_fails_cntr_err ||
+          bucket_alert_cntr_err ||
+          markov_hi_fails_cntr_err ||
+          markov_lo_fails_cntr_err ||
+          markov_hi_alert_cntr_err ||
+          markov_lo_alert_cntr_err ||
+          extht_hi_fails_cntr_err ||
+          extht_lo_fails_cntr_err ||
+          extht_hi_alert_cntr_err ||
+          extht_lo_alert_cntr_err ||
+          any_fails_cntr_err ||
+          sha3_count_error);
 
   //--------------------------------------------
   // repetitive count test
@@ -1267,6 +1418,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (repcnt_event_hwm_bypass)
   );
 
+  // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(FullRegWidth)
   ) u_entropy_src_cntr_reg_repcnt (
@@ -1274,7 +1426,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
     .event_i             (repcnt_fail_pulse),
-    .value_o             (repcnt_total_fails)
+    .value_o             (repcnt_total_fails),
+    .err_o               (repcnt_fails_cntr_err)
   );
 
   assign hw2reg.repcnt_hi_watermarks.fips_watermark.d = repcnt_event_hwm_fips;
@@ -1326,6 +1479,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (repcnts_event_hwm_bypass)
   );
 
+  // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(FullRegWidth)
   ) u_entropy_src_cntr_reg_repcnts (
@@ -1333,7 +1487,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
     .event_i             (repcnts_fail_pulse),
-    .value_o             (repcnts_total_fails)
+    .value_o             (repcnts_total_fails),
+    .err_o               (repcnts_fails_cntr_err)
   );
 
   assign hw2reg.repcnts_hi_watermarks.fips_watermark.d = repcnts_event_hwm_fips;
@@ -1389,6 +1544,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (adaptp_hi_event_hwm_bypass)
   );
 
+  // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(FullRegWidth)
   ) u_entropy_src_cntr_reg_adaptp_hi (
@@ -1396,7 +1552,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
     .event_i             (adaptp_hi_fail_pulse),
-    .value_o             (adaptp_hi_total_fails)
+    .value_o             (adaptp_hi_total_fails),
+    .err_o               (adaptp_hi_fails_cntr_err)
   );
 
 
@@ -1429,6 +1586,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (adaptp_lo_event_hwm_bypass)
   );
 
+  // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(FullRegWidth)
   ) u_entropy_src_cntr_reg_adaptp_lo (
@@ -1436,7 +1594,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
     .event_i             (adaptp_lo_fail_pulse),
-    .value_o             (adaptp_lo_total_fails)
+    .value_o             (adaptp_lo_total_fails),
+    .err_o               (adaptp_lo_fails_cntr_err)
   );
 
   assign hw2reg.adaptp_lo_watermarks.fips_watermark.d = adaptp_lo_event_hwm_fips;
@@ -1490,6 +1649,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (bucket_event_hwm_bypass)
   );
 
+  // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(FullRegWidth)
   ) u_entropy_src_cntr_reg_bucket (
@@ -1497,7 +1657,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
     .event_i             (bucket_fail_pulse),
-    .value_o             (bucket_total_fails)
+    .value_o             (bucket_total_fails),
+    .err_o               (bucket_fails_cntr_err)
   );
 
   assign hw2reg.bucket_hi_watermarks.fips_watermark.d = bucket_event_hwm_fips;
@@ -1554,6 +1715,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (markov_hi_event_hwm_bypass)
   );
 
+  // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(FullRegWidth)
   ) u_entropy_src_cntr_reg_markov_hi (
@@ -1561,7 +1723,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
     .event_i             (markov_hi_fail_pulse),
-    .value_o             (markov_hi_total_fails)
+    .value_o             (markov_hi_total_fails),
+    .err_o               (markov_hi_fails_cntr_err)
   );
 
   assign hw2reg.markov_hi_watermarks.fips_watermark.d = markov_hi_event_hwm_fips;
@@ -1593,6 +1756,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (markov_lo_event_hwm_bypass)
   );
 
+  // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(FullRegWidth)
   ) u_entropy_src_cntr_reg_markov_lo (
@@ -1600,7 +1764,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
     .event_i             (markov_lo_fail_pulse),
-    .value_o             (markov_lo_total_fails)
+    .value_o             (markov_lo_total_fails),
+    .err_o               (markov_lo_fails_cntr_err)
   );
 
   assign hw2reg.markov_lo_watermarks.fips_watermark.d = markov_lo_event_hwm_fips;
@@ -1651,6 +1816,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (extht_hi_event_hwm_bypass)
   );
 
+  // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(FullRegWidth)
   ) u_entropy_src_cntr_reg_extht_hi (
@@ -1658,7 +1824,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
     .event_i             (extht_hi_fail_pulse),
-    .value_o             (extht_hi_total_fails)
+    .value_o             (extht_hi_total_fails),
+    .err_o               (extht_hi_fails_cntr_err)
   );
 
 
@@ -1691,6 +1858,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (extht_lo_event_hwm_bypass)
   );
 
+  // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(FullRegWidth)
   ) u_entropy_src_cntr_reg_extht_lo (
@@ -1698,7 +1866,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
     .event_i             (extht_lo_fail_pulse),
-    .value_o             (extht_lo_total_fails)
+    .value_o             (extht_lo_total_fails),
+    .err_o               (extht_lo_fails_cntr_err)
   );
 
   assign hw2reg.extht_lo_watermarks.fips_watermark.d = extht_lo_event_hwm_fips;
@@ -1712,6 +1881,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign alert_cntrs_clr = health_test_clr || rst_alert_cntr;
 
+  // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(HalfRegWidth)
   ) u_entropy_src_cntr_reg_any_alert_fails (
@@ -1719,7 +1889,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
     .event_i             (any_fail_pulse),
-    .value_o             (any_fail_count)
+    .value_o             (any_fail_count),
+    .err_o               (any_fails_cntr_err)
   );
 
 
@@ -1732,7 +1903,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
          extht_hi_fail_pulse || extht_lo_fail_pulse;
 
   assign ht_failed_d =
-         (!es_enable) ? 1'b0 :
+         (!es_enable_q_fo[26]) ? 1'b0 :
          ht_done_pulse_q ? 1'b0 :
          any_fail_pulse ? 1'b1 :
          ht_failed_q;
@@ -1779,6 +1950,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
 
   // repcnt fail counter
+  // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(EighthRegWidth)
   ) u_entropy_src_cntr_reg_repcnt_alert_fails (
@@ -1786,12 +1958,14 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
     .event_i             (repcnt_fail_pulse),
-    .value_o             (repcnt_fail_count)
+    .value_o             (repcnt_fail_count),
+    .err_o               (repcnt_alert_cntr_err)
   );
 
   assign hw2reg.alert_fail_counts.repcnt_fail_count.d = repcnt_fail_count;
 
   // repcnts fail counter
+  // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(EighthRegWidth)
   ) u_entropy_src_cntr_reg_repcnts_alert_fails (
@@ -1799,37 +1973,43 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
     .event_i             (repcnts_fail_pulse),
-    .value_o             (repcnts_fail_count)
+    .value_o             (repcnts_fail_count),
+    .err_o               (repcnts_alert_cntr_err)
   );
 
   assign hw2reg.alert_fail_counts.repcnts_fail_count.d = repcnts_fail_count;
 
   // adaptp fail counter hi and lo
+  // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(EighthRegWidth)
-  ) u_entropy_src_cntr_reg_adaptp_alert_hi_fails (
+  ) u_entropy_src_cntr_reg_adaptp_hi_alert_fails (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
     .event_i             (adaptp_hi_fail_pulse),
-    .value_o             (adaptp_hi_fail_count)
+    .value_o             (adaptp_hi_fail_count),
+    .err_o               (adaptp_hi_alert_cntr_err)
   );
 
   assign hw2reg.alert_fail_counts.adaptp_hi_fail_count.d = adaptp_hi_fail_count;
 
+  // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(EighthRegWidth)
-  ) u_entropy_src_cntr_reg_adaptp_alert_lo_fails (
+  ) u_entropy_src_cntr_reg_adaptp_lo_alert_fails (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
     .event_i             (adaptp_lo_fail_pulse),
-    .value_o             (adaptp_lo_fail_count)
+    .value_o             (adaptp_lo_fail_count),
+    .err_o               (adaptp_lo_alert_cntr_err)
   );
 
   assign hw2reg.alert_fail_counts.adaptp_lo_fail_count.d = adaptp_lo_fail_count;
 
   // bucket fail counter
+  // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(EighthRegWidth)
   ) u_entropy_src_cntr_reg_bucket_alert_fails (
@@ -1837,58 +2017,67 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
     .event_i             (bucket_fail_pulse),
-    .value_o             (bucket_fail_count)
+    .value_o             (bucket_fail_count),
+    .err_o               (bucket_alert_cntr_err)
   );
 
   assign hw2reg.alert_fail_counts.bucket_fail_count.d = bucket_fail_count;
 
 
   // markov fail counter hi and lo
+  // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(EighthRegWidth)
-  ) u_entropy_src_cntr_reg_markov_alert_hi_fails (
+  ) u_entropy_src_cntr_reg_markov_hi_alert_fails (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
     .event_i             (markov_hi_fail_pulse),
-    .value_o             (markov_hi_fail_count)
+    .value_o             (markov_hi_fail_count),
+    .err_o               (markov_hi_alert_cntr_err)
   );
 
   assign hw2reg.alert_fail_counts.markov_hi_fail_count.d = markov_hi_fail_count;
 
+  // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(EighthRegWidth)
-  ) u_entropy_src_cntr_reg_markov_alert_lo_fails (
+  ) u_entropy_src_cntr_reg_markov_lo_alert_fails (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
     .event_i             (markov_lo_fail_pulse),
-    .value_o             (markov_lo_fail_count)
+    .value_o             (markov_lo_fail_count),
+    .err_o               (markov_lo_alert_cntr_err)
   );
 
   assign hw2reg.alert_fail_counts.markov_lo_fail_count.d = markov_lo_fail_count;
 
   // extht fail counter hi and lo
+  // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(EighthRegWidth)
-  ) u_entropy_src_cntr_reg_extht_alert_hi_fails (
+  ) u_entropy_src_cntr_reg_extht_hi_alert_fails (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
     .event_i             (extht_hi_fail_pulse),
-    .value_o             (extht_hi_fail_count)
+    .value_o             (extht_hi_fail_count),
+    .err_o               (extht_hi_alert_cntr_err)
   );
 
   assign hw2reg.extht_fail_counts.extht_hi_fail_count.d = extht_hi_fail_count;
 
+  // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(EighthRegWidth)
-  ) u_entropy_src_cntr_reg_extht_alert_lo_fails (
+  ) u_entropy_src_cntr_reg_extht_lo_alert_fails (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
     .event_i             (extht_lo_fail_pulse),
-    .value_o             (extht_lo_fail_count)
+    .value_o             (extht_lo_fail_count),
+    .err_o               (extht_lo_alert_cntr_err)
   );
 
   assign hw2reg.extht_fail_counts.extht_lo_fail_count.d = extht_lo_fail_count;
@@ -1917,7 +2106,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign pfifo_postht_push = ht_esbus_vld_dly_q;
   assign pfifo_postht_wdata = ht_esbus_dly_q;
 
-  assign pfifo_postht_clr = !es_enable;
+  assign pfifo_postht_clr = !es_enable_q_fo[27];
   assign pfifo_postht_pop = ht_esbus_vld_dly2_q &&
          pfifo_postht_not_empty;
 
@@ -1950,7 +2139,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // fifo controls
   assign sfifo_observe_push = fw_ov_mode && pfifo_postht_pop;
 
-  assign sfifo_observe_clr  = !es_enable;
+  assign sfifo_observe_clr  = !es_enable_q_fo[28];
 
   assign sfifo_observe_wdata = pfifo_postht_rdata;
 
@@ -1995,7 +2184,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
          (fw_ov_entropy_insert ? fw_ov_wr_data : pfifo_postht_rdata) :
          pfifo_postht_rdata;
 
-  assign pfifo_precon_clr = !es_enable;
+  assign pfifo_precon_clr = !es_enable_q_fo[29];
   assign pfifo_precon_pop = pfifo_precon_not_empty;
 
 
@@ -2018,7 +2207,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign pfifo_cond_not_empty = sha3_state_vld;
   assign sha3_msgfifo_ready = sha3_msg_rdy_q;
 
-  assign sha3_msg_rdy_d = es_enable && sha3_msg_rdy;
+  assign sha3_msg_rdy_d = es_enable_q_fo[30] && sha3_msg_rdy;
 
   // SHA3 hashing engine
   sha3 #(
@@ -2092,7 +2281,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign pfifo_bypass_push = pfifo_precon_pop && es_bypass_mode;
   assign pfifo_bypass_wdata = pfifo_precon_rdata;
 
-  assign pfifo_bypass_clr = !es_enable;
+  assign pfifo_bypass_clr = !es_enable_q_fo[31];
   assign pfifo_bypass_pop = bypass_stage_pop;
 
 
@@ -2104,11 +2293,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // state machine to coordinate fifo flow
   //--------------------------------------------
 
+  // SEC_CM: CTR.LOCAL_ESC
+  // SEC_CM: MAIN_SM.FSM.SPARSE
   entropy_src_main_sm
     u_entropy_src_main_sm (
     .clk_i                (clk_i),
     .rst_ni               (rst_ni),
-    .enable_i             (es_enable),
+    .enable_i             (es_enable_q_fo[32]),
     .ht_done_pulse_i      (ht_done_pulse_q),
     .ht_fail_pulse_i      (ht_failed_q),
     .alert_thresh_fail_i  (alert_threshold_fail),
@@ -2126,6 +2317,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .sha3_done_o          (sha3_done),
     .cs_aes_halt_req_o    (cs_aes_halt_req),
     .cs_aes_halt_ack_i    (cs_aes_halt_i.cs_aes_halt_ack),
+    .local_escalate_i     (es_cntr_err_sum),
     .main_sm_alert_o      (es_main_sm_alert),
     .main_sm_idle_o       (es_main_sm_idle),
     .main_sm_state_o      (es_main_sm_state),
@@ -2133,7 +2325,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   // es to cs halt request to reduce power spikes
-  // assign cs_aes_halt_d = es_enable && cs_aes_halt_req;
   assign cs_aes_halt_d = cs_aes_halt_req;
   assign cs_aes_halt_o.cs_aes_halt_req = cs_aes_halt_q;
 
@@ -2159,11 +2350,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .depth_o        (sfifo_esfinal_depth)
   );
 
-  assign fips_compliance = !es_bypass_mode && es_enable_rng && !rng_bit_en;
+  assign fips_compliance = !es_bypass_mode && es_enable_q_fo[33] && !rng_bit_en;
 
   // fifo controls
   assign sfifo_esfinal_push = sfifo_esfinal_not_full && main_stage_push;
-  assign sfifo_esfinal_clr  = !es_enable;
+  assign sfifo_esfinal_clr  = !es_enable_q_fo[34];
   assign sfifo_esfinal_wdata = {fips_compliance,final_es_data};
   assign sfifo_esfinal_pop = es_route_to_sw ? pfifo_swread_push :
          es_hw_if_fifo_pop;
@@ -2189,13 +2380,15 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign entropy_src_hw_if_o.es_fips = esfinal_fips_flag
                                        && fips_enable_pfe; // TODO: Fix fips_enable_pfe
 
+  // SEC_CM: ACK_SM.FSM.SPARSE
   entropy_src_ack_sm u_entropy_src_ack_sm (
     .clk_i            (clk_i),
     .rst_ni           (rst_ni),
-    .enable_i         (es_enable),
+    .enable_i         (es_enable_q_fo[35]),
     .req_i            (es_hw_if_req),
     .ack_o            (es_hw_if_ack),
     .fifo_not_empty_i (sfifo_esfinal_not_empty && !es_route_to_sw),
+    .local_escalate_i (es_cntr_err),
     .fifo_pop_o       (es_hw_if_fifo_pop),
     .ack_sm_err_o     (es_ack_sm_err)
   );
@@ -2215,7 +2408,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign es_rdata_capt_d = es_rdata_capt_vld ? sfifo_esfinal_rdata[63:0] : es_rdata_capt_q;
 
   assign es_rdata_capt_vld_d =
-         !es_enable ? 1'b0 :
+         !es_enable_q_fo[36] ? 1'b0 :
          es_rdata_capt_vld ? 1'b1 :
          es_rdata_capt_vld_q;
 
@@ -2248,13 +2441,25 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign pfifo_swread_push = es_route_to_sw && pfifo_swread_not_full && sfifo_esfinal_not_empty;
   assign pfifo_swread_wdata = esfinal_data;
 
-  assign pfifo_swread_clr = !es_enable;
-  assign pfifo_swread_pop =  es_enable && sw_es_rd_pulse;
+  assign pfifo_swread_clr = !es_enable_q_fo[37];
+  assign pfifo_swread_pop =  es_enable_q_fo[38] && sw_es_rd_pulse;
 
   // set the es entropy to the read reg
-  assign es_data_reg_rd_en = es_enable && efuse_es_sw_reg_en_i && entropy_data_reg_en_pfe;
+  assign es_data_reg_rd_en = es_enable_q_fo[39] && efuse_es_sw_reg_en && entropy_data_reg_en_pfe;
   assign hw2reg.entropy_data.d = es_data_reg_rd_en ? pfifo_swread_rdata : '0;
   assign sw_es_rd_pulse = es_data_reg_rd_en && reg2hw.entropy_data.re;
+
+  assign efuse_es_sw_reg_en = prim_mubi_pkg::mubi8_test_true_strict(en_entropy_src_fw_read);
+
+  prim_mubi8_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_prim_mubi8_sync_es_fw_read (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(otp_en_entropy_src_fw_read_i),
+    .mubi_o(en_entropy_src_fw_read)
+  );
 
   //--------------------------------------------
   // unused signals
