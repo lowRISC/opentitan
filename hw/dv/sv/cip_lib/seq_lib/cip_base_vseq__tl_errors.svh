@@ -417,9 +417,9 @@ virtual task test_intg_err_in_passthru_mem(const ref dv_base_mem mems[$]);
                   .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
     `DV_CHECK_EQ(completed, 1)
     `DV_CHECK_EQ(saw_err, 0)
-    tl_access_rsp.is_d_chan_intg_ok(.en_rsp_intg_chk(1),
-                                    .en_data_intg_chk(1),
-                                    .throw_error(1));
+    void'(tl_access_rsp.is_d_chan_intg_ok(.en_rsp_intg_chk(1),
+                                          .en_data_intg_chk(1),
+                                          .throw_error(1)));
 
     `uvm_info(`gfn, $sformatf("Backdoor inject intg fault to %s addr 0x%0h", ral_name, addr),
               UVM_LOW)
