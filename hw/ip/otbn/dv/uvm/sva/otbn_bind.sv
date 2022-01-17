@@ -24,6 +24,7 @@ module otbn_bind;
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .reg2hw   (reg2hw),
+    .hw2reg   (hw2reg),
     .done_i   (done),
     .idle_o_i (idle_o)
   );

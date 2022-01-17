@@ -180,9 +180,10 @@ class otbn_scoreboard extends cip_base_scoreboard #(
       case (csr.get_name())
         // Spot writes to the "cmd" register that tell us to start
         "cmd": begin
-          // We start the execution when we see a write of the EXECUTE command. See the comment
-          // above pending_start_tl_trans to see how this tracking works.
-          if (item.a_data == otbn_pkg::CmdExecute) begin
+          // We start the execution when we see a write of the EXECUTE command and we are currently
+          // in the IDLE operational state. See the comment above pending_start_tl_trans to see how
+          // this tracking works.
+          if ((item.a_data == otbn_pkg::CmdExecute) && (model_status == otbn_pkg::StatusIdle)) begin
             // Set a flag: we're expecting the model to start on the next posedge. Also, spawn off a
             // checking thread that will make sure the flag has been cleared again by the following
             // posedge. Note that the reset() method is only called in the DV base class on the
