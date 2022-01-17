@@ -313,6 +313,23 @@ mask_rom_tests += {
   }
 }
 
+sw_silicon_creator_lib_sigverify_mod_exp_ibex_functest = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_sigverify_mod_exp_ibex_functest',
+    sources: [
+      'sigverify_mod_exp_ibex_functest.c'
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_sigverify,
+    ],
+  ),
+)
+mask_rom_tests += {
+  'sw_silicon_creator_lib_sigverify_mod_exp_ibex_functest': {
+    'library': sw_silicon_creator_lib_sigverify_mod_exp_ibex_functest,
+  }
+}
+
 sw_silicon_creator_lib_sigverify_mod_exp_otbn_functest = declare_dependency(
   link_with: static_library(
     'sw_silicon_creator_lib_sigverify_mod_exp_otbn_functest',

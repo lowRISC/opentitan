@@ -430,6 +430,24 @@ cc_library(
 )
 
 opentitan_functest(
+    name = "sigverify_mod_exp_ibex_functest",
+    srcs = ["sigverify_mod_exp_ibex_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+        tags = [
+            "manual",
+            "verilator",
+        ],
+    ),
+    deps = [
+        ":sigverify_mod_exp_ibex",
+        ":sigverify_testvectors",
+        ":test_main",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+    ],
+)
+
+opentitan_functest(
     name = "sigverify_mod_exp_otbn_functest",
     srcs = ["sigverify_mod_exp_otbn_functest.c"],
     verilator = verilator_params(
