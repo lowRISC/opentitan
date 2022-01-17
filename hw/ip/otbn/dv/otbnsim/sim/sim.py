@@ -132,7 +132,7 @@ class OTBNSim:
         if not self.state.running():
             return (None, [])
 
-        if self.state.fsm_state == FsmState.PRE_EXEC:
+        if self.state.fsm_state in [FsmState.PRE_EXEC]:
             # Zero INSN_CNT the cycle after we are told to start (and every
             # cycle after that until we start executing instructions, but that
             # doesn't really matter)
@@ -143,13 +143,16 @@ class OTBNSim:
             return (None, changes)
 
         # If we are not in PRE_EXEC, then we have a valid URND seed. So we
-        # should step URND regardless of whether we're actually executing
-        # instructions.
+        # should step URND nevertheless.
         self.state.wsrs.URND.commit()
         self.state.wsrs.URND.step()
 
-        if self.state.fsm_state == FsmState.FETCH_WAIT:
+        if self.state.fsm_state in [FsmState.FETCH_WAIT]:
+            # Zero INSN_CNT the cycle after we are told to start (and every
+            # cycle after that until we start executing instructions, but that
+            # doesn't really matter)
             changes = self._on_stall(verbose, fetch_next=False)
+            self.state.ext_regs.write('INSN_CNT', 0, True)
             return (None, changes)
 
         if self.state.fsm_state in [FsmState.POST_EXEC, FsmState.LOCKING]:

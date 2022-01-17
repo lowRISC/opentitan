@@ -1,0 +1,38 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Meson RISCV toolchain configuration.
+#
+# NOTE: If you're using a toolchain since version 20200602-1, it is likely that
+#       you are using the meson toolchain configuration within the toolchain
+#       install, rather than this file. This file remains mostly for legacy
+#       reasons, and will eventually be removed.
+
+[binaries]
+c = '/opt/tools/riscv/bin/riscv32-unknown-elf-gcc'
+cpp = '/opt/tools/riscv/bin/riscv32-unknown-elf-g++'
+ar = '/opt/tools/riscv/bin/riscv32-unknown-elf-ar'
+ld = '/opt/tools/riscv/bin/riscv32-unknown-elf-ld'
+objdump = '/opt/tools/riscv/bin/riscv32-unknown-elf-objdump'
+objcopy = '/opt/tools/riscv/bin/riscv32-unknown-elf-objcopy'
+strip = '/opt/tools/riscv/bin/riscv32-unknown-elf-strip'
+as = '/opt/tools/riscv/bin/riscv32-unknown-elf-as'
+
+[properties]
+has_function_printf = false
+c_args = [
+  '-mabi=ilp32',
+  '-march=rv32imc',
+  '-mcmodel=medany']
+
+[build_machine]
+system = 'darwin'
+cpu_family = 'x86_64'
+endian = 'little'
+
+[host_machine]
+system = 'bare metal'
+cpu_family = 'riscv32'
+cpu = 'ibex'
+endian = 'little'

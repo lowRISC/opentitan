@@ -4,6 +4,8 @@
 
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 
+#include <array>
+
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"

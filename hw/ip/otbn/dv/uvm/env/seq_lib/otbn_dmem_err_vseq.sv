@@ -57,6 +57,7 @@ class otbn_dmem_err_vseq extends otbn_base_vseq;
           repeat (3) wait_alert_trigger("fatal", .wait_complete(1));
         end
       join
+      dut_init("HARD");
     end
   endtask
 

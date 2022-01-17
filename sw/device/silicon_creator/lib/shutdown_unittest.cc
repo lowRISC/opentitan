@@ -4,6 +4,8 @@
 
 #include "sw/device/silicon_creator/lib/shutdown.h"
 
+#include <array>
+
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"

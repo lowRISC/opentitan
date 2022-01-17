@@ -79,16 +79,8 @@
       desc: '''
             Inject ECC errors into DMEM and IMEM and expect an alert
             '''
-      milestone: V2S
+      milestone: V2
       tests: ["otbn_imem_err", "otbn_dmem_err"]
-    }
-    {
-      name: internal_integrity
-      desc: '''
-        Corrupt internal state and expect an alert
-      '''
-      milestone: V2S
-      tests: []
     }
     {
       name: back_to_back
@@ -106,10 +98,11 @@
     {
       name: stress_all
       desc: '''
-            Run assorted sequences back-to-back.
+            Run multiple sequences back-to-back while making invalid TL
+            accesses at the same time.
             '''
       milestone: V2
-      tests: ["otbn_stress_all"]
+      tests: []
     }
     {
       name: lc_escalation

@@ -4,6 +4,7 @@
 
 #include "sw/device/sca/lib/prng.h"
 
+#include <array>
 #include <algorithm>
 
 #include "gmock/gmock.h"

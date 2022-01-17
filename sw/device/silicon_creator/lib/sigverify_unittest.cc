@@ -4,6 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/sigverify.h"
 
+#include <array>
 #include <cstring>
 #include <limits>
 #include <unordered_set>

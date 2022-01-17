@@ -4,6 +4,8 @@
 
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 
+#include <array>
+
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/testing/mock_mmio_test_utils.h"

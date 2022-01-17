@@ -82,15 +82,6 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   //    bins mnem_add = {mnem_add};
 `define DEF_MNEM_BIN(NAME) bins NAME = {NAME}
 
-  // Equivalents of DEF_MNEM and DEF_MNEM_BIN, but for external CSRs. Again, we want to use the CSR
-  // names as bins in coverpoints and need sized literals.
-`define DEF_CSR(CSR_NAME, STR) \
-  csr_str_t CSR_NAME = csr_str_t'(STR)
-  `DEF_CSR(csr_load_checksum, "load_checksum");
-  `DEF_CSR(csr_ctrl, "ctrl");
-`undef DEF_CSR
-`define DEF_CSR_BIN(NAME) bins NAME = {NAME}
-
   // Cross one, two or three coverpoints with mnemonic_cp.
   //
   // This is intentended to be used inside covergroups that support multiple instructions. In each
@@ -221,24 +212,17 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     bins neg = {[WIDTH'd1 << (WIDTH - 1):$]};     \
   }
 
-  // The bins for a coverpoint that checks whether a value is zero or not (assumed to be represented
-  // by an unsigned SystemVerilog expression). Used by DEF_NZ_CP and DEF_NZ_IF_CP.
-`define _NZ_CP_BINS {       \
-    bins zero = {0};        \
-    bins nonzero = {[1:$]}; \
-  }
-
   // A macro to define a coverpoint based on whether a value is zero or not (assumed to be
   // represented by an unsigned SystemVerilog expression).
-`define DEF_NZ_CP(NAME, VALUE) NAME: coverpoint VALUE `_NZ_CP_BINS
+`define DEF_NZ_CP(NAME, VALUE) \
+  NAME: coverpoint VALUE {     \
+    bins zero = {0};           \
+    bins nonzero = {[1:$]};    \
+  }
 
   // A macro to define a coverpoint for a condition that should be seen: EXPR should be a single bit
   // and there's just one bin (with expected value 1'b1).
 `define DEF_SEEN_CP(NAME, EXPR) NAME: coverpoint (EXPR) { bins seen = {1'b1}; }
-
-  // Equivalent of DEF_NZ_CP and DEF_SEEN_CP, but which add a test to qualifies the coverpoint.
-`define DEF_NZ_IF_CP(NAME, VALUE, TEST) NAME: coverpoint (VALUE) iff (TEST) `_NZ_CP_BINS
-`define DEF_SEEN_IF_CP(NAME, EXPR, TEST) NAME: coverpoint (EXPR) iff (TEST) { bins seen = {1'b1}; }
 
   // Remap a CSR index to an internal "coverage" index. This function avoids having to duplicate the
   // list of CSRs below and is also an easy way to explicitly track invalid CSRs explicitly
@@ -294,10 +278,6 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       8'h01: return 1;     // RND
       8'h02: return 2;     // URND
       8'h03: return 3;     // ACC
-      8'h04: return 4;     // KEY_S0_L
-      8'h05: return 5;     // KEY_S0_H
-      8'h06: return 6;     // KEY_S1_L
-      8'h07: return 7;     // KEY_S1_H
       default: return -1;  // (invalid)
     endcase
   endfunction
@@ -308,232 +288,82 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     bins rnd         = {1};            \
     bins urnd        = {2};            \
     bins acc         = {3};            \
-    bins key_s0_l    = {4};            \
-    bins key_s0_h    = {5};            \
-    bins key_s1_l    = {6};            \
-    bins key_s1_h    = {7};            \
     bins invalid     = {-1};           \
     illegal_bins bad = default;        \
   }
-
-  // State tracking
-
-  // For the LOAD_CHECKSUM CSR, we want to see the following sequence: write the CSR; perform at
-  // least one memory update; read the CSR. It's a little awkward to encode this with SystemVerilog
-  // functional coverage, so we cheat and put the temporal logic into a little "fsm state" here.
-  // This is updated in on_ext_csr_access() (when accessing the right CSR) and in on_mem_write.
-  typedef enum {
-    WUR_IDLE,
-    WUR_WRITTEN_CSR,  // We've seen a write to the LOAD_CHECKSUM CSR
-    WUR_UPDATED_MEM   // And now we've seen a write that updates memory
-  } load_checksum_write_upd_read_e;
-
-  load_checksum_write_upd_read_e wur_state;
-
-  // For some CSRs, we want to see a write to the CSR in each operational state, followed by a read
-  // before the next write (although it's ok if we've changed operational state since). To track
-  // this, we keep an associative array keyed by CSR name whose value is the last operational state
-  // where we've seen a write that changes the value. If there is a value at the name when we read
-  // the CSR, we sample the ext_csr_wr_operational_state_cg covergroup.
-  operational_state_e last_write_state[csr_str_t];
-
-  // To track "error promotion" based on the CTRL register, we want to see each software error cause
-  // a fatal alert. One way to do this is to run a test, check we're in the LOCKED state, then look
-  // at ERR_BITS and see just one SW error, then look at FATAL_ALERT_CAUSE and see that only the
-  // FATAL_SOFTWARE bit is set.
-  //
-  // Of course, this is a bit fiddly to track because there are several things that have to happen
-  // in order. This variable gets set on each read of ERR_BITS and cleared on reset or on a change
-  // of operational state. The idea is that if we read FATAL_ALERT_CAUSE and see only FATAL_SOFTWARE
-  // set then we can sample the promoted_err_cg covergroup, tracking which SW error was promoted.
-  // Clearing when when changing operational state makes sure that we really have seen nonzero
-  // ERR_BITS since the last operation finished.
-  logic [31:0] last_err_bits = 0;
 
   // Non-core covergroups //////////////////////////////////////////////////////
 
   // CMD external CSR
   covergroup ext_csr_cmd_cg
-    with function sample(otbn_pkg::cmd_e     value,
-                         access_e            access_type,
-                         operational_state_e state);
+    with function sample(otbn_pkg::cmd_e value, otbn_env_pkg::operational_state_e state);
 
-    // Expect to see each genuine command, plus at least one bogus value
-    cmd_cp: coverpoint {value} {
-      bins CmdExecute     = {otbn_pkg::CmdExecute};
-      bins CmdSecWipeDmem = {otbn_pkg::CmdSecWipeDmem};
-      bins CmdSecWipeImem = {otbn_pkg::CmdSecWipeImem};
-      bins BogusCmd       = {[0:$]} with (!(item inside {otbn_pkg::CmdExecute,
-                                                         otbn_pkg::CmdSecWipeDmem,
-                                                         otbn_pkg::CmdSecWipeImem}));
-    }
-    access_type_cp: coverpoint access_type;
+    cmd_cp: coverpoint value;
+    state_cp: coverpoint state;
 
     // We want to see an attempt to issue every command in every state.
-    cmd_state_cross: cross cmd_cp, state iff (access_type == AccessSoftwareWrite);
-
-  endgroup
-
-  // CTRL external CSR
-  covergroup ext_csr_ctrl_cg
-    with function sample(logic               value,
-                         access_e            access_type,
-                         operational_state_e state);
-    // See a read as well as a write.
-    access_type_cp: coverpoint access_type;
-
-    // See a write of each value in idle state.
-    value_cp: coverpoint value iff ((access_type == AccessSoftwareWrite) &&
-                                    (state == OperationalStateIdle));
+    cmd_state_cross: cross cmd_cp, state_cp;
   endgroup
 
   // STATUS external CSR
   covergroup ext_csr_status_cg
-    with function sample(otbn_pkg::status_e  value,
-                         access_e            access_type);
-    // Read each possible status value
-    status_cp: coverpoint value iff (access_type == AccessSoftwareRead);
+    with function sample(otbn_pkg::status_e value);
 
-    // See a write as well as a read.
-    access_type_cp: coverpoint access_type;
+    status_cp: coverpoint value;
   endgroup
 
   // ERR_BITS external CSR
   covergroup ext_csr_err_bits_cg
-    with function sample(otbn_pkg::err_bits_t value,
-                         logic [31:0]         old_value,
-                         access_e             access_type,
-                         operational_state_e  state);
-    // We want to read every error bit at least once.
-`define DEF_ERR_BIT_CP(NAME) \
-  `DEF_SEEN_IF_CP(err_bits_``NAME``_cp, value.NAME, access_type == AccessSoftwareRead)
+    with function sample(otbn_pkg::err_bits_t value, otbn_env_pkg::operational_state_e state);
 
-    `DEF_ERR_BIT_CP(bad_insn_addr)
-    `DEF_ERR_BIT_CP(call_stack)
-    `DEF_ERR_BIT_CP(illegal_insn)
-    `DEF_ERR_BIT_CP(loop)
-    `DEF_ERR_BIT_CP(imem_intg_violation)
-    `DEF_ERR_BIT_CP(dmem_intg_violation)
-    `DEF_ERR_BIT_CP(reg_intg_violation)
-    `DEF_ERR_BIT_CP(bus_intg_violation)
-    `DEF_ERR_BIT_CP(bad_internal_state)
-    `DEF_ERR_BIT_CP(illegal_bus_access)
-    `DEF_ERR_BIT_CP(lifecycle_escalation)
+    // We want to see every error bit at least once.
+    `DEF_SEEN_CP(err_bits_bad_data_addr_cp, value.bad_data_addr)
+    `DEF_SEEN_CP(err_bits_bad_insn_addr_cp, value.bad_insn_addr)
+    `DEF_SEEN_CP(err_bits_call_stack_cp, value.call_stack)
+    `DEF_SEEN_CP(err_bits_illegal_insn_cp, value.illegal_insn)
+    `DEF_SEEN_CP(err_bits_loop_cp, value.loop)
+    `DEF_SEEN_CP(err_bits_imem_intg_violation_cp, value.imem_intg_violation)
+    `DEF_SEEN_CP(err_bits_dmem_intg_violation_cp, value.dmem_intg_violation)
+    `DEF_SEEN_CP(err_bits_reg_intg_violation_cp, value.reg_intg_violation)
+    `DEF_SEEN_CP(err_bits_bus_intg_violation_cp, value.bus_intg_violation)
+    `DEF_SEEN_CP(err_bits_bad_internal_state_cp, value.bad_internal_state)
+    `DEF_SEEN_CP(err_bits_illegal_bus_access_cp, value.illegal_bus_access)
+    `DEF_SEEN_CP(err_bits_lifecycle_escalation_cp, value.lifecycle_escalation)
 
-`undef DEF_ERR_BIT_CP
-
-    // We want to see a read of ERR_BITS in every operational state, but don't need a full cross
+    // We want to see an access to ERR_BITS in every operational state, but don't need a full cross
     // with all possible error values.
-    state_cp: coverpoint state iff (access_type == AccessSoftwareRead);
-
-    // We want to track writes to ERR_BITS when the old value was nonzero.
-    `DEF_SEEN_IF_CP(clear_cp, old_value != 0, access_type == AccessSoftwareWrite)
-
-    // Cross these writes with the operational state
-    clear_state_cross: cross clear_cp, state;
-
-    // See both reads and writes. This is actually implied by clear_cp and state_cp, but it can't
-    // hurt to be explicit.
-    access_type_cp: coverpoint access_type;
+    state_cp: coverpoint state;
   endgroup
 
   // FATAL_ALERT_CAUSE external CSR
   covergroup ext_csr_fatal_alert_cause_cg
-    with function sample(logic [31:0]        value,
-                         access_e            access_type,
-                         operational_state_e state);
+    with function sample(logic [31:0] value, otbn_env_pkg::operational_state_e state);
 
     // We want to see every valid bit at least once.
-`define DEF_FAC_CP(NAME, IDX) \
-  `DEF_SEEN_IF_CP(fatal_alert_cause_``NAME``_cp, value[IDX], access_type == AccessSoftwareRead)
+    `DEF_SEEN_CP(fatal_alert_cause_imem_intg_violation_cp, value[0])
+    `DEF_SEEN_CP(fatal_alert_cause_dmem_intg_violation_cp, value[1])
+    `DEF_SEEN_CP(fatal_alert_cause_reg_intg_violation_cp, value[2])
+    `DEF_SEEN_CP(fatal_alert_cause_bus_intg_violation_cp, value[3])
+    `DEF_SEEN_CP(fatal_alert_cause_bad_internal_state_cp, value[4])
+    `DEF_SEEN_CP(fatal_alert_cause_illegal_bus_access_cp, value[5])
+    `DEF_SEEN_CP(fatal_alert_cause_lifecycle_escalation_cp, value[6])
 
-    `DEF_FAC_CP(imem_intg_violation, 0)
-    `DEF_FAC_CP(dmem_intg_violation, 1)
-    `DEF_FAC_CP(reg_intg_violation, 2)
-    `DEF_FAC_CP(bus_intg_violation, 3)
-    `DEF_FAC_CP(bad_internal_state, 4)
-    `DEF_FAC_CP(illegal_bus_access, 5)
-    `DEF_FAC_CP(lifecycle_escalation, 6)
-    `DEF_FAC_CP(fatal_software, 7)
-
-`undef DEF_FAC_CP
-
-    // We want to see a read of FATAL_ALERT_CAUSE in every operational state, but don't need to see
-    // all possible values that could be read.
-    state_cp: coverpoint state iff (access_type == AccessSoftwareRead);
-
-    // See a write as well as a read.
-    access_type_cp: coverpoint access_type;
+    // We want to see an access to FATAL_ALERT_CAUSE in every operational state, but don't need to
+    // see all possible values that could be read.
+    state_cp: coverpoint state;
   endgroup
 
   // INSN_CNT external CSR
   covergroup ext_csr_insn_cnt_cg
-    with function sample(logic [31:0]        value,
-                         logic [31:0]        old_value,
-                         access_e            access_type,
-                         operational_state_e state);
+    with function sample(logic [31:0] value, otbn_env_pkg::operational_state_e state);
 
-    // We want to see at least one non-zero value of INSN_CNT to ensure it's doing something. The
-    // actual values are cross-checked with the ISS.
-    `DEF_NZ_IF_CP(insn_cnt_cp, value, access_type == AccessSoftwareRead)
+    // We want to see at least one non-zero value of INSN_CNT to ensure it's doing something.
+    // The actual values are cross-checked with the ISS.
+    `DEF_NZ_CP(insn_cnt_cp, value)
 
-    // We want to see a read from INSN_CNT in all operational states
-    state_cp: coverpoint state iff (access_type == AccessSoftwareRead);
-
-    // We want to track writes to INSN_CNT the old value was nonzero.
-    `DEF_SEEN_IF_CP(clear_cp, old_value != 0, access_type == AccessSoftwareWrite)
-
-    // Cross these writes with the operational state
-    clear_state_cross: cross clear_cp, state;
-  endgroup
-
-  // Specialized covergroup for LOAD_CHECKSUM external CSR. This is used to track the "write CSR;
-  // write mem; read CSR" sequence. See notes above load_checksum_write_upd_read_e for more
-  // information. We've seen the sequence once we call the sample function.
-  covergroup ext_csr_load_checksum_wur_cg with function sample();
-    `DEF_SEEN_CP(wur_cp, 1'b1)
-  endgroup
-
-  // Specialized covergroup "write then read" where we that track writes across different
-  // operational states, followed by a read (to check that the write took some effect). See note
-  // above last_write_state for details of how this works.
-  covergroup ext_csr_wr_operational_state_cg
-    with function sample(csr_str_t csr, operational_state_e wr_state);
-
-    csr_cp: coverpoint csr {
-      `DEF_CSR_BIN(csr_load_checksum);
-      `DEF_CSR_BIN(csr_ctrl);
-      illegal_bins other = default;
-    }
-
-    csr_state_cross: cross csr_cp, wr_state;
-
-  endgroup
-
-  // Specialized covergroup to track that we've seen each software error individually cause a fatal
-  // alert. This gets sampled when we read a FATAL_ALERT_CAUSE with just FATAL_SOFTWARE and is given
-  // last_err_bits (see comment above declaration of that variable for more details).
-  covergroup promoted_err_cg
-    with function sample(logic [31:0] last_err_bits);
-
-    // We're interested in the "one-hot" values corresponding to each error that wouldn't normally
-    // be fatal.
-    err_bits_cp: coverpoint last_err_bits {
-      bins bad_data_addr = {32'h1};
-      bins bad_insn_addr = {32'h2};
-      bins call_stack    = {32'h4};
-      bins illegal_insn  = {32'h8};
-      bins loop          = {32'h10};
-      bins key_invalid   = {32'h20};
-    }
-  endgroup
-
-  covergroup scratchpad_writes_cg with function sample(uvm_reg_addr_t addr);
-    // See attempted writes to the bottom and top address in the scratchpad memory
-    addr_cp: coverpoint addr {
-      bins low  = {OTBN_DMEM_OFFSET + OTBN_DMEM_SIZE};
-      bins high = {OTBN_DMEM_OFFSET + 2 * OTBN_DMEM_SIZE - 1};
-    }
+    // We want to see an access to INSN_CNT in all operational states, but don't care about the
+    // cross between the actual value and the state.
+    state_cp: coverpoint state;
   endgroup
 
   // Non-instruction covergroups ///////////////////////////////////////////////
@@ -1958,19 +1788,6 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                  (operand_a >= 32))
   endgroup
 
-  covergroup insn_bn_wsrr_cg
-    with function sample(logic [7:0] wsr_imm, logic has_sideload_key);
-
-    // Track coverage of the key sideload WSRs specifically. Here 4 - 7 are the indices of KEY_S0_L,
-    // KEY_S0_H, KEY_S1_L and KEY_S1_H respectively.
-    key_wsr_cp: coverpoint wsr_imm { bins key_wsrs[] = {[4:7]}; }
-
-    // Crossing key_wsr_cp with has_sideload_key asks that we see a read of each WSR both with and
-    // without a valid key.
-    key_avail_cross: cross key_wsr_cp, has_sideload_key;
-
-  endgroup
-
   // A mapping from instruction name to the name of that instruction's encoding.
   string insn_encodings[mnem_str_t];
 
@@ -1978,15 +1795,10 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     super.new(name, parent);
 
     ext_csr_cmd_cg = new;
-    ext_csr_ctrl_cg = new;
     ext_csr_status_cg = new;
     ext_csr_err_bits_cg = new;
     ext_csr_fatal_alert_cause_cg = new;
     ext_csr_insn_cnt_cg = new;
-    ext_csr_load_checksum_wur_cg = new;
-    ext_csr_wr_operational_state_cg = new;
-    promoted_err_cg = new;
-    scratchpad_writes_cg = new;
 
     call_stack_cg = new;
     flag_write_cg = new;
@@ -2041,7 +1853,6 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     insn_bn_subm_cg = new;
     insn_bn_xid_cg = new;
     insn_bn_movr_cg = new;
-    insn_bn_wsrr_cg = new;
 
     // Set up instruction encoding mapping
     insn_encodings[mnem_add]           = "R";
@@ -2100,127 +1911,28 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     insn_encodings[mnem_question_mark] = "dummy";
   endfunction
 
-  // Reset any internal state tracking because the DUT has just seen a reset
-  function void on_reset();
-    wur_state = WUR_IDLE;
-    last_write_state.delete();
-    last_err_bits = 0;
-  endfunction
-
-  // Called on each change of operational state
-  function void on_state_change(operational_state_e new_state);
-    last_err_bits = 0;
-  endfunction
-
-  function void on_write_to_wr_csr(uvm_reg csr, logic [31:0] data, operational_state_e state);
-    // Ignore writes with the value that's there already
-    if (data == csr.get_mirrored_value()) return;
-
-    // Otherwise, set an entry in last_write_state
-    last_write_state[csr_str_t'(csr.get_name())] = state;
-  endfunction
-
-  // Handle coverage for external (bus-accessible) CSRs.
-  //
-  // This runs just before calling predict to update the RAL model, so the old value of the CSR can
-  // be read with csr.get_mirrored_value().
+  // Handle coverage for external (bus-accessible) CSRs
   function void on_ext_csr_access(uvm_reg csr, otbn_env_pkg::access_e access_type,
-                                  logic [31:0] data, operational_state_e state);
+                                  logic [31:0] data, otbn_env_pkg::operational_state_e state);
 
-    csr_str_t csr_name        = csr_str_t'(csr.get_name());
-    bit track_write_then_read = 1'b0;
-
-    case (csr_name)
+    case (csr.get_name())
       "cmd": begin
-        ext_csr_cmd_cg.sample(otbn_pkg::cmd_e'(data), access_type, state);
-      end
-      "ctrl": begin
-        track_write_then_read = 1'b1;
-        ext_csr_ctrl_cg.sample(data[0], access_type, state);
+        ext_csr_cmd_cg.sample(otbn_pkg::cmd_e'(data), state);
       end
       "status": begin
-        ext_csr_status_cg.sample(otbn_pkg::status_e'(data), access_type);
+        ext_csr_status_cg.sample(otbn_pkg::status_e'(data));
       end
       "err_bits": begin
-        ext_csr_err_bits_cg.sample(otbn_pkg::err_bits_t'(data),
-                                   csr.get_mirrored_value(), access_type, state);
+        ext_csr_err_bits_cg.sample(otbn_pkg::err_bits_t'(data), state);
       end
       "fatal_alert_cause": begin
-        ext_csr_fatal_alert_cause_cg.sample(data, access_type, state);
-
-        // If we read a FATAL_ALERT_CAUSE of (1 << 7) = FATAL_SOFTWARE and we're in a locked state
-        // then we should sample promoted_err_cg to track what SW error was promoted.
-        if ((state == OperationalStateLocked) &&
-            (access_type == AccessSoftwareRead) &&
-            (data == (1 << 7))) begin
-          promoted_err_cg.sample(last_err_bits);
-        end
+        ext_csr_fatal_alert_cause_cg.sample(data, state);
       end
       "insn_cnt": begin
-        ext_csr_insn_cnt_cg.sample(data, csr.get_mirrored_value(), access_type, state);
-      end
-      "load_checksum": begin
-        track_write_then_read = 1'b1;
-
-        // Special handling for the "write; update; read" sequence.
-        case (wur_state)
-          WUR_IDLE: begin
-            // The WUR_IDLE -> WUR_WRITTEN_CSR transition should happen if we see a write to the
-            // register that will change its value and we're in an operational state where it will
-            // take effect.
-            if ((data != csr.get_mirrored_value()) &&
-                (access_type == AccessSoftwareWrite) &&
-                (state == OperationalStateIdle)) begin
-              wur_state = WUR_WRITTEN_CSR;
-            end
-          end
-          WUR_WRITTEN_CSR: begin
-            // We can't leave the WUR_WRITTEN_CSR state by accessing the CSR (see on_mem_write())
-          end
-          WUR_UPDATED_MEM: begin
-            // If we read the CSR after updating memory, sample from the covergroup and go back to
-            // WUR_IDLE.
-            if (access_type == AccessSoftwareRead) begin
-              ext_csr_load_checksum_wur_cg.sample();
-              wur_state = WUR_IDLE;
-            end
-          end
-          default: `DV_CHECK_FATAL(0)
-        endcase
+        ext_csr_insn_cnt_cg.sample(data, state);
       end
       default: ; // We only track some registers with functional coverage.
     endcase
-
-    // Track "write then read" across operational states
-    if (track_write_then_read) begin
-      if (access_type == AccessSoftwareWrite) begin
-        on_write_to_wr_csr(csr, data, state);
-      end else begin
-        if (last_write_state.exists(csr_name)) begin
-          ext_csr_wr_operational_state_cg.sample(csr_name, last_write_state[csr_name]);
-        end
-      end
-    end
-  endfunction
-
-  // Handle coverage for bus writes to memory
-  function void on_mem_write(uvm_mem             mem,
-                             bit [31:0]          offset,
-                             logic [31:0]        data,
-                             operational_state_e state);
-    // Handle the "write; update; read" sequence for LOAD_CHECKSUM. If we're in the WUR_WRITTEN_CSR
-    // state and this write will have an effect (because we're in the idle state), step to
-    // WUR_UPDATED_MEM.
-    if ((wur_state == WUR_WRITTEN_CSR) && (state == OperationalStateIdle)) begin
-      wur_state = WUR_UPDATED_MEM;
-    end
-  endfunction
-
-  function void on_tl_write(uvm_reg_addr_t addr, logic [31:0] data, operational_state_e state);
-    // Track attempted writes to the scratchpad memory
-    if (state == OperationalStateIdle) begin
-      scratchpad_writes_cg.sample(addr);
-    end
   endfunction
 
   // Handle coverage for an instruction that was executed
@@ -2530,10 +2242,6 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                                grd,
                                local_x1_uflow);
       end
-      mnem_bn_wsrr: begin
-        logic [7:0] wsr_imm = insn_data[27:20];
-        insn_bn_wsrr_cg.sample(wsr_imm, rtl_item.has_sideload_key);
-      end
       default:
         // No special handling for this instruction yet.
         ;
@@ -2567,11 +2275,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 `undef DEF_GPR_TOGGLE_CROSS
 `undef DEF_WDR_TOGGLE_CROSS
 `undef DEF_SIGN_CP
-`undef _NZ_CP_BINS
 `undef DEF_NZ_CP
-`undef DEF_NZ_IF_CP
 `undef DEF_SEEN_CP
-`undef DEF_SEEN_IF_CP
 `undef DEF_CSR_CP
 
 endclass

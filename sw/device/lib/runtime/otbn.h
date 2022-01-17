@@ -41,15 +41,33 @@ typedef struct otbn_app {
    * End of initialized OTBN data memory.
    */
   const uint8_t *dmem_data_end;
+  /**
+   * Start of uninitialized OTBN data memory.
+   *
+   * Data in this section is initialized to zeroes in DMEM when the app is
+   * loaded.
+   */
+  const uint8_t *dmem_bss_start;
+  /**
+   * End of uninitialized OTBN data memory.
+   */
+  const uint8_t *dmem_bss_end;
+  /**
+   * Offset of the BSS section within DMEM.
+   */
+  uint32_t dmem_bss_offset;
 } otbn_app_t;
 
 /**
- * The address of an OTBN symbol as seen by OTBN
+ * A pointer to a symbol in OTBN's instruction or data memory.
  *
- * Use `OTBN_DECLARE_SYMBOL_ADDR()` together with `OTBN_ADDR_T_INIT()` to
+ * Use `OTBN_DECLARE_PTR_SYMBOL()` together with `OTBN_PTR_T_INIT()` to
  * initialize this type.
+ *
+ * The value of the pointer is an address in the normal CPU address space, and
+ * must be first converted into OTBN address space before it can be used there.
  */
-typedef uint32_t otbn_addr_t;
+typedef uint8_t *otbn_ptr_t;
 
 /**
  * The result of an OTBN operation.
@@ -101,56 +119,6 @@ typedef struct otbn {
 } otbn_t;
 
 /**
- * Generate the prefix to add to an OTBN symbol name used on the Ibex side
- *
- * The result is a pointer to Ibex's rodata that should be used to initialise
- * memory for that symbol.
- *
- * This is needed by the OTBN driver to support DMEM/IMEM ranges but
- * application code shouldn't need to use this. Use the `otbn_addr_t` type and
- * supporting macros instead.
- */
-#define OTBN_SYMBOL_PTR(app_name, sym) _otbn_local_app_##app_name##_##sym
-
-/**
- * Generate the prefix to add to an OTBN symbol name used on the OTBN side
- *
- * The result is a pointer whose integer value is the address by which the
- * symbol should be accessed in OTBN memory.
- *
- * This is an internal macro used in `OTBN_DECLARE_SYMBOL_ADDR` and
- * `OTBN_ADDR_T_INIT` but application code shouldn't need to use it directly.
- */
-#define OTBN_SYMBOL_ADDR(app_name, sym) _otbn_remote_app_##app_name##_##sym
-
-/**
- * Makes a symbol in the OTBN application image available.
- *
- * This is needed by the OTBN driver to support DMEM/IMEM ranges but
- * application code shouldn't need to use this. To get access to OTBN
- * addresses, use `OTBN_DECLARE_SYMBOL_ADDR` instead.
- */
-#define OTBN_DECLARE_SYMBOL_PTR(app_name, symbol_name) \
-  extern const uint8_t OTBN_SYMBOL_PTR(app_name, symbol_name)[]
-
-/**
- * Makes the OTBN address of a symbol in the OTBN application available.
- *
- * Symbols are typically function or data pointers, i.e. labels in assembly
- * code. Unlike OTBN_DECLARE_SYMBOL_PTR, this will work for symbols in the .bss
- * section (which exist on the OTBN side, even though they don't have backing
- * data on Ibex).
- *
- * Use this macro instead of manually declaring the symbols as symbol names
- * might change.
- *
- * @param app_name    Name of the application the function is contained in.
- * @param symbol_name Name of the symbol (function, label).
- */
-#define OTBN_DECLARE_SYMBOL_ADDR(app_name, symbol_name) \
-  extern const uint8_t OTBN_SYMBOL_ADDR(app_name, symbol_name)[]
-
-/**
  * Makes an embedded OTBN application image available for use.
  *
  * Make symbols available that indicate the start and the end of instruction
@@ -162,11 +130,14 @@ typedef struct otbn {
  * @param app_name Name of the application to load, which is typically the
  *                 name of the main (assembly) source file.
  */
-#define OTBN_DECLARE_APP_SYMBOLS(app_name)             \
-  OTBN_DECLARE_SYMBOL_PTR(app_name, _imem_start);      \
-  OTBN_DECLARE_SYMBOL_PTR(app_name, _imem_end);        \
-  OTBN_DECLARE_SYMBOL_PTR(app_name, _dmem_data_start); \
-  OTBN_DECLARE_SYMBOL_PTR(app_name, _dmem_data_end)
+#define OTBN_DECLARE_APP_SYMBOLS(app_name)                        \
+  extern const uint8_t _otbn_app_##app_name##__imem_start[];      \
+  extern const uint8_t _otbn_app_##app_name##__imem_end[];        \
+  extern const uint8_t _otbn_app_##app_name##__dmem_data_start[]; \
+  extern const uint8_t _otbn_app_##app_name##__dmem_data_end[];   \
+  extern const uint8_t _otbn_app_##app_name##__dmem_bss_start[];  \
+  extern const uint8_t _otbn_app_##app_name##__dmem_bss_end[];    \
+  extern const uint8_t _otbn_app_##app_name##__dmem_bss_offset[];
 
 /**
  * Initializes the OTBN application information structure.
@@ -178,19 +149,37 @@ typedef struct otbn {
  * @param app_name Name of the application to load.
  * @see OTBN_DECLARE_APP_SYMBOLS()
  */
-#define OTBN_APP_T_INIT(app_name)                                     \
-  ((otbn_app_t){                                                      \
-      .imem_start = OTBN_SYMBOL_PTR(app_name, _imem_start),           \
-      .imem_end = OTBN_SYMBOL_PTR(app_name, _imem_end),               \
-      .dmem_data_start = OTBN_SYMBOL_PTR(app_name, _dmem_data_start), \
-      .dmem_data_end = OTBN_SYMBOL_PTR(app_name, _dmem_data_end),     \
+#define OTBN_APP_T_INIT(app_name)                                           \
+  ((otbn_app_t){                                                            \
+      .imem_start = _otbn_app_##app_name##__imem_start,                     \
+      .imem_end = _otbn_app_##app_name##__imem_end,                         \
+      .dmem_data_start = _otbn_app_##app_name##__dmem_data_start,           \
+      .dmem_data_end = _otbn_app_##app_name##__dmem_data_end,               \
+      .dmem_bss_start = _otbn_app_##app_name##__dmem_bss_start,             \
+      .dmem_bss_end = _otbn_app_##app_name##__dmem_bss_end,                 \
+      .dmem_bss_offset = (uint32_t)_otbn_app_##app_name##__dmem_bss_offset, \
   })
 
 /**
- * Initializes an `otbn_addr_t`.
+ * Makes a symbol in the OTBN application image available.
+ *
+ * Symbols are typically function or data pointers, i.e. labels in assembly
+ * code.
+ *
+ * Use this macro instead of manually declaring the symbols as symbol names
+ * might change.
+ *
+ * @param app_name    Name of the application the function is contained in.
+ * @param symbol_name Name of the symbol (function, label).
  */
-#define OTBN_ADDR_T_INIT(app_name, symbol_name) \
-  ((uint32_t)OTBN_SYMBOL_ADDR(app_name, symbol_name))
+#define OTBN_DECLARE_PTR_SYMBOL(app_name, symbol_name) \
+  extern const uint8_t _otbn_app_##app_name##_##symbol_name[]
+
+/**
+ * Initializes an `otbn_ptr_t`.
+ */
+#define OTBN_PTR_T_INIT(app_name, symbol_name) \
+  ((otbn_ptr_t)_otbn_app_##app_name##_##symbol_name)
 
 /**
  * Initializes the OTBN context structure.
@@ -237,25 +226,25 @@ otbn_result_t otbn_busy_wait_for_done(otbn_t *ctx);
  *
  * @param ctx The context object.
  * @param len_bytes Number of bytes to copy.
- * @param dest Address of the destination in OTBN's data memory.
+ * @param dest Pointer to the destination in OTBN's data memory.
  * @param src Source of the data to copy.
  * @return The result of the operation.
  */
 otbn_result_t otbn_copy_data_to_otbn(otbn_t *ctx, size_t len_bytes,
-                                     const void *src, otbn_addr_t dest);
+                                     const void *src, otbn_ptr_t dest);
 
 /**
  * Copies data from OTBN's data memory to CPU memory.
  *
  * @param ctx The context object.
  * @param len_bytes The number of bytes to copy.
- * @param src The address in OTBN data memory to copy from.
+ * @param src The pointer in OTBN data memory to copy from.
  * @param[out] dest The destination of the copied data in main memory
  *                  (preallocated).
  * @return The result of the operation.
  */
 otbn_result_t otbn_copy_data_from_otbn(otbn_t *ctx, size_t len_bytes,
-                                       otbn_addr_t src, void *dest);
+                                       const otbn_ptr_t src, void *dest);
 
 /**
  * Overwrites all of OTBN's data memory with zeros.
@@ -267,6 +256,18 @@ otbn_result_t otbn_copy_data_from_otbn(otbn_t *ctx, size_t len_bytes,
  * @return The result of the operation.
  */
 otbn_result_t otbn_zero_data_memory(otbn_t *ctx);
+
+/**
+ * Gets the address in OTBN data memory referenced by `ptr`.
+ *
+ * @param ctx The context object.
+ * @param ptr The pointer to convert.
+ * @param[out] dmem_addr_otbn The address of the data in OTBN's data memory.
+ * @return The result of the operation; #kOtbnBadArg if `ptr` is not in the data
+ *         memory space of the currently loaded application.
+ */
+otbn_result_t otbn_data_ptr_to_dmem_addr(const otbn_t *ctx, otbn_ptr_t ptr,
+                                         uint32_t *dmem_addr_otbn);
 
 /**
  * Writes a LOG_INFO message with the contents of each 256b DMEM word.

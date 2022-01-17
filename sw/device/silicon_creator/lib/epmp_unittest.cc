@@ -4,6 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/epmp.h"
 
+#include <array>
 #include <vector>
 
 #include "gtest/gtest.h"

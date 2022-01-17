@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/dif/dif_kmac.h"
 
+#include <array>
 #include <string>
 
 #include "gmock/gmock.h"

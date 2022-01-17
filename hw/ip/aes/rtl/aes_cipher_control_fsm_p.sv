@@ -153,8 +153,7 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
   logic             in_valid;
   logic             out_ready;
   logic             cfg_valid;
-  logic             op_raw;
-  ciph_op_e         op;
+  logic             op;
   key_len_e         key_len;
   logic             crypt;
   logic             dec_key_gen;
@@ -179,7 +178,7 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
   assign {in_valid,
           out_ready,
           cfg_valid,
-          op_raw,
+          op,
           key_len,
           crypt,
           dec_key_gen,
@@ -200,8 +199,6 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
           prng_reseed_q,
           key_clear_q,
           data_out_clear_q} = in_buf;
-
-  assign op = ciph_op_e'(op_raw);
 
   // Intermediate output signals
   logic             in_ready;

@@ -124,9 +124,6 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     fatal_alert_expected = 1'b0;
     fatal_alert_allowed  = 1'b0;
     recov_alert_expected = 1'b0;
-
-    // Reset any state tracking in the coverage collector
-    if (cfg.en_cov) cov.on_reset();
   endfunction
 
   task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -139,21 +136,15 @@ class otbn_scoreboard extends cip_base_scoreboard #(
 
   task process_tl_addr(tl_seq_item item);
     uvm_reg              csr;
-    uvm_reg_addr_t       masked_addr, aligned_addr;
-    operational_state_e  state;
+    uvm_reg_addr_t       aligned_addr;
     otbn_exp_read_data_t exp_read_data = '{upd: 1'b0, chk: 'x, val: 'x};
 
-    state = cfg.controller_vif.get_operational_state();
-
     aligned_addr = ral.get_word_aligned_addr(item.a_addr);
-    masked_addr  = aligned_addr & ral.get_addr_mask();
-
-    // If coverage is enabled, track the write.
-    if (cfg.en_cov) cov.on_tl_write(masked_addr, item.a_data, state);
 
     // Is this a write to memory (either DMEM or IMEM)?
     if (item.is_write()) begin
       uvm_mem mem = ral.default_map.get_mem_by_offset(aligned_addr);
+      uvm_reg_addr_t masked_addr = aligned_addr & ral.get_addr_mask();
       if (mem != null) begin
         uvm_reg_addr_t base = mem.get_offset(0, ral.default_map);
         `DV_CHECK_FATAL(base <= masked_addr)
@@ -169,13 +160,14 @@ class otbn_scoreboard extends cip_base_scoreboard #(
       return;
 
     if (item.is_write()) begin
-      // Track coverage for write accesses to external CSRs over TL-UL.
-      if (cfg.en_cov) begin
-        cov.on_ext_csr_access(csr, otbn_env_pkg::AccessSoftwareWrite, item.a_data, state);
-      end
-
       // If this is a write, update the RAL model
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+
+      // Track coverage for write accesses to external CSRs over TL-UL.
+      if (cfg.en_cov) begin
+        cov.on_ext_csr_access(csr, otbn_env_pkg::AccessSoftwareWrite, item.a_data,
+                              cfg.controller_vif.get_operational_state());
+      end
 
       case (csr.get_name())
         // Spot writes to the "cmd" register that tell us to start
@@ -348,10 +340,6 @@ class otbn_scoreboard extends cip_base_scoreboard #(
                         old_crc, new_crc, old_crc ^ {32{1'b1}}, new_crc ^ {32{1'b1}}),
               UVM_HIGH);
 
-    if (cfg.en_cov) begin
-      cov.on_mem_write(mem, offset, item.a_data, cfg.controller_vif.get_operational_state());
-    end
-
     // Predict the resulting value of LOAD_CHECKSUM
     `DV_CHECK_FATAL(ral.load_checksum.checksum.predict(.value(new_crc), .kind(UVM_PREDICT_READ)))
   endfunction
@@ -392,8 +380,6 @@ class otbn_scoreboard extends cip_base_scoreboard #(
           end
 
           model_status = item.status;
-
-          if (cfg.en_cov) cov.on_state_change(model_status);
         end
 
         OtbnModelInsn: begin
@@ -451,7 +437,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
       // busy to locked), so the scoreboard has no way of knowing whether the recoverable alert was
       // supposed to have happened. In practice, I suspect we don't care: if a fatal alert was
       // raised, a recoverable alert doesn't really matter.
-      expected = ((alert_name == "recov") && recov_alert_expected) || fatal_alert_allowed;
+      expected = ((alert_name == "recov") && recov_alert_expected) || fatal_alert_expected;
       if (expected || cfg.under_reset) begin
         break;
       end
@@ -516,8 +502,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
 
     if (alert_name == "fatal") begin
       // If this was a fatal alert then check the counter is positive and that the expected flag is
-      // set. Clear the "expected" flag, but not "allowed" (so that we won't see a problem when the
-      // fatal alert is re-triggered).
+      // set (but don't clear it).
       `DV_CHECK_FATAL((fatal_alert_count > 0) && fatal_alert_expected)
       fatal_alert_expected = 1'b0;
     end else begin

@@ -111,7 +111,12 @@ typedef void (*sram_ctrl_instruction_fault_function_t)(void);
  * https://github.com/riscv-non-isa/riscv-asm-manual/blob/master/riscv-asm.md
  */
 static void sram_execution_test(void) {
-  memset((void *)kRetRamStartAddr, 0, SRAM_CTRL_TESTUTILS_DATA_NUM_BYTES);
+  uint8_t *ram_start_addr = (uint8_t *)kRetRamStartAddr;
+
+  for (int i = 0; i < SRAM_CTRL_TESTUTILS_DATA_NUM_BYTES; i++) {
+    *ram_start_addr = 0;
+  }
+  //memset((void *)kRetRamStartAddr, 0, SRAM_CTRL_TESTUTILS_DATA_NUM_BYTES);
 
   // Map the function pointer onto the instruction buffer.
   sram_ctrl_instruction_fault_function_t instruction_access_fault_func =
