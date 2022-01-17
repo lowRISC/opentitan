@@ -19,6 +19,7 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "lc_ctrl_regs.h"
 #include "otp_ctrl_regs.h"
+#include "rv_core_ibex_regs.h"
 
 namespace shutdown_unittest {
 
@@ -67,6 +68,7 @@ void shutdown_hang(void) { return MockShutdown::Instance().shutdown_hang(); }
 
 // Real implementations of the above mocks.
 extern void unmocked_shutdown_flash_kill(void);
+extern void unmocked_shutdown_software_escalate(void);
 }  // extern "C"
 
 constexpr uint32_t Pack32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
@@ -616,5 +618,11 @@ TEST_F(ShutdownTest, ShutdownIfErrorUnknown) {
   SHUTDOWN_IF_ERROR(kErrorUnknown);
 }
 
+TEST_F(ShutdownTest, SoftwareEscalate) {
+  EXPECT_ABS_WRITE32(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR +
+                         RV_CORE_IBEX_SW_FATAL_ERR_REG_OFFSET,
+                     0);
+  unmocked_shutdown_software_escalate();
+}
 }  // namespace
 }  // namespace shutdown_unittest
