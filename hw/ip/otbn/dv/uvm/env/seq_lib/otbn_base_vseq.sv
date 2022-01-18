@@ -35,6 +35,14 @@ class otbn_base_vseq extends cip_base_vseq #(
   // sideload sequencer will get upset if we kill a process that's waiting for a grant from it).
   protected int unsigned stop_tokens = 0;
 
+  // Overridden from dv_base_vseq
+  task dut_init(string reset_kind = "HARD");
+    // Always drive the lifecycle escalation signal to off at the start of the sequence.
+    cfg.escalate_vif.enable = lc_ctrl_pkg::Off;
+
+    super.dut_init(reset_kind);
+  endtask
+
   // Load the contents of an ELF file into the DUT's memories, either by a DPI backdoor (if backdoor
   // is true) or with TL transactions. Also, pass loop warp rules to the ISS through the model.
   protected task load_elf(string path, bit backdoor);
