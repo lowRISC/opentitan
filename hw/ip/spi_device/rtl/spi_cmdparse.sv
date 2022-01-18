@@ -131,6 +131,7 @@ module spi_cmdparse
   ////////////
   sel_datapath_e sel_dp;
   assign sel_dp_o = sel_dp;
+  `ASSERT_KNOWN(SelDpKnown_A, sel_dp_o)
 
   // FSM asserts latching enable signal for cmd_info in 8th opcode cycle.
   logic                   latch_cmdinfo;

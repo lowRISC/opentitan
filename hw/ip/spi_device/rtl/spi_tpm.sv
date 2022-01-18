@@ -745,6 +745,7 @@ module spi_tpm
   assign xfer_size_met = xfer_bytes_q == xfer_size;
 
   // Output data mux
+  `ASSERT_KNOWN(DataSelKnown_A, isck_data_sel, clk_out_i, !rst_n)
   always_comb begin
     isck_p2s_data = 8'h 00;
 
@@ -786,6 +787,7 @@ module spi_tpm
     .data_o (isck_hw_reg_byte)
   );
 
+  `ASSERT_KNOWN(HwRegIdxKnown_A, isck_hw_reg_idx, clk_out_i, !rst_n)
   always_comb begin : hw_reg_mux
     isck_hw_reg_word = 32'h FFFF_FFFF;
 
