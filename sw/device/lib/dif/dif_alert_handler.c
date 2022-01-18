@@ -484,11 +484,8 @@ dif_result_t dif_alert_handler_lock_ping_timer(
     return kDifBadArg;
   }
 
-  uint32_t reg = bitfield_bit32_write(
-      1, ALERT_HANDLER_PING_TIMER_EN_SHADOWED_PING_TIMER_EN_SHADOWED_BIT, true);
-  mmio_region_write32_shadowed(alert_handler->base_addr,
-                               ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET,
-                               reg);
+  mmio_region_write32(alert_handler->base_addr,
+                      ALERT_HANDLER_PING_TIMER_REGWEN_REG_OFFSET, 0);
 
   return kDifOk;
 }
@@ -498,11 +495,9 @@ dif_result_t dif_alert_handler_is_ping_timer_locked(
   if (alert_handler == NULL || is_locked == NULL) {
     return kDifBadArg;
   }
-  uint32_t reg =
-      mmio_region_read32(alert_handler->base_addr,
-                         ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET);
-  *is_locked = bitfield_bit32_read(
-      reg, ALERT_HANDLER_PING_TIMER_EN_SHADOWED_PING_TIMER_EN_SHADOWED_BIT);
+
+  *is_locked = !mmio_region_read32(alert_handler->base_addr,
+                                   ALERT_HANDLER_PING_TIMER_REGWEN_REG_OFFSET);
 
   return kDifOk;
 }
