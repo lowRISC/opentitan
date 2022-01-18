@@ -754,6 +754,31 @@ sw_tests += {
   }
 }
 
+# AON Timer wdog bite reset test.
+aon_timer_wdog_bite_reset_test = declare_dependency(
+  link_with: static_library(
+    'aon_timer_wdog_bite_reset_test',
+    sources: [
+      hw_ip_rstmgr_reg_h,
+      'aon_timer_wdog_bite_reset_test.c',
+    ],
+    dependencies: [
+      sw_lib_dif_rstmgr,
+      sw_lib_dif_aon_timer,
+      sw_lib_dif_pwrmgr,
+      sw_lib_runtime_log,
+      sw_lib_testing_aon_timer_testutils,
+      sw_lib_testing_rstmgr_testutils,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'aon_timer_wdog_bite_reset_test': {
+    'library': aon_timer_wdog_bite_reset_test,
+  }
+}
+
 ###############################################################################
 # Auto-generated tests
 ###############################################################################
