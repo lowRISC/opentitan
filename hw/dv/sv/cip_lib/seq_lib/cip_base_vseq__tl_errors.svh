@@ -410,7 +410,6 @@ virtual task test_intg_err_in_passthru_mem(const ref dv_base_mem mems[$]);
     offset = $urandom_range(0, mems[i].get_n_bytes() - 1);
     addr = mems[i].get_address(offset);
     ral_name = mems[i].get_parent().get_name();
-
     // Before inject faults, this read should have correct integrity
     tl_access_sub(.addr(addr), .write(0), .data(data), .completed(completed), .saw_err(saw_err),
                   .check_rsp(1),  .rsp(tl_access_rsp),
