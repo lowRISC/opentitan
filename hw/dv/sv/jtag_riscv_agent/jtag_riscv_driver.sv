@@ -75,31 +75,33 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
       activate_rv_dm();
     end else begin
       if (cfg.is_rv_dm) begin
-        bit [DMI_DATAW-1:0] sbcs_val = 'b1<<SbBusy;
-        `DV_CHECK_FATAL(rv_dm_activated, "Please activate rm_dm before accessing CSRs!")
+        bit [DMI_DATAW-1:0] sbcs_val = drive_req.op == DmiRead ?
+                                       ('b1<<SbBusy | 'b1 << SbReadOnAddr) : 'b1<<SbBusy;
+        `DV_CHECK_FATAL(rv_dm_activated, "Please activate rv_dm before accessing CSRs!")
 
         // If using rv_dm to access csr, need to send the following seq:
         // 1). Set busy bit in sbcs.
         // 2). Write address to SBAddress0.
         // 3). Write/Read csr data via SbData0.
-        send_csr_dr_req(.op(DmiWrite), .data(sbcs_val), .addr(Sbcs), .dout(dout));
-        send_csr_dr_req(.op(DmiWrite), .data(drive_req.addr), .addr(SbAddress0), .dout(dout));
-        send_csr_dr_req(.op(drive_req.op), .data(drive_req.data), .addr(SbData0), .dout(dout));
+        send_csr_req(.op(DmiWrite), .data(sbcs_val), .addr(Sbcs), .dout(dout), .status(status));
+        send_csr_req(.op(DmiWrite), .data(drive_req.addr), .addr(SbAddress0), .dout(dout),
+                     .status(status));
+        // For RV_DM jtag operation, all requests except sbcs write will be blocking until sbcs
+        // indicates the request is done.
+        if (drive_req.op == DmiRead) wait_sbcs_idle();
+        send_csr_req(.op(drive_req.op), .data(drive_req.data), .addr(SbData0), .dout(dout),
+                     .status(status));
       end else begin
-
         // Drive DR with operation type, address, and data.
-        send_csr_dr_req(.op(drive_req.op),
-                        .data(drive_req.data),
-                        .addr(drive_req.addr),
-                        .dout(dout));
+        send_csr_req(.op(drive_req.op), .data(drive_req.data), .addr(drive_req.addr), .dout(dout),
+                     .status(status));
       end
 
       // Get status of previous transfer
-      check_csr_req_status(.status(status), .rdata(rdata));
       drive_req.status = status;
 
       // Update CSR read data
-      if (drive_req.op == DmiRead) drive_req.data = rdata;
+      if (drive_req.op == DmiRead) drive_req.data = dout;
     end
 
     // Mark end of transaction processing
@@ -122,6 +124,21 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
         dr_len == DTMCS_DRW;
         dr     == 1 << dtmcs_req_idx;)
     m_dr_seq.start(cfg.jtag_sequencer_h);
+  endtask
+
+  // This task finishes a csr read/write transaction:
+  // 1. Driving JTAG's DR register to start the transaction.
+  // 2. Check status until the transaction is done.
+  protected virtual task send_csr_req(input bit [DMI_OPW-1:0] op,
+                                      input bit [DMI_DATAW-1:0] data,
+                                      input bit [DMI_ADDRW-1:0] addr,
+                                      output bit [DMI_DRW-1:0] dout,
+                                      output bit [DMI_OPW-1:0] status);
+    // Drive DR with operation type, address, and data.
+    send_csr_dr_req(.op(op), .data(data), .addr(addr), .dout(dout));
+
+    // Get status of previous transfer
+    check_csr_req_status(.status(status), .rdata(dout));
   endtask
 
   // This task sends a CSR register read/write request via JTAG data register.
@@ -164,21 +181,35 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
 
   protected virtual task activate_rv_dm();
     bit [bus_params_pkg::BUS_DW-1:0] dmctrl_val, sbcs_val;
+    bit [DMI_OPW-1:0] status;
 
     // Set dmcontrol's dmactive bit.
     while (dmctrl_val == 0) begin
-      send_csr_dr_req(.op(DmiWrite), .data(1), .addr(DmControl), .dout(dmctrl_val));
-      send_csr_dr_req(.op(DmiRead), .data(0), .addr(DmControl), .dout(dmctrl_val));
+      send_csr_req(.op(DmiWrite), .data(1), .addr(DmControl), .dout(dmctrl_val), .status(status));
+      send_csr_req(.op(DmiRead), .data(0), .addr(DmControl), .dout(dmctrl_val), .status(status));
     end
 
     // Read system bus access control and status register.
     // Once the sbcs value is not 0, then RV_DM jtag is ready.
-    while (sbcs_val == 0)  send_csr_dr_req(.op(DmiRead), .data(0), .addr(Sbcs), .dout(sbcs_val));
+    while (sbcs_val == 0)  begin
+      send_csr_req(.op(DmiRead), .data(0), .addr(Sbcs), .dout(sbcs_val), .status(status));
+    end
 
     // Ensure the RV_DM is set to correct bus width.
     `DV_CHECK_EQ(sbcs_val[SbAccess32], 1, "expect SBA width to be 32 bits!", error, msg_id)
 
     rv_dm_activated = 1;
+  endtask
+
+  protected virtual task wait_sbcs_idle();
+    bit [DMI_DATAW-1:0] sbcs_val;
+    `DV_SPINWAIT(
+        do begin
+          bit [DMI_OPW-1:0] status;
+          send_csr_req(.op(DmiRead), .data(0), .addr(Sbcs), .dout(sbcs_val), .status(status));
+        end while (sbcs_val[SbBusy] == 1);,
+        "timeout waiting for sbcs to be idle", default_jtag_timeout
+    )
   endtask
 
 endclass
