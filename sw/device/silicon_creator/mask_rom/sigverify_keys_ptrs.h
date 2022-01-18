@@ -24,6 +24,51 @@ enum {
  * Key types.
  *
  * The life cycle states in which a key can be used depend on its type.
+ *
+ * Encoding generated with
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 3 -n 32 \
+ *     -s 1985033815 --language=c
+ *
+ * Hamming distance histogram:
+ *
+ *  0: --
+ *  1: --
+ *  2: --
+ *  3: --
+ *  4: --
+ *  5: --
+ *  6: --
+ *  7: --
+ *  8: --
+ *  9: --
+ * 10: --
+ * 11: --
+ * 12: --
+ * 13: --
+ * 14: --
+ * 15: |||||||||||||||||||| (33.33%)
+ * 16: --
+ * 17: |||||||||||||||||||| (33.33%)
+ * 18: |||||||||||||||||||| (33.33%)
+ * 19: --
+ * 20: --
+ * 21: --
+ * 22: --
+ * 23: --
+ * 24: --
+ * 25: --
+ * 26: --
+ * 27: --
+ * 28: --
+ * 29: --
+ * 30: --
+ * 31: --
+ * 32: --
+ *
+ * Minimum Hamming distance: 15
+ * Maximum Hamming distance: 18
+ * Minimum Hamming weight: 13
+ * Maximum Hamming weight: 16
  */
 typedef enum sigverify_key_type {
   /**
@@ -32,20 +77,20 @@ typedef enum sigverify_key_type {
    * Keys of this type can be used only in TEST_UNLOCKED* and RMA life cycle
    * states.
    */
-  kSigverifyKeyTypeTest,
+  kSigverifyKeyTypeTest = 0x3ff0c819,
   /**
    * A production key.
    *
    * Keys of this type can be used in all operational life cycle states, i.e.
    * states in which CPU execution is enabled.
    */
-  kSigverifyKeyTypeProd,
+  kSigverifyKeyTypeProd = 0x43a839ad,
   /**
    * A development key.
    *
    * Keys of this type can be used only in the DEV life cycle state.
    */
-  kSigverifyKeyTypeDev,
+  kSigverifyKeyTypeDev = 0x7a01a471,
 } sigverify_key_type_t;
 
 /**
