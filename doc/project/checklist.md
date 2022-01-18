@@ -137,18 +137,6 @@ See also the related [GitHub issue #2229](https://github.com/lowRISC/opentitan/i
 
 ## D2S
 
-### SEC_CM_IMPLEMENTED
-
-Any appropriate security counter-measures are implemented.
-
-
-Note:
-
-- For duplicated counters [`prim_count`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_count.sv) must be used.
-- For duplicated LFSRs [`prim_double_lfsr`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_double_lfsr.sv) must be used.
-- For redundantly encoded FSMs, [the sparse-fsm-encode.py script](https://github.com/lowRISC/opentitan/blob/master/util/design/sparse-fsm-encode.py) must be used to generate the encoding (in conjunction with the [`prim_sparse_fsm_flop`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_sparse_fsm_flop.sv)) primitive.
-- For multibit signals, the `mubi` types in [`prim_mubi_pkg`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_mubi_pkg.sv) should be used if possible.
-
 ### SEC_CM_ASSETS_LISTED
 
 List the assets and corresponding countermeasures in canonical format in the IP Hjson (the canonical naming is checked by the reggen tool for correctness).
@@ -173,6 +161,20 @@ countermeasures: [
 ```
 
 For a full list of permitted asset and countermeasure types, see the [countermeasure.py](https://github.com/lowRISC/opentitan/blob/master/util/reggen/countermeasure.py) script that implements the name checks.
+
+Note the SEC_CM_DOCUMENTED item in the D2 checklist, which is a precursor to this step.
+
+### SEC_CM_IMPLEMENTED
+
+Any appropriate security counter-measures are implemented.
+
+
+Note:
+
+- For duplicated counters [`prim_count`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_count.sv) must be used.
+- For duplicated LFSRs [`prim_double_lfsr`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_double_lfsr.sv) must be used.
+- For redundantly encoded FSMs, [the sparse-fsm-encode.py script](https://github.com/lowRISC/opentitan/blob/master/util/design/sparse-fsm-encode.py) must be used to generate the encoding (in conjunction with the [`prim_sparse_fsm_flop`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_sparse_fsm_flop.sv)) primitive.
+- For multibit signals, the `mubi` types in [`prim_mubi_pkg`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_mubi_pkg.sv) should be used if possible.
 
 ### SEC_CM_RTL_REVIEWED
 
