@@ -603,28 +603,19 @@ class PingTimerLockTest : public AlertHandlerTest {};
 TEST_F(PingTimerLockTest, IsPingTimerLocked) {
   bool flag;
 
-  EXPECT_READ32(
-      ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET,
-      {{ALERT_HANDLER_PING_TIMER_EN_SHADOWED_PING_TIMER_EN_SHADOWED_BIT,
-        false}});
+  EXPECT_READ32(ALERT_HANDLER_PING_TIMER_REGWEN_REG_OFFSET, 1);
   EXPECT_EQ(dif_alert_handler_is_ping_timer_locked(&alert_handler_, &flag),
             kDifOk);
   EXPECT_FALSE(flag);
 
-  EXPECT_READ32(
-      ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET,
-      {{ALERT_HANDLER_PING_TIMER_EN_SHADOWED_PING_TIMER_EN_SHADOWED_BIT,
-        true}});
+  EXPECT_READ32(ALERT_HANDLER_PING_TIMER_REGWEN_REG_OFFSET, 0);
   EXPECT_EQ(dif_alert_handler_is_ping_timer_locked(&alert_handler_, &flag),
             kDifOk);
   EXPECT_TRUE(flag);
 }
 
 TEST_F(PingTimerLockTest, LockPingTimer) {
-  EXPECT_WRITE32_SHADOWED(
-      ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET,
-      {{ALERT_HANDLER_PING_TIMER_EN_SHADOWED_PING_TIMER_EN_SHADOWED_BIT,
-        true}});
+  EXPECT_WRITE32(ALERT_HANDLER_PING_TIMER_REGWEN_REG_OFFSET, 0);
   EXPECT_EQ(dif_alert_handler_lock_ping_timer(&alert_handler_), kDifOk);
 }
 
