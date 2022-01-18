@@ -209,6 +209,13 @@ If `EnMasking` is not defined, the KMAC merges the shared key to the unmasked fo
 
 The IP has N number of the application interface. The apps connected to the KMAC IP may initiate the SHA3/cSHAKE/KMAC hashing operation via the application interface `kmac_pkg::app_{req|rsp}_t`.
 The type of the hashing operation is determined in the compile-time parameter `kmac_pkf::AppCfg`.
+
+| Index | App      | Algorithm | Prefix
+|:-----:|:--------:|:---------:|------------
+| 0     | KeyMgr   | KMAC      | CSR prefix
+| 1     | LC_CTRL  | cSHAKE128 | "LC_CTRL"
+| 2     | ROM_CTRL | cSHAKE256 | "ROM_CTRL"
+
 In the current version of IP, the IP has three application interfaces, which are KeyMgr, LC_CTRL, and ROM_CTRL.
 KeyMgr uses the KMAC operation with CSR prefix value.
 LC_CTRL and ROM_CTRL use the cSHAKE operation with the compile-time parameter prefixes.
