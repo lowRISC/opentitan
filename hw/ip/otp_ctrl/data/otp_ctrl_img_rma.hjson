@@ -35,6 +35,14 @@
                     // sw/device/lib/base/hardened.h.
                     value: "0x4b4b4b4b4b4ba5a5",
                 }
+                {
+                    name: "CREATOR_SW_CFG_RNG_EN",
+                    // Enable use of entropy for countermeasures. See the
+                    // definition of `hardened_bool_t` in
+                    // sw/device/lib/base/hardened.h.
+                    // TODO(#10177): Enable for integration testing.
+                    value: "0x0",
+                },
             ],
         }
         {
@@ -192,7 +200,7 @@
                 },
                 {
                     name: "ROM_ALERT_PHASE_CYCLES"
-                    // Set the alert phase cycles to 0,10,10,0xFFFFFFFF for 
+                    // Set the alert phase cycles to 0,10,10,0xFFFFFFFF for
                     // classes A and B, and to all zeros for classes C and D.
                     value: [
                         "0x0", "0xa", "0xa", "0xFFFFFFFF",
