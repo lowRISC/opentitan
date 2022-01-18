@@ -248,6 +248,36 @@ mask_rom_tests += {
   }
 }
 
+# Mask ROM rng driver
+sw_silicon_creator_lib_driver_rnd = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_rnd',
+    sources: [
+      hw_ip_ibex_reg_h,
+      hw_ip_otp_ctrl_reg_h,
+      'rnd.c',
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_base_abs_mmio,
+      sw_silicon_creator_lib_driver_otp,
+    ],
+  ),
+)
+
+sw_silicon_creator_lib_driver_rnd_functest = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_rnd_functest',
+    sources: ['rnd_functest.c'],
+    dependencies: [
+      sw_silicon_creator_lib_driver_rnd,
+    ],
+  ),
+)
+mask_rom_tests += {
+  'sw_silicon_creator_lib_driver_rnd_functest': {
+    'library': sw_silicon_creator_lib_driver_rnd_functest,
+  }
+}
 
 # Mask ROM rstmgr driver
 sw_silicon_creator_lib_driver_rstmgr = declare_dependency(

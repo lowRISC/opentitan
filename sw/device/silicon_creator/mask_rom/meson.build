@@ -206,6 +206,7 @@ mask_rom_lib = declare_dependency(
       sw_silicon_creator_lib_driver_lifecycle,
       sw_silicon_creator_lib_driver_pinmux,
       sw_silicon_creator_lib_driver_retention_sram,
+      sw_silicon_creator_lib_driver_rnd,
       sw_silicon_creator_lib_driver_rstmgr,
       sw_silicon_creator_lib_driver_uart,
       sw_silicon_creator_lib_fake_deps,

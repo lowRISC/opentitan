@@ -337,6 +337,32 @@ opentitan_functest(
 )
 
 cc_library(
+    name = "rnd",
+    srcs = ["rnd.c"],
+    hdrs = ["rnd.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":otp",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib/base:abs_mmio",
+    ]
+)
+
+opentitan_functest(
+    name = "rnd_functest",
+    srcs = ["rnd_functest.c"],
+    deps = [
+        ":rnd",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:test_main",
+    ],
+)
+
+cc_library(
     name = "rstmgr",
     srcs = ["rstmgr.c"],
     hdrs = ["rstmgr.h"],
