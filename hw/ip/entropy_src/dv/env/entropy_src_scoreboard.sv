@@ -12,6 +12,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard
 
   `uvm_component_utils(entropy_src_scoreboard)
 
+  virtual entropy_src_cov_if   cov_vif;
+
   // used by collect_entropy to determine the FSMs phase
   int seed_idx                = 0;
   int entropy_data_seeds      = 0;
@@ -56,6 +58,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard
 
     rng_fifo   = new("rng_fifo", this);
     csrng_fifo = new("csrng_fifo", this);
+
+    if (!uvm_config_db#(virtual entropy_src_cov_if)::get
+       (null, "*.env" , "entropy_src_cov_if", cov_vif)) begin
+       `uvm_fatal(`gfn, $sformatf("Failed to get entropy_src_cov_if from uvm_config_db"))
+    end
   endfunction
 
   function void connect_phase(uvm_phase phase);

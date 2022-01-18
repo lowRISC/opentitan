@@ -30,6 +30,7 @@ class entropy_src_env extends cip_base_env #(
                   (this, "m_rng_agent*", "cfg", cfg.m_rng_agent_cfg);
     cfg.m_rng_agent_cfg.agent_type = push_pull_agent_pkg::PushAgent;
     cfg.m_rng_agent_cfg.if_mode    = dv_utils_pkg::Host;
+    cfg.m_rng_agent_cfg.en_cov     = cfg.en_cov;
 
     // To correctly model ast/rng behavior, back-to-back entropy is not allowed
     cfg.m_rng_agent_cfg.zero_delays = 0;
@@ -42,6 +43,7 @@ class entropy_src_env extends cip_base_env #(
                   (this, "m_csrng_agent*", "cfg", cfg.m_csrng_agent_cfg);
     cfg.m_csrng_agent_cfg.agent_type = push_pull_agent_pkg::PullAgent;
     cfg.m_csrng_agent_cfg.if_mode    = dv_utils_pkg::Host;
+    cfg.m_csrng_agent_cfg.en_cov     = cfg.en_cov;
 
     if (!uvm_config_db#(virtual pins_if#(8))::get(this, "", "otp_en_es_fw_read_vif",
         cfg.otp_en_es_fw_read_vif)) begin

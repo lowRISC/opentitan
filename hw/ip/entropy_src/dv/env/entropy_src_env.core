@@ -18,6 +18,7 @@ filesets:
       - entropy_src_virtual_sequencer.sv: {is_include_file: true}
       - entropy_src_scoreboard.sv: {is_include_file: true}
       - entropy_src_env.sv: {is_include_file: true}
+      - entropy_src_env_cov.sv: {is_include_file: true}
       - seq_lib/entropy_src_vseq_list.sv: {is_include_file: true}
       - seq_lib/entropy_src_base_vseq.sv: {is_include_file: true}
       - seq_lib/entropy_src_common_vseq.sv: {is_include_file: true}
