@@ -38,7 +38,7 @@ class otbn_base_vseq extends cip_base_vseq #(
   // Overridden from dv_base_vseq
   task dut_init(string reset_kind = "HARD");
     // Always drive the lifecycle escalation signal to off at the start of the sequence.
-    cfg.escalate_vif.enable = lc_ctrl_pkg::Off;
+    cfg.escalate_vif.reset_signals();
 
     super.dut_init(reset_kind);
   endtask
