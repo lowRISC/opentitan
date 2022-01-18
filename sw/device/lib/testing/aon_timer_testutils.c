@@ -13,7 +13,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-void aon_timer_testutils_wakeup_config(dif_aon_timer_t *aon_timer,
+void aon_timer_testutils_wakeup_config(const dif_aon_timer_t *aon_timer,
                                        uint32_t cycles) {
   // Make sure that wake-up timer is stopped.
   CHECK_DIF_OK(dif_aon_timer_wakeup_stop(aon_timer));
@@ -31,7 +31,7 @@ void aon_timer_testutils_wakeup_config(dif_aon_timer_t *aon_timer,
   CHECK_DIF_OK(dif_aon_timer_wakeup_start(aon_timer, cycles, 0));
 }
 
-void aon_timer_testutils_watchdog_config(dif_aon_timer_t *aon_timer,
+void aon_timer_testutils_watchdog_config(const dif_aon_timer_t *aon_timer,
                                          uint32_t bark_cycles,
                                          uint32_t bite_cycles) {
   // Make sure that watchdog timer is stopped.
@@ -40,7 +40,7 @@ void aon_timer_testutils_watchdog_config(dif_aon_timer_t *aon_timer,
   // Make sure the watchdog IRQ is cleared to avoid false positive.
   CHECK_DIF_OK(
       dif_aon_timer_irq_acknowledge(aon_timer, kDifAonTimerIrqWdogTimerBark));
-  bool is_pending;
+  bool is_pending = true;
   CHECK_DIF_OK(dif_aon_timer_irq_is_pending(
       aon_timer, kDifAonTimerIrqWdogTimerBark, &is_pending));
   CHECK(!is_pending);

@@ -21,7 +21,7 @@
  * domains.
  */
 void pwrmgr_testutils_enable_low_power(
-    dif_pwrmgr_t *pwrmgr, dif_pwrmgr_request_sources_t wakeups,
+    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_request_sources_t wakeups,
     dif_pwrmgr_domain_config_t domain_config);
 
 /**
@@ -30,7 +30,7 @@ void pwrmgr_testutils_enable_low_power(
  * @param pwrmgr A power manager handle.
  * @param reasons A bit mask of reasons.
  */
-bool pwrmgr_testutils_is_wakeup_reason(dif_pwrmgr_t *pwrmgr,
+bool pwrmgr_testutils_is_wakeup_reason(const dif_pwrmgr_t *pwrmgr,
                                        dif_pwrmgr_request_sources_t reasons);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_PWRMGR_TESTUTILS_H_
