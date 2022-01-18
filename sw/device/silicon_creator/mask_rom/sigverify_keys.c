@@ -58,94 +58,120 @@ static rom_error_t key_is_valid_in_otp(size_t key_index) {
       .mask = UINT8_MAX,
       .index = (key_index % kSigverifyNumEntriesPerOtpWord) * 8,
   };
-  if (bitfield_field32_read(otp_read32(addr), field) == kHardenedByteBoolTrue) {
+  hardened_byte_bool_t is_valid =
+      bitfield_field32_read(otp_read32(addr), field);
+  if (launder32(is_valid) == kHardenedByteBoolTrue) {
+    HARDENED_CHECK_EQ(is_valid, kHardenedByteBoolTrue);
     return kErrorOk;
   }
   return kErrorSigverifyBadKey;
 }
 
 /**
- * Determines whether a test key is valid in the given life cycle state.
+ * Determines whether a key is valid in the RMA life cycle state.
  *
- * A test key is valid if the device is in:
- *  - A TEST_UNLOCKED state or
- *  - The RMA state and the key is valid in OTP.
+ * Only test and production keys that are not invalidated in OTP are valid in
+ * the RMA life cycle state.
  *
- * @param lc_state Life cycle state of the device.
+ * @param key_type Type of the key.
  * @param key_index Index of the key.
  * @return The result of the operation.
  */
-static rom_error_t test_key_is_valid(lifecycle_state_t lc_state,
-                                     size_t key_index) {
-  switch (lc_state) {
-    case kLcStateTestUnlocked0:
-    case kLcStateTestUnlocked1:
-    case kLcStateTestUnlocked2:
-    case kLcStateTestUnlocked3:
-    case kLcStateTestUnlocked4:
-    case kLcStateTestUnlocked5:
-    case kLcStateTestUnlocked6:
-    case kLcStateTestUnlocked7:
-      // We don't read from OTP since it may not be programmed yet.
-      return kErrorOk;
-    case kLcStateRma:
+static rom_error_t key_is_valid_in_lc_state_rma(sigverify_key_type_t key_type,
+                                                size_t key_index) {
+  switch (launder32(key_type)) {
+    case kSigverifyKeyTypeTest:
+      HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeTest);
       return key_is_valid_in_otp(key_index);
-    default:
+    case kSigverifyKeyTypeProd:
+      HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeProd);
+      return key_is_valid_in_otp(key_index);
+    case kSigverifyKeyTypeDev:
+      HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeDev);
       return kErrorSigverifyBadKey;
+    default:
+      HARDENED_UNREACHABLE();
   }
 }
 
 /**
- * Determines whether a production key is valid in the given life cycle state.
+ * Determines whether a key is valid in the DEV life cycle state.
  *
- * A production is key is valid if the device is in:
- *  - A TEST_UNLOCKED state, or
- *  - An operational state (PROD, PROD_END, DEV, or RMA) and the key is valid in
- * OTP.
+ * Only production and development keys that are not invalidated in OTP are
+ * valid in the DEV life cycle state.
  *
- * @param lc_state Life cycle state of the device.
+ * @param key_type Type of the key.
  * @param key_index Index of the key.
  * @return The result of the operation.
  */
-static rom_error_t prod_key_is_valid(lifecycle_state_t lc_state,
-                                     size_t key_index) {
-  switch (lc_state) {
-    case kLcStateTestUnlocked0:
-    case kLcStateTestUnlocked1:
-    case kLcStateTestUnlocked2:
-    case kLcStateTestUnlocked3:
-    case kLcStateTestUnlocked4:
-    case kLcStateTestUnlocked5:
-    case kLcStateTestUnlocked6:
-    case kLcStateTestUnlocked7:
-      // We don't read from OTP since it may not be programmed yet.
-      return kErrorOk;
-    case kLcStateProd:
-    case kLcStateProdEnd:
-    case kLcStateDev:
-    case kLcStateRma:
+static rom_error_t key_is_valid_in_lc_state_dev(sigverify_key_type_t key_type,
+                                                size_t key_index) {
+  switch (launder32(key_type)) {
+    case kSigverifyKeyTypeTest:
+      HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeTest);
+      return kErrorSigverifyBadKey;
+    case kSigverifyKeyTypeProd:
+      HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeProd);
+      return key_is_valid_in_otp(key_index);
+    case kSigverifyKeyTypeDev:
+      HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeDev);
       return key_is_valid_in_otp(key_index);
     default:
-      return kErrorSigverifyBadKey;
+      HARDENED_UNREACHABLE();
   }
 }
 
 /**
- * Determines whether a development key is valid in the given life cycle state.
+ * Determines whether a key is valid in PROD and PROD_END life cycle states.
  *
- * A development key is valid only if the device is in the DEV state and the key
- * is valid in OTP.
+ * Only production keys that are not invalidated in OTP are valid in PROD and
+ * PROD_END life cycle states.
  *
- * @param lc_state Life cycle state of the device.
+ * @param key_type Type of the key.
  * @param key_index Index of the key.
  * @return The result of the operation.
  */
-static rom_error_t dev_key_is_valid(lifecycle_state_t lc_state,
-                                    size_t key_index) {
-  if (lc_state == kLcStateDev) {
-    return key_is_valid_in_otp(key_index);
+static rom_error_t key_is_valid_in_lc_state_prod(sigverify_key_type_t key_type,
+                                                 size_t key_index) {
+  switch (launder32(key_type)) {
+    case kSigverifyKeyTypeTest:
+      HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeTest);
+      return kErrorSigverifyBadKey;
+    case kSigverifyKeyTypeProd:
+      HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeProd);
+      return key_is_valid_in_otp(key_index);
+    case kSigverifyKeyTypeDev:
+      HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeDev);
+      return kErrorSigverifyBadKey;
+    default:
+      HARDENED_UNREACHABLE();
   }
-  return kErrorSigverifyBadKey;
+}
+
+/**
+ * Determines whether a key is valid in TEST_UNLOCKED_* life cycle states.
+ *
+ * Only test and production keys are valid in TEST_UNLOCKED_* states. We don't
+ * read from OTP since it may not be programmed yet.
+ *
+ * @param key_type Type of the key.
+ * @return The result of the operation.
+ */
+static rom_error_t key_is_valid_in_lc_state_test(
+    sigverify_key_type_t key_type) {
+  switch (launder32(key_type)) {
+    case kSigverifyKeyTypeTest:
+      HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeTest);
+      return kErrorOk;
+    case kSigverifyKeyTypeProd:
+      HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeProd);
+      return kErrorOk;
+    case kSigverifyKeyTypeDev:
+      HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeDev);
+      return kErrorSigverifyBadKey;
+    default:
+      HARDENED_UNREACHABLE();
+  }
 }
 
 /**
@@ -158,15 +184,45 @@ static rom_error_t dev_key_is_valid(lifecycle_state_t lc_state,
  */
 static rom_error_t key_is_valid(sigverify_key_type_t key_type,
                                 lifecycle_state_t lc_state, size_t key_index) {
-  switch (key_type) {
-    case kSigverifyKeyTypeTest:
-      return test_key_is_valid(lc_state, key_index);
-    case kSigverifyKeyTypeProd:
-      return prod_key_is_valid(lc_state, key_index);
-    case kSigverifyKeyTypeDev:
-      return dev_key_is_valid(lc_state, key_index);
+  switch (launder32(lc_state)) {
+    case kLcStateTestUnlocked0:
+      HARDENED_CHECK_EQ(lc_state, kLcStateTestUnlocked0);
+      return key_is_valid_in_lc_state_test(key_type);
+    case kLcStateTestUnlocked1:
+      HARDENED_CHECK_EQ(lc_state, kLcStateTestUnlocked1);
+      return key_is_valid_in_lc_state_test(key_type);
+    case kLcStateTestUnlocked2:
+      HARDENED_CHECK_EQ(lc_state, kLcStateTestUnlocked2);
+      return key_is_valid_in_lc_state_test(key_type);
+    case kLcStateTestUnlocked3:
+      HARDENED_CHECK_EQ(lc_state, kLcStateTestUnlocked3);
+      return key_is_valid_in_lc_state_test(key_type);
+    case kLcStateTestUnlocked4:
+      HARDENED_CHECK_EQ(lc_state, kLcStateTestUnlocked4);
+      return key_is_valid_in_lc_state_test(key_type);
+    case kLcStateTestUnlocked5:
+      HARDENED_CHECK_EQ(lc_state, kLcStateTestUnlocked5);
+      return key_is_valid_in_lc_state_test(key_type);
+    case kLcStateTestUnlocked6:
+      HARDENED_CHECK_EQ(lc_state, kLcStateTestUnlocked6);
+      return key_is_valid_in_lc_state_test(key_type);
+    case kLcStateTestUnlocked7:
+      HARDENED_CHECK_EQ(lc_state, kLcStateTestUnlocked7);
+      return key_is_valid_in_lc_state_test(key_type);
+    case kLcStateProd:
+      HARDENED_CHECK_EQ(lc_state, kLcStateProd);
+      return key_is_valid_in_lc_state_prod(key_type, key_index);
+    case kLcStateProdEnd:
+      HARDENED_CHECK_EQ(lc_state, kLcStateProdEnd);
+      return key_is_valid_in_lc_state_prod(key_type, key_index);
+    case kLcStateDev:
+      HARDENED_CHECK_EQ(lc_state, kLcStateDev);
+      return key_is_valid_in_lc_state_dev(key_type, key_index);
+    case kLcStateRma:
+      HARDENED_CHECK_EQ(lc_state, kLcStateRma);
+      return key_is_valid_in_lc_state_rma(key_type, key_index);
     default:
-      return kErrorSigverifyBadKey;
+      HARDENED_UNREACHABLE();
   }
 }
 
@@ -174,14 +230,31 @@ rom_error_t sigverify_rsa_key_get(uint32_t key_id, lifecycle_state_t lc_state,
                                   const sigverify_rsa_key_t **key) {
   const sigverify_mask_rom_key_t *keys = sigverify_rsa_keys_ptr_get();
   size_t num_keys = sigverify_num_rsa_keys_get();
-  for (size_t i = 0; i < num_keys; ++i) {
-    const sigverify_mask_rom_key_t *cand_key = &keys[i];
-    if (sigverify_rsa_key_id_get(&cand_key->key.n) == key_id) {
-      RETURN_IF_ERROR(key_is_valid(cand_key->key_type, lc_state, i));
-      *key = &cand_key->key;
-      return kErrorOk;
+  size_t cand_key_index = UINT32_MAX;
+  size_t i = 0;
+  for (; launder32(i) < num_keys; ++i) {
+    const sigverify_mask_rom_key_t *k = &keys[i];
+    size_t k_id = sigverify_rsa_key_id_get(&k->key.n);
+    if (launder32(k_id) == key_id) {
+      HARDENED_CHECK_EQ(k_id, key_id);
+      rom_error_t error = key_is_valid(k->key_type, lc_state, i);
+      if (launder32(error) == kErrorOk) {
+        HARDENED_CHECK_EQ(error, kErrorOk);
+        cand_key_index = i;
+      }
     }
   }
+  HARDENED_CHECK_EQ(i, num_keys);
+
+  if (launder32(cand_key_index) < num_keys) {
+    HARDENED_CHECK_LT(cand_key_index, num_keys);
+    rom_error_t error =
+        key_is_valid(keys[cand_key_index].key_type, lc_state, cand_key_index);
+    HARDENED_CHECK_EQ(error, kErrorOk);
+    *key = &keys[cand_key_index].key;
+    return error;
+  }
+
   return kErrorSigverifyBadKey;
 }
 

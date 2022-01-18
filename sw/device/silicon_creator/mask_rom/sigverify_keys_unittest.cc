@@ -179,7 +179,12 @@ TEST_P(BadKeyIdTypeTest, BadKeyId) {
   EXPECT_EQ(sigverify_rsa_key_get(0, GetParam(), &key), kErrorSigverifyBadKey);
 }
 
-TEST_P(BadKeyIdTypeTest, BadKeyType) {
+INSTANTIATE_TEST_SUITE_P(AllLcStates, BadKeyIdTypeTest,
+                         testing::ValuesIn(LcStatesAll()));
+
+class BadKeyIdTypeDeathTest : public BadKeyIdTypeTest {};
+
+TEST_P(BadKeyIdTypeDeathTest, BadKeyType) {
   uint32_t key_id = 0xFF;
   sigverify_key_type_t bad_key_type =
       static_cast<sigverify_key_type_t>(kSigverifyKeyTypeDev + 1);
@@ -189,15 +194,17 @@ TEST_P(BadKeyIdTypeTest, BadKeyType) {
           .key_type = bad_key_type,
       },
   };
-
-  ExpectKeysPtrGet(keys);
-
   const sigverify_rsa_key_t *key;
-  EXPECT_EQ(sigverify_rsa_key_get(key_id, GetParam(), &key),
-            kErrorSigverifyBadKey);
+
+  ASSERT_DEATH(
+      {
+        ExpectKeysPtrGet(keys);
+        sigverify_rsa_key_get(key_id, GetParam(), &key);
+      },
+      "");
 }
 
-INSTANTIATE_TEST_SUITE_P(AllLcStates, BadKeyIdTypeTest,
+INSTANTIATE_TEST_SUITE_P(AllLcStates, BadKeyIdTypeDeathTest,
                          testing::ValuesIn(LcStatesAll()));
 
 /**
@@ -207,24 +214,26 @@ class KeyValidityTest : public SigverifyKeys,
                         public testing::WithParamInterface<
                             std::tuple<size_t, lifecycle_state_t>> {};
 
-class NonOperationalState : public KeyValidityTest {};
+class NonOperationalStateDeathTest : public KeyValidityTest {};
 
-TEST_P(NonOperationalState, BadKey) {
+TEST_P(NonOperationalStateDeathTest, BadKey) {
   size_t key_index;
   lifecycle_state_t lc_state;
   std::tie(key_index, lc_state) = GetParam();
-
-  ExpectKeysPtrGet(kMockKeys);
-
   const sigverify_rsa_key_t *key;
-  EXPECT_EQ(sigverify_rsa_key_get(
-                sigverify_rsa_key_id_get(&kMockKeys[key_index].key.n), lc_state,
-                &key),
-            kErrorSigverifyBadKey);
+
+  ASSERT_DEATH(
+      {
+        ExpectKeysPtrGet(kMockKeys);
+        sigverify_rsa_key_get(
+            sigverify_rsa_key_id_get(&kMockKeys[key_index].key.n), lc_state,
+            &key);
+      },
+      "");
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    AllKeysAndNonOperationalStates, NonOperationalState,
+    AllKeysAndNonOperationalStates, NonOperationalStateDeathTest,
     testing::Combine(testing::Range<size_t>(0, kNumMockKeys),
                      testing::ValuesIn(kLcStatesNonOperational)));
 
@@ -236,6 +245,7 @@ TEST_P(ValidBasedOnOtp, ValidInOtp) {
   std::tie(key_index, lc_state) = GetParam();
 
   ExpectKeysPtrGet(kMockKeys);
+  ExpectOtpRead(key_index, kHardenedByteBoolTrue);
   ExpectOtpRead(key_index, kHardenedByteBoolTrue);
 
   const sigverify_rsa_key_t *key;

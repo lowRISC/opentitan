@@ -236,7 +236,6 @@ cc_test(
     defines = ["OT_OFF_TARGET_TEST"],
     deps = [
         ":mock_sigverify_keys_ptrs",
-        ":sigverify_keys",
         ":sigverify_keys_ptrs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/base",
@@ -247,6 +246,7 @@ cc_test(
         "//sw/device/silicon_creator/lib:sigverify_mod_exp_ibex",
         "//sw/device/silicon_creator/lib/drivers:mock_lifecycle",
         "//sw/device/silicon_creator/lib/drivers:mock_otp",
+        "//sw/device/silicon_creator/mask_rom/keys:test_keys",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
