@@ -46,6 +46,8 @@ class otp_ctrl_dai_errs_vseq extends otp_ctrl_dai_lock_vseq;
 
   virtual task post_start();
     expect_fatal_alerts = 1;
+    do_apply_reset = 1;
+    do_otp_ctrl_init = 1;
     super.post_start();
   endtask
 endclass
