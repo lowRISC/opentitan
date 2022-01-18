@@ -261,6 +261,18 @@
       default: "4",
       local: "true"
     },
+    { name: "CreatorSwCfgRngEnOffset",
+      desc: "Offset of CREATOR_SW_CFG_RNG_EN",
+      type: "int",
+      default: "220",
+      local: "true"
+    },
+    { name: "CreatorSwCfgRngEnSize",
+      desc: "Size of CREATOR_SW_CFG_RNG_EN",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
     { name: "CreatorSwCfgDigestOffset",
       desc: "Offset of CREATOR_SW_CFG_DIGEST",
       type: "int",
