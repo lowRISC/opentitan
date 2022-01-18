@@ -89,7 +89,6 @@ module entropy_src_ack_sm (
       end
       AckWait: begin
         if (!enable_i) begin
-          ack_o = 1'b1;
           state_d = Idle;
         end else begin
           if (fifo_not_empty_i) begin
