@@ -800,7 +800,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard
 
       if(cfg.type_bypass == prim_mubi_pkg::MuBi4True) begin
         retry_limit          = 2;
-        pass_requirement     = 0;
+        pass_requirement     = 1;
         ht_fips_mode         = 0;
       end else begin
         case (dut_fsm_phase)
@@ -815,7 +815,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard
             ht_fips_mode     = 1;
           end
           CONTINUOUS: begin
-            pass_requirement = 0;
+            pass_requirement = 1;
             retry_limit      = 2;
             ht_fips_mode     = 1;
           end
