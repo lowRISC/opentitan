@@ -41,7 +41,8 @@ name:
       "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
       "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
       "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
-      "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"
+      "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
+      "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"
   ]
 
   // Add options needed to compile against otbn_memutil, otbn_tracer, and
@@ -197,6 +198,12 @@ name:
     {
       name: "otbn_stress_all"
       uvm_test_seq: "otbn_stress_all_vseq"
+      en_run_modes: ["build_otbn_rig_binaries_mode"]
+      reseed: 5
+    }
+
+    {
+      name: "otbn_stress_all_with_rand_reset"
       en_run_modes: ["build_otbn_rig_binaries_mode"]
       reseed: 5
     }
