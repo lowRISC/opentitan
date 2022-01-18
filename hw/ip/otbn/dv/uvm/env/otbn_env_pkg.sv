@@ -45,8 +45,9 @@ package otbn_env_pkg;
   parameter uint NUM_EDN = 2;
 
   // typedefs
-  typedef virtual pins_if #(1) idle_vif;
-  typedef logic [TL_AIW-1:0]   tl_source_t;
+  typedef virtual pins_if #(1)     idle_vif;
+  typedef virtual otbn_escalate_if escalate_vif;
+  typedef logic [TL_AIW-1:0]       tl_source_t;
 
   // Expected data for a pending read (see exp_read_values in otbn_scoreboard.sv)
   typedef struct packed {

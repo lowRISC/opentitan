@@ -25,10 +25,11 @@ module tb;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   // interfaces
-  clk_rst_if                    clk_rst_if (.clk(clk), .rst_n(rst_n));
-  tl_if                         tl_if      (.clk(clk), .rst_n(rst_n));
-  pins_if #(1)                  idle_if    (idle);
-  pins_if #(NUM_MAX_INTERRUPTS) intr_if    (interrupts);
+  clk_rst_if                    clk_rst_if  (.clk(clk), .rst_n(rst_n));
+  tl_if                         tl_if       (.clk(clk), .rst_n(rst_n));
+  pins_if #(1)                  idle_if     (idle);
+  otbn_escalate_if              escalate_if (.clk_i (clk), .rst_ni (rst_n));
+  pins_if #(NUM_MAX_INTERRUPTS) intr_if     (interrupts);
   assign interrupts[0] = {intr_done};
 
   // A hook to allow sequences to enable or disable the MatchingStatus_A assertion below. This is
@@ -123,7 +124,7 @@ module tb;
     .alert_rx_i(alert_rx),
     .alert_tx_o(alert_tx),
 
-    .lc_escalate_en_i (lc_ctrl_pkg::Off),
+    .lc_escalate_en_i (escalate_if.enable),
 
     .ram_cfg_i('0),
 
@@ -282,6 +283,7 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(idle_vif)::set(null, "*.env", "idle_vif", idle_if);
+    uvm_config_db#(escalate_vif)::set(null, "*.env", "escalate_vif", escalate_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual otbn_model_if)::set(null, "*.env.model_agent", "vif", model_if);
     uvm_config_db#(virtual key_sideload_if)::set(null, "*.env.keymgr_sideload_agent",
