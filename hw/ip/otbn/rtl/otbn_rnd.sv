@@ -42,6 +42,8 @@ module otbn_rnd import otbn_pkg::*;
   input  logic            urnd_advance_i,
   // URND data from PRNG
   output logic [WLEN-1:0] urnd_data_o,
+  // URND lockup state detected
+  output logic            urnd_all_zero_o,
 
   // Entropy distribution network (EDN)
   output logic                    edn_rnd_req_o,
@@ -140,7 +142,7 @@ module otbn_rnd import otbn_pkg::*;
     .xoshiro_en_i (urnd_advance_i),
     .entropy_i    ('0),
     .data_o       (urnd_data_o),
-    .all_zero_o   ()
+    .all_zero_o   (urnd_all_zero_o)
   );
 
   `ASSERT(rnd_clear_on_req_complete, rnd_req_complete |=> ~rnd_valid_q)

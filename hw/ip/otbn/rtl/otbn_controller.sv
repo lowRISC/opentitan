@@ -125,6 +125,7 @@ module otbn_controller
   output logic rnd_req_o,
   output logic rnd_prefetch_req_o,
   input  logic rnd_valid_i,
+  input  logic urnd_state_err_i,
 
   // Secure Wipe
   input  logic secure_wipe_running_i,
@@ -442,7 +443,7 @@ module otbn_controller
   assign err_bits.lifecycle_escalation = lifecycle_escalation_i;
   assign err_bits.illegal_bus_access   = illegal_bus_access_i;
   assign err_bits.bad_internal_state   = start_stop_state_error_i | state_error |
-                                          otbn_scramble_state_error_i;
+                                         otbn_scramble_state_error_i | urnd_state_err_i;
   assign err_bits.bus_intg_violation   = bus_intg_violation_i;
   assign err_bits.reg_intg_violation   = rf_base_rd_data_err_i | rf_bignum_rd_data_err;
   assign err_bits.dmem_intg_violation  = lsu_rdata_err_i;
@@ -474,7 +475,7 @@ module otbn_controller
   assign fatal_err = |{err_bits.fatal_software,
                        err_bits.lifecycle_escalation,
                        err_bits.illegal_bus_access,
-                       err_bits.bad_internal_state ,
+                       err_bits.bad_internal_state,
                        err_bits.bus_intg_violation,
                        err_bits.reg_intg_violation,
                        err_bits.dmem_intg_violation,

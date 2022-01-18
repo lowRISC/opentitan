@@ -192,6 +192,7 @@ module otbn_core
   logic            urnd_reseed_busy;
   logic            urnd_advance;
   logic [WLEN-1:0] urnd_data;
+  logic            urnd_all_zero;
 
   logic        controller_start;
 
@@ -416,6 +417,7 @@ module otbn_core
     .rnd_req_o         (rnd_req),
     .rnd_prefetch_req_o(rnd_prefetch_req),
     .rnd_valid_i       (rnd_valid),
+    .urnd_state_err_i  (urnd_all_zero),
 
     // Secure wipe
     .secure_wipe_running_i(secure_wipe_running),
@@ -639,6 +641,7 @@ module otbn_core
     .urnd_reseed_busy_o(urnd_reseed_busy),
     .urnd_advance_i    (urnd_advance),
     .urnd_data_o       (urnd_data),
+    .urnd_all_zero_o   (urnd_all_zero),
 
     .edn_rnd_req_o,
     .edn_rnd_ack_i,
