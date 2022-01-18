@@ -55,7 +55,7 @@
     'sw/otbn/crypto/modexp.s',
     'sw/otbn/crypto/p256.s',
     'sw/otbn/crypto/rsa_verify.s',
-    'sw/otbn/crypto/rsa_verify_3072.s',
+    'sw/otbn/crypto/handwritten/rsa_verify_3072.s',
     # Mersenne Twister PRNG
     'sw/device/sca/lib/prng.c',
     # Alma testbench files
