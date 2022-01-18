@@ -8,7 +8,7 @@ below snippets can be used for various operations.
 
 Generating a key pair:
 ```
-$ openssl genrsa -out <basename>.pem <-f4,-3> 3072
+$ openssl genrsa -out <basename>.pem -f4 3072
 Generating RSA private key, 3072 bit long modulus (2 primes)
 ..............................++++
 .....................................................................++++

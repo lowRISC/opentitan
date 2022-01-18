@@ -89,7 +89,6 @@ static const sigverify_rsa_key_t kKeyExp65537 = {
     .exponent = 65537,
 };
 
-// sw/device/silicon_creator/mask_rom/keys/test_key_1_rsa_3072_exp_3.public.der
 static const sigverify_rsa_key_t kKeyExp3 = {
     .n = {{
         0xbd158913, 0xab75ea1a, 0xc04e5292, 0x68f5778a, 0xa71418c7, 0xddc4fc1c,
