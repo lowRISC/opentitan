@@ -58,9 +58,6 @@ class otbn_imem_err_vseq extends otbn_base_vseq;
         repeat (3) wait_alert_trigger("fatal", .wait_complete(1));
       end
     join
-
-    // Finally, reset the DUT (otherwise we won't be able to chain another vseq after this one)
-    dut_init("HARD");
   endtask
 
 endclass
