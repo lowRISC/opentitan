@@ -153,11 +153,12 @@ if {[info exists ::env(CHECK)]} {
   }
 }
 
+# TODO: support the following feature.
 # Uncomment "jg_auto_coi_cov_waivers" to automatically waive out COI cover items which cannot
 # propagate to "relevant signals" (by default, top instance outputs). If you need to specify
 # include/exclude relevant signals manually, run "jg_auto_coi_cov_waivers -help" for more
 # options.
-jg_auto_coi_cov_waivers
+# jg_auto_coi_cov_waivers
 
 #-------------------------------------------------------------------------
 # configure proofgrid
