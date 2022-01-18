@@ -477,6 +477,37 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
   return (launderw(c) & a) | (launderw(~c) & b);
 }
 
+/**
+ * Evaluate a manifestly true expression and generate an illegal instruction
+ * exception if the result is false.
+ *
+ * This macro is intended to be used along with `launder32()` to handle detected
+ * faults when implementing redundant checks, i.e. in places where the compiler
+ * could otherwise prove statically unreachable. For example:
+ * ```
+ * if (launder32(x) == 0) {
+ *   SHUTDOWN_CHECK(launder32(x) == 0);
+ * }
+ * ```
+ * See `launder32()` for more details.
+ * TODO(#10006): Improve this implementation.
+ */
+#ifndef OT_OFF_TARGET_TEST
+#define SHUTDOWN_CHECK(expr_)  \
+  do {                         \
+    if (!(expr_)) {            \
+      asm volatile("unimp");   \
+      __builtin_unreachable(); \
+    }                          \
+  } while (false)
+#else
+#include <assert.h>
+#define SHUTDOWN_CHECK(expr_) \
+  do {                        \
+    assert(expr_);            \
+  } while (false)
+#endif
+
 #ifdef __cplusplus
 }
 #endif  // __cplusplus
