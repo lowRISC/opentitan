@@ -19,6 +19,8 @@ class edn_genbits_vseq extends edn_base_vseq;
                                                 num_requests_q[$], endpoint_q[$];
 
   task body();
+    super.body();
+
     // TODO: Test boot_mode, auto_req_mode
 
     // Wait for cmd_rdy

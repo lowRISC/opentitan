@@ -9,7 +9,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
   );
   `uvm_component_utils(edn_scoreboard)
 
-  // local variables
+  virtual edn_cov_if   cov_vif;
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(csrng_pkg::FIPS_GENBITS_BUS_WIDTH)))
@@ -30,6 +30,10 @@ class edn_scoreboard extends cip_base_scoreboard #(
 
     for (int i = 0; i < cfg.num_endpoints; i++) begin
       endpoint_fifo[i] = new($sformatf("endpoint_fifo[%0d]", i), this);
+    end
+
+    if (!uvm_config_db#(virtual edn_cov_if)::get(null, "*.env" , "edn_cov_if", cov_vif)) begin
+      `uvm_fatal(`gfn, $sformatf("Failed to get edn_cov_if from uvm_config_db"))
     end
   endfunction
 

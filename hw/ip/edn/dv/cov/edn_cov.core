@@ -1,0 +1,22 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:edn_cov"
+description: "edn functional coverage interface & bind"
+
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_utils
+      - lowrisc:dv:edn_env
+      - lowrisc:ip:edn
+    files:
+      - edn_cov_if.sv
+      - edn_cov_bind.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

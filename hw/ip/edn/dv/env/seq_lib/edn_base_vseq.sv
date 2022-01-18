@@ -14,6 +14,16 @@ class edn_base_vseq extends cip_base_vseq #(
 
   bit do_edn_init = 1'b1;
 
+  virtual edn_cov_if   cov_vif;
+
+  virtual task body();
+    if (!uvm_config_db#(virtual edn_cov_if)::get(null, "*.env" , "edn_cov_if", cov_vif)) begin
+      `uvm_fatal(`gfn, $sformatf("Failed to get edn_cov_if from uvm_config_db"))
+    end
+
+    cov_vif.cg_cfg_sample(.cfg(cfg));
+  endtask
+
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
 

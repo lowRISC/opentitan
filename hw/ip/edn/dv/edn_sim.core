@@ -13,6 +13,7 @@ filesets:
     depend:
       - lowrisc:dv:edn_test
       - lowrisc:dv:edn_sva
+      - lowrisc:dv:edn_cov
     files:
       - tb.sv
     file_type: systemVerilogSource

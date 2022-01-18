@@ -19,16 +19,16 @@ class csrng_item extends uvm_sequence_item;
 
   constraint c_clen {
     clen inside {[0:12]};
-  };
+  }
 
   constraint c_cmd_data {
     solve clen before cmd_data_q;
     cmd_data_q.size() == clen;
-  };
+  }
 
   constraint c_flags {
     flags inside {[0:1]};
-  };
+  }
 
   // TODO: Try glen > 32, glen = 0 on GEN cmd
   constraint c_glen {
@@ -37,7 +37,7 @@ class csrng_item extends uvm_sequence_item;
       glen == 0;
     else
       glen inside {[1:32]};
-  };
+  }
 
    //--------------------------------------------------------------------
    // do_copy
