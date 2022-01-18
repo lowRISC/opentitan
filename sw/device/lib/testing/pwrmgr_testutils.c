@@ -12,7 +12,7 @@
 #include "sw/device/lib/testing/check.h"
 
 void pwrmgr_testutils_enable_low_power(
-    dif_pwrmgr_t *pwrmgr, dif_pwrmgr_request_sources_t wakeups,
+    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_request_sources_t wakeups,
     dif_pwrmgr_domain_config_t domain_config) {
   // Enable low power on the next WFI with clocks and power domains configured
   // per domain_config.
@@ -22,7 +22,7 @@ void pwrmgr_testutils_enable_low_power(
   CHECK_DIF_OK(dif_pwrmgr_low_power_set_enabled(pwrmgr, kDifToggleEnabled));
 }
 
-bool pwrmgr_testutils_is_wakeup_reason(dif_pwrmgr_t *pwrmgr,
+bool pwrmgr_testutils_is_wakeup_reason(const dif_pwrmgr_t *pwrmgr,
                                        dif_pwrmgr_request_sources_t reasons) {
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
   CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(pwrmgr, &wakeup_reason));

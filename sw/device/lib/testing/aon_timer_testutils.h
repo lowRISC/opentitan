@@ -13,7 +13,7 @@
  * Configure wakeup counter for a number of AON clock cycles.
  * @param cycles The number of AON clock cycles.
  */
-void aon_timer_testutils_wakeup_config(dif_aon_timer_t *aon_timer,
+void aon_timer_testutils_wakeup_config(const dif_aon_timer_t *aon_timer,
                                        uint32_t cycles);
 
 /**
@@ -24,7 +24,7 @@ void aon_timer_testutils_wakeup_config(dif_aon_timer_t *aon_timer,
  * @param bark_cycles The number of AON clock cycles till barking.
  * @param bite_cycles The number of AON clock cycles till biting.
  */
-void aon_timer_testutils_watchdog_config(dif_aon_timer_t *aon_timer,
+void aon_timer_testutils_watchdog_config(const dif_aon_timer_t *aon_timer,
                                          uint32_t bark_cycles,
                                          uint32_t bite_cycles);
 
