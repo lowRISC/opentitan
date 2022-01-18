@@ -23,6 +23,7 @@ class edn_env extends cip_base_env #(
     m_csrng_agent = csrng_agent::type_id::create("m_csrng_agent", this);
     uvm_config_db#(csrng_agent_cfg)::set(this, "m_csrng_agent*", "cfg", cfg.m_csrng_agent_cfg);
     cfg.m_csrng_agent_cfg.if_mode = dv_utils_pkg::Device;
+    cfg.m_csrng_agent_cfg.en_cov  = cfg.en_cov;
 
     for (int i = 0; i < MAX_NUM_ENDPOINTS; i++) begin
       string endpoint_agent_name = $sformatf("m_endpoint_agent[%0d]", i);
@@ -32,6 +33,7 @@ class edn_env extends cip_base_env #(
           set(this, $sformatf("%0s*", endpoint_agent_name), "cfg", cfg.m_endpoint_agent_cfg[i]);
       cfg.m_endpoint_agent_cfg[i].agent_type = push_pull_agent_pkg::PullAgent;
       cfg.m_endpoint_agent_cfg[i].if_mode    = dv_utils_pkg::Host;
+      cfg.m_endpoint_agent_cfg[i].en_cov     = cfg.en_cov;
       // TODO: Move these
       cfg.m_endpoint_agent_cfg[i].zero_delays = 1'b1;
     end

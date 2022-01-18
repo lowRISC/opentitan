@@ -15,6 +15,8 @@ class edn_smoke_vseq extends edn_base_vseq;
   bit [17:0]                                    glen;
 
   task body();
+    super.body();
+
     // Wait for cmd_rdy
     csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));
 
