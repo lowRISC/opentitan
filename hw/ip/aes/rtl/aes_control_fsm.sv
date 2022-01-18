@@ -460,7 +460,7 @@ module aes_control_fsm
           if (cipher_crypt_i) begin
             aes_ctrl_ns = FINISH;
 
-          end else begin // (key_iv_data_in_clear_i || data_out_clear_i)
+          end else if (key_iv_data_in_clear_i || data_out_clear_i) begin
             // To clear the output data registers, we re-use the muxing resources of the cipher
             // core. To clear all key material, some key registers inside the cipher core need to
             // be cleared.
@@ -472,6 +472,10 @@ module aes_control_fsm
             if (cipher_in_ready_i) begin
               aes_ctrl_ns = CLEAR;
             end
+          end else begin
+            // Another write to the trigger register must have overwritten the trigger bits that
+            // actually caused us to enter this state. Just return.
+            aes_ctrl_ns = IDLE;
           end // cipher_crypt_i
         end // prng_data_ack_i
       end
