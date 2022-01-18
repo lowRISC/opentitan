@@ -119,7 +119,7 @@
             Trigger the life cycle escalation input.
             '''
       milestone: V2
-      tests: []
+      tests: ["otbn_escalate"]
     }
   ]
 }

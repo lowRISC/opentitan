@@ -11,4 +11,19 @@ interface otbn_escalate_if (
 
   lc_ctrl_pkg::lc_tx_t enable;
 
+  function automatic void reset_signals();
+    enable = lc_ctrl_pkg::Off;
+  endfunction
+
+  task automatic set_after_n_clocks(int unsigned n);
+    `DV_SPINWAIT_EXIT(
+      begin
+        repeat (n) @(posedge clk_i);
+        enable = lc_ctrl_pkg::On;
+      end,
+      @(negedge rst_ni);,
+      "Not setting enable signal because we've gone into reset",
+      "otbn_escalate_if")
+  endtask
+
 endinterface
