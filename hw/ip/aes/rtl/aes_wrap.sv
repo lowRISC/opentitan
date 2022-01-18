@@ -7,14 +7,14 @@
 module aes_wrap
   import aes_pkg::*;
 #(
-  parameter bit         AES192Enable = 0,           // Can be 0 (disable), or 1 (enable).
-  parameter bit         Masking      = 0,           // Can be 0 (no masking), or
+  parameter bit         AES192Enable = 1,           // Can be 0 (disable), or 1 (enable).
+  parameter bit         Masking      = 1,           // Can be 0 (no masking), or
                                                     // 1 (first-order masking) of the cipher
                                                     // core. Masking requires the use of a
                                                     // masked S-Box, see SBoxImpl parameter.
                                                     // Note: currently, constant masks are
                                                     // used, this is of course not secure.
-  parameter sbox_impl_e SBoxImpl     = SBoxImplLut  // See aes_pkg.sv
+  parameter sbox_impl_e SBoxImpl     = SBoxImplDom  // See aes_pkg.sv
 ) (
   input  logic         clk_i,
   input  logic         rst_ni,
