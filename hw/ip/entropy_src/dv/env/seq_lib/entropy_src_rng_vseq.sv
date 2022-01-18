@@ -50,6 +50,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   endtask
 
   task body();
+    super.body();
+
     // Create rng host sequence
     m_rng_push_seq = entropy_src_base_rng_seq::type_id::create("m_rng_push_seq");
 

@@ -98,15 +98,17 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "csrng_rst_vif", csrng_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
+    uvm_config_db#(virtual entropy_src_cov_if)::set(null, "*.env", "entropy_src_cov_if",
+        dut.u_entropy_src_cov_if);
     uvm_config_db#(virtual pins_if#(8))::set(null, "*.env", "otp_en_es_fw_read_vif",
-                                         otp_en_es_fw_read_if);
+        otp_en_es_fw_read_if);
     uvm_config_db#(virtual pins_if#(8))::set(null, "*.env", "otp_en_es_fw_over_vif",
-                                         otp_en_es_fw_over_if);
+        otp_en_es_fw_over_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH)))::set
-                                        (null, "*.env.m_rng_agent*", "vif", rng_if);
+        (null, "*.env.m_rng_agent*", "vif", rng_if);
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)))::
-      set(null, "*.env.m_csrng_agent*", "vif", csrng_if);
+        set(null, "*.env.m_csrng_agent*", "vif", csrng_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
