@@ -64,6 +64,18 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     control_ip_clocks();
   endtask
 
+  local function void disable_unnecessary_exclusions();
+    ral.get_excl_item().enable_excl("clkmgr_reg_block.clk_enables", 0);
+    ral.get_excl_item().enable_excl("clkmgr_reg_block.clk_hints", 0);
+    ral.get_excl_item().enable_excl("clkmgr_reg_block.io_measure_ctrl.en", 0);
+    ral.get_excl_item().enable_excl("clkmgr_reg_block.io_div2_measure_ctrl.en", 0);
+    ral.get_excl_item().enable_excl("clkmgr_reg_block.io_div4_measure_ctrl.en", 0);
+    ral.get_excl_item().enable_excl("clkmgr_reg_block.main_measure_ctrl.en", 0);
+    ral.get_excl_item().enable_excl("clkmgr_reg_block.usb_measure_ctrl.en", 0);
+    `uvm_info(`gfn, "Adjusted exclusions", UVM_MEDIUM)
+    ral.get_excl_item().print_exclusions(UVM_MEDIUM);
+  endfunction
+
   task pre_start();
     cfg.clkmgr_vif.init(.idle('1), .scanmode(scanmode), .lc_debug_en(Off));
     cfg.clkmgr_vif.update_io_ip_clk_en(1'b0);
@@ -71,6 +83,8 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     cfg.clkmgr_vif.update_usb_ip_clk_en(1'b0);
     cfg.clkmgr_vif.update_all_clk_byp_ack(prim_mubi_pkg::MuBi4False);
     cfg.clkmgr_vif.update_io_clk_byp_ack(prim_mubi_pkg::MuBi4False);
+    // There is something strange with exclusions. Don't disable for now.
+    // disable_unnecessary_exclusions();
     clkmgr_init();
     super.pre_start();
   endtask

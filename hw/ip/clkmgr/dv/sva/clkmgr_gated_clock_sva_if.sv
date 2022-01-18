@@ -11,8 +11,9 @@ interface clkmgr_gated_clock_sva_if (
   input logic scanmode,
   input logic gated_clk
 );
-  // This fires at negedges, so check $past(clk*) as activity. The assertion is okay if gating
-  // changes, either at the next clock event or between them.
+  // This fires at negedges: if the gated clock is inactive its value is expected to be low,
+  // and viceversa. The assertions pass if gating is not stable to avoid cycle accuracy, and
+  // these gated clocks are expected to be changed infrequently.
   logic gating;
   always_comb gating = sw_clk_en && ip_clk_en || scanmode;
 
