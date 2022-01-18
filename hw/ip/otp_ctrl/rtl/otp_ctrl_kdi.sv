@@ -123,6 +123,32 @@ module otp_ctrl_kdi
   assign flash_otp_key_o.addr_ack = gnt[1];
   assign otbn_otp_key_o.ack       = gnt[2];
 
+  // anchored seeds
+  logic [FlashKeySeedWidth-1:0] flash_data_key_seed;
+  logic [FlashKeySeedWidth-1:0] flash_addr_key_seed;
+  logic [SramKeySeedWidth-1:0]  sram_data_key_seed;
+
+  prim_sec_anchor_buf #(
+    .Width(FlashKeySeedWidth)
+  ) u_flash_data_key_anchor (
+    .in_i(flash_data_key_seed_i),
+    .out_o(flash_data_key_seed)
+  );
+
+  prim_sec_anchor_buf #(
+    .Width(FlashKeySeedWidth)
+  ) u_flash_addr_key_anchor (
+    .in_i(flash_addr_key_seed_i),
+    .out_o(flash_addr_key_seed)
+  );
+
+  prim_sec_anchor_buf #(
+    .Width(SramKeySeedWidth)
+  ) u_sram_data_key_anchor (
+    .in_i(sram_data_key_seed_i),
+    .out_o(sram_data_key_seed)
+  );
+
   // Flash data key
   assign req_bundles[0] = '{ingest_entropy: 1'b0, // no random entropy added
                             chained_digest: 1'b0, // revert to netlist IV between blocks
@@ -130,7 +156,7 @@ module otp_ctrl_kdi
                             fetch_nonce:    1'b1,
                             nonce_size:     2'(FlashKeyWidth/EdnDataWidth-1),
                             seed_valid:     scrmbl_key_seed_valid_i,
-                            seed:           flash_data_key_seed_i}; // 2x128bit
+                            seed:           flash_data_key_seed}; // 2x128bit
   // Flash addr key
   assign req_bundles[1] = '{ingest_entropy: 1'b0, // no random entropy added
                             chained_digest: 1'b0, // revert to netlist IV between blocks
@@ -138,7 +164,7 @@ module otp_ctrl_kdi
                             fetch_nonce:    1'b1,
                             nonce_size:     '0,
                             seed_valid:     scrmbl_key_seed_valid_i,
-                            seed:           flash_addr_key_seed_i}; // 2x128bit
+                            seed:           flash_addr_key_seed}; // 2x128bit
   // OTBN key
   assign req_bundles[2] = '{ingest_entropy: 1'b1, // ingest random data
                             chained_digest: 1'b0, // revert to netlist IV between blocks
@@ -146,8 +172,8 @@ module otp_ctrl_kdi
                             fetch_nonce:    1'b1, // fetch nonce
                             nonce_size:     2'(OtbnNonceWidth/EdnDataWidth-1),
                             seed_valid:     scrmbl_key_seed_valid_i,
-                            seed:           {sram_data_key_seed_i,   // reuse same seed
-                                             sram_data_key_seed_i}};
+                            seed:           {sram_data_key_seed,   // reuse same seed
+                                             sram_data_key_seed}};
 
   // SRAM keys
   for (genvar k = 3; k < NumReq; k++) begin : gen_req_assign
@@ -159,8 +185,8 @@ module otp_ctrl_kdi
                               fetch_nonce:    1'b1, // fetch nonce
                               nonce_size:     2'(SramNonceWidth/EdnDataWidth-1),
                               seed_valid:     scrmbl_key_seed_valid_i,
-                              seed:           {sram_data_key_seed_i,   // reuse same seed
-                                               sram_data_key_seed_i}};
+                              seed:           {sram_data_key_seed,   // reuse same seed
+                                               sram_data_key_seed}};
   end
 
   // This arbitrates among incoming key derivation requests on a
@@ -246,6 +272,16 @@ module otp_ctrl_kdi
   end
 
   // Connect keys/nonce outputs to output regs.
+  prim_sec_anchor_flop #(
+    .Width(ScrmblKeyWidth),
+    .ResetValue('0)
+  ) u_key_out_anchor (
+    .clk_i,
+    .rst_ni,
+    .d_i(key_out_d),
+    .q_o(key_out_q)
+  );
+
   assign otbn_otp_key_o.key          = key_out_q;
   assign otbn_otp_key_o.nonce        = nonce_out_q[OtbnNonceSel-1:0];
   assign otbn_otp_key_o.seed_valid   = seed_valid_q;
@@ -548,12 +584,10 @@ module otp_ctrl_kdi
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      key_out_q     <= '0;
       nonce_out_q   <= '0;
       seed_valid_q  <= 1'b0;
       edn_req_q     <= 1'b0;
     end else begin
-      key_out_q     <= key_out_d;
       nonce_out_q   <= nonce_out_d;
       seed_valid_q  <= seed_valid_d;
       edn_req_q     <= edn_req_d;
