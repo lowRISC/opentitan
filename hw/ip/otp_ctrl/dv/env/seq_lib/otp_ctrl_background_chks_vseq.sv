@@ -66,7 +66,7 @@ class otp_ctrl_background_chks_vseq extends otp_ctrl_dai_lock_vseq;
 
   virtual task post_start();
     expect_fatal_alerts = 1;
-    cfg.en_scb = 1;
     super.post_start();
+    cfg.en_scb = 1;
   endtask
 endclass
