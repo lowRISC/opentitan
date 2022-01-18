@@ -95,6 +95,37 @@ module otp_ctrl_scrmbl
   // Decryption Key LUT //
   ////////////////////////
 
+  // Anchor keys, constants and IVs
+  key_array_t rnd_cnst_key_anchor;
+  digest_const_array_t rnd_cnst_digest_anchor;
+  digest_iv_array_t rnd_cnst_digest_iv_anchor;
+
+  for (genvar i = 0; i < NumScrmblKeys; i++) begin : gen_anchor_keys
+    prim_sec_anchor_buf #(
+      .Width(ScrmblKeyWidth)
+    ) u_key_anchor_buf (
+      .in_i(RndCnstKey[i]),
+      .out_o(rnd_cnst_key_anchor[i])
+    );
+  end
+
+  for (genvar i = 0; i < NumDigestSets; i++) begin : gen_anchor_digests
+    prim_sec_anchor_buf #(
+      .Width(ScrmblKeyWidth)
+    ) u_const_anchor_buf (
+      .in_i(RndCnstDigestConst[i]),
+      .out_o(rnd_cnst_digest_anchor[i])
+    );
+
+    prim_sec_anchor_buf #(
+      .Width(ScrmblBlockWidth)
+    ) u_iv_anchor_buf (
+      .in_i(RndCnstDigestIV[i]),
+      .out_o(rnd_cnst_digest_iv_anchor[i])
+    );
+  end
+
+
   // Align these arrays to power of 2's to prevent X's in the muxing operations further below.
   logic [2**$clog2(NumScrmblKeys)-1:0][ScrmblKeyWidth-1:0] otp_enc_key_lut;
   logic [2**$clog2(NumScrmblKeys)-1:0][ScrmblKeyWidth-1:0] otp_dec_key_lut;
@@ -111,16 +142,16 @@ module otp_ctrl_scrmbl
     digest_iv_lut = '0;
 
     for (int k = 0; k < NumScrmblKeys; k++) begin
-      otp_enc_key_lut[k] = RndCnstKey[k];
+      otp_enc_key_lut[k] = rnd_cnst_key_anchor[k];
       // Due to the PRESENT key schedule, we have to step the key schedule function by
       // NumPresentRounds forwards to get the decryption key.
       otp_dec_key_lut[k] =
-          prim_cipher_pkg::present_get_dec_key128(RndCnstKey[k], 5'(NumPresentRounds));
+          prim_cipher_pkg::present_get_dec_key128(rnd_cnst_key_anchor[k], 5'(NumPresentRounds));
     end
 
     for (int k = 0; k < NumDigestSets; k++) begin
-      digest_const_lut[k] = RndCnstDigestConst[k];
-      digest_iv_lut[k]    = RndCnstDigestIV[k];
+      digest_const_lut[k] = rnd_cnst_digest_anchor[k];
+      digest_iv_lut[k]    = rnd_cnst_digest_iv_anchor[k];
     end
   end
   `ASSERT_KNOWN(EncKeyLutKnown_A,      otp_enc_key_lut)
