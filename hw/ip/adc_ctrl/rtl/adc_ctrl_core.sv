@@ -110,8 +110,8 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
   end
 
   // adc filter status
-  assign aon_filter_status_o.d  = match_pulse;
-  assign aon_filter_status_o.de = 1'b1;
+  assign aon_filter_status_o.d  = match_pulse | reg2hw_i.filter_status.q;
+  assign aon_filter_status_o.de = |match_pulse;
 
   // generate wakeup to external power manager if filter status
   // and wakeup enable are set.
