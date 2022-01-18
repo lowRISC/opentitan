@@ -17,7 +17,7 @@ enum {
   /**
    * Number of RSA public keys.
    */
-  kSigVerifyNumRsaKeys = 2,
+  kSigVerifyNumRsaKeys = 1,
 };
 
 /**

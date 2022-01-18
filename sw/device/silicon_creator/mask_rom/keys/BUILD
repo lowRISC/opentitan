@@ -8,6 +8,5 @@ cc_library(
     name = "test_keys",
     hdrs = [
         "test_key_0_rsa_3072_exp_f4.h",
-        "test_key_1_rsa_3072_exp_3.h",
     ],
 )

@@ -12,7 +12,6 @@
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/sigverify.h"
 #include "sw/device/silicon_creator/mask_rom/keys/test_key_0_rsa_3072_exp_f4.h"
-#include "sw/device/silicon_creator/mask_rom/keys/test_key_1_rsa_3072_exp_3.h"
 #include "sw/device/silicon_creator/mask_rom/sigverify_keys_ptrs.h"
 
 #include "otp_ctrl_regs.h"
@@ -27,11 +26,6 @@ const sigverify_mask_rom_key_t kSigVerifyRsaKeys[kSigVerifyNumRsaKeys] = {
     [0] =
         {
             .key = TEST_KEY_0_RSA_3072_EXP_F4,
-            .key_type = kSigverifyKeyTypeTest,
-        },
-    [1] =
-        {
-            .key = TEST_KEY_1_RSA_3072_EXP_3,
             .key_type = kSigverifyKeyTypeTest,
         },
 };
