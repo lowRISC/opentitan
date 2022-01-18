@@ -100,6 +100,7 @@ opentitan_binary(
         "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rnd",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:uart",
     ],

@@ -18,6 +18,7 @@
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
+#include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -92,8 +93,7 @@ static rom_error_t mask_rom_init(void) {
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);
 
-  // TODO(lowRISC/opentitan#8536): Integrate RND driver.
-  sec_mmio_check_values(/*rnd_offset=*/0);
+  sec_mmio_check_values(rnd_uint32());
   sec_mmio_check_counters(/*expected_check_count=*/1);
 
   return kErrorOk;
@@ -157,8 +157,7 @@ static rom_error_t mask_rom_boot(const manifest_t *manifest,
   // TODO: Replace kFlashCtrlExecEnable with flash_exec when HW is updated.
   flash_ctrl_exec_set(kFlashCtrlExecEnable);
 
-  // TODO(lowRISC/opentitan#8536): Integrate RND driver.
-  sec_mmio_check_values(/*rnd_offset=*/0);
+  sec_mmio_check_values(rnd_uint32());
   sec_mmio_check_counters(/*expected_check_count=*/3);
 
   // Unlock execution of ROM_EXT executable code (text) sections.
