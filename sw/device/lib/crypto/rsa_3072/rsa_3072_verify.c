@@ -18,8 +18,6 @@ OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072,
                          mode);  // Mode (constants or modexp).
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072,
                          out_buf);  // Output buffer (message).
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072,
-                         in_exp);  // The RSA key exponent (n).
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072, in_mod);  // The RSA modulus (n).
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072, in_buf);  // The signature (s).
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072,
@@ -32,8 +30,6 @@ static const otbn_addr_t kOtbnVarRsaMode =
     OTBN_ADDR_T_INIT(run_rsa_verify_3072, mode);
 static const otbn_addr_t kOtbnVarRsaOutBuf =
     OTBN_ADDR_T_INIT(run_rsa_verify_3072, out_buf);
-static const otbn_addr_t kOtbnVarRsaInExp =
-    OTBN_ADDR_T_INIT(run_rsa_verify_3072, in_exp);
 static const otbn_addr_t kOtbnVarRsaInMod =
     OTBN_ADDR_T_INIT(run_rsa_verify_3072, in_mod);
 static const otbn_addr_t kOtbnVarRsaInBuf =
@@ -175,7 +171,7 @@ otbn_error_t rsa_3072_verify(const rsa_3072_int_t *signature,
   otbn_t otbn;
   rsa_3072_int_t recoveredMessage;
 
-  // For now, only the F4 modulus is supported.
+  // Only the F4 modulus is supported.
   if (public_key->e != 65537) {
     return kOtbnErrorInvalidArgument;
   }
@@ -189,10 +185,6 @@ otbn_error_t rsa_3072_verify(const rsa_3072_int_t *signature,
   // Set mode to perform modular exponentiation.
   OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(
       &otbn, kOtbnRsaModeNumWords, &kOtbnRsaModeModexp, kOtbnVarRsaMode));
-
-  // Set the exponent (e).
-  OTBN_RETURN_IF_ERROR(
-      otbn_copy_data_to_otbn(&otbn, 1, &public_key->e, kOtbnVarRsaInExp));
 
   // Set the modulus (n).
   OTBN_RETURN_IF_ERROR(

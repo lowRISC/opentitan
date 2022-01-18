@@ -41,12 +41,8 @@ def parse_test(raw_data, n, e, t):
     elif t['result'] == 'invalid':
         test['valid'] = False
     elif t['result'] == 'acceptable':
-        if t['comment'] == 'short signature':
-            # We consider short signatures valid
-            test['valid'] = True
-        else:
-            # err on the side of caution and reject "acceptable" signatures otherwise
-            test['valid'] = False
+        # err on the side of caution and reject "acceptable" signatures
+        test['valid'] = False
         notes.append('signature marked as acceptable by wycheproof')
     else:
         raise RuntimeError('Unexpected result type {}'.format(test['result']))

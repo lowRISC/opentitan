@@ -8,6 +8,8 @@
  * Standalone embeddable wrapper for 3072 bit RSA signature verification.
  * Performs either computation of Montgomery constants or modular
  * exponentiation, depending on mode.
+ *
+ * The only exponent supported is e=65537.
  */
 run_rsa_verify_3072:
   /* Get the mode input value: x3 <= mode */
@@ -38,16 +40,14 @@ compute_constants:
   ecall
 
 /**
- * Run RSA-3072 modular exponentiation.
+ * Run RSA-3072 modular exponentiation with e=65537 (F4 exponent).
  *
- * Computes msg=(sig^e) mod M, where
- *          e is the public key exponent
+ * Computes msg=(sig^65537) mod M, where
  *          M is the public key modulus
  *          sig is the signature
  *
  * The result, msg, is the recovered message digest.
  *
- * @param[in] dmem[in_exp]: Exponent of the RSA public key (must be 3 or F4=65537)
  * @param[in] dmem[in_mod]: Modulus of the RSA public key
  * @param[in] dmem[in_buf]: Signature to check against
  * @param[in] dmem[rr]: Montgomery constant R^2
@@ -62,28 +62,9 @@ modexp:
   la        x26, rr
   la        x17, m0inv
 
-  /* Get the exponent: x3 <= dmem[in_exp] */
-  la       x2, in_exp
-  lw       x3, 0(x2)
-
-  /* Call a modexp implementation matching the exponent.
-     Both modexp implementations end in ecall. */
-  li       x2, 3
-  beq      x3, x2, modexp_3
-  li       x2, 65537
-  beq      x3, x2, modexp_f4
-
-  /* Unexpected exponent; fail */
-  unimp
-
-modexp_f4:
   /* run modular exponentiation */
   jal      x1, modexp_var_3072_f4
-  ecall
 
-modexp_3:
-  /* run modular exponentiation */
-  jal      x1, modexp_var_3072_3
   ecall
 
 .bss
@@ -92,12 +73,6 @@ modexp_3:
 .globl mode
 .balign 4
 mode:
-.zero 4
-
-/* Exponent of the RSA-3072 key. Accepted values: 3 or F4=65537 */
-.globl in_exp
-.balign 4
-in_exp:
 .zero 4
 
 /* Modulus of RSA-3072 key */

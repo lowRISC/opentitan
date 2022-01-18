@@ -109,6 +109,12 @@ def main() -> int:
     testvecs = hjson.load(args.hjsonfile)
     args.hjsonfile.close()
 
+    # Look for test vectors with unsupported exponents and mark them invalid.
+    for t in testvecs:
+        if t['e'] != 65537:
+            t['valid'] = False
+            t['comment'] += (', ' if t['comment'] else '') + 'unsupported exponent'
+
     # Convert the 3072-bit numbers n and sig into words expressed in hex
     for t in testvecs:
         t['n_hexwords'] = rsa_3072_int_to_hexwords(t['n'])

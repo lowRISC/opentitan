@@ -109,6 +109,8 @@ hmac_error_t rsa_3072_encode_sha256(const uint8_t *msg, size_t msgLen,
 /**
  * Verifies an RSA-3072 signature.
  *
+ * The key exponent must be 65537; no other exponents are supported.
+ *
  * @param signature Signature to be verified.
  * @param message Encoded message representative to check the signature against.
  * @param public_key Key to check the signature against.

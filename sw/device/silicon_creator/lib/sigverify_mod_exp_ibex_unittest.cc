@@ -67,9 +67,8 @@ struct SigTestCase {
 };
 
 // The keys below do not need to be kept in sync with the actual keys used in
-// boot stages since we have separate tests for each boot stage. However, it is
-// important to cover both exponents, i.e. 3 and 65537, that we support.
-constexpr SigTestCase kSigTestCases[2]{
+// boot stages since we have separate tests for each boot stage.
+constexpr SigTestCase kSigTestCases[1]{
     // message: "test"
     {
         // sw/device/silicon_creator/mask_rom/keys/test_key_0_rsa_3072_exp_f4.public.der
@@ -132,72 +131,6 @@ constexpr SigTestCase kSigTestCases[2]{
                 0xbaaebfac, 0x653b64bd, 0x826a3baa, 0x98703747, 0x6ee930ec,
                 0xacbb94d8, 0xcede8d12, 0xa17b3cb0, 0xa520fe81, 0x84df2df5,
                 0x4f97181e,
-            },
-        .enc_msg = &kEncMsgTest,
-
-    },
-    // message: "test"
-    {
-        // sw/device/silicon_creator/mask_rom/keys/test_key_1_rsa_3072_exp_3.public.der
-        .key =
-            {
-                .n = {{
-                    0xbd158913, 0xab75ea1a, 0xc04e5292, 0x68f5778a, 0xa71418c7,
-                    0xddc4fc1c, 0xcb09302d, 0xedf3142b, 0x656d7d85, 0xf761d32a,
-                    0x2d334d1b, 0x26c91770, 0x5b9ba5a0, 0x00ac6c05, 0xbabaf1bb,
-                    0xa8299ecc, 0xb4223f99, 0x5b676ad3, 0xcaa786c2, 0x3e2f1785,
-                    0x204b6991, 0x21fa118f, 0x435573ab, 0xa3353ba1, 0x1074c161,
-                    0x2ad5e901, 0x7310247c, 0x1e21b8e9, 0x0cfc7762, 0x0a9139b1,
-                    0xfc655b33, 0x6990faaf, 0xbb88faec, 0x7c7bd6ef, 0x261e4555,
-                    0x6bc3d813, 0x5ce6e18b, 0xdd308629, 0x37d3d54d, 0x65acd84d,
-                    0x97b7e0c3, 0xc0d35caa, 0xb0be177a, 0x09473af3, 0x67f43155,
-                    0x3b2f7661, 0xf9255df2, 0x1b42c84c, 0x355cd607, 0x835e74ca,
-                    0x1d011c4e, 0x46652555, 0x1566f96f, 0x6cffd2f9, 0x204e783e,
-                    0xa178a2eb, 0xe7297a95, 0xd7380039, 0x1a685545, 0x76ed97c9,
-                    0x6bc0b1b7, 0xd9b1338e, 0xa3b23005, 0x6fe7109f, 0x01c232e1,
-                    0x851639c5, 0xe81d338c, 0x25ebe0c4, 0x5b0202cd, 0x3690cb70,
-                    0xad13b664, 0x8bf7833e, 0x6017349c, 0xf6e90b08, 0x953ef3d8,
-                    0x4bc11817, 0xd0f6e840, 0xfe01a954, 0x9b866209, 0xb9653ff8,
-                    0x0d654f5c, 0xff78177c, 0x3688833c, 0x57cc0c30, 0x71965be7,
-                    0xf61fb728, 0xaeac8ca2, 0xbdc9848b, 0x954c529f, 0x9917ac7f,
-                    0x4ba4c007, 0xce2dbf0b, 0xfc7d8504, 0x2712580b, 0xd0293151,
-                    0xa4dbbff3,
-                }},
-                .n0_inv =
-                    {
-                        0x079056e5,
-                        0xe151dae1,
-                        0xd4f9deee,
-                        0xe18c4cab,
-                        0x868f9abe,
-                        0x8643ed1c,
-                        0x58022be6,
-                        0x8f8972c9,
-                    },
-                .exponent = 3,
-            },
-        .sig =
-            {
-                0xb13844fa, 0x9c7622d8, 0xda09bdc4, 0x79fde5c6, 0x7037a98b,
-                0x4d53a5cf, 0xabd7e9e4, 0x8456c575, 0x1f1fc5f6, 0x7870e2d5,
-                0x96a488c2, 0x7aa2263c, 0xbe5dbcf1, 0x34a6b2ff, 0x51bd23fa,
-                0xef582d6d, 0x52d0e2fa, 0x586c6b2f, 0x0aa1e7d0, 0x0d1f8a33,
-                0xf95e28bc, 0x70f13b45, 0x548740b0, 0x42be7f0d, 0x4254ac6f,
-                0xb7363b68, 0x48f1c461, 0x06b8f936, 0xd3274353, 0x121219e4,
-                0x98d8e770, 0x39e1bb17, 0x1a005ad4, 0x673985f4, 0x6f2cfd4a,
-                0xba537c5f, 0x1ca6bdad, 0x5e7bdb7d, 0x9b6783bd, 0xf3a1e998,
-                0xa5dc56f6, 0x149d6bb5, 0x9437917a, 0xfeb89880, 0x6e6ce5f9,
-                0x07bece66, 0xaab327ae, 0x1ff13a9e, 0x35e3b280, 0x645b636a,
-                0x34628104, 0xda8148ee, 0x95d22ce1, 0x78f4e1a0, 0xec9bdf2e,
-                0x42fc69d0, 0x4b8e5244, 0x192a0454, 0x7bfd31dc, 0x09a07d77,
-                0x2a3c745b, 0x8d5deeb7, 0xb539505c, 0xd5352a21, 0x22fd9774,
-                0x6fd4f48f, 0x60d2c5e9, 0x9292c725, 0x035797d8, 0x8bbb8d02,
-                0x977bdd02, 0x2da179b2, 0xa9779cc9, 0x13c5fe29, 0x607c3673,
-                0x8e52aeca, 0x6fd9ea3a, 0x5915a281, 0x69dc74c2, 0x162207fb,
-                0x1efa0497, 0x0a9e1a61, 0x3542ac58, 0x885d5d5e, 0x29623b26,
-                0x14cbc783, 0xa2f9511e, 0xfcb8986f, 0x6b7ca8d8, 0xde4c53b2,
-                0x4f8fd997, 0x2eded334, 0xe9d492dd, 0xd0751bc1, 0x9077d8cd,
-                0x5563ec91,
             },
         .enc_msg = &kEncMsgTest,
     },
