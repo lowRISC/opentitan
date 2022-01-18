@@ -17,8 +17,6 @@ OTBN_DECLARE_APP_SYMBOLS(
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp,
                          out_buf);  // Output buffer (message).
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp,
-                         in_exp);  // The RSA key exponent (e).
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp,
                          in_mod);  // The RSA modulus (n).
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp,
                          in_buf);  // The signature (s).
@@ -29,8 +27,6 @@ static const otbn_app_t kOtbnAppRsa =
     OTBN_APP_T_INIT(run_rsa_verify_3072_rr_modexp);
 static const otbn_addr_t kOtbnVarRsaOutBuf =
     OTBN_ADDR_T_INIT(run_rsa_verify_3072_rr_modexp, out_buf);
-static const otbn_addr_t kOtbnVarRsaInExp =
-    OTBN_ADDR_T_INIT(run_rsa_verify_3072_rr_modexp, in_exp);
 static const otbn_addr_t kOtbnVarRsaInMod =
     OTBN_ADDR_T_INIT(run_rsa_verify_3072_rr_modexp, in_mod);
 static const otbn_addr_t kOtbnVarRsaInBuf =
@@ -76,10 +72,6 @@ rom_error_t run_otbn_rsa_3072_modexp(
   otbn_init(&otbn);
   RETURN_IF_ERROR(otbn_load_app(&otbn, kOtbnAppRsa));
 
-  // Set the exponent (e).
-  RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, 1, &public_key->exponent,
-                                         kOtbnVarRsaInExp));
-
   // Set the modulus (n).
   RETURN_IF_ERROR(
       write_rsa_3072_int_to_otbn(&otbn, &public_key->n, kOtbnVarRsaInMod));
@@ -108,7 +100,7 @@ rom_error_t run_otbn_rsa_3072_modexp(
 rom_error_t sigverify_mod_exp_otbn(const sigverify_rsa_key_t *key,
                                    const sigverify_rsa_buffer_t *sig,
                                    sigverify_rsa_buffer_t *result) {
-  if (key->exponent != 65537 && key->exponent != 3) {
+  if (key->exponent != 65537) {
     return kErrorSigverifyBadExponent;
   }
 

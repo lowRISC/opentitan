@@ -15,8 +15,20 @@ rom_error_t sigverify_mod_exp_otbn_test(void) {
   sigverify_test_vector_t testvec = sigverify_tests[test_index];
 
   sigverify_rsa_buffer_t recovered_message;
-  RETURN_IF_ERROR(
-      sigverify_mod_exp_otbn(&testvec.key, &testvec.sig, &recovered_message));
+  rom_error_t result =
+      sigverify_mod_exp_otbn(&testvec.key, &testvec.sig, &recovered_message);
+
+  // Check for unsupported exponents, which should produce an error.
+  if (testvec.key.exponent != 65537) {
+    if (result == kErrorOk) {
+      // Unsupported exponent; this test should have failed.
+      LOG_ERROR("No error on signature with unsupported exponent.");
+      LOG_INFO("Test notes: %s", testvec.comment);
+      return kErrorUnknown;
+    } else {
+      return kErrorOk;
+    }
+  }
 
   bool passed = memcmp(testvec.encoded_msg, recovered_message.data,
                        sizeof(testvec.encoded_msg)) == 0;

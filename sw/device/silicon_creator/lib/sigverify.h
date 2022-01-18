@@ -48,6 +48,8 @@ inline uint32_t sigverify_rsa_key_id_get(
  * The actual implementation that is used (software or OTBN) is determined by
  * the life cycle state of the device and the OTP value.
  *
+ * The key exponent must be 65537; no other exponents are supported.
+ *
  * @param signature Signature to be verified.
  * @param key Signer's RSA public key.
  * @param act_digest Actual digest of the message being verified.

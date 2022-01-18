@@ -168,14 +168,7 @@ rom_error_t sigverify_mod_exp_ibex(const sigverify_rsa_key_t *key,
                                    sigverify_rsa_buffer_t *result) {
   sigverify_rsa_buffer_t buf;
 
-  if (key->exponent == 3) {
-    // buf = R^2 mod n
-    calc_r_square(key, &buf);
-    // result = sig * R mod n
-    mont_mul(key, sig, &buf, result);
-    // buf = sig^2 * R mod n
-    mont_mul(key, result, result, &buf);
-  } else if (key->exponent == 65537) {
+  if (key->exponent == 65537) {
     // result = R^2 mod n
     calc_r_square(key, result);
     // buf = sig * R mod n

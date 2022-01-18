@@ -56,7 +56,15 @@ bool test_main(void) {
   for (uint32_t i = 0; i < RSA_3072_VERIFY_NUM_TESTS; i++) {
     LOG_INFO("Starting rsa_3072_verify_test on test vector %d of %d...", i + 1,
              RSA_3072_VERIFY_NUM_TESTS);
-    rsa_3072_verify_test_vector_t testvec = rsa_3072_verify_tests[i];
+
+    // Extract test vector and check for unsupported exponents (e.g. 3); these
+￼   // signatures are expected to fail verification, so mark them invalid.
+￼   rsa_3072_verify_test_vector_t testvec = rsa_3072_verify_tests[i];
+￼   if (testvec.publicKey.e != 65537) {
+￼     testvec.valid = false;
+￼   }
+
+    // Run test and print out result.
     bool local_result = rsa_3072_verify_test(&testvec);
     if (local_result) {
       LOG_INFO("Finished rsa_3072_verify_test on test vector %d : ok", i + 1);

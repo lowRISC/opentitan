@@ -49,7 +49,7 @@ typedef struct sigverify_rsa_key {
    */
   uint32_t n0_inv[8];
   /**
-   * Exponent.
+   * Exponent. For sigverify, the only exponent supported is 65537.
    */
   uint32_t exponent;
 } sigverify_rsa_key_t;

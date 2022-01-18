@@ -132,10 +132,13 @@ rom_error_t compute_digest(void) {
 
 rom_error_t sigverify_test_exp_3(void) {
   uint32_t flash_exec = 0;
-  rom_error_t result = sigverify_rsa_verify(
-      &kSignatureExp3, &kKeyExp3, &act_digest, kLcStateRma, &flash_exec);
-  CHECK(flash_exec == kSigverifyFlashExec);
-  return result;
+  // Signature verification should fail when using exponent 3.
+  if (sigverify_rsa_verify(&kSignatureExp3, &kKeyExp3, &act_digest, kLcStateRma,
+                           &flash_exec) == kErrorOk) {
+    return kErrorUnknown;
+  }
+  CHECK(flash_exec == UINT32_MAX);
+  return kErrorOk;
 }
 
 rom_error_t sigverify_test_exp_65537(void) {
