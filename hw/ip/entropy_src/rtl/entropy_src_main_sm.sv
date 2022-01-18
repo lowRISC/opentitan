@@ -35,46 +35,48 @@ module entropy_src_main_sm #(
   output logic [StateWidth-1:0] main_sm_state_o,
   output logic                  main_sm_err_o
 );
+
 // Encoding generated with:
-// $ ./util/design/sparse-fsm-encode.py -d 3 -m 17 -n 8 \
-//      -s 1105235456 --language=sv
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 18 -n 8 \
+//      -s 281987796 --language=sv
 //
 // Hamming distance histogram:
 //
 //  0: --
 //  1: --
 //  2: --
-//  3: ||||||||||||||| (29.41%)
-//  4: |||||||||||||||||||| (38.97%)
-//  5: ||||||||| (17.65%)
-//  6: |||| (8.82%)
-//  7: || (4.41%)
-//  8:  (0.74%)
+//  3: |||||||||||||||| (31.37%)
+//  4: |||||||||||||||||||| (37.91%)
+//  5: |||||||| (15.69%)
+//  6: |||| (9.15%)
+//  7: ||| (5.88%)
+//  8: --
 //
 // Minimum Hamming distance: 3
-// Maximum Hamming distance: 8
-// Minimum Hamming weight: 1
-// Maximum Hamming weight: 6
+// Maximum Hamming distance: 7
+// Minimum Hamming weight: 2
+// Maximum Hamming weight: 7
 //
 
   typedef enum logic [StateWidth-1:0] {
-    Idle              = 8'b10010011, // idle
-    BootHTRunning     = 8'b01111011, // boot mode, wait for health test done pulse
-    BootPostHTChk     = 8'b01001111, // boot mode, wait for post health test packer not empty state
-    StartupHTStart    = 8'b11100110, // startup mode, pulse the sha3 start input
-    StartupPhase1     = 8'b11010100, // startup mode, look for first test pass/fail
-    StartupPass1      = 8'b00100000, // startup mode, look for first test pass/fail, done if pass
-    StartupFail1      = 8'b11110001, // startup mode, look for second fail, alert if fail
-    ContHTStart       = 8'b00011101, // continuous test mode, pulse the sha3 start input
-    ContHTRunning     = 8'b10101111, // continuous test mode, wait for health test done pulse
-    Sha3MsgDone       = 8'b10001001, // sha3 mode, all input messages added, ready to process
-    Sha3Prep          = 8'b01101100, // sha3 mode, request csrng arb to reduce power
-    Sha3Process       = 8'b10111000, // sha3 mode, pulse the sha3 process input
-    Sha3Valid         = 8'b10011110, // sha3 mode, wait for sha3 valid indication
-    Sha3Done          = 8'b00110110, // sha3 mode, capture sha3 result, pulse done input
-    Sha3Quiesce       = 8'b01011000, // sha3 mode, goto alert state or continuous check mode
-    AlertState        = 8'b00001010, // if some alert condition occurs, hang here until sw handles
-    Error             = 8'b01000001  // illegal state reached and hang
+    Idle              = 8'b10001000, // idle
+    BootHTRunning     = 8'b11101100, // boot mode, wait for health test done pulse
+    BootPostHTChk     = 8'b01000001, // boot mode, wait for post health test packer not empty state
+    StartupHTStart    = 8'b00100110, // startup mode, pulse the sha3 start input
+    StartupPhase1     = 8'b11110110, // startup mode, look for first test pass/fail
+    StartupPass1      = 8'b01110000, // startup mode, look for first test pass/fail, done if pass
+    StartupFail1      = 8'b00101101, // startup mode, look for second fail, alert if fail
+    ContHTStart       = 8'b01101010, // continuous test mode, pulse the sha3 start input
+    ContHTRunning     = 8'b11111001, // continuous test mode, wait for health test done pulse
+    Sha3MsgDone       = 8'b10010011, // sha3 mode, all input messages added, ready to process
+    Sha3Prep          = 8'b00001011, // sha3 mode, request csrng arb to reduce power
+    Sha3Process       = 8'b01111111, // sha3 mode, pulse the sha3 process input
+    Sha3Valid         = 8'b00010101, // sha3 mode, wait for sha3 valid indication
+    Sha3Done          = 8'b10111010, // sha3 mode, capture sha3 result, pulse done input
+    Sha3Quiesce       = 8'b00011110, // sha3 mode, goto alert state or continuous check mode
+    AlertState        = 8'b11000010, // if some alert condition occurs, pulse an alert indication
+    AlertHang         = 8'b10100001, // after pulsing alert signal, hang here until sw handles
+    Error             = 8'b11001111  // illegal state reached and hang
   } state_e;
 
   state_e state_d, state_q;
@@ -261,6 +263,9 @@ module entropy_src_main_sm #(
       end
       AlertState: begin
         main_sm_alert_o = 1'b1;
+        state_d = AlertHang;
+      end
+      AlertHang: begin
         if (!enable_i) begin
           state_d = Idle;
         end
