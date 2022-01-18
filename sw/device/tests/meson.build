@@ -769,6 +769,7 @@ aon_timer_wdog_bite_reset_test = declare_dependency(
       sw_lib_runtime_log,
       sw_lib_testing_aon_timer_testutils,
       sw_lib_testing_rstmgr_testutils,
+      sw_lib_testing_pwrmgr_testutils,
       top_earlgrey,
     ],
   ),
