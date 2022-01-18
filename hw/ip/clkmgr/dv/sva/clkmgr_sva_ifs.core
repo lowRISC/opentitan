@@ -12,6 +12,8 @@ filesets:
     files:
       - clkmgr_div_sva_if.sv
       - clkmgr_gated_clock_sva_if.sv
+      - clkmgr_aon_cg_en_sva_if.sv
+      - clkmgr_cg_en_sva_if.sv
     file_type: systemVerilogSource
 
 targets:
