@@ -19,6 +19,14 @@ static_assert(ALERT_HANDLER_PARAM_N_PHASES == 4,
 static_assert(ALERT_HANDLER_PARAM_N_LOC_ALERT == 7,
               "Expected seven local alerts!");
 
+/**
+ * Macro for generating the case statements for local alert lock CSRS.
+ */
+#define LOC_ALERT_REGWENS_CASE_(loc_alert_, value_)                       \
+  case loc_alert_:                                                        \
+    regwen_offset = ALERT_HANDLER_LOC_ALERT_REGWEN_##value_##_REG_OFFSET; \
+    break;
+
 // TODO(#9899): add static assert for accumulator_threshold field size
 
 /**
@@ -506,6 +514,44 @@ dif_result_t dif_alert_handler_is_alert_locked(
   return kDifOk;
 }
 
+dif_result_t dif_alert_handler_lock_local_alert(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_local_alert_t local_alert) {
+  if (alert_handler == NULL) {
+    return kDifBadArg;
+  }
+
+  ptrdiff_t regwen_offset;
+  switch (local_alert) {
+    LIST_OF_LOC_ALERTS(LOC_ALERT_REGWENS_CASE_)
+    default:
+      return kDifBadArg;
+  }
+
+  mmio_region_write32(alert_handler->base_addr, regwen_offset, 0);
+
+  return kDifOk;
+}
+
+dif_result_t dif_alert_handler_is_local_alert_locked(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_local_alert_t local_alert, bool *is_locked) {
+  if (alert_handler == NULL || is_locked == NULL) {
+    return kDifBadArg;
+  }
+
+  ptrdiff_t regwen_offset;
+  switch (local_alert) {
+    LIST_OF_LOC_ALERTS(LOC_ALERT_REGWENS_CASE_)
+    default:
+      return kDifBadArg;
+  }
+
+  *is_locked = !mmio_region_read32(alert_handler->base_addr, regwen_offset);
+
+  return kDifOk;
+}
+
 dif_result_t dif_alert_handler_lock_ping_timer(
     const dif_alert_handler_t *alert_handler) {
   if (alert_handler == NULL) {
@@ -899,3 +945,5 @@ dif_result_t dif_alert_handler_get_class_state(
 
   return kDifOk;
 }
+
+#undef LOC_ALERT_REGWENS_CASE_

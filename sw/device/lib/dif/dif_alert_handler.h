@@ -322,7 +322,7 @@ typedef struct dif_alert_handler_config {
  * Otherwise, configurations may only be locked by performing subsequent calls
  * to each component-specific locking DIF: `dif_alert_handler_lock_*(...)`.
  *
- * @param handler An alert handler handle.
+ * @param alert_handler An alert handler handle.
  * @param config Runtime configuration parameters.
  * @param locked The locked state to set for each configuration.
  * @return The result of the operation.
@@ -338,7 +338,7 @@ dif_result_t dif_alert_handler_configure(
  * This operation is lock-protected, meaning once the configuration is locked,
  * it cannot be reconfigured until after a system reset.
  *
- * @param handler An alert handler handle.
+ * @param alert_handler An alert handler handle.
  * @param alert The alert to be configured.
  * @param alert_class The class to assign the alert to.
  * @param enabled The enablement state to configure the alert in.
@@ -357,7 +357,7 @@ dif_result_t dif_alert_handler_configure_alert(
  * This operation is lock-protected, meaning once the configuration is locked,
  * it cannot be reconfigured until after a system reset.
  *
- * @param handler An alert handler handle.
+ * @param alert_handler An alert handler handle.
  * @param local_alert The local alert to be configured.
  * @param alert_class The class to assign the alert to.
  * @param enabled The enablement state to configure the alert in.
@@ -381,7 +381,7 @@ dif_result_t dif_alert_handler_configure_local_alert(
  * the accumulation counter threshold configuration for the class, however, the
  * escalation protocol will not trigger.
  *
- * @param handler An alert handler handle.
+ * @param alert_handler An alert handler handle.
  * @param alert_class The class to be configured.
  * @param config The escalation protocol configuration.
  * @param enabled The enablement state of the class escalation protocol.
@@ -404,7 +404,7 @@ dif_alert_handler_configure_class(const dif_alert_handler_t *alert_handler,
  * Therefore, this DIF should be invoked after configuring and enabling each
  * (local) alert.
  *
- * @param handler An alert handler handle.
+ * @param alert_handler An alert handler handle.
  * @param ping_timeout The alert ping timeout, in cycles.
  * @param enabled The enablement state to configure the ping timer in.
  * @param locked The locked state to configure ping timer in.
@@ -424,7 +424,7 @@ OT_WARN_UNUSED_RESULT dif_result_t dif_alert_handler_configure_ping_timer(
  * Therefore, this DIF should be invoked after configuring and enabling each
  * (local) alert.
  *
- * @param handler An alert handler handle.
+ * @param alert_handler An alert handler handle.
  * @param locked The locked state to configure ping timer in after enabling it.
  * @return The result of the operation.
  */
@@ -432,7 +432,7 @@ OT_WARN_UNUSED_RESULT dif_result_t dif_alert_handler_ping_timer_set_enabled(
     const dif_alert_handler_t *alert_handler, dif_toggle_t locked);
 
 /**
- * Locks out alert handler alert configuration.
+ * Locks out an alert handler alert configuration.
  *
  * This operation cannot be undone, and should be performed at the end of
  * configuring the alert handler in early boot.
@@ -451,7 +451,7 @@ dif_result_t dif_alert_handler_lock_alert(
 /**
  * Checks whether an alert handler's alert is locked.
  *
- * @param handler An alert handler handle.
+ * @param alert_handler An alert handler handle.
  * @param alert The alert to check is locked.
  * @param is_locked Out-param for the locked state.
  * @return The result of the operation.
@@ -462,6 +462,37 @@ dif_result_t dif_alert_handler_is_alert_locked(
     bool *is_locked);
 
 /**
+ * Locks out an alert handler local alert configuration.
+ *
+ * This operation cannot be undone, and should be performed at the end of
+ * configuring the alert handler in early boot.
+ *
+ * This function is reentrant: calling it while functionality is locked will
+ * have no effect and return `kDifOk`.
+ *
+ * @param alert_handler An alert handler handle.
+ * @param local_alert The local alert to lock.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_alert_handler_lock_local_alert(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_local_alert_t local_alert);
+
+/**
+ * Checks whether an alert handler's local alert is locked.
+ *
+ * @param alert_handler An alert handler handle.
+ * @param local_alert The local alert to check is locked.
+ * @param is_locked Out-param for the locked state.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_alert_handler_is_local_alert_locked(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_local_alert_t local_alert, bool *is_locked);
+
+/**
  * Locks out alert handler ping timer configuration.
  *
  * This operation cannot be undone, and should be performed at the end of
@@ -470,7 +501,7 @@ dif_result_t dif_alert_handler_is_alert_locked(
  * This function is reentrant: calling it while functionality is locked will
  * have no effect and return `kDifOk`.
  *
- * @param handler An alert handler handle.
+ * @param alert_handler An alert handler handle.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
@@ -480,7 +511,7 @@ dif_result_t dif_alert_handler_lock_ping_timer(
 /**
  * Checks whether alert handler's ping timer is locked.
  *
- * @param handler An alert handler handle.
+ * @param alert_handler An alert handler handle.
  * @param is_locked Out-param for the locked state.
  * @return The result of the operation.
  */
@@ -493,7 +524,7 @@ dif_result_t dif_alert_handler_is_ping_timer_locked(
  *
  * Note that multiple alerts may be causes at the same time.
  *
- * @param handler An alert handler handle.
+ * @param alert_handler An alert handler handle.
  * @param alert The alert to check.
  * @param is_cause Out-param for whether this alert is a cause.
  * @return The result of the operation.
@@ -506,7 +537,7 @@ dif_result_t dif_alert_handler_alert_is_cause(
 /**
  * Clears an alert from the cause vector, similar to an IRQ acknowledgement.
  *
- * @param handler An alert handler handle.
+ * @param alert_handler An alert handler handle.
  * @param alert The alert to acknowledge.
  * @return The result of the operation.
  */
@@ -519,7 +550,7 @@ dif_result_t dif_alert_handler_alert_acknowledge(
  *
  * Note that multiple alerts may be causes at the same time.
  *
- * @param handler An alert handler handle.
+ * @param alert_handler An alert handler handle.
  * @param alert The alert to check.
  * @param is_cause Out-param for whether this alert is a cause.
  * @return The result of the operation.
@@ -533,7 +564,7 @@ dif_result_t dif_alert_handler_local_alert_is_cause(
  * Clears a local alert from the cause vector, similar to an IRQ
  * acknowledgement.
  *
- * @param handler An alert handler handle.
+ * @param alert_handler An alert handler handle.
  * @param alert The alert to acknowledge.
  * @return The result of the operation.
  */
@@ -549,7 +580,7 @@ dif_result_t dif_alert_handler_local_alert_acknowledge(
  * function may suddenly begin returning `false` instead of `true` without
  * software invervention, if escalation has been triggered.
  *
- * @param handler An alert handler handle.
+ * @param alert_handler An alert handler handle.
  * @param alert_class The class to check.
  * @param can_clear Out-param for the clear enablement state.
  * @return The result of the operation.
@@ -564,7 +595,7 @@ dif_result_t dif_alert_handler_escalation_can_clear(
  *
  * This operation is similar to locking in that it cannot be undone.
  *
- * @param handler An alert handler handle.
+ * @param alert_handler An alert handler handle.
  * @param alert_class The class to disable clearing for.
  * @return The result of the operation.
  */
@@ -579,7 +610,7 @@ dif_result_t dif_alert_handler_escalation_disable_clearing(
  * This operation can be disabled with
  * `dif_alert_handler_escalation_disable_clearing()`.
  *
- * @param handler An alert handler handle.
+ * @param alert_handler An alert handler handle.
  * @param alert_class The class to clear an escalation for.
  * @return The result of the operation.
  */
@@ -599,7 +630,7 @@ dif_result_t dif_alert_handler_escalation_clear(
  * This value is cleared as a side-effect of
  * `dif_alert_handler_escalation_clear()`.
  *
- * @param handler An alert handler handle.
+ * @param alert_handler An alert handler handle.
  * @param alert_class The class to get the accumulator for.
  * @param alerts Out-param for the accumulator.
  * @return The result of the operation.
@@ -618,7 +649,7 @@ dif_result_t dif_alert_handler_get_accumulator(
  * If in an escalation phase, it returns the number of cycles that phase
  * has been active for.
  *
- * @param handler An alert handler handle.
+ * @param alert_handler An alert handler handle.
  * @param alert_class The class to set the counter for.
  * @param cycles Out-param for the counter.
  * @return The result of the operation.
@@ -633,7 +664,7 @@ dif_result_t dif_alert_handler_get_escalation_counter(
  *
  * See `dif_alert_handler_class_state_t` for potential states.
  *
- * @param handler An alert handler handle.
+ * @param alert_handler An alert handler handle.
  * @param alert_class The class to get the state of
  * @param state Out-param for the class state.
  * @return The result of the operation.

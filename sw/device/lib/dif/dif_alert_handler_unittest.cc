@@ -633,7 +633,7 @@ TEST_P(AlertLockTest, LockAlert) {
   EXPECT_EQ(dif_alert_handler_lock_alert(&alert_handler_, alert), kDifOk);
 }
 
-INSTANTIATE_TEST_SUITE_P(LockAllAlert, AlertLockTest,
+INSTANTIATE_TEST_SUITE_P(LockAllAlerts, AlertLockTest,
                          testing::Range(0, kAlerts));
 
 TEST_F(AlertLockTest, BadArgs) {
@@ -648,6 +648,87 @@ TEST_F(AlertLockTest, BadArgs) {
 
   EXPECT_EQ(dif_alert_handler_lock_alert(nullptr, 0), kDifBadArg);
   EXPECT_EQ(dif_alert_handler_lock_alert(&alert_handler_, kAlerts), kDifBadArg);
+}
+
+class LocalAlertLockTest
+    : public AlertHandlerTest,
+      public testing::WithParamInterface<dif_alert_handler_local_alert_t> {};
+
+TEST_P(LocalAlertLockTest, IsLocalAlertLocked) {
+  dif_alert_handler_local_alert_t local_alert = GetParam();
+  bool is_locked = true;
+
+  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_REGWEN_0_REG_OFFSET +
+                    static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
+                ALERT_HANDLER_LOC_ALERT_REGWEN_0_REG_RESVAL);
+  EXPECT_EQ(dif_alert_handler_is_local_alert_locked(&alert_handler_,
+                                                    local_alert, &is_locked),
+            kDifOk);
+  EXPECT_FALSE(is_locked);
+
+  is_locked = false;
+  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_REGWEN_0_REG_OFFSET +
+                    static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
+                0);
+  EXPECT_EQ(dif_alert_handler_is_local_alert_locked(&alert_handler_,
+                                                    local_alert, &is_locked),
+            kDifOk);
+  EXPECT_TRUE(is_locked);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    AllLocalAlertsLockedAndUnlocked, LocalAlertLockTest,
+    testing::Values(kDifAlertHandlerLocalAlertAlertPingFail,
+                    kDifAlertHandlerLocalAlertEscalationPingFail,
+                    kDifAlertHandlerLocalAlertAlertIntegrityFail,
+                    kDifAlertHandlerLocalAlertEscalationIntegrityFail,
+                    kDifAlertHandlerLocalAlertBusIntegrityFail,
+                    kDifAlertHandlerLocalAlertShadowedUpdateError,
+                    kDifAlertHandlerLocalAlertShadowedStorageError));
+
+TEST_P(LocalAlertLockTest, LockLocalAlert) {
+  dif_alert_handler_local_alert_t local_alert = GetParam();
+
+  EXPECT_WRITE32(ALERT_HANDLER_LOC_ALERT_REGWEN_0_REG_OFFSET +
+                     static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
+                 0);
+  EXPECT_EQ(dif_alert_handler_lock_local_alert(&alert_handler_, local_alert),
+            kDifOk);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    LockAllLocalAlerts, LocalAlertLockTest,
+    testing::Values(kDifAlertHandlerLocalAlertAlertPingFail,
+                    kDifAlertHandlerLocalAlertEscalationPingFail,
+                    kDifAlertHandlerLocalAlertAlertIntegrityFail,
+                    kDifAlertHandlerLocalAlertEscalationIntegrityFail,
+                    kDifAlertHandlerLocalAlertBusIntegrityFail,
+                    kDifAlertHandlerLocalAlertShadowedUpdateError,
+                    kDifAlertHandlerLocalAlertShadowedStorageError));
+
+TEST_F(LocalAlertLockTest, BadArgs) {
+  bool is_locked;
+  EXPECT_EQ(
+      dif_alert_handler_is_local_alert_locked(
+          nullptr, kDifAlertHandlerLocalAlertShadowedStorageError, &is_locked),
+      kDifBadArg);
+  EXPECT_EQ(dif_alert_handler_is_local_alert_locked(
+                &alert_handler_,
+                static_cast<dif_alert_handler_local_alert_t>(kLocalAlerts),
+                &is_locked),
+            kDifBadArg);
+  EXPECT_EQ(
+      dif_alert_handler_is_local_alert_locked(
+          &alert_handler_, kDifAlertHandlerLocalAlertAlertPingFail, nullptr),
+      kDifBadArg);
+
+  EXPECT_EQ(dif_alert_handler_lock_local_alert(
+                nullptr, kDifAlertHandlerLocalAlertAlertPingFail),
+            kDifBadArg);
+  EXPECT_EQ(dif_alert_handler_lock_local_alert(
+                &alert_handler_,
+                static_cast<dif_alert_handler_local_alert_t>(kLocalAlerts)),
+            kDifBadArg);
 }
 
 class PingTimerLockTest : public AlertHandlerTest {};
