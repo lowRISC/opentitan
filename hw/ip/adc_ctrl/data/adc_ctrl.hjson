@@ -71,6 +71,10 @@
         { bits: "0",
           name: "adc_enable",
           desc: "1'b0: to power down ADC and ADC_CTRL FSM will enter the reset state; 1'b1: to power up ADC and ADC_CTRL FSM will start",
+          tags: [
+            // Writes to ADC_EN_CTRL.ADC_ENABLE will cause side effects
+            "excl:CsrNonInitTests:CsrExclWrite:CsrExclWriteCheck"
+          ]
         }
         { bits: "1",
           name: "oneshot_mode",
