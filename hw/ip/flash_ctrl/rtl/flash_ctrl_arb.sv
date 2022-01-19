@@ -83,37 +83,73 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
   output flash_lcmgr_phase_e phase_o,
 
   // indication that sw has been selected
-  output flash_sel_e sel_o
+  output flash_sel_e sel_o,
+
+  // fsm sparse error
+  output logic fsm_err_o
 
 );
 
   // arbitration FSM
-  typedef enum logic [1:0] {
-    StReset,  // at reset wait for flash phy to be ready
-    StHw,
-    StSwActive,
-    StSwIdle
-  } state_e;
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 5 -n 10 \
+  //      -s 1044018132 --language=sv --avoid-zero
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: --
+  //  4: --
+  //  5: |||||||||||||||||||| (50.00%)
+  //  6: |||||||||||||||| (40.00%)
+  //  7: |||| (10.00%)
+  //  8: --
+  //  9: --
+  // 10: --
+  //
+  // Minimum Hamming distance: 5
+  // Maximum Hamming distance: 7
+  // Minimum Hamming weight: 5
+  // Maximum Hamming weight: 7
+  //
+  localparam int StateWidth = 10;
+  typedef enum logic [StateWidth-1:0] {
+    StReset    = 10'b1010101011,
+    StHw       = 10'b1111010001,
+    StSwActive = 10'b1011001100,
+    StSwIdle   = 10'b0101100111,
+    StInvalid  = 10'b0111111010
+  } arb_state_e;
 
   flash_sel_e func_sel;
-  state_e state_q, state_d;
+  arb_state_e state_q, state_d;
 
   logic sw_req;
   assign sw_req = sw_ctrl_i.start.q;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      state_q <= StReset;
-    end else begin
-      state_q <= state_d;
-    end
-  end
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  logic [StateWidth-1:0] state_raw_q;
+  assign state_q = arb_state_e'(state_raw_q);
+  prim_sparse_fsm_flop #(
+    .StateEnumT(arb_state_e),
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(StReset))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .state_i ( state_d     ),
+    .state_o ( state_raw_q )
+  );
 
   always_comb begin
 
     func_sel = NoneSel;
     fifo_clr_o = 1'b0;
     state_d = state_q;
+    fsm_err_o = 1'b0;
 
     unique case (state_q)
       StReset: begin
@@ -158,7 +194,15 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
         end
       end
 
-      default:;
+      StInvalid: begin
+        fsm_err_o = 1'b1;
+      end
+
+      default: begin
+        state_d = StInvalid;
+      end
+
+
     endcase // unique case (state_q)
   end // always_comb
 

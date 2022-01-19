@@ -973,6 +973,7 @@ module flash_ctrl_core_reg_top (
   logic fault_status_reg_intg_err_qs;
   logic fault_status_phy_intg_err_qs;
   logic fault_status_lcmgr_err_qs;
+  logic fault_status_arb_fsm_err_qs;
   logic fault_status_storage_err_qs;
   logic [19:0] err_addr_qs;
   logic ecc_single_err_cnt_we;
@@ -11508,7 +11509,32 @@ module flash_ctrl_core_reg_top (
     .qs     (fault_status_lcmgr_err_qs)
   );
 
-  //   F[storage_err]: 9:9
+  //   F[arb_fsm_err]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_fault_status_arb_fsm_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fault_status.arb_fsm_err.de),
+    .d      (hw2reg.fault_status.arb_fsm_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.fault_status.arb_fsm_err.q),
+
+    // to register interface (read)
+    .qs     (fault_status_arb_fsm_err_qs)
+  );
+
+  //   F[storage_err]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -13603,7 +13629,8 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[6] = fault_status_reg_intg_err_qs;
         reg_rdata_next[7] = fault_status_phy_intg_err_qs;
         reg_rdata_next[8] = fault_status_lcmgr_err_qs;
-        reg_rdata_next[9] = fault_status_storage_err_qs;
+        reg_rdata_next[9] = fault_status_arb_fsm_err_qs;
+        reg_rdata_next[10] = fault_status_storage_err_qs;
       end
 
       addr_hit[87]: begin
