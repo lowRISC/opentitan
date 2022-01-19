@@ -971,8 +971,12 @@ static void peripheral_irqs_enable(void) {
       dif_spi_host_irq_restore_all(&spi_host1, &spi_host_irqs));
   CHECK_DIF_OK(
       dif_sysrst_ctrl_irq_restore_all(&sysrst_ctrl_aon, &sysrst_ctrl_irqs));
-  CHECK_DIF_OK(
-      dif_uart_irq_restore_all(&uart0, &uart_irqs));
+  // lowrisc/opentitan#8656: Skip UART0 in non-DV setups due to interference
+  // from the logging facility.
+  if (kDeviceType == kDeviceSimDV) {
+    CHECK_DIF_OK(
+        dif_uart_irq_restore_all(&uart0, &uart_irqs));
+  }
   CHECK_DIF_OK(
       dif_uart_irq_restore_all(&uart1, &uart_irqs));
   CHECK_DIF_OK(
@@ -1305,17 +1309,21 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from sysrst_ctrl_aon is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralUart0;
-  for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
-       irq <= kDifUartIrqRxParityErr; ++irq) {
-    uart_irq_expected = irq;
-    LOG_INFO("Triggering uart0 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_uart_irq_force(&uart0, irq));
+  // lowrisc/opentitan#8656: Skip UART0 in non-DV setups due to interference
+  // from the logging facility.
+  if (kDeviceType == kDeviceSimDV) {
+    peripheral_expected = kTopEarlgreyPlicPeripheralUart0;
+    for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
+         irq <= kDifUartIrqRxParityErr; ++irq) {
+      uart_irq_expected = irq;
+      LOG_INFO("Triggering uart0 IRQ %d.", irq);
+      CHECK_DIF_OK(dif_uart_irq_force(&uart0, irq));
 
-    CHECK(uart_irq_serviced == irq,
-          "Incorrect uart0 IRQ serviced: exp = %d, obs = %d", irq,
-          uart_irq_serviced);
-    LOG_INFO("IRQ %d from uart0 is serviced.", irq);
+      CHECK(uart_irq_serviced == irq,
+            "Incorrect uart0 IRQ serviced: exp = %d, obs = %d", irq,
+            uart_irq_serviced);
+      LOG_INFO("IRQ %d from uart0 is serviced.", irq);
+    }
   }
 
   peripheral_expected = kTopEarlgreyPlicPeripheralUart1;

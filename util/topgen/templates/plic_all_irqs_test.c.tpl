@@ -146,8 +146,22 @@ static void peripheral_irqs_enable(void) {
 <%
   if p.name == "aon_timer": continue
 %>\
-  CHECK_DIF_OK(
-      dif_${p.name}_irq_restore_all(${args(p)}, &${p.name}_irqs));
+<%
+  indent = ""
+%>\
+  % if p.inst_name == "uart0":
+<%
+  indent = "  "
+%>\
+  // lowrisc/opentitan#8656: Skip UART0 in non-DV setups due to interference
+  // from the logging facility.
+  if (kDeviceType == kDeviceSimDV) {
+  % endif
+  ${indent}CHECK_DIF_OK(
+  ${indent}    dif_${p.name}_irq_restore_all(${args(p)}, &${p.name}_irqs));
+  % if p.inst_name == "uart0":
+  }
+  % endif
   % endfor
 }
 
@@ -162,18 +176,32 @@ static void peripheral_irqs_enable(void) {
  */
 static void peripheral_irqs_trigger(void) {
   % for p in helper.irq_peripherals:
-  peripheral_expected = ${p.plic_name};
-  for (dif_${p.name}_irq_t irq = ${p.start_irq};
-       irq <= ${p.end_irq}; ++irq) {
-    ${p.name}_irq_expected = irq;
-    LOG_INFO("Triggering ${p.inst_name} IRQ %d.", irq);
-    CHECK_DIF_OK(dif_${p.name}_irq_force(&${p.inst_name}, irq));
+<%
+  indent = ""
+%>\
+  % if p.inst_name == "uart0":
+<%
+  indent = "  "
+%>\
+  // lowrisc/opentitan#8656: Skip UART0 in non-DV setups due to interference
+  // from the logging facility.
+  if (kDeviceType == kDeviceSimDV) {
+  % endif
+  ${indent}peripheral_expected = ${p.plic_name};
+  ${indent}for (dif_${p.name}_irq_t irq = ${p.start_irq};
+  ${indent}     irq <= ${p.end_irq}; ++irq) {
+  ${indent}  ${p.name}_irq_expected = irq;
+  ${indent}  LOG_INFO("Triggering ${p.inst_name} IRQ %d.", irq);
+  ${indent}  CHECK_DIF_OK(dif_${p.name}_irq_force(&${p.inst_name}, irq));
 
-    CHECK(${p.name}_irq_serviced == irq,
-          "Incorrect ${p.inst_name} IRQ serviced: exp = %d, obs = %d", irq,
-          ${p.name}_irq_serviced);
-    LOG_INFO("IRQ %d from ${p.inst_name} is serviced.", irq);
+  ${indent}  CHECK(${p.name}_irq_serviced == irq,
+  ${indent}        "Incorrect ${p.inst_name} IRQ serviced: exp = %d, obs = %d", irq,
+  ${indent}        ${p.name}_irq_serviced);
+  ${indent}  LOG_INFO("IRQ %d from ${p.inst_name} is serviced.", irq);
+  ${indent}}
+  % if p.inst_name == "uart0":
   }
+  % endif
 ${"" if loop.last else "\n"}\
   % endfor
 }
