@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 { name: "RV_CORE_IBEX",
   clocking: [{clock: "clk_i", reset: "rst_ni", primary: true},
+             {clock: "clk_edn_i", reset: "rst_edn_ni"}
              {clock: "clk_esc_i", reset: "rst_esc_ni"},
             ],
   bus_interfaces: [
@@ -134,6 +135,13 @@
       name:    "nmi_wdog",
       act:     "rcv",
       package: "",
+    },
+
+    { struct:  "edn",
+      type:    "req_rsp",
+      name:    "edn",
+      act:     "req",
+      package: "edn_pkg",
     },
 
   ],
@@ -666,7 +674,9 @@
       { name: "RND_DATA",
         desc: "Random data from EDN",
         swaccess: "ro",
-        hwaccess: "hwo",
+        hwaccess: "hrw",
+        hwext: "true",
+        hwre: "true",
         fields: [
           { bits: "31:0",
             name: "DATA",
@@ -696,6 +706,16 @@
             desc: '''
               When set, the data in !!RND_DATA is valid. When clear an EDN
               request for new data for !!RND_DATA is pending.
+            '''
+          },
+          { bits: "1",
+            resval: "0",
+            name: "RND_DATA_FIPS",
+            desc: '''
+              When !!RND_STATUS.RND_DATA_VALID is 1, this bit indicates whether
+              !!RND_DATA is fips quality.
+
+              When !!RND_STATUS.RND_DATA_VALID is 0, this bit has no meaning.
             '''
           },
         ]

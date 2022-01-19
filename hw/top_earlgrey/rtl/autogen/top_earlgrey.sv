@@ -562,10 +562,10 @@ module top_earlgrey #(
   logic       usbdev_usb_aon_wake_ack;
   logic       usbdev_usb_suspend;
   usbdev_pkg::awk_state_t       pinmux_aon_usb_state_debug;
-  edn_pkg::edn_req_t [6:0] edn0_edn_req;
-  edn_pkg::edn_rsp_t [6:0] edn0_edn_rsp;
-  edn_pkg::edn_req_t [6:0] edn1_edn_req;
-  edn_pkg::edn_rsp_t [6:0] edn1_edn_rsp;
+  edn_pkg::edn_req_t [7:0] edn0_edn_req;
+  edn_pkg::edn_rsp_t [7:0] edn0_edn_rsp;
+  edn_pkg::edn_req_t [7:0] edn1_edn_req;
+  edn_pkg::edn_rsp_t [7:0] edn1_edn_rsp;
   otp_ctrl_pkg::otbn_otp_key_req_t       otp_ctrl_otbn_otp_key_req;
   otp_ctrl_pkg::otbn_otp_key_rsp_t       otp_ctrl_otbn_otp_key_rsp;
   otp_ctrl_pkg::otp_keymgr_key_t       otp_ctrl_otp_keymgr_key;
@@ -751,6 +751,7 @@ module top_earlgrey #(
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp4;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp5;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp6;
+  edn_pkg::edn_rsp_t unused_edn1_edn_rsp7;
 
   // assign partial inter-module tie-off
   assign unused_edn1_edn_rsp1 = edn1_edn_rsp[1];
@@ -759,12 +760,14 @@ module top_earlgrey #(
   assign unused_edn1_edn_rsp4 = edn1_edn_rsp[4];
   assign unused_edn1_edn_rsp5 = edn1_edn_rsp[5];
   assign unused_edn1_edn_rsp6 = edn1_edn_rsp[6];
+  assign unused_edn1_edn_rsp7 = edn1_edn_rsp[7];
   assign edn1_edn_req[1] = '0;
   assign edn1_edn_req[2] = '0;
   assign edn1_edn_req[3] = '0;
   assign edn1_edn_req[4] = '0;
   assign edn1_edn_req[5] = '0;
   assign edn1_edn_req[6] = '0;
+  assign edn1_edn_req[7] = '0;
 
 
   // OTP HW_CFG Broadcast signals.
@@ -2516,6 +2519,8 @@ module top_earlgrey #(
       .pwrmgr_cpu_en_i(pwrmgr_aon_fetch_en),
       .pwrmgr_o(rv_core_ibex_pwrmgr),
       .nmi_wdog_i(aon_timer_aon_nmi_wdog_timer_bark),
+      .edn_o(edn0_edn_req[7]),
+      .edn_i(edn0_edn_rsp[7]),
       .corei_tl_h_o(main_tl_rv_core_ibex__corei_req),
       .corei_tl_h_i(main_tl_rv_core_ibex__corei_rsp),
       .cored_tl_h_o(main_tl_rv_core_ibex__cored_req),
@@ -2527,8 +2532,10 @@ module top_earlgrey #(
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
+      .clk_edn_i (clkmgr_aon_clocks.clk_main_infra),
       .clk_esc_i (clkmgr_aon_clocks.clk_io_div4_secure),
       .rst_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
+      .rst_edn_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
       .rst_esc_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
   // interrupt assignments

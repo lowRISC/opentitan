@@ -38,7 +38,7 @@
       type:    "req_rsp",
       name:    "edn",
       act:     "rsp",
-      width:   "7",
+      width:   "8",
       default: "'0",
       desc:    '''
                The collection of peripheral ports supported by edn. The width (4)

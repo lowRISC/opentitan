@@ -38,6 +38,9 @@ module rv_core_ibex
   // Clock and Reset
   input  logic        clk_i,
   input  logic        rst_ni,
+  // Clock domain for edn
+  input  logic        clk_edn_i,
+  input  logic        rst_edn_ni,
   // Clock domain for escalation receiver
   input  logic        clk_esc_i,
   input  logic        rst_esc_ni,
@@ -87,6 +90,10 @@ module rv_core_ibex
   // peripheral interface access
   input  tlul_pkg::tl_h2d_t cfg_tl_d_i,
   output tlul_pkg::tl_d2h_t cfg_tl_d_o,
+
+  // connection to edn
+  output edn_pkg::edn_req_t edn_o,
+  input edn_pkg::edn_rsp_t edn_i,
 
   // interrupts and alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
@@ -615,9 +622,66 @@ module rv_core_ibex
   // RND Data //
   //////////////
 
-  // Not yet implemented, tie-off all signals for now
-  assign hw2reg.rnd_data.de = 1'b0;
-  assign hw2reg.rnd_data.d  = '0;
+  logic [31:0] rnd_data_q, rnd_data_d;
+  logic rnd_valid_q, rnd_valid_d;
+  logic rnd_fips_q, rnd_fips_d;
+  logic edn_req;
+  logic [31:0] edn_data;
+  logic edn_ack;
+  logic edn_fips;
 
-  assign hw2reg.rnd_status.d = 1'b0;
+  always_comb begin
+    rnd_valid_d = rnd_valid_q;
+    rnd_data_d  = rnd_data_q;
+    rnd_fips_d  = rnd_fips_q;
+
+    if (reg2hw.rnd_data.re) begin
+      rnd_valid_d = '0;
+      rnd_data_d  = '0;
+      rnd_fips_d  = '0;
+    end else if (edn_req && edn_ack) begin
+      rnd_valid_d = 1'b1;
+      rnd_data_d  = edn_data;
+      rnd_fips_d  = edn_fips;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rnd_valid_q <= '0;
+      rnd_data_q  <= '0;
+      rnd_fips_q  <= '0;
+    end else begin
+      rnd_valid_q <= rnd_valid_d;
+      rnd_data_q  <= rnd_data_d;
+      rnd_fips_q  <= rnd_fips_d;
+    end
+  end
+
+  assign edn_req = ~rnd_valid_q;
+
+  prim_edn_req #(
+    .OutWidth(32)
+  ) u_edn_if (
+    .clk_i,
+    .rst_ni,
+    .req_chk_i(1'b1),
+    .req_i(edn_req),
+    .ack_o(edn_ack),
+    .data_o(edn_data),
+    .fips_o(edn_fips),
+    .clk_edn_i,
+    .rst_edn_ni,
+    .edn_o,
+    .edn_i
+  );
+
+  assign hw2reg.rnd_data.d                  = rnd_data_q;
+  assign hw2reg.rnd_status.rnd_data_valid.d = rnd_valid_q;
+  assign hw2reg.rnd_status.rnd_data_fips.d  = rnd_fips_q;
+
+  logic unused_reg2hw;
+  assign unused_reg2hw = |reg2hw.rnd_data.q;
+
+
 endmodule
