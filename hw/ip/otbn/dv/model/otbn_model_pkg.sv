@@ -54,5 +54,7 @@ package otbn_model_pkg;
 
   import "DPI-C" function void otbn_take_loop_warps(chandle model, chandle memutil);
 
+  import "DPI-C" function int otbn_model_send_lc_escalation(chandle model);
+
 endpackage
 `endif // SYNTHESIS

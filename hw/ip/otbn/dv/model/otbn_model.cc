@@ -502,6 +502,22 @@ void OtbnModel::reset() {
     iss->reset(has_rtl());
 }
 
+int OtbnModel::send_lc_escalation() {
+  ISSWrapper *iss = ensure_wrapper();
+  if (!iss)
+    return -1;
+
+  try {
+    iss->send_lc_escalation();
+  } catch (const std::exception &err) {
+    std::cerr << "Error when sending LC escalation signal to ISS: "
+              << err.what() << "\n";
+    return -1;
+  }
+
+  return 0;
+}
+
 ISSWrapper *OtbnModel::ensure_wrapper() {
   if (!iss_) {
     try {
@@ -757,10 +773,6 @@ unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned model_state,
     }
   }
 
-  // If the model isn't running, there's nothing more to do.
-  if (!(model_state & RUNNING_BIT))
-    return model_state;
-
   // Step the model once
   switch (model->step(status, insn_cnt, rnd_req, err_bits, stop_pc)) {
     case 0:
@@ -828,4 +840,9 @@ void otbn_model_set_keymgr_value(OtbnModel *model, svLogicVecVal *key0,
                                  svLogicVecVal *key1, unsigned char valid) {
   assert(model && key0 && key1);
   model->set_keymgr_value(key0, key1, valid);
+}
+
+int otbn_model_send_lc_escalation(OtbnModel *model) {
+  assert(model);
+  return model->send_lc_escalation();
 }

@@ -883,6 +883,8 @@ module otbn
 
       .start_i               (start_model),
 
+      .lc_escalate_en_i      (lc_escalate_en_i == lc_ctrl_pkg::On),
+
       .err_bits_o            (err_bits_model),
 
       .edn_rnd_i             (edn_rnd_model_i),
