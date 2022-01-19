@@ -37,8 +37,6 @@
                "-nowarn CUVIHR",
                // Needed for including "secded_enc.h".
                "-I{build_dir}/src/lowrisc_dv_secded_enc_0",
-               // Needed to support "$assertcontrol" used in hw/top_earlgrey/dv/env/ast_supply_if.sv.
-               "-abv_lrmcompliant_asrtctrl",
                ]
 
   run_opts:   ["-input {run_script}",

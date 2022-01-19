@@ -43,14 +43,14 @@ interface ast_supply_if (
   task automatic reenable_vcmain_assertion();
     repeat (CyclesBeforeReenablingAssert) @(posedge clk);
     `uvm_info("ast_supply_if", "re-enabling vcmain_supp_i related SVA", UVM_MEDIUM)
-    $assertcontrol(3, 1, 1, 1, top_earlgrey.u_pwrmgr_aon.u_slow_fsm.IntRstReq_A);
+    $asserton(1, top_earlgrey.u_pwrmgr_aon.u_slow_fsm.IntRstReq_A);
   endtask
 
   task static force_vcmain_supp_i(bit value);
     `uvm_info("ast_supply_if", $sformatf("forcing vcmain_supp_i to %b", value), UVM_MEDIUM)
     if (!value) begin
       `uvm_info("ast_supply_if", "disabling vcmain_supp_i related SVA", UVM_MEDIUM)
-      $assertcontrol(4, 1, 1, 1, top_earlgrey.u_pwrmgr_aon.u_slow_fsm.IntRstReq_A);
+      $assertoff(1, top_earlgrey.u_pwrmgr_aon.u_slow_fsm.IntRstReq_A);
     end
     force u_ast.vcmain_supp_i = value;
     if (value) reenable_vcmain_assertion();
