@@ -12,11 +12,12 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:count
       - lowrisc:prim:edge_detector
-      - lowrisc:prim:secded
-      - lowrisc:prim:lfsr
       - lowrisc:prim:flash
       - lowrisc:prim:gf_mult
       - lowrisc:prim:lc_sync
+      - lowrisc:prim:lfsr
+      - lowrisc:prim:secded
+      - lowrisc:prim:sparse_fsm
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:flash_ctrl_pkg
       - lowrisc:ip:jtag_pkg
