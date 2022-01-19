@@ -90,21 +90,60 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   // the various seed outputs
   logic [NumSeeds-1:0][SeedReads-1:0][BusWidth-1:0] seeds_q;
 
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: --
+  //  4: --
+  //  5: |||||||||||||||||||| (55.56%)
+  //  6: |||||||||||||||| (44.44%)
+  //  7: --
+  //  8: --
+  //  9: --
+  // 10: --
+  //
+  // Minimum Hamming distance: 5
+  // Maximum Hamming distance: 6
+  // Minimum Hamming weight: 5
+  // Maximum Hamming weight: 6
+  //
+  localparam int StateWidth = 10;
+
   // progress through and read out the various pieces of content
   // This FSM should become sparse, especially for StRmaRsp
-  typedef enum logic [3:0] {
-    StIdle,
-    StReqAddrKey,
-    StReqDataKey,
-    StReadSeeds,
-    StWait,
-    StEntropyReseed,
-    StRmaWipe,
-    StRmaRsp,
-    StInvalid
-  } state_e;
+  typedef enum logic [StateWidth-1:0] {
+    StIdle          = 10'b1001100110,
+    StReqAddrKey    = 10'b1010101101,
+    StReqDataKey    = 10'b0100110101,
+    StReadSeeds     = 10'b1110010110,
+    StWait          = 10'b1111000001,
+    StEntropyReseed = 10'b0011110011,
+    StRmaWipe       = 10'b0011011100,
+    StRmaRsp        = 10'b0101001111,
+    StInvalid       = 10'b0110101010
+  } lcmgr_state_e;
 
-  state_e state_q, state_d;
+  lcmgr_state_e state_q, state_d;
+  logic state_err;
+
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  logic [StateWidth-1:0] state_raw_q;
+  assign state_q = lcmgr_state_e'(state_raw_q);
+  //SEC_CM: FSM.SPARSE
+  prim_sparse_fsm_flop #(
+    .StateEnumT(lcmgr_state_e),
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(StIdle))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .state_i ( state_d ),
+    .state_o ( state_raw_q )
+  );
+
   lc_ctrl_pkg::lc_tx_t err_sts;
   logic err_sts_set;
   lc_ctrl_pkg::lc_tx_t rma_ack_d, rma_ack_q;
@@ -125,11 +164,9 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      state_q <= StIdle;
       rma_ack_q <= lc_ctrl_pkg::Off;
       validate_q <= 1'b0;
     end else begin
-      state_q <= state_d;
       rma_ack_q <= rma_ack_d;
       validate_q <= validate_d;
     end
@@ -315,6 +352,8 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     rma_wipe_req = 1'b0;
     rma_wipe_idx_incr = 1'b0;
 
+    state_err = 1'b0;
+
     unique case (state_q)
 
       // If rma request is seen, directly transition to wipe.
@@ -433,10 +472,14 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
         end
       end
 
-      // Invalid catch-all state
-      default: begin
+      StInvalid: begin
+        state_err = 1'b1;
         phase = PhaseInvalid;
         rma_ack_d = lc_ctrl_pkg::Off;
+      end
+
+      // Invalid catch-all state
+      default: begin
         state_d = StInvalid;
       end
 
@@ -474,14 +517,15 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   // flops in order to prevent FSM state encoding optimizations.
   logic [RmaStateWidth-1:0] rma_state_raw_q;
   assign rma_state_q = rma_state_e'(rma_state_raw_q);
-  prim_flop #(
+  prim_sparse_fsm_flop #(
+    .StateEnumT(rma_state_e),
     .Width(RmaStateWidth),
     .ResetValue(RmaStateWidth'(StRmaIdle))
-  ) u_state_regs (
+  ) u_rma_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( rma_state_d     ),
-    .q_o ( rma_state_raw_q )
+    .state_i ( rma_state_d ),
+    .state_o ( rma_state_raw_q )
   );
 
   logic page_err_q, page_err_d;
@@ -691,9 +735,13 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
         end
       end
 
-      default: begin
+      StRmaInvalid: begin
         err_sts_set = 1'b1;
         fsm_err = 1'b1;
+      end
+
+      default: begin
+        rma_state_d = StRmaInvalid;
       end
 
     endcase // unique case (rma_state_q)
@@ -720,7 +768,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   assign rma_ack_o = rma_ack_q;
 
   // all of these are considered fatal errors
-  assign fatal_err_o = page_err_q | word_err_q | fsm_err;
+  assign fatal_err_o = page_err_q | word_err_q | fsm_err | state_err;
 
   logic unused_seed_valid;
   assign unused_seed_valid = otp_key_rsp_i.seed_valid;
