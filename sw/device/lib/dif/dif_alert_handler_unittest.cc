@@ -598,6 +598,58 @@ TEST_F(PingTimerSetEnabledTest, SetEnabledAndLock) {
             kDifOk);
 }
 
+class AlertLockTest : public AlertHandlerTest,
+                      public testing::WithParamInterface<int> {};
+
+TEST_P(AlertLockTest, IsAlertLocked) {
+  dif_alert_handler_alert_t alert = GetParam();
+  bool is_locked = true;
+
+  ptrdiff_t regwen_offset =
+      ALERT_HANDLER_ALERT_REGWEN_0_REG_OFFSET + alert * sizeof(uint32_t);
+  EXPECT_READ32(regwen_offset, ALERT_HANDLER_ALERT_REGWEN_0_REG_RESVAL);
+  EXPECT_EQ(
+      dif_alert_handler_is_alert_locked(&alert_handler_, alert, &is_locked),
+      kDifOk);
+  EXPECT_FALSE(is_locked);
+
+  is_locked = false;
+  EXPECT_READ32(regwen_offset, 0);
+  EXPECT_EQ(
+      dif_alert_handler_is_alert_locked(&alert_handler_, alert, &is_locked),
+      kDifOk);
+  EXPECT_TRUE(is_locked);
+}
+
+INSTANTIATE_TEST_SUITE_P(AllAlertsLockedAndUnlocked, AlertLockTest,
+                         testing::Range(0, kAlerts));
+
+TEST_P(AlertLockTest, LockAlert) {
+  dif_alert_handler_alert_t alert = GetParam();
+
+  ptrdiff_t regwen_offset =
+      ALERT_HANDLER_ALERT_REGWEN_0_REG_OFFSET + alert * sizeof(uint32_t);
+  EXPECT_WRITE32(regwen_offset, 0);
+  EXPECT_EQ(dif_alert_handler_lock_alert(&alert_handler_, alert), kDifOk);
+}
+
+INSTANTIATE_TEST_SUITE_P(LockAllAlert, AlertLockTest,
+                         testing::Range(0, kAlerts));
+
+TEST_F(AlertLockTest, BadArgs) {
+  bool is_locked;
+  EXPECT_EQ(dif_alert_handler_is_alert_locked(nullptr, 0, &is_locked),
+            kDifBadArg);
+  EXPECT_EQ(
+      dif_alert_handler_is_alert_locked(&alert_handler_, kAlerts, &is_locked),
+      kDifBadArg);
+  EXPECT_EQ(dif_alert_handler_is_alert_locked(&alert_handler_, 0, nullptr),
+            kDifBadArg);
+
+  EXPECT_EQ(dif_alert_handler_lock_alert(nullptr, 0), kDifBadArg);
+  EXPECT_EQ(dif_alert_handler_lock_alert(&alert_handler_, kAlerts), kDifBadArg);
+}
+
 class PingTimerLockTest : public AlertHandlerTest {};
 
 TEST_F(PingTimerLockTest, IsPingTimerLocked) {

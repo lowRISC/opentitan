@@ -432,6 +432,36 @@ OT_WARN_UNUSED_RESULT dif_result_t dif_alert_handler_ping_timer_set_enabled(
     const dif_alert_handler_t *alert_handler, dif_toggle_t locked);
 
 /**
+ * Locks out alert handler alert configuration.
+ *
+ * This operation cannot be undone, and should be performed at the end of
+ * configuring the alert handler in early boot.
+ *
+ * This function is reentrant: calling it while functionality is locked will
+ * have no effect and return `kDifOk`.
+ *
+ * @param alert_handler An alert handler handle.
+ * @param alert The alert to lock.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_alert_handler_lock_alert(
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_alert_t alert);
+
+/**
+ * Checks whether an alert handler's alert is locked.
+ *
+ * @param handler An alert handler handle.
+ * @param alert The alert to check is locked.
+ * @param is_locked Out-param for the locked state.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_alert_handler_is_alert_locked(
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_alert_t alert,
+    bool *is_locked);
+
+/**
  * Locks out alert handler ping timer configuration.
  *
  * This operation cannot be undone, and should be performed at the end of

@@ -478,6 +478,34 @@ dif_result_t dif_alert_handler_configure(
   return kDifOk;
 }
 
+dif_result_t dif_alert_handler_lock_alert(
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_alert_t alert) {
+  if (alert_handler == NULL || alert >= ALERT_HANDLER_PARAM_N_ALERTS) {
+    return kDifBadArg;
+  }
+
+  ptrdiff_t regwen_offset =
+      ALERT_HANDLER_ALERT_REGWEN_0_REG_OFFSET + alert * sizeof(uint32_t);
+  mmio_region_write32(alert_handler->base_addr, regwen_offset, 0);
+
+  return kDifOk;
+}
+
+dif_result_t dif_alert_handler_is_alert_locked(
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_alert_t alert,
+    bool *is_locked) {
+  if (alert_handler == NULL || alert >= ALERT_HANDLER_PARAM_N_ALERTS ||
+      is_locked == NULL) {
+    return kDifBadArg;
+  }
+
+  ptrdiff_t regwen_offset =
+      ALERT_HANDLER_ALERT_REGWEN_0_REG_OFFSET + alert * sizeof(uint32_t);
+  *is_locked = !mmio_region_read32(alert_handler->base_addr, regwen_offset);
+
+  return kDifOk;
+}
+
 dif_result_t dif_alert_handler_lock_ping_timer(
     const dif_alert_handler_t *alert_handler) {
   if (alert_handler == NULL) {
