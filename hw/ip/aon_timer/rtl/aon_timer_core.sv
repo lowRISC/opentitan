@@ -54,7 +54,7 @@ module aon_timer_core import aon_timer_reg_pkg::*; (
   assign wkup_count_wr_data_o = (reg2hw_i.wkup_count.q + 32'd1);
 
   // Timer interrupt
-  assign wkup_intr_o = wkup_incr & (reg2hw_i.wkup_count.q == reg2hw_i.wkup_thold.q);
+  assign wkup_intr_o = wkup_incr & (reg2hw_i.wkup_count.q >= reg2hw_i.wkup_thold.q);
 
   ////////////////////
   // Watchdog Timer //
@@ -68,9 +68,9 @@ module aon_timer_core import aon_timer_reg_pkg::*; (
   assign wdog_count_wr_data_o = (reg2hw_i.wdog_count.q + 32'd1);
 
   // Timer interrupt
-  assign wdog_intr_o = wdog_incr & (reg2hw_i.wdog_count.q == reg2hw_i.wdog_bark_thold.q);
+  assign wdog_intr_o = wdog_incr & (reg2hw_i.wdog_count.q >= reg2hw_i.wdog_bark_thold.q);
   // Timer reset
-  assign wdog_reset_req_o = wdog_incr & (reg2hw_i.wdog_count.q == reg2hw_i.wdog_bite_thold.q);
+  assign wdog_reset_req_o = wdog_incr & (reg2hw_i.wdog_count.q >= reg2hw_i.wdog_bite_thold.q);
 
   assign unused_reg2hw = |{reg2hw_i.intr_state, reg2hw_i.intr_test, reg2hw_i.wkup_cause,
                            reg2hw_i.alert_test};
