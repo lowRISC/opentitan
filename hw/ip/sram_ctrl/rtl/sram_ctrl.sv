@@ -56,6 +56,26 @@ module sram_ctrl
 
   `ASSERT_INIT(NonceWidthsLessThanSource_A, NonceWidth + LfsrWidth <= otp_ctrl_pkg::SramNonceWidth)
 
+
+  /////////////////////////////////////
+  // Anchor incoming seeds and constants
+  /////////////////////////////////////
+  localparam int TotalAnchorWidth = $bits(otp_ctrl_pkg::sram_key_t) +
+                                    $bits(otp_ctrl_pkg::sram_nonce_t);
+
+  otp_ctrl_pkg::sram_key_t cnst_sram_key;
+  otp_ctrl_pkg::sram_nonce_t cnst_sram_nonce;
+
+  prim_sec_anchor_buf #(
+    .Width(TotalAnchorWidth)
+  ) u_seed_anchor (
+    .in_i({RndCnstSramKey,
+           RndCnstSramNonce}),
+    .out_o({cnst_sram_key,
+            cnst_sram_nonce})
+  );
+
+
   //////////////////////////
   // CSR Node and Mapping //
   //////////////////////////
@@ -232,6 +252,8 @@ module sram_ctrl
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
       key_req_pending_q <= 1'b0;
+      // reset case does not use buffered values as the
+      // reset value will be directly encoded into flop types
       key_q             <= RndCnstSramKey;
       nonce_q           <= RndCnstSramNonce;
     end else begin
@@ -244,8 +266,8 @@ module sram_ctrl
       // SEC_CM: KEY.GLOBAL_ESC
       // SEC_CM: KEY.LOCAL_ESC
       if (local_esc) begin
-        key_q   <= RndCnstSramKey;
-        nonce_q <= RndCnstSramNonce;
+        key_q   <= cnst_sram_key;
+        nonce_q <= cnst_sram_nonce;
       end
     end
   end

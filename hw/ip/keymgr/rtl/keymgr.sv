@@ -77,6 +77,44 @@ module keymgr
   `ASSERT_INIT(GenDataWidth_A, GenDataWidth <= KDFMaxWidth)
   `ASSERT_INIT(OutputKeyDiff_A, RndCnstHardOutputSeed != RndCnstSoftOutputSeed)
 
+
+  /////////////////////////////////////
+  // Anchor incoming seeds and constants
+  /////////////////////////////////////
+  localparam int TotalSeedWidth = KeyWidth * 9;
+  seed_t revision_seed;
+  seed_t creator_identity_seed;
+  seed_t owner_int_identity_seed;
+  seed_t owner_identity_seed;
+  seed_t soft_output_seed;
+  seed_t hard_output_seed;
+  seed_t aes_seed;
+  seed_t otbn_seed;
+  seed_t kmac_seed;
+
+  prim_sec_anchor_buf #(
+    .Width(TotalSeedWidth)
+  ) u_seed_anchor (
+    .in_i({RndCnstRevisionSeed,
+           RndCnstCreatorIdentitySeed,
+           RndCnstOwnerIntIdentitySeed,
+           RndCnstOwnerIdentitySeed,
+           RndCnstSoftOutputSeed,
+           RndCnstHardOutputSeed,
+           RndCnstAesSeed,
+           RndCnstOtbnSeed,
+           RndCnstKmacSeed}),
+    .out_o({revision_seed,
+            creator_identity_seed,
+            owner_int_identity_seed,
+            owner_identity_seed,
+            soft_output_seed,
+            hard_output_seed,
+            aes_seed,
+            otbn_seed,
+            kmac_seed})
+  );
+
   // Register module
   keymgr_reg2hw_t reg2hw;
   keymgr_hw2reg_t hw2reg;
@@ -105,7 +143,6 @@ module keymgr
                                 reg2hw.max_creator_key_ver_shadowed.err_update |
                                 reg2hw.max_owner_int_key_ver_shadowed.err_update |
                                 reg2hw.max_owner_key_ver_shadowed.err_update;
-
 
   /////////////////////////////////////
   //  Synchronize lc_ctrl control inputs
@@ -356,7 +393,7 @@ module keymgr
   logic [KeyWidth-1:0] creator_seed;
   assign creator_seed = flash_i.seeds[flash_ctrl_pkg::CreatorSeedIdx];
   assign adv_matrix[Creator] = AdvDataWidth'({sw_binding,
-                                              RndCnstRevisionSeed,
+                                              revision_seed,
                                               otp_device_id_i,
                                               lc_keymgr_div_i,
                                               rom_digest_i.data,
@@ -382,9 +419,9 @@ module keymgr
     assign id_matrix[i] = {IdLfsrCopies{data_rand[0]}};
   end
 
-  assign id_matrix[Creator]  = RndCnstCreatorIdentitySeed;
-  assign id_matrix[OwnerInt] = RndCnstOwnerIntIdentitySeed;
-  assign id_matrix[Owner]    = RndCnstOwnerIdentitySeed;
+  assign id_matrix[Creator]  = creator_identity_seed;
+  assign id_matrix[OwnerInt] = owner_int_identity_seed;
+  assign id_matrix[Owner]    = owner_identity_seed;
 
 
   // Generate output operation input construction
@@ -393,10 +430,10 @@ module keymgr
   logic [KeyWidth-1:0] cipher_seed;
 
   assign cipher_sel = keymgr_key_dest_e'(reg2hw.control.dest_sel);
-  assign cipher_seed = cipher_sel == Aes  ? RndCnstAesSeed  :
-                       cipher_sel == Kmac ? RndCnstKmacSeed :
-                       cipher_sel == Otbn ? RndCnstOtbnSeed : RndCnstNoneSeed;
-  assign output_key = (key_sel == HwKey) ? RndCnstHardOutputSeed : RndCnstSoftOutputSeed;
+  assign cipher_seed = cipher_sel == Aes  ? aes_seed  :
+                       cipher_sel == Kmac ? kmac_seed :
+                       cipher_sel == Otbn ? otbn_seed : RndCnstNoneSeed;
+  assign output_key = (key_sel == HwKey) ? hard_output_seed : soft_output_seed;
   assign gen_in = invalid_stage_sel ? {GenLfsrCopies{lfsr[31:0]}} : {reg2hw.key_version,
                                                                      reg2hw.salt,
                                                                      cipher_seed,

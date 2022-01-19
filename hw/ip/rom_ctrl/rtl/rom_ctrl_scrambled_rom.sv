@@ -58,8 +58,28 @@ module rom_ctrl_scrambled_rom
   input rom_cfg_t          cfg_i
 );
 
-  localparam bit [63-Aw:0] DataScrNonce = ScrNonce[63-Aw:0];
-  localparam bit [Aw-1:0]  AddrScrNonce = ScrNonce[63-:Aw];
+  /////////////////////////////////////
+  // Anchor incoming seeds and constants
+  /////////////////////////////////////
+  localparam int TotalAnchorWidth = $bits(ScrNonce) +
+                                    $bits(ScrKey);
+
+  logic [63:0] scr_nonce;
+  logic [127:0] scr_key;
+
+  prim_sec_anchor_buf #(
+    .Width(TotalAnchorWidth)
+  ) u_seed_anchor (
+    .in_i({ScrNonce,
+           ScrKey}),
+    .out_o({scr_nonce,
+            scr_key})
+  );
+
+  logic [63-Aw:0] data_scr_nonce;
+  logic [Aw-1:0] addr_scr_nonce;
+  assign data_scr_nonce = scr_nonce[63-Aw:0];
+  assign addr_scr_nonce = scr_nonce[63-:Aw];
 
   // Parameter Checks ==========================================================
 
@@ -77,7 +97,7 @@ module rom_ctrl_scrambled_rom
     .Decrypt   (0)
   ) u_sp_addr (
     .data_i (rom_addr_i),
-    .key_i  (AddrScrNonce),
+    .key_i  (addr_scr_nonce),
     .data_o (addr_scr)
   );
 
@@ -95,8 +115,8 @@ module rom_ctrl_scrambled_rom
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
     .valid_i (req_i),
-    .data_i  ({DataScrNonce, prince_addr_i}),
-    .key_i   (ScrKey),
+    .data_i  ({data_scr_nonce, prince_addr_i}),
+    .key_i   (scr_key),
     .dec_i   (1'b0),
     .data_o  (keystream),
     .valid_o ()
