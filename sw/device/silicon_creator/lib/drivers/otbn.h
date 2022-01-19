@@ -45,18 +45,63 @@ typedef enum otbn_status {
 
 /**
  * Error codes for the OTBN driver.
+ *
+ * Encoding generated with
+ * $ ./util/design/sparse-fsm-encode.py -d 8 -m 5 -n 32 \
+ *     -s 1314137161 --language=c
+ *
+ * Hamming distance histogram:
+ *
+ *  0: --
+ *  1: --
+ *  2: --
+ *  3: --
+ *  4: --
+ *  5: --
+ *  6: --
+ *  7: --
+ *  8: --
+ *  9: --
+ * 10: --
+ * 11: --
+ * 12: --
+ * 13: --
+ * 14: |||||||||||||||||||| (40.00%)
+ * 15: |||||||||| (20.00%)
+ * 16: --
+ * 17: ||||| (10.00%)
+ * 18: --
+ * 19: --
+ * 20: |||||||||| (20.00%)
+ * 21: ||||| (10.00%)
+ * 22: --
+ * 23: --
+ * 24: --
+ * 25: --
+ * 26: --
+ * 27: --
+ * 28: --
+ * 29: --
+ * 30: --
+ * 31: --
+ * 32: --
+ *
+ * Minimum Hamming distance: 14
+ * Maximum Hamming distance: 21
+ * Minimum Hamming weight: 13
+ * Maximum Hamming weight: 17
  */
-typedef enum otbn_error_t {
+typedef enum otbn_error {
   /** No errors. */
-  kOtbnErrorOk = 0,
+  kOtbnErrorOk = 0x2597dd62,
   /** Invalid argument provided to OTBN interface function. */
-  kOtbnErrorInvalidArgument = 1,
+  kOtbnErrorInvalidArgument = 0x7b16583e,
   /** Invalid offset provided. */
-  kOtbnErrorBadOffsetLen = 2,
+  kOtbnErrorBadOffsetLen = 0xc852656f,
   /** OTBN internal error; use otbn_get_err_bits for specific error codes. */
-  kOtbnErrorExecutionFailed = 3,
+  kOtbnErrorExecutionFailed = 0xe385d088,
   /** Attempt to interact with OTBN while it was unavailable. */
-  kOtbnErrorUnavailable = 4,
+  kOtbnErrorUnavailable = 0xcc2d43cc,
 } otbn_error_t;
 
 /**
