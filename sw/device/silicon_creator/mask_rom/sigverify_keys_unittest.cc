@@ -4,6 +4,7 @@
 
 #include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
 
+#include <array>
 #include <cstring>
 #include <limits>
 #include <numeric>
