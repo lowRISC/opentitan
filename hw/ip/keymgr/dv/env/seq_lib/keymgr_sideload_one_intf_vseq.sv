@@ -7,7 +7,7 @@ class keymgr_sideload_one_intf_vseq extends keymgr_sideload_vseq;
   `uvm_object_utils(keymgr_sideload_one_intf_vseq)
   `uvm_object_new
 
-  keymgr_pkg::keymgr_key_dest_e sideload_dest;
+  keymgr_pkg::keymgr_key_dest_e sideload_dest = keymgr_pkg::None;
   // also test HW sideload
   constraint gen_operation_c {
     gen_operation == keymgr_pkg::OpGenHwOut;
