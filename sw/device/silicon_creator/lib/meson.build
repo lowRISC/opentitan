@@ -55,7 +55,7 @@ sw_silicon_creator_lib_manifest_section = declare_dependency(
   link_whole: static_library(
     'sw_silicon_creator_lib_manifest_section',
     sources: [
-      'manifest.S',
+      'manifest_section.S',
     ],
   ),
 )
