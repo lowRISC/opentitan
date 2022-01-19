@@ -60,7 +60,7 @@ class FsmState(IntEnum):
     FETCH_WAIT = 11
     EXEC = 12
     POST_EXEC = 13
-    LOCKING = 13
+    LOCKING = 14
     LOCKED = 2550
 
 
@@ -267,9 +267,6 @@ class OTBNState:
         return self.fsm_state not in [FsmState.IDLE, FsmState.LOCKED]
 
     def commit(self, sim_stalled: bool) -> None:
-        # We shouldn't be running commit() in IDLE or LOCKED mode
-        assert self.running()
-
         if self._time_to_imem_invalidation is not None:
             self._time_to_imem_invalidation -= 1
             if self._time_to_imem_invalidation == 0:
@@ -330,8 +327,14 @@ class OTBNState:
             self.fsm_state = FsmState.LOCKED
             return
 
+        # If we are in LOCKED mode, commit external registers but do nothing
+        # else.
+        if self.fsm_state == FsmState.LOCKED:
+            self.ext_regs.commit()
+            return
+
         # Otherwise, we're in EXEC mode.
-        assert self.fsm_state == FsmState.EXEC
+        assert self.fsm_state in [FsmState.EXEC, FsmState.IDLE]
 
         # In case of a pending halt, commit the external registers, which
         # contain e.g. the ERR_BITS field, but nothing else. Switch to
@@ -342,7 +345,8 @@ class OTBNState:
                 self.ext_regs.write('INSN_CNT', 0, True)
                 self.fsm_state = FsmState.LOCKING
             else:
-                self.fsm_state = FsmState.POST_EXEC
+                if self.fsm_state == FsmState.EXEC:
+                    self.fsm_state = FsmState.POST_EXEC
             return
 
         # As pending_halt wasn't set, there shouldn't be any pending error bits

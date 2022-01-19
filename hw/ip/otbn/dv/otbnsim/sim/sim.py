@@ -4,6 +4,7 @@
 
 from typing import Dict, Iterator, List, Optional, Tuple
 
+from .constants import ErrBits, Status
 from .decode import EmptyInsn
 from .isa import OTBNInsn
 from .state import OTBNState, FsmState
@@ -130,7 +131,9 @@ class OTBNSim:
 
         '''
         if not self.state.running():
-            return (None, [])
+            changes = self.state.changes()
+            self.state.commit(sim_stalled=True)
+            return (None, changes)
 
         if self.state.fsm_state == FsmState.PRE_EXEC:
             # Zero INSN_CNT the cycle after we are told to start (and every
@@ -152,7 +155,11 @@ class OTBNSim:
             changes = self._on_stall(verbose, fetch_next=False)
             return (None, changes)
 
-        if self.state.fsm_state in [FsmState.POST_EXEC, FsmState.LOCKING]:
+        if self.state.fsm_state == FsmState.POST_EXEC:
+            return (None, self._on_stall(verbose, fetch_next=False))
+
+        if self.state.fsm_state == FsmState.LOCKING:
+            self.state.ext_regs.write('STATUS', Status.LOCKED, True)
             return (None, self._on_stall(verbose, fetch_next=False))
 
         assert self.state.fsm_state == FsmState.EXEC
@@ -202,3 +209,7 @@ class OTBNSim:
         '''Print a trace of the current instruction'''
         changes_str = ', '.join([t.trace() for t in changes])
         print('{:08x} | {:45} | [{}]'.format(pc, disasm, changes_str))
+
+    def on_lc_escalation(self) -> None:
+        '''React to a lifecycle controller escalation signal'''
+        self.state.stop_at_end_of_cycle(ErrBits.LIFECYCLE_ESCALATION)

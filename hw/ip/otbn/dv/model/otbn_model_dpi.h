@@ -102,6 +102,9 @@ void otbn_model_reset(OtbnModel *model);
 
 // Take loop warps from an OtbnMemUtil
 void otbn_take_loop_warps(OtbnModel *model, OtbnMemUtil *memutil);
+
+// React to a lifecycle controller escalation signal
+int otbn_model_send_lc_escalation(OtbnModel *model);
 }
 
 #endif  // OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_MODEL_DPI_H_
