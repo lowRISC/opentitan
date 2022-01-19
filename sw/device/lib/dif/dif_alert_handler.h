@@ -493,6 +493,37 @@ dif_result_t dif_alert_handler_is_local_alert_locked(
     dif_alert_handler_local_alert_t local_alert, bool *is_locked);
 
 /**
+ * Locks out an alert handler class configuration.
+ *
+ * This operation cannot be undone, and should be performed at the end of
+ * configuring the alert handler in early boot.
+ *
+ * This function is reentrant: calling it while functionality is locked will
+ * have no effect and return `kDifOk`.
+ *
+ * @param alert_handler An alert handler handle.
+ * @param alert_class The alert class to lock.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_alert_handler_lock_class(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_class_t alert_class);
+
+/**
+ * Checks whether an alert handler's class is locked.
+ *
+ * @param alert_handler An alert handler handle.
+ * @param alert_class The alert class to check is locked.
+ * @param is_locked Out-param for the locked state.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_alert_handler_is_class_locked(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_class_t alert_class, bool *is_locked);
+
+/**
  * Locks out alert handler ping timer configuration.
  *
  * This operation cannot be undone, and should be performed at the end of
