@@ -69,18 +69,18 @@
     {
       name: rom_ctrl_tlul_cg
       desc: '''
-            Collect coverage on the two TLUL interfaces, specifically checking
+            -Collect coverage on the two TLUL interfaces, specifically checking
             that we see requests around the same time as the rom check completes.
+            - Collect coverage to ensure that a_valid goes high when rom check 
+            is in progress. This ensures that the scenario where TL accesses are 
+            blocked until the ROM check is done is covered. 
             '''
     }
     {
       name: rom_ctrl_check_cg
       desc: '''
-            - Collect coverage on the outputs sent to the power manager to confirm
+            Collect coverage on the outputs sent to the power manager to confirm
             that we see pass and fail results.
-            - Collect coverage to ensure that a_valid goes high when rom check 
-            is in progress. This ensures that the scenario where TL accesses are 
-            blocked until the ROM check is done is covered. 
             '''
     }
   ]
