@@ -8,16 +8,17 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ibex:ibex_top
-      - lowrisc:prim:all
-      - lowrisc:prim:esc
-      - lowrisc:prim:clock_gating
-      - lowrisc:prim:mubi
-      - lowrisc:ip:tlul
-      - lowrisc:tlul:adapter_host
       - lowrisc:ip:lc_ctrl_pkg
-      - lowrisc:prim:lc_sync
-      - lowrisc:ip_interfaces:alert_handler_reg
       - lowrisc:ip:pwrmgr_pkg
+      - lowrisc:ip:tlul
+      - lowrisc:ip_interfaces:alert_handler_reg
+      - lowrisc:prim:all
+      - lowrisc:prim:clock_gating
+      - lowrisc:prim:edn_req
+      - lowrisc:prim:esc
+      - lowrisc:prim:lc_sync
+      - lowrisc:prim:mubi
+      - lowrisc:tlul:adapter_host
 
     files:
       - rtl/rv_core_ibex_pkg.sv

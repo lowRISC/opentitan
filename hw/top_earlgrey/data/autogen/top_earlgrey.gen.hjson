@@ -6032,7 +6032,7 @@
           package: edn_pkg
           type: req_rsp
           act: rsp
-          width: 7
+          width: 8
           default: "'0"
           inst_name: edn0
           end_idx: -1
@@ -6114,7 +6114,7 @@
           package: edn_pkg
           type: req_rsp
           act: rsp
-          width: 7
+          width: 8
           default: "'0"
           inst_name: edn1
           end_idx: 1
@@ -6541,6 +6541,7 @@
       clock_srcs:
       {
         clk_i: main
+        clk_edn_i: main
         clk_esc_i:
         {
           clock: io_div4
@@ -6555,6 +6556,11 @@
           name: sys
           domain: "0"
         }
+        rst_edn_ni:
+        {
+          name: sys
+          domain: "0"
+        }
         rst_esc_ni:
         {
           name: lc_io_div4
@@ -6564,6 +6570,7 @@
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
+        clk_edn_i: clkmgr_aon_clocks.clk_main_infra
         clk_esc_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       domain:
@@ -6917,6 +6924,18 @@
           index: -1
         }
         {
+          name: edn
+          struct: edn
+          package: edn_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: rv_core_ibex
+          default: ""
+          top_signame: edn0_edn
+          index: 7
+        }
+        {
           name: corei_tl_h
           struct: tl
           package: tlul_pkg
@@ -7191,6 +7210,7 @@
         alert_handler.edn
         aes.edn
         otbn.edn_urnd
+        rv_core_ibex.edn
       ]
       edn1.edn:
       [
@@ -17269,7 +17289,7 @@
         package: edn_pkg
         type: req_rsp
         act: rsp
-        width: 7
+        width: 8
         default: "'0"
         inst_name: edn0
         end_idx: -1
@@ -17317,7 +17337,7 @@
         package: edn_pkg
         type: req_rsp
         act: rsp
-        width: 7
+        width: 8
         default: "'0"
         inst_name: edn1
         end_idx: 1
@@ -17687,6 +17707,18 @@
         package: ""
         top_signame: aon_timer_aon_nmi_wdog_timer_bark
         index: -1
+      }
+      {
+        name: edn
+        struct: edn
+        package: edn_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: rv_core_ibex
+        default: ""
+        top_signame: edn0_edn
+        index: 7
       }
       {
         name: corei_tl_h
@@ -19415,7 +19447,7 @@
         package: edn_pkg
         struct: edn_req
         signame: edn0_edn_req
-        width: 7
+        width: 8
         type: req_rsp
         end_idx: -1
         act: rsp
@@ -19426,7 +19458,7 @@
         package: edn_pkg
         struct: edn_rsp
         signame: edn0_edn_rsp
-        width: 7
+        width: 8
         type: req_rsp
         end_idx: -1
         act: rsp
@@ -19437,7 +19469,7 @@
         package: edn_pkg
         struct: edn_req
         signame: edn1_edn_req
-        width: 7
+        width: 8
         type: req_rsp
         end_idx: 1
         act: rsp
@@ -19448,7 +19480,7 @@
         package: edn_pkg
         struct: edn_rsp
         signame: edn1_edn_rsp
-        width: 7
+        width: 8
         type: req_rsp
         end_idx: 1
         act: rsp

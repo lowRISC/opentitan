@@ -10,7 +10,7 @@ module edn
   import edn_pkg::*;
   import edn_reg_pkg::*;
 #(
-  parameter int NumEndPoints = 7,
+  parameter int NumEndPoints = 8,
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
   input logic clk_i,

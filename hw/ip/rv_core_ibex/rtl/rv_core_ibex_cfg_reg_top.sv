@@ -186,9 +186,11 @@ module rv_core_ibex_cfg_reg_top (
   logic err_status_fatal_core_err_wd;
   logic err_status_recov_core_err_qs;
   logic err_status_recov_core_err_wd;
+  logic rnd_data_re;
   logic [31:0] rnd_data_qs;
   logic rnd_status_re;
-  logic rnd_status_qs;
+  logic rnd_status_rnd_data_valid_qs;
+  logic rnd_status_rnd_data_fips_qs;
 
   // Register instances
   // R[alert_test]: V(True)
@@ -939,44 +941,48 @@ module rv_core_ibex_cfg_reg_top (
   );
 
 
-  // R[rnd_data]: V(False)
-  prim_subreg #(
-    .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+  // R[rnd_data]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
   ) u_rnd_data (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
+    .re     (rnd_data_re),
     .we     (1'b0),
     .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.rnd_data.de),
     .d      (hw2reg.rnd_data.d),
-
-    // to internal hardware
+    .qre    (reg2hw.rnd_data.re),
     .qe     (),
-    .q      (),
-
-    // to register interface (read)
+    .q      (reg2hw.rnd_data.q),
     .qs     (rnd_data_qs)
   );
 
 
   // R[rnd_status]: V(True)
+  //   F[rnd_data_valid]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_rnd_status (
+  ) u_rnd_status_rnd_data_valid (
     .re     (rnd_status_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.rnd_status.d),
+    .d      (hw2reg.rnd_status.rnd_data_valid.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (rnd_status_qs)
+    .qs     (rnd_status_rnd_data_valid_qs)
+  );
+
+  //   F[rnd_data_fips]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_rnd_status_rnd_data_fips (
+    .re     (rnd_status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.rnd_status.rnd_data_fips.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (rnd_status_rnd_data_fips_qs)
   );
 
 
@@ -1122,6 +1128,7 @@ module rv_core_ibex_cfg_reg_top (
   assign err_status_fatal_core_err_wd = reg_wdata[9];
 
   assign err_status_recov_core_err_wd = reg_wdata[10];
+  assign rnd_data_re = addr_hit[22] & reg_re & !reg_error;
   assign rnd_status_re = addr_hit[23] & reg_re & !reg_error;
 
   // Read data return
@@ -1229,7 +1236,8 @@ module rv_core_ibex_cfg_reg_top (
       end
 
       addr_hit[23]: begin
-        reg_rdata_next[0] = rnd_status_qs;
+        reg_rdata_next[0] = rnd_status_rnd_data_valid_qs;
+        reg_rdata_next[1] = rnd_status_rnd_data_fips_qs;
       end
 
       default: begin
