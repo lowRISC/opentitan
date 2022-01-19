@@ -198,7 +198,7 @@ Code Quality  | [TB_LINT_PASS][]                        | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | NA          |
 Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Done        |
 Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        |
-Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Not Started |
+Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Done        |
 Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 
 [DESIGN_DELTAS_CAPTURED_V2]:          {{<relref "/doc/project/checklist.md#design_deltas_captured_v2" >}}
