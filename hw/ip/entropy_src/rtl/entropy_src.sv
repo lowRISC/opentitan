@@ -298,10 +298,6 @@ module entropy_src
      alert_tx_o[1])
   end : gen_symbol_match
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck3_A,
-    u_entropy_src_core.u_entropy_src_bucket_ht.u_prim_count_test_cnt,
-    alert_tx_o[1])
-
   for (genvar sh = 0; sh < RngBusWidth; sh = sh+1) begin : gen_pair_cntrs
    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
      u_entropy_src_core.u_entropy_src_markov_ht.gen_cntrs[sh].u_prim_count_pair_cntr,

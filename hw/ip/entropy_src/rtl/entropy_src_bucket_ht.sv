@@ -31,8 +31,6 @@ module entropy_src_bucket_ht #(
   logic [NUM_BINS-1:0] bin_cnt_exceeds_thresh;
   logic [NUM_BINS - 1:0][RegWidth - 1:0] bin_cntr;
   logic [NUM_BINS-1:0] bin_cntr_err;
-  logic [RegWidth-1:0] test_cnt;
-  logic                test_cnt_err;
   logic [RegWidth-1:0] bin_max;
 
   // Bucket Test
@@ -77,28 +75,10 @@ module entropy_src_bucket_ht #(
     .o(bin_max)
   );
 
-  // Test event counter
-  // SEC_CM: CTR.REDUN
-  prim_count #(
-      .Width(RegWidth),
-      .OutSelDnCnt(1'b0), // count up
-      .CntStyle(prim_count_pkg::DupCnt)
-    ) u_prim_count_test_cnt (
-      .clk_i,
-      .rst_ni,
-      .clr_i(window_wrap_pulse_i),
-      .set_i(!active_i || clear_i),
-      .set_cnt_i(RegWidth'(0)),
-      .en_i(entropy_bit_vld_i && (|bin_cnt_exceeds_thresh)),
-      .step_i(RegWidth'(1)),
-      .cnt_o(test_cnt),
-      .err_o(test_cnt_err)
-    );
-
   // the pulses will be only one clock in length
-  assign test_fail_pulse_o = active_i && window_wrap_pulse_i && (test_cnt > '0);
+  assign test_fail_pulse_o = active_i && window_wrap_pulse_i && (|bin_cnt_exceeds_thresh);
   assign test_cnt_o = bin_max;
-  assign count_err_o = test_cnt_err || (|bin_cntr_err);
+  assign count_err_o = |bin_cntr_err;
 
 
 endmodule
