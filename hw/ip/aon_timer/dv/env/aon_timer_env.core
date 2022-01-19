@@ -20,6 +20,8 @@ filesets:
       - seq_lib/aon_timer_base_vseq.sv: {is_include_file: true}
       - seq_lib/aon_timer_common_vseq.sv: {is_include_file: true}
       - seq_lib/aon_timer_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/aon_timer_prescaler_vseq.sv: {is_include_file: true}
+      - seq_lib/aon_timer_jump_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

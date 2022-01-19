@@ -125,6 +125,7 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
       "wkup_ctrl": begin
         prescaler = get_reg_fld_mirror_value(ral, csr.get_name(), "prescaler");
         wkup_en   = get_reg_fld_mirror_value(ral, csr.get_name(), "enable");
+        if (data_phase_write) wkup_num_update_due = 1;
       end
       "wkup_cause": begin
         wkup_cause = csr.get_mirrored_value();
