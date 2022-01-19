@@ -7,6 +7,8 @@
 #include <cstring>
 #include <limits>
 #include <ostream>
+#include <tuple>
+#include <vector>
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
@@ -729,6 +731,75 @@ TEST_F(LocalAlertLockTest, BadArgs) {
                 &alert_handler_,
                 static_cast<dif_alert_handler_local_alert_t>(kLocalAlerts)),
             kDifBadArg);
+}
+
+class ClassLockTest : public AlertHandlerTest,
+                      public testing::WithParamInterface<
+                          std::tuple<dif_alert_handler_class_t, uint32_t>> {};
+
+static std::vector<std::tuple<dif_alert_handler_class_t, uint32_t>>
+    class_regwen_pairs{
+        std::tuple<dif_alert_handler_class_t, uint32_t>{
+            kDifAlertHandlerClassA, ALERT_HANDLER_CLASSA_REGWEN_REG_OFFSET},
+        std::tuple<dif_alert_handler_class_t, uint32_t>{
+            kDifAlertHandlerClassB, ALERT_HANDLER_CLASSB_REGWEN_REG_OFFSET},
+        std::tuple<dif_alert_handler_class_t, uint32_t>{
+            kDifAlertHandlerClassC, ALERT_HANDLER_CLASSC_REGWEN_REG_OFFSET},
+        std::tuple<dif_alert_handler_class_t, uint32_t>{
+            kDifAlertHandlerClassD, ALERT_HANDLER_CLASSD_REGWEN_REG_OFFSET}};
+
+TEST_P(ClassLockTest, IsClassLocked) {
+  dif_alert_handler_class_t alert_class = std::get<0>(GetParam());
+  uint32_t regwen_offset = std::get<1>(GetParam());
+  bool is_locked = true;
+
+  EXPECT_READ32(regwen_offset, ALERT_HANDLER_CLASSA_REGWEN_REG_RESVAL);
+  EXPECT_EQ(dif_alert_handler_is_class_locked(&alert_handler_, alert_class,
+                                              &is_locked),
+            kDifOk);
+  EXPECT_FALSE(is_locked);
+
+  is_locked = false;
+  EXPECT_READ32(regwen_offset, 0);
+  EXPECT_EQ(dif_alert_handler_is_class_locked(&alert_handler_, alert_class,
+                                              &is_locked),
+            kDifOk);
+  EXPECT_TRUE(is_locked);
+}
+
+INSTANTIATE_TEST_SUITE_P(AllClassesLockedAndUnlocked, ClassLockTest,
+                         testing::ValuesIn(class_regwen_pairs));
+
+TEST_P(ClassLockTest, LockClass) {
+  dif_alert_handler_class_t alert_class = std::get<0>(GetParam());
+  uint32_t regwen_offset = std::get<1>(GetParam());
+
+  EXPECT_WRITE32(regwen_offset, 0);
+  EXPECT_EQ(dif_alert_handler_lock_class(&alert_handler_, alert_class), kDifOk);
+}
+
+INSTANTIATE_TEST_SUITE_P(LockAllClasses, ClassLockTest,
+                         testing::ValuesIn(class_regwen_pairs));
+
+TEST_F(ClassLockTest, BadArgs) {
+  bool is_locked;
+  EXPECT_EQ(dif_alert_handler_is_class_locked(nullptr, kDifAlertHandlerClassA,
+                                              &is_locked),
+            kDifBadArg);
+  EXPECT_EQ(dif_alert_handler_is_class_locked(
+                &alert_handler_,
+                static_cast<dif_alert_handler_class_t>(kClasses), &is_locked),
+            kDifBadArg);
+  EXPECT_EQ(dif_alert_handler_is_class_locked(&alert_handler_,
+                                              kDifAlertHandlerClassD, nullptr),
+            kDifBadArg);
+
+  EXPECT_EQ(dif_alert_handler_lock_class(nullptr, kDifAlertHandlerClassA),
+            kDifBadArg);
+  EXPECT_EQ(
+      dif_alert_handler_lock_class(
+          &alert_handler_, static_cast<dif_alert_handler_class_t>(kClasses)),
+      kDifBadArg);
 }
 
 class PingTimerLockTest : public AlertHandlerTest {};

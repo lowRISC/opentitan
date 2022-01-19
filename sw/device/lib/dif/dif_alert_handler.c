@@ -20,11 +20,19 @@ static_assert(ALERT_HANDLER_PARAM_N_LOC_ALERT == 7,
               "Expected seven local alerts!");
 
 /**
- * Macro for generating the case statements for local alert lock CSRS.
+ * Macro for generating the case statements for local alert lock CSRs.
  */
 #define LOC_ALERT_REGWENS_CASE_(loc_alert_, value_)                       \
   case loc_alert_:                                                        \
     regwen_offset = ALERT_HANDLER_LOC_ALERT_REGWEN_##value_##_REG_OFFSET; \
+    break;
+
+/**
+ * Macro for generating the case statements for class lock CSRs.
+ */
+#define ALERT_CLASS_REGWENS_CASE_(class_, value_)                    \
+  case kDifAlertHandlerClass##class_:                                \
+    regwen_offset = ALERT_HANDLER_CLASS##class_##_REGWEN_REG_OFFSET; \
     break;
 
 // TODO(#9899): add static assert for accumulator_threshold field size
@@ -552,6 +560,44 @@ dif_result_t dif_alert_handler_is_local_alert_locked(
   return kDifOk;
 }
 
+dif_result_t dif_alert_handler_lock_class(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_class_t alert_class) {
+  if (alert_handler == NULL) {
+    return kDifBadArg;
+  }
+
+  ptrdiff_t regwen_offset;
+  switch (alert_class) {
+    LIST_OF_CLASSES(ALERT_CLASS_REGWENS_CASE_)
+    default:
+      return kDifBadArg;
+  }
+
+  mmio_region_write32(alert_handler->base_addr, regwen_offset, 0);
+
+  return kDifOk;
+}
+
+dif_result_t dif_alert_handler_is_class_locked(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_class_t alert_class, bool *is_locked) {
+  if (alert_handler == NULL || is_locked == NULL) {
+    return kDifBadArg;
+  }
+
+  ptrdiff_t regwen_offset;
+  switch (alert_class) {
+    LIST_OF_CLASSES(ALERT_CLASS_REGWENS_CASE_)
+    default:
+      return kDifBadArg;
+  }
+
+  *is_locked = !mmio_region_read32(alert_handler->base_addr, regwen_offset);
+
+  return kDifOk;
+}
+
 dif_result_t dif_alert_handler_lock_ping_timer(
     const dif_alert_handler_t *alert_handler) {
   if (alert_handler == NULL) {
@@ -947,3 +993,4 @@ dif_result_t dif_alert_handler_get_class_state(
 }
 
 #undef LOC_ALERT_REGWENS_CASE_
+#undef ALERT_CLASS_REGWENS_CASE_
