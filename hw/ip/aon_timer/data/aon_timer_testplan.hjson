@@ -48,7 +48,7 @@
       tests: ["aon_timer_prescaler"]
     }
     {
-      name: stress
+      name: jump
       desc: '''
             Change threshold values and prescaler value on random times without locking
             configuration registers of watchdog timer.
@@ -67,7 +67,7 @@
             prescaler value.
             '''
       milestone: V2
-      tests: ["aon_timer_stress"]
+      tests: ["aon_timer_jump"]
     }
   ]
 

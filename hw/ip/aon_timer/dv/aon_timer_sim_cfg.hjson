@@ -50,7 +50,14 @@
       name: aon_timer_smoke
       uvm_test_seq: aon_timer_smoke_vseq
     }
-
+    {
+      name: aon_timer_prescaler
+      uvm_test_seq: aon_timer_prescaler_vseq
+    }
+    {
+      name: aon_timer_jump
+      uvm_test_seq: aon_timer_jump_vseq
+    }
     // TODO: add more tests here
   ]
 
