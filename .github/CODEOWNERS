@@ -24,6 +24,7 @@
 # Bazel build rules
 *.bzl               @cfrantz @drewmacrae
 BUILD               @cfrantz @drewmacrae
+BUILD.bazel         @cfrantz @drewmacrae
 /WORKSPACE          @cfrantz @drewmacrae
 /.bazelrc           @cfrantz @drewmacrae
 
