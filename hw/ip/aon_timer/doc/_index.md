@@ -20,8 +20,11 @@ See that document for an overview of how it is integrated into the top level sys
 
 The always-on wakeup timer operation is straightforward.
 A count starts at 0 and slowly ticks upwards (one tick every `N + 1` clock cycles, where `N` is the pre-scaler value).
-When it reaches / exceeds the wake count, a level wakeup signal is sent to the power manager and a level IRQ is sent to the processor.
-This wakeup signal stays high until it is explicitly acknowledged by software (software must write zero to the {{<regref "WKUP_CAUSE">}} register to clear it).
+When it reaches / exceeds the wake threshold, a level wakeup signal is sent to the power manager and a level IRQ is sent to the processor.
+This wakeup signal stays high until it is explicitly acknowledged by software.
+To clear the wakeup write 0 to the {{<regref "WKUP_CAUSE">}} register.
+To clear the interrupt write 1 to {{<regref "INTR_STATE.wkup_timer_expired">}}.
+Note that if {{<regref "WKUP_COUNT">}} is not zeroed and remains at or above the wake threshold and the wakeup timer isn't disabled, the wakeup and interrupt will trigger again at the next clock tick.
 The wakeup timer can be used like a real-time clock for long periods in a low-power mode (though it does not give any guarantees of time-accuracy). **TODO: specify accuracy**
 
 ### AON Watchdog timer
@@ -102,6 +105,8 @@ Disable or reinitialize the wakeup timer if required by clearing the enable bit 
 Clear the interrupt by writing 1 into the Interrupt Status Register {{<regref "INTR_STATE">}}.
 
 If the timer has caused a wakeup event ({{<regref"WKUP_CAUSE">}} is set) then clear the wakeup request by writing 0 to {{<regref"WKUP_CAUSE">}}.
+
+If {{<regref"WKUP_COUNT">}} remains above the threshold after clearing the interrupt or wakeup event and the timer remains enabled, the interrupt and wakeup event will trigger again at the next clock tick.
 
 ## Device Interface Functions (DIFs)
 
