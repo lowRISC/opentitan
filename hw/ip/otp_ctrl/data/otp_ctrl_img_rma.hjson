@@ -40,8 +40,7 @@
                     // Enable use of entropy for countermeasures. See the
                     // definition of `hardened_bool_t` in
                     // sw/device/lib/base/hardened.h.
-                    // TODO(#10177): Enable for integration testing.
-                    value: "0x0",
+                    value: "0x739",
                 },
             ],
         }
