@@ -158,6 +158,13 @@ void ottf_external_isr(void) {
     irq = (dif_aon_timer_irq_t)(
         irq_id -
         (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+
+    if (irq_id == kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired) {
+      CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
+    } else if (irq_id == kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark) {
+      CHECK_DIF_OK(dif_aon_timer_watchdog_stop(&aon_timer));
+    }
+
     CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&aon_timer, irq));
   }
 
