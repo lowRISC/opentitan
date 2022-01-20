@@ -3,73 +3,15 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Dict, Generic, List, Optional, Set, Tuple, TypeVar
+from typing import Dict, List, Optional, Set, Tuple
 
 from .control_flow import *
+from .cache import CacheEntry, Cache
 from .decode import OTBNProgram
-from .information_flow import (InformationFlowGraph, InsnInformationFlow,
-                               safe_update_iflow)
+from .information_flow import InformationFlowGraph, InsnInformationFlow
 from .insn_yaml import Insn
 from .operand import RegOperandType
 from .section import CodeSection
-
-K = TypeVar('K')
-V = TypeVar('V')
-I = TypeVar('I')
-
-# TODO: move to other file
-class CacheEntry(Generic[K,V]):
-    '''Represents a single entry in a cache.
-
-    The entry must hold two pieces of information:
-    - value, the cached result to be returned on a matching lookup
-    - key, data needed to determine if the entry matches a lookup (e.g. input
-      parameters to the function whose result has been cached)
-
-    Note that this is not a simple key/value store, because a key might match a
-    lookup even if it's not an exact match. Determining what exactly needs to
-    match is implementation-specific and implemented by subclasses.
-    '''
-    def __init__(self, key: K, value: V):
-        self.key = key
-        self.value = value
-
-    def is_match(self, key: K) -> bool:
-        '''Returns whether this entry is a match for the key.
-
-        In the simplest case, this could be just self.key == key; however, the
-        implementer might choose to ignore certain information when evaluating
-        the match, depending on the use-case.
-        '''
-        raise NotImplementedError()
-
-# TODO: move to other file
-class Cache(Generic[I,K,V]):
-    '''Represents a cache to speed up recursive functions.
-
-    The cache is structured with two layers:
-    - The first layer is a dictionary that maps some hashable index type to the
-      second layer, a list for each dictionary entry.
-    - The second layer is a list of CacheEntry instances to be checked.
-
-    The purpose of the two-layer structure is to speed up lookups; the index
-    type should be used to quickly narrow things down to a limited number of
-    potentially matching entries (for instance, it could be an input parameter
-    to the function that absolutely must match for the cache entries to match).
-    '''
-    def __init__(self) -> None:
-        self.entries : Dict[I,List[CacheEntry[K,V]]] = {}
-
-    def add(self, index: I, entry: CacheEntry[K,V]) -> None:
-        # Only add if there's no matching entry already 
-        if self.lookup(index, entry.key) is None:
-            self.entries.setdefault(index, []).append(entry)
-
-    def lookup(self, index: I, key: K) -> Optional[V]:
-        for entry in self.entries.get(index, []):
-            if entry.is_match(key):
-                return entry.value
-        return None
 
 # Calls to _get_iflow return results in the form of a tuple with entries:
 #   used constants: a set containing the names of input constants the
@@ -77,7 +19,7 @@ class Cache(Generic[I,K,V]):
 #                   these entries unchanged should not change the results
 #   return iflow:   an information-flow graph for any paths ending in a return
 #                   to the address that is on top of the call stack at the
-#                   original PC (None if there are no such paths)
+#                   original PC
 #   end iflow:      an information-flow graph for any paths that lead to the
 #                   end of the entire program (i.e. ECALL instruction or end of
 #                   IMEM)
@@ -89,8 +31,7 @@ class Cache(Generic[I,K,V]):
 #                   the program; the value is a set of PCs of control-flow
 #                   instructions through which the node influences the control
 #                   flow
-IFlowResult = Tuple[Set[str], Optional[InformationFlowGraph],
-                    Optional[InformationFlowGraph], Dict[str, int],
+IFlowResult = Tuple[Set[str], InformationFlowGraph, InformationFlowGraph, Dict[str, int],
                     Dict[str, Set[int]]]
 
 class IFlowCacheEntry(CacheEntry[Dict[str,int], IFlowResult]):
@@ -105,7 +46,7 @@ class IFlowCacheEntry(CacheEntry[Dict[str,int], IFlowResult]):
     '''
     def is_match(self, constants: Dict[str,int]) -> bool:
         for k,v in self.key.items():
-            if constants[k] != v:
+            if constants.get(k, None) != v:
                 return False
         return True
 
@@ -121,13 +62,12 @@ class IFlowCache(Cache[int,Dict[str,int], IFlowResult]):
 # The information flow of a subroutine is represented as a tuple whose entries
 # are a subset of the IFlowResult tuple entries; in particular, it has the form
 # (return iflow, end iflow, control deps).
-SubroutineIFlow = Tuple[Optional[InformationFlowGraph],
-                        Optional[InformationFlowGraph], Dict[str, Set[int]]]
+SubroutineIFlow = Tuple[InformationFlowGraph,InformationFlowGraph, Dict[str, Set[int]]]
 
 # The information flow of a full program is the same as for a subroutine,
 # except with no "return" information flow. Since the call stack is empty
 # at the start, we're not expecting any return paths!
-ProgramIFlow = Tuple[Optional[InformationFlowGraph], Dict[str, Set[int]]]
+ProgramIFlow = Tuple[InformationFlowGraph, Dict[str, Set[int]]]
 
 
 def _get_op_val_str(insn: Insn, op_vals: Dict[str, int], opname: str) -> str:
@@ -148,10 +88,7 @@ def _update_constants_insn(insn: Insn, op_vals: Dict[str, int],
 
     Modifies the input `constants` dictionary.
     '''
-    # Make sure x0 is always constant (0), since it is not writeable
-    constants['x0'] = 0
-
-    new_constants = {}
+    new_constants = {'x0': 0}
     if insn.mnemonic == 'addi':
         grs1_name = _get_op_val_str(insn, op_vals, 'grs1')
         if grs1_name in constants:
@@ -183,9 +120,6 @@ def _update_constants_insn(insn: Insn, op_vals: Dict[str, int],
             del constants[sink]
 
     constants.update(new_constants)
-
-    # Make sure x0 is always constant (0), since it is not writeable
-    constants['x0'] = 0
 
     return
 
@@ -265,7 +199,7 @@ def _build_iflow_straightline(
     encountering a control-flow instruction. Updates `constants` to hold the
     constant values after the section has finished.
     '''
-    iflow = InformationFlowGraph({'x0': set()})
+    iflow = InformationFlowGraph.empty()
     constant_deps = set()
 
     for pc in range(start_pc, end_pc + 4, 4):
@@ -349,9 +283,9 @@ def _update_control_deps(current_deps: Dict[str, Set[int]],
 
 def _get_iflow_update_state(
         rec_result: IFlowResult, iflow: InformationFlowGraph,
-        program_end_iflow: Optional[InformationFlowGraph],
+        program_end_iflow: InformationFlowGraph,
         used_constants: Set[str],
-        control_deps: Dict[str, Set[int]]) -> Optional[InformationFlowGraph]:
+        control_deps: Dict[str, Set[int]]) -> InformationFlowGraph:
     '''Update the internal state of _get_iflow after a recursive call.
 
     The `used_constants` and `control_deps` state elements are updated in
@@ -366,9 +300,7 @@ def _get_iflow_update_state(
     _update_control_deps(control_deps, iflow, rec_control_deps)
 
     # Update information flow results for paths where the program ends
-    if rec_program_end_iflow is not None:
-        end_iflow = iflow.seq(rec_program_end_iflow)
-        program_end_iflow = safe_update_iflow(program_end_iflow, end_iflow)
+    program_end_iflow.update(iflow.seq(rec_program_end_iflow))
 
     return program_end_iflow
 
@@ -396,12 +328,13 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
 
     # The combined information flow for all paths leading to the end of the
     # subroutine (i.e. a RET, not counting RETS that happen after jumps within
-    # the subroutine at start_pc)
-    return_iflow = None
+    # the subroutine at start_pc). Initialize as nonexistent() because no paths
+    # have yet been found.
+    return_iflow = InformationFlowGraph.nonexistent()
 
     # The combined information flow for all paths leading to the end of the
     # program (i.e. an ECALL or the end of IMEM)
-    program_end_iflow = None
+    program_end_iflow = InformationFlowGraph.nonexistent()
 
     # The control-flow nodes whose values at the start PC influence control
     # flow
@@ -486,8 +419,7 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
 
             # Compose current iflow with the flow for paths that hit the end of
             # the loop
-            if body_return_iflow is not None:
-                iflow = iflow.seq(body_return_iflow)
+            iflow = iflow.seq(body_return_iflow)
 
         # Set the next edges to the instruction after the loop ends
         edges = [ControlLoc(body_loc.loop_end_pc + 4)]
@@ -537,10 +469,7 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
 
             # Clear common constants; there are no return branches here
             common_constants = {'x0': 0}
-            if program_end_iflow is None:
-                program_end_iflow = iflow
-            else:
-                program_end_iflow.update(iflow)
+            program_end_iflow.update(iflow)
         elif isinstance(loc, Ret):
             if loop_end_pc is not None:
                 raise RuntimeError(
@@ -554,10 +483,7 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
 
             # Since this is the only edge, common_constants must be unset
             common_constants = constants
-            if return_iflow is None:
-                return_iflow = iflow
-            else:
-                return_iflow.update(iflow)
+            return_iflow.update(iflow)
 
         elif isinstance(loc, LoopStart):
             # We shouldn't hit a LoopStart here; those cases (a loop
@@ -587,9 +513,7 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
 
             #  Update return_iflow with the current iflow composed with return
             #  paths
-            if rec_return_iflow is not None:
-                return_iflow = safe_update_iflow(return_iflow,
-                                                 iflow.seq(rec_return_iflow))
+            return_iflow.update(iflow.seq(rec_return_iflow))
         else:
             raise RuntimeError(
                 'Unexpected next control location type at PC {:#x}: {}'.format(
@@ -642,7 +566,7 @@ def get_subroutine_iflow(program: OTBNProgram, graph: ControlGraph,
     start_pc = program.get_pc_at_symbol(subroutine_name)
     _, ret_iflow, end_iflow, _, control_deps = _get_iflow(
         program, graph, start_pc, {'x0': 0}, None, IFlowCache())
-    if ret_iflow is None and end_iflow is None:
+    if not (ret_iflow.exists or end_iflow.exists):
         raise ValueError('Could not find any complete control-flow paths when '
                          'analyzing subroutine.')
     return ret_iflow, end_iflow, control_deps
@@ -661,11 +585,11 @@ def get_program_iflow(program: OTBNProgram,
     check_acyclic(graph)
     _, ret_iflow, end_iflow, _, control_deps = _get_iflow(
         program, graph, program.min_pc(), {'x0': 0}, None, IFlowCache())
-    if ret_iflow is not None:
+    if ret_iflow.exists:
         # No paths from imem_start should end in RET
         raise ValueError('Unexpected information flow for paths ending in RET '
                          'when analyzing whole program.')
-    assert end_iflow is not None
+    assert end_iflow.exists
     return end_iflow, control_deps
 
 
