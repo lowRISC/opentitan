@@ -39,8 +39,8 @@ rom_error_t boot_policy_manifest_check(lifecycle_state_t lc_state,
 
   if (launder32(manifest->security_version) >=
       boot_data.min_security_version_rom_ext) {
-    SHUTDOWN_CHECK(launder32(manifest->security_version) >=
-                   boot_data.min_security_version_rom_ext);
+    HARDENED_CHECK_GE(launder32(manifest->security_version),
+                      boot_data.min_security_version_rom_ext);
     return kErrorOk;
   }
   return kErrorBootPolicyRollback;

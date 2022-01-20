@@ -77,6 +77,7 @@ typedef enum hardened_byte_bool {
  * while blocking the compiler's attempts to delete them through dead code
  * elimination.
  *
+ * Suppose we have a pure-C `CHECK()` macro that does a runtime-assert.
  * For example, in the following code, a compiler would fold `CHECK()` away,
  * since dataflow analysis could tell it that `x` is always zero, allowing it to
  * deduce that `x == 0` -> `0 == 0` -> `true`. It then deletes the `CHECK(true)`
@@ -119,6 +120,17 @@ typedef enum hardened_byte_bool {
  * doesn't work, because the compiler may chose to move the operation into the
  * branch body. Thus, we need to stop it from learning that `x` is zero in the
  * first place.
+ *
+ * Note that, in spite of `HARDENED_CHECK` being written in assembly, it is
+ * still vulnerable to certain inimical compiler optimizations. For example,
+ * `HARDENED_CHECK_EQ(x, 0)` can be written to `HARDENED_CHECK_EQ(0, 0)`.
+ * Although the compiler cannot delete this code, it will emit the nonsensical
+ * ```
+ *   beqz zero, continue
+ *   unimp
+ * continue:
+ * ```
+ * effectively negating the doubled condition.
  *
  * ---
  *
@@ -172,8 +184,8 @@ typedef enum hardened_byte_bool {
  *   branch will never be executed in an untampered instruction stream.
  *
  * @param val A 32-bit integer to launder.
- * @return A 32-bit integer which will happen to have the same value as `val` at
- *         runtime.
+ * @return A 32-bit integer which will *happen* to have the same value as `val`
+ *         at runtime.
  */
 inline uint32_t launder32(uint32_t val) {
   // NOTE: This implementation is LLVM-specific, and should be considered to be
@@ -477,36 +489,84 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
   return (launderw(c) & a) | (launderw(~c) & b);
 }
 
+// Implementation details shared across shutdown macros.
+#ifndef OT_OFF_TARGET_TEST
+// This string can be tuned to be longer or shorter as desired, for
+// fault-hardening purposes.
+#define HARDENED_UNIMP_SEQUENCE_() "unimp; unimp; unimp; unimp;"
+
+#define HARDENED_CHECK_OP_EQ_ "beq"
+#define HARDENED_CHECK_OP_NE_ "bne"
+#define HARDENED_CHECK_OP_LT_ "blt"
+#define HARDENED_CHECK_OP_GT_ "bgt"
+#define HARDENED_CHECK_OP_LE_ "ble"
+#define HARDENED_CHECK_OP_GE_ "bge"
+
+// clang-format off
+#define HARDENED_CHECK_(op_, a_, b_) \
+  asm volatile(                      \
+      op_ " %0, %1, .L_HARDENED_%=;" \
+      HARDENED_UNIMP_SEQUENCE_()     \
+      ".L_HARDENED_%=:;"             \
+      ::"r"(a_), "r"(b_))
+// clang-format on
+
+#define HARDENED_UNREACHABLE_()               \
+  do {                                        \
+    asm volatile(HARDENED_UNIMP_SEQUENCE_()); \
+    __builtin_unreachable();                  \
+  } while (false)
+#else  // OT_OFF_TARGET_TEST
+#include <assert.h>
+
+#define HARDENED_CHECK_OP_EQ_ ==
+#define HARDENED_CHECK_OP_NE_ !=
+#define HARDENED_CHECK_OP_LT_ <
+#define HARDENED_CHECK_OP_GT_ >
+#define HARDENED_CHECK_OP_LE_ <=
+#define HARDENED_CHECK_OP_GE_ >=
+
+#define HARDENED_CHECK_(op_, a_, b_) assert((a_)op_(b_))
+
+#define HARDENED_UNREACHABLE_() assert(false)
+#endif  // OT_OFF_TARGET_TEST
+
 /**
- * Evaluate a manifestly true expression and generate an illegal instruction
- * exception if the result is false.
+ * Indicates that the following code is unreachable; it should never be
+ * reached at runtime.
+ *
+ * If it is reached anyways, an illegal instruction will be executed.
+ */
+#define HARDENED_UNREACHABLE() HARDENED_UNREACHABLE_()
+
+/**
+ * Compare two values in a way that is *manifestly* true: that is, under normal
+ * program execution, the comparison is a tautology.
+ *
+ * If the comparison fails, we can deduce the device is under attack, so an
+ * illegal instruction will be executed. The manner in which the comparison is
+ * done is carefully constructed in assembly to minimize the possibility of
+ * adversarial faults.
+ *
+ * There are six variants of this macro: one for each of the six comparison
+ * operations.
  *
  * This macro is intended to be used along with `launder32()` to handle detected
  * faults when implementing redundant checks, i.e. in places where the compiler
  * could otherwise prove statically unreachable. For example:
  * ```
  * if (launder32(x) == 0) {
- *   SHUTDOWN_CHECK(launder32(x) == 0);
+ *   HARDENED_CHECK_EQ(launder32(x), 0);
  * }
  * ```
  * See `launder32()` for more details.
- * TODO(#10006): Improve this implementation.
  */
-#ifndef OT_OFF_TARGET_TEST
-#define SHUTDOWN_CHECK(expr_)  \
-  do {                         \
-    if (!(expr_)) {            \
-      asm volatile("unimp");   \
-      __builtin_unreachable(); \
-    }                          \
-  } while (false)
-#else
-#include <assert.h>
-#define SHUTDOWN_CHECK(expr_) \
-  do {                        \
-    assert(expr_);            \
-  } while (false)
-#endif
+#define HARDENED_CHECK_EQ(a_, b_) HARDENED_CHECK_(HARDENED_CHECK_OP_EQ_, a_, b_)
+#define HARDENED_CHECK_NE(a_, b_) HARDENED_CHECK_(HARDENED_CHECK_OP_NE_, a_, b_)
+#define HARDENED_CHECK_LT(a_, b_) HARDENED_CHECK_(HARDENED_CHECK_OP_LT_, a_, b_)
+#define HARDENED_CHECK_GT(a_, b_) HARDENED_CHECK_(HARDENED_CHECK_OP_GT_, a_, b_)
+#define HARDENED_CHECK_LE(a_, b_) HARDENED_CHECK_(HARDENED_CHECK_OP_LE_, a_, b_)
+#define HARDENED_CHECK_GE(a_, b_) HARDENED_CHECK_(HARDENED_CHECK_OP_GE_, a_, b_)
 
 #ifdef __cplusplus
 }
