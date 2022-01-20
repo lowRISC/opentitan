@@ -4,11 +4,13 @@
 
 #include "sw/device/lib/base/multibits_asm.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "aon_timer_regs.h"
 #include "ast_regs.h"
 #include "csrng_regs.h"
 #include "edn_regs.h"
 #include "entropy_src_regs.h"
 #include "otp_ctrl_regs.h"
+#include "pwrmgr_regs.h"
 #include "sensor_ctrl_regs.h"
 #include "sram_ctrl_regs.h"
 
@@ -129,6 +131,29 @@ _mask_rom_start_boot:
    * exceptions, or Ibex's non-maskable interrupts (interrupt 31), so we still
    * need to be careful.
    */
+
+  // Configure the power manager to enable resets.
+  // Note: this enables all types of reset request for simplicity.
+  li t0, TOP_EARLGREY_PWRMGR_AON_BASE_ADDR
+  li t1, -1
+  sw t1, PWRMGR_RESET_EN_REG_OFFSET(t0)
+
+  // Trigger a power manager configuration synchronization.
+  li t1, (1 << PWRMGR_CFG_CDC_SYNC_SYNC_BIT)
+  sw t1, PWRMGR_CFG_CDC_SYNC_REG_OFFSET(t0)
+
+  // Setup the watchdog bite timer in order to reset the chip if the ROM stalls.
+  // Since interrupts are disabled the watchdog bark will have no effect
+  // therefore the bark threshold is just set to the highest possible value.
+  li t0, TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR
+  li t1, 0xffffffff // TODO(lowRISC/opentitan##10215): reduce bite timer value.
+  sw t1, AON_TIMER_WDOG_BITE_THOLD_REG_OFFSET(t0)
+  li t1, 0xffffffff
+  sw t1, AON_TIMER_WDOG_BARK_THOLD_REG_OFFSET(t0)
+
+  // Enable the watchdog timer.
+  li t1, (1 << AON_TIMER_WDOG_CTRL_ENABLE_BIT)
+  sw t1, AON_TIMER_WDOG_CTRL_REG_OFFSET(t0)
 
   // Clear all the machine-defined interrupts, `MEIE`, `MTIE`, and `MSIE` fields
   // of `mie`.
