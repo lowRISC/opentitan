@@ -13,8 +13,6 @@ interface prim_count_if #(
   input clk_i,
   input rst_ni);
 
-  localparam int ErrorToAlertMaxCycles = 5;
-
   string msg_id = $sformatf("%m");
 
   prim_count_pkg::prim_count_style_e cnt_style = CntStyle;
@@ -33,7 +31,7 @@ interface prim_count_if #(
       @(negedge clk_i);
       `DV_CHECK(uvm_hdl_read(signal_forced, orig_value))
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(force_value, force_value != orig_value;)
-      uvm_hdl_deposit(signal_forced, force_value);
+      `DV_CHECK(uvm_hdl_deposit(signal_forced, force_value))
       `uvm_info(msg_id, $sformatf("Forcing %s from %0d to %0d",
                                   signal_forced, orig_value, force_value), UVM_LOW)
 
@@ -41,7 +39,7 @@ interface prim_count_if #(
     endtask
 
     virtual task restore_fault();
-      uvm_hdl_deposit(signal_forced, orig_value);
+      `DV_CHECK(uvm_hdl_deposit(signal_forced, orig_value))
       `uvm_info(msg_id, $sformatf("Forcing %s to original value %0d", signal_forced, orig_value),
                 UVM_LOW)
     endtask
