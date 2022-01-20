@@ -417,6 +417,18 @@
       default: "64",
       local: "true"
     },
+    { name: "RomWatchdogBiteThresholdCyclesOffset",
+      desc: "Offset of ROM_WATCHDOG_BITE_THRESHOLD_CYCLES",
+      type: "int",
+      default: "1364",
+      local: "true"
+    },
+    { name: "RomWatchdogBiteThresholdCyclesSize",
+      desc: "Size of ROM_WATCHDOG_BITE_THRESHOLD_CYCLES",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
     { name: "OwnerSwCfgDigestOffset",
       desc: "Offset of OWNER_SW_CFG_DIGEST",
       type: "int",

@@ -13,6 +13,7 @@
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/flash_ctrl.h"
 #include "sw/device/lib/testing/test_rom/spiflash_frame.h"
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/log.h"

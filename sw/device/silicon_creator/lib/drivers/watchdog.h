@@ -4,19 +4,60 @@
 
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_WATCHDOG_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_WATCHDOG_H_
+
 #include <stdint.h>
+
+#include "sw/device/lib/base/hardened.h"
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
+ * The following constants represent the expected number of sec_mmio register
+ * writes performed by functions in provided in this module. See
+ * `SEC_MMIO_WRITE_INCREMENT()` for more details.
+ *
+ * Example:
+ * ```
+ *  watchdog_init(lc);
+ *  SEC_MMIO_WRITE_INCREMENT(kWatchdogSecMmioInit);
+ * ```
+ */
+enum {
+  kWatchdogSecMmioEnable = 4,
+  kWatchdogSecMmioDisable = 1,
+  kWatchdogSecMmioInit = kWatchdogSecMmioEnable,
+};
+
+/**
  * Initialize the watchdog timer.
  *
- * @param timeout_ms The timeout, in milliseconds, after which the watchdog
- *                   will trigger a reset. A value of zero disables the watchdog
- *                   timer.
+ * The watchdog bite threshold will be initialized to a value determined by
+ * the lifecycle state and OTP configuration.
+ *
+ * @param lc_state Current lifecycle state.
  */
-void watchdog_init(uint32_t timeout_ms);
+void watchdog_init(lifecycle_state_t lc_state);
+
+/**
+ * Configure the watchdog timer with given bite threshold.
+ *
+ * This operation will set the counter value to 0.
+ *
+ * @param threshold Bite threshold value in cycles.
+ * @param enable Whether or not to enable the watchdog timer after it is
+ * configured.
+ */
+void watchdog_configure(uint32_t threshold, hardened_bool_t enable);
+
+/**
+ * Disable the watchdog.
+ *
+ * This will prevent the watchdog from triggering and resetting the chip.
+ */
+void watchdog_disable(void);
 
 /**
  * Pet the watchdog, thus preventing a watchdog initiated reset.
@@ -25,6 +66,7 @@ void watchdog_pet(void);
 
 /**
  * Get the current watchdog counter value.
+ *
  * @return current watchdog value.
  */
 uint32_t watchdog_get(void);

@@ -23,6 +23,7 @@
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
+#include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify.h"
@@ -95,14 +96,20 @@ static rom_error_t mask_rom_init(void) {
   pinmux_init();
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);
-  // Initialize the shutdown policy according to lifecycle state.
+
   lc_state = lifecycle_state_get();
+
+  // Re-initialize the watchdog timer.
+  watchdog_init(lc_state);
+  SEC_MMIO_WRITE_INCREMENT(kWatchdogSecMmioInit);
+
+  // Initialize the shutdown policy.
   HARDENED_RETURN_IF_ERROR(shutdown_init(lc_state));
 
   flash_ctrl_init();
   SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInit);
 
-  // Initiaize in-memory copy of the ePMP register configuration.
+  // Initialize in-memory copy of the ePMP register configuration.
   mask_rom_epmp_state_init(&epmp);
 
   // Initialize the retention SRAM at power-on.
@@ -271,10 +278,18 @@ void mask_rom_main(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomMain, 3);
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomInit, 3);
 
+  // Disable the watchdog timer before entering bootstrap.
+  // TODO(lowRISC/opentitan#10631): decide on watchdog strategy for bootstrap.
+  watchdog_disable();
+  SEC_MMIO_WRITE_INCREMENT(kWatchdogSecMmioDisable);
 
   // TODO(lowrisc/opentitan#1513): Switch to EEPROM SPI device bootstrap
   // protocol.
   SHUTDOWN_IF_ERROR(primitive_bootstrap());
+
+  // Re-initialize the watchdog timer once bootstrap is complete.
+  watchdog_init(lc_state);
+  SEC_MMIO_WRITE_INCREMENT(kWatchdogSecMmioInit);
 
   // `mask_rom_try_boot` will not return unless there is an error.
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomMain, 4, kCfiRomTryBoot);
