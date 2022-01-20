@@ -33,7 +33,7 @@ yosys "attrmap -tocase keep -imap dont_touch=\"yes\" keep=1 -imap dont_touch=\"n
 # Place keep_hierarchy contraints on relevant modules to prevent aggressive synthesis optimzations
 # across the boundaries of these modules.
 yosys "hierarchy -check -top $lr_synth_top_module"
-yosys "setattr -mod -set keep_hierarchy 1 *prim_xilinx_buf*"
+yosys "setattr -mod -set keep_hierarchy 1 *prim_xilinx*"
 yosys "setattr -mod -set keep_hierarchy 1 *aes_*_fsm_p*"
 yosys "setattr -mod -set keep_hierarchy 1 *aes_*_fsm_n*"
 yosys "setattr -mod -set keep_hierarchy 1 *aes_sel_buf_chk*"
@@ -46,7 +46,7 @@ yosys "write_verilog $lr_synth_pre_map_out"
 
 # Remove keep_hierarchy constraints before writing out the netlist for Alma as it doesn't like
 # these constraints.
-yosys "setattr -mod -set keep_hierarchy 0 *prim_xilinx_buf*"
+yosys "setattr -mod -set keep_hierarchy 0 *prim_xilinx*"
 yosys "setattr -mod -set keep_hierarchy 0 *aes_*_fsm_p*"
 yosys "setattr -mod -set keep_hierarchy 0 *aes_*_fsm_n*"
 yosys "setattr -mod -set keep_hierarchy 0 *aes_sel_buf_chk*"
@@ -54,7 +54,7 @@ yosys "setattr -mod -set keep_hierarchy 0 *aes_sel_buf_chk*"
 yosys "write_verilog $lr_synth_alma_out"
 
 # Re-add keep_hierarchy constraints for further synthesis steps.
-yosys "setattr -mod -set keep_hierarchy 1 *prim_xilinx_buf*"
+yosys "setattr -mod -set keep_hierarchy 1 *prim_xilinx*"
 yosys "setattr -mod -set keep_hierarchy 1 *aes_*_fsm_p*"
 yosys "setattr -mod -set keep_hierarchy 1 *aes_*_fsm_n*"
 yosys "setattr -mod -set keep_hierarchy 1 *aes_sel_buf_chk*"
@@ -71,7 +71,7 @@ if { $lr_synth_timing_run } {
 }
 
 # Remove keep_hierarchy constraints before the final flattening step. We're done optimizing.
-yosys "setattr -mod -set keep_hierarchy 0 *prim_xilinx_buf*"
+yosys "setattr -mod -set keep_hierarchy 0 *prim_xilinx*"
 yosys "setattr -mod -set keep_hierarchy 0 *aes_*_fsm_p*"
 yosys "setattr -mod -set keep_hierarchy 0 *aes_*_fsm_n*"
 yosys "setattr -mod -set keep_hierarchy 0 *aes_sel_buf_chk*"
