@@ -22,7 +22,8 @@ module rstmgr_cnsty_chk
   input parent_rst_ni,
   input sw_rst_req_i,
   output logic sw_rst_req_clr_o,
-  output logic err_o
+  output logic err_o,
+  output logic fsm_err_o
 );
 
   localparam int MaxSyncDelay = 2;
@@ -73,26 +74,53 @@ module rstmgr_cnsty_chk
     .q_o(sync_child_rst)
   );
 
-
-  typedef enum logic [2:0] {
-    Reset,
-    Idle,
-    WaitForParent,
-    WaitForChild,
-    WaitForSrcRelease,
-    WaitForChildRelease,
-    Error
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 7 -n 6 \
+  //      -s 90402488 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (57.14%)
+  //  4: ||||||||||||||| (42.86%)
+  //  5: --
+  //  6: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 4
+  // Minimum Hamming weight: 1
+  // Maximum Hamming weight: 5
+  //
+  localparam int StateWidth = 6;
+  typedef enum logic [StateWidth-1:0] {
+    Reset               = 6'b011001,
+    Idle                = 6'b111100,
+    WaitForParent       = 6'b010010,
+    WaitForChild        = 6'b110111,
+    WaitForSrcRelease   = 6'b001111,
+    WaitForChildRelease = 6'b000100,
+    Error               = 6'b101010
   } state_e;
 
   state_e state_q, state_d;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      state_q <= Reset;
-    end else begin
-      state_q <= state_d;
-    end
-  end
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  logic [StateWidth-1:0] state_raw_q;
+  assign state_q = state_e'(state_raw_q);
+  //SEC_CM: FSM.SPARSE
+  prim_sparse_fsm_flop #(
+    .StateEnumT(state_e),
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(Reset))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .state_i ( state_d     ),
+    .state_o ( state_raw_q )
+  );
 
   logic timeout;
   logic cnt_inc;
@@ -124,6 +152,7 @@ module rstmgr_cnsty_chk
   always_comb begin
     state_d = state_q;
     err_o = '0;
+    fsm_err_o = '0;
     cnt_inc = '0;
     cnt_clr = '0;
     sw_rst_req_clr_o = '0;
@@ -222,7 +251,7 @@ module rstmgr_cnsty_chk
       end
 
       default: begin
-        state_d = Error;
+        fsm_err_o = 1'b1;
       end
     endcase // unique case (state_q)
   end // always_comb

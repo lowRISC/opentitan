@@ -33,6 +33,9 @@
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
+    { name: "FSM.SPARSE",
+      desc: "Sparse encoding for reset consistency check fsm."
+    }
   ]
   regwidth: "32",
   scan: "true",
@@ -66,7 +69,16 @@
       local: "true"
     },
 
-
+    { name:    "SecCheck",
+      type:    "bit",
+      default: "1'b1",
+      desc:    '''
+        When 1, enable rstmgr reset consistency checks.
+        When 0, there are no consistency checks.
+      '''
+      local:   "false",
+      expose:  "true"
+    },
   ],
 
   // Define rstmgr struct package

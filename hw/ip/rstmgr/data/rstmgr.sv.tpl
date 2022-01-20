@@ -6,13 +6,18 @@
 
 `include "prim_assert.sv"
 
+<%
+from topgen.lib import Name
+%>\
+
 // This top level controller is fairly hardcoded right now, but will be switched to a template
 module rstmgr
   import rstmgr_pkg::*;
   import rstmgr_reg_pkg::*;
   import prim_mubi_pkg::mubi4_t;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter bit SecCheck = 1
 ) (
   // Primary module clocks
   input clk_i,
@@ -167,6 +172,10 @@ module rstmgr
   logic [${len(leaf_rsts)-1}:0][PowerDomains-1:0] cnsty_chk_errs;
   logic [${len(leaf_rsts)-1}:0][PowerDomains-1:0] shadow_cnsty_chk_errs;
 
+  // consistency sparse fsm errors
+  logic [${len(leaf_rsts)-1}:0][PowerDomains-1:0] fsm_errs;
+  logic [${len(leaf_rsts)-1}:0][PowerDomains-1:0] shadow_fsm_errs;
+
   assign hw2reg.err_code.reg_intg_err.d  = 1'b1;
   assign hw2reg.err_code.reg_intg_err.de = reg_intg_err;
   assign hw2reg.err_code.reset_consistency_err.d  = 1'b1;
@@ -181,7 +190,9 @@ module rstmgr
   // All of these are fatal alerts
   assign alerts[0] = reg_intg_err |
                      |cnsty_chk_errs |
-                     |shadow_cnsty_chk_errs;
+                     |shadow_cnsty_chk_errs |
+                     |fsm_errs |
+                     |shadow_fsm_errs;
 
   assign alert_test = {
     reg2hw.alert_test.q &
@@ -327,9 +338,13 @@ module rstmgr
   // Power Domains: ${rst.domains}
   // Shadowed: ${rst.shadowed}
   % for j, name in enumerate(names):
+<%rst_name = Name.from_snake_case(name)
+%>\
     % for domain in power_domains:
        % if domain in rst.domains:
-  rstmgr_leaf_rst u_d${domain.lower()}_${name} (
+  rstmgr_leaf_rst #(
+    .SecCheck(SecCheck)
+  ) u_d${domain.lower()}_${name} (
     .clk_i,
     .rst_ni,
     .leaf_clk_i(clk_${rst.clock.name}_i),
@@ -343,16 +358,27 @@ module rstmgr
     .scan_sel(prim_mubi_pkg::mubi4_test_true_strict(leaf_rst_scanmode[${i}])),
     .rst_en_o(rst_en_o.${name}[Domain${domain}Sel]),
     .leaf_rst_o(resets_o.rst_${name}_n[Domain${domain}Sel]),
-    .err_o(${err_prefix[j]}cnsty_chk_errs[${i}][Domain${domain}Sel])
+    .err_o(${err_prefix[j]}cnsty_chk_errs[${i}][Domain${domain}Sel]),
+    .fsm_err_o(${err_prefix[j]}fsm_errs[${i}][Domain${domain}Sel])
   );
+
+  if (SecCheck) begin : gen_d${domain.lower()}_${name}_assert
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
+    D${domain.capitalize()}${rst_name.as_camel_case()}FsmCheck_A,
+    u_d${domain.lower()}_${name}.gen_rst_chk.u_rst_chk.u_state_regs,
+    alert_tx_o[0])
+  end
+
       % else:
   assign resets_o.rst_${name}_n[Domain${domain}Sel] = '0;
   assign ${err_prefix[j]}cnsty_chk_errs[${i}][Domain${domain}Sel] = '0;
+  assign ${err_prefix[j]}fsm_errs[${i}][Domain${domain}Sel] = '0;
   assign rst_en_o.${name}[Domain${domain}Sel] = MuBi4True;
       % endif
     % endfor
     % if len(names) == 1:
   assign shadow_cnsty_chk_errs[${i}] = '0;
+  assign shadow_fsm_errs[${i}] = '0;
     % endif
   % endfor
 
@@ -501,5 +527,6 @@ module rstmgr
 % for intf in export_rsts:
   `ASSERT_KNOWN(${intf.capitalize()}ResetsKnownO_A, resets_${intf}_o )
 % endfor
+
 
 endmodule // rstmgr

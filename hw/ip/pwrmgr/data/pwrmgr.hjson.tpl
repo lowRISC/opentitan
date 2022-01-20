@@ -181,6 +181,9 @@
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
+    { name: "FSM.SPARSE",
+      desc: "Sparse encoding for slow and fast state machines."
+    }
   ]
 
   regwidth: "32",
