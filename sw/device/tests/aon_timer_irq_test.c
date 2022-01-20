@@ -107,6 +107,8 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
   // Set the default value to a different value than expected.
   peripheral = kTopEarlgreyPlicPeripheralUnknown;
   irq = kDifAonTimerIrqWdogTimerBark;
+  // Capture the current tick to measure the time the IRQ will take.
+  time_elapsed = tick_count_get();
   if (expected_irq == kDifAonTimerIrqWkupTimerExpired) {
     // Setup the wake up interrupt.
     aon_timer_testutils_wakeup_config(aon_timer, count_cycles);
@@ -119,12 +121,23 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
                                         /*bite_cycles=*/count_cycles * 4);
   }
 
-  // Capture the current tick to measure the time the IRQ will take.
-  time_elapsed = tick_count_get();
-  do {
-    wait_for_interrupt();
-  } while (peripheral != kTopEarlgreyPlicPeripheralAonTimerAon &&
-           time_elapsed < sleep_range_h);
+  // Disable interrupts to be certain interrupt doesn't occur between while
+  // condition check and `wait_for_interrupt` (so WFI misses that interrupt).
+  irq_global_ctrl(false);
+
+  // Only enter WFI loop if we haven't already seen the interrupt.
+  if (peripheral != kTopEarlgreyPlicPeripheralAonTimerAon) {
+    do {
+      wait_for_interrupt();
+      // WFI ignores global interrupt enable, so enable it now and then
+      // immediately disable it. If there is an interrupt pending it will be
+      // taken here between the enable and disable. This confines the interrupt
+      // to a known place avoiding missed wakeup issues.
+      irq_global_ctrl(true);
+      irq_global_ctrl(false);
+    } while (peripheral != kTopEarlgreyPlicPeripheralAonTimerAon &&
+             time_elapsed < sleep_range_h);
+  }
 
   CHECK(time_elapsed < sleep_range_h && time_elapsed > sleep_range_l,
         "Timer took %u usec which is not in the range %u usec and %u usec",
