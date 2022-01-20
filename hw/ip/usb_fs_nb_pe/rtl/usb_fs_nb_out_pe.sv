@@ -285,6 +285,10 @@ module usb_fs_nb_out_pe #(
     endcase
   end
 
+  `ASSERT(OutXfrStateValid_A,
+    out_xfr_state inside {StIdle, StRcvdOut, StRcvdDataStart, StRcvdDataEnd, StRcvdIsoDataEnd},
+    clk_48mhz_i)
+
   // could flop this if needed
   assign out_ep_rollback_o = rollback_data;
 
