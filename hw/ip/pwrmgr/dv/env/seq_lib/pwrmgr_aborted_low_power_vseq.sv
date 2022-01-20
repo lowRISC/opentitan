@@ -13,13 +13,19 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
   // If set causes an abort because the CPU gets an interrupt, which shows up as
   // pwr_cpu.core_sleeping being low when the fast FSM is in FastPwrStateFallThrough.
   rand bit cpu_interrupt;
+  constraint cpu_interrupt_c {
+    cpu_interrupt dist {
+      1 := 2,
+      0 := 6
+    };
+  }
   rand bit flash_idle;
   rand bit lc_idle;
   rand bit otp_idle;
 
   constraint idle_c {
     solve cpu_interrupt before flash_idle, lc_idle, otp_idle;
-    if (!cpu_interrupt) {flash_idle & lc_idle & otp_idle == 1'b0;}
+    if (!cpu_interrupt) {(flash_idle && lc_idle && otp_idle) == 1'b0;}
   }
 
   constraint wakeups_c {wakeups != 0;}
@@ -68,7 +74,10 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
         cfg.clk_rst_vif.wait_clks(2);
         cfg.pwrmgr_vif.update_cpu_sleeping(1'b0);
       end else begin
-        `uvm_info(`gfn, "Expecting an abort (0x80)", UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf(
+                  "Expecting an abort (0x80): fi=%b, li=%b, oi=%b",
+                  flash_idle, lc_idle, otp_idle
+                  ), UVM_MEDIUM)
         set_nvms_idle(flash_idle, lc_idle, otp_idle);
       end
       // Wait enough time for the clocks to be turned off and then wait for them to go back on,
