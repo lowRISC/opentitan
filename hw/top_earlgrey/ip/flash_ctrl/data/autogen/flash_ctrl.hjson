@@ -368,8 +368,10 @@
             name: "VAL",
             desc: '''
               Initializes the flash controller.
-              During the initialization process, the flash controller reads out the root seeds
-              before allowing other usage of the flash controller.
+
+              During the initialization process, the flash controller requests the address and data
+              scramble keys and reads out the root seeds stored in flash before allowing other usage
+              of the flash controller.
 
               When the initialization sequence is complete, the flash read buffers are enabled
               and turned on.
@@ -423,8 +425,8 @@
             hwaccess: "hrw",
             name: "START",
             desc: '''
-              Start flash transaction.  This bit shall only be set after the other fields of the
-              CONTROL register and ADDR have been programmed
+              Start flash transaction.  This bit shall only be set at the same time or after the other
+              fields of the !!CONTROL register and !!ADDR have been programmed.
               '''
             resval: "0"
             tags: [// Dont enable flash - it causes several side-effects.
