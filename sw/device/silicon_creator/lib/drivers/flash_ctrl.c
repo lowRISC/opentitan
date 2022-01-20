@@ -210,14 +210,14 @@ static rom_error_t write(uint32_t addr, flash_ctrl_partition_t partition,
 static uint32_t info_page_addr(flash_ctrl_info_page_t info_page) {
 #define INFO_PAGE_ADDR_CASE_(name_, value_, bank_, page_)       \
   case (name_):                                                 \
-    SHUTDOWN_CHECK(launder32(info_page) == (name_));            \
+    HARDENED_CHECK_EQ(launder32(info_page), (name_));           \
     return kMemBase + (bank_)*FLASH_CTRL_PARAM_BYTES_PER_BANK + \
            (page_)*FLASH_CTRL_PARAM_BYTES_PER_PAGE;
 
   switch (launder32(info_page)) {
     FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_ADDR_CASE_)
     default:
-      SHUTDOWN_CHECK(false);
+      HARDENED_UNREACHABLE();
   }
 
 #undef INFO_PAGE_ADDR_CASE_
@@ -249,7 +249,7 @@ typedef struct info_cfg_regs {
 static info_cfg_regs_t info_cfg_regs(flash_ctrl_info_page_t info_page) {
 #define INFO_CFG_REGS_CASE_(name_, value_, bank_, page_)                           \
   case (name_):                                                                    \
-    SHUTDOWN_CHECK(launder32(info_page) == (name_));                               \
+    HARDENED_CHECK_EQ(launder32(info_page), (name_));                              \
     return (info_cfg_regs_t){                                                      \
         .cfg_wen_addr =                                                            \
             kBase +                                                                \
@@ -262,7 +262,7 @@ static info_cfg_regs_t info_cfg_regs(flash_ctrl_info_page_t info_page) {
   switch (launder32(info_page)) {
     FLASH_CTRL_INFO_PAGES_DEFINE(INFO_CFG_REGS_CASE_)
     default:
-      SHUTDOWN_CHECK(false);
+      HARDENED_UNREACHABLE();
   }
 
 #undef INFO_CFG_REGS_CASE_
