@@ -152,6 +152,8 @@ module usbdev_aon_wake import usbdev_pkg::*;(
     endcase
   end
 
+  `ASSERT(StateValid_A, astate_q inside {AwkIdle, AwkTrigUon, AwkWokenUon, AwkTrigUoff, AwkWoken})
+
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin : proc_reg_awk
     if (!rst_aon_ni) begin
       astate_q <= AwkIdle;

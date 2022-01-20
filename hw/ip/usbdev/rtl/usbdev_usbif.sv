@@ -107,7 +107,7 @@ module usbdev_usbif  #(
   logic                              current_setup, all_out_blocked, out_ep_newpkt;
   logic [NEndpoints-1:0]             out_ep_setup, out_ep_full, out_ep_stall;
   logic [NEndpoints-1:0]             setup_blocked, out_blocked;
-  logic [31:0]                       wdata;
+  logic [31:0]                       wdata_q, wdata_d;
   logic                              mem_read;
   logic [SramAw-1:0]                 mem_waddr, mem_raddr;
   logic                              link_reset;
@@ -148,32 +148,29 @@ module usbdev_usbif  #(
   assign std_write_d = out_ep_data_put & ((int'(out_max_used_q) < MaxPktSizeByte - 1) &
       (out_ep_put_addr[1:0] == 2'b11));
 
+  always_comb begin
+    wdata_d = wdata_q;
+
+    unique case (out_ep_put_addr[1:0])
+      0:       wdata_d[7:0]   = out_ep_data;
+      1:       wdata_d[15:8]  = out_ep_data;
+      2:       wdata_d[23:16] = out_ep_data;
+      3:       wdata_d[31:24] = out_ep_data;
+      default: wdata_d[7:0]   = out_ep_data;
+    endcase
+  end
+
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
       out_max_used_q <= '0;
-      wdata          <= '0;
+      wdata_q        <= '0;
       std_write_q    <= 1'b0;
     end else begin
       out_max_used_q <= out_max_used_d;
       std_write_q    <= std_write_d;
+
       if (out_ep_data_put) begin
-        unique case (out_ep_put_addr[1:0])
-          0: begin
-            wdata[7:0] <= out_ep_data;
-          end
-          1: begin
-            wdata[15:8] <= out_ep_data;
-          end
-          2: begin
-            wdata[23:16] <= out_ep_data;
-          end
-          3: begin
-            wdata[31:24] <= out_ep_data;
-          end
-          default: begin
-            wdata[7:0] <= out_ep_data;
-          end
-        endcase
+        wdata_q <= wdata_d;
       end
     end
   end // always_ff @ (posedge clk_48mhz_i)
@@ -182,7 +179,7 @@ module usbdev_usbif  #(
   assign mem_write_o = std_write_q |
                        (~out_max_used_q[PktW] & (out_max_used_q[1:0] != 2'b11) & out_ep_acked);
   assign mem_waddr = {av_rdata_i, out_max_used_q[PktW-1:2]};
-  assign mem_wdata_o = wdata;
+  assign mem_wdata_o = wdata_q;
   assign mem_addr_o = mem_write_o ? mem_waddr : mem_raddr;
   assign mem_req_o = mem_read | mem_write_o;
   assign current_setup = out_ep_setup[out_endpoint_o];
