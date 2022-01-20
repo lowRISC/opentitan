@@ -338,7 +338,13 @@ module aes_dom_dep_mul_gf2pn #(
   input  logic   [NPower-1:0] z_1,    // Randomness for resharing
   output logic   [NPower-1:0] a_q,    // Share a of q
   output logic   [NPower-1:0] b_q,    // Share b of q
-  output logic [2*NPower-1:0] prd_o   // Randomness for use in another S-Box instance
+  output logic [2*NPower-1:0] prd_o,  // Randomness for use in another S-Box instance
+  // These pipeline register outputs are only assigned when using a pipelined multiplier that is not
+  // followed by an un-pipelined DOM-indep multiplier (Pipeline == 1'b1 && PreDomIndep != 1'b1).
+  output logic   [NPower-1:0] a_x_qo,
+  output logic   [NPower-1:0] b_x_qo,
+  output logic   [NPower-1:0] a_y_qo,
+  output logic   [NPower-1:0] b_y_qo
 );
 
   import aes_sbox_canright_pkg::*;
@@ -447,6 +453,12 @@ module aes_dom_dep_mul_gf2pn #(
     assign a_y_calc = a_y_q;
     assign b_y_calc = b_y_q;
 
+    // Pipeline register output for reuse.
+    assign a_x_qo = a_x_q;
+    assign b_x_qo = b_x_q;
+    assign a_y_qo = a_y_q;
+    assign b_y_qo = b_y_q;
+
   end else begin : gen_no_pipeline
     // Do not add the optional pipeline registers for inputs x and y. This allows to save some area
     // in case the multiplier does not need to accept new data in every cycle. However, this can
@@ -457,6 +469,12 @@ module aes_dom_dep_mul_gf2pn #(
     assign b_x_calc = b_x;
     assign a_y_calc = a_y;
     assign b_y_calc = b_y;
+
+    // These are unused in this mode.
+    assign a_x_qo = '0;
+    assign b_x_qo = '0;
+    assign a_y_qo = '0;
+    assign b_y_qo = '0;
   end
 
   ///////////////////////////////
@@ -635,6 +653,7 @@ module aes_dom_inverse_gf2p4 #(
   );
 
   logic [3:0] b_gamma10_prd2;
+  logic [1:0] a_gamma1_q_tmp, a_gamma0_q_tmp, b_gamma1_q_tmp, b_gamma0_q_tmp;
   aes_dom_dep_mul_gf2pn #(
     .NPower      ( 2           ),
     .Pipeline    ( PipelineMul ),
@@ -651,7 +670,11 @@ module aes_dom_inverse_gf2p4 #(
     .z_1    ( prd_2_i[3:2]    ), // Randomness for resharing
     .a_q    ( a_gamma1_gamma0 ), // Share a of q
     .b_q    ( b_gamma1_gamma0 ), // Share b of q
-    .prd_o  ( b_gamma10_prd2  )  // Randomness for use in another S-Box instance
+    .prd_o  ( b_gamma10_prd2  ), // Randomness for use in another S-Box instance
+    .a_x_qo ( a_gamma1_q_tmp  ),
+    .a_y_qo ( a_gamma0_q_tmp  ),
+    .b_x_qo ( b_gamma1_q_tmp  ),
+    .b_y_qo ( b_gamma0_q_tmp  )
   );
 
   ////////////////
@@ -674,14 +697,20 @@ module aes_dom_inverse_gf2p4 #(
       .q_o    ( {a_gamma1_q, a_gamma0_q, b_gamma1_q, b_gamma0_q} )
     );
 
+    // We can't reuse these pipeline registers when we are not using pipelined multipliers.
+    logic [1:0] unused_a_gamma1_q, unused_a_gamma0_q, unused_b_gamma1_q, unused_b_gamma0_q;
+    assign unused_a_gamma1_q = a_gamma1_q_tmp;
+    assign unused_a_gamma0_q = a_gamma0_q_tmp;
+    assign unused_b_gamma1_q = b_gamma1_q_tmp;
+    assign unused_b_gamma0_q = b_gamma0_q_tmp;
   end else begin : gen_no_prim_flop_en
     // When using pipelined multipliers, there is no need to insert additional registers here.
     // Instead, the pipeline registers of the DOM-dep multiplier in Stage 2 can be re-used.
 
-    assign a_gamma1_q = u_aes_dom_mul_gamma1_gamma0.gen_pipeline.a_x_q;
-    assign a_gamma0_q = u_aes_dom_mul_gamma1_gamma0.gen_pipeline.a_y_q;
-    assign b_gamma1_q = u_aes_dom_mul_gamma1_gamma0.gen_pipeline.b_x_q;
-    assign b_gamma0_q = u_aes_dom_mul_gamma1_gamma0.gen_pipeline.b_y_q;
+    assign a_gamma1_q = a_gamma1_q_tmp;
+    assign a_gamma0_q = a_gamma0_q_tmp;
+    assign b_gamma1_q = b_gamma1_q_tmp;
+    assign b_gamma0_q = b_gamma0_q_tmp;
   end
 
   // Use intermediate results for generating PRD for Stage 3 of another S-Box instance.
@@ -734,7 +763,11 @@ module aes_dom_inverse_gf2p4 #(
     .z_1    ( prd_3_i[7:6]        ), // Randomness for resharing
     .a_q    ( a_gamma_inv[1:0]    ), // Share a of q
     .b_q    ( b_gamma_inv[1:0]    ), // Share b of q
-    .prd_o  ( b_gamma1_omega_prd3 )
+    .prd_o  ( b_gamma1_omega_prd3 ),
+    .a_x_qo (                     ), // unused
+    .a_y_qo (                     ), // unused
+    .b_x_qo (                     ), // unused
+    .b_y_qo (                     )  // unused
   );
 
   logic [3:0] b_gamma0_omega_prd3;
@@ -754,7 +787,11 @@ module aes_dom_inverse_gf2p4 #(
     .z_1    ( prd_3_i[3:2]        ), // Randomness for resharing
     .a_q    ( a_gamma_inv[3:2]    ), // Share a of q
     .b_q    ( b_gamma_inv[3:2]    ), // Share b of q
-    .prd_o  ( b_gamma0_omega_prd3 )
+    .prd_o  ( b_gamma0_omega_prd3 ),
+    .a_x_qo (                     ), // unused
+    .a_y_qo (                     ), // unused
+    .b_x_qo (                     ), // unused
+    .b_y_qo (                     )  // unused
   );
 
   // Use intermediate results for generating PRD for Stage 4 of another S-Box instance.
@@ -826,7 +863,11 @@ module aes_dom_inverse_gf2p8 #(
     .z_1    ( prd_i.prd_1[7:4] ), // Randomness for resharing
     .a_q    ( a_y1_y0          ), // Share a of q
     .b_q    ( b_y1_y0          ), // Share b of q
-    .prd_o  ( b_y10_prd1       )  // Randomness for use in another S-Box instance
+    .prd_o  ( b_y10_prd1       ),  // Randomness for use in another S-Box instance
+    .a_x_qo (                  ), // unused
+    .a_y_qo (                  ), // unused
+    .b_x_qo (                  ), // unused
+    .b_y_qo (                  )  // unused
   );
 
   logic [3:0] a_gamma, b_gamma;
