@@ -16,4 +16,7 @@ class otp_ctrl_virtual_sequencer extends cip_base_virtual_sequencer #(
   push_pull_sequencer#(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_addr_pull_sequencer_h;
   push_pull_sequencer#(.DeviceDataWidth(1), .HostDataWidth(LC_PROG_DATA_SIZE))
                        lc_prog_pull_sequencer_h;
+
+  // TODO: reggen tool optimization. Temp set up a prim_tl_sequencer.
+  tl_sequencer prim_tl_sequencer_h;
 endclass

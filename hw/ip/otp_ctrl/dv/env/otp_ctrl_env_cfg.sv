@@ -41,6 +41,9 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
   // values for otp_ctrl_if signals connected to DUT
   rand otp_ctrl_ast_inputs_cfg dut_cfg;
 
+  // TODO: reggen tool optimization. Temp mannual setup for prim_tl_agent.
+  rand tl_agent_cfg            prim_tl_agent_cfg;
+
   `uvm_object_utils_begin(otp_ctrl_env_cfg)
   `uvm_object_utils_end
 
@@ -54,9 +57,16 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
   }
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
+    // TODO: reggen tool optimization.
+    // Enable these codes once prim_reg_block has register place holders.
+    // string prim_ral_name = "otp_ctrl_prim_reg_block";
+    // ral_model_names.push_back(prim_ral_name);
+    // clk_freqs_mhz[prim_ral_name] = clk_freq_mhz;
+
     list_of_alerts = otp_ctrl_env_pkg::LIST_OF_ALERTS;
     num_edn = 1;
     tl_intg_alert_name = "fatal_bus_integ_error";
+
     super.initialize(csr_base_addr);
 
     // create push_pull agent config obj
@@ -81,6 +91,12 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
     m_lc_prog_pull_agent_cfg = push_pull_agent_cfg#(.HostDataWidth(LC_PROG_DATA_SIZE),
                                .DeviceDataWidth(1))::type_id::create("m_lc_prog_pull_agent_cfg");
     m_lc_prog_pull_agent_cfg.agent_type = PullAgent;
+
+    // TODO: reggen tool optimization. Temp mannual setup for prim_tl_agent.
+    prim_tl_agent_cfg = tl_agent_cfg::type_id::create("prim_tl_agent_cfg");
+    prim_tl_agent_cfg.if_mode = dv_utils_pkg::Host;
+    prim_tl_agent_cfg.host_can_stall_rsp_when_a_valid_high = $urandom_range(0, 1);
+    prim_tl_agent_cfg.allow_a_valid_drop_wo_a_ready = $urandom_range(0, 1);
 
     // set num_interrupts & num_alerts
     begin

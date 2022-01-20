@@ -518,8 +518,16 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   // This test access OTP_CTRL's test_access memory. The open-sourced code only test if the access
   // is valid. Please override this task in proprietary OTP.
-  // TODO: Add another TL interface to support this, and check if any conflict in close source.
   virtual task otp_test_access();
+    repeat (10) begin
+      bit [TL_DW-1:0] wr_data, rd_data;
+      bit [TL_AW-1:0] rand_addr = $urandom_range(0, PRIM_ADDR_SIZE + 3);
+      `DV_CHECK_STD_RANDOMIZE_FATAL(wr_data)
+      tl_access(.addr(rand_addr), .write(1), .data(wr_data),
+                .tl_sequencer_h(p_sequencer.prim_tl_sequencer_h));
+      tl_access(.addr(rand_addr), .write(0), .data(rd_data), .exp_data(wr_data),
+                .check_exp_data(1), .tl_sequencer_h(p_sequencer.prim_tl_sequencer_h));
+    end
   endtask
 
 endclass : otp_ctrl_base_vseq

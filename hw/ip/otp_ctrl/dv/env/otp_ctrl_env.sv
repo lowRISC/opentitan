@@ -18,6 +18,8 @@ class otp_ctrl_env #(
 
   `uvm_component_new
 
+  // TODO: reggen tool optimization. Temp mannual setup for prim_tl_agent.
+  tl_agent prim_tl_agent;
 
   push_pull_agent#(.DeviceDataWidth(SRAM_DATA_SIZE))  m_sram_pull_agent[NumSramKeyReqSlots];
   push_pull_agent#(.DeviceDataWidth(OTBN_DATA_SIZE))  m_otbn_pull_agent;
@@ -59,6 +61,12 @@ class otp_ctrl_env #(
     uvm_config_db#(push_pull_agent_cfg#(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1)))::
         set(this, "m_lc_prog_pull_agent", "cfg", cfg.m_lc_prog_pull_agent_cfg);
 
+    // TODO: reggen tool optimization.
+    // Temp build the prim_tl_agent.should be auto-generated via otp_ctrl_env_cfg once the reggen
+    // tool is optimized.NCurrently this is an empty RAL so dv_base_reg_block will return an error.
+    prim_tl_agent = tl_agent::type_id::create({"prim_tl_agent"}, this);
+    uvm_config_db#(tl_agent_cfg)::set(this, "prim_tl_agent", "cfg", cfg.prim_tl_agent_cfg);
+
     // config mem virtual interface
     if (!uvm_config_db#(mem_bkdr_util)::get(this, "", "mem_bkdr_util", cfg.mem_bkdr_util_h)) begin
       `uvm_fatal(`gfn, "failed to get mem_bkdr_util from uvm_config_db")
@@ -87,6 +95,8 @@ class otp_ctrl_env #(
     virtual_sequencer.flash_addr_pull_sequencer_h = m_flash_addr_pull_agent.sequencer;
     virtual_sequencer.flash_data_pull_sequencer_h = m_flash_data_pull_agent.sequencer;
     virtual_sequencer.lc_prog_pull_sequencer_h    = m_lc_prog_pull_agent.sequencer;
+    // TODO: reggen tool optimization. Temp mannual setup for prim_tl_agent.
+    virtual_sequencer.prim_tl_sequencer_h = prim_tl_agent.sequencer;
     if (cfg.en_scb) begin
       m_otbn_pull_agent.monitor.analysis_port.connect(scoreboard.otbn_fifo.analysis_export);
       m_flash_addr_pull_agent.monitor.analysis_port.connect(

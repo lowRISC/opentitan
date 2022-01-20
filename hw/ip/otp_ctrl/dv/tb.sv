@@ -60,6 +60,7 @@ module tb;
   push_pull_if #(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_data_if(.clk(clk), .rst_n(rst_n));
 
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
+  tl_if prim_tl_if(.clk(clk), .rst_n(rst_n));
 
   otp_ctrl_if otp_ctrl_if(.clk_i(clk), .rst_ni(rst_n));
 
@@ -91,9 +92,8 @@ module tb;
     // bus interfaces
     .core_tl_i                  (tl_if.h2d  ),
     .core_tl_o                  (tl_if.d2h  ),
-    // TODO: add second TL interface
-    .prim_tl_i                  ('0         ),
-    .prim_tl_o                  (prim_tl_o  ),
+    .prim_tl_i                  (prim_tl_if.h2d),
+    .prim_tl_o                  (prim_tl_if.d2h),
     // interrupt
     .intr_otp_operation_done_o  (intr_otp_operation_done),
     .intr_otp_error_o           (intr_otp_error),
@@ -223,6 +223,7 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_otp_ctrl_core_reg_block*",
                                        "vif", tl_if);
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.prim_tl_agent*","vif", prim_tl_if);
     uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(OTBN_DATA_SIZE)))::set(null,
                    "*env.m_otbn_pull_agent*", "vif", otbn_if);
     uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(FLASH_DATA_SIZE)))::set(null,
