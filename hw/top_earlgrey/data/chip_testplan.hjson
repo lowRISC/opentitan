@@ -2090,7 +2090,7 @@
             For the retention SRAM, instruction fetch is completely disabled via design parameter.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_sram_ctrl_execution_main"]
     }
     {
       name: chip_sw_sram_lc_escalation
