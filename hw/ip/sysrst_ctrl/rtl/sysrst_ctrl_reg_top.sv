@@ -775,7 +775,7 @@ module sysrst_ctrl_reg_top (
 
   prim_reg_cdc #(
     .DataWidth(16),
-    .ResetVal(16'h0),
+    .ResetVal(16'h7d0),
     .BitMask(16'hffff)
   ) u_key_intr_debounce_ctl_cdc (
     .clk_src_i    (clk_i),
@@ -813,7 +813,7 @@ module sysrst_ctrl_reg_top (
 
   prim_reg_cdc #(
     .DataWidth(17),
-    .ResetVal(17'h0),
+    .ResetVal(17'h7d0),
     .BitMask(17'h1ffff)
   ) u_auto_block_debounce_ctl_cdc (
     .clk_src_i    (clk_i),
@@ -3349,7 +3349,7 @@ module sysrst_ctrl_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0)
+    .RESVAL  (16'h7d0)
   ) u_key_intr_debounce_ctl (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3376,7 +3376,7 @@ module sysrst_ctrl_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0)
+    .RESVAL  (16'h7d0)
   ) u_auto_block_debounce_ctl_debounce_timer (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),

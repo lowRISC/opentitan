@@ -4,7 +4,7 @@ title: "System Reset Control Technical Specification"
 
 # Overview
 
-This document specifies the functionality of the System Reset Controller (`sysrst_ctrl`) that provides programmable hardware-level responses to trusted path inputs and basic board-level reset sequencing capabilities.
+This document specifies the functionality of the System Reset Controller (`sysrst_ctrl`) that provides programmable hardware-level responses to trusted IOs and basic board-level reset sequencing capabilities.
 These capabilities include keyboard and button combination-triggered actions, reset stretching for system-level reset signals, and internal reset / wakeup requests that go to the OpenTitan reset and power manager blocks.
 This module conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification" >}}).
 See that document for integration overview within the broader top level system.
@@ -115,9 +115,11 @@ Software can program the `sysrst_ctrl` block to detect certain specific signal t
 As opposed to the combo detection and general key interrupt features above, this is a fixed function feature with limited configurability. 
 In particular, the transitions that can be detected are fixed to the following:
 
-- A high level on the (potentially inverted) `ac_present` signal
-- A H -> L transition on the (potentially inverted) `pwrb_in` signal
-- A L -> H transition on the (potentially inverted) `lid_open` signal
+- A high level on the `ac_present` signal
+- A H -> L transition on the `pwrb_in` signal
+- A L -> H transition on the `lid_open` signal
+
+Note that the signals may be potentially inverted due to the [input inversion feature]({{< relref "#inversion" >}}).
 
 In order to activate this feature, software should do the following:
 
@@ -141,7 +143,7 @@ This is needed because this register has to be syncronized over to the AON clock
 `sysrst_ctrl` allows the software to read the raw input pin values via the {{< regref PIN_IN_VALUE >}} register like GPIOs.
 To this end, the hardware samples the raw input values of `pwrb_in`, `key[0,1,2]_in`, `ac_present_in`, `ec_rst_in_l` before they are being inverted, and synchronizes them onto the bus clock domain.
 
-## Pin output and keyboard inversion control
+## Pin output and keyboard inversion control {#inversion}
 
 Software can optionally override all output signals, and change the signal polarity of some of the input and output signals.
 The output signal override feature always has higher priority than any of the combo pattern detection mechanisms described above.

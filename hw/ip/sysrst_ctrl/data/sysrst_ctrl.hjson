@@ -594,7 +594,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       regwen: "REGWEN",
-      resval: "0",
+      resval: "2000",
       async: "clk_aon_i",
       fields: [
         { bits: "TimerWidth-1:0",
@@ -608,13 +608,12 @@
       swaccess: "rw",
       hwaccess: "hro",
       regwen: "REGWEN",
-      resval: "0",
       async: "clk_aon_i",
       fields: [
         { bits:   "TimerWidth-1:0",
           name:   "debounce_timer",
           desc:   "Define the timer value so that pwrb_in is not oscillating for 0-200ms, each step is 5us(200KHz clock)",
-          resval: "0",
+          resval: "2000",
         }
         { bits:   "16",
           name:   "auto_block_enable",
