@@ -216,14 +216,23 @@ bool test_main(void) {
       &plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
       kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
 
-  // Executing the test using a randon time between 100 and 1500 us to make sure
-  // the aon timer is generating the interrupt after the choosen time and theres
+  // Executing the test using randon time bounds calculated from the clock
+  // frequency to make sure the aon timer is generating the interrupt after the
+  // choosen time and there's no error in the reference time measurement. This
+  // calculation is required as the various platforms used for testing have
+  // differing clocks frequencies. A few hundred cycles is required for the
+  // interrupt to note the elapsed time so the test fails with an unacceptable
+  // time variance when the sleep time is too low.
+  uint64_t low_time_range = ((1000000 * 500) / kClockFreqCpuHz) * 20;
+  uint64_t high_time_range = ((1000000 * 500) / kClockFreqCpuHz) * 40;
+
   // no error in the reference time measurement.
-  uint64_t irq_time = rand_testutils_gen32_range(1, 15) * 100;
+  uint64_t irq_time =
+      rand_testutils_gen32_range(low_time_range, high_time_range);
   execute_test(&aon_timer, irq_time,
                /*expected_irq=*/kDifAonTimerIrqWkupTimerExpired);
 
-  irq_time = rand_testutils_gen32_range(1, 15) * 100;
+  irq_time = rand_testutils_gen32_range(low_time_range, high_time_range);
   execute_test(&aon_timer, irq_time,
                /*expected_irq=*/kDifAonTimerIrqWdogTimerBark);
 
