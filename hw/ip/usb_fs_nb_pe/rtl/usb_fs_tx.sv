@@ -262,6 +262,8 @@ module usb_fs_tx (
     end
   end
 
+  `ASSERT(StateValid_A, state_q inside {Idle, Sync, Pid, DataOrCrc160, Crc161, Eop, OscTest})
+
   always_comb begin : proc_byte_str
     if (bit_strobe_i && !bitstuff && !pkt_start_i) begin
       byte_strobe_d = (bit_count_q == 3'b000);
@@ -363,6 +365,8 @@ module usb_fs_tx (
       default : out_state_d = OsIdle;
     endcase
   end
+
+  `ASSERT(OutStateValid_A, out_state_q inside {OsIdle, OsWaitByte, OsTransmit})
 
   always_comb begin : proc_diff
     usb_d_d   = usb_d_q;

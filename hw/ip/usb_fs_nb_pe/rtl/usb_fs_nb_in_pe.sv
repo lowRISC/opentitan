@@ -228,6 +228,9 @@ module usb_fs_nb_in_pe #(
     endcase
   end
 
+  `ASSERT(InXfrStateValid_A,
+    in_xfr_state inside {StIdle, StRcvdIn, StSendData, StWaitAck}, clk_48mhz_i)
+
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
       tx_data_o <= '0;
