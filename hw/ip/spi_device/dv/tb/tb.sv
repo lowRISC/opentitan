@@ -44,6 +44,7 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(.pins(interrupts));
   pins_if #(1) devmode_if(devmode);
   spi_if  spi_if(.rst_n(rst_n));
+  spi_if  spi_p_if(.rst_n(rst_n));
 
   `DV_ALERT_IF_CONNECT
 
@@ -82,11 +83,17 @@ module tb;
     .intr_tpm_header_not_empty_o(intr_tpm_header_not_empty),
     .mbist_en_i     (1'b0),
     .scanmode_i     (prim_mubi_pkg::MuBi4False)
+    
   );
 
   assign sck           = spi_if.sck;
   assign csb           = spi_if.csb[0];
   assign tpm_csb       = spi_if.csb[1];
+  
+  assign spi_p_if.sck = pass_out.sck;
+  assign spi_p_if.csb = pass_out.csb;
+  assign spi_p_if.sio = pass_out.s;
+  
   // TODO: quad SPI mode is currently not yet implemented
   assign sd_in         = {3'b000, spi_if.sio[0]};
   assign spi_if.sio[1] = sd_out_en[1] ? sd_out[1] : 1'bz;
@@ -112,6 +119,7 @@ module tb;
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_agent*", "vif", spi_if);
+    uvm_config_db#(virtual spi_if)::set(null, "*.env.p_spi_agent*", "vif", spi_p_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
