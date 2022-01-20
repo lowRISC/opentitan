@@ -219,6 +219,14 @@ When an RMA entry request is received from the life cycle manager, the flash con
 The flash controller then initiates RMA entry process and notifies the life cycle controller when it is complete.
 Unlike the seed phase, after the RMA phase, the flash controller does not grant control back to software as the system is expected to reboot after an RMA attempt.
 
+#### Initialization
+
+The flash protocol controller is initialized through {{< regref "INIT" >}}.
+When initialization is invoked, the flash controller requests the address and data scrambling keys from an external entity, [otp_ctrl]({{< relref "hw/ip/otp_ctrl/doc/_index.md#interface-to-flash-scrambler" >}}) in this case.
+
+After the scrambling keys are requested, the flash protocol controller reads the root seeds out of the [secret partitions]({{< relref "#secret-information-partitions" >}}) and sends them to the key manager.
+Once the above steps are completed, the read buffers in the flash physical controller are enabled for operation.
+
 #### RMA Entry
 During RMA entry, the flash controller "wipes" the contents of the following
 - Creator partition
