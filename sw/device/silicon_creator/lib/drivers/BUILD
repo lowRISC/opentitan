@@ -517,21 +517,31 @@ cc_library(
     hdrs = ["watchdog.h"],
     deps = [
         "//hw/ip/aon_timer/data:aon_timer_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
     ],
 )
 
 cc_test(
     name = "watchdog_unittest",
     srcs = ["watchdog_unittest.cc"],
+    defines = [
+        "OT_OFF_TARGET_TEST",
+    ],
     deps = [
         ":watchdog",
         "//hw/ip/aon_timer/data:aon_timer_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
         "//sw/device/silicon_creator/lib/base:mock_abs_mmio",
+        "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
+        "//sw/device/silicon_creator/lib/drivers:mock_otp",
         "@googletest//:gtest_main",
     ],
 )
@@ -550,5 +560,6 @@ opentitan_functest(
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:test_main",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )

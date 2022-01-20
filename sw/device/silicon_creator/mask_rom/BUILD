@@ -105,6 +105,7 @@ opentitan_binary(
         "//sw/device/silicon_creator/lib/drivers:rnd",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:uart",
+        "//sw/device/silicon_creator/lib/drivers:watchdog",
     ],
 )
 
@@ -188,6 +189,7 @@ cc_library(
         "//sw/device/lib/testing/test_rom:bootstrap",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:log",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:hmac",
     ],
 )

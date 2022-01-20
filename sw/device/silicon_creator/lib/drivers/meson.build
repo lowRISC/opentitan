@@ -448,12 +448,15 @@ sw_silicon_creator_lib_driver_watchdog = declare_dependency(
     'sw_silicon_creator_lib_driver_watchdog',
     sources: [
       hw_ip_aon_timer_reg_h,
+      hw_ip_otp_ctrl_reg_h,
       hw_ip_pwrmgr_reg_h,
       'watchdog.c',
     ],
     dependencies: [
       sw_lib_mmio,
-      sw_lib_abs_mmio,
+      sw_silicon_creator_lib_base_sec_mmio,
+      sw_silicon_creator_lib_driver_lifecycle,
+      sw_silicon_creator_lib_driver_otp,
     ],
   ),
 )
@@ -463,16 +466,17 @@ test('sw_silicon_creator_lib_driver_watchdog_unittest', executable(
     sources: [
       'watchdog_unittest.cc',
       hw_ip_aon_timer_reg_h,
+      hw_ip_otp_ctrl_reg_h,
       hw_ip_pwrmgr_reg_h,
       'watchdog.c',
     ],
     dependencies: [
       sw_vendor_gtest,
-      sw_silicon_creator_lib_base_mock_abs_mmio,
+      sw_silicon_creator_lib_base_mock_sec_mmio,
     ],
     native: true,
-    c_args: ['-DMOCK_ABS_MMIO'],
-    cpp_args: ['-DMOCK_ABS_MMIO'],
+    c_args: ['-DMOCK_ABS_MMIO', '-DOT_OFF_TARGET_TEST'],
+    cpp_args: ['-DMOCK_ABS_MMIO', '-DOT_OFF_TARGET_TEST'],
   ),
   suite: 'mask_rom',
 )

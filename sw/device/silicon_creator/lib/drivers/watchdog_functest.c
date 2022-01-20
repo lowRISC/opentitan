@@ -6,13 +6,12 @@
 #include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/check.h"
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
@@ -23,22 +22,45 @@
 #include "rstmgr_regs.h"
 
 // Tests that we can pet the watchdog and avoid a reset.
-rom_error_t watchdog_pet_test(void) {
-  watchdog_init(500);
+static rom_error_t watchdog_pet_test(void) {
+  // Set watchdog bite threshold to 5ms.
+  uint32_t threshold = 5 * (kClockFreqAonHz / 1000);
+  LOG_INFO("threshold = %d", threshold);
+  watchdog_configure(threshold, kHardenedBoolTrue);
+
   for (size_t i = 0; i < 10; ++i) {
-    LOG_INFO("watchdog = %x", watchdog_get());
     watchdog_pet();
-    usleep(5000);
+
+    // Sleep for 1ms.
+    usleep(1 * 1000);
   }
-  watchdog_init(0);
+  watchdog_disable();
+  return kErrorOk;
+}
+
+// Tests that we can configure the watchdog in a disabled state.
+static rom_error_t watchdog_configure_disabled_test(void) {
+  // Set watchdog bite threshold to 1ms.
+  uint32_t threshold = 1 * (kClockFreqAonHz / 1000);
+  LOG_INFO("threshold = %d", threshold);
+  watchdog_configure(threshold, kHardenedBoolFalse);
+
+  // Sleep for 5ms.
+  usleep(5 * 1000);
   return kErrorOk;
 }
 
 // Tests that if we neglect the dog, it will bite and reset the chip.
-rom_error_t watchdog_bite_test(void) {
-  watchdog_init(1);
-  usleep(11000);
-  watchdog_init(0);
+static rom_error_t watchdog_bite_test(void) {
+  // Set watchdog bite threshold to 5ms.
+  uint32_t threshold = 5 * (kClockFreqAonHz / 1000);
+  LOG_INFO("threshold = %d", threshold);
+  watchdog_configure(threshold, kHardenedBoolTrue);
+
+  // Sleep for 6ms.
+  usleep(6 * 1000);
+
+  watchdog_disable();
   return kErrorUnknown;
 }
 
@@ -49,6 +71,7 @@ const test_config_t kTestConfig;
 typedef enum TestPhase {
   kTestPhaseInit = 0,
   kTestPhasePet,
+  kTestPhaseDisable,
   kTestPhaseBite,
   kTestPhaseDone,
 } test_phase_t;
@@ -71,11 +94,16 @@ bool test_main(void) {
   volatile uint32_t *phase = &retention_sram_get()->reserved_owner[0];
 
   if (bitfield_bit32_read(reason, kRstmgrReasonPowerOn)) {
+    sec_mmio_init();
+
     // Power-on: zero out the retention RAM.
     retention_sram_clear();
 
     *phase = kTestPhasePet;
     EXECUTE_TEST(result, watchdog_pet_test);
+
+    *phase = kTestPhaseDisable;
+    EXECUTE_TEST(result, watchdog_configure_disabled_test);
 
     *phase = kTestPhaseBite;
     EXECUTE_TEST(result, watchdog_bite_test);

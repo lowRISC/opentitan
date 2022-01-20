@@ -204,6 +204,10 @@
                     name: "ROM_ALERT_PHASE_CYCLES",
                     size: "64"
                 }
+                {
+                    name: "ROM_WATCHDOG_BITE_THRESHOLD_CYCLES",
+                    size: "4"
+                }
             ],
             desc: '''Software configuration partition for
             data that changes software behavior, specifically

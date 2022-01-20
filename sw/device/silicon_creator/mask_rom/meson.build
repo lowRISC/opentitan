@@ -214,6 +214,7 @@ mask_rom_lib = declare_dependency(
       sw_silicon_creator_lib_driver_rnd,
       sw_silicon_creator_lib_driver_rstmgr,
       sw_silicon_creator_lib_driver_uart,
+      sw_silicon_creator_lib_driver_watchdog,
       sw_silicon_creator_lib_fake_deps,
       sw_silicon_creator_lib_irq_asm,
       sw_silicon_creator_lib_manifest,
