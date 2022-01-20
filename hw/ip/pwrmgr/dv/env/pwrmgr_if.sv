@@ -72,15 +72,28 @@ interface pwrmgr_if (
   pwrmgr_pkg::fast_pwr_state_e fast_state;
   always_comb fast_state = `PATH_TO_DUT.u_fsm.state_q;
 
+  always_comb
+    wakeup_en = {
+      `PATH_TO_DUT.reg2hw.wakeup_en[5].q,
+      `PATH_TO_DUT.reg2hw.wakeup_en[4].q,
+      `PATH_TO_DUT.reg2hw.wakeup_en[3].q,
+      `PATH_TO_DUT.reg2hw.wakeup_en[2].q,
+      `PATH_TO_DUT.reg2hw.wakeup_en[1].q,
+      `PATH_TO_DUT.reg2hw.wakeup_en[0].q
+    };
+
   // Wakeup_status ro CSR.
   always_comb
     wakeup_status = {
+      `PATH_TO_DUT.hw2reg.wake_status[5].d,
       `PATH_TO_DUT.hw2reg.wake_status[4].d,
       `PATH_TO_DUT.hw2reg.wake_status[3].d,
       `PATH_TO_DUT.hw2reg.wake_status[2].d,
       `PATH_TO_DUT.hw2reg.wake_status[1].d,
       `PATH_TO_DUT.hw2reg.wake_status[0].d
     };
+
+  always_comb wakeup_capture_en = !`PATH_TO_DUT.u_reg.wake_info_capture_dis_qs;
 
   logic intr_enable;
   always_comb intr_enable = `PATH_TO_DUT.reg2hw.intr_enable.q;
@@ -125,24 +138,8 @@ interface pwrmgr_if (
     pwr_cpu.core_sleeping = value;
   endfunction
 
-  function automatic void update_wakeup_en_regwen(logic value);
-    wakeup_en_regwen &= value;
-  endfunction
-
-  function automatic void update_wakeup_en(logic [pwrmgr_reg_pkg::NumWkups-1:0] value);
-    wakeup_en = value;
-  endfunction
-
-  function automatic void update_wakeup_status(logic [pwrmgr_reg_pkg::NumWkups-1:0] value);
-    wakeup_status = value;
-  endfunction
-
   function automatic void update_wakeups(logic [pwrmgr_reg_pkg::NumWkups-1:0] wakeups);
     wakeups_i = wakeups;
-  endfunction
-
-  function automatic void update_wakeup_capture_dis(logic value);
-    wakeup_capture_en = !value;
   endfunction
 
   function automatic void update_resets(logic [pwrmgr_reg_pkg::NumRstReqs-1:0] resets);

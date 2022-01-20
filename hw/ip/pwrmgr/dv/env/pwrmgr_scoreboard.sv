@@ -38,14 +38,14 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
 
   task wakeup_ctrl_coverage_collector();
     forever
-      @(posedge cfg.pwrmgr_vif.wakeups_i) begin
+      @(posedge (|cfg.pwrmgr_vif.wakeups_i)) begin
         if (cfg.en_cov) begin
           // Allow for synchronization delay.
           cfg.slow_clk_rst_vif.wait_clks(2);
           foreach (cov.wakeup_ctrl_cg_wrap[i]) begin
-            cov.wakeup_ctrl_cg_wrap[i].sample(
-                cfg.pwrmgr_vif.wakeup_en[i], cfg.pwrmgr_vif.wakeup_capture_en,
-                cfg.pwrmgr_vif.wakeups_i[i], cfg.pwrmgr_vif.wakeup_status[i]);
+            cov.wakeup_ctrl_cg_wrap[i].sample(cfg.pwrmgr_vif.wakeup_en[i],
+                                              cfg.pwrmgr_vif.wakeup_capture_en,
+                                              cfg.pwrmgr_vif.wakeups_i[i]);
           end
         end
       end
@@ -133,7 +133,7 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
 
     // if incoming access is a write to a valid csr, then make updates right away
     if (addr_phase_write) begin
-      `uvm_info(`gfn, $sformatf("Writing 0x%x to %s", item.a_data, csr.get_full_name()), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("Writing 0x%x to %s", item.a_data, csr.get_full_name()), UVM_MEDIUM)
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
     end
 
@@ -209,15 +209,8 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
         do_read_check = 1'b0;
       end
       "wakeup_en_regwen": begin
-        // rw0c, so writing a 1 is a no-op.
-        if (data_phase_write) begin
-          cfg.pwrmgr_vif.update_wakeup_en_regwen(item.a_data);
-        end
       end
       "wakeup_en": begin
-        if (data_phase_write) begin
-          cfg.pwrmgr_vif.update_wakeup_en(item.a_data);
-        end
       end
       "wake_status": begin
         // Read-only.
@@ -240,9 +233,6 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
         do_read_check = 1'b0;
       end
       "wake_info_capture_dis": begin
-        if (data_phase_write) begin
-          cfg.pwrmgr_vif.update_wakeup_capture_dis(item.a_data);
-        end
       end
       "wake_info": begin
         // rw1c: write 1 clears, write 0 is no-op.
