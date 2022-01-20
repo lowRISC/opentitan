@@ -254,6 +254,9 @@
       reset_connections: {rst_ni: "por_io_div4"},
       domain: ["Aon"],
       base_addr: "0x40410000",
+      param_decl: {
+        SecCheck: "0",
+      }
       attr: "templated",
     },
     { name: "clkmgr_aon",

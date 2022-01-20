@@ -20,6 +20,14 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+    { name: "FSM.SPARSE",
+      desc: "Sparse encoding for reset consistency check fsm."
+    }
+  ]
   regwidth: "32",
   scan: "true",
   scan_reset: "true",

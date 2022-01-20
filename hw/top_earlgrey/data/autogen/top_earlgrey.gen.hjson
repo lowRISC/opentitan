@@ -2648,7 +2648,22 @@
         clk_io_div4_i: clkmgr_aon_clocks.clk_io_div4_powerup
       }
       param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: SecCheck
+          desc:
+            '''
+            When 1, enable rstmgr reset consistency checks.
+            When 0, there are no consistency checks.
+            '''
+          type: bit
+          default: 1'b1
+          expose: "true"
+          name_top: SecRstmgrAonCheck
+        }
+      ]
       inter_signal_list:
       [
         {

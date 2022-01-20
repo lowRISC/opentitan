@@ -10,8 +10,9 @@
 module rstmgr_leaf_rst
   import rstmgr_pkg::*;
   import rstmgr_reg_pkg::*;
-  import prim_mubi_pkg::mubi4_t;
-(
+  import prim_mubi_pkg::mubi4_t; #(
+  parameter bit SecCheck = 1
+) (
   input clk_i,
   input rst_ni,
   input leaf_clk_i,
@@ -21,7 +22,8 @@ module rstmgr_leaf_rst
   input scan_sel,
   output mubi4_t rst_en_o,
   output logic leaf_rst_o,
-  output logic err_o
+  output logic err_o,
+  output logic fsm_err_o
 );
 
   logic leaf_rst_sync;
@@ -58,6 +60,7 @@ module rstmgr_leaf_rst
     end
   end
 
+  if (SecCheck) begin : gen_rst_chk
   rstmgr_cnsty_chk u_rst_chk (
     .clk_i,
     .rst_ni,
@@ -66,8 +69,16 @@ module rstmgr_leaf_rst
     .parent_rst_ni,
     .sw_rst_req_i(sw_rst_req_q | ~sw_rst_req_ni),
     .sw_rst_req_clr_o(clr_sw_rst_req),
-    .err_o
+    .err_o,
+    .fsm_err_o
   );
+  end else begin : gen_no_rst_chk
+    logic unused_sig;
+    assign unused_sig = sw_rst_req_q | clr_sw_rst_req;
+
+    assign err_o = '0;
+    assign fsm_err_o = '0;
+  end
 
   // reset asserted indication for alert handler
   prim_mubi4_sender #(
