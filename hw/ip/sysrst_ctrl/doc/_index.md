@@ -1,11 +1,11 @@
 ---
-title: "System Reset Control (Chrome OS) Technical Specification"
+title: "System Reset Control Technical Specification"
 ---
 
 # Overview
 
-This document specifies the functionality of the System Reset Control (`sysrst_ctrl`) block which implements Chrome-OS-Platform-specific system and reset functionality.
-This IP block implements keyboard and button combination-triggered action and the Embedded Controller (EC) reset stretching and OpenTitan reset request logic.
+This document specifies the functionality of the System Reset Controller (`sysrst_ctrl`) that provides programmable hardware-level responses to trusted path inputs and basic board-level reset sequencing capabilities.
+These capabilities include keyboard and button combination-triggered actions, reset stretching for system-level reset signals, and internal reset / wakeup requests that go to the OpenTitan reset and power manager blocks.
 This module conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification" >}}).
 See that document for integration overview within the broader top level system.
 
@@ -77,7 +77,10 @@ Let's use the "Power button + Esc + Refresh" combo as an example:
 
 Once the above configuration is active, `sysrst_ctrl` will start the timer when a combo high (logic 1) to low (logic 0) transition is detected.
 Once the timing condition is met (10 seconds), `sysrst_ctrl` will assert `ec_rst_out_l`, the interrupt request and set the interrupt status register {{< regref COMBO_INTR_STATUS >}} to indicate the interrupt cause.
-The software interrupt handler should then read {{< regref COMBO_INTR_STATUS >}} register and clear the interrupt.
+The software interrupt handler should then read the {{< regref COMBO_INTR_STATUS >}} register and clear the interrupt via the {{< regref INTR_STATE >}} register.
+
+Note that an interrupt will also issue a wakeup request to the OpenTitan power manager via `aon_ot_wkup_req_o`.
+Software should therefore read and clear the {{< regref WKUP_STATUS >}} register as well.
 
 ## Auto-block key outputs
 
@@ -101,7 +104,37 @@ Software can program the `sysrst_ctrl` block to detect edge transitions on the `
 For example, when the power button is pressed, `pwrb_in` goes from logic 1 to logic 0 which would amount to an H->L transition.
 Likewise, when the power button is released, `pwrb_in` goes from logic 0 to logic 1 which would amount to an L->H transition.
 When `sysrst_ctrl` detects a transition (H->L or L->H) as specified in {{< regref KEY_INTR_CTL >}} and it meets the debounce requirement in {{< regref KEY_INTR_DEBOUNCE_CTL >}}, `sysrst_ctrl` sets the {{< regref KEY_INTR_STATUS >}} register to indicate the interrupt cause and send out a consolidated interrupt to the PLIC.
-The software interrupt handler should then read {{< regref KEY_INTR_STATUS >}} register and clear the interrupt.
+The software interrupt handler should then read the {{< regref KEY_INTR_STATUS >}} register and clear the interrupt via the {{< regref INTR_STATE >}} register.
+
+Note that an interrupt will also issue a wakeup request to the OpenTitan power manager via `aon_ot_wkup_req_o`.
+Software should therefore read and clear the {{< regref WKUP_STATUS >}} register as well.
+
+## Ultra-low-power Wakeup Feature
+
+Software can program the `sysrst_ctrl` block to detect certain specific signal transitions on the (possibly inverted) `ac_present`, `pwrb_in` and `lid_open` inputs.
+As opposed to the combo detection and general key interrupt features above, this is a fixed function feature with limited configurability. 
+In particular, the transitions that can be detected are fixed to the following:
+
+- A high level on the (potentially inverted) `ac_present` signal
+- A H -> L transition on the (potentially inverted) `pwrb_in` signal
+- A L -> H transition on the (potentially inverted) `lid_open` signal
+
+In order to activate this feature, software should do the following:
+
+1. Software can program the appropriate debounce times via the {{< regref ULP_AC_DEBOUNCE_CTL >}}, {{< regref ULP_LID_DEBOUNCE_CTL >}} and {{< regref ULP_PWRB_DEBOUNCE_CTL >}} registers.
+2. Then, software can activate detection by setting the {{< regref ULP_CTL >}} register to 1.
+
+Once the above configuration is active, `sysrst_ctrl` will start the timer when a transition is detected.
+Once the timing condition is met, `sysrst_ctrl` will assert `z3_wakeup` output signal, the interrupt request and set the interrupt status register {{< regref ULP_STATUS >}} to indicate the interrupt cause.
+The software interrupt handler should then read the {{< regref ULP_STATUS >}} register and clear the interrupt via the {{< regref INTR_STATE >}} register.
+
+Note that an interrupt will also issue a wakeup request to the OpenTitan power manager via `aon_ot_wkup_req_o`.
+Software should therefore read and clear the {{< regref WKUP_STATUS >}} register as well.
+
+Also note that the detection status is sticky.
+I.e., software needs to explicitly disable this feature by setting {{< regref ULP_CTL >}} to 0 in order to clear the FSM state.
+If software wants to re-arm the mechanism right away, it should first read back {{< regref ULP_CTL >}} to make sure it has been cleared before setting that register to 1 again.
+This is needed because this register has to be syncronized over to the AON clock domain.
 
 ## Pin input value accessibility
 
