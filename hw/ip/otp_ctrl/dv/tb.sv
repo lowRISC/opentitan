@@ -139,8 +139,8 @@ module tb;
     .scanmode_i                 (otp_ctrl_if.scanmode_i),
 
     // Test-related GPIO output
-    .cio_test_o                 (),
-    .cio_test_en_o              ()
+    .cio_test_o                 (otp_ctrl_if.cio_test_o),
+    .cio_test_en_o              (otp_ctrl_if.cio_test_en_o)
   );
 
   for (genvar i = 0; i < NumSramKeyReqSlots; i++) begin : gen_sram_pull_if

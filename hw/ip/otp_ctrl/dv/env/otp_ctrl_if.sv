@@ -13,9 +13,14 @@
 `define LC_PART_OTP_CMD_PATH \
     tb.dut.gen_partitions[LifeCycleIdx].gen_lifecycle.u_part_buf.otp_cmd_o
 
+`ifndef PRIM_GENERIC_OTP_PATH
+  `define PRIM_GENERIC_OTP_PATH\
+      tb.dut.u_otp
+`endif
+
 `ifndef PRIM_GENERIC_OTP_CMD_I_PATH
   `define PRIM_GENERIC_OTP_CMD_I_PATH \
-      tb.dut.u_otp.gen_generic.u_impl_generic.cmd_i
+      `PRIM_GENERIC_OTP_PATH.gen_generic.u_impl_generic.cmd_i
 `endif
 
 interface otp_ctrl_if(input clk_i, input rst_ni);
@@ -39,8 +44,10 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   otp_ast_rsp_t          otp_ast_pwr_seq_h_i;
 
   // Unused in prim_generic_otp memory.
-  logic [otp_ctrl_pkg::OtpTestCtrlWidth-1:0]   otp_vendor_test_ctrl_i;
-  logic [otp_ctrl_pkg::OtpTestStatusWidth-1:0] otp_vendor_test_status_o;
+  logic [OtpTestCtrlWidth-1:0]   otp_vendor_test_ctrl_i;
+  logic [OtpTestStatusWidth-1:0] otp_vendor_test_status_o;
+  logic [OtpTestVectWidth-1:0]   cio_test_o;
+  logic [OtpTestVectWidth-1:0]   cio_test_en_o;
 
   // Connect with lc_prog push_pull interface.
   logic lc_prog_req, lc_prog_err;
@@ -203,6 +210,17 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     endcase
   endtask
 
+  // Connectivity assertions for test related I/Os.
+  `ASSERT(LcOtpTestStatusO_A, otp_vendor_test_status_o == `PRIM_GENERIC_OTP_PATH.test_status_o)
+  `ASSERT(LcOtpTestCtrlI_A, otp_vendor_test_ctrl_i == `PRIM_GENERIC_OTP_PATH.test_ctrl_i)
+
+  `ASSERT(CioTestOWithDftOn_A,    lc_dft_en_i == lc_ctrl_pkg::On |->
+                                  ##2 cio_test_o == `PRIM_GENERIC_OTP_PATH.test_vect_o)
+  `ASSERT(CioTestOWithDftOff_A,   lc_dft_en_i != lc_ctrl_pkg::On |-> ##2 cio_test_o == 0)
+  `ASSERT(CioTestEnOWithDftOn_A,  lc_dft_en_i == lc_ctrl_pkg::On |-> ##2 cio_test_en_o == '1)
+  `ASSERT(CioTestEnOWithDftOff_A, lc_dft_en_i != lc_ctrl_pkg::On |-> ##2 cio_test_en_o == 0)
+
+
   `define OTP_ASSERT_WO_LC_ESC(NAME, SEQ) \
     `ASSERT(NAME, SEQ, clk_i, !rst_ni || lc_esc_on || alert_reqs)
 
@@ -231,4 +249,6 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   `undef ECC_REG_PATH
   `undef BUF_PART_OTP_CMD_PATH
   `undef LC_PART_OTP_CMD_PATH
+  `undef PRIM_GENERIC_OTP_PATH
+  `undef PRIM_GENERIC_OTP_CMD_I_PATH
 endinterface
