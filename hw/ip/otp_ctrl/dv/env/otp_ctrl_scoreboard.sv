@@ -514,10 +514,6 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                      csr_addr, otp_addr << 2))
       end
       return;
-    // TEST ACCESS window
-    end else if ((csr_addr & addr_mask) inside
-         {[TEST_ACCESS_BASE_ADDR : TEST_ACCESS_BASE_ADDR + TEST_ACCESS_WINDOW_SIZE]}) begin
-      return;
     end else begin
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end

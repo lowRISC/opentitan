@@ -36,9 +36,7 @@ package otp_ctrl_env_pkg;
 
   parameter uint DIGEST_SIZE             = 8;
   parameter uint SW_WINDOW_BASE_ADDR     = 'h1000;
-  parameter uint TEST_ACCESS_BASE_ADDR   = 'h2000;
   parameter uint SW_WINDOW_SIZE          = 512 * 4;
-  parameter uint TEST_ACCESS_WINDOW_SIZE = 16 * 4;
 
   // convert byte into TLUL width size
   parameter uint VENDOR_TEST_START_ADDR  = VendorTestOffset / (TL_DW / 8);
