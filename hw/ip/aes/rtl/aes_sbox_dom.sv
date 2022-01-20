@@ -1065,13 +1065,15 @@ module aes_sbox_dom
   // Buffer and forward PRD for the individual stages. We get 8 bits from the PRNG for usage in the
   // first cycle. Stages 2, 3 and 4 are driven by other S-Box instances.
   assign prd1_d = we[0] ? prd_i[7:0] : prd1_q;
-  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_prd1
-    if (!rst_ni) begin
-      prd1_q <= '0;
-    end else begin
-      prd1_q <= prd1_d;
-    end
-  end
+  prim_flop #(
+    .Width      ( 8  ),
+    .ResetValue ( '0 )
+  ) u_prim_flop_prd1_q (
+    .clk_i  ( clk_i  ),
+    .rst_ni ( rst_ni ),
+    .d_i    ( prd1_d ),
+    .q_o    ( prd1_q )
+  );
   assign in_prd = '{prd_1: prd1_d,
                     prd_2: prd_i[11:8],
                     prd_3: prd_i[19:12],
