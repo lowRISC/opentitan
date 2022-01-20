@@ -11,31 +11,23 @@
 // Wrapper class for wakeup control covergroup.
 class pwrmgr_wakeup_ctrl_cg_wrap;
   // This covers enable, capture, and status of wakeups.
-  covergroup wakeup_ctrl_cg(
-      string name
-  ) with function sample (
-      bit enable, bit capture, bit wakeup, bit status
-  );
+  covergroup wakeup_ctrl_cg(string name) with function sample (bit enable, bit capture, bit wakeup);
     option.name = name;
     option.per_instance = 1;
 
     enable_cp: coverpoint enable;
     capture_cp: coverpoint capture;
     wakeup_cp: coverpoint wakeup;
-    status_cp: coverpoint status;
 
-    wakeup_cross: cross enable_cp, capture_cp, wakeup_cp, status_cp{
-      ignore_bins disable_status = wakeup_cross with (enable_cp == 0 && status_cp == 1);
-      ignore_bins no_wakeup_status = wakeup_cross with (wakeup_cp == 0 && status_cp == 1);
-    }
+    wakeup_cross: cross enable_cp, capture_cp, wakeup_cp;
   endgroup
 
   function new(string name);
     wakeup_ctrl_cg = new(name);
   endfunction
 
-  function void sample (bit enable, bit capture, bit wakeup, bit status);
-    wakeup_ctrl_cg.sample(enable, capture, wakeup, status);
+  function void sample (bit enable, bit capture, bit wakeup);
+    wakeup_ctrl_cg.sample(enable, capture, wakeup);
   endfunction
 endclass
 
@@ -56,6 +48,7 @@ class pwrmgr_wakeup_intr_cg_wrap;
     interrupt_cp: coverpoint interrupt;
 
     interrupt_cross: cross enable_cp, status_cp, wakeup_cp, interrupt_cp{
+      ignore_bins no_wakeup = interrupt_cross with (wakeup_cp == 0 && interrupt_cp == 1);
       ignore_bins disable_pin = interrupt_cross with (enable_cp == 0 && interrupt_cp == 1);
       ignore_bins no_status_pin = interrupt_cross with (status_cp == 0 && interrupt_cp == 1);
     }
@@ -129,7 +122,7 @@ class pwrmgr_env_cov extends cip_base_env_cov #(
   // It is positive when reset happened after wakeup, and zero when they coincided in time.
   covergroup reset_wakeup_distance_cg with function sample (int cycles);
     cycles_cp: coverpoint cycles {
-      bins close[] = {[-4:4]};
+      bins close[] = {[-4 : 4]};
       bins far = default;
     }
   endgroup
