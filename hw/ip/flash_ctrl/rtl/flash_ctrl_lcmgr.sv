@@ -196,7 +196,6 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
 
   // synchronize inputs
   logic init_q;
-  lc_ctrl_pkg::lc_tx_t [0:0] rma_req;
 
   prim_flop_2sync #(
     .Width(1),
@@ -208,8 +207,16 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     .q_o(init_q)
   );
 
+  typedef enum logic [1:0] {
+    RmaReqInit,
+    RmaReqKey,
+    RmaReqWait,
+    RmaReqLast
+  } rma_req_idx_e;
+
+  lc_ctrl_pkg::lc_tx_t [RmaReqLast-1:0] rma_req;
   prim_lc_sync #(
-    .NumCopies(1)
+    .NumCopies(int'(RmaReqLast))
   ) u_sync_rma_req (
     .clk_i,
     .rst_ni,
@@ -310,8 +317,13 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
 
     unique case (state_q)
 
+      // If rma request is seen, directly transition to wipe.
+      // Since init has not been called, there are no guarantees
+      // to entropy behavior, thus do not reseed
       StIdle: begin
-        if (init_q) begin
+        if (rma_req[RmaReqInit] == lc_ctrl_pkg::On) begin
+          state_d = StRmaWipe;
+        end else if (init_q) begin
           state_d = StReqAddrKey;
         end
       end
@@ -319,7 +331,9 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
       StReqAddrKey: begin
         phase = PhaseSeed;
         addr_key_req_d = 1'b1;
-        if (addr_key_ack_q) begin
+        if (rma_req[RmaReqKey] == lc_ctrl_pkg::On) begin
+          state_d = StRmaWipe;
+        end else if (addr_key_ack_q) begin
           state_d = StReqDataKey;
         end
       end
@@ -327,7 +341,9 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
       StReqDataKey: begin
         phase = PhaseSeed;
         data_key_req_d = 1'b1;
-        if (data_key_ack_q) begin
+        if (rma_req[RmaReqKey] == lc_ctrl_pkg::On) begin
+          state_d = StRmaWipe;
+        end else if (data_key_ack_q) begin
           // provision_en is only a "good" value after otp/lc initialization
           state_d = provision_en_i ? StReadSeeds : StWait;
         end
@@ -375,7 +391,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
       // Waiting for an rma entry command
       StWait: begin
         rd_buf_en_o = 1'b1;
-        if (rma_req[0] == lc_ctrl_pkg::On) begin
+        if (rma_req[RmaReqWait] == lc_ctrl_pkg::On) begin
           state_d = StEntropyReseed;
         end
       end
