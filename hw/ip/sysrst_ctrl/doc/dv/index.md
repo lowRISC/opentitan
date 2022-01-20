@@ -30,7 +30,7 @@ For detailed information on SYSRST_CTRL design features, please see the [SYSRST_
 SYSRST_CTRL testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
 
 ### Block diagram
-![Block diagram](tb.svg)
+![Block diagram](sysrst_ctrl_tb_block_diagram.svg)
 
 ### Top level testbench
 The top level testbench is located at `hw/ip/sysrst_ctrl/dv/tb.sv`.
@@ -66,19 +66,10 @@ SYSRST_CTRL testbench instantiates (already handled in CIP base env) [alert_agen
 [list alert names].
 The alert_agents provide the ability to drive and independently monitor alert handshakes via alert interfaces in SYSRST_CTRL device.
 
-### UVC/agent 1
-[Describe here or add link to its README]
-
-### UVC/agent 2
-[Describe here or add link to its README]
-
 ### UVM RAL Model
 The SYSRST_CTRL RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
 It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
-
-### Reference models
-[Describe reference models in use if applicable, example: SHA256/HMAC]
 
 ### Stimulus strategy
 #### Test sequences
