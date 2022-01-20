@@ -10,7 +10,7 @@ from .operand import Operand, RegOperandType
 
 FLAG_NAMES = ['c', 'm', 'l', 'z']
 SPECIAL_REG_NAMES = ['mod', 'acc']
-
+READONLY = ['x0']
 
 class InformationFlowGraph:
     '''Represents an information flow graph.
@@ -25,8 +25,44 @@ class InformationFlowGraph:
     means the sink is overwritten with a constant value, and information is not
     flowing to it from any nodes (including its own previous value).
     '''
-    def __init__(self, flow: Dict[str, Set[str]]):
+    def __init__(self, flow: Dict[str, Set[str]], exists=True):
         self.flow = flow
+
+        # Should not be modified directly. See the nonexistent() method
+        # documentation for details of what this flag means.
+        self.exists = exists
+
+    @staticmethod
+    def empty() -> 'InformationFlowGraph':
+        '''Represents the graph for a path in which nothing is modified.
+
+        For instance, if a block of code could be executed or not depending on
+        the processor state, then the path where the block is not executed
+        would be an empty() graph. Then, one could use update() to get a graph
+        representing the combination of the two possibilities.
+        '''
+        return InformationFlowGraph({})
+
+    @staticmethod
+    def nonexistent() -> 'InformationFlowGraph':
+        '''Represents the graph for a nonexistent path.
+
+        There is an important distinction between this and an "empty" graph. In
+        particular, for any graph G, G.update(nonexistent) = G, which is not
+        the case for a merely "empty" graph; since the update() method is
+        combining all possible paths, an empty graph means we need to consider
+        that all nodes might be unmodified, while a nonexistent graph has no
+        possible paths and therefore no effect.
+
+        A nonexistent graph can be thought of as "None", but handling it
+        directly within the class reduces the need for None checks. 
+
+        For instance, imagine we want to represent the information flow for
+        only paths of a program that end in RET. If no paths from the current
+        point end in RET (because, for instance, all paths end the program with
+        ECALL), then a nonexistent graph would represent the information flow.
+        '''
+        return InformationFlowGraph({}, False)
 
     def sources(self, sink: str) -> Set[str]:
         '''Returns all sources for the given sink.'''
@@ -64,6 +100,18 @@ class InformationFlowGraph:
 
         Does not modify other.
         '''
+        if not other.exists:
+            # If the other graph is nonexistent, then this is a no-op.
+            return
+
+        if not self.exists:
+            # Updating a nonexistent graph with another graph should return the
+            # other graph; since we need to modify self, we change this graph's
+            # flow to match other's.
+            self.flow = other.flow.copy()
+            self.exists = other.exists
+            return
+
         for sink, sources in other.flow.items():
             if sink not in self.flow:
                 # implicitly, a non-updated value depends only on itself (NOT
@@ -94,6 +142,11 @@ class InformationFlowGraph:
 
         Defensively copies all source sets for the new graph.
         '''
+        if not self.exists or not other.exists:
+            # If either this or the other graph is nonexistent, then the
+            # sequence is nonexistent.
+            return InformationFlowGraph.nonexistent()
+
         flow = {}
         for sink, sources in other.flow.items():
             new_sources = set()
@@ -115,6 +168,9 @@ class InformationFlowGraph:
 
     def pretty(self, indent: int = 0) -> str:
         '''Return a human-readable representation of the graph.'''
+        if not self.exists:
+            return 'Nonexistent information-flow graph (no possible paths).'
+
         prefix = ' ' * indent
         flow_strings = {
             sink: ','.join(sorted(sources))
@@ -128,24 +184,6 @@ class InformationFlowGraph:
             lines.append('{}{}{} -> {}'.format(prefix, sources_str, padding,
                                                sink))
         return '\n'.join(lines)
-
-
-def safe_update_iflow(
-        current: Optional[InformationFlowGraph],
-        new: Optional[InformationFlowGraph]) -> Optional[InformationFlowGraph]:
-    '''Updates one iflow with the other, handling None as appropriate.
-
-    If `new` is None, simply returns `current`. If `new` is not None but
-    `current` is None, returns `new`. If neither is None, updates `current` to
-    include values from `new, then returns `current`.
-    '''
-    if new is None:
-        return current
-    if current is None:
-        return new
-    current.update(new)
-    return current
-
 
 class InsnInformationFlowNode:
     '''Represents an information flow node whose value may depend on operands.
@@ -457,15 +495,19 @@ class InsnInformationFlowRule:
 
     def evaluate(
             self, op_vals: Dict[str, int],
-            constant_regs: Dict[str, int]) -> Optional[InformationFlowGraph]:
+            constant_regs: Dict[str, int]) -> InformationFlowGraph:
         if not self.test.check(op_vals):
             # Rule is not triggered
-            return None
+            return InformationFlowGraph.nonexistent()
         sources = set()
         for node in self.flows_from:
             sources.add(node.evaluate(op_vals, constant_regs))
         flow = {}
         for node in self.flows_to:
+            if node in READONLY:
+                # No information will actually flow to this node, because it is
+                # not writeable; skip.
+                continue
             dest = node.evaluate(op_vals, constant_regs)
             flow[dest] = sources.copy()
         return InformationFlowGraph(flow)
@@ -518,18 +560,10 @@ class InsnInformationFlow:
 
     def evaluate(self, op_vals: Dict[str, int],
                  constant_regs: Dict[str, int]) -> InformationFlowGraph:
-        graph = None
+        graph = InformationFlowGraph.nonexistent()
         for rule in self.rules:
             rule_graph = rule.evaluate(op_vals, constant_regs)
-            graph = safe_update_iflow(graph, rule_graph)
-
-        if graph is None:
-            # If no rules are triggered, return an empty graph
-            graph = InformationFlowGraph({})
-
-        # The x0 register is special and always zero; make sure the
-        # information-flow graph shows it having no dependencies.
-        graph.flow['x0'] = set()
+            graph.update(rule_graph)
 
         return graph
 
