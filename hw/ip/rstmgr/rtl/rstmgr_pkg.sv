@@ -56,6 +56,12 @@ package rstmgr_pkg;
     logic [PowerDomains-1:0] rst_ast_sensor_ctrl_sys_io_div4_n;
   } rstmgr_ast_out_t;
 
+  // cpu reset requests and status
+  typedef struct packed {
+    logic rst_cpu_n;
+    logic ndmreset_req;
+  } rstmgr_cpu_t;
+
   // default value for rstmgr_ast_rsp_t (for dangling ports)
   parameter rstmgr_cpu_t RSTMGR_CPU_DEFAULT = '{
     rst_cpu_n: 1'b1,
