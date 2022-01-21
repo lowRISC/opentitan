@@ -25,7 +25,7 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
     resets_t enabled_resets;
 
     cfg.slow_clk_rst_vif.wait_for_reset(.wait_negedge(0));
-    csr_rd_check(.ptr(ral.reset_status[0]), .compare_value(0));
+    check_reset_status('0);
     for (int i = 0; i < num_trans; ++i) begin
       `uvm_info(`gfn, "Starting new round", UVM_MEDIUM)
       `DV_CHECK_RANDOMIZE_FATAL(this)
@@ -59,8 +59,7 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
       cfg.slow_clk_rst_vif.wait_clks(4);
 
       // This read is not always possible since the CPU may be off.
-      csr_rd_check(.ptr(ral.reset_status[0]), .compare_value(enabled_resets),
-                   .err_msg("failed reset_status check"));
+      check_reset_status(enabled_resets);
 
       wait(cfg.pwrmgr_vif.pwr_clk_req.main_ip_clk_en == 1'b1);
 
@@ -70,7 +69,7 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
       check_wake_info(.reasons('0), .fall_through(1'b0), .abort(1'b0));
 
       cfg.slow_clk_rst_vif.wait_clks(4);
-      csr_rd_check(.ptr(ral.reset_status[0]), .compare_value('0));
+      check_reset_status('0);
 
       // And check interrupt is not set.
       check_and_clear_interrupt(.expected(1'b0));

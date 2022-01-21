@@ -43,7 +43,7 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
     wakeups_t enabled_wakeups;
 
     cfg.slow_clk_rst_vif.wait_for_reset(.wait_negedge(0));
-    csr_rd_check(.ptr(ral.wake_status[0]), .compare_value(0));
+    check_wake_status('0);
     set_nvms_idle();
     for (int i = 0; i < num_trans; ++i) begin
       `uvm_info(`gfn, "Starting new round", UVM_MEDIUM)
@@ -84,9 +84,7 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
       cfg.clk_rst_vif.wait_clks(2);
       wait(cfg.pwrmgr_vif.pwr_clk_req.main_ip_clk_en == 1'b1);
 
-      // Check there was no reset.
-      csr_rd_check(.ptr(ral.reset_status[0]), .compare_value(0),
-                   .err_msg("failed reset_status check"));
+      check_reset_status('0);
 
       // No wakeups, but check abort and fall_through.
       if (cpu_interrupt) begin

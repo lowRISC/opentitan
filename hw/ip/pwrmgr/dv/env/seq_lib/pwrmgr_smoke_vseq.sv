@@ -32,8 +32,8 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
     set_nvms_idle();
     setup_interrupt(.enable(1'b1));
     cfg.slow_clk_rst_vif.wait_for_reset(.wait_negedge(0));
-    csr_rd_check(.ptr(ral.wake_status[0]), .compare_value(0));
-    csr_rd_check(.ptr(ral.reset_status[0]), .compare_value(0));
+    check_wake_status('0);
+    check_reset_status('0);
 
     // Enable all wakeups so any peripheral can cause a wakeup.
     wakeup_en = '1;
@@ -53,10 +53,9 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
     wait_for_fast_fsm_active();
     `uvm_info(`gfn, "smoke back from wakeup", UVM_MEDIUM)
 
-    csr_rd_check(.ptr(ral.wake_status[0]), .compare_value(wakeups & wakeup_en),
-                 .err_msg("failed wake_status check"));
-    csr_rd_check(.ptr(ral.reset_status[0]), .compare_value(0),
-                 .err_msg("failed reset_status check"));
+    check_wake_status(wakeups & wakeup_en);
+    check_reset_status('0);
+    cfg.pwrmgr_vif.update_wakeups('0);
     check_and_clear_interrupt(.expected(1'b1));
 
     // Enable resets.
@@ -75,7 +74,8 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
 
     // The reset_status CSR should be clear since the unit requesting reset
     // should have been reset, so the incoming reset should have cleared.
-    csr_rd_check(.ptr(ral.reset_status[0]), .compare_value('0));
+    check_reset_status('0);
+    check_wake_status('0);
 
     // Wait for interrupt to be generated whether or not it is enabled.
     cfg.slow_clk_rst_vif.wait_clks(10);
