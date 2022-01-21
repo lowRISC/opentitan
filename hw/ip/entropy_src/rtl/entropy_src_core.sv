@@ -136,7 +136,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [SeedLen-1:0]     esfinal_data;
   logic                   esfinal_fips_flag;
 
-  logic                   any_active;
   logic                   any_fail_pulse;
   logic                   main_stage_push;
   logic                   bypass_stage_pop;
@@ -391,6 +390,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    unused_sha3_state;
   logic                    unused_entropy_data;
   logic                    unused_fw_ov_rd_data;
+  logic                    unused_health_test_clr_pfe;
 
   logic                    sha3_state_error;
   logic                    sha3_count_error;
@@ -779,6 +779,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign markov_active = es_enable;
   assign extht_active = es_enable;
 
+  // TODO: Remove health_test_clr bit
   // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_ht_clr;
   assign mubi_ht_clr = mubi4_t'(reg2hw.conf.health_test_clr.q);
@@ -787,7 +788,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.recov_alert_sts.health_test_clr_field_alert.de = health_test_clr_pfa;
   assign hw2reg.recov_alert_sts.health_test_clr_field_alert.d  = health_test_clr_pfa;
 
-  assign health_test_clr = health_test_clr_pfe;
+  assign health_test_clr = es_enable_pfe && !es_enable_q;
 
   assign health_test_fips_window = reg2hw.health_test_windows.fips_window.q;
   assign health_test_bypass_window = reg2hw.health_test_windows.bypass_window.q;
@@ -876,7 +877,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (1'b1),
     .event_i             (repcnt_fips_threshold_wr),
     .value_i             (repcnt_fips_threshold),
     .value_o             (repcnt_fips_threshold_oneway)
@@ -889,7 +889,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (1'b1),
     .event_i             (repcnt_bypass_threshold_wr),
     .value_i             (repcnt_bypass_threshold),
     .value_o             (repcnt_bypass_threshold_oneway)
@@ -908,7 +907,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (1'b1),
     .event_i             (repcnts_fips_threshold_wr),
     .value_i             (repcnts_fips_threshold),
     .value_o             (repcnts_fips_threshold_oneway)
@@ -921,7 +919,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (1'b1),
     .event_i             (repcnts_bypass_threshold_wr),
     .value_i             (repcnts_bypass_threshold),
     .value_o             (repcnts_bypass_threshold_oneway)
@@ -941,7 +938,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (1'b1),
     .event_i             (adaptp_hi_fips_threshold_wr),
     .value_i             (adaptp_hi_fips_threshold),
     .value_o             (adaptp_hi_fips_threshold_oneway)
@@ -954,7 +950,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (1'b1),
     .event_i             (adaptp_hi_bypass_threshold_wr),
     .value_i             (adaptp_hi_bypass_threshold),
     .value_o             (adaptp_hi_bypass_threshold_oneway)
@@ -970,7 +965,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (1'b1),
     .event_i             (adaptp_lo_fips_threshold_wr),
     .value_i             (adaptp_lo_fips_threshold),
     .value_o             (adaptp_lo_fips_threshold_oneway)
@@ -983,7 +977,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (1'b1),
     .event_i             (adaptp_lo_bypass_threshold_wr),
     .value_i             (adaptp_lo_bypass_threshold),
     .value_o             (adaptp_lo_bypass_threshold_oneway)
@@ -1003,7 +996,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (1'b1),
     .event_i             (bucket_fips_threshold_wr),
     .value_i             (bucket_fips_threshold),
     .value_o             (bucket_fips_threshold_oneway)
@@ -1016,7 +1008,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (1'b1),
     .event_i             (bucket_bypass_threshold_wr),
     .value_i             (bucket_bypass_threshold),
     .value_o             (bucket_bypass_threshold_oneway)
@@ -1036,7 +1027,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (1'b1),
     .event_i             (markov_hi_fips_threshold_wr),
     .value_i             (markov_hi_fips_threshold),
     .value_o             (markov_hi_fips_threshold_oneway)
@@ -1049,7 +1039,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (1'b1),
     .event_i             (markov_hi_bypass_threshold_wr),
     .value_i             (markov_hi_bypass_threshold),
     .value_o             (markov_hi_bypass_threshold_oneway)
@@ -1065,7 +1054,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (1'b1),
     .event_i             (markov_lo_fips_threshold_wr),
     .value_i             (markov_lo_fips_threshold),
     .value_o             (markov_lo_fips_threshold_oneway)
@@ -1078,7 +1066,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (1'b1),
     .event_i             (markov_lo_bypass_threshold_wr),
     .value_i             (markov_lo_bypass_threshold),
     .value_o             (markov_lo_bypass_threshold_oneway)
@@ -1098,7 +1085,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (1'b1),
     .event_i             (extht_hi_fips_threshold_wr),
     .value_i             (extht_hi_fips_threshold),
     .value_o             (extht_hi_fips_threshold_oneway)
@@ -1111,7 +1097,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (1'b1),
     .event_i             (extht_hi_bypass_threshold_wr),
     .value_i             (extht_hi_bypass_threshold),
     .value_o             (extht_hi_bypass_threshold_oneway)
@@ -1128,7 +1113,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (1'b1),
     .event_i             (extht_lo_fips_threshold_wr),
     .value_i             (extht_lo_fips_threshold),
     .value_o             (extht_lo_fips_threshold_oneway)
@@ -1141,7 +1125,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (1'b1),
     .event_i             (extht_lo_bypass_threshold_wr),
     .value_i             (extht_lo_bypass_threshold),
     .value_o             (extht_lo_bypass_threshold_oneway)
@@ -1257,7 +1240,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (repcnt_active),
     .event_i             (!es_bypass_mode),
     .value_i             (repcnt_event_cnt),
     .value_o             (repcnt_event_hwm_fips)
@@ -1270,7 +1252,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (repcnt_active),
     .event_i             (es_bypass_mode),
     .value_i             (repcnt_event_cnt),
     .value_o             (repcnt_event_hwm_bypass)
@@ -1282,7 +1263,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (repcnt_active),
     .event_i             (repcnt_fail_pulse),
     .value_o             (repcnt_total_fails)
   );
@@ -1319,7 +1299,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (repcnts_active),
     .event_i             (!es_bypass_mode),
     .value_i             (repcnts_event_cnt),
     .value_o             (repcnts_event_hwm_fips)
@@ -1332,7 +1311,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (repcnts_active),
     .event_i             (es_bypass_mode),
     .value_i             (repcnts_event_cnt),
     .value_o             (repcnts_event_hwm_bypass)
@@ -1344,7 +1322,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (repcnts_active),
     .event_i             (repcnts_fail_pulse),
     .value_o             (repcnts_total_fails)
   );
@@ -1385,7 +1362,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (adaptp_active),
     .event_i             (health_test_done_pulse && !es_bypass_mode),
     .value_i             (adaptp_event_cnt),
     .value_o             (adaptp_hi_event_hwm_fips)
@@ -1398,7 +1374,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (adaptp_active),
     .event_i             (health_test_done_pulse && es_bypass_mode),
     .value_i             (adaptp_event_cnt),
     .value_o             (adaptp_hi_event_hwm_bypass)
@@ -1410,7 +1385,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (adaptp_active),
     .event_i             (adaptp_hi_fail_pulse),
     .value_o             (adaptp_hi_total_fails)
   );
@@ -1428,7 +1402,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (adaptp_active),
     .event_i             (health_test_done_pulse && !es_bypass_mode),
     .value_i             (adaptp_event_cnt),
     .value_o             (adaptp_lo_event_hwm_fips)
@@ -1441,7 +1414,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (adaptp_active),
     .event_i             (health_test_done_pulse && es_bypass_mode),
     .value_i             (adaptp_event_cnt),
     .value_o             (adaptp_lo_event_hwm_bypass)
@@ -1453,7 +1425,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (adaptp_active),
     .event_i             (adaptp_lo_fail_pulse),
     .value_o             (adaptp_lo_total_fails)
   );
@@ -1492,7 +1463,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (bucket_active),
     .event_i             (health_test_done_pulse && !es_bypass_mode),
     .value_i             (bucket_event_cnt),
     .value_o             (bucket_event_hwm_fips)
@@ -1505,7 +1475,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (bucket_active),
     .event_i             (health_test_done_pulse && es_bypass_mode),
     .value_i             (bucket_event_cnt),
     .value_o             (bucket_event_hwm_bypass)
@@ -1517,7 +1486,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (bucket_active),
     .event_i             (bucket_fail_pulse),
     .value_o             (bucket_total_fails)
   );
@@ -1559,7 +1527,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (markov_active),
     .event_i             (health_test_done_pulse && !es_bypass_mode),
     .value_i             (markov_hi_event_cnt),
     .value_o             (markov_hi_event_hwm_fips)
@@ -1572,7 +1539,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (markov_active),
     .event_i             (health_test_done_pulse && es_bypass_mode),
     .value_i             (markov_hi_event_cnt),
     .value_o             (markov_hi_event_hwm_bypass)
@@ -1584,7 +1550,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (markov_active),
     .event_i             (markov_hi_fail_pulse),
     .value_o             (markov_hi_total_fails)
   );
@@ -1601,7 +1566,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (markov_active),
     .event_i             (health_test_done_pulse && !es_bypass_mode),
     .value_i             (markov_lo_event_cnt),
     .value_o             (markov_lo_event_hwm_fips)
@@ -1614,7 +1578,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (markov_active),
     .event_i             (health_test_done_pulse && es_bypass_mode),
     .value_i             (markov_lo_event_cnt),
     .value_o             (markov_lo_event_hwm_bypass)
@@ -1626,7 +1589,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (markov_active),
     .event_i             (markov_lo_fail_pulse),
     .value_o             (markov_lo_total_fails)
   );
@@ -1662,7 +1624,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (extht_active),
     .event_i             (health_test_done_pulse && !es_bypass_mode),
     .value_i             (extht_event_cnt),
     .value_o             (extht_hi_event_hwm_fips)
@@ -1675,7 +1636,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (extht_active),
     .event_i             (health_test_done_pulse && es_bypass_mode),
     .value_i             (extht_event_cnt),
     .value_o             (extht_hi_event_hwm_bypass)
@@ -1687,7 +1647,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (extht_active),
     .event_i             (extht_hi_fail_pulse),
     .value_o             (extht_hi_total_fails)
   );
@@ -1705,7 +1664,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (extht_active),
     .event_i             (health_test_done_pulse && !es_bypass_mode),
     .value_i             (extht_event_cnt),
     .value_o             (extht_lo_event_hwm_fips)
@@ -1718,7 +1676,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (extht_active),
     .event_i             (health_test_done_pulse && es_bypass_mode),
     .value_i             (extht_event_cnt),
     .value_o             (extht_lo_event_hwm_bypass)
@@ -1730,7 +1687,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .active_i            (extht_active),
     .event_i             (extht_lo_fail_pulse),
     .value_o             (extht_lo_total_fails)
   );
@@ -1752,13 +1708,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
-    .active_i            (any_active),
     .event_i             (any_fail_pulse),
     .value_o             (any_fail_count)
   );
 
-  assign any_active = repcnt_active || repcnts_active || adaptp_active ||
-         bucket_active || markov_active || extht_active;
 
   assign any_fail_pulse =
          repcnt_fail_pulse ||
@@ -1822,7 +1775,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
-    .active_i            (repcnt_active),
     .event_i             (repcnt_fail_pulse),
     .value_o             (repcnt_fail_count)
   );
@@ -1836,7 +1788,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
-    .active_i            (repcnts_active),
     .event_i             (repcnts_fail_pulse),
     .value_o             (repcnts_fail_count)
   );
@@ -1850,7 +1801,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
-    .active_i            (adaptp_active),
     .event_i             (adaptp_hi_fail_pulse),
     .value_o             (adaptp_hi_fail_count)
   );
@@ -1863,7 +1813,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
-    .active_i            (adaptp_active),
     .event_i             (adaptp_lo_fail_pulse),
     .value_o             (adaptp_lo_fail_count)
   );
@@ -1877,7 +1826,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
-    .active_i            (bucket_active),
     .event_i             (bucket_fail_pulse),
     .value_o             (bucket_fail_count)
   );
@@ -1892,7 +1840,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
-    .active_i            (markov_active),
     .event_i             (markov_hi_fail_pulse),
     .value_o             (markov_hi_fail_count)
   );
@@ -1905,7 +1852,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
-    .active_i            (markov_active),
     .event_i             (markov_lo_fail_pulse),
     .value_o             (markov_lo_fail_count)
   );
@@ -1919,7 +1865,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
-    .active_i            (extht_active),
     .event_i             (extht_hi_fail_pulse),
     .value_o             (extht_hi_fail_count)
   );
@@ -1932,7 +1877,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
-    .active_i            (extht_active),
     .event_i             (extht_lo_fail_pulse),
     .value_o             (extht_lo_fail_count)
   );
@@ -2302,6 +2246,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign unused_sha3_state = (|sha3_state[0][sha3_pkg::StateW-1:SeedLen]);
   assign unused_entropy_data = (|reg2hw.entropy_data.q);
   assign unused_fw_ov_rd_data = (|reg2hw.fw_ov_rd_data.q);
+  assign unused_health_test_clr_pfe = health_test_clr_pfe;
 
 
 endmodule
