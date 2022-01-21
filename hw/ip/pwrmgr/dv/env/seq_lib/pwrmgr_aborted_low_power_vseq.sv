@@ -75,9 +75,8 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
         cfg.pwrmgr_vif.update_cpu_sleeping(1'b0);
       end else begin
         `uvm_info(`gfn, $sformatf(
-                  "Expecting an abort (0x80): fi=%b, li=%b, oi=%b",
-                  flash_idle, lc_idle, otp_idle
-                  ), UVM_MEDIUM)
+                  "Expecting an abort (0x80): fi=%b, li=%b, oi=%b", flash_idle, lc_idle, otp_idle),
+                  UVM_MEDIUM)
         set_nvms_idle(flash_idle, lc_idle, otp_idle);
       end
       // Wait enough time for the clocks to be turned off and then wait for them to go back on,

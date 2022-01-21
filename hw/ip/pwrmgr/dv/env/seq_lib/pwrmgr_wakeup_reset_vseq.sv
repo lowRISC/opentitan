@@ -13,9 +13,29 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
 
   constraint wakeup_en_c {
     solve wakeups before wakeups_en;
-    |(wakeups_en & wakeups) == 1'b1;
+    (wakeups_en & wakeups) != 0;
   }
   constraint disable_wakeup_capture_c {disable_wakeup_capture == 1'b0;}
+
+  // Cause some delays for the rom_ctrl done and good inputs. Simple, enough to hold the
+  // transition to active state.
+  // Consider adding SVA to monitor fast state transitions are compliant
+  // with "ROM Integrity Checks" at
+  // https://docs.opentitan.org/hw/ip/pwrmgr/doc/#fast-clock-domain-fsm
+  // TODO(maturana) https://github.com/lowRISC/opentitan/issues/10241
+  local task twirl_rom_response();
+    cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4False;
+    cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4False;
+    @(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateAckPwrUp);
+    cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
+    @(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheck);
+    cfg.clk_rst_vif.wait_clks(10);
+    cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4False;
+    cfg.clk_rst_vif.wait_clks(5);
+    cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
+    cfg.clk_rst_vif.wait_clks(5);
+    cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4True;
+  endtask
 
   task body();
     logic [TL_DW-1:0] value;
@@ -74,8 +94,7 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
             `uvm_info(`gfn, "Sending power glitch", UVM_MEDIUM)
             cfg.pwrmgr_vif.glitch_power_reset();
           end
-          if (escalation_reset)
-            send_escalation_reset();
+          if (escalation_reset) send_escalation_reset();
           `uvm_info(`gfn, $sformatf(
                     "Sending reset=%b, power_glitch=%b, escalation=%b",
                     resets,
@@ -102,6 +121,7 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
       csr_rd_check(.ptr(ral.reset_status[0]), .compare_value(enabled_resets),
                    .err_msg("failed reset_status check"));
       wait(cfg.pwrmgr_vif.pwr_clk_req.main_ip_clk_en == 1'b1);
+      twirl_rom_response();
 
       wait_for_fast_fsm_active();
 
