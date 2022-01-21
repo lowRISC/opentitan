@@ -1,10 +1,10 @@
 ---
-title: "PATTGEN HWIP Technical Specification"
+title: "Pattern Generator HWIP Technical Specification"
 ---
 
 # Overview
 
-This document specifies PATTGEN hardware IP (HWIP) functionality.
+This document specifies the functionality of the pattern generator hardware IP (HWIP).
 This module conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification/index.md" >}})
 See that document for integration overview within the broader top-level system.
 
@@ -22,7 +22,7 @@ See that document for integration overview within the broader top-level system.
 
 ## Description
 
-The PATTGEN IP transmits short (maximum 64 bits) time-dependent data patterns on two clock-parallel channels.
+The pattern generator HWIP transmits short (maximum 64 bits) time-dependent data patterns on two clock-parallel channels.
 Each channel consists of one clock (`pcl`) and one data (`pda`) line.
 The output channels may be activated and operated independently, or they can be started at the same time to effectively create a 4-output pattern.
 
@@ -91,13 +91,13 @@ The entire sequence can be restarted either by resetting or disabling and re-ena
 
 ### Interrupts
 
-PATTGEN HWIP provides two interrupt pins, `done_ch0` and `done_ch1`, which indicate the completion of pattern generation on the output channels.
+The pattern generator HWIP provides two interrupt pins, `done_ch0` and `done_ch1`, which indicate the completion of pattern generation on the output channels.
 These interrupts can be enabled/disabled by setting/un-setting the corresponding bits of the {{< regref "INTR_ENABLE" >}} register.
 To clear the interrupts, bit `1` must be written the corresponding bits of {{< regref "INTR_STATE" >}} register
 
 # Programmers guide
 
-To start pattern generation, the register interface of PATTGEN HWIP should be properly initialized and configured.
+To start pattern generation, the register interface of the pattern generator HWIP should be properly initialized and configured.
 
 The guide that follows provides instuctions for configuring Channel 0.
 To configure Channel 1, use the registers with the "CH1" suffix, instead of the "CH0" registers.
