@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Dict, List, Optional, Sequence, Set
+from typing import Dict, Iterator, List, Optional, Sequence, Set
 
 from serialize.parse_helpers import check_keys, check_list, check_str
 
@@ -25,7 +25,7 @@ class InformationFlowGraph:
     means the sink is overwritten with a constant value, and information is not
     flowing to it from any nodes (including its own previous value).
     '''
-    def __init__(self, flow: Dict[str, Set[str]], exists=True):
+    def __init__(self, flow: Dict[str, Set[str]], exists:bool=True):
         self.flow = flow
 
         # Should not be modified directly. See the nonexistent() method
@@ -80,6 +80,25 @@ class InformationFlowGraph:
             # Implicitly, the source is unmodified and depends on itself
             out.add(source)
         return out
+
+    def all_sources(self) -> Set[str]:
+        '''Returns all sources in the graph.'''
+        out : Set[str] = set()
+        return out.union(*self.flow.values())
+
+    def all_sinks(self) -> Set[str]:
+        '''Returns all sinks in the graph.'''
+        return set(self.flow.keys())
+
+    def sources_for_any(self, sinks: Iterator[str]) -> Set[str]:
+        '''Returns all nodes that are a source for any of the given sinks.'''
+        out : Set[str] = set()
+        return out.union(*(self.sources(s) for s in sinks))
+
+    def sinks_for_any(self, sinks: Iterator[str]) -> Set[str]:
+        '''Returns all nodes that are a sink for any of the given sources.'''
+        out : Set[str] = set()
+        return out.union(*(self.sinks(s) for s in sinks))
 
     def update(self, other: 'InformationFlowGraph') -> None:
         '''Updates self to include the information flow from other.
@@ -504,11 +523,11 @@ class InsnInformationFlowRule:
             sources.add(node.evaluate(op_vals, constant_regs))
         flow = {}
         for node in self.flows_to:
-            if node in READONLY:
+            dest = node.evaluate(op_vals, constant_regs)
+            if dest in READONLY:
                 # No information will actually flow to this node, because it is
                 # not writeable; skip.
                 continue
-            dest = node.evaluate(op_vals, constant_regs)
             flow[dest] = sources.copy()
         return InformationFlowGraph(flow)
 
