@@ -6,7 +6,7 @@
   name: aes
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: lowrisc:ip:{name}:0.6
+  fusesoc_core: lowrisc:ip:{name}:1.0
 
   import_cfgs: [// Project wide common GTECH synthesis config file
                 "{proj_root}/hw/syn/tools/dvsim/common_gtech_syn_cfg.hjson"]
