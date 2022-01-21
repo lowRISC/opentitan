@@ -293,7 +293,7 @@
     }
     { // TODO: this is an array of covergroups, confirm if this is the correct format
       name: unbuf_err_code_cg
-      desc: '''This is an array of covergroups to cover all applicable error codes in two
+      desc: '''This is an array of covergroups to cover all applicable error codes in three
             unbuffered partitions.'''
     }
     { // TODO: this is an array of covergroups, confirm if this is the correct format
