@@ -401,11 +401,15 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
                  10_000,)
     `uvm_info(`gfn, "In process_low_power_hint pre forks", UVM_MEDIUM)
     fork
-      wait_for_fall_through();
-      wait_for_abort();
-      wait_for_low_power_transition();
-    join_any
-    disable fork;
+      begin : isolation_fork
+        fork
+          wait_for_fall_through();
+          wait_for_abort();
+          wait_for_low_power_transition();
+        join_any
+        disable fork;
+      end
+    join
     // At this point we know the low power transition went through or was aborted.
     // If it went through, determine if the transition to active state is for a reset, and
     // cancel the expected interrupt.
@@ -476,9 +480,15 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   // Checks the reset_status CSR matches expectations.
-  task check_reset_status(resets_t enabled_resets);
-    csr_rd_check(.ptr(ral.reset_status[0]), .compare_value(enabled_resets),
+  task check_reset_status(resets_t expected_resets);
+    csr_rd_check(.ptr(ral.reset_status[0]), .compare_value(expected_resets),
                  .err_msg("reset_status"));
+  endtask
+
+  // Checks the wake_status CSR matches expectations.
+  task check_wake_status(wakeups_t expected_wakeups);
+    csr_rd_check(.ptr(ral.wake_status[0]), .compare_value(expected_wakeups),
+                 .err_msg("wake_status"));
   endtask
 
   // Checks the wake_info CSR matches expectations depending on capture disable.
