@@ -23,7 +23,7 @@ module entropy_src_main_sm #(
   input logic                   main_stage_rdy_i,
   input logic                   bypass_stage_rdy_i,
   input logic                   sha3_state_vld_i,
-  output logic                  main_stage_pop_o,
+  output logic                  main_stage_push_o,
   output logic                  bypass_stage_pop_o,
   output logic                  sha3_start_o,
   output logic                  sha3_process_o,
@@ -103,7 +103,7 @@ module entropy_src_main_sm #(
     state_d = state_q;
     rst_bypass_mode_o = 1'b0;
     rst_alert_cntr_o = 1'b0;
-    main_stage_pop_o = 1'b0;
+    main_stage_push_o = 1'b0;
     bypass_stage_pop_o = 1'b0;
     sha3_start_o = 1'b0;
     sha3_process_o = 1'b0;
@@ -126,6 +126,9 @@ module entropy_src_main_sm #(
       BootHTRunning: begin
         if (!enable_i) begin
           state_d = Idle;
+        end else if (bypass_stage_rdy_i) begin
+          // pop if prior ht phase failed
+          bypass_stage_pop_o = 1'b1;
         end else begin
           if (ht_done_pulse_i) begin
             if (ht_fail_pulse_i) begin
@@ -149,6 +152,7 @@ module entropy_src_main_sm #(
             rst_alert_cntr_o = 1'b1;
             rst_bypass_mode_o = 1'b1;
             bypass_stage_pop_o = 1'b1;
+            main_stage_push_o = 1'b1;
             state_d = StartupHTStart;
           end
         end
@@ -247,7 +251,7 @@ module entropy_src_main_sm #(
         end else begin
           if (main_stage_rdy_i) begin
             sha3_done_o = 1'b1;
-            main_stage_pop_o = 1'b1;
+            main_stage_push_o = 1'b1;
             state_d = Sha3Quiesce;
           end
         end
