@@ -138,7 +138,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   logic                   any_active;
   logic                   any_fail_pulse;
-  logic                   main_stage_pop;
+  logic                   main_stage_push;
   logic                   bypass_stage_pop;
   logic [HalfRegWidth-1:0] any_fail_count;
   logic                    alert_threshold_fail;
@@ -2144,7 +2144,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .main_stage_rdy_i     (pfifo_cond_not_empty),
     .bypass_stage_rdy_i   (pfifo_bypass_not_empty),
     .sha3_state_vld_i     (sha3_state_vld),
-    .main_stage_pop_o     (main_stage_pop),
+    .main_stage_push_o    (main_stage_push),
     .bypass_stage_pop_o   (bypass_stage_pop),
     .sha3_start_o         (sha3_start),
     .sha3_process_o       (sha3_process),
@@ -2187,8 +2187,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign fips_compliance = !es_bypass_mode && es_enable_rng && !rng_bit_en;
 
   // fifo controls
-  assign sfifo_esfinal_push = sfifo_esfinal_not_full &&
-         ((main_stage_pop || bypass_stage_pop) && !ht_failed_q);
+  assign sfifo_esfinal_push = sfifo_esfinal_not_full && main_stage_push;
   assign sfifo_esfinal_clr  = !es_enable;
   assign sfifo_esfinal_wdata = {fips_compliance,final_es_data};
   assign sfifo_esfinal_pop = es_route_to_sw ? pfifo_swread_push :
