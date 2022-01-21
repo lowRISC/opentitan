@@ -65,7 +65,7 @@ static inline rom_error_t mask_rom_irq_error(void) {
  * Performs once-per-boot initialization of mask ROM modules and peripherals.
  */
 static rom_error_t mask_rom_init(void) {
-  sec_mmio_init(shutdown_finalize);
+  sec_mmio_init();
   // Initialize the shutdown policy according to lifecycle state.
   lc_state = lifecycle_state_get();
   RETURN_IF_ERROR(shutdown_init(lc_state));

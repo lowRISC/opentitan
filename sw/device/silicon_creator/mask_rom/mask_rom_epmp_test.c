@@ -63,15 +63,6 @@ typedef enum exception {
 } exception_t;
 
 /**
- * sec_mmio callback.
- *
- * @param error sec_mmio error.
- */
-static void sec_mmio_callback(rom_error_t error) {
-  LOG_ERROR("sec_mmio error: 0x%x", error);
-}
-
-/**
  * Get the value of the `mcause` register.
  *
  * @returns The encoded interrupt or exception cause.
@@ -377,7 +368,7 @@ static void test_unlock_exec_eflash(epmp_state_t *epmp) {
 
 void mask_rom_main(void) {
   // Initialize sec_mmio.
-  sec_mmio_init(sec_mmio_callback);
+  sec_mmio_init();
 
   // Initialize pinmux configuration so we can use the UART.
   pinmux_init();

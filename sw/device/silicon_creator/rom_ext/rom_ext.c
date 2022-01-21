@@ -56,7 +56,7 @@ static inline rom_error_t rom_ext_irq_error(void) {
 }
 
 void rom_ext_init(void) {
-  sec_mmio_next_stage_init(shutdown_finalize);
+  sec_mmio_next_stage_init();
 
   lc_state = lifecycle_state_get();
 

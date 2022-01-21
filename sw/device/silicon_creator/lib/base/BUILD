@@ -1,6 +1,7 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -44,6 +45,7 @@ cc_library(
         "abs_mmio.h",
         "mock_abs_mmio.h",
     ],
+    defines = ["MOCK_ABS_MMIO"],
     deps = [
         "//sw/device/lib/base/testing",
         "//sw/device/silicon_creator/testing:mask_rom_test",
@@ -55,6 +57,7 @@ cc_library(
     name = "sec_mmio",
     srcs = ["sec_mmio.c"],
     hdrs = ["sec_mmio.h"],
+    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":abs_mmio",
         "//sw/device/lib/base",
@@ -78,10 +81,15 @@ cc_library(
 
 cc_test(
     name = "sec_mmio_unittest",
-    srcs = ["sec_mmio_unittest.cc"],
+    srcs = [
+        "sec_mmio.h",
+        "sec_mmio.c",
+        "sec_mmio_unittest.cc",
+    ],
+    defines = ["OT_OFF_TARGET_TEST"],
     deps = [
         ":mock_abs_mmio",
-        ":sec_mmio",
+        "//sw/device/lib/base",
         "//sw/device/silicon_creator/lib:error",
         "@googletest//:gtest_main",
     ],
