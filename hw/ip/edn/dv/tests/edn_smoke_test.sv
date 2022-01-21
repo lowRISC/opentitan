@@ -11,7 +11,8 @@ class edn_smoke_test extends edn_base_test;
     super.configure_env();
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
-    cfg.num_endpoints = 1;
+    cfg.num_endpoints = MIN_NUM_ENDPOINTS;
+
     `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_HIGH)
   endfunction
 endclass : edn_smoke_test
