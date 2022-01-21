@@ -33,7 +33,7 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
     bit prior_abort = '0;
 
     cfg.slow_clk_rst_vif.wait_for_reset(.wait_negedge(0));
-    csr_rd_check(.ptr(ral.wake_status[0]), .compare_value(0));
+    check_wake_status('0);
     for (int i = 0; i < num_trans; ++i) begin
       `uvm_info(`gfn, "Starting new round", UVM_MEDIUM)
       `DV_CHECK_RANDOMIZE_FATAL(this)
@@ -92,8 +92,7 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
       // Check wake_status prior to wakeup, or the unit requesting wakeup will have been reset.
       // This read will not work in the chip, since the processor will be asleep.
       cfg.slow_clk_rst_vif.wait_clks(4);
-      csr_rd_check(.ptr(ral.wake_status[0]), .compare_value(wakeups & wakeups_en),
-                   .err_msg("failed wake_status check"));
+      check_wake_status(wakeups & wakeups_en);
       `uvm_info(`gfn, $sformatf("Got wake_status=0x%x", wakeups & wakeups_en), UVM_MEDIUM)
       wait(cfg.pwrmgr_vif.pwr_clk_req.main_ip_clk_en == 1'b1);
 
@@ -104,9 +103,7 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
       wait_for_fast_fsm_active();
       `uvm_info(`gfn, "Back from wakeup", UVM_MEDIUM)
 
-      csr_rd_check(.ptr(ral.reset_status[0]), .compare_value(0),
-                   .err_msg("failed reset_status check"));
-
+      check_reset_status('0);
       check_wake_info(.reasons(wakeups_en), .prior_reasons(prior_reasons), .fall_through(1'b0),
                       .prior_fall_through(prior_fall_through), .abort(1'b0),
                       .prior_abort(prior_abort));
@@ -117,7 +114,7 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
       // will remain active, preventing the device from going to sleep.
       cfg.pwrmgr_vif.update_wakeups('0);
       cfg.slow_clk_rst_vif.wait_clks(10);
-      csr_rd_check(.ptr(ral.wake_status[0]), .compare_value('0));
+      check_wake_status('0);
 
       // Wait for interrupt to be generated whether or not it is enabled.
       cfg.slow_clk_rst_vif.wait_clks(10);
