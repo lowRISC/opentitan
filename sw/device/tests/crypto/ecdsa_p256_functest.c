@@ -5,12 +5,11 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/silicon_creator/lib/crypto/ecdsa_p256/ecdsa_p256.h"
-#include "sw/device/silicon_creator/lib/drivers/hmac.h"
-#include "sw/device/silicon_creator/lib/drivers/otbn.h"
-#include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/otbn_util.h"
-#include "sw/device/silicon_creator/lib/test_main.h"
+#include "sw/device/lib/crypto/ecdsa_p256/ecdsa_p256.h"
+#include "sw/device/lib/crypto/drivers/hmac.h"
+#include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/otbn_util.h"
+#include "sw/device/lib/testing/test_framework/ottf.h"
 
 // Message
 static const char kMessage[] = "test message";
@@ -33,49 +32,57 @@ static const ecdsa_p256_private_key_t kPrivateKey = {
           0xf46c0bda, 0x7abbe68f, 0xb7a04555},
 };
 
-rom_error_t compute_digest(void) {
+hmac_error_t compute_digest(void) {
   hmac_digest_t act_digest;
   uint32_t i;
 
   hmac_sha256_init();
-  RETURN_IF_ERROR(hmac_sha256_update(&kMessage, sizeof(kMessage) - 1));
-  RETURN_IF_ERROR(hmac_sha256_final(&act_digest));
+  hmac_error_t err = hmac_sha256_update(&kMessage, sizeof(kMessage) - 1);
+  if (err != kHmacOk) {
+    return err;
+  }
+  err = hmac_sha256_final(&act_digest);
+  if (err != kHmacOk) {
+    return err;
+  }
 
   for (i = 0; i < kP256ScalarNumWords; i++) {
     digest.h[i] = act_digest.digest[i];
   };
 
-  return kErrorOk;
+  return kHmacOk;
 }
 
-rom_error_t sign_then_verify_test(void) {
+bool sign_then_verify_test(void) {
   ecdsa_p256_signature_t signature;
   hardened_bool_t verificationResult;
 
   // Generate a signature for the message
   LOG_INFO("Signing...");
-  FOLD_OTBN_ERROR(ecdsa_p256_sign(&digest, &kPrivateKey, &signature));
+  otbn_error_t err = ecdsa_p256_sign(&digest, &kPrivateKey, &signature);
+  if (err != kOtbnOk) {
+    return false;
+  }
 
   // Verify the signature
   LOG_INFO("Verifying...");
-  FOLD_OTBN_ERROR(
-      ecdsa_p256_verify(&signature, &digest, &kPublicKey, &verificationResult));
+  err = ecdsa_p256_verify(&signature, &digest, &kPublicKey, &verificationResult);
+  if (err != kOtbnOk) {
+    return false;
+  }
 
   // Signature verification is expected to succeed
   CHECK(verificationResult == kHardenedBoolTrue);
 
-  return kErrorOk;
+  return true;
 }
 
 const test_config_t kTestConfig;
 
 bool test_main(void) {
-  rom_error_t result = kErrorOk;
-
   entropy_testutils_boot_mode_init();
 
-  CHECK(compute_digest() == kErrorOk);
+  CHECK(compute_digest() == kHmacOk);
 
-  EXECUTE_TEST(result, sign_then_verify_test);
-  return result == kErrorOk;
+  return sign_then_verify_test();
 }

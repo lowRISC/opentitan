@@ -46,7 +46,7 @@ typedef enum otbn_status {
 /**
  * Error codes for the OTBN driver.
  */
-typedef enum otbn_error_t {
+typedef enum otbn_error {
   /** No errors. */
   kOtbnErrorOk = 0,
   /** Invalid argument provided to OTBN interface function. */
