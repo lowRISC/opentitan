@@ -41,6 +41,8 @@
 // 2. Kmac Prefix
 // * sideload & key_valid -> Checker in kmac_core
 
+`include "prim_assert.sv"
+
 module kmac_errchk
   import kmac_pkg::*;
   import sha3_pkg::sha3_mode_e;
