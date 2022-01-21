@@ -17,6 +17,12 @@ GROUP(-lgcc)
  */
 __DYNAMIC = 0;
 
+INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
+
+MEMORY {
+  eflash_rom_ext(rx) : ORIGIN = 0x90000000, LENGTH = 0x80000 
+}
+
 /**
  * Marking the entry point correctly for the ELF file. The signer tool will
  * transfer this value to the `entry_point` field of the manifest, which will
@@ -25,13 +31,28 @@ __DYNAMIC = 0;
 ENTRY(_rom_ext_start_boot)
 
 /**
+ * Reserving space at the top of the RAM for the stack.
+ */
+_stack_size = 0x2000;
+_stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
+_stack_start = _stack_end - _stack_size;
+
+/**
+ * These symbols will be used to setup the simple address translation
+ */
+_vflash_address = ORIGIN(eflash_rom_ext);
+_vflash_size = LENGTH(eflash_rom_ext);
+ASSERT((_vflash_size <= (LENGTH(eflash) / 2)), "Error: rom ext flash is bigger than slot");
+_addr_translation_crt_offset = _rom_ext_start_boot - _vflash_address;
+
+/**
  * NOTE: We have to align each section to word boundaries as our current
  * s19->slm conversion scripts are not able to handle non-word aligned sections.
  */
 SECTIONS {
-  .manifest _slot_start_address : {
+  .manifest _vflash_address : {
     KEEP(*(.manifest))
-  } > eflash
+  } > eflash_rom_ext
 
   /**
    * Ibex interrupt vector.
@@ -42,14 +63,14 @@ SECTIONS {
   .vectors : ALIGN(256) {
     _text_start = .;
     KEEP(*(.vectors))
-  } > eflash
+  } > eflash_rom_ext
 
   /**
    * C runtime (CRT) section, containing program initialization code.
    */
   .crt : ALIGN(4) {
     KEEP(*(.crt))
-  } > eflash
+  } > eflash_rom_ext
 
   /**
    * Standard text section, containing program code.
@@ -60,7 +81,7 @@ SECTIONS {
 
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
-  } > eflash
+  } > eflash_rom_ext
 
   /**
    * Shutdown text section, containing shutdown function(s).
@@ -74,7 +95,7 @@ SECTIONS {
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
     _text_end = .;
-  } > eflash
+  } > eflash_rom_ext
 
   /**
    * Read-only data section, containing all large compile-time constants, like
@@ -87,7 +108,7 @@ SECTIONS {
     *(.srodata.*)
     *(.rodata)
     *(.rodata.*)
-  } > eflash
+  } > eflash_rom_ext
 
   /**
    * Critical static data that is accessible by both the mask ROM and the ROM
@@ -145,7 +166,7 @@ SECTIONS {
      *
      * Using `AT>` means we don't have to keep track of the next free part of
      * flash, as we do in our other linker scripts. */
-  } > ram_main AT> eflash
+  } > ram_main AT> eflash_rom_ext
 
   /**
    * Standard BSS section. This will be zeroed at runtime by the CRT.

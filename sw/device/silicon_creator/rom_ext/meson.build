@@ -85,6 +85,7 @@ foreach slot, slot_link_args : rom_ext_link_info
     slot: declare_dependency(
       sources: [
         'rom_ext_start.S',
+        hw_ip_ibex_reg_h,
       ],
       link_args: slot_link_args[0],
       dependencies: [
@@ -109,6 +110,7 @@ foreach slot, slot_link_args : rom_ext_link_info
         slot + '_rom_ext_lib',
         sources: [
           'rom_ext.c',
+          hw_ip_ibex_reg_h,
         ],
         link_depends: [slot_link_args[1]],
     )
