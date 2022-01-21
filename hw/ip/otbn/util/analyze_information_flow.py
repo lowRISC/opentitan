@@ -64,14 +64,14 @@ def main() -> int:
     # If no secrets were given or the --verbose flag is set, then print the
     # full information-flow graphs.
     if (args.verbose or args.secrets is None):
-        if ret_iflow is not None:
+        if ret_iflow.exists:
             print(
                 'Information flow for paths ending in a return to the caller:')
             print(ret_iflow.pretty(indent=2))
-            if end_iflow is not None:
+            if end_iflow.exists:
                 print('--------')
 
-        if end_iflow is not None:
+        if end_iflow.exists:
             print('Information flow for paths ending the program:')
             print(end_iflow.pretty(indent=2))
 
@@ -101,14 +101,14 @@ def main() -> int:
 
     # Print final secrets (if initial secrets were provided).
     if args.secrets is not None:
-        if ret_iflow is not None:
+        if ret_iflow.exists:
             final_secrets = {
                 sink
                 for node in args.secrets for sink in ret_iflow.sinks(node)
             }
             print('Final secrets for paths ending in a return to the caller:',
                   ', '.join(sorted(final_secrets)))
-        if end_iflow is not None:
+        if end_iflow.exists:
             final_secrets = {
                 sink
                 for node in args.secrets for sink in end_iflow.sinks(node)

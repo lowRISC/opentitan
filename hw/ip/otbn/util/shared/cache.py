@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Generic, Optional, TypeVar
+from typing import Dict, Generic, Optional, List, TypeVar
 
 K = TypeVar('K')
 V = TypeVar('V')

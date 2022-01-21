@@ -3,14 +3,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Callable, Dict, List, Optional, Set, Tuple
 
-from .control_flow import *
 from .cache import CacheEntry, Cache
+from .constants import ConstantContext, get_op_val_str
+from .control_flow import *
 from .decode import OTBNProgram
 from .information_flow import InformationFlowGraph, InsnInformationFlow
 from .insn_yaml import Insn
-from .operand import RegOperandType
 from .section import CodeSection
 
 # Calls to _get_iflow return results in the form of a tuple with entries:
@@ -23,18 +23,18 @@ from .section import CodeSection
 #   end iflow:      an information-flow graph for any paths that lead to the
 #                   end of the entire program (i.e. ECALL instruction or end of
 #                   IMEM)
-#   new constants:  values of constants that are shared between all paths
-#                   ending in RET (i.e. the constants a caller can rely on
-#                   regardless of input)
+#   constants:      known constants that are in common between all "return"
+#                   iflow paths (i.e. the constants that a caller can always
+#                   rely on)
 #   control deps:   a dictionary whose keys are the information-flow nodes
 #                   whose values at the start PC influence the control flow of
 #                   the program; the value is a set of PCs of control-flow
 #                   instructions through which the node influences the control
 #                   flow
-IFlowResult = Tuple[Set[str], InformationFlowGraph, InformationFlowGraph, Dict[str, int],
+IFlowResult = Tuple[Set[str], InformationFlowGraph, InformationFlowGraph, ConstantContext,
                     Dict[str, Set[int]]]
 
-class IFlowCacheEntry(CacheEntry[Dict[str,int], IFlowResult]):
+class IFlowCacheEntry(CacheEntry[ConstantContext, IFlowResult]):
     '''Represents an entry in the cache for _get_iflow.
 
     The key for the cache entry is the values of certain constants in the input
@@ -44,13 +44,13 @@ class IFlowCacheEntry(CacheEntry[Dict[str,int], IFlowResult]):
     same values for those constants but different values for others, the result
     should not change. 
     '''
-    def is_match(self, constants: Dict[str,int]) -> bool:
-        for k,v in self.key.items():
-            if constants.get(k, None) != v:
+    def is_match(self, constants: ConstantContext) -> bool:
+        for k,v in self.key.values.items():
+            if constants.get(k) != v:
                 return False
         return True
 
-class IFlowCache(Cache[int,Dict[str,int], IFlowResult]):
+class IFlowCache(Cache[int,ConstantContext, IFlowResult]):
     '''Represents the cache for _get_iflow.
 
     The index of the cache is the start PC for the call to _get_iflow. If this
@@ -69,64 +69,9 @@ SubroutineIFlow = Tuple[InformationFlowGraph,InformationFlowGraph, Dict[str, Set
 # at the start, we're not expecting any return paths!
 ProgramIFlow = Tuple[InformationFlowGraph, Dict[str, Set[int]]]
 
-
-def _get_op_val_str(insn: Insn, op_vals: Dict[str, int], opname: str) -> str:
-    '''Get the value of the given operand as a string.'''
-    op = insn.name_to_operand[opname]
-    return op.op_type.op_val_to_str(op_vals[opname], None)
-
-
-def _update_constants_insn(insn: Insn, op_vals: Dict[str, int],
-                           constants: Dict[str, int]) -> None:
-    '''Determines the values of constant registers after the instruction.
-
-    Currently, this procedure supports only a limited set of instructions.
-    Since constant values only need to be known in order to decode indirect
-    references to WDRs and loop counts, this set is chosen based on operations
-    likely to happen to those registers: `addi`, `lui`, and bignum instructions
-    containing `_inc` op_vals.
-
-    Modifies the input `constants` dictionary.
-    '''
-    new_constants = {'x0': 0}
-    if insn.mnemonic == 'addi':
-        grs1_name = _get_op_val_str(insn, op_vals, 'grs1')
-        if grs1_name in constants:
-            grd_name = _get_op_val_str(insn, op_vals, 'grd')
-            # Operand is a constant; add/update grd
-            new_constants[grd_name] = constants[grs1_name] + op_vals['imm']
-    elif insn.mnemonic == 'lui':
-        grd_name = _get_op_val_str(insn, op_vals, 'grd')
-        new_constants[grd_name] = op_vals['imm'] << 12
-    else:
-        # If the instruction has any op_vals ending in _inc that are nonzero,
-        # assume we're incrementing the corresponding register
-        for op in insn.operands:
-            if op.name.endswith('_inc'):
-                if op_vals[op.name] != 0:
-                    # If reg to be incremented is a constant, increment it!
-                    inc_op = op.name[:-(len('_inc'))]
-                    inc_name = _get_op_val_str(insn, op_vals, inc_op)
-                    if inc_name in constants:
-                        new_constants[inc_name] = constants[inc_name] + 1
-
-    # If the instruction's information-flow graph indicates that we updated any
-    # constant register other than the ones handled above, the value of that
-    # register can no longer be determined; remove it from the constants
-    # dictionary.
-    iflow_graph = insn.iflow.evaluate(op_vals, constants)
-    for sink, sources in iflow_graph.flow.items():
-        if sink in constants and sink not in new_constants:
-            del constants[sink]
-
-    constants.update(new_constants)
-
-    return
-
-
 def _build_iflow_insn(
         insn: Insn, op_vals: Dict[str, int], pc: int,
-        constants: Dict[str, int]) -> Tuple[Set[str], InformationFlowGraph]:
+        constants: ConstantContext) -> Tuple[Set[str], InformationFlowGraph]:
     '''Constructs the information-flow graph for a single instruction.
 
     Raises a ValueError if the information-flow graph cannot be constructed
@@ -149,9 +94,9 @@ def _build_iflow_insn(
                 'need to add constant-tracking support for more '
                 'instructions.'.format(const, pc,
                                        insn.disassemble(pc, op_vals),
-                                       list(constants.keys())))
+                                       list(constants.values.keys())))
 
-    return constant_deps, insn.iflow.evaluate(op_vals, constants)
+    return constant_deps, insn.iflow.evaluate(op_vals, constants.values)
 
 
 def _get_insn_control_deps(insn: Insn, op_vals: Dict[str, int]) -> Set[str]:
@@ -164,18 +109,18 @@ def _get_insn_control_deps(insn: Insn, op_vals: Dict[str, int]) -> Set[str]:
         return set()
     elif insn.mnemonic in ['beq', 'bne']:
         # both compared values influence control flow
-        grs1_name = _get_op_val_str(insn, op_vals, 'grs1')
-        grs2_name = _get_op_val_str(insn, op_vals, 'grs2')
+        grs1_name = get_op_val_str(insn, op_vals, 'grs1')
+        grs2_name = get_op_val_str(insn, op_vals, 'grs2')
         return {grs1_name, grs2_name}
     elif insn.mnemonic == 'jalr':
         if op_vals['grs1'] == 1:
             return set()
         # jump destination register influences control flow
-        grs1_name = _get_op_val_str(insn, op_vals, 'grs1')
+        grs1_name = get_op_val_str(insn, op_vals, 'grs1')
         return {grs1_name}
     elif insn.mnemonic == 'loop':
         # loop #iterations influences control flow
-        grs_name = _get_op_val_str(insn, op_vals, 'grs')
+        grs_name = get_op_val_str(insn, op_vals, 'grs')
         return {grs_name}
     elif insn.mnemonic in ['ecall', 'jal', 'loopi']:
         # these all rely only on immediates
@@ -187,7 +132,7 @@ def _get_insn_control_deps(insn: Insn, op_vals: Dict[str, int]) -> Set[str]:
 
 def _build_iflow_straightline(
         program: OTBNProgram, start_pc: int, end_pc: int,
-        constants: Dict[str, int]) -> Tuple[Set[str], InformationFlowGraph]:
+        constants: ConstantContext) -> Tuple[Set[str], InformationFlowGraph]:
     '''Constructs the information-flow graph for a straightline code section.
 
     Returns two values:
@@ -217,19 +162,20 @@ def _build_iflow_straightline(
         iflow = iflow.seq(insn_iflow)
 
         # Update constants to their values after the instruction
-        _update_constants_insn(insn, op_vals, constants)
+        constants.update_insn(insn, op_vals)
 
     # Update used constants to include constants that were used to compute the
     # new constants
-    for const in constants:
-        const_sources = iflow.flow[const] if const in iflow.flow else {const}
-        constant_deps.update(const_sources)
+    # TODO: results in unnecessary re-computations for updated constants that
+    # we don't end up using; see if we can improve performance here?
+    const_sources = iflow.sources_for_any(iter(constants.values.keys()))
+    constant_deps.update(const_sources)
 
     return constant_deps, iflow
 
 
 def _get_constant_loop_iterations(insn: Insn, op_vals: Dict[str, int],
-                                  constants: Dict[str, int]) -> Optional[int]:
+                                  constants: ConstantContext) -> Optional[int]:
     '''Given a loop instruction, returns the number of iterations if constant.
 
     If the number of iterations is not constant, returns None.
@@ -238,23 +184,23 @@ def _get_constant_loop_iterations(insn: Insn, op_vals: Dict[str, int],
     if insn.mnemonic == 'loopi':
         return op_vals['iterations']
     elif insn.mnemonic == 'loop':
-        reg_name = _get_op_val_str(insn, op_vals, 'grs')
-        return constants.get(reg_name, None)
+        reg_name = get_op_val_str(insn, op_vals, 'grs')
+        return constants.get(reg_name)
 
     # Should not get here!
     assert False
 
 
-def _get_iflow_cache_update(pc: int, constants: Dict[str, int],
+def _get_iflow_cache_update(pc: int, constants: ConstantContext,
                             result: IFlowResult, cache: IFlowCache) -> None:
     '''Updates the cache for _get_iflow.'''
     used_constants = result[0]
     used_constant_values = {}
     for name in used_constants:
         assert name in constants
-        used_constant_values[name] = constants[name]
+        used_constant_values[name] = constants.values[name]
 
-    cache.add(pc, IFlowCacheEntry(used_constant_values, result))
+    cache.add(pc, IFlowCacheEntry(ConstantContext(used_constant_values), result))
 
     return
 
@@ -306,7 +252,7 @@ def _get_iflow_update_state(
 
 
 def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
-               start_constants: Dict[str, int], loop_end_pc: Optional[int],
+               start_constants: ConstantContext, loop_end_pc: Optional[int],
                cache: IFlowCache) -> IFlowResult:
     '''Gets the information-flow graphs for paths starting at start_pc.
 
@@ -337,7 +283,7 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
     program_end_iflow = InformationFlowGraph.nonexistent()
 
     # The control-flow nodes whose values at the start PC influence control
-    # flow
+    # flow (and the PCs of the control-flow instructions they influence)
     control_deps: Dict[str, Set[int]] = {}
 
     section = graph.get_section(start_pc)
@@ -358,7 +304,8 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
                                                       section.end - 4,
                                                       constants)
 
-    # Get the instruction/operands at the very end of the block for special handling
+    # Get the instruction/operands at the very end of the block (i.e. the
+    # control-flow instruction) for special handling
     last_insn = program.get_insn(section.end)
     last_op_vals = program.get_operands(section.end)
 
@@ -390,18 +337,15 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
                 'known constant at PC {:#x} (known constants: {}). If '
                 'the register is in fact a constant, you may need to '
                 'add constant-tracking support for more instructions.'.format(
-                    section.end, constants.keys()))
+                    section.end, constants.values.keys()))
 
-        if len(edges) != 1 or not isinstance(edges[0], LoopStart):
-            raise RuntimeError(
-                'Control graph section ends in {} at PC {:#x} but the '
-                'next control-flow locations are: {} instead of 1 '
-                'LoopStart instance as expected'.format(
-                    last_insn.mnemonic, section.end, edges))
+        # A loop instruction should result in exactly one edge of type
+        # LoopStart; check that assumption before we rely on it
+        assert len(edges) == 1 and isinstance(edges[0], LoopStart)
         body_loc = edges[0]
 
         # Update the constants to include the loop instruction
-        _update_constants_insn(last_insn, last_op_vals, constants)
+        constants.update_insn(last_insn, last_op_vals)
 
         # Recursive calls for each iteration
         for _ in range(iterations):
@@ -426,13 +370,10 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
     elif last_insn.mnemonic == 'jal' and last_op_vals['grd'] == 1:
         # Special handling for jumps; recursive call for jump destination, then
         # continue at pc+4
-        if len(edges) != 1 or edges[0].is_special():
-            raise RuntimeError(
-                'Control graph section ends in {} at PC {:#x} but the '
-                'next control-flow locations are: {} instead of 1 '
-                'non-special ControlLoc instance as expected'.format(
-                    last_insn.mnemonic, section.end, edges))
 
+        # Jumps should produce exactly one non-special edge; check that
+        # assumption before we rely on it
+        assert len(edges) == 1 and not edges[0].is_special()
         jump_loc = edges[0]
         jump_result = _get_iflow(program, graph, jump_loc.pc, constants, None,
                                  cache)
@@ -454,37 +395,28 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
         edges = [ControlLoc(section.end + 4)]
     else:
         # Update the constants to include the last instruction
-        _update_constants_insn(last_insn, last_op_vals, constants)
+        constants.update_insn(last_insn, last_op_vals)
 
     # We're only returning constants that are the same in all RET branches
     common_constants = None
 
     for loc in edges:
         if isinstance(loc, Ecall) or isinstance(loc, ImemEnd):
-            if len(edges) != 1:
-                raise RuntimeError(
-                    'Control graph section at PC {:#x} has edges {}; if '
-                    'edges contain an Ecall or ImemEnd, it is expected to '
-                    'be the only edge.'.format(section.end, edges))
-
+            # Ecall or ImemEnd nodes are expected to be the only edge
+            assert len(edges) == 1
             # Clear common constants; there are no return branches here
-            common_constants = {'x0': 0}
+            common_constants = ConstantContext.empty()
             program_end_iflow.update(iflow)
         elif isinstance(loc, Ret):
             if loop_end_pc is not None:
                 raise RuntimeError(
                     'RET before end of loop at PC {:#x} (loop end PC: '
                     '{:#x})'.format(section.end, loop_end_pc))
-            if len(edges) != 1:
-                raise RuntimeError(
-                    'Control graph section at PC {:#x} has edges {}; if '
-                    'edges contain a Ret, it is expected to be the only '
-                    'edge.'.format(section.end, edges))
-
+            # Ret nodes are expected to be the only edge
+            assert len(edges) == 1
             # Since this is the only edge, common_constants must be unset
             common_constants = constants
             return_iflow.update(iflow)
-
         elif isinstance(loc, LoopStart):
             # We shouldn't hit a LoopStart here; those cases (a loop
             # instruction or the end of a loop) are all handled earlier
@@ -502,14 +434,11 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
             # Get information flow for return paths and new constants
             _, rec_return_iflow, _, rec_constants, _ = result
 
-            # Update common constants
+            # Take values on which existing and recursive constants agree
             if common_constants is None:
                 common_constants = rec_constants
             else:
-                for const, value in rec_constants.items():
-                    if common_constants.get(const, None) != value:
-                        # Remove from common_constants if key exists
-                        common_constants.pop(const, None)
+                common_constants.intersect(rec_constants)
 
             #  Update return_iflow with the current iflow composed with return
             #  paths
@@ -519,8 +448,9 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
                 'Unexpected next control location type at PC {:#x}: {}'.format(
                     section.end, type(loc)))
 
-    if common_constants is None:
-        common_constants = constants
+    # There should be at least one edge, and all edges should set
+    # common_constants to some non-None value
+    assert common_constants is not None
 
     # Update the cache and return
     out = (used_constants, return_iflow, program_end_iflow, common_constants,
@@ -565,7 +495,7 @@ def get_subroutine_iflow(program: OTBNProgram, graph: ControlGraph,
     check_acyclic(graph)
     start_pc = program.get_pc_at_symbol(subroutine_name)
     _, ret_iflow, end_iflow, _, control_deps = _get_iflow(
-        program, graph, start_pc, {'x0': 0}, None, IFlowCache())
+        program, graph, start_pc, ConstantContext.empty(), None, IFlowCache())
     if not (ret_iflow.exists or end_iflow.exists):
         raise ValueError('Could not find any complete control-flow paths when '
                          'analyzing subroutine.')
@@ -584,7 +514,7 @@ def get_program_iflow(program: OTBNProgram,
     '''
     check_acyclic(graph)
     _, ret_iflow, end_iflow, _, control_deps = _get_iflow(
-        program, graph, program.min_pc(), {'x0': 0}, None, IFlowCache())
+        program, graph, program.min_pc(), ConstantContext.empty(), None, IFlowCache())
     if ret_iflow.exists:
         # No paths from imem_start should end in RET
         raise ValueError('Unexpected information flow for paths ending in RET '
