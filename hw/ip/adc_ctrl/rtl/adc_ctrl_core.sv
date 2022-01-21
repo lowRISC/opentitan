@@ -179,7 +179,6 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
   // Assertions
   //////////////////////
 
-  `ASSERT_INIT(MaxFilters_A, NumAdcFilter <= 32)
-  `ASSERT(OneHotMatch_A, adc_ctrl_done |-> $onehot0(match_pulse))
+  `ASSERT(MaxFilters_A, NumAdcFilter <= 32, clk_aon_i, !rst_aon_ni)
 
 endmodule
