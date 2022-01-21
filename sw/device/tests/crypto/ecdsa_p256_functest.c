@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/crypto/drivers/hmac.h"
+#include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/ecdsa_p256/ecdsa_p256.h"
+#include "sw/device/lib/crypto/otbn_util.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/crypto/ecdsa_p256/ecdsa_p256.h"
-#include "sw/device/lib/crypto/drivers/hmac.h"
-#include "sw/device/lib/crypto/drivers/otbn.h"
-#include "sw/device/lib/crypto/otbn_util.h"
 #include "sw/device/lib/testing/test_framework/ottf.h"
 
 // Message
@@ -60,14 +60,15 @@ bool sign_then_verify_test(void) {
   // Generate a signature for the message
   LOG_INFO("Signing...");
   otbn_error_t err = ecdsa_p256_sign(&digest, &kPrivateKey, &signature);
-  if (err != kOtbnOk) {
+  if (err != kOtbnErrorOk) {
     return false;
   }
 
   // Verify the signature
   LOG_INFO("Verifying...");
-  err = ecdsa_p256_verify(&signature, &digest, &kPublicKey, &verificationResult);
-  if (err != kOtbnOk) {
+  err =
+      ecdsa_p256_verify(&signature, &digest, &kPublicKey, &verificationResult);
+  if (err != kOtbnErrorOk) {
     return false;
   }
 

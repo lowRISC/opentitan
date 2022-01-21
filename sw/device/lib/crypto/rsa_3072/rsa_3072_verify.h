@@ -104,7 +104,7 @@ otbn_error_t rsa_3072_compute_constants(const rsa_3072_public_key_t *public_key,
  * @return Result of the operation (OK or error).
  */
 hmac_error_t rsa_3072_encode_sha256(const uint8_t *msg, size_t msgLen,
-                                   rsa_3072_int_t *result);
+                                    rsa_3072_int_t *result);
 
 /**
  * Verifies an RSA-3072 signature.

@@ -8,5 +8,5 @@ is designed to read the exact same format.
 
 Example:
 ```shell
-$ ./sigverify_set_testvectors.py $CRYPTOLIB/tests/testvectors/rsa_3072_verify_wycheproof.hjson
+$ ./sigverify_set_testvectors.py sw/device/tests/crypto/testvectors/rsa_3072_verify_wycheproof.hjson
 ```
