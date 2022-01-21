@@ -320,6 +320,10 @@
                 '''
         }
       ]
+      tags: [// Updated by HW based on observed USB signals, comprises also readbacks.
+             // Pinmux configuration can affect at least the sense and link_state bits.
+             // Exclude all read checks in all tests including reset tests.
+             "excl:CsrAllTests:CsrExclCheck"]
     }
     { name: "avbuffer",
       desc: "Available Buffer FIFO",
@@ -713,22 +717,6 @@
           resval: "1",
           desc: '''
                 Recognize a single SE0 bit as an end of packet, otherwise two successive bits are required.
-                '''
-        }
-        {
-          bits: "3",
-          name: "override_pwr_sense_en",
-          desc: '''
-                Override the USB power sense value with override_pwr_sense_val.
-                '''
-          tags: [// Overriding pwr sense will cause the usbdev to think the link is powered up.
-                 "excl:CsrNonInitTests:CsrExclWrite"]
-        }
-        {
-          bits: "4",
-          name: "override_pwr_sense_val",
-          desc: '''
-                0: USB power not present, 1: present.
                 '''
         }
         {

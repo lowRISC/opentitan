@@ -174,18 +174,6 @@ static bool is_valid_toggle(dif_toggle_t val) {
 }
 
 /**
- * Checks if the given value is a valid `dif_usbdev_power_sense_override_t`
- * variant.
- */
-OT_WARN_UNUSED_RESULT
-static bool is_valid_power_sense_override(
-    dif_usbdev_power_sense_override_t val) {
-  return val == kDifUsbdevPowerSenseOverrideDisabled ||
-         val == kDifUsbdevPowerSenseOverridePresent ||
-         val == kDifUsbdevPowerSenseOverrideNotPresent;
-}
-
-/**
  * Checks if the given value is a valid endpoint number.
  */
 OT_WARN_UNUSED_RESULT
@@ -248,7 +236,6 @@ dif_result_t dif_usbdev_configure(const dif_usbdev_t *usbdev,
   if (!is_valid_toggle(config.differential_rx) ||
       !is_valid_toggle(config.differential_tx) ||
       !is_valid_toggle(config.single_bit_eop) ||
-      !is_valid_power_sense_override(config.power_sense_override) ||
       !is_valid_toggle(config.pin_flip) ||
       !is_valid_toggle(config.clock_sync_signals)) {
     return kDifBadArg;
@@ -283,32 +270,6 @@ dif_result_t dif_usbdev_configure(const dif_usbdev_t *usbdev,
         (bitfield_field32_t){
             .mask = 1,
             .index = USBDEV_PHY_CONFIG_EOP_SINGLE_BIT_BIT,
-        },
-        1);
-  }
-
-  if (config.power_sense_override == kDifUsbdevPowerSenseOverridePresent) {
-    phy_config_val = bitfield_field32_write(
-        phy_config_val,
-        (bitfield_field32_t){
-            .mask = 1,
-            .index = USBDEV_PHY_CONFIG_OVERRIDE_PWR_SENSE_EN_BIT,
-        },
-        1);
-    phy_config_val = bitfield_field32_write(
-        phy_config_val,
-        (bitfield_field32_t){
-            .mask = 1,
-            .index = USBDEV_PHY_CONFIG_OVERRIDE_PWR_SENSE_VAL_BIT,
-        },
-        1);
-  } else if (config.power_sense_override ==
-             kDifUsbdevPowerSenseOverrideNotPresent) {
-    phy_config_val = bitfield_field32_write(
-        phy_config_val,
-        (bitfield_field32_t){
-            .mask = 1,
-            .index = USBDEV_PHY_CONFIG_OVERRIDE_PWR_SENSE_EN_BIT,
         },
         1);
   }

@@ -619,7 +619,8 @@ package top_earlgrey_pkg;
     MioInSysrstCtrlAonKey2In = 53,
     MioInSysrstCtrlAonPwrbIn = 54,
     MioInSysrstCtrlAonLidOpen = 55,
-    MioInCount = 56
+    MioInUsbdevSense = 56,
+    MioInCount = 57
   } mio_in_e;
 
   typedef enum {
@@ -717,17 +718,16 @@ package top_earlgrey_pkg;
     DioSysrstCtrlAonEcRstL = 11,
     DioSpiDeviceSck = 12,
     DioSpiDeviceCsb = 13,
-    DioUsbdevSense = 14,
-    DioSpiHost0Sck = 15,
-    DioSpiHost0Csb = 16,
-    DioUsbdevSe0 = 17,
-    DioUsbdevDpPullup = 18,
-    DioUsbdevDnPullup = 19,
-    DioUsbdevTxModeSe = 20,
-    DioUsbdevSuspend = 21,
-    DioUsbdevRxEnable = 22,
-    DioSysrstCtrlAonFlashWpL = 23,
-    DioCount = 24
+    DioSpiHost0Sck = 14,
+    DioSpiHost0Csb = 15,
+    DioUsbdevSe0 = 16,
+    DioUsbdevDpPullup = 17,
+    DioUsbdevDnPullup = 18,
+    DioUsbdevTxModeSe = 19,
+    DioUsbdevSuspend = 20,
+    DioUsbdevRxEnable = 21,
+    DioSysrstCtrlAonFlashWpL = 22,
+    DioCount = 23
   } dio_e;
 
   // Raw MIO/DIO input array indices on chip-level.

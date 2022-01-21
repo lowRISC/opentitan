@@ -8,6 +8,7 @@
 #include "sw/device/examples/demos.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_gpio.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/pinmux.h"
@@ -69,6 +70,7 @@ static const size_t kExpectedUsbCharsRecved = 6;
 static size_t usb_chars_recved_total;
 
 static dif_gpio_t gpio;
+static dif_pinmux_t pinmux;
 static dif_spi_device_t spi;
 static dif_spi_device_config_t spi_config;
 static dif_uart_t uart;
@@ -109,6 +111,8 @@ static const uint32_t kDiffMask = 2;
 static const uint32_t kUPhyMask = 4;
 
 int main(int argc, char **argv) {
+  CHECK_DIF_OK(dif_pinmux_init(
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart));
   CHECK_DIF_OK(
@@ -153,6 +157,16 @@ int main(int argc, char **argv) {
   bool uphy = gpio_state & kUPhyMask ? true : false;
   LOG_INFO("PHY settings: pinflip=%d differential=%d USB Phy=%d", pinflip,
            differential, uphy);
+  // Connect correct VBUS detection pin
+  if (uphy) {
+    CHECK_DIF_OK(dif_pinmux_input_select(
+        &pinmux, kTopEarlgreyPinmuxPeripheralInUsbdevSense,
+        kTopEarlgreyPinmuxInselIor0));
+  } else {
+    CHECK_DIF_OK(dif_pinmux_input_select(
+        &pinmux, kTopEarlgreyPinmuxPeripheralInUsbdevSense,
+        kTopEarlgreyPinmuxInselIor1));
+  }
   // The TI phy always uses single ended TX
   usbdev_init(&usbdev, pinflip, differential, differential && !uphy);
 

@@ -361,12 +361,6 @@ module chip_${top["name"]}_${target["name"]} (
   assign manual_oe_usb_n = dio_oe[DioUsbdevDn];
   assign manual_attr_usb_n = dio_attr[DioUsbdevDn];
 
-  // Connect sense pad
-  assign dio_in[DioUsbdevSense] = manual_in_io_usb_sense0;
-  assign manual_out_io_usb_sense0 = dio_out[DioUsbdevSense];
-  assign manual_oe_io_usb_sense0 = dio_oe[DioUsbdevSense];
-  assign manual_attr_io_sense0 = dio_attr[DioUsbdevSense];
-
   // Connect DN pullup
   assign dio_in[DioUsbdevDnPullup] = manual_in_io_usb_dnpullup0;
   assign manual_out_io_usb_dnpullup0 = dio_out[DioUsbdevDnPullup];
@@ -503,14 +497,6 @@ module chip_${top["name"]}_${target["name"]} (
   assign manual_oe_io_usb_dppullup0 = undo_swap ? dio_oe[DioUsbdevDnPullup] :
                                                   dio_oe[DioUsbdevDpPullup];
   assign dio_in[DioUsbdevDpPullup] = manual_in_io_usb_dppullup0;
-
-  // DioUsbdevSense
-  assign manual_out_io_usb_sense0 = dio_out[DioUsbdevSense];
-  assign manual_oe_io_usb_sense0  = dio_oe[DioUsbdevSense];
-  assign dio_in[DioUsbdevSense] = use_uphy ? manual_in_io_uphy_sense :
-                                             manual_in_io_usb_sense0;
-  assign manual_out_io_uphy_sense = 1'b0;
-  assign manual_oe_io_uphy_sense = 1'b0;
 
   // DioUsbdevRxEnable
   assign dio_in[DioUsbdevRxEnable] = 1'b0;
@@ -987,7 +973,6 @@ module chip_${top["name"]}_${target["name"]} (
   );
 
   // Tie-off unused signals
-  assign dio_in[DioUsbdevSense] = 1'b0;
   assign dio_in[DioUsbdevSe0] = 1'b0;
   assign dio_in[DioUsbdevDpPullup] = 1'b0;
   assign dio_in[DioUsbdevDnPullup] = 1'b0;
@@ -997,10 +982,6 @@ module chip_${top["name"]}_${target["name"]} (
 
   logic unused_usb_sigs;
   assign unused_usb_sigs = ^{
-    // Sense
-    dio_out[DioUsbdevSense],
-    dio_oe[DioUsbdevSense],
-    dio_attr[DioUsbdevSense],
     // SE0
     dio_out[DioUsbdevSe0],
     dio_oe[DioUsbdevSe0],

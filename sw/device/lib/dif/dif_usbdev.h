@@ -100,15 +100,6 @@ typedef struct dif_usbdev_buffer {
 } dif_usbdev_buffer_t;
 
 /**
- * Set of allowed configurations for USB power sense override.
- */
-typedef enum dif_usbdev_power_sense_override {
-  kDifUsbdevPowerSenseOverrideDisabled,
-  kDifUsbdevPowerSenseOverridePresent,
-  kDifUsbdevPowerSenseOverrideNotPresent
-} dif_usbdev_power_sense_override_t;
-
-/**
  * Configuration for initializing a USB device.
  */
 typedef struct dif_usbdev_config {
@@ -125,10 +116,6 @@ typedef struct dif_usbdev_config {
    * two bits.
    */
   dif_toggle_t single_bit_eop;
-  /**
-   * Override USB power sense.
-   */
-  dif_usbdev_power_sense_override_t power_sense_override;
   /**
    * Flip the D+/D- pins.
    */

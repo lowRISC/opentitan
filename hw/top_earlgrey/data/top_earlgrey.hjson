@@ -1194,7 +1194,6 @@
       { instance: 'usbdev',          port: 'd',              connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
       { instance: 'usbdev',          port: 'dp',             connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
       { instance: 'usbdev',          port: 'dn',             connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
-      { instance: 'usbdev',          port: 'sense',          connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
       { instance: 'usbdev',          port: 'se0',            connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
       { instance: 'usbdev',          port: 'dp_pullup',      connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
       { instance: 'usbdev',          port: 'dn_pullup',      connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
@@ -1232,6 +1231,7 @@
       { instance: "sysrst_ctrl_aon", port: 'pwrb_out',       connection: 'muxed',  pad: ''             , desc: ''},
       { instance: "sysrst_ctrl_aon", port: 'lid_open',       connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "sysrst_ctrl_aon", port: 'z3_wakeup',      connection: 'muxed' , pad: ''             , desc: ''},
+      { instance: 'usbdev',          port: 'sense',          connection: 'muxed' , pad: ''             , desc: ''},
     ],
 
     num_wkup_detect: 8
@@ -1323,7 +1323,7 @@
           'FLASH_TEST_MODE0', 'FLASH_TEST_MODE1',
           'IOB10', 'IOB11', 'IOB12',
           'IOC0', 'IOC1', 'IOC12',
-          'IOR0', 'IOR1', 'IOR2', 'IOR3', 'IOR4', 'IOR5', 'IOR6', 'IOR7', 'IOR8', 'IOR9', 'IOR10', 'IOR11', 'IOR12', 'IOR13'
+          'IOR2', 'IOR3', 'IOR4', 'IOR5', 'IOR6', 'IOR7', 'IOR8', 'IOR9', 'IOR10', 'IOR11', 'IOR12', 'IOR13'
         ],
 
         add_pads: [
@@ -1331,7 +1331,6 @@
           { name: 'IO_CLK',           type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Extra clock input for FPGA target'}
           { name: 'IO_JSRST_N',       type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Dedicated JTAG system reset input'}
           // Custom USB pads
-          { name: 'IO_USB_SENSE0',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB signal for FPGA target'}
           { name: 'IO_USB_DNPULLUP0', type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB signal for FPGA target'}
           { name: 'IO_USB_DPPULLUP0', type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB signal for FPGA target'}
           { name: 'IO_UPHY_DP_TX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
@@ -1340,7 +1339,6 @@
           { name: 'IO_UPHY_DN_RX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
           { name: 'IO_UPHY_D_RX',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
           { name: 'IO_UPHY_OE_N',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_UPHY_SENSE',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
           { name: 'IO_UPHY_DPPULLUP', type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
           { name: 'IO_UPHY_SPD',      type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
           { name: 'IO_UPHY_SUS',      type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
@@ -1379,7 +1377,7 @@
           'FLASH_TEST_MODE0', 'FLASH_TEST_MODE1',
           'IOB10', 'IOB11', 'IOB12',
           'IOC0', 'IOC1', 'IOC12',
-          'IOR0', 'IOR1', 'IOR2', 'IOR3', 'IOR4', 'IOR5', 'IOR6', 'IOR7', 'IOR8', 'IOR9', 'IOR10', 'IOR11', 'IOR12', 'IOR13'
+          'IOR2', 'IOR3', 'IOR4', 'IOR5', 'IOR6', 'IOR7', 'IOR8', 'IOR9', 'IOR10', 'IOR11', 'IOR12', 'IOR13'
         ],
 
         add_pads: [
@@ -1387,7 +1385,6 @@
           { name: 'IO_CLK',           type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Extra clock input for FPGA target'}
           { name: 'IO_JSRST_N',       type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Dedicated JTAG system reset input'}
           // Custom USB pads
-          { name: 'IO_USB_SENSE0',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB signal for FPGA target'}
           { name: 'IO_USB_DNPULLUP0', type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB signal for FPGA target'}
           { name: 'IO_USB_DPPULLUP0', type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB signal for FPGA target'}
           { name: 'IO_UPHY_DP_TX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
@@ -1396,7 +1393,6 @@
           { name: 'IO_UPHY_DN_RX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
           { name: 'IO_UPHY_D_RX',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
           { name: 'IO_UPHY_OE_N',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_UPHY_SENSE',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
           { name: 'IO_UPHY_DPPULLUP', type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
         ],
       },

@@ -53,3 +53,32 @@ cc_library(
         "//sw/device/lib/base",
     ],
 )
+
+cc_library(
+    name = "usb",
+    srcs = [
+        "usb_controlep.c",
+        "usbdev.c"
+    ],
+    hdrs = [
+        "usb_consts.h",
+        "usb_controlep.h",
+        "usbdev.h",
+    ],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/ip/usbdev/data:usbdev_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base",
+    ],
+)
+
+cc_library(
+    name = "usb_simpleserial",
+    srcs = ["usb_simpleserial.c"],
+    hdrs = ["usb_simpleserial.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":usb",
+    ],
+)
