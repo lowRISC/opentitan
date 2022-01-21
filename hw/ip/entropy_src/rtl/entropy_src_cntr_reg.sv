@@ -13,7 +13,6 @@ module entropy_src_cntr_reg #(
 
    // functional interface
   input logic                   clear_i,
-  input logic                   active_i,
   input logic                   event_i,
   output logic [RegWidth-1:0]   value_o
 );
@@ -31,7 +30,7 @@ module entropy_src_cntr_reg #(
     end
 
   // counter will not wrap when full value is reached
-  assign event_cntr_d = (!active_i || clear_i) ? '0 :
+  assign event_cntr_d = clear_i ? '0 :
                         (event_i && (~event_cntr_q != '0)) ? event_cntr_q+1 :
                         event_cntr_q;
 

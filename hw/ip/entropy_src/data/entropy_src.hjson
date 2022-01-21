@@ -611,6 +611,8 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
+      tags: [// Internal HW can modify status register
+             "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
           name: "FIPS_WATERMARK",
@@ -627,6 +629,8 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
+      tags: [// Internal HW can modify status register
+             "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
           name: "FIPS_WATERMARK",
@@ -643,6 +647,8 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
+      tags: [// Internal HW can modify status register
+             "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
           name: "FIPS_WATERMARK",
@@ -659,6 +665,8 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
+      tags: [// Internal HW can modify status register
+             "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
           name: "FIPS_WATERMARK",
@@ -677,6 +685,8 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
+      tags: [// Internal HW can modify status register
+             "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
           name: "FIPS_WATERMARK",
@@ -693,6 +703,8 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
+      tags: [// Internal HW can modify status register
+             "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
           name: "FIPS_WATERMARK",
@@ -711,6 +723,8 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
+      tags: [// Internal HW can modify status register
+             "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
           name: "FIPS_WATERMARK",
@@ -726,6 +740,8 @@
       desc:     "Markov test high watermarks register",
       swaccess: "ro",
       hwaccess: "hwo",
+      tags: [// Internal HW can modify status register
+             "excl:CsrAllTests:CsrExclCheck"]
       hwext: "true",
       fields: [
         { bits: "15:0",
@@ -743,6 +759,8 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
+      tags: [// Internal HW can modify status register
+             "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
           name: "FIPS_WATERMARK",
