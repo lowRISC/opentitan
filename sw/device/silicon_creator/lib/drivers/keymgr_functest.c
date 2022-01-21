@@ -91,11 +91,6 @@ const uint32_t kMaxVerBl0 = 2;
 
 const test_config_t kTestConfig;
 
-/** SEC MMIO error handler. */
-static void error_handler_cb(rom_error_t e) {
-  LOG_ERROR("Secure MMIO error: 0x%x", e);
-}
-
 /**
  * Writes `size` words of `data` into flash info page.
  *
@@ -310,7 +305,7 @@ bool test_main(void) {
   } else {
     LOG_INFO("Powered up for the second time, actuate keymgr");
 
-    sec_mmio_init(error_handler_cb);
+    sec_mmio_init();
     init_kmac_for_keymgr();
 
     EXECUTE_TEST(result, keymgr_rom_test);

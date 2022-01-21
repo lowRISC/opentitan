@@ -16,7 +16,7 @@ namespace internal {
  */
 class MockSecMmio : public GlobalMock<MockSecMmio> {
  public:
-  MOCK_METHOD(void, Init, (sec_mmio_shutdown_handler callee));
+  MOCK_METHOD(void, Init, ());
   MOCK_METHOD(uint32_t, Read32, (uint32_t addr));
   MOCK_METHOD(void, Write32, (uint32_t addr, uint32_t value));
   MOCK_METHOD(void, Write32Shadowed, (uint32_t addr, uint32_t value));
@@ -72,9 +72,7 @@ using MockSecMmio = testing::StrictMock<internal::MockSecMmio>;
 
 extern "C" {
 
-void sec_mmio_init(sec_mmio_shutdown_handler callee) {
-  MockSecMmio::Instance().Init(callee);
-}
+void sec_mmio_init(void) { MockSecMmio::Instance().Init(); }
 
 uint32_t sec_mmio_read32(uint32_t addr) {
   return MockSecMmio::Instance().Read32(addr);

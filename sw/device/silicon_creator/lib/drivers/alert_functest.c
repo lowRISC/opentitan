@@ -31,11 +31,6 @@ enum {
   kFlashBase = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR,
 };
 
-/** SEC MMIO error handler. */
-static void error_handler_cb(rom_error_t e) {
-  LOG_ERROR("Secure MMIO error: 0x%x", e);
-}
-
 rom_error_t alert_no_escalate_test(void) {
   // Configure class B alerts for phase 0 only and disable NMI signalling.
   alert_class_config_t config = {
@@ -101,7 +96,7 @@ bool test_main(void) {
   CHECK(bitfield_popcount32(reason) == 1, "Expected exactly 1 reset reason.");
 
   if (bitfield_bit32_read(reason, kRstmgrReasonPowerOn)) {
-    sec_mmio_init(error_handler_cb);
+    sec_mmio_init();
     EXECUTE_TEST(result, alert_no_escalate_test);
     EXECUTE_TEST(result, alert_escalate_test);
     LOG_ERROR("Test failure: should have reset before this line.");

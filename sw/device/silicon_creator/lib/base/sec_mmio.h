@@ -21,7 +21,7 @@ extern "C" {
  *
  * This module is responsible for tracking critical register values for an
  * initialized context `sec_mmio_ctx_t`, and provides a mechanism to evaluate
- * expectations and trigger shutdown escalation on fault detection.
+ * expectations and trigger an exception on fault detection.
  *
  * Initialization
  *
@@ -45,13 +45,6 @@ extern "C" {
  *
  * - `sec_mmio_check_values()`
  * - `sec_mmio_check_counters()`
- *
- * Opens:
- *
- * - Currently fault detection escalations are performed by calling a handler
- *   that is registered at `sec_mmio_init()` call time. Need to determine if we
- *   want to move to a mock_shutdown implementation, or if we want to refactor
- *   the code to return error codes.
  */
 
 enum {
@@ -117,34 +110,23 @@ OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, check_count, 1612);
 OT_ASSERT_SIZE(sec_mmio_ctx_t, 1616);  // Checked by linker script.
 
 /**
- * Shutdown module callback handler.
- */
-typedef void (*sec_mmio_shutdown_handler)(rom_error_t);
-
-/**
  * Initializes the module.
  *
- * Registers the `cb` callback handler and initializes the internal
- * `sec_mmio_ctx_t` context.
- *
- * @param cb Shutdown module callback handler.
+ * Initializes the internal `sec_mmio_ctx_t` context.
  */
-void sec_mmio_init(sec_mmio_shutdown_handler cb);
+void sec_mmio_init(void);
 
 /**
  * Executes sec_mmio next boot stage initialization.
  *
- * Registers the `cb` callback handler, and performs the following operations to
- * the internal `sec_mmio_ctx_t` context:
+ * Performs the following operations to the internal `sec_mmio_ctx_t` context:
  *
  * - Clear the check count. This allows the caller to reset the
  *   `sec_mmio_check_counters()` expected count argument.
  * - Reset all expected address and values in the expectations table starting at
  *   the last_index.
- *
- * @param cb Shutdown module callback handler.
  */
-void sec_mmio_next_stage_init(sec_mmio_shutdown_handler cb);
+void sec_mmio_next_stage_init(void);
 
 /**
  * Reads an aligned uint32_t from the MMIO region `addr`.
@@ -153,7 +135,7 @@ void sec_mmio_next_stage_init(sec_mmio_shutdown_handler cb);
  * is stored in the list of expected register values for later comparison
  * via `sec_mmio_check_values()`.
  *
- * A shutdown sequence is initiated if the comparison operation fails.
+ * An exception is thrown if the comparison operation fails.
  *
  * @param addr The address to read from.
  * @return the read value.
@@ -172,7 +154,7 @@ uint32_t sec_mmio_read32(uint32_t addr);
  * writes. The caller is responsible to setting the expected write count by
  * calling `sec_mmio_write_increment()`.
  *
- * A shutdown sequence is initiated if the comparison operation fails.
+ * An exception is thrown if the comparison operation fails.
  *
  * @param addr The address to write to.
  * @param value The value to write.
@@ -191,7 +173,7 @@ void sec_mmio_write32(uint32_t addr, uint32_t value);
  * writes. The caller is responsible to setting the expected write count by
  * calling `sec_mmio_write_increment()`.
  *
- * A shutdown sequence is initiated if the comparison operation fails.
+ * An exception is thrown if the comparison operation fails.
  *
  * @param addr The address to write to.
  * @param value The value to write.
@@ -208,8 +190,8 @@ void sec_mmio_write_increment(uint32_t value);
 /**
  * Checks the expected list of register values.
  *
- * All expected register values are verified against expectations. A shutdown
- * sequence is initiated if any of the comparison fails.
+ * All expected register values are verified against expectations. An exception
+ * is thrown if any of the comparison fails.
  *
  * The `rnd_offset` parameter can be set to a random value to randomize the
  * order of reads.
@@ -227,8 +209,8 @@ void sec_mmio_check_values(uint32_t rnd_offset);
 /**
  * Checks the expected counter state.
  *
- * Checks the expected number of register writes and check counts. A shutdown
- * sequence is initiated if the counters fail to match expectations.
+ * Checks the expected number of register writes and check counts. An exception
+ * is thrown if the counters fail to match expectations.
  *
  * Calling this function will increment the check function counter on a
  * successful
