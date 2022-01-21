@@ -56,13 +56,6 @@ SRCTREE_TOP = Path(__file__).parent.parent.resolve()
 
 TOPGEN_TEMPLATE_PATH = Path(__file__).parent / 'topgen/templates'
 
-# List of IP templates which use ipgen to instantiate the template.
-# TODO: Remove once all IP templates use ipgen.
-IPS_USING_IPGEN = [
-    'rv_plic',
-    'alert_handler',
-]
-
 
 def ipgen_render(template_name: str, topname: str, params: Dict,
                  out_path: Path):
@@ -625,7 +618,8 @@ def generate_top_ral(top: Dict[str, object], name_to_block: Dict[str, IpBlock],
         block_name = module['type']
         block = name_to_block[block_name]
         if "attr" in module:
-            if module["attr"] not in ['templated', 'reggen_top', 'reggen_only']:
+            if module["attr"] not in ['templated', 'ipgen', 'reggen_top',
+                                      'reggen_only']:
                 raise ValueError('Unsupported value for attr field of {}: {!r}'
                                  .format(inst_name, module["attr"]))
             attrs[inst_name] = module["attr"]
@@ -707,11 +701,13 @@ def create_mem(item, addrsep, regwidth):
 def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     # Create generated list
     # These modules are generated through topgen
-    generated_list = [
-        module['type'] for module in topcfg['module']
-        if lib.is_templated(module)
-    ]
-    log.info("Filtered list is {}".format(generated_list))
+    templated_list = lib.get_templated_modules(topcfg)
+    log.info("Templated list is {}".format(templated_list))
+
+    ipgen_list = lib.get_ipgen_modules(topcfg)
+    log.info("Ip gen list is {}".format(ipgen_list))
+
+    generated_list = templated_list + ipgen_list
 
     # These modules are NOT generated but belong to a specific top
     # and therefore not part of "hw/ip"
@@ -751,7 +747,7 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
         # the output path.  For modules not generated before, it may exist in a
         # pre-defined area already.
         log.info("Appending {}".format(ip))
-        if ip in IPS_USING_IPGEN:
+        if ip in ipgen_list:
             ip_relpath = 'ip_autogen'
             desc_file_relpath = 'data'
         else:
@@ -794,7 +790,7 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
             # of as soon as we don't arbitrarily template IP description Hjson
             # files any more.
             if ip_name in generated_list and not ip_desc_file.is_file():
-                if ip_name in IPS_USING_IPGEN:
+                if ip_name in ipgen_list:
                     log.info(
                         "To-be-auto-generated Hjson %s does not yet exist. "
                         "Falling back to the default configuration of template "

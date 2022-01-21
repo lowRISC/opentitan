@@ -387,7 +387,7 @@
       clock_group: "secure",
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x48000000",
-      attr: "templated",
+      attr: "ipgen",
     },
     { name: "aes",
       type: "aes",

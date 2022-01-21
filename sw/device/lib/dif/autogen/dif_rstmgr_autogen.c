@@ -20,3 +20,25 @@ dif_result_t dif_rstmgr_init(mmio_region_t base_addr, dif_rstmgr_t *rstmgr) {
 
   return kDifOk;
 }
+
+dif_result_t dif_rstmgr_alert_force(const dif_rstmgr_t *rstmgr,
+                                    dif_rstmgr_alert_t alert) {
+  if (rstmgr == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t alert_idx;
+  switch (alert) {
+    case kDifRstmgrAlertFatalFault:
+      alert_idx = RSTMGR_ALERT_TEST_FATAL_FAULT_BIT;
+      break;
+    default:
+      return kDifBadArg;
+  }
+
+  uint32_t alert_test_reg = bitfield_bit32_write(0, alert_idx, true);
+  mmio_region_write32(rstmgr->base_addr, RSTMGR_ALERT_TEST_REG_OFFSET,
+                      alert_test_reg);
+
+  return kDifOk;
+}
