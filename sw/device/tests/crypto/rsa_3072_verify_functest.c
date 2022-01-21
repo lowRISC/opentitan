@@ -6,26 +6,38 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/silicon_creator/lib/crypto/rsa_3072/rsa_3072_verify.h"
-#include "sw/device/silicon_creator/lib/crypto/tests/rsa_3072_verify_testvectors.h"
-#include "sw/device/silicon_creator/lib/drivers/otbn.h"
-#include "sw/device/silicon_creator/lib/test_main.h"
+#include "sw/device/lib/crypto/rsa_3072/rsa_3072_verify.h"
+#include "sw/device/lib/crypto/tests/rsa_3072_verify_testvectors.h"
+#include "sw/device/lib/drivers/otbn.h"
+#include "sw/device/lib/testing/test_framework/ottf.h"
 
-rom_error_t rsa_3072_verify_test(const rsa_3072_verify_test_vector_t *testvec) {
+bool rsa_3072_verify_test(const rsa_3072_verify_test_vector_t *testvec) {
   rsa_3072_constants_t constants;
   rsa_3072_int_t encodedMessage;
   hardened_bool_t result;
 
   // Encode message
-  RETURN_IF_ERROR(
-      rsa_3072_encode_sha256(testvec->msg, testvec->msgLen, &encodedMessage));
+  hmac_error_t err =
+      rsa_3072_encode_sha256(testvec->msg, testvec->msgLen, &encodedMessage);
+  if (err != kHmacOk) {
+    LOG_ERROR("Error from HMAC during message encoding: 0x%08x.", err);
+    return false;
+  }
 
   // Precompute Montgomery constants
-  FOLD_OTBN_ERROR(rsa_3072_compute_constants(&testvec->publicKey, &constants));
+  otbn_error_t err = rsa_3072_compute_constants(&testvec->publicKey, &constants);
+  if (err != kOtbnOk) {
+    LOG_ERROR("Error from OTBN while computing constants: 0x%08x.", err);
+    return false;
+  }
 
   // Attempt to verify signature
-  FOLD_OTBN_ERROR(rsa_3072_verify(&testvec->signature, &encodedMessage,
-                                  &testvec->publicKey, &constants, &result));
+  err = rsa_3072_verify(&testvec->signature, &encodedMessage,
+                                  &testvec->publicKey, &constants, &result);
+  if (err != kOtbnOk) {
+    LOG_ERROR("Error from OTBN during signature verification: 0x%08x.", err);
+    return false;
+  }
 
   if (testvec->valid) {
     CHECK(result == kHardenedBoolTrue);
@@ -33,13 +45,14 @@ rom_error_t rsa_3072_verify_test(const rsa_3072_verify_test_vector_t *testvec) {
     CHECK(result == kHardenedBoolFalse);
   }
 
-  return kErrorOk;
+  return true;
 }
 
 const test_config_t kTestConfig;
 
 bool test_main(void) {
-  rom_error_t result = kErrorOk;
+  // Stays true only if all tests pass.
+  bool result = true;
 
   entropy_testutils_boot_mode_init();
 
@@ -47,17 +60,17 @@ bool test_main(void) {
     LOG_INFO("Starting rsa_3072_verify_test on test vector %d of %d...", i + 1,
              RSA_3072_VERIFY_NUM_TESTS);
     rsa_3072_verify_test_vector_t testvec = rsa_3072_verify_tests[i];
-    rom_error_t localErr = rsa_3072_verify_test(&testvec);
-    if (localErr == kErrorOk) {
+    bool local_result = rsa_3072_verify_test(&testvec);
+    if (local_result) {
       LOG_INFO("Finished rsa_3072_verify_test on test vector %d : ok", i + 1);
     } else {
       LOG_ERROR(
-          "Finished rsa_3072_verify_test on test vector %d : error 0x%08x.",
-          i + 1, localErr);
+          "Finished rsa_3072_verify_test on test vector %d : error",
+          i + 1);
       LOG_INFO("Test notes: %s", testvec.comment);
-      result = localErr;
     }
+    result &= local_result;
   }
 
-  return result == kErrorOk;
+  return result;
 }

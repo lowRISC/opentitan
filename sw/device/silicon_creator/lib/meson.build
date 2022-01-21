@@ -17,9 +17,6 @@ sw_silicon_creator_lib_otbn_util = declare_dependency(
   ),
 )
 
-# Must be declared after otbn_util, which is used in the crypto library.
-subdir('crypto')
-
 # Mask ROM fake dependencies.  These are temporary dependencies until we
 # refactor or copy the other libraries we need (e.g. `runtime`).
 sw_silicon_creator_lib_fake_deps = declare_dependency(
