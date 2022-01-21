@@ -80,4 +80,19 @@ void pinmux_init(void) {
   reg_offset = kTopEarlgreyPinmuxMioOutIoc9 << 2;
   mask = PINMUX_MIO_OUTSEL_0_OUT_0_MASK;
   mmio_region_write32(reg32, reg_offset, reg_value & mask);
+
+  // Configure USBDEV SENSE outputs to be high-Z (IOR0, IOR1)
+  reg32 =
+      mmio_region_from_addr(PINMUX0_BASE_ADDR + PINMUX_MIO_OUTSEL_0_REG_OFFSET);
+  // TODO(lowRISC/opentitan#10408): replace with named constant
+  reg_value = 2;  // high-Z value
+  mask = PINMUX_MIO_OUTSEL_0_OUT_0_MASK;
+  // We've got one insel configuration field per register. Hence, we have to
+  // convert the enumeration index into a byte address using << 2.
+  reg_offset = kTopEarlgreyPinmuxMioOutIor0 << 2;
+  mmio_region_write32(reg32, reg_offset, reg_value & mask);
+  // We've got one insel configuration field per register. Hence, we have to
+  // convert the enumeration index into a byte address using << 2.
+  reg_offset = kTopEarlgreyPinmuxMioOutIor1 << 2;
+  mmio_region_write32(reg32, reg_offset, reg_value & mask);
 }

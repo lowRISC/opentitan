@@ -39,7 +39,6 @@ module chip_englishbreakfast_verilator (
     dio_in[DioSpiDeviceSck] = cio_spi_device_sck_p2d;
     dio_in[DioSpiDeviceCsb] = cio_spi_device_csb_p2d;
     dio_in[DioSpiDeviceSd0] = cio_spi_device_sdi_p2d;
-    dio_in[DioUsbdevSense] = cio_usbdev_sense_p2d;
     dio_in[DioUsbdevD] = cio_usbdev_d_p2d;
     dio_in[DioUsbdevDp] = cio_usbdev_dp_p2d;
     dio_in[DioUsbdevDn] = cio_usbdev_dn_p2d;
@@ -73,6 +72,8 @@ module chip_englishbreakfast_verilator (
     mio_in = '0;
     mio_in[31:0] = cio_gpio_p2d;
     mio_in[25] = cio_uart_rx_p2d;
+    mio_in[35] = cio_usbdev_sense_p2d;
+    mio_in[36] = cio_usbdev_sense_p2d;
   end
 
   assign cio_gpio_d2p[25:0]       = mio_out[25:0];

@@ -130,7 +130,6 @@ module chip_earlgrey_asic (
       BidirTol, // DIO usbdev_se0
       BidirStd, // DIO spi_host0_csb
       BidirStd, // DIO spi_host0_sck
-      BidirTol, // DIO usbdev_sense
       InputStd, // DIO spi_device_csb
       InputStd, // DIO spi_device_sck
       BidirOd, // DIO sysrst_ctrl_aon_ec_rst_l
@@ -1065,7 +1064,6 @@ module chip_earlgrey_asic (
   );
 
   // Tie-off unused signals
-  assign dio_in[DioUsbdevSense] = 1'b0;
   assign dio_in[DioUsbdevSe0] = 1'b0;
   assign dio_in[DioUsbdevDpPullup] = 1'b0;
   assign dio_in[DioUsbdevDnPullup] = 1'b0;
@@ -1075,10 +1073,6 @@ module chip_earlgrey_asic (
 
   logic unused_usb_sigs;
   assign unused_usb_sigs = ^{
-    // Sense
-    dio_out[DioUsbdevSense],
-    dio_oe[DioUsbdevSense],
-    dio_attr[DioUsbdevSense],
     // SE0
     dio_out[DioUsbdevSe0],
     dio_oe[DioUsbdevSe0],

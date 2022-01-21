@@ -55,7 +55,7 @@ module usbdev_iomux
   logic cio_usb_d_flipped;
   logic cio_usb_dp_pullup_en, cio_usb_dn_pullup_en;
 
-  logic async_pwr_sense, sys_usb_sense;
+  logic sys_usb_sense;
   logic cio_usb_dp, cio_usb_dn, cio_usb_d;
   logic pinflip;
   logic unused_eop_single_bit;
@@ -112,7 +112,7 @@ module usbdev_iomux
     .d_i    ({cio_usb_dp_i,
               cio_usb_dn_i,
               cio_usb_d_i,
-              async_pwr_sense}),
+              cio_usb_sense_i}),
     .q_o    ({cio_usb_dp,
               cio_usb_dn,
               cio_usb_d,
@@ -228,14 +228,5 @@ module usbdev_iomux
   assign usb_rx_dp_o = pinflip ?  cio_usb_dn : cio_usb_dp;
   assign usb_rx_dn_o = pinflip ?  cio_usb_dp : cio_usb_dn;
   assign usb_rx_d_o  = pinflip ? ~cio_usb_d  : cio_usb_d;
-
-  // Power sense mux
-  always_comb begin : proc_mux_pwr_sense
-    if (sys_reg2hw_config_i.override_pwr_sense_en.q) begin
-      async_pwr_sense = sys_reg2hw_config_i.override_pwr_sense_val.q;
-    end else begin
-      async_pwr_sense = cio_usb_sense_i;
-    end
-  end
 
 endmodule

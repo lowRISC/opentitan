@@ -105,9 +105,9 @@ module top_earlgrey #(
   output logic [46:0] mio_out_o,
   output logic [46:0] mio_oe_o,
   // Dedicated I/O
-  input        [23:0] dio_in_i,
-  output logic [23:0] dio_out_o,
-  output logic [23:0] dio_oe_o,
+  input        [22:0] dio_in_i,
+  output logic [22:0] dio_out_o,
+  output logic [22:0] dio_oe_o,
 
   // pad attributes to padring
   output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_attr_o,
@@ -194,12 +194,12 @@ module top_earlgrey #(
   import top_earlgrey_rnd_cnst_pkg::*;
 
   // Signals
-  logic [55:0] mio_p2d;
+  logic [56:0] mio_p2d;
   logic [74:0] mio_d2p;
   logic [74:0] mio_en_d2p;
-  logic [23:0] dio_p2d;
-  logic [23:0] dio_d2p;
-  logic [23:0] dio_en_d2p;
+  logic [22:0] dio_p2d;
+  logic [22:0] dio_d2p;
+  logic [22:0] dio_en_d2p;
   // uart0
   logic        cio_uart0_rx_p2d;
   logic        cio_uart0_tx_d2p;
@@ -2998,6 +2998,7 @@ module top_earlgrey #(
   assign cio_sysrst_ctrl_aon_key2_in_p2d = mio_p2d[MioInSysrstCtrlAonKey2In];
   assign cio_sysrst_ctrl_aon_pwrb_in_p2d = mio_p2d[MioInSysrstCtrlAonPwrbIn];
   assign cio_sysrst_ctrl_aon_lid_open_p2d = mio_p2d[MioInSysrstCtrlAonLidOpen];
+  assign cio_usbdev_sense_p2d = mio_p2d[MioInUsbdevSense];
 
   // All muxed outputs
   assign mio_d2p[MioOutGpioGpio0] = cio_gpio_gpio_d2p[0];
@@ -3154,7 +3155,7 @@ module top_earlgrey #(
   assign mio_en_d2p[MioOutSysrstCtrlAonZ3Wakeup] = cio_sysrst_ctrl_aon_z3_wakeup_en_d2p;
 
   // All dedicated inputs
-  logic [23:0] unused_dio_p2d;
+  logic [22:0] unused_dio_p2d;
   assign unused_dio_p2d = dio_p2d;
   assign cio_spi_host0_sd_p2d[0] = dio_p2d[DioSpiHost0Sd0];
   assign cio_spi_host0_sd_p2d[1] = dio_p2d[DioSpiHost0Sd1];
@@ -3170,7 +3171,6 @@ module top_earlgrey #(
   assign cio_sysrst_ctrl_aon_ec_rst_l_p2d = dio_p2d[DioSysrstCtrlAonEcRstL];
   assign cio_spi_device_sck_p2d = dio_p2d[DioSpiDeviceSck];
   assign cio_spi_device_csb_p2d = dio_p2d[DioSpiDeviceCsb];
-  assign cio_usbdev_sense_p2d = dio_p2d[DioUsbdevSense];
 
     // All dedicated outputs
   assign dio_d2p[DioSpiHost0Sd0] = cio_spi_host0_sd_d2p[0];
@@ -3187,7 +3187,6 @@ module top_earlgrey #(
   assign dio_d2p[DioSysrstCtrlAonEcRstL] = cio_sysrst_ctrl_aon_ec_rst_l_d2p;
   assign dio_d2p[DioSpiDeviceSck] = 1'b0;
   assign dio_d2p[DioSpiDeviceCsb] = 1'b0;
-  assign dio_d2p[DioUsbdevSense] = 1'b0;
   assign dio_d2p[DioSpiHost0Sck] = cio_spi_host0_sck_d2p;
   assign dio_d2p[DioSpiHost0Csb] = cio_spi_host0_csb_d2p;
   assign dio_d2p[DioUsbdevSe0] = cio_usbdev_se0_d2p;
@@ -3213,7 +3212,6 @@ module top_earlgrey #(
   assign dio_en_d2p[DioSysrstCtrlAonEcRstL] = cio_sysrst_ctrl_aon_ec_rst_l_en_d2p;
   assign dio_en_d2p[DioSpiDeviceSck] = 1'b0;
   assign dio_en_d2p[DioSpiDeviceCsb] = 1'b0;
-  assign dio_en_d2p[DioUsbdevSense] = 1'b0;
   assign dio_en_d2p[DioSpiHost0Sck] = cio_spi_host0_sck_en_d2p;
   assign dio_en_d2p[DioSpiHost0Csb] = cio_spi_host0_csb_en_d2p;
   assign dio_en_d2p[DioUsbdevSe0] = cio_usbdev_se0_en_d2p;

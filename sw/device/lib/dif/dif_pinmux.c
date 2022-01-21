@@ -9,9 +9,6 @@
 
 #include "pinmux_regs.h"  // Generated.
 
-// This just exists to check that the header compiles for now. The actual
-// implementation is work in progress.
-
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pinmux_input_select(const dif_pinmux_t *pinmux,
                                      dif_pinmux_index_t peripheral_input,

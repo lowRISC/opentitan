@@ -27,7 +27,6 @@ module chip_earlgrey_nexysvideo #(
   inout SPI_DEV_CS_L, // Dedicated Pad for spi_device_csb
   inout IO_CLK, // Manual Pad
   inout IO_JSRST_N, // Manual Pad
-  inout IO_USB_SENSE0, // Manual Pad
   inout IO_USB_DNPULLUP0, // Manual Pad
   inout IO_USB_DPPULLUP0, // Manual Pad
   inout IO_UPHY_DP_TX, // Manual Pad
@@ -36,7 +35,6 @@ module chip_earlgrey_nexysvideo #(
   inout IO_UPHY_DN_RX, // Manual Pad
   inout IO_UPHY_D_RX, // Manual Pad
   inout IO_UPHY_OE_N, // Manual Pad
-  inout IO_UPHY_SENSE, // Manual Pad
   inout IO_UPHY_DPPULLUP, // Manual Pad
 
   // Muxed Pads
@@ -68,7 +66,9 @@ module chip_earlgrey_nexysvideo #(
   inout IOC8, // MIO Pad 30
   inout IOC9, // MIO Pad 31
   inout IOC10, // MIO Pad 32
-  inout IOC11  // MIO Pad 33
+  inout IOC11, // MIO Pad 33
+  inout IOR0, // MIO Pad 35
+  inout IOR1  // MIO Pad 36
 );
 
   import top_earlgrey_pkg::*;
@@ -115,7 +115,6 @@ module chip_earlgrey_nexysvideo #(
       BidirTol, // DIO usbdev_se0
       BidirStd, // DIO spi_host0_csb
       BidirStd, // DIO spi_host0_sck
-      BidirTol, // DIO usbdev_sense
       InputStd, // DIO spi_device_csb
       InputStd, // DIO spi_device_sck
       BidirOd, // DIO sysrst_ctrl_aon_ec_rst_l
@@ -206,7 +205,6 @@ module chip_earlgrey_nexysvideo #(
   logic manual_in_usb_n, manual_out_usb_n, manual_oe_usb_n;
   logic manual_in_io_clk, manual_out_io_clk, manual_oe_io_clk;
   logic manual_in_io_jsrst_n, manual_out_io_jsrst_n, manual_oe_io_jsrst_n;
-  logic manual_in_io_usb_sense0, manual_out_io_usb_sense0, manual_oe_io_usb_sense0;
   logic manual_in_io_usb_dnpullup0, manual_out_io_usb_dnpullup0, manual_oe_io_usb_dnpullup0;
   logic manual_in_io_usb_dppullup0, manual_out_io_usb_dppullup0, manual_oe_io_usb_dppullup0;
   logic manual_in_io_uphy_dp_tx, manual_out_io_uphy_dp_tx, manual_oe_io_uphy_dp_tx;
@@ -215,7 +213,6 @@ module chip_earlgrey_nexysvideo #(
   logic manual_in_io_uphy_dn_rx, manual_out_io_uphy_dn_rx, manual_oe_io_uphy_dn_rx;
   logic manual_in_io_uphy_d_rx, manual_out_io_uphy_d_rx, manual_oe_io_uphy_d_rx;
   logic manual_in_io_uphy_oe_n, manual_out_io_uphy_oe_n, manual_oe_io_uphy_oe_n;
-  logic manual_in_io_uphy_sense, manual_out_io_uphy_sense, manual_oe_io_uphy_sense;
   logic manual_in_io_uphy_dppullup, manual_out_io_uphy_dppullup, manual_oe_io_uphy_dppullup;
 
   pad_attr_t manual_attr_por_n;
@@ -223,7 +220,6 @@ module chip_earlgrey_nexysvideo #(
   pad_attr_t manual_attr_usb_n;
   pad_attr_t manual_attr_io_clk;
   pad_attr_t manual_attr_io_jsrst_n;
-  pad_attr_t manual_attr_io_usb_sense0;
   pad_attr_t manual_attr_io_usb_dnpullup0;
   pad_attr_t manual_attr_io_usb_dppullup0;
   pad_attr_t manual_attr_io_uphy_dp_tx;
@@ -232,7 +228,6 @@ module chip_earlgrey_nexysvideo #(
   pad_attr_t manual_attr_io_uphy_dn_rx;
   pad_attr_t manual_attr_io_uphy_d_rx;
   pad_attr_t manual_attr_io_uphy_oe_n;
-  pad_attr_t manual_attr_io_uphy_sense;
   pad_attr_t manual_attr_io_uphy_dppullup;
 
   /////////////////////////
@@ -275,12 +270,6 @@ module chip_earlgrey_nexysvideo #(
   assign mio_in[34] = 1'b0;
   assign mio_in_raw[34] = 1'b0;
   assign unused_sig[55] = mio_out[34] ^ mio_oe[34];
-  assign mio_in[35] = 1'b0;
-  assign mio_in_raw[35] = 1'b0;
-  assign unused_sig[56] = mio_out[35] ^ mio_oe[35];
-  assign mio_in[36] = 1'b0;
-  assign mio_in_raw[36] = 1'b0;
-  assign unused_sig[57] = mio_out[36] ^ mio_oe[36];
   assign mio_in[37] = 1'b0;
   assign mio_in_raw[37] = 1'b0;
   assign unused_sig[58] = mio_out[37] ^ mio_oe[37];
@@ -326,11 +315,10 @@ module chip_earlgrey_nexysvideo #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(20),
-    .NMioPads(29),
+    .NDioPads(18),
+    .NMioPads(31),
     .DioPadType ({
       BidirStd, // IO_UPHY_DPPULLUP
-      BidirStd, // IO_UPHY_SENSE
       BidirStd, // IO_UPHY_OE_N
       BidirStd, // IO_UPHY_D_RX
       BidirStd, // IO_UPHY_DN_RX
@@ -339,7 +327,6 @@ module chip_earlgrey_nexysvideo #(
       BidirStd, // IO_UPHY_DP_TX
       BidirStd, // IO_USB_DPPULLUP0
       BidirStd, // IO_USB_DNPULLUP0
-      BidirStd, // IO_USB_SENSE0
       InputStd, // IO_JSRST_N
       InputStd, // IO_CLK
       InputStd, // SPI_DEV_CS_L
@@ -351,6 +338,8 @@ module chip_earlgrey_nexysvideo #(
       InputStd  // POR_N
     }),
     .MioPadType ({
+      BidirStd, // IOR1
+      BidirStd, // IOR0
       BidirOd, // IOC11
       BidirOd, // IOC10
       BidirStd, // IOC9
@@ -389,7 +378,6 @@ module chip_earlgrey_nexysvideo #(
     // Chip IOs
     .dio_pad_io ({
       IO_UPHY_DPPULLUP,
-      IO_UPHY_SENSE,
       IO_UPHY_OE_N,
       IO_UPHY_D_RX,
       IO_UPHY_DN_RX,
@@ -398,7 +386,6 @@ module chip_earlgrey_nexysvideo #(
       IO_UPHY_DP_TX,
       IO_USB_DPPULLUP0,
       IO_USB_DNPULLUP0,
-      IO_USB_SENSE0,
       IO_JSRST_N,
       IO_CLK,
       SPI_DEV_CS_L,
@@ -411,6 +398,8 @@ module chip_earlgrey_nexysvideo #(
     }),
 
     .mio_pad_io ({
+      IOR1,
+      IOR0,
       IOC11,
       IOC10,
       IOC9,
@@ -445,7 +434,6 @@ module chip_earlgrey_nexysvideo #(
     // Core-facing
     .dio_in_o ({
         manual_in_io_uphy_dppullup,
-        manual_in_io_uphy_sense,
         manual_in_io_uphy_oe_n,
         manual_in_io_uphy_d_rx,
         manual_in_io_uphy_dn_rx,
@@ -454,7 +442,6 @@ module chip_earlgrey_nexysvideo #(
         manual_in_io_uphy_dp_tx,
         manual_in_io_usb_dppullup0,
         manual_in_io_usb_dnpullup0,
-        manual_in_io_usb_sense0,
         manual_in_io_jsrst_n,
         manual_in_io_clk,
         dio_in[DioSpiDeviceCsb],
@@ -467,7 +454,6 @@ module chip_earlgrey_nexysvideo #(
       }),
     .dio_out_i ({
         manual_out_io_uphy_dppullup,
-        manual_out_io_uphy_sense,
         manual_out_io_uphy_oe_n,
         manual_out_io_uphy_d_rx,
         manual_out_io_uphy_dn_rx,
@@ -476,7 +462,6 @@ module chip_earlgrey_nexysvideo #(
         manual_out_io_uphy_dp_tx,
         manual_out_io_usb_dppullup0,
         manual_out_io_usb_dnpullup0,
-        manual_out_io_usb_sense0,
         manual_out_io_jsrst_n,
         manual_out_io_clk,
         dio_out[DioSpiDeviceCsb],
@@ -489,7 +474,6 @@ module chip_earlgrey_nexysvideo #(
       }),
     .dio_oe_i ({
         manual_oe_io_uphy_dppullup,
-        manual_oe_io_uphy_sense,
         manual_oe_io_uphy_oe_n,
         manual_oe_io_uphy_d_rx,
         manual_oe_io_uphy_dn_rx,
@@ -498,7 +482,6 @@ module chip_earlgrey_nexysvideo #(
         manual_oe_io_uphy_dp_tx,
         manual_oe_io_usb_dppullup0,
         manual_oe_io_usb_dnpullup0,
-        manual_oe_io_usb_sense0,
         manual_oe_io_jsrst_n,
         manual_oe_io_clk,
         dio_oe[DioSpiDeviceCsb],
@@ -511,7 +494,6 @@ module chip_earlgrey_nexysvideo #(
       }),
     .dio_attr_i ({
         manual_attr_io_uphy_dppullup,
-        manual_attr_io_uphy_sense,
         manual_attr_io_uphy_oe_n,
         manual_attr_io_uphy_d_rx,
         manual_attr_io_uphy_dn_rx,
@@ -520,7 +502,6 @@ module chip_earlgrey_nexysvideo #(
         manual_attr_io_uphy_dp_tx,
         manual_attr_io_usb_dppullup0,
         manual_attr_io_usb_dnpullup0,
-        manual_attr_io_usb_sense0,
         manual_attr_io_jsrst_n,
         manual_attr_io_clk,
         dio_attr[DioSpiDeviceCsb],
@@ -533,22 +514,27 @@ module chip_earlgrey_nexysvideo #(
       }),
 
     .mio_in_o ({
+        mio_in[36:35],
         mio_in[33:24],
         mio_in[18:0]
       }),
     .mio_out_i ({
+        mio_out[36:35],
         mio_out[33:24],
         mio_out[18:0]
       }),
     .mio_oe_i ({
+        mio_oe[36:35],
         mio_oe[33:24],
         mio_oe[18:0]
       }),
     .mio_attr_i ({
+        mio_attr[36:35],
         mio_attr[33:24],
         mio_attr[18:0]
       }),
     .mio_in_raw_o ({
+        mio_in_raw[36:35],
         mio_in_raw[33:24],
         mio_in_raw[18:0]
       })
@@ -649,14 +635,6 @@ module chip_earlgrey_nexysvideo #(
   assign manual_oe_io_usb_dppullup0 = undo_swap ? dio_oe[DioUsbdevDnPullup] :
                                                   dio_oe[DioUsbdevDpPullup];
   assign dio_in[DioUsbdevDpPullup] = manual_in_io_usb_dppullup0;
-
-  // DioUsbdevSense
-  assign manual_out_io_usb_sense0 = dio_out[DioUsbdevSense];
-  assign manual_oe_io_usb_sense0  = dio_oe[DioUsbdevSense];
-  assign dio_in[DioUsbdevSense] = use_uphy ? manual_in_io_uphy_sense :
-                                             manual_in_io_usb_sense0;
-  assign manual_out_io_uphy_sense = 1'b0;
-  assign manual_oe_io_uphy_sense = 1'b0;
 
   // DioUsbdevRxEnable
   assign dio_in[DioUsbdevRxEnable] = 1'b0;

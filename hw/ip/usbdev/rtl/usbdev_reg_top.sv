@@ -558,10 +558,6 @@ module usbdev_reg_top (
   logic phy_config_tx_differential_mode_wd;
   logic phy_config_eop_single_bit_qs;
   logic phy_config_eop_single_bit_wd;
-  logic phy_config_override_pwr_sense_en_qs;
-  logic phy_config_override_pwr_sense_en_wd;
-  logic phy_config_override_pwr_sense_val_qs;
-  logic phy_config_override_pwr_sense_val_wd;
   logic phy_config_pinflip_qs;
   logic phy_config_pinflip_wd;
   logic phy_config_usb_ref_disable_qs;
@@ -5459,56 +5455,6 @@ module usbdev_reg_top (
     .qs     (phy_config_eop_single_bit_qs)
   );
 
-  //   F[override_pwr_sense_en]: 3:3
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
-  ) u_phy_config_override_pwr_sense_en (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (phy_config_we),
-    .wd     (phy_config_override_pwr_sense_en_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.phy_config.override_pwr_sense_en.q),
-
-    // to register interface (read)
-    .qs     (phy_config_override_pwr_sense_en_qs)
-  );
-
-  //   F[override_pwr_sense_val]: 4:4
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
-  ) u_phy_config_override_pwr_sense_val (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (phy_config_we),
-    .wd     (phy_config_override_pwr_sense_val_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.phy_config.override_pwr_sense_val.q),
-
-    // to register interface (read)
-    .qs     (phy_config_override_pwr_sense_val_qs)
-  );
-
   //   F[pinflip]: 5:5
   prim_subreg #(
     .DW      (1),
@@ -6143,10 +6089,6 @@ module usbdev_reg_top (
 
   assign phy_config_eop_single_bit_wd = reg_wdata[2];
 
-  assign phy_config_override_pwr_sense_en_wd = reg_wdata[3];
-
-  assign phy_config_override_pwr_sense_val_wd = reg_wdata[4];
-
   assign phy_config_pinflip_wd = reg_wdata[5];
 
   assign phy_config_usb_ref_disable_wd = reg_wdata[6];
@@ -6457,8 +6399,6 @@ module usbdev_reg_top (
         reg_rdata_next[0] = phy_config_rx_differential_mode_qs;
         reg_rdata_next[1] = phy_config_tx_differential_mode_qs;
         reg_rdata_next[2] = phy_config_eop_single_bit_qs;
-        reg_rdata_next[3] = phy_config_override_pwr_sense_en_qs;
-        reg_rdata_next[4] = phy_config_override_pwr_sense_val_qs;
         reg_rdata_next[5] = phy_config_pinflip_qs;
         reg_rdata_next[6] = phy_config_usb_ref_disable_qs;
         reg_rdata_next[7] = phy_config_tx_osc_test_mode_qs;

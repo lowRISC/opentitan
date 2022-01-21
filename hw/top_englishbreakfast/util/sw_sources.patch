@@ -2,11 +2,10 @@ diff --git a/sw/device/lib/pinmux.c b/sw/device/lib/pinmux.c
 index 8861f54ba..8442bb896 100644
 --- a/sw/device/lib/pinmux.c
 +++ b/sw/device/lib/pinmux.c
-@@ -60,24 +60,4 @@ void pinmux_init(void) {
-   reg_offset = kTopEarlgreyPinmuxMioOutIoc4 << 2;
+@@ -61,26 +61,6 @@ void pinmux_init(void) {
    mask = PINMUX_MIO_OUTSEL_0_OUT_0_MASK;
    mmio_region_write32(reg32, reg_offset, reg_value & mask);
--
+ 
 -  // Configure UART1 RX input to connect to MIO pad IOC8
 -  reg32 = mmio_region_from_addr(PINMUX0_BASE_ADDR +
 -                                PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET);
@@ -26,7 +25,10 @@ index 8861f54ba..8442bb896 100644
 -  reg_offset = kTopEarlgreyPinmuxMioOutIoc9 << 2;
 -  mask = PINMUX_MIO_OUTSEL_0_OUT_0_MASK;
 -  mmio_region_write32(reg32, reg_offset, reg_value & mask);
- }
+-
+   // Configure USBDEV SENSE outputs to be high-Z (IOR0, IOR1)
+   reg32 =
+       mmio_region_from_addr(PINMUX0_BASE_ADDR + PINMUX_MIO_OUTSEL_0_REG_OFFSET);
 diff --git a/sw/device/lib/testing/test_rom/test_rom_start.S b/sw/device/lib/testing/test_rom/test_rom_start.S
 index 480451ff5..d595aa757 100644
 --- a/sw/device/lib/testing/test_rom/test_rom_start.S
