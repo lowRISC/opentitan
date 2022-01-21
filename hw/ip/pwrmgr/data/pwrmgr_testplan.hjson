@@ -19,8 +19,7 @@
             - Triggers SW initiated low power transition with reset settings
               in `control` CSR.
             - Triggers wakeup.
-            - Enables reset.
-            - Triggers a reset.
+            - Enables and triggers a reset.
             - Waits for pwrmgr to be out of reset.
 
             **Stimulus**:
@@ -30,14 +29,12 @@
               to outputs, and are checked by SVA.
 
             **Checks**:
-            - Checks that fast fsm is active checking the CSR `ctrl_cfg_regwen`
-              is set.
-            - Checks that the wakeup and reset causes are as expected reading
-              CSRs `wake_status` and `reset_status`.
-            - Checks the output `pwr_rst_req.reset_cause` matches a low power or
+            - The fast fsm becomes active when `fetch_en_o` output rises.
+            - The wakeup and reset causes are as expected reading CSRs
+              `wake_status` and `reset_status`.
+            - The output `pwr_rst_req.reset_cause` matches a low power or
               reset cause.
-            - Checks the output `pwr_rst_req.rstreqs` matches the enabled
-              resets.
+            - The output `pwr_rst_req.rstreqs` matches the enabled resets.
             '''
       milestone: V1
       tests: ["pwrmgr_smoke"]
@@ -62,8 +59,7 @@
             - Set `intr_enable` randomly.
 
             **Checks**:
-            - Waits for fast fsm to become active reading `ctrl_cfg_regwen`
-              until it becomes 1.
+            - The fast fsm becomes active when `fetch_en_o` output rises.
             - Depending on `wakeups_i`:
               - If all wakeups are disabled, wait some time checking the
                 state remains inactive.
@@ -145,10 +141,10 @@
               - Conditionals via rstreqs_i,
               - Main power glitch via rst_main_ni.
               - Escalation via `esc_rst_tx_i`.
+              - Sw reset from rstmgr via `sw_rst_req_i`.
 
             **Checks**:
-            - Waits for fast fsm to become active reading `ctrl_cfg_regwen`
-              until it becomes 1.
+            - The fast fsm becomes active when `fetch_en_o` output rises.
             - Checks the `reset_status` CSRs.
             - Checks `ip_clk_en` output has a low transition.
             - SVA that when `pwr_rst_req.reset_cause` is HwReq, and the output
@@ -169,8 +165,7 @@
             - Set the rst_main_ni input low indicating a main power glitch.
 
             **Checks**:
-            - Waits for fast fsm to become active reading `ctrl_cfg_regwen`
-              until it becomes 1.
+            - The fast fsm becomes active when `fetch_en_o` output rises.
             - Checks the `reset_status` CSRs.
             - Checks `ip_clk_en` output has a low transition.
             - Checks the output `pwr_rst_req.reset_cause` matches HwReq.

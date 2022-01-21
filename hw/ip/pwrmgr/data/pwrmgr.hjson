@@ -450,7 +450,7 @@
     },
 
     { name: "WAKE_INFO_CAPTURE_DIS",
-      desc: "Indicates which functions caused the chip to wakeup",
+      desc: "Disables capture by WAKE_INFO",
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0"
@@ -458,8 +458,8 @@
         { bits: "0",
           name: "VAL",
           desc: '''
-            When written to 1, this actively suppresses the wakeup info capture.
-            When written to 0, wakeup info capture timing is controlled by HW.
+            When written to 1, WAKE INFO capture is suppressed.
+            When written to 0, WAKE_INFO capture is controlled by HW.
           ''',
         },
       ]
@@ -468,9 +468,9 @@
     { name: "WAKE_INFO",
       desc: '''
         Indicates which functions caused the chip to wakeup.
-        The wake info recording begins whenever the device begins a valid low power entry.
 
-        This capture is continued until it is explicitly disabled through WAKE_INFO_CAPTURE_DIS.
+        This register starts recording upon a valid low power entry with WAKE_INFO_CAPTURE_DIS off.
+        Capture continues until it is explicitly disabled by setting WAKE_INFO_CAPTURE_DIS.
         This means it is possible to capture multiple wakeup reasons.
       ''',
       swaccess: "rw1c",
