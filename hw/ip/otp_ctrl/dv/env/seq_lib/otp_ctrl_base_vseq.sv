@@ -250,14 +250,17 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  virtual task write_sw_rd_locks(bit [1:0] do_rd_lock= $urandom());
-    if (do_rd_lock[0]) csr_wr(ral.creator_sw_cfg_read_lock, 0);
-    if (do_rd_lock[1]) csr_wr(ral.owner_sw_cfg_read_lock, 0);
+  virtual task write_sw_rd_locks(bit [NUM_UNBUFF_PARTS-1:0] do_rd_lock= $urandom());
+    if (do_rd_lock[VendorTestIdx])   csr_wr(ral.vendor_test_read_lock, 0);
+    if (do_rd_lock[CreatorSwCfgIdx]) csr_wr(ral.creator_sw_cfg_read_lock, 0);
+    if (do_rd_lock[OwnerSwCfgIdx])   csr_wr(ral.owner_sw_cfg_read_lock, 0);
   endtask
 
   // The digest CSR values are verified in otp_ctrl_scoreboard
   virtual task rd_digests();
     bit [TL_DW-1:0] val;
+    csr_rd(.ptr(ral.vendor_test_digest[0]),    .value(val));
+    csr_rd(.ptr(ral.vendor_test_digest[1]),    .value(val));
     csr_rd(.ptr(ral.creator_sw_cfg_digest[0]), .value(val));
     csr_rd(.ptr(ral.creator_sw_cfg_digest[1]), .value(val));
     csr_rd(.ptr(ral.owner_sw_cfg_digest[0]),   .value(val));
