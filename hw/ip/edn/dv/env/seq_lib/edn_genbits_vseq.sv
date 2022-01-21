@@ -7,28 +7,31 @@ class edn_genbits_vseq extends edn_base_vseq;
 
   `uvm_object_new
 
-  push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)
-      m_endpoint_pull_seq[MAX_NUM_ENDPOINTS];
+  push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)   m_endpoint_pull_seq[MAX_NUM_ENDPOINTS];
 
-  bit [csrng_pkg::GENBITS_BUS_WIDTH - 1:0]      genbits;
-  bit [entropy_src_pkg::FIPS_BUS_WIDTH - 1:0]   fips;
-  bit [edn_pkg::ENDPOINT_BUS_WIDTH - 1:0]       edn_bus[MAX_NUM_ENDPOINTS];
-  bit [3:0]                                     acmd, clen, flags;
-  bit [17:0]                                    glen;
-  uint                                          num_requesters, num_requests,
-                                                num_requests_q[$], endpoint_q[$];
+  uint   boot_requester, num_requesters, num_requests, num_requests_q[$], endpoint_q[$];
 
   task body();
     super.body();
 
-    // TODO: Test boot_mode, auto_req_mode
+    // TODO: Test auto_req_mode
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(boot_requester,
+                                       boot_requester inside { [0:cfg.num_endpoints - 1] };)
+    m_endpoint_pull_seq[boot_requester] = push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)::
+        type_id::create($sformatf("m_endpoint_pull_seq[%0d]", boot_requester));
+
+    // Verify boot_req_mode cmds, continue after disable
+    if (cfg.boot_req_mode == MuBi4True) begin
+      m_endpoint_pull_seq[boot_requester].num_trans =
+          csrng_pkg::GENBITS_BUS_WIDTH/ENDPOINT_BUS_WIDTH;
+      m_endpoint_pull_seq[boot_requester].start(p_sequencer.endpoint_sequencer_h[boot_requester]);
+    end
 
     // Wait for cmd_rdy
     csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));
 
     // Create/Send INS cmd
     acmd  = csrng_pkg::INS;
-    flags = 4'h1;
     csr_wr(.ptr(ral.sw_cmd_req), .value({glen, flags, clen, acmd}));
 
     // Expect/Clear interrupt bit
@@ -70,7 +73,6 @@ class edn_genbits_vseq extends edn_base_vseq;
 
     // Create/Send GEN cmd
     acmd  = csrng_pkg::GEN;
-    flags = 4'h0;
     csr_wr(.ptr(ral.sw_cmd_req), .value({glen, flags, clen, acmd}));
 
     // Start endpoint_pull sequences

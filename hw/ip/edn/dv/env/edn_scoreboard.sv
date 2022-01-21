@@ -103,6 +103,13 @@ class edn_scoreboard extends cip_base_scoreboard #(
       "sw_cmd_req": begin
       end
       "sw_cmd_sts": begin
+        do_read_check = 1'b0;
+      end
+      "boot_ins_cmd": begin
+      end
+      "boot_gen_cmd": begin
+      end
+      "sum_sts": begin
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
