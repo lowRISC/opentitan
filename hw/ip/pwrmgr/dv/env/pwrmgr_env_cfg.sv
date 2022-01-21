@@ -35,6 +35,8 @@ class pwrmgr_env_cfg extends cip_base_env_cfg #(
     m_esc_agent_cfg = alert_esc_agent_cfg::type_id::create("m_esc_agent_cfg");
     `DV_CHECK_RANDOMIZE_FATAL(m_esc_agent_cfg)
     m_esc_agent_cfg.is_alert = 0;
+    // Disable escalation ping coverage.
+    m_esc_agent_cfg.en_ping_cov = 0;
   endfunction
 
 endclass
