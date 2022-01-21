@@ -121,8 +121,9 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
         check_otp_fatal_err("fatal_macro_error", exp_status);
       end else if ($urandom_range(0, 1)) begin
 
-        // Randomly force ECC reg in sw partitions to create a check failure
-        bit [1:0] sw_check_fail = $urandom_range(1, 4);
+        // Randomly force ECC reg in sw partitions to create a check failure.
+        // Totaly three sw partitions, and each bit indexes a partition.
+        bit [2:0] sw_check_fail = $urandom_range(1, 7);
         cfg.otp_ctrl_vif.force_sw_check_fail(sw_check_fail);
         `uvm_info(`gfn, $sformatf("OTP_init SW ECC check failure with index %0h", sw_check_fail),
                   UVM_LOW)

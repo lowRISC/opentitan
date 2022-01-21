@@ -133,17 +133,17 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     @(posedge clk_i);
     if (fail_idx[VendorTestIdx]) begin
       force tb.dut.gen_partitions[VendorTestIdx].gen_unbuffered.
-            u_part_unbuf.`ECC_REG_PATH.syndrome_o[0] = 1;
+            u_part_unbuf.`ECC_REG_PATH.data_i[0] = 1;
       force_sw_parts_ecc_reg[VendorTestIdx] = 1;
     end
     if (fail_idx[CreatorSwCfgIdx]) begin
       force tb.dut.gen_partitions[CreatorSwCfgIdx].gen_unbuffered.
-            u_part_unbuf.`ECC_REG_PATH.syndrome_o[0] = 1;
+            u_part_unbuf.`ECC_REG_PATH.data_i[0] = 1;
       force_sw_parts_ecc_reg[CreatorSwCfgIdx] = 1;
     end
     if (fail_idx[OwnerSwCfgIdx]) begin
       force tb.dut.gen_partitions[OwnerSwCfgIdx].gen_unbuffered.
-            u_part_unbuf.`ECC_REG_PATH.syndrome_o[0] = 1;
+            u_part_unbuf.`ECC_REG_PATH.data_i[0] = 1;
       force_sw_parts_ecc_reg[OwnerSwCfgIdx] = 1;
     end
   endtask
@@ -152,17 +152,17 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     @(posedge clk_i);
     if (force_sw_parts_ecc_reg[VendorTestIdx]) begin
       release tb.dut.gen_partitions[VendorTestIdx].gen_unbuffered.
-              u_part_unbuf.`ECC_REG_PATH.syndrome_o[0];
+              u_part_unbuf.`ECC_REG_PATH.data_i[0];
       force_sw_parts_ecc_reg[VendorTestIdx] = 0;
     end
     if (force_sw_parts_ecc_reg[CreatorSwCfgIdx]) begin
       release tb.dut.gen_partitions[CreatorSwCfgIdx].gen_unbuffered.
-              u_part_unbuf.`ECC_REG_PATH.syndrome_o[0];
+              u_part_unbuf.`ECC_REG_PATH.data_i[0];
       force_sw_parts_ecc_reg[CreatorSwCfgIdx] = 0;
     end
     if (force_sw_parts_ecc_reg[OwnerSwCfgIdx]) begin
       release tb.dut.gen_partitions[OwnerSwCfgIdx].gen_unbuffered.
-              u_part_unbuf.`ECC_REG_PATH.syndrome_o[0];
+              u_part_unbuf.`ECC_REG_PATH.data_i[0];
       force_sw_parts_ecc_reg[OwnerSwCfgIdx] = 0;
     end
   endtask
