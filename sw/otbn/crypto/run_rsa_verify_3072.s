@@ -33,8 +33,8 @@ run_rsa_verify_3072:
  * @param[out] dmem[m0inv]: Montgomery constant m0_inv = (-(M^-1)) mod 2^256
 */
 compute_constants:
-  jal       x1, compute_rr
   jal       x1, compute_m0_inv
+  jal       x1, compute_rr
   ecall
 
 /**

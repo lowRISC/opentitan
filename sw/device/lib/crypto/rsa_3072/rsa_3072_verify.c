@@ -50,7 +50,7 @@ static const uint32_t kOtbnRsaModeModexp = 2;
 
 // TODO: Change the error type here to a crypto_error_t once that type exists.
 hmac_error_t rsa_3072_encode_sha256(const uint8_t *msg, size_t msgLen,
-                                   rsa_3072_int_t *result) {
+                                    rsa_3072_int_t *result) {
   enum { kSha256DigestNumWords = 8 };
 
   // Message encoding as described in RFC 8017, Section 9.2. The encoded
