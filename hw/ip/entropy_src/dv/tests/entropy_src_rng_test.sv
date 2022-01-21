@@ -17,7 +17,7 @@ class entropy_src_rng_test extends entropy_src_base_test;
     cfg.bypass_window_size          = 384;
     cfg.boot_mode_retry_limit       = 10;
     cfg.entropy_data_reg_enable_pct = 100;
-    cfg.sim_duration                = 10ms;
+    cfg.sim_duration                = 100ms;
     cfg.hard_mtbf                   = 100s;
     cfg.soft_mtbf                   = 7500us;
     cfg.adaptp_sigma_min            = 1.0;

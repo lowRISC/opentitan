@@ -151,20 +151,21 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     cfg.clk_rst_vif.wait_clks(dly_to_access_intr);
     csr_rd(.ptr(ral.recov_alert_sts.es_main_sm_alert), .value(alert_sts));
     if (alert_sts) begin
+      `uvm_info(`gfn, "Clearing ES SM Alerts", UVM_HIGH)
       `uvm_info(`gfn, "Identified main_sm alert", UVM_HIGH)
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_alert_sts)
+      cfg.clk_rst_vif.wait_clks(dly_to_access_alert_sts);
+      csr_wr(.ptr(ral.conf.enable), .value(prim_mubi_pkg::MuBi4False));
+      csr_wr(.ptr(ral.recov_alert_sts.es_main_sm_alert), .value(1'b1));
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(do_check_ht_diag)
       if (do_check_ht_diag) begin
+        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_alert_sts)
+        cfg.clk_rst_vif.wait_clks(dly_to_access_alert_sts);
         // read all health check values
         `uvm_info(`gfn, "Checking_ht_values", UVM_HIGH)
         check_ht_diagnostics();
         `uvm_info(`gfn, "ht value check complete", UVM_HIGH)
       end
-      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_alert_sts)
-      cfg.clk_rst_vif.wait_clks(dly_to_access_alert_sts);
-      `uvm_info(`gfn, "Clearing ES SM Alerts", UVM_HIGH)
-      csr_wr(.ptr(ral.conf.enable), .value(prim_mubi_pkg::MuBi4False));
-      `uvm_info(`gfn, "DUT disabled", UVM_HIGH)
-      csr_wr(.ptr(ral.recov_alert_sts.es_main_sm_alert), .value(1'b1));
       csr_wr(.ptr(ral.conf.enable), .value(prim_mubi_pkg::MuBi4True));
     end
   endtask
