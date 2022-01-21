@@ -48,6 +48,29 @@ typedef struct dif_rstmgr {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_rstmgr_init(mmio_region_t base_addr, dif_rstmgr_t *rstmgr);
 
+/**
+ * A rstmgr alert type.
+ */
+typedef enum dif_rstmgr_alert {
+  /**
+   * This fatal alert is triggered when a fatal TL-UL bus integrity fault is
+   * detected.
+   */
+  kDifRstmgrAlertFatalFault = 0,
+} dif_rstmgr_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param rstmgr A rstmgr handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rstmgr_alert_force(const dif_rstmgr_t *rstmgr,
+                                    dif_rstmgr_alert_t alert);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

@@ -35,5 +35,26 @@ TEST_F(InitTest, Success) {
   EXPECT_EQ(dif_rstmgr_init(dev().region(), &rstmgr_), kDifOk);
 }
 
+class AlertForceTest : public RstmgrTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_rstmgr_alert_force(nullptr, kDifRstmgrAlertFatalFault),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(
+      dif_rstmgr_alert_force(nullptr, static_cast<dif_rstmgr_alert_t>(32)),
+      kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(RSTMGR_ALERT_TEST_REG_OFFSET,
+                 {{RSTMGR_ALERT_TEST_FATAL_FAULT_BIT, true}});
+  EXPECT_EQ(dif_rstmgr_alert_force(&rstmgr_, kDifRstmgrAlertFatalFault),
+            kDifOk);
+}
+
 }  // namespace
 }  // namespace dif_rstmgr_autogen_unittest

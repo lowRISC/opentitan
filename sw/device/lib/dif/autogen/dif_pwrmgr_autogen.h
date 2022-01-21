@@ -49,6 +49,29 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_pwrmgr_init(mmio_region_t base_addr, dif_pwrmgr_t *pwrmgr);
 
 /**
+ * A pwrmgr alert type.
+ */
+typedef enum dif_pwrmgr_alert {
+  /**
+   * This fatal alert is triggered when a fatal TL-UL bus integrity fault is
+   * detected.
+   */
+  kDifPwrmgrAlertFatalFault = 0,
+} dif_pwrmgr_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param pwrmgr A pwrmgr handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_pwrmgr_alert_force(const dif_pwrmgr_t *pwrmgr,
+                                    dif_pwrmgr_alert_t alert);
+
+/**
  * A pwrmgr interrupt request type.
  */
 typedef enum dif_pwrmgr_irq {

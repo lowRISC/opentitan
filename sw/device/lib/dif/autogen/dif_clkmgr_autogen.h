@@ -48,6 +48,33 @@ typedef struct dif_clkmgr {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_init(mmio_region_t base_addr, dif_clkmgr_t *clkmgr);
 
+/**
+ * A clkmgr alert type.
+ */
+typedef enum dif_clkmgr_alert {
+  /**
+   * This recoverable alert is triggered when there are measurement errors.
+   */
+  kDifClkmgrAlertRecovFault = 0,
+  /**
+   * This fatal alert is triggered when a fatal TL-UL bus integrity fault is
+   * detected.
+   */
+  kDifClkmgrAlertFatalFault = 1,
+} dif_clkmgr_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param clkmgr A clkmgr handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_clkmgr_alert_force(const dif_clkmgr_t *clkmgr,
+                                    dif_clkmgr_alert_t alert);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

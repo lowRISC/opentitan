@@ -2079,7 +2079,7 @@
           domain: "0"
         }
       }
-      attr: templated
+      attr: ipgen
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
@@ -3548,7 +3548,6 @@
       [
         Aon
       ]
-      attr: templated
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_timers
@@ -4598,7 +4597,7 @@
           domain: "0"
         }
       }
-      attr: templated
+      attr: ipgen
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure

@@ -4,17 +4,12 @@
 
 from collections import OrderedDict
 from pathlib import Path
-
+from typing import List
 import hjson
 
 # This file is $REPO_TOP/util/make_new_dif/ip.py, so it takes three parent()
 # calls to get back to the top.
 REPO_TOP = Path(__file__).resolve().parent.parent.parent
-
-IPS_USING_IPGEN = [
-    'rv_plic',
-    'alert_handler',
-]
 
 
 class Alert:
@@ -86,12 +81,15 @@ class Ip:
         irqs (List[Irq]): List of Irq objs constructed from HJSON data.
 
     """
-    def __init__(self, name_snake: str, name_long_lower: str) -> None:
+    def __init__(self, name_snake: str, name_long_lower: str,
+                 templated_modules: List[str], ipgen_modules: List[str]) -> None:
         """Mines metadata to populate this Ip object.
 
         Args:
             name_snake: IP short name in lower snake case (e.g., pwrmgr).
             name_long_lower: IP full name in lower case (e.g., power manager).
+            templated_modules: Templated modules where hjson is under top_*
+            ipgen_modules: Ipgen modules where hjson is under ip_autogen
         """
         # Generate various IP name formats.
         self.name_snake = name_snake
@@ -105,12 +103,15 @@ class Ip:
         self.name_long_upper = (self.name_long_lower[0].upper() +
                                 self.name_long_lower[1:])
         # Load HJSON data.
-        if self.name_snake in IPS_USING_IPGEN:
-            ip_dir = REPO_TOP / "hw/top_earlgrey/ip_autogen/{0}".format(
+        if self.name_snake in ipgen_modules:
+            data_dir = REPO_TOP / "hw/top_earlgrey/ip_autogen/{0}/data".format(
+                self.name_snake)
+        elif self.name_snake in templated_modules:
+            data_dir = REPO_TOP / "hw/top_earlgrey/ip/{0}/data/autogen".format(
                 self.name_snake)
         else:
-            ip_dir = REPO_TOP / "hw/ip/{0}".format(self.name_snake)
-        _hjson_file = ip_dir / "data" / "{0}.hjson".format(self.name_snake)
+            data_dir = REPO_TOP / "hw/ip/{0}/data".format(self.name_snake)
+        _hjson_file = data_dir / "{0}.hjson".format(self.name_snake)
         with _hjson_file.open("r") as f:
             _hjson_str = f.read()
         self._hjson_data = hjson.loads(_hjson_str)

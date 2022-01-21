@@ -35,6 +35,27 @@ TEST_F(InitTest, Success) {
   EXPECT_EQ(dif_pwrmgr_init(dev().region(), &pwrmgr_), kDifOk);
 }
 
+class AlertForceTest : public PwrmgrTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_pwrmgr_alert_force(nullptr, kDifPwrmgrAlertFatalFault),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(
+      dif_pwrmgr_alert_force(nullptr, static_cast<dif_pwrmgr_alert_t>(32)),
+      kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(PWRMGR_ALERT_TEST_REG_OFFSET,
+                 {{PWRMGR_ALERT_TEST_FATAL_FAULT_BIT, true}});
+  EXPECT_EQ(dif_pwrmgr_alert_force(&pwrmgr_, kDifPwrmgrAlertFatalFault),
+            kDifOk);
+}
+
 class IrqGetStateTest : public PwrmgrTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {
