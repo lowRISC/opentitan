@@ -201,13 +201,203 @@
             - Ensure that the data returned is correct for the given locality.
             - Randomise TPM_CFG.invalid_locality and confirm response.'''
       milestone: V2
+      tests: ["spi_device_tpm_locality"]
+    }
+    {
+      name: pass_cmd_filtering
+      desc: '''
+            - Randomize command opcode.
+            - Configure unused CMD_INFO reg with new opcode and set it to valid.
+            - Check opcode and address are passing through.
+            - Configure filter bit corresponding to opcode to 1.
+            - Check only opcode is passing through.
+            - Set filter bit back to 0.
+            - Check opcode and address are passing through again.'''
+      milestone: V2
       tests: []
     }
     {
-      name: partial_tpm_txrx
+      name: pass_addr_translation
       desc: '''
-            - Perform partial txrx over SPI with TPM_CFG.EN is set.
-            - Perform multiple partial TX/RX.'''
+            - Randomize command opcode.
+            - Configure unused CMD_INFO reg with new opcode and set it to valid.
+            - Enable address translation for given command.
+            - Configure address translation bits.
+            - Check proper address translation is applied.
+            - Disable address translation for given command.
+            - Check address is now passing unchanged.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: pass_payload_translation
+      desc: '''
+            - Configure program or write_status command.
+            - Enable payload translation for given command.
+            - Configure payload translation bits.
+            - Check proper payload translation is applied.
+            - Disable payload translation for given command.
+            - Check payload is now passing unchanged.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: cmd_info_slots
+      desc: '''
+            - Configure first 5 slots according to required configuration.
+            - Configure next 6 slots for read commands
+            - Randomize configuration of the remaining 13 cmd info slots.
+            - Issue commands with various opcodes enabled in info slots.
+            - Check proper command propagation.
+            - Disable some cmd info slots.
+            - Check no propagation of disabled commands.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: cmd_read_status
+      desc: '''
+            - Configure proper read status command info slot.
+            - Issue read status command.
+            - Check propagation of read status command.
+            - Initiate response to the read status.
+            - Check proper reception of response.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: cmd_read_jedec
+      desc: '''
+            - Configure proper read jedec command info slot.
+            - Issue read jedec command.
+            - Check propagation of read jedec command.
+            - Initiate response to the read jedec.
+            - Check proper reception of response.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: cmd_read_sfdp
+      desc: '''
+            - Configure proper read sfdp command info slot.
+            - Issue read sfdp command.
+            - Check propagation of read sfdp command.
+            - Initiate response to the read sfdp.
+            - Check proper reception of response.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: cmd_fast_read
+      desc: '''
+            - Configure proper fast read command info slot.
+            - Issue fast read command.
+            - Check propagation of fast read command.
+            - Initiate response to the fast read.
+            - Check proper reception of response.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: flash_cmd_upload
+      desc: '''
+            - Configure flash mode.
+            - Configure cmd info slots.
+            - Set upload to 1 for some of 13 non fixed cmd info slots.
+            - Host should poll busy field status to check if command is done.
+            - Issue next command upload and poll busy status again.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: mailbox_command
+      desc: '''
+            - Configure cmd info slots.
+            - Issue one of predefined read command targeting mailbox space.
+            - Check response to read command.
+            - Check if command is processed internally.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: mailbox_cross_outside_command
+      desc: '''
+            - Configure cmd info slots.
+            - Issue one of predefined read command targeting mailbox space.
+            - Command should start inside mailbox space and cross into read space.
+            - Command should be blocked.'''//TODO Clarify if data returned if crossing boundary
+      milestone: V2
+      tests: []
+    }
+    {
+      name: mailbox_cross_inside_command
+      desc: '''
+            - Configure cmd info slots.
+            - Issue one of predefined read command targeting read space outside mailbox space.
+            - Command should start outside mailbox space and cross into mailbox space.
+            - Command should be blocked.'''//TODO Clarify if data returned if crossing boundary
+      milestone: V2
+      tests: []
+    }
+    {
+      name: cmd_read_buffer
+      desc: '''
+            - Configure device in flash or passthrough mode.
+            - SW updates read buffer contents.
+            - Issue read command.
+            - Check proper read data.
+            - Issue new read command that crosses read buffer boundary.
+            - Behavior on crossing uncertain //TODO Clarify spec on this
+            - Check internal buffer index bit.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: cmd_dummy_cycle
+      desc: '''
+            - Configure cmd info slots.
+            - Configure dummy cycle of read commands to non default value.
+            - For single mode allowed dummy cycle is 7.
+            - For dual mode allowed dummy cycle is 3 and 7.
+            - For quad mode allowed dummy cycle is 1, 3, 5 and 7.
+            - Check return data timing for configured commands.
+            - Check proper read data.
+            - Issue new read command that crosses read buffer boundary.
+            - Check internal buffer index bit.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: quad_spi
+      desc: '''
+            - Configure passthrough or flash mode.
+            - Configure cmd info slots.
+            - Configure quad mode.
+            - Issue supported command.
+            - Check data on all four lines.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: dual_spi
+      desc: '''
+            - Configure passthrough or flash mode.
+            - Configure cmd info slots.
+            - Configure dual mode.
+            - Issue supported command.
+            - Check data on both lines.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: 4b_3b_feature
+      desc: '''
+            - Configure passthrough or flash mode.
+            - Configure command info slots.
+            - Configure different values for 4B/3B.
+            - Randomize configuration of EN4B and EX4B register fields.
+            - Issue supported command with required address.
+            - Check proper address propagation.'''
       milestone: V2
       tests: []
     }
