@@ -88,6 +88,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   logic [PING_CNT_DW + IdDw - 1:0] lfsr_state;
   assign entropy = (reseed_en) ? edn_data_i[LfsrWidth-1:0] : '0;
 
+  // SEC_CM: PING_TIMER.LFSR.REDUN
   // We employ two redundant LFSRs to guard against FI attacks.
   // If any of the two is glitched and the two LFSR states do not agree,
   // the FSM below is moved into a terminal error state and all ping alerts
@@ -164,6 +165,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   logic [PING_CNT_DW-1:0] esc_cnt;
   assign esc_cnt_clr = (esc_cnt >= PING_CNT_DW'(N_ESC_SEV-1)) && esc_cnt_en;
 
+  // SEC_CM: PING_TIMER.CTR.REDUN
   prim_count #(
     .Width(PING_CNT_DW),
     .OutSelDnCnt(0), // count up
@@ -196,6 +198,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   assign timer_expired = (cnt == '0);
   assign cnt_set = wait_cnt_set || timeout_cnt_set;
 
+  // SEC_CM: PING_TIMER.CTR.REDUN
   prim_count #(
     .Width(PING_CNT_DW),
     .OutSelDnCnt(1), // count down
@@ -248,6 +251,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
     .out_o(spurious_esc_ping)
   );
 
+  // SEC_CM: PING_TIMER.FSM.SPARSE
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 5 -m 6 -n 9 \
   //      -s 728582219 --language=sv
@@ -311,6 +315,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
           timeout_cnt_set = 1'b1;
         end
       end
+      // SEC_CM: ALERT_RX.INTERSIG.BKGN_CHK
       // send out an alert ping request and wait for a ping
       // response or a ping timeout (whatever comes first).
       // if the alert ID is not valid, we drop the request and
@@ -332,6 +337,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
           timeout_cnt_set = 1'b1;
         end
       end
+      // SEC_CM: ESC_TX.INTERSIG.BKGN_CHK
       // send out an escalation ping request and wait for a ping
       // response or a ping timeout (whatever comes first)
       EscPingSt: begin
@@ -345,6 +351,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
           end
         end
       end
+      // SEC_CM: PING_TIMER.FSM.LOCAL_ESC
       // terminal FSM error state.
       // if we for some reason end up in this state (e.g. malicious glitching)
       // we are going to assert both ping fails continuously
@@ -357,6 +364,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
       end
     endcase
 
+    // SEC_CM: PING_TIMER.FSM.LOCAL_ESC
     // if the two LFSR or counter states do not agree,
     // we move into the terminal state.
     if (lfsr_err || cnt_error || esc_cnt_error) begin

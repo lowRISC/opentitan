@@ -233,16 +233,13 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     { name: "PING_TIMER.CONFIG.REGWEN",
       desc: "The ping timer configuration registers are REGWEN protected."
     }
-    {
-      name: "ALERT.CONFIG.REGWEN",
+    { name: "ALERT.CONFIG.REGWEN",
       desc: "The individual alert enables are REGWEN protected."
     }
-    {
-      name: "ALERT_LOC.CONFIG.REGWEN",
+    { name: "ALERT_LOC.CONFIG.REGWEN",
       desc: "The individual local alert enables are REGWEN protected."
     }
-    {
-      name: "CLASS.CONFIG.REGWEN",
+    { name: "CLASS.CONFIG.REGWEN",
       desc: "The class configuration registers are REGWEN protected."
     }
     { name: "ALERT.INTERSIG.DIFF",
