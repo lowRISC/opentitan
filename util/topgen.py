@@ -16,6 +16,7 @@ from copy import deepcopy
 from io import StringIO
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+from itertools import chain
 
 import hjson
 import tlgen
@@ -26,6 +27,7 @@ from mako.template import Template
 from reggen import access, gen_rtl, window
 from reggen.inter_signal import InterSignal
 from reggen.ip_block import IpBlock
+from reggen.countermeasure import CounterMeasure
 from reggen.lib import check_list
 from topgen import get_hjsonobj_xbars
 from topgen import intermodule as im
@@ -222,6 +224,27 @@ def generate_plic(top, out_path):
     ipgen_render('rv_plic', topname, params, out_path)
 
 
+# TODO: For generated IPs that are generated legacy style (i.e., without IPgen)
+# we have to search both the source and destination RTL directories, since not
+# all files are copied over. This is a workaround which can be removed once
+# all generated IPs have transitioned to IPgen.
+def generate_regfile_from_path(hjson_path: Path,
+                               generated_rtl_path: Path,
+                               original_rtl_path: Path = None):
+    '''Generate RTL register file from path and check countermeasure labels'''
+    obj = IpBlock.from_path(str(hjson_path), [])
+
+    # If this block has countermeasures, we grep for RTL annotations in
+    # all .sv implementation files and check whether they match up
+    # with what is defined inside the Hjson.
+    sv_files = generated_rtl_path.glob('*.sv')
+    if original_rtl_path is not None:
+        sv_files = chain(sv_files, original_rtl_path.glob('*.sv'))
+    rtl_names = CounterMeasure.search_rtl_files(sv_files)
+    obj.check_cm_annotations(rtl_names, str(hjson_path))
+    gen_rtl.gen_rtl(obj, str(generated_rtl_path))
+
+
 def generate_pinmux(top, out_path):
 
     topname = top['name']
@@ -297,6 +320,8 @@ def generate_pinmux(top, out_path):
     # Template path
     tpl_path = Path(
         __file__).resolve().parent / '../hw/ip/pinmux/data/pinmux.hjson.tpl'
+    original_rtl_path = Path(
+        __file__).resolve().parent / '../hw/ip/pinmux/rtl'
 
     # Generate register package and RTLs
     gencmd = ("// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson "
@@ -332,8 +357,8 @@ def generate_pinmux(top, out_path):
     with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
         fout.write(genhdr + gencmd + out)
 
-    gen_rtl.gen_rtl(IpBlock.from_text(out, [], str(hjson_gen_path)),
-                    str(rtl_path))
+    # Generate reg file
+    generate_regfile_from_path(hjson_gen_path, rtl_path, original_rtl_path)
 
 
 def generate_clkmgr(top, cfg_path, out_path):
@@ -348,6 +373,7 @@ def generate_clkmgr(top, cfg_path, out_path):
     hjson_tpl = cfg_path / '../ip/clkmgr/data/clkmgr.hjson.tpl'
     rtl_tpl = cfg_path / '../ip/clkmgr/data/clkmgr.sv.tpl'
     pkg_tpl = cfg_path / '../ip/clkmgr/data/clkmgr_pkg.sv.tpl'
+    original_rtl_path = cfg_path / '../ip/clkmgr/rtl'
 
     hjson_out = data_path / 'clkmgr.hjson'
     rtl_out = rtl_path / 'clkmgr.sv'
@@ -383,7 +409,7 @@ def generate_clkmgr(top, cfg_path, out_path):
             fout.write(genhdr + out)
 
     # Generate reg files
-    gen_rtl.gen_rtl(IpBlock.from_path(str(hjson_out), []), str(rtl_path))
+    generate_regfile_from_path(hjson_out, rtl_path, original_rtl_path)
 
 
 # generate pwrmgr
@@ -417,6 +443,7 @@ def generate_pwrmgr(top, out_path):
     # So, read template files from ip directory.
     tpl_path = Path(__file__).resolve().parent / '../hw/ip/pwrmgr/data'
     hjson_tpl_path = tpl_path / 'pwrmgr.hjson.tpl'
+    original_rtl_path = Path(__file__).resolve().parent / '../hw/ip/pwrmgr/rtl'
 
     # Render and write out hjson
     out = StringIO()
@@ -440,7 +467,7 @@ def generate_pwrmgr(top, out_path):
         fout.write(genhdr + out)
 
     # Generate reg files
-    gen_rtl.gen_rtl(IpBlock.from_path(str(hjson_path), []), str(rtl_path))
+    generate_regfile_from_path(hjson_path, rtl_path, original_rtl_path)
 
 
 # generate rstmgr
@@ -453,6 +480,7 @@ def generate_rstmgr(topcfg, out_path):
     doc_path = out_path / 'ip/rstmgr/data/autogen'
     doc_path.mkdir(parents=True, exist_ok=True)
     tpl_path = Path(__file__).resolve().parent / '../hw/ip/rstmgr/data'
+    original_rtl_path = Path(__file__).resolve().parent / '../hw/ip/rstmgr/rtl'
 
     # Read template files from ip directory.
     tpls = []
@@ -514,7 +542,7 @@ def generate_rstmgr(topcfg, out_path):
 
     # Generate reg files
     hjson_path = outputs[0]
-    gen_rtl.gen_rtl(IpBlock.from_path(str(hjson_path), []), str(rtl_path))
+    generate_regfile_from_path(hjson_path, rtl_path, original_rtl_path)
 
 
 # generate flash
@@ -527,6 +555,8 @@ def generate_flash(topcfg, out_path):
     doc_path = out_path / 'ip/flash_ctrl/data/autogen'
     doc_path.mkdir(parents=True, exist_ok=True)
     tpl_path = Path(__file__).resolve().parent / '../hw/ip/flash_ctrl/data'
+    original_rtl_path = Path(
+        __file__).resolve().parent / '../hw/ip/flash_ctrl/rtl'
 
     # Read template files from ip directory.
     tpls = []
@@ -573,7 +603,7 @@ def generate_flash(topcfg, out_path):
 
     # Generate reg files
     hjson_path = outputs[0]
-    gen_rtl.gen_rtl(IpBlock.from_path(str(hjson_path), []), str(rtl_path))
+    generate_regfile_from_path(hjson_path, rtl_path, original_rtl_path)
 
 
 def generate_top_only(top_only_dict, out_path, topname, alt_hjson_path):
@@ -595,8 +625,7 @@ def generate_top_only(top_only_dict, out_path, topname, alt_hjson_path):
             ip, hjson_path, genrtl_dir))
 
         # Generate reg files
-        gen_rtl.gen_rtl(IpBlock.from_path(str(hjson_path), []),
-                        str(genrtl_dir))
+        generate_regfile_from_path(hjson_path, genrtl_dir)
 
 
 def generate_top_ral(top: Dict[str, object], name_to_block: Dict[str, IpBlock],
