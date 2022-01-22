@@ -120,6 +120,24 @@
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
+    { name: "CTRL.CONFIG.REGWEN",
+      desc: "The SRAM control register is protected by a REGWEN."
+    }
+    { name: "EXEC.CONFIG.REGWEN",
+      desc: "The SRAM execution enable register is protected by a REGWEN."
+    }
+    { name: "EXEC.CONFIG.MUBI",
+      desc: "The SRAM execution enable register is multibit encoded."
+    }
+    { name: "EXEC.INTERSIG.MUBI",
+      desc: "The SRAM execution enable signal coming from OTP is multibit encoded."
+    }
+    { name: "LC_ESCALATE_EN.INTERSIG.MUBI",
+      desc: "The life cycle escalation enable signal is multibit encoded."
+    }
+    { name: "LC_HW_DEBUG_EN.INTERSIG.MUBI",
+      desc: "The life cycle hardware debug enable signal is multibit encoded."
+    }
     { name: "MEM.INTEGRITY",
       desc: "End-to-end data/memory integrity scheme."
     }
