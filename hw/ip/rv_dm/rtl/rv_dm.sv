@@ -69,6 +69,7 @@ module rv_dm
     .tl_i      (regs_tl_d_i    ),
     .tl_o      (regs_tl_d_o    ),
     .reg2hw    (regs_reg2hw    ),
+    // SEC_CM: BUS.INTEGRITY
     .intg_err_o(regs_intg_error),
     .devmode_i (1'b1           )
   );
@@ -80,6 +81,7 @@ module rv_dm
     .tl_o      (rom_tl_d_o    ),
     .tl_win_o  (rom_tl_win_h2d),
     .tl_win_i  (rom_tl_win_d2h),
+    // SEC_CM: BUS.INTEGRITY
     .intg_err_o(rom_intg_error),
     .devmode_i (1'b1          )
   );
