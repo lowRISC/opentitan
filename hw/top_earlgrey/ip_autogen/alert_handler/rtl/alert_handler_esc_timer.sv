@@ -52,6 +52,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
   // are permanently asserted.
   logic cnt_en, cnt_clr, cnt_error;
 
+  // SEC_CM: ESC_TIMER.CTR.REDUN
   prim_count #(
     .Width(EscCntDw),
     .OutSelDnCnt(0), // count up
@@ -83,6 +84,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
 
   logic [N_PHASES-1:0] phase_oh;
 
+  // SEC_CM: ESC_TIMER.FSM.SPARSE
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 5 -m 8 -n 10 \
   //      -s 784905746 --language=sv
@@ -260,6 +262,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
         esc_state_o = FsmError;
         fsm_error = 1'b1;
       end
+      // SEC_CM: ESC_TIMER.FSM.LOCAL_ESC
       // catch glitches.
       default: begin
         state_d = FsmErrorSt;
@@ -267,6 +270,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
       end
     endcase
 
+    // SEC_CM: ESC_TIMER.FSM.LOCAL_ESC
     // if any of the duplicate counter pairs has an inconsistent state
     // we move into the terminal FSM error state.
     if (accu_fail_i || cnt_error) begin
@@ -279,6 +283,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
     // generate configuration mask for escalation enable signals
     assign esc_map_oh[k] = N_ESC_SEV'(esc_en_i[k]) << esc_map_i[k];
     // mask reduce current phase state vector
+    // SEC_CM: ESC_TIMER.FSM.GLOBAL_ESC
     assign esc_sig_req_o[k] = |(esc_map_oh[k] & phase_oh) | fsm_error;
   end
 
