@@ -32,6 +32,25 @@ extern "C" {
 // it is used in the definition of `dif_usbdev_buffer_pool` below.
 #define USBDEV_NUM_BUFFERS 32
 
+// Constants used for the `dif_usbdev_endpoint_id` direction field.
+#define USBDEV_ENDPOINT_DIR_IN 1
+#define USBDEV_ENDPOINT_DIR_OUT 0
+
+typedef struct dif_usbdev_endpoint_id {
+  /**
+   * Endpoint number.
+   */
+  unsigned int number : 4;
+  /**
+   * Reserved. Should be zero.
+   */
+  unsigned int reserved : 3;
+  /**
+   * Endpoint direction. 1 = IN endpoint, 0 = OUT endpoint
+   */
+  unsigned int direction : 1;
+} dif_usbdev_endpoint_id_t;
+
 /**
  * Free buffer pool.
  *
@@ -164,8 +183,11 @@ dif_result_t dif_usbdev_fill_available_fifo(
 /**
  * Enable or disable reception of SETUP packets for an endpoint.
  *
+ * This controls whether the pair of IN and OUT endpoints with the specified
+ * endpoint number are control endpoints.
+ *
  * @param usbdev A USB device.
- * @param endpoint An endpoint.
+ * @param endpoint An endpoint number.
  * @param new_state New SETUP packet reception state.
  * @return The result of the operation.
  */
@@ -178,7 +200,7 @@ dif_result_t dif_usbdev_endpoint_setup_enable(const dif_usbdev_t *usbdev,
  * Enable or disable reception of OUT packets for an endpoint.
  *
  * @param usbdev A USB device.
- * @param endpoint An endpoint.
+ * @param endpoint An OUT endpoint number.
  * @param new_state New OUT packet reception state.
  * @return The result of the operation.
  */
@@ -191,26 +213,27 @@ dif_result_t dif_usbdev_endpoint_out_enable(const dif_usbdev_t *usbdev,
  * Enable or disable STALL for an endpoint.
  *
  * @param usbdev A USB device.
- * @param endpoint An endpoint.
+ * @param endpoint An endpoint ID.
  * @param new_state New STALL state.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_usbdev_endpoint_stall_enable(const dif_usbdev_t *usbdev,
-                                              uint8_t endpoint,
+                                              dif_usbdev_endpoint_id_t endpoint,
                                               dif_toggle_t new_state);
 
 /**
  * Get STALL state of an endpoint.
  *
  * @param usbdev A USB device.
- * @param endpoint An endpoint.
+ * @param endpoint An endpoint ID.
  * @param[out] state Current STALL state.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_usbdev_endpoint_stall_get(const dif_usbdev_t *usbdev,
-                                           uint8_t endpoint, bool *state);
+                                           dif_usbdev_endpoint_id_t endpoint,
+                                           bool *state);
 
 /**
  * Enable or disable isochronous mode for an endpoint.
@@ -226,14 +249,31 @@ dif_result_t dif_usbdev_endpoint_stall_get(const dif_usbdev_t *usbdev,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_usbdev_endpoint_iso_enable(const dif_usbdev_t *usbdev,
-                                            uint8_t endpoint,
+                                            dif_usbdev_endpoint_id_t endpoint,
                                             dif_toggle_t new_state);
+
+/**
+ * Enable or disable an endpoint.
+ *
+ * An enabled endpoint responds to packets from the host. A disabled endpoint
+ * ignores them.
+ *
+ * @param usbdev A USB device.
+ * @param endpoint An endpoint.
+ * @param new_state New endpoint state.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_endpoint_enable(const dif_usbdev_t *usbdev,
+                                        dif_usbdev_endpoint_id_t endpoint,
+                                        dif_toggle_t new_state);
 
 /**
  * Enable the USB interface of a USB device.
  *
  * Calling this function causes the USB device to assert the full-speed pull-up
- * signal to indicate its presence to the host.
+ * signal to indicate its presence to the host. Ensure the default endpoint is
+ * set up before enabling the interface.
  *
  * @param usbdev A USB device.
  * @param new_state New interface state.
@@ -432,7 +472,7 @@ dif_result_t dif_usbdev_buffer_write(const dif_usbdev_t *usbdev,
  * `dif_usbdev_get_tx_status`, `dif_usbdev_buffer_return`.
  *
  * @param usbdev A USB device.
- * @param endpoint An endpoint.
+ * @param endpoint An OUT endpoint number.
  * @param buffer A buffer provided by `dif_usbdev_buffer_request`.
  * @return The result of the operation.
  */
@@ -445,7 +485,7 @@ dif_result_t dif_usbdev_send(const dif_usbdev_t *usbdev, uint8_t endpoint,
  */
 typedef enum dif_usbdev_tx_status {
   /**
-   *  There is no packet for the given endpoint.
+   *  There is no packet for the given OUT endpoint.
    */
   kDifUsbdevTxStatusNoPacket,
   /**
@@ -477,7 +517,7 @@ typedef enum dif_usbdev_tx_status {
  *
  * @param usbdev A USB device.
  * @param buffer_pool A USB device buffer pool.
- * @param endpoint An endpoint.
+ * @param endpoint An OUT endpoint number.
  * @param[out] status Status of the packet.
  * @return The result of the operation.
  */

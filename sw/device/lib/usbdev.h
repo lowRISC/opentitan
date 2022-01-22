@@ -225,7 +225,17 @@ void usbdev_endpoint_setup(usbdev_ctx_t *ctx, int ep, int enableout,
                            void (*flush)(void *), void (*reset)(void *));
 
 /**
+ * Connect the device to the bus.
+ *
+ * @param ctx the usbdev context.
+ */
+void usbdev_connect(usbdev_ctx_t *ctx);
+
+/**
  * Initialize the usbdev interface
+ *
+ * Does not connect the device, since the default endpoint is not yet enabled.
+ * See usbdev_connect().
  *
  * @param ctx uninitialized usbdev context pointer
  * @param pinflip boolean to indicate if PHY should be configured for D+/D- flip
@@ -253,10 +263,10 @@ void usbdev_wake(bool set);
 // when simulating with the USB DPI module.
 //#define ENABLE_TRC
 #ifdef ENABLE_TRC
-#include "sw/device/lib/uart.h"
-#define TRC_S(s) uart_send_str(s)
-#define TRC_I(i, b) uart_send_uint(i, b)
-#define TRC_C(c) uart_send_char(c)
+#include "sw/device/lib/runtime/log.h"
+#define TRC_S(s) LOG_INFO("%s", s)
+#define TRC_I(i, b) LOG_INFO("0x%x", i)
+#define TRC_C(c) LOG_INFO("%c", c)
 #else
 #define TRC_S(s)
 #define TRC_I(i, b)

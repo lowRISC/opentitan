@@ -16,8 +16,13 @@
 module usb_fs_nb_out_pe #(
   parameter logic [4:0] NumOutEps = 2,
   parameter int unsigned MaxOutPktSizeByte = 32,
+  // Targeting 17 bit times for the timeout. The counter runs on the 48 MHz
+  // clock. The SOP delay to rx_pkt_start_i is 3 bit times, but the two
+  // packets go in the same direction, so this is negated.
+  parameter int unsigned AckTimeoutCnt = 17 * 4,
   localparam int unsigned OutEpW = $clog2(NumOutEps), // derived parameter
-  localparam int unsigned PktW = $clog2(MaxOutPktSizeByte) // derived parameter
+  localparam int unsigned PktW = $clog2(MaxOutPktSizeByte), // derived parameter
+  localparam int unsigned AckTimeoutCntW = $clog2(AckTimeoutCnt) // derived parameter
 ) (
   input  logic                   clk_48mhz_i,
   input  logic                   rst_ni,
@@ -36,6 +41,8 @@ module usb_fs_nb_out_pe #(
   output logic                   out_ep_acked_o, // good termination, device has acked
   output logic                   out_ep_rollback_o, // bad termination, discard data
   output logic [NumOutEps-1:0]   out_ep_setup_o,
+  input  logic [NumOutEps-1:0]   out_ep_enabled_i, // Endpoint is enabled and produces handshakes
+  input  logic [NumOutEps-1:0]   out_ep_control_i, // Is a control endpoint: Accepts SETUP packets
   input  logic [NumOutEps-1:0]   out_ep_full_i, // Cannot accept data
   input  logic [NumOutEps-1:0]   out_ep_stall_i, // Stalled
   input  logic [NumOutEps-1:0]   out_ep_iso_i, // Configure endpoint in isochronous mode
@@ -72,12 +79,12 @@ module usb_fs_nb_out_pe #(
 );
 
   // suppress warnings
-  logic                      unused_1;
+  logic                        unused_1;
   assign unused_1 = tx_pkt_end_i;
 
-  ////////////////////////////////
-  // out transfer state machine //
-  ////////////////////////////////
+  ///////////////////////////////////
+  // out transaction state machine //
+  ///////////////////////////////////
   import usb_consts_pkg::*;
 
   typedef enum logic [2:0] {
@@ -88,15 +95,15 @@ module usb_fs_nb_out_pe #(
     StRcvdIsoDataEnd
   } state_out_e;
 
-  state_out_e  out_xfr_state;
-  state_out_e  out_xfr_state_next;
+  state_out_e  out_xact_state;
+  state_out_e  out_xact_state_next;
 
-  logic out_xfr_start;
+  logic out_xact_start;
   logic new_pkt_end;
   logic rollback_data;
 
-  // set when the endpoint buffer is unable to receive the out transfer
-  logic nak_out_transfer;
+  // set when the endpoint buffer is unable to receive the out transaction
+  logic nak_out_transaction;
 
   // data toggle state
   logic [NumOutEps - 1:0] data_toggle_q, data_toggle_d;
@@ -105,20 +112,17 @@ module usb_fs_nb_out_pe #(
   logic       token_received, out_token_received, setup_token_received;
   logic       invalid_packet_received, data_packet_received, non_data_packet_received;
   logic       bad_data_toggle;
-  logic       ep_impl_d, ep_impl_q;
+  logic       ep_in_hw, ep_active, ep_is_control;
   logic [3:0] out_ep_current_d;
 
-  // 1: If the current transfer is a SETUP, 0: OUT
-  logic current_xfer_setup_q;
+  // 1: If the current transaction is a SETUP, 0: OUT
+  logic current_xact_setup_q;
 
   // More syntax so can compare with enum
   usb_pid_type_e rx_pid_type;
   usb_pid_e      rx_pid;
   assign rx_pid_type = usb_pid_type_e'(rx_pid_i[1:0]);
   assign rx_pid      = usb_pid_e'(rx_pid_i);
-
-  // Is the specified endpoint actually implemented?
-  assign ep_impl_d = {1'b0, rx_endp_i} < NumOutEps;
 
   assign token_received =
     rx_pkt_end_i &&
@@ -148,28 +152,34 @@ module usb_fs_nb_out_pe #(
     rx_pkt_valid_i &&
     !((rx_pid == UsbPidData0) || (rx_pid == UsbPidData1));
 
-  assign out_ep_current_d = ep_impl_d ? rx_endp_i : '0;
+  // Is the specified endpoint actually implemented in hardware?
+  assign ep_in_hw = {1'b0, rx_endp_i} < NumOutEps;
+  assign out_ep_current_d = ep_in_hw ? rx_endp_i : '0;
 
   // Make widths work - out_ep_current_d/out_ep_current_o only hold implemented endpoint IDs.
   // These signals can be used to index signals of NumOutEps width.
-  // They are only valid if ep_impl_d/q are set, i.e., if the specified endpoint is implemented.
+  // They are only valid if ep_in_hw is set, i.e., if the specified endpoint is implemented.
   logic [OutEpW-1:0] out_ep_index;
   logic [OutEpW-1:0] out_ep_index_d;
   assign out_ep_index   = out_ep_current_o[0 +: OutEpW];
   assign out_ep_index_d = out_ep_current_d[0 +: OutEpW];
 
+  // Is the endpoint active?
+  assign ep_active = out_ep_enabled_i[out_ep_index_d] & ep_in_hw;
+  assign ep_is_control = out_ep_control_i[out_ep_index_d];
+
   assign bad_data_toggle =
     data_packet_received &&
-    ep_impl_d &&
+    ep_active &&
     rx_pid_i[3] != data_toggle_q[out_ep_index_d];
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
       out_ep_setup_o <= '0;
     end else begin
-      if (setup_token_received && ep_impl_d) begin
+      if (setup_token_received && ep_active) begin
         out_ep_setup_o[out_ep_index_d] <= 1'b1;
-      end else if (out_token_received && ep_impl_d) begin
+      end else if (out_token_received && ep_active) begin
         out_ep_setup_o[out_ep_index_d] <= 1'b0;
       end
     end
@@ -185,92 +195,108 @@ module usb_fs_nb_out_pe #(
     end
   end
 
-  ////////////////////////////////
-  // out transfer state machine //
-  ////////////////////////////////
+  ///////////////////////////////////
+  // out transaction state machine //
+  ///////////////////////////////////
+
+  logic [AckTimeoutCntW-1:0] timeout_cntdown_d, timeout_cntdown_q;
 
   always_comb begin
     out_ep_acked_o = 1'b0;
-    out_xfr_start = 1'b0;
-    out_xfr_state_next = out_xfr_state;
+    out_xact_start = 1'b0;
+    out_xact_state_next = out_xact_state;
     tx_pkt_start_o = 1'b0;
     tx_pid_o = 4'b0000;
     new_pkt_end = 1'b0;
     rollback_data = 1'b0;
+    timeout_cntdown_d = AckTimeoutCnt[AckTimeoutCntW-1:0];
 
-    unique case (out_xfr_state)
+    unique case (out_xact_state)
       StIdle: begin
-        // For unimplemented EPs:
-        // - OUT transfers are stalled.
-        // - SETUP transfers are ignored.
-        if (out_token_received || (setup_token_received && ep_impl_d)) begin
-          out_xfr_state_next = StRcvdOut;
-          out_xfr_start = 1'b1;
+        // For unimplemented EPs, transactions are ignored.
+        // SETUP transactions are also ignored for non-control EPs.
+        if (ep_active && (out_token_received || (setup_token_received && ep_is_control))) begin
+          out_xact_state_next = StRcvdOut;
+          out_xact_start = 1'b1;
         end else begin
-          out_xfr_state_next = StIdle;
+          out_xact_state_next = StIdle;
         end
       end
 
       StRcvdOut: begin
+        // The spec says we have up to 18 bit times to wait for the host's
+        // data packet. If it doesn't arrive in time, we must invalidate the
+        // transaction.
+        timeout_cntdown_d = timeout_cntdown_d - 1'b1;
+
         if (rx_pkt_start_i) begin
-          out_xfr_state_next = StRcvdDataStart;
+          out_xact_state_next = StRcvdDataStart;
+        end else if (timeout_cntdown_q == '0) begin
+          out_xact_state_next = StIdle;
         end else begin
-          out_xfr_state_next = StRcvdOut;
+          out_xact_state_next = StRcvdOut;
         end
       end
 
       StRcvdDataStart: begin
-        if (ep_impl_q && out_ep_iso_i[out_ep_index] && data_packet_received) begin
-          // ISO EP: Don't send a handshake, ignore toggle. Note an unimplemented EP cannot be an
-          // ISO EP.
-          out_xfr_state_next = StRcvdIsoDataEnd;
-        end else if (ep_impl_q && bad_data_toggle && !out_ep_stall_i[out_ep_index]) begin
+        if (!ep_is_control && out_ep_iso_i[out_ep_index] && data_packet_received) begin
+          // ISO EP: Don't send a handshake, ignore toggle.
+          // But ignore iso bit for endpoints marked control. This is
+          // a configuration error.
+          out_xact_state_next = StRcvdIsoDataEnd;
+        end else if (bad_data_toggle && !out_ep_stall_i[out_ep_index]) begin
           // The DATA toggle was wrong (skipped when this EP is stalled)
           // Note: bad_data_toggle is meaningless for unimplemented EPs.
-          out_xfr_state_next = StIdle;
+          out_xact_state_next = StIdle;
           rollback_data = 1'b1;
           tx_pkt_start_o = 1'b1;
           tx_pid_o = {UsbPidAck}; // ACK by spec because this is most likely previous ACK was lost
         end else if (invalid_packet_received || non_data_packet_received) begin
           // in these cases eg bad CRC, send no response (not a NAK)
-          out_xfr_state_next = StIdle;
+          out_xact_state_next = StIdle;
           rollback_data = 1'b1;
         end else if (data_packet_received) begin
-          out_xfr_state_next = StRcvdDataEnd;
+          out_xact_state_next = StRcvdDataEnd;
         end else begin
-          out_xfr_state_next = StRcvdDataStart;
+          out_xact_state_next = StRcvdDataStart;
         end
       end
 
       StRcvdDataEnd: begin
-        out_xfr_state_next = StIdle;
+        out_xact_state_next = StIdle;
         tx_pkt_start_o = 1'b1;
 
-        if ((!ep_impl_q || out_ep_stall_i[out_ep_index]) && !current_xfer_setup_q) begin
-          // We only send STALL for OUT transfers if the specified EP:
-          // - is not implemented,
-          // - is not set up.
-          // SETUP transfers are not stalled.
-          tx_pid_o = {UsbPidStall}; // STALL
-        end else if (nak_out_transfer) begin
-          tx_pid_o = {UsbPidNak}; // NAK -- the endpoint could not accept the data at the moment
-          rollback_data = 1'b1;
+        if (current_xact_setup_q) begin
+          // SETUP transactions end here
+          if (nak_out_transaction) begin
+            // SETUP transactions that fail to be received are dropped without a response.
+            tx_pkt_start_o = 1'b0;
+            rollback_data = 1'b1;
+          end else begin
+            tx_pid_o = {UsbPidAck};
+            new_pkt_end = 1'b1;
+            out_ep_acked_o = 1'b1;
+          end
         end else begin
-          tx_pid_o = {UsbPidAck}; // ACK
-          new_pkt_end = 1'b1;
-          out_ep_acked_o = 1'b1;
+          // Non-isochronous OUT transactions end here
+          if (out_ep_stall_i[out_ep_index]) begin
+            tx_pid_o = {UsbPidStall}; // STALL
+          end else if (nak_out_transaction) begin
+            tx_pid_o = {UsbPidNak}; // NAK -- the endpoint could not accept the data at the moment
+            rollback_data = 1'b1;
+          end else begin
+            tx_pid_o = {UsbPidAck}; // ACK
+            new_pkt_end = 1'b1;
+            out_ep_acked_o = 1'b1;
+          end
         end
       end
 
       StRcvdIsoDataEnd: begin
-        out_xfr_state_next = StIdle;
+        // Isochronous OUT transactions end here
+        out_xact_state_next = StIdle;
 
-        // An unimplemented EP cannot be in ISO mode, no need to check ep_impl_q here.
-        if (out_ep_stall_i[out_ep_index] && !current_xfer_setup_q) begin
-          // Send a STALL (something bad happened and the host needs to resolve it)
-          tx_pkt_start_o = 1'b1;
-          tx_pid_o       = {UsbPidStall}; // STALL
-        end else if (nak_out_transfer) begin
+        if (nak_out_transaction) begin
           // We got a valid packet, but can't store it (error that the software must resolve)
           rollback_data = 1'b1;
         end else begin
@@ -281,12 +307,12 @@ module usb_fs_nb_out_pe #(
 
       end
 
-      default: out_xfr_state_next = StIdle;
+      default: out_xact_state_next = StIdle;
     endcase
   end
 
-  `ASSERT(OutXfrStateValid_A,
-    out_xfr_state inside {StIdle, StRcvdOut, StRcvdDataStart, StRcvdDataEnd, StRcvdIsoDataEnd},
+  `ASSERT(OutXactStateValid_A,
+    out_xact_state inside {StIdle, StRcvdOut, StRcvdDataStart, StRcvdDataEnd, StRcvdIsoDataEnd},
     clk_48mhz_i)
 
   // could flop this if needed
@@ -294,16 +320,24 @@ module usb_fs_nb_out_pe #(
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      out_xfr_state <= StIdle;
+      timeout_cntdown_q <= AckTimeoutCnt[AckTimeoutCntW-1:0];
     end else begin
-      out_xfr_state <= link_reset_i ? StIdle : out_xfr_state_next;
+      timeout_cntdown_q <= timeout_cntdown_d;
+    end
+  end
+
+  always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      out_xact_state <= StIdle;
+    end else begin
+      out_xact_state <= link_reset_i ? StIdle : out_xact_state_next;
     end
   end
 
   always_comb begin : proc_data_toggle_d
     data_toggle_d = data_toggle_q;
 
-    if (setup_token_received && ep_impl_d) begin
+    if (setup_token_received && ep_active) begin
       data_toggle_d[out_ep_index_d] = 1'b0;
     end else if (new_pkt_end) begin
       data_toggle_d[out_ep_index] = ~data_toggle_q[out_ep_index];
@@ -326,14 +360,12 @@ module usb_fs_nb_out_pe #(
     if (!rst_ni) begin
       out_ep_newpkt_o       <= 1'b0;
       out_ep_current_o      <= '0;
-      current_xfer_setup_q  <= 1'b0;
-      ep_impl_q             <= 1'b0;
+      current_xact_setup_q  <= 1'b0;
     end else begin
-      if (out_xfr_start) begin
+      if (out_xact_start) begin
         out_ep_newpkt_o      <= 1'b1;
         out_ep_current_o     <= out_ep_current_d;
-        current_xfer_setup_q <= setup_token_received;
-        ep_impl_q            <= ep_impl_d;
+        current_xact_setup_q <= setup_token_received;
       end else begin
         out_ep_newpkt_o <= 1'b0;
       end
@@ -345,22 +377,22 @@ module usb_fs_nb_out_pe #(
     if (!rst_ni) begin
       out_ep_data_put_o <= 1'b0;
     end else begin
-      out_ep_data_put_o <= ((out_xfr_state == StRcvdDataStart) && rx_data_put_i);
+      out_ep_data_put_o <= ((out_xact_state == StRcvdDataStart) && rx_data_put_i);
     end
   end
 
-  // nack an OUT if any data comes in with the endpoint full
+  // nak an OUT if any data comes in with the endpoint full
   // Note that if there is a full size packet buffer this will only be all or nothing
   // but in the case there was a FIFO with less than a max packet size free you
   // could get lucky and the packet received be small and fit with no need to NAK
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      nak_out_transfer <= 1'b0;
+      nak_out_transaction <= 1'b0;
     end else begin
-      if ((out_xfr_state == StIdle) || (out_xfr_state == StRcvdOut)) begin
-        nak_out_transfer <= 1'b0;
+      if ((out_xact_state == StIdle) || (out_xact_state == StRcvdOut)) begin
+        nak_out_transaction <= 1'b0;
       end else if (out_ep_data_put_o && out_ep_full_i[out_ep_index]) begin
-        nak_out_transfer <= 1'b1;
+        nak_out_transaction <= 1'b1;
       end
     end
   end
@@ -370,15 +402,15 @@ module usb_fs_nb_out_pe #(
   // -- the address is at max packet size
   // NOTE if more than max packet size received then data is lost
   logic increment_addr;
-  assign increment_addr = !nak_out_transfer && (~&out_ep_put_addr_o) && out_ep_data_put_o;
+  assign increment_addr = !nak_out_transaction && (~&out_ep_put_addr_o) && out_ep_data_put_o;
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
       out_ep_put_addr_o <= '0;
     end else begin
-      if (out_xfr_state == StRcvdOut) begin
+      if (out_xact_state == StRcvdOut) begin
         out_ep_put_addr_o <= '0;
-      end else if ((out_xfr_state == StRcvdDataStart) && increment_addr) begin
+      end else if ((out_xact_state == StRcvdDataStart) && increment_addr) begin
         out_ep_put_addr_o <= out_ep_put_addr_o + 1;
       end
     end

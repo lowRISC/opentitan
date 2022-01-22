@@ -223,6 +223,50 @@
         }
       ]
     }
+    { multireg: {
+        name: "ep_out_enable",
+        count: "NEndpoints"
+        cname: "Endpoint"
+        desc: '''
+              Enable an endpoint to respond to transactions in the downstream direction.
+              Note that as the default endpoint, endpoint 0 must be enabled in both the IN and OUT directions before enabling the USB interface to connect.
+              '''
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          {
+            bits: "0",
+            name: "enable",
+            desc: '''
+                  This bit must be set to enable downstream transactions to be received on the endpoint and elicit responses.
+                  If the bit is clear, any SETUP or OUT packets sent to the endpoint will be ignored.
+                  '''
+          }
+        ]
+      }
+    }
+    { multireg: {
+        name: "ep_in_enable",
+        count: "NEndpoints"
+        cname: "Endpoint"
+        desc: '''
+              Enable an endpoint to respond to transactions in the upstream direction.
+              Note that as the default endpoint, endpoint 0 must be enabled in both the IN and OUT directions before enabling the USB interface to connect.
+              '''
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+           {
+            bits: "0",
+            name: "enable",
+            desc: '''
+                  This bit must be set to enable upstream transactions to be received on the endpoint and elicit responses.
+                  If the bit is clear then any IN packets sent to the endpoint will be ignored.
+                  '''
+          }
+        ]
+      }
+    }
     { name: "usbstat",
       desc: "USB Status",
       swaccess: "ro",
@@ -396,7 +440,8 @@
             desc: '''
                   This bit must be set to enable SETUP transactions to be
                   received on the endpoint. If the bit is clear then a
-                  SETUP request will be responded to with a NACK.
+                  SETUP packet will be ignored. The bit should be set for
+                  control endpoints (and only control endpoints).
                   '''
           }
         ]
@@ -416,7 +461,8 @@
             desc: '''
                   This bit must be set to enable OUT transactions to be
                   received on the endpoint. If the bit is clear then an
-                  OUT request will be responded to with a NACK.
+                  OUT request will be responded to with a NAK, if the endpoint
+                  is enabled.
                   '''
           }
         ]
@@ -443,20 +489,44 @@
       }
     }
     { multireg: {
-        name: "stall",
+        name: "out_stall",
         count: "NEndpoints"
         cname: "Endpoint"
-        desc: "Endpoint STALL control",
+        desc: "OUT Endpoint STALL control",
         swaccess: "rw",
         hwaccess: "hrw",
         fields: [
           {
             bits: "0",
-            name: "stall",
+            name: "endpoint",
             desc: '''
-                  If this bit is set then an IN or OUT transaction to this endpoint will be responded to with a STALL return.
-                  This is used when the endpoint is disabled (functional stall) or when a control transfer is not supported (protocol stall).
-                  SETUP transactions are always accepted and a SETUP will clear the stall flag (this is necessary for protocol stalls, to avoid sending stalls on subsequent IN/OUT transfers).
+                  If this bit is set then an OUT transaction to this endpoint will elicit a STALL handshake, when a non-isochronous endpoint is enabled.
+                  If the configuration has both STALL and NAK enabled, the STALL handshake will take priority.
+
+                  Note that SETUP transactions are always either accepted or ignored.
+                  For endpoints that accept SETUP transactions, a SETUP packet will clear the STALL flag on endpoints for both the IN and OUT directions.
+                  '''
+          }
+        ]
+      }
+    }
+    { multireg: {
+        name: "in_stall",
+        count: "NEndpoints"
+        cname: "Endpoint"
+        desc: "IN Endpoint STALL control",
+        swaccess: "rw",
+        hwaccess: "hrw",
+        fields: [
+          {
+            bits: "0",
+            name: "endpoint",
+            desc: '''
+                  If this bit is set then an IN transaction to this endpoint will elicit a STALL handshake, when a non-isochronous endpoint is enabled.
+                  If the configuration has both STALL and NAK enabled, the STALL handshake will take priority.
+
+                  Note that SETUP transactions are always either accepted or ignored.
+                  For endpoints that accept SETUP transactions, a SETUP packet will clear the STALL flag on endpoints for both the IN and OUT directions.
                   '''
           }
         ]

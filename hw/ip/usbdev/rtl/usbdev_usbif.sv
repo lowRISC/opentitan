@@ -71,6 +71,8 @@ module usbdev_usbif  #(
   input  logic                     enable_i,
   input  logic [6:0]               devaddr_i,
   output logic                     clr_devaddr_o,
+  input  logic [NEndpoints-1:0]    in_ep_enabled_i,
+  input  logic [NEndpoints-1:0]    out_ep_enabled_i,
   input  logic [NEndpoints-1:0]    ep_iso_i,
   input  logic                     cfg_eop_single_bit_i, // 1: detect a single SE0 bit as EOP
   input  logic                     cfg_rx_differential_i, // 1: use differential rx data on usb_d_i
@@ -106,7 +108,7 @@ module usbdev_usbif  #(
   logic                              out_ep_data_put, out_ep_acked, out_ep_rollback;
   logic                              current_setup, all_out_blocked, out_ep_newpkt;
   logic [NEndpoints-1:0]             out_ep_setup, out_ep_full, out_ep_stall;
-  logic [NEndpoints-1:0]             setup_blocked, out_blocked;
+  logic [NEndpoints-1:0]             out_blocked;
   logic [31:0]                       wdata_q, wdata_d;
   logic                              mem_read;
   logic [SramAw-1:0]                 mem_waddr, mem_raddr;
@@ -205,7 +207,6 @@ module usbdev_usbif  #(
   end
 
   // full here covers the software blocking by clearing the enable
-  assign setup_blocked = out_ep_setup & ~rx_setup_i;
   assign out_blocked = ~out_ep_setup & ~rx_out_i;
   // full also covers being blocked because the hardware can't take any transaction
   assign all_out_blocked = (~rx_wready_i) | (~av_rvalid_i);
@@ -213,7 +214,7 @@ module usbdev_usbif  #(
   assign event_av_empty_o = out_ep_newpkt & (~av_rvalid_i);
   assign event_rx_full_o = out_ep_newpkt & (~rx_wready_i);
 
-  assign out_ep_full = {NEndpoints{all_out_blocked}} | setup_blocked | out_blocked;
+  assign out_ep_full = {NEndpoints{all_out_blocked}} | out_blocked;
   assign out_ep_stall = rx_stall_i;
 
   // Need to clear IN read if a SETUP is received because it may use the IN channel
@@ -221,8 +222,8 @@ module usbdev_usbif  #(
   // with a NAK, which is illegal anyway
   assign setup_received_o = current_setup & rx_wvalid_o;
 
-  // IN (device to host) transfers
-  logic                  in_ep_xfr_end, in_ep_data_get, in_data_done, in_ep_newpkt, pkt_start_rd;
+  // IN (device to host) transactions
+  logic                  in_ep_xact_end, in_ep_data_get, in_data_done, in_ep_newpkt, pkt_start_rd;
   logic [NEndpoints-1:0] in_ep_data_done;
   logic [PktW-1:0]       in_ep_get_addr;
   logic [7:0]            in_ep_data;
@@ -256,7 +257,7 @@ module usbdev_usbif  #(
   assign in_ep_data = in_ep_get_addr[1] ?
                       (in_ep_get_addr[0] ? mem_rdata_i[31:24] : mem_rdata_i[23:16]) :
                       (in_ep_get_addr[0] ? mem_rdata_i[15:8]  : mem_rdata_i[7:0]);
-  assign set_sent_o = in_ep_xfr_end;
+  assign set_sent_o = in_ep_xact_end;
 
   logic [10:0]     frame_index_raw;
   logic            rx_jjj_det;
@@ -293,6 +294,8 @@ module usbdev_usbif  #(
     .out_ep_acked_o        (out_ep_acked),
     .out_ep_rollback_o     (out_ep_rollback),
     .out_ep_setup_o        (out_ep_setup),
+    .out_ep_enabled_i      (out_ep_enabled_i),
+    .out_ep_control_i      (rx_setup_i),
     .out_ep_full_i         (out_ep_full),
     .out_ep_stall_i        (out_ep_stall),
     .out_ep_iso_i          (ep_iso_i),
@@ -300,10 +303,11 @@ module usbdev_usbif  #(
     // in endpoint interfaces
     .in_ep_current_o       (in_ep_current),
     .in_ep_rollback_o      (link_in_err_o),
-    .in_ep_xfr_end_o       (in_ep_xfr_end),
+    .in_ep_xact_end_o      (in_ep_xact_end),
     .in_ep_get_addr_o      (in_ep_get_addr),
     .in_ep_data_get_o      (in_ep_data_get),
     .in_ep_newpkt_o        (in_ep_newpkt),
+    .in_ep_enabled_i       (in_ep_enabled_i),
     .in_ep_stall_i         (in_stall_i),
     .in_ep_has_data_i      (in_rdy_i),
     .in_ep_data_i          (in_ep_data),

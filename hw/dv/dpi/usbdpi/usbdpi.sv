@@ -52,6 +52,7 @@ module usbdpi #(
 
   initial begin
     ctx = usbdpi_create(NAME, LOG_LEVEL);
+    sense_p2d = 1'b0;
   end
 
   final begin
@@ -72,7 +73,7 @@ module usbdpi #(
 
   assign d2p = {dp_d2p, dp_en_d2p, dn_d2p, dn_en_d2p, d_d2p, d_en_d2p, se0_d2p, se0_en_d2p, pullupdp_d2p & pullupdp_en_d2p, pullupdn_d2p & pullupdn_en_d2p, txmode_d2p & txmode_en_d2p};
   always_ff @(posedge clk_48MHz_i) begin
-    if (pullup_detect) begin
+    if (!sense_p2d || pullup_detect) begin
       automatic byte p2d = usbdpi_host_to_device(ctx, d2p);
       d_int <= p2d[3];
       dp_int <= p2d[2];
@@ -87,7 +88,6 @@ module usbdpi #(
       d_int <= 0;
       dp_int <= 0;
       dn_int <= 0;
-      sense_p2d <= 0;
     end
   end
 

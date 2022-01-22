@@ -99,11 +99,37 @@
 extern "C" {
 #endif
 
+typedef enum usbdpi_bus_state {
+  kUsbIdle,
+  kUsbControlSetup,
+  kUsbControlSetupAck,
+  kUsbControlDataOut,
+  kUsbControlDataOutAck,
+  kUsbControlStatusInToken,
+  kUsbControlStatusInData,
+  kUsbControlStatusInAck,
+  kUsbControlDataInToken,
+  kUsbControlDataInData,
+  kUsbControlDataInAck,
+  kUsbControlStatusOut,
+  kUsbControlStatusOutAck,
+  kUsbIsoToken,
+  kUsbIsoDataIn,
+  kUsbIsoDataOut,
+  kUsbBulkOut,
+  kUsbBulkOutAck,
+  kUsbBulkInToken,
+  kUsbBulkInData,
+  kUsbBulkInAck,
+} usbdpi_bus_state_t;
+
 struct usbdpi_ctx {
+  usbdpi_bus_state_t bus_state;
   int loglevel;
   FILE *mon_file;
   char mon_pathname[PATH_MAX];
   void *mon;
+  int retries;
   int last_pu;
   int lastrxpid;
   int tick;

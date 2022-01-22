@@ -167,16 +167,19 @@ int main(int argc, char **argv) {
         &pinmux, kTopEarlgreyPinmuxPeripheralInUsbdevSense,
         kTopEarlgreyPinmuxInselIor1));
   }
+  CHECK_DIF_OK(
+      dif_spi_device_send(&spi, &spi_config, "SPI!", 4, /*bytes_sent=*/NULL));
+
   // The TI phy always uses single ended TX
   usbdev_init(&usbdev, pinflip, differential, differential && !uphy);
 
   usb_controlep_init(&usbdev_control, &usbdev, 0, config_descriptors,
                      sizeof(config_descriptors));
+  while (usbdev_control.device_state != kUsbDeviceConfigured) {
+    usbdev_poll(&usbdev);
+  }
   usb_simpleserial_init(&simple_serial0, &usbdev, 1, usb_receipt_callback_0);
   usb_simpleserial_init(&simple_serial1, &usbdev, 2, usb_receipt_callback_1);
-
-  CHECK_DIF_OK(
-      dif_spi_device_send(&spi, &spi_config, "SPI!", 4, /*bytes_sent=*/NULL));
 
   bool say_hello = true;
   bool pass_signaled = false;

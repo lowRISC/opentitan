@@ -71,6 +71,7 @@ static ctstate_t setup_req(usb_controlep_ctx_t *ctctx, void *ctx,
       ctctx->usb_config = wValue;
       // send zero length packet for status phase
       usbdev_sendbuf_byid(ctx, buf, 0, ctctx->ep);
+      ctctx->device_state = kUsbDeviceConfigured;
       return kCtStatIn;
 
     case kUsbSetupReqGetConfiguration:
@@ -166,6 +167,9 @@ static void ctrl_tx_done(void *ctctx_v) {
       usbdev_set_deviceid(ctx, ctctx->new_dev);
       TRC_I(ctctx->new_dev, 8);
       ctctx->ctrlstate = kCtIdle;
+      // Should be kUsbDeviceAddressed only, but test controller is borked
+      // ctctx->device_state = kUsbDeviceAddressed;
+      ctctx->device_state = kUsbDeviceConfigured;
       return;
     case kCtStatIn:
       ctctx->ctrlstate = kCtIdle;
@@ -247,4 +251,6 @@ void usb_controlep_init(usb_controlep_ctx_t *ctctx, usbdev_ctx_t *ctx, int ep,
   ctctx->ctrlstate = kCtIdle;
   ctctx->cfg_dscr = cfg_dscr;
   ctctx->cfg_dscr_len = cfg_dscr_len;
+  usbdev_connect(ctx);
+  ctctx->device_state = kUsbDeviceDefault;
 }
