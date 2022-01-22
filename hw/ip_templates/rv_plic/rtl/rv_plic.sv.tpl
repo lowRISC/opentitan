@@ -237,6 +237,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
     .reg2hw,
     .hw2reg,
 
+    // SEC_CM: BUS.INTEGRITY
     .intg_err_o(alerts[0]),
 
     .devmode_i  (1'b1)
