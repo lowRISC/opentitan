@@ -31,6 +31,12 @@ module tlul_adapter_sram
   parameter bit EnableRspIntgGen  = 0,  // 1: Generate response integrity
   parameter bit EnableDataIntgGen = 0,  // 1: Generate response data integrity
   parameter bit EnableDataIntgPt  = 0,  // 1: Passthrough command/response data integrity
+  // Data that is returned upon an a TL-UL error belonging to an instruction fetch.
+  // Note that this data will be returned with the correct bus integrity value.
+  parameter logic [top_pkg::TL_DW-1:0] DataWhenInstrError = '0,
+  // Data that is returned upon an a TL-UL error not belonging to an instruction fetch.
+  // Note that this data will be returned with the correct bus integrity value.
+  parameter logic [top_pkg::TL_DW-1:0] DataWhenError      = {top_pkg::TL_DW{1'b1}},
   localparam int WidthMult        = SramDw / top_pkg::TL_DW,
   localparam int IntgWidth        = tlul_pkg::DataIntgWidth * WidthMult,
   localparam int DataOutW         = EnableDataIntgPt ? SramDw + IntgWidth : SramDw
@@ -181,6 +187,7 @@ module tlul_adapter_sram
   typedef struct packed {
     req_op_e                    op ;
     logic                       error ;
+    prim_mubi_pkg::mubi4_t      instr_type;
     logic [top_pkg::TL_SZW-1:0] size ;
     logic [top_pkg::TL_AIW-1:0] source ;
   } req_t ;
@@ -253,7 +260,44 @@ module tlul_adapter_sram
   end
 
   logic vld_rd_rsp;
-  assign vld_rd_rsp = reqfifo_rvalid & rspfifo_rvalid & (reqfifo_rdata.op == OpRead);
+  assign vld_rd_rsp = d_valid & reqfifo_rvalid & rspfifo_rvalid & (reqfifo_rdata.op == OpRead);
+  // If the response data is not valid, we set it to an illegal blanking value which is determined
+  // by whether the current transaction is an instruction fetch or a regular read operation.
+  logic [top_pkg::TL_DW-1:0] error_blanking_data;
+  assign error_blanking_data = (prim_mubi_pkg::mubi4_test_true_strict(reqfifo_rdata.instr_type)) ?
+                                 DataWhenInstrError :
+                                 DataWhenError;
+
+  // Since DataWhenInstrError and DataWhenError can be arbitrary parameters
+  // we statically calculate the correct integrity values for these parameters here so that
+  // they do not have to be supplied externally.
+  logic [top_pkg::TL_DW-1:0] unused_instr, unused_data;
+  logic [DataIntgWidth-1:0] error_instr_integ, error_data_integ;
+  tlul_data_integ_enc u_tlul_data_integ_enc_instr (
+    .data_i(DataMaxWidth'(DataWhenInstrError)),
+    .data_intg_o({error_instr_integ, unused_instr})
+  );
+  tlul_data_integ_enc u_tlul_data_integ_enc_data (
+    .data_i(DataMaxWidth'(DataWhenError)),
+    .data_intg_o({error_data_integ, unused_data})
+  );
+
+  logic [DataIntgWidth-1:0] error_blanking_integ;
+  assign error_blanking_integ = (prim_mubi_pkg::mubi4_test_true_strict(reqfifo_rdata.instr_type)) ?
+                                 error_instr_integ :
+                                 error_data_integ;
+
+  logic [top_pkg::TL_DW-1:0] d_data;
+  assign d_data = (vld_rd_rsp && reqfifo_rdata.error) ? error_blanking_data : // TL-UL error
+                  (vld_rd_rsp)                        ? rspfifo_rdata.data  : // valid read
+                                                        '0;                   // valid write
+  // If this a write response with data fields set to 0, we have to set all ECC bits correctly
+  // since we are using an inverted Hsiao code.
+  logic [DataIntgWidth-1:0] data_intg;
+  assign data_intg = (vld_rd_rsp && reqfifo_rdata.error) ? error_blanking_integ    : // TL-UL error
+                     (vld_rd_rsp)                        ? rspfifo_rdata.data_intg : // valid read
+                     prim_secded_pkg::SecdedInv3932ZeroEcc;                          // valid write
+
   assign tl_o_int = '{
       d_valid  : d_valid ,
       d_opcode : (d_valid && reqfifo_rdata.op != OpRead) ? AccessAck : AccessAckData,
@@ -261,15 +305,8 @@ module tlul_adapter_sram
       d_size   : (d_valid) ? reqfifo_rdata.size : '0,
       d_source : (d_valid) ? reqfifo_rdata.source : '0,
       d_sink   : 1'b0,
-      d_data   : (d_valid && vld_rd_rsp)
-                 ? rspfifo_rdata.data : '0,
-      // If this a write response with data fields set to 0, we have to set all ECC bits correctly
-      // since we are using an inverted Hsiao code.
-      d_user   : '{
-        default: '0,
-        data_intg: d_valid && vld_rd_rsp ? rspfifo_rdata.data_intg :
-                                           prim_secded_pkg::SecdedInv3932ZeroEcc
-      },
+      d_data   : d_data,
+      d_user   : '{default: '0, data_intg: data_intg},
       d_error  : d_valid && d_error,
       a_ready  : (gnt_i | error_internal) & reqfifo_wready & sramreqfifo_wready
   };
@@ -354,6 +391,7 @@ module tlul_adapter_sram
   assign reqfifo_wdata  = '{
     op:     (tl_i_int.a_opcode != Get) ? OpWrite : OpRead, // To return AccessAck for opcode error
     error:  error_internal,
+    instr_type: tl_i_int.a_user.instr_type,
     size:   tl_i_int.a_size,
     source: tl_i_int.a_source
   }; // Store the request only. Doesn't have to store data
