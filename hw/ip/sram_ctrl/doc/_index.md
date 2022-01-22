@@ -36,7 +36,7 @@ Hence, the throughput of sub-word write operations is three times lower than for
 Note however that the throughput of read operations is the same for full- and sub-word read operations.
 
 The scrambling mechanism is always enabled and the `sram_ctrl` provides the scrambling device with a predefined scrambling key and nonce when it comes out of reset.
-It is the task of SW to request a new scrambling key and nonce via the CSRs as described in the [Programmer's Guide]({{< relref "#programmers-guide" >}}) below.
+It is the task of SW to request an updated scrambling key and nonce via the CSRs as described in the [Programmer's Guide]({{< relref "#programmers-guide" >}}) below.
 
 For SW convenience, the SRAM controller also provides an LFSR-based memory initialization feature that can overwrite the entire memory with pseudorandom data.
 Similarly to the scrambling key, it is the task of of SW to request memory initialization via the CSRs as described in the [Programmer's Guide]({{< relref "#programmers-guide" >}}) below.
@@ -78,7 +78,7 @@ Signal                     | Direction        | Type                            
 
 #### Interfaces to OTP and the SRAM Scrambling Primitive
 
-The interface to the key derivation interface inside the OTP controller follows a simple req / ack protocol, where the SRAM controller first requests a new ephemeral key by asserting the `sram_otp_key_i.req`.
+The interface to the key derivation interface inside the OTP controller follows a simple req / ack protocol, where the SRAM controller first requests an updated ephemeral key by asserting the `sram_otp_key_i.req`.
 The OTP controller then fetches entropy from CSRNG and derives an ephemeral key using the SRAM_DATA_KEY_SEED and the PRESENT scrambling data path as described in the [OTP controller spec]({{< relref "hw/ip/otp_ctrl/doc/#scrambling-datapath" >}}).
 Finally, the OTP controller returns a fresh ephemeral key via the response channels (`sram_otp_key_o[*]`, `otbn_otp_key_o`), which complete the req / ack handshake.
 The key and nonce are made available to the scrambling primitive in the subsequent cycle.
@@ -126,7 +126,7 @@ Since plain CTR mode does not diffuse the data bits due to the bitwise XOR, the 
 The S&P network employed is similar to the one employed in PRESENT and is explained in more detail [here]({{< relref "hw/ip/prim/doc/prim_ram_1p_scr#custom-substitution-permutation-network" >}}).
 
 Another CTR mode augmentation that is aimed at breaking the linear address space is SRAM address scrambling.
-The same S&P network that is used for intra-word diffusion is leveraged to non-linearly remap the SRAM address as shown in the block diagram above.
+The same S&P network construction that is used for intra-word diffusion is leveraged to non-linearly remap the SRAM address as shown in the block diagram above.
 
 ### Integrity Error Handling
 
@@ -146,7 +146,7 @@ Initialization can be triggered via the {{< regref "CTRL.INIT" >}} CSR, and once
 Then, the memory is initialized with pseudorandom data pulled from the LFSR.
 For each pseudorandom 32bit word, the initialization mechanism computes the corresponding integrity bits and writes both the data and integrity bits (39bit total) through the scrambling device using the most recently obtained scrambling key.
 
-If SW triggers the scrambling key renewal and LFSR initialization at the same time (i.e., with the same CSR write operation), the LFSR initialization will be stalled until a new scrambling key has been obtained.
+If SW triggers the scrambling key update and LFSR initialization at the same time (i.e., with the same CSR write operation), the LFSR initialization will be stalled until an updated scrambling key has been obtained.
 
 There is no limit on how often the initialization feature can be called, and hence it can also be used as a cheap SRAM wiping mechanism at runtime.
 Note however that the PRNG sequence does not have strong security guarantees, since it is produced using an LFSR.
@@ -204,9 +204,9 @@ For full write throughput, a more elaborate write buffering scheme would be requ
 The memory inside the SRAM controller can be used right away after a system reset.
 However, since the scrambling key defaults to a predefined value, it is recommended that SW performs the following initialization steps as early in the boot process as possible.
 
-1. Request a new ephemeral scrambling key from OTP by writing 0x1 to {{< regref "CTRL.RENEW_SCR_KEY" >}}.
+1. Request an updated ephemeral scrambling key from OTP by writing 0x1 to {{< regref "CTRL.RENEW_SCR_KEY" >}}.
    SW can spin on {{< regref "STATUS.SCR_KEY_VALID" >}} to wait until the new key has been obtained.
-   This is however not strictly needed, since memory accesses to the SRAM will be stalled until the new key has been obtained.
+   This is however not strictly needed, since memory accesses to the SRAM will be stalled until the updated key has been obtained.
 
 2. (optional) Initialize the memory with pseudo random data by writing 0x1 to {{< regref "CTRL.INIT" >}}
    SW can spin on {{< regref "STATUS.INIT_DONE" >}} to wait until the memory has been initialized.
@@ -218,7 +218,7 @@ However, since the scrambling key defaults to a predefined value, it is recommen
 
 4. (optional) Lock down write access to {{< regref "CTRL" >}} by writing to {{< regref "CTRL_REGWEN" >}} if future key renewals and initializations should be disallowed until the next system reset.
 
-Note that before (re-)requesting a new SRAM key it is imperative to make sure that:
+Note that before (re-)requesting an updated SRAM key it is imperative to make sure that:
 - The memory contents are not needed anymore. Requesting a key implicitly wipes all data in the SRAM.
 - The CSRNG and the entropy distribution network have been initialized. The key derivation mechanism in OTP needs to request a chunk of fresh entropy, and that request will block until the entropy distribution network responds.
 
