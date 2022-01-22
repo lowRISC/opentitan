@@ -653,6 +653,8 @@ usbdev_test_lib = declare_dependency(
     sources: ['usbdev_test.c'],
     dependencies: [
       sw_lib_usb,
+      sw_lib_dif_pinmux,
+      sw_lib_pinmux,
       sw_lib_runtime_log,
     ],
   ),

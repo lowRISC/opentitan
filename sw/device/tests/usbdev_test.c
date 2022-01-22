@@ -19,12 +19,16 @@
 
 #include "sw/device/lib/usbdev.h"
 
+#include "sw/device/lib/dif/dif_pinmux.h"
+#include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/test_framework/ottf.h"
 #include "sw/device/lib/usb_controlep.h"
 #include "sw/device/lib/usb_simpleserial.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
 /**
  * Configuration values for USB.
@@ -47,6 +51,11 @@ static uint8_t config_descriptors[] = {
 static usbdev_ctx_t usbdev;
 static usb_controlep_ctx_t usbdev_control;
 static usb_ss_ctx_t simple_serial;
+
+/**
+ * Pinmux handle
+ */
+static dif_pinmux_t pinmux;
 
 /**
  * Makes `c` into a printable character, replacing it with `replacement`
@@ -89,6 +98,13 @@ bool test_main(void) {
 
   LOG_INFO("Running USBDEV test");
 
+  CHECK_DIF_OK(dif_pinmux_init(
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+  pinmux_init();
+  CHECK_DIF_OK(dif_pinmux_input_select(
+      &pinmux, kTopEarlgreyPinmuxPeripheralInUsbdevSense,
+      kTopEarlgreyPinmuxInselIor0));
+
   // Call `usbdev_init` here so that DPI will not start until the
   // simulation has finished all of the printing, which takes a while
   // if `--trace` was passed in.
@@ -96,6 +112,9 @@ bool test_main(void) {
               /* tx_diff= */ false);
   usb_controlep_init(&usbdev_control, &usbdev, 0, config_descriptors,
                      sizeof(config_descriptors));
+  while (usbdev_control.device_state != kUsbDeviceConfigured) {
+    usbdev_poll(&usbdev);
+  }
   usb_simpleserial_init(&simple_serial, &usbdev, 1, usb_receipt_callback);
 
   while (usb_chars_recved_total < kExpectedUsbCharsRecved) {

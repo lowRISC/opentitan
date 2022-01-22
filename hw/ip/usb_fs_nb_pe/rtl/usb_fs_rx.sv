@@ -19,13 +19,13 @@ module usb_fs_rx (
   input  logic usb_dp_i,
   input  logic usb_dn_i,
 
-  // Transmit enable disables the receier
+  // Transmit enable disables the receiver
   input  logic tx_en_i,
 
   // pulse on every bit transition.
   output logic bit_strobe_o,
 
-  // Pulse on beginning of new packet.
+  // Pulse on detecting a start of packet symbol (i.e. the beginning of sync)
   output logic pkt_start_o,
 
   // Pulse on end of current packet.
@@ -37,7 +37,8 @@ module usb_fs_rx (
   output logic [3:0]  endp_o,
   output logic [10:0] frame_num_o,
 
-  // Pulse on valid data on rx_data.
+  // Pulse on valid data on rx_data. Will not go high for token or handshake
+  // packets.
   output logic rx_data_put_o,
   output logic [7:0] rx_data_o,
 
@@ -244,14 +245,17 @@ module usb_fs_rx (
   // packet detection //
   //////////////////////
 
-  // usb uses a sync to denote the beginning of a packet and two single-ended-0 to
-  // denote the end of a packet.  this state machine recognizes the beginning and
-  // end of packets for subsequent layers to process.
+  // usb uses a sync to denote the beginning of a packet's PID and two
+  // single-ended-0 to denote the end of a packet.  this state machine
+  // recognizes the beginning and end of packets for subsequent layers to
+  // process.
 
   logic [11:0] line_history_q, line_history_d;
   logic packet_valid_q, packet_valid_d;
-  logic see_eop, packet_start, packet_end;
+  logic see_sop, see_eop, packet_start, packet_end;
+  logic in_packet_d, in_packet_q;
 
+  // A bit of a misnomer: packet_start pulses when the PID begins, not SOP.
   assign packet_start = packet_valid_d & ~packet_valid_q;
   assign packet_end   = ~packet_valid_d & packet_valid_q;
 
@@ -260,6 +264,19 @@ module usb_fs_rx (
   // We also trigger an EOP on seeing a bitstuff error.
   assign see_eop = (cfg_eop_single_bit_i && line_history_q[1:0] == 2'b00)
     || (line_history_q[3:0] == 4'b0000) || bitstuff_error_q;
+
+  // SOP is the transition from idle (J) to K
+  assign see_sop = (line_history_q[3:0] == 4'b1001) & ~tx_en_i & ~in_packet_q;
+  assign in_packet_d = see_eop ? 1'b0 :
+                       see_sop ? 1'b1 : in_packet_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_reg_in_packet
+    if (!rst_ni) begin
+      in_packet_q <= 1'b0;
+    end else begin
+      in_packet_q <= in_packet_d;
+    end
+  end
 
   always_comb begin : proc_packet_valid_d
     if (line_state_valid) begin
@@ -519,7 +536,7 @@ module usb_fs_rx (
   assign frame_num_o = frame_num_q;
   assign pid_o       = full_pid_q[4:1];
 
-  assign pkt_start_o = packet_start;
+  assign pkt_start_o = see_sop;
   assign pkt_end_o   = packet_end;
 
 

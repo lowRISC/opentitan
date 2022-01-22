@@ -46,6 +46,8 @@ module usb_fs_nb_pe #(
   output logic                   out_ep_acked_o, // good termination, device has acked
   output logic                   out_ep_rollback_o, // bad termination, discard data
   output logic [NumOutEps-1:0]   out_ep_setup_o,
+  input  logic [NumOutEps-1:0]   out_ep_enabled_i, // Endpoint is enabled and produces handshakes
+  input  logic [NumOutEps-1:0]   out_ep_control_i, // Is a control endpoint: Accepts SETUP packets
   input  logic [NumOutEps-1:0]   out_ep_full_i, // Cannot accept data
   input  logic [NumOutEps-1:0]   out_ep_stall_i, // Stalled
   input  logic [NumOutEps-1:0]   out_ep_iso_i, // Configure endpoint in isochronous mode
@@ -53,10 +55,11 @@ module usb_fs_nb_pe #(
   // in endpoint interfaces
   output logic [3:0]             in_ep_current_o, // Other signals addressed to this ep
   output logic                   in_ep_rollback_o, // Bad termination, rollback transaction
-  output logic                   in_ep_xfr_end_o, // good termination, transaction complete
+  output logic                   in_ep_xact_end_o, // good termination, transaction complete
   output logic [PktW - 1:0]      in_ep_get_addr_o, // Offset requested (0..pktlen)
   output logic                   in_ep_data_get_o, // Accept data (get_addr advances too)
   output logic                   in_ep_newpkt_o, // New IN pkt start (with in_ep_current_o update)
+  input  logic [NumInEps-1:0]    in_ep_enabled_i, // Endpoint is enabled and produces handshakes
   input  logic [NumInEps-1:0]    in_ep_stall_i, // Endpoint in a stall state
   input  logic [NumInEps-1:0]    in_ep_has_data_i, // Endpoint has data to supply
   input  logic [7:0]             in_ep_data_i, // Data for current get_addr
@@ -137,10 +140,11 @@ module usb_fs_nb_pe #(
     // endpoint interface
     .in_ep_current_o       (in_ep_current_o),
     .in_ep_rollback_o      (in_ep_rollback_o),
-    .in_ep_xfr_end_o       (in_ep_xfr_end_o),
+    .in_ep_xact_end_o      (in_ep_xact_end_o),
     .in_ep_get_addr_o      (in_ep_get_addr_o),
     .in_ep_data_get_o      (in_ep_data_get_o),
     .in_ep_newpkt_o        (in_ep_newpkt_o),
+    .in_ep_enabled_i       (in_ep_enabled_i),
     .in_ep_stall_i         (in_ep_stall_i),
     .in_ep_has_data_i      (in_ep_has_data_i),
     .in_ep_data_i          (in_ep_data_i),
@@ -184,6 +188,8 @@ module usb_fs_nb_pe #(
     .out_ep_acked_o         (out_ep_acked_o),
     .out_ep_rollback_o      (out_ep_rollback_o),
     .out_ep_setup_o         (out_ep_setup_o),
+    .out_ep_enabled_i       (out_ep_enabled_i),
+    .out_ep_control_i       (out_ep_control_i),
     .out_ep_full_i          (out_ep_full_i),
     .out_ep_stall_i         (out_ep_stall_i),
     .out_ep_iso_i           (out_ep_iso_i),

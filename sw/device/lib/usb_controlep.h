@@ -19,10 +19,20 @@ typedef enum ctstate {
   kCtError        // Something bad
 } ctstate_t;
 
+typedef enum usbdevice_state {
+  kUsbDeviceAttached,
+  kUsbDevicePowered,
+  kUsbDeviceDefault,
+  kUsbDeviceAddressed,
+  kUsbDeviceConfigured,
+  kUsbDeviceSuspended,
+} usb_device_state_t;
+
 typedef struct usb_controlep_ctx {
   usbdev_ctx_t *ctx;
   int ep;
   ctstate_t ctrlstate;
+  usb_device_state_t device_state;
   uint32_t new_dev;
   uint8_t usb_config;
   const uint8_t *cfg_dscr;

@@ -266,11 +266,21 @@ module usbdev
   logic [NEndpoints-1:0] clear_rdybit, set_sentbit, update_pend;
   logic                  usb_setup_received, setup_received, usb_set_sent, set_sent;
   logic [NEndpoints-1:0] ep_iso;
-  logic [NEndpoints-1:0] enable_setup, enable_out, ep_stall;
-  logic [NEndpoints-1:0] usb_enable_setup, usb_enable_out, usb_ep_stall;
+  logic [NEndpoints-1:0] enable_setup, enable_out, in_ep_stall, out_ep_stall;
+  logic [NEndpoints-1:0] usb_enable_setup, usb_enable_out;
+  logic [NEndpoints-1:0] usb_in_ep_stall, usb_out_ep_stall;
+  logic [NEndpoints-1:0] ep_in_enable, ep_out_enable, usb_ep_in_enable, usb_ep_out_enable;
   logic [NEndpoints-1:0] in_rdy_async;
   logic [3:0]            usb_out_endpoint;
   logic                  usb_out_endpoint_val;
+
+  // Endpoint enables
+  always_comb begin : proc_map_ep_enable
+    for (int i = 0; i < NEndpoints; i++) begin
+      ep_in_enable[i] = reg2hw.ep_in_enable[i].q;
+      ep_out_enable[i] = reg2hw.ep_out_enable[i].q;
+    end
+  end
 
   // RX enables
   always_comb begin : proc_map_rxenable
@@ -283,17 +293,27 @@ module usbdev
   // STALL for both directions
   always_comb begin : proc_map_stall
     for (int i = 0; i < NEndpoints; i++) begin
-      ep_stall[i] = reg2hw.stall[i];
+      in_ep_stall[i] = reg2hw.in_stall[i];
+      out_ep_stall[i] = reg2hw.out_stall[i];
     end
   end
 
   prim_flop_2sync #(
-    .Width(3*NEndpoints)
+    .Width(4*NEndpoints)
   ) usbdev_sync_ep_cfg (
     .clk_i  (clk_usb_48mhz_i),
     .rst_ni (rst_usb_48mhz_ni),
-    .d_i    ({enable_setup, enable_out, ep_stall}),
-    .q_o    ({usb_enable_setup, usb_enable_out, usb_ep_stall})
+    .d_i    ({enable_setup, enable_out, in_ep_stall, out_ep_stall}),
+    .q_o    ({usb_enable_setup, usb_enable_out, usb_in_ep_stall, usb_out_ep_stall})
+  );
+
+  prim_flop_2sync #(
+    .Width(2*NEndpoints)
+  ) usbdev_sync_ep_enable (
+    .clk_i  (clk_usb_48mhz_i),
+    .rst_ni (rst_usb_48mhz_ni),
+    .d_i    ({ep_in_enable, ep_out_enable}),
+    .q_o    ({usb_ep_in_enable, usb_ep_out_enable})
   );
 
   // CDC: ok, quasi-static
@@ -521,7 +541,7 @@ module usbdev
     // receive side
     .rx_setup_i           (usb_enable_setup),
     .rx_out_i             (usb_enable_out),
-    .rx_stall_i           (usb_ep_stall),
+    .rx_stall_i           (usb_out_ep_stall),
     .av_rvalid_i          (usb_av_rvalid),
     .av_rready_o          (usb_av_rready),
     .av_rdata_i           (usb_av_rdata),
@@ -538,7 +558,7 @@ module usbdev
     // transmit side
     .in_buf_i             (usb_in_buf[usb_in_endpoint]),
     .in_size_i            (usb_in_size[usb_in_endpoint]),
-    .in_stall_i           (usb_ep_stall),
+    .in_stall_i           (usb_in_ep_stall),
     .in_rdy_i             (usb_in_rdy),
     .set_sent_o           (usb_set_sent),
     .in_endpoint_o        (usb_in_endpoint),
@@ -555,6 +575,8 @@ module usbdev
     .enable_i             (usb_enable),
     .devaddr_i            (usb_device_addr),
     .clr_devaddr_o        (usb_clr_devaddr),
+    .in_ep_enabled_i      (usb_ep_in_enable),
+    .out_ep_enabled_i     (usb_ep_out_enable),
     .ep_iso_i             (ep_iso), // cdc ok, quasi-static
     .cfg_eop_single_bit_i (reg2hw.phy_config.eop_single_bit.q), // cdc ok: quasi-static
     .tx_osc_test_mode_i   (reg2hw.phy_config.tx_osc_test_mode.q), // cdc ok: quasi-static
@@ -663,11 +685,14 @@ module usbdev
   // setup_received, as it is stable
   always_comb begin : proc_stall_tieoff
     for (int i = 0; i < NEndpoints; i++) begin
-      hw2reg.stall[i].d  = 1'b0;
+      hw2reg.in_stall[i].d  = 1'b0;
+      hw2reg.out_stall[i].d  = 1'b0;
       if (setup_received && usb_out_endpoint_val && usb_out_endpoint == 4'(unsigned'(i))) begin
-        hw2reg.stall[i].de = 1'b1;
+        hw2reg.out_stall[i].de = 1'b1;
+        hw2reg.in_stall[i].de = 1'b1;
       end else begin
-        hw2reg.stall[i].de = 1'b0;
+        hw2reg.out_stall[i].de = 1'b0;
+        hw2reg.in_stall[i].de = 1'b0;
       end
     end
   end

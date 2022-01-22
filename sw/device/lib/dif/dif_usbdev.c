@@ -177,8 +177,8 @@ static bool is_valid_toggle(dif_toggle_t val) {
  * Checks if the given value is a valid endpoint number.
  */
 OT_WARN_UNUSED_RESULT
-static bool is_valid_endpoint(uint8_t endpoint) {
-  return endpoint < USBDEV_NUM_ENDPOINTS;
+static bool is_valid_endpoint(uint8_t endpoint_number) {
+  return endpoint_number < USBDEV_NUM_ENDPOINTS;
 }
 
 /**
@@ -338,29 +338,57 @@ dif_result_t dif_usbdev_endpoint_out_enable(const dif_usbdev_t *usbdev,
 }
 
 dif_result_t dif_usbdev_endpoint_stall_enable(const dif_usbdev_t *usbdev,
-                                              uint8_t endpoint,
+                                              dif_usbdev_endpoint_id_t endpoint,
                                               dif_toggle_t new_state) {
-  return endpoint_functionality_enable(usbdev, USBDEV_STALL_REG_OFFSET,
-                                       endpoint, new_state);
+  if (endpoint.direction == USBDEV_ENDPOINT_DIR_IN) {
+    return endpoint_functionality_enable(usbdev, USBDEV_IN_STALL_REG_OFFSET,
+                                         endpoint.number, new_state);
+  } else {
+    return endpoint_functionality_enable(usbdev, USBDEV_OUT_STALL_REG_OFFSET,
+                                         endpoint.number, new_state);
+  }
 }
 
 dif_result_t dif_usbdev_endpoint_stall_get(const dif_usbdev_t *usbdev,
-                                           uint8_t endpoint, bool *state) {
-  if (usbdev == NULL || state == NULL || !is_valid_endpoint(endpoint)) {
+                                           dif_usbdev_endpoint_id_t endpoint,
+                                           bool *state) {
+  if (usbdev == NULL || state == NULL || !is_valid_endpoint(endpoint.number)) {
     return kDifBadArg;
   }
 
-  *state = mmio_region_get_bit32(usbdev->base_addr, USBDEV_STALL_REG_OFFSET,
-                                 kEndpointHwInfos[endpoint].bit_index);
+  if (endpoint.direction == USBDEV_ENDPOINT_DIR_IN) {
+    *state =
+        mmio_region_get_bit32(usbdev->base_addr, USBDEV_IN_STALL_REG_OFFSET,
+                              kEndpointHwInfos[endpoint.number].bit_index);
+  } else {
+    *state =
+        mmio_region_get_bit32(usbdev->base_addr, USBDEV_OUT_STALL_REG_OFFSET,
+                              kEndpointHwInfos[endpoint.number].bit_index);
+  }
 
   return kDifOk;
 }
 
 dif_result_t dif_usbdev_endpoint_iso_enable(const dif_usbdev_t *usbdev,
-                                            uint8_t endpoint,
+                                            dif_usbdev_endpoint_id_t endpoint,
                                             dif_toggle_t new_state) {
-  return endpoint_functionality_enable(usbdev, USBDEV_ISO_REG_OFFSET, endpoint,
-                                       new_state);
+  // TODO: Support configuring IN and OUT endpoints independently when the
+  // hardware does.
+  return endpoint_functionality_enable(usbdev, USBDEV_ISO_REG_OFFSET,
+                                       endpoint.number, new_state);
+}
+
+dif_result_t dif_usbdev_endpoint_enable(const dif_usbdev_t *usbdev,
+                                        dif_usbdev_endpoint_id_t endpoint,
+                                        dif_toggle_t new_state) {
+  if (endpoint.direction == USBDEV_ENDPOINT_DIR_IN) {
+    return endpoint_functionality_enable(usbdev, USBDEV_EP_IN_ENABLE_REG_OFFSET,
+                                         endpoint.number, new_state);
+  } else {
+    return endpoint_functionality_enable(
+        usbdev, USBDEV_EP_OUT_ENABLE_REG_OFFSET, endpoint.number, new_state);
+  }
+  return kDifOk;
 }
 
 dif_result_t dif_usbdev_interface_enable(const dif_usbdev_t *usbdev,

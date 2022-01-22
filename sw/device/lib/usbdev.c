@@ -4,7 +4,6 @@
 
 #include "sw/device/lib/usbdev.h"
 
-
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "usbdev_regs.h"  // Generated.
 
@@ -16,6 +15,10 @@
 #define CLRBIT(val, bit) (val & ~(1 << bit))
 
 #define REG32(add) *((volatile uint32_t *)(add))
+
+static bool endpoint_is_in(uint8_t endpoint) { return endpoint & 0x80; }
+
+static uint8_t endpoint_number(uint8_t endpoint) { return endpoint & 0x7F; }
 
 // Free buffer pool is held on a simple stack
 // Initalize to all buffer IDs are free
@@ -213,14 +216,16 @@ void usbdev_set_deviceid(usbdev_ctx_t *ctx, int deviceid) {
 }
 
 void usbdev_halt(usbdev_ctx_t *ctx, int endpoint, int enable) {
+  // FIXME: The two endpoints are supposed to be independent
   uint32_t epbit = 1 << endpoint;
-  uint32_t stall = REG32(USBDEV_BASE_ADDR + USBDEV_STALL_REG_OFFSET);
+  uint32_t stall = REG32(USBDEV_BASE_ADDR + USBDEV_IN_STALL_REG_OFFSET);
   if (enable) {
     stall |= epbit;
   } else {
     stall &= ~epbit;
   }
-  REG32(USBDEV_BASE_ADDR + USBDEV_STALL_REG_OFFSET) = stall;
+  REG32(USBDEV_BASE_ADDR + USBDEV_IN_STALL_REG_OFFSET) = stall;
+  REG32(USBDEV_BASE_ADDR + USBDEV_OUT_STALL_REG_OFFSET) = stall;
   ctx->halted = stall;
   // TODO future addition would be to callback the endpoint driver
   // for now it just sees its traffic has stopped
@@ -243,11 +248,15 @@ void usbdev_clear_data_toggle(usbdev_ctx_t *ctx, int endpoint) {
 
 void usbdev_set_ep0_stall(usbdev_ctx_t *ctx, int stall) {
   if (stall) {
-    REG32(USBDEV_BASE_ADDR + USBDEV_STALL_REG_OFFSET) =
-        REG32(USBDEV_BASE_ADDR + USBDEV_STALL_REG_OFFSET) | 1;
+    REG32(USBDEV_BASE_ADDR + USBDEV_IN_STALL_REG_OFFSET) =
+        REG32(USBDEV_BASE_ADDR + USBDEV_IN_STALL_REG_OFFSET) | 1;
+    REG32(USBDEV_BASE_ADDR + USBDEV_OUT_STALL_REG_OFFSET) =
+        REG32(USBDEV_BASE_ADDR + USBDEV_OUT_STALL_REG_OFFSET) | 1;
   } else {
-    REG32(USBDEV_BASE_ADDR + USBDEV_STALL_REG_OFFSET) =
-        REG32(USBDEV_BASE_ADDR + USBDEV_STALL_REG_OFFSET) & ~(1);
+    REG32(USBDEV_BASE_ADDR + USBDEV_IN_STALL_REG_OFFSET) =
+        REG32(USBDEV_BASE_ADDR + USBDEV_IN_STALL_REG_OFFSET) & ~(1);
+    REG32(USBDEV_BASE_ADDR + USBDEV_OUT_STALL_REG_OFFSET) =
+        REG32(USBDEV_BASE_ADDR + USBDEV_OUT_STALL_REG_OFFSET) & ~(1);
   }
 }
 
@@ -263,11 +272,24 @@ void usbdev_endpoint_setup(usbdev_ctx_t *ctx, int ep, int enableout,
   ctx->rx_callback[ep] = rx;
   ctx->flush[ep] = flush;
   ctx->reset[ep] = reset;
+
+  uint32_t tx_ep_en = REG32(USBDEV_BASE_ADDR + USBDEV_EP_IN_ENABLE_REG_OFFSET);
+  tx_ep_en |= (1 << (ep + USBDEV_EP_IN_ENABLE_ENABLE_0_BIT));
+  REG32(USBDEV_BASE_ADDR + USBDEV_EP_IN_ENABLE_REG_OFFSET) = tx_ep_en;
+
   if (enableout) {
     uint32_t rxen = REG32(USBDEV_BASE_ADDR + USBDEV_RXENABLE_OUT_REG_OFFSET);
     rxen |= (1 << (ep + USBDEV_RXENABLE_OUT_OUT_0_BIT));
     REG32(USBDEV_BASE_ADDR + USBDEV_RXENABLE_OUT_REG_OFFSET) = rxen;
+    uint32_t ep_en = REG32(USBDEV_BASE_ADDR + USBDEV_EP_OUT_ENABLE_REG_OFFSET);
+    ep_en |= (1 << (ep + USBDEV_EP_OUT_ENABLE_ENABLE_0_BIT));
+    REG32(USBDEV_BASE_ADDR + USBDEV_EP_OUT_ENABLE_REG_OFFSET) = ep_en;
   }
+}
+
+void usbdev_connect(usbdev_ctx_t *ctx) {
+  REG32(USBDEV_BASE_ADDR + USBDEV_USBCTRL_REG_OFFSET) =
+      (1 << USBDEV_USBCTRL_ENABLE_BIT);
 }
 
 void usbdev_init(usbdev_ctx_t *ctx, bool pinflip, bool diff_rx, bool diff_tx) {
@@ -289,6 +311,12 @@ void usbdev_init(usbdev_ctx_t *ctx, bool pinflip, bool diff_rx, bool diff_tx) {
       (1 << USBDEV_RXENABLE_SETUP_SETUP_0_BIT);
   REG32(USBDEV_BASE_ADDR + USBDEV_RXENABLE_OUT_REG_OFFSET) =
       (1 << USBDEV_RXENABLE_OUT_OUT_0_BIT);
+  REG32(USBDEV_BASE_ADDR + USBDEV_EP_IN_ENABLE_REG_OFFSET) =
+      (1 << USBDEV_EP_IN_ENABLE_ENABLE_0_BIT);
+  REG32(USBDEV_BASE_ADDR + USBDEV_EP_OUT_ENABLE_REG_OFFSET) =
+      (1 << USBDEV_EP_OUT_ENABLE_ENABLE_0_BIT);
+  REG32(USBDEV_BASE_ADDR + USBDEV_IN_STALL_REG_OFFSET) = 0;
+  REG32(USBDEV_BASE_ADDR + USBDEV_OUT_STALL_REG_OFFSET) = 0;
 
   uint32_t phy_config =
       (pinflip << USBDEV_PHY_CONFIG_PINFLIP_BIT) |
@@ -296,9 +324,6 @@ void usbdev_init(usbdev_ctx_t *ctx, bool pinflip, bool diff_rx, bool diff_tx) {
       (diff_tx << USBDEV_PHY_CONFIG_TX_DIFFERENTIAL_MODE_BIT) |
       (1 << USBDEV_PHY_CONFIG_EOP_SINGLE_BIT_BIT);
   REG32(USBDEV_BASE_ADDR + USBDEV_PHY_CONFIG_REG_OFFSET) = phy_config;
-
-  REG32(USBDEV_BASE_ADDR + USBDEV_USBCTRL_REG_OFFSET) =
-      (1 << USBDEV_USBCTRL_ENABLE_BIT);
 }
 
 void usbdev_force_dx_pullup(line_sel_t line, bool set) {
