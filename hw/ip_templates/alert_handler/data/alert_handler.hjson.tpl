@@ -230,6 +230,21 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     { name: "CONFIG.SHADOW",
       desc: "Important CSRs are shadowed."
     }
+    { name: "PING_TIMER.CONFIG.REGWEN",
+      desc: "The ping timer configuration registers are REGWEN protected."
+    }
+    {
+      name: "ALERT.CONFIG.REGWEN",
+      desc: "The individual alert enables are REGWEN protected."
+    }
+    {
+      name: "ALERT_LOC.CONFIG.REGWEN",
+      desc: "The individual local alert enables are REGWEN protected."
+    }
+    {
+      name: "CLASS.CONFIG.REGWEN",
+      desc: "The class configuration registers are REGWEN protected."
+    }
     { name: "ALERT.INTERSIG.DIFF",
       desc: "Differentially encoded alert channels."
     }
@@ -259,6 +274,14 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     }
     { name: "PING_TIMER.FSM.LOCAL_ESC",
       desc: "Ping timer FSM moves into an invalid state upon local escalation."
+    }
+    { name: "ESC_TIMER.FSM.GLOBAL_ESC",
+      desc: '''
+            The escalation timer FSMs are the root of global escalation,
+            hence if any of them moves into an invalid state by virtue of
+            ESC_TIMER.FSM.LOCAL_ESC, this will trigger all escalation actions
+            and thereby global escalation as well.
+            '''
     }
     { name: "ACCU.CTR.REDUN",
       desc: "Accumulator counters are redundant."
