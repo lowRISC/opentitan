@@ -13,6 +13,7 @@ import reggen.gen_rtl
 from mako import exceptions as mako_exceptions  # type: ignore
 from mako.lookup import TemplateLookup as MakoTemplateLookup  # type: ignore
 from reggen.ip_block import IpBlock
+from reggen.countermeasure import CounterMeasure
 
 from .lib import IpConfig, IpTemplate, TemplateParameter
 
@@ -267,10 +268,19 @@ class IpBlockRenderer(IpTemplateRendererBase):
                     f"{str(hjson_path)!r} does not exist.")
             rtl_path = output_dir_staging / 'rtl'
             rtl_path.mkdir(exist_ok=True)
+
+            obj = IpBlock.from_path(str(hjson_path), [])
+
+            # If this block has countermeasures, we grep for RTL annotations in
+            # all .sv implementation files and check whether they match up
+            # with what is defined inside the Hjson.
+            sv_files = rtl_path.glob('*.sv')
+            rtl_names = CounterMeasure.search_rtl_files(sv_files)
+            obj.check_cm_annotations(rtl_names, str(hjson_path))
+
             # TODO: Pass on template parameters to reggen? Or enable the user
             # to set a different set of parameters in the renderer?
-            reggen.gen_rtl.gen_rtl(IpBlock.from_path(str(hjson_path), []),
-                                   str(rtl_path))
+            reggen.gen_rtl.gen_rtl(obj, str(rtl_path))
 
             # Write IP configuration (to reproduce the generation process).
             # TODO: Should the ipconfig file be written to the instance name,
