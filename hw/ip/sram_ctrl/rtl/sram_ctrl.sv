@@ -39,9 +39,12 @@ module sram_ctrl
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0]  alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]  alert_tx_o,
   // Life-cycle escalation input (scraps the scrambling keys)
+  // SEC_CM: LC_ESCALATE_EN.INTERSIG.MUBI
   input  lc_ctrl_pkg::lc_tx_t                        lc_escalate_en_i,
+  // SEC_CM: LC_HW_DEBUG_EN.INTERSIG.MUBI
   input  lc_ctrl_pkg::lc_tx_t                        lc_hw_debug_en_i,
   // Otp configuration for sram execution
+  // SEC_CM: EXEC.INTERSIG.MUBI
   input  prim_mubi_pkg::mubi8_t                      otp_en_sram_ifetch_i,
   // Key request to OTP (running on clk_fixed)
   output otp_ctrl_pkg::sram_otp_key_req_t            sram_otp_key_o,
@@ -86,6 +89,8 @@ module sram_ctrl
   sram_ctrl_regs_reg2hw_t reg2hw;
   sram_ctrl_regs_hw2reg_t hw2reg;
 
+  // SEC_CM: CTRL.CONFIG.REGWEN
+  // SEC_CM: EXEC.CONFIG.REGWEN
   sram_ctrl_regs_reg_top u_reg_regs (
     .clk_i,
     .rst_ni,
@@ -313,7 +318,9 @@ module sram_ctrl
     // SEC_CM: INSTR.BUS.LC_GATED
     assign lc_ifetch_en = (lc_hw_debug_en_i == lc_ctrl_pkg::On) ? MuBi4True :
                                                                   MuBi4False;
+    // SEC_CM: EXEC.CONFIG.MUBI
     assign reg_ifetch_en = mubi4_t'(reg2hw.exec.q);
+    // SEC_CM: EXEC.INTERSIG.MUBI
     assign en_ifetch = (mubi8_test_true_strict(otp_en_sram_ifetch_i)) ? reg_ifetch_en :
                                                                         lc_ifetch_en;
   end else begin : gen_tieoff
