@@ -198,9 +198,9 @@ class CounterMeasure:
 
         # Is there anything in the Hjson that isn't described in the RTL?
         for name in hjson_set - rtl_set:
-            log.warning("Countermeasure {} is referenced in the Hjson, but "
-                        "doesn't appear in the RTL."
-                        .format(name))
+            log.warning("Countermeasure {} is referenced in the Hjson of the "
+                        "{}, but doesn't appear in the RTL."
+                        .format(name, what))
 
         # TODO(#10071): Once all designs are annotated, generate a RuntimeError
         #               if we saw anything in the loop above.
