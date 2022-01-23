@@ -19,6 +19,7 @@ elf_to_dis_custom_target_args = {
     '--disassemble',
     '--headers',
     '--line-numbers',
+    '--disassemble-zeroes',
     '--source',
     '@INPUT@',
   ],
