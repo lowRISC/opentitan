@@ -24,27 +24,39 @@ timeunit  1ns / 1ps;
 import ast_bhv_pkg::* ;
 
 localparam real SysClkPeriod = 10000; // 10000ps (100Mhz)
-logic clk;
 shortreal jitter;
+reg init_start = 1'b0;
 
 initial begin
-  clk  = 1'b0;
   $display("\nSYS Clock Period: %0dps", SysClkPeriod);
+  #1; init_start  = 1'b1;
 end
 
 // Enable 5us RC Delay on rise
-logic en_osc_re;
-buf #(SYS_EN_RDLY, 0) b0 (en_osc_re, (vcore_pok_h_i && sys_en_i));
+wire en_osc_re_buf, en_osc_re;
+buf #(SYS_EN_RDLY, 0) b0 (en_osc_re_buf, (vcore_pok_h_i && sys_en_i));
+assign en_osc_re = en_osc_re_buf && init_start;
 
 // Clock Oscillator
 ////////////////////////////////////////
 logic en_osc;
+reg clk_osc = 1'b1;
 
 always begin
   // 0-2000ps is upto +20% Jitter
   jitter = sys_jen_i ? $urandom_range(2000, 0) : 0;
-  #((SysClkPeriod+jitter)/2000) clk = ~clk && en_osc;
+  #((SysClkPeriod+jitter)/2000) clk_osc = ~clk_osc;
 end
+
+// HDL Clock Gate
+logic clk;
+reg en_clk;
+
+always_latch begin
+  if ( !clk_osc ) en_clk <= en_osc;
+end
+
+assign clk = clk_osc && en_clk;
 `else  // of SYBTHESIS
 // SYNTHESIS/LINTER
 ///////////////////////////////////////

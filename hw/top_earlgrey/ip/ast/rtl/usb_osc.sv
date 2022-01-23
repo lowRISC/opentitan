@@ -24,33 +24,46 @@ timeunit 1ns / 1ps;
 import ast_bhv_pkg::* ;
 
 localparam real UsbClkPeriod = 1000000/48;  // ~20833.33333ps (48Mhz)
-logic clk;
 integer rand32;
+reg init_start = 1'b0;
 
 initial begin
-  clk = 1'b0;
   $display("\nUSB Clock Period: %0dps", UsbClkPeriod);
   rand32 = $urandom_range((9'd416), -(9'd416));  // +/-416ps (+/-2% max)
   $display("USB Clock Drift: %0dps", rand32);
+  #1; init_start  = 1'b1;
 end
 
 // Enable 5us RC Delay on rise
-logic en_osc_re;
-buf #(IO_EN_RDLY, 0) b0 (en_osc_re, (vcore_pok_h_i && usb_en_i));
+wire en_osc_re_buf, en_osc_re;
+buf #(IO_EN_RDLY, 0) b0 (en_osc_re_buf, (vcore_pok_h_i && usb_en_i));
+assign en_osc_re = en_osc_re_buf && init_start;
 
-logic ref_val;
-buf #(USB_VAL_RDLY, USB_VAL_FDLY) b1 (ref_val, usb_ref_val_i);
+logic ref_val_buf, ref_val;
+buf #(USB_VAL_RDLY, USB_VAL_FDLY) b1 (ref_val_buf, usb_ref_val_i);
+assign ref_val = ref_val_buf && init_start;
 
 // Clock Oscillator
 ////////////////////////////////////////
 logic en_osc;
-shortreal drift;
+reg clk_osc = 1'b1;
 
+shortreal drift;
 assign drift = ref_val ? 0 : rand32;
 
 always begin
-  #((UsbClkPeriod + drift)/2000) clk = ~clk && en_osc;
+  #((UsbClkPeriod + drift)/2000) clk_osc = ~clk_osc;
 end
+
+// HDL Clock Gate
+logic clk;
+reg en_clk;
+
+always_latch begin
+  if ( !clk_osc ) en_clk <= en_osc;
+end
+
+assign clk = clk_osc && en_clk;
 `else  // of SYBTHESIS
 // SYNTHESIS/LINTER
 ///////////////////////////////////////
