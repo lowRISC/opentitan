@@ -24,6 +24,7 @@ filesets:
       - seq_lib/entropy_src_common_vseq.sv: {is_include_file: true}
       - seq_lib/entropy_src_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/entropy_src_rng_vseq.sv: {is_include_file: true}
+      - seq_lib/entropy_src_fw_ov_vseq.sv: {is_include_file: true}
       - seq_lib/entropy_src_stress_all_vseq.sv: {is_include_file: true}
       - seq_lib/entropy_src_base_rng_seq.sv: {is_include_file: true}
     file_type: systemVerilogSource

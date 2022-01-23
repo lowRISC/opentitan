@@ -6,4 +6,5 @@
 `include "entropy_src_smoke_vseq.sv"
 `include "entropy_src_common_vseq.sv"
 `include "entropy_src_rng_vseq.sv"
+`include "entropy_src_fw_ov_vseq.sv"
 `include "entropy_src_stress_all_vseq.sv"

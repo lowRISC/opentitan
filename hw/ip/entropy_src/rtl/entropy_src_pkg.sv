@@ -13,6 +13,9 @@ package entropy_src_pkg;
   parameter int  CSRNG_BUS_WIDTH = 384;
   parameter int  FIPS_BUS_WIDTH  = 1;
   parameter int  FIPS_CSRNG_BUS_WIDTH = FIPS_BUS_WIDTH + CSRNG_BUS_WIDTH;
+  // TODO: Should this be re-used in the RTL?
+  parameter int  OBSERVE_FIFO_DEPTH = 64;
+
 
   // es entropy i/f
   typedef struct packed {

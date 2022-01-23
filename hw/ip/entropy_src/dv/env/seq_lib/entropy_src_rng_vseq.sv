@@ -50,13 +50,13 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     ral.entropy_control.es_route.set(prim_mubi_pkg::MuBi4True);
     csr_update(.csr(ral.entropy_control));
     // Wait for data to arrive for TL consumption via the ENTROPY_DATA register
-    csr_spinwait(.ptr(ral.intr_state.es_entropy_valid), .exp_data(1'b1));
+    poll();
     ral.entropy_control.es_route.set(prim_mubi_pkg::MuBi4False);
     csr_update(.csr(ral.entropy_control));
 
     // read all available seeds
     do begin
-      do_entropy_data_read(.seeds_found(seeds_found));
+      do_entropy_data_read(.bundles_found(seeds_found));
     end while (seeds_found > 0);
     `uvm_info(`gfn, "CSR Thread: Seed read Successfully", UVM_HIGH)
   endtask
