@@ -239,8 +239,11 @@ test('sw_silicon_creator_lib_sigverify_unittest', executable(
     dependencies: [
       sw_vendor_gtest,
       sw_lib_testing_bitfield,
+      sw_lib_testing_hardened,
     ],
     native: true,
+    c_args: ['-DOT_OFF_TARGET_TEST'],
+    cpp_args: ['-DOT_OFF_TARGET_TEST'],
   ),
   suite: 'mask_rom',
 )

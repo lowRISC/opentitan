@@ -228,6 +228,7 @@ cc_library(
 cc_test(
     name = "sigverify_keys_unittest",
     srcs = [
+        "//sw/device/silicon_creator/lib:sigverify_src_for_keys_unittest",
         "sigverify_keys.c",
         "sigverify_keys.h",
         "sigverify_keys_unittest.cc",
@@ -241,7 +242,6 @@ cc_test(
         "//sw/device/lib/base",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:mock_sigverify",
-        "//sw/device/silicon_creator/lib:sigverify",
         "//sw/device/silicon_creator/lib:sigverify_internal",
         "//sw/device/silicon_creator/lib:sigverify_intf",
         "//sw/device/silicon_creator/lib:sigverify_mod_exp_ibex",
