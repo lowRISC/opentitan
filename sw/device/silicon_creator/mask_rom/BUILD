@@ -146,6 +146,7 @@ opentitan_functest(
         "//hw/ip/csrng/data:csrng_regs",
         "//hw/ip/edn/data:edn_regs",
         "//hw/ip/entropy_src/data:entropy_src_regs",
+        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/ip/pwrmgr/data/autogen:pwrmgr_regs",
         "//hw/ip/sram_ctrl/data:sram_ctrl_regs",

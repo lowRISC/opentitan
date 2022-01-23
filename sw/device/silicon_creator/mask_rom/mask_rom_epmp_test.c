@@ -23,6 +23,7 @@
 #include "sw/device/silicon_creator/lib/epmp_test_unlock.h"
 #include "sw/device/silicon_creator/mask_rom/mask_rom_epmp.h"
 
+#include "flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sram_ctrl_regs.h"  // Generated.
 
@@ -383,7 +384,7 @@ void mask_rom_main(void) {
 
   // Enable execution of code in flash.
   flash_ctrl_init();
-  flash_ctrl_exec_set(kFlashCtrlExecEnable);
+  flash_ctrl_exec_set(FLASH_CTRL_PARAM_EXEC_EN);
 
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);

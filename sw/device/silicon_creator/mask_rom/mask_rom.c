@@ -154,8 +154,7 @@ static rom_error_t mask_rom_boot(const manifest_t *manifest,
   keymgr_creator_max_ver_set(manifest->max_key_version);
 
   // Enable execution of code from flash if signature is verified.
-  // TODO: Replace kFlashCtrlExecEnable with flash_exec when HW is updated.
-  flash_ctrl_exec_set(kFlashCtrlExecEnable);
+  flash_ctrl_exec_set(flash_exec);
 
   sec_mmio_check_values(rnd_uint32());
   sec_mmio_check_counters(/*expected_check_count=*/3);

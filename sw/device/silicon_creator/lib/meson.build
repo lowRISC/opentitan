@@ -234,6 +234,7 @@ test('sw_silicon_creator_lib_sigverify_unittest', executable(
       'sigverify_unittest.cc',
       'sigverify.c',
       hw_ip_otp_ctrl_reg_h,
+      hw_ip_flash_ctrl_reg_h,
     ],
     dependencies: [
       sw_vendor_gtest,

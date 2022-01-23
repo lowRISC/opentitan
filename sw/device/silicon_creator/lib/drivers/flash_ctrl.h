@@ -387,22 +387,17 @@ void flash_ctrl_data_default_cfg_set(flash_ctrl_cfg_t cfg);
  */
 void flash_ctrl_info_cfg_set(flash_ctrl_info_page_t info_page, flash_ctrl_cfg_t cfg);
 
-typedef enum flash_ctrl_exec {
-  kFlashCtrlExecDisable,
-  kFlashCtrlExecEnable,
-} flash_ctrl_exec_t;
-
 /**
  * Enable execution from flash.
  *
  * Note: a ePMP region must also be configured in order to execute code in
  * flash.
  *
- * @param `enable` Value to write to the `flash_ctrl.EXEC` register. The
- *                value `0xa` will enable execution, all other values will
- *                disable execution.
+ * @param exec_val Value to write to the `flash_ctrl.EXEC` register.
+ * `FLASH_CTRL_PARAM_EXEC_EN` will enable execution, all other values will
+ * disable execution.
  */
-void flash_ctrl_exec_set(flash_ctrl_exec_t enable);
+void flash_ctrl_exec_set(uint32_t exec_val);
 
 /**
  * Disables all access to silicon creator info pages until next reset.

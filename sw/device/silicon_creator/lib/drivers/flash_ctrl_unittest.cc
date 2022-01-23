@@ -335,19 +335,10 @@ TEST_F(TransferTest, TransferInternalError) {
 
 class ExecTest : public FlashCtrlTest {};
 
-TEST_F(ExecTest, Enable) {
-  EXPECT_SEC_WRITE32(base_ + FLASH_CTRL_EXEC_REG_OFFSET,
-                     FLASH_CTRL_PARAM_EXEC_EN);
+TEST_F(ExecTest, Set) {
+  EXPECT_SEC_WRITE32(base_ + FLASH_CTRL_EXEC_REG_OFFSET, UINT32_MAX);
   EXPECT_SEC_WRITE_INCREMENT(1);
-  flash_ctrl_exec_set(kFlashCtrlExecEnable);
-}
-
-TEST_F(ExecTest, Disable) {
-  // Note: any value that is not FLASH_CTRL_PARAM_EXEC_EN will disable
-  // execution.
-  EXPECT_SEC_WRITE32(base_ + FLASH_CTRL_EXEC_REG_OFFSET, 0);
-  EXPECT_SEC_WRITE_INCREMENT(1);
-  flash_ctrl_exec_set(kFlashCtrlExecDisable);
+  flash_ctrl_exec_set(UINT32_MAX);
 }
 
 struct PermsSetCase {
