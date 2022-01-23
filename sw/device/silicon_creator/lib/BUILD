@@ -362,12 +362,22 @@ cc_library(
     ],
 )
 
+filegroup(
+    name = "sigverify_src_for_keys_unittest",
+    srcs = ["sigverify.c"],
+)
+
 cc_test(
     name = "sigverify_unittest",
-    srcs = ["sigverify_unittest.cc"],
+    srcs = [
+        "sigverify.c",
+        "sigverify_unittest.cc",
+    ],
+    defines = [
+        "OT_OFF_TARGET_TEST",
+    ],
     deps = [
         ":mock_sigverify",
-        ":sigverify",
         ":sigverify_intf",
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
