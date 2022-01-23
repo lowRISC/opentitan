@@ -93,6 +93,7 @@ mask_rom_epmp_test_lib = declare_dependency(
     'mask_rom_epmp_test_lib',
     sources: [
       hw_ip_sram_ctrl_reg_h,
+      hw_ip_flash_ctrl_reg_h,
       'mask_rom_epmp_test.c',
     ],
     link_depends: [rom_linkfile],

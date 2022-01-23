@@ -16,8 +16,12 @@
 #include "sw/device/silicon_creator/lib/mock_sigverify_mod_exp_otbn.h"
 #include "sw/device/silicon_creator/testing/mask_rom_test.h"
 
+#include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
+
+static_assert(kSigverifyFlashExec == FLASH_CTRL_PARAM_EXEC_EN,
+              "kSigverifyFlashExec must be equal to FLASH_CTRL_PARAM_EXEC_EN");
 
 namespace sigverify_unittest {
 namespace {

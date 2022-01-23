@@ -400,11 +400,8 @@ rom_error_t flash_ctrl_info_erase(flash_ctrl_info_page_t info_page,
   return wait_for_done(kErrorFlashCtrlInfoErase);
 }
 
-void flash_ctrl_exec_set(flash_ctrl_exec_t enable) {
-  // Enable or disable flash execution.
-  uint32_t exec_en =
-      (enable == kFlashCtrlExecEnable) ? FLASH_CTRL_PARAM_EXEC_EN : 0;
-  sec_mmio_write32(kBase + FLASH_CTRL_EXEC_REG_OFFSET, exec_en);
+void flash_ctrl_exec_set(uint32_t exec_val) {
+  sec_mmio_write32(kBase + FLASH_CTRL_EXEC_REG_OFFSET, exec_val);
   sec_mmio_write_increment(1);
 }
 
