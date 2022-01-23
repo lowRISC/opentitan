@@ -75,15 +75,15 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task dut_shutdown();
-    bit seeds_found;
+    bit bundles_found;
     // check for pending entropy_src operations and wait for them to complete
     `uvm_info(`gfn, "Shutting down", UVM_LOW)
     do begin
       #( 1us);
       `uvm_info(`gfn, "Polling for remaining data (clear entropy_data interrupt)", UVM_LOW)
-      do_entropy_data_read(-1, seeds_found);
-      `uvm_info(`gfn, $sformatf("Found %01d seeds", seeds_found), UVM_HIGH)
-    end while (seeds_found > 0);
+      do_entropy_data_read(.max_bundles(-1), .bundles_found(bundles_found));
+      `uvm_info(`gfn, $sformatf("Found %01d seeds", bundles_found), UVM_HIGH)
+    end while (bundles_found > 0);
 
     `uvm_info(`gfn, "Disabling DUT", UVM_MEDIUM)
     ral.module_enable.module_enable.set(prim_mubi_pkg::MuBi4False);
@@ -107,6 +107,14 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
     // Thresholds managed in derived vseq classes
 
+    // FW_OV registers
+    ral.fw_ov_control.fw_ov_mode.set(cfg.fw_read_enable);
+    ral.fw_ov_control.fw_ov_entropy_insert.set(cfg.fw_over_enable);
+    csr_update(.csr(ral.fw_ov_control));
+
+    ral.observe_fifo_thresh.observe_fifo_thresh.set(cfg.observe_fifo_thresh);
+    csr_update(ral.observe_fifo_thresh);
+
     // Enables (should be done last)
     ral.conf.fips_enable.set(cfg.enable);
 
@@ -115,6 +123,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     ral.conf.rng_bit_enable.set(cfg.rng_bit_enable);
     ral.conf.rng_bit_sel.set(cfg.rng_bit_sel);
     csr_update(.csr(ral.conf));
+
 
     ral.module_enable.set(cfg.enable); // TODO: Change config here?
     csr_update(.csr(ral.module_enable));
@@ -131,29 +140,90 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
   endtask
 
-  // Read all seeds in ENTROPY_DATA until
-  // a. Max_tries seed have been read
+  typedef enum int {
+    TlSrcEntropyDataReg,
+    TlSrcObserveFIFO
+  } tl_data_source_e;
+
+  // Poll the relevant interrupt bit for accessing either the ENTROPY_DATA or FW_OV_RD_DATA
+  // register
+  task poll(tl_data_source_e source = TlSrcEntropyDataReg);
+
+    uvm_reg_field intr_field;
+
+    case (source)
+      TlSrcEntropyDataReg: begin
+        intr_field = ral.intr_state.es_entropy_valid;
+      end
+      TlSrcObserveFIFO: begin
+        intr_field = ral.intr_state.es_observe_fifo_ready;
+      end
+      default: begin
+        `uvm_fatal(`gfn, "Invalid source for accessing TL entropy (enviroment error)")
+      end
+    endcase
+
+    csr_spinwait(.ptr(intr_field), .exp_data(1'b1));
+  endtask
+
+
+  // Read all data in ENTROPY_DATA or FW_OV_RD_DATA up to a certain ammount
+  //
+  // Data is read in bundles, where the size of a bundle depends on the data
+  // source.
+  //
+  // For the entropy_data register a bundle consists of CSRNG_BUS_WIDTH (=384) bits
+  // and this it takes CSRNG_BUS_WIDTH/TL_DW (=12) reads to fetch a whole bundle.
+  //
+  // When accessing the observe_fifo via the FW_OV_RD_DATA register the bundle size is
+  // programmable and set to be equal to the value set in the OBSERVE_FIFO_DEPTH register
+  // (TODO: What happens if the depth is zero?)
+  //
+  // a. max_bundles bundles have been read
   // b. The intr_state register indicates no more data in entropy_data
   //
-  // If max_tries < 0, simply reads all available seeds.
-  task do_entropy_data_read(int max_seeds = -1, output int seeds_found);
+  // If max_tries < 0, simply reads all available bundles.
+  task do_entropy_data_read(tl_data_source_e source = TlSrcEntropyDataReg,
+                            int max_bundles = -1,
+                            output int bundles_found);
     bit intr_status;
     bit done;
-    seeds_found = 0;
+    int cnt_per_interrupt;
+
+    uvm_reg_field intr_field;
+    uvm_reg       data_reg;
+
+    bundles_found = 0;
+
+    case (source)
+      TlSrcEntropyDataReg: begin
+        intr_field        = ral.intr_state.es_entropy_valid;
+        data_reg          = ral.entropy_data;
+        cnt_per_interrupt = entropy_src_pkg::CSRNG_BUS_WIDTH / TL_DW;
+      end
+      TlSrcObserveFIFO: begin
+        intr_field        = ral.intr_state.es_observe_fifo_ready;
+        data_reg          = ral.fw_ov_rd_data;
+        cnt_per_interrupt = ral.observe_fifo_thresh.get();
+      end
+      default: begin
+        `uvm_fatal(`gfn, "Invalid source for accessing TL entropy (enviroment error)")
+      end
+    endcase
 
     do begin
-      csr_rd(.ptr(ral.intr_state.es_entropy_valid), .value(intr_status));
+      csr_rd(.ptr(intr_field), .value(intr_status));
       if (intr_status) begin
         // Read and check entropy
-        for (int i = 0; i < entropy_src_pkg::CSRNG_BUS_WIDTH/TL_DW; i++) begin
+        for (int i = 0; i < cnt_per_interrupt; i++) begin
           bit [TL_DW-1:0] entropy_tlul;
-          csr_rd(.ptr(ral.entropy_data), .value(entropy_tlul));
+          csr_rd(.ptr(data_reg), .value(entropy_tlul));
         end
-        // Clear entropy_valid interrupt bit
-        csr_wr(.ptr(ral.intr_state.es_entropy_valid), .value(1'b1), .blocking(1'b1));
-        seeds_found++;
+        // Clear the appropriate interrupt bit
+        csr_wr(.ptr(intr_field), .value(1'b1), .blocking(1'b1));
+        bundles_found++;
       end
-      done = (max_seeds >= 0) && (seeds_found >= max_seeds);
+      done = (max_bundles >= 0) && (bundles_found >= max_bundles);
     end while (intr_status && !done);
   endtask
 

@@ -16,6 +16,7 @@ package entropy_src_test_pkg;
   `include "entropy_src_base_test.sv"
   `include "entropy_src_smoke_test.sv"
   `include "entropy_src_rng_test.sv"
+  `include "entropy_src_fw_ov_test.sv"
   `include "entropy_src_stress_all_test.sv"
 
 endpackage
