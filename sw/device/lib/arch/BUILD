@@ -1,7 +1,5 @@
 package(default_visibility = ["//visibility:public"])
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU")
-
 cc_library(
     name = "device",
     hdrs = ["device.h"],
