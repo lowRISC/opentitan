@@ -54,7 +54,6 @@ module rom_ctrl_fsm
   output logic                       alert_o
 );
 
-  import prim_mubi_pkg::mubi4_bool_to_mubi;
   import prim_mubi_pkg::mubi4_test_true_loose;
   import prim_mubi_pkg::MuBi4False, prim_mubi_pkg::MuBi4True;
 
@@ -87,8 +86,9 @@ module rom_ctrl_fsm
   );
 
   // The compare block (responsible for comparing CSR data and forwarding it to the key manager)
-  logic start_checker_q;
-  logic checker_done, checker_good, checker_alert;
+  logic   start_checker_q;
+  logic   checker_done, checker_alert;
+  mubi4_t checker_good;
   rom_ctrl_compare #(
     .NumWords  (TopCount)
   ) u_compare (
@@ -249,8 +249,7 @@ module rom_ctrl_fsm
 
   // The 'done' signal for pwrmgr is asserted once we get into the Done state. The 'good' signal
   // compes directly from the checker.
-  assign pwrmgr_data_o = '{done: in_state_done,
-                           good: mubi4_bool_to_mubi(checker_good)};
+  assign pwrmgr_data_o = '{done: in_state_done, good: checker_good};
 
   // Pass the digest all-at-once to the keymgr. The loose check means that glitches will add
   // spurious edges to the valid signal that can be caught at the other end.
