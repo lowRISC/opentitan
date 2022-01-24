@@ -16,7 +16,9 @@
 
 `include "prim_assert.sv"
 
-module rom_ctrl_compare #(
+module rom_ctrl_compare
+  import prim_mubi_pkg::mubi4_t;
+#(
   parameter int NumWords = 2
 ) (
   input logic                        clk_i,
@@ -24,7 +26,7 @@ module rom_ctrl_compare #(
 
   input logic                        start_i,
   output logic                       done_o,
-  output logic                       good_o,
+  output mubi4_t                     good_o,
 
   // CSR inputs for DIGEST and EXP_DIGEST. Ordered with word 0 as LSB.
   input logic [NumWords*32-1:0]      digest_i,
@@ -35,6 +37,7 @@ module rom_ctrl_compare #(
 );
 
   import prim_util_pkg::vbits;
+  import prim_mubi_pkg::mubi4_bool_to_mubi;
 
   `ASSERT_INIT(NumWordsPositive_A, 0 < NumWords)
 
@@ -156,7 +159,18 @@ module rom_ctrl_compare #(
   assign matches_d = matches_q && (digest_word == exp_digest_word);
 
   assign done_o = (state_q == Done);
-  assign good_o = matches_q;
+
+  // Instantiate an explicit prim_mubi4_sender for the good signal. The logic is that we don't want
+  // to make the actual check multi-bit (doing so properly would mean replicating the 32-bit
+  // comparator) but we *do* want to make sure a synthesis tool doesn't optimize away the 4-bit
+  // signal. The barrier from the primitive ensures that won't happen.
+  prim_mubi4_sender
+  u_done_sender (
+    .clk_i,
+    .rst_ni,
+    .mubi_i (mubi4_bool_to_mubi(matches_q)),
+    .mubi_o (good_o)
+  );
 
   assign alert_o = fsm_alert | start_alert | wait_addr_alert | done_addr_alert;
 
