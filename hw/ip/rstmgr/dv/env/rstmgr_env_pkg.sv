@@ -27,6 +27,8 @@ package rstmgr_env_pkg;
   parameter uint NUM_ALERTS = 1;
 
   // types
+  typedef logic [NumSwResets-1:0] sw_rst_t;
+
   typedef logic [$bits(alert_pkg::alert_crashdump_t)-1:0] linearized_alert_dump_t;
 
   // functions
