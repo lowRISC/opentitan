@@ -152,6 +152,8 @@ module aes_wrap
     // FSM
     aes_wrap_ctrl_ns      = aes_wrap_ctrl_cs;
     count_d               = count_q + 32'h1;
+    data_out_d            = data_out_q;
+    test_done_o           = 1'b0;
 
     unique case (aes_wrap_ctrl_cs)
 
