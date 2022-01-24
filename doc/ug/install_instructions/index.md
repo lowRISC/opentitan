@@ -38,11 +38,10 @@ For packages listed below without a version number we have not determined a mini
 * Python 3.6 with pip.
   Additional Python dependencies are installed through pip.
 * A C++14 capable compiler.
-  GCC 8 or Clang 3.5 should meet this requirement.
+  GCC 5 or Clang 3.5 should meet this requirement.
 * clang-format.
   The use of clang-format 6.0 is recommended to match the formatting enforced when submitting a pull request.
 * [ninja](https://ninja-build.org/)  {{< tool_version "ninja" >}}
-* bazel 4.2.0
 * Bash
 * curl
 * xz tools

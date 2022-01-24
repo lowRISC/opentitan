@@ -56,16 +56,16 @@ opentitan_functest(
     name = "gpio_smoketest",
     srcs = ["gpio_smoketest.c"],
     verilator = verilator_params(
+        tags = [
+            "cpu:4",
+            "failing_verilator"
+        ],
         args = [
             "--verilator-args=--trace",
             "console",
             "--timeout=3600",
             "--exit-failure=FAIL",
             "--exit-success=PASS",
-        ],
-        tags = [
-            "cpu:4",
-            "failing_verilator",
         ],
     ),
     deps = [
