@@ -61,15 +61,16 @@
     }
     {
       name: chip_sw_uart_tx_rx_alt_clk_freq
-      desc: '''Verify the transmission of UART while randomizing the core clock frequency.
+      desc: '''Verify the transmission of UART via using external clock as uart core clock.
 
-            Run the chip_uart_tx_rx test with the core clock frequency randomized between known
-            bounds.
-
-            TODO: Find out what the range is for the core clock frequency randomization.
+            Extend from chip_sw_uart_rand_baudrate with following added settings.
+            - Configure LC to RMA state, so that it allows clkmgr to use external clock.
+            - Configure clkmgr to select external clock.
+            - Randomize `LOW_SPEED_SEL`, so that uart core clock frequency can be either
+              ext_clk_freq / 4 or ext_clk_freq / 2.
             '''
       milestone: V1
-      tests: []
+      tests: ["chip_sw_uart_tx_rx_alt_clk_freq", "chip_sw_uart_tx_rx_alt_clk_freq_low_speed"]
     }
 
     // GPIO (pre-verified IP) integration tests:

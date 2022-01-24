@@ -230,6 +230,22 @@
       reseed: 20
     }
     {
+      name: chip_sw_uart_tx_rx_alt_clk_freq
+      uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
+      sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
+      en_run_modes: ["sw_test_mode"]
+      run_opts: ["+use_otp_image=LcStRma", "+use_extclk=1"]
+      reseed: 10
+    }
+    {
+      name: chip_sw_uart_tx_rx_alt_clk_freq_low_speed
+      uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
+      sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
+      en_run_modes: ["sw_test_mode"]
+      run_opts: ["+use_otp_image=LcStRma", "+use_extclk=1", "extclk_low_speed_sel=1"]
+      reseed: 10
+    }
+    {
       name: chip_sw_spi_device_tx_rx
       uvm_test_seq: chip_sw_spi_tx_rx_vseq
       sw_images: ["sw/device/tests/spi_tx_rx_test:1"]

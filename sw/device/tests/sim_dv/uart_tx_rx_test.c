@@ -5,6 +5,8 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
+#include "sw/device/lib/dif/dif_clkmgr.h"
+#include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/irq.h"
@@ -64,6 +66,14 @@ typedef enum uart_direction {
  * in SRAM at the start of the test because the CRT init code wipes it to 0s.
  */
 static volatile const uint8_t kUartIdx = 0x0;
+
+/**
+ * Indicates if ext_clk is used and what speed.
+ *
+ * Similar to `kUartIdx`, this may be overridden in DV testbench
+ */
+static volatile const uint8_t kUseExtClk = 0x0;
+static volatile const uint8_t kUseLowSpeedSel = 0x0;
 
 // A set of bytes to be send out of TX.
 static const uint8_t kUartTxData[UART_DATASET_SIZE] = {
@@ -491,6 +501,28 @@ static bool execute_test(const dif_uart_t *uart) {
   return true;
 }
 
+void config_external_clock(void) {
+  dif_lc_ctrl_t lc;
+  dif_clkmgr_t clkmgr;
+  mmio_region_t lc_ctrl_base_addr =
+      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR);
+  mmio_region_t clkmgr_base_addr =
+      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
+
+  CHECK_DIF_OK(dif_lc_ctrl_init(lc_ctrl_base_addr, &lc));
+  CHECK_DIF_OK(dif_clkmgr_init(clkmgr_base_addr, &clkmgr));
+
+  LOG_INFO("Read and check LC state.");
+  dif_lc_ctrl_state_t curr_state;
+  CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc, &curr_state));
+  CHECK(curr_state == kDifLcCtrlStateRma,
+        "LC State isn't in kDifLcCtrlStateRma!");
+
+  // Enable external clock
+  LOG_INFO("Configure clkmgr to enable external clock");
+  CHECK_DIF_OK(dif_clkmgr_external_clock_set_enabled(&clkmgr, kUseLowSpeedSel));
+}
+
 const test_config_t kTestConfig;
 
 bool test_main(void) {
@@ -511,6 +543,10 @@ bool test_main(void) {
   pinmux_connect_uart_to_pads(
       kTopEarlgreyPinmuxInselIor11, kTopEarlgreyPinmuxPeripheralInUart3Rx,
       kTopEarlgreyPinmuxMioOutIor12, kTopEarlgreyPinmuxOutselUart3Tx);
+
+  if (kUseExtClk) {
+    config_external_clock();
+  }
 
   // Initialize the UART.
   mmio_region_t chosen_uart_region = mmio_region_from_addr(uart_base_addr);
