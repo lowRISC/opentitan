@@ -462,9 +462,10 @@ class otbn_base_vseq extends cip_base_vseq #(
           timed_out = 1'b1;
         end else begin
           timed_out = 1'b0;
-          // The OTBN sequence finished so update wait_cycles. cycle_counter should always be less
-          // than wait_cycles (because of how we calculate wait cycles).
-          `DV_CHECK_FATAL(cycle_counter < wait_cycles);
+          // The OTBN sequence finished so update wait_cycles. cycle_counter should be at most equal
+          // to wait_cycles because we'll stop at that point. It can be equal if OTBN happens to
+          // complete its operation in wait_cycles cycles.
+          `DV_CHECK_LE_FATAL(cycle_counter, wait_cycles);
           longest_run_ = cycle_counter;
 
           // Wait for the run_otbn thread to finish. This will usually be instant, but might take
