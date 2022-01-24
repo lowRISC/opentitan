@@ -133,8 +133,8 @@ opentitan_rom_binary(
 cc_library(
     name = "mask_rom_epmp",
     srcs = [
-        "mask_rom_epmp.S",
         "mask_rom_epmp.c",
+        "mask_rom_epmp_init.S",
     ],
     hdrs = ["mask_rom_epmp.h"],
     target_compatible_with = [OPENTITAN_CPU],
