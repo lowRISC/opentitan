@@ -244,7 +244,6 @@ hw_ip_spi_device_reg_h = gen_hw_hdr.process('hw/ip/spi_device/data/spi_device.hj
 hw_ip_spi_host_reg_h = gen_hw_hdr.process('hw/ip/spi_host/data/spi_host.hjson')
 hw_ip_sram_ctrl_reg_h = gen_hw_hdr.process('hw/ip/sram_ctrl/data/sram_ctrl.hjson')
 hw_ip_rom_ctrl_reg_h = gen_hw_hdr.process('hw/ip/rom_ctrl/data/rom_ctrl.hjson')
-hw_ip_entropy_src_reg_h = gen_hw_hdr.process('hw/ip/entropy_src/data/entropy_src.hjson')
 hw_ip_csrng_reg_h = gen_hw_hdr.process('hw/ip/csrng/data/csrng.hjson')
 hw_ip_edn_reg_h = gen_hw_hdr.process('hw/ip/edn/data/edn.hjson')
 hw_ip_rv_timer_reg_h = gen_hw_hdr.process('hw/ip/rv_timer/data/rv_timer.hjson')
@@ -268,6 +267,40 @@ top_earlgrey = declare_dependency(
   link_with: static_library(
     'top_earlgrey_ot',
     sources: [
+      hw_ip_adc_ctrl_reg_h,
+      hw_ip_aes_reg_h,
+      hw_ip_alert_handler_reg_h,
+      hw_ip_aon_timer_reg_h,
+      hw_ip_clkmgr_reg_h,
+      hw_ip_entropy_src_reg_h,
+      hw_ip_flash_ctrl_reg_h,
+      hw_ip_gpio_reg_h,
+      hw_ip_hmac_reg_h,
+      hw_ip_kmac_reg_h,
+      hw_ip_i2c_reg_h,
+      hw_ip_keymgr_reg_h,
+      hw_ip_lc_ctrl_reg_h,
+      hw_ip_otbn_reg_h,
+      hw_ip_otp_ctrl_reg_h,
+      hw_ip_spi_device_reg_h,
+      hw_ip_spi_host_reg_h,
+      hw_ip_sram_ctrl_reg_h,
+      hw_ip_rom_ctrl_reg_h,
+      hw_ip_csrng_reg_h,
+      hw_ip_edn_reg_h,
+      hw_ip_rv_timer_reg_h,
+      hw_ip_uart_reg_h,
+      hw_ip_usbdev_reg_h,
+      hw_ip_sysrst_ctrl_reg_h,
+      hw_ip_pattgen_reg_h,
+      hw_ip_pwm_reg_h,
+      hw_ip_pwrmgr_reg_h,
+      hw_ip_rstmgr_reg_h,
+      hw_ip_ibex_reg_h,
+      hw_top_earlgrey_pinmux_reg_h,
+      hw_top_earlgrey_rv_plic_reg_h,
+      hw_ip_ast_reg_h,
+      hw_ip_sensor_ctrl_reg_h,
       'hw/' + TOPNAME + '/sw/autogen/top_earlgrey.c',
     ],
   )

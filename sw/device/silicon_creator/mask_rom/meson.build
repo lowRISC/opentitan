@@ -52,7 +52,7 @@ sw_silicon_creator_mask_rom_epmp = declare_dependency(
   link_with: static_library(
     'sw_silicon_creator_mask_rom_epmp',
     sources: [
-      'mask_rom_epmp.S',
+      'mask_rom_epmp_init.S',
       'mask_rom_epmp.c',
     ],
     dependencies: [
