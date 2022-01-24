@@ -315,12 +315,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard
     alert_cnt  =  alert_cnt_field.get_mirrored_value();
 
     if (failure) begin
-      if (!&alert_cnt) begin
-        alert_cnt++;
-      end
-      if (!&fail_total) begin
-        fail_total++;
-      end
+      // Update the predicted failure counters, noting that the DUT will not let these overflow
+      alert_cnt  += (&alert_cnt)  ? 0 : 1;
+      fail_total += (&fail_total) ? 0 : 1;
     end
 
     fmt = "Threshold for \"%s\" test (FIPS? %d): %04h";
