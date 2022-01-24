@@ -79,8 +79,8 @@ cc_library(
 cc_test(
     name = "flash_ctrl_unittest",
     srcs = [
-        "flash_ctrl.h",
         "flash_ctrl.c",
+        "flash_ctrl.h",
         "flash_ctrl_unittest.cc",
     ],
     defines = [
@@ -355,7 +355,7 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
         "//sw/device/silicon_creator/lib/base:abs_mmio",
-    ]
+    ],
 )
 
 opentitan_functest(

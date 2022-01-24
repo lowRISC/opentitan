@@ -16,4 +16,3 @@ cc_library(
         "//sw/device/lib/base",
     ],
 )
-
