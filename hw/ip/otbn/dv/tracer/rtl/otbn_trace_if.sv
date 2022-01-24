@@ -216,8 +216,10 @@ interface otbn_trace_if
                                             u_otbn_alu_bignum.mod_q[i_word*32+:32];
   end
 
-  assign ispr_read[IsprMod] = (any_ispr_read & (ispr_addr == IsprMod)) |
-    (alu_bignum_operation.op inside {AluOpBignumAddm, AluOpBignumSubm});
+  assign ispr_read[IsprMod] =
+    (any_ispr_read & (ispr_addr == IsprMod)) |
+    (insn_fetch_resp_valid &
+     (alu_bignum_operation.op inside {AluOpBignumAddm, AluOpBignumSubm}));
 
   assign ispr_read_data[IsprMod] = u_otbn_alu_bignum.mod_q;
 
