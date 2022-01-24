@@ -699,8 +699,8 @@ module chip_${top["name"]}_${target["name"]} (
 
   assign pad2ast = { manual_in_ast_misc,
                      mio_in_raw[MioPadIoc3],
-                     mio_in_raw[MioPadIob8],
-                     mio_in_raw[MioPadIob7],
+                     mio_in_raw[MioPadIoc2],
+                     mio_in_raw[MioPadIoc1],
                      mio_in_raw[MioPadIob2],
                      mio_in_raw[MioPadIob1],
                      mio_in_raw[MioPadIob0],
