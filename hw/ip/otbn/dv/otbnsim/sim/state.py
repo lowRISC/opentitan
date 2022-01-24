@@ -353,6 +353,7 @@ class OTBNState:
         assert self._err_bits == 0
 
         self.ext_regs.commit()
+        self.gprs.commit()
 
         # If we're stalled, there's nothing more to do: we only commit the rest
         # of the architectural state when we finish our stall cycles.
@@ -360,7 +361,6 @@ class OTBNState:
             return
 
         self.dmem.commit()
-        self.gprs.commit()
         self.pc = self.get_next_pc()
         self._pc_next_override = None
         self.loop_stack.commit()
