@@ -277,9 +277,9 @@ cc_library(
     name = "shutdown",
     srcs = ["shutdown.c"],
     deps = [
+        ":shutdown_intf",
         ":error",
         ":log",
-        ":shutdown_intf",
         "//hw/ip/keymgr/data:keymgr_regs",
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
@@ -305,9 +305,9 @@ cc_test(
         "OT_OFF_TARGET_TEST",
     ],
     deps = [
+        ":shutdown_intf",
         ":error",
         ":log",
-        ":shutdown_intf",
         "//hw/ip/keymgr/data:keymgr_regs",
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
@@ -422,8 +422,6 @@ opentitan_functest(
     ),
     deps = [
         ":sigverify",
-        ":sigverify_mod_exp_ibex",
-        ":sigverify_mod_exp_otbn",
         ":sigverify_testvectors",
         ":test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
@@ -442,7 +440,6 @@ cc_library(
 cc_library(
     name = "sigverify_mod_exp_otbn",
     srcs = ["sigverify_mod_exp_otbn.c"],
-    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":error",
         ":otbn_util",
