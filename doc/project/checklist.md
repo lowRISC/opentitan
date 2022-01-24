@@ -400,7 +400,7 @@ All covergoups have been created and sampled in the reactive components of the t
 
 ### ALL_INTERFACES_EXERCISED
 
-For simulations, all interfaces are connected to all sidebands and exercised.
+For simulations, interfaces are connected to all ports of the DUT and are exercised.
 For an FPV testbench, assertions have been added for all interfaces including sidebands.
 
 ### ALL_ASSERTION_CHECKS_ADDED
@@ -436,6 +436,7 @@ A nightly regression with multiple random seeds is 90% passing.
 ### SIM_CODE_COVERAGE_V2
 
 Line, toggle, fsm (state & transition), branch and assertion code coverage has reached 90%.
+Toggle coverage of the ports of the DUT and all pre-verified sub-modules have individually reached 90% in both directions (1->0 and 0->1).
 
 ### SIM_FUNCTIONAL_COVERAGE_V2
 
