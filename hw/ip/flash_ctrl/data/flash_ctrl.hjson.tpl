@@ -184,10 +184,6 @@
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
-
-    { name: "FSM.SPARSE",
-      desc: "sparse fsm encoding in life cycle interface."
-    }
   ]
 
   scan: "true",       // Enable `scanmode_i` port
@@ -1073,12 +1069,6 @@
               '''
           },
           { bits: "9",
-            name: "arb_fsm_err",
-            desc: '''
-              The software / hardware interface has encountered a fatal error.
-              '''
-          },
-          { bits: "10",
             name: "storage_err",
             desc: '''
               A shadow register encountered a storage fault.
