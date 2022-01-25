@@ -73,6 +73,7 @@ module edn_core import edn_pkg::*;
   logic                    max_reqs_between_reseed_load;
   logic [31:0]             max_reqs_between_reseed_bus;
   logic                    csrng_cmd_ack;
+  logic                    csrng_cmd_ack_gated;
   logic                    send_rescmd;
   logic                    cmd_sent;
   logic                    send_gencmd;
@@ -238,7 +239,7 @@ module edn_core import edn_pkg::*;
   );
 
   // interrupt for sw app interface only
-  assign event_edn_cmd_req_done = csrng_cmd_ack;
+  assign event_edn_cmd_req_done = csrng_cmd_ack_gated;
 
   // set the interrupt sources
   assign event_edn_fatal_err = (edn_enable && (
@@ -416,12 +417,14 @@ module edn_core import edn_pkg::*;
   assign sw_rdy_sts_d =
          !edn_enable ? 1'b1 :
          sw_cmd_req_load ? 1'b0 :
+         seq_auto_req_mode ? 1'b0 :
          csrng_cmd_i.csrng_req_ready ? 1'b1 :
          sw_rdy_sts_q;
 
   // receive cmd ack
   assign csrng_cmd_ack = csrng_cmd_i.csrng_rsp_ack;
-  assign hw2reg.sw_cmd_sts.cmd_sts.de = csrng_cmd_ack;
+  assign csrng_cmd_ack_gated = csrng_cmd_i.csrng_rsp_ack && !seq_auto_req_mode;
+  assign hw2reg.sw_cmd_sts.cmd_sts.de = csrng_cmd_ack_gated;
   assign hw2reg.sw_cmd_sts.cmd_sts.d = csrng_cmd_i.csrng_rsp_sts;
 
   // rescmd fifo
