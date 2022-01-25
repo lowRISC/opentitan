@@ -23,10 +23,16 @@
       desc: "Software triggered Alert for recoverable faults",
     },
     { name: "fatal_hw_err",
-      desc: "Ibex core triggered alert for fatal faults, including integrity faults",
+      desc: '''
+        Triggered when
+          - Ibex raises `alert_major_internal_o`
+          - Ibex raises `alert_major_bus_o`
+          - A double fault is seen (Ibex raises `double_fault_seen_o`)
+          - A bus integrity error is seen
+      '''
     },
     { name: "recov_hw_err",
-      desc: "Ibex core triggered alert for recoverable faults",
+      desc: "Triggered when Ibex raises `alert_minor_o`",
     },
   ],
 
@@ -351,6 +357,49 @@
     }
     { name: "SCRAMBLE.KEY.SIDELOAD",
       desc: "The scrambling key for the icache is sideloaded from OTP and thus unreadable by SW."
+    }
+    { name: "CORE.DATA_REG_SW.SCA",
+      desc: "Data independent timing."
+    }
+    { name: "PC.CTRL_FLOW.CONSISTENCY"
+      desc: "Correct PC increment check."
+    }
+    { name: "CTRL_FLOW.UNPREDICTABLE"
+      desc: "Randomized dummy instruction insertion."
+    }
+    { name: "DATA_REG_SW.INTEGRITY"
+      desc: '''
+        Register file integrity checking. Note that whilst the core itself is
+        duplicated (see LOGIC.SHADOW) the register file is not. Protection is
+        provided by an ECC.
+      '''
+    }
+    { name: "LOGIC.SHADOW"
+      desc: '''
+        Shadow core run in lockstep to crosscheck CPU behaviour. This provides
+        broad protection for all assets with the the Ibex core.
+      '''
+    }
+    { name: "FETCH.CTRL.LC_GATED"
+      desc: "Fetch enable so core execution can be halted."
+    }
+    { name: "EXCEPTION.CTRL_FLOW.LOCAL_ESC"
+      desc: '''
+        A mechanism to detect and act on double faults. Local escalation shuts
+        down the core when a double fault is seen.
+      '''
+    }
+    { name: "EXCEPTION.CTRL_FLOW.GLOBAL_ESC"
+      desc:  '''
+        A mechanism to detect and act on double faults. Global escalation
+        sends a fatal alert when a double fault is seen.
+      '''
+    }
+    { name: "ICACHE.MEM.SCRAMBLE"
+      desc: "ICache memory scrambling."
+    }
+    { name: "ICACHE.MEM.INTEGRITY"
+      desc: "ICache memory integrity checking."
     }
   ]
 
@@ -694,6 +743,7 @@
             resval: "0x0"
             desc: '''
               rv_core_ibex detected a fatal internal error
+              (``alert_major_internal_o``` from Ibex seen)
             '''
           },
           { bits: "10",
@@ -701,6 +751,7 @@
             resval: "0x0"
             desc: '''
               rv_core_ibex detected a recoverable internal error
+              (``alert_minor`` from Ibex seen)
             '''
           },
         ]
