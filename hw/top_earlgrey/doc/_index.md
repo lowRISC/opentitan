@@ -449,6 +449,22 @@ For more details see the [flash controller module specification]({{< relref "hw/
 Interconnecting the processor and peripheral and memory units is a bus network built upon the TileLink-Uncached-Light protocol.
 See the [OpenTitan bus specification]({{< relref "hw/ip/tlul/doc" >}}) for more details.
 
+#### Topology
+`top_earlgrey` has a two-level hierarchy for its bus network.
+Close to the CPU is the high-speed cluster, with low access latency.
+Farther from the CPU, through a low-speed bridge, is the low-speed cluster, with higher access latency.
+
+#### Performance
+
+The following table describes the typical number of CPU cycles from a transaction's launch to its completion for a device in the specified cluster.
+Note that these values assume there is no bus contention.
+
+| Cluster    | CPU Access Latency |
+| ---------- | ------------------ |
+| High speed | 2 CPU cycles       |
+| Low speed  | 18-20 CPU cycles   |
+
+
 ## Register Table
 
 The base and bound addresses of the memory and peripherals are given in this table below.
