@@ -79,7 +79,11 @@ impl Uart for CW310Uart {
     }
 
     /// Writes data from `buf` to the UART.
-    fn write(&self, buf: &[u8]) -> Result<usize> {
-        Ok(self.port.borrow_mut().write(buf)?)
+    fn write(&self, mut buf: &[u8]) -> Result<()> {
+        while buf.len() > 0 {
+            let written = self.port.borrow_mut().write(buf)?;
+            buf = &buf[written..];
+        }
+        Ok(())
     }
 }

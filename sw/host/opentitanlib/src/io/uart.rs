@@ -45,5 +45,5 @@ pub trait Uart {
     fn read_timeout(&self, buf: &mut [u8], timeout: Duration) -> Result<usize>;
 
     /// Writes data from `buf` to the UART.
-    fn write(&self, buf: &[u8]) -> Result<usize>;
+    fn write(&self, buf: &[u8]) -> Result<()>;
 }

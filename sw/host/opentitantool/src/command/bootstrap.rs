@@ -4,18 +4,14 @@
 
 use anyhow::{ensure, Result};
 use erased_serde::Serialize;
-use humantime::parse_duration;
 use std::any::Any;
 use std::path::PathBuf;
-use std::time::Duration;
 use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::bootstrap::{Bootstrap, BootstrapOptions, BootstrapProtocol};
-use opentitanlib::io::spi::SpiParams;
 use opentitanlib::transport;
-use opentitanlib::transport::Capability;
 use opentitanlib::util::image::ImageAssembler;
 use opentitanlib::util::parse_int::ParseInt;
 
@@ -23,22 +19,7 @@ use opentitanlib::util::parse_int::ParseInt;
 #[derive(Debug, StructOpt)]
 pub struct BootstrapCommand {
     #[structopt(flatten)]
-    params: SpiParams,
-    #[structopt(
-        short,
-        long,
-        possible_values = &BootstrapProtocol::variants(),
-        case_insensitive = true,
-        default_value = "primitive",
-        help = "Bootstrap protocol to use"
-    )]
-    protocol: BootstrapProtocol,
-    #[structopt(long, parse(try_from_str=parse_duration), help = "Duration of the reset delay")]
-    reset_delay: Option<Duration>,
-    #[structopt(long, parse(try_from_str=parse_duration), help = "Duration of the inter-frame delay")]
-    inter_frame_delay: Option<Duration>,
-    #[structopt(long, parse(try_from_str=parse_duration), help = "Duration of the flash-erase delay")]
-    flash_erase_delay: Option<Duration>,
+    bootstrap_options: BootstrapOptions,
     #[structopt(
         long,
         parse(try_from_str=usize::from_str),
@@ -97,27 +78,11 @@ impl CommandDispatch for BootstrapCommand {
             !self.filename.is_empty(),
             "You must supply at least one filename"
         );
-        if self.protocol == BootstrapProtocol::Emulator {
+        if self.bootstrap_options.protocol == BootstrapProtocol::Emulator {
             return self.bootstrap_using_direct_emulator_integration(transport);
         }
 
-        transport
-            .capabilities()
-            .request(Capability::GPIO | Capability::SPI)
-            .ok()?;
-
-        let options = BootstrapOptions {
-            reset_delay: self.reset_delay,
-            inter_frame_delay: self.inter_frame_delay,
-            flash_erase_delay: self.flash_erase_delay,
-        };
-        let bootstrap = Bootstrap::new(self.protocol, options)?;
-
-        let spi = self.params.create(transport)?;
-        let reset_pin = transport.gpio_pin("RESET")?;
-        let bootstrap_pin = transport.gpio_pin("BOOTSTRAP")?;
-        let payload = self.payload()?;
-        bootstrap.update(&*spi, &*reset_pin, &*bootstrap_pin, &payload)?;
+        Bootstrap::update(&transport, &self.bootstrap_options, &self.payload()?)?;
         Ok(None)
     }
 }

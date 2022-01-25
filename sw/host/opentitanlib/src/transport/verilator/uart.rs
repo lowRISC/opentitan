@@ -47,8 +47,7 @@ impl Uart for VerilatorUart {
         Ok(self.file.borrow_mut().read(buf)?)
     }
 
-    fn write(&self, buf: &[u8]) -> Result<usize> {
-        self.file.borrow_mut().write_all(buf)?;
-        Ok(buf.len())
+    fn write(&self, buf: &[u8]) -> Result<()> {
+        Ok(self.file.borrow_mut().write_all(buf)?)
     }
 }
