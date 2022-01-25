@@ -118,6 +118,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     StReqAddrKey    = 10'b1010101101,
     StReqDataKey    = 10'b0100110101,
     StReadSeeds     = 10'b1110010110,
+    StReadEval      = 10'b1011101000,
     StWait          = 10'b1111000001,
     StEntropyReseed = 10'b0011110011,
     StRmaWipe       = 10'b0011011100,
@@ -398,33 +399,56 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
         addr = BusAddrW'(seed_page_addr);
         info_sel = seed_info_sel;
 
+        addr_cnt_en = rvalid_i;
+
         // we have checked all seeds, proceed
         if (seed_cnt_q == NumSeeds) begin
           start = 1'b0;
           state_d = StWait;
-
-        // still reading curent seed, increment whenever data returns
-        end else if (!done_i) begin
-          addr_cnt_en = rvalid_i;
-
-        // current seed reading is complete
-        // error is intentionally not used here, as we do not want read seed
-        // failures to stop the software from using flash
-        // When there are upstream failures, the data returned is simply all 1's.
-        // So instead of doing anything explicit, a status is indicated for software.
         end else if (done_i) begin
-          addr_cnt_clr = 1'b1;
-          seed_err_o = 1'b1;
+          //seed_err_o = |err_i;
+          state_d = StReadEval;
 
-          // we move to the next seed only if current seed is read and validated
-          // if not, flip to validate phase and read seed again
-          if (validate_q) begin
+        end
+
+
+
+//        // still reading curent seed, increment whenever data returns
+//        end else if (!done_i) begin
+//          addr_cnt_en = rvalid_i;
+//
+//        // current seed reading is complete
+//        // error is intentionally not used here, as we do not want read seed
+//        // failures to stop the software from using flash
+//        // When there are upstream failures, the data returned is simply all 1's.
+//        // So instead of doing anything explicit, a status is indicated for software.
+//        end else if (done_i) begin
+//        state_d = StWait;
+//
+//          addr_cnt_clr = 1'b1;
+//          seed_err_o = 1'b1;
+//
+//          // we move to the next seed only if current seed is read and validated
+//          // if not, flip to validate phase and read seed again
+//          if (validate_q) begin
+//            seed_cnt_en = 1'b1;
+//            validate_d = 1'b0;
+//          end else begin
+//            validate_d = 1'b1;
+//          end
+//        end
+      end // case: StReadSeeds
+
+      StReadEval: begin
+         addr_cnt_clr = 1'b1;
+         state_d = StReadSeeds;
+
+         if (validate_q) begin
             seed_cnt_en = 1'b1;
             validate_d = 1'b0;
-          end else begin
+         end else begin
             validate_d = 1'b1;
-          end
-        end
+         end
       end
 
       // Waiting for an rma entry command
@@ -462,7 +486,6 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
       // Second check for error status:
       // If error status indicates error, jump to invalid terminal state
       // Otherwise assign output to error status;
-      // TODO: consider lengthening the check
       StRmaRsp: begin
         phase = PhaseRma;
         if (err_sts != lc_ctrl_pkg::On) begin
@@ -683,11 +706,15 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
         rma_op = FlashOpErase;
         if (done_i) begin
           err_sts_set = |err_i;
-          word_cnt_ld = 1'b1;
-          rma_state_d = StRmaWordSel;
+	  rma_state_d = StRmaEraseWait;	   	   
         end
       end
 
+      StRmaEraseWait: begin
+	 word_cnt_ld = 1'b1;
+         rma_state_d = StRmaWordSel;
+      end
+      
       StRmaWordSel: begin
         if (word_cnt < BusWordsPerPage) begin
           rma_state_d = StRmaProgram;
