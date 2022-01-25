@@ -195,6 +195,7 @@ module rv_core_ibex
   logic fatal_intg_event;
   logic fatal_core_event;
   logic recov_core_event;
+  // SEC_CM: BUS.INTEGRITY
   assign fatal_intg_event = ibus_intg_err | dbus_intg_err | alert_major_bus;
   assign fatal_core_event = alert_major_internal | double_fault;
   assign recov_core_event = alert_minor;
@@ -434,6 +435,7 @@ module rv_core_ibex
     .rvfi_mem_rdata,
     .rvfi_mem_wdata,
 `endif
+    // SEC_CM: FETCH.CTRL.LC_GATED
     .fetch_enable_i         (fetch_enable),
     .alert_minor_o          (alert_minor),
     .alert_major_internal_o (alert_major_internal),
@@ -477,6 +479,7 @@ module rv_core_ibex
   logic [top_pkg::TL_DW-1:0] unused_data;
   // tl_adapter_host_i_ibex only reads instruction. a_data is always 0
   assign {instr_wdata_intg, unused_data} = prim_secded_pkg::prim_secded_inv_39_32_enc('0);
+  // SEC_CM: BUS.INTEGRITY
   tlul_adapter_host #(
     .MAX_REQS(NumOutstandingReqs),
     // if secure ibex is not set, data integrity is not generated
@@ -531,6 +534,7 @@ module rv_core_ibex
     .addr_o(data_addr_trans)
   );
 
+  // SEC_CM: BUS.INTEGRITY
   tlul_adapter_host #(
     .MAX_REQS(2),
     .EnableDataIntgGen(~SecureIbex)

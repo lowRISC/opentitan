@@ -98,6 +98,18 @@ When the CPU encounters a double fault, the current crash dump is moved to previ
 
 This allows the software to see both fault locations and debug accordingly.
 
+## Fetch Enable
+
+Ibex has a top-level fetch enable input (``fetch_enable_i``), which uses the same multi-bit encoding used by the lifecycle controller.
+When Ibex fetch is disabled it will cease to execute, but will complete instructions currently in the pipeline.
+Ibex fetch is enabled when all of the following conditions are met:
+  - The lifecycle controller has enabled it
+  - The power manager has enabled it
+  - A ``fatal_hw_err`` alert hasn't been raised
+
+### Local Escalation Path
+
+When the ``fatal_hw_err`` alert is raised Ibex fetch is disabled and will remain disabled until ``rv_core_ibex`` is reset.
 
 ## Register Table
 
