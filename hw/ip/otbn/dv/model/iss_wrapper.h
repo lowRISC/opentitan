@@ -21,7 +21,7 @@ struct TmpDir;
 class MirroredRegs {
  public:
   MirroredRegs()
-      : status(0), insn_cnt(0), err_bits(0), stop_pc(0), rnd_req(0) {}
+      : status(0), insn_cnt(0), err_bits(0), rnd_req(0), stop_pc(0) {}
 
   uint32_t status;
   uint32_t insn_cnt;
