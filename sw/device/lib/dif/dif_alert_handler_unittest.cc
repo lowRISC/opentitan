@@ -972,23 +972,23 @@ TEST_F(LocalAlertCauseTest, NullArgs) {
 class EscalationTest : public AlertHandlerTest {};
 
 TEST_F(EscalationTest, CanClear) {
-  bool flag;
+  bool can_clear;
 
   EXPECT_READ32(ALERT_HANDLER_CLASSB_CLR_REGWEN_REG_OFFSET, true);
   EXPECT_EQ(dif_alert_handler_escalation_can_clear(
-                &alert_handler_, kDifAlertHandlerClassB, &flag),
+                &alert_handler_, kDifAlertHandlerClassB, &can_clear),
             kDifOk);
-  EXPECT_TRUE(flag);
+  EXPECT_TRUE(can_clear);
 
   EXPECT_READ32(ALERT_HANDLER_CLASSA_CLR_REGWEN_REG_OFFSET, false);
   EXPECT_EQ(dif_alert_handler_escalation_can_clear(
-                &alert_handler_, kDifAlertHandlerClassA, &flag),
+                &alert_handler_, kDifAlertHandlerClassA, &can_clear),
             kDifOk);
-  EXPECT_FALSE(flag);
+  EXPECT_FALSE(can_clear);
 }
 
 TEST_F(EscalationTest, Disable) {
-  EXPECT_WRITE32(ALERT_HANDLER_CLASSC_CLR_REGWEN_REG_OFFSET, true);
+  EXPECT_WRITE32(ALERT_HANDLER_CLASSC_CLR_REGWEN_REG_OFFSET, 0);
   EXPECT_EQ(dif_alert_handler_escalation_disable_clearing(
                 &alert_handler_, kDifAlertHandlerClassC),
             kDifOk);
@@ -1002,10 +1002,10 @@ TEST_F(EscalationTest, Clear) {
 }
 
 TEST_F(EscalationTest, NullArgs) {
-  bool flag;
+  bool can_clear;
 
   EXPECT_EQ(dif_alert_handler_escalation_can_clear(
-                nullptr, kDifAlertHandlerClassB, &flag),
+                nullptr, kDifAlertHandlerClassB, &can_clear),
             kDifBadArg);
   EXPECT_EQ(dif_alert_handler_escalation_can_clear(
                 &alert_handler_, kDifAlertHandlerClassB, nullptr),
@@ -1020,12 +1020,12 @@ TEST_F(EscalationTest, NullArgs) {
 class GetterTest : public AlertHandlerTest {};
 
 TEST_F(GetterTest, GetAcc) {
-  uint16_t alerts;
+  uint16_t num_alerts;
   EXPECT_READ32(ALERT_HANDLER_CLASSB_ACCUM_CNT_REG_OFFSET, 0xaaaa);
-  EXPECT_EQ(dif_alert_handler_get_accumulator(&alert_handler_,
-                                              kDifAlertHandlerClassB, &alerts),
+  EXPECT_EQ(dif_alert_handler_get_accumulator(
+                &alert_handler_, kDifAlertHandlerClassB, &num_alerts),
             kDifOk);
-  EXPECT_EQ(alerts, 0xaaaa);
+  EXPECT_EQ(num_alerts, 0xaaaa);
 }
 
 TEST_F(GetterTest, GetCycles) {

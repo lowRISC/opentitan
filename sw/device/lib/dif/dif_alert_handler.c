@@ -19,7 +19,8 @@ static_assert(ALERT_HANDLER_PARAM_N_PHASES == 4,
 static_assert(ALERT_HANDLER_PARAM_N_LOC_ALERT == 7,
               "Expected seven local alerts!");
 
-// TODO: add static asserts for multiregs (locks, enables, cause, etc.)
+// TODO: add static asserts for multiregs (locks, enables, cause, escalation
+// clear, etc.)
 
 /**
  * Macro for generating the case statements for local alert cause CSRs.
@@ -43,6 +44,14 @@ static_assert(ALERT_HANDLER_PARAM_N_LOC_ALERT == 7,
 #define ALERT_CLASS_REGWENS_CASE_(class_, value_)                    \
   case kDifAlertHandlerClass##class_:                                \
     regwen_offset = ALERT_HANDLER_CLASS##class_##_REGWEN_REG_OFFSET; \
+    break;
+
+/**
+ * Macro for generating the case statements for class clear lock CSRs.
+ */
+#define ALERT_CLASS_CLEAR_REGWENS_CASE_(class_, value_)                  \
+  case kDifAlertHandlerClass##class_:                                    \
+    regwen_offset = ALERT_HANDLER_CLASS##class_##_CLR_REGWEN_REG_OFFSET; \
     break;
 
 // TODO(#9899): add static assert for accumulator_threshold field size
@@ -697,28 +706,6 @@ dif_result_t dif_alert_handler_local_alert_acknowledge(
   return kDifOk;
 }
 
-OT_WARN_UNUSED_RESULT
-static bool get_clear_enable_reg_offset(dif_alert_handler_class_t class,
-                                        ptrdiff_t *reg_offset) {
-  switch (class) {
-    case kDifAlertHandlerClassA:
-      *reg_offset = ALERT_HANDLER_CLASSA_CLR_REGWEN_REG_OFFSET;
-      break;
-    case kDifAlertHandlerClassB:
-      *reg_offset = ALERT_HANDLER_CLASSB_CLR_REGWEN_REG_OFFSET;
-      break;
-    case kDifAlertHandlerClassC:
-      *reg_offset = ALERT_HANDLER_CLASSC_CLR_REGWEN_REG_OFFSET;
-      break;
-    case kDifAlertHandlerClassD:
-      *reg_offset = ALERT_HANDLER_CLASSD_CLR_REGWEN_REG_OFFSET;
-      break;
-    default:
-      return false;
-  }
-  return true;
-}
-
 dif_result_t dif_alert_handler_escalation_can_clear(
     const dif_alert_handler_t *alert_handler,
     dif_alert_handler_class_t alert_class, bool *can_clear) {
@@ -726,14 +713,14 @@ dif_result_t dif_alert_handler_escalation_can_clear(
     return kDifBadArg;
   }
 
-  ptrdiff_t reg_offset;
-  if (!get_clear_enable_reg_offset(alert_class, &reg_offset)) {
-    return kDifBadArg;
+  ptrdiff_t regwen_offset;
+  switch (alert_class) {
+    LIST_OF_CLASSES(ALERT_CLASS_CLEAR_REGWENS_CASE_)
+    default:
+      return kDifBadArg;
   }
 
-  uint32_t reg = mmio_region_read32(alert_handler->base_addr, reg_offset);
-  *can_clear = bitfield_bit32_read(
-      reg, ALERT_HANDLER_CLASSA_CLR_REGWEN_CLASSA_CLR_REGWEN_BIT);
+  *can_clear = mmio_region_read32(alert_handler->base_addr, regwen_offset);
 
   return kDifOk;
 }
@@ -745,14 +732,14 @@ dif_result_t dif_alert_handler_escalation_disable_clearing(
     return kDifBadArg;
   }
 
-  ptrdiff_t reg_offset;
-  if (!get_clear_enable_reg_offset(alert_class, &reg_offset)) {
-    return kDifBadArg;
+  ptrdiff_t regwen_offset;
+  switch (alert_class) {
+    LIST_OF_CLASSES(ALERT_CLASS_CLEAR_REGWENS_CASE_)
+    default:
+      return kDifBadArg;
   }
 
-  uint32_t reg = bitfield_bit32_write(
-      0, ALERT_HANDLER_CLASSA_CLR_REGWEN_CLASSA_CLR_REGWEN_BIT, true);
-  mmio_region_write32(alert_handler->base_addr, reg_offset, reg);
+  mmio_region_write32(alert_handler->base_addr, regwen_offset, 0);
 
   return kDifOk;
 }
@@ -764,63 +751,51 @@ dif_result_t dif_alert_handler_escalation_clear(
     return kDifBadArg;
   }
 
+#define ALERT_CLASS_CLEAR_CASE_(class_, value_)                         \
+  case kDifAlertHandlerClass##class_:                                   \
+    reg_offset = ALERT_HANDLER_CLASS##class_##_CLR_SHADOWED_REG_OFFSET; \
+    break;
+
   ptrdiff_t reg_offset;
   switch (alert_class) {
-    case kDifAlertHandlerClassA:
-      reg_offset = ALERT_HANDLER_CLASSA_CLR_SHADOWED_REG_OFFSET;
-      break;
-    case kDifAlertHandlerClassB:
-      reg_offset = ALERT_HANDLER_CLASSB_CLR_SHADOWED_REG_OFFSET;
-      break;
-    case kDifAlertHandlerClassC:
-      reg_offset = ALERT_HANDLER_CLASSC_CLR_SHADOWED_REG_OFFSET;
-      break;
-    case kDifAlertHandlerClassD:
-      reg_offset = ALERT_HANDLER_CLASSD_CLR_SHADOWED_REG_OFFSET;
-      break;
+    LIST_OF_CLASSES(ALERT_CLASS_CLEAR_CASE_)
     default:
       return kDifBadArg;
   }
 
-  uint32_t reg = bitfield_bit32_write(
-      0, ALERT_HANDLER_CLASSA_CLR_SHADOWED_CLASSA_CLR_SHADOWED_BIT, true);
-  mmio_region_write32_shadowed(alert_handler->base_addr, reg_offset, reg);
+#undef ALERT_CLASS_CLEAR_CASE_
+
+  mmio_region_write32_shadowed(alert_handler->base_addr, reg_offset, 0x1);
 
   return kDifOk;
 }
 
 dif_result_t dif_alert_handler_get_accumulator(
     const dif_alert_handler_t *alert_handler,
-    dif_alert_handler_class_t alert_class, uint16_t *alerts) {
-  if (alert_handler == NULL || alerts == NULL) {
+    dif_alert_handler_class_t alert_class, uint16_t *num_alerts) {
+  if (alert_handler == NULL || num_alerts == NULL) {
     return kDifBadArg;
   }
+
+#define ALERT_CLASS_ACCUM_CASE_(class_, value_)                                  \
+  case kDifAlertHandlerClass##class_:                                            \
+    reg_offset = ALERT_HANDLER_CLASS##class_##_ACCUM_CNT_REG_OFFSET;             \
+    field =                                                                      \
+        ALERT_HANDLER_CLASS##class_##_ACCUM_CNT_CLASS##class_##_ACCUM_CNT_FIELD; \
+    break;
 
   ptrdiff_t reg_offset;
   bitfield_field32_t field;
   switch (alert_class) {
-    case kDifAlertHandlerClassA:
-      reg_offset = ALERT_HANDLER_CLASSA_ACCUM_CNT_REG_OFFSET;
-      field = ALERT_HANDLER_CLASSA_ACCUM_CNT_CLASSA_ACCUM_CNT_FIELD;
-      break;
-    case kDifAlertHandlerClassB:
-      reg_offset = ALERT_HANDLER_CLASSB_ACCUM_CNT_REG_OFFSET;
-      field = ALERT_HANDLER_CLASSB_ACCUM_CNT_CLASSB_ACCUM_CNT_FIELD;
-      break;
-    case kDifAlertHandlerClassC:
-      reg_offset = ALERT_HANDLER_CLASSC_ACCUM_CNT_REG_OFFSET;
-      field = ALERT_HANDLER_CLASSC_ACCUM_CNT_CLASSC_ACCUM_CNT_FIELD;
-      break;
-    case kDifAlertHandlerClassD:
-      reg_offset = ALERT_HANDLER_CLASSD_ACCUM_CNT_REG_OFFSET;
-      field = ALERT_HANDLER_CLASSD_ACCUM_CNT_CLASSD_ACCUM_CNT_FIELD;
-      break;
+    LIST_OF_CLASSES(ALERT_CLASS_ACCUM_CASE_)
     default:
       return kDifBadArg;
   }
 
+#undef ALERT_CLASS_ACCUM_CASE_
+
   uint32_t reg = mmio_region_read32(alert_handler->base_addr, reg_offset);
-  *alerts = bitfield_field32_read(reg, field);
+  *num_alerts = bitfield_field32_read(reg, field);
 
   return kDifOk;
 }
@@ -832,23 +807,19 @@ dif_result_t dif_alert_handler_get_escalation_counter(
     return kDifBadArg;
   }
 
+#define ALERT_CLASS_ESC_CNT_CASE_(class_, value_)                  \
+  case kDifAlertHandlerClass##class_:                              \
+    reg_offset = ALERT_HANDLER_CLASS##class_##_ESC_CNT_REG_OFFSET; \
+    break;
+
   ptrdiff_t reg_offset;
   switch (alert_class) {
-    case kDifAlertHandlerClassA:
-      reg_offset = ALERT_HANDLER_CLASSA_ESC_CNT_REG_OFFSET;
-      break;
-    case kDifAlertHandlerClassB:
-      reg_offset = ALERT_HANDLER_CLASSB_ESC_CNT_REG_OFFSET;
-      break;
-    case kDifAlertHandlerClassC:
-      reg_offset = ALERT_HANDLER_CLASSC_ESC_CNT_REG_OFFSET;
-      break;
-    case kDifAlertHandlerClassD:
-      reg_offset = ALERT_HANDLER_CLASSD_ESC_CNT_REG_OFFSET;
-      break;
+    LIST_OF_CLASSES(ALERT_CLASS_ESC_CNT_CASE_)
     default:
       return kDifBadArg;
   }
+
+#undef ALERT_CLASS_ESC_CNT_CASE_
 
   *cycles = mmio_region_read32(alert_handler->base_addr, reg_offset);
 
@@ -863,28 +834,21 @@ dif_result_t dif_alert_handler_get_class_state(
     return kDifBadArg;
   }
 
+#define ALERT_CLASS_STATE_CASE_(class_, value_)                              \
+  case kDifAlertHandlerClass##class_:                                        \
+    reg_offset = ALERT_HANDLER_CLASS##class_##_STATE_REG_OFFSET;             \
+    field = ALERT_HANDLER_CLASS##class_##_STATE_CLASS##class_##_STATE_FIELD; \
+    break;
+
   ptrdiff_t reg_offset;
   bitfield_field32_t field;
   switch (alert_class) {
-    case kDifAlertHandlerClassA:
-      reg_offset = ALERT_HANDLER_CLASSA_STATE_REG_OFFSET;
-      field = ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_FIELD;
-      break;
-    case kDifAlertHandlerClassB:
-      reg_offset = ALERT_HANDLER_CLASSB_STATE_REG_OFFSET;
-      field = ALERT_HANDLER_CLASSB_STATE_CLASSB_STATE_FIELD;
-      break;
-    case kDifAlertHandlerClassC:
-      reg_offset = ALERT_HANDLER_CLASSC_STATE_REG_OFFSET;
-      field = ALERT_HANDLER_CLASSC_STATE_CLASSC_STATE_FIELD;
-      break;
-    case kDifAlertHandlerClassD:
-      reg_offset = ALERT_HANDLER_CLASSD_STATE_REG_OFFSET;
-      field = ALERT_HANDLER_CLASSD_STATE_CLASSD_STATE_FIELD;
-      break;
+    LIST_OF_CLASSES(ALERT_CLASS_STATE_CASE_)
     default:
       return kDifBadArg;
   }
+
+#undef ALERT_CLASS_STATE_CASE_
 
   uint32_t reg = mmio_region_read32(alert_handler->base_addr, reg_offset);
   switch (bitfield_field32_read(reg, field)) {
@@ -915,7 +879,3 @@ dif_result_t dif_alert_handler_get_class_state(
 
   return kDifOk;
 }
-
-#undef LOC_ALERT_CAUSE_REGS_CASE_
-#undef LOC_ALERT_REGWENS_CASE_
-#undef ALERT_CLASS_REGWENS_CASE_
