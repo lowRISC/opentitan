@@ -103,3 +103,6 @@ class CSRFile:
             return
 
         raise RuntimeError('Unknown CSR index: {:#x}'.format(idx))
+
+    def wipe(self) -> None:
+        self.flags.write_unsigned(0)

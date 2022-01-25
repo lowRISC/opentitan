@@ -126,3 +126,7 @@ class RegFile:
     def peek_unsigned_values(self) -> List[int]:
         '''Get a list of the (unsigned) values of the registers'''
         return [reg.read_unsigned(backdoor=True) for reg in self._registers]
+
+    def wipe(self) -> None:
+        for r in self._registers:
+            r.write_unsigned(0)

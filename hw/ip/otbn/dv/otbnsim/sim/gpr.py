@@ -107,6 +107,16 @@ class GPRs(RegFile):
         self._x1.abort()
         self.call_stack_err = False
 
-    def start(self) -> None:
-        '''Executed on start of operation. Clears call stack.'''
+    def empty_call_stack(self) -> None:
+        '''Clear call stack.'''
         self._x1.start()
+
+    def wipe(self) -> None:
+        '''Wipe all registers to zero'''
+        # Wipe GPRs other than x0 (no effect) and x1 (not tracked like this at
+        # the moment).
+        #
+        # TODO: Check that we wipe the call stack in the RTL and make sure it
+        #       appears in a trace entry, then match that here.
+        for idx in range(2, 32):
+            self.get_reg(idx).write_unsigned(0)

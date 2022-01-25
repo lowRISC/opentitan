@@ -161,11 +161,14 @@ class OTBNSim:
         if self.state.fsm_state in [FsmState.WIPING_GOOD, FsmState.WIPING_BAD]:
             assert self.state.wipe_cycles > 0
             self.state.wipe_cycles -= 1
+            # Wipe all registers and set STATUS on the penultimate cycle.
             if self.state.wipe_cycles == 1:
                 next_status = (Status.IDLE
                                if self.state.fsm_state == FsmState.WIPING_GOOD
                                else Status.LOCKED)
                 self.state.ext_regs.write('STATUS', next_status, True)
+                self.state.wipe()
+
             return (None, self._on_stall(verbose, fetch_next=False))
 
         assert self.state.fsm_state == FsmState.EXEC

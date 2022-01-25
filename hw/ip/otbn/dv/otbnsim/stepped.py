@@ -140,14 +140,33 @@ def on_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     pc = sim.state.pc
     assert 0 == pc & 3
 
-    insn, changes = sim.step(verbose=False)
+    was_wiping = sim.state.wiping() and sim.state.secure_wipe_enabled
 
-    if insn is not None or changes:
-        print('STALL' if insn is None else insn.rtl_trace(pc))
-        for change in changes:
-            entry = change.rtl_trace()
-            if entry is not None:
-                print(entry)
+    insn, changes = sim.step(verbose=False)
+    if insn is not None:
+        hdr = insn.rtl_trace(pc)  # type: Optional[str]
+    elif was_wiping:
+        # The trailing space is a bit naff but matches the behaviour in the RTL
+        # tracer, where it's rather difficult to change.
+        hdr = 'U ' if sim.state.wiping() else 'V '
+    elif (sim.state.running() or
+          (changes and not sim.state.secure_wipe_enabled)):
+        hdr = 'STALL'
+    else:
+        hdr = None
+
+    rtl_changes = []
+    for c in changes:
+        rt = c.rtl_trace()
+        if rt is not None:
+            rtl_changes.append(rt)
+
+    if hdr is None:
+        assert not rtl_changes
+    else:
+        print(hdr)
+        for rt in rtl_changes:
+            print(rt)
 
     return None
 
