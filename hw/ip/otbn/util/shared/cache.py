@@ -2,13 +2,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Dict, Generic, Optional, List, TypeVar
+from typing import Dict, Generic, List, Optional, TypeVar
 
-K = TypeVar('K')
-V = TypeVar('V')
-I = TypeVar('I')
+K = TypeVar('K')  # Key type.
+V = TypeVar('V')  # Value type.
+X = TypeVar('X')  # Index type.
 
-class CacheEntry(Generic[K,V]):
+
+class CacheEntry(Generic[K, V]):
     '''Represents a single entry in a cache.
 
     The entry must hold two pieces of information:
@@ -33,7 +34,8 @@ class CacheEntry(Generic[K,V]):
         '''
         raise NotImplementedError()
 
-class Cache(Generic[I,K,V]):
+
+class Cache(Generic[X, K, V]):
     '''Represents a cache to speed up recursive functions.
 
     The cache is structured with two layers:
@@ -47,14 +49,14 @@ class Cache(Generic[I,K,V]):
     to the function that absolutely must match for the cache entries to match).
     '''
     def __init__(self) -> None:
-        self.entries : Dict[I,List[CacheEntry[K,V]]] = {}
+        self.entries: Dict[X, List[CacheEntry[K, V]]] = {}
 
-    def add(self, index: I, entry: CacheEntry[K,V]) -> None:
-        # Only add if there's no matching entry already 
+    def add(self, index: X, entry: CacheEntry[K, V]) -> None:
+        # Only add if there's no matching entry already
         if self.lookup(index, entry.key) is None:
             self.entries.setdefault(index, []).append(entry)
 
-    def lookup(self, index: I, key: K) -> Optional[V]:
+    def lookup(self, index: X, key: K) -> Optional[V]:
         for entry in self.entries.get(index, []):
             if entry.is_match(key):
                 return entry.value

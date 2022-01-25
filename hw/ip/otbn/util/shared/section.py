@@ -19,7 +19,7 @@ class CodeSection:
         self.end = end
 
     def get_insn_sequence(self, program: OTBNProgram) -> List[Insn]:
-        return [ program.get_insn(pc) for pc in self.__iter__() ]
+        return [program.get_insn(pc) for pc in self.__iter__()]
 
     def pretty(self) -> str:
         return '0x{:x}-0x{:x}'.format(self.start, self.end)
