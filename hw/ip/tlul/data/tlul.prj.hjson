@@ -19,8 +19,9 @@
       {
         version:            "1.0",
         life_stage:         "L1",
-        design_stage:       "D1",
+        design_stage:       "D2",
         verification_stage: "V1",
+        commit_id:          "92fa6f8648ac1e60ec98e18657d9925b47fac3b9",
         notes:              "Use FPV for the TL building blocks and DV for the generated XBARs."
       }
     ]
