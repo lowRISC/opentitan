@@ -546,7 +546,9 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
  * If the comparison fails, we can deduce the device is under attack, so an
  * illegal instruction will be executed. The manner in which the comparison is
  * done is carefully constructed in assembly to minimize the possibility of
- * adversarial faults.
+ * adversarial faults. This macro also implicitly launders both arguments since
+ * the compiler doesn't see the comparison and can't learn any new information
+ * from it.
  *
  * There are six variants of this macro: one for each of the six comparison
  * operations.
@@ -556,7 +558,7 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
  * could otherwise prove statically unreachable. For example:
  * ```
  * if (launder32(x) == 0) {
- *   HARDENED_CHECK_EQ(launder32(x), 0);
+ *   HARDENED_CHECK_EQ(x, 0);
  * }
  * ```
  * See `launder32()` for more details.
