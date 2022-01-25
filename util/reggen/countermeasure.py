@@ -14,6 +14,7 @@ CM_ASSETS = [
     'KEY',
     'ADDR',
     'DATA_REG',
+    'DATA_REG_SW',
     'CTRL_FLOW',
     'CTRL',
     'CONFIG',
@@ -57,6 +58,7 @@ CM_TYPES = [
     'MASKING',
     'LOCAL_ESC',
     'GLOBAL_ESC',
+    'UNPREDICTABLE',
     'CM'
 ]
 

@@ -259,26 +259,27 @@ The following standardised assets are defined:
 
 | Asset name | Intended meaning |
 | --- | --- |
-| KEY        | A key (secret data) |
-| ADDR       | An address |
-| DATA_REG   | A configuration data register that doesn't come from software (such as Keccak state) |
-| CTRL_FLOW  | The control flow of software or a module |
-| CTRL       | Logic used to steer hardware behavior |
-| CONFIG     | Software-supplied configuration, programmed through the comportable register interface |
-| LFSR       | A linear feedback shift register |
-| RNG        | A random number generator |
-| CTR        | A counter |
-| FSM        | A finite state machine |
-| MEM        | A generic data memory; volatile or non-volatile |
-| CLK        | A clock |
-| RST        | A reset signal |
-| BUS        | Data transferred on a bus |
-| INTERSIG   | A non-bus signal between two IP blocks |
-| MUX        | A multiplexer that controls propagation of sensitive data |
-| CONSTANTS  | A netlist constant |
-| STATE      | An internal state signal (other than FSM state, which is covered by the FSM label) |
-| TOKEN      | A cryptographic token |
-| LOGIC      | Any logic. This is a very broad category: avoid if possible and give an instance or net name if not. |
+| KEY         | A key (secret data) |
+| ADDR        | An address |
+| DATA_REG    | A configuration data register that doesn't come from software (such as Keccak state) |
+| DATA_REG_SW | A data holding register that is manipulated by software |
+| CTRL_FLOW   | The control flow of software or a module |
+| CTRL        | Logic used to steer hardware behavior |
+| CONFIG      | Software-supplied configuration, programmed through the comportable register interface |
+| LFSR        | A linear feedback shift register |
+| RNG         | A random number generator |
+| CTR         | A counter |
+| FSM         | A finite state machine |
+| MEM         | A generic data memory; volatile or non-volatile |
+| CLK         | A clock |
+| RST         | A reset signal |
+| BUS         | Data transferred on a bus |
+| INTERSIG    | A non-bus signal between two IP blocks |
+| MUX         | A multiplexer that controls propagation of sensitive data |
+| CONSTANTS   | A netlist constant |
+| STATE       | An internal state signal (other than FSM state, which is covered by the FSM label) |
+| TOKEN       | A cryptographic token |
+| LOGIC       | Any logic. This is a very broad category: avoid if possible and give an instance or net name if not. |
 
 The following standardised countermeasures are defined:
 
@@ -289,7 +290,7 @@ The following standardised countermeasures are defined:
 | DIFF           | A signal is differentially encoded | CTRL, CTR |
 | REDUN          | There are redundant versions of the asset | ADDR, CTRL, CONFIG, CTR
 | REGWEN         | A register write enable is used to protect the asset from write access | CONFIG, MEM
-| SHADOW         | A shadow register is used to store the asset | CONFIG
+| SHADOW         | The asset has a shadow replica to cross-check against | CONFIG
 | REGREN         | A register write enable is used to protect the asset from read access | CONFIG, MEM
 | SCRAMBLE       | The asset is scrambled | CONFIG, MEM
 | INTEGRITY      | The asset has integrity protection from a computed value such as a checksum | CONFIG, REG, MEM
@@ -307,8 +308,8 @@ The following standardised countermeasures are defined:
 | MASKING        | A more specific version of SCA where an asset is split into shares |
 | LOCAL_ESC      | A local escalation event is triggered when an attack is detected |
 | GLOBAL_ESC     | A global escalation event is triggered when an attack is detected |
+| UNPREDICTABLE  | Behaviour is unpredictable to frustrate repeatable FI attacks |
 | CM             | Catch-all for countermeasures that cannot be further specified. This is a very broad category: avoid if possible and give an instance or net name if not. |
-
 
 ## Register Handling
 
