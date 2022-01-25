@@ -5,7 +5,9 @@
 use anyhow::Result;
 use safe_ftdi as ftdi;
 use std::cell::RefCell;
-use std::time::Duration;
+use std::cmp;
+use std::thread;
+use std::time::{Duration, Instant};
 
 use crate::io::uart::Uart;
 use crate::transport::ultradebug::Ultradebug;
@@ -48,11 +50,21 @@ impl Uart for UltradebugUart {
         Ok(())
     }
 
-    fn read_timeout(&self, buf: &mut [u8], _timeout: Duration) -> Result<usize> {
-        // Note: my recollection is that there is no way to set a read timeout
-        // for the UART.  If there are no characters ready, the FTDI device
-        // simply returns a zero-length read.
-        self.read(buf)
+    fn read_timeout(&self, buf: &mut [u8], timeout: Duration) -> Result<usize> {
+        let now = Instant::now();
+        let count = self.read(buf)?;
+        if count > 0 {
+            return Ok(count);
+        }
+        let short_delay = cmp::min(timeout.mul_f32(0.1), Duration::from_millis(20));
+        while now.elapsed() < timeout {
+            thread::sleep(short_delay);
+            let count = self.read(buf)?;
+            if count > 0 {
+                return Ok(count);
+            }
+        }
+        Ok(0)
     }
 
     fn read(&self, buf: &mut [u8]) -> Result<usize> {
@@ -60,13 +72,12 @@ impl Uart for UltradebugUart {
         Ok(n as usize)
     }
 
-    fn write(&self, buf: &[u8]) -> Result<usize> {
-        let mut total = 0usize;
+    fn write(&self, mut buf: &[u8]) -> Result<()> {
         let inner = self.inner.borrow();
-        while total < buf.len() {
-            let n = inner.device.write_data(&buf[total..])?;
-            total += n as usize;
+        while buf.len() > 0 {
+            let n = inner.device.write_data(buf)?;
+            buf = &buf[n as usize..];
         }
-        Ok(total)
+        Ok(())
     }
 }

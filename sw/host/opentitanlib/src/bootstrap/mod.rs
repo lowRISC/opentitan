@@ -3,16 +3,22 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use humantime::parse_duration;
 use serde::Deserialize;
+use std::rc::Rc;
 use std::time::Duration;
 use structopt::clap::arg_enum;
+use structopt::StructOpt;
 use thiserror::Error;
 
+use crate::app::TransportWrapper;
 use crate::io::gpio::GpioPin;
-use crate::io::spi::Target;
+use crate::io::spi::SpiParams;
+use crate::io::uart::UartParams;
 
 mod legacy;
 mod primitive;
+mod rescue;
 
 #[derive(Debug, Error)]
 pub enum BootstrapError {
@@ -22,9 +28,10 @@ pub enum BootstrapError {
 
 arg_enum! {
     /// `BootstrapProtocol` describes the supported types of bootstrap.
-    /// The `Primitive` protocol is used by OpenTitan during development.
-    /// The `Legacy` protocol is used by previous generations of Google Titan-class chips.
-    /// The `Eeprom` protocol is planned to be implemented for OpenTitan.
+    /// The `Primitive` SPI protocol is used by OpenTitan during development.
+    /// The `Legacy` SPI protocol is used by previous generations of Google Titan-class chips.
+    /// The `Eeprom` SPI protocol is planned to be implemented for OpenTitan.
+    /// The `Rescue` UART protocol is used by Google Ti50 firmware.
     /// The 'Emulator' value indicates that this tool has a direct way
     /// of communicating with the OpenTitan emulator, to replace the
     /// contents of the emulated flash storage.
@@ -33,42 +40,81 @@ arg_enum! {
         Primitive,
         Legacy,
         Eeprom,
+        Rescue,
         Emulator,
     }
 }
 
 // Implementations of bootstrap need to implement the `UpdateProtocol` trait.
 trait UpdateProtocol {
-    fn update(&self, spi: &dyn Target, payload: &[u8]) -> Result<()>;
+    /// Called before any action is taken, to allow the protocol to verify that the transport
+    /// supports SPI/UART or whatever it needs.
+    fn verify_capabilities(
+        &self,
+        container: &Bootstrap,
+        transport: &TransportWrapper,
+    ) -> Result<()>;
+    /// Indicates whether the caller should assert the bootstrap pin and reset the chip, before
+    /// invoking update().
+    fn uses_common_bootstrap_reset(&self) -> bool;
+    /// Invoked to perform the actual transfer of an executable image to the OpenTitan chip.
+    fn update(
+        &self,
+        container: &Bootstrap,
+        transport: &TransportWrapper,
+        payload: &[u8],
+    ) -> Result<()>;
 }
 
 /// Options which control bootstrap behavior.
 /// The meaning of each of these values depends on the specific bootstrap protocol being used.
-#[derive(Debug, Default)]
+#[derive(Debug, StructOpt)]
 pub struct BootstrapOptions {
-    /// How long to hold the reset pin during the reset sequence.
+    #[structopt(flatten)]
+    pub uart_params: UartParams,
+    #[structopt(flatten)]
+    pub spi_params: SpiParams,
+    #[structopt(
+        short,
+        long,
+        possible_values = &BootstrapProtocol::variants(),
+        case_insensitive = true,
+        default_value = "primitive",
+        help = "Bootstrap protocol to use"
+    )]
+    pub protocol: BootstrapProtocol,
+    #[structopt(long, parse(try_from_str=parse_duration), help = "Duration of the reset delay")]
     pub reset_delay: Option<Duration>,
-    /// How long to delay between sending bootstrap frames.
+    #[structopt(long, parse(try_from_str=parse_duration), help = "Duration of the inter-frame delay")]
     pub inter_frame_delay: Option<Duration>,
-    /// How long to delay during a flash erase operation.
+    #[structopt(long, parse(try_from_str=parse_duration), help = "Duration of the flash-erase delay")]
     pub flash_erase_delay: Option<Duration>,
 }
 
 /// Bootstrap wraps and drives the various bootstrap protocols.
-pub struct Bootstrap {
+pub struct Bootstrap<'a> {
     pub protocol: BootstrapProtocol,
+    pub uart_params: &'a UartParams,
+    pub spi_params: &'a SpiParams,
+    reset_pin: Rc<dyn GpioPin>,
+    bootstrap_pin: Rc<dyn GpioPin>,
     reset_delay: Duration,
-    updater: Box<dyn UpdateProtocol>,
 }
 
-impl Bootstrap {
+impl<'a> Bootstrap<'a> {
     const RESET_DELAY: Duration = Duration::from_millis(200);
 
-    /// Consrtuct a `Bootstrap` struct configured to use `protocol` and `options`.
-    pub fn new(protocol: BootstrapProtocol, options: BootstrapOptions) -> Result<Self> {
-        let updater: Box<dyn UpdateProtocol> = match protocol {
+    /// Perform the update, sending the firmware `payload` to a SPI or UART target depending on
+    /// given `options`, which specifies protocol and port to use.
+    pub fn update(
+        transport: &TransportWrapper,
+        options: &BootstrapOptions,
+        payload: &[u8],
+    ) -> Result<()> {
+        let updater: Box<dyn UpdateProtocol> = match options.protocol {
             BootstrapProtocol::Primitive => Box::new(primitive::Primitive::new(&options)),
             BootstrapProtocol::Legacy => Box::new(legacy::Legacy::new(&options)),
+            BootstrapProtocol::Rescue => Box::new(rescue::Rescue::new(&options)),
             BootstrapProtocol::Eeprom => {
                 unimplemented!();
             }
@@ -77,36 +123,44 @@ impl Bootstrap {
                 unimplemented!();
             }
         };
-        Ok(Bootstrap {
-            protocol,
+        Bootstrap {
+            protocol: options.protocol,
+            uart_params: &options.uart_params,
+            spi_params: &options.spi_params,
+            reset_pin: transport.gpio_pin("RESET")?,
+            bootstrap_pin: transport.gpio_pin("BOOTSTRAP")?,
             reset_delay: options.reset_delay.unwrap_or(Self::RESET_DELAY),
-            updater: updater,
-        })
+        }
+        .do_update(updater, transport, payload)
     }
 
-    /// Perform the update, sending the firmware `payload` to the `spi` target,
-    /// using `gpio` to sequence the reset and bootstrap pins.
-    pub fn update(
+    fn do_update(
         &self,
-        spi: &dyn Target,
-        reset: &dyn GpioPin,
-        bootstrap: &dyn GpioPin,
+        updater: Box<dyn UpdateProtocol>,
+        transport: &TransportWrapper,
         payload: &[u8],
     ) -> Result<()> {
-        log::info!("Asserting bootstrap pins...");
-        bootstrap.write(true)?;
+        updater.verify_capabilities(&self, transport)?;
+        let perform_bootstrap_reset = updater.uses_common_bootstrap_reset();
 
-        log::info!("Restting the target...");
-        reset.write(false)?; // Low active
-        std::thread::sleep(self.reset_delay);
-        reset.write(true)?; // Release reset
-        std::thread::sleep(self.reset_delay);
+        if perform_bootstrap_reset {
+            log::info!("Asserting bootstrap pins...");
+            self.bootstrap_pin.write(true)?;
 
-        log::info!("Performing bootstrap...");
-        self.updater.update(spi, payload)?;
+            log::info!("Reseting the target...");
+            self.reset_pin.write(false)?; // Low active
+            std::thread::sleep(self.reset_delay);
+            self.reset_pin.write(true)?; // Release reset
+            std::thread::sleep(self.reset_delay);
 
-        log::info!("Releasing bootstrap pins...");
-        bootstrap.write(false)?;
-        Ok(())
+            log::info!("Performing bootstrap...");
+        }
+        let result = updater.update(&self, transport, payload);
+
+        if perform_bootstrap_reset {
+            log::info!("Releasing bootstrap pins...");
+            self.bootstrap_pin.write(false)?;
+        }
+        result
     }
 }

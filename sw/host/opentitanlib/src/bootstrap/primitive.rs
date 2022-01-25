@@ -7,8 +7,10 @@ use mundane::hash::{Digest, Hasher, Sha256};
 use std::time::Duration;
 use zerocopy::AsBytes;
 
-use crate::bootstrap::{BootstrapOptions, UpdateProtocol};
-use crate::io::spi::{Target, Transfer};
+use crate::app::TransportWrapper;
+use crate::bootstrap::{Bootstrap, BootstrapOptions, UpdateProtocol};
+use crate::io::spi::Transfer;
+use crate::transport::Capability;
 
 #[derive(AsBytes, Debug, Default)]
 #[repr(C)]
@@ -105,8 +107,31 @@ impl Primitive {
 }
 
 impl UpdateProtocol for Primitive {
+    fn verify_capabilities(
+        &self,
+        _container: &Bootstrap,
+        transport: &TransportWrapper,
+    ) -> Result<()> {
+        transport
+            .capabilities()
+            .request(Capability::GPIO | Capability::SPI)
+            .ok()?;
+        Ok(())
+    }
+
+    fn uses_common_bootstrap_reset(&self) -> bool {
+        true
+    }
+
     /// Performs the update protocol using the `transport` with the firmware `payload`.
-    fn update(&self, spi: &dyn Target, payload: &[u8]) -> Result<()> {
+    fn update(
+        &self,
+        container: &Bootstrap,
+        transport: &TransportWrapper,
+        payload: &[u8],
+    ) -> Result<()> {
+        let spi = container.spi_params.create(transport)?;
+
         let frames = Frame::from_payload(payload);
 
         let mut i = 0;
