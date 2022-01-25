@@ -204,14 +204,19 @@ def gen_html_register(outfile: TextIO,
 
         if field.enum is not None:
             desc_parts.append('<table>')
+
+            # Add two to include the "0x" part
+            hex_width = 2 + ((field.bits.width() + 3) // 4)
+
             for enum in field.enum:
                 enum_desc_paras = expand_paras(enum.desc, rnames)
                 desc_parts.append('<tr>'
-                                  '<td>{val}</td>'
+                                  '<td>{val:#0{hex_width}x}</td>'
                                   '<td>{name}</td>'
                                   '<td>{desc}</td>'
                                   '</tr>\n'
                                   .format(val=enum.value,
+                                          hex_width=hex_width,
                                           name=enum.name,
                                           desc=''.join(enum_desc_paras)))
             desc_parts.append('</table>')
