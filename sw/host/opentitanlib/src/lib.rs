@@ -8,6 +8,7 @@ pub mod bootstrap;
 pub mod crypto;
 pub mod io;
 pub mod otp;
+pub mod image;
 pub mod spiflash;
 pub mod transport;
 pub mod util;
