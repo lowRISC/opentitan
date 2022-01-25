@@ -4,13 +4,37 @@
 
 #include "otbn_trace_entry.h"
 
-#include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <regex>
 #include <sstream>
 
-void OtbnTraceEntry::from_rtl_trace(const std::string &trace) {
+bool OtbnTraceBodyLine::fill_from_string(const std::string &src,
+                                         const std::string &line) {
+  // A valid line matches the following regex
+  std::regex re("(.) ([^:]+): (.+)");
+  std::smatch match;
+
+  if (!std::regex_match(line, match, re)) {
+    std::cerr << "OTBN trace body line from " << src
+              << " does not have expected format. Saw: `" << line << "'.\n";
+    return false;
+  }
+
+  assert(match.size() == 4);
+
+  raw_ = line;
+  type_ = match[1].str()[0];
+  loc_ = match[2].str();
+  value_ = match[3].str();
+  return true;
+}
+
+bool OtbnTraceBodyLine::operator==(const OtbnTraceBodyLine &other) const {
+  return raw_ == other.raw_;
+}
+
+bool OtbnTraceEntry::from_rtl_trace(const std::string &trace) {
   size_t eol = trace.find('\n');
   hdr_ = trace.substr(0, eol);
   trace_type_ = hdr_to_trace_type(hdr_);
@@ -21,12 +45,18 @@ void OtbnTraceEntry::from_rtl_trace(const std::string &trace) {
     size_t line_len =
         (eol == std::string::npos) ? std::string::npos : eol - bol;
     std::string line = trace.substr(bol, line_len);
-    if (line.size() > 0 && line[0] == '>')
-      writes_.push_back(line);
+
+    // We're only interested in register writes
+    if (!(line.size() > 0 && line[0] == '>'))
+      continue;
+
+    OtbnTraceBodyLine parsed_line;
+    if (!parsed_line.fill_from_string("RTL", line)) {
+      return false;
+    }
+    writes_[parsed_line.get_loc()] = parsed_line;
   }
-  std::sort(writes_.begin(), writes_.end());
-  auto last = std::unique(writes_.begin(), writes_.end());
-  writes_.erase(last, writes_.end());
+  return true;
 }
 
 bool OtbnTraceEntry::operator==(const OtbnTraceEntry &other) const {
@@ -35,19 +65,16 @@ bool OtbnTraceEntry::operator==(const OtbnTraceEntry &other) const {
 
 void OtbnTraceEntry::print(const std::string &indent, std::ostream &os) const {
   os << indent << hdr_ << "\n";
-  for (const std::string &write : writes_) {
-    os << indent << write << "\n";
+  for (const auto &pr : writes_) {
+    os << indent << pr.second.get_string() << "\n";
   }
 }
 
 void OtbnTraceEntry::take_writes(const OtbnTraceEntry &other) {
   if (!other.writes_.empty()) {
-    for (const std::string &write : other.writes_) {
-      writes_.push_back(write);
+    for (const auto &pr : other.writes_) {
+      writes_[pr.first] = pr.second;
     }
-    std::sort(writes_.begin(), writes_.end());
-    auto last = std::unique(writes_.begin(), writes_.end());
-    writes_.erase(last, writes_.end());
   }
 }
 
@@ -180,7 +207,11 @@ bool OtbnIssTraceEntry::from_iss_trace(const std::vector<std::string> &lines) {
         // external register changes, not tracked by the RTL core simulation)
         bool is_bang = (line.size() > 0 && line[0] == '!');
         if (!is_bang) {
-          writes_.push_back(line);
+          OtbnTraceBodyLine parsed_line;
+          if (!parsed_line.fill_from_string("ISS", line)) {
+            return false;
+          }
+          writes_[parsed_line.get_loc()] = parsed_line;
         }
         break;
       }
@@ -195,6 +226,5 @@ bool OtbnIssTraceEntry::from_iss_trace(const std::vector<std::string> &lines) {
     return false;
   }
 
-  std::sort(writes_.begin(), writes_.end());
   return true;
 }
