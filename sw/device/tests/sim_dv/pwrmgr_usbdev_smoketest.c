@@ -17,6 +17,7 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf.h"
 #include "sw/device/lib/usbdev.h"
 
@@ -73,11 +74,9 @@ bool test_main(void) {
     usleep(20);  // 20us
 
     // Enable low power on the next WFI with default settings.
-    CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
-        &pwrmgr, kDifPwrmgrReqTypeWakeup, kDifPwrmgrWakeupRequestSourceFour));
-    CHECK_DIF_OK(dif_pwrmgr_set_domain_config(
-        &pwrmgr, kDifPwrmgrDomainOptionUsbClockInActivePower));
-    CHECK_DIF_OK(dif_pwrmgr_low_power_set_enabled(&pwrmgr, kDifToggleEnabled));
+    pwrmgr_testutils_enable_low_power(
+        &pwrmgr, kDifPwrmgrWakeupRequestSourceFour,
+        kDifPwrmgrDomainOptionUsbClockInActivePower);
 
     // Enter low power mode.
     wait_for_interrupt();

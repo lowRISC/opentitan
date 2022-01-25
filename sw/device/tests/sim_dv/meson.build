@@ -14,6 +14,7 @@ pwrmgr_usbdev_smoketest_lib = declare_dependency(
       sw_lib_usb,
       sw_lib_mmio,
       sw_lib_runtime_log,
+      sw_lib_testing_pwrmgr_testutils,
     ],
   ),
 )
