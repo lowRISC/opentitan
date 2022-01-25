@@ -158,15 +158,15 @@ impl Deref for DeferredValue {
 
 /// Wrapper type to force deserialization assuming octal encoding.
 #[derive(Deserialize, Debug)]
-pub struct OctEncoded<T: ParseInt>(#[serde(with = "self")] T);
+pub struct OctEncoded<T: ParseInt>(#[serde(with = "self")] pub T);
 
 /// Wrapper type to force deserialization assuming decimal encoding.
 #[derive(Deserialize, Debug)]
-pub struct DecEncoded<T: ParseInt>(#[serde(with = "self")] T);
+pub struct DecEncoded<T: ParseInt>(#[serde(with = "self")] pub T);
 
 /// Wrapper type to force deserialization assuming hexadecimal encoding.
 #[derive(Deserialize, Debug)]
-pub struct HexEncoded<T: ParseInt>(#[serde(with = "self")] T);
+pub struct HexEncoded<T: ParseInt>(#[serde(with = "self")] pub T);
 
 macro_rules! impl_parse_int_enc {
     ($ty:ident, $radix:expr) => {

@@ -93,8 +93,7 @@ impl Default for ManifestUsageConstraints {
         Self {
             selector_bits: 0,
             device_id: LifecycleDeviceId {
-                device_id: [MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL;
-                    8usize],
+                device_id: [MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL; 8usize],
             },
             manuf_state_creator: MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL,
             manuf_state_owner: MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL,
