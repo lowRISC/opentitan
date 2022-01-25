@@ -13,6 +13,31 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
   // ext interfaces
   rom_ctrl_vif rom_ctrl_vif;
 
+  // Enables/disable all protocol delays.
+  rand bit zero_delays;
+
+  // Bias randomization in favor of enabling zero delays less often.
+  constraint zero_delays_c {
+    zero_delays dist { 0 := 8,
+                       1 := 2 };
+  }
+
+  // Device-side delay for both push/pull protocols.
+  rand int unsigned device_delay_max;
+
+  constraint device_delay_max_c {
+    solve zero_delays before device_delay_max;
+    if (zero_delays) {
+      device_delay_max == 0;
+    } else {
+      device_delay_max dist {
+        [1:20] :/ 2,
+        [21:50] :/ 4
+      };
+    }
+  }
+
+
   `uvm_object_utils_begin(rom_ctrl_env_cfg)
   `uvm_object_utils_end
 

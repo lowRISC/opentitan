@@ -18,6 +18,7 @@ class rom_ctrl_env extends cip_base_env #(
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
 
+    `DV_CHECK_RANDOMIZE_FATAL(cfg)
     // Get the mem_bkdr interface
     if (!uvm_config_db#(mem_bkdr_util)::get(this, "", "mem_bkdr_util", cfg.mem_bkdr_util_h)) begin
       `uvm_fatal(`gfn, "failed to get mem_bkdr_util from uvm_config_db")
@@ -30,6 +31,8 @@ class rom_ctrl_env extends cip_base_env #(
     // Build the KMAC agent
     m_kmac_agent = kmac_app_agent::type_id::create("m_kmac_agent", this);
     uvm_config_db#(kmac_app_agent_cfg)::set(this, "m_kmac_agent", "cfg", cfg.m_kmac_agent_cfg);
+    cfg.m_kmac_agent_cfg.zero_delays = cfg.zero_delays;
+    cfg.m_kmac_agent_cfg.m_data_push_agent_cfg.device_delay_max = cfg.device_delay_max;
 
   endfunction
 
