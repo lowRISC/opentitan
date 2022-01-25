@@ -19,8 +19,45 @@ static_assert(ALERT_HANDLER_PARAM_N_PHASES == 4,
 static_assert(ALERT_HANDLER_PARAM_N_LOC_ALERT == 7,
               "Expected seven local alerts!");
 
-// TODO: add static asserts for multiregs (locks, enables, cause, escalation
-// clear, etc.)
+// Enable, class, lock, and cause multiregs for alerts.
+static_assert(ALERT_HANDLER_ALERT_EN_SHADOWED_MULTIREG_COUNT &&
+                  ALERT_HANDLER_ALERT_EN_SHADOWED_EN_A_FIELD_WIDTH == 1 &&
+                  ALERT_HANDLER_ALERT_EN_SHADOWED_0_EN_A_0_BIT == 0,
+              "Expected alert enables to be multiregs with LSB at index 0!");
+static_assert(ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT &&
+                  ALERT_HANDLER_ALERT_CLASS_SHADOWED_CLASS_A_FIELD_WIDTH == 2 &&
+                  ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_OFFSET == 0,
+              "Expected alert class CSRs to be multiregs with LSB at index 0!");
+static_assert(ALERT_HANDLER_ALERT_REGWEN_MULTIREG_COUNT &&
+                  ALERT_HANDLER_ALERT_REGWEN_EN_FIELD_WIDTH == 1 &&
+                  ALERT_HANDLER_ALERT_REGWEN_0_EN_0_BIT == 0,
+              "Expected alert locks to be multiregs with LSB at index 0!");
+static_assert(ALERT_HANDLER_ALERT_CAUSE_MULTIREG_COUNT &&
+                  ALERT_HANDLER_ALERT_CAUSE_A_FIELD_WIDTH == 1 &&
+                  ALERT_HANDLER_ALERT_CAUSE_0_A_0_BIT == 0,
+              "Expected alert causes to be multiregs with LSB at index 0!");
+
+// Enable, class, lock, and cause multiregs for local alerts.
+static_assert(
+    ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_MULTIREG_COUNT &&
+        ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_EN_LA_FIELD_WIDTH == 1 &&
+        ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_EN_LA_0_BIT == 0,
+    "Expected local alert enables to be multiregs with LSB at index 0!");
+static_assert(
+    ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT &&
+        ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_CLASS_LA_FIELD_WIDTH == 2 &&
+        ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_OFFSET == 0,
+    "Expected local alert class CSRs to be multiregs with LSB at index 0!");
+static_assert(
+    ALERT_HANDLER_LOC_ALERT_REGWEN_MULTIREG_COUNT &&
+        ALERT_HANDLER_LOC_ALERT_REGWEN_EN_FIELD_WIDTH == 1 &&
+        ALERT_HANDLER_LOC_ALERT_REGWEN_0_EN_0_BIT == 0,
+    "Expected local alert locks to be multiregs with LSB at index 0!");
+static_assert(
+    ALERT_HANDLER_LOC_ALERT_CAUSE_MULTIREG_COUNT &&
+        ALERT_HANDLER_LOC_ALERT_CAUSE_LA_FIELD_WIDTH == 1 &&
+        ALERT_HANDLER_LOC_ALERT_CAUSE_0_LA_0_BIT == 0,
+    "Expected local alert causes to be multiregs with LSB at index 0!");
 
 /**
  * Macro for generating the case statements for local alert cause CSRs.
@@ -117,18 +154,14 @@ dif_result_t dif_alert_handler_configure_alert(
   // Enable the alert.
   ptrdiff_t enable_reg_offset =
       ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET + alert * sizeof(uint32_t);
-  uint32_t enable_reg = bitfield_bit32_write(
-      0, ALERT_HANDLER_ALERT_EN_SHADOWED_0_EN_A_0_BIT, true);
   mmio_region_write32_shadowed(alert_handler->base_addr, enable_reg_offset,
-                               enable_reg);
+                               0x1);
 
   // Classify the alert.
   ptrdiff_t class_reg_offset = ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET +
                                alert * sizeof(uint32_t);
-  uint32_t class_reg = bitfield_field32_write(
-      0, ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_FIELD, classification);
   mmio_region_write32_shadowed(alert_handler->base_addr, class_reg_offset,
-                               class_reg);
+                               classification);
 
   // Lock the configuration.
   if (locked == kDifToggleEnabled) {
@@ -152,24 +185,18 @@ dif_result_t dif_alert_handler_configure_local_alert(
     return kDifBadArg;
   }
 
-#define LOC_ALERT_REGS_CASE_(loc_alert_, value_)                                     \
-  case loc_alert_:                                                                   \
-    enable_reg_offset =                                                              \
-        ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_##value_##_REG_OFFSET;                   \
-    enable_bit =                                                                     \
-        ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_##value_##_EN_LA_##value_##_BIT;         \
-    class_reg_offset =                                                               \
-        ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_##value_##_REG_OFFSET;                \
-    class_field =                                                                    \
-        ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_##value_##_CLASS_LA_##value_##_FIELD; \
-    regwen_offset = ALERT_HANDLER_LOC_ALERT_REGWEN_##value_##_REG_OFFSET;            \
+#define LOC_ALERT_REGS_CASE_(loc_alert_, value_)                          \
+  case loc_alert_:                                                        \
+    enable_reg_offset =                                                   \
+        ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_##value_##_REG_OFFSET;        \
+    class_reg_offset =                                                    \
+        ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_##value_##_REG_OFFSET;     \
+    regwen_offset = ALERT_HANDLER_LOC_ALERT_REGWEN_##value_##_REG_OFFSET; \
     break;
 
   // Get register/field offsets for local alert type.
   ptrdiff_t enable_reg_offset;
-  bitfield_bit32_index_t enable_bit;
   ptrdiff_t class_reg_offset;
-  bitfield_field32_t class_field;
   ptrdiff_t regwen_offset;
   switch (local_alert) {
     LIST_OF_LOC_ALERTS(LOC_ALERT_REGS_CASE_)
@@ -187,14 +214,12 @@ dif_result_t dif_alert_handler_configure_local_alert(
   // Enable the alert.
   // NOTE: the alert ID corresponds directly to the multireg index.
   // (I.e., alert N has enable multireg N).
-  uint32_t enable_reg = bitfield_bit32_write(0, enable_bit, true);
   mmio_region_write32_shadowed(alert_handler->base_addr, enable_reg_offset,
-                               enable_reg);
+                               0x1);
 
   // Classify the alert.
-  uint32_t class_reg = bitfield_field32_write(0, class_field, classification);
   mmio_region_write32_shadowed(alert_handler->base_addr, class_reg_offset,
-                               class_reg);
+                               classification);
 
   // Lock the configuration.
   if (locked == kDifToggleEnabled) {
