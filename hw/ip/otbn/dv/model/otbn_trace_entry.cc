@@ -13,6 +13,7 @@
 void OtbnTraceEntry::from_rtl_trace(const std::string &trace) {
   size_t eol = trace.find('\n');
   hdr_ = trace.substr(0, eol);
+  trace_type_ = hdr_to_trace_type(hdr_);
 
   while (eol != std::string::npos) {
     size_t bol = eol + 1;
@@ -50,12 +51,6 @@ void OtbnTraceEntry::take_writes(const OtbnTraceEntry &other) {
   }
 }
 
-bool OtbnTraceEntry::empty() const { return hdr_.empty(); }
-
-bool OtbnTraceEntry::is_stall() const { return !empty() && hdr_[0] == 'S'; }
-
-bool OtbnTraceEntry::is_exec() const { return !empty() && hdr_[0] == 'E'; }
-
 bool OtbnTraceEntry::is_compatible(const OtbnTraceEntry &prev) const {
   // Two entries are compatible if they might both come from the multi-cycle
   // execution of one instruction. For example, you might expect to see these
@@ -67,6 +62,8 @@ bool OtbnTraceEntry::is_compatible(const OtbnTraceEntry &prev) const {
   // which show an instruction at 0x10 stalling for a cycle and then managing
   // to execute.
   //
+  // Similarly, you might expect to see U followed by U or V.
+  //
   // As an added complication, if we see an IMEM fetch error, the entry will
   // become
   //
@@ -74,6 +71,7 @@ bool OtbnTraceEntry::is_compatible(const OtbnTraceEntry &prev) const {
   //
   // and that's fine. So the rule is:
   //
+  //   - Check the types are compatible (S then S or E; U then U or V)
   //   - Compare the two lines from character 1 onwards.
   //   - If they match: accept.
   //   - Otherwise, if the second line has no '?' then reject.
@@ -83,6 +81,20 @@ bool OtbnTraceEntry::is_compatible(const OtbnTraceEntry &prev) const {
   // (This wrongly accepts some malformed examples, but that's fine: it's just
   // meant as a quick check to make sure our trace machinery isn't dropping
   // entries)
+  bool matching_types;
+  switch (prev.trace_type()) {
+    case Stall:
+      matching_types = (trace_type_ == Stall || trace_type_ == Exec);
+      break;
+    case WipeInProgress:
+      matching_types =
+          (trace_type_ == WipeInProgress || trace_type_ == WipeComplete);
+      break;
+    default:
+      matching_types = false;
+  }
+  if (!matching_types)
+    return false;
 
   bool exact_match =
       0 == hdr_.compare(1, std::string::npos, prev.hdr_, 1, std::string::npos);
@@ -94,6 +106,36 @@ bool OtbnTraceEntry::is_compatible(const OtbnTraceEntry &prev) const {
     return false;
 
   return 0 == hdr_.compare(1, first_qm - 1, prev.hdr_, 1, first_qm - 1);
+}
+
+bool OtbnTraceEntry::is_partial() const {
+  return ((trace_type_ == OtbnTraceEntry::Stall) ||
+          (trace_type_ == OtbnTraceEntry::WipeInProgress));
+}
+
+bool OtbnTraceEntry::is_final() const {
+  return ((trace_type_ == OtbnTraceEntry::Exec) ||
+          (trace_type_ == OtbnTraceEntry::WipeComplete));
+}
+
+OtbnTraceEntry::trace_type_t OtbnTraceEntry::hdr_to_trace_type(
+    const std::string &hdr) {
+  if (hdr.empty()) {
+    return Invalid;
+  }
+
+  switch (hdr[0]) {
+    case 'S':
+      return Stall;
+    case 'E':
+      return Exec;
+    case 'U':
+      return WipeInProgress;
+    case 'V':
+      return WipeComplete;
+    default:
+      return Invalid;
+  }
 }
 
 bool OtbnIssTraceEntry::from_iss_trace(const std::vector<std::string> &lines) {
@@ -108,6 +150,7 @@ bool OtbnIssTraceEntry::from_iss_trace(const std::vector<std::string> &lines) {
     switch (state) {
       case 0:
         hdr_ = line;
+        trace_type_ = hdr_to_trace_type(hdr_);
         state = (!line.empty() && line[0] == 'E') ? 1 : 2;
         break;
 

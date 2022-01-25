@@ -406,7 +406,7 @@ int ISSWrapper::step(bool gen_trace) {
   bool error = false;
 
   run_command("step\n", &lines);
-  if (gen_trace) {
+  if (gen_trace && lines.size()) {
     if (!OtbnTraceChecker::get().OnIssTrace(lines)) {
       return -1;
     }

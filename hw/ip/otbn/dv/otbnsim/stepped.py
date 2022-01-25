@@ -142,11 +142,12 @@ def on_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
     insn, changes = sim.step(verbose=False)
 
-    print('STALL' if insn is None else insn.rtl_trace(pc))
-    for change in changes:
-        entry = change.rtl_trace()
-        if entry is not None:
-            print(entry)
+    if insn is not None or changes:
+        print('STALL' if insn is None else insn.rtl_trace(pc))
+        for change in changes:
+            entry = change.rtl_trace()
+            if entry is not None:
+                print(entry)
 
     return None
 

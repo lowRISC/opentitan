@@ -15,8 +15,8 @@
 static std::unique_ptr<OtbnTraceChecker> trace_checker;
 
 OtbnTraceChecker::OtbnTraceChecker()
-    : rtl_pending_(false),
-      rtl_stall_(false),
+    : rtl_started_(false),
+      rtl_pending_(false),
       iss_started_(false),
       iss_pending_(false),
       done_(true),
@@ -50,75 +50,14 @@ void OtbnTraceChecker::AcceptTraceString(const std::string &trace,
   done_ = false;
   OtbnTraceEntry trace_entry;
   trace_entry.from_rtl_trace(trace);
-  if (trace_entry.empty()) {
-    std::cerr << "ERROR: Invalid RTL trace entry with empty header:\n";
+  if (trace_entry.trace_type() == OtbnTraceEntry::Invalid) {
+    std::cerr << "ERROR: Invalid RTL trace entry with invalid header:\n";
     trace_entry.print("  ", std::cerr);
     seen_err_ = true;
     return;
   }
 
-  // Unless something has gone very wrong, trace_entry.hdr_ will start with 'S'
-  // (stall) or 'E' (execute). We want to coalesce entries for an instruction
-  // here to avoid the ISS needing to figure out what write happens when on a
-  // multi-cycle instruction.
-  //
-  // We work on the basis that an instruction will appear as zero or more stall
-  // entries followed by an execution entry. When we see a stall entry, we
-  // merge it into rtl_stalled_entry_, setting rtl_stall_ to flag that it
-  // contains some information.
-  //
-  // When an execution entry comes up, we check it matches the pending stall
-  // entry and then merge all the fields together, finally setting
-  // rtl_pending_.
-  if (trace_entry.is_stall()) {
-    if (rtl_stall_) {
-      // We already have a stall line. Make sure the headers match.
-      if (!trace_entry.is_compatible(rtl_stalled_entry_)) {
-        std::cerr
-            << ("ERROR: Stall trace entry followed by "
-                "mis-matching stall.\n"
-                "  Existing stall entry was:\n");
-        rtl_stalled_entry_.print("    ", std::cerr);
-        std::cerr << "  New stall entry was:\n";
-        trace_entry.print("    ", std::cerr);
-        seen_err_ = true;
-        return;
-      }
-      rtl_stalled_entry_.take_writes(trace_entry);
-    } else {
-      // This is the first stall. Set the rtl_stall_ flag and save trace_entry.
-      rtl_stall_ = true;
-      rtl_stalled_entry_ = trace_entry;
-    }
-    return;
-  }
-
-  // This wasn't a stall entry. Check it's an execution.
-  if (!trace_entry.is_exec()) {
-    std::cerr << "ERROR: Invalid RTL trace entry (neither S nor E):\n";
-    trace_entry.print("  ", std::cerr);
-    seen_err_ = true;
-    return;
-  }
-
-  // If had a stall before, merge in any writes from it, making sure the lines
-  // match.
-  if (rtl_stall_) {
-    if (!trace_entry.is_compatible(rtl_stalled_entry_)) {
-      std::cerr
-          << ("ERROR: Execution trace entry doesn't match stall:\n"
-              "  Stall entry was:\n");
-      rtl_stalled_entry_.print("    ", std::cerr);
-      std::cerr << "  Execution entry was:\n";
-      trace_entry.print("    ", std::cerr);
-      seen_err_ = true;
-      return;
-    }
-
-    trace_entry.take_writes(rtl_stalled_entry_);
-  }
-
-  // Check we don't already have a pending RTL execution entry
+  // Check we don't already have a pending RTL final entry
   if (rtl_pending_) {
     std::cerr
         << ("ERROR: Two back-to-back RTL "
@@ -131,8 +70,65 @@ void OtbnTraceChecker::AcceptTraceString(const std::string &trace,
     return;
   }
 
+  // At this point, we know that the header is a Stall, Exec, WipeInProgress or
+  // WipeComplete. We want to coalesce entries for an instruction/wipe here to
+  // avoid the ISS needing to figure out which write happens at what time on a
+  // multi-cycle instruction.
+  //
+  // We work on the basis that an instruction will appear as zero or more
+  // "partial entries" (S or U) followed by an "final" entry (E or V). When we
+  // see a partial entry, we merge it into rtl_partial_entry_, setting
+  // rtl_partial_ to flag that it contains some information.
+  //
+  // When a final entry comes up, we check it matches any pending partial entry
+  // and then merge all the fields together, finally setting rtl_pending_.
+  if (trace_entry.is_partial()) {
+    if (rtl_started_) {
+      // We already have a partial entry. Make sure the headers match.
+      if (!trace_entry.is_compatible(rtl_entry_)) {
+        std::cerr
+            << ("ERROR: Partial trace entry followed by "
+                "mis-matching partial entry.\n"
+                "  Existing partial entry was:\n");
+        rtl_entry_.print("    ", std::cerr);
+        std::cerr << "  New partial entry was:\n";
+        trace_entry.print("    ", std::cerr);
+        seen_err_ = true;
+        return;
+      }
+      rtl_entry_.take_writes(trace_entry);
+    } else {
+      // This is the first partial entry. Set the rtl_started_ flag and save
+      // trace_entry.
+      rtl_started_ = true;
+      rtl_entry_ = trace_entry;
+    }
+    return;
+  }
+
+  // This wasn't a partial entry. At this point, we should know it's a final
+  // one.
+  assert(trace_entry.is_final());
+
+  // If had a partial entry before, merge in any writes from it, making sure
+  // the entries are compatible.
+  if (rtl_started_) {
+    if (!trace_entry.is_compatible(rtl_entry_)) {
+      std::cerr
+          << ("ERROR: Final trace entry doesn't match partial entry:\n"
+              "  Partial entry was:\n");
+      rtl_entry_.print("    ", std::cerr);
+      std::cerr << "  Final entry was:\n";
+      trace_entry.print("    ", std::cerr);
+      seen_err_ = true;
+      return;
+    }
+
+    trace_entry.take_writes(rtl_entry_);
+  }
+
   rtl_pending_ = true;
-  rtl_stall_ = false;
+  rtl_started_ = false;
   rtl_entry_ = trace_entry;
 
   if (!MatchPair()) {
@@ -145,11 +141,6 @@ bool OtbnTraceChecker::OnIssTrace(const std::vector<std::string> &lines) {
 
   if (seen_err_) {
     return false;
-  }
-
-  // Ignore STALL entries that don't have any changes
-  if (lines.size() == 1 && lines[0] == "STALL") {
-    return true;
   }
 
   OtbnIssTraceEntry trace_entry;
@@ -179,14 +170,15 @@ bool OtbnTraceChecker::OnIssTrace(const std::vector<std::string> &lines) {
   if (iss_started_) {
     // We have some changes associated with a stall. Merge in the changes that
     // we've just seen. We do it "backwards" so that if trace_entry is an
-    // execute entry, so is the result.
+    // final entry then so is the result.
     trace_entry.take_writes(iss_entry_);
   }
 
   iss_started_ = true;
   iss_entry_ = trace_entry;
 
-  if (iss_entry_.is_exec()) {
+  // Set the pending flag if we've got the end of an event (either E or V).
+  if (iss_entry_.is_final()) {
     iss_pending_ = true;
   }
 
@@ -195,7 +187,7 @@ bool OtbnTraceChecker::OnIssTrace(const std::vector<std::string> &lines) {
 
 void OtbnTraceChecker::Flush() {
   rtl_pending_ = false;
-  rtl_stall_ = false;
+  rtl_started_ = false;
   iss_pending_ = false;
   iss_started_ = false;
 }

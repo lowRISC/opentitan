@@ -74,7 +74,9 @@ interface otbn_trace_if
 
   input logic [otbn_pkg::WLEN-1:0] urnd_data,
 
-  input logic [1:0][otbn_pkg::SideloadKeyWidth-1:0] sideload_key_shares_i
+  input logic [1:0][otbn_pkg::SideloadKeyWidth-1:0] sideload_key_shares_i,
+
+  input logic secure_wipe_running
 );
   import otbn_pkg::*;
 
@@ -290,6 +292,18 @@ interface otbn_trace_if
 
     assign flags_read_data[i_fg] = u_otbn_alu_bignum.flags_q[i_fg];
   end
+
+  // Detect negative edges of the secure wipe signal
+  logic secure_wipe_running_r, secure_wipe_done;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      secure_wipe_running_r <= 0;
+    end else begin
+      secure_wipe_running_r <= secure_wipe_running;
+    end
+  end
+  assign secure_wipe_done = secure_wipe_running_r & ~secure_wipe_running;
+
 endinterface
 
 `endif // SYNTHESIS

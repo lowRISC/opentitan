@@ -10,7 +10,10 @@
  * get the information it needs. For further information see `hw/ip/otbn/dv/tracer/README.md`.
  */
 module otbn_tracer
-(
+#(
+  // Enable internal secure wipe
+  parameter bit SecWipeEn  = 1'b0
+) (
   input  logic  clk_i,
   input  logic  rst_ni,
 
@@ -21,6 +24,8 @@ module otbn_tracer
   // Prefixes used in trace lines. Formats are documented in `hw/ip/otbn/dv/tracer/README.md`
   parameter string InsnExecutePrefix = "E";
   parameter string InsnStallPrefix = "S";
+  parameter string WipeInProgressPrefix = "U";
+  parameter string WipeCompletePrefix = "V";
   parameter string RegReadPrefix = "<";
   parameter string RegWritePrefix = ">";
   parameter string MemWritePrefix = "W";
@@ -187,7 +192,7 @@ module otbn_tracer
     end
   endfunction
 
-  function automatic void trace_insn();
+  function automatic void trace_header();
     if (otbn_trace.insn_valid) begin
       if (otbn_trace.insn_fetch_err) begin
         // This means that we've seen an IMEM integrity error. Squash the reported instruction bits
@@ -201,6 +206,13 @@ module otbn_tracer
                                otbn_trace.insn_data));
       end
     end
+    if (SecWipeEn) begin
+      if (otbn_trace.secure_wipe_running) begin
+        output_trace(WipeInProgressPrefix, "");
+      end else if (otbn_trace.secure_wipe_done) begin
+        output_trace(WipeCompletePrefix, "");
+      end
+    end
   endfunction
 
   import "DPI-C" function void accept_otbn_trace_string(string trace, int unsigned cycle_count);
@@ -208,7 +220,7 @@ module otbn_tracer
   function automatic void do_trace();
     trace_output_buffer = "";
 
-    trace_insn();
+    trace_header();
     trace_bignum_rf();
     trace_base_rf();
     trace_bignum_mem();

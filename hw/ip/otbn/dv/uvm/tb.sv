@@ -153,7 +153,8 @@ module tb;
     .DmemAddrWidth (DmemAddrWidth)
   ) i_otbn_trace_if (.*);
 
-  bind dut.u_otbn_core otbn_tracer u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
+  bind dut.u_otbn_core otbn_tracer #(.SecWipeEn(SecWipeEn))
+    u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
 
   bind dut.u_otbn_core.u_otbn_controller otbn_controller_if i_otbn_controller_if (.*);
 
