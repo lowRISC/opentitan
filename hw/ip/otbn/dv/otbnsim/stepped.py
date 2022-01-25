@@ -14,6 +14,9 @@ prefixed with "0x" if they are hexadecimal.
 
     start                Set the PC to zero and start OTBN
 
+    configure            Enable or disable the secure wipe machinery (this is a
+                         temporary feature until everything works together)
+
     step                 Run one instruction. Print trace information to
                          stdout.
 
@@ -117,6 +120,15 @@ def on_start(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     print('START')
     sim.state.ext_regs.commit()
     sim.start(collect_stats=False)
+
+    return None
+
+
+def on_configure(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
+    check_arg_count('configure', 1, args)
+
+    enable = read_word('secure_wipe_en', args[0], 1) != 0
+    sim.configure(enable)
 
     return None
 
@@ -354,6 +366,7 @@ def on_send_lc_escalation(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
 _HANDLERS = {
     'start': on_start,
+    'configure': on_configure,
     'step': on_step,
     'load_elf': on_load_elf,
     'add_loop_warp': on_add_loop_warp,

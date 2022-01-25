@@ -220,8 +220,10 @@ static std::vector<T> get_stack(const std::string &stack_scope) {
 }
 
 OtbnModel::OtbnModel(const std::string &mem_scope,
-                     const std::string &design_scope)
-    : mem_util_(mem_scope), design_scope_(design_scope) {}
+                     const std::string &design_scope, bool enable_secure_wipe)
+    : mem_util_(mem_scope),
+      design_scope_(design_scope),
+      enable_secure_wipe_(enable_secure_wipe) {}
 
 OtbnModel::~OtbnModel() {}
 
@@ -521,7 +523,7 @@ int OtbnModel::send_lc_escalation() {
 ISSWrapper *OtbnModel::ensure_wrapper() {
   if (!iss_) {
     try {
-      iss_.reset(new ISSWrapper());
+      iss_.reset(new ISSWrapper(enable_secure_wipe_));
     } catch (const std::runtime_error &err) {
       std::cerr << "Error when constructing ISS wrapper: " << err.what()
                 << "\n";
@@ -706,9 +708,11 @@ bool OtbnModel::check_call_stack(ISSWrapper &iss) const {
   return good;
 }
 
-OtbnModel *otbn_model_init(const char *mem_scope, const char *design_scope) {
+OtbnModel *otbn_model_init(const char *mem_scope, const char *design_scope,
+                           int enable_secure_wipe) {
   assert(mem_scope && design_scope);
-  return new OtbnModel(mem_scope, design_scope);
+  assert(enable_secure_wipe == 0 || enable_secure_wipe == 1);
+  return new OtbnModel(mem_scope, design_scope, enable_secure_wipe != 0);
 }
 
 void otbn_model_destroy(OtbnModel *model) { delete model; }

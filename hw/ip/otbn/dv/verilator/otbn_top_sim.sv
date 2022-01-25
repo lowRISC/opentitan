@@ -18,6 +18,9 @@ module otbn_top_sim (
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte);
   localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte);
 
+  // Enable internal secure wipe
+  localparam bit SecWipeEn  = 1'b0;
+
   // Fixed key and nonce for scrambling in verilator environment
   localparam logic [127:0] TestScrambleKey   = 128'h48ecf6c738f0f108a5b08620695ffd4d;
   localparam logic [63:0]  TestScrambleNonce = 64'hf88c2578fa4cd123;
@@ -65,7 +68,8 @@ module otbn_top_sim (
 
   otbn_core #(
     .ImemSizeByte ( ImemSizeByte ),
-    .DmemSizeByte ( DmemSizeByte )
+    .DmemSizeByte ( DmemSizeByte ),
+    .SecWipeEn    ( SecWipeEn    )
   ) u_otbn_core (
     .clk_i                       ( IO_CLK              ),
     .rst_ni                      ( IO_RST_N            ),
@@ -300,7 +304,8 @@ module otbn_top_sim (
 
   otbn_core_model #(
     .MemScope        ( ".." ),
-    .DesignScope     ( DesignScope )
+    .DesignScope     ( DesignScope ),
+    .SecWipeEn       ( SecWipeEn    )
   ) u_otbn_core_model (
     .clk_i                 ( IO_CLK ),
     .clk_edn_i             ( IO_CLK ),

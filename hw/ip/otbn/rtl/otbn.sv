@@ -19,6 +19,9 @@ module otbn
   // Default seed for URND PRNG
   parameter urnd_prng_seed_t       RndCnstUrndPrngSeed      = RndCnstUrndPrngSeedDefault,
 
+  // Enable internal secure wipe
+  parameter bit SecWipeEn  = 1'b0,
+
   // Default seed and nonce for scrambling
   parameter otp_ctrl_pkg::otbn_key_t   RndCnstOtbnKey   = RndCnstOtbnKeyDefault,
   parameter otp_ctrl_pkg::otbn_nonce_t RndCnstOtbnNonce = RndCnstOtbnNonceDefault
@@ -873,7 +876,8 @@ module otbn
 
     otbn_core_model #(
       .MemScope(".."),
-      .DesignScope("")
+      .DesignScope(""),
+      .SecWipeEn(SecWipeEn)
     ) u_otbn_core_model (
       .clk_i,
       .clk_edn_i,
@@ -918,6 +922,7 @@ module otbn
       .RegFile(RegFile),
       .DmemSizeByte(DmemSizeByte),
       .ImemSizeByte(ImemSizeByte),
+      .SecWipeEn(SecWipeEn),
       .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed)
     ) u_otbn_core (
       .clk_i,
@@ -976,6 +981,7 @@ module otbn
       .RegFile(RegFile),
       .DmemSizeByte(DmemSizeByte),
       .ImemSizeByte(ImemSizeByte),
+      .SecWipeEn(SecWipeEn),
       .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed)
     ) u_otbn_core (
       .clk_i,
