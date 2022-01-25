@@ -67,7 +67,6 @@ static const sigverify_test_vector_t sigverify_tests[2] = {
                         0xe228696c,
                         0xb5fb5926,
                     },
-                .exponent = 0x10001,
             },
         .sig =
             {.data =
@@ -160,7 +159,6 @@ static const sigverify_test_vector_t sigverify_tests[2] = {
                         0xe228696c,
                         0xb5fb5926,
                     },
-                .exponent = 0x10001,
             },
         .sig =
             {.data =

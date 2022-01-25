@@ -41,7 +41,6 @@ static const sigverify_test_vector_t sigverify_tests[${len(tests)}] = {
                               ${', '.join(t["n0_inv_hexwords"][i:i + 4])},
   % endfor
                           },
-                .exponent = ${'{:#x}'.format(t["e"])},
             },
         .sig =
             {.data =

@@ -36,27 +36,27 @@ using ::testing::Return;
  */
 constexpr sigverify_mask_rom_key_t kMockKeys[]{
     {
-        .key = {.n = {{0xA0}}, .n0_inv = {0}, .exponent = 0},
+        .key = {.n = {{0xA0}}, .n0_inv = {0}},
         .key_type = kSigverifyKeyTypeTest,
     },
     {
-        .key = {.n = {{0xB0}}, .n0_inv = {0}, .exponent = 0},
+        .key = {.n = {{0xB0}}, .n0_inv = {0}},
         .key_type = kSigverifyKeyTypeProd,
     },
     {
-        .key = {.n = {{0xC0}}, .n0_inv = {0}, .exponent = 0},
+        .key = {.n = {{0xC0}}, .n0_inv = {0}},
         .key_type = kSigverifyKeyTypeDev,
     },
     {
-        .key = {.n = {{0xA1}}, .n0_inv = {0}, .exponent = 0},
+        .key = {.n = {{0xA1}}, .n0_inv = {0}},
         .key_type = kSigverifyKeyTypeTest,
     },
     {
-        .key = {.n = {{0xB1}}, .n0_inv = {0}, .exponent = 0},
+        .key = {.n = {{0xB1}}, .n0_inv = {0}},
         .key_type = kSigverifyKeyTypeProd,
     },
     {
-        .key = {.n = {{0xC1}}, .n0_inv = {0}, .exponent = 0},
+        .key = {.n = {{0xC1}}, .n0_inv = {0}},
         .key_type = kSigverifyKeyTypeDev,
     },
 };
@@ -167,7 +167,7 @@ TEST_P(BadKeyIdTypeDeathTest, BadKeyType) {
       static_cast<sigverify_key_type_t>(kSigverifyKeyTypeDev + 1);
   sigverify_mask_rom_key_t keys[]{
       {
-          .key = {.n = {{key_id}}, .n0_inv = {0}, .exponent = 0},
+          .key = {.n = {{key_id}}, .n0_inv = {0}},
           .key_type = bad_key_type,
       },
   };

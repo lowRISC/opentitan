@@ -109,11 +109,8 @@ def main() -> int:
     testvecs = hjson.load(args.hjsonfile)
     args.hjsonfile.close()
 
-    # Look for test vectors with unsupported exponents and mark them invalid.
-    for t in testvecs:
-        if t['e'] != 65537:
-            t['valid'] = False
-            t['comment'] += (', ' if t['comment'] else '') + 'unsupported exponent'
+    # Exclude test vectors with invalid exponents.
+    testvecs = [t for t in testvecs if t['e'] == 65537]
 
     # Convert the 3072-bit numbers n and sig into words expressed in hex
     for t in testvecs:

@@ -33,7 +33,7 @@ typedef struct sigverify_rsa_buffer {
 } sigverify_rsa_buffer_t;
 
 /**
- * An RSA public key.
+ * An RSA public key with exponent 65537.
  */
 typedef struct sigverify_rsa_key {
   /**
@@ -48,10 +48,6 @@ typedef struct sigverify_rsa_key {
    * first word, which is equal to -n^-1 mod 2^32.
    */
   uint32_t n0_inv[8];
-  /**
-   * Exponent. For sigverify, the only exponent supported is 65537.
-   */
-  uint32_t exponent;
 } sigverify_rsa_key_t;
 
 #ifdef __cplusplus
