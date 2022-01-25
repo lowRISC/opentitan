@@ -19,48 +19,49 @@ from .trace import Trace, TracePC
 from .wsr import WSRFile
 
 
+# The number of cycles spent in the 'WIPE' state. This takes constant time in
+# the RTL, mirrored here.
+_WIPE_CYCLES = 98
+
+
 class FsmState(IntEnum):
     r'''State of the internal start/stop FSM
 
     The FSM diagram looks like:
 
-          /----------------------------------------------------------\
-          |                                                          |
-          v                                         /->  POST_EXEC --/
-        IDLE  ->  PRE_EXEC  ->  FETCH_WAIT -> EXEC <
-                                                    \->  LOCKING   --\
-                                                                     |
-          /----------------------------------------------------------/
-          |
-          v
-        LOCKED
+
+          IDLE -> PRE_EXEC -> FETCH_WAIT -> EXEC
+            ^                                | |
+            \---------------- WIPING_GOOD <--/ |
+                                               |
+                  LOCKED <--  WIPING_BAD  <----/
 
     IDLE represents the state when nothing is going on but there have been no
     fatal errors. It matches Status.IDLE. LOCKED represents the state when
     there has been a fatal error. It matches Status.LOCKED.
 
-    PRE_EXEC, FETCH_WAIT, EXEC, POST_EXEC and LOCKING correspond to
+    PRE_EXEC, FETCH_WAIT, EXEC, WIPING_GOOD and WIPING_BAD correspond to
     Status.BUSY_EXECUTE. PRE_EXEC is the period after starting OTBN where we're
     still waiting for an EDN value to seed URND. FETCH_WAIT is the single cycle
     delay after seeding URND to fill the prefetch stage. EXEC is the period
     where we start fetching and executing instructions.
 
-    POST_EXEC and LOCKING are both used for the single cycle after we finish
-    executing where the STATUS register gets updated. The difference between
-    them is that POST_EXEC goes back to IDLE and LOCKING goes to LOCKED.
+    WIPING_GOOD and WIPING_BAD represent the time where we're performing a
+    secure wipe of internal state (ending in updating the STATUS register to
+    show we're done). The difference between them is that WIPING_GOOD goes back
+    to IDLE and WIPING_BAD goes to LOCKED.
 
     This is a refinement of the Status enum and the integer values are picked
     so that you can divide by 10 to get the corresponding Status entry. (This
     isn't used in the code, but makes debugging slightly more convenient when
     you just have the numeric values available).
-
     '''
     IDLE = 0
     PRE_EXEC = 10
     FETCH_WAIT = 11
     EXEC = 12
-    POST_EXEC = 13
-    LOCKING = 14
+    WIPING_GOOD = 13
+    WIPING_BAD = 14
     LOCKED = 2550
 
 
@@ -117,6 +118,11 @@ class OTBNState:
         # finishing an operation. Eventually it will be unconditionally enabled
         # (once everything works together properly).
         self.secure_wipe_enabled = False
+
+        # This is the number of cycles left for wiping. When we're in the
+        # WIPING_GOOD or WIPING_BAD state, this should be a non-negative
+        # number. Initialise to -1 to catch bugs if we forget to set it.
+        self.wipe_cycles = -1
 
     def get_next_pc(self) -> int:
         if self._pc_next_override is not None:
@@ -316,20 +322,17 @@ class OTBNState:
 
             return
 
-        # If we are in POST_EXEC mode, this is the single cycle after the end
-        # of execution after either completion or a recoverable error. Commit
-        # external registers (to update STATUS) and then switch to IDLE.
-        if self.fsm_state == FsmState.POST_EXEC:
+        # If we are in either WIPING_GOOD or WIPING_BAD, we're busy wiping all
+        # internal state. Our wipe_cycles counter will have been decremented by
+        # Sim::step() and we're done if it gets to zero.
+        if self.fsm_state in [FsmState.WIPING_GOOD, FsmState.WIPING_BAD]:
             self.ext_regs.commit()
-            self.fsm_state = FsmState.IDLE
-            return
-
-        # If we are in LOCKING mode, this is the single cycle after the end of
-        # execution after a fatal error. Commit external registers (to update
-        # STATUS) and then switch to LOCKED.
-        if self.fsm_state == FsmState.LOCKING:
-            self.ext_regs.commit()
-            self.fsm_state = FsmState.LOCKED
+            assert self.wipe_cycles >= 0
+            if self.wipe_cycles == 0:
+                self.fsm_state = (FsmState.IDLE
+                                  if self.fsm_state == FsmState.WIPING_GOOD
+                                  else FsmState.LOCKED)
+                self.wipe_cycles = -1
             return
 
         # If we are in LOCKED mode, commit external registers but do nothing
@@ -346,12 +349,17 @@ class OTBNState:
         # POST_EXEC to allow one more cycle.
         if self.pending_halt:
             self.ext_regs.commit()
-            if self._err_bits >> 16:
+
+            should_lock = (self._err_bits >> 16) != 0
+            if should_lock:
                 self.ext_regs.write('INSN_CNT', 0, True)
-                self.fsm_state = FsmState.LOCKING
-            else:
-                if self.fsm_state == FsmState.EXEC:
-                    self.fsm_state = FsmState.POST_EXEC
+
+            if self.fsm_state == FsmState.EXEC:
+                self.fsm_state = (FsmState.WIPING_BAD if should_lock
+                                  else FsmState.WIPING_GOOD)
+                self.wipe_cycles = (_WIPE_CYCLES
+                                    if self.secure_wipe_enabled else 1)
+
             return
 
         # As pending_halt wasn't set, there shouldn't be any pending error bits
@@ -426,11 +434,12 @@ class OTBNState:
         # set) is the 'done' flag.
         self.ext_regs.set_bits('INTR_STATE', 1 << 0)
 
-        # STATUS is a status register. If there are any pending error bits
-        # greater than 16, this was a fatal error so we should lock ourselves.
-        # Otherwise, go back to IDLE.
-        new_status = Status.LOCKED if self._err_bits >> 16 else Status.IDLE
-        self.ext_regs.write('STATUS', new_status, True)
+        if not self.secure_wipe_enabled:
+            # STATUS is a status register. If there are any pending error bits
+            # greater than 16, this was a fatal error so we should lock
+            # ourselves. Otherwise, go back to IDLE.
+            new_status = Status.LOCKED if self._err_bits >> 16 else Status.IDLE
+            self.ext_regs.write('STATUS', new_status, True)
 
         # Make any error bits visible
         self.ext_regs.write('ERR_BITS', self._err_bits, True)
