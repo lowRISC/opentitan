@@ -277,6 +277,9 @@ class OTBNState:
     def running(self) -> bool:
         return self.fsm_state not in [FsmState.IDLE, FsmState.LOCKED]
 
+    def wiping(self) -> bool:
+        return self.fsm_state in [FsmState.WIPING_GOOD, FsmState.WIPING_BAD]
+
     def commit(self, sim_stalled: bool) -> None:
         if self._time_to_imem_invalidation is not None:
             self._time_to_imem_invalidation -= 1
@@ -327,6 +330,10 @@ class OTBNState:
         # Sim::step() and we're done if it gets to zero.
         if self.fsm_state in [FsmState.WIPING_GOOD, FsmState.WIPING_BAD]:
             self.ext_regs.commit()
+            self.gprs.commit()
+            self.wdrs.commit()
+            self.wsrs.commit()
+            self.csrs.flags.commit()
             assert self.wipe_cycles >= 0
             if self.wipe_cycles == 0:
                 self.fsm_state = (FsmState.IDLE
@@ -408,7 +415,7 @@ class OTBNState:
         self.csrs = CSRFile()
         self.wsrs.on_start()
         self.loop_stack = LoopStack()
-        self.gprs.start()
+        self.gprs.empty_call_stack()
 
     def stop(self) -> None:
         '''Set flags to stop the processor and maybe abort the instruction.
@@ -526,3 +533,13 @@ class OTBNState:
 
     def invalidate_imem(self) -> None:
         self._time_to_imem_invalidation = 2
+
+    def wipe(self) -> None:
+        if not self.secure_wipe_enabled:
+            return
+
+        self.gprs.empty_call_stack()
+        self.gprs.wipe()
+        self.wdrs.wipe()
+        self.wsrs.wipe()
+        self.csrs.wipe()
