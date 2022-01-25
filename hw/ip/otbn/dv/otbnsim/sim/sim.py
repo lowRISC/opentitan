@@ -158,11 +158,14 @@ class OTBNSim:
             changes = self._on_stall(verbose, fetch_next=False)
             return (None, changes)
 
-        if self.state.fsm_state == FsmState.POST_EXEC:
-            return (None, self._on_stall(verbose, fetch_next=False))
-
-        if self.state.fsm_state == FsmState.LOCKING:
-            self.state.ext_regs.write('STATUS', Status.LOCKED, True)
+        if self.state.fsm_state in [FsmState.WIPING_GOOD, FsmState.WIPING_BAD]:
+            assert self.state.wipe_cycles > 0
+            self.state.wipe_cycles -= 1
+            if self.state.wipe_cycles == 1:
+                next_status = (Status.IDLE
+                               if self.state.fsm_state == FsmState.WIPING_GOOD
+                               else Status.LOCKED)
+                self.state.ext_regs.write('STATUS', next_status, True)
             return (None, self._on_stall(verbose, fetch_next=False))
 
         assert self.state.fsm_state == FsmState.EXEC
