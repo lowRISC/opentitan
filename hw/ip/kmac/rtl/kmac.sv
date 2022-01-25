@@ -1254,6 +1254,7 @@ module kmac
   // Command input should be onehot0
   `ASSUME(CmdOneHot0_M, reg2hw.cmd.cmd.qe |-> $onehot0(reg2hw.cmd.cmd.q))
 
+`ifndef SYNTHESIS
   // redundant counter error
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SentMsgCountCheck_A, u_sha3.u_pad.u_sentmsg_count,
                                          alert_tx_o[0])
@@ -1276,4 +1277,5 @@ module kmac
     `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(EntropyFsmCheck_A, gen_entropy.u_entropy.u_state_regs,
                                          alert_tx_o[0])
   end
+`endif
 endmodule
