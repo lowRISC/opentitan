@@ -5,7 +5,7 @@
 
 from typing import Dict, List, Set, Tuple
 
-from .decode import OTBNProgram, decode_elf
+from .decode import OTBNProgram
 from .insn_yaml import Insn
 from .section import CodeSection
 
@@ -84,6 +84,23 @@ class LoopStart(ControlLoc):
                                                 self.loop_end_pc)
 
 
+class LoopEnd(ControlLoc):
+    '''Represents the end of a loop (looping back to the start).
+
+    Contains the LoopStart instance we're looping back to.
+    '''
+    def __init__(self, loop_start: LoopStart):
+        self.loop_start = loop_start
+
+    @classmethod
+    def is_special(cls) -> bool:
+        return True
+
+    def pretty(self) -> str:
+        return '<loop end: back to {:#x}>'.format(
+            self.loop_start.loop_start_pc)
+
+
 class ControlGraph:
     '''Represents the control flow graph of (part of) an OTBN program.
 
@@ -119,8 +136,8 @@ class ControlGraph:
         except KeyError:
             graph_pcs = [hex(pc) for pc in self.graph.keys()]
             raise ValueError(
-                'PC {:#x} not found in control graph (PCs in graph are: {})'
-                .format(pc, graph_pcs)) from None
+                'PC {:#x} not found in control graph (PCs in graph are: {})'.
+                format(pc, graph_pcs)) from None
 
     def get_section(self, pc: int) -> CodeSection:
         '''Returns the CodeSection for the given PC.
@@ -144,12 +161,9 @@ class ControlGraph:
         sec, edges = self.get_entry(pc)
         for loc in edges:
             if isinstance(loc, LoopStart):
-                # If this is the last loop instruction, don't loop back
-                if sec.end == loc.loop_end_pc:
-                    continue
                 pc = loc.loop_start_pc
             elif loc.is_special():
-                # Skip Ret, Ecall, ImemEnd
+                # Skip Ret, Ecall, ImemEnd, LoopEnd
                 continue
             else:
                 pc = loc.pc
@@ -191,11 +205,19 @@ class ControlGraph:
             disassembly = insn.disassemble(pc, operands)
             out.append((0, '{:#x}: {}'.format(pc, disassembly)))
             already_printed.add(sec.start)
-        # Indent if we have more than 1 non-special edge
-        non_special_edges = [loc for loc in edges if not loc.is_special()]
+        # Indent if we have more than 1 non-special edge, excluding LoopEnds
+        # (i.e. if this is a branch)
+        non_special_edges = [
+            loc for loc in edges
+            if not (loc.is_special() or isinstance(loc, LoopEnd))
+        ]
         child_indent = 0 if len(non_special_edges) <= 1 else 2
         for loc in edges:
-            out.append((0, '->'))
+            if isinstance(loc, LoopEnd):
+                out.append((0, loc.pretty()))
+                continue
+            if len(non_special_edges) > 1:
+                out.append((0, '->'))
             if loc.is_special():
                 out.append((child_indent, loc.pretty()))
                 if isinstance(loc, Ret) and len(call_stack) > 0:
@@ -205,12 +227,10 @@ class ControlGraph:
                                 program, call_stack[0], concise,
                                 already_printed, call_stack[1:])]
                 if isinstance(loc, LoopStart):
-                    # Prevent loops in printing by checking we didn't already print this loop
-                    if loc.loop_start_pc not in already_printed:
-                        out += [(indent + child_indent, line)
-                                for indent, line in self._pretty_lines(
-                                    program, loc.loop_start_pc, concise,
-                                    already_printed, call_stack)]
+                    out += [(indent + child_indent, line)
+                            for indent, line in self._pretty_lines(
+                                program, loc.loop_start_pc, concise,
+                                already_printed, call_stack)]
             else:
                 insn = program.get_insn(sec.end)
                 operands = program.get_operands(sec.end)
@@ -311,10 +331,11 @@ def _populate_control_graph(graph: ControlGraph, program: OTBNProgram,
 
         # Special handling for reaching the end of a loop body
         if loop is not None and pc == loop.loop_end_pc:
-            # Finished the loop; add the current section and connect it back to
-            # the start as well as the next pc, then recurse on the next PC.
+            # Finished the loop; add the current section and connect it to a
+            # LoopEnd instance as well as the next pc, then recurse on the next
+            # PC.
             sec = CodeSection(start_pc, pc)
-            graph.graph[start_pc] = (sec, [loop, ControlLoc(pc + 4)])
+            graph.graph[start_pc] = (sec, [LoopEnd(loop), ControlLoc(pc + 4)])
             _populate_control_graph(graph, program, pc + 4, loop_stack[1:])
             return
 
@@ -332,7 +353,7 @@ def _populate_control_graph(graph: ControlGraph, program: OTBNProgram,
                 # Destination is just a normal PC
                 _populate_control_graph(graph, program, loc.pc, loop_stack)
             elif isinstance(loc, LoopStart):
-                if len(loop_stack) >= 7:
+                if len(loop_stack) >= LOOP_STACK_SIZE - 1:
                     loop_start_pcs = [
                         loop.loop_start_pc for loop in [loc] + loop_stack
                     ]

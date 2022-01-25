@@ -5,10 +5,10 @@
 
 import argparse
 import sys
-from typing import Dict, List, Optional, Set, Tuple
 
 from shared.control_flow import program_control_graph, subroutine_control_graph
 from shared.decode import decode_elf
+from shared.information_flow import InformationFlowGraph
 from shared.information_flow_analysis import (get_program_iflow,
                                               get_subroutine_iflow,
                                               stringify_control_deps)
@@ -52,10 +52,10 @@ def main() -> int:
         print(graph.pretty(program, indent=2))
 
     # Compute information-flow graph(s).
-    ret_iflow, end_iflow = None, None
     if args.subroutine is None:
         what = 'program'
         end_iflow, control_deps = get_program_iflow(program, graph)
+        ret_iflow = InformationFlowGraph.nonexistent()
     else:
         what = 'subroutine'
         ret_iflow, end_iflow, control_deps = get_subroutine_iflow(

@@ -3,15 +3,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Callable, Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
-from .cache import CacheEntry, Cache
+from .cache import Cache, CacheEntry
 from .constants import ConstantContext, get_op_val_str
-from .control_flow import *
+from .control_flow import ControlLoc, ControlGraph, Ecall, ImemEnd, LoopStart, LoopEnd, Ret
 from .decode import OTBNProgram
-from .information_flow import InformationFlowGraph, InsnInformationFlow
+from .information_flow import InformationFlowGraph
 from .insn_yaml import Insn
-from .section import CodeSection
 
 # Calls to _get_iflow return results in the form of a tuple with entries:
 #   used constants: a set containing the names of input constants the
@@ -31,8 +30,9 @@ from .section import CodeSection
 #                   the program; the value is a set of PCs of control-flow
 #                   instructions through which the node influences the control
 #                   flow
-IFlowResult = Tuple[Set[str], InformationFlowGraph, InformationFlowGraph, ConstantContext,
-                    Dict[str, Set[int]]]
+IFlowResult = Tuple[Set[str], InformationFlowGraph, InformationFlowGraph,
+                    ConstantContext, Dict[str, Set[int]]]
+
 
 class IFlowCacheEntry(CacheEntry[ConstantContext, IFlowResult]):
     '''Represents an entry in the cache for _get_iflow.
@@ -42,32 +42,36 @@ class IFlowCacheEntry(CacheEntry[ConstantContext, IFlowResult]):
     result. Only constants that were actually used in the process of computing
     the result are stored in the key; if another call to _get_iflow has the
     same values for those constants but different values for others, the result
-    should not change. 
+    should not change.
     '''
     def is_match(self, constants: ConstantContext) -> bool:
-        for k,v in self.key.values.items():
+        for k, v in self.key.values.items():
             if constants.get(k) != v:
                 return False
         return True
 
-class IFlowCache(Cache[int,ConstantContext, IFlowResult]):
+
+class IFlowCache(Cache[int, ConstantContext, IFlowResult]):
     '''Represents the cache for _get_iflow.
 
     The index of the cache is the start PC for the call to _get_iflow. If this
     index and the values of the constants used in the call match a new call,
-    the cached result is returned. 
+    the cached result is returned.
     '''
     pass
+
 
 # The information flow of a subroutine is represented as a tuple whose entries
 # are a subset of the IFlowResult tuple entries; in particular, it has the form
 # (return iflow, end iflow, control deps).
-SubroutineIFlow = Tuple[InformationFlowGraph,InformationFlowGraph, Dict[str, Set[int]]]
+SubroutineIFlow = Tuple[InformationFlowGraph, InformationFlowGraph,
+                        Dict[str, Set[int]]]
 
 # The information flow of a full program is the same as for a subroutine,
 # except with no "return" information flow. Since the call stack is empty
 # at the start, we're not expecting any return paths!
 ProgramIFlow = Tuple[InformationFlowGraph, Dict[str, Set[int]]]
+
 
 def _build_iflow_insn(
         insn: Insn, op_vals: Dict[str, int], pc: int,
@@ -136,8 +140,7 @@ def _build_iflow_straightline(
     '''Constructs the information-flow graph for a straightline code section.
 
     Returns two values:
-    - The set of constants (at the start instruction) that the graph and new
-      state of `constants` depend on
+    - The set of constants (at the start instruction) that the graph depends on
     - The information-flow graph
 
     The instruction at end_pc is included in the calculation. Errors upon
@@ -163,13 +166,6 @@ def _build_iflow_straightline(
 
         # Update constants to their values after the instruction
         constants.update_insn(insn, op_vals)
-
-    # Update used constants to include constants that were used to compute the
-    # new constants
-    # TODO: results in unnecessary re-computations for updated constants that
-    # we don't end up using; see if we can improve performance here?
-    const_sources = iflow.sources_for_any(iter(constants.values.keys()))
-    constant_deps.update(const_sources)
 
     return constant_deps, iflow
 
@@ -200,7 +196,8 @@ def _get_iflow_cache_update(pc: int, constants: ConstantContext,
         assert name in constants
         used_constant_values[name] = constants.values[name]
 
-    cache.add(pc, IFlowCacheEntry(ConstantContext(used_constant_values), result))
+    cache.add(pc, IFlowCacheEntry(ConstantContext(used_constant_values),
+                                  result))
 
     return
 
@@ -229,8 +226,7 @@ def _update_control_deps(current_deps: Dict[str, Set[int]],
 
 def _get_iflow_update_state(
         rec_result: IFlowResult, iflow: InformationFlowGraph,
-        program_end_iflow: InformationFlowGraph,
-        used_constants: Set[str],
+        program_end_iflow: InformationFlowGraph, used_constants: Set[str],
         control_deps: Dict[str, Set[int]]) -> InformationFlowGraph:
     '''Update the internal state of _get_iflow after a recursive call.
 
@@ -388,8 +384,7 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
         _, jump_return_iflow, _, constants, _ = jump_result
 
         # Compose current iflow with the flow for the jump's return paths
-        if jump_return_iflow is not None:
-            iflow = iflow.seq(jump_return_iflow)
+        iflow = iflow.seq(jump_return_iflow)
 
         # Set the next edges to the instruction after the jump returns
         edges = [ControlLoc(section.end + 4)]
@@ -417,11 +412,12 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
             # Since this is the only edge, common_constants must be unset
             common_constants = constants
             return_iflow.update(iflow)
-        elif isinstance(loc, LoopStart):
-            # We shouldn't hit a LoopStart here; those cases (a loop
+        elif isinstance(loc, LoopStart) or isinstance(loc, LoopEnd):
+            # We shouldn't hit a loop instances here; those cases (a loop
             # instruction or the end of a loop) are all handled earlier
-            raise RuntimeError('Unexpected LoopStart at PC {:#x}'.format(
-                section.end))
+            raise RuntimeError(
+                'Unexpected loop edge (type {}) at PC {:#x}'.format(
+                    type(loc), section.end))
         elif not loc.is_special():
             # Just a normal PC; recurse
             result = _get_iflow(program, graph, loc.pc, constants, loop_end_pc,
@@ -452,6 +448,18 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
     # common_constants to some non-None value
     assert common_constants is not None
 
+    # Update used_constants to include any constant dependencies of
+    # common_constants, since common_constants will be cached
+    used_constants.update(
+        return_iflow.sources_for_any(common_constants.values.keys()))
+
+    # Strip special register x0 from both sources and sinks of graphs returned.
+    return_iflow.remove_source('x0')
+    return_iflow.remove_sink('x0')
+    program_end_iflow.remove_source('x0')
+    program_end_iflow.remove_sink('x0')
+    control_deps.pop('x0', None)
+
     # Update the cache and return
     out = (used_constants, return_iflow, program_end_iflow, common_constants,
            control_deps)
@@ -472,7 +480,7 @@ def check_acyclic(graph: ControlGraph) -> None:
         ]
         for pc, links in cycles.items():
             msg.append('{:#x} <-> {}'.format(
-                pc, ','.join(['{:#x}'.format(l) for l in links])))
+                pc, ','.join(['{:#x}'.format(link) for link in links])))
         msg.append('Analyzing cyclic control flow outside of LOOP/LOOPI '
                    'instructions is not currently supported.')
         raise ValueError('\n'.join(msg))
@@ -514,7 +522,8 @@ def get_program_iflow(program: OTBNProgram,
     '''
     check_acyclic(graph)
     _, ret_iflow, end_iflow, _, control_deps = _get_iflow(
-        program, graph, program.min_pc(), ConstantContext.empty(), None, IFlowCache())
+        program, graph, program.min_pc(), ConstantContext.empty(), None,
+        IFlowCache())
     if ret_iflow.exists:
         # No paths from imem_start should end in RET
         raise ValueError('Unexpected information flow for paths ending in RET '
@@ -523,7 +532,8 @@ def get_program_iflow(program: OTBNProgram,
     return end_iflow, control_deps
 
 
-def stringify_control_deps(program: OTBNProgram, control_deps: Dict[str,Set[int]]) -> List[str]:
+def stringify_control_deps(program: OTBNProgram,
+                           control_deps: Dict[str, Set[int]]) -> List[str]:
     '''Compute string representations of nodes that influence control flow.
 
     Returns a list of strings, each representing one node that influences
@@ -542,7 +552,6 @@ def stringify_control_deps(program: OTBNProgram, control_deps: Dict[str,Set[int]
             continue
         for pc in pcs:
             insn = program.get_insn(pc)
-            pc_strings.append('{} at PC {:#x}'.format(
-                insn.mnemonic, pc))
+            pc_strings.append('{} at PC {:#x}'.format(insn.mnemonic, pc))
         out.append('{} (via {})'.format(node, ', '.join(pc_strings)))
     return out
