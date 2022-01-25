@@ -716,19 +716,3 @@ jobs:
       command: build
       Dockerfile: ./site/redirector/Dockerfile
       buildContext: ./site/redirector
-
-
-- job: bazel_build_and_test
-  displayName: Bazel Build and Test
-  dependsOn: lint
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
-  pool:
-    vmImage: ubuntu-18.04
-  steps:
-  - template: ci/install-package-dependencies.yml
-    # The default timeout is too short to build verilator so let's skip it for the first pass
-  - bash: |
-          bazel query "rdeps(//..., //hw:verilator)" |
-          sed -e 's/^/-/' |
-          xargs bazel test --nobuild_tests_only --test_tag_filters=-cw310,-verilator -- //...
-    displayName: bazel test
