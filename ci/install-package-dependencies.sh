@@ -86,6 +86,26 @@ echo "$EDATOOLS_REPO" > "$TMPDIR/obs.list"
 sudo mv "$TMPDIR/obs.asc"  /etc/apt/trusted.gpg.d/obs.asc
 sudo mv "$TMPDIR/obs.list" /etc/apt/sources.list.d/edatools.list
 
+# Install gcc-9 and set it as the default.
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test \
+  && sudo $APT_CMD update \
+  && sudo $APT_CMD install -y gcc-9 g++-9 \
+  && sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 90 \
+  && sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 90 || {
+    error "Failed to set up gcc-9"
+  }
+
+# Install bazel from bazel's apt repository.
+sudo $APT_CMD install -y apt-transport-https gnupg \
+  && curl -fsSL https://bazel.build/bazel-release.pub.gpg \
+    | gpg --dearmor > bazel.gpg \
+  && sudo mv bazel.gpg /etc/apt/trusted.gpg.d/ \
+  && echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" \
+    | sudo tee /etc/apt/sources.list.d/bazel.list > /dev/null \
+  && sudo $APT_CMD update && sudo $APT_CMD install -y bazel || {
+    error "Failed to install Bazel"
+  }
+
 # Ensure apt package index is up-to-date.
 sudo $APT_CMD update || {
     error "Failed to run apt update"
