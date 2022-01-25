@@ -1,0 +1,1 @@
+../../../../hw/vendor/lowrisc_ibex/syn/README.md
