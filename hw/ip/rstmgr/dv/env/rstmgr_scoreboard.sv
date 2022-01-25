@@ -87,6 +87,8 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
         // Write only.
         do_read_check = 1'b0;
       end
+      "reset_req": begin
+      end
       "reset_info": begin
         // RW1C.
         do_read_check = 1'b0;

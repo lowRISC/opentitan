@@ -100,17 +100,17 @@ module tb;
     .pwr_i(rstmgr_if.pwr_i),
     .pwr_o(rstmgr_if.pwr_o),
 
+    .sw_rst_req_o(rstmgr_if.sw_rst_req_o),
     .rst_cpu_n_i(rstmgr_if.cpu_i.rst_cpu_n),
     .ndmreset_req_i(rstmgr_if.cpu_i.ndmreset_req),
 
     .alert_dump_i(rstmgr_if.alert_dump_i),
-
     .cpu_dump_i(rstmgr_if.cpu_dump_i),
-
-    .rst_en_o(),
 
     .scan_rst_ni(rstmgr_if.scan_rst_ni),
     .scanmode_i(rstmgr_if.scanmode_i),
+
+    .rst_en_o(rstmgr_if.rst_en_o),
     .resets_o(rstmgr_if.resets_o)
   );
 
