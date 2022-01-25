@@ -35,7 +35,6 @@
             0x9c9a176b, 0x44d6fa52, 0x71a63ec4, 0xadc94595,             \
             0x3fd9bc73, 0xa83cdc95, 0xbe1bc819, 0x2b421fae,             \
         },                                                              \
-    .exponent = 65537,                                                  \
   }
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_KEYS_TEST_KEY_0_RSA_3072_EXP_F4_H_

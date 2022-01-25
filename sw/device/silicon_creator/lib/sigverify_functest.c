@@ -86,7 +86,6 @@ static const sigverify_rsa_key_t kKeyExp65537 = {
             0xbe1bc819,
             0x2b421fae,
         },
-    .exponent = 65537,
 };
 
 static const sigverify_rsa_key_t kKeyExp3 = {
@@ -119,7 +118,6 @@ static const sigverify_rsa_key_t kKeyExp3 = {
             0x58022be6,
             0x8f8972c9,
         },
-    .exponent = 3,
 };
 
 rom_error_t compute_digest(void) {

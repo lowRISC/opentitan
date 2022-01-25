@@ -23,7 +23,7 @@ extern "C" {
  * - sig is an RSA signature,
  * - e and n are the exponent and the modulus of the key, respectively.
  *
- * The key exponent must be 65537; no other exponents are supported.
+ * The key exponent is always 65537; no other exponents are supported.
  *
  * @param key An RSA public key.
  * @param sig Buffer that holds the signature, little-endian.
@@ -42,7 +42,7 @@ rom_error_t sigverify_mod_exp_ibex(const sigverify_rsa_key_t *key,
  * - sig is an RSA signature,
  * - e and n are the exponent and the modulus of the key, respectively.
  *
- * The key exponent must be 65537; no other exponents are supported.
+ * The key exponent is always 65537; no other exponents are supported.
  *
  * @param key An RSA public key.
  * @param sig Buffer that holds the signature, little-endian.
