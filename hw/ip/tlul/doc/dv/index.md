@@ -13,10 +13,20 @@ title: "TLUL XBAR DV document"
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
   * [HW development stages]({{< relref "doc/project/development_stages" >}})
-* DV regression results dashboard (link TBD)
+* [Simulation results](https://reports.opentitan.org/hw/ip/keymgr/dv/latest/results.html)
 
 ## Design features
 For detailed information on TLUL design features, please see the [TLUL design specification]({{< relref ".." >}}).
+
+Only following modules are verified in this testbench.
+* tlul_socket_1n, tlul_socket_m1
+* tlul_fifo_async, tlul_fifo_sync
+
+The other TLUL modules as follows are verified in the blocks that instantiate them.
+* tlul_adapter_*
+* tlul_*intg* / tlul_*integ*
+* tlul_err*
+* tlul_sram_byte, sram2tlul
 
 ## Testbench architecture
 XBAR testbench has been constructed based on the `hw/dv/sv/dv_lib`
