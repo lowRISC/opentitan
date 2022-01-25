@@ -663,13 +663,13 @@ dif_result_t dif_alert_handler_escalation_clear(
  *
  * @param alert_handler An alert handler handle.
  * @param alert_class The class to get the accumulator for.
- * @param alerts Out-param for the accumulator.
+ * @param num_alerts Out-param for the number of alerts that have accumulated.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_alert_handler_get_accumulator(
     const dif_alert_handler_t *alert_handler,
-    dif_alert_handler_class_t alert_class, uint16_t *alerts);
+    dif_alert_handler_class_t alert_class, uint16_t *num_alerts);
 
 /**
  * Gets the current value of the "escalation counter".
