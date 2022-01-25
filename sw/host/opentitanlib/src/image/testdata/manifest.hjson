@@ -1,0 +1,158 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+/**
+ * Manifest for boot stage images stored in flash.
+ *
+ * OpenTitan secure boot, at a minimum, consists of three boot stages: ROM,
+ * ROM_EXT, and the first owner boot stage, e.g. BL0. ROM is stored in the
+ * read-only Mask ROM while remaining stages are stored in flash. This structure
+ * must be placed at the start of ROM_EXT and first owner boot stage images so
+ * that ROM and ROM_EXT can verify the integrity and authenticity of the next
+ * stage and configure peripherals as needed before handing over execution.
+ *
+ * Use of this struct for stages following the first owner boot stage is
+ * optional.
+ *
+ * Note: The definitions in
+ * sw/host/rom_ext_image_tools/signer/image/src/manifest.rs must be updated if
+ * this struct is modified. Please see the instructions in that file.
+ */
+{
+  /**
+   * Image signature.
+   *
+   * RSASSA-PKCS1-v1_5 signature of the image generated using a 3072-bit RSA
+   * private key and the SHA-256 hash function. The signed region of an image
+   * starts immediately after this field and ends at the end of the image.
+   *
+   * On-target verification should also integrate usage constraints comparison
+   * to signature verification to harden it against potential attacks. During
+   * verification, the digest of an image should be computed by first reading
+   * the usage constraints from the hardware and then concatenating the rest of
+   * the image:
+   *
+   *   digest = SHA256(usage_constraints_from_hw || rest_of_the_image)
+   *
+   * The start and the length of the region that should be concatenated to the
+   * usage constraints read from the hardware can be obtained using
+   * `manifest_digest_region_get()`.
+   */
+  signature: "0xA54D06061A27A2F6AE70F6A1FA51A840F62B64864E20DD713F633420802359DA7AD61881B2B7A6C4B57D4BBD84966168CA1F1C2FC843940BA18EAA436A12E3E17DEE78F3E1603F2BAB4CC60F4703C6CFBACC2F231E9090AAB18851531FC8AB95845D007D774C66140DB8474ABDA36DA28549DC59713C4750E23317FE46FED91672D2CFB91C37331E1CB4A94BA0C5E87F0A869FE39C55CA686F4943B305AA1890CBED0A33A37A51DECB0627DB353EAAEB48BC2C3FCC710D6D35F8DE11342FBC4CB697687A55999572C7F34B5837749BCA8CA48D073D30D71006B0C7056BF073814CD1A262454FBD003BCD6871999413F0C2E8C321B0534714D8E542B1398D0080B1A11919D66EDA8F467D309624ED7AE596B16EB082BFC17F2E6F33BCEAEEF18133582475406F4F784C3DABD22935D01C84B5C2638A8C287C93173C620D5050BAF8D4CC8C1D2FE2A40407A7D609F2C164CF0BB48508C441C252A930489A50994876CAFACE79D48B6C1234C915320527E335AAED816C39EAAC0123456789012345"
+
+  /**
+   * Usage constraints.
+   */
+  usage_constraints: {
+    /**
+     * Usage constraint selector bits.
+     *
+     * The bits of this field are mapped to the remaining fields as follows:
+     * - Bits 0-7: `device_id[0-7]`
+     * - Bit 8   : `manuf_state_creator`
+     * - Bit 9   : `manuf_state_owner`
+     * - Bit 10  : `life_cycle_state`
+     */
+    selector_bits: "0x00000000"
+    /**
+     * Device identifier value which is compared against the `DEVICE_ID` value
+     * stored in the `HW_CFG` partition in OTP.
+     *
+     * Mapped to bits 0-7 of `selector_bits`.
+     */
+    device_id: [
+      "0x00000000", "0x00000000", "0x00000000", "0x00000000", "0x00000000", "0x00000000",
+      "0x00000000", "0x00000000",
+      ],
+    /**
+     * Device Silicon Creator manufacting status compared against the
+     * `CREATOR_SW_MANUF_STATUS` value stored in the `CREATOR_SW_CFG` partition in
+     * OTP.
+     *
+     * Mapped to bit 8 of `selector_bits`.
+     */
+    manuf_state_creator: "0x00000000"
+    /**
+     * Device Silicon Owner manufacturing status compared against the
+     * `OWNER_SW_MANUF_STATUS` value stored in the `OWNER_SW_CFG` partition in
+     * OTP.
+     *
+     * Mapped to bit 9 of `selector_bits`.
+     */
+    manuf_state_owner: "0x00000000"
+    /**
+     * Device life cycle status compared against the status reported by the life
+     * cycle controller.
+     *
+     * Mapped to bit 10 of `selector_bits`.
+     */
+    life_cycle_state: "0x00000000"
+  }
+  /**
+   * Modulus of the signer's 3072-bit RSA public key.
+   */
+  modulus: "0xA54D06061A27A2F6AE70F6A1FA51A840F62B64864E20DD713F633420802359DA7AD61881B2B7A6C4B57D4BBD84966168CA1F1C2FC843940BA18EAA436A12E3E17DEE78F3E1603F2BAB4CC60F4703C6CFBACC2F231E9090AAB18851531FC8AB95845D007D774C66140DB8474ABDA36DA28549DC59713C4750E23317FE46FED91672D2CFB91C37331E1CB4A94BA0C5E87F0A869FE39C55CA686F4943B305AA1890CBED0A33A37A51DECB0627DB353EAAEB48BC2C3FCC710D6D35F8DE11342FBC4CB697687A55999572C7F34B5837749BCA8CA48D073D30D71006B0C7056BF073814CD1A262454FBD003BCD6871999413F0C2E8C321B0534714D8E542B1398D0080B1A11919D66EDA8F467D309624ED7AE596B16EB082BFC17F2E6F33BCEAEEF18133582475406F4F784C3DABD22935D01C84B5C2638A8C287C93173C620D5050BAF8D4CC8C1D2FE2A40407A7D609F2C164CF0BB48508C441C252A930489A50994876CAFACE79D48B6C1234C915320527E335AAED816C39EAAC0123456789012345"
+  /**
+   * Exponent of the signer's RSA public key.
+   */
+  exponent: 3
+  /**
+   * Manifest identifier.
+   */
+  identifier: "0x00000000"
+  /**
+   * Length of the image including the manifest in bytes.
+   *
+   * Note that the length includes the signature but the signature is excluded
+   * from the signed region.
+   */
+  length: "0x00000000"
+  /**
+   * Image major version.
+   */
+  version_major: "0x00000000"
+  /**
+   * Image minor version.
+   */
+  version_minor: "0x00000000"
+  /**
+   * Security version of the image used for anti-rollback protection.
+   */
+  security_version: "0x00000000"
+  /**
+   * Image timestamp.
+   *
+   * Unix timestamp that gives the creation time of the image, seconds since
+   * 00:00:00 on January 1, 1970 UTC (the Unix Epoch).
+   */
+  timestamp: "0x00000000"
+  /**
+   * Binding value used by key manager to derive secret values.
+   *
+   * A change in this value changes the secret value of key manager, and
+   * consequently, the versioned keys and identity seeds generated at subsequent
+   * boot stages.
+   */
+  binding_value: ["0x00000000", "0x00000000", "0x00000000", "0x00000000", "0x00000000",
+                  "0x00000000", "0x00000000", "0x00000000", ]
+  /**
+   * Maximum allowed version for keys generated at the next boot stage.
+   */
+  max_key_version: "0x00000000"
+  /**
+   * Offset of the start of the executable region of the image from the start
+   * of the manifest in bytes.
+   */
+  code_start: "0x00000000"
+  /**
+   * Offset of the end of the executable region (exclusive) of the image from
+   * the start of the manifest in bytes.
+   */
+  code_end: "0x00000000"
+  /**
+   * Offset of the first instruction to execute in the image from the start of
+   * the manifest in bytes.
+   */
+  entry_point: "0x00000000"
+}
