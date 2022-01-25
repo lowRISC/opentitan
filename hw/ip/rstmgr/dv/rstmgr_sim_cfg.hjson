@@ -65,6 +65,10 @@
       uvm_test_seq: rstmgr_por_stretcher_vseq
     }
     {
+      name: rstmgr_reset
+      uvm_test_seq: rstmgr_reset_vseq
+    }
+    {
       name: rstmgr_sw_rst
       uvm_test_seq: rstmgr_sw_rst_vseq
     }

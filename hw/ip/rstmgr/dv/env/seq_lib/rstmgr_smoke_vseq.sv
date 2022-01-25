@@ -35,7 +35,7 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
     csr_wr(.ptr(ral.reset_info), .value('1));
 
     // Send low power entry reset.
-    send_reset(pwrmgr_pkg::LowPwrEntry, rstreqs);
+    send_reset(pwrmgr_pkg::LowPwrEntry, '0);
     check_reset_info(2, "expected reset_info to indicate low power");
     check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b1);
 
