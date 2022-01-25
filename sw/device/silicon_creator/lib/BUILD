@@ -352,6 +352,7 @@ cc_library(
 cc_library(
     name = "sigverify",
     srcs = ["sigverify.c"],
+    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":sigverify_internal",
         ":sigverify_intf",
@@ -423,6 +424,8 @@ opentitan_functest(
     deps = [
         ":sigverify",
         ":sigverify_testvectors",
+        ":sigverify_mod_exp_ibex",
+        ":sigverify_mod_exp_otbn",
         ":test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
@@ -440,6 +443,7 @@ cc_library(
 cc_library(
     name = "sigverify_mod_exp_otbn",
     srcs = ["sigverify_mod_exp_otbn.c"],
+    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":error",
         ":otbn_util",

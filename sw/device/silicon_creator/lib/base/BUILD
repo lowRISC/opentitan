@@ -40,9 +40,11 @@ cc_library(
 cc_library(
     name = "mock_abs_mmio",
     testonly = True,
-    hdrs = ["mock_abs_mmio.h"],
+    hdrs = [
+        "abs_mmio.h",
+        "mock_abs_mmio.h",
+    ],
     deps = [
-        ":abs_mmio",
         "//sw/device/lib/base/testing",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest",
@@ -63,9 +65,11 @@ cc_library(
 cc_library(
     name = "mock_sec_mmio",
     testonly = True,
-    hdrs = ["mock_sec_mmio.h"],
+    hdrs = [
+        "mock_sec_mmio.h",
+        "sec_mmio.h",
+    ],
     deps = [
-        ":sec_mmio",
         "//sw/device/lib/base/testing",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest",
