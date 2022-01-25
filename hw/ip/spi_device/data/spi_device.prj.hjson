@@ -18,5 +18,13 @@
         commit_id:          "553ca956e0204e5b67b3bbea47f2e067f60b5510",
         notes:              ""
       }
+      { version:            "1.0",
+        life_stage:         "L1",
+        design_stage:       "D2",
+        verification_stage: "V1",
+        dif_stage:          "S0",
+        commit_id:          "dae702d55b89a18621607b34f7ab8161be3706eb",
+        notes:              ""
+      }
     ]
 }
