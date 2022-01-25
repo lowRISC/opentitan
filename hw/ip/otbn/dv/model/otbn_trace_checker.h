@@ -82,10 +82,9 @@ class OtbnTraceChecker : public OtbnTraceListener {
   // message to stderr and return false.
   bool MatchPair();
 
+  bool rtl_started_;
   bool rtl_pending_;
-  bool rtl_stall_;
   OtbnTraceEntry rtl_entry_;
-  OtbnTraceEntry rtl_stalled_entry_;
 
   bool iss_started_;
   bool iss_pending_;

@@ -9,6 +9,14 @@
 
 class OtbnTraceEntry {
  public:
+  enum trace_type_t {
+    Invalid,
+    Stall,
+    Exec,
+    WipeInProgress,
+    WipeComplete,
+  };
+
   virtual ~OtbnTraceEntry(){};
 
   void from_rtl_trace(const std::string &trace);
@@ -18,20 +26,22 @@ class OtbnTraceEntry {
 
   void take_writes(const OtbnTraceEntry &other);
 
-  // True if the entry is empty (no header or other text)
-  bool empty() const;
-
-  // True if this is a stall
-  bool is_stall() const;
-
-  // True if this is an execute line
-  bool is_exec() const;
+  trace_type_t trace_type() const { return trace_type_; }
 
   // True if this is an acceptable line to follow other (assumed to
-  // have been a stall)
+  // have been of type Stall or WipeInProgress)
   bool is_compatible(const OtbnTraceEntry &other) const;
 
+  // True if this entry is "partial" (Stall or WipeInProgress)
+  bool is_partial() const;
+
+  // True if this entry is "final" (Exec or WipeComplete)
+  bool is_final() const;
+
  protected:
+  static trace_type_t hdr_to_trace_type(const std::string &hdr);
+
+  trace_type_t trace_type_;
   std::string hdr_;
   std::vector<std::string> writes_;
 };

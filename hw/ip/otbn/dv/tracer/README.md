@@ -18,25 +18,44 @@ into `otbn_core` provided it is given a `otbn_trace_if` instance.
 
 ## Trace Format
 
-Trace output is generated as a series of records. Each record consists of a
-number of lines that begin with a single character that identifies the category
-of the line and relate to activity occurring in the cycle the record is
-associated with.  The format following that within the line depends upon the
-category (see the XPrefix parameters below for the possible categories).
+Trace output is generated as a series of records. Every record has zero or more
+*header lines*, followed by zero or more *body lines*. There is no fixed
+ordering within the header lines or the body lines.
 
-A record may start with an 'E' or 'S' (instruction execute or stall) line, then
-has other lines.  Ordering for the other lines is not guaranteed. A record will
-never be empty. It is expected that all records begin with an 'E' or 'S' line. A
-record without an 'E' or 'S' line indicates a bug in OTBN. It is not the
-tracer's responsibility to detect bugs; the simulation environment should flag
-these as errors in a suitable way.
+The type of any line can be identified by its first character. The possible
+types for header lines are as follows:
 
-Whilst the tracer does not aim to detect bugs there may be instances where the
-signals it traces do something unexpected that requires special behaviour. Where
-this happens 'ERR' will be placed somewhere in the line that contains
-information about the unexpected signals. See information on Memory Write (`W`)
-lines below for an example. 'ERR' will not be present in trace output for any
-other reason.
+- `S`: **Instruction stall**. An instruction is stalled.
+- `E`: **Instruction execute**. An instruction completed its execution.
+- `U`: **Wipe in progress**. OTBN is in the middle of an internal wipe.
+- `V`: **Wipe complete**. An internal wipe has completed.
+
+The possible types for body lines are:
+
+- `<`: **Register read**: A register has been read.
+- `>`: **Register write**: A register has been written.
+- `R`: **Memory load**: A value has been loaded from memory.
+- `W`: **Memory store**: A value has been stored to memory.
+
+See the [sections below](#line-formats) for details of what information is in
+the different lines.
+
+A well-formed record has exactly one header line, but it's possible for the
+tracer to generate other records if something goes wrong in the design. It is
+not the tracer's responsibility to detect bugs; the simulation environment
+should flag these as errors in a suitable way.
+
+An instruction execution will be represented by zero or more `S` records,
+followed by one `E` record that represents the retirement of the instruction.
+The secure wipe phase at the end of OTBN's operation will be represented by
+zero or more `U` records, followed by a final `V` record.
+
+Whilst the tracer does not aim to detect bugs, there may be instances where the
+signals it traces do something unexpected that requires special behaviour.
+Where this happens, the string `"ERR"` will be placed somewhere in the line
+that contains information about the unexpected signals. See information on
+Memory Write (`W`) lines below for an example. `ERR` will not be present in
+trace output for any other reason.
 
 ### Record examples
 (The first line of each example illustrates the instruction being traced to aid the example and
@@ -65,11 +84,11 @@ E PC: 0x000000e8, insn: 0x002081ab
 
 ### Instruction Execute (`E`) and Stall (`S`) lines
 
-Indicates an instruction is executing or stalling. An 'E' line indicates the
-instruction completed in the trace record's cycle. An instruction that is
-stalled will first produce a record containing an 'S' line and will producing a
-matching 'E' line in a future record the cycle it unstalls and finishes. The
-line provides the PC and raw instruction bits. 
+These indicate that an instruction is executing or stalling. An 'E' line
+indicates the instruction completed in the trace record's cycle. An instruction
+that is stalled will first produce a record containing an 'S' line and will
+produce a matching 'E' line in a future record on the cycle it unstalls and
+finishes. The line provides the PC and raw instruction bits.
 
 Instruction at 0x0000014c is 0x01800d13 and stalling (a future record will
 contain a matching 'E' line):
@@ -82,11 +101,16 @@ Instruction at 0x00000150 is 0x01acc10b is executing and will complete:
 E PC: 0x00000150, insn: 0x01acc10b
 ```
 
+### Secure wipe (`U` and `V`) lines
+
+These indicate that a secure wipe operation is in progress. There is no other
+information, so the line consists of a bare `U` or `V` character.
+
 ### Register Read (`<`) and Write (`>`) lines
 
-Indicates data that has been read or written to either register files or special
-purpose registers (such as ACC or the bignum side flags).  The line provides the
-register name and the data read/written
+These show data that has been read or written to either register files or
+special purpose registers (such as ACC or the bignum side flags). The line
+provides the register name and the data read/written
 
 Register x26 was read and contained value 0x00000018:
 ```
@@ -114,7 +138,7 @@ Flag group 0 had value `{C: 1, M: 1, L: 1, Z: 0}` written to it:
 
 ### Memory Read (`R`) and Write (`W`) lines
 
-Indicates activity on the Dmem bus. The line provides the address and data
+These indicate activity on the Dmem bus. The line provides the address and data
 written/read. For a read the data is always WLEN bits and the address is WLEN
 aligned (for an execution of LW only a 32-bit chunk of that data is required).
 For a write the write mask is examined. Where the mask indicates a bignum side
