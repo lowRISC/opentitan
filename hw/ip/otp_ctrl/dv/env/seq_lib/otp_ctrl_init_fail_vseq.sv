@@ -110,8 +110,12 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
 
         void'(backdoor_inject_ecc_err(addr, ecc_otp_err));
         // VendorTest partition's ECC error is not fatal.
-        if (ecc_otp_err == OtpEccUncorrErr && !is_fatal && i > 0) is_fatal = 1;
-        if (ecc_otp_err == OtpEccCorrErr && !is_correctable) is_correctable = 1;
+        if (!is_fatal && ecc_otp_err == OtpEccUncorrErr && !ecc_corr_err_only_part(i)) begin
+          is_fatal = 1;
+        end else if (!is_correctable && (ecc_otp_err == OtpEccCorrErr ||
+            (ecc_otp_err == OtpEccUncorrErr && ecc_corr_err_only_part(i)))) begin
+          is_correctable = 1;
+        end
         if (ecc_otp_err != OtpNoEccErr) exp_status[i] = 1;
       end
 

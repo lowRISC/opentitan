@@ -25,6 +25,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   // This bit is used for DAI interface to mark if the read access is valid.
   bit dai_read_valid;
 
+  // TODO: currently skip checking if the ECC error is uncorrectable. Support reading is when we
+  // update to mem_bkdr_if.
+  bit check_dai_rd_data = 1;
+
   // Status related variables
   bit under_chk, under_dai_access;
   bit [TL_DW-1:0] exp_status, status_mask;
@@ -503,7 +507,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     // SW CFG window
     end else if ((csr_addr & addr_mask) inside
         {[SW_WINDOW_BASE_ADDR : SW_WINDOW_BASE_ADDR + SW_WINDOW_SIZE]}) begin
-      if (data_phase_read) begin
+      if (data_phase_read && check_dai_rd_data) begin
         bit [TL_AW-1:0] otp_addr = (csr_addr & addr_mask - SW_WINDOW_BASE_ADDR) >> 2;
         // TODO: macro ecc uncorrectable error once mem_bkdr_util supports
         //`DV_CHECK_EQ(item.d_data, 0,
@@ -595,6 +599,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
               DaiRead: begin
                 // Check if it is sw partition read lock
                 bit sw_read_lock = 0;
+                check_dai_rd_data = 1;
                 if (part_idx == VendorTestIdx) begin
                   sw_read_lock = `gmv(ral.vendor_test_read_lock) == 0;
                 end else if (part_idx == CreatorSwCfgIdx) begin
@@ -633,11 +638,17 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                       ecc_err = max2(read_a_word_with_ecc(dai_addr + 4, read_out), ecc_err);
                     end
 
-                    if (ecc_err == OtpEccCorrErr) begin
+                    // Some partitions do not trigger ECC uncorrectable fatal error.
+                    if (ecc_err == OtpEccCorrErr ||
+                        (ecc_err == OtpEccUncorrErr && ecc_corr_err_only_part(part_idx))) begin
                       predict_err(OtpDaiErrIdx, OtpMacroEccCorrError);
-                      backdoor_update_otp_array(dai_addr);
+                      if (ecc_err == OtpEccUncorrErr) check_dai_rd_data = 0;
+                      else                            backdoor_update_otp_array(dai_addr);
                       predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
                                     otp_a[otp_addr], otp_a[otp_addr+1]);
+                      // In sequence, we backdoor write back to non-error value, so here scb reset
+                      // the ecc_err back to NoErr.
+                      cfg.ecc_err = OtpNoEccErr;
                     end else if (ecc_err == OtpEccUncorrErr) begin
                       predict_err(OtpDaiErrIdx, OtpMacroEccUncorrError);
                       // Max wait 20 clock cycles because scb did not know when exactly OTP will
@@ -648,10 +659,6 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                       predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
                                     otp_a[otp_addr], otp_a[otp_addr+1]);
                     end
-
-                    // In sequence, we backdoor write back to non-error value, so here scb reset
-                    // the ecc_err back to NoErr.
-                    if (cfg.ecc_err == OtpEccCorrErr) cfg.ecc_err = OtpNoEccErr;
                   end else begin
                     predict_no_err(OtpDaiErrIdx);
                     predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
@@ -816,11 +823,12 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       "owner_sw_cfg_digest_1", "vendor_test_digest_0", "vendor_test_digest_1": begin
         if (ignore_digest_chk) do_read_check = 0;
       end
+      "direct_access_rdata_0", "direct_access_rdata_1": do_read_check = check_dai_rd_data;
       "direct_access_regwen", "direct_access_wdata_0", "direct_access_wdata_1",
-      "direct_access_address", "direct_access_rdata_0", "direct_access_rdata_1",
-      "check_regwen", "check_trigger_regwen", "check_trigger", "check_timeout", "intr_enable",
-      "creator_sw_cfg_read_lock", "owner_sw_cfg_read_lock", "integrity_check_period",
-      "consistency_check_period", "alert_test", "vendor_test_read_lock": begin
+      "direct_access_address", "check_regwen", "check_trigger_regwen", "check_trigger",
+      "check_timeout", "intr_enable", "creator_sw_cfg_read_lock", "owner_sw_cfg_read_lock",
+      "integrity_check_period", "consistency_check_period", "alert_test",
+      "vendor_test_read_lock": begin
         // Do nothing
       end
       default: begin
