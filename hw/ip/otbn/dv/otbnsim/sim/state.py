@@ -113,6 +113,11 @@ class OTBNState:
         self._time_to_imem_invalidation = None  # type: Optional[int]
         self.invalidated_imem = False
 
+        # This flag controls whether we do the secure wipe sequence after
+        # finishing an operation. Eventually it will be unconditionally enabled
+        # (once everything works together properly).
+        self.secure_wipe_enabled = False
+
     def get_next_pc(self) -> int:
         if self._pc_next_override is not None:
             return self._pc_next_override

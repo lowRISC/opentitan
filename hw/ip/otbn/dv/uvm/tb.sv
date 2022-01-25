@@ -24,6 +24,9 @@ module tb;
   wire idle, intr_done;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
+  // Configure internal secure wipe
+  localparam bit SecWipeEn  = 1'b0;
+
   // interfaces
   clk_rst_if                    clk_rst_if  (.clk(clk), .rst_n(rst_n));
   tl_if                         tl_if       (.clk(clk), .rst_n(rst_n));
@@ -107,7 +110,8 @@ module tb;
   // dut
   otbn # (
     .RndCnstOtbnKey(TestScrambleKey),
-    .RndCnstOtbnNonce(TestScrambleNonce)
+    .RndCnstOtbnNonce(TestScrambleNonce),
+    .SecWipeEn(SecWipeEn)
   ) dut (
     .clk_i (clk),
     .rst_ni(rst_n),
@@ -208,7 +212,8 @@ module tb;
 
   otbn_core_model #(
     .MemScope     ("..dut"),
-    .DesignScope  ("..dut.u_otbn_core")
+    .DesignScope  ("..dut.u_otbn_core"),
+    .SecWipeEn    (SecWipeEn)
   ) u_model (
     .clk_i        (model_if.clk_i),
     .clk_edn_i    (edn_clk),

@@ -16,7 +16,8 @@ struct ISSWrapper;
 
 class OtbnModel {
  public:
-  OtbnModel(const std::string &mem_scope, const std::string &design_scope);
+  OtbnModel(const std::string &mem_scope, const std::string &design_scope,
+            bool enable_secure_wipe);
   ~OtbnModel();
 
   // Replace any current loop warps with those from memutil. Returns 0
@@ -124,10 +125,12 @@ class OtbnModel {
   // We want to create the model in an initial block in the SystemVerilog
   // simulation, but might not actually want to spawn the ISS. To handle that
   // in a non-racy way, the most convenient thing is to spawn the ISS the first
-  // time it's actually needed. Use ensure_iss() to create as needed.
+  // time it's actually needed. Use ensure_wrapper() to create as needed.
   std::unique_ptr<ISSWrapper> iss_;
+
   OtbnMemUtil mem_util_;
   std::string design_scope_;
+  bool enable_secure_wipe_;
 };
 
 #endif  // OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_MODEL_H_

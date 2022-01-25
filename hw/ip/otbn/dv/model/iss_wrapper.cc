@@ -237,7 +237,8 @@ static void read_ext_reg(const std::string &reg_name,
   }
 }
 
-ISSWrapper::ISSWrapper() : tmpdir(new TmpDir()) {
+ISSWrapper::ISSWrapper(bool enable_secure_wipe)
+    : tmpdir(new TmpDir()), enable_secure_wipe(enable_secure_wipe) {
   std::string model_path(find_otbn_model());
 
   // We want two pipes: one for writing to the child process, and the other for
@@ -352,7 +353,13 @@ void ISSWrapper::dump_d(const std::string &path) const {
   run_command(oss.str(), nullptr);
 }
 
-void ISSWrapper::start() { run_command("start\n", nullptr); }
+void ISSWrapper::start() {
+  std::ostringstream oss;
+  oss << "configure " << (int)enable_secure_wipe << "\n";
+
+  run_command("start\n", nullptr);
+  run_command(oss.str(), nullptr);
+}
 
 void ISSWrapper::edn_rnd_cdc_done() {
   run_command("edn_rnd_cdc_done\n", nullptr);

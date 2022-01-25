@@ -59,6 +59,9 @@ class OTBNSim:
         self._next_insn = None
         self.state.start()
 
+    def configure(self, enable_secure_wipe: bool) -> None:
+        self.state.secure_wipe_enabled = enable_secure_wipe
+
     def _fetch(self, pc: int) -> OTBNInsn:
         word_pc = pc >> 2
         if word_pc >= len(self.program):
