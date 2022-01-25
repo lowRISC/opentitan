@@ -112,15 +112,19 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
       if (cfg.en_cov) begin
         cov.reset_wakeup_distance_cg.sample(cycles_before_reset - cycles_before_wakeup);
       end
-      // Check wake_status prior to wakeup, or the unit requesting wakeup will have been reset.
-      // This read will not work in the chip, since the processor will be asleep.
-      cfg.slow_clk_rst_vif.wait_clks(4);
-      check_wake_status(enabled_wakeups);
-      `uvm_info(`gfn, $sformatf("Got wake_status=0x%x", enabled_wakeups), UVM_MEDIUM)
-      check_reset_status(enabled_resets);
-      wait(cfg.pwrmgr_vif.pwr_clk_req.main_ip_clk_en == 1'b1);
-      twirl_rom_response();
-
+      // twirl_rom_response has some waits, and so does the code to check wake_status,
+      // so we fork them to avoid conflicts.
+      fork
+        begin
+          cfg.slow_clk_rst_vif.wait_clks(4);
+          // Check wake_status prior to wakeup, or the unit requesting wakeup will have been reset.
+          // This read will not work in the chip, since the processor will be asleep.
+          check_wake_status(enabled_wakeups);
+          `uvm_info(`gfn, $sformatf("Got wake_status=0x%x", enabled_wakeups), UVM_MEDIUM)
+          check_reset_status(enabled_resets);
+        end
+        twirl_rom_response();
+      join
       wait_for_fast_fsm_active();
 
       check_reset_status('0);
