@@ -118,6 +118,12 @@ module aes_cipher_control_fsm import aes_pkg::*;
   logic unused_cfg_valid;
   assign unused_cfg_valid = cfg_valid_i;
 
+  // Tie off unused inputs.
+  if (!Masking) begin : gen_unused_prng_reseed
+    logic unused_prng_reseed;
+    assign unused_prng_reseed = prng_reseed_i;
+  end
+
   // Signals
   aes_cipher_ctrl_e aes_cipher_ctrl_ns, aes_cipher_ctrl_cs;
   logic             advance;
