@@ -98,7 +98,6 @@ module edn_main_sm (
         end
       end
       AckWait: begin
-        seq_auto_req_mode_o = 1'b0;
         if (csrng_cmd_ack_i) begin
           state_d = Dispatch;
         end

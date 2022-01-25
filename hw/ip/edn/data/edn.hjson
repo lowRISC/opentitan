@@ -159,8 +159,8 @@
                 This bit reflects the status of the EDN command state machine. This bit is asserted
                 whenever the the state machine is actively managing commands in either auto
                 request mode, or boot-time request mode.  After the state machine has
-                been suspended, this status bit should be polled to know when the last remaining
-                state machine command has been completed, at which point is safe to issue custom
+                been suspended, this status bit will reflect that the hardware operations are
+                completed. At this point it is safe to issue custom
                 commands via the software command forwarding interface. A value of zero indicates
                 that all commands have completed, and the state machine is idle.
                 '''
