@@ -42,7 +42,9 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
   rand otp_ctrl_ast_inputs_cfg dut_cfg;
 
   // TODO: reggen tool optimization. Temp mannual setup for prim_tl_agent.
-  rand tl_agent_cfg            prim_tl_agent_cfg;
+  rand tl_agent_cfg prim_tl_agent_cfg;
+  // Introduce this flag to avoid close source conflict.
+  bit               create_prim_tl_agent = 1;
 
   `uvm_object_utils_begin(otp_ctrl_env_cfg)
   `uvm_object_utils_end
@@ -93,10 +95,12 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
     m_lc_prog_pull_agent_cfg.agent_type = PullAgent;
 
     // TODO: reggen tool optimization. Temp mannual setup for prim_tl_agent.
-    prim_tl_agent_cfg = tl_agent_cfg::type_id::create("prim_tl_agent_cfg");
-    prim_tl_agent_cfg.if_mode = dv_utils_pkg::Host;
-    prim_tl_agent_cfg.host_can_stall_rsp_when_a_valid_high = $urandom_range(0, 1);
-    prim_tl_agent_cfg.allow_a_valid_drop_wo_a_ready = $urandom_range(0, 1);
+    if (create_prim_tl_agent) begin
+      prim_tl_agent_cfg = tl_agent_cfg::type_id::create("prim_tl_agent_cfg");
+      prim_tl_agent_cfg.if_mode = dv_utils_pkg::Host;
+      prim_tl_agent_cfg.host_can_stall_rsp_when_a_valid_high = $urandom_range(0, 1);
+      prim_tl_agent_cfg.allow_a_valid_drop_wo_a_ready = $urandom_range(0, 1);
+    end
 
     // set num_interrupts & num_alerts
     begin
@@ -108,7 +112,7 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
 
     // only support 1 outstanding TL items in tlul_adapter
     m_tl_agent_cfg.max_outstanding_req = 1;
-    prim_tl_agent_cfg.max_outstanding_req = 1;
+    if (create_prim_tl_agent) prim_tl_agent_cfg.max_outstanding_req = 1;
 
     // create the inputs cfg instance
     dut_cfg = otp_ctrl_ast_inputs_cfg::type_id::create("dut_cfg");
