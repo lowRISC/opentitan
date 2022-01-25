@@ -32,7 +32,6 @@ class kmac_app_agent_cfg extends dv_base_agent_cfg;
   constraint zero_delays_c {
     zero_delays dist { 0 := 8,
                        1 := 2 };
-    m_data_push_agent_cfg.zero_delays == zero_delays;
   }
 
   // Setter method for the user digest share queues - must be called externally to place specific user-digest_share0

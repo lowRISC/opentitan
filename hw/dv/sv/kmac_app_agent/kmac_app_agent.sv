@@ -35,6 +35,7 @@ class kmac_app_agent extends dv_base_agent #(
     cfg.m_data_push_agent_cfg.agent_type = PushAgent;
     cfg.m_data_push_agent_cfg.if_mode    = cfg.if_mode;
     cfg.vif.if_mode = cfg.if_mode;
+    cfg.m_data_push_agent_cfg.zero_delays = cfg.zero_delays;
 
     // pass cfg and vif
     uvm_config_db#(push_pull_agent_cfg#(`CONNECT_DATA_WIDTH))::set(this, "m_data_push_agent*",
