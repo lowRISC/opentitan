@@ -50,6 +50,11 @@
             - read back and verify the digest
             - perform a system-level reset to verify the corresponding CSRs exposing the digests
               have been populated
+
+            **Checks**:
+            - Assertion checks to ensure vendor specific I/Os: `otp_vendor_test_status_o`,
+              `otp_vendor_test_ctrl_i`, `cio_test_o`, and `cio_test_en_o` are connected currently
+              with `lc_dft_en_i` On and Off.
             '''
       milestone: V1
       tests: ["otp_ctrl_smoke"]
@@ -200,7 +205,8 @@
             This test checks if the test access to OTP macro is connected correctly.
 
             **Stimulus and Checks**:
-            - read out from the test access window and ensure no error occurs
+            - Write and check read results from the prim_tl_i/o.
+            - Ensure no error or alert occurs from DUT.
             '''
       milestone: V2
       tests: ["otp_ctrl_test_access"]
