@@ -832,92 +832,134 @@ TEST_F(PingTimerLockTest, NullArgs) {
   EXPECT_EQ(dif_alert_handler_lock_ping_timer(nullptr), kDifBadArg);
 }
 
-class CauseTest : public AlertHandlerTest {};
+class AlertCauseTest : public AlertHandlerTest,
+                       public testing::WithParamInterface<int> {};
 
-TEST_F(CauseTest, IsCause) {
-  bool flag;
+TEST_P(AlertCauseTest, IsCause) {
+  dif_alert_handler_alert_t alert = GetParam();
+  bool is_cause;
 
-  EXPECT_READ32(ALERT_HANDLER_ALERT_CAUSE_5_REG_OFFSET, {{0, true}});
-  EXPECT_EQ(dif_alert_handler_alert_is_cause(&alert_handler_, 5, &flag),
+  ptrdiff_t cause_offset =
+      ALERT_HANDLER_ALERT_CAUSE_0_REG_OFFSET + alert * sizeof(uint32_t);
+
+  EXPECT_READ32(cause_offset, 0x1);
+  EXPECT_EQ(dif_alert_handler_alert_is_cause(&alert_handler_, alert, &is_cause),
             kDifOk);
-  EXPECT_TRUE(flag);
+  EXPECT_TRUE(is_cause);
 
-  EXPECT_READ32(ALERT_HANDLER_ALERT_CAUSE_6_REG_OFFSET, {{0, false}});
-  EXPECT_EQ(dif_alert_handler_alert_is_cause(&alert_handler_, 6, &flag),
+  EXPECT_READ32(cause_offset, 0x0);
+  EXPECT_EQ(dif_alert_handler_alert_is_cause(&alert_handler_, alert, &is_cause),
             kDifOk);
-  EXPECT_FALSE(flag);
+  EXPECT_FALSE(is_cause);
 }
 
-TEST_F(CauseTest, Ack) {
-  EXPECT_WRITE32(ALERT_HANDLER_ALERT_CAUSE_0_REG_OFFSET,
-                 {{ALERT_HANDLER_ALERT_CAUSE_0_A_0_BIT, true}});
-  EXPECT_EQ(dif_alert_handler_alert_acknowledge(&alert_handler_, 0), kDifOk);
+INSTANTIATE_TEST_SUITE_P(AllCauses, AlertCauseTest, testing::Range(0, kAlerts));
 
-  EXPECT_WRITE32(ALERT_HANDLER_ALERT_CAUSE_11_REG_OFFSET,
-                 {{ALERT_HANDLER_ALERT_CAUSE_11_A_11_BIT, true}});
-  EXPECT_EQ(dif_alert_handler_alert_acknowledge(&alert_handler_, 11), kDifOk);
+TEST_P(AlertCauseTest, Ack) {
+  dif_alert_handler_alert_t alert = GetParam();
+
+  ptrdiff_t cause_offset =
+      ALERT_HANDLER_ALERT_CAUSE_0_REG_OFFSET + alert * sizeof(uint32_t);
+  EXPECT_WRITE32(cause_offset, 0x1);
+  EXPECT_EQ(dif_alert_handler_alert_acknowledge(&alert_handler_, alert),
+            kDifOk);
 }
 
-TEST_F(CauseTest, BadAlert) {
-  bool flag;
-  EXPECT_EQ(dif_alert_handler_alert_is_cause(&alert_handler_, kAlerts, &flag),
-            kDifBadArg);
+INSTANTIATE_TEST_SUITE_P(AllAcks, AlertCauseTest, testing::Range(0, kAlerts));
+
+TEST_F(AlertCauseTest, BadAlert) {
+  bool is_cause;
+  EXPECT_EQ(
+      dif_alert_handler_alert_is_cause(&alert_handler_, kAlerts, &is_cause),
+      kDifBadArg);
   EXPECT_EQ(dif_alert_handler_alert_acknowledge(&alert_handler_, kAlerts),
             kDifBadArg);
 }
 
-TEST_F(CauseTest, IsCauseLocal) {
-  bool flag;
-
-  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CAUSE_1_REG_OFFSET,
-                {{ALERT_HANDLER_LOC_ALERT_CAUSE_1_LA_1_BIT, true}});
-  EXPECT_EQ(
-      dif_alert_handler_local_alert_is_cause(
-          &alert_handler_, kDifAlertHandlerLocalAlertEscalationPingFail, &flag),
-      kDifOk);
-  EXPECT_TRUE(flag);
-
-  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CAUSE_4_REG_OFFSET,
-                {{ALERT_HANDLER_LOC_ALERT_CAUSE_4_LA_4_BIT, true}});
-  EXPECT_EQ(
-      dif_alert_handler_local_alert_is_cause(
-          &alert_handler_, kDifAlertHandlerLocalAlertBusIntegrityFail, &flag),
-      kDifOk);
-  EXPECT_TRUE(flag);
-
-  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CAUSE_3_REG_OFFSET,
-                {{ALERT_HANDLER_LOC_ALERT_CAUSE_3_LA_3_BIT, false}});
-  EXPECT_EQ(dif_alert_handler_local_alert_is_cause(
-                &alert_handler_,
-                kDifAlertHandlerLocalAlertEscalationIntegrityFail, &flag),
-            kDifOk);
-  EXPECT_FALSE(flag);
-}
-
-TEST_F(CauseTest, AckLocal) {
-  EXPECT_WRITE32(ALERT_HANDLER_LOC_ALERT_CAUSE_3_REG_OFFSET,
-                 {{ALERT_HANDLER_LOC_ALERT_CAUSE_3_LA_3_BIT, true}});
-  EXPECT_EQ(
-      dif_alert_handler_local_alert_acknowledge(
-          &alert_handler_, kDifAlertHandlerLocalAlertEscalationIntegrityFail),
-      kDifOk);
-
-  EXPECT_WRITE32(ALERT_HANDLER_LOC_ALERT_CAUSE_4_REG_OFFSET,
-                 {{ALERT_HANDLER_LOC_ALERT_CAUSE_4_LA_4_BIT, true}});
-  EXPECT_EQ(dif_alert_handler_local_alert_acknowledge(
-                &alert_handler_, kDifAlertHandlerLocalAlertBusIntegrityFail),
-            kDifOk);
-}
-
-TEST_F(CauseTest, NullArgs) {
-  bool flag;
-  EXPECT_EQ(dif_alert_handler_alert_is_cause(nullptr, 5, &flag), kDifBadArg);
+TEST_F(AlertCauseTest, NullArgs) {
+  bool is_cause;
+  EXPECT_EQ(dif_alert_handler_alert_is_cause(nullptr, 5, &is_cause),
+            kDifBadArg);
   EXPECT_EQ(dif_alert_handler_alert_is_cause(&alert_handler_, 5, nullptr),
             kDifBadArg);
   EXPECT_EQ(dif_alert_handler_alert_acknowledge(nullptr, 11), kDifBadArg);
+}
+
+class LocalAlertCauseTest
+    : public AlertHandlerTest,
+      public testing::WithParamInterface<dif_alert_handler_local_alert_t> {};
+
+TEST_P(LocalAlertCauseTest, IsCause) {
+  dif_alert_handler_local_alert_t local_alert = GetParam();
+  bool is_cause;
+
+  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CAUSE_0_REG_OFFSET +
+                    static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
+                0x1);
+  EXPECT_EQ(dif_alert_handler_local_alert_is_cause(&alert_handler_, local_alert,
+                                                   &is_cause),
+            kDifOk);
+  EXPECT_TRUE(is_cause);
+
+  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CAUSE_0_REG_OFFSET +
+                    static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
+                0x0);
+  EXPECT_EQ(dif_alert_handler_local_alert_is_cause(&alert_handler_, local_alert,
+                                                   &is_cause),
+            kDifOk);
+  EXPECT_FALSE(is_cause);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    AllCauses, LocalAlertCauseTest,
+    testing::Values(kDifAlertHandlerLocalAlertAlertPingFail,
+                    kDifAlertHandlerLocalAlertEscalationPingFail,
+                    kDifAlertHandlerLocalAlertAlertIntegrityFail,
+                    kDifAlertHandlerLocalAlertEscalationIntegrityFail,
+                    kDifAlertHandlerLocalAlertBusIntegrityFail,
+                    kDifAlertHandlerLocalAlertShadowedUpdateError,
+                    kDifAlertHandlerLocalAlertShadowedStorageError));
+
+TEST_P(LocalAlertCauseTest, Ack) {
+  dif_alert_handler_local_alert_t local_alert = GetParam();
+
+  EXPECT_WRITE32(ALERT_HANDLER_LOC_ALERT_CAUSE_0_REG_OFFSET +
+                     static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
+                 0x1);
+  EXPECT_EQ(
+      dif_alert_handler_local_alert_acknowledge(&alert_handler_, local_alert),
+      kDifOk);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    AllAcks, LocalAlertCauseTest,
+    testing::Values(kDifAlertHandlerLocalAlertAlertPingFail,
+                    kDifAlertHandlerLocalAlertEscalationPingFail,
+                    kDifAlertHandlerLocalAlertAlertIntegrityFail,
+                    kDifAlertHandlerLocalAlertEscalationIntegrityFail,
+                    kDifAlertHandlerLocalAlertBusIntegrityFail,
+                    kDifAlertHandlerLocalAlertShadowedUpdateError,
+                    kDifAlertHandlerLocalAlertShadowedStorageError));
+
+TEST_F(LocalAlertCauseTest, BadLocalAlert) {
+  bool is_cause;
   EXPECT_EQ(dif_alert_handler_local_alert_is_cause(
-                nullptr, kDifAlertHandlerLocalAlertEscalationPingFail, &flag),
+                &alert_handler_,
+                static_cast<dif_alert_handler_local_alert_t>(kLocalAlerts),
+                &is_cause),
             kDifBadArg);
+  EXPECT_EQ(dif_alert_handler_local_alert_acknowledge(
+                &alert_handler_,
+                static_cast<dif_alert_handler_local_alert_t>(kLocalAlerts)),
+            kDifBadArg);
+}
+
+TEST_F(LocalAlertCauseTest, NullArgs) {
+  bool is_cause;
+  EXPECT_EQ(
+      dif_alert_handler_local_alert_is_cause(
+          nullptr, kDifAlertHandlerLocalAlertEscalationPingFail, &is_cause),
+      kDifBadArg);
   EXPECT_EQ(dif_alert_handler_local_alert_is_cause(
                 &alert_handler_, kDifAlertHandlerLocalAlertEscalationPingFail,
                 nullptr),

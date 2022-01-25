@@ -582,27 +582,27 @@ dif_result_t dif_alert_handler_alert_acknowledge(
  * Note that multiple alerts may be causes at the same time.
  *
  * @param alert_handler An alert handler handle.
- * @param alert The alert to check.
+ * @param local_alert The local alert to check.
  * @param is_cause Out-param for whether this alert is a cause.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_alert_handler_local_alert_is_cause(
     const dif_alert_handler_t *alert_handler,
-    dif_alert_handler_local_alert_t alert, bool *is_cause);
+    dif_alert_handler_local_alert_t local_alert, bool *is_cause);
 
 /**
  * Clears a local alert from the cause vector, similar to an IRQ
  * acknowledgement.
  *
  * @param alert_handler An alert handler handle.
- * @param alert The alert to acknowledge.
+ * @param local_alert The local alert to acknowledge.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_alert_handler_local_alert_acknowledge(
     const dif_alert_handler_t *alert_handler,
-    dif_alert_handler_local_alert_t alert);
+    dif_alert_handler_local_alert_t local_alert);
 
 /**
  * Checks whether software can clear escalations for this class.
