@@ -26,27 +26,47 @@ class kmac_app_device_driver extends kmac_app_driver;
 
   // drive trans received from sequencer
   virtual task get_and_drive();
-    forever begin
-      seq_item_port.get_next_item(req);
-      $cast(rsp, req.clone());
-      rsp.set_id_info(req);
-      `uvm_info(`gfn, $sformatf("rcvd item:\n%0s", req.sprint()), UVM_HIGH)
+    int num_wait;
+    fork
+      begin
+        forever begin
+          seq_item_port.get_next_item(req);
+          $cast(rsp, req.clone());
+          rsp.set_id_info(req);
+          `uvm_info(`gfn, $sformatf("rcvd item:\n%0s", req.sprint()), UVM_HIGH)
 
-      `DV_SPINWAIT_EXIT(repeat (rsp.rsp_delay) @(cfg.vif.device_cb);,
-                        wait(!cfg.vif.rst_n))
+          `DV_SPINWAIT_EXIT(repeat (rsp.rsp_delay) @(cfg.vif.device_cb);,
+                            wait(!cfg.vif.rst_n))
 
-      cfg.vif.device_cb.rsp_done          <= 1;
-      cfg.vif.device_cb.rsp_digest_share0 <= rsp.rsp_digest_share0;
-      cfg.vif.device_cb.rsp_digest_share1 <= rsp.rsp_digest_share1;
-      cfg.vif.device_cb.rsp_error         <= rsp.rsp_error;
+          cfg.vif.device_cb.rsp_done          <= 1;
+          cfg.vif.device_cb.rsp_digest_share0 <= rsp.rsp_digest_share0;
+          cfg.vif.device_cb.rsp_digest_share1 <= rsp.rsp_digest_share1;
+          cfg.vif.device_cb.rsp_error         <= rsp.rsp_error;
 
-      `DV_SPINWAIT_EXIT(@(cfg.vif.device_cb);,
-                        wait(!cfg.vif.rst_n))
-      invalidate_signals();
+          `DV_SPINWAIT_EXIT(@(cfg.vif.device_cb);,
+                            wait(!cfg.vif.rst_n))
+          invalidate_signals();
 
-      `uvm_info(`gfn, "item sent", UVM_HIGH)
-      seq_item_port.item_done(rsp);
-    end
+          `uvm_info(`gfn, "item sent", UVM_HIGH)
+          seq_item_port.item_done(rsp);
+        end
+      end
+      begin
+        forever
+        begin
+          cfg.vif.device_cb.kmac_data_i_ready <= 0;
+          repeat($urandom_range(0,20)) begin
+            @(posedge cfg.vif.clk);
+          end
+          cfg.vif.device_cb.kmac_data_i_ready <= 1;
+          repeat($urandom_range(0,1000)) begin
+            if(!cfg.vif.rst_n)
+              break;
+            @(posedge cfg.vif.clk);
+          end
+        end
+      end
+    join
   endtask
 
 endclass

@@ -35,6 +35,7 @@ interface push_pull_if #(parameter int HostDataWidth = 32,
 
   // Interface mode - Host or Device
   dv_utils_pkg::if_mode_e if_mode;
+  bit drive_rdy;
 
   // This bit controls what protocol assertions will be enabled,
   // e.g. if the agent is configured in Push mode, we do not want to
@@ -89,12 +90,12 @@ interface push_pull_if #(parameter int HostDataWidth = 32,
   endclocking
 
   // Push output assignments
-  assign ready =    (is_push_agent && if_mode == dv_utils_pkg::Device) ? ready_int : 'z;
-  assign valid =    (is_push_agent && if_mode == dv_utils_pkg::Host)   ? valid_int : 'z;
+  assign ready = (is_push_agent && if_mode == dv_utils_pkg::Device && !drive_rdy) ? ready_int : 'z;
+  assign valid = (is_push_agent && if_mode == dv_utils_pkg::Host)   ? valid_int : 'z;
 
   // Pull output assignments
-  assign req  =     (!is_push_agent && if_mode == dv_utils_pkg::Host)   ? req_int : 'z;
-  assign ack  =     (!is_push_agent && if_mode == dv_utils_pkg::Device) ? ack_int : 'z;
+  assign req  =  (!is_push_agent && if_mode == dv_utils_pkg::Host)   ? req_int : 'z;
+  assign ack  =  (!is_push_agent && if_mode == dv_utils_pkg::Device) ? ack_int : 'z;
 
   // Data signal assignments
   assign h_data = (if_mode == dv_utils_pkg::Host) ? h_data_int : 'z;
