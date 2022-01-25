@@ -8,11 +8,13 @@ from typing import Dict, Optional
 from .insn_yaml import Insn
 from .operand import RegOperandType
 
+
 def get_op_val_str(insn: Insn, op_vals: Dict[str, int], opname: str) -> str:
     '''Get the value of the given (register) operand as a string.'''
     op = insn.name_to_operand[opname]
     assert isinstance(op.op_type, RegOperandType)
     return op.op_type.op_val_to_str(op_vals[opname], None)
+
 
 class ConstantContext:
     '''Represents known-constant GPRs.
@@ -20,7 +22,7 @@ class ConstantContext:
     This datatype is used to track and evaluate GPR pointers for indirect
     references.
     '''
-    def __init__(self, values: Dict[str,int]):
+    def __init__(self, values: Dict[str, int]):
         # The x0 register needs to always be 0
         assert values.get('x0', None) == 0
         self.values = values.copy()
@@ -53,7 +55,7 @@ class ConstantContext:
         Does not modify self or other.
         '''
         out = {}
-        for k,v in self.values.items():
+        for k, v in self.values.items():
             if other.get(k) == v:
                 out[k] = v
         return ConstantContext(out)
@@ -73,7 +75,7 @@ class ConstantContext:
             if grs1_name in self.values:
                 grd_name = get_op_val_str(insn, op_vals, 'grd')
                 # Operand is a constant; add/update grd
-                new_values[grd_name]= self.values[grs1_name] + op_vals['imm']
+                new_values[grd_name] = self.values[grs1_name] + op_vals['imm']
         elif insn.mnemonic == 'lui':
             grd_name = get_op_val_str(insn, op_vals, 'grd')
             new_values[grd_name] = op_vals['imm'] << 12
@@ -81,7 +83,7 @@ class ConstantContext:
             # If the instruction has any op_vals ending in _inc,
             # assume we're incrementing the corresponding register
             for op in insn.operands:
-                if op.name.endswith('_inc'):
+                if op.name.endswith('_inc') and op_vals[op.name] != 0:
                     # If reg to be incremented is a constant, increment it
                     inc_op = op.name[:-(len('_inc'))]
                     inc_name = get_op_val_str(insn, op_vals, inc_op)
