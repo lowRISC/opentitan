@@ -4,8 +4,39 @@
 #ifndef OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_TRACE_ENTRY_H_
 #define OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_TRACE_ENTRY_H_
 
+#include <map>
 #include <string>
 #include <vector>
+
+// This models a body line in an OTBN trace entry (type '<', '>', 'R' or 'W').
+// Each of these lines is of the format
+//
+//   TYPE ' ' LOC ': ' VALUE
+//
+// and we parse them accordingly here. The point is that we want to merge
+// successive writes to the same location and thus need to unpack things enough
+// to see them.
+class OtbnTraceBodyLine {
+ public:
+  // Parse a line into this object, based on the format above. On success,
+  // return true. On failure, write an error message to stderr (using src to
+  // say where the line came from) and return false.
+  bool fill_from_string(const std::string &src, const std::string &line);
+
+  bool operator==(const OtbnTraceBodyLine &other) const;
+
+  // Return the location that is being read or written
+  const std::string &get_loc() const { return loc_; }
+
+  // Return the original string format for the entry
+  const std::string &get_string() const { return raw_; }
+
+ private:
+  std::string raw_;
+  char type_;
+  std::string loc_;
+  std::string value_;
+};
 
 class OtbnTraceEntry {
  public:
@@ -19,7 +50,9 @@ class OtbnTraceEntry {
 
   virtual ~OtbnTraceEntry(){};
 
-  void from_rtl_trace(const std::string &trace);
+  // Parse a trace entry from the RTL into this object. On an error, print a
+  // message to stderr and return false.
+  bool from_rtl_trace(const std::string &trace);
 
   bool operator==(const OtbnTraceEntry &other) const;
   void print(const std::string &indent, std::ostream &os) const;
@@ -43,7 +76,8 @@ class OtbnTraceEntry {
 
   trace_type_t trace_type_;
   std::string hdr_;
-  std::vector<std::string> writes_;
+  // The register writes for this trace entry, keyed by destination
+  std::map<std::string, OtbnTraceBodyLine> writes_;
 };
 
 class OtbnIssTraceEntry : public OtbnTraceEntry {

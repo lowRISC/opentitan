@@ -49,7 +49,10 @@ void OtbnTraceChecker::AcceptTraceString(const std::string &trace,
 
   done_ = false;
   OtbnTraceEntry trace_entry;
-  trace_entry.from_rtl_trace(trace);
+  if (!trace_entry.from_rtl_trace(trace)) {
+    seen_err_ = true;
+    return;
+  }
   if (trace_entry.trace_type() == OtbnTraceEntry::Invalid) {
     std::cerr << "ERROR: Invalid RTL trace entry with invalid header:\n";
     trace_entry.print("  ", std::cerr);
