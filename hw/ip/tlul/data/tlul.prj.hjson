@@ -20,9 +20,12 @@
         version:            "1.0",
         life_stage:         "L1",
         design_stage:       "D2",
-        verification_stage: "V1",
-        commit_id:          "92fa6f8648ac1e60ec98e18657d9925b47fac3b9",
-        notes:              "Use FPV for the TL building blocks and DV for the generated XBARs."
+        verification_stage: "V2",
+        commit_id:          "dae702d55b89a18621607b34f7ab8161be3706eb",
+        notes:              '''Only the XBAR instances (xbar_main and xbar_peri) and TLUL components
+                            that go into them are certified to V2. For exceptions see
+                            [DV_DOC](https://docs.opentitan.org/hw/ip/tlul/doc/dv/index.html#design-features)
+                            '''
       }
     ]
 }
