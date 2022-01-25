@@ -182,7 +182,7 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Done        |
 Documentation | [DV_DOC_COMPLETED][]                    | Done        |
 Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Done        |
-Testbench     | [ALL_INTERFACES_EXERCISED][]            | Done        |
+Testbench     | [ALL_INTERFACES_EXERCISED][]            | Done        | `prim_tl_o/i` has a simple prim_tl_agent support, but needto be replaced with auto-generated tl_agent once reggen tool is optimized.
 Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Done        |
 Testbench     | [SIM_TB_ENV_COMPLETED][]                | Done        |
 Tests         | [SIM_ALL_TESTS_PASSING][]               | Done        |

@@ -22,9 +22,9 @@
         version:            "1.0",
         life_stage:         "L1",
         design_stage:       "D2S",
-        verification_stage: "V1",
+        verification_stage: "V2",
         dif_stage:          "S1",
-        notes:              "Rolled back to V1 due test_memory change.",
+        notes:              "Will fully support test_access tl_if once reggen tool is optimized.",
       }
     ]
 }
