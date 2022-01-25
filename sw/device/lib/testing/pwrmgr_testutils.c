@@ -16,10 +16,12 @@ void pwrmgr_testutils_enable_low_power(
     dif_pwrmgr_domain_config_t domain_config) {
   // Enable low power on the next WFI with clocks and power domains configured
   // per domain_config.
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeWakeup,
+                                              wakeups, kDifToggleDisabled));
   CHECK_DIF_OK(
-      dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeWakeup, wakeups));
-  CHECK_DIF_OK(dif_pwrmgr_set_domain_config(pwrmgr, domain_config));
-  CHECK_DIF_OK(dif_pwrmgr_low_power_set_enabled(pwrmgr, kDifToggleEnabled));
+      dif_pwrmgr_set_domain_config(pwrmgr, domain_config, kDifToggleDisabled));
+  CHECK_DIF_OK(dif_pwrmgr_low_power_set_enabled(pwrmgr, kDifToggleEnabled,
+                                                kDifToggleEnabled));
 }
 
 bool pwrmgr_testutils_is_wakeup_reason(const dif_pwrmgr_t *pwrmgr,

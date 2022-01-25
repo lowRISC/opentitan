@@ -38,13 +38,13 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
   endfunction
 
   function void write_byte(mem_addr_t addr, bit [7:0] data);
-   `uvm_info(`gfn, $sformatf("Write Mem : Addr[0x%0h], Data[0x%0h]", addr, data), UVM_MEDIUM)
+   `uvm_info(`gfn, $sformatf("Write Mem : Addr[0x%0h], Data[0x%0h]", addr, data), UVM_HIGH)
     system_memory[addr] = data;
   endfunction
 
   function void compare_byte(mem_addr_t addr, bit [7:0] act_data);
    `uvm_info(`gfn, $sformatf("Compare Mem : Addr[0x%0h], Act Data[0x%0h], Exp Data[0x%0h]",
-                             addr, act_data, system_memory[addr]), UVM_MEDIUM)
+                             addr, act_data, system_memory[addr]), UVM_HIGH)
     `DV_CHECK_EQ(act_data, system_memory[addr], $sformatf("addr 0x%0h read out mismatch", addr))
   endfunction
 

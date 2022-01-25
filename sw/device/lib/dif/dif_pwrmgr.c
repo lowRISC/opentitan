@@ -218,8 +218,10 @@ static bool request_sources_is_locked(const dif_pwrmgr_t *pwrmgr,
 }
 
 dif_result_t dif_pwrmgr_low_power_set_enabled(const dif_pwrmgr_t *pwrmgr,
-                                              dif_toggle_t new_state) {
-  if (pwrmgr == NULL || !dif_is_valid_toggle(new_state)) {
+                                              dif_toggle_t new_state,
+                                              dif_toggle_t sync_state) {
+  if (pwrmgr == NULL || !dif_is_valid_toggle(new_state) ||
+      !dif_is_valid_toggle(sync_state)) {
     return kDifBadArg;
   }
 
@@ -233,8 +235,9 @@ dif_result_t dif_pwrmgr_low_power_set_enabled(const dif_pwrmgr_t *pwrmgr,
                                  dif_toggle_to_bool(new_state));
   mmio_region_write32(pwrmgr->base_addr, PWRMGR_CONTROL_REG_OFFSET, reg_val);
 
-  // Slow clock domain must be synced for changes to take effect.
-  sync_slow_clock_domain_polled(pwrmgr);
+  // Slow clock domain may be synced for changes to take effect.
+  if (sync_state == kDifToggleEnabled)
+    sync_slow_clock_domain_polled(pwrmgr);
 
   return kDifOk;
 }
@@ -254,8 +257,10 @@ dif_result_t dif_pwrmgr_low_power_get_enabled(const dif_pwrmgr_t *pwrmgr,
 }
 
 dif_result_t dif_pwrmgr_set_domain_config(const dif_pwrmgr_t *pwrmgr,
-                                          dif_pwrmgr_domain_config_t config) {
-  if (pwrmgr == NULL || !is_valid_for_bitfield(config, kDomainConfigBitfield)) {
+                                          dif_pwrmgr_domain_config_t config,
+                                          dif_toggle_t sync_state) {
+  if (pwrmgr == NULL || !is_valid_for_bitfield(config, kDomainConfigBitfield) ||
+      !dif_is_valid_toggle(sync_state)) {
     return kDifBadArg;
   }
 
@@ -268,8 +273,9 @@ dif_result_t dif_pwrmgr_set_domain_config(const dif_pwrmgr_t *pwrmgr,
   reg_val = bitfield_field32_write(reg_val, kDomainConfigBitfield, config);
   mmio_region_write32(pwrmgr->base_addr, PWRMGR_CONTROL_REG_OFFSET, reg_val);
 
-  // Slow clock domain must be synced for changes to take effect.
-  sync_slow_clock_domain_polled(pwrmgr);
+  // Slow clock domain may be synced for changes to take effect.
+  if (sync_state == kDifToggleEnabled)
+    sync_slow_clock_domain_polled(pwrmgr);
 
   return kDifOk;
 }
@@ -289,8 +295,9 @@ dif_result_t dif_pwrmgr_get_domain_config(const dif_pwrmgr_t *pwrmgr,
 
 dif_result_t dif_pwrmgr_set_request_sources(
     const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_req_type_t req_type,
-    dif_pwrmgr_request_sources_t sources) {
-  if (pwrmgr == NULL || !is_valid_req_type(req_type)) {
+    dif_pwrmgr_request_sources_t sources, dif_toggle_t sync_state) {
+  if (pwrmgr == NULL || !is_valid_req_type(req_type) ||
+      !dif_is_valid_toggle(sync_state)) {
     return kDifBadArg;
   }
 
@@ -309,8 +316,9 @@ dif_result_t dif_pwrmgr_set_request_sources(
   uint32_t reg_val = bitfield_field32_write(0, reg_info.bitfield, sources);
   mmio_region_write32(pwrmgr->base_addr, reg_info.sources_enable_reg_offset,
                       reg_val);
-  // Slow clock domain must be synced for changes to take effect.
-  sync_slow_clock_domain_polled(pwrmgr);
+  // Slow clock domain may be synced for changes to take effect.
+  if (sync_state == kDifToggleEnabled)
+    sync_slow_clock_domain_polled(pwrmgr);
 
   return kDifOk;
 }

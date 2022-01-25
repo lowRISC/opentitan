@@ -173,6 +173,7 @@ cc_test(
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:mock_abs_mmio",
         "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
+        "//sw/device/lib/testing:pwrmgr_testutils",
         "@googletest//:gtest_main",
     ],
 )

@@ -180,16 +180,19 @@ typedef struct dif_pwrmgr_wakeup_reason {
  * corresponding bit automatically, this function must be called before each
  * transition to low power state.
  *
- * Note: This function also syncs changes to the slow clock domain for them to
- * take effect.
+ * This function can be configured to skip synchronization to the slow clock
+ * domain, under the assumption that timely synchronization will be performed
+ * by some of the other functions that can trigger it.
  *
  * @param pwrmgr A power manager handle.
  * @param new_state Whether low power state is enabled.
+ * @param sync_state Whether to wait for state to transfer to slow domain
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pwrmgr_low_power_set_enabled(const dif_pwrmgr_t *pwrmgr,
-                                              dif_toggle_t new_state);
+                                              dif_toggle_t new_state,
+                                              dif_toggle_t sync_state);
 
 /**
  * Checks whether low power state is enabled.
@@ -206,16 +209,19 @@ dif_result_t dif_pwrmgr_low_power_get_enabled(const dif_pwrmgr_t *pwrmgr,
  * Configures power manager to enable/disable various clock and power domains in
  * low and active power states.
  *
- * Note: This function also syncs changes to the slow clock domain for them to
- * take effect.
+ * This function can be configured to skip synchronization to the slow clock
+ * domain, under the assumption that timely synchronization will be performed
+ * by some of the other functions that can trigger it.
  *
  * @param pwrmgr A power manager handle.
  * @param config A domain configuration.
+ * @param sync_state Whether to wait for state to transfer to slow domain
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pwrmgr_set_domain_config(const dif_pwrmgr_t *pwrmgr,
-                                          dif_pwrmgr_domain_config_t config);
+                                          dif_pwrmgr_domain_config_t config,
+                                          dif_toggle_t sync_state);
 
 /**
  * Gets current power manager configuration.
@@ -235,18 +241,20 @@ dif_result_t dif_pwrmgr_get_domain_config(const dif_pwrmgr_t *pwrmgr,
  * watchdog timer, USB, etc. This function sets which sources are enabled for a
  * particular request type.
  *
- * Note: This function also syncs changes to the slow clock domain for them to
- * take effect.
+ * This function can be configured to skip synchronization to the slow clock
+ * domain, under the assumption that timely synchronization will be performed
+ * by some of the other functions that can trigger it.
  *
  * @param pwrmgr A power manager handle.
  * @param req_type A request type.
  * @param sources Sources enabled for the given request type.
+ * @param sync_state Whether to wait for state to transfer to slow domain
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pwrmgr_set_request_sources(
     const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_req_type_t req_type,
-    dif_pwrmgr_request_sources_t sources);
+    dif_pwrmgr_request_sources_t sources, dif_toggle_t sync_state);
 
 /**
  * Gets sources enabled for a request type.

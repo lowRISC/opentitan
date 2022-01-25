@@ -16,6 +16,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
@@ -218,10 +219,8 @@ static void soft_reboot(dif_pwrmgr_t *pwrmgr, dif_aon_timer_t *aon_timer) {
   dif_pwrmgr_domain_config_t config;
   config = kDifPwrmgrDomainOptionUsbClockInActivePower;
 
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
-      pwrmgr, kDifPwrmgrReqTypeWakeup, kDifPwrmgrWakeupRequestSourceFive));
-  CHECK_DIF_OK(dif_pwrmgr_set_domain_config(pwrmgr, config));
-  CHECK_DIF_OK(dif_pwrmgr_low_power_set_enabled(pwrmgr, kDifToggleEnabled));
+  pwrmgr_testutils_enable_low_power(pwrmgr, kDifPwrmgrWakeupRequestSourceFive,
+                                    config);
 
   // Enter low power mode.
   LOG_INFO("Entering low power");
