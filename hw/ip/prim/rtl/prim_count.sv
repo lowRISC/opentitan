@@ -67,8 +67,6 @@ module prim_count import prim_count_pkg::*; #(
   logic set_up_cnt;
   assign set_up_cnt = set_i & (CntStyle == DupCnt);
 
-
-  cmp_valid_e cmp_valid;
   logic [CntCopies-1:0][Width-1:0] up_cnt_d, up_cnt_d_buf;
   logic [CntCopies-1:0][Width-1:0] up_cnt_q;
   logic [Width-1:0] max_val;
@@ -76,6 +74,8 @@ module prim_count import prim_count_pkg::*; #(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
+      max_val <= '{default: '1};
+    end else if (clr_i) begin
       max_val <= '{default: '1};
     end else if (set_i && (CntStyle == CrossCnt)) begin
       max_val <= set_cnt_i;
@@ -111,22 +111,12 @@ module prim_count import prim_count_pkg::*; #(
     logic [Width-1:0] down_cnt;
     logic [Width-1:0] sum;
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        cmp_valid <= CmpInvalid;
-      end else if (clr_i) begin
-        cmp_valid <= CmpInvalid;
-      end else if ((cmp_valid == CmpInvalid) && set_i) begin
-        cmp_valid <= CmpValid;
-      end
-    end
-
     // down-count
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        down_cnt <= '0;
+        down_cnt <= '{default: '1};
       end else if (clr_i) begin
-        down_cnt <= '0;
+        down_cnt <= '{default: '1};
       end else if (set_i) begin
         down_cnt <= set_cnt_i;
       end else if (en_i && (down_cnt > '0)) begin
@@ -140,26 +130,25 @@ module prim_count import prim_count_pkg::*; #(
     assign err   = (max_val != sum) | msb;
 
     `ASSERT(CrossCntErrForward_A,
-            (cmp_valid == CmpValid) && ((down_cnt + up_cnt_q[0]) != {1'b0, max_val}) |-> err_o)
+            ((down_cnt + up_cnt_q[0]) != {1'b0, max_val}) |-> err_o)
     `ASSERT(CrossCntErrBackward_A, err_o |->
-            (cmp_valid == CmpValid) && ((down_cnt + up_cnt_q[0]) != {1'b0, max_val}))
+            ((down_cnt + up_cnt_q[0]) != {1'b0, max_val}))
 
     // Down counter assumption to control underflow
     // We can also constrain the down counter underflow via `down_cnt % step_i == 0`.
     // However, modulo operation can be very complex for formal analysis.
-    `ASSUME(DownCntStepInt_A, cmp_valid == CmpValid |-> down_cnt == 0 || down_cnt >= step_i)
+    `ASSUME(DownCntStepInt_A, down_cnt == 0 || down_cnt >= step_i)
 
     // Up counter assumption to control overflow
       logic [Width:0] unused_cnt;
       assign unused_cnt = up_cnt_q[0] + step_i;
       logic unused_incr_cnt;
-      assign unused_incr_cnt = (cmp_valid == CmpValid) & !clr_i & !set_i;
+      assign unused_incr_cnt = !clr_i & !set_i & en_i;
 
       `ASSUME(UpCntOverFlow_A, unused_incr_cnt && !err |-> ~unused_cnt[Width])
 
   end else if (CntStyle == DupCnt) begin : gen_dup_cnt_hardening
     // duplicate count compare is always valid
-    assign cmp_valid = CmpValid;
     assign cnt_o = up_cnt_q[0];
     assign err   = (up_cnt_q[0] != up_cnt_q[1]);
 
@@ -167,11 +156,7 @@ module prim_count import prim_count_pkg::*; #(
     `ASSERT(DupCntErrBackward_A, err_o |-> up_cnt_q[0] != up_cnt_q[1])
   end
 
-  // If the compare flag is not a valid enum, treat it like an error
-  // If cmp_valid == CmpInvalid we cannot make a valid comparison and thus
-  // don't set err_o (this happens when the down_cnt is cleared to zero)
-  assign err_o = (cmp_valid == CmpValid)   ?  err :
-                 (cmp_valid == CmpInvalid) ?  '0  : 1'b1;
+  assign err_o = err;
 
   // ASSERTIONS AND ASSUMPTIONS
   `ifdef INC_ASSERT
@@ -191,7 +176,7 @@ module prim_count import prim_count_pkg::*; #(
   // Clear and set should not be seen at the same time
   `ASSUME(SimulClrSet_A, clr_i || set_i |-> clr_i != set_i)
 
-  `ASSERT(OutClr_A, clr_i |=> cnt_o == 0)
+  `ASSERT(OutClr_A, clr_i |=> OutSelDnCnt ? &cnt_o : cnt_o == 0)
 
   // When `en_i` is set without `clr_i` and `set_i`, and counter does not reach max/min value,
   // we expect `cnt_o` to increment or decrement base on `step_i`.
