@@ -31,8 +31,8 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
     wakeups_t prior_reasons = '0;
     bit prior_fall_through = '0;
     bit prior_abort = '0;
+    wait_for_fast_fsm_active();
 
-    cfg.slow_clk_rst_vif.wait_for_reset(.wait_negedge(0));
     check_wake_status('0);
     for (int i = 0; i < num_trans; ++i) begin
       `uvm_info(`gfn, "Starting new round", UVM_MEDIUM)
@@ -114,12 +114,14 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
       // will remain active, preventing the device from going to sleep.
       cfg.pwrmgr_vif.update_wakeups('0);
       cfg.slow_clk_rst_vif.wait_clks(10);
+      cfg.pwrmgr_vif.update_cpu_sleeping(1'b0);
       check_wake_status('0);
 
       // Wait for interrupt to be generated whether or not it is enabled.
       cfg.slow_clk_rst_vif.wait_clks(10);
       check_and_clear_interrupt(.expected(1'b1));
     end
+    clear_wake_info();
   endtask
 
 endclass : pwrmgr_lowpower_wakeup_race_vseq

@@ -29,9 +29,10 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
     logic [TL_DW-1:0] value;
     wakeups_t wakeup_en;
     resets_t reset_en;
+    wait_for_fast_fsm_active();
     set_nvms_idle();
     setup_interrupt(.enable(1'b1));
-    cfg.slow_clk_rst_vif.wait_for_reset(.wait_negedge(0));
+
     check_wake_status('0);
     check_reset_status('0);
 
@@ -55,6 +56,9 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
 
     check_wake_status(wakeups & wakeup_en);
     check_reset_status('0);
+    // And make the cpu active.
+    cfg.pwrmgr_vif.update_cpu_sleeping(1'b0);
+
     cfg.pwrmgr_vif.update_wakeups('0);
     check_and_clear_interrupt(.expected(1'b1));
 
@@ -76,6 +80,7 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
     // should have been reset, so the incoming reset should have cleared.
     check_reset_status('0);
     check_wake_status('0);
+    clear_wake_info();
 
     // Wait for interrupt to be generated whether or not it is enabled.
     cfg.slow_clk_rst_vif.wait_clks(10);
