@@ -90,14 +90,14 @@ module tb;
   assign csb           = spi_if.csb[0];
   assign tpm_csb       = spi_if.csb[1];
   
-  assign spi_p_if.sck = pass_out.sck;
-  assign spi_p_if.csb = pass_out.csb;
-  assign spi_p_if.sio = pass_out.s;
+//  assign spi_p_if.sck = pass_out.sck;
+//  assign spi_p_if.csb = pass_out.csb;
+//  assign spi_p_if.sio = pass_out.s;
   
   // TODO: quad SPI mode is currently not yet implemented
   assign sd_in         = {3'b000, spi_if.sio[0]};
   assign spi_if.sio[1] = sd_out_en[1] ? sd_out[1] : 1'bz;
-  assign spi_if.sio[2] = pass_out.csb ? 1'bz : pass_out.s;
+  //assign spi_if.sio[2] = pass_out.csb ? 1'bz : pass_out.s;
 
   assign interrupts[RxFifoFull]      = intr_rxf;
   assign interrupts[RxFifoGeLevel]   = intr_rxlvl;
@@ -119,7 +119,7 @@ module tb;
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_agent*", "vif", spi_if);
-    uvm_config_db#(virtual spi_if)::set(null, "*.env.p_spi_agent*", "vif", spi_p_if);
+    uvm_config_db#(virtual spi_if)::set(null, "*.env.spi_device*", "vif", spi_p_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
