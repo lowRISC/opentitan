@@ -17,7 +17,8 @@ module usb_fs_nb_in_pe #(
   parameter int unsigned MaxInPktSizeByte = 32,
   // Targeting 17 bit times for the timeout. The counter runs on the 48 MHz
   // clock, the SOP delay to rx_pkt_start_i is 3 bit times, and the EOP delay
-  // to tx_pkt_end_i is essentially 0.
+  // to tx_pkt_end_i is essentially 0. This timeout originates from Section
+  // 7.1.19.1 of the USB 2.0 specification.
   parameter int unsigned AckTimeoutCnt = (17 + 3) * 4,
   localparam int unsigned InEpW = $clog2(NumInEps), // derived parameter
   localparam int unsigned PktW = $clog2(MaxInPktSizeByte), // derived parameter

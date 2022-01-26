@@ -43,6 +43,7 @@ package usbdev_env_pkg;
     IntrRxBitstuffErr = 13,
     IntrFrame = 14,
     IntrConnected = 15,
+    IntrLinkOutErr = 16,
     NumUsbdevInterrupts
   } usbdev_intr_e;
 

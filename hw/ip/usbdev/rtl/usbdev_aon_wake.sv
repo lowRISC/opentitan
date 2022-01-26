@@ -15,6 +15,7 @@ module usbdev_aon_wake import usbdev_pkg::*;(
   // These come from the chip pin
   input  logic usb_dp_async_alw_i,
   input  logic usb_dn_async_alw_i,
+  input  logic usb_sense_async_alw_i,
 
   // These come from post pinmux sleep handling logic
   input  logic usb_dppullup_en_alw_i,
@@ -30,6 +31,10 @@ module usbdev_aon_wake import usbdev_pkg::*;(
 
   // wake/powerup request
   output logic wake_req_alw_o,
+
+  // Event signals that indicate what happened while monitoring
+  output logic bus_reset_alw_o,
+  output logic sense_lost_alw_o,
 
   // state debug information
   output awk_state_e state_debug_o
@@ -67,7 +72,6 @@ module usbdev_aon_wake import usbdev_pkg::*;(
 
   assign {low_power, suspend_req, wake_ack} = filter_cdc_out;
 
-
   logic notidle_async;
   logic wake_req;
   // In suspend it is the device pullup that sets the line state
@@ -90,12 +94,65 @@ module usbdev_aon_wake import usbdev_pkg::*;(
     .filter_o (wake_req)
   );
 
+  // Detect bus reset and VBUS removal events.
+  // Hold the detectors in reset when this module is in the idle state, to
+  // avoid sampling / hysteresis issues that carry over when the link is
+  // active.
+  logic aon_usb_events_active;
+  logic se0_async, sense_lost_async;
+  logic event_bus_reset, event_sense_lost;
+  logic bus_reset_d, bus_reset_q;
+  logic sense_lost_d, sense_lost_q;
+
+  assign se0_async = ~usb_dp_async_alw_i & ~usb_dn_async_alw_i;
+  assign sense_lost_async = ~usb_sense_async_alw_i;
+
+  prim_filter #(
+    .AsyncOn(1),
+    .Cycles(3)
+  ) filter_bus_reset (
+    .clk_i    (clk_aon_i),
+    .rst_ni   (aon_usb_events_active),
+    .enable_i (1'b1),
+    .filter_i (se0_async),
+    .filter_o (event_bus_reset)
+  );
+
+  prim_filter #(
+    .AsyncOn(1),
+    .Cycles(3)
+  ) filter_sense (
+    .clk_i    (clk_aon_i),
+    .rst_ni   (aon_usb_events_active),
+    .enable_i (1'b1),
+    .filter_i (sense_lost_async),
+    .filter_o (event_sense_lost)
+  );
+
+  assign bus_reset_d = event_bus_reset | (bus_reset_q & aon_usb_events_active);
+  assign sense_lost_d = event_sense_lost | (sense_lost_q & aon_usb_events_active);
+
+  assign bus_reset_alw_o = bus_reset_q;
+  assign sense_lost_alw_o = sense_lost_q;
+
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin : proc_reg_events
+    if (!rst_aon_ni) begin
+      bus_reset_q <= 1'b0;
+      sense_lost_q <= 1'b0;
+    end else begin
+      bus_reset_q <= bus_reset_d;
+      sense_lost_q <= sense_lost_d;
+    end
+  end
+
   always_comb begin : proc_awk_fsm
     astate_d  = astate_q;
+    aon_usb_events_active = 1'b1;
 
     unique case (astate_q)
       // No aon suspend entry has been requested or detected
       AwkIdle: begin
+        aon_usb_events_active = 1'b0;
         if (suspend_req) begin
           astate_d = AwkTrigUon;
         end
@@ -134,9 +191,13 @@ module usbdev_aon_wake import usbdev_pkg::*;(
         end
       end
 
-      // Suspend has been enetered and the USB IP is in low power
+      // Suspend has been entered and the USB IP is in low power
       AwkTrigUoff: begin
-        if (wake_req) begin
+        // wake_req covers any events on D+/D-, including a bus reset, since
+        // it triggers on anything where D+/D- != J. A bus reset would show an
+        // SE0 symbol.
+        // sense_lost_q covers events on VBUS.
+        if (wake_req | sense_lost_q) begin
           astate_d = AwkWoken;
         end
       end

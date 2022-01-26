@@ -399,6 +399,7 @@ module chip_earlgrey_verilator (
     usb_dn_idx:        DioUsbdevDn,
     usb_dp_pullup_idx: DioUsbdevDpPullup,
     usb_dn_pullup_idx: DioUsbdevDnPullup,
+    usb_sense_idx:     MioInUsbdevSense,
     // TODO: connect these once the verilator chip-level has been merged with the chiplevel.sv.tpl
     dio_pad_type: {pinmux_reg_pkg::NDioPads{prim_pad_wrapper_pkg::BidirStd}},
     mio_pad_type: {pinmux_reg_pkg::NMioPads{prim_pad_wrapper_pkg::BidirStd}}

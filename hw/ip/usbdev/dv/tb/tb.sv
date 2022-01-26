@@ -28,6 +28,7 @@ module tb;
   wire intr_rx_full;
   wire intr_av_overflow;
   wire intr_link_in_err;
+  wire intr_link_out_err;
   wire intr_rx_crc_err;
   wire intr_rx_pid_err;
   wire intr_rx_bitstuff_err;
@@ -60,16 +61,19 @@ module tb;
     .alert_rx_i           (alert_rx   ),
     .alert_tx_o           (alert_tx   ),
 
-    // pinmux wakeup interface
-    .usb_state_debug_i    ('0),
-
     // USB Interface
     // TOOD: need to hook up an interface
-    .cio_sense_i          (1'b0),
     .cio_d_i              (1'b0),
     .cio_dp_i             (1'b1),
     .cio_dn_i             (1'b0),
+    .cio_d_o              (),
+    .cio_d_en_o           (),
+    .cio_dp_o             (),
+    .cio_dp_en_o          (),
+    .cio_dn_o             (),
+    .cio_dn_en_o          (),
 
+    .cio_sense_i          (1'b0),
     .cio_se0_o            (),
     .cio_se0_en_o         (),
     .cio_dp_pullup_o      (),
@@ -80,12 +84,26 @@ module tb;
     .cio_tx_mode_se_en_o  (),
     .cio_suspend_o        (),
     .cio_suspend_en_o     (),
-    .cio_d_o              (),
-    .cio_d_en_o           (),
-    .cio_dp_o             (),
-    .cio_dp_en_o          (),
-    .cio_dn_o             (),
-    .cio_dn_en_o          (),
+    .cio_rx_enable_o      (),
+    .cio_rx_enable_en_o   (),
+
+    // Direct pinmux aon detect connections
+    .usb_out_of_rst_o     (),
+    .usb_aon_wake_en_o    (),
+    .usb_aon_wake_ack_o   (),
+    .usb_suspend_o        (),
+
+    // Events and debug info from wakeup module
+    .usb_aon_bus_reset_i  ('0),
+    .usb_aon_sense_lost_i ('0),
+    .usb_state_debug_i    ('0),
+
+    // SOF reference for clock calibration
+    .usb_ref_val_o        (),
+    .usb_ref_pulse_o      (),
+
+    // memory configuration
+    .ram_cfg_i            ('0),
 
     // Interrupts
     .intr_pkt_received_o    (intr_pkt_received    ),
@@ -100,6 +118,7 @@ module tb;
     .intr_rx_full_o         (intr_rx_full         ),
     .intr_av_overflow_o     (intr_av_overflow     ),
     .intr_link_in_err_o     (intr_link_in_err     ),
+    .intr_link_out_err_o    (intr_link_out_err    ),
     .intr_rx_crc_err_o      (intr_rx_crc_err      ),
     .intr_rx_pid_err_o      (intr_rx_pid_err      ),
     .intr_rx_bitstuff_err_o (intr_rx_bitstuff_err ),
@@ -119,6 +138,7 @@ module tb;
   assign interrupts[IntrRxFull]         = intr_rx_full;
   assign interrupts[IntrAvOverflow]     = intr_av_overflow;
   assign interrupts[IntrLinkInErr]      = intr_link_in_err;
+  assign interrupts[IntrLinkOutErr]     = intr_link_out_err;
   assign interrupts[IntrRxCrcErr]       = intr_rx_crc_err;
   assign interrupts[IntrRxPidErr]       = intr_rx_pid_err;
   assign interrupts[IntrRxBitstuffErr]  = intr_rx_bitstuff_err;
