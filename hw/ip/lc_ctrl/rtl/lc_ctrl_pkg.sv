@@ -175,4 +175,8 @@ package lc_ctrl_pkg;
        InvalidTokenIdx}}   // -> RAW, TEST_LOCKED0-6
   };
 
+  // These macros are only used locally.
+  `undef TEST_LOCKED
+  `undef TEST_UNLOCKED
+
 endpackage : lc_ctrl_pkg
