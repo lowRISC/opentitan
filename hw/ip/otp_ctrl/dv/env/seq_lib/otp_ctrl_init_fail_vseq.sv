@@ -65,7 +65,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
       dai_wr(dai_addr, wdata0, wdata1);
 
       // OTP read via DAI, check data in scb
-      dai_rd(dai_addr, 0, wdata0, wdata1);
+      dai_rd(dai_addr, wdata0, wdata1);
 
       // If write sw partitions, check tlul window
       if (is_sw_part(dai_addr)) begin
