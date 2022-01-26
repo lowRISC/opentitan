@@ -139,13 +139,12 @@ module lc_ctrl_signal_decode
               lc_iso_part_sw_rd_en   = On;
               lc_keymgr_div_d        = RndCnstLcKeymgrDivProduction;
               // Only allow provisioning if the device has not yet been personalized.
-              if (secrets_valid_i == Off) begin
-                lc_creator_seed_sw_rw_en = On;
-              end
+              // If secrets_valid_i is set to ON, we output OFF.
+              // Note that we can convert ON to OFF with a bitwise inversion due to the encoding.
+              lc_creator_seed_sw_rw_en = lc_tx_t'(~secrets_valid_i);
               // Only allow hardware to consume the seeds once personalized.
-              if (secrets_valid_i == On) begin
-                lc_seed_hw_rd_en = On;
-              end
+              // If secrets_valid_i is set to ON, we output ON.
+              lc_seed_hw_rd_en = secrets_valid_i;
             end
             ///////////////////////////////////////////////////////////////////
             // Similar functions as PROD, with the following differences:
@@ -159,13 +158,12 @@ module lc_ctrl_signal_decode
               lc_iso_part_sw_wr_en   = On;
               lc_keymgr_div_d        = RndCnstLcKeymgrDivTestDevRma;
               // Only allow provisioning if the device has not yet been personalized.
-              if (secrets_valid_i == Off) begin
-                lc_creator_seed_sw_rw_en = On;
-              end
+              // If secrets_valid_i is set to ON, we output OFF.
+              // Note that we can convert ON to OFF with a bitwise inversion due to the encoding.
+              lc_creator_seed_sw_rw_en = lc_tx_t'(~secrets_valid_i);
               // Only allow hardware to consume the seeds once personalized.
-              if (secrets_valid_i == On) begin
-                lc_seed_hw_rd_en = On;
-              end
+              // If secrets_valid_i is set to ON, we output ON.
+              lc_seed_hw_rd_en = secrets_valid_i;
             end
             ///////////////////////////////////////////////////////////////////
             // Enable all test and production functions.
