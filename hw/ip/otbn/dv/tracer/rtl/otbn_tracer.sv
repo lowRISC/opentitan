@@ -120,7 +120,7 @@ module otbn_tracer
                                             otbn_trace.rf_base_rd_data_b));
     end
 
-    if (otbn_trace.rf_base_wr_en && otbn_trace.rf_base_wr_commit &&
+    if (|otbn_trace.rf_base_wr_en && otbn_trace.rf_base_wr_commit &&
         otbn_trace.rf_base_wr_addr != '0) begin
       output_trace(RegWritePrefix, $sformatf("x%02d: 0x%08x", otbn_trace.rf_base_wr_addr,
                                              otbn_trace.rf_base_wr_data));
@@ -138,7 +138,7 @@ module otbn_tracer
                                             otbn_wlen_data_str(otbn_trace.rf_bignum_rd_data_b)));
     end
 
-    if (otbn_trace.rf_bignum_wr_en) begin
+    if (|otbn_trace.rf_bignum_wr_en) begin
       output_trace(RegWritePrefix, $sformatf("w%02d: %s", otbn_trace.rf_bignum_wr_addr,
                                              otbn_wlen_data_str(otbn_trace.rf_bignum_wr_data)));
     end
