@@ -504,12 +504,15 @@ module otbn_controller
       end
     end
 
+    `ASSERT(ErrBitSetOnErr, err |=> |err_bits_o)
   end else begin : gen_bypass_sec_wipe
     logic unused_err_bits_en;
 
     assign unused_err_bits_en = err_bits_en;
     assign err_bits_o = err_bits;
     assign recoverable_err_o = recoverable_err;
+
+    `ASSERT(ErrBitSetOnErr, err |-> |err_bits_o)
   end
 
   assign err = software_err | fatal_err;
@@ -517,7 +520,6 @@ module otbn_controller
   // Instructions must not execute if there is an error
   assign insn_executing = insn_valid_i & ~err;
 
-  `ASSERT(ErrBitSetOnErr, err |-> |err_bits_o)
   `ASSERT(ErrSetOnFatalErr, fatal_err |-> err)
   `ASSERT(SoftwareErrIfNonInsnAddrSoftwareErr, non_insn_addr_software_err |-> software_err)
 
