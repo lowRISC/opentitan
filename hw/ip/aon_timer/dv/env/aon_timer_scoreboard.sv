@@ -212,7 +212,7 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
       wait(!under_reset);
       if (wkup_num_update_due) begin
         if (wkup_count < wkup_thold) begin
-          wkup_num = ((wkup_thold - wkup_count) * (prescaler + 1));
+          wkup_num = ((wkup_thold - wkup_count + 1) * (prescaler + 1));
         end
         else begin
           wkup_num = 0;
@@ -220,17 +220,21 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("Calculated WKUP_NUM: %d", wkup_num), UVM_HIGH)
       end
       if (wdog_num_update_due) begin
-        // calculate wdog bark and bite
-        if (wkup_count < wkup_thold) begin
+        // calculate wdog bark
+        if (wdog_count < bark_thold) begin
           wdog_bark_num = bark_thold - wdog_count;
-          `uvm_info(`gfn, $sformatf("Calculated wdog_bark_num: %d", wdog_bark_num), UVM_HIGH)
-          wdog_bite_num = bite_thold - wdog_count;
-          `uvm_info(`gfn, $sformatf("Calculated wdog_bite_num: %d", wdog_bite_num), UVM_HIGH)
         end
         else begin
           wdog_bark_num = 0;
+        end
+        `uvm_info(`gfn, $sformatf("Calculated wdog_bark_num: %d", wdog_bark_num), UVM_HIGH)
+        if (wdog_count < bite_thold) begin
+          wdog_bite_num = bite_thold - wdog_count;
+        end
+        else begin
           wdog_bite_num = 0;
         end
+        `uvm_info(`gfn, $sformatf("Calculated wdog_bite_num: %d", wdog_bite_num), UVM_HIGH)
       end
       wkup_num_update_due = 0;
       wdog_num_update_due = 0;
