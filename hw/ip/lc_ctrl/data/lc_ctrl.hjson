@@ -54,6 +54,24 @@
       randcount: "128",
       randtype:  "data",
     }
+    { name:      "RndCnstRmaTokenInvalid",
+      desc:      "Compile-time random bits used as token value if the token is not valid",
+      type:      "lc_ctrl_state_pkg::lc_token_t",
+      randcount: "128",
+      randtype:  "data",
+    }
+    { name:      "RndCnstTestUnlockTokenInvalid",
+      desc:      "Compile-time random bits used as token value if the token is not valid",
+      type:      "lc_ctrl_state_pkg::lc_token_t",
+      randcount: "128",
+      randtype:  "data",
+    }
+    { name:      "RndCnstTestExitTokenInvalid",
+      desc:      "Compile-time random bits used as token value if the token is not valid",
+      type:      "lc_ctrl_state_pkg::lc_token_t",
+      randcount: "128",
+      randtype:  "data",
+    }
     // Regular parameters
     { name:    "NumTokenWords",
       desc:    "Number of 32bit words in a token.",

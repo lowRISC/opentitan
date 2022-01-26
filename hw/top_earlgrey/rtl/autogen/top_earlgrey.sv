@@ -1497,7 +1497,10 @@ module top_earlgrey #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[17:15]),
     .RndCnstLcKeymgrDivInvalid(RndCnstLcCtrlLcKeymgrDivInvalid),
     .RndCnstLcKeymgrDivTestDevRma(RndCnstLcCtrlLcKeymgrDivTestDevRma),
-    .RndCnstLcKeymgrDivProduction(RndCnstLcCtrlLcKeymgrDivProduction)
+    .RndCnstLcKeymgrDivProduction(RndCnstLcCtrlLcKeymgrDivProduction),
+    .RndCnstRmaTokenInvalid(RndCnstLcCtrlRmaTokenInvalid),
+    .RndCnstTestUnlockTokenInvalid(RndCnstLcCtrlTestUnlockTokenInvalid),
+    .RndCnstTestExitTokenInvalid(RndCnstLcCtrlTestExitTokenInvalid)
   ) u_lc_ctrl (
       // [15]: fatal_prog_error
       // [16]: fatal_state_error
