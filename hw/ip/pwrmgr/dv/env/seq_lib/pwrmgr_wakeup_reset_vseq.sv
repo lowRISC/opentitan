@@ -41,8 +41,8 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
     logic [TL_DW-1:0] value;
     resets_t enabled_resets;
     wakeups_t enabled_wakeups;
+    wait_for_fast_fsm_active();
 
-    cfg.slow_clk_rst_vif.wait_for_reset(.wait_negedge(0));
     check_reset_status('0);
     check_wake_status('0);
     for (int i = 0; i < num_trans; ++i) begin
@@ -150,7 +150,10 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
       // Clear hardware resets: if they are enabled they are cleared when rst_lc_req[1] goes active,
       // but this makes sure they are cleared even if none is enabled for the next round.
       cfg.pwrmgr_vif.update_resets('0);
+      // And make the cpu active.
+      cfg.pwrmgr_vif.update_cpu_sleeping(1'b0);
     end
+    clear_wake_info();
   endtask
 
 endclass : pwrmgr_wakeup_reset_vseq
