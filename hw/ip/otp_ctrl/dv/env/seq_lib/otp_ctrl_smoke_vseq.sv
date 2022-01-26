@@ -128,7 +128,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       if ($urandom_range(0, 1) && access_locked_parts) write_sw_rd_locks();
 
       for (int i = 0; i < num_dai_op; i++) begin
-        bit [TL_DW-1:0] rdata0, rdata1;
+        bit [TL_DW-1:0] rdata0, rdata1, backdoor_rd_val;
 
         `DV_CHECK_RANDOMIZE_FATAL(this)
         // recalculate part_idx in case some test turn off constraint dai_wr_legal_addr_c
@@ -142,6 +142,11 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
           if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code[0]), .value(tlul_val));
         end
 
+        // Inject ECC error.
+        if (ecc_otp_err != OtpNoEccErr && dai_addr < LifeCycleOffset) begin
+          backdoor_rd_val = backdoor_inject_ecc_err(dai_addr, ecc_otp_err);
+        end
+
         if (rand_rd) begin
           // OTP read via DAI, check data in scb
           dai_rd(dai_addr, rdata0, rdata1);
@@ -152,6 +157,11 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
           uvm_reg_addr_t tlul_addr = cfg.ral.get_addr_from_offset(get_sw_window_offset(dai_addr));
           // tlul error rsp is checked in scoreboard
           tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1), .check_rsp(0));
+        end
+
+        // Backdoor restore injected ECC error, but should not affect fatal alerts.
+        if (ecc_otp_err != OtpNoEccErr && dai_addr < LifeCycleOffset) begin
+          cfg.mem_bkdr_util_h.write32({dai_addr[TL_DW-3:2], 2'b00}, backdoor_rd_val);
         end
 
         if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(tlul_val));
