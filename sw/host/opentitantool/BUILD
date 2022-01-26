@@ -19,6 +19,7 @@ rust_binary(
         "src/command/console.rs",
         "src/command/gpio.rs",
         "src/command/hello.rs",
+        "src/command/i2c.rs",
         "src/command/image.rs",
         "src/command/load_bitstream.rs",
         "src/command/mod.rs",
