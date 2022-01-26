@@ -12,11 +12,11 @@
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/stdasm.h"
-#include "sw/device/lib/pinmux.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
+#include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
@@ -66,6 +66,10 @@ static inline rom_error_t mask_rom_irq_error(void) {
  */
 static rom_error_t mask_rom_init(void) {
   sec_mmio_init();
+  // Initialize pinmux configuration so we can use the UART.
+  pinmux_init();
+  // Configure UART0 as stdout.
+  uart_init(kUartNCOValue);
   // Initialize the shutdown policy according to lifecycle state.
   lc_state = lifecycle_state_get();
   RETURN_IF_ERROR(shutdown_init(lc_state));
@@ -87,11 +91,6 @@ static rom_error_t mask_rom_init(void) {
   if (bitfield_bit32_read(reset_reasons, kRstmgrReasonPowerOn)) {
     retention_sram_clear();
   }
-
-  // Initialize pinmux configuration so we can use the UART.
-  pinmux_init();
-  // Configure UART0 as stdout.
-  uart_init(kUartNCOValue);
 
   sec_mmio_check_values(rnd_uint32());
   sec_mmio_check_counters(/*expected_check_count=*/1);
