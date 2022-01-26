@@ -15,7 +15,7 @@ title: "KEYMGR DV document"
 * [Simulation results](https://reports.opentitan.org/hw/ip/keymgr/dv/latest/results.html)
 
 ## Design features
-For detailed information on KEYMGR design features, please see the [KEYMGR HWIP technical specification](}}).
+For detailed information on KEYMGR design features, please see the [KEYMGR HWIP technical specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 KEYMGR testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
