@@ -30,14 +30,15 @@ class csrng_env extends cip_base_env #(
     for (int i = 0; i < NUM_HW_APPS; i++) begin
       string edn_agent_name = $sformatf("m_edn_agent[%0d]", i);
       m_edn_agent[i] = csrng_agent::type_id::create(edn_agent_name, this);
-      uvm_config_db#(csrng_agent_cfg)::set(this, $sformatf("%0s*", edn_agent_name), "cfg", cfg.m_edn_agent_cfg[i]);
+      uvm_config_db#(csrng_agent_cfg)::set(this, $sformatf("%0s*", edn_agent_name), "cfg",
+          cfg.m_edn_agent_cfg[i]);
       cfg.m_edn_agent_cfg[i].if_mode = dv_utils_pkg::Host;
       cfg.m_edn_agent_cfg[i].en_cov  = cfg.en_cov;
+    end
 
-      if (!uvm_config_db#(virtual pins_if#(8))::get(this, "", "otp_en_cs_sw_app_read_vif",
-          cfg.otp_en_cs_sw_app_read_vif)) begin
-        `uvm_fatal(get_full_name(), "failed to get otp_en_cs_sw_app_read_vif from uvm_config_db")
-      end
+    if (!uvm_config_db#(virtual pins_if#(8))::get(this, "", "otp_en_cs_sw_app_read_vif",
+        cfg.otp_en_cs_sw_app_read_vif)) begin
+      `uvm_fatal(get_full_name(), "failed to get otp_en_cs_sw_app_read_vif from uvm_config_db")
     end
   endfunction
 

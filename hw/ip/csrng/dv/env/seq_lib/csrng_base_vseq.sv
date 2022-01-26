@@ -29,7 +29,10 @@ class csrng_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
+    cfg.otp_en_cs_sw_app_read_vif.drive(.val(cfg.otp_en_cs_sw_app_read));
+
     super.dut_init(reset_kind);
+
     if (do_csrng_init) csrng_init();
   endtask
 
@@ -40,7 +43,6 @@ class csrng_base_vseq extends cip_base_vseq #(
 
   // setup basic csrng features
   virtual task csrng_init();
-    cfg.otp_en_cs_sw_app_read_vif.drive(.val(cfg.otp_en_cs_sw_app_read));
 
     // Enables
     csr_wr(.ptr(ral.regwen), .value(cfg.regwen));
