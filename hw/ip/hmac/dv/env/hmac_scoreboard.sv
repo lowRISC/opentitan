@@ -12,7 +12,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   bit [7:0]       msg_q[$];
   bit             hmac_start, hmac_process;
   int             hmac_wr_cnt, hmac_rd_cnt;
-  bit [TL_DW-1:0] key[8];
+  bit [TL_DW-1:0] key[NUM_KEYS];
+  bit [TL_DW-1:0] exp_digest[NUM_DIGESTS];
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -124,8 +125,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           "wipe_secret", "intr_enable", "intr_state", "alert_test": begin
             // Do nothing
           end
-          "digest_0", "digest_1", "digest_2", "digest_3", "digest_4", "digest_5", "digest_6", "digest_7",
-          "status", "msg_length_lower", "msg_length_upper": begin
+          "digest_0", "digest_1", "digest_2", "digest_3", "digest_4", "digest_5", "digest_6",
+          "digest_7", "status", "msg_length_lower", "msg_length_upper": begin
             `uvm_error(`gfn, $sformatf("this reg does not have write access: %0s",
                                        csr.get_full_name()))
           end
@@ -181,17 +182,24 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             flush();
           end
         end
-        "digest_0", "digest_1", "digest_2", "digest_3", "digest_4", "digest_5", "digest_6", "digest_7":
-        begin
+        "digest_0", "digest_1", "digest_2", "digest_3", "digest_4", "digest_5", "digest_6",
+        "digest_7": begin
+          int digest_idx = get_digest_index(csr_name);
           // HW default output Littie Endian for each digest (32 bits)
           // But standard DPI function expect output is in Big Endian
           // So digest_swap = 0 will require flip the expect value
-          if (ral.cfg.digest_swap.get_mirrored_value() == 1'b0) begin
-            bit [TL_AW-1:0] digest_data = {<<8{csr.get_mirrored_value()}};
-            `DV_CHECK_EQ(item.d_data, digest_data);
-            // do not want to update mirror value here, directly return
-            return;
+          bit [TL_DW-1:0] real_digest_val = (ral.cfg.digest_swap.get_mirrored_value() == 1'b0) ?
+                                            {<<8{item.d_data}} : item.d_data;
+          // If wipe_secret is triggered, ensure the predicted value does not match the readout
+          // digest.
+          if (cfg.wipe_secret_triggered) begin
+            `DV_CHECK_NE(real_digest_val, exp_digest[digest_idx]);
+            // Update new digest data to the exp_digest variable.
+            exp_digest[digest_idx] = real_digest_val;
+          end else begin
+            `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx]);
           end
+          return;
         end
         "status": begin
           if (!do_cycle_accurate_check) do_read_check = 0;
@@ -227,7 +235,9 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     fifo_empty = 0;
     hmac_start = 0;
     key        = '{default:0};
+    exp_digest = '{default:0};
     msg_q.delete();
+    cfg.wipe_secret_triggered = 0;
   endfunction
 
   // clear variables after hmac_done
@@ -373,7 +383,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   virtual function void predict_digest(bit [7:0] msg_q[],
                                        bit       sha_en  = ral.cfg.sha_en.get_mirrored_value(),
                                        bit       hmac_en = ral.cfg.hmac_en.get_mirrored_value());
-    int unsigned exp_digest[8];
     case ({hmac_en, sha_en})
       2'b11: begin
         cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(key, msg_q, exp_digest);
@@ -386,7 +395,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
         exp_digest = '{default:0};
       end
     endcase
-    foreach (exp_digest[i]) void'(ral.digest[i].predict(exp_digest[i]));
   endfunction
 
   virtual function void update_wr_msg_length(int size_bytes);
@@ -401,4 +409,5 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
       void'(ral.err_code.predict(.value(err_code_val), .kind(UVM_PREDICT_DIRECT)));
     end
   endfunction
+
 endclass

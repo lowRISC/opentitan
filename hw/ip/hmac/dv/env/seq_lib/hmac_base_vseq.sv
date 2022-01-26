@@ -108,6 +108,8 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   virtual task rd_digest();
     bit [TL_DW-1:0] digest[8];
     csr_rd_digest(digest);
+    // Clear the wipe_secret flag because the exp digest val in scb will be updated.
+    cfg.wipe_secret_triggered = 0;
   endtask
 
     // read digest value and output read value
@@ -125,6 +127,13 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
       csr_update(.csr(ral.key[i]));
       `uvm_info(`gfn, $sformatf("key[%0d] = 0x%0h", i, key[i]), UVM_HIGH)
     end
+  endtask
+
+  virtual task wipe_secrets();
+    bit [TL_DW-1:0] secret_val;
+    `DV_CHECK_STD_RANDOMIZE_FATAL(secret_val)
+    csr_wr(.ptr(ral.wipe_secret), .value(secret_val));
+    cfg.wipe_secret_triggered = 1;
   endtask
 
   // write msg to DUT, read status FIFO FULL and check intr FIFO FULL
@@ -246,8 +255,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
       // can safely assume that `exp_digest` always has 8 elements
       // since HMAC output size is 256 bits.
       foreach (act_digest[i]) begin
-        `DV_CHECK_EQ(act_digest[i], packed_exp_digest[i],
-                     $sformatf("for index %0d", i))
+        `DV_CHECK_EQ(act_digest[i], packed_exp_digest[i], $sformatf("for index %0d", i))
       end
     end else begin
       `uvm_info(`gfn, "skipped comparison due to reset", UVM_LOW)
