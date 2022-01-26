@@ -25,9 +25,7 @@ using ::testing::Eq;
 
 class SecMmioTest : public mask_rom_test::MaskRomTest {
  protected:
-  void SetUp() override {
-    sec_mmio_init(+[](rom_error_t) { std::abort(); });
-  }
+  void SetUp() override { sec_mmio_init(); }
   sec_mmio_ctx_t *ctx_ = &::sec_mmio_ctx;
   mask_rom_test::MockAbsMmio mmio_;
 };
@@ -39,7 +37,7 @@ TEST_F(SecMmioTest, Initialize) {
   ctx_->last_index = 1;
   ctx_->write_count = 1;
   ctx_->addrs[0] = 0;
-  sec_mmio_init(+[](rom_error_t) { std::abort(); });
+  sec_mmio_init();
 
   EXPECT_EQ(ctx_->check_count, 0);
   EXPECT_EQ(ctx_->expected_write_count, 0);
@@ -79,7 +77,7 @@ TEST_F(SecMmioTest, NextStageInitialize) {
     expected_values[i] = UINT32_MAX;
   }
 
-  sec_mmio_next_stage_init(+[](rom_error_t) { std::abort(); });
+  sec_mmio_next_stage_init();
 
   EXPECT_EQ(ctx_->write_count, 6);
   EXPECT_EQ(ctx_->expected_write_count, 6);
@@ -155,25 +153,25 @@ TEST_F(SecMmioTest, CheckValues) {
   EXPECT_ABS_READ32(8, 0xa5a5a5a5);
   EXPECT_EQ(sec_mmio_read32(8), 0xa5a5a5a5);
 
-  // The expected permutation order for rnd_offset=0 is {1, 2, 0}.
+  // The expected permutation order for rnd_offset=0
+  EXPECT_ABS_READ32(0, 0x12345678);
   EXPECT_ABS_READ32(4, 0x87654321);
   EXPECT_ABS_READ32(8, 0xa5a5a5a5);
-  EXPECT_ABS_READ32(0, 0x12345678);
   sec_mmio_check_values(/*rnd_offset=*/0);
   EXPECT_EQ(ctx_->check_count, 1);
 
-  // The expected permutation order for rnd_offset=1 is {2, 0, 1}.
+  // The expected permutation order for rnd_offset=0x80000000
+  EXPECT_ABS_READ32(4, 0x87654321);
   EXPECT_ABS_READ32(8, 0xa5a5a5a5);
   EXPECT_ABS_READ32(0, 0x12345678);
-  EXPECT_ABS_READ32(4, 0x87654321);
-  sec_mmio_check_values(/*rnd_offset=*/1);
+  sec_mmio_check_values(/*rnd_offset=*/0x80000000);
   EXPECT_EQ(ctx_->check_count, 2);
 
-  // The expected permutation order for rnd_offset=32 is {0, 1, 2}.
+  // The expected permutation order for rnd_offset=0xf0000000
+  EXPECT_ABS_READ32(8, 0xa5a5a5a5);
   EXPECT_ABS_READ32(0, 0x12345678);
   EXPECT_ABS_READ32(4, 0x87654321);
-  EXPECT_ABS_READ32(8, 0xa5a5a5a5);
-  sec_mmio_check_values(/*rnd_offset=*/32);
+  sec_mmio_check_values(/*rnd_offset=*/0xf0000000);
   EXPECT_EQ(ctx_->check_count, 3);
 }
 

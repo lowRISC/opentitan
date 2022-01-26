@@ -131,6 +131,7 @@ module spi_cmdparse
   ////////////
   sel_datapath_e sel_dp;
   assign sel_dp_o = sel_dp;
+  `ASSERT_KNOWN(SelDpKnown_A, sel_dp_o)
 
   // FSM asserts latching enable signal for cmd_info in 8th opcode cycle.
   logic                   latch_cmdinfo;
@@ -267,7 +268,6 @@ module spi_cmdparse
     if (!rst_ni) begin
       st <= StIdle;
     end else if (module_active) begin
-      // TODO: What condition should this to be activated?
       st <= st_d;
     end
   end
@@ -351,7 +351,6 @@ module spi_cmdparse
             end
 
             opcode_en4b, opcode_ex4b: begin
-              // TODO: implement
               st_d = StAddr4B;
 
               // opcode only commands. Need to assert DP before transition

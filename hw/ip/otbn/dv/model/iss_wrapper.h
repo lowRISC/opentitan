@@ -21,7 +21,7 @@ struct TmpDir;
 class MirroredRegs {
  public:
   MirroredRegs()
-      : status(0), insn_cnt(0), err_bits(0), stop_pc(0), rnd_req(0) {}
+      : status(0), insn_cnt(0), err_bits(0), rnd_req(0), stop_pc(0) {}
 
   uint32_t status;
   uint32_t insn_cnt;
@@ -115,6 +115,9 @@ struct ISSWrapper {
   // OtbnTraceChecker to clear out any partial instructions. It also resets
   // mirrored registers to their initial states.
   void reset(bool gen_trace);
+
+  // Send a lifecycle controller escalation signal
+  void send_lc_escalation();
 
   const MirroredRegs &get_mirrored() const { return mirrored_; }
 

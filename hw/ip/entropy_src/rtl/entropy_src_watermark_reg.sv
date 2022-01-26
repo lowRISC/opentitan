@@ -14,7 +14,6 @@ module entropy_src_watermark_reg #(
 
    // functional interface
   input logic                   clear_i,
-  input logic                   active_i,
   input logic                   event_i,
   input logic [RegWidth-1:0]    value_i,
   output logic [RegWidth-1:0]   value_o
@@ -34,7 +33,7 @@ module entropy_src_watermark_reg #(
       event_cntr_q       <= event_cntr_d;
     end
 
-  assign event_cntr_d = (!active_i || clear_i) ? reg_reset :
+  assign event_cntr_d = clear_i ? reg_reset :
                         event_i ? event_cntr_change :
                         event_cntr_q;
 

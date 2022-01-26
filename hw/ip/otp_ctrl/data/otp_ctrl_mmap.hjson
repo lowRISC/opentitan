@@ -94,7 +94,8 @@
             desc: '''Vendor test partition for OTP smoke checks
             during manufacturing. The OTP wrapper control logic inside prim_otp is allowed
             to read/write to this region. ECC uncorrectable errors seen on the functional
-            prim_otp interface will not lead to an alert for this partition.
+            prim_otp interface will not lead to an alert for this partition. Instead, such errors
+            will be reported as correctable ECC errors.
             '''
         }
         {

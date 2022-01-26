@@ -23,6 +23,7 @@
 #include "sw/device/silicon_creator/lib/epmp_test_unlock.h"
 #include "sw/device/silicon_creator/mask_rom/mask_rom_epmp.h"
 
+#include "flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sram_ctrl_regs.h"  // Generated.
 
@@ -60,15 +61,6 @@ typedef enum exception {
   kExceptionECallFromUMode = 8,
   kExceptionECallFromMMode = 11,
 } exception_t;
-
-/**
- * sec_mmio callback.
- *
- * @param error sec_mmio error.
- */
-static void sec_mmio_callback(rom_error_t error) {
-  LOG_ERROR("sec_mmio error: 0x%x", error);
-}
 
 /**
  * Get the value of the `mcause` register.
@@ -376,14 +368,14 @@ static void test_unlock_exec_eflash(epmp_state_t *epmp) {
 
 void mask_rom_main(void) {
   // Initialize sec_mmio.
-  sec_mmio_init(sec_mmio_callback);
+  sec_mmio_init();
 
   // Initialize pinmux configuration so we can use the UART.
   pinmux_init();
 
   // Enable execution of code in flash.
   flash_ctrl_init();
-  flash_ctrl_exec_set(kFlashCtrlExecEnable);
+  flash_ctrl_exec_set(FLASH_CTRL_PARAM_EXEC_EN);
 
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);

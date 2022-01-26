@@ -18,6 +18,8 @@ interface rstmgr_if (
   pwrmgr_pkg::pwr_rst_req_t                       pwr_i;
   pwrmgr_pkg::pwr_rst_rsp_t                       pwr_o;
 
+  prim_mubi_pkg::mubi4_t                          sw_rst_req_o;
+
   // cpu related inputs
   rstmgr_pkg::rstmgr_cpu_t                        cpu_i;
 
@@ -29,8 +31,10 @@ interface rstmgr_if (
 
   // dft bypass
   logic                                           scan_rst_ni;
-
   prim_mubi_pkg::mubi4_t                          scanmode_i;
+
+  // Reset status for alert handler.
+  rstmgr_pkg::rstmgr_rst_en_t                     rst_en_o;
 
   // reset outputs
   rstmgr_pkg::rstmgr_out_t                        resets_o;

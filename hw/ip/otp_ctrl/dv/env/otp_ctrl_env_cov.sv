@@ -191,6 +191,9 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
     }
     // LC partition has a separate LCI err_code to collect macro related errors.
     dai_err_code_for_all_partitions: cross err_code_vals, partition {
+      // Illegal bin - vendor_test partition does not have EccUncorrectable error.
+      illegal_bins vendor_test_ecc_uncorrectable_err =
+                   binsof (partition.vendor_test) && binsof (err_code_vals.ecc_uncorr_err);
       ignore_bins lc_or_oob_ignore = binsof (partition.lc_or_oob) &&
                   binsof(err_code_vals) intersect {[OtpMacroError:OtpMacroWriteBlankError]};
     }

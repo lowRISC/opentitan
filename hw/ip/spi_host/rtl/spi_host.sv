@@ -60,6 +60,7 @@ module spi_host
     .tl_win_i   (fifo_win_d2h),
     .reg2hw,
     .hw2reg,
+    // SEC_CM: BUS.INTEGRITY
     .intg_err_o (alerts[0]),
     .devmode_i  (1'b1)
   );

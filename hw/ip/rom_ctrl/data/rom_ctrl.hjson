@@ -115,7 +115,10 @@
     },
     {
       name: "FSM.SPARSE",
-      desc: "FSMs are sparsely encoded."
+      desc: '''
+        FSMs are sparsely encoded. There are two FSMs. The first is in
+        rom_ctrl_fsm. The second, simpler FSM is in rom_ctrl_compare.
+      '''
     },
     {
       name: "MEM.SCRAMBLE",

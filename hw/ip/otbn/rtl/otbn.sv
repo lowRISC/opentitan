@@ -733,7 +733,7 @@ module otbn
   logic        insn_cnt_clear;
   logic        unused_insn_cnt_q;
   assign hw2reg.insn_cnt.d = insn_cnt;
-  assign insn_cnt_clear = reg2hw.insn_cnt.qe & ~busy_execute_q;
+  assign insn_cnt_clear = (reg2hw.insn_cnt.qe & ~busy_execute_q) | lifecycle_escalation;
   // Ignore all write data to insn_cnt. All writes zero the register.
   assign unused_insn_cnt_q = ^reg2hw.insn_cnt.q;
 
@@ -882,6 +882,8 @@ module otbn
       .rst_edn_ni,
 
       .start_i               (start_model),
+
+      .lc_escalate_en_i      (lc_escalate_en_i == lc_ctrl_pkg::On),
 
       .err_bits_o            (err_bits_model),
 

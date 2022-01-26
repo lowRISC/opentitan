@@ -32,6 +32,7 @@ STAGE_STRINGS = {
     'D0': 'Initial Work',
     'D1': 'Functional',
     'D2': 'Feature Complete',
+    'D2S': 'Security Countermeasures Complete',
     'D3': 'Design Complete',
     # Verification Stages
     'V0': 'Initial Work',

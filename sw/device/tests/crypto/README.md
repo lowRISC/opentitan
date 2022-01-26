@@ -14,7 +14,7 @@ data from a header file (ending in `_testvectors.h`) and runs a set of tests on
 each test vector. By default, the header file contains a small set of
 hard-coded test vectors. If all you want to do is sanity-check, then simply run
 `ninja` and run the `_functest` target (e.g.
-`sw_silicon_creator_lib_crypto_rsa_3072_verify_functest`) on your desired
+`sw_lib_crypto_rsa_3072_verify_functest`) on your desired
 platform.
 
 However, if you want to run a set of test vectors from an external source, a
@@ -48,7 +48,7 @@ Set up RSA-3072 test to run hardcoded test vectors:
 $ ./rsa_3072_verify_set_testvectors.py testvectors/rsa_3072_verify_hardcoded.hjson
 ```
 After this step, you can run `ninja` to re-build and then run the
-`sw_silicon_creator_lib_crypto_rsa_3072_verify_functest` target to run the
+`sw_lib_crypto_rsa_3072_verify_functest` target to run the
 tests. The same applies to all other examples here.
 
 Set up RSA-3072 test to run 20 random test vectors:

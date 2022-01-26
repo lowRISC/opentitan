@@ -148,6 +148,21 @@ dif_result_t dif_clkmgr_hintable_clock_get_hint(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock,
     dif_toggle_t *state);
 
+/**
+ * Enable chip to use the external clock.
+ *
+ * @param clkmgr Clock Manager Handle.
+ * @param is_low_speed External clock is low speed or high speed.
+ * High speed - external clock is close to nominal speeds (e.g. external clock
+ * is 96MHz and nominal frequency is 96MHz-100MHz). Low speed - external clock
+ * is half of nominal speeds (e.g. external clock is 48MHz and nominal frequency
+ * is 96MHz-100MHz).
+ *
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_clkmgr_external_clock_set_enabled(const dif_clkmgr_t *clkmgr,
+                                                   bool is_low_speed);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

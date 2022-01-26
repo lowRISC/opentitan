@@ -255,9 +255,13 @@ module otp_ctrl_part_buf
               state_d = InitSt;
               cnt_en = 1'b1;
             end
-            // Signal ECC errors, but do not go into terminal error state.
+            // At this point the only error that we could have gotten are correctable ECC errors.
+            // There is one exception, though, which are partitions where the ecc_fatal
+            // bit is set to 0 (this is only used for test partitions). In that a case,
+            // correctable and uncorrectable ECC errors are both collapsed and signalled
+            // as MacroEccCorrError
             if (otp_err_e'(otp_err_i) != NoError) begin
-              error_d = otp_err_e'(otp_err_i);
+              error_d = MacroEccCorrError;
             end
           end else begin
             state_d = ErrorSt;
@@ -372,9 +376,13 @@ module otp_ctrl_part_buf
                 cnsty_chk_ack_o = 1'b1;
               end
             end
-            // Signal ECC errors, but do not go into terminal error state.
+            // At this point the only error that we could have gotten are correctable ECC errors.
+            // There is one exception, though, which are partitions where the ecc_fatal
+            // bit is set to 0 (this is only used for test partitions). In that a case,
+            // correctable and uncorrectable ECC errors are both collapsed and signalled
+            // as MacroEccCorrError
             if (otp_err_e'(otp_err_i) != NoError) begin
-              error_d = otp_err_e'(otp_err_i);
+              error_d = MacroEccCorrError;
             end
           end else begin
             state_d = ErrorSt;

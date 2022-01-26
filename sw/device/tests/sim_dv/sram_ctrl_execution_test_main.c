@@ -7,6 +7,7 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/dif/dif_sram_ctrl.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
@@ -20,6 +21,7 @@
 #include "sw/device/lib/testing/test_framework/test_status.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "otp_ctrl_regs.h"  // Generated
 
 const test_config_t kTestConfig;
 
@@ -45,9 +47,10 @@ static const uint32_t kRamEndAddr = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
  *
  * x = OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET (1728)
  * y = OTP_CTRL_PARAM_HW_CFG_OFFSET (1664)
- * IFETCH_OFFSET = (x - y) / 8 = 8
+ * IFETCH_OFFSET = (x - y) = 64
  */
-static const uint32_t kOtpIfetchHwRelativeOffset = 8;
+static const uint32_t kOtpIfetchHwRelativeOffset =
+    OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET - OTP_CTRL_PARAM_HW_CFG_OFFSET;
 
 /**
  * Executes the return instruction from MAIN SRAM.
@@ -79,8 +82,9 @@ static bool otp_ifetch_enabled(void) {
   uint32_t value;
   CHECK_DIF_OK(dif_otp_ctrl_dai_read32_end(&otp, &value));
 
-  // OTP stores IFETCH state in a single bit (enabled/disabled).
-  return bitfield_bit32_read(value, 0);
+  return bitfield_field32_read(
+             value, (bitfield_field32_t){.mask = 0xff, .index = 0}) ==
+         kMultiBitBool8True;
 }
 
 /**
@@ -103,7 +107,7 @@ static bool otp_ifetch_enabled(void) {
  * stack by the OTTF exception handler entry subroutine, which means that the
  * return address can be loaded from there. See comments below for more details.
  */
-void ottf_exeception_handler(void) {
+void ottf_exception_handler(void) {
   // The frame address is the address of the stack location that holds the
   // `mepc`, since the OTTF exception handler entry code saves the `mepc` to
   // the top of the stack before transferring control flow to the exception
@@ -144,6 +148,42 @@ void ottf_exeception_handler(void) {
 }
 
 /**
+ * Sets the sram_ctrl exec CSR to both states and attempts to execute
+ * the code in SRAM. Checks whether an exception was observed for each
+ * case in line with the expected result based on LC_STATE and
+ * OTP IFETCH.
+ */
+void do_execute_test(bool debug_func, bool ifetch_en) {
+  bool csr_enabled_exception_expected;
+  bool csr_disabled_exception_expected;
+
+  if (debug_func && !ifetch_en) {
+    csr_enabled_exception_expected = false;
+    csr_disabled_exception_expected = false;
+  } else if (debug_func && ifetch_en) {
+    csr_enabled_exception_expected = false;
+    csr_disabled_exception_expected = true;
+  } else if (!debug_func && !ifetch_en) {
+    csr_enabled_exception_expected = true;
+    csr_disabled_exception_expected = true;
+  } else {
+    csr_enabled_exception_expected = false;
+    csr_disabled_exception_expected = true;
+  }
+
+  CHECK_DIF_OK(dif_sram_ctrl_exec_set_enabled(&sram_ctrl, kDifToggleEnabled));
+  exception_observed = false;
+  execute_code_in_sram();
+  CHECK(exception_observed == csr_enabled_exception_expected,
+        "Expected exception not observed whilst executing from SRAM!");
+  CHECK_DIF_OK(dif_sram_ctrl_exec_set_enabled(&sram_ctrl, kDifToggleDisabled));
+  exception_observed = false;
+  execute_code_in_sram();
+  CHECK(exception_observed == csr_disabled_exception_expected,
+        "Expected exception not observed whilst executing from SRAM!");
+}
+
+/**
  * Performs the tests.
  *
  * When chip is in one of the lifecycle states where debug functions are
@@ -161,35 +201,25 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR),
       &sram_ctrl));
 
+  bool locked;
+  CHECK_DIF_OK(
+      dif_sram_ctrl_is_locked(&sram_ctrl, kDifSramCtrlLockExec, &locked));
+  CHECK(!locked, "Execution is disabled and locked, cannot perform the test");
+
   dif_lc_ctrl_t lc;
   CHECK_DIF_OK(dif_lc_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR), &lc));
 
-  if (otp_ifetch_enabled()) {
-    dif_toggle_t state;
-    CHECK_DIF_OK(dif_sram_ctrl_exec_get_enabled(&sram_ctrl, &state));
-    if (state == kDifToggleDisabled) {
-      bool locked;
-      CHECK_DIF_OK(
-          dif_sram_ctrl_is_locked(&sram_ctrl, kDifSramCtrlLockExec, &locked));
-      CHECK(!locked,
-            "Execution is disabled and locked, cannot perform the test");
-      CHECK_DIF_OK(
-          dif_sram_ctrl_exec_set_enabled(&sram_ctrl, kDifToggleEnabled));
+  // For the current configuration (set by the testbench)
+  // check that execution exceptions are as expected.
+  do_execute_test(lc_ctrl_testutils_debug_func_enabled(&lc),
+                  otp_ifetch_enabled());
 
-      exception_observed = false;
-      execute_code_in_sram();
-      CHECK(!exception_observed,
-            "Exception observed whilst executing from SRAM!");
-    }
-  } else if (lc_ctrl_testutils_debug_func_enabled(&lc)) {
-    exception_observed = false;
-    execute_code_in_sram();
-    CHECK(!exception_observed,
-          "Exception observed whilst executing from SRAM!");
-  } else {
-    LOG_FATAL("Execution from SRAM cannot be enabled, cannot run the test");
-  }
+  // When the test is complete flag WFI status so
+  // the testbench can reset and progress to the next
+  // combination of LC_STATE and OTP IFETCH.
+  test_status_set(kTestStatusInWfi);
+  wait_for_interrupt();
 
   return true;
 }

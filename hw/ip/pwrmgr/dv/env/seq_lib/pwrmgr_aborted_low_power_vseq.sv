@@ -41,8 +41,8 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
   task body();
     logic [TL_DW-1:0] value;
     wakeups_t enabled_wakeups;
+    wait_for_fast_fsm_active();
 
-    cfg.slow_clk_rst_vif.wait_for_reset(.wait_negedge(0));
     check_wake_status('0);
     set_nvms_idle();
     for (int i = 0; i < num_trans; ++i) begin
@@ -64,6 +64,13 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
 
       wait_for_csr_to_propagate_to_slow_domain();
 
+      // Prepare for an abort ahead of time.
+      if (!cpu_interrupt) begin
+        `uvm_info(`gfn, $sformatf(
+                  "Expecting an abort (0x80): fi=%b, li=%b, oi=%b", flash_idle, lc_idle, otp_idle),
+                  UVM_MEDIUM)
+        set_nvms_idle(flash_idle, lc_idle, otp_idle);
+      end
       cfg.pwrmgr_vif.update_cpu_sleeping(1'b1);
 
       // Defeat the low power entry.
@@ -73,17 +80,14 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
         set_nvms_idle();
         cfg.clk_rst_vif.wait_clks(2);
         cfg.pwrmgr_vif.update_cpu_sleeping(1'b0);
-      end else begin
-        `uvm_info(`gfn, $sformatf(
-                  "Expecting an abort (0x80): fi=%b, li=%b, oi=%b", flash_idle, lc_idle, otp_idle),
-                  UVM_MEDIUM)
-        set_nvms_idle(flash_idle, lc_idle, otp_idle);
       end
       // Wait enough time for the clocks to be turned off and then wait for them to go back on,
       // indicating the fast fsm is active again.
       cfg.clk_rst_vif.wait_clks(2);
       wait(cfg.pwrmgr_vif.pwr_clk_req.main_ip_clk_en == 1'b1);
 
+      wait_for_fast_fsm_active();
+      `uvm_info(`gfn, "Back from wakeup", UVM_MEDIUM)
       check_reset_status('0);
 
       // No wakeups, but check abort and fall_through.

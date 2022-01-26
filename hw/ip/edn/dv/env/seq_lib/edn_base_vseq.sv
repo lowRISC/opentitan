@@ -13,6 +13,10 @@ class edn_base_vseq extends cip_base_vseq #(
   `uvm_object_new
 
   bit do_edn_init = 1'b1;
+  bit [csrng_pkg::GENBITS_BUS_WIDTH - 1:0]      genbits;
+  bit [entropy_src_pkg::FIPS_BUS_WIDTH - 1:0]   fips;
+  bit [3:0]                                     acmd, clen, flags;
+  bit [17:0]                                    glen;
 
   virtual edn_cov_if   cov_vif;
 
@@ -46,6 +50,13 @@ class edn_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task edn_init(string reset_kind = "HARD");
+    if (cfg.boot_req_mode == MuBi4True) begin
+      // TODO: Randomize boot_ins_cmd/boot_gen_cmd
+      cfg.boot_ins_cmd = 32'h1;
+      csr_wr(.ptr(ral.boot_ins_cmd), .value(cfg.boot_ins_cmd));
+      cfg.boot_gen_cmd = 32'h1003;
+      csr_wr(.ptr(ral.boot_gen_cmd), .value(cfg.boot_gen_cmd));
+    end
     // Enable edn, set modes
     ral.ctrl.edn_enable.set(cfg.enable);
     ral.ctrl.boot_req_mode.set(cfg.boot_req_mode);

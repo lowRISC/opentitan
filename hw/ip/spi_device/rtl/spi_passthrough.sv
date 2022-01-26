@@ -819,6 +819,7 @@ module spi_passthrough
       end
     endcase
   end
+  `ASSERT_KNOWN(PassThroughStKnown_A, st)
 
   ///////////////
   // Assertion //

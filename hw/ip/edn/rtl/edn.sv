@@ -47,6 +47,9 @@ module edn
   assign intg_err_alert[0] = 1'b0;
 
 
+  // SEC_CM: CONFIG.REGWEN
+  // SEC_CM: TILE_LINK.BUS.INTEGRITY
+
   edn_reg_top u_reg (
     .clk_i,
     .rst_ni,

@@ -12,3 +12,4 @@
 `include "otbn_imem_err_vseq.sv"
 `include "otbn_dmem_err_vseq.sv"
 `include "otbn_stress_all_vseq.sv"
+`include "otbn_escalate_vseq.sv"

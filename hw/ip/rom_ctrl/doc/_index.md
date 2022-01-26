@@ -79,6 +79,8 @@ Until it is done, it controls ROM address requests (through the green multiplexe
 The select signal for this multiplexer has a redundant encoding to protect it against fault injection attacks.
 If the select signal has an invalid value, this will trigger a fatal alert.
 Before starting to read data, it starts a cSHAKE operation on the [KMAC]({{< relref "hw/ip/kmac/doc" >}}) module using one of its application interfaces.
+We expect to use the `cSHAKE256` algorithm, with prefix "ROM_CTRL".
+The [Application Interface]({{< relref "hw/ip/kmac/doc#application-interface" >}}) section of the KMAC documentation details the parameters used.
 
 The checker reads the ROM contents in address order, resulting in a scattered access pattern on the ROM itself because of the address scrambling.
 Each read produces 39 bits of data, which are padded with zeros to 64 bits to match the interface expected by the KMAC block.

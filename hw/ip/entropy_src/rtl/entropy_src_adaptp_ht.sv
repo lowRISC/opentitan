@@ -48,6 +48,7 @@ module entropy_src_adaptp_ht #(
                        RegWidth'(entropy_bit_i[0]);
 
   // cumulative ones counter
+  // SEC_CM: CTR.REDUN
   prim_count #(
       .Width(RegWidth),
       .OutSelDnCnt(1'b0), // count up

@@ -128,7 +128,6 @@ module spid_status
     end else if (reg_en && sys_status_we_i && (1'b0 == sys_status_i[0])) begin
       status[0] <= 1'b 0;
     end else if (reg_update) begin
-      // TODO: Latch HW value to here
       status[0] <= status_sck[0];
     end
   end

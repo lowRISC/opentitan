@@ -96,6 +96,7 @@ module aon_timer import aon_timer_reg_pkg::*;
     .reg2hw,
     .hw2reg,
 
+    // SEC_CM: BUS.INTEGRITY
     .intg_err_o (alerts[0]),
     .devmode_i  (1'b1)
   );

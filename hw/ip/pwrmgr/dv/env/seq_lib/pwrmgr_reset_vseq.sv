@@ -23,8 +23,8 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
   task body();
     logic [TL_DW-1:0] value;
     resets_t enabled_resets;
+    wait_for_fast_fsm_active();
 
-    cfg.slow_clk_rst_vif.wait_for_reset(.wait_negedge(0));
     check_reset_status('0);
     for (int i = 0; i < num_trans; ++i) begin
       `uvm_info(`gfn, "Starting new round", UVM_MEDIUM)
@@ -74,6 +74,7 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
       // And check interrupt is not set.
       check_and_clear_interrupt(.expected(1'b0));
     end
+    clear_wake_info();
   endtask
 
 endclass : pwrmgr_reset_vseq

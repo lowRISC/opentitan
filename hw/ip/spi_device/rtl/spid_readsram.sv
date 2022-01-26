@@ -223,7 +223,7 @@ module spid_readsram
 
     unique case (st_q)
       StIdle: begin
-        if (sram_read_req_i) begin // TODO: Change to STRB set
+        if (sram_read_req_i) begin
           sram_req = 1'b 1;
           addr_sel = AddrInput;
         end

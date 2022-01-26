@@ -23,6 +23,7 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
 
   rand mubi4_t   enable, boot_req_mode, auto_req_mode;
   rand uint      num_endpoints;
+  rand bit [csrng_pkg::CSRNG_CMD_WIDTH - 1:0]   boot_ins_cmd, boot_gen_cmd;
 
   // Constraints
   // TODO: utilize suggestions in PR9535 to generate "other" values when testing alerts
@@ -36,9 +37,9 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
                               MuBi4True  :/ auto_req_mode_pct,
                               MuBi4False :/ (100 - auto_req_mode_pct) };}
   constraint num_endpoints_c {num_endpoints dist {
-                              MIN_NUM_ENDPOINTS :/ 30,
-                              MAX_NUM_ENDPOINTS :/ 30,
-                              [MIN_NUM_ENDPOINTS + 1:MAX_NUM_ENDPOINTS-1] :/ 40 };}
+                              MIN_NUM_ENDPOINTS :/ 40,
+                              MAX_NUM_ENDPOINTS :/ 40,
+                              [MIN_NUM_ENDPOINTS + 1:MAX_NUM_ENDPOINTS - 1] :/ 20 };}
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = edn_env_pkg::LIST_OF_ALERTS;

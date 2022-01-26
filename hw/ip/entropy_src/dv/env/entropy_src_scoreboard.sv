@@ -8,7 +8,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard
     .RAL_T(entropy_src_reg_block),
     .COV_T(entropy_src_env_cov)
   );
-  import entropy_src_pkg::*;
 
   `uvm_component_utils(entropy_src_scoreboard)
 
@@ -57,10 +56,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(RNG_BUS_WIDTH)))
       rng_fifo;
 
-  // Clearing the enable is a soft form of reset.
+  // Enabling, disabling and reset all have some effect in clearing the state of the DUT
   typedef enum int {
     HardReset,
-    Disable
+    Disable,
+    Enable
   } reset_event_e;
 
   `uvm_component_new
@@ -94,7 +94,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard
   // Health check test routines
   //
 
-  task update_repcnts(rng_val_t rng_val);
+  function void update_repcnts(rng_val_t rng_val);
     for (int i = 0; i < RNG_BUS_WIDTH; i++) begin
       if (rng_val[i] == prev_rng_val[i]) begin
         repcnt[i]++;
@@ -110,7 +110,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard
     end
     prev_rng_val = rng_val;
     max_repcnt_symbol = (repcnt_symbol > max_repcnt_symbol) ? repcnt_symbol : max_repcnt_symbol;
-  endtask
+  endfunction
 
   // TODO: Revisit after resolution of #9759
   function int calc_adaptp_test(queue_of_rng_val_t window);
@@ -314,8 +314,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard
     alert_cnt  =  alert_cnt_field.get_mirrored_value();
 
     if (failure) begin
-      alert_cnt++;
-      fail_total++;
+      // Update the predicted failure counters, noting that the DUT will not let these overflow
+      alert_cnt  += (&alert_cnt)  ? 0 : 1;
+      fail_total += (&fail_total) ? 0 : 1;
     end
 
     fmt = "Threshold for \"%s\" test (FIPS? %d): %04h";
@@ -602,10 +603,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard
   endfunction
 
   // Clear all relevant prediction variables for
-  // Reset and disable events.
+  // Reset,  disable and enable events.
   function void handle_disable_reset(reset_event_e rst_type);
+    if (rst_type == Enable) begin
+      clear_ht_stat_predictions();
+    end
     threshold_alert_active = 0;
-    clear_ht_stat_predictions();
     seed_idx = 0;
     seed_tl_read_cnt = 0;
     if( rst_type == HardReset ) begin
@@ -622,8 +625,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard
     // TODO: should we flush the CSRNG fifo?
     //csrng_fifo.flush();
 
-    // Communicate this event to the process_entropy process
-    // with a possible delay.
     `uvm_info(`gfn, $sformatf("%s Detected", rst_type.name), UVM_MEDIUM)
   endfunction
 
@@ -648,9 +649,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
         // Special handling for registers with broader impacts
         case (csr.get_name())
-          "conf": begin
+          "module_enable": begin
             bit do_disable, do_enable;
-            uvm_reg_field enable_field = csr.get_field_by_name("enable");
+            uvm_reg_field enable_field = csr.get_field_by_name("module_enable");
             prim_mubi_pkg::mubi4_t enable_mubi = enable_field.get_mirrored_value();
             // TODO: integrate this with invalid MuBi checks
             do_disable = (enable_mubi == prim_mubi_pkg::MuBi4False);
@@ -659,6 +660,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard
               dut_pipeline_enabled = 1;
               fork
                 begin
+                  handle_disable_reset(Enable);
                   collect_entropy();
                   handle_disable_reset(Disable);
                 end
@@ -695,7 +697,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard
       end
       "intr_test": begin
       end
+      "regwen_me": begin
+      end
       "regwen": begin
+      end
+      "module_enable": begin
       end
       "conf": begin
       end

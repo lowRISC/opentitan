@@ -70,7 +70,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   bit lc_check_byp_en = 1;
 
   // Internal veriable to track which sw partitions have ECC reg error.
-  bit [2:0] force_sw_parts_ecc_reg;
+  bit [NUM_UNBUFF_PARTS-1:0] force_sw_parts_ecc_reg;
 
   // DUT configuration object
   otp_ctrl_ast_inputs_cfg dut_cfg;
@@ -129,7 +129,8 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
 
   // SW partitions do not have any internal checks.
   // Here we force internal ECC check to fail.
-  task automatic force_sw_check_fail(bit[1:0] fail_idx = $urandom_range(1, 4));
+  task automatic force_sw_check_fail(
+      bit[NUM_UNBUFF_PARTS-1:0] fail_idx = $urandom_range(1, (1'b1 << NUM_UNBUFF_PARTS) - 1));
     @(posedge clk_i);
     if (fail_idx[VendorTestIdx]) begin
       force tb.dut.gen_partitions[VendorTestIdx].gen_unbuffered.

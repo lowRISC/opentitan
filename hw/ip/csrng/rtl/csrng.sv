@@ -24,6 +24,7 @@ module csrng
   output tlul_pkg::tl_d2h_t tl_o,
 
    // OTP Interface
+  // SEC_CM: INTERSIG.MUBI
   input  prim_mubi_pkg::mubi8_t otp_en_csrng_sw_app_read_i,
 
   // Lifecycle broadcast inputs
@@ -63,6 +64,9 @@ module csrng
 
   logic [NumAlerts-1:0] intg_err_alert;
   assign intg_err_alert[0] = 1'b0;
+
+  // SEC_CM: CONFIG.REGWEN
+  // SEC_CM: TILE_LINK.BUS.INTEGRITY
 
   csrng_reg_top u_reg (
     .clk_i,

@@ -138,9 +138,13 @@
       fields: [
         { bits: "0",
           name: "ABORT",
-          desc: '''
-            Abort pending jobs. If TX_FIFO (async) is full,
-            this command can let TXF Control logic back to Idle state
+          desc: '''Abort pending TX data in Generic mode.
+
+            If TX_FIFO (Asynchronous) is full, the TXF waits indefinitely to
+            push the next byte into the asynchronous FIFO. SW may reset the
+            Async FIFO along with aborting the current task. SW should update
+            the write pointer of the TXF in order not to push the byte to
+            Asynchronous FIFO again by TXF logic.
             '''
           resval: "0"
         },
@@ -333,7 +337,13 @@
         { bits: "1", name: "rxf_empty",  desc: "RX FIFO empty", resval: "1"},
         { bits: "2", name: "txf_full",   desc: "TX FIFO full"},
         { bits: "3", name: "txf_empty",  desc: "TX FIFO empty", resval: "1"},
-        { bits: "4", name: "abort_done", desc: "Abort process is completed", resval: "1" },
+        { bits: "4", name: "abort_done",
+          desc: '''Abort process is completed.
+
+            Current version does not implement abort_done logic. It is tied to
+            1 always.
+            '''
+          resval: "1" },
         { bits: "5", name: "csb",        desc: "Direct input of CSb signal", resval: "1" },
       ]
       tags: [// Status reads back unexpected values due to writes to other CSRs.

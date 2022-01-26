@@ -4,8 +4,6 @@
 
 class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_block));
 
-  import entropy_src_pkg::*;
-
   `uvm_object_utils_begin(entropy_src_env_cfg)
   `uvm_object_utils_end
 
@@ -78,7 +76,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
   // Number of clock cycles between a TLUL disable signal, and deassertion
   // of enable on the RNG bus.
-  int  tlul2rng_disable_delay = 2;
+  int  tlul2rng_disable_delay = 1;
 
   // Constraints
   constraint c_regwen {regwen dist {

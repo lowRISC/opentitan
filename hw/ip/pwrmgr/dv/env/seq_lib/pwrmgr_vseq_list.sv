@@ -7,6 +7,7 @@
 `include "pwrmgr_lowpower_wakeup_race_vseq.sv"
 `include "pwrmgr_reset_vseq.sv"
 `include "pwrmgr_smoke_vseq.sv"
+`include "pwrmgr_stress_all_vseq.sv"
 `include "pwrmgr_wakeup_reset_vseq.sv"
 `include "pwrmgr_wakeup_vseq.sv"
 `include "pwrmgr_common_vseq.sv"

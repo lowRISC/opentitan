@@ -63,6 +63,8 @@ prefixed with "0x" if they are hexadecimal.
                          change of state (this is pure, but handled in Python
                          to simplify verification).
 
+    send_lc_escalation   React to lc_escalate_en_i going high
+
 '''
 
 import binascii
@@ -344,6 +346,12 @@ def on_step_crc(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     return None
 
 
+def on_send_lc_escalation(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
+    check_arg_count('send_lc_escalation', 0, args)
+    sim.on_lc_escalation()
+    return None
+
+
 _HANDLERS = {
     'start': on_start,
     'step': on_step,
@@ -364,7 +372,8 @@ _HANDLERS = {
     'invalidate_imem': on_invalidate_imem,
     'invalidate_dmem': on_invalidate_dmem,
     'set_keymgr_value': on_set_keymgr_value,
-    'step_crc': on_step_crc
+    'step_crc': on_step_crc,
+    'send_lc_escalation': on_send_lc_escalation
 }
 
 

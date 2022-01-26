@@ -5,18 +5,7 @@
 // smoke test vseq
 class aon_timer_smoke_vseq extends aon_timer_base_vseq;
   `uvm_object_utils(aon_timer_smoke_vseq)
-
-  // Randomize Bark/Bite and Wake-up thresholds for the counter
-  rand uint wkup_count;
-  rand uint wdog_count;
-
-  constraint count_vals_c {
-    wkup_count inside {[1:10]};
-    wdog_count inside {[1:10]};
-  }
-
   `uvm_object_new
-
 
   task body();
 
@@ -28,17 +17,6 @@ class aon_timer_smoke_vseq extends aon_timer_base_vseq;
   endtask : body
 
   task smoke_configure();
-
-    // Write random value to the COUNT registers
-    csr_utils_pkg::csr_wr(ral.wkup_count, wkup_count);
-    `uvm_info(`gfn,
-              $sformatf("\n\t Writing random COUNT value of %d to WKUP", wkup_count),
-              UVM_HIGH)
-
-    csr_utils_pkg::csr_wr(ral.wdog_count, wdog_count);
-    `uvm_info(`gfn,
-              $sformatf("\n\t Writing random COUNT value of %d to WDOG", wdog_count),
-              UVM_HIGH)
 
     `uvm_info(`gfn, "Enabling AON Timer. Writing 1 to WKUP_CTRL and WDOG_CTRL", UVM_HIGH)
     csr_utils_pkg::csr_wr(ral.wkup_ctrl.enable, 1'b1);

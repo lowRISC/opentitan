@@ -35,11 +35,9 @@ interface pwrmgr_clock_enables_sva_if (
   bit fast_is_active;
   always_comb fast_is_active = fast_state == pwrmgr_pkg::FastPwrStateActive;
 
+  // This allows the usb enable to be slower since it also depends on usb clk_status.
   sequence usbActiveTransition_S;
-    logic prev_en;
-    (1'b1,
-    prev_en = usb_clk_en_active_i
-    ) ##[1:5] !fast_is_active || usb_clk_en == prev_en;
+    ##[0:7] !fast_is_active || usb_clk_en == usb_clk_en_active_i;
   endsequence
 
   `ASSERT(CoreClkPwrUp_A, transitionUp_S |=> core_clk_en == 1'b1, clk_i, reset_or_disable)
@@ -48,7 +46,7 @@ interface pwrmgr_clock_enables_sva_if (
           reset_or_disable)
 
   // This deals with transitions while the fast fsm is active.
-  `ASSERT(UsbClkActive_A, fast_is_active && $changed(usb_clk_en_active_i) |-> usbActiveTransition_S,
+  `ASSERT(UsbClkActive_A, fast_is_active && $changed(usb_clk_en_active_i) |=> usbActiveTransition_S,
           clk_i, reset_or_disable)
 
   `ASSERT(CoreClkPwrDown_A, transitionDown_S |=> core_clk_en == (core_clk_en_i && main_pd_ni),

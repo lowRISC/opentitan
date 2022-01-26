@@ -10,6 +10,7 @@ interface rom_ctrl_cov_if (
     input kmac_pkg::app_req_t         kmac_data_o,
     input logic                       exp_digest_de,
     input tlul_pkg::tl_h2d_t          rom_tl_i,
+    input tlul_pkg::tl_d2h_t          rom_tl_o,
     input tlul_pkg::tl_h2d_t          regs_tl_i,
     input rom_ctrl_pkg::pwrmgr_data_t pwrmgr_data_o
 );
@@ -20,11 +21,7 @@ interface rom_ctrl_cov_if (
 
   bit en_full_cov = 1'b1;
   bit en_intg_cov = 1'b1;
-
   bit pwrmgr_data_invalid = prim_mubi_pkg::mubi4_test_invalid(pwrmgr_data_o.good);
-  bit pwrmgr_data_good = prim_mubi_pkg::mubi4_test_true_strict(pwrmgr_data_o.good);
-  bit pwrmgr_data_done = prim_mubi_pkg::mubi4_test_true_strict(pwrmgr_data_o.done);
-
   /////////////////////////////////////
   // KMAC APP interface cover points //
   /////////////////////////////////////
@@ -62,17 +59,29 @@ interface rom_ctrl_cov_if (
     option.per_instance = 1;
 
     // Cover rom requests around the time of check completion
-    cp_rom_req_check: coverpoint {rom_tl_i.a_valid, pwrmgr_data_done} {
-      bins req_before_done = (2'b10 => 2'b11);
-      bins req_and_done    = (2'b00 => 2'b11);
-      bins req_after_done  = (2'b01 => 2'b10);
+    cp_rom_req_check: coverpoint {rom_tl_i.a_valid, pwrmgr_data_o.done} {
+      bins req_before_done  = ({1'b1, prim_mubi_pkg::MuBi4False} =>
+                               {1'b1, prim_mubi_pkg::MuBi4True});
+      bins req_and_done     = ({1'b0, prim_mubi_pkg::MuBi4False} =>
+                               {1'b1, prim_mubi_pkg::MuBi4True});
+      bins req_after_done   = ({1'b0, prim_mubi_pkg::MuBi4True} =>
+                               {1'b1, prim_mubi_pkg::MuBi4True});
+    }
+
+    // Cover the invalid case
+    cp_rom_invalid_condition: coverpoint pwrmgr_data_invalid {
+      bins check_invalid = {1};
+      bins check_valid = {0};
     }
 
     // Cover csr requests around the time of check completion
-    cp_regs_req_check: coverpoint {regs_tl_i.a_valid, pwrmgr_data_done} {
-      bins req_before_done = (2'b10 => 2'b11);
-      bins req_and_done    = (2'b00 => 2'b11);
-      bins req_after_done  = (2'b01 => 2'b10);
+    cp_regs_req_check: coverpoint {regs_tl_i.a_valid, pwrmgr_data_o.done} {
+      bins req_before_done  = ({1'b1, prim_mubi_pkg::MuBi4False} =>
+                               {1'b1, prim_mubi_pkg::MuBi4True});
+      bins req_and_done     = ({1'b0, prim_mubi_pkg::MuBi4False} =>
+                               {1'b1, prim_mubi_pkg::MuBi4True});
+      bins req_after_done   = ({1'b0, prim_mubi_pkg::MuBi4True} =>
+                               {1'b1, prim_mubi_pkg::MuBi4True});
     }
 
   endgroup
@@ -88,17 +97,10 @@ interface rom_ctrl_cov_if (
     option.per_instance = 1;
 
     // Cover the check pass and fail case
-    cp_rom_check_condition: coverpoint pwrmgr_data_good
-      iff (pwrmgr_data_done) {
-      bins check_pass = {1};
-      bins check_fail = {0};
-    }
-
-    // Cover the invalid case
-    cp_rom_invalid_condition: coverpoint pwrmgr_data_invalid
-      iff (pwrmgr_data_done) {
-      bins check_valid = {1};
-      bins check_invalid = {0};
+    cp_rom_check_condition: coverpoint pwrmgr_data_o.good
+      iff (pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True) {
+      bins check_pass = {prim_mubi_pkg::MuBi4True};
+      bins check_fail = {prim_mubi_pkg::MuBi4False};
     }
 
   endgroup

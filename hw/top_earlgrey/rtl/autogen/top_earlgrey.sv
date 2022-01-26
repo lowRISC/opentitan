@@ -34,6 +34,7 @@ module top_earlgrey #(
   // parameters for spi_host1
   // parameters for pwrmgr_aon
   // parameters for rstmgr_aon
+  parameter bit SecRstmgrAonCheck = 1'b1,
   // parameters for clkmgr_aon
   // parameters for sysrst_ctrl_aon
   // parameters for adc_ctrl_aon
@@ -1696,7 +1697,8 @@ module top_earlgrey #(
       .rst_slow_ni (rstmgr_aon_resets.rst_por_aon_n[rstmgr_pkg::DomainAonSel])
   );
   rstmgr #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[21:21])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[21:21]),
+    .SecCheck(SecRstmgrAonCheck)
   ) u_rstmgr_aon (
       // [21]: fatal_fault
       .alert_tx_o  ( alert_tx[21:21] ),

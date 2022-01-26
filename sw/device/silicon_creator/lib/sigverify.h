@@ -21,8 +21,9 @@ extern "C" {
 enum {
   /**
    * Correct `flash_exec` value.
-   * TODO(#10022): Remove this and replace all usages from flash_ctrl_regs.h
-   * when hardware is updated.
+   *
+   * This value must be equal to `FLASH_CTRL_PARAM_EXEC_EN`. Defined here to be
+   * able to use in tests.
    */
   kSigverifyFlashExec = 0xa26a38f7,
 };

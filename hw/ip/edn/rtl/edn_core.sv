@@ -73,6 +73,7 @@ module edn_core import edn_pkg::*;
   logic                    max_reqs_between_reseed_load;
   logic [31:0]             max_reqs_between_reseed_bus;
   logic                    csrng_cmd_ack;
+  logic                    csrng_cmd_ack_gated;
   logic                    send_rescmd;
   logic                    cmd_sent;
   logic                    send_gencmd;
@@ -238,7 +239,7 @@ module edn_core import edn_pkg::*;
   );
 
   // interrupt for sw app interface only
-  assign event_edn_cmd_req_done = csrng_cmd_ack;
+  assign event_edn_cmd_req_done = csrng_cmd_ack_gated;
 
   // set the interrupt sources
   assign event_edn_fatal_err = (edn_enable && (
@@ -329,6 +330,7 @@ module edn_core import edn_pkg::*;
   import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::mubi4_test_invalid;
 
+  // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_edn_enable;
   assign mubi_edn_enable = mubi4_t'(reg2hw.ctrl.edn_enable.q);
   assign edn_enable_pfe = mubi4_test_true_strict(mubi_edn_enable);
@@ -336,6 +338,7 @@ module edn_core import edn_pkg::*;
   assign hw2reg.recov_alert_sts.edn_enable_field_alert.de = edn_enable_pfa;
   assign hw2reg.recov_alert_sts.edn_enable_field_alert.d  = edn_enable_pfa;
 
+  // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_cmd_fifo_rst;
   assign mubi_cmd_fifo_rst = mubi4_t'(reg2hw.ctrl.cmd_fifo_rst.q);
   assign cmd_fifo_rst_pfe = mubi4_test_true_strict(mubi_cmd_fifo_rst);
@@ -353,6 +356,7 @@ module edn_core import edn_pkg::*;
   //--------------------------------------------
   // sw register interface
   //--------------------------------------------
+  // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_auto_req_mode;
   assign mubi_auto_req_mode = mubi4_t'(reg2hw.ctrl.auto_req_mode.q);
   assign auto_req_mode_pfe = mubi4_test_true_strict(mubi_auto_req_mode);
@@ -413,12 +417,14 @@ module edn_core import edn_pkg::*;
   assign sw_rdy_sts_d =
          !edn_enable ? 1'b1 :
          sw_cmd_req_load ? 1'b0 :
+         seq_auto_req_mode ? 1'b0 :
          csrng_cmd_i.csrng_req_ready ? 1'b1 :
          sw_rdy_sts_q;
 
   // receive cmd ack
   assign csrng_cmd_ack = csrng_cmd_i.csrng_rsp_ack;
-  assign hw2reg.sw_cmd_sts.cmd_sts.de = csrng_cmd_ack;
+  assign csrng_cmd_ack_gated = csrng_cmd_i.csrng_rsp_ack && !seq_auto_req_mode;
+  assign hw2reg.sw_cmd_sts.cmd_sts.de = csrng_cmd_ack_gated;
   assign hw2reg.sw_cmd_sts.cmd_sts.d = csrng_cmd_i.csrng_rsp_sts;
 
   // rescmd fifo
@@ -530,6 +536,8 @@ module edn_core import edn_pkg::*;
 
 
   // Maximum requests counter for a generate command
+
+  // SEC_CM: CTR.REDUN
     prim_count #(
         .Width(RegWidth),
         .OutSelDnCnt(1'b1), // count down
@@ -563,6 +571,7 @@ module edn_core import edn_pkg::*;
 
   assign cmd_sent = (cmd_fifo_cnt_q == RescmdFifoIdxWidth'(1));
 
+  // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_boot_req_mode;
   assign mubi_boot_req_mode = mubi4_t'(reg2hw.ctrl.boot_req_mode.q);
   assign boot_req_mode_pfe = mubi4_test_true_strict(mubi_boot_req_mode);
@@ -664,6 +673,8 @@ module edn_core import edn_pkg::*;
   // - checks to make sure repeated data sets off
   //   an alert for sw to handle
   //--------------------------------------------
+
+  // SEC_CM: CS_RDATA.BUS.CONSISTENCY
 
   // capture a copy of the entropy data
   assign cs_rdata_capt_vld = (packer_cs_rvalid && packer_cs_rready);

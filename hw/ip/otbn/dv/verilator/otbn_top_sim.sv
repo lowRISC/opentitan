@@ -309,6 +309,8 @@ module otbn_top_sim (
 
     .start_i               ( otbn_start ),
 
+    .lc_escalate_en_i      ( 1'b0 ),
+
     .err_bits_o            ( otbn_model_err_bits ),
 
     .edn_rnd_i             ( rnd_rsp ),

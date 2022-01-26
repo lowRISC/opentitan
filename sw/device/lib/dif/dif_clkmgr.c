@@ -148,3 +148,21 @@ dif_result_t dif_clkmgr_hintable_clock_get_hint(
 
   return kDifOk;
 }
+
+dif_result_t dif_clkmgr_external_clock_set_enabled(const dif_clkmgr_t *clkmgr,
+                                                   bool is_low_speed) {
+  uint32_t extclk_ctrl_reg = 0;
+
+  if (clkmgr == NULL) {
+    return kDifBadArg;
+  }
+
+  extclk_ctrl_reg = bitfield_field32_write(
+      extclk_ctrl_reg, CLKMGR_EXTCLK_CTRL_SEL_FIELD, kMultiBitBool4True);
+  extclk_ctrl_reg = bitfield_field32_write(
+      extclk_ctrl_reg, CLKMGR_EXTCLK_CTRL_LOW_SPEED_SEL_FIELD,
+      is_low_speed ? kMultiBitBool4True : kMultiBitBool4False);
+  mmio_region_write32(clkmgr->base_addr, CLKMGR_EXTCLK_CTRL_REG_OFFSET,
+                      extclk_ctrl_reg);
+  return kDifOk;
+}

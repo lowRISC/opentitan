@@ -599,6 +599,7 @@ module pwrmgr
 
   `endif
 
-
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(FsmCheck_A, u_fsm.u_state_regs, alert_tx_o[0])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SlowFsmCheck_A, u_slow_fsm.u_state_regs, alert_tx_o[0])
 
 endmodule // pwrmgr

@@ -89,6 +89,10 @@ class OtbnModel {
   // Flush any information in the model
   void reset();
 
+  // React to a lifecycle controller escalation signal. Returns 0 on
+  // success; -1 on failure.
+  int send_lc_escalation();
+
  private:
   // Constructs an ISS wrapper if necessary. If something goes wrong, this
   // function prints a message and then returns null. If ensure is true, it

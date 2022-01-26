@@ -30,12 +30,16 @@ uart_tx_rx_test_lib = declare_dependency(
   link_with: static_library(
     'uart_tx_rx_test_lib',
     sources: [
+      hw_ip_lc_ctrl_reg_h,
+      hw_ip_clkmgr_reg_h,
       # TODO, remove it once pinout configuration is provided
       hw_top_earlgrey_pinmux_reg_h,
       'uart_tx_rx_test.c'],
     dependencies: [
       sw_lib_dif_uart,
       sw_lib_dif_rv_plic,
+      sw_lib_dif_lc_ctrl,
+      sw_lib_dif_clkmgr,
       sw_lib_irq,
       sw_lib_mmio,
       sw_lib_runtime_log,
@@ -155,5 +159,31 @@ rom_ctrl_integrity_check_test_lib = declare_dependency(
 sw_tests += {
   'rom_ctrl_integrity_check_test': {
     'library': rom_ctrl_integrity_check_test_lib,
+  }
+}
+
+# SRAM Controller execution from Main SRAM test.
+sram_ctrl_execution_test_main_lib = declare_dependency(
+  link_with: static_library(
+    'sram_ctrl_execution_test_main_lib',
+    sources: [
+      hw_ip_otp_ctrl_reg_h,
+      'sram_ctrl_execution_test_main.c',
+    ],
+    dependencies: [
+      sw_lib_bitfield,
+      sw_lib_dif_sram_ctrl,
+      sw_lib_runtime_ibex,
+      sw_lib_runtime_log,
+      sw_lib_testing_lc_ctrl_testutils,
+      sw_lib_testing_otp_ctrl_testutils,
+      sw_lib_testing_sram_ctrl_testutils,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'sram_ctrl_execution_test_main': {
+    'library': sram_ctrl_execution_test_main_lib,
   }
 }

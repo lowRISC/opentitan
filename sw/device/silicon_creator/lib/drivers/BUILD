@@ -89,8 +89,10 @@ cc_test(
     deps = [
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing",
+        "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:mock_abs_mmio",
         "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:mock_otp",
@@ -261,9 +263,11 @@ cc_library(
 cc_library(
     name = "mock_otp",
     testonly = True,
-    hdrs = ["mock_otp.h"],
+    hdrs = [
+        "mock_otp.h",
+        "otp.h"
+    ],
     deps = [
-        ":otp",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest",
     ],

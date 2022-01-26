@@ -188,8 +188,6 @@ module spi_p2s
   end
 
   // cnt
-  // TODO: Consider dummy cycle that is not aligned to a byte
-  //       Is this valid scenario?
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       cnt <= BitWidth'(0);

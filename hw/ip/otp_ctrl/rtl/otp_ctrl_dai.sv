@@ -303,7 +303,7 @@ module otp_ctrl_dai
       end
       ///////////////////////////////////////////////////////////////////
       // Wait for OTP response and write to readout register. Check
-      // whether descrambling is  required or not. In case an OTP
+      // whether descrambling is required or not. In case an OTP
       // transaction fails, latch the OTP error code, and jump to
       // terminal error state.
       ReadWaitSt: begin
@@ -312,11 +312,10 @@ module otp_ctrl_dai
             // HW digests always remain readable.
             PartInfo[part_idx].hw_digest && otp_addr_o == digest_addr_lut[part_idx]) begin
           if (otp_rvalid_i) begin
-            // Check OTP return code.
-            if ((!(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}))) begin
-              state_d = ErrorSt;
-              error_d = otp_err_e'(otp_err_i);
-            end else begin
+            // Check OTP return code. Depending on the partition configuration, we do not treat
+            // uncorrectable ECC errors as fatal.
+            if (!PartInfo[part_idx].ecc_fatal && otp_err_e'(otp_err_i) == MacroEccUncorrError ||
+                otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}) begin
               data_en = 1'b1;
               // We do not need to descramble the digest values.
               if (PartInfo[part_idx].secret && otp_addr_o != digest_addr_lut[part_idx]) begin
@@ -325,10 +324,17 @@ module otp_ctrl_dai
                 state_d = IdleSt;
                 dai_cmd_done_o = 1'b1;
               end
-              // Signal soft ECC errors, but do not go into terminal error state.
-              if (otp_err_e'(otp_err_i) == MacroEccCorrError) begin
-                error_d = otp_err_e'(otp_err_i);
+              // At this point the only error that we could have gotten are correctable ECC errors.
+              // There is one exception, though, which are partitions where the ecc_fatal
+              // bit is set to 0 (this is only used for test partitions). In that a case,
+              // correctable and uncorrectable ECC errors are both collapsed and signalled
+              // as MacroEccCorrError
+              if (otp_err_e'(otp_err_i) != NoError) begin
+                error_d = MacroEccCorrError;
               end
+            end else begin
+              state_d = ErrorSt;
+              error_d = otp_err_e'(otp_err_i);
             end
           end
         // At this point, this check MUST succeed - otherwise this means that
@@ -798,7 +804,8 @@ module otp_ctrl_dai
   // OTP error response
   `ASSERT(OtpErrorState_A,
       state_q inside {InitOtpSt, ReadWaitSt, WriteWaitSt, DigReadWaitSt} && otp_rvalid_i &&
-      !(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError, MacroWriteBlankError})
+      !(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError, MacroWriteBlankError}) &&
+      !(!PartInfo[part_idx].ecc_fatal && otp_err_e'(otp_err_i) == MacroEccUncorrError)
       |=>
       state_q == ErrorSt && error_o == $past(otp_err_e'(otp_err_i)))
 

@@ -72,14 +72,13 @@ interface rstmgr_cascading_sva_if (
   // Macros to avoid excessive boiler-plate code below.
   `define FALL_ASSERT(_name, _from, _to, _cycles, _clk) \
     `ASSERT(_name``AboveFallBelowHigh_A, \
-            $fell(_from) && _to |-> ##[_cycles.fall.min:_cycles.fall.max] $fell(_to), _clk, \
+            $fell(_from) && _to |-> ##[_cycles.fall.min:_cycles.fall.max] _to, _clk, \
             disable_sva)
 
   `define RISE_ASSERTS(_name, _from, _to, _cycles, _clk) \
     `ASSERT(_name``AboveRise_A, \
-            $rose(_from) |-> ##[_cycles.rise.min:_cycles.rise.max] (!_from || $rose(_to)), _clk, \
+            $rose(_from) ##1 _from [* _cycles.rise.min] |=> ##[0:_cycles.rise.max-_cycles.rise.min] (!_from || _to), _clk, \
             disable_sva) \
-    `ASSERT(_name``BelowRise_A, $rose(_to) |-> _from == 1'b1, _clk, disable_sva)
 
   `define CASCADED_ASSERTS(_name, _from, _to, _cycles, _clk) \
       `FALL_ASSERT(_name, _from, _to, _cycles, _clk) \

@@ -63,6 +63,7 @@ module entropy_src_repcnt_ht #(
            (prev_sample_q[sh] != entropy_bit_i[sh]);
 
     // NIST B counter
+    // SEC_CM: CTR.REDUN
     prim_count #(
       .Width(RegWidth),
       .OutSelDnCnt(1'b0), // count up

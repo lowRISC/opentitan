@@ -28,10 +28,12 @@ interface pwrmgr_rstmgr_sva_if (
   // Number of cycles for the LC/SYS reset handshake.
   localparam int MIN_LC_SYS_CYCLES = 0;
   localparam int MAX_LC_SYS_CYCLES = 24;
+  `define LC_SYS_CYCLES ##[MIN_LC_SYS_CYCLES:MAX_LC_SYS_CYCLES]
 
   // Number of cycles for the output resets.
   localparam int MIN_RST_CYCLES = 0;
   localparam int MAX_RST_CYCLES = 40;
+  `define RST_CYCLES ##[MIN_RST_CYCLES:MAX_RST_CYCLES]
 
   bit disable_sva;
   bit reset_or_disable;
@@ -42,66 +44,57 @@ interface pwrmgr_rstmgr_sva_if (
     return rst_sys_req[pd] || (ndm_sys_req && reset_cause == pwrmgr_pkg::ResetNone);
   endfunction
 
-  // Lc and Sys handshake.
+  // Lc and Sys handshake: pwrmgr rst_*_req causes rstmgr rst_*_src_n
   for (genvar pd = 0; pd < pwrmgr_pkg::PowerDomains; ++pd) begin : gen_assertions_per_power_domains
-    `ASSERT(LcHandshakeOn_A,
-            rst_lc_req[pd] |-> ##[MIN_LC_SYS_CYCLES:MAX_LC_SYS_CYCLES] !rst_lc_src_n[pd], clk_i,
+    `ASSERT(LcHandshakeOn_A, rst_lc_req[pd] |-> `LC_SYS_CYCLES !rst_lc_src_n[pd], clk_i,
             reset_or_disable)
-    `ASSERT(LcHandshakeOff_A,
-            !rst_lc_req[pd] |-> ##[MIN_LC_SYS_CYCLES:MAX_LC_SYS_CYCLES] rst_lc_src_n[pd], clk_i,
+    `ASSERT(LcHandshakeOff_A, !rst_lc_req[pd] |-> `LC_SYS_CYCLES rst_lc_src_n[pd], clk_i,
             reset_or_disable)
-    `ASSERT(SysHandshakeOn_A,
-            sysOrNdmRstReq(pd) |-> ##[MIN_LC_SYS_CYCLES:MAX_LC_SYS_CYCLES] !rst_sys_src_n[pd],
-            clk_i, reset_or_disable)
-    `ASSERT(SysHandshakeOff_A,
-            !sysOrNdmRstReq(pd) |-> ##[MIN_LC_SYS_CYCLES:MAX_LC_SYS_CYCLES] rst_sys_src_n[pd],
-            clk_i, reset_or_disable)
+    `ASSERT(SysHandshakeOn_A, sysOrNdmRstReq(pd) |-> `LC_SYS_CYCLES !rst_sys_src_n[pd], clk_i,
+            reset_or_disable)
+    `ASSERT(SysHandshakeOff_A, !sysOrNdmRstReq(pd) |-> `LC_SYS_CYCLES rst_sys_src_n[pd], clk_i,
+            reset_or_disable)
   end
+  `undef LC_SYS_CYCLES
 
   // Reset ins to outs.
+
   for (genvar rst = 0; rst < pwrmgr_reg_pkg::NumRstReqs; ++rst) begin : gen_hw_resets
     `ASSERT(HwResetOn_A,
             $rose(
                 rstreqs_i[rst] && reset_en[rst]
-            ) |-> ##[MIN_RST_CYCLES:MAX_RST_CYCLES] rstreqs[rst],
-            clk_i, reset_or_disable)
+            ) |-> `RST_CYCLES rstreqs[rst], clk_i, reset_or_disable)
     `ASSERT(HwResetOff_A,
             $fell(
                 rstreqs_i[rst] && reset_en[rst]
-            ) |-> ##[MIN_RST_CYCLES:MAX_RST_CYCLES] !rstreqs[rst],
-            clk_i, reset_or_disable)
+            ) |-> `RST_CYCLES !rstreqs[rst], clk_i, reset_or_disable)
   end
 
   `ASSERT(MainPwrRstOn_A,
           $rose(
               main_rst_req_i
-          ) |-> ##[MIN_RST_CYCLES:MAX_RST_CYCLES] rstreqs[pwrmgr_pkg::ResetMainPwrIdx],
-          clk_i, reset_or_disable)
+          ) |-> `RST_CYCLES rstreqs[pwrmgr_pkg::ResetMainPwrIdx], clk_i, reset_or_disable)
   `ASSERT(MainPwrRstOff_A,
           $fell(
               main_rst_req_i
-          ) |-> ##[MIN_RST_CYCLES:MAX_RST_CYCLES] !rstreqs[pwrmgr_pkg::ResetMainPwrIdx],
-          clk_i, reset_or_disable)
+          ) |-> `RST_CYCLES !rstreqs[pwrmgr_pkg::ResetMainPwrIdx], clk_i, reset_or_disable)
 
   `ASSERT(EscRstOn_A,
           $rose(
               esc_rst_req_i
-          ) |-> ##[MIN_RST_CYCLES:MAX_RST_CYCLES] rstreqs[pwrmgr_pkg::ResetEscIdx],
-          clk_i, reset_or_disable)
+          ) |-> `RST_CYCLES rstreqs[pwrmgr_pkg::ResetEscIdx], clk_i, reset_or_disable)
   `ASSERT(EscRstOff_A,
           $fell(
               esc_rst_req_i
-          ) |-> ##[MIN_RST_CYCLES:MAX_RST_CYCLES] !rstreqs[pwrmgr_pkg::ResetEscIdx],
-          clk_i, reset_or_disable)
+          ) |-> `RST_CYCLES !rstreqs[pwrmgr_pkg::ResetEscIdx], clk_i, reset_or_disable)
 
   `ASSERT(SwRstOn_A,
           $rose(
               sw_rst_req_i
-          ) |-> ##[MIN_RST_CYCLES:MAX_RST_CYCLES] rstreqs[pwrmgr_pkg::ResetSwReqIdx],
-          clk_i, reset_or_disable)
+          ) |-> `RST_CYCLES rstreqs[pwrmgr_pkg::ResetSwReqIdx], clk_i, reset_or_disable)
   `ASSERT(SwRstOff_A,
           $fell(
               sw_rst_req_i
-          ) |-> ##[MIN_RST_CYCLES:MAX_RST_CYCLES] !rstreqs[pwrmgr_pkg::ResetSwReqIdx],
-          clk_i, reset_or_disable)
+          ) |-> `RST_CYCLES !rstreqs[pwrmgr_pkg::ResetSwReqIdx], clk_i, reset_or_disable)
+  `undef RST_CYCLES
 endinterface

@@ -32,6 +32,8 @@ module otbn_core_model
 
   input  logic               start_i, // start the operation
 
+  input  logic               lc_escalate_en_i,
+
   output err_bits_t          err_bits_o, // updated when STATUS switches to idle
 
   input  edn_pkg::edn_rsp_t  edn_rnd_i, // EDN response interface for RND
@@ -78,11 +80,12 @@ module otbn_core_model
   bit failed_cmp, failed_step, check_due, running;
   assign {failed_cmp, failed_step, check_due, running} = model_state[3:0];
 
-  bit [7:0] status_d, status_q;
+  bit [7:0]  status_d, status_q;
   bit [31:0] insn_cnt_d, insn_cnt_q;
   bit [31:0] raw_err_bits_d, raw_err_bits_q;
   bit [31:0] stop_pc_d, stop_pc_q;
-  bit rnd_req_start_d, rnd_req_start_q;
+  bit        rnd_req_start_d, rnd_req_start_q;
+  bit        failed_lc_escalate;
 
   bit unused_raw_err_bits;
   logic unused_edn_rsp_fips;
@@ -144,6 +147,56 @@ module otbn_core_model
     end
   end
 
+  // The lc_escalate_en_i signal in the design goes through a prim_lc_sync which always injects
+  // exactly two cycles of delay (this is a synchroniser, not a CDC, so its behaviour is easy to
+  // predict). Model that delay in the SystemVerilog here, since it's much easier than handling it
+  // in the Python.
+  //
+  // We actually do another hack here, where we only delay by one cycle. This is because the easiest
+  // way to make the escalation signal work is to apply it at the *end* of the Python cycle, which
+  // means we gain an extra cycle of delay on the Python side.
+  logic [1:0] escalate_fifo;
+  logic       new_escalation;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      escalate_fifo <= '0;
+    end else begin
+      escalate_fifo <= {escalate_fifo[0], lc_escalate_en_i};
+    end
+  end
+  assign new_escalation = escalate_fifo[0] & ~escalate_fifo[1];
+
+  // A "busy" counter. We'd like to avoid stepping the Python process on every cycle when there's
+  // nothing going on (since it's rather expensive). But exactly modelling *when* we can safely
+  // avoid doing this is rather awkward. So we do a conservative approximation. We know that some
+  // events show there's stuff going on (the 'running' bit, a CDC completion, or a lifecycle
+  // escalation signal). If these happen, we reset the counter. If it gets down to zero, we stop
+  // stepping the model. This counter lets us "flush out" events for a few cycles without having to
+  // model the timing too precisely on the SV side.
+  logic [3:0] busy_counter_q, busy_counter_d;
+  logic       reset_busy_counter, step_iss;
+
+  assign reset_busy_counter = start_i | running | check_due | new_escalation | edn_rnd_cdc_done_i;
+  assign step_iss = reset_busy_counter || (busy_counter_q != 0);
+
+  always_comb begin
+    busy_counter_d = busy_counter_q;
+
+    if (reset_busy_counter) begin
+      busy_counter_d = 4'd10;
+    end else if (busy_counter_q > 0) begin
+      busy_counter_d = busy_counter_q - 4'd1;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      busy_counter_q <= 0;
+    end else begin
+      busy_counter_q <= busy_counter_d;
+    end
+  end
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       otbn_model_reset(model_handle);
@@ -154,6 +207,9 @@ module otbn_core_model
       raw_err_bits_q <= 0;
       stop_pc_q <= 0;
     end else begin
+      if (new_escalation) begin
+        failed_lc_escalate <= (otbn_model_send_lc_escalation(model_handle) == 0);
+      end
       if (!$stable(keymgr_key_i) || $rose(rst_ni)) begin
         otbn_model_set_keymgr_value(model_handle, keymgr_key_i.key[0], keymgr_key_i.key[1],
                                     keymgr_key_i.valid);
@@ -164,7 +220,7 @@ module otbn_core_model
       if (edn_rnd_cdc_done_i) begin
         edn_model_rnd_cdc_done(model_handle);
       end
-      if (start_i | running | check_due) begin
+      if (step_iss) begin
         model_state <= otbn_model_step(model_handle,
                                        start_i,
                                        model_state,
@@ -178,9 +234,6 @@ module otbn_core_model
         rnd_req_start_q <= rnd_req_start_d;
         raw_err_bits_q <= raw_err_bits_d;
         stop_pc_q <= stop_pc_d;
-      end else begin
-        // Make RND Request 0 when we are not running and we're not being told to start.
-        rnd_req_start_q <= 1'b0;
       end
     end
   end
@@ -226,7 +279,7 @@ module otbn_core_model
       );
   end
 
-  assign err_o = failed_step | failed_cmp;
+  assign err_o = failed_step | failed_cmp | failed_lc_escalate;
 
   // Derive a "done" signal. This should trigger for a single cycle when OTBN finishes its work.
   // It's analogous to the done_o signal on otbn_core, but this signal is delayed by a single cycle

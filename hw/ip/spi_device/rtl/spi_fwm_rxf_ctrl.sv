@@ -80,7 +80,8 @@ module spi_fwm_rxf_ctrl #(
 
   logic [PtrW-1:0] ptr_cmp;
   assign ptr_cmp = rptr ^ wptr;
-  // TODO: Check partial SRAM width read condition
+  // The FIFO assumes the partial write as full word write. So, even 3B left,
+  // still the FIFO is full.
   assign sramf_full = (ptr_cmp[PtrW-1] == 1'b1) && (ptr_cmp[PtrW-2:SDW] == '0);
   assign full = sramf_full;
 

@@ -7,6 +7,8 @@
 #include <cstring>
 #include <limits>
 #include <ostream>
+#include <tuple>
+#include <vector>
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
@@ -731,6 +733,75 @@ TEST_F(LocalAlertLockTest, BadArgs) {
             kDifBadArg);
 }
 
+class ClassLockTest : public AlertHandlerTest,
+                      public testing::WithParamInterface<
+                          std::tuple<dif_alert_handler_class_t, uint32_t>> {};
+
+static std::vector<std::tuple<dif_alert_handler_class_t, uint32_t>>
+    class_regwen_pairs{
+        std::tuple<dif_alert_handler_class_t, uint32_t>{
+            kDifAlertHandlerClassA, ALERT_HANDLER_CLASSA_REGWEN_REG_OFFSET},
+        std::tuple<dif_alert_handler_class_t, uint32_t>{
+            kDifAlertHandlerClassB, ALERT_HANDLER_CLASSB_REGWEN_REG_OFFSET},
+        std::tuple<dif_alert_handler_class_t, uint32_t>{
+            kDifAlertHandlerClassC, ALERT_HANDLER_CLASSC_REGWEN_REG_OFFSET},
+        std::tuple<dif_alert_handler_class_t, uint32_t>{
+            kDifAlertHandlerClassD, ALERT_HANDLER_CLASSD_REGWEN_REG_OFFSET}};
+
+TEST_P(ClassLockTest, IsClassLocked) {
+  dif_alert_handler_class_t alert_class = std::get<0>(GetParam());
+  uint32_t regwen_offset = std::get<1>(GetParam());
+  bool is_locked = true;
+
+  EXPECT_READ32(regwen_offset, ALERT_HANDLER_CLASSA_REGWEN_REG_RESVAL);
+  EXPECT_EQ(dif_alert_handler_is_class_locked(&alert_handler_, alert_class,
+                                              &is_locked),
+            kDifOk);
+  EXPECT_FALSE(is_locked);
+
+  is_locked = false;
+  EXPECT_READ32(regwen_offset, 0);
+  EXPECT_EQ(dif_alert_handler_is_class_locked(&alert_handler_, alert_class,
+                                              &is_locked),
+            kDifOk);
+  EXPECT_TRUE(is_locked);
+}
+
+INSTANTIATE_TEST_SUITE_P(AllClassesLockedAndUnlocked, ClassLockTest,
+                         testing::ValuesIn(class_regwen_pairs));
+
+TEST_P(ClassLockTest, LockClass) {
+  dif_alert_handler_class_t alert_class = std::get<0>(GetParam());
+  uint32_t regwen_offset = std::get<1>(GetParam());
+
+  EXPECT_WRITE32(regwen_offset, 0);
+  EXPECT_EQ(dif_alert_handler_lock_class(&alert_handler_, alert_class), kDifOk);
+}
+
+INSTANTIATE_TEST_SUITE_P(LockAllClasses, ClassLockTest,
+                         testing::ValuesIn(class_regwen_pairs));
+
+TEST_F(ClassLockTest, BadArgs) {
+  bool is_locked;
+  EXPECT_EQ(dif_alert_handler_is_class_locked(nullptr, kDifAlertHandlerClassA,
+                                              &is_locked),
+            kDifBadArg);
+  EXPECT_EQ(dif_alert_handler_is_class_locked(
+                &alert_handler_,
+                static_cast<dif_alert_handler_class_t>(kClasses), &is_locked),
+            kDifBadArg);
+  EXPECT_EQ(dif_alert_handler_is_class_locked(&alert_handler_,
+                                              kDifAlertHandlerClassD, nullptr),
+            kDifBadArg);
+
+  EXPECT_EQ(dif_alert_handler_lock_class(nullptr, kDifAlertHandlerClassA),
+            kDifBadArg);
+  EXPECT_EQ(
+      dif_alert_handler_lock_class(
+          &alert_handler_, static_cast<dif_alert_handler_class_t>(kClasses)),
+      kDifBadArg);
+}
+
 class PingTimerLockTest : public AlertHandlerTest {};
 
 TEST_F(PingTimerLockTest, IsPingTimerLocked) {
@@ -761,92 +832,134 @@ TEST_F(PingTimerLockTest, NullArgs) {
   EXPECT_EQ(dif_alert_handler_lock_ping_timer(nullptr), kDifBadArg);
 }
 
-class CauseTest : public AlertHandlerTest {};
+class AlertCauseTest : public AlertHandlerTest,
+                       public testing::WithParamInterface<int> {};
 
-TEST_F(CauseTest, IsCause) {
-  bool flag;
+TEST_P(AlertCauseTest, IsCause) {
+  dif_alert_handler_alert_t alert = GetParam();
+  bool is_cause;
 
-  EXPECT_READ32(ALERT_HANDLER_ALERT_CAUSE_5_REG_OFFSET, {{0, true}});
-  EXPECT_EQ(dif_alert_handler_alert_is_cause(&alert_handler_, 5, &flag),
+  ptrdiff_t cause_offset =
+      ALERT_HANDLER_ALERT_CAUSE_0_REG_OFFSET + alert * sizeof(uint32_t);
+
+  EXPECT_READ32(cause_offset, 0x1);
+  EXPECT_EQ(dif_alert_handler_alert_is_cause(&alert_handler_, alert, &is_cause),
             kDifOk);
-  EXPECT_TRUE(flag);
+  EXPECT_TRUE(is_cause);
 
-  EXPECT_READ32(ALERT_HANDLER_ALERT_CAUSE_6_REG_OFFSET, {{0, false}});
-  EXPECT_EQ(dif_alert_handler_alert_is_cause(&alert_handler_, 6, &flag),
+  EXPECT_READ32(cause_offset, 0x0);
+  EXPECT_EQ(dif_alert_handler_alert_is_cause(&alert_handler_, alert, &is_cause),
             kDifOk);
-  EXPECT_FALSE(flag);
+  EXPECT_FALSE(is_cause);
 }
 
-TEST_F(CauseTest, Ack) {
-  EXPECT_WRITE32(ALERT_HANDLER_ALERT_CAUSE_0_REG_OFFSET,
-                 {{ALERT_HANDLER_ALERT_CAUSE_0_A_0_BIT, true}});
-  EXPECT_EQ(dif_alert_handler_alert_acknowledge(&alert_handler_, 0), kDifOk);
+INSTANTIATE_TEST_SUITE_P(AllCauses, AlertCauseTest, testing::Range(0, kAlerts));
 
-  EXPECT_WRITE32(ALERT_HANDLER_ALERT_CAUSE_11_REG_OFFSET,
-                 {{ALERT_HANDLER_ALERT_CAUSE_11_A_11_BIT, true}});
-  EXPECT_EQ(dif_alert_handler_alert_acknowledge(&alert_handler_, 11), kDifOk);
+TEST_P(AlertCauseTest, Ack) {
+  dif_alert_handler_alert_t alert = GetParam();
+
+  ptrdiff_t cause_offset =
+      ALERT_HANDLER_ALERT_CAUSE_0_REG_OFFSET + alert * sizeof(uint32_t);
+  EXPECT_WRITE32(cause_offset, 0x1);
+  EXPECT_EQ(dif_alert_handler_alert_acknowledge(&alert_handler_, alert),
+            kDifOk);
 }
 
-TEST_F(CauseTest, BadAlert) {
-  bool flag;
-  EXPECT_EQ(dif_alert_handler_alert_is_cause(&alert_handler_, kAlerts, &flag),
-            kDifBadArg);
+INSTANTIATE_TEST_SUITE_P(AllAcks, AlertCauseTest, testing::Range(0, kAlerts));
+
+TEST_F(AlertCauseTest, BadAlert) {
+  bool is_cause;
+  EXPECT_EQ(
+      dif_alert_handler_alert_is_cause(&alert_handler_, kAlerts, &is_cause),
+      kDifBadArg);
   EXPECT_EQ(dif_alert_handler_alert_acknowledge(&alert_handler_, kAlerts),
             kDifBadArg);
 }
 
-TEST_F(CauseTest, IsCauseLocal) {
-  bool flag;
-
-  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CAUSE_1_REG_OFFSET,
-                {{ALERT_HANDLER_LOC_ALERT_CAUSE_1_LA_1_BIT, true}});
-  EXPECT_EQ(
-      dif_alert_handler_local_alert_is_cause(
-          &alert_handler_, kDifAlertHandlerLocalAlertEscalationPingFail, &flag),
-      kDifOk);
-  EXPECT_TRUE(flag);
-
-  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CAUSE_4_REG_OFFSET,
-                {{ALERT_HANDLER_LOC_ALERT_CAUSE_4_LA_4_BIT, true}});
-  EXPECT_EQ(
-      dif_alert_handler_local_alert_is_cause(
-          &alert_handler_, kDifAlertHandlerLocalAlertBusIntegrityFail, &flag),
-      kDifOk);
-  EXPECT_TRUE(flag);
-
-  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CAUSE_3_REG_OFFSET,
-                {{ALERT_HANDLER_LOC_ALERT_CAUSE_3_LA_3_BIT, false}});
-  EXPECT_EQ(dif_alert_handler_local_alert_is_cause(
-                &alert_handler_,
-                kDifAlertHandlerLocalAlertEscalationIntegrityFail, &flag),
-            kDifOk);
-  EXPECT_FALSE(flag);
-}
-
-TEST_F(CauseTest, AckLocal) {
-  EXPECT_WRITE32(ALERT_HANDLER_LOC_ALERT_CAUSE_3_REG_OFFSET,
-                 {{ALERT_HANDLER_LOC_ALERT_CAUSE_3_LA_3_BIT, true}});
-  EXPECT_EQ(
-      dif_alert_handler_local_alert_acknowledge(
-          &alert_handler_, kDifAlertHandlerLocalAlertEscalationIntegrityFail),
-      kDifOk);
-
-  EXPECT_WRITE32(ALERT_HANDLER_LOC_ALERT_CAUSE_4_REG_OFFSET,
-                 {{ALERT_HANDLER_LOC_ALERT_CAUSE_4_LA_4_BIT, true}});
-  EXPECT_EQ(dif_alert_handler_local_alert_acknowledge(
-                &alert_handler_, kDifAlertHandlerLocalAlertBusIntegrityFail),
-            kDifOk);
-}
-
-TEST_F(CauseTest, NullArgs) {
-  bool flag;
-  EXPECT_EQ(dif_alert_handler_alert_is_cause(nullptr, 5, &flag), kDifBadArg);
+TEST_F(AlertCauseTest, NullArgs) {
+  bool is_cause;
+  EXPECT_EQ(dif_alert_handler_alert_is_cause(nullptr, 5, &is_cause),
+            kDifBadArg);
   EXPECT_EQ(dif_alert_handler_alert_is_cause(&alert_handler_, 5, nullptr),
             kDifBadArg);
   EXPECT_EQ(dif_alert_handler_alert_acknowledge(nullptr, 11), kDifBadArg);
+}
+
+class LocalAlertCauseTest
+    : public AlertHandlerTest,
+      public testing::WithParamInterface<dif_alert_handler_local_alert_t> {};
+
+TEST_P(LocalAlertCauseTest, IsCause) {
+  dif_alert_handler_local_alert_t local_alert = GetParam();
+  bool is_cause;
+
+  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CAUSE_0_REG_OFFSET +
+                    static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
+                0x1);
+  EXPECT_EQ(dif_alert_handler_local_alert_is_cause(&alert_handler_, local_alert,
+                                                   &is_cause),
+            kDifOk);
+  EXPECT_TRUE(is_cause);
+
+  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CAUSE_0_REG_OFFSET +
+                    static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
+                0x0);
+  EXPECT_EQ(dif_alert_handler_local_alert_is_cause(&alert_handler_, local_alert,
+                                                   &is_cause),
+            kDifOk);
+  EXPECT_FALSE(is_cause);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    AllCauses, LocalAlertCauseTest,
+    testing::Values(kDifAlertHandlerLocalAlertAlertPingFail,
+                    kDifAlertHandlerLocalAlertEscalationPingFail,
+                    kDifAlertHandlerLocalAlertAlertIntegrityFail,
+                    kDifAlertHandlerLocalAlertEscalationIntegrityFail,
+                    kDifAlertHandlerLocalAlertBusIntegrityFail,
+                    kDifAlertHandlerLocalAlertShadowedUpdateError,
+                    kDifAlertHandlerLocalAlertShadowedStorageError));
+
+TEST_P(LocalAlertCauseTest, Ack) {
+  dif_alert_handler_local_alert_t local_alert = GetParam();
+
+  EXPECT_WRITE32(ALERT_HANDLER_LOC_ALERT_CAUSE_0_REG_OFFSET +
+                     static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
+                 0x1);
+  EXPECT_EQ(
+      dif_alert_handler_local_alert_acknowledge(&alert_handler_, local_alert),
+      kDifOk);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    AllAcks, LocalAlertCauseTest,
+    testing::Values(kDifAlertHandlerLocalAlertAlertPingFail,
+                    kDifAlertHandlerLocalAlertEscalationPingFail,
+                    kDifAlertHandlerLocalAlertAlertIntegrityFail,
+                    kDifAlertHandlerLocalAlertEscalationIntegrityFail,
+                    kDifAlertHandlerLocalAlertBusIntegrityFail,
+                    kDifAlertHandlerLocalAlertShadowedUpdateError,
+                    kDifAlertHandlerLocalAlertShadowedStorageError));
+
+TEST_F(LocalAlertCauseTest, BadLocalAlert) {
+  bool is_cause;
   EXPECT_EQ(dif_alert_handler_local_alert_is_cause(
-                nullptr, kDifAlertHandlerLocalAlertEscalationPingFail, &flag),
+                &alert_handler_,
+                static_cast<dif_alert_handler_local_alert_t>(kLocalAlerts),
+                &is_cause),
             kDifBadArg);
+  EXPECT_EQ(dif_alert_handler_local_alert_acknowledge(
+                &alert_handler_,
+                static_cast<dif_alert_handler_local_alert_t>(kLocalAlerts)),
+            kDifBadArg);
+}
+
+TEST_F(LocalAlertCauseTest, NullArgs) {
+  bool is_cause;
+  EXPECT_EQ(
+      dif_alert_handler_local_alert_is_cause(
+          nullptr, kDifAlertHandlerLocalAlertEscalationPingFail, &is_cause),
+      kDifBadArg);
   EXPECT_EQ(dif_alert_handler_local_alert_is_cause(
                 &alert_handler_, kDifAlertHandlerLocalAlertEscalationPingFail,
                 nullptr),
@@ -859,23 +972,23 @@ TEST_F(CauseTest, NullArgs) {
 class EscalationTest : public AlertHandlerTest {};
 
 TEST_F(EscalationTest, CanClear) {
-  bool flag;
+  bool can_clear;
 
   EXPECT_READ32(ALERT_HANDLER_CLASSB_CLR_REGWEN_REG_OFFSET, true);
   EXPECT_EQ(dif_alert_handler_escalation_can_clear(
-                &alert_handler_, kDifAlertHandlerClassB, &flag),
+                &alert_handler_, kDifAlertHandlerClassB, &can_clear),
             kDifOk);
-  EXPECT_TRUE(flag);
+  EXPECT_TRUE(can_clear);
 
   EXPECT_READ32(ALERT_HANDLER_CLASSA_CLR_REGWEN_REG_OFFSET, false);
   EXPECT_EQ(dif_alert_handler_escalation_can_clear(
-                &alert_handler_, kDifAlertHandlerClassA, &flag),
+                &alert_handler_, kDifAlertHandlerClassA, &can_clear),
             kDifOk);
-  EXPECT_FALSE(flag);
+  EXPECT_FALSE(can_clear);
 }
 
 TEST_F(EscalationTest, Disable) {
-  EXPECT_WRITE32(ALERT_HANDLER_CLASSC_CLR_REGWEN_REG_OFFSET, true);
+  EXPECT_WRITE32(ALERT_HANDLER_CLASSC_CLR_REGWEN_REG_OFFSET, 0);
   EXPECT_EQ(dif_alert_handler_escalation_disable_clearing(
                 &alert_handler_, kDifAlertHandlerClassC),
             kDifOk);
@@ -889,10 +1002,10 @@ TEST_F(EscalationTest, Clear) {
 }
 
 TEST_F(EscalationTest, NullArgs) {
-  bool flag;
+  bool can_clear;
 
   EXPECT_EQ(dif_alert_handler_escalation_can_clear(
-                nullptr, kDifAlertHandlerClassB, &flag),
+                nullptr, kDifAlertHandlerClassB, &can_clear),
             kDifBadArg);
   EXPECT_EQ(dif_alert_handler_escalation_can_clear(
                 &alert_handler_, kDifAlertHandlerClassB, nullptr),
@@ -907,12 +1020,12 @@ TEST_F(EscalationTest, NullArgs) {
 class GetterTest : public AlertHandlerTest {};
 
 TEST_F(GetterTest, GetAcc) {
-  uint16_t alerts;
+  uint16_t num_alerts;
   EXPECT_READ32(ALERT_HANDLER_CLASSB_ACCUM_CNT_REG_OFFSET, 0xaaaa);
-  EXPECT_EQ(dif_alert_handler_get_accumulator(&alert_handler_,
-                                              kDifAlertHandlerClassB, &alerts),
+  EXPECT_EQ(dif_alert_handler_get_accumulator(
+                &alert_handler_, kDifAlertHandlerClassB, &num_alerts),
             kDifOk);
-  EXPECT_EQ(alerts, 0xaaaa);
+  EXPECT_EQ(num_alerts, 0xaaaa);
 }
 
 TEST_F(GetterTest, GetCycles) {

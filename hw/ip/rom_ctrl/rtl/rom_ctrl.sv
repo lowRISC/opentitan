@@ -490,6 +490,8 @@ module rom_ctrl
   // This check ensures that all tl accesses are blocked until rom check is completed. You might
   // think we could check for a_ready, but that doesn't work because the TL to SRAM adapter has a
   // 1-entry cache that accepts the transaction (but doesn't reply)
-  `ASSERT(TlAccessChk_A, (pwrmgr_data_o.done == prim_mubi_pkg::MuBi4False) |-> !rom_tl_o.d_valid)
+  `ASSERT(TlAccessChk_A,
+          (pwrmgr_data_o.done == prim_mubi_pkg::MuBi4False) |->
+          (!rom_tl_o.d_valid || (rom_tl_o.d_valid && rom_tl_o.d_error)))
 
 endmodule

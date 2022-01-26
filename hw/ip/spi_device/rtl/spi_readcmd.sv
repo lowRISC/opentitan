@@ -187,7 +187,6 @@ module spi_readcmd
   sram_err_t unused_sram_rerr;
   assign unused_sram_rerr = sram_m2l_i.rerror;
 
-  // TODO: Implement cmd_info
   logic unused_cmd_info_idx;
   assign unused_cmd_info_idx = ^cmd_info_idx_i;
 
@@ -204,7 +203,8 @@ module spi_readcmd
 
   `ASSERT(ValidCmdConfig_A,
           main_st == MainAddress |-> (cmd_info_i.addr_mode != AddrDisabled)
-          && cmd_info_i.payload_dir == PayloadOut)
+          && cmd_info_i.payload_dir == PayloadOut
+          && cmd_info_i.valid)
 
   logic unused_s2p_bitcnt;
   assign unused_s2p_bitcnt = ^s2p_bitcnt_i;
@@ -311,9 +311,6 @@ module spi_readcmd
 
   logic [31:0] mailbox_masked_addr;
 
-  // TODO: implement
-  // logic [31:0] buffer_masked_addr;
-
   // Double buffering signals
   logic readbuf_idx; // 0 or 1
   logic readbuf_flip; // if this is asserted, readbuf_idx flips.
@@ -393,7 +390,6 @@ module spi_readcmd
   assign addr_ready_in_word     = (addr_cnt_d == 5'd 2);
   assign addr_ready_in_halfword = (addr_cnt_d == 5'd 1);
 
-  // TODO: Check if addr_cnt_d or addr_cnt_q ?
   assign addr_latched = (addr_cnt_d == 5'd 0);
 
   assign cmdinfo_addr_mode = get_addr_mode(cmd_info_i, addr_4b_en_i);
@@ -418,8 +414,6 @@ module spi_readcmd
       addr_cnt_d = (cmdinfo_addr_mode == Addr4B) ? 5'd 30 : 5'd 22;
 
       // TODO: Dual IO/ Quad IO case
-
-      // TODO: Force 4B mode
     end else if (addr_cnt_q == '0) begin
       addr_cnt_d = addr_cnt_q;
     end else if (addr_shift_en) begin

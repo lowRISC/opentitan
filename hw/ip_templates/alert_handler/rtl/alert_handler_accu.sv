@@ -28,6 +28,7 @@ module alert_handler_accu import alert_pkg::*; (
   assign trig_gated = class_trig_i & class_en_i;
   assign accu_en = trig_gated && !(&accu_cnt_o);
 
+  // SEC_CM: ACCU.CTR.REDUN
   // We employ two redundant counters to guard against FI attacks.
   // If any of the two is glitched and the two counter states do not agree,
   // the check_fail_o signal is asserted which will move the corresponding escalation

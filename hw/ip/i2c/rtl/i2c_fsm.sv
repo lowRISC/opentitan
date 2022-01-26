@@ -415,11 +415,12 @@ module i2c_fsm (
         sda_temp = 1'b0;
         scl_temp = 1'b0;
       end
-      // ClockLow: SCL is pulled low, SDA stays low
+      // ClockLow: SCL stays low, shift indexed bit onto SDA
       ClockLow : begin
         host_idle_o = 1'b0;
-        sda_temp = 1'b0;
+        sda_temp = fmt_byte_i[bit_index];
         scl_temp = 1'b0;
+        if (sda_temp && !sda_i) event_sda_interference_o = 1'b1;
       end
       // SetupBit: Shift indexed bit onto SDA, SCL stays low
       SetupBit : begin
@@ -778,7 +779,7 @@ module i2c_fsm (
         end
       end
 
-      // ClockLow: SCL is pulled low, SDA stays low
+      // ClockLow: SCL stays low, shift indexed bit onto SDA
       ClockLow : begin
         if (tcount_q == 20'd1) begin
           state_d = SetupBit;

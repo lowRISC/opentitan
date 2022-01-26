@@ -223,6 +223,7 @@ module flash_ctrl
   logic sw_sel;
   flash_lcmgr_phase_e hw_phase;
   logic lcmgr_err;
+  logic arb_fsm_err;
 
   // Flash control arbitration connections to software interface
   logic sw_ctrl_done;
@@ -367,7 +368,8 @@ module flash_ctrl
     .phase_o(phase),
 
     // indication that sw has been selected
-    .sel_o(if_sel)
+    .sel_o(if_sel),
+    .fsm_err_o(arb_fsm_err)
   );
 
   assign op_start      = muxed_ctrl.start.q;
@@ -922,6 +924,7 @@ module flash_ctrl
   assign hw2reg.fault_status.reg_intg_err.d   = 1'b1;
   assign hw2reg.fault_status.phy_intg_err.d   = 1'b1;
   assign hw2reg.fault_status.lcmgr_err.d      = 1'b1;
+  assign hw2reg.fault_status.arb_fsm_err.d    = 1'b1;
   assign hw2reg.fault_status.storage_err.d    = 1'b1;
   assign hw2reg.fault_status.mp_err.de        = hw_err.mp_err;
   assign hw2reg.fault_status.rd_err.de        = hw_err.rd_err;
@@ -931,6 +934,7 @@ module flash_ctrl
   assign hw2reg.fault_status.reg_intg_err.de  = intg_err;
   assign hw2reg.fault_status.phy_intg_err.de  = flash_phy_rsp.intg_err;
   assign hw2reg.fault_status.lcmgr_err.de     = lcmgr_err;
+  assign hw2reg.fault_status.arb_fsm_err.de   = arb_fsm_err;
   assign hw2reg.fault_status.storage_err.de   = storage_err;
 
   // Correctable ECC count / address
@@ -1183,4 +1187,11 @@ module flash_ctrl
                                          alert_tx_o[0])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(WordCntAlertCheck_A, u_flash_hw_if.u_word_cnt,
                                          alert_tx_o[0])
+
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(LcCtrlFsmCheck_A,
+    u_flash_hw_if.u_state_regs, alert_tx_o[0])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(LcCtrlRmaFsmCheck_A,
+    u_flash_hw_if.u_rma_state_regs, alert_tx_o[0])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(ArbFsmCheck_A,
+    u_ctrl_arb.u_state_regs, alert_tx_o[0])
 endmodule

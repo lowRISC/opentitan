@@ -17,9 +17,6 @@ sw_silicon_creator_lib_otbn_util = declare_dependency(
   ),
 )
 
-# Must be declared after otbn_util, which is used in the crypto library.
-subdir('crypto')
-
 # Mask ROM fake dependencies.  These are temporary dependencies until we
 # refactor or copy the other libraries we need (e.g. `runtime`).
 sw_silicon_creator_lib_fake_deps = declare_dependency(
@@ -234,12 +231,16 @@ test('sw_silicon_creator_lib_sigverify_unittest', executable(
       'sigverify_unittest.cc',
       'sigverify.c',
       hw_ip_otp_ctrl_reg_h,
+      hw_ip_flash_ctrl_reg_h,
     ],
     dependencies: [
       sw_vendor_gtest,
       sw_lib_testing_bitfield,
+      sw_lib_testing_hardened,
     ],
     native: true,
+    c_args: ['-DOT_OFF_TARGET_TEST'],
+    cpp_args: ['-DOT_OFF_TARGET_TEST'],
   ),
   suite: 'mask_rom',
 )

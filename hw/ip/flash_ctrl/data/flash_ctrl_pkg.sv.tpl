@@ -586,13 +586,14 @@ package flash_ctrl_pkg;
   //
   localparam int RmaStateWidth = 10;
   typedef enum logic [RmaStateWidth-1:0] {
-    StRmaIdle        = 10'b1000000111,
-    StRmaPageSel     = 10'b0110100101,
-    StRmaErase       = 10'b0100011100,
-    StRmaWordSel     = 10'b1011110010,
-    StRmaProgram     = 10'b0000111011,
-    StRmaProgramWait = 10'b0011001000,
-    StRmaRdVerify    = 10'b1101101001
+    StRmaIdle        = 10'b1101000011,
+    StRmaPageSel     = 10'b0010111001,
+    StRmaErase       = 10'b1111010100,
+    StRmaWordSel     = 10'b0001011111,
+    StRmaProgram     = 10'b0110001110,
+    StRmaProgramWait = 10'b1000110110,
+    StRmaRdVerify    = 10'b1011101010,
+    StRmaInvalid     = 10'b1100101101
   } rma_state_e;
 
 endpackage : flash_ctrl_pkg

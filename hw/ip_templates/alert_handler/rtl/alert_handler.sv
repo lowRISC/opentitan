@@ -29,6 +29,7 @@ module alert_handler
   output logic                             intr_classc_o,
   output logic                             intr_classd_o,
   // Clock gating and reset info from rstmgr and clkmgr
+  // SEC_CM: LPG.INTERSIG.MUBI
   input  prim_mubi_pkg::mubi4_t [NLpg-1:0] lpg_cg_en_i,
   input  prim_mubi_pkg::mubi4_t [NLpg-1:0] lpg_rst_en_i,
   // State information for HW crashdump
@@ -37,9 +38,11 @@ module alert_handler
   output edn_pkg::edn_req_t                edn_o,
   input  edn_pkg::edn_rsp_t                edn_i,
   // Alert Sources
+  // SEC_CM: ALERT.INTERSIG.DIFF
   input  alert_tx_t [NAlerts-1:0]          alert_tx_i,
   output alert_rx_t [NAlerts-1:0]          alert_rx_o,
   // Escalation outputs
+  // SEC_CM: ESC.INTERSIG.DIFF
   input  esc_rx_t [N_ESC_SEV-1:0]          esc_rx_i,
   output esc_tx_t [N_ESC_SEV-1:0]          esc_tx_o
 );
@@ -59,6 +62,11 @@ module alert_handler
           intr_classb_o,
           intr_classa_o} = irq;
 
+  // SEC_CM: CONFIG.SHADOW
+  // SEC_CM: PING_TIMER.CONFIG.REGWEN
+  // SEC_CM: ALERT.CONFIG.REGWEN
+  // SEC_CM: ALERT_LOC.CONFIG.REGWEN
+  // SEC_CM: CLASS.CONFIG.REGWEN
   alert_handler_reg_wrap u_reg_wrap (
     .clk_i,
     .rst_ni,
@@ -70,9 +78,11 @@ module alert_handler
     .crashdump_o,
     .hw2reg_wrap,
     .reg2hw_wrap,
+    // SEC_CM: BUS.INTEGRITY
     .fatal_integ_alert_o(loc_alert_trig[4])
   );
 
+  // SEC_CM: CONFIG.SHADOW
   assign loc_alert_trig[5] = reg2hw_wrap.shadowed_err_update;
   assign loc_alert_trig[6] = reg2hw_wrap.shadowed_err_storage;
 
@@ -121,7 +131,9 @@ module alert_handler
     // set this to the maximum width in the design.
     // can be overridden in DV and FPV to shorten the wait periods.
     .wait_cyc_mask_i    ( {PING_CNT_DW{1'b1}}            ),
+    // SEC_CM: ALERT_RX.INTERSIG.BKGN_CHK
     .alert_ping_req_o   ( alert_ping_req                 ),
+    // SEC_CM: ESC_TX.INTERSIG.BKGN_CHK
     .esc_ping_req_o     ( esc_ping_req                   ),
     .alert_ping_ok_i    ( alert_ping_ok                  ),
     .esc_ping_ok_i      ( esc_ping_ok                    ),
@@ -137,6 +149,7 @@ module alert_handler
   alert_handler_lpg_ctrl u_alert_handler_lpg_ctrl (
     .clk_i,
     .rst_ni,
+    // SEC_CM: LPG.INTERSIG.MUBI
     .lpg_cg_en_i,
     .lpg_rst_en_i,
     .alert_init_trig_o ( alert_init_trig )
@@ -161,6 +174,7 @@ module alert_handler
       .ping_ok_o    ( alert_ping_ok[k]   ),
       .integ_fail_o ( alert_integfail[k] ),
       .alert_o      ( alert_trig[k]      ),
+      // SEC_CM: ALERT.INTERSIG.DIFF
       .alert_rx_o   ( alert_rx_o[k]      ),
       .alert_tx_i   ( alert_tx_i[k]      )
     );
@@ -241,7 +255,11 @@ module alert_handler
     end
 
     assign esc_sig_req[k] = |esc_sig_req_trsp[k];
-
+    // SEC_CM: ESC_RX.INTERSIG.BKGN_CHK
+    // Note: This countermeasure is actually implemented on the receiver side. We currently cannot
+    // put this RTL label inside that module due to the way our countermeasure annotation check
+    // script discovers the RTL files. The label is thus put here. Please refer to
+    // prim_esc_receiver.sv for the actual implementation of this mechanism.
     prim_esc_sender u_esc_sender (
       .clk_i,
       .rst_ni,
@@ -249,6 +267,7 @@ module alert_handler
       .ping_ok_o    ( esc_ping_ok[k]   ),
       .integ_fail_o ( esc_integfail[k] ),
       .esc_req_i    ( esc_sig_req[k]   ),
+      // SEC_CM: ESC.INTERSIG.DIFF
       .esc_rx_i     ( esc_rx_i[k]      ),
       .esc_tx_o     ( esc_tx_o[k]      )
     );

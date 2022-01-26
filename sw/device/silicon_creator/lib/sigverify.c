@@ -140,14 +140,14 @@ static rom_error_t sigverify_encoded_message_check(
   // correct, garbage otherwise.
   uint32_t *enc_msg_ptr = enc_msg->data;
   size_t i = 0;
-  for (size_t j = 0; j < kHmacDigestNumWords; ++j, ++i) {
+  for (size_t j = 0; launder32(j) < kHmacDigestNumWords; ++j, ++i) {
     enc_msg_ptr[i] ^= act_digest->digest[j] ^ kSigverifyShares[i];
   }
   // Note: This also includes the zero byte right before PS.
   static const uint32_t kEncodedSha256[] = {
       0x05000420, 0x03040201, 0x86480165, 0x0d060960, 0x00303130,
   };
-  for (size_t j = 0; j < ARRAYSIZE(kEncodedSha256); ++j, ++i) {
+  for (size_t j = 0; launder32(j) < ARRAYSIZE(kEncodedSha256); ++j, ++i) {
     enc_msg_ptr[i] ^= kEncodedSha256[j] ^ kSigverifyShares[i];
   }
   // Note: `kPsLen` excludes the last word of `enc_msg`, which is 0x0001ffff.
@@ -155,18 +155,18 @@ static rom_error_t sigverify_encoded_message_check(
                                ARRAYSIZE(kEncodedSha256) -
                                ARRAYSIZE(act_digest->digest) - /*last word*/ 1;
   // PS up to the last word.
-  for (size_t j = 0; j < kPsLen; ++j, ++i) {
+  for (size_t j = 0; launder32(j) < kPsLen; ++j, ++i) {
     enc_msg_ptr[i] ^= 0xffffffff ^ kSigverifyShares[i];
   }
   // Last word.
   enc_msg_ptr[i] ^= 0x0001ffff ^ kSigverifyShares[i];
-  // TODO(#10007): Use SHUTDOWN_CHECK to check loop completion.
+  HARDENED_CHECK_EQ(i, kSigVerifyRsaNumWords - 1);
 
   // Step 2: Reduce `enc_msg` to produce the value to write to flash_ctrl EXEC
   // register (`flash_exec`) and the return value (`result`).
   *flash_exec = 0;
   uint32_t diff = 0;
-  for (i = 0; i < kSigVerifyRsaNumWords; ++i) {
+  for (i = 0; launder32(i) < kSigVerifyRsaNumWords; ++i) {
     // Following three statements set `diff` to `UINT32_MAX` if `enc_msg[i]` is
     // incorrect, no change otherwise.
     diff |= enc_msg_ptr[i] ^ kSigverifyShares[i];
@@ -177,14 +177,14 @@ static rom_error_t sigverify_encoded_message_check(
     // Set `flash_exec` to `UINT32_MAX` if `enc_msg` is incorrect.
     *flash_exec |= diff;
   }
-  // TODO(#10007): Use SHUTDOWN_CHECK to check loop completion.
+  HARDENED_CHECK_EQ(i, kSigVerifyRsaNumWords);
 
   // Note: `kSigverifyFlashExec` is defined such that the following operation
   // produces `kErrorOk`.
   rom_error_t result =
       (*flash_exec << 21 ^ *flash_exec << 10 ^ *flash_exec >> 1) >> 21;
-  if (result == kErrorOk) {
-    // TODO(#10007): Use SHUTDOWN_CHECK once it's merged.
+  if (launder32(result) == kErrorOk) {
+    HARDENED_CHECK_EQ(result, kErrorOk);
     return result;
   }
 

@@ -35,6 +35,14 @@ class otbn_base_vseq extends cip_base_vseq #(
   // sideload sequencer will get upset if we kill a process that's waiting for a grant from it).
   protected int unsigned stop_tokens = 0;
 
+  // Overridden from dv_base_vseq
+  task dut_init(string reset_kind = "HARD");
+    // Always drive the lifecycle escalation signal to off at the start of the sequence.
+    cfg.escalate_vif.reset_signals();
+
+    super.dut_init(reset_kind);
+  endtask
+
   // Load the contents of an ELF file into the DUT's memories, either by a DPI backdoor (if backdoor
   // is true) or with TL transactions. Also, pass loop warp rules to the ISS through the model.
   protected task load_elf(string path, bit backdoor);
@@ -454,9 +462,10 @@ class otbn_base_vseq extends cip_base_vseq #(
           timed_out = 1'b1;
         end else begin
           timed_out = 1'b0;
-          // The OTBN sequence finished so update wait_cycles. cycle_counter should always be less
-          // than wait_cycles (because of how we calculate wait cycles).
-          `DV_CHECK_FATAL(cycle_counter < wait_cycles);
+          // The OTBN sequence finished so update wait_cycles. cycle_counter should be at most equal
+          // to wait_cycles because we'll stop at that point. It can be equal if OTBN happens to
+          // complete its operation in wait_cycles cycles.
+          `DV_CHECK_LE_FATAL(cycle_counter, wait_cycles);
           longest_run_ = cycle_counter;
 
           // Wait for the run_otbn thread to finish. This will usually be instant, but might take

@@ -24,7 +24,9 @@ module entropy_src
   output tlul_pkg::tl_d2h_t tl_o,
 
   // OTP Interface
+  // SEC_CM: INTERSIG.MUBI
   input  mubi8_t otp_en_entropy_src_fw_read_i,
+  // SEC_CM: INTERSIG.MUBI
   input  mubi8_t otp_en_entropy_src_fw_over_i,
 
   // RNG Interface
@@ -116,6 +118,9 @@ module entropy_src
   logic [NumAlerts-1:0] intg_err_alert;
   assign intg_err_alert[0] = 1'b0;
 
+  // SEC_CM: CONFIG.REGWEN
+  // SEC_CM: TILE_LINK.BUS.INTEGRITY
+
   entropy_src_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -183,7 +188,13 @@ module entropy_src
     es_fips: '1
   };
   // once enabled, stub entropy is always available
-  assign stub_es_valid = |reg2hw.conf.enable.q;
+
+  import prim_mubi_pkg::mubi4_t;
+  import prim_mubi_pkg::mubi4_test_true_strict;
+
+  mubi4_t mubi_module_en;
+  assign mubi_module_en  = mubi4_t'(reg2hw.module_enable.q);
+  assign stub_es_valid = mubi4_test_true_strict(mubi_module_en);
 
   if (Stub) begin : gen_stub_entropy_src
 
@@ -192,10 +203,10 @@ module entropy_src
       if (!rst_ni) begin
         lfsr_en <= '0;
       end else begin
-        lfsr_en <= |reg2hw.conf.enable.q;
+        lfsr_en <= stub_es_valid;
       end
     end
-    assign seed_ld = |reg2hw.conf.enable.q & !lfsr_en;
+    assign seed_ld = stub_es_valid & !lfsr_en;
 
     prim_lfsr #(
       .LfsrDw(StubLfsrWidth),
@@ -221,7 +232,7 @@ module entropy_src
       // need to move this to package so that it can be referenced
       stub_hw2reg.debug_status.main_sm_state.d = 8'b01110110;
 
-      stub_hw2reg.intr_state.es_entropy_valid.de = |reg2hw.conf.enable.q;
+      stub_hw2reg.intr_state.es_entropy_valid.de = stub_es_valid;
       stub_hw2reg.intr_state.es_entropy_valid.d = 1'b1;
 
     end
@@ -293,10 +304,6 @@ module entropy_src
      alert_tx_o[1])
   end : gen_symbol_match
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck3_A,
-    u_entropy_src_core.u_entropy_src_bucket_ht.u_prim_count_test_cnt,
-    alert_tx_o[1])
-
   for (genvar sh = 0; sh < RngBusWidth; sh = sh+1) begin : gen_pair_cntrs
    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
      u_entropy_src_core.u_entropy_src_markov_ht.gen_cntrs[sh].u_prim_count_pair_cntr,
@@ -329,5 +336,12 @@ module entropy_src
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SHA3padFsmCheck_A,
     u_entropy_src_core.u_sha3.u_pad.u_state_regs, alert_tx_o[1])
+
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SentMsgCountCheck_A,
+    u_entropy_src_core.u_sha3.u_pad.u_sentmsg_count, alert_tx_o[1])
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RoundCountCheck_A,
+    u_entropy_src_core.u_sha3.u_keccak.u_round_count, alert_tx_o[1])
 
 endmodule

@@ -64,8 +64,10 @@ class otp_ctrl_env #(
     // TODO: reggen tool optimization.
     // Temp build the prim_tl_agent.should be auto-generated via otp_ctrl_env_cfg once the reggen
     // tool is optimized.NCurrently this is an empty RAL so dv_base_reg_block will return an error.
-    prim_tl_agent = tl_agent::type_id::create({"prim_tl_agent"}, this);
-    uvm_config_db#(tl_agent_cfg)::set(this, "prim_tl_agent", "cfg", cfg.prim_tl_agent_cfg);
+    if (cfg.create_prim_tl_agent) begin
+      prim_tl_agent = tl_agent::type_id::create({"prim_tl_agent"}, this);
+      uvm_config_db#(tl_agent_cfg)::set(this, "prim_tl_agent", "cfg", cfg.prim_tl_agent_cfg);
+    end
 
     // config mem virtual interface
     if (!uvm_config_db#(mem_bkdr_util)::get(this, "", "mem_bkdr_util", cfg.mem_bkdr_util_h)) begin
@@ -96,7 +98,9 @@ class otp_ctrl_env #(
     virtual_sequencer.flash_data_pull_sequencer_h = m_flash_data_pull_agent.sequencer;
     virtual_sequencer.lc_prog_pull_sequencer_h    = m_lc_prog_pull_agent.sequencer;
     // TODO: reggen tool optimization. Temp mannual setup for prim_tl_agent.
-    virtual_sequencer.prim_tl_sequencer_h = prim_tl_agent.sequencer;
+    if (cfg.create_prim_tl_agent) begin
+      virtual_sequencer.prim_tl_sequencer_h = prim_tl_agent.sequencer;
+    end
     if (cfg.en_scb) begin
       m_otbn_pull_agent.monitor.analysis_port.connect(scoreboard.otbn_fifo.analysis_export);
       m_flash_addr_pull_agent.monitor.analysis_port.connect(

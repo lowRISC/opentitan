@@ -24,8 +24,6 @@ module tb;
   // By using a reset, the VIF is allowed to clear REQ, within
   // triggering an assertion.
   wire csrng_rst_n;
-  wire intr_entropy_valid, intr_health_test_failed, intr_ebus_check_failed,
-       intr_observe_fifo_ready, intr_fatal_err;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   wire [7:0]                    otp_en_es_fw_read, otp_en_es_fw_over;
 
@@ -74,18 +72,12 @@ module tb;
 
     .intr_es_entropy_valid_o      (intr_entropy_valid),
     .intr_es_health_test_failed_o (intr_health_test_failed),
-  // TODO: add intrp
-  //    .intr_es_ebus_check_failed_o  (intr_ebus_check_failed),
     .intr_es_observe_fifo_ready_o (intr_observe_fifo_ready),
     .intr_es_fatal_err_o          (intr_fatal_err)
   );
 
-  // TODO: remove when intrp is added
-  assign intr_ebus_check_failed = 1'b0;
-
   assign interrupts[EntropyValid]     = intr_entropy_valid;
   assign interrupts[HealthTestFailed] = intr_health_test_failed;
-  assign interrupts[EBusChkFailed]    = intr_ebus_check_failed;
   assign interrupts[ObserveFifoReady] = intr_observe_fifo_ready;
   assign interrupts[FatalErr]         = intr_fatal_err;
 

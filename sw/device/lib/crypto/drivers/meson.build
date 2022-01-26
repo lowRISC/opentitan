@@ -17,3 +17,19 @@ sw_lib_crypto_hmac = declare_dependency(
     ]
   )
 )
+
+# OTBN driver
+sw_lib_crypto_otbn = declare_dependency(
+  link_with: static_library(
+    'sw_lib_crypto_otbn',
+    sources: [
+      hw_ip_otbn_reg_h,
+      'otbn.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_bitfield,
+      top_earlgrey,
+    ]
+  )
+)
