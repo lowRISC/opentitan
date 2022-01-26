@@ -321,7 +321,7 @@ SEED_HW_RD_EN only becomes active if SECRET2_DIGEST has a nonzero value in DEV, 
 ## Flash Collateral
 
 The flash contains both memory mapped and non-memory mapped partitions.
-As it pertains to life cycle, the flash contains three sets of important collateral.
+As it pertains to life cycle, the flash contains two sets of important collateral.
 They are enumerated in the table below.
 Just as with OTP, the consumer and usage of each is also described.
 
