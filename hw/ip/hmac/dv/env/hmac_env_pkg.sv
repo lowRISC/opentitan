@@ -33,6 +33,9 @@ package hmac_env_pkg;
   // 1 cycles to write a msg word to hmac_msg_fifo
   parameter uint32 HMAC_WR_WORD_CYCLE        = 1;
 
+  parameter uint NUM_DIGESTS = 8;
+  parameter uint NUM_KEYS = 8;
+
   // alerts
   parameter uint NUM_ALERTS = 1;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
@@ -70,12 +73,34 @@ package hmac_env_pkg;
     SwPushMsgWhenIdle          = 32'h 0000_0005
   } err_code_e;
 
+  // Enum for the timing when issue wipe_secret CSR.
+  typedef enum bit [2:0] {
+    NoWipeSecret,
+    WipeSecretBeforeKey,
+    WipeSecretBeforeStart,
+    WipeSecretBeforeProcess,
+    WipeSecretBeforeDone
+  } wipe_secret_req_e;
+
   typedef class hmac_env_cfg;
   typedef class hmac_env_cov;
   typedef cip_base_virtual_sequencer #(hmac_env_cfg, hmac_env_cov) hmac_virtual_sequencer;
   typedef virtual pins_if #(1) d2h_a_ready_vif;
 
   // functions
+  function automatic int get_digest_index(string csr_name);
+    case (csr_name)
+      "digest_0": return 0;
+      "digest_1": return 1;
+      "digest_2": return 2;
+      "digest_3": return 3;
+      "digest_4": return 4;
+      "digest_5": return 5;
+      "digest_6": return 6;
+      "digest_7": return 7;
+      default: `uvm_fatal("get_digest_index", $sformatf("invalid digest csr name: %0s", csr_name))
+    endcase
+  endfunction
 
   // package sources
   `include "hmac_env_cfg.sv"
