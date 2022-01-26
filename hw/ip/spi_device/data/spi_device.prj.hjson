@@ -20,10 +20,10 @@
       }
       { version:            "1.0",
         life_stage:         "L1",
-        design_stage:       "D2",
+        design_stage:       "D2S",
         verification_stage: "V1",
         dif_stage:          "S0",
-        commit_id:          "dae702d55b89a18621607b34f7ab8161be3706eb",
+        commit_id:          "",
         notes:              ""
       }
     ]
