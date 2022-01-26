@@ -64,7 +64,6 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   // Cfg errors are cleared after reset
   virtual task apply_reset(string kind = "HARD");
     super.apply_reset(kind);
-    cfg.ecc_err = OtpNoEccErr;
   endtask
 
   virtual task dut_shutdown();
@@ -156,27 +155,11 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   endtask : dai_wr
 
   // This task triggers an OTP readout sequence via the DAI interface
-  // If ecc_err is not OtpNoEccErr, will backdoor write to OTP and trigger an ECC error
   virtual task dai_rd(input  bit [TL_DW-1:0] addr,
-                      input  otp_ecc_err_e   ecc_err,
                       output bit [TL_DW-1:0] rdata0,
                       output bit [TL_DW-1:0] rdata1);
-    bit [TL_DW-1:0] val, backdoor_rd_val;
-    bit backdoor_wr;
+    bit [TL_DW-1:0] val;
     addr = randomize_dai_addr(addr);
-
-    // Here we won't backdoor write to corrupt ECC bits if:
-    // 1. Current ECC error is uncorrectable already. Then the DAI access is locked and cannot read
-    // any more.
-    // 2. If dai read address is not valid (lc address or larger). Then DAI access will return
-    // access error before reading the OTP bits.
-    if (cfg.ecc_err != OtpEccUncorrErr && addr < LifeCycleOffset) begin
-      if (ecc_err != OtpNoEccErr) begin
-        backdoor_rd_val = backdoor_inject_ecc_err(addr, ecc_err);
-        backdoor_wr = 1;
-      end
-      cfg.ecc_err = ecc_err;
-    end
 
     csr_wr(ral.direct_access_address, addr);
     csr_wr(ral.direct_access_cmd, int'(otp_ctrl_pkg::DaiRead));
@@ -191,19 +174,13 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     csr_rd(ral.direct_access_rdata[0], rdata0);
     if (is_secret(addr) || is_digest(addr)) csr_rd(ral.direct_access_rdata[1], rdata1);
     rd_and_clear_intrs();
-
-    // If has ecc_err, backdoor write back original value
-    // TODO: remove this once we can detect ECC error from men_bkdr_if
-    if (backdoor_wr) begin
-      cfg.mem_bkdr_util_h.write32({addr[TL_DW-3:2], 2'b00}, backdoor_rd_val);
-    end
   endtask : dai_rd
 
   virtual task dai_rd_check(bit [TL_DW-1:0] addr,
                             bit [TL_DW-1:0] exp_data0,
                             bit [TL_DW-1:0] exp_data1 = 0);
     bit [TL_DW-1:0] rdata0, rdata1;
-    dai_rd(addr, OtpNoEccErr, rdata0, rdata1);
+    dai_rd(addr, rdata0, rdata1);
     `DV_CHECK_EQ(rdata0, exp_data0, $sformatf("dai addr %0h rdata0 readout mismatch", addr))
     if (is_secret(addr) || is_digest(addr)) begin
       `DV_CHECK_EQ(rdata1, exp_data1, $sformatf("dai addr %0h rdata1 readout mismatch", addr))

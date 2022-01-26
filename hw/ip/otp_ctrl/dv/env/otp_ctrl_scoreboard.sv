@@ -620,23 +620,23 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                      cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i == lc_ctrl_pkg::Off)) begin
                   predict_err(OtpDaiErrIdx, OtpAccessError);
                   predict_rdata(is_secret(dai_addr) || is_digest(dai_addr), 0, 0);
-                  // DAI interface access error, even though injected ECC error, it won't be read
-                  // out and detected. (TODO: can remove this once ECC is adopted in mem_bkdr_util)
-                  cfg.ecc_err = OtpNoEccErr;
 
                 end else begin
+                  bit [TL_DW-1:0] err_code, read_out;
                   bit [TL_AW-1:0] otp_addr = get_scb_otp_addr();
+
+                  // Backdoor read to check if there is any ECC error.
+                  int ecc_err = read_a_word_with_ecc(dai_addr, read_out);
+                  if (is_secret(dai_addr) || is_digest(dai_addr)) begin
+                    ecc_err = max2(read_a_word_with_ecc(dai_addr + 4, read_out), ecc_err);
+                  end
+
                   // Check if write has any write_blank_error, then potentially read might have ECC
                   // error.
-                  bit [TL_DW-1:0] err_code = `gmv(ral.err_code[0]);
+                  err_code = `gmv(ral.err_code[0]);
+
                   if (get_field_val(ral.err_code[0].err_code[DaiIdx], err_code) ==
-                      OtpMacroWriteBlankError ||
-                      cfg.ecc_err != OtpNoEccErr) begin
-                    bit [TL_DW-1:0] read_out;
-                    int ecc_err = read_a_word_with_ecc(dai_addr, read_out);
-                    if (is_secret(dai_addr) || is_digest(dai_addr)) begin
-                      ecc_err = max2(read_a_word_with_ecc(dai_addr + 4, read_out), ecc_err);
-                    end
+                      OtpMacroWriteBlankError || ecc_err != OtpNoEccErr) begin
 
                     // Some partitions do not trigger ECC uncorrectable fatal error.
                     if (ecc_err == OtpEccCorrErr ||
@@ -646,9 +646,6 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                       else                            backdoor_update_otp_array(dai_addr);
                       predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
                                     otp_a[otp_addr], otp_a[otp_addr+1]);
-                      // In sequence, we backdoor write back to non-error value, so here scb reset
-                      // the ecc_err back to NoErr.
-                      cfg.ecc_err = OtpNoEccErr;
                     end else if (ecc_err == OtpEccUncorrErr) begin
                       predict_err(OtpDaiErrIdx, OtpMacroEccUncorrError);
                       // Max wait 20 clock cycles because scb did not know when exactly OTP will

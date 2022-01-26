@@ -144,7 +144,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
         if (rand_rd) begin
           // OTP read via DAI, check data in scb
-          dai_rd(dai_addr, ecc_otp_err, rdata0, rdata1);
+          dai_rd(dai_addr, rdata0, rdata1);
         end
 
         // if write sw partitions, check tlul window
