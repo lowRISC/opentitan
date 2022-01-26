@@ -10,7 +10,10 @@ module lc_ctrl_fsm
 #(// Random netlist constants
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid    = LcKeymgrDivWidth'(0),
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestDevRma = LcKeymgrDivWidth'(1),
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction = LcKeymgrDivWidth'(2)
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction = LcKeymgrDivWidth'(2),
+  parameter lc_token_t RndCnstRmaTokenInvalid        = LcTokenWidth'(8'hAA),
+  parameter lc_token_t RndCnstTestUnlockTokenInvalid = LcTokenWidth'(8'hBB),
+  parameter lc_token_t RndCnstTestExitTokenInvalid   = LcTokenWidth'(8'hCC)
 ) (
   // This module is combinational, but we
   // need the clock and reset for the assertions.
@@ -484,6 +487,30 @@ module lc_ctrl_fsm
   // Token mux //
   ///////////////
 
+  lc_ctrl_pkg::lc_tx_t [1:0] rma_token_valid;
+  prim_lc_sync #(
+    .NumCopies(2),
+    .AsyncOn(0),
+    .ResetValueIsOn(0)
+  ) u_prim_lc_sync_rma_token_valid (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(rma_token_valid_i),
+    .lc_en_o(rma_token_valid)
+  );
+
+  lc_ctrl_pkg::lc_tx_t [3:0] test_tokens_valid;
+  prim_lc_sync #(
+    .NumCopies(4),
+    .AsyncOn(0),
+    .ResetValueIsOn(0)
+  ) u_prim_lc_sync_test_token_valid (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(test_tokens_valid_i),
+    .lc_en_o(test_tokens_valid)
+  );
+
   // This indexes the correct token, based on the transition arc.
   // Note that we always perform a token comparison, even in case of
   // unconditional transitions. In the case of unconditional tokens
@@ -495,17 +522,23 @@ module lc_ctrl_fsm
     hashed_tokens = '0;
     hashed_tokens[ZeroTokenIdx]       = AllZeroTokenHashed;
     hashed_tokens[RawUnlockTokenIdx]  = RndCnstRawUnlockTokenHashed;
-    hashed_tokens[TestUnlockTokenIdx] = test_unlock_token_i;
-    hashed_tokens[TestExitTokenIdx]   = test_exit_token_i;
-    hashed_tokens[RmaTokenIdx]        = rma_token_i;
+    hashed_tokens[TestUnlockTokenIdx] = (test_tokens_valid[0] == On) ?
+                                        test_unlock_token_i :
+                                        RndCnstTestUnlockTokenInvalid;
+    hashed_tokens[TestExitTokenIdx]   = (test_tokens_valid[1] == On) ?
+                                        test_exit_token_i :
+                                        RndCnstTestExitTokenInvalid;
+    hashed_tokens[RmaTokenIdx]        = (rma_token_valid[0] == On) ?
+                                        rma_token_i :
+                                        RndCnstRmaTokenInvalid;
     hashed_tokens[InvalidTokenIdx]    = '0;
     // Valid signals
     hashed_tokens_valid                     = '0;
     hashed_tokens_valid[ZeroTokenIdx]       = 1'b1; // always valid
     hashed_tokens_valid[RawUnlockTokenIdx]  = 1'b1; // always valid
-    hashed_tokens_valid[TestUnlockTokenIdx] = (test_tokens_valid_i == On);
-    hashed_tokens_valid[TestExitTokenIdx]   = (test_tokens_valid_i == On);
-    hashed_tokens_valid[RmaTokenIdx]        = (rma_token_valid_i == On);
+    hashed_tokens_valid[TestUnlockTokenIdx] = (test_tokens_valid[2] == On);
+    hashed_tokens_valid[TestExitTokenIdx]   = (test_tokens_valid[3] == On);
+    hashed_tokens_valid[RmaTokenIdx]        = (rma_token_valid[1] == On);
     hashed_tokens_valid[InvalidTokenIdx]    = 1'b0; // always invalid
   end
 

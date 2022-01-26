@@ -19,7 +19,10 @@ module lc_ctrl
   // Random netlist constants
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid    = LcKeymgrDivWidth'(0),
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestDevRma = LcKeymgrDivWidth'(1),
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction = LcKeymgrDivWidth'(2)
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction = LcKeymgrDivWidth'(2),
+  parameter lc_token_t RndCnstRmaTokenInvalid        = LcTokenWidth'(8'hAA),
+  parameter lc_token_t RndCnstTestUnlockTokenInvalid = LcTokenWidth'(8'hBB),
+  parameter lc_token_t RndCnstTestExitTokenInvalid   = LcTokenWidth'(8'hCC)
 ) (
   // Life cycle controller clock
   input                                              clk_i,
@@ -605,9 +608,12 @@ module lc_ctrl
   ////////////
 
   lc_ctrl_fsm #(
-    .RndCnstLcKeymgrDivInvalid    ( RndCnstLcKeymgrDivInvalid    ),
-    .RndCnstLcKeymgrDivTestDevRma ( RndCnstLcKeymgrDivTestDevRma ),
-    .RndCnstLcKeymgrDivProduction ( RndCnstLcKeymgrDivProduction )
+    .RndCnstLcKeymgrDivInvalid     ( RndCnstLcKeymgrDivInvalid     ),
+    .RndCnstLcKeymgrDivTestDevRma  ( RndCnstLcKeymgrDivTestDevRma  ),
+    .RndCnstLcKeymgrDivProduction  ( RndCnstLcKeymgrDivProduction  ),
+    .RndCnstRmaTokenInvalid        ( RndCnstRmaTokenInvalid        ),
+    .RndCnstTestUnlockTokenInvalid ( RndCnstTestUnlockTokenInvalid ),
+    .RndCnstTestExitTokenInvalid   ( RndCnstTestExitTokenInvalid   )
   ) u_lc_ctrl_fsm (
     .clk_i,
     .rst_ni,
