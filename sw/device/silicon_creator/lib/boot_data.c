@@ -472,14 +472,7 @@ static rom_error_t boot_data_default_get(lifecycle_state_t lc_state,
                                          boot_data_t *boot_data) {
   // TODO(#8778): Default boot data.
   switch (lc_state) {
-    case kLcStateTestUnlocked0:
-    case kLcStateTestUnlocked1:
-    case kLcStateTestUnlocked2:
-    case kLcStateTestUnlocked3:
-    case kLcStateTestUnlocked4:
-    case kLcStateTestUnlocked5:
-    case kLcStateTestUnlocked6:
-    case kLcStateTestUnlocked7:
+    case kLcStateTest:
     case kLcStateDev:
     case kLcStateRma:
       *boot_data = kBootDataDefault;

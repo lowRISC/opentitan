@@ -190,7 +190,7 @@ rom_error_t read_empty_default_allowed_test(void) {
   erase_boot_data_pages();
 
   boot_data_t boot_data;
-  RETURN_IF_ERROR(boot_data_read(kLcStateTestUnlocked0, &boot_data));
+  RETURN_IF_ERROR(boot_data_read(kLcStateTest, &boot_data));
   RETURN_IF_ERROR(check_boot_data(&boot_data, 5));
   return kErrorOk;
 }

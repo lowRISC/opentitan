@@ -71,14 +71,7 @@ rom_error_t shutdown_init(lifecycle_state_t lc_state) {
   // Are we in a lifecycle state which needs alert configuration?
   uint32_t lc_shift;
   switch (lc_state) {
-    case kLcStateTestUnlocked0:
-    case kLcStateTestUnlocked1:
-    case kLcStateTestUnlocked2:
-    case kLcStateTestUnlocked3:
-    case kLcStateTestUnlocked4:
-    case kLcStateTestUnlocked5:
-    case kLcStateTestUnlocked6:
-    case kLcStateTestUnlocked7:
+    case kLcStateTest:
       // Don't configure alerts during manufacturing as OTP may not have been
       // programmed yet.
       return kErrorOk;
@@ -226,25 +219,25 @@ shutdown_redact_policy_inline(void) {
   //
   // Note that we cannot use the lifecycle or OTP libraries since an error
   // may trigger a call to `shutdown_finalize`.
-  lifecycle_state_t lc_state = (lifecycle_state_t)bitfield_field32_read(
-      abs_mmio_read32(TOP_EARLGREY_LC_CTRL_BASE_ADDR +
-                      LC_CTRL_LC_STATE_REG_OFFSET),
-      LC_CTRL_LC_STATE_STATE_FIELD);
-  switch (lc_state) {
-    case kLcStateTestUnlocked0:
-    case kLcStateTestUnlocked1:
-    case kLcStateTestUnlocked2:
-    case kLcStateTestUnlocked3:
-    case kLcStateTestUnlocked4:
-    case kLcStateTestUnlocked5:
-    case kLcStateTestUnlocked6:
-    case kLcStateTestUnlocked7:
-    case kLcStateRma:
+  uint32_t raw_state =
+      bitfield_field32_read(abs_mmio_read32(TOP_EARLGREY_LC_CTRL_BASE_ADDR +
+                                            LC_CTRL_LC_STATE_REG_OFFSET),
+                            LC_CTRL_LC_STATE_STATE_FIELD);
+  switch (raw_state) {
+    case LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED0:
+    case LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED1:
+    case LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED2:
+    case LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED3:
+    case LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED4:
+    case LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED5:
+    case LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED6:
+    case LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED7:
+    case LC_CTRL_LC_STATE_STATE_VALUE_RMA:
       // No error redaction in TEST_UNLOCKED and RMA states.
       return kShutdownErrorRedactNone;
-    case kLcStateProd:
-    case kLcStateProdEnd:
-    case kLcStateDev:
+    case LC_CTRL_LC_STATE_STATE_VALUE_DEV:
+    case LC_CTRL_LC_STATE_STATE_VALUE_PROD:
+    case LC_CTRL_LC_STATE_STATE_VALUE_PROD_END:
       // In production states use the redaction level specified in OTP.
       return (shutdown_error_redact_t)abs_mmio_read32(
           TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +

@@ -95,45 +95,12 @@ constexpr sigverify_rsa_buffer_t kSignature{};
  * Life cycle states used in parameterized tests.
  */
 
-constexpr std::array<lifecycle_state_t, 8> kLcStatesTest{
-    kLcStateTestUnlocked0, kLcStateTestUnlocked1, kLcStateTestUnlocked2,
-    kLcStateTestUnlocked3, kLcStateTestUnlocked4, kLcStateTestUnlocked5,
-    kLcStateTestUnlocked6, kLcStateTestUnlocked7,
-};
-
 constexpr std::array<lifecycle_state_t, 4> kLcStatesNonTestOperational{
     kLcStateDev,
     kLcStateProd,
     kLcStateProdEnd,
     kLcStateRma,
 };
-
-constexpr std::array<lifecycle_state_t, 12> kLcStatesNonOperational{
-    kLcStateRaw,         kLcStateTestLocked0,
-    kLcStateTestLocked1, kLcStateTestLocked2,
-    kLcStateTestLocked3, kLcStateTestLocked4,
-    kLcStateTestLocked5, kLcStateTestLocked6,
-    kLcStateScrap,       kLcStatePostTransition,
-    kLcStateEscalate,    kLcStateInvalid,
-};
-
-const std::unordered_set<lifecycle_state_t> &LcStatesAll() {
-  static const std::unordered_set<lifecycle_state_t> *const kLcStatesAll =
-      []() {
-        auto states = new std::unordered_set<lifecycle_state_t>();
-        states->insert(kLcStatesTest.begin(), kLcStatesTest.end());
-        states->insert(kLcStatesNonTestOperational.begin(),
-                       kLcStatesNonTestOperational.end());
-        states->insert(kLcStatesNonOperational.begin(),
-                       kLcStatesNonOperational.end());
-        return states;
-      }();
-  return *kLcStatesAll;
-}
-
-TEST(LcStateCount, IsCorrect) {
-  EXPECT_EQ(kLcStateNumStates, LcStatesAll().size());
-}
 
 class SigverifyInLcState
     : public mask_rom_test::MaskRomTest,
@@ -223,18 +190,18 @@ INSTANTIATE_TEST_SUITE_P(NonTestOperationalStatesDeathTest,
 
 class SigverifyInTestStates : public SigverifyInLcState {};
 
-TEST_P(SigverifyInTestStates, GoodSignatureIbex) {
+TEST_F(SigverifyInTestStates, GoodSignatureIbex) {
   EXPECT_CALL(sigverify_mod_exp_ibex_, mod_exp(&key_, &kSignature, NotNull()))
       .WillOnce(DoAll(SetArgPointee<2>(kEncMsg), Return(kErrorOk)));
 
   uint32_t flash_exec = 0;
-  EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam(),
+  EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, kLcStateTest,
                                  &flash_exec),
             kErrorOk);
   EXPECT_EQ(flash_exec, kSigverifyFlashExec);
 }
 
-TEST_P(SigverifyInTestStates, BadSignatureIbex) {
+TEST_F(SigverifyInTestStates, BadSignatureIbex) {
   // Corrupt the words of the encoded message by flipping their bits and check
   // that signature verification fails.
   for (size_t i = 0; i < kSigVerifyRsaNumWords; ++i) {
@@ -245,28 +212,23 @@ TEST_P(SigverifyInTestStates, BadSignatureIbex) {
         .WillOnce(DoAll(SetArgPointee<2>(bad_enc_msg), Return(kErrorOk)));
 
     uint32_t flash_exec = 0;
-    EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam(),
-                                   &flash_exec),
+    EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest,
+                                   kLcStateTest, &flash_exec),
               kErrorSigverifyBadEncodedMessage);
     EXPECT_EQ(flash_exec, std::numeric_limits<uint32_t>::max());
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(TestStates, SigverifyInTestStates,
-                         testing::ValuesIn(kLcStatesTest));
-
 class SigverifyInInvalidStates : public SigverifyInLcState {};
 
-TEST_P(SigverifyInInvalidStates, BadLcState) {
+TEST_F(SigverifyInInvalidStates, BadLcState) {
   uint32_t flash_exec = 0;
-  EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam(),
-                                 &flash_exec),
-            kErrorSigverifyBadLcState);
+  EXPECT_EQ(
+      sigverify_rsa_verify(&kSignature, &key_, &kTestDigest,
+                           static_cast<lifecycle_state_t>(0), &flash_exec),
+      kErrorSigverifyBadLcState);
   EXPECT_EQ(flash_exec, std::numeric_limits<uint32_t>::max());
 }
-
-INSTANTIATE_TEST_SUITE_P(NonOperationalStates, SigverifyInInvalidStates,
-                         testing::ValuesIn(kLcStatesNonOperational));
 
 struct UsageConstraintsTestCase {
   uint32_t selector_bits;

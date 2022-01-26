@@ -17,6 +17,7 @@ namespace internal {
 class MockLifecycle : public GlobalMock<MockLifecycle> {
  public:
   MOCK_METHOD(lifecycle_state_t, State, ());
+  MOCK_METHOD(uint32_t, RawState, ());
   MOCK_METHOD(void, DeviceId, (lifecycle_device_id_t * device_id));
 };
 
@@ -28,6 +29,10 @@ extern "C" {
 
 lifecycle_state_t lifecycle_state_get(void) {
   return MockLifecycle::Instance().State();
+}
+
+uint32_t lifecycle_raw_state_get(void) {
+  return MockLifecycle::Instance().RawState();
 }
 
 void lifecycle_device_id_get(lifecycle_device_id_t *device_id) {

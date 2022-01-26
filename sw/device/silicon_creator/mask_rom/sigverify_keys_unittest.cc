@@ -82,12 +82,6 @@ std::vector<size_t> MockKeyIndicesOfType(sigverify_key_type_t key_type) {
  * Life cycle states used in parameterized tests.
  */
 
-constexpr std::array<lifecycle_state_t, 8> kLcStatesTest{
-    kLcStateTestUnlocked0, kLcStateTestUnlocked1, kLcStateTestUnlocked2,
-    kLcStateTestUnlocked3, kLcStateTestUnlocked4, kLcStateTestUnlocked5,
-    kLcStateTestUnlocked6, kLcStateTestUnlocked7,
-};
-
 constexpr std::array<lifecycle_state_t, 4> kLcStatesNonTestOperational{
     kLcStateDev,
     kLcStateProd,
@@ -95,32 +89,15 @@ constexpr std::array<lifecycle_state_t, 4> kLcStatesNonTestOperational{
     kLcStateRma,
 };
 
-constexpr std::array<lifecycle_state_t, 12> kLcStatesNonOperational{
-    kLcStateRaw,         kLcStateTestLocked0,
-    kLcStateTestLocked1, kLcStateTestLocked2,
-    kLcStateTestLocked3, kLcStateTestLocked4,
-    kLcStateTestLocked5, kLcStateTestLocked6,
-    kLcStateScrap,       kLcStatePostTransition,
-    kLcStateEscalate,    kLcStateInvalid,
+constexpr std::array<lifecycle_state_t, 6> kLcStatesAll{
+    kLcStateTest,
+    kLcStateDev,
+    kLcStateProd,
+    kLcStateProdEnd,
+    kLcStateRma,
+    // An invalid state
+    static_cast<lifecycle_state_t>(0),
 };
-
-const std::unordered_set<lifecycle_state_t> &LcStatesAll() {
-  static const std::unordered_set<lifecycle_state_t> *const kLcStatesAll =
-      []() {
-        auto states = new std::unordered_set<lifecycle_state_t>();
-        states->insert(kLcStatesTest.begin(), kLcStatesTest.end());
-        states->insert(kLcStatesNonTestOperational.begin(),
-                       kLcStatesNonTestOperational.end());
-        states->insert(kLcStatesNonOperational.begin(),
-                       kLcStatesNonOperational.end());
-        return states;
-      }();
-  return *kLcStatesAll;
-}
-
-TEST(LcStateCount, IsCorrect) {
-  EXPECT_EQ(kLcStateNumStates, LcStatesAll().size());
-}
 
 class SigverifyKeys : public mask_rom_test::MaskRomTest {
  protected:
@@ -180,7 +157,7 @@ TEST_P(BadKeyIdTypeTest, BadKeyId) {
 }
 
 INSTANTIATE_TEST_SUITE_P(AllLcStates, BadKeyIdTypeTest,
-                         testing::ValuesIn(LcStatesAll()));
+                         testing::ValuesIn(kLcStatesAll));
 
 class BadKeyIdTypeDeathTest : public BadKeyIdTypeTest {};
 
@@ -205,7 +182,7 @@ TEST_P(BadKeyIdTypeDeathTest, BadKeyType) {
 }
 
 INSTANTIATE_TEST_SUITE_P(AllLcStates, BadKeyIdTypeDeathTest,
-                         testing::ValuesIn(LcStatesAll()));
+                         testing::ValuesIn(kLcStatesAll));
 
 /**
  * Base class for paramaterized tests below.
@@ -235,7 +212,7 @@ TEST_P(NonOperationalStateDeathTest, BadKey) {
 INSTANTIATE_TEST_SUITE_P(
     AllKeysAndNonOperationalStates, NonOperationalStateDeathTest,
     testing::Combine(testing::Range<size_t>(0, kNumMockKeys),
-                     testing::ValuesIn(kLcStatesNonOperational)));
+                     testing::Values(static_cast<lifecycle_state_t>(0))));
 
 class ValidBasedOnOtp : public KeyValidityTest {};
 
@@ -310,13 +287,13 @@ INSTANTIATE_TEST_SUITE_P(
     ProdKeysInTestStates, ValidInState,
     testing::Combine(
         testing::ValuesIn(MockKeyIndicesOfType(kSigverifyKeyTypeProd)),
-        testing::ValuesIn(kLcStatesTest)));
+        testing::Values(kLcStateTest)));
 
 INSTANTIATE_TEST_SUITE_P(
     TestKeysInTestStates, ValidInState,
     testing::Combine(
         testing::ValuesIn(MockKeyIndicesOfType(kSigverifyKeyTypeTest)),
-        testing::ValuesIn(kLcStatesTest)));
+        testing::Values(kLcStateTest)));
 
 class InvalidInState : public KeyValidityTest {};
 
@@ -344,7 +321,7 @@ INSTANTIATE_TEST_SUITE_P(
     DevKeysAndTestStates, InvalidInState,
     testing::Combine(
         testing::ValuesIn(MockKeyIndicesOfType(kSigverifyKeyTypeDev)),
-        testing::ValuesIn(kLcStatesTest)));
+        testing::Values(kLcStateTest)));
 
 INSTANTIATE_TEST_SUITE_P(
     DevKeysAndNonDevOperStates, InvalidInState,

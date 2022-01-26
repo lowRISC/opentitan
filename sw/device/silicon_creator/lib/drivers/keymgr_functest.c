@@ -272,8 +272,7 @@ bool test_main(void) {
   rom_error_t result = kErrorOk;
 
   // This test is expected to run in DEV, PROD or PROD_END states.
-  lifecycle_state_t lc_state = lifecycle_state_get();
-  LOG_INFO("lifecycle state: %s", lifecycle_state_name_get(lc_state));
+  LOG_INFO("lifecycle state: 0x%x", lifecycle_raw_state_get());
 
   // Initialize pwrmgr
   dif_pwrmgr_t pwrmgr;
