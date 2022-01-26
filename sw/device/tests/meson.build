@@ -2,10 +2,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# All tests added to this dictionary will result in build targets that have
-# names starting `sw/device/tests/<test_name>`. They will not contain the
-# subdirectory name, because the build targets are really declared at the bottom
-# of this file, rather than in the subdirectories.
+# All build targets below in `sw_tests` or `sw_signed_tests` will have names
+# starting with `sw/device/tests/<test_name>`. They will not contain the
+# subdirectory name (e.g., `sim_dv/`), because the build targets are really
+# declared in the for loops in this build file.
+
+# All tests added to the `sw_test` dictionary:
+#  - will not be crytographically signed.
+#  - are intended to be launched via the test ROM and OTTF.
 sw_tests = {
   # 'test_name': {
   #   'library': test_lib,
@@ -13,12 +17,10 @@ sw_tests = {
   # },
 }
 
-# All tests added to this dictionary will result in build targets that have
-# names starting `sw/device/tests/<test_name>`. They will not contain the
-# subdirectory name, because the build targets are really declared at the bottom
-# of this file, rather than in the subdirectories.
-#
-# These tests will link against a ROM_EXT slot A image.
+# All tests added to the `sw_rom_ext_tests` dictionary:
+#  - will be crytographically signed.
+#  - are intended to be launched via the mask ROM and OTTF.
+#  - will link against a ROM_EXT slot A image.
 sw_rom_ext_tests = {
   #   'test_name': {
   #   'library': test_lib,
@@ -931,7 +933,7 @@ foreach sw_test_name, sw_test_info : sw_tests
   endforeach
 endforeach
 
-# (signed) test binaries loaded with ROM from sw/device/silicon_creator/
+# (signed) test binaries loaded with mask ROM (from sw/device/silicon_creator/)
 foreach sw_test_name, sw_test_info : sw_rom_ext_tests
   foreach device_name, device_lib : sw_lib_arch_core_devices
     sw_test_elf = executable(

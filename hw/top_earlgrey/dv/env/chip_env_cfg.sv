@@ -140,8 +140,8 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   //
   // The index (optional) is mapped to the type of SW image (enumerated in sw_type_e). If index is
   // not specified, then `SwTypeTest` is assumed. Flags (optional) are arbitrary strings attached to
-  // the SW image. They can be used to treat the SW image in a specific way. The flag "prebuilt" for
-  // example, is used to set the SW image path correctly.
+  // the SW image. They can be used to treat the SW image in a specific way. The flags "prebuilt"
+  // and "signed" for example, are used to set the SW image path correctly.
   virtual function void parse_sw_images_string(string sw_images_string);
     string sw_images_split[$];
 
@@ -177,6 +177,11 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     foreach (sw_images[i]) begin
       if ("prebuilt" inside {sw_image_flags[i]}) begin
         sw_images[i] = $sformatf("%0s/%0s", sw_build_bin_dir, sw_images[i]);
+      end else if ("signed" inside {sw_image_flags[i]}) begin
+        // TODO: support multiple signing keys. See "signing_keys" in
+        // `sw/device/meson.build` for options.
+        sw_images[i] = $sformatf("%0s/%0s_%0s.test_key_0.signed",
+          sw_build_bin_dir, sw_images[i], sw_build_device);
       end else begin
         sw_images[i] = $sformatf("%0s/%0s_%0s", sw_build_bin_dir, sw_images[i], sw_build_device);
       end
