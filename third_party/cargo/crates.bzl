@@ -46,6 +46,7 @@ _DEPENDENCIES = {
         "directories": "@raze__directories__4_0_1//:directories",
         "env_logger": "@raze__env_logger__0_8_4//:env_logger",
         "erased-serde": "@raze__erased_serde__0_3_16//:erased_serde",
+        "hex": "@raze__hex__0_4_3//:hex",
         "humantime": "@raze__humantime__2_1_0//:humantime",
         "indicatif": "@raze__indicatif__0_16_2//:indicatif",
         "log": "@raze__log__0_4_14//:log",
