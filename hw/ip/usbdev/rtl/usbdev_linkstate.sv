@@ -15,6 +15,7 @@ module usbdev_linkstate (
   input  logic usb_oe_i,
   input  logic rx_jjj_det_i,
   input  logic sof_valid_i,
+
   output logic link_disconnect_o,  // level
   output logic link_connect_o,     // level
   output logic link_reset_o,       // level
@@ -26,8 +27,12 @@ module usbdev_linkstate (
   output logic [2:0] link_state_o
 );
 
-  localparam logic [11:0] SUSPEND_TIMEOUT = 12'd3000; // 3ms by spec
-  localparam logic [2:0]  RESET_TIMEOUT   = 3'd3;     // 3us. Can be 2.5us - 10ms by spec
+  // Suspend signaling is 3ms of J by spec.
+  localparam logic [11:0] SUSPEND_TIMEOUT = 12'd3000;
+  // Reset is 2.5us - 10ms of SE0 by spec, though care should be taken to not
+  // confuse the 2 *low-speed* bit times (1.33us) of SE0 that terminate resume
+  // signaling. Use 3us here.
+  localparam logic [2:0]  RESET_TIMEOUT   = 3'd3;
 
   typedef enum logic [2:0] {
     // Unpowered state
@@ -267,7 +272,7 @@ module usbdev_linkstate (
   ////////////////////
   // Idle detection //
   ////////////////////
-  //  Here we clean up the idle signal and generate a signle ev_bus_inactive
+  //  Here we clean up the idle signal and generate a single ev_bus_inactive
   //  after the timer expires
   always_comb begin : proc_idle_det
     link_inac_state_d = link_inac_state_q;

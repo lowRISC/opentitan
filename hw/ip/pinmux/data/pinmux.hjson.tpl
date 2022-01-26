@@ -151,6 +151,22 @@
       struct:  "logic",
       width:   "1"
     },
+    { name:    "usb_bus_reset",
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1",
+      default: "1'b0"
+    },
+    { name:    "usb_sense_lost",
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1",
+      default: "1'b0"
+    },
     { name:    "usb_state_debug",
       type:    "uni",
       act:     "req",

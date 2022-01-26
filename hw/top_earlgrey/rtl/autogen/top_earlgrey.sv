@@ -562,6 +562,8 @@ module top_earlgrey #(
   logic       usbdev_usb_aon_wake_en;
   logic       usbdev_usb_aon_wake_ack;
   logic       usbdev_usb_suspend;
+  logic       usbdev_usb_aon_bus_reset;
+  logic       usbdev_usb_aon_sense_lost;
   usbdev_pkg::awk_state_t       pinmux_aon_usb_state_debug;
   edn_pkg::edn_req_t [7:0] edn0_edn_req;
   edn_pkg::edn_rsp_t [7:0] edn0_edn_rsp;
@@ -1419,6 +1421,8 @@ module top_earlgrey #(
       .usb_aon_wake_en_o(usbdev_usb_aon_wake_en),
       .usb_aon_wake_ack_o(usbdev_usb_aon_wake_ack),
       .usb_suspend_o(usbdev_usb_suspend),
+      .usb_aon_bus_reset_i(usbdev_usb_aon_bus_reset),
+      .usb_aon_sense_lost_i(usbdev_usb_aon_sense_lost),
       .usb_state_debug_i(pinmux_aon_usb_state_debug),
       .ram_cfg_i(ast_ram_2p_cfg),
       .tl_i(usbdev_tl_req),
@@ -1892,6 +1896,8 @@ module top_earlgrey #(
       .usb_aon_wake_en_i(usbdev_usb_aon_wake_en),
       .usb_aon_wake_ack_i(usbdev_usb_aon_wake_ack),
       .usb_suspend_i(usbdev_usb_suspend),
+      .usb_bus_reset_o(usbdev_usb_aon_bus_reset),
+      .usb_sense_lost_o(usbdev_usb_aon_sense_lost),
       .usb_state_debug_o(pinmux_aon_usb_state_debug),
       .tl_i(pinmux_aon_tl_req),
       .tl_o(pinmux_aon_tl_rsp),

@@ -1198,6 +1198,34 @@
           index: -1
         }
         {
+          name: usb_aon_bus_reset
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: usbdev
+          default: ""
+          package: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: usbdev_usb_aon_bus_reset
+          index: -1
+        }
+        {
+          name: usb_aon_sense_lost
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: usbdev
+          default: ""
+          package: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: usbdev_usb_aon_sense_lost
+          index: -1
+        }
+        {
           name: usb_state_debug
           struct: awk_state
           package: usbdev_pkg
@@ -3512,6 +3540,30 @@
           default: ""
           package: ""
           top_signame: usbdev_usb_suspend
+          index: -1
+        }
+        {
+          name: usb_bus_reset
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: pinmux_aon
+          package: ""
+          top_signame: usbdev_usb_aon_bus_reset
+          index: -1
+        }
+        {
+          name: usb_sense_lost
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: pinmux_aon
+          package: ""
+          top_signame: usbdev_usb_aon_sense_lost
           index: -1
         }
         {
@@ -7232,6 +7284,14 @@
       usbdev.usb_suspend:
       [
         pinmux_aon.usb_suspend
+      ]
+      usbdev.usb_aon_bus_reset:
+      [
+        pinmux_aon.usb_bus_reset
+      ]
+      usbdev.usb_aon_sense_lost:
+      [
+        pinmux_aon.usb_sense_lost
       ]
       pinmux_aon.usb_state_debug:
       [
@@ -14303,6 +14363,34 @@
         index: -1
       }
       {
+        name: usb_aon_bus_reset
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: usbdev
+        default: ""
+        package: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: usbdev_usb_aon_bus_reset
+        index: -1
+      }
+      {
+        name: usb_aon_sense_lost
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: usbdev
+        default: ""
+        package: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: usbdev_usb_aon_sense_lost
+        index: -1
+      }
+      {
         name: usb_state_debug
         struct: awk_state
         package: usbdev_pkg
@@ -15941,6 +16029,30 @@
         default: ""
         package: ""
         top_signame: usbdev_usb_suspend
+        index: -1
+      }
+      {
+        name: usb_bus_reset
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: pinmux_aon
+        package: ""
+        top_signame: usbdev_usb_aon_bus_reset
+        index: -1
+      }
+      {
+        name: usb_sense_lost
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: pinmux_aon
+        package: ""
+        top_signame: usbdev_usb_aon_sense_lost
         index: -1
       }
       {
@@ -19446,6 +19558,28 @@
         type: uni
         end_idx: -1
         act: req
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        signame: usbdev_usb_aon_bus_reset
+        width: 1
+        type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        signame: usbdev_usb_aon_sense_lost
+        width: 1
+        type: uni
+        end_idx: -1
+        act: rcv
         suffix: ""
         default: "'0"
       }

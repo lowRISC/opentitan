@@ -97,7 +97,8 @@ module usbdev_usbif  #(
   output logic                     rx_bitstuff_err_o
 );
 
-  assign usb_pullup_en_o = enable_i;
+  // Enable pull-up resistor only if VBUS is active
+  assign usb_pullup_en_o = enable_i & usb_sense_i;
 
   // OUT or SETUP direction
   logic [PktW:0]                     out_max_used_d, out_max_used_q;

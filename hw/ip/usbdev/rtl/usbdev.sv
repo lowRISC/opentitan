@@ -62,7 +62,9 @@ module usbdev
   output logic       usb_aon_wake_ack_o,
   output logic       usb_suspend_o,
 
-  // Debug info from wakeup module
+  // Events and debug info from wakeup module
+  input              usb_aon_bus_reset_i,
+  input              usb_aon_sense_lost_i,
   input awk_state_t  usb_state_debug_i,
 
   // SOF reference for clock calibration
@@ -762,6 +764,8 @@ module usbdev
   usbdev_reg_top u_reg (
     .clk_i,
     .rst_ni,
+    .clk_aon_i,
+    .rst_aon_ni,
 
     .tl_i (tl_i),
     .tl_o (tl_o),
@@ -1143,41 +1147,15 @@ module usbdev
   assign usb_suspend_o = cio_suspend_o;
 
   /////////////////////////////////////////
-  // capture async debug info            //
+  // capture async event and debug info  //
   /////////////////////////////////////////
 
-  logic aon_tgl;
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
-    if (!rst_aon_ni) begin
-      aon_tgl <= 1'b0;
-    end else begin
-      aon_tgl <= aon_tgl ^ 1'b1;
-    end
-  end
-
-  logic tgl_sync, tgl_sync_d1;
-  prim_flop_2sync #(
-    .Width(1)
-  ) u_tgl_sync (
-    .clk_i,
-    .rst_ni,
-    .d_i(aon_tgl),
-    .q_o(tgl_sync)
-    );
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      tgl_sync_d1 <= 1'b0;
-    end else begin
-      tgl_sync_d1 <= tgl_sync;
-    end
-  end
-
-  logic tgl_en;
-  assign tgl_en = tgl_sync ^ tgl_sync_d1;
-
-  assign hw2reg.wake_debug.de = tgl_en;
-  assign hw2reg.wake_debug.d = usb_state_debug_i;
+  assign hw2reg.wake_events.state.de = 1'b1;
+  assign hw2reg.wake_events.state.d = usb_state_debug_i;
+  assign hw2reg.wake_events.disconnected.de = 1'b1;
+  assign hw2reg.wake_events.disconnected.d = usb_aon_sense_lost_i;
+  assign hw2reg.wake_events.bus_reset.de = 1'b1;
+  assign hw2reg.wake_events.bus_reset.d = usb_aon_bus_reset_i;
 
   /////////////////////////////////
   // Xprop assertions on outputs //

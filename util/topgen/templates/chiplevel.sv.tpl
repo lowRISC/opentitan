@@ -144,6 +144,7 @@ module chip_${top["name"]}_${target["name"]} (
     usb_dn_idx:        DioUsbdevDn,
     usb_dp_pullup_idx: DioUsbdevDpPullup,
     usb_dn_pullup_idx: DioUsbdevDnPullup,
+    usb_sense_idx:     MioInUsbdevSense,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
 <%

@@ -9,6 +9,8 @@
 module usbdev_reg_top (
   input clk_i,
   input rst_ni,
+  input clk_aon_i,
+  input rst_aon_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
@@ -155,6 +157,18 @@ module usbdev_reg_top (
   );
 
   // cdc oversampling signals
+    logic sync_aon_update;
+  prim_sync_reqack u_aon_tgl (
+    .clk_src_i(clk_aon_i),
+    .rst_src_ni(rst_aon_ni),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .req_chk_i(1'b1),
+    .src_req_i(1'b1),
+    .src_ack_o(),
+    .dst_req_o(sync_aon_update),
+    .dst_ack_i(sync_aon_update)
+  );
 
   assign reg_rdata = reg_rdata_next ;
   assign reg_error = (devmode_i & addrmiss) | wr_err | intg_err;
@@ -644,7 +658,45 @@ module usbdev_reg_top (
   logic wake_config_wake_en_wd;
   logic wake_config_wake_ack_qs;
   logic wake_config_wake_ack_wd;
-  logic [2:0] wake_debug_qs;
+  logic [9:0] wake_events_qs;
+  logic wake_events_busy;
+  // Define register CDC handling.
+  // CDC handling is done on a per-reg instead of per-field boundary.
+
+  logic [2:0]  aon_wake_events_state_qs_int;
+  logic  aon_wake_events_disconnected_qs_int;
+  logic  aon_wake_events_bus_reset_qs_int;
+  logic [9:0] aon_wake_events_d;
+
+  always_comb begin
+    aon_wake_events_d = '0;
+    aon_wake_events_d[2:0] = aon_wake_events_state_qs_int;
+    aon_wake_events_d[8] = aon_wake_events_disconnected_qs_int;
+    aon_wake_events_d[9] = aon_wake_events_bus_reset_qs_int;
+  end
+
+  prim_reg_cdc #(
+    .DataWidth(10),
+    .ResetVal(10'h0),
+    .BitMask(10'h307)
+  ) u_wake_events_cdc (
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_regwen_i ('0),
+    .src_we_i     ('0),
+    .src_re_i     ('0),
+    .src_wd_i     ('0),
+    .src_busy_o   (wake_events_busy),
+    .src_qs_o     (wake_events_qs), // for software read back
+    .dst_d_i      (aon_wake_events_d),
+    .dst_we_o     (),
+    .dst_re_o     (),
+    .dst_regwen_o (),
+    .dst_wd_o     ()
+  );
 
   // Register instances
   // R[intr_state]: V(False)
@@ -6567,29 +6619,80 @@ module usbdev_reg_top (
   );
 
 
-  // R[wake_debug]: V(False)
+  // R[wake_events]: V(False)
+  //   F[state]: 2:0
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (3'h0)
-  ) u_wake_debug (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+  ) u_wake_events_state (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
 
     // from register interface
     .we     (1'b0),
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.wake_debug.de),
-    .d      (hw2reg.wake_debug.d),
+    .de     (hw2reg.wake_events.state.de),
+    .d      (hw2reg.wake_events.state.d),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (wake_debug_qs)
+    .qs     (aon_wake_events_state_qs_int)
+  );
+
+  //   F[disconnected]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_wake_events_disconnected (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.wake_events.disconnected.de),
+    .d      (hw2reg.wake_events.disconnected.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (aon_wake_events_disconnected_qs_int)
+  );
+
+  //   F[bus_reset]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_wake_events_bus_reset (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.wake_events.bus_reset.de),
+    .d      (hw2reg.wake_events.bus_reset.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (aon_wake_events_bus_reset_qs_int)
   );
 
 
@@ -6630,7 +6733,7 @@ module usbdev_reg_top (
     addr_hit[30] = (reg_addr == USBDEV_PHY_PINS_DRIVE_OFFSET);
     addr_hit[31] = (reg_addr == USBDEV_PHY_CONFIG_OFFSET);
     addr_hit[32] = (reg_addr == USBDEV_WAKE_CONFIG_OFFSET);
-    addr_hit[33] = (reg_addr == USBDEV_WAKE_DEBUG_OFFSET);
+    addr_hit[33] = (reg_addr == USBDEV_WAKE_EVENTS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -7520,9 +7623,8 @@ module usbdev_reg_top (
       end
 
       addr_hit[33]: begin
-        reg_rdata_next[2:0] = wake_debug_qs;
+        reg_rdata_next = DW'(wake_events_qs);
       end
-
       default: begin
         reg_rdata_next = '1;
       end
@@ -7539,6 +7641,9 @@ module usbdev_reg_top (
   always_comb begin
     reg_busy_sel = '0;
     unique case (1'b1)
+      addr_hit[33]: begin
+        reg_busy_sel = wake_events_busy;
+      end
       default: begin
         reg_busy_sel  = '0;
       end

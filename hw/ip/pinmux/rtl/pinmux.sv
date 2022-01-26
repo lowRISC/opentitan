@@ -50,6 +50,8 @@ module pinmux
   input                            usb_aon_wake_en_i,
   input                            usb_aon_wake_ack_i,
   input                            usb_suspend_i,
+  output                           usb_bus_reset_o,
+  output                           usb_sense_lost_o,
   output usbdev_pkg::awk_state_t   usb_state_debug_o,
   // Bus Interface (device)
   input  tlul_pkg::tl_h2d_t        tl_i,
@@ -245,6 +247,7 @@ module pinmux
     // input signals for resume detection
     .usb_dp_async_alw_i(dio_to_periph_o[TargetCfg.usb_dp_idx]),
     .usb_dn_async_alw_i(dio_to_periph_o[TargetCfg.usb_dn_idx]),
+    .usb_sense_async_alw_i(mio_to_periph_o[TargetCfg.usb_sense_idx]),
     .usb_dppullup_en_alw_i(dio_out_o[TargetCfg.usb_dp_pullup_idx]),
     .usb_dnpullup_en_alw_i(dio_out_o[TargetCfg.usb_dn_pullup_idx]),
 
@@ -256,6 +259,8 @@ module pinmux
 
     // wake/powerup request
     .wake_req_alw_o(usb_wkup_req_o),
+    .bus_reset_alw_o(usb_bus_reset_o),
+    .sense_lost_alw_o(usb_sense_lost_o),
     .state_debug_o(usb_state_debug_o)
   );
 

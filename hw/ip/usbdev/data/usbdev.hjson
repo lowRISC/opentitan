@@ -69,6 +69,20 @@
       struct:  "logic",
       width:   "1"
     },
+    { name:    "usb_aon_bus_reset",
+      type:    "uni",
+      act:     "rcv",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    },
+    { name:    "usb_aon_sense_lost",
+      type:    "uni",
+      act:     "rcv",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    },
     { name:    "usb_state_debug",
       type:    "uni",
       act:     "rcv",
@@ -859,17 +873,34 @@
       ]
     }
 
-    { name: "wake_debug",
-      desc: "USB wake module debug",
+    { name: "wake_events",
+      desc: "USB wake module events and debug",
       swaccess: "ro",
       hwaccess: "hwo",
+      async: "clk_aon_i",
       fields: [
         {
           bits: "2:0",
           resval: "0",
           name: "state",
           desc: '''
-                  USB aon wake module state read back
+                USB aon wake module state read back
+                '''
+        }
+        {
+          bits: "8",
+          resval: "0",
+          name: "disconnected",
+          desc: '''
+                USB aon wake module detected VBUS was interrupted while monitoring events.
+                '''
+        }
+        {
+          bits: "9",
+          resval: "0",
+          name: "bus_reset",
+          desc: '''
+                USB aon wake module detected a bus reset while monitoring events.
                 '''
         }
       ]
