@@ -134,8 +134,7 @@ module otbn_alu_bignum
       if (!rst_ni) begin
         flags_q[i_fg] <= '{Z : 1'b0, L : 1'b0, M : 1'b0, C : 1'b0};
       end else if (flags_en[i_fg]) begin
-        flags_q[i_fg] <= sec_wipe_zero_i ? '{Z : 1'b0, L : 1'b0, M : 1'b0, C : 1'b0} :
-                                           flags_d[i_fg];
+        flags_q[i_fg] <= flags_d[i_fg];
       end
     end
 
@@ -154,6 +153,7 @@ module otbn_alu_bignum
         logic_update_flags_en: flags_d[i_fg] = logic_update_flags;
         mac_update_flags_en:   flags_d[i_fg] = mac_update_flags;
         ispr_update_flags_en:  flags_d[i_fg] = ispr_base_wdata_i[i_fg*FlagsWidth+:FlagsWidth];
+        sec_wipe_zero_i:       flags_d[i_fg] = '0;
         default: ;
       endcase
     end
