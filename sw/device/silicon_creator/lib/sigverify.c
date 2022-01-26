@@ -249,7 +249,7 @@ rom_error_t sigverify_rsa_verify(const sigverify_rsa_buffer_t *signature,
       RETURN_IF_ERROR(sigverify_mod_exp_otbn(key, signature, &enc_msg));
       break;
     default:
-      return kErrorSigverifyBadOtpValue;
+      HARDENED_UNREACHABLE();
   }
   RETURN_IF_ERROR(
       sigverify_encoded_message_check(&enc_msg, act_digest, flash_exec));

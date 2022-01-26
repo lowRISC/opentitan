@@ -148,18 +148,6 @@ class SigverifyInLcState
 
 class SigverifyInNonTestStates : public SigverifyInLcState {};
 
-TEST_P(SigverifyInNonTestStates, BadOtpValue) {
-  EXPECT_CALL(otp_,
-              read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET))
-      .WillOnce(Return(0xA5A5A5A5));
-
-  uint32_t flash_exec = 0;
-  EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam(),
-                                 &flash_exec),
-            kErrorSigverifyBadOtpValue);
-  EXPECT_EQ(flash_exec, std::numeric_limits<uint32_t>::max());
-}
-
 TEST_P(SigverifyInNonTestStates, GoodSignatureIbex) {
   EXPECT_CALL(otp_,
               read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET))
@@ -210,6 +198,27 @@ TEST_P(SigverifyInNonTestStates, BadSignatureOtbn) {
 }
 
 INSTANTIATE_TEST_SUITE_P(NonTestOperationalStates, SigverifyInNonTestStates,
+                         testing::ValuesIn(kLcStatesNonTestOperational));
+
+class SigverifyInNonTestStatesDeathTest : public SigverifyInLcState {};
+
+TEST_P(SigverifyInNonTestStatesDeathTest, BadOtpValue) {
+  ASSERT_DEATH(
+      {
+        EXPECT_CALL(
+            otp_,
+            read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET))
+            .WillOnce(Return(0xA5A5A5A5));
+
+        uint32_t flash_exec = 0;
+        sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam(),
+                             &flash_exec);
+      },
+      "");
+}
+
+INSTANTIATE_TEST_SUITE_P(NonTestOperationalStatesDeathTest,
+                         SigverifyInNonTestStates,
                          testing::ValuesIn(kLcStatesNonTestOperational));
 
 class SigverifyInTestStates : public SigverifyInLcState {};
