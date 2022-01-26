@@ -31,7 +31,11 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
+    cfg.otp_en_es_fw_read_vif.drive(.val(cfg.otp_en_es_fw_read));
+    cfg.otp_en_es_fw_over_vif.drive(.val(cfg.otp_en_es_fw_over));
+
     super.dut_init();
+
     if (do_entropy_src_init) entropy_src_init();
   endtask
 
@@ -96,10 +100,6 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
   // setup basic entropy_src features
   virtual task entropy_src_init();
-    // Fuses
-    cfg.otp_en_es_fw_read_vif.drive(.val(cfg.otp_en_es_fw_read));
-    cfg.otp_en_es_fw_over_vif.drive(.val(cfg.otp_en_es_fw_over));
-
     // Controls
     ral.entropy_control.es_type.set(cfg.type_bypass);
     ral.entropy_control.es_route.set(cfg.route_software);
