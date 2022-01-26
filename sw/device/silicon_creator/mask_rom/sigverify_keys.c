@@ -185,29 +185,8 @@ static rom_error_t key_is_valid_in_lc_state_test(
 static rom_error_t key_is_valid(sigverify_key_type_t key_type,
                                 lifecycle_state_t lc_state, size_t key_index) {
   switch (launder32(lc_state)) {
-    case kLcStateTestUnlocked0:
-      HARDENED_CHECK_EQ(lc_state, kLcStateTestUnlocked0);
-      return key_is_valid_in_lc_state_test(key_type);
-    case kLcStateTestUnlocked1:
-      HARDENED_CHECK_EQ(lc_state, kLcStateTestUnlocked1);
-      return key_is_valid_in_lc_state_test(key_type);
-    case kLcStateTestUnlocked2:
-      HARDENED_CHECK_EQ(lc_state, kLcStateTestUnlocked2);
-      return key_is_valid_in_lc_state_test(key_type);
-    case kLcStateTestUnlocked3:
-      HARDENED_CHECK_EQ(lc_state, kLcStateTestUnlocked3);
-      return key_is_valid_in_lc_state_test(key_type);
-    case kLcStateTestUnlocked4:
-      HARDENED_CHECK_EQ(lc_state, kLcStateTestUnlocked4);
-      return key_is_valid_in_lc_state_test(key_type);
-    case kLcStateTestUnlocked5:
-      HARDENED_CHECK_EQ(lc_state, kLcStateTestUnlocked5);
-      return key_is_valid_in_lc_state_test(key_type);
-    case kLcStateTestUnlocked6:
-      HARDENED_CHECK_EQ(lc_state, kLcStateTestUnlocked6);
-      return key_is_valid_in_lc_state_test(key_type);
-    case kLcStateTestUnlocked7:
-      HARDENED_CHECK_EQ(lc_state, kLcStateTestUnlocked7);
+    case kLcStateTest:
+      HARDENED_CHECK_EQ(lc_state, kLcStateTest);
       return key_is_valid_in_lc_state_test(key_type);
     case kLcStateProd:
       HARDENED_CHECK_EQ(lc_state, kLcStateProd);

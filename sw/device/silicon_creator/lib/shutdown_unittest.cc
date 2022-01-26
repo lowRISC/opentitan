@@ -505,10 +505,17 @@ TEST_F(ShutdownTest, InitializeRma) {
 TEST_F(ShutdownTest, RedactPolicyManufacturing) {
   // Devices in manufacturing or RMA states should not redact errors regardless
   // of the redaction level set by OTP.
-  constexpr std::array<lifecycle_state_t, 9> kManufacturingStates = {
-      kLcStateTestUnlocked0, kLcStateTestUnlocked1, kLcStateTestUnlocked2,
-      kLcStateTestUnlocked3, kLcStateTestUnlocked4, kLcStateTestUnlocked5,
-      kLcStateTestUnlocked6, kLcStateTestUnlocked7, kLcStateRma};
+  constexpr std::array<uint32_t, 9> kManufacturingStates = {
+      LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED0,
+      LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED1,
+      LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED2,
+      LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED3,
+      LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED4,
+      LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED5,
+      LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED6,
+      LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED7,
+      LC_CTRL_LC_STATE_STATE_VALUE_RMA,
+  };
   for (const auto state : kManufacturingStates) {
     EXPECT_ABS_READ32(
         TOP_EARLGREY_LC_CTRL_BASE_ADDR + LC_CTRL_LC_STATE_REG_OFFSET,
@@ -519,8 +526,11 @@ TEST_F(ShutdownTest, RedactPolicyManufacturing) {
 
 TEST_F(ShutdownTest, RedactPolicyProduction) {
   // Production states should read redaction level from OTP.
-  constexpr std::array<lifecycle_state_t, 3> kProductionStates = {
-      kLcStateProd, kLcStateProdEnd, kLcStateDev};
+  constexpr std::array<uint32_t, 3> kProductionStates = {
+      LC_CTRL_LC_STATE_STATE_VALUE_DEV,
+      LC_CTRL_LC_STATE_STATE_VALUE_PROD,
+      LC_CTRL_LC_STATE_STATE_VALUE_PROD_END,
+  };
   for (const auto state : kProductionStates) {
     EXPECT_ABS_READ32(
         TOP_EARLGREY_LC_CTRL_BASE_ADDR + LC_CTRL_LC_STATE_REG_OFFSET,
@@ -536,51 +546,25 @@ TEST_F(ShutdownTest, RedactPolicyProduction) {
 TEST_F(ShutdownTest, RedactPolicyInvalid) {
   // Invalid states should result in the highest redaction level regardless of
   // the redaction level set by OTP.
-  constexpr std::array<lifecycle_state_t, 11> kInvalidStates = {
-      kLcStateTestLocked0, kLcStateTestLocked1, kLcStateTestLocked2,
-      kLcStateTestLocked3, kLcStateTestLocked4, kLcStateTestLocked5,
-      kLcStateTestLocked6, kLcStateScrap,       kLcStatePostTransition,
-      kLcStateEscalate,    kLcStateInvalid};
-  for (const auto state : kInvalidStates) {
-    EXPECT_ABS_READ32(
-        TOP_EARLGREY_LC_CTRL_BASE_ADDR + LC_CTRL_LC_STATE_REG_OFFSET,
-        static_cast<uint32_t>(state));
-    EXPECT_EQ(shutdown_redact_policy(), kShutdownErrorRedactAll);
-  }
+  EXPECT_ABS_READ32(
+      TOP_EARLGREY_LC_CTRL_BASE_ADDR + LC_CTRL_LC_STATE_REG_OFFSET, 0);
+  EXPECT_EQ(shutdown_redact_policy(), kShutdownErrorRedactAll);
 }
 
 TEST_F(ShutdownTest, InitializeManufacturing) {
   // OTP reads and alert setup should be skipped in the TEST_UNLOCKED lifecycle
   // states.
-  constexpr std::array<lifecycle_state_t, 8> kManufacturingStates = {
-      kLcStateTestUnlocked0, kLcStateTestUnlocked1, kLcStateTestUnlocked2,
-      kLcStateTestUnlocked3, kLcStateTestUnlocked4, kLcStateTestUnlocked5,
-      kLcStateTestUnlocked6, kLcStateTestUnlocked7,
-  };
-  for (auto state : kManufacturingStates) {
-    EXPECT_EQ(shutdown_init(state), kErrorOk);
-  }
+  EXPECT_EQ(shutdown_init(kLcStateTest), kErrorOk);
 }
 
 TEST_F(ShutdownTest, InitializeInvalid) {
-  // Invalid states (such as the INVALID lifecycle state itself) should be
-  // treated as PROD.
-  constexpr std::array<lifecycle_state_t, 12> kInvalidStates = {
-      kLcStateRaw,         kLcStateTestLocked0,
-      kLcStateTestLocked1, kLcStateTestLocked2,
-      kLcStateTestLocked3, kLcStateTestLocked4,
-      kLcStateTestLocked5, kLcStateTestLocked6,
-      kLcStateScrap,       kLcStatePostTransition,
-      kLcStateEscalate,    kLcStateInvalid,
-  };
-  for (auto state : kInvalidStates) {
-    SetupOtpReads();
-    ExpectFinalize(kErrorShutdownBadLcState);
+  SetupOtpReads();
+  ExpectFinalize(kErrorShutdownBadLcState);
 
-    // Note: the unmocked implementation of `shutdown_finalize` will never
-    // return and therefore `shutdown_init` will not return.
-    EXPECT_EQ(shutdown_init(state), kErrorShutdownBadLcState);
-  }
+  // Note: the unmocked implementation of `shutdown_finalize` will never
+  // return and therefore `shutdown_init` will not return.
+  EXPECT_EQ(shutdown_init(static_cast<lifecycle_state_t>(0)),
+            kErrorShutdownBadLcState);
 }
 
 TEST(ShutdownModule, RedactErrors) {

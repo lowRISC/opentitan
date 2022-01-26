@@ -199,7 +199,7 @@ void mask_rom_main(void) {
   // TODO(lowrisc/opentitan#7894): What (if anything) should we print at
   // startup?
   log_printf("OpenTitan: \"version-tag\"\r\n");
-  log_printf("lc_state: %s\r\n", lifecycle_state_name_get(lc_state));
+  log_printf("lc_state: 0x%x\r\n", (unsigned int)lifecycle_raw_state_get());
 
   // TODO(lowrisc/opentitan#1513): Switch to EEPROM SPI device bootstrap
   // protocol.

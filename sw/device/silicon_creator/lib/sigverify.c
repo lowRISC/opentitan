@@ -207,14 +207,7 @@ static rom_error_t sigverify_encoded_message_check(
 static rom_error_t sigverify_use_sw_rsa_verify(lifecycle_state_t lc_state,
                                                hardened_bool_t *use_sw) {
   switch (lc_state) {
-    case kLcStateTestUnlocked0:
-    case kLcStateTestUnlocked1:
-    case kLcStateTestUnlocked2:
-    case kLcStateTestUnlocked3:
-    case kLcStateTestUnlocked4:
-    case kLcStateTestUnlocked5:
-    case kLcStateTestUnlocked6:
-    case kLcStateTestUnlocked7:
+    case kLcStateTest:
       // Don't read from OTP during manufacturing. Use software
       // implementation by default.
       *use_sw = kHardenedBoolTrue;
