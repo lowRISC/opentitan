@@ -93,7 +93,7 @@ It is the only token among those listed that is a global constant and stored in 
 
 All others CAN be device unique and are stored in OTP.
 
-### Token Usage Limits
+### Transition Counter Limits
 
 For conditional transitions, there is a limit to how many times they can be attempted.
 This is to prevent an attacker from brute-forcing any specific token, as this also helps to reduce the overall required token size.
