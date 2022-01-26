@@ -270,7 +270,7 @@ module lc_ctrl_fsm
 
         // If the clock mux has been steered, double check that this is still the case.
         // Otherwise abort the transition operation.
-        if (lc_clk_byp_req != lc_clk_byp_ack[1]) begin
+        if (lc_clk_byp_req_o != lc_clk_byp_ack[1]) begin
             fsm_state_d = PostTransSt;
             otp_prog_error_o = 1'b1;
         end
@@ -381,7 +381,7 @@ module lc_ctrl_fsm
 
         // If the clock mux has been steered, double check that this is still the case.
         // Otherwise abort the transition operation.
-        if (lc_clk_byp_req != lc_clk_byp_ack[2]) begin
+        if (lc_clk_byp_req_o != lc_clk_byp_ack[2]) begin
             fsm_state_d = PostTransSt;
             otp_prog_error_o = 1'b1;
         end
