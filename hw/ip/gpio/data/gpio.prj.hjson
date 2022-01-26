@@ -20,7 +20,7 @@
       {
         version:            "1.1",
         life_stage:         "L1",
-        design_stage:       "D2",
+        design_stage:       "D2S",
         verification_stage: "V2",
         dif_stage:          "S1",
         notes:              "Rolled back to D2 as the register module is updated",
