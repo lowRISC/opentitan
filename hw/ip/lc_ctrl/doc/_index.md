@@ -369,41 +369,43 @@ Parameter                      | Default (Max)         | Top Earlgrey   | Descri
 
 {{< incGenFromIpDesc "../data/lc_ctrl.hjson" "hwcfg" >}}
 
-Signal                       | Direction        | Type                                 | Description
------------------------------|------------------|--------------------------------------|---------------
-`jtag_i`                     | `input`          | `jtag_pkg::jtag_req_t`               | JTAG input signals for life cycle TAP.
-`jtag_o`                     | `output`         | `jtag_pkg::jtag_rsp_t`               | JTAG output signals for life cycle TAP.
-`esc_scrap_state0_tx_i`      | `input`          | `prim_esc_pkg::esc_tx_t`             | Escalation input from alert handler. Moves the life cycle state into an invalid state upon assertion.
-`esc_scrap_state0_rx_o`      | `output`         | `prim_esc_pkg::esc_rx_t`             | Escalation feedback to alert handler
-`esc_scrap_state1_tx_i`      | `input`          | `prim_esc_pkg::esc_tx_t`             | Escalation input from alert handler. Moves the life cycle state into an invalid state upon assertion.
-`esc_scrap_state1_rx_o`      | `output`         | `prim_esc_pkg::esc_rx_t`             | Escalation feedback to alert handler
-`pwr_lc_i`                   | `input`          | `pwrmgr::pwr_lc_req_t`               | Initialization request coming from power manager.
-`pwr_lc_o`                   | `output`         | `pwrmgr::pwr_lc_rsp_t`               | Initialization response and programming idle state going to power manager.
-`lc_otp_program_o`           | `output`         | `otp_ctrl_pkg::lc_otp_program_req_t` | Life cycle state transition request.
-`lc_otp_program_i`           | `input`          | `otp_ctrl_pkg::lc_otp_program_rsp_t` | Life cycle state transition response.
-`kmac_data_o`                | `output`         | `kmac_pkg::app_req_t`                | Life cycle RAW token hashing request.
-`kmac_data_i`                | `input`          | `kmac_pkg::app_rsp_t`                | Life cycle RAW token hashing response.
-`otp_lc_data_i`              | `input`          | `otp_ctrl_pkg::otp_lc_data_t`        | Life cycle state output holding the current life cycle state, the value of the transition counter and the tokens needed for life cycle transitions.
-`lc_keymgr_div_o`            | `output`         | `lc_keymgr_div_t`                    | Life cycle state group diversification value.
-`lc_flash_rma_seed_o`        | `output`         | `lc_flash_rma_seed_t`                | Seed for flash RMA.
-`otp_device_id_i`            | `input`          | `otp_device_id_t`                    | HW_CFG bits from OTP ({{< regref DEVICE_ID_0 >}}).
-`otp_manuf_state_i`          | `input`          | `otp_manuf_state_t`                  | HW_CFG bits from OTP ({{< regref MANUF_STATE_0 >}}).
-`lc_dft_en_o`                | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_nvm_debug_en_o`          | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_hw_debug_en_o`           | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_cpu_en_o`                | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_creator_seed_sw_rw_en_o` | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_owner_seed_sw_rw_en_o`   | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_iso_part_sw_rd_en_o`     | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_iso_part_sw_wr_en_o`     | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_seed_hw_rd_en_o`         | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_keymgr_en_o`             | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_escalate_en_o`           | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_check_byp_en_o`          | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_clk_byp_req_o`           | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_clk_byp_ack_i`           | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_flash_rma_req_o`         | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_flash_rma_ack_i`         | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
+Signal                       | Direction        | Type                                     | Description
+-----------------------------|------------------|------------------------------------------|---------------
+`jtag_i`                     | `input`          | `jtag_pkg::jtag_req_t`                   | JTAG input signals for life cycle TAP.
+`jtag_o`                     | `output`         | `jtag_pkg::jtag_rsp_t`                   | JTAG output signals for life cycle TAP.
+`esc_scrap_state0_tx_i`      | `input`          | `prim_esc_pkg::esc_tx_t`                 | Escalation input from alert handler. Moves the life cycle state into an invalid state upon assertion.
+`esc_scrap_state0_rx_o`      | `output`         | `prim_esc_pkg::esc_rx_t`                 | Escalation feedback to alert handler
+`esc_scrap_state1_tx_i`      | `input`          | `prim_esc_pkg::esc_tx_t`                 | Escalation input from alert handler. Moves the life cycle state into an invalid state upon assertion.
+`esc_scrap_state1_rx_o`      | `output`         | `prim_esc_pkg::esc_rx_t`                 | Escalation feedback to alert handler
+`pwr_lc_i`                   | `input`          | `pwrmgr::pwr_lc_req_t`                   | Initialization request coming from power manager.
+`pwr_lc_o`                   | `output`         | `pwrmgr::pwr_lc_rsp_t`                   | Initialization response and programming idle state going to power manager.
+`lc_otp_program_o`           | `output`         | `otp_ctrl_pkg::lc_otp_program_req_t`     | Life cycle state transition request.
+`lc_otp_program_i`           | `input`          | `otp_ctrl_pkg::lc_otp_program_rsp_t`     | Life cycle state transition response.
+`kmac_data_o`                | `output`         | `kmac_pkg::app_req_t`                    | Life cycle RAW token hashing request.
+`kmac_data_i`                | `input`          | `kmac_pkg::app_rsp_t`                    | Life cycle RAW token hashing response.
+`otp_lc_data_i`              | `input`          | `otp_ctrl_pkg::otp_lc_data_t`            | Life cycle state output holding the current life cycle state, the value of the transition counter and the tokens needed for life cycle transitions.
+`lc_keymgr_div_o`            | `output`         | `lc_keymgr_div_t`                        | Life cycle state group diversification value.
+`lc_flash_rma_seed_o`        | `output`         | `lc_flash_rma_seed_t`                    | Seed for flash RMA.
+`otp_device_id_i`            | `input`          | `otp_device_id_t`                        | HW_CFG bits from OTP ({{< regref DEVICE_ID_0 >}}).
+`otp_manuf_state_i`          | `input`          | `otp_manuf_state_t`                      | HW_CFG bits from OTP ({{< regref MANUF_STATE_0 >}}).
+`lc_otp_vendor_test_o`       | `output`         | `otp_ctrl_pkg::lc_otp_vendor_test_req_t` | Vendor-specific test bits to OTP ({{< regref OTP_VENDOR_TEST_CTRL >}}).
+`lc_otp_vendor_test_i`       | `input`          | `otp_ctrl_pkg::lc_otp_vendor_test_rsp_t` | Vendor-specific test bits to OTP ({{< regref OTP_VENDOR_TEST_STATUS >}}).
+`lc_dft_en_o`                | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
+`lc_nvm_debug_en_o`          | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
+`lc_hw_debug_en_o`           | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
+`lc_cpu_en_o`                | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
+`lc_creator_seed_sw_rw_en_o` | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
+`lc_owner_seed_sw_rw_en_o`   | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
+`lc_iso_part_sw_rd_en_o`     | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
+`lc_iso_part_sw_wr_en_o`     | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
+`lc_seed_hw_rd_en_o`         | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
+`lc_keymgr_en_o`             | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
+`lc_escalate_en_o`           | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
+`lc_check_byp_en_o`          | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
+`lc_clk_byp_req_o`           | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
+`lc_clk_byp_ack_i`           | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
+`lc_flash_rma_req_o`         | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
+`lc_flash_rma_ack_i`         | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
 
 #### Power Manager Interface
 
