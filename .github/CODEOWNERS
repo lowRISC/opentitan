@@ -71,6 +71,6 @@ COPYING*            @asb
 /util/licence-checker.hjson  @asb
 
 # CI and testing
-/ci/                @mcy
+/ci/                @mcy @milesdai @rswarbrick
 /test/              @mcy
-azure_pipelines.yml @mcy
+azure-pipelines.yml @mcy @milesdai @rswarbrick
