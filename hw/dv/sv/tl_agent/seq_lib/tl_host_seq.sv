@@ -27,7 +27,7 @@ class tl_host_seq #(type REQ_T = tl_seq_item) extends tl_host_base_seq #(REQ_T);
   }
 
   virtual task body();
-    set_response_queue_depth(cfg.max_outstanding_req);
+    set_response_queue_depth(-1);
     fork
       begin : wait_response_thread
         for (int i = 0; i < req_cnt; i++) begin
