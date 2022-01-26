@@ -335,8 +335,54 @@
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
-    { name: "STATE.SPARSE",
-      desc: "Sparse manufacturing state encoding."
+    { name: "TRANSITION.CONFIG.REGWEN",
+      desc: '''
+            The transition interface registers are REGWEN protected.
+            The REGWEN is governed by hardware, and is only set to 1 if the interface mutex has been successfully claimed.
+            Also, the REGWEN is set to 0 while a state transition is in progress in order to prevent any accidental changes
+            to the transition interface CSRs during that phase.
+            '''
+    }
+    { name: "MANUF.STATE.SPARSE",
+      desc: '''
+            The manufacturing state vector is sparsely encoded.
+            Although the encoding is randomly chosen, it satisfies specific Hamming weight and Hamming distance
+            thresholds (see lc_ctrl_state_pkg.sv for the statistics).
+            All manufacturing state encodings (except for the RAW state) have been constructed so that all OTP
+            words belonging to the manufacturing state vector have a non-zero value.
+            The individual OTP words are unique and have been engineered so that each word can be incrementally
+            overwritten with another engineered value without causing the ECC bits added by the OTP macro to become
+            inconsistent.
+            '''
+    }
+    { name: "TRANSITION.CTR.SPARSE",
+      desc: '''
+            The life cycle transition counter state is sparsely encoded.
+            Although the encoding is randomly chosen, it satisfies specific Hamming weight and Hamming distance
+            thresholds (see lc_ctrl_state_pkg.sv for the statistics).
+            All counter state encodings (except for the 0 state) have been constructed so that all OTP
+            words belonging to the counter state vector have a non-zero value.
+            The individual OTP words are unique and have been engineered so that each word can be incrementally
+            overwritten with another engineered value without causing the ECC bits added by the OTP macro to become
+            inconsistent.
+            '''
+    }
+    { name: "MANUF.STATE.BKGN_CHK",
+      desc: '''
+            The manufacturing state vector is continuously decoded and checked,
+            once the life cycle controller has initialized. If any mismatch is detected,
+            local escalation is triggered (MAIN.FSM.LOCAL_ESC).
+            '''
+    }
+    { name: "TRANSITION.CTR.BKGN_CHK",
+      desc: '''
+            The life cycle transition counter is continuously decoded and checked,
+            once the life cycle controller has initialized. If any mismatch is detected,
+            local escalation is triggered (MAIN.FSM.LOCAL_ESC).
+            Note that any non-RAW manufacturing state requires the transition counter to
+            be nonzero. Also, the transition counter is used to enforce a limit of maximum
+            24 state transitions in order to guard against bruteforcing.
+            '''
     }
     { name: "MAIN.FSM.SPARSE",
       desc: "The main state FSM is sparsely encoded."
@@ -344,23 +390,30 @@
     { name: "KMAC.FSM.SPARSE",
       desc: "The KMAC interface FSM is sparsely encoded."
     }
-    { name: "KMAC.FSM.LOCAL_ESC",
-      desc: "The KMAC interface FSM is moved into an invalid state upon local escalation."
-    }
     { name: "MAIN.FSM.LOCAL_ESC",
-      desc: "The main state FSM moves to a virtual scrap state upon local escalation."
+      desc: '''
+            Upon local escalation due to an invalid state encoding of the life cycle state vector or
+            an invalid KMAC interface FSM state, the main state FSM moves to the InvalidSt state which
+            behaves like a virtual scrap state.
+            '''
     }
     { name: "MAIN.FSM.GLOBAL_ESC",
-      desc: "The main state FSM moves to a virtual scrap state upon global escalation."
+      desc: '''
+            Upon global escalation (triggered by the alert escalation receivers), the main state FSM
+            moves to the EscalateSt state which behaves like a virtual scrap state.
+            '''
     }
-    { name: "KMAC.CTR.REDUN",
-      desc: "The counter inside the KMAC interface is replicated."
+    { name: "MAIN.CTRL_FLOW.CONSISTENCY",
+      desc: '''
+            The control flow of the main FSM is constructed so that the FSM only progresses linearly in
+            one direction. There are no transition arcs that loop back to previous FSM states.
+            '''
     }
     { name: "INTERSIG.MUBI",
       desc: "Life cycle control signals are multibit encoded."
     }
     { name: "TOKEN.DIGEST",
-      desc: "Life cycle transition tokens are hashed with cSHAKE128."
+      desc: "Life cycle transition tokens are hashed with cSHAKE128, using a custom 'LC_CTRL' prefix."
     }
   ]
 
