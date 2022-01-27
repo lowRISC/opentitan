@@ -50,7 +50,7 @@ def main() -> int:
     sim.state.ext_regs.commit()
 
     sim.start(collect_stats)
-    sim.run(verbose=args.verbose)
+    sim.run(verbose=args.verbose, dump_file=args.dump_regs)
 
     if exp_end_addr is not None:
         if sim.state.pc != exp_end_addr:
@@ -61,12 +61,6 @@ def main() -> int:
 
     if args.dump_dmem is not None:
         args.dump_dmem.write(sim.dump_data())
-
-    if args.dump_regs is not None:
-        for idx, value in enumerate(sim.state.gprs.peek_unsigned_values()):
-            args.dump_regs.write(' x{:<2} = 0x{:08x}\n'.format(idx, value))
-        for idx, value in enumerate(sim.state.wdrs.peek_unsigned_values()):
-            args.dump_regs.write(' w{:<2} = 0x{:064x}\n'.format(idx, value))
 
     if collect_stats:
         assert sim.stats is not None

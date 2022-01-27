@@ -19,7 +19,7 @@ def test_ext_regs_success(tmpdir: py.path.local) -> None:
     """
 
     sim = prepare_sim_for_asm_str(simple_asm, tmpdir, False)
-    sim.run(verbose=False)
+    sim.run(verbose=False, dump_file=None)
 
     assert sim.state.ext_regs.read('ERR_BITS', False) == 0
     assert sim.state.ext_regs.read('FATAL_ALERT_CAUSE', False) == 0
@@ -43,7 +43,7 @@ def test_ext_regs_err_bits_bad(tmpdir: py.path.local) -> None:
     """
 
     sim = prepare_sim_for_asm_str(invalid_jump_asm, tmpdir, False)
-    sim.run(verbose=False)
+    sim.run(verbose=False, dump_file=None)
 
     assert sim.state.ext_regs.read('ERR_BITS', False) == ErrBits.BAD_INSN_ADDR
 
