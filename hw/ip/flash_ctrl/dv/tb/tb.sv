@@ -149,7 +149,7 @@ module tb;
               end : deassert_init
             join_none
           end else begin
-            init = (rst_n === 1'b0) ? 1'b1 : 1'bx;
+            init = 1'b1;
           end
 
           // Wait for the rst_n to change.
