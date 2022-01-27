@@ -604,6 +604,10 @@ module kmac
     endcase
   end
 
+  // LFSR errors
+  logic lfsr_error, kmac_entropy_lfsr_error;
+  assign lfsr_error = kmac_entropy_lfsr_error;
+
   // Counter errors
   logic counter_error, sha3_count_error, key_index_error;
   assign counter_error = sha3_count_error
@@ -1086,9 +1090,10 @@ module kmac
       .hash_threshold_i (entropy_hash_threshold),
 
       // Error
-      .err_o           (entropy_err),
+      .err_o              (entropy_err),
       .sparse_fsm_error_o (kmac_entropy_state_error),
-      .err_processed_i (err_processed)
+      .lfsr_error_o       (kmac_entropy_lfsr_error),
+      .err_processed_i    (err_processed)
     );
   end else begin : gen_empty_entropy
     // If Masking is not used, no need of entropy. Ignore inputs and config; tie output to 0.
@@ -1123,6 +1128,7 @@ module kmac
     assign entropy_err = '{valid: 1'b 0, code: ErrNone, info: '0};
 
     assign kmac_entropy_state_error = 1'b 0;
+    assign kmac_entropy_lfsr_error  = 1'b 0;
 
     logic [1:0] unused_entropy_status;
     assign unused_entropy_status = entropy_in_keyblock;
@@ -1210,6 +1216,7 @@ module kmac
                      | alert_intg_err
                      | sparse_fsm_error
                      | counter_error
+                     | lfsr_error
                      ;
 
   // Make the fatal alert observable via status register.

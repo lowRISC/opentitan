@@ -10,7 +10,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:prim_dom_and_2share
       - lowrisc:prim:arbiter
-      - lowrisc:prim:lfsr
+      - lowrisc:prim:double_lfsr
       - lowrisc:prim:assert
       - lowrisc:prim:count
       - lowrisc:prim:sparse_fsm

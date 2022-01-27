@@ -59,6 +59,7 @@ module kmac_entropy
   // Error output
   output err_t err_o,
   output logic sparse_fsm_error_o,
+  output logic lfsr_error_o,
   input        err_processed_i
 );
 
@@ -298,7 +299,10 @@ module kmac_entropy
   end
   `ASSERT_KNOWN(ModeKnown_A, mode_i)
 
-  prim_lfsr #(
+  // We employ two redundant LFSRs to guard against FI attacks.
+  // If any of the two is glitched and the two LFSR states do not agree,
+  // the FSM below is moved into a terminal error state.
+  prim_double_lfsr #(
     .LfsrDw(EntropyLfsrW),
     .EntropyDw(EntropyLfsrW),
     .StateOutDw(EntropyLfsrW),
@@ -311,8 +315,9 @@ module kmac_entropy
     .seed_en_i(lfsr_seed_en),
     .seed_i   (lfsr_seed),
     .lfsr_en_i(lfsr_en),
-    .entropy_i('0),        // Does not use additional entropy while operating
-    .state_o  (lfsr_data)  // (partial) LFSR state output StateOutDw
+    .entropy_i('0),          // Does not use additional entropy while operating
+    .state_o  (lfsr_data),   // (partial) LFSR state output StateOutDw
+    .err_o    (lfsr_error_o)
   );
   // LFSR ---------------------------------------------------------------------
 
