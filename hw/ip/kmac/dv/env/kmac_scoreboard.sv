@@ -2408,7 +2408,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     end
   endtask : process_tl_access
 
-  virtual function predict_err(bit is_sha3_err = 0, bit is_kmac_err = 0);
+  virtual function void predict_err(bit is_sha3_err = 0, bit is_kmac_err = 0);
     // set interrupt
     if (!intr_kmac_err) intr_kmac_err = 1;
     `uvm_info(`gfn, "raised intr_kmac_err", UVM_HIGH)

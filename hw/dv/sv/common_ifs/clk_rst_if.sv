@@ -211,7 +211,7 @@ interface clk_rst_if #(
   // Scales the clock frequency up and down on every edge.
   function automatic void apply_freq_scaling();
     real scaling;
-    real mult = $urandom_range(0, clk_freq_scale_up) ? 1.0 : -1.0;
+    real mult = $urandom_range(0, int'(clk_freq_scale_up)) ? 1.0 : -1.0;
 
     if ($urandom_range(1, 100) <= clk_freq_scaling_chance_pc) begin
       scaling = 1.0 + mult * real'($urandom_range(0, clk_freq_scaling_pc)) / 100;

@@ -47,6 +47,13 @@ module tb;
     .cio_pcl0_tx_o        (pcl_tx_o[0]   ),
     .cio_pda1_tx_o        (pda_tx_o[1]   ),
     .cio_pcl1_tx_o        (pcl_tx_o[1]   ),
+
+    // TODO: Connect and monitor these ports.
+    .cio_pda0_tx_en_o     (),
+    .cio_pcl0_tx_en_o     (),
+    .cio_pda1_tx_en_o     (),
+    .cio_pcl1_tx_en_o     (),
+
     .intr_done_ch0_o      (intr_done_ch0 ),
     .intr_done_ch1_o      (intr_done_ch1 )
   );

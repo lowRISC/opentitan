@@ -27,7 +27,7 @@ class pattgen_monitor extends dv_base_monitor #(
     collect_trans(phase);
   endtask : run_phase
 
-  virtual task collect_trans(uvm_phase phase);
+  virtual protected task collect_trans(uvm_phase phase);
     for (uint i = 0; i < NUM_PATTGEN_CHANNELS; i++) begin
       fork
         automatic uint channel = i;

@@ -8,6 +8,8 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
   .COV_T(adc_ctrl_env_cov)
 );
 
+  `uvm_component_utils(adc_ctrl_scoreboard)
+
   // Analysis FIFOs for ADC push pull monitor transactions
   adc_push_pull_fifo_t m_adc_push_pull_fifo[ADC_CTRL_CHANNELS];
 
@@ -25,15 +27,6 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // Interrupt asserted this ADC sample
   protected logic m_interrupt_posedge;
-
-
-  `uvm_component_utils(adc_ctrl_scoreboard)
-
-  // local variables
-
-  // TLM agent fifos
-
-  // local queues to hold incoming packets pending comparison
 
   `uvm_component_new
 

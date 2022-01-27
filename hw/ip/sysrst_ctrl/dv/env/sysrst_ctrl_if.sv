@@ -28,7 +28,7 @@ interface sysrst_ctrl_if (
   logic lid_open_out;
 
   // reset value of input signals
-  function automatic reset_signals();
+  function automatic void reset_signals();
     ac_present <= 0;
     key0_in <= 0;
     key1_in <= 0;

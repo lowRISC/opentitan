@@ -16,6 +16,7 @@
 module prim_esc_tb;
 
   import dv_utils_pkg::*;
+  `include "dv_macros.svh"
 
   //////////////////////////////////////////////////////
   // config
@@ -24,6 +25,8 @@ module prim_esc_tb;
   localparam time ClkPeriod  = 10000;
   localparam int  PING_CNT_DW = 1;
   localparam int  TIMEOUT_CYCLES = 1 << (PING_CNT_DW + 6);
+  localparam string MSG_ID = $sformatf("%m");
+
   uint default_spinwait_timeout_ns = 100_000;
 
   //////////////////////////////////////////////////////
@@ -84,6 +87,8 @@ module prim_esc_tb;
   //////////////////////////////////////////////////////
 
   initial begin: p_stimuli
+    time delay_ps;
+
     ping_req = 0;
     esc_req  = 0;
     main_clk.set_period_ps(ClkPeriod);
@@ -93,7 +98,8 @@ module prim_esc_tb;
     // Sequence 1. Random reset during escalation handshake sequence.
     ping_req = 1;
     // Issue async reset between first and fifth clock cycle to reach FSM coverages.
-    #(($urandom_range(1, ClkPeriod) + $urandom_range(1, 5) * ClkPeriod) * 1ps);
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(delay_ps, delay_ps inside {[1:ClkPeriod]};, , MSG_ID)
+    #((delay_ps + $urandom_range(1, 5) * ClkPeriod) * 1ps);
     main_clk.apply_reset();
     ping_req = 0;
 

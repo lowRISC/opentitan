@@ -110,7 +110,10 @@ module tb;
     .cg_en_o(),
 
     .jitter_en_o(clkmgr_if.jitter_en_o),
-    .clocks_o   (clkmgr_if.clocks_o)
+    .clocks_o   (clkmgr_if.clocks_o),
+
+    // TODO: connect and use this interface.
+    .hi_speed_sel_o()
   );
 
   initial begin

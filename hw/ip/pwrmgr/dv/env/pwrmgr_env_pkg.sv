@@ -14,6 +14,10 @@ package pwrmgr_env_pkg;
   import csr_utils_pkg::*;
   import pwrmgr_ral_pkg::*;
   import alert_esc_agent_pkg::*;
+  import pwrmgr_pkg::PowerDomains;
+  import prim_mubi_pkg::mubi4_t;
+  import prim_mubi_pkg::MuBi4False;
+  import prim_mubi_pkg::MuBi4True;
 
   // macro includes
   `include "uvm_macros.svh"

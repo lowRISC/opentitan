@@ -2,8 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class entropy_src_scoreboard extends cip_base_scoreboard
-  #(
+class entropy_src_scoreboard extends cip_base_scoreboard#(
     .CFG_T(entropy_src_env_cfg),
     .RAL_T(entropy_src_reg_block),
     .COV_T(entropy_src_env_cov)
@@ -11,7 +10,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard
 
   `uvm_component_utils(entropy_src_scoreboard)
 
-  virtual entropy_src_cov_if   cov_vif;
+  virtual entropy_src_cov_if cov_vif;
 
   // used by collect_entropy to determine the FSMs phase
   int seed_idx             = 0;

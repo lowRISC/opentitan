@@ -99,7 +99,7 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
     if (!rst_ni) begin
        pend_trans <= '0;
   % for hro_reg in hro_regs_list:
-       exp_vals[${hro_map.get(hro_reg.offset)[0]}] <= ${hro_reg.resval};
+       exp_vals[${hro_map.get(hro_reg.offset)[0]}] <= 'h${f'{hro_reg.resval:0x}'};
   % endfor
     end else begin
       if (h2d.a_valid && d2h.a_ready) begin

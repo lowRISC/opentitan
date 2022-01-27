@@ -8,12 +8,8 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   .COV_T              (clkmgr_env_cov),
   .VIRTUAL_SEQUENCER_T(clkmgr_virtual_sequencer)
 );
-  import prim_mubi_pkg::mubi4_t;
-  import prim_mubi_pkg::MuBi4False;
-  import prim_mubi_pkg::MuBi4True;
 
   `uvm_object_utils(clkmgr_base_vseq)
-
   `uvm_object_new
 
   // The extra cycles to wait after reset before starting any test, required so some CSRs (notably

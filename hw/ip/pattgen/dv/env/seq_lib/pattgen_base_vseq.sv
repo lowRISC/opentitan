@@ -357,7 +357,8 @@ class pattgen_base_vseq extends cip_base_vseq #(
       ch_cfg.prediv dist {
         cfg.seq_cfg.pattgen_max_prediv :/ cfg.seq_cfg.data_top_pct,
         cfg.seq_cfg.pattgen_min_prediv :/ cfg.seq_cfg.data_bottom_pct,
-        [cfg.seq_cfg.pattgen_min_prediv + 1:cfg.seq_cfg.pattgen_max_prediv - 1] :/ cfg.seq_cfg.data_middle_pct
+        [cfg.seq_cfg.pattgen_min_prediv + 1 :
+         cfg.seq_cfg.pattgen_max_prediv - 1] :/ cfg.seq_cfg.data_middle_pct
       };
       ch_cfg.reps dist {
         cfg.seq_cfg.pattgen_max_reps :/ cfg.seq_cfg.data_top_pct,

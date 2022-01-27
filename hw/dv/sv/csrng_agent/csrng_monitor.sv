@@ -60,7 +60,7 @@ class csrng_monitor extends dv_base_monitor #(
       for (int i = 0; i <= cs_item.clen; i++) begin
         csrng_cmd_fifo.get(item);
         if (i == 0) begin
-          cs_item.acmd  = item.h_data[3:0];
+          cs_item.acmd  = acmd_e'(item.h_data[3:0]);
           cs_item.clen  = item.h_data[7:4];
           cs_item.flags = item.h_data[11:8];
           cs_item.glen  = item.h_data[30:12];
@@ -97,7 +97,7 @@ class csrng_monitor extends dv_base_monitor #(
         // TODO: sample any covergroups
         // TODO: Implement suggestion in PR #5456
         cs_item = csrng_item::type_id::create("cs_item");
-        cs_item.acmd = cfg.vif.mon_cb.cmd_req.csrng_req_bus[3:0];
+        cs_item.acmd = acmd_e'(cfg.vif.mon_cb.cmd_req.csrng_req_bus[3:0]);
         if (cs_item.acmd == csrng_pkg::GEN)
           cs_item.glen = cfg.vif.mon_cb.cmd_req.csrng_req_bus[30:12];
         `uvm_info(`gfn, $sformatf("Captured item: %s", cs_item.convert2string()), UVM_HIGH)

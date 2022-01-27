@@ -262,7 +262,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
 
         "command": begin
           spi_segment_item    wr_segment;
-          spi_cmd_reg.direction = get_field_val(ral.command.direction, item.a_data);
+          spi_cmd_reg.direction = spi_dir_e'(get_field_val(ral.command.direction, item.a_data));
           spi_cmd_reg.mode      = spi_mode_e'(get_field_val(ral.command.speed, item.a_data));
           spi_cmd_reg.csaat     = get_field_val(ral.command.csaat, item.a_data);
           spi_cmd_reg.len       = get_field_val(ral.command.len, item.a_data);

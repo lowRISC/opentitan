@@ -186,7 +186,7 @@ module clkmgr_bind;
     .rst_n(rst_io_div2_ni),
     .ip_clk_en(clk_io_div2_en),
     .sw_clk_en(1'b1),
-    .scanmode(0),
+    .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.io_div2_infra == prim_mubi_pkg::MuBi4True)
   );
 
@@ -195,7 +195,7 @@ module clkmgr_bind;
     .rst_n(rst_io_div4_ni),
     .ip_clk_en(clk_io_div4_en),
     .sw_clk_en(1'b1),
-    .scanmode(0),
+    .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.io_div4_infra == prim_mubi_pkg::MuBi4True)
   );
 
@@ -204,7 +204,7 @@ module clkmgr_bind;
     .rst_n(rst_io_ni),
     .ip_clk_en(clk_io_en),
     .sw_clk_en(1'b1),
-    .scanmode(0),
+    .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.io_infra == prim_mubi_pkg::MuBi4True)
   );
 
@@ -213,7 +213,7 @@ module clkmgr_bind;
     .rst_n(rst_main_ni),
     .ip_clk_en(clk_main_en),
     .sw_clk_en(1'b1),
-    .scanmode(0),
+    .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.main_infra == prim_mubi_pkg::MuBi4True)
   );
 
@@ -222,7 +222,7 @@ module clkmgr_bind;
     .rst_n(rst_io_div4_ni),
     .ip_clk_en(clk_io_div4_en),
     .sw_clk_en(1'b1),
-    .scanmode(0),
+    .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.io_div4_secure == prim_mubi_pkg::MuBi4True)
   );
 
@@ -231,7 +231,7 @@ module clkmgr_bind;
     .rst_n(rst_main_ni),
     .ip_clk_en(clk_main_en),
     .sw_clk_en(1'b1),
-    .scanmode(0),
+    .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.main_secure == prim_mubi_pkg::MuBi4True)
   );
 
@@ -240,7 +240,7 @@ module clkmgr_bind;
     .rst_n(rst_usb_ni),
     .ip_clk_en(clk_usb_en),
     .sw_clk_en(1'b1),
-    .scanmode(0),
+    .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.usb_secure == prim_mubi_pkg::MuBi4True)
   );
 
@@ -249,7 +249,7 @@ module clkmgr_bind;
     .rst_n(rst_io_div4_ni),
     .ip_clk_en(clk_io_div4_en),
     .sw_clk_en(1'b1),
-    .scanmode(0),
+    .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.io_div4_timers == prim_mubi_pkg::MuBi4True)
   );
 
@@ -258,7 +258,7 @@ module clkmgr_bind;
     .rst_n(rst_io_div2_ni),
     .ip_clk_en(clk_io_div2_en),
     .sw_clk_en(clk_io_div2_peri_sw_en),
-    .scanmode(0),
+    .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.io_div2_peri == prim_mubi_pkg::MuBi4True)
   );
 
@@ -267,7 +267,7 @@ module clkmgr_bind;
     .rst_n(rst_io_div4_ni),
     .ip_clk_en(clk_io_div4_en),
     .sw_clk_en(clk_io_div4_peri_sw_en),
-    .scanmode(0),
+    .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.io_div4_peri == prim_mubi_pkg::MuBi4True)
   );
 
@@ -276,7 +276,7 @@ module clkmgr_bind;
     .rst_n(rst_io_ni),
     .ip_clk_en(clk_io_en),
     .sw_clk_en(clk_io_peri_sw_en),
-    .scanmode(0),
+    .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.io_peri == prim_mubi_pkg::MuBi4True)
   );
 
@@ -285,7 +285,7 @@ module clkmgr_bind;
     .rst_n(rst_usb_ni),
     .ip_clk_en(clk_usb_en),
     .sw_clk_en(clk_usb_peri_sw_en),
-    .scanmode(0),
+    .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.usb_peri == prim_mubi_pkg::MuBi4True)
   );
 
@@ -294,7 +294,7 @@ module clkmgr_bind;
     .rst_n(rst_io_div4_ni),
     .ip_clk_en(clk_io_div4_en),
     .sw_clk_en(clk_io_div4_otbn_hint || !idle_i[HintIoDiv4Otbn]),
-    .scanmode(0),
+    .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.io_div4_otbn == prim_mubi_pkg::MuBi4True)
   );
 
@@ -303,7 +303,7 @@ module clkmgr_bind;
     .rst_n(rst_main_ni),
     .ip_clk_en(clk_main_en),
     .sw_clk_en(clk_main_aes_hint || !idle_i[HintMainAes]),
-    .scanmode(0),
+    .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.main_aes == prim_mubi_pkg::MuBi4True)
   );
 
@@ -312,7 +312,7 @@ module clkmgr_bind;
     .rst_n(rst_main_ni),
     .ip_clk_en(clk_main_en),
     .sw_clk_en(clk_main_hmac_hint || !idle_i[HintMainHmac]),
-    .scanmode(0),
+    .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.main_hmac == prim_mubi_pkg::MuBi4True)
   );
 
@@ -321,7 +321,7 @@ module clkmgr_bind;
     .rst_n(rst_main_ni),
     .ip_clk_en(clk_main_en),
     .sw_clk_en(clk_main_kmac_hint || !idle_i[HintMainKmac]),
-    .scanmode(0),
+    .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.main_kmac == prim_mubi_pkg::MuBi4True)
   );
 
@@ -330,7 +330,7 @@ module clkmgr_bind;
     .rst_n(rst_main_ni),
     .ip_clk_en(clk_main_en),
     .sw_clk_en(clk_main_otbn_hint || !idle_i[HintMainOtbn]),
-    .scanmode(0),
+    .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.main_otbn == prim_mubi_pkg::MuBi4True)
   );
 endmodule

@@ -31,7 +31,7 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
   endtask
 
   // drive trans received from sequencer
-  protected virtual task get_and_drive();
+  virtual task get_and_drive();
     `uvm_info(`gfn, "get_and_drive: STARTED", UVM_MEDIUM)
     forever begin
       seq_item_port.get_next_item(req);

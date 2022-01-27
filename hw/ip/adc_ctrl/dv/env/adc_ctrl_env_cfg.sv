@@ -115,7 +115,7 @@ class adc_ctrl_env_cfg extends cip_base_env_cfg #(
   endtask
 
   // Trigger an ADC push pull item received event.
-  virtual function trigger_adc_rx_event(int channel);
+  virtual function void trigger_adc_rx_event(int channel);
     ->m_adc_push_pull_ev[channel];
   endfunction
 

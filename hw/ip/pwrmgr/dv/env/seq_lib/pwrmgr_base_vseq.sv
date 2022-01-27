@@ -12,8 +12,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   `uvm_object_new
 
-  import pwrmgr_pkg::PowerDomains;
-
   localparam int ActiveTimeoutInNanoSeconds = 10_000;
   localparam int PropagationToSlowTimeoutInNanoSeconds = 15_000;
   localparam int FetchEnTimeoutNs = 40_000;

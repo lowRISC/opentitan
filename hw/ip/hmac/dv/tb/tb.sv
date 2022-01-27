@@ -42,8 +42,12 @@ module tb;
     .alert_tx_o         ( alert_tx       ),
 
     .intr_hmac_done_o   ( intr_hmac_done ),
-    .intr_fifo_empty_o  ( intr_fifo_empty ),
-    .intr_hmac_err_o    ( intr_hmac_err  )
+    .intr_fifo_empty_o  ( intr_fifo_empty),
+    .intr_hmac_err_o    ( intr_hmac_err  ),
+
+    // TODO: connect this signal and check correctness: it will cause the clock to
+    // be turned off at the wrong time if it is not accurate.
+    .idle_o             ()
   );
 
   assign interrupts[HmacDone]         = intr_hmac_done;

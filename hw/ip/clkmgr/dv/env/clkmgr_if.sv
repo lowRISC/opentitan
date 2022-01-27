@@ -47,103 +47,115 @@ interface clkmgr_if (
   clkmgr_pkg::clkmgr_out_t clocks_o;
 
   // Internal DUT signals.
-`ifndef PATH_TO_DUT
-  `define PATH_TO_DUT tb.dut
+  // TODO: This is a core env component (i.e. reusable entity) that makes hierarchical references
+  // into the DUT. A better strategy would be to bind this interface to the DUT in tb.sv and use
+  // relative paths instead.
+`ifndef CLKMGR_HIER
+  `define CLKMGR_HIER tb.dut
 `endif
 
   // The CSR values from the testbench side.
   clk_enables_t clk_enables_csr;
   always_comb
     clk_enables_csr = '{
-    usb_peri_en: `PATH_TO_DUT.reg2hw.clk_enables.clk_usb_peri_en.q,
-    io_peri_en: `PATH_TO_DUT.reg2hw.clk_enables.clk_io_peri_en.q,
-    io_div2_peri_en: `PATH_TO_DUT.reg2hw.clk_enables.clk_io_div2_peri_en.q,
-    io_div4_peri_en: `PATH_TO_DUT.reg2hw.clk_enables.clk_io_div4_peri_en.q
+    usb_peri_en: `CLKMGR_HIER.reg2hw.clk_enables.clk_usb_peri_en.q,
+    io_peri_en: `CLKMGR_HIER.reg2hw.clk_enables.clk_io_peri_en.q,
+    io_div2_peri_en: `CLKMGR_HIER.reg2hw.clk_enables.clk_io_div2_peri_en.q,
+    io_div4_peri_en: `CLKMGR_HIER.reg2hw.clk_enables.clk_io_div4_peri_en.q
   };
 
   clk_hints_t clk_hints_csr;
   always_comb
     clk_hints_csr = '{
-    otbn_main: `PATH_TO_DUT.reg2hw.clk_hints.clk_main_otbn_hint.q,
-    otbn_io_div4: `PATH_TO_DUT.reg2hw.clk_hints.clk_io_div4_otbn_hint.q,
-    kmac: `PATH_TO_DUT.reg2hw.clk_hints.clk_main_kmac_hint.q,
-    hmac: `PATH_TO_DUT.reg2hw.clk_hints.clk_main_hmac_hint.q,
-    aes: `PATH_TO_DUT.reg2hw.clk_hints.clk_main_aes_hint.q
+    otbn_main: `CLKMGR_HIER.reg2hw.clk_hints.clk_main_otbn_hint.q,
+    otbn_io_div4: `CLKMGR_HIER.reg2hw.clk_hints.clk_io_div4_otbn_hint.q,
+    kmac: `CLKMGR_HIER.reg2hw.clk_hints.clk_main_kmac_hint.q,
+    hmac: `CLKMGR_HIER.reg2hw.clk_hints.clk_main_hmac_hint.q,
+    aes: `CLKMGR_HIER.reg2hw.clk_hints.clk_main_aes_hint.q
   };
 
+  // TODO: Change this to mubi4_t type.
   lc_ctrl_pkg::lc_tx_t extclk_ctrl_csr_sel;
-  always_comb extclk_ctrl_csr_sel = `PATH_TO_DUT.reg2hw.extclk_ctrl.sel.q;
+  always_comb begin
+    extclk_ctrl_csr_sel = lc_ctrl_pkg::lc_tx_t'(`CLKMGR_HIER.reg2hw.extclk_ctrl.sel.q);
+  end
 
+  // TODO: Change this to mubi4_t type.
   lc_ctrl_pkg::lc_tx_t extclk_ctrl_csr_step_down;
-  always_comb extclk_ctrl_csr_step_down = `PATH_TO_DUT.reg2hw.extclk_ctrl.low_speed_sel.q;
+  always_comb begin
+    extclk_ctrl_csr_step_down = lc_ctrl_pkg::lc_tx_t'(
+        `CLKMGR_HIER.reg2hw.extclk_ctrl.low_speed_sel.q);
+  end
 
   prim_mubi_pkg::mubi4_t jitter_enable_csr;
-  always_comb jitter_enable_csr = `PATH_TO_DUT.reg2hw.jitter_enable.q;
+  always_comb begin
+    jitter_enable_csr = prim_mubi_pkg::mubi4_t'(`CLKMGR_HIER.reg2hw.jitter_enable.q);
+  end
 
   freq_measurement_t io_freq_measurement;
   logic io_timeout_err;
-  always @(posedge `PATH_TO_DUT.u_io_meas.clk_i) begin
-    if (`PATH_TO_DUT.u_io_meas.valid_o) begin
-      io_freq_measurement = '{valid: `PATH_TO_DUT.u_io_meas.valid_o,
-                              slow: `PATH_TO_DUT.u_io_meas.slow_o,
-                              fast: `PATH_TO_DUT.u_io_meas.fast_o};
+  always @(posedge `CLKMGR_HIER.u_io_meas.clk_i) begin
+    if (`CLKMGR_HIER.u_io_meas.valid_o) begin
+      io_freq_measurement = '{valid: `CLKMGR_HIER.u_io_meas.valid_o,
+                              slow: `CLKMGR_HIER.u_io_meas.slow_o,
+                              fast: `CLKMGR_HIER.u_io_meas.fast_o};
       `uvm_info("clkmgr_if", $sformatf("Sampled coverage for ClkMesrIo as %p", io_freq_measurement),
                 UVM_MEDIUM)
     end
   end
-  always_comb io_timeout_err = `PATH_TO_DUT.io_timeout_err;
+  always_comb io_timeout_err = `CLKMGR_HIER.io_timeout_err;
 
   freq_measurement_t io_div2_freq_measurement;
   logic io_div2_timeout_err;
-  always @(posedge `PATH_TO_DUT.u_io_div2_meas.clk_i) begin
-    if (`PATH_TO_DUT.u_io_div2_meas.valid_o) begin
-      io_div2_freq_measurement = '{valid: `PATH_TO_DUT.u_io_div2_meas.valid_o,
-                                   slow: `PATH_TO_DUT.u_io_div2_meas.slow_o,
-                                   fast: `PATH_TO_DUT.u_io_div2_meas.fast_o};
+  always @(posedge `CLKMGR_HIER.u_io_div2_meas.clk_i) begin
+    if (`CLKMGR_HIER.u_io_div2_meas.valid_o) begin
+      io_div2_freq_measurement = '{valid: `CLKMGR_HIER.u_io_div2_meas.valid_o,
+                                   slow: `CLKMGR_HIER.u_io_div2_meas.slow_o,
+                                   fast: `CLKMGR_HIER.u_io_div2_meas.fast_o};
       `uvm_info("clkmgr_if", $sformatf(
                 "Sampled coverage for ClkMesrIoDiv2 as %p", io_div2_freq_measurement), UVM_MEDIUM)
     end
   end
-  always_comb io_div2_timeout_err = `PATH_TO_DUT.io_div2_timeout_err;
+  always_comb io_div2_timeout_err = `CLKMGR_HIER.io_div2_timeout_err;
 
   freq_measurement_t io_div4_freq_measurement;
   logic io_div4_timeout_err;
-  always @(posedge `PATH_TO_DUT.u_io_div4_meas.clk_i) begin
-    if (`PATH_TO_DUT.u_io_div4_meas.valid_o) begin
-      io_div4_freq_measurement = '{valid: `PATH_TO_DUT.u_io_div4_meas.valid_o,
-                                   slow: `PATH_TO_DUT.u_io_div4_meas.slow_o,
-                                   fast: `PATH_TO_DUT.u_io_div4_meas.fast_o};
+  always @(posedge `CLKMGR_HIER.u_io_div4_meas.clk_i) begin
+    if (`CLKMGR_HIER.u_io_div4_meas.valid_o) begin
+      io_div4_freq_measurement = '{valid: `CLKMGR_HIER.u_io_div4_meas.valid_o,
+                                   slow: `CLKMGR_HIER.u_io_div4_meas.slow_o,
+                                   fast: `CLKMGR_HIER.u_io_div4_meas.fast_o};
       `uvm_info("clkmgr_if", $sformatf(
                 "Sampled coverage for ClkMesrIoDiv4 as %p", io_div4_freq_measurement), UVM_MEDIUM)
     end
   end
-  always_comb io_div4_timeout_err = `PATH_TO_DUT.io_div4_timeout_err;
+  always_comb io_div4_timeout_err = `CLKMGR_HIER.io_div4_timeout_err;
 
   freq_measurement_t main_freq_measurement;
   logic main_timeout_err;
-  always @(posedge `PATH_TO_DUT.u_main_meas.clk_i) begin
-    if (`PATH_TO_DUT.u_main_meas.valid_o) begin
-      main_freq_measurement = '{valid: `PATH_TO_DUT.u_main_meas.valid_o,
-                                slow: `PATH_TO_DUT.u_main_meas.slow_o,
-                                fast: `PATH_TO_DUT.u_main_meas.fast_o};
+  always @(posedge `CLKMGR_HIER.u_main_meas.clk_i) begin
+    if (`CLKMGR_HIER.u_main_meas.valid_o) begin
+      main_freq_measurement = '{valid: `CLKMGR_HIER.u_main_meas.valid_o,
+                                slow: `CLKMGR_HIER.u_main_meas.slow_o,
+                                fast: `CLKMGR_HIER.u_main_meas.fast_o};
       `uvm_info("clkmgr_if", $sformatf(
                 "Sampled coverage for ClkMesrMain as %p", main_freq_measurement), UVM_MEDIUM)
     end
   end
-  always_comb main_timeout_err = `PATH_TO_DUT.main_timeout_err;
+  always_comb main_timeout_err = `CLKMGR_HIER.main_timeout_err;
 
   freq_measurement_t usb_freq_measurement;
   logic usb_timeout_err;
-  always @(posedge `PATH_TO_DUT.u_usb_meas.clk_i) begin
-    if (`PATH_TO_DUT.u_usb_meas.valid_o) begin
-      usb_freq_measurement = '{valid: `PATH_TO_DUT.u_usb_meas.valid_o,
-                               slow: `PATH_TO_DUT.u_usb_meas.slow_o,
-                               fast: `PATH_TO_DUT.u_usb_meas.fast_o};
+  always @(posedge `CLKMGR_HIER.u_usb_meas.clk_i) begin
+    if (`CLKMGR_HIER.u_usb_meas.valid_o) begin
+      usb_freq_measurement = '{valid: `CLKMGR_HIER.u_usb_meas.valid_o,
+                               slow: `CLKMGR_HIER.u_usb_meas.slow_o,
+                               fast: `CLKMGR_HIER.u_usb_meas.fast_o};
       `uvm_info("clkmgr_if", $sformatf("Sampled coverage for ClkMesrUsb as %p", usb_freq_measurement
                 ), UVM_MEDIUM)
     end
   end
-  always_comb usb_timeout_err = `PATH_TO_DUT.usb_timeout_err;
+  always_comb usb_timeout_err = `CLKMGR_HIER.usb_timeout_err;
 
   function automatic void update_idle(hintables_t value);
     idle_i = value;
@@ -191,11 +203,11 @@ interface clkmgr_if (
   function automatic void force_high_starting_count(clk_mesr_e clk);
     `uvm_info("clkmgr_if", $sformatf("Forcing count of %0s to all 1.", clk.name()), UVM_MEDIUM)
     case (clk)
-      ClkMesrIo: `PATH_TO_DUT.u_io_meas.cnt = '1;
-      ClkMesrIoDiv2: `PATH_TO_DUT.u_io_div2_meas.cnt = '1;
-      ClkMesrIoDiv4: `PATH_TO_DUT.u_io_div4_meas.cnt = '1;
-      ClkMesrMain: `PATH_TO_DUT.u_main_meas.cnt = '1;
-      ClkMesrUsb: `PATH_TO_DUT.u_usb_meas.cnt = '1;
+      ClkMesrIo: `CLKMGR_HIER.u_io_meas.cnt = '1;
+      ClkMesrIoDiv2: `CLKMGR_HIER.u_io_div2_meas.cnt = '1;
+      ClkMesrIoDiv4: `CLKMGR_HIER.u_io_div4_meas.cnt = '1;
+      ClkMesrMain: `CLKMGR_HIER.u_main_meas.cnt = '1;
+      ClkMesrUsb: `CLKMGR_HIER.u_usb_meas.cnt = '1;
       default: ;
     endcase
   endfunction

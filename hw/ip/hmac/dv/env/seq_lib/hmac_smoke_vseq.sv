@@ -29,7 +29,7 @@ class hmac_smoke_vseq extends hmac_base_vseq;
   // HMAC key size will always be 256 bits.
   constraint key_c {
     key.size() == NUM_KEYS;
-  };
+  }
 
   constraint legal_seq_c {
     do_hash_start == 1;
