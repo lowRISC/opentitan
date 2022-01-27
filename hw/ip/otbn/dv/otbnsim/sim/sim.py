@@ -87,7 +87,7 @@ class OTBNSim:
         self.state.commit(sim_stalled=True)
         if fetch_next:
             self._next_insn = self._fetch(self.state.pc)
-        if self.stats is not None:
+        if self.stats is not None and not self.state.wiping():
             self.stats.record_stall()
         if verbose:
             self._print_trace(self.state.pc, '(stall)', changes)
