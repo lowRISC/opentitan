@@ -26,7 +26,7 @@ module clkmgr_root_ctrl
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
     .mubi_i(scanmode_i),
-    .mubi_o(scanmode)
+    .mubi_o({scanmode})
   );
 
   prim_clock_gating_sync u_cg (

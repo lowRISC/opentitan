@@ -182,7 +182,7 @@ module rstmgr
   assign hw2reg.err_code.reg_intg_err.d  = 1'b1;
   assign hw2reg.err_code.reg_intg_err.de = reg_intg_err;
   assign hw2reg.err_code.reset_consistency_err.d  = 1'b1;
-  assign hw2reg.err_code.reset_consistency_err.de = |cnsty_chk_errs |
+  assign hw2reg.err_code.reset_consistency_err.de = |cnsty_chk_errs ||
                                                     |shadow_cnsty_chk_errs;
 
   ////////////////////////////////////////////////////
@@ -191,10 +191,10 @@ module rstmgr
   logic [NumAlerts-1:0] alert_test, alerts;
 
   // All of these are fatal alerts
-  assign alerts[0] = reg_intg_err |
-                     |cnsty_chk_errs |
-                     |shadow_cnsty_chk_errs |
-                     |fsm_errs |
+  assign alerts[0] = reg_intg_err ||
+                     |cnsty_chk_errs ||
+                     |shadow_cnsty_chk_errs ||
+                     |fsm_errs ||
                      |shadow_fsm_errs;
 
   assign alert_test = {
@@ -1120,7 +1120,7 @@ module rstmgr
   logic pwrmgr_rst_req;
 
   // there is a valid reset request from pwrmgr
-  assign pwrmgr_rst_req = |pwr_i.rst_lc_req | |pwr_i.rst_sys_req;
+  assign pwrmgr_rst_req = |pwr_i.rst_lc_req || |pwr_i.rst_sys_req;
 
   // The qualification of first reset below could technically be POR as well.
   // However, that would enforce software to clear POR upon cold power up.  While that is

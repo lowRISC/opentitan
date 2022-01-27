@@ -153,7 +153,7 @@ module sram_ctrl
     .clk_i,
     .rst_ni,
     .lc_en_i (lc_escalate_en_i),
-    .lc_en_o (escalate_en)
+    .lc_en_o ({escalate_en})
   );
 
   // SEC_CM: KEY.GLOBAL_ESC
@@ -166,11 +166,11 @@ module sram_ctrl
   // Aggregate external and internal escalation sources. This is used on countermeasures further
   // below (key reset, transaction blocking and scrambling nonce reversal).
   logic local_esc;
-  assign local_esc = escalate                   |
-                     init_error                 |
-                     |bus_integ_error           |
-                     reg2hw.status.escalated.q  |
-                     reg2hw.status.init_error.q |
+  assign local_esc = escalate                   ||
+                     init_error                 ||
+                     |bus_integ_error           ||
+                     reg2hw.status.escalated.q  ||
+                     reg2hw.status.init_error.q ||
                      reg2hw.status.bus_integ_error.q;
 
   ///////////////////////
