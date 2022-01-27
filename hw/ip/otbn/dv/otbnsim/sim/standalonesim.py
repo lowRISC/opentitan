@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+from typing import Optional, TextIO
 from .sim import OTBNSim
 
 _TEST_RND_DATA = \
@@ -16,7 +17,7 @@ _TEST_URND_DATA = [
 
 
 class StandaloneSim(OTBNSim):
-    def run(self, verbose: bool) -> int:
+    def run(self, verbose: bool, dump_file: Optional[TextIO]) -> int:
         '''Run until ECALL.
 
         Return the number of cycles taken.
@@ -30,9 +31,21 @@ class StandaloneSim(OTBNSim):
             self.step(verbose)
             insn_count += 1
 
+            # If an instruction requests RND data, make it available
+            # immediately.
             if self.state.wsrs.RND.pending_request:
-                # If an instruction requests RND data, make it available
-                # immediately.
                 self.state.wsrs.RND.set_unsigned(_TEST_RND_DATA)
 
+            # Dump registers on the first wipe cycle. This makes sure that we
+            # dump them before zeroing.
+            if dump_file is not None and self.state.wiping():
+                self.dump_regs(dump_file)
+                dump_file = None
+
         return insn_count
+
+    def dump_regs(self, tgt: TextIO) -> None:
+        for idx, value in enumerate(self.state.gprs.peek_unsigned_values()):
+            tgt.write(' x{:<2} = 0x{:08x}\n'.format(idx, value))
+        for idx, value in enumerate(self.state.wdrs.peek_unsigned_values()):
+            tgt.write(' w{:<2} = 0x{:064x}\n'.format(idx, value))
