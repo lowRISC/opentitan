@@ -30,15 +30,6 @@ cc_test(
 )
 
 cc_library(
-    name = "abs_mmio",
-    srcs = ["abs_mmio.c"],
-    hdrs = ["abs_mmio.h"],
-    deps = [
-        "//sw/device/lib/base",
-    ],
-)
-
-cc_library(
     name = "mock_abs_mmio",
     testonly = True,
     hdrs = [
@@ -59,8 +50,8 @@ cc_library(
     hdrs = ["sec_mmio.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        ":abs_mmio",
         "//sw/device/lib/base",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib:error",
     ],
 )

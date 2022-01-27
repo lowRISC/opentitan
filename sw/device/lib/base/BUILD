@@ -29,6 +29,19 @@ cc_library(
 )
 
 cc_library(
+    name = "abs_mmio",
+    srcs = [
+        "abs_mmio.c",
+    ],
+    hdrs = [
+        "abs_mmio.h",
+    ],
+    deps = [
+        ":base",
+    ],
+)
+
+cc_library(
     name = "mmio",
     srcs = [
         "mmio.c",

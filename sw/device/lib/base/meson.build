@@ -13,6 +13,17 @@ sw_lib_bitfield = declare_dependency(
   )
 )
 
+sw_lib_abs_mmio = declare_dependency(
+  link_with: static_library(
+    'sw_lib_abs_mmio',
+    sources: [
+      'abs_mmio.c',
+    ],
+    dependencies: [],
+  ),
+)
+
+
 # Memory Operations library (sw_lib_mem)
 sw_lib_mem = declare_dependency(
   link_with: static_library(

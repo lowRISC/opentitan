@@ -53,8 +53,8 @@ opentitan_functest(
         "//hw/top_earlgrey:alert_handler_regs",
         "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib:test_main",
-        "//sw/device/silicon_creator/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )
@@ -70,7 +70,6 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:otp",
     ],
@@ -93,7 +92,6 @@ cc_test(
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/base:mock_abs_mmio",
         "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:mock_otp",
         "@googletest//:gtest_main",
@@ -108,8 +106,8 @@ cc_library(
         "//hw/ip/hmac/data:hmac_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/base:abs_mmio",
     ],
 )
 
@@ -159,7 +157,6 @@ cc_library(
         "//sw/device/lib/base/freestanding",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:keymgr_binding",
-        "//sw/device/silicon_creator/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )
@@ -253,8 +250,8 @@ cc_library(
         "//hw/ip/otbn/data:otbn_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/base:abs_mmio",
     ],
 )
 
@@ -318,7 +315,6 @@ cc_library(
         "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
-        "//sw/device/silicon_creator/lib/base:abs_mmio",
     ],
 )
 
@@ -342,8 +338,8 @@ cc_library(
         "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/base:abs_mmio",
     ],
 )
 
@@ -381,7 +377,6 @@ cc_library(
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
-        "//sw/device/silicon_creator/lib/base:abs_mmio",
     ]
 )
 
@@ -439,8 +434,8 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/base:abs_mmio",
     ],
 )
 
@@ -475,7 +470,7 @@ cc_library(
         "//hw/ip/aon_timer/data:aon_timer_regs",
         "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/silicon_creator/lib/base:abs_mmio",
+        "//sw/device/lib/base:abs_mmio",
     ],
 )
 

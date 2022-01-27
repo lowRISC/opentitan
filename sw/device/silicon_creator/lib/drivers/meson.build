@@ -45,7 +45,7 @@ sw_silicon_creator_lib_driver_hmac = declare_dependency(
       'hmac.c',
     ],
     dependencies: [
-      sw_silicon_creator_lib_base_abs_mmio,
+      sw_lib_abs_mmio,
     ],
   ),
 )
@@ -92,7 +92,7 @@ sw_silicon_creator_lib_driver_keymgr = declare_dependency(
       'keymgr.c',
     ],
     dependencies: [
-      sw_silicon_creator_lib_base_abs_mmio,
+      sw_lib_abs_mmio,
       sw_silicon_creator_lib_base_sec_mmio,
     ],
   ),
@@ -152,7 +152,7 @@ sw_silicon_creator_lib_driver_uart = declare_dependency(
     ],
     dependencies: [
       sw_lib_mmio,
-      sw_silicon_creator_lib_base_abs_mmio,
+      sw_lib_abs_mmio,
     ],
   ),
 )
@@ -230,7 +230,7 @@ sw_silicon_creator_lib_driver_retention_sram = declare_dependency(
       'retention_sram.c',
     ],
     dependencies: [
-      sw_silicon_creator_lib_base_abs_mmio,
+      sw_lib_abs_mmio,
     ],
   ),
 )
@@ -278,7 +278,7 @@ sw_silicon_creator_lib_driver_rnd = declare_dependency(
       'rnd.c',
     ],
     dependencies: [
-      sw_silicon_creator_lib_base_abs_mmio,
+      sw_lib_abs_mmio,
       sw_silicon_creator_lib_driver_otp,
     ],
   ),
@@ -308,7 +308,7 @@ sw_silicon_creator_lib_driver_rstmgr = declare_dependency(
       'rstmgr.c',
     ],
     dependencies: [
-      sw_silicon_creator_lib_base_abs_mmio,
+      sw_lib_abs_mmio,
     ],
   ),
 )
@@ -340,7 +340,7 @@ sw_silicon_creator_lib_driver_rstmgr_functest = declare_dependency(
       'rstmgr_functest.c'
     ],
     dependencies: [
-      sw_silicon_creator_lib_base_abs_mmio,
+      sw_lib_abs_mmio,
       sw_silicon_creator_lib_driver_rstmgr,
       sw_silicon_creator_lib_driver_retention_sram,
     ],
@@ -395,7 +395,7 @@ sw_silicon_creator_lib_driver_alert_functest = declare_dependency(
       'alert_functest.c'
     ],
     dependencies: [
-      sw_silicon_creator_lib_base_abs_mmio,
+      sw_lib_abs_mmio,
       sw_silicon_creator_lib_base_sec_mmio,
       sw_silicon_creator_lib_driver_alert,
       sw_silicon_creator_lib_driver_rstmgr,
@@ -417,7 +417,7 @@ sw_silicon_creator_lib_driver_pinmux = declare_dependency(
       'pinmux.c',
     ],
     dependencies: [
-      sw_silicon_creator_lib_base_abs_mmio,
+      sw_lib_abs_mmio,
     ],
   ),
 )
@@ -451,7 +451,7 @@ sw_silicon_creator_lib_driver_watchdog = declare_dependency(
     ],
     dependencies: [
       sw_lib_mmio,
-      sw_silicon_creator_lib_base_abs_mmio,
+      sw_lib_abs_mmio,
     ],
   ),
 )
@@ -484,7 +484,7 @@ sw_silicon_creator_lib_driver_otbn = declare_dependency(
       'otbn.c',
     ],
     dependencies: [
-      sw_silicon_creator_lib_base_abs_mmio,
+      sw_lib_abs_mmio,
     ],
   ),
 )
@@ -537,7 +537,7 @@ sw_silicon_creator_lib_driver_flash_ctrl = declare_dependency(
       'flash_ctrl.c',
     ],
     dependencies: [
-      sw_silicon_creator_lib_base_abs_mmio,
+      sw_lib_abs_mmio,
       sw_silicon_creator_lib_base_sec_mmio,
       sw_silicon_creator_lib_driver_otp,
       sw_lib_hardened,

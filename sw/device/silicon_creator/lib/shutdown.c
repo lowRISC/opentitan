@@ -6,11 +6,11 @@
 
 #include <assert.h>
 
+#include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/stdasm.h"
-#include "sw/device/silicon_creator/lib/base/abs_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"

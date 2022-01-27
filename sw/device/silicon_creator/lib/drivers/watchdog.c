@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 
-#include "sw/device/silicon_creator/lib/base/abs_mmio.h"
+#include "sw/device/lib/base/abs_mmio.h"
 
 #include "aon_timer_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"

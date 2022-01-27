@@ -149,7 +149,7 @@ opentitan_functest(
         ":irq_asm",
         ":test_main",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/silicon_creator/lib/base:abs_mmio",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:watchdog",
@@ -247,7 +247,6 @@ cc_library(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
-        "//sw/device/silicon_creator/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/drivers:otbn",
     ],
 )
@@ -288,7 +287,7 @@ cc_library(
         "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
-        "//sw/device/silicon_creator/lib/base:abs_mmio",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/drivers:alert",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",

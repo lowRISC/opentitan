@@ -30,16 +30,6 @@ test('mock_csr_test', executable(
   cpp_args: ['-DMOCK_CSR'],
 ))
 
-sw_silicon_creator_lib_base_abs_mmio = declare_dependency(
-  link_with: static_library(
-    'sw_silicon_creator_lib_base_abs_mmio',
-    sources: [
-      'abs_mmio.c',
-    ],
-    dependencies: [],
-  ),
-)
-
 sw_silicon_creator_lib_base_mock_abs_mmio = declare_dependency(
   link_with: static_library(
     'mock_abs_mmio',
@@ -64,7 +54,7 @@ sw_silicon_creator_lib_base_sec_mmio = declare_dependency(
       'sec_mmio.c',
     ],
     dependencies: [
-      sw_silicon_creator_lib_base_abs_mmio,
+      sw_lib_abs_mmio,
     ],
   ),
 )

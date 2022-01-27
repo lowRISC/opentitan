@@ -6,7 +6,7 @@
 
 #include <assert.h>
 
-#include "sw/device/silicon_creator/lib/base/abs_mmio.h"
+#include "sw/device/lib/base/abs_mmio.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sram_ctrl_regs.h"  // Generated.
