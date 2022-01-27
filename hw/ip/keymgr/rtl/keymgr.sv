@@ -77,6 +77,8 @@ module keymgr
   `ASSERT_INIT(GenDataWidth_A, GenDataWidth <= KDFMaxWidth)
   `ASSERT_INIT(OutputKeyDiff_A, RndCnstHardOutputSeed != RndCnstSoftOutputSeed)
 
+  import prim_mubi_pkg::mubi4_test_true_strict;
+  import prim_mubi_pkg::mubi4_test_false_strict;
 
   /////////////////////////////////////
   // Anchor incoming seeds and constants
@@ -235,7 +237,7 @@ module keymgr
 
   keymgr_stage_e stage_sel;
   logic invalid_stage_sel;
-  keymgr_gen_out_e key_sel;
+  prim_mubi_pkg::mubi4_t hw_key_sel;
   logic adv_en, id_en, gen_en;
   logic wipe_key;
   hw_key_req_t kmac_key;
@@ -288,7 +290,7 @@ module keymgr
     .data_valid_o(data_valid),
     .working_state_o(hw2reg.working_state.d),
     .root_key_i(otp_key_i),
-    .hw_sel_o(key_sel),
+    .hw_sel_o(hw_key_sel),
     .stage_sel_o(stage_sel),
     .invalid_stage_sel_o(invalid_stage_sel),
     .cdi_sel_o(cdi_sel),
@@ -433,7 +435,8 @@ module keymgr
   assign cipher_seed = cipher_sel == Aes  ? aes_seed  :
                        cipher_sel == Kmac ? kmac_seed :
                        cipher_sel == Otbn ? otbn_seed : RndCnstNoneSeed;
-  assign output_key = (key_sel == HwKey) ? hard_output_seed : soft_output_seed;
+  assign output_key = mubi4_test_true_strict(hw_key_sel) ? hard_output_seed :
+                      soft_output_seed;
   assign gen_in = invalid_stage_sel ? {GenLfsrCopies{lfsr[31:0]}} : {reg2hw.key_version,
                                                                      reg2hw.salt,
                                                                      cipher_seed,
@@ -515,7 +518,7 @@ module keymgr
     .clr_key_i(keymgr_sideload_clr_e'(reg2hw.sideload_clear.q)),
     .wipe_key_i(wipe_key),
     .dest_sel_i(cipher_sel),
-    .key_sel_i(key_sel),
+    .hw_key_sel_i(hw_key_sel),
     .data_en_i(data_en),
     .data_valid_i(data_valid),
     .key_i(kmac_key),
@@ -528,6 +531,18 @@ module keymgr
   );
 
   for (genvar i = 0; i < 8; i++) begin : gen_sw_assigns
+
+    prim_mubi_pkg::mubi4_t [1:0] hw_key_sel_buf;
+    prim_mubi4_sync #(
+      .NumCopies(2),
+      .AsyncOn(0)
+    ) u_mubi_buf (
+      .clk_i('0),
+      .rst_ni('0),
+      .mubi_i(hw_key_sel),
+      .mubi_o(hw_key_sel_buf)
+    );
+
     prim_sec_anchor_buf #(
      .Width(32)
     ) u_prim_buf_share0_d (
@@ -545,14 +560,14 @@ module keymgr
     prim_sec_anchor_buf #(
      .Width(1)
     ) u_prim_buf_share0_de (
-      .in_i(wipe_key | data_valid & (key_sel == SwKey)),
+      .in_i(wipe_key | data_valid & mubi4_test_false_strict(hw_key_sel_buf[0])),
       .out_o(hw2reg.sw_share0_output[i].de)
     );
 
     prim_sec_anchor_buf #(
      .Width(1)
     ) u_prim_buf_share1_de (
-      .in_i(wipe_key | data_valid & (key_sel == SwKey)),
+      .in_i(wipe_key | data_valid & mubi4_test_false_strict(hw_key_sel_buf[1])),
       .out_o(hw2reg.sw_share1_output[i].de)
     );
   end

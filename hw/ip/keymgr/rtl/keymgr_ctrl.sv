@@ -43,7 +43,7 @@ module keymgr_ctrl
 
   // Data input
   input  otp_ctrl_pkg::otp_keymgr_key_t root_key_i,
-  output keymgr_gen_out_e hw_sel_o,
+  output prim_mubi_pkg::mubi4_t hw_sel_o,
   output keymgr_stage_e stage_sel_o,
   output logic invalid_stage_sel_o,
   output logic [CdiWidth-1:0] cdi_sel_o,
@@ -367,9 +367,13 @@ module keymgr_ctrl
     .err_o(cnt_err)
   );
 
-  // TODO: Create a no select option, do not leave this as binary
-  assign hw_sel_o = gen_out_hw_sel ? HwKey : SwKey;
 
+  prim_mubi4_sender u_hw_sel (
+    .clk_i,
+    .rst_ni,
+    .mubi_i (prim_mubi_pkg::mubi4_bool_to_mubi(gen_out_hw_sel)),
+    .mubi_o (hw_sel_o)
+  );
 
   // when in a state that accepts commands, look at op_ack for completion
   // when in a state that does not accept commands, wait for other triggers.
