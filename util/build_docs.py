@@ -124,6 +124,7 @@ config = {
         "hw/ip/pwrmgr/data/pwrmgr_testplan.hjson",
         "hw/ip/rom_ctrl/data/rom_ctrl_testplan.hjson",
         "hw/ip/rstmgr/data/rstmgr_testplan.hjson",
+        "hw/ip/rv_dm/data/rv_dm_testplan.hjson",
         "hw/top_earlgrey/ip_autogen/rv_plic/data/rv_plic_fpv_testplan.hjson",
         "hw/ip/rv_timer/data/rv_timer_testplan.hjson",
         "hw/ip/spi_device/data/spi_device_testplan.hjson",
