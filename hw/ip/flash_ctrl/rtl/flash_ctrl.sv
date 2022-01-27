@@ -1156,8 +1156,13 @@ module flash_ctrl
 
   `ASSERT_KNOWN(TlDValidKnownO_A,       core_tl_o.d_valid )
   `ASSERT_KNOWN(TlAReadyKnownO_A,       core_tl_o.a_ready )
+  `ASSERT_KNOWN_IF(RspPayLoad_A,        core_tl_o, core_tl_o.d_valid)
   `ASSERT_KNOWN(PrimTlDValidKnownO_A,   prim_tl_o.d_valid )
   `ASSERT_KNOWN(PrimTlAReadyKnownO_A,   prim_tl_o.a_ready )
+  `ASSERT_KNOWN_IF(PrimRspPayLoad_A,    prim_tl_o, prim_tl_o.d_valid)
+  `ASSERT_KNOWN(MemTlDValidKnownO_A,    mem_tl_o.d_valid )
+  `ASSERT_KNOWN(MemTlAReadyKnownO_A,    mem_tl_o.a_ready )
+  `ASSERT_KNOWN_IF(MemRspPayLoad_A,     mem_tl_o, mem_tl_o.d_valid)
   `ASSERT_KNOWN(FlashKnownO_A,          {flash_phy_req.req, flash_phy_req.rd,
                                          flash_phy_req.prog, flash_phy_req.pg_erase,
                                          flash_phy_req.bk_erase})
