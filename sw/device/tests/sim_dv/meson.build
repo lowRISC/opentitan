@@ -142,6 +142,28 @@ sw_tests += {
   }
 }
 
+flash_ctrl_lc_rw_en_test_lib = declare_dependency(
+  link_with: static_library(
+    'flash_ctrl_lc_rw_en_test_lib',
+    sources: ['flash_ctrl_lc_rw_en_test.c'],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_dif_flash_ctrl,
+      sw_lib_dif_lc_ctrl,
+      sw_lib_dif_otp_ctrl,
+      sw_lib_dif_kmac,
+      sw_lib_dif_keymgr,
+      sw_lib_testing_flash_ctrl_testutils,
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+sw_tests += {
+  'flash_ctrl_lc_rw_en_test': {
+    'library': flash_ctrl_lc_rw_en_test_lib,
+  }
+}
+
 rom_ctrl_integrity_check_test_lib = declare_dependency(
   link_with: static_library(
     'rom_ctrl_integrity_check_test_lib',

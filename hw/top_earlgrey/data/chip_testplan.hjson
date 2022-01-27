@@ -2380,7 +2380,7 @@
               accessibility of the corresponding partition depending on the signal value.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_flash_ctrl_lc_rw_en"]
     }
     {
       name: chip_sw_flash_creator_seed_wipe_on_rma
@@ -2399,7 +2399,7 @@
               accessibility of the corresponding partition depending on the signal value.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_flash_ctrl_lc_rw_en"]
     }
     {
       name: chip_sw_flash_lc_iso_part_sw_rd_en
@@ -2410,7 +2410,7 @@
               accessibility of the corresponding partition depending on the signal value.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_flash_ctrl_lc_rw_en"]
     }
     {
       name: chip_sw_flash_lc_iso_part_sw_wr_en
@@ -2421,7 +2421,7 @@
               accessibility of the corresponding partition depending on the signal value.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_flash_ctrl_lc_rw_en"]
     }
     {
       name: chip_sw_flash_lc_seed_hw_rd_en
@@ -2433,7 +2433,7 @@
               keymgr.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_flash_ctrl_lc_rw_en"]
     }
     {
       name: chip_sw_flash_lc_escalate_en
