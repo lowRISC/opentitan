@@ -4,7 +4,6 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
-
 #include "sw/device/silicon_creator/lib/drivers/otbn.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/otbn_util.h"
@@ -47,8 +46,9 @@ static const otbn_addr_t kOtbnVarRsaM0Inv =
  * @param dst Address of the destination in OTBN's data memory.
  * @return The result of the operation.
  */
-static otbn_error_t write_rsa_3072_int_to_otbn(
-    otbn_t *otbn, const sigverify_rsa_buffer_t *src, otbn_addr_t dst) {
+static rom_error_t write_rsa_3072_int_to_otbn(otbn_t *otbn,
+                                              const sigverify_rsa_buffer_t *src,
+                                              otbn_addr_t dst) {
   return otbn_copy_data_to_otbn(otbn, kSigVerifyRsaNumWords, src->data, dst);
 }
 
@@ -60,13 +60,13 @@ static otbn_error_t write_rsa_3072_int_to_otbn(
  * @param dst The destination of the copied data in main memory (preallocated).
  * @return The result of the operation.
  */
-static otbn_error_t read_rsa_3072_int_from_otbn(otbn_t *otbn,
-                                                const otbn_addr_t src,
-                                                sigverify_rsa_buffer_t *dst) {
+static rom_error_t read_rsa_3072_int_from_otbn(otbn_t *otbn,
+                                               const otbn_addr_t src,
+                                               sigverify_rsa_buffer_t *dst) {
   return otbn_copy_data_from_otbn(otbn, kSigVerifyRsaNumWords, src, dst->data);
 }
 
-otbn_error_t run_otbn_rsa_3072_modexp(
+rom_error_t run_otbn_rsa_3072_modexp(
     const sigverify_rsa_key_t *public_key,
     const sigverify_rsa_buffer_t *signature,
     sigverify_rsa_buffer_t *recovered_message) {
@@ -74,35 +74,35 @@ otbn_error_t run_otbn_rsa_3072_modexp(
 
   // Initialize OTBN and load the RSA app.
   otbn_init(&otbn);
-  OTBN_RETURN_IF_ERROR(otbn_load_app(&otbn, kOtbnAppRsa));
+  RETURN_IF_ERROR(otbn_load_app(&otbn, kOtbnAppRsa));
 
   // Set the exponent (e).
-  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, 1, &public_key->exponent,
-                                              kOtbnVarRsaInExp));
+  RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, 1, &public_key->exponent,
+                                         kOtbnVarRsaInExp));
 
   // Set the modulus (n).
-  OTBN_RETURN_IF_ERROR(
+  RETURN_IF_ERROR(
       write_rsa_3072_int_to_otbn(&otbn, &public_key->n, kOtbnVarRsaInMod));
 
   // Set the signature.
-  OTBN_RETURN_IF_ERROR(
+  RETURN_IF_ERROR(
       write_rsa_3072_int_to_otbn(&otbn, signature, kOtbnVarRsaInBuf));
 
   // Set the precomputed constant m0_inv.
-  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(
-      &otbn, kOtbnWideWordNumWords, public_key->n0_inv, kOtbnVarRsaM0Inv));
+  RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, kOtbnWideWordNumWords,
+                                         public_key->n0_inv, kOtbnVarRsaM0Inv));
 
   // Start the OTBN routine.
-  OTBN_RETURN_IF_ERROR(otbn_execute_app(&otbn));
+  RETURN_IF_ERROR(otbn_execute_app(&otbn));
 
   // Spin here waiting for OTBN to complete.
-  OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done(&otbn));
+  RETURN_IF_ERROR(otbn_busy_wait_for_done(&otbn));
 
   // Read recovered message out of OTBN dmem.
-  OTBN_RETURN_IF_ERROR(
+  RETURN_IF_ERROR(
       read_rsa_3072_int_from_otbn(&otbn, kOtbnVarRsaOutBuf, recovered_message));
 
-  return kOtbnErrorOk;
+  return kErrorOk;
 }
 
 rom_error_t sigverify_mod_exp_otbn(const sigverify_rsa_key_t *key,
@@ -112,8 +112,8 @@ rom_error_t sigverify_mod_exp_otbn(const sigverify_rsa_key_t *key,
     return kErrorSigverifyBadExponent;
   }
 
-  // Run OTBN application, and convert the OTBN error to a ROM error if needed.
-  FOLD_OTBN_ERROR(run_otbn_rsa_3072_modexp(key, sig, result));
+  // Run OTBN application.
+  RETURN_IF_ERROR(run_otbn_rsa_3072_modexp(key, sig, result));
 
   return kErrorOk;
 }
