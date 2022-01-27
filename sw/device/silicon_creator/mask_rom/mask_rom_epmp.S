@@ -77,6 +77,11 @@ mask_rom_epmp_init:
   li   t0, TOR(0x50000000) // TODO(#7117): generate MMIO end address.
   csrw pmpaddr11, t0
 
+  // Debug ROM
+  // TODO(#11092): use TOP_EARLGREY_RV_DM_ROM_SIZE_BYTES instead of constant
+  li   t0, NAPOT(TOP_EARLGREY_RV_DM_ROM_BASE_ADDR, 0x1000)
+  csrw pmpaddr13, t0
+
   // Stack guard
   la   t0, _epmp_stack_guard_na4
   csrw pmpaddr14, t0
@@ -90,7 +95,8 @@ mask_rom_epmp_init:
            CFG_INDEX(2  % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LR)    /* ROM         */
   li   t1, CFG_INDEX(5  % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LR)    /* eFLASH      */
   li   t2, CFG_INDEX(11 % 4, EPMP_CFG_A_TOR   | EPMP_CFG_LRW)   /* MMIO        */
-  li   t3, CFG_INDEX(14 % 4, EPMP_CFG_A_NA4   | EPMP_CFG_L)   | /* Stack Guard */ \
+  li   t3, CFG_INDEX(13 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRWX)| /* Debug ROM   */ \
+           CFG_INDEX(14 % 4, EPMP_CFG_A_NA4   | EPMP_CFG_L)   | /* Stack Guard */ \
            CFG_INDEX(15 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRW)   /* RAM         */
   csrw pmpcfg0, t0
   csrw pmpcfg1, t1

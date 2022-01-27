@@ -99,6 +99,9 @@ static rom_error_t mask_rom_init(void) {
 
   lc_state = lifecycle_state_get();
 
+  // Update epmp config for debug rom according to lifecycle state.
+  mask_rom_epmp_config_debug_rom(lc_state);
+
   // Re-initialize the watchdog timer.
   watchdog_init(lc_state);
   SEC_MMIO_WRITE_INCREMENT(kWatchdogSecMmioInit);
@@ -110,7 +113,7 @@ static rom_error_t mask_rom_init(void) {
   SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInit);
 
   // Initialize in-memory copy of the ePMP register configuration.
-  mask_rom_epmp_state_init(&epmp);
+  mask_rom_epmp_state_init(&epmp, lc_state);
 
   // Initialize the retention SRAM at power-on.
   //

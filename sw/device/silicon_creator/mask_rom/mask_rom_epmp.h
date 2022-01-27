@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/epmp.h"
 
 #ifdef __cplusplus
@@ -43,8 +44,9 @@ extern "C" {
  * to the hardware configuration.
  *
  * @param[out] state The shadow registers to configure with initial values.
+ * @param lc_state The current lifecycle state to check for debug enable.
  */
-void mask_rom_epmp_state_init(epmp_state_t *state);
+void mask_rom_epmp_state_init(epmp_state_t *state, lifecycle_state_t lc_state);
 
 /**
  * Unlocks the provided ROM_EXT image region with read-execute permissions.
@@ -56,6 +58,14 @@ void mask_rom_epmp_state_init(epmp_state_t *state);
  * @param image Region for executable sections in ROM_EXT image.
  */
 void mask_rom_epmp_unlock_rom_ext_rx(epmp_state_t *state, epmp_region_t image);
+
+/**
+ * Configure the ePMP entry to manage access to Debug ROM based on life cycle
+ * state.
+ *
+ * @param lc_state The current lifecycle state to check for debug enable.
+ */
+void mask_rom_epmp_config_debug_rom(lifecycle_state_t lc_state);
 
 #ifdef __cplusplus
 }  // extern "C"
