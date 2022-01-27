@@ -60,14 +60,14 @@ TEST_F(ImemWriteTest, BadAddressBeyondMemorySize) {
   std::array<uint32_t, 2> test_data = {0};
 
   EXPECT_EQ(otbn_imem_write(OTBN_IMEM_SIZE_BYTES, test_data.data(), 1),
-            kOtbnErrorBadOffsetLen);
+            kErrorOtbnBadOffsetLen);
 }
 
 TEST_F(ImemWriteTest, BadAddressIntegerOverflow) {
   std::array<uint32_t, 4> test_data = {0};
 
   EXPECT_EQ(otbn_imem_write(0xFFFFFFFC, test_data.data(), 1),
-            kOtbnErrorBadOffsetLen);
+            kErrorOtbnBadOffsetLen);
 }
 
 TEST_F(ImemWriteTest, SuccessWithoutOffset) {
@@ -79,7 +79,7 @@ TEST_F(ImemWriteTest, SuccessWithoutOffset) {
   EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET, test_data[0]);
   EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET + 4, test_data[1]);
 
-  EXPECT_EQ(otbn_imem_write(0, test_data.data(), 2), kOtbnErrorOk);
+  EXPECT_EQ(otbn_imem_write(0, test_data.data(), 2), kErrorOk);
 }
 
 TEST_F(ImemWriteTest, SuccessWithOffset) {
@@ -91,7 +91,7 @@ TEST_F(ImemWriteTest, SuccessWithOffset) {
   EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET + 4, test_data[0]);
   EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET + 8, test_data[1]);
 
-  EXPECT_EQ(otbn_imem_write(4, test_data.data(), 2), kOtbnErrorOk);
+  EXPECT_EQ(otbn_imem_write(4, test_data.data(), 2), kErrorOk);
 }
 
 class DmemWriteTest : public OtbnTest {};
@@ -105,7 +105,7 @@ TEST_F(DmemWriteTest, SuccessWithoutOffset) {
   EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET, test_data[0]);
   EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + 4, test_data[1]);
 
-  EXPECT_EQ(otbn_dmem_write(0, test_data.data(), 2), kOtbnErrorOk);
+  EXPECT_EQ(otbn_dmem_write(0, test_data.data(), 2), kErrorOk);
 }
 
 TEST_F(DmemWriteTest, SuccessWithOffset) {
@@ -117,7 +117,7 @@ TEST_F(DmemWriteTest, SuccessWithOffset) {
   EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + 4, test_data[0]);
   EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + 8, test_data[1]);
 
-  EXPECT_EQ(otbn_dmem_write(4, test_data.data(), 2), kOtbnErrorOk);
+  EXPECT_EQ(otbn_dmem_write(4, test_data.data(), 2), kErrorOk);
 }
 
 class DmemReadTest : public OtbnTest {};
@@ -132,7 +132,7 @@ TEST_F(DmemReadTest, SuccessWithoutOffset) {
 
   std::array<uint32_t, 2> test_data = {0};
 
-  EXPECT_EQ(otbn_dmem_read(0, test_data.data(), 2), kOtbnErrorOk);
+  EXPECT_EQ(otbn_dmem_read(0, test_data.data(), 2), kErrorOk);
   EXPECT_THAT(test_data, ElementsAre(0x12345678, 0xabcdef01));
 }
 
@@ -145,7 +145,7 @@ TEST_F(DmemReadTest, SuccessWithOffset) {
 
   std::array<uint32_t, 2> test_data = {0};
 
-  EXPECT_EQ(otbn_dmem_read(4, test_data.data(), 2), kOtbnErrorOk);
+  EXPECT_EQ(otbn_dmem_read(4, test_data.data(), 2), kErrorOk);
   EXPECT_THAT(test_data, ElementsAre(0x12345678, 0xabcdef01));
 }
 
@@ -155,14 +155,14 @@ TEST_F(ControlSoftwareErrorsFatalTest, Success) {
   EXPECT_ABS_WRITE32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
   EXPECT_ABS_READ32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
 
-  EXPECT_EQ(otbn_set_ctrl_software_errs_fatal(true), kOtbnErrorOk);
+  EXPECT_EQ(otbn_set_ctrl_software_errs_fatal(true), kErrorOk);
 }  // namespace
 
 TEST_F(ControlSoftwareErrorsFatalTest, Failure) {
   EXPECT_ABS_WRITE32(base_ + OTBN_CTRL_REG_OFFSET, 0x0);
   EXPECT_ABS_READ32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
 
-  EXPECT_EQ(otbn_set_ctrl_software_errs_fatal(false), kOtbnErrorUnavailable);
+  EXPECT_EQ(otbn_set_ctrl_software_errs_fatal(false), kErrorOtbnUnavailable);
 }
 
 }  // namespace

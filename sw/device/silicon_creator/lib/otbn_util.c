@@ -22,7 +22,7 @@ void otbn_init(otbn_t *ctx) {
   };
 }
 
-otbn_error_t otbn_busy_wait_for_done(otbn_t *ctx) {
+rom_error_t otbn_busy_wait_for_done(otbn_t *ctx) {
   while (otbn_is_busy()) {
   }
 
@@ -30,9 +30,9 @@ otbn_error_t otbn_busy_wait_for_done(otbn_t *ctx) {
   otbn_get_err_bits(&err_bits);
   if (err_bits != kOtbnErrBitsNoError) {
     ctx->error_bits = err_bits;
-    return kOtbnErrorExecutionFailed;
+    return kErrorOtbnExecutionFailed;
   }
-  return kOtbnErrorOk;
+  return kErrorOk;
 }
 
 /**
@@ -58,9 +58,9 @@ bool check_app_address_ranges(const otbn_app_t *app) {
   return true;
 }
 
-otbn_error_t otbn_load_app(otbn_t *ctx, const otbn_app_t app) {
+rom_error_t otbn_load_app(otbn_t *ctx, const otbn_app_t app) {
   if (!check_app_address_ranges(&app)) {
-    return kOtbnErrorInvalidArgument;
+    return kErrorOtbnInvalidArgument;
   }
 
   const size_t imem_num_words = app.imem_end - app.imem_start;
@@ -68,38 +68,37 @@ otbn_error_t otbn_load_app(otbn_t *ctx, const otbn_app_t app) {
 
   ctx->app_is_loaded = false;
 
-  OTBN_RETURN_IF_ERROR(otbn_imem_write(0, app.imem_start, imem_num_words));
+  RETURN_IF_ERROR(otbn_imem_write(0, app.imem_start, imem_num_words));
 
   otbn_zero_dmem();
   if (data_num_words > 0) {
-    OTBN_RETURN_IF_ERROR(
-        otbn_dmem_write(0, app.dmem_data_start, data_num_words));
+    RETURN_IF_ERROR(otbn_dmem_write(0, app.dmem_data_start, data_num_words));
   }
 
   ctx->app = app;
   ctx->app_is_loaded = true;
-  return kOtbnErrorOk;
+  return kErrorOk;
 }
 
-otbn_error_t otbn_execute_app(otbn_t *ctx) {
+rom_error_t otbn_execute_app(otbn_t *ctx) {
   if (!ctx->app_is_loaded) {
-    return kOtbnErrorInvalidArgument;
+    return kErrorOtbnInvalidArgument;
   }
 
   otbn_execute();
-  return kOtbnErrorOk;
+  return kErrorOk;
 }
 
-otbn_error_t otbn_copy_data_to_otbn(otbn_t *ctx, size_t len,
-                                    const uint32_t *src, otbn_addr_t dest) {
-  OTBN_RETURN_IF_ERROR(otbn_dmem_write(dest, src, len));
+rom_error_t otbn_copy_data_to_otbn(otbn_t *ctx, size_t len, const uint32_t *src,
+                                   otbn_addr_t dest) {
+  RETURN_IF_ERROR(otbn_dmem_write(dest, src, len));
 
-  return kOtbnErrorOk;
+  return kErrorOk;
 }
 
-otbn_error_t otbn_copy_data_from_otbn(otbn_t *ctx, size_t len_bytes,
-                                      otbn_addr_t src, uint32_t *dest) {
-  OTBN_RETURN_IF_ERROR(otbn_dmem_read(src, dest, len_bytes));
+rom_error_t otbn_copy_data_from_otbn(otbn_t *ctx, size_t len_bytes,
+                                     otbn_addr_t src, uint32_t *dest) {
+  RETURN_IF_ERROR(otbn_dmem_read(src, dest, len_bytes));
 
-  return kOtbnErrorOk;
+  return kErrorOk;
 }

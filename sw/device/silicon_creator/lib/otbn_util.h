@@ -195,7 +195,7 @@ void otbn_init(otbn_t *ctx);
  * @param app The application to load into OTBN.
  * @return The result of the operation.
  */
-otbn_error_t otbn_load_app(otbn_t *ctx, const otbn_app_t app);
+rom_error_t otbn_load_app(otbn_t *ctx, const otbn_app_t app);
 
 /**
  * Start the OTBN application.
@@ -205,7 +205,7 @@ otbn_error_t otbn_load_app(otbn_t *ctx, const otbn_app_t app);
  * @param ctx The context object.
  * @return The result of the operation.
  */
-otbn_error_t otbn_execute_app(otbn_t *ctx);
+rom_error_t otbn_execute_app(otbn_t *ctx);
 
 /**
  * Busy waits for OTBN to be done with its operation.
@@ -213,7 +213,7 @@ otbn_error_t otbn_execute_app(otbn_t *ctx);
  * @param ctx The context object.
  * @return The result of the operation.
  */
-otbn_error_t otbn_busy_wait_for_done(otbn_t *ctx);
+rom_error_t otbn_busy_wait_for_done(otbn_t *ctx);
 
 /**
  * Copies data from the CPU memory to OTBN data memory.
@@ -224,8 +224,8 @@ otbn_error_t otbn_busy_wait_for_done(otbn_t *ctx);
  * @param src Source of the data to copy.
  * @return The result of the operation.
  */
-otbn_error_t otbn_copy_data_to_otbn(otbn_t *ctx, size_t len,
-                                    const uint32_t *src, otbn_addr_t dest);
+rom_error_t otbn_copy_data_to_otbn(otbn_t *ctx, size_t len, const uint32_t *src,
+                                   otbn_addr_t dest);
 
 /**
  * Copies data from OTBN's data memory to CPU memory.
@@ -237,22 +237,8 @@ otbn_error_t otbn_copy_data_to_otbn(otbn_t *ctx, size_t len,
  *                  (preallocated).
  * @return The result of the operation.
  */
-otbn_error_t otbn_copy_data_from_otbn(otbn_t *ctx, size_t len,
-                                      const otbn_addr_t src, uint32_t *dest);
-
-/**
- * Evaluate an expression and return a mask ROM error if the result is an
- * OTBN error.
- *
- * @param expr_ An expression which results in an otbn_error_t.
- */
-#define FOLD_OTBN_ERROR(expr_)          \
-  do {                                  \
-    otbn_error_t local_error_ = expr_;  \
-    if (local_error_ != kOtbnErrorOk) { \
-      return kErrorOtbnInternal;        \
-    }                                   \
-  } while (0)
+rom_error_t otbn_copy_data_from_otbn(otbn_t *ctx, size_t len,
+                                     const otbn_addr_t src, uint32_t *dest);
 
 #ifdef __cplusplus
 }
