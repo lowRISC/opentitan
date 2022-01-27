@@ -82,7 +82,7 @@ module sysrst_ctrl_keyintr
           key_intr_status_o.ec_rst_l_h2l.de} = h2l_met_pulse;
 
   // Send out aggregated interrupt pulse
-  assign sysrst_ctrl_key_intr_o = |l2h_met_pulse | |h2l_met_pulse;
+  assign sysrst_ctrl_key_intr_o = |l2h_met_pulse || |h2l_met_pulse;
 
   // To write into interrupt status register
   assign key_intr_status_o.pwrb_h2l.d = 1'b1;

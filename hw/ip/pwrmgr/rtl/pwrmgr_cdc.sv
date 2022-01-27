@@ -303,7 +303,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .clk_i,
     .rst_ni,
     .mubi_i(rom_ctrl_done_i),
-    .mubi_o(rom_ctrl_done_o)
+    .mubi_o({rom_ctrl_done_o})
   );
 
   ////////////////////////////////

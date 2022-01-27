@@ -216,14 +216,14 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   // if enable is low, meaning clock is not requested to turn on, the status is
   // don't care.
   // the bit-wise OR of both conditions must be all true.
-  assign clks_enabled = ip_clk_en_q &
+  assign clks_enabled = ip_clk_en_q &&
                         &((ips_clk_en_o & clk_en_status_i) | ~ips_clk_en_o);
 
   // clocks all disabled is the opposite:
   // if enable is low the status must also be low.
   // if enable is high, the status is don't care.
   // the bit-wise OR of both conditions must be all true.
-  assign clks_disabled = ~ip_clk_en_q &
+  assign clks_disabled = ~ip_clk_en_q &&
                          &((~ips_clk_en_o & ~clk_en_status_i) | ips_clk_en_o);
 
 

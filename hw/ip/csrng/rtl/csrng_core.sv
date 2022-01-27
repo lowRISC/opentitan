@@ -1340,7 +1340,7 @@ module csrng_core import csrng_pkg::*; #(
     .clk_i,
     .rst_ni,
     .lc_en_i(lc_hw_debug_en_i),
-    .lc_en_o(lc_hw_debug_en_out)
+    .lc_en_o({lc_hw_debug_en_out})
   );
 
   assign      lc_hw_debug_on = (lc_hw_debug_en_out == lc_ctrl_pkg::On);

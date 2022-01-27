@@ -88,7 +88,7 @@ module clkmgr_byp
     .clk_i,
     .rst_ni,
     .mubi_i(io_clk_byp_ack_i),
-    .mubi_o(io_clk_byp_ack)
+    .mubi_o({io_clk_byp_ack})
   );
 
   prim_mubi4_sync #(
@@ -98,7 +98,7 @@ module clkmgr_byp
     .clk_i,
     .rst_ni,
     .mubi_i(all_clk_byp_ack_i),
-    .mubi_o(all_clk_byp_ack)
+    .mubi_o({all_clk_byp_ack})
   );
 
   // create individual requests
