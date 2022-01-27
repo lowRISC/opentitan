@@ -36,7 +36,7 @@ class key_sideload_monitor extends dv_base_monitor #(
       curr_item.valid = cfg.vif.sideload_key.valid;
       curr_item.key0  = cfg.vif.sideload_key.key[0];
       curr_item.key1  = cfg.vif.sideload_key.key[1];
-      if((prev_item.valid != curr_item.valid) || (prev_item.key0 != curr_item.key0) ||
+      if ((prev_item.valid != curr_item.valid) || (prev_item.key0 != curr_item.key0) ||
          (prev_item.key1 != curr_item.key1)) begin
         analysis_port.write(curr_item);
         prev_item.copy(curr_item);
