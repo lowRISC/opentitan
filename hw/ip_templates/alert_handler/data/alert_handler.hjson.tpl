@@ -17,7 +17,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     { protocol: "tlul", direction: "device" }
   ],
   regwidth: "32",
-  hier_path: "u_reg_wrap"
+  hier_path: "u_reg_wrap.u_reg"
 ##############################################################################
   param_list: [
     // Random netlist constants
