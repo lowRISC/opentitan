@@ -501,10 +501,13 @@ class mem_bkdr_util extends uvm_object;
   endfunction
 
   virtual function void set_mem();
+    bit res;
     `uvm_info(`gfn, "Set memory", UVM_LOW)
-    for (int i = 0; i < size_bytes; i++) begin
-      write8(i, '1);
+    for (int i = 0; i < depth; i++) begin
+      res = uvm_hdl_deposit($sformatf("%0s[%0d]", path, i), {default: '1});
+      `DV_CHECK_EQ(res, 1, $sformatf("set_mem uvm_hdl_deposit failed at index %0d", i))
     end
+
   endfunction
 
   // randomize the memory
