@@ -129,6 +129,5 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/${name}/dv/${name}_sim_cfg.hjson
 ```
 
 ${'##'} Testplan
-<!-- TODO: uncomment the line below after adding the testplan.
-Please make sure the testplan is added to `/util/build_docs.py`. -->
-{{</* incGenFromIpDesc "/hw/ip/${name}/data/${name}_testplan.hjson" "testplan" */>}
+<!-- TODO: Add the testplan to `/util/build_docs.py`. -->
+{{< incGenFromIpDesc "../../data/${name}_testplan.hjson" "testplan" >}
