@@ -12,9 +12,6 @@ class spi_device_env extends cip_base_env #(
   spi_agent spi_device;
   spi_agent m_spi_agent;
   `uvm_component_new
-  
-  
-  
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -26,7 +23,7 @@ class spi_device_env extends cip_base_env #(
     m_spi_agent = spi_agent::type_id::create("m_spi_agent", this);
     uvm_config_db#(spi_agent_cfg)::set(this, "m_spi_agent", "cfg", cfg.m_spi_agent_cfg);
     cfg.m_spi_agent_cfg.en_cov = cfg.en_cov;
-    
+
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -44,9 +41,9 @@ class spi_device_env extends cip_base_env #(
     if (cfg.m_spi_agent_cfg.is_active) begin
       virtual_sequencer.spi_sequencer_h = m_spi_agent.sequencer;
     end
-  //  if (cfg.p_spi_agent_cfg.is_active) begin
- //     virtual_sequencer.spi_sequencer_h = p_spi_agent.sequencer;
- //   end
+   // if (cfg.spi_device_cfg.is_active) begin
+      virtual_sequencer.spi_sequencer_d = spi_device.sequencer;
+   // end
   endfunction
 
 endclass

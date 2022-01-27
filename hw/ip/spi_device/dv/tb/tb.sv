@@ -25,6 +25,7 @@ module tb;
   wire [3:0] sd_out_en;
   wire [3:0] sd_in;
   spi_device_pkg::passthrough_req_t pass_out;
+  spi_device_pkg::passthrough_req_t pass_in;
 
   wire intr_rxf;
   wire intr_rxlvl;
@@ -67,7 +68,7 @@ module tb;
 
     .cio_tpm_csb_i  (tpm_csb   ),
 
-    .passthrough_i  (sd_in     ),
+    .passthrough_i  (pass_in.s   ),
     .passthrough_o  (pass_out  ),
 
     .intr_generic_rx_full_o             (intr_rxf  ),
@@ -83,17 +84,17 @@ module tb;
     .intr_tpm_header_not_empty_o(intr_tpm_header_not_empty),
     .mbist_en_i     (1'b0),
     .scanmode_i     (prim_mubi_pkg::MuBi4False)
-    
   );
 
   assign sck           = spi_if.sck;
   assign csb           = spi_if.csb[0];
   assign tpm_csb       = spi_if.csb[1];
-  
-//  assign spi_p_if.sck = pass_out.sck;
-//  assign spi_p_if.csb = pass_out.csb;
-//  assign spi_p_if.sio = pass_out.s;
-  
+
+  assign spi_p_if.sck = pass_out.sck;
+  assign spi_p_if.csb = pass_out.csb;
+  assign spi_p_if.sio = pass_out.s;
+  assign pass_in.s = spi_p_if.sio;
+
   // TODO: quad SPI mode is currently not yet implemented
   assign sd_in         = {3'b000, spi_if.sio[0]};
   assign spi_if.sio[1] = sd_out_en[1] ? sd_out[1] : 1'bz;
