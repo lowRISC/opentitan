@@ -14,6 +14,10 @@ package rstmgr_env_pkg;
   import csr_utils_pkg::*;
   import rstmgr_ral_pkg::*;
 
+  import prim_mubi_pkg::mubi4_t;
+  import prim_mubi_pkg::MuBi4False;
+  import prim_mubi_pkg::MuBi4True;
+
   import rstmgr_reg_pkg::NumHwResets;
   import rstmgr_reg_pkg::NumSwResets;
 

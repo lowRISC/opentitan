@@ -367,16 +367,16 @@ class kmac_env_cov extends cip_base_env_cov #(.CFG_T(kmac_env_cfg));
    }
   endgroup
 
-  function sample_cfg(bit kmac,
-                      bit xof,
-                      sha3_pkg::keccak_strength_e kstrength,
-                      sha3_pkg::sha3_mode_e kmode,
-                      kmac_pkg::key_len_e key_len,
-                      bit msg_endianness,
-                      bit state_endianness,
-                      bit en_sideload,
-                      kmac_pkg::entropy_mode_e entropy_mode,
-                      bit fast_entropy);
+  function void sample_cfg(bit kmac,
+                           bit xof,
+                           sha3_pkg::keccak_strength_e kstrength,
+                           sha3_pkg::sha3_mode_e kmode,
+                           kmac_pkg::key_len_e key_len,
+                           bit msg_endianness,
+                           bit state_endianness,
+                           bit en_sideload,
+                           kmac_pkg::entropy_mode_e entropy_mode,
+                           bit fast_entropy);
 
     if (cfg.enable_masking) begin
       config_masked_cg.sample(kmac, xof, kstrength, kmode, key_len, msg_endianness,

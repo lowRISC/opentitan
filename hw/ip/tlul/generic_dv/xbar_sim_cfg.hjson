@@ -23,6 +23,9 @@
   // Bypass VCS CHECK_SUM check as the exclusion file is generated without proper CHECK_SUM value
   vcs_cov_analyze_opts: ["-excl_bypass_checks"]
   vcs_cov_report_opts:  ["-excl_bypass_checks"]
+  xcelium_cov_analyze_opts: []
+  xcelium_cov_report_opts:  []
+
   cov_analyze_opts: ["{{tool}_cov_analyze_opts}"]
   cov_report_opts: ["{{tool}_cov_report_opts}"]
 

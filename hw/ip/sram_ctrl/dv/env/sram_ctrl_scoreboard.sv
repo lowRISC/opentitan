@@ -165,7 +165,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     tlul_pkg::tl_a_user_t a_user       = tlul_pkg::tl_a_user_t'(item.a_user);
     prim_mubi_pkg::mubi8_t sram_ifetch = cfg.exec_vif.otp_en_sram_ifetch;
     lc_ctrl_pkg::lc_tx_t hw_debug_en   = cfg.exec_vif.lc_hw_debug_en;
-    prim_mubi_pkg::mubi4_t  csr_exec   = `gmv(ral.exec);
+    prim_mubi_pkg::mubi4_t  csr_exec   = prim_mubi_pkg::mubi4_t'(`gmv(ral.exec));
 
     if (cfg.en_cov) begin
       cov.executable_cg.sample(hw_debug_en,

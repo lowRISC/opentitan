@@ -8,9 +8,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   .COV_T              (rstmgr_env_cov),
   .VIRTUAL_SEQUENCER_T(rstmgr_virtual_sequencer)
 );
-  import prim_mubi_pkg::mubi4_t;
-  import prim_mubi_pkg::MuBi4False;
-  import prim_mubi_pkg::MuBi4True;
 
   `uvm_object_utils(rstmgr_base_vseq)
 

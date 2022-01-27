@@ -20,60 +20,59 @@ class jtag_riscv_monitor extends dv_base_monitor #(
 
   // collect transactions
   virtual protected task collect_trans(uvm_phase phase);
-    jtag_item jt;
-    logic [DMI_ADDRW-1:0] addr = 'X;
-    logic [DMI_DATAW-1:0] wdata = 'X, rdata = 'X;
-    jtag_op_e op_trans = 'X, op = 'X;
-    jtag_op_status_e status = 'X;
-    bit dmi_selected = 0;
+    jtag_item item;
+    jtag_op_e op;
+    logic [DMI_ADDRW-1:0] addr;
+    logic [DMI_DATAW-1:0] data;
+    jtag_op_status_e status;
+    bit dmi_selected;
     ITEM_T monitor_item;
+
     forever begin
-      jtag_item_fifo.get(jt);
-      `uvm_info(`gfn, jt.sprint(uvm_default_line_printer), UVM_HIGH)
-      if (jt.select_ir == 1) begin
+      jtag_item_fifo.get(item);
+      `uvm_info(`gfn, item.sprint(uvm_default_line_printer), UVM_HIGH)
+      if (item.select_ir == 1) begin
         // Instruction register transaction
-        if (jt.ir == JtagDmiAccess) dmi_selected = 1;
+        if (item.ir == JtagDmiAccess) dmi_selected = 1;
         else dmi_selected = 0;
       end else if (dmi_selected) begin
-        // DR transaction and DMI selected by the nstruction register
-        // Extract op from the transaction data register
-        op_trans = jt.dr[DMI_OPW-1 : 0];
-        if (op_trans === DmiRead || op_trans === DmiWrite) begin
+        // DR transaction and DMI selected by the instruction register.
+        // Extract op from the transaction data register.
+        op = item.dr[DMI_OPW-1 : 0];
+        if (op === DmiRead || op === DmiWrite) begin
           // Read / write request
-          op    = op_trans;
-          addr  = jt.dr[DMI_ADDRW + DMI_DATAW + DMI_OPW - 1 : DMI_DATAW + DMI_OPW];
-          wdata = jt.dr[DMI_DATAW + DMI_OPW - 1 : DMI_OPW];
-          `uvm_info(`gfn, $sformatf(
-                    "Got request - op:%s(%h) addr:%h wdata:%h", op.name, op, addr, wdata),
-                    UVM_MEDIUM)
-        end else if (op_trans === DmiStatus) begin
+          addr  = item.dr[DMI_ADDRW + DMI_DATAW + DMI_OPW - 1 : DMI_DATAW + DMI_OPW];
+          data  = item.dr[DMI_DATAW + DMI_OPW - 1 : DMI_OPW];
+          `uvm_info(`gfn, $sformatf("Got request - op:%0s addr:0x%0h data:0x%0h", op.name, addr,
+                                    data), UVM_HIGH)
+        end else if (op === DmiStatus) begin
           // Status / response DR transaction
           // Extract status fields
-          status = jt.dout[DMI_OPW-1 : 0];
-          rdata  = jt.dout[DMI_DATAW+DMI_OPW-1 : DMI_OPW];
+          status = item.dout[DMI_OPW-1 : 0];
+          data   = item.dout[DMI_DATAW+DMI_OPW-1 : DMI_OPW];
           // Only monitor packets for completed transactions -
           // Not retries (status===DmiInProgress)
           if (status === DmiNoErr || status === DmiFail) begin
             `uvm_create_obj(ITEM_T, monitor_item)
             monitor_item.addr   = addr;
             monitor_item.op     = op;
-            monitor_item.data   = (op == DmiRead) ? rdata : wdata;
+            monitor_item.data   = data;
             monitor_item.status = status;
             analysis_port.write(monitor_item);
             `uvm_info(`gfn, monitor_item.sprint(uvm_default_line_printer), UVM_MEDIUM)
           end else if (status === DmiInProgress) begin
-            `uvm_info(`gfn, $sformatf(
-                      "Got busy status (%s) - op:%s(%h) addr:%h", status.name, op.name, op, addr),
-                      UVM_MEDIUM)
+            `uvm_info(`gfn, $sformatf("Got busy status %0s - op:%0s addr:0x%0h", status.name,
+                                      op.name, addr), UVM_MEDIUM)
           end else begin
             if (!cfg.allow_errors) begin
-              `uvm_error(`gfn, $sformatf("Bad status - %s(%h) ", status.name, status))
+              `uvm_error(`gfn, $sformatf("Bad status - %0s(0x%0h) ", status.name, status))
             end else begin
-              `uvm_info(`gfn, $sformatf("Bad status - %s(%h) ", status.name, status), UVM_MEDIUM)
+              `uvm_info(`gfn, $sformatf("Bad status - %0s(0x%0h) ", status.name, status),
+                        UVM_MEDIUM)
             end
           end
         end else begin
-          `uvm_error(`gfn, $sformatf("Bad op - %s(%h) ", op_trans.name, op_trans))
+          `uvm_error(`gfn, $sformatf("Bad op - %0s(0x%0h)", op.name, op))
         end
       end
     end

@@ -49,7 +49,7 @@ class spi_transaction_item extends uvm_sequence_item;
   rand spi_cmd_e cmd;
 
   spi_segment_item  segment, segment_clone;
-  spi_segment_type_e seg_type = 0;
+  spi_segment_type_e seg_type = spi_segment_type_e'(0);
   spi_segment_item   segments[$];
 
 
@@ -81,8 +81,7 @@ class spi_transaction_item extends uvm_sequence_item;
 
   constraint num_segments_c {
     num_segments inside { [spi_num_seg_min:spi_num_seg_max] };
-  };
-
+  }
 
   function void post_randomize();
     generate_segments();

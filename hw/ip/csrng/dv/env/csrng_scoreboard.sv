@@ -113,7 +113,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
         if (addr_phase_write) begin
           if (!more_cmd_data) begin
             cs_item[SW_APP] = csrng_item::type_id::create("cs_item[SW_APP]");
-            cs_item[SW_APP].acmd  = item.a_data[3:0];
+            cs_item[SW_APP].acmd  = acmd_e'(item.a_data[3:0]);
             cs_item[SW_APP].clen  = item.a_data[7:4];
             cs_item[SW_APP].flags = item.a_data[11:8];
             cs_item[SW_APP].glen  = item.a_data[30:12];

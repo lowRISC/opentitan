@@ -245,7 +245,7 @@ package test_vectors_pkg;
 
     while (!$feof(fd)) begin
       // Get the next line
-      $fgets(line, fd);
+      void'($fgets(line, fd));
 
       // Get global security strength, input length, output length
       if (line.getc(0) == "[") begin

@@ -13,6 +13,9 @@ package clkmgr_env_pkg;
   import dv_base_reg_pkg::*;
   import csr_utils_pkg::*;
   import clkmgr_ral_pkg::*;
+  import prim_mubi_pkg::mubi4_t;
+  import prim_mubi_pkg::MuBi4False;
+  import prim_mubi_pkg::MuBi4True;
 
   import lc_ctrl_pkg::lc_tx_t;
   import lc_ctrl_pkg::On;

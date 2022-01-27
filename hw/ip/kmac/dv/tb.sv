@@ -23,6 +23,7 @@ module tb;
   // kmac_app interfaces
   kmac_pkg::app_req_t [kmac_pkg::NumAppIntf-1:0] app_req;
   kmac_pkg::app_rsp_t [kmac_pkg::NumAppIntf-1:0] app_rsp;
+  logic en_masking;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -35,8 +36,9 @@ module tb;
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
   key_sideload_if sideload_if(
-    .clk_i  (clk),
-    .rst_ni (rst_n)
+    .clk_i        (clk),
+    .rst_ni       (rst_n),
+    .sideload_key (kmac_sideload_key)
   );
 
   kmac_app_intf kmac_app_if[kmac_pkg::NumAppIntf](.clk(clk), .rst_n(rst_n));
@@ -62,7 +64,7 @@ module tb;
     .alert_tx_o         (alert_tx ),
 
     // KeyMgr sideload key interface
-    .keymgr_key_i       (sideload_if.sideload_key ),
+    .keymgr_key_i       (kmac_sideload_key),
 
     // KeyMgr KDF datapath
     //
@@ -78,6 +80,9 @@ module tb;
 
     // Idle interface
     .idle_o             (idle),
+
+    // TODO: check this output signal.
+    .en_masking_o       (en_masking),
 
     // EDN interface
     .clk_edn_i          (edn_clk                           ),

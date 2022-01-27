@@ -4,12 +4,8 @@
 
 // The reset test randomly introduces external resets, power glitches, and escalation resets.
 class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
-  import prim_mubi_pkg::mubi4_t;
-  import prim_mubi_pkg::MuBi4False;
-  import prim_mubi_pkg::MuBi4True;
 
   `uvm_object_utils(pwrmgr_reset_vseq)
-
   `uvm_object_new
 
   constraint wakeups_c {wakeups == 0;}

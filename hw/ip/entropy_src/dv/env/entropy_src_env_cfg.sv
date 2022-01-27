@@ -4,9 +4,7 @@
 
 class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_block));
 
-  `uvm_object_utils_begin(entropy_src_env_cfg)
-  `uvm_object_utils_end
-
+  `uvm_object_utils(entropy_src_env_cfg)
   `uvm_object_new
 
   // Ext component cfgs

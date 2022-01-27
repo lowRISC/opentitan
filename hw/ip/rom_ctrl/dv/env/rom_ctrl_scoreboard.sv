@@ -147,7 +147,7 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
-  virtual function check_rom_access(tl_seq_item item);
+  virtual function void check_rom_access(tl_seq_item item);
     bit [ROM_MEM_W-1:0] exp_data;
 
     if (item.is_write()) begin

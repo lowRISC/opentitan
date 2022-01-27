@@ -8,6 +8,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:prim:assert
+      - lowrisc:prim:mubi
     files:
       - clkmgr_pwrmgr_sva_if.sv
     file_type: systemVerilogSource

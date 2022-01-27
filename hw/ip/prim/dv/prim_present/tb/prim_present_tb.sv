@@ -32,6 +32,8 @@ module prim_present_tb;
   localparam int unsigned KeyWidth = 128;
 `endif
 
+  localparam string MSG_ID = $sformatf("%m");
+
   // Max number of rounds according to spec.
   // We redefine this parameter here to avoid clutter from the long package identifier.
   localparam int unsigned NumRounds = crypto_dpi_present_pkg::NumRounds;
@@ -206,7 +208,6 @@ module prim_present_tb;
 
   initial begin : p_stimuli
     int num_trans;
-    string msg_id = $sformatf("%m");
 
     // The key and plaintext/ciphertext to be fed into PRESENT instances.
     bit [KeyWidth-1:0] key;
@@ -238,8 +239,8 @@ module prim_present_tb;
     void'($value$plusargs("smoke_test=%0b", smoke_test));
     num_trans = smoke_test ? 1 : $urandom_range(5000, 25000);
     for (int i = 0; i < num_trans; i++) begin
-      `DV_CHECK_STD_RANDOMIZE_FATAL(plaintext, "", msg_id)
-      `DV_CHECK_STD_RANDOMIZE_FATAL(key, "", msg_id)
+      `DV_CHECK_STD_RANDOMIZE_FATAL(plaintext, "", MSG_ID)
+      `DV_CHECK_STD_RANDOMIZE_FATAL(key, "", MSG_ID)
       test_present(plaintext, key);
     end
 
@@ -251,9 +252,12 @@ module prim_present_tb;
 
   // TODO: perhaps wrap this in a macro?
   initial begin
-    bit poll_for_stop = 1'b1;
-    int unsigned poll_for_stop_interval_ns = 1000;
+    bit poll_for_stop;
+    int unsigned poll_for_stop_interval_ns;
+
+    poll_for_stop = 1'b1;
     void'($value$plusargs("poll_for_stop=%0b", poll_for_stop));
+    poll_for_stop_interval_ns = 1000;
     void'($value$plusargs("poll_for_stop_interval_ns=%0d", poll_for_stop_interval_ns));
     if (poll_for_stop) dv_utils_pkg::poll_for_stop(.interval_ns(poll_for_stop_interval_ns));
   end

@@ -44,7 +44,7 @@ module tb;
     .tl_i                       (tl_if.h2d),
     .tl_o                       (tl_if.d2h),
 
-    .otp_en_csrng_sw_app_read_i (otp_en_cs_sw_app_read),
+    .otp_en_csrng_sw_app_read_i (prim_mubi_pkg::mubi8_t'(otp_en_cs_sw_app_read)),
 
     .lc_hw_debug_en_i           (lc_ctrl_pkg::On),
 
