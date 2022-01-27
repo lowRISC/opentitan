@@ -37,8 +37,8 @@
       if_suffix = '' if if_name is None else '_' + if_name
       esc_if_name = block_name.lower() + if_suffix
       if_desc = '' if if_name is None else '; interface {}'.format(if_name)
-      reg_block_path = 'u_reg' + if_suffix
-      reg_block_path = reg_block_path if block.hier_path is None else block.hier_path + "." + reg_block_path
+      reg_block_path = 'u_reg' + if_suffix if block.hier_path is None else if_suffix
+      reg_block_path = 'u_reg' + if_suffix if block.hier_path is None else if_suffix + block.hier_path
 %>\
 // Block: ${block_name.lower()}${if_desc}
 <%
