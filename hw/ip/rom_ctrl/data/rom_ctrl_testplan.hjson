@@ -43,7 +43,7 @@
             - Check that fatal error is flagged.
             '''
       milestone: V2S
-      tests: []
+      tests: ["rom_ctrl_corrupt_sig_fatal_chk"]
     }
     {
       name: max_throughput_chk

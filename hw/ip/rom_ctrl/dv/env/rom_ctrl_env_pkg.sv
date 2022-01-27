@@ -16,6 +16,7 @@ package rom_ctrl_env_pkg;
   import rom_ctrl_rom_ral_pkg::*;
   import kmac_app_agent_pkg::*;
   import mem_bkdr_util_pkg::*;
+  import prim_mubi_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -39,6 +40,7 @@ package rom_ctrl_env_pkg;
 
   // types
   typedef virtual rom_ctrl_if rom_ctrl_vif;
+  typedef class rom_ctrl_scoreboard;
 
   // functions
 

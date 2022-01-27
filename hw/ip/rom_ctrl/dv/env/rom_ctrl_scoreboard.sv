@@ -16,6 +16,7 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
   prim_mubi_pkg::mubi4_t         digest_good;
   bit                            pwrmgr_complete;
   bit                            keymgr_complete;
+  bit                            disable_rom_acc_chk;
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(kmac_app_item) kmac_req_fifo;
@@ -179,7 +180,7 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
     bit data_phase_write  = (write && channel == DataChannel);
 
     if (ral_name == "rom_ctrl_rom_reg_block") begin
-      if (channel == DataChannel) begin
+      if (channel == DataChannel && !disable_rom_acc_chk) begin
         check_rom_access(item);
       end
       return;

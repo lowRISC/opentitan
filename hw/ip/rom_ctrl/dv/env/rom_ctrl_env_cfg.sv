@@ -25,6 +25,9 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
   // Device-side delay for both push/pull protocols.
   rand int unsigned device_delay_max;
 
+  // A handle to the scoreboard, used to flag expected errors.
+  rom_ctrl_scoreboard scoreboard;
+
   constraint device_delay_max_c {
     solve zero_delays before device_delay_max;
     if (zero_delays) {
@@ -36,7 +39,6 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
       };
     }
   }
-
 
   `uvm_object_utils_begin(rom_ctrl_env_cfg)
   `uvm_object_utils_end
