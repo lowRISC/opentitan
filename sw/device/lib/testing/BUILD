@@ -2,15 +2,27 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-package(default_visibility = ["//visibility:public"])
-
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+
+package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "aes_testutils",
     srcs = ["aes_testutils.c"],
     hdrs = ["aes_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
+)
+
+cc_library(
+    name = "alert_handler_testutils",
+    srcs = ["alert_handler_testutils.c"],
+    hdrs = ["alert_handler_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/dif:alert_handler",
+        "//sw/device/lib/dif:base",
+        "//sw/device/lib/testing/test_framework",
+    ],
 )
 
 cc_library(

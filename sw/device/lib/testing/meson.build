@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Random number generator.
+# Random number generator test utilities
 sw_lib_testing_rand_testutils = declare_dependency(
   link_with: static_library(
     'sw_lib_testing_rand_testutils',
@@ -10,6 +10,7 @@ sw_lib_testing_rand_testutils = declare_dependency(
   ),
 )
 
+# aes test utilities
 sw_lib_testing_aes_testutils = declare_dependency(
   link_with: static_library(
     'sw_lib_testing_aes_testutils',
@@ -23,7 +24,22 @@ sw_lib_testing_aes_testutils = declare_dependency(
   ),
 )
 
-# aon_timer test utilities.
+# alert_handler test utilities
+sw_lib_testing_alert_handler_testutils = declare_dependency(
+  link_with: static_library(
+    'sw_lib_testing_alert_handler_testutils',
+    sources: [
+      hw_ip_alert_handler_reg_h,
+      'alert_handler_testutils.c'
+    ],
+    dependencies: [
+      sw_lib_dif_alert_handler,
+      sw_lib_dif_base,
+    ],
+  ),
+)
+
+# aon_timer test utilities
 sw_lib_testing_aon_timer_testutils = declare_dependency(
   link_with: static_library(
     'sw_lib_testing_aon_timer_testutils',
@@ -38,6 +54,7 @@ sw_lib_testing_aon_timer_testutils = declare_dependency(
   ),
 )
 
+# clkmgr test utilities
 sw_lib_testing_clkmgr_testutils = declare_dependency(
   link_with: static_library(
     'sw_lib_testing_clkmgr_testutils',
@@ -52,7 +69,7 @@ sw_lib_testing_clkmgr_testutils = declare_dependency(
   ),
 )
 
-# hardware entropy complex (entropy_src, csrng, edn) test utilities.
+# hardware entropy complex (entropy_src, csrng, edn) test utilities
 sw_lib_testing_entropy_testutils = declare_dependency(
   link_with: static_library(
     'sw_lib_testing_entropy_testutils',
@@ -69,7 +86,7 @@ sw_lib_testing_entropy_testutils = declare_dependency(
   ),
 )
 
-# pwrmgr test utilities.
+# pwrmgr test utilities
 sw_lib_testing_pwrmgr_testutils = declare_dependency(
   link_with: static_library(
     'sw_lib_testing_pwrmgr_testutils',
@@ -83,7 +100,7 @@ sw_lib_testing_pwrmgr_testutils = declare_dependency(
   ),
 )
 
-# rstmgr test utilities.
+# rstmgr test utilities
 sw_lib_testing_rstmgr_testutils = declare_dependency(
   link_with: static_library(
     'sw_lib_testing_rstmgr_testutils',
@@ -97,6 +114,7 @@ sw_lib_testing_rstmgr_testutils = declare_dependency(
   ),
 )
 
+# rv_plic test utilities
 sw_lib_testing_rv_plic_testutils = declare_dependency(
   link_with: static_library(
     'sw_lib_testing_rv_plic_testutils',
@@ -112,6 +130,7 @@ sw_lib_testing_rv_plic_testutils = declare_dependency(
   ),
 )
 
+# sram_ctrl test utilities
 sw_lib_testing_sram_ctrl_testutils = declare_dependency(
   link_with: static_library(
     'sw_lib_testing_sram_ctrl_testutils',
@@ -125,6 +144,7 @@ sw_lib_testing_sram_ctrl_testutils = declare_dependency(
   ),
 )
 
+# otp_ctrl test utilities
 sw_lib_testing_otp_ctrl_testutils = declare_dependency(
   link_with: static_library(
     'sw_lib_testing_otp_ctrl_testutils',
@@ -139,6 +159,7 @@ sw_lib_testing_otp_ctrl_testutils = declare_dependency(
   ),
 )
 
+# lc_ctrl test utilities
 sw_lib_testing_lc_ctrl_testutils = declare_dependency(
   link_with: static_library(
     'sw_lib_testing_lc_ctrl_testutils',

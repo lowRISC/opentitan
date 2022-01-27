@@ -312,27 +312,6 @@ typedef struct dif_alert_handler_config {
 } dif_alert_handler_config_t;
 
 /**
- * Configures alert handler with runtime information.
- *
- * This function should need to be called once for the lifetime of `handle`.
- *
- * This operation is lock-protected, meaning once the configuration is locked,
- * it cannot be reconfigured until after a system reset. If `locked` is set to
- * `kDifToggleEnabled`, then every lockable configuration will be locked.
- * Otherwise, configurations may only be locked by performing subsequent calls
- * to each component-specific locking DIF: `dif_alert_handler_lock_*(...)`.
- *
- * @param alert_handler An alert handler handle.
- * @param config Runtime configuration parameters.
- * @param locked The locked state to set for each configuration.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_alert_handler_configure(
-    const dif_alert_handler_t *alert_handler, dif_alert_handler_config_t config,
-    dif_toggle_t locked);
-
-/**
  * Configures an alert in the alert handler.
  *
  * This operation is lock-protected, meaning once the configuration is locked,
