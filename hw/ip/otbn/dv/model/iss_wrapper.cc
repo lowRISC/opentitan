@@ -237,6 +237,28 @@ static void read_ext_reg(const std::string &reg_name,
   }
 }
 
+// A specialized version of read_ext_reg that updates a boolean flag
+// (assuming that the ISS will always signal the register as having
+// value 0 or 1). Prints a message to stderr and returns false on
+// error.
+static bool read_ext_flag(const std::string &reg_name,
+                          const std::vector<std::string> &lines, bool *dest) {
+  assert(dest);
+
+  uint32_t dest32 = *dest ? 1 : 0;
+  read_ext_reg(reg_name, lines, &dest32);
+
+  if (dest32 > 1) {
+    std::cerr << "ERROR: Unexpected update to " << reg_name << " with value 0x"
+              << std::hex << dest32 << std::dec
+              << " when we expected a boolean flag.";
+    return false;
+  }
+
+  *dest = dest32 != 0;
+  return true;
+}
+
 ISSWrapper::ISSWrapper(bool enable_secure_wipe)
     : tmpdir(new TmpDir()), enable_secure_wipe(enable_secure_wipe) {
   std::string model_path(find_otbn_model());
@@ -419,13 +441,18 @@ int ISSWrapper::step(bool gen_trace) {
   bool is_stopped = mirrored_.stopped();
   bool done = is_stopped && !was_stopped;
 
-  // Also try to read INSN_CNT, ERR_BITS and STOP_PC. The latter two only get
-  // updated around the end of an operation but the precise timing is slightly
-  // in flux, so it's easiest to just allow updates whenever they arrive.
+  // Also try to read INSN_CNT, ERR_BITS and STOP_PC plus some associated
+  // flags. Some of these flags only get updated around the end of an operation
+  // but the precise timing is slightly fiddly, so it's easiest to just allow
+  // updates whenever they arrive.
   read_ext_reg("INSN_CNT", lines, &mirrored_.insn_cnt);
-  read_ext_reg("RND_REQ", lines, &mirrored_.rnd_req);
   read_ext_reg("ERR_BITS", lines, &mirrored_.err_bits);
   read_ext_reg("STOP_PC", lines, &mirrored_.stop_pc);
+
+  if (!read_ext_flag("RND_REQ", lines, &mirrored_.rnd_req))
+    return -1;
+  if (!read_ext_flag("WIPE_START", lines, &mirrored_.wipe_start))
+    return -1;
 
   return done ? 1 : 0;
 }

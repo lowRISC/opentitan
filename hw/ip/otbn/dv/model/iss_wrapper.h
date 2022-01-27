@@ -21,15 +21,27 @@ struct TmpDir;
 class MirroredRegs {
  public:
   MirroredRegs()
-      : status(0), insn_cnt(0), err_bits(0), rnd_req(0), stop_pc(0) {}
+      : status(0),
+        insn_cnt(0),
+        err_bits(0),
+        stop_pc(0),
+        rnd_req(false),
+        wipe_start(false) {}
 
   uint32_t status;
   uint32_t insn_cnt;
   uint32_t err_bits;
-  uint32_t rnd_req;
 
   // The final PC from the most recent run
   uint32_t stop_pc;
+
+  // We are issuing an EDN request for RND
+  bool rnd_req;
+
+  // This goes high for a single cycle when we start the internal secure wipe
+  // (and can be used as a trigger to check internal state before it gets
+  // trashed)
+  bool wipe_start;
 
   // Execution is stopped if status is either 0 (IDLE) or 0xff (LOCKED)
   bool stopped() const { return status == 0 || status == 0xff; }

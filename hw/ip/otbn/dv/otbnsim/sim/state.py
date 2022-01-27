@@ -456,6 +456,10 @@ class OTBNState:
         # expected to stop.
         self.ext_regs.write('STOP_PC', self.pc, True)
 
+        # Set the WIPE_START flag. This will be cleared again on the
+        # next cycle.
+        self.ext_regs.write('WIPE_START', 1, True)
+
     def set_flags(self, fg: int, flags: FlagReg) -> None:
         '''Update flags for a flag group'''
         self.csrs.flags[fg] = flags
