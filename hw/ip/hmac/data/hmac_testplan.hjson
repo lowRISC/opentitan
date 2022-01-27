@@ -81,6 +81,20 @@
       tests: ["hmac_stress_all"]
     }
     {
+      name: stress_reset_during_process
+      desc: ''' This test complements `hmac_stress_all_with_rand_reset` test to issue reset at
+            special timing.
+
+            Certain FSM states are hard to interrupt by `hmac_stress_all_with_rand_reset`. For
+            example, the FSM state `StPushToMsgFifo` lasts for around 20 cycles out of the entire
+            hmac hashing process. To ensure these FSM states are interrupted by reset, this test
+            issues reset within a random range of cycles after hmac process command is issued, and
+            check if hmac functions correctly after reset is issued.
+            '''
+      milestone: V2
+      tests: ["stress_reset_during_process"]
+    }
+    {
       name: write_config_and_secret_key_during_msg_wr
       desc: "Change config registers and secret keys during msg write, make sure access is blocked."
       milestone: V3

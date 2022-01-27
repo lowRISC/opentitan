@@ -81,6 +81,11 @@
     }
 
     {
+      name: hmac_reset_during_process
+      uvm_test_seq: hmac_reset_during_process_vseq
+    }
+
+    {
       name: hmac_test_sha_vectors
       uvm_test_seq: hmac_test_vectors_sha_vseq
       run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0"]

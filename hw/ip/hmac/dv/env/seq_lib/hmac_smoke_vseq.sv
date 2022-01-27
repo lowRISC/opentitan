@@ -22,6 +22,7 @@ class hmac_smoke_vseq extends hmac_base_vseq;
   rand int        burst_wr_length;
   rand bit        do_hash_start_when_active;
   rand bit        do_hash_start;
+  rand bit        reset_during_hmac_process;
 
   // HMAC key size will always be 256 bits.
   constraint key_c {
@@ -52,6 +53,10 @@ class hmac_smoke_vseq extends hmac_base_vseq;
     intr_fifo_empty_en dist {1'b1 := 8, 1'b0 := 2};
     intr_hmac_done_en dist {1'b1 := 8, 1'b0 := 2};
     intr_hmac_err_en  dist {1'b1 := 8, 1'b0 := 2};
+  }
+
+  constraint reset_during_hmac_process_c {
+    reset_during_hmac_process == 0;
   }
 
   virtual task pre_start();
@@ -108,24 +113,29 @@ class hmac_smoke_vseq extends hmac_base_vseq;
         // msg stream in finished, start hash
         if (do_hash_start) trigger_process();
 
-        // there is one clk cycle difference between scb and design when predict fifo_empty,
-        // it could happen when input message length is not a multiple of 4, then in design
-        // the `sha2_pad.st_q` will transit from `StFifoReceive` to `StPad80`.
-        // If the last two fifo_rds are back-to-back, then design will have one cycle delay before
-        // the last fifo_rd in order to switch the state.
-        // If the last two fifo_rds are not back-to-back, then there won't be any delay for the
-        // last fifo_rd
-        // the wait_clk below is implemented to avoid checking intr_state during this corner case
-        cfg.clk_rst_vif.wait_clks((msg.size() % 4 || !legal_seq_c.constraint_mode()) ?
-                                  HMAC_KEY_PROCESS_CYCLES * 2 :
-                                  $urandom_range(0, HMAC_KEY_PROCESS_CYCLES * 2));
+        if (reset_during_hmac_process) begin
+          trigger_reset();
+        end else begin
 
-        if (do_hash_start) begin
-          // wait for interrupt to assert, check status and clear it
-          if (intr_hmac_done_en) begin
-            wait(cfg.intr_vif.pins[HmacDone] === 1'b1);
-          end else begin
-            csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
+          // there is one clk cycle difference between scb and design when predict fifo_empty,
+          // it could happen when input message length is not a multiple of 4, then in design
+          // the `sha2_pad.st_q` will transit from `StFifoReceive` to `StPad80`.
+          // If the last two fifo_rds are back-to-back, then design will have one cycle delay before
+          // the last fifo_rd in order to switch the state.
+          // If the last two fifo_rds are not back-to-back, then there won't be any delay for the
+          // last fifo_rd
+          // the wait_clk below is implemented to avoid checking intr_state during this corner case
+          cfg.clk_rst_vif.wait_clks((msg.size() % 4 || !legal_seq_c.constraint_mode()) ?
+                                    HMAC_KEY_PROCESS_CYCLES * 2 :
+                                    $urandom_range(0, HMAC_KEY_PROCESS_CYCLES * 2));
+
+          if (do_hash_start) begin
+            // wait for interrupt to assert, check status and clear it
+            if (intr_hmac_done_en) begin
+              wait(cfg.intr_vif.pins[HmacDone] === 1'b1);
+            end else begin
+              csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
+            end
           end
         end
         csr_rd(.ptr(ral.intr_state), .value(intr_state_val));
@@ -140,5 +150,13 @@ class hmac_smoke_vseq extends hmac_base_vseq;
       rd_digest();
     end
   endtask : body
+
+  // In hmac_core, the FSM `StPushToMsgFifo` only spans around 20 clock cycles in the entire
+  // hashing process. So to ensure hmac won't corrupt if reset is issued during `StPushToMsgFifo`
+  // state, this task try to issue reset (with a large possibility) during `StPushToMsgFifo` state.
+  virtual task trigger_reset();
+    cfg.clk_rst_vif.wait_clks($urandom_range(100, 150));
+    dut_init();
+  endtask
 
 endclass : hmac_smoke_vseq
