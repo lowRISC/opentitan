@@ -36,6 +36,11 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     if (do_hmac_init) hmac_init();
   endtask
 
+  virtual task apply_reset(string kind = "HARD");
+    super.apply_reset(kind);
+    cfg.hash_process_triggered = 0;
+  endtask
+
   virtual task dut_shutdown();
     super.dut_shutdown();
     // TODO: nothing extra to do yet
@@ -97,6 +102,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   virtual task trigger_process();
     csr_wr(.ptr(ral.cmd), .value(1'b1 << HashProcess));
+    cfg.hash_process_triggered = 1;
   endtask
 
   virtual task trigger_hash_when_active();
