@@ -22,15 +22,16 @@ interface pwrmgr_ast_sva_if (
   // not more than 2 cycles.
   localparam int MIN_CLK_WAIT_CYCLES = 0;
   localparam int MIN_PDN_WAIT_CYCLES = 0;
-  localparam int MAX_WAIT_CYCLES = 10;
+  localparam int MAX_CLK_WAIT_CYCLES = 10;
+  localparam int MAX_PDN_WAIT_CYCLES = 110;
 
   bit disable_sva;
   bit reset_or_disable;
 
   always_comb reset_or_disable = !rst_slow_ni || disable_sva;
 
-  `define CLK_WAIT_BOUNDS ##[MIN_CLK_WAIT_CYCLES:MAX_WAIT_CYCLES]
-  `define PDN_WAIT_BOUNDS ##[MIN_PDN_WAIT_CYCLES:MAX_WAIT_CYCLES]
+  `define CLK_WAIT_BOUNDS ##[MIN_CLK_WAIT_CYCLES:MAX_CLK_WAIT_CYCLES]
+  `define PDN_WAIT_BOUNDS ##[MIN_PDN_WAIT_CYCLES:MAX_PDN_WAIT_CYCLES]
 
   // Clock enable-valid.
   `ASSERT(CoreClkHandshakeOn_A, pwr_ast_o.core_clk_en |-> `CLK_WAIT_BOUNDS pwr_ast_i.core_clk_val,

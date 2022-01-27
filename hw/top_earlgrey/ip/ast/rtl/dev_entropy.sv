@@ -108,7 +108,7 @@ logic wready_dev, wready_es;
 
 prim_flop_2sync #(
   .Width ( 1 ),
-  .ResetValue ( 0 )
+  .ResetValue ( 1'b0 )
 ) u_wvalid_es_sync (
   .clk_i,
   .rst_ni,
@@ -148,26 +148,28 @@ assign dev_wready_o = !wdata_val;
 // Device Clock
 ///////////////////////////////////////
 // Reset de-assert of rst_ni to Device clock
-logic rst_es_dev_nd, rst_es_dev_n;
+logic rst_es_dev_in_n, rst_es_dev_da_n, rst_es_dev_n;
+
+assign rst_es_dev_in_n = rst_ni && rst_dev_ni;
 
 prim_flop_2sync #(
   .Width ( 1 ),
-  .ResetValue ( 0 )
+  .ResetValue ( 1'b0 )
 ) u_rst_es_n_da (
   .clk_i ( clk_dev_i ),
-  .rst_ni ( rst_ni && rst_dev_ni ),
+  .rst_ni ( rst_es_dev_in_n ),
   .d_i ( 1'b1 ),
-  .q_o ( rst_es_dev_nd )
+  .q_o ( rst_es_dev_da_n )
 );
 
-assign rst_es_dev_n = rst_es_dev_nd;
+assign rst_es_dev_n = rst_es_dev_da_n;
 
 // Sync wready_es to Device clock
 logic wready, wready_es_dev;
 
 prim_flop_2sync #(
   .Width ( 1 ),
-  .ResetValue ( 0 )
+  .ResetValue ( 1'b0 )
 ) u_wready_es_dev_sync (
   .clk_i ( clk_dev_i ),
   .rst_ni ( rst_es_dev_n ),
@@ -195,7 +197,7 @@ logic wdata_val_dev;
 
 prim_flop_2sync #(
   .Width ( 1 ),
-  .ResetValue ( 0 )
+  .ResetValue ( 1'b0 )
 ) u_wvalid_dev_sync (
   .clk_i ( clk_dev_i ),
   .rst_ni ( rst_es_dev_n ),

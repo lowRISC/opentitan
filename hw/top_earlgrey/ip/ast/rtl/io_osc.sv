@@ -23,24 +23,37 @@ timeunit 1ns / 1ps;
 import ast_bhv_pkg::* ;
 
 localparam real IoClkPeriod = 1000000/96;  // ~10416.666667ps (96Mhz)
-logic clk;
+reg init_start = 1'b0;
 
 initial begin
-  clk = 1'b0;
   $display("\nIO Clock Period: %0dps", IoClkPeriod);
+  #1; init_start  = 1'b1;
 end
 
 // Enable 5us RC Delay on rise
-logic en_osc_re;
-buf #(IO_EN_RDLY, 0) b0 (en_osc_re, (vcore_pok_h_i && io_en_i));
+wire en_osc_re_buf, en_osc_re;
+buf #(IO_EN_RDLY, 0) b0 (en_osc_re_buf, (vcore_pok_h_i && io_en_i));
+assign en_osc_re = en_osc_re_buf && init_start;
+
 
 // Clock Oscillator
 ////////////////////////////////////////
 logic en_osc;
+reg clk_osc = 1'b1;
 
 always begin
-   #(IoClkPeriod/2000) clk = ~clk && en_osc;
+   #(IoClkPeriod/2000) clk_osc = ~clk_osc;
 end
+
+// HDL Clock Gate
+logic clk;
+reg en_clk;
+
+always_latch begin
+  if ( !clk_osc ) en_clk <= en_osc;
+end
+
+assign clk = clk_osc && en_clk;
 `else  // of SYBTHESIS
 // SYNTHESIS/LINTER
 ///////////////////////////////////////

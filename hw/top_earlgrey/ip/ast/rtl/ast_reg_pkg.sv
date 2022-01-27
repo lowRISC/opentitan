@@ -8,7 +8,7 @@ package ast_reg_pkg;
 
   // Param list
   parameter int NumRegsA = 31;
-  parameter int NumRegsB = 4;
+  parameter int NumRegsB = 5;
 
   // Address widths within the block
   parameter int BlockAw = 10;
@@ -36,9 +36,9 @@ package ast_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    ast_reg2hw_rega_mreg_t [30:0] rega; // [1152:161]
-    ast_reg2hw_regal_reg_t regal; // [160:128]
-    ast_reg2hw_regb_mreg_t [3:0] regb; // [127:0]
+    ast_reg2hw_rega_mreg_t [30:0] rega; // [1184:193]
+    ast_reg2hw_regal_reg_t regal; // [192:160]
+    ast_reg2hw_regb_mreg_t [4:0] regb; // [159:0]
   } ast_reg2hw_t;
 
   // HW -> register type
@@ -83,6 +83,7 @@ package ast_reg_pkg;
   parameter logic [BlockAw-1:0] AST_REGB_1_OFFSET = 10'h 204;
   parameter logic [BlockAw-1:0] AST_REGB_2_OFFSET = 10'h 208;
   parameter logic [BlockAw-1:0] AST_REGB_3_OFFSET = 10'h 20c;
+  parameter logic [BlockAw-1:0] AST_REGB_4_OFFSET = 10'h 210;
 
   // Reset values for hwext registers and their fields
   parameter logic [31:0] AST_REGAL_RESVAL = 32'h 0;
@@ -125,11 +126,12 @@ package ast_reg_pkg;
     AST_REGB_0,
     AST_REGB_1,
     AST_REGB_2,
-    AST_REGB_3
+    AST_REGB_3,
+    AST_REGB_4
   } ast_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] AST_PERMIT [36] = '{
+  parameter logic [3:0] AST_PERMIT [37] = '{
     4'b 1111, // index[ 0] AST_REGA_0
     4'b 1111, // index[ 1] AST_REGA_1
     4'b 1111, // index[ 2] AST_REGA_2
@@ -165,7 +167,8 @@ package ast_reg_pkg;
     4'b 1111, // index[32] AST_REGB_0
     4'b 1111, // index[33] AST_REGB_1
     4'b 1111, // index[34] AST_REGB_2
-    4'b 1111  // index[35] AST_REGB_3
+    4'b 1111, // index[35] AST_REGB_3
+    4'b 1111  // index[36] AST_REGB_4
   };
 
 endpackage

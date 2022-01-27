@@ -65,31 +65,37 @@ always_ff @( posedge clk_i, negedge rst_n ) begin
   end
 end
 
-always_ff @( posedge clk_i, negedge rst_n ) begin
-  if ( !rst_n ) begin
-    rng_b <= {EntropyStreams{1'b0}};
-  end else if ( srate_rng_val ) begin
-    rng_b <= lfsr_val[EntropyStreams-1:0];
-  end
-end
-
 
 ////////////////////////////////////////
 // Sychronize Bus & Valid to RNG Clock
 ////////////////////////////////////////
-logic sync_rng_val;
+logic sync_rng_val, srate_rng_val_en, src_busy;
 
-prim_pulse_sync u_rng_val_pulse_sync (
+ast_pulse_sync u_rng_val_pulse_sync (
+  .scan_mode_i ( scan_mode_i ),
+  .scan_reset_ni ( rst_n ),
   // source clock domain
   .clk_src_i ( clk_i ),
   .rst_src_ni ( rst_n ),
   .src_pulse_i ( srate_rng_val ),
+  .src_pulse_en_o ( srate_rng_val_en ),
+  .src_busy_o ( src_busy ),
   // destination clock domain
   .clk_dst_i ( clk_ast_rng_i ),
   .rst_dst_ni ( rst_ast_rng_ni ),
   .dst_pulse_o ( sync_rng_val )
 );
 
+// Sanple & Hold the rng_b value until the sync completes
+always_ff @( posedge clk_i, negedge rst_n ) begin
+  if ( !rst_n ) begin
+    rng_b <= {EntropyStreams{1'b0}};
+  end else if ( srate_rng_val_en ) begin
+    rng_b <= lfsr_val[EntropyStreams-1:0];
+  end
+end
+
+//Sync to RNG clock domain
 always_ff @( posedge clk_ast_rng_i, negedge rst_ast_rng_ni ) begin
   if (!rst_ast_rng_ni ) begin
     rng_b_o <= {EntropyStreams{1'b0}};
@@ -107,6 +113,9 @@ end
 // Unused Signals
 ///////////////////////
 logic unused_sigs;
-assign unused_sigs = ^{ rng_fips_i };  // Used in ASIC implementation
+assign unused_sigs = ^{
+                        rng_fips_i,  // Used in ASIC implementation
+                        src_busy
+                      };
 
 endmodule : rng

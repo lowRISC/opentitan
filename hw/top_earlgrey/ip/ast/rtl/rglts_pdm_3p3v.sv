@@ -5,132 +5,296 @@
 // *Name: rglts_pdm_3p3v
 // *Module Description: Regulators (MAIN & AON) & PDM Logic @3.3V
 //############################################################################
-`ifdef SYNTHESIS
-`ifndef PRIM_DEFAULT_IMPL
-`define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
-`endif
-`endif
 
 module rglts_pdm_3p3v (
-  input vcc_pok_h_i,                     // VCC (3.3V) Exist @3.3v
-  input vcmain_pok_h_i,                  // VCMAIN (1.1v) Exist @3.3v
-  input vcmain_pok_o_h_i,                // vcmain_pok_o signal (1.1v) @3.3v
-  input clk_src_aon_h_i,                 // AON Clock @3.3v
-  input main_pd_h_ni,                    // MAIN Regulator Power Down @3.3v
-  input main_env_iso_en_h_i,             // Enveloped ISOlation ENable for MAIN @3.3v
+  input vcc_pok_h_i,                     // VCC Exist @3.3v
+  input vcaon_pok_por_h_i,               // VCAON_POK_POR (1.1v) @1.1v
+  input vcmain_pok_por_h_i,              // VCMAIN_POK_POR (1.1v) @1.1v
+  input [1:0] vio_pok_h_i,               // vioa/b_pok signals (1.1v) @3.3v
+  input clk_src_aon_h_i,                 // AON Clock (1.1v) @3.3v
+  input main_pd_h_ni,                    // MAIN Regulator Power Down (1.1v) @3.3v
+  input por_sync_h_ni,                        // POR (Sync to AON clock) (1.1v) @3.3v
   input [1:0] otp_power_seq_h_i,         // MMR0,24 in @3.3v
-  input scan_mode_i,                     // Scan Mode
-  output logic vcaon_pok_h_o,            // VCAON (1.1v) Exist @3.3v
-  output logic main_pwr_dly_o,           // For modeling only.
+  input scan_mode_h_i,                   // Scan Mode
+  input scan_reset_h_ni,                 // Scan Reset @3.3v
+  output logic vcmain_pok_h_o,           // VCMAIN Exist @3.3v
+  output logic rglssm_vcaon_h_o,         // Regulators state machine at VCAON @3.3v
+  output logic vcaon_pok_h_o,            // VCAON Exist @3.3v
+  output logic vcaon_pok_1p1_h_o,        // VCAON Exist @3.3v for BE 1.1v (UPF issue)
+  output logic vcaon_pok_por_h_o,        // VCAON_POK_POR @3.3v
+  output logic vcmain_pok_por_h_o,       // VCMAIN_POK_POR @3.3v
+  output logic [1:0] vio_pok_h_o,        // vioa/b_pok_h signals @3.3v
+  output logic vcc_pok_str_h_o,          // VCC Exist Stretched @3.3V
+  output logic vcc_pok_str_1p1_h_o,      // VCC Exist Stretched @3.3V for BE 1.1v (UPF issue)
   output logic deep_sleep_h_o,           // Deep Sleep (main regulator & switch are off) @3.3v
   output logic flash_power_down_h_o,     //
   output logic flash_power_ready_h_o,    //
   output logic [1:0] otp_power_seq_h_o   // MMR0,24 masked by PDM, out (VCC)
 );
 
-`ifndef SYNTHESIS
-// Behavioral Model
+logic [9-1:0] dly_cnt, hc2lc_val, lc2hc_val;  // upto 255 aon clock (1275us)
+logic [9-1:0] swtoff_val, swton_val;
+logic [1:0] dv_hook, dft_sel;
+
+assign dv_hook = 2'b00;  // Force 2'b11 to reduce LDOs time & double LDOs start-up time
+assign dft_sel = dv_hook;
+assign swtoff_val = 0;
+assign swton_val  = 0;
+
+assign hc2lc_val = (dft_sel == 2'b10) ? 9'd2 :
+                   (dft_sel == 2'b11) ? 9'd4 :
+                   (dft_sel == 2'b00) ? ({1'b0, ast_pkg::Hc2LcTrCyc[7:0]} - swtoff_val) :
+                                        (ast_pkg::Hc2LcTrCyc[7:0]*2 - swtoff_val);
+
+assign lc2hc_val = (dft_sel == 2'b10) ? 9'd6 :
+                   (dft_sel == 2'b11) ? 9'd12 :
+                   (dft_sel == 2'b00) ? ({1'b0, ast_pkg::Lc2HcTrCyc[7:0]} - swton_val) :
+                                        (ast_pkg::Lc2HcTrCyc[7:0]*2 - swton_val);
+
+// Turn 1.1v into 3.3v signals
+////////////////////////////////////////
+assign vcaon_pok_por_h_o  = vcaon_pok_por_h_i;   // Level Shifter
+assign vcmain_pok_por_h_o = vcmain_pok_por_h_i;  // Level Shifter
+assign vio_pok_h_o[1:0] = vio_pok_h_i[1:0];      // Level Shifter
+
+
 ///////////////////////////////////////
-import ast_bhv_pkg::* ;
+// Regulators State Machine
+///////////////////////////////////////
+typedef enum logic [3-1:0] {
+  RGLS_CLDPU = 3'd0,  // Cold power-up (MAIN Regulator ON, AON Regulator OFF, Power Switch Enabled)
+  RGLS_VCMON = 3'd1,  // MAIN Regulator ON (AON Regulator OFF, Power Switch Enabled)
+  RGLS_VCM2A = 3'd3,  // MAIN Regulator ON (AON Regulator rN,  Power Switch Enabled->Disabled)
+  RGLS_VCAON = 3'd7,  // AON Regulator ON (MAIN Regulator OFF, Power Switch Diabled)
+  RGLS_VCA2M = 3'd5,  // AON Regulator ON (MAIN Regulator ON,  Power Switch Diabled->Enabled)
+  RGLS_BROUT = 3'd6   // Brownout (MAIN Regulator ON, AON Regulator OFF, Power Switch Enabled)
+} rgls_sm_e;
 
-// localparam time MPVCC_RDLY = 5us,
-//                 MPVCC_FDLY = 100ns,
-//                 MPPD_RDLY  = 50us,
-//                 MPPD_FDLY  = 1us;
+rgls_sm_e rgls_sm;
+logic vcmain_pok_h, main_pd_str_h;
 
-logic mr_vcc_dly, mr_pd_dly;
+// Hold state machin reset on brownout for minimum 13us.
+logic rgls_rst_h_n;
+assign rgls_rst_h_n = vcc_pok_str_h_o;
 
-// The initial is needed to clear the X of the delays at the start
-logic init_start;
+// Syncronizers
+// First stage clk FE & second clk RE
+///////////////////////////////////////
+logic vcc_pok_fe_h, vcc_pok_s_h;
 
-initial begin
-  init_start = 1'b1; #1;
-  init_start = 1'b0;
-end
+logic clk_src_aon_h_n;
+assign clk_src_aon_h_n = !clk_src_aon_h_i;
 
-always_ff @( posedge init_start, negedge init_start,
-             posedge vcc_pok_h_i, negedge vcc_pok_h_i ) begin
-  if ( init_start ) begin
-    mr_vcc_dly <= 1'b0;
-  end else if ( !init_start && vcc_pok_h_i ) begin
-    mr_vcc_dly <= #(MPVCC_RDLY) vcc_pok_h_i;
-  end else if ( !init_start && !vcc_pok_h_i ) begin
-    mr_vcc_dly <= #(MPVCC_FDLY) vcc_pok_h_i;
+always_ff @( posedge clk_src_aon_h_n, negedge rgls_rst_h_n ) begin
+  if ( !rgls_rst_h_n ) begin
+    vcc_pok_fe_h <= 1'b0;
+  end else begin
+    vcc_pok_fe_h  <= vcc_pok_h_i;
   end
 end
 
-always_ff @( posedge init_start, negedge init_start,
-             posedge vcc_pok_h_i, negedge vcc_pok_h_i,
-             posedge main_pd_h_ni, negedge main_pd_h_ni ) begin
-  if ( init_start ) begin
-    mr_pd_dly <= 1'b1;
-  end else if ( !init_start && main_pd_h_ni && vcc_pok_h_i ) begin
-    mr_pd_dly <= #(MPPD_RDLY) main_pd_h_ni && vcc_pok_h_i;
-  end else if ( !init_start && !main_pd_h_ni && vcc_pok_h_i ) begin
-    mr_pd_dly <= #(MPPD_FDLY) main_pd_h_ni && vcc_pok_h_i;
+always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
+  if ( !rgls_rst_h_n ) begin
+    vcc_pok_s_h <= 1'b0;
+  end else begin
+    vcc_pok_s_h <= vcc_pok_fe_h;
   end
 end
 
-assign main_pwr_dly_o = mr_vcc_dly && mr_pd_dly;
+// Regulators State Mashine
+////////////////////////////////////////
+always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
+  if ( !rgls_rst_h_n ) begin
+    vcmain_pok_h     <= 1'b0;        // VCMAIN Regulator Disabled
+    main_pd_str_h    <= 1'b0;        // Power Down Stratch off
+    rglssm_vcaon_h_o <= 1'b0;        // (rgls_sm == RGLS_VCAON)
+    //
+    dly_cnt          <= lc2hc_val;   // VCMAIN Regulator power-up time
+    //
+    rgls_sm          <= RGLS_CLDPU;  // Power VCMAIN (Cold)
+  end else begin
+    case ( rgls_sm )
+      RGLS_CLDPU: begin
+        vcmain_pok_h     <= 1'b0;        // VCMAIN Regulator Disabled
+        main_pd_str_h    <= 1'b0;        // Power Down Stratch off
+        rglssm_vcaon_h_o <= 1'b0;        // (rgls_sm == RGLS_VCAON)
+        //
+        dly_cnt          <= dly_cnt - 1'b1;
+        //
+        if (dly_cnt == '0) begin
+          rgls_sm        <= RGLS_VCMON;  // VCMAIN Regultor is ON!
+        end else begin
+          rgls_sm        <= RGLS_CLDPU;  // Power VCMAIN!
+        end
+      end
 
-logic vcaon_pok_h;
+      RGLS_VCMON: begin
+        vcmain_pok_h     <= 1'b1;        // VCMAIN Regulator Enabled
+        main_pd_str_h    <= 1'b0;        // Power Down Stratch
+        rglssm_vcaon_h_o <= 1'b0;        // (rgls_sm == RGLS_VCAON)
+        //
+        dly_cnt          <= hc2lc_val;   // VCAON Regulator power-up time
+        //
+        if ( !vcc_pok_s_h ) begin
+          rgls_sm        <= RGLS_BROUT;  // Brownout
+        end else if ( !main_pd_h_ni && por_sync_h_ni ) begin
+          main_pd_str_h  <= 1'b1;        // Power Down Stratch on
+          rgls_sm        <= RGLS_VCM2A;  // VCMAIN to VCAON Transition
+        end else begin
+          rgls_sm        <= RGLS_VCMON;  // VCMAIN Regulator is ON!
+        end
+      end
 
-vcaon_pgd u_vcaon_pok (
-  .vcaon_pok_o ( vcaon_pok_h )
-);
+      RGLS_VCM2A: begin
+        vcmain_pok_h     <= 1'b1;        // VCMAIN Regulator Enabled
+        main_pd_str_h    <= 1'b1;        // Power Down Stratch
+        rglssm_vcaon_h_o <= 1'b0;        // (rgls_sm == RGLS_VCAON)
+        //
+        dly_cnt          <= dly_cnt - 1'b1;
+        //
+        if ( !por_sync_h_ni ) begin
+          rgls_sm        <= RGLS_VCMON;  // VCMAIN Regultor is ON!
+        end else if ( dly_cnt == '0 ) begin
+          rgls_sm        <= RGLS_VCAON;  // VCAON Regulator is ON!
+        end else begin
+          rgls_sm        <= RGLS_VCM2A;  // VCMAIN to VCAON Transition
+        end
+      end
 
-assign vcaon_pok_h_o = vcaon_pok_h && vcc_pok_h_i;
+      RGLS_VCAON: begin
+        vcmain_pok_h     <= 1'b0;        // VCMAIN Regulator Disabled
+        main_pd_str_h    <= 1'b1;        // Power Down Stratch
+        rglssm_vcaon_h_o <= 1'b1;        // (rgls_sm == RGLS_VCAON)
+        //
+        dly_cnt          <= lc2hc_val;   // VCMAIN Regulator power-up time
+        //
+        if ( main_pd_h_ni || !por_sync_h_ni ) begin
+          rgls_sm        <= RGLS_VCA2M;  // VCAON->VCMAIN Transition
+        end else begin
+          rgls_sm        <= RGLS_VCAON;  // VCAON Regulator is ON!
+        end
+      end
 
-`else  // of SYNTHESIS
-// SYNTHESUS/VERILATOR/LINTER/FPGA
-///////////////////////////////////////
-localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
+      RGLS_VCA2M: begin
+        vcmain_pok_h     <= 1'b0;        // VCMAIN Regulator Disable
+        main_pd_str_h    <= 1'b0;        // Power Down Stratch off
+        rglssm_vcaon_h_o <= 1'b0;        // (rgls_sm == RGLS_VCAON)
+        //
+        dly_cnt         <= dly_cnt - 1'b1;
+        //
+        if ( dly_cnt == '0 ) begin
+          rgls_sm        <= RGLS_VCMON;  // VCMAIN Regulator is ON!
+        end else begin
+          rgls_sm        <= RGLS_VCA2M;  // VCAON->VCMAIN Transition
+        end
+      end
 
-logic dummy0, dummy1;
+      RGLS_BROUT: begin
+        vcmain_pok_h     <= 1'b1;        // VCMAIN Regulator Enabled
+        main_pd_str_h    <= 1'b0;        // Powe Down Stratch off
+        rglssm_vcaon_h_o <= 1'b0;        // (rgls_sm == RGLS_VCAON)
+        //
+        dly_cnt          <= lc2hc_val;   // VCMAIN Regulator power-up time
+        //
+        rgls_sm          <= RGLS_BROUT;  // Brownout
+      end
 
-assign dummy0 = vcmain_pok_h_i && vcmain_pok_o_h_i && 1'b0;
-assign dummy1 = vcmain_pok_h_i || vcmain_pok_o_h_i || 1'b1;
-
-assign vcaon_pok_h_o  = dummy0 || !dummy0;  // 1'b1
-assign main_pwr_dly_o = dummy1 || !dummy1;  // 1'b1
-
-if (Impl == prim_pkg::ImplXilinx) begin : gen_xilinx
-  // FPGA Specifi (place holder)
-  ///////////////////////////////////////
-  // TODO
-end else begin : gen_generic
-  // TODO
+      default: begin
+        vcmain_pok_h     <= 1'b0;        // VCMAIN Regulator Disabled
+        main_pd_str_h    <= 1'b0;        // Powe Down Stratch off
+        rglssm_vcaon_h_o <= 1'b0;        // (rgls_sm == RGLS_VCAON)
+        //
+        dly_cnt          <= lc2hc_val;   // VCMAIN Regulator power-up time
+        //
+        rgls_sm          <= RGLS_CLDPU;  // Power VCMAIN (Cold)
+      end
+    endcase
+  end
 end
-`endif  // of SYNTHESIS
+
+// VCAON POK is needed for cold power-up to enable the AON clock
+// Therefore, it is connected directly to VCC POK.
+assign vcaon_pok_h_o  = vcc_pok_h_i;
+assign vcaon_pok_1p1_h_o = vcaon_pok_h_o;  // For layout separation
+assign vcmain_pok_h_o = vcmain_pok_h;
+
+
+///////////////////////////////////////
+// Streched VCC_POK During Brownout
+///////////////////////////////////////
+localparam int VccPokStrNum = 4;  // (Min-Max) (3-4)x5us=(15-20)us
+
+logic vcc_pok_set_h, vcc_pok_rst_h_n;
+logic [VccPokStrNum-1:0] vcc_pok_str_h;
+
+assign vcc_pok_rst_h_n = scan_mode_h_i ? scan_reset_h_ni : vcc_pok_h_i || vcaon_pok_h_o;
+
+// Enable proper order of reset/set execution
+always_comb begin
+  vcc_pok_set_h = !scan_mode_h_i && vcc_pok_rst_h_n && vcc_pok_h_i;  // <=
+end
+
+always_ff @( posedge clk_src_aon_h_i, negedge vcc_pok_rst_h_n, posedge vcc_pok_set_h ) begin
+  if ( !vcc_pok_rst_h_n ) begin
+    vcc_pok_str_h[0] <= 1'b0;
+  end else if ( vcc_pok_set_h ) begin
+    vcc_pok_str_h[0] <= 1'b1;
+  end else begin
+    vcc_pok_str_h[0] <= 1'b0;
+  end
+end
+
+for (genvar i = 1; i < VccPokStrNum; i++ ) begin : gen_vcc_pok_str
+  always_ff @( posedge clk_src_aon_h_i, negedge vcc_pok_rst_h_n, posedge vcc_pok_set_h ) begin
+    if ( !vcc_pok_rst_h_n ) begin
+      vcc_pok_str_h[i] <= 1'b0;
+    end else if ( vcc_pok_set_h ) begin
+      vcc_pok_str_h[i] <= 1'b1;
+    end else begin
+      vcc_pok_str_h[i] <= vcc_pok_str_h[i-1];
+    end
+  end
+end
+
+assign vcc_pok_str_h_o = vcc_pok_str_h[VccPokStrNum-1];
+assign vcc_pok_str_1p1_h_o = vcc_pok_str_h[VccPokStrNum-1];
 
 
 ///////////////////////////////////////
 // Deep Sleep Indication
 ///////////////////////////////////////
-assign deep_sleep_h_o = !(main_pd_h_ni && vcmain_pok_o_h_i);
+logic deep_sleep_h;
+
+assign deep_sleep_h = !(main_pd_h_ni && !main_pd_str_h && vcmain_pok_por_h_o);
+
+always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
+  if ( !rgls_rst_h_n ) begin
+    deep_sleep_h_o <= 1'b0;
+  end else begin
+    deep_sleep_h_o <= deep_sleep_h;
+  end
+end
 
 
 ///////////////////////////////////////
 // Flash
 ///////////////////////////////////////
-assign flash_power_down_h_o  = scan_mode_i || !(main_pd_h_ni && vcmain_pok_o_h_i);
+assign flash_power_down_h_o  = scan_mode_h_i || deep_sleep_h;
 assign flash_power_ready_h_o = vcc_pok_h_i;
 
 
 ///////////////////////////////////////
 // OTP
 ///////////////////////////////////////
-assign otp_power_seq_h_o[0] = !scan_mode_i && !flash_power_down_h_o && otp_power_seq_h_i[0];
-assign otp_power_seq_h_o[1] =  scan_mode_i || flash_power_down_h_o || otp_power_seq_h_i[1];
+assign otp_power_seq_h_o[0] = !scan_mode_h_i && !flash_power_down_h_o && otp_power_seq_h_i[0];
+assign otp_power_seq_h_o[1] =  scan_mode_h_i || flash_power_down_h_o || otp_power_seq_h_i[1];
 
 
-///////////////////////
-// Unused Signals
-///////////////////////
-logic unused_sigs;
-assign unused_sigs = ^{ main_env_iso_en_h_i,  // Used in ASIC implementation
-                        vcmain_pok_h_i,       // Used in ASIC implementation
-                        clk_src_aon_h_i       // Used in ASIC implementation
-                      };
+/////////////////////
+// Unused Signals  //
+/////////////////////
+// logic unused_sigs;
+
+// assign unused_sigs = ^{ };
 
 endmodule : rglts_pdm_3p3v

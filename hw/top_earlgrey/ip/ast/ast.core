@@ -47,6 +47,7 @@ filesets:
       - rtl/gfr_clk_mux2.sv
       - rtl/ast_clks_byp.sv
       - rtl/rglts_pdm_3p3v.sv
+      - rtl/ast_pulse_sync.sv
       - rtl/ast_entropy.sv
       - rtl/dev_entropy.sv
       - rtl/rng.sv
