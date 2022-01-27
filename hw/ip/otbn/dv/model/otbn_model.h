@@ -94,6 +94,10 @@ class OtbnModel {
   // success; -1 on failure.
   int send_lc_escalation();
 
+  // Returns true if we have an ISS wrapper and it has the START_WIPE flag
+  // asserted
+  bool is_at_start_of_wipe() const;
+
  private:
   // Constructs an ISS wrapper if necessary. If something goes wrong, this
   // function prints a message and then returns null. If ensure is true, it
