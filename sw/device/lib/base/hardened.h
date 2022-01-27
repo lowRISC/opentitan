@@ -196,18 +196,50 @@ inline uint32_t launder32(uint32_t val) {
   // box. Similar tricks are employed in other security-sensitive code-bases,
   // such as https://boringssl-review.googlesource.com/c/boringssl/+/36484.
   //
-  // It is *not* marked as volatile, since reordering is not desired; marking it
-  // as volatile does make some laundering operations suddenly start working
-  // spuriously, which is entirely dependent on how excited LLVM is about
-  // reordering things. To avoid this trap, we do not mark as volatile and
-  // instead require that reordering be prevented through careful sequencing of
-  // statements.
+  // # "To volatile or not to volatile, that is the question."
+  // Naively, this snippet would not be marked volatile, since we do not care
+  // about reordering. However, there are rare optimizations that can result
+  // in "miscompilation" of this primitive. For example, if the argument is
+  // a complex expression, we get something like the following Godbolt:
+  // https://godbolt.org/z/c7M7Yr7Yo.
   //
+  // This is not actually a miscompilation: LLVM is treating the asm
+  // statement as behaving like a random oracle determined entirely by its
+  // arguments; therefore, it is entitled to deduplicate both occurences of
+  // `LaunderPure(y)` (in this particular case, from bisecting the passes,
+  // it appears to happen during register allocation).
+  //
+  // We work around this by marking the inline asm volatile.
+  //
+  // Alternatively, we could add a "nonce" to the inline asm that has been
+  // tainted by a volatile asm operation. This has the benefit that the input
+  // does not need to happen-before the volatile operation, and can be
+  // arbitrarily reordered, while ensuring that no call of launder32() is
+  // "pure" in the deduplication sense. I.e.:
+  //
+  //   uint32_t nonce;
+  //   asm volatile("" : "=r"(nonce));
+  //   asm("" : "+r"(val) : "r"(nonce));
+  //
+  // At the time of writing, it seems preferable to have something we know is
+  // correct rather than being overly clever; this is recorded here in case
+  // the current implementation is unsuitable and we need something more
+  // carefully tuned.
+  //
+  // This comment was formerly present to justify the lack of volatile. It is
+  // left behind as a warning to not try to remove it without further careful
+  // analysis.
+  // > It is *not* marked as volatile, since reordering is not desired; marking
+  // > it volatile does make some laundering operations suddenly start working
+  // > spuriously, which is entirely dependent on how excited LLVM is about
+  // > reordering things. To avoid this trap, we do not mark as volatile and
+  // > instead require that reordering be prevented through careful sequencing
+  // > of statements.
+
   // The +r constraint tells the compiler that this is an "inout" parameter: it
   // means that not only does the black box depend on `val`, but it also mutates
-  // it in an unspecified way. This ensures that the laundering operation occurs
-  // in the right place in the dependency ordering.
-  asm("" : "+r"(val));
+  // it in an unspecified way.
+  asm volatile("" : "+r"(val));
   return val;
 }
 
@@ -221,7 +253,7 @@ inline uint32_t launder32(uint32_t val) {
  *         runtime.
  */
 inline uintptr_t launderw(uintptr_t val) {
-  asm("" : "+r"(val));
+  asm volatile("" : "+r"(val));
   return val;
 }
 
