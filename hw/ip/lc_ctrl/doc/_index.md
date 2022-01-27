@@ -487,13 +487,14 @@ In order to write to the CSRs, a [hardware mutex]({{< relref "#hardware-mutex" >
 The life cycle controller also contains two escalation receivers that are connected to escalation severity 1 and 2 of the alert handler module.
 The actions that are triggered by these escalation receivers are explained in the [escalation handling section]({{< relref "#escalation-handling" >}}) below.
 
-### System Integration
+### System Integration and TAP Isolation
 
 The figure below provides more context about how the life cycle controller is integrated into the system, and how its control signals interact with various components.
 
 ![LC Controller Block Diagram](lc_ctrl_system_view.svg)
 
-**TODO: expand**
+Although technically a life cycle feature, the sampling of the strap pins and JTAG / TAP isolation is performed in the pinmux after the life cycle controller has initialized.
+See [pinmux documentation]({{< relref "hw/ip/pinmux/doc/#strap-sampling-and-tap-isolation" >}}) and the detailed selection listed in [Life Cycle Definition Table]({{< relref "doc/security/specs/device_life_cycle/_index.md#manufacturing-states" >}}).
 
 ### Life Cycle Manufacturing State Encodings
 
@@ -539,11 +540,6 @@ The strokes are similarly encoded as the life cycle state in the sense that upon
 Upon each life cycle transition attempt, the life cycle controller **FIRST** increments the transition counter before initiating any token hashing and comparison operations.
 
 A decoded version of this counter is exposed in the {{< regref "LC_TRANSITION_CNT" >}} register.
-
-### TAP Isolation
-
-Although technically a life cycle feature, the sampling of the strap pins and JTAG / TAP isolation is performed in the pinmux after the life cycle controller has initialized.
-See [pinmux documentation]({{< relref "hw/ip/pinmux/doc/#strap-sampling-and-tap-isolation" >}}) and the detailed selection listed in [Life Cycle Definition Table]({{< relref "doc/security/specs/device_life_cycle/_index.md#manufacturing-states" >}}).
 
 ### Life Cycle State Controller
 
