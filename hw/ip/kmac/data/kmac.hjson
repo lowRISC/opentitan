@@ -31,6 +31,7 @@
       ii) storage errors in the shadow registers
       iii) errors in the message, round, or key counter
       iv) any internal FSM entering an ivalid state
+      v) an error in the redundant lfsr
       The KMAC unit cannot recover from such an error and needs to be reset.
       '''
     }
@@ -488,6 +489,7 @@
             ii) storage errors in the shadow registers
             iii) errors in the message, round, or key counter
             iv) any internal FSM entering an ivalid state
+            v) an error in the redundant lfsr
           '''
         }
         { bits: "17",
