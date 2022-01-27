@@ -34,6 +34,8 @@ class rom_ctrl_env extends cip_base_env #(
     cfg.m_kmac_agent_cfg.zero_delays = cfg.zero_delays;
     cfg.m_kmac_agent_cfg.m_data_push_agent_cfg.device_delay_max = cfg.device_delay_max;
 
+    cfg.scoreboard = scoreboard;
+
   endfunction
 
   function void connect_phase(uvm_phase phase);

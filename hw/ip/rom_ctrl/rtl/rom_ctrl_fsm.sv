@@ -9,6 +9,7 @@
 module rom_ctrl_fsm
   import prim_mubi_pkg::mubi4_t;
   import prim_util_pkg::vbits;
+  import rom_ctrl_pkg::*;
 #(
   parameter int RomDepth = 16,
   parameter int TopCount = 8
@@ -30,8 +31,8 @@ module rom_ctrl_fsm
   output logic [vbits(TopCount)-1:0] exp_digest_idx_o,
 
   // To power manager and key manager
-  output rom_ctrl_pkg::pwrmgr_data_t pwrmgr_data_o,
-  output rom_ctrl_pkg::keymgr_data_t keymgr_data_o,
+  output pwrmgr_data_t pwrmgr_data_o,
+  output keymgr_data_t keymgr_data_o,
 
   // To KMAC (ROM data)
   input logic                        kmac_rom_rdy_i,
@@ -127,47 +128,14 @@ module rom_ctrl_fsm
   //       Checking -> Done;
   //       Done [peripheries=2];
   //     }
-  //
-  //
-  // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 7 -n 6 -s 2 --language=sv
-  //
-  // Hamming distance histogram:
-  //
-  //  0: --
-  //  1: --
-  //  2: --
-  //  3: |||||||||||||||||||| (57.14%)
-  //  4: ||||||||||||||| (42.86%)
-  //  5: --
-  //  6: --
-  //
-  // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 4
-  // Minimum Hamming weight: 1
-  // Maximum Hamming weight: 4
-  //
-  // However, we glom on an extra 4 bits to hold a mubi4_t that encodes "state == Done". The idea is
-  // that we can do that for the rom_select_bus_o signal without needing an intermediate 1-bit
-  // signal which would need burying.
-  //
   // SEC_CM: FSM.SPARSE
   // SEC_CM: INTERSIG.MUBI
-  typedef enum logic [9:0] {
-    ReadingLow  = {6'b001100, MuBi4False},
-    ReadingHigh = {6'b001011, MuBi4False},
-    RomAhead    = {6'b111001, MuBi4False},
-    KmacAhead   = {6'b100111, MuBi4False},
-    Checking    = {6'b010101, MuBi4False},
-    Done        = {6'b100000, MuBi4True},
-    Invalid     = {6'b010010, MuBi4False}
-  } state_e;
 
   logic [9:0]  state_q, state_d;
   logic        fsm_alert;
 
   prim_sparse_fsm_flop #(
-    .StateEnumT(state_e),
+    .StateEnumT(fsm_state_e),
     .Width(10),
     .ResetValue({ReadingLow})
   ) u_state_regs (
