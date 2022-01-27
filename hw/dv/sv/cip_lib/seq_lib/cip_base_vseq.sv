@@ -673,13 +673,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
               `uvm_info(`gfn, $sformatf("\nFinished run %0d/%0d w/o reset", i, num_times), UVM_LOW)
             end
             begin : issue_rand_reset
-              `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(
-                  rand_reset_delay,
-                  rand_reset_delay inside {[1:reset_delay_bound]};)
-
-              cfg.clk_rst_vif.wait_clks(rand_reset_delay);
-              #($urandom_range(0, cfg.clk_rst_vif.clk_period_ps) * 1ps);
-              ongoing_reset = 1'b1;
+              wait_to_issue_reset(reset_delay_bound);
               `uvm_info(`gfn, $sformatf("\nReset is issued for run %0d/%0d", i, num_times), UVM_LOW)
               apply_resets_concurrently();
               ongoing_reset = 1'b0;
@@ -697,6 +691,18 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         end : isolation_fork
       join
     end
+  endtask
+
+  // Helper function for stress_all_with_rand_reset task to wait for random time before issuing
+  // reset. This function can be extended to wait for certain special timing to issue reset.
+  virtual task wait_to_issue_reset(uint reset_delay_bound = 10_000_000);
+    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(
+        rand_reset_delay,
+        rand_reset_delay inside {[1:reset_delay_bound]};
+    )
+
+    cfg.clk_rst_vif.wait_clks(rand_reset_delay);
+    #($urandom_range(0, cfg.clk_rst_vif.clk_period_ps) * 1ps);
   endtask
 
   virtual task read_and_check_all_csrs_after_reset();
