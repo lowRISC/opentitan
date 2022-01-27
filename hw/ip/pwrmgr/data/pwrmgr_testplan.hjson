@@ -222,10 +222,19 @@
       tests: ["pwrmgr_lowpower_wakeup_race"]
     }
     {
-      name: stress
-      desc: '''The standard stress test.'''
-      milestone: V3
-      tests: []
+      name: stress_all
+      desc: '''This runs random sequences in succession.
+
+            Randomly chooses from the following sequences:
+            - pwrmgr_aborted_low_power_vseq
+            - pwrmgr_lowpower_wakeup_race_vseq
+            - pwrmgr_reset_vseq
+            - pwrmgr_smoke_vseq
+            - pwrmgr_wakeup_reset_vseq
+            - pwrmgr_wakeup_vseq
+	    '''
+      milestone: V2
+      tests: ["pwrmgr_stress_all"]
     }
   ]
 
