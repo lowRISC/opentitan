@@ -521,7 +521,7 @@ module edn_core import edn_pkg::*;
     .rst_ni(rst_ni),
     .boot_req_mode_i(boot_auto_req_dly_q),
     .auto_req_mode_i(auto_req_mode),
-    .sw_cmd_req_load_i(sw_cmd_req_load),
+    .sw_cmd_req_load_i(cs_cmd_req_out_q),
     .seq_auto_req_mode_o(seq_auto_req_mode),
     .auto_req_mode_end_o(auto_req_mode_end),
     .csrng_cmd_ack_i(csrng_cmd_ack),
