@@ -155,14 +155,36 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     end
   endtask
 
+  task set_alert_info_for_capture(alert_pkg::alert_crashdump_t alert_dump, logic enable);
+    set_alert_dump_info(alert_dump);
+    `uvm_info(`gfn, $sformatf("%0sabling alert_info capture", (enable ? "En" : "Dis")), UVM_MEDIUM)
+    csr_wr(.ptr(ral.alert_info_ctrl.en), .value(enable));
+  endtask
+
+  task set_cpu_info_for_capture(ibex_pkg::crash_dump_t cpu_dump, logic enable);
+    set_cpu_dump_info(cpu_dump);
+    `uvm_info(`gfn, $sformatf("%0sabling cpu_info capture", (enable ? "En" : "Dis")), UVM_MEDIUM)
+    csr_wr(.ptr(ral.cpu_info_ctrl.en), .value(enable));
+  endtask
+
   task set_alert_and_cpu_info_for_capture(alert_pkg::alert_crashdump_t alert_dump,
                                           ibex_pkg::crash_dump_t cpu_dump);
-    set_alert_dump_info(alert_dump);
-    `uvm_info(`gfn, "Enabling alert_info capture", UVM_MEDIUM)
-    csr_wr(.ptr(ral.alert_info_ctrl.en), .value(1'b1));
-    set_cpu_dump_info(cpu_dump);
-    `uvm_info(`gfn, "Enabling cpu_info capture", UVM_MEDIUM)
-    csr_wr(.ptr(ral.cpu_info_ctrl.en), .value(1'b1));
+    set_alert_info_for_capture(alert_dump, 1'b1);
+    set_cpu_info_for_capture(cpu_dump, 1'b1);
+  endtask
+
+  task check_alert_info_after_reset(alert_pkg::alert_crashdump_t alert_dump, logic enable);
+    csr_rd_check(.ptr(ral.alert_info_ctrl.en), .compare_value(enable),
+                 .err_msg($sformatf("Expected alert info capture enable %b", enable)));
+    csr_wr(.ptr(ral.alert_info_ctrl.en), .value(enable));
+    check_alert_dump_info(alert_dump);
+  endtask
+
+  task check_cpu_info_after_reset(ibex_pkg::crash_dump_t cpu_dump, logic enable);
+    csr_rd_check(.ptr(ral.cpu_info_ctrl.en), .compare_value(enable),
+                 .err_msg($sformatf("Expected cpu info capture enable %b", enable)));
+    csr_wr(.ptr(ral.cpu_info_ctrl.en), .value(enable));
+    check_cpu_dump_info(cpu_dump);
   endtask
 
   // Checks both alert and cpu_info_ctrl.en, and their _info contents.
@@ -172,14 +194,8 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   // value we write it to update the mirrored value.
   task check_alert_and_cpu_info_after_reset(alert_pkg::alert_crashdump_t alert_dump,
                                             ibex_pkg::crash_dump_t cpu_dump, logic enable);
-    csr_rd_check(.ptr(ral.alert_info_ctrl.en), .compare_value(enable),
-                 .err_msg($sformatf("Expected alert info capture enable %b", enable)));
-    csr_wr(.ptr(ral.alert_info_ctrl.en), .value(enable));
-    check_alert_dump_info(alert_dump);
-    csr_rd_check(.ptr(ral.cpu_info_ctrl.en), .compare_value(enable),
-                 .err_msg($sformatf("Expected cpu info capture enable %b", enable)));
-    csr_wr(.ptr(ral.cpu_info_ctrl.en), .value(enable));
-    check_cpu_dump_info(cpu_dump);
+    check_alert_info_after_reset(alert_dump, enable);
+    check_cpu_info_after_reset(cpu_dump, enable);
   endtask
 
   // Stimulate and check sw_rst_ctrl_n with a given sw_rst_regen setting.

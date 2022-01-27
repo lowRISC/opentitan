@@ -10,10 +10,19 @@ module rstmgr_bind;
 
   bind rstmgr rstmgr_csr_assert_fpv rstmgr_csr_assert (.clk_i, .rst_ni, .h2d(tl_i), .d2h(tl_o));
 
-  bind rstmgr pwrmgr_rstmgr_sva_if pwrmgr_rstmgr_sva_if (
+  bind rstmgr pwrmgr_rstmgr_sva_if #(
+    .CHECK_RSTREQS(0)
+  ) pwrmgr_rstmgr_sva_if (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    // The inputs from pwrmgr.
+    // These inputs from pwrmgr are ignored since they check pwrmgr's rstreqs output.
+    .rstreqs_i('0),
+    .reset_en('0),
+    .sw_rst_req_i('0),
+    .main_rst_req_i('0),
+    .esc_rst_req_i('0),
+    .rstreqs('0),
+    // These are actually used for checks.
     .rst_lc_req(pwr_i.rst_lc_req),
     .rst_sys_req(pwr_i.rst_sys_req),
     .ndm_sys_req(ndmreset_req_i),
@@ -50,20 +59,28 @@ module rstmgr_bind;
   );
 
   bind rstmgr rstmgr_sw_rst_sva_if rstmgr_sw_rst_sva_if (
-    .clk_i,
+    .clk_i({
+      clk_io_div4_i,
+      clk_io_div4_i,
+      clk_io_div4_i,
+      clk_usb_i,
+      clk_io_div4_i,
+      clk_io_div2_i,
+      clk_io_i,
+      clk_io_div4_i
+    }),
     .rst_ni,
     .parent_rst_n(rst_sys_src_n[1]),
-    .enables(reg2hw.sw_rst_regwen),
-    .ctrl_ns(reg2hw.sw_rst_ctrl_n),
+    .ctrl_ns(hw2reg.sw_rst_ctrl_n),
     .rst_ens({
-      rst_en_o.i2c2[1],
-      rst_en_o.i2c1[1],
-      rst_en_o.i2c0[1],
-      rst_en_o.usbif[1],
-      rst_en_o.usb[1],
-      rst_en_o.spi_host1[1],
-      rst_en_o.spi_host0[1],
-      rst_en_o.spi_device[1]
+      rst_en_o.i2c2[1] == prim_mubi_pkg::MuBi4True,
+      rst_en_o.i2c1[1] == prim_mubi_pkg::MuBi4True,
+      rst_en_o.i2c0[1] == prim_mubi_pkg::MuBi4True,
+      rst_en_o.usbif[1] == prim_mubi_pkg::MuBi4True,
+      rst_en_o.usb[1] == prim_mubi_pkg::MuBi4True,
+      rst_en_o.spi_host1[1] == prim_mubi_pkg::MuBi4True,
+      rst_en_o.spi_host0[1] == prim_mubi_pkg::MuBi4True,
+      rst_en_o.spi_device[1] == prim_mubi_pkg::MuBi4True
     }),
     .rst_ns({
       resets_o.rst_i2c2_n[1],
