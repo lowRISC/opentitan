@@ -42,7 +42,7 @@ volatile sec_mmio_ctx_t sec_mmio_ctx;
 // In-memory copy of the ePMP register configuration.
 epmp_state_t epmp;
 // Life cycle state of the chip.
-lifecycle_state_t lc_state = kLcStateProd;
+lifecycle_state_t lc_state = (lifecycle_state_t)0;
 
 static inline rom_error_t mask_rom_irq_error(void) {
   uint32_t mcause;
@@ -153,6 +153,9 @@ static rom_error_t mask_rom_boot(const manifest_t *manifest,
 
   // Enable execution of code from flash if signature is verified.
   flash_ctrl_exec_set(flash_exec);
+
+  // Check cached lc_state value aginst the value reported by hardware.
+  HARDENED_CHECK_EQ(lc_state, lifecycle_state_get());
 
   sec_mmio_check_values(rnd_uint32());
   sec_mmio_check_counters(/*expected_check_count=*/3);
