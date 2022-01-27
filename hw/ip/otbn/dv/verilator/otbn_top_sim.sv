@@ -394,6 +394,7 @@ module otbn_top_sim (
   // Defined in otbn_top_sim.cc
   import "DPI-C" context function int OtbnTopInstallLoopWarps();
   import "DPI-C" context function void OtbnTopApplyLoopWarp();
+  import "DPI-C" context function void OtbnTopDumpState();
   bit warps_installed;
 
   always_ff @(negedge IO_CLK or negedge IO_RST_N) begin
@@ -412,6 +413,11 @@ module otbn_top_sim (
   always_ff @(posedge IO_CLK or negedge IO_RST_N) begin
     if (IO_RST_N) begin
       OtbnTopApplyLoopWarp();
+    end
+  end
+  always_ff @(negedge IO_CLK or negedge IO_RST_N) begin
+    if (IO_RST_N && u_otbn_core_model.check_due && u_otbn_core_model.running) begin
+      OtbnTopDumpState();
     end
   end
 
