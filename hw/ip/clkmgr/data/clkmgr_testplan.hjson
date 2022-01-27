@@ -238,10 +238,10 @@
       tests: ["clkmgr_frequency"]
     }
     {
-      name: stress
-      desc: '''Create standard stress tests.
+      name: stress_all
+      desc: '''This runs random sequences in succession.
 
-            Stress with the following sequences:
+            Randomly chooses from the following sequences:
             - clkmgr_extclk_vseq,
             - clkmgr_frequency_timeout_vseq,
             - clkmgr_frequency_vseq,
@@ -251,19 +251,6 @@
             '''
       milestone: V2
       tests: ["clkmgr_stress_all"]
-    }
-    {
-      name: stress_with_rand_reset
-      desc: '''Create standard stress tests with random reset.
-
-            Stress with the following sequences:
-            - clkmgr_extclk_vseq,
-            - clkmgr_peri_vseq,
-            - clkmgr_smoke_vseq,
-            - clkmgr_trans_vseq
-            '''
-      milestone: V3
-      tests: []
     }
   ]
 
