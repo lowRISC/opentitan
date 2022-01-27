@@ -14,7 +14,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   input wipe_key_i,  // wipe key deletes and renders sideloads useless until reboot
   input [Shares-1:0][RandWidth-1:0] entropy_i,
   input keymgr_key_dest_e dest_sel_i,
-  input keymgr_gen_out_e key_sel_i,
+  input prim_mubi_pkg::mubi4_t hw_key_sel_i,
   input data_en_i,
   input data_valid_i,
   input hw_key_req_t key_i,
@@ -135,10 +135,22 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     endcase // unique case (state_q)
   end
 
+  import prim_mubi_pkg::mubi4_test_true_strict;
+  prim_mubi_pkg::mubi4_t [2:0] hw_key_sel;
+  prim_mubi4_sync #(
+    .NumCopies(3),
+    .AsyncOn(0)
+  ) u_mubi_buf (
+    .clk_i('0),
+    .rst_ni('0),
+    .mubi_i(hw_key_sel_i),
+    .mubi_o(hw_key_sel)
+  );
+
   logic aes_sel, kmac_sel, otbn_sel;
-  assign aes_sel  = dest_sel_i == Aes  & key_sel_i == HwKey;
-  assign kmac_sel = dest_sel_i == Kmac & key_sel_i == HwKey;
-  assign otbn_sel = dest_sel_i == Otbn & key_sel_i == HwKey;
+  assign aes_sel  = dest_sel_i == Aes  & mubi4_test_true_strict(hw_key_sel[0]);
+  assign kmac_sel = dest_sel_i == Kmac & mubi4_test_true_strict(hw_key_sel[1]);
+  assign otbn_sel = dest_sel_i == Otbn & mubi4_test_true_strict(hw_key_sel[2]);
 
   keymgr_sideload_key u_aes_key (
     .clk_i,
