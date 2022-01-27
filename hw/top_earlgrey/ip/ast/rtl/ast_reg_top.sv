@@ -217,6 +217,9 @@ module ast_reg_top (
   logic regb_3_we;
   logic [31:0] regb_3_qs;
   logic [31:0] regb_3_wd;
+  logic regb_4_we;
+  logic [31:0] regb_4_qs;
+  logic [31:0] regb_4_wd;
 
   // Register instances
   // Subregister 0 of Multireg rega
@@ -1179,8 +1182,35 @@ module ast_reg_top (
   );
 
 
+  // Subregister 4 of Multireg regb
+  // R[regb_4]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0)
+  ) u_regb_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  logic [35:0] addr_hit;
+    // from register interface
+    .we     (regb_4_we),
+    .wd     (regb_4_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.regb[4].q),
+
+    // to register interface (read)
+    .qs     (regb_4_qs)
+  );
+
+
+
+  logic [36:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == AST_REGA_0_OFFSET);
@@ -1219,6 +1249,7 @@ module ast_reg_top (
     addr_hit[33] = (reg_addr == AST_REGB_1_OFFSET);
     addr_hit[34] = (reg_addr == AST_REGB_2_OFFSET);
     addr_hit[35] = (reg_addr == AST_REGB_3_OFFSET);
+    addr_hit[36] = (reg_addr == AST_REGB_4_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1261,7 +1292,8 @@ module ast_reg_top (
                (addr_hit[32] & (|(AST_PERMIT[32] & ~reg_be))) |
                (addr_hit[33] & (|(AST_PERMIT[33] & ~reg_be))) |
                (addr_hit[34] & (|(AST_PERMIT[34] & ~reg_be))) |
-               (addr_hit[35] & (|(AST_PERMIT[35] & ~reg_be)))));
+               (addr_hit[35] & (|(AST_PERMIT[35] & ~reg_be))) |
+               (addr_hit[36] & (|(AST_PERMIT[36] & ~reg_be)))));
   end
   assign rega_0_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -1372,6 +1404,9 @@ module ast_reg_top (
   assign regb_3_we = addr_hit[35] & reg_we & !reg_error;
 
   assign regb_3_wd = reg_wdata[31:0];
+  assign regb_4_we = addr_hit[36] & reg_we & !reg_error;
+
+  assign regb_4_wd = reg_wdata[31:0];
 
   // Read data return
   always_comb begin
@@ -1519,6 +1554,10 @@ module ast_reg_top (
 
       addr_hit[35]: begin
         reg_rdata_next[31:0] = regb_3_qs;
+      end
+
+      addr_hit[36]: begin
+        reg_rdata_next[31:0] = regb_4_qs;
       end
 
       default: begin

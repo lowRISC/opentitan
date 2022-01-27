@@ -23,32 +23,44 @@ timeunit 1ns / 10ps;
 import ast_bhv_pkg::* ;
 
 localparam time AonClkPeriod = 5000ns; // 5000ns (200Khz)
-logic clk;
+reg init_start = 1'b0;
 
 initial begin
-  clk = 1'b0;
   $display("\nAON Clock Period: %0dns", AonClkPeriod);
+  #1; init_start  = 1'b1;
 end
 
 // Enable 5us RC Delay on rise
-logic en_osc_re;
-buf #(AON_EN_RDLY, 0) b0 (en_osc_re, (vcore_pok_h_i && aon_en_i));
+wire en_osc_re_buf, en_osc_re;
+buf #(AON_EN_RDLY, 0) b0 (en_osc_re_buf, (vcore_pok_h_i && aon_en_i));
+assign en_osc_re = en_osc_re_buf && init_start;
 
 // Clock Oscillator
 ////////////////////////////////////////
 logic en_osc;
+reg clk_osc = 1'b1;
 
 always begin
-  #(AonClkPeriod/2) clk = ~clk && en_osc;
+  #(AonClkPeriod/2) clk_osc = ~clk_osc;
 end
-`else  // of SYBTHESIS
+
+// HDL Clock Gate
+logic clk;
+reg en_clk;
+
+always_latch begin
+  if ( !clk_osc ) en_clk <= en_osc;
+end
+
+assign clk = clk_osc && en_clk;
+`else  // of SYNTHESIS
 // SYNTHESIS/LINTER
 ///////////////////////////////////////
-logic en_osc_re;
-assign en_osc_re = vcore_pok_h_i && aon_en_i;
-
 logic clk, en_osc;
 assign clk = 1'b0;
+
+logic en_osc_re;
+assign en_osc_re = vcore_pok_h_i && aon_en_i;
 `endif  // of SYBTHESIS
 `else  // of AST_BYPASS_CLK
 // VERILATOR/FPGA

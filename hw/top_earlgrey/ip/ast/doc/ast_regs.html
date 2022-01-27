@@ -1,3 +1,66 @@
+<style>
+ table.regpic {
+  width: 95%;
+  border-collapse: collapse;
+  margin-left:auto; 
+  margin-right:auto;
+  table-layout:fixed;
+ }
+ table.regdef {
+  border: 1px solid black;
+  width: 80%;
+  border-collapse: collapse;
+  margin-left:auto; 
+  margin-right:auto;
+  table-layout:auto;
+ }
+ table.regdef th {
+  border: 1px solid black;
+  font-family: sans-serif;
+ }
+ td.bitnum {
+  font-size: 60%;
+  text-align: center;
+ }
+ td.unused {
+  border: 1px solid black;
+  background-color: gray;
+ }
+ td.fname {
+  border: 1px solid black;
+  text-align: center;
+  font-family: sans-serif;
+ }
+ td.regbits, td.regperm, td.regrv, td.regfn {
+  border: 1px solid black;
+  text-align: center;
+  font-family: sans-serif;
+ }
+ td.regde {
+  border: 1px solid black;
+ }
+ table.cfgtable {
+  border: 1px solid black;
+  width: 80%;
+  border-collapse: collapse;
+  margin-left:auto;
+  margin-right:auto;
+  table-layout:auto;
+ }
+ table.cfgtable th {
+  border: 1px solid black;
+  font-family: sans-serif;
+  font-weight: bold;
+ }
+ table.cfgtable td {
+  border: 1px solid black;
+  font-family: sans-serif;
+ }
+ p {
+  color: blue;
+  font-size: 16px;
+ }
+</style>
 <table class="regdef" id="Reg_rega_0">
  <tr>
   <th class="regdef" colspan=5>
@@ -501,4 +564,18 @@
 <tr><td class="bitnum">15</td><td class="bitnum">14</td><td class="bitnum">13</td><td class="bitnum">12</td><td class="bitnum">11</td><td class="bitnum">10</td><td class="bitnum">9</td><td class="bitnum">8</td><td class="bitnum">7</td><td class="bitnum">6</td><td class="bitnum">5</td><td class="bitnum">4</td><td class="bitnum">3</td><td class="bitnum">2</td><td class="bitnum">1</td><td class="bitnum">0</td></tr><tr><td class="fname" colspan=16>...reg32_3</td>
 </tr></table></td></tr>
 <tr><th width=5%>Bits</th><th width=5%>Type</th><th width=5%>Reset</th><th>Name</th><th>Description</th></tr><tr><td class="regbits">31:0</td><td class="regperm">rw</td><td class="regrv">0x0</td><td class="regfn">reg32_3</td><td class="regde"><p>For REGB3</p></td></table>
+<br>
+<table class="regdef" id="Reg_regb_4">
+ <tr>
+  <th class="regdef" colspan=5>
+   <div>ast.REGB_4 @ 0x210</div>
+   <div><p>AST Registers Array-B to set address space size</p></div>
+   <div>Reset default = 0x0, mask 0xffffffff</div>
+  </th>
+ </tr>
+<tr><td colspan=5><table class="regpic"><tr><td class="bitnum">31</td><td class="bitnum">30</td><td class="bitnum">29</td><td class="bitnum">28</td><td class="bitnum">27</td><td class="bitnum">26</td><td class="bitnum">25</td><td class="bitnum">24</td><td class="bitnum">23</td><td class="bitnum">22</td><td class="bitnum">21</td><td class="bitnum">20</td><td class="bitnum">19</td><td class="bitnum">18</td><td class="bitnum">17</td><td class="bitnum">16</td></tr><tr><td class="fname" colspan=16>reg32_4...</td>
+</tr>
+<tr><td class="bitnum">15</td><td class="bitnum">14</td><td class="bitnum">13</td><td class="bitnum">12</td><td class="bitnum">11</td><td class="bitnum">10</td><td class="bitnum">9</td><td class="bitnum">8</td><td class="bitnum">7</td><td class="bitnum">6</td><td class="bitnum">5</td><td class="bitnum">4</td><td class="bitnum">3</td><td class="bitnum">2</td><td class="bitnum">1</td><td class="bitnum">0</td></tr><tr><td class="fname" colspan=16>...reg32_4</td>
+</tr></table></td></tr>
+<tr><th width=5%>Bits</th><th width=5%>Type</th><th width=5%>Reset</th><th>Name</th><th>Description</th></tr><tr><td class="regbits">31:0</td><td class="regperm">rw</td><td class="regrv">0x0</td><td class="regfn">reg32_4</td><td class="regde"><p>For REGB4</p></td></table>
 <br>
