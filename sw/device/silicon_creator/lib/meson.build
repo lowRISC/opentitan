@@ -107,7 +107,7 @@ sw_silicon_creator_lib_shutdown = declare_dependency(
       'shutdown.c',
     ],
     dependencies: [
-      sw_silicon_creator_lib_base_abs_mmio,
+      sw_lib_abs_mmio,
       sw_silicon_creator_lib_driver_alert,
     ],
   ),

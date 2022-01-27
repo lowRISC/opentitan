@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_BASE_ABS_MMIO_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_BASE_ABS_MMIO_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_ABS_MMIO_H_
+#define OPENTITAN_SW_DEVICE_LIB_BASE_ABS_MMIO_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -118,4 +118,4 @@ extern void abs_mmio_write32_shadowed(uint32_t addr, uint32_t value);
 }
 #endif
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_BASE_ABS_MMIO_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_ABS_MMIO_H_

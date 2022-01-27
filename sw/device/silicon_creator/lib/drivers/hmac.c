@@ -4,10 +4,10 @@
 
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 
+#include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/silicon_creator/lib/base/abs_mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "hmac_regs.h"  // Generated.

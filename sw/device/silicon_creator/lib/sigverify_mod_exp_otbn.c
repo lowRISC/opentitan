@@ -4,7 +4,6 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
-
 #include "sw/device/silicon_creator/lib/drivers/otbn.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/otbn_util.h"

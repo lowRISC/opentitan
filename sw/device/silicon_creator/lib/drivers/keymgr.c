@@ -4,9 +4,9 @@
 
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 
+#include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/freestanding/assert.h"
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/silicon_creator/lib/base/abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
