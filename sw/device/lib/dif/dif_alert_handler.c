@@ -151,17 +151,17 @@ dif_result_t dif_alert_handler_configure_alert(
     return kDifLocked;
   }
 
-  // Enable the alert.
-  ptrdiff_t enable_reg_offset =
-      ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET + alert * sizeof(uint32_t);
-  mmio_region_write32_shadowed(alert_handler->base_addr, enable_reg_offset,
-                               0x1);
-
   // Classify the alert.
   ptrdiff_t class_reg_offset = ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET +
                                alert * sizeof(uint32_t);
   mmio_region_write32_shadowed(alert_handler->base_addr, class_reg_offset,
                                classification);
+
+  // Enable the alert.
+  ptrdiff_t enable_reg_offset =
+      ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET + alert * sizeof(uint32_t);
+  mmio_region_write32_shadowed(alert_handler->base_addr, enable_reg_offset,
+                               0x1);
 
   // Lock the configuration.
   if (locked == kDifToggleEnabled) {
@@ -211,15 +211,15 @@ dif_result_t dif_alert_handler_configure_local_alert(
     return kDifLocked;
   }
 
+  // Classify the alert.
+  mmio_region_write32_shadowed(alert_handler->base_addr, class_reg_offset,
+                               classification);
+
   // Enable the alert.
   // NOTE: the alert ID corresponds directly to the multireg index.
   // (I.e., alert N has enable multireg N).
   mmio_region_write32_shadowed(alert_handler->base_addr, enable_reg_offset,
                                0x1);
-
-  // Classify the alert.
-  mmio_region_write32_shadowed(alert_handler->base_addr, class_reg_offset,
-                               classification);
 
   // Lock the configuration.
   if (locked == kDifToggleEnabled) {
@@ -364,9 +364,6 @@ dif_result_t dif_alert_handler_configure_class(
     }
   }
 
-  mmio_region_write32_shadowed(alert_handler->base_addr, ctrl_reg_offset,
-                               ctrl_reg);
-
   // Configure the class accumulator threshold.
   mmio_region_write32_shadowed(alert_handler->base_addr,
                                accum_thresh_reg_offset,
@@ -382,6 +379,10 @@ dif_result_t dif_alert_handler_configure_class(
                                crashdump_phase_reg_offset,
                                (uint32_t)(config.crashdump_escalation_phase -
                                           kDifAlertHandlerClassStatePhase0));
+
+  // Configure the class control register last, since this holds the enable bit.
+  mmio_region_write32_shadowed(alert_handler->base_addr, ctrl_reg_offset,
+                               ctrl_reg);
 
   // Lock the configuration.
   if (locked == kDifToggleEnabled) {

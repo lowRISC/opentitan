@@ -90,12 +90,12 @@ TEST_P(AlertConfigTest, EnableOnly) {
       ALERT_HANDLER_ALERT_REGWEN_0_REG_OFFSET + alert * sizeof(uint32_t),
       ALERT_HANDLER_ALERT_REGWEN_0_REG_RESVAL);
   EXPECT_WRITE32_SHADOWED(
-      ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET + alert * sizeof(uint32_t),
-      {{ALERT_HANDLER_ALERT_EN_SHADOWED_0_EN_A_0_BIT, true}});
-  EXPECT_WRITE32_SHADOWED(
       ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET +
           alert * sizeof(uint32_t),
       {{ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_OFFSET, alert_class}});
+  EXPECT_WRITE32_SHADOWED(
+      ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET + alert * sizeof(uint32_t),
+      {{ALERT_HANDLER_ALERT_EN_SHADOWED_0_EN_A_0_BIT, true}});
 
   EXPECT_EQ(
       dif_alert_handler_configure_alert(&alert_handler_, alert, alert_class,
@@ -111,12 +111,12 @@ TEST_P(AlertConfigTest, EnableAndLock) {
       ALERT_HANDLER_ALERT_REGWEN_0_REG_OFFSET + alert * sizeof(uint32_t),
       ALERT_HANDLER_ALERT_REGWEN_0_REG_RESVAL);
   EXPECT_WRITE32_SHADOWED(
-      ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET + alert * sizeof(uint32_t),
-      {{ALERT_HANDLER_ALERT_EN_SHADOWED_0_EN_A_0_BIT, true}});
-  EXPECT_WRITE32_SHADOWED(
       ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET +
           alert * sizeof(uint32_t),
       {{ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_OFFSET, alert_class}});
+  EXPECT_WRITE32_SHADOWED(
+      ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET + alert * sizeof(uint32_t),
+      {{ALERT_HANDLER_ALERT_EN_SHADOWED_0_EN_A_0_BIT, true}});
   EXPECT_WRITE32(
       ALERT_HANDLER_ALERT_REGWEN_0_REG_OFFSET + alert * sizeof(uint32_t), 0);
 
@@ -192,14 +192,14 @@ TEST_P(LocalAlertConfigTest, EnableOnly) {
                     static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
                 ALERT_HANDLER_LOC_ALERT_REGWEN_0_REG_RESVAL);
   EXPECT_WRITE32_SHADOWED(
-      ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_REG_OFFSET +
-          static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
-      {{ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_EN_LA_0_BIT, true}});
-  EXPECT_WRITE32_SHADOWED(
       ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET +
           static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
       {{ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_OFFSET,
         alert_class}});
+  EXPECT_WRITE32_SHADOWED(
+      ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_REG_OFFSET +
+          static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
+      {{ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_EN_LA_0_BIT, true}});
 
   EXPECT_EQ(dif_alert_handler_configure_local_alert(
                 &alert_handler_, local_alert, alert_class, kDifToggleEnabled,
@@ -215,14 +215,14 @@ TEST_P(LocalAlertConfigTest, EnableAndLock) {
                     static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
                 ALERT_HANDLER_LOC_ALERT_REGWEN_0_REG_RESVAL);
   EXPECT_WRITE32_SHADOWED(
-      ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_REG_OFFSET +
-          static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
-      {{ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_EN_LA_0_BIT, true}});
-  EXPECT_WRITE32_SHADOWED(
       ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET +
           static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
       {{ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_OFFSET,
         alert_class}});
+  EXPECT_WRITE32_SHADOWED(
+      ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_REG_OFFSET +
+          static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
+      {{ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_EN_LA_0_BIT, true}});
   EXPECT_WRITE32(ALERT_HANDLER_LOC_ALERT_REGWEN_0_REG_OFFSET +
                      static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
                  0);
@@ -408,6 +408,15 @@ TEST_F(ClassConfigTest, EnableOnly) {
   EXPECT_WRITE32_SHADOWED(ALERT_HANDLER_CLASSC_PHASE2_CYC_SHADOWED_REG_OFFSET,
                           esc_phases[1].duration_cycles);
 
+  EXPECT_WRITE32_SHADOWED(ALERT_HANDLER_CLASSC_ACCUM_THRESH_SHADOWED_REG_OFFSET,
+                          config.accumulator_threshold);
+
+  EXPECT_WRITE32_SHADOWED(ALERT_HANDLER_CLASSC_TIMEOUT_CYC_SHADOWED_REG_OFFSET,
+                          config.irq_deadline_cycles);
+
+  EXPECT_WRITE32_SHADOWED(
+      ALERT_HANDLER_CLASSC_CRASHDUMP_TRIGGER_SHADOWED_REG_OFFSET, 1);
+
   uint32_t ctrl_reg = 0;
   ctrl_reg = bitfield_bit32_write(ctrl_reg,
                                   ALERT_HANDLER_CLASSC_CTRL_SHADOWED_EN_BIT, 1);
@@ -421,15 +430,6 @@ TEST_F(ClassConfigTest, EnableOnly) {
       ctrl_reg, ALERT_HANDLER_CLASSC_CTRL_SHADOWED_MAP_E1_FIELD, 2);
   EXPECT_WRITE32_SHADOWED(ALERT_HANDLER_CLASSC_CTRL_SHADOWED_REG_OFFSET,
                           ctrl_reg);
-
-  EXPECT_WRITE32_SHADOWED(ALERT_HANDLER_CLASSC_ACCUM_THRESH_SHADOWED_REG_OFFSET,
-                          config.accumulator_threshold);
-
-  EXPECT_WRITE32_SHADOWED(ALERT_HANDLER_CLASSC_TIMEOUT_CYC_SHADOWED_REG_OFFSET,
-                          config.irq_deadline_cycles);
-
-  EXPECT_WRITE32_SHADOWED(
-      ALERT_HANDLER_CLASSC_CRASHDUMP_TRIGGER_SHADOWED_REG_OFFSET, 1);
 
   EXPECT_EQ(dif_alert_handler_configure_class(
                 &alert_handler_, kDifAlertHandlerClassC, config,
@@ -462,6 +462,15 @@ TEST_F(ClassConfigTest, EnableAndLock) {
   EXPECT_WRITE32_SHADOWED(ALERT_HANDLER_CLASSC_PHASE2_CYC_SHADOWED_REG_OFFSET,
                           esc_phases[1].duration_cycles);
 
+  EXPECT_WRITE32_SHADOWED(ALERT_HANDLER_CLASSC_ACCUM_THRESH_SHADOWED_REG_OFFSET,
+                          config.accumulator_threshold);
+
+  EXPECT_WRITE32_SHADOWED(ALERT_HANDLER_CLASSC_TIMEOUT_CYC_SHADOWED_REG_OFFSET,
+                          config.irq_deadline_cycles);
+
+  EXPECT_WRITE32_SHADOWED(
+      ALERT_HANDLER_CLASSC_CRASHDUMP_TRIGGER_SHADOWED_REG_OFFSET, 1);
+
   uint32_t ctrl_reg = 0;
   ctrl_reg = bitfield_bit32_write(ctrl_reg,
                                   ALERT_HANDLER_CLASSC_CTRL_SHADOWED_EN_BIT, 1);
@@ -477,15 +486,6 @@ TEST_F(ClassConfigTest, EnableAndLock) {
       ctrl_reg, ALERT_HANDLER_CLASSC_CTRL_SHADOWED_MAP_E3_FIELD, 2);
   EXPECT_WRITE32_SHADOWED(ALERT_HANDLER_CLASSC_CTRL_SHADOWED_REG_OFFSET,
                           ctrl_reg);
-
-  EXPECT_WRITE32_SHADOWED(ALERT_HANDLER_CLASSC_ACCUM_THRESH_SHADOWED_REG_OFFSET,
-                          config.accumulator_threshold);
-
-  EXPECT_WRITE32_SHADOWED(ALERT_HANDLER_CLASSC_TIMEOUT_CYC_SHADOWED_REG_OFFSET,
-                          config.irq_deadline_cycles);
-
-  EXPECT_WRITE32_SHADOWED(
-      ALERT_HANDLER_CLASSC_CRASHDUMP_TRIGGER_SHADOWED_REG_OFFSET, 1);
 
   EXPECT_WRITE32(ALERT_HANDLER_CLASSC_REGWEN_REG_OFFSET, 0);
 
