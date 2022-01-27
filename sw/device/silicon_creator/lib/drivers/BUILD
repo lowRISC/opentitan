@@ -223,6 +223,27 @@ cc_library(
     ],
 )
 
+cc_test(
+    name = "lifecycle_unittest",
+    srcs = [
+        "lifecycle.h",
+        "lifecycle.c",
+        "lifecycle_unittest.cc",
+    ],
+    defines = [
+        "OT_OFF_TARGET_TEST",
+    ],
+    deps = [
+        "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "otbn",
     srcs = ["otbn.c"],

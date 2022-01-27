@@ -17,6 +17,25 @@ sw_silicon_creator_lib_driver_lifecycle = declare_dependency(
   ),
 )
 
+test('sw_silicon_creator_lib_driver_lifecycle_unittest', executable(
+    'sw_silicon_creator_lib_driver_lifecycle_unittest',
+    sources: [
+      'lifecycle_unittest.cc',
+      hw_ip_lc_ctrl_reg_h,
+      'lifecycle.c',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_silicon_creator_lib_base_mock_sec_mmio,
+      sw_lib_testing_hardened,
+    ],
+    native: true,
+    c_args: ['-DOT_OFF_TARGET_TEST'],
+    cpp_args: ['-DOT_OFF_TARGET_TEST'],
+  ),
+  suite: 'mask_rom',
+)
+
 # Mask ROM hmac driver
 sw_silicon_creator_lib_driver_hmac = declare_dependency(
   link_with: static_library(
