@@ -66,6 +66,17 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
 
     // Clear reset_info register.
     csr_wr(.ptr(ral.reset_info), .value('1));
+    `DV_CHECK_RANDOMIZE_FATAL(this)
+
+    set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
+
+    // Send sw reset.
+    send_sw_reset();
+    check_reset_info(8, "Expected reset_info to indicate sw reset");
+    check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b0);
+
+    // Clear reset_info register.
+    csr_wr(.ptr(ral.reset_info), .value('1));
 
     // Testing software resets.
     begin : sw_rst

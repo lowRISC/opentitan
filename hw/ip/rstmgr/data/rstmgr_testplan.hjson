@@ -91,7 +91,7 @@
             - Each bit was cleared at least once.
             '''
       milestone: V2
-      tests: []
+      tests: ["rstmgr_reset"]
     }
     {
       name: cpu_info
@@ -107,16 +107,12 @@
             - Generate reset(s) as in `smoke` testpoint.
 
             **Checks**:
-            - Check that `cpu_regwen` doesn't transition to 1 after reset.
             - Verify the `cpu_info` is only captured when enabled.
             - Verify the `cpu_info` contents at each `cpu_info_ctrl.index`
               matches the expected value.
-
-            - Checking that `cpu_regwen` controls when `cpu_info_ctrl` can be
-              modified should be done in common csr tests.
             '''
       milestone: V2
-      tests: []
+      tests: ["rstmgr_reset"]
     }
     {
       name: alert_info
@@ -132,21 +128,23 @@
             - Generate reset(s) as in `smoke` testpoint.
 
             **Checks**:
-            - Check that `alert_regwen` doesn't transition to 1 after reset.
             - Verify the `alert_info` is only captured when enabled.
             - Verify the `alert_info` contents at each `alert_info_ctrl.index`
               matches the expected value.
-
-            - Checking that `alert_regwen` controls when `alert_info_ctrl` can
-              be modified should be done in common csr tests.
             '''
       milestone: V2
-      tests: []
+      tests: ["rstmgr_reset"]
     }
     {
-      name: stress
-      desc: '''The standard stress test.'''
-      milestone: V3
+      name: stress_all
+      desc: '''This runs random tests sequentially.
+
+            Stress with the following sequences:
+            - rstmgr_reset_vseq
+            - rstmgr_smoke_vseq
+            - rstmgr_sw_rst_vseq
+	    '''
+      milestone: V2
       tests: []
     }
   ]
