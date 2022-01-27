@@ -30,7 +30,6 @@ int otbn_stack_element_peek(int index, svBitVecVal *val) __attribute__((weak));
 #define RUNNING_BIT (1U << 0)
 #define CHECK_DUE_BIT (1U << 1)
 #define FAILED_STEP_BIT (1U << 2)
-#define FAILED_CMP_BIT (1U << 3)
 
 // Read (the start of) the contents of a file at path as a vector of bytes.
 // Expects num_bytes bytes of data. On failure, throws a std::runtime_error.
@@ -520,6 +519,11 @@ int OtbnModel::send_lc_escalation() {
   return 0;
 }
 
+bool OtbnModel::is_at_start_of_wipe() const {
+  ISSWrapper *iss = iss_.get();
+  return iss && iss->get_mirrored().wipe_start;
+}
+
 ISSWrapper *OtbnModel::ensure_wrapper() {
   if (!iss_) {
     try {
@@ -736,32 +740,15 @@ void edn_model_urnd_cdc_done(OtbnModel *model) { model->edn_urnd_cdc_done(); }
 unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned model_state,
                          svBitVecVal *status /* bit [7:0] */,
                          svBitVecVal *insn_cnt /* bit [31:0] */,
-                         svBitVecVal *rnd_req /* bit [31:0] */,
+                         svBitVecVal *rnd_req /* bit [0:0] */,
                          svBitVecVal *err_bits /* bit [31:0] */,
                          svBitVecVal *stop_pc /* bit [31:0] */) {
   assert(model && status && insn_cnt && err_bits && stop_pc);
-
-  // Run model checks if needed. This usually happens just after an operation
-  // has finished.
-  if (model->has_rtl() && (model_state & CHECK_DUE_BIT)) {
-    switch (model->check()) {
-      case 1:
-        // Match (success)
-        break;
-
-      case 0:
-        // Mismatch
-        model_state |= FAILED_CMP_BIT;
-        break;
-
-      default:
-        // Something went wrong
-        return (model_state & ~RUNNING_BIT) | FAILED_STEP_BIT;
-    }
-    model_state &= ~CHECK_DUE_BIT;
-  }
-
   assert(!is_xz(start));
+
+  // Clear any check due bit (we hopefully ran the check on the previous
+  // negedge)
+  model_state = model_state & ~CHECK_DUE_BIT;
 
   // Start the model if requested
   if (start) {
@@ -793,25 +780,44 @@ unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned model_state,
       return (model_state & ~RUNNING_BIT) | FAILED_STEP_BIT;
   }
 
-  // If we're still running, there's nothing more to do.
-  if (model_state & RUNNING_BIT)
-    return model_state;
+  // If we're at the start of a wipe, set the CHECK_DUE_BIT so that we run a
+  // check before we wipe everything
+  if (model->is_at_start_of_wipe())
+    model_state |= CHECK_DUE_BIT;
 
-  // If we've just stopped running and there's no RTL, load the contents of
-  // DMEM back from the ISS
-  if (!model->has_rtl()) {
-    switch (model->load_dmem()) {
+  return model_state;
+}
+
+int otbn_model_check(OtbnModel *model, svBitVecVal *mismatch /* bit [0:0] */) {
+  assert(model && mismatch);
+
+  // Run model checks if needed. This usually happens just after an operation
+  // has finished.
+  if (model->has_rtl()) {
+    switch (model->check()) {
+      case 1:
+        // Match (success)
+        break;
+
       case 0:
-        // Success
+        // Mismatch
+        *mismatch |= 1;
         break;
 
       default:
-        // Failed to load DMEM
-        return (model_state & ~RUNNING_BIT) | FAILED_STEP_BIT;
+        // Something went wrong
+        return 0;
     }
   }
 
-  return model_state;
+  // If there's no RTL, load the contents of DMEM back from the ISS
+  if (!model->has_rtl()) {
+    if (model->load_dmem() != 0) {
+      return 0;
+    }
+  }
+
+  return 1;
 }
 
 int otbn_model_invalidate_imem(OtbnModel *model) {

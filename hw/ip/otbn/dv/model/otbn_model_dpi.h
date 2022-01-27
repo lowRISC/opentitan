@@ -52,7 +52,6 @@ void otbn_model_set_keymgr_value(OtbnModel *model, svLogicVecVal *key0,
 //    Bit 0:      running       True if the model is currently running
 //    Bit 1:      check_due     True if the model finished running last cycle
 //    Bit 2:      failed_step   Something failed when trying to start/step ISS
-//    Bit 3:      failed_cmp    Consistency check at end of run failed
 //
 // The otbn_model_step function should only be called when either the model is
 // running (bit 0 of model_state), has a check due (bit 1 of model_state), or
@@ -65,22 +64,27 @@ void otbn_model_set_keymgr_value(OtbnModel *model, svLogicVecVal *key0,
 // *insn_cnt.
 //
 // If nothing goes wrong and the ISS finishes its run, we set running to false,
-// write out err_bits and stop_pc and do the post-run task. If the model's
-// design_scope is non-empty, it should be the scope of an RTL implementation.
-// In that case, we compare register and memory contents with that
-// implementation, printing to stderr and setting the failed_cmp bit if there
-// are any mismatches. If the model's design_scope is the empty string, we grab
-// the contents of DMEM from the ISS and inject them into the simulation
-// memory.
+// write out err_bits and stop_pc and set check_due to ensure otbn_model_check
+// runs on the next negedge of the clock.
 //
-// If start is true, we start the model and then step once (as
-// above).
+// If start is true, we start the model and then step once (as above).
 unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned model_state,
                          svBitVecVal *status /* bit [7:0] */,
                          svBitVecVal *insn_cnt /* bit [31:0] */,
                          svBitVecVal *rnd_req /* bit [0:0] */,
                          svBitVecVal *err_bits /* bit [31:0] */,
                          svBitVecVal *stop_pc /* bit [31:0] */);
+
+// This gets run if the otbn_model_step function sets the check_due bit in its
+// model_state bitfield (see above). If the model's design_scope is non-empty,
+// it should be the scope of an RTL implementation. In that case, we compare
+// register and memory contents with that implementation, printing to stderr
+// and setting the failed_cmp bit if there are any mismatches. If the model's
+// design_scope is the empty string, we grab the contents of DMEM from the ISS
+// and inject them into the simulation memory.
+//
+// Returns 1 on success; 0 on failure.
+int otbn_model_check(OtbnModel *model, svBitVecVal *mismatch /* bit [0:0] */);
 
 // Tell the model to mark all of IMEM as invalid so that any fetch causes an
 // integrity error. Returns 0 on success or -1 on failure.

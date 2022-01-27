@@ -76,12 +76,11 @@ module otbn_core_model
   // Extract particular bits of the model_state value.
   //
   //   [0]     running:      The ISS is currently running
-  //   [1]     check_due:    The ISS just finished but still needs to check results
+  //   [1]     check_due:    The ISS needs to check results
   //   [2]     failed_step:  Something went wrong when trying to start or step the ISS.
-  //   [3]     failed_cmp:   The consistency check at the end of run failed.
 
-  bit failed_cmp, failed_step, check_due, running;
-  assign {failed_cmp, failed_step, check_due, running} = model_state[3:0];
+  bit failed_step, check_due, running;
+  assign {failed_step, check_due, running} = model_state[2:0];
 
   bit [7:0]  status_d, status_q;
   bit [31:0] insn_cnt_d, insn_cnt_q;
@@ -241,6 +240,21 @@ module otbn_core_model
     end
   end
 
+  // If a check is requested, run it on the following negedge. This guarantees that both the ISS and
+  // RTL are "at the end" of a cycle.
+  logic failed_check, check_mismatch_d, check_mismatch_q;
+  always_ff @(negedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      failed_check <= 0;
+      check_mismatch_q <= 0;
+    end else begin
+      if (check_due) begin
+        failed_check <= (otbn_model_check(model_handle, check_mismatch_d) == 0);
+        check_mismatch_q <= check_mismatch_d;
+      end
+    end
+  end
+
   // Assertion to ensure that keymgr key valid is never unknown.
   `ASSERT_KNOWN(KeyValidIsKnownChk_A, keymgr_key_i.valid)
   // Assertion to ensure that keymgr key values are never unknown if valid is high.
@@ -282,7 +296,7 @@ module otbn_core_model
       );
   end
 
-  assign err_o = failed_step | failed_cmp | failed_lc_escalate;
+  assign err_o = failed_step | failed_check | check_mismatch_q | failed_lc_escalate;
 
   // Derive a "done" signal. This should trigger for a single cycle when OTBN finishes its work.
   // It's analogous to the done_o signal on otbn_core, but this signal is delayed by a single cycle
