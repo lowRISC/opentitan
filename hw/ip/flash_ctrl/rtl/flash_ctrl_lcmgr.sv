@@ -97,32 +97,31 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   //  2: --
   //  3: --
   //  4: --
-  //  5: |||||||||||||||||||| (55.56%)
-  //  6: |||||||||||||||| (44.44%)
-  //  7: --
-  //  8: --
-  //  9: --
+  //  5: |||||||||||||||||||| (40.00%)
+  //  6: |||||||||||||||| (33.33%)
+  //  7: ||||| (11.11%)
+  //  8: |||||| (13.33%)
+  //  9: | (2.22%)
   // 10: --
+  // 11: --
   //
   // Minimum Hamming distance: 5
-  // Maximum Hamming distance: 6
-  // Minimum Hamming weight: 5
-  // Maximum Hamming weight: 6
+  // Maximum Hamming distance: 9
+  // Minimum Hamming weight: 4
+  // Maximum Hamming weight: 7
   //
-  localparam int StateWidth = 10;
-
-  // progress through and read out the various pieces of content
-  // This FSM should become sparse, especially for StRmaRsp
+  localparam int StateWidth = 11;
   typedef enum logic [StateWidth-1:0] {
-    StIdle          = 10'b1001100110,
-    StReqAddrKey    = 10'b1010101101,
-    StReqDataKey    = 10'b0100110101,
-    StReadSeeds     = 10'b1110010110,
-    StWait          = 10'b1111000001,
-    StEntropyReseed = 10'b0011110011,
-    StRmaWipe       = 10'b0011011100,
-    StRmaRsp        = 10'b0101001111,
-    StInvalid       = 10'b0110101010
+    StIdle          = 11'b01010101111,
+    StReqAddrKey    = 11'b01001110011,
+    StReqDataKey    = 11'b11010000100,
+    StReadSeeds     = 11'b10001010101,
+    StReadEval      = 11'b11110110010,
+    StWait          = 11'b00111101010,
+    StEntropyReseed = 11'b11101001000,
+    StRmaWipe       = 11'b00010011001,
+    StRmaRsp        = 11'b10100100001,
+    StInvalid       = 11'b10100011110
   } lcmgr_state_e;
 
   lcmgr_state_e state_q, state_d;
@@ -399,32 +398,26 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
         info_sel = seed_info_sel;
 
         // we have checked all seeds, proceed
+        addr_cnt_en = rvalid_i;
         if (seed_cnt_q == NumSeeds) begin
           start = 1'b0;
           state_d = StWait;
-
-        // still reading curent seed, increment whenever data returns
-        end else if (!done_i) begin
-          addr_cnt_en = rvalid_i;
-
-        // current seed reading is complete
-        // error is intentionally not used here, as we do not want read seed
-        // failures to stop the software from using flash
-        // When there are upstream failures, the data returned is simply all 1's.
-        // So instead of doing anything explicit, a status is indicated for software.
         end else if (done_i) begin
-          addr_cnt_clr = 1'b1;
-          seed_err_o = 1'b1;
+          seed_err_o = |err_i;
+          state_d = StReadEval;
+        end
+      end // case: StReadSeeds
 
-          // we move to the next seed only if current seed is read and validated
-          // if not, flip to validate phase and read seed again
-          if (validate_q) begin
+     StReadEval: begin
+         addr_cnt_clr = 1'b1;
+         state_d = StReadSeeds;
+
+         if (validate_q) begin
             seed_cnt_en = 1'b1;
             validate_d = 1'b0;
-          end else begin
+         end else begin
             validate_d = 1'b1;
-          end
-        end
+         end
       end
 
       // Waiting for an rma entry command
@@ -609,14 +602,14 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   // On - no errors
   // Off - errors were observed
   logic [lc_ctrl_pkg::TxWidth-1:0] err_sts_raw_q;
-  assign err_sts_q = lc_ctrl_pkg::lc_tx_t'(state_raw_q);
+  assign err_sts_q = lc_ctrl_pkg::lc_tx_t'(err_sts_raw_q);
   assign err_sts_d = err_sts_set && (err_sts_q != lc_ctrl_pkg::Off) ? lc_ctrl_pkg::Off : err_sts_q;
   // This primitive is used to place a size-only constraint on the flops in order to prevent
   // optimizations. Without this Vivado may infer combo loops. For details, see
   // https://github.com/lowRISC/opentitan/issues/10204
   prim_flop #(
     .Width(lc_ctrl_pkg::TxWidth),
-    .ResetValue(lc_ctrl_pkg::On)
+    .ResetValue(lc_ctrl_pkg::TxWidth'(lc_ctrl_pkg::On))
   ) u_prim_flop_err_sts (
     .clk_i,
     .rst_ni,
