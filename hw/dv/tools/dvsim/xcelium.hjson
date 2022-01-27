@@ -35,6 +35,12 @@
                "-nowarn DSEMEL",
                // Ignore hierarchial ref warnings in interfaces
                "-nowarn CUVIHR",
+               // Ignore warning "Potentially reversed dist range may cause it to be treated as
+               // empty". This is thrown when and expression like `var - 1` is added to a
+               // randomization distribution, which can potentially be a negative value.
+               "-nowarn REVRNG",
+               // Ignore warning "Include directory <path> given but not used". This is benign.
+               "-nowarn SPDUSD",
                // Needed for including "secded_enc.h".
                "-I{build_dir}/src/lowrisc_dv_secded_enc_0",
                ]
