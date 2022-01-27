@@ -193,6 +193,7 @@ opentitan_functest(
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:keymgr_binding",
         "//sw/device/silicon_creator/lib:test_main",
