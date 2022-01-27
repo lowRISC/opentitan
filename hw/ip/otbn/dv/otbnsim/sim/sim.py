@@ -161,6 +161,11 @@ class OTBNSim:
         if self.state.fsm_state in [FsmState.WIPING_GOOD, FsmState.WIPING_BAD]:
             assert self.state.wipe_cycles > 0
             self.state.wipe_cycles -= 1
+
+            # Clear the WIPE_START register if it was set
+            if self.state.ext_regs.read('WIPE_START', True):
+                self.state.ext_regs.write('WIPE_START', 0, True)
+
             # Wipe all registers and set STATUS on the penultimate cycle.
             if self.state.wipe_cycles == 1:
                 next_status = (Status.IDLE

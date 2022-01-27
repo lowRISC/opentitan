@@ -185,6 +185,10 @@ class RGReg:
         return self._trace
 
 
+def make_flag_reg(name: str, double_flopped: bool) -> RGReg:
+    return RGReg([RGField(name, 32, 0, 0, 'ro')], double_flopped)
+
+
 class OTBNExtRegs:
     '''A class representing OTBN's externally visible CSRs
 
@@ -217,13 +221,16 @@ class OTBNExtRegs:
         # the future (see issue #4327) but, for now, it's just used in
         # simulation to help track whether RIG-generated binaries finished
         # where they expected to finish.
-        self.regs['STOP_PC'] = RGReg([RGField('STOP_PC', 32, 0, 0, 'ro')],
-                                     True)
+        self.regs['STOP_PC'] = make_flag_reg('STOP_PC', True)
 
         # Add a fake "RND_REQ" register to pass it through otbn_core_model
         # when OTBN_USE_MODEL parameter is enabled in system level tests.
-        self.regs['RND_REQ'] = RGReg([RGField('RND_REQ', 32, 0, 0, 'ro')],
-                                     True)
+        self.regs['RND_REQ'] = make_flag_reg('RND_REQ', True)
+
+        # Add a fake "WIPE_START" register. We set this for a single cycle when
+        # starting secure wipe and the C++ model can use this to trigger a dump
+        # of internal state before it gets zeroed out.
+        self.regs['WIPE_START'] = make_flag_reg('WIPE_START', False)
 
     def _get_reg(self, reg_name: str) -> RGReg:
         reg = self.regs.get(reg_name)
