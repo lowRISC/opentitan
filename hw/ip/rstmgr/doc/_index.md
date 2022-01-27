@@ -284,6 +284,7 @@ Reset Cause             | Description
 `POR`                   | Cold boot, the system was reset through POR circuitry.
 `LOW_POWER_EXIT`        | Warm boot, the system was reset through low power exit.
 `NDM RESET`             | Warm boot, the system was reset through `rv_dm` non-debug-module request.
+`SW_REQ`                | Warm boot, the system was reset through {{< regref "RST_REQ" >}}.
 `HW_REQ`                | Warm boot, the system was reset through peripheral requests.  There may be multiple such requests.
 
 
@@ -291,24 +292,24 @@ The reset info register is write 1 clear.
 It is software responsibility to clear old reset reasons; the reset manager simply records based on the rules below.
 
 Excluding power on reset, which is always recorded when the device POR circuitry is triggered, the other resets are recorded when authorized by the reset manager.
-Reset manager authorization in turn is based on reset category as indicated by the power manager.
-The power manager observes 3 categories of reset states that are mutually exclusive.
-*   No resets are triggered through the power manager.
-*   Resets triggered by low power entry.
-*   Resets triggered by a peripheral request.
+Reset manager authorization is based on reset categories as indicated by the power manager.
+The power manager has three reset categories that are mutually exclusive:
+*   No reset has been triggered by pwrmgr.
+*   Low power entry reset has been triggered by pwrmgr.
+*   Software or peripheral reset request has been triggered by pwrmgr.
 
-Whenever the power manager begins one of the latter two sequences, it sends a hint to the reset manager so that the reset manager can decide which reason to record when the processor reset is observed.
-Whenever the power manager is NOT in one of the two latter states, non-debug-module resets are allowed and directly handled and recorded by the reset manager.
+The reset categories are sent to the reset manager so that it can decide which reason to record when the processor reset is observed.
+Non-debug-module resets are allowed only when no resets have been triggered by pwrmgr.
 
 Since a reset could be motivated by multiple reasons (a security escalation during low power transition for example), the reset information registers constantly record all reset causes in which it is allowed.
 The only case where this is not done is `POR`, where active recording is silenced until the first processor reset release.
 
-Despite 3 reset causes all labeled as warm boot, their effects on the system are not identical.
+Even though four reset causes are labeled as warm boot, their effects on the system are not identical.
 
-*  When the reset cause is `LOW_POWER_EXIT`, it means only the non-always-on domains have been reset
+*  When the reset cause is `LOW_POWER_EXIT`, it means only the non-always-on domains have been reset.
    *  Always-on domains retain their pre-low power values.
 *  When the reset cause is `NDM_RESET`, it means only the `rst_sys_n` tree has asserted for all power domains.
-*  When the reset cause is `HW_REQ`, it means everything other than power / clock / reset managers have reset.
+*  When the reset cause is `HW_REQ` or `SW_REQ`, it means everything other than power / clock / reset managers have reset.
 
 This behavioral difference may be important to software, as it implies the configuration of the system may need to be different.
 
