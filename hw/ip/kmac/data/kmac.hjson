@@ -148,6 +148,13 @@
       name:    "en_masking"
       act:     "req"
     }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_escalate_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
   ]
   countermeasures: [
     { name: "BUS.INTEGRITY",

@@ -20,6 +20,8 @@ filesets:
       - lowrisc:ip:edn_pkg
       - lowrisc:prim:edn_req
       - lowrisc:ip:kmac_pkg
+      - lowrisc:ip:lc_ctrl_pkg
+      - lowrisc:prim:lc_sync
     files:
       - rtl/kmac_reg_pkg.sv
       - rtl/kmac_reg_top.sv

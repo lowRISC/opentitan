@@ -59,6 +59,9 @@ module kmac
   output edn_pkg::edn_req_t entropy_o,
   input  edn_pkg::edn_rsp_t entropy_i,
 
+  // Life cycle
+  input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+
   // interrupts
   output logic intr_kmac_done_o,
   output logic intr_fifo_empty_o,
@@ -82,40 +85,43 @@ module kmac
   // This state machine is to track the current process based on SW input and
   // KMAC operation.
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 5 -n 6 \
-  //      -s 4015776642 --language=sv
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 6 -n 6 \
+  //      -s 1966361510 --language=sv
   //
   // Hamming distance histogram:
   //
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||||||||||||| (50.00%)
-  //  4: |||||||||||||||| (40.00%)
-  //  5: |||| (10.00%)
+  //  3: |||||||||||||||||||| (53.33%)
+  //  4: ||||||||||||||| (40.00%)
+  //  5: || (6.67%)
   //  6: --
   //
   // Minimum Hamming distance: 3
   // Maximum Hamming distance: 5
-  // Minimum Hamming weight: 1
+  // Minimum Hamming weight: 2
   // Maximum Hamming weight: 5
   //
   localparam int StateWidth = 6;
   typedef enum logic [StateWidth-1:0] {
     // Idle state
-    KmacIdle = 6'b001000,
+    KmacIdle = 6'b001011,
 
     // When software writes CmdStart @ KmacIdle and kmac_en, FSM moves to this
-    KmacPrefix = 6'b100110,
+    KmacPrefix = 6'b000110,
 
     // When SHA3 engine processes Key block, FSM moves to here.
-    KmacKeyBlock = 6'b111101,
+    KmacKeyBlock = 6'b111110,
 
     // Message Feed
-    KmacMsgFeed = 6'b010010,
+    KmacMsgFeed = 6'b010101,
 
     // Complete and squeeze
-    KmacDigest = 6'b100001
+    KmacDigest = 6'b101101,
+
+    // Error
+    KmacTerminalError = 6'b110000
 
   } kmac_st_e;
 
@@ -293,6 +299,9 @@ module kmac
 
   logic alert_fatal, alert_recov_operation;
   logic alert_intg_err;
+
+  // Life cycle
+  lc_ctrl_pkg::lc_tx_t       lc_escalate_en;
 
   //////////////////////////////////////
   // Connecting Register IF to logics //
@@ -720,12 +729,23 @@ module kmac
         end
       end
 
-      default: begin
+      KmacTerminalError: begin
         //this state is terminal
-        kmac_st_d = kmac_st;
+        kmac_st_d = KmacTerminalError;
+        kmac_state_error = 1'b 1;
+      end
+
+      default: begin
+        kmac_st_d = KmacTerminalError;
         kmac_state_error = 1'b 1;
       end
     endcase
+
+    // Unconditionally jump into the terminal error state
+    // if the life cycle controller triggers an escalation.
+    if (lc_escalate_en != lc_ctrl_pkg::Off) begin
+      kmac_st_d = KmacTerminalError;
+    end
   end
   `ASSERT_KNOWN(KmacStKnown_A, kmac_st)
 
@@ -767,6 +787,9 @@ module kmac
     .done_i    (sha3_done           ),
     .process_o (kmac2sha3_process   ),
 
+    // LC escalation
+    .lc_escalate_en_i (lc_escalate_en),
+
     // Error detection
     .sparse_fsm_error_o (kmac_core_state_error),
     .key_index_error_o  (key_index_error)
@@ -803,6 +826,9 @@ module kmac
     .process_i  (kmac2sha3_process),
     .run_i      (sha3_run         ),
     .done_i     (sha3_done        ),
+
+    // LC escalation
+    //.lc_escalate_en_i (lc_escalate_en),
 
     .absorbed_o  (sha3_absorbed),
     .squeezing_o (unused_sha3_squeeze),
@@ -946,6 +972,9 @@ module kmac
     .sw_cmd_i (checked_sw_cmd),
     .cmd_o    (kmac_cmd),
 
+    // LC escalation
+    .lc_escalate_en_i (lc_escalate_en),
+
     // Error report
     .error_o            (app_err),
     .sparse_fsm_error_o (kmac_app_state_error)
@@ -1019,7 +1048,10 @@ module kmac
     .sha3_absorbed_i(sha3_absorbed       ),
     .keccak_done_i  (sha3_block_processed),
 
-    .error_o           (errchecker_err),
+    // LC escalation
+    .lc_escalate_en_i (lc_escalate_en),
+
+    .error_o            (errchecker_err),
     .sparse_fsm_error_o (kmac_errchk_state_error)
   );
 
@@ -1088,6 +1120,9 @@ module kmac
       .hash_cnt_o       (entropy_hash_cnt),
       .hash_cnt_clr_i   (entropy_hash_clr),
       .hash_threshold_i (entropy_hash_threshold),
+
+      // LC escalation
+      .lc_escalate_en_i (lc_escalate_en),
 
       // Error
       .err_o              (entropy_err),
@@ -1237,6 +1272,16 @@ module kmac
       .alert_tx_o    ( alert_tx_o[i] )
     );
   end
+
+  // Synchronize life cycle input
+  prim_lc_sync #(
+    .NumCopies (1)
+  ) u_prim_lc_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i ( lc_escalate_en_i ),
+    .lc_en_o ( lc_escalate_en   )
+  );
 
   assign en_masking_o = EnMasking;
 

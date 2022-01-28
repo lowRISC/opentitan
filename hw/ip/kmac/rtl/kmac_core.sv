@@ -49,6 +49,9 @@ module kmac_core
   // Control to SHA3 core
   output logic process_o,
 
+  // Life cycle
+  input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+
   output logic sparse_fsm_error_o,
   output logic key_index_error_o
 );
@@ -67,7 +70,7 @@ module kmac_core
   /////////////////
 
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 5 \
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 5 -n 6 \
   //      -s 401658243 --language=sv
   //
   // Hamming distance histogram:
@@ -75,32 +78,36 @@ module kmac_core
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||||||||||||| (66.67%)
-  //  4: |||||||||| (33.33%)
-  //  5: --
+  //  3: |||||||||||||||||||| (50.00%)
+  //  4: |||||||||||||||| (40.00%)
+  //  5: |||| (10.00%)
+  //  6: --
   //
   // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 4
+  // Maximum Hamming distance: 5
   // Minimum Hamming weight: 1
   // Maximum Hamming weight: 4
   //
-  localparam int StateWidth = 5;
+  localparam int StateWidth = 6;
   typedef enum logic [StateWidth-1:0] {
-    StKmacIdle = 5'b01100,
+    StKmacIdle = 6'b011000,
 
     // Secret Key pushing stage
     // The key is sliced by prim_slicer. This state pushes the sliced data into
     // SHA3 hashing engine. When it hits the block size limit,
     // (same as in sha3pad) the state machine moves to Message.
-    StKey = 5'b01011,
+    StKey = 6'b010111,
 
     // Incoming Message
     // The core does nothing but forwarding the incoming message to SHA3 hashing
     // engine by turning off `en_kmac_datapath`.
-    StKmacMsg = 5'b10111,
+    StKmacMsg = 6'b001110,
 
     // Wait till done signal
-    StKmacFlush = 5'b10000
+    StKmacFlush = 6'b101011,
+
+    // Terminal Error
+    StTerminalError = 6'b100000
   } kmac_st_e ;
 
   /////////////
@@ -224,12 +231,24 @@ module kmac_core
         end
       end
 
-      default: begin
+      StTerminalError: begin
         // this state is terminal
         st_d = st;
         sparse_fsm_error_o = 1'b 1;
       end
+
+      default: begin
+        // this state is terminal
+        st_d = StTerminalError;
+        sparse_fsm_error_o = 1'b 1;
+      end
     endcase
+
+    // Unconditionally jump into the terminal error state
+    // if the life cycle controller triggers an escalation.
+    if (lc_escalate_en_i != lc_ctrl_pkg::Off) begin
+      st_d = StTerminalError;
+    end
   end
 
   //////////////

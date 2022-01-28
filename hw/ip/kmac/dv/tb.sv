@@ -63,6 +63,9 @@ module tb;
     .alert_rx_i         (alert_rx ),
     .alert_tx_o         (alert_tx ),
 
+    // life cycle escalation input
+    .lc_escalate_en_i   (lc_ctrl_pkg::Off ),
+
     // KeyMgr sideload key interface
     .keymgr_key_i       (kmac_sideload_key),
 

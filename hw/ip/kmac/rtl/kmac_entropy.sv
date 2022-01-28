@@ -56,6 +56,9 @@ module kmac_entropy
   input                                     hash_cnt_clr_i,
   input        [kmac_reg_pkg::HashCntW-1:0] hash_threshold_i,
 
+  // Life cycle
+  input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+
   // Error output
   output err_t err_o,
   output logic sparse_fsm_error_o,
@@ -80,7 +83,7 @@ module kmac_entropy
 
 
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 8 -n 10 \
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 9 -n 10 \
   //      -s 507672272 --language=sv
   //
   // Hamming distance histogram:
@@ -88,13 +91,13 @@ module kmac_entropy
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||| (14.29%)
-  //  4: |||||||||| (14.29%)
-  //  5: |||||||||||||||||||| (28.57%)
-  //  6: |||||||||||| (17.86%)
-  //  7: ||||||| (10.71%)
-  //  8: ||||||| (10.71%)
-  //  9: || (3.57%)
+  //  3: ||||||||||| (13.89%)
+  //  4: ||||||||||||||| (19.44%)
+  //  5: |||||||||||||||||||| (25.00%)
+  //  6: ||||||||||||||| (19.44%)
+  //  7: ||||||||||| (13.89%)
+  //  8: |||| (5.56%)
+  //  9: || (2.78%)
   // 10: --
   //
   // Minimum Hamming distance: 3
@@ -108,12 +111,12 @@ module kmac_entropy
   typedef enum logic [StateWidth-1:0] {
     // Reset: Reset state. The entropy is not ready. The state machine should
     // get new entropy from EDN or the seed should be feeded by the software.
-    StRandReset = 10'b 1101110011,
+    StRandReset = 10'b1001111000,
 
     // The seed is fed into LFSR and the entropy is ready. It means the
     // rand_valid is asserted with valid data. It takes a few steps to reach
     // this state from StRandIdle.
-    StRandReady = 10'b 1001111000,
+    StRandReady = 10'b0110000100,
 
     // EDN interface: Send request and receive
     // RandEdnReq state can be transit from StRandReset or from StRandReady
@@ -131,28 +134,28 @@ module kmac_entropy
     //        EdnReq to refresh seed
     //     3. If a KMAC operation is completed, the FSM also refreshes the LFSR
     //        seed to prepare next KMAC op or wipe out operation.
-    StRandEdn = 10'b 0110000100,
+    StRandEdn = 10'b1100100111,
 
     // Sw Seed: If mode is set to manual mode, This entropy module needs initial
     // seed from the software. It waits the seed update signal to expand initial
     // entropy
-    StSwSeedWait = 10'b 1100100111,
+    StSwSeedWait = 10'b1011110110,
 
     // Expand: The SW or EDN provides 64-bit entropy (seed). In this state, this
     // entropy generator expands the 64-bit entropy into 320-bit entropy using
     // LFSR. Then it expands 320-bit pseudo random entropy into 1600-bit by
     // replicating the PR entropy five times w/ compile-time shuffling scheme.
-    StRandExpand = 10'b 1011110110,
+    StRandExpand = 10'b0000001100,
 
     // ErrWaitExpired: If Edn timer expires, FSM moves to this state and wait
     // the software response. Software should switch to manual mode then disable
     // the timer (to 0) and update the seed via register interface.
-    StRandErrWaitExpired = 10'b 0000001100,
+    StRandErrWaitExpired = 10'b0001100011,
 
     // ErrNoValidMode: If SW sets entropy ready but the mode is not either
     // Manual Mode nor EdnMode, this logic reports to SW with
     // NoValidEntropyMode.
-    StRandErrIncorrectMode = 10'b 0001100011,
+    StRandErrIncorrectMode = 10'b1110010000,
 
     // Err: After the error is reported, FSM sits in Err state ignoring all the
     // requests. It does not generate new entropy and drops the entropy valid
@@ -162,7 +165,9 @@ module kmac_entropy
     // clear the entropy ready signal before clear the error interrupt so that
     // the FSM sits in StRandReset state not moving forward with incorrect
     // configurations.
-    StRandErr = 10'b 1110010000
+    StRandErr = 10'b1000011110,
+
+    StTerminalError = 10'b0010011000
   } rand_st_e;
 
   /////////////
@@ -597,12 +602,23 @@ module kmac_entropy
 
       end
 
-      default: begin
+      StTerminalError: begin
         // this state is terminal
         st_d = st;
         sparse_fsm_error_o = 1'b 1;
       end
+
+      default: begin
+        st_d = StTerminalError;
+        sparse_fsm_error_o = 1'b 1;
+      end
     endcase
+
+    // Unconditionally jump into the terminal error state
+    // if the life cycle controller triggers an escalation.
+    if (lc_escalate_en_i != lc_ctrl_pkg::Off) begin
+      st_d = StTerminalError;
+    end
   end
   `ASSERT_KNOWN(RandStKnown_A, st)
 

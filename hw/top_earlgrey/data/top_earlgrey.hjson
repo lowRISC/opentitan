@@ -881,6 +881,7 @@
       'lc_ctrl.lc_cpu_en'          : ['rv_core_ibex.lc_cpu_en'],
       'lc_ctrl.lc_keymgr_en'       : ['keymgr.lc_keymgr_en'],
       'lc_ctrl.lc_escalate_en'     : ['aes.lc_escalate_en',
+                                      'kmac.lc_escalate_en',
                                       'otbn.lc_escalate_en',
                                       'otp_ctrl.lc_escalate_en',
                                       'sram_ctrl_main.lc_escalate_en',

@@ -5148,6 +5148,18 @@
           index: -1
         }
         {
+          name: lc_escalate_en
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: kmac
+          top_signame: lc_ctrl_lc_escalate_en
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -7334,6 +7346,7 @@
       lc_ctrl.lc_escalate_en:
       [
         aes.lc_escalate_en
+        kmac.lc_escalate_en
         otbn.lc_escalate_en
         otp_ctrl.lc_escalate_en
         sram_ctrl_main.lc_escalate_en
@@ -16793,6 +16806,18 @@
         end_idx: -1
         top_type: broadcast
         top_signame: kmac_en_masking
+        index: -1
+      }
+      {
+        name: lc_escalate_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: kmac
+        top_signame: lc_ctrl_lc_escalate_en
         index: -1
       }
       {
