@@ -920,28 +920,28 @@
       desc: "The background check timer FSM is sparsely encoded."
     }
     { name: "DAI.CTR.REDUN",
-      desc: "The direct access interface address counter is duplicated."
+      desc: "The direct access interface address counter employs a cross-counter implementation."
     }
     { name: "KDI_SEED.CTR.REDUN",
-      desc: "The key derivation interface counter is duplicated."
+      desc: "The key derivation interface counter employs a cross-counter implementation."
     }
     { name: "KDI_ENTROPY.CTR.REDUN",
-      desc: "The key derivation entropy counter is duplicated."
+      desc: "The key derivation entropy counter employs a cross-counter implementation."
     }
     { name: "LCI.CTR.REDUN",
-      desc: "The life cycle interface address counter is duplicated."
+      desc: "The life cycle interface address counter employs a cross-counter implementation."
     }
     { name: "PART.CTR.REDUN",
-      desc: "The address counter of buffered partitions is duplicated."
+      desc: "The address counter of buffered partitions employs a cross-counter implementation."
     }
     { name: "SCRMBL.CTR.REDUN",
-      desc: "The srambling datapath counter is duplicated."
+      desc: "The srambling datapath counter employs a cross-counter implementation."
     }
     { name: "TIMER_INTEG.CTR.REDUN",
-      desc: "The background integrity check timer is duplicated."
+      desc: "The background integrity check timer employs a cross-counter implementation."
     }
     { name: "TIMER_CNSTY.CTR.REDUN",
-      desc: "The background consistency check timer is duplicated."
+      desc: "The background consistency check timer employs a cross-counter implementation."
     }
     { name: "TIMER.LFSR.REDUN",
       desc: "The background check LFSR is duplicated."
