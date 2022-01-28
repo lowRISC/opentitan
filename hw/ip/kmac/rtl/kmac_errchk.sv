@@ -67,6 +67,9 @@ module kmac_errchk
   input sha3_absorbed_i,
   input keccak_done_i,
 
+  // Life cycle
+  input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+
   output err_t error_o,
   output logic sparse_fsm_error_o
 );
@@ -111,7 +114,8 @@ module kmac_errchk
     StMsgFeed = 6'b110001,
     StProcessing = 6'b010110,
     StAbsorbed = 6'b100010,
-    StSqueezing = 6'b111100
+    StSqueezing = 6'b111100,
+    StTerminalError = 6'b011011
   } st_e;
   st_e st, st_d;
 
@@ -185,6 +189,11 @@ module kmac_errchk
         if (sw_cmd_i != CmdNone) begin
           err_swsequence = 1'b 1;
         end
+      end
+
+      StTerminalError: begin
+        err_swsequence = 1'b 0;
+        sparse_fsm_error_o = 1'b 1;
       end
 
       default: begin
@@ -350,11 +359,22 @@ module kmac_errchk
         end
       end
 
-      default: begin
+      StTerminalError: begin
         // this state is terminal
         st_d = st;
       end
+
+      default: begin
+        // this state is terminal
+        st_d = StTerminalError;
+      end
     endcase
+
+    // Unconditionally jump into the terminal error state
+    // if the life cycle controller triggers an escalation.
+    if (lc_escalate_en_i != lc_ctrl_pkg::Off) begin
+      st_d = StTerminalError;
+    end
   end : next_state
   `ASSERT_KNOWN(StKnown_A, st)
 

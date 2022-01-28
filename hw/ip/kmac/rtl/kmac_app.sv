@@ -106,6 +106,9 @@ module kmac_app
   // error_o value is pushed to Error FIFO at KMAC/SHA3 top and reported to SW
   output kmac_pkg::err_t error_o,
 
+  // Life cycle
+  input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+
   output logic sparse_fsm_error_o
 );
 
@@ -155,7 +158,7 @@ module kmac_app
   };
 
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 9 -n 10 \
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 10 -n 10 \
   //      -s 155490773 --language=sv
   //
   // Hamming distance histogram:
@@ -163,17 +166,17 @@ module kmac_app
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||| (16.67%)
-  //  4: |||||||||||||||||||| (30.56%)
-  //  5: |||||||||||||||| (25.00%)
-  //  6: ||||||||| (13.89%)
-  //  7: ||||||||| (13.89%)
-  //  8: --
+  //  3: |||||||||| (13.33%)
+  //  4: |||||||||||||||||||| (24.44%)
+  //  5: |||||||||||||||||||| (24.44%)
+  //  6: |||||||||||||| (17.78%)
+  //  7: |||||||||||||| (17.78%)
+  //  8: | (2.22%)
   //  9: --
   // 10: --
   //
   // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 7
+  // Maximum Hamming distance: 8
   // Minimum Hamming weight: 2
   // Maximum Hamming weight: 9
   //
@@ -181,7 +184,7 @@ module kmac_app
 
   // States
   typedef enum logic [StateWidth-1:0] {
-    StIdle = 10'b1011011010,
+    StIdle = 10'b0101110011,
 
     // Application operation.
     //
@@ -217,7 +220,10 @@ module kmac_app
     // When KeyMgr operates, the secret key is not ready yet.
     StKeyMgrErrKeyNotValid = 10'b1001110100,
 
-    StError = 10'b1101011101
+    StError = 10'b1101011101,
+
+    // This state is used for terminal errors
+    StTerminalError = 10'b0010001001
   } st_e;
 
   /////////////
@@ -500,12 +506,23 @@ module kmac_app
 
       end
 
-      default: begin
+      StTerminalError: begin
         // this state is terminal
         st_d = st;
         sparse_fsm_error_o = 1'b 1;
       end
+
+      default: begin
+        st_d = StTerminalError;
+        sparse_fsm_error_o = 1'b 1;
+      end
     endcase
+
+    // Unconditionally jump into the terminal error state
+    // if the life cycle controller triggers an escalation.
+    if (lc_escalate_en_i != lc_ctrl_pkg::Off) begin
+      st_d = StTerminalError;
+    end
   end
 
   if (SecIdleAcceptSwMsg != 1'b0) begin : gen_lint_err

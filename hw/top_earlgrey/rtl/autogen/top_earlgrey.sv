@@ -2204,6 +2204,7 @@ module top_earlgrey #(
       .entropy_i(edn0_edn_rsp[3]),
       .idle_o(clkmgr_aon_idle[2]),
       .en_masking_o(kmac_en_masking),
+      .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .tl_i(kmac_tl_req),
       .tl_o(kmac_tl_rsp),
 
