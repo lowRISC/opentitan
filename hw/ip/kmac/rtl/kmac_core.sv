@@ -172,6 +172,7 @@ module kmac_core
   );
 
   // Next state and output logic
+  // SEC_CM: FSM.SPARSE
   always_comb begin
     st_d = StKmacIdle;
 
