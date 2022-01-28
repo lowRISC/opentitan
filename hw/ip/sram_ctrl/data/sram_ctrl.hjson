@@ -159,6 +159,9 @@
     { name: "CTR.REDUN",
       desc: "The initialization counter is duplicated."
     }
+    { name: "SCRAMBLE.KEY.SIDELOAD",
+      desc: "The scrambling key is sideloaded from OTP and thus unreadable by SW."
+    }
   ]
 
   regwidth: "32",
