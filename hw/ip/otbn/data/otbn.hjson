@@ -133,6 +133,9 @@
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
+    { name: "SCRAMBLE.KEY.SIDELOAD",
+      desc: "The scrambling key is sideloaded from OTP and thus unreadable by SW."
+    }
   ]
 
   regwidth: "32"
