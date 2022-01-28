@@ -390,10 +390,15 @@ A possible sequence for the signals described is illustrated below.
   {name: 'otp_lc_data_o.valid',             wave: '0.|...|.1.|...|...'},
   {name: 'otp_lc_data_o.state',             wave: '03|...|...|...|...'},
   {name: 'otp_lc_data_o.count',             wave: '03|...|...|...|...'},
+  {},
   {name: 'otp_lc_data_o.test_unlock_token', wave: '0.|...|.3.|...|...'},
   {name: 'otp_lc_data_o.test_exit_token',   wave: '0.|...|.3.|...|...'},
-  {name: 'otp_lc_data_o.id_state',          wave: '0.|.3.|...|...|...'},
+  {name: 'otp_lc_data_o.test_tokens_valid', wave: '0.|...|.3.|...|...'},
+  {},
   {name: 'otp_lc_data_o.rma_token',         wave: '0.|.3.|...|...|...'},
+  {name: 'otp_lc_data_o.rma_token_valid',   wave: '0.|.3.|...|...|...'},
+  {},
+  {name: 'otp_lc_data_o.secrets_valid',     wave: '0.|.3.|...|...|...'},
   {},
   {name: 'lc_creator_seed_sw_rw_en_i',      wave: '0.|...|...|.4.|...'},
   {name: 'lc_seed_hw_rd_en_i',              wave: '0.|...|...|.4.|...'},
@@ -404,7 +409,8 @@ A possible sequence for the signals described is illustrated below.
 {{< /wavejson >}}
 
 Note that the `otp_lc_data_o.valid` signal is only asserted after the `LIFE_CYCLE`, `SECRET0` and `SECRET2` partitions have successfully initialized, since the life cycle collateral contains information from all three partitions.
-The `otp_lc_data_o.id_state` signal is set to `lc_ctrl_pkg::Set` iff the `SECRET2` partition containing the root keys has been locked with a digest.
+The `otp_lc_data_o.test_tokens_valid` and `otp_lc_data_o.rma_token_valid` signals are multibit valid signals indicating whether the corresponding tokens are valid.
+The ``otp_lc_data_o.secrets_valid`` signal is a multibit valid signal that is set to `lc_ctrl_pkg::On` iff the `SECRET2` partition containing the root keys has been locked with a digest.
 
 
 ##### State Transitions
