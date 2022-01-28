@@ -136,12 +136,18 @@ module keymgr
     .devmode_i  (1'b1) // connect to real devmode signal in the future
   );
 
-  assign shadowed_storage_err = reg2hw.reseed_interval_shadowed.err_storage |
+  assign shadowed_storage_err = reg2hw.control_shadowed.cdi_sel.err_storage |
+                                reg2hw.control_shadowed.dest_sel.err_storage |
+                                reg2hw.control_shadowed.operation.err_storage |
+                                reg2hw.reseed_interval_shadowed.err_storage |
                                 reg2hw.max_creator_key_ver_shadowed.err_storage |
                                 reg2hw.max_owner_int_key_ver_shadowed.err_storage |
                                 reg2hw.max_owner_key_ver_shadowed.err_storage;
 
-  assign shadowed_update_err  = reg2hw.reseed_interval_shadowed.err_update |
+  assign shadowed_update_err  = reg2hw.control_shadowed.cdi_sel.err_update |
+                                reg2hw.control_shadowed.dest_sel.err_update |
+                                reg2hw.control_shadowed.operation.err_update |
+                                reg2hw.reseed_interval_shadowed.err_update |
                                 reg2hw.max_creator_key_ver_shadowed.err_update |
                                 reg2hw.max_owner_int_key_ver_shadowed.err_update |
                                 reg2hw.max_owner_key_ver_shadowed.err_update;
@@ -215,7 +221,7 @@ module keymgr
     // DV. When an invalid operation is selected, the keymgr just starts transmitting
     // whatever is at the prng output, however, this may cause a dv protocol violation
     // if a reseed happens to coincide.
-    .seed_en_i(seed_en & ~reg2hw.control.start.q),
+    .seed_en_i(seed_en & ~reg2hw.start.q),
     .seed_i(seed),
     .entropy_i('0),
     .state_o(lfsr)
@@ -277,9 +283,9 @@ module keymgr
     .prng_reseed_ack_i(reseed_ack),
     .prng_en_o(ctrl_lfsr_en),
     .entropy_i(ctrl_rand),
-    .op_i(keymgr_ops_e'(reg2hw.control.operation.q)),
-    .op_start_i(reg2hw.control.start.q),
-    .op_cdi_sel_i(reg2hw.control.cdi_sel.q),
+    .op_i(keymgr_ops_e'(reg2hw.control_shadowed.operation.q)),
+    .op_start_i(reg2hw.start.q),
+    .op_cdi_sel_i(reg2hw.control_shadowed.cdi_sel.q),
     .op_done_o(op_done),
     .init_o(init),
     .sw_binding_unlock_o(sw_binding_unlock),
@@ -307,10 +313,10 @@ module keymgr
     .kmac_data_i(kmac_data_truncated)
   );
 
-  assign hw2reg.control.start.d  = '0;
-  assign hw2reg.control.start.de = op_done;
+  assign hw2reg.start.d  = '0;
+  assign hw2reg.start.de = op_done;
   // as long as operation is ongoing, capture status
-  assign hw2reg.op_status.de = reg2hw.control.start.q;
+  assign hw2reg.op_status.de = reg2hw.start.q;
 
   // working state is always visible
   assign hw2reg.working_state.de = 1'b1;
@@ -323,8 +329,8 @@ module keymgr
     .rst_ni,
     .init_i(1'b1), // cfg_regwen does not care about init
     .en_i(lc_keymgr_en[KeyMgrEnCfgEn] == lc_ctrl_pkg::On),
-    .set_i(reg2hw.control.start.q & op_done),
-    .clr_i(reg2hw.control.start.q),
+    .set_i(reg2hw.start.q & op_done),
+    .clr_i(reg2hw.start.q),
     .out_o(cfg_regwen)
   );
 
@@ -431,7 +437,7 @@ module keymgr
   keymgr_key_dest_e cipher_sel;
   logic [KeyWidth-1:0] cipher_seed;
 
-  assign cipher_sel = keymgr_key_dest_e'(reg2hw.control.dest_sel);
+  assign cipher_sel = keymgr_key_dest_e'(reg2hw.control_shadowed.dest_sel.q);
   assign cipher_seed = cipher_sel == Aes  ? aes_seed  :
                        cipher_sel == Kmac ? kmac_seed :
                        cipher_sel == Otbn ? otbn_seed : RndCnstNoneSeed;
@@ -684,11 +690,9 @@ module keymgr
   `ASSERT_KNOWN(IntrKnownO_A, intr_op_done_o)
   `ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
 
-  // the keys are not reset to any specific values
-  // TBD this may be changed depending on whether we want to support this
-  // mode of operation going forward.
-  `ASSERT_KNOWN(AesKeyKnownO_A,  aes_key_o.valid)
-  `ASSERT_KNOWN(KmacKeyKnownO_A, kmac_key_o.valid)
+  `ASSERT_KNOWN(AesKeyKnownO_A,  aes_key_o)
+  `ASSERT_KNOWN(KmacKeyKnownO_A, kmac_key_o)
+  `ASSERT_KNOWN(OtbnKeyKnownO_A, otbn_key_o)
   `ASSERT_KNOWN(KmacDataKnownO_A, kmac_data_o)
 
   // kmac parameter consistency

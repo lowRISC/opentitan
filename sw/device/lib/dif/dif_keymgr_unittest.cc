@@ -209,19 +209,21 @@ class DifKeymgrInitialized : public DifKeymgrTest {
    * Expectations for starting an operation.
    */
   void ExpectOperationStart(const OperationStartParams &params) {
-    EXPECT_WRITE32(KEYMGR_CONTROL_REG_OFFSET,
-                   {{
-                        .offset = KEYMGR_CONTROL_DEST_SEL_OFFSET,
-                        .value = params.dest_sel,
-                    },
-                    {
-                        .offset = KEYMGR_CONTROL_OPERATION_OFFSET,
-                        .value = params.operation,
-                    },
-                    {
-                        .offset = KEYMGR_CONTROL_START_BIT,
-                        .value = 1,
-                    }});
+    EXPECT_WRITE32_SHADOWED(
+        KEYMGR_CONTROL_SHADOWED_REG_OFFSET,
+        {{
+             .offset = KEYMGR_CONTROL_SHADOWED_DEST_SEL_OFFSET,
+             .value = params.dest_sel,
+         },
+         {
+             .offset = KEYMGR_CONTROL_SHADOWED_OPERATION_OFFSET,
+             .value = params.operation,
+         }});
+
+    EXPECT_WRITE32(KEYMGR_START_REG_OFFSET, {{
+                                                .offset = KEYMGR_START_EN_BIT,
+                                                .value = 1,
+                                            }});
   }
 
   /**
@@ -372,8 +374,8 @@ TEST_P(AdvanceToOperational, Success) {
   EXPECT_WRITE32_SHADOWED(reg_info.offset, kStateParams.max_key_version);
   EXPECT_WRITE32(reg_info.wen_offset, 0);
   ExpectOperationStart({
-      .dest_sel = KEYMGR_CONTROL_DEST_SEL_VALUE_NONE,
-      .operation = KEYMGR_CONTROL_OPERATION_VALUE_ADVANCE,
+      .dest_sel = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
+      .operation = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_ADVANCE,
   });
 
   EXPECT_EQ(dif_keymgr_advance_state(&keymgr_, &kStateParams), kDifOk);
@@ -382,8 +384,8 @@ TEST_P(AdvanceToOperational, Success) {
 TEST_P(AdvanceToNonOperational, Success) {
   ExpectIdleAtState(GetParam());
   ExpectOperationStart({
-      .dest_sel = KEYMGR_CONTROL_DEST_SEL_VALUE_NONE,
-      .operation = KEYMGR_CONTROL_OPERATION_VALUE_ADVANCE,
+      .dest_sel = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
+      .operation = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_ADVANCE,
   });
 
   EXPECT_EQ(dif_keymgr_advance_state(&keymgr_, nullptr), kDifOk);
@@ -409,8 +411,8 @@ TEST_F(DisableTest, LockedConfig) {
 TEST_F(DisableTest, Disable) {
   ExpectIdle();
   ExpectOperationStart({
-      .dest_sel = KEYMGR_CONTROL_DEST_SEL_VALUE_NONE,
-      .operation = KEYMGR_CONTROL_OPERATION_VALUE_DISABLE,
+      .dest_sel = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
+      .operation = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_DISABLE,
   });
 
   EXPECT_EQ(dif_keymgr_disable(&keymgr_), kDifOk);
@@ -637,8 +639,8 @@ TEST_F(GenerateIdentityTest, LockedConfig) {
 TEST_F(GenerateIdentityTest, Generate) {
   ExpectIdle();
   ExpectOperationStart({
-      .dest_sel = KEYMGR_CONTROL_DEST_SEL_VALUE_NONE,
-      .operation = KEYMGR_CONTROL_OPERATION_VALUE_GENERATE_ID,
+      .dest_sel = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
+      .operation = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_ID,
   });
 
   EXPECT_EQ(dif_keymgr_generate_identity_seed(&keymgr_), kDifOk);
@@ -712,18 +714,21 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Values(
         GenerateVersionedKeyTestCase{
             .dest = kDifKeymgrVersionedKeyDestSw,
-            .exp_dest_sel = KEYMGR_CONTROL_DEST_SEL_VALUE_NONE,
-            .exp_operation = KEYMGR_CONTROL_OPERATION_VALUE_GENERATE_SW_OUTPUT,
+            .exp_dest_sel = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
+            .exp_operation =
+                KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_SW_OUTPUT,
         },
         GenerateVersionedKeyTestCase{
             .dest = kDifKeymgrVersionedKeyDestAes,
-            .exp_dest_sel = KEYMGR_CONTROL_DEST_SEL_VALUE_AES,
-            .exp_operation = KEYMGR_CONTROL_OPERATION_VALUE_GENERATE_HW_OUTPUT,
+            .exp_dest_sel = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_AES,
+            .exp_operation =
+                KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT,
         },
         GenerateVersionedKeyTestCase{
             .dest = kDifKeymgrVersionedKeyDestKmac,
-            .exp_dest_sel = KEYMGR_CONTROL_DEST_SEL_VALUE_KMAC,
-            .exp_operation = KEYMGR_CONTROL_OPERATION_VALUE_GENERATE_HW_OUTPUT,
+            .exp_dest_sel = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_KMAC,
+            .exp_operation =
+                KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT,
         }));
 
 class SideloadClearTest : public DifKeymgrInitialized {};

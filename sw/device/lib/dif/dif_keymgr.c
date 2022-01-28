@@ -221,14 +221,14 @@ typedef struct start_operation_params {
  */
 static void start_operation(const dif_keymgr_t *keymgr,
                             start_operation_params_t params) {
-  uint32_t reg_control =
-      bitfield_field32_write(0, KEYMGR_CONTROL_DEST_SEL_FIELD, params.dest);
+  uint32_t reg_control = bitfield_field32_write(
+      0, KEYMGR_CONTROL_SHADOWED_DEST_SEL_FIELD, params.dest);
   reg_control = bitfield_field32_write(
-      reg_control, KEYMGR_CONTROL_OPERATION_FIELD, params.op);
-  reg_control =
-      bitfield_bit32_write(reg_control, KEYMGR_CONTROL_START_BIT, true);
-  mmio_region_write32(keymgr->base_addr, KEYMGR_CONTROL_REG_OFFSET,
-                      reg_control);
+      reg_control, KEYMGR_CONTROL_SHADOWED_OPERATION_FIELD, params.op);
+  mmio_region_write32_shadowed(keymgr->base_addr,
+                               KEYMGR_CONTROL_SHADOWED_REG_OFFSET, reg_control);
+  mmio_region_write32(keymgr->base_addr, KEYMGR_START_REG_OFFSET,
+                      1 << KEYMGR_START_EN_BIT);
 }
 
 dif_result_t dif_keymgr_configure(const dif_keymgr_t *keymgr,
@@ -310,10 +310,11 @@ dif_result_t dif_keymgr_advance_state(const dif_keymgr_t *keymgr,
   }
 
   // Advance state.
-  start_operation(keymgr, (start_operation_params_t){
-                              .dest = KEYMGR_CONTROL_DEST_SEL_VALUE_NONE,
-                              .op = KEYMGR_CONTROL_OPERATION_VALUE_ADVANCE,
-                          });
+  start_operation(keymgr,
+                  (start_operation_params_t){
+                      .dest = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
+                      .op = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_ADVANCE,
+                  });
 
   return kDifOk;
 }
@@ -328,10 +329,11 @@ dif_result_t dif_keymgr_disable(const dif_keymgr_t *keymgr) {
   }
 
   // Disable key manager.
-  start_operation(keymgr, (start_operation_params_t){
-                              .dest = KEYMGR_CONTROL_DEST_SEL_VALUE_NONE,
-                              .op = KEYMGR_CONTROL_OPERATION_VALUE_DISABLE,
-                          });
+  start_operation(keymgr,
+                  (start_operation_params_t){
+                      .dest = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
+                      .op = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_DISABLE,
+                  });
 
   return kDifOk;
 }
@@ -438,10 +440,11 @@ dif_result_t dif_keymgr_generate_identity_seed(const dif_keymgr_t *keymgr) {
     return kDifLocked;
   }
 
-  start_operation(keymgr, (start_operation_params_t){
-                              .dest = KEYMGR_CONTROL_DEST_SEL_VALUE_NONE,
-                              .op = KEYMGR_CONTROL_OPERATION_VALUE_GENERATE_ID,
-                          });
+  start_operation(keymgr,
+                  (start_operation_params_t){
+                      .dest = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
+                      .op = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_ID,
+                  });
 
   return kDifOk;
 }
@@ -456,20 +459,20 @@ dif_result_t dif_keymgr_generate_versioned_key(
   switch (params.dest) {
     case kDifKeymgrVersionedKeyDestSw:
       hw_op_params = (start_operation_params_t){
-          .dest = KEYMGR_CONTROL_DEST_SEL_VALUE_NONE,
-          .op = KEYMGR_CONTROL_OPERATION_VALUE_GENERATE_SW_OUTPUT,
+          .dest = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
+          .op = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_SW_OUTPUT,
       };
       break;
     case kDifKeymgrVersionedKeyDestAes:
       hw_op_params = (start_operation_params_t){
-          .dest = KEYMGR_CONTROL_DEST_SEL_VALUE_AES,
-          .op = KEYMGR_CONTROL_OPERATION_VALUE_GENERATE_HW_OUTPUT,
+          .dest = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_AES,
+          .op = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT,
       };
       break;
     case kDifKeymgrVersionedKeyDestKmac:
       hw_op_params = (start_operation_params_t){
-          .dest = KEYMGR_CONTROL_DEST_SEL_VALUE_KMAC,
-          .op = KEYMGR_CONTROL_OPERATION_VALUE_GENERATE_HW_OUTPUT,
+          .dest = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_KMAC,
+          .op = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT,
       };
       break;
     default:

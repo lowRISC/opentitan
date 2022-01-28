@@ -219,7 +219,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       UpdateHwOut: begin
         kmac_digests_t key_shares = {item.rsp_digest_share1, item.rsp_digest_share0};
         keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
-            `gmv(ral.control.dest_sel));
+            `gmv(ral.control_shadowed.dest_sel));
 
         if (dest != keymgr_pkg::None && !get_fault_err()) begin
           cfg.keymgr_vif.update_sideload_key(key_shares, current_state, current_cdi, dest);
@@ -271,7 +271,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
           if (cfg.en_cov && cfg.keymgr_vif.get_keymgr_en() && is_final_kdf) begin
             keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
-                `gmv(ral.control.dest_sel));
+                `gmv(ral.control_shadowed.dest_sel));
             cov.state_and_op_cg.sample(current_state, op, current_op_status, current_cdi, dest);
           end
         end
@@ -410,7 +410,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       if (cfg.en_cov && ral.cfg_regwen.locks_reg_or_fld(dv_reg) &&
           cfg.keymgr_vif.get_keymgr_en()) begin
         bit cfg_regwen = (current_op_status == keymgr_pkg::OpWip);
-        if (csr.get_name() == "control") begin
+        if (csr.get_name() == "control_shadowed") begin
           cov.control_w_regwen_cg.sample(item.a_data, cfg_regwen);
         end else if (csr.get_name() == "sideload_clear") begin
           cov.sideload_clear_cg.sample(`gmv(ral.sideload_clear.val),
@@ -538,9 +538,9 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
           end
         end
       end
-      "control": begin
+      "start": begin
         if (addr_phase_write) begin
-          bit start = `gmv(ral.control.start);
+          bit start = `gmv(ral.start.en);
 
           if (start) begin
             keymgr_pkg::keymgr_ops_e op = get_operation();
@@ -581,7 +581,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
                       if (cfg.en_cov) begin
                         keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
-                            `gmv(ral.control.dest_sel));
+                            `gmv(ral.control_shadowed.dest_sel));
 
                         cov.state_and_op_cg.sample(current_state, op, current_op_status,
                             current_cdi, dest);
@@ -605,7 +605,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
                 if (op == keymgr_pkg::OpAdvance) begin
                   current_cdi = get_adv_cdi_type();
                 end else begin
-                  int cdi_sel = `gmv(ral.control.cdi_sel);
+                  int cdi_sel = `gmv(ral.control_shadowed.cdi_sel);
                   `downcast(current_cdi, cdi_sel)
                 end
                 // update kmac key for check
@@ -616,7 +616,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
               end
             endcase
             // start will be clear after OP is done
-            void'(ral.control.start.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
+            void'(ral.start.en.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
           end // start
         end // addr_phase_write
       end
@@ -660,7 +660,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
               if (cfg.en_cov) begin
                 keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
-                    `gmv(ral.control.dest_sel));
+                    `gmv(ral.control_shadowed.dest_sel));
 
                 cov.state_and_op_cg.sample(current_state, get_operation(), current_op_status,
                     current_cdi, dest);
@@ -1082,7 +1082,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     gen_out_data_t exp, act;
     keymgr_pkg::keymgr_ops_e op = get_operation();
     keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
-            `gmv(ral.control.dest_sel));
+            `gmv(ral.control_shadowed.dest_sel));
     string str;
 
     act = {<<8{byte_data_q}};
@@ -1141,7 +1141,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   // if it's not defined operation, treat as OpDisable
   virtual function keymgr_pkg::keymgr_ops_e get_operation();
     keymgr_pkg::keymgr_ops_e op;
-    int op_int_val = `gmv(ral.control.operation);
+    int op_int_val = `gmv(ral.control_shadowed.operation);
 
     if (!$cast(op, op_int_val)) op = keymgr_pkg::OpDisable;
     return op;

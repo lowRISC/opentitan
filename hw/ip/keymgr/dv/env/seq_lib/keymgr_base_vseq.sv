@@ -141,7 +141,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
     keymgr_pkg::keymgr_op_status_e exp_status;
     bit is_good_op = 1;
     int key_verion = `gmv(ral.key_version[0]);
-    keymgr_pkg::keymgr_ops_e operation = `gmv(ral.control.operation);
+    keymgr_pkg::keymgr_ops_e operation = `gmv(ral.control_shadowed.operation);
     bit[TL_DW-1:0] rd_val;
 
     if (operation inside {keymgr_pkg::OpGenSwOut, keymgr_pkg::OpGenHwOut}) begin
@@ -216,9 +216,10 @@ class keymgr_base_vseq extends cip_base_vseq #(
   virtual task keymgr_advance(bit wait_done = 1);
     keymgr_pkg::keymgr_working_state_e exp_next_state = get_next_state(current_state);
     `uvm_info(`gfn, $sformatf("Advance key manager state from %0s", current_state.name), UVM_MEDIUM)
-    ral.control.start.set(1'b1);
-    ral.control.operation.set(keymgr_pkg::OpAdvance);
-    csr_update(.csr(ral.control));
+    ral.control_shadowed.operation.set(keymgr_pkg::OpAdvance);
+    csr_update(.csr(ral.control_shadowed));
+    ral.start.en.set(1'b1);
+    csr_update(.csr(ral.start));
 
     if (wait_done) begin
       wait_op_done();
@@ -232,12 +233,13 @@ class keymgr_base_vseq extends cip_base_vseq #(
                                bit wait_done = 1);
     `uvm_info(`gfn, "Generate key manager output", UVM_MEDIUM)
 
-    ral.control.start.set(1'b1);
-    ral.control.operation.set(int'(operation));
-    `DV_CHECK_RANDOMIZE_FATAL(ral.control.cdi_sel)
-    ral.control.dest_sel.set(int'(key_dest));
-    csr_update(.csr(ral.control));
-    ral.control.start.set(1'b0);
+    ral.control_shadowed.operation.set(int'(operation));
+    `DV_CHECK_RANDOMIZE_FATAL(ral.control_shadowed.cdi_sel)
+    ral.control_shadowed.dest_sel.set(int'(key_dest));
+    csr_update(.csr(ral.control_shadowed));
+    ral.start.en.set(1'b1);
+    csr_update(.csr(ral.start));
+    ral.start.en.set(1'b0);
 
     if (wait_done) wait_op_done();
   endtask : keymgr_generate
