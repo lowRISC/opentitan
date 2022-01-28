@@ -19,6 +19,7 @@ class MockBootData : public GlobalMock<MockBootData> {
   MOCK_METHOD(rom_error_t, Read,
               (lifecycle_state_t lc_state, boot_data_t *boot_data));
   MOCK_METHOD(rom_error_t, Write, (const boot_data_t *boot_data));
+  MOCK_METHOD(rom_error_t, Check, (const boot_data_t *boot_data));
 };
 
 }  // namespace internal
@@ -33,6 +34,10 @@ rom_error_t boot_data_read(lifecycle_state_t lc_state, boot_data_t *boot_data) {
 
 rom_error_t boot_data_write(const boot_data_t *boot_data) {
   return MockBootData::Instance().Write(boot_data);
+}
+
+rom_error_t boot_data_digest_is_valid(const boot_data *boot_data) {
+  return MockBootData::Instance().Check(boot_data);
 }
 
 }  // extern "C"
