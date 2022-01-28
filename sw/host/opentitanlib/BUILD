@@ -82,5 +82,9 @@ rust_test(
     data = [
         "src/util/testdata/hello.txt",
         "src/util/testdata/world.txt",
+        "src/otp/testdata/lc_ctrl_state.hjson",
+        "src/otp/testdata/otp_ctrl_img_dev.hjson",
+        "src/otp/testdata/otp_ctrl_mmap.hjson",
+        "src/otp/testdata/output.vmem",
     ],
 )
