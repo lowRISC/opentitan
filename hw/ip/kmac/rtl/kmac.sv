@@ -449,6 +449,7 @@ module kmac
   // Secret Key
   // Secret key is defined as external register. So the logic latches when SW
   // writes to KEY_SHARE0 , KEY_SHARE1 registers.
+  // SEC_CM: SW_KEY.KEY.MASKING
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       sw_key_data[0] <= '0;
@@ -1186,10 +1187,13 @@ module kmac
 
     .reg2hw,
     .hw2reg,
+
+    // SEC_CM: BUS.INTEGRITY
     .intg_err_o(alert_intg_err),
     .devmode_i (devmode)
   );
 
+  // SEC_CM: CONFIG.SHADOW
   assign shadowed_storage_err = |{
       reg2hw.cfg_shadowed.kmac_en.err_storage             ,
       reg2hw.cfg_shadowed.kstrength.err_storage           ,

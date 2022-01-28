@@ -365,6 +365,7 @@ module kmac_app
   );
 
   // Next State & output logic
+  // SEC_CM: FSM.SPARSE
   always_comb begin
     st_d = StIdle;
 

@@ -204,6 +204,7 @@ module keccak_round #(
   );
 
   // Next state logic and output logic
+  // SEC_CM: FSM.SPARSE
   always_comb begin
     // Default values
     keccak_st_d = StIdle;
@@ -400,6 +401,7 @@ module keccak_round #(
 
   // Round number
   // This primitive is used to place a hardened counter
+  // SEC_CM: CTR.REDUN
   prim_count #(
     .Width(RndW),
     .OutSelDnCnt(1'b 0), // 0 selects up count

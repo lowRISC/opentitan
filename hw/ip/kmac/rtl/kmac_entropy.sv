@@ -307,6 +307,7 @@ module kmac_entropy
   // We employ two redundant LFSRs to guard against FI attacks.
   // If any of the two is glitched and the two LFSR states do not agree,
   // the FSM below is moved into a terminal error state.
+  // SEC_CM: LFSR.REDUN
   prim_double_lfsr #(
     .LfsrDw(EntropyLfsrW),
     .EntropyDw(EntropyLfsrW),
@@ -401,6 +402,7 @@ module kmac_entropy
   );
 
   // State: Next State and Output Logic
+  // SEC_CM: FSM.SPARSE
   always_comb begin
     st_d = StRandReset;
     sparse_fsm_error_o = 1'b 0;

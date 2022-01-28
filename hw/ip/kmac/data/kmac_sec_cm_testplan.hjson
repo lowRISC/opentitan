@@ -29,5 +29,35 @@
       milestone: V2S
       tests: []
     }
+    {
+      name: sec_cm_sw_key_key_masking
+      desc: "Verify the countermeasure(s) SW_KEY.KEY_MASKING."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_config_shadow
+      desc: "Verify the countermeasure(s) CONFIG.SHADOW."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_fsm_sparse
+      desc: "Verify the countermeasure(s) FSM.SPARSE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_lfsr_redun
+      desc: "Verify the countermeasure(s) LFSR.REDUN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_ctr_redun
+      desc: "Verify the countermeasure(s) CTR.REDUN."
+      milestone: V2S
+      tests: []
+    }
   ]
 }

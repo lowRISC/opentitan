@@ -155,6 +155,7 @@ module kmac_errchk
 
   // SW sequence Error
   // info field: Current state, Received command
+  // SEC_CM: FSM.SPARSE
   always_comb begin
     err_swsequence = 1'b 0;
     sparse_fsm_error_o = 1'b 0;
