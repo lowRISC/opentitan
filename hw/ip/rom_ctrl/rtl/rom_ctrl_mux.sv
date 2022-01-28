@@ -107,8 +107,20 @@ module rom_ctrl_mux
 
   assign chk_rdata_o = rom_scr_rdata_i;
 
-  assign rom_req_o         = mubi4_test_true_strict(sel_bus_i) ? bus_req_i         : chk_req_i;
-  assign rom_rom_addr_o    = mubi4_test_true_strict(sel_bus_i) ? bus_rom_addr_i    : chk_addr_i;
-  assign rom_prince_addr_o = mubi4_test_true_strict(sel_bus_i) ? bus_prince_addr_i : chk_addr_i;
+  always_comb begin
+    unique if (mubi4_test_true_strict(sel_bus_i)) begin
+      rom_req_o         = bus_req_i;
+      rom_rom_addr_o    = bus_rom_addr_i;
+      rom_prince_addr_o = bus_prince_addr_i;
+    end else if (mubi4_test_false_strict(sel_bus_i)) begin
+      rom_req_o         = chk_req_i;
+      rom_rom_addr_o    = chk_addr_i;
+      rom_prince_addr_o = chk_addr_i;
+    end else begin
+      rom_req_o         = '0;
+      rom_rom_addr_o    = '0;
+      rom_prince_addr_o = '0;
+    end
+  end
 
 endmodule
