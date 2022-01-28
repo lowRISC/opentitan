@@ -780,4 +780,20 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   logic unused_seed_valid;
   assign unused_seed_valid = otp_key_rsp_i.seed_valid;
 
+  // assertion
+
+`ifdef INC_ASSERT
+  logic [DataWidth-1:0] rma_data;
+  always_ff @(posedge clk_i) begin
+    if (rma_start && rvalid_i && rready_o) begin
+      rma_data <= {rma_data[DataWidth -: BusWidth], rdata_i};
+    end
+  end
+
+  // check the rma programmed value actually matches what was read back
+  `ASSERT(ProgRdVerify_A, rma_start & rd_cnt_en & done_i |-> prog_data == rma_data)
+
+`endif
+
+
 endmodule // flash_ctrl_lcmgr
