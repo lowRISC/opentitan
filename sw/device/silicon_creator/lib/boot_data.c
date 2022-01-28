@@ -66,51 +66,6 @@ static void boot_data_digest_compute(const void *boot_data,
 }
 
 /**
- * Shares for producing the `is_valid` value in `boot_data_digest_check()`.
- * First 7 shares are generated using the `sparse-fsm-encode` script while the
- * last share is `kHardenedBoolTrue ^ kHardenedBoolFalse ^ kDigestShares[0] ^
- * ... ^ kDigestShares[7]` so that xor'ing all shares with the initial value of
- * `is_valid`, i.e. `kHardenedBoolFalse`, produces `kHardenedBoolTrue`.
- *
- * Encoding generated with
- * $ ./util/design/sparse-fsm-encode.py -d 6 -m 7 -n 32 \
- *     -s 266012770 --language=c
- *
- * Minimum hamming distance: 12
- * Maximum hamming distance: 19
- * Minimum hamming weight: 14
- * Maximum hamming weight: 23
- */
-static const uint32_t kDigestShares[kHmacDigestNumWords] = {
-    0x0d0b4d17, 0xcd73e3ff, 0x07a6f2f4, 0xcedfd599,
-    0x54eac5b2, 0x0723ff0a, 0x6e234ee1, 0x34ebfb31,
-};
-
-/**
- * Checks whether the digest of a boot data entry is valid.
- *
- * @param boot_data A buffer that holds a boot data entry.
- * @return Whether the digest of the entry is valid.
- */
-static hardened_bool_t boot_data_digest_is_valid(const boot_data_t *boot_data) {
-  static_assert(offsetof(boot_data_t, digest) == 0,
-                "`digest` must be the first field of `boot_data_t`.");
-
-  hardened_bool_t is_valid = kHardenedBoolFalse;
-  hmac_digest_t act_digest;
-  boot_data_digest_compute(boot_data, &act_digest);
-
-  size_t i = 0;
-  for (; launder32(i) < kHmacDigestNumWords; ++i) {
-    is_valid ^=
-        boot_data->digest.digest[i] ^ act_digest.digest[i] ^ kDigestShares[i];
-  }
-  HARDENED_CHECK_EQ(i, kHmacDigestNumWords);
-
-  return is_valid;
-}
-
-/**
  * Checks whether a boot data entry is empty.
  *
  * @param boot_data A buffer that holds a boot data entry. Must be word aligned.
@@ -380,8 +335,7 @@ static rom_error_t boot_data_page_info_get_impl(
     if (sniff_results[i] == kBootDataIdentifier) {
       RETURN_IF_ERROR(
           boot_data_entry_read(page, i, &page_info->last_valid_entry));
-      if (boot_data_digest_is_valid(&page_info->last_valid_entry) ==
-          kHardenedBoolTrue) {
+      if (boot_data_check(&page_info->last_valid_entry) == kErrorOk) {
         page_info->last_valid_index = i;
         page_info->has_valid_entry = kHardenedBoolTrue;
         break;
@@ -552,4 +506,55 @@ rom_error_t boot_data_write(const boot_data_t *boot_data) {
   }
 
   return kErrorOk;
+}
+
+/**
+ * Shares for producing the `error` value in `boot_data_check()`. First 8
+ * shares are generated using the `sparse-fsm-encode` script while the last
+ * share is `kErrorOk ^ kBootDataInvalid ^ kBootDataIdentifier ^
+ * kCheckShares[0] ^ ... ^ kCheckShares[7]` so that xor'ing all shares with
+ * the initial value of `error`, i.e. `kErrorBootDataInvalid`, and
+ * `kBootDataIdentifier` produces `kErrorOk`.
+ *
+ * Encoding generated with
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 8 -n 32 \
+ *     -s 49105412 --language=c
+ *
+ * Minimum Hamming distance: 12
+ * Maximum Hamming distance: 23
+ * Minimum Hamming weight: 13
+ * Maximum Hamming weight: 20
+ */
+static const uint32_t kCheckShares[kHmacDigestNumWords + 1] = {
+    0xe021e1a9, 0xf81e8365, 0xbf8322db, 0xc7a37080, 0x271a933f,
+    0xdd8ce33f, 0x7585d574, 0x951777af, 0x381dee3a,
+};
+
+/**
+ * Checks whether the digest of a boot data entry is valid.
+ *
+ * @param boot_data A buffer that holds a boot data entry.
+ * @return Whether the digest of the entry is valid.
+ */
+rom_error_t boot_data_check(const boot_data_t *boot_data) {
+  static_assert(offsetof(boot_data_t, digest) == 0,
+                "`digest` must be the first field of `boot_data_t`.");
+
+  rom_error_t error = kErrorBootDataInvalid;
+  hmac_digest_t act_digest;
+  boot_data_digest_compute(boot_data, &act_digest);
+
+  size_t i = 0;
+  for (; launder32(i) < kHmacDigestNumWords; ++i) {
+    error ^=
+        boot_data->digest.digest[i] ^ act_digest.digest[i] ^ kCheckShares[i];
+  }
+  HARDENED_CHECK_EQ(i, kHmacDigestNumWords);
+  error ^= boot_data->identifier ^ kCheckShares[kHmacDigestNumWords];
+  if (launder32(error) == kErrorOk) {
+    HARDENED_CHECK_EQ(error, kErrorOk);
+    return error;
+  }
+
+  return kErrorBootDataInvalid;
 }
