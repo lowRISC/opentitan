@@ -47,6 +47,7 @@ module sram_ctrl
   // SEC_CM: EXEC.INTERSIG.MUBI
   input  prim_mubi_pkg::mubi8_t                      otp_en_sram_ifetch_i,
   // Key request to OTP (running on clk_fixed)
+  // SEC_CM: SCRAMBLE.KEY.SIDELOAD
   output otp_ctrl_pkg::sram_otp_key_req_t            sram_otp_key_o,
   input  otp_ctrl_pkg::sram_otp_key_rsp_t            sram_otp_key_i,
   // config
