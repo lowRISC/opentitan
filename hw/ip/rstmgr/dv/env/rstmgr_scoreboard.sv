@@ -131,6 +131,10 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
         // TODO Check with bitwise enables from sw_rst_regwen.
         do_read_check = 1'b0;
       end
+      "err_code": begin
+        // Set by hardware.
+        do_read_check = 1'b0;
+      end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end

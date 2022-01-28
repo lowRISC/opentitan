@@ -60,9 +60,11 @@ class rstmgr_reset_vseq extends rstmgr_base_vseq;
     alert_pkg::alert_crashdump_t prev_alert_dump = '0;
     ibex_pkg::crash_dump_t prev_cpu_dump = '0;
 
-    // Expect reset info to be POR.
-    check_reset_info(1, "expected reset_info to be POR");
-    check_alert_and_cpu_info_after_reset(.alert_dump('0), .cpu_dump('0), .enable(1'b0));
+    // Expect reset info to be POR when running the sequence standalone.
+    if (is_running_sequence("rstmgr_reset_vseq")) begin
+      check_reset_info(1, "expected reset_info to be POR");
+      check_alert_and_cpu_info_after_reset(.alert_dump('0), .cpu_dump('0), .enable(1'b0));
+    end
 
     // Clear reset_info register, and enable cpu and alert info capture.
     csr_wr(.ptr(ral.reset_info), .value('1));
@@ -133,8 +135,8 @@ class rstmgr_reset_vseq extends rstmgr_base_vseq;
       end
     end
     csr_wr(.ptr(ral.reset_info), .value('1));
-    set_alert_info_for_capture(.alert_dump('0), .enable(1'b0));
-    set_cpu_info_for_capture(.cpu_dump('0), .enable(1'b0));
+    // This clears the info registers to cancel side-effects into other sequences with stress tests.
+    clear_alert_and_cpu_info();
   endtask
 
 endclass : rstmgr_reset_vseq
