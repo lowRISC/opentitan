@@ -5,6 +5,7 @@
 #include "sw/device/lib/dif/dif_alert_handler.h"
 
 #include <assert.h>
+#include <limits.h>
 
 #include "sw/device/lib/base/bitfield.h"
 
@@ -59,6 +60,24 @@ static_assert(
         ALERT_HANDLER_LOC_ALERT_CAUSE_0_LA_0_BIT == 0,
     "Expected local alert causes to be multiregs with LSB at index 0!");
 
+// Accumulator threshold field sizes.
+static_assert(
+    ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED_CLASSA_ACCUM_THRESH_SHADOWED_MASK <=
+        USHRT_MAX,
+    "Expected class A accumulator threshold field to be 16 bits.");
+static_assert(
+    ALERT_HANDLER_CLASSB_ACCUM_THRESH_SHADOWED_CLASSB_ACCUM_THRESH_SHADOWED_MASK <=
+        USHRT_MAX,
+    "Expected class B accumulator threshold field to be 16 bits.");
+static_assert(
+    ALERT_HANDLER_CLASSC_ACCUM_THRESH_SHADOWED_CLASSC_ACCUM_THRESH_SHADOWED_MASK <=
+        USHRT_MAX,
+    "Expected class C accumulator threshold field to be 16 bits.");
+static_assert(
+    ALERT_HANDLER_CLASSD_ACCUM_THRESH_SHADOWED_CLASSD_ACCUM_THRESH_SHADOWED_MASK <=
+        USHRT_MAX,
+    "Expected class D accumulator threshold field to be 16 bits.");
+
 /**
  * Macro for generating the case statements for local alert cause CSRs.
  */
@@ -91,13 +110,11 @@ static_assert(
     regwen_offset = ALERT_HANDLER_CLASS##class_##_CLR_REGWEN_REG_OFFSET; \
     break;
 
-// TODO(#9899): add static assert for accumulator_threshold field size
-
 /**
- * We use this to convert the class enum to the integer value that is assigned
- * to each class in auto-generated register header file. We do this to make this
- * code robust against changes to the class values in the auto-generated
- * register header file.
+ * We use this to convert the class enum to the integer value that is
+ * assigned to each class in auto-generated register header file. We do this
+ * to make this code robust against changes to the class values in the
+ * auto-generated register header file.
  */
 OT_WARN_UNUSED_RESULT
 static bool class_to_uint32(dif_alert_handler_class_t alert_class,
@@ -242,6 +259,18 @@ dif_result_t dif_alert_handler_configure_class(
       !dif_is_valid_toggle(enabled) || !dif_is_valid_toggle(locked)) {
     return kDifBadArg;
   }
+  for (int i = 0; i < config.escalation_phases_len; ++i) {
+    switch (config.escalation_phases[i].phase) {
+      case kDifAlertHandlerClassStatePhase0:
+      case kDifAlertHandlerClassStatePhase1:
+      case kDifAlertHandlerClassStatePhase2:
+      case kDifAlertHandlerClassStatePhase3:
+        continue;
+        break;
+      default:
+        return kDifBadArg;
+    }
+  }
 
 #define ALERT_CLASS_CONFIG_REGS_CASE_(class_, value_)                         \
   case kDifAlertHandlerClass##class_:                                         \
@@ -336,8 +365,6 @@ dif_result_t dif_alert_handler_configure_class(
         ctrl_reg, signal_map_field,
         (uint32_t)(phase - kDifAlertHandlerClassStatePhase0));
 
-    // TODO(#9899): alter this to leave no hardware configuration effects if
-    // kDifBadArg needs to be returned.
     switch (phase) {
       case kDifAlertHandlerClassStatePhase0:
         mmio_region_write32_shadowed(
