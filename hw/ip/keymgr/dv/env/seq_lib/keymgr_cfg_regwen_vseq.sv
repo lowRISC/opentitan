@@ -72,8 +72,8 @@ class keymgr_cfg_regwen_vseq extends keymgr_random_vseq;
     `uvm_info(`gfn, $sformatf("Write regwen lockable reg %0s, and this write should be ignored",
                               lockable_reg.get_name()), UVM_MEDIUM)
     csr_wr(lockable_reg, val);
-    // if it's control, wait until OP is done, so that control.start is clear
-    if (lockable_reg.get_name() == "control") begin
+    // if it's control, wait until OP is done, so that start.en is clear
+    if (lockable_reg.get_name() == "control_shadowed") begin
       csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_pkg::OpWip),
                    .compare_op(CompareOpNe));
     end

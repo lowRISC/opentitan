@@ -16,14 +16,14 @@ class keymgr_direct_to_disabled_vseq extends keymgr_random_vseq;
     end
 
     `uvm_info(`gfn, $sformatf("Directly go to Disabled from %0s", current_state.name), UVM_MEDIUM)
-    ral.control.start.set(1'b1);
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.control.operation,
+    ral.start.en.set(1'b1);
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.control_shadowed.operation,
                                    // All values not enumerated below behave the same as disable
                                    !(value inside {keymgr_pkg::OpAdvance,
                                                    keymgr_pkg::OpGenId,
                                                    keymgr_pkg::OpGenSwOut,
                                                    keymgr_pkg::OpGenHwOut});)
-    csr_update(.csr(ral.control));
+    csr_update(.csr(ral.start));
 
     wait_op_done();
     if (get_check_en()) `DV_CHECK_EQ(current_state, keymgr_pkg::StDisabled)

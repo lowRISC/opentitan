@@ -114,12 +114,14 @@ void keymgr_owner_int_max_ver_set(uint32_t max_key_ver) {
 }
 
 void keymgr_advance_state(void) {
-  uint32_t reg = bitfield_bit32_write(0, KEYMGR_CONTROL_START_BIT, true);
-  reg = bitfield_field32_write(reg, KEYMGR_CONTROL_DEST_SEL_FIELD,
-                               KEYMGR_CONTROL_DEST_SEL_VALUE_NONE);
-  reg = bitfield_field32_write(reg, KEYMGR_CONTROL_OPERATION_FIELD,
-                               KEYMGR_CONTROL_OPERATION_VALUE_ADVANCE);
-  abs_mmio_write32(kBase + KEYMGR_CONTROL_REG_OFFSET, reg);
+  uint32_t reg =
+      bitfield_field32_write(0, KEYMGR_CONTROL_SHADOWED_DEST_SEL_FIELD,
+                             KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE);
+  reg = bitfield_field32_write(reg, KEYMGR_CONTROL_SHADOWED_OPERATION_FIELD,
+                               KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_ADVANCE);
+  abs_mmio_write32_shadowed(kBase + KEYMGR_CONTROL_SHADOWED_REG_OFFSET, reg);
+
+  abs_mmio_write32(kBase + KEYMGR_START_REG_OFFSET, 1);
 }
 
 rom_error_t keymgr_state_check(keymgr_state_t expected_state) {

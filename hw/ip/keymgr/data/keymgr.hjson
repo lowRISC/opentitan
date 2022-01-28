@@ -240,23 +240,20 @@
             key manager configuration enable.
             When key manager operation is started (see CONTROL), registers protected by this EN are no longer
             modifiable until the operation completes.
-
-            TBD
-            This should be enhanced to support multi-bit values in the future. Should be another script change.
           '''
         },
       ]
     },
 
-    { name: "CONTROL",
-      desc: "Key manager operation controls",
-      regwen: "CFG_REGWEN",
+    { name: "START",
+      desc: "Key manager operation start",
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      regwen: "CFG_REGWEN",
       fields: [
         { bits: "0",
           hwaccess: "hrw",
-          name: "START",
+          name: "EN",
           desc: "Start key manager operations",
           resval: "0"
           enum: [
@@ -269,8 +266,19 @@
           ]
           tags: [// bit self clears, handle in directed test
             "excl:CsrNonInitTests:CsrExclWrite"]
-        },
+        }
+      ]
+    },
 
+    { name: "CONTROL_SHADOWED",
+      desc: "Key manager operation controls",
+      regwen: "CFG_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hro",
+      shadowed: "true",
+      update_err_alert: "recov_operation_err",
+      storage_err_alert: "fatal_fault_err",
+      fields: [
         { bits: "6:4",
           name: "OPERATION",
           desc: "Key manager operation selection. All values not enumerated below behave the same as disable",
