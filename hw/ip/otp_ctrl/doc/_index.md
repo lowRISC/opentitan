@@ -1017,8 +1017,8 @@ Note some properties are worded with "SHALL" and others with "SHOULD".
 - The IP should contain native detectors for fault injection attacks.
 - The IP should contain mechanisms to guard against interrupted programming - either through malicious intent or unexpected power loss and glitched address lines.
 - The IP should contain mechanisms for error corrections (single bit errors).
-- For example ECC or redundant bits voting / or-ing.
-- As error correction mechanisms are technology dependent, that information should not be exposed to the open-source controller, instead the controller should simply receive information on whether a read / program was successful.
+  - For example ECC or redundant bits voting / or-ing.
+  - As error correction mechanisms are technology dependent, that information should not be exposed to the open-source controller, instead the controller should simply receive information on whether a read / program was successful.
 - The IP should have self-test functionality to assess the health of the storage and analog structures.
 - The IP may contain native PUF-like functionality.
 
