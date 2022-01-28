@@ -11,6 +11,10 @@
 `include "prim_assert.sv"
 
 module prim_lc_sender #(
+  // This flops the output if set to 1.
+  // In special cases where the sender is in the same clock domain as the receiver,
+  // this can be set to 0. However, it is recommended to leave this at 1.
+  parameter bit AsyncOn = 1,
   // 0: reset value is lc_ctrl_pkg::Off
   // 1: reset value is lc_ctrl_pkg::On
   parameter bit ResetValueIsOn = 0
@@ -27,15 +31,28 @@ module prim_lc_sender #(
   logic [lc_ctrl_pkg::TxWidth-1:0] lc_en, lc_en_out;
   assign lc_en = lc_ctrl_pkg::TxWidth'(lc_en_i);
 
-  prim_sec_anchor_flop #(
-    .Width(lc_ctrl_pkg::TxWidth),
-    .ResetValue(lc_ctrl_pkg::TxWidth'(ResetValue))
-  ) u_prim_flop (
-    .clk_i,
-    .rst_ni,
-    .d_i   ( lc_en     ),
-    .q_o   ( lc_en_out )
-  );
+  if (AsyncOn) begin : gen_flops
+    prim_sec_anchor_flop #(
+      .Width(lc_ctrl_pkg::TxWidth),
+      .ResetValue(lc_ctrl_pkg::TxWidth'(ResetValue))
+    ) u_prim_flop (
+      .clk_i,
+      .rst_ni,
+      .d_i   ( lc_en     ),
+      .q_o   ( lc_en_out )
+    );
+  end else begin : gen_no_flops
+    for (genvar k = 0; k < lc_ctrl_pkg::TxWidth; k++) begin : gen_bits
+      prim_sec_anchor_buf u_prim_buf (
+        .in_i(lc_en[k]),
+        .out_o(lc_en_out[k])
+      );
+    end
+    logic unused_clk;
+    logic unused_rst;
+    assign unused_clk = clk_i;
+    assign unused_rst = rst_ni;
+  end
 
   assign lc_en_o = lc_ctrl_pkg::lc_tx_t'(lc_en_out);
 
