@@ -174,7 +174,7 @@ The contents must go through periodic integrity checks and therefore the stored 
 ### Life Cycle Partition
 
 The life cycle partition cannot be locked and will therefore not contain a stored digest.
-Note however that only the life cycle controller has access to this partition, i.e., the DAI cannot read nor write from/to the life cycle partition.
+Note however that only the life cycle controller has access to this partition, i.e., the Direct Access Interface (DAI) cannot read nor write from/to the life cycle partition.
 
 ## Secret vs Non-Secret Partitions
 
@@ -358,7 +358,7 @@ The power manager interface is comprised of three signals overall: an initializa
 
 The power manager asserts `pwr_otp_i.otp_init` in order to signal to the OTP controller that it can start initialization, and the OTP controller signals completion of the initialization sequence by asserting `pwr_otp_o.otp_done` (the signal will remain high until reset).
 
-The idle indication signal `pwr_otp_o.otp_idle` indicates whether there is an ongoing write operation in the DAI or LCI, and the power manager uses that indication to determine whether a power down request needs to be aborted.
+The idle indication signal `pwr_otp_o.otp_idle` indicates whether there is an ongoing write operation in the Direct Access Interface (DAI) or Life Cycle Interface (LCI), and the power manager uses that indication to determine whether a power down request needs to be aborted.
 
 Since the power manager may run in a different clock domain, the `pwr_otp_i.otp_init` signal is synchronized within the OTP controller.
 The power manager is responsible for synchronizing the `pwr_otp_o.otp_done` and `pwr_otp_o.otp_idle` signals.
@@ -511,7 +511,7 @@ The following is a high-level block diagram that illustrates everything that has
 ![OTP Controller Block Diagram](otp_ctrl_blockdiag.svg)
 
 Each of the partitions P0-P7 has its [own controller FSM]({{< relref "#partition-implementations" >}}) that interacts with the OTP wrapper and the [scrambling datapath]({{< relref "#scrambling-datapath" >}}) to fulfill its tasks.
-The partitions expose the address ranges and access control information to the DAI in order to block accesses that go to locked address ranges.
+The partitions expose the address ranges and access control information to the Direct Access Interface (DAI) in order to block accesses that go to locked address ranges.
 Further, the only two blocks that have (conditional) write access to the OTP are the DAI and the Life Cycle Interface (LCI) blocks.
 The partitions can only issue read transactions to the OTP macro.
 Note that the access ranges of the DAI and the LCI are mutually exclusive.
