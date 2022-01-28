@@ -188,6 +188,10 @@
     { name: "FSM.SPARSE",
       desc: "sparse fsm encoding in life cycle interface."
     }
+
+    { name: "SCRAMBLE.KEY.SIDELOAD",
+      desc: "The scrambling key is sideloaded from OTP and thus unreadable by SW."
+    }
   ]
 
   scan: "true",       // Enable `scanmode_i` port
