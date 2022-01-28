@@ -69,11 +69,13 @@ module rom_ctrl
   logic                     bus_rom_req;
   logic                     bus_rom_gnt;
   logic [DataWidth-1:0]     bus_rom_rdata;
-  logic                     bus_rom_rvalid;
+  logic                     bus_rom_rvalid, bus_rom_rvalid_raw;
 
   logic [RomIndexWidth-1:0] checker_rom_index;
   logic                     checker_rom_req;
   logic [DataWidth-1:0]     checker_rom_rdata;
+
+  logic                     internal_alert;
 
   // Pack / unpack kmac connection data ========================================
 
@@ -217,7 +219,7 @@ module rom_ctrl
     .bus_req_i         (bus_rom_req),
     .bus_gnt_o         (bus_rom_gnt),
     .bus_rdata_o       (bus_rom_rdata),
-    .bus_rvalid_o      (bus_rom_rvalid),
+    .bus_rvalid_o      (bus_rom_rvalid_raw),
     .chk_addr_i        (checker_rom_index),
     .chk_req_i         (checker_rom_req),
     .chk_rdata_o       (checker_rom_rdata),
@@ -229,6 +231,17 @@ module rom_ctrl
     .rom_rvalid_i      (rom_rvalid),
     .alert_o           (mux_alert)
   );
+
+  // Squash all responses from the ROM to the bus if there's an internal integrity error from the
+  // checker FSM or the mux. This avoids having to handle awkward corner cases in the mux: if
+  // something looks bad, we'll complain and hang the bus transaction.
+  //
+  // Note that the two signals that go into internal_alert are both sticky. The mux explicitly
+  // latches its alert_o output and the checker FSM jumps to an invalid scrap state when it sees an
+  // error which, in turn, sets checker_alert.
+  //
+  // SEC_CM: BUS.LOCAL_ESC
+  assign bus_rom_rvalid = bus_rom_rvalid_raw & !internal_alert;
 
   // The ROM itself ============================================================
 
@@ -397,9 +410,11 @@ module rom_ctrl
   logic bus_integrity_error;
   assign bus_integrity_error = rom_reg_integrity_error | rom_integrity_error | reg_integrity_error;
 
+  assign internal_alert = checker_alert | mux_alert;
+
   // FATAL_ALERT_CAUSE register
-  assign hw2reg.fatal_alert_cause.checker_error.d  = checker_alert | mux_alert;
-  assign hw2reg.fatal_alert_cause.checker_error.de = checker_alert | mux_alert;
+  assign hw2reg.fatal_alert_cause.checker_error.d  = internal_alert;
+  assign hw2reg.fatal_alert_cause.checker_error.de = internal_alert;
   assign hw2reg.fatal_alert_cause.integrity_error.d  = bus_integrity_error;
   assign hw2reg.fatal_alert_cause.integrity_error.de = bus_integrity_error;
 
