@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
@@ -116,9 +117,10 @@ static void transaction_start(transaction_params_t params) {
  * @param word_count Number of words to read from the FIFO.
  * @param[out] data Output buffer.
  */
-static void fifo_read(size_t word_count, uint32_t *data) {
+static void fifo_read(size_t word_count, void *data) {
   for (size_t i = 0; i < word_count; ++i) {
-    data[i] = abs_mmio_read32(kBase + FLASH_CTRL_RD_FIFO_REG_OFFSET);
+    write_32(abs_mmio_read32(kBase + FLASH_CTRL_RD_FIFO_REG_OFFSET), data);
+    data = (char *)data + sizeof(uint32_t);
   }
 }
 
@@ -130,9 +132,10 @@ static void fifo_read(size_t word_count, uint32_t *data) {
  * @param word_count Number of words to write to the FIFO.
  * @param data Input buffer.
  */
-static void fifo_write(size_t word_count, const uint32_t *data) {
+static void fifo_write(size_t word_count, const void *data) {
   for (size_t i = 0; i < word_count; ++i) {
-    abs_mmio_write32(kBase + FLASH_CTRL_PROG_FIFO_REG_OFFSET, data[i]);
+    abs_mmio_write32(kBase + FLASH_CTRL_PROG_FIFO_REG_OFFSET, read_32(data));
+    data = (const char *)data + sizeof(uint32_t);
   }
 }
 
@@ -166,7 +169,7 @@ static rom_error_t wait_for_done(rom_error_t error) {
  * @return Result of the operation.
  */
 static rom_error_t write(uint32_t addr, flash_ctrl_partition_t partition,
-                         uint32_t word_count, const uint32_t *data,
+                         uint32_t word_count, const void *data,
                          rom_error_t error) {
   enum {
     kWindowWordCount = FLASH_CTRL_PARAM_REG_BUS_PGM_RES_BYTES / sizeof(uint32_t)
@@ -193,7 +196,7 @@ static rom_error_t write(uint32_t addr, flash_ctrl_partition_t partition,
     RETURN_IF_ERROR(wait_for_done(error));
 
     addr += window_word_count * sizeof(uint32_t);
-    data += window_word_count;
+    data = (const char *)data + window_word_count * sizeof(uint32_t);
     word_count -= window_word_count;
     window_word_count = kWindowWordCount;
   }
@@ -330,7 +333,7 @@ void flash_ctrl_status_get(flash_ctrl_status_t *status) {
 }
 
 rom_error_t flash_ctrl_data_read(uint32_t addr, uint32_t word_count,
-                                 uint32_t *data) {
+                                 void *data) {
   transaction_start((transaction_params_t){
       .addr = addr,
       .op_type = FLASH_CTRL_CONTROL_OP_VALUE_READ,
@@ -345,7 +348,7 @@ rom_error_t flash_ctrl_data_read(uint32_t addr, uint32_t word_count,
 
 rom_error_t flash_ctrl_info_read(flash_ctrl_info_page_t info_page,
                                  uint32_t offset, uint32_t word_count,
-                                 uint32_t *data) {
+                                 void *data) {
   const uint32_t addr = info_page_addr(info_page) + offset;
   transaction_start((transaction_params_t){
       .addr = addr,
@@ -360,14 +363,14 @@ rom_error_t flash_ctrl_info_read(flash_ctrl_info_page_t info_page,
 }
 
 rom_error_t flash_ctrl_data_write(uint32_t addr, uint32_t word_count,
-                                  const uint32_t *data) {
+                                  const void *data) {
   return write(addr, kFlashCtrlPartitionData, word_count, data,
                kErrorFlashCtrlDataWrite);
 }
 
 rom_error_t flash_ctrl_info_write(flash_ctrl_info_page_t info_page,
                                   uint32_t offset, uint32_t word_count,
-                                  const uint32_t *data) {
+                                  const void *data) {
   const uint32_t addr = info_page_addr(info_page) + offset;
   return write(addr, kFlashCtrlPartitionInfo0, word_count, data,
                kErrorFlashCtrlInfoWrite);
