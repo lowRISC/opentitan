@@ -152,6 +152,22 @@ module chip_earlgrey_verilator (
   // AST - Common with other platforms //
   ///////////////////////////////////////
 
+  // platform specific supply manipulation to create POR
+  logic [3:0] cnt;
+  logic vcc_supp;
+
+  // keep incrementing until saturation
+  always_ff @(posedge clk_aon) begin
+    if (cnt < 4'hf) begin
+      cnt <= cnt + 1'b1;
+    end
+  end
+
+  // create fake por condition
+  assign vcc_supp = cnt < 4'h4 ? 1'b0 :
+                    cnt < 4'h8 ? 1'b1 :
+                    cnt < 4'hc ? 1'b0 : 1'b1;
+
   // TLUL interface
   tlul_pkg::tl_h2d_t base_ast_bus;
   tlul_pkg::tl_d2h_t ast_base_bus;
@@ -284,7 +300,7 @@ module chip_earlgrey_verilator (
     .rst_ast_usb_ni (rstmgr_aon_resets.rst_usbif_n[rstmgr_pkg::Domain0Sel]),
 
     // pok test for FPGA
-    .vcc_supp_i            ( 1'b1 ),
+    .vcc_supp_i            ( vcc_supp ),
     .vcaon_supp_i          ( 1'b1 ),
     .vcmain_supp_i         ( 1'b1 ),
     .vioa_supp_i           ( 1'b1 ),

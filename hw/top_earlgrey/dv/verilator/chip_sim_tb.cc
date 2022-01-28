@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
   // to appropriately propagate.
   // The reset duration must be appropriately sized to the divider for clk_aon
   // in chip_earlgrey_verilator.sv.  It must be at least 2 cycles of clk_aon.
-  simctrl.SetInitialResetDelay(10000);
+  simctrl.SetInitialResetDelay(20000);
   simctrl.SetResetDuration(10);
 
   std::cout << "Simulation of OpenTitan Earl Grey" << std::endl
