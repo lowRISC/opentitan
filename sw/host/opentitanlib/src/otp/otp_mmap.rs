@@ -190,18 +190,20 @@ impl OtpMap {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::otp::tests::testdata;
     use std::fs::read_to_string;
 
     #[test]
     fn test_mmap_deserialize() {
         let _: OtpMap =
-            deser_hjson::from_str(&read_to_string("tests/otp_ctrl_mmap.hjson").unwrap()).unwrap();
+            deser_hjson::from_str(&read_to_string(testdata("otp_ctrl_mmap.hjson")).unwrap())
+                .unwrap();
     }
 
     #[test]
     fn test_img_deserialize() {
         let _: OtpImg =
-            deser_hjson::from_str(&read_to_string("tests/otp_ctrl_img_dev.hjson").unwrap())
+            deser_hjson::from_str(&read_to_string(testdata("otp_ctrl_img_dev.hjson")).unwrap())
                 .unwrap();
     }
 }
