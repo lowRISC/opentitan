@@ -298,13 +298,15 @@ The following standardised countermeasures are defined:
 | LC_GATED       | Access to the asset is qualified by life-cycle state | REG, MEM, CONSTANTS, CONFIG
 | BKGN_CHK       | The asset is protected with a continuous background health check |
 | GLITCH_DETECT  | The asset is protected by an analog glitch detector | CTRL, FSM, CLK, RST
-| SW_UNREADABLE  | The asset is not accessible by software |
+| SW_UNREADABLE  | The asset is not readable by software | MEM, KEY
+| SW_UNWRITABLE  | The asset is not writable by software | MEM, KEY
+| SW_NOACCESS    | The asset is not writable nor readable by software (SW_UNWRITABLE and SW_UNREADABLE at the same time) | MEM, KEY
 | SIDELOAD       | The asset can be loaded without exposing it to software | KEY
 | SCA            | A countermeasure that provides side-channel attack resistance |
 | MASKING        | A more specific version of SCA where an asset is split into shares |
 | LOCAL_ESC      | A local escalation event is triggered when an attack is detected |
 | GLOBAL_ESC     | A global escalation event is triggered when an attack is detected |
-
+| CM             | Catch-all for countermeasures that cannot be further specified. This is a very broad category: avoid if possible and give an instance or net name if not. |
 
 
 ## Register Handling
