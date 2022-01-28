@@ -15,6 +15,7 @@ filesets:
       - lowrisc:prim:otp
       - lowrisc:prim:double_lfsr
       - lowrisc:prim:count
+      - lowrisc:prim:lc_sender
       - lowrisc:prim:lc_sync
       - lowrisc:prim:buf
       - lowrisc:prim:flop

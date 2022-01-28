@@ -1253,29 +1253,32 @@ module otp_ctrl
   assign secrets_valid = (part_digest[Secret2Idx] != '0) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
 
   // Buffer these constants in order to ensure that synthesis does not try to optimize the encoding.
-  logic [lc_ctrl_pkg::TxWidth-1:0] test_tokens_valid_buf, rma_token_valid_buf, secrets_valid_buf;
-  prim_buf #(
-    .Width(lc_ctrl_pkg::TxWidth)
-  ) u_prim_buf_test_tokens_valid (
-    .in_i(test_tokens_valid),
-    .out_o(test_tokens_valid_buf)
-  );
-  prim_buf #(
-    .Width(lc_ctrl_pkg::TxWidth)
-  ) u_prim_buf_rma_token_valid (
-    .in_i(rma_token_valid),
-    .out_o(rma_token_valid_buf)
-  );
-  prim_buf #(
-    .Width(lc_ctrl_pkg::TxWidth)
-  ) u_prim_buf_secrets_valid (
-    .in_i(secrets_valid),
-    .out_o(secrets_valid_buf)
+  prim_lc_sender #(
+    .AsyncOn(0)
+  ) u_prim_lc_sender_test_tokens_valid (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(test_tokens_valid),
+    .lc_en_o(otp_lc_data_o.test_tokens_valid)
   );
 
-  assign otp_lc_data_o.test_tokens_valid = lc_ctrl_pkg::lc_tx_t'(test_tokens_valid_buf);
-  assign otp_lc_data_o.rma_token_valid = lc_ctrl_pkg::lc_tx_t'(rma_token_valid_buf);
-  assign otp_lc_data_o.secrets_valid = lc_ctrl_pkg::lc_tx_t'(secrets_valid_buf);
+  prim_lc_sender #(
+    .AsyncOn(0)
+  ) u_prim_lc_sender_rma_token_valid (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(rma_token_valid),
+    .lc_en_o(otp_lc_data_o.rma_token_valid)
+  );
+
+  prim_lc_sender #(
+    .AsyncOn(0)
+  ) u_prim_lc_sender_secrets_valid (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(secrets_valid),
+    .lc_en_o(otp_lc_data_o.secrets_valid)
+  );
 
   // Lifecycle state
   assign otp_lc_data_o.state = lc_ctrl_state_pkg::lc_state_e'(part_buf_data[LcStateOffset +:
