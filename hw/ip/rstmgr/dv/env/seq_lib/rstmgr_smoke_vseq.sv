@@ -5,6 +5,7 @@
 // Tests the different kinds of reset: POR, low power wakeup, hardware reset, debug_mode reset,
 // and software initiated peripheral resets.
 class rstmgr_smoke_vseq extends rstmgr_base_vseq;
+
   `uvm_object_utils(rstmgr_smoke_vseq)
 
   `uvm_object_new
@@ -14,24 +15,24 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
   constraint sw_rst_some_reset_n {sw_rst_regwen & ~sw_rst_ctrl_n != '0;}
 
   task body();
-    // Expect reset info to be POR.
-    check_reset_info(1, "expected reset_info to be POR");
-    check_alert_and_cpu_info_after_reset(.alert_dump('0), .cpu_dump('0), .enable(1'b0));
-
-    // Clear reset_info register, and enable cpu and alert info capture.
+    bit is_standalone = is_running_sequence("rstmgr_smoke_vseq");
+    // Expect reset info to be POR when running the sequence standalone.
+    if (is_standalone) begin
+      check_reset_info(1, "expected reset_info to be POR");
+      check_alert_and_cpu_info_after_reset(.alert_dump('0), .cpu_dump('0), .enable(1'b0));
+    end
     csr_wr(.ptr(ral.reset_info), .value('1));
     set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
 
     send_scan_reset();
     // Scan reset triggers an AON reset (and all others).
-    wait(cfg.rstmgr_vif.resets_o.rst_por_aon_n == '1);
+    wait(&cfg.rstmgr_vif.resets_o.rst_por_aon_n);
 
     check_reset_info(1, "expected reset_info to be POR for scan reset");
     // Alert and cpu info settings were reset. Check and re-enable them.
     check_alert_and_cpu_info_after_reset(.alert_dump('0), .cpu_dump('0), .enable(1'b0));
     set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
 
-    // Clear reset_info register.
     csr_wr(.ptr(ral.reset_info), .value('1));
 
     // Send low power entry reset.
@@ -39,7 +40,6 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
     check_reset_info(2, "expected reset_info to indicate low power");
     check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b1);
 
-    // Clear reset_info register.
     csr_wr(.ptr(ral.reset_info), .value('1));
     cfg.io_div4_clk_rst_vif.wait_clks(10);
 
@@ -49,14 +49,13 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
     set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
 
     send_reset(pwrmgr_pkg::HwReq, rstreqs);
-    check_reset_info({rstreqs, 4'h0}, $sformatf(
-                     "expected reset_info to match 0x%x", {rstreqs, 4'h0}));
+    check_reset_info({rstreqs, 4'h0}, $sformatf("expected reset_info to match 0x%x", {rstreqs, 4'h0}
+                     ));
     check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b0);
 
-    // Clear reset_info register.
     csr_wr(.ptr(ral.reset_info), .value('1));
-    `DV_CHECK_RANDOMIZE_FATAL(this)
 
+    `DV_CHECK_RANDOMIZE_FATAL(this)
     set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
 
     // Send debug reset.
@@ -64,22 +63,21 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
     check_reset_info(4, "Expected reset_info to indicate ndm reset");
     check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b1);
 
-    // Clear reset_info register.
     csr_wr(.ptr(ral.reset_info), .value('1));
-    `DV_CHECK_RANDOMIZE_FATAL(this)
 
+    `DV_CHECK_RANDOMIZE_FATAL(this)
     set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
 
     // Send sw reset.
     send_sw_reset();
     check_reset_info(8, "Expected reset_info to indicate sw reset");
-    check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b0);
+    check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 0);
 
-    // Clear reset_info register.
     csr_wr(.ptr(ral.reset_info), .value('1));
 
-    // Testing software resets.
-    begin : sw_rst
+    // Testing software resets: only run this when the sequence is run standalone, since
+    // setting sw_rst_regwen is irreversible.
+    if (is_standalone) begin : sw_rst
       logic [NumSwResets-1:0] exp_ctrl_n;
       const logic [NumSwResets-1:0] sw_rst_all_ones = '1;
       alert_pkg::alert_crashdump_t bogus_alert_dump = '1;
@@ -103,8 +101,10 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
                    .err_msg("Expected sw_rst_ctrl_n not to change"));
 
       check_sw_rst_ctrl_n(sw_rst_ctrl_n, sw_rst_regwen, 1);
-    end
-    check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b1);
+      check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b1);
+    end : sw_rst
+    // This clears the info registers to cancel side-effects into other sequences with stress tests.
+    clear_alert_and_cpu_info();
   endtask : body
 
 endclass : rstmgr_smoke_vseq

@@ -101,6 +101,13 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     cfg.rstmgr_vif.cpu_i.rst_cpu_n = value;
   endfunction
 
+  function logic is_running_sequence(string seq_name);
+    string actual_sequence = "none";
+    // Okay to ignore return value since the default won't match.
+    void'($value$plusargs("UVM_TEST_SEQ=%0s", actual_sequence));
+    return actual_sequence.compare(seq_name) == 0;
+  endfunction
+
   task check_reset_info(logic [TL_DW-1:0] expected_value, string msg = "reset_info mismatch");
     csr_rd_check(.ptr(ral.reset_info), .compare_value(expected_value), .err_msg(msg));
   endtask
@@ -195,6 +202,12 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     check_cpu_info_after_reset(cpu_dump, enable);
   endtask
 
+  task clear_alert_and_cpu_info();
+    set_alert_and_cpu_info_for_capture('0, '0);
+    send_sw_reset();
+    check_alert_and_cpu_info_after_reset(.alert_dump('0), .cpu_dump('0), .enable(0));
+  endtask
+
   // Stimulate and check sw_rst_ctrl_n with a given sw_rst_regen setting.
   task check_sw_rst_ctrl_n(sw_rst_t sw_rst_ctrl_n, sw_rst_t sw_rst_regen, bit erase_ctrl_n);
     sw_rst_t exp_ctrl_n;
@@ -241,7 +254,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     reset_start(reset_cause);
     cfg.io_div4_clk_rst_vif.wait_clks(non_ndm_reset_cycles);
     // Cause the reset to drop.
-    `uvm_info(`gfn, $sformatf("Clearing %0s reset", reset_cause.name()), UVM_LOW)
     set_rstreqs(0);
     reset_done();
   endtask
@@ -258,6 +270,8 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     update_scanmode(prim_mubi_pkg::MuBi4False);
     update_scan_rst_n(1'b1);
     reset_done();
+    // This makes sure the clock has restarted before this returns.
+    cfg.io_div4_clk_rst_vif.wait_clks(1);
     `uvm_info(`gfn, "Done sending scan reset.", UVM_MEDIUM)
   endtask
 
@@ -268,7 +282,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "Sending ndm reset", UVM_LOW)
     cfg.io_div4_clk_rst_vif.wait_clks(ndm_reset_cycles);
     set_ndmreset_req(1'b0);
-    `uvm_info(`gfn, $sformatf("Clearing ndm reset"), UVM_LOW)
   endtask
 
   // Requests a sw reset. It is cleared by hardware once the reset is taken.

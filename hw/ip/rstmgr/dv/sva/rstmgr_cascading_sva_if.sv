@@ -12,6 +12,9 @@
 //
 // Some individual reset outputs will always be off. Allowing for this in general would
 // weaken the property that some resets MUST rise following other rise.
+//
+// Peripheral resets cascade from sys, and are checked in rstmgr_sw_rst_sva_if since they
+// require additional inputs.
 interface rstmgr_cascading_sva_if (
   input logic clk_i,
   input logic clk_aon_i,
@@ -167,24 +170,6 @@ interface rstmgr_cascading_sva_if (
   `CASCADED_ASSERTS(CascadeSysToSysShadowed, rst_sys_src_n[rstmgr_pkg::Domain0Sel],
                     resets_o.rst_sys_shadowed_n[rstmgr_pkg::Domain0Sel], SysCycles, clk_main_i)
 
-  // Peripheral resets cascade from sys.
-  // We only care for power domain 1 for peripherals.
-  `CASCADED_ASSERTS(CascadeSysToSpiDevice, rst_sys_src_n[rstmgr_pkg::Domain0Sel],
-                    resets_o.rst_spi_device_n[rstmgr_pkg::Domain0Sel], PeriCycles, clk_io_div4_i)
-  `CASCADED_ASSERTS(CascadeSysToSpiHost0, rst_sys_src_n[rstmgr_pkg::Domain0Sel],
-                    resets_o.rst_spi_host0_n[rstmgr_pkg::Domain0Sel], PeriCycles, clk_io_i)
-  `CASCADED_ASSERTS(CascadeSysToSpiHost1, rst_sys_src_n[rstmgr_pkg::Domain0Sel],
-                    resets_o.rst_spi_host1_n[rstmgr_pkg::Domain0Sel], PeriCycles, clk_io_div2_i)
-  `CASCADED_ASSERTS(CascadeSysToUsb, rst_sys_src_n[rstmgr_pkg::Domain0Sel],
-                    resets_o.rst_usb_n[rstmgr_pkg::Domain0Sel], PeriCycles, clk_io_div4_i)
-  `CASCADED_ASSERTS(CascadeSysToUsbIf, rst_sys_src_n[rstmgr_pkg::Domain0Sel],
-                    resets_o.rst_usbif_n[rstmgr_pkg::Domain0Sel], PeriCycles, clk_usb_i)
-  `CASCADED_ASSERTS(CascadeSysToI2C0, rst_sys_src_n[rstmgr_pkg::Domain0Sel],
-                    resets_o.rst_i2c0_n[rstmgr_pkg::Domain0Sel], PeriCycles, clk_io_div4_i)
-  `CASCADED_ASSERTS(CascadeSysToI2C1, rst_sys_src_n[rstmgr_pkg::Domain0Sel],
-                    resets_o.rst_i2c1_n[rstmgr_pkg::Domain0Sel], PeriCycles, clk_io_div4_i)
-  `CASCADED_ASSERTS(CascadeSysToI2C2, rst_sys_src_n[rstmgr_pkg::Domain0Sel],
-                    resets_o.rst_i2c2_n[rstmgr_pkg::Domain0Sel], PeriCycles, clk_io_div4_i)
   `undef FALL_ASSERT
   `undef RISE_ASSERTS
   `undef CASCADED_ASSERTS

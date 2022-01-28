@@ -56,7 +56,7 @@ module tb;
   pins_if #(1) devmode_if (devmode);
   tl_if tl_if (
     .clk,
-    .rst_n
+    .rst_n(rstmgr_if.resets_o.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel])
   );
 
   rstmgr_if rstmgr_if (
@@ -105,10 +105,10 @@ module tb;
     .ndmreset_req_i(rstmgr_if.cpu_i.ndmreset_req),
 
     .alert_dump_i(rstmgr_if.alert_dump_i),
-    .cpu_dump_i(rstmgr_if.cpu_dump_i),
+    .cpu_dump_i  (rstmgr_if.cpu_dump_i),
 
     .scan_rst_ni(rstmgr_if.scan_rst_ni),
-    .scanmode_i(rstmgr_if.scanmode_i),
+    .scanmode_i (rstmgr_if.scanmode_i),
 
     .rst_en_o(rstmgr_if.rst_en_o),
     .resets_o(rstmgr_if.resets_o)
@@ -135,6 +135,11 @@ module tb;
 
     $timeformat(-12, 0, " ps", 12);
     run_test();
+  end
+
+  initial begin
+    clk_rst_if.drive_rst_n = 1'b0;
+    force clk_rst_if.rst_n = rstmgr_if.resets_o.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel];
   end
 
 endmodule
