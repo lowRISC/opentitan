@@ -244,10 +244,7 @@ rom_error_t sigverify_rsa_verify(const sigverify_rsa_buffer_t *signature,
     default:
       HARDENED_UNREACHABLE();
   }
-  RETURN_IF_ERROR(
-      sigverify_encoded_message_check(&enc_msg, act_digest, flash_exec));
-
-  return kErrorOk;
+  return sigverify_encoded_message_check(&enc_msg, act_digest, flash_exec);
 }
 
 void sigverify_usage_constraints_get(

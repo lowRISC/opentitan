@@ -57,8 +57,8 @@ typedef struct boot_data_buffer {
  * @param[out] digest Digest of the boot data entry.
  * @return The result of the operation.
  */
-static rom_error_t boot_data_digest_compute(const void *boot_data,
-                                            hmac_digest_t *digest) {
+static void boot_data_digest_compute(const void *boot_data,
+                                     hmac_digest_t *digest) {
   enum {
     kDigestRegionOffset = sizeof((boot_data_t){0}.digest),
     kDigestRegionSize = sizeof(boot_data_t) - kDigestRegionOffset,
@@ -67,10 +67,9 @@ static rom_error_t boot_data_digest_compute(const void *boot_data,
                 "`digest` must be the first field of `boot_data_t`.");
 
   hmac_sha256_init();
-  RETURN_IF_ERROR(hmac_sha256_update(
-      (const char *)boot_data + kDigestRegionOffset, kDigestRegionSize));
-  RETURN_IF_ERROR(hmac_sha256_final(digest));
-  return kErrorOk;
+  hmac_sha256_update((const char *)boot_data + kDigestRegionOffset,
+                     kDigestRegionSize);
+  hmac_sha256_final(digest);
 }
 
 /**
@@ -87,7 +86,7 @@ static rom_error_t boot_data_digest_is_valid(
 
   *is_valid = kHardenedBoolFalse;
   hmac_digest_t act_digest;
-  RETURN_IF_ERROR(boot_data_digest_compute(boot_data, &act_digest));
+  boot_data_digest_compute(boot_data, &act_digest);
   if (memcmp(&act_digest, boot_data, sizeof(act_digest.digest)) == 0) {
     *is_valid = kHardenedBoolTrue;
   }
@@ -509,7 +508,7 @@ rom_error_t boot_data_write(const boot_data_t *boot_data) {
     // Note: Not checking for wraparound since a successful write will
     // invalidate the old entry.
     new_entry.counter = active_page.last_valid_entry.counter + 1;
-    RETURN_IF_ERROR(boot_data_digest_compute(&new_entry, &new_entry.digest));
+    boot_data_digest_compute(&new_entry, &new_entry.digest);
     if (active_page.has_empty_entry == kHardenedBoolTrue) {
       RETURN_IF_ERROR(boot_data_entry_write(active_page.page,
                                             active_page.first_empty_index,
@@ -530,7 +529,7 @@ rom_error_t boot_data_write(const boot_data_t *boot_data) {
     // Erase the first page and write the entry there if the active page cannot
     // be found, i.e. the storage is not initialized yet.
     new_entry.counter = kBootDataDefault.counter + 1;
-    RETURN_IF_ERROR(boot_data_digest_compute(&new_entry, &new_entry.digest));
+    boot_data_digest_compute(&new_entry, &new_entry.digest);
     RETURN_IF_ERROR(
         boot_data_entry_write(kPages[0], 0, &new_entry, kHardenedBoolTrue));
   } else {

@@ -36,10 +36,7 @@ void hmac_sha256_init(void) {
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET, reg);
 }
 
-rom_error_t hmac_sha256_update(const void *data, size_t len) {
-  if (data == NULL) {
-    return kErrorHmacInvalidArgument;
-  }
+void hmac_sha256_update(const void *data, size_t len) {
   const uint8_t *data_sent = (const uint8_t *)data;
 
   // Individual byte writes are needed if the buffer isn't word aligned.
@@ -60,14 +57,9 @@ rom_error_t hmac_sha256_update(const void *data, size_t len) {
     abs_mmio_write8(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_MSG_FIFO_REG_OFFSET,
                     *data_sent++);
   }
-  return kErrorOk;
 }
 
-rom_error_t hmac_sha256_final(hmac_digest_t *digest) {
-  if (digest == NULL) {
-    return kErrorHmacInvalidArgument;
-  }
-
+void hmac_sha256_final(hmac_digest_t *digest) {
   uint32_t reg = 0;
   reg = bitfield_bit32_write(reg, HMAC_CMD_HASH_PROCESS_BIT, true);
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET, reg);
@@ -86,5 +78,4 @@ rom_error_t hmac_sha256_final(hmac_digest_t *digest) {
         abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_DIGEST_7_REG_OFFSET -
                         (i * sizeof(uint32_t)));
   }
-  return kErrorOk;
 }

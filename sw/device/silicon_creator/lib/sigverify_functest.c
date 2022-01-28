@@ -120,11 +120,10 @@ static const sigverify_rsa_key_t kKeyExp3 = {
         },
 };
 
-rom_error_t compute_digest(void) {
+void compute_digest(void) {
   hmac_sha256_init();
-  RETURN_IF_ERROR(hmac_sha256_update(&kMessage, sizeof(kMessage) - 1));
-  RETURN_IF_ERROR(hmac_sha256_final(&act_digest));
-  return kErrorOk;
+  hmac_sha256_update(&kMessage, sizeof(kMessage) - 1);
+  hmac_sha256_final(&act_digest);
 }
 
 rom_error_t sigverify_test_exp_3(void) {
@@ -163,7 +162,7 @@ const test_config_t kTestConfig;
 bool test_main(void) {
   rom_error_t result = kErrorOk;
 
-  CHECK(compute_digest() == kErrorOk);
+  compute_digest();
 
   EXECUTE_TEST(result, sigverify_test_exp_3);
   EXECUTE_TEST(result, sigverify_test_exp_65537);

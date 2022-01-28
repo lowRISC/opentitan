@@ -27,7 +27,6 @@ enum module_ {
   kModuleUnknown = 0,
   kModuleAlertHandler = MODULE_CODE('A', 'H'),
   kModuleUart =         MODULE_CODE('U', 'A'),
-  kModuleHmac =         MODULE_CODE('H', 'M'),
   kModuleSigverify =    MODULE_CODE('S', 'V'),
   kModuleKeymgr =       MODULE_CODE('K', 'M'),
   kModuleManifest =     MODULE_CODE('M', 'A'),
@@ -74,7 +73,6 @@ enum module_ {
   X(kErrorOk, 0x739), \
   X(kErrorUartInvalidArgument,        ERROR_(1, kModuleUart, kInvalidArgument)), \
   X(kErrorUartBadBaudRate,            ERROR_(2, kModuleUart, kInvalidArgument)), \
-  X(kErrorHmacInvalidArgument,        ERROR_(1, kModuleHmac, kInvalidArgument)), \
   X(kErrorSigverifyBadEncodedMessage, ERROR_(1, kModuleSigverify, kInvalidArgument)), \
   X(kErrorSigverifyBadKey,            ERROR_(2, kModuleSigverify, kInvalidArgument)), \
   X(kErrorSigverifyBadOtpValue,       ERROR_(3, kModuleSigverify, kInternal)), \
