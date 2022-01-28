@@ -986,7 +986,10 @@
       desc: "All partition buffer registers are protected with ECC on 64bit blocks."
     }
     { name: "MACRO.MEM.INTEGRITY",
-      desc: "All OTP macro words are protected with ECC on 16bit words."
+      desc: '''
+            The OTP macro employs a vendor-specific integrity scheme at the granularity of the native 16bit OTP words.
+            The scheme is able to at least detect single bit errors.
+            '''
     }
     { name: "PART.DATA_REG.BKGN_CHK",
       desc: "The digest of buffered partitions is recomputed and checked at pseudorandom intervals in the background."
