@@ -891,6 +891,17 @@ The hardware will set {{< regref DIRECT_ACCESS_REGWEN >}} to 0x0 while an operat
 It should also be noted that the effect of locking a partition via the digest only takes effect **after** the next system reset.
 To prevent integrity check failures SW must therefore ensure that no more programming operations are issued to the affected partition after initiating the digest calculation sequence.
 
+### Software Integrity Handling
+
+As opposed to buffered partitions, the digest and integrity handling of unbufferd partitions is entirely up to software.
+The only hardware-assisted feature in unbuffered partitions is the digest lock, which locks write access to an unbuffered partition once a nonzero value has been programmed to the 64bit digest location.
+
+In a similar vein, it should be noted that the system-wide bus-integrity metadata does not travel alongside the data end-to-end in the OTP controller (i.e., the  bus-integrity metadata bits are not stored into the OTP memory array).
+This means that data written to and read from the OTP macro is not protected by the bus integrity feature at all stages.
+In case of buffered partitions this does not pose a concern since data integrity in these partitions is checked via the hardware assisted digest mechanism.
+In case of unbuffered partitions however, the data integrity checking is entirely up to software.
+I.e., if data is read from an unbuffered partition (either through the DAI or CSR windows), software should perform an integrity check on that data.
+
 ## Error Handling
 
 The agents that can access the OTP macro (DAI, LCI, buffered/unbuffered partitions) expose detailed error codes that can be used to root cause any failure.
