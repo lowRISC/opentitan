@@ -17,8 +17,7 @@ class otp_ctrl_unbuf_err_code_cg_wrap;
     err_code_vals: coverpoint val {
       bins no_err              = {OtpNoError};
       bins macro_err           = {OtpMacroError};
-      // TODO: will cover with the latest mem_bkdr_if method
-      // bins ecc_corr_err     = {'b010};
+      bins ecc_corr_err        = {OtpMacroEccCorrError};
       bins ecc_uncorr_err      = {OtpMacroEccUncorrError};
       bins access_err          = {OtpAccessError};
       bins check_fail          = {OtpCheckFailError};
