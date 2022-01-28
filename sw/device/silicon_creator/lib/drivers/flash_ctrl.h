@@ -223,11 +223,11 @@ void flash_ctrl_status_get(flash_ctrl_status_t *status);
  *
  * @param addr Address to read from.
  * @param word_count Number of bus words to read.
- * @param[out] data Buffer to store the read data.
+ * @param[out] data Buffer to store the read data. Must be word aligned.
  * @return Result of the operation.
  */
 rom_error_t flash_ctrl_data_read(uint32_t addr, uint32_t word_count,
-                                 uint32_t *data);
+                                 void *data);
 
 /**
  * Reads data from an information page.
@@ -239,12 +239,12 @@ rom_error_t flash_ctrl_data_read(uint32_t addr, uint32_t word_count,
  * @param info_page Information page to read from.
  * @param offset Offset from the start of the page.
  * @param word_count Number of bus words to read.
- * @param[out] data Buffer to store the read data.
+ * @param[out] data Buffer to store the read data. Must be word aligned.
  * @return Result of the operation.
  */
 rom_error_t flash_ctrl_info_read(flash_ctrl_info_page_t info_page,
                                  uint32_t offset, uint32_t word_count,
-                                 uint32_t *data);
+                                 void *data);
 
 /**
  * Writes data to the data partition.
@@ -255,11 +255,11 @@ rom_error_t flash_ctrl_info_read(flash_ctrl_info_page_t info_page,
  *
  * @param addr Address to write to.
  * @param word_count Number of bus words to write.
- * @param data Data to write.
+ * @param data Data to write. Must be word aligned.
  * @return Result of the operation.
  */
 rom_error_t flash_ctrl_data_write(uint32_t addr, uint32_t word_count,
-                                  const uint32_t *data);
+                                  const void *data);
 
 /**
  * Writes data to an information page.
@@ -271,12 +271,12 @@ rom_error_t flash_ctrl_data_write(uint32_t addr, uint32_t word_count,
  * @param info_page Information page to write to.
  * @param offset Offset from the start of the page.
  * @param word_count Number of bus words to write.
- * @param data Data to write.
+ * @param data Data to write. Must be word aligned.
  * @return Result of the operation.
  */
 rom_error_t flash_ctrl_info_write(flash_ctrl_info_page_t info_page,
                                   uint32_t offset, uint32_t word_count,
-                                  const uint32_t *data);
+                                  const void *data);
 
 typedef enum flash_ctrl_erase_type {
   /**
