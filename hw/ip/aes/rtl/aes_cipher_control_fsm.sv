@@ -35,6 +35,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
   input  logic             data_out_clear_i,
   input  logic             mux_sel_err_i,
   input  logic             sp_enc_err_i,
+  input  logic             op_err_i,
   output logic             alert_o,
 
   // Control signals for masking PRNG
@@ -226,7 +227,8 @@ module aes_cipher_control_fsm import aes_pkg::*;
             // Load full key
             key_full_sel_o = dec_key_gen_i ? KEY_FULL_ENC_INIT :
                         (op_i == CIPH_FWD) ? KEY_FULL_ENC_INIT :
-                                             KEY_FULL_DEC_INIT;
+                        (op_i == CIPH_INV) ? KEY_FULL_DEC_INIT :
+                                             KEY_FULL_ENC_INIT;
             key_full_we_o  = 1'b1;
 
             // Load num_rounds, initialize round counters.
@@ -304,7 +306,8 @@ module aes_cipher_control_fsm import aes_pkg::*;
         prng_reseed_req_o = Masking & prng_reseed_q_i & ~prng_reseed_done_q;
 
         // Select round key: direct or mixed (equivalent inverse cipher)
-        round_key_sel_o = (op_i == CIPH_FWD) ? ROUND_KEY_DIRECT : ROUND_KEY_MIXED;
+        round_key_sel_o = (op_i == CIPH_FWD) ? ROUND_KEY_DIRECT :
+                          (op_i == CIPH_INV) ? ROUND_KEY_MIXED  : ROUND_KEY_DIRECT;
 
         // Advance in sync with SubBytes and KeyExpand. Based on the S-Box implementation, both can
         // take multiple cycles to finish. Wait for handshake. The DOM S-Boxes consume fresh PRD
@@ -382,7 +385,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
         // Perform both handshakes simultaneously.
         advance        = sub_bytes_out_req_i | dec_key_gen_q_i;
         sub_bytes_en_o = ~dec_key_gen_q_i;
-        out_valid_o    = (mux_sel_err_i || sp_enc_err_i) ? 1'b0                  :
+        out_valid_o    = (mux_sel_err_i || sp_enc_err_i || op_err_i) ? 1'b0      :
             Masking ? (prng_reseed_q_i ? prng_reseed_done_q & advance : advance) : advance;
 
         // Stop updating the cycle counter once we have valid output.
@@ -466,7 +469,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
 
     // Unconditionally jump into the terminal error state in case a mux selector or a sparsely
     // encoded signal becomes invalid, or in case we have detected a fault in the round counter.
-    if (mux_sel_err_i || sp_enc_err_i || rnd_ctr_err_i) begin
+    if (mux_sel_err_i || sp_enc_err_i || rnd_ctr_err_i || op_err_i) begin
       aes_cipher_ctrl_ns = ERROR;
     end
   end
@@ -513,7 +516,10 @@ module aes_cipher_control_fsm import aes_pkg::*;
   ////////////////
 
   // Selectors must be known/valid
-  `ASSERT_KNOWN(AesCiphOpKnown, op_i)
+  `ASSERT(AesCiphOpValid, cfg_valid_i |-> op_i inside {
+      CIPH_FWD,
+      CIPH_INV
+      })
   `ASSERT(AesKeyLenValid, cfg_valid_i |-> key_len_i inside {
       AES_128,
       AES_192,

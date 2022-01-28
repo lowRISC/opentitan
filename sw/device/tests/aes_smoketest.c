@@ -88,9 +88,10 @@ bool test_main(void) {
 
   // Setup ECB encryption transaction.
   dif_aes_transaction_t transaction = {
+      .operation = kDifAesOperationEncrypt,
+      .mode = kDifAesModeEcb,
       .key_len = kDifAesKey256,
-      .mode = kDifAesModeEncrypt,
-      .operation = kDifAesOperationAuto,
+      .manual_operation = kDifAesManualOperationAuto,
   };
   CHECK_DIF_OK(dif_aes_start_ecb(&aes, &transaction, key));
 
@@ -122,7 +123,7 @@ bool test_main(void) {
   }
 
   // Setup ECB decryption transaction.
-  transaction.mode = kDifAesModeDecrypt;
+  transaction.operation = kDifAesOperationDecrypt;
   CHECK_DIF_OK(dif_aes_start_ecb(&aes, &transaction, key));
 
   // Load the previously produced cipher text to start the decryption operation.

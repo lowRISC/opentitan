@@ -60,9 +60,10 @@ class AesTestInitialized : public AesTest {
   dif_aes_t aes_;
 
   const dif_aes_transaction_t kTransaction = {
+      .operation = kDifAesOperationEncrypt,
+      .mode = kDifAesModeEcb,
       .key_len = kDifAesKey128,
-      .mode = kDifAesModeEncrypt,
-      .operation = kDifAesOperationAuto,
+      .manual_operation = kDifAesManualOperationAuto,
       .masking = kDifAesMaskingInternalPrng,
   };
 
@@ -86,7 +87,7 @@ TEST_F(EcbTest, start) {
     EXPECT_WRITE32(AES_CTRL_SHADOWED_REG_OFFSET,
                    {{AES_CTRL_SHADOWED_KEY_LEN_OFFSET, 0x01},
                     {AES_CTRL_SHADOWED_MODE_OFFSET, 0x01},
-                    {AES_CTRL_SHADOWED_OPERATION_BIT, false},
+                    {AES_CTRL_SHADOWED_OPERATION_OFFSET, 0x1},
                     {AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, false},
                     {AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_BIT, false}});
   }
@@ -105,7 +106,7 @@ TEST_F(CbcTest, start) {
     EXPECT_WRITE32(AES_CTRL_SHADOWED_REG_OFFSET,
                    {{AES_CTRL_SHADOWED_KEY_LEN_OFFSET, 0x01},
                     {AES_CTRL_SHADOWED_MODE_OFFSET, 0x02},
-                    {AES_CTRL_SHADOWED_OPERATION_BIT, false},
+                    {AES_CTRL_SHADOWED_OPERATION_OFFSET, 0x1},
                     {AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, false},
                     {AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_BIT, false}});
   }
@@ -125,7 +126,7 @@ TEST_F(CFBTest, start) {
     EXPECT_WRITE32(AES_CTRL_SHADOWED_REG_OFFSET,
                    {{AES_CTRL_SHADOWED_KEY_LEN_OFFSET, 0x01},
                     {AES_CTRL_SHADOWED_MODE_OFFSET, 0x04},
-                    {AES_CTRL_SHADOWED_OPERATION_BIT, false},
+                    {AES_CTRL_SHADOWED_OPERATION_OFFSET, 0x1},
                     {AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, false},
                     {AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_BIT, false}});
   }
@@ -145,7 +146,7 @@ TEST_F(OFBTest, start) {
     EXPECT_WRITE32(AES_CTRL_SHADOWED_REG_OFFSET,
                    {{AES_CTRL_SHADOWED_KEY_LEN_OFFSET, 0x01},
                     {AES_CTRL_SHADOWED_MODE_OFFSET, 0x08},
-                    {AES_CTRL_SHADOWED_OPERATION_BIT, false},
+                    {AES_CTRL_SHADOWED_OPERATION_OFFSET, 0x1},
                     {AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, false},
                     {AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_BIT, false}});
   }
@@ -165,7 +166,7 @@ TEST_F(CTRTest, start) {
     EXPECT_WRITE32(AES_CTRL_SHADOWED_REG_OFFSET,
                    {{AES_CTRL_SHADOWED_KEY_LEN_OFFSET, 0x01},
                     {AES_CTRL_SHADOWED_MODE_OFFSET, 0x10},
-                    {AES_CTRL_SHADOWED_OPERATION_BIT, false},
+                    {AES_CTRL_SHADOWED_OPERATION_OFFSET, 0x1},
                     {AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, false},
                     {AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_BIT, false}});
   }

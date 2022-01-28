@@ -55,14 +55,16 @@ module aes_sbox_canright (
   logic [7:0] data_basis_x, data_inverse;
 
   // Convert to normal basis X.
-  assign data_basis_x = (op_i == CIPH_FWD) ? aes_mvm(data_i, A2X) :
-                                             aes_mvm(data_i ^ 8'h63, S2X);
+  assign data_basis_x = (op_i == CIPH_FWD) ? aes_mvm(data_i, A2X)         :
+                        (op_i == CIPH_INV) ? aes_mvm(data_i ^ 8'h63, S2X) :
+                                             aes_mvm(data_i, A2X);
 
   // Do the inversion in normal basis X.
   assign data_inverse = aes_inverse_gf2p8(data_basis_x);
 
   // Convert to basis S or A.
   assign data_o       = (op_i == CIPH_FWD) ? aes_mvm(data_inverse, X2S) ^ 8'h63 :
-                                             aes_mvm(data_inverse, X2A);
+                        (op_i == CIPH_INV) ? aes_mvm(data_inverse, X2A) :
+                                             aes_mvm(data_inverse, X2S) ^ 8'h63;
 
 endmodule

@@ -529,6 +529,7 @@ virtual task rebuild_message();
     bit [3:0][31:0] tmp_output;
 
     forever begin
+      bit operation;
       aes_message_item msg;
       msg_fifo.get(msg);
       `uvm_info(`gfn, $sformatf("model %b, operation: %b, mode %06b, IV %h, key_len %03b, key share0 %h, key share1 %h ",
@@ -540,7 +541,9 @@ virtual task rebuild_message();
         msg.alloc_predicted_msg();
 
         //ref-model      / opration     / chipher mode /    IV   / key_len    / key /data i /data o //
-        c_dpi_aes_crypt_message(cfg.ref_model, msg.aes_operation, msg.aes_mode, msg.aes_iv,
+        operation = msg.aes_operation == AES_ENC ? 1'b0 :
+                    msg.aes_operation == AES_DEC ? 1'b1 : 1'b0;
+        c_dpi_aes_crypt_message(cfg.ref_model, operation, msg.aes_mode, msg.aes_iv,
                                 msg.aes_keylen, msg.aes_key[0] ^ msg.aes_key[1],
                                 msg.input_msg, msg.predicted_msg);
 

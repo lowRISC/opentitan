@@ -56,9 +56,9 @@ class aes_base_vseq extends cip_base_vseq #(
      // Wait for DUT ready
     csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
     // initialize control register
-    aes_ctrl[0]    = 0;                  // set to encryption
-    aes_ctrl[6:1]  = aes_pkg::AES_ECB;   // 6'b00_0001
-    aes_ctrl[9:7]  = aes_pkg::AES_128;   // set to 128b key
+    aes_ctrl[1:0]  = aes_pkg::AES_ENC;   // 2'b01
+    aes_ctrl[7:2]  = aes_pkg::AES_ECB;   // 6'b00_0001
+    aes_ctrl[10:8] = aes_pkg::AES_128;   // 3'b001
     csr_wr(.ptr(ral.ctrl_shadowed), .value(aes_ctrl), .en_shadow_wr(1'b1), .blocking(1));
     // initialize aux control register and lock it
     // This is a temporary workaround until the aux control register is properly supported.
@@ -94,7 +94,7 @@ class aes_base_vseq extends cip_base_vseq #(
   endtask // prng_reseed
 
 
-  virtual task set_operation(bit operation);
+  virtual task set_operation(bit [1:0] operation);
       ral.ctrl_shadowed.operation.set(operation);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
   endtask // set_operation

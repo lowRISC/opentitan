@@ -872,7 +872,10 @@ module aes_core
       AES_CTR,
       AES_NONE
       })
-  `ASSERT_KNOWN(AesOpKnown, aes_op_q)
+  `ASSERT(AesOpValid, !ctrl_err_storage |-> aes_op_q inside {
+      AES_ENC,
+      AES_DEC
+      })
 
   // Check parameters
   `ASSERT_INIT(AesNumSlicesCtr, NumSlicesCtr == 8)

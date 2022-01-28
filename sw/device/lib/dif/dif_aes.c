@@ -17,6 +17,18 @@
  */
 
 /*
+ * Field to select AES operation.
+ *
+ * Invalid input values, i.e., value with multiple bits set - are mapped to
+ * `kAesOperationFieldValEnc`.
+ */
+typedef enum aes_operation_field_val {
+  kAesOperationFieldValInvalid = 0x0,
+  kAesOperationFieldValEnc = 0x1, /**< Enrcyption. */
+  kAesOperationFieldValDec = 0x2, /**< Decryption. */
+} aes_operation_field_val_t;
+
+/*
  * Field to select AES block cipher mode.
  *
  * Invalid input values, i.e., value with multiple bits set - are mapped to
@@ -111,6 +123,38 @@ static void aes_clear_internal_state(const dif_aes_t *aes) {
   }
 }
 
+static aes_operation_field_val_t operation_to_field(
+    dif_aes_operation_t operation) {
+  switch (operation) {
+    case kDifAesOperationEncrypt:
+      return kAesOperationFieldValEnc;
+    case kDifAesOperationDecrypt:
+      return kAesOperationFieldValDec;
+    default:
+      return kAesOperationFieldValInvalid;
+  }
+}
+
+// TODO: We should extract the MODE from the transaction using this function and
+// not separately provide it. See
+// https://github.com/lowRISC/opentitan/issues/10487
+// static aes_mode_field_val_t mode_to_field(dif_aes_mode_t mode) {
+//  switch (mode) {
+//    case kDifAesModeEcb:
+//      return kAesModeFieldValEcb;
+//    case kDifAesModeCbc:
+//      return kAesModeFieldValCbc;
+//    case kDifAesModeCfb:
+//      return kAesModeFieldValCfb;
+//    case kDifAesModeOfb:
+//      return kAesModeFieldValOfb;
+//    case kDifAesModeCtr:
+//      return kAesModeFieldValCtr;
+//    default:
+//      return kAesModeFieldValNone;
+//  }
+//}
+
 static aes_key_field_val_t key_to_field(dif_aes_key_length_t key) {
   switch (key) {
     case kDifAesKey128:
@@ -129,30 +173,37 @@ static aes_key_field_val_t key_to_field(dif_aes_key_length_t key) {
  *
  * @param aes AES state data.
  * @param transaction Configuration data, common across all Cipher modes.
- * @param cipher_mode_val Cipher Mode register write value.
+ * @param mode_val Block cipher mode of operation register write value.
  * @return `dif_result_t`.
  */
 static dif_result_t configure(const dif_aes_t *aes,
                               const dif_aes_transaction_t *transaction,
-                              aes_mode_field_val_t cipher_mode_val) {
+                              aes_mode_field_val_t mode_val) {
+  aes_operation_field_val_t operation_val =
+      operation_to_field(transaction->operation);
+  if (operation_val == kAesOperationFieldValInvalid) {
+    return kDifError;
+  }
+  // TODO: We should extract the mode from the transaction and not separately
+  // provide it. See https://github.com/lowRISC/opentitan/issues/10487
+  // aes_mode_field_val_t mode_val = mode_to_field(transaction->mode);
+  // if (mode_val == kAesModeFieldValNone) {
+  //  return kDifError;
+  //}
   aes_key_field_val_t key_len_val = key_to_field(transaction->key_len);
   if (key_len_val == kAesKeyFieldValInvalid) {
     return kDifError;
   }
 
-  uint32_t reg =
-      bitfield_field32_write(0, AES_CTRL_SHADOWED_KEY_LEN_FIELD, key_len_val);
+  uint32_t reg = bitfield_field32_write(0, AES_CTRL_SHADOWED_OPERATION_FIELD,
+                                        operation_val);
 
-  reg = bitfield_field32_write(reg, AES_CTRL_SHADOWED_MODE_FIELD,
-                               cipher_mode_val);
+  reg = bitfield_field32_write(reg, AES_CTRL_SHADOWED_MODE_FIELD, mode_val);
 
-  if (transaction->mode == kDifAesModeDecrypt) {
-    reg = bitfield_bit32_write(reg, AES_CTRL_SHADOWED_OPERATION_BIT, true);
-  } else {
-    reg = bitfield_bit32_write(reg, AES_CTRL_SHADOWED_OPERATION_BIT, false);
-  }
+  reg =
+      bitfield_field32_write(reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD, key_len_val);
 
-  if (transaction->operation == kDifAesOperationManual) {
+  if (transaction->manual_operation == kDifAesManualOperationManual) {
     reg =
         bitfield_bit32_write(reg, AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, true);
   } else {
@@ -197,15 +248,17 @@ dif_result_t dif_aes_reset(const dif_aes_t *aes) {
 
   aes_clear_internal_state(aes);
 
-  uint32_t reg =
-      bitfield_bit32_write(0, AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, true);
-
   // Any values would do, illegal values chosen here.
+  uint32_t reg =
+      bitfield_field32_write(0, AES_CTRL_SHADOWED_OPERATION_FIELD, 0xffffffff);
+
   reg = bitfield_field32_write(reg, AES_CTRL_SHADOWED_MODE_FIELD,
                                AES_CTRL_SHADOWED_MODE_VALUE_AES_NONE);
 
   reg =
       bitfield_field32_write(reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD, 0xffffffff);
+
+  reg = bitfield_bit32_write(reg, AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, true);
 
   aes_shadowed_write(aes->base_addr, AES_CTRL_SHADOWED_REG_OFFSET, reg);
 

@@ -40,6 +40,7 @@ module aes_cipher_control import aes_pkg::*;
   output logic                    data_out_clear_o,
   input  logic                    mux_sel_err_i,
   input  logic                    sp_enc_err_i,
+  input  logic                    op_err_i,
   output logic                    alert_o,
 
   // Control signals for masking PRNG
@@ -176,6 +177,7 @@ module aes_cipher_control import aes_pkg::*;
         .mux_sel_err_i         ( mux_sel_err              ),
         .sp_enc_err_i          ( sp_enc_err               ),
         .rnd_ctr_err_i         ( rnd_ctr_err              ),
+        .op_err_i              ( op_err_i                 ),
         .alert_o               ( mr_alert[i]              ), // OR-combine
 
         .prng_update_o         ( mr_prng_update[i]        ), // OR-combine
@@ -242,6 +244,7 @@ module aes_cipher_control import aes_pkg::*;
         .mux_sel_err_i         ( mux_sel_err              ),
         .sp_enc_err_i          ( sp_enc_err               ),
         .rnd_ctr_err_i         ( rnd_ctr_err              ),
+        .op_err_i              ( op_err_i                 ),
         .alert_o               ( mr_alert[i]              ), // OR-combine
 
         .prng_update_o         ( mr_prng_update[i]        ), // OR-combine
@@ -538,6 +541,9 @@ module aes_cipher_control import aes_pkg::*;
   ////////////////
 
   // Selectors must be known/valid
-  `ASSERT_KNOWN(AesCiphOpKnown, op_i)
+  `ASSERT(AesCiphOpValid, cfg_valid_i |-> op_i inside {
+      CIPH_FWD,
+      CIPH_INV
+      })
 
 endmodule

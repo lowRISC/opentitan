@@ -77,13 +77,14 @@ typedef enum integer {
 
 
 // Parameters used for controlgroups in the coverage
+parameter int AES_OP_WIDTH             = 2;
 parameter int AES_MODE_WIDTH           = 6;
 parameter int AES_KEYLEN_WIDTH         = 3;
 parameter int AES_PRNGRESEEDRATE_WIDTH = 3;
 
-typedef enum logic {
-  AES_ENC = 1'b0,
-  AES_DEC = 1'b1
+typedef enum logic [AES_OP_WIDTH-1:0] {
+  AES_ENC = 2'b01,
+  AES_DEC = 2'b10
 } aes_op_e;
 
 typedef enum logic [AES_MODE_WIDTH-1:0] {
@@ -95,9 +96,9 @@ typedef enum logic [AES_MODE_WIDTH-1:0] {
   AES_NONE = 6'b10_0000
 } aes_mode_e;
 
-typedef enum logic {
-  CIPH_FWD = 1'b0,
-  CIPH_INV = 1'b1
+typedef enum logic [AES_OP_WIDTH-1:0] {
+  CIPH_FWD = 2'b01,
+  CIPH_INV = 2'b10
 } ciph_op_e;
 
 typedef enum logic [AES_KEYLEN_WIDTH-1:0] {

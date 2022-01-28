@@ -114,6 +114,7 @@ module aes_sbox_lut (
   };
 
   // Drive output
-  assign data_o = (op_i == CIPH_FWD) ? SBOX_FWD[data_i] : SBOX_INV[data_i];
+  assign data_o = (op_i == CIPH_FWD) ? SBOX_FWD[data_i] :
+                  (op_i == CIPH_INV) ? SBOX_INV[data_i] : SBOX_FWD[data_i];
 
 endmodule

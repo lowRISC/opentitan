@@ -54,10 +54,11 @@ static dif_aes_t aes;
 static void aes_serial_set_key(const uint8_t *key, size_t key_len) {
   SS_CHECK(key_len == kAesKeyLength);
   dif_aes_transaction_t transaction = {
+      .operation = kDifAesOperationEncrypt,
+      .mode = kDifAesModeEcb,
       .key_len = kDifAesKey128,
       .masking = kDifAesMaskingInternalPrng,
-      .mode = kDifAesModeEncrypt,
-      .operation = kDifAesOperationManual,
+      .manual_operation = kDifAesManualOperationManual,
   };
   dif_aes_key_share_t key_shares;
   memcpy(key_shares.share0, key, sizeof(key_shares.share0));
