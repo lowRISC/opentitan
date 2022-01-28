@@ -41,13 +41,6 @@ static const flash_ctrl_info_page_t kPages[2] = {
 };
 
 /**
- * A type that holds `kBootDataNumWords` words.
- */
-typedef struct boot_data_buffer {
-  uint32_t data[kBootDataNumWords];
-} boot_data_buffer_t;
-
-/**
  * Computes the SHA-256 digest of a boot data entry.
  *
  * The region covered by this digest starts immediately after the `identifier`
@@ -99,8 +92,7 @@ static const uint32_t kDigestShares[kHmacDigestNumWords] = {
  * @param boot_data A buffer that holds a boot data entry.
  * @return Whether the digest of the entry is valid.
  */
-static hardened_bool_t boot_data_digest_is_valid(
-    const boot_data_buffer_t *boot_data) {
+static hardened_bool_t boot_data_digest_is_valid(const boot_data_t *boot_data) {
   static_assert(offsetof(boot_data_t, digest) == 0,
                 "`digest` must be the first field of `boot_data_t`.");
 
@@ -110,7 +102,8 @@ static hardened_bool_t boot_data_digest_is_valid(
 
   size_t i = 0;
   for (; launder32(i) < kHmacDigestNumWords; ++i) {
-    is_valid ^= boot_data->data[i] ^ act_digest.digest[i] ^ kDigestShares[i];
+    is_valid ^=
+        boot_data->digest.digest[i] ^ act_digest.digest[i] ^ kDigestShares[i];
   }
   HARDENED_CHECK_EQ(i, kHmacDigestNumWords);
 
@@ -120,14 +113,15 @@ static hardened_bool_t boot_data_digest_is_valid(
 /**
  * Checks whether a boot data entry is empty.
  *
- * @param boot_data A buffer that holds a boot data entry.
+ * @param boot_data A buffer that holds a boot data entry. Must be word aligned.
  * @return Whether the entry is empty.
  */
-static hardened_bool_t boot_data_is_empty(const boot_data_buffer_t *boot_data) {
+static hardened_bool_t boot_data_is_empty(const void *boot_data) {
   for (size_t i = 0; i < kBootDataNumWords; ++i) {
-    if (boot_data->data[i] != kBootDataEmptyWordValue) {
+    if (read_32(boot_data) != kBootDataEmptyWordValue) {
       return kHardenedBoolFalse;
     }
+    boot_data = (char *)boot_data + sizeof(uint32_t);
   }
   return kHardenedBoolTrue;
 }
@@ -179,10 +173,9 @@ static rom_error_t boot_data_sniff(flash_ctrl_info_page_t page, size_t index,
  * @return The result of the operation.
  */
 static rom_error_t boot_data_entry_read(flash_ctrl_info_page_t page,
-                                        size_t index,
-                                        boot_data_buffer_t *boot_data) {
+                                        size_t index, boot_data_t *boot_data) {
   const uint32_t offset = index * sizeof(boot_data_t);
-  return flash_ctrl_info_read(page, offset, kBootDataNumWords, boot_data->data);
+  return flash_ctrl_info_read(page, offset, kBootDataNumWords, boot_data);
 }
 
 /**
@@ -211,9 +204,6 @@ static rom_error_t boot_data_entry_write_impl(flash_ctrl_info_page_t page,
   OT_ASSERT_MEMBER_OFFSET(boot_data_t, is_valid, 32);
   OT_ASSERT_MEMBER_OFFSET(boot_data_t, identifier, 40);
 
-  boot_data_buffer_t buf;
-  memcpy(&buf, boot_data, sizeof(boot_data_t));
-
   if (erase == kHardenedBoolTrue) {
     RETURN_IF_ERROR(flash_ctrl_info_erase(page, kFlashCtrlEraseTypePage));
   }
@@ -221,21 +211,22 @@ static rom_error_t boot_data_entry_write_impl(flash_ctrl_info_page_t page,
   // Write digest
   const uint32_t offset = index * sizeof(boot_data_t);
   RETURN_IF_ERROR(
-      flash_ctrl_info_write(page, offset, kHmacDigestNumWords, buf.data));
+      flash_ctrl_info_write(page, offset, kHmacDigestNumWords, boot_data));
   // Write the rest of the entry, skipping over `is_valid`.
   enum {
     kSecondWriteOffsetBytes = offsetof(boot_data_t, identifier),
     kSecondWriteOffsetWords = kSecondWriteOffsetBytes / sizeof(uint32_t),
     kSecondWriteNumWords = kBootDataNumWords - kSecondWriteOffsetWords,
   };
-  RETURN_IF_ERROR(flash_ctrl_info_write(page, offset + kSecondWriteOffsetBytes,
-                                        kSecondWriteNumWords,
-                                        buf.data + kSecondWriteOffsetWords));
+  RETURN_IF_ERROR(flash_ctrl_info_write(
+      page, offset + kSecondWriteOffsetBytes, kSecondWriteNumWords,
+      (const char *)boot_data + kSecondWriteOffsetBytes));
 
   // Check.
+  boot_data_t written;
   RETURN_IF_ERROR(
-      flash_ctrl_info_read(page, offset, kBootDataNumWords, buf.data));
-  if (memcmp(&buf, boot_data, sizeof(boot_data_t)) != 0) {
+      flash_ctrl_info_read(page, offset, kBootDataNumWords, &written));
+  if (memcmp(&written, boot_data, sizeof(boot_data_t)) != 0) {
     return kErrorBootDataWriteCheck;
   }
   return kErrorOk;
@@ -357,7 +348,6 @@ typedef struct boot_data_page_info {
 static rom_error_t boot_data_page_info_get_impl(
     flash_ctrl_info_page_t page, boot_data_page_info_t *page_info) {
   uint32_t sniff_results[kBootDataEntriesPerPage];
-  boot_data_buffer_t buf;
 
   page_info->page = page;
   page_info->has_empty_entry = kHardenedBoolFalse;
@@ -370,8 +360,10 @@ static rom_error_t boot_data_page_info_get_impl(
     RETURN_IF_ERROR(boot_data_sniff(page, i, &sniff_results[i]));
     // Check all words of this entry only if it can be empty.
     if (sniff_results[i] == kBootDataEmptyWordValue) {
-      RETURN_IF_ERROR(boot_data_entry_read(page, i, &buf));
-      if (boot_data_is_empty(&buf) == kHardenedBoolTrue) {
+      RETURN_IF_ERROR(
+          boot_data_entry_read(page, i, &page_info->last_valid_entry));
+      if (boot_data_is_empty(&page_info->last_valid_entry) ==
+          kHardenedBoolTrue) {
         page_info->first_empty_index = i;
         page_info->has_empty_entry = kHardenedBoolTrue;
         break;
@@ -386,9 +378,10 @@ static rom_error_t boot_data_page_info_get_impl(
   for (size_t i = start_index; i < kBootDataEntriesPerPage; --i) {
     // Check the digest only if this entry can be valid.
     if (sniff_results[i] == kBootDataIdentifier) {
-      RETURN_IF_ERROR(boot_data_entry_read(page, i, &buf));
-      if (boot_data_digest_is_valid(&buf) == kHardenedBoolTrue) {
-        memcpy(&page_info->last_valid_entry, &buf, sizeof(boot_data_t));
+      RETURN_IF_ERROR(
+          boot_data_entry_read(page, i, &page_info->last_valid_entry));
+      if (boot_data_digest_is_valid(&page_info->last_valid_entry) ==
+          kHardenedBoolTrue) {
         page_info->last_valid_index = i;
         page_info->has_valid_entry = kHardenedBoolTrue;
         break;
