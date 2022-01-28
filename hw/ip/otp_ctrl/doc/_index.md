@@ -345,12 +345,12 @@ Signal                       | Direction        | Type                        | 
 
 The OTP controller contains various interfaces that connect to other comportable IPs within OpenTitan, and these are briefly explained further below.
 
-#### CSRNG Interface
+#### EDN Interface
 
-The entropy request interface that talks to CSRNG in order to fetch fresh entropy for ephemeral SRAM scrambling key derivation and the LFSR counters for background checks.
+The entropy request interface that talks to EDN in order to fetch fresh entropy for ephemeral SRAM scrambling key derivation and the LFSR counters for background checks.
 It is comprised of the `otp_edn_o` and `otp_edn_i` signals and follows a req / ack protocol.
 
-See also [CSRNG documentation]({{< relref "hw/ip/csrng/doc" >}}).
+See also [EDN documentation]({{< relref "hw/ip/edn/doc" >}}).
 
 #### Power Manager Interface
 
@@ -472,7 +472,7 @@ If the scrambling device runs on a significantly slower clock than OTP, an addit
 #### Interfaces to SRAM and OTBN Scramblers
 
 The interfaces to the SRAM and OTBN scrambling devices follow a req / ack protocol, where the scrambling device first requests a new ephemeral key by asserting the request channel (`sram_otp_key_i[*]`, `otbn_otp_key_i`).
-The OTP controller then fetches entropy from CSRNG and derives an ephemeral key using the SRAM_DATA_KEY_SEED and the [PRESENT scrambling data path]({{< relref "#scrambling-datapath" >}}).
+The OTP controller then fetches entropy from EDN and derives an ephemeral key using the SRAM_DATA_KEY_SEED and the [PRESENT scrambling data path]({{< relref "#scrambling-datapath" >}}).
 Finally, the OTP controller returns a fresh ephemeral key via the response channels (`sram_otp_key_o[*]`, `otbn_otp_key_o`), which complete the req / ack handshake.
 The wave diagram below illustrates this process for the OTBN scrambling device.
 
@@ -488,7 +488,7 @@ The wave diagram below illustrates this process for the OTBN scrambling device.
 {{< /wavejson >}}
 
 If the key seeds have not yet been provisioned, the keys are derived from all-zero constants, and the `*.seed_valid` signal will be set to 0 in the response.
-It should be noted that this mechanism requires the CSRNG and entropy distribution network to be operational, and a key derivation request will block if they are not.
+It should be noted that this mechanism requires the EDN and entropy distribution network to be operational, and a key derivation request will block if they are not.
 
 Note that the req/ack protocol runs on the OTP clock.
 It is the task of the scrambling device to perform the synchronization as described in the previous subsection on the [flash scrambler interface]({{< relref "#interface-to-flash-scrambler" >}}).
@@ -522,13 +522,13 @@ The CSR node on the left side of this diagram connects to the DAI, the OTP parti
 All connections from the partitions to the CSR node are read-only, and typically only carry a subset of the information available.
 E.g., the secret partitions only expose their digest value via the CSRs.
 
-The Key Derivation Interface (KDI) on the bottom right side interacts with the scrambling datapath, the CSRNG and the partition holding the scrambling root keys in order to derive static and ephemeral scrambling keys for FLASH and SRAM scrambling.
+The Key Derivation Interface (KDI) on the bottom right side interacts with the scrambling datapath, the EDN and the partition holding the scrambling root keys in order to derive static and ephemeral scrambling keys for FLASH and SRAM scrambling.
 
 The test access gate shown at the top of the block diagram is governed by the life cycle qualification signal `dft_en_i`, which is only enabled during the TEST_UNLOCKED* life cycle states.
 Otherwise, test access via this TL-UL window is locked down.
 
 In addition to the blocks mentioned so far, the OTP controller also contains an LFSR timer that creates pseudo-randomly distributed partition check requests, and provides pseudo random data at high bandwidth in the event of a secure erase request due to chip-wide alert escalation.
-For security reasons, the LFSR is periodically reseeded with entropy coming from CSRNG.
+For security reasons, the LFSR is periodically reseeded with entropy coming from EDN.
 
 ### Data Allocation and Packing
 #### Software View
@@ -653,7 +653,7 @@ Note that both the IV as well as the finalization constant are global netlist co
 The key derivation functions for ephemeral SRAM and static FLASH scrambling keys employ a similar construction as the digest calculation function.
 In particular, the keys are derived by repeatedly reducing a (partially random) block of data into a 64bit block, as illustrated in subfigures c) and d).
 
-For ephemeral SRAM scrambling keys, the data block is composed of the 128bit SRAM_DATA_KEY_SEED stored in OTP, as well as 128bit of fresh entropy fetched from the CSRNG.
+For ephemeral SRAM scrambling keys, the data block is composed of the 128bit SRAM_DATA_KEY_SEED stored in OTP, as well as 128bit of fresh entropy fetched from the EDN.
 This process is repeated twice in order to produce a 128bit key.
 
 For static FLASH scrambling keys, the data block is composed of a 128bit part of either the FLASH_DATA_KEY_SEED or the FLASH_ADDR_KEY_SEED stored in OTP.
