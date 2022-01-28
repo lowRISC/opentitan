@@ -194,7 +194,7 @@ module aes_wrap
         h2d.a_valid   = 1'b1;
         h2d.a_opcode  = PutFullData;
         h2d.a_address = {{{32-BlockAw}{1'b0}}, AES_CTRL_SHADOWED_OFFSET};
-        h2d.a_data    = {19'h0, 1'b0 ,1'b0, SIDELOAD, AES_128, AES_MODE, AES_ENC};
+        h2d.a_data    = {18'h0, 1'b0 ,1'b0, SIDELOAD, AES_128, AES_MODE, AES_ENC};
 
         // We can't do back to back transactions. De-assert valid while receiving response.
         if (d2h.d_valid) begin

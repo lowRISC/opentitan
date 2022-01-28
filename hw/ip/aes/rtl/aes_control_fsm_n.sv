@@ -211,8 +211,8 @@ module aes_control_fsm_n
   logic                                    ctrl_err_storage;
   aes_op_e                                 op;
   aes_mode_e                               mode;
-  logic                                    cipher_op_raw;
   ciph_op_e                                cipher_op;
+  logic             [$bits(cipher_op)-1:0] cipher_op_raw;
   logic                                    sideload;
   prs_rate_e                               prng_reseed_rate;
   logic                                    manual_operation;

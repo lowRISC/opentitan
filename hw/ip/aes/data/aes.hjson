@@ -372,15 +372,31 @@
     update_err_alert: "recov_ctrl_update_err",
     storage_err_alert: "fatal_fault",
     fields: [
-      { bits: "0",
+      { bits: "1:0",
         name: "OPERATION",
-        resval: "0",
+        resval: "0x1",
+        hwaccess: "hrw",
         desc:  '''
-          Select encryption(0) or decryption(1) operation of AES unit.
+          2-bit one-hot field to select the operation of AES unit.
+          Invalid input values, i.e., values with multiple bits set and value 2'b00, are mapped to AES_ENCRYPTION (2'b01).
         '''
+        enum: [
+          { value: "1",
+            name: "AES_ENC",
+            desc: '''
+              2'b01: Encryption.
+            '''
+          },
+          { value: "2",
+            name: "AES_DEC",
+            desc: '''
+              2'b10: Decryption.
+            '''
+          },
+        ]
         tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_operation"]
       }
-      { bits: "6:1",
+      { bits: "7:2",
         name: "MODE",
         resval: "0x20",
         hwaccess: "hrw",
@@ -428,7 +444,7 @@
         ]
         tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_mode"]
       }
-      { bits: "9:7",
+      { bits: "10:8",
         name: "KEY_LEN",
         resval: "1",
         hwaccess: "hrw",
@@ -460,7 +476,7 @@
         ]
         tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_key_len"]
       }
-      { bits: "10",
+      { bits: "11",
         name: "SIDELOAD",
         resval: "0",
         desc: '''
@@ -468,7 +484,7 @@
         '''
         tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_sideload"]
       }
-      { bits: "13:11",
+      { bits: "14:12",
         name: "PRNG_RESEED_RATE",
         resval: "1",
         hwaccess: "hrw",
@@ -499,7 +515,7 @@
         ]
         tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_prng_reseed_rate"]
       }
-      { bits: "14",
+      { bits: "15",
         name: "MANUAL_OPERATION",
         resval: "0"
         desc:  '''
@@ -512,7 +528,7 @@
         '''
         tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_manual_operation"]
       }
-      { bits: "15",
+      { bits: "16",
         name: "FORCE_ZERO_MASKS",
         resval: "0"
         desc:  '''

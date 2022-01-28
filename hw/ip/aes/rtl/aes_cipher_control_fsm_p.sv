@@ -35,6 +35,7 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
   input  logic             mux_sel_err_i,
   input  logic             sp_enc_err_i,
   input  logic             rnd_ctr_err_i,
+  input  logic             op_err_i,
   output logic             alert_o,
 
   // Control signals for masking PRNG
@@ -99,6 +100,7 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
     mux_sel_err_i,
     sp_enc_err_i,
     rnd_ctr_err_i,
+    op_err_i,
     prng_reseed_ack_i,
     sub_bytes_out_req_i,
     key_expand_out_req_i,
@@ -128,6 +130,7 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
     mux_sel_err_i,
     sp_enc_err_i,
     rnd_ctr_err_i,
+    op_err_i,
     prng_reseed_ack_i,
     sub_bytes_out_req_i,
     key_expand_out_req_i,
@@ -150,31 +153,32 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
     .out_o(in_buf)
   );
 
-  logic             in_valid;
-  logic             out_ready;
-  logic             cfg_valid;
-  logic             op_raw;
-  ciph_op_e         op;
-  key_len_e         key_len;
-  logic             crypt;
-  logic             dec_key_gen;
-  logic             prng_reseed;
-  logic             key_clear;
-  logic             data_out_clear;
-  logic             mux_sel_err;
-  logic             sp_enc_err;
-  logic             rnd_ctr_err;
-  logic             prng_reseed_ack;
-  logic             sub_bytes_out_req;
-  logic             key_expand_out_req;
-  logic [3:0]       rnd_ctr_q;
-  logic [3:0]       rnd_ctr_rem_q;
-  logic [3:0]       num_rounds_q;
-  logic             crypt_q;
-  logic             dec_key_gen_q;
-  logic             prng_reseed_q;
-  logic             key_clear_q;
-  logic             data_out_clear_q;
+  logic                 in_valid;
+  logic                 out_ready;
+  logic                 cfg_valid;
+  ciph_op_e             op;
+  logic [$bits(op)-1:0] op_raw;
+  key_len_e             key_len;
+  logic                 crypt;
+  logic                 dec_key_gen;
+  logic                 prng_reseed;
+  logic                 key_clear;
+  logic                 data_out_clear;
+  logic                 mux_sel_err;
+  logic                 sp_enc_err;
+  logic                 rnd_ctr_err;
+  logic                 op_err;
+  logic                 prng_reseed_ack;
+  logic                 sub_bytes_out_req;
+  logic                 key_expand_out_req;
+  logic [3:0]           rnd_ctr_q;
+  logic [3:0]           rnd_ctr_rem_q;
+  logic [3:0]           num_rounds_q;
+  logic                 crypt_q;
+  logic                 dec_key_gen_q;
+  logic                 prng_reseed_q;
+  logic                 key_clear_q;
+  logic                 data_out_clear_q;
 
   assign {in_valid,
           out_ready,
@@ -189,6 +193,7 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
           mux_sel_err,
           sp_enc_err,
           rnd_ctr_err,
+          op_err,
           prng_reseed_ack,
           sub_bytes_out_req,
           key_expand_out_req,
@@ -260,6 +265,7 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
     .mux_sel_err_i         ( mux_sel_err            ),
     .sp_enc_err_i          ( sp_enc_err             ),
     .rnd_ctr_err_i         ( rnd_ctr_err            ),
+    .op_err_i              ( op_err                 ),
     .alert_o               ( alert                  ),
 
     .prng_update_o         ( prng_update            ),

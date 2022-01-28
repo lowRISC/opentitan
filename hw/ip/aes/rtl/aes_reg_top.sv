@@ -170,8 +170,8 @@ module aes_reg_top (
   logic [31:0] data_out_3_qs;
   logic ctrl_shadowed_re;
   logic ctrl_shadowed_we;
-  logic ctrl_shadowed_operation_qs;
-  logic ctrl_shadowed_operation_wd;
+  logic [1:0] ctrl_shadowed_operation_qs;
+  logic [1:0] ctrl_shadowed_operation_wd;
   logic [5:0] ctrl_shadowed_mode_qs;
   logic [5:0] ctrl_shadowed_mode_wd;
   logic [2:0] ctrl_shadowed_key_len_qs;
@@ -728,9 +728,9 @@ module aes_reg_top (
 
 
   // R[ctrl_shadowed]: V(True)
-  //   F[operation]: 0:0
+  //   F[operation]: 1:0
   prim_subreg_ext #(
-    .DW    (1)
+    .DW    (2)
   ) u_ctrl_shadowed_operation (
     .re     (ctrl_shadowed_re),
     .we     (ctrl_shadowed_we),
@@ -742,7 +742,7 @@ module aes_reg_top (
     .qs     (ctrl_shadowed_operation_qs)
   );
 
-  //   F[mode]: 6:1
+  //   F[mode]: 7:2
   prim_subreg_ext #(
     .DW    (6)
   ) u_ctrl_shadowed_mode (
@@ -756,7 +756,7 @@ module aes_reg_top (
     .qs     (ctrl_shadowed_mode_qs)
   );
 
-  //   F[key_len]: 9:7
+  //   F[key_len]: 10:8
   prim_subreg_ext #(
     .DW    (3)
   ) u_ctrl_shadowed_key_len (
@@ -770,7 +770,7 @@ module aes_reg_top (
     .qs     (ctrl_shadowed_key_len_qs)
   );
 
-  //   F[sideload]: 10:10
+  //   F[sideload]: 11:11
   prim_subreg_ext #(
     .DW    (1)
   ) u_ctrl_shadowed_sideload (
@@ -784,7 +784,7 @@ module aes_reg_top (
     .qs     (ctrl_shadowed_sideload_qs)
   );
 
-  //   F[prng_reseed_rate]: 13:11
+  //   F[prng_reseed_rate]: 14:12
   prim_subreg_ext #(
     .DW    (3)
   ) u_ctrl_shadowed_prng_reseed_rate (
@@ -798,7 +798,7 @@ module aes_reg_top (
     .qs     (ctrl_shadowed_prng_reseed_rate_qs)
   );
 
-  //   F[manual_operation]: 14:14
+  //   F[manual_operation]: 15:15
   prim_subreg_ext #(
     .DW    (1)
   ) u_ctrl_shadowed_manual_operation (
@@ -812,7 +812,7 @@ module aes_reg_top (
     .qs     (ctrl_shadowed_manual_operation_qs)
   );
 
-  //   F[force_zero_masks]: 15:15
+  //   F[force_zero_masks]: 16:16
   prim_subreg_ext #(
     .DW    (1)
   ) u_ctrl_shadowed_force_zero_masks (
@@ -1328,19 +1328,19 @@ module aes_reg_top (
   assign ctrl_shadowed_re = addr_hit[29] & reg_re & !reg_error;
   assign ctrl_shadowed_we = addr_hit[29] & reg_we & !reg_error;
 
-  assign ctrl_shadowed_operation_wd = reg_wdata[0];
+  assign ctrl_shadowed_operation_wd = reg_wdata[1:0];
 
-  assign ctrl_shadowed_mode_wd = reg_wdata[6:1];
+  assign ctrl_shadowed_mode_wd = reg_wdata[7:2];
 
-  assign ctrl_shadowed_key_len_wd = reg_wdata[9:7];
+  assign ctrl_shadowed_key_len_wd = reg_wdata[10:8];
 
-  assign ctrl_shadowed_sideload_wd = reg_wdata[10];
+  assign ctrl_shadowed_sideload_wd = reg_wdata[11];
 
-  assign ctrl_shadowed_prng_reseed_rate_wd = reg_wdata[13:11];
+  assign ctrl_shadowed_prng_reseed_rate_wd = reg_wdata[14:12];
 
-  assign ctrl_shadowed_manual_operation_wd = reg_wdata[14];
+  assign ctrl_shadowed_manual_operation_wd = reg_wdata[15];
 
-  assign ctrl_shadowed_force_zero_masks_wd = reg_wdata[15];
+  assign ctrl_shadowed_force_zero_masks_wd = reg_wdata[16];
   assign ctrl_aux_shadowed_re = addr_hit[30] & reg_re & !reg_error;
   assign ctrl_aux_shadowed_we = addr_hit[30] & reg_we & !reg_error;
 
@@ -1480,13 +1480,13 @@ module aes_reg_top (
       end
 
       addr_hit[29]: begin
-        reg_rdata_next[0] = ctrl_shadowed_operation_qs;
-        reg_rdata_next[6:1] = ctrl_shadowed_mode_qs;
-        reg_rdata_next[9:7] = ctrl_shadowed_key_len_qs;
-        reg_rdata_next[10] = ctrl_shadowed_sideload_qs;
-        reg_rdata_next[13:11] = ctrl_shadowed_prng_reseed_rate_qs;
-        reg_rdata_next[14] = ctrl_shadowed_manual_operation_qs;
-        reg_rdata_next[15] = ctrl_shadowed_force_zero_masks_qs;
+        reg_rdata_next[1:0] = ctrl_shadowed_operation_qs;
+        reg_rdata_next[7:2] = ctrl_shadowed_mode_qs;
+        reg_rdata_next[10:8] = ctrl_shadowed_key_len_qs;
+        reg_rdata_next[11] = ctrl_shadowed_sideload_qs;
+        reg_rdata_next[14:12] = ctrl_shadowed_prng_reseed_rate_qs;
+        reg_rdata_next[15] = ctrl_shadowed_manual_operation_qs;
+        reg_rdata_next[16] = ctrl_shadowed_force_zero_masks_qs;
       end
 
       addr_hit[30]: begin

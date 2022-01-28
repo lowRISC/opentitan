@@ -10,9 +10,6 @@ class aes_wake_up_vseq extends aes_base_vseq;
   `uvm_object_new
 
 
-  parameter bit       ENCRYPT = 1'b0;
-  parameter bit       DECRYPT = 1'b1;
-
   bit [3:0] [31:0]    plain_text       = 128'hDEADBEEFEEDDBBAABAADBEEFDEAFBEAD;
   logic [255:0]       init_key [2]     = '{256'h0000111122223333444455556666777788889999AAAABBBBCCCCDDDDEEEEFFFF, 256'h0};
   bit [3:0] [31:0]    cypher_text;
@@ -31,7 +28,7 @@ class aes_wake_up_vseq extends aes_base_vseq;
 
     `uvm_info(`gfn, $sformatf(" \n\t ---|setting operation to encrypt"), UVM_HIGH)
     // set operation to encrypt
-    set_operation(ENCRYPT);
+    set_operation(AES_ENC);
 
     `uvm_info(`gfn, $sformatf(" \n\t ---| WRITING INIT KEY \n\t ----| SHARE0 %02h \n\t ---| SHARE1 %02h ", init_key[0], init_key[1]), UVM_HIGH)
     write_key(init_key, do_b2b);
@@ -54,7 +51,7 @@ class aes_wake_up_vseq extends aes_base_vseq;
     cfg.clk_rst_vif.wait_clks(20);
 
     // set aes to decrypt
-    set_operation(DECRYPT);
+    set_operation(AES_DEC);
     cfg.clk_rst_vif.wait_clks(20);
     `uvm_info(`gfn, $sformatf("\n\t ---| WRITING INIT KEY \n\t ----| SHARE0 %02h \n\t ---| SHARE1 %02h ", init_key[0], init_key[1]), UVM_HIGH)
     write_key(init_key, do_b2b);

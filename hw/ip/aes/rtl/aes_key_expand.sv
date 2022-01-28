@@ -447,7 +447,10 @@ module aes_key_expand import aes_pkg::*;
        SBoxImpl == SBoxImplCanright)))
 
   // Selectors must be known/valid
-  `ASSERT_KNOWN(AesCiphOpKnown, op_i)
+  `ASSERT(AesCiphOpValid, cfg_valid_i |-> op_i inside {
+      CIPH_FWD,
+      CIPH_INV
+      })
   `ASSERT(AesKeyLenValid, cfg_valid_i |-> key_len_i inside {
       AES_128,
       AES_192,

@@ -409,8 +409,9 @@ module aes_sbox_canright_masked_noreuse (
   logic [7:0] in_mask_basis_x, out_mask_basis_x;
 
   // Convert data to normal basis X.
-  assign in_data_basis_x = (op_i == CIPH_FWD) ? aes_mvm(data_i, A2X) :
-                                                aes_mvm(data_i ^ 8'h63, S2X);
+  assign in_data_basis_x = (op_i == CIPH_FWD) ? aes_mvm(data_i, A2X)         :
+                           (op_i == CIPH_INV) ? aes_mvm(data_i ^ 8'h63, S2X) :
+                                                aes_mvm(data_i, A2X);
 
   // For the masked Canright SBox with no re-use, the output mask directly corresponds to the
   // LSBs of the pseduo-random data provided as input.
@@ -423,10 +424,12 @@ module aes_sbox_canright_masked_noreuse (
   // Convert masks to normal basis X.
   // The addition of constant 8'h63 following the affine transformation is skipped.
   assign in_mask_basis_x  = (op_i == CIPH_FWD) ? aes_mvm(mask_i, A2X) :
-                                                 aes_mvm(mask_i, S2X);
+                            (op_i == CIPH_INV) ? aes_mvm(mask_i, S2X) :
+                                                 aes_mvm(mask_i, A2X);
 
   // The output mask is converted in the opposite direction.
   assign out_mask_basis_x = (op_i == CIPH_INV) ? aes_mvm(mask_o, A2X) :
+                            (op_i == CIPH_FWD) ? aes_mvm(mask_o, S2X) :
                                                  aes_mvm(mask_o, S2X);
 
   // Do the inversion in normal basis X.
@@ -440,6 +443,7 @@ module aes_sbox_canright_masked_noreuse (
 
   // Convert to basis S or A.
   assign data_o = (op_i == CIPH_FWD) ? (aes_mvm(out_data_basis_x, X2S) ^ 8'h63) :
-                                       (aes_mvm(out_data_basis_x, X2A));
+                  (op_i == CIPH_INV) ? (aes_mvm(out_data_basis_x, X2A))         :
+                                       (aes_mvm(out_data_basis_x, X2S) ^ 8'h63);
 
 endmodule

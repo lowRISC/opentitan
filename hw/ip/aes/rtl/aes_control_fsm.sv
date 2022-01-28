@@ -171,6 +171,7 @@ module aes_control_fsm
 
   logic                     cfg_valid;
   logic                     no_alert;
+  logic                     cipher_op_err;
   logic                     start_common, start_ecb, start_cbc, start_cfb, start_ofb, start_ctr;
   logic                     start;
   logic                     finish;
@@ -211,6 +212,9 @@ module aes_control_fsm
   // configuration and if no fatal alert condition occured.
   assign cfg_valid = ~((mode_i == AES_NONE) | ctrl_err_storage_i);
   assign no_alert  = ~alert_fatal_i;
+
+  // cipher_op_i is obtained from the configuration of the control register with additional logic.
+  assign cipher_op_err = ~(cipher_op_i == CIPH_FWD || cipher_op_i == CIPH_INV);
 
   // Check common start conditions. These are needed for any mode, unless we are running in
   // manual mode.
@@ -520,7 +524,8 @@ module aes_control_fsm
           // let data propagate in case of mux selector or sparsely encoded signals taking on
           // invalid values.
           cipher_out_ready_o = finish;
-          cipher_out_done    = finish & cipher_out_valid_i & ~mux_sel_err_i & ~sp_enc_err_i;
+          cipher_out_done    = finish & cipher_out_valid_i &
+              ~mux_sel_err_i & ~sp_enc_err_i & ~cipher_op_err;
 
           // Signal if the cipher core is stalled (because previous output has not yet been read).
           stall    = ~finish & cipher_out_valid_i;
@@ -602,7 +607,7 @@ module aes_control_fsm
           if (cipher_data_out_clear_i) begin
             // Clear output data and the trigger bit. Don't release data from cipher core in case
             // of mux selector or sparsely encoded signals taking on invalid values.
-            data_out_we_o     = ~mux_sel_err_i & ~sp_enc_err_i;
+            data_out_we_o     = ~mux_sel_err_i & ~sp_enc_err_i & ~cipher_op_err;
             data_out_clear_we = 1'b1;
           end
 
@@ -623,7 +628,8 @@ module aes_control_fsm
 
     // Unconditionally jump into the terminal error state in case a mux selector or a sparsely
     // encoded signal becomes invalid, or if the life cycle controller triggers an escalation.
-    if (mux_sel_err_i || sp_enc_err_i || lc_escalate_en_i != lc_ctrl_pkg::Off) begin
+    if (mux_sel_err_i || sp_enc_err_i || cipher_op_err ||
+            lc_escalate_en_i != lc_ctrl_pkg::Off) begin
       aes_ctrl_ns = ERROR;
     end
   end
@@ -856,8 +862,14 @@ module aes_control_fsm
       AES_CTR,
       AES_NONE
       })
-  `ASSERT_KNOWN(AesOpKnown, op_i)
-  `ASSERT_KNOWN(AesCiphOpKnown, cipher_op_i)
+  `ASSERT(AesOpValid, !ctrl_err_storage_i |-> op_i inside {
+      AES_ENC,
+      AES_DEC
+      })
+  `ASSERT(AesCiphOpValid, !cipher_op_err |-> cipher_op_i inside {
+      CIPH_FWD,
+      CIPH_INV
+      })
   `ASSERT(AesControlStateValid, !alert_o |-> aes_ctrl_cs inside {
       IDLE,
       LOAD,

@@ -45,6 +45,7 @@ module aes_ctrl_reg_shadowed
 
   // Signals
   ctrl_reg_t ctrl_wd;
+  aes_op_e   op;
   aes_mode_e mode;
   key_len_e  key_len;
   prs_rate_e prng_reseed_rate;
@@ -73,7 +74,14 @@ module aes_ctrl_reg_shadowed
       reg2hw_ctrl_i.force_zero_masks.qe;
 
   // Get and resolve values from register interface.
-  assign ctrl_wd.operation = aes_op_e'(reg2hw_ctrl_i.operation.q);
+  assign op = aes_op_e'(reg2hw_ctrl_i.operation.q);
+  always_comb begin : op_get
+    unique case (op)
+      AES_ENC: ctrl_wd.operation = AES_ENC;
+      AES_DEC: ctrl_wd.operation = AES_DEC;
+      default: ctrl_wd.operation = AES_ENC; // unsupported values are mapped to AES_ENC
+    endcase
+  end
 
   assign mode = aes_mode_e'(reg2hw_ctrl_i.mode.q);
   always_comb begin : mode_get
@@ -128,7 +136,7 @@ module aes_ctrl_reg_shadowed
     .rst_shadowed_ni,
     .re         (reg2hw_ctrl_i.operation.re),
     .we         (we_i),
-    .wd         (ctrl_wd.operation),
+    .wd         ({ctrl_wd.operation}),
     .de         (1'b0),
     .d          ('0),
     .qe         (),

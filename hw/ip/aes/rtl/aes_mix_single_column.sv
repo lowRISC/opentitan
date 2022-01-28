@@ -56,8 +56,10 @@ module aes_mix_single_column (
   assign z[1] = y2 ^ y[1];
 
   // Mux z
-  assign z_muxed[0] = (op_i == CIPH_FWD) ? 8'b0 : z[0];
-  assign z_muxed[1] = (op_i == CIPH_FWD) ? 8'b0 : z[1];
+  assign z_muxed[0] = (op_i == CIPH_FWD) ? 8'b0 :
+                      (op_i == CIPH_INV) ? z[0] : 8'b0;
+  assign z_muxed[1] = (op_i == CIPH_FWD) ? 8'b0 :
+                      (op_i == CIPH_INV) ? z[1] : 8'b0;
 
   // Drive outputs
   assign data_o[0] = data_i[1] ^ x_mul2[3] ^ x[1] ^ z_muxed[1];

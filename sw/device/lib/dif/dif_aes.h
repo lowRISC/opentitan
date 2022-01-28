@@ -82,6 +82,46 @@ typedef struct dif_aes_data {
 } dif_aes_data_t;
 
 /**
+ * AES operation.
+ */
+typedef enum dif_aes_operation {
+  /**
+   * AES encryption.
+   */
+  kDifAesOperationEncrypt = 0,
+  /**
+   * AES decryption.
+   */
+  kDifAesOperationDecrypt,
+} dif_aes_operation_t;
+
+/**
+ * AES block cipher mode of operation.
+ */
+typedef enum dif_aes_mode {
+  /**
+   * The Electronic Codebook Mode.
+   */
+  kDifAesModeEcb = 0,
+  /**
+   * The Cipher Block Chaining Mode.
+   */
+  kDifAesModeCbc,
+  /**
+   * The Cipher Feedback Mode.
+   */
+  kDifAesModeCfb,
+  /**
+   * The Output Feedback Mode.
+   */
+  kDifAesModeOfb,
+  /**
+   * The Counter Mode.
+   */
+  kDifAesModeCtr,
+} dif_aes_mode_t;
+
+/**
  * AES key length in bits.
  */
 typedef enum dif_aes_key_length {
@@ -100,34 +140,20 @@ typedef enum dif_aes_key_length {
 } dif_aes_key_length_t;
 
 /**
- * AES mode.
+ * AES manual operation.
  */
-typedef enum dif_aes_mode {
-  /**
-   * AES encryption mode.
-   */
-  kDifAesModeEncrypt = 0,
-  /**
-   * AES decryption mode.
-   */
-  kDifAesModeDecrypt,
-} dif_aes_mode_t;
-
-/**
- * AES operation.
- */
-typedef enum dif_aes_operation {
+typedef enum dif_aes_manual_operation {
   /**
    * AES operates in automatic mode - which means that the encryption/decryption
    * is automatically triggered on every successful `dif_aes_*_load_data()`.
    */
-  kDifAesOperationAuto = 0,
+  kDifAesManualOperationAuto = 0,
   /**
    * AES operates in manual mode - which means that the encryption/decryption
    * is manually triggered by `dif_aes_trigger(kDifAesTriggerStart)`.
    */
-  kDifAesOperationManual,
-} dif_aes_operation_t;
+  kDifAesManualOperationManual,
+} dif_aes_manual_operation_t;
 
 /**
  * AES masking.
@@ -151,9 +177,10 @@ typedef enum dif_aes_masking {
  * Parameters for an AES transaction.
  */
 typedef struct dif_aes_transaction {
-  dif_aes_key_length_t key_len;
-  dif_aes_mode_t mode;
   dif_aes_operation_t operation;
+  dif_aes_mode_t mode;
+  dif_aes_key_length_t key_len;
+  dif_aes_manual_operation_t manual_operation;
   dif_aes_masking_t masking;
 } dif_aes_transaction_t;
 
