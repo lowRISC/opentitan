@@ -49,6 +49,7 @@ CM_TYPES = [
     'BKGN_CHK',
     'GLITCH_DETECT',
     'SW_UNREADABLE',
+    'SIDELOAD',
     'SCA',
     'MASKING',
     'LOCAL_ESC',

@@ -299,6 +299,7 @@ The following standardised countermeasures are defined:
 | BKGN_CHK       | The asset is protected with a continuous background health check |
 | GLITCH_DETECT  | The asset is protected by an analog glitch detector | CTRL, FSM, CLK, RST
 | SW_UNREADABLE  | The asset is not accessible by software |
+| SIDELOAD       | The asset can be loaded without exposing it to software | KEY
 | SCA            | A countermeasure that provides side-channel attack resistance |
 | MASKING        | A more specific version of SCA where an asset is split into shares |
 | LOCAL_ESC      | A local escalation event is triggered when an attack is detected |
