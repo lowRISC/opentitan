@@ -46,10 +46,6 @@ TEST_F(Sha256InitTest, Initialize) {
 
 class Sha256UpdateTest : public HmacTest {};
 
-TEST_F(Sha256UpdateTest, NullArgs) {
-  EXPECT_EQ(hmac_sha256_update(nullptr, 0), kErrorHmacInvalidArgument);
-}
-
 TEST_F(Sha256UpdateTest, SendData) {
   constexpr std::array<uint8_t, 16> kData = {
       0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
@@ -59,11 +55,11 @@ TEST_F(Sha256UpdateTest, SendData) {
   // Trigger 8bit aligned writes.
   EXPECT_ABS_WRITE8(base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x01);
   EXPECT_ABS_WRITE8(base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x02);
-  EXPECT_EQ(hmac_sha256_update(&kData[1], 2), kErrorOk);
+  hmac_sha256_update(&kData[1], 2);
 
   // Trigger a single 32bit aligned write.
   EXPECT_ABS_WRITE32(base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x03020100);
-  EXPECT_EQ(hmac_sha256_update(&kData[0], 4), kErrorOk);
+  hmac_sha256_update(&kData[0], 4);
 
   // Trigger 8bit/32bit/8bit sequence.
   EXPECT_ABS_WRITE8(base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x02);
@@ -71,14 +67,10 @@ TEST_F(Sha256UpdateTest, SendData) {
   EXPECT_ABS_WRITE32(base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x07060504);
   EXPECT_ABS_WRITE8(base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x08);
   EXPECT_ABS_WRITE8(base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x09);
-  EXPECT_EQ(hmac_sha256_update(&kData[2], 8), kErrorOk);
+  hmac_sha256_update(&kData[2], 8);
 }
 
 class Sha256FinalTest : public HmacTest {};
-
-TEST_F(Sha256FinalTest, NullArgs) {
-  EXPECT_EQ(hmac_sha256_final(nullptr), kErrorHmacInvalidArgument);
-}
 
 TEST_F(Sha256FinalTest, GetDigest) {
   constexpr std::array<uint32_t, 8> kExpectedDigest = {
@@ -116,7 +108,7 @@ TEST_F(Sha256FinalTest, GetDigest) {
   EXPECT_ABS_READ32(base_ + HMAC_DIGEST_0_REG_OFFSET, kExpectedDigest[7]);
 
   hmac_digest_t got_digest;
-  EXPECT_EQ(hmac_sha256_final(&got_digest), kErrorOk);
+  hmac_sha256_final(&got_digest);
   EXPECT_THAT(got_digest.digest, ElementsAreArray(kExpectedDigest));
 }
 

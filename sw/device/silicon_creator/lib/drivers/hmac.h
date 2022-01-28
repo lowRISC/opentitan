@@ -47,19 +47,15 @@ void hmac_sha256_init(void);
  *
  * @param data Buffer to copy data from.
  * @param len size of the `data` buffer.
- * @return The result of the operation.
  */
-HMAC_WARN_UNUSED_RESULT
-rom_error_t hmac_sha256_update(const void *data, size_t len);
+void hmac_sha256_update(const void *data, size_t len);
 
 /**
  * Finalizes SHA256 operation and writes `digest` buffer.
  *
  * @param[out] digest Buffer to copy digest to.
- * @return The result of the operation.
  */
-HMAC_WARN_UNUSED_RESULT
-rom_error_t hmac_sha256_final(hmac_digest_t *digest);
+void hmac_sha256_final(hmac_digest_t *digest);
 
 #ifdef __cplusplus
 }

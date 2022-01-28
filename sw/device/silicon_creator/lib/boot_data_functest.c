@@ -172,9 +172,9 @@ static rom_error_t check_boot_data(const boot_data_t *boot_data,
 
   hmac_digest_t act_digest;
   hmac_sha256_init();
-  RETURN_IF_ERROR(hmac_sha256_update(
-      (const char *)boot_data + kDigestRegionOffset, kDigestRegionSize));
-  RETURN_IF_ERROR(hmac_sha256_final(&act_digest));
+  hmac_sha256_update((const char *)boot_data + kDigestRegionOffset,
+                     kDigestRegionSize);
+  hmac_sha256_final(&act_digest);
   if (memcmp(&act_digest, &boot_data->digest, sizeof(act_digest)) != 0) {
     return kErrorUnknown;
   }

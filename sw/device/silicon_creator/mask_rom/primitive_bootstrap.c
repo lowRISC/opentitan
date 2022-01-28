@@ -106,12 +106,11 @@ static rom_error_t erase_flash(void) {
 /**
  * Computes the SHA256 of the given data.
  */
-static rom_error_t compute_sha256(const void *data, size_t len,
-                                  hmac_digest_t *digest) {
+static void compute_sha256(const void *data, size_t len,
+                           hmac_digest_t *digest) {
   hmac_sha256_init();
-  RETURN_IF_ERROR(hmac_sha256_update(data, len));
-  RETURN_IF_ERROR(hmac_sha256_final(digest));
-  return kErrorOk;
+  hmac_sha256_update(data, len);
+  hmac_sha256_final(digest);
 }
 
 /**
@@ -119,16 +118,14 @@ static rom_error_t compute_sha256(const void *data, size_t len,
  *
  * Returns true if the hashes match.
  */
-static rom_error_t check_frame_hash(const spiflash_frame_t *frame,
-                                    bool *result) {
+static bool check_frame_hash(const spiflash_frame_t *frame) {
   hmac_digest_t digest;
   size_t digest_len = sizeof(digest.digest);
 
   uint8_t *data = ((uint8_t *)frame) + digest_len;
-  RETURN_IF_ERROR(
-      compute_sha256(data, sizeof(spiflash_frame_t) - digest_len, &digest));
-  *result = memcmp(digest.digest, frame->header.hash.digest, digest_len) == 0;
-  return kErrorOk;
+
+  compute_sha256(data, sizeof(spiflash_frame_t) - digest_len, &digest);
+  return memcmp(digest.digest, frame->header.hash.digest, digest_len) == 0;
 }
 
 /**
@@ -149,9 +146,7 @@ static rom_error_t bootstrap_flash(void) {
       uint32_t frame_num = SPIFLASH_FRAME_NUM(frame.header.frame_num);
 
       if (frame_num == expected_frame_num) {
-        bool frame_result = false;
-        RETURN_IF_ERROR(check_frame_hash(&frame, &frame_result));
-        if (!frame_result) {
+        if (!check_frame_hash(&frame)) {
           log_printf("Detected hash mismatch on frame 0x%x\n\r",
                      (unsigned int)frame_num);
           RETURN_IF_ERROR(
@@ -159,7 +154,7 @@ static rom_error_t bootstrap_flash(void) {
           continue;
         }
 
-        RETURN_IF_ERROR(compute_sha256(&frame, sizeof(spiflash_frame_t), &ack));
+        compute_sha256(&frame, sizeof(spiflash_frame_t), &ack);
         RETURN_IF_ERROR(
             spi_device_send((uint8_t *)&ack.digest, sizeof(ack.digest)));
 

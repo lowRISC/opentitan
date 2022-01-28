@@ -78,19 +78,17 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest) {
   manifest_usage_constraints_t usage_constraints_from_hw;
   sigverify_usage_constraints_get(manifest->usage_constraints.selector_bits,
                                   &usage_constraints_from_hw);
-  RETURN_IF_ERROR(hmac_sha256_update(&usage_constraints_from_hw,
-                                     sizeof(usage_constraints_from_hw)));
+  hmac_sha256_update(&usage_constraints_from_hw,
+                     sizeof(usage_constraints_from_hw));
   // Hash the remaining part of the image.
   manifest_digest_region_t digest_region = manifest_digest_region_get(manifest);
-  RETURN_IF_ERROR(
-      hmac_sha256_update(digest_region.start, digest_region.length));
+  hmac_sha256_update(digest_region.start, digest_region.length);
   // Verify signature
   hmac_digest_t act_digest;
-  RETURN_IF_ERROR(hmac_sha256_final(&act_digest));
+  hmac_sha256_final(&act_digest);
   uint32_t flash_exec = 0;
-  RETURN_IF_ERROR(sigverify_rsa_verify(&manifest->signature, key, &act_digest,
-                                       lc_state, &flash_exec));
-  return kErrorOk;
+  return sigverify_rsa_verify(&manifest->signature, key, &act_digest, lc_state,
+                              &flash_exec);
 }
 
 static rom_error_t rom_ext_boot(const manifest_t *manifest) {
