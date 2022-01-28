@@ -49,11 +49,14 @@ CM_TYPES = [
     'BKGN_CHK',
     'GLITCH_DETECT',
     'SW_UNREADABLE',
+    'SW_UNWRITABLE',
+    'SW_NOACCESS',
     'SIDELOAD',
     'SCA',
     'MASKING',
     'LOCAL_ESC',
-    'GLOBAL_ESC'
+    'GLOBAL_ESC',
+    'CM'
 ]
 
 # Tag to look for when extracting RTL annotations.
