@@ -95,6 +95,23 @@
       '''
     },
     {
+      name: "CHECKER.CTRL_FLOW.CONSISTENCY",
+      desc: '''
+        The main checker FSM steps on internal 'done' signals, coming
+        from its address counter, the KMAC response and its comparison
+        counter. If any of these are asserted at times we don't
+        expect, the FSM jumps to an invalid state. This triggers an
+        alert and will not set the external 'done' signal for pwrmgr
+        to continue boot.
+      '''
+    },
+    {
+      name: "CHECKER.FSM.LOCAL_ESC",
+      desc: '''
+        The main checker FSM moves to an invalid state on local escalation.
+      '''
+    },
+    {
       name: "COMPARE.CTRL_FLOW.CONSISTENCY",
       desc: '''
         The hash comparison module triggers a fatal error if the checker FSM

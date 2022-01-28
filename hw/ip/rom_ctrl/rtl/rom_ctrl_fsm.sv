@@ -112,6 +112,7 @@ module rom_ctrl_fsm
   //    KmacAhead:    KMAC is done, but we're still reading the high part of ROM
   //    Checking:     We are comparing DIGEST and EXP_DIGEST and sending data to keymgr
   //    Done:         Terminal state
+  //    Invalid:      Terminal and invalid state (only reachable by a glitch)
   //
   // The FSM is linear, except for the branch where reading the high part of ROM races with getting
   // the result back from KMAC.
@@ -126,23 +127,24 @@ module rom_ctrl_fsm
   //       Done [peripheries=2];
   //     }
   //
-  // Initial encoding generated with:
-  // $ util/design/sparse-fsm-encode.py -d 3 -m 6 -n 6 -s 2 --language=sv
+  //
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 7 -n 6 -s 2 --language=sv
   //
   // Hamming distance histogram:
   //
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||||||||||||| (53.33%)
-  //  4: ||||||||||||||| (40.00%)
-  //  5: || (6.67%)
+  //  3: |||||||||||||||||||| (57.14%)
+  //  4: ||||||||||||||| (42.86%)
+  //  5: --
   //  6: --
   //
   // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 5
+  // Maximum Hamming distance: 4
   // Minimum Hamming weight: 1
-  // Maximum Hamming weight: 5
+  // Maximum Hamming weight: 4
   //
   // However, we glom on an extra 4 bits to hold a mubi4_t that encodes "state == Done". The idea is
   // that we can do that for the rom_select_bus_o signal without needing an intermediate 1-bit
@@ -151,12 +153,13 @@ module rom_ctrl_fsm
   // SEC_CM: FSM.SPARSE
   // SEC_CM: INTERSIG.MUBI
   typedef enum logic [9:0] {
-    ReadingLow  = {6'b111101, MuBi4False},
-    ReadingHigh = {6'b110110, MuBi4False},
-    RomAhead    = {6'b000011, MuBi4False},
-    KmacAhead   = {6'b101010, MuBi4False},
-    Checking    = {6'b010000, MuBi4False},
-    Done        = {6'b001100, MuBi4True}
+    ReadingLow  = {6'b001100, MuBi4False},
+    ReadingHigh = {6'b001011, MuBi4False},
+    RomAhead    = {6'b111001, MuBi4False},
+    KmacAhead   = {6'b100111, MuBi4False},
+    Checking    = {6'b010101, MuBi4False},
+    Done        = {6'b100000, MuBi4True},
+    Invalid     = {6'b010010, MuBi4False}
   } state_e;
 
   logic [9:0]  state_q, state_d;
@@ -212,10 +215,33 @@ module rom_ctrl_fsm
       end
 
       default: begin
-        // Invalid state.
+        // An invalid state (includes the explicit Invalid state)
         fsm_alert = 1'b1;
+        state_d = Invalid;
       end
     endcase
+
+    // Consistency checks for done signals.
+    //
+    // If checker_done is high in a state other than Checking or Done then something has gone wrong
+    // and we ran the check early. Similarly, counter_done should only be high after we've left
+    // ReadingLow. Finally, kmac_done_i should only be high in ReadingHigh or RomAhead. If any of
+    // these consistency requirements don't hold, jump to the Invalid state. This will also raise an
+    // alert on the following cycle.
+    //
+    // SEC_CM: CHECKER.CTRL_FLOW.CONSISTENCY
+    if ((checker_done && !(state_q inside {Checking, Done})) ||
+        (counter_done && state_q == ReadingLow) ||
+        (kmac_done_i && !(state_q inside {ReadingHigh, RomAhead}))) begin
+      state_d = Invalid;
+    end
+
+    // Jump to an invalid state if sending out an alert for any other reason
+    //
+    // SEC_CM: CHECKER.FSM.LOCAL_ESC
+    if (alert_o) begin
+      state_d = Invalid;
+    end
   end
 
   // The in_state_done signal is supposed to be true iff we're in FSM state Done. Grabbing just the
