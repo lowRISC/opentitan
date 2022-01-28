@@ -223,6 +223,8 @@
                 return before issuing new commands. This interface is intended
                 to be controlled solely by software. If !!AUTO_REQ_MODE is set, this
                 register will have no effect on operation.
+                Note that CSRNG command format details can be found
+                in [CSRNG]({{< relref "hw/ip/csrng/doc" >}}).
                 '''
         }
       ]
@@ -269,6 +271,8 @@
                 the MAX_NUM_REQS_BETWEEN_RESEEDS counter value has reached zero. On overflow this
                 FIFO pops the oldest word from the previous command. Updated commands can be inserted
                 by pushing 13 command words into the FIFO, pushing the previous command out.
+                Note that CSRNG command format details can be found
+                in [CSRNG]({{< relref "hw/ip/csrng/doc" >}}).
                 '''
         }
       ]
@@ -289,6 +293,8 @@
                 receiving a command ack from the previous command. On overflow this
                 FIFO pops the oldest word from the previous command. Updated commands can be inserted
                 by pushing 13 command words into the FIFO, pushing the previous command out.
+                Note that CSRNG command format details can be found
+                in [CSRNG]({{< relref "hw/ip/csrng/doc" >}}).
                 '''
         }
       ]
