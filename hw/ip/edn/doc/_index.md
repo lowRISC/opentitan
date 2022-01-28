@@ -65,6 +65,19 @@ In boot-time request mode the generate commands continue until `EDN_ENABLE` fiel
 Note that when the `EDN_ENABLE` field is cleared or the `BOOT_REQ_MODE` field is cleared, an `uninstantiate` command needs to be sent by firmware to destroy the instance in csrng.
 Note that the EDNs and CSRNG should always be reset together to ensure proper instantiation or uninstantiation of state variables.
 
+### Security
+
+All module assets and countermeasures performed by hardware are listed in the hjson countermeasures section.
+Labels for each instance of asset and coutermeasure are located throughout the RTL source code.
+
+The receiving FIFO for genbits from CSRNG will have a hardware check on the output bus.
+This is done to make sure repeated values are not occurring.
+Only 64 bits (out of 128 bits) are checked, since this is statistically significant, and more checking would cost more silicon.
+It is expected that an endpoint requiring high-quality entropy will do an additional consistency hardware check on the 32 bit data bus.
+Additionally the FIPS signal on the endpoint bus should also be checked for high-quality entropy consumers.
+Boot request mode is an example where the FIPS signal will not be ever be set, and consuming endpoint of low-quality entropy do not need to check this signal.
+
+
 ## Example Topology
 In general, the OpenTitan random number subsystem consists of one `entropy_src`, one CSRNG, and one or more EDNs.
 The `entropy_src` only supports one connection to a CSRNG, but the CSRNG has multiple application interface ports for connecting to EDN's or other hardware blocks.
@@ -190,12 +203,12 @@ The recommended write sequence for the entire entropy system is one configuratio
 
 ### Interrupts
 
-The EDN module has two interrupts: `edn_cmd_req_done` and `edn_fifo_err`.
+The EDN module has two interrupts: `edn_cmd_req_done` and `edn_fatal_err`.
 
-The `es_cmd_req_done` interrupt should be used when a CSRNG command is issued and firmware is waiting for completion.
+The `edn_cmd_req_done` interrupt should be used when a CSRNG command is issued and firmware is waiting for completion.
 
-The `es_fifo_err` interrupt will fire when a FIFO has a malfunction.
-The conditions that cause this to happen are either when there is a push to a full FIFO or a pull from an empty FIFO.
+The `edn_fatal_err` interrupt will fire when a fatal error has been detected.
+The conditions that cause this to happen are FIFO error, a state machine error state transition, or a prim_count error.
 
 #### Waveforms
 

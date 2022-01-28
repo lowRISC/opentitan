@@ -53,7 +53,6 @@ module edn_ack_sm (
   // flops in order to prevent FSM state encoding optimizations.
 
 
-  // SEC_CM: FSM.SPARSE
   prim_sparse_fsm_flop #(
     .StateEnumT(state_e),
     .Width(StateWidth),

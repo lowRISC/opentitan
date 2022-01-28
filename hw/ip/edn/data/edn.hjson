@@ -57,11 +57,17 @@
     { name: "CONFIG.MUBI"
       desc: "Registers have multi-bit encoded fields."
     }
-    { name: "FSM.SPARSE"
-      desc: "Sparse state machine implementation."
+    { name: "MAIN_SM.FSM.SPARSE"
+      desc: "The EDN main state machine uses a sparse state encoding."
+    }
+    { name: "ACK_SM.FSM.SPARSE"
+      desc: "The EDN ACK state machine uses a sparse state encoding."
     }
     { name: "CTR.REDUN"
       desc: "Counter hardening on the generate command maximum requests counter."
+    }
+    { name: "MAIN_SM.CTR.LOCAL_ESC"
+      desc: "A mismatch detected inside any EDN counter moves the main state machine into a terminal error state."
     }
     { name: "CS_RDATA.BUS.CONSISTENCY"
       desc: "Comparison on successive bus values for genbits returned from csrng that will destribute over the endpoint buses."
