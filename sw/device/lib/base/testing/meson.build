@@ -12,6 +12,17 @@ sw_lib_testing_bitfield = declare_dependency(
   )
 )
 
+sw_lib_testing_memory = declare_dependency(
+  link_with: static_library(
+    'memory',
+    sources: [
+      meson.source_root() / 'sw/device/lib/base/memory.c',
+    ],
+    c_args: ['-fno-builtin'],
+    native: true,
+  ),
+)
+
 sw_lib_testing_hardened = declare_dependency(
   link_with: static_library(
     'hardened',
