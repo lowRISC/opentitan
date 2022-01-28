@@ -22,6 +22,7 @@ module edn_main_sm (
   output logic               capt_rescmd_fifo_cnt_o,
   output logic               send_rescmd_o,
   input logic                cmd_sent_i,
+  input logic                local_escalate_i,
   output logic               main_sm_err_o
 );
 
@@ -65,7 +66,6 @@ module edn_main_sm (
   // flops in order to prevent FSM state encoding optimizations.
 
 
-  // SEC_CM: FSM.SPARSE
   prim_sparse_fsm_flop #(
     .StateEnumT(state_e),
     .Width(StateWidth),
@@ -139,6 +139,9 @@ module edn_main_sm (
       end
       default: state_d = Error;
     endcase
+    if (local_escalate_i) begin
+      state_d = Error;
+    end
   end
 
 endmodule
