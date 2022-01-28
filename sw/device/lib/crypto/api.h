@@ -501,12 +501,12 @@ crypto_status_t aes_gcm_verify_tag_update(aes_gcm_context_t *gcm_context,
  *
  * @param gcm_context Pointer to the GCM context struct
  * @param auth_tag Authentication tag
- * @param verification_result Result of the tag verification (Pass/Fail) 
+ * @param verification_result Result of the tag verification (Pass/Fail)
  * @return crypto_status_t The return status of the tag verify operation
  */
-crypto_status_t aes_gcm_verify_tag_final(aes_gcm_context_t *gcm_context,
-                                         crypto_uint8_buf_t auth_tag,
-                                         verification_status_t *verification_result);
+crypto_status_t aes_gcm_verify_tag_final(
+    aes_gcm_context_t *gcm_context, crypto_uint8_buf_t auth_tag,
+    verification_status_t *verification_result);
 
 /**
  * Performs the AES-GCM decryption update operation.
@@ -947,10 +947,8 @@ crypto_status_t hmac_sha256_final(hash_context_t *const ctx,
  */
 crypto_status_t rsa_keygen(drbg_state_t *drbg_state,
                            crypto_uint8_buf_t additional_input,
-                           size_t required_key_len, 
-                           crypto_unblinded_key_t *N,
-                           crypto_unblinded_key_t *E, 
-                           crypto_blinded_key_t *D);
+                           size_t required_key_len, crypto_unblinded_key_t *N,
+                           crypto_unblinded_key_t *E, crypto_blinded_key_t *D);
 
 /**
  * Computes the digital signature on the input message data.
@@ -963,11 +961,9 @@ crypto_status_t rsa_keygen(drbg_state_t *drbg_state,
  * @param signature Pointer to generated signature struct
  * @return crypto_status_t The result of the rsa sign generation
  */
-crypto_status_t rsa_sign(crypto_unblinded_key_t *N, 
-                         crypto_blinded_key_t *D,
+crypto_status_t rsa_sign(crypto_unblinded_key_t *N, crypto_blinded_key_t *D,
                          const crypto_uint8_buf_t input_message,
-                         rsa_padding_t padding_mode, 
-                         rsa_hash_t hash_mode,
+                         rsa_padding_t padding_mode, rsa_hash_t hash_mode,
                          crypto_uint8_buf_t *signature);
 
 /**
@@ -982,15 +978,14 @@ crypto_status_t rsa_sign(crypto_unblinded_key_t *N,
  * @param padding_mode Padding scheme to be used for the data
  * @param hash_mode Hashing scheme to be used for the signature scheme
  * @param signature Pointer to the signature to be verified
- * @param verification_result Returns the result of signature verification (Pass/Fail)
+ * @param verification_result Returns the result of signature verification
+ * (Pass/Fail)
  * @return crypto_status_t The return status of the rsa verify operation
  */
-crypto_status_t rsa_verify(crypto_unblinded_key_t *N, 
-                           crypto_unblinded_key_t *E,
+crypto_status_t rsa_verify(crypto_unblinded_key_t *N, crypto_unblinded_key_t *E,
                            const crypto_uint8_buf_t input_message,
-                           rsa_padding_t padding_mode, 
-                           rsa_hash_t hash_mode,
-                           crypto_uint8_buf_t signature, 
+                           rsa_padding_t padding_mode, rsa_hash_t hash_mode,
+                           crypto_uint8_buf_t signature,
                            verification_status_t *verification_result);
 
 /**
@@ -1028,8 +1023,7 @@ crypto_status_t rsa_keygen_async(drbg_state_t *drbg_state,
 crypto_status_t rsa_sign_async(crypto_unblinded_key_t *N,
                                crypto_blinded_key_t *D,
                                const crypto_uint8_buf_t input_message,
-                               rsa_padding_t padding_mode, 
-                               rsa_hash_t hash_mode,
+                               rsa_padding_t padding_mode, rsa_hash_t hash_mode,
                                crypto_uint8_buf_t *signature);
 
 /**
@@ -1044,7 +1038,8 @@ crypto_status_t rsa_sign_async(crypto_unblinded_key_t *N,
  * @param padding_mode Padding scheme to be used for the data
  * @param hash_mode Hashing scheme to be used for the signature scheme
  * @param signature Pointer to the signature to be verified
- * @param verification_result Returns the result of signature verification (Pass/Fail)
+ * @param verification_result Returns the result of signature verification
+ * (Pass/Fail)
  * @return crypto_status_t The return status of the rsa verify operation
  */
 crypto_status_t rsa_verify_async(crypto_unblinded_key_t *N,
@@ -1108,7 +1103,8 @@ crypto_status_t ecdsa_sign(crypto_blinded_key_t *private_key,
  * @param public_key Pointer to the unblinded public key (E) struct
  * @param input_message Input message to be signed for verification
  * @param signature Pointer to the signature to be verified
- * @param verification_result Returns the result of signature verification (Pass/Fail)
+ * @param verification_result Returns the result of signature verification
+ * (Pass/Fail)
  * @return crypto_status_t Return status of the ecc verification operation
  */
 crypto_status_t ecdsa_verify(ecc_public_key_t *public_key,
@@ -1181,7 +1177,8 @@ crypto_status_t ed25519_sign(crypto_blinded_key_t *private_key,
  * @param input_message Input message to be signed for verification
  * @param sign_mode Parameter for Eddsa or Hash EdDSA sign mode
  * @param signature Pointer to the signature to be verified
- * @param verification_result Returns the result of signature verification (Pass/Fail) 
+ * @param verification_result Returns the result of signature verification
+ * (Pass/Fail)
  * @return crypto_status_t Return status of the eddsa verification operation
  */
 crypto_status_t ed25519_verify(edd_public_key_t *public_key,
@@ -1237,8 +1234,8 @@ crypto_status_t eddsa_keygen_async(drbg_state_t *drbg_state,
  * @return crypto_status_t Result of the ecc signature operation
  */
 crypto_status_t ecdsa_sign_async(crypto_blinded_key_t *private_key,
-                               const crypto_uint8_buf_t input_message,
-                               ecc_signature_t *signature);
+                                 const crypto_uint8_buf_t input_message,
+                                 ecc_signature_t *signature);
 
 /**
  * Performs ECDSA digital signature verification, asynchronously.
@@ -1246,13 +1243,14 @@ crypto_status_t ecdsa_sign_async(crypto_blinded_key_t *private_key,
  * @param public_key Pointer to the unblinded public key (E) struct
  * @param input_message Input message to be signed for verification
  * @param signature Pointer to the signature to be verified
- * @param verification_result Returns the result of signature verification (Pass/Fail)
+ * @param verification_result Returns the result of signature verification
+ * (Pass/Fail)
  * @return crypto_status_t Return status of the ecc verification operation
  */
 crypto_status_t ecdsa_verify_async(ecc_public_key_t *public_key,
-                                 const crypto_uint8_buf_t input_message,
-                                 ecc_signature_t *signature,
-                                 verification_status_t *verification_result);
+                                   const crypto_uint8_buf_t input_message,
+                                   ecc_signature_t *signature,
+                                   verification_status_t *verification_result);
 
 /**
  * Performs the EdDSA digital signature generation for the Ed25519
@@ -1277,14 +1275,14 @@ crypto_status_t ed25519_sign_async(crypto_blinded_key_t *private_key,
  * @param input_message Input message to be signed for verification
  * @param sign_mode Parameter for Eddsa or Hash EdDSA sign mode
  * @param signature Pointer to the signature to be verified
- * @param verification_result Returns the result of signature verification (Pass/Fail) 
+ * @param verification_result Returns the result of signature verification
+ * (Pass/Fail)
  * @return crypto_status_t Return status of the eddsa verification operation
  */
-crypto_status_t ed25519_verify_async(edd_public_key_t *public_key,
-                                     const crypto_uint8_buf_t input_message,
-                                     eddsa_sign_mode_t sign_mode,
-                                     ecc_signature_t *signature,
-                                     verification_status_t *verification_result);
+crypto_status_t ed25519_verify_async(
+    edd_public_key_t *public_key, const crypto_uint8_buf_t input_message,
+    eddsa_sign_mode_t sign_mode, ecc_signature_t *signature,
+    verification_status_t *verification_result);
 
 /**
  * DRBG state.
