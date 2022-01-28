@@ -46,6 +46,7 @@ sw_silicon_creator_lib_driver_hmac = declare_dependency(
     ],
     dependencies: [
       sw_lib_abs_mmio,
+      sw_lib_mem,
     ],
   ),
 )
@@ -60,6 +61,7 @@ test('sw_silicon_creator_lib_driver_hmac_unittest', executable(
     dependencies: [
       sw_vendor_gtest,
       sw_silicon_creator_lib_base_mock_abs_mmio,
+      sw_lib_testing_memory,
     ],
     native: true,
     c_args: ['-DMOCK_ABS_MMIO'],

@@ -49,8 +49,7 @@ rom_error_t hmac_sha256_update(const void *data, size_t len) {
   }
 
   for (; len >= sizeof(uint32_t); len -= sizeof(uint32_t)) {
-    // FIXME: read_32 does not work for unittests.
-    uint32_t data_aligned = *(const uint32_t *)data_sent;
+    uint32_t data_aligned = read_32(data_sent);
     abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_MSG_FIFO_REG_OFFSET,
                      data_aligned);
     data_sent += sizeof(uint32_t);

@@ -450,7 +450,6 @@ test('dif_hmac_unittest', executable(
     sources: [
       #'dif_hmac_unittest.cc',
       'autogen/dif_hmac_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/base/memory.c',
       meson.source_root() / 'sw/device/lib/dif/dif_hmac.c',
       meson.source_root() / 'sw/device/lib/dif/autogen/dif_hmac_autogen.c',
       hw_ip_hmac_reg_h,
@@ -458,6 +457,7 @@ test('dif_hmac_unittest', executable(
     dependencies: [
       sw_vendor_gtest,
       sw_lib_base_testing_mock_mmio,
+      sw_lib_testing_memory,
     ],
     native: true,
     c_args: ['-DMOCK_MMIO'],
@@ -488,7 +488,6 @@ test('dif_kmac_unittest', executable(
     sources: [
       'dif_kmac_unittest.cc',
       'autogen/dif_kmac_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/base/memory.c',
       meson.source_root() / 'sw/device/lib/dif/dif_kmac.c',
       meson.source_root() / 'sw/device/lib/dif/autogen/dif_kmac_autogen.c',
       hw_ip_kmac_reg_h,
@@ -496,6 +495,7 @@ test('dif_kmac_unittest', executable(
     dependencies: [
       sw_vendor_gtest,
       sw_lib_base_testing_mock_mmio,
+      sw_lib_testing_memory,
     ],
     native: true,
     c_args: ['-DMOCK_MMIO'],
