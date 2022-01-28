@@ -96,7 +96,19 @@ module rom_ctrl_mux
   logic sel_q_reverted;
   assign sel_q_reverted = mubi4_test_true_loose(sel_bus_qq) & mubi4_test_false_loose(sel_bus_q);
 
-  assign alert_o = sel_invalid | sel_reverted | sel_q_reverted;
+  logic alert_q, alert_d;
+
+  assign alert_d = sel_invalid | sel_reverted | sel_q_reverted;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      alert_q <= 0;
+    end else begin
+      alert_q <= alert_q | alert_d;
+    end
+  end
+
+  assign alert_o = alert_q;
 
   // The bus can have access every cycle, from when the select signal switches to the bus.
   assign bus_gnt_o    = mubi4_test_true_strict(sel_bus_i);

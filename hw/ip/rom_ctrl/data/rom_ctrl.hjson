@@ -160,6 +160,14 @@
         integrity scheme).
       '''
     },
+    { name: "BUS.LOCAL_ESC",
+      desc: '''
+        To avoid responding to a request with erroneous data, even though an
+        alert went out, the bus_rom_rvalid signal used to signal a response to
+        the ROM-side TL bus can only be high if no internal consistency error
+        has been spotted.
+      '''
+    }
     {
       name: "MUX.MUBI",
       desc: '''
