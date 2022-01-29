@@ -72,14 +72,18 @@ module prim_count import prim_count_pkg::*; #(
   logic [Width-1:0] max_val;
   logic err;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      max_val <= '{default: '1};
-    end else if (clr_i) begin
-      max_val <= '{default: '1};
-    end else if (set_i && (CntStyle == CrossCnt)) begin
-      max_val <= set_cnt_i;
+  if (CntStyle == CrossCnt) begin : gen_crosscnt_max_val
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        max_val <= '1;
+      end else if (clr_i) begin
+        max_val <= '1;
+      end else if (set_i) begin
+        max_val <= set_cnt_i;
+      end
     end
+  end else begin : gen_dupcnt_max_val
+     assign max_val = '1;
   end
 
   for (genvar i = 0; i < CntCopies; i++) begin : gen_cnts

@@ -134,6 +134,7 @@ module keymgr_ctrl
   logic invalid_op;
   logic cnt_err;
   // states fall out of sparsely encoded range
+  logic data_fsm_err;
   logic state_intg_err_q, state_intg_err_d;
 
   ///////////////////////////
@@ -782,7 +783,7 @@ module keymgr_ctrl
   assign async_fault_d[AsyncFaultKmacFsm] = kmac_fsm_err_i;
   assign async_fault_d[AsyncFaultRegIntg] = regfile_intg_err_i;
   assign async_fault_d[AsyncFaultShadow ] = shadowed_storage_err_i;
-  assign async_fault_d[AsyncFaultFsmIntg] = state_intg_err_q;
+  assign async_fault_d[AsyncFaultFsmIntg] = state_intg_err_q | data_fsm_err;
   assign async_fault_d[AsyncFaultCntErr ] = cnt_err;
   assign async_fault_d[AsyncFaultRCntErr] = reseed_cnt_err_i;
   assign async_fault_d[AsyncFaultSideErr] = sideload_fsm_err_i;
@@ -818,23 +819,50 @@ module keymgr_ctrl
   // Suppress kmac return data
   ///////////////////////////////
   // This is a separate data path from the FSM used to control the data_en_o output
-
-  typedef enum logic [1:0] {
-    StCtrlDataIdle,
-    StCtrlDataEn,
-    StCtrlDataDis,
-    StCtrlDataWait
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: --
+  //  4: --
+  //  5: |||||||||||||||||||| (50.00%)
+  //  6: |||||||||||||||| (40.00%)
+  //  7: |||| (10.00%)
+  //  8: --
+  //  9: --
+  // 10: --
+  //
+  // Minimum Hamming distance: 5
+  // Maximum Hamming distance: 7
+  // Minimum Hamming weight: 5
+  // Maximum Hamming weight: 7
+  //
+  localparam int DataStateWidth = 10;
+  typedef enum logic [DataStateWidth-1:0] {
+    StCtrlDataIdle    = 10'b1001110111,
+    StCtrlDataEn      = 10'b1110001011,
+    StCtrlDataDis     = 10'b0110100110,
+    StCtrlDataWait    = 10'b1010111000,
+    StCtrlDataInvalid = 10'b1111010100
   } keymgr_ctrl_data_state_e;
 
   keymgr_ctrl_data_state_e data_st_d, data_st_q;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      data_st_q <= StCtrlDataIdle;
-    end else begin
-      data_st_q <= data_st_d;
-    end
-  end
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  logic [DataStateWidth-1:0] data_st_raw_q;
+  assign data_st_q = keymgr_ctrl_data_state_e'(data_st_raw_q);
+  prim_sparse_fsm_flop #(
+    .StateEnumT(keymgr_ctrl_data_state_e),
+    .Width(DataStateWidth),
+    .ResetValue(DataStateWidth'(StCtrlDataIdle))
+  ) u_data_state_regs (
+    .clk_i,
+    .rst_ni,
+    .state_i ( data_st_d     ),
+    .state_o ( data_st_raw_q )
+  );
 
   // The below control path is used for modulating the datapath to sideload and sw keys.
   // This path is separate from the data_valid_o path, thus creating two separate attack points.
@@ -846,6 +874,7 @@ module keymgr_ctrl
   always_comb begin
     data_st_d = data_st_q;
     data_en_o = 1'b0;
+    data_fsm_err = 1'b0;
     unique case (data_st_q)
 
       StCtrlDataIdle: begin
@@ -877,7 +906,10 @@ module keymgr_ctrl
         end
       end
 
-      default:;
+      default: begin
+        data_fsm_err = 1'b1;
+      end
+
 
     endcase // unique case (data_st_q)
   end
