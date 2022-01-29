@@ -15,6 +15,10 @@
 module prim_mubi12_sender
   import prim_mubi_pkg::*;
 #(
+  // This flops the output if set to 1.
+  // In special cases where the sender is in the same clock domain as the receiver,
+  // this can be set to 0. However, it is recommended to leave this at 1.
+  parameter bit AsyncOn = 1,
   // Reset value for the sender flops
   parameter mubi12_t ResetValue = MuBi12False
 ) (
@@ -27,15 +31,28 @@ module prim_mubi12_sender
   logic [MuBi12Width-1:0] mubi, mubi_out;
   assign mubi = MuBi12Width'(mubi_i);
 
-  prim_flop #(
-    .Width(MuBi12Width),
-    .ResetValue(MuBi12Width'(ResetValue))
-  ) u_prim_flop (
-    .clk_i,
-    .rst_ni,
-    .d_i   ( mubi     ),
-    .q_o   ( mubi_out )
-  );
+  if (AsyncOn) begin : gen_flops
+    prim_flop #(
+      .Width(MuBi12Width),
+      .ResetValue(MuBi12Width'(ResetValue))
+    ) u_prim_flop (
+      .clk_i,
+      .rst_ni,
+      .d_i   ( mubi     ),
+      .q_o   ( mubi_out )
+    );
+  end else begin : gen_no_flops
+    for (genvar k = 0; k < MuBi12Width; k++) begin : gen_bits
+      prim_buf u_prim_buf (
+        .in_i(mubi[k]),
+        .out_o(mubi_out[k])
+      );
+    end
+    logic unused_clk;
+    logic unused_rst;
+    assign unused_clk = clk_i;
+    assign unused_rst = rst_ni;
+  end
 
   assign mubi_o = mubi12_t'(mubi_out);
 
