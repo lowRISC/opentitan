@@ -306,29 +306,49 @@ module otp_ctrl
   // Access Defaults and CSRs //
   //////////////////////////////
 
-  part_access_t [NumPart-1:0] part_access;
+  part_access_t [NumPart-1:0] part_access_pre, part_access;
   always_comb begin : p_access_control
     // Default (this will be overridden by partition-internal settings).
-    part_access = {{32'(2*NumPart)}{MuBi8False}};
+    part_access_pre = {{32'(2*NumPart)}{MuBi8False}};
     // Permanently lock DAI write and read access to the life cycle partition.
     // The LC partition can only be read from and written to via the LC controller.
-    part_access[LifeCycleIdx].write_lock = MuBi8True;
-    part_access[LifeCycleIdx].read_lock = MuBi8True;
+    part_access_pre[LifeCycleIdx].write_lock = MuBi8True;
+    part_access_pre[LifeCycleIdx].read_lock = MuBi8True;
 
     // Propagate CSR read enables down to the SW_CFG partitions.
     if (!reg2hw.vendor_test_read_lock) begin
-      part_access[VendorTestIdx].read_lock = MuBi8True;
+      part_access_pre[VendorTestIdx].read_lock = MuBi8True;
     end
     if (!reg2hw.creator_sw_cfg_read_lock) begin
-      part_access[CreatorSwCfgIdx].read_lock = MuBi8True;
+      part_access_pre[CreatorSwCfgIdx].read_lock = MuBi8True;
     end
     if (!reg2hw.owner_sw_cfg_read_lock) begin
-      part_access[OwnerSwCfgIdx].read_lock = MuBi8True;
+      part_access_pre[OwnerSwCfgIdx].read_lock = MuBi8True;
     end
     // The SECRET2 partition can only be accessed (write&read) when provisioning is enabled.
     if (lc_creator_seed_sw_rw_en != lc_ctrl_pkg::On) begin
-      part_access[Secret2Idx] = {2{MuBi8True}};
+      part_access_pre[Secret2Idx] = {2{MuBi8True}};
     end
+  end
+
+  // This prevents the synthesis tool from optimizing the multibit signals.
+  for (genvar k = 0; k < NumPart; k++) begin : gen_bufs
+    prim_mubi8_sender #(
+      .AsyncOn(0)
+    ) u_prim_mubi8_sender_write_lock (
+      .clk_i,
+      .rst_ni,
+      .mubi_i(part_access_pre[k].write_lock),
+      .mubi_o(part_access[k].write_lock)
+    );
+    prim_mubi8_sender #(
+      .AsyncOn(0)
+    ) u_prim_mubi8_sender_read_lock (
+      .clk_i,
+      .rst_ni,
+      .mubi_i(part_access_pre[k].read_lock),
+      .mubi_o(part_access[k].read_lock)
+    );
   end
 
   //////////////////////

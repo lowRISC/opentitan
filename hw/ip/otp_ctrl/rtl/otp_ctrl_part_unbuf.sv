@@ -121,8 +121,6 @@ module otp_ctrl_part_unbuf
 
   logic [SwWindowAddrWidth-1:0] tlul_addr_d, tlul_addr_q;
 
-  part_access_t access;
-
   // This is only used to return bus errors when the FSM is in ErrorSt.
   logic pending_tlul_error_d, pending_tlul_error_q;
 
@@ -224,7 +222,7 @@ module otp_ctrl_part_unbuf
         // Double check the address range.
         if ({tlul_addr_q, 2'b00} >= Info.offset &&
             {1'b0, tlul_addr_q, 2'b00} < PartEnd &&
-             mubi8_test_false_strict(access.read_lock)) begin
+             mubi8_test_false_strict(access_o.read_lock)) begin
           otp_req_o = 1'b1;
           otp_addr_sel = DataAddr;
           if (otp_gnt_i) begin
@@ -360,37 +358,59 @@ module otp_ctrl_part_unbuf
   // Aggregate all possible DAI write locks. The partition is also locked when uninitialized.
   // Note that the locks are redundantly encoded values.
   part_access_t access_pre;
-  assign access_pre.write_lock = mubi8_and_lo(init_locked, access_i.write_lock);
-  assign access_pre.read_lock  = mubi8_and_lo(init_locked, access_i.read_lock);
+  prim_mubi8_sender #(
+    .AsyncOn(0)
+  ) u_prim_mubi8_sender_write_lock_pre (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi8_and_lo(init_locked, access_i.write_lock)),
+    .mubi_o(access_pre.write_lock)
+  );
+  prim_mubi8_sender #(
+    .AsyncOn(0)
+  ) u_prim_mubi8_sender_read_lock_pre (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi8_and_lo(init_locked, access_i.read_lock)),
+    .mubi_o(access_pre.read_lock)
+  );
 
   if (Info.write_lock) begin : gen_digest_write_lock
     mubi8_t digest_locked;
     assign digest_locked = (digest_o != '0) ? MuBi8True : MuBi8False;
-    assign access.write_lock = mubi8_and_lo(access_pre.write_lock, digest_locked);
-    `ASSERT(DigestWriteLocksPartition_A, digest_o |-> mubi8_test_true_loose(access.write_lock))
+
+    // This prevents the synthesis tool from optimizing the multibit signal.
+    prim_mubi8_sender #(
+      .AsyncOn(0)
+    ) u_prim_mubi8_sender_write_lock (
+      .clk_i,
+      .rst_ni,
+      .mubi_i(mubi8_and_lo(access_pre.write_lock, digest_locked)),
+      .mubi_o(access_o.write_lock)
+    );
+
+    `ASSERT(DigestWriteLocksPartition_A, digest_o |-> mubi8_test_true_loose(access_o.write_lock))
   end else begin : gen_no_digest_write_lock
-    assign access.write_lock = access_pre.write_lock;
+    assign access_o.write_lock = access_pre.write_lock;
   end
 
   if (Info.read_lock) begin : gen_digest_read_lock
     mubi8_t digest_locked;
     assign digest_locked = (digest_o != '0) ? MuBi8True : MuBi8False;
-    assign access.read_lock = mubi8_and_lo(access_pre.read_lock, digest_locked);
-    `ASSERT(DigestReadLocksPartition_A, digest_o |-> mubi8_test_true_loose(access.read_lock))
-  end else begin : gen_no_digest_read_lock
-    assign access.read_lock = access_pre.read_lock;
-  end
 
-  // Make sure there is a hand-picked buffer on each bit to prevent
-  // the synthesis tool from optimizing the multibit signal.
-  logic [$bits(part_access_t)-1:0] access_in, access_out;
-  assign access_in = $bits(part_access_t)'(access);
-  assign access_o = part_access_t'(access_out);
-  for (genvar k = 0; k < $bits(part_access_t); k++) begin : gen_bits
-    prim_buf u_prim_buf (
-      .in_i(access_in[k]),
-      .out_o(access_out[k])
+    // This prevents the synthesis tool from optimizing the multibit signal.
+    prim_mubi8_sender #(
+      .AsyncOn(0)
+    ) u_prim_mubi8_sender_read_lock (
+      .clk_i,
+      .rst_ni,
+      .mubi_i(mubi8_and_lo(access_pre.read_lock, digest_locked)),
+      .mubi_o(access_o.read_lock)
     );
+
+    `ASSERT(DigestReadLocksPartition_A, digest_o |-> mubi8_test_true_loose(access_o.read_lock))
+  end else begin : gen_no_digest_read_lock
+    assign access_o.read_lock = access_pre.read_lock;
   end
 
   ///////////////
