@@ -67,12 +67,14 @@ package otp_ctrl_part_pkg;
 % endfor
   } digest_sel_e;
 
+  // SEC_CM: SECRET.MEM.SCRAMBLE
   parameter key_array_t RndCnstKey = {
 % for key in otp_mmap.config["scrambling"]["keys"][::-1]:
     ${"{0:}'h{1:0X}".format(otp_mmap.config["scrambling"]["key_size"] * 8, key["value"])}${"" if loop.last else ","}
 % endfor
   };
 
+  // SEC_CM: PART.MEM.DIGEST
   // Note: digest set 0 is used for computing the partition digests. Constants at
   // higher indices are used to compute the scrambling keys.
   parameter digest_const_array_t RndCnstDigestConst = {

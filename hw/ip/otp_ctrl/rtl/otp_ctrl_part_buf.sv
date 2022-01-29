@@ -38,6 +38,7 @@ module otp_ctrl_part_buf
   // a terminal error state.
   output otp_err_e                    error_o,
   // Access/lock status
+  // SEC_CM: ACCESS.CTRL.MUBI
   input  part_access_t                access_i, // runtime lock from CSRs
   output part_access_t                access_o,
   // Buffered 64bit digest output.
@@ -103,6 +104,7 @@ module otp_ctrl_part_buf
   // OTP Partition FSM //
   ///////////////////////
 
+  // SEC_CM: PART.FSM.SPARSE
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 5 -m 16 -n 12 \
   //      -s 3370657881 --language=sv
@@ -274,6 +276,7 @@ module otp_ctrl_part_buf
       // datapath mutex. Note that once the mutex is acquired, we have
       // exclusive access to the scrambling datapath until we release
       // the mutex by deasserting scrmbl_mtx_req_o.
+      // SEC_CM: SECRET.MEM.SCRAMBLE
       InitDescrSt: begin
         scrmbl_mtx_req_o = 1'b1;
         scrmbl_valid_o = 1'b1;
@@ -286,6 +289,7 @@ module otp_ctrl_part_buf
       ///////////////////////////////////////////////////////////////////
       // Wait for the descrambled data to return. Note that we release
       // the mutex lock upon leaving this state.
+      // SEC_CM: SECRET.MEM.SCRAMBLE
       InitDescrWaitSt: begin
         scrmbl_mtx_req_o = 1'b1;
         scrmbl_sel_o = Info.key_sel;
@@ -317,6 +321,7 @@ module otp_ctrl_part_buf
       ///////////////////////////////////////////////////////////////////
       // Read the digest. Wait here until the OTP request has been granted.
       // And then wait until the OTP word comes back.
+      // SEC_CM: PART.DATA_REG.BKGN_CHK
       CnstyReadSt: begin
         otp_req_o = 1'b1;
         // In case this partition has a hardware digest, we only have to read
@@ -335,6 +340,7 @@ module otp_ctrl_part_buf
       // a mismatch, lock down the partition and go into the terminal error
       // state. In case an OTP transaction fails, latch the OTP error code
       // and jump to a terminal error state.
+      // SEC_CM: PART.DATA_REG.BKGN_CHK
       CnstyReadWaitSt: begin
         if (otp_rvalid_i) begin
           // Depending on the partition configuration, we do not treat uncorrectable ECC errors
@@ -394,6 +400,7 @@ module otp_ctrl_part_buf
       end
       ///////////////////////////////////////////////////////////////////
       // First, acquire the mutex for the digest and clear the digest state.
+      // SEC_CM: PART.DATA_REG.BKGN_CHK
       IntegDigClrSt: begin
         // Check whether this partition requires checking at all.
         if (Info.hw_digest) begin
@@ -432,6 +439,7 @@ module otp_ctrl_part_buf
       // Scramble buffered data (which is held in plaintext form).
       // This moves the previous scrambling result into the shadow reg
       // for later use.
+      // SEC_CM: PART.DATA_REG.BKGN_CHK
       IntegScrSt: begin
           scrmbl_mtx_req_o = 1'b1;
           scrmbl_valid_o = 1'b1;
@@ -443,6 +451,7 @@ module otp_ctrl_part_buf
       end
       ///////////////////////////////////////////////////////////////////
       // Wait for the scrambled data to return.
+      // SEC_CM: PART.DATA_REG.BKGN_CHK
       IntegScrWaitSt: begin
         scrmbl_mtx_req_o = 1'b1;
         scrmbl_sel_o = Info.key_sel;
@@ -454,6 +463,8 @@ module otp_ctrl_part_buf
       // Push the word read into the scrambling datapath. The last
       // block is repeated in case the number blocks in this partition
       // is odd.
+      // SEC_CM: PART.MEM.DIGEST
+      // SEC_CM: PART.DATA_REG.BKGN_CHK
       IntegDigSt: begin
         scrmbl_mtx_req_o = 1'b1;
         scrmbl_valid_o = 1'b1;
@@ -488,6 +499,8 @@ module otp_ctrl_part_buf
       // Padding state. When we get here, we've copied the last encryption
       // result into the shadow register such that we've effectively
       // repeated the last block twice in order to pad the data to 128bit.
+      // SEC_CM: PART.MEM.DIGEST
+      // SEC_CM: PART.DATA_REG.BKGN_CHK
       IntegDigPadSt: begin
         scrmbl_mtx_req_o = 1'b1;
         scrmbl_valid_o = 1'b1;
@@ -498,6 +511,8 @@ module otp_ctrl_part_buf
       end
       ///////////////////////////////////////////////////////////////////
       // Trigger digest finalization and go wait for the result.
+      // SEC_CM: PART.MEM.DIGEST
+      // SEC_CM: PART.DATA_REG.BKGN_CHK
       IntegDigFinSt: begin
         scrmbl_mtx_req_o = 1'b1;
         scrmbl_valid_o = 1'b1;
@@ -510,6 +525,8 @@ module otp_ctrl_part_buf
       // Wait for the digest to return, and double check whether the digest
       // matches. If yes, unlock the partition. Otherwise, go into the terminal
       // error state, where the partition will be locked down.
+      // SEC_CM: PART.MEM.DIGEST
+      // SEC_CM: PART.DATA_REG.BKGN_CHK
       IntegDigWaitSt: begin
         scrmbl_mtx_req_o = 1'b1;
         data_sel = ScrmblData;
@@ -562,12 +579,14 @@ module otp_ctrl_part_buf
 
     // Unconditionally jump into the terminal error state in case of
     // an ECC error or escalation, and lock access to the partition down.
+    // SEC_CM: PART.FSM.LOCAL_ESC
     if (ecc_err) begin
       state_d = ErrorSt;
       if (state_q != ErrorSt) begin
         error_d = CheckFailError;
       end
     end
+    // SEC_CM: PART.FSM.LOCAL_ESC, PART.FSM.GLOBAL_ESC
     if (escalate_en_i != lc_ctrl_pkg::Off || cnt_err) begin
       state_d = ErrorSt;
       if (state_q != ErrorSt) begin
@@ -582,6 +601,7 @@ module otp_ctrl_part_buf
 
   // Address counter - this is only used for computing a digest, hence the increment is
   // fixed to 8 byte.
+  // SEC_CM: PART.CTR.REDUN
   prim_count #(
     .Width(CntWidth),
     .OutSelDnCnt(0), // count up
@@ -624,6 +644,7 @@ module otp_ctrl_part_buf
   // Buffer Regs //
   /////////////////
 
+  // SEC_CM: PART.DATA_REG.INTEGRITY
   otp_ctrl_ecc_reg #(
     .Width ( ScrmblBlockWidth ),
     .Depth ( NumScrmblBlocks  )
@@ -669,6 +690,7 @@ module otp_ctrl_part_buf
     .mubi_o(access_pre.read_lock)
   );
 
+  // SEC_CM: PART.MEM.SW_UNWRITABLE
   if (Info.write_lock) begin : gen_digest_write_lock
     mubi8_t digest_locked;
     assign digest_locked = (digest_o != '0) ? MuBi8True : MuBi8False;
@@ -688,6 +710,7 @@ module otp_ctrl_part_buf
     assign access_o.write_lock = access_pre.write_lock;
   end
 
+  // SEC_CM: PART.MEM.SW_UNREADABLE
   if (Info.read_lock) begin : gen_digest_read_lock
     mubi8_t digest_locked;
     assign digest_locked = (digest_o != '0) ? MuBi8True : MuBi8False;

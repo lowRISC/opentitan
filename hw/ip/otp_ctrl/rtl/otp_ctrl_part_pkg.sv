@@ -50,12 +50,14 @@ package otp_ctrl_part_pkg;
     SramDataKey
   } digest_sel_e;
 
+  // SEC_CM: SECRET.MEM.SCRAMBLE
   parameter key_array_t RndCnstKey = {
     128'h63E7BF615ABDA4C5EECB3771DA2139CE,
     128'h5703C3EB2BB563689E00A67814EFBDE8,
     128'h74FC825441343DA9273226119C9DD48B
   };
 
+  // SEC_CM: PART.MEM.DIGEST
   // Note: digest set 0 is used for computing the partition digests. Constants at
   // higher indices are used to compute the scrambling keys.
   parameter digest_const_array_t RndCnstDigestConst = {

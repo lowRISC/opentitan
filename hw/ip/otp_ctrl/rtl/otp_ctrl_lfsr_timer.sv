@@ -89,6 +89,7 @@ module otp_ctrl_lfsr_timer
   // We employ two redundant LFSRs to guard against FI attacks.
   // If any of the two is glitched and the two LFSR states do not agree,
   // the FSM below is moved into a terminal error state.
+  // SEC_CM: TIMER.LFSR.REDUN
   prim_double_lfsr #(
     .LfsrDw      ( LfsrWidth      ),
     .EntropyDw   ( LfsrWidth      ),
@@ -142,6 +143,7 @@ module otp_ctrl_lfsr_timer
   assign integ_cnt_set_val = (integ_set_period) ? (lfsr_state & integ_mask) : LfsrWidth'(timeout_i);
   assign cnsty_cnt_set_val = (cnsty_set_period) ? (lfsr_state & cnsty_mask) : LfsrWidth'(timeout_i);
 
+  // SEC_CM: TIMER_INTEG.CTR.REDUN
   prim_count #(
     .Width(LfsrWidth),
     .OutSelDnCnt(1), // count down
@@ -158,6 +160,7 @@ module otp_ctrl_lfsr_timer
     .err_o(integ_cnt_err)
   );
 
+  // SEC_CM: TIMER_CNSTY.CTR.REDUN
   prim_count #(
     .Width(LfsrWidth),
     .OutSelDnCnt(1), // count down
@@ -200,6 +203,7 @@ module otp_ctrl_lfsr_timer
   // Ping and Timeout Logic //
   ////////////////////////////
 
+  // SEC_CM: TIMER.FSM.SPARSE
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 5 -m 5 -n 9 \
   //      -s 628816752 --language=sv
@@ -345,6 +349,7 @@ module otp_ctrl_lfsr_timer
 
     // Unconditionally jump into the terminal error state in case of escalation,
     // or if the two LFSR or counter states do not agree.
+    // SEC_CM: TIMER.FSM.LOCAL_ESC, TIMER.FSM.GLOBAL_ESC
     if (lfsr_err || integ_cnt_err || cnsty_cnt_err || escalate_en_i != lc_ctrl_pkg::Off) begin
        state_d = ErrorSt;
     end
