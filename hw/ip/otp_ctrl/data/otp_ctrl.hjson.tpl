@@ -426,14 +426,50 @@
     { name: "PART.DATA_REG.INTEGRITY",
       desc: "All partition buffer registers are protected with ECC on 64bit blocks."
     }
+    { name: "PART.DATA_REG.BKGN_CHK",
+      desc: "The digest of buffered partitions is recomputed and checked at pseudorandom intervals in the background."
+    }
+    { name: "PART.MEM.REGREN"
+      desc: "Unbuffered ('software') partitions can be read-locked via a CSR until the next system reset."
+    }
+    { name: "PART.MEM.SW_UNREADABLE"
+      desc: "Secret buffered partitions become unreadable to software once they are locked via the digest."
+    }
+    { name: "PART.MEM.SW_UNWRITABLE"
+      desc: "All partitions become unwritable by software once they are locked via the digest."
+    }
+    { name: "LC_PART.MEM.SW_NOACCESS"
+      desc: "The life cycle partition is not directly readable nor writable via software."
+    }
+    { name: "ACCESS.CTRL.MUBI",
+      desc: "The access control signals going from the partitions to the DAI are MUBI encoded."
+    }
+    { name: "TOKEN_VALID.CTRL.MUBI",
+      desc: "The token valid signals going to the life cycle controller are MUBI encoded."
+    }
+    { name: "LC_CTRL.INTERSIG.MUBI",
+      desc: "The life cycle control signals are multibit encoded."
+    }
+    { name: "TEST.BUS.LC_GATED",
+      desc: "Prevent access to test signals and the OTP backdoor interface in non-test lifecycle states."
+    }
+    { name: "DIRECT_ACCESS.CONFIG.REGWEN",
+      desc: "The direct access CSRs are REGWEN protected."
+    }
+    { name: "CHECK_TRIGGER.CONFIG.REGWEN",
+      desc: "The check trigger CSR is REGWEN protected."
+    }
+    { name: "CHECK.CONFIG.REGWEN",
+      desc: "The check CSR is REGWEN protected."
+    }
     { name: "MACRO.MEM.INTEGRITY",
       desc: '''
             The OTP macro employs a vendor-specific integrity scheme at the granularity of the native 16bit OTP words.
             The scheme is able to at least detect single bit errors.
             '''
     }
-    { name: "PART.DATA_REG.BKGN_CHK",
-      desc: "The digest of buffered partitions is recomputed and checked at pseudorandom intervals in the background."
+    { name: "MACRO.MEM.CM",
+      desc: "The OTP macro may contain additional vendor-specific countermeasures."
     }
   ]
 
@@ -833,7 +869,7 @@
       { name: "INTEGRITY_CHECK_PERIOD",
         desc: '''
               This value specifies the maximum period that can be generated pseudo-randomly.
-              Only applies to the HW_CFG and SECRET* partitions, once they are locked.
+              Only applies to the HW_CFG and SECRET* partitions once they are locked.
               '''
         swaccess: "rw",
         hwaccess: "hro",
@@ -855,7 +891,7 @@
       { name: "CONSISTENCY_CHECK_PERIOD",
         desc: '''
               This value specifies the maximum period that can be generated pseudo-randomly.
-              This applies to the LIFE_CYCLE partition and the HW_CFG and SECRET* partitions, once they are locked.
+              This applies to the LIFE_CYCLE partition and the HW_CFG and SECRET* partitions once they are locked.
               '''
         swaccess: "rw",
         hwaccess: "hro",
