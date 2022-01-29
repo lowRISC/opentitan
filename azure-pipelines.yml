@@ -726,9 +726,6 @@ jobs:
   steps:
     - template: ci/install-package-dependencies.yml
       # The default timeout is too short to build verilator so let's skip it for the first pass
-    - bash: |
-            bazel query "rdeps(//..., //hw:verilator)" |
-            sed -e 's/^/-/' |
-            xargs bazel test --nobuild_tests_only --test_tag_filters=-cw310,-verilator -- //...
-      displayName: bazel test
+    - bash: ci/scripts/quick-bazel.sh
+      displayName: quick-bazel
       continueOnError: true
