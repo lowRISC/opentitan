@@ -97,7 +97,7 @@ If the compile-time Verilog parameter `EnMasking` is not set, the first phase an
 
 If the masking feature is enabled, Keccak round logic stores the intermediate state after processing the 1st phase.
 The stored value are fed into the Chi function at the next cycle.
-Chi function implements [Domain-Oriented Masking (DOM) AND][]logic inside to protect against the 1st order SCA attacks.
+Chi function implements [Domain-Oriented Masking (DOM) AND][] logic inside to protect against the 1st order SCA attacks.
 The DOM AND logic needs entropy to disperse the power peaks.
 Chi function moves forward only when there is valid entropy.
 
