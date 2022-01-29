@@ -48,7 +48,7 @@ Documentation | [FEATURE_FROZEN][]      | Done        |
 RTL           | [FEATURE_COMPLETE][]    | Done        |
 RTL           | [AREA_CHECK][]          | Done        | Note, area will be impacted by how many HW_CFG bits will be used eventually. The current area is a worst case scenario, since all available HW_CFG bits are buffered at the moment. Memory map will be finalized by D3.
 RTL           | [PORT_FROZEN][]         | Done        |
-RTL           | [ARCHITECTURE_FROZEN][] | Done        | Note that the KMAC token hashing interface change is deferred to after D2 (this is a security hardening task). Also, the closed source OTP wrapper is still outstanding.
+RTL           | [ARCHITECTURE_FROZEN][] | Done        | 
 RTL           | [REVIEW_TODO][]         | Done        |
 RTL           | [STYLE_X][]             | Done        |
 Code Quality  | [LINT_PASS][]           | Done        |
@@ -80,10 +80,10 @@ Security      | [SEC_RND_CNST][]        | Done        |
 
  Type         | Item                         | Resolution  | Note/Collaterals
 --------------|------------------------------|-------------|------------------
-Security      | [SEC_CM_ASSETS_LISTED][]     | Not Started |
-Security      | [SEC_CM_IMPLEMENTED][]       | Not Started |
-Security      | [SEC_CM_RTL_REVIEWED][]      | Not Started |
-Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Not Started |
+Security      | [SEC_CM_ASSETS_LISTED][]     | Done        |
+Security      | [SEC_CM_IMPLEMENTED][]       | Done        |
+Security      | [SEC_CM_RTL_REVIEWED][]      | Done        |
+Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Done        |
 
 [SEC_CM_ASSETS_LISTED]:    {{<relref "/doc/project/checklist.md#sec_cm_assets_listed" >}}
 [SEC_CM_IMPLEMENTED]:      {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
