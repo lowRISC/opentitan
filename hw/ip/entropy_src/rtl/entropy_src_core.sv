@@ -411,6 +411,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    sha3_state_error;
   logic                    sha3_count_error;
   logic [EsEnableCopies-1:0] es_enable_q_fo;
+  logic                      es_hw_regwen;
 
   logic                    unused_err_code_test_bit;
   logic                    unused_sha3_state;
@@ -462,26 +463,35 @@ module entropy_src_core import entropy_src_pkg::*; #(
       es_rdata_capt_vld_q   <= es_rdata_capt_vld_d;
     end
 
+  import prim_mubi_pkg::mubi4_t;
+  import prim_mubi_pkg::mubi4_test_true_strict;
+  import prim_mubi_pkg::mubi4_test_invalid;
+
+  mubi4_t [4:0] mubi_module_en_fanout;
+
+  //--------------------------------------------
+  // register lock gating
+  //--------------------------------------------
+
+  assign es_hw_regwen = reg2hw.sw_regupd.q && !mubi4_test_true_strict(mubi_module_en_fanout[4]);
+  assign hw2reg.regwen.de = 1'b1;
+  assign hw2reg.regwen.d = es_hw_regwen;
 
   //--------------------------------------------
   // set up secure enable bits
   //--------------------------------------------
-  import prim_mubi_pkg::mubi4_t;
-  import prim_mubi_pkg::mubi4_test_true_strict;
-  import prim_mubi_pkg::mubi4_test_invalid;
 
   // check for illegal enable field states, and set alert if detected
 
   // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_module_en;
-  mubi4_t [3:0] mubi_module_en_fanout;
   assign mubi_module_en  = mubi4_t'(reg2hw.module_enable.q);
   assign es_enable_pfa = mubi4_test_invalid(mubi_module_en_fanout[0]);
   assign hw2reg.recov_alert_sts.module_enable_field_alert.de = es_enable_pfa;
   assign hw2reg.recov_alert_sts.module_enable_field_alert.d  = es_enable_pfa;
 
   prim_mubi4_sync #(
-    .NumCopies(4),
+    .NumCopies(5),
     .AsyncOn(0)
   ) u_prim_mubi4_sync_entropy_module_en (
     .clk_i,
