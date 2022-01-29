@@ -28,6 +28,7 @@ module otp_ctrl_dai
   // a terminal error state.
   output otp_err_e                       error_o,
   // Access/lock status from partitions
+  // SEC_CM: ACCESS.CTRL.MUBI
   input  part_access_t [NumPart-1:0]     part_access_i,
   // CSR interface
   input        [OtpByteAddrWidth-1:0]    dai_addr_i,
@@ -79,6 +80,7 @@ module otp_ctrl_dai
   // DAI Control FSM //
   /////////////////////
 
+  // SEC_CM: DAI.FSM.SPARSE
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 5 -m 20 -n 12 \
   //      -s 3011551511 --language=sv
@@ -350,6 +352,7 @@ module otp_ctrl_dai
       // datapath mutex. Note that once the mutex is acquired, we have
       // exclusive access to the scrambling datapath until we release
       // the mutex by deasserting scrmbl_mtx_req_o.
+      // SEC_CM: SECRET.MEM.SCRAMBLE
       DescrSt: begin
         scrmbl_mtx_req_o = 1'b1;
         scrmbl_valid_o = 1'b1;
@@ -362,6 +365,7 @@ module otp_ctrl_dai
       ///////////////////////////////////////////////////////////////////
       // Wait for the descrambled data to return. Note that we release
       // the mutex lock upon leaving this state.
+      // SEC_CM: SECRET.MEM.SCRAMBLE
       DescrWaitSt: begin
         scrmbl_mtx_req_o = 1'b1;
         scrmbl_sel_o = PartInfo[part_idx].key_sel;
@@ -449,6 +453,7 @@ module otp_ctrl_dai
       // datapath mutex. Note that once the mutex is acquired, we have
       // exclusive access to the scrambling datapath until we release
       // the mutex by deasserting scrmbl_mtx_req_o.
+      // SEC_CM: SECRET.MEM.SCRAMBLE
       ScrSt: begin
         scrmbl_mtx_req_o = 1'b1;
         // Check write access and bail out if this is not consistent.
@@ -473,6 +478,7 @@ module otp_ctrl_dai
       ///////////////////////////////////////////////////////////////////
       // Wait for the scrambled data to return. Note that we release
       // the mutex lock upon leaving this state.
+      // SEC_CM: SECRET.MEM.SCRAMBLE
       ScrWaitSt: begin
         scrmbl_mtx_req_o = 1'b1;
         // Continously check write access and bail out if this is not consistent.
@@ -496,6 +502,7 @@ module otp_ctrl_dai
       end
       ///////////////////////////////////////////////////////////////////
       // First, acquire the mutex for the digest and clear the digest state.
+      // SEC_CM: PART.MEM.DIGEST
       DigClrSt: begin
         scrmbl_mtx_req_o = 1'b1;
         scrmbl_valid_o = 1'b1;
@@ -508,6 +515,7 @@ module otp_ctrl_dai
       ///////////////////////////////////////////////////////////////////
       // This requests a 64bit block to be pushed into the digest datapath.
       // We also check here whether the partition has been write locked.
+      // SEC_CM: PART.MEM.DIGEST
       DigReadSt: begin
         scrmbl_mtx_req_o = 1'b1;
         if (mubi8_test_false_strict(part_access_i[part_idx].read_lock) &&
@@ -528,6 +536,7 @@ module otp_ctrl_dai
       // whether descrambling is required or not. In case an OTP
       // transaction fails, latch the OTP error code, and jump to
       // terminal error state.
+      // SEC_CM: PART.MEM.DIGEST
       DigReadWaitSt: begin
         scrmbl_mtx_req_o = 1'b1;
         if (otp_rvalid_i) begin
@@ -550,6 +559,7 @@ module otp_ctrl_dai
       // Push the word read into the scrambling datapath.  The last
       // block is repeated in case the number blocks in this partition
       // is odd.
+      // SEC_CM: PART.MEM.DIGEST
       DigSt: begin
         scrmbl_mtx_req_o = 1'b1;
         scrmbl_valid_o = 1'b1;
@@ -579,6 +589,7 @@ module otp_ctrl_dai
       ///////////////////////////////////////////////////////////////////
       // Padding state, just repeat the last block and go to digest
       // finalization.
+      // SEC_CM: PART.MEM.DIGEST
       DigPadSt: begin
         scrmbl_mtx_req_o = 1'b1;
         scrmbl_valid_o = 1'b1;
@@ -589,6 +600,7 @@ module otp_ctrl_dai
       end
       ///////////////////////////////////////////////////////////////////
       // Trigger digest finalization and go wait for the result.
+      // SEC_CM: PART.MEM.DIGEST
       DigFinSt: begin
         scrmbl_mtx_req_o = 1'b1;
         scrmbl_valid_o = 1'b1;
@@ -603,6 +615,7 @@ module otp_ctrl_dai
       // since the counter has been stepped to the correct address as
       // part of the readout sequence, and the correct size for this
       // access has been loaded before.
+      // SEC_CM: PART.MEM.DIGEST
       DigWaitSt: begin
         scrmbl_mtx_req_o = 1'b1;
         data_sel = ScrmblData;
@@ -630,6 +643,7 @@ module otp_ctrl_dai
     endcase // state_q
 
     // Unconditionally jump into the terminal error state in case of escalation.
+    // SEC_CM: DAI.FSM.LOCAL_ESC, DAI.FSM.GLOBAL_ESC
     if (escalate_en_i != lc_ctrl_pkg::Off || cnt_err) begin
       state_d = ErrorSt;
       if (state_q != ErrorSt) begin
@@ -714,6 +728,7 @@ module otp_ctrl_dai
 
   // Address counter - this is only used for computing a digest, hence the increment is
   // fixed to 8 byte.
+  // SEC_CM: DAI.CTR.REDUN
   prim_count #(
     .Width(CntWidth),
     .OutSelDnCnt(0), // count up

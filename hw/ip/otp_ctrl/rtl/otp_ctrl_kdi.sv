@@ -218,6 +218,7 @@ module otp_ctrl_kdi
   logic seed_cnt_clr, seed_cnt_en, entropy_cnt_clr, entropy_cnt_en, seed_cnt_err, entropy_cnt_err;
   logic [CntWidth-1:0] seed_cnt, entropy_cnt;
 
+  // SEC_CM: KDI_SEED.CTR.REDUN
   prim_count #(
     .Width(CntWidth),
     .OutSelDnCnt(0), // count up
@@ -234,6 +235,7 @@ module otp_ctrl_kdi
     .err_o(seed_cnt_err)
   );
 
+  // SEC_CM: KDI_ENTROPY.CTR.REDUN
   prim_count #(
     .Width(CntWidth),
     .OutSelDnCnt(0), // count up
@@ -311,6 +313,7 @@ module otp_ctrl_kdi
   // Control FSM //
   /////////////////
 
+  // SEC_CM: KDI.FSM.SPARSE
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 5 -m 11 -n 10 \
   //      -s 2544133835 --language=sv
@@ -558,6 +561,7 @@ module otp_ctrl_kdi
     endcase // state_q
 
     // Unconditionally jump into the terminal error state in case of escalation.
+    // SEC_CM: KDI.FSM.LOCAL_ESC, KDI.FSM.GLOBAL_ESC
     if (escalate_en_i != lc_ctrl_pkg::Off || seed_cnt_err || entropy_cnt_err) begin
       state_d = ErrorSt;
     end

@@ -55,12 +55,14 @@ module otp_ctrl
   input  lc_otp_program_req_t                        lc_otp_program_i,
   output lc_otp_program_rsp_t                        lc_otp_program_o,
   // Lifecycle broadcast inputs
+  // SEC_CM: LC_CTRL.INTERSIG.MUBI
   input  lc_ctrl_pkg::lc_tx_t                        lc_creator_seed_sw_rw_en_i,
   input  lc_ctrl_pkg::lc_tx_t                        lc_seed_hw_rd_en_i,
   input  lc_ctrl_pkg::lc_tx_t                        lc_dft_en_i,
   input  lc_ctrl_pkg::lc_tx_t                        lc_escalate_en_i,
   input  lc_ctrl_pkg::lc_tx_t                        lc_check_byp_en_i,
   // OTP broadcast outputs
+  // SEC_CM: TOKEN_VALID.CTRL.MUBI
   output otp_lc_data_t                               otp_lc_data_o,
   output otp_keymgr_key_t                            otp_keymgr_key_o,
   // Scrambling key requests
@@ -116,6 +118,7 @@ module otp_ctrl
   otp_ctrl_reg_pkg::otp_ctrl_core_reg2hw_t reg2hw;
   otp_ctrl_reg_pkg::otp_ctrl_core_hw2reg_t hw2reg;
 
+  // SEC_CM: DIRECT_ACCESS.CONFIG.REGWEN, CHECK_TRIGGER.CONFIG.REGWEN, CHECK.CONFIG.REGWEN
   otp_ctrl_core_reg_top u_reg_core (
     .clk_i,
     .rst_ni,
@@ -125,6 +128,7 @@ module otp_ctrl
     .tl_win_i  ( tl_win_d2h    ),
     .reg2hw    ( reg2hw        ),
     .hw2reg    ( hw2reg        ),
+    // SEC_CM: BUS.INTEGRITY
     .intg_err_o( intg_error[0] ),
     .devmode_i ( 1'b1          )
   );
@@ -214,6 +218,7 @@ module otp_ctrl
     .addr_o      (  tlul_addr         ),
     .wdata_o     (                    ), // unused
     .wmask_o     (                    ), // unused
+    // SEC_CM: BUS.INTEGRITY
     .intg_error_o(  intg_error[1]     ),
     .rdata_i     (  tlul_rdata        ),
     .rvalid_i    (  tlul_rvalid       ),
@@ -306,16 +311,19 @@ module otp_ctrl
   // Access Defaults and CSRs //
   //////////////////////////////
 
+  // SEC_CM: ACCESS.CTRL.MUBI
   part_access_t [NumPart-1:0] part_access_pre, part_access;
   always_comb begin : p_access_control
     // Default (this will be overridden by partition-internal settings).
     part_access_pre = {{32'(2*NumPart)}{MuBi8False}};
     // Permanently lock DAI write and read access to the life cycle partition.
     // The LC partition can only be read from and written to via the LC controller.
+    // SEC_CM: LC_PART.MEM.SW_NOACCESS
     part_access_pre[LifeCycleIdx].write_lock = MuBi8True;
     part_access_pre[LifeCycleIdx].read_lock = MuBi8True;
 
     // Propagate CSR read enables down to the SW_CFG partitions.
+    // SEC_CM: PART.MEM.REGREN
     if (!reg2hw.vendor_test_read_lock) begin
       part_access_pre[VendorTestIdx].read_lock = MuBi8True;
     end
@@ -581,6 +589,7 @@ module otp_ctrl
   assign cnsty_chk_trig   = reg2hw.check_trigger.consistency.q &
                             reg2hw.check_trigger.consistency.qe;
 
+  // SEC_CM: PART.DATA_REG.BKGN_CHK
   otp_ctrl_lfsr_timer #(
     .RndCnstLfsrSeed(RndCnstLfsrSeed),
     .RndCnstLfsrPerm(RndCnstLfsrPerm)
@@ -710,16 +719,19 @@ module otp_ctrl
   tlul_pkg::tl_d2h_t           prim_tl_d2h_gated;
 
   // Life cycle qualification of TL-UL test interface.
+  // SEC_CM: TEST.BUS.LC_GATED
   assign prim_tl_h2d_gated = (lc_dft_en[0] == lc_ctrl_pkg::On) ?
                              prim_tl_i : '0;
   assign prim_tl_o         = (lc_dft_en[1] == lc_ctrl_pkg::On) ?
                              prim_tl_d2h_gated : '0;
 
   // Test-related GPIOs.
+  // SEC_CM: TEST.BUS.LC_GATED
   logic [OtpTestVectWidth-1:0] otp_test_vect;
   assign cio_test_o = (lc_dft_en[2] == lc_ctrl_pkg::On) ? otp_test_vect : '0;
   assign cio_test_en_o = (lc_dft_en[2] == lc_ctrl_pkg::On) ? {OtpTestVectWidth{1'b1}} : '0;
 
+  // SEC_CM: MACRO.MEM.CM, MACRO.MEM.INTEGRITY
   prim_otp #(
     .Width            ( OtpWidth            ),
     .Depth            ( OtpDepth            ),
@@ -855,6 +867,8 @@ module otp_ctrl
   logic scrmbl_arb_req_ready, scrmbl_arb_rsp_valid;
   logic [NumAgents-1:0] part_scrmbl_req_ready, part_scrmbl_rsp_valid;
 
+  // SEC_CM: SECRET.MEM.SCRAMBLE
+  // SEC_CM: PART.MEM.DIGEST
   otp_ctrl_scrmbl u_otp_ctrl_scrmbl (
     .clk_i,
     .rst_ni,
@@ -1280,6 +1294,7 @@ module otp_ctrl
   assign secrets_valid = (part_digest[Secret2Idx] != '0) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
 
   // Buffer these constants in order to ensure that synthesis does not try to optimize the encoding.
+  // SEC_CM: TOKEN_VALID.CTRL.MUBI
   prim_lc_sender #(
     .AsyncOn(0)
   ) u_prim_lc_sender_test_tokens_valid (

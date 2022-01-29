@@ -28,6 +28,7 @@ module otp_ctrl_part_unbuf
   // a terminal error state.
   output otp_err_e                    error_o,
   // Access/lock status
+  // SEC_CM: ACCESS.CTRL.MUBI
   input  part_access_t                access_i, // runtime lock from CSRs
   output part_access_t                access_o,
   // Buffered 64bit digest output.
@@ -73,6 +74,7 @@ module otp_ctrl_part_unbuf
   // OTP Partition FSM //
   ///////////////////////
 
+  // SEC_CM: PART.FSM.SPARSE
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 5 -m 7 -n 10 \
   //      -s 4247417884 --language=sv
@@ -293,12 +295,14 @@ module otp_ctrl_part_unbuf
 
     // Unconditionally jump into the terminal error state in case of
     // an ECC error or escalation, and lock access to the partition down.
+    // SEC_CM: PART.FSM.LOCAL_ESC
     if (ecc_err) begin
       state_d = ErrorSt;
       if (state_q != ErrorSt) begin
         error_d = CheckFailError;
       end
     end
+    // SEC_CM: PART.FSM.GLOBAL_ESC
     if (escalate_en_i != lc_ctrl_pkg::Off) begin
       state_d = ErrorSt;
       if (state_q != ErrorSt) begin
@@ -335,6 +339,7 @@ module otp_ctrl_part_unbuf
   // Digest Reg //
   ////////////////
 
+  // SEC_CM: PART.DATA_REG.INTEGRITY
   otp_ctrl_ecc_reg #(
     .Width ( ScrmblBlockWidth ),
     .Depth ( 1                )
@@ -375,6 +380,7 @@ module otp_ctrl_part_unbuf
     .mubi_o(access_pre.read_lock)
   );
 
+  // SEC_CM: PART.MEM.SW_UNWRITABLE
   if (Info.write_lock) begin : gen_digest_write_lock
     mubi8_t digest_locked;
     assign digest_locked = (digest_o != '0) ? MuBi8True : MuBi8False;
@@ -394,6 +400,7 @@ module otp_ctrl_part_unbuf
     assign access_o.write_lock = access_pre.write_lock;
   end
 
+  // SEC_CM: PART.MEM.SW_UNREADABLE
   if (Info.read_lock) begin : gen_digest_read_lock
     mubi8_t digest_locked;
     assign digest_locked = (digest_o != '0) ? MuBi8True : MuBi8False;

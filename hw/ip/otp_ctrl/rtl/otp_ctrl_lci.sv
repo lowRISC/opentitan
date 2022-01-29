@@ -66,6 +66,7 @@ module otp_ctrl_lci
   // Controller FSM //
   ////////////////////
 
+  // SEC_CM: LCI.FSM.SPARSE
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 5 -m 5 -n 9 \
   //      -s 558234734 --language=sv
@@ -208,6 +209,7 @@ module otp_ctrl_lci
     endcase // state_q
 
     // Unconditionally jump into the terminal error state in case of escalation.
+    // SEC_CM: LCI.FSM.LOCAL_ESC, LCI.FSM.GLOBAL_ESC
     if (escalate_en_i != lc_ctrl_pkg::Off || cnt_err) begin
       state_d = ErrorSt;
       if (error_q == NoError) begin
@@ -222,6 +224,7 @@ module otp_ctrl_lci
   //////////////////////////////
 
   // Native OTP word counter
+  // SEC_CM: LCI.CTR.REDUN
   prim_count #(
     .Width(CntWidth),
     .OutSelDnCnt(0), // count up

@@ -233,6 +233,7 @@ module otp_ctrl_scrmbl
   // FSM //
   /////////
 
+  // SEC_CM: SCRMBL.FSM.SPARSE
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 5 -m 5 -n 9 \
   //      -s 2193087944 --language=sv
@@ -275,6 +276,7 @@ module otp_ctrl_scrmbl
 
   assign valid_o = valid_q;
 
+  // SEC_CM: SCRMBL.CTR.REDUN
   prim_count #(
     .Width(CntWidth),
     .OutSelDnCnt(0), // count up
@@ -422,6 +424,7 @@ module otp_ctrl_scrmbl
     endcase // state_q
 
     // Unconditionally jump into the terminal error state in case of escalation.
+    // SEC_CM: SCRMBL.FSM.LOCAL_ESC, SCRMBL.FSM.GLOBAL_ESC
     if (escalate_en_i != lc_ctrl_pkg::Off || cnt_err) begin
       state_d = ErrorSt;
     end
