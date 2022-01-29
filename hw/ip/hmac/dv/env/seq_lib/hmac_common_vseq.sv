@@ -42,6 +42,7 @@ class hmac_common_vseq extends hmac_base_vseq;
     end else begin
       super.wait_to_issue_reset(reset_delay_bound);
     end
+    cfg.hash_process_triggered = 0;
   endtask : wait_to_issue_reset
 
 endclass
