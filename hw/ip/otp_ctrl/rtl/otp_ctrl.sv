@@ -675,6 +675,8 @@ module otp_ctrl
   logic [NumAgents-1:0]        part_otp_arb_req, part_otp_arb_gnt;
   otp_bundle_t                 part_otp_arb_bundle [NumAgents];
   logic                        otp_arb_valid, otp_arb_ready;
+  logic                        otp_prim_valid, otp_prim_ready;
+  logic                        otp_rsp_fifo_valid, otp_rsp_fifo_ready;
   logic [vbits(NumAgents)-1:0] otp_arb_idx;
   otp_bundle_t                 otp_arb_bundle;
 
@@ -695,6 +697,11 @@ module otp_ctrl
     .data_o    ( otp_arb_bundle      ),
     .ready_i   ( otp_arb_ready       )
   );
+
+  // Don't issue more transactions than what the rsp_fifo can keep track of.
+  assign otp_arb_ready      = otp_prim_ready & otp_rsp_fifo_ready;
+  assign otp_prim_valid     = otp_arb_valid & otp_rsp_fifo_ready;
+  assign otp_rsp_fifo_valid = otp_prim_ready & otp_prim_valid;
 
   prim_otp_pkg::err_e          part_otp_err;
   logic [OtpIfWidth-1:0]       part_otp_rdata;
@@ -745,8 +752,8 @@ module otp_ctrl
     // Alerts
     .otp_alert_src_o  ( otp_alert_o          ),
     // Read / Write command interface
-    .ready_o          ( otp_arb_ready        ),
-    .valid_i          ( otp_arb_valid        ),
+    .ready_o          ( otp_prim_ready       ),
+    .valid_i          ( otp_prim_valid       ),
     .cmd_i            ( otp_arb_bundle.cmd   ),
     .size_i           ( otp_arb_bundle.size  ),
     .addr_i           ( otp_arb_bundle.addr  ),
@@ -769,15 +776,15 @@ module otp_ctrl
   ) u_otp_rsp_fifo (
     .clk_i,
     .rst_ni,
-    .clr_i    ( 1'b0           ),
-    .wvalid_i ( otp_arb_valid & otp_arb_ready ),
-    .wready_o (                ),
-    .wdata_i  ( otp_arb_idx    ),
-    .rvalid_o ( otp_fifo_valid ),
-    .rready_i ( otp_rvalid     ),
-    .rdata_o  ( otp_part_idx   ),
-    .depth_o  (                ),
-    .full_o   (                )
+    .clr_i    ( 1'b0               ),
+    .wvalid_i ( otp_rsp_fifo_valid ),
+    .wready_o ( otp_rsp_fifo_ready ),
+    .wdata_i  ( otp_arb_idx        ),
+    .rvalid_o ( otp_fifo_valid     ),
+    .rready_i ( otp_rvalid         ),
+    .rdata_o  ( otp_part_idx       ),
+    .depth_o  (                    ),
+    .full_o   (                    )
   );
 
   // Steer response back to the partition where this request originated.
