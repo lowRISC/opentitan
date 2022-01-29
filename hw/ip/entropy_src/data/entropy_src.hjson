@@ -121,8 +121,8 @@
 
   regwidth: "32",
   registers: [
-    { name: "REGWEN_ME",
-      desc: "Register write enable for module enable control register",
+    { name: "ME_REGWEN",
+      desc: "Register write enable for module enable register",
       swaccess: "rw0c",
       hwaccess: "none",
       fields: [
@@ -135,15 +135,38 @@
         }
       ]
     },
-    { name: "REGWEN",
-      desc: "Register write enable for all control registers",
+    { name: "SW_REGUPD",
+      desc: "Register write enable for control and threshold registers",
       swaccess: "rw0c",
-      hwaccess: "none",
+      hwaccess: "hro",
+      tags: [// Exclude from writes to these field because they cause side affects.
+             "excl:CsrAllTests:CsrExclAll"]
       fields: [
         {
             bits: "0",
-            desc: ''' When true, all writeable registers can be modified.
-            When false, they become read-only.
+            desc: ''' When this bit true and the MODULE_ENABLE field is false,
+            the REGWEN write enable bit read as true, and is distributed to
+            all associated control and threshold registers.
+            When false, these registers become read-only.
+            '''
+            resval: 1
+        }
+      ]
+    },
+    { name: "REGWEN",
+      desc: "Register write enable for all control registers",
+      swaccess: "ro",  // this particular enable bit is meant to be fully HW managed
+      hwaccess: "hwo",
+      tags: [// Internal HW can modify status register
+             "excl:CsrAllTests:CsrExclCheck"]
+      fields: [
+        {
+            bits: "0",
+            desc: ''' This read-only write enable bit will allow write access
+            to control and theshold registers that are associated with this bit,
+            but only when the MODULE_ENABLE field is set to kMuBi4False and the
+            SW_REGUPD write enable bit is set to true.
+            When read as false, these registers become read-only.
             '''
             resval: 1
         }
@@ -175,7 +198,7 @@
       desc: "Module enable register",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGWEN_ME",
+      regwen:   "ME_REGWEN",
       tags: [// Exclude from writes to these field because they cause side affects.
              "excl:CsrAllTests:CsrExclAll"]
       fields: [
