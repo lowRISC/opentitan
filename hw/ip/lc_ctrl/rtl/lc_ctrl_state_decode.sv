@@ -76,6 +76,7 @@ module lc_ctrl_state_decode
           LcStProdEnd:       dec_lc_state_o = DecLcStProdEnd;
           LcStRma:           dec_lc_state_o = DecLcStRma;
           LcStScrap:         dec_lc_state_o = DecLcStScrap;
+          // SEC_CM: MANUF.STATE.BKGN_CHK
           default:           state_invalid_error_o[1] = 1'b1;
         endcase // lc_state_i
 
@@ -105,9 +106,11 @@ module lc_ctrl_state_decode
           LcCnt22:  dec_lc_cnt_o = 5'd22;
           LcCnt23:  dec_lc_cnt_o = 5'd23;
           LcCnt24:  dec_lc_cnt_o = 5'd24;
+          // SEC_CM: TRANSITION.CTR.BKGN_CHK
           default:  state_invalid_error_o[2] = 1'b1;
         endcase // lc_cnt_i
 
+        // SEC_CM: MANUF.STATE.BKGN_CHK
         unique case (secrets_valid_i)
           // If the secrets have not been provisioned, the ID state is "blank".
           Off:  dec_lc_id_state_o = DecLcIdBlank;
@@ -118,12 +121,14 @@ module lc_ctrl_state_decode
 
         // Require that any non-raw state has a valid, nonzero
         // transition count.
+        // SEC_CM: TRANSITION.CTR.BKGN_CHK
         if (lc_state_i != LcStRaw && lc_cnt_i == LcCnt0) begin
           state_invalid_error_o[4] = 1'b1;
         end
 
         // We can't have a personalized device that is
         // still in RAW or any of the test states.
+        // SEC_CM: MANUF.STATE.BKGN_CHK
         if ((secrets_valid_i == On) &&
             !(lc_state_i inside {LcStDev,
                                  LcStProd,
