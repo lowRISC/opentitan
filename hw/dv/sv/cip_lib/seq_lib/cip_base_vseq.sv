@@ -674,6 +674,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
             end
             begin : issue_rand_reset
               wait_to_issue_reset(reset_delay_bound);
+              ongoing_reset = 1'b1;
               `uvm_info(`gfn, $sformatf("\nReset is issued for run %0d/%0d", i, num_times), UVM_LOW)
               apply_resets_concurrently();
               ongoing_reset = 1'b0;
