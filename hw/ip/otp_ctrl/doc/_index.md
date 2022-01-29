@@ -899,7 +899,7 @@ To prevent integrity check failures SW must therefore ensure that no more progra
 
 ### Software Integrity Handling
 
-As opposed to buffered partitions, the digest and integrity handling of unbufferd partitions is entirely up to software.
+As opposed to buffered partitions, the digest and integrity handling of unbuffered partitions is entirely up to software.
 The only hardware-assisted feature in unbuffered partitions is the digest lock, which locks write access to an unbuffered partition once a nonzero value has been programmed to the 64bit digest location.
 
 In a similar vein, it should be noted that the system-wide bus-integrity metadata does not travel alongside the data end-to-end in the OTP controller (i.e., the  bus-integrity metadata bits are not stored into the OTP memory array).
@@ -932,6 +932,8 @@ Error Code | Enum Name              | Recoverable | DAI | LCI | Unbuf | Buf   | 
 
 All non-zero error codes listed above trigger an `otp_error` interrupt.
 In addition, all unrecoverable OTP `Macro*` errors (codes 0x1, 0x3) trigger a `fatal_macro_error` alert, while all remaining unrecoverable errors trigger a `fatal_check_error` alert.
+
+If software receives an `otp_error` interrupt, but all error codes read back as 0x0 (`NoError`), this should be treated as a fatal error condition, and the system should be shut down as soon as possible.
 
 Note that while the `MacroWriteBlankError` is marked as a recoverable error, the affected OTP word may be in an inconsistent state after this error has been returned.
 This can cause several issues when the word is accessed again (either as part of a regular read operation, as part of the readout at boot, or as part of a background check).
