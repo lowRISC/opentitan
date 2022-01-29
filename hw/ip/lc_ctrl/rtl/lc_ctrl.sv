@@ -61,12 +61,14 @@ module lc_ctrl
   input  otp_ctrl_pkg::lc_otp_program_rsp_t          lc_otp_program_i,
   // Life cycle hashing interface for raw unlock
   // Synchronized in the life cycle controller.
+  // SEC_CM: TOKEN.DIGEST
   input  kmac_pkg::app_rsp_t                         kmac_data_i,
   output kmac_pkg::app_req_t                         kmac_data_o,
   // OTP broadcast outputs
   // No sync required since LC and OTP are in the same clock domain.
   input  otp_ctrl_pkg::otp_lc_data_t                 otp_lc_data_i,
   // Life cycle broadcast outputs (all of them are registered).
+  // SEC_CM: INTERSIG.MUBI
   output lc_tx_t                                     lc_dft_en_o,
   output lc_tx_t                                     lc_nvm_debug_en_o,
   output lc_tx_t                                     lc_hw_debug_en_o,
@@ -81,11 +83,13 @@ module lc_ctrl
   output lc_tx_t                                     lc_check_byp_en_o,
   // Request and feedback to/from clock manager and AST.
   // The ack is synced to the lc clock domain using prim_lc_sync.
+  // SEC_CM: INTERSIG.MUBI
   output lc_tx_t                                     lc_clk_byp_req_o,
   input  lc_tx_t                                     lc_clk_byp_ack_i,
   // Request and feedback to/from flash controller.
   // The ack is synced to the lc clock domain using prim_lc_sync.
   output lc_flash_rma_seed_t                         lc_flash_rma_seed_o,
+  // SEC_CM: INTERSIG.MUBI
   output lc_tx_t                                     lc_flash_rma_req_o,
   input  lc_tx_t                                     lc_flash_rma_ack_i,
   // State group diversification value for keymgr.
@@ -119,6 +123,7 @@ module lc_ctrl
   lc_ctrl_reg_pkg::lc_ctrl_reg2hw_t reg2hw;
   lc_ctrl_reg_pkg::lc_ctrl_hw2reg_t hw2reg;
 
+  // SEC_CM: TRANSITION.CONFIG.REGWEN
   logic fatal_bus_integ_error_q, fatal_bus_integ_error_d;
   lc_ctrl_reg_top u_reg (
     .clk_i,
@@ -127,6 +132,7 @@ module lc_ctrl
     .tl_o,
     .reg2hw    ( reg2hw                  ),
     .hw2reg    ( hw2reg                  ),
+    // SEC_CM: BUS.INTEGRITY
     .intg_err_o( fatal_bus_integ_error_d ),
     .devmode_i ( 1'b1                    )
   );
@@ -147,6 +153,7 @@ module lc_ctrl
     .tl_o      ( tap_tl_d2h ),
     .reg2hw    ( tap_reg2hw ),
     .hw2reg    ( tap_hw2reg ),
+    // The JTAG TAP does not support bus integrity.
     .intg_err_o(            ),
     .devmode_i ( 1'b1       )
   );
@@ -312,6 +319,7 @@ module lc_ctrl
       tap_hw2reg.transition_ctrl   = use_ext_clock_q;
       tap_hw2reg.transition_token  = transition_token_q;
       tap_hw2reg.transition_target = transition_target_q;
+      // SEC_CM: TRANSITION.CONFIG.REGWEN
       tap_hw2reg.transition_regwen = lc_idle_d;
       tap_hw2reg.otp_vendor_test_ctrl     = otp_vendor_test_ctrl_q;
       tap_hw2reg.otp_vendor_test_status   = otp_vendor_test_status;
@@ -319,6 +327,7 @@ module lc_ctrl
       hw2reg.transition_ctrl   = use_ext_clock_q;
       hw2reg.transition_token  = transition_token_q;
       hw2reg.transition_target = transition_target_q;
+      // SEC_CM: TRANSITION.CONFIG.REGWEN
       hw2reg.transition_regwen = lc_idle_d;
       hw2reg.otp_vendor_test_ctrl     = otp_vendor_test_ctrl_q;
       hw2reg.otp_vendor_test_status   = otp_vendor_test_status;
@@ -514,6 +523,7 @@ module lc_ctrl
   // Escalation Receivers //
   //////////////////////////
 
+  // SEC_CM: MAIN.FSM.GLOBAL_ESC
   // We still have two escalation receivers here for historical reasons.
   // The two actions "wipe secrets" and "scrap lifecycle state" have been
   // combined in order to simplify both DV and the design, as otherwise

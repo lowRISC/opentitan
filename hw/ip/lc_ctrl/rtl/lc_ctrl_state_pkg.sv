@@ -86,6 +86,7 @@ package lc_ctrl_state_pkg;
   // Note that the ECC bits are not defined in this package as they will be calculated by
   // the OTP ECC logic at runtime.
 
+  // SEC_CM: MANUF.STATE.SPARSE
   // The A/B values are used for the encoded LC state.
   parameter logic [15:0] A0 = 16'b1000011000111000; // ECC: 6'b110000
   parameter logic [15:0] B0 = 16'b1110011001111001; // ECC: 6'b111111
@@ -148,6 +149,7 @@ package lc_ctrl_state_pkg;
   parameter logic [15:0] B19 = 16'b1110100111111111; // ECC: 6'b001101
 
 
+  // SEC_CM: TRANSITION.CTR.SPARSE
   // The C/D values are used for the encoded LC transition counter.
   parameter logic [15:0] C0 = 16'b0000110000011011; // ECC: 6'b110110
   parameter logic [15:0] D0 = 16'b0011111000011111; // ECC: 6'b111111

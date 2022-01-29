@@ -124,6 +124,7 @@ module lc_ctrl_kmac_if
   // Serialization FSM Running on KMAC Clock //
   /////////////////////////////////////////////
 
+  // SEC_CM: KMAC.FSM.SPARSE
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 5 -m 4 -n 8 \
   //      -s 3343913945 --language=sv

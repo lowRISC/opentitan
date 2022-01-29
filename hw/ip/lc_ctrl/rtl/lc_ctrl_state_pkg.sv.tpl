@@ -122,6 +122,7 @@ package lc_ctrl_state_pkg;
   // Note that the ECC bits are not defined in this package as they will be calculated by
   // the OTP ECC logic at runtime.
 
+  // SEC_CM: MANUF.STATE.SPARSE
   // The A/B values are used for the encoded LC state.
 % for word in lc_st_enc.config['genwords']['lc_state']:
   parameter logic [${data_width-1}:0] A${loop.index} = ${data_width}'b${word[0][ecc_width:]}; // ECC: ${ecc_width}'b${word[0][0:ecc_width]}
@@ -129,6 +130,7 @@ package lc_ctrl_state_pkg;
 
 % endfor
 
+  // SEC_CM: TRANSITION.CTR.SPARSE
   // The C/D values are used for the encoded LC transition counter.
 % for word in lc_st_enc.config['genwords']['lc_cnt']:
   parameter logic [${data_width-1}:0] C${loop.index} = ${data_width}'b${word[0][ecc_width:]}; // ECC: ${ecc_width}'b${word[0][0:ecc_width]}

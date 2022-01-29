@@ -150,6 +150,7 @@ module lc_ctrl_fsm
   // Multibit state error from state decoder
   logic [5:0] state_invalid_error;
 
+  // SEC_CM: MAIN.CTRL_FLOW.CONSISTENCY
   always_comb begin : p_fsm
     // FSM default state assignments.
     fsm_state_d   = fsm_state_q;
@@ -305,6 +306,7 @@ module lc_ctrl_fsm
       // all-zero token value. That way, we always compare a hashed token
       // and guarantee that no other control flow path exists that could
       // bypass the token check.
+      // SEC_CM: TOKEN.DIGEST
       TokenHashSt: begin
         token_hash_req_o = 1'b1;
         if (token_hash_ack_i) begin
@@ -340,6 +342,7 @@ module lc_ctrl_fsm
       // Check again two times whether this transition and the hashed
       // token are valid. Also check again whether the flash RMA
       // response is valid.
+      // SEC_CM: TOKEN.DIGEST
       TokenCheck0St,
       TokenCheck1St: begin
         if (trans_invalid_error_o) begin
@@ -424,9 +427,11 @@ module lc_ctrl_fsm
     // is not valid, we jump into the terminal error state right away.
     // Note that state_invalid_error is a multibit error signal
     // with different error sources - need to reduce this to one bit here.
+    // SEC_CM: MAIN.FSM.LOCAL_ESC
     if (|state_invalid_error | token_if_fsm_err_i) begin
       fsm_state_d = InvalidSt;
       state_invalid_error_o = 1'b1;
+    // SEC_CM: MAIN.FSM.GLOBAL_ESC
     end else if (esc_scrap_state0_i || esc_scrap_state1_i) begin
       fsm_state_d = EscalateSt;
     end
@@ -511,6 +516,7 @@ module lc_ctrl_fsm
     .lc_en_o(test_tokens_valid)
   );
 
+  // SEC_CM: TOKEN.DIGEST
   // This indexes the correct token, based on the transition arc.
   // Note that we always perform a token comparison, even in case of
   // unconditional transitions. In the case of unconditional tokens

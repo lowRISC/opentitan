@@ -50,6 +50,7 @@ package lc_ctrl_pkg;
   // Main FSM State //
   ////////////////////
 
+  // SEC_CM: MAIN.FSM.SPARSE
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 5 -m 15 -n 16 \
   //      -s 2934212379 --language=sv
