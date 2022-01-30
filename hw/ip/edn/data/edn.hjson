@@ -230,7 +230,7 @@
                 to be controlled solely by software. If !!AUTO_REQ_MODE is set, this
                 register will have no effect on operation.
                 Note that CSRNG command format details can be found
-                in [CSRNG]({{< relref "hw/ip/csrng/doc" >}}).
+                in the CSRNG documentation.
                 '''
         }
       ]
@@ -278,7 +278,7 @@
                 FIFO pops the oldest word from the previous command. Updated commands can be inserted
                 by pushing 13 command words into the FIFO, pushing the previous command out.
                 Note that CSRNG command format details can be found
-                in [CSRNG]({{< relref "hw/ip/csrng/doc" >}}).
+                in the CSRNG documentation.
                 '''
         }
       ]
@@ -300,7 +300,7 @@
                 FIFO pops the oldest word from the previous command. Updated commands can be inserted
                 by pushing 13 command words into the FIFO, pushing the previous command out.
                 Note that CSRNG command format details can be found
-                in [CSRNG]({{< relref "hw/ip/csrng/doc" >}}).
+                in the CSRNG documentation.
                 '''
         }
       ]
