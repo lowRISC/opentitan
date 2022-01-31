@@ -8,7 +8,8 @@ class rv_dm_virtual_sequencer extends cip_base_virtual_sequencer #(
   );
   `uvm_component_utils(rv_dm_virtual_sequencer)
 
-  jtag_sequencer jtag_sequencer_h;
+  tl_sequencer    tl_sba_sequencer_h;
+  jtag_sequencer  jtag_sequencer_h;
 
   `uvm_component_new
 
