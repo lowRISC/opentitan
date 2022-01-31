@@ -38,9 +38,6 @@ class aes_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("\n TL delay: [%d:%d] \n zero delay %d",
               cfg.m_tl_agent_cfg.d_ready_delay_min,cfg.m_tl_agent_cfg.d_ready_delay_max,
               cfg.zero_delays  ), UVM_MEDIUM)
-    // MAKE SURE WE DON*T RESEED
-    // TODO remove for V2s
-    csr_wr(.ptr(ral.ctrl_aux_shadowed), .value(0), .en_shadow_wr(1'b1), .blocking(1));
   endtask
 
 
@@ -51,7 +48,7 @@ class aes_base_vseq extends cip_base_vseq #(
     #1ps; // workaround for race condition in dv_lib
     wait(!cfg.clk_rst_vif.rst_n); // under reset will not work here..
     wait(cfg.clk_rst_vif.rst_n);
-  endtask // apply_reset
+  endtask // aes_reset
 
   // setup basic aes features
   virtual task aes_init();
@@ -60,13 +57,13 @@ class aes_base_vseq extends cip_base_vseq #(
     bit [31:0] aes_trigger = '0;
 
     `uvm_info(`gfn, $sformatf("\n\t ----| CHECKING FOR IDLE"), UVM_HIGH)
-     // Wait for DUT ready
     csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
     // initialize control register
     aes_ctrl[1:0]  = aes_pkg::AES_ENC;   // 2'b01
     aes_ctrl[7:2]  = aes_pkg::AES_ECB;   // 6'b00_0001
     aes_ctrl[10:8] = aes_pkg::AES_128;   // 3'b001
     csr_wr(.ptr(ral.ctrl_shadowed), .value(aes_ctrl), .en_shadow_wr(1'b1), .blocking(1));
+    csr_wr(.ptr(ral.ctrl_aux_shadowed), .value(cfg.do_reseed), .en_shadow_wr(1'b1), .blocking(1));
   endtask // aes_init
 
 
@@ -187,12 +184,14 @@ class aes_base_vseq extends cip_base_vseq #(
     bit setup_mode = 0;
     `DV_CHECK_STD_RANDOMIZE_FATAL(setup_mode)
     csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
+    // disable shadow sideload to avoid triggering a reseed unless needed
+    ral.ctrl_shadowed.sideload.set(0);
     if (!setup_mode) begin
       set_operation(item.operation);
       set_mode(item.aes_mode);
       set_key_len(item.key_len);
-      set_sideload(item.sideload_en);
       set_manual_operation(item.manual_op);
+      set_sideload(item.sideload_en);
     end else begin
       // or write all at once //
       ral.ctrl_shadowed.operation.set(item.operation);
@@ -251,10 +250,22 @@ class aes_base_vseq extends cip_base_vseq #(
   endtask // generate_data_stream
 
 
-  virtual task write_data_key_iv( aes_seq_item item,  bit [3:0] [31:0] data);
-    string txt                ="";
-    bit    is_blocking        = ~item.do_b2b;
-    int    wait_on_reseed     = 16;
+  virtual task write_data_key_iv(
+    aes_seq_item item,         // sequence item with configuraton
+    aes_seq_item data_item,        // sequence item with data to process
+    bit          new_msg,          // is this a new msg -> do dut config
+    bit          manual_operation, // use manual operation
+    bit          sideload_en,      // we are currently using sideload key
+    bit          read_output,      // read output or leave untouched
+    ref  bit     rst_set           // reset was forced - restart message
+    );
+
+    status_t status;
+    bit      return_on_idle   = 1;
+    bit [3:0] [7:0] data      = data_item.data_in;
+    string   txt              ="";
+    bit      is_blocking      = ~item.do_b2b;
+    int      wait_on_reseed   = 16;
     string interleave_queue[] = '{ "key_share0_0", "key_share0_1", "key_share0_2", "key_share0_3",
                                    "key_share0_4", "key_share0_5", "key_share0_6", "key_share0_7",
                                    "key_share1_0", "key_share1_1", "key_share1_2", "key_share1_3",
@@ -275,7 +286,7 @@ class aes_base_vseq extends cip_base_vseq #(
 
     if (cfg.random_data_key_iv_order) begin
       int q_size = interleave_queue.size();
-        interleave_queue.shuffle();
+      interleave_queue.shuffle();
     end
 
     txt = {txt, $sformatf("\n\t IS blocking %b", is_blocking) };
@@ -308,13 +319,18 @@ class aes_base_vseq extends cip_base_vseq #(
           csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
         end
       endcase // case interleave_queue[i]
-      //TODO ENABLE FOR V2s
-      //if (wait_on_reseed == 0) csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
+
+      if (wait_on_reseed == 0) begin
+        status_fsm(item, data_item, new_msg,
+                   manual_operation, sideload_en, return_on_idle, read_output, status, rst_set);
+        wait_on_reseed = 16;
+      end
+      if (rst_set) break;
     end
-    //release sideload
+
     `uvm_info(`gfn,
-        $sformatf("\n\t  Configuring the DUT in the following order:  %s, \n\t data 0x%0h",
-            txt, data), UVM_MEDIUM)
+              $sformatf("\n\t  Configuring the DUT in the following order:  %s, \n\t data 0x%0h",
+                        txt, data), UVM_MEDIUM)
   endtask // write_data_key_iv
 
 
@@ -345,7 +361,6 @@ class aes_base_vseq extends cip_base_vseq #(
         `DV_CHECK_RANDOMIZE_WITH_FATAL(req_key_seq, sideload_key.valid == 1;)
         new_key = 0;
       end
-      // send to sequencer with low priority so we can overwrite
       `uvm_send_pri(req_key_seq, 400)
       key_rdy = 1;
     end
@@ -383,12 +398,17 @@ class aes_base_vseq extends cip_base_vseq #(
     cfg_item = aes_item_queue.pop_back();
 
 
-    if (new_msg) setup_dut(cfg_item);
+    // check idle before starting
+    status_fsm(cfg_item, data_item, new_msg, manual_operation, sideload_en, 1, 0, status, rst_set);
+    setup_dut(cfg_item);
+    // check idle before starting
+    status_fsm(cfg_item, data_item, new_msg, manual_operation, sideload_en, 1, 0, status, rst_set);
     if (unbalanced == 0 || manual_operation) begin
        data_item = new();
       while ((aes_item_queue.size() > 0) && !rst_set) begin
-        status_fsm(cfg_item, data_item, new_msg, manual_operation, sideload_en, 0, status, rst_set);
-        if (status.input_ready) begin
+        status_fsm(cfg_item, data_item, new_msg, manual_operation,
+                   sideload_en, 0, 0, status, rst_set);
+        if (status.input_ready && status.idle) begin
           data_item = aes_item_queue.pop_back();
           config_and_transmit(cfg_item, data_item, new_msg,
                               manual_operation, sideload_en, 1, rst_set);
@@ -404,7 +424,8 @@ class aes_base_vseq extends cip_base_vseq #(
       while (((aes_item_queue.size() > 0) || (read_queue.size() > 0)) && !rst_set) begin
         // get the status to make sure we can provide data - but don't wait for output //
         if (aes_item_queue.size() > 0 ) data_item = new();
-        status_fsm(cfg_item, data_item, new_msg, manual_operation, sideload_en, 0, status, rst_set);
+        status_fsm(cfg_item, data_item, new_msg,
+                   manual_operation, sideload_en, 0, 0, status, rst_set);
 
         read  = ($urandom_range(0, 100) <= read_prob);
         write = ($urandom_range(0, 100) <= write_prob);
@@ -432,7 +453,7 @@ class aes_base_vseq extends cip_base_vseq #(
           end
         end
       end
-    end
+    end // else: !if(unbalanced == 0 || manual_operation)
   endtask // send_msg
 
 
@@ -462,14 +483,15 @@ class aes_base_vseq extends cip_base_vseq #(
     status_t              status;
     rst_set = 0;
     if (new_msg) begin
-      write_data_key_iv(cfg_item, data_item.data_in);
+      write_data_key_iv(cfg_item, data_item, new_msg,
+                   manual_operation, sideload_en, 0, rst_set);
     end else begin
       add_data(data_item.data_in, cfg_item.do_b2b);
     end
-    if (manual_operation) trigger();
-    if (read_output) begin
+    if (manual_operation && !rst_set) trigger();
+    if (read_output && !rst_set) begin
        status_fsm(cfg_item, data_item, new_msg,
-                   manual_operation, sideload_en, read_output, status, rst_set);
+                   manual_operation, sideload_en, 0, read_output, status, rst_set);
     end
   endtask // config_and_transmit
 
@@ -490,6 +512,7 @@ class aes_base_vseq extends cip_base_vseq #(
       bit                 new_msg,          // is this a new msg -> do dut config
       bit                 manual_operation, // use manual operation
       bit                 sideload_en,      // currently using sideload key
+      bit                 return_on_idle,   // return if DUT status is idle
       bit                 read_output,      // read output or leave untouched
       ref  status_t       status,           // the current AES status
       ref  bit            rst_set           // we forced a reset - abort current message and restart
@@ -564,6 +587,9 @@ class aes_base_vseq extends cip_base_vseq #(
           if (status.output_valid && read_output) begin
             read_data(data_item.data_out, is_blocking);
             done = 1;
+          end else if (return_on_idle) begin
+            // We expect dut to be IDLE
+            done = 1;
           end else begin
             // if data is not ready the DUT is missing
             // KEY and IV - or the configuration
@@ -586,12 +612,12 @@ class aes_base_vseq extends cip_base_vseq #(
           // if not ready for input and no output ready should only occur after reset
           if (!status.input_ready) begin
             idle_cnt++;
-            if(idle_cnt == 100) begin
+            if(idle_cnt == 1000) begin
               `uvm_fatal(`gfn,
                   $sformatf("AES REPORTED NOT IDLE, READY or STALLING for 100 consecutive reads"))
             end
           end
-          if (!read_output) done = 1;
+          if (!read_output && !return_on_idle) done = 1;
           // else DUT is in operation wait for new output
           txt = {txt, $sformatf("\n\t ----| status state 3 ")};
 
@@ -607,7 +633,7 @@ class aes_base_vseq extends cip_base_vseq #(
       end // else: !if(status.alert_fatal_fault)
     end // while (!done)
 
-    if(global_reset) begin
+    if (global_reset) begin
       rst_set = 1;
     end
     `uvm_info(`gfn, $sformatf("\n\t %s",txt), UVM_MEDIUM)
@@ -657,6 +683,12 @@ class aes_base_vseq extends cip_base_vseq #(
     end
 
     write_key(cfg_item.key, is_blocking);
+    // wait for reseed but check for fatal
+    // if fatal idle will never come
+    csr_rd(.ptr(ral.status), .value(status), .blocking(1));
+    if (!status.alert_fatal_fault && !status.idle) begin
+      if (cfg.reseed_en) csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
+    end
     write_iv(cfg_item.iv, is_blocking);
     add_data(data_item.data_in, cfg_item.do_b2b);
     if (manual_operation) trigger();
@@ -701,8 +733,8 @@ class aes_base_vseq extends cip_base_vseq #(
 
       // when using sideload we need to wait for sequence to release key
       // before starting a new message
-      wait(!key_used)
-        key_rdy = 0;
+      wait(!key_used);
+      key_rdy = 0;
 
 
       if (rst_set) begin
@@ -720,6 +752,7 @@ class aes_base_vseq extends cip_base_vseq #(
           `uvm_info(`gfn, $sformatf("WAITING FOR RESET RELEASE"), UVM_MEDIUM)
           wait(cfg.clk_rst_vif.rst_n);
           #1ps;
+          dut_init("HARD");
         end
       end
     end

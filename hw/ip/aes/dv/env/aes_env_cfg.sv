@@ -43,6 +43,8 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
 
   // use manual operation mode percentage
   int                manual_operation_pct       = 10;
+  // enable reseed on key touch
+  int                reseed_en                  = 1;
 
   // debug / directed test knobs
   // use fixed key
@@ -121,8 +123,11 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   // TL UL contraints //
   rand tl_ul_access_e host_resp_speed;
 
+  rand bit           do_reseed;
+
 
   // constraints
+  constraint do_reseed_c    { if (reseed_en == 0) { do_reseed == 0};}
   constraint num_messages_c {num_messages inside {[num_messages_min : num_messages_max]};}
   constraint ref_model_c    {ref_model    dist   { 0 :/ use_c_model_pct,
                                                    1 :/ (100 - use_c_model_pct)};}

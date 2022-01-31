@@ -284,6 +284,7 @@ class aes_seq_item extends uvm_sequence_item;
     operation        = rhs_.operation;
     mode             = rhs_.mode;
     data_in          = rhs_.data_in;
+    data_in_vld      = rhs_.data_in_vld;
     key              = rhs_.key;
     key_len          = rhs_.key_len;
     key_vld          = rhs_.key_vld;
