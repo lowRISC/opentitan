@@ -365,7 +365,6 @@ package flash_ctrl_pkg;
     logic                 ecc_en;
     logic                 he_en;
     logic                 rd_buf_en;
-    logic                 ecc_multi_err_en;
     logic                 rd;
     logic                 prog;
     logic                 pg_erase;
@@ -396,7 +395,6 @@ package flash_ctrl_pkg;
     ecc_en:        '0,
     he_en:         '0,
     rd_buf_en:     1'b0,
-    ecc_multi_err_en: '0,
     rd:            '0,
     prog:          '0,
     pg_erase:      '0,

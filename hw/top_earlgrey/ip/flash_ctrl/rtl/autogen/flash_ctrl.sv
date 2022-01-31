@@ -791,7 +791,6 @@ module flash_ctrl
   assign flash_phy_req.jtag_req.tms = cio_tms_i;
   assign flash_phy_req.jtag_req.tdi = cio_tdi_i;
   assign flash_phy_req.jtag_req.trst_n = '0;
-  assign flash_phy_req.ecc_multi_err_en = reg2hw.phy_err_cfg.q;
   assign flash_phy_req.intg_err = intg_err;
   assign cio_tdo_o = flash_phy_rsp.jtag_rsp.tdo;
   assign cio_tdo_en_o = flash_phy_rsp.jtag_rsp.tdo_oe;

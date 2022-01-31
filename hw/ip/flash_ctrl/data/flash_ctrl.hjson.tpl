@@ -1134,54 +1134,6 @@
         }
       }
 
-      { name: "PHY_ERR_CFG_REGWEN",
-        swaccess: "rw0c",
-        hwaccess: "none",
-        desc: '''
-        Controls the configurability of the !!PHY_ERR_CFG register.
-        ''',
-
-        fields: [
-          { bits: "0",
-            name: "EN",
-            desc: '''
-              Configuration enable.
-            ''',
-            resval: "1",
-          },
-        ]
-      },
-
-      { name: "PHY_ERR_CFG",
-        regwen: "PHY_ERR_CFG_REGWEN",
-        desc: "Phy error configuration",
-        swaccess: "rw",
-        hwaccess: "hro",
-        fields: [
-          { bits: "0",
-            name: "ECC_MULTI_ERR_DATA_EN",
-            desc: '''
-              Transaction error response for ECC multi bit errors in data type transactions.
-              When set to 1, the error response is propagated to the source.
-              When set to 0, the error response is silenced.
-
-              Note this register only controls whether an error response is generated to the source
-              for data transactions.  It does not control whether !!ERR_CODE and its associated error
-              status register collects error information.
-
-              This can be used by software to dictate whether a multi-bit error should be reflected as a
-              bus error to bus hosts or the flash controller.
-
-              The reason this may not be desired is because software may want to triage the actual bit change,
-              and that would not be possible if an error response is always generated.  The hosts may simply
-              react on the error and discard the data.
-            '''
-          },
-        ]
-        tags: [ // alert triggers should be tested by directed tests
-               "excl:CsrAllTests:CsrExclWrite"]
-      },
-
       { name: "PHY_ALERT_CFG",
         desc: "Phy alert configuration",
         swaccess: "rw",

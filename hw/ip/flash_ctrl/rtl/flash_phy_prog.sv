@@ -259,22 +259,15 @@ module flash_phy_prog import flash_phy_pkg::*; (
   logic [PlainDataWidth-1:0] ecc_data_in;
   assign ecc_data_in = {plain_data_ecc, packed_data};
 
-  // first ecc encoder used for overall data
+  // reliability ECC calculation
   prim_secded_hamming_76_68_enc u_enc (
     .data_i(ecc_data_in),
     .data_o(ecc_data)
   );
 
-  // TODO, can this be merged now?
-  // second ecc encoder used for plain portion only
-  // the duplicated ecc encoder is a temporary work-around
-  // for prim_flash / dv which currently maintains a separate
-  // memory for the normal data portion and the metadata portion.
-  // Once that is addressed in a different PR, the two encoders
-  // will be merged.
-  // This is also related to how mem_bkdr is structured. The plain
-  // ECC for flash is truncated when used, so it does not fit neatly
-  // into the back door scheme.
+  // integrity ECC calculation
+  // This instance can technically be merged with the instance above, but is
+  // kept separate for the sake of convenience
   prim_secded_hamming_72_64_enc u_plain_enc (
     .data_i(packed_data),
     .data_o(plain_data_w_ecc)

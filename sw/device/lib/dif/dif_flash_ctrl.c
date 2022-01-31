@@ -1230,11 +1230,6 @@ dif_result_t dif_flash_ctrl_set_phy_configuration(
     return kDifLocked;
   }
 
-  uint32_t reg =
-      bitfield_bit32_write(0, FLASH_CTRL_PHY_ERR_CFG_ECC_MULTI_ERR_DATA_EN_BIT,
-                           config.ecc_multi_bit_data_error_enable);
-  mmio_region_write32(handle->dev.base_addr, FLASH_CTRL_PHY_ERR_CFG_REG_OFFSET,
-                      reg);
   return kDifOk;
 }
 
@@ -1245,13 +1240,12 @@ dif_result_t dif_flash_ctrl_get_phy_configuration(
   if (handle == NULL || config_out == NULL) {
     return kDifBadArg;
   }
-  const uint32_t reg = mmio_region_read32(handle->dev.base_addr,
-                                          FLASH_CTRL_PHY_ERR_CFG_REG_OFFSET);
-  dif_flash_ctrl_phy_config_t config = {
-      .ecc_multi_bit_data_error_enable = bitfield_bit32_read(
-          reg, FLASH_CTRL_PHY_ERR_CFG_ECC_MULTI_ERR_DATA_EN_BIT),
-  };
-  *config_out = config;
+
+  dif_flash_ctrl_phy_config_t phy_config;
+  phy_config.unused = 1;
+
+  // There is nothing at the moment
+  *config_out = phy_config;
   return kDifOk;
 }
 
@@ -1272,10 +1266,6 @@ dif_result_t dif_flash_ctrl_lock_phy_configuration(
     return kDifLocked;
   }
 
-  uint32_t reg = bitfield_bit32_write(
-      0, FLASH_CTRL_REGION_CFG_REGWEN_0_REGION_0_BIT, false);
-  mmio_region_write32(handle->dev.base_addr,
-                      FLASH_CTRL_PHY_ERR_CFG_REGWEN_REG_OFFSET, reg);
   return kDifOk;
 }
 
@@ -1285,9 +1275,8 @@ dif_result_t dif_flash_ctrl_phy_configuration_is_locked(
   if (handle == NULL || locked_out == NULL) {
     return kDifBadArg;
   }
-  uint32_t reg = mmio_region_read32(handle->dev.base_addr,
-                                    FLASH_CTRL_PHY_ERR_CFG_REGWEN_REG_OFFSET);
-  *locked_out = !bitfield_bit32_read(reg, FLASH_CTRL_PHY_ERR_CFG_REGWEN_EN_BIT);
+
+  *locked_out = 0;
   return kDifOk;
 }
 

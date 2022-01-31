@@ -906,22 +906,6 @@ TEST_F(FlashCtrlTest, SimpleQueries) {
   EXPECT_EQ(ecc_errors.single_bit_error_count, 11);
   EXPECT_EQ(ecc_errors.last_error_address, 0x16487590u);
 
-  dif_flash_ctrl_phy_config_t phy_config;
-  EXPECT_READ32(FLASH_CTRL_PHY_ERR_CFG_REG_OFFSET,
-                {
-                    {FLASH_CTRL_PHY_ERR_CFG_ECC_MULTI_ERR_DATA_EN_BIT, 1},
-                });
-  EXPECT_EQ(dif_flash_ctrl_get_phy_configuration(&dif_flash_ctrl_, &phy_config),
-            kDifOk);
-  EXPECT_EQ(phy_config.ecc_multi_bit_data_error_enable, 1);
-
-  EXPECT_READ32(FLASH_CTRL_PHY_ERR_CFG_REGWEN_REG_OFFSET,
-                {{FLASH_CTRL_PHY_ERR_CFG_REGWEN_EN_BIT, 0}});
-  EXPECT_EQ(
-      dif_flash_ctrl_phy_configuration_is_locked(&dif_flash_ctrl_, &locked),
-      kDifOk);
-  EXPECT_TRUE(locked);
-
   dif_flash_ctrl_phy_status_t phy_status;
   EXPECT_READ32(FLASH_CTRL_PHY_STATUS_REG_OFFSET,
                 {
