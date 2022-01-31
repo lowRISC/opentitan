@@ -21,7 +21,7 @@ module rv_dm
   input  logic                clk_i,       // clock
   input  logic                rst_ni,      // asynchronous reset active low, connect PoR
                                            // here, not the system reset
-  input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
+  input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i, // Debug module lifecycle enable/disable
   input  prim_mubi_pkg::mubi4_t scanmode_i,
   input                       scan_rst_ni,
   output logic                ndmreset_req_o,  // non-debug module reset

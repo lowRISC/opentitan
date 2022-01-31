@@ -34,6 +34,14 @@ The debug system is compliant with the [RISC-V Debug Specification 0.13.2](https
 
 All hardware interfaces of the debug system are documented in the [PULP RISC-V Debug System Documentation](https://github.com/lowRISC/opentitan/blob/master/hw/vendor/pulp_riscv_dbg/doc/debug-system.md), with the exception of the bus interfaces, which are converted to TL-UL by this wrapper.
 
+### Life Cycle Control
+
+Debug system functionality is controlled by the [HW_DEBUG_EN]({{< relref "hw/ip/lc_ctrl/doc/#hw_debug_en" >}}) function of the life cycle controller.
+
+```verilog
+input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i, // Debug module lifecycle enable/disable
+```
+
 ### JTAG
 
 The debug system provides a standard JTAG (IEEE Std 1149.1-2013) port for external debug access.
