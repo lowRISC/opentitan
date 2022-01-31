@@ -5,7 +5,6 @@
 #include "sw/device/silicon_creator/mask_rom/boot_policy.h"
 
 #include "gtest/gtest.h"
-#include "sw/device/silicon_creator/lib/mock_boot_data.h"
 #include "sw/device/silicon_creator/lib/mock_manifest.h"
 #include "sw/device/silicon_creator/lib/mock_shutdown.h"
 #include "sw/device/silicon_creator/mask_rom/mock_boot_policy_ptrs.h"
@@ -13,16 +12,12 @@
 
 namespace manifest_unittest {
 namespace {
-using ::testing::DoAll;
-using ::testing::NotNull;
 using ::testing::Return;
-using ::testing::SetArgPointee;
 
 class BootPolicyTest : public mask_rom_test::MaskRomTest {
  protected:
   mask_rom_test::MockBootPolicyPtrs boot_policy_ptrs_;
   mask_rom_test::MockManifest mock_manifest_;
-  mask_rom_test::MockBootData mock_boot_data_;
 };
 
 class ManifestCheckLengthTest : public BootPolicyTest,
@@ -33,11 +28,10 @@ TEST_P(ManifestCheckLengthTest, ManifestCheckGood) {
   manifest.identifier = MANIFEST_IDENTIFIER_ROM_EXT;
   manifest.length = GetParam();
   boot_data_t boot_data{};
-  EXPECT_CALL(mock_manifest_, Check(&manifest)).WillOnce(Return(kErrorOk));
-  EXPECT_CALL(mock_boot_data_, Read(kLcStateProd, NotNull()))
-      .WillOnce(DoAll(SetArgPointee<1>(boot_data), Return(kErrorOk)));
 
-  EXPECT_EQ(boot_policy_manifest_check(kLcStateProd, &manifest), kErrorOk);
+  EXPECT_CALL(mock_manifest_, Check(&manifest)).WillOnce(Return(kErrorOk));
+
+  EXPECT_EQ(boot_policy_manifest_check(&manifest, &boot_data), kErrorOk);
 }
 
 INSTANTIATE_TEST_SUITE_P(GoodLengths, ManifestCheckLengthTest,
@@ -47,21 +41,23 @@ INSTANTIATE_TEST_SUITE_P(GoodLengths, ManifestCheckLengthTest,
 
 TEST_F(BootPolicyTest, ManifestCheckBadIdentifier) {
   manifest_t manifest{};
+  boot_data_t boot_data{};
 
-  EXPECT_EQ(boot_policy_manifest_check(kLcStateProd, &manifest),
+  EXPECT_EQ(boot_policy_manifest_check(&manifest, &boot_data),
             kErrorBootPolicyBadIdentifier);
 }
 
 TEST_F(BootPolicyTest, ManifestCheckBadLength) {
   manifest_t manifest{};
   manifest.identifier = MANIFEST_IDENTIFIER_ROM_EXT;
+  boot_data_t boot_data{};
 
   manifest.length = MANIFEST_LENGTH_FIELD_ROM_EXT_MIN - 1;
-  EXPECT_EQ(boot_policy_manifest_check(kLcStateProd, &manifest),
+  EXPECT_EQ(boot_policy_manifest_check(&manifest, &boot_data),
             kErrorBootPolicyBadLength);
 
   manifest.length = MANIFEST_LENGTH_FIELD_ROM_EXT_MAX + 1;
-  EXPECT_EQ(boot_policy_manifest_check(kLcStateProd, &manifest),
+  EXPECT_EQ(boot_policy_manifest_check(&manifest, &boot_data),
             kErrorBootPolicyBadLength);
 }
 
@@ -69,23 +65,12 @@ TEST_F(BootPolicyTest, ManifestCheckBadManifest) {
   manifest_t manifest{};
   manifest.identifier = MANIFEST_IDENTIFIER_ROM_EXT;
   manifest.length = MANIFEST_LENGTH_FIELD_ROM_EXT_MAX;
+  boot_data_t boot_data{};
 
   EXPECT_CALL(mock_manifest_, Check(&manifest))
       .WillOnce(Return(kErrorManifestBadEntryPoint));
-  EXPECT_EQ(boot_policy_manifest_check(kLcStateProd, &manifest),
+  EXPECT_EQ(boot_policy_manifest_check(&manifest, &boot_data),
             kErrorManifestBadEntryPoint);
-}
-
-TEST_F(BootPolicyTest, ManifestCheckBadBootData) {
-  manifest_t manifest{};
-  manifest.identifier = MANIFEST_IDENTIFIER_ROM_EXT;
-  manifest.length = MANIFEST_LENGTH_FIELD_ROM_EXT_MAX;
-
-  EXPECT_CALL(mock_manifest_, Check(&manifest)).WillOnce(Return(kErrorOk));
-  EXPECT_CALL(mock_boot_data_, Read(kLcStateProd, NotNull()))
-      .WillOnce(Return(kErrorBootDataNotFound));
-  EXPECT_EQ(boot_policy_manifest_check(kLcStateProd, &manifest),
-            kErrorBootDataNotFound);
 }
 
 TEST_F(BootPolicyTest, ManifestCheckRollback) {
@@ -96,9 +81,7 @@ TEST_F(BootPolicyTest, ManifestCheckRollback) {
   boot_data.min_security_version_rom_ext = 1;
 
   EXPECT_CALL(mock_manifest_, Check(&manifest)).WillOnce(Return(kErrorOk));
-  EXPECT_CALL(mock_boot_data_, Read(kLcStateProd, NotNull()))
-      .WillOnce(DoAll(SetArgPointee<1>(boot_data), Return(kErrorOk)));
-  EXPECT_EQ(boot_policy_manifest_check(kLcStateProd, &manifest),
+  EXPECT_EQ(boot_policy_manifest_check(&manifest, &boot_data),
             kErrorBootPolicyRollback);
 }
 
