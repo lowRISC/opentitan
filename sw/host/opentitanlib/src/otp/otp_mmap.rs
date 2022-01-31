@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::otp::num_de::{self, DeferredValue};
+use crate::util::num_de::{self, DeferredValue};
 use crate::otp::otp_img::OtpImg;
 use crate::otp::vmem_serialize::*;
 
