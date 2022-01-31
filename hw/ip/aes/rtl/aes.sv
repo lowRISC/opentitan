@@ -71,7 +71,7 @@ module aes
   aes_hw2reg_t               hw2reg;
 
   logic      [NumAlerts-1:0] alert;
-  lc_ctrl_pkg::lc_tx_t       lc_escalate_en;
+  lc_ctrl_pkg::lc_tx_t [1:0] lc_escalate_en;
 
   logic                      edn_req;
   logic                      edn_ack;
@@ -100,7 +100,7 @@ module aes
 
   // Synchronize life cycle input
   prim_lc_sync #(
-    .NumCopies (1)
+    .NumCopies (2)
   ) u_prim_lc_sync (
     .clk_i,
     .rst_ni,
@@ -114,17 +114,17 @@ module aes
     .DataSrc2Dst(1'b0),
     .DataReg(1'b0)
   ) u_prim_sync_reqack_data (
-    .clk_src_i  ( clk_i                              ),
-    .rst_src_ni ( rst_ni                             ),
-    .clk_dst_i  ( clk_edn_i                          ),
-    .rst_dst_ni ( rst_edn_ni                         ),
-    .req_chk_i  ( lc_escalate_en == lc_ctrl_pkg::Off ),
-    .src_req_i  ( edn_req                            ),
-    .src_ack_o  ( edn_ack                            ),
-    .dst_req_o  ( edn_o.edn_req                      ),
-    .dst_ack_i  ( edn_i.edn_ack                      ),
-    .data_i     ( edn_i.edn_bus                      ),
-    .data_o     ( edn_data                           )
+    .clk_src_i  ( clk_i                                 ),
+    .rst_src_ni ( rst_ni                                ),
+    .clk_dst_i  ( clk_edn_i                             ),
+    .rst_dst_ni ( rst_edn_ni                            ),
+    .req_chk_i  ( lc_escalate_en[0] == lc_ctrl_pkg::Off ),
+    .src_req_i  ( edn_req                               ),
+    .src_ack_o  ( edn_ack                               ),
+    .dst_req_o  ( edn_o.edn_req                         ),
+    .dst_ack_i  ( edn_i.edn_ack                         ),
+    .data_i     ( edn_i.edn_bus                         ),
+    .data_o     ( edn_data                              )
   );
   // We don't track whether the entropy is pre-FIPS or not inside AES.
   assign unused_edn_fips = edn_i.edn_fips;
@@ -172,7 +172,7 @@ module aes
 
     .keymgr_key_i           ( keymgr_key_i         ),
 
-    .lc_escalate_en_i       ( lc_escalate_en       ),
+    .lc_escalate_en_i       ( lc_escalate_en[1]    ),
 
     .intg_err_alert_i       ( intg_err_alert       ),
     .alert_recov_o          ( alert[0]             ),
