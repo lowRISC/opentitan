@@ -1,0 +1,101 @@
+"""
+@generated
+cargo-raze crate build file.
+
+DO NOT EDIT! Replaced on runs of cargo-raze
+"""
+
+# buildifier: disable=load
+load("@bazel_skylib//lib:selects.bzl", "selects")
+
+# buildifier: disable=load
+load(
+    "@rules_rust//rust:defs.bzl",
+    "rust_binary",
+    "rust_library",
+    "rust_proc_macro",
+    "rust_test",
+)
+
+package(default_visibility = [
+    # Public for visibility by "@raze__crate__version//" targets.
+    #
+    # Prefer access through "//third_party/cargo", which limits external
+    # visibility to explicit Cargo.toml dependencies.
+    "//visibility:public",
+])
+
+licenses([
+    "notice",  # MIT from expression "MIT"
+])
+
+# Generated Targets
+# buildifier: disable=out-of-order-load
+# buildifier: disable=load-on-top
+load(
+    "@rules_rust//cargo:cargo_build_script.bzl",
+    "cargo_build_script",
+)
+
+cargo_build_script(
+    name = "scroll_build_script",
+    srcs = glob(["**/*.rs"]),
+    build_script_env = {
+    },
+    crate_features = [
+        "derive",
+        "scroll_derive",
+        "std",
+    ],
+    crate_root = "build.rs",
+    data = glob(["**"]),
+    edition = "2015",
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+    version = "0.9.2",
+    visibility = ["//visibility:private"],
+    deps = [
+        "@raze__rustc_version__0_2_3//:rustc_version",
+    ],
+)
+
+# Unsupported target "bench" with type "bench" omitted
+
+# Unsupported target "data_ctx" with type "example" omitted
+
+rust_library(
+    name = "scroll",
+    srcs = glob(["**/*.rs"]),
+    crate_features = [
+        "derive",
+        "scroll_derive",
+        "std",
+    ],
+    crate_root = "src/lib.rs",
+    data = [],
+    edition = "2015",
+    proc_macro_deps = [
+        "@raze__scroll_derive__0_9_5//:scroll_derive",
+    ],
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+    version = "0.9.2",
+    # buildifier: leave-alone
+    deps = [
+        ":scroll_build_script",
+    ],
+)
+
+# Unsupported target "api" with type "test" omitted
+
+# Unsupported target "readme" with type "test" omitted

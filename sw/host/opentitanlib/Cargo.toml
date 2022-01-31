@@ -30,6 +30,7 @@ hex = "0.4.3"
 # mundane as a dependency.  To regenerate the bazel dependency rules via
 # `cargo raze`, you'll have to temporarily comment out `mundane`.
 mundane = "0.5.0"
+memoffset = "0.6.0"
 num-bigint-dig = "0.7.0"
 num-traits = "0.2.14"
 sha2 = "0.10.1"
