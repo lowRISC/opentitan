@@ -21,6 +21,25 @@
 #include "rstmgr_regs.h"     // Generated.
 #include "sram_ctrl_regs.h"  // Generated.
 
+#define BACKDOOR_TEST_WORDS 16
+#define BACKDOOR_TEST_BYTES BACKDOOR_TEST_WORDS * sizeof(uint32_t)
+
+/* The offset into the main SRAM where we will backdoor write data.
+ * This offset only needs to be after the location of
+ * "sram_ctrl_main_scramble_buffer" as all other data in the SRAM
+ * will have been scrambled at this point. Using the midpoint
+ * of the SRAM.
+ */
+#define BACKDOOR_MAIN_RAM_OFFSET \
+  (TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES / 8)
+
+/* The offset in the retention SRAM where we will copy the data
+ * read from the main SRAM that was written by the backdoor. This
+ * location needs to be after SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS which
+ * is the end of where the scrambled data is located.
+ */
+#define RET_RAM_COPY_OFFSET SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS
+
 const test_config_t kTestConfig;
 
 static dif_sram_ctrl_t sram_ctrl;
@@ -60,6 +79,25 @@ static const sram_ctrl_testutils_data_t kRamTestPattern2 = {
         },
 };
 
+/** Expected data for the backdoor write test, to be written from the testbench.
+ */
+static const uint8_t kBackdoorExpectedBytes[BACKDOOR_TEST_BYTES];
+
+/**
+ * SRAM backdoor offset address.
+ */
+static const uint32_t kMainRamBackdoorOffset =
+    TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
+    (BACKDOOR_MAIN_RAM_OFFSET * sizeof(uint32_t));
+
+/**
+ * The address in the retention SRAM where the backdoor written
+ * data will be copied to be checked after reset.
+ */
+static const uint32_t kRetRamBackdoorOffset =
+    TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
+    (RET_RAM_COPY_OFFSET * sizeof(uint32_t));
+
 /**
  * Performs scrambling, saves the test relevant data and resets the system.
  *
@@ -68,8 +106,9 @@ static const sram_ctrl_testutils_data_t kRamTestPattern2 = {
  * data. This will thrash the SRAM (including .bss, .data segments and the
  * stack), effectively rendering the C runtime environment invalid.
  *
- * This function saves contents of the `sram_ctrl_main_scramble_buffer` in the
- * RETENTION SRAM, which is kept intact across the system reboot.
+ * This function saves contents of the `sram_ctrl_main_scramble_buffer` and
+ * the data written from the testbench in the RETENTION SRAM, which is
+ * kept intact across the system reboot.
  */
 static noreturn void main_sram_scramble(void) {
   asm volatile(
@@ -90,6 +129,15 @@ static noreturn void main_sram_scramble(void) {
       "  addi %[kCopyFromAddr], %[kCopyFromAddr], 4                 \n"
       "  addi %[kCopyToAddr], %[kCopyToAddr], 4                     \n"
       "  blt %[kCopyToAddr], %[kCopyToEndAddr], .L_buffer_copy_loop \n"
+
+      // Copy the backdoor written contents to the retention SRAM.
+      ".L_offset_copy_loop:                                         \n"
+      "  lw t0, 0(%[kOffsetCopyFromAddr])                           \n"
+      "  sw t0, 0(%[kOffsetCopyToAddr])                             \n"
+      "  addi %[kOffsetCopyFromAddr], %[kOffsetCopyFromAddr], 4     \n"
+      "  addi %[kOffsetCopyToAddr], %[kOffsetCopyToAddr], 4         \n"
+      "  blt %[kOffsetCopyToAddr], %[kOffsetCopyToEndAddr], "
+      ".L_offset_copy_loop \n"
 
       // Trigger the software system reset via the Reset Manager.
       "li t0, %[kMultiBitTrue]                                      \n"
@@ -115,7 +163,12 @@ static noreturn void main_sram_scramble(void) {
         [kCopyFromAddr] "r"(sram_ctrl_main_scramble_buffer),
         [kCopyToAddr] "r"(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR),
         [kCopyToEndAddr] "r"(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
-                             SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS)
+                             (SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS * 4)),
+
+        [kOffsetCopyFromAddr] "r"(kMainRamBackdoorOffset),
+        [kOffsetCopyToAddr] "r"(kRetRamBackdoorOffset),
+        [kOffsetCopyToEndAddr] "r"(kRetRamBackdoorOffset +
+                                   (BACKDOOR_TEST_WORDS * 4))
 
       : "t0");
 
@@ -129,7 +182,6 @@ static bool reentry_after_system_reset(void) {
   dif_rstmgr_t rstmgr;
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
-
   return rstmgr_testutils_reset_info_any(&rstmgr, kDifRstmgrResetInfoSw);
 }
 
@@ -175,6 +227,10 @@ bool test_main(void) {
         TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR, &kRamTestPattern1));
     CHECK(sram_ctrl_testutils_read_check_neq(
         TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR, &kRamTestPattern2));
+
+    sram_ctrl_testutils_check_backdoor_write(
+        TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR, BACKDOOR_TEST_WORDS,
+        RET_RAM_COPY_OFFSET, kBackdoorExpectedBytes);
   } else {
     prepare_for_scrambling();
     main_sram_scramble();

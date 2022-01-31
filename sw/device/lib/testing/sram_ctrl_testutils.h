@@ -56,4 +56,20 @@ bool sram_ctrl_testutils_read_check_neq(
  */
 void sram_ctrl_testutils_scramble(const dif_sram_ctrl_t *sram_ctrl);
 
+/**
+ * Triggers the SRAM wipe operation and waits for it to finish.
+ */
+void sram_ctrl_testutils_wipe(const dif_sram_ctrl_t *sram_ctrl);
+
+/**
+ * Reads data from `backdoor_addr` in SRAM (retention or main) and
+ * compares against `expected_bytes`.
+ *
+ * The data is checked for equality.
+ */
+void sram_ctrl_testutils_check_backdoor_write(uintptr_t backdoor_addr,
+                                              uint32_t num_words,
+                                              uint32_t offset_addr,
+                                              const uint8_t *expected_bytes);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_SRAM_CTRL_TESTUTILS_H_

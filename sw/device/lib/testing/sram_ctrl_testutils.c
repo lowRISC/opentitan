@@ -14,7 +14,7 @@ void sram_ctrl_testutils_write(uintptr_t address,
                                const sram_ctrl_testutils_data_t *data) {
   mmio_region_t region = mmio_region_from_addr(address);
   for (size_t index = 0; index < SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS; ++index) {
-    mmio_region_write32(region, index, data->words[index]);
+    mmio_region_write32(region, sizeof(uint32_t) * index, data->words[index]);
   }
 }
 
@@ -29,7 +29,7 @@ static bool read_from_ram_check(uintptr_t address,
                                 bool eq) {
   mmio_region_t region = mmio_region_from_addr(address);
   for (size_t index = 0; index < SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS; ++index) {
-    uint32_t read_word = mmio_region_read32(region, index);
+    uint32_t read_word = mmio_region_read32(region, sizeof(uint32_t) * index);
     if ((read_word == expected->words[index]) != eq) {
       LOG_INFO("READ_WORD[%x], CONTROL_WORD[%x], INDEX = %d", read_word,
                expected->words[index], index);
@@ -94,4 +94,42 @@ void sram_ctrl_testutils_scramble(const dif_sram_ctrl_t *sram_ctrl) {
   // Loop until new scrambling key has been obtained.
   LOG_INFO("Waiting for SRAM scrambling to finish");
   IBEX_SPIN_FOR(scramble_finished(sram_ctrl), usec);
+}
+
+/**
+ * Checks whether the SRAM wipe operation has finished.
+ */
+static bool wipe_finished(const dif_sram_ctrl_t *sram_ctrl) {
+  dif_sram_ctrl_status_bitfield_t status;
+  CHECK_DIF_OK(dif_sram_ctrl_get_status(sram_ctrl, &status));
+  return status & kDifSramCtrlStatusInitDone;
+}
+
+void sram_ctrl_testutils_wipe(const dif_sram_ctrl_t *sram_ctrl) {
+  CHECK_DIF_OK(dif_sram_ctrl_wipe(sram_ctrl));
+  // The timeout calculation is the same as the scramble timeout.
+  uint32_t usec =
+      udiv64_slow(1000000, udiv64_slow(kClockFreqCpuHz, 850, NULL) + 1, NULL);
+  LOG_INFO("Waiting for SRAM wipe to finish");
+  IBEX_SPIN_FOR(wipe_finished(sram_ctrl), usec);
+}
+
+void sram_ctrl_testutils_check_backdoor_write(uintptr_t backdoor_addr,
+                                              uint32_t num_words,
+                                              uint32_t offset_addr,
+                                              const uint8_t *expected_bytes) {
+  mmio_region_t mem_region = mmio_region_from_addr(backdoor_addr);
+  uint32_t backdoor_data[num_words];
+  uint32_t expected_data[num_words];
+
+  for (int i = 0; i < num_words; ++i) {
+    backdoor_data[i] =
+        mmio_region_read32(mem_region, sizeof(uint32_t) * (offset_addr + i));
+    // The expected data bytes are organized little-endian.
+    expected_data[i] = expected_bytes[(i * sizeof(uint32_t)) + 3] << 24 |
+                       expected_bytes[(i * sizeof(uint32_t)) + 2] << 16 |
+                       expected_bytes[(i * sizeof(uint32_t)) + 1] << 8 |
+                       expected_bytes[(i * sizeof(uint32_t))];
+    CHECK(backdoor_data[i] == expected_data[i]);
+  }
 }

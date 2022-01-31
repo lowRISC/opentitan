@@ -97,6 +97,25 @@ TEST_F(RequestNewKeyTest, Success) {
   EXPECT_DIF_OK(dif_sram_ctrl_request_new_key(&sram_ctrl_));
 }
 
+class WipeTest : public SramCtrlTest {};
+
+TEST_F(WipeTest, NullArgs) {
+  EXPECT_EQ(dif_sram_ctrl_wipe(nullptr), kDifBadArg);
+}
+
+TEST_F(WipeTest, Locked) {
+  EXPECT_READ32(SRAM_CTRL_CTRL_REGWEN_REG_OFFSET, 0);
+  EXPECT_EQ(dif_sram_ctrl_wipe(&sram_ctrl_), kDifLocked);
+}
+
+TEST_F(WipeTest, Success) {
+  EXPECT_READ32(SRAM_CTRL_CTRL_REGWEN_REG_OFFSET, 1);
+  EXPECT_WRITE32(SRAM_CTRL_CTRL_REG_OFFSET,
+                 {{SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT, false},
+                  {SRAM_CTRL_CTRL_INIT_BIT, true}});
+  EXPECT_EQ(dif_sram_ctrl_wipe(&sram_ctrl_), kDifOk);
+}
+
 class GetStatusTest : public SramCtrlTest {};
 
 TEST_F(GetStatusTest, NullArgs) {
