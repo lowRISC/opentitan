@@ -81,8 +81,7 @@ module rv_dm
     .tl_o      (rom_tl_d_o    ),
     .tl_win_o  (rom_tl_win_h2d),
     .tl_win_i  (rom_tl_win_d2h),
-    // SEC_CM: BUS.INTEGRITY
-    .intg_err_o(rom_intg_error),
+    .intg_err_o(),
     .devmode_i (1'b1          )
   );
 
@@ -459,6 +458,7 @@ module rv_dm
     .SramDw(BusWidth),
     .Outstanding(1),
     .ByteAccess(0),
+    .CmdIntgCheck(1),
     .EnableRspIntgGen(1)
   ) tl_adapter_device_mem (
     .clk_i,
@@ -471,7 +471,8 @@ module rv_dm
     .addr_o      (addr_w),
     .wdata_o     (wdata),
     .wmask_o     (),
-    .intg_error_o(),
+    // SEC_CM: BUS.INTEGRITY
+    .intg_error_o(rom_intg_error),
     .rdata_i     (rdata & {BusWidth{rom_en}}),
     .rvalid_i    (rvalid & rom_en),
     .rerror_i    ({2{~rom_en}}),
