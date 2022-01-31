@@ -124,6 +124,16 @@ static rom_error_t mask_rom_verify(const manifest_t *manifest,
       sigverify_rsa_key_id_get(&manifest->modulus), lc_state, &key));
 
   hmac_sha256_init();
+  // Invalidate the digest if the security version of the manifest is smaller
+  // than the minimum required security version.
+  if (launder32(manifest->security_version) <
+      boot_data.min_security_version_rom_ext) {
+    uint32_t extra_word = UINT32_MAX;
+    hmac_sha256_update(&extra_word, sizeof(extra_word));
+  }
+  HARDENED_CHECK_GE(manifest->security_version,
+                    boot_data.min_security_version_rom_ext);
+
   // Hash usage constraints.
   manifest_usage_constraints_t usage_constraints_from_hw;
   sigverify_usage_constraints_get(manifest->usage_constraints.selector_bits,
