@@ -20,9 +20,7 @@ module lc_ctrl
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid    = LcKeymgrDivWidth'(0),
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestDevRma = LcKeymgrDivWidth'(1),
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction = LcKeymgrDivWidth'(2),
-  parameter lc_token_t RndCnstRmaTokenInvalid        = LcTokenWidth'(8'hAA),
-  parameter lc_token_t RndCnstTestUnlockTokenInvalid = LcTokenWidth'(8'hBB),
-  parameter lc_token_t RndCnstTestExitTokenInvalid   = LcTokenWidth'(8'hCC)
+  parameter lc_token_mux_t  RndCnstInvalidTokens         = {TokenMuxBits{1'b1}}
 ) (
   // Life cycle controller clock
   input                                              clk_i,
@@ -66,6 +64,7 @@ module lc_ctrl
   output kmac_pkg::app_req_t                         kmac_data_o,
   // OTP broadcast outputs
   // No sync required since LC and OTP are in the same clock domain.
+  // SEC_CM: TOKEN_VALID.CTRL.MUBI
   input  otp_ctrl_pkg::otp_lc_data_t                 otp_lc_data_i,
   // Life cycle broadcast outputs (all of them are registered).
   // SEC_CM: INTERSIG.MUBI
@@ -621,9 +620,7 @@ module lc_ctrl
     .RndCnstLcKeymgrDivInvalid     ( RndCnstLcKeymgrDivInvalid     ),
     .RndCnstLcKeymgrDivTestDevRma  ( RndCnstLcKeymgrDivTestDevRma  ),
     .RndCnstLcKeymgrDivProduction  ( RndCnstLcKeymgrDivProduction  ),
-    .RndCnstRmaTokenInvalid        ( RndCnstRmaTokenInvalid        ),
-    .RndCnstTestUnlockTokenInvalid ( RndCnstTestUnlockTokenInvalid ),
-    .RndCnstTestExitTokenInvalid   ( RndCnstTestExitTokenInvalid   )
+    .RndCnstInvalidTokens          ( RndCnstInvalidTokens          )
   ) u_lc_ctrl_fsm (
     .clk_i,
     .rst_ni,

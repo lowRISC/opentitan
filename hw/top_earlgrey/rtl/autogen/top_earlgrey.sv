@@ -1498,9 +1498,7 @@ module top_earlgrey #(
     .RndCnstLcKeymgrDivInvalid(RndCnstLcCtrlLcKeymgrDivInvalid),
     .RndCnstLcKeymgrDivTestDevRma(RndCnstLcCtrlLcKeymgrDivTestDevRma),
     .RndCnstLcKeymgrDivProduction(RndCnstLcCtrlLcKeymgrDivProduction),
-    .RndCnstRmaTokenInvalid(RndCnstLcCtrlRmaTokenInvalid),
-    .RndCnstTestUnlockTokenInvalid(RndCnstLcCtrlTestUnlockTokenInvalid),
-    .RndCnstTestExitTokenInvalid(RndCnstLcCtrlTestExitTokenInvalid)
+    .RndCnstInvalidTokens(RndCnstLcCtrlInvalidTokens)
   ) u_lc_ctrl (
       // [15]: fatal_prog_error
       // [16]: fatal_state_error
