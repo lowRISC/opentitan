@@ -16,7 +16,7 @@ module lc_ctrl_state_decode
   // Main FSM state.
   input  fsm_state_e        fsm_state_i,
   // Decoded state vector.
-  output dec_lc_state_e     dec_lc_state_o,
+  output ext_dec_lc_state_t dec_lc_state_o,
   output dec_lc_id_state_e  dec_lc_id_state_o,
   output dec_lc_cnt_t       dec_lc_cnt_o,
   output logic [5:0]        state_invalid_error_o
@@ -26,13 +26,24 @@ module lc_ctrl_state_decode
   // Signal Decoder Logic //
   //////////////////////////
 
+  // SEC_CM: STATE.CONFIG.SPARSE
+  // The decoded life cycle state uses a redundant representation that is used internally
+  // and in the CSR node.
+  ext_dec_lc_state_t dec_lc_state;
+  prim_sec_anchor_buf #(
+    .Width($bits(ext_dec_lc_state_t))
+  ) u_prim_sec_anchor_buf (
+    .in_i(dec_lc_state),
+    .out_o(dec_lc_state_o)
+  );
+
   // The decoder logic below decodes the life cycle state vector and counter
   // into a format that can be exposed in the CSRs. If the state is invalid,
   // this will be flagged as well.
 
   always_comb begin : p_lc_state_decode
     // Decoded state defaults
-    dec_lc_state_o        = DecLcStInvalid;
+    dec_lc_state        = {DecLcStateNumRep{DecLcStInvalid}};
     dec_lc_cnt_o          = {DecLcCountWidth{1'b1}};
     dec_lc_id_state_o     = DecLcIdInvalid;
     state_invalid_error_o = '0;
@@ -42,9 +53,9 @@ module lc_ctrl_state_decode
       ResetSt: ;
       // These are temporary, terminal states that are not encoded
       // in the persistent LC state vector from OTP, hence we decode them first.
-      EscalateSt:  dec_lc_state_o = DecLcStEscalate;
-      PostTransSt: dec_lc_state_o = DecLcStPostTrans;
-      InvalidSt:   dec_lc_state_o = DecLcStInvalid;
+      EscalateSt:  dec_lc_state = {DecLcStateNumRep{DecLcStEscalate}};
+      PostTransSt: dec_lc_state = {DecLcStateNumRep{DecLcStPostTrans}};
+      InvalidSt:   dec_lc_state = {DecLcStateNumRep{DecLcStInvalid}};
       // Otherwise check and decode the life cycle state continously.
       default: begin
         // Note that we require that the valid signal from OTP is
@@ -55,27 +66,27 @@ module lc_ctrl_state_decode
         state_invalid_error_o[0] = ~lc_state_valid_i;
 
         unique case (lc_state_i)
-          LcStRaw:           dec_lc_state_o = DecLcStRaw;
-          LcStTestUnlocked0: dec_lc_state_o = DecLcStTestUnlocked0;
-          LcStTestLocked0:   dec_lc_state_o = DecLcStTestLocked0;
-          LcStTestUnlocked1: dec_lc_state_o = DecLcStTestUnlocked1;
-          LcStTestLocked1:   dec_lc_state_o = DecLcStTestLocked1;
-          LcStTestUnlocked2: dec_lc_state_o = DecLcStTestUnlocked2;
-          LcStTestLocked2:   dec_lc_state_o = DecLcStTestLocked2;
-          LcStTestUnlocked3: dec_lc_state_o = DecLcStTestUnlocked3;
-          LcStTestLocked3:   dec_lc_state_o = DecLcStTestLocked3;
-          LcStTestUnlocked4: dec_lc_state_o = DecLcStTestUnlocked4;
-          LcStTestLocked4:   dec_lc_state_o = DecLcStTestLocked4;
-          LcStTestUnlocked5: dec_lc_state_o = DecLcStTestUnlocked5;
-          LcStTestLocked5:   dec_lc_state_o = DecLcStTestLocked5;
-          LcStTestUnlocked6: dec_lc_state_o = DecLcStTestUnlocked6;
-          LcStTestLocked6:   dec_lc_state_o = DecLcStTestLocked6;
-          LcStTestUnlocked7: dec_lc_state_o = DecLcStTestUnlocked7;
-          LcStDev:           dec_lc_state_o = DecLcStDev;
-          LcStProd:          dec_lc_state_o = DecLcStProd;
-          LcStProdEnd:       dec_lc_state_o = DecLcStProdEnd;
-          LcStRma:           dec_lc_state_o = DecLcStRma;
-          LcStScrap:         dec_lc_state_o = DecLcStScrap;
+          LcStRaw:           dec_lc_state = {DecLcStateNumRep{DecLcStRaw}};
+          LcStTestUnlocked0: dec_lc_state = {DecLcStateNumRep{DecLcStTestUnlocked0}};
+          LcStTestLocked0:   dec_lc_state = {DecLcStateNumRep{DecLcStTestLocked0}};
+          LcStTestUnlocked1: dec_lc_state = {DecLcStateNumRep{DecLcStTestUnlocked1}};
+          LcStTestLocked1:   dec_lc_state = {DecLcStateNumRep{DecLcStTestLocked1}};
+          LcStTestUnlocked2: dec_lc_state = {DecLcStateNumRep{DecLcStTestUnlocked2}};
+          LcStTestLocked2:   dec_lc_state = {DecLcStateNumRep{DecLcStTestLocked2}};
+          LcStTestUnlocked3: dec_lc_state = {DecLcStateNumRep{DecLcStTestUnlocked3}};
+          LcStTestLocked3:   dec_lc_state = {DecLcStateNumRep{DecLcStTestLocked3}};
+          LcStTestUnlocked4: dec_lc_state = {DecLcStateNumRep{DecLcStTestUnlocked4}};
+          LcStTestLocked4:   dec_lc_state = {DecLcStateNumRep{DecLcStTestLocked4}};
+          LcStTestUnlocked5: dec_lc_state = {DecLcStateNumRep{DecLcStTestUnlocked5}};
+          LcStTestLocked5:   dec_lc_state = {DecLcStateNumRep{DecLcStTestLocked5}};
+          LcStTestUnlocked6: dec_lc_state = {DecLcStateNumRep{DecLcStTestUnlocked6}};
+          LcStTestLocked6:   dec_lc_state = {DecLcStateNumRep{DecLcStTestLocked6}};
+          LcStTestUnlocked7: dec_lc_state = {DecLcStateNumRep{DecLcStTestUnlocked7}};
+          LcStDev:           dec_lc_state = {DecLcStateNumRep{DecLcStDev}};
+          LcStProd:          dec_lc_state = {DecLcStateNumRep{DecLcStProd}};
+          LcStProdEnd:       dec_lc_state = {DecLcStateNumRep{DecLcStProdEnd}};
+          LcStRma:           dec_lc_state = {DecLcStateNumRep{DecLcStRma}};
+          LcStScrap:         dec_lc_state = {DecLcStateNumRep{DecLcStScrap}};
           // SEC_CM: MANUF.STATE.BKGN_CHK
           default:           state_invalid_error_o[1] = 1'b1;
         endcase // lc_state_i

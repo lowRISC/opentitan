@@ -15,7 +15,7 @@ module lc_ctrl_state_transition
   // Main FSM state.
   input  fsm_state_e        fsm_state_i,
   // Decoded lc state input
-  input  dec_lc_state_e     dec_lc_state_i,
+  input  ext_dec_lc_state_t dec_lc_state_i,
   // Transition target.
   input  ext_dec_lc_state_t trans_target_i,
   // Updated state vector.
@@ -89,14 +89,19 @@ module lc_ctrl_state_transition
                             TokenCheck0St,
                             TokenCheck1St,
                             TransProgSt}) begin
-      // Check that the decoded transition indexes are valid
-      // before indexing the state transition matrix.
-      if (dec_lc_state_i    <= DecLcStScrap &&
-          trans_target_i[0] <= DecLcStScrap) begin
-        // Check the state transition token matrix in order to see whether this
-        // transition is valid. All transitions have a token index value different
-        // from InvalidTokenIdx.
-        if (TransTokenIdxMatrix[dec_lc_state_i][trans_target_i[0]] != InvalidTokenIdx) begin
+      // SEC_CM: STATE.CONFIG.SPARSE
+      // Check that the decoded transition indexes are valid before indexing the state transition
+      // matrix. We perform the check twice with different indices into the replicated state
+      // enumeration.
+      if (dec_lc_state_i[0] <= DecLcStScrap &&
+          trans_target_i[0] <= DecLcStScrap &&
+          dec_lc_state_i[1] <= DecLcStScrap &&
+          trans_target_i[1] <= DecLcStScrap) begin
+        // Check the state transition token matrix in order to see whether this transition is valid.
+        // All transitions have a token index value different from InvalidTokenIdx. We perform the
+        // check twice with different indices into the replicated state enumeration.
+        if (TransTokenIdxMatrix[dec_lc_state_i[0]][trans_target_i[0]] != InvalidTokenIdx ||
+            TransTokenIdxMatrix[dec_lc_state_i[1]][trans_target_i[1]] != InvalidTokenIdx) begin
           // Encode the target state.
           // Note that the life cycle encoding itself also ensures that only certain transitions are
           // possible. So even if this logic here is tampered with, the encoding values won't allow
@@ -124,7 +129,7 @@ module lc_ctrl_state_transition
             {DecLcStateNumRep{DecLcStProdEnd}}:       next_lc_state_o = LcStProdEnd;
             {DecLcStateNumRep{DecLcStRma}}:           next_lc_state_o = LcStRma;
             {DecLcStateNumRep{DecLcStScrap}}:         next_lc_state_o = LcStScrap;
-            default:              trans_invalid_error_o = 1'b1;
+            default:                                  trans_invalid_error_o = 1'b1;
           endcase // trans_target_i
         end else begin
           trans_invalid_error_o = 1'b1;
@@ -132,6 +137,33 @@ module lc_ctrl_state_transition
       end else begin
         trans_invalid_error_o = 1'b1;
       end
+
+      // SEC_CM: STATE.CONFIG.SPARSE
+      // Check that the internally re-encoded life cycle state has a correct encoding.
+      unique case (dec_lc_state_i)
+        {DecLcStateNumRep{DecLcStRaw}},
+        {DecLcStateNumRep{DecLcStTestUnlocked0}},
+        {DecLcStateNumRep{DecLcStTestLocked0}},
+        {DecLcStateNumRep{DecLcStTestUnlocked1}},
+        {DecLcStateNumRep{DecLcStTestLocked1}},
+        {DecLcStateNumRep{DecLcStTestUnlocked2}},
+        {DecLcStateNumRep{DecLcStTestLocked2}},
+        {DecLcStateNumRep{DecLcStTestUnlocked3}},
+        {DecLcStateNumRep{DecLcStTestLocked3}},
+        {DecLcStateNumRep{DecLcStTestUnlocked4}},
+        {DecLcStateNumRep{DecLcStTestLocked4}},
+        {DecLcStateNumRep{DecLcStTestUnlocked5}},
+        {DecLcStateNumRep{DecLcStTestLocked5}},
+        {DecLcStateNumRep{DecLcStTestUnlocked6}},
+        {DecLcStateNumRep{DecLcStTestLocked6}},
+        {DecLcStateNumRep{DecLcStTestUnlocked7}},
+        {DecLcStateNumRep{DecLcStDev}},
+        {DecLcStateNumRep{DecLcStProd}},
+        {DecLcStateNumRep{DecLcStProdEnd}},
+        {DecLcStateNumRep{DecLcStRma}},
+        {DecLcStateNumRep{DecLcStScrap}}: ;
+        default: trans_invalid_error_o = 1'b1;
+      endcase // trans_target_i
     end
   end
 
