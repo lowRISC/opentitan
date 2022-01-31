@@ -35,23 +35,23 @@ Code Quality  | [LINT_SETUP][]                 | Done        |
 
 Type          | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]        | Not Started |
-Documentation | [BLOCK_DIAGRAM][]       | Not Started |
-Documentation | [DOC_INTERFACE][]       | Not Started |
-Documentation | [MISSING_FUNC][]        | Not Started |
-Documentation | [FEATURE_FROZEN][]      | Not Started |
-RTL           | [FEATURE_COMPLETE][]    | Not Started |
-RTL           | [AREA_CHECK][]          | Not Started |
-RTL           | [PORT_FROZEN][]         | Not Started |
-RTL           | [ARCHITECTURE_FROZEN][] | Not Started |
-RTL           | [REVIEW_TODO][]         | Not Started |
-RTL           | [STYLE_X][]             | Not Started |
-Code Quality  | [LINT_PASS][]           | Not Started |
-Code Quality  | [CDC_SETUP][]           | Not Started |
-Code Quality  | [FPGA_TIMING][]         | Not Started |
-Code Quality  | [CDC_SYNCMACRO][]       | Not Started |
-Security      | [SEC_CM_DOCUMENTED][]   | Not Started |
-Security      | [SEC_RND_CNST][]        | Not Started |
+Documentation | [NEW_FEATURES][]        | Done        |
+Documentation | [BLOCK_DIAGRAM][]       | Done        | Available in external [PULP RISC-V Debug System Documentation](https://github.com/lowRISC/opentitan/blob/master/hw/vendor/pulp_riscv_dbg/doc/debug-system.md)
+Documentation | [DOC_INTERFACE][]       | Done        |
+Documentation | [MISSING_FUNC][]        | Done        |
+Documentation | [FEATURE_FROZEN][]      | Done        |
+RTL           | [FEATURE_COMPLETE][]    | Done        |
+RTL           | [AREA_CHECK][]          | Done        |
+RTL           | [PORT_FROZEN][]         | Done        |
+RTL           | [ARCHITECTURE_FROZEN][] | Done        |
+RTL           | [REVIEW_TODO][]         | Done        |
+RTL           | [STYLE_X][]             | Waived      | Waiving as RTL is from a third-party
+Code Quality  | [LINT_PASS][]           | Done        |
+Code Quality  | [CDC_SETUP][]           | Waived      | CDC flow is not available yet
+Code Quality  | [FPGA_TIMING][]         | Done        |
+Code Quality  | [CDC_SYNCMACRO][]       | Done        |
+Security      | [SEC_CM_DOCUMENTED][]   | Done        |
+Security      | [SEC_RND_CNST][]        | N/A         |
 
 [NEW_FEATURES]:        {{<relref "/doc/project/checklist.md#new_features" >}}
 [BLOCK_DIAGRAM]:       {{<relref "/doc/project/checklist.md#block_diagram" >}}

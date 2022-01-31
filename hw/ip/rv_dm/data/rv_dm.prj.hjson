@@ -8,6 +8,6 @@
     hw_checklist:       "../doc/checklist"
     version:            "0.5",
     life_stage:         "L1",
-    design_stage:       "D1",
+    design_stage:       "D2",
     verification_stage: "V0",
 }
