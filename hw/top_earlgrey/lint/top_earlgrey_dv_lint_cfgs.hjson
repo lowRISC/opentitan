@@ -140,6 +140,11 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/rom_ctrl/dv/lint/{tool}"
              },
+             {    name: rv_dm
+                  fusesoc_core: lowrisc:dv:rv_dm_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/rv_dm/dv/lint/{tool}"
+             },
              {    name: rv_timer
                   fusesoc_core: lowrisc:dv:rv_timer_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
