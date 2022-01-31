@@ -41,7 +41,7 @@ class keymgr_common_vseq extends keymgr_base_vseq;
     super.read_and_check_all_csrs_after_reset();
   endtask
 
-  virtual task run_csr_vseq(string csr_test_type = "",
+  virtual task run_csr_vseq(string csr_test_type,
                             int    num_test_csrs = 0,
                             bit    do_rand_wr_and_reset = 1,
                             string ral_name = "");

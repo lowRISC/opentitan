@@ -23,9 +23,9 @@
 class csr_base_seq extends uvm_reg_sequence #(uvm_sequence #(uvm_reg_item));
   `uvm_object_utils(csr_base_seq)
 
-  uvm_reg_block   models[string];
-  uvm_reg         all_csrs[$];
-  uvm_reg         test_csrs[$];
+  dv_base_reg_block models[$];
+  uvm_reg           all_csrs[$];
+  uvm_reg           test_csrs[$];
 
   // By default, assume external checker (example, scoreboard) is turned off. If that is the case,
   // then writes are followed by call to predict function to update the mirrored value. Reads are
@@ -81,8 +81,8 @@ class csr_base_seq extends uvm_reg_sequence #(uvm_sequence #(uvm_reg_item));
     end
 
     if (!(test_csr_chunk inside {[1:num_csr_chunks]})) begin
-      `uvm_fatal(`gtn, $sformatf({{"invalid opt +test_csr_chunk=%0d, +num_csr_chunks=%0d "},
-                                  {"(1 <= test_csr_chunk <= num_csr_chunks)"}},
+      `uvm_fatal(`gtn, $sformatf({{"Invalid opt +test_csr_chunk=%0d, +num_csr_chunks=%0d "},
+                                  {"(1 <= test_csr_chunk <= num_csr_chunks)."}},
                                   test_csr_chunk, num_csr_chunks))
     end
     chunk_size = (num_test_csrs != 0) ? num_test_csrs : (all_csrs.size / num_csr_chunks + 1);
@@ -92,11 +92,11 @@ class csr_base_seq extends uvm_reg_sequence #(uvm_sequence #(uvm_reg_item));
       end_idx = all_csrs.size() - 1;
 
     test_csrs = all_csrs[start_idx:end_idx];
-    `uvm_info(`gtn, $sformatf("testing %0d csrs [%0d - %0d] in all supplied models",
-                    test_csrs.size(), start_idx, end_idx), UVM_MEDIUM)
+    `uvm_info(`gtn, $sformatf("Testing %0d csrs [%0d - %0d] in all supplied models.",
+                              test_csrs.size(), start_idx, end_idx), UVM_MEDIUM)
     foreach (test_csrs[i]) begin
-      `uvm_info(`gtn, $sformatf("test_csrs list: %0s, reset: 0x%0x", test_csrs[i].get_full_name(),
-                                 test_csrs[i].get_mirrored_value()), UVM_HIGH)
+      `uvm_info(`gtn, $sformatf("Testing CSR %0s, reset: 0x%0x.", test_csrs[i].get_full_name(),
+                                test_csrs[i].get_mirrored_value()), UVM_HIGH)
     end
     test_csrs.shuffle();
   endfunction
@@ -498,6 +498,7 @@ class csr_mem_walk_seq extends csr_base_seq;
   virtual task body();
     mem_walk_seq = uvm_mem_walk_seq::type_id::create("mem_walk_seq");
     foreach (models[i]) begin
+      `uvm_info(`gfn, $sformatf("Testing model %0s", models[i].get_full_name()), UVM_LOW)
       mem_walk_seq.model = models[i];
       mem_walk_seq.start(null);
     end

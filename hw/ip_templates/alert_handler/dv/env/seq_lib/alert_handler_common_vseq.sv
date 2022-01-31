@@ -29,7 +29,7 @@ class alert_handler_common_vseq extends alert_handler_base_vseq;
   // alert for tl_intg_err and lock this register. Because tl_intg_err can trigger local alert and
   // eventually triggers escalation. Then the auto predications for escalation related registers
   // such as `class_clr` and `clr_regwen` registers are not correct.
-  virtual task run_csr_vseq(string csr_test_type = "",
+  virtual task run_csr_vseq(string csr_test_type,
                             int    num_test_csrs = 0,
                             bit    do_rand_wr_and_reset = 1,
                             string ral_name = "");
