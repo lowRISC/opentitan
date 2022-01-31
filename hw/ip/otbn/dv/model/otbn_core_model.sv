@@ -208,7 +208,7 @@ module otbn_core_model
       stop_pc_q <= 0;
     end else begin
       if (new_escalation) begin
-        failed_lc_escalate <= (otbn_model_send_lc_escalation(model_handle) == 0);
+        failed_lc_escalate <= (otbn_model_send_lc_escalation(model_handle) != 0);
       end
       if (!$stable(keymgr_key_i) || $rose(rst_ni)) begin
         otbn_model_set_keymgr_value(model_handle, keymgr_key_i.key[0], keymgr_key_i.key[1],
