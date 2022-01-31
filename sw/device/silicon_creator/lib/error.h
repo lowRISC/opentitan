@@ -6,6 +6,7 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_ERROR_H_
 
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/hardened.h"
 
 #define USING_ABSL_STATUS
 #include "sw/device/silicon_creator/lib/absl_status.h"
@@ -138,7 +139,7 @@ typedef enum rom_error {
 /**
  * Evaluate an expression and return if the result is an error.
  *
- * @param expr_ An expression which results in an rom_error_t.
+ * @param expr_ An expression which results in a `rom_error_t`.
  */
 #define RETURN_IF_ERROR(expr_)        \
   do {                                \
@@ -146,7 +147,24 @@ typedef enum rom_error {
     if (local_error_ != kErrorOk) {   \
       return local_error_;            \
     }                                 \
-  } while (0)
+  } while (false)
+
+/**
+ * Hardened version of `RETURN_IF_ERROR()`.
+ *
+ * See `launder32()` and `HARDENED_CHECK_EQ()` in
+ * `sw/device/lib/base/hardened.h` for more details.
+ *
+ * @param expr_ An expression which results in a `rom_error_t`.
+ */
+#define HARDENED_RETURN_IF_ERROR(expr_)  \
+  do {                                   \
+    rom_error_t error_ = expr_;          \
+    if (launder32(error_) != kErrorOk) { \
+      return error_;                     \
+    }                                    \
+    HARDENED_CHECK_EQ(error_, kErrorOk); \
+  } while (false)
 
 #ifdef __cplusplus
 }
