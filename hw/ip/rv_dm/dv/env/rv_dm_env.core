@@ -12,6 +12,7 @@ filesets:
       - lowrisc:dv:jtag_agent
     files:
       - rv_dm_env_pkg.sv
+      - rv_dm_if.sv
       - rv_dm_env_cfg.sv: {is_include_file: true}
       - rv_dm_env_cov.sv: {is_include_file: true}
       - rv_dm_virtual_sequencer.sv: {is_include_file: true}

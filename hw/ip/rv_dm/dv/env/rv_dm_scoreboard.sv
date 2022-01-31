@@ -4,7 +4,7 @@
 
 class rv_dm_scoreboard extends cip_base_scoreboard #(
     .CFG_T(rv_dm_env_cfg),
-    .RAL_T(rv_dm_reg_block),
+    .RAL_T(rv_dm_regs_reg_block),
     .COV_T(rv_dm_env_cov)
   );
   `uvm_component_utils(rv_dm_scoreboard)
@@ -12,7 +12,9 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
   // local variables
 
   // TLM agent fifos
-  uvm_tlm_analysis_fifo #(jtag_item) jtag_fifo;
+  uvm_tlm_analysis_fifo #(tl_seq_item)  tl_sba_a_chan_fifo;
+  uvm_tlm_analysis_fifo #(tl_seq_item)  tl_sba_d_chan_fifo;
+  uvm_tlm_analysis_fifo #(jtag_item)    jtag_fifo;
 
   // local queues to hold incoming packets pending comparison
   jtag_item jtag_q[$];
@@ -22,6 +24,8 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     jtag_fifo = new("jtag_fifo", this);
+    tl_sba_a_chan_fifo = new("tl_sba_a_chan_fifo", this);
+    tl_sba_d_chan_fifo = new("tl_sba_d_chan_fifo", this);
     // TODO: remove once support alert checking
     do_alert_check = 0;
   endfunction
@@ -34,6 +38,8 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
     super.run_phase(phase);
     fork
       process_jtag_fifo();
+      process_tl_sba_a_chan_fifo();
+      process_tl_sba_d_chan_fifo();
     join_none
   endtask
 
@@ -41,8 +47,33 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
     jtag_item item;
     forever begin
       jtag_fifo.get(item);
-      `uvm_info(`gfn, $sformatf("received jtag item:\n%0s", item.sprint()), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("Received jtag item:\n%0s", item.sprint()), UVM_HIGH)
     end
+  endtask
+
+  virtual task process_tl_sba_a_chan_fifo();
+    tl_seq_item item;
+    forever begin
+      tl_sba_a_chan_fifo.get(item);
+      `uvm_info(`gfn, $sformatf("Received SBA TL a_chan item:\n%0s", item.sprint()), UVM_HIGH)
+      process_tl_sba_access(item, AddrChannel);
+    end
+  endtask
+
+  virtual task process_tl_sba_d_chan_fifo();
+    tl_seq_item item;
+    forever begin
+      tl_sba_d_chan_fifo.get(item);
+      `uvm_info(`gfn, $sformatf("Received SBA TL d_chan item:\n%0s", item.sprint()), UVM_HIGH)
+      // check tl packet integrity
+      void'(item.is_ok());
+      process_tl_sba_access(item, DataChannel);
+    end
+  endtask
+
+  // task to process tl access
+  virtual task process_tl_sba_access(tl_seq_item item, tl_channels_e channel);
+    // TODO
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -102,12 +133,16 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
-    // reset local fifos queues and variables
+    jtag_fifo.flush();
+    tl_sba_a_chan_fifo.flush();
+    tl_sba_d_chan_fifo.flush();
   endfunction
 
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
-    // post test checks - ensure that all local fifos and queues are empty
+    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(jtag_item, jtag_fifo)
+    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, tl_sba_a_chan_fifo)
+    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, tl_sba_d_chan_fifo)
   endfunction
 
 endclass

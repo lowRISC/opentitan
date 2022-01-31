@@ -11,6 +11,7 @@ filesets:
 
   files_dv:
     depend:
+      - lowrisc:dv:rv_dm_env
       - lowrisc:dv:rv_dm_test
       - lowrisc:dv:rv_dm_sva
     files:
@@ -25,6 +26,5 @@ targets:
       - files_dv
     default_tool: vcs
 
-  # TODO: add a lint check cfg in `hw/top_earlgrey/lint/top_earlgrey_dv_lint_cfgs.hjson`
   lint:
     <<: *sim_target
