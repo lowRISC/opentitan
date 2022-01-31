@@ -27,6 +27,9 @@ package lc_ctrl_pkg;
     InvalidTokenIdx    = 3'h5
   } token_idx_e;
 
+  parameter int TokenMuxBits = 2**TokenIdxWidth*LcTokenWidth;
+  typedef logic [TokenMuxBits-1:0] lc_token_mux_t;
+
   ////////////////////////////////
   // Typedefs for LC Interfaces //
   ////////////////////////////////

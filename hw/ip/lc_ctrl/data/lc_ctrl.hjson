@@ -54,22 +54,10 @@
       randcount: "128",
       randtype:  "data",
     }
-    { name:      "RndCnstRmaTokenInvalid",
-      desc:      "Compile-time random bits used as token value if the token is not valid",
-      type:      "lc_ctrl_state_pkg::lc_token_t",
-      randcount: "128",
-      randtype:  "data",
-    }
-    { name:      "RndCnstTestUnlockTokenInvalid",
-      desc:      "Compile-time random bits used as token value if the token is not valid",
-      type:      "lc_ctrl_state_pkg::lc_token_t",
-      randcount: "128",
-      randtype:  "data",
-    }
-    { name:      "RndCnstTestExitTokenInvalid",
-      desc:      "Compile-time random bits used as token value if the token is not valid",
-      type:      "lc_ctrl_state_pkg::lc_token_t",
-      randcount: "128",
+    { name:      "RndCnstInvalidTokens",
+      desc:      "Compile-time random bits used for invalid tokens in the token mux",
+      type:      "lc_ctrl_pkg::lc_token_mux_t",
+      randcount: "1024",
       randtype:  "data",
     }
     // Regular parameters
@@ -430,9 +418,27 @@
     { name: "INTERSIG.MUBI",
       desc: "Life cycle control signals are multibit encoded."
     }
+    { name: "TOKEN_VALID.CTRL.MUBI",
+      desc: "The token valid signals coming from OTP are MUBI encoded."
+    }
     { name: "TOKEN.DIGEST",
       desc: "Life cycle transition tokens are hashed with cSHAKE128, using a custom 'LC_CTRL' prefix."
     }
+    { name: "TOKEN_MUX.CTRL.REDUN",
+      desc: '''
+            The life cycle transition token mux is broken into two halves that are steered with
+            separately decoded and buffered MUBI valid signals (see also TOKEN_VALID.CTRL.MUBI).
+            '''
+    }
+    { name: "TOKEN_VALID.MUX.REDUN",
+      desc: '''
+            The life cycle transition token valid mux is replicated twice.
+            If a transition is initiated and the two mux index signals are inconsistent
+            or if any of the two valid mux outputs is not set to valid, the transition will
+            fail with a TRANSITION_ERROR.
+            '''
+    }
+
   ]
 
   registers: [

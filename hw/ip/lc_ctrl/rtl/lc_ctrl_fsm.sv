@@ -11,9 +11,7 @@ module lc_ctrl_fsm
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid    = LcKeymgrDivWidth'(0),
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestDevRma = LcKeymgrDivWidth'(1),
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction = LcKeymgrDivWidth'(2),
-  parameter lc_token_t RndCnstRmaTokenInvalid        = LcTokenWidth'(8'hAA),
-  parameter lc_token_t RndCnstTestUnlockTokenInvalid = LcTokenWidth'(8'hBB),
-  parameter lc_token_t RndCnstTestExitTokenInvalid   = LcTokenWidth'(8'hCC)
+  parameter lc_token_mux_t  RndCnstInvalidTokens         = {TokenMuxBits{1'b1}}
 ) (
   // This module is combinational, but we
   // need the clock and reset for the assertions.
@@ -144,7 +142,7 @@ module lc_ctrl_fsm
   `ASSERT_KNOWN(FsmStateKnown_A,  fsm_state_q  )
 
   // Hashed token to compare against.
-  logic hashed_token_valid_mux;
+  logic [1:0] hashed_token_valid_mux;
   lc_token_t hashed_token_mux;
 
   // Multibit state error from state decoder
@@ -294,7 +292,7 @@ module lc_ctrl_fsm
       // First transition valid check. This will be repeated several
       // times below.
       TransCheckSt: begin
-        if (trans_invalid_error_o) begin
+        if (trans_invalid_error_o || token_mux_indices_inconsistent) begin
           fsm_state_d = PostTransSt;
         end else begin
           fsm_state_d = TokenHashSt;
@@ -317,7 +315,7 @@ module lc_ctrl_fsm
           // OTP. I.e., these tokens first have to be provisioned, before they can be used.
           if (hashed_token_i == hashed_token_mux &&
               !token_hash_err_i &&
-              hashed_token_valid_mux) begin
+              &hashed_token_valid_mux) begin
             fsm_state_d = FlashRmaSt;
           end else begin
             fsm_state_d = PostTransSt;
@@ -345,7 +343,7 @@ module lc_ctrl_fsm
       // SEC_CM: TOKEN.DIGEST
       TokenCheck0St,
       TokenCheck1St: begin
-        if (trans_invalid_error_o) begin
+        if (trans_invalid_error_o || token_mux_indices_inconsistent) begin
           fsm_state_d = PostTransSt;
         end else begin
           // If any of these RMA are conditions are true,
@@ -358,7 +356,7 @@ module lc_ctrl_fsm
                lc_flash_rma_ack[1] == On)) begin
             if (hashed_token_i == hashed_token_mux &&
                 !token_hash_err_i &&
-                hashed_token_valid_mux) begin
+                &hashed_token_valid_mux) begin
               if (fsm_state_q == TokenCheck1St) begin
                 // This is the only way we can get into the
                 // programming state.
@@ -492,9 +490,9 @@ module lc_ctrl_fsm
   // Token mux //
   ///////////////
 
-  lc_ctrl_pkg::lc_tx_t [1:0] rma_token_valid;
+  lc_ctrl_pkg::lc_tx_t [3:0] rma_token_valid;
   prim_lc_sync #(
-    .NumCopies(2),
+    .NumCopies(4),
     .AsyncOn(0),
     .ResetValueIsOn(0)
   ) u_prim_lc_sync_rma_token_valid (
@@ -504,9 +502,9 @@ module lc_ctrl_fsm
     .lc_en_o(rma_token_valid)
   );
 
-  lc_ctrl_pkg::lc_tx_t [3:0] test_tokens_valid;
+  lc_ctrl_pkg::lc_tx_t [7:0] test_tokens_valid;
   prim_lc_sync #(
-    .NumCopies(4),
+    .NumCopies(8),
     .AsyncOn(0),
     .ResetValueIsOn(0)
   ) u_prim_lc_sync_test_token_valid (
@@ -516,41 +514,107 @@ module lc_ctrl_fsm
     .lc_en_o(test_tokens_valid)
   );
 
+  // SEC_CM: TOKEN_MUX.CTRL.REDUN
+  // The token mux is split into two halves for which we use separate mux select signals
+  // that have both been generated from separately buffered multibit lifecycle signals.
+  logic [2**TokenIdxWidth-1:0][LcTokenWidth/2-1:0] hashed_tokens_lower, hashed_tokens_upper;
+  // These helper signals are only there to increase readability of the mux code below.
+  logic [LcTokenWidth/2-1:0] test_unlock_token_lower, test_unlock_token_upper;
+  logic [LcTokenWidth/2-1:0] test_exit_token_lower, test_exit_token_upper;
+  logic [LcTokenWidth/2-1:0] rma_token_lower, rma_token_upper;
+  assign {test_unlock_token_lower, test_unlock_token_upper} = test_unlock_token_i;
+  assign {test_exit_token_lower, test_exit_token_upper}     = test_exit_token_i;
+  assign {rma_token_lower, rma_token_upper}                 = rma_token_i;
+
   // SEC_CM: TOKEN.DIGEST
   // This indexes the correct token, based on the transition arc.
   // Note that we always perform a token comparison, even in case of
   // unconditional transitions. In the case of unconditional tokens
   // we just pass an all-zero constant through the hashing function.
-  lc_token_t [2**TokenIdxWidth-1:0] hashed_tokens;
-  logic [2**TokenIdxWidth-1:0] hashed_tokens_valid;
-  logic [TokenIdxWidth-1:0] token_idx;
   always_comb begin : p_token_assign
-    hashed_tokens = '0;
-    hashed_tokens[ZeroTokenIdx]       = AllZeroTokenHashed;
-    hashed_tokens[RawUnlockTokenIdx]  = RndCnstRawUnlockTokenHashed;
-    hashed_tokens[TestUnlockTokenIdx] = (test_tokens_valid[0] == On) ?
-                                        test_unlock_token_i :
-                                        RndCnstTestUnlockTokenInvalid;
-    hashed_tokens[TestExitTokenIdx]   = (test_tokens_valid[1] == On) ?
-                                        test_exit_token_i :
-                                        RndCnstTestExitTokenInvalid;
-    hashed_tokens[RmaTokenIdx]        = (rma_token_valid[0] == On) ?
-                                        rma_token_i :
-                                        RndCnstRmaTokenInvalid;
-    hashed_tokens[InvalidTokenIdx]    = '0;
-    // Valid signals
-    hashed_tokens_valid                     = '0;
-    hashed_tokens_valid[ZeroTokenIdx]       = 1'b1; // always valid
-    hashed_tokens_valid[RawUnlockTokenIdx]  = 1'b1; // always valid
-    hashed_tokens_valid[TestUnlockTokenIdx] = (test_tokens_valid[2] == On);
-    hashed_tokens_valid[TestExitTokenIdx]   = (test_tokens_valid[3] == On);
-    hashed_tokens_valid[RmaTokenIdx]        = (rma_token_valid[1] == On);
-    hashed_tokens_valid[InvalidTokenIdx]    = 1'b0; // always invalid
+    // Set the invalid token indices to a random netlist constant, rather than all-zero.
+    {hashed_tokens_lower, hashed_tokens_upper} = RndCnstInvalidTokens;
+    // All-zero token for unconditional transitions.
+    {hashed_tokens_lower[ZeroTokenIdx],
+     hashed_tokens_upper[ZeroTokenIdx]} = AllZeroTokenHashed;
+    {hashed_tokens_lower[RawUnlockTokenIdx],
+     hashed_tokens_upper[RawUnlockTokenIdx]} = RndCnstRawUnlockTokenHashed;
+    // This mux has two separate halves, steered with separately buffered life cycle signals.
+    if (test_tokens_valid[0] == On) begin
+      hashed_tokens_lower[TestUnlockTokenIdx] = test_unlock_token_lower;
+    end
+    if (test_tokens_valid[1] == On) begin
+      hashed_tokens_upper[TestUnlockTokenIdx] = test_unlock_token_upper;
+    end
+    // This mux has two separate halves, steered with separately buffered life cycle signals.
+    if (test_tokens_valid[2] == On) begin
+      hashed_tokens_lower[TestExitTokenIdx] = test_exit_token_lower;
+    end
+    if (test_tokens_valid[3] == On) begin
+      hashed_tokens_upper[TestExitTokenIdx] = test_exit_token_upper;
+    end
+    // This mux has two separate halves, steered with separately buffered life cycle signals.
+    if (rma_token_valid[0] == On) begin
+      hashed_tokens_lower[RmaTokenIdx] = rma_token_lower;
+    end
+    if (rma_token_valid[1] == On) begin
+      hashed_tokens_upper[RmaTokenIdx] = rma_token_upper;
+    end
   end
 
-  assign token_idx = TransTokenIdxMatrix[dec_lc_state_o][trans_target_i[0]];
-  assign hashed_token_mux = hashed_tokens[token_idx];
-  assign hashed_token_valid_mux = hashed_tokens_valid[token_idx];
+  // SEC_CM: TOKEN_VALID.MUX.REDUN
+  // The token valid mux is duplicated.
+  logic [TokenIdxWidth-1:0] token_idx0, token_idx1;
+  logic [2**TokenIdxWidth-1:0] hashed_tokens_valid0, hashed_tokens_valid1;
+  always_comb begin : p_token_valid_assign
+    // First mux
+    hashed_tokens_valid0                     = '0;
+    hashed_tokens_valid0[ZeroTokenIdx]       = 1'b1; // always valid
+    hashed_tokens_valid0[RawUnlockTokenIdx]  = 1'b1; // always valid
+    hashed_tokens_valid0[TestUnlockTokenIdx] = (test_tokens_valid[4] == On);
+    hashed_tokens_valid0[TestExitTokenIdx]   = (test_tokens_valid[5] == On);
+    hashed_tokens_valid0[RmaTokenIdx]        = (rma_token_valid[2] == On);
+    hashed_tokens_valid0[InvalidTokenIdx]    = 1'b0; // always invalid
+    // Second mux
+    hashed_tokens_valid1                     = '0;
+    hashed_tokens_valid1[ZeroTokenIdx]       = 1'b1; // always valid
+    hashed_tokens_valid1[RawUnlockTokenIdx]  = 1'b1; // always valid
+    hashed_tokens_valid1[TestUnlockTokenIdx] = (test_tokens_valid[6] == On);
+    hashed_tokens_valid1[TestExitTokenIdx]   = (test_tokens_valid[7] == On);
+    hashed_tokens_valid1[RmaTokenIdx]        = (rma_token_valid[3] == On);
+    hashed_tokens_valid1[InvalidTokenIdx]    = 1'b0; // always invalid
+  end
+
+  logic [DecLcStateWidth-1:0] dec_lc_state0, dec_lc_state1;
+  logic [DecLcStateWidth-1:0] dec_lc_state0_buf, dec_lc_state1_buf;
+  assign dec_lc_state0 = dec_lc_state_o;
+  assign dec_lc_state1 = dec_lc_state_o;
+  prim_sec_anchor_buf #(
+    .Width(DecLcStateWidth)
+  ) u_prim_sec_anchor_buf_index0 (
+    .in_i(dec_lc_state0),
+    .out_o(dec_lc_state0_buf)
+  );
+  prim_sec_anchor_buf #(
+    .Width(DecLcStateWidth)
+  ) u_prim_sec_anchor_buf_index1 (
+    .in_i(dec_lc_state1),
+    .out_o(dec_lc_state1_buf)
+  );
+
+  // The trans_target_i signal comes from the CSR and uses a replication encoding,
+  // hence we can use different indices of the array.
+  assign token_idx0       = TransTokenIdxMatrix[dec_lc_state0_buf][trans_target_i[0]];
+  assign token_idx1       = TransTokenIdxMatrix[dec_lc_state1_buf][trans_target_i[1]];
+  assign hashed_token_mux = {hashed_tokens_lower[token_idx0],
+                             hashed_tokens_upper[token_idx1]};
+  assign hashed_token_valid_mux = {hashed_tokens_valid0[token_idx0],
+                                   hashed_tokens_valid1[token_idx1]};
+
+  // This signal with the trans_invalid_error_o in the FSM below. We do not trigger an alert right
+  // away if this happens, since it could be due to an invalid value programmed to the CSRs.
+  logic token_mux_indices_inconsistent;
+  assign token_mux_indices_inconsistent = (token_idx0 != token_idx1);
 
   ////////////////////////////////////////////////////////////////////
   // Decoding and transition logic for redundantly encoded LC state //
