@@ -129,6 +129,7 @@ package flash_ctrl_env_pkg;
   // functions
 
   // package sources
+  `include "flash_mem_bkdr_util.sv"
   `include "flash_mem_addr_attrs.sv"
   `include "flash_ctrl_seq_cfg.sv"
   `include "flash_ctrl_env_cfg.sv"

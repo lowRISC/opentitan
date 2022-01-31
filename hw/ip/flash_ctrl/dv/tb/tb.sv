@@ -190,7 +190,7 @@ module tb;
       flash_dv_part_e part = part.first();
 
       initial begin
-        mem_bkdr_util m_mem_bkdr_util;
+        flash_mem_bkdr_util m_mem_bkdr_util;
         m_mem_bkdr_util = new(
             .name($sformatf("mem_bkdr_util[%0s][%0d]", part.name(), i)),
             .path(`FLASH_DATA_MEM_HIER_STR(i)),
@@ -205,7 +205,7 @@ module tb;
 
       for (genvar j = 0; j < flash_ctrl_pkg::InfoTypes; j++) begin : gen_each_info_type
         initial begin
-          mem_bkdr_util m_mem_bkdr_util;
+          flash_mem_bkdr_util m_mem_bkdr_util;
           m_mem_bkdr_util = new(
               .name($sformatf("mem_bkdr_util[%0s][%0d]", part.name(), i)),
               .path(`FLASH_INFO_MEM_HIER_STR(i, j)),
