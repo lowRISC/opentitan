@@ -67,8 +67,8 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
   assign a_mask_bit[23:16] = h2d.a_mask[2] ? '1 : '0;
   assign a_mask_bit[31:24] = h2d.a_mask[3] ? '1 : '0;
 
-  bit [${addr_msb}-2:0] hro_idx; // index for exp_vals
-  bit [${addr_msb}:0]   normalized_addr;
+  bit [${addr_msb}:0] hro_idx; // index for exp_vals
+  bit [${addr_msb}:0] normalized_addr;
 
   // Map register address with hro_idx in exp_vals array.
   always_comb begin: decode_hro_addr_to_idx
@@ -90,8 +90,12 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
     pend_item_t [2**TL_AIW-1:0] pend_trans;
   `endif
 
-  // normalized address only take the [${addr_msb}:2] address from the TLUL a_address
+  // Word-align the incoming TLUL a_address to obtain the normalized address.
+% if addr_msb > 2:
   assign normalized_addr = {h2d.a_address[${addr_msb}:2], 2'b0};
+% else:
+  assign normalized_addr = '0;
+% endif
 
 % if num_hro_regs > 0:
   // for write HRO registers, store the write data into exp_vals
