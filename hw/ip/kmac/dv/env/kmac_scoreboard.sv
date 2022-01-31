@@ -1859,18 +1859,21 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               // fifo_empty interrupt will only be asserted if the fifo becomes empty
               // after its depth has been greater than 0 to prevent random assertions
               @(fifo_wr_ptr, fifo_rd_ptr);
-              #1;
+              #1ps;
               if (fifo_wr_ptr >= fifo_rd_ptr) begin
                 `uvm_info(`gfn, "fifo_wr_ptr is greater than fifo_rd_ptr", UVM_HIGH)
                 while (fifo_wr_ptr != fifo_rd_ptr) begin
                   cfg.clk_rst_vif.wait_clks(1);
-                  #1;
+                  #1ps;
                 end
                 `uvm_info(`gfn, "fifo pointers are now equal", UVM_HIGH)
                 fork
                   begin
-                    cfg.clk_rst_vif.wait_clks(2);
-                    if (!intr_fifo_empty) intr_fifo_empty = 1;
+                    int prev_fifo_wr_ptr = fifo_wr_ptr;
+                    cfg.clk_rst_vif.wait_n_clks(2);
+                    // If after fifo_wr_ptr == fifo_rd_ptr, next clock cycle new data is written to
+                    // the write fifo, the fifo_empty_intr will not fire.
+                    if (!intr_fifo_empty && (prev_fifo_wr_ptr == fifo_wr_ptr)) intr_fifo_empty = 1;
                     `uvm_info(`gfn, "raised intr_fifo_empty", UVM_HIGH)
                   end
                 join_none;
