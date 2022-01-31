@@ -826,51 +826,6 @@ sw_tests += {
   }
 }
 
-
-# SRAM Controller scrambled access test.
-sram_ctrl_scrambled_access_test_lib = declare_dependency(
-  link_with: static_library(
-    'sram_ctrl_scrambled_access_test_lib',
-    sources: ['sram_ctrl_scrambled_access_test.c'],
-    dependencies: [
-      sw_lib_dif_sram_ctrl,
-      sw_lib_runtime_log,
-      sw_lib_testing_sram_ctrl_testutils,
-      top_earlgrey,
-    ],
-  ),
-)
-sw_tests += {
-  'sram_ctrl_scrambled_access_test': {
-    'library': sram_ctrl_scrambled_access_test_lib,
-  }
-}
-
-# SRAM Controller main scrambled access test.
-sram_ctrl_main_scrambled_access_test_lib = declare_dependency(
-  link_with: static_library(
-    'sram_ctrl_main_scrambled_access_test_lib',
-    sources: [
-      hw_ip_rstmgr_reg_h,
-      hw_ip_sram_ctrl_reg_h,
-      'sram_ctrl_main_scrambled_access_test.c',
-    ],
-    dependencies: [
-      sw_lib_dif_rstmgr,
-      sw_lib_dif_sram_ctrl,
-      sw_lib_runtime_log,
-      sw_lib_testing_rstmgr_testutils,
-      sw_lib_testing_sram_ctrl_testutils,
-      top_earlgrey,
-    ],
-  ),
-)
-sw_tests += {
-  'sram_ctrl_main_scrambled_access_test': {
-    'library': sram_ctrl_main_scrambled_access_test_lib,
-  }
-}
-
 # SRAM Controller execution from Ret SRAM test.
 sram_ctrl_execution_test_ret_lib = declare_dependency(
   link_with: static_library(

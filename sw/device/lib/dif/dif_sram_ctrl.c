@@ -113,6 +113,21 @@ dif_result_t dif_sram_ctrl_request_new_key(const dif_sram_ctrl_t *sram_ctrl) {
   return kDifOk;
 }
 
+dif_result_t dif_sram_ctrl_wipe(const dif_sram_ctrl_t *sram_ctrl) {
+  if (sram_ctrl == NULL) {
+    return kDifBadArg;
+  }
+
+  if (sram_ctrl_locked_ctrl(sram_ctrl)) {
+    return kDifLocked;
+  }
+
+  uint32_t reg = bitfield_bit32_write(0, SRAM_CTRL_CTRL_INIT_BIT, true);
+  mmio_region_write32(sram_ctrl->base_addr, SRAM_CTRL_CTRL_REG_OFFSET, reg);
+
+  return kDifOk;
+}
+
 dif_result_t dif_sram_ctrl_get_status(const dif_sram_ctrl_t *sram_ctrl,
                                       dif_sram_ctrl_status_bitfield_t *status) {
   if (sram_ctrl == NULL) {

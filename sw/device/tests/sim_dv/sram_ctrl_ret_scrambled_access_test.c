@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/sram_ctrl_testutils.h"
@@ -14,9 +15,21 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+#define SRAM_CTRL_BACKDOOR_TEST_WORDS 16
+#define SRAM_CTRL_BACKDOOR_TEST_BYTES \
+  SRAM_CTRL_BACKDOOR_TEST_WORDS * sizeof(uint32_t)
+
+/* The offset into the retention SRAM where we will backdoor write data.
+ * This can be anywhere except at the base address which is
+ * already used in the test for the scramble check.
+ * Using the midpoint of the SRAM.
+ */
+#define RET_OFFSET (TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES / 8)
+
 const test_config_t kTestConfig;
 
 static dif_sram_ctrl_t sram_ctrl;
+static dif_rstmgr_t rstmgr;
 
 /**
  * Retention SRAM start address (inclusive).
@@ -49,6 +62,10 @@ static const sram_ctrl_testutils_data_t kRamTestPattern2 = {
             0x5A5A5A5A,
         },
 };
+
+/** Expected data for the backdoor write test, to be written from the testbench.
+ */
+static const uint8_t kBackdoorExpectedBytes[SRAM_CTRL_BACKDOOR_TEST_BYTES];
 
 /**
  * Tests that the written data to RAM can be read.
@@ -92,10 +109,13 @@ bool test_ram_scrambling(const dif_sram_ctrl_t *sram_ctrl) {
 }
 
 bool test_main(void) {
+  CHECK_DIF_OK(dif_rstmgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
   CHECK_DIF_OK(dif_sram_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR),
       &sram_ctrl));
 
+  sram_ctrl_testutils_wipe(&sram_ctrl);
   test_ram_write_read_pattern();
 
   // There is a non-zero chance that the value at the tested address by pure
@@ -106,6 +126,12 @@ bool test_main(void) {
     CHECK(test_ram_scrambling(&sram_ctrl),
           "Retention RAM Scrambling test has failed (double-checked)");
   }
+
+  sram_ctrl_testutils_check_backdoor_write(kRetSramStartAddr,
+                                           SRAM_CTRL_BACKDOOR_TEST_WORDS,
+                                           RET_OFFSET, kBackdoorExpectedBytes);
+
+  CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
 
   return true;
 }
