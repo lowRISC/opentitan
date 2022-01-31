@@ -35,7 +35,6 @@ module flash_phy_rd
 
   // configuration interface from flash controller
   input buf_en_i,
-  input ecc_multi_err_en_i,
 
   // interface with arbitration unit
   input req_i,
@@ -347,7 +346,6 @@ module flash_phy_rd
 
   // scrambled data must pass through ECC first
   logic valid_ecc;
-  logic ecc_multi_err_raw;
   logic ecc_multi_err;
   logic ecc_single_err;
   logic [PlainDataWidth-1:0] data_ecc_chk;
@@ -365,16 +363,11 @@ module flash_phy_rd
     .data_i(data_i),
     .data_o(data_ecc_chk),
     .syndrome_o(),
-    .err_o({ecc_multi_err_raw, ecc_single_err})
+    .err_o({ecc_multi_err, ecc_single_err})
   );
 
-  // For instruction type accesses, always return the transaction error
-  // For data type accesses, allow the error return to be configurable, as the actual data may
-  // need to be debugged
-  import prim_mubi_pkg::mubi4_test_true_strict;
-  assign ecc_multi_err = mubi4_test_true_strict(rd_attrs.instr_type) ?
-                         ecc_multi_err_raw :
-                         ecc_multi_err_raw & ecc_multi_err_en_i;
+  // send out error indication when ecc is enabled
+  assign data_err = valid_ecc & ecc_multi_err;
 
   // If there is a detected multi-bit error or a single bit error, always return the
   // ECC corrected result (even though it is possibly wrong).
@@ -384,9 +377,7 @@ module flash_phy_rd
                     data_ecc_chk :
                     data_i[PlainDataWidth-1:0];
 
-  assign data_err = valid_ecc & ecc_multi_err;
-
-  // always send out sideband indication on error
+  // send out error indication when ecc is enabled
   assign ecc_single_err_o = valid_ecc & ecc_single_err;
 
   // ecc address return is always the full flash word

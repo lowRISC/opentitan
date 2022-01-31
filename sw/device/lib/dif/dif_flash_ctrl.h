@@ -1015,10 +1015,9 @@ dif_result_t dif_flash_ctrl_get_ecc_errors(
 
 typedef struct dif_flash_ctrl_phy_config {
   /**
-   * Cause multi-bit errors in data type transactions to report as transaction
-   * errors. If false, errors will be silenced.
+   * This struct is currently unused
    */
-  bool ecc_multi_bit_data_error_enable : 1;
+  bool unused : 1;
 } dif_flash_ctrl_phy_config_t;
 
 /**
