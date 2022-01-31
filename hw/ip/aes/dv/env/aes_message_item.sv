@@ -187,7 +187,7 @@ class aes_message_item extends uvm_sequence_item;
 
   constraint sideload_c {
     sideload_en dist{ 0:/(100-sideload_pct),
-                       1:/sideload_pct};
+                      1:/sideload_pct};
   }
 
   constraint manual_operation_c {

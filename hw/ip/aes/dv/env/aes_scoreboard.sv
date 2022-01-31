@@ -472,13 +472,13 @@ class aes_scoreboard extends cip_base_scoreboard #(
       forever begin
         // Wait for a valid sideloaded key
         key_manager_fifo.get(sideload_item);
-          // Note: max size of sideloaded key is keymgr_pkg::KeyWidth
+        // Note: max size of sideloaded key is keymgr_pkg::KeyWidth
 
         for (int i = 0; i < keymgr_pkg::KeyWidth / 32; i++) begin
           key_item.key[0][i]     = sideload_item.key0[i*32 +: 32];
           key_item.key[1][i]     = sideload_item.key1[i*32 +: 32];
-          key_item.key_vld[0][i] = 1'b1;
-          key_item.key_vld[1][i] = 1'b1;
+          key_item.key_vld[0][i] = sideload_item.valid;
+          key_item.key_vld[1][i] = sideload_item.valid;
         end
       end
   endtask
@@ -524,7 +524,7 @@ virtual task rebuild_message();
                 message = new();
                 if (full_item.start_item && full_item.manual_op) begin
                   // only set skip if this is not a real start message
-                  message.skip_msg = ~full_item.message_start();
+                  message.skip_msg = ~full_item.message_start() || ~full_item.data_in_valid();
                 end
                 message.add_start_msg_item(full_item);
               end else begin
@@ -673,8 +673,10 @@ virtual task rebuild_message();
       `DV_EOT_PRINT_MAILBOX_CONTENTS(aes_message_item, msg_fifo)
       `DV_EOT_PRINT_MAILBOX_CONTENTS(aes_seq_item, item_fifo)
       `DV_EOT_PRINT_Q_CONTENTS(aes_seq_item, rcv_item_q)
-      if (good_cnt !=
-             (cfg.num_messages - cfg.num_corrupt_messages - skipped_cnt + cfg.split_cnt)) begin
+      // check that we saw all messages
+      // if there is more than expected check split count
+      if (good_cnt <
+             (cfg.num_messages - cfg.num_corrupt_messages - skipped_cnt)) begin
         rpt_srvr = uvm_report_server::get_server();
         if (rpt_srvr.get_severity_count(UVM_FATAL)
              + rpt_srvr.get_severity_count(UVM_ERROR) == 0) begin
@@ -690,6 +692,17 @@ virtual task rebuild_message();
         txt = { txt, $sformatf(" \n\t ----| Skipped: \t%d", skipped_cnt)};
         txt = { txt, $sformatf(" \n\t ----| Split: \t%d", cfg.split_cnt)};
         `uvm_fatal(`gfn, $sformatf("%s", txt) )
+      end
+      if ((good_cnt > (cfg.num_messages - cfg.num_corrupt_messages - skipped_cnt))
+           && (cfg.split_cnt == 0)) begin
+        txt = " SAW TOO MANY MESSAGES AND NONE WAS SPLIT";
+        txt = { txt, $sformatf(" \n\t ----| Expected:\t %d", cfg.num_messages)};
+        txt = { txt, $sformatf(" \n\t ----| Seen: \t%d",  good_cnt)};
+        txt = { txt, $sformatf(" \n\t ----| Expected corrupted: \t%d", cfg.num_corrupt_messages)};
+        txt = { txt, $sformatf(" \n\t ----| Seen corrupted: \t%d", corrupt_cnt)};
+        txt = { txt, $sformatf(" \n\t ----| Skipped: \t%d", skipped_cnt)};
+        txt = { txt, $sformatf(" \n\t ----| Split: \t%d", cfg.split_cnt)};
+        `uvm_fatal(`gfn, $sformatf("%s", txt))
       end
     end
   endfunction
