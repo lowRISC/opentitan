@@ -48,21 +48,26 @@
 `endif
 
 // A macro to simplify the distribution constraint of mubi type variable
-// Don't use this macro directly, use DV_MUBI4|8|16_DIST
+// Don't use this macro directly, use DV_MUBI4|8|16_DIST.
+// The weights of both TRUE and FALSE are scaled by the number of other
+// values, and this uses ":=" for the distribution of other values, so they
+// are truly uniform.
+// The MAX_ argument is the maximum value that VAR_ can take, which means
+// (MAX_ - 1) is the scaling factor.
 `ifndef _DV_MUBI_DIST
-`define _DV_MUBI_DIST(VAR_, TRUE_, FALSE_, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_) \
+`define _DV_MUBI_DIST(VAR_, TRUE_, FALSE_, MAX_, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_) \
   if (TRUE_ > FALSE_) { \
-    VAR_ dist {TRUE_                         := T_WEIGHT_,      \
-               FALSE_                        := F_WEIGHT_,      \
-               [0 : FALSE_ - 1]              := OTHER_WEIGHT_,  \
-               [FALSE_ + 1 : TRUE_ - 1]      := OTHER_WEIGHT_,  \
-               [TRUE_ + 1 : type(VAR_)'('1)] := OTHER_WEIGHT_}; \
-  } else {                                                      \
-    VAR_ dist {TRUE_                         := T_WEIGHT_,      \
-               FALSE_                        := F_WEIGHT_,      \
-               [0 : TRUE_ - 1]               := OTHER_WEIGHT_,  \
-               [TRUE_ + 1 : FALSE_ - 1]      := OTHER_WEIGHT_,  \
-               [FALSE_+ 1 : type(VAR_)'('1)] := OTHER_WEIGHT_}; \
+    VAR_ dist {TRUE_                         := T_WEIGHT_ * (MAX_ - 1), \
+               FALSE_                        := F_WEIGHT_ * (MAX_ - 1), \
+               [0 : FALSE_ - 1]              := OTHER_WEIGHT_,          \
+               [FALSE_ + 1 : TRUE_ - 1]      := OTHER_WEIGHT_,          \
+               [TRUE_ + 1 : MAX_]            := OTHER_WEIGHT_};         \
+  } else {                                                              \
+    VAR_ dist {TRUE_                         := T_WEIGHT_ * (MAX_ - 1), \
+               FALSE_                        := F_WEIGHT_ * (MAX_ - 1), \
+               [0 : TRUE_ - 1]               := OTHER_WEIGHT_,          \
+               [TRUE_ + 1 : FALSE_ - 1]      := OTHER_WEIGHT_,          \
+               [FALSE_+ 1 : MAX_]            := OTHER_WEIGHT_};         \
   }
 `endif
 
@@ -73,22 +78,22 @@
 // OTHER_WEIGHT_: randomization weight of values other than True or False
 `ifndef DV_MUBI4_DIST
 `define DV_MUBI4_DIST(VAR_, T_WEIGHT_ = 2, F_WEIGHT_ = 2, OTHER_WEIGHT_ = 1) \
-  `_DV_MUBI_DIST(VAR_, MuBi4True, MuBi4False, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_)
+  `_DV_MUBI_DIST(VAR_, MuBi4True, MuBi4False, (1 << 4) - 1, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_)
 `endif
 
 `ifndef DV_MUBI8_DIST
 `define DV_MUBI8_DIST(VAR_, T_WEIGHT_ = 2, F_WEIGHT_ = 2, OTHER_WEIGHT_ = 1) \
-  `_DV_MUBI_DIST(VAR_, MuBi8True, MuBi8False, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_)
+  `_DV_MUBI_DIST(VAR_, MuBi8True, MuBi8False, (1 << 8) - 1, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_)
 `endif
 
 `ifndef DV_MUBI12_DIST
 `define DV_MUBI12_DIST(VAR_, T_WEIGHT_ = 2, F_WEIGHT_ = 2, OTHER_WEIGHT_ = 1) \
-  `_DV_MUBI_DIST(VAR_, MuBi12True, MuBi12False, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_)
+  `_DV_MUBI_DIST(VAR_, MuBi12True, MuBi12False, (1 << 12) - 1,T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_)
 `endif
 
 `ifndef DV_MUBI16_DIST
 `define DV_MUBI16_DIST(VAR_, T_WEIGHT_ = 2, F_WEIGHT_ = 2, OTHER_WEIGHT_ = 1) \
-  `_DV_MUBI_DIST(VAR_, MuBi16True, MuBi16False, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_)
+  `_DV_MUBI_DIST(VAR_, MuBi16True, MuBi16False, T_WEIGHT_, (1 << 16) - 1, F_WEIGHT_, OTHER_WEIGHT_)
 `endif
 
 `endif  // __CIP_MACROS_SVH__

@@ -79,15 +79,14 @@ package cip_base_pkg;
   // t_weight: randomization weight of the value True
   // f_weight: randomization weight of the value False
   // other_weight: collective randomization weight of all values other than True or False
-  `define _DV_MUBI_RAND_VAL(WIDTH_) \
-    function automatic mubi``WIDTH_``_t get_rand_mubi``WIDTH_``_val( \
-        int t_weight = 2, int f_weight = 2, int other_weight = 1); \
-      bit[WIDTH_-1:0] val; \
-      int             scaling = (1 << WIDTH_) - 2; \
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(val, \
-          `DV_MUBI``WIDTH_``_DIST(val, t_weight * scaling, f_weight * scaling, other_weight), , \
-                                         msg_id) \
-      return mubi``WIDTH_``_t'(val); \
+  `define _DV_MUBI_RAND_VAL(WIDTH_)                                         \
+    function automatic mubi``WIDTH_``_t get_rand_mubi``WIDTH_``_val(        \
+        int t_weight = 2, int f_weight = 2, int other_weight = 1);          \
+      bit[WIDTH_-1:0] val;                                                  \
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(val,                               \
+          `DV_MUBI``WIDTH_``_DIST(val, t_weight, f_weight, other_weight), , \
+                                         msg_id)                            \
+      return mubi``WIDTH_``_t'(val);                                        \
     endfunction
 
   // Create function - get_rand_mubi4_val
