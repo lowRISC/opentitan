@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from copy import deepcopy
-from typing import Dict, Iterable, Optional
+from typing import Any, Dict, Iterable, Optional
 
 from .insn_yaml import Insn
 from .operand import RegOperandType
@@ -47,11 +47,12 @@ class ConstantContext:
     def __contains__(self, gpr: str) -> bool:
         return gpr in self.values
 
-    def __deepcopy__(self, memo) -> 'ConstantContext':
+    def __deepcopy__(self, memo: Optional[Dict[int,
+                                               Any]]) -> 'ConstantContext':
         return ConstantContext(deepcopy(self.values, memo))
 
-    def includes(self, other: 'ConstantContext') -> 'ConstantContext':
-        '''Returns true iff self contains all key/value pairs in other.'''
+    def includes(self, other: 'ConstantContext') -> bool:
+        '''Returns true iff other is a restriction of self.'''
         for k, v in other.values.items():
             if self.get(k) != v:
                 return False
@@ -78,7 +79,6 @@ class ConstantContext:
         for reg in to_remove:
             if reg != 'x0':
                 self.values.pop(reg, None)
-
 
     def update_insn(self, insn: Insn, op_vals: Dict[str, int]) -> None:
         '''Updates to new known constant values GPRs after the instruction.

@@ -84,6 +84,7 @@ class LoopStart(ControlLoc):
         return '<loop from {:#x}-{:#x}>'.format(self.loop_start_pc,
                                                 self.loop_end_pc)
 
+
 class Cycle(ControlLoc):
     '''Represents a control flow that loops back to a previous PC.
 
@@ -98,6 +99,7 @@ class Cycle(ControlLoc):
 
     def pretty(self) -> str:
         return '<cycle: back to {:#x}>'.format(self.pc)
+
 
 class LoopEnd(Cycle):
     '''Represents the end of a loop (looping back to the start).
@@ -130,8 +132,8 @@ class ControlGraph:
           CodeSection ending in `ret` would have a single Ret() instance in its
           list.
     '''
-    def __init__(self, start: int,
-            graph: Dict[int, Tuple[CodeSection,List[ControlLoc]]]):
+    def __init__(self, start: int, graph: Dict[int, Tuple[CodeSection,
+                                                          List[ControlLoc]]]):
         for pc, (sec, _) in graph.items():
             assert sec.start == pc
         self.start = start
@@ -192,7 +194,8 @@ class ControlGraph:
             if len(symbols) > 0:
                 out.append((0, '<{}> (see above)'.format(', '.join(symbols))))
             else:
-                out.append((0, '{:#x}..{:#x} (see above)'.format(entry_pc, sec.end)))
+                out.append(
+                    (0, '{:#x}..{:#x} (see above)'.format(entry_pc, sec.end)))
             pcs_to_print = []
         elif len(symbols) > 0:
             out.append((0, '<{}>'.format(', '.join(symbols))))
@@ -221,7 +224,8 @@ class ControlGraph:
                 continue
             if len(non_special_edges) > 1:
                 last_insn = program.get_insn(sec.end)
-                out.append((0, '-> (branch from {:#x}: {})'.format(sec.end, last_insn.mnemonic)))
+                out.append((0, '-> (branch from {:#x}: {})'.format(
+                    sec.end, last_insn.mnemonic)))
             if loc.is_special():
                 out.append((child_indent, loc.pretty()))
                 if isinstance(loc, Ret) and len(call_stack) > 0:
@@ -395,7 +399,9 @@ def _populate_control_graph(graph: ControlGraph, program: OTBNProgram,
                                          program.max_pc()), [ImemEnd()])
     return
 
-def _label_cycles(program: OTBNProgram, graph: ControlGraph, start_pc: int, visited_pcs: Set[int]) -> None:
+
+def _label_cycles(program: OTBNProgram, graph: ControlGraph, start_pc: int,
+                  visited_pcs: Set[int]) -> None:
     '''Creates Cycle edges to remove cyclic control flow from the graph.
 
     Modifies graph in place. Works by replacing edges that loop back to an
@@ -406,8 +412,9 @@ def _label_cycles(program: OTBNProgram, graph: ControlGraph, start_pc: int, visi
         visited_pcs.add(pc)
     for i in range(len(edges)):
         edge = edges[i]
-        if isinstance(edge, Ret) or isinstance(edge, ImemEnd) or isinstance(edge, Ecall):
-            # Cannot possibly loop back 
+        if isinstance(edge, Ret) or isinstance(edge, ImemEnd) or isinstance(
+                edge, Ecall):
+            # Cannot possibly loop back
             continue
         elif isinstance(edge, Cycle):
             # Done; no need to traverse or replace
@@ -426,13 +433,15 @@ def _fix_cycles(program: OTBNProgram, graph: ControlGraph) -> None:
     '''
     _label_cycles(program, graph, graph.start, set())
     cycle_start_pcs = graph.get_cycle_starts()
-    new_entries: Dict[int,Tuple[CodeSection,List[ControlLoc]]] = {}
+    # The new_entries dictionary will have the same structure as graph.graph.
+    new_entries = {}
     for start_pc in graph.graph:
         sec, edges = graph.get_entry(start_pc)
         for pc in sec:
             if pc in cycle_start_pcs and pc != sec.start:
                 # Split this section and create a new edge leading to the cycle
-                new_entries[start_pc] = (CodeSection(start_pc, pc), [ControlLoc(pc)])
+                new_entries[start_pc] = (CodeSection(start_pc,
+                                                     pc), [ControlLoc(pc)])
                 break
     graph.graph.update(new_entries)
 

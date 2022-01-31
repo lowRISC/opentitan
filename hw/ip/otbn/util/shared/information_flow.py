@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from copy import deepcopy
-from typing import Dict, Iterable, List, Optional, Sequence, Set
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Set
 
 from serialize.parse_helpers import check_keys, check_list, check_str
 
@@ -202,11 +202,12 @@ class InformationFlowGraph:
 
         return InformationFlowGraph(flow)
 
-    def __deepcopy__(self, memo):
+    def __deepcopy__(self,
+                     memo: Optional[Dict[int, Any]]) -> 'InformationFlowGraph':
         flow = deepcopy(self.flow, memo)
         return InformationFlowGraph(flow, self.exists)
 
-    def loop(self, max_iterations=1000) -> 'InformationFlowGraph':
+    def loop(self, max_iterations: int = 1000) -> 'InformationFlowGraph':
         '''Returns graph representing all possible repetitions of seq() of this
         graph with itself.
 
@@ -224,7 +225,7 @@ class InformationFlowGraph:
         stabilized), which is only guaranteed to happen if the node set is
         finite. By default, an error will be produced after a certain maximum
         number of iterations, but the caller can override this by setting
-        `max_iterations` to None. 
+        `max_iterations` to None.
 
         Returns a new graph; the input graph is unmodified.
         '''
@@ -243,10 +244,9 @@ class InformationFlowGraph:
             ctr += 1
 
         raise RuntimeError(
-                'Maximum number of iterations ({}) exceeded when looping '
-                'information-flow graph. Is the set of possible nodes larger '
-                'than the maximum iterations?'
-                .format(max_iterations))
+            'Maximum number of iterations ({}) exceeded when looping '
+            'information-flow graph. Is the set of possible nodes larger '
+            'than the maximum iterations?'.format(max_iterations))
 
     def pretty(self, indent: int = 0) -> str:
         '''Return a human-readable representation of the graph.'''
@@ -268,12 +268,14 @@ class InformationFlowGraph:
                                                sink))
         return '\n'.join(lines)
 
-    def __eq__(self, other: 'InformationFlowGraph') -> bool:
+    def __eq__(self, other: object) -> bool:
         '''Compare two information flow graphs for equality.
 
         Two graphs are considered equal iff the underlying flow dictionaries
         are equal.
         '''
+        if not isinstance(other, InformationFlowGraph):
+            return False
         return self.flow == other.flow
 
 

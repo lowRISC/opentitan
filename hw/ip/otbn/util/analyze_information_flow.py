@@ -55,7 +55,8 @@ def main() -> int:
             print('Control flow has cycles starting at the following PCs:')
             for pc in cycle_pcs:
                 symbols = program.get_symbols_for_pc(pc)
-                label_str = ' <{}>'.format(', '.join(symbols)) if symbols else ''
+                label_str = ' <{}>'.format(
+                    ', '.join(symbols)) if symbols else ''
                 print('{:#x}{}'.format(pc, label_str))
 
     # Compute information-flow graph(s).
