@@ -103,7 +103,8 @@ void otbn_model_reset(OtbnModel *model);
 // Take loop warps from an OtbnMemUtil
 void otbn_take_loop_warps(OtbnModel *model, OtbnMemUtil *memutil);
 
-// React to a lifecycle controller escalation signal
+// React to a lifecycle controller escalation signal. Returns 0 on success or
+// -1 on failure.
 int otbn_model_send_lc_escalation(OtbnModel *model);
 }
 
