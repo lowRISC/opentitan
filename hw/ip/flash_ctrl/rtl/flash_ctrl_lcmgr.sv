@@ -455,7 +455,6 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
       // Second check for error status:
       // If error status indicates error, jump to invalid terminal state
       // Otherwise assign output to error status;
-      // TODO: consider lengthening the check
       StRmaRsp: begin
         phase = PhaseRma;
         if (err_sts_q != lc_ctrl_pkg::On) begin

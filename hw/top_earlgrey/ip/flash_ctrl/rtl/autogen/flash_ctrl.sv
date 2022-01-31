@@ -531,7 +531,6 @@ module flash_ctrl
     .flash_last_o   (flash_prog_last),
     .flash_type_o   (flash_prog_type),
     .flash_done_i   (flash_prog_done),
-    // TODO, pending feedback
     .flash_phy_err_i(flash_phy_rsp.flash_err),
     .flash_mp_err_i (flash_mp_err)
   );

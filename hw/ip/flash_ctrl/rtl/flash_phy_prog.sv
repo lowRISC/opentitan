@@ -19,8 +19,7 @@
 // - Observe minimum block cipher sizes for scrambling / descrambling and ECC.
 //   Scrambling algorithms and ECC work on a specific chunk of data.  When these features
 //   are enabled, the phy controller needs to ensure there is enough data to satisfy that
-//   request - TBD: This should be checked with software.  Hardware could also always behave
-//   as it does in the point above and rely on software to correctly compact the data.
+//   request.
 
 module flash_phy_prog import flash_phy_pkg::*; (
   input clk_i,
@@ -266,7 +265,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
     .data_o(ecc_data)
   );
 
-  // TODO
+  // TODO, can this be merged now?
   // second ecc encoder used for plain portion only
   // the duplicated ecc encoder is a temporary work-around
   // for prim_flash / dv which currently maintains a separate

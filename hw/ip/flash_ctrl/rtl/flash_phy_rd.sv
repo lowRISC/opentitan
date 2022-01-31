@@ -453,7 +453,7 @@ module flash_phy_rd
   assign hint_descram = fifo_data_valid & descram_q;
   assign hint_forward = fifo_data_valid & forward_q;
 
-  //TODO: Cleanup the FIFO popping a bit more
+  // See comment above on how FIFO popping can be improved in the future
   prim_fifo_sync #(
     .Width   (PlainDataWidth + 3 + NumBuf),
     .Pass    (0),
