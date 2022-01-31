@@ -390,6 +390,14 @@
             24 state transitions in order to guard against bruteforcing.
             '''
     }
+    { name: "STATE.CONFIG.SPARSE",
+      desc: '''
+            The decoded manufacturing state uses a replicated enum encoding to fill the 32bit
+            value exposed in the CSRs (both the LC_STATE and TRANSITION_TARGET registers).
+            This is done to 1) ease hardening of firmware code, and 2) to ensure that even the decoded
+            life cycle state vector inside the life cycle controller still has a redundant encoding.
+            '''
+    }
     { name: "MAIN.FSM.SPARSE",
       desc: "The main state FSM is sparsely encoded."
     }

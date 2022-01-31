@@ -41,7 +41,7 @@ module lc_ctrl_fsm
   input                         trans_cmd_i,
   input  ext_dec_lc_state_t     trans_target_i,
   // Decoded life cycle state for CSRs.
-  output dec_lc_state_e         dec_lc_state_o,
+  output ext_dec_lc_state_t     dec_lc_state_o,
   output dec_lc_cnt_t           dec_lc_cnt_o,
   output dec_lc_id_state_e      dec_lc_id_state_o,
   // Token hashing interface
@@ -144,6 +144,7 @@ module lc_ctrl_fsm
   // Hashed token to compare against.
   logic [1:0] hashed_token_valid_mux;
   lc_token_t hashed_token_mux;
+  logic token_mux_indices_inconsistent;
 
   // Multibit state error from state decoder
   logic [5:0] state_invalid_error;
@@ -585,27 +586,11 @@ module lc_ctrl_fsm
     hashed_tokens_valid1[InvalidTokenIdx]    = 1'b0; // always invalid
   end
 
-  logic [DecLcStateWidth-1:0] dec_lc_state0, dec_lc_state1;
-  logic [DecLcStateWidth-1:0] dec_lc_state0_buf, dec_lc_state1_buf;
-  assign dec_lc_state0 = dec_lc_state_o;
-  assign dec_lc_state1 = dec_lc_state_o;
-  prim_sec_anchor_buf #(
-    .Width(DecLcStateWidth)
-  ) u_prim_sec_anchor_buf_index0 (
-    .in_i(dec_lc_state0),
-    .out_o(dec_lc_state0_buf)
-  );
-  prim_sec_anchor_buf #(
-    .Width(DecLcStateWidth)
-  ) u_prim_sec_anchor_buf_index1 (
-    .in_i(dec_lc_state1),
-    .out_o(dec_lc_state1_buf)
-  );
-
+  // SEC_CM: STATE.CONFIG.SPARSE
   // The trans_target_i signal comes from the CSR and uses a replication encoding,
   // hence we can use different indices of the array.
-  assign token_idx0       = TransTokenIdxMatrix[dec_lc_state0_buf][trans_target_i[0]];
-  assign token_idx1       = TransTokenIdxMatrix[dec_lc_state1_buf][trans_target_i[1]];
+  assign token_idx0       = TransTokenIdxMatrix[dec_lc_state_o[0]][trans_target_i[0]];
+  assign token_idx1       = TransTokenIdxMatrix[dec_lc_state_o[1]][trans_target_i[1]];
   assign hashed_token_mux = {hashed_tokens_lower[token_idx0],
                              hashed_tokens_upper[token_idx1]};
   assign hashed_token_valid_mux = {hashed_tokens_valid0[token_idx0],
@@ -613,7 +598,6 @@ module lc_ctrl_fsm
 
   // This signal with the trans_invalid_error_o in the FSM below. We do not trigger an alert right
   // away if this happens, since it could be due to an invalid value programmed to the CSRs.
-  logic token_mux_indices_inconsistent;
   assign token_mux_indices_inconsistent = (token_idx0 != token_idx1);
 
   ////////////////////////////////////////////////////////////////////

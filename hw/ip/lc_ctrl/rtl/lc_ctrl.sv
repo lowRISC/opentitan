@@ -122,7 +122,7 @@ module lc_ctrl
   lc_ctrl_reg_pkg::lc_ctrl_reg2hw_t reg2hw;
   lc_ctrl_reg_pkg::lc_ctrl_hw2reg_t hw2reg;
 
-  // SEC_CM: TRANSITION.CONFIG.REGWEN
+  // SEC_CM: TRANSITION.CONFIG.REGWEN, STATE.CONFIG.SPARSE
   logic fatal_bus_integ_error_q, fatal_bus_integ_error_d;
   lc_ctrl_reg_top u_reg (
     .clk_i,
@@ -278,9 +278,9 @@ module lc_ctrl
   lc_token_t     transition_token_d, transition_token_q;
   ext_dec_lc_state_t transition_target_d, transition_target_q;
   // No need to register these.
-  dec_lc_state_e    dec_lc_state;
-  dec_lc_cnt_t      dec_lc_cnt;
-  dec_lc_id_state_e dec_lc_id_state;
+  ext_dec_lc_state_t dec_lc_state;
+  dec_lc_cnt_t       dec_lc_cnt;
+  dec_lc_id_state_e  dec_lc_id_state;
 
   logic lc_idle_d;
 
@@ -301,7 +301,7 @@ module lc_ctrl
     hw2reg.status.state_error            = fatal_state_error_q;
     hw2reg.status.otp_partition_error    = otp_part_error_q;
     hw2reg.status.bus_integ_error        = fatal_bus_integ_error_q;
-    hw2reg.lc_state                      = {DecLcStateNumRep{dec_lc_state}};
+    hw2reg.lc_state                      = dec_lc_state;
     hw2reg.lc_transition_cnt             = dec_lc_cnt;
     hw2reg.lc_id_state                   = {DecLcIdStateNumRep{dec_lc_id_state}};
     hw2reg.device_id                     = otp_device_id_i;
