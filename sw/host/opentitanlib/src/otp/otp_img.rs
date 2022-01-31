@@ -6,7 +6,7 @@ use serde::Deserialize;
 
 use std::path::Path;
 
-use crate::otp::num_de::{DecEncoded, DeferredValue};
+use crate::util::num_de::{DecEncoded, DeferredValue};
 use anyhow::Result;
 use rand::rngs::StdRng;
 use rand::SeedableRng;
