@@ -404,8 +404,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     end
     if (channel == DataChannel) begin
       `DV_CHECK_EQ(item.d_error, is_tl_err,
-          $sformatf({"unmapped: %0d, mem_access_err: %0d, csr_size_err: %0d, tl_item_err: %0d, ",
-                    "has_intg_err: %0d"}, is_tl_unmapped_addr, mem_access_err,
+          $sformatf({"On interface %0s, TL item: %0s, unmapped: %0d, mem_access_err: %0d, ",
+                    "csr_size_err: %0d, tl_item_err: %0d, has_intg_err: %0d"}, ral_name,
+                    item.sprint(uvm_default_line_printer), is_tl_unmapped_addr, mem_access_err,
                     csr_size_err, tl_item_err, has_intg_err))
 
       // these errors all have the same outcome. Only sample coverages when there is just one
@@ -450,12 +451,18 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
            item.a_opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData}) begin
         mem_byte_access_err = 1;
       end
+
       // check if mem read happens while mem doesn't allow read (WO)
       mem_wo_err = (mem_access == "WO") && (item.a_opcode == tlul_pkg::Get);
+
       // check if mem write happens while mem is RO
       mem_ro_err = (mem_access == "RO") && (item.a_opcode != tlul_pkg::Get);
 
-      if (mem_byte_access_err || mem_wo_err || mem_ro_err) return 0;
+      if (mem_byte_access_err || mem_wo_err || mem_ro_err) begin
+        `uvm_info(`gfn, $sformatf("mem_byte_access_err = %0d, mem_wo_err = %0d, mem_ro_err = %0d",
+                                  mem_byte_access_err, mem_wo_err, mem_ro_err), UVM_HIGH)
+        return 0;
+      end
     end
     return 1;
   endfunction
