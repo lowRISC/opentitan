@@ -1,0 +1,88 @@
+"""
+@generated
+cargo-raze crate build file.
+
+DO NOT EDIT! Replaced on runs of cargo-raze
+"""
+
+# buildifier: disable=load
+load("@bazel_skylib//lib:selects.bzl", "selects")
+
+# buildifier: disable=load
+load(
+    "@rules_rust//rust:defs.bzl",
+    "rust_binary",
+    "rust_library",
+    "rust_proc_macro",
+    "rust_test",
+)
+
+package(default_visibility = [
+    # Public for visibility by "@raze__crate__version//" targets.
+    #
+    # Prefer access through "//third_party/cargo", which limits external
+    # visibility to explicit Cargo.toml dependencies.
+    "//visibility:public",
+])
+
+licenses([
+    "notice",  # MIT from expression "MIT"
+])
+
+# Generated Targets
+
+# Unsupported target "ar" with type "example" omitted
+
+# Unsupported target "automagic" with type "example" omitted
+
+# Unsupported target "dotnet_pe_analysis" with type "example" omitted
+
+# Unsupported target "dyldinfo" with type "example" omitted
+
+# Unsupported target "lipo" with type "example" omitted
+
+# Unsupported target "rdr" with type "example" omitted
+
+# Unsupported target "scroll" with type "example" omitted
+
+rust_library(
+    name = "goblin",
+    srcs = glob(["**/*.rs"]),
+    crate_features = [
+        "alloc",
+        "archive",
+        "default",
+        "elf32",
+        "elf64",
+        "endian_fd",
+        "log",
+        "mach32",
+        "mach64",
+        "pe32",
+        "pe64",
+        "std",
+    ],
+    crate_root = "src/lib.rs",
+    data = [],
+    edition = "2018",
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+    version = "0.0.24",
+    # buildifier: leave-alone
+    deps = [
+        "@raze__log__0_4_14//:log",
+        "@raze__plain__0_2_3//:plain",
+        "@raze__scroll__0_9_2//:scroll",
+    ],
+)
+
+# Unsupported target "archive" with type "test" omitted
+
+# Unsupported target "compare_dyldinfos" with type "test" omitted
+
+# Unsupported target "macho" with type "test" omitted
