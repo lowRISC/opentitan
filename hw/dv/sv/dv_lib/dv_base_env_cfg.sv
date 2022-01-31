@@ -28,8 +28,9 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   }
 
   // reg model & q of valid csr addresses
-  RAL_T                             ral;
-  dv_base_reg_block                 ral_models[string];
+  RAL_T             ral;
+  dv_base_reg_block ral_models[string];
+
   // A queue of the names of RAL models that should be created in the `initialize` function
   // Related agents, adapters will be created in env as well as connecting them with scb
   // For example, if the IP has an additional RAL model named `ral1`, add it into the list as below

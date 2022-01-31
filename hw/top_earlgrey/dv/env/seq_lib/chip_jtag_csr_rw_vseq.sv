@@ -25,7 +25,7 @@ class chip_jtag_csr_rw_vseq extends chip_common_vseq;
     run_common_vseq_wrapper(num_trans);
   endtask : body
 
-  virtual task run_csr_vseq(string csr_test_type = "",
+  virtual task run_csr_vseq(string csr_test_type,
                             int    num_test_csrs = 0,
                             bit    do_rand_wr_and_reset = 1,
                             string ral_name = "");

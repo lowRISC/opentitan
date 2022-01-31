@@ -169,15 +169,15 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
   virtual task run_csr_vseq_wrapper(int num_times = 1);
     string        csr_test_type;
 
-    // env needs to have a ral instance
+    // Env needs to have a ral instance.
     `DV_CHECK_GE_FATAL(cfg.ral_models.size(), 1)
 
-    // get csr_test_type from plusarg
+    // Get csr_test_type from plusarg
     void'($value$plusargs("csr_%0s", csr_test_type));
 
     // run the csr seq
     for (int i = 1; i <= num_times; i++) begin
-      `uvm_info(`gfn, $sformatf("running csr %0s vseq iteration %0d/%0d",
+      `uvm_info(`gfn, $sformatf("Running csr %0s vseq iteration %0d/%0d.",
                                 csr_test_type, i, num_times), UVM_LOW)
       run_csr_vseq(.csr_test_type(csr_test_type));
     end
@@ -187,25 +187,22 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
   // arg csr_test_type: what csr test to run {hw_reset, rw, bit_bash, aliasing}
   // arg num_test_csrs:instead of testing the entire ral model or passing test chunk info via
   // plusarg, provide ability to set a random number of csrs to test from higher level sequence
-  virtual task run_csr_vseq(string csr_test_type = "",
+  virtual task run_csr_vseq(string csr_test_type,
                             int    num_test_csrs = 0,
                             bit    do_rand_wr_and_reset = 1,
                             string ral_name = "");
     csr_base_seq      m_csr_seq;
-    dv_base_reg_block models[string];
+    dv_base_reg_block models[$];
 
     // env needs to have at least one ral instance
     `DV_CHECK_GE_FATAL(cfg.ral_models.size(), 1)
 
-    // If ral_name is specified, only use registers on that named interface. Otherwise, use all
-    // registers.
+    // Filter out the RAL blocks under test with the supplied name, if available.
     if (ral_name != "") begin
       `DV_CHECK_FATAL(cfg.ral_models.exists(ral_name))
-      models[ral_name] = cfg.ral_models[ral_name];
+      models.push_back(cfg.ral_models[ral_name]);
     end else begin
-      foreach (cfg.ral_models[i]) begin
-        models[i] = cfg.ral_models[i];
-      end
+      foreach (cfg.ral_models[i]) models.push_back(cfg.ral_models[i]);
     end
 
     // check which csr test type
@@ -238,11 +235,7 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
 
       // run write-only sequence to randomize the csr values
       m_csr_write_seq = csr_write_seq::type_id::create("m_csr_write_seq");
-      // We have to assign this array in a loop because the element types aren't equivalent, so
-      // the array types aren't assignment compatible.
-      foreach (models[i]) begin
-        m_csr_write_seq.models[i] = models[i];
-      end
+      m_csr_write_seq.models = models;
       m_csr_write_seq.external_checker = cfg.en_scb;
       m_csr_write_seq.en_rand_backdoor_write = 1'b1;
       m_csr_write_seq.start(null);
@@ -259,11 +252,7 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
 
     // create base csr seq and pass our ral
     m_csr_seq = csr_base_seq::type_id::create("m_csr_seq");
-    // We have to assign this array in a loop because the element types aren't equivalent, so
-    // the array types aren't assignment compatible.
-    foreach (models[i])  begin
-      m_csr_seq.models[i] = models[i];
-    end
+    m_csr_seq.models = models;
     m_csr_seq.external_checker = cfg.en_scb;
     m_csr_seq.num_test_csrs = num_test_csrs;
     m_csr_seq.start(null);

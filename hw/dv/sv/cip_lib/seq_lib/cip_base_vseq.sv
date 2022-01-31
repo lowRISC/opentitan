@@ -481,7 +481,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   endtask
 
   virtual task check_no_fatal_alerts();
-    // Max alert_handshake shake cycls:
+    // Max alert_handshake shake cycles:
     // - 20 cycles includes ack response and ack stable time.
     // - 10 is the max difference between alert clock and dut clock.
     int max_alert_handshake_cycles = 20 * 10;
@@ -601,7 +601,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   endtask
 
   // override csr_vseq to control adapter to abort transaction
-  virtual task run_csr_vseq(string csr_test_type = "",
+  virtual task run_csr_vseq(string csr_test_type,
                             int    num_test_csrs = 0,
                             bit    do_rand_wr_and_reset = 1,
                             string ral_name = "");
