@@ -24,8 +24,8 @@ boot_policy_manifests_t boot_policy_manifests_get(void) {
   };
 }
 
-rom_error_t boot_policy_manifest_check(lifecycle_state_t lc_state,
-                                       const manifest_t *manifest) {
+rom_error_t boot_policy_manifest_check(const manifest_t *manifest,
+                                       const boot_data_t *boot_data) {
   if (manifest->identifier != MANIFEST_IDENTIFIER_ROM_EXT) {
     return kErrorBootPolicyBadIdentifier;
   }
@@ -34,13 +34,11 @@ rom_error_t boot_policy_manifest_check(lifecycle_state_t lc_state,
     return kErrorBootPolicyBadLength;
   }
   RETURN_IF_ERROR(manifest_check(manifest));
-  boot_data_t boot_data;
-  RETURN_IF_ERROR(boot_data_read(lc_state, &boot_data));
 
   if (launder32(manifest->security_version) >=
-      boot_data.min_security_version_rom_ext) {
-    HARDENED_CHECK_GE(launder32(manifest->security_version),
-                      boot_data.min_security_version_rom_ext);
+      boot_data->min_security_version_rom_ext) {
+    HARDENED_CHECK_GE(manifest->security_version,
+                      boot_data->min_security_version_rom_ext);
     return kErrorOk;
   }
   return kErrorBootPolicyRollback;

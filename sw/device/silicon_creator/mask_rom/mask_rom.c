@@ -117,7 +117,7 @@ static rom_error_t mask_rom_init(void) {
 static rom_error_t mask_rom_verify(const manifest_t *manifest,
                                    uint32_t *flash_exec) {
   *flash_exec = 0;
-  HARDENED_RETURN_IF_ERROR(boot_policy_manifest_check(lc_state, manifest));
+  HARDENED_RETURN_IF_ERROR(boot_policy_manifest_check(manifest, &boot_data));
 
   const sigverify_rsa_key_t *key;
   HARDENED_RETURN_IF_ERROR(sigverify_rsa_key_get(
