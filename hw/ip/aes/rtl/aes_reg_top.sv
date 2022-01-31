@@ -839,7 +839,7 @@ module aes_reg_top (
 
     // from register interface
     .re     (ctrl_aux_shadowed_re),
-    .we     (ctrl_aux_shadowed_we),
+    .we     (ctrl_aux_shadowed_we & ctrl_aux_regwen_qs),
     .wd     (ctrl_aux_shadowed_wd),
 
     // from internal hardware
