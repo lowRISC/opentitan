@@ -7,7 +7,6 @@
 //
 // This module wraps every single flash bank and contains most of the region attribute,
 // scramble, ECC, security and arbitration logic.
-// Most of the items are TODO, at the moment only arbitration logic exists.
 
 module flash_phy_core
   import flash_phy_pkg::*;
