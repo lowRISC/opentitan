@@ -432,6 +432,7 @@ module aes_core
     .key_clear_o        ( cipher_key_clear_busy      ),
     .data_out_clear_i   ( cipher_data_out_clear      ),
     .data_out_clear_o   ( cipher_data_out_clear_busy ),
+    .alert_fatal_i      ( alert_fatal_o              ),
     .alert_o            ( cipher_alert               ),
 
     .prd_clearing_i     ( cipher_prd_clearing        ),

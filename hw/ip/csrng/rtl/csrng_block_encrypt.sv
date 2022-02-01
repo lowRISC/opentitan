@@ -104,6 +104,7 @@ module csrng_block_encrypt import csrng_pkg::*; #(
     .key_len_i          ( aes_pkg::AES_256           ),
     .crypt_i            ( aes_pkg::SP2V_HIGH         ), // Enable
     .crypt_o            ( cipher_crypt_busy          ),
+    .alert_fatal_i      ( 1'b0                       ),
     .alert_o            ( block_encrypt_aes_cipher_sm_err_o),
     .dec_key_gen_i      ( aes_pkg::SP2V_LOW          ), // Disable
     .dec_key_gen_o      (                            ),

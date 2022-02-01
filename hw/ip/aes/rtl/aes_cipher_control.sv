@@ -41,6 +41,7 @@ module aes_cipher_control import aes_pkg::*;
   input  logic                    mux_sel_err_i,
   input  logic                    sp_enc_err_i,
   input  logic                    op_err_i,
+  input  logic                    alert_fatal_i,
   output logic                    alert_o,
 
   // Control signals for masking PRNG
@@ -172,6 +173,7 @@ module aes_cipher_control import aes_pkg::*;
         .sp_enc_err_i          ( sp_enc_err               ),
         .rnd_ctr_err_i         ( rnd_ctr_err              ),
         .op_err_i              ( op_err_i                 ),
+        .alert_fatal_i         ( alert_fatal_i            ),
         .alert_o               ( mr_alert[i]              ), // OR-combine
 
         .prng_update_o         ( mr_prng_update[i]        ), // OR-combine
@@ -234,6 +236,7 @@ module aes_cipher_control import aes_pkg::*;
         .sp_enc_err_i          ( sp_enc_err               ),
         .rnd_ctr_err_i         ( rnd_ctr_err              ),
         .op_err_i              ( op_err_i                 ),
+        .alert_fatal_i         ( alert_fatal_i            ),
         .alert_o               ( mr_alert[i]              ), // OR-combine
 
         .prng_update_o         ( mr_prng_update[i]        ), // OR-combine
