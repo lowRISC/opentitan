@@ -486,7 +486,7 @@ module flash_phy_rd
 
   // generate the mask calculation request
   // mask calculation is done in parallel to the read stage
-  // calc_req_o is done a cycle after req_o so that most of the
+  // calc_req_o is done after req_o is accepted so that most of the
   // cycle can be allocated to mask calculation logic. req_o,
   // unlike calc_req_o, asserts the same cycle the transaction is
   // received, so much of the timing may have already been lost to
@@ -494,7 +494,7 @@ module flash_phy_rd
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       calc_req_o <= '0;
-    end else if (req_o && descramble_i) begin
+    end else if (req_o && ack_i && descramble_i) begin
       calc_req_o <= 1'b1;
     end else if (calc_req_o && calc_ack_i) begin
       calc_req_o <= 1'b0;
