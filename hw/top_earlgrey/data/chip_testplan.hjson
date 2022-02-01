@@ -33,6 +33,7 @@
             '''
       milestone: V1
       tests: ["chip_sw_uart_tx_rx"]
+      tags: ["gls"]
     }
     {
       name: chip_sw_uart_rx_overflow

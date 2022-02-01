@@ -40,13 +40,35 @@ The following attributes are used to define each testpoint, at minimum:
 
     Full [Markdown]({{< relref "doc/rm/markdown_usage_style" >}}) syntax is supported when writing the description.
 
-* **tests: list of written test(s) for a testpoint**
+* **tests: list of written test(s) for this testpoint**
 
     The testplan is written in the initial work stage of the verification [life-cycle]({{< relref "doc/project/development_stages#hardware-verification-stages" >}}).
     Later, when the DV engineer writes the tests, they may not map one-to-one to a testpoint - it may be possible that a written test satisfactorilly addresses multiple testpoints; OR it may also be possible that a testpoint needs to be split into multiple smaller tests.
     To cater to these needs, we provide the ability to set a list of written tests for each testpoint.
     It is used to not only indicate the current progress so far into each milestone, but also map the simulation results to the testpoints to generate the final report table.
     This list is initially empty - it is gradually updated as tests are written.
+
+* **tags: list of tags relevant for this testpoint**
+
+    Tags represent the need to run the same testpoint under specific conditions, in additional platforms or with a specific set of build / runtime options.
+    At the moment, tags are not strictly defined - users are free to come up with their own set of tags.
+    The following examples of tags illustrate the usage:
+
+```hjson
+  // Run this testpoint on verilator and fpga as well.
+  tags: ["verilator", "fpga_cw310"]
+
+  // Run this testpoint in gate level and with poweraware.
+  tags: ["gls", "pa"]
+
+  // Run this testpoint with mask ROM (will use test ROM by default).
+  tags: ["mask_rom"]
+
+  // Run this testpoint as a post-Si test vector on the tester.
+  tags: ["vector"]
+```
+
+    The testplan from the documentation point of view, can be filtered by a tag (or a set of tags), so that the generated testplan table only includes (or excludes) those testpoints.
 
 If the need arises, more attributes may be added relatively easily.
 
@@ -80,6 +102,7 @@ Here's an example:
       tests: ["foo_feature2_test1",
               "foo_feature2_test2",
               "foo_feature2_test3"]
+      tags: ["gls"]
     }
     ...
   ]
@@ -221,7 +244,23 @@ $ ./util/dvsim/testplanner.py \
     -s util/dvsim/examples/testplanner/foo_sim_results.hjson
 ```
 
-Note that the simulations results HJson file used for mapping the results to the testplan is for illustration.
+Filter the testplan by tags "foo" and "bar":
+```console
+$ ./util/dvsim/testplanner.py \
+    util/dvsim/examples/testplanner/foo_testplan.hjson:foo:bar \
+    -s util/dvsim/examples/testplanner/foo_sim_results.hjson
+
+Filter the testplan by excluding the testspoints tagged "foo":
+```console
+$ ./util/dvsim/testplanner.py \
+    util/dvsim/examples/testplanner/foo_testplan.hjson:-foo \
+    -s util/dvsim/examples/testplanner/foo_sim_results.hjson
+```
+
+To filter by tags, simply append the testplan path with the requested tags with ":" delimiter as shown in the example above.
+Prefixing the tag with minus sign ('-') will exclude the testpoints that contain that tag.
+
+Note that the simulations results Hjson file used for mapping the results to the testplan in the examples above (`foo_sim_results.hjson`) is for illustration.
 `dvsim` does not generate such a file - it invokes the `Testplan` class APIs directly to map the simulation results.
 
 Generate simulation result tables in HTML to a file:

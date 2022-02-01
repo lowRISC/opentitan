@@ -40,6 +40,9 @@ class Element():
 
         raw_dict is the dictionary parsed from the HJSon file.
         """
+        # 'tags' is an optional field in addition to the mandatory self.fields.
+        self.tags = []
+
         for field in self.fields:
             try:
                 setattr(self, field, raw_dict.pop(field))
@@ -49,7 +52,7 @@ class Element():
                                f"{self.fields}\n{e}")
 
         # Set the remaining k-v pairs in raw_dict as instance attributes.
-        for k, v in raw_dict:
+        for k, v in raw_dict.items():
             setattr(self, k, v)
 
         # Verify things are in order.
@@ -67,6 +70,32 @@ class Element():
         if not self.name:
             raise ValueError(f"Error: {self.kind.capitalize()} name cannot "
                              f"be empty:\n{self}")
+
+        # "tags", if updated key must be list.
+        if not isinstance(self.tags, list):
+            raise ValueError(f"'tags' key in {self} is not a list.")
+
+    def has_tags(self, tags: set) -> bool:
+        """Checks if the provided tags match the tags originally set.
+
+        tags is a list of tags that are we are filtering this testpoints with.
+        Tags may be preceded with `-` to exclude the testpoints that contain
+        that tag.
+
+        Vacuously returns true if tags is an empty list.
+        """
+        if not tags:
+            return True
+
+        for tag in tags:
+            if tag.startswith("-"):
+                if tag[1:] in self.tags:
+                    return False
+            else:
+                if tag not in self.tags:
+                    return False
+
+        return True
 
 
 class Covergroup(Element):
@@ -119,6 +148,10 @@ class Testpoint(Element):
             raise ValueError(f"Testpoint milestone {self.milestone} is "
                              f"invalid:\n{self}\nLegal values: "
                              f"Testpoint.milestones")
+
+        # "tests" key must be list.
+        if not isinstance(self.tests, list):
+            raise ValueError(f"'tests' key in {self} is not a list.")
 
     def do_substitutions(self, substitutions):
         '''Substitute {wildcards} in tests
@@ -199,7 +232,7 @@ class Testplan:
         sys.exit(1)
 
     @staticmethod
-    def _create_testplan_elements(kind, raw_dicts_list):
+    def _create_testplan_elements(kind: str, raw_dicts_list: list, tags: set):
         """Creates testplan elements from the list of raw dicts.
 
         kind is either 'testpoint' or 'covergroup'.
@@ -214,15 +247,18 @@ class Testplan:
                 print(f"Error: {kind} arg is invalid.\n{e}")
                 sys.exit(1)
             except ValueError as e:
-                print(e)
+                print(f"{kind}\n{dict_entry}\n{e}")
                 sys.exit(1)
 
             if item.name in item_names:
                 print(f"Error: Duplicate {kind} item found with name: "
                       f"{item.name}")
                 sys.exit(1)
-            items.append(item)
-            item_names.add(item.name)
+
+            # Filter out the item by tags if provided.
+            if item.has_tags(tags):
+                items.append(item)
+                item_names.add(item.name)
         return items
 
     @staticmethod
@@ -262,7 +298,9 @@ class Testplan:
     def __init__(self, filename, repo_top=None, name=None):
         """Initialize the testplan.
 
-        filename is the HJson file that captures the testplan.
+        filename is the HJson file that captures the testplan. It may be
+        suffixed with tags separated with a colon delimiter to filter the
+        testpoints. For example: path/too/foo_testplan.hjson:bar:baz
         repo_top is an optional argument indicating the path to top level repo
         / project directory. It is used with filename arg.
         name is an optional argument indicating the name of the testplan / DUT.
@@ -273,8 +311,13 @@ class Testplan:
         self.covergroups = []
         self.test_results_mapped = False
 
-        if filename:
-            self._parse_testplan(filename, repo_top)
+        # Split the filename into filename and tags, if provided.
+        split = str(filename).split(":")
+        filename = Path(split[0])
+        tags = set(split[1:])
+
+        if filename.exists():
+            self._parse_testplan(filename, tags, repo_top)
 
         if name:
             self.name = name
@@ -340,7 +383,7 @@ class Testplan:
 
         return result
 
-    def _parse_testplan(self, filename, repo_top=None):
+    def _parse_testplan(self, filename: Path, tags: set, repo_top=None):
         '''Parse testplan Hjson file and create the testplan elements.
 
         It creates the list of testpoints and covergroups extracted from the
@@ -378,11 +421,11 @@ class Testplan:
 
         testpoints = obj.get("testpoints", [])
         self.testpoints = self._create_testplan_elements(
-            'testpoint', testpoints)
+            'testpoint', testpoints, tags)
 
         covergroups = obj.get("covergroups", [])
         self.covergroups = self._create_testplan_elements(
-            'covergroup', covergroups)
+            'covergroup', covergroups, set())
 
         if not testpoints and not covergroups:
             print(f"Error: No testpoints or covergroups found in {filename}")

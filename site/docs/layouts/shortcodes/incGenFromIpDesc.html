@@ -7,6 +7,13 @@ hjsonPath: Path to an IP description file in Hjson (ip_name.hjson)
   Relative paths are resolved relative to the directory using the shortcode.
   Absolute paths are resolved relative to REPO_TOP.
 
+  This path could also be a testplan described in Hjson
+  (ip_name_testplan.hjson). Testplans may additionally be suffixed with "tags"
+  separated with ":" colon delimiter, such as "ip_name_testplan.hjson:foo:bar".
+  The tags are extracted from the path and appended at the end to construct the
+  path of the generated content, for example:
+  "ip_name_testplan.hjson.foo_bar_testplan"
+
 contentType: Type of generated content to include.
   Valid options: testplan, hwcfg, registers
 
@@ -18,8 +25,14 @@ included by the shortcode here.
 {{ $contentType := .Get 1 }}
 {{ $ipDescFile := (printf "%s.%s" $hjsonPath $contentType) }}
 
+{{ if eq $contentType "testplan" }}
+  {{ $splitTags := split $hjsonPath ":" }}
+  {{ $tags := (cond (gt (len $splitTags) 1) (delimit (after 1 $splitTags) "_") "") }}
+  {{ $ipDescFile = (printf "%s.%s_%s" (index $splitTags 0) $tags $contentType) }}
+{{ end }}
+
 {{ $path := "UNDEF" }}
-{{ if (hasPrefix $hjsonPath "/") }}
+{{ if (hasPrefix $ipDescFile "/") }}
   {{ $path = path.Join .Site.Params.generatedRoot $ipDescFile }}
 {{ else }}
   {{ $path = path.Join .Site.Params.generatedRoot .Page.File.Dir $ipDescFile }}
