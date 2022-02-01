@@ -124,7 +124,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
 
   logic [SlowPwrStateWidth-1:0] state_raw_q;
   assign state_q = slow_pwr_state_e'(state_raw_q);
-    // SEC_CM: FSM.SPARSE
+  // SEC_CM: FSM.SPARSE
   prim_sparse_fsm_flop #(
     .StateEnumT(slow_pwr_state_e),
     .Width(SlowPwrStateWidth),
@@ -261,6 +261,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       // Signal the fast FSM if it somehow is still running.
       // Both FSMs are now permanently out of sync and the device
       // must be rebooted.
+      // SEC_CM: FSM.LOCAL_ESC
       default: begin
         fsm_invalid_d = 1'b1;
         pd_nd         = 1'b0;
@@ -298,6 +299,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   // power stability reset request
   // If the main power becomes unstable for whatever reason,
   // request reset
+  // SEC_CM: MAIN_PD.RST.LOCAL_ESC
   logic pwr_rst_req;
   assign pwr_rst_req = mon_main_pok & ~main_pok_st;
 

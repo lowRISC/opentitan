@@ -13,7 +13,8 @@ This document specifies the functionality of the OpenTitan power manager.
 - Software initiated low power entry and hardware requested low power exit.
 - Peripheral reset requests
 - Low power abort and low power fall-through support.
-- ROM integrity check at power-up
+- ROM integrity check at power-up.
+- Local checks for escalator and power stability.
 
 ## Description
 
@@ -77,7 +78,7 @@ The slow FSM `Low Power` and fast FSM `Active` states specifically are concepts 
 The slow clock domain FSM (referred to as the slow FSM from here on) resets to the Reset state.
 This state is released by `por_rst_n`, which is supplied from the reset controller.
 The `por_rst_n` signal is released when the reset controller detects the root power domains (`vcaon_pok` from AST) of the system are ready.
-Please see the [ast]({{< relref "hw/top_earlgrey/ip/ast/doc" >}})) for more details.
+Please see the [ast]({{< relref "hw/top_earlgrey/ip/ast/doc" >}}) for more details.
 
 The slow FSM requests the AST to power up the main domain and high speed clocks.
 Once those steps are done, it requests the fast FSM to begin operation.
@@ -133,23 +134,29 @@ If `good` is true, ROM execution is allowed.
 If `good` is false, ROM execution is disallowed.
 
 ### Fall Through Handling
+
 A low power entry fall through occurs when some condition occurs that immediately de-assert the entry conditions right after the software requests it.
 
-In this version of the power manager design, it can happen if right after software asserts WFI, an interrupt is shown to the processor, thus breaking it out of its currently stopped state.
-Whether this type of fall through happens is highly dependent on how the system handles interrupts during low power entry - some systems may choose to completely any interrupt not related to wakeup, others may choose to leave them all enabled.
+This can happen if right after software asserts WFI, an interrupt is shown to the processor, thus breaking it out of its currently stopped state.
+Whether this type of fall through happens is highly dependent on how the system handles interrupts during low power entry - some systems may choose to completely silence any interrupt not related to wakeup, others may choose to leave them all enabled.
 The fall through handle is specifically catered to the latter category.
 
 For a normal low power entry, the fast FSM first checks that the low power entry conditions are still true.
 If the entry conditions are no longer true, the fast FSM "falls through" the entry handling and returns the system to active state, thus terminating the entry process.
 
 ### Abort Handling
-If the entry conditions are still true, the fast FSM then checks there are no ongoing non-volatile activities from `otp_ctrl`, `lc_ctrl` and `flash_ctrl`.
-If any of the modules is active, the fast FSM "aborts" entry handling and returns the system to active state, thus terminating the entry process.
 
+If the entry conditions are still true, the fast FSM then checks there are no ongoing non-volatile activities from `otp_ctrl`, `lc_ctrl` and `flash_ctrl`.
+If any module is active, the fast FSM "aborts" entry handling and returns the system to active state, thus terminating the entry process.
 
 ## Reset Request Handling
 
-There are 3 reset requests in the system - peripheral requested reset such as watchdog, power manager's internal reset request and non-debug module reset.
+There are 4 reset requests in the system
+- peripheral requested reset such as watchdog.
+- reset manager's software requested reset, which is functionally very similar to a peripheral requested reset.
+- power manager's internal reset request.
+- Non-debug module reset.
+
 Flash brownout is handled separately and described in [flash handling section](#flash-handling) below.
 
 Peripheral requested resets such as watchdog are handled directly by the power manager, while the non-debug module reset is handled by the reset controller.
@@ -176,7 +183,7 @@ However, peripheral resets are always handled gracefully and follow the normal F
 Alert escalations can happen at any time and do not always obey normal rules.
 As a result, upon alert escalation, the power manager makes a best case effort to transition directly into reset handling.
 
-This may not always be possible if the escalation happens while in low power (for example the FSM is in an invalid state).
+This may not always be possible if the escalation happens while the FSM is in an invalid state.
 In this scenario, the pwrmgr keeps everything powered off and silenced and requests escalation handling if the system ever wakes up.
 
 #### Main Power Unstable Reset Requests
@@ -235,34 +242,33 @@ The software is also able to enable recording during `Active` state if it choose
 
 
 ## Flash Handling
+For the section below, flash storage refers to the proprietary flash storage supplied by a vendor.
+Flash refers to the `flash_ctrl`, which is the open source controller that manages accesses to the flash storage.
 
 ### Power-Up Handling
 
-The AST automatically takes flash out of power down state as part of the power manager's power up request.
-Once flash is powered up, the power manager keeps a running count of the flash initialization time.
-When this time has expired, an acknowledgment is forwarded to the flash controller.
-Once the boot ROM is allowed to execute, it is expected to initialize the flash prior to using it.
-This involves 4 steps:
+The AST automatically takes the flash storage out of power down state as part of the power manager's power up request.
+Once flash storage is powered up and ready, an indication is sent to the [flash_ctrl]({{< relref "hw/top_earlgrey/ip/ast/doc" >}}).
 
-*   Poll flash control register to ensure flash has powered up (this is the same signal mentioned above).
-*   Obtain flash redundancy or configuration information (could be in flash or OTP)
-    *   If in flash, this information is unscrambled
-    *   This item is TBD and must be further discussed.
-*   Program redundancy or configuration information into the flash controller and lock it from further modification (this item is TBD).
-*   Initialize flash scrambling and program any excluded regions based on OTP or other information.
+Once the boot ROM is allowed to execute, it is expected to further initialize the `flash_ctrl` and flash storage prior to using it.
+This involves the following steps:
 
-There may be additional steps depending on flash design and software needs.
+*   Poll `flash_ctrl` register to ensure flash storage has powered up and completed internal initialization.
+*   Initialize `flash_ctrl` seed reading and scrambling.
 
 ### Power-Down Handling
 
-When the device enters deep sleep, the flash is automatically put into power down mode by the AST.
-When the device exits low power state, it is the responsibility of the boot ROM to poll for flash power-up complete.
+Before the device enters low power, the pwrmgr first checks to ensure there are no ongoing transactions to the flash storage.
+When the device enters deep sleep, the flash storage is automatically put into power down mode by the AST.
+The AST places the flash storage into power down through direct signaling between AST and flash storage, the pwrmgr is not directly involved.
 
+When the device exits low power state, it is the responsibility of the boot ROM to poll for flash power-up complete similar to the above section.
 
 ### Flash Brownout Handling
 
-When the supply of the device dips below a certain point during a stateful flash operation (program or erase) the flash requires the operation to terminate in a pre-defined manner.
+When the supply of the device dips below a certain point during a stateful flash storage operation (program or erase) the flash storage requires the operation to terminate in a pre-defined manner.
 This sequence will be exclusively handled by the AST.
+
 The power manager is unaware of the difference between POR and flash brownout.
 Because of this, the software also cannot distinguish between these two reset causes.
 
@@ -303,7 +309,60 @@ There is currently no standardized way to do this, so it is up to the debugging 
 
 # Programmers Guide
 
-Please see [power management programmers model](https://docs.google.com/document/d/1w86rmvylJgZVmmQ6Q1YBcCp2VFctkQT3zJ408SJMLPE/edit?usp=sharing) for now.
+The process in which the power manager is used is highly dependent on the system's topology.
+The following proposes one method for how this can be done.
+
+Assume first the system has the power states described [above](#supported-low-power-modes).
+
+## Programmer Sequence for Entering Low Power
+
+1. Disable interrupts
+2. Enable desired wakeup and reset sources in {{< regref "WAKEUP_EN" >}} and {{< regref "RESET_EN" >}}.
+3. Perform any system-specific low power entry steps, e.g.
+   - Interrupt checks (if something became pending prior to disable)
+4. Configure low power mode in {{< regref "CONTROL" >}}.
+5. Set low power hint in {{< regref "LOW_POWER_HINT" >}}.
+6. Set and poll {{< regref "CFG_CDC_SYNC" >}} to ensure above settings propagate across clock domains.
+7. Execute wait-for-interrupt instruction on the processing host.
+
+### Possible Exits
+
+Once low power is entered, the system may exit due to several reasons.
+1. Graceful low power exit - This exit occurs when some source in the system gracefully wakes up the power manager.
+2. System reset request - This exit occurs when either software or a peripheral requests the pwrmgr to reset the system.
+2. [Fall through exit](#fall-through-handling) - This exit occurs when an interrupt manages to break the wait-for-interrupt loop.
+3. [Aborted entry](#abort-handling) - This exit occurs when low power entry is attempted with an ongoing non-volatile transaction.
+
+## Programmer Sequence for Exiting Low Power
+
+There are two separate cases for low power exit.
+One is exiting from deep sleep, and the other is exiting from normal sleep.
+
+### Exiting from Deep Sleep
+
+When exiting from deep sleep, the system begins execution in ROM.
+
+1. Complete normal preparation steps.
+2. Check reset cause in [rstmgr]({{< relref "hw/ip/rstmgr/doc" >}})
+3. Re-enable modules that have powered down.
+4. Disable wakeup recording through {{< regref "WAKE_INFO_CAPTURE_DIS" >}}.
+5. Check which source woke up the system through {{< regref "WAKE_INFO" >}}.
+6. Take appropriate steps to handle the wake and resume normal operation.
+7. Once wake is handled, clear the wake indication in {{< regref "WAKE_INFO" >}}.
+
+### Exiting from Normal Sleep
+
+The handling for fall-through and abort are similar to normal sleep exit.
+Since in these scenarios the system was not reset, software continues executing the instruction after the wait-for-interrupt invocation.
+
+1. Check exit condition to determine appropriate steps.
+2. Clear low power hints and configuration in {{< regref "CONTROL" >}}.
+3. Set and poll {{< regref "CFG_CDC_SYNC" >}} to ensure setting changes have propagated across clock boundaries.
+4. Disable wakeup sources and stop recording.
+5. Re-enable interrupts for normal operation and wakeup handling.
+6. Once wake is handled, clear the wake indication in {{< regref "WAKE_INFO" >}}.
+
+For an in-depth discussion, please see [power management programmers model](https://docs.google.com/document/d/1w86rmvylJgZVmmQ6Q1YBcCp2VFctkQT3zJ408SJMLPE/edit?usp=sharing) for additional details.
 
 ## Register Table
 

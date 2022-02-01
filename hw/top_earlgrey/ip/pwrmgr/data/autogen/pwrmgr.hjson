@@ -220,9 +220,43 @@
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
+    { name: "LC_CTRL.INTERSIG.MUBI",
+      desc: "life cycle control / debug signals are multibit."
+    }
+    { name: "ROM_CTRL.INTERSIG.MUBI",
+      desc: "rom control done/good signals are multibit."
+    }
+    { name: "RSTMGR.INTERSIG.MUBI",
+      desc: "reset manager software request is multibit."
+    }
+    { name: "ESC_RX.CLK.BKGN_CHK",
+      desc: "Escalation receiver has a background timeout check"
+    }
+    { name: "ESC_RX.CLK.LOCAL_ESC",
+      desc: "Escalation receiver clock timeout has a local reset escalation"
+    }
     { name: "FSM.SPARSE",
       desc: "Sparse encoding for slow and fast state machines."
     }
+    { name: "FSM.LOCAL_ESC",
+      desc: "When FSMs reach a bad state, escalate directly and force user reset."
+    }
+    { name: "FSM.GLOBAL_ESC",
+      desc: "When global escalation is received, proceed directly to reset."
+    }
+    { name: "MAIN_PD.RST.LOCAL_ESC",
+      desc: "When main power domain reset glitches, proceed directly to reset."
+    }
+    { name: "CTRL.CONFIG.REGWEN",
+      desc: "Main control protected by regwen."
+    }
+    { name: "WAKEUP.CONFIG.REGWEN",
+      desc: "Wakeup configuration protected by regwen."
+    }
+    { name: "RESET.CONFIG.REGWEN",
+      desc: "Reset configuration protected by regwen."
+    }
+
   ]
 
   regwidth: "32",
