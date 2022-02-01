@@ -25,11 +25,15 @@ class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     num_edn = 1;
+    has_shadowed_regs = 1;
     list_of_alerts = kmac_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_fault_err";
     super.initialize(csr_base_addr);
 
     tl_intg_alert_fields[ral.status.alert_fatal_fault] = 1;
+    shadow_update_err_status_fields[ral.status.alert_recov_ctrl_update_err] = 1;
+    shadow_storage_err_status_fields[ral.status.alert_fatal_fault] = 1;
+
     for (int i = 0; i < kmac_pkg::NumAppIntf; i++) begin
       string name = $sformatf("m_kmac_app_agent_cfg[%0d]", i);
       m_kmac_app_agent_cfg[i] = kmac_app_agent_cfg::type_id::create(name);
