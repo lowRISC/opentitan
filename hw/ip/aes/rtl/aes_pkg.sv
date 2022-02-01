@@ -441,6 +441,17 @@ function automatic logic [7:0] aes_mvm(
   return vec_c;
 endfunction
 
+// Rotate integer indices
+function automatic integer aes_rot_int(integer in, integer num);
+  integer out;
+  if (in == 0) begin
+    out = num - 1;
+  end else begin
+    out = in - 1;
+  end
+  return out;
+endfunction
+
 // Function for extracting LSBs of the per-S-Box pseudo-random data (PRD) from the output of the
 // masking PRNG.
 //

@@ -68,8 +68,7 @@ module aes_sub_bytes import aes_pkg::*;
       // Rotate the randomness produced by the S-Boxes over the columns but not across rows as
       // MixColumns will operate across rows. The LSBs are taken from the masking PRNG (prd_i)
       // whereas the MSBs are produced by the other S-Box instances.
-      assign in_prd[i][j] = (j == 0) ? {out_prd[i][3],   prd_i[i][j]}  :
-                                       {out_prd[i][j-1], prd_i[i][j]};
+      assign in_prd[i][j] = {out_prd[i][aes_rot_int(j,4)], prd_i[i][j]};
 
       aes_sbox #(
         .SBoxImpl ( SBoxImpl )

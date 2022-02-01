@@ -215,8 +215,7 @@ module aes_key_expand import aes_pkg::*;
   for (genvar i = 0; i < 4; i++) begin : gen_sbox
     // Rotate the randomness produced by the S-Boxes. The LSBs are taken from the masking PRNG
     // (prd_i) whereas the MSBs are produced by the other S-Box instances.
-    assign in_prd[i] = (i == 0) ? {out_prd[3],   prd_i[WidthPRDSBox*i +: WidthPRDSBox]} :
-                                  {out_prd[i-1], prd_i[WidthPRDSBox*i +: WidthPRDSBox]};
+    assign in_prd[i] = {out_prd[aes_rot_int(i,4)], prd_i[WidthPRDSBox*i +: WidthPRDSBox]};
 
     aes_sbox #(
       .SBoxImpl ( SBoxImpl )
