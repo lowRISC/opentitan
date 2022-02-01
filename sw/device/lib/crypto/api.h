@@ -222,7 +222,7 @@ typedef enum ecc_named_curve {
 } ecc_named_curve_t;
 
 /**
- * Struct to handle ECDSA signature.
+ * Struct to handle ECDSA or EdDSA signature.
  */
 typedef struct ecc_signature {
   // Length of ECC signature R parameter, in bytes.
@@ -246,9 +246,9 @@ typedef enum eddsa_sign_mode {
 } eddsa_sign_mode_t;
 
 /**
- * Struct to handle ECC public key type.
+ * Struct to handle ECDSA or ECDH public key type.
  *
- * Length of public key coordinates (x,y) follows len(prime_P).
+ * Length of public key coordinates (x,y) follows len(p).
  */
 typedef struct ecc_public_key {
   // ECC public key x coordinate.
@@ -268,7 +268,7 @@ typedef struct ed25519_public_key {
 } eddsa_public_key_t;
 
 /**
- * Struct for domain parameters for a generic ECC Weierstrass curve.
+ * Struct for domain parameters for a generic Weierstrass elliptic curve.
  */
 typedef struct ecc_domain {
   // Length of p.
@@ -285,7 +285,7 @@ typedef struct ecc_domain {
   uint32_t *b;
   // Value of x coordinate of G (base point). Same length as p.
   uint32_t *gx;
-  // Value of y coordinate of G (base point). Same length as p. 
+  // Value of y coordinate of G (base point). Same length as p.
   uint32_t *gy;
   // Length of q.
   size_t len_q;
@@ -1056,7 +1056,7 @@ crypto_status_t rsa_verify_async(crypto_unblinded_key_t *n,
                                  verification_status_t *verification_result);
 
 /**
- * Sets the domain parameters of a generic (Weierstrass) ECC curve.
+ * Sets the domain parameters of a generic Weierstrass curve.
  *
  * @param domain_parameters Pointer to the ECC curve domain parameters
  * @return crypto_status_t The result of the ECC set domain operation
@@ -1064,7 +1064,7 @@ crypto_status_t rsa_verify_async(crypto_unblinded_key_t *n,
 crypto_status_t ecc_set_domain(ecc_domain_t domain_parameters);
 
 /**
- * Sets the domain parameters of a named (Weierstrass) ECC curve.
+ * Sets the domain parameters of a named Weierstrass curve.
  *
  * @param named_curve Named curve to set domain parameters for
  * @return crypto_status_t The result of the ECC set domain operation
@@ -1072,17 +1072,17 @@ crypto_status_t ecc_set_domain(ecc_domain_t domain_parameters);
 crypto_status_t ecc_set_domain_named(ecc_named_curve_t named_curve);
 
 /**
- * Performs the ECC key generation.
+ * Performs ECDSA/ECDH key generation.
  *
- * Computes ECC private key (d) and public key (Q). DRBG state is passed
- * as an input parameter.
+ * Computes private key (d) and public key (Q). DRBG state is passed as an
+ * input parameter.
  *
  * @param drbg_state Pointer to the DRBG working state
  * @param additional_input Pointer to the additional input for DRBG
  * @param required_key_len Requested key length in bits
  * @param private_key Pointer to the blinded private key (d) struct
  * @param public_key Pointer to the unblinded public key (Q) struct
- * @return crypto_status_t The result of the ECC key generation
+ * @return crypto_status_t The result of the key generation
  */
 crypto_status_t ecc_keygen(drbg_state_t *drbg_state,
                            crypto_uint8_buf_t additional_input,
@@ -1096,7 +1096,7 @@ crypto_status_t ecc_keygen(drbg_state_t *drbg_state,
  * @param private_key Pointer to the blinded private key (d) struct
  * @param input_message Input message to be signed
  * @param signature Pointer to the signature struct with (r,s) values
- * @return crypto_status_t Result of the ECC signature operation
+ * @return crypto_status_t Result of the signature operation
  */
 crypto_status_t ecdsa_sign(crypto_blinded_key_t *private_key,
                            const crypto_uint8_buf_t input_message,
@@ -1110,7 +1110,7 @@ crypto_status_t ecdsa_sign(crypto_blinded_key_t *private_key,
  * @param signature Pointer to the signature to be verified
  * @param verification_result Returns the result of signature verification
  * (Pass/Fail)
- * @return crypto_status_t Return status of the ECC verification operation
+ * @return crypto_status_t Return status of the verification operation
  */
 crypto_status_t ecdsa_verify(ecc_public_key_t *public_key,
                              const crypto_uint8_buf_t input_message,
@@ -1125,15 +1125,14 @@ crypto_status_t ecdsa_verify(ecc_public_key_t *public_key,
  * @param shared_secret Pointer to generated blinded shared key struct
  * @return crypto_status_t Result of the ecdh operation
  */
-crypto_status_t ecc_ecdh(crypto_blinded_key_t *private_key,
-                         ecc_public_key_t *public_key,
-                         crypto_blinded_key_t *shared_secret);
+crypto_status_t ecdh(crypto_blinded_key_t *private_key,
+                     ecc_public_key_t *public_key,
+                     crypto_blinded_key_t *shared_secret);
 
 /**
- * Performs the X25519 Diffie Hellman key exchange function using
- * Curve25519.
+ * Performs the X25519 Diffie Hellman shared secret generation.
  *
- * @param private_key Pointer to the blinded private (u-coordinate)
+ * @param private_key Pointer to the blinded private key (u-coordinate)
  * @param public_key Pointer to the public scalar from the sender
  * @param shared_secret Pointer to shared secret key (u-coordinate)
  * @return crypto_status_t Result of the ecdh operation
@@ -1195,7 +1194,7 @@ crypto_status_t ed25519_verify(edd_public_key_t *public_key,
 /**
  * Performs ECDSA/ECDH key generation, asynchronously.
  *
- * Computes ECC private exponent (d) and public key (Q). DRBG state is
+ * Computes private exponent (d) and public key (Q). DRBG state is
  * passed as an input parameter.
  *
  * @param drbg_state Pointer to the DRBG working state
