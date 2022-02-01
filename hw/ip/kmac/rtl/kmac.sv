@@ -1195,15 +1195,15 @@ module kmac
 
   // Alerts
   assign alert_test = {
-    reg2hw.alert_test.recov_operation_err.q
-      & reg2hw.alert_test.recov_operation_err.qe, // [1]
     reg2hw.alert_test.fatal_fault_err.q
-      & reg2hw.alert_test.fatal_fault_err.qe          // [0]
+      & reg2hw.alert_test.fatal_fault_err.qe,    // [1]
+    reg2hw.alert_test.recov_operation_err.q
+      & reg2hw.alert_test.recov_operation_err.qe // [0]
   };
 
   assign alerts = {
-    alert_recov_operation, // Alerts[1]
-    alert_fatal            // Alerts[0]
+    alert_fatal,           // Alerts[1]
+    alert_recov_operation  // Alerts[0]
     };
 
   assign alert_recov_operation = shadowed_update_err;
@@ -1221,8 +1221,6 @@ module kmac
 
   // Make the fatal alert observable via status register.
   assign hw2reg.status.alert_fatal_fault.d  = alert_fatal;
-
-
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
