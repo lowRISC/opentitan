@@ -57,8 +57,8 @@ rom_ext_link_info = {
   [
     # Link arguments for slot A.
     [
-      '-Wl,-L,@0@'.format(meson.source_root()),
-      '-Wl,-T,@0@/@1@'.format(meson.source_root(), rom_ext_linkfile_slot_a[0]),
+      '-Wl,-L,@0@'.format(meson.project_source_root()),
+      '-Wl,-T,@0@/@1@'.format(meson.project_source_root(), rom_ext_linkfile_slot_a[0]),
     ] + embedded_target_extra_link_args,
     # Link dependency file for slot A.
     [
@@ -69,8 +69,8 @@ rom_ext_link_info = {
   [
     # Link arguments for slot B.
     [
-      '-Wl,-L,@0@'.format(meson.source_root()),
-      '-Wl,-T,@0@/@1@'.format(meson.source_root(), rom_ext_linkfile_slot_b[0]),
+      '-Wl,-L,@0@'.format(meson.project_source_root()),
+      '-Wl,-T,@0@/@1@'.format(meson.project_source_root(), rom_ext_linkfile_slot_b[0]),
     ] + embedded_target_extra_link_args,
     # Link dependency file for slot B.
     [

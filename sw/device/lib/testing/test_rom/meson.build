@@ -9,12 +9,12 @@ chip_info_h = declare_dependency(
     output: 'chip_info.h',
     command: [
       prog_python,
-      meson.source_root() / 'util/rom_chip_info.py',
+      meson.project_source_root() / 'util/rom_chip_info.py',
       '--outdir', '@OUTDIR@',
       '--ot_version', ot_version,
     ],
     depend_files: [
-      meson.source_root() / 'util/rom_chip_info.py',
+      meson.project_source_root() / 'util/rom_chip_info.py',
     ],
   )],
 )
@@ -23,9 +23,9 @@ chip_info_h = declare_dependency(
 #
 # See `sw/device/lib/testing/test_framework/ottf.ld` for additional info
 # about these parameters.
-test_rom_linker_script = '@0@/@1@'.format(meson.source_root(), files(['test_rom.ld'])[0])
+test_rom_linker_script = '@0@/@1@'.format(meson.project_source_root(), files(['test_rom.ld'])[0])
 test_rom_link_args = [
-  '-Wl,-L,@0@'.format(meson.source_root()),
+  '-Wl,-L,@0@'.format(meson.project_source_root()),
   '-Wl,-T,@0@'.format(test_rom_linker_script),
   '-Wl,--build-id=none',
 ]

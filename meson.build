@@ -5,7 +5,7 @@
 project(
   'opentitan', 'c', 'cpp',
   version: '0.1',
-  meson_version: '>=0.53.0', # Matches version in python-requirements.txt
+  meson_version: '>=0.56.2', # Matches version in python-requirements.txt
   default_options: [
     'c_std=c11',
     'build.c_std=c11',
@@ -35,7 +35,7 @@ endif
 
 # See the comment in `./util/meson-purge-includes.sh` for why this is necessary.
 if not get_option('keep_includes')
-  meson.add_postconf_script(meson.source_root() + '/util/meson-purge-includes.sh')
+  meson.add_postconf_script(meson.project_source_root() + '/util/meson-purge-includes.sh')
 endif
 
 coverage = get_option('coverage')
@@ -104,8 +104,8 @@ endif
 # builds.
 c_cpp_args = [
   # We use absolute include paths as much as possible.
-  '-I' + meson.source_root(),
-  '-I' + meson.build_root(),
+  '-I' + meson.project_source_root(),
+  '-I' + meson.project_build_root(),
 ]
 add_project_arguments(c_cpp_args, language: ['c', 'cpp'], native: false)
 add_project_arguments(c_cpp_args, language: ['c', 'cpp'], native: true)
@@ -115,7 +115,7 @@ c_cpp_cross_args = [
   # Do not use standard system headers
   '-nostdinc',
   # Use OpenTitan's freestanding headers instead
-  '-isystem' + meson.source_root() / 'sw/device/lib/base/freestanding',
+  '-isystem' + meson.project_source_root() / 'sw/device/lib/base/freestanding',
   # Don't emit unwinding information
   '-fno-asynchronous-unwind-tables',
   # Don't use COMMON sections for uninitialized globals
@@ -194,8 +194,8 @@ prog_as = find_program('as')
 prog_objdump = find_program('objdump')
 prog_objcopy = find_program('objcopy')
 
-prog_otbn_as = meson.source_root() / 'hw/ip/otbn/util/otbn-as'
-prog_otbn_ld = meson.source_root() / 'hw/ip/otbn/util/otbn-ld'
+prog_otbn_as = meson.project_source_root() / 'hw/ip/otbn/util/otbn-as'
+prog_otbn_ld = meson.project_source_root() / 'hw/ip/otbn/util/otbn-ld'
 
 # Hardware register headers. These are generated from HJSON files, and accesible
 # in C via |#include "{IP_NAME}_regs.h"|.
@@ -259,7 +259,7 @@ top_earlgrey = declare_dependency(
 subdir('sw')
 
 # Write environment file
-prog_meson_write_env = meson.source_root() / 'util/meson_write_env.py'
+prog_meson_write_env = meson.project_source_root() / 'util/meson_write_env.py'
 r = run_command(
   prog_python,
   prog_meson_write_env,
@@ -267,14 +267,14 @@ r = run_command(
   '--out-file',
   meson.current_build_dir() / '.env',
 
-  'PYTHON=@0@'.format(prog_python.path()),
+  'PYTHON=@0@'.format(prog_python.full_path()),
   'OTBN_AS=@0@'.format(prog_otbn_as),
   'OTBN_LD=@0@'.format(prog_otbn_ld),
-  'RV32_TOOL_OBJCOPY=@0@'.format(prog_objcopy.path()),
-  'RV32_TOOL_AS=@0@'.format(prog_as.path()),
-  'RV32_TOOL_LD=@0@'.format(prog_ld.path()),
-  'RV32_TOOL_OBJDUMP=@0@'.format(prog_objdump.path()),
-  'RV32_TOOL_OBJCOPY=@0@'.format(prog_objcopy.path()),
+  'RV32_TOOL_OBJCOPY=@0@'.format(prog_objcopy.full_path()),
+  'RV32_TOOL_AS=@0@'.format(prog_as.full_path()),
+  'RV32_TOOL_LD=@0@'.format(prog_ld.full_path()),
+  'RV32_TOOL_OBJDUMP=@0@'.format(prog_objdump.full_path()),
+  'RV32_TOOL_OBJCOPY=@0@'.format(prog_objcopy.full_path()),
 )
 assert(r.returncode() == 0, 'Error while calling meson_write_env.py.\n' +
   'STDOUT:\n' + r.stdout().strip() + '\n' +

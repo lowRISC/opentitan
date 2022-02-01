@@ -6,7 +6,7 @@ sw_lib_testing_bitfield = declare_dependency(
   link_with: static_library(
     'bitfield',
     sources: [
-      meson.source_root() / 'sw/device/lib/base/bitfield.c',
+      meson.project_source_root() / 'sw/device/lib/base/bitfield.c',
     ],
     native: true,
   )
@@ -16,7 +16,7 @@ sw_lib_testing_memory = declare_dependency(
   link_with: static_library(
     'memory',
     sources: [
-      meson.source_root() / 'sw/device/lib/base/memory.c',
+      meson.project_source_root() / 'sw/device/lib/base/memory.c',
     ],
     c_args: ['-fno-builtin'],
     native: true,
@@ -27,7 +27,7 @@ sw_lib_testing_hardened = declare_dependency(
   link_with: static_library(
     'hardened',
     sources: [
-      meson.source_root() / 'sw/device/lib/base/hardened.c',
+      meson.project_source_root() / 'sw/device/lib/base/hardened.c',
     ],
     native: true,
   )
@@ -37,7 +37,7 @@ sw_lib_base_testing_mock_mmio = declare_dependency(
   link_with: static_library(
     'mock_mmio',
     sources: [
-      meson.source_root() / 'sw/device/lib/base/mmio.c',
+      meson.project_source_root() / 'sw/device/lib/base/mmio.c',
       'mock_mmio.cc',
     ],
     dependencies: [
