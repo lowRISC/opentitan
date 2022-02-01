@@ -56,7 +56,7 @@ static const otbn_addr_t kOtbnVarEcdsaDptrXr =
 /* Mode is represented by a single word, 1 for sign and 2 for verify */
 static const uint32_t kOtbnEcdsaModeNumWords = 1;
 static const uint32_t kOtbnEcdsaModeSign = 1;
-// static const uint32_t kOtbnEcdsaModeVerify = 2;
+static const uint32_t kOtbnEcdsaModeVerify = 2;
 
 /**
  * Makes a single dptr in the P256 library point to where its value is stored.
@@ -110,7 +110,7 @@ otbn_error_t ecdsa_p256_sign(const ecdsa_p256_message_digest_t *digest,
   OTBN_RETURN_IF_ERROR(otbn_load_app(&otbn, kOtbnAppEcdsa));
   OTBN_RETURN_IF_ERROR(setup_data_pointers(&otbn));
 
-  // Set mode so start() will jump into p256_ecdsa_sign().
+  // Set mode so start() will jump into p256_ecdsa_sign.
   OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(
       &otbn, kOtbnEcdsaModeNumWords, &kOtbnEcdsaModeSign, kOtbnVarEcdsaMode));
 
@@ -130,11 +130,11 @@ otbn_error_t ecdsa_p256_sign(const ecdsa_p256_message_digest_t *digest,
 
   // Read signature R out of OTBN dmem.
   OTBN_RETURN_IF_ERROR(otbn_copy_data_from_otbn(&otbn, kP256ScalarNumWords,
-                                                kOtbnVarEcdsaR, result->R));
+                                                kOtbnVarEcdsaR, result->r));
 
   // Read signature S out of OTBN dmem.
   OTBN_RETURN_IF_ERROR(otbn_copy_data_from_otbn(&otbn, kP256ScalarNumWords,
-                                                kOtbnVarEcdsaS, result->S));
+                                                kOtbnVarEcdsaS, result->s));
 
   // TODO: try to verify the signature, and return an error if verification
   // fails.
@@ -148,7 +148,56 @@ otbn_error_t ecdsa_p256_verify(const ecdsa_p256_signature_t *signature,
                                const ecdsa_p256_message_digest_t *digest,
                                const ecdsa_p256_public_key_t *public_key,
                                hardened_bool_t *result) {
-  // TODO: unimplemented
+  otbn_t otbn;
+  otbn_init(&otbn);
+
+  // Load the ECDSA/P-256 app and set up data pointers
+  OTBN_RETURN_IF_ERROR(otbn_load_app(&otbn, kOtbnAppEcdsa));
+  OTBN_RETURN_IF_ERROR(setup_data_pointers(&otbn));
+
+  // Set mode so start() will jump into p256_ecdsa_verify.
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(
+      &otbn, kOtbnEcdsaModeNumWords, &kOtbnEcdsaModeVerify, kOtbnVarEcdsaMode));
+
+  // Set the message digest.
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, kP256ScalarNumWords,
+                                              digest->h, kOtbnVarEcdsaMsg));
+
+  // Set the signature R.
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, kP256ScalarNumWords,
+                                              signature->r, kOtbnVarEcdsaR));
+
+  // Set the signature S.
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, kP256ScalarNumWords,
+                                              signature->s, kOtbnVarEcdsaS));
+
+  // Set the public key x coordinate.
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, kP256CoordNumWords,
+                                              public_key->x, kOtbnVarEcdsaX));
+
+  // Set the public key y coordinate.
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, kP256CoordNumWords,
+                                              public_key->y, kOtbnVarEcdsaY));
+
+  // Start the OTBN routine.
+  OTBN_RETURN_IF_ERROR(otbn_execute_app(&otbn));
+
+  // Spin here waiting for OTBN to complete.
+  OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done(&otbn));
+
+  // Read x_r (recovered R) out of OTBN dmem.
+  uint32_t x_r[kP256ScalarNumWords];
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_from_otbn(&otbn, kP256ScalarNumWords,
+                                                kOtbnVarEcdsaXr, x_r));
+
+  // TODO: Harden this memory comparison or do it in OTBN.
+  // Check that x_r == R.
   *result = kHardenedBoolTrue;
+  for (int i = 0; i < kP256ScalarNumWords; i++) {
+    if (x_r[i] != signature->r[i]) {
+      *result = kHardenedBoolFalse;
+    }
+  }
+
   return kOtbnErrorOk;
 }
