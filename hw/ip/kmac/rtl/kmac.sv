@@ -301,7 +301,7 @@ module kmac
   logic alert_intg_err;
 
   // Life cycle
-  lc_ctrl_pkg::lc_tx_t       lc_escalate_en;
+  lc_ctrl_pkg::lc_tx_t  lc_escalate_en_sync, lc_escalate_en;
 
   //////////////////////////////////////
   // Connecting Register IF to logics //
@@ -1170,7 +1170,7 @@ module kmac
   end
 
   // Register top
-  logic [NumAlerts-1:0] alert_test, alerts;
+  logic [NumAlerts-1:0] alert_test, alerts, alerts_q;
 
   logic shadowed_storage_err, shadowed_update_err;
   kmac_reg_top u_reg (
@@ -1273,14 +1273,37 @@ module kmac
     );
   end
 
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+  // break up the combinatorial path for local escalation
+    if (!rst_ni) begin
+      alerts_q[1] <= 1'b0;
+    end else if (alerts[1]) begin
+      // fatal alerts cannot be cleared
+      alerts_q[1] <= 1'b1;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+  // break up the combinatorial path for local escalation
+    if (!rst_ni) begin
+      alerts_q[0] <= 1'b0;
+    end else begin
+      // recoverable alerts can be cleared so just latch the value
+      alerts_q[0] <= alerts[0];
+    end
+  end
+
+  assign lc_escalate_en = (alerts_q[1] || (lc_escalate_en_sync == lc_ctrl_pkg::On))
+                          ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
+
   // Synchronize life cycle input
   prim_lc_sync #(
     .NumCopies (1)
   ) u_prim_lc_sync (
     .clk_i,
     .rst_ni,
-    .lc_en_i ( lc_escalate_en_i ),
-    .lc_en_o ( lc_escalate_en   )
+    .lc_en_i ( lc_escalate_en_i    ),
+    .lc_en_o ( lc_escalate_en_sync )
   );
 
   assign en_masking_o = EnMasking;
