@@ -43,7 +43,7 @@ def main():
         add_help=True)
     parser.add_argument(
         'file',
-        type=str,
+        type=Path,
         help="""Relative path to the SystemVerilog file of the module for which
         the code shall be generated. This can be a primitive or a comportable IP
         (for which the -c switch should be set)."""
@@ -52,7 +52,7 @@ def main():
     parser.add_argument(
         '-o',
         '--outdir',
-        type=str,
+        type=Path,
         default="",
         help="""Path where to place the testbench code. This is defaults to
         '../fpv' w.r.t. to the module path. For instance, if the module path is
@@ -72,7 +72,7 @@ def main():
 
     args = parser.parse_args()
 
-    mod_path = Path(args.file)
+    mod_path = args.file
     if not mod_path.is_file() or mod_path.suffix != ".sv":
         print("Error: %s is not a module or does not exist" % str(mod_path))
         return 1
