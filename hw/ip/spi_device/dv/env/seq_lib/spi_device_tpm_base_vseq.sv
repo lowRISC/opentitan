@@ -68,6 +68,8 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
 
     // Check command and address fifo
     csr_rd(.ptr(ral.tpm_cmd_addr), .value(chk_cmd_addr_data));
+
+    csr_rd(.ptr(ral.tpm_cmd_addr), .value(chk_cmd_addr_data));
     addr_cmd = {<<1{addr_cmd}};
     `DV_CHECK_CASE_EQ(addr_cmd, chk_cmd_addr_data)
 
@@ -97,5 +99,79 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
       if (pay_num == 4) cfg.m_spi_agent_cfg.csb_consecutive = 0;
     end
   endtask : poll_start_collect_data
+
+  virtual task tpm_read_trans(bit [7:0] tpm_cmd);
+    bit [31:0] device_word_rsp;
+    bit [23:0] read_tpm_addr;
+    bit [23:0] tpm_addr_read;
+    bit [31:0] read_address_command;
+    byte data_bytes[$];
+    bit [7:0] returned_bytes[*];
+    bit [7:0] read_fifo_data[$];
+
+    // send cmd_addr
+    `DV_CHECK_STD_RANDOMIZE_FATAL(read_tpm_addr)
+
+    // Data size will be 5, first byte dummy for polling, remaining 4 for payload
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(data_bytes, data_bytes.size() == 5;)
+
+    read_tpm_addr = {<<1{read_tpm_addr}};
+    read_address_command = {read_tpm_addr, tpm_cmd};
+    `uvm_info(`gfn, $sformatf("Address Command = 0x%0h", read_address_command), UVM_LOW)
+    cfg.m_spi_agent_cfg.csb_consecutive = 1;
+    spi_host_xfer_word(read_address_command, device_word_rsp);
+     fork
+       begin
+        csr_rd(.ptr(ral.tpm_cmd_addr), .value(tpm_addr_read));
+        // Upon receiving read command, set read fifo contents
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(read_fifo_data, read_fifo_data.size() == 4;)
+        foreach (read_fifo_data[i]) csr_wr(.ptr(ral.tpm_read_fifo), .value(read_fifo_data[i]));
+       end // Write Read Fifo Thread
+       begin
+         // poll START and collect data
+         poll_start_collect_data(data_bytes, returned_bytes);
+       end // Poll read data thread
+     join
+
+    `DV_CHECK_CASE_EQ({returned_bytes[3], returned_bytes[2], returned_bytes[1],
+                       returned_bytes[0]}, {read_fifo_data[3], read_fifo_data[2],
+                       read_fifo_data[1], read_fifo_data[0]})
+
+    cfg.clk_rst_vif.wait_clks(100);
+  endtask : tpm_read_trans
+
+  virtual task tpm_write_trans(bit [7:0] tpm_cmd);
+    bit [31:0] device_word_rsp;
+    bit [7:0]  device_byte_rsp;
+    bit [23:0] write_tpm_addr;
+    bit [31:0] write_address_command;
+    byte data_bytes[$];
+    int pay_num;
+
+    // send cmd_addr
+    `DV_CHECK_STD_RANDOMIZE_FATAL(write_tpm_addr)
+
+    // Data size will be 5, first byte dummy for polling, remaining 4 for payload
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(data_bytes, data_bytes.size() == 5;)
+
+    write_address_command = {write_tpm_addr, tpm_cmd};
+    `uvm_info(`gfn, $sformatf("Address Command = 0x%0h", write_address_command), UVM_LOW)
+
+    // send payload
+    cfg.m_spi_agent_cfg.csb_consecutive = 1;
+    spi_host_xfer_word(write_address_command, device_word_rsp);
+    while (pay_num < 5) begin
+      spi_host_xfer_byte(data_bytes[pay_num], device_byte_rsp);
+      `uvm_info(`gfn, $sformatf("Device Resp = 0x%0h", device_byte_rsp), UVM_LOW)
+      device_byte_rsp = {<<1{device_byte_rsp}};
+      if (pay_num > 0) pay_num++;
+      if (pay_num == 0  && device_byte_rsp == TPM_START) pay_num++;
+      if (pay_num == 4) cfg.m_spi_agent_cfg.csb_consecutive = 0;
+    end
+    cfg.clk_rst_vif.wait_clks(10);
+    chk_fifo_contents(write_address_command, data_bytes);
+    write_tpm_addr = 0;
+
+  endtask : tpm_write_trans
 
 endclass : spi_device_tpm_base_vseq

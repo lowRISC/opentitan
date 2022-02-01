@@ -22,3 +22,5 @@
 `include "spi_device_abort_vseq.sv"
 `include "spi_device_tpm_locality_vseq.sv"
 `include "spi_device_tpm_read_vseq.sv"
+`include "spi_device_tpm_read_write_vseq.sv"
+
