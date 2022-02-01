@@ -35,6 +35,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
   input  logic             data_out_clear_i,
   input  logic             mux_sel_err_i,
   input  logic             sp_enc_err_i,
+  input  logic             rnd_ctr_err_i,
   input  logic             op_err_i,
   output logic             alert_o,
 
@@ -60,17 +61,11 @@ module aes_cipher_control_fsm import aes_pkg::*;
   input  logic             key_expand_out_req_i, // Sparsify using multi-rail.
   output logic             key_expand_out_ack_o, // Sparsify using multi-rail.
   output logic             key_expand_clear_o,
+  output logic [3:0]       rnd_ctr_o,
   output key_words_sel_e   key_words_sel_o,
   output round_key_sel_e   round_key_sel_o,
 
   // Register signals
-  input  logic [3:0]       rnd_ctr_q_i,
-  output logic [3:0]       rnd_ctr_d_o,
-  input  logic [3:0]       rnd_ctr_rem_q_i,
-  output logic [3:0]       rnd_ctr_rem_d_o,
-  input  logic [3:0]       num_rounds_q_i,
-  output logic [3:0]       num_rounds_d_o,
-  input  logic             rnd_ctr_err_i,
   input  logic             crypt_q_i,            // Sparsify using multi-rail.
   output logic             crypt_d_o,            // Sparsify using multi-rail.
   input  logic             dec_key_gen_q_i,      // Sparsify using multi-rail.
@@ -130,10 +125,12 @@ module aes_cipher_control_fsm import aes_pkg::*;
   logic             advance;
   logic       [2:0] cyc_ctr_d, cyc_ctr_q;
   logic             prng_reseed_done_d, prng_reseed_done_q;
+  logic       [3:0] rnd_ctr_d, rnd_ctr_q;
+  logic       [3:0] num_rounds_d, num_rounds_q;
   logic       [3:0] num_rounds_regular;
 
   // Use separate signal for number of regular rounds.
-  assign num_rounds_regular = num_rounds_q_i - 4'd1;
+  assign num_rounds_regular = num_rounds_q - 4'd1;
 
   // FSM
   always_comb begin : aes_cipher_ctrl_fsm
@@ -166,9 +163,8 @@ module aes_cipher_control_fsm import aes_pkg::*;
 
     // FSM
     aes_cipher_ctrl_ns   = aes_cipher_ctrl_cs;
-    num_rounds_d_o       = num_rounds_q_i;
-    rnd_ctr_d_o          = rnd_ctr_q_i;
-    rnd_ctr_rem_d_o      = rnd_ctr_rem_q_i;
+    num_rounds_d         = num_rounds_q;
+    rnd_ctr_d            = rnd_ctr_q;
     crypt_d_o            = crypt_q_i;
     dec_key_gen_d_o      = dec_key_gen_q_i;
     prng_reseed_d_o      = prng_reseed_q_i;
@@ -231,12 +227,11 @@ module aes_cipher_control_fsm import aes_pkg::*;
                                              KEY_FULL_ENC_INIT;
             key_full_we_o  = 1'b1;
 
-            // Load num_rounds, initialize round counters.
-            num_rounds_d_o = (key_len_i == AES_128) ? 4'd10 :
-                             (key_len_i == AES_192) ? 4'd12 :
-                                                      4'd14;
-            rnd_ctr_rem_d_o    = num_rounds_d_o;
-            rnd_ctr_d_o        = '0;
+            // Load num_rounds, initialize round counter.
+            num_rounds_d = (key_len_i == AES_128) ? 4'd10 :
+                           (key_len_i == AES_192) ? 4'd12 :
+                                                    4'd14;
+            rnd_ctr_d          = '0;
             aes_cipher_ctrl_ns = INIT;
 
           end else begin
@@ -277,15 +272,13 @@ module aes_cipher_control_fsm import aes_pkg::*;
             key_expand_out_ack_o = 1'b1;
             state_we_o           = ~dec_key_gen_q_i;
             key_full_we_o        = 1'b1;
-            rnd_ctr_d_o          = rnd_ctr_q_i     + 4'b0001;
-            rnd_ctr_rem_d_o      = rnd_ctr_rem_q_i - 4'b0001;
+            rnd_ctr_d            = rnd_ctr_q + 4'b0001;
             cyc_ctr_d            = 3'd0;
             aes_cipher_ctrl_ns   = ROUND;
           end
         end else begin
           state_we_o         = ~dec_key_gen_q_i;
-          rnd_ctr_d_o        = rnd_ctr_q_i     + 4'b0001;
-          rnd_ctr_rem_d_o    = rnd_ctr_rem_q_i - 4'b0001;
+          rnd_ctr_d          = rnd_ctr_q + 4'b0001;
           cyc_ctr_d          = 3'd0;
           aes_cipher_ctrl_ns = ROUND;
         end
@@ -328,12 +321,11 @@ module aes_cipher_control_fsm import aes_pkg::*;
           key_full_we_o = 1'b1;
 
           // Update round
-          rnd_ctr_d_o     = rnd_ctr_q_i     + 4'b0001;
-          rnd_ctr_rem_d_o = rnd_ctr_rem_q_i - 4'b0001;
-          cyc_ctr_d       = 3'd0;
+          rnd_ctr_d     = rnd_ctr_q + 4'b0001;
+          cyc_ctr_d     = 3'd0;
 
           // Are we doing the last regular round?
-          if (rnd_ctr_q_i == num_rounds_regular) begin
+          if (rnd_ctr_q >= num_rounds_regular) begin
             aes_cipher_ctrl_ns = FINISH;
 
             if (dec_key_gen_q_i) begin
@@ -351,7 +343,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
                 aes_cipher_ctrl_ns = IDLE;
               end
             end
-          end // rnd_ctr_q_i
+          end // rnd_ctr_q
         end // SubBytes/KeyExpand REQ/ACK
       end
 
@@ -492,10 +484,16 @@ module aes_cipher_control_fsm import aes_pkg::*;
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_fsm
     if (!rst_ni) begin
       prng_reseed_done_q <= 1'b0;
+      rnd_ctr_q          <= '0;
+      num_rounds_q       <= '0;
     end else begin
       prng_reseed_done_q <= prng_reseed_done_d;
+      rnd_ctr_q          <= rnd_ctr_d;
+      num_rounds_q       <= num_rounds_d;
     end
   end
+
+  assign rnd_ctr_o = rnd_ctr_q;
 
   if (SBoxImpl == SBoxImplDom) begin : gen_reg_cyc_ctr
     always_ff @(posedge clk_i or negedge rst_ni) begin : reg_cyc_ctr
