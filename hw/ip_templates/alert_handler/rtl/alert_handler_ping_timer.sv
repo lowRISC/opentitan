@@ -201,8 +201,8 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   // SEC_CM: PING_TIMER.CTR.REDUN
   prim_count #(
     .Width(PING_CNT_DW),
-    .OutSelDnCnt(1), // count down
-    .CntStyle(prim_count_pkg::CrossCnt),
+    .OutSelDnCnt(0),
+    .CntStyle(prim_count_pkg::DupCnt),
     // The alert handler behaves differently than other comportable IP. I.e., instead of sending out
     // an alert signal, this condition is handled internally in the alert handler.
     .EnableAlertTriggerSVA(0)
@@ -213,7 +213,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
     .set_i(cnt_set),
     .set_cnt_i(cnt_setval),
     .en_i(!timer_expired),
-    .step_i(PING_CNT_DW'(1)),
+    .step_i({PING_CNT_DW{1'b1}}), // 2's complement for -1, since we count down
     .cnt_o(cnt),
     .err_o(cnt_error)
   );

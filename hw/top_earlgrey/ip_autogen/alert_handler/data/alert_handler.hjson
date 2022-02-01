@@ -381,13 +381,13 @@
             '''
     }
     { name: "ACCU.CTR.REDUN",
-      desc: "Accumulator counters are redundant."
+      desc: "Accumulator counters employ a cross-counter implementation."
     }
     { name: "ESC_TIMER.CTR.REDUN",
-      desc: "Escalation timer counters are redundant."
+      desc: "Escalation timer counters employ a duplicated counter implementation."
     }
     { name: "PING_TIMER.CTR.REDUN",
-      desc: "Ping timer counters are redundant."
+      desc: "Ping timer counters employ a duplicated counter implementation."
     }
     { name: "PING_TIMER.LFSR.REDUN",
       desc: "Ping timer LFSR is redundant."
