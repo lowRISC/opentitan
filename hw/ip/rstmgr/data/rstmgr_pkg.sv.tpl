@@ -20,6 +20,7 @@ package rstmgr_pkg;
 % endfor
 
   // resets generated and broadcast
+  // SEC_CM: LEAF.RST.SHADOW
   typedef struct packed {
 % for rst in output_rsts:
   % if rst.shadowed:

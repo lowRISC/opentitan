@@ -24,8 +24,23 @@
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
-    { name: "FSM.SPARSE",
-      desc: "Sparse encoding for reset consistency check fsm."
+    { name: "SCAN.INTERSIG.MUBI",
+      desc: "scan control signals are multibit"
+    }
+    { name: "LEAF.RST.BKGN_CHK",
+      desc: "Background consistency checks for each leaf reset."
+    }
+    { name: "LEAF.RST.SHADOW",
+      desc: "Lead resets to blocks containing shadow registers are shadowed"
+    }
+    { name: "LEAF.FSM.SPARSE",
+      desc: "Sparsely encoded fsm for each leaf rst check. he hamming delta is only 3 as there are a significant number of leaf resets"
+    }
+    { name: "SW_RST.CONFIG.REGWEN",
+      desc: "Software reset controls are protected by regwen"
+    }
+    { name: "DUMP_CTRL.CONFIG.REGWEN",
+      desc: "Crash dump controls are protected by regwen"
     }
   ]
   regwidth: "32",

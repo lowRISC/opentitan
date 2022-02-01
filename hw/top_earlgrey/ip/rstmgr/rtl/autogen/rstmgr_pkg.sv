@@ -30,6 +30,7 @@ package rstmgr_pkg;
   parameter int I2C2 = 7;
 
   // resets generated and broadcast
+  // SEC_CM: LEAF.RST.SHADOW
   typedef struct packed {
     logic [PowerDomains-1:0] rst_por_aon_n;
     logic [PowerDomains-1:0] rst_por_n;

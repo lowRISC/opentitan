@@ -61,17 +61,18 @@ module rstmgr_leaf_rst
   end
 
   if (SecCheck) begin : gen_rst_chk
-  rstmgr_cnsty_chk u_rst_chk (
-    .clk_i,
-    .rst_ni,
-    .child_clk_i(leaf_clk_i),
-    .child_rst_ni(leaf_rst_o),
-    .parent_rst_ni,
-    .sw_rst_req_i(sw_rst_req_q | ~sw_rst_req_ni),
-    .sw_rst_req_clr_o(clr_sw_rst_req),
-    .err_o,
-    .fsm_err_o
-  );
+    // SEC_CM: LEAF.RST.BKGN_CHK
+    rstmgr_cnsty_chk u_rst_chk (
+      .clk_i,
+      .rst_ni,
+      .child_clk_i(leaf_clk_i),
+      .child_rst_ni(leaf_rst_o),
+      .parent_rst_ni,
+      .sw_rst_req_i(sw_rst_req_q | ~sw_rst_req_ni),
+      .sw_rst_req_clr_o(clr_sw_rst_req),
+      .err_o,
+      .fsm_err_o
+    );
   end else begin : gen_no_rst_chk
     logic unused_sig;
     assign unused_sig = sw_rst_req_q | clr_sw_rst_req;

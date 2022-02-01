@@ -56,6 +56,7 @@ module rstmgr
 
   // dft bypass
   input scan_rst_ni,
+  // SEC_CM: SCAN.INTERSIG.MUBI
   input prim_mubi_pkg::mubi4_t scanmode_i,
 
   // Reset asserted indications going to alert handler
@@ -152,6 +153,8 @@ module rstmgr
   rstmgr_reg_pkg::rstmgr_hw2reg_t hw2reg;
 
   logic reg_intg_err;
+  // SEC_CM: BUS.INTEGRITY
+  // SEC_CM: SW_RST.CONFIG.REGWEN, DUMP_CTRL.CONFIG.REGWEN
   rstmgr_reg_top u_reg (
     .clk_i,
     .rst_ni,
