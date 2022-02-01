@@ -29,7 +29,7 @@ endforeach
 rust_flags = ''
 
 # The cargo invocation script.
-cargo_invoke_cmd = meson.source_root() / 'util/invoke_cargo.sh'
+cargo_invoke_cmd = meson.project_source_root() / 'util/invoke_cargo.sh'
 
 # Note: the opentitantool depends on opentitanlib. This dependency is handled
 # by cargo itself but perhaps should be handled by the build system.
@@ -40,8 +40,8 @@ opentitantool = custom_target(
     cargo,
     cargo_flags,
     rust_flags,
-    meson.source_root(),
-    meson.build_root(),
+    meson.project_source_root(),
+    meson.project_build_root(),
   ],
   depend_files: [
     cargo_invoke_cmd,

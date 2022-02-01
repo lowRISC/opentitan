@@ -14,7 +14,7 @@ isort
 libcst
 livereload
 mako
-meson >= 0.53.0, <= 0.54 # minimum matches version in meson.build
+meson >= 0.56.2, <= 0.57.2 # minimum matches version in meson.build
 mistletoe>=0.7.2
 mypy
 # Premailer 3.9.0 broke the API by introducing an allow_loading_external_files

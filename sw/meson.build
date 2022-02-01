@@ -4,14 +4,14 @@
 
 # A command, for use in custom_target(), to build artifacts into $BIN_DIR.
 export_target_command = [
-  meson.source_root() / 'util/export_target.sh',
+  meson.project_source_root() / 'util/export_target.sh',
   bin_dir / 'sw',
   'sw',
   '@OUTDIR@',
   '@INPUT@',
 ]
 export_target_depend_files = [
-  meson.source_root() / 'util/export_target.sh',
+  meson.project_source_root() / 'util/export_target.sh',
 ]
 
 subdir('vendor')

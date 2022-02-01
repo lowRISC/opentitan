@@ -41,15 +41,15 @@ sw_otbn_sources = {}
 subdir('code-snippets')
 subdir('crypto')
 
-prog_otbn_build = meson.source_root() / 'util/otbn_build.py'
+prog_otbn_build = meson.project_source_root() / 'util/otbn_build.py'
 
 otbn_build_command = [
   prog_env,
   'OTBN_AS=@0@'.format(prog_otbn_as),
   'OTBN_LD=@0@'.format(prog_otbn_ld),
-  'RV32_TOOL_OBJCOPY=@0@'.format(prog_objcopy.path()),
-  'RV32_TOOL_AS=@0@'.format(prog_as.path()),
-  'RV32_TOOL_LD=@0@'.format(prog_ld.path()),
+  'RV32_TOOL_OBJCOPY=@0@'.format(prog_objcopy.full_path()),
+  'RV32_TOOL_AS=@0@'.format(prog_as.full_path()),
+  'RV32_TOOL_LD=@0@'.format(prog_ld.full_path()),
   prog_python,
   prog_otbn_build,
   '--out-dir',
@@ -59,9 +59,9 @@ otbn_build_command = [
 otbn_build_depend_files = [
   prog_otbn_as,
   prog_otbn_ld,
-  prog_objcopy.path(),
-  prog_as.path(),
-  prog_ld.path(),
+  prog_objcopy.full_path(),
+  prog_as.full_path(),
+  prog_ld.full_path(),
   prog_otbn_build,
 ]
 

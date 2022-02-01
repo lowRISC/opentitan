@@ -80,7 +80,7 @@ embedded_target_extra_link_args = [
 # simulations.
 extract_sw_logs_sim_dv_outputs = ['@BASENAME@.rodata.txt', '@BASENAME@.logs.txt']
 extract_sw_logs_sim_dv_command = [
-  prog_python, meson.source_root() / 'util/device_sw_utils/extract_sw_logs.py',
+  prog_python, meson.project_source_root() / 'util/device_sw_utils/extract_sw_logs.py',
   '--elf-file', '@INPUT@',
   '--rodata-sections', '.rodata',
   '--logs-fields-section', '.logs.fields',
@@ -88,7 +88,7 @@ extract_sw_logs_sim_dv_command = [
   '--outdir', '@OUTDIR@',
 ]
 extract_sw_logs_sim_dv_depend_files = [
-  meson.source_root() / 'util/device_sw_utils/extract_sw_logs.py',
+  meson.project_source_root() / 'util/device_sw_utils/extract_sw_logs.py',
 ]
 
 # Generates the OTP image containing root secrets, sw configuration partitions and
@@ -99,15 +99,15 @@ extract_sw_logs_sim_dv_depend_files = [
 # Need to make this more flexible in the future.
 # TODO: additional OTP partitions can be included with the --add-cfg switch
 # see also util/design/README.md
-make_otp_img_inputs = [meson.source_root() / 'hw/ip/otp_ctrl/data/otp_ctrl_img_rma.hjson']
+make_otp_img_inputs = [meson.project_source_root() / 'hw/ip/otp_ctrl/data/otp_ctrl_img_rma.hjson']
 make_otp_img_command = [
-  prog_python, meson.source_root() / 'util/design/gen-otp-img.py',
+  prog_python, meson.project_source_root() / 'util/design/gen-otp-img.py',
   '--quiet',
   '--img-cfg', '@INPUT@',
   '--out', '@OUTPUT@',
 ]
 make_otp_img_depend_files = [
-  meson.source_root() / 'util/design/gen-otp-img.py',
+  meson.project_source_root() / 'util/design/gen-otp-img.py',
 ]
 
 # Generates a scrambled version of a ROM image from an ELF
@@ -116,20 +116,20 @@ make_otp_img_depend_files = [
 #       top_earlgrey is the only top-level with a rom_ctrl block, but we'll
 #       need to make this more generic if we support more top-levels.
 scramble_image_hjson = [
-  meson.source_root() / 'hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson'
+  meson.project_source_root() / 'hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson'
 ]
 scramble_image_outputs = [
   '@BASENAME@.scr.39.vmem',
 ]
 scramble_image_command = [
     prog_python,
-    meson.source_root() / 'hw/ip/rom_ctrl/util/scramble_image.py',
+    meson.project_source_root() / 'hw/ip/rom_ctrl/util/scramble_image.py',
     scramble_image_hjson,
     '@INPUT@',
     '@OUTPUT@',
 ]
 scramble_image_depend_files = [
-    meson.source_root() / 'hw/ip/rom_ctrl/util/scramble_image.py',
+    meson.project_source_root() / 'hw/ip/rom_ctrl/util/scramble_image.py',
     scramble_image_hjson
 ]
 
@@ -142,20 +142,20 @@ flash_image_outputs = [
 
 flash_image_command = [
     prog_python,
-    meson.source_root() / 'util/design/gen-flash-img.py',
+    meson.project_source_root() / 'util/design/gen-flash-img.py',
     '@INPUT@',
     '@OUTPUT@',
 ]
 
 flash_image_depend_files = [
-    meson.source_root() / 'util/design/gen-flash-img.py',
+    meson.project_source_root() / 'util/design/gen-flash-img.py',
 ]
 
 
 # Signing keys for ROM_EXT images.
 signing_keys = {
   'test_key_0': {
-    'path': meson.source_root() / 'sw/device/silicon_creator/mask_rom/keys/test_key_0_rsa_3072_exp_f4.der',
+    'path': meson.project_source_root() / 'sw/device/silicon_creator/mask_rom/keys/test_key_0_rsa_3072_exp_f4.der',
   },
 }
 

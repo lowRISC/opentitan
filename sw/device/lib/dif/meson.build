@@ -32,7 +32,7 @@ test('dif_adc_ctrl_unittest', executable(
     'dif_adc_ctrl_unittest',
     sources: [
       'autogen/dif_adc_ctrl_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_adc_ctrl_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_adc_ctrl_autogen.c',
       hw_ip_adc_ctrl_reg_h,
     ],
     dependencies: [
@@ -66,9 +66,9 @@ test('dif_clkmgr_unittest', executable(
     sources: [
       'dif_clkmgr_unittest.cc',
       'autogen/dif_clkmgr_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_base.c',
-      meson.source_root() / 'sw/device/lib/dif/dif_clkmgr.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_clkmgr_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_base.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_clkmgr.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_clkmgr_autogen.c',
       hw_ip_clkmgr_reg_h,
     ],
     dependencies: [
@@ -102,8 +102,8 @@ test('dif_csrng_unittest', executable(
     sources: [
       'dif_csrng_unittest.cc',
       'autogen/dif_csrng_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_csrng.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_csrng_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_csrng.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_csrng_autogen.c',
       hw_ip_csrng_reg_h,
     ],
     dependencies: [
@@ -136,8 +136,8 @@ test('dif_edn_unittest', executable(
     'dif_edn_unittest',
     sources: [
       'autogen/dif_edn_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_edn.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_edn_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_edn.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_edn_autogen.c',
       hw_ip_edn_reg_h,
     ],
     dependencies: [
@@ -171,8 +171,8 @@ test('dif_uart_unittest', executable(
     sources: [
       'dif_uart_unittest.cc',
       'autogen/dif_uart_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_uart.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_uart_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_uart.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_uart_autogen.c',
       hw_ip_uart_reg_h,
     ],
     dependencies: [
@@ -207,8 +207,8 @@ test('dif_rv_plic_unittest', executable(
     sources: [
       'dif_rv_plic_unittest.cc',
       'autogen/dif_rv_plic_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_rv_plic.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_rv_plic_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_rv_plic.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_rv_plic_autogen.c',
       hw_top_earlgrey_rv_plic_reg_h,
     ],
     dependencies: [
@@ -242,8 +242,8 @@ test('dif_gpio_unittest', executable(
     sources: [
       'dif_gpio_unittest.cc',
       'autogen/dif_gpio_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_gpio.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_gpio_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_gpio.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_gpio_autogen.c',
       hw_ip_gpio_reg_h,
     ],
     dependencies: [
@@ -277,8 +277,8 @@ test('dif_spi_device_unittest', executable(
     sources: [
       'dif_spi_device_unittest.cc',
       'autogen/dif_spi_device_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_spi_device.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_spi_device_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_spi_device.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_spi_device_autogen.c',
       hw_ip_spi_device_reg_h,
     ],
     dependencies: [
@@ -310,7 +310,7 @@ test('dif_spi_host_unittest', executable(
     'dif_spi_host_unittest',
     sources: [
       'autogen/dif_spi_host_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_spi_host_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_spi_host_autogen.c',
       hw_ip_spi_host_reg_h,
     ],
     dependencies: [
@@ -344,8 +344,8 @@ test('dif_rv_timer_unittest', executable(
     sources: [
       'dif_rv_timer_unittest.cc',
       'autogen/dif_rv_timer_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_rv_timer.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_rv_timer_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_rv_timer.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_rv_timer_autogen.c',
       hw_ip_rv_timer_reg_h,
     ],
     dependencies: [
@@ -379,8 +379,8 @@ test('dif_i2c_unittest', executable(
     sources: [
       'dif_i2c_unittest.cc',
       'autogen/dif_i2c_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_i2c.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_i2c_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_i2c.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_i2c_autogen.c',
       hw_ip_i2c_reg_h,
     ],
     dependencies: [
@@ -414,8 +414,8 @@ test('dif_usbdev_unittest', executable(
     'dif_usbdev_unittest',
     sources: [
       'autogen/dif_usbdev_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_usbdev.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_usbdev_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_usbdev.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_usbdev_autogen.c',
       hw_ip_usbdev_reg_h,
     ],
     dependencies: [
@@ -450,8 +450,8 @@ test('dif_hmac_unittest', executable(
     sources: [
       #'dif_hmac_unittest.cc',
       'autogen/dif_hmac_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_hmac.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_hmac_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_hmac.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_hmac_autogen.c',
       hw_ip_hmac_reg_h,
     ],
     dependencies: [
@@ -488,8 +488,8 @@ test('dif_kmac_unittest', executable(
     sources: [
       'dif_kmac_unittest.cc',
       'autogen/dif_kmac_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_kmac.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_kmac_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_kmac.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_kmac_autogen.c',
       hw_ip_kmac_reg_h,
     ],
     dependencies: [
@@ -524,8 +524,8 @@ test('dif_otbn_unittest', executable(
     sources: [
       'dif_otbn_unittest.cc',
       'autogen/dif_otbn_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_otbn.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_otbn_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_otbn.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_otbn_autogen.c',
       hw_ip_otbn_reg_h,
     ],
     dependencies: [
@@ -560,8 +560,8 @@ test('dif_rstmgr_unittest', executable(
     sources: [
       'dif_rstmgr_unittest.cc',
       'autogen/dif_rstmgr_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_rstmgr.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_rstmgr_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_rstmgr.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_rstmgr_autogen.c',
       hw_ip_rstmgr_reg_h,
     ],
     dependencies: [
@@ -596,9 +596,9 @@ test('dif_alert_handler_unittest', executable(
     sources: [
       'dif_alert_handler_unittest.cc',
       'autogen/dif_alert_handler_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_base.c',
-      meson.source_root() / 'sw/device/lib/dif/dif_alert_handler.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_alert_handler_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_base.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_alert_handler.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_alert_handler_autogen.c',
       hw_ip_alert_handler_reg_h,
     ],
     dependencies: [
@@ -633,9 +633,9 @@ test('dif_pwrmgr_unittest', executable(
     sources: [
       'dif_pwrmgr_unittest.cc',
       'autogen/dif_pwrmgr_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_base.c',
-      meson.source_root() / 'sw/device/lib/dif/dif_pwrmgr.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_pwrmgr_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_base.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_pwrmgr.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_pwrmgr_autogen.c',
       hw_ip_pwrmgr_reg_h,
     ],
     dependencies: [
@@ -670,9 +670,9 @@ test('dif_keymgr_unittest', executable(
     sources: [
       'dif_keymgr_unittest.cc',
       'autogen/dif_keymgr_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_base.c',
-      meson.source_root() / 'sw/device/lib/dif/dif_keymgr.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_keymgr_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_base.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_keymgr.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_keymgr_autogen.c',
       hw_ip_keymgr_reg_h,
     ],
     dependencies: [
@@ -707,8 +707,8 @@ test('dif_otp_ctrl_unittest', executable(
     sources: [
       'dif_otp_ctrl_unittest.cc',
       'autogen/dif_otp_ctrl_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_otp_ctrl.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_otp_ctrl_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_otp_ctrl.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_otp_ctrl_autogen.c',
       hw_ip_otp_ctrl_reg_h,
     ],
     dependencies: [
@@ -743,8 +743,8 @@ test('dif_lc_ctrl_unittest', executable(
     sources: [
       'dif_lc_ctrl_unittest.cc',
       'autogen/dif_lc_ctrl_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_lc_ctrl.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_lc_ctrl_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_lc_ctrl.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_lc_ctrl_autogen.c',
       hw_ip_lc_ctrl_reg_h,
     ],
     dependencies: [
@@ -779,8 +779,8 @@ test('dif_aon_timer_unittest', executable(
     sources: [
       'dif_aon_timer_unittest.cc',
       'autogen/dif_aon_timer_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_aon_timer.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_aon_timer_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_aon_timer.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_aon_timer_autogen.c',
       hw_ip_aon_timer_reg_h,
     ],
     dependencies: [
@@ -815,8 +815,8 @@ test('dif_entropy_src_unittest', executable(
     sources: [
       'dif_entropy_src_unittest.cc',
       'autogen/dif_entropy_src_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_entropy_src.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_entropy_src_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_entropy_src.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_entropy_src_autogen.c',
       hw_ip_entropy_src_reg_h,
     ],
     dependencies: [
@@ -850,8 +850,8 @@ test('dif_aes_unittest', executable(
     sources: [
       'dif_aes_unittest.cc',
       'autogen/dif_aes_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_aes.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_aes_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_aes.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_aes_autogen.c',
       hw_ip_aes_reg_h,
     ],
     dependencies: [
@@ -885,8 +885,8 @@ test('dif_pinmux_unittest', executable(
     'dif_pinmux_unittest',
     sources: [
       'autogen/dif_pinmux_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_pinmux.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_pinmux_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_pinmux.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_pinmux_autogen.c',
       hw_top_earlgrey_pinmux_reg_h,
     ],
     dependencies: [
@@ -920,8 +920,8 @@ test('dif_sram_ctrl_unittest', executable(
     sources: [
       'dif_sram_ctrl_unittest.cc',
       'autogen/dif_sram_ctrl_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_sram_ctrl.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_sram_ctrl_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_sram_ctrl.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_sram_ctrl_autogen.c',
       hw_ip_sram_ctrl_reg_h,
     ],
     dependencies: [
@@ -953,7 +953,7 @@ test('dif_sysrst_ctrl_unittest', executable(
     'dif_sysrst_ctrl_unittest',
     sources: [
       'autogen/dif_sysrst_ctrl_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_sysrst_ctrl_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_sysrst_ctrl_autogen.c',
       hw_ip_sysrst_ctrl_reg_h,
     ],
     dependencies: [
@@ -987,9 +987,9 @@ test('dif_flash_ctrl_unittest', executable(
     sources: [
       'dif_flash_ctrl_unittest.cc',
       'autogen/dif_flash_ctrl_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_base.c',
-      meson.source_root() / 'sw/device/lib/dif/dif_flash_ctrl.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_flash_ctrl_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_base.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_flash_ctrl.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_flash_ctrl_autogen.c',
       hw_ip_flash_ctrl_reg_h,
     ],
     dependencies: [
@@ -1023,8 +1023,8 @@ test('dif_rom_ctrl_unittest', executable(
     sources: [
       'dif_rom_ctrl_unittest.cc',
       'autogen/dif_rom_ctrl_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/dif_rom_ctrl.c',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_rom_ctrl_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_rom_ctrl.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_rom_ctrl_autogen.c',
       hw_ip_rom_ctrl_reg_h,
     ],
     dependencies: [
@@ -1056,7 +1056,7 @@ test('dif_pattgen_unittest', executable(
     'dif_pattgen_unittest',
     sources: [
       'autogen/dif_pattgen_autogen_unittest.cc',
-      meson.source_root() / 'sw/device/lib/dif/autogen/dif_pattgen_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_pattgen_autogen.c',
       hw_ip_pattgen_reg_h,
     ],
     dependencies: [

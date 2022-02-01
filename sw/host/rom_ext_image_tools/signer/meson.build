@@ -29,7 +29,7 @@ endforeach
 rust_flags = ''
 
 # The cargo invocation script.
-cargo_invoke_cmd = meson.source_root() / 'util/invoke_cargo.sh'
+cargo_invoke_cmd = meson.project_source_root() / 'util/invoke_cargo.sh'
 
 # Get the command lines for the native C and C++ compilers to pass on to other
 # build systems.
@@ -50,8 +50,8 @@ rom_ext_signer = custom_target(
     cargo_flags,
     rust_flags,
     '',
-    meson.source_root(),
-    meson.build_root(),
+    meson.project_source_root(),
+    meson.project_build_root(),
   ],
   depend_files: [
     cargo_invoke_cmd,
