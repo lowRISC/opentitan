@@ -828,7 +828,7 @@ module kmac
     .done_i     (sha3_done        ),
 
     // LC escalation
-    //.lc_escalate_en_i (lc_escalate_en),
+    .lc_escalate_en_i (lc_escalate_en),
 
     .absorbed_o  (sha3_absorbed),
     .squeezing_o (unused_sha3_squeeze),

@@ -68,6 +68,9 @@ module sha3
   output logic              state_valid_o,
   output logic [StateW-1:0] state_o [Share],
 
+  // Life cycle
+  input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+
   // error_o value is pushed to Error FIFO at KMAC/SHA3 top and reported to SW
   output err_t error_o,
 
@@ -274,13 +277,23 @@ module sha3
         st_d = StIdle_sparse;
       end
 
-      default: begin
+      StTerminalError_sparse: begin
         //this state is terminal
-        st_d = st;
+        st_d = StTerminalError_sparse;
         sha3_state_error = 1'b 1;
       end
 
+      default: begin
+        st_d = StTerminalError_sparse;
+        sha3_state_error = 1'b 1;
+      end
     endcase
+
+    // Unconditionally jump into the terminal error state
+    // if the life cycle controller triggers an escalation.
+    if (lc_escalate_en_i != lc_ctrl_pkg::Off) begin
+      st_d = StTerminalError_sparse;
+    end
   end
 
   //////////////
@@ -396,6 +409,9 @@ module sha3
     .mode_i,
     .strength_i,
 
+    // LC
+    .lc_escalate_en_i (lc_escalate_en_i),
+
     // controls
     .start_i   (keccak_start),
     .process_i (keccak_process),
@@ -432,6 +448,9 @@ module sha3
 
     .state_o    (state),
 
+    // LC
+    .lc_escalate_en_i (lc_escalate_en_i),
+
     .sparse_fsm_error_o  (keccak_round_state_error),
     .round_count_error_o (round_count_error),
 
@@ -445,7 +464,7 @@ module sha3
   // Unknown check for case statement
   `ASSERT(MuxSelKnown_A, mux_sel inside {MuxGuard, MuxRelease})
   `ASSERT(FsmKnown_A, st inside {StIdle_sparse, StAbsorb_sparse, StSqueeze_sparse,
-                                        StManualRun_sparse, StFlush_sparse})
+                                 StManualRun_sparse, StFlush_sparse, StTerminalError_sparse})
 
   // `state` shall be 0 in invalid
   if (EnMasking) begin: gen_chk_digest_masked
