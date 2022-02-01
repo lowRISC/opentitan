@@ -161,6 +161,28 @@
                 sends to SDO. This mode doesn't support Dual or Quad mode
                 '''
             },
+            { value: "1"
+              name: "flashmode"
+              desc: '''SPI Flash Emulation mode.
+
+                In flash mode, SPI Device IP accepts SPI Flash commands and
+                processes internally, then returns data for the read commands.
+                HW processes the Status, JEDEC ID, SFDP commands.
+
+                The current version does not support Dual/Quad IO and QPI
+                commands.
+                '''
+            }
+            { value: "2"
+              name: "passthrough"
+              desc: '''
+                In passthrough mode, SPI Device IP forwards the incoming SPI
+                flash traffics to the attached downstream flash device. HW may
+                processes commands internally and returns data.
+
+                SW may configure the device to drop inadmissable commands.
+                '''
+            }
           ]
           tags: [// Changing modes randomly can result in unknown values being
                  // passed between spi_dev/host due to passthrough
