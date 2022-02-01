@@ -131,6 +131,7 @@ module aes_cipher_core import aes_pkg::*;
   output logic                        key_clear_o,
   input  logic                        data_out_clear_i, // Re-use the cipher core muxes.
   output logic                        data_out_clear_o,
+  input  logic                        alert_fatal_i,
   output logic                        alert_o,
 
   // Pseudo-random data for register clearing
@@ -543,6 +544,7 @@ module aes_cipher_core import aes_pkg::*;
     .mux_sel_err_i        ( mux_sel_err         ),
     .sp_enc_err_i         ( sp_enc_err_q        ),
     .op_err_i             ( op_err              ),
+    .alert_fatal_i        ( alert_fatal_i       ),
     .alert_o              ( alert_o             ),
 
     .prng_update_o        ( prd_masking_upd     ),

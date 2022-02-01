@@ -40,6 +40,7 @@ module aes_cipher_control_fsm_n import aes_pkg::*;
   input  logic             sp_enc_err_i,
   input  logic             rnd_ctr_err_i,
   input  logic             op_err_i,
+  input  logic             alert_fatal_i,
   output logic             alert_o,
 
   // Control signals for masking PRNG
@@ -100,6 +101,7 @@ module aes_cipher_control_fsm_n import aes_pkg::*;
     sp_enc_err_i,
     rnd_ctr_err_i,
     op_err_i,
+    alert_fatal_i,
     prng_reseed_ack_i,
     sub_bytes_out_req_ni,
     key_expand_out_req_ni,
@@ -127,6 +129,7 @@ module aes_cipher_control_fsm_n import aes_pkg::*;
     sp_enc_err_i,
     rnd_ctr_err_i,
     op_err_i,
+    alert_fatal_i,
     prng_reseed_ack_i,
     sub_bytes_out_req_ni,
     key_expand_out_req_ni,
@@ -161,6 +164,7 @@ module aes_cipher_control_fsm_n import aes_pkg::*;
   logic                 sp_enc_err;
   logic                 rnd_ctr_err;
   logic                 op_err;
+  logic                 alert_fatal;
   logic                 prng_reseed_ack;
   logic                 sub_bytes_out_req_n;
   logic                 key_expand_out_req_n;
@@ -184,6 +188,7 @@ module aes_cipher_control_fsm_n import aes_pkg::*;
           sp_enc_err,
           rnd_ctr_err,
           op_err,
+          alert_fatal,
           prng_reseed_ack,
           sub_bytes_out_req_n,
           key_expand_out_req_n,
@@ -255,6 +260,7 @@ module aes_cipher_control_fsm_n import aes_pkg::*;
     .sp_enc_err_i          ( sp_enc_err            ),
     .rnd_ctr_err_i         ( rnd_ctr_err           ),
     .op_err_i              ( op_err                ),
+    .alert_fatal_i         ( alert_fatal           ),
     .alert_o               ( alert                 ),
 
     .prng_update_o         ( prng_update           ),
