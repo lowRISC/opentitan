@@ -159,7 +159,32 @@
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
+    },
+    { name: "TIMEOUT.CLK.BKGN_CHK",
+      desc: "Background check for clock timeout."
+    },
+    { name: "MEAS.CLK.BKGN_CHK",
+      desc: "Background check for clock frequency."
+    },
+    { name: "LC_CTRL.INTERSIG.MUBI",
+      desc: "The life cycle control signals are multibit encoded."
     }
+    { name: "LC_CTRL_CLK_HANDSHAKE.INTERSIG.MUBI",
+      desc: "The life cycle clock req/ack signals are multibit encoded."
+    }
+    { name: "CLK_HANDSHAKE.INTERSIG.MUBI",
+      desc: "The external clock req/ack signals are multibit encoded."
+    }
+    { name: "JITTER.CONFIG.MUBI",
+      desc: "The jitter enable configuration is multibit encoded."
+    }
+    { name: "MEAS.CONFIG.REGWEN",
+      desc: "The measurement controls protected with regwen."
+    }
+    { name: "CLK_CTRL.CONFIG.REGWEN",
+      desc: "Software controlled clock requests are proteced with regwen."
+    }
+
   ]
 
   registers: [
