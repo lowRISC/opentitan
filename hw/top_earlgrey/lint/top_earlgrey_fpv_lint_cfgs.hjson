@@ -149,5 +149,11 @@
                import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                rel_path: "hw/ip/kmac/fpv/lint/{tool}"
              }
+             {
+               name: prim_max_tree_fpv
+               fusesoc_core: lowrisc:fpv:prim_max_tree_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_max_tree_fpv/lint/{tool}"
+             }             
             ]
 }
