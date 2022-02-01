@@ -2252,6 +2252,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .run_i      (1'b0             ), // For software application
     .done_i     (sha3_done        ),
 
+    // LC escalation
+    .lc_escalate_en_i (lc_ctrl_pkg::Off),
+
     .absorbed_o (sha3_absorbed),
     .squeezing_o (sha3_squeezing),
 

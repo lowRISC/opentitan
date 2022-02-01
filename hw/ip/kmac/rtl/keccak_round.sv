@@ -51,6 +51,9 @@ module keccak_round #(
   // State out. This can be used as Digest
   output logic [Width-1:0] state_o [Share],
 
+  // Life cycle
+  input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+
   output logic             sparse_fsm_error_o,
   output logic             round_count_error_o,
 
@@ -133,7 +136,7 @@ module keccak_round #(
   assign rnd_eq_end = (int'(round) == MaxRound - 1);
 
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 6 -n 6 \
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 7 -n 6 \
   //      -s 1363425333 --language=sv
   //
   // Hamming distance histogram:
@@ -141,45 +144,47 @@ module keccak_round #(
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||||||||||||| (53.33%)
-  //  4: ||||||||||||||| (40.00%)
-  //  5: || (6.67%)
+  //  3: |||||||||||||||||||| (57.14%)
+  //  4: ||||||||||||||| (42.86%)
+  //  5: --
   //  6: --
   //
   // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 5
+  // Maximum Hamming distance: 4
   // Minimum Hamming weight: 1
   // Maximum Hamming weight: 5
   //
   localparam int StateWidth = 6;
   typedef enum logic [StateWidth-1:0] {
-      StIdle = 6'b100010,
+      StIdle = 6'b011111,
 
       // Active state is used in Unmasked version only.
       // It handles keccak round in a cycle
-      StActive = 6'b111101,
+      StActive = 6'b000100,
 
       // Phase1 --> Phase2 --> Phase3
       // Activated only in Masked version.
       // Phase1 processes Theta, Rho, Pi steps in a cycle and stores the states
       // into storage. It unconditionally moves to Phase2.
-      StPhase1 = 6'b011011,
+      StPhase1 = 6'b101101,
 
       // First half part of Chi step. It waits random value is ready
       // then move to Phase 3.
-      StPhase2 = 6'b000111,
+      StPhase2 = 6'b000011,
 
       // Second half of Chi step and Iota step.
       // This state doesn't require random value as it is XORed into the states
       // in Phase2. If round is reached to the end (MaxRound -1) then it
       // completes the process and goes back to Idle. If not, repeats the Phase
       // again.
-      StPhase3 = 6'b001000,
+      StPhase3 = 6'b011000,
 
       // Error state. Not clearly defined yet.
       // Intention is if any unexpected input in the process, state moves to
       // here and report through the error fifo with debugging information.
-      StError = 6'b010100
+      StError = 6'b110001,
+
+      StTerminalError = 6'b110110
   } keccak_st_e;
   keccak_st_e keccak_st, keccak_st_d;
 
@@ -302,12 +307,23 @@ module keccak_round #(
         keccak_st_d = StError;
       end
 
-      default: begin
+      StTerminalError: begin
         //this state is terminal
         keccak_st_d = keccak_st;
         sparse_fsm_error_o = 1'b 1;
       end
+
+      default: begin
+        keccak_st_d = StTerminalError;
+        sparse_fsm_error_o = 1'b 1;
+      end
     endcase
+
+    // Unconditionally jump into the terminal error state
+    // if the life cycle controller triggers an escalation.
+    if (lc_escalate_en_i != lc_ctrl_pkg::Off) begin
+      keccak_st_d = StTerminalError;
+    end
   end
 
   // Ready indicates the keccak_round is able to receive new message.

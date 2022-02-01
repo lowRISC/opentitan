@@ -101,7 +101,7 @@ package sha3_pkg;
   // and also in KMAC top module and the register interface for sw to track the
   // sha3 status.
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 6 -n 6 \
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 7 -n 6 \
   //      -s 4082450958 --language=sv
   //
   // Hamming distance histogram:
@@ -109,15 +109,15 @@ package sha3_pkg;
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||||||||||||| (53.33%)
-  //  4: ||||||||||||||| (40.00%)
-  //  5: || (6.67%)
+  //  3: |||||||||||||||||||| (57.14%)
+  //  4: ||||||||||||||| (42.86%)
+  //  5: --
   //  6: --
   //
   // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 5
-  // Minimum Hamming weight: 2
-  // Maximum Hamming weight: 5
+  // Maximum Hamming distance: 4
+  // Minimum Hamming weight: 1
+  // Maximum Hamming weight: 4
   //
   localparam int StateWidth = 6;
   typedef enum logic [StateWidth-1:0] {
@@ -128,7 +128,7 @@ package sha3_pkg;
     // not sha3core. The core module and this state machine observe the status
     // of the process and mainly waits until all the sponge absorbing is
     // completed. The main indicator is `absorbed` signal.
-    StAbsorb_sparse = 6'b100111,
+    StAbsorb_sparse = 6'b100001,
 
     // TODO: Implement StAbort later after context-switching discussion.
     // Abort stage can be moved from StAbsorb stage. It basically holds the
@@ -136,23 +136,25 @@ package sha3_pkg;
     // software. This stage is for the software to pause current operation and
     // store the internal state elsewhere then initiates new KMAC/SHA3 process.
     // StAbort only can be moved to _StFlush_.
-    //StAbort_sparse = 6'b110000,
+    //StAbort_sparse = 6'b011101,
 
     // Squeeze stage allows the software to read the internal state.
     // If `EnMasking`, it opens the read permission of two share of the state.
     // The squeezing in SHA3 specification describes the software to read up to
     // the rate of SHA3 algorithm but this logic opens up the entire 1600 bits
     // of the state (3200bits if `EnMasking`).
-    StSqueeze_sparse = 6'b001010,
+    StSqueeze_sparse = 6'b001011,
 
     // ManualRun stage initiaties the keccak round and waits the completion.
     // This state is moved from Squeeze state by writing 1 to manual_run CSR.
     // When keccak round is completed, it goes back to Squeeze state.
-    StManualRun_sparse = 6'b111011,
+    StManualRun_sparse = 6'b010000,
 
     // Flush stage, the core clears out the internal variables and also
     // submodules' variables too. Then moves back to Idle state.
-    StFlush_sparse =  6'b010101
+    StFlush_sparse =  6'b000110,
+
+    StTerminalError_sparse = 6'b111010
   } sha3_st_sparse_e;
 
   localparam int StateWidthLogic = 3;

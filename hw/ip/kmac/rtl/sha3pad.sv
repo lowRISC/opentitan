@@ -62,6 +62,9 @@ module sha3pad
   // `done_i`
   output logic absorbed_o,
 
+  // Life cycle
+  input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+
   // Indication that there was a fault in the sparse encoding
   output logic sparse_fsm_error_o,
 
@@ -75,7 +78,7 @@ module sha3pad
 
   // Padding States
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 9 -n 7 \
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 10 -n 7 \
   //      -s 1116691466 --language=sv
   //
   // Hamming distance histogram:
@@ -83,20 +86,20 @@ module sha3pad
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||||||||||||| (38.89%)
-  //  4: |||||||||||||||||||| (38.89%)
-  //  5: |||||||| (16.67%)
-  //  6: || (5.56%)
-  //  7: --
+  //  3: |||||||||||||||||||| (42.22%)
+  //  4: |||||||||||||||||| (40.00%)
+  //  5: ||||| (11.11%)
+  //  6: || (4.44%)
+  //  7: | (2.22%)
   //
   // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 6
-  // Minimum Hamming weight: 1
+  // Maximum Hamming distance: 7
+  // Minimum Hamming weight: 2
   // Maximum Hamming weight: 5
   //
   localparam int StateWidthPad = 7;
   typedef enum logic [StateWidthPad-1:0] {
-    StPadIdle = 7'b1011010,
+    StPadIdle = 7'b1000010,
 
     // Sending a block of prefix, if cSHAKE mode is turned on. For the rest
     // (SHA3, SHAKE), sending prefix is not needed. FSM moves from Idle to
@@ -104,8 +107,8 @@ module sha3pad
     //
     // As prim_slicer is instantiated, zerofill after the actual prefix is done
     // by the module.
-    StPrefix,
-    StPrefixWait,
+    StPrefix = 7'b0111100,
+    StPrefixWait =7'b1001100,
 
     // Sending Message. In this state, it directly forwards the incoming data
     // to Keccak round module. If `process_i` is asserted, then the rest of the
@@ -113,21 +116,23 @@ module sha3pad
     //
     // The incoming data can be partial write. Padding logic counts the number
     // of bytes received and pause if a block size is transferred.
-    StMessage,
-    StMessageWait,
+    StMessage = 7'b0100101,
+    StMessageWait = 7'b0001111,
 
     // After sending the messages, then `process_i` is set, the FSM pads at the
     // end of the message based on `mode_i`. If this is the last byte of the
     // block, then it pads [7] to 1 to complete `pad10*1()` function.
-    StPad,
-    StPadRun,
+    StPad = 7'b1111010,
+    StPadRun = 7'b0011001,
 
     // If the padding isn't the end of the block byte (which will be rare case),
     // FSM moves to another zerofill state. In contrast to StZerofill, this state
-    StPad01,
+    StPad01 = 7'b1101001,
 
     // Flushing the internal packers in front of the Keccak data output port.
-    StPadFlush = 7'b0010111
+    StPadFlush = 7'b1010111,
+
+    StTerminalError = 7'b0110011
   } pad_st_e;
 
   typedef enum logic [2:0] {
@@ -477,13 +482,24 @@ module sha3pad
         end
       end
 
-      default: begin
+      StTerminalError: begin
         // this state is terminal
         st_d = st;
         sparse_fsm_error_o = 1'b 1;
       end
 
+      default: begin
+        // this state is terminal
+        st_d = StTerminalError;
+        sparse_fsm_error_o = 1'b 1;
+      end
     endcase
+
+    // Unconditionally jump into the terminal error state
+    // if the life cycle controller triggers an escalation.
+    if (lc_escalate_en_i != lc_ctrl_pkg::Off) begin
+      st_d = StTerminalError;
+    end
   end
 
   //////////////
