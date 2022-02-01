@@ -84,12 +84,17 @@ module entropy_src_repcnt_ht #(
 
   end : gen_cntrs
 
-  entropy_src_comparator_tree #(
-    .Width(RegWidth),
-    .Depth(2)
-  ) u_comp (
-    .i(rep_cntr),
-    .o(cntr_max)
+  prim_max_tree #(
+    .NumSrc(RngBusWidth),
+    .Width(RegWidth)
+  ) u_prim_max_tree_rep_cntr_max (
+    .clk_i,
+    .rst_ni,
+    .values_i   (rep_cntr),
+    .valid_i    ({RngBusWidth{1'b1}}),
+    .max_value_o(cntr_max),
+    .max_idx_o  (),
+    .max_valid_o()
   );
 
   // the pulses will be only one clock in length
