@@ -8,6 +8,7 @@
 
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/stdasm.h"
@@ -70,29 +71,30 @@ static size_t clsindex(alert_class_t cls) {
 rom_error_t shutdown_init(lifecycle_state_t lc_state) {
   // Are we in a lifecycle state which needs alert configuration?
   uint32_t lc_shift;
-  switch (lc_state) {
+  switch (launder32(lc_state)) {
     case kLcStateTest:
+      HARDENED_CHECK_EQ(lc_state, kLcStateTest);
       // Don't configure alerts during manufacturing as OTP may not have been
       // programmed yet.
       return kErrorOk;
     case kLcStateProd:
+      HARDENED_CHECK_EQ(lc_state, kLcStateProd);
       lc_shift = 0;
       break;
     case kLcStateProdEnd:
+      HARDENED_CHECK_EQ(lc_state, kLcStateProdEnd);
       lc_shift = 8;
       break;
     case kLcStateDev:
+      HARDENED_CHECK_EQ(lc_state, kLcStateDev);
       lc_shift = 16;
       break;
     case kLcStateRma:
+      HARDENED_CHECK_EQ(lc_state, kLcStateRma);
       lc_shift = 24;
       break;
     default:
-      // Invalid lifecycle state.
-      shutdown_finalize(kErrorShutdownBadLcState);
-
-      // Reachable if using a mock implementation of `shutdown_finalize`.
-      return kErrorShutdownBadLcState;
+      HARDENED_UNREACHABLE();
   }
 
   // Get the enable and escalation settings for all four alert classes.

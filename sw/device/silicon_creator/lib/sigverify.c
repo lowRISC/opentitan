@@ -201,26 +201,29 @@ static rom_error_t sigverify_encoded_message_check(
  * value.
  *
  * @param lc_state Life cycle state of the device.
- * @param[out] use_sw Use software implementation for signature verification.
- * @return Result of the operation.
+ * @return Whether to use software implementation for signature verification.
  */
-static rom_error_t sigverify_use_sw_rsa_verify(lifecycle_state_t lc_state,
-                                               hardened_bool_t *use_sw) {
-  switch (lc_state) {
+static hardened_bool_t sigverify_use_sw_rsa_verify(lifecycle_state_t lc_state) {
+  switch (launder32(lc_state)) {
     case kLcStateTest:
+      HARDENED_CHECK_EQ(lc_state, kLcStateTest);
       // Don't read from OTP during manufacturing. Use software
       // implementation by default.
-      *use_sw = kHardenedBoolTrue;
-      return kErrorOk;
-    case kLcStateProd:
-    case kLcStateProdEnd:
+      return kHardenedBoolTrue;
     case kLcStateDev:
+      HARDENED_CHECK_EQ(lc_state, kLcStateDev);
+      return otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET);
+    case kLcStateProd:
+      HARDENED_CHECK_EQ(lc_state, kLcStateProd);
+      return otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET);
+    case kLcStateProdEnd:
+      HARDENED_CHECK_EQ(lc_state, kLcStateProdEnd);
+      return otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET);
     case kLcStateRma:
-      *use_sw =
-          otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET);
-      return kErrorOk;
+      HARDENED_CHECK_EQ(lc_state, kLcStateRma);
+      return otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET);
     default:
-      return kErrorSigverifyBadLcState;
+      HARDENED_UNREACHABLE();
   }
 }
 
@@ -230,9 +233,7 @@ rom_error_t sigverify_rsa_verify(const sigverify_rsa_buffer_t *signature,
                                  lifecycle_state_t lc_state,
                                  uint32_t *flash_exec) {
   *flash_exec = UINT32_MAX;
-  hardened_bool_t use_sw;
-  RETURN_IF_ERROR(sigverify_use_sw_rsa_verify(lc_state, &use_sw));
-
+  hardened_bool_t use_sw = sigverify_use_sw_rsa_verify(lc_state);
   sigverify_rsa_buffer_t enc_msg;
   switch (use_sw) {
     case kHardenedBoolTrue:
