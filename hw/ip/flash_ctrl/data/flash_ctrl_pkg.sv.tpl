@@ -587,6 +587,7 @@ package flash_ctrl_pkg;
     StRmaIdle        = 10'b1101000011,
     StRmaPageSel     = 10'b0010111001,
     StRmaErase       = 10'b1111010100,
+    StRmaEraseWait   = 10'b0111010101,
     StRmaWordSel     = 10'b0001011111,
     StRmaProgram     = 10'b0110001110,
     StRmaProgramWait = 10'b1000110110,
