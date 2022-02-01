@@ -67,12 +67,17 @@ module entropy_src_bucket_ht #(
     assign bin_cnt_exceeds_thresh[i] = (bin_cntr[i] > thresh_i);
   end : gen_symbol_match
 
-  entropy_src_comparator_tree #(
-    .Width(RegWidth),
-    .Depth(RngBusWidth)
-  ) u_comp (
-    .i(bin_cntr),
-    .o(bin_max)
+  prim_max_tree #(
+    .NumSrc(NUM_BINS),
+    .Width(RegWidth)
+  ) u_prim_max_tree_bin_cntr_max (
+    .clk_i,
+    .rst_ni,
+    .values_i   (bin_cntr),
+    .valid_i    ({RegWidth{1'b1}}),
+    .max_value_o(bin_max),
+    .max_idx_o  (),
+    .max_valid_o()
   );
 
   // the pulses will be only one clock in length
