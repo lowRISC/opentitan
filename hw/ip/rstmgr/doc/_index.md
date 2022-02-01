@@ -31,7 +31,7 @@ The topology can be summarized as follows:
 
 *   There are two reset domains
     *   Test Domain - Driven by `TRSTn`
-    *   Core Domain - Driven by internal [POR circuitry]() and an external pin reset connection.
+    *   Core Domain - Driven by internal [POR circuitry]({{< relref "hw/top_earlgrey/ip/ast/doc" >}}).
 *   Test domain is comprised of the following components
     *   SOC TAP and related DFT circuits
     *   RISC-V TAP (part of the `rv_dm` module)
@@ -104,18 +104,18 @@ The reset trees are cascaded upon one another in this order:
 `rst_por_n` -> `rst_lc_n` -> `rst_sys_n` -> `rst_module_n`
 This means when a particular reset asserts, all downstream resets also assert.
 
-The primary difference between `rst_lc_n` and `rst_sys_n` is that the former controls the reset state of all non-volatile related logic in the system, while the latter can be used to issue system resets for debug.
-This separation is required because the non-volatile controllers (OTP / Lifecycle) are used to qualify DFT and debug functions of the design.
+The primary difference between `rst_lc_n` and `rst_sys_n` is that the former controls the reset state of all non-volatile and life cycle related logic in the system, while the latter can be used to issue system resets for debug.
+This separation is required because the non-volatile controllers (`otp_ctrl` / `lc_ctrl`) are used to qualify DFT and debug functions of the design.
 If these modules are reset along with the rest of the system, the TAP and related debug functions would also be reset.
 By keeping these reset trees separate, we allow the state of the test domain functions to persist while functionally resetting the rest of the core domain.
 
-Additionally, modules such as alert handler and [aon timers]() (which contain the watchdog function) are also kept on the `rst_lc_n` tree.
+Additionally, modules such as [alert handler](({{< relref "hw/top_earlgrey/ip_autogen/alert_handler/doc" >}})) and [aon timer]({{< relref "hw/ip/aon_timer/doc" >}}) (which contains the watchdog function) are also kept on the `rst_lc_n` tree.
 This ensures that an erroneously requested system reset through `rst_sys_n` cannot silence the alert mechanism or prevent the system from triggering a watchdog mechanism.
 
 The reset topology also contains additional properties:
 *   Selective processor HART resets, such as `hartreset` in `dmcontrol`, are not implemented, as it causes a security policy inconsistency with the remaining system.
     *   Specifically, these selective resets can cause the cascaded property shown above to not be obeyed.
-*   Modules do not implement local resets that wipe configuration registers, especially if there are configuration enable locks.
+*   Modules do not implement local resets that wipe configuration registers, especially if there are configuration locks.
     *   Modules are allowed to implement local soft resets that clear datapaths; but these are examined on a case by case basis for possible security side channels.
 *   In a production system, the Test Reset Input (`TRSTn`) should be explicitly asserted through system integration.
     *   In a production system, `TRSTn` only needs to be released for RMA transitions and nothing else.
@@ -136,11 +136,12 @@ These requests primarily come from the following sources:
 *  Peripherals capable of reset requests: such as [sysrst_ctrl]({{< relref "hw/ip/sysrst_ctrl/doc/_index.md" >}}) and [always on timers ]({{< relref "hw/ip/aon_timer/doc/_index.md" >}}).
 *  Debug modules such as `rv_dm`.
 *  Power manager request for low power entry and exit.
+*  Direct software request for reset.
 
 ### Shadow Resets
 
-OpenTitan supports the concept of shadow registers.
-These are registers stored in two-or-more constantly checking copies to ensure the values were not maliciously or accidentally disturbed.
+OpenTitan supports the shadow configuration registers.
+These are registers stored in two constantly checking copies to ensure the values are not maliciously or accidentally disturbed.
 For these components, the reset manager outputs a shadow reset dedicated to resetting only the shadow storage.
 This reset separation ensures that a targetted attack on the reset line cannot easily defeat shadow registers.
 
@@ -263,12 +264,6 @@ In general, the following rules apply:
 *   If a module can alter the software's perception of time or general control flow (timer or interrupt aggregator), it cannot be software resettable.
 *   If a module contains sensor functions for security, it cannot be software resettable.
 *   If a module controls life cycle or related function, it cannot be software resettable.
-
-
-## Shadow Resets
-
-Leaf resets also can be design time configured to output [shadow resets](https://docs.google.com/document/d/1Oiv1ewvxhhk6c8aY2f2bV6tTZMI-zUlLeRZJMmXMBmo/edit?usp=sharing).
-The details of this function are TBD.
 
 ## Reset Information
 

@@ -110,7 +110,7 @@ module rstmgr_cnsty_chk
   // flops in order to prevent FSM state encoding optimizations.
   logic [StateWidth-1:0] state_raw_q;
   assign state_q = state_e'(state_raw_q);
-  //SEC_CM: FSM.SPARSE
+  //SEC_CM: LEAF.FSM.SPARSE
   prim_sparse_fsm_flop #(
     .StateEnumT(state_e),
     .Width(StateWidth),
