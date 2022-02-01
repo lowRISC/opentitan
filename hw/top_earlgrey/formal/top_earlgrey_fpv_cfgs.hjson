@@ -333,6 +333,14 @@
                rel_path: "hw/ip/kmac/sha3pad/{sub_flow}/{tool}"
                cov: true
              }
+             {
+               name: prim_max_tree_fpv
+               dut: prim_max_tree_tb
+               fusesoc_core: lowrisc:fpv:prim_max_tree_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_max_tree/{sub_flow}/{tool}"
+               cov: true
+             }
              // Below are IPs that already has a DV testbench,
              // FPV only verifies TLUL interface and build-in assertions,
              // so will not collect FPV coverage.
