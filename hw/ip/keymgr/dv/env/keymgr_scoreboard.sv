@@ -615,8 +615,6 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
                 end
               end
             endcase
-            // start will be clear after OP is done
-            void'(ral.start.en.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
           end // start
         end // addr_phase_write
       end

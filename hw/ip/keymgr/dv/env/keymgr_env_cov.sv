@@ -200,6 +200,7 @@ class keymgr_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_env_cfg));
     create_sw_input_cg_obj(cfg.ral.max_creator_key_ver_shadowed.get_name());
     create_sw_input_cg_obj(cfg.ral.max_owner_int_key_ver_shadowed.get_name());
     create_sw_input_cg_obj(cfg.ral.max_owner_key_ver_shadowed.get_name());
+    create_sw_input_cg_obj(cfg.ral.start.get_name());
   endfunction
 
   virtual function void create_sw_input_cg_obj(string name);
