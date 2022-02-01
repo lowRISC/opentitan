@@ -250,7 +250,7 @@ This means if the clock's actual value is between 23.8MHz and 24.2MHz, this devi
 Conversely, if the clock's natural operation has an error range wider than this resoltion, the min / max counts must be adjusted to account for this error.
 
 Additionally, clock manager uses a similar time-out mechanism to see if any of the root clocks have stopped toggling for an extended period of time.
-This is done by creating an artificial handshake between the two root clock domain and the always on clock domain that must complete within a certain amount of time based on known clock ratios.
+This is done by creating an artificial handshake between the root clock domain and the always on clock domain that must complete within a certain amount of time based on known clock ratios.
 Based on the nature of the handshake and the margin window, the minimal timeout detection window is approximately 2-4 always on clock cycles.
 If the root clock domain stops and resumes in significantly less time than this window, the time-out may not be detected.
 

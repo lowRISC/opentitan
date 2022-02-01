@@ -60,13 +60,16 @@
   input [4:0] idle_i,
 
   // life cycle state output
+  // SEC_CM: LC_CTRL.INTERSIG.MUBI
   input lc_tx_t lc_hw_debug_en_i,
 
   // clock bypass control with lc_ctrl
+  // SEC_CM: LC_CTRL_CLK_HANDSHAKE.INTERSIG.MUBI
   input lc_tx_t lc_clk_byp_req_i,
   output lc_tx_t lc_clk_byp_ack_o,
 
   // clock bypass control with ast
+  // SEC_CM: CLK_HANDSHAKE.INTERSIG.MUBI
   output mubi4_t io_clk_byp_req_o,
   input mubi4_t io_clk_byp_ack_i,
   output mubi4_t all_clk_byp_req_o,
@@ -164,6 +167,8 @@
   clkmgr_reg_pkg::clkmgr_reg2hw_t reg2hw;
   clkmgr_reg_pkg::clkmgr_hw2reg_t hw2reg;
 
+  // SEC_CM: MEAS.CONFIG.REGWEN
+  // SEC_CM: CLK_CTRL.CONFIG.REGWEN
   clkmgr_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -181,6 +186,7 @@
     .tl_o,
     .reg2hw,
     .hw2reg,
+    // SEC_CM: BUS.INTEGRITY
     .intg_err_o(hw2reg.fatal_err_code.de),
     .devmode_i(1'b1)
   );
@@ -470,6 +476,7 @@
 
   ////////////////////////////////////////////////////
   // Clock Measurement for the roots
+  // SEC_CM: TIMEOUT.CLK.BKGN_CHK, MEAS.CLK.BKGN_CHK
   ////////////////////////////////////////////////////
 
   logic io_fast_err;
@@ -1283,6 +1290,7 @@
   assign hw2reg.clk_hints_status.clk_io_div4_otbn_val.de = 1'b1;
   assign hw2reg.clk_hints_status.clk_io_div4_otbn_val.d = clk_io_div4_otbn_en;
 
+  // SEC_CM: JITTER.CONFIG.MUBI
   assign jitter_en_o = mubi4_test_true_loose(mubi4_t'(reg2hw.jitter_enable.q));
 
   ////////////////////////////////////////////////////
