@@ -55,6 +55,7 @@ module pwrmgr
 
   // processor interface
   input  pwr_cpu_t pwr_cpu_i,
+  // SEC_CM: LC_CTRL.INTERSIG.MUBI
   output lc_ctrl_pkg::lc_tx_t fetch_en_o,
   input lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
@@ -68,9 +69,11 @@ module pwrmgr
   output logic low_power_o,
 
   // rom_ctrl interface
+  // SEC_CM: ROM_CTRL.INTERSIG.MUBI
   input rom_ctrl_pkg::pwrmgr_data_t rom_ctrl_i,
 
   // software issued reset request
+  // SEC_CM: RSTMGR.INTERSIG.MUBI
   input prim_mubi_pkg::mubi4_t sw_rst_req_i,
 
   // escalation interface
@@ -116,6 +119,7 @@ module pwrmgr
 
   localparam int EscTimeOutCnt = 128;
   logic esc_timeout;
+  // SEC_CM: ESC_RX.CLK.BKGN_CHK, ESC_RX.CLK.LOCAL_ESC
   prim_clock_timeout #(
     .TimeOutCnt(EscTimeOutCnt)
   ) u_esc_timeout (
@@ -139,20 +143,18 @@ module pwrmgr
   assign peri_reqs_raw.wakeups = wakeups_i;
   assign peri_reqs_raw.rstreqs[NumRstReqs-1:0] = rstreqs_i;
   assign peri_reqs_raw.rstreqs[ResetMainPwrIdx] = slow_rst_req;
+  // SEC_CM: ESC_RX.CLK.LOCAL_ESC, FSM.GLOBAL_ESC
   assign peri_reqs_raw.rstreqs[ResetEscIdx] = esc_rst_req | esc_timeout;
 
   ////////////////////////////
   ///  Software reset request
   ////////////////////////////
   logic sw_rst_req;
-  prim_flop #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_sw_req_flop (
-    .clk_i,
-    .rst_ni,
-    .d_i(prim_mubi_pkg::mubi4_test_true_strict(sw_rst_req_i)),
-    .q_o(sw_rst_req)
+  prim_buf #(
+    .Width(1)
+  ) u_sw_req_buf (
+    .in_i(prim_mubi_pkg::mubi4_test_true_strict(sw_rst_req_i)),
+    .out_o(sw_rst_req)
   );
 
   assign peri_reqs_raw.rstreqs[ResetSwReqIdx] = sw_rst_req;
@@ -227,6 +229,8 @@ module pwrmgr
   logic clr_cfg_lock;
   logic reg_intg_err;
 
+  // SEC_CM: BUS.INTEGRITY
+  // SEC_CM: CTRL.CONFIG.REGWEN, WAKEUP.CONFIG.REGWEN, RESET.CONFIG.REGWEN
   pwrmgr_reg_top u_reg (
     .clk_i,
     .rst_ni,

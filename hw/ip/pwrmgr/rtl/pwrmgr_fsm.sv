@@ -438,6 +438,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
       end
 
       // Terminal state, kill everything
+      // SEC_CM: FSM.LOCAL_ESC
       default: begin
         rst_lc_req_d = {PowerDomains{1'b1}};
         rst_sys_req_d = {PowerDomains{1'b1}};
