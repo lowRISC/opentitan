@@ -146,8 +146,8 @@ module otp_ctrl_lfsr_timer
   // SEC_CM: TIMER_INTEG.CTR.REDUN
   prim_count #(
     .Width(LfsrWidth),
-    .OutSelDnCnt(1), // count down
-    .CntStyle(prim_count_pkg::CrossCnt)
+    .OutSelDnCnt(0),
+    .CntStyle(prim_count_pkg::DupCnt)
   ) u_prim_count_integ (
     .clk_i,
     .rst_ni,
@@ -155,7 +155,7 @@ module otp_ctrl_lfsr_timer
     .set_i(integ_cnt_set),
     .set_cnt_i(integ_cnt_set_val),
     .en_i(!integ_cnt_zero),
-    .step_i(LfsrWidth'(1)),
+    .step_i({LfsrWidth{1'b1}}), // 2's complement for -1 so that this counts down.
     .cnt_o(integ_cnt),
     .err_o(integ_cnt_err)
   );
@@ -163,8 +163,8 @@ module otp_ctrl_lfsr_timer
   // SEC_CM: TIMER_CNSTY.CTR.REDUN
   prim_count #(
     .Width(LfsrWidth),
-    .OutSelDnCnt(1), // count down
-    .CntStyle(prim_count_pkg::CrossCnt)
+    .OutSelDnCnt(0),
+    .CntStyle(prim_count_pkg::DupCnt)
   ) u_prim_count_cnsty (
     .clk_i,
     .rst_ni,
@@ -172,7 +172,7 @@ module otp_ctrl_lfsr_timer
     .set_i(cnsty_cnt_set),
     .set_cnt_i(cnsty_cnt_set_val),
     .en_i(!cnsty_cnt_zero && !cnsty_cnt_pause),
-    .step_i(LfsrWidth'(1)),
+    .step_i({LfsrWidth{1'b1}}), // 2's complement for -1 so that this counts down.
     .cnt_o(cnsty_cnt),
     .err_o(cnsty_cnt_err)
   );
