@@ -218,12 +218,13 @@ class keymgr_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("Advance key manager state from %0s", current_state.name), UVM_MEDIUM)
     ral.control_shadowed.operation.set(keymgr_pkg::OpAdvance);
     csr_update(.csr(ral.control_shadowed));
-    ral.start.en.set(1'b1);
-    csr_update(.csr(ral.start));
+    csr_wr(.ptr(ral.start), .value(1));
 
     if (wait_done) begin
       wait_op_done();
       if (get_check_en()) `DV_CHECK_EQ(current_state, exp_next_state)
+      // randomly program to 0, which should not affect anything
+      if ($urandom_range(0, 1)) csr_wr(.ptr(ral.start), .value(0));
     end
   endtask : keymgr_advance
 
@@ -237,9 +238,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
     `DV_CHECK_RANDOMIZE_FATAL(ral.control_shadowed.cdi_sel)
     ral.control_shadowed.dest_sel.set(int'(key_dest));
     csr_update(.csr(ral.control_shadowed));
-    ral.start.en.set(1'b1);
-    csr_update(.csr(ral.start));
-    ral.start.en.set(1'b0);
+    csr_wr(.ptr(ral.start), .value(1));
 
     if (wait_done) wait_op_done();
   endtask : keymgr_generate

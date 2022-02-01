@@ -60,7 +60,10 @@ class keymgr_common_vseq extends keymgr_base_vseq;
 
     // Don't do additional operation in shadow_reg_errors_with_csr_rw, as the csr_rw_seq runs in
     // parallel and issueing an operation affects CSR access.
-    if (`gmv(ral.fault_status.shadow) && common_seq_type != "shadow_reg_errors_with_csr_rw") begin
+    // If control_shadowed has a storage error, this reg is locked. We can't update its value to do
+    // an advance operation.
+    if (`gmv(ral.fault_status.shadow) && common_seq_type != "shadow_reg_errors_with_csr_rw" &&
+      !ral.control_shadowed.get_shadow_storage_err()) begin
       check_state_after_non_operation_fault();
     end
   endtask
