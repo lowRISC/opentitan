@@ -25,12 +25,9 @@ endtask : post_run_sec_cm_fi_vseq
 // - Verify any operations that follow fail (as applicable).
 // refer to ip/keymgr/dv/env/seq_lib/keymgr_common_vseq.sv as an example
 virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
-  // TODO, it's better to unify these to one alert
-  string sec_cm_alert_name = cfg.tl_intg_alert_name;
-
-  `DV_CHECK_FATAL(sec_cm_alert_name inside {cfg.list_of_alerts},
+  `DV_CHECK_FATAL(cfg.sec_cm_alert_name inside {cfg.list_of_alerts},
                   $sformatf("sec_cm_alert_name (%s) is not inside %p",
-                            sec_cm_alert_name, cfg.list_of_alerts))
+                            cfg.sec_cm_alert_name, cfg.list_of_alerts))
 
   `uvm_info(`gfn, $sformatf("expected fatal alert is triggered for %s", if_proxy.sec_cm_type.name),
             UVM_LOW)
@@ -38,7 +35,7 @@ virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
   // This is a fatal alert and design keeps sending it until reset is issued.
   // Check alerts are triggered for a few times
   repeat (5) begin
-    wait_alert_trigger(sec_cm_alert_name, .wait_complete(1));
+    wait_alert_trigger(cfg.sec_cm_alert_name, .wait_complete(1));
   end
 endtask : check_sec_cm_fi_resp
 

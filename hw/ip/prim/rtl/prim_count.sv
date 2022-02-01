@@ -180,24 +180,28 @@ module prim_count import prim_count_pkg::*; #(
   // Clear and set should not be seen at the same time
   `ASSUME(SimulClrSet_A, clr_i || set_i |-> clr_i != set_i)
 
-  `ASSERT(OutClr_A, clr_i |=> OutSelDnCnt ? &cnt_o : cnt_o == 0)
+  // when the counter is forced by TB, it can be any value, but we should see err_o is set.
+  `ASSERT(OutClr_A, clr_i |=> (OutSelDnCnt ? &cnt_o : cnt_o == 0) || err_o)
 
   // When `en_i` is set without `clr_i` and `set_i`, and counter does not reach max/min value,
-  // we expect `cnt_o` to increment or decrement base on `step_i`.
+  // we expect `cnt_o` to increment or decrement base on `step_i`, or error occurs
   `ASSERT(OutStep_A,
           !(clr_i ||set_i) throughout en_i ##[1:$] en_i && max_val > cnt_o && cnt_o > 0 |->
-          (CntStyle == DupCnt || !OutSelDnCnt) ? cnt_o - past_cnt_o == past_step_i :
-           past_cnt_o - cnt_o == past_step_i)
+          ((CntStyle == DupCnt || !OutSelDnCnt) ? cnt_o - past_cnt_o == past_step_i :
+           past_cnt_o - cnt_o == past_step_i) || err_o)
 
   // When `set_i` is set, at next clock cycle:
   // 1). For duplicate counter, sets the `cnt_o` to `set_cnt_i`.
   // 2). For cross up counter, sets the `max_value` to `set_cnt_i`.
   // 3). For cross down counter, sets the `cnt_o` and `max_value` to `set_cnt_i`.
+  // 4). error occurs due to a fault injection
   `ASSERT(OutSet_A, ##1 set_i |=>
-          (CntStyle == DupCnt || OutSelDnCnt) ? cnt_o == $past(set_cnt_i) : cnt_o == 0)
+          ((CntStyle == DupCnt || OutSelDnCnt) ? cnt_o == $past(set_cnt_i) : cnt_o == 0) || err_o)
 
-  // If the up counter reaches its max value, the value won't increment or change.
-  `ASSERT(MaxUpCntStable_A, up_cnt_q[0] == max_val && !clr_i && !set_i |=> $stable(up_cnt_q[0]))
+  // If the up counter reaches its max value, the value won't increment or change, unless there is
+  // a fault injection
+  `ASSERT(MaxUpCntStable_A, up_cnt_q[0] == max_val && !clr_i && !set_i |=>
+          $stable(up_cnt_q[0]) || err_o)
 
   // This logic that will be assign to one, when user adds macro
   // ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT to check the error with alert, in case that prim_count

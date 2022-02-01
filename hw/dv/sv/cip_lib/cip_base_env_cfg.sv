@@ -13,6 +13,7 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
 
   // Override this alert name at `initialize` if it's not as below
   string              tl_intg_alert_name = "fatal_fault";
+  string              sec_cm_alert_name  = "fatal_fault";
 
   // If there is a bit in an "alert cause" register that will be set by a corrupt bus access, this
   // should be the name of that field (with syntax "reg.field"). Used by cip_base_scoreboard to

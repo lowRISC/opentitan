@@ -2,21 +2,15 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:sec_cm"
-description: "Common interfaces used in DV"
+name: "lowrisc:dv:sec_cm_prim_count_bind"
+description: "Common bind file for testing prim_count countermeasures"
 
 filesets:
   files_dv:
     depend:
-      - lowrisc:prim:alert
       - lowrisc:prim:count
-      - lowrisc:prim:sparse_fsm
-      - lowrisc:dv:dv_utils
     files:
-      - sec_cm_pkg.sv
-      - sec_cm_base_if_proxy.sv: {is_include_file: true}
-      - prim_count_if.sv
-      - prim_sparse_fsm_flop_if.sv
+      - sec_cm_prim_count_bind.sv
     file_type: systemVerilogSource
 
 targets:
