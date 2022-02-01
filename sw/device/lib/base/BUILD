@@ -41,6 +41,13 @@ cc_library(
     ],
 )
 
+# mock_abs_mmio is currently under sw/silicon_creator/lib/base and we need this
+# header to be able to build unit tests.
+filegroup(
+    name = "abs_mmio_h",
+    srcs = ["abs_mmio.h"],
+)
+
 cc_library(
     name = "mmio",
     srcs = [
