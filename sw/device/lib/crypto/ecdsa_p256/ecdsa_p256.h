@@ -40,8 +40,8 @@ enum {
  * The signature consists of two integers r and s, computed modulo n.
  */
 typedef struct ecdsa_p256_signature_t {
-  uint32_t R[kP256ScalarNumWords];
-  uint32_t S[kP256ScalarNumWords];
+  uint32_t r[kP256ScalarNumWords];
+  uint32_t s[kP256ScalarNumWords];
 } ecdsa_p256_signature_t;
 
 /**

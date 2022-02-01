@@ -19,17 +19,17 @@ ecdsa_p256_message_digest_t digest;
 
 static const ecdsa_p256_public_key_t kPublicKey = {
     // Public key x-coordinate (Q.x)
-    .x = {0x4eb28b55, 0xeb886224, 0xf2bf1b9e, 0xd84a09a7, 0x866792cd,
-          0xca075d07, 0x82e72dac, 0x3114791f},
+    .x = {0x558bb24e, 0x246288eb, 0x9e1bbff2, 0xa7094ad8, 0xcd926786,
+          0x075d07ca, 0xac2de782, 0x1f791431},
     // Public key y-coordinate (Q.y)
-    .y = {0x279ce423, 0x2410a2fa, 0xbd5373f1, 0xa508f040, 0x9ec05521,
-          0xa4f05459, 0x003e5f15, 0x3cc64b87},
+    .y = {0x23e49c27, 0xfaa21024, 0xf17353bd, 0x40f008a5, 0x2155c09e,
+          0x5954f0a4, 0x155f3e00, 0x874bc63c},
 };
 
 // Private key (d)
 static const ecdsa_p256_private_key_t kPrivateKey = {
-    .d = {0xcdb457af, 0x1c9f4c74, 0x020c7e8b, 0xe9933e28, 0x0cf0180d,
-          0xf46c0bda, 0x7abbe68f, 0xb7a04555},
+    .d = {0xaf57b4cd, 0x744c9f1c, 0x8b7e0c02, 0x283e93e9, 0x0d18f00c,
+          0xda0b6cf4, 0x8fe6bb7a, 0x5545a0b7},
 };
 
 hmac_error_t compute_digest(void) {
@@ -61,6 +61,10 @@ bool sign_then_verify_test(void) {
   LOG_INFO("Signing...");
   otbn_error_t err = ecdsa_p256_sign(&digest, &kPrivateKey, &signature);
   if (err != kOtbnErrorOk) {
+    LOG_ERROR("Error from OTBN while signing: 0x%08x.", err);
+    otbn_err_bits_t err_bits;
+    otbn_get_err_bits(&err_bits);
+    LOG_INFO("OTBN error bits: 0x%08x", err_bits);
     return false;
   }
 
@@ -69,6 +73,10 @@ bool sign_then_verify_test(void) {
   err =
       ecdsa_p256_verify(&signature, &digest, &kPublicKey, &verificationResult);
   if (err != kOtbnErrorOk) {
+    LOG_ERROR("Error from OTBN while verifying signature: 0x%08x.", err);
+    otbn_err_bits_t err_bits;
+    otbn_get_err_bits(&err_bits);
+    LOG_INFO("OTBN error bits: 0x%08x", err_bits);
     return false;
   }
 
