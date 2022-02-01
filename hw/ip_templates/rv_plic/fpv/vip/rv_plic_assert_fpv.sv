@@ -23,7 +23,7 @@ module rv_plic_assert_fpv #(parameter int NumSrc = 1,
   input [NumSrc-1:0] ie [NumTarget],
   input [NumSrc-1:0] claim,
   input [NumSrc-1:0] complete,
-  input [PRIOW-1:0]  prio [NumSrc],
+  input [NumSrc-1:0][PRIOW-1:0] prio,
   input [PRIOW-1:0]  threshold [NumTarget]
 );
 
