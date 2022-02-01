@@ -938,10 +938,10 @@
       desc: "The srambling datapath counter employs a cross-counter implementation."
     }
     { name: "TIMER_INTEG.CTR.REDUN",
-      desc: "The background integrity check timer employs a cross-counter implementation."
+      desc: "The background integrity check timer employs a duplicated counter implementation."
     }
     { name: "TIMER_CNSTY.CTR.REDUN",
-      desc: "The background consistency check timer employs a cross-counter implementation."
+      desc: "The background consistency check timer employs a duplicated counter implementation."
     }
     { name: "TIMER.LFSR.REDUN",
       desc: "The background check LFSR is duplicated."
