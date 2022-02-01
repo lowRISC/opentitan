@@ -157,7 +157,7 @@ def gen_dv(block: IpBlock, dv_base_names: List[str], outdir: str) -> int:
     block_dv_base_names = get_block_base_name(dv_base_names_map, lblock)
 
     for if_name, rb in block.reg_blocks.items():
-        hier_path = '.u_reg' if block.hier_path is None else block.hier_path
+        hier_path = 'u_reg' if block.hier_path is None else block.hier_path
         if_suffix = '' if if_name is None else '_' + if_name.lower()
         mod_base = lblock + if_suffix
         reg_block_path = hier_path + if_suffix
