@@ -219,15 +219,16 @@ TEST_F(SigverifyInTestStates, BadSignatureIbex) {
   }
 }
 
-class SigverifyInInvalidStates : public SigverifyInLcState {};
+class SigverifyBadLcStateDeathTest : public SigverifyInLcState {};
 
-TEST_F(SigverifyInInvalidStates, BadLcState) {
-  uint32_t flash_exec = 0;
-  EXPECT_EQ(
-      sigverify_rsa_verify(&kSignature, &key_, &kTestDigest,
-                           static_cast<lifecycle_state_t>(0), &flash_exec),
-      kErrorSigverifyBadLcState);
-  EXPECT_EQ(flash_exec, std::numeric_limits<uint32_t>::max());
+TEST_F(SigverifyBadLcStateDeathTest, BadLcState) {
+  ASSERT_DEATH(
+      {
+        uint32_t flash_exec = 0;
+        sigverify_rsa_verify(&kSignature, &key_, &kTestDigest,
+                             static_cast<lifecycle_state_t>(0), &flash_exec);
+      },
+      "");
 }
 
 struct UsageConstraintsTestCase {

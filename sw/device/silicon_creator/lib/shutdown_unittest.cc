@@ -557,14 +557,15 @@ TEST_F(ShutdownTest, InitializeManufacturing) {
   EXPECT_EQ(shutdown_init(kLcStateTest), kErrorOk);
 }
 
-TEST_F(ShutdownTest, InitializeInvalid) {
-  SetupOtpReads();
-  ExpectFinalize(kErrorShutdownBadLcState);
+class ShutdownDeathTest : public ShutdownTest {};
 
-  // Note: the unmocked implementation of `shutdown_finalize` will never
-  // return and therefore `shutdown_init` will not return.
-  EXPECT_EQ(shutdown_init(static_cast<lifecycle_state_t>(0)),
-            kErrorShutdownBadLcState);
+TEST_F(ShutdownDeathTest, InitializeInvalid) {
+  ASSERT_DEATH(
+      {
+        SetupOtpReads();
+        shutdown_init(static_cast<lifecycle_state_t>(0));
+      },
+      "");
 }
 
 TEST(ShutdownModule, RedactErrors) {

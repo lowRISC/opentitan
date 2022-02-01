@@ -39,6 +39,7 @@ sw_silicon_creator_lib_boot_data = declare_dependency(
       'boot_data.c',
     ],
     dependencies: [
+      sw_lib_hardened,
       sw_silicon_creator_lib_driver_flash_ctrl,
       sw_silicon_creator_lib_driver_hmac,
     ],
@@ -87,6 +88,7 @@ sw_silicon_creator_lib_sigverify = declare_dependency(
       sw_silicon_creator_lib_driver_otp,
       sw_silicon_creator_lib_driver_lifecycle,
       sw_lib_bitfield,
+      sw_lib_hardened,
       sw_silicon_creator_lib_otbn_util,
       sw_otbn['run_rsa_verify_3072_rr_modexp']['rv32embed_dependency'],
     ],
@@ -108,6 +110,7 @@ sw_silicon_creator_lib_shutdown = declare_dependency(
     ],
     dependencies: [
       sw_lib_abs_mmio,
+      sw_lib_hardened,
       sw_silicon_creator_lib_driver_alert,
     ],
   ),
@@ -177,6 +180,7 @@ test('sw_silicon_creator_lib_shutdown_unittest', executable(
     dependencies: [
       sw_vendor_gtest,
       sw_silicon_creator_lib_base_mock_abs_mmio,
+      sw_lib_testing_hardened,
     ],
     native: true,
     c_args: ['-DMOCK_ABS_MMIO', '-DOT_OFF_TARGET_TEST'],

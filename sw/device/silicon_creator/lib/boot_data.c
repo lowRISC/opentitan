@@ -439,14 +439,27 @@ boot_data_t kBootDataDefault = (boot_data_t){
 static rom_error_t boot_data_default_get(lifecycle_state_t lc_state,
                                          boot_data_t *boot_data) {
   // TODO(#8778): Default boot data.
-  switch (lc_state) {
+  switch (launder32(lc_state)) {
     case kLcStateTest:
+      HARDENED_CHECK_EQ(lc_state, kLcStateTest);
+      *boot_data = kBootDataDefault;
+      return kErrorOk;
     case kLcStateDev:
+      HARDENED_CHECK_EQ(lc_state, kLcStateDev);
+      *boot_data = kBootDataDefault;
+      return kErrorOk;
+    case kLcStateProd:
+      HARDENED_CHECK_EQ(lc_state, kLcStateProd);
+      return kErrorBootDataNotFound;
+    case kLcStateProdEnd:
+      HARDENED_CHECK_EQ(lc_state, kLcStateProdEnd);
+      return kErrorBootDataNotFound;
     case kLcStateRma:
+      HARDENED_CHECK_EQ(lc_state, kLcStateRma);
       *boot_data = kBootDataDefault;
       return kErrorOk;
     default:
-      return kErrorBootDataNotFound;
+      HARDENED_UNREACHABLE();
   }
 }
 
