@@ -140,5 +140,9 @@ For a list of available tests  to run, please see the 'Tests' column in the [tes
 
 ### Nightly
 
-## Testplan
+## Testplan (RTL simulations)
 {{< incGenFromIpDesc "../../data/chip_testplan.hjson" "testplan" >}}
+
+## Testplan (Gate level simulations)
+Note that the descriptions of the test below may be replicated from the table above.
+{{< incGenFromIpDesc "../../data/chip_testplan.hjson:gls" "testplan" >}}

@@ -15,10 +15,10 @@ import logging
 import os
 import platform
 import re
+import socket
 import subprocess
 import sys
 import textwrap
-import socket
 from pathlib import Path
 
 import check_tool_requirements
@@ -135,6 +135,7 @@ config = {
         "hw/ip/usbdev/data/usbdev_testplan.hjson",
         "hw/ip/sysrst_ctrl/data/sysrst_ctrl_testplan.hjson",
         "hw/top_earlgrey/data/chip_testplan.hjson",
+        "hw/top_earlgrey/data/chip_testplan.hjson:gls",
         "hw/top_earlgrey/data/standalone_sw_testplan.hjson",
         "util/dvsim/examples/testplanner/foo_testplan.hjson",
     ],
@@ -191,9 +192,14 @@ def generate_hardware_blocks():
 
 def generate_testplans():
     for testplan in config["testplan_definitions"]:
+        # Split the filename into filename and tags, if provided.
+        split = testplan.split(":")
+        filename = split[0]
+        tags = "_".join(split[1:])
         plan = Testplan.Testplan(SRCTREE_TOP.joinpath(testplan),
                                  repo_top=SRCTREE_TOP)
-        plan_path = config["outdir-generated"].joinpath(testplan + '.testplan')
+        plan_filename = f"{filename}.{tags}_testplan"
+        plan_path = config["outdir-generated"].joinpath(plan_filename)
         plan_path.parent.mkdir(parents=True, exist_ok=True)
 
         testplan_html = open(str(plan_path), mode='w')
