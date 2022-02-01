@@ -69,6 +69,7 @@ cc_library(
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:otp",
@@ -92,6 +93,7 @@ cc_test(
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing",
         "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:mock_abs_mmio",
         "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:mock_otp",
         "@googletest//:gtest_main",
@@ -154,6 +156,7 @@ cc_library(
         "//hw/ip/keymgr/data:keymgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base/freestanding",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:keymgr_binding",
@@ -315,6 +318,7 @@ cc_library(
         "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
+        "//sw/device/lib/base:abs_mmio",
     ],
 )
 
@@ -377,6 +381,7 @@ cc_library(
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
+        "//sw/device/lib/base:abs_mmio",
     ]
 )
 
@@ -495,8 +500,8 @@ opentitan_functest(
         ":rstmgr",
         ":watchdog",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:test_main",
-        "//sw/device/silicon_creator/lib/base:abs_mmio",
     ],
 )

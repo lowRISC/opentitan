@@ -33,7 +33,7 @@ cc_library(
     name = "mock_abs_mmio",
     testonly = True,
     hdrs = [
-        "abs_mmio.h",
+        "//sw/device/lib/base:abs_mmio_h",
         "mock_abs_mmio.h",
     ],
     defines = ["MOCK_ABS_MMIO"],
