@@ -377,6 +377,10 @@ module rv_core_ibex
     .addr_o(instr_addr_trans)
   );
 
+  logic [6:0]  instr_wdata_intg;
+  logic [top_pkg::TL_DW-1:0] unused_data;
+  // tl_adapter_host_i_ibex only reads instruction. a_data is always 0
+  assign {instr_wdata_intg, unused_data} = prim_secded_pkg::prim_secded_inv_39_32_enc('0);
   tlul_adapter_host #(
     .MAX_REQS(NumOutstandingReqs),
     // if secure ibex is not set, data integrity is not generated
@@ -391,7 +395,7 @@ module rv_core_ibex
     .addr_i       (instr_addr_trans),
     .we_i         (1'b0),
     .wdata_i      (32'b0),
-    .wdata_intg_i ('0),
+    .wdata_intg_i (instr_wdata_intg),
     .be_i         (4'hF),
     .valid_o      (instr_rvalid),
     .rdata_o      (instr_rdata),

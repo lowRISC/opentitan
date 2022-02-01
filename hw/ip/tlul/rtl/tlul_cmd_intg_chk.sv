@@ -39,8 +39,7 @@ module tlul_cmd_intg_chk import tlul_pkg::*; (
   assign wr_txn = tl_i.a_valid &
                   (tl_i.a_opcode == PutFullData | tl_i.a_opcode == PutPartialData);
 
-  assign err_o = tl_i.a_valid & |err |
-                 wr_txn & |data_err;
+  assign err_o = tl_i.a_valid & (|err | (|data_err));
 
 
   logic unused_tl;
