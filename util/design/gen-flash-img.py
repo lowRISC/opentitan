@@ -15,7 +15,7 @@ from pathlib import Path
 import secded_gen
 
 
-def _add_plain_ecc(in_val: int) -> str:
+def _add_intg_ecc(in_val: int) -> str:
     result, m = secded_gen.ecc_encode("hamming", 64, in_val)
 
     m_nibbles = math.ceil(m / 4)
@@ -23,6 +23,16 @@ def _add_plain_ecc(in_val: int) -> str:
 
     # due to lack of storage space, the first nibble of the ECC is truncated
     return result[1:]
+
+
+def _add_reliability_ecc(in_val: int) -> str:
+    result, m = secded_gen.ecc_encode("hamming", 68, in_val)
+
+    m_nibbles = math.ceil((68 + m) / 4)
+    result = format(result, '0' + str(m_nibbles) + 'x')
+
+    # return full result
+    return result
 
 
 def main():
@@ -48,7 +58,9 @@ def main():
             if re.match(r"^@", item):
                 result += item
             else:
-                result += f' {_add_plain_ecc(int(item, 16))}'
+                data_w_intg_ecc = _add_intg_ecc(int(item, 16))
+                full_ecc = _add_reliability_ecc(int(data_w_intg_ecc, 16))
+                result += f' {full_ecc}'
 
         # add processed element to output
         output.append(result)
