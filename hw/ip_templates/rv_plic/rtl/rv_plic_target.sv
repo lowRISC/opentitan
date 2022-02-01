@@ -28,78 +28,35 @@ module rv_plic_target #(
   input [N_SOURCE-1:0]  ip_i,
   input [N_SOURCE-1:0]  ie_i,
 
-  input [PrioWidth-1:0] prio_i [N_SOURCE],
-  input [PrioWidth-1:0] threshold_i,
+  input [N_SOURCE-1:0][PrioWidth-1:0] prio_i,
+  input               [PrioWidth-1:0] threshold_i,
 
-  output logic            irq_o,
+  output logic                irq_o,
   output logic [SrcWidth-1:0] irq_id_o
 );
 
-  // this only works with 2 or more sources
-  `ASSERT_INIT(NumSources_A, N_SOURCE >= 2)
-
-  // align to powers of 2 for simplicity
-  // a full binary tree with N levels has 2**N + 2**N-1 nodes
-  localparam int NumLevels = $clog2(N_SOURCE);
-  logic [2**(NumLevels+1)-2:0]            is_tree;
-  logic [2**(NumLevels+1)-2:0][SrcWidth-1:0]  id_tree;
-  logic [2**(NumLevels+1)-2:0][PrioWidth-1:0] max_tree;
-
-  for (genvar level = 0; level < NumLevels+1; level++) begin : gen_tree
-    //
-    // level+1   C0   C1   <- "Base1" points to the first node on "level+1",
-    //            \  /         these nodes are the children of the nodes one level below
-    // level       Pa      <- "Base0", points to the first node on "level",
-    //                         these nodes are the parents of the nodes one level above
-    //
-    // hence we have the following indices for the paPa, C0, C1 nodes:
-    // Pa = 2**level     - 1 + offset       = Base0 + offset
-    // C0 = 2**(level+1) - 1 + 2*offset     = Base1 + 2*offset
-    // C1 = 2**(level+1) - 1 + 2*offset + 1 = Base1 + 2*offset + 1
-    //
-    localparam int Base0 = (2**level)-1;
-    localparam int Base1 = (2**(level+1))-1;
-
-    for (genvar offset = 0; offset < 2**level; offset++) begin : gen_level
-      localparam int Pa = Base0 + offset;
-      localparam int C0 = Base1 + 2*offset;
-      localparam int C1 = Base1 + 2*offset + 1;
-
-      // this assigns the gated interrupt source signals, their
-      // corresponding IDs and priorities to the tree leafs
-      if (level == NumLevels) begin : gen_leafs
-        if (offset < N_SOURCE) begin : gen_assign
-          assign is_tree[Pa]  = ip_i[offset] & ie_i[offset];
-          assign id_tree[Pa]  = offset;
-          assign max_tree[Pa] = prio_i[offset];
-        end else begin : gen_tie_off
-          assign is_tree[Pa]  = '0;
-          assign id_tree[Pa]  = '0;
-          assign max_tree[Pa] = '0;
-        end
-      // this creates the node assignments
-      end else begin : gen_nodes
-        logic sel; // local helper variable
-        // in case only one of the parent has a pending irq_o, forward that one
-        // in case both irqs are pending, forward the one with higher priority
-        assign sel = (~is_tree[C0] & is_tree[C1]) |
-                     (is_tree[C0] & is_tree[C1] & logic'(max_tree[C1] > max_tree[C0]));
-        // forwarding muxes
-        // Note: these ternaries have triggered a synthesis bug in Vivado versions older
-        // than 2020.2. If the problem resurfaces again, have a look at issue #1408.
-        assign is_tree[Pa]  = (sel) ? is_tree[C1]  : is_tree[C0];
-        assign id_tree[Pa]  = (sel) ? id_tree[C1]  : id_tree[C0];
-        assign max_tree[Pa] = (sel) ? max_tree[C1] : max_tree[C0];
-      end
-    end : gen_level
-  end : gen_tree
+  // Find maximum value and index using a binary tree implementation.
+  logic max_valid;
+  logic [PrioWidth-1:0] max_value;
+  logic [SrcWidth-1:0] max_idx;
+  prim_max_tree #(
+    .NumSrc(N_SOURCE),
+    .Width(PrioWidth)
+  ) u_prim_max_tree (
+    .clk_i,
+    .rst_ni,
+    .values_i(prio_i),
+    .valid_i(ip_i & ie_i),
+    .max_value_o(max_value),
+    .max_idx_o(max_idx),
+    .max_valid_o(max_valid)
+  );
 
   logic irq_d, irq_q;
   logic [SrcWidth-1:0] irq_id_d, irq_id_q;
 
-  // the results can be found at the tree root
-  assign irq_d    = (max_tree[0] > threshold_i) ? is_tree[0] : 1'b0;
-  assign irq_id_d = (is_tree[0]) ? id_tree[0] : '0;
+  assign irq_d    = (max_value > threshold_i) ? max_valid : 1'b0;
+  assign irq_id_d = (max_valid) ? max_idx : '0;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : gen_regs
     if (!rst_ni) begin

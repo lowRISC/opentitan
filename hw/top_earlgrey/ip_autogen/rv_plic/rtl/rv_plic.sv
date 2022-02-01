@@ -66,7 +66,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
 
   logic [SRCW-1:0]      cc_id [NumTarget]; // Write ID
 
-  logic [PRIOW-1:0] prio [NumSrc];
+  logic [NumSrc-1:0][PRIOW-1:0] prio;
 
   logic [PRIOW-1:0] threshold [NumTarget];
 
