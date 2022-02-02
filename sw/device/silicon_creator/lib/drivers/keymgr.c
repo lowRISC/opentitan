@@ -63,18 +63,20 @@ static rom_error_t expected_state_check(uint32_t expected_state) {
 }
 
 rom_error_t keymgr_init(uint16_t entropy_reseed_interval) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kKeymgrSecMmioInit, 1);
   RETURN_IF_ERROR(expected_state_check(kKeymgrStateReset));
   uint32_t reg = bitfield_field32_write(
       0, KEYMGR_RESEED_INTERVAL_SHADOWED_VAL_FIELD, entropy_reseed_interval);
   sec_mmio_write32_shadowed(kBase + KEYMGR_RESEED_INTERVAL_SHADOWED_REG_OFFSET,
                             reg);
-  sec_mmio_write_increment(/*value=*/1);
   return kErrorOk;
 }
 
 void keymgr_sw_binding_set(
     const keymgr_binding_value_t *binding_value_sealing,
     const keymgr_binding_value_t *binding_value_attestation) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet, 17);
+
   // Write and lock (rw0c) the software binding value. This register is unlocked
   // by hardware upon a successful state transition.
   for (size_t i = 0; i < ARRAYSIZE(binding_value_sealing->data); ++i) {
@@ -88,7 +90,6 @@ void keymgr_sw_binding_set(
         binding_value_attestation->data[i]);
   }
   sec_mmio_write32(kBase + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 0);
-  sec_mmio_write_increment(/*value=*/17);
 }
 
 void keymgr_sw_binding_unlock_wait(void) {
@@ -98,19 +99,19 @@ void keymgr_sw_binding_unlock_wait(void) {
 }
 
 void keymgr_creator_max_ver_set(uint32_t max_key_ver) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kKeymgrSecMmioCreatorMaxVerSet, 2);
   // Write and lock (rw0c) the max key version.
   sec_mmio_write32_shadowed(
       kBase + KEYMGR_MAX_CREATOR_KEY_VER_SHADOWED_REG_OFFSET, max_key_ver);
   sec_mmio_write32(kBase + KEYMGR_MAX_CREATOR_KEY_VER_REGWEN_REG_OFFSET, 0);
-  sec_mmio_write_increment(/*value=*/2);
 }
 
 void keymgr_owner_int_max_ver_set(uint32_t max_key_ver) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kKeymgrSecMmioOwnerIntMaxVerSet, 2);
   // Write and lock (rw0c) the max key version.
   sec_mmio_write32_shadowed(
       kBase + KEYMGR_MAX_OWNER_INT_KEY_VER_SHADOWED_REG_OFFSET, max_key_ver);
   sec_mmio_write32(kBase + KEYMGR_MAX_OWNER_INT_KEY_VER_REGWEN_REG_OFFSET, 0);
-  sec_mmio_write_increment(/*value=*/2);
 }
 
 void keymgr_advance_state(void) {

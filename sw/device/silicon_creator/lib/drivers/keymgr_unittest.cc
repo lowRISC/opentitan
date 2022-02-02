@@ -53,7 +53,6 @@ TEST_F(KeymgrTest, Initialize) {
 
   EXPECT_SEC_WRITE32_SHADOWED(
       base_ + KEYMGR_RESEED_INTERVAL_SHADOWED_REG_OFFSET, 0u);
-  EXPECT_SEC_WRITE_INCREMENT(1);
   EXPECT_EQ(keymgr_init(0u), kErrorOk);
 }
 
@@ -93,7 +92,6 @@ TEST_F(KeymgrTest, SwBindingValuesSet) {
                      cfg_.binding_value_attestation.data[7]);
 
   EXPECT_SEC_WRITE32(base_ + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 0);
-  EXPECT_SEC_WRITE_INCREMENT(17);
   keymgr_sw_binding_set(&cfg_.binding_value_sealing,
                         &cfg_.binding_value_attestation);
 }
@@ -108,7 +106,6 @@ TEST_F(KeymgrTest, SetCreatorMaxVerKey) {
   EXPECT_SEC_WRITE32_SHADOWED(
       base_ + KEYMGR_MAX_CREATOR_KEY_VER_SHADOWED_REG_OFFSET, cfg_.max_key_ver);
   EXPECT_SEC_WRITE32(base_ + KEYMGR_MAX_CREATOR_KEY_VER_REGWEN_REG_OFFSET, 0);
-  EXPECT_SEC_WRITE_INCREMENT(2);
   keymgr_creator_max_ver_set(cfg_.max_key_ver);
 }
 
@@ -117,7 +114,6 @@ TEST_F(KeymgrTest, SetOwnerIntMaxVerKey) {
       base_ + KEYMGR_MAX_OWNER_INT_KEY_VER_SHADOWED_REG_OFFSET,
       cfg_.max_key_ver);
   EXPECT_SEC_WRITE32(base_ + KEYMGR_MAX_OWNER_INT_KEY_VER_REGWEN_REG_OFFSET, 0);
-  EXPECT_SEC_WRITE_INCREMENT(2);
   keymgr_owner_int_max_ver_set(cfg_.max_key_ver);
 }
 

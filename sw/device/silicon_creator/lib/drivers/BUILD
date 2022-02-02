@@ -152,6 +152,7 @@ cc_library(
     name = "keymgr",
     srcs = ["keymgr.c"],
     hdrs = ["keymgr.h"],
+    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/keymgr/data:keymgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -166,12 +167,17 @@ cc_library(
 
 cc_test(
     name = "keymgr_unittest",
-    srcs = ["keymgr_unittest.cc"],
+    srcs = [
+        "keymgr.h",
+        "keymgr.c",
+        "keymgr_unittest.cc"
+    ],
     deps = [
-        ":keymgr",
+        "//hw/ip/keymgr/data:keymgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/base/freestanding",
         "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:keymgr_binding",
         "//sw/device/silicon_creator/lib/base:mock_abs_mmio",
         "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
         "@googletest//:gtest_main",
