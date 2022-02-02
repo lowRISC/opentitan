@@ -58,10 +58,10 @@ package lc_ctrl_pkg;
     return ~(val inside {On, Off});
   endfunction : lc_tx_test_invalid
 
-  // Convert a 1 input value to a mubi output
-  function automatic lc_tx_t lc_tx_bool_to_mubi(logic val);
+  // Convert a 1 input value to a lc_tx output
+  function automatic lc_tx_t lc_tx_bool_to_lc_tx(logic val);
     return (val ? On : Off);
-  endfunction : lc_tx_bool_to_mubi
+  endfunction : lc_tx_bool_to_lc_tx
 
   // Test whether the multibit value signals an "enabled" condition.
   // The strict version of this function requires

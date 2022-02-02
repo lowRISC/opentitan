@@ -267,6 +267,10 @@ module rv_core_ibex
             irq_external})
   );
 
+  // Multibit AND computation for fetch enable.
+  lc_ctrl_pkg::lc_tx_t fetch_enable;
+  assign fetch_enable = lc_ctrl_pkg::lc_tx_and_hi(lc_cpu_en[0], pwrmgr_cpu_en[0]);
+
   ibex_top #(
     .PMPEnable                ( PMPEnable                ),
     .PMPGranularity           ( PMPGranularity           ),
@@ -355,8 +359,9 @@ module rv_core_ibex
     .rvfi_mem_rdata,
     .rvfi_mem_wdata,
 `endif
-
-    .fetch_enable_i   (lc_cpu_en[0] == lc_ctrl_pkg::On && pwrmgr_cpu_en[0] == lc_ctrl_pkg::On),
+    // TODO(D2S): this needs to be pulled into both the primary core and into the shadow core
+    // before decoding it to a single bit.
+    .fetch_enable_i   (lc_ctrl_pkg::lc_tx_test_true_strict(fetch_enable)),
     .alert_minor_o    (alert_minor),
     .alert_major_o    (alert_major),
     .core_sleep_o     (pwrmgr_o.core_sleeping)
