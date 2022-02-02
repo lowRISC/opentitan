@@ -8,7 +8,8 @@
                      "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "aon_timer_sec_cm_testplan.hjson"]
   testpoints: [
     {
       name: smoke
@@ -40,7 +41,7 @@
             - Register writes to WKUP_CTRL while running.
 
             **Checks**:
-            - WKUP_COUNT should reflect expected -and changed- passing of real time 
+            - WKUP_COUNT should reflect expected -and changed- passing of real time
             regardless of its changing prescaler value.
             '''
       milestone: V2
@@ -76,7 +77,7 @@
       desc: '''
         Includes possible values of all registers of AON timer. For 32b registers, bins are
         introduced in order to simplfy coverage. Maximum and minimum values are collected in
-        a seperate bin to guarantee that they are checked. 32 separate bins are auto-generated 
+        a separate bin to guarantee that they are checked. 32 separate bins are auto-generated
         in order to distrubute values evenly.
       '''
     }

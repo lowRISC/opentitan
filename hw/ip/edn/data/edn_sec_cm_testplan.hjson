@@ -1,0 +1,75 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Security countermeasures testplan extracted from the IP Hjson using reggen.
+//
+// This testplan is auto-generated only the first time it is created. This is
+// because this testplan needs to be hand-editable. It is possible that these
+// testpoints can go out of date if the spec is updated with new
+// countermeasures. When `reggen` is invoked when this testplan already exists,
+// It checks if the list of testpoints is up-to-date and enforces the user to
+// make further manual updates.
+//
+// These countermeasures and their descriptions can be found here:
+// .../edn/data/edn.hjson
+//
+// It is possible that the testing of some of these countermeasures may already
+// be covered as a testpoint in a different testplan. This duplication is ok -
+// the test would have likely already been developed. We simply map those tests
+// to the testpoints below using the `tests` key.
+//
+// Please ensure that this testplan is imported in:
+// .../edn/data/edn_testplan.hjson
+{
+  testpoints: [
+    {
+      name: sec_cm_config_regwen
+      desc: "Verify the countermeasure(s) CONFIG.REGWEN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_config_mubi
+      desc: "Verify the countermeasure(s) CONFIG.MUBI."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_main_sm_fsm_sparse
+      desc: "Verify the countermeasure(s) MAIN_SM.FSM.SPARSE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_ack_sm_fsm_sparse
+      desc: "Verify the countermeasure(s) ACK_SM.FSM.SPARSE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_ctr_redun
+      desc: "Verify the countermeasure(s) CTR.REDUN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_main_sm_ctr_local_esc
+      desc: "Verify the countermeasure(s) MAIN_SM.CTR.LOCAL_ESC."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_cs_rdata_bus_consistency
+      desc: "Verify the countermeasure(s) CS_RDATA.BUS.CONSISTENCY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_tile_link_bus_integrity
+      desc: "Verify the countermeasure(s) TILE_LINK.BUS.INTEGRITY."
+      milestone: V2S
+      tests: []
+    }
+  ]
+}

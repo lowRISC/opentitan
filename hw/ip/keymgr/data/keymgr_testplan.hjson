@@ -10,7 +10,8 @@
                      "hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/sec_cm_count_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/sec_cm_fsm_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson"]
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
+                     "keymgr_sec_cm_testplan.hjson"]
   testpoints: [
     {
       name: smoke

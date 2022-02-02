@@ -8,7 +8,10 @@
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson"]
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
+                     // TODO: Top-level specific Hjson imported here. This will likely be resolved
+                     // once we move to IPgen flow.
+                     "hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr_sec_cm_testplan.hjson"]
   testpoints: [
     {
       name: smoke
@@ -53,7 +56,7 @@
             This test runs multiple rounds, and on each one it randomizes
              `ip_clk_en` and `scanmode_i`, and the initial setting of
              `clk_enables`, it sends a CSR write to `csr_enables` with this
-             initial value followed by a write that flips all bits. 
+             initial value followed by a write that flips all bits.
 
             **Checks**:
             - The scoreboard checks the gated clock activities against its

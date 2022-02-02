@@ -97,6 +97,7 @@ blk-hjson      = $(PRJ_DIR)/hw/ip/$*/$(dir_hjson)/$*.hjson
 $(ips_reg): %_reg: | $(REG_OUTPUT_DV_DIR)
 	$(if $(wildcard $(blk-gen-script)),$(blk-gen-script))
 	${PRJ_DIR}/util/regtool.py ${toolflags} -r $(blk-hjson)
+	${PRJ_DIR}/util/regtool.py --sec-cm-testplan $(blk-hjson)
 	${PRJ_DIR}/util/regtool.py -s -t $(REG_OUTPUT_DV_DIR) $(blk-hjson)
 
 # Register generation for otp_ctrl also depends on running gen-otp-mmap.py

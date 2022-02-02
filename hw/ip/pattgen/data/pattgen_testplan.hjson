@@ -8,7 +8,8 @@
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"],
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "pattgen_sec_cm_testplan.hjson"],
   testpoints: [
     {
       name: smoke
@@ -144,7 +145,7 @@
     {
       name: inter_cg
       desc: '''
-            intr_cg is defined in cip_base_env_cov and 
+            intr_cg is defined in cip_base_env_cov and
             referenced in pattgen_scoreboard
             '''
     }
@@ -200,7 +201,7 @@
             Covers various data_0 values of the channel0 seed pattern ranges,
             to ensure that Pattgen can operate successfully on different pattern lengths.
             we will cover that an acceptable distribution of lengths has been seen,
-            and specifically cover corner cases. The covergroup takes data from 
+            and specifically cover corner cases. The covergroup takes data from
             TL_UL scoreboard input
             '''
     }
