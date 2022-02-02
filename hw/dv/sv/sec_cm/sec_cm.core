@@ -11,12 +11,14 @@ filesets:
       - lowrisc:prim:alert
       - lowrisc:prim:count
       - lowrisc:prim:sparse_fsm
+      - lowrisc:prim:double_lfsr
       - lowrisc:dv:dv_utils
     files:
       - sec_cm_pkg.sv
       - sec_cm_base_if_proxy.sv: {is_include_file: true}
       - prim_count_if.sv
       - prim_sparse_fsm_flop_if.sv
+      - prim_double_lfsr_if.sv
     file_type: systemVerilogSource
 
 targets:
