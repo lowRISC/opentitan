@@ -95,45 +95,63 @@ interface rstmgr_cascading_sva_if (
   // become inactive. This checks POR stretching.
 
   // The antecedent: por_n_i rising and being active for enough cycles.
+
+  logic scanmode;
+  always_comb scanmode = prim_mubi_pkg::mubi4_test_true_strict(scanmode_i);
+
+  logic scan_reset_n;
+  always_comb scan_reset_n = !scanmode || scan_rst_ni;
+
+  logic aon_por_n_i;
+  always_comb aon_por_n_i = por_n_i[rstmgr_pkg::DomainAonSel] && !scanmode;
+
   sequence PorStable_S;
     $rose(
-        por_n_i[rstmgr_pkg::DomainAonSel]
-    ) ##1 (por_n_i[rstmgr_pkg::DomainAonSel] [* PorCycles.rise.min]);
+        aon_por_n_i
+    ) ##1 aon_por_n_i [* PorCycles.rise.min];
   endsequence
 
   // The reset stretching assertion.
   `ASSERT(StablePorToAonRise_A,
-          PorStable_S |-> ##[0:(PorCycles.rise.max-PorCycles.rise.min)] resets_o.rst_por_aon_n[0],
+          PorStable_S |-> ##[0:(PorCycles.rise.max-PorCycles.rise.min)]
+          !aon_por_n_i || resets_o.rst_por_aon_n[0],
           clk_aon_i, disable_sva)
 
-  logic scan_reset_n;
-  always_comb scan_reset_n = scan_rst_ni || prim_mubi_pkg::mubi4_test_true_strict(scanmode_i);
+  // The scan reset to Por.
+  `ASSERT(ScanRstToAonRise_A, scan_reset_n && scanmode |-> resets_o.rst_por_aon_n[0], clk_aon_i,
+          disable_sva)
 
-  logic [rstmgr_pkg::PowerDomains-1:0] effective_aon_rst;
-  always_comb effective_aon_rst = resets_o.rst_por_aon_n & {rstmgr_pkg::PowerDomains{scan_reset_n}};
+  logic [rstmgr_pkg::PowerDomains-1:0] effective_aon_rst_n;
+  always_comb
+    effective_aon_rst_n = resets_o.rst_por_aon_n & {rstmgr_pkg::PowerDomains{scan_reset_n}};
+
+  // The AON reset triggers the various POR reset for the different clock domains through
+  // synchronizers.
+  // The current system doesn't have any consumers of domain 1 por_io_div4, and thus only domain 0
+  // cascading is checked here.
+  `CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv4, effective_aon_rst_n[0],
+                    resets_o.rst_por_io_div4_n[0], SyncCycles, clk_io_div4_i)
 
   // The internal reset is triggered by one of the generated reset outputs.
   logic [rstmgr_pkg::PowerDomains-1:0] local_rst_n;
   always_comb
     local_rst_n = {rstmgr_pkg::PowerDomains{resets_o.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]}};
 
-  // The AON reset triggers the various POR reset for the different clock domains through
-  // synchronizers.
-  // The current system doesn't have any consumers of domain 1 por_io_div4, and thus only domain 0
-  // cascading is checked here.
-  `CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv4, effective_aon_rst[0],
-                    resets_o.rst_por_io_div4_n[0], SyncCycles, clk_io_div4_i)
+  logic [rstmgr_pkg::PowerDomains-1:0] local_rst_or_lc_req_n;
+  always_comb local_rst_or_lc_req_n = local_rst_n & ~rst_lc_req;
+
+  logic [rstmgr_pkg::PowerDomains-1:0] lc_rst_or_sys_req_n;
+  always_comb lc_rst_or_sys_req_n = rst_lc_src_n & ~rst_sys_req;
 
   for (genvar pd = 0; pd < rstmgr_pkg::PowerDomains; ++pd) begin : g_power_domains
     // The root lc reset is triggered either by the internal reset, or by the pwr_i.rst_lc_req
     // input. The latter is checked independently in pwrmgr_rstmgr_sva_if.
-    `CASCADED_ASSERTS(CascadeLocalRstToLc, local_rst_n[pd] && !rst_lc_req[pd], rst_lc_src_n[pd],
-                      LcCycles, clk_i)
+    `CASCADED_ASSERTS(CascadeLocalRstToLc, local_rst_or_lc_req_n[pd], rst_lc_src_n[pd], LcCycles,
+                      clk_i)
 
     // The root sys reset is triggered by the lc reset, or independently by external requests.
     // The latter is checked independently in pwrmgr_rstmgr_sva_if.
-    `CASCADED_ASSERTS(CascadeLcToSys, rst_lc_src_n[pd] && !rst_sys_req[pd], rst_sys_src_n[pd],
-                      SysCycles, clk_i)
+    `CASCADED_ASSERTS(CascadeLcToSys, lc_rst_or_sys_req_n[pd], rst_sys_src_n[pd], SysCycles, clk_i)
 
     // Controlled by rst_lc_src_n.
     `CASCADED_ASSERTS(CascadeLcToLcIoDiv4, rst_lc_src_n[pd], resets_o.rst_lc_io_div4_n[pd],
@@ -149,13 +167,13 @@ interface rstmgr_cascading_sva_if (
   end
 
   // Aon to POR
-  `CASCADED_ASSERTS(CascadeEffAonToRstPor, effective_aon_rst[rstmgr_pkg::DomainAonSel],
+  `CASCADED_ASSERTS(CascadeEffAonToRstPor, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
                     resets_o.rst_por_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_main_i)
-  `CASCADED_ASSERTS(CascadeEffAonToRstPorIo, effective_aon_rst[rstmgr_pkg::DomainAonSel],
+  `CASCADED_ASSERTS(CascadeEffAonToRstPorIo, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
                     resets_o.rst_por_io_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_io_i)
-  `CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv2, effective_aon_rst[rstmgr_pkg::DomainAonSel],
+  `CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv2, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
                     resets_o.rst_por_io_div2_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_io_div2_i)
-  `CASCADED_ASSERTS(CascadeEffAonToRstPorUcb, effective_aon_rst[rstmgr_pkg::DomainAonSel],
+  `CASCADED_ASSERTS(CascadeEffAonToRstPorUcb, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
                     resets_o.rst_por_usb_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_usb_i)
 
   // Controlled by rst_lc_src_n.

@@ -41,13 +41,13 @@ module rstmgr_bind;
     .clk_main_i,
     .clk_usb_i,
     .por_n_i,
+    .scan_rst_ni,
+    .scanmode_i,
     .resets_o,
     .rst_lc_req(pwr_i.rst_lc_req),
     .rst_sys_req(pwr_i.rst_sys_req),
     .rst_lc_src_n(pwr_o.rst_lc_src_n),
-    .rst_sys_src_n(pwr_o.rst_sys_src_n),
-    .scan_rst_ni,
-    .scanmode_i
+    .rst_sys_src_n(pwr_o.rst_sys_src_n)
   );
 
   bind rstmgr rstmgr_attrs_sva_if rstmgr_attrs_sva_if (
