@@ -41,3 +41,9 @@ targets:
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl
+  
+  formal:
+    filesets:
+      - files_rtl
+    toplevel: prim_max_tree
+    

@@ -333,10 +333,9 @@
                rel_path: "hw/ip/kmac/sha3pad/{sub_flow}/{tool}"
                cov: true
              }
-             {
-               name: prim_max_tree_fpv
-               dut: prim_max_tree_tb
-               fusesoc_core: lowrisc:fpv:prim_max_tree_fpv
+             { name: prim_max_tree
+               dut: prim_max_tree
+               fusesoc_core: lowrisc:prim:max_tree
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/prim/prim_max_tree/{sub_flow}/{tool}"
                cov: true
