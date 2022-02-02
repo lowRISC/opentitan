@@ -58,6 +58,24 @@ typedef enum keymgr_state {
 } keymgr_state_t;
 
 /**
+ * The following constants represent the expected number of sec_mmio register
+ * writes performed by functions in provided in this module. See
+ * `SEC_MMIO_WRITE_INCREMENT()` for more details.
+ *
+ * Example:
+ * ```
+ *  keymgr_sw_binding_set();
+ *  SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet);
+ * ```
+ */
+enum {
+  kKeymgrSecMmioInit = 1,
+  kKeymgrSecMmioSwBindingSet = 17,
+  kKeymgrSecMmioCreatorMaxVerSet = 2,
+  kKeymgrSecMmioOwnerIntMaxVerSet = 2,
+};
+
+/**
  * Sets the key manager software binding inputs.
  *
  * @param binding_value_sealing Software binding for sealing value.

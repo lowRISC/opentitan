@@ -232,6 +232,8 @@ rom_error_t keymgr_rom_test(void) {
   ASSERT_OK(keymgr_state_check(kKeymgrStateReset));
   keymgr_sw_binding_set(&kBindingValueRomExt, &kBindingValueRomExt);
   keymgr_creator_max_ver_set(kMaxVerRomExt);
+  SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet +
+                           kKeymgrSecMmioCreatorMaxVerSet);
   sec_mmio_check_values(/*rnd_offset=*/0);
   sec_mmio_check_counters(/*expected_check_count=*/1);
   return kErrorOk;
@@ -243,8 +245,9 @@ rom_error_t keymgr_rom_ext_test(void) {
 
   const uint16_t kEntropyReseedInterval = 0x1234;
   ASSERT_OK(keymgr_init(kEntropyReseedInterval));
-
+  SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioInit);
   sec_mmio_check_values(/*rnd_offset=*/0);
+
   keymgr_advance_state();
   ASSERT_OK(keymgr_state_check(kKeymgrStateInit));
 
@@ -259,6 +262,8 @@ rom_error_t keymgr_rom_ext_test(void) {
 
   keymgr_sw_binding_set(&kBindingValueBl0, &kBindingValueBl0);
   keymgr_owner_int_max_ver_set(kMaxVerBl0);
+  SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet +
+                           kKeymgrSecMmioOwnerIntMaxVerSet);
   sec_mmio_check_values(/*rnd_offset=*/0);
 
   keymgr_advance_state();
