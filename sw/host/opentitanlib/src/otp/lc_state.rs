@@ -73,14 +73,14 @@ impl LcSecded {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::otp::tests::testdata;
+    use crate::testdata;
     use anyhow::Result;
     use deser_hjson::from_str;
     use std::fs::read_to_string;
 
     #[test]
     fn test_lc_state_deserialize() -> Result<()> {
-        let _: LcState = from_str(&read_to_string(&testdata("lc_ctrl_state.hjson"))?)?;
+        let _: LcState = from_str(&read_to_string(&testdata!("lc_ctrl_state.hjson"))?)?;
         Ok(())
     }
 

@@ -13,24 +13,18 @@ mod num_de;
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::testdata;
     use anyhow::Result;
-    use std::path::Path;
-
-    pub(crate) fn testdata(s: &str) -> String {
-        let mut result = "sw/host/opentitanlib/src/otp/testdata/".to_string();
-        result.push_str(s);
-        result
-    }
 
     #[test]
     fn test_vmem_serialize() -> Result<()> {
-        let mut otp_mmap = otp_mmap::OtpMap::new(Path::new(&testdata("otp_ctrl_mmap.hjson")))?;
-        let mut otp_img = otp_img::OtpImg::new(Path::new(&testdata("otp_ctrl_img_dev.hjson")))?;
-        let lc_state = lc_state::LcSecded::new(Path::new(&testdata("lc_ctrl_state.hjson")))?;
+        let mut otp_mmap = otp_mmap::OtpMap::new(&testdata!("otp_ctrl_mmap.hjson"))?;
+        let mut otp_img = otp_img::OtpImg::new(&testdata!("otp_ctrl_img_dev.hjson"))?;
+        let lc_state = lc_state::LcSecded::new(&testdata!("lc_ctrl_state.hjson"))?;
         let vmem = otp_mmap.make_vmem(&mut otp_img)?;
         let keys = otp_mmap.generate_keys(&otp_img);
         let result = vmem.generate(keys, &lc_state)?;
-        let expected = std::fs::read_to_string(Path::new(&testdata("output.vmem")))?;
+        let expected = std::fs::read_to_string(testdata!("output.vmem"))?;
         let expected = expected
             .split("\n")
             .filter(|s| !s.is_empty())
