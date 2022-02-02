@@ -40,9 +40,9 @@
   .option norelax
 
   .balign 256
-  .global _test_rom_ext_interrupt_vector
-  .type _test_rom_ext_interrupt_vector, @function
-_test_rom_ext_interrupt_vector:
+  .global _interrupt_vector
+  .type _interrupt_vector, @function
+_interrupt_vector:
 
   // RISC-V Standard (Vectored) Interrupt Handlers:
 
@@ -90,7 +90,7 @@ _test_rom_ext_interrupt_vector:
   unimp
 
   // Set size so vector can be disassembled.
-  .size _test_rom_ext_interrupt_vector, .-_test_rom_ext_interrupt_vector
+  .size _interrupt_vector, .-_interrupt_vector
 
   .option pop
 
@@ -102,20 +102,15 @@ _test_rom_ext_interrupt_vector:
   // is allocated space in ROM by the linker.
   .section .crt, "ax", @progbits
 
-  .extern abort
-  .extern main
-  .extern crt_interrupt_vector
-  .extern crt_section_clear
-  .extern crt_section_copy
-
 /**
  * Callable entry point for flash.
  *
  * This sets up the stack, zeroes `.bss`, and sets up `.data`.
  * It then jumps into main.
  */
-_start:
   .globl _start
+  .type _start, @function
+_start:
 
   // Set up the stack. We have no expectation that the rom that
   // jumps here will have the correct stack start linked in.
@@ -129,18 +124,20 @@ _start:
   .option pop
 
   // Set up the new interrupt vector.
-  la   t0, (_test_rom_ext_interrupt_vector + 1)
+  la   t0, (_interrupt_vector + 1)
   csrw mtvec, t0
 
   // Zero out the `.bss` segment.
   la   a0, _bss_start
   la   a1, _bss_end
+  .extern crt_section_clear
   call crt_section_clear
 
   // Initialize the `.data` segment from the `.idata` segment.
   la   a0, _data_start
   la   a1, _data_end
   la   a2, _data_init_start
+  .extern crt_section_copy
   call crt_section_copy
 
   // Call the functions in the `.init_array` section.
@@ -163,11 +160,12 @@ init_array_loop:
   bltu s0, s1, init_array_loop
 init_array_loop_end:
 
-  // Jump into the C program entry point. This is your standard
-  // C `main()`, so we need to pass dummy values for `argc` and `argv`.
+  // Jump into the OTTF C entry point. This is your standard C `main()`, so we
+  // need to pass dummy values for `argc` and `argv`.
   li   a0, 0x0  // argc = 0
   li   a1, 0x0  // argv = NULL
-  call main
+  .extern main
+  tail main
 
-  // Halt the core (wfi loop)
-  tail abort
+  // Set size so this function can be disassembled.
+  .size _start, .-_start

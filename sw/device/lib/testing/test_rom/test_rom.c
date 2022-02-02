@@ -24,7 +24,7 @@
  * and describes the location of the flash header.
  *
  * The actual contents are not defined by the ROM, but rather
- * by the flash binary: see `sw/device/lib/testing/test_rom_ext/test_rom_ext.ld`
+ * by the flash binary: see `sw/device/lib/testing/test_framework/ottf.ld`
  * for that.
  */
 extern struct { void (*entry)(void); } _flash_header;

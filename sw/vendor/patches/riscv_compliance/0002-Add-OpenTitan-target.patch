@@ -257,7 +257,7 @@ new file mode 100644
 index 0000000..b71105c
 --- /dev/null
 +++ b/riscv-target/opentitan/device/rv32imc/Makefile.include
-@@ -0,0 +1,75 @@
+@@ -0,0 +1,74 @@
 +# Copyright lowRISC contributors.
 +# Licensed under the Apache License, Version 2.0, see LICENSE for details.
 +# SPDX-License-Identifier: Apache-2.0
@@ -269,7 +269,7 @@ index 0000000..b71105c
 +OT_TOOLS     ?= /tools/riscv/bin
 +OT_FPGA_UART ?=
 +OT_TARGET    ?= fpga_nexysvideo
-+LDSCRIPT      = $(OT_ROOT)/sw/device/lib/testing/test_rom_ext/test_rom_ext.ld
++LDSCRIPT      = $(OT_ROOT)/sw/device/lib/testing/test_framework/ottf.ld
 +DEFINES       = $(CARG) -DPRIV_MISA_S=0 -DPRIV_MISA_U=0 -DRVTEST_ENTRY=_rvc_start -DTRAPALIGN=8
 +TARGET_SIM   ?= $(OT_ROOT)/build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator
 +
@@ -324,8 +324,7 @@ index 0000000..b71105c
 +		-L$(OT_ROOT) -T$(LDSCRIPT) $$< \
 +		$(OPENTITAN)/main.c \
 +		$(OPENTITAN)/run_rvc_test.S \
-+		$(OT_ROOT)/sw/device/lib/testing/test_rom_ext/test_rom_ext_irq_vector.S \
-+		$(OT_ROOT)/sw/device/lib/testing/test_rom_ext/test_rom_ext_start.S \
++		$(OT_ROOT)/sw/device/lib/testing/test_framework/ottf_start.S \
 +		-L$(OT_BIN)/sw/device/riscv_compliance_support \
 +		-l$(COMPLIANCE_LIB) \
 +		-o $$(@); \

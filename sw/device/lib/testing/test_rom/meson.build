@@ -21,7 +21,7 @@ chip_info_h = declare_dependency(
 
 # Test ROM linker parameters.
 #
-# See `sw/device/lib/testing/test_rom_ext/test_rom_ext.ld` for additional info
+# See `sw/device/lib/testing/test_framework/ottf.ld` for additional info
 # about these parameters.
 test_rom_linker_script = '@0@/@1@'.format(meson.source_root(), files(['test_rom.ld'])[0])
 test_rom_link_args = [

@@ -20,7 +20,6 @@ sw_sca_lib_sca  = declare_dependency(
       sw_lib_dif_csrng,
       sw_lib_dif_edn,
       sw_lib_irq,
-      sw_lib_testing_ottf_isrs,
       sw_lib_mmio,
       sw_lib_pinmux,
       sw_lib_runtime_log,

@@ -11,6 +11,8 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     ],
     name_suffix: 'elf',
     dependencies: [
+      device_lib,
+      ottf_start_lib,
       sw_examples_demos,
       sw_lib_runtime_hart,
       sw_lib_pinmux,
@@ -21,9 +23,6 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       sw_lib_runtime_log,
       sw_lib_dif_uart,
       sw_lib_usb,
-      test_rom_ext,
-      device_lib,
-      sw_lib_testing_ottf_isrs,
       sw_lib_testing_test_status,
     ],
   )

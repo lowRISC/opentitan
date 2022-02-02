@@ -46,7 +46,7 @@ test('sw_silicon_creator_rom_ext_boot_policy_unittest', executable(
 
 # Mask ROM Linker Parameters
 #
-# See `sw/device/lib/testing/test_rom_ext/test_rom_ext.ld` for additional info
+# See `sw/device/lib/testing/test_framework/ottf.ld` for additional info
 # about these parameters.
 
 rom_ext_linkfile_slot_a = files(['rom_ext_slot_a.ld'])

@@ -12,12 +12,12 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     'ot_riscv_compliance_support_inner_' + device_name,
     sources: ['support.c'],
     dependencies: [
+      device_lib,
+      ottf_start_lib,
       sw_lib_runtime_print,
       sw_lib_runtime_log,
       sw_lib_mem,
-      sw_lib_testing_ottf_isrs,
       sw_lib_testing_test_status,
-      device_lib,
     ],
   )
 

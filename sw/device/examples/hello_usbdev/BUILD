@@ -40,7 +40,6 @@ cc_library(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing/test_framework",
-        "//sw/device/lib/testing/test_framework:ottf_isrs",
-        "//sw/device/lib/testing/test_rom_ext",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )

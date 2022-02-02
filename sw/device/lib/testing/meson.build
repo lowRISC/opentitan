@@ -175,4 +175,3 @@ sw_lib_testing_lc_ctrl_testutils = declare_dependency(
 
 subdir('test_framework')
 subdir('test_rom')
-subdir('test_rom_ext')

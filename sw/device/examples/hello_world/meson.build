@@ -8,6 +8,8 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     sources: ['hello_world.c'],
     name_suffix: 'elf',
     dependencies: [
+      device_lib,
+      ottf_start_lib,
       sw_examples_demos,
       sw_lib_runtime_hart,
       sw_lib_runtime_print,
@@ -17,9 +19,6 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       sw_lib_irq,
       sw_lib_dif_spi_device,
       sw_lib_dif_uart,
-      test_rom_ext,
-      device_lib,
-      sw_lib_testing_ottf_isrs,
       sw_lib_testing_test_status,
     ],
   )

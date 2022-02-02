@@ -301,15 +301,14 @@ def _format_list(name, list1, datadict, **kwargs):
     return [x.format(**kwargs) for x in list1 + datadict.pop(name, [])]
 
 _OTTF_DEPS = [
+    "//sw/device/lib/arch:device",
     "//sw/device/lib/base",
     "//sw/device/lib/runtime:hart",
     "//sw/device/lib/runtime:log",
     "//sw/device/lib/runtime:print",
-    "//sw/device/lib/arch:device",
-    "//sw/device/lib/testing/test_rom_ext",
     "//sw/device/lib/crt",
+    "//sw/device/lib/testing/test_framework:ottf_start",
     "//sw/device/lib/testing/test_framework:ottf",
-    "//sw/device/lib/testing/test_framework:ottf_isrs",
     "//sw/device/lib/base:mmio",
 ]
 
