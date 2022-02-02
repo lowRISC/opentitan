@@ -476,8 +476,7 @@ rom_error_t boot_data_read(lifecycle_state_t lc_state, boot_data_t *boot_data) {
       return kErrorOk;
     case kErrorBootDataNotFound:
       // TODO(#8779): Recovery paths for failures in prod life cycle states?
-      RETURN_IF_ERROR(boot_data_default_get(lc_state, boot_data));
-      return kErrorOk;
+      return boot_data_default_get(lc_state, boot_data);
     default:
       return error;
   }
