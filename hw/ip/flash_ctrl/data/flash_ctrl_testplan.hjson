@@ -117,7 +117,7 @@
             bank. Expect that operations are successfully executed.
             '''
       milestone: V2
-      tests: []
+      tests: ["flash_ctrl_phy_arb"]
     }
     {
       name: host_interleave
