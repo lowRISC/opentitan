@@ -599,8 +599,12 @@ TEST_F(ShutdownTest, FlashKill) {
 TEST_F(ShutdownTest, ShutdownIfErrorOk) { SHUTDOWN_IF_ERROR(kErrorOk); }
 
 TEST_F(ShutdownTest, ShutdownIfErrorUnknown) {
-  ExpectFinalize(kErrorUnknown);
-  SHUTDOWN_IF_ERROR(kErrorUnknown);
+  EXPECT_DEATH(
+      {
+        ExpectFinalize(kErrorUnknown);
+        SHUTDOWN_IF_ERROR(kErrorUnknown);
+      },
+      "");
 }
 
 TEST_F(ShutdownTest, SoftwareEscalate) {
