@@ -64,14 +64,19 @@ module tb;
 
   `DV_ALERT_IF_CONNECT
 
+  // SIMPLE OTP KEY INTERFACE (Access via VIF)
+
   otp_ctrl_pkg::flash_otp_key_req_t otp_req;
   otp_ctrl_pkg::flash_otp_key_rsp_t otp_rsp;
 
-  always_comb begin
-    otp_rsp = otp_ctrl_pkg::FLASH_OTP_KEY_RSP_DEFAULT;
-    otp_rsp.data_ack = otp_req.data_req;
-    otp_rsp.addr_ack = otp_req.addr_req;
-  end
+  assign flash_ctrl_if.otp_req.addr_req = otp_req.addr_req;
+  assign flash_ctrl_if.otp_req.data_req = otp_req.data_req;
+
+  assign otp_rsp.addr_ack               = flash_ctrl_if.otp_rsp.addr_ack;
+  assign otp_rsp.data_ack               = flash_ctrl_if.otp_rsp.data_ack;
+  assign otp_rsp.key                    = flash_ctrl_if.otp_rsp.key;
+  assign otp_rsp.rand_key               = flash_ctrl_if.otp_rsp.rand_key;
+  assign otp_rsp.seed_valid             = flash_ctrl_if.otp_rsp.seed_valid;
 
   wire flash_test_v;
   assign (pull1, pull0) flash_test_v = 1'b1;
@@ -147,7 +152,6 @@ module tb;
     .flash_alert_o    (flash_ctrl_if.flash_alert)
   );
 
-  // -----------------------------------
   // Create edge in flash_power_down_h_i, whenever reset is asserted
   logic init;
   assign flash_power_down_h = (init ? 1'b1 : 1'b0);
