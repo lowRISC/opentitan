@@ -1,0 +1,117 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Security countermeasures testplan extracted from the IP Hjson using reggen.
+//
+// This testplan is auto-generated only the first time it is created. This is
+// because this testplan needs to be hand-editable. It is possible that these
+// testpoints can go out of date if the spec is updated with new
+// countermeasures. When `reggen` is invoked when this testplan already exists,
+// It checks if the list of testpoints is up-to-date and enforces the user to
+// make further manual updates.
+//
+// These countermeasures and their descriptions can be found here:
+// .../sram_ctrl/data/sram_ctrl.hjson
+//
+// It is possible that the testing of some of these countermeasures may already
+// be covered as a testpoint in a different testplan. This duplication is ok -
+// the test would have likely already been developed. We simply map those tests
+// to the testpoints below using the `tests` key.
+//
+// Please ensure that this testplan is imported in:
+// .../sram_ctrl/data/sram_ctrl_testplan.hjson
+{
+  testpoints: [
+    {
+      name: sec_cm_bus_integrity
+      desc: "Verify the countermeasure(s) BUS.INTEGRITY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_ctrl_config_regwen
+      desc: "Verify the countermeasure(s) CTRL.CONFIG.REGWEN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_exec_config_regwen
+      desc: "Verify the countermeasure(s) EXEC.CONFIG.REGWEN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_exec_config_mubi
+      desc: "Verify the countermeasure(s) EXEC.CONFIG.MUBI."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_exec_intersig_mubi
+      desc: "Verify the countermeasure(s) EXEC.INTERSIG.MUBI."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_lc_escalate_en_intersig_mubi
+      desc: "Verify the countermeasure(s) LC_ESCALATE_EN.INTERSIG.MUBI."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_lc_hw_debug_en_intersig_mubi
+      desc: "Verify the countermeasure(s) LC_HW_DEBUG_EN.INTERSIG.MUBI."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mem_integrity
+      desc: "Verify the countermeasure(s) MEM.INTEGRITY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mem_scramble
+      desc: "Verify the countermeasure(s) MEM.SCRAMBLE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_addr_scramble
+      desc: "Verify the countermeasure(s) ADDR.SCRAMBLE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_instr_bus_lc_gated
+      desc: "Verify the countermeasure(s) INSTR.BUS.LC_GATED."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_key_global_esc
+      desc: "Verify the countermeasure(s) KEY.GLOBAL_ESC."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_key_local_esc
+      desc: "Verify the countermeasure(s) KEY.LOCAL_ESC."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_ctr_redun
+      desc: "Verify the countermeasure(s) CTR.REDUN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_scramble_key_sideload
+      desc: "Verify the countermeasure(s) SCRAMBLE.KEY.SIDELOAD."
+      milestone: V2S
+      tests: []
+    }
+  ]
+}

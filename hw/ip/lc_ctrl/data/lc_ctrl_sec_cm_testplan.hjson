@@ -1,0 +1,129 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Security countermeasures testplan extracted from the IP Hjson using reggen.
+//
+// This testplan is auto-generated only the first time it is created. This is
+// because this testplan needs to be hand-editable. It is possible that these
+// testpoints can go out of date if the spec is updated with new
+// countermeasures. When `reggen` is invoked when this testplan already exists,
+// It checks if the list of testpoints is up-to-date and enforces the user to
+// make further manual updates.
+//
+// These countermeasures and their descriptions can be found here:
+// .../lc_ctrl/data/lc_ctrl.hjson
+//
+// It is possible that the testing of some of these countermeasures may already
+// be covered as a testpoint in a different testplan. This duplication is ok -
+// the test would have likely already been developed. We simply map those tests
+// to the testpoints below using the `tests` key.
+//
+// Please ensure that this testplan is imported in:
+// .../lc_ctrl/data/lc_ctrl_testplan.hjson
+{
+  testpoints: [
+    {
+      name: sec_cm_bus_integrity
+      desc: "Verify the countermeasure(s) BUS.INTEGRITY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_transition_config_regwen
+      desc: "Verify the countermeasure(s) TRANSITION.CONFIG.REGWEN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_manuf_state_sparse
+      desc: "Verify the countermeasure(s) MANUF.STATE.SPARSE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_transition_ctr_sparse
+      desc: "Verify the countermeasure(s) TRANSITION.CTR.SPARSE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_manuf_state_bkgn_chk
+      desc: "Verify the countermeasure(s) MANUF.STATE.BKGN_CHK."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_transition_ctr_bkgn_chk
+      desc: "Verify the countermeasure(s) TRANSITION.CTR.BKGN_CHK."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_state_config_sparse
+      desc: "Verify the countermeasure(s) STATE.CONFIG.SPARSE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_main_fsm_sparse
+      desc: "Verify the countermeasure(s) MAIN.FSM.SPARSE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_kmac_fsm_sparse
+      desc: "Verify the countermeasure(s) KMAC.FSM.SPARSE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_main_fsm_local_esc
+      desc: "Verify the countermeasure(s) MAIN.FSM.LOCAL_ESC."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_main_fsm_global_esc
+      desc: "Verify the countermeasure(s) MAIN.FSM.GLOBAL_ESC."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_main_ctrl_flow_consistency
+      desc: "Verify the countermeasure(s) MAIN.CTRL_FLOW.CONSISTENCY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_intersig_mubi
+      desc: "Verify the countermeasure(s) INTERSIG.MUBI."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_token_valid_ctrl_mubi
+      desc: "Verify the countermeasure(s) TOKEN_VALID.CTRL.MUBI."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_token_digest
+      desc: "Verify the countermeasure(s) TOKEN.DIGEST."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_token_mux_ctrl_redun
+      desc: "Verify the countermeasure(s) TOKEN_MUX.CTRL.REDUN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_token_valid_mux_redun
+      desc: "Verify the countermeasure(s) TOKEN_VALID.MUX.REDUN."
+      milestone: V2S
+      tests: []
+    }
+  ]
+}

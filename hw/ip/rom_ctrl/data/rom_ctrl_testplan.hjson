@@ -7,7 +7,8 @@
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/passthru_mem_intg_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "rom_ctrl_sec_cm_testplan.hjson"]
   testpoints: [
     {
       name: smoke
@@ -28,7 +29,7 @@
             - Check that the memory accesses return expected data
             - Check that pwrmgr_data_o.good is not asserted in first iteration.
             - Check that pwrmgr_data_o.good is asserted in second iteration.
-            - Check that tile link accesses are blocked till pwrmgr_data_o.done is asserted. 
+            - Check that tile link accesses are blocked till pwrmgr_data_o.done is asserted.
             '''
       milestone: V1
       tests: ["rom_ctrl_smoke"]
@@ -37,7 +38,7 @@
       name: corrupt_sig_fatal_chk
       desc: '''
             Corrupt integrity of signals like the select signal to addr mux.
-            
+
             **Checks**:
             - Check that fatal error is flagged.
             '''
@@ -52,7 +53,7 @@
       milestone: V2
       tests: ["rom_ctrl_stress_all"]
     }
-    
+
   ]
   covergroups: [
     {
@@ -71,9 +72,9 @@
       desc: '''
             -Collect coverage on the two TLUL interfaces, specifically checking
             that we see requests around the same time as the rom check completes.
-            - Collect coverage to ensure that a_valid goes high when rom check 
-            is in progress. This ensures that the scenario where TL accesses are 
-            blocked until the ROM check is done is covered. 
+            - Collect coverage to ensure that a_valid goes high when rom check
+            is in progress. This ensures that the scenario where TL accesses are
+            blocked until the ROM check is done is covered.
             '''
     }
     {

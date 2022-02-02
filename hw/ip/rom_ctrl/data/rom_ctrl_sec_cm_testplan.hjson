@@ -1,0 +1,111 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Security countermeasures testplan extracted from the IP Hjson using reggen.
+//
+// This testplan is auto-generated only the first time it is created. This is
+// because this testplan needs to be hand-editable. It is possible that these
+// testpoints can go out of date if the spec is updated with new
+// countermeasures. When `reggen` is invoked when this testplan already exists,
+// It checks if the list of testpoints is up-to-date and enforces the user to
+// make further manual updates.
+//
+// These countermeasures and their descriptions can be found here:
+// .../rom_ctrl/data/rom_ctrl.hjson
+//
+// It is possible that the testing of some of these countermeasures may already
+// be covered as a testpoint in a different testplan. This duplication is ok -
+// the test would have likely already been developed. We simply map those tests
+// to the testpoints below using the `tests` key.
+//
+// Please ensure that this testplan is imported in:
+// .../rom_ctrl/data/rom_ctrl_testplan.hjson
+{
+  testpoints: [
+    {
+      name: sec_cm_checker_ctr_consistency
+      desc: "Verify the countermeasure(s) CHECKER.CTR.CONSISTENCY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_checker_ctrl_flow_consistency
+      desc: "Verify the countermeasure(s) CHECKER.CTRL_FLOW.CONSISTENCY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_checker_fsm_local_esc
+      desc: "Verify the countermeasure(s) CHECKER.FSM.LOCAL_ESC."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_compare_ctrl_flow_consistency
+      desc: "Verify the countermeasure(s) COMPARE.CTRL_FLOW.CONSISTENCY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_compare_ctr_consistency
+      desc: "Verify the countermeasure(s) COMPARE.CTR.CONSISTENCY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_fsm_sparse
+      desc: "Verify the countermeasure(s) FSM.SPARSE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mem_scramble
+      desc: "Verify the countermeasure(s) MEM.SCRAMBLE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mem_digest
+      desc: "Verify the countermeasure(s) MEM.DIGEST."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_intersig_mubi
+      desc: "Verify the countermeasure(s) INTERSIG.MUBI."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_bus_integrity
+      desc: "Verify the countermeasure(s) BUS.INTEGRITY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_bus_local_esc
+      desc: "Verify the countermeasure(s) BUS.LOCAL_ESC."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mux_mubi
+      desc: "Verify the countermeasure(s) MUX.MUBI."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mux_consistency
+      desc: "Verify the countermeasure(s) MUX.CONSISTENCY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_ctrl_redun
+      desc: "Verify the countermeasure(s) CTRL.REDUN."
+      milestone: V2S
+      tests: []
+    }
+  ]
+}

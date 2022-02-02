@@ -8,7 +8,8 @@
                      "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "rv_dm_sec_cm_testplan.hjson"]
   testpoints: [
     {
       name: smoke

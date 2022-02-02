@@ -24,7 +24,7 @@ from ipgen import (IpBlockRenderer, IpConfig, IpDescriptionOnlyRenderer,
                    IpTemplate, TemplateRenderError)
 from mako import exceptions
 from mako.template import Template
-from reggen import access, gen_rtl, window
+from reggen import access, gen_rtl, gen_sec_cm_testplan, window
 from reggen.inter_signal import InterSignal
 from reggen.ip_block import IpBlock
 from reggen.countermeasure import CounterMeasure
@@ -243,6 +243,7 @@ def generate_regfile_from_path(hjson_path: Path,
     rtl_names = CounterMeasure.search_rtl_files(sv_files)
     obj.check_cm_annotations(rtl_names, str(hjson_path))
     gen_rtl.gen_rtl(obj, str(generated_rtl_path))
+    gen_sec_cm_testplan.gen_sec_cm_testplan(obj, hjson_path.parent)
 
 
 def generate_pinmux(top, out_path):
