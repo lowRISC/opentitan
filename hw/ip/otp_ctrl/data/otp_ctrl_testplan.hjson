@@ -8,6 +8,8 @@
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/sec_cm_count_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/sec_cm_fsm_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson"]
   testpoints: [
     {
@@ -210,6 +212,20 @@
             '''
       milestone: V2
       tests: ["otp_ctrl_stress_all"]
+    }
+    {
+      name: sec_cm_additional_check
+      desc: '''
+            Verify the outcome of injecting faults to security countermeasures.
+
+            Stimulus:
+            As mentioned in `prim_count_check`, `prim_fsm_check` and `prim_double_lfsr_check`.
+
+            Checks:
+            - TODO, add additional checks if applicable.
+            '''
+      milestone: V2S
+      tests: ["otp_ctrl_sec_cm"]
     }
     {
       name: otp_ctrl_low_freq_read
