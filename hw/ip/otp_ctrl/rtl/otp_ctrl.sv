@@ -1398,4 +1398,7 @@ module otp_ctrl
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntScrmblCheck_A,
       u_otp_ctrl_scrmbl.u_prim_count, alert_tx_o[1])
 
+  // Alert assertions for double LFSR.
+  `ASSERT_PRIM_DOUBLE_LFSR_ERROR_TRIGGER_ALERT(DoubleLfsrCheck_A,
+      u_otp_ctrl_lfsr_timer.u_prim_double_lfsr, alert_tx_o[1])
 endmodule : otp_ctrl
