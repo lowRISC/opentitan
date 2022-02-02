@@ -73,13 +73,22 @@ static void boot_data_digest_compute(const void *boot_data,
  * @return Whether the entry is empty.
  */
 static hardened_bool_t boot_data_is_empty(const void *boot_data) {
-  for (size_t i = 0; i < kBootDataNumWords; ++i) {
-    if (read_32(boot_data) != kBootDataEmptyWordValue) {
-      return kHardenedBoolFalse;
-    }
+  static_assert(kBootDataEmptyWordValue == UINT32_MAX,
+                "kBootDataEmptyWordValue must be UINT32_MAX");
+  size_t i = 0;
+  hardened_bool_t is_empty = kHardenedBoolTrue;
+  uint32_t res = kBootDataEmptyWordValue;
+  for (; launder32(i) < kBootDataNumWords; ++i) {
+    res &= read_32(boot_data);
+    is_empty &= read_32(boot_data);
     boot_data = (char *)boot_data + sizeof(uint32_t);
   }
-  return kHardenedBoolTrue;
+  HARDENED_CHECK_EQ(i, kBootDataNumWords);
+  if (launder32(res) == kBootDataEmptyWordValue) {
+    HARDENED_CHECK_EQ(res, kBootDataEmptyWordValue);
+    return is_empty;
+  }
+  return kHardenedBoolFalse;
 }
 
 /**
