@@ -247,7 +247,7 @@
           desc: '''
                 This bit indicates when the command interface is ready to accept commands.
                 '''
-          resval: "1"
+          resval: "0"
         }
         { bits: "1",
           name: "CMD_STS",
