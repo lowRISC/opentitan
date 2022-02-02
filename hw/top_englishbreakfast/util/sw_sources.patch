@@ -105,7 +105,7 @@ index a4d57e1c7..d12c776b7 100644
      simple_serial_process_packet();
    }
 diff --git a/sw/device/sca/lib/meson.build b/sw/device/sca/lib/meson.build
-index c4a65f7e0..3f6ee67f1 100644
+index 3a613b2b8..fa939775a 100644
 --- a/sw/device/sca/lib/meson.build
 +++ b/sw/device/sca/lib/meson.build
 @@ -17,8 +17,6 @@ sw_sca_lib_sca  = declare_dependency(
@@ -115,8 +115,8 @@ index c4a65f7e0..3f6ee67f1 100644
 -      sw_lib_dif_csrng,
 -      sw_lib_dif_edn,
        sw_lib_irq,
-       sw_lib_testing_ottf_isrs,
        sw_lib_mmio,
+       sw_lib_pinmux,
 diff --git a/sw/device/sca/lib/sca.c b/sw/device/sca/lib/sca.c
 index 3c0c86f26..7354aa9cb 100644
 --- a/sw/device/sca/lib/sca.c
@@ -257,10 +257,10 @@ index 26c7a270d..8b464a137 100644
    CHECK_DIF_OK(
        dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
 diff --git a/sw/device/tests/meson.build b/sw/device/tests/meson.build
-index 8e60b6e41..6036f1353 100644
+index 529f26e38..e638f25e1 100644
 --- a/sw/device/tests/meson.build
 +++ b/sw/device/tests/meson.build
-@@ -253,7 +253,6 @@ aes_smoketest_lib = declare_dependency(
+@@ -254,7 +254,6 @@ aes_smoketest_lib = declare_dependency(
        sw_lib_dif_aes,
        sw_lib_mmio,
        sw_lib_runtime_log,

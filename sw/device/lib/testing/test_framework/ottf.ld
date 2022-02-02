@@ -33,7 +33,7 @@ _stack_start = _stack_end - _stack_size;
 _dv_log_offset = 0x10000;
 
 /**
- * The entry point in `test_rom_ext_start.S` is called `_start`. This
+ * The entry point in `ottf_start.S` is called `_start`. This
  * information in the ELF file is not used - instead we use the information in
  * the `.flash_header` section to understand where to start execution of a flash
  * image. We need this declaration so LLD does not error.
@@ -60,7 +60,7 @@ SECTIONS {
   } > eflash_virtual
 
   /**
-   * Ibex interrupt vectors. See 'test_rom_ext_start.S' for more information.
+   * OTTF interrupt vectors. See 'ottf_start.S' for more information.
    */
   .vectors : {
     *(.vectors)

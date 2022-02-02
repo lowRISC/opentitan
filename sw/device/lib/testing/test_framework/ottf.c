@@ -9,6 +9,7 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_uart.h"
+#include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/check.h"
@@ -71,8 +72,8 @@ int main(int argc, char **argv) {
 
   // Run the test.
   if (kTestConfig.enable_concurrency) {
-    // Run `test_main()` in a FreeRTOS task, allowing other FreeRTOS tasks to be
-    // spawned, if requested in the main test task.
+    // Run `test_main()` in a FreeRTOS task, allowing other FreeRTOS tasks to
+    // be spawned, if requested in the main test task.
     xTaskCreate(test_wrapper, "TestTask", configMINIMAL_STACK_SIZE, NULL,
                 tskIDLE_PRIORITY + 1, NULL);
     vTaskStartScheduler();
@@ -82,5 +83,6 @@ int main(int argc, char **argv) {
   }
 
   // Unreachable code.
+  abort();
   return 1;
 }

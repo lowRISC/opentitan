@@ -2,9 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-package(default_visibility = ["//visibility:public"])
-
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+
+package(default_visibility = ["//visibility:public"])
 
 # TODO use more specific targets to avoid unnecesary dependencies
 # https://github.com/lowRISC/opentitan/issues/9098
@@ -79,6 +79,36 @@ cc_library(
 )
 
 cc_library(
+    name = "ottf_start",
+    srcs = [
+        "ottf_isrs.S",
+        "ottf_isrs.c",
+        "ottf_start.S",
+    ],
+    hdrs = [
+        "ottf_isrs.h",
+        "ottf_macros.h",
+    ],
+    copts = [
+        "-nostdlib",
+        "-ffreestanding",
+    ],
+    linkopts = [
+        "-T $(location ottf.ld)",
+    ],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "ottf.ld",
+        "//hw/top_earlgrey/sw/autogen:linker_script",
+        "//sw/device:info_sections",
+        "//sw/device/lib/base",
+        "//sw/device/lib/crt",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+    ],
+)
+
+cc_library(
     name = "ottf",
     srcs = [
         "ottf.c",
@@ -107,20 +137,5 @@ cc_library(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/vendor/freertos_freertos_kernel:kernel",
-    ],
-)
-
-cc_library(
-    name = "ottf_isrs",
-    srcs = [
-        "ottf_isrs.S",
-        "ottf_isrs.c",
-    ],
-    hdrs = [
-        "ottf_isrs.h",
-    ],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":freertos_port",
     ],
 )

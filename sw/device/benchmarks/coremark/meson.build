@@ -18,11 +18,10 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     ],
     name_suffix: 'elf',
     dependencies: [
+      device_lib,
+      ottf_start_lib,
       sw_lib_dif_uart,
       sw_lib_mem,
-      test_rom_ext,
-      device_lib,
-      sw_lib_testing_ottf_isrs,
       sw_lib_testing_test_status,
     ],
     # Set up coremark-specific defines.

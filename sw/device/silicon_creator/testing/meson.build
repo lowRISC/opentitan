@@ -19,10 +19,9 @@ foreach mask_rom_test_name, mask_rom_test_info : mask_rom_tests
       mask_rom_test_name + '_' + device_name,
       name_suffix: 'elf',
       dependencies: [
-        test_rom_ext,
         device_lib,
         mask_rom_test_info['library'],
-        sw_lib_testing_ottf,
+        ottf_lib,
       ],
     )
 

@@ -16,7 +16,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-// Symbols defined in `sw/device/lib/testing/test_rom_ext/test_rom_ext.ld`,
+// Symbols defined in `sw/device/lib/testing/test_framework/ottf.ld`,
 // which we use to check that the CRT did what it was supposed to.
 extern char _bss_start;
 extern char _bss_end;

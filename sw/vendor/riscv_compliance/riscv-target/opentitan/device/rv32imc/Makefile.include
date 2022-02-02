@@ -9,7 +9,7 @@ OT_BIN       ?= $(OT_ROOT)/build-bin
 OT_TOOLS     ?= /tools/riscv/bin
 OT_FPGA_UART ?=
 OT_TARGET    ?= fpga_nexysvideo
-LDSCRIPT      = $(OT_ROOT)/sw/device/lib/testing/test_rom_ext/test_rom_ext.ld
+LDSCRIPT      = $(OT_ROOT)/sw/device/lib/testing/test_framework/ottf.ld
 DEFINES       = $(CARG) -DPRIV_MISA_S=0 -DPRIV_MISA_U=0 -DRVTEST_ENTRY=_rvc_start -DTRAPALIGN=8
 TARGET_SIM   ?= $(OT_ROOT)/build/lowrisc_systems_chip_earlgrey_verilator_0.1/sim-verilator/Vchip_earlgrey_verilator
 
@@ -65,8 +65,7 @@ COMPILE_TARGET += \
 		-L$(OT_ROOT) -T$(LDSCRIPT) $$< \
 		$(OPENTITAN)/main.c \
 		$(OPENTITAN)/run_rvc_test.S \
-		$(OT_ROOT)/sw/device/lib/testing/test_rom_ext/test_rom_ext_irq_vector.S \
-		$(OT_ROOT)/sw/device/lib/testing/test_rom_ext/test_rom_ext_start.S \
+		$(OT_ROOT)/sw/device/lib/testing/test_framework/ottf_start.S \
 		-L$(OT_BIN)/sw/device/riscv_compliance_support \
 		-l$(COMPLIANCE_LIB) \
 		-o $$(@); \
