@@ -17,6 +17,7 @@ module keymgr_ctrl
   input rst_ni,
 
   // lifecycle enforcement
+  // SEC_CM: CTRL.FSM.GLOBAL_ESC
   input en_i,
 
   // faults that can occur outside of operations
@@ -239,6 +240,7 @@ module keymgr_ctrl
   //////////////////////////
   logic [StateWidth-1:0] state_raw_q;
   assign state_q = keymgr_ctrl_state_e'(state_raw_q);
+  // SEC_CM: CTRL.FSM.SPARSE
   prim_sparse_fsm_flop #(
     .StateEnumT(keymgr_ctrl_state_e),
     .Width(StateWidth),
@@ -352,6 +354,7 @@ module keymgr_ctrl
     endcase // unique case (update_sel)
   end
 
+  // SEC_CM: CTRL.CTR.REDUN
   prim_count #(
     .Width(CntWidth),
     .OutSelDnCnt(1'b0),
@@ -391,6 +394,8 @@ module keymgr_ctrl
   logic inv_state;
   assign adv_state = op_ack & adv_req & ~op_err;
   assign dis_state = op_ack & dis_req;
+
+  // SEC_CM: CTRL.FSM.LOCAL_ESC
   assign inv_state = op_ack & op_fault_err;
 
   always_comb begin
@@ -853,6 +858,7 @@ module keymgr_ctrl
   // flops in order to prevent FSM state encoding optimizations.
   logic [DataStateWidth-1:0] data_st_raw_q;
   assign data_st_q = keymgr_ctrl_data_state_e'(data_st_raw_q);
+  // SEC_CM: DATA.FSM.SPARSE
   prim_sparse_fsm_flop #(
     .StateEnumT(keymgr_ctrl_data_state_e),
     .Width(DataStateWidth),

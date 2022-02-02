@@ -53,6 +53,7 @@ module keymgr
   input kmac_en_masking_i,
 
   // the following signals should eventually be wrapped into structs from other modules
+  // SEC_CM: LC_CTRL.INTERSIG.MUBI
   input lc_ctrl_pkg::lc_tx_t lc_keymgr_en_i,
   input lc_ctrl_pkg::lc_keymgr_div_t lc_keymgr_div_i,
   input otp_ctrl_pkg::otp_keymgr_key_t otp_key_i,
@@ -124,6 +125,10 @@ module keymgr
   logic regfile_intg_err;
   logic shadowed_storage_err;
   logic shadowed_update_err;
+  // SEC_CM: BUS.INTEGRITY
+  // SEC_CM: CONFIG.SHADOW
+  // SEC_CM: OP.CONFIG.REGWEN, RESEED.CONFIG.REGWEN, SW_BINDING.CONFIG.REGWEN
+  // SEC_CM: MAX_KEY_VER.CONFIG.REGWEN
   keymgr_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -460,6 +465,8 @@ module keymgr
 
   // General module for checking inputs
   logic key_vld;
+  // SEC_CM: CONSTANTS.CONSISTENCY
+  // SEC_CM: INTERSIG.CONSISTENCY
   keymgr_input_checks u_checks (
     .rom_digest_i,
     .max_key_versions_i(max_key_versions),
@@ -516,6 +523,7 @@ module keymgr
   /////////////////////////////////////
   //  Side load key storage
   /////////////////////////////////////
+  // SEC_CM: HW.KEY.SW_NOACCESS
   keymgr_sideload_key_ctrl u_sideload_ctrl (
     .clk_i,
     .rst_ni,
@@ -525,6 +533,7 @@ module keymgr
     .wipe_key_i(wipe_key),
     .dest_sel_i(cipher_sel),
     .hw_key_sel_i(hw_key_sel),
+    // SEC_CM: OUTPUT_KEYS.CTRL.REDUN
     .data_en_i(data_en),
     .data_valid_i(data_valid),
     .key_i(kmac_key),
@@ -549,6 +558,7 @@ module keymgr
       .mubi_o(hw_key_sel_buf)
     );
 
+    // SEC_CM: OUTPUT_KEYS.CTRL.REDUN
     prim_sec_anchor_buf #(
      .Width(32)
     ) u_prim_buf_share0_d (
@@ -712,4 +722,5 @@ module keymgr
                                          alert_tx_o[0])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlMainFsmCheck_A, u_ctrl.u_state_regs, alert_tx_o[0])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlDataFsmCheck_A, u_ctrl.u_data_state_regs, alert_tx_o[0])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacIfFsmCheck_A, u_kmac_if.u_state_regs, alert_tx_o[0])
 endmodule // keymgr
