@@ -27,4 +27,44 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     run_common_vseq_wrapper(num_trans);
   endtask : body
 
+  virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
+
+    super.check_sec_cm_fi_resp(if_proxy);
+
+    // TODO, check the status CSR
+    case (if_proxy.sec_cm_type)
+      SecCmPrimCount: begin
+      end
+      SecCmPrimSparseFsmFlop: begin
+      end
+      SecCmPrimDoubleLfsr: begin
+        bit[TL_DW-1:0] status_val;
+
+        // TODO, this fault leads to other other errors as well, most of bits in status are set 1,
+        // confirm with designer to see if that is expected.
+        csr_rd(.ptr(ral.status), .value(status_val));
+        `DV_CHECK_EQ(status_val[OtpLfsrFsmErrIdx], 1)
+      end
+      default: `uvm_fatal(`gfn, $sformatf("unexpected sec_cm_type %s", if_proxy.sec_cm_type.name))
+    endcase
+
+    // TODO, after fault occurs, OTP operation may be blocked. If so, check here
+  endtask : check_sec_cm_fi_resp
+
+   virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
+    // TODO, disable all assertons now
+    if (!enable) begin
+      $assertoff(0, "tb.dut");
+    end
+    case (if_proxy.sec_cm_type)
+      SecCmPrimCount: begin
+      end
+      SecCmPrimSparseFsmFlop: begin
+      end
+      SecCmPrimDoubleLfsr: begin
+      end
+      default: `uvm_fatal(`gfn, $sformatf("unexpected sec_cm_type %s", if_proxy.sec_cm_type.name))
+    endcase
+  endfunction: sec_cm_fi_ctrl_svas
+
 endclass
