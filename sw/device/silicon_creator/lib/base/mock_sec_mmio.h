@@ -9,6 +9,11 @@
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/testing/mask_rom_test.h"
 
+extern "C" {
+// Required by `SEC_MMIO_WRITE_INCREMENT()`.
+volatile sec_mmio_ctx_t sec_mmio_ctx;
+}
+
 namespace mask_rom_test {
 namespace internal {
 /**
