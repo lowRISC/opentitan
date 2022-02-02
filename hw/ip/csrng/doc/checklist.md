@@ -227,9 +227,11 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Tests         | [SEC_CM_VERIFIED][]                     | Not Started |
-
-[SEC_CM_VERIFIED]:                    {{<relref "/doc/project/checklist.md#sec_cm_verified" >}}
+Tests         | [FPV_SEC_CM_VERIFIED][]                 | Not Started |
+Tests         | [SIM_SEC_CM_VERIFIED][]                 | Not Started |
+ 
+[FPV_SEC_CM_VERIFIED]:                {{<relref "/doc/project/checklist.md#fpv_sec_cm_verified" >}}
+[SIM_SEC_CM_VERIFIED]:                {{<relref "/doc/project/checklist.md#sim_sec_cm_verified" >}}
 
 ### V3
 
