@@ -26,3 +26,37 @@ macro_rules! collection {
         Iterator::collect(IntoIterator::into_iter([$($v),*]))
     }};
 }
+
+/// The `testdata` macro can be used in tests to reference testdata directories.
+#[macro_export]
+#[cfg(test)]
+macro_rules! testdata {
+    () => {{
+        use std::path::PathBuf;
+        let mut path = PathBuf::new();
+        path.push(file!());
+        path.pop();
+        path.push("testdata");
+        path
+    }};
+    ($f:expr) => {{
+        let mut path = testdata!();
+        path.push($f);
+        path
+    }};
+}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn test_testdata() {
+        assert_eq!(
+            testdata!().to_str().unwrap(),
+            "sw/host/opentitanlib/src/util/testdata"
+        );
+        assert_eq!(
+            testdata!("my.file").to_str().unwrap(),
+            "sw/host/opentitanlib/src/util/testdata/my.file"
+        );
+    }
+}
