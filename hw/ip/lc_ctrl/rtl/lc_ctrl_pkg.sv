@@ -49,6 +49,129 @@ package lc_ctrl_pkg;
   parameter int LcKeymgrDivWidth = 128;
   typedef logic [LcKeymgrDivWidth-1:0] lc_keymgr_div_t;
 
+  /////////////////////////////////////////////
+  // Helper Functions for Life Cycle Signals //
+  /////////////////////////////////////////////
+
+  // Test whether the value is supplied is one of the valid enumerations
+  function automatic logic lc_tx_test_invalid(lc_tx_t val);
+    return ~(val inside {On, Off});
+  endfunction : lc_tx_test_invalid
+
+  // Convert a 1 input value to a mubi output
+  function automatic lc_tx_t lc_tx_bool_to_mubi(logic val);
+    return (val ? On : Off);
+  endfunction : lc_tx_bool_to_mubi
+
+  // Test whether the multibit value signals an "enabled" condition.
+  // The strict version of this function requires
+  // the multibit value to equal True.
+  function automatic logic lc_tx_test_true_strict(lc_tx_t val);
+    return On == val;
+  endfunction : lc_tx_test_true_strict
+
+  // Test whether the multibit value signals a "disabled" condition.
+  // The strict version of this function requires
+  // the multibit value to equal False.
+  function automatic logic lc_tx_test_false_strict(lc_tx_t val);
+    return Off == val;
+  endfunction : lc_tx_test_false_strict
+
+  // Test whether the multibit value signals an "enabled" condition.
+  // The loose version of this function interprets all
+  // values other than False as "enabled".
+  function automatic logic lc_tx_test_true_loose(lc_tx_t val);
+    return Off != val;
+  endfunction : lc_tx_test_true_loose
+
+  // Test whether the multibit value signals a "disabled" condition.
+  // The loose version of this function interprets all
+  // values other than True as "disabled".
+  function automatic logic lc_tx_test_false_loose(lc_tx_t val);
+    return On != val;
+  endfunction : lc_tx_test_false_loose
+
+
+  // Performs a logical OR operation between two multibit values.
+  // This treats "act" as logical 1, and all other values are
+  // treated as 0. Truth table:
+  //
+  // A    | B    | OUT
+  //------+------+-----
+  // !act | !act | !act
+  // act  | !act | act
+  // !act | act  | act
+  // act  | act  | act
+  //
+  function automatic lc_tx_t lc_tx_or(lc_tx_t a, lc_tx_t b, lc_tx_t act);
+    logic [TxWidth-1:0] a_in, b_in, act_in, out;
+    a_in = a;
+    b_in = b;
+    act_in = act;
+    for (int k = 0; k < TxWidth; k++) begin
+      if (act_in[k]) begin
+        out[k] = a_in[k] || b_in[k];
+      end else begin
+        out[k] = a_in[k] && b_in[k];
+      end
+    end
+    return lc_tx_t'(out);
+  endfunction : lc_tx_or
+
+  // Performs a logical AND operation between two multibit values.
+  // This treats "act" as logical 1, and all other values are
+  // treated as 0. Truth table:
+  //
+  // A    | B    | OUT
+  //------+------+-----
+  // !act | !act | !act
+  // act  | !act | !act
+  // !act | act  | !act
+  // act  | act  | act
+  //
+  function automatic lc_tx_t lc_tx_and(lc_tx_t a, lc_tx_t b, lc_tx_t act);
+    logic [TxWidth-1:0] a_in, b_in, act_in, out;
+    a_in = a;
+    b_in = b;
+    act_in = act;
+    for (int k = 0; k < TxWidth; k++) begin
+      if (act_in[k]) begin
+        out[k] = a_in[k] && b_in[k];
+      end else begin
+        out[k] = a_in[k] || b_in[k];
+      end
+    end
+    return lc_tx_t'(out);
+  endfunction : lc_tx_and
+
+  // Performs a logical OR operation between two multibit values.
+  // This treats "True" as logical 1, and all other values are
+  // treated as 0.
+  function automatic lc_tx_t lc_tx_or_hi(lc_tx_t a, lc_tx_t b);
+    return lc_tx_or(a, b, On);
+  endfunction : lc_tx_or_hi
+
+  // Performs a logical AND operation between two multibit values.
+  // This treats "True" as logical 1, and all other values are
+  // treated as 0.
+  function automatic lc_tx_t lc_tx_and_hi(lc_tx_t a, lc_tx_t b);
+    return lc_tx_and(a, b, On);
+  endfunction : lc_tx_and_hi
+
+  // Performs a logical OR operation between two multibit values.
+  // This treats "False" as logical 1, and all other values are
+  // treated as 0.
+  function automatic lc_tx_t lc_tx_or_lo(lc_tx_t a, lc_tx_t b);
+    return lc_tx_or(a, b, Off);
+  endfunction : lc_tx_or_lo
+
+  // Performs a logical AND operation between two multibit values.
+  // Tlos treats "False" as logical 1, and all other values are
+  // treated as 0.
+  function automatic lc_tx_t lc_tx_and_lo(lc_tx_t a, lc_tx_t b);
+    return lc_tx_and(a, b, Off);
+  endfunction : lc_tx_and_lo
+
   ////////////////////
   // Main FSM State //
   ////////////////////
