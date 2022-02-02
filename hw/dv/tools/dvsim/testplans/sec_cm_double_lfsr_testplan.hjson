@@ -1,0 +1,29 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  testpoints: [
+    {
+      name: prim_double_lfsr_check
+      desc: ''' Verify that violating prim_double_lfsr LFSR properties generate a fatal alert.
+
+            Stimulus:
+            - At the falling edge (non-active edge), force one of the LFSR to a different value than
+              the other's.
+            - Randomly force the LFSR back to a normal value to ensure the error is latched and
+              won't go away until reset.
+            - Within the next few cycles, the violation of hardened LFSR property should
+              generate a fatal alert.
+            - Repeat for ALL prim_double_lfsr instances in the DUT.
+
+            Checks:
+            - Check that fatal alert is triggered.
+            - Check that err_code/fault_status is updated correctly and preserved until reset.
+            - Verify any operations that follow fail (as applicable).
+            '''
+      milestone: V2S
+      tests: ["{name}_sec_cm"]
+    }
+  ]
+}
+

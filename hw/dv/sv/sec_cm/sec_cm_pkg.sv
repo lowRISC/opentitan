@@ -16,7 +16,8 @@ package sec_cm_pkg;
 
   typedef enum int {
     SecCmPrimCount,
-    SecCmPrimSparseFsmFlop
+    SecCmPrimSparseFsmFlop,
+    SecCmPrimDoubleLfsr
   } sec_cm_type_e;
 
   `include "sec_cm_base_if_proxy.sv"
