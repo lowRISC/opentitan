@@ -102,7 +102,8 @@ module alert_handler_ping_timer import alert_pkg::*; #(
     .StatePerm   ( RndCnstLfsrPerm    ),
     .MaxLenSVA   ( MaxLenSVA          ),
     .LockupSVA   ( LockupSVA          ),
-    .ExtSeedSVA  ( 1'b0               ) // ext seed is unused
+    .ExtSeedSVA  ( 1'b0               ), // ext seed is unused
+    .EnableAlertTriggerSVA ( 1'b0     )
   ) u_prim_double_lfsr (
     .clk_i,
     .rst_ni,
