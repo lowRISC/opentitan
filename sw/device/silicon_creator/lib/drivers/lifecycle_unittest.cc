@@ -124,7 +124,7 @@ class LifecycleDeathTest : public LifecycleTest,
                            public testing::WithParamInterface<uint32_t> {};
 
 TEST_P(LifecycleDeathTest, InvalidState) {
-  ASSERT_DEATH(
+  EXPECT_DEATH(
       {
         EXPECT_SEC_READ32(base_ + LC_CTRL_LC_STATE_REG_OFFSET, GetParam());
         lifecycle_state_get();

@@ -173,54 +173,53 @@ TEST_F(SecMmioTest, CheckCount) {
   EXPECT_EQ(ctx_->check_count, 2);
 }
 
-// Negative test cases trigger assertions, which are caugth by `ASSERT_DEATH`
-// calls. All test cases use lambda functions to wrap expectations and work
-// around issue google/googletest#1004.
+// Negative test cases trigger assertions, which are caugth by `EXPECT_DEATH`
+// calls.
 class SecMmioDeathTest : public SecMmioTest {};
 
 TEST_F(SecMmioDeathTest, Read32OrDieSimulatedFault) {
-  ASSERT_DEATH(
-      [] {
+  EXPECT_DEATH(
+      {
         EXPECT_ABS_READ32(0, 0x12345678);
         EXPECT_ABS_READ32(0, 0);
         sec_mmio_read32(0);
-      }(),
+      },
       "");
 }
 
 TEST_F(SecMmioDeathTest, Write32SimulatedFault) {
-  ASSERT_DEATH(
-      [] {
+  EXPECT_DEATH(
+      {
         EXPECT_ABS_WRITE32(0, 0x12345678);
         EXPECT_ABS_READ32(0, 0);
         sec_mmio_write32(0, 0x12345678);
-      }(),
+      },
       "");
 }
 
 TEST_F(SecMmioDeathTest, CheckValuesSimulatedFault) {
-  ASSERT_DEATH(
-      [] {
+  EXPECT_DEATH(
+      {
         EXPECT_ABS_WRITE32(0, 0x12345678);
         EXPECT_ABS_READ32(0, 0x12345678);
         sec_mmio_write32(0, 0x12345678);
 
         EXPECT_ABS_READ32(0, 0);
         sec_mmio_check_values(/*rnd_offset=*/0);
-      }(),
+      },
       "");
 }
 
 TEST_F(SecMmioDeathTest, CheckCountWriteMismatch) {
   // The developer forgot to increment the write counter, or an attacker
   // glitched the sec write operation.
-  ASSERT_DEATH(
-      [] {
+  EXPECT_DEATH(
+      {
         EXPECT_ABS_WRITE32(0, 0x12345678);
         EXPECT_ABS_READ32(0, 0x12345678);
         sec_mmio_write32(0, 0x12345678);
         sec_mmio_check_counters(/*expected_check_count=*/0);
-      }(),
+      },
       "");
 }
 
