@@ -529,10 +529,10 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
 
 #define HARDENED_CHECK_OP_EQ_ "beq"
 #define HARDENED_CHECK_OP_NE_ "bne"
-#define HARDENED_CHECK_OP_LT_ "blt"
-#define HARDENED_CHECK_OP_GT_ "bgt"
-#define HARDENED_CHECK_OP_LE_ "ble"
-#define HARDENED_CHECK_OP_GE_ "bge"
+#define HARDENED_CHECK_OP_LT_ "bltu"
+#define HARDENED_CHECK_OP_GT_ "bgtu"
+#define HARDENED_CHECK_OP_LE_ "bleu"
+#define HARDENED_CHECK_OP_GE_ "bgeu"
 
 // clang-format off
 #define HARDENED_CHECK_(op_, a_, b_) \
@@ -558,7 +558,7 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
 #define HARDENED_CHECK_OP_LE_ <=
 #define HARDENED_CHECK_OP_GE_ >=
 
-#define HARDENED_CHECK_(op_, a_, b_) assert((a_)op_(b_))
+#define HARDENED_CHECK_(op_, a_, b_) assert((uint64_t)(a_)op_(uint64_t)(b_))
 
 #define HARDENED_UNREACHABLE_() assert(false)
 #endif  // OT_OFF_TARGET_TEST
