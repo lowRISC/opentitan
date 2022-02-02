@@ -220,17 +220,19 @@
     {
       name: secret_partition
       desc: '''
-            Verify values of secret information partitions. Enabling by life cycle and otp is
-            required. Pages are read upon flash controller initialization.
+            Verify the secret information partitions. Accessibility is controlled by the Life Cycle Controller
+            Seeds are read upon flash controller initialization and sent to the Key Manager, additionally verify
+            that scramble Keys are Read from the OTP and sent into the Flash Ctlr.  Also erify that programmed
+            Secret Partitions retain their values through a Reset Cycle.
             '''
       milestone: V2
-      tests: []
+      tests: ["flash_ctrl_hw_sec_otp"]
     }
     {
       name: isolation_partition
       desc: '''
-            Verify values of isolated information partitions. Accessablity is controlled by life
-            cycle and otp.
+            Verify the isolated information partitions. Accessiblity is controlled by the Life Cycle Controller
+            
             '''
       milestone: V2
       tests: []

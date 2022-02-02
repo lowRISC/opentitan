@@ -70,6 +70,19 @@ package flash_ctrl_env_pkg;
   // Need to create a design parameter for this
   parameter uint FlashFullDataWidth = flash_ctrl_pkg::DataWidth + 4;
 
+  parameter otp_ctrl_pkg::flash_otp_key_rsp_t FLASH_OTP_RSP_DEFAULT = '{
+      data_ack: 1'b0,
+      addr_ack: 1'b0,
+      key: '0,
+      rand_key: '0,
+      seed_valid: 1'b0
+  };
+
+  // For Secret Partitions
+  parameter uint FlashSecretPartWords = 8;  // Size Of Secret Part - (8x32=256 Bits)
+  parameter uint FlashCreatorPartStartAddr = 32'h00000800;  // Info Partition Page 1
+  parameter uint FlashOwnerPartStartAddr = 32'h00001000;  // Info Partition Page 2
+
   // types
   typedef enum int {
     FlashCtrlIntrProgEmpty = 0,
@@ -96,6 +109,13 @@ package flash_ctrl_env_pkg;
     FlashPartInfo1      = 2,
     FlashPartRedundancy = 4
   } flash_dv_part_e;
+
+  // Special Partitions
+  typedef enum logic [1:0] {
+    FlashCreatorPart = 0,
+    FlashOwnerPart   = 1,
+    FlashIsolPart    = 2
+  } flash_sec_part_e;
 
   typedef struct packed {
     bit  en;           // enable this region

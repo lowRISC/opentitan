@@ -69,7 +69,6 @@ class flash_ctrl_seq_cfg extends uvm_object;
   bit op_readonly_on_info_partition;  // Make info partition read-only.
   bit op_readonly_on_info1_partition;  // Make info1 partition read-only.
 
-
   uint op_erase_type_bank_pc;
   uint op_max_words;
   bit op_allow_invalid;
@@ -95,6 +94,12 @@ class flash_ctrl_seq_cfg extends uvm_object;
 
   // Timeout for erase transaction
   uint erase_timeout_ns;
+
+  // Enable/Disable the Secret Seeds and Keys during Initialisation
+  bit en_init_keys_seeds;
+
+  // Enable/Disable the Random Flash Inititlisation After Reset
+  bit disable_flash_init;
 
   `uvm_object_new
 
@@ -124,7 +129,6 @@ class flash_ctrl_seq_cfg extends uvm_object;
     op_on_redundancy_partition_pc = sel_redundancy_part_pc;
 
   endfunction : set_partition_pc
-
 
   virtual function void configure();
     max_num_trans                 = 20;
@@ -183,6 +187,10 @@ class flash_ctrl_seq_cfg extends uvm_object;
     prog_timeout_ns = 10_000_000;  // 10ms
 
     erase_timeout_ns = 120_000_000;  // 120ms
+
+    en_init_keys_seeds = 1'b0;  // Off
+
+    disable_flash_init = 1'b0;  // Off
 
     set_partition_pc();
 

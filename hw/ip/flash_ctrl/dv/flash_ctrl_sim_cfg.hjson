@@ -92,6 +92,12 @@
       run_opts: ["+zero_delays=1"]
       reseed: 20
     }
+    {
+      name: flash_ctrl_hw_sec_otp
+      uvm_test_seq: flash_ctrl_hw_sec_otp_vseq
+      reseed: 5
+    }
+  
   ]
 
   // List of regressions.
