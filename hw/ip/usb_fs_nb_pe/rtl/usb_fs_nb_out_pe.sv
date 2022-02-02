@@ -227,7 +227,7 @@ module usb_fs_nb_out_pe #(
         // The spec says we have up to 18 bit times to wait for the host's
         // data packet. If it doesn't arrive in time, we must invalidate the
         // transaction.
-        timeout_cntdown_d = timeout_cntdown_d - 1'b1;
+        timeout_cntdown_d = timeout_cntdown_q - 1'b1;
 
         if (rx_pkt_start_i) begin
           out_xact_state_next = StRcvdDataStart;
