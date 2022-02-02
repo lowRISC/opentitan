@@ -47,7 +47,7 @@ module edn_core import edn_pkg::*;
   localparam int CSGenBitsWidth = 128;
   localparam int EndPointBusWidth = 32;
   localparam int RescmdFifoIdxWidth = $clog2(RescmdFifoDepth);
-  localparam int EdnEnableCopies = 29;
+  localparam int EdnEnableCopies = 27;
   localparam int FifoRstCopies = 4;
   localparam int BootReqCopies = 3;
 
@@ -56,18 +56,17 @@ module edn_core import edn_pkg::*;
   logic event_edn_fatal_err;
   logic [EdnEnableCopies-1:1] edn_enable_fo;
   logic [FifoRstCopies-1:1] cmd_fifo_rst_fo;
-  logic [BootReqCopies-1:1] boot_request_fo;
+  logic [BootReqCopies-1:1] boot_req_mode_fo;
   logic edn_enable_pfa;
   logic cmd_fifo_rst_pfa;
   logic packer_arb_valid;
   logic packer_arb_ready;
   logic [NumEndPoints-1:0] packer_arb_req;
   logic [NumEndPoints-1:0] packer_arb_gnt;
-  logic                    auto_req_mode;
   logic                    auto_req_mode_pfe;
   logic                    auto_req_mode_pfa;
-  logic                    seq_auto_req_mode;
-  logic                    auto_req_mode_end;
+  logic                    main_sm_done_pulse;
+  logic                    main_sm_busy;
   logic                    capt_gencmd_fifo_cnt;
   logic                    capt_rescmd_fifo_cnt;
   logic                    max_reqs_cnt_zero;
@@ -79,6 +78,7 @@ module edn_core import edn_pkg::*;
   logic                    send_rescmd;
   logic                    cmd_sent;
   logic                    send_gencmd;
+  logic                    boot_send_gencmd;
   logic                    sw_cmd_req_load;
   logic [31:0]             sw_cmd_req_bus;
   logic                    reseed_cmd_load;
@@ -95,7 +95,9 @@ module edn_core import edn_pkg::*;
   logic                      boot_req_mode_pfa;
   logic                      boot_wr_cmd_reg;
   logic                      boot_wr_cmd_genfifo;
-  logic                      boot_auto_req;
+  logic                      auto_first_ack_wait;
+  logic                      auto_set_intr_gate;
+  logic                      auto_clr_intr_gate;
 
   logic [NumEndPoints-1:0]   packer_ep_clr;
   logic [NumEndPoints-1:0]   packer_ep_ack;
@@ -170,12 +172,11 @@ module edn_core import edn_pkg::*;
   logic                               send_gencmd_q, send_gencmd_d;
   logic                               csrng_fips_q, csrng_fips_d;
   logic [NumEndPoints-1:0]            edn_fips_q, edn_fips_d;
-  logic [3:0]                         boot_req_q, boot_req_d;
-  logic                               boot_auto_req_wack_q, boot_auto_req_wack_d;
-  logic                               boot_auto_req_dly_q, boot_auto_req_dly_d;
   logic [63:0]                        cs_rdata_capt_q, cs_rdata_capt_d;
   logic                               cs_rdata_capt_vld_q, cs_rdata_capt_vld_d;
   logic                               sw_rdy_sts_q, sw_rdy_sts_d;
+  logic                               intr_sts_gate_q, intr_sts_gate_d;
+  logic                               edn_enable_q, edn_enable_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -188,12 +189,11 @@ module edn_core import edn_pkg::*;
       send_gencmd_q <= '0;
       csrng_fips_q <= '0;
       edn_fips_q <= '0;
-      boot_req_q <= '0;
-      boot_auto_req_wack_q <= '0;
-      boot_auto_req_dly_q <= '0;
       cs_rdata_capt_q <= '0;
       cs_rdata_capt_vld_q <= '0;
       sw_rdy_sts_q   <= '0;
+      intr_sts_gate_q   <= '0;
+      edn_enable_q  <= '0;
     end else begin
       cs_cmd_req_q  <= cs_cmd_req_d;
       cs_cmd_req_vld_q  <= cs_cmd_req_vld_d;
@@ -204,12 +204,11 @@ module edn_core import edn_pkg::*;
       send_gencmd_q <= send_gencmd_d;
       csrng_fips_q <= csrng_fips_d;
       edn_fips_q <= edn_fips_d;
-      boot_req_q <= boot_req_d;
-      boot_auto_req_wack_q <= boot_auto_req_wack_d;
-      boot_auto_req_dly_q <= boot_auto_req_dly_d;
       cs_rdata_capt_q <= cs_rdata_capt_d;
       cs_rdata_capt_vld_q <= cs_rdata_capt_vld_d;
       sw_rdy_sts_q   <= sw_rdy_sts_d;
+      intr_sts_gate_q   <= intr_sts_gate_d;
+      edn_enable_q  <= edn_enable_d;
     end
 
   //--------------------------------------------
@@ -405,13 +404,12 @@ module edn_core import edn_pkg::*;
 
   // SW interface connection
   // cmd req
-  assign auto_req_mode = auto_req_mode_pfe;
   assign sw_cmd_req_load = reg2hw.sw_cmd_req.qe;
   assign sw_cmd_req_bus = reg2hw.sw_cmd_req.q;
   assign hw2reg.sum_sts.req_mode_sm_sts.de = 1'b1;
-  assign hw2reg.sum_sts.req_mode_sm_sts.d = seq_auto_req_mode;
+  assign hw2reg.sum_sts.req_mode_sm_sts.d = main_sm_busy;
   assign hw2reg.sum_sts.boot_inst_ack.de = 1'b1;
-  assign hw2reg.sum_sts.boot_inst_ack.d = csrng_cmd_ack && boot_request_fo[1];
+  assign hw2reg.sum_sts.boot_inst_ack.d = csrng_cmd_ack && boot_req_mode_fo[1];
 
   assign max_reqs_between_reseed_load = reg2hw.max_num_reqs_between_reseeds.qe;
   assign max_reqs_between_reseed_bus = reg2hw.max_num_reqs_between_reseeds.q;
@@ -434,14 +432,13 @@ module edn_core import edn_pkg::*;
 
   assign cs_cmd_req_out_d =
          (!edn_enable_fo[11]) ? '0 :
-         (!seq_auto_req_mode) ? cs_cmd_req_q :
          send_rescmd ? sfifo_rescmd_rdata :
-         send_gencmd ? sfifo_gencmd_rdata :
-         cs_cmd_req_out_q;
+         (send_gencmd || boot_send_gencmd) ? sfifo_gencmd_rdata :
+         cs_cmd_req_q;
 
   assign cs_cmd_req_vld_out_d =
          (!edn_enable_fo[12]) ? '0 :
-         seq_auto_req_mode ? (send_rescmd || send_gencmd) :
+         ((send_rescmd || send_gencmd || boot_send_gencmd) && cmd_sent) ? 1'b1 :
          cs_cmd_req_vld_q;
 
   // drive outputs
@@ -453,17 +450,27 @@ module edn_core import edn_pkg::*;
   assign hw2reg.sw_cmd_sts.cmd_rdy.d = cmd_rdy;
   assign cmd_rdy = !sw_cmd_req_load && sw_rdy_sts_q;
   assign sw_rdy_sts_d =
-         !edn_enable_fo[13] ? 1'b1 :
+         !edn_enable_q ? 1'b0 :
          sw_cmd_req_load ? 1'b0 :
-         seq_auto_req_mode ? 1'b0 :
+         auto_first_ack_wait ? 1'b1 :
+         main_sm_busy ? 1'b0 :
          csrng_cmd_i.csrng_req_ready ? 1'b1 :
          sw_rdy_sts_q;
 
+  assign edn_enable_d = edn_enable_fo[13];
+
   // receive cmd ack
   assign csrng_cmd_ack = csrng_cmd_i.csrng_rsp_ack;
-  assign csrng_cmd_ack_gated = csrng_cmd_i.csrng_rsp_ack && !seq_auto_req_mode;
+  assign csrng_cmd_ack_gated = csrng_cmd_ack && intr_sts_gate_q;
   assign hw2reg.sw_cmd_sts.cmd_sts.de = csrng_cmd_ack_gated;
   assign hw2reg.sw_cmd_sts.cmd_sts.d = csrng_cmd_i.csrng_rsp_sts;
+
+  assign intr_sts_gate_d =
+         !edn_enable_fo[14] ? 1'b0 :
+         main_sm_done_pulse ? 1'b1 :
+         auto_set_intr_gate ? 1'b1 :
+         auto_clr_intr_gate ? 1'b0 :
+         intr_sts_gate_q;
 
   // rescmd fifo
   prim_fifo_sync #(
@@ -486,20 +493,22 @@ module edn_core import edn_pkg::*;
 
   // feedback cmd back into rescmd fifo
   assign send_rescmd_d =
-         (!edn_enable_fo[14]) ? '0 :
+         (!edn_enable_fo[15]) ? '0 :
          send_rescmd;
 
   assign sfifo_rescmd_push =
-         seq_auto_req_mode ? send_rescmd_q :
+         send_rescmd_q ? 1'b1  :
          reseed_cmd_load;
 
-  assign sfifo_rescmd_wdata = seq_auto_req_mode ? cs_cmd_req_out_q :  reseed_cmd_bus;
+  assign sfifo_rescmd_wdata =
+         (auto_req_mode_pfe && main_sm_busy && !auto_first_ack_wait) ? cs_cmd_req_out_q :
+         reseed_cmd_bus;
 
   assign sfifo_rescmd_pop = send_rescmd;
 
   assign sfifo_rescmd_clr =
-         (!edn_enable_fo[15]) ? '0 :
-         (cmd_fifo_rst_fo[1] || auto_req_mode_end);
+         (!edn_enable_fo[16]) ? '0 :
+         (cmd_fifo_rst_fo[1] || main_sm_done_pulse);
 
   assign sfifo_rescmd_err =
          {(sfifo_rescmd_push && sfifo_rescmd_full),
@@ -527,24 +536,24 @@ module edn_core import edn_pkg::*;
 
   // feedback cmd back into gencmd fifo
   assign send_gencmd_d =
-         (!edn_enable_fo[16]) ? '0 :
+         (!edn_enable_fo[17]) ? '0 :
          send_gencmd;
 
   assign sfifo_gencmd_push =
          boot_wr_cmd_genfifo ? 1'b1 :
-         seq_auto_req_mode ? send_gencmd_q :
+         send_gencmd_q ? 1'b1  :
          generate_cmd_load;
 
   assign sfifo_gencmd_wdata =
          boot_wr_cmd_genfifo ? boot_gen_cmd :
-         seq_auto_req_mode ? cs_cmd_req_out_q :
+         (auto_req_mode_pfe && main_sm_busy && !auto_first_ack_wait) ? cs_cmd_req_out_q :
          generate_cmd_bus;
 
-  assign sfifo_gencmd_pop = send_gencmd;
+  assign sfifo_gencmd_pop = send_gencmd || boot_send_gencmd;
 
   assign sfifo_gencmd_clr =
-         (!edn_enable_fo[17]) ? '0 :
-         (cmd_fifo_rst_fo[2] || auto_req_mode_end);
+         (!edn_enable_fo[18]) ? '0 :
+         (cmd_fifo_rst_fo[2] || main_sm_done_pulse);
 
   assign sfifo_gencmd_err =
          {(sfifo_gencmd_push && sfifo_gencmd_full),
@@ -557,19 +566,26 @@ module edn_core import edn_pkg::*;
   edn_main_sm u_edn_main_sm (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .boot_req_mode_i(boot_auto_req_dly_q),
-    .auto_req_mode_i(auto_req_mode),
-    .sw_cmd_req_load_i(cs_cmd_req_vld_out_q),
-    .seq_auto_req_mode_o(seq_auto_req_mode),
-    .auto_req_mode_end_o(auto_req_mode_end),
+    .edn_enable_i(edn_enable_fo[19]),
+    .boot_req_mode_i(boot_req_mode_fo[2]),
+    .auto_req_mode_i(auto_req_mode_pfe),
+    .sw_cmd_req_load_i(sw_cmd_req_load),
+    .boot_wr_cmd_reg_o(boot_wr_cmd_reg),
+    .boot_wr_cmd_genfifo_o(boot_wr_cmd_genfifo),
+    .auto_set_intr_gate_o(auto_set_intr_gate),
+    .auto_clr_intr_gate_o(auto_clr_intr_gate),
+    .auto_first_ack_wait_o(auto_first_ack_wait),
+    .main_sm_done_pulse_o(main_sm_done_pulse),
     .csrng_cmd_ack_i(csrng_cmd_ack),
     .capt_gencmd_fifo_cnt_o(capt_gencmd_fifo_cnt),
+    .boot_send_gencmd_o(boot_send_gencmd),
     .send_gencmd_o(send_gencmd),
     .max_reqs_cnt_zero_i(max_reqs_cnt_zero),
     .capt_rescmd_fifo_cnt_o(capt_rescmd_fifo_cnt),
     .send_rescmd_o(send_rescmd),
     .cmd_sent_i(cmd_sent),
     .local_escalate_i(edn_cntr_err_sum),
+    .main_sm_busy_o(main_sm_busy),
     .main_sm_err_o(edn_main_sm_err)
   );
 
@@ -596,17 +612,17 @@ module edn_core import edn_pkg::*;
 
   assign max_reqs_cnt_load = (max_reqs_between_reseed_load || // sw initial load
                               send_rescmd && cmd_sent ||      // runtime decrement
-                              auto_req_mode_end);             // restore when auto mode done
+                              main_sm_done_pulse);             // restore when auto mode done
 
-  assign max_reqs_cnt_zero = boot_auto_req_dly_q ? 1'b0 : (max_reqs_cnt == '0);
+  assign max_reqs_cnt_zero = (max_reqs_cnt == '0);
 
 
   assign cmd_fifo_cnt_d =
-         (!edn_enable_fo[18]) ? '0 :
-         (cmd_fifo_rst_fo[3] || !seq_auto_req_mode) ? '0 :
+         (!edn_enable_fo[20]) ? '0 :
+         (cmd_fifo_rst_fo[3] || main_sm_done_pulse) ? '0 :
          capt_gencmd_fifo_cnt ? (sfifo_gencmd_depth) :
          capt_rescmd_fifo_cnt ? (sfifo_rescmd_depth) :
-         (send_gencmd || send_rescmd)? (cmd_fifo_cnt_q-1) :
+         (send_gencmd || boot_send_gencmd || send_rescmd)? (cmd_fifo_cnt_q-1) :
          cmd_fifo_cnt_q;
 
   assign cmd_sent = (cmd_fifo_cnt_q == RescmdFifoIdxWidth'(1));
@@ -619,7 +635,7 @@ module edn_core import edn_pkg::*;
   assign hw2reg.recov_alert_sts.boot_req_mode_field_alert.d  = boot_req_mode_pfa;
 
   for (genvar i = 1; i < BootReqCopies; i = i+1) begin : gen_mubi_boot_copies
-    assign boot_request_fo[i] = mubi4_test_true_strict(mubi_boot_req_mode_fanout[i]);
+    assign boot_req_mode_fo[i] = mubi4_test_true_strict(mubi_boot_req_mode_fanout[i]);
   end : gen_mubi_boot_copies
 
   prim_mubi4_sync #(
@@ -631,30 +647,6 @@ module edn_core import edn_pkg::*;
     .mubi_i(mubi_boot_req_mode),
     .mubi_o(mubi_boot_req_mode_fanout)
   );
-
-
-  assign boot_req_d[0] =
-         (!edn_enable_fo[19]) ? '0 :
-         boot_request_fo[2] ? 1'b1 :
-         boot_req_q[0];
-
-  assign boot_req_d[3:1] =
-         (!edn_enable_fo[20]) ? '0 :
-         boot_req_q[2:0];
-
-  assign boot_wr_cmd_reg = !boot_req_q[1] && boot_req_q[0];
-  assign boot_wr_cmd_genfifo =!boot_req_q[2] && boot_req_q[1];
-  assign boot_auto_req = !boot_req_q[3] && boot_req_q[2];
-
-  assign boot_auto_req_wack_d =
-         (!edn_enable_fo[21]) ? '0 :
-         boot_auto_req ? 1'b1 :
-         csrng_cmd_ack ? 1'b0 :
-         boot_auto_req_wack_q;
-
-  assign boot_auto_req_dly_d =
-         (!edn_enable_fo[22]) ? '0 :
-         boot_auto_req_wack_q;
 
 
   //--------------------------------------------
@@ -705,7 +697,7 @@ module edn_core import edn_pkg::*;
     .depth_o    ()
   );
 
-  assign packer_cs_clr = !edn_enable_fo[23];
+  assign packer_cs_clr = !edn_enable_fo[21];
   assign packer_cs_push = csrng_cmd_i.genbits_valid;
   assign packer_cs_wdata = csrng_cmd_i.genbits_bus;
   assign csrng_cmd_o.genbits_ready = packer_cs_wready;
@@ -713,7 +705,7 @@ module edn_core import edn_pkg::*;
   assign packer_arb_ready = packer_cs_rvalid;
 
   assign csrng_fips_d =
-         !edn_enable_fo[24] ? 1'b0 :
+         !edn_enable_fo[22] ? 1'b0 :
          (packer_cs_push && packer_cs_wready) ? csrng_cmd_i.genbits_fips :
          csrng_fips_q;
 
@@ -732,7 +724,7 @@ module edn_core import edn_pkg::*;
   assign cs_rdata_capt_d = cs_rdata_capt_vld ? packer_cs_rdata[63:0] : cs_rdata_capt_q;
 
   assign cs_rdata_capt_vld_d =
-         !edn_enable_fo[25] ? 1'b0 :
+         !edn_enable_fo[23] ? 1'b0 :
          cs_rdata_capt_vld ? 1'b1 :
          cs_rdata_capt_vld_q;
 
@@ -768,12 +760,12 @@ module edn_core import edn_pkg::*;
       .depth_o    ()
     );
 
-    assign packer_ep_clr[i] = !edn_enable_fo[26];
+    assign packer_ep_clr[i] = !edn_enable_fo[24];
     assign packer_ep_push[i] = packer_arb_valid && packer_ep_wready[i] && packer_arb_gnt[i];
     assign packer_ep_wdata[i] = packer_cs_rdata;
 
     // fips indication
-    assign edn_fips_d[i] = !edn_enable_fo[27] ? 1'b0 :
+    assign edn_fips_d[i] = !edn_enable_fo[25] ? 1'b0 :
            (packer_ep_push[i] && packer_ep_wready[i]) ?  csrng_fips_q :
            edn_fips_q[i];
     assign edn_o[i].edn_fips = edn_fips_q[i];
@@ -786,7 +778,7 @@ module edn_core import edn_pkg::*;
     edn_ack_sm u_edn_ack_sm_ep (
       .clk_i            (clk_i),
       .rst_ni           (rst_ni),
-      .enable_i         (edn_enable_fo[28]),
+      .enable_i         (edn_enable_fo[26]),
       .req_i            (edn_i[i].edn_req),
       .ack_o            (packer_ep_ack[i]),
       .fifo_not_empty_i (packer_ep_rvalid[i]),

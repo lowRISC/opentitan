@@ -10,52 +10,69 @@ module edn_main_sm (
   input logic                clk_i,
   input logic                rst_ni,
 
+  input logic                edn_enable_i,
   input logic                boot_req_mode_i,
   input logic                auto_req_mode_i,
   input logic                sw_cmd_req_load_i,
-  output logic               seq_auto_req_mode_o,
-  output logic               auto_req_mode_end_o,
+  output logic               boot_wr_cmd_reg_o,
+  output logic               boot_wr_cmd_genfifo_o,
+  output logic               auto_set_intr_gate_o,
+  output logic               auto_clr_intr_gate_o,
+  output logic               auto_first_ack_wait_o,
+  output logic               main_sm_done_pulse_o,
   input logic                csrng_cmd_ack_i,
   output logic               capt_gencmd_fifo_cnt_o,
+  output logic               boot_send_gencmd_o,
   output logic               send_gencmd_o,
   input logic                max_reqs_cnt_zero_i,
   output logic               capt_rescmd_fifo_cnt_o,
   output logic               send_rescmd_o,
   input logic                cmd_sent_i,
   input logic                local_escalate_i,
+  output logic               main_sm_busy_o,
   output logic               main_sm_err_o
 );
-
-// Encoding generated with:
-// $ ./util/design/sparse-fsm-encode.py -d 3 -m 8 -n 6 \
-//      -s 3370065314 --language=sv
 //
 // Hamming distance histogram:
 //
 //  0: --
 //  1: --
 //  2: --
-//  3: |||||||||||||||||||| (57.14%)
-//  4: ||||||||||||||| (42.86%)
-//  5: --
-//  6: --
+//  3: ||||||||||| (17.54%)
+//  4: |||||||||||||||||||| (29.82%)
+//  5: ||||||||||||||||| (26.32%)
+//  6: ||||||||||| (17.54%)
+//  7: ||||| (7.60%)
+//  8:  (1.17%)
+//  9: --
 //
 // Minimum Hamming distance: 3
-// Maximum Hamming distance: 4
-// Minimum Hamming weight: 1
-// Maximum Hamming weight: 5
+// Maximum Hamming distance: 8
+// Minimum Hamming weight: 2
+// Maximum Hamming weight: 7
 //
 
-  localparam int StateWidth = 6;
+  localparam int StateWidth = 9;
   typedef enum logic [StateWidth-1:0] {
-    Idle          = 6'b111011, // idle (hamming distance = 3)
-    AckWait       = 6'b010111, // wait for csrng req ack
-    Dispatch      = 6'b011100, // dispatch the next cmd after ack
-    CaptGenCnt    = 6'b110000, // capture the generate fifo count
-    SendGenCmd    = 6'b001001, // send the generate cmd req
-    CaptReseedCnt = 6'b101110, // capture the reseed fifo count
-    SendReseedCmd = 6'b000010, // send the reseed cmd req
-    Error         = 6'b100101  // illegal state reached and hang
+    Idle              = 9'b110000101, // idle
+    BootLoadIns       = 9'b110110111, // boot: load the instantiate command
+    BootLoadGen       = 9'b000000011, // boot: load the generate command
+    BootInsAckWait    = 9'b011010010, // boot: wait for instantiate command ack
+    BootCaptGenCnt    = 9'b010111010, // boot: capture the gen fifo count
+    BootSendGenCmd    = 9'b011100100, // boot: send the generate command
+    BootGenAckWait    = 9'b101101100, // boot: wait for generate command ack
+    BootPulse         = 9'b100001010, // boot: signal a done pulse
+    BootDone          = 9'b011011111, // boot: stay in done state until reset
+    AutoLoadIns       = 9'b001110000, // auto: load the instantiate command
+    AutoFirstAckWait  = 9'b001001101, // auto: wait for first instantiate command ack
+    AutoAckWait       = 9'b101100011, // auto: wait for instantiate command ack
+    AutoDispatch      = 9'b110101110, // auto: determine next command to be sent
+    AutoCaptGenCnt    = 9'b000110101, // auto: capture the gen fifo count
+    AutoSendGenCmd    = 9'b111111000, // auto: send the generate command
+    AutoCaptReseedCnt = 9'b000100110, // auto: capture the reseed fifo count
+    AutoSendReseedCmd = 9'b101010110, // auto: send the reseed command
+    SWPortMode        = 9'b100111001, // swport: no hw request mode
+    Error             = 9'b010010001  // illegal state reached and hang
   } state_e;
 
   state_e state_d, state_q;
@@ -78,60 +95,126 @@ module edn_main_sm (
   );
 
   assign state_q = state_e'(state_raw_q);
+  assign main_sm_busy_o = (state_q != Idle) && (state_q != BootPulse) &&
+         (state_q != BootDone) && (state_q != SWPortMode);
 
   always_comb begin
     state_d = state_q;
+    boot_wr_cmd_reg_o = 1'b0;
+    boot_wr_cmd_genfifo_o = 1'b0;
+    boot_send_gencmd_o = 1'b0;
+    auto_set_intr_gate_o = 1'b0;
+    auto_clr_intr_gate_o = 1'b0;
+    auto_first_ack_wait_o = 1'b0;
     capt_gencmd_fifo_cnt_o = 1'b0;
     send_gencmd_o = 1'b0;
     capt_rescmd_fifo_cnt_o = 1'b0;
     send_rescmd_o = 1'b0;
-    seq_auto_req_mode_o = 1'b1;
-    auto_req_mode_end_o = 1'b0;
+    main_sm_done_pulse_o = 1'b0;
     main_sm_err_o = 1'b0;
     unique case (state_q)
       Idle: begin
-        seq_auto_req_mode_o = 1'b0;
-        if (boot_req_mode_i) begin
-          state_d = AckWait;
-        end else if (auto_req_mode_i && sw_cmd_req_load_i) begin
-          state_d = AckWait;
+        if (boot_req_mode_i && edn_enable_i) begin
+          state_d = BootLoadIns;
+        end else if (auto_req_mode_i && edn_enable_i) begin
+          state_d = AutoLoadIns;
+        end else if (edn_enable_i) begin
+          main_sm_done_pulse_o = 1'b1;
+          state_d = SWPortMode;
         end
       end
-      AckWait: begin
+      BootLoadIns: begin
+        boot_wr_cmd_reg_o = 1'b1;
+        state_d = BootLoadGen;
+      end
+      BootLoadGen: begin
+        boot_wr_cmd_genfifo_o = 1'b1;
+        state_d = BootInsAckWait;
+      end
+      BootInsAckWait: begin
         if (csrng_cmd_ack_i) begin
-          state_d = Dispatch;
+          state_d = BootCaptGenCnt;
         end
       end
-      Dispatch: begin
-        if (!auto_req_mode_i && !boot_req_mode_i) begin
-          auto_req_mode_end_o = 1'b1;
+      BootCaptGenCnt: begin
+        capt_gencmd_fifo_cnt_o = 1'b1;
+        state_d = BootSendGenCmd;
+      end
+      BootSendGenCmd: begin
+        boot_send_gencmd_o = 1'b1;
+        if (cmd_sent_i) begin
+          state_d = BootGenAckWait;
+        end
+      end
+      BootGenAckWait: begin
+        if (csrng_cmd_ack_i) begin
+          state_d = BootPulse;
+        end
+      end
+      BootPulse: begin
+        main_sm_done_pulse_o = 1'b1;
+        state_d = BootDone;
+      end
+      BootDone: begin
+        if (!edn_enable_i) begin
+          state_d = Idle;
+        end
+      end
+      //-----------------------------------
+      AutoLoadIns: begin
+        auto_set_intr_gate_o = 1'b1;
+        auto_first_ack_wait_o = 1'b1;
+        if (sw_cmd_req_load_i) begin
+          state_d = AutoFirstAckWait;
+        end
+      end
+      AutoFirstAckWait: begin
+        auto_first_ack_wait_o = 1'b1;
+        if (csrng_cmd_ack_i) begin
+          auto_clr_intr_gate_o = 1'b1;
+          state_d = AutoDispatch;
+        end
+      end
+      AutoAckWait: begin
+        if (csrng_cmd_ack_i) begin
+          state_d = AutoDispatch;
+        end
+      end
+      AutoDispatch: begin
+        if (!auto_req_mode_i) begin
+          main_sm_done_pulse_o = 1'b1;
           state_d = Idle;
         end else begin
           if (max_reqs_cnt_zero_i) begin
-            state_d = CaptReseedCnt;
+            state_d = AutoCaptReseedCnt;
           end else begin
-            state_d = CaptGenCnt;
+            state_d = AutoCaptGenCnt;
           end
         end
       end
-      CaptGenCnt: begin
+      AutoCaptGenCnt: begin
         capt_gencmd_fifo_cnt_o = 1'b1;
-        state_d = SendGenCmd;
+        state_d = AutoSendGenCmd;
       end
-      SendGenCmd: begin
+      AutoSendGenCmd: begin
         send_gencmd_o = 1'b1;
         if (cmd_sent_i) begin
-          state_d = AckWait;
+          state_d = AutoAckWait;
         end
       end
-      CaptReseedCnt: begin
+      AutoCaptReseedCnt: begin
         capt_rescmd_fifo_cnt_o = 1'b1;
-        state_d = SendReseedCmd;
+        state_d = AutoSendReseedCmd;
       end
-      SendReseedCmd: begin
+      AutoSendReseedCmd: begin
         send_rescmd_o = 1'b1;
         if (cmd_sent_i) begin
-          state_d = AckWait;
+          state_d = AutoAckWait;
+        end
+      end
+      SWPortMode: begin
+        if (!edn_enable_i) begin
+          state_d = Idle;
         end
       end
       Error: begin
