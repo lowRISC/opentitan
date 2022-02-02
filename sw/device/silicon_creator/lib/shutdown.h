@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <stdnoreturn.h>
 
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -22,12 +23,13 @@ extern "C" {
  *
  * @param expr_ An expression which results in an rom_error_t.
  */
-#define SHUTDOWN_IF_ERROR(expr_) \
-  do {                           \
-    rom_error_t error = (expr_); \
-    if (error != kErrorOk) {     \
-      shutdown_finalize(error);  \
-    }                            \
+#define SHUTDOWN_IF_ERROR(expr_)         \
+  do {                                   \
+    rom_error_t error_ = expr_;          \
+    if (launder32(error_) != kErrorOk) { \
+      shutdown_finalize(error_);         \
+    }                                    \
+    HARDENED_CHECK_EQ(error_, kErrorOk); \
   } while (false)
 
 /**
