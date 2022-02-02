@@ -11,10 +11,10 @@ import re
 import sys
 from pathlib import Path
 
-from reggen import (gen_cheader, gen_dv, gen_fpv, gen_html,
-                    gen_json, gen_rtl, gen_rust, gen_selfdoc, version)
-from reggen.ip_block import IpBlock
+from reggen import (gen_cheader, gen_dv, gen_fpv, gen_html, gen_json, gen_rtl,
+                    gen_rust, gen_sec_cm_testplan, gen_selfdoc, version)
 from reggen.countermeasure import CounterMeasure
+from reggen.ip_block import IpBlock
 
 DESC = """regtool, generate register info from Hjson source"""
 
@@ -61,6 +61,9 @@ def main():
     parser.add_argument('-r',
                         action='store_true',
                         help='Output as SystemVerilog RTL')
+    parser.add_argument('--sec-cm-testplan',
+                        action='store_true',
+                        help='Generate security countermeasures testplan.')
     parser.add_argument('-s',
                         action='store_true',
                         help='Output as UVM Register class')
@@ -123,6 +126,7 @@ def main():
                      ('d', ('html', None)), ('doc', ('doc', None)),
                      ('r', ('rtl', 'rtl')), ('s', ('dv', 'dv')),
                      ('f', ('fpv', 'fpv/vip')), ('cdefines', ('cdh', None)),
+                     ('sec_cm_testplan', ('sec_cm_testplan', 'data')),
                      ('rust', ('rs', None))]
     format = None
     dirspec = None
@@ -146,8 +150,7 @@ def main():
         if len(tokens) != 2:
             raise ValueError('Entry {} in list of parameter defaults to '
                              'apply is {!r}, which is not of the form '
-                             'param=value.'
-                             .format(idx, raw_param))
+                             'param=value.'.format(idx, raw_param))
         params.append((tokens[0], tokens[1]))
 
     # Define either outfile or outdir (but not both), depending on the output
@@ -207,6 +210,8 @@ def main():
     else:
         if format == 'rtl':
             return gen_rtl.gen_rtl(obj, outdir)
+        if format == 'sec_cm_testplan':
+            return gen_sec_cm_testplan.gen_sec_cm_testplan(obj, outdir)
         if format == 'dv':
             return gen_dv.gen_dv(obj, args.dv_base_names, outdir)
         if format == 'fpv':
@@ -237,7 +242,8 @@ def main():
             if format == 'html':
                 return gen_html.gen_html(obj, outfile)
             elif format == 'cdh':
-                return gen_cheader.gen_cdefines(obj, outfile, src_lic, src_copy)
+                return gen_cheader.gen_cdefines(obj, outfile, src_lic,
+                                                src_copy)
             elif format == 'rs':
                 return gen_rust.gen_rust(obj, outfile, src_lic, src_copy)
             else:
