@@ -107,7 +107,7 @@ void sec_mmio_write32_shadowed(uint32_t addr, uint32_t value) {
 }
 
 void sec_mmio_write_increment(uint32_t value) {
-  sec_mmio_ctx.expected_write_count += value;
+  SEC_MMIO_WRITE_INCREMENT(value);
 }
 
 void sec_mmio_check_values(uint32_t rnd_offset) {

@@ -12,11 +12,6 @@
 #include "sw/device/silicon_creator/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-extern "C" {
-// Declared in the sec_mmio module.
-extern sec_mmio_ctx_t sec_mmio_ctx;
-}
-
 namespace sec_mmio_unittest {
 namespace {
 using ::testing::Each;
@@ -26,7 +21,7 @@ using ::testing::Eq;
 class SecMmioTest : public mask_rom_test::MaskRomTest {
  protected:
   void SetUp() override { sec_mmio_init(); }
-  sec_mmio_ctx_t *ctx_ = &::sec_mmio_ctx;
+  volatile sec_mmio_ctx_t *ctx_ = &::sec_mmio_ctx;
   mask_rom_test::MockAbsMmio mmio_;
 };
 

@@ -109,6 +109,31 @@ OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, expected_write_count, 1608);
 OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, check_count, 1612);
 OT_ASSERT_SIZE(sec_mmio_ctx_t, 1616);  // Checked by linker script.
 
+// The sec_mmio_ctx is referenced here to be able to use it inside the
+// `SEC_MMIO_WRITE_INCREMENT()` macro.
+extern volatile sec_mmio_ctx_t sec_mmio_ctx;
+
+/**
+ * Increment the expected count of register writes by `value`.
+ *
+ * This macro is preferred over `sec_mmio_write_increment()` as it doesn't
+ * require a function call to update the expected number of writes stored in
+ * `sec_mmio_ctx`.
+ *
+ * @param value The expected write count increment.
+ */
+#define SEC_MMIO_WRITE_INCREMENT(value)           \
+  do {                                            \
+    sec_mmio_ctx.expected_write_count += (value); \
+  } while (0);
+
+/**
+ * Assert macro used to cross-reference exported sec_mmio expected write counts
+ * to their respective functions.
+ */
+#define SEC_MMIO_ASSERT_WRITE_INCREMENT(enum_val, expected) \
+  static_assert(enum_val == expected, "Unexpected value for " #enum_val);
+
 /**
  * Initializes the module.
  *
