@@ -560,7 +560,7 @@ TEST_F(ShutdownTest, InitializeManufacturing) {
 class ShutdownDeathTest : public ShutdownTest {};
 
 TEST_F(ShutdownDeathTest, InitializeInvalid) {
-  ASSERT_DEATH(
+  EXPECT_DEATH(
       {
         SetupOtpReads();
         shutdown_init(static_cast<lifecycle_state_t>(0));

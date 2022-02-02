@@ -180,7 +180,7 @@ TEST_P(BadKeyIdTypeDeathTest, BadKeyType) {
   };
   const sigverify_rsa_key_t *key;
 
-  ASSERT_DEATH(
+  EXPECT_DEATH(
       {
         ExpectKeysPtrGet(keys);
         sigverify_rsa_key_get(key_id, GetParam(), &key);
@@ -206,7 +206,7 @@ TEST_P(NonOperationalStateDeathTest, BadKey) {
   std::tie(key_index, lc_state) = GetParam();
   const sigverify_rsa_key_t *key;
 
-  ASSERT_DEATH(
+  EXPECT_DEATH(
       {
         ExpectKeysPtrGet(kMockKeys);
         sigverify_rsa_key_get(
