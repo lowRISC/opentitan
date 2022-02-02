@@ -40,6 +40,7 @@ rust_library(
         "src/transport/cw310/spi.rs",
         "src/transport/cw310/uart.rs",
         "src/transport/cw310/usb.rs",
+        "src/transport/hyperdebug/c2d2.rs",
         "src/transport/hyperdebug/gpio.rs",
         "src/transport/hyperdebug/i2c.rs",
         "src/transport/hyperdebug/mod.rs",

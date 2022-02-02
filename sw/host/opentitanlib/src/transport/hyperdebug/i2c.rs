@@ -7,8 +7,8 @@ use std::cmp;
 use std::rc::Rc;
 use zerocopy::{AsBytes, FromBytes};
 
-use crate::io::i2c::{I2cError, Bus, Transfer};
-use crate::transport::hyperdebug::{BulkInterface, Error, Hyperdebug, Inner};
+use crate::io::i2c::{Bus, I2cError, Transfer};
+use crate::transport::hyperdebug::{BulkInterface, Error, Inner};
 
 pub struct HyperdebugI2cBus {
     inner: Rc<Inner>,
@@ -65,15 +65,15 @@ impl RspTransfer {
 }
 
 impl HyperdebugI2cBus {
-    pub fn open(hyperdebug: &Hyperdebug, idx: u8) -> Result<Self> {
-        let mut usb_handle = hyperdebug.inner.usb_device.borrow_mut();
+    pub fn open(inner: &Rc<Inner>, i2c_interface: &BulkInterface, idx: u8) -> Result<Self> {
+        let mut usb_handle = inner.usb_device.borrow_mut();
 
         // Exclusively claim I2C interface, preparing for bulk transfers.
-        usb_handle.claim_interface(hyperdebug.i2c_interface.interface)?;
+        usb_handle.claim_interface(i2c_interface.interface)?;
 
         Ok(Self {
-            inner: Rc::clone(&hyperdebug.inner),
-            interface: hyperdebug.i2c_interface,
+            inner: Rc::clone(&inner),
+            interface: *i2c_interface,
             bus_idx: idx,
             max_read_size: 0x8000 as usize,
             max_write_size: 0x1000 as usize,

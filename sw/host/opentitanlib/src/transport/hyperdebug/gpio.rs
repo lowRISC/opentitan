@@ -6,7 +6,7 @@ use anyhow::Result;
 use std::rc::Rc;
 
 use crate::io::gpio::{GpioPin, PinMode, PullMode};
-use crate::transport::hyperdebug::{Error, Hyperdebug, Inner};
+use crate::transport::hyperdebug::{Error, Inner};
 
 pub struct HyperdebugGpioPin {
     inner: Rc<Inner>,
@@ -14,9 +14,9 @@ pub struct HyperdebugGpioPin {
 }
 
 impl HyperdebugGpioPin {
-    pub fn open(hyperdebug: &Hyperdebug, pinname: &str) -> Result<Self> {
+    pub fn open(inner: &Rc<Inner>, pinname: &str) -> Result<Self> {
         let result = Self {
-            inner: Rc::clone(&hyperdebug.inner),
+            inner: Rc::clone(inner),
             pinname: pinname.to_string(),
         };
         Ok(result)

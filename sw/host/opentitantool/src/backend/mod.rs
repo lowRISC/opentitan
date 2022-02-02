@@ -9,6 +9,8 @@ use thiserror::Error;
 
 use opentitanlib::app::conf::ConfigurationFile;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::transport::hyperdebug::c2d2::C2d2Flavor;
+use opentitanlib::transport::hyperdebug::StandardFlavor;
 use opentitanlib::transport::{EmptyTransport, Transport};
 use opentitanlib::util::parse_int::ParseInt;
 
@@ -50,7 +52,8 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
         "" => create_empty_transport(),
         "verilator" => verilator::create(&args.verilator_opts),
         "ultradebug" => ultradebug::create(args),
-        "hyperdebug" => hyperdebug::create(args),
+        "hyperdebug" => hyperdebug::create::<StandardFlavor>(args),
+        "c2d2" => hyperdebug::create::<C2d2Flavor>(args),
         "cw310" => cw310::create(args),
         _ => Err(Error::UnknownInterface(args.interface.clone()).into()),
     }?);

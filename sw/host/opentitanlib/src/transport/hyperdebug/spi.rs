@@ -9,7 +9,7 @@ use std::rc::Rc;
 use zerocopy::{AsBytes, FromBytes};
 
 use crate::io::spi::{SpiError, Target, Transfer, TransferMode};
-use crate::transport::hyperdebug::{BulkInterface, Error, Hyperdebug, Inner};
+use crate::transport::hyperdebug::{BulkInterface, Error, Inner};
 
 pub struct HyperdebugSpiTarget {
     inner: Rc<Inner>,
@@ -112,28 +112,28 @@ impl RspTransferContinue {
 }
 
 impl HyperdebugSpiTarget {
-    pub fn open(hyperdebug: &Hyperdebug, idx: u8) -> Result<Self> {
-        let mut usb_handle = hyperdebug.inner.usb_device.borrow_mut();
+    pub fn open(inner: &Rc<Inner>, spi_interface: &BulkInterface, idx: u8) -> Result<Self> {
+        let mut usb_handle = inner.usb_device.borrow_mut();
 
         // Tell HyperDebug to enable SPI bridge.
         usb_handle.write_control(
             rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
             USB_SPI_REQ_ENABLE,
             0, /* wValue */
-            hyperdebug.spi_interface.interface as u16,
+            spi_interface.interface as u16,
             &mut [],
         )?;
 
         // Exclusively claim SPI interface, preparing for bulk transfers.
-        usb_handle.claim_interface(hyperdebug.spi_interface.interface)?;
+        usb_handle.claim_interface(spi_interface.interface)?;
 
         // Initial bulk request/response to query capabilities.
         usb_handle.write_bulk(
-            hyperdebug.spi_interface.out_endpoint,
+            spi_interface.out_endpoint,
             &USB_SPI_PKT_ID_CMD_GET_USB_SPI_CONFIG.to_le_bytes(),
         )?;
         let mut resp: RspUsbSpiConfig = Default::default();
-        let rc = usb_handle.read_bulk(hyperdebug.spi_interface.in_endpoint, resp.as_bytes_mut())?;
+        let rc = usb_handle.read_bulk(spi_interface.in_endpoint, resp.as_bytes_mut())?;
         ensure!(
             rc == size_of::<RspUsbSpiConfig>(),
             Error::CommunicationError("Unrecognized reponse to GET_USB_SPI_CONFIG")
@@ -149,8 +149,8 @@ impl HyperdebugSpiTarget {
         );
 
         Ok(Self {
-            inner: Rc::clone(&hyperdebug.inner),
-            interface: hyperdebug.spi_interface,
+            inner: Rc::clone(&inner),
+            interface: *spi_interface,
             _target_idx: idx,
             max_chunk_size: std::cmp::min(resp.max_write_chunk, resp.max_read_chunk) as usize,
         })

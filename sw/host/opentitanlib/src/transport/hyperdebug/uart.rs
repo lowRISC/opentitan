@@ -12,14 +12,13 @@ use std::time::Duration;
 
 use crate::io::uart::Uart;
 use crate::transport::hyperdebug::Error;
-use crate::transport::hyperdebug::Hyperdebug;
 
 pub struct HyperdebugUart {
     port: RefCell<Box<dyn serialport::SerialPort>>,
 }
 
 impl HyperdebugUart {
-    pub fn open(_hyperdebug: &Hyperdebug, tty: &Path) -> Result<Self> {
+    pub fn open(tty: &Path) -> Result<Self> {
         let port = serialport::new(tty.to_str().ok_or(Error::UnicodePathError)?, 115_200)
             .timeout(Duration::from_millis(100))
             .open()
