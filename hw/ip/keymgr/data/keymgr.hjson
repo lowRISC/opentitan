@@ -223,6 +223,103 @@
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
+    { name: "CONFIG.SHADOW",
+      desc: '''
+        Various critical registers are shadowed: including operation control, reseed interval,
+        and key max version (creator, owner intermediate, owner).
+      '''
+    }
+    { name: "OP.CONFIG.REGWEN",
+      desc: '''
+        Various controls locked during the duration of an operation: including operation start,
+        operation control, sideload clear, salt and key version.
+      '''
+    }
+    { name: "RESEED.CONFIG.REGWEN",
+      desc: '''
+        Reseed interval is software lockable.
+      '''
+    }
+    { name: "SW_BINDING.CONFIG.REGWEN",
+      desc: '''
+        Software binding is lockable by software in each stage. When keymgr successfully advances,
+        the lock is released to allow the next stage the freedom to program.
+      '''
+    }
+    { name: "MAX_KEY_VER.CONFIG.REGWEN",
+      desc: '''
+        Max key version is software lockable.
+      '''
+    }
+    { name: "LC_CTRL.INTERSIG.MUBI",
+      desc: '''
+        Life cycle control signal is multibit
+      '''
+    }
+    { name: "CONSTANTS.CONSISTENCY",
+      desc: '''
+        Basic consistency checks (all 0's or all 1's) for keymgr diversification constants
+      '''
+    }
+    { name: "INTERSIG.CONSISTENCY",
+      desc: '''
+        Basic consistency checks (all 0's or all 1's) for otp diversification inputs
+      '''
+    }
+    { name: "HW.KEY.SW_NOACCESS",
+      desc: '''
+        Sideload keys are not directly accessible by software.
+      '''
+    }
+    { name: "OUTPUT_KEYS.CTRL.REDUN",
+      desc: '''
+        Software and sideload keys are redundantly controlled. One valid controls the write enable,
+        the other controls the input data (muxed to random).
+      '''
+    }
+    { name: "CTRL.FSM.SPARSE",
+      desc: '''
+        Main control fsm is sparsely encoded.
+      '''
+    }
+    { name: "DATA.FSM.SPARSE",
+      desc: '''
+        Control data fsm (for redundant data control) is sparsely encoded.
+      '''
+    }
+    { name: "CTRL.FSM.LOCAL_ESC",
+      desc: '''
+        Main control fsm locally escalates based on any detected fault in keymgr.
+        When a fault is detected (sync or async) the fsm transitions to invalid state to prevent
+        further legal operations from executing.
+      '''
+    }
+    { name: "CTRL.FSM.GLOBAL_ESC",
+      desc: '''
+        When the system globally escalates, the main control fsm also transitions to invalid state
+        to prevent further legal operations from executing.
+      '''
+    }
+    { name: "CTRL.CTR.REDUN",
+      desc: '''
+        Primary count is duplicated.
+      '''
+    }
+    { name: "KMAC_IF.FSM.SPARSE",
+      desc: '''
+        kmac interface fsm is sparsely encoded.
+      '''
+    }
+    { name: "KMAC_IF.CTR.REDUN",
+      desc: '''
+        Primary count uses cross count.
+      '''
+    }
+    { name: "RESEED.CTR.REDUN",
+      desc: '''
+        Primary count is duplicated.
+      '''
+    }
   ]
 
   regwidth: "32",

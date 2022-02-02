@@ -69,6 +69,7 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
 
   // whenever reseed count reaches reseed_interval, issue a request and wait for ack
   logic [15:0] reseed_cnt;
+  // SEC_CM: RESEED.CTR.REDUN
   prim_count #(
     .Width(16),
     .OutSelDnCnt(0),

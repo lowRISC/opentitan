@@ -131,6 +131,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   assign start = adv_en_i | id_en_i | gen_en_i;
 
   logic cnt_err;
+  // SEC_CM: KMAC_IF.CTR.REDUN
   prim_count #(
     .Width(CntWidth),
     .OutSelDnCnt(1'b1),
@@ -160,14 +161,16 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   logic [StateWidth-1:0] state_raw_q;
   assign state_q = data_state_e'(state_raw_q);
 
-  prim_flop #(
+  // SEC_CM: KMAC_IF.FSM.SPARSE
+  prim_sparse_fsm_flop #(
+    .StateEnumT(data_state_e),
     .Width(StateWidth),
     .ResetValue(StateWidth'(StIdle))
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( state_d     ),
-    .q_o ( state_raw_q )
+    .state_i ( state_d     ),
+    .state_o ( state_raw_q )
   );
 
   always_comb begin
