@@ -113,7 +113,7 @@
       fields: [
         { bits: "7:0",
           name: "lp_sample_cnt",
-          desc: "The number of samples in low-power mode when the low-power mode is enabled. After the programmed number is met, ADC won't be powered down any more.",
+          desc: "The number of samples in low-power mode when the low-power mode is enabled. After the programmed number is met, ADC won't be powered down any more.  This value must be 1 or larger.",
           resval: "4",
         }
       ],
@@ -127,7 +127,7 @@
       fields: [
         { bits: "15:0",
           name: "np_sample_cnt",
-          desc: "The number of samples in normal-power mode to meet the debounce spec. used after the low-power mode condition is met or in the normal power mode",
+          desc: "The number of samples in normal-power mode to meet the debounce spec. used after the low-power mode condition is met or in the normal power mode.  This value must be 1 or larger.",
         }
       ]
     }
