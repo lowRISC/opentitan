@@ -35,8 +35,9 @@ class otbn_dmem_err_vseq extends otbn_base_vseq;
     @(cfg.clk_rst_vif.cbn);
 
     for (int i = 0; i < 2 * otbn_reg_pkg::OTBN_DMEM_SIZE / 32; i++) begin
-      bit[311:0] good_data = cfg.read_dmem_word(i, key, nonce);
-      bit [311:0] bad_data = good_data ^ {8{mask}};
+      bit [ExtWLEN-1:0] old_data = cfg.read_dmem_word(i, key, nonce);
+      bit [ExtWLEN-1:0] good_data = cfg.fix_integrity_wlen(old_data);
+      bit [ExtWLEN-1:0] bad_data = good_data ^ {BaseWordsPerWLEN{mask}};
       cfg.write_dmem_word(i, bad_data, key, nonce);
     end
 
