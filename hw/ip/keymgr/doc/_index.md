@@ -524,8 +524,6 @@ At the conclusion of the command, key and valid signals are forwarded by the key
 The key and valid signals remain asserted to the selected destination until software explicitly disables the output via another command, or issues another `generate-output-hw` command with a different destination primitive.
 
 
-More details to come.
-
 ## Register Table
 
 {{< incGenFromIpDesc "../data/keymgr.hjson" "registers" >}}
