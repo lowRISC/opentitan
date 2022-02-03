@@ -145,6 +145,20 @@ static void test_err_test(otbn_t *otbn_ctx) {
   check_otbn_insn_cnt(otbn_ctx, 1);
 }
 
+static void test_sec_wipe(otbn_t *otbn_ctx) {
+  dif_otbn_status_t otbn_status;
+
+  CHECK(dif_otbn_write_cmd(&otbn_ctx->dif, kDifOtbnCmdSecWipeDmem) == kDifOk);
+  CHECK(dif_otbn_get_status(&otbn_ctx->dif, &otbn_status) == kDifOk);
+  CHECK(otbn_status == kDifOtbnStatusBusySecWipeDmem);
+  CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOk);
+
+  CHECK(dif_otbn_write_cmd(&otbn_ctx->dif, kDifOtbnCmdSecWipeImem) == kDifOk);
+  CHECK(dif_otbn_get_status(&otbn_ctx->dif, &otbn_status) == kDifOk);
+  CHECK(otbn_status == kDifOtbnStatusBusySecWipeImem);
+  CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOk);
+}
+
 bool test_main() {
   entropy_testutils_boot_mode_init();
 
@@ -153,6 +167,7 @@ bool test_main() {
                                  TOP_EARLGREY_OTBN_BASE_ADDR)) == kOtbnOk);
 
   test_barrett384(&otbn_ctx);
+  test_sec_wipe(&otbn_ctx);
   test_err_test(&otbn_ctx);
 
   return true;
