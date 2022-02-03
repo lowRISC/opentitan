@@ -58,7 +58,7 @@ cc_library(
     name = "usb",
     srcs = [
         "usb_controlep.c",
-        "usbdev.c"
+        "usbdev.c",
     ],
     hdrs = [
         "usb_consts.h",

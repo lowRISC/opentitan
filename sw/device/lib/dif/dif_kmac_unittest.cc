@@ -112,7 +112,7 @@ class KmacTest : public testing::Test, public mock_mmio::MmioTest {
    * @param size Len of the buffer.
    */
   void setExpectedMessageByte(const uint8_t *message, const size_t size) {
-    for (int i = 0; i < size; ++i) {
+    for (size_t i = 0; i < size; ++i) {
       EXPECT_WRITE8(KMAC_MSG_FIFO_REG_OFFSET, message[i]);
     }
   }
@@ -158,7 +158,7 @@ class AbsorbalignmentMessage : public KmacTest {};
 TEST_F(AbsorbalignmentMessage, Success) {
   uint8_t buffer[kMsg_.size() + sizeof(uint32_t)];
 
-  for (int i = 0; i < sizeof(uint32_t); i++) {
+  for (size_t i = 0; i < sizeof(uint32_t); i++) {
     uint8_t *pMsg = &buffer[i];
     std::copy(kMsg_.begin(), kMsg_.end(), pMsg);
 

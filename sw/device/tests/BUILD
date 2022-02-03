@@ -47,6 +47,9 @@ opentitan_functest(
 opentitan_functest(
     name = "entropy_src_smoketest",
     srcs = ["entropy_src_smoketest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         "//sw/device/lib/dif:entropy_src",
     ],
@@ -56,16 +59,16 @@ opentitan_functest(
     name = "gpio_smoketest",
     srcs = ["gpio_smoketest.c"],
     verilator = verilator_params(
-        tags = [
-            "cpu:4",
-            "failing_verilator"
-        ],
         args = [
             "--verilator-args=--trace",
             "console",
             "--timeout=3600",
             "--exit-failure=FAIL",
             "--exit-success=PASS",
+        ],
+        tags = [
+            "cpu:4",
+            "failing_verilator",
         ],
     ),
     deps = [
