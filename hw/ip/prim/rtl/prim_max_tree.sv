@@ -135,7 +135,9 @@ module prim_max_tree #(
   assign max_value_exp = max_value(values_i, valid_i);
   assign max_idx_exp = max_idx(values_i, valid_i);
 
-  `ASSERT(ValidInImpliesValidOut_A, |valid_i <-> max_valid_o)
+  // TODO(10588): Below syntax is not supported in xcelium, track xcelium cases #46591452.
+  // `ASSERT(ValidInImpliesValidOut_A, |valid_i <-> max_valid_o)
+  `ASSERT(ValidInImpliesValidOut_A, |valid_i === max_valid_o)
   `ASSERT(MaxComputation_A, max_valid_o |-> max_value_o == max_value_exp)
   `ASSERT(MaxComputationInvalid_A, !max_valid_o |-> max_value_o == values_i[0])
   `ASSERT(MaxIndexComputation_A, max_valid_o |-> max_idx_o == max_idx_exp)
