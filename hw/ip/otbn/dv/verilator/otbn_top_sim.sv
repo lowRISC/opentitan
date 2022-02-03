@@ -110,6 +110,11 @@ module otbn_top_sim (
     .insn_cnt_o                  ( insn_cnt            ),
     .insn_cnt_clear_i            ( 1'b0                ),
 
+    .mems_sec_wipe_o             (                     ),
+    .dmem_sec_wipe_urnd_key_o    (                     ),
+    .imem_sec_wipe_urnd_key_o    (                     ),
+    .req_sec_wipe_urnd_keys_i    ( 1'b0                ),
+
     .bus_intg_violation_i        ( 1'b0                ),
     .illegal_bus_access_i        ( 1'b0                ),
     .lifecycle_escalation_i      ( 1'b0                ),
