@@ -1527,9 +1527,10 @@
         swaccess: "rw0c",
         hwaccess: "hro",
         regwen:   "DIRECT_ACCESS_REGWEN",
-        tags:     [ // The enable register "DIRECT_ACCESS_REGWEN" is HW controlled,
-                    // so not able to predict this register value automatically
-                    "excl:CsrNonInitTests:CsrExclCheck"],
+        tags:     [ // The value of this register can affect the read access of the this
+                    // partition's memory window. Excluding this register from writing can ensure
+                    // memories have read and write access.
+                    "excl:CsrNonInitTests:CsrExclWrite"],
         fields: [
           { bits:   "0",
             desc: '''
@@ -1547,9 +1548,10 @@
         swaccess: "rw0c",
         hwaccess: "hro",
         regwen:   "DIRECT_ACCESS_REGWEN",
-        tags:     [ // The enable register "DIRECT_ACCESS_REGWEN" is HW controlled,
-                    // so not able to predict this register value automatically
-                    "excl:CsrNonInitTests:CsrExclCheck"],
+        tags:     [ // The value of this register can affect the read access of the this
+                    // partition's memory window. Excluding this register from writing can ensure
+                    // memories have read and write access.
+                    "excl:CsrNonInitTests:CsrExclWrite"],
         fields: [
           { bits:   "0",
             desc: '''
@@ -1567,9 +1569,10 @@
         swaccess: "rw0c",
         hwaccess: "hro",
         regwen:   "DIRECT_ACCESS_REGWEN",
-        tags:     [ // The enable register "DIRECT_ACCESS_REGWEN" is HW controlled,
-                    // so not able to predict this register value automatically
-                    "excl:CsrNonInitTests:CsrExclCheck"],
+        tags:     [ // The value of this register can affect the read access of the this
+                    // partition's memory window. Excluding this register from writing can ensure
+                    // memories have read and write access.
+                    "excl:CsrNonInitTests:CsrExclWrite"],
         fields: [
           { bits:   "0",
             desc: '''
