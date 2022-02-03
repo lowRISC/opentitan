@@ -188,6 +188,10 @@ class otbn_base_vseq extends cip_base_vseq #(
     `DV_CHECK_FATAL(stop_tokens == 0)
     running_ = 1'b1;
 
+    // Check that we aren't currently in reset. If we were, this task would otherwise exit
+    // immediately, causing all sorts of confusion. It's a testbench bug if we are.
+    `DV_CHECK_FATAL(!cfg.under_reset)
+
     fork : isolation_fork
       begin
         fork
