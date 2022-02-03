@@ -28,7 +28,6 @@ class OtpTest : public mask_rom_test::MaskRomTest {
 
 TEST_F(OtpTest, CreatorSwCfgLockdown) {
   EXPECT_SEC_WRITE32(base_ + OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_REG_OFFSET, 0);
-  EXPECT_SEC_WRITE_INCREMENT(1);
 
   otp_creator_sw_cfg_lockdown();
 }

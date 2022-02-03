@@ -17,6 +17,21 @@ extern "C" {
 #define OTP_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
 
 /**
+ * The following constants represent the expected number of sec_mmio register
+ * writes performed by functions provided by this module. See
+ * `SEC_MMIO_WRITE_INCREMENT()` for more details.
+ *
+ * Example:
+ * ```
+ *  otp_creator_sw_cfg_lockdown();
+ *  SEC_MMIO_WRITE_INCREMENT(kOtpSecMmioCreatorSwCfgLockDown);
+ * ```
+ */
+enum {
+  kOtpSecMmioCreatorSwCfgLockDown = 1,
+};
+
+/**
  * Perform a blocking 32-bit read from the memory mapped software config
  * partitions.
  *
