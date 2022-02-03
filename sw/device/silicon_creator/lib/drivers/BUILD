@@ -280,6 +280,7 @@ cc_library(
     name = "otp",
     srcs = ["otp.c"],
     hdrs = ["otp.h"],
+    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -304,9 +305,13 @@ cc_library(
 
 cc_test(
     name = "otp_unittest",
-    srcs = ["otp_unittest.cc"],
+    srcs = [
+        "otp.h",
+        "otp.c",
+        "otp_unittest.cc",
+    ],
     deps = [
-        ":otp",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
         "//sw/device/silicon_creator/lib:error",

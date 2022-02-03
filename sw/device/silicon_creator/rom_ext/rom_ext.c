@@ -96,7 +96,8 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
   // reset.
   flash_ctrl_creator_info_pages_lockdown();
   otp_creator_sw_cfg_lockdown();
-  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCreatorInfoPagesLockdown);
+  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCreatorInfoPagesLockdown +
+                           kOtpSecMmioCreatorSwCfgLockDown);
 
   // Unlock execution of owner stage executable code (text) sections.
   rom_ext_epmp_unlock_owner_stage_rx(&epmp, manifest_code_region_get(manifest));
