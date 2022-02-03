@@ -25,6 +25,13 @@ class otbn_stress_all_vseq extends otbn_base_vseq;
       uint           seq_idx = $urandom_range(0, vseq_names.size() - 1);
       string         cur_vseq_name = vseq_names[seq_idx];
 
+      // If we're running as a subsequence of otbn_stress_all_with_rand_reset and i > 0, the
+      // previous sequence might have exited early when the controlling sequence applied a reset. In
+      // this case, wait until we come back out of reset before running the next one.
+      if (cfg.under_reset) begin
+        cfg.clk_rst_vif.wait_for_reset(.wait_negedge(1'b0), .wait_posedge(1'b1));
+      end
+
       seq = create_seq_by_name(cur_vseq_name);
       `downcast(otbn_vseq, seq)
 
