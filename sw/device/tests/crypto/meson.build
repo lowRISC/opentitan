@@ -21,6 +21,24 @@ sw_tests += {
   }
 }
 
+crypto_ecdsa_p256_verify_test_lib = declare_dependency(
+  link_with: static_library(
+    'crypto_ecdsa_p256_verify_test_lib',
+    sources: [
+      'ecdsa_p256_verify_functest.c'
+    ],
+    dependencies: [
+      sw_lib_crypto_ecdsa_p256,
+      sw_lib_crypto_hmac,
+    ],
+  ),
+)
+sw_tests += {
+  'crypto_ecdsa_p256_verify_test': {
+    'library': crypto_ecdsa_p256_verify_test_lib,
+  }
+}
+
 # Tests for RSA-3072 verify
 crypto_rsa_3072_verify_test_lib = declare_dependency(
   link_with: static_library(
