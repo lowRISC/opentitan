@@ -90,10 +90,7 @@ class Dmem:
                 raise ValueError('The validity byte for 32-bit word {} '
                                  'in the input data is {}, not 0 or 1.'
                                  .format(idx32, vld))
-
-            # TODO: Take account of validity bit here!
-
-            self.data[idx32] = u32
+            self.data[idx32] = u32 if vld else None
 
     def _load_4byte_le_words(self, data: bytes) -> None:
         '''Replace the start of memory with data
