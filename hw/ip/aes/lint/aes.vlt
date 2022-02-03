@@ -40,3 +40,7 @@ split_var -module "aes_masked_inverse_gf2p4*" -var "b0_inv_buf"
 lint_off -rule UNOPTFLAT -file "*/rtl/aes_control_fsm_*.sv" -match "Signal unoptimizable: Feedback to clock or circular logic: '*u_aes_control_fsm_i.out'"
 lint_off -rule UNOPTFLAT -file "*/rtl/aes_cipher_control_fsm_*.sv" -match "Signal unoptimizable: Feedback to clock or circular logic: '*u_aes_cipher_control_fsm_i.out'"
 lint_off -rule UNOPTFLAT -file "*/rtl/aes_ctr_fsm_*.sv" -match "Signal unoptimizable: Feedback to clock or circular logic: '*u_aes_ctr_fsm_i.in'"
+
+// key_init_new_pulse feeds into prng_resee_we_o but there is still no circular dependency.
+lint_off -rule UNOPTFLAT -file "*/rtl/aes_control_fsm_*.sv" -match "Signal unoptimizable: Feedback to clock or circular logic: '*u_aes_control_fsm_i.prng_reseed_we'"
+lint_off -rule UNOPTFLAT -file "*/rtl/aes_reg_status.sv" -match "Signal unoptimizable: Feedback to clock or circular logic: '*u_aes_control_fsm_i.u_aes_control_fsm.u_reg_status_key_init.new_d'"

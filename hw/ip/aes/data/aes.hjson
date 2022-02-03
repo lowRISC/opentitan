@@ -654,6 +654,7 @@
       { bits: "0",
         name: "IDLE",
         resval: "0",
+        hwaccess: "hrw",
         desc:  '''
           The AES unit is idle (1) or busy (0).
           This flag is `0` if one of the following operations is currently running: i) encryption/decryption, ii) register clearing or iii) PRNG reseeding.

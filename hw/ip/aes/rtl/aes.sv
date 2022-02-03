@@ -182,7 +182,7 @@ module aes
     .hw2reg                 ( hw2reg               )
   );
 
-  assign idle_o = hw2reg.status.idle.d;
+  assign idle_o = reg2hw.status.idle.q;
 
   ////////////
   // Alerts //

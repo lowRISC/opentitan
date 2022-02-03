@@ -174,6 +174,7 @@ module aes_control_fsm
   logic                     cipher_op_err;
   logic                     start_common, start_ecb, start_cbc, start_cfb, start_ofb, start_ctr;
   logic                     start;
+  logic                     start_core;
   logic                     finish;
   logic                     crypt;
   logic                     cipher_out_done;
@@ -334,22 +335,30 @@ module aes_control_fsm
 
     // FSM
     aes_ctrl_ns        = aes_ctrl_cs;
+    start_core         = 1'b0;
     prng_reseed_done_d = prng_reseed_done_q | prng_reseed_ack_i;
 
     unique case (aes_ctrl_cs)
 
       IDLE: begin
-        idle    = ~(start | key_iv_data_in_clear_i | data_out_clear_i | prng_reseed_i);
+        // The core is about to start encryption/decryption or another action.
+        start_core = start | key_iv_data_in_clear_i | data_out_clear_i | prng_reseed_i;
+
+        // Update status register. A write to the main control register (if sideload is enabled)
+        // or writing the last key register can initiate a PRNG reseed operation via trigger
+        // register. To avoid that subsequent writes to the main control, key or IV registers
+        // collide with the start of the reseed operation, de-assert the idle bit.
+        idle    = ~(start_core | (prng_reseed_o & prng_reseed_we_o));
         idle_we = 1'b1;
 
-        if (idle) begin
-          // Initial key and IV updates are ignored if we are not idle. If key sideload is enabled,
-          // software writes to the initial key registers are ignored.
+        if (!start_core) begin
+          // Initial key and IV updates are ignored if the core is about to start. If key sideload
+          // is enabled, software writes to the initial key registers are ignored.
           key_init_we_o = sideload_i ? {NumSharesKey * NumRegsKey{key_sideload}} : key_init_qe_i;
           iv_we_o       = iv_qe;
 
-          // Updates to the control register are only allowed if we are idle and we don't have a
-          // storage error. A storage error is unrecoverable and requires a reset.
+          // Updates to the control register are only allowed if the core is not about to start and
+          // there isn't a storage error. A storage error is unrecoverable and requires a reset.
           ctrl_we_o      = !ctrl_err_storage_i ? ctrl_qe_i : 1'b0;
 
           // Control register updates clear all register status trackers.
