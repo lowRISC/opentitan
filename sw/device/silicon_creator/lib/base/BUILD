@@ -33,8 +33,8 @@ cc_library(
     name = "mock_abs_mmio",
     testonly = True,
     hdrs = [
-        "//sw/device/lib/base:abs_mmio_h",
         "mock_abs_mmio.h",
+        "//sw/device/lib/base:abs_mmio_h",
     ],
     defines = ["MOCK_ABS_MMIO"],
     deps = [
@@ -73,8 +73,8 @@ cc_library(
 cc_test(
     name = "sec_mmio_unittest",
     srcs = [
-        "sec_mmio.h",
         "sec_mmio.c",
+        "sec_mmio.h",
         "sec_mmio_unittest.cc",
     ],
     defines = ["OT_OFF_TARGET_TEST"],

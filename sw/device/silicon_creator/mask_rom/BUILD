@@ -228,10 +228,10 @@ cc_library(
 cc_test(
     name = "sigverify_keys_unittest",
     srcs = [
-        "//sw/device/silicon_creator/lib:sigverify_src_for_keys_unittest",
         "sigverify_keys.c",
         "sigverify_keys.h",
         "sigverify_keys_unittest.cc",
+        "//sw/device/silicon_creator/lib:sigverify_src_for_keys_unittest",
     ],
     defines = ["OT_OFF_TARGET_TEST"],
     deps = [

@@ -28,6 +28,8 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/examples:demos",
         "//sw/device/lib:pinmux",
+        "//sw/device/lib:usb",
+        "//sw/device/lib:usb_simpleserial",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/crt",
         "//sw/device/lib/dif:gpio",
@@ -40,7 +42,5 @@ cc_library(
         "//sw/device/lib/testing/test_framework",
         "//sw/device/lib/testing/test_framework:ottf_isrs",
         "//sw/device/lib/testing/test_rom_ext",
-        "//sw/device/lib:usb",
-        "//sw/device/lib:usb_simpleserial",
     ],
 )

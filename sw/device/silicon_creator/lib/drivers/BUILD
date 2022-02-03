@@ -4,7 +4,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_binary", "opentitan_functest")
+load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_binary", "opentitan_functest", "verilator_params")
 
 cc_library(
     name = "alert",
@@ -79,8 +79,8 @@ cc_library(
 cc_test(
     name = "flash_ctrl_unittest",
     srcs = [
-        "flash_ctrl.h",
         "flash_ctrl.c",
+        "flash_ctrl.h",
         "flash_ctrl_unittest.cc",
     ],
     defines = [
@@ -170,10 +170,10 @@ cc_test(
     deps = [
         ":keymgr",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:mock_abs_mmio",
         "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
-        "//sw/device/lib/testing:pwrmgr_testutils",
         "@googletest//:gtest_main",
     ],
 )
@@ -227,8 +227,8 @@ cc_library(
 cc_test(
     name = "lifecycle_unittest",
     srcs = [
-        "lifecycle.h",
         "lifecycle.c",
+        "lifecycle.h",
         "lifecycle_unittest.cc",
     ],
     defines = [
@@ -288,7 +288,7 @@ cc_library(
     testonly = True,
     hdrs = [
         "mock_otp.h",
-        "otp.h"
+        "otp.h",
     ],
     deps = [
         "//sw/device/silicon_creator/testing:mask_rom_test",
@@ -382,7 +382,7 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
         "//sw/device/lib/base:abs_mmio",
-    ]
+    ],
 )
 
 opentitan_functest(
@@ -495,6 +495,9 @@ cc_test(
 opentitan_functest(
     name = "watchdog_functest",
     srcs = ["watchdog_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         ":retention_sram",
         ":rstmgr",

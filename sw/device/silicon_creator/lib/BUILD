@@ -46,7 +46,7 @@ opentitan_functest(
     name = "boot_data_functest",
     srcs = ["boot_data_functest.c"],
     verilator = verilator_params(
-        timeout = "long",
+        timeout = "eternal",
     ),
     deps = [
         ":boot_data",
@@ -425,8 +425,6 @@ opentitan_functest(
         ":sigverify_mod_exp_ibex",
         ":sigverify_mod_exp_otbn",
         ":sigverify_testvectors",
-        ":sigverify_mod_exp_ibex",
-        ":sigverify_mod_exp_otbn",
         ":test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
