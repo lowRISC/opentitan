@@ -78,31 +78,6 @@ static Ecc32MemArea::EccWords read_words_from_file(const std::string &path,
   return ret;
 }
 
-static std::vector<uint8_t> words_to_bytes(
-    const Ecc32MemArea::EccWords &words) {
-  std::vector<uint8_t> ret;
-  ret.reserve(words.size() * 4);
-  for (size_t i = 0; i < words.size(); ++i) {
-    const Ecc32MemArea::EccWord &word = words[i];
-    bool valid = word.first;
-    uint32_t w32 = word.second;
-
-    // Complain if the word has an invalid checksum. We don't support doing
-    // that at the moment.
-    if (!valid) {
-      std::ostringstream oss;
-      oss << "Cannot convert 32-bit word " << i
-          << " to bytes because its valid flag is false.";
-      throw std::runtime_error(oss.str());
-    }
-
-    for (int j = 0; j < 4; ++j) {
-      ret.push_back((w32 >> 8 * j) & 0xff);
-    }
-  }
-  return ret;
-}
-
 // Write some words to a new file at path. On failure, throws a
 // std::runtime_error.
 static void write_words_to_file(const std::string &path,
@@ -432,9 +407,8 @@ int OtbnModel::load_dmem() {
   try {
     // Read DMEM from the ISS
     iss->dump_d(dfname);
-    Ecc32MemArea::EccWords words =
-        read_words_from_file(dfname, dmem.GetSizeBytes() / 4);
-    set_sim_memory(false, words_to_bytes(words));
+    set_sim_memory(false,
+                   read_words_from_file(dfname, dmem.GetSizeBytes() / 4));
   } catch (const std::exception &err) {
     std::cerr << "Error when loading dmem from ISS: " << err.what() << "\n";
     return -1;
@@ -543,8 +517,9 @@ Ecc32MemArea::EccWords OtbnModel::get_sim_memory(bool is_imem) const {
   return mem_area.ReadWithIntegrity(0, mem_area.GetSizeWords());
 }
 
-void OtbnModel::set_sim_memory(bool is_imem, const std::vector<uint8_t> &data) {
-  mem_util_.GetMemArea(is_imem).Write(0, data);
+void OtbnModel::set_sim_memory(bool is_imem,
+                               const Ecc32MemArea::EccWords &words) {
+  mem_util_.GetMemArea(is_imem).WriteWithIntegrity(0, words);
 }
 
 bool OtbnModel::check_dmem(ISSWrapper &iss) const {

@@ -52,6 +52,37 @@ Ecc32MemArea::EccWords Ecc32MemArea::ReadWithIntegrity(
   return ret;
 }
 
+void Ecc32MemArea::WriteWithIntegrity(uint32_t word_offset,
+                                      const EccWords &data) const {
+  // See MemArea::Write for an explanation for this buffer.
+  uint8_t minibuf[SV_MEM_WIDTH_BYTES];
+  memset(minibuf, 0, sizeof minibuf);
+  assert(width_byte_ <= sizeof minibuf);
+
+  uint32_t width_32 = width_byte_ / 4;
+  uint32_t to_write = data.size() / width_32;
+
+  assert((data.size() % width_32) == 0);
+  assert(word_offset + to_write <= num_words_);
+
+  for (uint32_t i = 0; i < to_write; ++i) {
+    uint32_t dst_word = word_offset + i;
+    uint32_t phys_addr = ToPhysAddr(dst_word);
+
+    WriteBufferWithIntegrity(minibuf, data, i * width_32, dst_word);
+    WriteFromMinibuf(phys_addr, minibuf, dst_word);
+  }
+}
+
+// Zero enough of the buffer to fill it with a word using insert_bits
+static void zero_buffer(uint8_t buf[SV_MEM_WIDTH_BYTES], uint32_t width_byte) {
+  // The insert_bits routine assumes that the buffer will have been zeroed, so
+  // do that here. Note that this buffer has (width_byte / 4) words, each of
+  // which is 39 bits long. Divide this by 8, rounding up.
+  size_t phys_size_bytes = (39 * (width_byte / 4) + 7) / 8;
+  memset(buf, 0, phys_size_bytes);
+}
+
 // Add bits to buf at bit_idx
 //
 // buf is assumed to be little-endian, so bit_idx 0 will refer to the bottom
@@ -81,6 +112,16 @@ static void insert_bits(uint8_t *buf, unsigned bit_idx, uint8_t new_bits,
     count -= to_take;
     new_bits >>= to_take;
   }
+}
+
+// Add 4 bytes to buf from bytes at bit_idx, plus check bits
+static void insert_word(uint8_t *buf, unsigned bit_idx, const uint8_t *bytes,
+                        uint8_t check_bits) {
+  assert((check_bits >> 7) == 0);
+  for (int i = 0; i < 4; ++i) {
+    insert_bits(buf, bit_idx + 8 * i, bytes[i], 8);
+  }
+  insert_bits(buf, bit_idx + 8 * 4, check_bits, 7);
 }
 
 // Extract bits from buf at bit_idx
@@ -115,18 +156,32 @@ static uint8_t extract_bits(const uint8_t *buf, unsigned bit_idx,
 void Ecc32MemArea::WriteBuffer(uint8_t buf[SV_MEM_WIDTH_BYTES],
                                const std::vector<uint8_t> &data,
                                size_t start_idx, uint32_t dst_word) const {
-  // The insert_bits routine assumes that the buffer will have been zeroed, so
-  // do that here. Note that this buffer has (width_byte_ / 4) words, each of
-  // which is 39 bits long. Divide this by 8, rounding up.
-  size_t phys_size_bytes = (39 * (width_byte_ / 4) + 7) / 8;
-  memset(buf, 0, phys_size_bytes);
-
+  zero_buffer(buf, width_byte_);
   for (int i = 0; i < width_byte_ / 4; ++i) {
-    uint8_t check_bits = enc_secded_inv_39_32(&data[start_idx + 4 * i]);
+    const uint8_t *src_data = &data[start_idx + 4 * i];
+    insert_word(buf, 39 * i, src_data, enc_secded_inv_39_32(src_data));
+  }
+}
+
+void Ecc32MemArea::WriteBufferWithIntegrity(uint8_t buf[SV_MEM_WIDTH_BYTES],
+                                            const EccWords &data,
+                                            size_t start_idx,
+                                            uint32_t dst_word) const {
+  uint8_t src_data[4];
+
+  zero_buffer(buf, width_byte_);
+  for (int i = 0; i < width_byte_ / 4; ++i) {
+    const EccWord &word = data[start_idx + i];
     for (int j = 0; j < 4; ++j) {
-      insert_bits(buf, 39 * i + 8 * j, data[start_idx + 4 * i + j], 8);
+      src_data[j] = (word.second >> 8 * j) & 0xff;
     }
-    insert_bits(buf, 39 * i + 32, check_bits, 7);
+    uint8_t check_bits = enc_secded_inv_39_32(src_data);
+
+    // Invert (and thus corrupt) check bits if needed
+    if (!word.first)
+      check_bits ^= 0x7f;
+
+    insert_word(buf, 39 * i, src_data, check_bits);
   }
 }
 

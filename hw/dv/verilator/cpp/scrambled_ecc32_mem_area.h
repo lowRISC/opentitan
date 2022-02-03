@@ -48,6 +48,12 @@ class ScrambledEcc32MemArea : public Ecc32MemArea {
                                const uint8_t buf[SV_MEM_WIDTH_BYTES],
                                uint32_t src_word) const override;
 
+  void WriteBufferWithIntegrity(uint8_t buf[SV_MEM_WIDTH_BYTES],
+                                const EccWords &data, size_t start_idx,
+                                uint32_t dst_word) const override;
+
+  void ScrambleBuffer(uint8_t buf[SV_MEM_WIDTH_BYTES], uint32_t dst_word) const;
+
   uint32_t ToPhysAddr(uint32_t logical_addr) const override;
 
   uint32_t GetPhysWidth() const;
