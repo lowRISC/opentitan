@@ -45,21 +45,18 @@ class Dmem:
             raise RuntimeError('Implausibly large DMEM size: {}'
                                .format(dmem_size))
 
-        # We're going to store DMEM as an array of 32-byte words (the native
-        # width for the OTBN wide side). Of course, that means dmem_size needs
-        # to be divisible by 32.
+        # The native width for the OTBN wide side is 256 bits. This means that
+        # dmem_size needs to be divisible by 32.
         if dmem_size % 32:
             raise RuntimeError('DMEM size ({}) is not divisible by 32.'
                                .format(dmem_size))
 
+        # We represent the contents of DMEM as a list of 32-bit words (unlike
+        # the RTL, which uses a 256-bit array). An entry in self.data is None
+        # if the word has invalid integrity bits and we'll get an error if we
+        # try to read it. Otherwise, we store the integer value.
         num_words = dmem_size // 4
-
-        # Initialise the memory to an arbitrary "bad" constant (here,
-        # 0xdeadbeef). We could initialise to a random value, but maybe it's
-        # more helpful to generate something recognisable for now.
-        uninit = 0xdeadbeef
-
-        self.data = [uninit] * num_words  # type: List[Optional[int]]
+        self.data = [None] * num_words  # type: List[Optional[int]]
         self.trace = []  # type: List[TraceDmemStore]
 
     def _load_5byte_le_words(self, data: bytes) -> None:
