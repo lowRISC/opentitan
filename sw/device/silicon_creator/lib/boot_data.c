@@ -9,6 +9,7 @@
 
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -216,6 +217,7 @@ static rom_error_t boot_data_entry_write(flash_ctrl_info_page_t page,
                                       .write = kHardenedBoolFalse,
                                       .erase = kHardenedBoolFalse,
                                   });
+  SEC_MMIO_WRITE_INCREMENT(2 * kFlashCtrlSecMmioInfoPermsSet);
   return error;
 }
 
@@ -254,6 +256,7 @@ static rom_error_t boot_data_entry_invalidate(flash_ctrl_info_page_t page,
                                       .write = kHardenedBoolFalse,
                                       .erase = kHardenedBoolFalse,
                                   });
+  SEC_MMIO_WRITE_INCREMENT(2 * kFlashCtrlSecMmioInfoPermsSet);
   return error;
 }
 
@@ -369,6 +372,7 @@ static rom_error_t boot_data_page_info_get(flash_ctrl_info_page_t page,
                                       .write = kHardenedBoolFalse,
                                       .erase = kHardenedBoolFalse,
                                   });
+  SEC_MMIO_WRITE_INCREMENT(2 * kFlashCtrlSecMmioInfoPermsSet);
   return error;
 }
 

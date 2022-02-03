@@ -69,42 +69,6 @@ typedef enum flash_crtl_partition {
  * $ ./util/design/sparse-fsm-encode.py -d 6 -m 20 -n 32 \
  *     -s 1755363476 --language=c
  *
- * Hamming distance histogram:
- *
- *  0: --
- *  1: --
- *  2: --
- *  3: --
- *  4: --
- *  5: --
- *  6: --
- *  7: --
- *  8: --
- *  9:  (0.53%)
- * 10: || (2.63%)
- * 11: || (2.11%)
- * 12: |||||| (6.84%)
- * 13: |||||| (6.84%)
- * 14: ||||||||||| (12.11%)
- * 15: ||||||||||| (11.58%)
- * 16: |||||||||||||||||||| (20.53%)
- * 17: ||||||||| (10.00%)
- * 18: |||||||||| (10.53%)
- * 19: ||||||| (7.37%)
- * 20: |||||| (6.84%)
- * 21: | (1.05%)
- * 22: | (1.05%)
- * 23: --
- * 24: --
- * 25: --
- * 26: --
- * 27: --
- * 28: --
- * 29: --
- * 30: --
- * 31: --
- * 32: --
- *
  * Minimum Hamming distance: 9
  * Maximum Hamming distance: 22
  * Minimum Hamming weight: 13
@@ -169,11 +133,37 @@ typedef enum flash_ctrl_info_page {
 #define FLASH_CTRL_OTP_FIELD_HE \
   (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 2 }
 
+
+/**
+ * The following constants represent the expected number of sec_mmio register
+ * writes performed by functions in provided in this module. See
+ * `SEC_MMIO_WRITE_INCREMENT()` for more details.
+ *
+ * Example:
+ * ```
+ *  flash_ctrl_init();
+ *  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInit);
+ * ```
+ */
+enum {
+  kFlashCtrlSecMmioCreatorInfoPagesLockdown = 12,
+  kFlashCtrlSecMmioDataDefaultCfgSet = 1,
+  kFlashCtrlSecMmioDataDefaultPermsSet = 1,
+  kFlashCtrlSecMmioExecSet = 1,
+  kFlashCtrlSecMmioInfoCfgSet = 1,
+  kFlashCtrlSecMmioInfoPermsSet = 1,
+  kFlashCtrlSecMmioInit = 5,
+};
+
 /**
  * Kicks of the initialization of the flash controller.
  *
  * This must complete before flash can be accessed. The init status can be
  * queried by calling `flash_ctrl_status_get()` and checking `init_wip`.
+ *
+ * The caller is responsible for calling
+ * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInit)` when sec_mmio is being
+ * used to check expectations.
  */
 void flash_ctrl_init(void);
 
@@ -338,6 +328,10 @@ typedef struct flash_ctrl_perms {
  * A permission is enabled only if the corresponding field in `perms` is
  * `kHardenedBoolTrue`.
  *
+ * The caller is responsible for calling
+ * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioDataDefaultPermsSet)` when
+ * sec_mmio is being used to check expectations.
+ *
  * @param perms New permissions.
  */
 void flash_ctrl_data_default_perms_set(flash_ctrl_perms_t perms);
@@ -347,6 +341,10 @@ void flash_ctrl_data_default_perms_set(flash_ctrl_perms_t perms);
  *
  * A permission is enabled only if the corresponding field in `perms` is
  * `kHardenedBoolTrue`.
+ *
+ * * The caller is responsible for calling
+ * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInfoPermsSet)` when sec_mmio is
+ * being used to check expectations.
  *
  * @param info_page An information page.
  * @param perms New permissions.
@@ -375,12 +373,20 @@ typedef struct flash_ctrl_cfg {
 /**
  * Sets default configuration settings for the data partition.
  *
+ * The caller is responsible for calling
+ * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioDataDefaultCfgSet)` when sec_mmio
+ * is being used to check expectations.
+ *
  * @param cfg New configuration settings.
  */
 void flash_ctrl_data_default_cfg_set(flash_ctrl_cfg_t cfg);
 
 /**
  * Sets configuration settings for an info page.
+ *
+ * The caller is responsible for calling
+ * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInfoCfgSet)` when sec_mmio is being
+ * used to check expectations.
  *
  * @param info_page An information page.
  * @param cfg New configuration settings.
@@ -393,6 +399,10 @@ void flash_ctrl_info_cfg_set(flash_ctrl_info_page_t info_page, flash_ctrl_cfg_t 
  * Note: a ePMP region must also be configured in order to execute code in
  * flash.
  *
+ * The caller is responsible for calling
+ * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioExecSet)` when sec_mmio is being
+ * used to check expectations.
+ *
  * @param exec_val Value to write to the `flash_ctrl.EXEC` register.
  * `FLASH_CTRL_PARAM_EXEC_EN` will enable execution, all other values will
  * disable execution.
@@ -404,6 +414,10 @@ void flash_ctrl_exec_set(uint32_t exec_val);
  *
  * This function must be called in ROM_EXT before handing over execution to the
  * first owner boot stage.
+ *
+ * The caller is responsible for calling
+ * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCreatorInfoPagesLockdown)` when
+ * sec_mmio is being used to check expectations.
  */
 void flash_ctrl_creator_info_pages_lockdown(void);
 
