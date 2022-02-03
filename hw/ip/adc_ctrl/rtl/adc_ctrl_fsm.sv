@@ -46,6 +46,8 @@ module adc_ctrl_fsm
   logic any_fst_lp_match, stay_match;
   logic [15:0] np_sample_cnt_d, np_sample_cnt_q;
   logic np_sample_cnt_clr, np_sample_cnt_en;
+  logic [7:0] lp_sample_cnt_thresh;
+  logic [15:0] np_sample_cnt_thresh;
 
   //FSM flow
   //1. PWRDN->PWRUP->IDLE->ONEST_0->ONEST_021->ONEST_1->ONEST_DONE->PWRDN
@@ -212,6 +214,10 @@ module adc_ctrl_fsm
     end
   end
 
+  assign lp_sample_cnt_thresh = cfg_lp_sample_cnt_i - 1'b1;
+  assign np_sample_cnt_thresh = cfg_np_sample_cnt_i - 1'b1;
+
+
   always_comb begin: adc_fsm
     fsm_state_d = fsm_state_q;
     //outputs
@@ -310,7 +316,6 @@ module adc_ctrl_fsm
         adc_chn_sel_o = 2'b10;
         if (adc_d_val_i) begin//sample chn1 value
           fsm_state_d = LP_EVAL;
-          lp_sample_cnt_en = 1'b1;
         end
       end
 
@@ -319,14 +324,13 @@ module adc_ctrl_fsm
         // do not transition forward until handshake with ADC is complete
         if (!adc_d_val_i) begin
           ld_match = 1'b1;
-          if ((lp_sample_cnt_q < cfg_lp_sample_cnt_i) && stay_match) begin
-            fsm_state_d = LP_SLP;
-          end
-          else if (!stay_match) begin
+          if (!stay_match) begin
             fsm_state_d = LP_SLP;
             lp_sample_cnt_clr = 1'b1;
-          end
-          else if ((lp_sample_cnt_q == cfg_lp_sample_cnt_i) && stay_match) begin
+          end else if (lp_sample_cnt_q < lp_sample_cnt_thresh) begin
+            fsm_state_d = LP_SLP;
+            lp_sample_cnt_en = 1'b1;
+          end else if (lp_sample_cnt_q == lp_sample_cnt_thresh) begin
             fsm_state_d = NP_0;
             lp_sample_cnt_clr = 1'b1;
           end
@@ -375,7 +379,6 @@ module adc_ctrl_fsm
         adc_chn_sel_o = 2'b10;
         if (adc_d_val_i) begin//sample chn1 value
           fsm_state_d = NP_EVAL;
-          np_sample_cnt_en = 1'b1;
         end
       end
 
@@ -385,14 +388,13 @@ module adc_ctrl_fsm
         // do not transition forward until handshake with ADC is complete
         if (!adc_d_val_i) begin
           ld_match = 1'b1;
-          if ((np_sample_cnt_q < cfg_np_sample_cnt_i) && stay_match) begin
-            fsm_state_d = NP_0;
-          end
-          else if (!stay_match) begin
+          if (!stay_match) begin
             fsm_state_d = NP_0;
             np_sample_cnt_clr = 1'b1;
-          end
-          else if ((np_sample_cnt_q == cfg_np_sample_cnt_i) && stay_match) begin
+          end else if (np_sample_cnt_q < np_sample_cnt_thresh) begin
+            fsm_state_d = NP_0;
+            np_sample_cnt_en = 1'b1;
+          end else if (np_sample_cnt_q == np_sample_cnt_thresh) begin
             fsm_state_d = NP_DONE;
             np_sample_cnt_clr = 1'b1;
             adc_ctrl_done_o = 1'b1;
@@ -411,6 +413,8 @@ module adc_ctrl_fsm
     endcase
   end
 
+   `ASSUME(LpSampleCntCfg_M, cfg_lp_sample_cnt_i > '0, clk_aon_i, !rst_aon_ni)
+   `ASSUME(NpSampleCntCfg_M, cfg_np_sample_cnt_i > '0, clk_aon_i, !rst_aon_ni)
    `ASSERT(NpCntCheckClr_A, ld_match & $rose(stay_match) |->
      (np_sample_cnt_q == '0), clk_aon_i, !rst_aon_ni)
 
