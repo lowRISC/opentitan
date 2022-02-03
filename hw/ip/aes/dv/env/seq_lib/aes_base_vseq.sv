@@ -133,7 +133,7 @@ class aes_base_vseq extends cip_base_vseq #(
 
 
   virtual task write_iv(bit  [3:0][31:0] iv, bit do_b2b);
-    foreach (iv[i]) csr_wr(.ptr(ral.iv[i]), .value(iv[0]), .blocking(~do_b2b));
+    foreach (iv[i]) csr_wr(.ptr(ral.iv[i]), .value(iv[i]), .blocking(~do_b2b));
   endtask
 
 
