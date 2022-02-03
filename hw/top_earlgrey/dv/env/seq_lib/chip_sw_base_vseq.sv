@@ -22,7 +22,10 @@ class chip_sw_base_vseq extends chip_base_vseq;
   // Backdoor load the sw test image, setup UART, logger and test status interfaces.
   virtual task cpu_init();
      int size_bytes;
+     int total_bytes;
      logic [31:0] rand_val;
+     int          tile_idx;
+
 
     `uvm_info(`gfn, "Started cpu_init", UVM_MEDIUM)
     // TODO: Fixing this for now - need to find a way to pass this on to the SW test.
@@ -43,19 +46,35 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.sw_test_status_vif.sw_test_status_addr = SW_DV_TEST_STATUS_ADDR;
 
     `uvm_info(`gfn, "Initializing RAM", UVM_MEDIUM)
+
+    // Assume each tile contains the same number of bytes
+    size_bytes = cfg.mem_bkdr_util_h[chip_mem_e'(RamMain0)].get_size_bytes();
+    total_bytes = size_bytes * cfg.num_ram_main_tiles;
+
     // Randomize the main SRAM.
-    for (int i = 0; i < cfg.num_ram_main_tiles; i++) begin
-      chip_mem_e mem = chip_mem_e'(RamMain0 + i);
-      size_bytes = cfg.mem_bkdr_util_h[mem].get_size_bytes();
-       for (int w_idx = 0; w_idx < size_bytes; w_idx=w_idx+4) begin
-         `DV_CHECK_STD_RANDOMIZE_FATAL(rand_val, "Randomization failed!")
-         cfg.mem_bkdr_util_h[mem].sram_encrypt_write32_integ(
-           .addr(w_idx),
-           .data(rand_val),
-           .key(RndCnstSramCtrlMainSramKey),
-           .nonce(RndCnstSramCtrlMainSramNonce)
-         );
-       end
+    for (int idx = 0; idx < total_bytes; idx=idx+4) begin
+       chip_mem_e mem;
+       logic [31:0] addr_scr;
+       logic [38:0] data_scr;
+       logic [31:0] addr_mask = size_bytes - 1;
+
+       // calculate the scramble address
+       addr_scr = cfg.mem_bkdr_util_h[RamMain0].get_sram_encrypt_addr(
+         idx, RndCnstSramCtrlMainSramNonce, $clog2(cfg.num_ram_main_tiles));
+
+       // determine which tile the scrambled address belongs
+       tile_idx = addr_scr / size_bytes;
+
+       // calculate the scrambled random data
+       `DV_CHECK_STD_RANDOMIZE_FATAL(rand_val, "Randomization failed!")
+       data_scr = cfg.mem_bkdr_util_h[RamMain0].get_sram_encrypt32_intg_data(
+         idx, rand_val, RndCnstSramCtrlMainSramKey, RndCnstSramCtrlMainSramNonce,
+         $clog2(cfg.num_ram_main_tiles));
+
+       // write the scrambled data into the targetted memory tile
+       mem = chip_mem_e'(RamMain0 + tile_idx);
+       cfg.mem_bkdr_util_h[mem].write39integ(addr_scr & addr_mask, data_scr);
+
     end
 
     // Initialize the data partition in all flash banks to all 1s.
