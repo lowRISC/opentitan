@@ -46,8 +46,13 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
   }
 
   constraint num_trans_c {
-    num_trans  inside {[1:2]};
-    num_dai_op inside {[1:50]};
+    if (cfg.smoke_test) {
+      num_trans  inside {[1:2]};
+      num_dai_op inside {[5:10]};
+    } else {
+      num_trans  inside {[1:2]};
+      num_dai_op inside {[1:50]};
+    }
   }
 
   constraint regwens_c {
