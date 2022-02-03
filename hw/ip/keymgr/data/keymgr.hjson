@@ -229,7 +229,7 @@
   registers: [
     { name: "CFG_REGWEN",
       desc: "Key manager configuration enable",
-      swaccess: "ro",  // this particular lock is meant to be fully HW managed
+      swaccess: "ro",  // this lock is HW managed
       hwaccess: "hwo",
       hwext: "true",
       fields: [
