@@ -262,9 +262,9 @@ static rom_error_t boot_data_entry_invalidate(flash_ctrl_info_page_t page,
 
 /**
  * A struct that stores some information about the first empty and last valid
- * entries in a flash info page.
+ * entries in the active flash info page.
  */
-typedef struct boot_data_page_info {
+typedef struct active_page_info {
   /**
    * Info page.
    */
@@ -285,31 +285,33 @@ typedef struct boot_data_page_info {
    * Index of the last valid entry in the page.
    */
   size_t last_valid_index;
-  /**
-   * Last valid entry in the page.
-   */
-  boot_data_t last_valid_entry;
-} boot_data_page_info_t;
+} active_page_info_t;
 
 /**
- * Populates a page info struct for the given page.
+ * Updates the given active page info struct and last valid boot data entry
+ * using the given page.
  *
  * This function performs a forward search to find the first empty boot data
  * entry followed by a backward search to find the last valid boot data entry.
- * Reads must be enabled for the given page before this function is called, see
- * `boot_data_page_info_get()`.
+ * If the page has an entry that is newer than the one passed in, this function
+ * updates `page_info` and `boot_data`. Reads must be enabled for the given page
+ * before this function is called, see `boot_data_page_info_get()`.
  *
  * @param page A boot data page.
- * @param[out] page_info Page info struct for the given page.
+ * @param[in,out] page_info Active page info struct. Updated if the given page
+ * has a newer entry.
+ * @param[in,out] boot_data Last valid boot data entry found so far. Updated if
+ * the given page has a newer entry.
  * @return The result of the operation.
  */
-static rom_error_t boot_data_page_info_get_impl(
-    flash_ctrl_info_page_t page, boot_data_page_info_t *page_info) {
+static rom_error_t boot_data_page_info_update_impl(
+    flash_ctrl_info_page_t page, active_page_info_t *page_info,
+    boot_data_t *boot_data) {
   uint32_t sniff_results[kBootDataEntriesPerPage];
 
-  page_info->page = page;
-  page_info->has_empty_entry = kHardenedBoolFalse;
-  page_info->has_valid_entry = kHardenedBoolFalse;
+  boot_data_t buf;
+  size_t first_empty_index = kBootDataEntriesPerPage;
+  hardened_bool_t has_empty_entry = kHardenedBoolFalse;
 
   // Perform a forward search to find the first empty entry.
   for (size_t i = 0; i < kBootDataEntriesPerPage; ++i) {
@@ -318,31 +320,47 @@ static rom_error_t boot_data_page_info_get_impl(
     RETURN_IF_ERROR(boot_data_sniff(page, i, &sniff_results[i]));
     // Check all words of this entry only if it can be empty.
     if (sniff_results[i] == kBootDataEmptyWordValue) {
-      RETURN_IF_ERROR(
-          boot_data_entry_read(page, i, &page_info->last_valid_entry));
-      if (boot_data_is_empty(&page_info->last_valid_entry) ==
-          kHardenedBoolTrue) {
-        page_info->first_empty_index = i;
-        page_info->has_empty_entry = kHardenedBoolTrue;
+      RETURN_IF_ERROR(boot_data_entry_read(page, i, &buf));
+      if (boot_data_is_empty(&buf) == kHardenedBoolTrue) {
+        first_empty_index = i;
+        has_empty_entry = kHardenedBoolTrue;
         break;
       }
     }
   }
 
   // Perform a backward search to find the last valid entry.
-  size_t start_index = (page_info->has_empty_entry == kHardenedBoolTrue)
-                           ? page_info->first_empty_index - 1
+  hardened_bool_t has_valid_entry = kHardenedBoolFalse;
+  size_t last_valid_index = kBootDataEntriesPerPage;
+  size_t start_index = (has_empty_entry == kHardenedBoolTrue)
+                           ? first_empty_index - 1
                            : kBootDataEntriesPerPage - 1;
   for (size_t i = start_index; i < kBootDataEntriesPerPage; --i) {
     // Check the digest only if this entry can be valid.
     if (sniff_results[i] == kBootDataIdentifier) {
-      RETURN_IF_ERROR(
-          boot_data_entry_read(page, i, &page_info->last_valid_entry));
-      if (boot_data_check(&page_info->last_valid_entry) == kErrorOk) {
-        page_info->last_valid_index = i;
-        page_info->has_valid_entry = kHardenedBoolTrue;
+      RETURN_IF_ERROR(boot_data_entry_read(page, i, &buf));
+      if (boot_data_check(&buf) == kErrorOk) {
+        has_valid_entry = kHardenedBoolTrue;
+        last_valid_index = i;
         break;
       }
+    }
+  }
+
+  // Update `page_info` and `boot_data` if an entry has not been found yet
+  // or if this entry is newer.
+  if (has_valid_entry == kHardenedBoolTrue) {
+    if (page_info->has_valid_entry == kHardenedBoolFalse ||
+        (page_info->has_valid_entry == kHardenedBoolTrue &&
+         buf.counter > boot_data->counter)) {
+      *page_info = (active_page_info_t){
+          .page = page,
+          .has_empty_entry = has_empty_entry,
+          .first_empty_index = first_empty_index,
+          .has_valid_entry = has_valid_entry,
+          .last_valid_index = last_valid_index,
+      };
+      *boot_data = buf;
     }
   }
 
@@ -350,23 +368,29 @@ static rom_error_t boot_data_page_info_get_impl(
 }
 
 /**
- * Handles read permissions and populates a page info struct for the given page.
+ * Handles read permissions and updates the active page info struct and last
+ * valid boot data entry using the given page.
  *
  * This function wraps the actual implementation to enable and disable reads for
  * the given page, see `boot_data_page_info_get_impl()`.
  *
  * @param page A boot data page.
- * @param[out] page_info Page info struct for the given page.
+ * @param[in,out] page_info Active page info struct. Updated if the given page
+ * has a newer entry.
+ * @param[in,out] boot_data Last valid boot data entry found so far. Updated if
+ * the given page has a newer entry.
  * @return The result of the operation.
  */
-static rom_error_t boot_data_page_info_get(flash_ctrl_info_page_t page,
-                                           boot_data_page_info_t *page_info) {
+static rom_error_t boot_data_page_info_update(flash_ctrl_info_page_t page,
+                                              active_page_info_t *page_info,
+                                              boot_data_t *boot_data) {
   flash_ctrl_info_perms_set(page, (flash_ctrl_perms_t){
                                       .read = kHardenedBoolTrue,
                                       .write = kHardenedBoolFalse,
                                       .erase = kHardenedBoolFalse,
                                   });
-  rom_error_t error = boot_data_page_info_get_impl(page, page_info);
+  rom_error_t error =
+      boot_data_page_info_update_impl(page, page_info, boot_data);
   flash_ctrl_info_perms_set(page, (flash_ctrl_perms_t){
                                       .read = kHardenedBoolFalse,
                                       .write = kHardenedBoolFalse,
@@ -377,42 +401,32 @@ static rom_error_t boot_data_page_info_get(flash_ctrl_info_page_t page,
 }
 
 /**
- * Finds the active info page and returns its page info struct.
+ * Finds the active info page and returns its page info struct and last boot
+ * data entry.
  *
  * The active info page is the one that has the newest valid boot data entry,
  * i.e. the entry with the greatest counter value.
  *
  * @param[out] page_info Page info struct of the active info page.
+ * @param[out] boot_data Last valid boot data entry.
  * @return The result of the operation.
  */
-static rom_error_t boot_data_active_page_find(
-    boot_data_page_info_t *page_info) {
-  boot_data_page_info_t page_infos[2];
+static rom_error_t boot_data_active_page_find(active_page_info_t *page_info,
+                                              boot_data_t *boot_data) {
+  *page_info = (active_page_info_t){
+      .page = (flash_ctrl_info_page_t)0,
+      .has_empty_entry = kHardenedBoolFalse,
+      .first_empty_index = kBootDataEntriesPerPage,
+      .has_valid_entry = kHardenedBoolFalse,
+      .last_valid_index = kBootDataEntriesPerPage,
+  };
+
   for (size_t i = 0; i < ARRAYSIZE(kPages); ++i) {
-    RETURN_IF_ERROR(boot_data_page_info_get(kPages[i], &page_infos[i]));
+    RETURN_IF_ERROR(
+        boot_data_page_info_update(kPages[i], page_info, boot_data));
   }
 
-  if (page_infos[0].has_valid_entry == kHardenedBoolTrue &&
-      page_infos[1].has_valid_entry == kHardenedBoolTrue) {
-    if (page_infos[0].last_valid_entry.counter >
-        page_infos[1].last_valid_entry.counter) {
-      *page_info = page_infos[0];
-      return kErrorOk;
-    } else if (page_infos[1].last_valid_entry.counter >
-               page_infos[0].last_valid_entry.counter) {
-      *page_info = page_infos[1];
-      return kErrorOk;
-    } else {
-      return kErrorBootDataNotFound;
-    }
-  } else if (page_infos[0].has_valid_entry == kHardenedBoolTrue) {
-    *page_info = page_infos[0];
-    return kErrorOk;
-  } else if (page_infos[1].has_valid_entry == kHardenedBoolTrue) {
-    *page_info = page_infos[1];
-    return kErrorOk;
-  }
-  return kErrorBootDataNotFound;
+  return kErrorOk;
 }
 
 /**
@@ -468,17 +482,14 @@ static rom_error_t boot_data_default_get(lifecycle_state_t lc_state,
 }
 
 rom_error_t boot_data_read(lifecycle_state_t lc_state, boot_data_t *boot_data) {
-  boot_data_page_info_t active_page;
-  rom_error_t error = boot_data_active_page_find(&active_page);
-  switch (error) {
-    case kErrorOk:
-      *boot_data = active_page.last_valid_entry;
+  active_page_info_t active_page;
+  RETURN_IF_ERROR(boot_data_active_page_find(&active_page, boot_data));
+  switch (active_page.has_valid_entry) {
+    case kHardenedBoolTrue:
       return kErrorOk;
-    case kErrorBootDataNotFound:
+    case kHardenedBoolFalse:
       // TODO(#8779): Recovery paths for failures in prod life cycle states?
       return boot_data_default_get(lc_state, boot_data);
-    default:
-      return error;
   }
 }
 
@@ -486,13 +497,14 @@ rom_error_t boot_data_write(const boot_data_t *boot_data) {
   boot_data_t new_entry = *boot_data;
   new_entry.is_valid = kBootDataValidEntry;
   new_entry.identifier = kBootDataIdentifier;
-  boot_data_page_info_t active_page;
-  rom_error_t error = boot_data_active_page_find(&active_page);
+  active_page_info_t active_page;
+  boot_data_t last_entry;
+  RETURN_IF_ERROR(boot_data_active_page_find(&active_page, &last_entry));
 
-  if (error == kErrorOk) {
+  if (active_page.has_valid_entry == kHardenedBoolTrue) {
     // Note: Not checking for wraparound since a successful write will
     // invalidate the old entry.
-    new_entry.counter = active_page.last_valid_entry.counter + 1;
+    new_entry.counter = last_entry.counter + 1;
     boot_data_digest_compute(&new_entry, &new_entry.digest);
     if (active_page.has_empty_entry == kHardenedBoolTrue) {
       RETURN_IF_ERROR(boot_data_entry_write(active_page.page,
@@ -510,15 +522,13 @@ rom_error_t boot_data_write(const boot_data_t *boot_data) {
     // across both pages.
     RETURN_IF_ERROR(boot_data_entry_invalidate(active_page.page,
                                                active_page.last_valid_index));
-  } else if (error == kErrorBootDataNotFound) {
+  } else {
     // Erase the first page and write the entry there if the active page cannot
     // be found, i.e. the storage is not initialized yet.
     new_entry.counter = kBootDataDefault.counter + 1;
     boot_data_digest_compute(&new_entry, &new_entry.digest);
     RETURN_IF_ERROR(
         boot_data_entry_write(kPages[0], 0, &new_entry, kHardenedBoolTrue));
-  } else {
-    return error;
   }
 
   return kErrorOk;
