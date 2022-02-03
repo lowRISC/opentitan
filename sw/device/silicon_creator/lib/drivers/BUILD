@@ -10,6 +10,7 @@ cc_library(
     name = "alert",
     srcs = ["alert.c"],
     hdrs = ["alert.h"],
+    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top_earlgrey:alert_handler_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -32,11 +33,16 @@ cc_library(
 
 cc_test(
     name = "alert_unittest",
-    srcs = ["alert_unittest.cc"],
+    srcs = [
+        "alert.h",
+        "alert.c",
+        "alert_unittest.cc",
+    ],
     deps = [
-        ":alert",
         "//hw/top_earlgrey:alert_handler_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
         "@googletest//:gtest_main",
     ],

@@ -29,7 +29,6 @@ TEST_F(InitTest, AlertConfigureAlertBadIndex) {
 }
 
 TEST_F(InitTest, AlertConfigureAlertBadClass) {
-  EXPECT_SEC_WRITE_INCREMENT(0);
   EXPECT_EQ(alert_configure(0, (alert_class_t)-1, kAlertEnableNone),
             kErrorAlertBadClass);
 }
@@ -39,18 +38,15 @@ TEST_F(InitTest, AlertConfigureAlertBadEnable) {
   // experience an error when evaluating the enable parameter.
   EXPECT_SEC_WRITE32_SHADOWED(
       base_ + ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET, 0);
-  EXPECT_SEC_WRITE_INCREMENT(1);
   EXPECT_EQ(alert_configure(0, kAlertClassA, (alert_enable_t)-1),
             kErrorAlertBadEnable);
 }
 
 TEST_F(InitTest, AlertConfigureAlertClassXNoOperation) {
-  EXPECT_SEC_WRITE_INCREMENT(0);
   EXPECT_EQ(alert_configure(0, kAlertClassX, kAlertEnableNone), kErrorOk);
 }
 
 TEST_F(InitTest, LocalAlertConfigureAlertClassXNoOperation) {
-  EXPECT_SEC_WRITE_INCREMENT(0);
   EXPECT_EQ(alert_local_configure(0, kAlertClassX, kAlertEnableNone), kErrorOk);
 }
 
@@ -59,7 +55,6 @@ TEST_F(InitTest, AlertConfigure0AsClassA) {
       base_ + ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET, 0);
   EXPECT_SEC_WRITE32_SHADOWED(
       base_ + ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET, 1);
-  EXPECT_SEC_WRITE_INCREMENT(2);
   EXPECT_EQ(alert_configure(0, kAlertClassA, kAlertEnableEnabled), kErrorOk);
 }
 
@@ -68,7 +63,6 @@ TEST_F(InitTest, LocalAlertConfigure0AsClassA) {
       base_ + ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET, 0);
   EXPECT_SEC_WRITE32_SHADOWED(
       base_ + ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_REG_OFFSET, 1);
-  EXPECT_SEC_WRITE_INCREMENT(2);
   EXPECT_EQ(alert_local_configure(0, kAlertClassA, kAlertEnableEnabled),
             kErrorOk);
 }
@@ -78,7 +72,6 @@ TEST_F(InitTest, AlertConfigure1AsClassB) {
       base_ + ALERT_HANDLER_ALERT_CLASS_SHADOWED_1_REG_OFFSET, 1);
   EXPECT_SEC_WRITE32_SHADOWED(
       base_ + ALERT_HANDLER_ALERT_EN_SHADOWED_1_REG_OFFSET, 1);
-  EXPECT_SEC_WRITE_INCREMENT(2);
   EXPECT_EQ(alert_configure(1, kAlertClassB, kAlertEnableEnabled), kErrorOk);
 }
 
@@ -87,7 +80,6 @@ TEST_F(InitTest, LocalAlertConfigure1AsClassB) {
       base_ + ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_1_REG_OFFSET, 1);
   EXPECT_SEC_WRITE32_SHADOWED(
       base_ + ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_1_REG_OFFSET, 1);
-  EXPECT_SEC_WRITE_INCREMENT(2);
   EXPECT_EQ(alert_local_configure(1, kAlertClassB, kAlertEnableEnabled),
             kErrorOk);
 }
@@ -97,7 +89,6 @@ TEST_F(InitTest, AlertConfigure2AsClassC) {
       base_ + ALERT_HANDLER_ALERT_CLASS_SHADOWED_2_REG_OFFSET, 2);
   EXPECT_SEC_WRITE32_SHADOWED(
       base_ + ALERT_HANDLER_ALERT_EN_SHADOWED_2_REG_OFFSET, 1);
-  EXPECT_SEC_WRITE_INCREMENT(2);
   EXPECT_EQ(alert_configure(2, kAlertClassC, kAlertEnableEnabled), kErrorOk);
 }
 
@@ -106,7 +97,6 @@ TEST_F(InitTest, LocalAlertConfigure2AsClassC) {
       base_ + ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_2_REG_OFFSET, 2);
   EXPECT_SEC_WRITE32_SHADOWED(
       base_ + ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_2_REG_OFFSET, 1);
-  EXPECT_SEC_WRITE_INCREMENT(2);
   EXPECT_EQ(alert_local_configure(2, kAlertClassC, kAlertEnableEnabled),
             kErrorOk);
 }
@@ -117,7 +107,6 @@ TEST_F(InitTest, AlertConfigure3AsClassDLocked) {
   EXPECT_SEC_WRITE32_SHADOWED(
       base_ + ALERT_HANDLER_ALERT_EN_SHADOWED_3_REG_OFFSET, 1);
   EXPECT_SEC_WRITE32(base_ + ALERT_HANDLER_ALERT_REGWEN_3_REG_OFFSET, 0);
-  EXPECT_SEC_WRITE_INCREMENT(3);
   EXPECT_EQ(alert_configure(3, kAlertClassD, kAlertEnableLocked), kErrorOk);
 }
 
@@ -127,7 +116,6 @@ TEST_F(InitTest, LocalAlertConfigure3AsClassDLocked) {
   EXPECT_SEC_WRITE32_SHADOWED(
       base_ + ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_3_REG_OFFSET, 1);
   EXPECT_SEC_WRITE32(base_ + ALERT_HANDLER_LOC_ALERT_REGWEN_3_REG_OFFSET, 0);
-  EXPECT_SEC_WRITE_INCREMENT(3);
   EXPECT_EQ(alert_local_configure(3, kAlertClassD, kAlertEnableLocked),
             kErrorOk);
 }
@@ -172,7 +160,6 @@ TEST_F(InitTest, AlertConfigureClassA) {
   EXPECT_SEC_WRITE32_SHADOWED(
       base_ + ALERT_HANDLER_CLASSA_PHASE3_CYC_SHADOWED_REG_OFFSET, 1000);
   EXPECT_SEC_WRITE32(base_ + ALERT_HANDLER_CLASSA_REGWEN_REG_OFFSET, 0);
-  EXPECT_SEC_WRITE_INCREMENT(8);
   EXPECT_EQ(alert_class_configure(kAlertClassA, &config), kErrorOk);
 }
 
@@ -210,7 +197,6 @@ TEST_F(InitTest, AlertConfigureClassB) {
       base_ + ALERT_HANDLER_CLASSB_PHASE2_CYC_SHADOWED_REG_OFFSET, 100);
   EXPECT_SEC_WRITE32_SHADOWED(
       base_ + ALERT_HANDLER_CLASSB_PHASE3_CYC_SHADOWED_REG_OFFSET, 1000);
-  EXPECT_SEC_WRITE_INCREMENT(7);
   EXPECT_EQ(alert_class_configure(kAlertClassB, &config), kErrorOk);
 }
 
@@ -248,7 +234,6 @@ TEST_F(InitTest, AlertConfigureClassC) {
       base_ + ALERT_HANDLER_CLASSC_PHASE2_CYC_SHADOWED_REG_OFFSET, 100);
   EXPECT_SEC_WRITE32_SHADOWED(
       base_ + ALERT_HANDLER_CLASSC_PHASE3_CYC_SHADOWED_REG_OFFSET, 1000);
-  EXPECT_SEC_WRITE_INCREMENT(7);
   EXPECT_EQ(alert_class_configure(kAlertClassC, &config), kErrorOk);
 }
 
@@ -286,7 +271,6 @@ TEST_F(InitTest, AlertConfigureClassD) {
       base_ + ALERT_HANDLER_CLASSD_PHASE2_CYC_SHADOWED_REG_OFFSET, 100);
   EXPECT_SEC_WRITE32_SHADOWED(
       base_ + ALERT_HANDLER_CLASSD_PHASE3_CYC_SHADOWED_REG_OFFSET, 1000);
-  EXPECT_SEC_WRITE_INCREMENT(7);
   EXPECT_EQ(alert_class_configure(kAlertClassD, &config), kErrorOk);
 }
 
