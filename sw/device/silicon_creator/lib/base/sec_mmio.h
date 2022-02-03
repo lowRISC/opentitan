@@ -30,8 +30,8 @@ extern "C" {
  * Register writes
  *
  * - Perform a number (N) of calls to `sec_mmio_write32()`.
- * - Increment the expected number of writes by N by calling
- *   `sec_mmio_write_increment()`. This is done using a separate function call
+ * - Increment the expected number of writes by N with
+ *   `SEC_MMIO_WRITE_INCREMENT()`. This is done using a separate function call
  *   to be able to detect skip instruciton faults on `sec_mmio_write32()`
  *   calls.
  *
@@ -85,7 +85,7 @@ typedef struct sec_mmio_ctx {
   uint32_t write_count;
   /**
    * Represents the expected number of register write operations. Incremented by
-   * the `sec_mmio_write_increment()` function.
+   * `SEC_MMIO_WRITE_INCREMENT()`.
    */
   uint32_t expected_write_count;
   /**
@@ -116,23 +116,20 @@ extern volatile sec_mmio_ctx_t sec_mmio_ctx;
 /**
  * Increment the expected count of register writes by `value`.
  *
- * This macro is preferred over `sec_mmio_write_increment()` as it doesn't
- * require a function call to update the expected number of writes stored in
- * `sec_mmio_ctx`.
+ * This macro must be used to increment the number of expected register writes
+ * before calling `sec_mmio_check_counters()`.
  *
  * @param value The expected write count increment.
  */
-#define SEC_MMIO_WRITE_INCREMENT(value)           \
-  do {                                            \
-    sec_mmio_ctx.expected_write_count += (value); \
-  } while (0);
+#define SEC_MMIO_WRITE_INCREMENT(value) \
+  (sec_mmio_ctx.expected_write_count += (value))
 
 /**
  * Assert macro used to cross-reference exported sec_mmio expected write counts
  * to their respective functions.
  */
 #define SEC_MMIO_ASSERT_WRITE_INCREMENT(enum_val, expected) \
-  static_assert(enum_val == expected, "Unexpected value for " #enum_val);
+  static_assert(enum_val == expected, "Unexpected value for " #enum_val)
 
 /**
  * Initializes the module.
@@ -176,8 +173,8 @@ uint32_t sec_mmio_read32(uint32_t addr);
  * via `sec_mmio_check_values()`.
  *
  * On successful calls, this function will increment the internal count of
- * writes. The caller is responsible to setting the expected write count by
- * calling `sec_mmio_write_increment()`.
+ * writes. The caller is responsible to setting the expected write count with
+ * `SEC_MMIO_WRITE_INCREMENT()`.
  *
  * An exception is thrown if the comparison operation fails.
  *
@@ -195,8 +192,8 @@ void sec_mmio_write32(uint32_t addr, uint32_t value);
  * values for later comparison via `sec_mmio_check_values()`.
  *
  * On successful calls, this function will increment the internal count of
- * writes. The caller is responsible to setting the expected write count by
- * calling `sec_mmio_write_increment()`.
+ * writes. The caller is responsible to setting the expected write count with
+ * `SEC_MMIO_WRITE_INCREMENT()`.
  *
  * An exception is thrown if the comparison operation fails.
  *
@@ -205,12 +202,6 @@ void sec_mmio_write32(uint32_t addr, uint32_t value);
  */
 void sec_mmio_write32_shadowed(uint32_t addr, uint32_t value);
 
-/**
- * Increment the expected count of register writes by `value`.
- *
- * @param value The expected write count increment.
- */
-void sec_mmio_write_increment(uint32_t value);
 
 /**
  * Checks the expected list of register values.

@@ -169,7 +169,7 @@ static rom_error_t mask_rom_boot(const manifest_t *manifest,
   HARDENED_RETURN_IF_ERROR(keymgr_state_check(kKeymgrStateReset));
   keymgr_sw_binding_set(&manifest->binding_value, &manifest->binding_value);
   keymgr_creator_max_ver_set(manifest->max_key_version);
-  SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioInit + kKeymgrSecMmioSwBindingSet +
+  SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet +
                            kKeymgrSecMmioCreatorMaxVerSet);
 
   // Check cached life cycle state against the value reported by hardware.

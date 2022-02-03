@@ -106,10 +106,6 @@ void sec_mmio_write32_shadowed(uint32_t addr, uint32_t value) {
   ++sec_mmio_ctx.write_count;
 }
 
-void sec_mmio_write_increment(uint32_t value) {
-  SEC_MMIO_WRITE_INCREMENT(value);
-}
-
 void sec_mmio_check_values(uint32_t rnd_offset) {
   // Pick a random starting offset.
   uint32_t offset =
