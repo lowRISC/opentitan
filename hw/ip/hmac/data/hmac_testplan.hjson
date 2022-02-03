@@ -106,4 +106,38 @@
       tests: ["hmac_smoke"]
     }
   ]
+
+  covergroups: [
+    {
+      name: cfg_cg
+      desc: '''Covers the cfg configurations below and their cross:
+            - hmac_en
+            - endian_swap
+            - digest_swap
+            '''
+    }
+    {
+      name: status_cg
+      desc: '''Covers the status bits below and cross them with different configurations above:
+            - fifo_empty
+            - fifo_full
+            - fifo_depth
+            '''
+    }
+    {
+      name: err_code_cg
+      desc: '''Covers the error scenarios below:
+            - No error.
+            - Push message when sha is disabled.
+            - Hash starts when sha is disabled.
+            - Update secret key when hash is in progress.
+            - Issue hash start again when hash in progress.
+            - Push message when hmac is idle.
+            '''
+    }
+    {
+      name: msg_len_cg
+      desc: "Covers the length of the streamed in message."
+    }
+  ]
 }
