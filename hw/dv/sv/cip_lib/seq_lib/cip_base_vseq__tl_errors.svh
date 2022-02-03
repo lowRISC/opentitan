@@ -326,6 +326,7 @@ virtual task issue_tl_access_w_intg_err(string ral_name);
     end
   endcase
   tl_access(.addr(addr), .write(write), .data(data), .tl_intg_err_type(tl_intg_err_type),
+            .mask(get_rand_contiguous_mask()),
             .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
 endtask
 
