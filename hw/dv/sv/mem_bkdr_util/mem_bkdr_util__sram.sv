@@ -334,6 +334,77 @@ virtual function void sram_encrypt_write32(logic [bus_params_pkg::BUS_AW-1:0] ad
   write32(bus_addr, scrambled_data);
 endfunction
 
+function automatic logic [bus_params_pkg::BUS_AW-1:0] get_sram_encrypt_addr (
+  logic [bus_params_pkg::BUS_AW-1:0] addr,
+  logic [SRAM_BLOCK_WIDTH-1:0] nonce,
+  logic [31:0] extra_addr_bits = '0);
+
+  int full_addr_width = addr_width + extra_addr_bits;
+
+  logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
+  logic scrambled_addr [] = new[full_addr_width];
+  logic sram_addr      [] = new[full_addr_width];
+  logic nonce_arr      [] = new[SRAM_BLOCK_WIDTH];
+
+  nonce_arr = {<<{nonce}};
+  for (int i = 0; i < full_addr_width; i++) begin
+    sram_addr[i] = addr[addr_lsb + i];
+  end
+
+  // calculate scrambled address
+  scrambled_addr = sram_scrambler_pkg::encrypt_sram_addr(sram_addr, full_addr_width, nonce_arr);
+
+  // convert to bus address output
+  for (int i = 0; i < addr_lsb; i++) begin
+    bus_addr[i] = addr[i];
+  end
+
+  for (int i = 0; i < full_addr_width; i++) begin
+    bus_addr[addr_lsb + i] = scrambled_addr[i];
+  end
+
+  return bus_addr;
+
+endfunction // get_sram_encrypt_addr
+
+function automatic logic [38:0] get_sram_encrypt32_intg_data (
+  logic [bus_params_pkg::BUS_AW-1:0] addr,
+  logic [31:0]                       data,
+  logic [SRAM_KEY_WIDTH-1:0]         key,
+  logic [SRAM_BLOCK_WIDTH-1:0]       nonce,
+  int                                extra_addr_bits=0);
+
+  logic [38:0]                       integ_data;
+  logic [38:0]                       scrambled_data;
+
+  int full_addr_width = addr_width + extra_addr_bits;
+  logic wdata_arr      [] = new[39];
+  logic sram_addr      [] = new[full_addr_width];
+  logic key_arr        [] = new[SRAM_KEY_WIDTH];
+  logic nonce_arr      [] = new[SRAM_BLOCK_WIDTH];
+
+  key_arr   = {<<{key}};
+  nonce_arr = {<<{nonce}};
+
+  for (int i = 0; i < full_addr_width; i++) begin
+    sram_addr[i] = addr[addr_lsb + i];
+  end
+
+  // Calculate the integrity constant
+  integ_data = prim_secded_pkg::prim_secded_inv_39_32_enc(data);
+
+  // Calculate the scrambled data
+  wdata_arr = {<<{integ_data}};
+  wdata_arr = sram_scrambler_pkg::encrypt_sram_data(
+      wdata_arr, 39, 39, sram_addr, full_addr_width, key_arr, nonce_arr
+  );
+  scrambled_data = {<<{wdata_arr}};
+
+  return scrambled_data;
+
+endfunction // get_sram_encrypt32_intg_data
+
+
 virtual function void sram_encrypt_write32_integ(logic [bus_params_pkg::BUS_AW-1:0] addr,
                                                  logic [31:0]                       data,
                                                  logic [SRAM_KEY_WIDTH-1:0]         key,
