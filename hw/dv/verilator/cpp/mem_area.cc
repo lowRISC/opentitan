@@ -46,19 +46,7 @@ void MemArea::Write(uint32_t word_offset,
     uint32_t phys_addr = ToPhysAddr(dst_word);
 
     WriteBuffer(minibuf, data, i * width_byte_, dst_word);
-
-    // Both ToPhysAddr and WriteBuffer might set the scope with `SVScoped` so
-    // only construct `SVScoped` once they've both been called so they don't
-    // interact causing incorrect relative path behaviour. If this fails to set
-    // scope, it will throw an error which should be caught at this function's
-    // callsite.
-    SVScoped scoped(scope_);
-    if (!simutil_set_mem(phys_addr, (svBitVecVal *)minibuf)) {
-      std::ostringstream oss;
-      oss << "Could not set memory at byte offset 0x" << std::hex
-          << dst_word * width_byte_ << ".";
-      throw std::runtime_error(oss.str());
-    }
+    WriteFromMinibuf(phys_addr, minibuf, dst_word);
   }
 }
 
@@ -119,6 +107,17 @@ void MemArea::ReadToMinibuf(uint8_t *minibuf, uint32_t phys_addr) const {
     std::ostringstream oss;
     oss << "Could not read memory word at physical index 0x" << std::hex
         << phys_addr << ".";
+    throw std::runtime_error(oss.str());
+  }
+}
+
+void MemArea::WriteFromMinibuf(uint32_t phys_addr, const uint8_t *minibuf,
+                               uint32_t dst_word) const {
+  SVScoped scoped(scope_);
+  if (!simutil_set_mem(phys_addr, (const svBitVecVal *)minibuf)) {
+    std::ostringstream oss;
+    oss << "Could not set memory at byte offset 0x" << std::hex
+        << dst_word * width_byte_ << ".";
     throw std::runtime_error(oss.str());
   }
 }

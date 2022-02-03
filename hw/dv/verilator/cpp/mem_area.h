@@ -49,7 +49,7 @@ class MemArea {
    *                    written.
    *
    * @param data        The data that should be written. If the length is not a
-   *                    multiple of \p word_offset, the last word will be
+   *                    multiple of \p width_byte, the last word will be
    *                    zero-extended.
    */
   virtual void Write(uint32_t word_offset,
@@ -137,6 +137,14 @@ class MemArea {
    * implementation of MemArea::Write() for the details.
    */
   void ReadToMinibuf(uint8_t *minibuf, uint32_t phys_addr) const;
+
+  /** Write from minibuf to the memory word at phys_addr
+   *
+   * minibuf should be at least SV_MEM_WIDTH_BYTES in size. See the
+   * implementation of MemArea::Write() for the details.
+   */
+  void WriteFromMinibuf(uint32_t phys_addr, const uint8_t *minibuf,
+                        uint32_t dst_word) const;
 };
 
 #endif  // OPENTITAN_HW_DV_VERILATOR_CPP_MEM_AREA_H_

@@ -40,6 +40,19 @@ class Ecc32MemArea : public MemArea {
    */
   EccWords ReadWithIntegrity(uint32_t word_offset, uint32_t num_words) const;
 
+  /** Write data with validity bits, starting at the given offset
+   *
+   * This is equivalent to MemArea's Write method, but takes a vector of pairs
+   * with a bit saying whether the integrity bits for the word are valid or
+   * not.
+   *
+   * @param word_offset The offset, in words, of the first word that should be
+   *                    written.
+   *
+   * @param data        The data that should be written.
+   */
+  void WriteWithIntegrity(uint32_t word_offset, const EccWords &data) const;
+
  protected:
   void WriteBuffer(uint8_t buf[SV_MEM_WIDTH_BYTES],
                    const std::vector<uint8_t> &data, size_t start_idx,
@@ -62,6 +75,20 @@ class Ecc32MemArea : public MemArea {
   virtual void ReadBufferWithIntegrity(EccWords &data,
                                        const uint8_t buf[SV_MEM_WIDTH_BYTES],
                                        uint32_t src_word) const;
+
+  /** Insert a memory word into buf from one or more 32-bit words in data.
+   *
+   * @param buf       Destination buffer (physical memory bits)
+   *
+   * @param data      Source data, from which the 32-bit words should be read
+   *
+   * @param start_idx The index of the first 32-bit word in data to read
+   *
+   * @param dst_word  Logical address of the location being written
+   */
+  virtual void WriteBufferWithIntegrity(uint8_t buf[SV_MEM_WIDTH_BYTES],
+                                        const EccWords &data, size_t start_idx,
+                                        uint32_t dst_word) const;
 };
 
 #endif  // OPENTITAN_HW_DV_VERILATOR_CPP_ECC32_MEM_AREA_H_

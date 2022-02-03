@@ -109,7 +109,7 @@ class OtbnModel {
   Ecc32MemArea::EccWords get_sim_memory(bool is_imem) const;
 
   // Set the contents of the ISS's memory
-  void set_sim_memory(bool is_imem, const std::vector<uint8_t> &data);
+  void set_sim_memory(bool is_imem, const Ecc32MemArea::EccWords &words);
 
   // Grab contents of dmem from the model and compare them with the RTL. Prints
   // messages to stderr on failure or mismatch. Returns true on success; false

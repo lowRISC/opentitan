@@ -177,17 +177,7 @@ void ScrambledEcc32MemArea::WriteBuffer(uint8_t buf[SV_MEM_WIDTH_BYTES],
                                         uint32_t dst_word) const {
   // Compute integrity
   Ecc32MemArea::WriteBuffer(buf, data, start_idx, dst_word);
-
-  std::vector<uint8_t> scramble_buf =
-      std::vector<uint8_t>(buf, buf + GetPhysWidthByte());
-
-  // Scramble data with integrity
-  scramble_buf = scramble_encrypt_data(
-      scramble_buf, GetPhysWidth(), 39, AddrIntToBytes(dst_word, addr_width_),
-      addr_width_, GetScrambleNonce(), GetScrambleKey(), repeat_keystream_);
-
-  // Copy scrambled data to write buffer
-  std::copy(scramble_buf.begin(), scramble_buf.end(), &buf[0]);
+  ScrambleBuffer(buf, dst_word);
 }
 
 std::vector<uint8_t> ScrambledEcc32MemArea::ReadUnscrambled(
@@ -210,8 +200,27 @@ void ScrambledEcc32MemArea::ReadBufferWithIntegrity(
     EccWords &data, const uint8_t buf[SV_MEM_WIDTH_BYTES],
     uint32_t src_word) const {
   std::vector<uint8_t> unscrambled_data = ReadUnscrambled(buf, src_word);
-  // Strip integrity to give final result
   Ecc32MemArea::ReadBufferWithIntegrity(data, &unscrambled_data[0], src_word);
+}
+
+void ScrambledEcc32MemArea::WriteBufferWithIntegrity(
+    uint8_t buf[SV_MEM_WIDTH_BYTES], const EccWords &data, size_t start_idx,
+    uint32_t dst_word) const {
+  Ecc32MemArea::WriteBufferWithIntegrity(buf, data, start_idx, dst_word);
+  ScrambleBuffer(buf, dst_word);
+}
+
+void ScrambledEcc32MemArea::ScrambleBuffer(uint8_t buf[SV_MEM_WIDTH_BYTES],
+                                           uint32_t dst_word) const {
+  std::vector<uint8_t> scramble_buf(buf, buf + GetPhysWidthByte());
+
+  // Scramble data with integrity
+  scramble_buf = scramble_encrypt_data(
+      scramble_buf, GetPhysWidth(), 39, AddrIntToBytes(dst_word, addr_width_),
+      addr_width_, GetScrambleNonce(), GetScrambleKey(), repeat_keystream_);
+
+  // Copy scrambled data to write buffer
+  std::copy(scramble_buf.begin(), scramble_buf.end(), &buf[0]);
 }
 
 uint32_t ScrambledEcc32MemArea::ToPhysAddr(uint32_t logical_addr) const {
