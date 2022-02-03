@@ -14,4 +14,8 @@ class otp_ctrl_macro_errs_vseq extends otp_ctrl_dai_lock_vseq;
     ecc_otp_err inside {OtpEccCorrErr, OtpEccUncorrErr};
   }
 
+  function void pre_randomize();
+    this.no_access_err_c.constraint_mode(0);
+  endfunction
+
 endclass

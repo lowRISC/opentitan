@@ -514,6 +514,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         bit [TL_DW-1:0] read_out;
         int ecc_err = read_a_word_with_ecc(dai_addr, read_out);
 
+        // Any alert that indicates the OTP block is in the final error state should not enter the
+        // logic here, but gated at `is_tl_mem_access_allowed` function.
+        `DV_CHECK_EQ(cfg.otp_ctrl_vif.alert_reqs, 0)
+
         // ECC uncorrectable errors are gated by `is_tl_mem_access_allowed` function.
         if (ecc_err != OtpNoEccErr) begin
           predict_err(part_idx, OtpMacroEccCorrError);
@@ -1203,52 +1207,57 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     bit [TL_AW-1:0] addr_mask = ral.get_addr_mask();
     bit [TL_AW-1:0] dai_addr = (csr_addr & addr_mask - SW_WINDOW_BASE_ADDR);
 
-    // If sw partition is read locked, then access policy changes from RO to no access
-    if (`gmv(ral.vendor_test_read_lock) == 0 || cfg.otp_ctrl_vif.under_error_states()) begin
-      if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr + VendorTestOffset :
-                        cfg.ral_models[ral_name].mem_ranges[0].start_addr + VendorTestOffset +
-                        VendorTestSize - 1]}) begin
-        predict_err(OtpVendorTestErrIdx, OtpAccessError);
-        `DV_CHECK_EQ(item.d_data, 0,
-                     $sformatf("locked mem read mismatch at TLUL addr %0h in VendorTest", addr))
-        return 0;
+    // Ensure the address is within the memory window range.
+    if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr :
+                      cfg.ral_models[ral_name].mem_ranges[0].end_addr]}) begin
+
+      // If sw partition is read locked, then access policy changes from RO to no access
+      if (`gmv(ral.vendor_test_read_lock) == 0 || cfg.otp_ctrl_vif.under_error_states()) begin
+        if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr + VendorTestOffset :
+                          cfg.ral_models[ral_name].mem_ranges[0].start_addr + VendorTestOffset +
+                          VendorTestSize - 1]}) begin
+          predict_err(OtpVendorTestErrIdx, OtpAccessError);
+          `DV_CHECK_EQ(item.d_data, 0,
+                       $sformatf("locked mem read mismatch at TLUL addr %0h in VendorTest", addr))
+          return 0;
+        end
       end
-    end
-    if (`gmv(ral.creator_sw_cfg_read_lock) == 0 || cfg.otp_ctrl_vif.under_error_states()) begin
-      if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr + CreatorSwCfgOffset :
-                        cfg.ral_models[ral_name].mem_ranges[0].start_addr + CreatorSwCfgOffset +
-                        CreatorSwCfgSize - 1]}) begin
-        predict_err(OtpCreatorSwCfgErrIdx, OtpAccessError);
-        `DV_CHECK_EQ(item.d_data, 0,
-                     $sformatf("locked mem read mismatch at TLUL addr %0h in CreatorSwCfg", addr))
-        return 0;
+      if (`gmv(ral.creator_sw_cfg_read_lock) == 0 || cfg.otp_ctrl_vif.under_error_states()) begin
+        if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr + CreatorSwCfgOffset :
+                          cfg.ral_models[ral_name].mem_ranges[0].start_addr + CreatorSwCfgOffset +
+                          CreatorSwCfgSize - 1]}) begin
+          predict_err(OtpCreatorSwCfgErrIdx, OtpAccessError);
+          `DV_CHECK_EQ(item.d_data, 0,
+                       $sformatf("locked mem read mismatch at TLUL addr %0h in CreatorSwCfg", addr))
+          return 0;
+        end
       end
-    end
-    if (`gmv(ral.owner_sw_cfg_read_lock) == 0 ||  cfg.otp_ctrl_vif.under_error_states()) begin
-      if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr + OwnerSwCfgOffset :
-                        cfg.ral_models[ral_name].mem_ranges[0].start_addr + OwnerSwCfgOffset +
-                        OwnerSwCfgSize - 1]}) begin
-        predict_err(OtpOwnerSwCfgErrIdx, OtpAccessError);
-        `DV_CHECK_EQ(item.d_data, 0,
-                     $sformatf("locked mem read mismatch at TLUL addr %0h in OwnerSwCfg", addr))
-        return 0;
+      if (`gmv(ral.owner_sw_cfg_read_lock) == 0 || cfg.otp_ctrl_vif.under_error_states()) begin
+        if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr + OwnerSwCfgOffset :
+                          cfg.ral_models[ral_name].mem_ranges[0].start_addr + OwnerSwCfgOffset +
+                          OwnerSwCfgSize - 1]}) begin
+          predict_err(OtpOwnerSwCfgErrIdx, OtpAccessError);
+          `DV_CHECK_EQ(item.d_data, 0,
+                       $sformatf("locked mem read mismatch at TLUL addr %0h in OwnerSwCfg", addr))
+          return 0;
+        end
+      end
+
+      // Check ECC uncorrectable fatal error.
+      if (dai_addr < LifeCycleOffset) begin
+        int part_idx = get_part_index(dai_addr);
+        bit [TL_DW-1:0] read_out;
+        int ecc_err = read_a_word_with_ecc(dai_addr, read_out);
+        if (ecc_err == OtpEccUncorrErr && !ecc_corr_err_only_part(part_idx)) begin
+            predict_err(part_idx, OtpMacroEccUncorrError);
+            set_exp_alert("fatal_macro_error", 1, 20);
+            `DV_CHECK_EQ(item.d_data, 0, $sformatf(
+                         "ECC uncorrectable error exp to readout all 0s at TLUL addr %0h", addr))
+           return 0;
+        end
       end
     end
 
-    // Check ECC uncorrectable fatal error.
-    if (dai_addr < LifeCycleOffset) begin
-      int part_idx = get_part_index(dai_addr);
-      bit [TL_DW-1:0] read_out;
-      int ecc_err = read_a_word_with_ecc(dai_addr, read_out);
-      if (ecc_err == OtpEccUncorrErr && !ecc_corr_err_only_part(part_idx)) begin
-          predict_err(part_idx, OtpMacroEccUncorrError);
-          set_exp_alert("fatal_macro_error", 1, 20);
-          `DV_CHECK_EQ(item.d_data, 0,
-                       $sformatf("ECC uncorrectable error exp to readout all 0s at TLUL addr %0h",
-                       addr))
-       return 0;
-      end
-    end
     return super.is_tl_mem_access_allowed(item, ral_name, mem_byte_access_err, mem_wo_err,
                                           mem_ro_err);
   endfunction
