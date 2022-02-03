@@ -149,7 +149,7 @@ interface otbn_rnd_if (
   `ASSERT_EDGE(IDLE,        READING,     rnd_req_i)
   `ASSERT_EDGE(IDLE,        PREFETCHING, rnd_prefetch_req_i)
   `ASSERT_EDGE(READING,     FULL,        edn_rnd_ack_i)
-  `ASSERT_EDGE(PREFETCHING, READING,     rnd_req_i)
+  `ASSERT_EDGE(PREFETCHING, READING,     rnd_req_i && !edn_rnd_ack_i)
   `ASSERT_EDGE(PREFETCHING, FULL,        edn_rnd_ack_i)
   `ASSERT_EDGE(FULL,        IDLE,        rnd_req_i)
 
