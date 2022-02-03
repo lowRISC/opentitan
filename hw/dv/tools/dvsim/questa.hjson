@@ -1,0 +1,111 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  build_cmd:  "{job_prefix} qrun -optimize"
+  run_cmd:    "{job_prefix} qrun -simulate"
+
+  build_opts: [ "-timescale 1ns/1ps",
+                "-uvm -uvmhome {QUESTA_HOME}/questasim/verilog_src/uvm-1.2",
+                "-mfcu",
+                "-f {sv_flist}",
+                // List multiple tops for the simulation. Prepend each top level with `-top`.
+                "{eval_cmd} echo {sim_tops} | sed -E 's/(\\S+)/-top \\1/g'",
+                "-voptargs=\"+acc=nr\""
+              ]
+
+  run_opts:   [ "-outdir {build_dir}/sim-vcs/qrun.out",
+                "-sv_seed {seed}",
+                // dv_macros.svh has a macro printing null using %0d
+                // format specifier, Questa throws an error on this
+                // we demote this error in Questa
+                "-suppress vsim-8323",
+                // Questa forces all declared virtual interfaces to be allocated,
+                // even in classes that are not even created at runtime. The switch
+                // below demotes the associated error thrown.
+                "-permit_unmatched_virtual_intf",
+                "+UVM_TESTNAME={uvm_test}",
+                "+UVM_TEST_SEQ={uvm_test_seq}"
+              ]
+
+  // Supported wave dumping formats (in order of preference).
+  supported_wave_formats: []
+
+  // Default tcl script used when running the sim. Override if needed.
+  run_script: ""
+
+  // Coverage related.
+  cov_db_dir: "{scratch_path}/coverage/{build_mode}.ucdb"
+
+  // Individual test specific coverage data - this will be deleted if the test fails
+  // so that coverage from failiing tests is not included in the final report.
+  cov_db_test_dir_name: "{run_dir_name}.{seed}"
+  cov_db_test_dir: "{cov_db_dir}/snps/coverage/db/testdata/{cov_db_test_dir_name}"
+
+  // Merging coverage.
+  // "cov_db_dirs" is a special variable that appends all build directories in use.
+  // It is constructed by the tool itself.
+  cov_merge_dir:    "{scratch_path}/cov_report"
+  cov_merge_db_dir: ""
+  cov_merge_cmd:    ""
+  cov_merge_opts:   []
+
+  // Generate covreage reports in text as well as html.
+  cov_report_dir:       "{scratch_path}/cov_report"
+  cov_report_cmd:       ""
+  cov_report_opts:      []
+  cov_report_txt:   "{cov_report_dir}/dashboard.txt"
+
+  // Analyzing coverage - this is done by invoking --cov-analyze switch. It opens up the
+  // GUI for visual analysis.
+  cov_analyze_dir:  "{scratch_path}/cov_analyze"
+  cov_analyze_cmd:  ""
+  cov_analyze_opts: []
+
+  // By default, collect all coverage metrics.
+  cov_metrics: "bcestf"
+
+  // pass and fail patterns
+  build_fail_patterns: ["^\\*\\* Error.*$"]
+  run_fail_patterns:   ["^\\*\\* Error.*$"]
+
+  build_modes: [
+   {
+      name: questa_gui
+      is_sim_mode: 1
+      build_opts: []
+      run_opts: ["-gui"]
+    }
+    {
+      name: questa_waves
+      is_sim_mode: 1
+    }
+    // TODO Questa coverage only currently supported in the GUI with no merging
+    {
+      name: questa_cov
+      is_sim_mode: 1
+      build_opts: ["+cover={cov_metrics}"]
+      run_opts:   ["-coverage", "-gui"]
+    }
+    // TODO support profiling for questa
+    {
+      name: questa_profile
+      is_sim_mode: 1
+      build_opts: []
+      run_opts:   []
+    }
+    {
+      name: questa_xprop
+      is_sim_mode: 1
+      build_opts: []
+    }
+    {
+      // TODO: Add build and run options to enable zero delay loop detection.
+      name: questa_loopdetect
+      is_sim_mode: 1
+      build_opts: []
+      run_opts:   []
+    }
+
+  ]
+}
