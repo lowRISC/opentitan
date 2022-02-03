@@ -75,7 +75,7 @@ module aes_ctrl_reg_shadowed
 
   // Get and resolve values from register interface.
   assign op = aes_op_e'(reg2hw_ctrl_i.operation.q);
-  always_comb begin : op_get
+  always_comb begin : operation_get
     unique case (op)
       AES_ENC: ctrl_wd.operation = AES_ENC;
       AES_DEC: ctrl_wd.operation = AES_DEC;
