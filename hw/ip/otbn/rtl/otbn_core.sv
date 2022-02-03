@@ -71,6 +71,12 @@ module otbn_core
   output logic [31:0] insn_cnt_o,
   input  logic        insn_cnt_clear_i,
 
+  output logic         mems_sec_wipe_o,          // Request secure wipe for imem and dmem
+  input  logic         req_sec_wipe_urnd_keys_i, // Request URND bits for temporary scramble keys.
+                                                 // Keys below are valid cycle after request.
+  output logic [127:0] dmem_sec_wipe_urnd_key_o, // URND bits to give temporary dmem scramble key
+  output logic [127:0] imem_sec_wipe_urnd_key_o, // URND bits to give temporary imem scramble key
+
   // An integrity check on an incoming bus transaction failed. Results in a fatal error.
   input logic bus_intg_violation_i,
 
@@ -191,6 +197,7 @@ module otbn_core
   logic            urnd_reseed_req;
   logic            urnd_reseed_busy;
   logic            urnd_advance;
+  logic            urnd_advance_start_stop_control;
   logic [WLEN-1:0] urnd_data;
   logic            urnd_all_zero;
 
@@ -220,6 +227,8 @@ module otbn_core
 
   logic start_stop_state_error;
 
+  logic req_sec_wipe_urnd_keys_q;
+
   // Start stop control start OTBN execution when requested and deals with any pre start or post
   // stop actions.
   otbn_start_stop_control #(
@@ -234,7 +243,7 @@ module otbn_core
 
     .urnd_reseed_req_o (urnd_reseed_req),
     .urnd_reseed_busy_i(urnd_reseed_busy),
-    .urnd_advance_o    (urnd_advance),
+    .urnd_advance_o    (urnd_advance_start_stop_control),
 
     .start_secure_wipe_i  (start_secure_wipe),
     .secure_wipe_running_o(secure_wipe_running),
@@ -427,6 +436,7 @@ module otbn_core
     .state_reset_i(state_reset),
     .insn_cnt_o   (insn_cnt),
     .insn_cnt_clear_i,
+    .mems_sec_wipe_o,
     .bus_intg_violation_i,
     .illegal_bus_access_i,
     .lifecycle_escalation_i,
@@ -651,6 +661,21 @@ module otbn_core
     .edn_urnd_ack_i,
     .edn_urnd_data_i
   );
+
+  // Advance URND either when the start_stop_control commands it or when temporary secure wipe keys
+  // are requested.
+  assign urnd_advance = urnd_advance_start_stop_control | req_sec_wipe_urnd_keys_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      req_sec_wipe_urnd_keys_q <= 1'b0;
+    end else begin
+      req_sec_wipe_urnd_keys_q <= req_sec_wipe_urnd_keys_i;
+    end
+  end
+
+  assign dmem_sec_wipe_urnd_key_o = urnd_data[127:0];
+  assign imem_sec_wipe_urnd_key_o = urnd_data[255:128];
 
   // Asserts =======================================================================================
 

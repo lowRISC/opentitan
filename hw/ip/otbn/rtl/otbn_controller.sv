@@ -135,6 +135,7 @@ module otbn_controller
   input  logic        state_reset_i,
   output logic [31:0] insn_cnt_o,
   input  logic        insn_cnt_clear_i,
+  output logic        mems_sec_wipe_o,
   input  logic        bus_intg_violation_i,
   input  logic        illegal_bus_access_i,
   input  logic        lifecycle_escalation_i,
@@ -484,6 +485,7 @@ module otbn_controller
   assign recoverable_err = software_err & ~software_errs_fatal_i;
 
   assign reg_intg_violation_o = err_bits.reg_intg_violation;
+  assign mems_sec_wipe_o = (state_d == OtbnStateLocked) & (state_q != OtbnStateLocked);
 
   if (SecWipeEn) begin : gen_sec_wipe
     err_bits_t err_bits_d, err_bits_q;

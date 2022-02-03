@@ -96,6 +96,11 @@ module otbn
   logic busy_execute_d, busy_execute_q;
   logic done, locked, idle;
   logic illegal_bus_access_d, illegal_bus_access_q;
+  logic dmem_sec_wipe_d, dmem_sec_wipe_q;
+  logic imem_sec_wipe_d, imem_sec_wipe_q;
+  logic mems_sec_wipe;
+  logic req_sec_wipe_urnd_keys;
+  logic [127:0] dmem_sec_wipe_urnd_key, imem_sec_wipe_urnd_key;
 
   logic recoverable_err;
   logic reg_intg_violation;
@@ -226,12 +231,15 @@ module otbn
   otp_ctrl_pkg::otbn_key_t otbn_imem_scramble_key;
   otbn_imem_nonce_t        otbn_imem_scramble_nonce;
   logic                    otbn_imem_scramble_valid;
+  logic                    otbn_imem_scramble_key_req_busy;
   logic                    unused_otbn_imem_scramble_key_seed_valid;
 
   otp_ctrl_pkg::otbn_key_t otbn_dmem_scramble_key;
   otbn_dmem_nonce_t        otbn_dmem_scramble_nonce;
   logic                    otbn_dmem_scramble_valid;
+  logic                    otbn_dmem_scramble_key_req_busy;
   logic                    unused_otbn_dmem_scramble_key_seed_valid;
+
 
   logic otbn_scramble_state_error;
 
@@ -258,8 +266,13 @@ module otbn
     .otbn_imem_scramble_valid_o         (otbn_imem_scramble_valid),
     .otbn_imem_scramble_key_seed_valid_o(unused_otbn_imem_scramble_key_seed_valid),
 
-    .otbn_dmem_scramble_new_req_i(1'b0),
-    .otbn_imem_scramble_new_req_i(1'b0),
+    .otbn_dmem_scramble_sec_wipe_i    (dmem_sec_wipe_q),
+    .otbn_dmem_scramble_sec_wipe_key_i(dmem_sec_wipe_urnd_key),
+    .otbn_imem_scramble_sec_wipe_i    (imem_sec_wipe_q),
+    .otbn_imem_scramble_sec_wipe_key_i(imem_sec_wipe_urnd_key),
+
+    .otbn_dmem_scramble_key_req_busy_o(otbn_dmem_scramble_key_req_busy),
+    .otbn_imem_scramble_key_req_busy_o(otbn_imem_scramble_key_req_busy),
 
     .state_error_o(otbn_scramble_state_error)
   );
@@ -624,8 +637,46 @@ module otbn
                                reg_bus_intg_violation);
 
   // CMD register
-  // start is flopped to avoid long timing paths from the TL fabric into OTBN internals.
-  assign start_d = reg2hw.cmd.qe & (reg2hw.cmd.q == CmdExecute) & idle;
+  always_comb begin
+    // start is flopped to avoid long timing paths from the TL fabric into OTBN internals.
+    start_d         = 1'b0;
+    dmem_sec_wipe_d = 1'b0;
+    imem_sec_wipe_d = 1'b0;
+
+    // Can only start a new command when idle.
+    if (idle) begin
+      if (reg2hw.cmd.qe) begin
+        unique case (reg2hw.cmd.q)
+          CmdExecute:     start_d         = 1'b1;
+          CmdSecWipeDmem: dmem_sec_wipe_d = 1'b1;
+          CmdSecWipeImem: imem_sec_wipe_d = 1'b1;
+          default: ;
+        endcase
+      end
+    end else if (busy_execute_q) begin
+      // OTBN can command a secure wipe of IMEM and DMEM. This occurs when OTBN encounters a fatal
+      // error.
+      if (mems_sec_wipe) begin
+        dmem_sec_wipe_d = 1'b1;
+        imem_sec_wipe_d = 1'b1;
+      end
+    end
+  end
+
+  // Secure wipe control. In the first cycle temporary scramble keys are requested from URND. These
+  // are available the following cycle where the secure wipe request is sent to scramble_ctrl.
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      dmem_sec_wipe_q <= 1'b0;
+      imem_sec_wipe_q <= 1'b0;
+    end else begin
+      dmem_sec_wipe_q <= dmem_sec_wipe_d;
+      imem_sec_wipe_q <= imem_sec_wipe_d;
+    end
+  end
+
+  assign req_sec_wipe_urnd_keys = dmem_sec_wipe_d | imem_sec_wipe_d;
+
   assign illegal_bus_access_d = dmem_illegal_bus_access | imem_illegal_bus_access;
 
   // Flop `illegal_bus_access_q` so we know an illegal bus access has happened and to break a timing
@@ -641,20 +692,28 @@ module otbn
   end
 
   // STATUS register
-  always_comb begin
-    unique case (1'b1)
-      busy_execute_q: hw2reg.status.d = StatusBusyExecute;
-      locked:         hw2reg.status.d = StatusLocked;
-      idle:           hw2reg.status.d = StatusIdle;
-      // TODO: Add other busy flags
+  // imem/dmem scramble req can be busy when locked, so use a priority selection so locked status
+  // always takes priority.
+  assign hw2reg.status.d = locked                          ? StatusLocked          :
+                           busy_execute_q                  ? StatusBusyExecute     :
+                           otbn_dmem_scramble_key_req_busy ? StatusBusySecWipeDmem :
+                           otbn_imem_scramble_key_req_busy ? StatusBusySecWipeImem :
+                           idle                            ? StatusIdle            :
+                                                             StatusLocked;
 
-      // Default case should not be reachable (checked by OtbnStatesOneHot assertion below)
-      default:        hw2reg.status.d = StatusLocked;
-    endcase
-  end
   assign hw2reg.status.de = 1'b1;
 
-  `ASSERT(OtbnStatesOneHot, $onehot({busy_execute_q, locked, idle}))
+  `ASSERT(OtbnStateDefined, |{locked,
+                              busy_execute_q,
+                              otbn_dmem_scramble_key_req_busy,
+                              otbn_imem_scramble_key_req_busy,
+                              idle})
+
+  `ASSERT(OtbnSomeStatesExclusive, $onehot0({locked, busy_execute_q, idle}))
+  `ASSERT(OtbnOnlyIdleIfNoActivity, idle |-> ~|{locked,
+                                                busy_execute_q,
+                                                otbn_dmem_scramble_key_req_busy,
+                                                otbn_imem_scramble_key_req_busy})
 
   // CTRL register
   assign software_errs_fatal_d =
@@ -973,6 +1032,11 @@ module otbn
       .insn_cnt_o                  (insn_cnt_rtl),
       .insn_cnt_clear_i            (insn_cnt_clear),
 
+      .mems_sec_wipe_o             (mems_sec_wipe),
+      .dmem_sec_wipe_urnd_key_o    (dmem_sec_wipe_urnd_key),
+      .imem_sec_wipe_urnd_key_o    (imem_sec_wipe_urnd_key),
+      .req_sec_wipe_urnd_keys_i    (req_sec_wipe_urnd_keys),
+
       .bus_intg_violation_i        (bus_intg_violation),
       .illegal_bus_access_i        (illegal_bus_access_q),
       .lifecycle_escalation_i      (lifecycle_escalation),
@@ -1032,6 +1096,11 @@ module otbn
       .insn_cnt_o                  (insn_cnt),
       .insn_cnt_clear_i            (insn_cnt_clear),
 
+      .mems_sec_wipe_o             (mems_sec_wipe),
+      .dmem_sec_wipe_urnd_key_o    (dmem_sec_wipe_urnd_key),
+      .imem_sec_wipe_urnd_key_o    (imem_sec_wipe_urnd_key),
+      .req_sec_wipe_urnd_keys_i    (req_sec_wipe_urnd_keys),
+
       .bus_intg_violation_i        (bus_intg_violation),
       .illegal_bus_access_i        (illegal_bus_access_q),
       .lifecycle_escalation_i      (lifecycle_escalation),
@@ -1046,7 +1115,8 @@ module otbn
   `endif
 
   // We're idle if we're neither busy executing something nor locked
-  assign idle = ~(busy_execute_q | locked);
+  assign idle = ~(busy_execute_q | locked | otbn_dmem_scramble_key_req_busy |
+                  otbn_imem_scramble_key_req_busy);
 
   // The core can never signal a write to IMEM
   assign imem_write_core = 1'b0;

@@ -37,8 +37,13 @@ module otbn_scramble_ctrl
   output logic                    otbn_imem_scramble_valid_o,
   output logic                    otbn_imem_scramble_key_seed_valid_o,
 
-  input  logic otbn_dmem_scramble_new_req_i,
-  input  logic otbn_imem_scramble_new_req_i,
+  input  logic                    otbn_dmem_scramble_sec_wipe_i,
+  input  otp_ctrl_pkg::otbn_key_t otbn_dmem_scramble_sec_wipe_key_i,
+  input  logic                    otbn_imem_scramble_sec_wipe_i,
+  input  otp_ctrl_pkg::otbn_key_t otbn_imem_scramble_sec_wipe_key_i,
+
+  output logic otbn_dmem_scramble_key_req_busy_o,
+  output logic otbn_imem_scramble_key_req_busy_o,
 
   output logic state_error_o
 );
@@ -54,11 +59,11 @@ module otbn_scramble_ctrl
   logic dmem_scramble_req_pending_q, dmem_scramble_req_pending_d;
   logic imem_scramble_req_pending_q, imem_scramble_req_pending_d;
 
-  logic dmem_key_nonce_en;
-  logic imem_key_nonce_en;
+  logic dmem_key_en, dmem_nonce_en;
+  logic imem_key_en, imem_nonce_en;
 
-  otp_ctrl_pkg::otbn_key_t dmem_key_q;
-  otp_ctrl_pkg::otbn_key_t imem_key_q;
+  otp_ctrl_pkg::otbn_key_t dmem_key_q, dmem_key_d, dmem_key_sel_otp;
+  otp_ctrl_pkg::otbn_key_t imem_key_q, imem_key_d, imem_key_sel_otp;
 
   otbn_dmem_nonce_t dmem_nonce_q;
   otbn_imem_nonce_t imem_nonce_q;
@@ -68,22 +73,38 @@ module otbn_scramble_ctrl
   otp_ctrl_pkg::otbn_nonce_t otp_nonce;
   logic                      otp_key_seed_valid;
 
+  assign dmem_key_d = dmem_key_sel_otp ? otp_key : otbn_dmem_scramble_sec_wipe_key_i;
+  assign imem_key_d = imem_key_sel_otp ? otp_key : otbn_imem_scramble_sec_wipe_key_i;
+
+  // TODO: Different reset key/nonce for imem/dmem?
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      dmem_key_q   <= RndCnstOtbnKey;
+      dmem_key_q <= RndCnstOtbnKey;
+    end else if (dmem_key_en) begin
+      dmem_key_q <= dmem_key_d;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       dmem_nonce_q <= RndCnstOtbnNonce;
-    end else if (dmem_key_nonce_en) begin
-      dmem_key_q   <= otp_key;
+    end else if (dmem_nonce_en) begin
       dmem_nonce_q <= otp_nonce;
     end
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      imem_key_q   <= RndCnstOtbnKey;
+      imem_key_q <= RndCnstOtbnKey;
+    end else if (imem_key_en) begin
+      imem_key_q <= imem_key_d;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       imem_nonce_q <= RndCnstOtbnNonce;
-    end else if (imem_key_nonce_en) begin
-      imem_key_q   <= otp_key;
+    end else if (imem_nonce_en) begin
       imem_nonce_q <= otp_nonce;
     end
   end
@@ -128,41 +149,67 @@ module otbn_scramble_ctrl
     imem_key_valid_d            = imem_key_valid_q;
     dmem_key_seed_valid_d       = dmem_key_seed_valid_q;
     imem_key_seed_valid_d       = imem_key_seed_valid_q;
-    dmem_key_nonce_en           = 1'b0;
-    imem_key_nonce_en           = 1'b0;
-    dmem_scramble_req_pending_d = dmem_scramble_req_pending_q | otbn_dmem_scramble_new_req_i;
-    imem_scramble_req_pending_d = imem_scramble_req_pending_q | otbn_imem_scramble_new_req_i;
+    dmem_key_en                 = 1'b0;
+    dmem_nonce_en               = 1'b0;
+    imem_key_en                 = 1'b0;
+    imem_nonce_en               = 1'b0;
+    dmem_scramble_req_pending_d = dmem_scramble_req_pending_q;
+    imem_scramble_req_pending_d = imem_scramble_req_pending_q;
+    dmem_key_sel_otp            = 1'b0;
+    imem_key_sel_otp            = 1'b0;
     state_d                     = state_q;
     otp_key_req                 = 1'b0;
     state_error_o               = 1'b0;
+
+    // Action dmem secure wipe request unless a new key request is already ongoing
+    if (otbn_dmem_scramble_sec_wipe_i && state_q != ScrambleCtrlDmemReq) begin
+      dmem_key_valid_d            = 1'b0;
+      dmem_key_en                 = 1'b1;
+      dmem_key_sel_otp            = 1'b0;
+      dmem_scramble_req_pending_d = 1'b1;
+    end
+
+    // Action imem secure wipe request unless a new key request is already ongoing
+    if (otbn_imem_scramble_sec_wipe_i && state_q != ScrambleCtrlImemReq) begin
+      imem_key_valid_d            = 1'b0;
+      imem_key_en                 = 1'b1;
+      imem_key_sel_otp            = 1'b0;
+      imem_scramble_req_pending_d = 1'b1;
+    end
 
     unique case (state_q)
       ScrambleCtrlIdle: begin
         if (dmem_scramble_req_pending_q) begin
           otp_key_req      = 1'b1;
-          dmem_key_valid_d = 1'b0;
           state_d          = ScrambleCtrlDmemReq;
         end else if (imem_scramble_req_pending_q) begin
           otp_key_req      = 1'b1;
-          imem_key_valid_d = 1'b0;
           state_d          = ScrambleCtrlImemReq;
         end
       end
       ScrambleCtrlDmemReq: begin
+        otp_key_req = 1'b1;
+
         if (otp_key_ack) begin
           state_d                     = ScrambleCtrlIdle;
           dmem_scramble_req_pending_d = 1'b0;
-          dmem_key_nonce_en           = 1'b1;
+          dmem_key_en                 = 1'b1;
+          dmem_nonce_en               = 1'b1;
           dmem_key_valid_d            = 1'b1;
           dmem_key_seed_valid_d       = otp_key_seed_valid;
+          dmem_key_sel_otp            = 1'b1;
         end
       end ScrambleCtrlImemReq: begin
+        otp_key_req = 1'b1;
+
         if (otp_key_ack) begin
           state_d                     = ScrambleCtrlIdle;
           imem_scramble_req_pending_d = 1'b0;
-          imem_key_nonce_en           = 1'b1;
+          imem_key_en                 = 1'b1;
+          imem_nonce_en               = 1'b1;
           imem_key_valid_d            = 1'b1;
           imem_key_seed_valid_d       = otp_key_seed_valid;
+          imem_key_sel_otp            = 1'b1;
         end
       end
       default: begin
@@ -170,6 +217,10 @@ module otbn_scramble_ctrl
       end
     endcase
   end
+
+  assign otbn_dmem_scramble_key_req_busy_o = state_q == ScrambleCtrlDmemReq;
+  assign otbn_imem_scramble_key_req_busy_o = state_q == ScrambleCtrlImemReq;
+
 
   prim_sync_reqack_data #(
     .Width($bits(otp_ctrl_pkg::otbn_otp_key_rsp_t)-1),
