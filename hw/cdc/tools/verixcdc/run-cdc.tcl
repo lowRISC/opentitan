@@ -98,6 +98,33 @@ analyze_intent
 verify_cdc
 
 #########################
+## Top Modules         ##
+#########################
+# TODO: modules are used after elaboration. If a module is instantiated
+# multiple times, the module name should be uniquified name.
+# Due to this, uart, i2c, spi_host reports are not correct.
+set modules {
+  spi_device
+  kmac
+  hmac
+  uart
+  gpio
+  spi_host
+  flash_ctrl
+  alert_handler
+  otp_ctrl
+  lc_ctrl
+  pwrmgr
+  clkmgr
+  rstmgr
+  keymgr
+  csrng
+  entropy_src
+  aes
+  rom_ctrl
+}
+
+#########################
 ## Read in Waivers     ##
 #########################
 
@@ -108,3 +135,11 @@ source $CDC_WAIVER_FILE
 #########################
 
 report_policy -verbose -skip_empty_summary_status -compat -output vcdc.rpt ALL
+
+file mkdir ../REPORT/
+
+foreach mod $modules {
+  report_policy -verbose -skip_empty_summary_status -compat -output ../REPORT/vcdc.$mod.rpt -module $mod ALL
+}
+
+# report_messages -output verix_cdc.rpt
