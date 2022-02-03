@@ -25,7 +25,6 @@ class MockSecMmio : public GlobalMock<MockSecMmio> {
   MOCK_METHOD(uint32_t, Read32, (uint32_t addr));
   MOCK_METHOD(void, Write32, (uint32_t addr, uint32_t value));
   MOCK_METHOD(void, Write32Shadowed, (uint32_t addr, uint32_t value));
-  MOCK_METHOD(void, WriteIncrement, (uint32_t value));
   MOCK_METHOD(void, CheckValues, (uint32_t rnd_offset));
   MOCK_METHOD(void, CheckCounters, (uint32_t expected_check_count));
 };
@@ -67,14 +66,6 @@ using MockSecMmio = testing::StrictMock<internal::MockSecMmio>;
   EXPECT_CALL(::mask_rom_test::MockSecMmio::Instance(), \
               Write32Shadowed(addr, mock_mmio::ToInt<uint32_t>(__VA_ARGS__)));
 
-/**
- * Expect a write counter increment with a given 32-bit increment value.
- *
- * @param val Increment value.
- */
-#define EXPECT_SEC_WRITE_INCREMENT(val) \
-  EXPECT_CALL(::mask_rom_test::MockSecMmio::Instance(), WriteIncrement(val));
-
 extern "C" {
 
 void sec_mmio_init(void) { MockSecMmio::Instance().Init(); }
@@ -89,10 +80,6 @@ void sec_mmio_write32(uint32_t addr, uint32_t value) {
 
 void sec_mmio_write32_shadowed(uint32_t addr, uint32_t value) {
   MockSecMmio::Instance().Write32Shadowed(addr, value);
-}
-
-void sec_mmio_write_increment(uint32_t value) {
-  MockSecMmio::Instance().WriteIncrement(value);
 }
 
 void sec_mmio_check_values(uint32_t rnd_offset) {

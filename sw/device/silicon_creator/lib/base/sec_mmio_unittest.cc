@@ -122,14 +122,6 @@ TEST_F(SecMmioTest, Write32) {
   EXPECT_EQ(ctx_->last_index, 2);
 }
 
-TEST_F(SecMmioTest, CounterInc) {
-  sec_mmio_write_increment(5);
-  EXPECT_EQ(ctx_->expected_write_count, 5);
-
-  sec_mmio_write_increment(10);
-  EXPECT_EQ(ctx_->expected_write_count, 15);
-}
-
 TEST_F(SecMmioTest, CheckValues) {
   EXPECT_ABS_WRITE32(0, 0x12345678);
   EXPECT_ABS_READ32(0, 0x12345678);
@@ -174,7 +166,7 @@ TEST_F(SecMmioTest, CheckCount) {
   EXPECT_ABS_WRITE32(0, 0x12345678);
   EXPECT_ABS_READ32(0, 0x12345678);
   sec_mmio_write32(0, 0x12345678);
-  sec_mmio_write_increment(1);
+  SEC_MMIO_WRITE_INCREMENT(1);
 
   sec_mmio_check_counters(/*expected_check_count=*/0);
   sec_mmio_check_counters(/*expected_check_count=*/1);
