@@ -34,7 +34,8 @@ class otbn_imem_err_vseq extends otbn_base_vseq;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
 
     for (int i = 0; i < otbn_reg_pkg::OTBN_IMEM_SIZE / 4; i++) begin
-      bit [38:0] good_data = cfg.read_imem_word(i, key, nonce);
+      bit [38:0] old_data = cfg.read_imem_word(i, key, nonce);
+      bit [38:0] good_data = cfg.fix_integrity_32(old_data);
       bit [38:0] bad_data = good_data ^ mask;
       cfg.write_imem_word(i, bad_data, key, nonce);
     end

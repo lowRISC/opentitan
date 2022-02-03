@@ -246,4 +246,43 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     dmem_util.write(BUS_AW'(phys_idx) * 32, scr_data);
   endfunction
 
+  // Strip off integrity bits from data
+  function logic [255:0] strip_integrity_wlen(logic [311:0] data);
+    logic [255:0] ret;
+    for (int i = 0; i < 8; ++i) begin
+      ret[32*i +: 32] = data[39*i +: 32];
+    end
+    return ret;
+  endfunction
+
+  // Add new known-good integrity bits to data
+  function logic [311:0] add_integrity_wlen(logic [255:0] data);
+    logic [311:0] ret;
+    for (int i = 0; i < 8; ++i) begin
+      logic [31:0] w32 = data[32*i +: 32];
+      ret[39*i +: 39] = prim_secded_pkg::prim_secded_inv_39_32_enc(w32);
+    end
+    return ret;
+  endfunction
+
+  // Fix integrity bits of data
+  function logic [311:0] fix_integrity_wlen(logic [311:0] data);
+    return add_integrity_wlen(strip_integrity_wlen(data));
+  endfunction
+
+  // Strip off integrity bits from IMEM
+  function logic [31:0] strip_integrity_32(logic [38:0] data);
+    return data[31:0];
+  endfunction
+
+  // Add new known-good integrity bits to data
+  function logic [38:0] add_integrity_32(logic [31:0] data);
+    return prim_secded_pkg::prim_secded_inv_39_32_enc(data);
+  endfunction
+
+  // Fix integrity bits of data
+  function logic [38:0] fix_integrity_32(logic [38:0] data);
+    return add_integrity_32(strip_integrity_32(data));
+  endfunction
+
 endclass
