@@ -274,7 +274,7 @@ static info_cfg_regs_t info_cfg_regs(flash_ctrl_info_page_t info_page) {
 /**
  * Disables all access to a page until next reset.
  *
- * It's the responsibility of the caller to call `sec_mmio_write_increment()`
+ * It's the responsibility of the caller to call `SEC_MMIO_WRITE_INCREMENT()`
  * with the correct value.
  *
  * @param info_page An info page.
@@ -286,12 +286,15 @@ static void page_lockdown(flash_ctrl_info_page_t info_page) {
 }
 
 void flash_ctrl_init(void) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(
+      kFlashCtrlSecMmioInit,
+      2 + kFlashCtrlSecMmioDataDefaultCfgSet + 2 * kFlashCtrlSecMmioInfoCfgSet);
+
   // Initialize the flash controller.
   abs_mmio_write32(kBase + FLASH_CTRL_INIT_REG_OFFSET,
                    bitfield_bit32_write(0, FLASH_CTRL_INIT_VAL_BIT, true));
   // Disable all access to the silicon creator secret info page.
   page_lockdown(kFlashCtrlInfoPageCreatorSecret);
-  sec_mmio_write_increment(2);
   // Configure default scrambling, ECC, and HE settings for the data partition.
   uint32_t otp_val =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
@@ -404,11 +407,13 @@ rom_error_t flash_ctrl_info_erase(flash_ctrl_info_page_t info_page,
 }
 
 void flash_ctrl_exec_set(uint32_t exec_val) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioExecSet, 1);
   sec_mmio_write32(kBase + FLASH_CTRL_EXEC_REG_OFFSET, exec_val);
-  sec_mmio_write_increment(1);
 }
 
 void flash_ctrl_data_default_perms_set(flash_ctrl_perms_t perms) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioDataDefaultPermsSet, 1);
+
   // Read first to preserve ECC, scrambling, and high endurance bits.
   uint32_t reg =
       sec_mmio_read32(kBase + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET);
@@ -422,11 +427,12 @@ void flash_ctrl_data_default_perms_set(flash_ctrl_perms_t perms) {
                            perms.erase == kHardenedBoolTrue);
   sec_mmio_write32_shadowed(
       kBase + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET, reg);
-  sec_mmio_write_increment(1);
 }
 
 void flash_ctrl_info_perms_set(flash_ctrl_info_page_t info_page,
                                flash_ctrl_perms_t perms) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioInfoPermsSet, 1);
+
   const uint32_t cfg_addr = info_cfg_regs(info_page).cfg_addr;
   // Read first to preserve ECC, scrambling, and high endurance bits.
   uint32_t reg = sec_mmio_read32(cfg_addr);
@@ -442,10 +448,11 @@ void flash_ctrl_info_perms_set(flash_ctrl_info_page_t info_page,
       reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_ERASE_EN_0_BIT,
       perms.erase == kHardenedBoolTrue);
   sec_mmio_write32_shadowed(cfg_addr, reg);
-  sec_mmio_write_increment(1);
 }
 
 void flash_ctrl_data_default_cfg_set(flash_ctrl_cfg_t cfg) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioDataDefaultCfgSet, 1);
+
   // Read first to preserve permission bits.
   uint32_t reg =
       sec_mmio_read32(kBase + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET);
@@ -458,11 +465,12 @@ void flash_ctrl_data_default_cfg_set(flash_ctrl_cfg_t cfg) {
                              cfg.he == kMultiBitBool8True);
   sec_mmio_write32_shadowed(
       kBase + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET, reg);
-  sec_mmio_write_increment(1);
 }
 
 void flash_ctrl_info_cfg_set(flash_ctrl_info_page_t info_page,
                              flash_ctrl_cfg_t cfg) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioInfoCfgSet, 1);
+
   const uint32_t cfg_addr = info_cfg_regs(info_page).cfg_addr;
   // Read first to preserve permission bits.
   uint32_t reg = sec_mmio_read32(cfg_addr);
@@ -478,7 +486,6 @@ void flash_ctrl_info_cfg_set(flash_ctrl_info_page_t info_page,
       reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_HE_EN_0_BIT,
       cfg.he == kMultiBitBool8True);
   sec_mmio_write32_shadowed(cfg_addr, reg);
-  sec_mmio_write_increment(1);
 }
 
 /**
@@ -496,8 +503,9 @@ static const flash_ctrl_info_page_t kInfoPagesNoOwnerAccess[] = {
 };
 
 void flash_ctrl_creator_info_pages_lockdown(void) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioCreatorInfoPagesLockdown,
+                                  2 * ARRAYSIZE(kInfoPagesNoOwnerAccess));
   for (size_t i = 0; i < ARRAYSIZE(kInfoPagesNoOwnerAccess); ++i) {
     page_lockdown(kInfoPagesNoOwnerAccess[i]);
   }
-  sec_mmio_write_increment(2 * ARRAYSIZE(kInfoPagesNoOwnerAccess));
 }

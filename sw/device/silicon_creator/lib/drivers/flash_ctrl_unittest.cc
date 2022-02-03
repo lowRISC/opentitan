@@ -117,7 +117,6 @@ TEST_P(InitTest, Initialize) {
   auto info_page = InfoPages().at(kFlashCtrlInfoPageCreatorSecret);
   EXPECT_SEC_WRITE32_SHADOWED(base_ + info_page.cfg_offset, 0);
   EXPECT_SEC_WRITE32(base_ + info_page.cfg_wen_offset, 0);
-  EXPECT_SEC_WRITE_INCREMENT(2);
 
   EXPECT_CALL(
       otp_, read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET))
@@ -126,7 +125,6 @@ TEST_P(InitTest, Initialize) {
   EXPECT_SEC_WRITE32_SHADOWED(
       base_ + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET,
       GetParam().data_write_val);
-  EXPECT_SEC_WRITE_INCREMENT(1);
 
   EXPECT_CALL(
       otp_,
@@ -136,12 +134,11 @@ TEST_P(InitTest, Initialize) {
   EXPECT_SEC_READ32(base_ + info_page.cfg_offset, 0);
   EXPECT_SEC_WRITE32_SHADOWED(base_ + info_page.cfg_offset,
                               GetParam().info_write_val);
-  EXPECT_SEC_WRITE_INCREMENT(1);
+
   info_page = InfoPages().at(kFlashCtrlInfoPageBootData1);
   EXPECT_SEC_READ32(base_ + info_page.cfg_offset, 0);
   EXPECT_SEC_WRITE32_SHADOWED(base_ + info_page.cfg_offset,
                               GetParam().info_write_val);
-  EXPECT_SEC_WRITE_INCREMENT(1);
 
   flash_ctrl_init();
 }
@@ -337,7 +334,6 @@ class ExecTest : public FlashCtrlTest {};
 
 TEST_F(ExecTest, Set) {
   EXPECT_SEC_WRITE32(base_ + FLASH_CTRL_EXEC_REG_OFFSET, UINT32_MAX);
-  EXPECT_SEC_WRITE_INCREMENT(1);
   flash_ctrl_exec_set(UINT32_MAX);
 }
 
@@ -373,7 +369,6 @@ TEST_P(FlashCtrlPermsSetTest, InfoPermsSet) {
     EXPECT_SEC_READ32(base_ + it.second.cfg_offset, GetParam().info_read_val);
     EXPECT_SEC_WRITE32_SHADOWED(base_ + it.second.cfg_offset,
                                 GetParam().info_write_val);
-    EXPECT_SEC_WRITE_INCREMENT(1);
 
     flash_ctrl_info_perms_set(it.first, GetParam().perms);
   }
@@ -385,7 +380,6 @@ TEST_P(FlashCtrlPermsSetTest, DataDefaultPermsSet) {
   EXPECT_SEC_WRITE32_SHADOWED(
       base_ + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET,
       GetParam().data_write_val);
-  EXPECT_SEC_WRITE_INCREMENT(1);
 
   flash_ctrl_data_default_perms_set(GetParam().perms);
 }
@@ -500,7 +494,6 @@ TEST_P(FlashCtrlCfgSetTest, InfoCfgSet) {
     EXPECT_SEC_READ32(base_ + it.second.cfg_offset, GetParam().info_read_val);
     EXPECT_SEC_WRITE32_SHADOWED(base_ + it.second.cfg_offset,
                                 GetParam().info_write_val);
-    EXPECT_SEC_WRITE_INCREMENT(1);
 
     flash_ctrl_info_cfg_set(it.first, GetParam().cfg);
   }
@@ -512,7 +505,6 @@ TEST_P(FlashCtrlCfgSetTest, DataDefaultCfgSet) {
   EXPECT_SEC_WRITE32_SHADOWED(
       base_ + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET,
       GetParam().data_write_val);
-  EXPECT_SEC_WRITE_INCREMENT(1);
 
   flash_ctrl_data_default_cfg_set(GetParam().cfg);
 }
@@ -607,7 +599,6 @@ TEST_F(FlashCtrlTest, CreatorInfoLockdown) {
     EXPECT_SEC_WRITE32_SHADOWED(base_ + info_page.cfg_offset, 0);
     EXPECT_SEC_WRITE32(base_ + info_page.cfg_wen_offset, 0);
   }
-  EXPECT_SEC_WRITE_INCREMENT(2 * no_owner_access.size());
 
   flash_ctrl_creator_info_pages_lockdown();
 }

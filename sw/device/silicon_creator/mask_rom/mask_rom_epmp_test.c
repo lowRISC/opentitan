@@ -376,6 +376,7 @@ void mask_rom_main(void) {
   // Enable execution of code in flash.
   flash_ctrl_init();
   flash_ctrl_exec_set(FLASH_CTRL_PARAM_EXEC_EN);
+  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInit + kFlashCtrlSecMmioExecSet);
 
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);

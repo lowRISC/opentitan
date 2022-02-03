@@ -5,6 +5,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/check.h"
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/test_main.h"
@@ -333,6 +334,8 @@ bool test_main(void) {
   rom_error_t result = kErrorOk;
 
   flash_ctrl_init();
+  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInit);
+  sec_mmio_check_counters(/*expected_check_count=*/0);
 
   EXECUTE_TEST(result, check_test_data_test);
   EXECUTE_TEST(result, read_empty_default_allowed_test);
