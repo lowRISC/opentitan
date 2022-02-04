@@ -222,7 +222,7 @@ module adc_ctrl_fsm
     fsm_state_d = fsm_state_q;
     //outputs
     adc_chn_sel_o = 2'b0;
-    adc_pd_o = 1'b1;//default value
+    adc_pd_o = 1'b0;//default value
     pwrup_timer_cnt_clr = 1'b0;
     pwrup_timer_cnt_en = 1'b0;
     lp_sample_cnt_clr = 1'b0;
@@ -237,13 +237,13 @@ module adc_ctrl_fsm
 
     unique case (fsm_state_q)
       PWRDN: begin
+        adc_pd_o = 1'b1;
         if (trigger_l2h) begin
           fsm_state_d = PWRUP;
         end
       end
 
       PWRUP: begin
-        adc_pd_o = 1'b0;
         if (pwrup_timer_cnt_q != cfg_pwrup_time_i) begin
           pwrup_timer_cnt_en = 1'b1;
         end
@@ -254,7 +254,6 @@ module adc_ctrl_fsm
       end
 
       IDLE: begin
-        adc_pd_o = 1'b0;
         if (cfg_oneshot_mode_i) begin
           fsm_state_d = ONEST_0;
         end
@@ -267,7 +266,6 @@ module adc_ctrl_fsm
       end
 
       ONEST_0: begin
-        adc_pd_o = 1'b0;
         adc_chn_sel_o = 2'b01;
         if (adc_d_val_i) begin//sample chn0 value
           fsm_state_d = ONEST_021;
@@ -275,14 +273,12 @@ module adc_ctrl_fsm
       end
 
       ONEST_021: begin//transition between chn0 and chn1; adc_chn_sel_o=2'b0
-        adc_pd_o = 1'b0;
         if (!adc_d_val_i) begin
           fsm_state_d = ONEST_1;
         end
       end
 
       ONEST_1: begin
-        adc_pd_o = 1'b0;
         adc_chn_sel_o = 2'b10;
         if (adc_d_val_i) begin//sample chn1 value
           fsm_state_d = ONEST_DONE;
@@ -297,7 +293,6 @@ module adc_ctrl_fsm
       end
 
       LP_0: begin
-        adc_pd_o = 1'b0;
         adc_chn_sel_o = 2'b01;
         if (adc_d_val_i) begin//sample chn0 value
           fsm_state_d = LP_021;
@@ -305,14 +300,12 @@ module adc_ctrl_fsm
       end
 
       LP_021: begin//transition between chn0 and chn1; adc_chn_sel_o=2'b0
-        adc_pd_o = 1'b0;
         if (!adc_d_val_i) begin
           fsm_state_d = LP_1;
         end
       end
 
       LP_1: begin
-        adc_pd_o = 1'b0;
         adc_chn_sel_o = 2'b10;
         if (adc_d_val_i) begin//sample chn1 value
           fsm_state_d = LP_EVAL;
@@ -320,7 +313,6 @@ module adc_ctrl_fsm
       end
 
       LP_EVAL: begin
-        adc_pd_o = 1'b0;
         // do not transition forward until handshake with ADC is complete
         if (!adc_d_val_i) begin
           ld_match = 1'b1;
@@ -338,7 +330,6 @@ module adc_ctrl_fsm
       end
 
       LP_SLP: begin
-        adc_pd_o = 1'b1;
         if (wakeup_timer_cnt_q  != cfg_wakeup_time_i) begin
           wakeup_timer_cnt_en = 1'b1;
         end
@@ -349,7 +340,6 @@ module adc_ctrl_fsm
       end
 
       LP_PWRUP: begin
-        adc_pd_o = 1'b0;
         if (pwrup_timer_cnt_q != cfg_pwrup_time_i) begin
           pwrup_timer_cnt_en = 1'b1;
         end
@@ -360,7 +350,6 @@ module adc_ctrl_fsm
       end
 
       NP_0: begin
-        adc_pd_o = 1'b0;
         adc_chn_sel_o = 2'b01;
         if (adc_d_val_i) begin//sample chn0 value
           fsm_state_d = NP_021;
@@ -368,14 +357,12 @@ module adc_ctrl_fsm
       end
 
       NP_021: begin//transition between chn0 and chn1; adc_chn_sel_o=2'b0
-        adc_pd_o = 1'b0;
         if (!adc_d_val_i) begin
           fsm_state_d = NP_1;
         end
       end
 
       NP_1: begin
-        adc_pd_o = 1'b0;
         adc_chn_sel_o = 2'b10;
         if (adc_d_val_i) begin//sample chn1 value
           fsm_state_d = NP_EVAL;
@@ -383,8 +370,6 @@ module adc_ctrl_fsm
       end
 
       NP_EVAL: begin
-        adc_pd_o = 1'b0;
-
         // do not transition forward until handshake with ADC is complete
         if (!adc_d_val_i) begin
           ld_match = 1'b1;
@@ -397,7 +382,6 @@ module adc_ctrl_fsm
           end else if (np_sample_cnt_q == np_sample_cnt_thresh) begin
             fsm_state_d = NP_DONE;
             np_sample_cnt_clr = 1'b1;
-            adc_ctrl_done_o = 1'b1;
           end
         end
       end
