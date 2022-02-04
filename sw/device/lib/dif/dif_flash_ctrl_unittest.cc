@@ -364,7 +364,7 @@ TEST_F(FlashCtrlTest, ReadTransaction) {
           {FLASH_CTRL_CONTROL_OP_OFFSET, FLASH_CTRL_CONTROL_OP_VALUE_READ},
           {FLASH_CTRL_CONTROL_PARTITION_SEL_BIT, 1},
           {FLASH_CTRL_CONTROL_INFO_SEL_OFFSET, 1},
-          {FLASH_CTRL_CONTROL_NUM_OFFSET, 0x20},
+          {FLASH_CTRL_CONTROL_NUM_OFFSET, 0x20 - 1},
       });
   EXPECT_WRITE32(FLASH_CTRL_ADDR_REG_OFFSET, 0x80);
   EXPECT_WRITE32(
@@ -374,7 +374,7 @@ TEST_F(FlashCtrlTest, ReadTransaction) {
           {FLASH_CTRL_CONTROL_OP_OFFSET, FLASH_CTRL_CONTROL_OP_VALUE_READ},
           {FLASH_CTRL_CONTROL_PARTITION_SEL_BIT, 1},
           {FLASH_CTRL_CONTROL_INFO_SEL_OFFSET, 1},
-          {FLASH_CTRL_CONTROL_NUM_OFFSET, 0x20},
+          {FLASH_CTRL_CONTROL_NUM_OFFSET, 0x20 - 1},
       });
   EXPECT_EQ(dif_flash_ctrl_start(&dif_flash_ctrl_, transaction), kDifOk);
   EXPECT_TRUE(dif_flash_ctrl_.transaction_pending);
@@ -388,7 +388,7 @@ TEST_F(FlashCtrlTest, ReadTransaction) {
           {FLASH_CTRL_CONTROL_OP_OFFSET, FLASH_CTRL_CONTROL_OP_VALUE_READ},
           {FLASH_CTRL_CONTROL_PARTITION_SEL_BIT, 1},
           {FLASH_CTRL_CONTROL_INFO_SEL_OFFSET, 1},
-          {FLASH_CTRL_CONTROL_NUM_OFFSET, 0x20},
+          {FLASH_CTRL_CONTROL_NUM_OFFSET, 0x20 - 1},
       });
   for (uint32_t i = 0; i < 0x20; ++i) {
     EXPECT_READ32(FLASH_CTRL_RD_FIFO_REG_OFFSET, i);
@@ -411,6 +411,7 @@ TEST_F(FlashCtrlTest, ReadTransaction) {
                     {FLASH_CTRL_OP_STATUS_DONE_BIT, 1},
                     {FLASH_CTRL_OP_STATUS_ERR_BIT, 0},
                 });
+  EXPECT_WRITE32(FLASH_CTRL_OP_STATUS_REG_OFFSET, 0);
   EXPECT_READ32(FLASH_CTRL_ERR_CODE_REG_OFFSET,
                 {
                     {FLASH_CTRL_ERR_CODE_MP_ERR_BIT, 1},
@@ -479,7 +480,7 @@ TEST_F(FlashCtrlTest, ProgramTransaction) {
           {FLASH_CTRL_CONTROL_OP_OFFSET, FLASH_CTRL_CONTROL_OP_VALUE_PROG},
           {FLASH_CTRL_CONTROL_PARTITION_SEL_BIT, 0},
           {FLASH_CTRL_CONTROL_PROG_SEL_BIT, 1},
-          {FLASH_CTRL_CONTROL_NUM_OFFSET, 0x16},
+          {FLASH_CTRL_CONTROL_NUM_OFFSET, 0x16 - 1},
       });
   EXPECT_WRITE32(FLASH_CTRL_ADDR_REG_OFFSET, 0x1800);
   EXPECT_WRITE32(
@@ -489,7 +490,7 @@ TEST_F(FlashCtrlTest, ProgramTransaction) {
           {FLASH_CTRL_CONTROL_OP_OFFSET, FLASH_CTRL_CONTROL_OP_VALUE_PROG},
           {FLASH_CTRL_CONTROL_PARTITION_SEL_BIT, 0},
           {FLASH_CTRL_CONTROL_PROG_SEL_BIT, 1},
-          {FLASH_CTRL_CONTROL_NUM_OFFSET, 0x16},
+          {FLASH_CTRL_CONTROL_NUM_OFFSET, 0x16 - 1},
       });
   EXPECT_EQ(dif_flash_ctrl_start(&dif_flash_ctrl_, transaction), kDifOk);
   EXPECT_TRUE(dif_flash_ctrl_.transaction_pending);
@@ -503,7 +504,7 @@ TEST_F(FlashCtrlTest, ProgramTransaction) {
           {FLASH_CTRL_CONTROL_OP_OFFSET, FLASH_CTRL_CONTROL_OP_VALUE_PROG},
           {FLASH_CTRL_CONTROL_PARTITION_SEL_BIT, 0},
           {FLASH_CTRL_CONTROL_PROG_SEL_BIT, 1},
-          {FLASH_CTRL_CONTROL_NUM_OFFSET, 0x16},
+          {FLASH_CTRL_CONTROL_NUM_OFFSET, 0x16 - 1},
       });
   for (uint32_t i = 0; i < 0x16; ++i) {
     data[i] = i;
@@ -525,6 +526,7 @@ TEST_F(FlashCtrlTest, ProgramTransaction) {
                     {FLASH_CTRL_OP_STATUS_DONE_BIT, 1},
                     {FLASH_CTRL_OP_STATUS_ERR_BIT, 0},
                 });
+  EXPECT_WRITE32(FLASH_CTRL_OP_STATUS_REG_OFFSET, 0);
   EXPECT_READ32(FLASH_CTRL_ERR_CODE_REG_OFFSET,
                 {
                     {FLASH_CTRL_ERR_CODE_MP_ERR_BIT, 0},

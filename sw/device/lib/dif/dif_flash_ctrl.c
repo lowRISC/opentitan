@@ -308,7 +308,7 @@ dif_result_t dif_flash_ctrl_start_unsafe(
   }
 
   uint32_t control_reg = bitfield_field32_write(0, FLASH_CTRL_CONTROL_NUM_FIELD,
-                                                transaction.word_count);
+                                                transaction.word_count - 1);
   switch (transaction.op) {
     case kDifFlashCtrlOpRead:
       control_reg =
@@ -387,7 +387,8 @@ dif_result_t dif_flash_ctrl_start(dif_flash_ctrl_state_t *handle,
   }
 
   const uint32_t max_word_count = FLASH_CTRL_CONTROL_NUM_MASK;
-  if (transaction.word_count > max_word_count) {
+  if (transaction.word_count - 1 > max_word_count ||
+      transaction.word_count == 0) {
     return kDifBadArg;
   }
 
@@ -592,6 +593,9 @@ dif_result_t dif_flash_ctrl_end(dif_flash_ctrl_state_t *handle,
       bitfield_bit32_read(status_reg, FLASH_CTRL_OP_STATUS_DONE_BIT);
   out->operation_error =
       bitfield_bit32_read(status_reg, FLASH_CTRL_OP_STATUS_ERR_BIT);
+  // Clear the operation status
+  mmio_region_write32(handle->dev.base_addr, FLASH_CTRL_OP_STATUS_REG_OFFSET,
+                      0);
   handle->transaction_pending = false;
   return dif_flash_ctrl_get_error_codes(handle, &out->error_code);
 }

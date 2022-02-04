@@ -557,7 +557,8 @@ typedef struct dif_flash_ctrl_output {
 
 /**
  * Check that the transaction has completed and return any resulting error
- * codes. Does not clear the error codes.
+ * codes. Does not clear the error codes, but does clear the operation status if
+ * the operation has terminated.
  *
  * @param handle flash controller device for completing the transaction.
  * @param out Out parameter. Contains the transaction status and error codes.
