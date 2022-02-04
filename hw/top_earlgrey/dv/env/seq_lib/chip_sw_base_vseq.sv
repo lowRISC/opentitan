@@ -23,8 +23,6 @@ class chip_sw_base_vseq extends chip_base_vseq;
   virtual task cpu_init();
      int size_bytes;
      int total_bytes;
-     logic [31:0] rand_val;
-     int          tile_idx;
 
 
     `uvm_info(`gfn, "Started cpu_init", UVM_MEDIUM)
@@ -52,29 +50,11 @@ class chip_sw_base_vseq extends chip_base_vseq;
     total_bytes = size_bytes * cfg.num_ram_main_tiles;
 
     // Randomize the main SRAM.
-    for (int idx = 0; idx < total_bytes; idx=idx+4) begin
-       chip_mem_e mem;
-       logic [31:0] addr_scr;
-       logic [38:0] data_scr;
-       logic [31:0] addr_mask = size_bytes - 1;
+    for (int addr = 0; addr < total_bytes; addr = addr + 4) begin
+      bit [31:0] rand_val;
 
-       // calculate the scramble address
-       addr_scr = cfg.mem_bkdr_util_h[RamMain0].get_sram_encrypt_addr(
-         idx, RndCnstSramCtrlMainSramNonce, $clog2(cfg.num_ram_main_tiles));
-
-       // determine which tile the scrambled address belongs
-       tile_idx = addr_scr / size_bytes;
-
-       // calculate the scrambled random data
-       `DV_CHECK_STD_RANDOMIZE_FATAL(rand_val, "Randomization failed!")
-       data_scr = cfg.mem_bkdr_util_h[RamMain0].get_sram_encrypt32_intg_data(
-         idx, rand_val, RndCnstSramCtrlMainSramKey, RndCnstSramCtrlMainSramNonce,
-         $clog2(cfg.num_ram_main_tiles));
-
-       // write the scrambled data into the targetted memory tile
-       mem = chip_mem_e'(RamMain0 + tile_idx);
-       cfg.mem_bkdr_util_h[mem].write39integ(addr_scr & addr_mask, data_scr);
-
+      `DV_CHECK_STD_RANDOMIZE_FATAL(rand_val, "Randomization failed!")
+      main_sram_bkdr_write32(addr, rand_val);
     end
 
     // Initialize the data partition in all flash banks to all 1s.
@@ -102,6 +82,70 @@ class chip_sw_base_vseq extends chip_base_vseq;
     // overrides after this zero delay.
     #0;
   endtask
+
+  virtual function void main_sram_bkdr_write32(
+      bit [bus_params_pkg::BUS_AW-1:0] addr,
+      bit [31:0] data,
+      bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key = RndCnstSramCtrlMainSramKey,
+      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlMainSramNonce);
+    _sram_bkdr_write32(addr, data, 1, key, nonce);
+  endfunction
+
+  virtual function void ret_sram_bkdr_write32(
+      bit [bus_params_pkg::BUS_AW-1:0] addr,
+      bit [31:0] data,
+      bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key = RndCnstSramCtrlRetAonSramKey,
+      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlRetAonSramNonce);
+    _sram_bkdr_write32(addr, data, 0, key, nonce);
+  endfunction
+
+  // scrambled address may cross the tile, this function will find out what tile the address is
+  // located and backdoor write to it.
+  virtual function void _sram_bkdr_write32(
+      bit [bus_params_pkg::BUS_AW-1:0] addr,
+      bit [31:0] data,
+      bit is_main_ram, // if 1, main ram, otherwise, ret ram
+      bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key,
+      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce);
+
+    chip_mem_e mem;
+    int        num_tiles;
+    bit [31:0] addr_scr;
+    bit [38:0] data_scr;
+    bit [31:0] addr_mask;
+    int        tile_idx;
+    int        size_bytes;
+
+    // Use the 1st tile of the RAM for now. Based on the scrambled address, will find out which
+    // tile to write.
+    if (is_main_ram) begin
+      mem = RamMain0;
+      num_tiles = cfg.num_ram_main_tiles;
+    end else begin
+      mem = RamRet0;
+      num_tiles = cfg.num_ram_ret_tiles;
+    end
+
+    // Assume each tile contains the same number of bytes
+    size_bytes = cfg.mem_bkdr_util_h[mem].get_size_bytes();
+    addr_mask = size_bytes - 1;
+
+    // calculate the scramble address
+    addr_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt_addr(
+        addr, nonce, $clog2(num_tiles));
+
+    // determine which tile the scrambled address belongs
+    tile_idx = addr_scr / size_bytes;
+
+    // calculate the scrambled data
+    data_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt32_intg_data(
+        addr, data, key, nonce,
+        $clog2(num_tiles));
+
+    // write the scrambled data into the targetted memory tile
+    mem = chip_mem_e'(mem + tile_idx);
+    cfg.mem_bkdr_util_h[mem].write39integ(addr_scr & addr_mask, data_scr);
+  endfunction
 
   virtual task body();
     cfg.sw_test_status_vif.set_num_iterations(num_trans);
