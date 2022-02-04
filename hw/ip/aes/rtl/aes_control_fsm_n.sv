@@ -26,6 +26,7 @@ module aes_control_fsm_n
   // Main control signals
   input  logic                                    ctrl_qe_i,
   output logic                                    ctrl_we_o,
+  input  logic                                    ctrl_phase_i,
   input  logic                                    ctrl_err_storage_i,
   input  aes_op_e                                 op_i,
   input  aes_mode_e                               mode_i,
@@ -124,6 +125,7 @@ module aes_control_fsm_n
 
   localparam int NumInBufBits = $bits({
     ctrl_qe_i,
+    ctrl_phase_i,
     ctrl_err_storage_i,
     op_i,
     mode_i,
@@ -163,6 +165,7 @@ module aes_control_fsm_n
 
   assign in = {
     ctrl_qe_i,
+    ctrl_phase_i,
     ctrl_err_storage_i,
     op_i,
     mode_i,
@@ -208,6 +211,7 @@ module aes_control_fsm_n
   );
 
   logic                                    ctrl_qe;
+  logic                                    ctrl_phase;
   logic                                    ctrl_err_storage;
   aes_op_e                                 op;
   aes_mode_e                               mode;
@@ -244,6 +248,7 @@ module aes_control_fsm_n
   logic                                    output_lost_in_buf;
 
   assign {ctrl_qe,
+          ctrl_phase,
           ctrl_err_storage,
           op,
           mode,
@@ -336,6 +341,7 @@ module aes_control_fsm_n
 
     .ctrl_qe_i                 ( ctrl_qe                       ),
     .ctrl_we_o                 ( ctrl_we                       ),
+    .ctrl_phase_i              ( ctrl_phase                    ),
     .ctrl_err_storage_i        ( ctrl_err_storage              ),
     .op_i                      ( op                            ),
     .mode_i                    ( mode                          ),
