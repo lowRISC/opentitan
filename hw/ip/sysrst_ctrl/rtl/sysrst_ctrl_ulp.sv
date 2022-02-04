@@ -5,6 +5,7 @@
 // Description sysrst_ctrl ULP module
 
 module sysrst_ctrl_ulp
+  import sysrst_ctrl_pkg::*;
   import sysrst_ctrl_reg_pkg::*;
 (
   input clk_i,
@@ -22,64 +23,67 @@ module sysrst_ctrl_ulp
   // Wakeup pulses on AON clock
   output ulp_wakeup_pulse_o,
   output z3_wakeup_hw_o
-
 );
 
-  // This detects a negative edge
   logic pwrb_det, pwrb_det_pulse;
   sysrst_ctrl_detect #(
-    .TimerWidth(TimerWidth),
-    .EdgeDetect(1),  // require an edge for detection
-    .Sticky(1)       // detected status remains asserted until disabled
+    .DebounceTimerWidth(TimerWidth),
+    .DetectTimerWidth(1),
+    // This detects a negative edge
+    .EventType(EdgeToLow),
+    // Detected status remains asserted until disabled
+    .Sticky(1)
   ) u_sysrst_ctrl_detect_pwrb (
     .clk_i,
     .rst_ni,
-    .trigger_i(pwrb_int_i),
-    .cfg_timer_i(ulp_pwrb_debounce_ctl_i.q),
-    .cfg_l2h_en_i(1'b0),
-    .cfg_h2l_en_i(ulp_ctl_i.q),
-    .l2h_detected_o(),
-    .h2l_detected_o(pwrb_det),
-    .l2h_detected_pulse_o(),
-    .h2l_detected_pulse_o(pwrb_det_pulse)
+    .trigger_i             (pwrb_int_i),
+    .cfg_debounce_timer_i  (ulp_pwrb_debounce_ctl_i.q),
+    .cfg_detect_timer_i    ('0),
+    .cfg_enable_i          (ulp_ctl_i.q),
+    .event_detected_o      (pwrb_det),
+    .event_detected_pulse_o(pwrb_det_pulse)
   );
 
-  // This detects a positivie edge
   logic lid_open_det, lid_open_det_pulse;
   sysrst_ctrl_detect #(
-    .TimerWidth(TimerWidth),
-    .EdgeDetect(1),  // require an edge for detection
-    .Sticky(1)       // detected status remains asserted until disabled
+    .DebounceTimerWidth(TimerWidth),
+    .DetectTimerWidth(1),
+    // This detects a positive edge
+    .EventType(EdgeToHigh),
+    // Detected status remains asserted until disabled
+    .Sticky(1)
   ) u_sysrst_ctrl_detect_lid_open (
     .clk_i,
     .rst_ni,
-    .trigger_i(lid_open_int_i),
-    .cfg_timer_i(ulp_lid_debounce_ctl_i.q),
-    .cfg_l2h_en_i(ulp_ctl_i.q),
-    .cfg_h2l_en_i(1'b0),
-    .l2h_detected_o(lid_open_det),
-    .h2l_detected_o(),
-    .l2h_detected_pulse_o(lid_open_det_pulse),
-    .h2l_detected_pulse_o()
+    .trigger_i             (lid_open_int_i),
+    .cfg_debounce_timer_i  (ulp_lid_debounce_ctl_i.q),
+    // We're only using the debounce timer.
+    // The detection timer is set to 0 which corresponds to a 1 cycle detection window.
+    .cfg_detect_timer_i    ('0),
+    .cfg_enable_i          (ulp_ctl_i.q),
+    .event_detected_o      (lid_open_det),
+    .event_detected_pulse_o(lid_open_det_pulse)
   );
 
-  // This detects a positive level
   logic ac_present_det, ac_present_det_pulse;
   sysrst_ctrl_detect #(
-    .TimerWidth(TimerWidth),
-    .EdgeDetect(0),  // do NOT require an edge for detection
-    .Sticky(1)       // detected status remains asserted until disabled
+    .DebounceTimerWidth(TimerWidth),
+    .DetectTimerWidth(1),
+    // Detect a high level
+    .EventType(HighLevel),
+    // Detected status remains asserted until disabled
+    .Sticky(1)
   ) u_sysrst_ctrl_detect_ac_present (
     .clk_i,
     .rst_ni,
-    .trigger_i(ac_present_int_i),
-    .cfg_timer_i(ulp_ac_debounce_ctl_i.q),
-    .cfg_l2h_en_i(ulp_ctl_i.q),
-    .cfg_h2l_en_i(1'b0),
-    .l2h_detected_o(ac_present_det),
-    .h2l_detected_o(),
-    .l2h_detected_pulse_o(ac_present_det_pulse),
-    .h2l_detected_pulse_o()
+    .trigger_i             (ac_present_int_i),
+    .cfg_debounce_timer_i  (ulp_ac_debounce_ctl_i.q),
+    // We're only using the debounce timer.
+    // The detection timer is set to 0 which corresponds to a 1 cycle detection window.
+    .cfg_detect_timer_i    ('0),
+    .cfg_enable_i          (ulp_ctl_i.q),
+    .event_detected_o      (ac_present_det),
+    .event_detected_pulse_o(ac_present_det_pulse)
   );
 
   // aggregate pulse and level signals

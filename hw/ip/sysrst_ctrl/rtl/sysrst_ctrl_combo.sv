@@ -5,6 +5,7 @@
 // Description: sysrst_ctrl combo Module
 //
 module sysrst_ctrl_combo
+  import sysrst_ctrl_pkg::*;
   import sysrst_ctrl_reg_pkg::*;
 (
   input                                                                clk_i,
@@ -66,38 +67,22 @@ module sysrst_ctrl_combo
     logic trigger;
     assign trigger = (in & cfg_in_sel) == '0;
 
-    // Just debounce and forward the trigger level.
-    logic trigger_debounced;
-    prim_filter_ctr #(
-      .AsyncOn(0), // input signal has already been synced to the AON clock
-      .CntWidth(TimerWidth)
-    ) u_prim_filter_ctr (
-      .clk_i,
-      .rst_ni,
-      .enable_i(1'b1),
-      .filter_i(trigger),
-      .thresh_i(key_intr_debounce_ctl_i.q),
-      .filter_o(trigger_debounced)
-    );
-
-    // This detector does not act as a debouncer.
-    // Rather, it checks whether the combo is pressed long enough to trigger the action.
     logic combo_det_pulse;
     sysrst_ctrl_detect #(
-      .TimerWidth(DetTimerWidth),
-      .EdgeDetect(1),  // require an edge for detection
-      .Sticky(0)       // detected status is automatically reset if signal does not remain stable
-    ) u_sysrst_ctrl_detect_debounce (
+      .DebounceTimerWidth(TimerWidth),
+      .DetectTimerWidth(DetTimerWidth),
+      // This detects a positive edge
+      .EventType(EdgeToHigh),
+      .Sticky(0)
+    ) u_sysrst_ctrl_detect (
       .clk_i,
       .rst_ni,
-      .trigger_i(trigger_debounced),
-      .cfg_timer_i(com_det_ctl_i[k].q),
-      .cfg_l2h_en_i(cfg_combo_en),
-      .cfg_h2l_en_i(1'b0),
-      .l2h_detected_o(),
-      .h2l_detected_o(),
-      .l2h_detected_pulse_o(combo_det_pulse),
-      .h2l_detected_pulse_o()
+      .trigger_i             (trigger),
+      .cfg_debounce_timer_i  (key_intr_debounce_ctl_i.q),
+      .cfg_detect_timer_i    (com_det_ctl_i[k].q),
+      .cfg_enable_i          (cfg_combo_en),
+      .event_detected_o      (),
+      .event_detected_pulse_o(combo_det_pulse)
     );
 
     //Instantiate the combo action module

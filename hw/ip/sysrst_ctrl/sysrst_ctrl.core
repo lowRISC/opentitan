@@ -14,6 +14,7 @@ filesets:
     files:
       - rtl/sysrst_ctrl_reg_pkg.sv
       - rtl/sysrst_ctrl_reg_top.sv
+      - rtl/sysrst_ctrl_pkg.sv
       - rtl/sysrst_ctrl_autoblock.sv
       - rtl/sysrst_ctrl_comboact.sv
       - rtl/sysrst_ctrl_pin.sv
