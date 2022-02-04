@@ -2042,6 +2042,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_0_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[0].en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[0].en.err_storage)
@@ -2072,6 +2075,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_0_rd_en_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[0].rd_en.err_update),
@@ -2104,6 +2110,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_0_prog_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[0].prog_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[0].prog_en.err_storage)
@@ -2134,6 +2143,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_0_erase_en_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[0].erase_en.err_update),
@@ -2166,6 +2178,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_0_scramble_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[0].scramble_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[0].scramble_en.err_storage)
@@ -2196,6 +2211,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_0_ecc_en_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[0].ecc_en.err_update),
@@ -2228,6 +2246,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_0_he_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[0].he_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[0].he_en.err_storage)
@@ -2259,6 +2280,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_0_base_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[0].base.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[0].base.err_storage)
@@ -2289,6 +2313,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_0_size_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[0].size.err_update),
@@ -2324,6 +2351,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_1_en_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[1].en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[1].en.err_storage)
@@ -2354,6 +2384,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_1_rd_en_1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[1].rd_en.err_update),
@@ -2386,6 +2419,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_1_prog_en_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[1].prog_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[1].prog_en.err_storage)
@@ -2416,6 +2452,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_1_erase_en_1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[1].erase_en.err_update),
@@ -2448,6 +2487,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_1_scramble_en_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[1].scramble_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[1].scramble_en.err_storage)
@@ -2478,6 +2520,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_1_ecc_en_1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[1].ecc_en.err_update),
@@ -2510,6 +2555,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_1_he_en_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[1].he_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[1].he_en.err_storage)
@@ -2541,6 +2589,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_1_base_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[1].base.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[1].base.err_storage)
@@ -2571,6 +2622,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_1_size_1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[1].size.err_update),
@@ -2606,6 +2660,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_2_en_2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[2].en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[2].en.err_storage)
@@ -2636,6 +2693,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_2_rd_en_2_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[2].rd_en.err_update),
@@ -2668,6 +2728,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_2_prog_en_2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[2].prog_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[2].prog_en.err_storage)
@@ -2698,6 +2761,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_2_erase_en_2_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[2].erase_en.err_update),
@@ -2730,6 +2796,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_2_scramble_en_2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[2].scramble_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[2].scramble_en.err_storage)
@@ -2760,6 +2829,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_2_ecc_en_2_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[2].ecc_en.err_update),
@@ -2792,6 +2864,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_2_he_en_2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[2].he_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[2].he_en.err_storage)
@@ -2823,6 +2898,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_2_base_2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[2].base.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[2].base.err_storage)
@@ -2853,6 +2931,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_2_size_2_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[2].size.err_update),
@@ -2888,6 +2969,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_3_en_3_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[3].en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[3].en.err_storage)
@@ -2918,6 +3002,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_3_rd_en_3_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[3].rd_en.err_update),
@@ -2950,6 +3037,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_3_prog_en_3_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[3].prog_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[3].prog_en.err_storage)
@@ -2980,6 +3070,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_3_erase_en_3_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[3].erase_en.err_update),
@@ -3012,6 +3105,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_3_scramble_en_3_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[3].scramble_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[3].scramble_en.err_storage)
@@ -3042,6 +3138,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_3_ecc_en_3_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[3].ecc_en.err_update),
@@ -3074,6 +3173,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_3_he_en_3_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[3].he_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[3].he_en.err_storage)
@@ -3105,6 +3207,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_3_base_3_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[3].base.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[3].base.err_storage)
@@ -3135,6 +3240,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_3_size_3_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[3].size.err_update),
@@ -3170,6 +3278,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_4_en_4_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[4].en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[4].en.err_storage)
@@ -3200,6 +3311,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_4_rd_en_4_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[4].rd_en.err_update),
@@ -3232,6 +3346,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_4_prog_en_4_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[4].prog_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[4].prog_en.err_storage)
@@ -3262,6 +3379,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_4_erase_en_4_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[4].erase_en.err_update),
@@ -3294,6 +3414,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_4_scramble_en_4_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[4].scramble_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[4].scramble_en.err_storage)
@@ -3324,6 +3447,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_4_ecc_en_4_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[4].ecc_en.err_update),
@@ -3356,6 +3482,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_4_he_en_4_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[4].he_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[4].he_en.err_storage)
@@ -3387,6 +3516,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_4_base_4_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[4].base.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[4].base.err_storage)
@@ -3417,6 +3549,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_4_size_4_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[4].size.err_update),
@@ -3452,6 +3587,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_5_en_5_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[5].en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[5].en.err_storage)
@@ -3482,6 +3620,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_5_rd_en_5_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[5].rd_en.err_update),
@@ -3514,6 +3655,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_5_prog_en_5_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[5].prog_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[5].prog_en.err_storage)
@@ -3544,6 +3688,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_5_erase_en_5_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[5].erase_en.err_update),
@@ -3576,6 +3723,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_5_scramble_en_5_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[5].scramble_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[5].scramble_en.err_storage)
@@ -3606,6 +3756,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_5_ecc_en_5_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[5].ecc_en.err_update),
@@ -3638,6 +3791,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_5_he_en_5_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[5].he_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[5].he_en.err_storage)
@@ -3669,6 +3825,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_5_base_5_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[5].base.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[5].base.err_storage)
@@ -3699,6 +3858,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_5_size_5_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[5].size.err_update),
@@ -3734,6 +3896,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_6_en_6_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[6].en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[6].en.err_storage)
@@ -3764,6 +3929,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_6_rd_en_6_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[6].rd_en.err_update),
@@ -3796,6 +3964,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_6_prog_en_6_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[6].prog_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[6].prog_en.err_storage)
@@ -3826,6 +3997,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_6_erase_en_6_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[6].erase_en.err_update),
@@ -3858,6 +4032,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_6_scramble_en_6_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[6].scramble_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[6].scramble_en.err_storage)
@@ -3888,6 +4065,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_6_ecc_en_6_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[6].ecc_en.err_update),
@@ -3920,6 +4100,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_6_he_en_6_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[6].he_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[6].he_en.err_storage)
@@ -3951,6 +4134,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_6_base_6_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[6].base.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[6].base.err_storage)
@@ -3981,6 +4167,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_6_size_6_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[6].size.err_update),
@@ -4016,6 +4205,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_7_en_7_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[7].en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[7].en.err_storage)
@@ -4046,6 +4238,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_7_rd_en_7_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[7].rd_en.err_update),
@@ -4078,6 +4273,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_7_prog_en_7_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[7].prog_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[7].prog_en.err_storage)
@@ -4108,6 +4306,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_7_erase_en_7_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[7].erase_en.err_update),
@@ -4140,6 +4341,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_7_scramble_en_7_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[7].scramble_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[7].scramble_en.err_storage)
@@ -4170,6 +4374,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_7_ecc_en_7_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[7].ecc_en.err_update),
@@ -4202,6 +4409,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_7_he_en_7_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[7].he_en.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[7].he_en.err_storage)
@@ -4233,6 +4443,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_7_base_7_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[7].base.err_update),
     .err_storage (reg2hw.mp_region_cfg_shadowed[7].base.err_storage)
@@ -4263,6 +4476,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_shadowed_7_size_7_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_region_cfg_shadowed[7].size.err_update),
@@ -4297,6 +4513,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (default_region_shadowed_rd_en_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.default_region_shadowed.rd_en.err_update),
     .err_storage (reg2hw.default_region_shadowed.rd_en.err_storage)
@@ -4327,6 +4546,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (default_region_shadowed_prog_en_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.default_region_shadowed.prog_en.err_update),
@@ -4359,6 +4581,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (default_region_shadowed_erase_en_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.default_region_shadowed.erase_en.err_update),
     .err_storage (reg2hw.default_region_shadowed.erase_en.err_storage)
@@ -4389,6 +4614,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (default_region_shadowed_scramble_en_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.default_region_shadowed.scramble_en.err_update),
@@ -4421,6 +4649,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (default_region_shadowed_ecc_en_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.default_region_shadowed.ecc_en.err_update),
     .err_storage (reg2hw.default_region_shadowed.ecc_en.err_storage)
@@ -4451,6 +4682,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (default_region_shadowed_he_en_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.default_region_shadowed.he_en.err_update),
@@ -4756,6 +4990,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_0_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[0].en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[0].en.err_storage)
@@ -4786,6 +5023,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_0_rd_en_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[0].rd_en.err_update),
@@ -4818,6 +5058,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_0_prog_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[0].prog_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[0].prog_en.err_storage)
@@ -4848,6 +5091,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_0_erase_en_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[0].erase_en.err_update),
@@ -4880,6 +5126,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_0_scramble_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[0].scramble_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[0].scramble_en.err_storage)
@@ -4911,6 +5160,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_0_ecc_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[0].ecc_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[0].ecc_en.err_storage)
@@ -4941,6 +5193,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_0_he_en_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[0].he_en.err_update),
@@ -4976,6 +5231,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_1_en_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[1].en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[1].en.err_storage)
@@ -5006,6 +5264,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_1_rd_en_1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[1].rd_en.err_update),
@@ -5038,6 +5299,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_1_prog_en_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[1].prog_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[1].prog_en.err_storage)
@@ -5068,6 +5332,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_1_erase_en_1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[1].erase_en.err_update),
@@ -5100,6 +5367,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_1_scramble_en_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[1].scramble_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[1].scramble_en.err_storage)
@@ -5131,6 +5401,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_1_ecc_en_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[1].ecc_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[1].ecc_en.err_storage)
@@ -5161,6 +5434,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_1_he_en_1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[1].he_en.err_update),
@@ -5196,6 +5472,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_2_en_2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[2].en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[2].en.err_storage)
@@ -5226,6 +5505,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_2_rd_en_2_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[2].rd_en.err_update),
@@ -5258,6 +5540,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_2_prog_en_2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[2].prog_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[2].prog_en.err_storage)
@@ -5288,6 +5573,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_2_erase_en_2_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[2].erase_en.err_update),
@@ -5320,6 +5608,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_2_scramble_en_2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[2].scramble_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[2].scramble_en.err_storage)
@@ -5351,6 +5642,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_2_ecc_en_2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[2].ecc_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[2].ecc_en.err_storage)
@@ -5381,6 +5675,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_2_he_en_2_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[2].he_en.err_update),
@@ -5416,6 +5713,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_3_en_3_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[3].en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[3].en.err_storage)
@@ -5446,6 +5746,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_3_rd_en_3_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[3].rd_en.err_update),
@@ -5478,6 +5781,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_3_prog_en_3_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[3].prog_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[3].prog_en.err_storage)
@@ -5508,6 +5814,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_3_erase_en_3_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[3].erase_en.err_update),
@@ -5540,6 +5849,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_3_scramble_en_3_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[3].scramble_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[3].scramble_en.err_storage)
@@ -5571,6 +5883,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_3_ecc_en_3_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[3].ecc_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[3].ecc_en.err_storage)
@@ -5601,6 +5916,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_3_he_en_3_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[3].he_en.err_update),
@@ -5636,6 +5954,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_4_en_4_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[4].en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[4].en.err_storage)
@@ -5666,6 +5987,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_4_rd_en_4_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[4].rd_en.err_update),
@@ -5698,6 +6022,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_4_prog_en_4_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[4].prog_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[4].prog_en.err_storage)
@@ -5728,6 +6055,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_4_erase_en_4_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[4].erase_en.err_update),
@@ -5760,6 +6090,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_4_scramble_en_4_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[4].scramble_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[4].scramble_en.err_storage)
@@ -5791,6 +6124,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_4_ecc_en_4_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[4].ecc_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[4].ecc_en.err_storage)
@@ -5821,6 +6157,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_4_he_en_4_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[4].he_en.err_update),
@@ -5856,6 +6195,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_5_en_5_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[5].en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[5].en.err_storage)
@@ -5886,6 +6228,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_5_rd_en_5_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[5].rd_en.err_update),
@@ -5918,6 +6263,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_5_prog_en_5_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[5].prog_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[5].prog_en.err_storage)
@@ -5948,6 +6296,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_5_erase_en_5_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[5].erase_en.err_update),
@@ -5980,6 +6331,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_5_scramble_en_5_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[5].scramble_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[5].scramble_en.err_storage)
@@ -6011,6 +6365,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_5_ecc_en_5_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[5].ecc_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[5].ecc_en.err_storage)
@@ -6041,6 +6398,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_5_he_en_5_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[5].he_en.err_update),
@@ -6076,6 +6436,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_6_en_6_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[6].en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[6].en.err_storage)
@@ -6106,6 +6469,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_6_rd_en_6_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[6].rd_en.err_update),
@@ -6138,6 +6504,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_6_prog_en_6_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[6].prog_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[6].prog_en.err_storage)
@@ -6168,6 +6537,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_6_erase_en_6_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[6].erase_en.err_update),
@@ -6200,6 +6572,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_6_scramble_en_6_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[6].scramble_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[6].scramble_en.err_storage)
@@ -6231,6 +6606,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_6_ecc_en_6_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[6].ecc_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[6].ecc_en.err_storage)
@@ -6261,6 +6639,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_6_he_en_6_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[6].he_en.err_update),
@@ -6296,6 +6677,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_7_en_7_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[7].en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[7].en.err_storage)
@@ -6326,6 +6710,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_7_rd_en_7_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[7].rd_en.err_update),
@@ -6358,6 +6745,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_7_prog_en_7_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[7].prog_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[7].prog_en.err_storage)
@@ -6388,6 +6778,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_7_erase_en_7_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[7].erase_en.err_update),
@@ -6420,6 +6813,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_7_scramble_en_7_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[7].scramble_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[7].scramble_en.err_storage)
@@ -6451,6 +6847,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_7_ecc_en_7_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[7].ecc_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[7].ecc_en.err_storage)
@@ -6481,6 +6880,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_7_he_en_7_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[7].he_en.err_update),
@@ -6516,6 +6918,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_8_en_8_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[8].en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[8].en.err_storage)
@@ -6546,6 +6951,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_8_rd_en_8_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[8].rd_en.err_update),
@@ -6578,6 +6986,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_8_prog_en_8_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[8].prog_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[8].prog_en.err_storage)
@@ -6608,6 +7019,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_8_erase_en_8_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[8].erase_en.err_update),
@@ -6640,6 +7054,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_8_scramble_en_8_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[8].scramble_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[8].scramble_en.err_storage)
@@ -6671,6 +7088,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_8_ecc_en_8_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[8].ecc_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[8].ecc_en.err_storage)
@@ -6701,6 +7121,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_8_he_en_8_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[8].he_en.err_update),
@@ -6736,6 +7159,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_9_en_9_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[9].en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[9].en.err_storage)
@@ -6766,6 +7192,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_9_rd_en_9_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[9].rd_en.err_update),
@@ -6798,6 +7227,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_9_prog_en_9_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[9].prog_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[9].prog_en.err_storage)
@@ -6828,6 +7260,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_9_erase_en_9_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[9].erase_en.err_update),
@@ -6860,6 +7295,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_9_scramble_en_9_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[9].scramble_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[9].scramble_en.err_storage)
@@ -6891,6 +7329,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_9_ecc_en_9_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[9].ecc_en.err_update),
     .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[9].ecc_en.err_storage)
@@ -6921,6 +7362,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_shadowed_9_he_en_9_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[9].he_en.err_update),
@@ -6983,6 +7427,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info1_page_cfg_shadowed_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info1_page_cfg_shadowed[0].en.err_update),
     .err_storage (reg2hw.bank0_info1_page_cfg_shadowed[0].en.err_storage)
@@ -7013,6 +7460,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info1_page_cfg_shadowed_rd_en_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info1_page_cfg_shadowed[0].rd_en.err_update),
@@ -7045,6 +7495,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info1_page_cfg_shadowed_prog_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info1_page_cfg_shadowed[0].prog_en.err_update),
     .err_storage (reg2hw.bank0_info1_page_cfg_shadowed[0].prog_en.err_storage)
@@ -7075,6 +7528,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info1_page_cfg_shadowed_erase_en_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info1_page_cfg_shadowed[0].erase_en.err_update),
@@ -7107,6 +7563,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info1_page_cfg_shadowed_scramble_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info1_page_cfg_shadowed[0].scramble_en.err_update),
     .err_storage (reg2hw.bank0_info1_page_cfg_shadowed[0].scramble_en.err_storage)
@@ -7138,6 +7597,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info1_page_cfg_shadowed_ecc_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info1_page_cfg_shadowed[0].ecc_en.err_update),
     .err_storage (reg2hw.bank0_info1_page_cfg_shadowed[0].ecc_en.err_storage)
@@ -7168,6 +7630,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info1_page_cfg_shadowed_he_en_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info1_page_cfg_shadowed[0].he_en.err_update),
@@ -7257,6 +7722,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_shadowed_0_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[0].en.err_update),
     .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[0].en.err_storage)
@@ -7287,6 +7755,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_shadowed_0_rd_en_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[0].rd_en.err_update),
@@ -7319,6 +7790,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_shadowed_0_prog_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[0].prog_en.err_update),
     .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[0].prog_en.err_storage)
@@ -7349,6 +7823,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_shadowed_0_erase_en_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[0].erase_en.err_update),
@@ -7381,6 +7858,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_shadowed_0_scramble_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[0].scramble_en.err_update),
     .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[0].scramble_en.err_storage)
@@ -7412,6 +7892,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_shadowed_0_ecc_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[0].ecc_en.err_update),
     .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[0].ecc_en.err_storage)
@@ -7442,6 +7925,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_shadowed_0_he_en_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[0].he_en.err_update),
@@ -7477,6 +7963,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_shadowed_1_en_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[1].en.err_update),
     .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[1].en.err_storage)
@@ -7507,6 +7996,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_shadowed_1_rd_en_1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[1].rd_en.err_update),
@@ -7539,6 +8031,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_shadowed_1_prog_en_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[1].prog_en.err_update),
     .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[1].prog_en.err_storage)
@@ -7569,6 +8064,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_shadowed_1_erase_en_1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[1].erase_en.err_update),
@@ -7601,6 +8099,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_shadowed_1_scramble_en_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[1].scramble_en.err_update),
     .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[1].scramble_en.err_storage)
@@ -7632,6 +8133,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_shadowed_1_ecc_en_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[1].ecc_en.err_update),
     .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[1].ecc_en.err_storage)
@@ -7662,6 +8166,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_shadowed_1_he_en_1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[1].he_en.err_update),
@@ -7967,6 +8474,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_0_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[0].en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[0].en.err_storage)
@@ -7997,6 +8507,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_0_rd_en_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[0].rd_en.err_update),
@@ -8029,6 +8542,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_0_prog_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[0].prog_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[0].prog_en.err_storage)
@@ -8059,6 +8575,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_0_erase_en_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[0].erase_en.err_update),
@@ -8091,6 +8610,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_0_scramble_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[0].scramble_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[0].scramble_en.err_storage)
@@ -8122,6 +8644,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_0_ecc_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[0].ecc_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[0].ecc_en.err_storage)
@@ -8152,6 +8677,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_0_he_en_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[0].he_en.err_update),
@@ -8187,6 +8715,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_1_en_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[1].en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[1].en.err_storage)
@@ -8217,6 +8748,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_1_rd_en_1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[1].rd_en.err_update),
@@ -8249,6 +8783,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_1_prog_en_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[1].prog_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[1].prog_en.err_storage)
@@ -8279,6 +8816,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_1_erase_en_1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[1].erase_en.err_update),
@@ -8311,6 +8851,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_1_scramble_en_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[1].scramble_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[1].scramble_en.err_storage)
@@ -8342,6 +8885,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_1_ecc_en_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[1].ecc_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[1].ecc_en.err_storage)
@@ -8372,6 +8918,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_1_he_en_1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[1].he_en.err_update),
@@ -8407,6 +8956,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_2_en_2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[2].en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[2].en.err_storage)
@@ -8437,6 +8989,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_2_rd_en_2_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[2].rd_en.err_update),
@@ -8469,6 +9024,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_2_prog_en_2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[2].prog_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[2].prog_en.err_storage)
@@ -8499,6 +9057,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_2_erase_en_2_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[2].erase_en.err_update),
@@ -8531,6 +9092,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_2_scramble_en_2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[2].scramble_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[2].scramble_en.err_storage)
@@ -8562,6 +9126,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_2_ecc_en_2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[2].ecc_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[2].ecc_en.err_storage)
@@ -8592,6 +9159,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_2_he_en_2_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[2].he_en.err_update),
@@ -8627,6 +9197,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_3_en_3_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[3].en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[3].en.err_storage)
@@ -8657,6 +9230,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_3_rd_en_3_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[3].rd_en.err_update),
@@ -8689,6 +9265,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_3_prog_en_3_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[3].prog_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[3].prog_en.err_storage)
@@ -8719,6 +9298,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_3_erase_en_3_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[3].erase_en.err_update),
@@ -8751,6 +9333,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_3_scramble_en_3_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[3].scramble_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[3].scramble_en.err_storage)
@@ -8782,6 +9367,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_3_ecc_en_3_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[3].ecc_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[3].ecc_en.err_storage)
@@ -8812,6 +9400,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_3_he_en_3_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[3].he_en.err_update),
@@ -8847,6 +9438,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_4_en_4_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[4].en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[4].en.err_storage)
@@ -8877,6 +9471,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_4_rd_en_4_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[4].rd_en.err_update),
@@ -8909,6 +9506,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_4_prog_en_4_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[4].prog_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[4].prog_en.err_storage)
@@ -8939,6 +9539,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_4_erase_en_4_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[4].erase_en.err_update),
@@ -8971,6 +9574,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_4_scramble_en_4_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[4].scramble_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[4].scramble_en.err_storage)
@@ -9002,6 +9608,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_4_ecc_en_4_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[4].ecc_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[4].ecc_en.err_storage)
@@ -9032,6 +9641,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_4_he_en_4_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[4].he_en.err_update),
@@ -9067,6 +9679,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_5_en_5_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[5].en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[5].en.err_storage)
@@ -9097,6 +9712,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_5_rd_en_5_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[5].rd_en.err_update),
@@ -9129,6 +9747,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_5_prog_en_5_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[5].prog_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[5].prog_en.err_storage)
@@ -9159,6 +9780,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_5_erase_en_5_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[5].erase_en.err_update),
@@ -9191,6 +9815,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_5_scramble_en_5_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[5].scramble_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[5].scramble_en.err_storage)
@@ -9222,6 +9849,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_5_ecc_en_5_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[5].ecc_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[5].ecc_en.err_storage)
@@ -9252,6 +9882,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_5_he_en_5_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[5].he_en.err_update),
@@ -9287,6 +9920,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_6_en_6_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[6].en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[6].en.err_storage)
@@ -9317,6 +9953,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_6_rd_en_6_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[6].rd_en.err_update),
@@ -9349,6 +9988,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_6_prog_en_6_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[6].prog_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[6].prog_en.err_storage)
@@ -9379,6 +10021,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_6_erase_en_6_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[6].erase_en.err_update),
@@ -9411,6 +10056,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_6_scramble_en_6_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[6].scramble_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[6].scramble_en.err_storage)
@@ -9442,6 +10090,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_6_ecc_en_6_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[6].ecc_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[6].ecc_en.err_storage)
@@ -9472,6 +10123,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_6_he_en_6_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[6].he_en.err_update),
@@ -9507,6 +10161,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_7_en_7_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[7].en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[7].en.err_storage)
@@ -9537,6 +10194,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_7_rd_en_7_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[7].rd_en.err_update),
@@ -9569,6 +10229,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_7_prog_en_7_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[7].prog_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[7].prog_en.err_storage)
@@ -9599,6 +10262,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_7_erase_en_7_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[7].erase_en.err_update),
@@ -9631,6 +10297,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_7_scramble_en_7_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[7].scramble_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[7].scramble_en.err_storage)
@@ -9662,6 +10331,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_7_ecc_en_7_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[7].ecc_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[7].ecc_en.err_storage)
@@ -9692,6 +10364,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_7_he_en_7_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[7].he_en.err_update),
@@ -9727,6 +10402,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_8_en_8_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[8].en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[8].en.err_storage)
@@ -9757,6 +10435,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_8_rd_en_8_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[8].rd_en.err_update),
@@ -9789,6 +10470,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_8_prog_en_8_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[8].prog_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[8].prog_en.err_storage)
@@ -9819,6 +10503,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_8_erase_en_8_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[8].erase_en.err_update),
@@ -9851,6 +10538,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_8_scramble_en_8_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[8].scramble_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[8].scramble_en.err_storage)
@@ -9882,6 +10572,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_8_ecc_en_8_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[8].ecc_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[8].ecc_en.err_storage)
@@ -9912,6 +10605,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_8_he_en_8_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[8].he_en.err_update),
@@ -9947,6 +10643,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_9_en_9_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[9].en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[9].en.err_storage)
@@ -9977,6 +10676,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_9_rd_en_9_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[9].rd_en.err_update),
@@ -10009,6 +10711,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_9_prog_en_9_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[9].prog_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[9].prog_en.err_storage)
@@ -10039,6 +10744,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_9_erase_en_9_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[9].erase_en.err_update),
@@ -10071,6 +10779,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_9_scramble_en_9_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[9].scramble_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[9].scramble_en.err_storage)
@@ -10102,6 +10813,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_9_ecc_en_9_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[9].ecc_en.err_update),
     .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[9].ecc_en.err_storage)
@@ -10132,6 +10846,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_shadowed_9_he_en_9_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[9].he_en.err_update),
@@ -10194,6 +10911,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info1_page_cfg_shadowed_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info1_page_cfg_shadowed[0].en.err_update),
     .err_storage (reg2hw.bank1_info1_page_cfg_shadowed[0].en.err_storage)
@@ -10224,6 +10944,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info1_page_cfg_shadowed_rd_en_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info1_page_cfg_shadowed[0].rd_en.err_update),
@@ -10256,6 +10979,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info1_page_cfg_shadowed_prog_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info1_page_cfg_shadowed[0].prog_en.err_update),
     .err_storage (reg2hw.bank1_info1_page_cfg_shadowed[0].prog_en.err_storage)
@@ -10286,6 +11012,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info1_page_cfg_shadowed_erase_en_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info1_page_cfg_shadowed[0].erase_en.err_update),
@@ -10318,6 +11047,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info1_page_cfg_shadowed_scramble_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info1_page_cfg_shadowed[0].scramble_en.err_update),
     .err_storage (reg2hw.bank1_info1_page_cfg_shadowed[0].scramble_en.err_storage)
@@ -10349,6 +11081,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info1_page_cfg_shadowed_ecc_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info1_page_cfg_shadowed[0].ecc_en.err_update),
     .err_storage (reg2hw.bank1_info1_page_cfg_shadowed[0].ecc_en.err_storage)
@@ -10379,6 +11114,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info1_page_cfg_shadowed_he_en_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info1_page_cfg_shadowed[0].he_en.err_update),
@@ -10468,6 +11206,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_shadowed_0_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[0].en.err_update),
     .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[0].en.err_storage)
@@ -10498,6 +11239,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_shadowed_0_rd_en_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[0].rd_en.err_update),
@@ -10530,6 +11274,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_shadowed_0_prog_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[0].prog_en.err_update),
     .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[0].prog_en.err_storage)
@@ -10560,6 +11307,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_shadowed_0_erase_en_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[0].erase_en.err_update),
@@ -10592,6 +11342,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_shadowed_0_scramble_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[0].scramble_en.err_update),
     .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[0].scramble_en.err_storage)
@@ -10623,6 +11376,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_shadowed_0_ecc_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[0].ecc_en.err_update),
     .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[0].ecc_en.err_storage)
@@ -10653,6 +11409,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_shadowed_0_he_en_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[0].he_en.err_update),
@@ -10688,6 +11447,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_shadowed_1_en_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[1].en.err_update),
     .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[1].en.err_storage)
@@ -10718,6 +11480,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_shadowed_1_rd_en_1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[1].rd_en.err_update),
@@ -10750,6 +11515,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_shadowed_1_prog_en_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[1].prog_en.err_update),
     .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[1].prog_en.err_storage)
@@ -10780,6 +11548,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_shadowed_1_erase_en_1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[1].erase_en.err_update),
@@ -10812,6 +11583,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_shadowed_1_scramble_en_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[1].scramble_en.err_update),
     .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[1].scramble_en.err_storage)
@@ -10843,6 +11617,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_shadowed_1_ecc_en_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[1].ecc_en.err_update),
     .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[1].ecc_en.err_storage)
@@ -10873,6 +11650,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_shadowed_1_he_en_1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[1].he_en.err_update),
@@ -10934,6 +11714,9 @@ module flash_ctrl_core_reg_top (
     // to register interface (read)
     .qs     (mp_bank_cfg_shadowed_erase_en_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.mp_bank_cfg_shadowed[0].err_update),
     .err_storage (reg2hw.mp_bank_cfg_shadowed[0].err_storage)
@@ -10964,6 +11747,9 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_bank_cfg_shadowed_erase_en_1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.mp_bank_cfg_shadowed[1].err_update),
