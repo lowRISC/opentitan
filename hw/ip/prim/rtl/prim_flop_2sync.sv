@@ -6,7 +6,7 @@
 // This may need to be moved to prim_generic if libraries have a specific cell
 // for synchronization
 
-module prim_generic_flop_2sync #(
+module prim_flop_2sync #(
   parameter int               Width      = 16,
   parameter logic [Width-1:0] ResetValue = '0
 ) (
@@ -15,6 +15,8 @@ module prim_generic_flop_2sync #(
   input        [Width-1:0] d_i,
   output logic [Width-1:0] q_o
 );
+
+  // TODO(#10432): Add CDC instrumentation for simulations
 
   logic [Width-1:0] intq;
 
@@ -38,4 +40,4 @@ module prim_generic_flop_2sync #(
     .q_o
   );
 
-endmodule
+endmodule : prim_flop_2sync
