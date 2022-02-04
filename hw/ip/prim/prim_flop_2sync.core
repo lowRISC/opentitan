@@ -6,13 +6,15 @@ CAPI=2:
 name: "lowrisc:prim:flop_2sync"
 description: "Primitive synchronizer"
 filesets:
-  primgen_dep:
+  files_rtl:
     depend:
       - lowrisc:prim:prim_pkg
-      - lowrisc:prim:primgen
-      # Needed because the generic prim_generic_flop_2sync has a
+      # Needed because the generic prim_flop_2sync has a
       # dependency on prim:flop.
       - lowrisc:prim:flop
+    files:
+      - rtl/prim_flop_2sync.sv
+    file_type: systemVerilogSource
 
   files_verilator_waiver:
     depend:
@@ -34,20 +36,10 @@ filesets:
       # common waivers
       - lowrisc:lint:common
 
-
-generate:
-  impl:
-    generator: primgen
-    parameters:
-      prim_name: flop_2sync
-
 targets:
   default:
     filesets:
       - tool_verilator   ? (files_verilator_waiver)
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
-      - primgen_dep
-    generate:
-      - impl
-
+      - files_rtl
