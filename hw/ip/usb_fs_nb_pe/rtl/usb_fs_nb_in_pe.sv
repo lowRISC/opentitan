@@ -27,6 +27,7 @@ module usb_fs_nb_in_pe #(
   input  logic               clk_48mhz_i,
   input  logic               rst_ni,
   input  logic               link_reset_i,
+  input  logic               link_active_i,
   input  logic [6:0]         dev_addr_i,
 
 
@@ -284,7 +285,7 @@ module usb_fs_nb_in_pe #(
     if (!rst_ni) begin
       in_xact_state <= StIdle;
       in_ep_rollback_o <= 1'b0;
-    end else if (link_reset_i) begin
+    end else if (link_reset_i || !link_active_i) begin
       in_xact_state <= StIdle;
       in_ep_rollback_o <= 1'b0;
     end else begin

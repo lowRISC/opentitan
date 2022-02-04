@@ -159,6 +159,7 @@ module usbdev
   logic [2:0]        usb_link_state;
   logic              usb_enable;
   logic [6:0]        usb_device_addr;
+  logic              usb_resume_link_active;
 
   logic                  data_toggle_clear_qe;
   logic                  usb_data_toggle_clear_en;
@@ -584,6 +585,7 @@ module usbdev
     .tx_osc_test_mode_i   (reg2hw.phy_config.tx_osc_test_mode.q), // cdc ok: quasi-static
     .cfg_rx_differential_i (reg2hw.phy_config.rx_differential_mode.q), // cdc ok: quasi-static
     .data_toggle_clear_i  (usb_data_toggle_clear),
+    .resume_link_active_i (usb_resume_link_active),
 
     // status
     .frame_o              (usb_frame),
@@ -617,15 +619,10 @@ module usbdev
     .q_o    ({hw2reg.usbstat.link_state.d, hw2reg.usbstat.frame.d})
   );
 
-  // sys clk -> USB clk
-  prim_flop_2sync #(
-    .Width      (1+7)
-  ) cdc_sys_to_usb (
-    .clk_i  (clk_usb_48mhz_i),
-    .rst_ni (rst_usb_48mhz_ni),
-    .d_i    ({reg2hw.usbctrl.enable.q, reg2hw.usbctrl.device_address.q}),
-    .q_o    ({usb_enable,              usb_device_addr})
-  );
+  assign usb_enable = reg2hw.usbctrl.enable.q;
+  assign usb_device_addr = reg2hw.usbctrl.device_address.q;
+  assign usb_resume_link_active = reg2hw.usbctrl.resume_link_active.qe &
+                                  reg2hw.usbctrl.resume_link_active.q;
 
   // CDC for event signals (arguably they are there for a long time so would be ok)
   // Just want a pulse to ensure only one interrupt for an event
@@ -651,14 +648,7 @@ module usbdev
   assign hw2reg.usbstat.host_lost.d = event_host_lost;
 
   // resets etc cause the device address to clear
-  prim_pulse_sync usbdev_devclr (
-    .clk_src_i   (clk_usb_48mhz_i),
-    .clk_dst_i   (clk_i),
-    .rst_src_ni  (rst_usb_48mhz_ni),
-    .rst_dst_ni  (rst_ni),
-    .src_pulse_i (usb_clr_devaddr),
-    .dst_pulse_o (hw2reg.usbctrl.device_address.de)
-  );
+  assign hw2reg.usbctrl.device_address.de = usb_clr_devaddr;
   assign hw2reg.usbctrl.device_address.d = '0;
 
   // AV empty is a single pulse so needs pulsesync
@@ -766,6 +756,8 @@ module usbdev
     .rst_ni,
     .clk_aon_i,
     .rst_aon_ni,
+    .clk_usb_48mhz_i,
+    .rst_usb_48mhz_ni,
 
     .tl_i (tl_i),
     .tl_o (tl_o),
@@ -1142,7 +1134,8 @@ module usbdev
   end
 
   assign usb_aon_wake_en_o = reg2hw.wake_config.wake_en.q;
-  assign usb_aon_wake_ack_o = reg2hw.wake_config.wake_ack.q;
+  assign usb_aon_wake_ack_o = reg2hw.wake_config.wake_ack.qe &
+                              reg2hw.wake_config.wake_ack.q;
   // re-use I/O version to allow software override if needed
   assign usb_suspend_o = cio_suspend_o;
 

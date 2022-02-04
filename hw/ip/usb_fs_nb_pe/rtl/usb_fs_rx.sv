@@ -47,6 +47,7 @@ module usb_fs_rx (
 
   // line status for the status detection (actual rx bits after clock recovery)
   output logic rx_jjj_det_o,
+  output logic rx_j_det_o,
 
   // Error detection
   output logic crc_error_o,
@@ -318,6 +319,9 @@ module usb_fs_rx (
 
   // mask out jjj detection when transmitting (because rx is forced to J)
   assign rx_jjj_det_o = ~tx_en_i & (line_history_q[5:0] == 6'b101010); // three Js
+
+  // Used for seeing a J after the completion of resume signaling
+  assign rx_j_det_o = ~tx_en_i & (line_history_q[1:0] == 2'b10);
 
   /////////////////
   // NRZI decode //

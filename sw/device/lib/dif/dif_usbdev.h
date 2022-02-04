@@ -579,9 +579,11 @@ dif_result_t dif_usbdev_status_get_host_lost(const dif_usbdev_t *usbdev,
 typedef enum dif_usbdev_link_state {
   kDifUsbdevLinkStateDisconnected,
   kDifUsbdevLinkStatePowered,
-  kDifUsbdevLinkStatePoweredSuspend,
+  kDifUsbdevLinkStatePoweredSuspended,
   kDifUsbdevLinkStateActive,
-  kDifUsbdevLinkStateSuspend,
+  kDifUsbdevLinkStateSuspended,
+  kDifUsbdevLinkStateActiveNoSof,
+  kDifUsbdevLinkStateResuming,
 } dif_usbdev_link_state_t;
 
 /**

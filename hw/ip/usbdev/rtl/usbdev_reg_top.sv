@@ -9,6 +9,8 @@
 module usbdev_reg_top (
   input clk_i,
   input rst_ni,
+  input clk_usb_48mhz_i,
+  input rst_usb_48mhz_ni,
   input clk_aon_i,
   input rst_aon_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
@@ -157,6 +159,18 @@ module usbdev_reg_top (
   );
 
   // cdc oversampling signals
+    logic sync_usb_48mhz_update;
+  prim_sync_reqack u_usb_48mhz_tgl (
+    .clk_src_i(clk_usb_48mhz_i),
+    .rst_src_ni(rst_usb_48mhz_ni),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .req_chk_i(1'b1),
+    .src_req_i(1'b1),
+    .src_ack_o(),
+    .dst_req_o(sync_usb_48mhz_update),
+    .dst_ack_i(sync_usb_48mhz_update)
+  );
     logic sync_aon_update;
   prim_sync_reqack u_aon_tgl (
     .clk_src_i(clk_aon_i),
@@ -267,10 +281,8 @@ module usbdev_reg_top (
   logic alert_test_we;
   logic alert_test_wd;
   logic usbctrl_we;
-  logic usbctrl_enable_qs;
-  logic usbctrl_enable_wd;
-  logic [6:0] usbctrl_device_address_qs;
-  logic [6:0] usbctrl_device_address_wd;
+  logic [22:0] usbctrl_qs;
+  logic usbctrl_busy;
   logic ep_out_enable_we;
   logic ep_out_enable_enable_0_qs;
   logic ep_out_enable_enable_0_wd;
@@ -654,14 +666,84 @@ module usbdev_reg_top (
   logic phy_config_tx_osc_test_mode_qs;
   logic phy_config_tx_osc_test_mode_wd;
   logic wake_config_we;
-  logic wake_config_wake_en_qs;
-  logic wake_config_wake_en_wd;
-  logic wake_config_wake_ack_qs;
-  logic wake_config_wake_ack_wd;
+  logic [1:0] wake_config_qs;
+  logic wake_config_busy;
   logic [9:0] wake_events_qs;
   logic wake_events_busy;
   // Define register CDC handling.
   // CDC handling is done on a per-reg instead of per-field boundary.
+
+  logic  usb_48mhz_usbctrl_enable_qs_int;
+  logic [6:0]  usb_48mhz_usbctrl_device_address_qs_int;
+  logic [22:0] usb_48mhz_usbctrl_d;
+  logic [22:0] usb_48mhz_usbctrl_wdata;
+  logic usb_48mhz_usbctrl_we;
+  logic unused_usb_48mhz_usbctrl_wdata;
+
+  always_comb begin
+    usb_48mhz_usbctrl_d = '0;
+    usb_48mhz_usbctrl_d[0] = usb_48mhz_usbctrl_enable_qs_int;
+    usb_48mhz_usbctrl_d[22:16] = usb_48mhz_usbctrl_device_address_qs_int;
+  end
+
+  prim_reg_cdc #(
+    .DataWidth(23),
+    .ResetVal(23'h0),
+    .BitMask(23'h7f0003)
+  ) u_usbctrl_cdc (
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_usb_48mhz_i),
+    .rst_dst_ni   (rst_usb_48mhz_ni),
+    .src_update_i (sync_usb_48mhz_update),
+    .src_regwen_i ('0),
+    .src_we_i     (usbctrl_we),
+    .src_re_i     ('0),
+    .src_wd_i     (reg_wdata[22:0]),
+    .src_busy_o   (usbctrl_busy),
+    .src_qs_o     (usbctrl_qs), // for software read back
+    .dst_d_i      (usb_48mhz_usbctrl_d),
+    .dst_we_o     (usb_48mhz_usbctrl_we),
+    .dst_re_o     (),
+    .dst_regwen_o (),
+    .dst_wd_o     (usb_48mhz_usbctrl_wdata)
+  );
+  assign unused_usb_48mhz_usbctrl_wdata = ^usb_48mhz_usbctrl_wdata;
+
+  logic  aon_wake_config_wake_en_qs_int;
+  logic [1:0] aon_wake_config_d;
+  logic [1:0] aon_wake_config_wdata;
+  logic aon_wake_config_we;
+  logic unused_aon_wake_config_wdata;
+
+  always_comb begin
+    aon_wake_config_d = '0;
+    aon_wake_config_d[0] = aon_wake_config_wake_en_qs_int;
+  end
+
+  prim_reg_cdc #(
+    .DataWidth(2),
+    .ResetVal(2'h0),
+    .BitMask(2'h3)
+  ) u_wake_config_cdc (
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_update_i (sync_aon_update),
+    .src_regwen_i ('0),
+    .src_we_i     (wake_config_we),
+    .src_re_i     ('0),
+    .src_wd_i     (reg_wdata[1:0]),
+    .src_busy_o   (wake_config_busy),
+    .src_qs_o     (wake_config_qs), // for software read back
+    .dst_d_i      (aon_wake_config_d),
+    .dst_we_o     (aon_wake_config_we),
+    .dst_re_o     (),
+    .dst_regwen_o (),
+    .dst_wd_o     (aon_wake_config_wdata)
+  );
+  assign unused_aon_wake_config_wdata = ^aon_wake_config_wdata;
 
   logic [2:0]  aon_wake_events_state_qs_int;
   logic  aon_wake_events_disconnected_qs_int;
@@ -1815,23 +1897,48 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_usbctrl_enable (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_usb_48mhz_i),
+    .rst_ni  (rst_usb_48mhz_ni),
 
     // from register interface
-    .we     (usbctrl_we),
-    .wd     (usbctrl_enable_wd),
+    .we     (usb_48mhz_usbctrl_we),
+    .wd     (usb_48mhz_usbctrl_wdata[0]),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.usbctrl.enable.qe),
     .q      (reg2hw.usbctrl.enable.q),
 
     // to register interface (read)
-    .qs     (usbctrl_enable_qs)
+    .qs     (usb_48mhz_usbctrl_enable_qs_int)
+  );
+
+  //   F[resume_link_active]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0)
+  ) u_usbctrl_resume_link_active (
+    .clk_i   (clk_usb_48mhz_i),
+    .rst_ni  (rst_usb_48mhz_ni),
+
+    // from register interface
+    .we     (usb_48mhz_usbctrl_we),
+    .wd     (usb_48mhz_usbctrl_wdata[1]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (reg2hw.usbctrl.resume_link_active.qe),
+    .q      (reg2hw.usbctrl.resume_link_active.q),
+
+    // to register interface (read)
+    .qs     ()
   );
 
   //   F[device_address]: 22:16
@@ -1840,23 +1947,23 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0)
   ) u_usbctrl_device_address (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_usb_48mhz_i),
+    .rst_ni  (rst_usb_48mhz_ni),
 
     // from register interface
-    .we     (usbctrl_we),
-    .wd     (usbctrl_device_address_wd),
+    .we     (usb_48mhz_usbctrl_we),
+    .wd     (usb_48mhz_usbctrl_wdata[22:16]),
 
     // from internal hardware
     .de     (hw2reg.usbctrl.device_address.de),
     .d      (hw2reg.usbctrl.device_address.d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.usbctrl.device_address.qe),
     .q      (reg2hw.usbctrl.device_address.q),
 
     // to register interface (read)
-    .qs     (usbctrl_device_address_qs)
+    .qs     (usb_48mhz_usbctrl_device_address_qs_int)
   );
 
 
@@ -6574,48 +6681,48 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_wake_config_wake_en (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (wake_config_we),
-    .wd     (wake_config_wake_en_wd),
+    .we     (aon_wake_config_we),
+    .wd     (aon_wake_config_wdata[0]),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.wake_config.wake_en.qe),
     .q      (reg2hw.wake_config.wake_en.q),
 
     // to register interface (read)
-    .qs     (wake_config_wake_en_qs)
+    .qs     (aon_wake_config_wake_en_qs_int)
   );
 
   //   F[wake_ack]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0)
   ) u_wake_config_wake_ack (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
 
     // from register interface
-    .we     (wake_config_we),
-    .wd     (wake_config_wake_ack_wd),
+    .we     (aon_wake_config_we),
+    .wd     (aon_wake_config_wdata[1]),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.wake_config.wake_ack.qe),
     .q      (reg2hw.wake_config.wake_ack.q),
 
     // to register interface (read)
-    .qs     (wake_config_wake_ack_qs)
+    .qs     ()
   );
 
 
@@ -6886,9 +6993,8 @@ module usbdev_reg_top (
   assign alert_test_wd = reg_wdata[0];
   assign usbctrl_we = addr_hit[4] & reg_we & !reg_error;
 
-  assign usbctrl_enable_wd = reg_wdata[0];
 
-  assign usbctrl_device_address_wd = reg_wdata[22:16];
+
   assign ep_out_enable_we = addr_hit[5] & reg_we & !reg_error;
 
   assign ep_out_enable_enable_0_wd = reg_wdata[0];
@@ -7264,9 +7370,7 @@ module usbdev_reg_top (
   assign phy_config_tx_osc_test_mode_wd = reg_wdata[7];
   assign wake_config_we = addr_hit[32] & reg_we & !reg_error;
 
-  assign wake_config_wake_en_wd = reg_wdata[0];
 
-  assign wake_config_wake_ack_wd = reg_wdata[1];
 
   // Read data return
   always_comb begin
@@ -7337,10 +7441,8 @@ module usbdev_reg_top (
       end
 
       addr_hit[4]: begin
-        reg_rdata_next[0] = usbctrl_enable_qs;
-        reg_rdata_next[22:16] = usbctrl_device_address_qs;
+        reg_rdata_next = DW'(usbctrl_qs);
       end
-
       addr_hit[5]: begin
         reg_rdata_next[0] = ep_out_enable_enable_0_qs;
         reg_rdata_next[1] = ep_out_enable_enable_1_qs;
@@ -7618,10 +7720,8 @@ module usbdev_reg_top (
       end
 
       addr_hit[32]: begin
-        reg_rdata_next[0] = wake_config_wake_en_qs;
-        reg_rdata_next[1] = wake_config_wake_ack_qs;
+        reg_rdata_next = DW'(wake_config_qs);
       end
-
       addr_hit[33]: begin
         reg_rdata_next = DW'(wake_events_qs);
       end
@@ -7641,6 +7741,12 @@ module usbdev_reg_top (
   always_comb begin
     reg_busy_sel = '0;
     unique case (1'b1)
+      addr_hit[4]: begin
+        reg_busy_sel = usbctrl_busy;
+      end
+      addr_hit[32]: begin
+        reg_busy_sel = wake_config_busy;
+      end
       addr_hit[33]: begin
         reg_busy_sel = wake_events_busy;
       end

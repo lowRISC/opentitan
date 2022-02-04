@@ -23,6 +23,8 @@ module usb_fs_nb_pe #(
   input  logic                   clk_48mhz_i,
   input  logic                   rst_ni,        // Async. reset, active low
   input  logic                   link_reset_i,  // USB reset, sync to 48 MHz, active high
+  input  logic                   link_active_i, // Device is in Default/Addressed/Configured state
+                                                // and may respond to transactions
   input  logic [6:0]             dev_addr_i,
 
   input  logic                   cfg_eop_single_bit_i, // 1: detect a single SE0 bit as EOP
@@ -72,6 +74,7 @@ module usb_fs_nb_pe #(
 
   // RX line status
   output logic                   rx_jjj_det_o,
+  output logic                   rx_j_det_o,
 
   // RX errors
   output logic                   rx_crc_err_o,
@@ -135,6 +138,7 @@ module usb_fs_nb_pe #(
     .clk_48mhz_i           (clk_48mhz_i),
     .rst_ni                (rst_ni),
     .link_reset_i          (link_reset_i),
+    .link_active_i         (link_active_i),
     .dev_addr_i            (dev_addr_i),
 
     // endpoint interface
@@ -177,6 +181,7 @@ module usb_fs_nb_pe #(
     .clk_48mhz_i            (clk_48mhz_i),
     .rst_ni                 (rst_ni),
     .link_reset_i           (link_reset_i),
+    .link_active_i          (link_active_i),
     .dev_addr_i             (dev_addr_i),
 
     // endpoint interface
@@ -233,6 +238,7 @@ module usb_fs_nb_pe #(
     .rx_data_o              (rx_data),
     .valid_packet_o         (rx_pkt_valid),
     .rx_jjj_det_o           (rx_jjj_det_o),
+    .rx_j_det_o             (rx_j_det_o),
     .crc_error_o            (rx_crc_err_o),
     .pid_error_o            (rx_pid_err_o),
     .bitstuff_error_o       (rx_bitstuff_err_o)
