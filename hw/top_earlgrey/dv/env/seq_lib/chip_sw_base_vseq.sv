@@ -101,7 +101,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
   // scrambled address may cross the tile, this function will find out what tile the address is
   // located and backdoor write to it.
-  virtual function void _sram_bkdr_write32(
+  protected virtual function void _sram_bkdr_write32(
       bit [bus_params_pkg::BUS_AW-1:0] addr,
       bit [31:0] data,
       bit is_main_ram, // if 1, main ram, otherwise, ret ram
