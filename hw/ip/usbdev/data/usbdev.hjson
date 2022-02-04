@@ -755,6 +755,8 @@
                 0: Outputs are controlled by the hardware block.
                 1: Outputs are controlled with this register.
                 '''
+          tags: [// Prevent random csr tests from driving conflicting values into the chip
+                 "excl:CsrNonInitTests:CsrExclWrite"]
         }
       ]
     }
