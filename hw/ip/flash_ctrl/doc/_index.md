@@ -217,7 +217,12 @@ Software can then read / program / erase the flash as needed.
 
 When an RMA entry request is received from the life cycle manager, the flash controller waits for any pending flash transaction to complete, then switches priority to the hardware interface.
 The flash controller then initiates RMA entry process and notifies the life cycle controller when it is complete.
-Unlike the seed phase, after the RMA phase, the flash controller does not grant control back to software as the system is expected to reboot after an RMA attempt.
+The RMA entry process wipes out all data, creator, owner and isolated partitions.
+
+After RMA completes, if the host system is still available, the flash protocol controller registers can still be accessed.
+However, flash memory access are not allowed, either directly by the host or indirectly through flash protocol controller initiated transactions.
+It is expected that after an RMA transition, the entire system will be rebooted.
+
 
 #### Initialization
 
@@ -228,7 +233,7 @@ After the scrambling keys are requested, the flash protocol controller reads the
 Once the above steps are completed, the read buffers in the flash physical controller are enabled for operation.
 
 #### RMA Entry
-During RMA entry, the flash controller "wipes" the contents of the following
+During RMA entry, the flash controller "wipes" the contents of the following:
 - Creator partition
 - Owner partition
 - Isolated partition
