@@ -234,7 +234,9 @@ dif_result_t dif_entropy_src_disable(const dif_entropy_src_t *entropy_src) {
     return kDifBadArg;
   }
   // TODO: should first check if entropy is locked and return error if it is.
-  mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_CONF_REG_OFFSET, 0);
+  mmio_region_write32(entropy_src->base_addr,
+                      ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
+                      kMultiBitBool4False);
 
   const dif_entropy_src_fw_override_config_t kDefaultFwOverrideConfig = {
       .enable = false,
