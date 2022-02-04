@@ -21,6 +21,7 @@ module aes_control_fsm
   // Main control signals
   input  logic                                    ctrl_qe_i,
   output logic                                    ctrl_we_o,
+  input  logic                                    ctrl_phase_i,
   input  logic                                    ctrl_err_storage_i,
   input  aes_op_e                                 op_i,
   input  aes_mode_e                               mode_i,
@@ -671,14 +672,14 @@ module aes_control_fsm
   /////////////////////
 
   // We only take a new sideload key if sideload is enabled, if the provided sideload key is marked
-  // as valid, and after the control register has been written. After that point we don't update
-  // the key anymore, as we don't have a notion of when it actually changes. This would be required
-  // to trigger decryption key generation for ECB/CBC decryption.
+  // as valid, and after the control register has been written for the second time. After that
+  // point we don't update the key anymore, as we don't have a notion of when it actually changes.
+  // This would be required to trigger decryption key generation for ECB/CBC decryption.
   // To update the sideload key, software has to:
   // 1) wait unitl AES is idle,
   // 2) wait for the key manager to provide the new key,
   // 3) start a new message by writing the control register and providing the IV (if needed).
-  assign key_sideload = sideload_i & key_sideload_valid_i & ctrl_we_q;
+  assign key_sideload = sideload_i & key_sideload_valid_i & ctrl_we_q & ~ctrl_phase_i;
 
   // We only use clean initial keys. Either software/counter has updated
   // - all initial key registers, or

@@ -57,6 +57,7 @@ module aes_core
   // Signals
   logic                                       ctrl_qe;
   logic                                       ctrl_we;
+  logic                                       ctrl_phase;
   aes_op_e                                    aes_op_q;
   aes_mode_e                                  aes_mode_q;
   ciph_op_e                                   cipher_op;
@@ -503,6 +504,7 @@ module aes_core
     .rst_shadowed_ni    ( rst_shadowed_ni      ),
     .qe_o               ( ctrl_qe              ),
     .we_i               ( ctrl_we              ),
+    .phase_o            ( ctrl_phase           ),
     .operation_o        ( aes_op_q             ),
     .mode_o             ( aes_mode_q           ),
     .key_len_o          ( key_len_q            ),
@@ -530,6 +532,7 @@ module aes_core
 
     .ctrl_qe_i                 ( ctrl_qe                                ),
     .ctrl_we_o                 ( ctrl_we                                ),
+    .ctrl_phase_i              ( ctrl_phase                             ),
     .ctrl_err_storage_i        ( ctrl_err_storage                       ),
     .op_i                      ( aes_op_q                               ),
     .mode_i                    ( aes_mode_q                             ),

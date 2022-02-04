@@ -19,6 +19,7 @@ module aes_control
   // Main control signals
   input  logic                      ctrl_qe_i,
   output logic                      ctrl_we_o,
+  input  logic                      ctrl_phase_i,
   input  logic                      ctrl_err_storage_i,
   input  aes_op_e                   op_i,
   input  aes_mode_e                 mode_i,
@@ -250,6 +251,7 @@ module aes_control
 
         .ctrl_qe_i                 ( ctrl_qe_i                     ),
         .ctrl_we_o                 ( mr_ctrl_we[i]                 ), // AND-combine
+        .ctrl_phase_i              ( ctrl_phase_i                  ),
         .ctrl_err_storage_i        ( ctrl_err_storage_i            ),
         .op_i                      ( op_i                          ),
         .mode_i                    ( mode_i                        ),
@@ -340,6 +342,7 @@ module aes_control
 
         .ctrl_qe_i                 ( ctrl_qe_i                     ),
         .ctrl_we_o                 ( mr_ctrl_we[i]                 ), // AND-combine
+        .ctrl_phase_i              ( ctrl_phase_i                  ),
         .ctrl_err_storage_i        ( ctrl_err_storage_i            ),
         .op_i                      ( op_i                          ),
         .mode_i                    ( mode_i                        ),
