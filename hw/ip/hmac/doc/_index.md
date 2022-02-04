@@ -25,6 +25,10 @@ generator to check the integrity of an incoming message and a signature signed
 with the same secret key. It generates a different authentication code with the
 same message if the secret key is different.
 
+This HMAC module is not a side channel or fault injection resistant implementation.
+This module is meant purely for hashing acceleration.
+If hardened MAC operations are required, users should either employ [KMAC]({{< relref "hw/ip/kmac/doc" >}}) or a software implementation.
+
 The 256-bit secret key written in {{< regref "KEY_0" >}} to {{< regref "KEY_7" >}}. The message to authenticate
 is written to {{< regref "MSG_FIFO" >}} and the HMAC generates a 256-bit digest value which can
 be read from {{< regref "DIGEST_0" >}} to {{< regref "DIGEST_7" >}}. The `hash_done` interrupt is raised to
