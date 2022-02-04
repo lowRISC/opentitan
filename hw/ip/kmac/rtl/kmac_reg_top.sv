@@ -613,6 +613,9 @@ module kmac_reg_top (
     // to register interface (read)
     .qs     (cfg_shadowed_kmac_en_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.cfg_shadowed.kmac_en.err_update),
     .err_storage (reg2hw.cfg_shadowed.kmac_en.err_storage)
@@ -643,6 +646,9 @@ module kmac_reg_top (
 
     // to register interface (read)
     .qs     (cfg_shadowed_kstrength_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.cfg_shadowed.kstrength.err_update),
@@ -675,6 +681,9 @@ module kmac_reg_top (
     // to register interface (read)
     .qs     (cfg_shadowed_mode_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.cfg_shadowed.mode.err_update),
     .err_storage (reg2hw.cfg_shadowed.mode.err_storage)
@@ -705,6 +714,9 @@ module kmac_reg_top (
 
     // to register interface (read)
     .qs     (cfg_shadowed_msg_endianness_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.cfg_shadowed.msg_endianness.err_update),
@@ -737,6 +749,9 @@ module kmac_reg_top (
     // to register interface (read)
     .qs     (cfg_shadowed_state_endianness_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.cfg_shadowed.state_endianness.err_update),
     .err_storage (reg2hw.cfg_shadowed.state_endianness.err_storage)
@@ -767,6 +782,9 @@ module kmac_reg_top (
 
     // to register interface (read)
     .qs     (cfg_shadowed_sideload_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.cfg_shadowed.sideload.err_update),
@@ -799,6 +817,9 @@ module kmac_reg_top (
     // to register interface (read)
     .qs     (cfg_shadowed_entropy_mode_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.cfg_shadowed.entropy_mode.err_update),
     .err_storage (reg2hw.cfg_shadowed.entropy_mode.err_storage)
@@ -829,6 +850,9 @@ module kmac_reg_top (
 
     // to register interface (read)
     .qs     (cfg_shadowed_entropy_fast_process_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.cfg_shadowed.entropy_fast_process.err_update),
@@ -861,6 +885,9 @@ module kmac_reg_top (
     // to register interface (read)
     .qs     (cfg_shadowed_entropy_ready_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.cfg_shadowed.entropy_ready.err_update),
     .err_storage (reg2hw.cfg_shadowed.entropy_ready.err_storage)
@@ -891,6 +918,9 @@ module kmac_reg_top (
 
     // to register interface (read)
     .qs     (cfg_shadowed_err_processed_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.cfg_shadowed.err_processed.err_update),

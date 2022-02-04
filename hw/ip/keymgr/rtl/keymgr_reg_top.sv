@@ -479,6 +479,9 @@ module keymgr_reg_top (
     // to register interface (read)
     .qs     (control_shadowed_operation_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.control_shadowed.operation.err_update),
     .err_storage (reg2hw.control_shadowed.operation.err_storage)
@@ -510,6 +513,9 @@ module keymgr_reg_top (
     // to register interface (read)
     .qs     (control_shadowed_cdi_sel_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.control_shadowed.cdi_sel.err_update),
     .err_storage (reg2hw.control_shadowed.cdi_sel.err_storage)
@@ -540,6 +546,9 @@ module keymgr_reg_top (
 
     // to register interface (read)
     .qs     (control_shadowed_dest_sel_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.control_shadowed.dest_sel.err_update),
@@ -624,6 +633,9 @@ module keymgr_reg_top (
 
     // to register interface (read)
     .qs     (reseed_interval_shadowed_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.reseed_interval_shadowed.err_update),
@@ -1373,6 +1385,9 @@ module keymgr_reg_top (
     // to register interface (read)
     .qs     (max_creator_key_ver_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.max_creator_key_ver_shadowed.err_update),
     .err_storage (reg2hw.max_creator_key_ver_shadowed.err_storage)
@@ -1431,6 +1446,9 @@ module keymgr_reg_top (
     // to register interface (read)
     .qs     (max_owner_int_key_ver_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.max_owner_int_key_ver_shadowed.err_update),
     .err_storage (reg2hw.max_owner_int_key_ver_shadowed.err_storage)
@@ -1488,6 +1506,9 @@ module keymgr_reg_top (
 
     // to register interface (read)
     .qs     (max_owner_key_ver_shadowed_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.max_owner_key_ver_shadowed.err_update),

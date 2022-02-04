@@ -794,6 +794,9 @@ ${bits.msb}\
       % else:
     .qs     (${qs_expr}),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.${fsig_name}.err_update),
     .err_storage (reg2hw.${fsig_name}.err_storage)

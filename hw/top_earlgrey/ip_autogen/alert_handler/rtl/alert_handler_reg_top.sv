@@ -1647,6 +1647,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (ping_timeout_cyc_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.ping_timeout_cyc_shadowed.err_update),
     .err_storage (reg2hw.ping_timeout_cyc_shadowed.err_storage)
@@ -1678,6 +1681,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (ping_timer_en_shadowed_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.ping_timer_en_shadowed.err_update),
@@ -3305,6 +3311,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[0].err_update),
     .err_storage (reg2hw.alert_en_shadowed[0].err_storage)
@@ -3337,6 +3346,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[1].err_update),
@@ -3371,6 +3383,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[2].err_update),
     .err_storage (reg2hw.alert_en_shadowed[2].err_storage)
@@ -3403,6 +3418,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_3_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[3].err_update),
@@ -3437,6 +3455,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_4_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[4].err_update),
     .err_storage (reg2hw.alert_en_shadowed[4].err_storage)
@@ -3469,6 +3490,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_5_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[5].err_update),
@@ -3503,6 +3527,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_6_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[6].err_update),
     .err_storage (reg2hw.alert_en_shadowed[6].err_storage)
@@ -3535,6 +3562,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_7_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[7].err_update),
@@ -3569,6 +3599,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_8_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[8].err_update),
     .err_storage (reg2hw.alert_en_shadowed[8].err_storage)
@@ -3601,6 +3634,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_9_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[9].err_update),
@@ -3635,6 +3671,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_10_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[10].err_update),
     .err_storage (reg2hw.alert_en_shadowed[10].err_storage)
@@ -3667,6 +3706,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_11_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[11].err_update),
@@ -3701,6 +3743,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_12_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[12].err_update),
     .err_storage (reg2hw.alert_en_shadowed[12].err_storage)
@@ -3733,6 +3778,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_13_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[13].err_update),
@@ -3767,6 +3815,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_14_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[14].err_update),
     .err_storage (reg2hw.alert_en_shadowed[14].err_storage)
@@ -3799,6 +3850,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_15_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[15].err_update),
@@ -3833,6 +3887,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_16_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[16].err_update),
     .err_storage (reg2hw.alert_en_shadowed[16].err_storage)
@@ -3865,6 +3922,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_17_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[17].err_update),
@@ -3899,6 +3959,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_18_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[18].err_update),
     .err_storage (reg2hw.alert_en_shadowed[18].err_storage)
@@ -3931,6 +3994,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_19_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[19].err_update),
@@ -3965,6 +4031,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_20_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[20].err_update),
     .err_storage (reg2hw.alert_en_shadowed[20].err_storage)
@@ -3997,6 +4066,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_21_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[21].err_update),
@@ -4031,6 +4103,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_22_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[22].err_update),
     .err_storage (reg2hw.alert_en_shadowed[22].err_storage)
@@ -4063,6 +4138,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_23_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[23].err_update),
@@ -4097,6 +4175,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_24_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[24].err_update),
     .err_storage (reg2hw.alert_en_shadowed[24].err_storage)
@@ -4129,6 +4210,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_25_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[25].err_update),
@@ -4163,6 +4247,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_26_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[26].err_update),
     .err_storage (reg2hw.alert_en_shadowed[26].err_storage)
@@ -4195,6 +4282,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_27_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[27].err_update),
@@ -4229,6 +4319,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_28_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[28].err_update),
     .err_storage (reg2hw.alert_en_shadowed[28].err_storage)
@@ -4261,6 +4354,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_29_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[29].err_update),
@@ -4295,6 +4391,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_30_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[30].err_update),
     .err_storage (reg2hw.alert_en_shadowed[30].err_storage)
@@ -4327,6 +4426,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_31_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[31].err_update),
@@ -4361,6 +4463,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_32_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[32].err_update),
     .err_storage (reg2hw.alert_en_shadowed[32].err_storage)
@@ -4393,6 +4498,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_33_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[33].err_update),
@@ -4427,6 +4535,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_34_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[34].err_update),
     .err_storage (reg2hw.alert_en_shadowed[34].err_storage)
@@ -4459,6 +4570,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_35_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[35].err_update),
@@ -4493,6 +4607,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_36_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[36].err_update),
     .err_storage (reg2hw.alert_en_shadowed[36].err_storage)
@@ -4525,6 +4642,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_37_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[37].err_update),
@@ -4559,6 +4679,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_38_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[38].err_update),
     .err_storage (reg2hw.alert_en_shadowed[38].err_storage)
@@ -4591,6 +4714,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_39_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[39].err_update),
@@ -4625,6 +4751,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_40_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[40].err_update),
     .err_storage (reg2hw.alert_en_shadowed[40].err_storage)
@@ -4657,6 +4786,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_41_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[41].err_update),
@@ -4691,6 +4823,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_42_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[42].err_update),
     .err_storage (reg2hw.alert_en_shadowed[42].err_storage)
@@ -4723,6 +4858,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_43_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[43].err_update),
@@ -4757,6 +4895,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_44_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[44].err_update),
     .err_storage (reg2hw.alert_en_shadowed[44].err_storage)
@@ -4789,6 +4930,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_45_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[45].err_update),
@@ -4823,6 +4967,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_46_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[46].err_update),
     .err_storage (reg2hw.alert_en_shadowed[46].err_storage)
@@ -4855,6 +5002,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_47_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[47].err_update),
@@ -4889,6 +5039,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_48_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[48].err_update),
     .err_storage (reg2hw.alert_en_shadowed[48].err_storage)
@@ -4921,6 +5074,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_49_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[49].err_update),
@@ -4955,6 +5111,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_50_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[50].err_update),
     .err_storage (reg2hw.alert_en_shadowed[50].err_storage)
@@ -4987,6 +5146,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_51_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[51].err_update),
@@ -5021,6 +5183,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_52_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[52].err_update),
     .err_storage (reg2hw.alert_en_shadowed[52].err_storage)
@@ -5053,6 +5218,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_53_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[53].err_update),
@@ -5087,6 +5255,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_54_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[54].err_update),
     .err_storage (reg2hw.alert_en_shadowed[54].err_storage)
@@ -5119,6 +5290,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_55_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[55].err_update),
@@ -5153,6 +5327,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_56_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[56].err_update),
     .err_storage (reg2hw.alert_en_shadowed[56].err_storage)
@@ -5185,6 +5362,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_shadowed_57_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[57].err_update),
@@ -5219,6 +5399,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_en_shadowed_58_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_en_shadowed[58].err_update),
     .err_storage (reg2hw.alert_en_shadowed[58].err_storage)
@@ -5251,6 +5434,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[0].err_update),
@@ -5285,6 +5471,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[1].err_update),
     .err_storage (reg2hw.alert_class_shadowed[1].err_storage)
@@ -5317,6 +5506,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_2_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[2].err_update),
@@ -5351,6 +5543,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_3_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[3].err_update),
     .err_storage (reg2hw.alert_class_shadowed[3].err_storage)
@@ -5383,6 +5578,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_4_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[4].err_update),
@@ -5417,6 +5615,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_5_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[5].err_update),
     .err_storage (reg2hw.alert_class_shadowed[5].err_storage)
@@ -5449,6 +5650,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_6_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[6].err_update),
@@ -5483,6 +5687,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_7_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[7].err_update),
     .err_storage (reg2hw.alert_class_shadowed[7].err_storage)
@@ -5515,6 +5722,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_8_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[8].err_update),
@@ -5549,6 +5759,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_9_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[9].err_update),
     .err_storage (reg2hw.alert_class_shadowed[9].err_storage)
@@ -5581,6 +5794,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_10_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[10].err_update),
@@ -5615,6 +5831,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_11_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[11].err_update),
     .err_storage (reg2hw.alert_class_shadowed[11].err_storage)
@@ -5647,6 +5866,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_12_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[12].err_update),
@@ -5681,6 +5903,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_13_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[13].err_update),
     .err_storage (reg2hw.alert_class_shadowed[13].err_storage)
@@ -5713,6 +5938,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_14_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[14].err_update),
@@ -5747,6 +5975,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_15_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[15].err_update),
     .err_storage (reg2hw.alert_class_shadowed[15].err_storage)
@@ -5779,6 +6010,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_16_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[16].err_update),
@@ -5813,6 +6047,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_17_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[17].err_update),
     .err_storage (reg2hw.alert_class_shadowed[17].err_storage)
@@ -5845,6 +6082,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_18_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[18].err_update),
@@ -5879,6 +6119,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_19_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[19].err_update),
     .err_storage (reg2hw.alert_class_shadowed[19].err_storage)
@@ -5911,6 +6154,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_20_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[20].err_update),
@@ -5945,6 +6191,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_21_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[21].err_update),
     .err_storage (reg2hw.alert_class_shadowed[21].err_storage)
@@ -5977,6 +6226,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_22_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[22].err_update),
@@ -6011,6 +6263,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_23_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[23].err_update),
     .err_storage (reg2hw.alert_class_shadowed[23].err_storage)
@@ -6043,6 +6298,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_24_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[24].err_update),
@@ -6077,6 +6335,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_25_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[25].err_update),
     .err_storage (reg2hw.alert_class_shadowed[25].err_storage)
@@ -6109,6 +6370,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_26_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[26].err_update),
@@ -6143,6 +6407,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_27_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[27].err_update),
     .err_storage (reg2hw.alert_class_shadowed[27].err_storage)
@@ -6175,6 +6442,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_28_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[28].err_update),
@@ -6209,6 +6479,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_29_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[29].err_update),
     .err_storage (reg2hw.alert_class_shadowed[29].err_storage)
@@ -6241,6 +6514,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_30_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[30].err_update),
@@ -6275,6 +6551,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_31_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[31].err_update),
     .err_storage (reg2hw.alert_class_shadowed[31].err_storage)
@@ -6307,6 +6586,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_32_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[32].err_update),
@@ -6341,6 +6623,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_33_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[33].err_update),
     .err_storage (reg2hw.alert_class_shadowed[33].err_storage)
@@ -6373,6 +6658,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_34_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[34].err_update),
@@ -6407,6 +6695,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_35_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[35].err_update),
     .err_storage (reg2hw.alert_class_shadowed[35].err_storage)
@@ -6439,6 +6730,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_36_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[36].err_update),
@@ -6473,6 +6767,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_37_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[37].err_update),
     .err_storage (reg2hw.alert_class_shadowed[37].err_storage)
@@ -6505,6 +6802,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_38_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[38].err_update),
@@ -6539,6 +6839,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_39_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[39].err_update),
     .err_storage (reg2hw.alert_class_shadowed[39].err_storage)
@@ -6571,6 +6874,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_40_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[40].err_update),
@@ -6605,6 +6911,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_41_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[41].err_update),
     .err_storage (reg2hw.alert_class_shadowed[41].err_storage)
@@ -6637,6 +6946,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_42_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[42].err_update),
@@ -6671,6 +6983,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_43_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[43].err_update),
     .err_storage (reg2hw.alert_class_shadowed[43].err_storage)
@@ -6703,6 +7018,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_44_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[44].err_update),
@@ -6737,6 +7055,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_45_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[45].err_update),
     .err_storage (reg2hw.alert_class_shadowed[45].err_storage)
@@ -6769,6 +7090,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_46_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[46].err_update),
@@ -6803,6 +7127,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_47_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[47].err_update),
     .err_storage (reg2hw.alert_class_shadowed[47].err_storage)
@@ -6835,6 +7162,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_48_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[48].err_update),
@@ -6869,6 +7199,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_49_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[49].err_update),
     .err_storage (reg2hw.alert_class_shadowed[49].err_storage)
@@ -6901,6 +7234,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_50_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[50].err_update),
@@ -6935,6 +7271,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_51_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[51].err_update),
     .err_storage (reg2hw.alert_class_shadowed[51].err_storage)
@@ -6967,6 +7306,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_52_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[52].err_update),
@@ -7001,6 +7343,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_53_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[53].err_update),
     .err_storage (reg2hw.alert_class_shadowed[53].err_storage)
@@ -7033,6 +7378,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_54_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[54].err_update),
@@ -7067,6 +7415,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_55_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[55].err_update),
     .err_storage (reg2hw.alert_class_shadowed[55].err_storage)
@@ -7099,6 +7450,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_56_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[56].err_update),
@@ -7133,6 +7487,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_shadowed_57_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[57].err_update),
     .err_storage (reg2hw.alert_class_shadowed[57].err_storage)
@@ -7165,6 +7522,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_shadowed_58_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.alert_class_shadowed[58].err_update),
@@ -8981,6 +9341,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (loc_alert_en_shadowed_0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.loc_alert_en_shadowed[0].err_update),
     .err_storage (reg2hw.loc_alert_en_shadowed[0].err_storage)
@@ -9013,6 +9376,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (loc_alert_en_shadowed_1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.loc_alert_en_shadowed[1].err_update),
@@ -9047,6 +9413,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (loc_alert_en_shadowed_2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.loc_alert_en_shadowed[2].err_update),
     .err_storage (reg2hw.loc_alert_en_shadowed[2].err_storage)
@@ -9079,6 +9448,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (loc_alert_en_shadowed_3_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.loc_alert_en_shadowed[3].err_update),
@@ -9113,6 +9485,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (loc_alert_en_shadowed_4_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.loc_alert_en_shadowed[4].err_update),
     .err_storage (reg2hw.loc_alert_en_shadowed[4].err_storage)
@@ -9145,6 +9520,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (loc_alert_en_shadowed_5_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.loc_alert_en_shadowed[5].err_update),
@@ -9179,6 +9557,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (loc_alert_en_shadowed_6_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.loc_alert_en_shadowed[6].err_update),
     .err_storage (reg2hw.loc_alert_en_shadowed[6].err_storage)
@@ -9211,6 +9592,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (loc_alert_class_shadowed_0_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.loc_alert_class_shadowed[0].err_update),
@@ -9245,6 +9629,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (loc_alert_class_shadowed_1_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.loc_alert_class_shadowed[1].err_update),
     .err_storage (reg2hw.loc_alert_class_shadowed[1].err_storage)
@@ -9277,6 +9664,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (loc_alert_class_shadowed_2_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.loc_alert_class_shadowed[2].err_update),
@@ -9311,6 +9701,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (loc_alert_class_shadowed_3_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.loc_alert_class_shadowed[3].err_update),
     .err_storage (reg2hw.loc_alert_class_shadowed[3].err_storage)
@@ -9343,6 +9736,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (loc_alert_class_shadowed_4_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.loc_alert_class_shadowed[4].err_update),
@@ -9377,6 +9773,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (loc_alert_class_shadowed_5_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.loc_alert_class_shadowed[5].err_update),
     .err_storage (reg2hw.loc_alert_class_shadowed[5].err_storage)
@@ -9409,6 +9808,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (loc_alert_class_shadowed_6_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.loc_alert_class_shadowed[6].err_update),
@@ -9658,6 +10060,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classa_ctrl_shadowed_en_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classa_ctrl_shadowed.en.err_update),
     .err_storage (reg2hw.classa_ctrl_shadowed.en.err_storage)
@@ -9688,6 +10093,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classa_ctrl_shadowed_lock_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classa_ctrl_shadowed.lock.err_update),
@@ -9720,6 +10128,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classa_ctrl_shadowed_en_e0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classa_ctrl_shadowed.en_e0.err_update),
     .err_storage (reg2hw.classa_ctrl_shadowed.en_e0.err_storage)
@@ -9750,6 +10161,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classa_ctrl_shadowed_en_e1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classa_ctrl_shadowed.en_e1.err_update),
@@ -9782,6 +10196,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classa_ctrl_shadowed_en_e2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classa_ctrl_shadowed.en_e2.err_update),
     .err_storage (reg2hw.classa_ctrl_shadowed.en_e2.err_storage)
@@ -9812,6 +10229,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classa_ctrl_shadowed_en_e3_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classa_ctrl_shadowed.en_e3.err_update),
@@ -9844,6 +10264,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classa_ctrl_shadowed_map_e0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classa_ctrl_shadowed.map_e0.err_update),
     .err_storage (reg2hw.classa_ctrl_shadowed.map_e0.err_storage)
@@ -9874,6 +10297,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classa_ctrl_shadowed_map_e1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classa_ctrl_shadowed.map_e1.err_update),
@@ -9906,6 +10332,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classa_ctrl_shadowed_map_e2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classa_ctrl_shadowed.map_e2.err_update),
     .err_storage (reg2hw.classa_ctrl_shadowed.map_e2.err_storage)
@@ -9936,6 +10365,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classa_ctrl_shadowed_map_e3_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classa_ctrl_shadowed.map_e3.err_update),
@@ -9995,6 +10427,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classa_clr_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classa_clr_shadowed.err_update),
     .err_storage (reg2hw.classa_clr_shadowed.err_storage)
@@ -10042,6 +10477,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classa_accum_thresh_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classa_accum_thresh_shadowed.err_update),
     .err_storage (reg2hw.classa_accum_thresh_shadowed.err_storage)
@@ -10073,6 +10511,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classa_timeout_cyc_shadowed_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classa_timeout_cyc_shadowed.err_update),
@@ -10106,6 +10547,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classa_crashdump_trigger_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classa_crashdump_trigger_shadowed.err_update),
     .err_storage (reg2hw.classa_crashdump_trigger_shadowed.err_storage)
@@ -10137,6 +10581,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classa_phase0_cyc_shadowed_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classa_phase0_cyc_shadowed.err_update),
@@ -10170,6 +10617,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classa_phase1_cyc_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classa_phase1_cyc_shadowed.err_update),
     .err_storage (reg2hw.classa_phase1_cyc_shadowed.err_storage)
@@ -10202,6 +10652,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classa_phase2_cyc_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classa_phase2_cyc_shadowed.err_update),
     .err_storage (reg2hw.classa_phase2_cyc_shadowed.err_storage)
@@ -10233,6 +10686,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classa_phase3_cyc_shadowed_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classa_phase3_cyc_shadowed.err_update),
@@ -10323,6 +10779,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classb_ctrl_shadowed_en_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classb_ctrl_shadowed.en.err_update),
     .err_storage (reg2hw.classb_ctrl_shadowed.en.err_storage)
@@ -10353,6 +10812,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classb_ctrl_shadowed_lock_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classb_ctrl_shadowed.lock.err_update),
@@ -10385,6 +10847,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classb_ctrl_shadowed_en_e0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classb_ctrl_shadowed.en_e0.err_update),
     .err_storage (reg2hw.classb_ctrl_shadowed.en_e0.err_storage)
@@ -10415,6 +10880,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classb_ctrl_shadowed_en_e1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classb_ctrl_shadowed.en_e1.err_update),
@@ -10447,6 +10915,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classb_ctrl_shadowed_en_e2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classb_ctrl_shadowed.en_e2.err_update),
     .err_storage (reg2hw.classb_ctrl_shadowed.en_e2.err_storage)
@@ -10477,6 +10948,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classb_ctrl_shadowed_en_e3_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classb_ctrl_shadowed.en_e3.err_update),
@@ -10509,6 +10983,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classb_ctrl_shadowed_map_e0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classb_ctrl_shadowed.map_e0.err_update),
     .err_storage (reg2hw.classb_ctrl_shadowed.map_e0.err_storage)
@@ -10539,6 +11016,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classb_ctrl_shadowed_map_e1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classb_ctrl_shadowed.map_e1.err_update),
@@ -10571,6 +11051,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classb_ctrl_shadowed_map_e2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classb_ctrl_shadowed.map_e2.err_update),
     .err_storage (reg2hw.classb_ctrl_shadowed.map_e2.err_storage)
@@ -10601,6 +11084,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classb_ctrl_shadowed_map_e3_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classb_ctrl_shadowed.map_e3.err_update),
@@ -10660,6 +11146,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classb_clr_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classb_clr_shadowed.err_update),
     .err_storage (reg2hw.classb_clr_shadowed.err_storage)
@@ -10707,6 +11196,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classb_accum_thresh_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classb_accum_thresh_shadowed.err_update),
     .err_storage (reg2hw.classb_accum_thresh_shadowed.err_storage)
@@ -10738,6 +11230,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classb_timeout_cyc_shadowed_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classb_timeout_cyc_shadowed.err_update),
@@ -10771,6 +11266,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classb_crashdump_trigger_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classb_crashdump_trigger_shadowed.err_update),
     .err_storage (reg2hw.classb_crashdump_trigger_shadowed.err_storage)
@@ -10802,6 +11300,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classb_phase0_cyc_shadowed_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classb_phase0_cyc_shadowed.err_update),
@@ -10835,6 +11336,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classb_phase1_cyc_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classb_phase1_cyc_shadowed.err_update),
     .err_storage (reg2hw.classb_phase1_cyc_shadowed.err_storage)
@@ -10867,6 +11371,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classb_phase2_cyc_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classb_phase2_cyc_shadowed.err_update),
     .err_storage (reg2hw.classb_phase2_cyc_shadowed.err_storage)
@@ -10898,6 +11405,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classb_phase3_cyc_shadowed_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classb_phase3_cyc_shadowed.err_update),
@@ -10988,6 +11498,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classc_ctrl_shadowed_en_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classc_ctrl_shadowed.en.err_update),
     .err_storage (reg2hw.classc_ctrl_shadowed.en.err_storage)
@@ -11018,6 +11531,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classc_ctrl_shadowed_lock_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classc_ctrl_shadowed.lock.err_update),
@@ -11050,6 +11566,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classc_ctrl_shadowed_en_e0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classc_ctrl_shadowed.en_e0.err_update),
     .err_storage (reg2hw.classc_ctrl_shadowed.en_e0.err_storage)
@@ -11080,6 +11599,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classc_ctrl_shadowed_en_e1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classc_ctrl_shadowed.en_e1.err_update),
@@ -11112,6 +11634,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classc_ctrl_shadowed_en_e2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classc_ctrl_shadowed.en_e2.err_update),
     .err_storage (reg2hw.classc_ctrl_shadowed.en_e2.err_storage)
@@ -11142,6 +11667,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classc_ctrl_shadowed_en_e3_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classc_ctrl_shadowed.en_e3.err_update),
@@ -11174,6 +11702,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classc_ctrl_shadowed_map_e0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classc_ctrl_shadowed.map_e0.err_update),
     .err_storage (reg2hw.classc_ctrl_shadowed.map_e0.err_storage)
@@ -11204,6 +11735,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classc_ctrl_shadowed_map_e1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classc_ctrl_shadowed.map_e1.err_update),
@@ -11236,6 +11770,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classc_ctrl_shadowed_map_e2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classc_ctrl_shadowed.map_e2.err_update),
     .err_storage (reg2hw.classc_ctrl_shadowed.map_e2.err_storage)
@@ -11266,6 +11803,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classc_ctrl_shadowed_map_e3_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classc_ctrl_shadowed.map_e3.err_update),
@@ -11325,6 +11865,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classc_clr_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classc_clr_shadowed.err_update),
     .err_storage (reg2hw.classc_clr_shadowed.err_storage)
@@ -11372,6 +11915,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classc_accum_thresh_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classc_accum_thresh_shadowed.err_update),
     .err_storage (reg2hw.classc_accum_thresh_shadowed.err_storage)
@@ -11403,6 +11949,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classc_timeout_cyc_shadowed_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classc_timeout_cyc_shadowed.err_update),
@@ -11436,6 +11985,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classc_crashdump_trigger_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classc_crashdump_trigger_shadowed.err_update),
     .err_storage (reg2hw.classc_crashdump_trigger_shadowed.err_storage)
@@ -11467,6 +12019,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classc_phase0_cyc_shadowed_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classc_phase0_cyc_shadowed.err_update),
@@ -11500,6 +12055,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classc_phase1_cyc_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classc_phase1_cyc_shadowed.err_update),
     .err_storage (reg2hw.classc_phase1_cyc_shadowed.err_storage)
@@ -11532,6 +12090,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classc_phase2_cyc_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classc_phase2_cyc_shadowed.err_update),
     .err_storage (reg2hw.classc_phase2_cyc_shadowed.err_storage)
@@ -11563,6 +12124,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classc_phase3_cyc_shadowed_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classc_phase3_cyc_shadowed.err_update),
@@ -11653,6 +12217,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classd_ctrl_shadowed_en_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classd_ctrl_shadowed.en.err_update),
     .err_storage (reg2hw.classd_ctrl_shadowed.en.err_storage)
@@ -11683,6 +12250,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classd_ctrl_shadowed_lock_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classd_ctrl_shadowed.lock.err_update),
@@ -11715,6 +12285,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classd_ctrl_shadowed_en_e0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classd_ctrl_shadowed.en_e0.err_update),
     .err_storage (reg2hw.classd_ctrl_shadowed.en_e0.err_storage)
@@ -11745,6 +12318,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classd_ctrl_shadowed_en_e1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classd_ctrl_shadowed.en_e1.err_update),
@@ -11777,6 +12353,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classd_ctrl_shadowed_en_e2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classd_ctrl_shadowed.en_e2.err_update),
     .err_storage (reg2hw.classd_ctrl_shadowed.en_e2.err_storage)
@@ -11807,6 +12386,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classd_ctrl_shadowed_en_e3_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classd_ctrl_shadowed.en_e3.err_update),
@@ -11839,6 +12421,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classd_ctrl_shadowed_map_e0_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classd_ctrl_shadowed.map_e0.err_update),
     .err_storage (reg2hw.classd_ctrl_shadowed.map_e0.err_storage)
@@ -11869,6 +12454,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classd_ctrl_shadowed_map_e1_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classd_ctrl_shadowed.map_e1.err_update),
@@ -11901,6 +12489,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classd_ctrl_shadowed_map_e2_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classd_ctrl_shadowed.map_e2.err_update),
     .err_storage (reg2hw.classd_ctrl_shadowed.map_e2.err_storage)
@@ -11931,6 +12522,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classd_ctrl_shadowed_map_e3_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classd_ctrl_shadowed.map_e3.err_update),
@@ -11990,6 +12584,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classd_clr_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classd_clr_shadowed.err_update),
     .err_storage (reg2hw.classd_clr_shadowed.err_storage)
@@ -12037,6 +12634,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classd_accum_thresh_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classd_accum_thresh_shadowed.err_update),
     .err_storage (reg2hw.classd_accum_thresh_shadowed.err_storage)
@@ -12068,6 +12668,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classd_timeout_cyc_shadowed_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classd_timeout_cyc_shadowed.err_update),
@@ -12101,6 +12704,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classd_crashdump_trigger_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classd_crashdump_trigger_shadowed.err_update),
     .err_storage (reg2hw.classd_crashdump_trigger_shadowed.err_storage)
@@ -12132,6 +12738,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classd_phase0_cyc_shadowed_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classd_phase0_cyc_shadowed.err_update),
@@ -12165,6 +12774,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classd_phase1_cyc_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classd_phase1_cyc_shadowed.err_update),
     .err_storage (reg2hw.classd_phase1_cyc_shadowed.err_storage)
@@ -12197,6 +12809,9 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (classd_phase2_cyc_shadowed_qs),
 
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
     // Shadow register error conditions
     .err_update  (reg2hw.classd_phase2_cyc_shadowed.err_update),
     .err_storage (reg2hw.classd_phase2_cyc_shadowed.err_storage)
@@ -12228,6 +12843,9 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (classd_phase3_cyc_shadowed_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
 
     // Shadow register error conditions
     .err_update  (reg2hw.classd_phase3_cyc_shadowed.err_update),
