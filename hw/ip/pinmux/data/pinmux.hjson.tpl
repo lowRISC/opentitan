@@ -310,7 +310,7 @@
                   ]
                   // Random writes to this field may result in pad drive conflicts,
                   // which in turn leads to propagating Xes and assertion failures.
-                  tags: ["excl:CsrNonInitTests:CsrExclWrite"]
+                  tags: ["excl:CsrAllTests:CsrExclWrite"]
                 }
     },
 
