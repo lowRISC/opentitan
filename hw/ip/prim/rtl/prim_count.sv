@@ -21,13 +21,9 @@
 //    - en_i increments the counter by step_i, if neither of the above is set.
 //
 // In cross count mode
-//    - clr_i sets all (internal) counters to 0. This means:
-//      -- down_count is halted until set_i is set again
-//         Note: The up_count is still running.
-//      -- err_o is set to 0 (false),
-//      -- cnt_o is either all zero (OutSelDnCnt = 1) or the (running) up_count value
-//         (OutSelDnCnt = 0).
-//    - clr_i sets max_val to the max possible value given by the counter's width.
+//    - clr_i sets
+//      -- the down_count to 0.
+//      -- the up_count's max_val to the max possible value given by the counter's width.
 //    - set_i sets
 //      -- the up_count to 0 and the down_count to set_cnt_i,
 //      -- the up_count's max_val to set_cnt_i.
