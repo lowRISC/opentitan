@@ -465,6 +465,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   import prim_mubi_pkg::mubi4_t;
   import prim_mubi_pkg::mubi4_test_true_strict;
+  import prim_mubi_pkg::mubi4_test_false_loose;
   import prim_mubi_pkg::mubi4_test_invalid;
 
   mubi4_t [4:0] mubi_module_en_fanout;
@@ -473,7 +474,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // register lock gating
   //--------------------------------------------
 
-  assign es_hw_regwen = reg2hw.sw_regupd.q && !mubi4_test_true_strict(mubi_module_en_fanout[4]);
+  assign es_hw_regwen = reg2hw.sw_regupd.q && mubi4_test_false_loose(mubi_module_en_fanout[4]);
   assign hw2reg.regwen.de = 1'b1;
   assign hw2reg.regwen.d = es_hw_regwen;
 
