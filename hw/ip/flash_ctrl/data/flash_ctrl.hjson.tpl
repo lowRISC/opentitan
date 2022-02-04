@@ -1088,6 +1088,12 @@
               A shadow register encountered a storage fault.
             '''
           },
+          { bits: "11",
+            name: "seed_err",
+            desc: '''
+              The seed reading process encountered an unexpected error.
+            '''
+          },
         ]
       },
 

@@ -217,6 +217,7 @@ module flash_ctrl
   flash_lcmgr_phase_e hw_phase;
   logic lcmgr_err;
   logic arb_fsm_err;
+  logic seed_err;
 
   // Flash control arbitration connections to software interface
   logic sw_ctrl_done;
@@ -256,6 +257,8 @@ module flash_ctrl
 
   // life cycle connections
   lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en;
+
+  lc_ctrl_pkg::lc_tx_t dis_access;
 
   prim_lc_sync #(
     .NumCopies(1)
@@ -414,7 +417,7 @@ module flash_ctrl
 
     // outgoing seeds
     .seeds_o(keymgr_o.seeds),
-    .seed_err_o(), // TBD hook-up to Err code register
+    .seed_err_o(seed_err),
 
     // phase indication
     .phase_o(hw_phase),
@@ -438,6 +441,9 @@ module flash_ctrl
 
     // error indication
     .fatal_err_o(lcmgr_err),
+
+    // disable access to flash storage after rma process
+    .dis_access_o(dis_access),
 
     // init ongoing
     .init_busy_o(ctrl_init_busy)
@@ -866,7 +872,16 @@ module flash_ctrl
 
   // flash functional disable
   prim_mubi_pkg::mubi4_t flash_disable;
-  assign flash_disable = lc_escalate_en == lc_ctrl_pkg::On ?
+  lc_ctrl_pkg::lc_tx_t lc_disable;
+  assign lc_disable = lc_ctrl_pkg::lc_tx_or(lc_escalate_en, dis_access, lc_ctrl_pkg::On);
+
+  // Normally, faults (those registered in fault_status) should also cause flash access
+  // to disable.  However, most errors encountered by hardware during flash access
+  // are registered as faults (since they functionally never happen).  Out of an abundance
+  // of caution for the first iteration, we will not kill flash access based on those
+  // faults immediately just in case there are unexpected corner conditions.
+  // In other words...cowardice.
+  assign flash_disable = lc_ctrl_pkg::lc_tx_test_true_loose(lc_disable) ?
                          prim_mubi_pkg::MuBi4True :
                          prim_mubi_pkg::mubi4_t'(reg2hw.dis.q);
 
@@ -917,6 +932,7 @@ module flash_ctrl
   assign hw2reg.fault_status.lcmgr_err.d      = 1'b1;
   assign hw2reg.fault_status.arb_fsm_err.d    = 1'b1;
   assign hw2reg.fault_status.storage_err.d    = 1'b1;
+  assign hw2reg.fault_status.seed_err.d       = 1'b1;
   assign hw2reg.fault_status.mp_err.de        = hw_err.mp_err;
   assign hw2reg.fault_status.rd_err.de        = hw_err.rd_err;
   assign hw2reg.fault_status.prog_win_err.de  = hw_err.prog_win_err;
@@ -927,6 +943,7 @@ module flash_ctrl
   assign hw2reg.fault_status.lcmgr_err.de     = lcmgr_err;
   assign hw2reg.fault_status.arb_fsm_err.de   = arb_fsm_err;
   assign hw2reg.fault_status.storage_err.de   = storage_err;
+  assign hw2reg.fault_status.seed_err.de      = seed_err;
 
   // Correctable ECC count / address
   for (genvar i = 0; i < NumBanks; i++) begin : gen_ecc_single_err_reg
@@ -1182,6 +1199,8 @@ module flash_ctrl
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PageCntAlertCheck_A, u_flash_hw_if.u_page_cnt,
                                          alert_tx_o[0])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(WordCntAlertCheck_A, u_flash_hw_if.u_word_cnt,
+                                         alert_tx_o[0])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(WipeIdx_A, u_flash_hw_if.u_wipe_idx_cnt,
                                          alert_tx_o[0])
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(LcCtrlFsmCheck_A,
