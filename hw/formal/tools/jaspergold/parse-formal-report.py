@@ -76,7 +76,8 @@ def get_summary(str_buffer):
     summary = extract_messages_count(str_buffer, message_patterns)
 
     summary["pass_rate"] = format_percentage(summary["proven"],
-                                             summary["cex"] + summary["undetermined"])
+                                             summary["cex"] + summary["undetermined"] +
+                                             summary["unreachable"])
     summary["cov_rate"] = format_percentage(summary["covered"], summary["unreachable"])
 
     return summary
