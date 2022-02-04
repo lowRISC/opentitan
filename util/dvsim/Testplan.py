@@ -8,6 +8,7 @@ import os
 import re
 import sys
 from collections import defaultdict
+from pathlib import Path
 
 import hjson
 import mistletoe
@@ -293,6 +294,52 @@ class Testplan:
                 "progress": 0.0,
             }
 
+    @staticmethod
+    def _get_imported_testplan_paths(parent_testplan: Path,
+                                     imported_testplans: list,
+                                     repo_top: Path) -> list:
+        '''Parse imported testplans with correctly set paths.
+
+        Paths of the imported testplans can be set relative to repo_top
+        or relative to the parent testplan importing it. Path anchored to
+        the repo_top has higher precedence. If the path is not relative to
+        either, we check if the path is absolute (which must be avoided!),
+        else we raise an exception.
+
+        parent_testplan is the testplan currently being processed which
+        importing the sub-testplans.
+        imported_testplans is the list of testplans it imports - retrieved
+        directly from its Hjson file.
+        repo_top is the path to the repository's root directory.
+
+        Returns a list of imported testplans with correctly set paths.
+        Raises FileNotFoundError if the relative path to the testplan is
+        not anchored to repo_top or the parent testplan.
+        '''
+        result = []
+        for testplan in imported_testplans:
+            path = repo_top / testplan
+            if path.exists():
+                result.append(path)
+                continue
+
+            path = parent_testplan.parent / testplan
+            if path.exists():
+                result.append(path)
+                continue
+
+            # In version-controlled codebases, references to absolute paths
+            # must not exist. This usecase is supported anyway.
+            path = Path(testplan)
+            if path.exists():
+                result.append(path)
+                continue
+
+            raise FileNotFoundError(f"Testplan {testplan} imported by "
+                                    f"{parent_testplan} does not exist.")
+
+        return result
+
     def _parse_testplan(self, filename, repo_top=None):
         '''Parse testplan Hjson file and create the testplan elements.
 
@@ -304,14 +351,15 @@ class Testplan:
         '''
         if repo_top is None:
             # Assume dvsim's original location: $REPO_TOP/util/dvsim.
-            self_path = os.path.dirname(os.path.realpath(__file__))
-            repo_top = os.path.abspath(
-                os.path.join(self_path, os.pardir, os.pardir))
+            repo_top = Path(__file__).parent.parent.parent.resolve()
 
         obj = Testplan._parse_hjson(filename)
 
         parsed = set()
-        imported_testplans = obj.get("import_testplans", [])
+        parent_testplan = Path(filename)
+        imported_testplans = self._get_imported_testplan_paths(
+            parent_testplan, obj.get("import_testplans", []), repo_top)
+
         while imported_testplans:
             testplan = imported_testplans.pop(0)
             if testplan in parsed:
@@ -321,7 +369,9 @@ class Testplan:
                 sys.exit(1)
             parsed.add(testplan)
             data = self._parse_hjson(os.path.join(repo_top, testplan))
-            imported_testplans.extend(data.get("import_testplans", []))
+            imported_testplans.extend(
+                self._get_imported_testplan_paths(
+                    testplan, data.get("import_testplans", []), repo_top))
             obj = _merge_dicts(obj, data)
 
         self.name = obj.get("name")
