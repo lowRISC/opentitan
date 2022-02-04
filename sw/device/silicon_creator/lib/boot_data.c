@@ -124,7 +124,7 @@ static rom_error_t boot_data_sniff(flash_ctrl_info_page_t page, size_t index,
   *masked_identifier = 0;
   uint32_t buf[3];
   const uint32_t offset = index * sizeof(boot_data_t) + kIsValidOffset;
-  RETURN_IF_ERROR(flash_ctrl_info_read(page, offset, 3, buf));
+  HARDENED_RETURN_IF_ERROR(flash_ctrl_info_read(page, offset, 3, buf));
   *masked_identifier = buf[0] & buf[1] & buf[2];
   return kErrorOk;
 }
@@ -319,57 +319,86 @@ static rom_error_t boot_data_page_info_update_impl(
   uint32_t sniff_results[kBootDataEntriesPerPage];
 
   boot_data_t buf;
-  size_t first_empty_index = kBootDataEntriesPerPage;
-  hardened_bool_t has_empty_entry = kHardenedBoolFalse;
 
   // Perform a forward search to find the first empty entry.
-  for (size_t i = 0; i < kBootDataEntriesPerPage; ++i) {
+  hardened_bool_t has_empty_entry = kHardenedBoolFalse;
+  size_t i = 0;
+  for (; launder32(i) < kBootDataEntriesPerPage; ++i) {
     // Read and cache the identifier to quickly determine if an entry can be
     // empty or valid.
-    RETURN_IF_ERROR(boot_data_sniff(page, i, &sniff_results[i]));
+    HARDENED_RETURN_IF_ERROR(boot_data_sniff(page, i, &sniff_results[i]));
     // Check all words of this entry only if it can be empty.
     if (sniff_results[i] == kBootDataEmptyWordValue) {
-      RETURN_IF_ERROR(boot_data_entry_read(page, i, &buf));
-      if (boot_data_is_empty(&buf) == kHardenedBoolTrue) {
-        first_empty_index = i;
-        has_empty_entry = kHardenedBoolTrue;
+      HARDENED_RETURN_IF_ERROR(boot_data_entry_read(page, i, &buf));
+      has_empty_entry = boot_data_is_empty(&buf);
+      if (launder32(has_empty_entry) == kHardenedBoolTrue) {
+        HARDENED_CHECK_EQ(has_empty_entry, kHardenedBoolTrue);
         break;
       }
+      HARDENED_CHECK_EQ(has_empty_entry, kHardenedBoolFalse);
     }
   }
+  // At the end of this loop, `i` is the index of the first empty entry if any
+  // and `kBootDataEntriesPerPage` otherwise.
+  HARDENED_CHECK_LE(i, kBootDataEntriesPerPage);
+  size_t first_empty_index = i;
 
   // Perform a backward search to find the last valid entry.
   hardened_bool_t has_valid_entry = kHardenedBoolFalse;
-  size_t last_valid_index = kBootDataEntriesPerPage;
-  size_t start_index = (has_empty_entry == kHardenedBoolTrue)
-                           ? first_empty_index - 1
-                           : kBootDataEntriesPerPage - 1;
-  for (size_t i = start_index; i < kBootDataEntriesPerPage; --i) {
+  i = first_empty_index - 1;
+  size_t j = 0;
+  for (; launder32(i) < first_empty_index && launder32(j) < first_empty_index;
+       --i, ++j) {
     // Check the digest only if this entry can be valid.
     if (sniff_results[i] == kBootDataIdentifier) {
-      RETURN_IF_ERROR(boot_data_entry_read(page, i, &buf));
-      if (boot_data_check(&buf) == kErrorOk) {
-        has_valid_entry = kHardenedBoolTrue;
-        last_valid_index = i;
+      HARDENED_RETURN_IF_ERROR(boot_data_entry_read(page, i, &buf));
+      rom_error_t is_valid = boot_data_check(&buf);
+      if (launder32(is_valid) == kErrorOk) {
+        HARDENED_CHECK_EQ(is_valid, kErrorOk);
+        static_assert(kErrorOk == (rom_error_t)kHardenedBoolTrue,
+                      "kErrorOk must be equal to kHardenedBoolTrue");
+        has_valid_entry = (hardened_bool_t)is_valid;
         break;
       }
+      HARDENED_CHECK_EQ(is_valid, kErrorBootDataInvalid);
     }
   }
+  // At the end of this loop, `i` is the index of the last valid entry if any
+  // and `UINT32_MAX`, otherwise. `j` must be less than or equal to
+  // `first_empty_index`.
+  HARDENED_CHECK_LE(j, first_empty_index);
 
-  // Update `page_info` and `boot_data` if an entry has not been found yet
-  // or if this entry is newer.
-  if (has_valid_entry == kHardenedBoolTrue) {
-    if (page_info->has_valid_entry == kHardenedBoolFalse ||
-        (page_info->has_valid_entry == kHardenedBoolTrue &&
-         buf.counter > boot_data->counter)) {
+  if (launder32(has_valid_entry) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(has_valid_entry, kHardenedBoolTrue);
+    if (launder32(page_info->has_valid_entry) == kHardenedBoolFalse) {
+      // Update `page_info` and `boot_data` since this is the first valid entry.
+      HARDENED_CHECK_EQ(page_info->has_valid_entry, kHardenedBoolFalse);
       *page_info = (active_page_info_t){
           .page = page,
           .has_empty_entry = has_empty_entry,
           .first_empty_index = first_empty_index,
           .has_valid_entry = has_valid_entry,
-          .last_valid_index = last_valid_index,
+          .last_valid_index = i,
       };
       *boot_data = buf;
+    } else if (launder32(page_info->has_valid_entry) == kHardenedBoolTrue &&
+               launder32(buf.counter) > boot_data->counter) {
+      // Update `page_info` and `boot_data` since this entry is newer.
+      HARDENED_CHECK_EQ(page_info->has_valid_entry, kHardenedBoolTrue);
+      HARDENED_CHECK_GT(buf.counter, boot_data->counter);
+      *page_info = (active_page_info_t){
+          .page = page,
+          .has_empty_entry = has_empty_entry,
+          .first_empty_index = first_empty_index,
+          .has_valid_entry = has_valid_entry,
+          .last_valid_index = i,
+      };
+      *boot_data = buf;
+    } else {
+      HARDENED_CHECK_EQ(page_info->has_valid_entry, kHardenedBoolTrue);
+      // Counters cannot be equal if we have two valid entries since they are
+      // incremented at each write.
+      HARDENED_CHECK_LT(buf.counter, boot_data->counter);
     }
   }
 
@@ -430,10 +459,12 @@ static rom_error_t boot_data_active_page_find(active_page_info_t *page_info,
       .last_valid_index = kBootDataEntriesPerPage,
   };
 
-  for (size_t i = 0; i < ARRAYSIZE(kPages); ++i) {
-    RETURN_IF_ERROR(
+  size_t i = 0;
+  for (; launder32(i) < ARRAYSIZE(kPages); ++i) {
+    HARDENED_RETURN_IF_ERROR(
         boot_data_page_info_update(kPages[i], page_info, boot_data));
   }
+  HARDENED_CHECK_EQ(i, ARRAYSIZE(kPages));
 
   return kErrorOk;
 }
