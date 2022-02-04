@@ -504,13 +504,14 @@
         hwaccess: "hrw",
         desc:  '''
           2-bit one-hot field to select the operation of AES unit.
-          Invalid input values, i.e., values with multiple bits set and value 2'b00, are mapped to AES_ENCRYPTION (2'b01).
+          Invalid input values, i.e., values with multiple bits set and value 2'b00, are mapped to AES_ENC (2'b01).
         '''
         enum: [
           { value: "1",
             name: "AES_ENC",
             desc: '''
               2'b01: Encryption.
+              Invalid input values, i.e., 2'b00 and 2'b11, are mapped to AES_ENC.
             '''
           },
           { value: "2",
@@ -624,18 +625,21 @@
             desc: '''
               3'b001: Reseed the masking PRNG once per block.
               Invalid input values, i.e., values with multiple bits set and value 3'b000 are mapped to PER_1 (3'b001).
+              This results in a max entropy consumption rate of ~286 Mbit/s.
             '''
           },
           { value: "2",
             name: "PER_64",
             desc: '''
               3'b010: Reseed the masking PRNG approximately once per every 64 blocks.
+              This results in a max entropy consumption rate of ~4.5 Mbit/s.
             '''
           },
           { value: "4",
             name: "PER_8K",
             desc: '''
               3'b100: Reseed the masking PRNG approximately once per every 8192 blocks.
+              This results in an max entropy consumption rate of ~0.035 Mbit/s.
             '''
           }
         ]
