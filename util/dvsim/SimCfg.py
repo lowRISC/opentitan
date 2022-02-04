@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import sys
 from collections import OrderedDict
+from pathlib import Path
 
 from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, CovUnr, RunTest
 from FlowCfg import FlowCfg
@@ -291,7 +292,8 @@ class SimCfg(FlowCfg):
         # Regressions
         # Parse testplan if provided.
         if self.testplan != "":
-            self.testplan = Testplan(self.testplan, repo_top=self.proj_root)
+            self.testplan = Testplan(self.testplan,
+                                     repo_top=Path(self.proj_root))
             # Extract tests in each milestone and add them as regression target.
             self.regressions.extend(self.testplan.get_milestone_regressions())
         else:
@@ -362,7 +364,6 @@ class SimCfg(FlowCfg):
         for item in set(self.items) - items_matched:
             log.warning(f"Item {item} did not match any regressions or "
                         f"tests in {self.flow_cfg_file}.")
-
 
         # Merge the global build and run opts
         Tests.merge_global_opts(self.run_list, self.pre_build_cmds,
