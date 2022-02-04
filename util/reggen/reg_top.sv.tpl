@@ -358,10 +358,14 @@ ${field_sig_decl(f, sig_name, r.hwext, r.shadowed, r.async_clk)}\
 %>
       % if len(r.fields) > 1:
         % for f in r.fields:
+	  % if f.swaccess.allows_read():
   logic ${str_arr_sv(f.bits)} ${base_name}_${r_name}_${f.name.lower()}_qs_int;
+          % endif
         % endfor
       % else:
+	% if r.fields[0].swaccess.allows_read():
   logic ${str_arr_sv(r.fields[0].bits)} ${base_name}_${r_name}_qs_int;
+        % endif
       % endif
   logic [${r.get_width()-1}:0] ${base_name}_${r_name}_d;
       % if r.needs_we():
@@ -380,10 +384,14 @@ ${field_sig_decl(f, sig_name, r.hwext, r.shadowed, r.async_clk)}\
     ${base_name}_${r_name}_d = '0;
       % if len(r.fields) > 1:
         % for f in r.fields:
+	  % if f.swaccess.allows_read():
     ${base_name}_${r_name}_d[${str_bits_sv(f.bits)}] = ${base_name}_${r_name}_${f.name.lower()}_qs_int;
+	  % endif
         % endfor
       % else:
+	  % if f.swaccess.allows_read():
     ${base_name}_${r_name}_d = ${base_name}_${r_name}_qs_int;
+	  % endif
       % endif
   end
 
