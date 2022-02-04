@@ -18,8 +18,7 @@ interface prim_count_if #(
   prim_count_pkg::prim_count_style_e cnt_style = CntStyle;
 
   string path = dv_utils_pkg::get_parent_hier($sformatf("%m"));
-  string signal_forced = $sformatf("%s.gen_cnts[0].u_cnt_flop.gen_generic.u_impl_generic.q_o",
-                                   path);
+  string signal_forced;
 
   class prim_count_if_proxy extends sec_cm_pkg::sec_cm_base_if_proxy;
     `uvm_object_new
@@ -32,11 +31,12 @@ interface prim_count_if #(
       @(negedge clk_i);
       `DV_CHECK(uvm_hdl_read(signal_forced, orig_value))
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(force_value, force_value != orig_value;)
-      `DV_CHECK(uvm_hdl_deposit(signal_forced, force_value))
+      `DV_CHECK(uvm_hdl_force(signal_forced, force_value))
       `uvm_info(msg_id, $sformatf("Forcing %s from %0d to %0d",
                                   signal_forced, orig_value, force_value), UVM_LOW)
 
-      @(posedge clk_i);
+      @(negedge clk_i);
+      `DV_CHECK(uvm_hdl_release(signal_forced))
     endtask
 
     virtual task restore_fault();
@@ -48,6 +48,11 @@ interface prim_count_if #(
 
   prim_count_if_proxy if_proxy;
   initial begin
+    case (cnt_style)
+      prim_count_pkg::CrossCnt: signal_forced = $sformatf("%s.up_cnt_q", path);
+      prim_count_pkg::DupCnt: signal_forced = $sformatf("%s.up_cnt_q[0]", path);
+      default: `uvm_fatal(msg_id, $sformatf("unsupported style %s", cnt_style.name()))
+    endcase
     `DV_CHECK_FATAL(uvm_hdl_check_path(signal_forced), , msg_id)
 
     // Store the proxy object for TB to use
