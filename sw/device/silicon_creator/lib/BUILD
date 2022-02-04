@@ -57,6 +57,16 @@ opentitan_functest(
 )
 
 cc_library(
+    name = "cfi",
+    hdrs = [
+        "cfi.h",
+    ],
+    deps = [
+        "//sw/device/lib/base",
+    ],
+)
+
+cc_library(
     name = "epmp_intf",
     hdrs = [
         "epmp.h",

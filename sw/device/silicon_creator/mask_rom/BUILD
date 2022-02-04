@@ -86,6 +86,7 @@ opentitan_binary(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/crt",
         "//sw/device/lib/runtime:hart",
+        "//sw/device/silicon_creator/lib:cfi",
         "//sw/device/silicon_creator/lib:epmp",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:irq_asm",
