@@ -193,18 +193,20 @@ The FSM implements a subset of the USB device state diagram shown in Figure 9-1 
 
 |State| Description |
 |-----|-------------|
-|Disconnect | The link is disconnected. This is signaled when the VBUS is not driven by the host, which results in the sense input pin being low. An interrupt is raised on entering this state.|
-|Powered| The device has been powered as VBUS is being driven by the host, but has not been reset yet. The link is reset whenever the D+ and D- are both low (an SE0 condition) for an extended period. The host will assert reset for a minimum of 10 ms, but the USB specification allows the device to detect and respond to a reset after 2.5 us. The implementation here will report the reset state and raise an interrupt when the link is in SE0 for 3 us.|
-|Powered Suspend| The link is suspended when at idle (a J condition) for more than 3 ms. An interrupt is generated when the suspend is detected and a resume interrupt is generated when the link exits the suspend state. This state is entered, if the device has not been reset yet.|
+|Disconnected | The link is disconnected. This is signaled when the VBUS is not driven by the host, which results in the sense input pin being low, or when the user has not connected the pull-up by enabling the interface. An interrupt is raised on entering this state.|
+|Powered| The device has been powered as VBUS is being driven by the host and the user has connected the pull-up, but the device has not been reset yet. The link is reset whenever the D+ and D- are both low (an SE0 condition) for an extended period. The host will assert reset for a minimum of 10 ms, but the USB specification allows the device to detect and respond to a reset after 2.5 us. The implementation here will report the reset state and raise an interrupt when the link is in SE0 for 3 us.|
+|Powered Suspended| The link is suspended when at idle (a J condition) for more than 3 ms. An interrupt is generated when the suspend is detected and a resume interrupt is generated when the link exits the suspend state. This state is entered, if the device has not been reset yet.|
+|Active No SOF| The link has been reset and can begin receiving packets, but no Start-of-Frame packets have yet been seen.|
 |Active| The link is active when it is running normally. |
-|Suspend| Similar to 'Powered Suspend', but the device was in the active state before being suspended.|
+|Suspended| Similar to 'Powered Suspended', but the device was in the active state before being suspended.|
+|Resuming| The link is awaiting the end of resume signaling before transitioning to the Active No SOF state.|
 
 |Link Events| Description |
 |-----------|-------------|
 |Disconnect| VBUS has been lost. |
 |Link Reset| The link has been in the SE0 state for 3 us.|
 |Link Suspend| The link has been in the J state for more than 3 ms, upon which we have to enter the Suspend state.|
-|Link Resume| The link has been driven to a non-J state after being in Suspend.|
+|Link Resume| The link has been driven to a non-J state after being in Suspend. For the case of resuming to active link states, the end of resume signaling has occurred.|
 |Host Lost| Signaled using an interrupt if the link is active but a start of frame (SOF) packet has not been received from the host in 4.096 ms. The host is required to send a SOF packet every 1 ms. This is not an expected condition.|
 
 

@@ -725,20 +725,26 @@ dif_result_t dif_usbdev_status_get_link_state(
       USBDEV_USBSTAT_LINK_STATE_MASK, USBDEV_USBSTAT_LINK_STATE_OFFSET);
 
   switch (val) {
-    case USBDEV_USBSTAT_LINK_STATE_VALUE_DISCONNECT:
+    case USBDEV_USBSTAT_LINK_STATE_VALUE_DISCONNECTED:
       *link_state = kDifUsbdevLinkStateDisconnected;
       break;
     case USBDEV_USBSTAT_LINK_STATE_VALUE_POWERED:
       *link_state = kDifUsbdevLinkStatePowered;
       break;
-    case USBDEV_USBSTAT_LINK_STATE_VALUE_POWERED_SUSPEND:
-      *link_state = kDifUsbdevLinkStatePoweredSuspend;
+    case USBDEV_USBSTAT_LINK_STATE_VALUE_POWERED_SUSPENDED:
+      *link_state = kDifUsbdevLinkStatePoweredSuspended;
       break;
     case USBDEV_USBSTAT_LINK_STATE_VALUE_ACTIVE:
       *link_state = kDifUsbdevLinkStateActive;
       break;
-    case USBDEV_USBSTAT_LINK_STATE_VALUE_SUSPEND:
-      *link_state = kDifUsbdevLinkStateSuspend;
+    case USBDEV_USBSTAT_LINK_STATE_VALUE_SUSPENDED:
+      *link_state = kDifUsbdevLinkStateSuspended;
+      break;
+    case USBDEV_USBSTAT_LINK_STATE_VALUE_ACTIVE_NOSOF:
+      *link_state = kDifUsbdevLinkStateActiveNoSof;
+      break;
+    case USBDEV_USBSTAT_LINK_STATE_VALUE_RESUMING:
+      *link_state = kDifUsbdevLinkStateResuming;
       break;
     default:
       return kDifError;

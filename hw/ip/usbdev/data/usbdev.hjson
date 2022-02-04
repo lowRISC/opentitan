@@ -212,15 +212,27 @@
       desc: "USB Control",
       swaccess: "rw",
       hwaccess: "hro",
+      hwqe: "true",
+      async: "clk_usb_48mhz_i",
       fields: [
         {
           bits: "0",
           name: "enable",
           desc: '''
-                Set to enable the USB interface and assert the pullup.
+                Set to connect the USB interface (i.e. assert the pullup).
                 '''
           tags: [// Prevent usb from being enabled to avoid other unforeseen side effects.
                  "excl:CsrNonInitTests:CsrExclWrite"]
+        }
+        {
+          bits: "1",
+          name: "resume_link_active",
+          swaccess: "wo"
+          desc: '''
+                Write a 1 to this bit to instruct usbdev to jump to the LinkResuming state.
+                The write will only have an effect when the device is in the LinkPowered state.
+                Its intention is to handle a resume-from-suspend event after the IP has been powered down.
+                '''
         }
         {
           bits: "22:16",
@@ -309,15 +321,15 @@
                 '''
           enum: [
             { value: "0",
-              name: "disconnect",
-              desc: "Link disconnected (no VBUS)"
+              name: "disconnected",
+              desc: "Link disconnected (no VBUS or no pull-up connected)"
             },
             { value: "1",
               name: "powered",
-              desc: "Link powered, but not reset yet"
+              desc: "Link powered and connected, but not reset yet"
             },
             { value: "2",
-              name: "powered_suspend",
+              name: "powered_suspended",
               desc: "Link suspended (constant idle/J for > 3 ms), but not reset yet"
             },
             { value: "3",
@@ -325,13 +337,17 @@
               desc: "Link active"
             },
             { value: "4",
-              name: "suspend",
+              name: "suspended",
               desc: "Link suspended (constant idle for > 3 ms), was active before becoming suspended"
             },
             { value: "5",
               name: "active_nosof",
               desc: "Link active but no SOF has been received since the last reset."
             },
+	    { value: "6",
+	      name: "resuming",
+	      desc: "Link resuming to an active state, pending the end of resume signaling"
+	    },
           ]
         }
         {
@@ -843,6 +859,8 @@
       desc: "USB wake configuration for suspend / resume",
       swaccess: "rw",
       hwaccess: "hro",
+      async: "clk_aon_i",
+      hwqe: "true",
       fields: [
         {
           bits: "0",
@@ -862,6 +880,8 @@
           bits: "1",
           resval: "0",
           name: "wake_ack",
+          swaccess: "wo",
+          hwaccess: "hro",
           desc: '''
                 Wake acknowledgement. Once the usb device resumes from suspend, this acknowledgement is used
                 to transition the module back to normal operation.

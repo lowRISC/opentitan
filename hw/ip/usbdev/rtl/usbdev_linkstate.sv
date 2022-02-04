@@ -13,8 +13,11 @@ module usbdev_linkstate (
   input  logic usb_dp_i,
   input  logic usb_dn_i,
   input  logic usb_oe_i,
+  input  logic usb_pullup_en_i,
   input  logic rx_jjj_det_i,
+  input  logic rx_j_det_i,
   input  logic sof_valid_i,
+  input  logic resume_link_active_i, // pulse
 
   output logic link_disconnect_o,  // level
   output logic link_connect_o,     // level
@@ -35,15 +38,16 @@ module usbdev_linkstate (
   localparam logic [2:0]  RESET_TIMEOUT   = 3'd3;
 
   typedef enum logic [2:0] {
-    // Unpowered state
-    LinkDisconnect = 0,
-    // Powered states
+    // No power and/or no pull-up connected state
+    LinkDisconnected = 0,
+    // Powered / connected states
     LinkPowered = 1,
-    LinkPoweredSuspend = 2,
+    LinkPoweredSuspended = 2,
     // Active states
-    LinkActive = 3,
     LinkActiveNoSOF = 5,
-    LinkSuspend = 4
+    LinkActive = 3,
+    LinkSuspended = 4,
+    LinkResuming = 6
   } link_state_e;
 
   typedef enum logic [1:0] {
@@ -78,10 +82,10 @@ module usbdev_linkstate (
   // Events that are triggered by timeout
   logic ev_bus_inactive, ev_reset;
 
-  assign link_disconnect_o = (link_state_q == LinkDisconnect);
-  assign link_connect_o    = (link_state_q != LinkDisconnect);
-  assign link_suspend_o    = (link_state_q == LinkSuspend ||
-    link_state_q == LinkPoweredSuspend);
+  assign link_disconnect_o = (link_state_q == LinkDisconnected);
+  assign link_connect_o    = (link_state_q != LinkDisconnected);
+  assign link_suspend_o    = (link_state_q == LinkSuspended ||
+    link_state_q == LinkPoweredSuspended);
   assign link_active_o     = (link_state_q == LinkActive) ||
     (link_state_q == LinkActiveNoSOF);
   // Link state is stable, so we can output it to the register
@@ -128,14 +132,15 @@ module usbdev_linkstate (
     link_state_d = link_state_q;
     link_resume_o = 0;
 
-    // If VBUS ever goes away the link has disconnected
-    if (!see_pwr_sense) begin
-      link_state_d = LinkDisconnect;
+    // If VBUS ever goes away the link has disconnected (likewise if the
+    // pull-up goes away / user requested disconnection)
+    if (!see_pwr_sense || !usb_pullup_en_i) begin
+      link_state_d = LinkDisconnected;
     end else begin
       unique case (link_state_q)
         // No USB supply detected (USB spec: Attached)
-        LinkDisconnect: begin
-          if (see_pwr_sense) begin
+        LinkDisconnected: begin
+          if (see_pwr_sense & usb_pullup_en_i) begin
             link_state_d = LinkPowered;
           end
         end
@@ -143,17 +148,35 @@ module usbdev_linkstate (
         LinkPowered: begin
           if (ev_reset) begin
             link_state_d = LinkActiveNoSOF;
+          end else if (resume_link_active_i) begin
+            // Software-directed jump to resume from LinkSuspended, in case
+            // this module was previously powered down.
+            link_state_d = LinkResuming;
           end else if (ev_bus_inactive) begin
-            link_state_d = LinkPoweredSuspend;
+            link_state_d = LinkPoweredSuspended;
           end
         end
 
-        LinkPoweredSuspend: begin
+        LinkPoweredSuspended: begin
           if (ev_reset) begin
             link_state_d = LinkActiveNoSOF;
           end else if (ev_bus_active) begin
             link_resume_o = 1;
             link_state_d  = LinkPowered;
+          end
+        end
+
+        // An event occurred that brought the link out of LinkSuspended, but
+        // the end-of-resume signaling may not have occurred yet.
+        // Park here before starting to count towards not seeing SOF. Wait for
+        // the end of resume signaling before expecting SOF. The host will
+        // return the link to idle after a low-speed EOP. Instead of trying to
+        // capture the termination of resume signaling direclty, wait for
+        // any J / idle symbol (or a bus reset).
+        LinkResuming: begin
+          if (rx_j_det_i | ev_reset) begin
+            link_resume_o = 1;
+            link_state_d = LinkActiveNoSOF;
           end
         end
 
@@ -163,7 +186,7 @@ module usbdev_linkstate (
         // Annother is the SI is bad so good data is not recovered from the link
         LinkActiveNoSOF: begin
           if (ev_bus_inactive) begin
-            link_state_d = LinkSuspend;
+            link_state_d = LinkSuspended;
           end else if (sof_valid_i) begin
             link_state_d = LinkActive;
           end
@@ -172,35 +195,34 @@ module usbdev_linkstate (
         // Active (USB spec: Default / Address / Configured)
         LinkActive: begin
           if (ev_bus_inactive) begin
-            link_state_d = LinkSuspend;
+            link_state_d = LinkSuspended;
           end else if (ev_reset) begin
             link_state_d = LinkActiveNoSOF;
           end
         end
 
-        LinkSuspend: begin
+        LinkSuspended: begin
           if (ev_reset) begin
             link_resume_o = 1;
             link_state_d  = LinkActiveNoSOF;
           end else if (ev_bus_active) begin
-            link_resume_o = 1;
-            link_state_d  = LinkActive;
+            link_state_d  = LinkResuming;
           end
         end
 
         default: begin
-          link_state_d = LinkDisconnect;
+          link_state_d = LinkDisconnected;
         end
       endcase // case (link_state_q)
     end
   end
 
-  `ASSERT(LinkStateValid_A, link_state_q inside {LinkDisconnect, LinkPowered, LinkPoweredSuspend,
-    LinkActiveNoSOF, LinkActive, LinkSuspend}, clk_48mhz_i)
+  `ASSERT(LinkStateValid_A, link_state_q inside {LinkDisconnected, LinkPowered,
+    LinkPoweredSuspended, LinkResuming, LinkActiveNoSOF, LinkActive, LinkSuspended}, clk_48mhz_i)
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      link_state_q <= LinkDisconnect;
+      link_state_q <= LinkDisconnected;
     end else begin
       link_state_q <= link_state_d;
     end
