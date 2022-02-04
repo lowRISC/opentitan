@@ -5,6 +5,7 @@
 // Description: sysrst_ctrl key-triggered interrupt Module
 //
 module sysrst_ctrl_keyintr
+  import sysrst_ctrl_pkg::*;
   import sysrst_ctrl_reg_pkg::*;
 (
   input                                                 clk_i,
@@ -49,20 +50,41 @@ module sysrst_ctrl_keyintr
   logic [NumKeyIntr-1:0] l2h_met_pulse, h2l_met_pulse;
   for (genvar k = 0; k < NumKeyIntr; k++) begin : gen_keyfsm
     sysrst_ctrl_detect #(
-      .TimerWidth(TimerWidth),
-      .EdgeDetect(1),  // require an edge for detection
-      .Sticky(0)       // detected status is automatically reset if signal does not remain stable
-    ) u_sysrst_ctrl_detect (
+      .DebounceTimerWidth(TimerWidth),
+      .DetectTimerWidth(1),
+      // This detects a positive edge
+      .EventType(EdgeToHigh),
+      .Sticky(0)
+    ) u_sysrst_ctrl_detect_lid_open_l2h (
       .clk_i,
       .rst_ni,
-      .trigger_i(triggers[k]),
-      .cfg_timer_i(key_intr_debounce_ctl_i.q),
-      .cfg_l2h_en_i(l2h_en[k]),
-      .cfg_h2l_en_i(h2l_en[k]),
-      .l2h_detected_o(),
-      .h2l_detected_o(),
-      .l2h_detected_pulse_o(l2h_met_pulse[k]),
-      .h2l_detected_pulse_o(h2l_met_pulse[k])
+      .trigger_i             (triggers[k]),
+      .cfg_debounce_timer_i  (key_intr_debounce_ctl_i.q),
+      // We're only using the debounce timer.
+      // The detection timer is set to 0 which corresponds to a 1 cycle detection window.
+      .cfg_detect_timer_i    ('0),
+      .cfg_enable_i          (l2h_en[k]),
+      .event_detected_o      (),
+      .event_detected_pulse_o(l2h_met_pulse[k])
+    );
+
+    sysrst_ctrl_detect #(
+      .DebounceTimerWidth(TimerWidth),
+      .DetectTimerWidth(1),
+      // This detects a positive edge
+      .EventType(EdgeToLow),
+      .Sticky(0)
+    ) u_sysrst_ctrl_detect_lid_open_h2l (
+      .clk_i,
+      .rst_ni,
+      .trigger_i             (triggers[k]),
+      .cfg_debounce_timer_i  (key_intr_debounce_ctl_i.q),
+      // We're only using the debounce timer.
+      // The detection timer is set to 0 which corresponds to a 1 cycle detection window.
+      .cfg_detect_timer_i    ('0),
+      .cfg_enable_i          (h2l_en[k]),
+      .event_detected_o      (),
+      .event_detected_pulse_o(h2l_met_pulse[k])
     );
   end
 

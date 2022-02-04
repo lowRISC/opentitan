@@ -134,12 +134,12 @@ module sysrst_ctrl
   // Autoblock //
   ///////////////
 
-  // This module operates on both synchronized and unsynchronized signals.
-  // I.e., the passthrough signals are NOT synchronnous to the AON clock.
+  // The registers in this module run on the AON clock.
+  // However, the passthrough signals are NOT synchronous to the AON clock.
   logic pwrb_out_hw, key0_out_hw, key1_out_hw, key2_out_hw;
   sysrst_ctrl_autoblock u_sysrst_ctrl_autoblock (
-    .clk_aon_i,
-    .rst_aon_ni,
+    .clk_i(clk_aon_i),
+    .rst_ni(rst_aon_ni),
     // (Optionally) inverted input signals on AON clock
     .aon_pwrb_int_i(aon_pwrb_int),
     // (Optionally) inverted input signals (not synced to AON clock)
