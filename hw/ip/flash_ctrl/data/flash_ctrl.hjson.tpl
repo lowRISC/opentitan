@@ -527,7 +527,10 @@
           },
           { bits: "27:16",
             name: "NUM",
-            desc: "Number of bus words the flash operation should read or program.",
+            desc: '''
+	      One fewer than the number of bus words the flash operation should read or program.
+	      For example, to read 10 words, software should program this field with the value 9.
+	    '''
             resval: "0"
           },
         ]
