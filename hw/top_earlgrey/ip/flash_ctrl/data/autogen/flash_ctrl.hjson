@@ -183,14 +183,59 @@
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
-
-    { name: "FSM.SPARSE",
-      desc: "sparse fsm encoding in life cycle interface."
-    }
-
     { name: "SCRAMBLE.KEY.SIDELOAD",
       desc: "The scrambling key is sideloaded from OTP and thus unreadable by SW."
     }
+    { name: "LC_CTRL.INTERSIG.MUBI",
+      desc: "End-to-end bus integrity scheme."
+    }
+    { name: "CTRL.CONFIG.REGWEN",
+      desc: "Main control flow protected operation regwen."
+    }
+    { name: "DATA_REGIONS.CONFIG.REGWEN",
+      desc: "Each data region has a configurable regwen."
+    }
+    { name: "DATA_REGIONS.CONFIG.SHADOW",
+      desc: "Data region configuration is shadowed."
+    }
+    { name: "INFO_REGIONS.CONFIG.REGWEN",
+      desc: "Each info page of each type in each bank has separate regwen."
+    }
+    { name: "INFO_REGIONS.CONFIG.SHADOW",
+      desc: "Each info page of each type in each bank has separate regwen."
+    }
+    { name: "BANK.CONFIG.REGWEN",
+      desc: "Each bank has separate regwen for bank erase."
+    }
+    { name: "BANK.CONFIG.SHADOW",
+      desc: "Each bank has separate regwen for bank erase."
+    }
+    { name: "MEM.CTRL.GLOBAL_ESC",
+      desc: "Global escalation causes memory to no longer be accessible."
+    }
+    { name: "MEM_DISABLE.CONFIG.MUBI",
+      desc: "Software control for flash disable is multibit."
+    }
+    { name: "MEM_EN.CONFIG.REDUN",
+      desc: "Software control for flash enable is 32-bit constant."
+    }
+    { name: "MEM.SCRAMBLE",
+      desc: "Memory is XEX scrambled."
+    }
+    { name: "MEM.INTEGRITY",
+      desc: "Memory is protected with two layers of ECC integrity."
+    }
+    { name: "RMA_ENTRY.MEM.SEC_WIPE",
+      desc: "RMA entry entry wipes flash memory with random data."
+    }
+    { name: "FSM.SPARSE",
+      desc: "RMA handling FSMs are sparsely encoded."
+    }
+    { name: "CTR.SPARSE",
+      desc: "RMA handling counters are sparsely encoded."
+    }
+
+
   ]
 
   scan: "true",       // Enable `scanmode_i` port

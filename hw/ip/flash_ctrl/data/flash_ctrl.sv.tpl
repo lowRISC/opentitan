@@ -26,6 +26,7 @@ module flash_ctrl
   input        rst_otp_ni,
 
   // life cycle interface
+  // SEC_CM: LC_CTRL.INTERSIG.MUBI
   input lc_ctrl_pkg::lc_tx_t lc_creator_seed_sw_rw_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_owner_seed_sw_rw_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_rd_en_i,
@@ -43,6 +44,7 @@ module flash_ctrl
   output       tlul_pkg::tl_d2h_t mem_tl_o,
 
   // otp/lc/pwrmgr/keymgr Interface
+  // SEC_CM: SCRAMBLE.KEY.SIDELOAD
   output       otp_ctrl_pkg::flash_otp_key_req_t otp_o,
   input        otp_ctrl_pkg::flash_otp_key_rsp_t otp_i,
   input        lc_ctrl_pkg::lc_tx_t rma_req_i,
@@ -96,6 +98,11 @@ module flash_ctrl
   logic update_err;
   logic storage_err;
 
+  // SEC_CM: BUS.INTEGRITY
+  // SEC_CM: CTRL.CONFIG.REGWEN
+  // SEC_CM: DATA_REGIONS.CONFIG.REGWEN, DATA_REGIONS.CONFIG.SHADOW
+  // SEC_CM: INFO_REGIONS.CONFIG.REGWEN, INFO_REGIONS.CONFIG.SHADOW
+  // SEC_CM: BANK.CONFIG.REGWEN, BANK.CONFIG.SHADOW
   flash_ctrl_core_reg_top u_reg_core (
     .clk_i,
     .rst_ni,
@@ -881,6 +888,8 @@ module flash_ctrl
   // of caution for the first iteration, we will not kill flash access based on those
   // faults immediately just in case there are unexpected corner conditions.
   // In other words...cowardice.
+  // SEC_CM: MEM.CTRL.GLOBAL_ESC
+  // SEC_CM: MEM_DISABLE.CONFIG.MUBI
   assign flash_disable = lc_ctrl_pkg::lc_tx_test_true_loose(lc_disable) ?
                          prim_mubi_pkg::MuBi4True :
                          prim_mubi_pkg::mubi4_t'(reg2hw.dis.q);
@@ -890,11 +899,12 @@ module flash_ctrl
   prim_mubi_pkg::mubi4_t sw_flash_exec_en;
   prim_mubi_pkg::mubi4_t flash_exec_en;
 
+  // SEC_CM: MEM_EN.CONFIG.REDUN
   assign sw_flash_exec_en = (reg2hw.exec.q == unsigned'(ExecEn)) ?
                             prim_mubi_pkg::MuBi4True :
                             prim_mubi_pkg::MuBi4False;
 
-  assign flash_exec_en = lc_escalate_en == lc_ctrl_pkg::On ?
+  assign flash_exec_en = lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en) ?
                          prim_mubi_pkg::MuBi4False :
                          sw_flash_exec_en;
 

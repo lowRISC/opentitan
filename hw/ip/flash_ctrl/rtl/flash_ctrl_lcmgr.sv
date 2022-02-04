@@ -525,6 +525,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   // flops in order to prevent FSM state encoding optimizations.
   logic [RmaStateWidth-1:0] rma_state_raw_q;
   assign rma_state_q = rma_state_e'(rma_state_raw_q);
+  // SEC_CM: FSM.SPARSE
   prim_sparse_fsm_flop #(
     .StateEnumT(rma_state_e),
     .Width(RmaStateWidth),
@@ -536,6 +537,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     .state_o ( rma_state_raw_q )
   );
 
+  // SEC_CM: CTR.SPARSE
   logic page_err_q, page_err_d;
   prim_count #(
     .Width(PageCntWidth),
@@ -599,6 +601,9 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     end
   end
 
+  // beat cnt is not made a prim_count because if beat_cnt
+  // if tampered, the read verification stage will automatically
+  // fail.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       beat_cnt <= '0;
@@ -669,6 +674,8 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
 
   //fsm for handling the actual wipe
   logic fsm_err;
+
+  // SEC_CM: RMA_ENTRY.MEM.SEC_WIPE
   always_comb begin
     rma_state_d = rma_state_q;
     rma_wipe_done = 1'b0;
