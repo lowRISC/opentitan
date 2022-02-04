@@ -59,6 +59,13 @@ if {$env(DUT_TOP) == "rv_dm"} {
   clock -rate {cio_csb_i, cio_sd_i} cio_sck_i
   reset -expr {!rst_ni cio_csb_i}
 
+} elseif {$env(DUT_TOP) == "sysrst_ctrl"} {
+  clock clk_i -both_edges
+  clock clk_aon_i
+  clock -rate {tl_i} clk_i
+  clock -rate {cio_ac_present_i, cio_ec_rst_l_i, cio_key0_in_i, cio_key1_in_i, cio_key2_in_i, cio_pwrb_in_i, cio_lid_open_i} clk_aon_i
+  reset -expr {!rst_ni !rst_aon_ni}
+
 } elseif {$env(DUT_TOP) == "usbuart"} {
   clock clk_i -both_edges
   clock clk_usb_48mhz_i
