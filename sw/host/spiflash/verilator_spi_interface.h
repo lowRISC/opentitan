@@ -6,6 +6,7 @@
 #define OPENTITAN_SW_HOST_SPIFLASH_VERILATOR_SPI_INTERFACE_H_
 
 #include <string>
+#include <vector>
 
 #include "sw/host/spiflash/spi_interface.h"
 
@@ -21,9 +22,19 @@ namespace spiflash {
  */
 class VerilatorSpiInterface : public SpiInterface {
  public:
+  /** Verilator SPI configuration options. */
+  struct Options {
+    /** Target SPI device handle. */
+    std::string target;
+
+    /** Time to wait between frame transmitted and frame processing completed in
+     *  microseconds. */
+    int32_t frame_process_delay_us = 20000000;
+  };
+
   /** Constructs instance pointing to the `spi_filename` file path. */
-  explicit VerilatorSpiInterface(std::string spi_filename)
-      : spi_filename_(spi_filename), fd_(-1) {}
+  explicit VerilatorSpiInterface(Options options)
+      : options_(options), fd_(-1) {}
 
   /**
    * Closes the internal file handle used to communicate with the SPI device.
@@ -35,8 +46,9 @@ class VerilatorSpiInterface : public SpiInterface {
   bool CheckHash(const uint8_t *tx, size_t size) final;
 
  private:
-  std::string spi_filename_;
+  Options options_;
   int fd_;
+  std::vector<uint8_t> rx_;
 };
 
 }  // namespace spiflash

@@ -10,17 +10,12 @@
 #include <string>
 #include <termios.h>
 #include <unistd.h>
-#include <vector>
 
 #include "cryptoc/sha256.h"
 
 namespace opentitan {
 namespace spiflash {
 namespace {
-
-// TODO: If transmission is not successful, adapt this by an argument.
-/** Required delay to synchronize transactions with simulation environment. */
-constexpr int kWriteReadDelay = 20000000;
 
 /** Configure `fd` as a serial port with baud rate 9600. */
 bool SetTermOpts(int fd) {
@@ -48,7 +43,8 @@ bool SetTermOpts(int fd) {
  * which is the baud rate supported by Verilator.
  */
 int OpenDevice(const std::string &filename) {
-  int fd = open(filename.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK | O_CLOEXEC);
+  int fd =
+      open(filename.c_str(), O_RDWR | O_NOCTTY | /* O_NONBLOCK | */ O_CLOEXEC);
   if (fd < 0) {
     std::cerr << "Failed to open device: " << filename << std::endl;
     return fd;
@@ -60,27 +56,6 @@ int OpenDevice(const std::string &filename) {
   return fd;
 }
 
-/**
- * Reads `size` bytes into `rx` buffer from `fd`. Returns the number of bytes
- * read.
- */
-size_t ReadBytes(int fd, uint8_t *rx, size_t size) {
-  size_t bytes_read = 0;
-  while (bytes_read != size) {
-    ssize_t read_size = read(fd, &rx[bytes_read], size - bytes_read);
-    switch (read_size) {
-      case -1:
-        if (errno == EAGAIN || errno == EWOULDBLOCK) {
-          continue;
-        }
-        break;
-      default:
-        bytes_read += read_size;
-    }
-  }
-  return bytes_read;
-}
-
 }  // namespace
 
 VerilatorSpiInterface::~VerilatorSpiInterface() {
@@ -90,7 +65,7 @@ VerilatorSpiInterface::~VerilatorSpiInterface() {
 }
 
 bool VerilatorSpiInterface::Init() {
-  fd_ = OpenDevice(spi_filename_);
+  fd_ = OpenDevice(options_.target);
   if (fd_ < 0) {
     return false;
   }
@@ -98,13 +73,49 @@ bool VerilatorSpiInterface::Init() {
 }
 
 bool VerilatorSpiInterface::TransmitFrame(const uint8_t *tx, size_t size) {
-  size_t bytes_written = write(fd_, tx, size);
-  if (bytes_written != size) {
-    std::cerr << "Failed to write bytes to spi interface. Bytes written: "
-              << bytes_written << " expected: " << size << std::endl;
-    return false;
+  size_t bytes_written = 0;
+  size_t bytes_read = 0;
+
+  rx_.resize(size);
+
+  while (bytes_written != size || bytes_read != size) {
+    if (bytes_written != size) {
+      ssize_t write_size = size - bytes_written >= 4 ? 4 : size - bytes_written;
+      write_size = write(fd_, &tx[bytes_written], write_size);
+      switch (write_size) {
+        case -1:
+          if (errno != EAGAIN && errno != EWOULDBLOCK) {
+            std::cerr << "Failed to write bytes to spi interface, errno: "
+                      << strerror(errno) << ". Bytes written: " << bytes_written
+                      << " expected: " << size << std::endl;
+            return false;
+          }
+          break;
+        default:
+          bytes_written += write_size;
+          break;
+      }
+    }
+
+    if (bytes_read != size) {
+      ssize_t read_size = size - bytes_read >= 4 ? 4 : size - bytes_read;
+      read_size = read(fd_, &rx_[bytes_read], read_size);
+      switch (read_size) {
+        case -1:
+          if (errno != EAGAIN && errno != EWOULDBLOCK) {
+            std::cerr << "Failed to read bytes from spi interface, errno: "
+                      << strerror(errno) << ". Bytes read: " << bytes_read
+                      << " expected: " << size << std::endl;
+            return false;
+          }
+          break;
+        default:
+          bytes_read += read_size;
+          break;
+      }
+    }
   }
-  usleep(kWriteReadDelay);
+  usleep(options_.frame_process_delay_us);
   return true;
 }
 
@@ -112,14 +123,13 @@ bool VerilatorSpiInterface::CheckHash(const uint8_t *tx, size_t size) {
   uint8_t hash[SHA256_DIGEST_SIZE];
   SHA256_hash(tx, size, hash);
 
-  std::vector<uint8_t> rx(size);
-  size_t bytes_read = ReadBytes(fd_, &rx[0], size);
-  if (bytes_read < size) {
-    std::cerr << "Failed to read bytes from spi interface. Bytes read: "
-              << bytes_read << " expected: " << size << std::endl;
+  for (int i = 0; i < SHA256_DIGEST_SIZE; i++) {
+    if (rx_[i] != hash[SHA256_DIGEST_SIZE - i - 1]) {
+      return false;
+    }
   }
 
-  return !std::memcmp(&rx[0], hash, SHA256_DIGEST_SIZE);
+  return true;
 }
 }  // namespace spiflash
 }  // namespace opentitan

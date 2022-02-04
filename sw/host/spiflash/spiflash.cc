@@ -33,6 +33,10 @@ FTDI Options:
 
 Verilator Options:
   [--verilator=filehandle] Enables Verilator mode with SPI filehandle.
+  [--process-delay=microseconds] Frame transmission delay for frame processing.
+
+Protocol Options:
+  [--erase-delay=microseconds] Frame transmission delay for flash erase.
 
 DV Options:
   [--dump-frames=filehandle] Dump binary SPI flash frames in binary format.
@@ -61,9 +65,6 @@ struct SpiFlashOpts {
   /** Input file in binary format. */
   std::string input;
 
-  /** Target SPI device handle. */
-  std::string target;
-
   /** Output filename to dump SPI frames */
   std::string output_filename;
 
@@ -72,6 +73,12 @@ struct SpiFlashOpts {
 
   /** FTDI configuration options. */
   FtdiSpiInterface::Options ftdi_options;
+
+  /** Verilator configuration options. */
+  VerilatorSpiInterface::Options verilator_options;
+
+  /** Time to wait for flash to erase on transmission of first frame. */
+  int32_t flash_erase_delay_us = 100000;
 };
 
 /**
@@ -167,11 +174,13 @@ bool ParseArgs(int argc, char **argv, SpiFlashOpts *options) {
       {"dev-sn", required_argument, nullptr, 'n'},
       {"dump-frames", required_argument, nullptr, 'x'},
       {"verilator", required_argument, nullptr, 's'},
+      {"erase-delay", required_argument, nullptr, 'e'},
+      {"process-delay", required_argument, nullptr, 'p'},
       {"help", no_argument, nullptr, 'h'},
       {nullptr, no_argument, nullptr, 0}};
 
   while (true) {
-    int c = getopt_long(argc, argv, "i:d:n:s:x:h?", long_options, nullptr);
+    int c = getopt_long(argc, argv, "i:d:e:n:p:s:x:h?", long_options, nullptr);
     if (c == -1) {
       // if only input file was given default to using FTDI
       if (!options->input.empty() &&
@@ -192,13 +201,19 @@ bool ParseArgs(int argc, char **argv, SpiFlashOpts *options) {
           return false;
         }
         break;
+      case 'e':
+        options->flash_erase_delay_us = std::stoi(optarg);
+        break;
       case 'n':
         options->action = SpiFlashAction::kFtdi;
         options->ftdi_options.device_serial_number = optarg;
         break;
+      case 'p':
+        options->verilator_options.frame_process_delay_us = std::stoi(optarg);
+        break;
       case 's':
         options->action = SpiFlashAction::kVerilator;
-        options->target = optarg;
+        options->verilator_options.target = optarg;
         break;
       case 'x':
         options->action = SpiFlashAction::kDumpFrames;
@@ -245,7 +260,8 @@ int main(int argc, char **argv) {
 
   std::unique_ptr<SpiInterface> spi;
   if (spi_flash_options.action == SpiFlashAction::kVerilator) {
-    spi = std::make_unique<VerilatorSpiInterface>(spi_flash_options.target);
+    spi = std::make_unique<VerilatorSpiInterface>(
+        spi_flash_options.verilator_options);
   } else {
     spi = std::make_unique<FtdiSpiInterface>(spi_flash_options.ftdi_options);
   }
@@ -255,6 +271,7 @@ int main(int argc, char **argv) {
 
   Updater::Options options;
   options.code = code;
+  options.flash_erase_delay_us = spi_flash_options.flash_erase_delay_us;
 
   Updater updater(options, std::move(spi));
   return updater.Run() ? 0 : 1;
