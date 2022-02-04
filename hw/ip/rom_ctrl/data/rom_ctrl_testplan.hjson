@@ -46,6 +46,18 @@
       tests: []
     }
     {
+      name: max_throughput_chk
+      desc: '''
+            This test is intended to test the max throughput of ROM controller.
+            It takes N+1 cycles to finish N ROM read accesses.
+
+            **Checks**:
+            - Check if N read accesses finish in N+1 cycles.
+            '''
+      milestone: V2
+      tests: ["rom_ctrl_max_throughput_chk"]
+    }
+    {
       name: stress_all
       desc: '''
             - Combine above sequences in one test to run sequentially.
