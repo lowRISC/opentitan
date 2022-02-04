@@ -24,6 +24,7 @@ The AES unit supports the following features:
 - Support for AES-192 can be removed to save area, and is enabled/disabled using a compile-time Verilog parameter
 - First-order masking of the cipher core using domain-oriented masking (DOM) to aggravate side-channel analysis (SCA), can optionally be disabled using compile-time Verilog parameters (for more details see [Security Hardening below]({{< relref "#side-channel-analysis" >}}))
 - Latency per 16 byte data block of 12/14/16 clock cycles (unmasked implementation) and 56/66/72 clock cycles (DOM) in AES-128/192/256 mode
+- Automatic as well as software-initiated reseeding of internal pseudo-random number generators (PRNGs) with configurable reseeding rate resulting in max entropy consumption rates ranging from 286 Mbit/s to 0.035 Mbit/s (at 100 MHz).
 - Countermeasures for aggravating fault injection (FI) on the control path (for more details see [Security Hardening below]({{< relref "#fault-injection" >}}))
 - Register-based data and control interface
 - System key-manager interface for optional key sideload to not expose key material to the processor and other hosts attached to the system bus interconnect.
@@ -228,7 +229,7 @@ If the AES unit is busy and running in CBC or CTR mode, the AES unit itself upda
 
 The cipher core architecture of the AES unit is derived from the architecture proposed by Satoh et al.: ["A compact Rijndael Hardware Architecture with S-Box Optimization"](https://link.springer.com/chapter/10.1007%2F3-540-45682-1_15).
 The expected circuit area in a 110nm CMOS technology is in the order of 12 - 22 kGE (unmasked implementation, AES-128 only).
-The expected circuit area of the entire AES unit with masking enabled is around 100 kGE.
+The expected circuit area of the entire AES unit with masking enabled is around 110 kGE.
 For more details, refer to the [nightly OpenTitan synthesis results](https://reports.opentitan.org/hw/top_earlgrey/syn/latest/results.html).
 
 For a description of the various sub modules, see the following sections.
@@ -360,9 +361,15 @@ The selection of the masked S-Box implementation can be controlled via compile-t
 By default, the AES unit uses domain-oriented masking (DOM) for the S-Boxes as proposed by [Gross et al.: "Domain-Oriented Masking: Compact Masked Hardware Implementations with Arbitrary Protection Order".](https://eprint.iacr.org/2016/486.pdf)
 The provided implementation has a latency of 5 clock cycles per S-Box evaluation.
 As a result, the overall latency for processing a 16-byte data block increases from 12/14/16 to 56/66/72 clock cycles in AES-128/192/256 mode, respectively.
+The provided implementation further forwards partial, intermediate results among DOM S-Box instances for remasking purposes.
+This allows to reduce circuit area related to generating, buffering and applying PRD without impacting SCA resistance.
 Alternatively, the two original versions of the masked Canright S-Box can be chosen as proposed by [Canright and Batina: "A very compact "perfectly masked" S-Box for AES (corrected)".](https://eprint.iacr.org/2009/011.pdf)
 These are fully combinational (one S-Box evaluation every cycle) and have lower area footprint, but they are significantly less resistant to SCA.
 They are mainly included for reference but their usage is discouraged due to potential vulnerabilities to the correlation-enhanced collision attack as described by [Moradi et al.: "Correlation-Enhanced Power Analysis Collision Attack".](https://eprint.iacr.org/2010/297.pdf)
+
+The masking PRNG is reseeded with fresh entropy via [EDN]({{< relref "hw/ip/edn/doc" >}}) automatically 1) whenever a new key is provided (see {{< regref "CTRL_AUX_SHADOWED.KEY_TOUCH_FORCES_RESEED" >}}) and 2) based on a block counter.
+The rate at which this block counter initiates automatic reseed operations can be configured via {{< regref "CTRL_SHADOWED.PRNG_RESEED_RATE" >}}.
+In addition software can manually initiate a reseed operation via {{< regref "TRIGGER.PRNG_RESEED" >}}.
 
 Note that the masking can be enabled/disabled via compile-time Verilog parameter.
 It may be acceptable to disable the masking when using the AES cipher core for random number generation e.g. inside [CSRNG.]({{< relref "hw/ip/csrng/doc" >}})
@@ -422,10 +429,6 @@ To protect against FI attacks on the control path, the AES unit implements the f
   Internally, a shadow copy is used that is constantly compared with the actual register.
   For further details, refer to the [Register Tool documentation.]({{< relref "doc/rm/register_tool#shadow-registers" >}})
 
-- Hardened round counter:
-  To protect the round counter inside the cipher core against FI, a second copy of the counter is counting down, and the sum of the two counters is constantly compared with the number of total rounds to perform.
-  In addition, one parity bit is used for the round counter.
-
 - Sparse encodings of FSM states:
   All FSMs inside the AES unit use sparse state encodings.
 
@@ -434,7 +437,19 @@ To protect against FI attacks on the control path, the AES unit implements the f
 
 - Sparse encodings for handshake and other important control signals.
 
+- Multi-rail control logic:
+  All FSMs inside the AES unit are implemented using multiple independent and redundant logic rails.
+  Every rail evaluates and drives exactly one bit of sparsely encoded handshake or other important control signals.
+  The outputs of the different rails are constantly compared to detect potential faults.
+  The number of logic rails can be scaled up by means of relatively easy RTL modifications.
+  By default, three independent logic rails are used.
+
+- Hardened round counter:
+  Similar to the cipher core FSM, the internal round counter is protected against FI through a multi-rail implementation.
+  The outputs of the different rails are constantly compared to detect potential faults in the round counter.
+
 If any of these countermeasures detects a fault, a fatal alert is triggered, the internal FSMs go into a terminal error state, the AES unit does not release further data and locks up until reset.
+Since the AES unit has no ability to reset itself, a system-supplied reset is required before the AES unit can become operational again.
 Such a condition is reported in {{< regref "STATUS.ALERT_FATAL_FAULT" >}}.
 Details on where the fault has been detected are not provided.
 
@@ -463,6 +478,7 @@ Before initialization, software must ensure that the AES unit is idle by checkin
 If the AES unit is not idle, write operations to {{< regref "CTRL_SHADOWED" >}}, the Initial Key registers {{< regref "KEY_SHARE0_0" >}} - {{< regref "KEY_SHARE1_7" >}} and initialization vector (IV) registers {{< regref "IV_0" >}} - {{< regref "IV_3" >}} are ignored.
 
 To initialize the AES unit, software must first provide the configuration to the {{< regref "CTRL_SHADOWED" >}} register.
+Since writing this register may initiate the reseeding of the internal PRNGs, software must check that the AES unit is idle before providing the initial key.
 Then software must write the initial key to the Initial Key registers {{< regref "KEY_SHARE0_0" >}} - {{< regref "KEY_SHARE1_7" >}}.
 The key is provided in two shares:
 The first share is written to {{< regref "KEY_SHARE0_0" >}} - {{< regref "KEY_SHARE0_7" >}} and the second share is written to {{< regref "KEY_SHARE1_0" >}} - {{< regref "KEY_SHARE1_7" >}}.
@@ -477,6 +493,7 @@ For AES-128 ,the actual initial key used for encryption is formed by XORing {{< 
 For AES-192, the actual initial key used for encryption is formed by XORing {{< regref "KEY_SHARE0_0" >}} - {{< regref "KEY_SHARE0_5" >}} with {{< regref "KEY_SHARE1_0" >}} - {{< regref "KEY_SHARE1_5" >}}.
 
 If running in CBC, CFB, OFB or CTR mode, software must also write the IV registers {{< regref "IV_0" >}} - {{< regref "IV_3" >}}.
+Since providing the initial key initiate the reseeding of the internal PRNGs, software must check that the AES unit is idle before writing the IV registers.
 These registers are little-endian, but the increment of the IV in CTR mode is big-endian (see [Recommendation for Block Cipher Modes of Operation](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf)).
 Each IV register must be written at least once.
 The order in which these registers are written does not matter.
@@ -521,9 +538,10 @@ The code snippet below shows how to perform block operation.
   // Enable autostart, disable overwriting of previous output data. Note the control register is
   // shadowed and thus needs to be written twice.
   uint32_t aes_ctrl_val =
-      op << AES_CTRL_SHADOWED_OPERATION |
+      (op & AES_CTRL_SHADOWED_OPERATION_MASK) << AES_CTRL_SHADOWED_OPERATION_OFFSET |
+      (mode & AES_CTRL_SHADOWED_MODE_MASK) << AES_CTRL_SHADOWED_MODE_OFFSET |
       (key_len & AES_CTRL_SHADOWED_KEY_LEN_MASK) << AES_CTRL_SHADOWED_KEY_LEN_OFFSET |
-      0x0 << AES_CTRL_SHADOWED_MANUAL_OPERATION;
+      0x0 << AES_CTRL_SHADOWED_MANUAL_OPERATION_OFFSET;
   REG32(AES_CTRL_SHADOWED(0)) = aes_ctrl_val;
   REG32(AES_CTRL_SHADOWED(0)) = aes_ctrl_val;
 
