@@ -17,7 +17,7 @@
 // In duplicate count mode
 //    - clr_i sets all (internal) counters to 0.
 //    - set_i sets the up_count's starting value to set_cnt_i.
-//      Note: the maximum value is just the max possible value given by the counter's width.
+//      Note: the max_val is just the max possible value given by the counter's width.
 //    - en_i increments the counter by step_i, if neither of the above is set.
 //
 // In cross count mode
@@ -27,9 +27,10 @@
 //      -- err_o is set to 0 (false),
 //      -- cnt_o is either all zero (OutSelDnCnt = 1) or the (running) up_count value
 //         (OutSelDnCnt = 0).
+//    - clr_i sets max_val to the max possible value given by the counter's width.
 //    - set_i sets
 //      -- the up_count to 0 and the down_count to set_cnt_i,
-//      -- the up_count's maximum value to set_cnt_i.
+//      -- the up_count's max_val to set_cnt_i.
 //    - en_i increments/decrements the up_count/down_count by step_i, if neither of the above is
 //      set.
 
