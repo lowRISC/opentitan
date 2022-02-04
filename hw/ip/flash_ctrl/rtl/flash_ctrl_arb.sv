@@ -133,6 +133,7 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
   // flops in order to prevent FSM state encoding optimizations.
   logic [StateWidth-1:0] state_raw_q;
   assign state_q = arb_state_e'(state_raw_q);
+  // SEC_CM: FSM.SPARSE
   prim_sparse_fsm_flop #(
     .StateEnumT(arb_state_e),
     .Width(StateWidth),

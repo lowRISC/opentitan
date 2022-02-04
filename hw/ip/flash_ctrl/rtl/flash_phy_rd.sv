@@ -585,7 +585,7 @@ module flash_phy_rd
 
   // add plaintext decoding here
   // plaintext error
-  logic intg_err;
+  logic intg_err_pre, intg_err;
   logic [DataWidth-1:0] unused_data;
   logic [3:0] unused_intg;
   logic [3:0] truncated_intg;
@@ -594,9 +594,16 @@ module flash_phy_rd
     .data_i(data_out_muxed[DataWidth-1:0]),
     .data_o({unused_intg, truncated_intg, unused_data})
   );
-  assign intg_err = rsp_fifo_rdata.intg_ecc_en ?
-                    truncated_intg != data_out_muxed[DataWidth +: PlainIntgWidth] :
-                    '0;
+  assign intg_err_pre = rsp_fifo_rdata.intg_ecc_en ?
+                        truncated_intg != data_out_muxed[DataWidth +: PlainIntgWidth] :
+                        '0;
+
+  prim_sec_anchor_buf #(
+    .Width(1)
+  ) u_intg_buf (
+    .in_i(intg_err_pre),
+    .out_o(intg_err)
+  );
 
   // whenever the response is coming from the buffer, the error is never set
   assign data_valid_o = flash_rsp_match | |buf_rsp_match;

@@ -325,6 +325,7 @@ module flash_phy_core
     assign prog_data = prog_data_i;
   end else begin : gen_prog_data
 
+    // SEC_CM: MEM.INTEGRITY
     flash_phy_prog u_prog (
       .clk_i,
       .rst_ni,
@@ -377,6 +378,7 @@ module flash_phy_core
   assign scramble_muxed_addr = prog_calc_req ? muxed_addr[BusBankAddrW-1:LsbAddrBit] :
                                                rd_calc_addr;
 
+  // SEC_CM: MEM.SCRAMBLE
   flash_phy_scramble u_scramble (
     .clk_i,
     .rst_ni,

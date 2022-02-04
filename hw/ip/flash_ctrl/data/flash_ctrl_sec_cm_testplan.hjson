@@ -30,14 +30,104 @@
       tests: []
     }
     {
+      name: sec_cm_scramble_key_sideload
+      desc: "Verify the countermeasure(s) SCRAMBLE.KEY.SIDELOAD."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_lc_ctrl_intersig_mubi
+      desc: "Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_ctrl_config_regwen
+      desc: "Verify the countermeasure(s) CTRL.CONFIG.REGWEN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_data_regions_config_regwen
+      desc: "Verify the countermeasure(s) DATA_REGIONS.CONFIG.REGWEN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_data_regions_config_shadow
+      desc: "Verify the countermeasure(s) DATA_REGIONS.CONFIG.SHADOW."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_info_regions_config_regwen
+      desc: "Verify the countermeasure(s) INFO_REGIONS.CONFIG.REGWEN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_info_regions_config_shadow
+      desc: "Verify the countermeasure(s) INFO_REGIONS.CONFIG.SHADOW."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_bank_config_regwen
+      desc: "Verify the countermeasure(s) BANK.CONFIG.REGWEN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_bank_config_shadow
+      desc: "Verify the countermeasure(s) BANK.CONFIG.SHADOW."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mem_ctrl_global_esc
+      desc: "Verify the countermeasure(s) MEM.CTRL.GLOBAL_ESC."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mem_disable_config_mubi
+      desc: "Verify the countermeasure(s) MEM_DISABLE.CONFIG.MUBI."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mem_en_config_redun
+      desc: "Verify the countermeasure(s) MEM_EN.CONFIG.REDUN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mem_scramble
+      desc: "Verify the countermeasure(s) MEM.SCRAMBLE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mem_integrity
+      desc: "Verify the countermeasure(s) MEM.INTEGRITY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_rma_entry_mem_sec_wipe
+      desc: "Verify the countermeasure(s) RMA_ENTRY.MEM.SEC_WIPE."
+      milestone: V2S
+      tests: []
+    }
+    {
       name: sec_cm_fsm_sparse
       desc: "Verify the countermeasure(s) FSM.SPARSE."
       milestone: V2S
       tests: []
     }
     {
-      name: sec_cm_scramble_key_sideload
-      desc: "Verify the countermeasure(s) SCRAMBLE.KEY.SIDELOAD."
+      name: sec_cm_ctr_sparse
+      desc: "Verify the countermeasure(s) CTR.SPARSE."
       milestone: V2S
       tests: []
     }
