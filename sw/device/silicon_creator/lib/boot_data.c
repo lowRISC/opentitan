@@ -483,13 +483,17 @@ static rom_error_t boot_data_default_get(lifecycle_state_t lc_state,
 
 rom_error_t boot_data_read(lifecycle_state_t lc_state, boot_data_t *boot_data) {
   active_page_info_t active_page;
-  RETURN_IF_ERROR(boot_data_active_page_find(&active_page, boot_data));
-  switch (active_page.has_valid_entry) {
+  HARDENED_RETURN_IF_ERROR(boot_data_active_page_find(&active_page, boot_data));
+  switch (launder32(active_page.has_valid_entry)) {
     case kHardenedBoolTrue:
+      HARDENED_CHECK_EQ(active_page.has_valid_entry, kHardenedBoolTrue);
       return kErrorOk;
     case kHardenedBoolFalse:
+      HARDENED_CHECK_EQ(active_page.has_valid_entry, kHardenedBoolFalse);
       // TODO(#8779): Recovery paths for failures in prod life cycle states?
       return boot_data_default_get(lc_state, boot_data);
+    default:
+      HARDENED_UNREACHABLE();
   }
 }
 
