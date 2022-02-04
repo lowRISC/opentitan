@@ -379,12 +379,7 @@ $ sudo udevadm control --reload
 
 ## Siemens Questa
 
-If using Siemens Questa, once a standard installation been completed the following additional steps are required:
-1. Add `QUESTA_HOME` as an environment variable which points to the Questa installation directory.
-2. Run `hw/dv/tools/questa/questa_initial_setup.sh`. This removes the `"# "` at the start of every transcript line to provide compatibility OpenTitan for log file error checking.
+Once a standard installation has been completed, add `QUESTA_HOME` as an environment variable which points to the Questa installation directory.
 
-As of Questa version 21.4 there are some code incompatibilities with the OpenTitan code-base:
-* It does not support associative arrays when using class objects as an index. Code related to this must be commented out.
-* Clocking and non clocking drive signals cannot be both used in tl_host_driver.sv. See issue 9514 for a temporary workaround for this.
-
-Support cases for both these issues have been raised with Siemens. Hopefully they will be fixed in a future release.
+As of Questa version 21.4 there are some code incompatibilities with the OpenTitan code-base.
+See issue [#9514](https://github.com/lowRISC/opentitan/issues/9514) for the list of issues and temporary workarounds.

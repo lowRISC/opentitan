@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  build_cmd:  "{job_prefix} qrun -optimize"
-  run_cmd:    "{job_prefix} qrun -simulate"
+  build_cmd:  "{job_prefix} {QUESTA_HOME}/questasim/linux_x86_64/qrun -optimize"
+  run_cmd:    "{job_prefix} {QUESTA_HOME}/questasim/linux_x86_64/qrun -simulate"
+
 
   build_opts: [ "-timescale 1ns/1ps",
+                "-outdir {build_dir}/qrun.out",
                 "-uvm -uvmhome {QUESTA_HOME}/questasim/verilog_src/uvm-1.2",
                 "-mfcu",
                 "-f {sv_flist}",
@@ -14,7 +16,7 @@
                 "-voptargs=\"+acc=nr\""
               ]
 
-  run_opts:   [ "-outdir {build_dir}/sim-vcs/qrun.out",
+  run_opts:   [ "-outdir {build_dir}/qrun.out",
                 "-sv_seed {seed}",
                 // dv_macros.svh has a macro printing null using %0d
                 // format specifier, Questa throws an error on this
@@ -25,14 +27,15 @@
                 // below demotes the associated error thrown.
                 "-permit_unmatched_virtual_intf",
                 "+UVM_TESTNAME={uvm_test}",
-                "+UVM_TEST_SEQ={uvm_test_seq}"
+                "+UVM_TEST_SEQ={uvm_test_seq}",
+                "-do {run_script}"
               ]
 
   // Supported wave dumping formats (in order of preference).
   supported_wave_formats: []
 
   // Default tcl script used when running the sim. Override if needed.
-  run_script: ""
+  run_script: "{dv_root}/tools/questa/sim.tcl"
 
   // Coverage related.
   cov_db_dir: "{scratch_path}/coverage/{build_mode}.ucdb"
@@ -66,8 +69,9 @@
   cov_metrics: "bcestf"
 
   // pass and fail patterns
-  build_fail_patterns: ["^\\*\\* Error.*$"]
-  run_fail_patterns:   ["^\\*\\* Error.*$"]
+  build_fail_patterns: ["^## \\*\\* Error:.*$"
+                        "^\\*\\* Error:.*$"]
+  run_fail_patterns:   ["^\\*\\* Error:.*$"]
 
   build_modes: [
    {
