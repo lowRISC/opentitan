@@ -8,7 +8,7 @@
 #  ReconSignal==""
 #  MultiClockDomains=="IO_DIV2_CLK::IO_DIV4_CLK"
 
-set_rule_status -rule { W_RECON_GROUPS } -status { Waived }     \
+set_rule_status -rule {W_RECON_GROUPS} -status {Waived}         \
    -expression {(ControlSignal=~"*u_gpio.gen_filter*") &&       \
                 (ReconSignal=~"*u_gpio.u_reg.u_intr_state.q*")} \
    -comment {filters are converged into the interrupt status registers. Each bit is independent}

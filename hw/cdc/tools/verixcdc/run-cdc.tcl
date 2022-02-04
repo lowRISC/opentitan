@@ -25,6 +25,7 @@ set CONSTRAINT         [get_env_var "CONSTRAINT"]
 set FOUNDRY_CONSTRAINT [get_env_var "FOUNDRY_CONSTRAINT"]
 set PARAMS             [get_env_var "PARAMS"]
 set CDC_WAIVER_FILE    [get_env_var "CDC_WAIVER_FILE"]
+set CDC_WAIVER_DIR     [file dirname $CDC_WAIVER_FILE]
 set ENV_FILE           [get_env_var "ENV_FILE"]
 
 # Used to disable some SDC constructs that are not needed by CDC.
@@ -139,7 +140,11 @@ report_policy -verbose -skip_empty_summary_status -compat -output vcdc.rpt ALL
 file mkdir ../REPORT/
 
 foreach mod $modules {
-  report_policy -verbose -skip_empty_summary_status -compat -output ../REPORT/vcdc.$mod.rpt -module $mod ALL
+  report_policy -verbose -skip_empty_summary_status -compat -output ../REPORT/vcdc.$mod.rpt -module $mod {NEW TO_BE_FIXED DEFERRED}
 }
+
+# Report waived in a separate file
+report_policy -verbose -skip_empty_summary_status -compat -output ../REPORT/vcdc.rpt {NEW TO_BE_FIXED DEFERRED}
+report_policy -verbose -skip_empty_summary_status -compat -output ../REPORT/vcdc.waived.rpt {WAIVED}
 
 # report_messages -output verix_cdc.rpt
