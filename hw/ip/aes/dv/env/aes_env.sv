@@ -31,7 +31,8 @@ class aes_env extends cip_base_env #(
     keymgr_sideload_agent.sequencer.set_arbitration(UVM_SEQ_ARB_STRICT_FIFO);
     // connect keymanager monitor to scoreboard
     if (cfg.en_scb) begin
-      keymgr_sideload_agent.monitor.analysis_port.connect(scoreboard.key_manager_fifo.analysis_export);
+      keymgr_sideload_agent.monitor.analysis_port.connect(
+                        scoreboard.key_manager_fifo.analysis_export);
     end
   endfunction
 

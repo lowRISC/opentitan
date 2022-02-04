@@ -123,11 +123,11 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
 
 
   // constraints
-  constraint c_num_messages {num_messages inside {[num_messages_min : num_messages_max]};}
-  constraint c_ref_model    {ref_model    dist   { 0 :/ use_c_model_pct,
+  constraint num_messages_c {num_messages inside {[num_messages_min : num_messages_max]};}
+  constraint ref_model_c    {ref_model    dist   { 0 :/ use_c_model_pct,
                                                    1 :/ (100 - use_c_model_pct)};}
 
-  constraint c_inj_delay    {inj_delay    inside {[inj_min_delay : inj_max_delay]};}
+  constraint inj_delay_c    {inj_delay    inside {[inj_min_delay : inj_max_delay]};}
 
   constraint flip_rst_c { flip_rst dist { 0:/flip_rst_split_pct,
                                           1:/(100-flip_rst_split_pct) };}
