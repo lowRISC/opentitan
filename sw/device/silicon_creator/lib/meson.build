@@ -138,6 +138,9 @@ sw_silicon_creator_lib_epmp = declare_dependency(
     sources: [
       'epmp.c',
     ],
+    dependencies: [
+      sw_lib_hardened,
+    ],
   ),
 )
 
@@ -264,10 +267,11 @@ test('sw_silicon_creator_lib_epmp_unittest', executable(
       sw_vendor_gtest,
       sw_silicon_creator_lib_base_mock_csr,
       sw_lib_testing_bitfield,
+      sw_lib_testing_hardened,
     ],
     native: true,
-    c_args: ['-DMOCK_CSR'],
-    cpp_args: ['-DMOCK_CSR'],
+    c_args: ['-DMOCK_CSR', '-DOT_OFF_TARGET_TEST'],
+    cpp_args: ['-DMOCK_CSR', '-DOT_OFF_TARGET_TEST'],
     ),
   suite: 'mask_rom',
 )

@@ -96,6 +96,9 @@ cc_test(
         "epmp.c",
         "epmp.h",
     ],
+    defines = [
+        "OT_OFF_TARGET_TEST",
+    ],
     deps = [
         ":epmp_intf",
         ":error",
