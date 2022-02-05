@@ -5,6 +5,7 @@
 #include "sw/device/silicon_creator/lib/epmp.h"
 
 #include "sw/device/lib/base/csr.h"
+#include "sw/device/lib/base/hardened.h"
 
 /**
  * Extern declarations of inline functions.
@@ -17,12 +18,12 @@ extern void epmp_state_configure_napot(epmp_state_t *state, uint32_t entry,
                                        epmp_region_t region, epmp_perm_t perm);
 
 rom_error_t epmp_state_check(const epmp_state_t *s) {
-  bool result = true;
+  uint32_t checks = 0;
 #define CHECK_CSR(reg, value) \
   do {                        \
     uint32_t csr;             \
     CSR_READ(reg, &csr);      \
-    result &= csr == (value); \
+    checks += csr == (value); \
   } while (false)
 
   // Check address registers.
@@ -56,5 +57,14 @@ rom_error_t epmp_state_check(const epmp_state_t *s) {
 
 #undef CHECK_CSR
 
-  return result ? kErrorOk : kErrorEpmpBadCheck;
+  enum { kTotalChecks = 22 };
+  // Hamming distance of 3, error = 0x72f, kErrorOk = 0x739.
+  rom_error_t error = kErrorOk ^ kTotalChecks;
+  if (launder32(checks) == kTotalChecks) {
+    HARDENED_CHECK_EQ(checks, kTotalChecks);
+    error ^= checks;
+    HARDENED_CHECK_EQ(error, kErrorOk);
+    return error;
+  }
+  return kErrorEpmpBadCheck;
 }
