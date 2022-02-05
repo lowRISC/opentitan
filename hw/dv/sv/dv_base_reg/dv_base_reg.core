@@ -17,6 +17,7 @@ filesets:
       - dv_base_mem.sv: {is_include_file: true}
       - dv_base_reg_block.sv: {is_include_file: true}
       - dv_base_reg_map.sv: {is_include_file: true}
+      - dv_base_lockable_field_cov.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

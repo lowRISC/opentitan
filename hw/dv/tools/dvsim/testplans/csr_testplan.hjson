@@ -80,6 +80,34 @@
       milestone: V1
       tests: ["{name}{intf}_csr_mem_rw_with_rand_reset"]
     }
+    {
+      name: regwen_csr_and_corresponding_lockable_csr
+      desc: '''
+            Verify regwen CSR and its corresponding lockable CSRs.
+            - Randomly access all CSRs
+            - Test when regwen CSR is set, its corresponding lockable CSRs become
+              read-only registers
+
+            Note:
+            - If regwen CSR is HW read-only, this feature can be fully tested by common
+              CSR tests - csr_rw and csr_aliasing.
+            - If regwen CSR is HW updated, a separate test should be created to test it.
+            '''
+      milestone: V1
+      tests: ["{name}{intf}_csr_rw", "{name}{intf}_csr_aliasing"]
+    }
+  ]
+  covergroups: [
+    {
+      name: regwen_val_when_new_value_written_cg
+      desc: '''
+            Cover each lockable reg field with these 2 cases:
+            - When regwen = 1, a different value is written to the lockable CSR field, and a read
+              occurs after that.
+            - When regwen = 0, a different value is written to the lockable CSR field, and a read
+              occurs after that.
+            '''
+    }
   ]
 }
 

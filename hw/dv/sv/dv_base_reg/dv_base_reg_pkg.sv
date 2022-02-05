@@ -113,6 +113,7 @@ package dv_base_reg_pkg;
   endfunction : get_field_val
 
   `include "csr_excl_item.sv"
+  `include "dv_base_lockable_field_cov.sv"
   `include "dv_base_reg_field.sv"
   `include "dv_base_reg.sv"
   `include "dv_base_mem.sv"
