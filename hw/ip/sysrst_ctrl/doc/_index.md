@@ -82,6 +82,21 @@ The software interrupt handler should then read the {{< regref COMBO_INTR_STATUS
 Note that an interrupt will also issue a wakeup request to the OpenTitan power manager via `aon_ot_wkup_req_o`.
 Software should therefore read and clear the {{< regref WKUP_STATUS >}} register as well.
 
+### Combo actions
+
+The following four combo actions can be triggered:
+
+- Drive the `bat_disable` output high until the next reset. 
+- Issue an interrupt to the processor via `intr_sysrst_ctrl_o`.
+- Assert `ec_rst_out_l` for the amount of cycles configured in {{< regref EC_RST_CTL >}}.
+- Issue a reset request via `aon_ot_rst_req_o` to the reset manager of the OpenTitan system. Note that once a reset request is issued, it will remain asserted until the next reset.
+ 
+These actions can be configured via the {{< regref COM_OUT_CTL_0 >}} register for each of the combo blocks as described in the previous section.
+
+### Hardwired reset stretching functionality
+
+In addition to the combo action described above, `ec_rst_out_l` is automatically asserted for the amount of cycles defined in the {{< regref EC_RST_CTL >}} register whenever the `ec_rst_l` input is asserted (i.e., when it transitions from high to low).
+
 ## Auto-block key outputs
 
 Software can program the `sysrst_ctrl` block to override the output value of specific passthrough signals, depending on whether certain input signals are asserted or not.
