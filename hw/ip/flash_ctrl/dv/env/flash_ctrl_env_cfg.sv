@@ -21,8 +21,8 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // This causes problems in the read value especially in CSR tests.
   int post_reset_delay_clks = 1;
 
-  // Knob for SCB  scramble en
-  bit scb_scramble_en;
+  // Knob for blocking host reads
+  bit block_host_rd = 1;
 
   // read data by host if
   data_q_t flash_rd_data;

@@ -81,9 +81,9 @@ class flash_ctrl_scoreboard #(
 
       `DV_CHECK_EQ(word_align_addr(item.a_addr), word_align_addr(addr_item.a_addr))
       `DV_CHECK_EQ(item.a_source, addr_item.a_source)
-      if (cfg.scb_scramble_en == 0) begin  //backdoor reads used only without scrambling
+      if (cfg.block_host_rd) begin  // blocking reads are checked with backdoor reads
         check_trans(item);
-      end else begin  //sw reads are used only with scrambling
+      end else begin  // non blocking reads are pushed to the queue and in test checked
         cfg.flash_rd_data.push_back(item.d_data);
       end
     end
