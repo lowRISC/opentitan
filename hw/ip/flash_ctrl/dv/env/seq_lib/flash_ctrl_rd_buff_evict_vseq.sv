@@ -147,7 +147,7 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
     default_region_scramble_en = 0;
 
     // Scoreboard knob
-    cfg.scb_scramble_en = 0;
+    cfg.block_host_rd = 1;
 
     // Configure the flash with scramble disable.
     foreach (mp_regions[k]) begin

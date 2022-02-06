@@ -151,7 +151,7 @@ class flash_ctrl_host_dir_rd_vseq extends flash_ctrl_base_vseq;
     poll_fifo_status = 1;
 
     // Scoreboard knob
-    cfg.scb_scramble_en = 0;
+    cfg.block_host_rd = 1;
 
     // 1. Scramble disabled, read data has been checked in scoreboard by backdoor read
     // Configure the flash with scramble disable.
@@ -188,7 +188,7 @@ class flash_ctrl_host_dir_rd_vseq extends flash_ctrl_base_vseq;
     // 2. Scramble enabled, host direct read data has been checked by SW read
     `uvm_info(`gfn, $sformatf("Starting direct back-to-back reads with scramble enabled"), UVM_HIGH)
 
-    cfg.scb_scramble_en = 1;
+    cfg.block_host_rd = 0;
 
     // Configure the flash with scramble enable.
     foreach (mp_regions[k]) begin
