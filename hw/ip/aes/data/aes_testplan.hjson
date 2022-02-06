@@ -92,7 +92,7 @@
       desc: '''
             Verify that the DUT handles the NIST test vectors correctly.'''
       milestone: V2
-      tests: []
+      tests: ["aes_nist_vectors"]
     }
     {
       name: performance
