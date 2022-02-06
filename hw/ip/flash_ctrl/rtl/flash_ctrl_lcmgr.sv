@@ -786,7 +786,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   logic [DataWidth-1:0] rma_data;
   always_ff @(posedge clk_i) begin
     if (rma_start && rvalid_i && rready_o) begin
-      rma_data <= {rma_data[DataWidth -: BusWidth], rdata_i};
+      rma_data <= {rma_data[(DataWidth-1) -: BusWidth], rdata_i};
     end
   end
 
