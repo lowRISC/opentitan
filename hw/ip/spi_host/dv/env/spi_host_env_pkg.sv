@@ -90,7 +90,7 @@ package spi_host_env_pkg;
   } spi_host_command_t;
 
   typedef struct packed {
-    bit          status;
+    bit          ready;
     bit          active;
     bit          txfull;
     bit          txempty;
@@ -102,7 +102,7 @@ package spi_host_env_pkg;
     bit          byteorder;
     bit          rsv_0;
     bit          rx_wm;
-    bit [19:16]  rsv_1;
+    bit [19:16]  cmd_qd;
     bit [15:8]   rx_qd;
     bit [7:0]    tx_qd;
   } spi_host_status_t;

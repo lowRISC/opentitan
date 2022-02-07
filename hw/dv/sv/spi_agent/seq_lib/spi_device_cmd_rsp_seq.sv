@@ -17,13 +17,17 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
 
   // read queue
   spi_item rsp_q[$];
-  typedef enum {SpiIdle, SpiCmd, SpiData } spi_fsm_e;
+  typedef enum {
+    SpiIdle,
+    SpiCmd,
+    SpiData
+  } spi_fsm_e;
   spi_fsm_e spi_state = SpiIdle;
 
   virtual task body();
 
     // wait for reset release
-    if (cfg.in_reset) wait (!cfg.in_reset);
+    if (cfg.in_reset) wait(!cfg.in_reset);
 
     fork
       // get transactions from host
@@ -37,14 +41,14 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
 
 
   virtual task decode_cmd();
-    spi_item item;
-    spi_item rsp = spi_item::type_id::create("rsp");
-    spi_item rsp_clone;
-    spi_cmd_e  cmd;
-    bit [31:0] addr;
-    bit [31:0] data;
-    bit [31:0] addr_cnt = 0;
-    int        byte_cnt = 0;
+    spi_item         item;
+    spi_item         rsp = spi_item::type_id::create("rsp");
+    spi_item         rsp_clone;
+    spi_cmd_e        cmd;
+    bit       [31:0] addr;
+    bit       [31:0] data;
+    bit       [31:0] addr_cnt = 0;
+    int              byte_cnt = 0;
 
     forever begin
       case (spi_state)
@@ -67,10 +71,10 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
             spi_state = SpiCmd;
             addr_cnt = 0;
           end else begin
-            addr[31-8*byte_cnt -: 8] = item.data.pop_front();
+            addr[31-8*byte_cnt-:8] = item.data.pop_front();
             byte_cnt += 1;
-            if (byte_cnt+1 == cfg.spi_cmd_width) begin // +1 to accound for the cmd byte
-              byte_cnt = 0;
+            if (byte_cnt + 1 == cfg.spi_cmd_width) begin  // +1 to accound for the cmd byte
+              byte_cnt  = 0;
               spi_state = SpiData;
             end
           end
@@ -86,7 +90,7 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
                 ReadStd:  `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp, rsp.data.size() == 8;)
                 ReadDual: `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp, rsp.data.size() == 16;)
                 default:  `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp, rsp.data.size() == 32;)
-              endcase // case (cmd)
+              endcase  // case (cmd)
               `downcast(rsp_clone, rsp.clone());
               rsp_q.push_back(rsp_clone);
               rsp = new();
@@ -108,7 +112,7 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
                 spi_state = SpiCmd;
                 addr_cnt = 0;
               end else begin
-                data[31-8*addr_cnt[1:0] -: 8] = item.data.pop_front();
+                data[31-8*addr_cnt[1:0]-:8] = item.data.pop_front();
                 addr_cnt += 1;
               end
               // potential TODO add associative array for read back of write data
@@ -127,7 +131,7 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
   endtask
 
 
-  function spi_cmd_e cmd_check(bit[7:0] data);
+  function spi_cmd_e cmd_check(bit [7:0] data);
     spi_cmd_e cmd;
     `downcast(cmd, data, "Illegal Command seen")
     return cmd;

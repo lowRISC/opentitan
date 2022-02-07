@@ -40,7 +40,7 @@
               - Ensure transactions are transmitted/received correctly
             '''
       milestone: V2
-      tests: []
+      tests: ["spi_host_performance"]
     }
     {
       name: error_event_intr
@@ -118,7 +118,7 @@
                 after the tx_fifo or spi_fsm is reset
             '''
       milestone: V2
-      tests: []
+      tests: ["spi_host_sw_reset"]
     }
     {
       name: passthrough_mode
