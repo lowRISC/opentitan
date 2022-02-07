@@ -135,31 +135,43 @@
       desc: "Tilelink end-to-end bus integrity scheme."
     }
     { name: "AES_CIPHER.FSM.SPARSE",
-      desc: "See the AES module documentation for details."
+      desc: '''
+        The AES cipher core FSM uses a sparse state encoding.
+        See the AES module documentation for AES-specific countermeasures.
+      '''
     }
     { name: "AES_CIPHER.FSM.REDUN",
-      desc: "See the AES module documentation for details."
-    }
-    { name: "AES_CIPHER.FSM.LOCAL_ESC",
-      desc: "See the AES module documentation for details."
-    }
-    { name: "AES_CIPHER.CTR.REDUN",
-      desc: "See the AES module documentation for details."
-    }
-    { name: "AES_CIPHER.CTR.LOCAL_ESC",
-      desc: "See the AES module documentation for details."
+      desc: '''
+        The AES cipher core FSM uses multiple, independent logic rails.
+        See the AES module documentation for AES-specific countermeasures.
+      '''
     }
     { name: "AES_CIPHER.CTRL.SPARSE",
-      desc: "See the AES module documentation for details."
+      desc: '''
+        Critical control signals for the AES cipher core such as handshake and MUX control signals use sparse encodings.
+        See the AES module documentation for AES-specific countermeasures.
+      '''
     }
-    { name: "AES_CIPHER.CTRL.LOCAL_ESC",
-      desc: "See the AES module documentation for details."
+    { name: "AES_CIPHER.FSM.LOCAL_ESC",
+      desc: '''
+        The AES cipher core FSM moves to a terminal error state upon local escalation.
+        Can be triggered by AES_CIPHER.FSM.SPARSE, AES_CIPHER.FSM.REDUN, AES_CIPHER.CTR.REDUN and AES_CIPHER.CTRL.SPARSE.
+        See the AES module documentation for AES-specific countermeasures.
+      '''
+    }
+    { name: "AES_CIPHER.CTR.REDUN",
+      desc: '''
+        The AES round counter inside the AES cipher core FSM is protected with multiple, independent logic rails.
+        See the AES module documentation for AES-specific countermeasures.
+      '''
     }
     { name: "AES_CIPHER.DATA_REG.LOCAL_ESC",
-      desc: "See the AES module documentation for details."
+      desc: '''
+        Upon local escalation, the AES cipher core doesn't output intermediate state.
+        See the AES module documentation for AES-specific countermeasures.
+      '''
     }
   ],
-
   regwidth: "32",
   registers: [
     { name: "REGWEN",
