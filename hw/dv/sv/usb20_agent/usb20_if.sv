@@ -5,6 +5,13 @@
 interface usb20_if ();
 
   // interface pins
+  logic dp;
+  logic dm;
+  logic tx_mode;
+  logic vbus;
+  logic susp;
+  logic dp_pullup;
+  logic dm_pullup;
 
   // debug signals
 

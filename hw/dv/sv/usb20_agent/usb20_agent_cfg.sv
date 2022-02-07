@@ -4,6 +4,9 @@
 
 class usb20_agent_cfg extends dv_base_agent_cfg;
 
+  // host driver cfg
+  bit drive_diff; // Drive differential
+
   // interface handle used by driver, monitor & the sequencer, via cfg handle
   virtual usb20_if vif;
 

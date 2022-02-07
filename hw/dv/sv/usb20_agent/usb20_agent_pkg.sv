@@ -13,6 +13,7 @@ package usb20_agent_pkg;
   `include "dv_macros.svh"
 
   // parameters
+  parameter uint FS_PERIOD_PS = 83333;
 
   // local types
   // forward declare classes to allow typedefs below
