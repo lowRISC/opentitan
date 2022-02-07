@@ -59,6 +59,7 @@ class csrng_monitor extends dv_base_monitor #(
     forever begin
       for (int i = 0; i <= cs_item.clen; i++) begin
         csrng_cmd_fifo.get(item);
+        `uvm_info(`gfn, $sformatf("Received cs_item: %s", item.convert2string()), UVM_HIGH)
         if (i == 0) begin
           cs_item.acmd  = acmd_e'(item.h_data[3:0]);
           cs_item.clen  = item.h_data[7:4];
@@ -77,7 +78,7 @@ class csrng_monitor extends dv_base_monitor #(
         end
       end
       cfg.vif.wait_cmd_ack();
-      `uvm_info(`gfn, $sformatf("Captured cs_item: %s", cs_item.convert2string()), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("Writing analysis_port: %s", cs_item.convert2string()), UVM_HIGH)
       analysis_port.write(cs_item);
     end
   endtask
@@ -100,7 +101,8 @@ class csrng_monitor extends dv_base_monitor #(
         cs_item.acmd = acmd_e'(cfg.vif.mon_cb.cmd_req.csrng_req_bus[3:0]);
         if (cs_item.acmd == csrng_pkg::GEN)
           cs_item.glen = cfg.vif.mon_cb.cmd_req.csrng_req_bus[30:12];
-        `uvm_info(`gfn, $sformatf("Captured item: %s", cs_item.convert2string()), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("Writing req_analysis_port: %s", cs_item.convert2string()),
+             UVM_HIGH)
         req_analysis_port.write(cs_item);
         // After picking up a request, wait until a response is sent before
         // detecting another request, as this is not a pipelined protocol.

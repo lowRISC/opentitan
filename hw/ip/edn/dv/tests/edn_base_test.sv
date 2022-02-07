@@ -24,9 +24,7 @@ class edn_base_test extends cip_base_test #(
   // the run_phase; as such, nothing more needs to be done
 
   virtual function void configure_env();
-    cfg.enable_pct        = 100;
-    // TODO: Set percentage after PR#10339
-    cfg.boot_req_mode_pct = 0;
+    cfg.enable_pct = 100;
 
     cfg.m_csrng_agent_cfg.cmd_ack_zero_delays = 0; // Can't handle cmd ack too soon after req
     cfg.m_csrng_agent_cfg.min_cmd_ack_dly     = 4;

@@ -13,7 +13,6 @@ class csrng_device_driver extends csrng_driver;
     super.run_phase(phase);
   endtask
 
-  // TODO: drive_trans
   virtual task reset_signals();
     cfg.vif.cmd_rsp_int.csrng_rsp_ack <= 1'b0;
     cfg.vif.cmd_rsp_int.csrng_rsp_sts <= 1'b0;
