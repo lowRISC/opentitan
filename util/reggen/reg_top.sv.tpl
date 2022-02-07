@@ -684,7 +684,7 @@ ${bits.msb}\
     reg_name = reg.name.lower()
     clk_expr = reg.async_clk.clock if reg.async_clk else reg_clk_expr
     rst_expr = reg.async_clk.reset if reg.async_clk else reg_rst_expr
-    re_expr = f'{reg_name}_re' if field.swaccess.allows_read() or reg.shadowed else "1'b0"
+    re_expr = f'{clk_base_name}{reg_name}_re' if field.swaccess.allows_read() or reg.shadowed else "1'b0"
 
     # software inputs to field instance, write enable, read enable, write data
     if field.swaccess.allows_write():
@@ -736,11 +736,6 @@ ${bits.msb}\
     qs_expr = f'{clk_base_name}{finst_name}_qs{async_suffix}' if field.swaccess.allows_read() else ''
 
 %>\
-<%
-
-    if reg.async_clk:
-      update_expr = "sync_" + reg.async_clk.clock.strip("_iclk_")+ "_update"
-%>\
   % if reg.hwext:       ## if hwext, instantiate prim_subreg_ext
 <%
     subreg_block = "prim_subreg_ext"
@@ -774,6 +769,32 @@ ${bits.msb}\
   // constant-only read
   assign ${finst_name}_qs = ${resval_expr};
     % else:
+      % if reg.async_clk and reg.shadowed:
+  logic async_${finst_name}_err_update;
+  logic async_${finst_name}_err_storage;
+
+  // storage error is persistent and can be sampled at any time
+  prim_flop_en #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_${finst_name}_err_storage_sync (
+    .clk_i,
+    .rst_ni,
+    .en_i(sync_${clk_base_name}update),
+    .d_i(async_${finst_name}_err_storage),
+    .q_o(reg2hw.${fsig_name}.err_storage)
+  );
+
+  // update error is transient and must be immediately captured
+  prim_pulse_sync u_${finst_name}_err_update_sync (
+    .clk_src_i(${reg.async_clk.clock}),
+    .rst_src_ni(${reg.async_clk.reset}),
+    .src_pulse_i(async_${finst_name}_err_update),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(reg2hw.${fsig_name}.err_update)
+  );
+      % endif
   ${subreg_block} #(
     .DW      (${field.bits.width()}),
     .SwAccess(prim_subreg_pkg::SwAccess${field.swaccess.value[1].name.upper()}),
@@ -810,8 +831,13 @@ ${bits.msb}\
     .phase  (),
 
     // Shadow register error conditions
+        % if reg.async_clk:
+    .err_update  (async_${finst_name}_err_update),
+    .err_storage (async_${finst_name}_err_storage)
+        % else:
     .err_update  (reg2hw.${fsig_name}.err_update),
     .err_storage (reg2hw.${fsig_name}.err_storage)
+        % endif
       % endif
   );
     % endif  ## end non-constant prim_subreg

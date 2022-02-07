@@ -286,11 +286,6 @@ class Register(RegBase):
                               'shadowed flag for {} register'
                               .format(name))
 
-        if async_name and shadowed:
-            raise ValueError(f'{name} is defined as async and shadowed. '
-                             'This is currently not supported. Please file '
-                             'an issue against OpenTitan if this is needed.')
-
         raw_fields = check_list(rd['fields'],
                                 'fields for {} register'.format(name))
         if not raw_fields:
