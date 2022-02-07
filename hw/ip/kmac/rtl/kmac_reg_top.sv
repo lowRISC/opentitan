@@ -187,8 +187,8 @@ module kmac_reg_top (
   logic intr_test_fifo_empty_wd;
   logic intr_test_kmac_err_wd;
   logic alert_test_we;
-  logic alert_test_fatal_fault_err_wd;
   logic alert_test_recov_operation_err_wd;
+  logic alert_test_fatal_fault_err_wd;
   logic cfg_regwen_re;
   logic cfg_regwen_qs;
   logic cfg_shadowed_re;
@@ -542,21 +542,7 @@ module kmac_reg_top (
 
 
   // R[alert_test]: V(True)
-  //   F[fatal_fault_err]: 0:0
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_alert_test_fatal_fault_err (
-    .re     (1'b0),
-    .we     (alert_test_we),
-    .wd     (alert_test_fatal_fault_err_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.alert_test.fatal_fault_err.qe),
-    .q      (reg2hw.alert_test.fatal_fault_err.q),
-    .qs     ()
-  );
-
-  //   F[recov_operation_err]: 1:1
+  //   F[recov_operation_err]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test_recov_operation_err (
@@ -567,6 +553,20 @@ module kmac_reg_top (
     .qre    (),
     .qe     (reg2hw.alert_test.recov_operation_err.qe),
     .q      (reg2hw.alert_test.recov_operation_err.q),
+    .qs     ()
+  );
+
+  //   F[fatal_fault_err]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_fatal_fault_err (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_fatal_fault_err_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.fatal_fault_err.qe),
+    .q      (reg2hw.alert_test.fatal_fault_err.q),
     .qs     ()
   );
 
@@ -2252,9 +2252,9 @@ module kmac_reg_top (
   assign intr_test_kmac_err_wd = reg_wdata[2];
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
-  assign alert_test_fatal_fault_err_wd = reg_wdata[0];
+  assign alert_test_recov_operation_err_wd = reg_wdata[0];
 
-  assign alert_test_recov_operation_err_wd = reg_wdata[1];
+  assign alert_test_fatal_fault_err_wd = reg_wdata[1];
   assign cfg_regwen_re = addr_hit[4] & reg_re & !reg_error;
   assign cfg_shadowed_re = addr_hit[5] & reg_re & !reg_error;
   assign cfg_shadowed_we = addr_hit[5] & reg_we & !reg_error;

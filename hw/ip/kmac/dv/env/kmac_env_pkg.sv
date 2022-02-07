@@ -65,7 +65,7 @@ package kmac_env_pkg;
 
   // alerts
   parameter uint NUM_ALERTS = 2;
-  parameter string LIST_OF_ALERTS[] = {"fatal_fault_err", "recov_operation_err"};
+  parameter string LIST_OF_ALERTS[] = {"recov_operation_err", "fatal_fault_err"};
 
   parameter uint NUM_EDN = 1;
 

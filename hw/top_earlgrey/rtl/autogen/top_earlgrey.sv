@@ -2197,8 +2197,8 @@ module top_earlgrey #(
       .intr_kmac_done_o  (intr_kmac_kmac_done),
       .intr_fifo_empty_o (intr_kmac_fifo_empty),
       .intr_kmac_err_o   (intr_kmac_kmac_err),
-      // [39]: fatal_fault_err
-      // [40]: recov_operation_err
+      // [39]: recov_operation_err
+      // [40]: fatal_fault_err
       .alert_tx_o  ( alert_tx[40:39] ),
       .alert_rx_i  ( alert_rx[40:39] ),
 

@@ -1319,8 +1319,8 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdAesRecovCtrlUpdateErr = 36, /**< aes_recov_ctrl_update_err */
   kTopEarlgreyAlertIdAesFatalFault = 37, /**< aes_fatal_fault */
   kTopEarlgreyAlertIdHmacFatalFault = 38, /**< hmac_fatal_fault */
-  kTopEarlgreyAlertIdKmacFatalFaultErr = 39, /**< kmac_fatal_fault_err */
-  kTopEarlgreyAlertIdKmacRecovOperationErr = 40, /**< kmac_recov_operation_err */
+  kTopEarlgreyAlertIdKmacRecovOperationErr = 39, /**< kmac_recov_operation_err */
+  kTopEarlgreyAlertIdKmacFatalFaultErr = 40, /**< kmac_fatal_fault_err */
   kTopEarlgreyAlertIdOtbnFatal = 41, /**< otbn_fatal */
   kTopEarlgreyAlertIdOtbnRecov = 42, /**< otbn_recov */
   kTopEarlgreyAlertIdKeymgrFatalFaultErr = 43, /**< keymgr_fatal_fault_err */

@@ -29,11 +29,11 @@ dif_result_t dif_kmac_alert_force(const dif_kmac_t *kmac,
 
   bitfield_bit32_index_t alert_idx;
   switch (alert) {
-    case kDifKmacAlertFatalFaultErr:
-      alert_idx = KMAC_ALERT_TEST_FATAL_FAULT_ERR_BIT;
-      break;
     case kDifKmacAlertRecovOperationErr:
       alert_idx = KMAC_ALERT_TEST_RECOV_OPERATION_ERR_BIT;
+      break;
+    case kDifKmacAlertFatalFaultErr:
+      alert_idx = KMAC_ALERT_TEST_FATAL_FAULT_ERR_BIT;
       break;
     default:
       return kDifBadArg;

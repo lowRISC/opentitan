@@ -53,6 +53,11 @@ dif_result_t dif_kmac_init(mmio_region_t base_addr, dif_kmac_t *kmac);
  */
 typedef enum dif_kmac_alert {
   /**
+   * Alert for KMAC operation error. It occurs when the shadow registers have
+   * update errors.
+   */
+  kDifKmacAlertRecovOperationErr = 0,
+  /**
    * This fatal alert is triggered when a fatal error is detected inside the
    * KMAC unit. Examples for such faults include: i) TL-UL bus integrity fault.
    * ii) Storage errors in the shadow registers. iii) Errors in the message,
@@ -60,12 +65,7 @@ typedef enum dif_kmac_alert {
    * An error in the redundant lfsr. The KMAC unit cannot recover from such an
    * error and needs to be reset.
    */
-  kDifKmacAlertFatalFaultErr = 0,
-  /**
-   * Alert for KMAC operation error. It occurs when the shadow registers have
-   * update errors.
-   */
-  kDifKmacAlertRecovOperationErr = 1,
+  kDifKmacAlertFatalFaultErr = 1,
 } dif_kmac_alert_t;
 
 /**

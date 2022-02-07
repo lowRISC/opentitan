@@ -23,6 +23,11 @@
     }
   ]
   alert_list: [
+    { name: "recov_operation_err"
+      desc: '''
+        Alert for KMAC operation error. It occurs when the shadow registers have update errors.
+        '''
+    }
     { name: "fatal_fault_err",
       desc: '''
       This fatal alert is triggered when a fatal error is detected inside the KMAC unit.
@@ -34,11 +39,6 @@
       v) An error in the redundant lfsr.
       The KMAC unit cannot recover from such an error and needs to be reset.
       '''
-    }
-    { name: "recov_operation_err"
-      desc: '''
-        Alert for KMAC operation error. It occurs when the shadow registers have update errors.
-        '''
     }
   ],
   param_list: [
