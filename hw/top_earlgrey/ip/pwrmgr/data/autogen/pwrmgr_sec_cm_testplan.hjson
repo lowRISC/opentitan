@@ -30,8 +30,74 @@
       tests: []
     }
     {
+      name: sec_cm_lc_ctrl_intersig_mubi
+      desc: "Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_rom_ctrl_intersig_mubi
+      desc: "Verify the countermeasure(s) ROM_CTRL.INTERSIG.MUBI."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_rstmgr_intersig_mubi
+      desc: "Verify the countermeasure(s) RSTMGR.INTERSIG.MUBI."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_esc_rx_clk_bkgn_chk
+      desc: "Verify the countermeasure(s) ESC_RX.CLK.BKGN_CHK."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_esc_rx_clk_local_esc
+      desc: "Verify the countermeasure(s) ESC_RX.CLK.LOCAL_ESC."
+      milestone: V2S
+      tests: []
+    }
+    {
       name: sec_cm_fsm_sparse
       desc: "Verify the countermeasure(s) FSM.SPARSE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_fsm_local_esc
+      desc: "Verify the countermeasure(s) FSM.LOCAL_ESC."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_fsm_global_esc
+      desc: "Verify the countermeasure(s) FSM.GLOBAL_ESC."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_main_pd_rst_local_esc
+      desc: "Verify the countermeasure(s) MAIN_PD.RST.LOCAL_ESC."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_ctrl_config_regwen
+      desc: "Verify the countermeasure(s) CTRL.CONFIG.REGWEN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_wakeup_config_regwen
+      desc: "Verify the countermeasure(s) WAKEUP.CONFIG.REGWEN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_reset_config_regwen
+      desc: "Verify the countermeasure(s) RESET.CONFIG.REGWEN."
       milestone: V2S
       tests: []
     }

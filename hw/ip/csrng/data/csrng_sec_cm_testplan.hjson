@@ -42,14 +42,68 @@
       tests: []
     }
     {
-      name: sec_cm_fsm_sparse
-      desc: "Verify the countermeasure(s) FSM.SPARSE."
+      name: sec_cm_main_sm_fsm_sparse
+      desc: "Verify the countermeasure(s) MAIN_SM.FSM.SPARSE."
       milestone: V2S
       tests: []
     }
     {
-      name: sec_cm_ctr_redun
-      desc: "Verify the countermeasure(s) CTR.REDUN."
+      name: sec_cm_update_fsm_sparse
+      desc: "Verify the countermeasure(s) UPDATE.FSM.SPARSE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_blk_enc_fsm_sparse
+      desc: "Verify the countermeasure(s) BLK_ENC.FSM.SPARSE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_outblk_fsm_sparse
+      desc: "Verify the countermeasure(s) OUTBLK.FSM.SPARSE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_gen_cmd_ctr_redun
+      desc: "Verify the countermeasure(s) GEN_CMD.CTR.REDUN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_drbg_upd_ctr_redun
+      desc: "Verify the countermeasure(s) DRBG_UPD.CTR.REDUN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_drbg_gen_ctr_redun
+      desc: "Verify the countermeasure(s) DRBG_GEN.CTR.REDUN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_ctrl_mubi
+      desc: "Verify the countermeasure(s) CTRL.MUBI."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_main_sm_ctr_local_esc
+      desc: "Verify the countermeasure(s) MAIN_SM.CTR.LOCAL_ESC."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_constants_lc_gated
+      desc: "Verify the countermeasure(s) CONSTANTS.LC_GATED."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_fsm_lc_gated
+      desc: "Verify the countermeasure(s) FSM.LC_GATED."
       milestone: V2S
       tests: []
     }
@@ -62,6 +116,42 @@
     {
       name: sec_cm_tile_link_bus_integrity
       desc: "Verify the countermeasure(s) TILE_LINK.BUS.INTEGRITY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_aes_cipher_fsm_sparse
+      desc: "Verify the countermeasure(s) AES_CIPHER.FSM.SPARSE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_aes_cipher_fsm_redun
+      desc: "Verify the countermeasure(s) AES_CIPHER.FSM.REDUN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_aes_cipher_ctrl_sparse
+      desc: "Verify the countermeasure(s) AES_CIPHER.CTRL.SPARSE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_aes_cipher_fsm_local_esc
+      desc: "Verify the countermeasure(s) AES_CIPHER.FSM.LOCAL_ESC."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_aes_cipher_ctr_redun
+      desc: "Verify the countermeasure(s) AES_CIPHER.CTR.REDUN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_aes_cipher_data_reg_local_esc
+      desc: "Verify the countermeasure(s) AES_CIPHER.DATA_REG.LOCAL_ESC."
       milestone: V2S
       tests: []
     }
