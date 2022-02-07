@@ -366,7 +366,6 @@
         },
       ]
     },
-
 <% aon_freq = clocks.all_srcs['aon'].freq %>\
 % for src in typed_clocks.rg_srcs:
   <%
@@ -376,8 +375,8 @@
     width = ratio.bit_length() + 1
     max_msb = 4 + width - 1
     min_msb = (max_msb + 1) + width - 1
-  %>\
-    { name: "${src.upper()}_MEASURE_CTRL",
+  %>
+    { name: "${src.upper()}_MEAS_CTRL_SHADOWED",
       desc: '''
         Configuration controls for ${src} measurement.
 
@@ -388,6 +387,9 @@
       swaccess: "rw",
       hwaccess: "hro",
       async: "clk_${src}_i",
+      shadowed: "true",
+      update_err_alert: "recov_fault",
+      storage_err_alert: "fatal_fault",
       fields: [
         {
           bits: "0",
@@ -403,14 +405,14 @@
 
         {
           bits: "${max_msb}:4",
-          name: "MAX_THRESH",
+          name: "HI",
           desc: "Max threshold for ${src} measurement",
           resval: "${ratio + 10}"
         },
 
         {
           bits: "${min_msb}:${max_msb+1}",
-          name: "MIN_THRESH",
+          name: "LO",
           desc: "Min threshold for ${src} measurement",
           resval: "${ratio - 10}"
         },
@@ -443,6 +445,16 @@
           '''
         }
 % endfor
+% for src in typed_clocks.rg_srcs:
+        {
+          bits: "${loop.index + 2*len(typed_clocks.rg_srcs)}",
+          name: "${src.upper()}_UPDATE_ERR",
+          resval: 0,
+          desc: '''
+            !!${src.upper()}_MEASURE_CTRL_SHADOWED has an update error.
+          '''
+        }
+% endfor
       ]
     },
 
@@ -458,6 +470,16 @@
             Register file has experienced a fatal integrity error.
           '''
         },
+% for src in typed_clocks.rg_srcs:
+        {
+          bits: "${loop.index + 1}",
+          name: "${src.upper()}_STORAGE_ERR",
+          resval: 0,
+          desc: '''
+            !!${src.upper()}_MEASURE_CTRL_SHADOWED has a storage error.
+          '''
+        },
+% endfor
       ]
     },
   ]

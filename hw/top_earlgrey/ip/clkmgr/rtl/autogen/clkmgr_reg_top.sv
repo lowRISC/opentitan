@@ -9,6 +9,7 @@
 module clkmgr_reg_top (
   input clk_i,
   input rst_ni,
+  input rst_shadowed_ni,
   input clk_io_i,
   input rst_io_ni,
   input clk_io_div2_i,
@@ -220,21 +221,26 @@ module clkmgr_reg_top (
   logic measure_ctrl_regwen_we;
   logic measure_ctrl_regwen_qs;
   logic measure_ctrl_regwen_wd;
-  logic io_measure_ctrl_we;
-  logic [23:0] io_measure_ctrl_qs;
-  logic io_measure_ctrl_busy;
-  logic io_div2_measure_ctrl_we;
-  logic [21:0] io_div2_measure_ctrl_qs;
-  logic io_div2_measure_ctrl_busy;
-  logic io_div4_measure_ctrl_we;
-  logic [19:0] io_div4_measure_ctrl_qs;
-  logic io_div4_measure_ctrl_busy;
-  logic main_measure_ctrl_we;
-  logic [23:0] main_measure_ctrl_qs;
-  logic main_measure_ctrl_busy;
-  logic usb_measure_ctrl_we;
-  logic [21:0] usb_measure_ctrl_qs;
-  logic usb_measure_ctrl_busy;
+  logic io_meas_ctrl_shadowed_re;
+  logic io_meas_ctrl_shadowed_we;
+  logic [23:0] io_meas_ctrl_shadowed_qs;
+  logic io_meas_ctrl_shadowed_busy;
+  logic io_div2_meas_ctrl_shadowed_re;
+  logic io_div2_meas_ctrl_shadowed_we;
+  logic [21:0] io_div2_meas_ctrl_shadowed_qs;
+  logic io_div2_meas_ctrl_shadowed_busy;
+  logic io_div4_meas_ctrl_shadowed_re;
+  logic io_div4_meas_ctrl_shadowed_we;
+  logic [19:0] io_div4_meas_ctrl_shadowed_qs;
+  logic io_div4_meas_ctrl_shadowed_busy;
+  logic main_meas_ctrl_shadowed_re;
+  logic main_meas_ctrl_shadowed_we;
+  logic [23:0] main_meas_ctrl_shadowed_qs;
+  logic main_meas_ctrl_shadowed_busy;
+  logic usb_meas_ctrl_shadowed_re;
+  logic usb_meas_ctrl_shadowed_we;
+  logic [21:0] usb_meas_ctrl_shadowed_qs;
+  logic usb_meas_ctrl_shadowed_busy;
   logic recov_err_code_we;
   logic recov_err_code_io_measure_err_qs;
   logic recov_err_code_io_measure_err_wd;
@@ -256,214 +262,234 @@ module clkmgr_reg_top (
   logic recov_err_code_main_timeout_err_wd;
   logic recov_err_code_usb_timeout_err_qs;
   logic recov_err_code_usb_timeout_err_wd;
-  logic fatal_err_code_qs;
+  logic recov_err_code_io_update_err_qs;
+  logic recov_err_code_io_update_err_wd;
+  logic recov_err_code_io_div2_update_err_qs;
+  logic recov_err_code_io_div2_update_err_wd;
+  logic recov_err_code_io_div4_update_err_qs;
+  logic recov_err_code_io_div4_update_err_wd;
+  logic recov_err_code_main_update_err_qs;
+  logic recov_err_code_main_update_err_wd;
+  logic recov_err_code_usb_update_err_qs;
+  logic recov_err_code_usb_update_err_wd;
+  logic fatal_err_code_reg_intg_qs;
+  logic fatal_err_code_io_storage_err_qs;
+  logic fatal_err_code_io_div2_storage_err_qs;
+  logic fatal_err_code_io_div4_storage_err_qs;
+  logic fatal_err_code_main_storage_err_qs;
+  logic fatal_err_code_usb_storage_err_qs;
   // Define register CDC handling.
   // CDC handling is done on a per-reg instead of per-field boundary.
 
-  logic  io_io_measure_ctrl_en_qs_int;
-  logic [9:0]  io_io_measure_ctrl_max_thresh_qs_int;
-  logic [9:0]  io_io_measure_ctrl_min_thresh_qs_int;
-  logic [23:0] io_io_measure_ctrl_d;
-  logic [23:0] io_io_measure_ctrl_wdata;
-  logic io_io_measure_ctrl_we;
-  logic unused_io_io_measure_ctrl_wdata;
-  logic io_io_measure_ctrl_regwen;
+  logic  io_io_meas_ctrl_shadowed_en_qs_int;
+  logic [9:0]  io_io_meas_ctrl_shadowed_hi_qs_int;
+  logic [9:0]  io_io_meas_ctrl_shadowed_lo_qs_int;
+  logic [23:0] io_io_meas_ctrl_shadowed_d;
+  logic [23:0] io_io_meas_ctrl_shadowed_wdata;
+  logic io_io_meas_ctrl_shadowed_we;
+  logic unused_io_io_meas_ctrl_shadowed_wdata;
+  logic io_io_meas_ctrl_shadowed_re;
+  logic io_io_meas_ctrl_shadowed_regwen;
 
   always_comb begin
-    io_io_measure_ctrl_d = '0;
-    io_io_measure_ctrl_d[0] = io_io_measure_ctrl_en_qs_int;
-    io_io_measure_ctrl_d[13:4] = io_io_measure_ctrl_max_thresh_qs_int;
-    io_io_measure_ctrl_d[23:14] = io_io_measure_ctrl_min_thresh_qs_int;
+    io_io_meas_ctrl_shadowed_d = '0;
+    io_io_meas_ctrl_shadowed_d[0] = io_io_meas_ctrl_shadowed_en_qs_int;
+    io_io_meas_ctrl_shadowed_d[13:4] = io_io_meas_ctrl_shadowed_hi_qs_int;
+    io_io_meas_ctrl_shadowed_d[23:14] = io_io_meas_ctrl_shadowed_lo_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(24),
     .ResetVal(24'h759ea0),
     .BitMask(24'hfffff1)
-  ) u_io_measure_ctrl_cdc (
+  ) u_io_meas_ctrl_shadowed_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_io_i),
     .rst_dst_ni   (rst_io_ni),
     .src_update_i (sync_io_update),
     .src_regwen_i (measure_ctrl_regwen_qs),
-    .src_we_i     (io_measure_ctrl_we),
-    .src_re_i     ('0),
+    .src_we_i     (io_meas_ctrl_shadowed_we),
+    .src_re_i     (io_meas_ctrl_shadowed_re),
     .src_wd_i     (reg_wdata[23:0]),
-    .src_busy_o   (io_measure_ctrl_busy),
-    .src_qs_o     (io_measure_ctrl_qs), // for software read back
-    .dst_d_i      (io_io_measure_ctrl_d),
-    .dst_we_o     (io_io_measure_ctrl_we),
-    .dst_re_o     (),
-    .dst_regwen_o (io_io_measure_ctrl_regwen),
-    .dst_wd_o     (io_io_measure_ctrl_wdata)
+    .src_busy_o   (io_meas_ctrl_shadowed_busy),
+    .src_qs_o     (io_meas_ctrl_shadowed_qs), // for software read back
+    .dst_d_i      (io_io_meas_ctrl_shadowed_d),
+    .dst_we_o     (io_io_meas_ctrl_shadowed_we),
+    .dst_re_o     (io_io_meas_ctrl_shadowed_re),
+    .dst_regwen_o (io_io_meas_ctrl_shadowed_regwen),
+    .dst_wd_o     (io_io_meas_ctrl_shadowed_wdata)
   );
-  assign unused_io_io_measure_ctrl_wdata =
-      ^io_io_measure_ctrl_wdata;
+  assign unused_io_io_meas_ctrl_shadowed_wdata =
+      ^io_io_meas_ctrl_shadowed_wdata;
 
-  logic  io_div2_io_div2_measure_ctrl_en_qs_int;
-  logic [8:0]  io_div2_io_div2_measure_ctrl_max_thresh_qs_int;
-  logic [8:0]  io_div2_io_div2_measure_ctrl_min_thresh_qs_int;
-  logic [21:0] io_div2_io_div2_measure_ctrl_d;
-  logic [21:0] io_div2_io_div2_measure_ctrl_wdata;
-  logic io_div2_io_div2_measure_ctrl_we;
-  logic unused_io_div2_io_div2_measure_ctrl_wdata;
-  logic io_div2_io_div2_measure_ctrl_regwen;
+  logic  io_div2_io_div2_meas_ctrl_shadowed_en_qs_int;
+  logic [8:0]  io_div2_io_div2_meas_ctrl_shadowed_hi_qs_int;
+  logic [8:0]  io_div2_io_div2_meas_ctrl_shadowed_lo_qs_int;
+  logic [21:0] io_div2_io_div2_meas_ctrl_shadowed_d;
+  logic [21:0] io_div2_io_div2_meas_ctrl_shadowed_wdata;
+  logic io_div2_io_div2_meas_ctrl_shadowed_we;
+  logic unused_io_div2_io_div2_meas_ctrl_shadowed_wdata;
+  logic io_div2_io_div2_meas_ctrl_shadowed_re;
+  logic io_div2_io_div2_meas_ctrl_shadowed_regwen;
 
   always_comb begin
-    io_div2_io_div2_measure_ctrl_d = '0;
-    io_div2_io_div2_measure_ctrl_d[0] = io_div2_io_div2_measure_ctrl_en_qs_int;
-    io_div2_io_div2_measure_ctrl_d[12:4] = io_div2_io_div2_measure_ctrl_max_thresh_qs_int;
-    io_div2_io_div2_measure_ctrl_d[21:13] = io_div2_io_div2_measure_ctrl_min_thresh_qs_int;
+    io_div2_io_div2_meas_ctrl_shadowed_d = '0;
+    io_div2_io_div2_meas_ctrl_shadowed_d[0] = io_div2_io_div2_meas_ctrl_shadowed_en_qs_int;
+    io_div2_io_div2_meas_ctrl_shadowed_d[12:4] = io_div2_io_div2_meas_ctrl_shadowed_hi_qs_int;
+    io_div2_io_div2_meas_ctrl_shadowed_d[21:13] = io_div2_io_div2_meas_ctrl_shadowed_lo_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(22),
     .ResetVal(22'h1ccfa0),
     .BitMask(22'h3ffff1)
-  ) u_io_div2_measure_ctrl_cdc (
+  ) u_io_div2_meas_ctrl_shadowed_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_io_div2_i),
     .rst_dst_ni   (rst_io_div2_ni),
     .src_update_i (sync_io_div2_update),
     .src_regwen_i (measure_ctrl_regwen_qs),
-    .src_we_i     (io_div2_measure_ctrl_we),
-    .src_re_i     ('0),
+    .src_we_i     (io_div2_meas_ctrl_shadowed_we),
+    .src_re_i     (io_div2_meas_ctrl_shadowed_re),
     .src_wd_i     (reg_wdata[21:0]),
-    .src_busy_o   (io_div2_measure_ctrl_busy),
-    .src_qs_o     (io_div2_measure_ctrl_qs), // for software read back
-    .dst_d_i      (io_div2_io_div2_measure_ctrl_d),
-    .dst_we_o     (io_div2_io_div2_measure_ctrl_we),
-    .dst_re_o     (),
-    .dst_regwen_o (io_div2_io_div2_measure_ctrl_regwen),
-    .dst_wd_o     (io_div2_io_div2_measure_ctrl_wdata)
+    .src_busy_o   (io_div2_meas_ctrl_shadowed_busy),
+    .src_qs_o     (io_div2_meas_ctrl_shadowed_qs), // for software read back
+    .dst_d_i      (io_div2_io_div2_meas_ctrl_shadowed_d),
+    .dst_we_o     (io_div2_io_div2_meas_ctrl_shadowed_we),
+    .dst_re_o     (io_div2_io_div2_meas_ctrl_shadowed_re),
+    .dst_regwen_o (io_div2_io_div2_meas_ctrl_shadowed_regwen),
+    .dst_wd_o     (io_div2_io_div2_meas_ctrl_shadowed_wdata)
   );
-  assign unused_io_div2_io_div2_measure_ctrl_wdata =
-      ^io_div2_io_div2_measure_ctrl_wdata;
+  assign unused_io_div2_io_div2_meas_ctrl_shadowed_wdata =
+      ^io_div2_io_div2_meas_ctrl_shadowed_wdata;
 
-  logic  io_div4_io_div4_measure_ctrl_en_qs_int;
-  logic [7:0]  io_div4_io_div4_measure_ctrl_max_thresh_qs_int;
-  logic [7:0]  io_div4_io_div4_measure_ctrl_min_thresh_qs_int;
-  logic [19:0] io_div4_io_div4_measure_ctrl_d;
-  logic [19:0] io_div4_io_div4_measure_ctrl_wdata;
-  logic io_div4_io_div4_measure_ctrl_we;
-  logic unused_io_div4_io_div4_measure_ctrl_wdata;
-  logic io_div4_io_div4_measure_ctrl_regwen;
+  logic  io_div4_io_div4_meas_ctrl_shadowed_en_qs_int;
+  logic [7:0]  io_div4_io_div4_meas_ctrl_shadowed_hi_qs_int;
+  logic [7:0]  io_div4_io_div4_meas_ctrl_shadowed_lo_qs_int;
+  logic [19:0] io_div4_io_div4_meas_ctrl_shadowed_d;
+  logic [19:0] io_div4_io_div4_meas_ctrl_shadowed_wdata;
+  logic io_div4_io_div4_meas_ctrl_shadowed_we;
+  logic unused_io_div4_io_div4_meas_ctrl_shadowed_wdata;
+  logic io_div4_io_div4_meas_ctrl_shadowed_re;
+  logic io_div4_io_div4_meas_ctrl_shadowed_regwen;
 
   always_comb begin
-    io_div4_io_div4_measure_ctrl_d = '0;
-    io_div4_io_div4_measure_ctrl_d[0] = io_div4_io_div4_measure_ctrl_en_qs_int;
-    io_div4_io_div4_measure_ctrl_d[11:4] = io_div4_io_div4_measure_ctrl_max_thresh_qs_int;
-    io_div4_io_div4_measure_ctrl_d[19:12] = io_div4_io_div4_measure_ctrl_min_thresh_qs_int;
+    io_div4_io_div4_meas_ctrl_shadowed_d = '0;
+    io_div4_io_div4_meas_ctrl_shadowed_d[0] = io_div4_io_div4_meas_ctrl_shadowed_en_qs_int;
+    io_div4_io_div4_meas_ctrl_shadowed_d[11:4] = io_div4_io_div4_meas_ctrl_shadowed_hi_qs_int;
+    io_div4_io_div4_meas_ctrl_shadowed_d[19:12] = io_div4_io_div4_meas_ctrl_shadowed_lo_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(20),
     .ResetVal(20'h6e820),
     .BitMask(20'hffff1)
-  ) u_io_div4_measure_ctrl_cdc (
+  ) u_io_div4_meas_ctrl_shadowed_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_io_div4_i),
     .rst_dst_ni   (rst_io_div4_ni),
     .src_update_i (sync_io_div4_update),
     .src_regwen_i (measure_ctrl_regwen_qs),
-    .src_we_i     (io_div4_measure_ctrl_we),
-    .src_re_i     ('0),
+    .src_we_i     (io_div4_meas_ctrl_shadowed_we),
+    .src_re_i     (io_div4_meas_ctrl_shadowed_re),
     .src_wd_i     (reg_wdata[19:0]),
-    .src_busy_o   (io_div4_measure_ctrl_busy),
-    .src_qs_o     (io_div4_measure_ctrl_qs), // for software read back
-    .dst_d_i      (io_div4_io_div4_measure_ctrl_d),
-    .dst_we_o     (io_div4_io_div4_measure_ctrl_we),
-    .dst_re_o     (),
-    .dst_regwen_o (io_div4_io_div4_measure_ctrl_regwen),
-    .dst_wd_o     (io_div4_io_div4_measure_ctrl_wdata)
+    .src_busy_o   (io_div4_meas_ctrl_shadowed_busy),
+    .src_qs_o     (io_div4_meas_ctrl_shadowed_qs), // for software read back
+    .dst_d_i      (io_div4_io_div4_meas_ctrl_shadowed_d),
+    .dst_we_o     (io_div4_io_div4_meas_ctrl_shadowed_we),
+    .dst_re_o     (io_div4_io_div4_meas_ctrl_shadowed_re),
+    .dst_regwen_o (io_div4_io_div4_meas_ctrl_shadowed_regwen),
+    .dst_wd_o     (io_div4_io_div4_meas_ctrl_shadowed_wdata)
   );
-  assign unused_io_div4_io_div4_measure_ctrl_wdata =
-      ^io_div4_io_div4_measure_ctrl_wdata;
+  assign unused_io_div4_io_div4_meas_ctrl_shadowed_wdata =
+      ^io_div4_io_div4_meas_ctrl_shadowed_wdata;
 
-  logic  main_main_measure_ctrl_en_qs_int;
-  logic [9:0]  main_main_measure_ctrl_max_thresh_qs_int;
-  logic [9:0]  main_main_measure_ctrl_min_thresh_qs_int;
-  logic [23:0] main_main_measure_ctrl_d;
-  logic [23:0] main_main_measure_ctrl_wdata;
-  logic main_main_measure_ctrl_we;
-  logic unused_main_main_measure_ctrl_wdata;
-  logic main_main_measure_ctrl_regwen;
+  logic  main_main_meas_ctrl_shadowed_en_qs_int;
+  logic [9:0]  main_main_meas_ctrl_shadowed_hi_qs_int;
+  logic [9:0]  main_main_meas_ctrl_shadowed_lo_qs_int;
+  logic [23:0] main_main_meas_ctrl_shadowed_d;
+  logic [23:0] main_main_meas_ctrl_shadowed_wdata;
+  logic main_main_meas_ctrl_shadowed_we;
+  logic unused_main_main_meas_ctrl_shadowed_wdata;
+  logic main_main_meas_ctrl_shadowed_re;
+  logic main_main_meas_ctrl_shadowed_regwen;
 
   always_comb begin
-    main_main_measure_ctrl_d = '0;
-    main_main_measure_ctrl_d[0] = main_main_measure_ctrl_en_qs_int;
-    main_main_measure_ctrl_d[13:4] = main_main_measure_ctrl_max_thresh_qs_int;
-    main_main_measure_ctrl_d[23:14] = main_main_measure_ctrl_min_thresh_qs_int;
+    main_main_meas_ctrl_shadowed_d = '0;
+    main_main_meas_ctrl_shadowed_d[0] = main_main_meas_ctrl_shadowed_en_qs_int;
+    main_main_meas_ctrl_shadowed_d[13:4] = main_main_meas_ctrl_shadowed_hi_qs_int;
+    main_main_meas_ctrl_shadowed_d[23:14] = main_main_meas_ctrl_shadowed_lo_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(24),
     .ResetVal(24'h7a9fe0),
     .BitMask(24'hfffff1)
-  ) u_main_measure_ctrl_cdc (
+  ) u_main_meas_ctrl_shadowed_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_main_i),
     .rst_dst_ni   (rst_main_ni),
     .src_update_i (sync_main_update),
     .src_regwen_i (measure_ctrl_regwen_qs),
-    .src_we_i     (main_measure_ctrl_we),
-    .src_re_i     ('0),
+    .src_we_i     (main_meas_ctrl_shadowed_we),
+    .src_re_i     (main_meas_ctrl_shadowed_re),
     .src_wd_i     (reg_wdata[23:0]),
-    .src_busy_o   (main_measure_ctrl_busy),
-    .src_qs_o     (main_measure_ctrl_qs), // for software read back
-    .dst_d_i      (main_main_measure_ctrl_d),
-    .dst_we_o     (main_main_measure_ctrl_we),
-    .dst_re_o     (),
-    .dst_regwen_o (main_main_measure_ctrl_regwen),
-    .dst_wd_o     (main_main_measure_ctrl_wdata)
+    .src_busy_o   (main_meas_ctrl_shadowed_busy),
+    .src_qs_o     (main_meas_ctrl_shadowed_qs), // for software read back
+    .dst_d_i      (main_main_meas_ctrl_shadowed_d),
+    .dst_we_o     (main_main_meas_ctrl_shadowed_we),
+    .dst_re_o     (main_main_meas_ctrl_shadowed_re),
+    .dst_regwen_o (main_main_meas_ctrl_shadowed_regwen),
+    .dst_wd_o     (main_main_meas_ctrl_shadowed_wdata)
   );
-  assign unused_main_main_measure_ctrl_wdata =
-      ^main_main_measure_ctrl_wdata;
+  assign unused_main_main_meas_ctrl_shadowed_wdata =
+      ^main_main_meas_ctrl_shadowed_wdata;
 
-  logic  usb_usb_measure_ctrl_en_qs_int;
-  logic [8:0]  usb_usb_measure_ctrl_max_thresh_qs_int;
-  logic [8:0]  usb_usb_measure_ctrl_min_thresh_qs_int;
-  logic [21:0] usb_usb_measure_ctrl_d;
-  logic [21:0] usb_usb_measure_ctrl_wdata;
-  logic usb_usb_measure_ctrl_we;
-  logic unused_usb_usb_measure_ctrl_wdata;
-  logic usb_usb_measure_ctrl_regwen;
+  logic  usb_usb_meas_ctrl_shadowed_en_qs_int;
+  logic [8:0]  usb_usb_meas_ctrl_shadowed_hi_qs_int;
+  logic [8:0]  usb_usb_meas_ctrl_shadowed_lo_qs_int;
+  logic [21:0] usb_usb_meas_ctrl_shadowed_d;
+  logic [21:0] usb_usb_meas_ctrl_shadowed_wdata;
+  logic usb_usb_meas_ctrl_shadowed_we;
+  logic unused_usb_usb_meas_ctrl_shadowed_wdata;
+  logic usb_usb_meas_ctrl_shadowed_re;
+  logic usb_usb_meas_ctrl_shadowed_regwen;
 
   always_comb begin
-    usb_usb_measure_ctrl_d = '0;
-    usb_usb_measure_ctrl_d[0] = usb_usb_measure_ctrl_en_qs_int;
-    usb_usb_measure_ctrl_d[12:4] = usb_usb_measure_ctrl_max_thresh_qs_int;
-    usb_usb_measure_ctrl_d[21:13] = usb_usb_measure_ctrl_min_thresh_qs_int;
+    usb_usb_meas_ctrl_shadowed_d = '0;
+    usb_usb_meas_ctrl_shadowed_d[0] = usb_usb_meas_ctrl_shadowed_en_qs_int;
+    usb_usb_meas_ctrl_shadowed_d[12:4] = usb_usb_meas_ctrl_shadowed_hi_qs_int;
+    usb_usb_meas_ctrl_shadowed_d[21:13] = usb_usb_meas_ctrl_shadowed_lo_qs_int;
   end
 
   prim_reg_cdc #(
     .DataWidth(22),
     .ResetVal(22'h1ccfa0),
     .BitMask(22'h3ffff1)
-  ) u_usb_measure_ctrl_cdc (
+  ) u_usb_meas_ctrl_shadowed_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_usb_i),
     .rst_dst_ni   (rst_usb_ni),
     .src_update_i (sync_usb_update),
     .src_regwen_i (measure_ctrl_regwen_qs),
-    .src_we_i     (usb_measure_ctrl_we),
-    .src_re_i     ('0),
+    .src_we_i     (usb_meas_ctrl_shadowed_we),
+    .src_re_i     (usb_meas_ctrl_shadowed_re),
     .src_wd_i     (reg_wdata[21:0]),
-    .src_busy_o   (usb_measure_ctrl_busy),
-    .src_qs_o     (usb_measure_ctrl_qs), // for software read back
-    .dst_d_i      (usb_usb_measure_ctrl_d),
-    .dst_we_o     (usb_usb_measure_ctrl_we),
-    .dst_re_o     (),
-    .dst_regwen_o (usb_usb_measure_ctrl_regwen),
-    .dst_wd_o     (usb_usb_measure_ctrl_wdata)
+    .src_busy_o   (usb_meas_ctrl_shadowed_busy),
+    .src_qs_o     (usb_meas_ctrl_shadowed_qs), // for software read back
+    .dst_d_i      (usb_usb_meas_ctrl_shadowed_d),
+    .dst_we_o     (usb_usb_meas_ctrl_shadowed_we),
+    .dst_re_o     (usb_usb_meas_ctrl_shadowed_re),
+    .dst_regwen_o (usb_usb_meas_ctrl_shadowed_regwen),
+    .dst_wd_o     (usb_usb_meas_ctrl_shadowed_wdata)
   );
-  assign unused_usb_usb_measure_ctrl_wdata =
-      ^usb_usb_measure_ctrl_wdata;
+  assign unused_usb_usb_meas_ctrl_shadowed_wdata =
+      ^usb_usb_meas_ctrl_shadowed_wdata;
 
   // Register instances
   // R[alert_test]: V(True)
@@ -982,19 +1008,45 @@ module clkmgr_reg_top (
   );
 
 
-  // R[io_measure_ctrl]: V(False)
+  // R[io_meas_ctrl_shadowed]: V(False)
   //   F[en]: 0:0
-  prim_subreg #(
+  logic async_io_meas_ctrl_shadowed_en_err_update;
+  logic async_io_meas_ctrl_shadowed_en_err_storage;
+
+  // storage error is persistent and can be sampled at any time
+  prim_flop_en #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_io_meas_ctrl_shadowed_en_err_storage_sync (
+    .clk_i,
+    .rst_ni,
+    .en_i(sync_io_update),
+    .d_i(async_io_meas_ctrl_shadowed_en_err_storage),
+    .q_o(reg2hw.io_meas_ctrl_shadowed.en.err_storage)
+  );
+
+  // update error is transient and must be immediately captured
+  prim_pulse_sync u_io_meas_ctrl_shadowed_en_err_update_sync (
+    .clk_src_i(clk_io_i),
+    .rst_src_ni(rst_io_ni),
+    .src_pulse_i(async_io_meas_ctrl_shadowed_en_err_update),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(reg2hw.io_meas_ctrl_shadowed.en.err_update)
+  );
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_io_measure_ctrl_en (
+  ) u_io_meas_ctrl_shadowed_en (
     .clk_i   (clk_io_i),
     .rst_ni  (rst_io_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (io_io_measure_ctrl_we & io_io_measure_ctrl_regwen),
-    .wd     (io_io_measure_ctrl_wdata[0]),
+    .re     (io_io_meas_ctrl_shadowed_re),
+    .we     (io_io_meas_ctrl_shadowed_we & io_io_meas_ctrl_shadowed_regwen),
+    .wd     (io_io_meas_ctrl_shadowed_wdata[0]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1002,24 +1054,57 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.io_measure_ctrl.en.q),
+    .q      (reg2hw.io_meas_ctrl_shadowed.en.q),
 
     // to register interface (read)
-    .qs     (io_io_measure_ctrl_en_qs_int)
+    .qs     (io_io_meas_ctrl_shadowed_en_qs_int),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
+    // Shadow register error conditions
+    .err_update  (async_io_meas_ctrl_shadowed_en_err_update),
+    .err_storage (async_io_meas_ctrl_shadowed_en_err_storage)
   );
 
-  //   F[max_thresh]: 13:4
-  prim_subreg #(
+  //   F[hi]: 13:4
+  logic async_io_meas_ctrl_shadowed_hi_err_update;
+  logic async_io_meas_ctrl_shadowed_hi_err_storage;
+
+  // storage error is persistent and can be sampled at any time
+  prim_flop_en #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_io_meas_ctrl_shadowed_hi_err_storage_sync (
+    .clk_i,
+    .rst_ni,
+    .en_i(sync_io_update),
+    .d_i(async_io_meas_ctrl_shadowed_hi_err_storage),
+    .q_o(reg2hw.io_meas_ctrl_shadowed.hi.err_storage)
+  );
+
+  // update error is transient and must be immediately captured
+  prim_pulse_sync u_io_meas_ctrl_shadowed_hi_err_update_sync (
+    .clk_src_i(clk_io_i),
+    .rst_src_ni(rst_io_ni),
+    .src_pulse_i(async_io_meas_ctrl_shadowed_hi_err_update),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(reg2hw.io_meas_ctrl_shadowed.hi.err_update)
+  );
+  prim_subreg_shadow #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h1ea)
-  ) u_io_measure_ctrl_max_thresh (
+  ) u_io_meas_ctrl_shadowed_hi (
     .clk_i   (clk_io_i),
     .rst_ni  (rst_io_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (io_io_measure_ctrl_we & io_io_measure_ctrl_regwen),
-    .wd     (io_io_measure_ctrl_wdata[13:4]),
+    .re     (io_io_meas_ctrl_shadowed_re),
+    .we     (io_io_meas_ctrl_shadowed_we & io_io_meas_ctrl_shadowed_regwen),
+    .wd     (io_io_meas_ctrl_shadowed_wdata[13:4]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1027,24 +1112,57 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.io_measure_ctrl.max_thresh.q),
+    .q      (reg2hw.io_meas_ctrl_shadowed.hi.q),
 
     // to register interface (read)
-    .qs     (io_io_measure_ctrl_max_thresh_qs_int)
+    .qs     (io_io_meas_ctrl_shadowed_hi_qs_int),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
+    // Shadow register error conditions
+    .err_update  (async_io_meas_ctrl_shadowed_hi_err_update),
+    .err_storage (async_io_meas_ctrl_shadowed_hi_err_storage)
   );
 
-  //   F[min_thresh]: 23:14
-  prim_subreg #(
+  //   F[lo]: 23:14
+  logic async_io_meas_ctrl_shadowed_lo_err_update;
+  logic async_io_meas_ctrl_shadowed_lo_err_storage;
+
+  // storage error is persistent and can be sampled at any time
+  prim_flop_en #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_io_meas_ctrl_shadowed_lo_err_storage_sync (
+    .clk_i,
+    .rst_ni,
+    .en_i(sync_io_update),
+    .d_i(async_io_meas_ctrl_shadowed_lo_err_storage),
+    .q_o(reg2hw.io_meas_ctrl_shadowed.lo.err_storage)
+  );
+
+  // update error is transient and must be immediately captured
+  prim_pulse_sync u_io_meas_ctrl_shadowed_lo_err_update_sync (
+    .clk_src_i(clk_io_i),
+    .rst_src_ni(rst_io_ni),
+    .src_pulse_i(async_io_meas_ctrl_shadowed_lo_err_update),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(reg2hw.io_meas_ctrl_shadowed.lo.err_update)
+  );
+  prim_subreg_shadow #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h1d6)
-  ) u_io_measure_ctrl_min_thresh (
+  ) u_io_meas_ctrl_shadowed_lo (
     .clk_i   (clk_io_i),
     .rst_ni  (rst_io_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (io_io_measure_ctrl_we & io_io_measure_ctrl_regwen),
-    .wd     (io_io_measure_ctrl_wdata[23:14]),
+    .re     (io_io_meas_ctrl_shadowed_re),
+    .we     (io_io_meas_ctrl_shadowed_we & io_io_meas_ctrl_shadowed_regwen),
+    .wd     (io_io_meas_ctrl_shadowed_wdata[23:14]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1052,26 +1170,59 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.io_measure_ctrl.min_thresh.q),
+    .q      (reg2hw.io_meas_ctrl_shadowed.lo.q),
 
     // to register interface (read)
-    .qs     (io_io_measure_ctrl_min_thresh_qs_int)
+    .qs     (io_io_meas_ctrl_shadowed_lo_qs_int),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
+    // Shadow register error conditions
+    .err_update  (async_io_meas_ctrl_shadowed_lo_err_update),
+    .err_storage (async_io_meas_ctrl_shadowed_lo_err_storage)
   );
 
 
-  // R[io_div2_measure_ctrl]: V(False)
+  // R[io_div2_meas_ctrl_shadowed]: V(False)
   //   F[en]: 0:0
-  prim_subreg #(
+  logic async_io_div2_meas_ctrl_shadowed_en_err_update;
+  logic async_io_div2_meas_ctrl_shadowed_en_err_storage;
+
+  // storage error is persistent and can be sampled at any time
+  prim_flop_en #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_io_div2_meas_ctrl_shadowed_en_err_storage_sync (
+    .clk_i,
+    .rst_ni,
+    .en_i(sync_io_div2_update),
+    .d_i(async_io_div2_meas_ctrl_shadowed_en_err_storage),
+    .q_o(reg2hw.io_div2_meas_ctrl_shadowed.en.err_storage)
+  );
+
+  // update error is transient and must be immediately captured
+  prim_pulse_sync u_io_div2_meas_ctrl_shadowed_en_err_update_sync (
+    .clk_src_i(clk_io_div2_i),
+    .rst_src_ni(rst_io_div2_ni),
+    .src_pulse_i(async_io_div2_meas_ctrl_shadowed_en_err_update),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(reg2hw.io_div2_meas_ctrl_shadowed.en.err_update)
+  );
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_io_div2_measure_ctrl_en (
+  ) u_io_div2_meas_ctrl_shadowed_en (
     .clk_i   (clk_io_div2_i),
     .rst_ni  (rst_io_div2_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (io_div2_io_div2_measure_ctrl_we & io_div2_io_div2_measure_ctrl_regwen),
-    .wd     (io_div2_io_div2_measure_ctrl_wdata[0]),
+    .re     (io_div2_io_div2_meas_ctrl_shadowed_re),
+    .we     (io_div2_io_div2_meas_ctrl_shadowed_we & io_div2_io_div2_meas_ctrl_shadowed_regwen),
+    .wd     (io_div2_io_div2_meas_ctrl_shadowed_wdata[0]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1079,24 +1230,57 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.io_div2_measure_ctrl.en.q),
+    .q      (reg2hw.io_div2_meas_ctrl_shadowed.en.q),
 
     // to register interface (read)
-    .qs     (io_div2_io_div2_measure_ctrl_en_qs_int)
+    .qs     (io_div2_io_div2_meas_ctrl_shadowed_en_qs_int),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
+    // Shadow register error conditions
+    .err_update  (async_io_div2_meas_ctrl_shadowed_en_err_update),
+    .err_storage (async_io_div2_meas_ctrl_shadowed_en_err_storage)
   );
 
-  //   F[max_thresh]: 12:4
-  prim_subreg #(
+  //   F[hi]: 12:4
+  logic async_io_div2_meas_ctrl_shadowed_hi_err_update;
+  logic async_io_div2_meas_ctrl_shadowed_hi_err_storage;
+
+  // storage error is persistent and can be sampled at any time
+  prim_flop_en #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_io_div2_meas_ctrl_shadowed_hi_err_storage_sync (
+    .clk_i,
+    .rst_ni,
+    .en_i(sync_io_div2_update),
+    .d_i(async_io_div2_meas_ctrl_shadowed_hi_err_storage),
+    .q_o(reg2hw.io_div2_meas_ctrl_shadowed.hi.err_storage)
+  );
+
+  // update error is transient and must be immediately captured
+  prim_pulse_sync u_io_div2_meas_ctrl_shadowed_hi_err_update_sync (
+    .clk_src_i(clk_io_div2_i),
+    .rst_src_ni(rst_io_div2_ni),
+    .src_pulse_i(async_io_div2_meas_ctrl_shadowed_hi_err_update),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(reg2hw.io_div2_meas_ctrl_shadowed.hi.err_update)
+  );
+  prim_subreg_shadow #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (9'hfa)
-  ) u_io_div2_measure_ctrl_max_thresh (
+  ) u_io_div2_meas_ctrl_shadowed_hi (
     .clk_i   (clk_io_div2_i),
     .rst_ni  (rst_io_div2_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (io_div2_io_div2_measure_ctrl_we & io_div2_io_div2_measure_ctrl_regwen),
-    .wd     (io_div2_io_div2_measure_ctrl_wdata[12:4]),
+    .re     (io_div2_io_div2_meas_ctrl_shadowed_re),
+    .we     (io_div2_io_div2_meas_ctrl_shadowed_we & io_div2_io_div2_meas_ctrl_shadowed_regwen),
+    .wd     (io_div2_io_div2_meas_ctrl_shadowed_wdata[12:4]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1104,24 +1288,57 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.io_div2_measure_ctrl.max_thresh.q),
+    .q      (reg2hw.io_div2_meas_ctrl_shadowed.hi.q),
 
     // to register interface (read)
-    .qs     (io_div2_io_div2_measure_ctrl_max_thresh_qs_int)
+    .qs     (io_div2_io_div2_meas_ctrl_shadowed_hi_qs_int),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
+    // Shadow register error conditions
+    .err_update  (async_io_div2_meas_ctrl_shadowed_hi_err_update),
+    .err_storage (async_io_div2_meas_ctrl_shadowed_hi_err_storage)
   );
 
-  //   F[min_thresh]: 21:13
-  prim_subreg #(
+  //   F[lo]: 21:13
+  logic async_io_div2_meas_ctrl_shadowed_lo_err_update;
+  logic async_io_div2_meas_ctrl_shadowed_lo_err_storage;
+
+  // storage error is persistent and can be sampled at any time
+  prim_flop_en #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_io_div2_meas_ctrl_shadowed_lo_err_storage_sync (
+    .clk_i,
+    .rst_ni,
+    .en_i(sync_io_div2_update),
+    .d_i(async_io_div2_meas_ctrl_shadowed_lo_err_storage),
+    .q_o(reg2hw.io_div2_meas_ctrl_shadowed.lo.err_storage)
+  );
+
+  // update error is transient and must be immediately captured
+  prim_pulse_sync u_io_div2_meas_ctrl_shadowed_lo_err_update_sync (
+    .clk_src_i(clk_io_div2_i),
+    .rst_src_ni(rst_io_div2_ni),
+    .src_pulse_i(async_io_div2_meas_ctrl_shadowed_lo_err_update),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(reg2hw.io_div2_meas_ctrl_shadowed.lo.err_update)
+  );
+  prim_subreg_shadow #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (9'he6)
-  ) u_io_div2_measure_ctrl_min_thresh (
+  ) u_io_div2_meas_ctrl_shadowed_lo (
     .clk_i   (clk_io_div2_i),
     .rst_ni  (rst_io_div2_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (io_div2_io_div2_measure_ctrl_we & io_div2_io_div2_measure_ctrl_regwen),
-    .wd     (io_div2_io_div2_measure_ctrl_wdata[21:13]),
+    .re     (io_div2_io_div2_meas_ctrl_shadowed_re),
+    .we     (io_div2_io_div2_meas_ctrl_shadowed_we & io_div2_io_div2_meas_ctrl_shadowed_regwen),
+    .wd     (io_div2_io_div2_meas_ctrl_shadowed_wdata[21:13]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1129,26 +1346,59 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.io_div2_measure_ctrl.min_thresh.q),
+    .q      (reg2hw.io_div2_meas_ctrl_shadowed.lo.q),
 
     // to register interface (read)
-    .qs     (io_div2_io_div2_measure_ctrl_min_thresh_qs_int)
+    .qs     (io_div2_io_div2_meas_ctrl_shadowed_lo_qs_int),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
+    // Shadow register error conditions
+    .err_update  (async_io_div2_meas_ctrl_shadowed_lo_err_update),
+    .err_storage (async_io_div2_meas_ctrl_shadowed_lo_err_storage)
   );
 
 
-  // R[io_div4_measure_ctrl]: V(False)
+  // R[io_div4_meas_ctrl_shadowed]: V(False)
   //   F[en]: 0:0
-  prim_subreg #(
+  logic async_io_div4_meas_ctrl_shadowed_en_err_update;
+  logic async_io_div4_meas_ctrl_shadowed_en_err_storage;
+
+  // storage error is persistent and can be sampled at any time
+  prim_flop_en #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_io_div4_meas_ctrl_shadowed_en_err_storage_sync (
+    .clk_i,
+    .rst_ni,
+    .en_i(sync_io_div4_update),
+    .d_i(async_io_div4_meas_ctrl_shadowed_en_err_storage),
+    .q_o(reg2hw.io_div4_meas_ctrl_shadowed.en.err_storage)
+  );
+
+  // update error is transient and must be immediately captured
+  prim_pulse_sync u_io_div4_meas_ctrl_shadowed_en_err_update_sync (
+    .clk_src_i(clk_io_div4_i),
+    .rst_src_ni(rst_io_div4_ni),
+    .src_pulse_i(async_io_div4_meas_ctrl_shadowed_en_err_update),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(reg2hw.io_div4_meas_ctrl_shadowed.en.err_update)
+  );
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_io_div4_measure_ctrl_en (
+  ) u_io_div4_meas_ctrl_shadowed_en (
     .clk_i   (clk_io_div4_i),
     .rst_ni  (rst_io_div4_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (io_div4_io_div4_measure_ctrl_we & io_div4_io_div4_measure_ctrl_regwen),
-    .wd     (io_div4_io_div4_measure_ctrl_wdata[0]),
+    .re     (io_div4_io_div4_meas_ctrl_shadowed_re),
+    .we     (io_div4_io_div4_meas_ctrl_shadowed_we & io_div4_io_div4_meas_ctrl_shadowed_regwen),
+    .wd     (io_div4_io_div4_meas_ctrl_shadowed_wdata[0]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1156,24 +1406,57 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.io_div4_measure_ctrl.en.q),
+    .q      (reg2hw.io_div4_meas_ctrl_shadowed.en.q),
 
     // to register interface (read)
-    .qs     (io_div4_io_div4_measure_ctrl_en_qs_int)
+    .qs     (io_div4_io_div4_meas_ctrl_shadowed_en_qs_int),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
+    // Shadow register error conditions
+    .err_update  (async_io_div4_meas_ctrl_shadowed_en_err_update),
+    .err_storage (async_io_div4_meas_ctrl_shadowed_en_err_storage)
   );
 
-  //   F[max_thresh]: 11:4
-  prim_subreg #(
+  //   F[hi]: 11:4
+  logic async_io_div4_meas_ctrl_shadowed_hi_err_update;
+  logic async_io_div4_meas_ctrl_shadowed_hi_err_storage;
+
+  // storage error is persistent and can be sampled at any time
+  prim_flop_en #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_io_div4_meas_ctrl_shadowed_hi_err_storage_sync (
+    .clk_i,
+    .rst_ni,
+    .en_i(sync_io_div4_update),
+    .d_i(async_io_div4_meas_ctrl_shadowed_hi_err_storage),
+    .q_o(reg2hw.io_div4_meas_ctrl_shadowed.hi.err_storage)
+  );
+
+  // update error is transient and must be immediately captured
+  prim_pulse_sync u_io_div4_meas_ctrl_shadowed_hi_err_update_sync (
+    .clk_src_i(clk_io_div4_i),
+    .rst_src_ni(rst_io_div4_ni),
+    .src_pulse_i(async_io_div4_meas_ctrl_shadowed_hi_err_update),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(reg2hw.io_div4_meas_ctrl_shadowed.hi.err_update)
+  );
+  prim_subreg_shadow #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h82)
-  ) u_io_div4_measure_ctrl_max_thresh (
+  ) u_io_div4_meas_ctrl_shadowed_hi (
     .clk_i   (clk_io_div4_i),
     .rst_ni  (rst_io_div4_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (io_div4_io_div4_measure_ctrl_we & io_div4_io_div4_measure_ctrl_regwen),
-    .wd     (io_div4_io_div4_measure_ctrl_wdata[11:4]),
+    .re     (io_div4_io_div4_meas_ctrl_shadowed_re),
+    .we     (io_div4_io_div4_meas_ctrl_shadowed_we & io_div4_io_div4_meas_ctrl_shadowed_regwen),
+    .wd     (io_div4_io_div4_meas_ctrl_shadowed_wdata[11:4]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1181,24 +1464,57 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.io_div4_measure_ctrl.max_thresh.q),
+    .q      (reg2hw.io_div4_meas_ctrl_shadowed.hi.q),
 
     // to register interface (read)
-    .qs     (io_div4_io_div4_measure_ctrl_max_thresh_qs_int)
+    .qs     (io_div4_io_div4_meas_ctrl_shadowed_hi_qs_int),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
+    // Shadow register error conditions
+    .err_update  (async_io_div4_meas_ctrl_shadowed_hi_err_update),
+    .err_storage (async_io_div4_meas_ctrl_shadowed_hi_err_storage)
   );
 
-  //   F[min_thresh]: 19:12
-  prim_subreg #(
+  //   F[lo]: 19:12
+  logic async_io_div4_meas_ctrl_shadowed_lo_err_update;
+  logic async_io_div4_meas_ctrl_shadowed_lo_err_storage;
+
+  // storage error is persistent and can be sampled at any time
+  prim_flop_en #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_io_div4_meas_ctrl_shadowed_lo_err_storage_sync (
+    .clk_i,
+    .rst_ni,
+    .en_i(sync_io_div4_update),
+    .d_i(async_io_div4_meas_ctrl_shadowed_lo_err_storage),
+    .q_o(reg2hw.io_div4_meas_ctrl_shadowed.lo.err_storage)
+  );
+
+  // update error is transient and must be immediately captured
+  prim_pulse_sync u_io_div4_meas_ctrl_shadowed_lo_err_update_sync (
+    .clk_src_i(clk_io_div4_i),
+    .rst_src_ni(rst_io_div4_ni),
+    .src_pulse_i(async_io_div4_meas_ctrl_shadowed_lo_err_update),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(reg2hw.io_div4_meas_ctrl_shadowed.lo.err_update)
+  );
+  prim_subreg_shadow #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h6e)
-  ) u_io_div4_measure_ctrl_min_thresh (
+  ) u_io_div4_meas_ctrl_shadowed_lo (
     .clk_i   (clk_io_div4_i),
     .rst_ni  (rst_io_div4_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (io_div4_io_div4_measure_ctrl_we & io_div4_io_div4_measure_ctrl_regwen),
-    .wd     (io_div4_io_div4_measure_ctrl_wdata[19:12]),
+    .re     (io_div4_io_div4_meas_ctrl_shadowed_re),
+    .we     (io_div4_io_div4_meas_ctrl_shadowed_we & io_div4_io_div4_meas_ctrl_shadowed_regwen),
+    .wd     (io_div4_io_div4_meas_ctrl_shadowed_wdata[19:12]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1206,26 +1522,59 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.io_div4_measure_ctrl.min_thresh.q),
+    .q      (reg2hw.io_div4_meas_ctrl_shadowed.lo.q),
 
     // to register interface (read)
-    .qs     (io_div4_io_div4_measure_ctrl_min_thresh_qs_int)
+    .qs     (io_div4_io_div4_meas_ctrl_shadowed_lo_qs_int),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
+    // Shadow register error conditions
+    .err_update  (async_io_div4_meas_ctrl_shadowed_lo_err_update),
+    .err_storage (async_io_div4_meas_ctrl_shadowed_lo_err_storage)
   );
 
 
-  // R[main_measure_ctrl]: V(False)
+  // R[main_meas_ctrl_shadowed]: V(False)
   //   F[en]: 0:0
-  prim_subreg #(
+  logic async_main_meas_ctrl_shadowed_en_err_update;
+  logic async_main_meas_ctrl_shadowed_en_err_storage;
+
+  // storage error is persistent and can be sampled at any time
+  prim_flop_en #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_main_meas_ctrl_shadowed_en_err_storage_sync (
+    .clk_i,
+    .rst_ni,
+    .en_i(sync_main_update),
+    .d_i(async_main_meas_ctrl_shadowed_en_err_storage),
+    .q_o(reg2hw.main_meas_ctrl_shadowed.en.err_storage)
+  );
+
+  // update error is transient and must be immediately captured
+  prim_pulse_sync u_main_meas_ctrl_shadowed_en_err_update_sync (
+    .clk_src_i(clk_main_i),
+    .rst_src_ni(rst_main_ni),
+    .src_pulse_i(async_main_meas_ctrl_shadowed_en_err_update),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(reg2hw.main_meas_ctrl_shadowed.en.err_update)
+  );
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_main_measure_ctrl_en (
+  ) u_main_meas_ctrl_shadowed_en (
     .clk_i   (clk_main_i),
     .rst_ni  (rst_main_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (main_main_measure_ctrl_we & main_main_measure_ctrl_regwen),
-    .wd     (main_main_measure_ctrl_wdata[0]),
+    .re     (main_main_meas_ctrl_shadowed_re),
+    .we     (main_main_meas_ctrl_shadowed_we & main_main_meas_ctrl_shadowed_regwen),
+    .wd     (main_main_meas_ctrl_shadowed_wdata[0]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1233,24 +1582,57 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.main_measure_ctrl.en.q),
+    .q      (reg2hw.main_meas_ctrl_shadowed.en.q),
 
     // to register interface (read)
-    .qs     (main_main_measure_ctrl_en_qs_int)
+    .qs     (main_main_meas_ctrl_shadowed_en_qs_int),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
+    // Shadow register error conditions
+    .err_update  (async_main_meas_ctrl_shadowed_en_err_update),
+    .err_storage (async_main_meas_ctrl_shadowed_en_err_storage)
   );
 
-  //   F[max_thresh]: 13:4
-  prim_subreg #(
+  //   F[hi]: 13:4
+  logic async_main_meas_ctrl_shadowed_hi_err_update;
+  logic async_main_meas_ctrl_shadowed_hi_err_storage;
+
+  // storage error is persistent and can be sampled at any time
+  prim_flop_en #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_main_meas_ctrl_shadowed_hi_err_storage_sync (
+    .clk_i,
+    .rst_ni,
+    .en_i(sync_main_update),
+    .d_i(async_main_meas_ctrl_shadowed_hi_err_storage),
+    .q_o(reg2hw.main_meas_ctrl_shadowed.hi.err_storage)
+  );
+
+  // update error is transient and must be immediately captured
+  prim_pulse_sync u_main_meas_ctrl_shadowed_hi_err_update_sync (
+    .clk_src_i(clk_main_i),
+    .rst_src_ni(rst_main_ni),
+    .src_pulse_i(async_main_meas_ctrl_shadowed_hi_err_update),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(reg2hw.main_meas_ctrl_shadowed.hi.err_update)
+  );
+  prim_subreg_shadow #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h1fe)
-  ) u_main_measure_ctrl_max_thresh (
+  ) u_main_meas_ctrl_shadowed_hi (
     .clk_i   (clk_main_i),
     .rst_ni  (rst_main_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (main_main_measure_ctrl_we & main_main_measure_ctrl_regwen),
-    .wd     (main_main_measure_ctrl_wdata[13:4]),
+    .re     (main_main_meas_ctrl_shadowed_re),
+    .we     (main_main_meas_ctrl_shadowed_we & main_main_meas_ctrl_shadowed_regwen),
+    .wd     (main_main_meas_ctrl_shadowed_wdata[13:4]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1258,24 +1640,57 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.main_measure_ctrl.max_thresh.q),
+    .q      (reg2hw.main_meas_ctrl_shadowed.hi.q),
 
     // to register interface (read)
-    .qs     (main_main_measure_ctrl_max_thresh_qs_int)
+    .qs     (main_main_meas_ctrl_shadowed_hi_qs_int),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
+    // Shadow register error conditions
+    .err_update  (async_main_meas_ctrl_shadowed_hi_err_update),
+    .err_storage (async_main_meas_ctrl_shadowed_hi_err_storage)
   );
 
-  //   F[min_thresh]: 23:14
-  prim_subreg #(
+  //   F[lo]: 23:14
+  logic async_main_meas_ctrl_shadowed_lo_err_update;
+  logic async_main_meas_ctrl_shadowed_lo_err_storage;
+
+  // storage error is persistent and can be sampled at any time
+  prim_flop_en #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_main_meas_ctrl_shadowed_lo_err_storage_sync (
+    .clk_i,
+    .rst_ni,
+    .en_i(sync_main_update),
+    .d_i(async_main_meas_ctrl_shadowed_lo_err_storage),
+    .q_o(reg2hw.main_meas_ctrl_shadowed.lo.err_storage)
+  );
+
+  // update error is transient and must be immediately captured
+  prim_pulse_sync u_main_meas_ctrl_shadowed_lo_err_update_sync (
+    .clk_src_i(clk_main_i),
+    .rst_src_ni(rst_main_ni),
+    .src_pulse_i(async_main_meas_ctrl_shadowed_lo_err_update),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(reg2hw.main_meas_ctrl_shadowed.lo.err_update)
+  );
+  prim_subreg_shadow #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h1ea)
-  ) u_main_measure_ctrl_min_thresh (
+  ) u_main_meas_ctrl_shadowed_lo (
     .clk_i   (clk_main_i),
     .rst_ni  (rst_main_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (main_main_measure_ctrl_we & main_main_measure_ctrl_regwen),
-    .wd     (main_main_measure_ctrl_wdata[23:14]),
+    .re     (main_main_meas_ctrl_shadowed_re),
+    .we     (main_main_meas_ctrl_shadowed_we & main_main_meas_ctrl_shadowed_regwen),
+    .wd     (main_main_meas_ctrl_shadowed_wdata[23:14]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1283,26 +1698,59 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.main_measure_ctrl.min_thresh.q),
+    .q      (reg2hw.main_meas_ctrl_shadowed.lo.q),
 
     // to register interface (read)
-    .qs     (main_main_measure_ctrl_min_thresh_qs_int)
+    .qs     (main_main_meas_ctrl_shadowed_lo_qs_int),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
+    // Shadow register error conditions
+    .err_update  (async_main_meas_ctrl_shadowed_lo_err_update),
+    .err_storage (async_main_meas_ctrl_shadowed_lo_err_storage)
   );
 
 
-  // R[usb_measure_ctrl]: V(False)
+  // R[usb_meas_ctrl_shadowed]: V(False)
   //   F[en]: 0:0
-  prim_subreg #(
+  logic async_usb_meas_ctrl_shadowed_en_err_update;
+  logic async_usb_meas_ctrl_shadowed_en_err_storage;
+
+  // storage error is persistent and can be sampled at any time
+  prim_flop_en #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_usb_meas_ctrl_shadowed_en_err_storage_sync (
+    .clk_i,
+    .rst_ni,
+    .en_i(sync_usb_update),
+    .d_i(async_usb_meas_ctrl_shadowed_en_err_storage),
+    .q_o(reg2hw.usb_meas_ctrl_shadowed.en.err_storage)
+  );
+
+  // update error is transient and must be immediately captured
+  prim_pulse_sync u_usb_meas_ctrl_shadowed_en_err_update_sync (
+    .clk_src_i(clk_usb_i),
+    .rst_src_ni(rst_usb_ni),
+    .src_pulse_i(async_usb_meas_ctrl_shadowed_en_err_update),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(reg2hw.usb_meas_ctrl_shadowed.en.err_update)
+  );
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_usb_measure_ctrl_en (
+  ) u_usb_meas_ctrl_shadowed_en (
     .clk_i   (clk_usb_i),
     .rst_ni  (rst_usb_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (usb_usb_measure_ctrl_we & usb_usb_measure_ctrl_regwen),
-    .wd     (usb_usb_measure_ctrl_wdata[0]),
+    .re     (usb_usb_meas_ctrl_shadowed_re),
+    .we     (usb_usb_meas_ctrl_shadowed_we & usb_usb_meas_ctrl_shadowed_regwen),
+    .wd     (usb_usb_meas_ctrl_shadowed_wdata[0]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1310,24 +1758,57 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.usb_measure_ctrl.en.q),
+    .q      (reg2hw.usb_meas_ctrl_shadowed.en.q),
 
     // to register interface (read)
-    .qs     (usb_usb_measure_ctrl_en_qs_int)
+    .qs     (usb_usb_meas_ctrl_shadowed_en_qs_int),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
+    // Shadow register error conditions
+    .err_update  (async_usb_meas_ctrl_shadowed_en_err_update),
+    .err_storage (async_usb_meas_ctrl_shadowed_en_err_storage)
   );
 
-  //   F[max_thresh]: 12:4
-  prim_subreg #(
+  //   F[hi]: 12:4
+  logic async_usb_meas_ctrl_shadowed_hi_err_update;
+  logic async_usb_meas_ctrl_shadowed_hi_err_storage;
+
+  // storage error is persistent and can be sampled at any time
+  prim_flop_en #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_usb_meas_ctrl_shadowed_hi_err_storage_sync (
+    .clk_i,
+    .rst_ni,
+    .en_i(sync_usb_update),
+    .d_i(async_usb_meas_ctrl_shadowed_hi_err_storage),
+    .q_o(reg2hw.usb_meas_ctrl_shadowed.hi.err_storage)
+  );
+
+  // update error is transient and must be immediately captured
+  prim_pulse_sync u_usb_meas_ctrl_shadowed_hi_err_update_sync (
+    .clk_src_i(clk_usb_i),
+    .rst_src_ni(rst_usb_ni),
+    .src_pulse_i(async_usb_meas_ctrl_shadowed_hi_err_update),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(reg2hw.usb_meas_ctrl_shadowed.hi.err_update)
+  );
+  prim_subreg_shadow #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (9'hfa)
-  ) u_usb_measure_ctrl_max_thresh (
+  ) u_usb_meas_ctrl_shadowed_hi (
     .clk_i   (clk_usb_i),
     .rst_ni  (rst_usb_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (usb_usb_measure_ctrl_we & usb_usb_measure_ctrl_regwen),
-    .wd     (usb_usb_measure_ctrl_wdata[12:4]),
+    .re     (usb_usb_meas_ctrl_shadowed_re),
+    .we     (usb_usb_meas_ctrl_shadowed_we & usb_usb_meas_ctrl_shadowed_regwen),
+    .wd     (usb_usb_meas_ctrl_shadowed_wdata[12:4]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1335,24 +1816,57 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.usb_measure_ctrl.max_thresh.q),
+    .q      (reg2hw.usb_meas_ctrl_shadowed.hi.q),
 
     // to register interface (read)
-    .qs     (usb_usb_measure_ctrl_max_thresh_qs_int)
+    .qs     (usb_usb_meas_ctrl_shadowed_hi_qs_int),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
+    // Shadow register error conditions
+    .err_update  (async_usb_meas_ctrl_shadowed_hi_err_update),
+    .err_storage (async_usb_meas_ctrl_shadowed_hi_err_storage)
   );
 
-  //   F[min_thresh]: 21:13
-  prim_subreg #(
+  //   F[lo]: 21:13
+  logic async_usb_meas_ctrl_shadowed_lo_err_update;
+  logic async_usb_meas_ctrl_shadowed_lo_err_storage;
+
+  // storage error is persistent and can be sampled at any time
+  prim_flop_en #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_usb_meas_ctrl_shadowed_lo_err_storage_sync (
+    .clk_i,
+    .rst_ni,
+    .en_i(sync_usb_update),
+    .d_i(async_usb_meas_ctrl_shadowed_lo_err_storage),
+    .q_o(reg2hw.usb_meas_ctrl_shadowed.lo.err_storage)
+  );
+
+  // update error is transient and must be immediately captured
+  prim_pulse_sync u_usb_meas_ctrl_shadowed_lo_err_update_sync (
+    .clk_src_i(clk_usb_i),
+    .rst_src_ni(rst_usb_ni),
+    .src_pulse_i(async_usb_meas_ctrl_shadowed_lo_err_update),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(reg2hw.usb_meas_ctrl_shadowed.lo.err_update)
+  );
+  prim_subreg_shadow #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (9'he6)
-  ) u_usb_measure_ctrl_min_thresh (
+  ) u_usb_meas_ctrl_shadowed_lo (
     .clk_i   (clk_usb_i),
     .rst_ni  (rst_usb_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (usb_usb_measure_ctrl_we & usb_usb_measure_ctrl_regwen),
-    .wd     (usb_usb_measure_ctrl_wdata[21:13]),
+    .re     (usb_usb_meas_ctrl_shadowed_re),
+    .we     (usb_usb_meas_ctrl_shadowed_we & usb_usb_meas_ctrl_shadowed_regwen),
+    .wd     (usb_usb_meas_ctrl_shadowed_wdata[21:13]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1360,10 +1874,17 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.usb_measure_ctrl.min_thresh.q),
+    .q      (reg2hw.usb_meas_ctrl_shadowed.lo.q),
 
     // to register interface (read)
-    .qs     (usb_usb_measure_ctrl_min_thresh_qs_int)
+    .qs     (usb_usb_meas_ctrl_shadowed_lo_qs_int),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
+    // Shadow register error conditions
+    .err_update  (async_usb_meas_ctrl_shadowed_lo_err_update),
+    .err_storage (async_usb_meas_ctrl_shadowed_lo_err_storage)
   );
 
 
@@ -1618,13 +2139,139 @@ module clkmgr_reg_top (
     .qs     (recov_err_code_usb_timeout_err_qs)
   );
 
+  //   F[io_update_err]: 10:10
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_recov_err_code_io_update_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_err_code_we),
+    .wd     (recov_err_code_io_update_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_err_code.io_update_err.de),
+    .d      (hw2reg.recov_err_code.io_update_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_err_code_io_update_err_qs)
+  );
+
+  //   F[io_div2_update_err]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_recov_err_code_io_div2_update_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_err_code_we),
+    .wd     (recov_err_code_io_div2_update_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_err_code.io_div2_update_err.de),
+    .d      (hw2reg.recov_err_code.io_div2_update_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_err_code_io_div2_update_err_qs)
+  );
+
+  //   F[io_div4_update_err]: 12:12
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_recov_err_code_io_div4_update_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_err_code_we),
+    .wd     (recov_err_code_io_div4_update_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_err_code.io_div4_update_err.de),
+    .d      (hw2reg.recov_err_code.io_div4_update_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_err_code_io_div4_update_err_qs)
+  );
+
+  //   F[main_update_err]: 13:13
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_recov_err_code_main_update_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_err_code_we),
+    .wd     (recov_err_code_main_update_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_err_code.main_update_err.de),
+    .d      (hw2reg.recov_err_code.main_update_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_err_code_main_update_err_qs)
+  );
+
+  //   F[usb_update_err]: 14:14
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_recov_err_code_usb_update_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_err_code_we),
+    .wd     (recov_err_code_usb_update_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_err_code.usb_update_err.de),
+    .d      (hw2reg.recov_err_code.usb_update_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_err_code_usb_update_err_qs)
+  );
+
 
   // R[fatal_err_code]: V(False)
+  //   F[reg_intg]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
-  ) u_fatal_err_code (
+  ) u_fatal_err_code_reg_intg (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -1633,15 +2280,140 @@ module clkmgr_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.fatal_err_code.de),
-    .d      (hw2reg.fatal_err_code.d),
+    .de     (hw2reg.fatal_err_code.reg_intg.de),
+    .d      (hw2reg.fatal_err_code.reg_intg.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.fatal_err_code.q),
+    .q      (reg2hw.fatal_err_code.reg_intg.q),
 
     // to register interface (read)
-    .qs     (fatal_err_code_qs)
+    .qs     (fatal_err_code_reg_intg_qs)
+  );
+
+  //   F[io_storage_err]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_fatal_err_code_io_storage_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fatal_err_code.io_storage_err.de),
+    .d      (hw2reg.fatal_err_code.io_storage_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.fatal_err_code.io_storage_err.q),
+
+    // to register interface (read)
+    .qs     (fatal_err_code_io_storage_err_qs)
+  );
+
+  //   F[io_div2_storage_err]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_fatal_err_code_io_div2_storage_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fatal_err_code.io_div2_storage_err.de),
+    .d      (hw2reg.fatal_err_code.io_div2_storage_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.fatal_err_code.io_div2_storage_err.q),
+
+    // to register interface (read)
+    .qs     (fatal_err_code_io_div2_storage_err_qs)
+  );
+
+  //   F[io_div4_storage_err]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_fatal_err_code_io_div4_storage_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fatal_err_code.io_div4_storage_err.de),
+    .d      (hw2reg.fatal_err_code.io_div4_storage_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.fatal_err_code.io_div4_storage_err.q),
+
+    // to register interface (read)
+    .qs     (fatal_err_code_io_div4_storage_err_qs)
+  );
+
+  //   F[main_storage_err]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_fatal_err_code_main_storage_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fatal_err_code.main_storage_err.de),
+    .d      (hw2reg.fatal_err_code.main_storage_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.fatal_err_code.main_storage_err.q),
+
+    // to register interface (read)
+    .qs     (fatal_err_code_main_storage_err_qs)
+  );
+
+  //   F[usb_storage_err]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_fatal_err_code_usb_storage_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fatal_err_code.usb_storage_err.de),
+    .d      (hw2reg.fatal_err_code.usb_storage_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.fatal_err_code.usb_storage_err.q),
+
+    // to register interface (read)
+    .qs     (fatal_err_code_usb_storage_err_qs)
   );
 
 
@@ -1657,11 +2429,11 @@ module clkmgr_reg_top (
     addr_hit[ 5] = (reg_addr == CLKMGR_CLK_HINTS_OFFSET);
     addr_hit[ 6] = (reg_addr == CLKMGR_CLK_HINTS_STATUS_OFFSET);
     addr_hit[ 7] = (reg_addr == CLKMGR_MEASURE_CTRL_REGWEN_OFFSET);
-    addr_hit[ 8] = (reg_addr == CLKMGR_IO_MEASURE_CTRL_OFFSET);
-    addr_hit[ 9] = (reg_addr == CLKMGR_IO_DIV2_MEASURE_CTRL_OFFSET);
-    addr_hit[10] = (reg_addr == CLKMGR_IO_DIV4_MEASURE_CTRL_OFFSET);
-    addr_hit[11] = (reg_addr == CLKMGR_MAIN_MEASURE_CTRL_OFFSET);
-    addr_hit[12] = (reg_addr == CLKMGR_USB_MEASURE_CTRL_OFFSET);
+    addr_hit[ 8] = (reg_addr == CLKMGR_IO_MEAS_CTRL_SHADOWED_OFFSET);
+    addr_hit[ 9] = (reg_addr == CLKMGR_IO_DIV2_MEAS_CTRL_SHADOWED_OFFSET);
+    addr_hit[10] = (reg_addr == CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED_OFFSET);
+    addr_hit[11] = (reg_addr == CLKMGR_MAIN_MEAS_CTRL_SHADOWED_OFFSET);
+    addr_hit[12] = (reg_addr == CLKMGR_USB_MEAS_CTRL_SHADOWED_OFFSET);
     addr_hit[13] = (reg_addr == CLKMGR_RECOV_ERR_CODE_OFFSET);
     addr_hit[14] = (reg_addr == CLKMGR_FATAL_ERR_CODE_OFFSET);
   end
@@ -1726,23 +2498,28 @@ module clkmgr_reg_top (
   assign measure_ctrl_regwen_we = addr_hit[7] & reg_we & !reg_error;
 
   assign measure_ctrl_regwen_wd = reg_wdata[0];
-  assign io_measure_ctrl_we = addr_hit[8] & reg_we & !reg_error;
+  assign io_meas_ctrl_shadowed_re = addr_hit[8] & reg_re & !reg_error;
+  assign io_meas_ctrl_shadowed_we = addr_hit[8] & reg_we & !reg_error;
 
 
 
-  assign io_div2_measure_ctrl_we = addr_hit[9] & reg_we & !reg_error;
+  assign io_div2_meas_ctrl_shadowed_re = addr_hit[9] & reg_re & !reg_error;
+  assign io_div2_meas_ctrl_shadowed_we = addr_hit[9] & reg_we & !reg_error;
 
 
 
-  assign io_div4_measure_ctrl_we = addr_hit[10] & reg_we & !reg_error;
+  assign io_div4_meas_ctrl_shadowed_re = addr_hit[10] & reg_re & !reg_error;
+  assign io_div4_meas_ctrl_shadowed_we = addr_hit[10] & reg_we & !reg_error;
 
 
 
-  assign main_measure_ctrl_we = addr_hit[11] & reg_we & !reg_error;
+  assign main_meas_ctrl_shadowed_re = addr_hit[11] & reg_re & !reg_error;
+  assign main_meas_ctrl_shadowed_we = addr_hit[11] & reg_we & !reg_error;
 
 
 
-  assign usb_measure_ctrl_we = addr_hit[12] & reg_we & !reg_error;
+  assign usb_meas_ctrl_shadowed_re = addr_hit[12] & reg_re & !reg_error;
+  assign usb_meas_ctrl_shadowed_we = addr_hit[12] & reg_we & !reg_error;
 
 
 
@@ -1767,6 +2544,16 @@ module clkmgr_reg_top (
   assign recov_err_code_main_timeout_err_wd = reg_wdata[8];
 
   assign recov_err_code_usb_timeout_err_wd = reg_wdata[9];
+
+  assign recov_err_code_io_update_err_wd = reg_wdata[10];
+
+  assign recov_err_code_io_div2_update_err_wd = reg_wdata[11];
+
+  assign recov_err_code_io_div4_update_err_wd = reg_wdata[12];
+
+  assign recov_err_code_main_update_err_wd = reg_wdata[13];
+
+  assign recov_err_code_usb_update_err_wd = reg_wdata[14];
 
   // Read data return
   always_comb begin
@@ -1818,19 +2605,19 @@ module clkmgr_reg_top (
       end
 
       addr_hit[8]: begin
-        reg_rdata_next = DW'(io_measure_ctrl_qs);
+        reg_rdata_next = DW'(io_meas_ctrl_shadowed_qs);
       end
       addr_hit[9]: begin
-        reg_rdata_next = DW'(io_div2_measure_ctrl_qs);
+        reg_rdata_next = DW'(io_div2_meas_ctrl_shadowed_qs);
       end
       addr_hit[10]: begin
-        reg_rdata_next = DW'(io_div4_measure_ctrl_qs);
+        reg_rdata_next = DW'(io_div4_meas_ctrl_shadowed_qs);
       end
       addr_hit[11]: begin
-        reg_rdata_next = DW'(main_measure_ctrl_qs);
+        reg_rdata_next = DW'(main_meas_ctrl_shadowed_qs);
       end
       addr_hit[12]: begin
-        reg_rdata_next = DW'(usb_measure_ctrl_qs);
+        reg_rdata_next = DW'(usb_meas_ctrl_shadowed_qs);
       end
       addr_hit[13]: begin
         reg_rdata_next[0] = recov_err_code_io_measure_err_qs;
@@ -1843,10 +2630,20 @@ module clkmgr_reg_top (
         reg_rdata_next[7] = recov_err_code_io_div4_timeout_err_qs;
         reg_rdata_next[8] = recov_err_code_main_timeout_err_qs;
         reg_rdata_next[9] = recov_err_code_usb_timeout_err_qs;
+        reg_rdata_next[10] = recov_err_code_io_update_err_qs;
+        reg_rdata_next[11] = recov_err_code_io_div2_update_err_qs;
+        reg_rdata_next[12] = recov_err_code_io_div4_update_err_qs;
+        reg_rdata_next[13] = recov_err_code_main_update_err_qs;
+        reg_rdata_next[14] = recov_err_code_usb_update_err_qs;
       end
 
       addr_hit[14]: begin
-        reg_rdata_next[0] = fatal_err_code_qs;
+        reg_rdata_next[0] = fatal_err_code_reg_intg_qs;
+        reg_rdata_next[1] = fatal_err_code_io_storage_err_qs;
+        reg_rdata_next[2] = fatal_err_code_io_div2_storage_err_qs;
+        reg_rdata_next[3] = fatal_err_code_io_div4_storage_err_qs;
+        reg_rdata_next[4] = fatal_err_code_main_storage_err_qs;
+        reg_rdata_next[5] = fatal_err_code_usb_storage_err_qs;
       end
 
       default: begin
@@ -1857,7 +2654,26 @@ module clkmgr_reg_top (
 
   // shadow busy
   logic shadow_busy;
-  assign shadow_busy = 1'b0;
+  logic rst_done;
+  logic shadow_rst_done;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rst_done <= '0;
+    end else begin
+      rst_done <= 1'b1;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_shadowed_ni) begin
+    if (!rst_shadowed_ni) begin
+      shadow_rst_done <= '0;
+    end else begin
+      shadow_rst_done <= 1'b1;
+    end
+  end
+
+  // both shadow and normal resets have been released
+  assign shadow_busy = ~(rst_done & shadow_rst_done);
 
   // register busy
   logic reg_busy_sel;
@@ -1866,19 +2682,19 @@ module clkmgr_reg_top (
     reg_busy_sel = '0;
     unique case (1'b1)
       addr_hit[8]: begin
-        reg_busy_sel = io_measure_ctrl_busy;
+        reg_busy_sel = io_meas_ctrl_shadowed_busy;
       end
       addr_hit[9]: begin
-        reg_busy_sel = io_div2_measure_ctrl_busy;
+        reg_busy_sel = io_div2_meas_ctrl_shadowed_busy;
       end
       addr_hit[10]: begin
-        reg_busy_sel = io_div4_measure_ctrl_busy;
+        reg_busy_sel = io_div4_meas_ctrl_shadowed_busy;
       end
       addr_hit[11]: begin
-        reg_busy_sel = main_measure_ctrl_busy;
+        reg_busy_sel = main_meas_ctrl_shadowed_busy;
       end
       addr_hit[12]: begin
-        reg_busy_sel = usb_measure_ctrl_busy;
+        reg_busy_sel = usb_meas_ctrl_shadowed_busy;
       end
       default: begin
         reg_busy_sel  = '0;

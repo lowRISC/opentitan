@@ -79,65 +79,112 @@ package clkmgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+      logic        err_update;
+      logic        err_storage;
     } en;
     struct packed {
       logic [9:0] q;
-    } max_thresh;
+      logic        err_update;
+      logic        err_storage;
+    } hi;
     struct packed {
       logic [9:0] q;
-    } min_thresh;
-  } clkmgr_reg2hw_io_measure_ctrl_reg_t;
+      logic        err_update;
+      logic        err_storage;
+    } lo;
+  } clkmgr_reg2hw_io_meas_ctrl_shadowed_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
+      logic        err_update;
+      logic        err_storage;
     } en;
     struct packed {
       logic [8:0]  q;
-    } max_thresh;
+      logic        err_update;
+      logic        err_storage;
+    } hi;
     struct packed {
       logic [8:0]  q;
-    } min_thresh;
-  } clkmgr_reg2hw_io_div2_measure_ctrl_reg_t;
+      logic        err_update;
+      logic        err_storage;
+    } lo;
+  } clkmgr_reg2hw_io_div2_meas_ctrl_shadowed_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
+      logic        err_update;
+      logic        err_storage;
     } en;
     struct packed {
       logic [7:0]  q;
-    } max_thresh;
+      logic        err_update;
+      logic        err_storage;
+    } hi;
     struct packed {
       logic [7:0]  q;
-    } min_thresh;
-  } clkmgr_reg2hw_io_div4_measure_ctrl_reg_t;
+      logic        err_update;
+      logic        err_storage;
+    } lo;
+  } clkmgr_reg2hw_io_div4_meas_ctrl_shadowed_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
+      logic        err_update;
+      logic        err_storage;
     } en;
     struct packed {
       logic [9:0] q;
-    } max_thresh;
+      logic        err_update;
+      logic        err_storage;
+    } hi;
     struct packed {
       logic [9:0] q;
-    } min_thresh;
-  } clkmgr_reg2hw_main_measure_ctrl_reg_t;
+      logic        err_update;
+      logic        err_storage;
+    } lo;
+  } clkmgr_reg2hw_main_meas_ctrl_shadowed_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
+      logic        err_update;
+      logic        err_storage;
     } en;
     struct packed {
       logic [8:0]  q;
-    } max_thresh;
+      logic        err_update;
+      logic        err_storage;
+    } hi;
     struct packed {
       logic [8:0]  q;
-    } min_thresh;
-  } clkmgr_reg2hw_usb_measure_ctrl_reg_t;
+      logic        err_update;
+      logic        err_storage;
+    } lo;
+  } clkmgr_reg2hw_usb_meas_ctrl_shadowed_reg_t;
 
   typedef struct packed {
-    logic        q;
+    struct packed {
+      logic        q;
+    } reg_intg;
+    struct packed {
+      logic        q;
+    } io_storage_err;
+    struct packed {
+      logic        q;
+    } io_div2_storage_err;
+    struct packed {
+      logic        q;
+    } io_div4_storage_err;
+    struct packed {
+      logic        q;
+    } main_storage_err;
+    struct packed {
+      logic        q;
+    } usb_storage_err;
   } clkmgr_reg2hw_fatal_err_code_reg_t;
 
   typedef struct packed {
@@ -204,33 +251,75 @@ package clkmgr_reg_pkg;
       logic        d;
       logic        de;
     } usb_timeout_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } io_update_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } io_div2_update_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } io_div4_update_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } main_update_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } usb_update_err;
   } clkmgr_hw2reg_recov_err_code_reg_t;
 
   typedef struct packed {
-    logic        d;
-    logic        de;
+    struct packed {
+      logic        d;
+      logic        de;
+    } reg_intg;
+    struct packed {
+      logic        d;
+      logic        de;
+    } io_storage_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } io_div2_storage_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } io_div4_storage_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } main_storage_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } usb_storage_err;
   } clkmgr_hw2reg_fatal_err_code_reg_t;
 
   // Register -> HW type
   typedef struct packed {
-    clkmgr_reg2hw_alert_test_reg_t alert_test; // [122:119]
-    clkmgr_reg2hw_extclk_ctrl_reg_t extclk_ctrl; // [118:111]
-    clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [110:107]
-    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [106:103]
-    clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [102:98]
-    clkmgr_reg2hw_io_measure_ctrl_reg_t io_measure_ctrl; // [97:77]
-    clkmgr_reg2hw_io_div2_measure_ctrl_reg_t io_div2_measure_ctrl; // [76:58]
-    clkmgr_reg2hw_io_div4_measure_ctrl_reg_t io_div4_measure_ctrl; // [57:41]
-    clkmgr_reg2hw_main_measure_ctrl_reg_t main_measure_ctrl; // [40:20]
-    clkmgr_reg2hw_usb_measure_ctrl_reg_t usb_measure_ctrl; // [19:1]
-    clkmgr_reg2hw_fatal_err_code_reg_t fatal_err_code; // [0:0]
+    clkmgr_reg2hw_alert_test_reg_t alert_test; // [127:124]
+    clkmgr_reg2hw_extclk_ctrl_reg_t extclk_ctrl; // [123:116]
+    clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [115:112]
+    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [111:108]
+    clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [107:103]
+    clkmgr_reg2hw_io_meas_ctrl_shadowed_reg_t io_meas_ctrl_shadowed; // [102:82]
+    clkmgr_reg2hw_io_div2_meas_ctrl_shadowed_reg_t io_div2_meas_ctrl_shadowed; // [81:63]
+    clkmgr_reg2hw_io_div4_meas_ctrl_shadowed_reg_t io_div4_meas_ctrl_shadowed; // [62:46]
+    clkmgr_reg2hw_main_meas_ctrl_shadowed_reg_t main_meas_ctrl_shadowed; // [45:25]
+    clkmgr_reg2hw_usb_meas_ctrl_shadowed_reg_t usb_meas_ctrl_shadowed; // [24:6]
+    clkmgr_reg2hw_fatal_err_code_reg_t fatal_err_code; // [5:0]
   } clkmgr_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status; // [31:22]
-    clkmgr_hw2reg_recov_err_code_reg_t recov_err_code; // [21:2]
-    clkmgr_hw2reg_fatal_err_code_reg_t fatal_err_code; // [1:0]
+    clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status; // [51:42]
+    clkmgr_hw2reg_recov_err_code_reg_t recov_err_code; // [41:12]
+    clkmgr_hw2reg_fatal_err_code_reg_t fatal_err_code; // [11:0]
   } clkmgr_hw2reg_t;
 
   // Register offsets
@@ -242,11 +331,11 @@ package clkmgr_reg_pkg;
   parameter logic [BlockAw-1:0] CLKMGR_CLK_HINTS_OFFSET = 6'h 14;
   parameter logic [BlockAw-1:0] CLKMGR_CLK_HINTS_STATUS_OFFSET = 6'h 18;
   parameter logic [BlockAw-1:0] CLKMGR_MEASURE_CTRL_REGWEN_OFFSET = 6'h 1c;
-  parameter logic [BlockAw-1:0] CLKMGR_IO_MEASURE_CTRL_OFFSET = 6'h 20;
-  parameter logic [BlockAw-1:0] CLKMGR_IO_DIV2_MEASURE_CTRL_OFFSET = 6'h 24;
-  parameter logic [BlockAw-1:0] CLKMGR_IO_DIV4_MEASURE_CTRL_OFFSET = 6'h 28;
-  parameter logic [BlockAw-1:0] CLKMGR_MAIN_MEASURE_CTRL_OFFSET = 6'h 2c;
-  parameter logic [BlockAw-1:0] CLKMGR_USB_MEASURE_CTRL_OFFSET = 6'h 30;
+  parameter logic [BlockAw-1:0] CLKMGR_IO_MEAS_CTRL_SHADOWED_OFFSET = 6'h 20;
+  parameter logic [BlockAw-1:0] CLKMGR_IO_DIV2_MEAS_CTRL_SHADOWED_OFFSET = 6'h 24;
+  parameter logic [BlockAw-1:0] CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED_OFFSET = 6'h 28;
+  parameter logic [BlockAw-1:0] CLKMGR_MAIN_MEAS_CTRL_SHADOWED_OFFSET = 6'h 2c;
+  parameter logic [BlockAw-1:0] CLKMGR_USB_MEAS_CTRL_SHADOWED_OFFSET = 6'h 30;
   parameter logic [BlockAw-1:0] CLKMGR_RECOV_ERR_CODE_OFFSET = 6'h 34;
   parameter logic [BlockAw-1:0] CLKMGR_FATAL_ERR_CODE_OFFSET = 6'h 38;
 
@@ -265,11 +354,11 @@ package clkmgr_reg_pkg;
     CLKMGR_CLK_HINTS,
     CLKMGR_CLK_HINTS_STATUS,
     CLKMGR_MEASURE_CTRL_REGWEN,
-    CLKMGR_IO_MEASURE_CTRL,
-    CLKMGR_IO_DIV2_MEASURE_CTRL,
-    CLKMGR_IO_DIV4_MEASURE_CTRL,
-    CLKMGR_MAIN_MEASURE_CTRL,
-    CLKMGR_USB_MEASURE_CTRL,
+    CLKMGR_IO_MEAS_CTRL_SHADOWED,
+    CLKMGR_IO_DIV2_MEAS_CTRL_SHADOWED,
+    CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED,
+    CLKMGR_MAIN_MEAS_CTRL_SHADOWED,
+    CLKMGR_USB_MEAS_CTRL_SHADOWED,
     CLKMGR_RECOV_ERR_CODE,
     CLKMGR_FATAL_ERR_CODE
   } clkmgr_id_e;
@@ -284,11 +373,11 @@ package clkmgr_reg_pkg;
     4'b 0001, // index[ 5] CLKMGR_CLK_HINTS
     4'b 0001, // index[ 6] CLKMGR_CLK_HINTS_STATUS
     4'b 0001, // index[ 7] CLKMGR_MEASURE_CTRL_REGWEN
-    4'b 0111, // index[ 8] CLKMGR_IO_MEASURE_CTRL
-    4'b 0111, // index[ 9] CLKMGR_IO_DIV2_MEASURE_CTRL
-    4'b 0111, // index[10] CLKMGR_IO_DIV4_MEASURE_CTRL
-    4'b 0111, // index[11] CLKMGR_MAIN_MEASURE_CTRL
-    4'b 0111, // index[12] CLKMGR_USB_MEASURE_CTRL
+    4'b 0111, // index[ 8] CLKMGR_IO_MEAS_CTRL_SHADOWED
+    4'b 0111, // index[ 9] CLKMGR_IO_DIV2_MEAS_CTRL_SHADOWED
+    4'b 0111, // index[10] CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED
+    4'b 0111, // index[11] CLKMGR_MAIN_MEAS_CTRL_SHADOWED
+    4'b 0111, // index[12] CLKMGR_USB_MEAS_CTRL_SHADOWED
     4'b 0011, // index[13] CLKMGR_RECOV_ERR_CODE
     4'b 0001  // index[14] CLKMGR_FATAL_ERR_CODE
   };

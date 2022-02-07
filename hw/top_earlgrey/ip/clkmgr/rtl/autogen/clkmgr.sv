@@ -24,6 +24,7 @@
   // This drives the register interface
   input clk_i,
   input rst_ni,
+  input rst_shadowed_ni,
 
   // System clocks and resets
   // These are the source clocks for the system
@@ -172,6 +173,7 @@
   clkmgr_reg_top u_reg (
     .clk_i,
     .rst_ni,
+    .rst_shadowed_ni,
     .clk_io_i,
     .rst_io_ni,
     .clk_io_div2_i,
@@ -187,10 +189,10 @@
     .reg2hw,
     .hw2reg,
     // SEC_CM: BUS.INTEGRITY
-    .intg_err_o(hw2reg.fatal_err_code.de),
+    .intg_err_o(hw2reg.fatal_err_code.reg_intg.de),
     .devmode_i(1'b1)
   );
-  assign hw2reg.fatal_err_code.d = 1'b1;
+  assign hw2reg.fatal_err_code.reg_intg.d = 1'b1;
 
 
   ////////////////////////////////////////////////////
@@ -204,14 +206,19 @@
 
   logic recov_alert;
   assign recov_alert =
+    hw2reg.recov_err_code.io_update_err.de |
     hw2reg.recov_err_code.io_measure_err.de |
     hw2reg.recov_err_code.io_timeout_err.de |
+    hw2reg.recov_err_code.io_div2_update_err.de |
     hw2reg.recov_err_code.io_div2_measure_err.de |
     hw2reg.recov_err_code.io_div2_timeout_err.de |
+    hw2reg.recov_err_code.io_div4_update_err.de |
     hw2reg.recov_err_code.io_div4_measure_err.de |
     hw2reg.recov_err_code.io_div4_timeout_err.de |
+    hw2reg.recov_err_code.main_update_err.de |
     hw2reg.recov_err_code.main_measure_err.de |
     hw2reg.recov_err_code.main_timeout_err.de |
+    hw2reg.recov_err_code.usb_update_err.de |
     hw2reg.recov_err_code.usb_measure_err.de |
     hw2reg.recov_err_code.usb_timeout_err.de;
 
@@ -492,9 +499,9 @@
     .rst_ni(rst_io_ni),
     .clk_ref_i(clk_aon_i),
     .rst_ref_ni(rst_aon_ni),
-    .en_i(clk_io_en & reg2hw.io_measure_ctrl.en.q),
-    .max_cnt(reg2hw.io_measure_ctrl.max_thresh.q),
-    .min_cnt(reg2hw.io_measure_ctrl.min_thresh.q),
+    .en_i(clk_io_en & reg2hw.io_meas_ctrl_shadowed.en.q),
+    .max_cnt(reg2hw.io_meas_ctrl_shadowed.hi.q),
+    .min_cnt(reg2hw.io_meas_ctrl_shadowed.lo.q),
     .valid_o(),
     .fast_o(io_fast_err),
     .slow_o(io_slow_err),
@@ -530,6 +537,16 @@
   assign hw2reg.recov_err_code.io_measure_err.de = synced_io_err;
   assign hw2reg.recov_err_code.io_timeout_err.d = 1'b1;
   assign hw2reg.recov_err_code.io_timeout_err.de = synced_io_timeout_err;
+  assign hw2reg.recov_err_code.io_update_err.d = 1'b1;
+  assign hw2reg.recov_err_code.io_update_err.de =
+    reg2hw.io_meas_ctrl_shadowed.en.err_update |
+    reg2hw.io_meas_ctrl_shadowed.hi.err_update |
+    reg2hw.io_meas_ctrl_shadowed.lo.err_update;
+  assign hw2reg.fatal_err_code.io_storage_err.d = 1'b1;
+  assign hw2reg.fatal_err_code.io_storage_err.de =
+    reg2hw.io_meas_ctrl_shadowed.en.err_storage |
+    reg2hw.io_meas_ctrl_shadowed.hi.err_storage |
+    reg2hw.io_meas_ctrl_shadowed.lo.err_storage;
 
   logic io_div2_fast_err;
   logic io_div2_slow_err;
@@ -544,9 +561,9 @@
     .rst_ni(rst_io_div2_ni),
     .clk_ref_i(clk_aon_i),
     .rst_ref_ni(rst_aon_ni),
-    .en_i(clk_io_div2_en & reg2hw.io_div2_measure_ctrl.en.q),
-    .max_cnt(reg2hw.io_div2_measure_ctrl.max_thresh.q),
-    .min_cnt(reg2hw.io_div2_measure_ctrl.min_thresh.q),
+    .en_i(clk_io_div2_en & reg2hw.io_div2_meas_ctrl_shadowed.en.q),
+    .max_cnt(reg2hw.io_div2_meas_ctrl_shadowed.hi.q),
+    .min_cnt(reg2hw.io_div2_meas_ctrl_shadowed.lo.q),
     .valid_o(),
     .fast_o(io_div2_fast_err),
     .slow_o(io_div2_slow_err),
@@ -582,6 +599,16 @@
   assign hw2reg.recov_err_code.io_div2_measure_err.de = synced_io_div2_err;
   assign hw2reg.recov_err_code.io_div2_timeout_err.d = 1'b1;
   assign hw2reg.recov_err_code.io_div2_timeout_err.de = synced_io_div2_timeout_err;
+  assign hw2reg.recov_err_code.io_div2_update_err.d = 1'b1;
+  assign hw2reg.recov_err_code.io_div2_update_err.de =
+    reg2hw.io_div2_meas_ctrl_shadowed.en.err_update |
+    reg2hw.io_div2_meas_ctrl_shadowed.hi.err_update |
+    reg2hw.io_div2_meas_ctrl_shadowed.lo.err_update;
+  assign hw2reg.fatal_err_code.io_div2_storage_err.d = 1'b1;
+  assign hw2reg.fatal_err_code.io_div2_storage_err.de =
+    reg2hw.io_div2_meas_ctrl_shadowed.en.err_storage |
+    reg2hw.io_div2_meas_ctrl_shadowed.hi.err_storage |
+    reg2hw.io_div2_meas_ctrl_shadowed.lo.err_storage;
 
   logic io_div4_fast_err;
   logic io_div4_slow_err;
@@ -596,9 +623,9 @@
     .rst_ni(rst_io_div4_ni),
     .clk_ref_i(clk_aon_i),
     .rst_ref_ni(rst_aon_ni),
-    .en_i(clk_io_div4_en & reg2hw.io_div4_measure_ctrl.en.q),
-    .max_cnt(reg2hw.io_div4_measure_ctrl.max_thresh.q),
-    .min_cnt(reg2hw.io_div4_measure_ctrl.min_thresh.q),
+    .en_i(clk_io_div4_en & reg2hw.io_div4_meas_ctrl_shadowed.en.q),
+    .max_cnt(reg2hw.io_div4_meas_ctrl_shadowed.hi.q),
+    .min_cnt(reg2hw.io_div4_meas_ctrl_shadowed.lo.q),
     .valid_o(),
     .fast_o(io_div4_fast_err),
     .slow_o(io_div4_slow_err),
@@ -634,6 +661,16 @@
   assign hw2reg.recov_err_code.io_div4_measure_err.de = synced_io_div4_err;
   assign hw2reg.recov_err_code.io_div4_timeout_err.d = 1'b1;
   assign hw2reg.recov_err_code.io_div4_timeout_err.de = synced_io_div4_timeout_err;
+  assign hw2reg.recov_err_code.io_div4_update_err.d = 1'b1;
+  assign hw2reg.recov_err_code.io_div4_update_err.de =
+    reg2hw.io_div4_meas_ctrl_shadowed.en.err_update |
+    reg2hw.io_div4_meas_ctrl_shadowed.hi.err_update |
+    reg2hw.io_div4_meas_ctrl_shadowed.lo.err_update;
+  assign hw2reg.fatal_err_code.io_div4_storage_err.d = 1'b1;
+  assign hw2reg.fatal_err_code.io_div4_storage_err.de =
+    reg2hw.io_div4_meas_ctrl_shadowed.en.err_storage |
+    reg2hw.io_div4_meas_ctrl_shadowed.hi.err_storage |
+    reg2hw.io_div4_meas_ctrl_shadowed.lo.err_storage;
 
   logic main_fast_err;
   logic main_slow_err;
@@ -648,9 +685,9 @@
     .rst_ni(rst_main_ni),
     .clk_ref_i(clk_aon_i),
     .rst_ref_ni(rst_aon_ni),
-    .en_i(clk_main_en & reg2hw.main_measure_ctrl.en.q),
-    .max_cnt(reg2hw.main_measure_ctrl.max_thresh.q),
-    .min_cnt(reg2hw.main_measure_ctrl.min_thresh.q),
+    .en_i(clk_main_en & reg2hw.main_meas_ctrl_shadowed.en.q),
+    .max_cnt(reg2hw.main_meas_ctrl_shadowed.hi.q),
+    .min_cnt(reg2hw.main_meas_ctrl_shadowed.lo.q),
     .valid_o(),
     .fast_o(main_fast_err),
     .slow_o(main_slow_err),
@@ -686,6 +723,16 @@
   assign hw2reg.recov_err_code.main_measure_err.de = synced_main_err;
   assign hw2reg.recov_err_code.main_timeout_err.d = 1'b1;
   assign hw2reg.recov_err_code.main_timeout_err.de = synced_main_timeout_err;
+  assign hw2reg.recov_err_code.main_update_err.d = 1'b1;
+  assign hw2reg.recov_err_code.main_update_err.de =
+    reg2hw.main_meas_ctrl_shadowed.en.err_update |
+    reg2hw.main_meas_ctrl_shadowed.hi.err_update |
+    reg2hw.main_meas_ctrl_shadowed.lo.err_update;
+  assign hw2reg.fatal_err_code.main_storage_err.d = 1'b1;
+  assign hw2reg.fatal_err_code.main_storage_err.de =
+    reg2hw.main_meas_ctrl_shadowed.en.err_storage |
+    reg2hw.main_meas_ctrl_shadowed.hi.err_storage |
+    reg2hw.main_meas_ctrl_shadowed.lo.err_storage;
 
   logic usb_fast_err;
   logic usb_slow_err;
@@ -700,9 +747,9 @@
     .rst_ni(rst_usb_ni),
     .clk_ref_i(clk_aon_i),
     .rst_ref_ni(rst_aon_ni),
-    .en_i(clk_usb_en & reg2hw.usb_measure_ctrl.en.q),
-    .max_cnt(reg2hw.usb_measure_ctrl.max_thresh.q),
-    .min_cnt(reg2hw.usb_measure_ctrl.min_thresh.q),
+    .en_i(clk_usb_en & reg2hw.usb_meas_ctrl_shadowed.en.q),
+    .max_cnt(reg2hw.usb_meas_ctrl_shadowed.hi.q),
+    .min_cnt(reg2hw.usb_meas_ctrl_shadowed.lo.q),
     .valid_o(),
     .fast_o(usb_fast_err),
     .slow_o(usb_slow_err),
@@ -738,6 +785,16 @@
   assign hw2reg.recov_err_code.usb_measure_err.de = synced_usb_err;
   assign hw2reg.recov_err_code.usb_timeout_err.d = 1'b1;
   assign hw2reg.recov_err_code.usb_timeout_err.de = synced_usb_timeout_err;
+  assign hw2reg.recov_err_code.usb_update_err.d = 1'b1;
+  assign hw2reg.recov_err_code.usb_update_err.de =
+    reg2hw.usb_meas_ctrl_shadowed.en.err_update |
+    reg2hw.usb_meas_ctrl_shadowed.hi.err_update |
+    reg2hw.usb_meas_ctrl_shadowed.lo.err_update;
+  assign hw2reg.fatal_err_code.usb_storage_err.d = 1'b1;
+  assign hw2reg.fatal_err_code.usb_storage_err.de =
+    reg2hw.usb_meas_ctrl_shadowed.en.err_storage |
+    reg2hw.usb_meas_ctrl_shadowed.hi.err_storage |
+    reg2hw.usb_meas_ctrl_shadowed.lo.err_storage;
 
 
   ////////////////////////////////////////////////////

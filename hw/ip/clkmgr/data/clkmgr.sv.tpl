@@ -18,6 +18,7 @@
   // This drives the register interface
   input clk_i,
   input rst_ni,
+  input rst_shadowed_ni,
 
   // System clocks and resets
   // These are the source clocks for the system
@@ -148,6 +149,7 @@
   clkmgr_reg_top u_reg (
     .clk_i,
     .rst_ni,
+    .rst_shadowed_ni,
 % for src in typed_clocks.rg_srcs:
     .clk_${src}_i,
     .rst_${src}_ni,
@@ -157,10 +159,10 @@
     .reg2hw,
     .hw2reg,
     // SEC_CM: BUS.INTEGRITY
-    .intg_err_o(hw2reg.fatal_err_code.de),
+    .intg_err_o(hw2reg.fatal_err_code.reg_intg.de),
     .devmode_i(1'b1)
   );
-  assign hw2reg.fatal_err_code.d = 1'b1;
+  assign hw2reg.fatal_err_code.reg_intg.d = 1'b1;
 
 
   ////////////////////////////////////////////////////
@@ -175,6 +177,7 @@
   logic recov_alert;
   assign recov_alert =
 % for src in typed_clocks.rg_srcs:
+    hw2reg.recov_err_code.${src}_update_err.de |
     hw2reg.recov_err_code.${src}_measure_err.de |
     hw2reg.recov_err_code.${src}_timeout_err.de${";" if loop.last else " |"}
 % endfor
@@ -325,9 +328,9 @@
     .rst_ni(rst_${src}_ni),
     .clk_ref_i(clk_aon_i),
     .rst_ref_ni(rst_aon_ni),
-    .en_i(clk_${src}_en & reg2hw.${src}_measure_ctrl.en.q),
-    .max_cnt(reg2hw.${src}_measure_ctrl.max_thresh.q),
-    .min_cnt(reg2hw.${src}_measure_ctrl.min_thresh.q),
+    .en_i(clk_${src}_en & reg2hw.${src}_meas_ctrl_shadowed.en.q),
+    .max_cnt(reg2hw.${src}_meas_ctrl_shadowed.hi.q),
+    .min_cnt(reg2hw.${src}_meas_ctrl_shadowed.lo.q),
     .valid_o(),
     .fast_o(${src}_fast_err),
     .slow_o(${src}_slow_err),
@@ -363,6 +366,16 @@
   assign hw2reg.recov_err_code.${src}_measure_err.de = synced_${src}_err;
   assign hw2reg.recov_err_code.${src}_timeout_err.d = 1'b1;
   assign hw2reg.recov_err_code.${src}_timeout_err.de = synced_${src}_timeout_err;
+  assign hw2reg.recov_err_code.${src}_update_err.d = 1'b1;
+  assign hw2reg.recov_err_code.${src}_update_err.de =
+    reg2hw.${src}_meas_ctrl_shadowed.en.err_update |
+    reg2hw.${src}_meas_ctrl_shadowed.hi.err_update |
+    reg2hw.${src}_meas_ctrl_shadowed.lo.err_update;
+  assign hw2reg.fatal_err_code.${src}_storage_err.d = 1'b1;
+  assign hw2reg.fatal_err_code.${src}_storage_err.de =
+    reg2hw.${src}_meas_ctrl_shadowed.en.err_storage |
+    reg2hw.${src}_meas_ctrl_shadowed.hi.err_storage |
+    reg2hw.${src}_meas_ctrl_shadowed.lo.err_storage;
 
 % endfor
 
