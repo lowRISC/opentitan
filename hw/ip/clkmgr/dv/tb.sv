@@ -74,6 +74,7 @@ module tb;
   clkmgr dut (
     .clk_i (clk),
     .rst_ni(rst_n),
+    .rst_shadowed_ni(rst_n),
 
     .clk_main_i (clk_main),
     .rst_main_ni(rst_main_n),

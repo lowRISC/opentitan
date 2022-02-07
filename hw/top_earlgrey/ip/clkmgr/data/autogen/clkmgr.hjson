@@ -457,8 +457,8 @@
         },
       ]
     },
-
-      { name: "IO_MEASURE_CTRL",
+  
+    { name: "IO_MEAS_CTRL_SHADOWED",
       desc: '''
         Configuration controls for io measurement.
 
@@ -469,6 +469,9 @@
       swaccess: "rw",
       hwaccess: "hro",
       async: "clk_io_i",
+      shadowed: "true",
+      update_err_alert: "recov_fault",
+      storage_err_alert: "fatal_fault",
       fields: [
         {
           bits: "0",
@@ -484,20 +487,21 @@
 
         {
           bits: "13:4",
-          name: "MAX_THRESH",
+          name: "HI",
           desc: "Max threshold for io measurement",
           resval: "490"
         },
 
         {
           bits: "23:14",
-          name: "MIN_THRESH",
+          name: "LO",
           desc: "Min threshold for io measurement",
           resval: "470"
         },
       ]
     },
-      { name: "IO_DIV2_MEASURE_CTRL",
+  
+    { name: "IO_DIV2_MEAS_CTRL_SHADOWED",
       desc: '''
         Configuration controls for io_div2 measurement.
 
@@ -508,6 +512,9 @@
       swaccess: "rw",
       hwaccess: "hro",
       async: "clk_io_div2_i",
+      shadowed: "true",
+      update_err_alert: "recov_fault",
+      storage_err_alert: "fatal_fault",
       fields: [
         {
           bits: "0",
@@ -523,20 +530,21 @@
 
         {
           bits: "12:4",
-          name: "MAX_THRESH",
+          name: "HI",
           desc: "Max threshold for io_div2 measurement",
           resval: "250"
         },
 
         {
           bits: "21:13",
-          name: "MIN_THRESH",
+          name: "LO",
           desc: "Min threshold for io_div2 measurement",
           resval: "230"
         },
       ]
     },
-      { name: "IO_DIV4_MEASURE_CTRL",
+  
+    { name: "IO_DIV4_MEAS_CTRL_SHADOWED",
       desc: '''
         Configuration controls for io_div4 measurement.
 
@@ -547,6 +555,9 @@
       swaccess: "rw",
       hwaccess: "hro",
       async: "clk_io_div4_i",
+      shadowed: "true",
+      update_err_alert: "recov_fault",
+      storage_err_alert: "fatal_fault",
       fields: [
         {
           bits: "0",
@@ -562,20 +573,21 @@
 
         {
           bits: "11:4",
-          name: "MAX_THRESH",
+          name: "HI",
           desc: "Max threshold for io_div4 measurement",
           resval: "130"
         },
 
         {
           bits: "19:12",
-          name: "MIN_THRESH",
+          name: "LO",
           desc: "Min threshold for io_div4 measurement",
           resval: "110"
         },
       ]
     },
-      { name: "MAIN_MEASURE_CTRL",
+  
+    { name: "MAIN_MEAS_CTRL_SHADOWED",
       desc: '''
         Configuration controls for main measurement.
 
@@ -586,6 +598,9 @@
       swaccess: "rw",
       hwaccess: "hro",
       async: "clk_main_i",
+      shadowed: "true",
+      update_err_alert: "recov_fault",
+      storage_err_alert: "fatal_fault",
       fields: [
         {
           bits: "0",
@@ -601,20 +616,21 @@
 
         {
           bits: "13:4",
-          name: "MAX_THRESH",
+          name: "HI",
           desc: "Max threshold for main measurement",
           resval: "510"
         },
 
         {
           bits: "23:14",
-          name: "MIN_THRESH",
+          name: "LO",
           desc: "Min threshold for main measurement",
           resval: "490"
         },
       ]
     },
-      { name: "USB_MEASURE_CTRL",
+  
+    { name: "USB_MEAS_CTRL_SHADOWED",
       desc: '''
         Configuration controls for usb measurement.
 
@@ -625,6 +641,9 @@
       swaccess: "rw",
       hwaccess: "hro",
       async: "clk_usb_i",
+      shadowed: "true",
+      update_err_alert: "recov_fault",
+      storage_err_alert: "fatal_fault",
       fields: [
         {
           bits: "0",
@@ -640,14 +659,14 @@
 
         {
           bits: "12:4",
-          name: "MAX_THRESH",
+          name: "HI",
           desc: "Max threshold for usb measurement",
           resval: "250"
         },
 
         {
           bits: "21:13",
-          name: "MIN_THRESH",
+          name: "LO",
           desc: "Min threshold for usb measurement",
           resval: "230"
         },
@@ -739,6 +758,46 @@
             usb has timed out.
           '''
         }
+        {
+          bits: "10",
+          name: "IO_UPDATE_ERR",
+          resval: 0,
+          desc: '''
+            !!IO_MEASURE_CTRL_SHADOWED has an update error.
+          '''
+        }
+        {
+          bits: "11",
+          name: "IO_DIV2_UPDATE_ERR",
+          resval: 0,
+          desc: '''
+            !!IO_DIV2_MEASURE_CTRL_SHADOWED has an update error.
+          '''
+        }
+        {
+          bits: "12",
+          name: "IO_DIV4_UPDATE_ERR",
+          resval: 0,
+          desc: '''
+            !!IO_DIV4_MEASURE_CTRL_SHADOWED has an update error.
+          '''
+        }
+        {
+          bits: "13",
+          name: "MAIN_UPDATE_ERR",
+          resval: 0,
+          desc: '''
+            !!MAIN_MEASURE_CTRL_SHADOWED has an update error.
+          '''
+        }
+        {
+          bits: "14",
+          name: "USB_UPDATE_ERR",
+          resval: 0,
+          desc: '''
+            !!USB_MEASURE_CTRL_SHADOWED has an update error.
+          '''
+        }
       ]
     },
 
@@ -752,6 +811,46 @@
           resval: 0
           desc: '''
             Register file has experienced a fatal integrity error.
+          '''
+        },
+        {
+          bits: "1",
+          name: "IO_STORAGE_ERR",
+          resval: 0,
+          desc: '''
+            !!IO_MEASURE_CTRL_SHADOWED has a storage error.
+          '''
+        },
+        {
+          bits: "2",
+          name: "IO_DIV2_STORAGE_ERR",
+          resval: 0,
+          desc: '''
+            !!IO_DIV2_MEASURE_CTRL_SHADOWED has a storage error.
+          '''
+        },
+        {
+          bits: "3",
+          name: "IO_DIV4_STORAGE_ERR",
+          resval: 0,
+          desc: '''
+            !!IO_DIV4_MEASURE_CTRL_SHADOWED has a storage error.
+          '''
+        },
+        {
+          bits: "4",
+          name: "MAIN_STORAGE_ERR",
+          resval: 0,
+          desc: '''
+            !!MAIN_MEASURE_CTRL_SHADOWED has a storage error.
+          '''
+        },
+        {
+          bits: "5",
+          name: "USB_STORAGE_ERR",
+          resval: 0,
+          desc: '''
+            !!USB_MEASURE_CTRL_SHADOWED has a storage error.
           '''
         },
       ]

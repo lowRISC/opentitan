@@ -269,7 +269,7 @@
         [
           Aon
         ]
-        shadowed: false
+        shadowed: true
         sw: false
         path: rstmgr_aon_resets.rst_por_io_div4_n
         parent: por_aon

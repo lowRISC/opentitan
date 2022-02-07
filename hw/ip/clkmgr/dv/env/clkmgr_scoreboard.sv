@@ -305,15 +305,15 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       "measure_ctrl_regwen": begin
         if (addr_phase_write) measure_ctrl_regwen = item.a_data;
       end
-      "io_measure_ctrl": begin
+      "io_meas_ctrl_shadowed": begin
       end
-      "io_div2_measure_ctrl": begin
+      "io_div2_meas_ctrl_shadowed": begin
       end
-      "io_div4_measure_ctrl": begin
+      "io_div4_meas_ctrl_shadowed": begin
       end
-      "main_measure_ctrl": begin
+      "main_meas_ctrl_shadowed": begin
       end
-      "usb_measure_ctrl": begin
+      "usb_meas_ctrl_shadowed": begin
       end
       "recov_err_code": begin
         do_read_check = 1'b0;

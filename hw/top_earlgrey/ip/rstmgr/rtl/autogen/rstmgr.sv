@@ -433,7 +433,7 @@ module rstmgr
 
   // Generating resets for por_io_div4
   // Power Domains: ['Aon']
-  // Shadowed: False
+  // Shadowed: True
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck)
   ) u_daon_por_io_div4 (
@@ -461,8 +461,33 @@ module rstmgr
   assign cnsty_chk_errs[3][Domain0Sel] = '0;
   assign fsm_errs[3][Domain0Sel] = '0;
   assign rst_en_o.por_io_div4[Domain0Sel] = MuBi4True;
-  assign shadow_cnsty_chk_errs[3] = '0;
-  assign shadow_fsm_errs[3] = '0;
+  rstmgr_leaf_rst #(
+    .SecCheck(SecCheck)
+  ) u_daon_por_io_div4_shadowed (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_div4_i),
+    .parent_rst_ni(rst_por_aon_n[DomainAonSel]),
+    .sw_rst_req_ni(1'b1),
+    .scan_rst_ni,
+    .scan_sel(prim_mubi_pkg::mubi4_test_true_strict(leaf_rst_scanmode[3])),
+    .rst_en_o(rst_en_o.por_io_div4_shadowed[DomainAonSel]),
+    .leaf_rst_o(resets_o.rst_por_io_div4_shadowed_n[DomainAonSel]),
+    .err_o(shadow_cnsty_chk_errs[3][DomainAonSel]),
+    .fsm_err_o(shadow_fsm_errs[3][DomainAonSel])
+  );
+
+  if (SecCheck) begin : gen_daon_por_io_div4_shadowed_assert
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
+    DAonPorIoDiv4ShadowedFsmCheck_A,
+    u_daon_por_io_div4_shadowed.gen_rst_chk.u_rst_chk.u_state_regs,
+    alert_tx_o[0])
+  end
+
+  assign resets_o.rst_por_io_div4_shadowed_n[Domain0Sel] = '0;
+  assign shadow_cnsty_chk_errs[3][Domain0Sel] = '0;
+  assign shadow_fsm_errs[3][Domain0Sel] = '0;
+  assign rst_en_o.por_io_div4_shadowed[Domain0Sel] = MuBi4True;
 
   // Generating resets for por_usb
   // Power Domains: ['Aon']
