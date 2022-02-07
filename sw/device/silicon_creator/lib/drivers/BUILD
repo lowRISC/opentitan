@@ -402,6 +402,19 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "mock_rnd",
+    testonly = True,
+    hdrs = [
+        "mock_rnd.h",
+        "rnd.h",
+    ],
+    deps = [
+        "//sw/device/silicon_creator/testing:mask_rom_test",
+        "@googletest//:gtest",
+    ],
+)
+
 opentitan_functest(
     name = "rnd_functest",
     srcs = ["rnd_functest.c"],
