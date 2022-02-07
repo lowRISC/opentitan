@@ -4,10 +4,10 @@
 
 class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
 
-  // ext component cfgs
+  // external component cfgs
   csrng_agent_cfg   m_csrng_agent_cfg;
   push_pull_agent_cfg#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH))
-            m_endpoint_agent_cfg[MAX_NUM_ENDPOINTS];
+      m_endpoint_agent_cfg[MAX_NUM_ENDPOINTS];
 
   `uvm_object_utils_begin(edn_env_cfg)
     `uvm_field_object(m_csrng_agent_cfg, UVM_DEFAULT)
@@ -15,18 +15,19 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
       `uvm_field_object(m_endpoint_agent_cfg[i], UVM_DEFAULT)
     end
   `uvm_object_utils_end
-
   `uvm_object_new
+
+  // Variables
+  uint   reseed_cnt, generate_cnt, generate_between_reseeds_cnt;
 
   // Knobs & Weights
   uint   enable_pct, boot_req_mode_pct, auto_req_mode_pct,
-         min_num_boot_genbits, max_num_boot_genbits,
-         min_num_requests, max_num_requests,
-         min_num_reqs_between_reseeds, max_num_reqs_between_reseeds;
+         min_num_boot_reqs, max_num_boot_reqs,
+         min_num_ep_reqs, max_num_ep_reqs;
 
   rand mubi4_t   enable, boot_req_mode, auto_req_mode;
-  rand uint      num_endpoints, num_boot_genbits, num_reqs_between_reseeds;
-  rand bit [csrng_pkg::CSRNG_CMD_WIDTH - 1:0]   boot_ins_cmd, boot_gen_cmd;
+  rand uint      num_endpoints, num_boot_reqs;
+  rand bit[csrng_pkg::CSRNG_CMD_WIDTH - 1:0]   boot_ins_cmd, boot_gen_cmd;
 
   // Constraints
   // TODO: utilize suggestions in PR9535 to generate "other" values when testing alerts
@@ -45,17 +46,10 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
     {MuBi4False, MuBi4False} :/ (100 - boot_req_mode_pct - auto_req_mode_pct) };
 
     if (boot_req_mode == MuBi4True) {
-      num_boot_genbits inside { [min_num_boot_genbits:max_num_boot_genbits] };
+      num_boot_reqs inside { [min_num_boot_reqs:max_num_boot_reqs] };
     }
     else {
-      num_boot_genbits == 0;}
-
-    if (auto_req_mode == MuBi4True) {
-      num_reqs_between_reseeds inside {
-          [min_num_reqs_between_reseeds:max_num_reqs_between_reseeds] };
-    }
-    else {
-      num_reqs_between_reseeds == 0;}}
+      num_boot_reqs == 0;}}
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = edn_env_pkg::LIST_OF_ALERTS;
@@ -92,10 +86,8 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
         auto_req_mode.name())};
     str = {str,  $sformatf("\n\t |***** num_endpoints                : %10d *****| \t",
         num_endpoints)};
-    str = {str,  $sformatf("\n\t |***** num_boot_genbits             : %10d *****| \t",
-        num_boot_genbits)};
-    str = {str,  $sformatf("\n\t |***** num_reqs_between_reseeds     : %10d *****| \t",
-        num_reqs_between_reseeds)};
+    str = {str,  $sformatf("\n\t |***** num_boot_reqs                : %10d *****| \t",
+        num_boot_reqs)};
     str = {str,  $sformatf("\n\t |------------------- knobs ---------------------------| \t")};
     str = {str,  $sformatf("\n\t |***** enable_pct                   : %10d *****| \t",
         enable_pct)};
@@ -105,14 +97,10 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
         auto_req_mode_pct)};
     str = {str,  $sformatf("\n\t |***** MAX_NUM_ENDPOINTS            : %10d *****| \t",
         MAX_NUM_ENDPOINTS)};
-    str = {str,  $sformatf("\n\t |***** min_num_boot_genbits         : %10d *****| \t",
-        min_num_boot_genbits)};
-    str = {str,  $sformatf("\n\t |***** max_num_boot_genbits         : %10d *****| \t",
-        max_num_boot_genbits)};
-    str = {str,  $sformatf("\n\t |***** min_num_reqs_between_reseeds : %10d *****| \t",
-        min_num_boot_genbits)};
-    str = {str,  $sformatf("\n\t |***** max_num_reqs_between_reseeds : %10d *****| \t",
-        max_num_boot_genbits)};
+    str = {str,  $sformatf("\n\t |***** min_num_boot_reqs            : %10d *****| \t",
+        min_num_boot_reqs)};
+    str = {str,  $sformatf("\n\t |***** max_num_boot_reqs            : %10d *****| \t",
+        max_num_boot_reqs)};
     str = {str,  $sformatf("\n\t |*****************************************************| \t")};
     str = {str, "\n"};
     return str;

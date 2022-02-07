@@ -48,7 +48,7 @@ class edn_base_vseq extends cip_base_vseq #(
     if (cfg.boot_req_mode == MuBi4True) begin
       wr_cmd(.cmd_type("boot_ins"), .acmd(csrng_pkg::INS), .clen(0), .flags(0), .glen(0));
       wr_cmd(.cmd_type("boot_gen"), .acmd(csrng_pkg::GEN), .clen(0), .flags(0),
-             .glen(cfg.num_boot_genbits));
+             .glen(cfg.num_boot_reqs));
     end
 
     // Enable edn, set modes

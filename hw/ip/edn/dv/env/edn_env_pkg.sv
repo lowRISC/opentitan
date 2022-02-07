@@ -24,7 +24,6 @@ package edn_env_pkg;
   // parameters
   parameter uint     MIN_NUM_ENDPOINTS = 1;
   parameter uint     MAX_NUM_ENDPOINTS = 7;
-  parameter uint     MIN_GLEN = 1;
   parameter string   LIST_OF_ALERTS[]  = {"recov_alert","fatal_alert"};
   parameter uint     NUM_ALERTS        = 2;
 

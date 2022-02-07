@@ -12,12 +12,10 @@ class edn_genbits_test extends edn_base_test;
 
     cfg.boot_req_mode_pct = 30;
     cfg.auto_req_mode_pct = 30;
-    cfg.min_num_boot_genbits = 1;
-    cfg.max_num_boot_genbits = 4;
-    cfg.min_num_reqs_between_reseeds = 1;
-    cfg.max_num_reqs_between_reseeds = 1;
-    cfg.min_num_requests = 4;
-    cfg.max_num_requests = 16;
+    cfg.min_num_boot_reqs = 1;
+    cfg.max_num_boot_reqs = 4;
+    cfg.min_num_ep_reqs   = 4;
+    cfg.max_num_ep_reqs   = 16;
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
     `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_HIGH)
