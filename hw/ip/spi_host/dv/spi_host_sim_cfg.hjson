@@ -68,6 +68,10 @@
       name: spi_host_smoke
       uvm_test_seq: spi_host_smoke_vseq
     }
+    {
+      name: spi_host_speed
+      uvm_test_seq: spi_host_speed_vseq
+    }
     // TODO: add more tests here
   ]
 

@@ -77,7 +77,7 @@
               - verify that the DUT can handle different sck -> cs_n timings
             '''
       milestone: V2
-      tests: []
+      tests: ["spi_host_speed"]
     }
     {
       name: speed
@@ -89,7 +89,7 @@
               - verify that all speeds are supported
             '''
       milestone: V2
-      tests: []
+      tests: ["spi_host_speed"]
     }
     {
       name: chip_select_timing
@@ -101,7 +101,7 @@
               - Check that the DUT operates correctly under different SPI clock speeds
             '''
       milestone: V2
-      tests: []
+      tests: ["spi_host_speed"]
     }
     {
       name: sw_reset
@@ -143,7 +143,7 @@
               - Check that the DUT operates correctly under different cs_n settings
             '''
       milestone: V2
-      tests: []
+      tests: ["spi_host_speed"]
     }
     {
       name: full_cycle
