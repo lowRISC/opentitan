@@ -213,7 +213,8 @@
   regressions: [
     {
       name: smoke
-      tests: ["lc_ctrl_smoke"]
+      tests: ["lc_ctrl_smoke",
+              "lc_ctrl_jtag_smoke"]
     }
     {
       name: jtag
