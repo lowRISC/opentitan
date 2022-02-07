@@ -50,8 +50,8 @@ Code Quality  | [LINT_PASS][]           | Not Started |
 Code Quality  | [CDC_SETUP][]           | Not Started |
 Code Quality  | [FPGA_TIMING][]         | Not Started |
 Code Quality  | [CDC_SYNCMACRO][]       | Not Started |
-Security      | [SEC_CM_DOCUMENTED][]   | Not Started |
-Security      | [SEC_RND_CNST][]        | Not Started |
+Security      | [SEC_CM_DOCUMENTED][]   | N/A         |
+Security      | [SEC_RND_CNST][]        | N/A         |
 
 [NEW_FEATURES]:        {{<relref "/doc/project/checklist.md#new_features" >}}
 [BLOCK_DIAGRAM]:       {{<relref "/doc/project/checklist.md#block_diagram" >}}
@@ -75,10 +75,10 @@ Security      | [SEC_RND_CNST][]        | Not Started |
 
  Type         | Item                         | Resolution  | Note/Collaterals
 --------------|------------------------------|-------------|------------------
-Security      | [SEC_CM_ASSETS_LISTED][]     | Not Started |
-Security      | [SEC_CM_IMPLEMENTED][]       | Not Started |
-Security      | [SEC_CM_RTL_REVIEWED][]      | Not Started |
-Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Not Started |
+Security      | [SEC_CM_ASSETS_LISTED][]     | Done        |
+Security      | [SEC_CM_IMPLEMENTED][]       | Done        |
+Security      | [SEC_CM_RTL_REVIEWED][]      | N/A         |
+Security      | [SEC_CM_COUNCIL_REVIEWED][]  | N/A         | This block only contains the bus-integrity CM.
 
 [SEC_CM_ASSETS_LISTED]:    {{<relref "/doc/project/checklist.md#sec_cm_assets_listed" >}}
 [SEC_CM_IMPLEMENTED]:      {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
