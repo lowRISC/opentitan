@@ -157,6 +157,10 @@ class spi_host_base_vseq extends cip_base_vseq #(
 
   virtual task program_spi_host_regs();
     // IMPORTANT: configopt regs must be programmed before command reg
+    `DV_CHECK_RANDOMIZE_FATAL(ral.error_enable)
+    csr_update(.csr(ral.error_enable));
+    `DV_CHECK_RANDOMIZE_FATAL(ral.event_enable)
+    csr_update(.csr(ral.event_enable));
     `DV_CHECK_RANDOMIZE_FATAL(ral.intr_enable)
     csr_update(.csr(ral.intr_enable));
     program_configopt_regs();
