@@ -45,6 +45,7 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(.pins(interrupts));
   tl_if        tl_if(.clk(clk), .rst_n(rst_n));
   spi_if       spi_if(.rst_n(rst_n));
+  spi_passthrough_if       spi_passthrough_if(.rst_n(rst_n));
 
   `DV_ALERT_IF_CONNECT
 
@@ -66,7 +67,7 @@ module tb;
     .cio_csb_en_o         (cio_csb_en_o),
     .cio_sd_o             (cio_sd_o),
     .cio_sd_en_o          (cio_sd_en_o),
-    .cio_sd_i             (si_pulldown),
+    .cio_sd_i             (cio_sd_i),
     // passthrough i/o
     .passthrough_i        (passthrough_i),
     .passthrough_o        (passthrough_o),
@@ -75,9 +76,7 @@ module tb;
     .intr_spi_event_o     (intr_event)
   );
 
-  // configure passthrough i/o
   assign passthrough_i.sck = clk;
-  // TODO - V2 connect passtrhough to another agent
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       passthrough_i.passthrough_en <= 1'b0;
@@ -86,19 +85,21 @@ module tb;
       passthrough_i.s_en   <= 1'b0;
       passthrough_i.sck_gate_en <= 1'b0;
       passthrough_i.csb    <= 1'b1;
-      passthrough_i.s      <= '0;
     end else begin
-      passthrough_i.passthrough_en <= 1'b0;
-      passthrough_i.sck_en <= 1'b1;
-      passthrough_i.csb_en <= 1'b1;
-      passthrough_i.s_en   <= 1'b1;
-      passthrough_i.csb    <= 1'b0;
-      passthrough_i.s      <= ~passthrough_i.s;
-    end
+      passthrough_i.passthrough_en <= spi_passthrough_if.passthrough_en;
+      passthrough_i.sck_en         <= spi_passthrough_if.sck_en;
+      passthrough_i.csb_en         <= spi_passthrough_if.csb_en;
+      passthrough_i.s_en           <= spi_passthrough_if.s_en;
+      passthrough_i.sck_gate_en    <= spi_passthrough_if.sck_gate_en;
+      passthrough_i.csb            <= spi_passthrough_if.csb;
+  end
   end
 
-
-
+  assign passthrough_i.s      = spi_passthrough_if.is;
+  assign spi_passthrough_if.os = passthrough_o.s;
+  assign spi_passthrough_if.cio_sd_o = cio_sd_o;
+  
+  assign cio_sd_i =  spi_passthrough_if.passthrough_en ? spi_passthrough_if.cio_sd_i : si_pulldown;
 
   // configure spi_if i/o
   assign spi_if.sck = (cio_sck_en_o) ? cio_sck_o : 1'bz;
@@ -120,10 +121,13 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
+    uvm_config_db#(virtual spi_passthrough_if)::set(null, "*.env", "spi_passthrough_vif",
+                                                 spi_passthrough_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_agent*", "vif", spi_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
+
 
 endmodule

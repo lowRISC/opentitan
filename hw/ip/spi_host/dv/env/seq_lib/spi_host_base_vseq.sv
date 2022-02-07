@@ -49,13 +49,13 @@ class spi_host_base_vseq extends cip_base_vseq #(
       foreach (spi_config_regs.cpol[i]) {
         spi_config_regs.cpol[i] dist {
           1'b0 :/ 1,
-          1'b1 :/ 0
+          1'b1 :/ 1
         };
       }
       foreach (spi_config_regs.cpha[i]) {
         spi_config_regs.cpha[i] dist {
           1'b0 :/ 1,
-          1'b1 :/ 0
+          1'b1 :/ 1
         };
       }
       foreach (spi_config_regs.csnlead[i]) {
@@ -82,14 +82,14 @@ class spi_host_base_vseq extends cip_base_vseq #(
     // control reg
     spi_host_ctrl_reg.tx_watermark dist {
       [0:7]   :/ 1,
-      [8:15]  :/ 3,
-      [16:31] :/ 2,
+      [8:15]  :/ 1,
+      [16:31] :/ 1,
       [32:cfg.seq_cfg.host_spi_max_txwm] :/ 1
       };
     spi_host_ctrl_reg.rx_watermark dist {
       [0:7]   :/ 1,
-      [8:15]  :/ 3,
-      [16:31] :/ 2,
+      [8:15]  :/ 1,
+      [16:31] :/ 1,
       [32:cfg.seq_cfg.host_spi_max_rxwm] :/ 1
       };
   }
@@ -140,7 +140,7 @@ class spi_host_base_vseq extends cip_base_vseq #(
     wait(cfg.m_spi_agent_cfg.vif.rst_n);
     // program sw_reset for spi_host dut
     program_spi_host_sw_reset();
-    // enable then clear interrupts
+    // enable then clear interrupt
     csr_wr(.ptr(ral.intr_enable), .value({TL_DW{1'b1}}));
     csr_rd(.ptr(ral.intr_state), .value(intr_state));
     csr_wr(.ptr(ral.intr_state), .value(intr_state));
@@ -157,11 +157,13 @@ class spi_host_base_vseq extends cip_base_vseq #(
 
   virtual task program_spi_host_regs();
     // IMPORTANT: configopt regs must be programmed before command reg
+    `DV_CHECK_RANDOMIZE_FATAL(ral.intr_enable)
+    csr_update(.csr(ral.intr_enable));
     program_configopt_regs();
     program_control_reg();
     program_csid_reg();
     // TODO
-    // update_spi_agent_regs();
+    update_spi_agent_regs();
   endtask : program_spi_host_regs
 
   virtual task program_csid_reg();
@@ -292,7 +294,7 @@ class spi_host_base_vseq extends cip_base_vseq #(
     end
     cfg.m_spi_agent_cfg.csid              = spi_host_ctrl_reg.csid;
     cfg.m_spi_agent_cfg.spi_mode          = spi_host_command_reg.mode;
-
+    cfg.m_spi_agent_cfg.decode_commands   = 1'b1;
     print_spi_host_regs();
   endfunction : update_spi_agent_regs
 
@@ -315,6 +317,8 @@ class spi_host_base_vseq extends cip_base_vseq #(
 
       str = {str, "\n  base_vseq, values programed to the dut registers:"};
       str = {str, $sformatf("\n    csid         %0d", spi_host_ctrl_reg.csid)};
+      str = {str, $sformatf("\n    tx_watermark         %0b", spi_host_ctrl_reg.tx_watermark)};
+      str = {str, $sformatf("\n    rx_watermark         %0b", spi_host_ctrl_reg.rx_watermark)};
       str = {str, $sformatf("\n    Mode        %s",  spi_host_command_reg.mode.name())};
       str = {str, $sformatf("\n    direction    %s",  spi_host_command_reg.direction.name())};
       str = {str, $sformatf("\n    csaat        %b",  spi_host_command_reg.csaat)};
@@ -355,15 +359,15 @@ class spi_host_base_vseq extends cip_base_vseq #(
         write ? "WRITE" : "READ", addr, data, blocking, mask), UVM_HIGH)
   endtask : send_tl_access
 
-
-  virtual task access_data_fifo(ref bit [7:0] data_q[$], input spi_host_fifo_e fifo);
+  virtual task access_data_fifo(ref bit [7:0] data_q[$], input spi_host_fifo_e fifo,
+                                    bit fifo_avail_chk = 1'b1);
     bit [TL_DBW-1:0][7:0]   data          = '0;
     int                     cnt           =  0;
     bit [TL_DBW-1:0]        mask          = '0;
     bit                     wr_en         = 1;
     bit [TL_AW-1:0]         align_addr;
     // check free space in fifo
-    wait_for_fifos_available(fifo);
+    if (fifo_avail_chk) wait_for_fifos_available(fifo);
     //TODO add interrupt handling if FIFO overflow
 
     align_addr = get_aligned_tl_addr(fifo);

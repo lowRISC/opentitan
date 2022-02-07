@@ -13,6 +13,8 @@ class spi_host_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_host_reg_block));
   // agent cfgs
   spi_agent_cfg  m_spi_agent_cfg;
 
+  virtual spi_passthrough_if spi_passthrough_vif;
+
   // number of dummy cycles in a dummy segment
   rand int    num_dummy;
   int         max_dummy_cycles = 16;

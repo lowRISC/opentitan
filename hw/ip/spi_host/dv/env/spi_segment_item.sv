@@ -36,7 +36,7 @@ class spi_segment_item extends uvm_sequence_item;
   rand spi_host_command_t       command_reg;
   rand bit                [7:0] spi_data      [$];
 
-  constraint command_reg_c {
+  constraint command_reg_direction_c {
     //make sure the direction matches the segtype /cmd address are always tx/standard
     if ((cmd inside {ReadStd}) && (seg_type inside {Dummy, Data})) {
       command_reg.direction dist {
@@ -64,6 +64,8 @@ class spi_segment_item extends uvm_sequence_item;
       };
     }
 
+  }
+  constraint command_reg_mode_c {
 
     if (seg_type == Command) {
       command_reg.mode == Standard;
@@ -77,7 +79,9 @@ class spi_segment_item extends uvm_sequence_item;
         command_reg.mode == Quad;
       }
     }
+ }
 
+  constraint command_reg_lencsaat_c {
     if (seg_type == Command) {
       command_reg.len == num_cmd_bytes - 1;
     } else

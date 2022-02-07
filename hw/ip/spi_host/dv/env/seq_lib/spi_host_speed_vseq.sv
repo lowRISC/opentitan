@@ -7,13 +7,42 @@ class spi_host_speed_vseq extends spi_host_smoke_vseq;
   `uvm_object_utils(spi_host_speed_vseq)
   `uvm_object_new
 
-  int num_transactions = 2;
+  constraint spi_config_regs_c {
+      // configopts regs
+      foreach (spi_config_regs.cpol[i]) {
+        spi_config_regs.cpol[i] dist {
+          1'b0 :/ 1,
+          1'b1 :/ 1
+        };
+      }
+      foreach (spi_config_regs.cpha[i]) {
+        spi_config_regs.cpha[i] dist {
+          1'b0 :/ 1,
+          1'b1 :/ 1
+        };
+      }
+      foreach (spi_config_regs.csnlead[i]) {
+        spi_config_regs.csnlead[i] inside {[cfg.seq_cfg.host_spi_min_csn_latency :
+                                          cfg.seq_cfg.host_spi_max_csn_latency]};
+      }
+      foreach (spi_config_regs.csntrail[i]) {
+        spi_config_regs.csntrail[i] inside {[cfg.seq_cfg.host_spi_min_csn_latency :
+                                           cfg.seq_cfg.host_spi_max_csn_latency]};
+      }
+      foreach (spi_config_regs.csnidle[i]) {
+        spi_config_regs.csnidle[i] inside {[cfg.seq_cfg.host_spi_min_csn_latency :
+                                          cfg.seq_cfg.host_spi_max_csn_latency]};
+      }
+      foreach (spi_config_regs.clkdiv[i]) {
+        spi_config_regs.clkdiv[i] inside {[cfg.seq_cfg.host_spi_min_clkdiv :
+                                         cfg.seq_cfg.host_spi_max_clkdiv]};
+      }
+  }
 
-  virtual task start_spi_host_trans(int num_transactions);
+  virtual task start_spi_host_trans(int num_transactions, bit wait_ready = 1'b1);
     cfg.seq_cfg.std_en  = 1;
     cfg.seq_cfg.dual_en = 1;
-    //TODO: enable quad_en
-    cfg.seq_cfg.quad_en = 0;
+    cfg.seq_cfg.quad_en = 1;
     super.start_spi_host_trans(num_transactions);
   endtask
 

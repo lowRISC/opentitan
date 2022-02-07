@@ -61,7 +61,7 @@
                 once the event interrupt pin is asserted
             '''
       milestone: V2
-      tests: []
+      tests: ["spi_host_error_txrx", "spi_host_error_cmd", "spi_host_event"]
     }
     {
       name: clock_rate
@@ -131,7 +131,7 @@
               - TBD
       '''
       milestone: V2
-      tests: []
+      tests: ["spi_host_passthrough_mode"]
     }
     {
       name: cpol_cpha
@@ -211,7 +211,7 @@
               - Ensure reset is handled correctly
             '''
       milestone: V2
-      tests: []
+      tests: ["spi_host_stress_all"]
     }
     {
       name: winbond
