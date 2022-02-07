@@ -72,6 +72,14 @@
       name: spi_host_speed
       uvm_test_seq: spi_host_speed_vseq
     }
+    {
+      name: spi_host_performance
+      uvm_test_seq: spi_host_performance_vseq
+    }
+    {
+      name: spi_host_sw_reset
+      uvm_test_seq: spi_host_sw_reset_vseq
+    }
     // TODO: add more tests here
   ]
 
