@@ -111,6 +111,12 @@ class edn_scoreboard extends cip_base_scoreboard #(
       end
       "sum_sts": begin
       end
+      "generate_cmd": begin
+      end
+      "reseed_cmd": begin
+      end
+      "max_num_reqs_between_reseeds": begin
+      end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end
