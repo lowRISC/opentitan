@@ -15,7 +15,12 @@ interface spi_passthrough_if
   bit [3:0] is;
   bit [3:0] os;
   bit [3:0] s_en;
-  logic [3:0]   cio_sd_o;
-  bit [3:0]   cio_sd_i;
+  bit       cio_sck_o;
+  bit       cio_sck_en_o;
+  bit       cio_csb_o;
+  bit       cio_csb_en_o;
+  bit [3:0] cio_sd_o;
+  bit [3:0] cio_sd_en_o;
+  bit [3:0] cio_sd_i;
 
 endinterface : spi_passthrough_if

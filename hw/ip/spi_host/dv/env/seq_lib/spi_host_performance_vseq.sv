@@ -35,11 +35,8 @@ class spi_host_performance_vseq extends spi_host_smoke_vseq;
 
   virtual task start_spi_host_trans(int num_transactions, bit wait_ready = 1'b1);
     cfg.seq_cfg.std_en  = 1;
-    //TODO: enable dual_en and quad_en
-    cfg.seq_cfg.dual_en = 0;
-    cfg.seq_cfg.quad_en = 0;
+    cfg.seq_cfg.dual_en = 1;
+    cfg.seq_cfg.quad_en = 1;
     super.start_spi_host_trans(num_trans);
   endtask
-
 endclass : spi_host_performance_vseq
-
