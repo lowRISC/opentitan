@@ -11,6 +11,9 @@ class spi_monitor extends dv_base_monitor#(
 
   spi_item host_item, host_clone;
   spi_item device_item, device_clone;
+  spi_cmd_e cmd;
+  spi_cmd_e cmdtmp;
+  int cmd_byte;
 
   // Analysis port for the collected transfer.
   uvm_analysis_port #(spi_item) host_analysis_port;
@@ -37,6 +40,8 @@ class spi_monitor extends dv_base_monitor#(
       @(negedge cfg.vif.csb);
       // indicate that this the first byte in a spi transaction
       host_item.first_byte = 1;
+      cmd = CmdOnly;
+      cmd_byte = 0;
       collect_curr_trans();
     end
   endtask : collect_trans
@@ -54,46 +59,105 @@ class spi_monitor extends dv_base_monitor#(
             forever begin
               bit [7:0] host_byte;    // from sio
               bit [7:0] device_byte;  // from sio
-              int       which_bit;
-              bit [3:0] num_bits;
+              int       which_bit_h;
+              int       which_bit_d;
+              int       data_shift;
+              bit [3:0] num_samples;
               if (cfg.partial_byte == 1) begin
-                num_bits = cfg.bits_to_transfer;
+                num_samples = cfg.bits_to_transfer;
               end else begin
-                num_bits = 8;
+                num_samples = 8;
               end
-              for (int i = 0; i < num_bits; i++) begin
+
+              case(cmd)
+              CmdOnly, ReadStd, WriteStd: begin
+                data_shift = 1;
+              end
+              ReadDual, WriteDual: begin
+                data_shift = 2;
+              end
+              ReadQuad, WriteQuad: begin
+                data_shift = 4;
+              end
+              default: begin
+                data_shift = 1;
+              end
+              endcase
+
+              for (int i = 0; i < num_samples; i = i + data_shift) begin
                 // wait for the sampling edge
                 cfg.wait_sck_edge(SamplingEdge);
                 // check sio not x or z
                 if (cfg.en_monitor_checks) begin
-                  `DV_CHECK_CASE_NE(cfg.vif.sio[1:0], 2'bxx)
-                  `DV_CHECK_CASE_NE(cfg.vif.sio[1:0], 2'bxx)
+                  `DV_CHECK_CASE_NE(cfg.vif.sio[3:0], 4'bxxxx)
+                  `DV_CHECK_CASE_NE(cfg.vif.sio[3:0], 4'bxxxx)
                 end
+
+                which_bit_h = cfg.host_bit_dir ? i : 7 - i;
+                which_bit_d = cfg.device_bit_dir ? i : 7 - i;
+              case(cmd)
+              CmdOnly, ReadStd, WriteStd: begin
                 // sample sio[0] for tx
-                which_bit = cfg.host_bit_dir ? i : 7 - i;
-                host_byte[which_bit] = cfg.vif.sio[0];
-                cfg.vif.host_bit  = which_bit;
-                cfg.vif.host_byte = host_byte;
+                host_byte[which_bit_h] = cfg.vif.sio[0];
                 // sample sio[1] for rx
-                which_bit = cfg.device_bit_dir ? i : 7 - i;
-                device_byte[which_bit] = cfg.vif.sio[1];
-                // sending 7 bits will be padded with 0 for the last bit
-                if (i == 6 && num_bits == 7) begin
-                  which_bit = cfg.device_bit_dir ? 7 : 0;
-                  device_byte[which_bit] = 0;
+                device_byte[which_bit_d] = cfg.vif.sio[1];
+              end // cmdonly,readstd,writestd
+              ReadDual, WriteDual: begin
+                // sample sio[0] sio[1] for tx bidir 
+                host_byte[which_bit_h] = cfg.vif.sio[1];
+                host_byte[which_bit_h-1] = cfg.vif.sio[0];
+                // sample sio[0] sio[1] for rx bidir
+                device_byte[which_bit_d] = cfg.vif.sio[1];
+                device_byte[which_bit_d-1] = cfg.vif.sio[0];
+              end // ReadDual,WriteDual
+              ReadQuad, WriteQuad: begin
+                // sample sio[0] sio[1] sio[2] sio[3] for tx bidir
+                host_byte[which_bit_h] = cfg.vif.sio[3];
+                host_byte[which_bit_h-1] = cfg.vif.sio[2];
+                host_byte[which_bit_h-2] = cfg.vif.sio[1];
+                host_byte[which_bit_h-3] = cfg.vif.sio[0];
+                // sample sio[0] sio[1] sio[2] sio[3] for rx bidir
+                device_byte[which_bit_d] = cfg.vif.sio[3];
+                device_byte[which_bit_d-1] = cfg.vif.sio[2];
+                device_byte[which_bit_d-2] = cfg.vif.sio[1];
+                device_byte[which_bit_d-3] = cfg.vif.sio[0];
+              end // ReadQuad,WriteQuad
+              default: begin
+                // sample sio[0] for tx
+                host_byte[which_bit_h] = cfg.vif.sio[0];
+                // sample sio[1] for rx
+                device_byte[which_bit_d] = cfg.vif.sio[1];
+              end
+              endcase
+
+                cfg.vif.host_bit  = which_bit_h;
+                cfg.vif.host_byte = host_byte;
+               // sending 7 bits will be padded with 0 for the last bit
+                if (i == 6 && num_samples == 7) begin
+                  which_bit_d = cfg.device_bit_dir ? 7 : 0;
+                  device_byte[which_bit_d] = 0;
                 end
-                cfg.vif.device_bit = which_bit;
+                cfg.vif.device_bit = which_bit_d;
                 cfg.vif.device_byte = device_byte;
               end
+
               // sending less than 7 bits will not be captured, byte to be re-sent
-              if (num_bits >= 7) begin
+              if (num_samples >= 7) begin
                 host_item.data.push_back(host_byte);
                 device_item.data.push_back(device_byte);
               end
-
               // sending transactions when collect a word data
               if (host_item.data.size == cfg.num_bytes_per_trans_in_mon &&
                   device_item.data.size == cfg.num_bytes_per_trans_in_mon) begin
+              if (host_item.first_byte == 1 )  begin
+                 cmdtmp = host_byte;
+                `uvm_info(`gfn, $sformatf("spi_monitor: cmdtmp \n%0h", cmdtmp), UVM_DEBUG)
+                 end
+                 cmd_byte++;
+              if (cmd_byte == 4)begin
+                 cmd = cmdtmp;
+                `uvm_info(`gfn, $sformatf("spi_monitor: cmd \n%0h", cmd), UVM_DEBUG)
+                 end
                 `uvm_info(`gfn, $sformatf("spi_monitor: host packet:\n%0s", host_item.sprint()),
                           UVM_DEBUG)
                 `uvm_info(`gfn, $sformatf("spi_monitor: device packet:\n%0s", device_item.sprint()),
