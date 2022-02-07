@@ -30,6 +30,7 @@ class csrng_device_seq extends csrng_base_seq;
       end
       start_item(req);
       finish_item(req);
+      get_response(rsp);
     end
   endtask
 

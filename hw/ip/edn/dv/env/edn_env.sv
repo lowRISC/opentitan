@@ -48,6 +48,9 @@ class edn_env extends cip_base_env #(
       m_csrng_agent.m_genbits_push_agent.monitor.analysis_port.connect
           (scoreboard.genbits_fifo.analysis_export);
 
+      m_csrng_agent.m_cmd_push_agent.monitor.analysis_port.connect
+          (scoreboard.cs_cmd_fifo.analysis_export);
+
       for (int i = 0; i < cfg.num_endpoints; i++) begin
         m_endpoint_agent[i].monitor.analysis_port.connect
             (scoreboard.endpoint_fifo[i].analysis_export);
