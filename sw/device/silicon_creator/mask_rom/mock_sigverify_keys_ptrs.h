@@ -18,6 +18,7 @@ class MockSigverifyKeysPtrs : public GlobalMock<MockSigverifyKeysPtrs> {
  public:
   MOCK_METHOD(const sigverify_mask_rom_key_t *, RsaKeysPtrGet, ());
   MOCK_METHOD(size_t, NumRsaKeysGet, ());
+  MOCK_METHOD(size_t, RsaKeysStepGet, ());
 };
 
 }  // namespace internal
@@ -33,6 +34,10 @@ const sigverify_mask_rom_key_t *sigverify_rsa_keys_ptr_get() {
 
 size_t sigverify_num_rsa_keys_get() {
   return MockSigverifyKeysPtrs::Instance().NumRsaKeysGet();
+}
+
+size_t sigverify_rsa_keys_step_get() {
+  return MockSigverifyKeysPtrs::Instance().RsaKeysStepGet();
 }
 
 }  // extern "C"

@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
+#include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/sigverify.h"
 #include "sw/device/silicon_creator/mask_rom/keys/test_key_0_rsa_3072_exp_f4.h"
 #include "sw/device/silicon_creator/mask_rom/sigverify_keys_ptrs.h"
@@ -203,9 +204,12 @@ rom_error_t sigverify_rsa_key_get(uint32_t key_id, lifecycle_state_t lc_state,
                                   const sigverify_rsa_key_t **key) {
   const sigverify_mask_rom_key_t *keys = sigverify_rsa_keys_ptr_get();
   size_t num_keys = sigverify_num_rsa_keys_get();
+  size_t step = sigverify_rsa_keys_step_get();
   size_t cand_key_index = UINT32_MAX;
-  size_t i = 0;
-  for (; launder32(i) < num_keys; ++i) {
+  // Random start index that is less than `num_keys`.
+  size_t i = ((uint64_t)rnd_uint32() * (uint64_t)num_keys) >> 32;
+  size_t iter_cnt = 0;
+  for (; launder32(iter_cnt) < num_keys; ++iter_cnt) {
     const sigverify_mask_rom_key_t *k = &keys[i];
     size_t k_id = sigverify_rsa_key_id_get(&k->key.n);
     if (launder32(k_id) == key_id) {
@@ -216,8 +220,13 @@ rom_error_t sigverify_rsa_key_get(uint32_t key_id, lifecycle_state_t lc_state,
         cand_key_index = i;
       }
     }
+    i += step;
+    if (launder32(i) >= num_keys) {
+      i -= num_keys;
+    }
+    HARDENED_CHECK_LT(i, num_keys);
   }
-  HARDENED_CHECK_EQ(i, num_keys);
+  HARDENED_CHECK_EQ(iter_cnt, num_keys);
 
   if (launder32(cand_key_index) < num_keys) {
     HARDENED_CHECK_LT(cand_key_index, num_keys);

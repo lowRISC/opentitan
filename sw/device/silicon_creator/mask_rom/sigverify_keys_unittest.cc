@@ -5,6 +5,7 @@
 #include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
 
 #include <cstring>
+#include <limits>
 #include <numeric>
 #include <unordered_set>
 
@@ -12,6 +13,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
+#include "sw/device/silicon_creator/lib/drivers/mock_rnd.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/mock_sigverify_mod_exp_otbn.h"
 #include "sw/device/silicon_creator/lib/sigverify.h"
@@ -111,6 +113,10 @@ class SigverifyKeys : public mask_rom_test::MaskRomTest {
     ASSERT_LE(N, OTP_CTRL_PARAM_CREATOR_SW_CFG_KEY_IS_VALID_SIZE);
     EXPECT_CALL(sigverify_keys_ptrs_, RsaKeysPtrGet()).WillOnce(Return(keys));
     EXPECT_CALL(sigverify_keys_ptrs_, NumRsaKeysGet()).WillOnce(Return(N));
+    // Returning 1 since it is coprime with every integer.
+    EXPECT_CALL(sigverify_keys_ptrs_, RsaKeysStepGet()).WillOnce(Return(1));
+    EXPECT_CALL(rnd_, Uint32())
+        .WillOnce(Return(std::numeric_limits<uint32_t>::max()));
   }
 
   /**
@@ -143,6 +149,7 @@ class SigverifyKeys : public mask_rom_test::MaskRomTest {
 
   mask_rom_test::MockOtp otp_;
   mask_rom_test::MockSigverifyKeysPtrs sigverify_keys_ptrs_;
+  mask_rom_test::MockRnd rnd_;
 };
 
 class BadKeyIdTypeTest : public SigverifyKeys,
@@ -336,6 +343,24 @@ TEST(Keys, UniqueIds) {
   }
 
   EXPECT_EQ(ids.size(), kSigVerifyNumRsaKeys);
+}
+
+/**
+ * An implementation of the Euclidean algorithm since we can't use c++17's
+ * `std::gcd()` yet.
+ */
+uint32_t Gcd(uint32_t a, uint32_t b) {
+  while (b != 0) {
+    std::tie(a, b) = std::make_tuple(b, a % b);
+  }
+  return a;
+}
+
+TEST(KeysStep, IsCorrect) {
+  if (kSigVerifyNumRsaKeys > 1) {
+    EXPECT_LT(kSigverifyRsaKeysStep, kSigVerifyNumRsaKeys);
+    EXPECT_EQ(Gcd(kSigverifyRsaKeysStep, kSigVerifyNumRsaKeys), 1);
+  }
 }
 
 // Note: The test cases below test sigverify using mask ROM keys. They have some
