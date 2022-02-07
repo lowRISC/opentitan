@@ -25,6 +25,7 @@ sw_silicon_creator_mask_rom_sigverify = declare_dependency(
     dependencies: [
       sw_silicon_creator_lib_sigverify,
       sw_silicon_creator_lib_driver_otp,
+      sw_silicon_creator_lib_driver_rnd,
       sw_lib_bitfield,
     ],
   ),
