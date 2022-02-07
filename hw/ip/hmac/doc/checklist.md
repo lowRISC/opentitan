@@ -52,8 +52,8 @@ Code Quality  | [LINT_PASS][]           | Done        |
 Code Quality  | [CDC_SETUP][]           | N/A         |
 Code Quality  | [FPGA_TIMING][]         | Done        | Fmax @ 50MHz on NexysVideo
 Code Quality  | [CDC_SYNCMACRO][]       | N/A         |
-Security      | [SEC_CM_DOCUMENTED][]   | Not Started |
-Security      | [SEC_RND_CNST][]        | Not Started |
+Security      | [SEC_CM_DOCUMENTED][]   | N/A         |
+Security      | [SEC_RND_CNST][]        | N/A         |
 
 [#761]: https://github.com/loWRISC/opentitan/issues/761
 
