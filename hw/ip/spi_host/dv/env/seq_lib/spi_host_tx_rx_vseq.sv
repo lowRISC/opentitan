@@ -23,8 +23,6 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
     program_spi_host_regs();
     if (wait_ready) wait_ready_for_command();
     csr_rd(.ptr(ral.status), .value(status));
-    cfg.seq_cfg.host_spi_min_len = 4;
-    cfg.seq_cfg.host_spi_max_len = 16;
 
     for (int n = 0; n < num_transactions; n++) begin
       generate_transaction();
@@ -92,4 +90,33 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
     `DV_CHECK_RANDOMIZE_FATAL(transaction)
   endtask
 
+  task check_event(uvm_reg_field fld, bit value);
+    spi_host_intr_state_t intr_state;
+    uvm_reg_field enable_fld;
+    if (fld == ral.status.active) begin
+      enable_fld = ral.event_enable.get_field_by_name("idle");
+    end
+    else begin
+      enable_fld = ral.event_enable.get_field_by_name(fld.get_name);
+    end
+    csr_rd_check(.ptr(fld), .compare_value(value));
+    if (enable_fld != null) begin
+      bit enable = `gmv(enable_fld);
+      check_interrupts(1 << intr_state.spi_event, value & enable);
+    end else begin
+      check_interrupts(1 << intr_state.spi_event, 0);
+    end
+  endtask
+
+  task check_error(uvm_reg_field fld, bit value);
+    spi_host_intr_state_t intr_state;
+    uvm_reg_field enable_fld = ral.error_enable.get_field_by_name(fld.get_name);
+    csr_rd_check(.ptr(fld), .compare_value(value));
+    if (enable_fld != null) begin
+      bit enable = `gmv(enable_fld);
+      check_interrupts(1 << intr_state.error, value & enable);
+    end else begin
+      check_interrupts(1 << intr_state.error, 0);
+    end
+  endtask
 endclass : spi_host_tx_rx_vseq

@@ -318,6 +318,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
             bit [TL_DW-1:0] intr_en = `gmv(ral.intr_enable);
             bit [NumSpiHostIntr-1:0] intr_exp = item.a_data | `gmv(ral.intr_state);
             void'(ral.intr_state.predict(.value(intr_exp), .kind(UVM_PREDICT_DIRECT)));
+            // sample coverage
             if (cfg.en_cov) begin
               foreach (intr_exp[i]) begin
                 cov.intr_test_cg.sample(i, item.a_data[i], intr_en[i], intr_exp[i]);
@@ -390,17 +391,17 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     if (data_phase_read) begin
       case (csr_name)
         "intr_state": begin
-         spi_intr_state_reg.spi_event  = bit'(get_field_val(ral.intr_state.spi_event,
-                                                            item.a_data));
-         spi_intr_state_reg.error      = bit'(get_field_val(ral.intr_state.error, item.a_data));
-         if (cfg.en_cov) begin
-           bit [TL_DW-1:0]         intr_en  = `gmv(ral.intr_enable);
-           bit [NumSpiHostIntr-1:0]  intr_exp = `gmv(ral.intr_state);
+           spi_intr_state_reg.spi_event  = bit'(get_field_val(ral.intr_state.spi_event,
+                                                              item.a_data));
+           spi_intr_state_reg.error      = bit'(get_field_val(ral.intr_state.error, item.a_data));
+           if (cfg.en_cov) begin
+             bit [TL_DW-1:0]         intr_en  = `gmv(ral.intr_enable);
+             bit [NumSpiHostIntr-1:0]  intr_exp = `gmv(ral.intr_state);
              foreach (intr_exp[i]) begin
                cov.intr_cg.sample(i, intr_en[i], item.d_data);
                cov.intr_pins_cg.sample(i, cfg.intr_vif.pins[i]);
              end
-         end
+           end
          end
         "error_status": begin
           spi_error_status_reg.accessinval   = bit'(get_field_val(ral.error_status.accessinval,
@@ -453,7 +454,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     `DV_EOT_PRINT_Q_CONTENTS(spi_segment_item, read_segment_q)
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(spi_item, host_data_fifo)
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(spi_item, device_data_fifo)
-    if ((rx_data_q.size() != 0))
+    if((rx_data_q.size() != 0))
       `uvm_fatal(`gfn, $sformatf("ERROR - RX FIFO in DUT still has data to be read!"))
   endfunction : check_phase
 
