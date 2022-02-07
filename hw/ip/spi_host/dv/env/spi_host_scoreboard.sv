@@ -31,18 +31,22 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
   local bit [NumSpiHostIntr-1:0]    intr_state = 2'b00;
   local bit [NumSpiHostIntr-1:0]    intr_enable = 2'b00;
   local bit [NumSpiHostIntr-1:0]    intr_test = 2'b00;
-  local bit [4:0]                   error_enable = 5'b00000;
 
   // hold dut registers
   local spi_host_command_t          spi_cmd_reg;
   local spi_host_ctrl_t             spi_ctrl_reg;
   local spi_host_status_t           spi_status_reg;
+  local spi_host_error_enable_t     spi_error_enable_reg;
+  local spi_host_error_status_t     spi_error_status_reg;
+  local spi_host_event_enable_t     spi_event_enable_reg;
+  local spi_host_intr_state_t       spi_intr_state_reg;
+  local spi_host_intr_enable_t      spi_intr_enable_reg;
+  local spi_host_intr_test_t        spi_intr_test_reg;
   spi_host_configopts_t             spi_configopts;
   // control bits
   local bit                         spien              = 1'b0;
   local bit                         output_en          = 1'b0;
   local bit                         sw_rst             = 1'b0;
-
   int                               in_tx_seg_cnt      = 0;
   int                               checked_tx_seg_cnt = 0;
   int                               in_rx_seq_cnt      = 0;
@@ -170,7 +174,6 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
     string csr_name = "";
-    bit do_read_check = 1'b1;
     bit write = item.is_write();
     bit [TL_AW-1:0] csr_addr_mask = ral.get_addr_mask();
     uvm_reg_addr_t csr_addr = ral.get_word_aligned_addr(item.a_addr);
@@ -209,6 +212,9 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
 
       // packed vector to bytes
       tl_byte = {<< 8{item.d_data}};
+      if (cfg.en_cov) begin
+        cov.unaligned_data_cg.sample(item.a_mask);
+      end
       // store data in data queues
       foreach (tl_byte[i]) begin
         if (data_phase_read) begin
@@ -237,6 +243,11 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
           spien      = bit'(get_field_val(ral.control.spien,      item.a_data));
           output_en  = bit'(get_field_val(ral.control.output_en,  item.a_data));
           sw_rst     = bit'(get_field_val(ral.control.sw_rst,     item.a_data));
+          spi_ctrl_reg.tx_watermark = get_field_val(ral.control.tx_watermark, item.a_data);
+          spi_ctrl_reg.rx_watermark = get_field_val(ral.control.rx_watermark, item.a_data);
+          if (cfg.en_cov) begin
+            cov.control_cg.sample(spi_ctrl_reg,spien,output_en,sw_rst);
+          end
           if (sw_rst || spien) begin
             write_segment_q.delete();
             rx_data_q.delete();
@@ -265,6 +276,9 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
                                                            item.a_data);
           spi_configopts.csntrail[csr_idx] = get_field_val(ral.configopts[csr_idx].csntrail,
                                                            item.a_data);
+          if (cfg.en_cov) begin
+            cov.config_opts_cg.sample(spi_configopts);
+          end
         end
 
         "command": begin
@@ -285,21 +299,31 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
             `uvm_info(`gfn, $sformatf("\n  created expeted segment item %s",
                                         wr_segment.convert2string()), UVM_HIGH)
           end
+          if (cfg.en_cov) begin
+            cov.duplex_cg.sample(spi_cmd_reg.direction);
+            cov.command_cg.sample(spi_cmd_reg);
+          end
           // clear item
           host_wr_segment = new();
         end
-        "intr_state": begin
-          intr_state[1]      = bit'(get_field_val(ral.intr_state.spi_event, item.a_data));
-          intr_state[0]      = bit'(get_field_val(ral.intr_state.error, item.a_data));
-          do_read_check = 1'b0;
-        end
         "intr_enable": begin
-          intr_enable[1]      = bit'(get_field_val(ral.intr_enable.spi_event, item.a_data));
-          intr_enable[0]      = bit'(get_field_val(ral.intr_enable.error, item.a_data));
+          spi_intr_enable_reg.spi_event  = bit'(get_field_val(ral.intr_enable.spi_event,
+                                                              item.a_data));
+          spi_intr_enable_reg.error      = bit'(get_field_val(ral.intr_enable.error, item.a_data));
         end
         "intr_test": begin
-          intr_test[1]      = bit'(get_field_val(ral.intr_test.spi_event, item.a_data));
-          intr_test[0]      = bit'(get_field_val(ral.intr_test.error, item.a_data));
+          spi_intr_test_reg.spi_event  = bit'(get_field_val(ral.intr_test.spi_event, item.a_data));
+          spi_intr_test_reg.error      = bit'(get_field_val(ral.intr_test.error, item.a_data));
+          if (cfg.en_cov) begin
+            bit [TL_DW-1:0] intr_en = `gmv(ral.intr_enable);
+            bit [NumSpiHostIntr-1:0] intr_exp = item.a_data | `gmv(ral.intr_state);
+            void'(ral.intr_state.predict(.value(intr_exp), .kind(UVM_PREDICT_DIRECT)));
+            if (cfg.en_cov) begin
+              foreach (intr_exp[i]) begin
+                cov.intr_test_cg.sample(i, item.a_data[i], intr_en[i], intr_exp[i]);
+              end
+            end
+          end
         end
         "status": begin
          spi_status_reg.ready       =  get_field_val(ral.status.ready, item.a_data);
@@ -316,16 +340,84 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
          spi_status_reg.cmd_qd      =  get_field_val(ral.status.cmdqd, item.a_data);
          spi_status_reg.rx_qd       =  get_field_val(ral.status.rxqd, item.a_data);
          spi_status_reg.tx_qd       =  get_field_val(ral.status.txqd, item.a_data);
+          if (cfg.en_cov) begin
+            cov.status_cg.sample(spi_status_reg);
+          end
         end
         "csid": begin
           spi_ctrl_reg.csid = item.a_data;
+          if (cfg.en_cov) begin
+            cov.csid_cg.sample(spi_ctrl_reg);
+          end
         end
         "error_enable": begin
-          error_enable[4]      = bit'(get_field_val(ral.error_enable.csidinval, item.a_data));
-          error_enable[3]      = bit'(get_field_val(ral.error_enable.cmdinval, item.a_data));
-          error_enable[2]      = bit'(get_field_val(ral.error_enable.underflow, item.a_data));
-          error_enable[1]      = bit'(get_field_val(ral.error_enable.overflow, item.a_data));
-          error_enable[0]      = bit'(get_field_val(ral.error_enable.cmdbusy, item.a_data));
+          spi_error_enable_reg.csidinval     = bit'(get_field_val(ral.error_enable.csidinval,
+                                                                  item.a_data));
+          spi_error_enable_reg.cmdinval      = bit'(get_field_val(ral.error_enable.cmdinval,
+                                                                  item.a_data));
+          spi_error_enable_reg.underflow     = bit'(get_field_val(ral.error_enable.underflow,
+                                                                  item.a_data));
+          spi_error_enable_reg.overflow      = bit'(get_field_val(ral.error_enable.overflow,
+                                                                  item.a_data));
+          spi_error_enable_reg.cmdbusy       = bit'(get_field_val(ral.error_enable.cmdbusy,
+                                                                  item.a_data));
+          if (cfg.en_cov) begin
+            cov.error_en_cg.sample(spi_error_enable_reg);
+          end
+        end
+        "event_enable": begin
+          spi_event_enable_reg.idle      = bit'(get_field_val(ral.event_enable.idle,
+                                                              item.a_data));
+          spi_event_enable_reg.ready     = bit'(get_field_val(ral.event_enable.ready,
+                                                              item.a_data));
+          spi_event_enable_reg.txwm      = bit'(get_field_val(ral.event_enable.txwm,
+                                                              item.a_data));
+          spi_event_enable_reg.rxwm      = bit'(get_field_val(ral.event_enable.rxwm,
+                                                              item.a_data));
+          spi_event_enable_reg.txempty   = bit'(get_field_val(ral.event_enable.txempty,
+                                                              item.a_data));
+          spi_event_enable_reg.rxfull    = bit'(get_field_val(ral.event_enable.rxfull,
+                                                              item.a_data));
+          if (cfg.en_cov) begin
+            cov.event_en_cg.sample(spi_event_enable_reg);
+          end
+        end
+        default: begin
+         // do nothing
+        end
+      endcase
+    end
+    if (data_phase_read) begin
+      case (csr_name)
+        "intr_state": begin
+         spi_intr_state_reg.spi_event  = bit'(get_field_val(ral.intr_state.spi_event,
+                                                            item.a_data));
+         spi_intr_state_reg.error      = bit'(get_field_val(ral.intr_state.error, item.a_data));
+         if (cfg.en_cov) begin
+           bit [TL_DW-1:0]         intr_en  = `gmv(ral.intr_enable);
+           bit [NumSpiHostIntr-1:0]  intr_exp = `gmv(ral.intr_state);
+             foreach (intr_exp[i]) begin
+               cov.intr_cg.sample(i, intr_en[i], item.d_data);
+               cov.intr_pins_cg.sample(i, cfg.intr_vif.pins[i]);
+             end
+         end
+         end
+        "error_status": begin
+          spi_error_status_reg.accessinval   = bit'(get_field_val(ral.error_status.accessinval,
+                                                                  item.a_data));
+          spi_error_status_reg.csidinval     = bit'(get_field_val(ral.error_status.csidinval,
+                                                                  item.a_data));
+          spi_error_status_reg.cmdinval      = bit'(get_field_val(ral.error_status.cmdinval,
+                                                                  item.a_data));
+          spi_error_status_reg.underflow     = bit'(get_field_val(ral.error_status.underflow,
+                                                                  item.a_data));
+          spi_error_status_reg.overflow      = bit'(get_field_val(ral.error_status.overflow,
+                                                                  item.a_data));
+          spi_error_status_reg.cmdbusy       = bit'(get_field_val(ral.error_status.cmdbusy,
+                                                                  item.a_data));
+          if (cfg.en_cov) begin
+            cov.error_status_cg.sample(spi_error_status_reg, spi_error_enable_reg);
+          end
         end
         default: begin
          // do nothing
@@ -353,7 +445,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
     // post test checks - ensure that all local fifos and queues are empty
-    if ( in_tx_seg_cnt != checked_tx_seg_cnt)
+    if (in_tx_seg_cnt != checked_tx_seg_cnt)
       `uvm_fatal(`gfn, $sformatf("Didn't check all segments - expected %d actual %d",
                                   in_tx_seg_cnt, checked_tx_seg_cnt))
 
@@ -361,7 +453,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     `DV_EOT_PRINT_Q_CONTENTS(spi_segment_item, read_segment_q)
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(spi_item, host_data_fifo)
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(spi_item, device_data_fifo)
-    if(rx_data_q.size() != 0)
+    if ((rx_data_q.size() != 0))
       `uvm_fatal(`gfn, $sformatf("ERROR - RX FIFO in DUT still has data to be read!"))
   endfunction : check_phase
 

@@ -103,7 +103,7 @@ class spi_monitor extends dv_base_monitor#(
                 device_byte[which_bit_d] = cfg.vif.sio[1];
               end // cmdonly,readstd,writestd
               ReadDual, WriteDual: begin
-                // sample sio[0] sio[1] for tx bidir 
+                // sample sio[0] sio[1] for tx bidir
                 host_byte[which_bit_h] = cfg.vif.sio[1];
                 host_byte[which_bit_h-1] = cfg.vif.sio[0];
                 // sample sio[0] sio[1] for rx bidir

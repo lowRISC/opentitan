@@ -107,6 +107,47 @@ package spi_host_env_pkg;
     bit [7:0]    tx_qd;
   } spi_host_status_t;
 
+  typedef struct packed{
+    bit csidinval;
+    bit cmdinval;
+    bit underflow;
+    bit overflow;
+    bit cmdbusy;
+  } spi_host_error_enable_t;
+
+  typedef struct packed{
+    bit accessinval;
+    bit csidinval;
+    bit cmdinval;
+    bit underflow;
+    bit overflow;
+    bit cmdbusy;
+  } spi_host_error_status_t;
+
+  typedef struct packed{
+    bit idle;
+    bit ready;
+    bit txwm;
+    bit rxwm;
+    bit txempty;
+    bit rxfull;
+  } spi_host_event_enable_t;
+
+  typedef struct{
+    bit spi_event;
+    bit error;
+  } spi_host_intr_state_t;
+
+  typedef struct{
+    bit spi_event;
+    bit error;
+  } spi_host_intr_enable_t;
+
+  typedef struct{
+    bit spi_event;
+    bit error;
+  } spi_host_intr_test_t;
+
   // alerts
   parameter uint NUM_ALERTS = 1;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};

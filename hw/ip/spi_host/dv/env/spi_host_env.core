@@ -13,6 +13,7 @@ filesets:
       - lowrisc:ip:spi_host
     files:
       - spi_host_env_pkg.sv
+      - spi_passthrough_if.sv
       - spi_host_seq_cfg.sv: {is_include_file: true}
       - spi_host_env_cfg.sv: {is_include_file: true}
       - spi_host_env_cov.sv: {is_include_file: true}

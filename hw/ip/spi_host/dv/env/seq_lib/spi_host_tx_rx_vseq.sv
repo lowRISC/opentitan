@@ -18,18 +18,18 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
   semaphore spi_host_atomic = new(1);
 
 
-  virtual task start_spi_host_trans(int num_transactions);
+  virtual task start_spi_host_trans(int num_transactions, bit wait_ready = 1'b1);
     spi_host_status_t status;
     program_spi_host_regs();
-    wait_ready_for_command();
+    if (wait_ready) wait_ready_for_command();
     csr_rd(.ptr(ral.status), .value(status));
     cfg.seq_cfg.host_spi_min_len = 4;
     cfg.seq_cfg.host_spi_max_len = 16;
 
     for (int n = 0; n < num_transactions; n++) begin
       generate_transaction();
-      send_trans(transaction);
-      wait_ready_for_command();
+      send_trans(transaction, wait_ready);
+      if (wait_ready) wait_ready_for_command();
     end
   endtask
 
@@ -63,12 +63,12 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
   endtask
 
   // sending tx requests to the agent
-  virtual task send_trans(spi_transaction_item trans);
+  virtual task send_trans(spi_transaction_item trans, bit wait_ready = 1'b1);
     spi_segment_item segment = new();
     while (trans.segments.size() > 0) begin
       // wait on DUT ready
       segment = trans.segments.pop_back();
-      wait_ready_for_command();
+      if (wait_ready) wait_ready_for_command();
       // lock fifo to this seq
       spi_host_atomic.get(1);
       // write data to fifo
@@ -80,6 +80,12 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
     end
   endtask : send_trans
 
+  virtual task txfifo_fill();
+    spi_segment_item segment = new();
+    spi_host_atomic.get(1);
+    access_data_fifo(segment.spi_data, TxFifo);
+    spi_host_atomic.put(1);
+  endtask : txfifo_fill
 
   virtual task generate_transaction();
     transaction_init();
