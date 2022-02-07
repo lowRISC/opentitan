@@ -96,14 +96,6 @@
       tests: ["aes_nist_vectors"]
     }
     {
-      name: performance
-      desc: '''
-            Verify that the DUT performs as specified for each key length in terms of latency and throughput.
-            This testpoint will use automode (this will feed input data and offload output data as fast as the DUT can support it.)'''
-      milestone: V2
-      tests: []
-    }
-    {
       name: reset_recovery
       desc: '''
             Pull reset at random times, make sure DUT recover/resets correctly and there is no residual data left in the registers.'''
@@ -132,5 +124,106 @@
       milestone: V2
       tests: []
     }
+  ]
+
+
+covergroups: [
+    {
+     name: key_iv_data_cg
+     desc: '''
+           Covers that these registers have been written in random order and interleaved and that it has triggered an operation.
+           - the indiviadual registers (KEY/IV/DATA) can be written in random order
+           - The writes to these registers can also be interleaved
+           - Data out can be read in random order
+           '''
+    }
+    {
+     name: ctrl_reg_cg
+     desc: '''
+           Covers that all valid seetings have been tested.
+           Further more it covers that also illegal values have been tested.
+           Individual control settings that are covered includes:
+           - operation (encode/decode/illegal)
+           - mode (all modes + illegal/aes_none)
+           - key_len (128/192/256 + illegal)
+           - sideload
+           - prng_reseed_rate(all + illegal)
+           - manual operation
+           - force zero mask
+           All valid combinations of these will be crossed.
+           '''
+    }
+    {
+     name: ctrl_aux_cg
+     desc: '''
+           Covers when enabled a complete write forces a reseed.
+           this is done by checking the DUT goes out of idle state after a full key has been provided.
+           also covers that this is not the case then key_touch_forces_reseed = 0.
+           '''
+    }
+    {
+     name: trigger_cg
+     desc: '''
+           This covergroup has two very different cover points.
+           - start covers that a start initiates an operation in manual mode.
+             and that it does not when not in manual mode
+           - that a write to key_iv_data_in/data_out_clear clear clears the data from the register
+            Additionally it covers that going from automatic mode to manual mode it is not possible to trigger a start without configuring the DUT (writing to CTRL should trigger a need for new configuration)
+           The prng reseed is covered by the reseed_cg
+           '''
+    }
+    {
+     name: status_cg
+     desc: '''
+           Covers the different status bits was seen
+           '''
+    }
+    {
+     name: reseed_cg
+     desc: '''
+           Cover that the different reseed configurations has been used.
+           '''
+    }
+    {
+     name: fault_inject_cg
+     desc: '''
+           Cover that a recoverable error has been seen:
+           - When the DUT is idle but just about to start
+           - When the DUT is busy
+           '''
+    }
+    {
+     name: self_clearing_cg
+     desc: '''
+           Cover that the DUT self clearing is working correctly.
+           An attack could be made by triggering an operation after a reset without configuring the DUT.
+           The self clearing mechanism should prevent the DUT from starting.
+           This mechanism should also clear any data in the output register with random data
+           After a reset is pulled two things will be covered
+           - manually write trigger.start and poll status.idle and make sure the DUT stays in idle.
+           - read output registers make sure output is no longer present
+           '''
+    }
+    {
+     name: dut_busy_cg
+     desc: '''
+           Cover that a busy DUT cannot be manipulated.
+           This includes:
+           - Reading output registers does not reveal internal states.
+           - Trying to change the configuration (CTRL)
+           - Trying to change the key
+           - Trying to change the IV
+           '''
+    }
+    {
+     name: sideload_cg
+     desc: '''
+           Cover sideload functionality
+           This includes:
+           - That an operation does not start before a valid key is present at the sideload interface with sideload enabled.
+           - That a key on the sideload interface is not consumed when sideload is disabled.
+           '''
+    }
+
   ]
 }
