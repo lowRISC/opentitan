@@ -35,10 +35,6 @@ module tlul_cmd_intg_chk import tlul_pkg::*; (
 
   // error output is transactional, it is up to the instantiating module
   // to determine if a permanent latch is feasible
-  logic wr_txn;
-  assign wr_txn = tl_i.a_valid &
-                  (tl_i.a_opcode == PutFullData | tl_i.a_opcode == PutPartialData);
-
   assign err_o = tl_i.a_valid & (|err | (|data_err));
 
 
