@@ -1,2 +1,5 @@
 hw/ip/prim/util/vendor/google_verible_verilog_syntax_py
 sw/vendor/google_googletest
+
+# TODO: once Meson is no longer used, remove the line below.
+build
