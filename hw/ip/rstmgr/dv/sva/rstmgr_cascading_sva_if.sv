@@ -102,6 +102,7 @@ interface rstmgr_cascading_sva_if (
   logic scan_reset_n;
   always_comb scan_reset_n = !scanmode || scan_rst_ni;
 
+  // In scanmode only scan_rst_ni controls reset, so por_n_i is ignored.
   logic aon_por_n_i;
   always_comb aon_por_n_i = por_n_i[rstmgr_pkg::DomainAonSel] && !scanmode;
 

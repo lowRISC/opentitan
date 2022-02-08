@@ -81,6 +81,8 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   endfunction
 
   function void set_pwrmgr_rst_reqs(logic rst_lc_req, logic rst_sys_req);
+    `uvm_info(`gfn, $sformatf("Setting pwr_i lc_req=%x sys_req=%x", rst_lc_req, rst_sys_req),
+              UVM_MEDIUM)
     cfg.rstmgr_vif.pwr_i.rst_lc_req  = {rstmgr_pkg::PowerDomains{rst_lc_req}};
     cfg.rstmgr_vif.pwr_i.rst_sys_req = {rstmgr_pkg::PowerDomains{rst_sys_req}};
   endfunction
@@ -208,6 +210,13 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     check_alert_and_cpu_info_after_reset(.alert_dump('0), .cpu_dump('0), .enable(0));
   endtask
 
+  task clear_sw_rst_ctrl_n();
+    const sw_rst_t sw_rst_all_ones = '1;
+    csr_wr(.ptr(ral.sw_rst_ctrl_n[0]), .value(sw_rst_all_ones));
+    csr_rd_check(.ptr(ral.sw_rst_ctrl_n[0]), .compare_value(sw_rst_all_ones),
+                 .err_msg("Expected sw_rst_ctrl_n to be set"));
+  endtask
+
   // Stimulate and check sw_rst_ctrl_n with a given sw_rst_regen setting.
   task check_sw_rst_ctrl_n(sw_rst_t sw_rst_ctrl_n, sw_rst_t sw_rst_regen, bit erase_ctrl_n);
     sw_rst_t exp_ctrl_n;
@@ -223,12 +232,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
               UVM_MEDIUM)
     csr_rd_check(.ptr(ral.sw_rst_ctrl_n[0]), .compare_value(exp_ctrl_n),
                  .err_msg("Expected enabled updates in sw_rst_ctrl_n"));
-    if (erase_ctrl_n) begin
-      const sw_rst_t sw_rst_all_ones = '1;
-      csr_wr(.ptr(ral.sw_rst_ctrl_n[0]), .value(sw_rst_all_ones));
-      csr_rd_check(.ptr(ral.sw_rst_ctrl_n[0]), .compare_value(sw_rst_all_ones),
-                   .err_msg("Expected sw_rst_ctrl_n to be set"));
-    end
+    if (erase_ctrl_n) clear_sw_rst_ctrl_n();
   endtask
 
   // Happens with hardware resets.
@@ -245,17 +249,22 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     set_pwrmgr_rst_reqs(.rst_lc_req('0), .rst_sys_req('0));
   endtask
 
+  task release_reset(pwrmgr_pkg::reset_cause_e reset_cause);
+    cfg.io_div4_clk_rst_vif.wait_clks(non_ndm_reset_cycles);
+    // Cause the reset to drop.
+    `uvm_info(`gfn, $sformatf("Releasing %0s reset", reset_cause.name()), UVM_LOW)
+    set_rstreqs(0);
+    reset_done();
+  endtask
+
   // Sends either a low power exit or an external hardware reset request, and drops it once it
   // should have caused the hardware to handle it.
   task send_reset(pwrmgr_pkg::reset_cause_e reset_cause,
-                  logic [pwrmgr_pkg::TotalResetWidth-1:0] rstreqs);
+                  logic [pwrmgr_pkg::TotalResetWidth-1:0] rstreqs, logic clear_it = 1);
     `uvm_info(`gfn, $sformatf("Sending %0s reset", reset_cause.name()), UVM_LOW)
     set_rstreqs(rstreqs);
     reset_start(reset_cause);
-    cfg.io_div4_clk_rst_vif.wait_clks(non_ndm_reset_cycles);
-    // Cause the reset to drop.
-    set_rstreqs(0);
-    reset_done();
+    if (clear_it) release_reset(reset_cause);
   endtask
 
   task send_scan_reset();
