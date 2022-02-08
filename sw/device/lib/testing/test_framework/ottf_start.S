@@ -3,46 +3,66 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Flash header.
+ * Manifest for boot stages stored in flash.
  *
- * Contains the address of the entry point.
+ * Note, we set the default entry point field (which is the last field in the
+ * manifest struct) to `_ottf_start`. We do this to enable running unsigned test
+ * images with the test ROM, since these images will not be processed by our
+ * signing tool which would otherwise populate this entry point field.
  */
-  .section .flash_header, "a", @progbits
-  .4byte _start
+
+  #include "sw/device/silicon_creator/lib/manifest_size.h"
+
+  .section .manifest, "a"
+  .global kManifest
+
+kManifest:
+  .rept MANIFEST_SIZE - 4
+  .byte 0x0
+  .endr
+  .4byte _ottf_start
 
 /**
- * Ibex-specific interrupt vectors for test flash images.
- *
- * This is similar to the test ROM interrupt vectors configured in the Test ROM
- * (`sw/device/lib/testing/test_rom/test_rom_start.S`), except these are placed
- * in flash, and point to the OTTF ISRs declared in
- * `sw/device/lib/testing/test_framework/ottf_isrs.S`. If you are getting link
- * errors for these symbols, then it's likely you have forgotten to add
- * `ottf_isrs` as a dependency for your executable.
+ * OTTF Interrupt Vector.
  */
 
-  // These symbols are declared in
-  // `sw/device/lib/testing/test_framework/ottf_isrs.S`.
+  .section .vectors, "ax"
+  .option push
+
+  // Disable RISC-V instruction compression: we need all instructions to
+  // be exactly word wide in the interrupt vector.
+  .option norvc
+
+  // Disable RISC-V linker relaxation, as it can compress instructions at
+  // link-time, which we also really don't want.
+  .option norelax
+
+  // These symbols are declared in `ottf_isrs.S`.
   .extern handler_exception
   .extern handler_irq_software
   .extern handler_irq_timer
   .extern handler_irq_external
 
-  // NOTE: The "ax" flag below is necessary to ensure that this section
-  // is allocated space in flash by the linker.
-  .section .vectors, "ax"
-  .option push
-  // Switch off compressed instructions so we know each instruction below is
-  // exactly 4 bytes (one entry).
-  .option norvc
-  // Switch off linker relaxation so that the linker does not reduce the size of
-  // any entries.
-  .option norelax
-
+/**
+ * `_ottf_interrupt_vector` is an ibex-compatible interrupt vector.
+ *
+ * Interrupt vectors in Ibex have 32 4-byte entries for 32 possible interrupts. The
+ * vector must be 256-byte aligned, as Ibex's vectoring mechanism requires that.
+ *
+ * Only the following will be used by Ibex:
+ * - Exception Handler (Entry 0)
+ * - Machine Software Interrupt Handler (Entry 3)
+ * - Machine Timer Interrupt Handler (Entry 7)
+ * - Machine External Interrupt Handler (Entry 11)
+ * - Vendor Interrupt Handlers (Entries 16-31)
+ *
+ * More information about Ibex's interrupts can be found here:
+ *   https://ibex-core.readthedocs.io/en/latest/03_reference/exception_interrupts.html
+ */
   .balign 256
-  .global _interrupt_vector
-  .type _interrupt_vector, @function
-_interrupt_vector:
+  .global _ottf_interrupt_vector
+  .type _ottf_interrupt_vector, @function
+_ottf_interrupt_vector:
 
   // RISC-V Standard (Vectored) Interrupt Handlers:
 
@@ -90,66 +110,98 @@ _interrupt_vector:
   unimp
 
   // Set size so vector can be disassembled.
-  .size _interrupt_vector, .-_interrupt_vector
+  .size _ottf_interrupt_vector, .-_ottf_interrupt_vector
 
   .option pop
 
 /**
- * Flash executable runtime initialization code.
+ * OTTF runtime initialization code.
  */
 
-  // NOTE: The "ax" flag below is necessary to ensure that this section
-  // is allocated space in ROM by the linker.
-  .section .crt, "ax", @progbits
+  /**
+   * NOTE: The "ax" flag below is necessary to ensure that this section
+   * is allocated executable space in ROM by the linker.
+   */
+  .section .crt, "ax"
 
 /**
- * Callable entry point for flash.
+ * Entry point.
  *
- * This sets up the stack, zeroes `.bss`, and sets up `.data`.
- * It then jumps into main.
+ * This symbol is jumped to from the test ROM or mask ROM using the
+ * `entry_point` field of the manifest.
  */
-  .globl _start
-  .type _start, @function
-_start:
+  .globl _ottf_start
+  .type _ottf_start, @function
+_ottf_start:
 
-  // Set up the stack. We have no expectation that the rom that
-  // jumps here will have the correct stack start linked in.
-  la sp, _stack_end
+  /**
+   * Set up the stack pointer.
+   *
+   * In RISC-V, the stack grows downwards, so we load the address of the highest
+   * word in the stack into sp. We don't load in `_stack_end`, as that points
+   * beyond the end of RAM, and we always want it to be valid to dereference
+   * `sp`, and we need this to be 128-bit (16-byte) aligned to meet the psABI.
+   *
+   * If an exception fires, the handler is conventionaly only allowed to clobber
+   * memory at addresses below `sp`.
+   */
+  la   sp, (_stack_end - 16)
 
-  // Set up the global pointer. This requires that we disable linker relaxations
-  // (or it will be relaxed to `mv gp, gp`).
-  .option push
-  .option norelax
-  la gp, __global_pointer$
-  .option pop
-
-  // Set up the new interrupt vector.
-  la   t0, (_interrupt_vector + 1)
+  /**
+   * Set well-defined interrupt/exception handlers.
+   *
+   * The lowest two bits should be `0b01` to ensure we use vectored interrupts.
+   */
+  la   t0, (_ottf_interrupt_vector + 1)
   csrw mtvec, t0
 
-  // Zero out the `.bss` segment.
-  la   a0, _bss_start
-  la   a1, _bss_end
-  .extern crt_section_clear
-  call crt_section_clear
+  /**
+   * Setup C Runtime
+   */
 
-  // Initialize the `.data` segment from the `.idata` segment.
+  /**
+   * Initialize the `.data` section in RAM from Flash.
+   */
   la   a0, _data_start
   la   a1, _data_end
   la   a2, _data_init_start
   .extern crt_section_copy
   call crt_section_copy
 
-  // Call the functions in the `.init_array` section.
-  //
-  // This section is typically empty except for executables built with LLVM
-  // coverage enabled. When coverage is enabled, the compiler emits pointers to
-  // the functions that initialize the profile buffer in this section. These
-  // functions must be called before the instrumented functions in the program.
-  //
-  // We use `s0` and `s1` to represent the start and end pointers of
-  // `.init_array`, respectively, and `t0` to store the addresses of the
-  // functions to be called.
+  /**
+   * Initialize the `.bss` section.
+   *
+   * We do this despite zeroing all of SRAM above, so that we still zero `.bss`
+   * once we've enabled SRAM scrambling.
+   */
+  la   a0, _bss_start
+  la   a1, _bss_end
+  .extern crt_section_clear
+  call crt_section_clear
+
+  /**
+   * Setup global pointer.
+   *
+   * This requires that we temporarily disable linker relaxations, or it will be
+   * relaxed to `mv gp, gp`.
+   */
+  .option push
+  .option norelax
+  la gp, __global_pointer$
+  .option pop
+
+ /**
+  * Call the functions in the `.init_array` section.
+  *
+  * This section is typically empty except for executables built with LLVM
+  * coverage enabled. When coverage is enabled, the compiler emits pointers to
+  * the functions that initialize the profile buffer in this section. These
+  * functions must be called before the instrumented functions in the program.
+  *
+  * We use `s0` and `s1` to represent the start and end pointers of
+  * `.init_array`, respectively, and `t0` to store the addresses of the
+  * functions to be called.
+  */
   la   s0, _init_array_start
   la   s1, _init_array_end
   bgeu s0, s1, init_array_loop_end
@@ -160,12 +212,14 @@ init_array_loop:
   bltu s0, s1, init_array_loop
 init_array_loop_end:
 
-  // Jump into the OTTF C entry point. This is your standard C `main()`, so we
-  // need to pass dummy values for `argc` and `argv`.
+ /**
+  * Jump into the OTTF C entry point. This is your standard C `main()`, so we
+  * need to pass dummy values for `argc` and `argv`.
+  */
   li   a0, 0x0  // argc = 0
   li   a1, 0x0  // argv = NULL
   .extern main
   tail main
 
   // Set size so this function can be disassembled.
-  .size _start, .-_start
+  .size _ottf_start, .-_ottf_start

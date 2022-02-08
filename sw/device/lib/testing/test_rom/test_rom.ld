@@ -33,13 +33,13 @@ _vflash_size = LENGTH(eflash_virtual);
 _flash_start = ORIGIN(eflash);
 
 /**
- * This symbol points at the header of the flash binary, which contains loading
- * and signing information.
+ * This symbol points at the manifest of the OTTF + test binary, which contains
+ * loading and signing information.
  *
  * See `sw/device/lib/testing/test_framework/ottf.ld`, under the
- * .flash_header section, which populates it.
+ * .manifest section, which populates it.
  */
-_flash_header = _vflash_start;
+_manifest = _vflash_start;
 
 _rom_digest_size = 32;
 _chip_info_size = 128;

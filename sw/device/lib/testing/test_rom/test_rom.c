@@ -16,6 +16,7 @@
 #include "sw/device/lib/testing/test_framework/test_status.h"
 #include "sw/device/lib/testing/test_rom/bootstrap.h"
 #include "sw/device/lib/testing/test_rom/chip_info.h"  // Generated.
+#include "sw/device/silicon_creator/lib/manifest.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
@@ -27,9 +28,18 @@
  * by the flash binary: see `sw/device/lib/testing/test_framework/ottf.ld`
  * for that.
  */
-extern struct { void (*entry)(void); } _flash_header;
+extern manifest_t _manifest;
+extern uint32_t _vflash_start;
 extern uint32_t _vflash_size;
 extern uint32_t _flash_start;
+
+/**
+ * Type alias for the OTTF entry point.
+ *
+ * The entry point address obtained from the OTTF manifest must be cast to a
+ * pointer to this type before being called.
+ */
+typedef void ottf_entry(void);
 
 static dif_uart_t uart0;
 
@@ -60,20 +70,18 @@ void _boot_start(void) {
     test_status_set(kTestStatusFailed);
   }
 
-  // Simple transalation on flash
-  uint32_t src_addr = (uint32_t)&_flash_header;
+  // Example address translation on flash image.
+  uint32_t src_addr = (uint32_t)&_vflash_start;
   uint32_t size = (uint32_t)&_vflash_size;
   uint32_t dst_addr = (uint32_t)&_flash_start;
-
   init_translation(src_addr, size, dst_addr);
 
   LOG_INFO("Boot ROM initialisation has completed, jump into flash!");
 
-  // Jump into flash. At this point, the contents of the flash binary have been
-  // verified, and we can transfer control directly to it. It is the
-  // flash binary's responsibily to set up its own stack, and to never
-  // return.
-  _flash_header.entry();
+  // Jump to the OTTF in flash. Within the flash binary, it is the responsibily
+  // of the OTTF to set up its own stack, and to never return.
+  uintptr_t manifest_entry_point = _manifest.entry_point;
+  ((ottf_entry *)manifest_entry_point)();
 
   // If the flash image returns, we should abort anyway.
   abort();

@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_binary", "opentitan_functest", "verilator_params")
+load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_functest", "verilator_params")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -184,15 +184,18 @@ cc_test(
 )
 
 cc_library(
+    name = "manifest_size",
+    hdrs = ["manifest_size.h"],
+)
+
+cc_library(
     name = "manifest_intf",
-    hdrs = [
-        "manifest.h",
-        "manifest_size.h",
-    ],
+    hdrs = ["manifest.h"],
     deps = [
         ":epmp_intf",
         ":error",
         ":keymgr_binding",
+        ":manifest_size",
         ":sigverify_internal",
         "//sw/device/lib/base",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",

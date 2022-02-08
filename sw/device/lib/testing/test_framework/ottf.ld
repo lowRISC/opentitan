@@ -3,10 +3,26 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * Linker script for an OpenTitan flash (test) binaries.
+ * Linker script for OpenTitan OTTF-launched test binaries.
  *
  * Portions of this file are Ibex-specific.
  */
+
+INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
+
+/**
+ * Reserving space at the top of the RAM for the stack.
+ */
+_stack_size = 0x2000;
+_stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
+_stack_start = _stack_end - _stack_size;
+
+/**
+ * DV Log offset.
+ * TODO: this will need to be different depending on the boot stage the OTTF is
+ * launched at. See lowrisc/opentitan:#10498.
+ */
+_dv_log_offset = 0x10000;
 
 OUTPUT_ARCH(riscv)
 GROUP(-lgcc)
@@ -17,53 +33,37 @@ GROUP(-lgcc)
 __DYNAMIC = 0;
 
 /**
- * Memory definitions are auto-generated.
+ * Marking the entry point correctly for the ELF file. The signer tool will
+ * transfer this value to the `entry_point` field of the manifest, which will
+ * then be used by `mask_rom_boot` or `rom_ext_boot` to handover execution to
+ * the OTTF.
  */
-INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
+ENTRY(_ottf_start);
 
 /**
-/* Reserving space at the top of the RAM for the stack.
- * It is zeroed out so a size must be provided.
+ * NOTE: We have to align each section to word boundaries as our current
+ * s19->slm conversion scripts are not able to handle non-word aligned sections.
  */
-_stack_size = 0x2000;
-_stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
-_stack_start = _stack_end - _stack_size;
-
-/* DV Log offset (has to be different to other boot stages). */
-_dv_log_offset = 0x10000;
-
-/**
- * The entry point in `ottf_start.S` is called `_start`. This
- * information in the ELF file is not used - instead we use the information in
- * the `.flash_header` section to understand where to start execution of a flash
- * image. We need this declaration so LLD does not error.
- */
-ENTRY(_start);
-
 SECTIONS {
+  .manifest ORIGIN(eflash_virtual) : {
+    KEEP(*(.manifest))
+  } > eflash_virtual
+
   /**
-   * The flash header. This will eventually contain other stuff, like a
-   * signature, but for now it's just the entry point at offset zero.
+   * Ibex interrupt vector. See 'ottf_start.S' for more information.
+   *
+   * This has to be set up at a 256-byte offset, so that we can use it with
+   * Ibex.
    */
-  .flash_header ORIGIN(eflash_virtual) : ALIGN(4) {
-    KEEP(*(.flash_header))
+  .vectors : ALIGN (256){
+    *(.vectors)
   } > eflash_virtual
 
   /**
    * C runtime (CRT) section, containing program initialization code.
-   *
-   * The flash header contains the address of the entry point, _start, which is
-   * inside this section. We keep them together in the linked elf files too.
    */
   .crt : ALIGN(4) {
     KEEP(*(.crt))
-  } > eflash_virtual
-
-  /**
-   * OTTF interrupt vectors. See 'ottf_start.S' for more information.
-   */
-  .vectors : {
-    *(.vectors)
   } > eflash_virtual
 
   /**
@@ -94,7 +94,7 @@ SECTIONS {
    */
   .rodata : ALIGN(4) {
     /* Small read-only data comes before regular read-only data for the same
-     * reasons as in the data section */
+     * reasons as in the data section. */
     *(.srodata)
     *(.srodata.*)
     *(.rodata)
@@ -138,6 +138,7 @@ SECTIONS {
     KEEP(*(__llvm_prf_cnts))
     KEEP(*(__llvm_prf_data))
 
+    /* Ensure section end is word-aligned. */
     . = ALIGN(4);
     _data_end = .;
   } > ram_main
@@ -147,12 +148,15 @@ SECTIONS {
    */
   .bss : ALIGN(4) {
     _bss_start = .;
+
     /* Small BSS comes before regular BSS for the same reasons as in the data
      * section. */
     *(.sbss)
     *(.sbss.*)
     *(.bss)
     *(.bss.*)
+
+    /* Ensure section end is word-aligned. */
     . = ALIGN(4);
     _bss_end = .;
   } > ram_main
