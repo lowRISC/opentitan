@@ -51,11 +51,11 @@ class lc_ctrl_stress_all_vseq extends lc_ctrl_base_vseq;
       // Randomly choose TL or JTAG for register access
       if (use_jtag && (cfg.jtag_riscv_map != null)) begin
         cfg.jtag_csr = 1;
-        cfg.alert_max_delay = 4000;
+        cfg.alert_max_delay = 15000;
         cfg.ral.set_default_map(jtag_map);
       end else begin
         cfg.jtag_csr = 0;
-        cfg.alert_max_delay = 1500;
+        cfg.alert_max_delay = 2000;
         cfg.ral.set_default_map(tl_map);
       end
 

@@ -25,6 +25,8 @@ class lc_ctrl_lc_errors_vseq extends lc_ctrl_errors_vseq;
           err_inj.clk_byp_error_rsp,
           err_inj.flash_rma_error_rsp,
           err_inj.token_mismatch_err,
+          err_inj.token_invalid_err,
+          err_inj.token_response_err,
           err_inj.otp_partition_err
         }
     );
