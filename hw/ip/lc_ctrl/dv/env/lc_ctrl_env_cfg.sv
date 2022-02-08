@@ -5,16 +5,18 @@
 class lc_ctrl_env_cfg extends cip_base_env_cfg #(
   .RAL_T(lc_ctrl_reg_block)
 );
+  // DUT parameters
+  lc_ctrl_parameters_cfg parameters_cfg;
 
   // ext component cfgs
   push_pull_agent_cfg #(
     .HostDataWidth  (OTP_PROG_HDATA_WIDTH),
     .DeviceDataWidth(OTP_PROG_DDATA_WIDTH)
   ) m_otp_prog_pull_agent_cfg;
-  push_pull_agent_cfg #(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)) m_otp_token_pull_agent_cfg;
   alert_esc_agent_cfg m_esc_scrap_state1_agent_cfg;
   alert_esc_agent_cfg m_esc_scrap_state0_agent_cfg;
   jtag_riscv_agent_cfg m_jtag_riscv_agent_cfg;
+  kmac_app_agent_cfg m_kmac_app_agent_cfg;
 
   // ext interfaces
   pwr_lc_vif pwr_lc_vif;
@@ -39,6 +41,14 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
   // Enable scoreboard ral update on write
   bit en_scb_ral_update_write = 1;
 
+  // OTP
+  rand otp_device_id_t otp_device_id;
+  rand otp_device_id_t otp_manuf_state;
+  rand int otp_vendor_test_ctrl;
+  rand int otp_vendor_test_status;
+
+
+
   `uvm_object_utils_begin(lc_ctrl_env_cfg)
   `uvm_object_utils_end
 
@@ -48,6 +58,13 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
     list_of_alerts = lc_ctrl_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_bus_integ_error";
     super.initialize(csr_base_addr);
+
+    // Find parameters on config db
+    if (!uvm_config_db#(lc_ctrl_parameters_cfg)::get(
+            null, "", "parameters_cfg", parameters_cfg
+        ) || parameters_cfg == null) begin
+      `uvm_fatal(get_full_name(), "failed to get parameters_cfg from uvm_config_db")
+    end
 
     m_otp_prog_pull_agent_cfg = push_pull_agent_cfg#(
       .HostDataWidth  (OTP_PROG_HDATA_WIDTH),
@@ -60,14 +77,6 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
     m_otp_prog_pull_agent_cfg.if_mode = Device;
     m_otp_prog_pull_agent_cfg.in_bidirectional_mode = 1;
 
-    m_otp_token_pull_agent_cfg =
-        push_pull_agent_cfg#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth))::type_id::create(
-        "m_otp_token_pull_agent_cfg");
-    `DV_CHECK_RANDOMIZE_FATAL(m_otp_token_pull_agent_cfg)
-    m_otp_token_pull_agent_cfg.agent_type = PullAgent;
-    m_otp_token_pull_agent_cfg.if_mode = Device;
-    m_otp_token_pull_agent_cfg.in_bidirectional_mode = 1;
-    m_otp_token_pull_agent_cfg.hold_d_data_until_next_req = 1;
 
     m_esc_scrap_state1_agent_cfg =
         alert_esc_agent_cfg::type_id::create("m_esc_scrap_state1_agent_cfg");
@@ -82,9 +91,15 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
     m_jtag_riscv_agent_cfg = jtag_riscv_agent_cfg::type_id::create("m_jtag_riscv_agent_cfg");
     `DV_CHECK_RANDOMIZE_FATAL(m_jtag_riscv_agent_cfg)
 
+    m_kmac_app_agent_cfg = kmac_app_agent_cfg::type_id::create("m_kmac_app_agent_cfg");
+    m_kmac_app_agent_cfg.if_mode = Device;
+    m_kmac_app_agent_cfg.req_delay_max = 20;
+    m_kmac_app_agent_cfg.rsp_delay_max = 20;
+    `DV_CHECK_RANDOMIZE_FATAL(m_kmac_app_agent_cfg)
+
     jtag_csr = 0;
 
-    alert_max_delay = 1500;
+    alert_max_delay = 2000;
   endfunction
 
   virtual function void set_test_phase(lc_ctrl_test_phase_e test_phase);

@@ -13,12 +13,19 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   rand lc_state_bin_t invalid_lc_state_bin;
   rand lc_count_bin_t invalid_lc_count_bin;
   rand bit [DecLcStateWidth-1:0] invalid_next_state;
-  rand bit [FsmStateWidth-1:0] fsm_state_invert_bits;
-  rand bit [LcCountWidth-1:0] fsm_count_invert_bits;
-  rand int unsigned fsm_state_err_inj_delay;
-  rand int unsigned fsm_state_err_inj_period;
-  rand int unsigned fsm_count_err_inj_delay;
-  rand int unsigned fsm_count_err_inj_period;
+  rand bit [FsmStateWidth-1:0] lc_fsm_state_invert_bits;
+  rand bit [KMAC_FSM_WIDTH-1:0] kmac_fsm_state_invert_bits;
+  rand bit [LcCountWidth-1:0] count_invert_bits;
+  rand bit [LcStateWidth-1:0] state_invert_bits;
+  rand int unsigned lc_fsm_state_err_inj_delay;
+  rand int unsigned lc_fsm_state_err_inj_period;
+  rand int unsigned kmac_fsm_state_err_inj_delay;
+  rand int unsigned kmac_fsm_state_err_inj_period;
+  rand int unsigned state_err_inj_delay;
+  rand int unsigned state_err_inj_period;
+  rand int unsigned count_err_inj_delay;
+  rand int unsigned count_err_inj_period;
+
   rand int unsigned security_escalation_err_inj_delay;
   rand bit [1:0] security_escalation_err_inj_channels;
 
@@ -35,9 +42,9 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     `uvm_field_int(invalid_lc_state_bin, UVM_DEFAULT)
     `uvm_field_int(invalid_lc_count_bin, UVM_DEFAULT)
     `uvm_field_int(invalid_next_state, UVM_DEFAULT)
-    `uvm_field_int(fsm_state_invert_bits, UVM_DEFAULT)
-    `uvm_field_int(fsm_state_err_inj_delay, UVM_DEFAULT)
-    `uvm_field_int(fsm_state_err_inj_period, UVM_DEFAULT)
+    `uvm_field_int(lc_fsm_state_invert_bits, UVM_DEFAULT)
+    `uvm_field_int(lc_fsm_state_err_inj_delay, UVM_DEFAULT)
+    `uvm_field_int(lc_fsm_state_err_inj_period, UVM_DEFAULT)
   `uvm_object_utils_end
   `uvm_object_new
 
@@ -47,9 +54,14 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
   constraint lc_state_failure_c {
     err_inj.state_err == 0;
+    err_inj.state_illegal_err == 0;
     err_inj.state_backdoor_err == 0;
     err_inj.count_err == 0;
+    err_inj.count_illegal_err == 0;
     err_inj.count_backdoor_err == 0;
+    err_inj.lc_fsm_backdoor_err == 0;
+    err_inj.kmac_fsm_backdoor_err == 0;
+    err_inj.otp_lc_data_i_valid_err == 0;
   }
 
   constraint lc_errors_c {
@@ -58,6 +70,8 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     err_inj.clk_byp_error_rsp == 0;
     err_inj.flash_rma_error_rsp == 0;
     err_inj.token_mismatch_err == 0;
+    err_inj.token_response_err == 0;
+    err_inj.token_invalid_err == 0;
     err_inj.otp_partition_err == 0;
   }
 
@@ -73,24 +87,33 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     !(invalid_next_state inside {ValidDecodedStates});
   }
 
-  constraint fsm_state_invert_bits_c {
-    // Just one bit flipped by default
-    $onehot(fsm_state_invert_bits);
+  constraint lc_fsm_state_invert_bits_c {$onehot(lc_fsm_state_invert_bits);}
+
+  constraint kmac_fsm_state_invert_bits_c {$onehot(kmac_fsm_state_invert_bits);}
+
+  constraint count_invert_bits_c {$onehot(count_invert_bits);}
+
+  constraint state_invert_bits_c {$onehot(state_invert_bits);}
+
+  constraint lc_fsm_state_err_inj_delay_c {
+    lc_fsm_state_err_inj_delay inside {[1 : 5]};
+    lc_fsm_state_err_inj_period inside {[2 : 4]};
+
   }
 
-  constraint fsm_count_invert_bits_c {
-    // Just one bit flipped by default
-    $onehot(fsm_count_invert_bits);
+  constraint kmac_fsm_state_err_inj_delay_c {
+    kmac_fsm_state_err_inj_delay inside {[1 : 5]};
+    kmac_fsm_state_err_inj_period inside {[2 : 4]};
   }
 
-  constraint fsm_state_err_inj_delay_c {
-    fsm_state_err_inj_delay inside {[1 : 5]};
-    fsm_state_err_inj_period inside {[2 : 4]};
+  constraint state_err_inj_delay_c {
+    state_err_inj_delay inside {[1 : 5]};
+    state_err_inj_period inside {[2 : 4]};
   }
 
-  constraint fsm_count_err_inj_delay_c {
-    fsm_count_err_inj_delay inside {[1 : 5]};
-    fsm_count_err_inj_period inside {[2 : 4]};
+  constraint count_err_inj_delay_c {
+    count_err_inj_delay inside {[1 : 5]};
+    count_err_inj_period inside {[2 : 4]};
   }
 
   virtual task post_start();
@@ -126,17 +149,19 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
     // Make sure OTP response queue is cleared
     cfg.m_otp_prog_pull_agent_cfg.clear_d_user_data();
-    // delay to avoid race condition when sending item and checking no item after reset occur
-    // at the same time
-    #1ps;
     super.post_start();
+  endtask
 
+  virtual task pre_start();
+    // Align cfg.err_inj with the sequence before body starts
+    update_err_inj_cfg();
+    super.pre_start();
   endtask
 
   task body();
     uvm_reg_data_t rdata;
     logic [FsmStateWidth-1:0] fsm_state;
-    num_trans.rand_mode(0);
+
     update_err_inj_cfg();
 
     fork
@@ -147,6 +172,12 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     run_clk_byp_rsp_nonblocking(err_inj.clk_byp_error_rsp);
     run_flash_rma_rsp_nonblocking(err_inj.flash_rma_error_rsp);
 
+    //
+    // Check OTP read only regs
+    //
+    read_otp_csrs();
+
+
     for (int i = 1; i <= num_trans; i++) begin
       cfg.set_test_phase(LcCtrlIterStart);
 
@@ -155,6 +186,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         update_err_inj_cfg();
         dut_init();
       end
+      cfg.set_test_phase(LcCtrlDutInitComplete);
 
       `uvm_info(`gfn, $sformatf(
                 "starting seq %0d/%0d, init LC_state is %0s, LC_cnt is %0s err_inj=%p",
@@ -165,34 +197,73 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
                 err_inj
                 ), UVM_MEDIUM)
 
+      // If otp_lc_data_i.valid is not driven we expect to constantly
+      // read not ready
+      if (err_inj.otp_lc_data_i_valid_err) begin
+        // Check for lockup on TL interface
+        `DV_SPINWAIT(repeat(10) begin
+              csr_rd_check(.ptr(ral.status.ready), .compare_value(0),
+                  .err_msg(called_from(`__FILE__, `__LINE__)));
+            end)
+        // Sample coverage if enabled
+        sample_cov();
+        // End this iteration
+        continue;
+      end
+
       // Randomly check for ready - but not when a non transition state
       // or an illegal state will be driven via the OTP
       if ($urandom_range(0, 1)) begin
-        if (valid_state_for_trans(lc_state) && !err_inj.state_err && !err_inj.count_err) begin
-          csr_rd_check(.ptr(ral.status.ready), .compare_value(1));
+        if (valid_state_for_trans(
+                lc_state
+            ) && !err_inj.state_err && !err_inj.count_err && !err_inj.state_illegal_err &&
+                !err_inj.count_illegal_err) begin
+          csr_rd_check(.ptr(ral.status.ready), .compare_value(1),
+                       .err_msg(called_from(`__FILE__, `__LINE__)));
         end else begin
           // We expect ready to be zero when a bad state is driven
-          csr_rd_check(.ptr(ral.status.ready), .compare_value(0));
+          csr_rd_check(.ptr(ral.status.ready), .compare_value(0),
+                       .err_msg(called_from(`__FILE__, `__LINE__)));
         end
       end
 
       cfg.set_test_phase(LcCtrlDutReady);
 
-      // Invalid fsm state in registers by "backdoor"
-      if (err_inj.state_backdoor_err) begin
+      // Invalid LC fsm state in registers by "backdoor"
+      if (err_inj.lc_fsm_backdoor_err) begin
         fork
           begin
-            cfg.clk_rst_vif.wait_clks(fsm_state_err_inj_delay);
-            fsm_backdoor_err_inj();
+            cfg.clk_rst_vif.wait_clks(lc_fsm_state_err_inj_delay);
+            lc_fsm_backdoor_err_inj();
           end
         join_none
       end
 
-      // Invalid fsm state in registers by "backdoor"
+      // Invalid kmac state in registers by "backdoor"
+      if (err_inj.kmac_fsm_backdoor_err) begin
+        fork
+          begin
+            cfg.clk_rst_vif.wait_clks(kmac_fsm_state_err_inj_delay);
+            kmac_fsm_backdoor_err_inj();
+          end
+        join_none
+      end
+
+      // Invalid OTP state by "backdoor"
+      if (err_inj.state_backdoor_err) begin
+        fork
+          begin
+            cfg.clk_rst_vif.wait_clks(state_err_inj_delay);
+            state_backdoor_err_inj();
+          end
+        join_none
+      end
+
+      // Invalid OTP count by "backdoor"
       if (err_inj.count_backdoor_err) begin
         fork
           begin
-            cfg.clk_rst_vif.wait_clks(fsm_count_err_inj_delay);
+            cfg.clk_rst_vif.wait_clks(count_err_inj_delay);
             count_backdoor_err_inj();
           end
         join_none
@@ -202,7 +273,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       // verilog_format: off - avoid bad formatting
       if ((err_inj.state_err || valid_state_for_trans(lc_state)) &&
           (err_inj.count_err || err_inj.transition_count_err ||
-          (lc_cnt != LcCnt24 && lc_state != DecLcStScrap))) begin
+          (lc_cnt != LcCnt24 && lc_state != LcStScrap))) begin
         lc_ctrl_state_pkg::lc_token_t token_val = get_random_token();
         randomize_next_lc_state(dec_lc_state(lc_state));
         `uvm_info(`gfn, $sformatf(
@@ -272,14 +343,13 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       sample_cov();
 
     end
-
     // Clear error injection object so we don't get alerts etc.
     cfg.err_inj = 0;
 
     `uvm_info(`gfn, "body: finished", UVM_MEDIUM)
   endtask : body
 
-  protected virtual task dut_init(string reset_kind = "HARD");
+  virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
     // Make sure escalates and alert flags are cleared
     clear_escalate(0);
@@ -328,8 +398,9 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   virtual function void set_hashed_token();
     lc_ctrl_pkg::token_idx_e token_idx = get_exp_token(dec_lc_state(lc_state), next_lc_state);
     lc_ctrl_pkg::token_idx_e token_idx_err_inj;
-    lc_ctrl_state_pkg::lc_token_t tokens_a[NumTokens-1];
+    lc_ctrl_state_pkg::lc_token_t tokens_a[NumTokens];
     lc_ctrl_state_pkg::lc_token_t token_err_inj;
+    kmac_pkg::rsp_digest_t kmac_digest;
 
     tokens_a[ZeroTokenIdx]       = lc_ctrl_state_pkg::AllZeroTokenHashed;
     tokens_a[RawUnlockTokenIdx]  = lc_ctrl_state_pkg::RndCnstRawUnlockTokenHashed;
@@ -346,24 +417,26 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
                    ))
     end
 
-    // Clear the user_data_q here cause previous data might not be used due to some other lc_ctrl
-    // error: for example: lc_program error
-    cfg.m_otp_token_pull_agent_cfg.clear_d_user_data();
     if (!err_inj.token_mismatch_err) begin
-      cfg.m_otp_token_pull_agent_cfg.add_d_user_data(tokens_a[token_idx]);
+      kmac_digest =
+          token_to_kmac_digest(tokens_a[token_idx], token_scramble, err_inj.token_invalid_err);
     end else begin
       // Inject token error
       // 50% chance other token data, 50% chance random data
       if ($urandom_range(0, 1)) begin
         // Use other token
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(token_idx_err_inj, token_idx_err_inj != token_idx;)
-        cfg.m_otp_token_pull_agent_cfg.add_d_user_data(tokens_a[token_idx_err_inj]);
+        kmac_digest = token_to_kmac_digest(tokens_a[token_idx_err_inj], token_scramble);
       end else begin
         // Random token
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(token_err_inj, !(token_err_inj inside {tokens_a});)
-        cfg.m_otp_token_pull_agent_cfg.add_d_user_data(token_err_inj);
+        kmac_digest = token_to_kmac_digest(token_err_inj, token_scramble);
       end
     end
+    clear_kmac_user_digest_share();
+    cfg.m_kmac_app_agent_cfg.add_user_digest_share(kmac_digest);
+    // Set error response
+    cfg.m_kmac_app_agent_cfg.error_rsp_pct = (err_inj.token_response_err) ? 100 : 0;
   endfunction
 
   // Set otp program response data
@@ -381,27 +454,27 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     `uvm_info(`gfn, $sformatf("drive_otp_i: started rand_otp_i=%0b err_inj=%p", rand_otp_i, err_inj
               ), UVM_MEDIUM)
     if (rand_otp_i) begin
-      if (!err_inj.state_err) begin
+      if (!err_inj.state_err && !err_inj.state_illegal_err) begin
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(lc_state,
                                            // lc_state should be valid for transition
                                            lc_state inside {LcValidStateForTrans};)
         `uvm_info(`gfn, $sformatf("drive_otp_i: driving lc_state=%s", lc_state.name), UVM_MEDIUM)
       end else begin
-        // Force invalid state on input
-        lc_state = bin_to_lc_state(invalid_lc_state_bin);
+        // Force invalid state on input optionally with illegal coding
+        lc_state = lc_state_e'(bin_to_lc_state(invalid_lc_state_bin, err_inj.state_illegal_err));
         `uvm_info(`gfn, $sformatf("drive_otp_i: driving invalid state lc_state=%s", lc_state.name),
                   UVM_MEDIUM)
       end
 
-      if (!err_inj.count_err) begin
+      if (!err_inj.count_err && !err_inj.count_illegal_err) begin
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(lc_cnt,
                                            (lc_state != LcStRaw) -> (lc_cnt != LcCnt0);
         // Count must be less than LcCnt24 unless we want to inject a tranisition count error
         if (!err_inj.transition_count_err) {lc_cnt != LcCnt24;}
         else {lc_cnt == LcCnt24;})
       end else begin
-        // Force invalid count on input
-        lc_cnt = bin_to_lc_count(invalid_lc_count_bin);
+        // Force invalid count on input optionally with illegal coding
+        lc_cnt = lc_cnt_e'(bin_to_lc_count(invalid_lc_count_bin, err_inj.count_illegal_err));
         `uvm_info(`gfn, $sformatf(
                   "drive_otp_i: invalid count to otp_i invalid_lc_count_bin='b%b lc_cnt=%h",
                   invalid_lc_count_bin,
@@ -413,14 +486,19 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       lc_state = LcStRaw;
       lc_cnt   = LcCnt0;
     end
+
     cfg.lc_ctrl_vif.init(.lc_state(lc_state), .lc_cnt(lc_cnt),
-                         .otp_partition_err(err_inj.otp_partition_err));
+                         .otp_lc_data_i_valid(!err_inj.otp_lc_data_i_valid_err),
+                         .otp_partition_err(err_inj.otp_partition_err),
+                         .otp_device_id(cfg.otp_device_id), .otp_manuf_state(cfg.otp_manuf_state),
+                         .otp_vendor_test_status(cfg.otp_vendor_test_status));
   endtask
 
   virtual task sw_transition_req(bit [TL_DW-1:0] next_lc_state, bit [TL_DW*4-1:0] token_val);
     bit trigger_alert;
     bit terminate_wait_status = 0;
     bit [TL_DW-1:0] status_val = 0;
+    uvm_reg_data_t val;
 
     csr_wr(ral.claim_transition_if, CLAIM_TRANS_VAL);
     while (status_val != CLAIM_TRANS_VAL) begin
@@ -431,6 +509,16 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     foreach (ral.transition_token[i]) begin
       csr_wr(ral.transition_token[i], token_val[TL_DW-1:0]);
       token_val = token_val >> TL_DW;
+    end
+
+    // Write OTP vendor test reg
+    csr_wr(ral.otp_vendor_test_ctrl, cfg.otp_vendor_test_ctrl);
+    // Check  OTP vendor test status
+    if (!err_inj.lc_fsm_backdoor_err && !err_inj.kmac_fsm_backdoor_err &&
+        !err_inj.count_backdoor_err && !err_inj.state_backdoor_err) begin
+      // Don't check for backdoor error injection as the results
+      // are unpredictable
+      csr_rd(ral.otp_vendor_test_status, val);
     end
 
     fork
@@ -451,6 +539,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         end
       end
     join
+
 
   endtask
 
@@ -494,8 +583,11 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
     // Expected bits
     state_error_exp = cfg.err_inj.state_err || cfg.err_inj.count_err ||
-        cfg.err_inj.state_backdoor_err || cfg.err_inj.count_backdoor_err;
-    token_error_exp = cfg.err_inj.token_mismatch_err;
+        cfg.err_inj.state_illegal_err || cfg.err_inj.count_illegal_err ||
+        cfg.err_inj.lc_fsm_backdoor_err || cfg.err_inj.kmac_fsm_backdoor_err ||
+        cfg.err_inj.count_backdoor_err || cfg.err_inj.state_backdoor_err;
+    token_error_exp = cfg.err_inj.token_mismatch_err || cfg.err_inj.token_response_err ||
+        cfg.err_inj.token_invalid_err;
     flash_rma_error_exp = cfg.err_inj.flash_rma_error_rsp;
     otp_error_exp = cfg.err_inj.otp_prog_err || cfg.err_inj.clk_byp_error_rsp;
     transition_count_error_exp = cfg.err_inj.transition_count_err;
@@ -547,20 +639,37 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     join
   endtask
 
-  // Flip bits in FSM registers
-  protected virtual task fsm_backdoor_err_inj();
-    logic [FsmStateWidth-1:0] fsm_state;
-    fsm_state = cfg.lc_ctrl_vif.fsm_state_backdoor_read();
-    fsm_state ^= fsm_state_invert_bits;
-    cfg.lc_ctrl_vif.fsm_state_backdoor_write(fsm_state, 0, fsm_state_err_inj_period);
+  // Flip bits in LC FSM registers
+  protected virtual task lc_fsm_backdoor_err_inj();
+    logic [FsmStateWidth-1:0] state;
+    state = cfg.lc_ctrl_vif.lc_fsm_state_backdoor_read();
+    state ^= lc_fsm_state_invert_bits;
+    cfg.lc_ctrl_vif.lc_fsm_state_backdoor_write(state, 0, lc_fsm_state_err_inj_period);
   endtask
 
-  // Flip bits in Count registers
+  // Flip bits in KMAC FSM registers
+  protected virtual task kmac_fsm_backdoor_err_inj();
+    logic [KMAC_FSM_WIDTH-1:0] state;
+    state = cfg.lc_ctrl_vif.kmac_fsm_state_backdoor_read();
+    state ^= kmac_fsm_state_invert_bits;
+    cfg.lc_ctrl_vif.kmac_fsm_state_backdoor_write(state, 0, lc_fsm_state_err_inj_period);
+  endtask
+
+
+  // Flip bits in OTP State input
+  protected virtual task state_backdoor_err_inj();
+    logic [LcStateWidth-1:0] state;
+    state = cfg.lc_ctrl_vif.count_backdoor_read();
+    state ^= state_invert_bits;
+    cfg.lc_ctrl_vif.count_backdoor_write(state, 0, state_err_inj_period);
+  endtask
+
+  // Flip bits OTP Count input
   protected virtual task count_backdoor_err_inj();
-    logic [LcCountWidth-1:0] fsm_count;
-    fsm_count = cfg.lc_ctrl_vif.fsm_count_backdoor_read();
-    fsm_count ^= fsm_count_invert_bits;
-    cfg.lc_ctrl_vif.fsm_count_backdoor_write(fsm_count, 0, fsm_count_err_inj_period);
+    logic [LcCountWidth-1:0] count;
+    count = cfg.lc_ctrl_vif.count_backdoor_read();
+    count ^= count_invert_bits;
+    cfg.lc_ctrl_vif.count_backdoor_write(count, 0, count_err_inj_period);
   endtask
 
   // Send an escalate alert

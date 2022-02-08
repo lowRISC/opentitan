@@ -10,10 +10,12 @@ filesets:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - lowrisc:dv:jtag_riscv_agent
+      - lowrisc:dv:kmac_app_agent
       - lowrisc:dv:lc_ctrl_dv_utils
     files:
       - lc_ctrl_env_pkg.sv
       - lc_ctrl_if.sv
+      - lc_ctrl_parameters_cfg.sv: {is_include_file: true}
       - lc_ctrl_env_cfg.sv: {is_include_file: true}
       - lc_ctrl_env_cov.sv: {is_include_file: true}
       - lc_ctrl_virtual_sequencer.sv: {is_include_file: true}

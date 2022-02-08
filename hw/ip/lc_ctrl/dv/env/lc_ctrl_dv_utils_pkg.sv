@@ -337,10 +337,21 @@ package lc_ctrl_dv_utils_pkg;
   endfunction
 
   //Convert a binary representation to a lc_state representation 0=Axx 1=Bxx
-  function static bit [LcStateWidth-1:0] bin_to_lc_state(lc_state_bin_t val);
+  function static bit [LcStateWidth-1:0] bin_to_lc_state(lc_state_bin_t val, bit err_inj = 0);
+    int err_inj_idx = -1;
     bin_to_lc_state = 0;
+    if (err_inj) begin
+      // Select a symbol to invert
+      err_inj_idx = $urandom_range(0, $size(A_VALUES) - 1);
+    end
     for (int i = 0; i < $size(A_VALUES); i++) begin
-      bin_to_lc_state[i*16+:16] = val[i] ? B_VALUES[i] : A_VALUES[i];
+      if (i != err_inj_idx) begin
+        // No error
+        bin_to_lc_state[i*16+:16] = val[i] ? B_VALUES[i] : A_VALUES[i];
+      end else begin
+        // Error inject - invert symbol
+        bin_to_lc_state[i*16+:16] = val[i] ? ~B_VALUES[i] : ~A_VALUES[i];
+      end
     end
   endfunction
 
@@ -358,11 +369,22 @@ package lc_ctrl_dv_utils_pkg;
     end
   endfunction
 
-  //Convert a binary representation to a lc_count representation 0=Cxx 1=Cxx
-  function static bit [LcCountWidth-1:0] bin_to_lc_count(lc_count_bin_t val);
+  //Convert a binary representation to a lc_count representation 0=Cxx 1=Dxx
+  function static bit [LcCountWidth-1:0] bin_to_lc_count(lc_count_bin_t val, bit err_inj = 0);
+    int err_inj_idx = -1;
     bin_to_lc_count = 0;
-    for (int i = 0; i < $size(A_VALUES); i++) begin
-      bin_to_lc_count[i*16+:16] = val[i] ? B_VALUES[i] : A_VALUES[i];
+    if (err_inj) begin
+      // Select a symbol to invert
+      err_inj_idx = $urandom_range(0, $size(C_VALUES) - 1);
+    end
+    for (int i = 0; i < $size(C_VALUES); i++) begin
+      if (i != err_inj_idx) begin
+        // No error
+        bin_to_lc_count[i*16+:16] = val[i] ? D_VALUES[i] : C_VALUES[i];
+      end else begin
+        // Error inject - invert symbol
+        bin_to_lc_count[i*16+:16] = val[i] ? ~D_VALUES[i] : ~C_VALUES[i];
+      end
     end
   endfunction
 
@@ -420,4 +442,54 @@ package lc_ctrl_dv_utils_pkg;
       lc_count_to_bin(LcCnt24)
   };
 
+
+  // States with OTP test registers active
+  parameter lc_state_e LC_CTRL_OTP_TEST_REG_ENABLED_STATES[17] = '{
+      LcStRaw,
+      LcStTestUnlocked0,
+      LcStTestLocked0,
+      LcStTestUnlocked1,
+      LcStTestLocked1,
+      LcStTestUnlocked2,
+      LcStTestLocked2,
+      LcStTestUnlocked3,
+      LcStTestLocked3,
+      LcStTestUnlocked4,
+      LcStTestLocked4,
+      LcStTestUnlocked5,
+      LcStTestLocked5,
+      LcStTestUnlocked6,
+      LcStTestLocked6,
+      LcStTestUnlocked7,
+      LcStRma
+  };
+
+  // Counts with OTP test registers enabled
+  parameter lc_cnt_e LC_CTRL_OTP_TEST_REG_ENABLED_COUNTS[25] = '{
+      LcCnt0,
+      LcCnt1,
+      LcCnt2,
+      LcCnt3,
+      LcCnt4,
+      LcCnt5,
+      LcCnt6,
+      LcCnt7,
+      LcCnt8,
+      LcCnt9,
+      LcCnt10,
+      LcCnt11,
+      LcCnt12,
+      LcCnt13,
+      LcCnt14,
+      LcCnt15,
+      LcCnt16,
+      LcCnt17,
+      LcCnt18,
+      LcCnt19,
+      LcCnt20,
+      LcCnt21,
+      LcCnt22,
+      LcCnt23,
+      LcCnt24
+  };
 endpackage
