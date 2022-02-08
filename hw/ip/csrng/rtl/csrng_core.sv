@@ -876,7 +876,7 @@ module csrng_core import csrng_pkg::*; #(
 
   prim_mubi8_sync #(
     .NumCopies(2),
-    .AsyncOn(0)
+    .AsyncOn(1)
   ) u_prim_mubi8_sync_sw_app_read (
     .clk_i,
     .rst_ni,

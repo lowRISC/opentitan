@@ -605,7 +605,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   prim_mubi8_sync #(
     .NumCopies(1),
-    .AsyncOn(0)
+    .AsyncOn(1)
   ) u_prim_mubi8_sync_es_fw_over (
     .clk_i,
     .rst_ni,
@@ -2467,7 +2467,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   prim_mubi8_sync #(
     .NumCopies(1),
-    .AsyncOn(0)
+    .AsyncOn(1)
   ) u_prim_mubi8_sync_es_fw_read (
     .clk_i,
     .rst_ni,

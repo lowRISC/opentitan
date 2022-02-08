@@ -105,10 +105,19 @@ module prim_mubi${n_bits}_sync
       assign mubi = mubi_sync;
     end
   end else begin : gen_no_flops
-    logic unused_clk;
-    logic unused_rst;
-    assign unused_clk = clk_i;
-    assign unused_rst = rst_ni;
+
+    // This unused companion logic helps remove lint errors
+    // for modules where clock and reset are used for assertions only
+    // This logic will be removed for synthesis since it is unloaded.
+    mubi${n_bits}_t unused_logic;
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+         unused_logic <= MuBi${n_bits}False;
+      end else begin
+         unused_logic <= mubi_i;
+      end
+    end
+
     assign mubi = MuBi${n_bits}Width'(mubi_i);
   end
 
