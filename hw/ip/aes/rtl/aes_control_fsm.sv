@@ -185,6 +185,7 @@ module aes_control_fsm
   logic                     doing_ctr;
   logic                     ctrl_we_q;
   logic                     clear_in_out_status;
+  logic                     clear_on_fatal;
 
   logic                     start_we;
   logic                     key_iv_data_in_clear_we;
@@ -791,35 +792,37 @@ module aes_control_fsm
                           output_lost_i ? 1'b1 : output_valid_q & ~data_out_read;
   assign output_lost_we = ctrl_we_o | data_out_we_o;
 
+  // Should fatal alerts clear the status and trigger register?
+  assign clear_on_fatal = ClearStatusOnFatalAlert ? alert_fatal_i : 1'b0;
+
   /////////////////////
   // Status Register //
   /////////////////////
-  // Fatal alerts clear all other bits in the status register.
-  assign idle_o            = alert_fatal_i ? 1'b0 : idle;
-  assign idle_we_o         = alert_fatal_i ? 1'b1 : idle_we;
-  assign stall_o           = alert_fatal_i ? 1'b0 : stall;
-  assign stall_we_o        = alert_fatal_i ? 1'b1 : stall_we;
-  assign output_lost_o     = alert_fatal_i ? 1'b0 : output_lost;
-  assign output_lost_we_o  = alert_fatal_i ? 1'b1 : output_lost_we;
-  assign output_valid_o    = alert_fatal_i ? 1'b0 : output_valid;
-  assign output_valid_we_o = alert_fatal_i ? 1'b1 : output_valid_we;
-  assign input_ready_o     = alert_fatal_i ? 1'b0 : input_ready;
-  assign input_ready_we_o  = alert_fatal_i ? 1'b1 : input_ready_we;
+  assign idle_o            = clear_on_fatal ? 1'b0 : idle;
+  assign idle_we_o         = clear_on_fatal ? 1'b1 : idle_we;
+  assign stall_o           = clear_on_fatal ? 1'b0 : stall;
+  assign stall_we_o        = clear_on_fatal ? 1'b1 : stall_we;
+  assign output_lost_o     = clear_on_fatal ? 1'b0 : output_lost;
+  assign output_lost_we_o  = clear_on_fatal ? 1'b1 : output_lost_we;
+  assign output_valid_o    = clear_on_fatal ? 1'b0 : output_valid;
+  assign output_valid_we_o = clear_on_fatal ? 1'b1 : output_valid_we;
+  assign input_ready_o     = clear_on_fatal ? 1'b0 : input_ready;
+  assign input_ready_we_o  = clear_on_fatal ? 1'b1 : input_ready_we;
 
   //////////////////////
   // Trigger Register //
   //////////////////////
   // Most triggers are only ever cleared by control. Fatal alerts clear all bits in the trigger
   // register.
-  assign start_we_o                = alert_fatal_i ? 1'b1 : start_we;
-  assign key_iv_data_in_clear_we_o = alert_fatal_i ? 1'b1 : key_iv_data_in_clear_we;
-  assign data_out_clear_we_o       = alert_fatal_i ? 1'b1 : data_out_clear_we;
+  assign start_we_o                = clear_on_fatal ? 1'b1 : start_we;
+  assign key_iv_data_in_clear_we_o = clear_on_fatal ? 1'b1 : key_iv_data_in_clear_we;
+  assign data_out_clear_we_o       = clear_on_fatal ? 1'b1 : data_out_clear_we;
 
   // If configured, trigger the reseeding of the PRNGs used for clearing and masking purposes after
   // the key has been updated.
-  assign prng_reseed_o    = alert_fatal_i      ? 1'b0 :
+  assign prng_reseed_o    = clear_on_fatal     ? 1'b0 :
                             key_init_new_pulse ? 1'b1 : 1'b0;
-  assign prng_reseed_we_o = alert_fatal_i      ? 1'b1                      :
+  assign prng_reseed_we_o = clear_on_fatal     ? 1'b1                      :
                             key_init_new_pulse ? key_touch_forces_reseed_i : prng_reseed_we;
 
   ////////////////////////////
