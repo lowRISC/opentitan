@@ -120,9 +120,23 @@ cov_unr_build: gen_sv_flist
 	@echo "[make]: cov_unr_build"
 	cd ${sv_flist_gen_dir} && ${cov_unr_build_cmd} ${cov_unr_build_opts}
 
-cov_unr: cov_unr_build
+cov_unr_vcs: cov_unr_build
 	@echo "[make]: cov_unr"
 	cd ${sv_flist_gen_dir} && ${cov_unr_run_cmd} ${cov_unr_run_opts}
+
+cov_unr_xcelium: 
+	@echo "[make]: cov_unr"
+	mkdir -p ${cov_unr_dir}
+	cd ${cov_unr_dir} && ${cov_unr_run_cmd} ${cov_unr_run_opts}
+
+cov_unr_merge:
+	cd ${cov_unr_dir} && ${cov_merge_cmd} -init ${cov_unr_dir}/jgproject/sessionLogs/session_0/unr_imc_coverage_merge.cmd 
+
+ifeq (${SIMULATOR}, xcelium)
+  cov_unr: cov_unr_xcelium cov_unr_merge
+else
+  cov_unr: cov_unr_vcs
+endif
 
 # Merge coverage if there are multiple builds.
 cov_merge:
