@@ -318,6 +318,11 @@
 
           In SwMode, the software should update the internal LFSR seed
           through !!ENTROPY_SEED_LOWER and !!ENTROPY_SEED_UPPER.
+
+          Out of the reset, the entropy module inside KMAC IP generates LFSR to
+          support the ROM_CTRL operation. The logic does not go back to the
+          reset state to prevent KMAC from using LFSR with seeds. SW must
+          configure correct entropy_mode prior to setting the entropy_ready.
           '''
 
           enum: [
