@@ -6,10 +6,26 @@ module tb;
   // dep packages
   import uvm_pkg::*;
   import dv_utils_pkg::*;
+  import lc_ctrl_pkg::*;
+  import lc_ctrl_reg_pkg::*;
+  import lc_ctrl_state_pkg::*;
   import lc_ctrl_env_pkg::*;
   import lc_ctrl_test_pkg::*;
   import otp_ctrl_pkg::*;
   import jtag_riscv_agent_pkg::*;
+
+  // LC_CTRL parameters
+  // Enable asynchronous transitions on alerts.
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}};
+  // Idcode value for the JTAG.
+  parameter logic [31:0] IdcodeValue = 32'h00000001;
+  // Random netlist constants
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid    =
+    LcKeymgrDivWidth'({(LcKeymgrDivWidth/8){32'h00000000}});
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestDevRma =
+    LcKeymgrDivWidth'({(LcKeymgrDivWidth/8){8'h5a}});
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction =
+    LcKeymgrDivWidth'({(LcKeymgrDivWidth/8){8'ha5}});
 
   // macro includes
   `include "uvm_macros.svh"
@@ -19,10 +35,10 @@ module tb;
   wire devmode;
   wire [LcPwrIfWidth-1:0] pwr_lc;
 
-  // TODO: need to connect this properly
   wire [OtpTestCtrlWidth-1:0] otp_vendor_test_ctrl;
   wire [OtpTestStatusWidth-1:0] otp_vendor_test_status;
-  assign otp_vendor_test_status = '0;
+  assign lc_ctrl_if.otp_vendor_test_ctrl_o = otp_vendor_test_ctrl;
+  assign otp_vendor_test_status = lc_ctrl_if.otp_vendor_test_status_i;
 
   // interfaces
   clk_rst_if clk_rst_if (
@@ -55,49 +71,32 @@ module tb;
     .clk  (clk),
     .rst_n(rst_n)
   );
-  push_pull_if #(
-    .HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)
-  ) otp_token_if (
+
+
+  // KMAC App agent hookup
+  kmac_pkg::app_rsp_t kmac_data_in;
+  kmac_pkg::app_req_t kmac_data_out;
+  assign kmac_data_in = kmac_app_if.kmac_data_rsp;
+  assign kmac_app_if.kmac_data_req = kmac_data_out;
+
+  // KMAC vip
+  kmac_app_intf kmac_app_if (
     .clk  (clk),
     .rst_n(rst_n)
   );
 
-  // TODO: need to properly hook up KMAC agent.
-  logic req_q;
-  lc_ctrl_state_pkg::lc_token_t token_q;
-  kmac_pkg::app_rsp_t kmac_data_in;
-  kmac_pkg::app_req_t kmac_data_out;
-  assign kmac_data_in.ready = 1'b1;
-  assign kmac_data_in.done = otp_token_if.ack;
-  assign kmac_data_in.digest_share0 = kmac_pkg::AppDigestW'(otp_token_if.d_data);
-  assign kmac_data_in.digest_share1 = '0;
-  assign kmac_data_in.error = 1'b0;
-
-  assign otp_token_if.req = req_q;
-  assign otp_token_if.h_data = token_q;
-
-  always_ff @(posedge clk or negedge rst_n) begin : p_kmac_regs
-    if (!rst_n) begin
-      req_q   <= 1'b0;
-      token_q <= '0;
-    end else begin
-      req_q <= req_q & ~otp_token_if.ack;
-      if (kmac_data_out.valid) begin
-        if (kmac_data_out.last) begin
-          req_q <= 1'b1;
-          token_q[64+:64] <= kmac_data_out.data;
-        end else begin
-          token_q[0+:64] <= kmac_data_out.data;
-        end
-      end
-    end
-  end
-
-
   `DV_ALERT_IF_CONNECT
 
   // dut
-  lc_ctrl dut (
+  lc_ctrl #(
+    .AlertAsyncOn(AlertAsyncOn),
+    // Idcode value for the JTAG.
+    .IdcodeValue(IdcodeValue),
+    // Random netlist constants
+    .RndCnstLcKeymgrDivInvalid(RndCnstLcKeymgrDivInvalid),
+    .RndCnstLcKeymgrDivTestDevRma(RndCnstLcKeymgrDivTestDevRma),
+    .RndCnstLcKeymgrDivProduction(RndCnstLcKeymgrDivProduction)
+  ) dut (
     .clk_i (clk),
     .rst_ni(rst_n),
 
@@ -110,9 +109,10 @@ module tb;
     .alert_rx_i(alert_rx),
     .alert_tx_o(alert_tx),
 
-    .jtag_i    ({jtag_if.tck, jtag_if.tms, jtag_if.trst_n, jtag_if.tdi}),
-    .jtag_o    ({jtag_if.tdo, lc_ctrl_if.tdo_oe}),
-    .scanmode_i(1'b0),
+    .jtag_i     ({jtag_if.tck, jtag_if.tms, jtag_if.trst_n, jtag_if.tdi}),
+    .jtag_o     ({jtag_if.tdo, lc_ctrl_if.tdo_oe}),
+    .scanmode_i (lc_ctrl_if.scanmode_i),
+    .scan_rst_ni(lc_ctrl_if.scan_rst_ni),
 
     .esc_scrap_state0_tx_i(esc_scrap_state0_if.esc_tx),
     .esc_scrap_state0_rx_o(esc_scrap_state0_if.esc_rx),
@@ -178,6 +178,9 @@ module tb;
 
 
   initial begin
+    lc_ctrl_parameters_cfg parameters_cfg = lc_ctrl_parameters_cfg::type_id::create(
+        "parameters_cfg"
+    );
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
@@ -197,8 +200,16 @@ module tb;
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
                                          .DeviceDataWidth(OTP_PROG_DDATA_WIDTH)))::
                    set(null, "*env.m_otp_prog_pull_agent*", "vif", otp_prog_if);
-    uvm_config_db#(virtual push_pull_if#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)))::
-                   set(null, "*env.m_otp_token_pull_agent*", "vif", otp_token_if);
+    uvm_config_db#(virtual kmac_app_intf)::set(null, "*.env.m_kmac_app_agent", "vif", kmac_app_if);
+
+    // Parameter config object
+    parameters_cfg.alert_async_on = AlertAsyncOn;
+    parameters_cfg.id_code_value = IdcodeValue;
+    parameters_cfg.keymgr_div_invalid = RndCnstLcKeymgrDivInvalid;
+    parameters_cfg.keymgr_div_test_dev_rma = RndCnstLcKeymgrDivTestDevRma;
+    parameters_cfg.keymgr_div_production = RndCnstLcKeymgrDivProduction;
+    uvm_config_db#(lc_ctrl_parameters_cfg)::set(null, "*", "parameters_cfg", parameters_cfg);
+
     // verilog_format: on
     $timeformat(-12, 0, " ps", 12);
     run_test();
@@ -215,6 +226,9 @@ module tb;
       dut.u_lc_ctrl_kmac_if.u_prim_sync_reqack_data_in.u_prim_sync_reqack.SyncReqAckAckNeedsReq)
   `DV_ASSERT_CTRL(
       "KmacIfSyncReqAckAckNeedsReq",
-      tb.dut.u_lc_ctrl_kmac_if.u_prim_sync_reqack_data_out.u_prim_sync_reqack.SyncReqAckAckNeedsReq)
+      dut.u_lc_ctrl_kmac_if.u_prim_sync_reqack_data_out.u_prim_sync_reqack.SyncReqAckAckNeedsReq)
+  `DV_ASSERT_CTRL("KmacIfSyncReqAckAckNeedsReq",
+                  kmac_app_if.req_data_if.H_DataStableWhenValidAndNotReady_A)
+  `DV_ASSERT_CTRL("KmacIfSyncReqAckAckNeedsReq", kmac_app_if.req_data_if.ValidHighUntilReady_A)
 
 endmodule

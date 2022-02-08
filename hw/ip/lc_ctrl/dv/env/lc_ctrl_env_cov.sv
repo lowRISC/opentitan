@@ -53,9 +53,16 @@ class lc_ctrl_env_cov extends cip_base_env_cov #(
     otp_prog_err_cp: coverpoint cfg.err_inj.otp_prog_err;
     otp_partition_err_cp: coverpoint cfg.err_inj.otp_partition_err;
     token_mismatch_err_cp: coverpoint cfg.err_inj.token_mismatch_err;
+    token_invalid_err_cp:  coverpoint cfg.err_inj.token_invalid_err;
+    token_response_err_cp:  coverpoint cfg.err_inj.token_response_err;
+    otp_lc_data_i_valid_err_cp: coverpoint cfg.err_inj.otp_lc_data_i_valid_err;
     state_err_cp: coverpoint cfg.err_inj.state_err;
+    state_illegal_err_cp: coverpoint cfg.err_inj.state_illegal_err;
     state_backdoor_err_cp: coverpoint cfg.err_inj.state_backdoor_err;
+    lc_fsm_backdoor_err_cp: coverpoint cfg.err_inj.lc_fsm_backdoor_err;
+    kmac_fsm_backdoor_err_cp: coverpoint cfg.err_inj.kmac_fsm_backdoor_err;
     count_err_cp: coverpoint cfg.err_inj.count_err;
+    count_illegal_err_cp: coverpoint cfg.err_inj.count_illegal_err;
     count_backdoor_err_cp: coverpoint cfg.err_inj.count_backdoor_err;
     transition_err_cp: coverpoint cfg.err_inj.transition_err;
     transition_count_err_cp: coverpoint cfg.err_inj.transition_count_err;
@@ -67,8 +74,10 @@ class lc_ctrl_env_cov extends cip_base_env_cov #(
     // Crosses for attempted second transition with and without failure
     `LC_CTRL_POST_TRANS_CROSS(err_inj)
     `LC_CTRL_POST_TRANS_CROSS(state_err)
-    `LC_CTRL_POST_TRANS_CROSS(state_backdoor_err)
+    `LC_CTRL_POST_TRANS_CROSS(lc_fsm_backdoor_err)
+    `LC_CTRL_POST_TRANS_CROSS(state_illegal_err)
     `LC_CTRL_POST_TRANS_CROSS(count_err)
+    `LC_CTRL_POST_TRANS_CROSS(count_illegal_err)
     `LC_CTRL_POST_TRANS_CROSS(count_backdoor_err)
 
     // Crosses for error injection vs CSR access type  (JTAG/TL)- make sure we can detect
@@ -80,6 +89,8 @@ class lc_ctrl_env_cov extends cip_base_env_cov #(
     `LC_CTRL_JTAG_ERROR_CROSS(token_mismatch_err)
     `LC_CTRL_JTAG_ERROR_CROSS(state_err)
     `LC_CTRL_JTAG_ERROR_CROSS(state_backdoor_err)
+    `LC_CTRL_JTAG_ERROR_CROSS(lc_fsm_backdoor_err)
+    `LC_CTRL_JTAG_ERROR_CROSS(kmac_fsm_backdoor_err)
     `LC_CTRL_JTAG_ERROR_CROSS(count_err)
     `LC_CTRL_JTAG_ERROR_CROSS(count_backdoor_err)
     `LC_CTRL_JTAG_ERROR_CROSS(transition_err)

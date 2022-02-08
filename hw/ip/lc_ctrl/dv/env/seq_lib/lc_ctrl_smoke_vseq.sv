@@ -11,6 +11,7 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
   rand bit clk_byp_error_rsp, flash_rma_error_rsp;
   rand bit otp_prog_err, token_mismatch_err;
   dec_lc_state_e next_lc_state;
+  rand lc_token_t token_scramble;
 
   constraint no_err_rsps_c {
     clk_byp_error_rsp == 0;
@@ -32,15 +33,17 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
     // Kill sub processes
     disable run_clk_byp_rsp_nonblocking;
     disable run_flash_rma_rsp_nonblocking;
-    // delay to avoid race condition when sending item and checking no item after reset occur
-    // at the same time
-    //#1ps;
     super.post_start();
   endtask
 
   task body();
     run_clk_byp_rsp_nonblocking(clk_byp_error_rsp);
     run_flash_rma_rsp_nonblocking(flash_rma_error_rsp);
+
+    //
+    // Check OTP read only regs (static ones)
+    //
+    read_otp_csrs();
 
     for (int i = 1; i <= num_trans; i++) begin
       cfg.set_test_phase(LcCtrlIterStart);
@@ -89,6 +92,7 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
       sample_cov();
 
     end
+
   endtask : body
 
   // smoke test will always return valid next_lc_state
@@ -110,7 +114,7 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
 
   virtual function void set_hashed_token();
     lc_ctrl_pkg::token_idx_e token_idx = get_exp_token(dec_lc_state(lc_state), next_lc_state);
-
+    kmac_pkg::rsp_digest_t kmac_digest;
     // No token for InvalidTokenIdx
     lc_ctrl_state_pkg::lc_token_t tokens_a[NumTokens-1];
     tokens_a[ZeroTokenIdx]       = 0;
@@ -125,17 +129,8 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
                  next_lc_state.name
                  ))
 
-    // Clear the user_data_q here cause previous data might not be used due to some other lc_ctrl
-    // error: for example: lc_program error
-    cfg.m_otp_token_pull_agent_cfg.clear_d_user_data();
-    if (!token_mismatch_err) begin
-      cfg.m_otp_token_pull_agent_cfg.add_d_user_data(tokens_a[token_idx]);
-    end else begin
-      // 50% chance to input other token data, 50% chance let push-pull agent drive random data
-      if ($urandom_range(0, 1)) begin
-        token_idx = token_idx_e'($urandom_range(0, TokenIdxWidth - 2));
-        cfg.m_otp_token_pull_agent_cfg.add_d_user_data(tokens_a[token_idx]);
-      end
-    end
+    kmac_digest = token_to_kmac_digest(tokens_a[token_idx], token_scramble);
+    clear_kmac_user_digest_share();
+    cfg.m_kmac_app_agent_cfg.add_user_digest_share(kmac_digest);
   endfunction
 endclass : lc_ctrl_smoke_vseq

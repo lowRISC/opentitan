@@ -23,24 +23,23 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     .HostDataWidth  (OTP_PROG_HDATA_WIDTH),
     .DeviceDataWidth(OTP_PROG_DDATA_WIDTH)
   )) otp_prog_fifo;
-  uvm_tlm_analysis_fifo #(push_pull_item #(
-    .HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)
-  )) otp_token_fifo;
+  uvm_tlm_analysis_fifo #(kmac_app_item) kmac_app_req_fifo;
+  uvm_tlm_analysis_fifo #(kmac_app_item) kmac_app_rsp_fifo;
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) esc_wipe_secrets_fifo;
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) esc_scrap_state_fifo;
   uvm_tlm_analysis_fifo #(jtag_riscv_item) jtag_riscv_fifo;
-
-  // local queues to hold incoming packets pending comparison
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     otp_prog_fifo = new("otp_prog_fifo", this);
-    otp_token_fifo = new("otp_token_fifo", this);
+    kmac_app_req_fifo = new("kmac_app_req_fifo", this);
+    kmac_app_rsp_fifo = new("kmac_app_rsp_fifo", this);
     esc_wipe_secrets_fifo = new("esc_wipe_secrets_fifo", this);
     esc_scrap_state_fifo = new("esc_scrap_state_fifo", this);
     jtag_riscv_fifo = new("jtag_riscv_fifo", this);
+
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -52,7 +51,8 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     fork
       check_lc_output();
       process_otp_prog_rsp();
-      process_otp_token_rsp();
+      process_kmac_app_req();
+      process_kmac_app_rsp();
       if (cfg.jtag_riscv_map != null) process_jtag_riscv();
     join_none
   endtask
@@ -61,7 +61,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     forever begin
       @(posedge cfg.pwr_lc_vif.pins[LcPwrDoneRsp] && cfg.en_scb) begin
         // TODO: add coverage
-        dec_lc_state_e lc_state = dec_lc_state(cfg.lc_ctrl_vif.otp_i.state);
+        dec_lc_state_e lc_state = dec_lc_state(lc_state_e'(cfg.lc_ctrl_vif.otp_i.state));
         lc_outputs_t   exp_lc_o = EXP_LC_OUTPUTS[int'(lc_state)];
         string         err_msg = $sformatf("LC_St %0s", lc_state.name);
         cfg.clk_rst_vif.wait_n_clks(1);
@@ -80,7 +80,9 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
 
 
         if (cfg.err_inj.state_err || cfg.err_inj.count_err ||
-            cfg.err_inj.state_backdoor_err || cfg.err_inj.count_backdoor_err
+            cfg.err_inj.state_backdoor_err || cfg.err_inj.count_backdoor_err ||
+            cfg.err_inj.count_illegal_err || cfg.err_inj.state_illegal_err ||
+            cfg.err_inj.lc_fsm_backdoor_err || cfg.err_inj.kmac_fsm_backdoor_err
             ) begin // State/count error expected
           set_exp_alert(.alert_name("fatal_state_error"), .is_fatal(1),
                         .max_delay(cfg.alert_max_delay));
@@ -133,23 +135,52 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
 
       `DV_CHECK_EQ(otp_prog_count_act, otp_prog_count_exp, $sformatf(
                    " - %s vs %s", otp_prog_count_act.name, otp_prog_count_exp.name))
+
+      // Check OTP vendor control
+      if (!cfg.err_inj.lc_fsm_backdoor_err && !cfg.err_inj.count_backdoor_err) begin
+        // Don't check for backdoor error injection as the results
+        // are unpredictable
+        `DV_CHECK_EQ(cfg.lc_ctrl_vif.otp_vendor_test_ctrl_o, predict_otp_vendor_test_ctrl())
+      end
     end
   endtask
 
   // verilog_format: off - avoid bad formatting
-  virtual task process_otp_token_rsp();
+  virtual task process_kmac_app_req();
     forever begin
-      push_pull_item#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)) item_rcv;
-      otp_token_fifo.get(item_rcv);
-      if (cfg.en_scb) begin
-        `DV_CHECK_EQ(item_rcv.h_data, {`gmv(ral.transition_token[3]),
-                                       `gmv(ral.transition_token[2]),
-                                       `gmv(ral.transition_token[1]),
-                                       `gmv(ral.transition_token[0])})
+      bit [127:0] token_data;
+      kmac_app_item item_rcv;
+      kmac_app_req_fifo.get(item_rcv);
+      `uvm_info(`gfn, item_rcv.sprint(uvm_default_line_printer), UVM_HIGH)
+
+      // Should be 16 bytes of data
+      `DV_CHECK_EQ_FATAL(item_rcv.byte_data_q.size(), 16)
+      // Unpack token data from request
+      for(int i=0; i<16; i++) begin
+        token_data[i*8 +: 8] = item_rcv.byte_data_q[i];
       end
+      `uvm_info(`gfn, $sformatf("process_kmac_app_req: token received %h", token_data), UVM_LOW)
+
+      if (cfg.en_scb) begin
+        `DV_CHECK_EQ(token_data, {`gmv(ral.transition_token[3]),
+                                  `gmv(ral.transition_token[2]),
+                                  `gmv(ral.transition_token[1]),
+                                  `gmv(ral.transition_token[0])})
+      end
+
     end
   endtask
   // verilog_format: on
+
+  virtual task process_kmac_app_rsp();
+    forever begin
+      kmac_app_item item_rcv;
+      kmac_app_rsp_fifo.get(item_rcv);
+      `uvm_info(`gfn, item_rcv.sprint(uvm_default_line_printer), UVM_HIGH)
+    end
+  endtask
+
+
 
   virtual task process_jtag_riscv();
     jtag_riscv_item      jt_item;
@@ -238,6 +269,35 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
                           .value(predict_lc_transition_cnt()), .kind(UVM_PREDICT_READ)))
         end
 
+        "device_id_0",  "device_id_1", "device_id_2",
+            "device_id_3",  "device_id_4", "device_id_5",
+            "device_id_6",  "device_id_7" : begin
+          string name = csr.get_name();
+          string idx_str = string'(name.getc(name.len() - 1));
+          int idx = idx_str.atoi();
+          // Register values should reflect cfg.otp_device_id
+          // which is driven on otp_device_id_i
+          `DV_CHECK_FATAL(ral.device_id[idx].predict(
+                          .value(cfg.otp_device_id[idx*32+:32]), .kind(UVM_PREDICT_READ)))
+        end
+
+        "manuf_state_0",  "manuf_state_1", "manuf_state_2",
+            "manuf_state_3",  "manuf_state_4", "manuf_state_5",
+            "manuf_state_6",  "manuf_state_7" : begin
+          string name = csr.get_name();
+          string idx_str = string'(name.getc(name.len() - 1));
+          int idx = idx_str.atoi();
+          // Register values should reflect cfg.otp_device_id
+          // which is driven on otp_device_id_i
+          `DV_CHECK_FATAL(ral.manuf_state[idx].predict(
+                          .value(cfg.otp_manuf_state[idx*32+:32]), .kind(UVM_PREDICT_READ)))
+        end
+
+        "otp_vendor_test_status": begin
+          `DV_CHECK_FATAL(ral.otp_vendor_test_status.predict(
+                          .value(predict_otp_vendor_test_status()), .kind(UVM_PREDICT_READ)))
+        end
+
         default: begin
           // `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
         end
@@ -246,7 +306,14 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
 
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (data_phase_read) begin
-      if (csr.get_name() inside {"lc_state", "lc_transition_cnt"}) do_read_check = 1;
+      if (csr.get_name() inside {"lc_state", "lc_transition_cnt",
+        "device_id_0", "device_id_1", "device_id_2",
+            "device_id_3",  "device_id_4", "device_id_5",
+            "device_id_6",  "device_id_7", "manuf_state_0",  "manuf_state_1", "manuf_state_2",
+            "manuf_state_3",  "manuf_state_4", "manuf_state_5",
+            "manuf_state_6",  "manuf_state_7", "otp_vendor_test_status"
+          })
+        do_read_check = 1;
 
       if (do_read_check) begin
         `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data, $sformatf(
@@ -261,7 +328,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
                 }, UVM_MEDIUM)
 
       if (cfg.test_phase inside {[LcCtrlEscalate : LcCtrlPostTransTransitionComplete]}) begin
-        if(cfg.err_inj.state_backdoor_err || cfg.err_inj.count_backdoor_err ||
+        if(cfg.err_inj.lc_fsm_backdoor_err || cfg.err_inj.count_backdoor_err ||
             cfg.err_inj.otp_prog_err || cfg.err_inj.clk_byp_error_rsp) begin
           // Expect escalate to be asserted
           exp.lc_escalate_en_o = lc_ctrl_pkg::On;
@@ -286,12 +353,14 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
   // Predict the value of lc_state register
   virtual function bit [31:0] predict_lc_state();
     // Expected lc_state, lc_state register has this repeated DecLcStateNumRep times
-    dec_lc_state_e lc_state_single_exp = 'X;
+    dec_lc_state_e lc_state_single_exp = dec_lc_state_e'('X);
     bit [31:0] lc_state_exp;
 
     // State error of some kind expected
     bit state_err_exp = cfg.err_inj.state_err || cfg.err_inj.count_err ||
-        cfg.err_inj.count_backdoor_err || cfg.err_inj.state_backdoor_err;
+        cfg.err_inj.state_illegal_err || cfg.err_inj.count_illegal_err ||
+        cfg.err_inj.count_backdoor_err ||  cfg.err_inj.state_backdoor_err ||
+        cfg.err_inj.lc_fsm_backdoor_err || cfg.err_inj.kmac_fsm_backdoor_err;
 
     // OTP program error is expected
     bit prog_err_exp = cfg.err_inj.otp_prog_err || cfg.err_inj.clk_byp_error_rsp;
@@ -299,9 +368,10 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
 
     // Exceptions to default
     unique case (cfg.test_phase)
-      LcCtrlTestInit, LcCtrlIterStart, LcCtrlDutReady, LcCtrlWaitTransition: begin
+      LcCtrlTestInit, LcCtrlIterStart, LcCtrlLcInit, LcCtrlDutInitComplete,
+        LcCtrlDutReady, LcCtrlWaitTransition: begin
         // Prior to transition lc_state should mirror otp_i
-        lc_state_single_exp = dec_lc_state(cfg.lc_ctrl_vif.otp_i.state);
+        lc_state_single_exp = dec_lc_state(lc_state_e'(cfg.lc_ctrl_vif.otp_i.state));
       end
       LcCtrlTransitionComplete, LcCtrlReadState1: begin
         // Default PostTransition
@@ -355,13 +425,15 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
 
     // State error of some kind expected
     bit state_err_exp = cfg.err_inj.state_err || cfg.err_inj.count_err ||
-        cfg.err_inj.count_backdoor_err || cfg.err_inj.state_backdoor_err;
+        cfg.err_inj.state_illegal_err || cfg.err_inj.count_illegal_err ||
+        cfg.err_inj.count_backdoor_err || cfg.err_inj.lc_fsm_backdoor_err;
 
     // Exceptions to default expected lc_transition_count
     unique case (cfg.test_phase)
-      LcCtrlTestInit, LcCtrlIterStart, LcCtrlDutReady, LcCtrlWaitTransition: begin
+      LcCtrlTestInit, LcCtrlIterStart, LcCtrlLcInit, LcCtrlDutInitComplete,
+      LcCtrlDutReady, LcCtrlWaitTransition: begin
         // Prior to transition lc_transition_count should mirror otp_i
-        lc_transition_cnt_exp = dec_lc_cnt(cfg.lc_ctrl_vif.otp_i.count);
+        lc_transition_cnt_exp = dec_lc_cnt(lc_cnt_e'(cfg.lc_ctrl_vif.otp_i.count));
       end
       LcCtrlTransitionComplete, LcCtrlReadState1, LcCtrlEscalate,
         LcCtrlReadState2, LcCtrlPostTransition, LcCtrlPostStart : begin
@@ -389,15 +461,15 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
 
   virtual function otp_ctrl_pkg::lc_otp_program_req_t predict_otp_prog_req();
     // Convert state and count back to enums
-    const lc_state_e LcStateIn = cfg.lc_ctrl_vif.otp_i.state;
-    const lc_cnt_e LcCntIn = cfg.lc_ctrl_vif.otp_i.count;
+    const lc_state_e LcStateIn = lc_state_e'(cfg.lc_ctrl_vif.otp_i.state);
+    const lc_cnt_e LcCntIn = lc_cnt_e'(cfg.lc_ctrl_vif.otp_i.count);
     // Incremented LcCntIn - next() works because of encoding method
     const lc_cnt_e LcCntInInc = LcCntIn.next();
     // TODO needs expanding for JTAG registers
     const
     lc_state_e
     LcTargetState = encode_lc_state(
-        cfg.ral.transition_target.state.get_mirrored_value()
+        dec_lc_state_e'(cfg.ral.transition_target.state.get_mirrored_value())
     );
     lc_state_e lc_state_exp;
     lc_cnt_e lc_cnt_exp;
@@ -421,8 +493,37 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
               "predict_otp_prog_req: state=%s count=%s", lc_state_exp.name(), lc_cnt_exp.name),
               UVM_MEDIUM)
 
-    return ('{state: lc_state_t'(lc_state_exp), count: lc_cnt_t'(lc_cnt_exp), req: 0});
+    return ('{state: lc_state_exp, count: lc_cnt_exp, req: 0});
   endfunction
+
+  // Predict otp_vendor_test_status reg
+  virtual function uvm_reg_data_t predict_otp_vendor_test_status();
+    // Convert state and count to enums
+    const lc_state_e LcStateIn = lc_state_e'(cfg.lc_ctrl_vif.otp_i.state);
+    const lc_cnt_e   LcCntIn = lc_cnt_e'(cfg.lc_ctrl_vif.otp_i.count);
+
+    // Reflects otp_vendor_test_status_i in these states otherwise 0
+    if ((LcStateIn inside {LC_CTRL_OTP_TEST_REG_ENABLED_STATES}) &&
+        (LcCntIn inside {LC_CTRL_OTP_TEST_REG_ENABLED_COUNTS}) &&
+        (cfg.test_phase < LcCtrlPostTransition)) begin
+      return cfg.otp_vendor_test_status;
+    end else return 0;
+  endfunction
+
+  // Predict otp_vendor_test_ctrl output
+  virtual function uvm_reg_data_t predict_otp_vendor_test_ctrl();
+    // Convert state and count to enums
+    const lc_state_e LcStateIn = lc_state_e'(cfg.lc_ctrl_vif.otp_i.state);
+    const lc_cnt_e   LcCntIn = lc_cnt_e'(cfg.lc_ctrl_vif.otp_i.count);
+
+    // Reflects otp_vendor_test_status_i in these states otherwise 0
+    if ((LcStateIn inside {LC_CTRL_OTP_TEST_REG_ENABLED_STATES}) &&
+        (LcCntIn inside {LC_CTRL_OTP_TEST_REG_ENABLED_COUNTS}) &&
+        (cfg.test_phase < LcCtrlPostTransition)) begin
+      return cfg.otp_vendor_test_ctrl;
+    end else return 0;
+  endfunction
+
 
   // this function check if the triggered alert is expected
   // to turn off this check, user can set `do_alert_check` to 0

@@ -19,6 +19,7 @@ package lc_ctrl_env_pkg;
   import push_pull_agent_pkg::*;
   import alert_esc_agent_pkg::*;
   import jtag_riscv_agent_pkg::*;
+  import kmac_app_agent_pkg::*;
   import lc_ctrl_dv_utils_pkg::*;
   import prim_mubi_pkg::MuBi8True;
 
@@ -37,6 +38,9 @@ package lc_ctrl_env_pkg;
   // lc_otp_program host data width: lc_state_e width + lc_cnt_e width
   parameter uint OTP_PROG_HDATA_WIDTH = LcStateWidth + LcCountWidth;
   parameter uint OTP_PROG_DDATA_WIDTH = 1;
+
+  // KMAC FSM state width
+  parameter uint KMAC_FSM_WIDTH = 8;
 
   typedef struct packed {
     lc_ctrl_pkg::lc_tx_t lc_dft_en_o;
@@ -64,13 +68,27 @@ package lc_ctrl_env_pkg;
     bit otp_partition_err;
     // Incorrect token for state change
     bit token_mismatch_err;
+    // Bit error in token from KMAC App interface
+    bit token_invalid_err;
+    // Error response from KMAC app
+    bit token_response_err;
+    // otp_lc_data_i.valid == 0
+    bit otp_lc_data_i_valid_err;
     // Invalid state driven via OTP interface
     bit state_err;
+    // Illegal (bad symbol encoding) state driven via OTP interface
+    bit state_illegal_err;
     // Invalid count driven via OTP interface
     bit count_err;
-    // Invalid fsm state - via force in lc_ctrl_if
+    // Illegal (bad symbol encoding) count driven via OTP interface
+    bit count_illegal_err;
+    // Invalid LC fsm state - via force in lc_ctrl_if
+    bit lc_fsm_backdoor_err;
+    // Invalid KMAC IF fsm state - via force in lc_ctrl_if
+    bit kmac_fsm_backdoor_err;
+    // Invalid state - via force in lc_ctrl_if
     bit state_backdoor_err;
-    // Invalid count      - via force in lc_ctrl_if
+    // Invalid count - via force in lc_ctrl_if
     bit count_backdoor_err;
     // Send a transition request in post_trans state
     bit post_trans_err;
@@ -86,6 +104,8 @@ package lc_ctrl_env_pkg;
   typedef enum {
     LcCtrlTestInit,
     LcCtrlIterStart,
+    LcCtrlLcInit,
+    LcCtrlDutInitComplete,
     LcCtrlDutReady,
     LcCtrlBadNextState,
     LcCtrlWaitTransition,
@@ -253,6 +273,7 @@ package lc_ctrl_env_pkg;
   endfunction
 
   // package sources
+  `include "lc_ctrl_parameters_cfg.sv"
   `include "lc_ctrl_env_cfg.sv"
   `include "lc_ctrl_env_cov.sv"
   `include "lc_ctrl_virtual_sequencer.sv"

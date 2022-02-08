@@ -15,13 +15,13 @@ class lc_ctrl_regwen_during_op_vseq extends lc_ctrl_smoke_vseq;
     // This is to give us time to try some reads and writes to
     // transition_regwen locked registers while the transition is in progress
     if (!cfg.jtag_csr) begin  // TL access
-      cfg.m_otp_token_pull_agent_cfg.device_delay_min = 3000;
-      cfg.m_otp_token_pull_agent_cfg.device_delay_max = 4000;
+      cfg.m_kmac_app_agent_cfg.rsp_delay_min = 3000;
+      cfg.m_kmac_app_agent_cfg.rsp_delay_max = 4000;
     end else begin  // JTAG Access - give us some more time for JTAG
-      cfg.m_otp_token_pull_agent_cfg.device_delay_min = 10000;
-      cfg.m_otp_token_pull_agent_cfg.device_delay_max = 12000;
+      cfg.m_kmac_app_agent_cfg.rsp_delay_min = 10000;
+      cfg.m_kmac_app_agent_cfg.rsp_delay_max = 12000;
     end
-    cfg.m_otp_token_pull_agent_cfg.zero_delays = 0;
+    cfg.m_kmac_app_agent_cfg.zero_delays = 0;
   endtask
 
   virtual task sw_transition_req(bit [TL_DW-1:0] next_lc_state, bit [TL_DW*4-1:0] token_val);

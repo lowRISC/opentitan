@@ -1,30 +1,31 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
 class lc_ctrl_env extends cip_base_env #(
-    .CFG_T              (lc_ctrl_env_cfg),
-    .COV_T              (lc_ctrl_env_cov),
-    .VIRTUAL_SEQUENCER_T(lc_ctrl_virtual_sequencer),
-    .SCOREBOARD_T       (lc_ctrl_scoreboard)
-  );
+  .CFG_T              (lc_ctrl_env_cfg),
+  .COV_T              (lc_ctrl_env_cov),
+  .VIRTUAL_SEQUENCER_T(lc_ctrl_virtual_sequencer),
+  .SCOREBOARD_T       (lc_ctrl_scoreboard)
+);
   `uvm_component_utils(lc_ctrl_env)
 
-  push_pull_agent#(.HostDataWidth(OTP_PROG_HDATA_WIDTH), .DeviceDataWidth(OTP_PROG_DDATA_WIDTH))
-                   m_otp_prog_pull_agent;
-  push_pull_agent#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)) m_otp_token_pull_agent;
-  alert_esc_agent  m_esc_scrap_state1_agent;
-  alert_esc_agent  m_esc_scrap_state0_agent;
+  push_pull_agent #(
+    .HostDataWidth  (OTP_PROG_HDATA_WIDTH),
+    .DeviceDataWidth(OTP_PROG_DDATA_WIDTH)
+  ) m_otp_prog_pull_agent;
+  alert_esc_agent m_esc_scrap_state1_agent;
+  alert_esc_agent m_esc_scrap_state0_agent;
   jtag_riscv_agent m_jtag_riscv_agent;
   jtag_riscv_reg_adapter m_jtag_riscv_reg_adapter;
+  kmac_app_agent m_kmac_app_agent;
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
 
-    m_jtag_riscv_reg_adapter = jtag_riscv_reg_adapter::type_id::
-        create("m_jtag_riscv_reg_adapter",null,this.get_full_name());
+    m_jtag_riscv_reg_adapter = jtag_riscv_reg_adapter::type_id::create("m_jtag_riscv_reg_adapter",
+                                                                       null, this.get_full_name());
     m_jtag_riscv_reg_adapter.cfg = cfg.m_jtag_riscv_agent_cfg;
 
     // config power manager pin
@@ -44,44 +45,50 @@ class lc_ctrl_env extends cip_base_env #(
     uvm_config_db#(alert_esc_agent_cfg)::set(this, "m_esc_scrap_state0_agent", "cfg",
                                              cfg.m_esc_scrap_state0_agent_cfg);
     cfg.m_esc_scrap_state0_agent_cfg.en_cov = cfg.en_cov;
-
     m_jtag_riscv_agent = jtag_riscv_agent::type_id::create("m_jtag_riscv_agent", this);
     uvm_config_db#(jtag_riscv_agent_cfg)::set(this, "m_jtag_riscv_agent", "cfg",
                                               cfg.m_jtag_riscv_agent_cfg);
     cfg.m_jtag_riscv_agent_cfg.en_cov = cfg.en_cov;
 
-    m_otp_prog_pull_agent = push_pull_agent#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
-        .DeviceDataWidth(OTP_PROG_DDATA_WIDTH))::type_id::create("m_otp_prog_pull_agent", this);
+    m_kmac_app_agent = kmac_app_agent::type_id::create("m_kmac_app_agent", this);
+    uvm_config_db#(kmac_app_agent_cfg)::set(this, "m_kmac_app_agent", "cfg",
+                                            cfg.m_kmac_app_agent_cfg);
+    cfg.m_kmac_app_agent_cfg.en_cov = cfg.en_cov;
+
+
+    m_otp_prog_pull_agent = push_pull_agent#(
+      .HostDataWidth  (OTP_PROG_HDATA_WIDTH),
+      .DeviceDataWidth(OTP_PROG_DDATA_WIDTH)
+    )::type_id::create(
+        "m_otp_prog_pull_agent", this
+    );
+
+    // verilog_format: off
     uvm_config_db#(push_pull_agent_cfg#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
         .DeviceDataWidth(OTP_PROG_DDATA_WIDTH)))::set(this, "m_otp_prog_pull_agent", "cfg",
         cfg.m_otp_prog_pull_agent_cfg);
     cfg.m_otp_prog_pull_agent_cfg.en_cov = cfg.en_cov;
+    // verilog_format: on
 
-    m_otp_token_pull_agent = push_pull_agent#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth))::
-        type_id::create("m_otp_token_pull_agent", this);
-    uvm_config_db#(push_pull_agent_cfg#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)))::
-        set(this, "m_otp_token_pull_agent", "cfg", cfg.m_otp_token_pull_agent_cfg);
-    cfg.m_otp_token_pull_agent_cfg.en_cov = cfg.en_cov;
   endfunction
+
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     virtual_sequencer.otp_prog_pull_sequencer_h = m_otp_prog_pull_agent.sequencer;
-    virtual_sequencer.otp_token_pull_sequencer_h = m_otp_token_pull_agent.sequencer;
     virtual_sequencer.esc_wipe_secrets_sequencer_h = m_esc_scrap_state1_agent.sequencer;
     virtual_sequencer.esc_scrap_state_sequencer_h = m_esc_scrap_state0_agent.sequencer;
     virtual_sequencer.jtag_riscv_sequencer_h = m_jtag_riscv_agent.sequencer;
     if (cfg.en_scb) begin
-      m_otp_prog_pull_agent.monitor.analysis_port.connect(
-          scoreboard.otp_prog_fifo.analysis_export);
-      m_otp_token_pull_agent.monitor.analysis_port.connect(
-          scoreboard.otp_token_fifo.analysis_export);
+      m_otp_prog_pull_agent.monitor.analysis_port.connect(scoreboard.otp_prog_fifo.analysis_export);
+      m_kmac_app_agent.monitor.req_analysis_port.connect(
+          scoreboard.kmac_app_req_fifo.analysis_export);
+      m_kmac_app_agent.monitor.analysis_port.connect(scoreboard.kmac_app_rsp_fifo.analysis_export);
       m_esc_scrap_state1_agent.monitor.analysis_port.connect(
           scoreboard.esc_wipe_secrets_fifo.analysis_export);
       m_esc_scrap_state0_agent.monitor.analysis_port.connect(
           scoreboard.esc_scrap_state_fifo.analysis_export);
-      m_jtag_riscv_agent.monitor.analysis_port.connect(
-          scoreboard.jtag_riscv_fifo.analysis_export);
+      m_jtag_riscv_agent.monitor.analysis_port.connect(scoreboard.jtag_riscv_fifo.analysis_export);
     end
   endfunction
 
@@ -93,7 +100,7 @@ class lc_ctrl_env extends cip_base_env #(
     end
 
     if (cfg.jtag_csr) begin
-      `uvm_info(`gfn,"Setting jtag_riscv_map as default map",UVM_MEDIUM)
+      `uvm_info(`gfn, "Setting jtag_riscv_map as default map", UVM_MEDIUM)
       foreach (cfg.ral_models[i]) begin
         cfg.ral_models[i].set_default_map(cfg.jtag_riscv_map);
       end

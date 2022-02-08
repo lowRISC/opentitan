@@ -42,6 +42,8 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
+    // Clear static signals so we get transitions for toggle coverage
+    cfg.lc_ctrl_vif.clear_static_signals();
     // OTP inputs `lc_state` and `lc_cnt` need to be stable before lc_ctrl's reset is deasserted
     if (do_lc_ctrl_init) begin
       drive_otp_i();
@@ -65,13 +67,31 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
       lc_state = LcStRaw;
       lc_cnt   = LcCnt0;
     end
-    cfg.lc_ctrl_vif.init(lc_state, lc_cnt);
+
+    cfg.lc_ctrl_vif.init(.lc_state(lc_state), .lc_cnt(lc_cnt), .otp_device_id(cfg.otp_device_id),
+                         .otp_manuf_state(cfg.otp_manuf_state),
+                         .otp_vendor_test_status(cfg.otp_vendor_test_status));
+
   endtask
+
+  // Read OTP CSRs
+  virtual task read_otp_csrs();
+    uvm_reg_data_t val;
+    foreach (ral.device_id[i]) csr_rd(ral.device_id[i], val);
+    foreach (ral.manuf_state[i]) csr_rd(ral.manuf_state[i], val);
+  endtask
+
 
   // Drive LC init pin.
   virtual task lc_ctrl_init();
+    cfg.set_test_phase(LcCtrlLcInit);
     cfg.pwr_lc_vif.drive_pin(LcPwrInitReq, 1);
-    wait(cfg.pwr_lc_vif.pins[LcPwrDoneRsp] == 1);
+    // Dont wait for response from DUT if we are holding otp_lc_data_i.valid low
+    if (!cfg.err_inj.otp_lc_data_i_valid_err) begin
+      `DV_SPINWAIT(wait(cfg.pwr_lc_vif.pins[LcPwrDoneRsp] == 1);)
+    end else begin
+      cfg.clk_rst_vif.wait_clks($urandom_range(3, 10));
+    end
     cfg.pwr_lc_vif.drive_pin(LcPwrInitReq, 0);
   endtask
 
@@ -86,13 +106,13 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
       forever begin
         lc_ctrl_pkg::lc_tx_t rsp;
         wait(cfg.lc_ctrl_vif.clk_byp_req_o == lc_ctrl_pkg::On);
-        rsp = (has_err) ? $urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off :
+        rsp = (has_err) ? ($urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off) :
             lc_ctrl_pkg::On;
         cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
         cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
 
         wait(cfg.lc_ctrl_vif.clk_byp_req_o != lc_ctrl_pkg::On);
-        rsp = (has_err) ? $urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off :
+        rsp = (has_err) ? ($urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off) :
             lc_ctrl_pkg::Off;
         cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
         cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
@@ -105,13 +125,13 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
       forever begin
         lc_ctrl_pkg::lc_tx_t rsp;
         wait(cfg.lc_ctrl_vif.flash_rma_req_o == lc_ctrl_pkg::On);
-        rsp = (has_err) ? $urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off :
+        rsp = (has_err) ? ($urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off) :
             lc_ctrl_pkg::On;
         cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
         cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
 
         wait(cfg.lc_ctrl_vif.flash_rma_req_o != lc_ctrl_pkg::On);
-        rsp = (has_err) ? $urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off :
+        rsp = (has_err) ? ($urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off) :
             lc_ctrl_pkg::Off;
         cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
         cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
@@ -122,12 +142,19 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
   virtual task sw_transition_req(bit [TL_DW-1:0] next_lc_state, bit [TL_DW*4-1:0] token_val);
     bit trigger_alert;
     bit [TL_DW-1:0] status_val;
+    uvm_reg_data_t val;
     csr_wr(ral.claim_transition_if, CLAIM_TRANS_VAL);
     csr_wr(ral.transition_target, {DecLcStateNumRep{next_lc_state[DecLcStateWidth-1:0]}});
     foreach (ral.transition_token[i]) begin
       csr_wr(ral.transition_token[i], token_val[TL_DW-1:0]);
       token_val = token_val >> TL_DW;
     end
+    // Write vendor test reg
+    csr_wr(ral.otp_vendor_test_ctrl, cfg.otp_vendor_test_ctrl);
+    // Check  OTP vendor test status
+    csr_rd(ral.otp_vendor_test_status, val);
+
+    // Execute transition
     csr_wr(ral.transition_cmd, 'h01);
 
     // Wait for status done or terminal errors
@@ -156,8 +183,42 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
   // Sample the coverage for this sequence
   virtual function void sample_cov();
     // Only if coverage enabled
-    if(cfg.en_cov) begin
+    if (cfg.en_cov) begin
       p_sequencer.cov.sample_cov();
+    end
+  endfunction
+
+  // Create a string with "called from (filename:line number)" to be used in csr checks etc.
+  virtual function string called_from(string filename, int lineno);
+    return $sformatf("called from %s: %0d", filename, lineno);
+  endfunction
+
+  // Create a kmac digest from a token
+  virtual function kmac_pkg::rsp_digest_t token_to_kmac_digest(
+      lc_token_t token, lc_token_t scramble, bit err_inj = 0);
+    kmac_pkg::rsp_digest_t digest;
+    lc_token_t bit_flip;
+
+    // Randomize upper bits of digest
+    `DV_CHECK_STD_RANDOMIZE_FATAL(digest);
+
+    // Set the significant bits of the digest
+    digest.digest_share0[LcTokenWidth-1:0] = token ^ scramble;
+    digest.digest_share1[LcTokenWidth-1:0] = scramble;
+
+    if (err_inj) begin
+      // Inject an error by flipping a bit in one of the entries
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bit_flip, $onehot(bit_flip);)
+      if ($urandom_range(0, 1)) digest.digest_share0 ^= bit_flip;
+      else digest.digest_share1 ^= bit_flip;
+    end
+    return digest;
+  endfunction
+
+  // Clear kmac agent digest data
+  virtual function void clear_kmac_user_digest_share();
+    while (cfg.m_kmac_app_agent_cfg.has_user_digest_share()) begin
+      void'(cfg.m_kmac_app_agent_cfg.get_user_digest_share());
     end
   endfunction
 
