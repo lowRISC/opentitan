@@ -2171,7 +2171,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_en_0_regwen),
     .dst_wd_o     (aon_wkup_detector_en_0_wdata)
   );
-  assign unused_aon_wkup_detector_en_0_wdata = ^aon_wkup_detector_en_0_wdata;
+  assign unused_aon_wkup_detector_en_0_wdata =
+      ^aon_wkup_detector_en_0_wdata;
 
   logic  aon_wkup_detector_en_1_qs_int;
   logic [0:0] aon_wkup_detector_en_1_d;
@@ -2207,7 +2208,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_en_1_regwen),
     .dst_wd_o     (aon_wkup_detector_en_1_wdata)
   );
-  assign unused_aon_wkup_detector_en_1_wdata = ^aon_wkup_detector_en_1_wdata;
+  assign unused_aon_wkup_detector_en_1_wdata =
+      ^aon_wkup_detector_en_1_wdata;
 
   logic  aon_wkup_detector_en_2_qs_int;
   logic [0:0] aon_wkup_detector_en_2_d;
@@ -2243,7 +2245,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_en_2_regwen),
     .dst_wd_o     (aon_wkup_detector_en_2_wdata)
   );
-  assign unused_aon_wkup_detector_en_2_wdata = ^aon_wkup_detector_en_2_wdata;
+  assign unused_aon_wkup_detector_en_2_wdata =
+      ^aon_wkup_detector_en_2_wdata;
 
   logic  aon_wkup_detector_en_3_qs_int;
   logic [0:0] aon_wkup_detector_en_3_d;
@@ -2279,7 +2282,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_en_3_regwen),
     .dst_wd_o     (aon_wkup_detector_en_3_wdata)
   );
-  assign unused_aon_wkup_detector_en_3_wdata = ^aon_wkup_detector_en_3_wdata;
+  assign unused_aon_wkup_detector_en_3_wdata =
+      ^aon_wkup_detector_en_3_wdata;
 
   logic  aon_wkup_detector_en_4_qs_int;
   logic [0:0] aon_wkup_detector_en_4_d;
@@ -2315,7 +2319,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_en_4_regwen),
     .dst_wd_o     (aon_wkup_detector_en_4_wdata)
   );
-  assign unused_aon_wkup_detector_en_4_wdata = ^aon_wkup_detector_en_4_wdata;
+  assign unused_aon_wkup_detector_en_4_wdata =
+      ^aon_wkup_detector_en_4_wdata;
 
   logic  aon_wkup_detector_en_5_qs_int;
   logic [0:0] aon_wkup_detector_en_5_d;
@@ -2351,7 +2356,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_en_5_regwen),
     .dst_wd_o     (aon_wkup_detector_en_5_wdata)
   );
-  assign unused_aon_wkup_detector_en_5_wdata = ^aon_wkup_detector_en_5_wdata;
+  assign unused_aon_wkup_detector_en_5_wdata =
+      ^aon_wkup_detector_en_5_wdata;
 
   logic  aon_wkup_detector_en_6_qs_int;
   logic [0:0] aon_wkup_detector_en_6_d;
@@ -2387,7 +2393,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_en_6_regwen),
     .dst_wd_o     (aon_wkup_detector_en_6_wdata)
   );
-  assign unused_aon_wkup_detector_en_6_wdata = ^aon_wkup_detector_en_6_wdata;
+  assign unused_aon_wkup_detector_en_6_wdata =
+      ^aon_wkup_detector_en_6_wdata;
 
   logic  aon_wkup_detector_en_7_qs_int;
   logic [0:0] aon_wkup_detector_en_7_d;
@@ -2423,7 +2430,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_en_7_regwen),
     .dst_wd_o     (aon_wkup_detector_en_7_wdata)
   );
-  assign unused_aon_wkup_detector_en_7_wdata = ^aon_wkup_detector_en_7_wdata;
+  assign unused_aon_wkup_detector_en_7_wdata =
+      ^aon_wkup_detector_en_7_wdata;
 
   logic [2:0]  aon_wkup_detector_0_mode_0_qs_int;
   logic  aon_wkup_detector_0_filter_0_qs_int;
@@ -2463,7 +2471,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_0_regwen),
     .dst_wd_o     (aon_wkup_detector_0_wdata)
   );
-  assign unused_aon_wkup_detector_0_wdata = ^aon_wkup_detector_0_wdata;
+  assign unused_aon_wkup_detector_0_wdata =
+      ^aon_wkup_detector_0_wdata;
 
   logic [2:0]  aon_wkup_detector_1_mode_1_qs_int;
   logic  aon_wkup_detector_1_filter_1_qs_int;
@@ -2503,7 +2512,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_1_regwen),
     .dst_wd_o     (aon_wkup_detector_1_wdata)
   );
-  assign unused_aon_wkup_detector_1_wdata = ^aon_wkup_detector_1_wdata;
+  assign unused_aon_wkup_detector_1_wdata =
+      ^aon_wkup_detector_1_wdata;
 
   logic [2:0]  aon_wkup_detector_2_mode_2_qs_int;
   logic  aon_wkup_detector_2_filter_2_qs_int;
@@ -2543,7 +2553,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_2_regwen),
     .dst_wd_o     (aon_wkup_detector_2_wdata)
   );
-  assign unused_aon_wkup_detector_2_wdata = ^aon_wkup_detector_2_wdata;
+  assign unused_aon_wkup_detector_2_wdata =
+      ^aon_wkup_detector_2_wdata;
 
   logic [2:0]  aon_wkup_detector_3_mode_3_qs_int;
   logic  aon_wkup_detector_3_filter_3_qs_int;
@@ -2583,7 +2594,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_3_regwen),
     .dst_wd_o     (aon_wkup_detector_3_wdata)
   );
-  assign unused_aon_wkup_detector_3_wdata = ^aon_wkup_detector_3_wdata;
+  assign unused_aon_wkup_detector_3_wdata =
+      ^aon_wkup_detector_3_wdata;
 
   logic [2:0]  aon_wkup_detector_4_mode_4_qs_int;
   logic  aon_wkup_detector_4_filter_4_qs_int;
@@ -2623,7 +2635,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_4_regwen),
     .dst_wd_o     (aon_wkup_detector_4_wdata)
   );
-  assign unused_aon_wkup_detector_4_wdata = ^aon_wkup_detector_4_wdata;
+  assign unused_aon_wkup_detector_4_wdata =
+      ^aon_wkup_detector_4_wdata;
 
   logic [2:0]  aon_wkup_detector_5_mode_5_qs_int;
   logic  aon_wkup_detector_5_filter_5_qs_int;
@@ -2663,7 +2676,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_5_regwen),
     .dst_wd_o     (aon_wkup_detector_5_wdata)
   );
-  assign unused_aon_wkup_detector_5_wdata = ^aon_wkup_detector_5_wdata;
+  assign unused_aon_wkup_detector_5_wdata =
+      ^aon_wkup_detector_5_wdata;
 
   logic [2:0]  aon_wkup_detector_6_mode_6_qs_int;
   logic  aon_wkup_detector_6_filter_6_qs_int;
@@ -2703,7 +2717,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_6_regwen),
     .dst_wd_o     (aon_wkup_detector_6_wdata)
   );
-  assign unused_aon_wkup_detector_6_wdata = ^aon_wkup_detector_6_wdata;
+  assign unused_aon_wkup_detector_6_wdata =
+      ^aon_wkup_detector_6_wdata;
 
   logic [2:0]  aon_wkup_detector_7_mode_7_qs_int;
   logic  aon_wkup_detector_7_filter_7_qs_int;
@@ -2743,7 +2758,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_7_regwen),
     .dst_wd_o     (aon_wkup_detector_7_wdata)
   );
-  assign unused_aon_wkup_detector_7_wdata = ^aon_wkup_detector_7_wdata;
+  assign unused_aon_wkup_detector_7_wdata =
+      ^aon_wkup_detector_7_wdata;
 
   logic [7:0]  aon_wkup_detector_cnt_th_0_qs_int;
   logic [7:0] aon_wkup_detector_cnt_th_0_d;
@@ -2779,7 +2795,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_cnt_th_0_regwen),
     .dst_wd_o     (aon_wkup_detector_cnt_th_0_wdata)
   );
-  assign unused_aon_wkup_detector_cnt_th_0_wdata = ^aon_wkup_detector_cnt_th_0_wdata;
+  assign unused_aon_wkup_detector_cnt_th_0_wdata =
+      ^aon_wkup_detector_cnt_th_0_wdata;
 
   logic [7:0]  aon_wkup_detector_cnt_th_1_qs_int;
   logic [7:0] aon_wkup_detector_cnt_th_1_d;
@@ -2815,7 +2832,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_cnt_th_1_regwen),
     .dst_wd_o     (aon_wkup_detector_cnt_th_1_wdata)
   );
-  assign unused_aon_wkup_detector_cnt_th_1_wdata = ^aon_wkup_detector_cnt_th_1_wdata;
+  assign unused_aon_wkup_detector_cnt_th_1_wdata =
+      ^aon_wkup_detector_cnt_th_1_wdata;
 
   logic [7:0]  aon_wkup_detector_cnt_th_2_qs_int;
   logic [7:0] aon_wkup_detector_cnt_th_2_d;
@@ -2851,7 +2869,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_cnt_th_2_regwen),
     .dst_wd_o     (aon_wkup_detector_cnt_th_2_wdata)
   );
-  assign unused_aon_wkup_detector_cnt_th_2_wdata = ^aon_wkup_detector_cnt_th_2_wdata;
+  assign unused_aon_wkup_detector_cnt_th_2_wdata =
+      ^aon_wkup_detector_cnt_th_2_wdata;
 
   logic [7:0]  aon_wkup_detector_cnt_th_3_qs_int;
   logic [7:0] aon_wkup_detector_cnt_th_3_d;
@@ -2887,7 +2906,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_cnt_th_3_regwen),
     .dst_wd_o     (aon_wkup_detector_cnt_th_3_wdata)
   );
-  assign unused_aon_wkup_detector_cnt_th_3_wdata = ^aon_wkup_detector_cnt_th_3_wdata;
+  assign unused_aon_wkup_detector_cnt_th_3_wdata =
+      ^aon_wkup_detector_cnt_th_3_wdata;
 
   logic [7:0]  aon_wkup_detector_cnt_th_4_qs_int;
   logic [7:0] aon_wkup_detector_cnt_th_4_d;
@@ -2923,7 +2943,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_cnt_th_4_regwen),
     .dst_wd_o     (aon_wkup_detector_cnt_th_4_wdata)
   );
-  assign unused_aon_wkup_detector_cnt_th_4_wdata = ^aon_wkup_detector_cnt_th_4_wdata;
+  assign unused_aon_wkup_detector_cnt_th_4_wdata =
+      ^aon_wkup_detector_cnt_th_4_wdata;
 
   logic [7:0]  aon_wkup_detector_cnt_th_5_qs_int;
   logic [7:0] aon_wkup_detector_cnt_th_5_d;
@@ -2959,7 +2980,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_cnt_th_5_regwen),
     .dst_wd_o     (aon_wkup_detector_cnt_th_5_wdata)
   );
-  assign unused_aon_wkup_detector_cnt_th_5_wdata = ^aon_wkup_detector_cnt_th_5_wdata;
+  assign unused_aon_wkup_detector_cnt_th_5_wdata =
+      ^aon_wkup_detector_cnt_th_5_wdata;
 
   logic [7:0]  aon_wkup_detector_cnt_th_6_qs_int;
   logic [7:0] aon_wkup_detector_cnt_th_6_d;
@@ -2995,7 +3017,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_cnt_th_6_regwen),
     .dst_wd_o     (aon_wkup_detector_cnt_th_6_wdata)
   );
-  assign unused_aon_wkup_detector_cnt_th_6_wdata = ^aon_wkup_detector_cnt_th_6_wdata;
+  assign unused_aon_wkup_detector_cnt_th_6_wdata =
+      ^aon_wkup_detector_cnt_th_6_wdata;
 
   logic [7:0]  aon_wkup_detector_cnt_th_7_qs_int;
   logic [7:0] aon_wkup_detector_cnt_th_7_d;
@@ -3031,7 +3054,8 @@ module pinmux_reg_top (
     .dst_regwen_o (aon_wkup_detector_cnt_th_7_regwen),
     .dst_wd_o     (aon_wkup_detector_cnt_th_7_wdata)
   );
-  assign unused_aon_wkup_detector_cnt_th_7_wdata = ^aon_wkup_detector_cnt_th_7_wdata;
+  assign unused_aon_wkup_detector_cnt_th_7_wdata =
+      ^aon_wkup_detector_cnt_th_7_wdata;
 
   logic  aon_wkup_cause_cause_0_qs_int;
   logic  aon_wkup_cause_cause_1_qs_int;
@@ -3080,7 +3104,8 @@ module pinmux_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_wkup_cause_wdata)
   );
-  assign unused_aon_wkup_cause_wdata = ^aon_wkup_cause_wdata;
+  assign unused_aon_wkup_cause_wdata =
+      ^aon_wkup_cause_wdata;
 
   // Register instances
   // R[alert_test]: V(True)

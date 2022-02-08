@@ -298,7 +298,8 @@ module clkmgr_reg_top (
     .dst_regwen_o (io_io_measure_ctrl_regwen),
     .dst_wd_o     (io_io_measure_ctrl_wdata)
   );
-  assign unused_io_io_measure_ctrl_wdata = ^io_io_measure_ctrl_wdata;
+  assign unused_io_io_measure_ctrl_wdata =
+      ^io_io_measure_ctrl_wdata;
 
   logic  io_div2_io_div2_measure_ctrl_en_qs_int;
   logic [8:0]  io_div2_io_div2_measure_ctrl_max_thresh_qs_int;
@@ -338,7 +339,8 @@ module clkmgr_reg_top (
     .dst_regwen_o (io_div2_io_div2_measure_ctrl_regwen),
     .dst_wd_o     (io_div2_io_div2_measure_ctrl_wdata)
   );
-  assign unused_io_div2_io_div2_measure_ctrl_wdata = ^io_div2_io_div2_measure_ctrl_wdata;
+  assign unused_io_div2_io_div2_measure_ctrl_wdata =
+      ^io_div2_io_div2_measure_ctrl_wdata;
 
   logic  io_div4_io_div4_measure_ctrl_en_qs_int;
   logic [7:0]  io_div4_io_div4_measure_ctrl_max_thresh_qs_int;
@@ -378,7 +380,8 @@ module clkmgr_reg_top (
     .dst_regwen_o (io_div4_io_div4_measure_ctrl_regwen),
     .dst_wd_o     (io_div4_io_div4_measure_ctrl_wdata)
   );
-  assign unused_io_div4_io_div4_measure_ctrl_wdata = ^io_div4_io_div4_measure_ctrl_wdata;
+  assign unused_io_div4_io_div4_measure_ctrl_wdata =
+      ^io_div4_io_div4_measure_ctrl_wdata;
 
   logic  main_main_measure_ctrl_en_qs_int;
   logic [9:0]  main_main_measure_ctrl_max_thresh_qs_int;
@@ -418,7 +421,8 @@ module clkmgr_reg_top (
     .dst_regwen_o (main_main_measure_ctrl_regwen),
     .dst_wd_o     (main_main_measure_ctrl_wdata)
   );
-  assign unused_main_main_measure_ctrl_wdata = ^main_main_measure_ctrl_wdata;
+  assign unused_main_main_measure_ctrl_wdata =
+      ^main_main_measure_ctrl_wdata;
 
   logic  usb_usb_measure_ctrl_en_qs_int;
   logic [8:0]  usb_usb_measure_ctrl_max_thresh_qs_int;
@@ -458,7 +462,8 @@ module clkmgr_reg_top (
     .dst_regwen_o (usb_usb_measure_ctrl_regwen),
     .dst_wd_o     (usb_usb_measure_ctrl_wdata)
   );
-  assign unused_usb_usb_measure_ctrl_wdata = ^usb_usb_measure_ctrl_wdata;
+  assign unused_usb_usb_measure_ctrl_wdata =
+      ^usb_usb_measure_ctrl_wdata;
 
   // Register instances
   // R[alert_test]: V(True)

@@ -230,7 +230,8 @@ module pwm_reg_top (
     .dst_regwen_o (core_cfg_regwen),
     .dst_wd_o     (core_cfg_wdata)
   );
-  assign unused_core_cfg_wdata = ^core_cfg_wdata;
+  assign unused_core_cfg_wdata =
+      ^core_cfg_wdata;
 
   logic  core_pwm_en_en_0_qs_int;
   logic  core_pwm_en_en_1_qs_int;
@@ -276,7 +277,8 @@ module pwm_reg_top (
     .dst_regwen_o (core_pwm_en_regwen),
     .dst_wd_o     (core_pwm_en_wdata)
   );
-  assign unused_core_pwm_en_wdata = ^core_pwm_en_wdata;
+  assign unused_core_pwm_en_wdata =
+      ^core_pwm_en_wdata;
 
   logic  core_invert_invert_0_qs_int;
   logic  core_invert_invert_1_qs_int;
@@ -322,7 +324,8 @@ module pwm_reg_top (
     .dst_regwen_o (core_invert_regwen),
     .dst_wd_o     (core_invert_wdata)
   );
-  assign unused_core_invert_wdata = ^core_invert_wdata;
+  assign unused_core_invert_wdata =
+      ^core_invert_wdata;
 
   logic [15:0]  core_pwm_param_0_phase_delay_0_qs_int;
   logic  core_pwm_param_0_htbt_en_0_qs_int;
@@ -362,7 +365,8 @@ module pwm_reg_top (
     .dst_regwen_o (core_pwm_param_0_regwen),
     .dst_wd_o     (core_pwm_param_0_wdata)
   );
-  assign unused_core_pwm_param_0_wdata = ^core_pwm_param_0_wdata;
+  assign unused_core_pwm_param_0_wdata =
+      ^core_pwm_param_0_wdata;
 
   logic [15:0]  core_pwm_param_1_phase_delay_1_qs_int;
   logic  core_pwm_param_1_htbt_en_1_qs_int;
@@ -402,7 +406,8 @@ module pwm_reg_top (
     .dst_regwen_o (core_pwm_param_1_regwen),
     .dst_wd_o     (core_pwm_param_1_wdata)
   );
-  assign unused_core_pwm_param_1_wdata = ^core_pwm_param_1_wdata;
+  assign unused_core_pwm_param_1_wdata =
+      ^core_pwm_param_1_wdata;
 
   logic [15:0]  core_pwm_param_2_phase_delay_2_qs_int;
   logic  core_pwm_param_2_htbt_en_2_qs_int;
@@ -442,7 +447,8 @@ module pwm_reg_top (
     .dst_regwen_o (core_pwm_param_2_regwen),
     .dst_wd_o     (core_pwm_param_2_wdata)
   );
-  assign unused_core_pwm_param_2_wdata = ^core_pwm_param_2_wdata;
+  assign unused_core_pwm_param_2_wdata =
+      ^core_pwm_param_2_wdata;
 
   logic [15:0]  core_pwm_param_3_phase_delay_3_qs_int;
   logic  core_pwm_param_3_htbt_en_3_qs_int;
@@ -482,7 +488,8 @@ module pwm_reg_top (
     .dst_regwen_o (core_pwm_param_3_regwen),
     .dst_wd_o     (core_pwm_param_3_wdata)
   );
-  assign unused_core_pwm_param_3_wdata = ^core_pwm_param_3_wdata;
+  assign unused_core_pwm_param_3_wdata =
+      ^core_pwm_param_3_wdata;
 
   logic [15:0]  core_pwm_param_4_phase_delay_4_qs_int;
   logic  core_pwm_param_4_htbt_en_4_qs_int;
@@ -522,7 +529,8 @@ module pwm_reg_top (
     .dst_regwen_o (core_pwm_param_4_regwen),
     .dst_wd_o     (core_pwm_param_4_wdata)
   );
-  assign unused_core_pwm_param_4_wdata = ^core_pwm_param_4_wdata;
+  assign unused_core_pwm_param_4_wdata =
+      ^core_pwm_param_4_wdata;
 
   logic [15:0]  core_pwm_param_5_phase_delay_5_qs_int;
   logic  core_pwm_param_5_htbt_en_5_qs_int;
@@ -562,7 +570,8 @@ module pwm_reg_top (
     .dst_regwen_o (core_pwm_param_5_regwen),
     .dst_wd_o     (core_pwm_param_5_wdata)
   );
-  assign unused_core_pwm_param_5_wdata = ^core_pwm_param_5_wdata;
+  assign unused_core_pwm_param_5_wdata =
+      ^core_pwm_param_5_wdata;
 
   logic [15:0]  core_duty_cycle_0_a_0_qs_int;
   logic [15:0]  core_duty_cycle_0_b_0_qs_int;
@@ -600,7 +609,8 @@ module pwm_reg_top (
     .dst_regwen_o (core_duty_cycle_0_regwen),
     .dst_wd_o     (core_duty_cycle_0_wdata)
   );
-  assign unused_core_duty_cycle_0_wdata = ^core_duty_cycle_0_wdata;
+  assign unused_core_duty_cycle_0_wdata =
+      ^core_duty_cycle_0_wdata;
 
   logic [15:0]  core_duty_cycle_1_a_1_qs_int;
   logic [15:0]  core_duty_cycle_1_b_1_qs_int;
@@ -638,7 +648,8 @@ module pwm_reg_top (
     .dst_regwen_o (core_duty_cycle_1_regwen),
     .dst_wd_o     (core_duty_cycle_1_wdata)
   );
-  assign unused_core_duty_cycle_1_wdata = ^core_duty_cycle_1_wdata;
+  assign unused_core_duty_cycle_1_wdata =
+      ^core_duty_cycle_1_wdata;
 
   logic [15:0]  core_duty_cycle_2_a_2_qs_int;
   logic [15:0]  core_duty_cycle_2_b_2_qs_int;
@@ -676,7 +687,8 @@ module pwm_reg_top (
     .dst_regwen_o (core_duty_cycle_2_regwen),
     .dst_wd_o     (core_duty_cycle_2_wdata)
   );
-  assign unused_core_duty_cycle_2_wdata = ^core_duty_cycle_2_wdata;
+  assign unused_core_duty_cycle_2_wdata =
+      ^core_duty_cycle_2_wdata;
 
   logic [15:0]  core_duty_cycle_3_a_3_qs_int;
   logic [15:0]  core_duty_cycle_3_b_3_qs_int;
@@ -714,7 +726,8 @@ module pwm_reg_top (
     .dst_regwen_o (core_duty_cycle_3_regwen),
     .dst_wd_o     (core_duty_cycle_3_wdata)
   );
-  assign unused_core_duty_cycle_3_wdata = ^core_duty_cycle_3_wdata;
+  assign unused_core_duty_cycle_3_wdata =
+      ^core_duty_cycle_3_wdata;
 
   logic [15:0]  core_duty_cycle_4_a_4_qs_int;
   logic [15:0]  core_duty_cycle_4_b_4_qs_int;
@@ -752,7 +765,8 @@ module pwm_reg_top (
     .dst_regwen_o (core_duty_cycle_4_regwen),
     .dst_wd_o     (core_duty_cycle_4_wdata)
   );
-  assign unused_core_duty_cycle_4_wdata = ^core_duty_cycle_4_wdata;
+  assign unused_core_duty_cycle_4_wdata =
+      ^core_duty_cycle_4_wdata;
 
   logic [15:0]  core_duty_cycle_5_a_5_qs_int;
   logic [15:0]  core_duty_cycle_5_b_5_qs_int;
@@ -790,7 +804,8 @@ module pwm_reg_top (
     .dst_regwen_o (core_duty_cycle_5_regwen),
     .dst_wd_o     (core_duty_cycle_5_wdata)
   );
-  assign unused_core_duty_cycle_5_wdata = ^core_duty_cycle_5_wdata;
+  assign unused_core_duty_cycle_5_wdata =
+      ^core_duty_cycle_5_wdata;
 
   logic [15:0]  core_blink_param_0_x_0_qs_int;
   logic [15:0]  core_blink_param_0_y_0_qs_int;
@@ -828,7 +843,8 @@ module pwm_reg_top (
     .dst_regwen_o (core_blink_param_0_regwen),
     .dst_wd_o     (core_blink_param_0_wdata)
   );
-  assign unused_core_blink_param_0_wdata = ^core_blink_param_0_wdata;
+  assign unused_core_blink_param_0_wdata =
+      ^core_blink_param_0_wdata;
 
   logic [15:0]  core_blink_param_1_x_1_qs_int;
   logic [15:0]  core_blink_param_1_y_1_qs_int;
@@ -866,7 +882,8 @@ module pwm_reg_top (
     .dst_regwen_o (core_blink_param_1_regwen),
     .dst_wd_o     (core_blink_param_1_wdata)
   );
-  assign unused_core_blink_param_1_wdata = ^core_blink_param_1_wdata;
+  assign unused_core_blink_param_1_wdata =
+      ^core_blink_param_1_wdata;
 
   logic [15:0]  core_blink_param_2_x_2_qs_int;
   logic [15:0]  core_blink_param_2_y_2_qs_int;
@@ -904,7 +921,8 @@ module pwm_reg_top (
     .dst_regwen_o (core_blink_param_2_regwen),
     .dst_wd_o     (core_blink_param_2_wdata)
   );
-  assign unused_core_blink_param_2_wdata = ^core_blink_param_2_wdata;
+  assign unused_core_blink_param_2_wdata =
+      ^core_blink_param_2_wdata;
 
   logic [15:0]  core_blink_param_3_x_3_qs_int;
   logic [15:0]  core_blink_param_3_y_3_qs_int;
@@ -942,7 +960,8 @@ module pwm_reg_top (
     .dst_regwen_o (core_blink_param_3_regwen),
     .dst_wd_o     (core_blink_param_3_wdata)
   );
-  assign unused_core_blink_param_3_wdata = ^core_blink_param_3_wdata;
+  assign unused_core_blink_param_3_wdata =
+      ^core_blink_param_3_wdata;
 
   logic [15:0]  core_blink_param_4_x_4_qs_int;
   logic [15:0]  core_blink_param_4_y_4_qs_int;
@@ -980,7 +999,8 @@ module pwm_reg_top (
     .dst_regwen_o (core_blink_param_4_regwen),
     .dst_wd_o     (core_blink_param_4_wdata)
   );
-  assign unused_core_blink_param_4_wdata = ^core_blink_param_4_wdata;
+  assign unused_core_blink_param_4_wdata =
+      ^core_blink_param_4_wdata;
 
   logic [15:0]  core_blink_param_5_x_5_qs_int;
   logic [15:0]  core_blink_param_5_y_5_qs_int;
@@ -1018,7 +1038,8 @@ module pwm_reg_top (
     .dst_regwen_o (core_blink_param_5_regwen),
     .dst_wd_o     (core_blink_param_5_wdata)
   );
-  assign unused_core_blink_param_5_wdata = ^core_blink_param_5_wdata;
+  assign unused_core_blink_param_5_wdata =
+      ^core_blink_param_5_wdata;
 
   // Register instances
   // R[alert_test]: V(True)

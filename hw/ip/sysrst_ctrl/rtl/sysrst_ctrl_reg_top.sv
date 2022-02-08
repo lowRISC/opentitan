@@ -266,7 +266,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (aon_ec_rst_ctl_regwen),
     .dst_wd_o     (aon_ec_rst_ctl_wdata)
   );
-  assign unused_aon_ec_rst_ctl_wdata = ^aon_ec_rst_ctl_wdata;
+  assign unused_aon_ec_rst_ctl_wdata =
+      ^aon_ec_rst_ctl_wdata;
 
   logic [15:0]  aon_ulp_ac_debounce_ctl_qs_int;
   logic [15:0] aon_ulp_ac_debounce_ctl_d;
@@ -302,7 +303,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (aon_ulp_ac_debounce_ctl_regwen),
     .dst_wd_o     (aon_ulp_ac_debounce_ctl_wdata)
   );
-  assign unused_aon_ulp_ac_debounce_ctl_wdata = ^aon_ulp_ac_debounce_ctl_wdata;
+  assign unused_aon_ulp_ac_debounce_ctl_wdata =
+      ^aon_ulp_ac_debounce_ctl_wdata;
 
   logic [15:0]  aon_ulp_lid_debounce_ctl_qs_int;
   logic [15:0] aon_ulp_lid_debounce_ctl_d;
@@ -338,7 +340,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (aon_ulp_lid_debounce_ctl_regwen),
     .dst_wd_o     (aon_ulp_lid_debounce_ctl_wdata)
   );
-  assign unused_aon_ulp_lid_debounce_ctl_wdata = ^aon_ulp_lid_debounce_ctl_wdata;
+  assign unused_aon_ulp_lid_debounce_ctl_wdata =
+      ^aon_ulp_lid_debounce_ctl_wdata;
 
   logic [15:0]  aon_ulp_pwrb_debounce_ctl_qs_int;
   logic [15:0] aon_ulp_pwrb_debounce_ctl_d;
@@ -374,7 +377,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (aon_ulp_pwrb_debounce_ctl_regwen),
     .dst_wd_o     (aon_ulp_pwrb_debounce_ctl_wdata)
   );
-  assign unused_aon_ulp_pwrb_debounce_ctl_wdata = ^aon_ulp_pwrb_debounce_ctl_wdata;
+  assign unused_aon_ulp_pwrb_debounce_ctl_wdata =
+      ^aon_ulp_pwrb_debounce_ctl_wdata;
 
   logic  aon_ulp_ctl_qs_int;
   logic [0:0] aon_ulp_ctl_d;
@@ -409,7 +413,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_ulp_ctl_wdata)
   );
-  assign unused_aon_ulp_ctl_wdata = ^aon_ulp_ctl_wdata;
+  assign unused_aon_ulp_ctl_wdata =
+      ^aon_ulp_ctl_wdata;
 
   logic  aon_ulp_status_qs_int;
   logic [0:0] aon_ulp_status_d;
@@ -444,7 +449,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_ulp_status_wdata)
   );
-  assign unused_aon_ulp_status_wdata = ^aon_ulp_status_wdata;
+  assign unused_aon_ulp_status_wdata =
+      ^aon_ulp_status_wdata;
 
   logic  aon_wkup_status_qs_int;
   logic [0:0] aon_wkup_status_d;
@@ -479,7 +485,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_wkup_status_wdata)
   );
-  assign unused_aon_wkup_status_wdata = ^aon_wkup_status_wdata;
+  assign unused_aon_wkup_status_wdata =
+      ^aon_wkup_status_wdata;
 
   logic  aon_key_invert_ctl_key0_in_qs_int;
   logic  aon_key_invert_ctl_key0_out_qs_int;
@@ -537,7 +544,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (aon_key_invert_ctl_regwen),
     .dst_wd_o     (aon_key_invert_ctl_wdata)
   );
-  assign unused_aon_key_invert_ctl_wdata = ^aon_key_invert_ctl_wdata;
+  assign unused_aon_key_invert_ctl_wdata =
+      ^aon_key_invert_ctl_wdata;
 
   logic  aon_pin_allowed_ctl_bat_disable_0_qs_int;
   logic  aon_pin_allowed_ctl_ec_rst_l_0_qs_int;
@@ -603,7 +611,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (aon_pin_allowed_ctl_regwen),
     .dst_wd_o     (aon_pin_allowed_ctl_wdata)
   );
-  assign unused_aon_pin_allowed_ctl_wdata = ^aon_pin_allowed_ctl_wdata;
+  assign unused_aon_pin_allowed_ctl_wdata =
+      ^aon_pin_allowed_ctl_wdata;
 
   logic  aon_pin_out_ctl_bat_disable_qs_int;
   logic  aon_pin_out_ctl_ec_rst_l_qs_int;
@@ -652,7 +661,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_pin_out_ctl_wdata)
   );
-  assign unused_aon_pin_out_ctl_wdata = ^aon_pin_out_ctl_wdata;
+  assign unused_aon_pin_out_ctl_wdata =
+      ^aon_pin_out_ctl_wdata;
 
   logic  aon_pin_out_value_bat_disable_qs_int;
   logic  aon_pin_out_value_ec_rst_l_qs_int;
@@ -701,7 +711,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_pin_out_value_wdata)
   );
-  assign unused_aon_pin_out_value_wdata = ^aon_pin_out_value_wdata;
+  assign unused_aon_pin_out_value_wdata =
+      ^aon_pin_out_value_wdata;
 
   logic  aon_key_intr_ctl_pwrb_in_h2l_qs_int;
   logic  aon_key_intr_ctl_key0_in_h2l_qs_int;
@@ -759,7 +770,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (aon_key_intr_ctl_regwen),
     .dst_wd_o     (aon_key_intr_ctl_wdata)
   );
-  assign unused_aon_key_intr_ctl_wdata = ^aon_key_intr_ctl_wdata;
+  assign unused_aon_key_intr_ctl_wdata =
+      ^aon_key_intr_ctl_wdata;
 
   logic [15:0]  aon_key_intr_debounce_ctl_qs_int;
   logic [15:0] aon_key_intr_debounce_ctl_d;
@@ -795,7 +807,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (aon_key_intr_debounce_ctl_regwen),
     .dst_wd_o     (aon_key_intr_debounce_ctl_wdata)
   );
-  assign unused_aon_key_intr_debounce_ctl_wdata = ^aon_key_intr_debounce_ctl_wdata;
+  assign unused_aon_key_intr_debounce_ctl_wdata =
+      ^aon_key_intr_debounce_ctl_wdata;
 
   logic [15:0]  aon_auto_block_debounce_ctl_debounce_timer_qs_int;
   logic  aon_auto_block_debounce_ctl_auto_block_enable_qs_int;
@@ -833,7 +846,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (aon_auto_block_debounce_ctl_regwen),
     .dst_wd_o     (aon_auto_block_debounce_ctl_wdata)
   );
-  assign unused_aon_auto_block_debounce_ctl_wdata = ^aon_auto_block_debounce_ctl_wdata;
+  assign unused_aon_auto_block_debounce_ctl_wdata =
+      ^aon_auto_block_debounce_ctl_wdata;
 
   logic  aon_auto_block_out_ctl_key0_out_sel_qs_int;
   logic  aon_auto_block_out_ctl_key1_out_sel_qs_int;
@@ -879,7 +893,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (aon_auto_block_out_ctl_regwen),
     .dst_wd_o     (aon_auto_block_out_ctl_wdata)
   );
-  assign unused_aon_auto_block_out_ctl_wdata = ^aon_auto_block_out_ctl_wdata;
+  assign unused_aon_auto_block_out_ctl_wdata =
+      ^aon_auto_block_out_ctl_wdata;
 
   logic  aon_com_sel_ctl_0_key0_in_sel_0_qs_int;
   logic  aon_com_sel_ctl_0_key1_in_sel_0_qs_int;
@@ -923,7 +938,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (aon_com_sel_ctl_0_regwen),
     .dst_wd_o     (aon_com_sel_ctl_0_wdata)
   );
-  assign unused_aon_com_sel_ctl_0_wdata = ^aon_com_sel_ctl_0_wdata;
+  assign unused_aon_com_sel_ctl_0_wdata =
+      ^aon_com_sel_ctl_0_wdata;
 
   logic  aon_com_sel_ctl_1_key0_in_sel_1_qs_int;
   logic  aon_com_sel_ctl_1_key1_in_sel_1_qs_int;
@@ -967,7 +983,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (aon_com_sel_ctl_1_regwen),
     .dst_wd_o     (aon_com_sel_ctl_1_wdata)
   );
-  assign unused_aon_com_sel_ctl_1_wdata = ^aon_com_sel_ctl_1_wdata;
+  assign unused_aon_com_sel_ctl_1_wdata =
+      ^aon_com_sel_ctl_1_wdata;
 
   logic  aon_com_sel_ctl_2_key0_in_sel_2_qs_int;
   logic  aon_com_sel_ctl_2_key1_in_sel_2_qs_int;
@@ -1011,7 +1028,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (aon_com_sel_ctl_2_regwen),
     .dst_wd_o     (aon_com_sel_ctl_2_wdata)
   );
-  assign unused_aon_com_sel_ctl_2_wdata = ^aon_com_sel_ctl_2_wdata;
+  assign unused_aon_com_sel_ctl_2_wdata =
+      ^aon_com_sel_ctl_2_wdata;
 
   logic  aon_com_sel_ctl_3_key0_in_sel_3_qs_int;
   logic  aon_com_sel_ctl_3_key1_in_sel_3_qs_int;
@@ -1055,7 +1073,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (aon_com_sel_ctl_3_regwen),
     .dst_wd_o     (aon_com_sel_ctl_3_wdata)
   );
-  assign unused_aon_com_sel_ctl_3_wdata = ^aon_com_sel_ctl_3_wdata;
+  assign unused_aon_com_sel_ctl_3_wdata =
+      ^aon_com_sel_ctl_3_wdata;
 
   logic [31:0]  aon_com_det_ctl_0_qs_int;
   logic [31:0] aon_com_det_ctl_0_d;
@@ -1091,7 +1110,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (aon_com_det_ctl_0_regwen),
     .dst_wd_o     (aon_com_det_ctl_0_wdata)
   );
-  assign unused_aon_com_det_ctl_0_wdata = ^aon_com_det_ctl_0_wdata;
+  assign unused_aon_com_det_ctl_0_wdata =
+      ^aon_com_det_ctl_0_wdata;
 
   logic [31:0]  aon_com_det_ctl_1_qs_int;
   logic [31:0] aon_com_det_ctl_1_d;
@@ -1127,7 +1147,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (aon_com_det_ctl_1_regwen),
     .dst_wd_o     (aon_com_det_ctl_1_wdata)
   );
-  assign unused_aon_com_det_ctl_1_wdata = ^aon_com_det_ctl_1_wdata;
+  assign unused_aon_com_det_ctl_1_wdata =
+      ^aon_com_det_ctl_1_wdata;
 
   logic [31:0]  aon_com_det_ctl_2_qs_int;
   logic [31:0] aon_com_det_ctl_2_d;
@@ -1163,7 +1184,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (aon_com_det_ctl_2_regwen),
     .dst_wd_o     (aon_com_det_ctl_2_wdata)
   );
-  assign unused_aon_com_det_ctl_2_wdata = ^aon_com_det_ctl_2_wdata;
+  assign unused_aon_com_det_ctl_2_wdata =
+      ^aon_com_det_ctl_2_wdata;
 
   logic [31:0]  aon_com_det_ctl_3_qs_int;
   logic [31:0] aon_com_det_ctl_3_d;
@@ -1199,7 +1221,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (aon_com_det_ctl_3_regwen),
     .dst_wd_o     (aon_com_det_ctl_3_wdata)
   );
-  assign unused_aon_com_det_ctl_3_wdata = ^aon_com_det_ctl_3_wdata;
+  assign unused_aon_com_det_ctl_3_wdata =
+      ^aon_com_det_ctl_3_wdata;
 
   logic  aon_com_out_ctl_0_bat_disable_0_qs_int;
   logic  aon_com_out_ctl_0_interrupt_0_qs_int;
@@ -1241,7 +1264,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (aon_com_out_ctl_0_regwen),
     .dst_wd_o     (aon_com_out_ctl_0_wdata)
   );
-  assign unused_aon_com_out_ctl_0_wdata = ^aon_com_out_ctl_0_wdata;
+  assign unused_aon_com_out_ctl_0_wdata =
+      ^aon_com_out_ctl_0_wdata;
 
   logic  aon_com_out_ctl_1_bat_disable_1_qs_int;
   logic  aon_com_out_ctl_1_interrupt_1_qs_int;
@@ -1283,7 +1307,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (aon_com_out_ctl_1_regwen),
     .dst_wd_o     (aon_com_out_ctl_1_wdata)
   );
-  assign unused_aon_com_out_ctl_1_wdata = ^aon_com_out_ctl_1_wdata;
+  assign unused_aon_com_out_ctl_1_wdata =
+      ^aon_com_out_ctl_1_wdata;
 
   logic  aon_com_out_ctl_2_bat_disable_2_qs_int;
   logic  aon_com_out_ctl_2_interrupt_2_qs_int;
@@ -1325,7 +1350,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (aon_com_out_ctl_2_regwen),
     .dst_wd_o     (aon_com_out_ctl_2_wdata)
   );
-  assign unused_aon_com_out_ctl_2_wdata = ^aon_com_out_ctl_2_wdata;
+  assign unused_aon_com_out_ctl_2_wdata =
+      ^aon_com_out_ctl_2_wdata;
 
   logic  aon_com_out_ctl_3_bat_disable_3_qs_int;
   logic  aon_com_out_ctl_3_interrupt_3_qs_int;
@@ -1367,7 +1393,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (aon_com_out_ctl_3_regwen),
     .dst_wd_o     (aon_com_out_ctl_3_wdata)
   );
-  assign unused_aon_com_out_ctl_3_wdata = ^aon_com_out_ctl_3_wdata;
+  assign unused_aon_com_out_ctl_3_wdata =
+      ^aon_com_out_ctl_3_wdata;
 
   logic  aon_combo_intr_status_combo0_h2l_qs_int;
   logic  aon_combo_intr_status_combo1_h2l_qs_int;
@@ -1408,7 +1435,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_combo_intr_status_wdata)
   );
-  assign unused_aon_combo_intr_status_wdata = ^aon_combo_intr_status_wdata;
+  assign unused_aon_combo_intr_status_wdata =
+      ^aon_combo_intr_status_wdata;
 
   logic  aon_key_intr_status_pwrb_h2l_qs_int;
   logic  aon_key_intr_status_key0_in_h2l_qs_int;
@@ -1465,7 +1493,8 @@ module sysrst_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_key_intr_status_wdata)
   );
-  assign unused_aon_key_intr_status_wdata = ^aon_key_intr_status_wdata;
+  assign unused_aon_key_intr_status_wdata =
+      ^aon_key_intr_status_wdata;
 
   // Register instances
   // R[intr_state]: V(False)
