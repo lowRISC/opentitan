@@ -174,27 +174,27 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Not Started |
-Documentation | [DV_DOC_COMPLETED][]                    | Not Started |
-Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Not Started |
-Testbench     | [ALL_INTERFACES_EXERCISED][]            | Not Started |
-Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Not Started |
-Testbench     | [SIM_TB_ENV_COMPLETED][]                | Not Started |
-Tests         | [SIM_ALL_TESTS_PASSING][]               | Not Started |
-Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | Not Started |
-Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | Not Started |
-Tests         | [SIM_FW_SIMULATED][]                    | Not Started |
-Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Not Started |
-Coverage      | [SIM_CODE_COVERAGE_V2][]                | Not Started |
-Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Not Started |
-Coverage      | [FPV_CODE_COVERAGE_V2][]                | Not Started |
-Coverage      | [FPV_COI_COVERAGE_V2][]                 | Not Started |
-Code Quality  | [TB_LINT_PASS][]                        | Not Started |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Not Started |
-Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Not Started |
-Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Not Started |
+Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Done        |
+Documentation | [DV_DOC_COMPLETED][]                    | Done        |
+Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Started     | Some work pending per issue https://github.com/lowRISC/opentitan/issues/10687
+Testbench     | [ALL_INTERFACES_EXERCISED][]            | Started     | One input pending per issue https://github.com/lowRISC/opentitan/issues/10689
+Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Done        |
+Testbench     | [SIM_TB_ENV_COMPLETED][]                | Done        |
+Tests         | [SIM_ALL_TESTS_PASSING][]               | Done        |
+Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | N/A         |
+Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | N/A         |
+Tests         | [SIM_FW_SIMULATED][]                    | Done        |
+Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Done        |
+Coverage      | [SIM_CODE_COVERAGE_V2][]                | Done        |
+Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Done        |
+Coverage      | [FPV_CODE_COVERAGE_V2][]                | N/A         |
+Coverage      | [FPV_COI_COVERAGE_V2][]                 | N/A         |
+Code Quality  | [TB_LINT_PASS][]                        | Started     | One pending issue https://github.com/lowRISC/opentitan/pull/10683
+Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Done        |
+Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Done        |
+Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        |
 Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Not Started |
-Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
+Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 
 [DESIGN_DELTAS_CAPTURED_V2]:          {{<relref "/doc/project/checklist.md#design_deltas_captured_v2" >}}
 [DV_DOC_COMPLETED]:                   {{<relref "/doc/project/checklist.md#dv_doc_completed" >}}
