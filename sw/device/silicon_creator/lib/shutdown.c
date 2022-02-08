@@ -215,16 +215,7 @@ uint32_t shutdown_redact(rom_error_t reason, shutdown_error_redact_t severity) {
  * This function must be inlined because it is called from `shutdown_finalize`.
  */
 static ALWAYS_INLINE shutdown_error_redact_t
-shutdown_redact_policy_inline(void) {
-  // Determine the error code redaction policy to apply according to the
-  // lifecycle state and OTP configuration.
-  //
-  // Note that we cannot use the lifecycle or OTP libraries since an error
-  // may trigger a call to `shutdown_finalize`.
-  uint32_t raw_state =
-      bitfield_field32_read(abs_mmio_read32(TOP_EARLGREY_LC_CTRL_BASE_ADDR +
-                                            LC_CTRL_LC_STATE_REG_OFFSET),
-                            LC_CTRL_LC_STATE_STATE_FIELD);
+shutdown_redact_policy_inline(uint32_t raw_state) {
   switch (raw_state) {
     case LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED0:
     case LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED1:
@@ -252,17 +243,35 @@ shutdown_redact_policy_inline(void) {
 }
 
 shutdown_error_redact_t shutdown_redact_policy(void) {
-  return shutdown_redact_policy_inline();
+  // Determine the error code redaction policy to apply according to the
+  // lifecycle state and OTP configuration.
+  //
+  // Note that we cannot use the lifecycle or OTP libraries since an error
+  // may trigger a call to `shutdown_finalize`.
+  uint32_t raw_state =
+      bitfield_field32_read(abs_mmio_read32(TOP_EARLGREY_LC_CTRL_BASE_ADDR +
+                                            LC_CTRL_LC_STATE_REG_OFFSET),
+                            LC_CTRL_LC_STATE_STATE_FIELD);
+  return shutdown_redact_policy_inline(raw_state);
 }
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
+  uint32_t raw_state =
+      bitfield_field32_read(abs_mmio_read32(TOP_EARLGREY_LC_CTRL_BASE_ADDR +
+                                            LC_CTRL_LC_STATE_REG_OFFSET),
+                            LC_CTRL_LC_STATE_STATE_FIELD);
+
   // Call the inline variant of `shutdown_redact_policy` because we want to
   // guarantee that we won't jump to a different function.
-  shutdown_error_redact_t policy = shutdown_redact_policy_inline();
+  shutdown_error_redact_t policy = shutdown_redact_policy_inline(raw_state);
 
   // Call the inline variant of `shutdown_redact` because we want to guarantee
   // that we won't jump to a different function.
   uint32_t redacted_error = shutdown_redact_inline(reason, policy);
+
+  // TODO(lowrisc/opentitan#7894): What (if anything) should we print at
+  // startup?
+  log_printf("lc_state: 0x%x\n\r", (unsigned int)raw_state);
 
   // TODO(lowRISC/opentitan#8236): log_printf is in the .text section.
   log_printf("boot_fault: 0x%x\n", (unsigned int)redacted_error);

@@ -257,7 +257,6 @@ cc_library(
     deps = [
         ":error",
         "//sw/device/lib/base",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
     ],
 )
 
@@ -317,7 +316,7 @@ cc_test(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
         "//sw/device/silicon_creator/lib/base:mock_abs_mmio",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:mock_lifecycle",
         "//sw/device/silicon_creator/lib/drivers:mock_alert",
         "//sw/device/silicon_creator/lib/drivers:mock_otp",
         "//sw/device/silicon_creator/testing:mask_rom_test",
