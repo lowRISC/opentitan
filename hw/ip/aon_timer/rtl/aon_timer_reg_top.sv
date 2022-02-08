@@ -197,7 +197,8 @@ module aon_timer_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_wkup_ctrl_wdata)
   );
-  assign unused_aon_wkup_ctrl_wdata = ^aon_wkup_ctrl_wdata;
+  assign unused_aon_wkup_ctrl_wdata =
+      ^aon_wkup_ctrl_wdata;
 
   logic [31:0]  aon_wkup_thold_qs_int;
   logic [31:0] aon_wkup_thold_d;
@@ -232,7 +233,8 @@ module aon_timer_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_wkup_thold_wdata)
   );
-  assign unused_aon_wkup_thold_wdata = ^aon_wkup_thold_wdata;
+  assign unused_aon_wkup_thold_wdata =
+      ^aon_wkup_thold_wdata;
 
   logic [31:0]  aon_wkup_count_qs_int;
   logic [31:0] aon_wkup_count_d;
@@ -267,7 +269,8 @@ module aon_timer_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_wkup_count_wdata)
   );
-  assign unused_aon_wkup_count_wdata = ^aon_wkup_count_wdata;
+  assign unused_aon_wkup_count_wdata =
+      ^aon_wkup_count_wdata;
 
   logic  aon_wdog_ctrl_enable_qs_int;
   logic  aon_wdog_ctrl_pause_in_sleep_qs_int;
@@ -305,7 +308,8 @@ module aon_timer_reg_top (
     .dst_regwen_o (aon_wdog_ctrl_regwen),
     .dst_wd_o     (aon_wdog_ctrl_wdata)
   );
-  assign unused_aon_wdog_ctrl_wdata = ^aon_wdog_ctrl_wdata;
+  assign unused_aon_wdog_ctrl_wdata =
+      ^aon_wdog_ctrl_wdata;
 
   logic [31:0]  aon_wdog_bark_thold_qs_int;
   logic [31:0] aon_wdog_bark_thold_d;
@@ -341,7 +345,8 @@ module aon_timer_reg_top (
     .dst_regwen_o (aon_wdog_bark_thold_regwen),
     .dst_wd_o     (aon_wdog_bark_thold_wdata)
   );
-  assign unused_aon_wdog_bark_thold_wdata = ^aon_wdog_bark_thold_wdata;
+  assign unused_aon_wdog_bark_thold_wdata =
+      ^aon_wdog_bark_thold_wdata;
 
   logic [31:0]  aon_wdog_bite_thold_qs_int;
   logic [31:0] aon_wdog_bite_thold_d;
@@ -377,7 +382,8 @@ module aon_timer_reg_top (
     .dst_regwen_o (aon_wdog_bite_thold_regwen),
     .dst_wd_o     (aon_wdog_bite_thold_wdata)
   );
-  assign unused_aon_wdog_bite_thold_wdata = ^aon_wdog_bite_thold_wdata;
+  assign unused_aon_wdog_bite_thold_wdata =
+      ^aon_wdog_bite_thold_wdata;
 
   logic [31:0]  aon_wdog_count_qs_int;
   logic [31:0] aon_wdog_count_d;
@@ -412,7 +418,8 @@ module aon_timer_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_wdog_count_wdata)
   );
-  assign unused_aon_wdog_count_wdata = ^aon_wdog_count_wdata;
+  assign unused_aon_wdog_count_wdata =
+      ^aon_wdog_count_wdata;
 
   logic  aon_wkup_cause_qs_int;
   logic [0:0] aon_wkup_cause_d;
@@ -447,7 +454,8 @@ module aon_timer_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_wkup_cause_wdata)
   );
-  assign unused_aon_wkup_cause_wdata = ^aon_wkup_cause_wdata;
+  assign unused_aon_wkup_cause_wdata =
+      ^aon_wkup_cause_wdata;
 
   // Register instances
   // R[alert_test]: V(True)

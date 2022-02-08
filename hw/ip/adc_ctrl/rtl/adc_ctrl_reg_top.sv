@@ -265,7 +265,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_adc_en_ctl_wdata)
   );
-  assign unused_aon_adc_en_ctl_wdata = ^aon_adc_en_ctl_wdata;
+  assign unused_aon_adc_en_ctl_wdata =
+      ^aon_adc_en_ctl_wdata;
 
   logic  aon_adc_pd_ctl_lp_mode_qs_int;
   logic [3:0]  aon_adc_pd_ctl_pwrup_time_qs_int;
@@ -304,7 +305,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_adc_pd_ctl_wdata)
   );
-  assign unused_aon_adc_pd_ctl_wdata = ^aon_adc_pd_ctl_wdata;
+  assign unused_aon_adc_pd_ctl_wdata =
+      ^aon_adc_pd_ctl_wdata;
 
   logic [7:0]  aon_adc_lp_sample_ctl_qs_int;
   logic [7:0] aon_adc_lp_sample_ctl_d;
@@ -339,7 +341,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_adc_lp_sample_ctl_wdata)
   );
-  assign unused_aon_adc_lp_sample_ctl_wdata = ^aon_adc_lp_sample_ctl_wdata;
+  assign unused_aon_adc_lp_sample_ctl_wdata =
+      ^aon_adc_lp_sample_ctl_wdata;
 
   logic [15:0]  aon_adc_sample_ctl_qs_int;
   logic [15:0] aon_adc_sample_ctl_d;
@@ -374,7 +377,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_adc_sample_ctl_wdata)
   );
-  assign unused_aon_adc_sample_ctl_wdata = ^aon_adc_sample_ctl_wdata;
+  assign unused_aon_adc_sample_ctl_wdata =
+      ^aon_adc_sample_ctl_wdata;
 
   logic  aon_adc_fsm_rst_qs_int;
   logic [0:0] aon_adc_fsm_rst_d;
@@ -409,7 +413,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_adc_fsm_rst_wdata)
   );
-  assign unused_aon_adc_fsm_rst_wdata = ^aon_adc_fsm_rst_wdata;
+  assign unused_aon_adc_fsm_rst_wdata =
+      ^aon_adc_fsm_rst_wdata;
 
   logic [9:0]  aon_adc_chn0_filter_ctl_0_min_v_0_qs_int;
   logic  aon_adc_chn0_filter_ctl_0_cond_0_qs_int;
@@ -450,7 +455,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_adc_chn0_filter_ctl_0_wdata)
   );
-  assign unused_aon_adc_chn0_filter_ctl_0_wdata = ^aon_adc_chn0_filter_ctl_0_wdata;
+  assign unused_aon_adc_chn0_filter_ctl_0_wdata =
+      ^aon_adc_chn0_filter_ctl_0_wdata;
 
   logic [9:0]  aon_adc_chn0_filter_ctl_1_min_v_1_qs_int;
   logic  aon_adc_chn0_filter_ctl_1_cond_1_qs_int;
@@ -491,7 +497,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_adc_chn0_filter_ctl_1_wdata)
   );
-  assign unused_aon_adc_chn0_filter_ctl_1_wdata = ^aon_adc_chn0_filter_ctl_1_wdata;
+  assign unused_aon_adc_chn0_filter_ctl_1_wdata =
+      ^aon_adc_chn0_filter_ctl_1_wdata;
 
   logic [9:0]  aon_adc_chn0_filter_ctl_2_min_v_2_qs_int;
   logic  aon_adc_chn0_filter_ctl_2_cond_2_qs_int;
@@ -532,7 +539,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_adc_chn0_filter_ctl_2_wdata)
   );
-  assign unused_aon_adc_chn0_filter_ctl_2_wdata = ^aon_adc_chn0_filter_ctl_2_wdata;
+  assign unused_aon_adc_chn0_filter_ctl_2_wdata =
+      ^aon_adc_chn0_filter_ctl_2_wdata;
 
   logic [9:0]  aon_adc_chn0_filter_ctl_3_min_v_3_qs_int;
   logic  aon_adc_chn0_filter_ctl_3_cond_3_qs_int;
@@ -573,7 +581,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_adc_chn0_filter_ctl_3_wdata)
   );
-  assign unused_aon_adc_chn0_filter_ctl_3_wdata = ^aon_adc_chn0_filter_ctl_3_wdata;
+  assign unused_aon_adc_chn0_filter_ctl_3_wdata =
+      ^aon_adc_chn0_filter_ctl_3_wdata;
 
   logic [9:0]  aon_adc_chn0_filter_ctl_4_min_v_4_qs_int;
   logic  aon_adc_chn0_filter_ctl_4_cond_4_qs_int;
@@ -614,7 +623,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_adc_chn0_filter_ctl_4_wdata)
   );
-  assign unused_aon_adc_chn0_filter_ctl_4_wdata = ^aon_adc_chn0_filter_ctl_4_wdata;
+  assign unused_aon_adc_chn0_filter_ctl_4_wdata =
+      ^aon_adc_chn0_filter_ctl_4_wdata;
 
   logic [9:0]  aon_adc_chn0_filter_ctl_5_min_v_5_qs_int;
   logic  aon_adc_chn0_filter_ctl_5_cond_5_qs_int;
@@ -655,7 +665,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_adc_chn0_filter_ctl_5_wdata)
   );
-  assign unused_aon_adc_chn0_filter_ctl_5_wdata = ^aon_adc_chn0_filter_ctl_5_wdata;
+  assign unused_aon_adc_chn0_filter_ctl_5_wdata =
+      ^aon_adc_chn0_filter_ctl_5_wdata;
 
   logic [9:0]  aon_adc_chn0_filter_ctl_6_min_v_6_qs_int;
   logic  aon_adc_chn0_filter_ctl_6_cond_6_qs_int;
@@ -696,7 +707,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_adc_chn0_filter_ctl_6_wdata)
   );
-  assign unused_aon_adc_chn0_filter_ctl_6_wdata = ^aon_adc_chn0_filter_ctl_6_wdata;
+  assign unused_aon_adc_chn0_filter_ctl_6_wdata =
+      ^aon_adc_chn0_filter_ctl_6_wdata;
 
   logic [9:0]  aon_adc_chn0_filter_ctl_7_min_v_7_qs_int;
   logic  aon_adc_chn0_filter_ctl_7_cond_7_qs_int;
@@ -737,7 +749,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_adc_chn0_filter_ctl_7_wdata)
   );
-  assign unused_aon_adc_chn0_filter_ctl_7_wdata = ^aon_adc_chn0_filter_ctl_7_wdata;
+  assign unused_aon_adc_chn0_filter_ctl_7_wdata =
+      ^aon_adc_chn0_filter_ctl_7_wdata;
 
   logic [9:0]  aon_adc_chn1_filter_ctl_0_min_v_0_qs_int;
   logic  aon_adc_chn1_filter_ctl_0_cond_0_qs_int;
@@ -778,7 +791,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_adc_chn1_filter_ctl_0_wdata)
   );
-  assign unused_aon_adc_chn1_filter_ctl_0_wdata = ^aon_adc_chn1_filter_ctl_0_wdata;
+  assign unused_aon_adc_chn1_filter_ctl_0_wdata =
+      ^aon_adc_chn1_filter_ctl_0_wdata;
 
   logic [9:0]  aon_adc_chn1_filter_ctl_1_min_v_1_qs_int;
   logic  aon_adc_chn1_filter_ctl_1_cond_1_qs_int;
@@ -819,7 +833,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_adc_chn1_filter_ctl_1_wdata)
   );
-  assign unused_aon_adc_chn1_filter_ctl_1_wdata = ^aon_adc_chn1_filter_ctl_1_wdata;
+  assign unused_aon_adc_chn1_filter_ctl_1_wdata =
+      ^aon_adc_chn1_filter_ctl_1_wdata;
 
   logic [9:0]  aon_adc_chn1_filter_ctl_2_min_v_2_qs_int;
   logic  aon_adc_chn1_filter_ctl_2_cond_2_qs_int;
@@ -860,7 +875,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_adc_chn1_filter_ctl_2_wdata)
   );
-  assign unused_aon_adc_chn1_filter_ctl_2_wdata = ^aon_adc_chn1_filter_ctl_2_wdata;
+  assign unused_aon_adc_chn1_filter_ctl_2_wdata =
+      ^aon_adc_chn1_filter_ctl_2_wdata;
 
   logic [9:0]  aon_adc_chn1_filter_ctl_3_min_v_3_qs_int;
   logic  aon_adc_chn1_filter_ctl_3_cond_3_qs_int;
@@ -901,7 +917,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_adc_chn1_filter_ctl_3_wdata)
   );
-  assign unused_aon_adc_chn1_filter_ctl_3_wdata = ^aon_adc_chn1_filter_ctl_3_wdata;
+  assign unused_aon_adc_chn1_filter_ctl_3_wdata =
+      ^aon_adc_chn1_filter_ctl_3_wdata;
 
   logic [9:0]  aon_adc_chn1_filter_ctl_4_min_v_4_qs_int;
   logic  aon_adc_chn1_filter_ctl_4_cond_4_qs_int;
@@ -942,7 +959,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_adc_chn1_filter_ctl_4_wdata)
   );
-  assign unused_aon_adc_chn1_filter_ctl_4_wdata = ^aon_adc_chn1_filter_ctl_4_wdata;
+  assign unused_aon_adc_chn1_filter_ctl_4_wdata =
+      ^aon_adc_chn1_filter_ctl_4_wdata;
 
   logic [9:0]  aon_adc_chn1_filter_ctl_5_min_v_5_qs_int;
   logic  aon_adc_chn1_filter_ctl_5_cond_5_qs_int;
@@ -983,7 +1001,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_adc_chn1_filter_ctl_5_wdata)
   );
-  assign unused_aon_adc_chn1_filter_ctl_5_wdata = ^aon_adc_chn1_filter_ctl_5_wdata;
+  assign unused_aon_adc_chn1_filter_ctl_5_wdata =
+      ^aon_adc_chn1_filter_ctl_5_wdata;
 
   logic [9:0]  aon_adc_chn1_filter_ctl_6_min_v_6_qs_int;
   logic  aon_adc_chn1_filter_ctl_6_cond_6_qs_int;
@@ -1024,7 +1043,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_adc_chn1_filter_ctl_6_wdata)
   );
-  assign unused_aon_adc_chn1_filter_ctl_6_wdata = ^aon_adc_chn1_filter_ctl_6_wdata;
+  assign unused_aon_adc_chn1_filter_ctl_6_wdata =
+      ^aon_adc_chn1_filter_ctl_6_wdata;
 
   logic [9:0]  aon_adc_chn1_filter_ctl_7_min_v_7_qs_int;
   logic  aon_adc_chn1_filter_ctl_7_cond_7_qs_int;
@@ -1065,7 +1085,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_adc_chn1_filter_ctl_7_wdata)
   );
-  assign unused_aon_adc_chn1_filter_ctl_7_wdata = ^aon_adc_chn1_filter_ctl_7_wdata;
+  assign unused_aon_adc_chn1_filter_ctl_7_wdata =
+      ^aon_adc_chn1_filter_ctl_7_wdata;
 
   logic [1:0]  aon_adc_chn_val_0_adc_chn_value_ext_0_qs_int;
   logic [9:0]  aon_adc_chn_val_0_adc_chn_value_0_qs_int;
@@ -1174,7 +1195,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_adc_wakeup_ctl_wdata)
   );
-  assign unused_aon_adc_wakeup_ctl_wdata = ^aon_adc_wakeup_ctl_wdata;
+  assign unused_aon_adc_wakeup_ctl_wdata =
+      ^aon_adc_wakeup_ctl_wdata;
 
   logic [7:0]  aon_filter_status_qs_int;
   logic [7:0] aon_filter_status_d;
@@ -1209,7 +1231,8 @@ module adc_ctrl_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_filter_status_wdata)
   );
-  assign unused_aon_filter_status_wdata = ^aon_filter_status_wdata;
+  assign unused_aon_filter_status_wdata =
+      ^aon_filter_status_wdata;
 
   // Register instances
   // R[intr_state]: V(False)

@@ -418,7 +418,8 @@ ${field_sig_decl(f, sig_name, r.hwext, r.shadowed, r.async_clk)}\
     .dst_wd_o     (${dst_wd_expr})
   );
       % if r.needs_we():
-  assign unused_${base_name}_${r_name}_wdata = ^${base_name}_${r_name}_wdata;
+  assign unused_${base_name}_${r_name}_wdata =
+      ^${base_name}_${r_name}_wdata;
       % endif
     % endif
   % endfor
