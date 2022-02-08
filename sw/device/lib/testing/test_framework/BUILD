@@ -105,6 +105,7 @@ cc_library(
         "//sw/device/lib/crt",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
+        "//sw/device/silicon_creator/lib:manifest_size",
     ],
 )
 

@@ -24,19 +24,8 @@
 
 /**
  * Check if flash is blank to determine if bootstrap is needed.
- *
- * TODO: Update this to check bootstrap pin instead in Verilator.
  */
 static bool bootstrap_requested(void) {
-  // The following flash empty-sniff-check is done this way due to the lack of
-  // clear eflash reset in SIM environments.
-  if (kDeviceType == kDeviceSimVerilator) {
-    mmio_region_t flash_region = mmio_region_from_addr(FLASH_MEM_BASE_ADDR);
-    uint32_t value = mmio_region_read32(flash_region, 0x0);
-    return value == 0 || value == UINT32_MAX;
-  }
-
-  // Initialize GPIO device.
   dif_gpio_t gpio;
   CHECK_DIF_OK(
       dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));

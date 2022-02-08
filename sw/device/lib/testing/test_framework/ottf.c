@@ -83,6 +83,5 @@ int main(int argc, char **argv) {
   }
 
   // Unreachable code.
-  abort();
   return 1;
 }
