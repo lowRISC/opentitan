@@ -24,12 +24,12 @@ RSTMGR testbench has been constructed based on the [CIP testbench architecture](
 ![Block diagram](tb.svg)
 
 ### Top level testbench
-The top level testbench is located at `hw/ip/rstmgr/dv/tb.sv`.
-It instantiates the RSTMGR DUT module `hw/top_earlgrey/ip/rstmgr/rtl/autogen/rstmgr.sv`.
+The top level testbench is located at [`hw/ip/rstmgr/dv/tb.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/rstmgr/dv/tb.sv).
+It instantiates the RSTMGR DUT module [`hw/top_earlgrey/ip/rstmgr/rtl/autogen/rstmgr.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_earlgrey/ip/rstmgr/rtl/autogen/rstmgr.sv).
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
 * [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
-* RSTMGR interface `hw/ip/rstmgr/dv/env/rstmgr_if.sv`
+* RSTMGR interface [`hw/ip/rstmgr/dv/env/rstmgr_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/rstmgr/dv/env/rstmgr_if.sv)
 * Alerts ([`alert_esc_if`]({{< relref "hw/dv/sv/alert_esc_agent/README.md" >}}))
 * Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 
@@ -42,8 +42,9 @@ The following utilities provide generic helper tasks and functions to perform ac
 All common types and methods defined at the package level can be found in
 `rstmgr_env_pkg`. Some of them in use are:
 ```systemverilog
-virtual rstmgr_if rstmgr_vif;
-virtual pwrmgr_rstmgr_sva_if pwrmgr_rstmgr_sva_vif;
+  typedef logic [NumSwResets-1:0] sw_rst_t;
+  typedef logic [$bits(alert_pkg::alert_crashdump_t)-1:0] linearized_alert_dump_t;
+  typedef virtual pwrmgr_rstmgr_sva_if #(.CHECK_RSTREQS(0)) parameterized_pwrmgr_rstmgr_sva_vif;
 ```
 ### TL_agent
 The RSTMGR testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}}).
@@ -67,8 +68,11 @@ The regular `rst_ni` input is connected to its own `resets_o.rst_por_io_div4_n[0
 Similarly, all reset outputs from other `clk_rst_if` instances are ignored, and only their clock output is used.
 This is consistent with this IP being in charge of all derived resets in the chip.
 
+Besides the POR resets above, the test sequences mostly assert various reset requests from pwrmgr and trigger resets vir RESET_REQ CSR.
+Alert and CPU dump info is randomized and checked on resets.
+
 #### Test sequences
-The test sequences reside in `hw/ip/rstmgr/dv/env/seq_lib`.
+The test sequences reside in [`hw/ip/rstmgr/dv/env/seq_lib`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/rstmgr/dv/env/seq_lib).
 All test sequences are extended from `rstmgr_base_vseq`, which is extended from `cip_base_vseq` and serves as a starting point.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
@@ -95,32 +99,37 @@ The following covergroups have been developed to prove that the test intent has 
 * `cpu_info_cg`
 * `alert_info_capture_cg`
 * `cpu_info_capture_cg`
+* `sw_rst_cg`
 
 ### Self-checking strategy
-The partition between checks done in the scoreboard is not fixed.
-#### Scoreboard
-The `rstmgr_scoreboard` is primarily used for end to end checking.
-The following checks are performed:
-* The software controlled peripheral resets are asserted based on both `sw_rst_regwen` and `sw_rst_ctrl_n` CSRs when not set by `rst_lc_reg`, `rst_sys_req`, or por.
-* The `cpu_info` CSRs record the expected values based on the inputs on a system reset.
-* The `alert_info` CSRs record the expected values based on the inputs on a system reset.
-* The `reset_info` CSR records the expected reset cause.
+Most self checking is done using SVA, and via explicit CSR reads.
+The latter are described in the testplan.
 
 #### Assertions
 * TLUL assertions: The `tb/rstmgr_bind.sv` file binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 * Response to pwrmgr's `rst_lc_req` and `rst_sys_req` inputs: these trigger transitions in `rst_lc_src_n` and `rst_sys_rst_n` outputs.
-  Checked via SVAs in `hw/ip/pwrmgr/dv/sva/pwrmgr_rstmgr_sva_if.sv`.
+  Checked via SVAs in [`hw/ip/pwrmgr/dv/sva/pwrmgr_rstmgr_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/pwrmgr/dv/sva/pwrmgr_rstmgr_sva_if.sv).
 * Response to `cpu_i.ndmreset_req` input: after it is asserted, rstmgr's `rst_sys_src_n` should go active.
-  Checked via SVA in `hw/ip/pwrmgr/dv/sva/pwrmgr_rstmgr_sva_if.sv`.
+  Checked via SVA in [`hw/ip/pwrmgr/dv/sva/pwrmgr_rstmgr_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/pwrmgr/dv/sva/pwrmgr_rstmgr_sva_if.sv).
 * Resets cascade hierarchically per [Reset Topology]({{< relref "hw/ip/rstmgr/doc" >}}:#reset-topology).
-  Checked via SVA in `hw/ip/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv`.
+  Checked via SVA in [`hw/ip/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv).
 * POR must be active for at least 32 consecutive cycles before going inactive before output resets go inactive.
-  Checked via SVA in `hw/ip/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv`.
+  Checked via SVA in [`hw/ip/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv).
 * The scan reset `scan_rst_ni` qualified by `scanmode_i` triggers all cascaded resets that `por_n_i` does.
-  Checked via SVA in `hw/ip/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv`.
+  Checked via SVA in [`hw/ip/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv).
+* Software resets to peripherals also cascade hierarchically.
+  Checked via SVA in [`hw/ip/rstmgr/dv/sva/rstmgr_sw_rst_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/rstmgr/dv/sva/rstmgr_sw_rst_sva_if.sv).
+* The output `rst_en_o` for alert_handler tracks their corresponding resets.
+  Checked via SVA in both [`hw/ip/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv) and [`hw/ip/rstmgr/dv/sva/rstmgr_sw_rst_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/rstmgr/dv/sva/rstmgr_sw_rst_sva_if.sv).
 * The `alert` and `cpu_info_attr` indicate the number of 32-bit words needed to capture their inputs.
   Checked via SVA in `hw/ip/rstmgr/dv/sva/rstmgr_attrs_sva_if.sv`.
+
+## Testing V2S components
+The rstmgr_cnsty_chk module is a D2S component.
+It depends on very specific timing, and requires tampering stimulus to verify its functionality.
+It has its own separate dv environment and tests at `hw/ip/rstmgr/dv/rstmgr_cnsty_chk`.
+It is excluded from coverage for the rstmgr dv tests.
 
 ## Building and running tests
 We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
