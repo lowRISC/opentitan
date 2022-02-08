@@ -22,8 +22,8 @@ const size_t kEntropyDataNumWords = 12;
 // Issue #10092 has been opened to discuss this.
 
 const uint32_t kExpectedEntropyData[] = {
-    0xdaf90306, 0x466d674,  0x9691df54, 0xd2e3c93f, 0xdcbc993e, 0x64bfd173,
-    0xaba04e99, 0xf8ae1105, 0xd01dc17a, 0x608c5480, 0x373c5dcc, 0xc4e6cd55};
+    0x38a9e15d, 0xc615d072, 0x15f21dc9, 0x38f06e56, 0x790a2a87, 0x8bff3d11,
+    0xd56913da, 0x75dc72c3, 0xee2d38a2, 0xabfddaec, 0x3837e88b, 0x29cf1c12};
 
 bool test_main() {
   dif_entropy_src_t entropy_src;

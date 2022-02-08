@@ -109,17 +109,12 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
   uint32_t enable = test_param.expected_mode != kDifEntropySrcModeDisabled
                         ? kMultiBitBool4True
                         : kMultiBitBool4False;
-
-  uint32_t reset_ht = test_param.reset_health_test_registers
-                          ? kMultiBitBool4True
-                          : kMultiBitBool4False;
   EXPECT_WRITE32(
       ENTROPY_SRC_CONF_REG_OFFSET,
       {
           {ENTROPY_SRC_CONF_RNG_BIT_SEL_OFFSET, test_param.expected_rng_sel},
           {ENTROPY_SRC_CONF_RNG_BIT_ENABLE_OFFSET, rng_bit_enable},
-          {ENTROPY_SRC_CONF_HEALTH_TEST_CLR_OFFSET, reset_ht},
-          {ENTROPY_SRC_CONF_BOOT_BYPASS_DISABLE_OFFSET, kMultiBitBool4False},
+          {ENTROPY_SRC_CONF_THRESHOLD_SCOPE_OFFSET, kMultiBitBool4False},
           {ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_OFFSET, route_to_fw},
           {ENTROPY_SRC_CONF_FIPS_ENABLE_OFFSET, enable},
       });

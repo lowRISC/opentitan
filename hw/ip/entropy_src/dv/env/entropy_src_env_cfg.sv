@@ -41,11 +41,13 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // Knobs & Weights //
   /////////////////////
 
-  uint          enable_pct, route_software_pct, regwen_pct, fw_read_pct, fw_over_pct,
-                otp_en_es_fw_read_pct, otp_en_es_fw_over_pct, entropy_data_reg_enable_pct,
-                rng_bit_enable_pct, do_check_ht_diag_pct, type_bypass_pct, boot_bypass_disable_pct;
 
-
+  // Knobs & Weights
+  uint          module_enable_pct, fips_enable_pct, route_software_pct,
+                sw_regupd_pct, me_regwen_pct, fw_read_pct, fw_over_pct,
+                otp_en_es_fw_read_pct, otp_en_es_fw_over_pct,
+                type_bypass_pct, entropy_data_reg_enable_pct,
+                rng_bit_enable_pct, do_check_ht_diag_pct;
 
   // Health test knobs:
   real adaptp_sigma_max, adaptp_sigma_min;
@@ -56,12 +58,11 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // Randomized fields //
   ///////////////////////
 
-  rand bit         regwen;
+  rand bit         sw_regupd, me_regwen;
   rand bit [1:0]   rng_bit_sel;
 
-  rand prim_mubi_pkg::mubi4_t   enable, route_software, type_bypass,
-                                boot_bypass_disable, entropy_data_reg_enable,
-                                rng_bit_enable;
+  rand prim_mubi_pkg::mubi4_t   module_enable, fips_enable, route_software, type_bypass,
+                                entropy_data_reg_enable, rng_bit_enable;
 
 
   rand int                      observe_fifo_thresh;
@@ -95,9 +96,13 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // Constraints //
   /////////////////
 
-  constraint regwen_c {regwen dist {
-      1 :/ regwen_pct,
-      0 :/ (100 - regwen_pct) };}
+  constraint sw_regupd_c {sw_regupd dist {
+      1 :/ sw_regupd_pct,
+      0 :/ (100 - sw_regupd_pct) };}
+
+  constraint me_regwen_c {me_regwen dist {
+      1 :/ me_regwen_pct,
+      0 :/ (100 - me_regwen_pct) };}
 
   constraint otp_en_es_fw_read_c {otp_en_es_fw_read dist {
       prim_mubi_pkg::MuBi8True  :/ otp_en_es_fw_read_pct,
@@ -115,9 +120,13 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
       prim_mubi_pkg::MuBi4True  :/ fw_over_pct,
       prim_mubi_pkg::MuBi4False :/ (100 - fw_over_pct) };}
 
-  constraint enable_c {enable dist {
-      prim_mubi_pkg::MuBi4True  :/ enable_pct,
-      prim_mubi_pkg::MuBi4False :/ 100 - enable_pct };}
+  constraint module_enable_c {module_enable dist {
+      prim_mubi_pkg::MuBi4True  :/ module_enable_pct,
+      prim_mubi_pkg::MuBi4False :/ 100 - module_enable_pct };}
+
+  constraint fips_enable_c {fips_enable dist {
+      prim_mubi_pkg::MuBi4True  :/ fips_enable_pct,
+      prim_mubi_pkg::MuBi4False :/ 100 - fips_enable_pct };}
 
   constraint route_c {route_software dist {
       prim_mubi_pkg::MuBi4True  :/ route_software_pct,
@@ -126,10 +135,6 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   constraint bypass_c {type_bypass dist {
       prim_mubi_pkg::MuBi4True  :/ type_bypass_pct,
       prim_mubi_pkg::MuBi4False :/ (100 - type_bypass_pct) };}
-
-  constraint boot_bypass_disable_c {boot_bypass_disable dist {
-      prim_mubi_pkg::MuBi4True  :/ boot_bypass_disable_pct,
-      prim_mubi_pkg::MuBi4False :/ (100 - boot_bypass_disable_pct)};}
 
   constraint entropy_data_reg_enable_c {entropy_data_reg_enable dist {
       prim_mubi_pkg::MuBi4True  :/ entropy_data_reg_enable_pct,
@@ -179,16 +184,16 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
              otp_en_es_fw_read.name()),
         $sformatf("\n\t |***** otp_en_es_fw_over           : %12s *****| \t",
                   otp_en_es_fw_over.name()),
-        $sformatf("\n\t |***** enable                      : %12s *****| \t",
-                 enable.name()),
+        $sformatf("\n\t |***** module_enable               : %12s *****| \t",
+                 module_enable.name()),
+        $sformatf("\n\t |***** fips_enable                 : %12s *****| \t",
+                 fips_enable.name()),
         $sformatf("\n\t |***** route_software              : %12s *****| \t",
                   route_software.name()),
         $sformatf("\n\t |***** type_bypass                 : %12s *****| \t",
                    type_bypass.name()),
         $sformatf("\n\t |***** entropy_data_reg_enable     : %12s *****| \t",
                   entropy_data_reg_enable.name()),
-        $sformatf("\n\t |***** boot_bypass_disable         : %12s *****| \t",
-                  boot_bypass_disable.name()),
         $sformatf("\n\t |***** rng_bit_enable              : %12s *****| \t",
                   rng_bit_enable.name()),
         $sformatf("\n\t |***** rng_bit_sel                 : %12d *****| \t",
@@ -229,16 +234,16 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
                   fw_read_pct),
         $sformatf("\n\t |***** fw_over_pct                 : %12d *****| \t",
                   fw_over_pct),
-        $sformatf("\n\t |***** enable_pct                  : %12d *****| \t",
-                  enable_pct),
+        $sformatf("\n\t |***** module_enable_pct           : %12d *****| \t",
+                  module_enable_pct),
+        $sformatf("\n\t |***** fips_enable_pct             : %12d *****| \t",
+                  fips_enable_pct),
         $sformatf("\n\t |***** route_software_pct          : %12d *****| \t",
                   route_software_pct),
         $sformatf("\n\t |***** type_bypass_pct             : %12d *****| \t",
                   type_bypass_pct),
         $sformatf("\n\t |***** entropy_data_reg_enable_pct : %12d *****| \t",
                   entropy_data_reg_enable_pct),
-        $sformatf("\n\t |***** boot_bypass_disable_pct     : %12d *****| \t",
-                  boot_bypass_disable_pct),
         $sformatf("\n\t |***** rng_bit_enable_pct          : %12d *****| \t",
                   rng_bit_enable_pct),
         $sformatf("\n\t |***** adaptp_sigma range          : (%04.2f, %04.2f) *****| \t",

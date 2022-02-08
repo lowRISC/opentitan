@@ -106,6 +106,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.entropy_control));
 
     // Thresholds managed in derived vseq classes
+    // TODO: Study how this interacts with sw_regupd/regwen
 
     // FW_OV registers
     ral.fw_ov_control.fw_ov_mode.set(cfg.fw_read_enable);
@@ -116,27 +117,29 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_update(ral.observe_fifo_thresh);
 
     // Enables (should be done last)
-    ral.conf.fips_enable.set(cfg.enable);
-
+    ral.conf.fips_enable.set(cfg.fips_enable);
     ral.conf.entropy_data_reg_enable.set(cfg.entropy_data_reg_enable);
-    ral.conf.boot_bypass_disable.set(cfg.boot_bypass_disable);
     ral.conf.rng_bit_enable.set(cfg.rng_bit_enable);
     ral.conf.rng_bit_sel.set(cfg.rng_bit_sel);
     csr_update(.csr(ral.conf));
 
+    // Register write enable lock is on be default
+    // Setting this to zero will lock future writes
+    // TODO Do we need to check main_sm_idle before writing DUT registers?
+    csr_wr(.ptr(ral.sw_regupd), .value(cfg.sw_regupd));
 
-    ral.module_enable.set(cfg.enable); // TODO: Change config here?
+    // Module_enables (should be done last)
+    ral.module_enable.set(cfg.module_enable); // TODO: Change config here?
     csr_update(.csr(ral.module_enable));
+
+    ral.me_regwen.set(cfg.me_regwen);
+    csr_update(.csr(ral.me_regwen));
 
     if (do_interrupt) begin
       ral.intr_enable.set(en_intr);
       csr_update(ral.intr_enable);
     end
 
-    // Register write enable lock is on be default
-    // Setting this to zero will lock future writes
-    // TODO Do we need to check main_sm_idle before writing DUT registers?
-    csr_wr(.ptr(ral.regwen), .value(cfg.regwen));
 
   endtask
 

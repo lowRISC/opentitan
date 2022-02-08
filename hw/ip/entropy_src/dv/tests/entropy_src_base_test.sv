@@ -31,8 +31,8 @@ class entropy_src_base_test extends cip_base_test #(
     cfg.seed_cnt               = 1;
     cfg.otp_en_es_fw_read_pct  = 100;
     cfg.otp_en_es_fw_over_pct  = 100;
-    cfg.regwen_pct             = 100;
-    cfg.enable_pct             = 100;
+    cfg.me_regwen_pct          = 100;
+    cfg.module_enable_pct      = 100;
     cfg.type_bypass_pct        = 100;
   endfunction
 

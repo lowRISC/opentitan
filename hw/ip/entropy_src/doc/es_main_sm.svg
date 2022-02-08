@@ -26,12 +26,12 @@
 		.st11 {fill:#000000;font-family:Arial;font-size:0.833336em}
 		.st12 {fill:#000000;font-family:Arial;font-size:1.5em}
 		.st13 {fill:#000000;font-family:Calibri;font-size:0.916672em}
-		.st14 {marker-end:url(#mrkr5-75);stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:1}
+		.st14 {marker-end:url(#mrkr5-71);stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:1}
 		.st15 {fill:#ffffff;stroke:#3c63ac;stroke-width:0.75}
 		.st16 {fill:none;stroke:#3c63ac;stroke-width:0.75}
 		.st17 {fill:#f4b183;stroke:#000000;stroke-width:1}
 		.st18 {marker-end:url(#mrkr5-27);stroke:#000000;stroke-width:1}
-		.st19 {marker-end:url(#mrkr5-335);stroke:#000000;stroke-width:0.75}
+		.st19 {marker-end:url(#mrkr5-321);stroke:#000000;stroke-width:0.75}
 		.st20 {fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1;stroke-width:0.22935779816514}
 		.st21 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
 	]]>
@@ -49,11 +49,11 @@
 				markerUnits="strokeWidth" overflow="visible">
 			<use xlink:href="#lend5" transform="scale(-3.52,-3.52) "/>
 		</marker>
-		<marker id="mrkr5-75" class="st8" v:arrowType="5" v:arrowSize="2" v:setback="6.16" refX="-6.16" orient="auto"
+		<marker id="mrkr5-71" class="st8" v:arrowType="5" v:arrowSize="2" v:setback="6.16" refX="-6.16" orient="auto"
 				markerUnits="strokeWidth" overflow="visible">
 			<use xlink:href="#lend5" transform="scale(-3.52,-3.52) "/>
 		</marker>
-		<marker id="mrkr5-335" class="st20" v:arrowType="5" v:arrowSize="2" v:setback="7.15" refX="-7.15" orient="auto"
+		<marker id="mrkr5-321" class="st20" v:arrowType="5" v:arrowSize="2" v:setback="7.15" refX="-7.15" orient="auto"
 				markerUnits="strokeWidth" overflow="visible">
 			<use xlink:href="#lend5" transform="scale(-4.36,-4.36) "/>
 		</marker>
@@ -117,14 +117,14 @@
 			<title>Sheet.1297</title>
 			<path d="M0 581.18 A119.88 94.8803 -141.64 0 0 148.87 585.85 L149.1 585.58" class="st9"/>
 		</g>
-		<g id="shape1314-28" v:mID="1314" v:groupContext="shape" transform="translate(270,-463.646)">
+		<g id="shape1314-28" v:mID="1314" v:groupContext="shape" transform="translate(265.5,-453.484)">
 			<title>Sheet.1314</title>
-			<desc>Boot enabled</desc>
+			<desc>FIPS_ENABLE Off</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
-			<v:textRect cx="27" cy="596.323" width="54" height="31.3545"/>
-			<rect x="0" y="580.646" width="54" height="31.3545" class="st10"/>
-			<text x="16.71" y="593.32" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Boot <tspan x="9.2"
-						dy="1.2em" class="st4">enabled</tspan></text>		</g>
+			<v:textRect cx="40.5" cy="588.484" width="81" height="47.0317"/>
+			<rect x="0" y="564.968" width="81" height="47.0317" class="st10"/>
+			<text x="6.87" y="585.48" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>FIPS_ENABLE <tspan
+						x="33.83" dy="1.2em" class="st4">Off</tspan></text>		</g>
 		<g id="shape1326-32" v:mID="1326" v:groupContext="shape" transform="translate(162,-523.573)">
 			<title>Sheet.1326</title>
 			<desc>Entropy_Src Main State Machine</desc>
@@ -141,19 +141,11 @@
 			<rect x="0" y="580.646" width="112.5" height="31.3545" class="st10"/>
 			<text x="4.28" y="587.32" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Note: If entropy_src not <tspan
 						x="15.94" dy="1.2em" class="st4">enabled, all states </tspan><tspan x="28.46" dy="1.2em" class="st4">return to idle</tspan></text>		</g>
-		<g id="shape1328-41" v:mID="1328" v:groupContext="shape" transform="translate(410.286,-439.574)">
-			<title>Sheet.1328</title>
-			<desc>Boot not enabled</desc>
-			<v:textBlock v:margins="rect(4,4,4,4)"/>
-			<v:textRect cx="27" cy="596.323" width="54" height="31.3545"/>
-			<rect x="0" y="580.646" width="54" height="31.3545" class="st10"/>
-			<text x="8.37" y="593.32" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Boot not <tspan
-						x="9.2" dy="1.2em" class="st4">enabled</tspan></text>		</g>
-		<g id="shape1331-45" v:mID="1331" v:groupContext="shape" transform="translate(-140.336,266.828) rotate(-71.4985)">
+		<g id="shape1331-41" v:mID="1331" v:groupContext="shape" transform="translate(-140.336,266.828) rotate(-71.4985)">
 			<title>Sheet.1331</title>
 			<path d="M3.99 588.75 L4.24 589.02 A146.215 83.5612 -20.72 0 0 184.35 584.55" class="st7"/>
 		</g>
-		<g id="shape1338-50" v:mID="1338" v:groupContext="shape" transform="translate(549.938,-469.831)">
+		<g id="shape1338-46" v:mID="1338" v:groupContext="shape" transform="translate(549.938,-469.831)">
 			<title>Circle.1338</title>
 			<desc>Startup Start</desc>
 			<v:userDefs>
@@ -164,7 +156,7 @@
 			<path d="M0 586.52 A25.4808 25.4808 0 0 1 50.96 586.52 A25.4808 25.4808 0 1 1 0 586.52 Z" class="st5"/>
 			<text x="8.94" y="583.22" class="st13" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Startup<v:newlineChar/><tspan
 						x="14.72" dy="1.2em" class="st4">Start</tspan></text>		</g>
-		<g id="shape1339-54" v:mID="1339" v:groupContext="shape" transform="translate(549.938,-391.869)">
+		<g id="shape1339-50" v:mID="1339" v:groupContext="shape" transform="translate(549.938,-391.869)">
 			<title>Circle.1339</title>
 			<desc>Startup Phase1</desc>
 			<v:userDefs>
@@ -175,7 +167,7 @@
 			<path d="M0 586.52 A25.4808 25.4808 0 0 1 50.96 586.52 A25.4808 25.4808 0 1 1 0 586.52 Z" class="st5"/>
 			<text x="8.94" y="583.22" class="st13" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Startup<v:newlineChar/><tspan
 						x="9.44" dy="1.2em" class="st4">Phase1</tspan></text>		</g>
-		<g id="shape1340-58" v:mID="1340" v:groupContext="shape" transform="translate(655.332,-391.869)">
+		<g id="shape1340-54" v:mID="1340" v:groupContext="shape" transform="translate(655.332,-391.869)">
 			<title>Circle.1340</title>
 			<desc>Startup Fail1</desc>
 			<v:userDefs>
@@ -186,7 +178,7 @@
 			<path d="M0 586.52 A25.4808 25.4808 0 0 1 50.96 586.52 A25.4808 25.4808 0 1 1 0 586.52 Z" class="st5"/>
 			<text x="8.94" y="583.22" class="st13" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Startup<v:newlineChar/><tspan
 						x="15.01" dy="1.2em" class="st4">Fail1</tspan></text>		</g>
-		<g id="shape1341-62" v:mID="1341" v:groupContext="shape" transform="translate(549.938,-313.908)">
+		<g id="shape1341-58" v:mID="1341" v:groupContext="shape" transform="translate(549.938,-313.908)">
 			<title>Circle.1341</title>
 			<desc>Startup Pass1</desc>
 			<v:userDefs>
@@ -197,7 +189,7 @@
 			<path d="M0 586.52 A25.4808 25.4808 0 0 1 50.96 586.52 A25.4808 25.4808 0 1 1 0 586.52 Z" class="st5"/>
 			<text x="8.94" y="583.22" class="st13" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Startup<v:newlineChar/><tspan
 						x="12.92" dy="1.2em" class="st4">Pass1</tspan></text>		</g>
-		<g id="shape1342-66" v:mID="1342" v:groupContext="shape" transform="translate(549.938,-235.946)">
+		<g id="shape1342-62" v:mID="1342" v:groupContext="shape" transform="translate(549.938,-235.946)">
 			<title>Circle.1342</title>
 			<desc>Sha3 Process</desc>
 			<v:userDefs>
@@ -208,23 +200,23 @@
 			<path d="M0 586.52 A25.4808 25.4808 0 0 1 50.96 586.52 A25.4808 25.4808 0 1 1 0 586.52 Z" class="st5"/>
 			<text x="14.64" y="583.22" class="st13" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Sha3<v:newlineChar/><tspan
 						x="8.46" dy="1.2em" class="st4">Process</tspan></text>		</g>
-		<g id="shape1354-70" v:mID="1354" v:groupContext="shape" transform="translate(1187.42,142.169) rotate(90)">
+		<g id="shape1354-66" v:mID="1354" v:groupContext="shape" transform="translate(1187.42,142.169) rotate(90)">
 			<title>Sheet.1354</title>
 			<path d="M0 612 L20.84 612" class="st14"/>
 		</g>
-		<g id="shape1355-76" v:mID="1355" v:groupContext="shape" transform="translate(1187.42,220.131) rotate(90)">
+		<g id="shape1355-72" v:mID="1355" v:groupContext="shape" transform="translate(1187.42,220.131) rotate(90)">
 			<title>Sheet.1355</title>
 			<path d="M0 612 L20.84 612" class="st14"/>
 		</g>
-		<g id="shape1358-81" v:mID="1358" v:groupContext="shape" transform="translate(1088.55,652.296) rotate(135.918)">
+		<g id="shape1358-77" v:mID="1358" v:groupContext="shape" transform="translate(1088.55,652.296) rotate(135.918)">
 			<title>Sheet.1358</title>
 			<path d="M0 612 A61.8934 59.9416 44.08 0 1 81.53 607.93 L81.81 608.17" class="st9"/>
 		</g>
-		<g id="shape1359-86" v:mID="1359" v:groupContext="shape" transform="translate(223.4,-167.969) rotate(-38.8995)">
+		<g id="shape1359-82" v:mID="1359" v:groupContext="shape" transform="translate(223.4,-167.969) rotate(-38.8995)">
 			<title>Sheet.1359</title>
 			<path d="M-0 589.27 A87.3742 70.5008 -141.1 0 0 108.15 593.85 L108.39 593.58" class="st9"/>
 		</g>
-		<g id="shape1361-91" v:mID="1361" v:groupContext="shape" transform="translate(655.332,-235.946)">
+		<g id="shape1361-87" v:mID="1361" v:groupContext="shape" transform="translate(655.332,-235.946)">
 			<title>Circle.1361</title>
 			<desc>Cont. Start</desc>
 			<v:userDefs>
@@ -235,13 +227,13 @@
 			<path d="M0 586.52 A25.4808 25.4808 0 0 1 50.96 586.52 A25.4808 25.4808 0 1 1 0 586.52 Z" class="st6"/>
 			<text x="13.53" y="583.22" class="st13" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Cont.<v:newlineChar/><tspan
 						x="14.72" dy="1.2em" class="st4">Start</tspan></text>		</g>
-		<g id="shape1362-95" v:mID="1362" v:groupContext="shape" transform="translate(600.899,-261.427)">
+		<g id="shape1362-91" v:mID="1362" v:groupContext="shape" transform="translate(600.899,-261.427)">
 			<title>Sheet.1362</title>
 			<path d="M0 612 L48.27 612" class="st14"/>
 		</g>
-		<g id="group1369-100" transform="translate(474.077,-28.5392)" v:mID="1369" v:groupContext="group">
+		<g id="group1369-96" transform="translate(474.077,-28.5392)" v:mID="1369" v:groupContext="group">
 			<title>Sheet.1369</title>
-			<g id="shape1343-101" v:mID="1343" v:groupContext="shape" transform="translate(45,-71.8487)">
+			<g id="shape1343-97" v:mID="1343" v:groupContext="shape" transform="translate(45,-71.8487)">
 				<title>Circle.1343</title>
 				<desc>Cont. Start</desc>
 				<v:userDefs>
@@ -252,7 +244,7 @@
 				<path d="M0 586.52 A25.4808 25.4808 0 0 1 50.96 586.52 A25.4808 25.4808 0 1 1 0 586.52 Z" class="st6"/>
 				<text x="13.53" y="583.22" class="st13" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Cont.<v:newlineChar/><tspan
 							x="14.72" dy="1.2em" class="st4">Start</tspan></text>			</g>
-			<g id="shape1344-105" v:mID="1344" v:groupContext="shape">
+			<g id="shape1344-101" v:mID="1344" v:groupContext="shape">
 				<title>Circle.1344</title>
 				<desc>Cont. Run</desc>
 				<v:userDefs>
@@ -263,7 +255,7 @@
 				<path d="M0 586.52 A25.4808 25.4808 0 0 1 50.96 586.52 A25.4808 25.4808 0 1 1 0 586.52 Z" class="st6"/>
 				<text x="13.53" y="583.22" class="st13" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Cont.<v:newlineChar/><tspan
 							x="16.72" dy="1.2em" class="st4">Run</tspan></text>			</g>
-			<g id="shape1345-109" v:mID="1345" v:groupContext="shape" transform="translate(77.9616,0)">
+			<g id="shape1345-105" v:mID="1345" v:groupContext="shape" transform="translate(77.9616,0)">
 				<title>Circle.1345</title>
 				<desc>Sha3 Process</desc>
 				<v:userDefs>
@@ -274,20 +266,20 @@
 				<path d="M0 586.52 A25.4808 25.4808 0 0 1 50.96 586.52 A25.4808 25.4808 0 1 1 0 586.52 Z" class="st6"/>
 				<text x="14.64" y="583.22" class="st13" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Sha3<v:newlineChar/><tspan
 							x="8.46" dy="1.2em" class="st4">Process</tspan></text>			</g>
-			<g id="shape1350-113" v:mID="1350" v:groupContext="shape" transform="translate(561.313,860.604) rotate(122.798)">
+			<g id="shape1350-109" v:mID="1350" v:groupContext="shape" transform="translate(561.313,860.604) rotate(122.798)">
 				<title>Sheet.1350</title>
 				<path d="M0 605.36 A29.6043 19.0775 -32.8 0 0 29.83 608.34 L30.14 608.16" class="st9"/>
 			</g>
-			<g id="shape1352-118" v:mID="1352" v:groupContext="shape" transform="translate(43.5008,-7.46078)">
+			<g id="shape1352-114" v:mID="1352" v:groupContext="shape" transform="translate(43.5008,-7.46078)">
 				<title>Sheet.1352</title>
 				<path d="M0 612 L35.76 612" class="st14"/>
 			</g>
-			<g id="shape1353-123" v:mID="1353" v:groupContext="shape" transform="translate(-433.114,843.846) rotate(-117.793)">
+			<g id="shape1353-119" v:mID="1353" v:groupContext="shape" transform="translate(-433.114,843.846) rotate(-117.793)">
 				<title>Sheet.1353</title>
 				<path d="M0 606.52 A28.3479 14.9416 -152.21 0 0 27.42 610.6 L27.69 610.36" class="st9"/>
 			</g>
 		</g>
-		<g id="shape1371-128" v:mID="1371" v:groupContext="shape" transform="translate(58.2205,-420.694)">
+		<g id="shape1371-124" v:mID="1371" v:groupContext="shape" transform="translate(58.2205,-420.694)">
 			<title>Circle.1343</title>
 			<desc>Boot Start</desc>
 			<v:userDefs>
@@ -298,7 +290,7 @@
 			<path d="M0 586.52 A25.4808 25.4808 0 0 1 50.96 586.52 A25.4808 25.4808 0 1 1 0 586.52 Z" class="st3"/>
 			<text x="14.85" y="583.22" class="st13" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Boot<v:newlineChar/><tspan
 						x="14.72" dy="1.2em" class="st4">Start</tspan></text>		</g>
-		<g id="shape1372-132" v:mID="1372" v:groupContext="shape" transform="translate(13.2205,-348.846)">
+		<g id="shape1372-128" v:mID="1372" v:groupContext="shape" transform="translate(13.2205,-348.846)">
 			<title>Circle.1344</title>
 			<desc>Boot Run</desc>
 			<v:userDefs>
@@ -309,83 +301,83 @@
 			<path d="M0 586.52 A25.4808 25.4808 0 0 1 50.96 586.52 A25.4808 25.4808 0 1 1 0 586.52 Z" class="st3"/>
 			<text x="14.85" y="583.22" class="st13" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Boot<v:newlineChar/><tspan
 						x="16.72" dy="1.2em" class="st4">Run</tspan></text>		</g>
-		<g id="shape1374-136" v:mID="1374" v:groupContext="shape" transform="translate(574.533,511.759) rotate(122.798)">
+		<g id="shape1374-132" v:mID="1374" v:groupContext="shape" transform="translate(574.533,511.759) rotate(122.798)">
 			<title>Sheet.1374</title>
 			<path d="M0 605.36 A29.6043 19.0775 -32.8 0 0 29.83 608.34 L30.14 608.16" class="st9"/>
 		</g>
-		<g id="shape1375-141" v:mID="1375" v:groupContext="shape" transform="translate(64.1821,-295.481)">
+		<g id="shape1375-137" v:mID="1375" v:groupContext="shape" transform="translate(64.1821,-295.481)">
 			<title>Sheet.1375</title>
 			<path d="M0 612 L17.92 612" class="st14"/>
 		</g>
-		<g id="shape1376-146" v:mID="1376" v:groupContext="shape" transform="translate(-439.518,-118.156) rotate(-55.5629)">
+		<g id="shape1376-142" v:mID="1376" v:groupContext="shape" transform="translate(-439.518,-118.156) rotate(-55.5629)">
 			<title>Sheet.1376</title>
 			<path d="M-0 606.52 A34.6254 15.5193 -160.33 0 0 35.74 610.24 L36.03 610.02" class="st9"/>
 		</g>
-		<g id="shape1377-151" v:mID="1377" v:groupContext="shape" transform="translate(67.5859,-382.291)">
+		<g id="shape1377-147" v:mID="1377" v:groupContext="shape" transform="translate(67.5859,-382.291)">
 			<title>Sheet.1377</title>
 			<desc>Fail</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
 			<v:textRect cx="16.1154" cy="602.286" width="32.24" height="19.4272"/>
 			<rect x="0" y="592.573" width="32.2308" height="19.4272" class="st10"/>
 			<text x="8.06" y="605.29" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Fail</text>		</g>
-		<g id="shape1378-154" v:mID="1378" v:groupContext="shape" transform="translate(88.2589,-270)">
+		<g id="shape1378-150" v:mID="1378" v:groupContext="shape" transform="translate(88.2589,-270)">
 			<title>Circle.1378</title>
-			<desc>Startup Start</desc>
+			<desc>Boot Done</desc>
 			<v:userDefs>
 				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
 			</v:userDefs>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
 			<v:textRect cx="25.4808" cy="586.519" width="44.6" height="38.2212"/>
-			<path d="M0 586.52 A25.4808 25.4808 0 0 1 50.96 586.52 A25.4808 25.4808 0 1 1 0 586.52 Z" class="st5"/>
-			<text x="8.94" y="583.22" class="st13" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Startup<v:newlineChar/><tspan
-						x="14.72" dy="1.2em" class="st4">Start</tspan></text>		</g>
-		<g id="shape1381-158" v:mID="1381" v:groupContext="shape" transform="translate(650.701,263.154) rotate(90)">
+			<path d="M0 586.52 A25.4808 25.4808 0 0 1 50.96 586.52 A25.4808 25.4808 0 1 1 0 586.52 Z" class="st3"/>
+			<text x="14.85" y="583.22" class="st13" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Boot<v:newlineChar/><tspan
+						x="13.57" dy="1.2em" class="st4">Done</tspan></text>		</g>
+		<g id="shape1381-154" v:mID="1381" v:groupContext="shape" transform="translate(650.701,263.154) rotate(90)">
 			<title>Sheet.1381</title>
 			<path d="M0 612 L21.72 612" class="st14"/>
 		</g>
-		<g id="shape1382-163" v:mID="1382" v:groupContext="shape" transform="translate(39.7692,-324)">
+		<g id="shape1382-159" v:mID="1382" v:groupContext="shape" transform="translate(39.7692,-324)">
 			<title>Sheet.1382</title>
 			<desc>Pass</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
 			<v:textRect cx="16.1154" cy="602.286" width="32.24" height="19.4272"/>
 			<rect x="0" y="592.573" width="32.2308" height="19.4272" class="st10"/>
 			<text x="5" y="605.29" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Pass</text>		</g>
-		<g id="shape1383-166" v:mID="1383" v:groupContext="shape" transform="translate(607.5,-417.442)">
+		<g id="shape1383-162" v:mID="1383" v:groupContext="shape" transform="translate(607.5,-417.442)">
 			<title>Sheet.1383</title>
 			<desc>Fail</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
 			<v:textRect cx="16.1154" cy="602.286" width="32.24" height="19.4272"/>
 			<rect x="0" y="592.573" width="32.2308" height="19.4272" class="st10"/>
 			<text x="8.06" y="605.29" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Fail</text>		</g>
-		<g id="shape1385-169" v:mID="1385" v:groupContext="shape" transform="translate(656.25,-331.531)">
+		<g id="shape1385-165" v:mID="1385" v:groupContext="shape" transform="translate(656.25,-331.531)">
 			<title>Sheet.1385</title>
 			<desc>Fail</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
 			<v:textRect cx="16.1154" cy="602.286" width="32.24" height="19.4272"/>
 			<rect x="0" y="592.573" width="32.2308" height="19.4272" class="st10"/>
 			<text x="8.06" y="605.29" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Fail</text>		</g>
-		<g id="shape1386-172" v:mID="1386" v:groupContext="shape" transform="translate(618.385,-360.369)">
+		<g id="shape1386-168" v:mID="1386" v:groupContext="shape" transform="translate(618.385,-360.369)">
 			<title>Sheet.1386</title>
 			<desc>Pass</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
 			<v:textRect cx="16.1154" cy="602.286" width="32.24" height="19.4272"/>
 			<rect x="0" y="592.573" width="32.2308" height="19.4272" class="st10"/>
 			<text x="5" y="605.29" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Pass</text>		</g>
-		<g id="shape1387-175" v:mID="1387" v:groupContext="shape" transform="translate(541.885,-372.442)">
+		<g id="shape1387-171" v:mID="1387" v:groupContext="shape" transform="translate(541.885,-372.442)">
 			<title>Sheet.1387</title>
 			<desc>Pass</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
 			<v:textRect cx="16.1154" cy="602.286" width="32.24" height="19.4272"/>
 			<rect x="0" y="592.573" width="32.2308" height="19.4272" class="st10"/>
 			<text x="5" y="605.29" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Pass</text>		</g>
-		<g id="shape1388-178" v:mID="1388" v:groupContext="shape" transform="translate(540,-295.942)">
+		<g id="shape1388-174" v:mID="1388" v:groupContext="shape" transform="translate(540,-295.942)">
 			<title>Sheet.1388</title>
 			<desc>Pass</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
 			<v:textRect cx="16.1154" cy="602.286" width="32.24" height="19.4272"/>
 			<rect x="0" y="592.573" width="32.2308" height="19.4272" class="st10"/>
 			<text x="5" y="605.29" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Pass</text>		</g>
-		<g id="shape1389-181" v:mID="1389" v:groupContext="shape" transform="translate(655.332,-462.258)">
+		<g id="shape1389-177" v:mID="1389" v:groupContext="shape" transform="translate(655.332,-462.258)">
 			<title>Sheet.1389</title>
 			<desc>If 2 fails,then Alert</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
@@ -393,15 +385,15 @@
 			<rect x="0" y="579.13" width="87" height="32.8696" class="st10"/>
 			<text x="15.15" y="592.57" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>If 2 fails,then <tspan
 						x="33.22" dy="1.2em" class="st4">Alert</tspan></text>		</g>
-		<g id="shape1390-185" v:mID="1390" v:groupContext="shape" transform="translate(405.686,-377.502) rotate(-26.715)">
+		<g id="shape1390-181" v:mID="1390" v:groupContext="shape" transform="translate(405.686,-377.502) rotate(-26.715)">
 			<title>Sheet.1390</title>
 			<path d="M-0 612 A41.8029 21.0384 26.72 0 1 41.2 609.44 L41.52 609.59" class="st9"/>
 		</g>
-		<g id="shape1391-190" v:mID="1391" v:groupContext="shape" transform="translate(-55.2291,865.192) rotate(-120.131)">
+		<g id="shape1391-186" v:mID="1391" v:groupContext="shape" transform="translate(-55.2291,865.192) rotate(-120.131)">
 			<title>Sheet.1391</title>
 			<path d="M-0 612 A46.5192 27 30.13 0 1 48.34 609.12 L48.66 609.28" class="st9"/>
 		</g>
-		<g id="shape1393-195" v:mID="1393" v:groupContext="shape" transform="translate(404.441,-93.0384)">
+		<g id="shape1393-191" v:mID="1393" v:groupContext="shape" transform="translate(404.441,-93.0384)">
 			<title>Sheet.1393</title>
 			<desc>If consecutive fail cnt &#62; thresh, then Alert</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
@@ -409,7 +401,7 @@
 			<rect x="0" y="561.038" width="99.5591" height="50.9616" class="st10"/>
 			<text x="11.43" y="577.52" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>If consecutive fail <tspan
 						x="11" dy="1.2em" class="st4">cnt &#62; thresh, then </tspan><tspan x="39.5" dy="1.2em" class="st4">Alert</tspan></text>		</g>
-		<g id="shape1396-200" v:mID="1396" v:groupContext="shape" transform="translate(18,-486)">
+		<g id="shape1396-196" v:mID="1396" v:groupContext="shape" transform="translate(18,-486)">
 			<title>Sheet.1396</title>
 			<desc>Boot Entropy Sub-State Machine (non-FIPS entropy)</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
@@ -417,7 +409,7 @@
 			<rect x="0" y="561.038" width="99.5591" height="50.9616" class="st15"/>
 			<text x="20.87" y="577.52" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Boot Entropy<v:newlineChar/><tspan
 						x="5.87" dy="1.2em" class="st4"> </tspan>Sub-State Machine <tspan x="7.26" dy="1.2em" class="st4">(non</tspan>-FIPS entropy)</text>		</g>
-		<g id="shape1398-205" v:mID="1398" v:groupContext="shape" transform="translate(572.336,-541.184)">
+		<g id="shape1398-201" v:mID="1398" v:groupContext="shape" transform="translate(572.336,-541.184)">
 			<title>Sheet.1398</title>
 			<desc>Startup Health Test Sub-State Machine</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
@@ -425,11 +417,7 @@
 			<rect x="0" y="579.13" width="99.5591" height="32.8696" class="st16"/>
 			<text x="6.7" y="592.57" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Startup Health Test <tspan
 						x="7.25" dy="1.2em" class="st4">Sub</tspan>-State Machine</text>		</g>
-		<g id="shape1400-209" v:mID="1400" v:groupContext="shape" transform="translate(408.087,843.467) rotate(-178.035)">
-			<title>Sheet.1400</title>
-			<path d="M5.68 611 L6.03 611.07 A153 5.25 -1.97 0 0 153.09 609.83" class="st7"/>
-		</g>
-		<g id="shape1402-214" v:mID="1402" v:groupContext="shape" transform="translate(474.077,-165.104)">
+		<g id="shape1402-205" v:mID="1402" v:groupContext="shape" transform="translate(474.077,-165.104)">
 			<title>Sheet.1402</title>
 			<desc>Continuous Health Test Sub-State Machine</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
@@ -437,11 +425,11 @@
 			<rect x="0" y="579.13" width="128.923" height="32.8696" class="st16"/>
 			<text x="12.21" y="592.57" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Continuous Health Test <tspan
 						x="21.94" dy="1.2em" class="st4">Sub</tspan>-State Machine</text>		</g>
-		<g id="shape1403-218" v:mID="1403" v:groupContext="shape" transform="translate(1187.42,298.092) rotate(90)">
+		<g id="shape1403-209" v:mID="1403" v:groupContext="shape" transform="translate(1187.42,298.092) rotate(90)">
 			<title>Sheet.1403</title>
 			<path d="M0 612 L20.84 612" class="st14"/>
 		</g>
-		<g id="shape1411-223" v:mID="1411" v:groupContext="shape" transform="translate(39.6614,-175.801)">
+		<g id="shape1411-214" v:mID="1411" v:groupContext="shape" transform="translate(39.6614,-175.801)">
 			<title>Sheet.1411</title>
 			<desc>If sw directed, then leave Alert state</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
@@ -449,11 +437,11 @@
 			<rect x="0" y="579.13" width="99.5591" height="32.8696" class="st10"/>
 			<text x="7.81" y="592.57" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>If sw directed, then <tspan
 						x="13.93" dy="1.2em" class="st4">leave Alert state</tspan></text>		</g>
-		<g id="shape1412-227" v:mID="1412" v:groupContext="shape" transform="translate(-178.092,137.547) rotate(-63.6879)">
+		<g id="shape1412-218" v:mID="1412" v:groupContext="shape" transform="translate(-178.092,137.547) rotate(-63.6879)">
 			<title>Sheet.1412</title>
 			<path d="M-0 612 A120.502 86.245 158.81 0 1 156.26 607.74 L156.52 607.99" class="st9"/>
 		</g>
-		<g id="shape1413-232" v:mID="1413" v:groupContext="shape" transform="translate(327,-265.5)">
+		<g id="shape1413-223" v:mID="1413" v:groupContext="shape" transform="translate(327,-265.5)">
 			<title>Sheet.1413</title>
 			<desc>SW directed</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
@@ -461,7 +449,7 @@
 			<rect x="0" y="580.646" width="54" height="31.3545" class="st10"/>
 			<text x="18.95" y="593.32" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>SW <tspan x="9.21"
 						dy="1.2em" class="st4">directed</tspan></text>		</g>
-		<g id="shape1414-236" v:mID="1414" v:groupContext="shape" transform="translate(423,-245.75)">
+		<g id="shape1414-227" v:mID="1414" v:groupContext="shape" transform="translate(423,-245.75)">
 			<title>Sheet.1414</title>
 			<desc>Startup Passes</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
@@ -469,27 +457,23 @@
 			<rect x="0" y="580.646" width="54" height="31.3545" class="st10"/>
 			<text x="10.88" y="593.32" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Startup<v:newlineChar/><tspan
 						x="10.6" dy="1.2em" class="st4">Passes</tspan></text>		</g>
-		<g id="shape1422-240" v:mID="1422" v:groupContext="shape" transform="translate(303.024,-249.919) rotate(16.3322)">
-			<title>Sheet.1422</title>
-			<path d="M0 609.03 A25.4608 7.46078 -16.33 0 0 20.56 610.55 L20.91 610.46" class="st9"/>
-		</g>
-		<g id="shape1423-245" v:mID="1423" v:groupContext="shape" transform="translate(884.148,-235.013) rotate(16.8946)">
+		<g id="shape1423-231" v:mID="1423" v:groupContext="shape" transform="translate(884.148,-235.013) rotate(16.8946)">
 			<title>Sheet.1423</title>
 			<path d="M0 612 A29.8221 9.05759 163.11 0 1 25.9 608.8 L26.21 608.99" class="st9"/>
 		</g>
-		<g id="shape1427-250" v:mID="1427" v:groupContext="shape" transform="translate(781.546,678.343) rotate(165.392)">
+		<g id="shape1427-236" v:mID="1427" v:groupContext="shape" transform="translate(781.546,678.343) rotate(165.392)">
 			<title>Sheet.1427</title>
 			<path d="M-0 608.38 A34.6771 9.03756 -165.39 0 0 30.54 611.52 L30.85 611.33" class="st9"/>
 		</g>
-		<g id="shape1435-255" v:mID="1435" v:groupContext="shape" transform="translate(737.251,-107.133) rotate(22.7)">
+		<g id="shape1435-241" v:mID="1435" v:groupContext="shape" transform="translate(737.251,-107.133) rotate(22.7)">
 			<title>Sheet.1435</title>
 			<path d="M-0 612 A25.4608 10.6504 157.3 0 1 22.57 608.45 L22.86 608.65" class="st9"/>
 		</g>
-		<g id="shape1436-260" v:mID="1436" v:groupContext="shape" transform="translate(411.526,-326.485) rotate(38.9495)">
+		<g id="shape1436-246" v:mID="1436" v:groupContext="shape" transform="translate(411.526,-326.485) rotate(38.9495)">
 			<title>Sheet.1436</title>
 			<path d="M-0 604.97 A27 21.8248 -38.95 0 0 29.59 608.38 L29.89 608.18" class="st9"/>
 		</g>
-		<g id="shape1437-265" v:mID="1437" v:groupContext="shape" transform="translate(301.5,-56.3228)">
+		<g id="shape1437-251" v:mID="1437" v:groupContext="shape" transform="translate(301.5,-56.3228)">
 			<title>Sheet.1437</title>
 			<desc>Always Testing</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
@@ -497,11 +481,11 @@
 			<rect x="0" y="580.646" width="54" height="31.3545" class="st10"/>
 			<text x="11.16" y="593.32" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Always<v:newlineChar/><tspan
 						x="10.6" dy="1.2em" class="st4">Testing</tspan></text>		</g>
-		<g id="shape1440-269" v:mID="1440" v:groupContext="shape" transform="translate(600.899,-417.35)">
+		<g id="shape1440-255" v:mID="1440" v:groupContext="shape" transform="translate(600.899,-417.35)">
 			<title>Sheet.1440</title>
 			<path d="M0 612 L48.27 612" class="st14"/>
 		</g>
-		<g id="shape1441-274" v:mID="1441" v:groupContext="shape" transform="translate(189,-174)">
+		<g id="shape1441-260" v:mID="1441" v:groupContext="shape" transform="translate(189,-174)">
 			<title>Circle.1441</title>
 			<desc>Alert State</desc>
 			<v:userDefs>
@@ -512,24 +496,24 @@
 			<path d="M0 568.5 A43.5 43.5 0 1 1 87 568.5 A43.5 43.5 0 0 1 0 568.5 Z" class="st17"/>
 			<text x="32.56" y="565.2" class="st13" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Alert<v:newlineChar/><tspan
 						x="31.92" dy="1.2em" class="st4">State</tspan></text>		</g>
-		<g id="shape1444-278" v:mID="1444" v:groupContext="shape" transform="translate(844.5,272.249) rotate(90)">
+		<g id="shape1444-264" v:mID="1444" v:groupContext="shape" transform="translate(844.5,272.249) rotate(90)">
 			<title>Sheet.1444</title>
 			<path d="M0 612 L72.59 612" class="st14"/>
 		</g>
-		<g id="shape1448-283" v:mID="1448" v:groupContext="shape" transform="translate(-60.2072,-173.068) rotate(-30.436)">
+		<g id="shape1448-269" v:mID="1448" v:groupContext="shape" transform="translate(-60.2072,-173.068) rotate(-30.436)">
 			<title>Sheet.1448</title>
 			<path d="M3.53 607.39 L3.74 607.11 A172.174 116.04 32.04 0 1 210.49 612" class="st7"/>
 		</g>
-		<g id="shape1449-288" v:mID="1449" v:groupContext="shape" transform="translate(104.608,975.397) rotate(-156.997)">
+		<g id="shape1449-274" v:mID="1449" v:groupContext="shape" transform="translate(104.608,975.397) rotate(-156.997)">
 			<title>Sheet.1449</title>
 			<path d="M0 601.68 A63.7368 27.0591 -23 0 0 63.52 603.97 L63.86 603.84" class="st9"/>
 		</g>
-		<g id="shape1455-293" v:mID="1455" v:groupContext="shape" transform="translate(306,-90)">
+		<g id="shape1455-279" v:mID="1455" v:groupContext="shape" transform="translate(306,-90)">
 			<title>Sheet.1455</title>
 			<path d="M64.5 585.82 A28.5 26.1777 0 0 1 36 612 A36 27 0 0 1 0 585 A21.7116 34.8418 0 0 1 15.7 551.52 L16.05 551.44"
 					class="st18"/>
 		</g>
-		<g id="shape1543-298" v:mID="1543" v:groupContext="shape" transform="translate(168,-112.646)">
+		<g id="shape1543-284" v:mID="1543" v:groupContext="shape" transform="translate(168,-112.646)">
 			<title>Sheet.1543</title>
 			<desc>If alert fail, then hang</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
@@ -537,16 +521,16 @@
 			<rect x="0" y="580.646" width="64.5" height="31.3545" class="st10"/>
 			<text x="9.19" y="593.32" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>If alert fail, <tspan
 						x="10.01" dy="1.2em" class="st4">then hang</tspan></text>		</g>
-		<g id="shape1544-302" v:mID="1544" v:groupContext="shape" transform="translate(168,-146.829)">
+		<g id="shape1544-288" v:mID="1544" v:groupContext="shape" transform="translate(168,-146.829)">
 			<title>Sheet.1544</title>
 			<path d="M64.5 585.82 A28.5 26.1777 0 0 1 36 612 A36 27 0 0 1 0 585 A21.7116 34.8418 0 0 1 15.7 551.52 L16.05 551.44"
 					class="st18"/>
 		</g>
-		<g id="shape1546-307" v:mID="1546" v:groupContext="shape" transform="translate(-104.382,-159.731) rotate(-22.1134)">
+		<g id="shape1546-293" v:mID="1546" v:groupContext="shape" transform="translate(-104.382,-159.731) rotate(-22.1134)">
 			<title>Sheet.1546</title>
 			<path d="M5.5 610.17 L5.85 610.06 A70.0475 6.25972 5.09 0 1 70.41 612" class="st7"/>
 		</g>
-		<g id="shape1548-312" v:mID="1548" v:groupContext="shape" transform="translate(104.231,-420.694)">
+		<g id="shape1548-298" v:mID="1548" v:groupContext="shape" transform="translate(104.231,-420.694)">
 			<title>Sheet.1548</title>
 			<desc>If consecutive fail cnt &#62; thresh, then Alert</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
@@ -554,28 +538,28 @@
 			<rect x="0" y="561.038" width="99.5591" height="50.9616" class="st10"/>
 			<text x="11.43" y="577.52" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>If consecutive fail <tspan
 						x="11" dy="1.2em" class="st4">cnt &#62; thresh, then </tspan><tspan x="39.5" dy="1.2em" class="st4">Alert</tspan></text>		</g>
-		<g id="shape1549-317" v:mID="1549" v:groupContext="shape" transform="translate(197.269,-301.534)">
+		<g id="shape1549-303" v:mID="1549" v:groupContext="shape" transform="translate(197.269,-301.534)">
 			<title>Sheet.1549</title>
 			<desc>Alert</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
 			<v:textRect cx="16.1154" cy="602.286" width="32.24" height="19.4272"/>
 			<rect x="0" y="592.573" width="32.2308" height="19.4272" class="st10"/>
 			<text x="5.83" y="605.29" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Alert</text>		</g>
-		<g id="shape1550-320" v:mID="1550" v:groupContext="shape" transform="translate(310.885,-322.536)">
+		<g id="shape1550-306" v:mID="1550" v:groupContext="shape" transform="translate(310.885,-322.536)">
 			<title>Sheet.1550</title>
 			<desc>Alert</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
 			<v:textRect cx="16.1154" cy="602.286" width="32.24" height="19.4272"/>
 			<rect x="0" y="592.573" width="32.2308" height="19.4272" class="st10"/>
 			<text x="5.83" y="605.29" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Alert</text>		</g>
-		<g id="shape1551-323" v:mID="1551" v:groupContext="shape" transform="translate(298.135,-216.411)">
+		<g id="shape1551-309" v:mID="1551" v:groupContext="shape" transform="translate(298.135,-216.411)">
 			<title>Sheet.1551</title>
 			<desc>Alert</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
 			<v:textRect cx="16.1154" cy="602.286" width="32.24" height="19.4272"/>
 			<rect x="0" y="592.573" width="32.2308" height="19.4272" class="st10"/>
 			<text x="5.83" y="605.29" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Alert</text>		</g>
-		<g id="shape1552-326" v:mID="1552" v:groupContext="shape" transform="translate(13.2205,-270)">
+		<g id="shape1552-312" v:mID="1552" v:groupContext="shape" transform="translate(13.2205,-270)">
 			<title>Circle.1552</title>
 			<desc>Post Test</desc>
 			<v:userDefs>
@@ -586,29 +570,41 @@
 			<path d="M0 586.52 A25.4808 25.4808 0 0 1 50.96 586.52 A25.4808 25.4808 0 1 1 0 586.52 Z" class="st3"/>
 			<text x="15.75" y="583.22" class="st13" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Post <tspan
 						x="16.07" dy="1.2em" class="st4">Test </tspan> </text>		</g>
-		<g id="shape1554-330" v:mID="1554" v:groupContext="shape" transform="translate(64.1821,-369)">
+		<g id="shape1554-316" v:mID="1554" v:groupContext="shape" transform="translate(64.1821,-369)">
 			<title>Sheet.1554</title>
 			<path d="M0 606.67 A25.8179 5.32648 -180 0 0 25.82 612 A63 58.5 -180 0 0 88.52 559.21 L88.54 558.86" class="st19"/>
 		</g>
-		<g id="shape1555-336" v:mID="1555" v:groupContext="shape" transform="translate(310.5,-384.823)">
+		<g id="shape1555-322" v:mID="1555" v:groupContext="shape" transform="translate(256.22,-405)">
 			<title>Sheet.1555</title>
-			<desc>Boot Passes</desc>
+			<desc>Boot Passes &#38; MODULE_ENABLE Off</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
-			<v:textRect cx="27" cy="596.323" width="54" height="31.3545"/>
-			<rect x="0" y="580.646" width="54" height="31.3545" class="st10"/>
-			<text x="16.71" y="593.32" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Boot<v:newlineChar/><tspan
-						x="10.6" dy="1.2em" class="st4">Passes</tspan></text>		</g>
-		<g id="shape1556-340" v:mID="1556" v:groupContext="shape" transform="translate(-489.533,358.676) rotate(-96.3972)">
+			<v:textRect cx="49.7795" cy="586.519" width="99.56" height="50.9616"/>
+			<rect x="0" y="561.038" width="99.5591" height="50.9616" class="st10"/>
+			<text x="16.98" y="577.52" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Boot Passes &#38;<v:newlineChar/><tspan
+						x="5.88" dy="1.2em" class="st4">MODULE_ENABLE </tspan><tspan x="43.11" dy="1.2em" class="st4">Off</tspan></text>		</g>
+		<g id="shape1556-327" v:mID="1556" v:groupContext="shape" transform="translate(-489.533,358.676) rotate(-96.3972)">
 			<title>Sheet.1556</title>
 			<path d="M-0 607.05 A107.194 12.0184 -173.6 0 0 102.51 610.1 L102.82 609.92" class="st9"/>
 		</g>
-		<g id="shape1557-345" v:mID="1557" v:groupContext="shape" transform="translate(108,-318.038)">
+		<g id="shape1557-332" v:mID="1557" v:groupContext="shape" transform="translate(101.25,-306)">
 			<title>Sheet.1557</title>
-			<desc>Always in boot-only mode</desc>
+			<desc>MODULE_ENABLE Off</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
-			<v:textRect cx="32.25" cy="586.519" width="64.51" height="50.9616"/>
-			<rect x="0" y="561.038" width="64.5" height="50.9616" class="st10"/>
-			<text x="11.13" y="577.52" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Always in <tspan
-						x="11.68" dy="1.2em" class="st4">boot</tspan>-only <tspan x="19.74" dy="1.2em" class="st4">mode</tspan></text>		</g>
+			<v:textRect cx="57.375" cy="586.519" width="114.75" height="50.9616"/>
+			<rect x="0" y="561.038" width="114.75" height="50.9616" class="st10"/>
+			<text x="13.47" y="583.52" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>MODULE_ENABLE<v:newlineChar/><tspan
+						x="49.32" dy="1.2em" class="st4"> </tspan>Off</text>		</g>
+		<g id="shape1564-336" v:mID="1564" v:groupContext="shape" transform="translate(-197.058,-89.1753) rotate(-52.8565)">
+			<title>Sheet.1564</title>
+			<path d="M0 577.48 A148.971 100.388 -34.14 0 0 174.27 580.85 L174.58 580.65" class="st9"/>
+		</g>
+		<g id="shape1565-341" v:mID="1565" v:groupContext="shape" transform="translate(400.5,-431.735)">
+			<title>Sheet.1565</title>
+			<desc>FIPS_ENABLE On</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)"/>
+			<v:textRect cx="40.5" cy="588.484" width="81" height="47.0317"/>
+			<rect x="0" y="564.968" width="81" height="47.0317" class="st10"/>
+			<text x="6.87" y="585.48" class="st11" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>FIPS_ENABLE <tspan
+						x="33.83" dy="1.2em" class="st4">On</tspan></text>		</g>
 	</g>
 </svg>
