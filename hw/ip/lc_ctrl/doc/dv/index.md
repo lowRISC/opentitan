@@ -43,28 +43,27 @@ The following utilities provide generic helper tasks and functions to perform ac
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
-`lc_ctrl_env_pkg`. Some of them in use are:
-```systemverilog
-[list a few parameters, types & methods; no need to mention all]
-```
+`lc_ctrl_env_pkg`.
+
 ### TL_agent
 LC_CTRL testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into LC_CTRL device.
 
-### UVC/agent 1
-[Describe here or add link to its README]
+### JTAG RISCV Agent
+[jtag_riscv_agent]({{< relref "hw/dv/sv/jtag_riscv_agent/README.md" >}}) is used to read and write LC_CTRL registers via
+the JTAG interface. It contains an embedded instance of [jtag_agent] {{< relref "hw/dv/sv/jtag_agent/README.md" >}} which
+uses the jtag_if interface in the testbench.
 
-### UVC/agent 2
-[Describe here or add link to its README]
+### PUSH/PULL Agent
+[push_pull_agent]({{< relref "hw/dv/sv/push_pull_agent/README.md" >}}) is used to emulate the Token and
+OTP programing interfaces.
 
 ### UVM RAL Model
 The LC_CTRL RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
 It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
 
-### Reference models
-[Describe reference models in use if applicable, example: SHA256/HMAC]
 
 ### Stimulus strategy
 #### Test sequences
@@ -72,29 +71,35 @@ All test sequences reside in `hw/ip/lc_ctrl/dv/env/seq_lib`.
 The `lc_ctrl_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
 All test sequences are extended from `lc_ctrl_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
-Some of the most commonly used tasks / functions are as follows:
-* task 1:
-* task 2:
+
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following covergroups have been developed to prove that the test intent has been adequately met:
-* cg1:
-* cg2:
+*  err_inj_cg: indicates what error conditions have been injected.
+
 
 ### Self-checking strategy
 #### Scoreboard
 The `lc_ctrl_scoreboard` is primarily used for end to end checking.
-It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* analysis port1:
-* analysis port2:
-<!-- explain inputs monitored, flow of data and outputs checked -->
+It creates the following analysis exports to retrieve the data monitored by corresponding interface agents:
+* tl_[a_chan, d_chan, dir]_fifo_lc_ctrl_reg_block.analysis_export: Tile Link CSR reads/writes.
+* jtag_riscv_fifo.analysis_export: JTAG CSR reads/writes
+* alert_fifo[fatal_bus_integ_error, fatal_prog_error, fatal_state_error].analysis_export: Alert traffic from DUT
+* otp_prog_fifo.analysis_export:  OTP program data from LC_CTRL and response to LC_CTRL.
+* otp_token_fifo.analysis_export:  OTP token data from LC_CTRL and response to LC_CTRL.
+
+##### Scoreboard Checks
+* TL CSR data is used to check against expected values predicted by the scoreboard.
+It also updates the UVM register model.
+* JTAG CSR data is used to check against expected values predicted by the scoreboard.
+It also updates the UVM register model.
+* Alert data is decoded and used to indicate an alert has occured
 
 #### Assertions
 * TLUL assertions: The `tb/lc_ctrl_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
-* assert prop 1:
-* assert prop 2:
+
 
 ## Building and running tests
 We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
