@@ -29,21 +29,6 @@ typedef enum aes_operation_field_val {
 } aes_operation_field_val_t;
 
 /*
- * Field to select AES block cipher mode.
- *
- * Invalid input values, i.e., value with multiple bits set - are mapped to
- * `kAesModeFieldValNone`.
- */
-typedef enum aes_mode_field_val {
-  kAesModeFieldValEcb = 0x01,  /**< The Electronic Codebook Mode. */
-  kAesModeFieldValCbc = 0x02,  /**< The Cipher Block Chaining Mode. */
-  kAesModeFieldValCfb = 0x04,  /**< TODO */
-  kAesModeFieldValOfb = 0x08,  /**< TODO */
-  kAesModeFieldValCtr = 0x10,  /**< The Counter Mode. */
-  kAesModeFieldValNone = 0x20, /**< TODO */
-} aes_mode_field_val_t;
-
-/*
  * Field to select AES key length.
  *
  * Invalid input values, i.e., value with multiple bits set, value 3'b000, and
@@ -173,12 +158,10 @@ static aes_key_field_val_t key_to_field(dif_aes_key_length_t key) {
  *
  * @param aes AES state data.
  * @param transaction Configuration data, common across all Cipher modes.
- * @param mode_val Block cipher mode of operation register write value.
  * @return `dif_result_t`.
  */
 static dif_result_t configure(const dif_aes_t *aes,
-                              const dif_aes_transaction_t *transaction,
-                              aes_mode_field_val_t mode_val) {
+                              const dif_aes_transaction_t *transaction) {
   aes_operation_field_val_t operation_val =
       operation_to_field(transaction->operation);
   if (operation_val == kAesOperationFieldValInvalid) {
@@ -190,34 +173,24 @@ static dif_result_t configure(const dif_aes_t *aes,
   // if (mode_val == kAesModeFieldValNone) {
   //  return kDifError;
   //}
-  aes_key_field_val_t key_len_val = key_to_field(transaction->key_len);
-  if (key_len_val == kAesKeyFieldValInvalid) {
+  aes_key_field_val_t key_len = key_to_field(transaction->key_len);
+  if (key_len == kAesKeyFieldValInvalid) {
     return kDifError;
   }
 
   uint32_t reg = bitfield_field32_write(0, AES_CTRL_SHADOWED_OPERATION_FIELD,
                                         operation_val);
 
-  reg = bitfield_field32_write(reg, AES_CTRL_SHADOWED_MODE_FIELD, mode_val);
+  reg = bitfield_field32_write(reg, AES_CTRL_SHADOWED_MODE_FIELD,
+                               transaction->mode);
 
-  reg =
-      bitfield_field32_write(reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD, key_len_val);
+  reg = bitfield_field32_write(reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD, key_len);
 
-  if (transaction->manual_operation == kDifAesManualOperationManual) {
-    reg =
-        bitfield_bit32_write(reg, AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, true);
-  } else {
-    reg = bitfield_bit32_write(reg, AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT,
-                               false);
-  }
+  bool flag = transaction->manual_operation == kDifAesManualOperationManual;
+  reg = bitfield_bit32_write(reg, AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, flag);
 
-  if (transaction->masking == kDifAesMaskingForceZero) {
-    reg =
-        bitfield_bit32_write(reg, AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_BIT, true);
-  } else {
-    reg = bitfield_bit32_write(reg, AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_BIT,
-                               false);
-  }
+  flag = transaction->masking == kDifAesMaskingForceZero;
+  reg = bitfield_bit32_write(reg, AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_BIT, flag);
 
   aes_shadowed_write(aes->base_addr, AES_CTRL_SHADOWED_REG_OFFSET, reg);
 
@@ -265,10 +238,11 @@ dif_result_t dif_aes_reset(const dif_aes_t *aes) {
   return kDifOk;
 }
 
-dif_result_t dif_aes_start_ecb(const dif_aes_t *aes,
-                               const dif_aes_transaction_t *transaction,
-                               dif_aes_key_share_t key) {
-  if (aes == NULL || transaction == NULL) {
+dif_result_t dif_aes_start(const dif_aes_t *aes,
+                           const dif_aes_transaction_t *transaction,
+                           dif_aes_key_share_t key, const dif_aes_iv_t *iv) {
+  if (aes == NULL || transaction == NULL ||
+      (iv == NULL && transaction->mode != kDifAesModeEcb)) {
     return kDifBadArg;
   }
 
@@ -276,7 +250,7 @@ dif_result_t dif_aes_start_ecb(const dif_aes_t *aes,
     return kDifUnavailable;
   }
 
-  dif_result_t result = configure(aes, transaction, kAesModeFieldValEcb);
+  dif_result_t result = configure(aes, transaction);
   if (result != kDifOk) {
     return result;
   }
@@ -287,113 +261,10 @@ dif_result_t dif_aes_start_ecb(const dif_aes_t *aes,
   aes_set_multireg(aes, &key.share1[0], AES_KEY_SHARE1_MULTIREG_COUNT,
                    AES_KEY_SHARE1_0_REG_OFFSET);
 
-  return kDifOk;
-}
-
-dif_result_t dif_aes_start_cbc(const dif_aes_t *aes,
-                               const dif_aes_transaction_t *transaction,
-                               dif_aes_key_share_t key, dif_aes_iv_t iv) {
-  if (aes == NULL || transaction == NULL) {
-    return kDifBadArg;
+  if (transaction->mode != kDifAesModeEcb) {
+    aes_set_multireg(aes, &iv->iv[0], AES_IV_MULTIREG_COUNT,
+                     AES_IV_0_REG_OFFSET);
   }
-
-  if (!aes_idle(aes)) {
-    return kDifUnavailable;
-  }
-
-  dif_result_t result = configure(aes, transaction, kAesModeFieldValCbc);
-  if (result != kDifOk) {
-    return result;
-  }
-
-  aes_set_multireg(aes, &key.share0[0], AES_KEY_SHARE0_MULTIREG_COUNT,
-                   AES_KEY_SHARE0_0_REG_OFFSET);
-
-  aes_set_multireg(aes, &key.share1[0], AES_KEY_SHARE1_MULTIREG_COUNT,
-                   AES_KEY_SHARE1_0_REG_OFFSET);
-
-  aes_set_multireg(aes, &iv.iv[0], AES_IV_MULTIREG_COUNT, AES_IV_0_REG_OFFSET);
-
-  return kDifOk;
-}
-
-dif_result_t dif_aes_start_ctr(const dif_aes_t *aes,
-                               const dif_aes_transaction_t *transaction,
-                               dif_aes_key_share_t key, dif_aes_iv_t iv) {
-  if (aes == NULL || transaction == NULL) {
-    return kDifBadArg;
-  }
-
-  if (!aes_idle(aes)) {
-    return kDifUnavailable;
-  }
-
-  dif_result_t result = configure(aes, transaction, kAesModeFieldValCtr);
-  if (result != kDifOk) {
-    return result;
-  }
-
-  aes_set_multireg(aes, &key.share0[0], AES_KEY_SHARE0_MULTIREG_COUNT,
-                   AES_KEY_SHARE0_0_REG_OFFSET);
-
-  aes_set_multireg(aes, &key.share1[0], AES_KEY_SHARE1_MULTIREG_COUNT,
-                   AES_KEY_SHARE1_0_REG_OFFSET);
-
-  aes_set_multireg(aes, &iv.iv[0], AES_IV_MULTIREG_COUNT, AES_IV_0_REG_OFFSET);
-
-  return kDifOk;
-}
-
-dif_result_t dif_aes_start_ofb(const dif_aes_t *aes,
-                               const dif_aes_transaction_t *transaction,
-                               dif_aes_key_share_t key, dif_aes_iv_t iv) {
-  if (aes == NULL || transaction == NULL) {
-    return kDifBadArg;
-  }
-
-  if (!aes_idle(aes)) {
-    return kDifUnavailable;
-  }
-
-  dif_result_t result = configure(aes, transaction, kAesModeFieldValOfb);
-  if (result != kDifOk) {
-    return result;
-  }
-
-  aes_set_multireg(aes, &key.share0[0], AES_KEY_SHARE0_MULTIREG_COUNT,
-                   AES_KEY_SHARE0_0_REG_OFFSET);
-
-  aes_set_multireg(aes, &key.share1[0], AES_KEY_SHARE1_MULTIREG_COUNT,
-                   AES_KEY_SHARE1_0_REG_OFFSET);
-
-  aes_set_multireg(aes, &iv.iv[0], AES_IV_MULTIREG_COUNT, AES_IV_0_REG_OFFSET);
-
-  return kDifOk;
-}
-
-dif_result_t dif_aes_start_cfb(const dif_aes_t *aes,
-                               const dif_aes_transaction_t *transaction,
-                               dif_aes_key_share_t key, dif_aes_iv_t iv) {
-  if (aes == NULL || transaction == NULL) {
-    return kDifBadArg;
-  }
-
-  if (!aes_idle(aes)) {
-    return kDifUnavailable;
-  }
-
-  dif_result_t result = configure(aes, transaction, kAesModeFieldValCfb);
-  if (result != kDifOk) {
-    return result;
-  }
-
-  aes_set_multireg(aes, &key.share0[0], AES_KEY_SHARE0_MULTIREG_COUNT,
-                   AES_KEY_SHARE0_0_REG_OFFSET);
-
-  aes_set_multireg(aes, &key.share1[0], AES_KEY_SHARE1_MULTIREG_COUNT,
-                   AES_KEY_SHARE1_0_REG_OFFSET);
-
-  aes_set_multireg(aes, &iv.iv[0], AES_IV_MULTIREG_COUNT, AES_IV_0_REG_OFFSET);
 
   return kDifOk;
 }
