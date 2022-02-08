@@ -35,10 +35,20 @@
                 // "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"
 
   // Add additional tops for simulation.
-  sim_tops: ["lc_ctrl_bind"]
+  sim_tops: ["lc_ctrl_bind", "lc_ctrl_cov_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
+
+  overrides: [
+    //
+    // Override coverage config files to add our elaboration time coverage exclusions etc.
+    //
+    {
+      name: default_vcs_cov_cfg_file
+      value: "-cm_hier {dv_root}/tools/vcs/cover.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg+{proj_root}/hw/ip/lc_ctrl/dv/cov/lc_ctrl_cover.cfg"
+    }
+  ]
 
   // Default UVM test and seq class name.
   uvm_test: lc_ctrl_base_test
