@@ -41,6 +41,8 @@ novas.conf
 verdiLog/
 ascent_project/
 ascentlint.rpt
+.idebugrc
+idebugFiles/
 
 # verilator/gtkwave waveforms and wave lists
 *.fst
