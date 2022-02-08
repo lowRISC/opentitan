@@ -148,6 +148,9 @@ module flash_phy_core
     end
   end
 
+  // The following FSM should be re-coded to use prim_arb
+  // There are a few special conditions that require fsm handling, but the state
+  // space should be reduced.
   always_comb begin
     state_d = state_q;
 
@@ -172,20 +175,19 @@ module flash_phy_core
           inc_arb_cnt = req_i & host_req_rdy_o;
           state_d = host_req_rdy_o ? StHostRead : state_q;
         end else if (req_i && rd_i) begin
-          clr_arb_cnt = 1'b1;
           reqs[PhyRead] = 1'b1;
+          clr_arb_cnt = rd_stage_rdy;
           state_d = rd_stage_rdy ? StCtrlRead : state_q;
         end else if (req_i && prog_i) begin
-          clr_arb_cnt = 1'b1;
           reqs[PhyProg] = 1'b1;
 
           // it is possible for a program to immediate complete when the
           // program packing is not at the end of the flash word
+          clr_arb_cnt = prog_ack;
           state_d = prog_ack ? StIdle : StCtrlProg;
           ctrl_rsp_vld = prog_ack;
 
         end else if (req_i) begin
-          clr_arb_cnt = 1'b1;
           state_d = StCtrl;
         end
       end
@@ -211,6 +213,7 @@ module flash_phy_core
       // Need to update controller end to take advantage of read pipeline.
       // Once that is done, the two read states can merge.
       StCtrlRead: begin
+        clr_arb_cnt = 1'b1;
         if (rd_stage_data_valid) begin
           ctrl_rsp_vld = 1'b1;
           state_d = StIdle;
@@ -220,6 +223,7 @@ module flash_phy_core
       // Controller program data may be packed based on
       // address alignment
       StCtrlProg: begin
+        clr_arb_cnt = 1'b1;
         reqs[PhyProg] = 1'b1;
         if (prog_ack) begin
           ctrl_rsp_vld = 1'b1;
@@ -229,6 +233,7 @@ module flash_phy_core
 
       // other controller operations directly interface with flash
       StCtrl: begin
+        clr_arb_cnt = 1'b1;
         reqs[PhyPgErase] = pg_erase_i;
         reqs[PhyBkErase] = bk_erase_i;
         if (erase_ack) begin
