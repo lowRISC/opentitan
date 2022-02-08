@@ -15,7 +15,7 @@
 void otbn_init(otbn_t *ctx) {
   *ctx = (otbn_t){
       .app = {0},
-      .app_is_loaded = false,
+      .app_is_loaded = kHardenedBoolFalse,
       .error_bits = kOtbnErrBitsNoError,
   };
 }
@@ -64,7 +64,7 @@ rom_error_t otbn_load_app(otbn_t *ctx, const otbn_app_t app) {
   const size_t imem_num_words = app.imem_end - app.imem_start;
   const size_t data_num_words = app.dmem_data_end - app.dmem_data_start;
 
-  ctx->app_is_loaded = false;
+  ctx->app_is_loaded = kHardenedBoolFalse;
 
   RETURN_IF_ERROR(otbn_imem_write(0, app.imem_start, imem_num_words));
 
@@ -74,14 +74,15 @@ rom_error_t otbn_load_app(otbn_t *ctx, const otbn_app_t app) {
   }
 
   ctx->app = app;
-  ctx->app_is_loaded = true;
+  ctx->app_is_loaded = kHardenedBoolTrue;
   return kErrorOk;
 }
 
 rom_error_t otbn_execute_app(otbn_t *ctx) {
-  if (!ctx->app_is_loaded) {
+  if (launder32(ctx->app_is_loaded) != kHardenedBoolTrue) {
     return kErrorOtbnInvalidArgument;
   }
+  HARDENED_CHECK_EQ(ctx->app_is_loaded, kHardenedBoolTrue);
 
   otbn_execute();
   return kErrorOk;

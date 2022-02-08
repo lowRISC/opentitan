@@ -501,10 +501,11 @@ test('sw_silicon_creator_lib_driver_otbn_unittest', executable(
     dependencies: [
       sw_vendor_gtest,
       sw_silicon_creator_lib_base_mock_abs_mmio,
+      sw_lib_testing_hardened,
     ],
     native: true,
-    c_args: ['-DMOCK_ABS_MMIO'],
-    cpp_args: ['-DMOCK_ABS_MMIO'],
+    c_args: ['-DMOCK_ABS_MMIO', '-DOT_OFF_TARGET_TEST'],
+    cpp_args: ['-DMOCK_ABS_MMIO', '-DOT_OFF_TARGET_TEST'],
   ),
   suite: 'mask_rom',
 )

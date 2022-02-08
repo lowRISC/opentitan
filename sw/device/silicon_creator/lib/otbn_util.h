@@ -77,14 +77,14 @@ typedef struct otbn {
   /**
    * The application loaded or to be loaded into OTBN.
    *
-   * Only valid if @p app_is_loaded is true.
+   * Only valid if @p app_is_loaded is kHardenedBoolTrue.
    */
   otbn_app_t app;
 
   /**
    * Is the application loaded into OTBN?
    */
-  bool app_is_loaded;
+  hardened_bool_t app_is_loaded;
 
   /**
    * The error bits from the last execution of OTBN.
