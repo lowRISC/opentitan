@@ -12,6 +12,20 @@ sw_lib_testing_bitfield = declare_dependency(
   )
 )
 
+# global mock class
+sw_lib_testing_global_mock = declare_dependency(
+  link_with: static_library(
+    'sw_lib_testing_global_mock',
+    sources: [
+      'global_mock.h'
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+    ],
+    native: true,
+  ),
+)
+
 sw_lib_testing_memory = declare_dependency(
   link_with: static_library(
     'memory',
