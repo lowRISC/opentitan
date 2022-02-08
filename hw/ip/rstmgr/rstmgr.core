@@ -18,12 +18,12 @@ filesets:
       - lowrisc:prim:sparse_fsm
       - "fileset_ip     ? (lowrisc:ip:rstmgr_pkg)"
       - "fileset_top    ? (lowrisc:systems:rstmgr_pkg)"
+      - lowrisc:ip:rstmgr_cnsty_chk
       - "fileset_top    ? (lowrisc:systems:rstmgr)"
       - "fileset_topgen ? (lowrisc:systems:topgen)"
     files:
       - rtl/rstmgr_ctrl.sv
       - rtl/rstmgr_por.sv
-      - rtl/rstmgr_cnsty_chk.sv
       - rtl/rstmgr_crash_info.sv
       - rtl/rstmgr_leaf_rst.sv
       - "fileset_ip ? (rtl/rstmgr.sv)"
