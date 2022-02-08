@@ -186,7 +186,7 @@ module spi_host
         test_speed_inval = 1'b0;
       end
       Dual, Quad: begin
-        test_dir_inval   = (reg2hw.command.direction.q != Bidir);
+        test_dir_inval   = (reg2hw.command.direction.q == Bidir);
         test_speed_inval = 1'b0;
       end
       default: begin
