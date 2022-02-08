@@ -90,15 +90,7 @@ interface pwrmgr_rstmgr_sva_if #(
             $fell(
                 esc_rst_req_i
             ) |-> `RST_CYCLES !rstreqs[pwrmgr_pkg::ResetEscIdx], clk_i, reset_or_disable)
-
-    `ASSERT(SwRstOn_A,
-            $rose(
-                sw_rst_req_i
-            ) |-> `RST_CYCLES rstreqs[pwrmgr_pkg::ResetSwReqIdx], clk_i, reset_or_disable)
-    `ASSERT(SwRstOff_A,
-            $fell(
-                sw_rst_req_i
-            ) |-> `RST_CYCLES !rstreqs[pwrmgr_pkg::ResetSwReqIdx], clk_i, reset_or_disable)
+    // Software initiated resets are not sent to rstmgr since they originated there.
   end : gen_rstreqs_checks
   `undef RST_CYCLES
 endinterface
