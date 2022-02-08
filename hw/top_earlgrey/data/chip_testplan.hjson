@@ -1555,7 +1555,7 @@
             register. Check the digest registers for correctness against the expected digest value.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_aes_enc"]
     }
     {
       name: chip_sw_aes_entropy
