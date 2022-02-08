@@ -32,7 +32,7 @@ module kmac_core
   // Configurations
 
   // If kmac_en is cleared, Core logic doesn't function but forward incoming
-  // mesage to SHA3 core
+  // message to SHA3 core
   input                             kmac_en_i,
   input sha3_pkg::sha3_mode_e       mode_i,
   input sha3_pkg::keccak_strength_e strength_i,
