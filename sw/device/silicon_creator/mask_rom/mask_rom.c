@@ -23,7 +23,6 @@
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/log.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify.h"
 #include "sw/device/silicon_creator/mask_rom/boot_policy.h"
@@ -198,7 +197,6 @@ static rom_error_t mask_rom_boot(const manifest_t *manifest,
 
   // Jump to ROM_EXT entry point.
   uintptr_t entry_point = manifest_entry_point_get(manifest);
-  log_printf("rom_ext_entry: 0x%x\r\n", (unsigned int)entry_point);
   ((rom_ext_entry_point *)entry_point)();
 
   return kErrorMaskRomBootFailed;
@@ -230,10 +228,6 @@ static rom_error_t mask_rom_try_boot(void) {
 void mask_rom_main(void) {
   SHUTDOWN_IF_ERROR(mask_rom_init());
 
-  // TODO(lowrisc/opentitan#7894): What (if anything) should we print at
-  // startup?
-  log_printf("OpenTitan: \"version-tag\"\r\n");
-  log_printf("lc_state: 0x%x\r\n", (unsigned int)lifecycle_raw_state_get());
 
   // TODO(lowrisc/opentitan#1513): Switch to EEPROM SPI device bootstrap
   // protocol.

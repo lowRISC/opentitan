@@ -23,9 +23,11 @@ cc_library(
 cc_library(
     name = "mock_alert",
     testonly = True,
-    hdrs = ["mock_alert.h"],
+    hdrs = [
+        "alert.h",
+        "mock_alert.h",
+    ],
     deps = [
-        ":alert",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest",
     ],
@@ -228,9 +230,11 @@ cc_library(
 cc_library(
     name = "mock_lifecycle",
     testonly = True,
-    hdrs = ["mock_lifecycle.h"],
+    hdrs = [
+        "lifecycle.h",
+        "mock_lifecycle.h",
+    ],
     deps = [
-        ":lifecycle",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest",
     ],

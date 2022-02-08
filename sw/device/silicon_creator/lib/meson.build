@@ -4,6 +4,19 @@
 subdir('base')
 subdir('drivers')
 
+# Logging library.
+sw_silicon_creator_lib_log = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_log',
+    sources: [
+      'log.c',
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_driver_uart,
+    ],
+  ),
+)
+
 # Otbn utilities.
 sw_silicon_creator_lib_otbn_util = declare_dependency(
   link_with: static_library(
@@ -112,6 +125,7 @@ sw_silicon_creator_lib_shutdown = declare_dependency(
       sw_lib_abs_mmio,
       sw_lib_hardened,
       sw_silicon_creator_lib_driver_alert,
+      sw_silicon_creator_lib_log,
     ],
   ),
 )
@@ -147,19 +161,6 @@ sw_silicon_creator_lib_irq_asm = declare_dependency(
       hw_ip_rstmgr_reg_h,
       hw_ip_flash_ctrl_reg_h,
       'irq_asm.S',
-    ],
-  ),
-)
-
-# Logging library.
-sw_silicon_creator_lib_log = declare_dependency(
-  link_with: static_library(
-    'sw_silicon_creator_lib_log',
-    sources: [
-      'log.c',
-    ],
-    dependencies: [
-      sw_silicon_creator_lib_driver_uart,
     ],
   ),
 )
