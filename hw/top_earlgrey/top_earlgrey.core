@@ -115,7 +115,6 @@ targets:
     default_tool: verilator
     parameters:
       - SYNTHESIS=true
-      - AST_BYPASS_CLK=true
     tools:
       verilator:
         mode: lint-only
@@ -130,7 +129,6 @@ targets:
     default_tool: icarus
     parameters:
       - SYNTHESIS=true
-      - AST_BYPASS_CLK=true
     toplevel: top_earlgrey
 
   formal:
