@@ -48,10 +48,18 @@ module prim_mubi8_sender
         .out_o(mubi_out[k])
       );
     end
-    logic unused_clk;
-    logic unused_rst;
-    assign unused_clk = clk_i;
-    assign unused_rst = rst_ni;
+
+    // This unused companion logic helps remove lint errors
+    // for modules where clock and reset are used for assertions only
+    // This logic will be removed for sythesis since it is unloaded.
+    mubi8_t unused_logic;
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+         unused_logic <= MuBi8False;
+      end else begin
+         unused_logic <= mubi_i;
+      end
+    end
   end
 
   assign mubi_o = mubi8_t'(mubi_out);

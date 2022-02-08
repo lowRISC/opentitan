@@ -12,3 +12,6 @@ waive -rules {PARAM_NOT_USED} -location {prim_sparse_fsm_flop.sv} -regexp {.*Sta
 
 waive -rules {PARAM_NOT_USED} -location {prim_sparse_fsm_flop.sv} -regexp {.*EnableAlertTriggerSVA.*} \
       -comment "The disable parameter is used only during DV / FPV."
+
+waive -rules {SAME_NAME_TYPE} -location {prim_sparse_fsm_flop.sv} -regexp {.*ResetValue.*} \
+      -comment "The ResetValue parameter is a common name used by many prim types"
