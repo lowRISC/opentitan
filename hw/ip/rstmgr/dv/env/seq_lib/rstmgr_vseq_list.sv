@@ -7,5 +7,6 @@
 `include "rstmgr_reset_vseq.sv"
 `include "rstmgr_smoke_vseq.sv"
 `include "rstmgr_stress_all_vseq.sv"
+`include "rstmgr_sw_rst_reset_race_vseq.sv"
 `include "rstmgr_sw_rst_vseq.sv"
 `include "rstmgr_common_vseq.sv"

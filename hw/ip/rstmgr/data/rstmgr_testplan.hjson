@@ -10,6 +10,7 @@
                      // TODO: Top-level specific Hjson imported here. This will likely be resolved
                      // once we move to IPgen flow.
                      "hw/top_earlgrey/ip/rstmgr/data/autogen/rstmgr_sec_cm_testplan.hjson"]
+
   testpoints: [
     {
       name: smoke
@@ -81,6 +82,24 @@
       tests: ["rstmgr_sw_rst"]
     }
     {
+      name: sw_rst_reset_race
+      desc: '''Test sw_rst and reset close in time.
+
+            Sends sw_rst and regular resets in close temporal proximity.
+
+            **Stimulus**:
+            - Write `sw_rst_ctrl_n` CSR with random values when regwen is all 1's.
+            - Send a hardware reset.
+            - Release resets.
+
+            **Checks**:
+            - Check the `reset_info` CSR.
+            - Reset behavior is checked by SVA.
+            '''
+      milestone: V2
+      tests: ["rstmgr_sw_rst_reset_race"]
+    }
+    {
       name: reset_info
       desc: '''Test the reporting of reset reason.
 
@@ -148,7 +167,7 @@
             - rstmgr_sw_rst_vseq
 	    '''
       milestone: V2
-      tests: []
+      tests: ["rstmgr_stress_all"]
     }
   ]
 
