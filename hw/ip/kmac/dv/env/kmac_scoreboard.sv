@@ -2085,15 +2085,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             // ErrSwIssuedCmdInAppActive, but for any other command the KMAC will throw a
             // ErrSwCmdSequence.
             if (kmac_cmd_e'(item.a_data) != CmdNone) begin
-              if (kmac_cmd_e'(item.a_data) == CmdStart) begin
-                kmac_err.valid = 1;
-                kmac_err.code  = kmac_pkg::ErrSwIssuedCmdInAppActive;
-                kmac_err.info  = 24'(item.a_data);
-              end begin
-                kmac_err.valid = 1;
-                kmac_err.code  = kmac_pkg::ErrSwCmdSequence;
-                kmac_err.info  = 24'(item.a_data);
-              end
+              kmac_err.valid = 1;
+              kmac_err.code  = kmac_pkg::ErrSwIssuedCmdInAppActive;
+              kmac_err.info  = 24'(item.a_data);
               predict_err(.is_kmac_err(1));
             end
           end else begin
