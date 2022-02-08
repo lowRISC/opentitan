@@ -247,7 +247,7 @@ package kmac_pkg;
     // This error occurs in below scenario:
     //   - Sw does not send "Start" command to KMAC then writes data into
     //     Msg FIFO
-    //   - Sw writes data into Msg FIFO when KeyMgr is in operating
+    //   - Sw writes data into Msg FIFO when KeyMgr is in operation
     ErrSwPushedMsgFifo = 8'h 02,
 
     // ErrSwIssuedCmdInAppActive
