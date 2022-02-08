@@ -131,27 +131,23 @@ module pwm_chan #(
   assign duty_cycle_actual = (blink_en_i && !htbt_en_i) ? duty_cycle_blink :
                              (blink_en_i && htbt_en_i) ? duty_cycle_htbt : duty_cycle_a_i;
 
-  logic [15:0] dc_resn_comp;
-  logic [15:0] phase_delay_cropped;
-  logic [15:0] duty_cycle_cropped;
-  logic [30:0] phase_delay_scaled;
-  logic [30:0] duty_cycle_scaled;
-  logic [3:0] lshift;
-  logic unused_shift;
+  // For cases when the desired duty_cycle does not line up with the chosen resolution
+  // we mask away any used bits.
+  logic [15:0] dc_mask;
+  // Mask is de-asserted for first dc_resn_i + 1 bits.
+  // e.g. for dc_resn = 12, dc_mask = 16'b0000_0000_0000_0111
+  // Bits marked as one in this mask are unused in computing
+  // turn-on or turn-off times
+  assign dc_mask = 16'hffff >> (dc_resn_i + 1);
 
-  assign dc_resn_comp = 16'h1 << (dc_resn_i + 1);
-  assign lshift = 4'd15 - dc_resn_i;
-  assign phase_delay_cropped = (phase_delay_i <= dc_resn_comp) ?
-                                phase_delay_i : (phase_delay_i >> lshift);
-  assign duty_cycle_cropped = (duty_cycle_actual <= dc_resn_comp) ?
-                               duty_cycle_actual : (duty_cycle_actual >> lshift);
-  assign phase_delay_scaled = phase_delay_cropped << lshift;
-  assign duty_cycle_scaled = duty_cycle_cropped << lshift;
-  assign unused_shift = ^phase_delay_scaled | ^duty_cycle_scaled;
+  // Explicitly round down the phase_delay and duty_cycle
+  logic [15:0] phase_delay_masked, duty_cycle_masked;
+  assign phase_delay_masked = phase_delay_i & ~dc_mask;
+  assign duty_cycle_masked  = duty_cycle_actual & ~dc_mask;
 
-  assign on_phase = phase_delay_scaled[15:0];
-  assign {phase_wrap, off_phase} = {1'b0, phase_delay_scaled[15:0]} +
-                                   {1'b0, duty_cycle_scaled[15:0]};
+  assign on_phase                = phase_delay_masked;
+  assign {phase_wrap, off_phase} = {1'b0, phase_delay_masked} +
+                                   {1'b0, duty_cycle_masked};
 
   logic on_phase_exceeded;
   logic off_phase_exceeded;
