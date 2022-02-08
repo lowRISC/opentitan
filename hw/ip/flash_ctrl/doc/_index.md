@@ -105,7 +105,9 @@ Lastly, while the different partitions may be identical in some attributes, they
 *  All types of partitions obey the same program and erase rules :
    * A bit cannot be programmed back to 1 once it has been programmed to 0.
    * Only erase can restore a bit to 1 under normal circumstances.
-*  Data partitions can be directly read by software and other hardware hosts, while information partitions can only be read by the flash controller
+*  All partitions (data and information) can be read, programmed and erased by the flash protocol controller, subject to [memory protection](#memory-protection) and [life cycle qualification](#memory-protection-for-key-manager-and-life-cycle) .
+*  System hosts (processor and other entities) can only directly read the data partition, they do not have any kind of access to information partitions.
+   * System hosts are also not subject to memory protection rules, as those apply to the flash protocol controller only.
 
 For default assumptions of the design, see the [default configuration]({{< relref "#flash-default-configuration" >}}).
 
