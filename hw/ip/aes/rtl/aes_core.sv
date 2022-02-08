@@ -75,6 +75,7 @@ module aes_core
   logic                                       ctrl_alert;
   logic                                       mux_sel_err;
   logic                                       sp_enc_err_d, sp_enc_err_q;
+  logic                                       clear_on_fatal;
 
   logic                       [3:0][3:0][7:0] state_in;
   logic                      [SISelWidth-1:0] state_in_sel_raw;
@@ -834,14 +835,17 @@ module aes_core
   // Alerts //
   ////////////
 
+  // Should fatal alerts clear the status register?
+  assign clear_on_fatal = ClearStatusOnFatalAlert ? alert_fatal_o : 1'b0;
+
   // Recoverable alert conditions are signaled as a single alert event.
   assign ctrl_err_update = ctrl_reg_err_update | reg2hw.ctrl_aux_shadowed.err_update;
   assign alert_recov_o = ctrl_err_update;
 
   // The recoverable alert is observable via status register until the AES operation is restarted
   // by re-writing the Control Register. Fatal alerts clear all other bits in the status register.
-  assign hw2reg.status.alert_recov_ctrl_update_err.d  = ctrl_err_update & ~alert_fatal_o;
-  assign hw2reg.status.alert_recov_ctrl_update_err.de = ctrl_err_update | ctrl_we | alert_fatal_o;
+  assign hw2reg.status.alert_recov_ctrl_update_err.d  = ctrl_err_update & ~clear_on_fatal;
+  assign hw2reg.status.alert_recov_ctrl_update_err.de = ctrl_err_update | ctrl_we | clear_on_fatal;
 
   // Fatal alert conditions need to remain asserted until reset.
   assign ctrl_err_storage_d = ctrl_reg_err_storage | reg2hw.ctrl_aux_shadowed.err_storage;

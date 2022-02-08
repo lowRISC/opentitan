@@ -6,6 +6,10 @@
 
 package aes_pkg;
 
+// If this parameter is set, fatal alerts clear all status and trigger bits to zero. By
+// default, it's not set, i.e., no clearing is happening, in order to simplify debugging.
+parameter bit ClearStatusOnFatalAlert = 1'b0;
+
 // The initial key is always provided in two shares, independently whether the cipher core is
 // masked or not.
 parameter int unsigned NumSharesKey = 2;
