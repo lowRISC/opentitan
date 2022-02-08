@@ -171,7 +171,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     if (!rst_slow_ni) begin
       slow_wakeup_en_o <= '0;
       slow_reset_en_o <= '0;
-      slow_main_pd_no <= '0;
+      slow_main_pd_no <= '1;
       slow_io_clk_en_o <= '0;
       slow_core_clk_en_o <= '0;
       slow_usb_clk_en_lp_o <= '0;
