@@ -21,13 +21,7 @@ static void config_register_set(const dif_entropy_src_t *entropy_src,
                                 const dif_entropy_src_config_t *config) {
   // TODO: Make this configurable at the API level.
   uint32_t reg = bitfield_field32_write(
-      0, ENTROPY_SRC_CONF_BOOT_BYPASS_DISABLE_FIELD, kMultiBitBool4False);
-
-  uint32_t health_clr_sel = config->reset_health_test_registers
-                                ? kMultiBitBool4True
-                                : kMultiBitBool4False;
-  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_HEALTH_TEST_CLR_FIELD,
-                               health_clr_sel);
+      0, ENTROPY_SRC_CONF_THRESHOLD_SCOPE_FIELD, kMultiBitBool4False);
 
   reg = bitfield_field32_write(
       reg, ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD,

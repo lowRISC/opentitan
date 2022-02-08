@@ -34,7 +34,7 @@ package entropy_src_env_pkg;
     NumEntropySrcIntr = 4
   } entropy_src_intr_e;
 
-  typedef enum { BOOT, STARTUP, CONTINUOUS } entropy_phase_e;
+  typedef enum { BOOT, STARTUP, CONTINUOUS, HALTED } entropy_phase_e;
   typedef bit [RNG_BUS_WIDTH-1:0] rng_val_t;
   typedef rng_val_t queue_of_rng_val_t[$];
 
@@ -51,18 +51,13 @@ package entropy_src_env_pkg;
   // satisfy both the startup and (optional) boot phases.
   //
   function automatic entropy_phase_e convert_seed_idx_to_phase(int seed_idx,
-                                                               bit conditioning_bypass,
-                                                               bit boot_disable);
+                                                               bit fips_enable);
 
-    if (conditioning_bypass) begin
-      return BOOT;
-    end else if (!boot_disable) begin
+    if (!fips_enable) begin
       if (seed_idx == 0) begin
         return BOOT;
-      end else if (seed_idx == 1) begin
-        return STARTUP;
       end else begin
-        return CONTINUOUS;
+        return HALTED;
       end
     end else begin
       if (seed_idx == 0) begin
@@ -82,14 +77,13 @@ package entropy_src_env_pkg;
   //
   // The window size also dictates the ammount of data needed to create a single seed.
   //
-  function automatic int rng_window_size(int seed_idx, bit bypass,
-                                         bit boot_disable, int fips_window_size);
+  function automatic int rng_window_size(int seed_idx, bit fips_enable, int fips_window_size);
     entropy_phase_e phase;
 
     // Counts the number of seeds that have been successfully generated
     // in any post-boot phase.
 
-    phase = convert_seed_idx_to_phase(seed_idx, bypass, boot_disable);
+    phase = convert_seed_idx_to_phase(seed_idx, fips_enable);
 
     return (phase == BOOT) ? entropy_src_pkg::CSRNG_BUS_WIDTH : fips_window_size;
 

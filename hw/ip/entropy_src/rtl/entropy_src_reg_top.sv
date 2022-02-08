@@ -152,10 +152,8 @@ module entropy_src_reg_top (
   logic [3:0] conf_fips_enable_wd;
   logic [3:0] conf_entropy_data_reg_enable_qs;
   logic [3:0] conf_entropy_data_reg_enable_wd;
-  logic [3:0] conf_boot_bypass_disable_qs;
-  logic [3:0] conf_boot_bypass_disable_wd;
-  logic [3:0] conf_health_test_clr_qs;
-  logic [3:0] conf_health_test_clr_wd;
+  logic [3:0] conf_threshold_scope_qs;
+  logic [3:0] conf_threshold_scope_wd;
   logic [3:0] conf_rng_bit_enable_qs;
   logic [3:0] conf_rng_bit_enable_wd;
   logic [1:0] conf_rng_bit_sel_qs;
@@ -309,7 +307,8 @@ module entropy_src_reg_top (
   logic debug_status_sha3_absorbed_qs;
   logic debug_status_sha3_err_qs;
   logic debug_status_main_sm_idle_qs;
-  logic [7:0] debug_status_main_sm_state_qs;
+  logic debug_status_main_sm_boot_done_qs;
+  logic [8:0] debug_status_main_sm_state_qs;
   logic recov_alert_sts_we;
   logic recov_alert_sts_fips_enable_field_alert_qs;
   logic recov_alert_sts_fips_enable_field_alert_wd;
@@ -317,10 +316,8 @@ module entropy_src_reg_top (
   logic recov_alert_sts_entropy_data_reg_en_field_alert_wd;
   logic recov_alert_sts_module_enable_field_alert_qs;
   logic recov_alert_sts_module_enable_field_alert_wd;
-  logic recov_alert_sts_boot_bypass_disable_field_alert_qs;
-  logic recov_alert_sts_boot_bypass_disable_field_alert_wd;
-  logic recov_alert_sts_health_test_clr_field_alert_qs;
-  logic recov_alert_sts_health_test_clr_field_alert_wd;
+  logic recov_alert_sts_threshold_scope_field_alert_qs;
+  logic recov_alert_sts_threshold_scope_field_alert_wd;
   logic recov_alert_sts_rng_bit_enable_field_alert_qs;
   logic recov_alert_sts_rng_bit_enable_field_alert_wd;
   logic recov_alert_sts_fw_ov_mode_field_alert_qs;
@@ -812,18 +809,18 @@ module entropy_src_reg_top (
     .qs     (conf_entropy_data_reg_enable_qs)
   );
 
-  //   F[boot_bypass_disable]: 15:12
+  //   F[threshold_scope]: 15:12
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h5)
-  ) u_conf_boot_bypass_disable (
+  ) u_conf_threshold_scope (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (conf_we & regwen_qs),
-    .wd     (conf_boot_bypass_disable_wd),
+    .wd     (conf_threshold_scope_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -831,35 +828,10 @@ module entropy_src_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.conf.boot_bypass_disable.q),
+    .q      (reg2hw.conf.threshold_scope.q),
 
     // to register interface (read)
-    .qs     (conf_boot_bypass_disable_qs)
-  );
-
-  //   F[health_test_clr]: 19:16
-  prim_subreg #(
-    .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
-  ) u_conf_health_test_clr (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (conf_we & regwen_qs),
-    .wd     (conf_health_test_clr_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.conf.health_test_clr.q),
-
-    // to register interface (read)
-    .qs     (conf_health_test_clr_qs)
+    .qs     (conf_threshold_scope_qs)
   );
 
   //   F[rng_bit_enable]: 23:20
@@ -2111,9 +2083,23 @@ module entropy_src_reg_top (
     .qs     (debug_status_main_sm_idle_qs)
   );
 
-  //   F[main_sm_state]: 31:24
+  //   F[main_sm_boot_done]: 17:17
   prim_subreg_ext #(
-    .DW    (8)
+    .DW    (1)
+  ) u_debug_status_main_sm_boot_done (
+    .re     (debug_status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.debug_status.main_sm_boot_done.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (debug_status_main_sm_boot_done_qs)
+  );
+
+  //   F[main_sm_state]: 28:20
+  prim_subreg_ext #(
+    .DW    (9)
   ) u_debug_status_main_sm_state (
     .re     (debug_status_re),
     .we     (1'b0),
@@ -2202,54 +2188,29 @@ module entropy_src_reg_top (
     .qs     (recov_alert_sts_module_enable_field_alert_qs)
   );
 
-  //   F[boot_bypass_disable_field_alert]: 3:3
+  //   F[threshold_scope_field_alert]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
-  ) u_recov_alert_sts_boot_bypass_disable_field_alert (
+  ) u_recov_alert_sts_threshold_scope_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (recov_alert_sts_we),
-    .wd     (recov_alert_sts_boot_bypass_disable_field_alert_wd),
+    .wd     (recov_alert_sts_threshold_scope_field_alert_wd),
 
     // from internal hardware
-    .de     (hw2reg.recov_alert_sts.boot_bypass_disable_field_alert.de),
-    .d      (hw2reg.recov_alert_sts.boot_bypass_disable_field_alert.d),
+    .de     (hw2reg.recov_alert_sts.threshold_scope_field_alert.de),
+    .d      (hw2reg.recov_alert_sts.threshold_scope_field_alert.d),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (recov_alert_sts_boot_bypass_disable_field_alert_qs)
-  );
-
-  //   F[health_test_clr_field_alert]: 4:4
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (1'h0)
-  ) u_recov_alert_sts_health_test_clr_field_alert (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (recov_alert_sts_we),
-    .wd     (recov_alert_sts_health_test_clr_field_alert_wd),
-
-    // from internal hardware
-    .de     (hw2reg.recov_alert_sts.health_test_clr_field_alert.de),
-    .d      (hw2reg.recov_alert_sts.health_test_clr_field_alert.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (recov_alert_sts_health_test_clr_field_alert_qs)
+    .qs     (recov_alert_sts_threshold_scope_field_alert_qs)
   );
 
   //   F[rng_bit_enable_field_alert]: 5:5
@@ -2869,9 +2830,7 @@ module entropy_src_reg_top (
 
   assign conf_entropy_data_reg_enable_wd = reg_wdata[7:4];
 
-  assign conf_boot_bypass_disable_wd = reg_wdata[15:12];
-
-  assign conf_health_test_clr_wd = reg_wdata[19:16];
+  assign conf_threshold_scope_wd = reg_wdata[15:12];
 
   assign conf_rng_bit_enable_wd = reg_wdata[23:20];
 
@@ -2988,9 +2947,7 @@ module entropy_src_reg_top (
 
   assign recov_alert_sts_module_enable_field_alert_wd = reg_wdata[2];
 
-  assign recov_alert_sts_boot_bypass_disable_field_alert_wd = reg_wdata[3];
-
-  assign recov_alert_sts_health_test_clr_field_alert_wd = reg_wdata[4];
+  assign recov_alert_sts_threshold_scope_field_alert_wd = reg_wdata[3];
 
   assign recov_alert_sts_rng_bit_enable_field_alert_wd = reg_wdata[5];
 
@@ -3066,8 +3023,7 @@ module entropy_src_reg_top (
       addr_hit[9]: begin
         reg_rdata_next[3:0] = conf_fips_enable_qs;
         reg_rdata_next[7:4] = conf_entropy_data_reg_enable_qs;
-        reg_rdata_next[15:12] = conf_boot_bypass_disable_qs;
-        reg_rdata_next[19:16] = conf_health_test_clr_qs;
+        reg_rdata_next[15:12] = conf_threshold_scope_qs;
         reg_rdata_next[23:20] = conf_rng_bit_enable_qs;
         reg_rdata_next[25:24] = conf_rng_bit_sel_qs;
       end
@@ -3261,15 +3217,15 @@ module entropy_src_reg_top (
         reg_rdata_next[8] = debug_status_sha3_absorbed_qs;
         reg_rdata_next[9] = debug_status_sha3_err_qs;
         reg_rdata_next[16] = debug_status_main_sm_idle_qs;
-        reg_rdata_next[31:24] = debug_status_main_sm_state_qs;
+        reg_rdata_next[17] = debug_status_main_sm_boot_done_qs;
+        reg_rdata_next[28:20] = debug_status_main_sm_state_qs;
       end
 
       addr_hit[49]: begin
         reg_rdata_next[0] = recov_alert_sts_fips_enable_field_alert_qs;
         reg_rdata_next[1] = recov_alert_sts_entropy_data_reg_en_field_alert_qs;
         reg_rdata_next[2] = recov_alert_sts_module_enable_field_alert_qs;
-        reg_rdata_next[3] = recov_alert_sts_boot_bypass_disable_field_alert_qs;
-        reg_rdata_next[4] = recov_alert_sts_health_test_clr_field_alert_qs;
+        reg_rdata_next[3] = recov_alert_sts_threshold_scope_field_alert_qs;
         reg_rdata_next[5] = recov_alert_sts_rng_bit_enable_field_alert_qs;
         reg_rdata_next[8] = recov_alert_sts_fw_ov_mode_field_alert_qs;
         reg_rdata_next[9] = recov_alert_sts_fw_ov_entropy_insert_field_alert_qs;

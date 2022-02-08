@@ -93,10 +93,7 @@ package entropy_src_reg_pkg;
     } entropy_data_reg_enable;
     struct packed {
       logic [3:0]  q;
-    } boot_bypass_disable;
-    struct packed {
-      logic [3:0]  q;
-    } health_test_clr;
+    } threshold_scope;
     struct packed {
       logic [3:0]  q;
     } rng_bit_enable;
@@ -554,7 +551,10 @@ package entropy_src_reg_pkg;
       logic        d;
     } main_sm_idle;
     struct packed {
-      logic [7:0]  d;
+      logic        d;
+    } main_sm_boot_done;
+    struct packed {
+      logic [8:0]  d;
     } main_sm_state;
   } entropy_src_hw2reg_debug_status_reg_t;
 
@@ -574,11 +574,7 @@ package entropy_src_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } boot_bypass_disable_field_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } health_test_clr_field_alert;
+    } threshold_scope_field_alert;
     struct packed {
       logic        d;
       logic        de;
@@ -654,13 +650,13 @@ package entropy_src_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    entropy_src_reg2hw_intr_state_reg_t intr_state; // [544:541]
-    entropy_src_reg2hw_intr_enable_reg_t intr_enable; // [540:537]
-    entropy_src_reg2hw_intr_test_reg_t intr_test; // [536:529]
-    entropy_src_reg2hw_alert_test_reg_t alert_test; // [528:525]
-    entropy_src_reg2hw_sw_regupd_reg_t sw_regupd; // [524:524]
-    entropy_src_reg2hw_module_enable_reg_t module_enable; // [523:520]
-    entropy_src_reg2hw_conf_reg_t conf; // [519:498]
+    entropy_src_reg2hw_intr_state_reg_t intr_state; // [540:537]
+    entropy_src_reg2hw_intr_enable_reg_t intr_enable; // [536:533]
+    entropy_src_reg2hw_intr_test_reg_t intr_test; // [532:525]
+    entropy_src_reg2hw_alert_test_reg_t alert_test; // [524:521]
+    entropy_src_reg2hw_sw_regupd_reg_t sw_regupd; // [520:520]
+    entropy_src_reg2hw_module_enable_reg_t module_enable; // [519:516]
+    entropy_src_reg2hw_conf_reg_t conf; // [515:498]
     entropy_src_reg2hw_entropy_control_reg_t entropy_control; // [497:490]
     entropy_src_reg2hw_entropy_data_reg_t entropy_data; // [489:457]
     entropy_src_reg2hw_health_test_windows_reg_t health_test_windows; // [456:425]
@@ -717,8 +713,8 @@ package entropy_src_reg_pkg;
     entropy_src_hw2reg_alert_fail_counts_reg_t alert_fail_counts; // [130:103]
     entropy_src_hw2reg_extht_fail_counts_reg_t extht_fail_counts; // [102:95]
     entropy_src_hw2reg_fw_ov_rd_data_reg_t fw_ov_rd_data; // [94:63]
-    entropy_src_hw2reg_debug_status_reg_t debug_status; // [62:44]
-    entropy_src_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [43:18]
+    entropy_src_hw2reg_debug_status_reg_t debug_status; // [62:42]
+    entropy_src_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [41:18]
     entropy_src_hw2reg_err_code_reg_t err_code; // [17:0]
   } entropy_src_hw2reg_t;
 
@@ -842,7 +838,7 @@ package entropy_src_reg_pkg;
   parameter logic [7:0] ENTROPY_SRC_EXTHT_FAIL_COUNTS_RESVAL = 8'h 0;
   parameter logic [31:0] ENTROPY_SRC_FW_OV_RD_DATA_RESVAL = 32'h 0;
   parameter logic [31:0] ENTROPY_SRC_FW_OV_WR_DATA_RESVAL = 32'h 0;
-  parameter logic [31:0] ENTROPY_SRC_DEBUG_STATUS_RESVAL = 32'h 0;
+  parameter logic [28:0] ENTROPY_SRC_DEBUG_STATUS_RESVAL = 29'h 0;
 
   // Register index
   typedef enum int {

@@ -740,7 +740,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       end
       "intr_test": begin
       end
-      "regwen_me": begin
+      "me_regwen": begin
+      end
+      "sw_regupd": begin
       end
       "regwen": begin
       end
@@ -882,8 +884,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     int                              pass_cnt;
 
     dut_phase = convert_seed_idx_to_phase(seed_idx,
-                                          cfg.type_bypass == prim_mubi_pkg::MuBi4True,
-                                          cfg.boot_bypass_disable == prim_mubi_pkg::MuBi4True);
+                                          cfg.fips_enable == prim_mubi_pkg::MuBi4True);
 
     sample_rng_frames = sample.size();
 
@@ -1017,8 +1018,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       `uvm_info(`gfn, $sformatf("SEED_IDX: %01d", seed_idx), UVM_FULL)
 
       dut_fsm_phase = convert_seed_idx_to_phase(seed_idx,
-          cfg.type_bypass == prim_mubi_pkg::MuBi4True,
-          cfg.boot_bypass_disable == prim_mubi_pkg::MuBi4True);
+                                                cfg.fips_enable == prim_mubi_pkg::MuBi4True);
 
       case (dut_fsm_phase)
         BOOT: begin
@@ -1033,6 +1033,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           pass_requirement = 1;
           ht_fips_mode     = 1;
         end
+        HALTED: begin
+          // exit this task.
+          return;
+        end
         default: begin
           `uvm_fatal(`gfn, "Invalid predicted dut state (bug in environment)")
         end
@@ -1040,8 +1044,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
       `uvm_info(`gfn, $sformatf("phase: %s\n", dut_fsm_phase.name), UVM_HIGH)
 
-      window_size = rng_window_size(seed_idx, cfg.type_bypass == prim_mubi_pkg::MuBi4True,
-                                    cfg.boot_bypass_disable == prim_mubi_pkg::MuBi4True,
+      window_size = rng_window_size(seed_idx, cfg.fips_enable == prim_mubi_pkg::MuBi4True,
                                     cfg.fips_window_size);
 
       `uvm_info(`gfn, $sformatf("window_size: %08d\n", window_size), UVM_HIGH)

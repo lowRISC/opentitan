@@ -241,19 +241,11 @@
           resval: "false"
         },
         { bits: "15:12",
-          name: "BOOT_BYPASS_DISABLE",
+          name: "THRESHOLD_SCOPE",
           mubi: true,
           desc: '''
-                Setting this field to kMuBi4True will disable the initial generation of non-FIPS entropy.
-                '''
-          resval: false
-        },
-        { bits: "19:16",
-          name: "HEALTH_TEST_CLR",
-          mubi: true,
-          desc: '''
-                Setting this field to kMuBi4True will clear all registers related to the
-                health test operations.
+                Setting this field to kMuBi4True will enable threshold scope mode.
+                TODO(#9759): add more description.
                 '''
           resval: false
         },
@@ -1205,7 +1197,11 @@
           name: "MAIN_SM_IDLE",
           desc: "The entropy_src main state machine is in the idle state."
         }
-        { bits: "31:24",
+        { bits: "17",
+          name: "MAIN_SM_BOOT_DONE",
+          desc: "The entropy_src main state machine is in the boot phase done state."
+        }
+        { bits: "28:20",
           name: "MAIN_SM_STATE",
           desc: "This is the state of the entropy_src main state machine."
         }
@@ -1242,17 +1238,9 @@
                 '''
         }
         { bits: "3",
-          name: "BOOT_BYPASS_DISABLE_FIELD_ALERT",
+          name: "THRESHOLD_SCOPE_FIELD_ALERT",
           desc: '''
-                This bit is set when the BOOT_BYPASS_DISABLE field in the !!CONF register is set to
-                a value other than 0x5 or 0xA.
-                Writing a zero resets this status bit.
-                '''
-        }
-        { bits: "4",
-          name: "HEALTH_TEST_CLR_FIELD_ALERT",
-          desc: '''
-                This bit is set when the HEALTH_TEST_CLR field in the !!CONF register is set to
+                This bit is set when the THRESHOLD_SCOPE field in the !!CONF register is set to
                 a value other than 0x5 or 0xA.
                 Writing a zero resets this status bit.
                 '''

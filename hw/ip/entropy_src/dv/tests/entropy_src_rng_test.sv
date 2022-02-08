@@ -30,7 +30,8 @@ class entropy_src_rng_test extends entropy_src_base_test;
 
     // Allow for software reads, but let the vseq body do the enabling
     cfg.route_software_pct          = 0;
-    cfg.enable_pct                  = 0;
+    cfg.module_enable_pct           = 0;
+    cfg.fips_enable_pct             = 100;
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
     `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_LOW)
