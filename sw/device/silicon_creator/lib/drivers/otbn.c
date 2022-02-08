@@ -75,11 +75,13 @@ rom_error_t otbn_imem_write(uint32_t offset_bytes, const uint32_t *src,
   RETURN_IF_ERROR(
       check_offset_len(offset_bytes, num_words, kOtbnIMemSizeBytes));
 
-  for (size_t i = 0; i < num_words; ++i) {
+  size_t i = 0;
+  for (; launder32(i) < num_words; ++i) {
     abs_mmio_write32(
         kBase + OTBN_IMEM_REG_OFFSET + offset_bytes + i * sizeof(uint32_t),
         src[i]);
   }
+  HARDENED_CHECK_EQ(i, num_words);
 
   return kErrorOk;
 }
@@ -89,11 +91,13 @@ rom_error_t otbn_dmem_write(uint32_t offset_bytes, const uint32_t *src,
   RETURN_IF_ERROR(
       check_offset_len(offset_bytes, num_words, kOtbnDMemSizeBytes));
 
-  for (size_t i = 0; i < num_words; ++i) {
+  size_t i = 0;
+  for (; launder32(i) < num_words; ++i) {
     abs_mmio_write32(
         kBase + OTBN_DMEM_REG_OFFSET + offset_bytes + i * sizeof(uint32_t),
         src[i]);
   }
+  HARDENED_CHECK_EQ(i, num_words);
 
   return kErrorOk;
 }
@@ -103,18 +107,22 @@ rom_error_t otbn_dmem_read(uint32_t offset_bytes, uint32_t *dest,
   RETURN_IF_ERROR(
       check_offset_len(offset_bytes, num_words, kOtbnDMemSizeBytes));
 
-  for (size_t i = 0; i < num_words; ++i) {
+  size_t i = 0;
+  for (; launder32(i) < num_words; ++i) {
     dest[i] = abs_mmio_read32(kBase + OTBN_DMEM_REG_OFFSET + offset_bytes +
                               i * sizeof(uint32_t));
   }
+  HARDENED_CHECK_EQ(i, num_words);
 
   return kErrorOk;
 }
 
 void otbn_zero_dmem(void) {
-  for (size_t i = 0; i < kOtbnDMemSizeBytes; i += sizeof(uint32_t)) {
+  size_t i = 0;
+  for (; launder32(i) < kOtbnDMemSizeBytes; i += sizeof(uint32_t)) {
     abs_mmio_write32(kBase + OTBN_DMEM_REG_OFFSET + i, 0u);
   }
+  HARDENED_CHECK_EQ(i, kOtbnDMemSizeBytes / sizeof(uint32_t));
 }
 
 rom_error_t otbn_set_ctrl_software_errs_fatal(bool enable) {

@@ -265,6 +265,7 @@ cc_library(
     name = "otbn",
     srcs = ["otbn.c"],
     hdrs = ["otbn.h"],
+    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/otbn/data:otbn_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -276,10 +277,19 @@ cc_library(
 
 cc_test(
     name = "otbn_unittest",
-    srcs = ["otbn_unittest.cc"],
+    srcs = [
+        "otbn.c",
+        "otbn.h",
+        "otbn_unittest.cc"
+    ],
+    defines = [
+        "OT_OFF_TARGET_TEST",
+    ],
     deps = [
-        ":otbn",
+        "//hw/ip/otbn/data:otbn_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:mock_abs_mmio",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
