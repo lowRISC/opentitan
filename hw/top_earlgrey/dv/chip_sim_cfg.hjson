@@ -17,8 +17,8 @@
   // Fusesoc core file used for building the file list.
   fusesoc_core: lowrisc:dv:chip_sim:0.1
 
-  // Testplan hjson file.
-  testplan: "{proj_root}/hw/top_earlgrey/data/chip_testplan.hjson"
+  // Testplan hjson file, excluding the connectivity tests.
+  testplan: "{proj_root}/hw/top_earlgrey/data/chip_testplan.hjson:-conn"
 
   // RAL spec - used to generate the RAL model.
   ral_spec: "{proj_root}/hw/top_earlgrey/data/top_earlgrey.hjson"
@@ -83,7 +83,7 @@
   ]
 
   // exclusion files
-  vcs_cov_excl_files: ["{proj_root}/hw/top_earlgrey/dv/cov/ast_mem_cfg.el"]
+  vcs_cov_excl_files: ["{proj_root}/hw/top_earlgrey/dv/cov/conn_ast_mem_cfg.el"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 1
@@ -362,7 +362,7 @@
       uvm_test_seq: chip_sw_rom_ctrl_integrity_check_vseq
       sw_images: ["sw/device/tests/rom_ctrl_integrity_check_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-    }    
+    }
     {
       name: chip_sw_sram_ctrl_execution_main
       uvm_test_seq: chip_sw_sram_ctrl_execution_main_vseq
