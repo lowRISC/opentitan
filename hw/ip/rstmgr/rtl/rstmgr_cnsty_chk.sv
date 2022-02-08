@@ -114,7 +114,8 @@ module rstmgr_cnsty_chk
   prim_sparse_fsm_flop #(
     .StateEnumT(state_e),
     .Width(StateWidth),
-    .ResetValue(StateWidth'(Reset))
+    .ResetValue(StateWidth'(Reset)),
+    .EnableAlertTriggerSVA(0)
   ) u_state_regs (
     .clk_i,
     .rst_ni,
@@ -148,6 +149,7 @@ module rstmgr_cnsty_chk
 
   logic sync_child_ack;
 
+  // TODO - make this a sparse fsm
   always_comb begin
     state_d = state_q;
     err_o = '0;
