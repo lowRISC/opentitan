@@ -485,8 +485,7 @@
     {
       name: chip_jtag_csr_rw
       desc: '''
-            Verify accessibility of all the CSRs in the chip through jtag and also test RV_DM SBA
-            functionality
+            Verify accessibility of all the CSRs in the chip over JTAG.
 
             - Shuffle the list of CSRs first to remove the effect of ordering.
             - Write all CSRs via JTAG interface with a random value.
@@ -497,6 +496,26 @@
             '''
       milestone: V2
       tests: ["chip_jtag_csr_rw"]
+    }
+    {
+      name: chip_jtag_mem_access
+      desc: '''
+            Verify accessibility of all the memories in the chip over JTAG.
+
+            This test will target the following memories in the chip:
+              sram_main, sram_ret, otbn i|dmem, ROM
+
+            - Shuffle the list of memories first to remove the effect of ordering.
+            - Write a location in a randomly chosen set of addresses within each memory via JTAG
+              interface with random values.
+            - For read-only memories, preload the memory with random data via backdoor.
+            - Shuffle the list of memories again.
+            - Read the previously written addresses in the memories back again and check the read
+              value for correctness. Pick some random addresses to verify in case of read-only
+              memories.
+            '''
+      milestone: V2
+      tests: []
     }
     {
       name: chip_rv_dm_cpu_debug_mem_not_accessable
