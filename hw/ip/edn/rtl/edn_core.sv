@@ -96,6 +96,7 @@ module edn_core import edn_pkg::*;
   logic                      boot_wr_cmd_reg;
   logic                      boot_wr_cmd_genfifo;
   logic                      auto_first_ack_wait;
+  logic                      auto_req_mode_busy;
   logic                      auto_set_intr_gate;
   logic                      auto_clr_intr_gate;
 
@@ -501,7 +502,7 @@ module edn_core import edn_pkg::*;
          reseed_cmd_load;
 
   assign sfifo_rescmd_wdata =
-         (auto_req_mode_pfe && main_sm_busy && !auto_first_ack_wait) ? cs_cmd_req_out_q :
+         auto_req_mode_busy ? cs_cmd_req_out_q :
          reseed_cmd_bus;
 
   assign sfifo_rescmd_pop = send_rescmd;
@@ -546,7 +547,7 @@ module edn_core import edn_pkg::*;
 
   assign sfifo_gencmd_wdata =
          boot_wr_cmd_genfifo ? boot_gen_cmd :
-         (auto_req_mode_pfe && main_sm_busy && !auto_first_ack_wait) ? cs_cmd_req_out_q :
+         auto_req_mode_busy ? cs_cmd_req_out_q :
          generate_cmd_bus;
 
   assign sfifo_gencmd_pop = send_gencmd || boot_send_gencmd;
@@ -585,6 +586,7 @@ module edn_core import edn_pkg::*;
     .send_rescmd_o(send_rescmd),
     .cmd_sent_i(cmd_sent),
     .local_escalate_i(edn_cntr_err_sum),
+    .auto_req_mode_busy_o(auto_req_mode_busy),
     .main_sm_busy_o(main_sm_busy),
     .main_sm_err_o(edn_main_sm_err)
   );

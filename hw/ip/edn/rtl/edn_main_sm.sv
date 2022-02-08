@@ -29,6 +29,7 @@ module edn_main_sm (
   output logic               send_rescmd_o,
   input logic                cmd_sent_i,
   input logic                local_escalate_i,
+  output logic               auto_req_mode_busy_o,
   output logic               main_sm_busy_o,
   output logic               main_sm_err_o
 );
@@ -106,6 +107,7 @@ module edn_main_sm (
     auto_set_intr_gate_o = 1'b0;
     auto_clr_intr_gate_o = 1'b0;
     auto_first_ack_wait_o = 1'b0;
+    auto_req_mode_busy_o = 1'b0;
     capt_gencmd_fifo_cnt_o = 1'b0;
     send_gencmd_o = 1'b0;
     capt_rescmd_fifo_cnt_o = 1'b0;
@@ -176,11 +178,13 @@ module edn_main_sm (
         end
       end
       AutoAckWait: begin
+        auto_req_mode_busy_o = 1'b1;
         if (csrng_cmd_ack_i) begin
           state_d = AutoDispatch;
         end
       end
       AutoDispatch: begin
+        auto_req_mode_busy_o = 1'b1;
         if (!auto_req_mode_i) begin
           main_sm_done_pulse_o = 1'b1;
           state_d = Idle;
@@ -193,20 +197,24 @@ module edn_main_sm (
         end
       end
       AutoCaptGenCnt: begin
+        auto_req_mode_busy_o = 1'b1;
         capt_gencmd_fifo_cnt_o = 1'b1;
         state_d = AutoSendGenCmd;
       end
       AutoSendGenCmd: begin
+        auto_req_mode_busy_o = 1'b1;
         send_gencmd_o = 1'b1;
         if (cmd_sent_i) begin
           state_d = AutoAckWait;
         end
       end
       AutoCaptReseedCnt: begin
+        auto_req_mode_busy_o = 1'b1;
         capt_rescmd_fifo_cnt_o = 1'b1;
         state_d = AutoSendReseedCmd;
       end
       AutoSendReseedCmd: begin
+        auto_req_mode_busy_o = 1'b1;
         send_rescmd_o = 1'b1;
         if (cmd_sent_i) begin
           state_d = AutoAckWait;
