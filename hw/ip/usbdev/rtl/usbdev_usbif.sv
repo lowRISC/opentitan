@@ -350,6 +350,7 @@ module usbdev_usbif  #(
   end
 
   // Capture frame number (host sends evert 1ms)
+  // TODO(#10678): Handle missing SOF packets
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
       frame_o <= '0;
