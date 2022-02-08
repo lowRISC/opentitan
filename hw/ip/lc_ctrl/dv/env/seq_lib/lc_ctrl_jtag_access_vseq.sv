@@ -7,6 +7,10 @@ class lc_ctrl_jtag_access_vseq extends lc_ctrl_base_vseq;
   // Who should claim the mutex
   rand lc_ctrl_csr_intf_e mutex_owner_write, mutex_owner_read;
 
+  // Randomly assert scan_rst_ni - should have no effect
+  // unless scanmode_i == MuBi4True
+  rand bit scan_rst_ni;
+
   // Writable registers gated by transition_regwen
   // verilog_format: off - avoid bad formatting
   const string LcCtrlRWRegs[] = '{
@@ -23,7 +27,7 @@ class lc_ctrl_jtag_access_vseq extends lc_ctrl_base_vseq;
   // Read/write access
   typedef struct {
     dv_base_reg r;
-    bit map_sel;
+    lc_ctrl_csr_intf_e map_sel;
     bit blocking;
   } reg_access_t;
   // Read / write registers controlled by the mutex
@@ -60,8 +64,8 @@ class lc_ctrl_jtag_access_vseq extends lc_ctrl_base_vseq;
     while (maps.size()) begin
       uvm_reg_map m;
       m = maps.pop_front();
-      if (m.get_name() == "default_map") m_map[0] = m;
-      if (m.get_name() == "jtag_riscv_map") m_map[1] = m;
+      if (m.get_name() == "default_map") m_map[LcCtrlTLUL] = m;
+      if (m.get_name() == "jtag_riscv_map") m_map[LcCtrlJTAG] = m;
     end
 
   endtask
@@ -90,6 +94,9 @@ class lc_ctrl_jtag_access_vseq extends lc_ctrl_base_vseq;
                 mutex_owner_write.name(),
                 mutex_owner_read.name()
                 ), UVM_MEDIUM)
+
+      // set scan_rst_i - should have no effect unless scanmode_i == MuBi4True
+      cfg.lc_ctrl_vif.scan_rst_ni = scan_rst_ni;
 
       create_reg_accesses();
       m_reg_accesses.shuffle();
@@ -139,6 +146,8 @@ class lc_ctrl_jtag_access_vseq extends lc_ctrl_base_vseq;
 
   // Claim the mutex for the register writes
   virtual task csr_write_mutex_claim;
+    lc_ctrl_csr_intf_e not_mutex_owner_write =
+        (mutex_owner_write == LcCtrlTLUL) ? LcCtrlJTAG : LcCtrlTLUL;
     `uvm_info(`gfn, $sformatf(
               "csr_write_mutex_claim: claiming mutex for interface %s", mutex_owner_write.name()),
               UVM_MEDIUM)
@@ -146,7 +155,7 @@ class lc_ctrl_jtag_access_vseq extends lc_ctrl_base_vseq;
     `DV_SPINWAIT(
         fork
           claim_mutex(mutex_owner_write);
-          release_mutex(!mutex_owner_write);
+          release_mutex(not_mutex_owner_write);
         join
         )
      // verilog_format: on
@@ -157,6 +166,8 @@ class lc_ctrl_jtag_access_vseq extends lc_ctrl_base_vseq;
 
   // Claim the mutex for the register reads
   virtual task csr_read_mutex_claim;
+    lc_ctrl_csr_intf_e not_mutex_owner_read =
+        (mutex_owner_read == LcCtrlTLUL) ? LcCtrlJTAG : LcCtrlTLUL;
     `uvm_info(`gfn, $sformatf(
               "csr_read_mutex_claim: claiming mutex for interface %s", mutex_owner_read.name()),
               UVM_MEDIUM)
@@ -164,7 +175,7 @@ class lc_ctrl_jtag_access_vseq extends lc_ctrl_base_vseq;
     `DV_SPINWAIT(
         fork
           claim_mutex(mutex_owner_read);
-          release_mutex(!mutex_owner_read);
+          release_mutex(not_mutex_owner_read);
         join
         )
     // verilog_format: on
@@ -208,10 +219,10 @@ class lc_ctrl_jtag_access_vseq extends lc_ctrl_base_vseq;
   virtual function void create_reg_accesses();
     m_reg_accesses.delete();
     foreach (m_mutex_regs[i]) begin
-      m_reg_accesses.push_front('{r: m_mutex_regs[i], map_sel: 0, blocking: $urandom_range(1, 0)
-                                });
-      m_reg_accesses.push_front('{r: m_mutex_regs[i], map_sel: 1, blocking: $urandom_range(1, 0)
-                                });
+      m_reg_accesses.push_front('{r: m_mutex_regs[i], map_sel: LcCtrlTLUL,
+                                blocking: $urandom_range(1, 0)});
+      m_reg_accesses.push_front('{r: m_mutex_regs[i], map_sel: LcCtrlJTAG,
+                                blocking: $urandom_range(1, 0)});
     end
   endfunction
 

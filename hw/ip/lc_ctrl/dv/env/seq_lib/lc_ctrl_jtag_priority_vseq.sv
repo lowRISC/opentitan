@@ -60,7 +60,7 @@ class lc_ctrl_jtag_priority_vseq extends lc_ctrl_jtag_access_vseq;
 
         begin
           cfg.clk_rst_vif.wait_clks(tl_delay);
-          csr_wr(.ptr(m_claim_transition_if), .value(CLAIM_TRANS_VAL), .map(m_map[0]),
+          csr_wr(.ptr(m_claim_transition_if), .value(CLAIM_TRANS_VAL), .map(m_map[LcCtrlTLUL]),
                  .blocking(1));
         end
 
