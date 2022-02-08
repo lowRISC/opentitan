@@ -177,4 +177,19 @@
       tests: ["lc_ctrl_stress_all"]
     }
   ]
+
+  covergroups: [
+    {
+      name: err_inj_cg
+      desc: '''
+        Indicates what error conditions have been injected.
+      '''
+    }
+    {
+      name: lc_ctrl_fsm_cg
+      desc: '''
+        lc_ctrl_fsm states and arcs
+      '''
+    }
+  ]
 }

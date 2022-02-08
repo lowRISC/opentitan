@@ -179,27 +179,27 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Not Started |
-Documentation | [DV_DOC_COMPLETED][]                    | Not Started |
-Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Not Started |
-Testbench     | [ALL_INTERFACES_EXERCISED][]            | Not Started |
-Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Not Started |
-Testbench     | [SIM_TB_ENV_COMPLETED][]                | Not Started |
-Tests         | [SIM_ALL_TESTS_PASSING][]               | Not Started |
-Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | Not Started |
-Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | Not Started |
-Tests         | [SIM_FW_SIMULATED][]                    | Not Started |
-Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Not Started |
-Coverage      | [SIM_CODE_COVERAGE_V2][]                | Not Started |
-Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Not Started |
-Coverage      | [FPV_CODE_COVERAGE_V2][]                | Not Started |
-Coverage      | [FPV_COI_COVERAGE_V2][]                 | Not Started |
-Code Quality  | [TB_LINT_PASS][]                        | Not Started |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Not Started |
-Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Not Started |
-Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Not Started |
-Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Not Started |
-Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
+Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Done        |
+Documentation | [DV_DOC_COMPLETED][]                    | Done        |
+Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Done        |
+Testbench     | [ALL_INTERFACES_EXERCISED][]            | Done        |
+Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Done        |
+Testbench     | [SIM_TB_ENV_COMPLETED][]                | Done        |
+Tests         | [SIM_ALL_TESTS_PASSING][]               | Done        |
+Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | N/A         |
+Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | N/A         |
+Tests         | [SIM_FW_SIMULATED][]                    | N/A         |
+Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Done        |
+Coverage      | [SIM_CODE_COVERAGE_V2][]                | Done        | RV_TAP excluded
+Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Done        |
+Coverage      | [FPV_CODE_COVERAGE_V2][]                | N/A         |
+Coverage      | [FPV_COI_COVERAGE_V2][]                 | N/A         |
+Code Quality  | [TB_LINT_PASS][]                        | Done        |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | N/A         | Exception for IP modules
+Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Done        |
+Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        |
+Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Done        |
+Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 
 [DESIGN_DELTAS_CAPTURED_V2]:          {{<relref "/doc/project/checklist.md#design_deltas_captured_v2" >}}
 [DV_DOC_COMPLETED]:                   {{<relref "/doc/project/checklist.md#dv_doc_completed" >}}
@@ -229,7 +229,7 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 --------------|-----------------------------------------|-------------|------------------
 Tests         | [FPV_SEC_CM_VERIFIED][]                 | Not Started |
 Tests         | [SIM_SEC_CM_VERIFIED][]                 | Not Started |
- 
+
 [FPV_SEC_CM_VERIFIED]:                {{<relref "/doc/project/checklist.md#fpv_sec_cm_verified" >}}
 [SIM_SEC_CM_VERIFIED]:                {{<relref "/doc/project/checklist.md#sim_sec_cm_verified" >}}
 
