@@ -16,7 +16,8 @@ class rom_ctrl_stress_all_vseq extends rom_ctrl_base_vseq;
     string seq_names[] = {"rom_ctrl_smoke_vseq",
                           "rom_ctrl_common_vseq",
                           "rom_ctrl_throughput_vseq",
-                          "rom_ctrl_corrupt_sig_fatal_chk_vseq"};
+                          "rom_ctrl_corrupt_sig_fatal_chk_vseq",
+                          "rom_ctrl_kmac_err_chk_vseq"};
     for (int i = 1; i <= num_trans; i++) begin
       uvm_sequence   seq;
       rom_ctrl_base_vseq rom_ctrl_vseq;
