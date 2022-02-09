@@ -2044,22 +2044,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             predict_err(.is_kmac_err(1));
           end
 
-          // Mode/Strength configuration error
-          if ((hash_mode inside {sha3_pkg::Shake, sha3_pkg::CShake} &&
-                !(strength inside {sha3_pkg::L128, sha3_pkg::L256})) ||
-               (hash_mode == sha3_pkg::Sha3 &&
-                strength == sha3_pkg::L128)) begin
-            kmac_err.valid  = 1;
-            kmac_err.code   = kmac_pkg::ErrUnexpectedModeStrength;
-            kmac_err.info   = {8'h2, 10'h0, 2'(hash_mode), 1'b0, 3'(strength)};
-
-            predict_err(.is_kmac_err(1));
-
-            // If the mode/strength are mis-configured, the IP will finish running a hash with the
-            // incorrect configuration, producing a garbage digest that should not be checked.
-            do_check_digest = 1'b0;
-          end
-
           if (entropy_mode == EntropyModeEdn &&
               item.a_data[KmacEntropyReady] &&
               first_op_after_rst) begin
@@ -2093,6 +2077,24 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           end else begin
             case (kmac_cmd_e'(item.a_data))
               CmdStart: begin
+
+                // Mode/Strength configuration error
+                if ((hash_mode inside {sha3_pkg::Shake, sha3_pkg::CShake} &&
+                      !(strength inside {sha3_pkg::L128, sha3_pkg::L256})) ||
+                     (hash_mode == sha3_pkg::Sha3 &&
+                      strength == sha3_pkg::L128)) begin
+                  kmac_err.valid  = 1;
+                  kmac_err.code   = kmac_pkg::ErrUnexpectedModeStrength;
+                  kmac_err.info   = {8'h2, 10'h0, 2'(hash_mode), 1'b0, 3'(strength)};
+
+                  predict_err(.is_kmac_err(1));
+
+                  // If the mode/strength are mis-configured, the IP will finish running a hash
+                  // with the incorrect configuration, producing a garbage digest that should not
+                  // be checked.
+                  do_check_digest = 1'b0;
+                end
+
                 if (checked_kmac_cmd == CmdNone) begin
                   // the first 6B of the prefix (function name),
                   // need to check that it is "KMAC" when `kmac_en == 1`
