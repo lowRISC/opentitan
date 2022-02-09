@@ -15,7 +15,7 @@
             - Verify the update_error status register field is set to 1.
             - Repeat the above steps a bunch of times.
             '''
-      milestone: V1
+      milestone: V2S
       tests: ["{name}_shadow_reg_errors"]
     }
 
@@ -31,7 +31,7 @@
             - Verify the update_error status register field remains the same value.
             - Repeat the above steps a bunch of times.
             '''
-      milestone: V1
+      milestone: V2S
       tests: ["{name}_shadow_reg_errors"]
     }
 
