@@ -26,6 +26,7 @@ Instantiation Template
       .RegFile          ( ibex_pkg::RegFileFF              ),
       .ICache           ( 0                                ),
       .ICacheECC        ( 0                                ),
+      .ICacheScramble   ( 0                                ),
       .BranchPrediction ( 0                                ),
       .SecureIbex       ( 0                                ),
       .RndCnstLfsrSeed  ( ibex_pkg::RndCnstLfsrSeedDefault ),
@@ -112,7 +113,7 @@ Parameters
 | ``RV32B``                    | ibex_pkg::rv32b_e   | RV32BNone  | B(itmanipulation) extension select:                                   |
 |                              |                     |            | "ibex_pkg::RV32BNone": No B-extension                                 |
 |                              |                     |            | "ibex_pkg::RV32BBalanced": Sub-extensions Zbb, Zbs, Zbf and Zbt       |
-|                              |                     |            | "ibex_pkg::RV32Full": All sub-extensions                              |
+|                              |                     |            | "ibex_pkg::RV32BFull": All sub-extensions                             |
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+
 | ``RegFile``                  | ibex_pkg::regfile_e | RegFileFF  | Register file implementation select:                                  |
 |                              |                     |            | "ibex_pkg::RegFileFF": Generic flip-flop-based register file          |
@@ -130,6 +131,9 @@ Parameters
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+
 | ``ICacheECC``                | bit                 | 0          | *EXPERIMENTAL* Enable SECDED ECC protection in ICache (if             |
 |                              |                     |            | ICache == 1)                                                          |
++------------------------------+---------------------+------------+-----------------------------------------------------------------------+
+| ``ICacheScramble``           | bit                 | 0          | *EXPERIMENTAL* Enabling this parameter replaces tag and data RAMs of  |
+|                              |                     |            |  ICache with scrambling RAM primitives.                               |
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+
 | ``BranchPrediction``         | bit                 | 0          | *EXPERIMENTAL* Enable Static branch prediction                        |
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+
@@ -193,10 +197,14 @@ Interfaces
 | ``data_*``              | Load-store unit interface, see :ref:`load-store-unit`                  |
 +-------------------------+------------------------------------------------------------------------+
 | ``irq_*``               | Interrupt inputs, see :ref:`exceptions-interrupts`                     |
++-------------------------+-------------------------+-----+----------------------------------------+
+| ``scramble_*``          | Scrambling key interface, see :ref:`icache`                            |
 +-------------------------+------------------------------------------------------------------------+
 | ``debug_*``             | Debug interface, see :ref:`debug-support`                              |
 +-------------------------+------------------------------------------------------------------------+
 | ``crash_dump_o``        | A set of signals that can be captured on reset to aid crash debugging. |
++-------------------------+------------------------------------------------------------------------+
+| ``double_fault_seen_o`` | A double fault was observed, see :ref:`double-fault-detect`            |
 +-------------------------+-------------------------+-----+----------------------------------------+
 | ``fetch_enable_i``      | 1                       | in  | Allow the core to fetch instructions.  |
 |                         |                         |     | If this bit is set low, the core will  |

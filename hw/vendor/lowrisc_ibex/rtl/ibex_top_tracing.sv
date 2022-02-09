@@ -24,6 +24,7 @@ module ibex_top_tracing import ibex_pkg::*; #(
   parameter bit          DbgTriggerEn     = 1'b0,
   parameter int unsigned DbgHwBreakNum    = 1,
   parameter bit          SecureIbex       = 1'b0,
+  parameter bit          ICacheScramble   = 1'b0,
   parameter lfsr_seed_t  RndCnstLfsrSeed  = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t  RndCnstLfsrPerm  = RndCnstLfsrPermDefault,
   parameter int unsigned DmHaltAddr       = 32'h1A110800,
@@ -70,9 +71,16 @@ module ibex_top_tracing import ibex_pkg::*; #(
   input  logic [14:0]                  irq_fast_i,
   input  logic                         irq_nm_i,       // non-maskeable interrupt
 
+  // Scrambling Interface
+  input  logic                         scramble_key_valid_i,
+  input  logic [SCRAMBLE_KEY_W-1:0]    scramble_key_i,
+  input  logic [SCRAMBLE_NONCE_W-1:0]  scramble_nonce_i,
+  output logic                         scramble_req_o,
+
   // Debug Interface
   input  logic                         debug_req_i,
   output crash_dump_t                  crash_dump_o,
+  output logic                         double_fault_seen_o,
 
   // CPU Control Signals
   input  logic                         fetch_enable_i,
@@ -145,6 +153,7 @@ module ibex_top_tracing import ibex_pkg::*; #(
     .DbgHwBreakNum    ( DbgHwBreakNum    ),
     .WritebackStage   ( WritebackStage   ),
     .SecureIbex       ( SecureIbex       ),
+    .ICacheScramble   ( ICacheScramble   ),
     .RndCnstLfsrSeed  ( RndCnstLfsrSeed  ),
     .RndCnstLfsrPerm  ( RndCnstLfsrPerm  ),
     .DmHaltAddr       ( DmHaltAddr       ),
@@ -186,8 +195,14 @@ module ibex_top_tracing import ibex_pkg::*; #(
     .irq_fast_i,
     .irq_nm_i,
 
+    .scramble_key_valid_i,
+    .scramble_key_i,
+    .scramble_nonce_i,
+    .scramble_req_o,
+
     .debug_req_i,
     .crash_dump_o,
+    .double_fault_seen_o,
 
     .rvfi_valid,
     .rvfi_order,

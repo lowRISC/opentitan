@@ -36,6 +36,7 @@ module ibex_simple_system (
 );
 
   parameter bit                 SecureIbex               = 1'b0;
+  parameter bit                 ICacheScramble           = 1'b0;
   parameter bit                 PMPEnable                = 1'b0;
   parameter int unsigned        PMPGranularity           = 0;
   parameter int unsigned        PMPNumRegions            = 4;
@@ -163,6 +164,7 @@ module ibex_simple_system (
 
   ibex_top_tracing #(
       .SecureIbex      ( SecureIbex      ),
+      .ICacheScramble  ( ICacheScramble  ),
       .PMPEnable       ( PMPEnable       ),
       .PMPGranularity  ( PMPGranularity  ),
       .PMPNumRegions   ( PMPNumRegions   ),
@@ -216,8 +218,14 @@ module ibex_simple_system (
       .irq_fast_i            (15'b0),
       .irq_nm_i              (1'b0),
 
+      .scramble_key_valid_i  ('0),
+      .scramble_key_i        ('0),
+      .scramble_nonce_i      ('0),
+      .scramble_req_o        (),
+
       .debug_req_i           ('b0),
       .crash_dump_o          (),
+      .double_fault_seen_o   (),
 
       .fetch_enable_i        ('b1),
       .alert_minor_o         (),

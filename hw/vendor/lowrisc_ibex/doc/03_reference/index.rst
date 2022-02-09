@@ -23,5 +23,7 @@ It describes the design in detail, discusses the verification approach and the r
    tracer
    verification
    cosim
+   testplan
+   coverage_plan
    rvfi
    history

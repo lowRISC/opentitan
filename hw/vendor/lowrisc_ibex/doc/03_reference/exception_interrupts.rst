@@ -148,3 +148,19 @@ The purpose of the nonstandard ``mstack`` CSRs in Ibex is only to support recove
 These CSRs are not accessible by software.
 While handling an NMI, all interrupts are ignored independent of ``mstatus``.MIE.
 Nested NMIs are not supported.
+
+.. _double-fault-detect:
+
+Double Fault Detection
+----------------------
+
+Ibex has a mechanism to detect when a double fault has occurred.
+A double fault is defined as a synchronous exception occurring whilst handling a previous synchronous exception.
+The ``cpuctrl`` custom CSR has fields to provide software visibility and access to this mechanism.
+
+When a synchronous exception occurs, Ibex sets ``cpuctrl``.sync_exception_seen.
+Ibex clears ``cpuctrl``.sync_exception_seen when ``mret`` is executed.
+If a synchronous exception occurs whilst ``cpuctrl``.sync_exception_seen is set, a double fault has been detected.
+
+When a double fault is detected, the ``double_fault_seen_o`` output is asserted for one cycle and ``cpuctrl``.double_fault_seen is set.
+Note that writing the ``cpuctrl``.double_fault_seen field has no effect on the ``double_fault_seen_o`` output.

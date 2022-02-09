@@ -78,6 +78,7 @@ coverage. This includes testing all RV32IMCB instructions, privileged
 spec compliance, exception and interrupt testing, Debug Mode operation etc.
 The complete test list can be found in the file `dv/uvm/core_ibex/riscv_dv_extension/testlist.yaml
 <https://github.com/lowRISC/ibex/blob/master/dv/uvm/core_ibex/riscv_dv_extension/testlist.yaml>`_.
+For details on coverage see the :ref:`coverage-plan`.
 
 Please note that verification is still a work in progress.
 

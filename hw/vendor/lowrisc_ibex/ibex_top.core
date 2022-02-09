@@ -11,6 +11,9 @@ filesets:
       - lowrisc:ibex:ibex_pkg
       - lowrisc:ibex:ibex_core
       - lowrisc:prim:buf
+      - lowrisc:prim:clock_mux2
+      - lowrisc:prim:flop
+      - lowrisc:prim:ram_1p_scr
     files:
       - rtl/ibex_register_file_ff.sv # generic FF-based
       - rtl/ibex_register_file_fpga.sv # FPGA
@@ -104,6 +107,12 @@ parameters:
     default: 0
     paramtype: vlogparam
     description: "Enables security hardening features (EXPERIMENTAL) [0/1]"
+
+  ICacheScramble:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enables ICache scrambling feature (EXPERIMENTAL) [0/1]"
 
   PMPEnable:
     datatype: int

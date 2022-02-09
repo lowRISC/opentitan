@@ -44,3 +44,11 @@ The enhancements add:
 * A new CSR ``mseccfg`` providing functionality to allow locked regions to be modified and to implement default deny for M-mode accesses.
 * New PMP region configurations which are U-Mode or M-Mode accessible only with varying read/write/execute settings along with some shared U and M mode accessible configurations.
   These new configurations supersede the original ones and are enabled via ``mseccfg``.
+
+Custom Reset Values
+-------------------
+
+By default all PMP CSRs (include ``mseccfg``) are reset to 0.
+Some applications may want other reset values.
+Default reset values are defined in :file:`ibex_pmp_reset_default.svh`.
+An implementation can either modify this file or define ``IBEX_CUSTOM_PMP_RESET_VALUES`` and place a copy of :file:`ibex_pmp_result_default.svh` in a new file, :file:`ibex_pmp_reset.svh`, changing the values as required and adding the new file to the include path of whatever build flow is being used.

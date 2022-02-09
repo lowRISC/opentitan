@@ -539,6 +539,14 @@ Other bit fields read as zero.
 +-------+------+------------------------------------------------------------------+
 | Bit#  | R/W  | Description                                                      |
 +-------+------+------------------------------------------------------------------+
+| 7     | RW   | **double_fault_seen:** A synchronous exception was observed when |
+|       |      | the ``sync_exc_seen`` field was set. This field must be manually |
+|       |      | cleared, hardware only sets it (see :ref:`double-fault-detect`). |
++-------+------+------------------------------------------------------------------+
+| 6     | RW   | **sync_exc_seen:** A synchronous exception has been observed.    |
+|       |      | This flag is cleared when ``mret`` is executed.                  |
+|       |      | (see :ref:`double-fault-detect`).                                |
++-------+------+------------------------------------------------------------------+
 | 5:3   | WARL | **dummy_instr_mask:** Mask to control frequency of dummy         |
 |       |      | instruction insertion. If the core has not been configured with  |
 |       |      | security features (SecureIbex parameter == 0), this field will   |

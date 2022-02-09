@@ -72,6 +72,12 @@ parameters:
     paramtype: vlogparam
     description: "Enables security hardening features (EXPERIMENTAL) [0/1]"
 
+  ICacheScramble:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enables ICache scrambling feature (EXPERIMENTAL) [0/1]"
+
   BranchPredictor:
     datatype: int
     paramtype: vlogparam
@@ -107,6 +113,7 @@ targets:
       - RV32B
       - RegFile
       - ICache
+      - ICacheScramble
       - ICacheECC
       - BranchTargetALU
       - WritebackStage

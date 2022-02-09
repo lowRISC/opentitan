@@ -8,7 +8,6 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:secded
-      - lowrisc:prim:ram_1p
       - lowrisc:prim:assert
       - lowrisc:ibex:ibex_pkg
     files:

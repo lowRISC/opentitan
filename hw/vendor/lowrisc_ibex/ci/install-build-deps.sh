@@ -47,6 +47,7 @@ case "$ID-$VERSION_ID" in
         python3-setuptools \
         python3-wheel \
         python3-yaml \
+        python3-dev \
         srecord \
         zlib1g-dev \
         git \

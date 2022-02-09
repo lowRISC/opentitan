@@ -30,10 +30,14 @@ module ibex_top import ibex_pkg::*; #(
   parameter bit          DbgTriggerEn     = 1'b0,
   parameter int unsigned DbgHwBreakNum    = 1,
   parameter bit          SecureIbex       = 1'b0,
+  parameter bit          ICacheScramble   = 1'b0,
   parameter lfsr_seed_t  RndCnstLfsrSeed  = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t  RndCnstLfsrPerm  = RndCnstLfsrPermDefault,
   parameter int unsigned DmHaltAddr       = 32'h1A110800,
-  parameter int unsigned DmExceptionAddr  = 32'h1A110808
+  parameter int unsigned DmExceptionAddr  = 32'h1A110808,
+  // Default seed and nonce for scrambling
+  parameter logic [SCRAMBLE_KEY_W-1:0]   RndCnstIbexKey   = RndCnstIbexKeyDefault,
+  parameter logic [SCRAMBLE_NONCE_W-1:0] RndCnstIbexNonce = RndCnstIbexNonceDefault
 ) (
   // Clock and Reset
   input  logic                         clk_i,
@@ -74,9 +78,16 @@ module ibex_top import ibex_pkg::*; #(
   input  logic [14:0]                  irq_fast_i,
   input  logic                         irq_nm_i,       // non-maskeable interrupt
 
+  // Scrambling Interface
+  input  logic                         scramble_key_valid_i,
+  input  logic [SCRAMBLE_KEY_W-1:0]    scramble_key_i,
+  input  logic [SCRAMBLE_NONCE_W-1:0]  scramble_nonce_i,
+  output logic                         scramble_req_o,
+
   // Debug Interface
   input  logic                         debug_req_i,
   output crash_dump_t                  crash_dump_o,
+  output logic                         double_fault_seen_o,
 
   // RISC-V Formal Interface
   // Does not comply with the coding standards of _i/_o suffixes, but follows
@@ -130,6 +141,9 @@ module ibex_top import ibex_pkg::*; #(
   localparam int unsigned BusSizeECC        = ICacheECC ? (BUS_SIZE + 7) : BUS_SIZE;
   localparam int unsigned LineSizeECC       = BusSizeECC * IC_LINE_BEATS;
   localparam int unsigned TagSizeECC        = ICacheECC ? (IC_TAG_SIZE + 6) : IC_TAG_SIZE;
+  // Scrambling Parameter
+  localparam int unsigned NumAddrScrRounds  = ICacheScramble ? 2 : 0;
+  localparam int unsigned NumDiffRounds     = NumAddrScrRounds;
 
   // Clock signals
   logic                        clk;
@@ -159,6 +173,12 @@ module ibex_top import ibex_pkg::*; #(
   // Alert signals
   logic                        core_alert_major, core_alert_minor;
   logic                        lockstep_alert_major, lockstep_alert_minor;
+  // Scramble signals
+  logic                         icache_inval;
+  logic [SCRAMBLE_KEY_W-1:0]    scramble_key_q;
+  logic [SCRAMBLE_NONCE_W-1:0]  scramble_nonce_q;
+  logic                         scramble_key_valid_d, scramble_key_valid_q;
+  logic                         scramble_req_d, scramble_req_q;
 
   /////////////////////
   // Main clock gate //
@@ -247,16 +267,17 @@ module ibex_top import ibex_pkg::*; #(
     .rf_rdata_a_ecc_i (rf_rdata_a_ecc),
     .rf_rdata_b_ecc_i (rf_rdata_b_ecc),
 
-    .ic_tag_req_o   (ic_tag_req),
-    .ic_tag_write_o (ic_tag_write),
-    .ic_tag_addr_o  (ic_tag_addr),
-    .ic_tag_wdata_o (ic_tag_wdata),
-    .ic_tag_rdata_i (ic_tag_rdata),
-    .ic_data_req_o  (ic_data_req),
-    .ic_data_write_o(ic_data_write),
-    .ic_data_addr_o (ic_data_addr),
-    .ic_data_wdata_o(ic_data_wdata),
-    .ic_data_rdata_i(ic_data_rdata),
+    .ic_tag_req_o      (ic_tag_req),
+    .ic_tag_write_o    (ic_tag_write),
+    .ic_tag_addr_o     (ic_tag_addr),
+    .ic_tag_wdata_o    (ic_tag_wdata),
+    .ic_tag_rdata_i    (ic_tag_rdata),
+    .ic_data_req_o     (ic_data_req),
+    .ic_data_write_o   (ic_data_write),
+    .ic_data_addr_o    (ic_data_addr),
+    .ic_data_wdata_o   (ic_data_wdata),
+    .ic_data_rdata_i   (ic_data_rdata),
+    .ic_scr_key_valid_i(scramble_key_valid_q),
 
     .irq_software_i,
     .irq_timer_i,
@@ -267,6 +288,7 @@ module ibex_top import ibex_pkg::*; #(
 
     .debug_req_i,
     .crash_dump_o,
+    .double_fault_seen_o,
 
 `ifdef RVFI
     .rvfi_valid,
@@ -299,9 +321,10 @@ module ibex_top import ibex_pkg::*; #(
 `endif
 
     .fetch_enable_i,
-    .alert_minor_o(core_alert_minor),
-    .alert_major_o(core_alert_major),
-    .core_busy_o  (core_busy_d)
+    .alert_minor_o (core_alert_minor),
+    .alert_major_o (core_alert_major),
+    .icache_inval_o(icache_inval),
+    .core_busy_o   (core_busy_d)
   );
 
   /////////////////////////////////
@@ -373,6 +396,58 @@ module ibex_top import ibex_pkg::*; #(
     );
   end
 
+  ///////////////////////////////
+  // Scrambling Infrastructure //
+  ///////////////////////////////
+
+  if (ICacheScramble) begin : gen_scramble
+
+  // Scramble key valid starts with OTP returning new valid key and stays high
+  // until we request a new valid key.
+    assign scramble_key_valid_d = scramble_req_q ? scramble_key_valid_i :
+                                  icache_inval   ? 1'b0                 :
+                                                   scramble_key_valid_q;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        scramble_key_q       <= RndCnstIbexKey;
+        scramble_nonce_q     <= RndCnstIbexNonce;
+      end else if (scramble_key_valid_i) begin
+        scramble_key_q       <= scramble_key_i;
+        scramble_nonce_q     <= scramble_nonce_i;
+      end
+    end
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        scramble_key_valid_q <= 1'b1;
+        scramble_req_q       <= '0;
+      end else begin
+        scramble_key_valid_q <= scramble_key_valid_d;
+        scramble_req_q       <= scramble_req_d;
+      end
+    end
+
+  // Scramble key request starts with invalidate signal from ICache and stays high
+  // until we got a valid key.
+    assign scramble_req_d = scramble_req_q ? ~scramble_key_valid_i : icache_inval;
+    assign scramble_req_o = scramble_req_q;
+
+  end else begin : gen_noscramble
+
+    logic unused_scramble_inputs = scramble_key_valid_i & (|scramble_key_i) & (|RndCnstIbexKey) &
+                                   (|scramble_nonce_i) & (|RndCnstIbexNonce) & scramble_req_q &
+                                   icache_inval & scramble_key_valid_d & scramble_req_d;
+
+    assign scramble_req_d       = 1'b0;
+    assign scramble_req_q       = 1'b0;
+    assign scramble_req_o       = 1'b0;
+    assign scramble_key_q       = '0;
+    assign scramble_nonce_q     = '0;
+    assign scramble_key_valid_q = 1'b1;
+    assign scramble_key_valid_d = 1'b1;
+  end
+
   ////////////////////////
   // Rams Instantiation //
   ////////////////////////
@@ -380,35 +455,72 @@ module ibex_top import ibex_pkg::*; #(
   if (ICache) begin : gen_rams
 
     for (genvar way = 0; way < IC_NUM_WAYS; way++) begin : gen_rams_inner
+
       // Tag RAM instantiation
-      prim_ram_1p #(
-        .Width          (TagSizeECC),
-        .Depth          (IC_NUM_LINES),
-        .DataBitsPerMask(TagSizeECC)
+      prim_ram_1p_scr #(
+        .Width            (TagSizeECC),
+        .Depth            (IC_NUM_LINES),
+        .DataBitsPerMask  (TagSizeECC),
+        .EnableParity     (0),
+        .DiffWidth        (TagSizeECC),
+        .NumAddrScrRounds (NumAddrScrRounds),
+        .NumDiffRounds    (NumDiffRounds)
       ) tag_bank (
-        .clk_i  (clk_i),
-        .req_i  (ic_tag_req[way]),
-        .cfg_i  (ram_cfg_i),
-        .write_i(ic_tag_write),
-        .wmask_i({TagSizeECC{1'b1}}),
-        .addr_i (ic_tag_addr),
-        .wdata_i(ic_tag_wdata),
-        .rdata_o(ic_tag_rdata[way])
+        .clk_i,
+        .rst_ni,
+
+        .key_valid_i (scramble_key_valid_q),
+        .key_i       (scramble_key_q),
+        .nonce_i     (scramble_nonce_q),
+
+        .req_i       (ic_tag_req[way]),
+
+        .gnt_o       (),
+        .write_i     (ic_tag_write),
+        .addr_i      (ic_tag_addr),
+        .wdata_i     (ic_tag_wdata),
+        .wmask_i     ({TagSizeECC{1'b1}}),
+        .intg_error_i(1'b0),
+
+        .rdata_o     (ic_tag_rdata[way]),
+        .rvalid_o    (),
+        .raddr_o     (),
+        .rerror_o    (),
+        .cfg_i       (ram_cfg_i)
       );
+
       // Data RAM instantiation
-      prim_ram_1p #(
-        .Width          (LineSizeECC),
-        .Depth          (IC_NUM_LINES),
-        .DataBitsPerMask(LineSizeECC)
+      prim_ram_1p_scr #(
+        .Width              (LineSizeECC),
+        .Depth              (IC_NUM_LINES),
+        .DataBitsPerMask    (LineSizeECC),
+        .ReplicateKeyStream (1),
+        .EnableParity       (0),
+        .DiffWidth          (LineSizeECC),
+        .NumAddrScrRounds   (NumAddrScrRounds),
+        .NumDiffRounds      (NumDiffRounds)
       ) data_bank (
-        .clk_i  (clk_i),
-        .req_i  (ic_data_req[way]),
-        .cfg_i  (ram_cfg_i),
-        .write_i(ic_data_write),
-        .wmask_i({LineSizeECC{1'b1}}),
-        .addr_i (ic_data_addr),
-        .wdata_i(ic_data_wdata),
-        .rdata_o(ic_data_rdata[way])
+        .clk_i,
+        .rst_ni,
+
+        .key_valid_i (scramble_key_valid_q),
+        .key_i       (scramble_key_q),
+        .nonce_i     (scramble_nonce_q),
+
+        .req_i       (ic_data_req[way]),
+
+        .gnt_o       (),
+        .write_i     (ic_data_write),
+        .addr_i      (ic_data_addr),
+        .wdata_i     (ic_data_wdata),
+        .wmask_i     ({LineSizeECC{1'b1}}),
+        .intg_error_i(1'b0),
+
+        .rdata_o     (ic_data_rdata[way]),
+        .rvalid_o    (),
+        .raddr_o     (),
+        .rerror_o    (),
+        .cfg_i       (ram_cfg_i)
       );
     end
 
@@ -419,7 +531,11 @@ module ibex_top import ibex_pkg::*; #(
 
     assign unused_ram_cfg    = ram_cfg_i;
     assign unused_ram_inputs = (|ic_tag_req) & ic_tag_write & (|ic_tag_addr) & (|ic_tag_wdata) &
-                               (|ic_data_req) & ic_data_write & (|ic_data_addr) & (|ic_data_wdata);
+                               (|ic_data_req) & ic_data_write & (|ic_data_addr) & (|ic_data_wdata) &
+                               (|scramble_key_q) & (|scramble_nonce_q) & scramble_key_valid_q &
+                               scramble_key_valid_d & (|scramble_nonce_q) &
+                               (|NumAddrScrRounds);
+
     assign ic_tag_rdata      = '{default:'b0};
     assign ic_data_rdata     = '{default:'b0};
 
@@ -469,6 +585,7 @@ module ibex_top import ibex_pkg::*; #(
       ic_data_write,
       ic_data_addr,
       ic_data_wdata,
+      scramble_key_valid_i,
       irq_software_i,
       irq_timer_i,
       irq_external_i,
@@ -477,7 +594,9 @@ module ibex_top import ibex_pkg::*; #(
       irq_pending,
       debug_req_i,
       crash_dump_o,
+      double_fault_seen_o,
       fetch_enable_i,
+      icache_inval,
       core_busy_d
     });
 
@@ -523,6 +642,7 @@ module ibex_top import ibex_pkg::*; #(
     logic                         ic_data_write_local;
     logic [IC_INDEX_W-1:0]        ic_data_addr_local;
     logic [LineSizeECC-1:0]       ic_data_wdata_local;
+    logic                         scramble_key_valid_local;
 
     logic                         irq_software_local;
     logic                         irq_timer_local;
@@ -533,8 +653,10 @@ module ibex_top import ibex_pkg::*; #(
 
     logic                         debug_req_local;
     crash_dump_t                  crash_dump_local;
+    logic                         double_fault_seen_local;
     logic                         fetch_enable_local;
 
+    logic                         icache_inval_local;
     logic                         core_busy_local;
 
     assign buf_in = {
@@ -573,6 +695,7 @@ module ibex_top import ibex_pkg::*; #(
       ic_data_write,
       ic_data_addr,
       ic_data_wdata,
+      scramble_key_valid_q,
       irq_software_i,
       irq_timer_i,
       irq_external_i,
@@ -581,7 +704,9 @@ module ibex_top import ibex_pkg::*; #(
       irq_pending,
       debug_req_i,
       crash_dump_o,
+      double_fault_seen_o,
       fetch_enable_i,
+      icache_inval,
       core_busy_d
     };
 
@@ -621,6 +746,7 @@ module ibex_top import ibex_pkg::*; #(
       ic_data_write_local,
       ic_data_addr_local,
       ic_data_wdata_local,
+      scramble_key_valid_local,
       irq_software_local,
       irq_timer_local,
       irq_external_local,
@@ -629,7 +755,9 @@ module ibex_top import ibex_pkg::*; #(
       irq_pending_local,
       debug_req_local,
       crash_dump_local,
+      double_fault_seen_local,
       fetch_enable_local,
+      icache_inval_local,
       core_busy_local
     } = buf_out;
 
@@ -727,6 +855,7 @@ module ibex_top import ibex_pkg::*; #(
       .ic_data_addr_i     (ic_data_addr_local),
       .ic_data_wdata_i    (ic_data_wdata_local),
       .ic_data_rdata_i    (ic_data_rdata_local),
+      .ic_scr_key_valid_i (scramble_key_valid_local),
 
       .irq_software_i     (irq_software_local),
       .irq_timer_i        (irq_timer_local),
@@ -737,10 +866,12 @@ module ibex_top import ibex_pkg::*; #(
 
       .debug_req_i        (debug_req_local),
       .crash_dump_i       (crash_dump_local),
+      .double_fault_seen_i(double_fault_seen_local),
 
       .fetch_enable_i     (fetch_enable_local),
       .alert_minor_o      (lockstep_alert_minor_local),
       .alert_major_o      (lockstep_alert_major_local),
+      .icache_inval_i     (icache_inval_local),
       .core_busy_i        (core_busy_local),
       .test_en_i          (test_en_i),
       .scan_rst_ni        (scan_rst_ni)
