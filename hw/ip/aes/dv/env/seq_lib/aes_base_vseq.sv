@@ -94,6 +94,12 @@ class aes_base_vseq extends cip_base_vseq #(
   endtask // prng_reseed
 
 
+  virtual task set_force_zero_mask(bit val);
+    ral.ctrl_shadowed.operation.set(val);
+    csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+  endtask // set_force_zero_mask
+
+
   virtual task set_operation(bit [1:0] operation);
       ral.ctrl_shadowed.operation.set(operation);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
