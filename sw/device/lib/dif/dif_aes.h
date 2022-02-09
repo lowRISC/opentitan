@@ -88,11 +88,11 @@ typedef enum dif_aes_operation {
   /**
    * AES encryption.
    */
-  kDifAesOperationEncrypt = 0,
+  kDifAesOperationEncrypt = 1,
   /**
    * AES decryption.
    */
-  kDifAesOperationDecrypt,
+  kDifAesOperationDecrypt = 2,
 } dif_aes_operation_t;
 
 /**
@@ -102,23 +102,27 @@ typedef enum dif_aes_mode {
   /**
    * The Electronic Codebook Mode.
    */
-  kDifAesModeEcb = 0,
+  kDifAesModeEcb = 1,
+
   /**
    * The Cipher Block Chaining Mode.
    */
-  kDifAesModeCbc,
+  kDifAesModeCbc = (1 << 1),
+
   /**
    * The Cipher Feedback Mode.
    */
-  kDifAesModeCfb,
+  kDifAesModeCfb = (1 << 2),
+
   /**
    * The Output Feedback Mode.
    */
-  kDifAesModeOfb,
+  kDifAesModeOfb = (1 << 3),
+
   /**
    * The Counter Mode.
    */
-  kDifAesModeCtr,
+  kDifAesModeCtr = (1 << 4),
 } dif_aes_mode_t;
 
 /**
@@ -128,15 +132,15 @@ typedef enum dif_aes_key_length {
   /**
    * 128 bit wide AES key.
    */
-  kDifAesKey128 = 0,
+  kDifAesKey128 = 1,
   /**
    * 192 bit wide AES key.
    */
-  kDifAesKey192,
+  kDifAesKey192 = (1 << 1),
   /**
    * 256 bit wide AES key.
    */
-  kDifAesKey256,
+  kDifAesKey256 = (1 << 2)
 } dif_aes_key_length_t;
 
 /**

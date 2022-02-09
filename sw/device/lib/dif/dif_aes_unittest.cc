@@ -59,7 +59,7 @@ class AesTestInitialized : public AesTest {
  protected:
   dif_aes_t aes_;
 
-  const dif_aes_transaction_t kTransaction = {
+  dif_aes_transaction_t transaction = {
       .operation = kDifAesOperationEncrypt,
       .mode = kDifAesModeEcb,
       .key_len = kDifAesKey128,
@@ -79,94 +79,112 @@ class AesTestInitialized : public AesTest {
 };
 
 // ECB tests
-class EcbTest : public AesTestInitialized {};
+class EcbTest : public AesTestInitialized {
+ protected:
+  EcbTest() { transaction.mode = kDifAesModeEcb; }
+};
 
 TEST_F(EcbTest, start) {
   EXPECT_READ32(AES_STATUS_REG_OFFSET, 1);
   for (int i = 0; i < 2; i++) {
-    EXPECT_WRITE32(AES_CTRL_SHADOWED_REG_OFFSET,
-                   {{AES_CTRL_SHADOWED_KEY_LEN_OFFSET, 0x01},
-                    {AES_CTRL_SHADOWED_MODE_OFFSET, 0x01},
-                    {AES_CTRL_SHADOWED_OPERATION_OFFSET, 0x1},
-                    {AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, false},
-                    {AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_BIT, false}});
+    EXPECT_WRITE32(
+        AES_CTRL_SHADOWED_REG_OFFSET,
+        {{AES_CTRL_SHADOWED_KEY_LEN_OFFSET, kDifAesKey128},
+         {AES_CTRL_SHADOWED_MODE_OFFSET, kDifAesModeEcb},
+         {AES_CTRL_SHADOWED_OPERATION_OFFSET, kDifAesOperationEncrypt},
+         {AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, false},
+         {AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_BIT, false}});
   }
 
   setExpectedKey(kKey_, 8);
 
-  EXPECT_EQ(dif_aes_start_ecb(&aes_, &kTransaction, kKey_), kDifOk);
+  EXPECT_EQ(dif_aes_start_ecb(&aes_, &transaction, kKey_), kDifOk);
 }
 
-// CBC tests
-class CbcTest : public AesTestInitialized {};
+class CbcTest : public AesTestInitialized {
+ protected:
+  CbcTest() { transaction.mode = kDifAesModeCbc; }
+};
 
 TEST_F(CbcTest, start) {
   EXPECT_READ32(AES_STATUS_REG_OFFSET, 1);
   for (int i = 0; i < 2; i++) {
-    EXPECT_WRITE32(AES_CTRL_SHADOWED_REG_OFFSET,
-                   {{AES_CTRL_SHADOWED_KEY_LEN_OFFSET, 0x01},
-                    {AES_CTRL_SHADOWED_MODE_OFFSET, 0x02},
-                    {AES_CTRL_SHADOWED_OPERATION_OFFSET, 0x1},
-                    {AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, false},
-                    {AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_BIT, false}});
+    EXPECT_WRITE32(
+        AES_CTRL_SHADOWED_REG_OFFSET,
+        {{AES_CTRL_SHADOWED_KEY_LEN_OFFSET, kDifAesKey128},
+         {AES_CTRL_SHADOWED_MODE_OFFSET, kDifAesModeCbc},
+         {AES_CTRL_SHADOWED_OPERATION_OFFSET, kDifAesOperationEncrypt},
+         {AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, false},
+         {AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_BIT, false}});
   }
 
   setExpectedKey(kKey_, 8);
   setExpectedIv(kIv_);
 
-  EXPECT_EQ(dif_aes_start_cbc(&aes_, &kTransaction, kKey_, kIv_), kDifOk);
+  EXPECT_EQ(dif_aes_start_cbc(&aes_, &transaction, kKey_, kIv_), kDifOk);
 }
 
 // CFB tests
-class CFBTest : public AesTestInitialized {};
+class CFBTest : public AesTestInitialized {
+ protected:
+  CFBTest() { transaction.mode = kDifAesModeCfb; }
+};
 
 TEST_F(CFBTest, start) {
   EXPECT_READ32(AES_STATUS_REG_OFFSET, 1);
   for (int i = 0; i < 2; i++) {
-    EXPECT_WRITE32(AES_CTRL_SHADOWED_REG_OFFSET,
-                   {{AES_CTRL_SHADOWED_KEY_LEN_OFFSET, 0x01},
-                    {AES_CTRL_SHADOWED_MODE_OFFSET, 0x04},
-                    {AES_CTRL_SHADOWED_OPERATION_OFFSET, 0x1},
-                    {AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, false},
-                    {AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_BIT, false}});
+    EXPECT_WRITE32(
+        AES_CTRL_SHADOWED_REG_OFFSET,
+        {{AES_CTRL_SHADOWED_KEY_LEN_OFFSET, kDifAesKey128},
+         {AES_CTRL_SHADOWED_MODE_OFFSET, kDifAesModeCfb},
+         {AES_CTRL_SHADOWED_OPERATION_OFFSET, kDifAesOperationEncrypt},
+         {AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, false},
+         {AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_BIT, false}});
   }
 
   setExpectedKey(kKey_, 8);
   setExpectedIv(kIv_);
 
-  EXPECT_EQ(dif_aes_start_cfb(&aes_, &kTransaction, kKey_, kIv_), kDifOk);
+  EXPECT_EQ(dif_aes_start_cfb(&aes_, &transaction, kKey_, kIv_), kDifOk);
 }
 
 // OFB tests
-class OFBTest : public AesTestInitialized {};
+class OFBTest : public AesTestInitialized {
+ protected:
+  OFBTest() { transaction.mode = kDifAesModeOfb; }
+};
 
 TEST_F(OFBTest, start) {
   EXPECT_READ32(AES_STATUS_REG_OFFSET, 1);
   for (int i = 0; i < 2; i++) {
-    EXPECT_WRITE32(AES_CTRL_SHADOWED_REG_OFFSET,
-                   {{AES_CTRL_SHADOWED_KEY_LEN_OFFSET, 0x01},
-                    {AES_CTRL_SHADOWED_MODE_OFFSET, 0x08},
-                    {AES_CTRL_SHADOWED_OPERATION_OFFSET, 0x1},
-                    {AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, false},
-                    {AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_BIT, false}});
+    EXPECT_WRITE32(
+        AES_CTRL_SHADOWED_REG_OFFSET,
+        {{AES_CTRL_SHADOWED_KEY_LEN_OFFSET, kDifAesKey128},
+         {AES_CTRL_SHADOWED_MODE_OFFSET, kDifAesModeOfb},
+         {AES_CTRL_SHADOWED_OPERATION_OFFSET, kDifAesOperationEncrypt},
+         {AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, false},
+         {AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_BIT, false}});
   }
 
   setExpectedKey(kKey_, 8);
   setExpectedIv(kIv_);
 
-  EXPECT_EQ(dif_aes_start_ofb(&aes_, &kTransaction, kKey_, kIv_), kDifOk);
+  EXPECT_EQ(dif_aes_start_ofb(&aes_, &transaction, kKey_, kIv_), kDifOk);
 }
 
 // CTR tests
-class CTRTest : public AesTestInitialized {};
+class CTRTest : public AesTestInitialized {
+ protected:
+  CTRTest() { transaction.mode = kDifAesModeCtr; }
+};
 
 TEST_F(CTRTest, start) {
   EXPECT_READ32(AES_STATUS_REG_OFFSET, 1);
   for (int i = 0; i < 2; i++) {
     EXPECT_WRITE32(AES_CTRL_SHADOWED_REG_OFFSET,
-                   {{AES_CTRL_SHADOWED_KEY_LEN_OFFSET, 0x01},
-                    {AES_CTRL_SHADOWED_MODE_OFFSET, 0x10},
-                    {AES_CTRL_SHADOWED_OPERATION_OFFSET, 0x1},
+                   {{AES_CTRL_SHADOWED_KEY_LEN_OFFSET, kDifAesKey128},
+                    {AES_CTRL_SHADOWED_MODE_OFFSET, kDifAesModeCtr},
+                    {AES_CTRL_SHADOWED_OPERATION_OFFSET, kDifAesOperationEncrypt},
                     {AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, false},
                     {AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_BIT, false}});
   }
@@ -174,7 +192,7 @@ TEST_F(CTRTest, start) {
   setExpectedKey(kKey_, 8);
   setExpectedIv(kIv_);
 
-  EXPECT_EQ(dif_aes_start_ctr(&aes_, &kTransaction, kKey_, kIv_), kDifOk);
+  EXPECT_EQ(dif_aes_start_ctr(&aes_, &transaction, kKey_, kIv_), kDifOk);
 }
 
 }  // namespace
