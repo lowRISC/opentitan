@@ -251,7 +251,7 @@ Details may be missing since most of these items are not expected to be fully un
 
 ### TESTPLAN_COMPLETED
 
-A testplan has been written (in HJson format) indicating:
+A testplan has been written (in Hjson format) indicating:
 - Testpoints (a list of planned tests), each mapping to a design feature, with a description highlighting the goal of the test and optionally, the stimulus and the checking procedure.
 - The functional coverage plan captured as a list of covergroups, with a description highlighting which feature is expected to be covered by each covergroup.
   It may optionally contain additional details such as coverpoints and crosses of individual aspects of the said feature that is covered.
@@ -505,6 +505,15 @@ The V3 checklist has been reviewed to understand the scope and estimate effort.
 
 ## V2S
 
+### SEC_CM_TESTPLAN_COMPLETED
+
+The testplan has been updated with the necessary testpoints and covergroups to adequately verify all security countermeasures implemented in the DUT.
+These countermeasures are listed in the comportable IP Hjson file located at `hw/ip/<ip>/data/<ip>.hjson` (or equivalent).
+
+On OpenTitan, a security countermeasures testplan is auto-generated (the first time) by the `reggen` tool for each DUT, and is placed at `hw/ip/<ip>/data/<ip>_sec_cm_testplan.hjson` (or equivalent).
+This testplan has been imported into the main testplan written for the DUT.
+Tests implemented to verify the security countermeasures have been mapped to these testpoints.
+
 ### FPV_SEC_CM_PROVEN
 
 <!-- TODO, add the link to cm verif methodology doc -->
@@ -513,7 +522,16 @@ All security countermeasure assertions are proven in FPV.
 ### SIM_SEC_CM_VERIFIED
 
 <!-- TODO, add the link to cm verif methodology doc -->
-Security countermeasures are verified in simulation.
+All security countermeasures are verified in simulation.
+
+### SEC_CM_DV_REVIEWED
+
+The security countermeasures testplan and the overall DV effort has been reviewed by key stakeholders (as applicable):
+- DUT designer(s)
+- 1-2 peer DV engineers
+- Security architect (optional)
+
+This review may be waived if not deemed necessary.
 
 ## V3
 
