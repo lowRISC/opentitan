@@ -101,26 +101,71 @@ typedef enum dif_aes_operation {
 typedef enum dif_aes_mode {
   /**
    * The Electronic Codebook Mode.
+   * In ECB cipher mode the key must be changed for every new block of data.
+   * This is the only secure way to use ECB cipher mode.
+   *
+   * Note: The ECB cipher mode doesn't use the iv parameter of the
+   * `dif_aes_start` function.
+   *
+   * Note: it is discouraged to use this cipher mode, due to impractical amount
+   *       of different keys required to encrypt/decrypt multi-block messages.
    */
   kDifAesModeEcb = 1,
 
   /**
    * The Cipher Block Chaining Mode.
+   *
+   * In CBC cipher mode, the same key can be used for all messages, however
+   * new Initialisation Vector (IV) must be generated for any new message. The
+   * following condition must be true:
+   *     The IV must be unpredictable (it must not be possible to predict the IV
+   *     that will be associated to the plaintext in advance of the generation
+   * of the IV).
+   *
+   * With key length less than 256 bits, the excess portion of the `key` can be
+   * written with any data (preferably random).
    */
   kDifAesModeCbc = (1 << 1),
 
   /**
    * The Cipher Feedback Mode.
+   *
+   * In CFB cipher mode, the same key can be used for all messages, however
+   * new Initialisation Vector (IV) must be generated for any new message. The
+   * following condition must be true:
+   *     The IV must be unpredictable (it must not be possible to predict the IV
+   *     that will be associated to the plaintext in advance of the generation
+   * of the IV).
+   *
+   * With key length less than 256 bits, the excess portion of the `key` can be
+   * written with any data (preferably random).
    */
   kDifAesModeCfb = (1 << 2),
 
   /**
    * The Output Feedback Mode.
+   *
+   * In OFB cipher mode, the same key can be used for all messages, and the
+   * Initialization Vector (IV) need NOT be unpredictable. The following
+   * conditions must be true:
+   *     OFB mode requires a unique initialization vector for every message that
+   *     is ever encrypted under a given key, across all messages.
+   *
+   * With key length less than 256 bits, the excess portion of the `key` can be
+   * written with any data (preferably random).
    */
   kDifAesModeOfb = (1 << 3),
 
   /**
    * The Counter Mode.
+   *
+   * In CTR cipher mode, the same key can be used for all messages, if the
+   * following condition is true:
+   *     CTR mode requires a unique counter block for each plaintext block that
+   *     is ever encrypted under a given key, across all messages.
+   *
+   * With key length less than 256 bits, the excess portion of the `key` can be
+   * written with any data (preferably random).
    */
   kDifAesModeCtr = (1 << 4),
 } dif_aes_mode_t;
@@ -200,134 +245,24 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_aes_reset(const dif_aes_t *aes);
 
 /**
- * Begins an AES transaction in ECB mode.
- *
- * In ECB cipher mode the key must be changed for every new block of data. This
- * is the only secure way to use ECB cipher mode.
+ * Begins an AES transaction in the mode selected by the `transaction->mode`.
  *
  * Each call to this function should be sequenced with a call to
  * `dif_aes_end()`.
- *
- * Note: it is discouraged to use this cipher mode, due to inpractical amount
- *       of different keys required to encrypt/decrypt multi-block messages.
  *
  * The peripheral must be in IDLE state for this operation to take effect, and
  * will return `kDifAesBusy` if this condition is not met.
  *
  * @param aes AES state data.
  * @param transaction Configuration data.
+ * @param iv AES Initialisation Vector. The iv may not be used for some modes,
+ * see `dif_aes_mode_t` for more details.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_aes_start_ecb(const dif_aes_t *aes,
-                               const dif_aes_transaction_t *transaction,
-                               dif_aes_key_share_t key);
-
-/**
- * Begins an AES transaction in CBC mode.
- *
- * In CBC cipher mode, the same key can be used for all messages, however
- * new Initialisation Vector (IV) must be generated for any new message. The
- * following condition must be true:
- *     The IV must be unpredictable (it must not be possible to predict the IV
- *     that will be associated to the plaintext in advance of the generation of
- *     the IV).
- *
- * With key length less than 256 bits, the excess portion of the `key` can be
- * written with any data (preferably random).
- *
- * The peripheral must be in IDLE state for this operation to take effect, and
- * will return `kDifAesStartBusy` if this condition is not met.
- *
- * @param aes AES state data.
- * @param transaction Configuration data.
- * @param key Masked AES key.
- * @param iv AES Initialisation Vector.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_aes_start_cbc(const dif_aes_t *aes,
-                               const dif_aes_transaction_t *transaction,
-                               dif_aes_key_share_t key, dif_aes_iv_t iv);
-
-/**
- * Begins an AES transaction in CTR mode.
- *
- * In CTR cipher mode, the same key can be used for all messages, if the
- * following condition is true:
- *     CTR mode requires a unique counter block for each plaintext block that
- *     is ever encrypted under a given key, across all messages.
- *
- * With key length less than 256 bits, the excess portion of the `key` can be
- * written with any data (preferably random).
- *
- * The peripheral must be in IDLE state for this operation to take effect, and
- * will return `kDifAesStartBusy` if this condition is not met.
- *
- * @param aes AES state data.
- * @param transaction Configuration data.
- * @param key Masked AES key.
- * @param iv AES Initial Counter Value.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_aes_start_ctr(const dif_aes_t *aes,
-                               const dif_aes_transaction_t *transaction,
-                               dif_aes_key_share_t key, dif_aes_iv_t iv);
-
-/**
- * Begins an AES transaction in OFB mode.
- *
- * In OFB cipher mode, the same key can be used for all messages, and the
- * Initialization Vector (IV) need NOT be unpredictable. The following
- * conditions must be true:
- *     OFB mode requires a unique initialization vector for every message that
- *     is ever encrypted under a given key, across all messages.
- *
- * With key length less than 256 bits, the excess portion of the `key` can be
- * written with any data (preferably random).
- *
- * The peripheral must be in IDLE state for this operation to take effect, and
- * will return `kDifAesStartBusy` if this condition is not met.
- *
- * @param aes AES state data.
- * @param transaction Configuration data.
- * @param key Masked AES key.
- * @param iv AES Initialization vector.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_aes_start_ofb(const dif_aes_t *aes,
-                               const dif_aes_transaction_t *transaction,
-                               dif_aes_key_share_t key, dif_aes_iv_t iv);
-
-/**
- * Begins an AES transaction in CFB mode.
- *
- * In CFB cipher mode, the same key can be used for all messages, however
- * new Initialisation Vector (IV) must be generated for any new message. The
- * following condition must be true:
- *     The IV must be unpredictable (it must not be possible to predict the IV
- *     that will be associated to the plaintext in advance of the generation of
- *     the IV).
- *
- * With key length less than 256 bits, the excess portion of the `key` can be
- * written with any data (preferably random).
- *
- * The peripheral must be in IDLE state for this operation to take effect, and
- * will return `kDifAesStartBusy` if this condition is not met.
- *
- * @param aes AES state data.
- * @param transaction Configuration data.
- * @param key Masked AES key.
- * @param iv AES Initialization vector.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_aes_start_cfb(const dif_aes_t *aes,
-                               const dif_aes_transaction_t *transaction,
-                               dif_aes_key_share_t key, dif_aes_iv_t iv);
-
+dif_result_t dif_aes_start(const dif_aes_t *aes,
+                           const dif_aes_transaction_t *transaction,
+                           dif_aes_key_share_t key, const dif_aes_iv_t *iv);
 /**
  * Ends an AES transaction.
  *
