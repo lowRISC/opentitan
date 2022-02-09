@@ -123,8 +123,8 @@ class kmac_smoke_vseq extends kmac_base_vseq;
         if (en_sideload || provide_sideload_key) begin
           `uvm_create_on(sideload_seq, p_sequencer.key_sideload_sequencer_h);
           `DV_CHECK_RANDOMIZE_WITH_FATAL(sideload_seq,
-                                         sideload_key.valid == kmac_err_type !=
-                                         kmac_pkg::ErrKeyNotValid;)
+                                         sideload_key.valid ==
+                                         (kmac_err_type != kmac_pkg::ErrKeyNotValid);)
           `uvm_send(sideload_seq)
         end
         // write the SW key to the CSRs
