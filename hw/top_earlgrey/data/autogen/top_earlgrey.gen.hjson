@@ -7145,6 +7145,103 @@
           index: -1
           external: true
         }
+        {
+          struct: ast_obs_ctrl
+          package: ast_pkg
+          type: uni
+          name: obs_ctrl
+          act: rcv
+          inst_name: ast
+          width: 1
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: ast_obs_ctrl
+          index: -1
+          external: true
+        }
+        {
+          struct: logic
+          package: ""
+          type: uni
+          width: 8
+          name: fla_obs
+          act: req
+          inst_name: ast
+          default: ""
+          external: true
+          top_signame: fla_obs
+          index: -1
+        }
+        {
+          struct: logic
+          package: ""
+          type: uni
+          width: 8
+          name: otp_obs
+          act: req
+          inst_name: ast
+          default: ""
+          external: true
+          top_signame: otp_obs
+          index: -1
+        }
+      ]
+    }
+    {
+      name: flash_ctrl
+      inter_signal_list:
+      [
+        {
+          struct: logic
+          package: ""
+          type: uni
+          width: "8"
+          name: fla_obs
+          act: rcv
+          inst_name: flash_ctrl
+          index: -1
+        }
+        {
+          struct: ast_obs_ctrl
+          package: ast_pkg
+          type: uni
+          name: obs_ctrl
+          act: req
+          inst_name: flash_ctrl
+          width: 1
+          default: ""
+          top_signame: ast_obs_ctrl
+          index: -1
+        }
+      ]
+    }
+    {
+      name: otp_ctrl
+      inter_signal_list:
+      [
+        {
+          struct: logic
+          package: ""
+          type: uni
+          width: "8"
+          name: otp_obs
+          act: rcv
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
+          struct: ast_obs_ctrl
+          package: ast_pkg
+          type: uni
+          name: obs_ctrl
+          act: req
+          inst_name: otp_ctrl
+          width: 1
+          default: ""
+          top_signame: ast_obs_ctrl
+          index: -1
+        }
       ]
     }
   ]
@@ -7167,6 +7264,11 @@
       ast.rom_cfg:
       [
         rom_ctrl.rom_cfg
+      ]
+      ast.obs_ctrl:
+      [
+        flash_ctrl.obs_ctrl
+        otp_ctrl.obs_ctrl
       ]
       alert_handler.crashdump:
       [
@@ -7738,6 +7840,9 @@
       ast.ram_1p_cfg: ram_1p_cfg
       ast.ram_2p_cfg: ram_2p_cfg
       ast.rom_cfg: rom_cfg
+      ast.obs_ctrl: obs_ctrl
+      ast.fla_obs: fla_obs
+      ast.otp_obs: otp_obs
       clkmgr_aon.jitter_en: clk_main_jitter_en
       clkmgr_aon.io_clk_byp_req: io_clk_byp_req
       clkmgr_aon.io_clk_byp_ack: io_clk_byp_ack
@@ -18622,6 +18727,91 @@
         index: -1
         external: true
       }
+      {
+        struct: ast_obs_ctrl
+        package: ast_pkg
+        type: uni
+        name: obs_ctrl
+        act: rcv
+        inst_name: ast
+        width: 1
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: ast_obs_ctrl
+        index: -1
+        external: true
+      }
+      {
+        struct: logic
+        package: ""
+        type: uni
+        width: 8
+        name: fla_obs
+        act: req
+        inst_name: ast
+        default: ""
+        external: true
+        top_signame: fla_obs
+        index: -1
+      }
+      {
+        struct: logic
+        package: ""
+        type: uni
+        width: 8
+        name: otp_obs
+        act: req
+        inst_name: ast
+        default: ""
+        external: true
+        top_signame: otp_obs
+        index: -1
+      }
+      {
+        struct: logic
+        package: ""
+        type: uni
+        width: "8"
+        name: fla_obs
+        act: rcv
+        inst_name: flash_ctrl
+        index: -1
+      }
+      {
+        struct: ast_obs_ctrl
+        package: ast_pkg
+        type: uni
+        name: obs_ctrl
+        act: req
+        inst_name: flash_ctrl
+        width: 1
+        default: ""
+        top_signame: ast_obs_ctrl
+        index: -1
+      }
+      {
+        struct: logic
+        package: ""
+        type: uni
+        width: "8"
+        name: otp_obs
+        act: rcv
+        inst_name: otp_ctrl
+        index: -1
+      }
+      {
+        struct: ast_obs_ctrl
+        package: ast_pkg
+        type: uni
+        name: obs_ctrl
+        act: req
+        inst_name: otp_ctrl
+        width: 1
+        default: ""
+        top_signame: ast_obs_ctrl
+        index: -1
+      }
     ]
     external:
     [
@@ -18720,6 +18910,42 @@
         conn_type: true
         index: -1
         netname: ast_rom_cfg
+      }
+      {
+        package: ast_pkg
+        struct: ast_obs_ctrl
+        signame: obs_ctrl_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: true
+        index: -1
+        netname: ast_obs_ctrl
+      }
+      {
+        package: ""
+        struct: logic
+        signame: fla_obs_o
+        width: 8
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: fla_obs
+      }
+      {
+        package: ""
+        struct: logic
+        signame: otp_obs_o
+        width: 8
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: otp_obs
       }
       {
         package: ""
@@ -19164,6 +19390,17 @@
         act: rcv
         suffix: ""
         default: prim_rom_pkg::ROM_CFG_DEFAULT
+      }
+      {
+        package: ast_pkg
+        struct: ast_obs_ctrl
+        signame: ast_obs_ctrl
+        width: 1
+        type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
+        default: ast_pkg::AST_OBS_CTRL_DEFAULT
       }
       {
         package: alert_pkg

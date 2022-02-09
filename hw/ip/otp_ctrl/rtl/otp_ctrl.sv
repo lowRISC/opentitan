@@ -40,6 +40,9 @@ module otp_ctrl
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0]  alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]  alert_tx_o,
+  //Observability
+  input  ast_pkg::ast_obs_ctrl_t                     obs_ctrl_i,
+  output logic [8-1:0]                               otp_obs_o,
   // Macro-specific power sequencing signals to/from AST.
   output otp_ast_req_t                               otp_ast_pwr_seq_o,
   input  otp_ast_rsp_t                               otp_ast_pwr_seq_h_i,
@@ -757,6 +760,9 @@ module otp_ctrl
     .test_vect_o      ( otp_test_vect                 ),
     .test_tl_i        ( prim_tl_h2d_gated             ),
     .test_tl_o        ( prim_tl_d2h_gated             ),
+    // Observability
+    .obs_ctrl_i       ( obs_ctrl_i                    ),
+    .otp_obs_o        ( otp_obs_o                     ),
     // Other DFT signals
     .scan_en_i,
     .scan_rst_ni,

@@ -707,6 +707,11 @@ module chip_earlgrey_asic (
   // monitored clock
   logic sck_monitor;
 
+  // observe interface
+  logic [8-1:0] fla_obs;
+  logic [8-1:0] otp_obs;
+  ast_pkg::ast_obs_ctrl_t obs_ctrl;
+
   // otp power sequence
   otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
   otp_ctrl_pkg::otp_ast_rsp_t otp_ctrl_otp_ast_pwr_seq_h;
@@ -843,6 +848,7 @@ module chip_earlgrey_asic (
   ast_pkg::ast_dif_t flash_alert;
   ast_pkg::ast_dif_t otp_alert;
   logic ast_init_done;
+  logic usb_diff_rx_obs;
 
 
   ast #(
@@ -947,10 +953,11 @@ module chip_earlgrey_asic (
     // dft
     .dft_strap_test_i      ( dft_strap_test   ),
     .lc_dft_en_i           ( dft_en           ),
-    .fla_obs_i             ( '0 ),
-    .otp_obs_i             ( '0 ),
+    .fla_obs_i             ( fla_obs ),
+    .otp_obs_i             ( otp_obs ),
     .otm_obs_i             ( '0 ),
-    .obs_ctrl_o            (  ),
+    .usb_obs_i             ( usb_diff_rx_obs ),
+    .obs_ctrl_o            ( obs_ctrl ),
     // pinmux related
     .padmux2ast_i          ( pad2ast    ),
     .ast2padmux_o          ( ast2pinmux ),
@@ -1054,14 +1061,15 @@ module chip_earlgrey_asic (
   prim_usb_diff_rx #(
     .CalibW(ast_pkg::UsbCalibWidth)
   ) u_prim_usb_diff_rx (
-    .input_pi      ( USB_P                 ),
-    .input_ni      ( USB_N                 ),
-    .input_en_i    ( usb_rx_enable         ),
-    .core_pok_h_i  ( ast_pwst_h.aon_pok    ),
-    .pullup_p_en_i ( usb_pullup_p_en       ),
-    .pullup_n_en_i ( usb_pullup_n_en       ),
-    .calibration_i ( usb_io_pu_cal         ),
-    .input_o       ( dio_in[DioUsbdevD]    )
+    .input_pi          ( USB_P                 ),
+    .input_ni          ( USB_N                 ),
+    .input_en_i        ( usb_rx_enable         ),
+    .core_pok_h_i      ( ast_pwst_h.aon_pok    ),
+    .pullup_p_en_i     ( usb_pullup_p_en       ),
+    .pullup_n_en_i     ( usb_pullup_n_en       ),
+    .calibration_i     ( usb_io_pu_cal         ),
+    .usb_diff_rx_obs_o ( usb_diff_rx_obs       ),
+    .input_o           ( dio_in[DioUsbdevD]    )
   );
 
   // Tie-off unused signals
@@ -1132,6 +1140,9 @@ module chip_earlgrey_asic (
     .adc_rsp_i                    ( adc_rsp                    ),
     .ast_edn_req_i                ( ast_edn_edn_req            ),
     .ast_edn_rsp_o                ( ast_edn_edn_rsp            ),
+    .obs_ctrl_i                   ( obs_ctrl                   ),
+    .fla_obs_o                    ( fla_obs                    ),
+    .otp_obs_o                    ( otp_obs                    ),
     .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
     .otp_alert_o                  ( otp_alert                  ),

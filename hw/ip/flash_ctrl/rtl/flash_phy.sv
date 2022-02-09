@@ -36,6 +36,8 @@ module flash_phy
   input flash_power_down_h_i,
   inout [1:0] flash_test_mode_a_io,
   inout flash_test_voltage_h_io,
+  input ast_pkg::ast_obs_ctrl_t obs_ctrl_i,
+  output logic [8-1:0] fla_obs_o,
   input prim_mubi_pkg::mubi4_t flash_bist_enable_i,
   input lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i,
   output ast_pkg::ast_dif_t flash_alert_o
@@ -310,6 +312,9 @@ module flash_phy
     .flash_test_mode_a_io,
     .flash_test_voltage_h_io,
     .flash_err_o(flash_ctrl_o.flash_err),
+     // Observability
+    .obs_ctrl_i       ( obs_ctrl_i),
+    .fla_obs_o        ( fla_obs_o),
     // There alert signals are forwarded to both flash controller and ast
     .fl_alert_src_o(flash_alert_o)
   );

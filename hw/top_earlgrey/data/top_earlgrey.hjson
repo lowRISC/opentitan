@@ -765,7 +765,64 @@
           // The activity direction for a port inter-signal is "opposite" of
           // what the external module actually needs.
           act:     "rcv"
-        }
+        },
+
+        { struct:  "ast_obs_ctrl",
+          package: "ast_pkg",
+          type:    "uni",
+          name:    "obs_ctrl",
+          act:     "rcv"
+        },
+        { struct:  "logic",
+          package: "",
+          type:    "uni",
+          width:   "8"
+          name:    "fla_obs",
+          act:     "req"
+        },
+        { struct:  "logic",
+          package: "",
+          type:    "uni",
+          width:   "8"
+          name:    "otp_obs",
+          act:     "req"
+        },
+      ]
+    },
+
+    { name: "flash_ctrl",
+      inter_signal_list: [
+        { struct:  "logic",
+          package: "",
+          type:    "uni",
+          width:   "8"
+          name:    "fla_obs",
+          act:     "rcv"
+        },
+        { struct:  "ast_obs_ctrl",
+          package: "ast_pkg",
+          type:    "uni",
+          name:    "obs_ctrl",
+          act:     "req"
+        },
+      ]
+    },
+
+    { name: "otp_ctrl",
+      inter_signal_list: [
+        { struct:  "logic",
+          package: "",
+          type:    "uni",
+          width:   "8"
+          name:    "otp_obs",
+          act:     "rcv"
+        },
+        { struct:  "ast_obs_ctrl",
+          package: "ast_pkg",
+          type:    "uni",
+          name:    "obs_ctrl",
+          act:     "req"
+        },
       ]
     },
   ]
@@ -784,6 +841,7 @@
                                    'rv_core_ibex.ram_cfg'],
       'ast.ram_2p_cfg'          : ['spi_device.ram_cfg', 'usbdev.ram_cfg'],
       'ast.rom_cfg'             : ['rom_ctrl.rom_cfg'],
+      'ast.obs_ctrl'            : ['flash_ctrl.obs_ctrl', 'otp_ctrl.obs_ctrl'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
       'alert_handler.esc_rx'    : ['rv_core_ibex.esc_rx',
                                    'lc_ctrl.esc_scrap_state0_rx',
@@ -839,6 +897,7 @@
 
       // KeyMgr Sideload & KDF function
       'otp_ctrl.otp_keymgr_key' : ['keymgr.otp_key'],
+
       'keymgr.aes_key'          : ['aes.keymgr_key'],
       'keymgr.kmac_key'         : ['kmac.keymgr_key'],
       'keymgr.otbn_key'         : ['otbn.keymgr_key'],
@@ -977,6 +1036,9 @@
         'ast.ram_1p_cfg'                  : 'ram_1p_cfg',
         'ast.ram_2p_cfg'                  : 'ram_2p_cfg',
         'ast.rom_cfg'                     : 'rom_cfg',
+        'ast.obs_ctrl'                    : 'obs_ctrl',
+        'ast.fla_obs'                     : 'fla_obs',
+        'ast.otp_obs'                     : 'otp_obs',
         'clkmgr_aon.jitter_en'            : 'clk_main_jitter_en',
         'clkmgr_aon.io_clk_byp_req'       : 'io_clk_byp_req',
         'clkmgr_aon.io_clk_byp_ack'       : 'io_clk_byp_ack',
@@ -989,6 +1051,7 @@
         'flash_ctrl.flash_power_ready_h'  : 'flash_power_ready_h',
         'flash_ctrl.flash_test_mode_a'    : 'flash_test_mode_a',
         'flash_ctrl.flash_test_voltage_h ': 'flash_test_voltage_h',
+//        'flash_ctrl.fla_obs'              : 'fla_obs',
         'entropy_src.entropy_src_rng'     : 'es_rng',
         'entropy_src.rng_fips'            : 'es_rng_fips',
         'peri.tl_ast'                     : 'ast_tl',
@@ -999,7 +1062,8 @@
         'otp_ctrl.otp_ast_pwr_seq_h'      : '',
         'otp_ctrl.otp_ext_voltage_h'      : 'otp_ext_voltage_h',
         'otp_ctrl.otp_alert'              : 'otp_alert',
-        'rstmgr_aon.por_n'                : 'por_n'
+ //       'otp_ctrl.otp_obs'                : 'otp_obs',
+        'rstmgr_aon.por_n'                : 'por_n',
         'sensor_ctrl.ast_alert'           : 'sensor_ctrl_ast_alert',
         'sensor_ctrl.ast_status'          : 'sensor_ctrl_ast_status',
         'sensor_ctrl.ast2pinmux'          : 'ast2pinmux',

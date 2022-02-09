@@ -122,6 +122,7 @@ module ast #(
   input [8-1:0] fla_obs_i,                    // FLASH Observe Bus
   input [8-1:0] otp_obs_i,                    // OTP Observe Bus
   input [8-1:0] otm_obs_i,                    // OT Modules Observe Bus
+  input usb_obs_i,                            // USB DIFF RX Observe
   output ast_pkg::ast_obs_ctrl_t obs_ctrl_o,  // Observe Control
 
   // pad mux/pad related
@@ -223,7 +224,9 @@ logic rst_poks_n, rst_poks_por_n;
 assign rst_poks_n = scan_mode ? scan_reset_n : vcc_pok_str && vcaon_pok;
 assign rst_poks_por_n = scan_mode ? scan_reset_n : vcc_pok_str && vcaon_pok && por_ni;
 
-logic vcaon_pok_por_src;
+logic vcaon_pok_por_src, vcaon_pok_por_lat, poks_por_ack, rglssm_vcmon, rglssm_brout;
+
+assign poks_por_ack = vcaon_pok_por_src || rglssm_vcmon;
 
 // Reset De-Assert Sync
 prim_flop_2sync #(
@@ -232,11 +235,15 @@ prim_flop_2sync #(
 ) u_poks_por_dasrt (
   .clk_i ( clk_aon ),
   .rst_ni ( rst_poks_por_n ),
-  .d_i ( 1'b1 ),
+  .d_i ( poks_por_ack ),
   .q_o ( vcaon_pok_por_src )
 );
 
-assign vcaon_pok_por = scan_mode ? scan_reset_n : vcaon_pok_por_src;
+always_latch begin
+  if ( !rglssm_brout ) vcaon_pok_por_lat <= vcaon_pok_por_src;
+end
+
+assign vcaon_pok_por = scan_mode ? scan_reset_n : vcaon_pok_por_lat;
 assign ast_pwst_o.aon_pok = vcaon_pok_por;
 
 logic clk_aon_n;
@@ -318,6 +325,8 @@ rglts_pdm_3p3v u_rglts_pdm_3p3v (
   .scan_reset_h_ni ( scan_reset_n ),
   .vcmain_pok_h_o ( vcmain_pok_h ),
   .rglssm_vcaon_h_o ( rglssm_vcaon ),
+  .rglssm_vcmon_h_o ( rglssm_vcmon ),
+  .rglssm_brout_h_o ( rglssm_brout ),
   .vcaon_pok_h_o ( vcaon_pok_h ),
   .vcaon_pok_1p1_h_o ( vcaon_pok ),
   .vcaon_pok_por_h_o ( ast_pwst_h_o.aon_pok ),
@@ -956,6 +965,7 @@ assign unused_sigs = ^{ clk_ast_usb_i,
                         fla_obs_i[8-1:0],
                         otp_obs_i[8-1:0],
                         otm_obs_i[8-1:0],
+                        usb_obs_i,
                         reg2hw.rega,  // [0:31]
                         reg2hw.regb   // [0:3]
                       };

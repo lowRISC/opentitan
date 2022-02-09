@@ -54,6 +54,9 @@ module prim_generic_otp
   input  cmd_e                   cmd_i,  // 00: read command, 01: write command, 11: init command
   input [AddrWidth-1:0]          addr_i,
   input [IfWidth-1:0]            wdata_i,
+  //Observability
+  input ast_pkg::ast_obs_ctrl_t  obs_ctrl_i,
+  output logic [8-1:0]           otp_obs_o,
   // Response channel
   output logic                   valid_o,
   output logic [IfWidth-1:0]     rdata_o,
@@ -81,6 +84,10 @@ module prim_generic_otp
   assign unused_scan = ^{scanmode_i, scan_en_i, scan_rst_ni};
 
   assign otp_alert_src_o = '{p: '0, n: '1};
+
+  logic unused_obs_ctrl;
+  assign unused_obs_ctrl = obs_ctrl_i;
+  assign otp_obs_o = 8'h00;
 
   assign test_vect_o = '0;
   assign test_status_o = '0;

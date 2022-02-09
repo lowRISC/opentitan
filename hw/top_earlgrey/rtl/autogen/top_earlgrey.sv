@@ -123,6 +123,9 @@ module top_earlgrey #(
   input  prim_ram_1p_pkg::ram_1p_cfg_t       ram_1p_cfg_i,
   input  prim_ram_2p_pkg::ram_2p_cfg_t       ram_2p_cfg_i,
   input  prim_rom_pkg::rom_cfg_t       rom_cfg_i,
+  input  ast_pkg::ast_obs_ctrl_t       obs_ctrl_i,
+  output logic [7:0] fla_obs_o,
+  output logic [7:0] otp_obs_o,
   output logic       clk_main_jitter_en_o,
   output prim_mubi_pkg::mubi4_t       io_clk_byp_req_o,
   input  prim_mubi_pkg::mubi4_t       io_clk_byp_ack_i,
@@ -526,6 +529,7 @@ module top_earlgrey #(
   prim_ram_1p_pkg::ram_1p_cfg_t       ast_ram_1p_cfg;
   prim_ram_2p_pkg::ram_2p_cfg_t       ast_ram_2p_cfg;
   prim_rom_pkg::rom_cfg_t       ast_rom_cfg;
+  ast_pkg::ast_obs_ctrl_t       ast_obs_ctrl;
   alert_pkg::alert_crashdump_t       alert_handler_crashdump;
   prim_esc_pkg::esc_rx_t [3:0] alert_handler_esc_rx;
   prim_esc_pkg::esc_tx_t [3:0] alert_handler_esc_tx;
@@ -746,6 +750,7 @@ module top_earlgrey #(
   assign ast_ram_1p_cfg = ram_1p_cfg_i;
   assign ast_ram_2p_cfg = ram_2p_cfg_i;
   assign ast_rom_cfg = rom_cfg_i;
+  assign ast_obs_ctrl = obs_ctrl_i;
 
   // define partial inter-module tie-off
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp1;
@@ -1487,6 +1492,8 @@ module top_earlgrey #(
       .core_tl_o(otp_ctrl_core_tl_rsp),
       .prim_tl_i(otp_ctrl_prim_tl_req),
       .prim_tl_o(otp_ctrl_prim_tl_rsp),
+      .obs_ctrl_i(ast_obs_ctrl),  //JL TODO
+      .otp_obs_o(otp_obs_o),      //JL TODO
       .scanmode_i,
       .scan_rst_ni,
       .scan_en_i,
@@ -2069,6 +2076,8 @@ module top_earlgrey #(
       .prim_tl_o(flash_ctrl_prim_tl_rsp),
       .mem_tl_i(flash_ctrl_mem_tl_req),
       .mem_tl_o(flash_ctrl_mem_tl_rsp),
+      .obs_ctrl_i(ast_obs_ctrl),  //JL TODO
+      .fla_obs_o(fla_obs_o),      //JL TODO
       .scanmode_i,
       .scan_rst_ni,
       .scan_en_i,

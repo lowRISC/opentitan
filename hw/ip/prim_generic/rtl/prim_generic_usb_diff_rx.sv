@@ -17,6 +17,7 @@ module prim_generic_usb_diff_rx #(
   input              pullup_p_en_i, // pullup enable for P
   input              pullup_n_en_i, // pullup enable for N
   input [CalibW-1:0] calibration_i, // calibration input
+  output logic       usb_diff_rx_obs_o, // observability output
   output logic       input_o        // output of differential input buffer
 );
 
@@ -30,5 +31,10 @@ module prim_generic_usb_diff_rx #(
   assign unused_pullup_p_en = pullup_p_en_i;
   assign unused_pullup_n_en = pullup_n_en_i;
   assign unused_core_pok = core_pok_h_i;
+
+  prim_buf obs_buf (
+    .in_i  (input_o),
+    .out_o (usb_diff_rx_obs_o)
+  );
 
 endmodule : prim_generic_usb_diff_rx
