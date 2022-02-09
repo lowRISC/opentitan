@@ -41,6 +41,7 @@ module rom_ctrl_fsm
   // To KMAC (digest data)
   input logic                        kmac_done_i,
   input logic [TopCount*32-1:0]      kmac_digest_i,
+  input logic                        kmac_err_i,
 
   // To ROM mux
   output mubi4_t                     rom_select_bus_o,
@@ -192,14 +193,14 @@ module rom_ctrl_fsm
       ReadingHigh: begin
         unique case ({kmac_done_i, counter_done})
           2'b01: state_d = RomAhead;
-          2'b10: state_d = KmacAhead;
-          2'b11: state_d = Checking;
+          2'b10: state_d = kmac_err_i ? Invalid : KmacAhead;
+          2'b11: state_d = kmac_err_i ? Invalid : Checking;
           default: ; // No change
         endcase
       end
 
       RomAhead: begin
-        if (kmac_done_i) state_d = Checking;
+        if (kmac_done_i) state_d = kmac_err_i ? Invalid : Checking;
       end
 
       KmacAhead: begin
