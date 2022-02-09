@@ -6,6 +6,7 @@
 
 module prim_generic_flop_en #(
   parameter int               Width      = 1,
+  parameter bit               EnSecBuf   = 0,
   parameter logic [Width-1:0] ResetValue = 0
 ) (
   input                    clk_i,
@@ -15,10 +16,22 @@ module prim_generic_flop_en #(
   output logic [Width-1:0] q_o
 );
 
+  logic en;
+  if (EnSecBuf) begin : gen_en_sec_buf
+    prim_sec_anchor_buf #(
+      .Width(1)
+    ) u_en_buf (
+      .in_i(en_i),
+      .out_o(en)
+    );
+  end else begin : gen_en
+    assign en = en_i;
+  end
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       q_o <= ResetValue;
-    end else if (en_i) begin
+    end else if (en) begin
       q_o <= d_i;
     end
   end
