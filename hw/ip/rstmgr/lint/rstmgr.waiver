@@ -10,3 +10,13 @@ set_clock_drivers prim_clock_buf
 
 waive -rules TERMINAL_STATE -location {rstmgr_cnsty_chk.sv} -regexp {Terminal state 'Error' is detected} \
       -comment "Intentional terminal state"
+
+# All leaf resets have a reset multiplexer for scan reset
+waive -rules RESET_MUX -location {rstmgr.sv rstmgr_por.sv rstmgr_ctrl.sv} -regexp {Asynchronous reset '(resets_o\.)?rst_[A-Za-z_0-9]+_n(\[[0-9:]+\])?' is driven by a multiplexer} \
+      -comment "This is dedicated reset infrastructure, and hence permissible"
+
+waive -rules RESET_USE -location {rstmgr.sv} -regexp {'rst_n\[1\]' is connected to 'rstmgr_ctrl' port 'rst_ni*} \
+      -comment "Parent Non always on resets are combined with the always on reset first before being used as resets"
+
+waive -rules RESET_USE -location {rstmgr.sv} -regexp {rst_lc_src_n.* is connected to 'rstmgr_ctrl' port 'rst_parent_ni.*} \
+      -comment "Parent resets are used synchronously instead of directly as async resets"
