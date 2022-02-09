@@ -708,7 +708,8 @@ module usbdev_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (usb_48mhz_usbctrl_wdata)
   );
-  assign unused_usb_48mhz_usbctrl_wdata = ^usb_48mhz_usbctrl_wdata;
+  assign unused_usb_48mhz_usbctrl_wdata =
+      ^usb_48mhz_usbctrl_wdata;
 
   logic  aon_wake_config_wake_en_qs_int;
   logic [1:0] aon_wake_config_d;
@@ -743,7 +744,8 @@ module usbdev_reg_top (
     .dst_regwen_o (),
     .dst_wd_o     (aon_wake_config_wdata)
   );
-  assign unused_aon_wake_config_wdata = ^aon_wake_config_wdata;
+  assign unused_aon_wake_config_wdata =
+      ^aon_wake_config_wdata;
 
   logic [2:0]  aon_wake_events_state_qs_int;
   logic  aon_wake_events_disconnected_qs_int;
