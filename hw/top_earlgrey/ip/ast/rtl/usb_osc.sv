@@ -24,14 +24,15 @@ timeunit 1ns / 1ps;
 import ast_bhv_pkg::* ;
 
 localparam real UsbClkPeriod = 1000000/48;  // ~20833.33333ps (48Mhz)
-integer rand32;
 reg init_start = 1'b0;
+real CLK_PERIOD;
+integer rand32;
 
 initial begin
-  $display("\nUSB Clock Period: %0dps", UsbClkPeriod);
+  #1; init_start  = 1'b1;
+  $display("\nUSB Power-up Clock Frequency: %0d Hz", $rtoi(10**9/CLK_PERIOD));
   rand32 = $urandom_range((9'd416), -(9'd416));  // +/-416ps (+/-2% max)
   $display("USB Clock Drift: %0dps", rand32);
-  #1; init_start  = 1'b1;
 end
 
 // Enable 5us RC Delay on rise
@@ -51,8 +52,11 @@ reg clk_osc = 1'b1;
 shortreal drift;
 assign drift = ref_val ? 0 : rand32;
 
+assign CLK_PERIOD = $itor(UsbClkPeriod + drift)/1000;
+
+// Free running oscillator
 always begin
-  #((UsbClkPeriod + drift)/2000) clk_osc = ~clk_osc;
+  #(CLK_PERIOD/2) clk_osc = ~clk_osc;
 end
 
 // HDL Clock Gate

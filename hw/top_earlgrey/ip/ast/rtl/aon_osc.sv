@@ -22,12 +22,19 @@ module aon_osc (
 timeunit 1ns / 10ps;
 import ast_bhv_pkg::* ;
 
-localparam time AonClkPeriod = 5000ns; // 5000ns (200Khz)
+localparam time AonClkPeriod = 5000ns; // 5000ns (200KHz)
+
+real CLK_PERIOD, ckmul;
 reg init_start = 1'b0;
 
 initial begin
-  $display("\nAON Clock Period: %0dns", AonClkPeriod);
-  #1; init_start  = 1'b1;
+  if ( !$value$plusargs("osc200k_freq_multiplier=%f", ckmul) ) begin
+    ckmul = 1.0;
+  end
+  CLK_PERIOD = $itor(AonClkPeriod)/ckmul;
+  #1; init_start = 1'b1;
+  $display("\nAON Power-up Base Clock Frequency: %0d Hz", $rtoi(10**9/(CLK_PERIOD*ckmul)));
+  $display("AON Power-up Multiplied Clock Frequency: %0d Hz", $rtoi(10**9/CLK_PERIOD));
 end
 
 // Enable 5us RC Delay on rise
@@ -37,15 +44,15 @@ assign en_osc_re = en_osc_re_buf && init_start;
 
 // Clock Oscillator
 ////////////////////////////////////////
-logic en_osc;
 reg clk_osc = 1'b1;
 
+// Free running oscillator
 always begin
-  #(AonClkPeriod/2) clk_osc = ~clk_osc;
+  #(CLK_PERIOD/2) clk_osc = ~clk_osc;
 end
 
 // HDL Clock Gate
-logic clk;
+logic clk, en_osc;
 reg en_clk;
 
 always_latch begin

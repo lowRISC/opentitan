@@ -24,10 +24,12 @@ import ast_bhv_pkg::* ;
 
 localparam real IoClkPeriod = 1000000/96;  // ~10416.666667ps (96Mhz)
 reg init_start = 1'b0;
+real CLK_PERIOD;
 
 initial begin
-  $display("\nIO Clock Period: %0dps", IoClkPeriod);
+  CLK_PERIOD = $itor(IoClkPeriod/1000);
   #1; init_start  = 1'b1;
+  $display("\nIO Power-up Clock Frequency: %0d Hz", $rtoi(10**9/CLK_PERIOD));
 end
 
 // Enable 5us RC Delay on rise
@@ -41,8 +43,9 @@ assign en_osc_re = en_osc_re_buf && init_start;
 logic en_osc;
 reg clk_osc = 1'b1;
 
+// Free running oscillator
 always begin
-   #(IoClkPeriod/2000) clk_osc = ~clk_osc;
+   #(CLK_PERIOD/2) clk_osc = ~clk_osc;
 end
 
 // HDL Clock Gate

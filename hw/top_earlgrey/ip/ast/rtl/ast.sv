@@ -83,6 +83,7 @@ module ast #(
   input clk_src_io_en_i,                      // IO Source Clock Enable
   output logic clk_src_io_o,                  // IO Source Clock
   output logic clk_src_io_val_o,              // IO Source Clock Valid
+  output logic clk_src_io_48m_o,              // IO Source Clock is 48MHz
 
   // usb source clock
   input usb_ref_pulse_i,                      // USB Reference Pulse
@@ -122,6 +123,7 @@ module ast #(
   input [8-1:0] fla_obs_i,                    // FLASH Observe Bus
   input [8-1:0] otp_obs_i,                    // OTP Observe Bus
   input [8-1:0] otm_obs_i,                    // OT Modules Observe Bus
+  input usb_obs_i,                            // USB DIFF RX Observe
   output ast_pkg::ast_obs_ctrl_t obs_ctrl_o,  // Observe Control
 
   // pad mux/pad related
@@ -163,7 +165,7 @@ import ast_bhv_pkg::* ;
 
 logic scan_mode, shift_en, scan_clk, scan_reset_n;
 logic vcc_pok, vcc_pok_h, vcc_pok_str;
-logic vcaon_pok, vcaon_pok_h, vcmain_pok, vcmain_pok_h;
+logic vcaon_pok, vcaon_pok_h, vcmain_pok;
 logic vcaon_pok_por, vcmain_pok_por;
 
 // Local (AST) System clock buffer
@@ -223,7 +225,9 @@ logic rst_poks_n, rst_poks_por_n;
 assign rst_poks_n = scan_mode ? scan_reset_n : vcc_pok_str && vcaon_pok;
 assign rst_poks_por_n = scan_mode ? scan_reset_n : vcc_pok_str && vcaon_pok && por_ni;
 
-logic vcaon_pok_por_src;
+logic vcaon_pok_por_src, vcaon_pok_por_lat, poks_por_ack, rglssm_vcmon, rglssm_brout;
+
+assign poks_por_ack = vcaon_pok_por_src || rglssm_vcmon;
 
 // Reset De-Assert Sync
 prim_flop_2sync #(
@@ -232,11 +236,14 @@ prim_flop_2sync #(
 ) u_poks_por_dasrt (
   .clk_i ( clk_aon ),
   .rst_ni ( rst_poks_por_n ),
-  .d_i ( 1'b1 ),
+  .d_i ( poks_por_ack ),
   .q_o ( vcaon_pok_por_src )
 );
 
-assign vcaon_pok_por = scan_mode ? scan_reset_n : vcaon_pok_por_src;
+// Replace Latch for the OS code
+assign vcaon_pok_por_lat = rglssm_brout || vcaon_pok_por_src;
+
+assign vcaon_pok_por = scan_mode ? scan_reset_n : vcaon_pok_por_lat;
 assign ast_pwst_o.aon_pok = vcaon_pok_por;
 
 logic clk_aon_n;
@@ -256,8 +263,6 @@ end
 ///////////////////////////////////////
 // VCMAIN POK (Always ON)
 ///////////////////////////////////////
-
-assign vcmain_pok = vcmain_pok_h;   // Level Shifter
 
 logic rglssm_vcaon;
 
@@ -316,12 +321,14 @@ rglts_pdm_3p3v u_rglts_pdm_3p3v (
   .otp_power_seq_h_i ( otp_power_seq[1:0] ),
   .scan_mode_h_i ( scan_mode ),
   .scan_reset_h_ni ( scan_reset_n ),
-  .vcmain_pok_h_o ( vcmain_pok_h ),
   .rglssm_vcaon_h_o ( rglssm_vcaon ),
+  .rglssm_vcmon_h_o ( rglssm_vcmon ),
+  .rglssm_brout_h_o ( rglssm_brout ),
+  .vcmain_pok_h_o ( vcmain_pok ),
+  .vcmain_pok_por_h_o ( ast_pwst_h_o.main_pok ),
   .vcaon_pok_h_o ( vcaon_pok_h ),
   .vcaon_pok_1p1_h_o ( vcaon_pok ),
   .vcaon_pok_por_h_o ( ast_pwst_h_o.aon_pok ),
-  .vcmain_pok_por_h_o ( ast_pwst_h_o.main_pok ),
   .vio_pok_h_o ( ast_pwst_h_o.io_pok[1:0] ),
   .vcc_pok_str_h_o ( ast_pwst_h_o.vcc_pok ),
   .vcc_pok_str_1p1_h_o ( vcc_pok_str ),
@@ -415,7 +422,7 @@ logic clk_aon_ext;
 
 assign clk_aon_ext   = clk_osc_byp_i.aon;
 `endif
-assign rst_aon_clk_n = vcaon_pok;
+assign rst_aon_clk_n = vcc_pok_str;
 
 aon_clk  u_aon_clk (
   .vcore_pok_h_i ( vcaon_pok_h ),
@@ -506,6 +513,7 @@ ast_clks_byp u_ast_clks_byp (
   .clk_src_sys_val_o ( clk_src_sys_val_o ),
   .clk_src_io_o ( clk_src_io ),
   .clk_src_io_val_o ( clk_src_io_val_o ),
+  .clk_src_io_48m_o ( clk_src_io_48m_o ),
   .clk_src_usb_o ( clk_src_usb ),
   .clk_src_usb_val_o ( clk_src_usb_val_o ),
   .clk_src_aon_o ( clk_src_aon ),
@@ -956,6 +964,7 @@ assign unused_sigs = ^{ clk_ast_usb_i,
                         fla_obs_i[8-1:0],
                         otp_obs_i[8-1:0],
                         otm_obs_i[8-1:0],
+                        usb_obs_i,
                         reg2hw.rega,  // [0:31]
                         reg2hw.regb   // [0:3]
                       };
