@@ -23,18 +23,6 @@ extern "C" {
  * $ ./util/design/sparse-fsm-encode.py -d 2 -m 5 -n 8 \
  *     -s 3775359077 --language=c
  *
- * Hamming distance histogram:
- *
- *  0: --
- *  1: --
- *  2: --
- *  3: |||||| (20.00%)
- *  4: |||||||||||||||||||| (60.00%)
- *  5: |||||| (20.00%)
- *  6: --
- *  7: --
- *  8: --
- *
  * Minimum Hamming distance: 3
  * Maximum Hamming distance: 5
  * Minimum Hamming weight: 3
@@ -58,18 +46,6 @@ typedef enum AlertClass {
  * $ ./util/design/sparse-fsm-encode.py -d 5 -m 3 -n 8 \
  *     -s 999796195 --language=c
  *
- * Hamming distance histogram:
- *
- *  0: --
- *  1: --
- *  2: --
- *  3: --
- *  4: --
- *  5: |||||||||||||||||||| (66.67%)
- *  6: |||||||||| (33.33%)
- *  7: --
- *  8: --
- *
  * Minimum Hamming distance: 5
  * Maximum Hamming distance: 6
  * Minimum Hamming weight: 3
@@ -89,18 +65,6 @@ typedef enum AlertEnable {
  * Encoding generated with
  * $ ./util/design/sparse-fsm-encode.py -d 2 -m 5 -n 8 \
  *     -s 3525542881 --language=c
- *
- * Hamming distance histogram:
- *
- *  0: --
- *  1: --
- *  2: --
- *  3: ||||||||||||| (20.00%)
- *  4: |||||||||||||||||||| (30.00%)
- *  5: ||||||||||||| (20.00%)
- *  6: |||||||||||||||||||| (30.00%)
- *  7: --
- *  8: --
  *
  * Minimum Hamming distance: 3
  * Maximum Hamming distance: 6
