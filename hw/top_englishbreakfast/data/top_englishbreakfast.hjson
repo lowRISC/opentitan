@@ -474,11 +474,13 @@
                   }
       clock_srcs: {clk_i: "main",
                    clk_edn_i: "main",
-                   clk_esc_i: "io_div4"},
+                   clk_esc_i: "io_div4",
+                   clk_otp_i: "io_div4"},
       clock_group: "infra",
       reset_connections: {rst_ni: "sys",
                           rst_edn_ni: "sys",
-                          rst_esc_ni: "lc_io_div4"},
+                          rst_esc_ni: "lc_io_div4",
+                          rst_otp_ni: "lc_io_div4"},
       base_addr: "0x411F0000",
     },
   ]

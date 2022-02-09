@@ -91,6 +91,7 @@ module top_earlgrey #(
   parameter bit RvCoreIbexWritebackStage = 1,
   parameter bit RvCoreIbexICache = 1,
   parameter bit RvCoreIbexICacheECC = 1,
+  parameter bit RvCoreIbexICacheScramble = 1,
   parameter bit RvCoreIbexBranchPredictor = 0,
   parameter bit RvCoreIbexDbgTriggerEn = 1,
   parameter bit RvCoreIbexSecureIbex = 1,
@@ -542,8 +543,8 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       flash_ctrl_rma_req;
   lc_ctrl_pkg::lc_tx_t       flash_ctrl_rma_ack;
   lc_ctrl_pkg::lc_flash_rma_seed_t       flash_ctrl_rma_seed;
-  otp_ctrl_pkg::sram_otp_key_req_t [1:0] otp_ctrl_sram_otp_key_req;
-  otp_ctrl_pkg::sram_otp_key_rsp_t [1:0] otp_ctrl_sram_otp_key_rsp;
+  otp_ctrl_pkg::sram_otp_key_req_t [2:0] otp_ctrl_sram_otp_key_req;
+  otp_ctrl_pkg::sram_otp_key_rsp_t [2:0] otp_ctrl_sram_otp_key_rsp;
   pwrmgr_pkg::pwr_flash_t       pwrmgr_aon_pwr_flash;
   pwrmgr_pkg::pwr_rst_req_t       pwrmgr_aon_pwr_rst_req;
   pwrmgr_pkg::pwr_rst_rsp_t       pwrmgr_aon_pwr_rst_rsp;
@@ -2491,6 +2492,8 @@ module top_earlgrey #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[58:55]),
     .RndCnstLfsrSeed(RndCnstRvCoreIbexLfsrSeed),
     .RndCnstLfsrPerm(RndCnstRvCoreIbexLfsrPerm),
+    .RndCnstIbexKeyDefault(RndCnstRvCoreIbexIbexKeyDefault),
+    .RndCnstIbexNonceDefault(RndCnstRvCoreIbexIbexNonceDefault),
     .PMPEnable(RvCoreIbexPMPEnable),
     .PMPGranularity(RvCoreIbexPMPGranularity),
     .PMPNumRegions(RvCoreIbexPMPNumRegions),
@@ -2504,6 +2507,7 @@ module top_earlgrey #(
     .WritebackStage(RvCoreIbexWritebackStage),
     .ICache(RvCoreIbexICache),
     .ICacheECC(RvCoreIbexICacheECC),
+    .ICacheScramble(RvCoreIbexICacheScramble),
     .BranchPredictor(RvCoreIbexBranchPredictor),
     .DbgTriggerEn(RvCoreIbexDbgTriggerEn),
     .SecureIbex(RvCoreIbexSecureIbex),
@@ -2536,6 +2540,8 @@ module top_earlgrey #(
       .nmi_wdog_i(aon_timer_aon_nmi_wdog_timer_bark),
       .edn_o(edn0_edn_req[7]),
       .edn_i(edn0_edn_rsp[7]),
+      .icache_otp_key_o(otp_ctrl_sram_otp_key_req[2]),
+      .icache_otp_key_i(otp_ctrl_sram_otp_key_rsp[2]),
       .corei_tl_h_o(main_tl_rv_core_ibex__corei_req),
       .corei_tl_h_i(main_tl_rv_core_ibex__corei_rsp),
       .cored_tl_h_o(main_tl_rv_core_ibex__cored_req),
@@ -2549,9 +2555,11 @@ module top_earlgrey #(
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
       .clk_edn_i (clkmgr_aon_clocks.clk_main_infra),
       .clk_esc_i (clkmgr_aon_clocks.clk_io_div4_secure),
+      .clk_otp_i (clkmgr_aon_clocks.clk_io_div4_secure),
       .rst_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
       .rst_edn_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
-      .rst_esc_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
+      .rst_esc_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
+      .rst_otp_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
   // interrupt assignments
   assign intr_vector = {

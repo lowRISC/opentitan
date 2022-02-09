@@ -5,6 +5,7 @@
   clocking: [{clock: "clk_i", reset: "rst_ni", primary: true},
              {clock: "clk_edn_i", reset: "rst_edn_ni"}
              {clock: "clk_esc_i", reset: "rst_esc_ni"},
+             {clock: "clk_otp_i", reset: "rst_otp_ni"},
             ],
   bus_interfaces: [
     { protocol: "tlul", direction: "host",   name: "corei" }
@@ -144,6 +145,13 @@
       package: "edn_pkg",
     },
 
+    { struct:  "sram_otp_key",
+      type:    "req_rsp",
+      name:    "icache_otp_key",
+      act:     "req",
+      package: "otp_ctrl_pkg",
+    },
+
   ],
   param_list: [
     # Random netlist constants
@@ -163,6 +171,23 @@
       randcount: "32",
       randtype:  "perm"
     },
+    { name:    "RndCnstIbexKeyDefault",
+      type:    "logic [ibex_pkg::SCRAMBLE_KEY_W-1:0]",
+      desc:    '''
+        Default icache scrambling key
+      '''
+      randcount: "128",
+      randtype:  "data"
+    },
+    { name:    "RndCnstIbexNonceDefault",
+      type:    "logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0]",
+      desc:    '''
+        Default icache scrambling nonce
+      '''
+      randcount: "64",
+      randtype:  "data"
+    },
+
     { name:    "PMPEnable"
       type:    "bit"
       default: "1'b0"
@@ -251,6 +276,13 @@
     },
 
     { name:    "ICacheECC"
+      type:    "bit"
+      default: "0"
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "ICacheScramble"
       type:    "bit"
       default: "0"
       local:   "false"

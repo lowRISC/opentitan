@@ -304,4 +304,14 @@ package top_earlgrey_rnd_cnst_pkg;
     160'hC74D7925041C0BA9AEA26D1F6F823963B9B387CA
   };
 
+  // Default icache scrambling key
+  parameter logic [ibex_pkg::SCRAMBLE_KEY_W-1:0] RndCnstRvCoreIbexIbexKeyDefault = {
+    128'h9932A2605B23CB7AFBD120F152A9EF95
+  };
+
+  // Default icache scrambling nonce
+  parameter logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0] RndCnstRvCoreIbexIbexNonceDefault = {
+    64'h018D5A1FE3B04FF0
+  };
+
 endpackage : top_earlgrey_rnd_cnst_pkg

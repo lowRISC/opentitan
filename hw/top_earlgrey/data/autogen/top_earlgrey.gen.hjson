@@ -1545,7 +1545,7 @@
           package: otp_ctrl_pkg
           type: req_rsp
           act: rsp
-          width: 2
+          width: 3
           default: "'0"
           inst_name: otp_ctrl
           end_idx: -1
@@ -6619,6 +6619,7 @@
         WritebackStage: "1"
         ICache: "1"
         ICacheECC: "1"
+        ICacheScramble: "1"
         BranchPredictor: "0"
         DbgTriggerEn: "1"
         SecureIbex: "1"
@@ -6631,6 +6632,11 @@
         clk_i: main
         clk_edn_i: main
         clk_esc_i:
+        {
+          clock: io_div4
+          group: secure
+        }
+        clk_otp_i:
         {
           clock: io_div4
           group: secure
@@ -6654,12 +6660,18 @@
           name: lc_io_div4
           domain: "0"
         }
+        rst_otp_ni:
+        {
+          name: lc_io_div4
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
         clk_edn_i: clkmgr_aon_clocks.clk_main_infra
         clk_esc_i: clkmgr_aon_clocks.clk_io_div4_secure
+        clk_otp_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       domain:
       [
@@ -6687,6 +6699,26 @@
           name_top: RndCnstRvCoreIbexLfsrPerm
           default: 0xc74d7925041c0ba9aea26d1f6f823963b9b387ca
           randwidth: 160
+        }
+        {
+          name: RndCnstIbexKeyDefault
+          desc: Default icache scrambling key
+          type: logic [ibex_pkg::SCRAMBLE_KEY_W-1:0]
+          randcount: 128
+          randtype: data
+          name_top: RndCnstRvCoreIbexIbexKeyDefault
+          default: 0x9932a2605b23cb7afbd120f152a9ef95
+          randwidth: 128
+        }
+        {
+          name: RndCnstIbexNonceDefault
+          desc: Default icache scrambling nonce
+          type: logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0]
+          randcount: 64
+          randtype: data
+          name_top: RndCnstRvCoreIbexIbexNonceDefault
+          default: 0x18d5a1fe3b04ff0
+          randwidth: 64
         }
         {
           name: PMPEnable
@@ -6779,6 +6811,13 @@
           default: "1"
           expose: "true"
           name_top: RvCoreIbexICacheECC
+        }
+        {
+          name: ICacheScramble
+          type: bit
+          default: "1"
+          expose: "true"
+          name_top: RvCoreIbexICacheScramble
         }
         {
           name: BranchPredictor
@@ -7024,6 +7063,18 @@
           index: 7
         }
         {
+          name: icache_otp_key
+          struct: sram_otp_key
+          package: otp_ctrl_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: rv_core_ibex
+          default: ""
+          top_signame: otp_ctrl_sram_otp_key
+          index: 2
+        }
+        {
           name: corei_tl_h
           struct: tl
           package: tlul_pkg
@@ -7227,6 +7278,7 @@
       [
         sram_ctrl_main.sram_otp_key
         sram_ctrl_ret_aon.sram_otp_key
+        rv_core_ibex.icache_otp_key
       ]
       pwrmgr_aon.pwr_flash:
       [
@@ -14633,7 +14685,7 @@
         package: otp_ctrl_pkg
         type: req_rsp
         act: rsp
-        width: 2
+        width: 3
         default: "'0"
         inst_name: otp_ctrl
         end_idx: -1
@@ -17850,6 +17902,18 @@
         index: 7
       }
       {
+        name: icache_otp_key
+        struct: sram_otp_key
+        package: otp_ctrl_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: rv_core_ibex
+        default: ""
+        top_signame: otp_ctrl_sram_otp_key
+        index: 2
+      }
+      {
         name: corei_tl_h
         struct: tl
         package: tlul_pkg
@@ -19345,7 +19409,7 @@
         package: otp_ctrl_pkg
         struct: sram_otp_key_req
         signame: otp_ctrl_sram_otp_key_req
-        width: 2
+        width: 3
         type: req_rsp
         end_idx: -1
         act: rsp
@@ -19356,7 +19420,7 @@
         package: otp_ctrl_pkg
         struct: sram_otp_key_rsp
         signame: otp_ctrl_sram_otp_key_rsp
-        width: 2
+        width: 3
         type: req_rsp
         end_idx: -1
         act: rsp

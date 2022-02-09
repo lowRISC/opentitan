@@ -26,6 +26,7 @@ module rv_core_ibex
   parameter bit                   WritebackStage   = 1'b1,
   parameter bit                   ICache           = 1'b1,
   parameter bit                   ICacheECC        = 1'b1,
+  parameter bit                   ICacheScramble   = 1'b1,
   parameter bit                   BranchPredictor  = 1'b1,
   parameter bit                   DbgTriggerEn     = 1'b1,
   parameter bit                   SecureIbex       = 1'b1,
@@ -33,7 +34,11 @@ module rv_core_ibex
   parameter ibex_pkg::lfsr_perm_t RndCnstLfsrPerm  = ibex_pkg::RndCnstLfsrPermDefault,
   parameter int unsigned          DmHaltAddr       = 32'h1A110800,
   parameter int unsigned          DmExceptionAddr  = 32'h1A110808,
-  parameter bit                   PipeLine         = 1'b0
+  parameter bit                   PipeLine         = 1'b0,
+  parameter logic [ibex_pkg::SCRAMBLE_KEY_W-1:0] RndCnstIbexKeyDefault =
+      ibex_pkg::RndCnstIbexKeyDefault,
+  parameter logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0] RndCnstIbexNonceDefault =
+      ibex_pkg::RndCnstIbexNonceDefault
 ) (
   // Clock and Reset
   input  logic        clk_i,
@@ -94,6 +99,12 @@ module rv_core_ibex
   // connection to edn
   output edn_pkg::edn_req_t edn_o,
   input edn_pkg::edn_rsp_t edn_i,
+
+  // connection to otp scramble interface
+  input clk_otp_i,
+  input rst_otp_ni,
+  output otp_ctrl_pkg::sram_otp_key_req_t icache_otp_key_o,
+  input  otp_ctrl_pkg::sram_otp_key_rsp_t icache_otp_key_i,
 
   // interrupts and alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
@@ -177,6 +188,7 @@ module rv_core_ibex
   // integrity errors and core alert events
   logic ibus_intg_err, dbus_intg_err;
   logic alert_minor, alert_major;
+  logic double_fault;
 
   // alert events to peripheral module
   logic fatal_intg_event;
@@ -184,7 +196,7 @@ module rv_core_ibex
   logic recov_core_event;
   assign fatal_intg_event = ibus_intg_err | dbus_intg_err;
   assign fatal_core_event = alert_major;
-  assign recov_core_event = alert_minor;
+  assign recov_core_event = alert_minor | double_fault;
 
   // configurations for address translation
   region_cfg_t [NumRegions-1:0] ibus_region_cfg;
@@ -267,6 +279,37 @@ module rv_core_ibex
             irq_external})
   );
 
+
+  logic key_req, key_ack;
+  logic [ibex_pkg::SCRAMBLE_KEY_W-1:0] key;
+  logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0] nonce;
+  logic unused_seed_valid;
+  localparam int PayLoadW = ibex_pkg::SCRAMBLE_KEY_W + ibex_pkg::SCRAMBLE_NONCE_W + 1;
+  prim_sync_reqack_data #(
+    .Width(PayLoadW),
+    .DataSrc2Dst(1'b0)
+  ) u_prim_sync_reqack_data (
+    .clk_src_i  ( clk_i                         ),
+    .rst_src_ni ( rst_ni                        ),
+    .clk_dst_i  ( clk_otp_i                     ),
+    .rst_dst_ni ( rst_otp_ni                    ),
+    .req_chk_i  ( 1'b1                          ),
+    .src_req_i  ( key_req                       ),
+    .src_ack_o  ( key_ack                       ),
+    .dst_req_o  ( icache_otp_key_o.req          ),
+    .dst_ack_i  ( icache_otp_key_i.ack          ),
+    .data_i     ( {icache_otp_key_i.key,
+                   icache_otp_key_i.nonce[ibex_pkg::SCRAMBLE_NONCE_W-1:0],
+                   icache_otp_key_i.seed_valid} ),
+    .data_o     ( {key,
+                   nonce,
+                   unused_seed_valid}           )
+  );
+
+  logic unused_nonce;
+  assign unused_nonce = |icache_otp_key_i.nonce;
+
+
   // Multibit AND computation for fetch enable.
   lc_ctrl_pkg::lc_tx_t fetch_enable;
   assign fetch_enable = lc_ctrl_pkg::lc_tx_and_hi(lc_cpu_en[0], pwrmgr_cpu_en[0]);
@@ -285,11 +328,14 @@ module rv_core_ibex
     .WritebackStage           ( WritebackStage           ),
     .ICache                   ( ICache                   ),
     .ICacheECC                ( ICacheECC                ),
+    .ICacheScramble           ( ICacheScramble           ),
     .BranchPredictor          ( BranchPredictor          ),
     .DbgTriggerEn             ( DbgTriggerEn             ),
     .SecureIbex               ( SecureIbex               ),
     .RndCnstLfsrSeed          ( RndCnstLfsrSeed          ),
     .RndCnstLfsrPerm          ( RndCnstLfsrPerm          ),
+    .RndCnstIbexKey           ( RndCnstIbexKeyDefault    ),
+    .RndCnstIbexNonce         ( RndCnstIbexNonceDefault  ),
     .DmHaltAddr               ( DmHaltAddr               ),
     .DmExceptionAddr          ( DmExceptionAddr          )
   ) u_core (
@@ -333,6 +379,15 @@ module rv_core_ibex
 
     .debug_req_i,
     .crash_dump_o,
+
+    // icache scramble interface
+    .scramble_key_valid_i (key_ack),
+    .scramble_key_i       (key),
+    .scramble_nonce_i     (nonce),
+    .scramble_req_o       (key_req),
+
+    // double fault
+    .double_fault_seen_o  (double_fault),
 
 `ifdef RVFI
     .rvfi_valid,
