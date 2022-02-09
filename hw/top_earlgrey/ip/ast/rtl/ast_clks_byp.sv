@@ -32,6 +32,7 @@ module ast_clks_byp (
   output logic clk_src_sys_val_o,           // SYS Source Clock Valid
   output logic clk_src_io_o,                // IO Source Clock
   output logic clk_src_io_val_o,            // IO Source Clock Valid
+  output logic clk_src_io_48m_o,            // IO Source Clock is 48Mhz
   output logic clk_src_usb_o,               // USB Source Clock
   output logic clk_src_usb_val_o,           // USB Source Clock Valid
   output logic clk_src_aon_o,               // AON Source Clock
@@ -109,7 +110,7 @@ prim_clock_div #(
 
 assign clk_ext_usb_scn = clk_ext_d1ord2;
 
-logic clk_ext_usb_d240, clk_ext_aon;
+logic clk_ext_usb_d240, clk_ext_aon, clk_ext_aon_val;
 
 prim_clock_div #(
   .Divisor( 240 )
@@ -123,6 +124,7 @@ prim_clock_div #(
 );
 
 assign clk_ext_aon = clk_ext_usb_d240;
+assign clk_ext_aon_val = 1'b1;  // Always ON clock
 
 
 ////////////////////////////////////////
@@ -283,12 +285,15 @@ assign rst_clk_ext_n = vcaon_pok;
 ////////////////////////////////////////
 gfr_clk_mux2 u_clk_src_sys_sel (
   .clk_osc_i ( clk_osc_sys_i ),
+  .clk_osc_val_i ( clk_osc_sys_val_i ),
   .rst_clk_osc_ni ( rst_clk_osc_n ),
   .clk_ext_i ( clk_ext_sys ),
+  .clk_ext_val_i ( clk_ext_sys_val ),
   .rst_clk_ext_ni ( rst_clk_ext_n ),
   .ext_sel_i ( sys_clk_byp_sel ),
   .clk_osc_en_o ( sys_clk_osc_en ),
   .clk_ext_en_o ( sys_clk_byp_en ),
+  .clk_val_o ( clk_src_sys_val_o ),
   .clk_o ( clk_src_sys_o )
 );
 
@@ -296,12 +301,15 @@ gfr_clk_mux2 u_clk_src_sys_sel (
 ////////////////////////////////////////
 gfr_clk_mux2 u_clk_src_io_sel (
   .clk_osc_i ( clk_osc_io_i ),
+  .clk_osc_val_i ( clk_osc_io_val_i ),
   .rst_clk_osc_ni ( rst_clk_osc_n ),
   .clk_ext_i ( clk_ext_io ),
+  .clk_ext_val_i ( clk_ext_io_val ),
   .rst_clk_ext_ni ( rst_clk_ext_n ),
   .ext_sel_i ( io_clk_byp_sel ),
   .clk_osc_en_o ( io_clk_osc_en ),
   .clk_ext_en_o ( io_clk_byp_en ),
+  .clk_val_o ( clk_src_io_val_o ),
   .clk_o ( clk_src_io_o )
 );
 
@@ -309,12 +317,15 @@ gfr_clk_mux2 u_clk_src_io_sel (
 ////////////////////////////////////////
 gfr_clk_mux2 u_clk_src_usb_sel (
   .clk_osc_i ( clk_osc_usb_i ),
+  .clk_osc_val_i ( clk_osc_usb_val_i ),
   .rst_clk_osc_ni ( rst_clk_osc_n ),
   .clk_ext_i ( clk_ext_usb ),
+  .clk_ext_val_i ( clk_ext_usb_val ),
   .rst_clk_ext_ni ( rst_clk_ext_n ),
   .ext_sel_i ( usb_clk_byp_sel ),
   .clk_osc_en_o ( usb_clk_osc_en ),
   .clk_ext_en_o ( usb_clk_byp_en ),
+  .clk_val_o ( clk_src_usb_val_o ),
   .clk_o ( clk_src_usb_o )
 );
 
@@ -322,26 +333,17 @@ gfr_clk_mux2 u_clk_src_usb_sel (
 ////////////////////////////////////////
 gfr_clk_mux2 u_clk_src_aon_sel (
   .clk_osc_i ( clk_osc_aon_i ),
+  .clk_osc_val_i ( clk_osc_aon_val_i ),
   .rst_clk_osc_ni ( rst_clk_osc_n ),
   .clk_ext_i ( clk_ext_aon ),
+  .clk_ext_val_i ( clk_ext_aon_val ),
   .rst_clk_ext_ni ( rst_clk_ext_n ),
   .ext_sel_i ( aon_clk_byp_sel ),
   .clk_osc_en_o ( aon_clk_osc_en ),
   .clk_ext_en_o ( aon_clk_byp_en ),
+  .clk_val_o ( clk_src_aon_val_o ),
   .clk_o ( clk_src_aon_o )
 );
-
-// Clocks Valid
-////////////////////////////////////////
-assign clk_src_sys_val_o = sys_clk_byp_sel ? sys_clk_byp_en && clk_ext_sys_val :
-                                             sys_clk_osc_en && clk_osc_sys_val_i;
-assign clk_src_io_val_o  = io_clk_byp_sel  ? io_clk_byp_en  && clk_ext_io_val  :
-                                             io_clk_osc_en  && clk_osc_io_val_i;
-assign clk_src_usb_val_o = usb_clk_byp_sel ? usb_clk_byp_en && clk_ext_usb_val :
-                                             usb_clk_osc_en && clk_osc_usb_val_i;
-assign clk_src_aon_val_o = aon_clk_byp_sel ? aon_clk_byp_en :
-                                             aon_clk_osc_en && clk_osc_aon_val_i;  // TODO
-
 
 // All Clocks Bypass Acknowledge
 ////////////////////////////////////////
@@ -381,5 +383,23 @@ prim_mubi4_sender #(
   .mubi_i ( io_clk_byp_ack ),
   .mubi_o ( io_clk_byp_ack_o )
 );
+
+// IO Clock Source is 48MHz
+////////////////////////////////////////
+// Oscillator source is always 96MHz.
+// External Bypass source is assume to be 96MHz until it is ebabled as 48MHz
+assign clk_src_io_48m_o = io_clk_byp_sel && io_clk_byp_en && !ext_freq_is_96m;
+
+
+/////////////////////
+// Unused Signals  //
+/////////////////////
+logic unused_sigs;
+
+assign unused_sigs = ^{ sys_clk_osc_en,
+                        io_clk_osc_en,
+                        usb_clk_osc_en,
+                        aon_clk_osc_en
+                      };
 
 endmodule : ast_clks_byp

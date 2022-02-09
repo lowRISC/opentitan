@@ -9,12 +9,15 @@
 
 module gfr_clk_mux2 (
   input clk_osc_i,
+  input clk_osc_val_i,
   input rst_clk_osc_ni,
   input clk_ext_i,
+  input clk_ext_val_i,
   input rst_clk_ext_ni,
   input ext_sel_i,
   output logic clk_osc_en_o,
   output logic clk_ext_en_o,
+  output logic clk_val_o,
   output logic clk_o
 );
 
@@ -106,5 +109,10 @@ prim_clock_gating #(
 );
 
 assign clk_o = clk_osc || clk_ext;
+
+// Clock Valid Output
+assign clk_val_o = clk_osc_en_o ? clk_osc_val_i :
+                   clk_ext_en_o ? clk_ext_val_i :
+                                  1'b0;
 
 endmodule : gfr_clk_mux2

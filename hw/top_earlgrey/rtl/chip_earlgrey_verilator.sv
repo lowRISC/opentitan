@@ -329,6 +329,7 @@ module chip_earlgrey_verilator (
     .clk_src_io_en_i       ( base_ast_pwr.io_clk_en ),
     .clk_src_io_o          ( ast_base_clks.clk_io ),
     .clk_src_io_val_o      ( ast_base_pwr.io_clk_val ),
+    .clk_src_io_48m_o      (  ),
     // usb source clock
     .usb_ref_pulse_i       ( usb_ref_pulse ),
     .usb_ref_val_i         ( usb_ref_val ),
@@ -359,6 +360,7 @@ module chip_earlgrey_verilator (
     .fla_obs_i             ( '0 ),
     .otp_obs_i             ( '0 ),
     .otm_obs_i             ( '0 ),
+    .usb_obs_i             ( '0 ),
     .obs_ctrl_o            (  ),
     // pinmux related
     .padmux2ast_i          ( pad2ast    ),
