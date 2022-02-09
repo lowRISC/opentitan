@@ -7,23 +7,22 @@
 # subdirectory name (e.g., `sim_dv/`), because the build targets are really
 # declared in the for loops in this build file.
 
-# All tests added to the `sw_test` dictionary:
-#  - will not be crytographically signed.
-#  - are intended to be launched via the test ROM and OTTF.
+# All tests added to the `sw_test` dictionary will be compiled for various
+# device platforms (DV, Verilator, and FPGA). Additionally there are several
+# build options that can be configured for each test, all of which default to
+# `false`. These include:
+#  - whether or not to produce SPI flash frames of the test image for
+#    bootstrap test purposes.
+#  - whether or not to produce signed images for this test, enabling the test
+#    to be run by either the test or mask ROMs.
+#  - whether or not to launch the test from the OTTF, or to run it directly
+#    after the OTTF initialization assembly (`ottf_start.S`) runs.
 sw_tests = {
   # 'test_name': {
-  #   'library': test_lib,
-  #   'dv_frames': true/false, # (can be omitted, defaults to `false`)
-  # },
-}
-
-# All tests added to the `sw_rom_ext_tests` dictionary:
-#  - will be crytographically signed.
-#  - are intended to be launched via the mask ROM and OTTF.
-#  - will link against a ROM_EXT slot A image.
-sw_rom_ext_tests = {
-  #   'test_name': {
-  #   'library': test_lib,
+  #   'library':         test_lib,
+  #   'dv_frames':       true/false, # (can be omitted, defaults to `false`)
+  #   'sign':            true/false, # (can be omitted, defaults to `false`)
+  #   'ottf_start_only': true/false, # (can be omitted, defaults to `false`)
   # },
 }
 
@@ -39,7 +38,6 @@ example_chip_level_test_lib = declare_dependency(
     ],
   ),
 )
-
 sw_tests += {
   'example_chip_level_test': {
     'library': example_chip_level_test_lib,
@@ -91,11 +89,7 @@ uart_smoketest_lib = declare_dependency(
 sw_tests += {
   'uart_smoketest': {
     'library': uart_smoketest_lib,
-  }
-}
-sw_rom_ext_tests += {
-  'uart_smoketest': {
-    'library': uart_smoketest_lib,
+    'sign': true,
   }
 }
 
@@ -814,18 +808,55 @@ sw_tests += {
   }
 }
 
+crt_test_lib = declare_dependency(
+  link_with: static_library(
+    'crt_test_lib',
+    sources: ['crt_test.c'],
+    dependencies: [
+      sw_lib_testing_test_status,
+      sw_lib_runtime_print,
+      sw_lib_runtime_log,
+      sw_lib_dif_uart,
+    ],
+  ),
+)
+sw_tests += {
+  'crt_test': {
+    'library': crt_test_lib,
+    'ottf_start_only': true,
+  }
+}
+
 ###############################################################################
 # Build Targets
 ###############################################################################
-# (unsigned) test binaries loaded with ROM from sw/device/lib/testing/test_rom/
 foreach sw_test_name, sw_test_info : sw_tests
   foreach device_name, device_lib : sw_lib_arch_core_devices
+    targets_to_export = []
+    shared_test_deps = [device_lib]
+
+    # unsigned programs loaded with test ROM
+    if 'ottf_start_only' in sw_test_info and sw_test_info['ottf_start_only']
+      # Explicitly ONLY pull in the OTTF startup library since these tests need
+      # to run right after ottf_start.S is done executing. Additionally, the
+      # startup library contains default OTTF ISRs. While these tests may not
+      # override any of the default ISR symbols, they should be linked in since
+      # the `mtvec` is set to point to these in the `ottf_start.S`
+      # initialization assembly (contained in the ottf_start_lib target below).
+      shared_test_deps += [
+        ottf_start_lib,
+      ]
+    else
+      shared_test_deps += [
+        ottf_lib,
+      ]
+    endif
+
     sw_test_elf = executable(
       sw_test_name + '_' + device_name,
       name_suffix: 'elf',
       dependencies: [
-        device_lib,
-        ottf_lib,
+        shared_test_deps,
         sw_test_info['library'],
       ],
     )
@@ -844,12 +875,6 @@ foreach sw_test_name, sw_test_info : sw_tests
       kwargs: elf_to_bin_custom_target_args,
     )
 
-    sw_test_vmem32 = custom_target(
-      target_name.format('vmem32'),
-      input: sw_test_bin,
-      kwargs: bin_to_vmem32_custom_target_args,
-    )
-
     sw_test_vmem64 = custom_target(
       target_name.format('vmem64'),
       input: sw_test_bin,
@@ -864,6 +889,64 @@ foreach sw_test_name, sw_test_info : sw_tests
       depend_files: flash_image_depend_files,
       build_by_default: true,
     )
+
+    targets_to_export += [
+      sw_test_elf,
+      sw_test_dis,
+      sw_test_bin,
+      sw_test_vmem64,
+      sw_test_scr_vmem64,
+    ]
+
+    # signed programs loaded with mask ROM
+    if 'sign' in sw_test_info and sw_test_info['sign']
+      foreach key_name, key_info : signing_keys
+        signed_target_name = '_'.join([
+          'signed',
+          sw_test_name,
+          key_name,
+          '@0@',
+          device_name,
+        ])
+
+        sw_test_signed_bin = custom_target(
+          signed_target_name.format('bin'),
+          input: sw_test_bin,
+          output: '@BASENAME@.@0@.signed.bin'.format(key_name),
+          command: [
+            rom_ext_signer_export.full_path(),
+            'rom_ext',
+            '@INPUT@',
+            key_info['path'],
+            sw_test_elf.full_path(),
+            '@OUTPUT@',
+          ],
+          depends: rom_ext_signer_export,
+          build_by_default: true,
+        )
+
+        sw_test_signed_vmem64 = custom_target(
+          signed_target_name.format('vmem64'),
+          input: sw_test_signed_bin,
+          kwargs: bin_to_vmem64_custom_target_args,
+        )
+
+        sw_test_signed_scr_vmem64 = custom_target(
+          signed_target_name.format('scrambled'),
+          input: sw_test_signed_vmem64,
+          output: flash_image_outputs,
+          command: flash_image_command,
+          depend_files: flash_image_depend_files,
+          build_by_default: true,
+        )
+
+        targets_to_export += [
+          sw_test_signed_bin,
+          sw_test_signed_vmem64,
+          sw_test_signed_scr_vmem64,
+        ]
+      endforeach
+    endif
 
     sw_test_sim_dv_frames = []
     if device_name == 'sim_dv' and \
@@ -897,13 +980,13 @@ foreach sw_test_name, sw_test_info : sw_tests
         input: sw_test_sim_dv_frames_bin,
         output: '@BASENAME@.vmem',
       )
-      sw_test_sim_dv_frames = [
+
+      targets_to_export += [
         sw_test_sim_dv_frames_bin,
         sw_test_sim_dv_frames_vmem,
       ]
     endif
 
-    sw_test_sim_dv_logs = []
     if device_name == 'sim_dv'
       sw_test_sim_dv_logs = custom_target(
         sw_test_name + '_sim_dv_logs',
@@ -912,196 +995,18 @@ foreach sw_test_name, sw_test_info : sw_tests
         input: sw_test_elf,
         output: extract_sw_logs_sim_dv_outputs,
       )
+
+      targets_to_export += [sw_test_sim_dv_logs]
     endif
 
     custom_target(
       target_name.format('export'),
       command: export_target_command,
       depend_files: [export_target_depend_files,],
-      input: [
-        sw_test_elf,
-        sw_test_dis,
-        sw_test_bin,
-        sw_test_vmem32,
-        sw_test_vmem64,
-        sw_test_scr_vmem64,
-        sw_test_sim_dv_frames,
-        sw_test_sim_dv_logs,
-      ],
+      input: targets_to_export,
       output: target_name.format('export'),
       build_always_stale: true,
       build_by_default: true,
     )
   endforeach
-endforeach
-
-# (signed) test binaries loaded with mask ROM (from sw/device/silicon_creator/)
-#foreach sw_test_name, sw_test_info : sw_rom_ext_tests
-  #foreach device_name, device_lib : sw_lib_arch_core_devices
-    #sw_test_elf = executable(
-      #'_'.join(['rom_ext', sw_test_name, device_name]),
-      #name_suffix: 'elf',
-      #dependencies: [
-        ## Only use ROM_EXT slot A for now.
-        #rom_ext_slot_libs['rom_ext_slot_a'],
-        #device_lib,
-        #ottf_lib,
-        #sw_test_info['library'],
-      #],
-    #)
-
-    #target_name = '_'.join(['rom_ext', sw_test_name, '@0@', device_name])
-
-    #sw_test_dis = custom_target(
-      #target_name.format('dis'),
-      #input: sw_test_elf,
-      #kwargs: elf_to_dis_custom_target_args,
-    #)
-
-    #sw_test_bin = custom_target(
-      #target_name.format('bin'),
-      #input: sw_test_elf,
-      #kwargs: elf_to_bin_custom_target_args,
-    #)
-
-    #targets_to_export = [
-      #sw_test_elf,
-      #sw_test_dis,
-      #sw_test_bin,
-    #]
-
-    #foreach key_name, key_info : signing_keys
-      #signed_target_name = '_'.join(['rom_ext', sw_test_name, key_name, 'signed', '@0@', device_name])
-
-      #sw_test_signed_bin = custom_target(
-        #signed_target_name.format('bin'),
-        #input: sw_test_bin,
-        #output: '@BASENAME@.@0@.signed.bin'.format(key_name),
-        #command: [
-          #rom_ext_signer_export.full_path(),
-          #'rom_ext',
-          #'@INPUT@',
-          #key_info['path'],
-          #sw_test_elf.full_path(),
-          #'@OUTPUT@',
-        #],
-        #depends: rom_ext_signer_export,
-        #build_by_default: true,
-      #)
-
-      #sw_test_signed_vmem32 = custom_target(
-        #signed_target_name.format('vmem32'),
-        #input: sw_test_signed_bin,
-        #kwargs: bin_to_vmem32_custom_target_args,
-      #)
-
-      #sw_test_signed_vmem64 = custom_target(
-        #signed_target_name.format('vmem64'),
-        #input: sw_test_signed_bin,
-        #kwargs: bin_to_vmem64_custom_target_args,
-      #)
-
-      #sw_test_signed_scr_vmem64 = custom_target(
-        #signed_target_name.format('scrambled'),
-        #input: sw_test_signed_vmem64,
-        #output: flash_image_outputs,
-        #command: flash_image_command,
-        #depend_files: flash_image_depend_files,
-        #build_by_default: true,
-      #)
-
-      #targets_to_export += [
-        #sw_test_signed_bin,
-        #sw_test_signed_vmem32,
-        #sw_test_signed_vmem64,
-        #sw_test_signed_scr_vmem64
-      #]
-    #endforeach
-
-    #custom_target(
-      #target_name.format('export'),
-      #command: export_target_command,
-      #depend_files: [export_target_depend_files,],
-      #input: targets_to_export,
-      #output: target_name.format('export'),
-      #build_always_stale: true,
-      #build_by_default: true,
-    #)
-  #endforeach
-#endforeach
-
-# Specific custom configuration for `crt_test`
-foreach device_name, device_lib : sw_lib_arch_core_devices
-  crt_test_elf = executable(
-    'crt_test_' + device_name,
-    name_suffix: 'elf',
-    sources: ['crt_test.c'],
-    dependencies: [
-      device_lib,
-      # Explicitly ONLY pull in the OTTF startup library since we need to run
-      # right after the ottf_start.S is done executing. Additionally, the
-      # startup library contains default OTTF ISRs. While this test does not
-      # override any of the default ISR symbols, they should be linked in since
-      # the `mtvec` is set to point to these in the
-      # `sw/device/lib/testing/test_framework/ottf_start.S` initialization
-      # assembly (contained in the ottf_start_lib target below).
-      ottf_start_lib,
-      sw_lib_testing_test_status,
-      sw_lib_runtime_print,
-      sw_lib_runtime_log,
-      sw_lib_dif_uart,
-    ],
-  )
-
-  target_name = 'crt_test_@0@_' + device_name
-
-  crt_test_dis = custom_target(
-    target_name.format('dis'),
-    input: crt_test_elf,
-    kwargs: elf_to_dis_custom_target_args,
-  )
-
-  crt_test_bin = custom_target(
-    target_name.format('bin'),
-    input: crt_test_elf,
-    kwargs: elf_to_bin_custom_target_args,
-  )
-
-  crt_test_vmem32 = custom_target(
-    target_name.format('vmem32'),
-    input: crt_test_bin,
-    kwargs: bin_to_vmem32_custom_target_args,
-  )
-
-  crt_test_vmem64 = custom_target(
-    target_name.format('vmem64'),
-    input: crt_test_bin,
-    kwargs: bin_to_vmem64_custom_target_args,
-  )
-
-  crt_test_scr_vmem64 = custom_target(
-    target_name.format('scrambled'),
-    input: crt_test_vmem64,
-    output: flash_image_outputs,
-    command: flash_image_command,
-    depend_files: flash_image_depend_files,
-    build_by_default: true,
-  )
-
-  custom_target(
-    target_name.format('export'),
-    command: export_target_command,
-    depend_files: [export_target_depend_files,],
-    input: [
-      crt_test_elf,
-      crt_test_dis,
-      crt_test_bin,
-      crt_test_vmem32,
-      crt_test_vmem64,
-      crt_test_scr_vmem64,
-    ],
-    output: target_name.format('export'),
-    build_always_stale: true,
-    build_by_default: true,
-  )
 endforeach
