@@ -394,6 +394,9 @@ reg_field_name, field)">\
         .individually_accessible(1));
 
       ${fname}.set_original_access("${field_access}");
+% if field.mubi:
+      ${fname}.create_mubi_cov(.mubi_width(${field_size}));
+% endif
 % if field_tags:
       // create field tags
 %     for field_tag in field_tags:

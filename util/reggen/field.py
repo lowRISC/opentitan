@@ -58,7 +58,8 @@ class Field:
                  hwaccess: HWAccess,
                  bits: Bits,
                  resval: Optional[int],
-                 enum: Optional[List[EnumEntry]]):
+                 enum: Optional[List[EnumEntry]],
+                 mubi: bool):
         self.name = name
         self.desc = desc
         self.tags = tags
@@ -67,6 +68,7 @@ class Field:
         self.bits = bits
         self.resval = resval
         self.enum = enum
+        self.mubi = mubi
 
     @staticmethod
     def from_raw(reg_name: str,
@@ -204,7 +206,7 @@ class Field:
                 enum.append(entry)
                 enum_val_to_name[entry.value] = entry.name
 
-        return Field(name, desc, tags, swaccess, hwaccess, bits, resval, enum)
+        return Field(name, desc, tags, swaccess, hwaccess, bits, resval, enum, is_mubi)
 
     def has_incomplete_enum(self) -> bool:
         return (self.enum is not None and
@@ -277,7 +279,7 @@ class Field:
 
             ret.append(Field(name, desc,
                              self.tags, self.swaccess, self.hwaccess,
-                             bits, self.resval, enum))
+                             bits, self.resval, enum, self.mubi))
 
         return ret
 
@@ -291,7 +293,7 @@ class Field:
 
         return Field(self.name + suffix,
                      desc, self.tags, self.swaccess, self.hwaccess,
-                     self.bits, self.resval, enum)
+                     self.bits, self.resval, enum, self.mubi)
 
     def _asdict(self) -> Dict[str, object]:
         rd = {
