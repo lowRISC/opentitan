@@ -8,3 +8,4 @@
 `include "rom_ctrl_stress_all_vseq.sv"
 `include "rom_ctrl_throughput_vseq.sv"
 `include "rom_ctrl_corrupt_sig_fatal_chk_vseq.sv"
+`include "rom_ctrl_kmac_err_chk_vseq.sv"

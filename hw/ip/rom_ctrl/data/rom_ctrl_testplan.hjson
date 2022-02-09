@@ -65,6 +65,14 @@
       milestone: V2
       tests: ["rom_ctrl_stress_all"]
     }
+    {
+      name: kmac_err_chk
+      desc: '''
+            - Generate error from KMAC when it responds with KMAC digest image.
+            - Check that ROM controller goes into invalid state'''
+      milestone: V2
+      tests: ["rom_ctrl_kmac_err_chk"]
+    }
 
   ]
   covergroups: [
