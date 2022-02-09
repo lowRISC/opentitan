@@ -123,6 +123,17 @@ module ${mod_name} (
   tlul_pkg::tl_d2h_t tl_reg_d2h;
 % endif
 
+## The clock and reset inputs aren't used if this device interface has no
+## registers, only one window and isn't marked asynchronous. In that case, add
+## an unused_ signal to avoid lint warnings.
+% if not rb.all_regs and num_wins == 1 and not rb.async_if:
+  // Because we have no registers and only one window, this block is purely
+  // combinatorial. Mark the clk and reset inputs as unused.
+  logic unused_clk, unused_rst_n;
+  assign unused_clk = clk_i;
+  assign unused_rst_n = rst_ni;
+
+% endif
 % if rb.async_if:
   tlul_pkg::tl_h2d_t tl_async_h2d;
   tlul_pkg::tl_d2h_t tl_async_d2h;

@@ -28,6 +28,12 @@ module rom_ctrl_rom_reg_top (
   import rom_ctrl_reg_pkg::* ;
 
 
+  // Because we have no registers and only one window, this block is purely
+  // combinatorial. Mark the clk and reset inputs as unused.
+  logic unused_clk, unused_rst_n;
+  assign unused_clk = clk_i;
+  assign unused_rst_n = rst_ni;
+
 
   // Since there are no registers in this block, commands are routed through to windows which
   // can report their own integrity errors.
