@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:ibex:ibex_top
       - lowrisc:ip:lc_ctrl_pkg
+      - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:pwrmgr_pkg
       - lowrisc:ip:tlul
       - lowrisc:ip_interfaces:alert_handler_reg

@@ -691,6 +691,7 @@
                    WritebackStage: "1",
                    ICache: "1",
                    ICacheECC: "1",
+                   ICacheScramble: "1",
                    BranchPredictor: "0",
                    DbgTriggerEn: "1",
                    SecureIbex: "1",
@@ -705,9 +706,16 @@
           clock: "io_div4",
           group: "secure",
         }
+        clk_otp_i: {
+          clock: "io_div4",
+          group: "secure",
+        }
       },
       clock_group: "infra",
-      reset_connections: {rst_ni: "sys", rst_edn_ni: "sys", rst_esc_ni: "lc_io_div4"},
+      reset_connections: {rst_ni: "sys",
+                          rst_edn_ni: "sys",
+                          rst_esc_ni: "lc_io_div4",
+                          rst_otp_ni: "lc_io_div4"},
       base_addr: "0x411F0000",
     },
   ]
@@ -803,7 +811,8 @@
       'flash_ctrl.rma_ack'      : ['lc_ctrl.lc_flash_rma_ack'],
       'flash_ctrl.rma_seed'     : ['lc_ctrl.lc_flash_rma_seed'],
       'otp_ctrl.sram_otp_key'   : ['sram_ctrl_main.sram_otp_key',
-                                   'sram_ctrl_ret_aon.sram_otp_key']
+                                   'sram_ctrl_ret_aon.sram_otp_key'
+                                   'rv_core_ibex.icache_otp_key']
       'pwrmgr_aon.pwr_flash'    : ['flash_ctrl.pwrmgr'],
       'pwrmgr_aon.pwr_rst'      : ['rstmgr_aon.pwr'],
       'pwrmgr_aon.pwr_clk'      : ['clkmgr_aon.pwr'],
