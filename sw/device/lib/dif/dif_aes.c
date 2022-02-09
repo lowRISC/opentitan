@@ -152,10 +152,11 @@ dif_result_t dif_aes_reset(const dif_aes_t *aes) {
   return kDifOk;
 }
 
-dif_result_t dif_aes_start_ecb(const dif_aes_t *aes,
-                               const dif_aes_transaction_t *transaction,
-                               dif_aes_key_share_t key) {
-  if (aes == NULL || transaction == NULL) {
+dif_result_t dif_aes_start(const dif_aes_t *aes,
+                           const dif_aes_transaction_t *transaction,
+                           dif_aes_key_share_t key, const dif_aes_iv_t *iv) {
+  if (aes == NULL || transaction == NULL ||
+      (iv == NULL && transaction->mode != kDifAesModeEcb)) {
     return kDifBadArg;
   }
 
@@ -174,113 +175,10 @@ dif_result_t dif_aes_start_ecb(const dif_aes_t *aes,
   aes_set_multireg(aes, &key.share1[0], AES_KEY_SHARE1_MULTIREG_COUNT,
                    AES_KEY_SHARE1_0_REG_OFFSET);
 
-  return kDifOk;
-}
-
-dif_result_t dif_aes_start_cbc(const dif_aes_t *aes,
-                               const dif_aes_transaction_t *transaction,
-                               dif_aes_key_share_t key, dif_aes_iv_t iv) {
-  if (aes == NULL || transaction == NULL) {
-    return kDifBadArg;
+  if (transaction->mode != kDifAesModeEcb) {
+    aes_set_multireg(aes, &iv->iv[0], AES_IV_MULTIREG_COUNT,
+                     AES_IV_0_REG_OFFSET);
   }
-
-  if (!aes_idle(aes)) {
-    return kDifUnavailable;
-  }
-
-  dif_result_t result = configure(aes, transaction);
-  if (result != kDifOk) {
-    return result;
-  }
-
-  aes_set_multireg(aes, &key.share0[0], AES_KEY_SHARE0_MULTIREG_COUNT,
-                   AES_KEY_SHARE0_0_REG_OFFSET);
-
-  aes_set_multireg(aes, &key.share1[0], AES_KEY_SHARE1_MULTIREG_COUNT,
-                   AES_KEY_SHARE1_0_REG_OFFSET);
-
-  aes_set_multireg(aes, &iv.iv[0], AES_IV_MULTIREG_COUNT, AES_IV_0_REG_OFFSET);
-
-  return kDifOk;
-}
-
-dif_result_t dif_aes_start_ctr(const dif_aes_t *aes,
-                               const dif_aes_transaction_t *transaction,
-                               dif_aes_key_share_t key, dif_aes_iv_t iv) {
-  if (aes == NULL || transaction == NULL) {
-    return kDifBadArg;
-  }
-
-  if (!aes_idle(aes)) {
-    return kDifUnavailable;
-  }
-
-  dif_result_t result = configure(aes, transaction);
-  if (result != kDifOk) {
-    return result;
-  }
-
-  aes_set_multireg(aes, &key.share0[0], AES_KEY_SHARE0_MULTIREG_COUNT,
-                   AES_KEY_SHARE0_0_REG_OFFSET);
-
-  aes_set_multireg(aes, &key.share1[0], AES_KEY_SHARE1_MULTIREG_COUNT,
-                   AES_KEY_SHARE1_0_REG_OFFSET);
-
-  aes_set_multireg(aes, &iv.iv[0], AES_IV_MULTIREG_COUNT, AES_IV_0_REG_OFFSET);
-
-  return kDifOk;
-}
-
-dif_result_t dif_aes_start_ofb(const dif_aes_t *aes,
-                               const dif_aes_transaction_t *transaction,
-                               dif_aes_key_share_t key, dif_aes_iv_t iv) {
-  if (aes == NULL || transaction == NULL) {
-    return kDifBadArg;
-  }
-
-  if (!aes_idle(aes)) {
-    return kDifUnavailable;
-  }
-
-  dif_result_t result = configure(aes, transaction);
-  if (result != kDifOk) {
-    return result;
-  }
-
-  aes_set_multireg(aes, &key.share0[0], AES_KEY_SHARE0_MULTIREG_COUNT,
-                   AES_KEY_SHARE0_0_REG_OFFSET);
-
-  aes_set_multireg(aes, &key.share1[0], AES_KEY_SHARE1_MULTIREG_COUNT,
-                   AES_KEY_SHARE1_0_REG_OFFSET);
-
-  aes_set_multireg(aes, &iv.iv[0], AES_IV_MULTIREG_COUNT, AES_IV_0_REG_OFFSET);
-
-  return kDifOk;
-}
-
-dif_result_t dif_aes_start_cfb(const dif_aes_t *aes,
-                               const dif_aes_transaction_t *transaction,
-                               dif_aes_key_share_t key, dif_aes_iv_t iv) {
-  if (aes == NULL || transaction == NULL) {
-    return kDifBadArg;
-  }
-
-  if (!aes_idle(aes)) {
-    return kDifUnavailable;
-  }
-
-  dif_result_t result = configure(aes, transaction);
-  if (result != kDifOk) {
-    return result;
-  }
-
-  aes_set_multireg(aes, &key.share0[0], AES_KEY_SHARE0_MULTIREG_COUNT,
-                   AES_KEY_SHARE0_0_REG_OFFSET);
-
-  aes_set_multireg(aes, &key.share1[0], AES_KEY_SHARE1_MULTIREG_COUNT,
-                   AES_KEY_SHARE1_0_REG_OFFSET);
-
-  aes_set_multireg(aes, &iv.iv[0], AES_IV_MULTIREG_COUNT, AES_IV_0_REG_OFFSET);
 
   return kDifOk;
 }
