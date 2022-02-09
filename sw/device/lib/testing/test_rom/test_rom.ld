@@ -28,9 +28,11 @@ _heap_size = 0xe000;
 _stack_size = LENGTH(ram_main) - _heap_size;
 _stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
 _stack_start = _stack_end - _stack_size;
-_vflash_start = ORIGIN(eflash_virtual);
-_vflash_size = LENGTH(eflash_virtual);
 _flash_start = ORIGIN(eflash);
+
+/**
+ * TODO(lowrisc/opentitan:#10712): setup Ibex address translation
+ */
 
 /**
  * This symbol points at the manifest of the OTTF + test binary, which contains
@@ -39,7 +41,7 @@ _flash_start = ORIGIN(eflash);
  * See `sw/device/lib/testing/test_framework/ottf.ld`, under the
  * .manifest section, which populates it.
  */
-_manifest = _vflash_start;
+_manifest = _flash_start;
 
 _rom_digest_size = 32;
 _chip_info_size = 128;

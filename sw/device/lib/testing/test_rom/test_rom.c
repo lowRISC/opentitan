@@ -29,9 +29,6 @@
  * for that.
  */
 extern manifest_t _manifest;
-extern uint32_t _vflash_start;
-extern uint32_t _vflash_size;
-extern uint32_t _flash_start;
 
 /**
  * Type alias for the OTTF entry point.
@@ -70,17 +67,12 @@ void _boot_start(void) {
     test_status_set(kTestStatusFailed);
   }
 
-  // Example address translation on flash image.
-  uint32_t src_addr = (uint32_t)&_vflash_start;
-  uint32_t size = (uint32_t)&_vflash_size;
-  uint32_t dst_addr = (uint32_t)&_flash_start;
-  init_translation(src_addr, size, dst_addr);
-
-  LOG_INFO("Boot ROM initialisation has completed, jump into flash!");
+  // TODO(lowrisc/opentitan:#10712): setup Ibex address translation
 
   // Jump to the OTTF in flash. Within the flash binary, it is the responsibily
   // of the OTTF to set up its own stack, and to never return.
   uintptr_t manifest_entry_point = _manifest.entry_point;
+  LOG_INFO("Test ROM complete, jumping to flash!");
   ((ottf_entry *)manifest_entry_point)();
 
   // If the flash image returns, we should abort anyway.
