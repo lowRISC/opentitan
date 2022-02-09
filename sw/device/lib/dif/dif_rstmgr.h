@@ -288,32 +288,6 @@ dif_result_t dif_rstmgr_cpu_info_dump_read(
     size_t dump_size, size_t *segments_read);
 
 /**
- * The result of a Reset Manager software reset operation.
- */
-typedef enum dif_rstmgr_software_reset_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDifRstmgrSoftwareResetOk = kDifOk,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDifRstmgrSoftwareResetError = kDifError,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occurred.
-   */
-  kDifRstmgrSoftwareResetBadArg = kDifBadArg,
-  /**
-   * Indicates that this operation has been locked out, and can never
-   * succeed until hardware reset.
-   */
-  kDifRstmgrSoftwareResetLocked,
-} dif_rstmgr_software_reset_result_t;
-
-/**
  * Asserts or de-asserts software reset for the requested peripheral.
  *
  * @param handle A Reset Manager handle.
@@ -322,9 +296,9 @@ typedef enum dif_rstmgr_software_reset_result {
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_rstmgr_software_reset_result_t dif_rstmgr_software_reset(
-    const dif_rstmgr_t *handle, dif_rstmgr_peripheral_t peripheral,
-    dif_rstmgr_software_reset_t reset);
+dif_result_t dif_rstmgr_software_reset(const dif_rstmgr_t *handle,
+                                       dif_rstmgr_peripheral_t peripheral,
+                                       dif_rstmgr_software_reset_t reset);
 
 /**
  * Queries whether the requested peripheral is held in reset.

@@ -334,16 +334,16 @@ dif_result_t dif_rstmgr_cpu_info_dump_read(
   return kDifOk;
 }
 
-dif_rstmgr_software_reset_result_t dif_rstmgr_software_reset(
-    const dif_rstmgr_t *handle, dif_rstmgr_peripheral_t peripheral,
-    dif_rstmgr_software_reset_t reset) {
+dif_result_t dif_rstmgr_software_reset(const dif_rstmgr_t *handle,
+                                       dif_rstmgr_peripheral_t peripheral,
+                                       dif_rstmgr_software_reset_t reset) {
   if (handle == NULL || peripheral >= RSTMGR_PARAM_NUM_SW_RESETS) {
-    return kDifRstmgrSoftwareResetBadArg;
+    return kDifBadArg;
   }
 
   mmio_region_t base_addr = handle->base_addr;
   if (rstmgr_software_reset_is_locked(base_addr, peripheral)) {
-    return kDifRstmgrSoftwareResetLocked;
+    return kDifLocked;
   }
 
   switch (reset) {
@@ -358,10 +358,10 @@ dif_rstmgr_software_reset_result_t dif_rstmgr_software_reset(
       rstmgr_software_reset_hold(base_addr, peripheral, false);
       break;
     default:
-      return kDifRstmgrSoftwareResetError;
+      return kDifError;
   }
 
-  return kDifRstmgrSoftwareResetOk;
+  return kDifOk;
 }
 
 dif_result_t dif_rstmgr_software_reset_is_held(
