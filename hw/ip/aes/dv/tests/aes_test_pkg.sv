@@ -26,4 +26,5 @@ package aes_test_pkg;
   `include "aes_clear_test.sv"
   `include "aes_alert_reset_test.sv"
   `include "aes_sideload_test.sv"
+  `include "aes_deinit_test.sv"
 endpackage

@@ -8,3 +8,4 @@
 `include "aes_common_vseq.sv"
 `include "aes_stress_vseq.sv"
 `include "aes_alert_reset_vseq.sv"
+`include "aes_deinit_vseq.sv"
