@@ -94,6 +94,7 @@ module rom_ctrl
   logic                     kmac_rom_last;
   logic                     kmac_done;
   logic [255:0]             kmac_digest;
+  logic                     kmac_err;
 
   if (!SecDisableScrambling) begin : gen_kmac_scramble_enabled
     // The usual situation, with scrambling enabled. Collect up output signals for kmac and split up
@@ -108,9 +109,8 @@ module rom_ctrl
     assign kmac_rom_rdy = kmac_data_i.ready;
     assign kmac_done = kmac_data_i.done;
     assign kmac_digest = kmac_data_i.digest_share0[255:0] ^ kmac_data_i.digest_share1[255:0];
+    assign kmac_err = kmac_data_i.error;
 
-    logic unused_kmac_error;
-    assign unused_kmac_error = ^kmac_data_i.error;
     logic unused_kmac_digest;
     assign unused_kmac_digest = ^{
       kmac_data_i.digest_share0[kmac_pkg::AppDigestW-1:256],
@@ -125,6 +125,7 @@ module rom_ctrl
     assign kmac_rom_rdy = 1'b0;
     assign kmac_done = 1'b0;
     assign kmac_digest = '0;
+    assign kmac_err = 1'b0;
 
     logic unused_kmac_inputs;
     assign unused_kmac_inputs = ^{kmac_data_i};
@@ -357,6 +358,7 @@ module rom_ctrl
       .kmac_rom_last_o      (kmac_rom_last),
       .kmac_done_i          (kmac_done),
       .kmac_digest_i        (kmac_digest),
+      .kmac_err_i           (kmac_err),
       .rom_select_bus_o     (rom_select_bus),
       .rom_addr_o           (checker_rom_index),
       .rom_req_o            (checker_rom_req),
