@@ -55,7 +55,7 @@ set USB_TCK_PERIOD [expr $USB_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
 create_clock -name USB_CLK -period ${USB_TCK_PERIOD} [get_pins ${USB_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks USB_CLK]
 
-set USBDEV_IOMUX_PATH top_earlgrey/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/gen_*u_impl_*/u_sync_1/gen_*u_impl*
+set USBDEV_IOMUX_PATH top_earlgrey/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/u_sync_1/gen_*u_impl*
 set USBDEV_OUTREG_PATH top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx
 # This requires knowledge of actual pin names, which are different depending on
 # whether we run this with tech lizbs or not.
