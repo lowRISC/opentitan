@@ -154,7 +154,7 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdUsbdevRxPidErr] = kTopEarlgreyPlicPeripheralUsbdev,
   [kTopEarlgreyPlicIrqIdUsbdevRxBitstuffErr] = kTopEarlgreyPlicPeripheralUsbdev,
   [kTopEarlgreyPlicIrqIdUsbdevFrame] = kTopEarlgreyPlicPeripheralUsbdev,
-  [kTopEarlgreyPlicIrqIdUsbdevConnected] = kTopEarlgreyPlicPeripheralUsbdev,
+  [kTopEarlgreyPlicIrqIdUsbdevPowered] = kTopEarlgreyPlicPeripheralUsbdev,
   [kTopEarlgreyPlicIrqIdUsbdevLinkOutErr] = kTopEarlgreyPlicPeripheralUsbdev,
   [kTopEarlgreyPlicIrqIdOtpCtrlOtpOperationDone] = kTopEarlgreyPlicPeripheralOtpCtrl,
   [kTopEarlgreyPlicIrqIdOtpCtrlOtpError] = kTopEarlgreyPlicPeripheralOtpCtrl,

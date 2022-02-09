@@ -77,7 +77,7 @@ module usbdev
   // Interrupts
   output logic       intr_pkt_received_o, // Packet received
   output logic       intr_pkt_sent_o, // Packet sent
-  output logic       intr_connected_o,
+  output logic       intr_powered_o,
   output logic       intr_disconnected_o,
   output logic       intr_host_lost_o,
   output logic       intr_link_reset_o,
@@ -138,7 +138,7 @@ module usbdev
   logic              usb_event_av_empty, event_av_overflow, usb_event_rx_full;
   logic              event_av_empty, event_rx_full;
   logic              usb_event_link_reset, usb_event_link_suspend, usb_event_link_resume;
-  logic              usb_event_host_lost, usb_event_disconnect, usb_event_connect;
+  logic              usb_event_host_lost, usb_event_disconnect, usb_event_powered;
   logic              usb_event_rx_crc_err, usb_event_rx_pid_err;
   logic              usb_event_rx_bitstuff_err;
   logic              usb_event_in_err;
@@ -147,7 +147,7 @@ module usbdev
   logic              usb_link_active;
 
   logic              event_link_reset, event_link_suspend, event_link_resume;
-  logic              event_host_lost, event_disconnect, event_connect;
+  logic              event_host_lost, event_disconnect, event_powered;
   logic              event_rx_crc_err, event_rx_pid_err;
   logic              event_rx_bitstuff_err;
   logic              event_in_err;
@@ -592,7 +592,7 @@ module usbdev
     .frame_start_o        (usb_event_frame),
     .link_state_o         (usb_link_state),
     .link_disconnect_o    (usb_event_disconnect),
-    .link_connect_o       (usb_event_connect),
+    .link_powered_o       (usb_event_powered),
     .link_reset_o         (usb_event_link_reset),
     .link_active_o        (usb_link_active),
     .link_suspend_o       (usb_event_link_suspend),
@@ -630,9 +630,9 @@ module usbdev
     .clk_i  (clk_i),
     .rst_ni (rst_ni),
     .d_i    ({usb_event_disconnect, usb_event_link_reset, usb_event_link_suspend,
-              usb_event_host_lost, usb_event_connect}),
+              usb_event_host_lost, usb_event_powered}),
     .q_o    ({event_disconnect, event_link_reset, event_link_suspend,
-              event_host_lost, event_connect})
+              event_host_lost, event_powered})
   );
 
   // Resume is a single pulse so needs pulsesync
@@ -835,17 +835,17 @@ module usbdev
     .intr_o                 (intr_disconnected_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_connected (
+  prim_intr_hw #(.Width(1)) intr_powered (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (event_connect),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.connected.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.connected.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.connected.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.connected.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.connected.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.connected.d),
-    .intr_o                 (intr_connected_o)
+    .event_intr_i           (event_powered),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.powered.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.powered.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.powered.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.powered.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.powered.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.powered.d),
+    .intr_o                 (intr_powered_o)
   );
 
   prim_intr_hw #(.Width(1)) intr_host_lost (
@@ -1185,7 +1185,7 @@ module usbdev
   //Interrupt signals
   `ASSERT_KNOWN(USBIntrPktRcvdKnown_A, intr_pkt_received_o)
   `ASSERT_KNOWN(USBIntrPktSentKnown_A, intr_pkt_sent_o)
-  `ASSERT_KNOWN(USBIntrConnKnown_A, intr_connected_o)
+  `ASSERT_KNOWN(USBIntrPwrdKnown_A, intr_powered_o)
   `ASSERT_KNOWN(USBIntrDisConKnown_A, intr_disconnected_o)
   `ASSERT_KNOWN(USBIntrHostLostKnown_A, intr_host_lost_o)
   `ASSERT_KNOWN(USBIntrLinkRstKnown_A, intr_link_reset_o)

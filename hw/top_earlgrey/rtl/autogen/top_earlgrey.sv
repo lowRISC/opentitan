@@ -473,7 +473,7 @@ module top_earlgrey #(
   logic intr_usbdev_rx_pid_err;
   logic intr_usbdev_rx_bitstuff_err;
   logic intr_usbdev_frame;
-  logic intr_usbdev_connected;
+  logic intr_usbdev_powered;
   logic intr_usbdev_link_out_err;
   logic intr_otp_ctrl_otp_operation_done;
   logic intr_otp_ctrl_otp_error;
@@ -1412,7 +1412,7 @@ module top_earlgrey #(
       .intr_rx_pid_err_o      (intr_usbdev_rx_pid_err),
       .intr_rx_bitstuff_err_o (intr_usbdev_rx_bitstuff_err),
       .intr_frame_o           (intr_usbdev_frame),
-      .intr_connected_o       (intr_usbdev_connected),
+      .intr_powered_o         (intr_usbdev_powered),
       .intr_link_out_err_o    (intr_usbdev_link_out_err),
       // [11]: fatal_fault
       .alert_tx_o  ( alert_tx[11:11] ),
@@ -2597,7 +2597,7 @@ module top_earlgrey #(
       intr_otp_ctrl_otp_error, // IDs [145 +: 1]
       intr_otp_ctrl_otp_operation_done, // IDs [144 +: 1]
       intr_usbdev_link_out_err, // IDs [143 +: 1]
-      intr_usbdev_connected, // IDs [142 +: 1]
+      intr_usbdev_powered, // IDs [142 +: 1]
       intr_usbdev_frame, // IDs [141 +: 1]
       intr_usbdev_rx_bitstuff_err, // IDs [140 +: 1]
       intr_usbdev_rx_pid_err, // IDs [139 +: 1]

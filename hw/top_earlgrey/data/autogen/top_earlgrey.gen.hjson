@@ -13046,7 +13046,7 @@
       module_name: usbdev
     }
     {
-      name: usbdev_connected
+      name: usbdev_powered
       width: 1
       type: interrupt
       module_name: usbdev

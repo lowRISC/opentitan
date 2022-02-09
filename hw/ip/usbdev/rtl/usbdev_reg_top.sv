@@ -221,8 +221,8 @@ module usbdev_reg_top (
   logic intr_state_rx_bitstuff_err_wd;
   logic intr_state_frame_qs;
   logic intr_state_frame_wd;
-  logic intr_state_connected_qs;
-  logic intr_state_connected_wd;
+  logic intr_state_powered_qs;
+  logic intr_state_powered_wd;
   logic intr_state_link_out_err_qs;
   logic intr_state_link_out_err_wd;
   logic intr_enable_we;
@@ -256,8 +256,8 @@ module usbdev_reg_top (
   logic intr_enable_rx_bitstuff_err_wd;
   logic intr_enable_frame_qs;
   logic intr_enable_frame_wd;
-  logic intr_enable_connected_qs;
-  logic intr_enable_connected_wd;
+  logic intr_enable_powered_qs;
+  logic intr_enable_powered_wd;
   logic intr_enable_link_out_err_qs;
   logic intr_enable_link_out_err_wd;
   logic intr_test_we;
@@ -276,7 +276,7 @@ module usbdev_reg_top (
   logic intr_test_rx_pid_err_wd;
   logic intr_test_rx_bitstuff_err_wd;
   logic intr_test_frame_wd;
-  logic intr_test_connected_wd;
+  logic intr_test_powered_wd;
   logic intr_test_link_out_err_wd;
   logic alert_test_we;
   logic alert_test_wd;
@@ -1159,29 +1159,29 @@ module usbdev_reg_top (
     .qs     (intr_state_frame_qs)
   );
 
-  //   F[connected]: 15:15
+  //   F[powered]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
-  ) u_intr_state_connected (
+  ) u_intr_state_powered (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_we),
-    .wd     (intr_state_connected_wd),
+    .wd     (intr_state_powered_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.connected.de),
-    .d      (hw2reg.intr_state.connected.d),
+    .de     (hw2reg.intr_state.powered.de),
+    .d      (hw2reg.intr_state.powered.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.connected.q),
+    .q      (reg2hw.intr_state.powered.q),
 
     // to register interface (read)
-    .qs     (intr_state_connected_qs)
+    .qs     (intr_state_powered_qs)
   );
 
   //   F[link_out_err]: 16:16
@@ -1586,18 +1586,18 @@ module usbdev_reg_top (
     .qs     (intr_enable_frame_qs)
   );
 
-  //   F[connected]: 15:15
+  //   F[powered]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_intr_enable_connected (
+  ) u_intr_enable_powered (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_we),
-    .wd     (intr_enable_connected_wd),
+    .wd     (intr_enable_powered_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1605,10 +1605,10 @@ module usbdev_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.connected.q),
+    .q      (reg2hw.intr_enable.powered.q),
 
     // to register interface (read)
-    .qs     (intr_enable_connected_qs)
+    .qs     (intr_enable_powered_qs)
   );
 
   //   F[link_out_err]: 16:16
@@ -1848,17 +1848,17 @@ module usbdev_reg_top (
     .qs     ()
   );
 
-  //   F[connected]: 15:15
+  //   F[powered]: 15:15
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_connected (
+  ) u_intr_test_powered (
     .re     (1'b0),
     .we     (intr_test_we),
-    .wd     (intr_test_connected_wd),
+    .wd     (intr_test_powered_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.connected.qe),
-    .q      (reg2hw.intr_test.connected.q),
+    .qe     (reg2hw.intr_test.powered.qe),
+    .q      (reg2hw.intr_test.powered.q),
     .qs     ()
   );
 
@@ -6917,7 +6917,7 @@ module usbdev_reg_top (
 
   assign intr_state_frame_wd = reg_wdata[14];
 
-  assign intr_state_connected_wd = reg_wdata[15];
+  assign intr_state_powered_wd = reg_wdata[15];
 
   assign intr_state_link_out_err_wd = reg_wdata[16];
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
@@ -6952,7 +6952,7 @@ module usbdev_reg_top (
 
   assign intr_enable_frame_wd = reg_wdata[14];
 
-  assign intr_enable_connected_wd = reg_wdata[15];
+  assign intr_enable_powered_wd = reg_wdata[15];
 
   assign intr_enable_link_out_err_wd = reg_wdata[16];
   assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
@@ -6987,7 +6987,7 @@ module usbdev_reg_top (
 
   assign intr_test_frame_wd = reg_wdata[14];
 
-  assign intr_test_connected_wd = reg_wdata[15];
+  assign intr_test_powered_wd = reg_wdata[15];
 
   assign intr_test_link_out_err_wd = reg_wdata[16];
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
@@ -7394,7 +7394,7 @@ module usbdev_reg_top (
         reg_rdata_next[12] = intr_state_rx_pid_err_qs;
         reg_rdata_next[13] = intr_state_rx_bitstuff_err_qs;
         reg_rdata_next[14] = intr_state_frame_qs;
-        reg_rdata_next[15] = intr_state_connected_qs;
+        reg_rdata_next[15] = intr_state_powered_qs;
         reg_rdata_next[16] = intr_state_link_out_err_qs;
       end
 
@@ -7414,7 +7414,7 @@ module usbdev_reg_top (
         reg_rdata_next[12] = intr_enable_rx_pid_err_qs;
         reg_rdata_next[13] = intr_enable_rx_bitstuff_err_qs;
         reg_rdata_next[14] = intr_enable_frame_qs;
-        reg_rdata_next[15] = intr_enable_connected_qs;
+        reg_rdata_next[15] = intr_enable_powered_qs;
         reg_rdata_next[16] = intr_enable_link_out_err_qs;
       end
 
