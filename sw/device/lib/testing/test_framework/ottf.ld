@@ -20,7 +20,7 @@ _stack_start = _stack_end - _stack_size;
 /**
  * DV Log offset.
  * TODO: this will need to be different depending on the boot stage the OTTF is
- * launched at. See lowrisc/opentitan:#10498.
+ * launched at. See lowrisc/opentitan:#10712.
  */
 _dv_log_offset = 0x10000;
 
@@ -45,9 +45,9 @@ ENTRY(_ottf_start);
  * s19->slm conversion scripts are not able to handle non-word aligned sections.
  */
 SECTIONS {
-  .manifest ORIGIN(eflash_virtual) : {
+  .manifest ORIGIN(eflash) : {
     KEEP(*(.manifest))
-  } > eflash_virtual
+  } > eflash
 
   /**
    * Ibex interrupt vector. See 'ottf_start.S' for more information.
@@ -57,14 +57,14 @@ SECTIONS {
    */
   .vectors : ALIGN (256){
     *(.vectors)
-  } > eflash_virtual
+  } > eflash
 
   /**
    * C runtime (CRT) section, containing program initialization code.
    */
   .crt : ALIGN(4) {
     KEEP(*(.crt))
-  } > eflash_virtual
+  } > eflash
 
   /**
    * For LLVM profiling. This contains a pointer to the runtime initialization
@@ -78,7 +78,7 @@ SECTIONS {
       *(.init_array.*)
       . = ALIGN(4);
       _init_array_end = .;
-  } > eflash_virtual
+  } > eflash
 
   /**
    * Standard text section, containing program code.
@@ -86,7 +86,10 @@ SECTIONS {
   .text : ALIGN(4) {
     *(.text)
     *(.text.*)
-  } > eflash_virtual
+
+    /* Ensure section end is word-aligned. */
+    . = ALIGN(4);
+  } > eflash
 
   /**
    * Read-only data section, containing all large compile-time constants, like
@@ -104,7 +107,7 @@ SECTIONS {
     KEEP(*(__llvm_covfun))
     KEEP(*(__llvm_covmap))
     KEEP(*(__llvm_prf_names))
-  } > eflash_virtual
+  } > eflash
 
   /**
    * "Intitial data" section, the initial values of the mutable data section
@@ -112,7 +115,7 @@ SECTIONS {
    */
   .idata : ALIGN(4) {
     _data_init_start = .;
-  } > eflash_virtual
+  } > eflash
 
   /**
    * Standard mutable data section, at the bottom of RAM. This will be

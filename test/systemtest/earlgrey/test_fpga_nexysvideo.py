@@ -95,7 +95,7 @@ def test_apps_selfchecking(tmp_path, localconf_board, board_earlgrey,
     bootstrap_done_exp = b'Bootstrap: DONE!'
     assert uart.find_in_output(bootstrap_done_exp, timeout=60)
 
-    bootmsg_exp = b'Boot ROM initialisation has completed, jump into flash!'
+    bootmsg_exp = b'Test ROM complete, jumping to flash!'
     assert uart.find_in_output(bootmsg_exp,
                                timeout=10), "End-of-bootrom string not found."
 
