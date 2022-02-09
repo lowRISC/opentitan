@@ -566,7 +566,7 @@ TEST_F(SoftwareResetTest, SoftwareResetIsLocked) {
 
     EXPECT_EQ(dif_rstmgr_software_reset(&rstmgr_, bit_index,
                                         kDifRstmgrSoftwareResetHold),
-              kDifRstmgrSoftwareResetLocked);
+              kDifLocked);
   }
 }
 
