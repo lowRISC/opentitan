@@ -390,9 +390,24 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     end
   endtask
 
+  // some coverage sampling should be disabled when it's a CSR test
+  virtual function void disable_coverage_sample_for_csr_test();
+    `uvm_info(`gfn, "mubi reg coverage sampling is disabled as this is a CSR test", UVM_HIGH)
+    foreach (all_csrs[i]) begin
+      dv_base_reg_field fields[$];
+
+      all_csrs[i].get_dv_base_reg_fields(fields);
+      // assign null to all mubi_cov object, so that coverage sampling is skipped
+      foreach (fields[j]) fields[j].mubi_cov = null;
+    end
+  endfunction
+
   // wrapper task to call common test or csr tests
   virtual task run_common_vseq_wrapper(int num_times = 1);
     if (common_seq_type == "") void'($value$plusargs("run_%0s", common_seq_type));
+
+    disable_coverage_sample_for_csr_test();
+
     // check which test type
     case (common_seq_type)
       "intr_test":                     run_intr_test_vseq(num_times);

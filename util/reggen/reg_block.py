@@ -407,7 +407,8 @@ class RegBlock:
                                 hwaccess=hwaccess_obj,
                                 bits=signal.bits,
                                 resval=0,
-                                enum=None))
+                                enum=None,
+                                mubi=False))
 
         reg = Register(self.offset,
                        reg_name,

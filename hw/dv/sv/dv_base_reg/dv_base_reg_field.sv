@@ -14,6 +14,9 @@ class dv_base_reg_field extends uvm_reg_field;
   local dv_base_reg_field regwen_fld;
   local dv_base_lockable_field_cov lockable_field_cov;
 
+  // variable for mubi coverage, which is only created when this is a mubi reg
+  dv_base_mubi_cov mubi_cov;
+
   `uvm_object_utils(dv_base_reg_field)
   `uvm_object_new
 
@@ -115,6 +118,11 @@ class dv_base_reg_field extends uvm_reg_field;
     lockable_field_cov = dv_base_lockable_field_cov::type_id::create(`gfn);
   endfunction
 
+  function void create_mubi_cov(int mubi_width);
+    mubi_cov = dv_base_mubi_cov::type_id::create(`gfn);
+    mubi_cov.create_cov(mubi_width);
+  endfunction
+
   // Returns true if this field can lock the specified register/field, else return false.
   // If lockable register is partially lockable (only certain field is lockable), this method will
   // still return true.
@@ -156,6 +164,8 @@ class dv_base_reg_field extends uvm_reg_field;
       uvm_reg_data_t field_val = rw.value[0] & ((1 << get_n_bits()) - 1);
 
       if (lockable_field_cov != null) lockable_field_cov.post_write(field_val, `gmv(regwen_fld));
+
+      if (mubi_cov != null) mubi_cov.sample(field_val);
     end
   endtask
 
