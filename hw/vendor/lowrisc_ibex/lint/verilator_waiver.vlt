@@ -67,3 +67,6 @@ lint_off -rule UNUSED -file "*/rtl/ibex_branch_predict.sv" -match "*rst_ni*"
 // Temporary waivers until OpenTitan primitives are lint-clean
 // https://github.com/lowRISC/opentitan/issues/2313
 lint_off -file "*/lowrisc_prim_*/rtl/*.sv"
+
+lint_off -rule UNUSED -file "*/rtl/ibex_top_tracing.sv" -match "*RndCnstLfsrSeed*"
+lint_off -rule UNUSED -file "*/rtl/ibex_top_tracing.sv" -match "*RndCnstLfsrPerm*"

@@ -21,6 +21,7 @@ small:
   PMPGranularity           : 0
   PMPNumRegions            : 4
   SecureIbex               : 0
+  ICacheScramble           : 0
 
 # Configuration to match that used in the OpenTitan project
 opentitan:
@@ -37,6 +38,7 @@ opentitan:
   PMPGranularity           : 0
   PMPNumRegions            : 16
   SecureIbex               : 1
+  ICacheScramble           : 0
 
 # ===============================
 # * EXPERIMENTAL CONFIGURATIONS *
@@ -59,6 +61,7 @@ experimental-maxperf:
   PMPGranularity           : 0
   PMPNumRegions            : 4
   SecureIbex               : 0
+  ICacheScramble           : 0
 
 # experimental-maxperf config above plus PMP enabled with 16 regions.
 experimental-maxperf-pmp:
@@ -75,6 +78,7 @@ experimental-maxperf-pmp:
   PMPGranularity           : 0
   PMPNumRegions            : 16
   SecureIbex               : 0
+  ICacheScramble           : 0
 
 # experimental-maxperf-pmp config above with balanced bitmanip extension
 experimental-maxperf-pmp-bmbalanced:
@@ -91,6 +95,7 @@ experimental-maxperf-pmp-bmbalanced:
   PMPGranularity           : 0
   PMPNumRegions            : 16
   SecureIbex               : 0
+  ICacheScramble           : 0
 
 # experimental-maxperf-pmp config above with full bitmanip extension
 experimental-maxperf-pmp-bmfull:
@@ -107,6 +112,7 @@ experimental-maxperf-pmp-bmfull:
   PMPGranularity           : 0
   PMPNumRegions            : 16
   SecureIbex               : 0
+  ICacheScramble           : 0
 
 # experimental-maxperf-pmp-bmfull config above with icache enabled
 experimental-maxperf-pmp-bmfull-icache:
@@ -123,6 +129,7 @@ experimental-maxperf-pmp-bmfull-icache:
   PMPGranularity           : 0
   PMPNumRegions            : 16
   SecureIbex               : 0
+  ICacheScramble           : 0
 
 # experimental-maxperf with branch predictor switched on. This exists to allow
 # easy use of Ibex with the branch predictor in particular for CI runs. The
@@ -142,4 +149,5 @@ experimental-branch-predictor:
   PMPGranularity           : 0
   PMPNumRegions            : 4
   SecureIbex               : 0
+  ICacheScramble           : 0
 

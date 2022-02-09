@@ -21,6 +21,9 @@ run stand-alone binaries. It contains:
   <https://github.com/lowRISC/lowrisc-toolchains/releases>
 * libelf and its development libraries.
   On Debian/Ubuntu, install it by running `apt-get install libelf-dev`.
+* srecord.
+  On Debian/Ubuntu, install it by running `apt-get install srecord`.
+  (Optional, needed for generating a vmem file)
 
 ## Building Simulation
 

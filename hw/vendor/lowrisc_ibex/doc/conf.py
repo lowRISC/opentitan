@@ -115,7 +115,7 @@ html_logo = 'images/logo.svg'
 html_static_path = ['_static']
 
 html_css_files = [
-    '_static/theme_overrides.css', # Fix wide tables in RTD theme
+    'theme_overrides.css', # Fix wide tables in RTD theme
 ]
 
 # -- Options for LaTeX output ---------------------------------------------

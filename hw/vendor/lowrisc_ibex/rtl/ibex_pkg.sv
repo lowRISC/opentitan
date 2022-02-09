@@ -330,22 +330,25 @@ package ibex_pkg;
   } dbg_cause_e;
 
   // ICache constants
-  parameter int unsigned ADDR_W          = 32;
-  parameter int unsigned BUS_SIZE        = 32;
-  parameter int unsigned BUS_BYTES       = BUS_SIZE/8;
-  parameter int unsigned BUS_W           = $clog2(BUS_BYTES);
-  parameter int unsigned IC_SIZE_BYTES   = 4096;
-  parameter int unsigned IC_NUM_WAYS     = 2;
-  parameter int unsigned IC_LINE_SIZE    = 64;
-  parameter int unsigned IC_LINE_BYTES   = IC_LINE_SIZE/8;
-  parameter int unsigned IC_LINE_W       = $clog2(IC_LINE_BYTES);
-  parameter int unsigned IC_NUM_LINES    = IC_SIZE_BYTES / IC_NUM_WAYS / IC_LINE_BYTES;
-  parameter int unsigned IC_LINE_BEATS   = IC_LINE_BYTES / BUS_BYTES;
-  parameter int unsigned IC_LINE_BEATS_W = $clog2(IC_LINE_BEATS);
-  parameter int unsigned IC_INDEX_W      = $clog2(IC_NUM_LINES);
-  parameter int unsigned IC_INDEX_HI     = IC_INDEX_W + IC_LINE_W - 1;
-  parameter int unsigned IC_TAG_SIZE     = ADDR_W - IC_INDEX_W - IC_LINE_W + 1; // 1 valid bit
-  parameter int unsigned IC_OUTPUT_BEATS = (BUS_BYTES / 2); // number of halfwords
+  parameter int unsigned ADDR_W           = 32;
+  parameter int unsigned BUS_SIZE         = 32;
+  parameter int unsigned BUS_BYTES        = BUS_SIZE/8;
+  parameter int unsigned BUS_W            = $clog2(BUS_BYTES);
+  parameter int unsigned IC_SIZE_BYTES    = 4096;
+  parameter int unsigned IC_NUM_WAYS      = 2;
+  parameter int unsigned IC_LINE_SIZE     = 64;
+  parameter int unsigned IC_LINE_BYTES    = IC_LINE_SIZE/8;
+  parameter int unsigned IC_LINE_W        = $clog2(IC_LINE_BYTES);
+  parameter int unsigned IC_NUM_LINES     = IC_SIZE_BYTES / IC_NUM_WAYS / IC_LINE_BYTES;
+  parameter int unsigned IC_LINE_BEATS    = IC_LINE_BYTES / BUS_BYTES;
+  parameter int unsigned IC_LINE_BEATS_W  = $clog2(IC_LINE_BEATS);
+  parameter int unsigned IC_INDEX_W       = $clog2(IC_NUM_LINES);
+  parameter int unsigned IC_INDEX_HI      = IC_INDEX_W + IC_LINE_W - 1;
+  parameter int unsigned IC_TAG_SIZE      = ADDR_W - IC_INDEX_W - IC_LINE_W + 1; // 1 valid bit
+  parameter int unsigned IC_OUTPUT_BEATS  = (BUS_BYTES / 2); // number of halfwords
+  // ICache Scrambling Parameters
+  parameter int unsigned SCRAMBLE_KEY_W   = 128;
+  parameter int unsigned SCRAMBLE_NONCE_W = 64;
 
   // PMP constants
   parameter int unsigned PMP_MAX_REGIONS      = 16;
@@ -599,5 +602,8 @@ package ibex_pkg;
   parameter lfsr_perm_t RndCnstLfsrPermDefault = {
     160'h1e35ecba467fd1b12e958152c04fa43878a8daed
   };
-
+  parameter logic [SCRAMBLE_KEY_W-1:0]   RndCnstIbexKeyDefault =
+      128'h14e8cecae3040d5e12286bb3cc113298;
+  parameter logic [SCRAMBLE_NONCE_W-1:0] RndCnstIbexNonceDefault =
+      64'hf79780bc735f3843;
 endpackage

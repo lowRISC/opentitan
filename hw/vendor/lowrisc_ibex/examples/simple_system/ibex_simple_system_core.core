@@ -30,7 +30,6 @@ filesets:
 targets:
   default:
     filesets:
-      - tool_verilator ? (files_verilator)
       - tool_veriblelint ? (files_lint_verible)
       - files_sim
-      - files_verilator
+      - tool_verilator ? (files_verilator)

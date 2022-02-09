@@ -8,10 +8,13 @@ module top_artya7 (
     output [3:0]        LED
 );
 
-  parameter int          MEM_SIZE     = 256 * 1024; // 256 kB
-  parameter logic [31:0] MEM_START    = 32'h00000000;
-  parameter logic [31:0] MEM_MASK     = MEM_SIZE-1;
-  parameter              SRAMInitFile = "";
+  parameter int          FPGAPowerAnalysis = 0;
+  // Choose 64kb memory for normal builds and 256kb for FPGAPowerAnalysis builds. The latter will
+  // not fit in the Arty A7-35 Board FPGA.
+  parameter int          MEM_SIZE          = FPGAPowerAnalysis == 0 ? 64 * 1024 : 256 * 1024;
+  parameter logic [31:0] MEM_START         = 32'h00000000;
+  parameter logic [31:0] MEM_MASK          = MEM_SIZE-1;
+  parameter              SRAMInitFile      = "";
 
   logic clk_sys, rst_sys_n;
 
@@ -108,17 +111,8 @@ module top_artya7 (
     .b_rdata_o (instr_rdata)
   );
 
-
-  // SRAM to Ibex
-  always_ff @(posedge clk_sys or negedge rst_sys_n) begin
-    if (!rst_sys_n) begin
-      instr_gnt    <= '0;
-      data_gnt     <= '0;
-    end else begin
-      instr_gnt    <= instr_req ;
-      data_gnt     <=  data_req ;
-    end
-  end
+  assign instr_gnt = instr_req;
+  assign data_gnt  = data_req;
 
   // Connect the LED output to the lower four bits of the most significant
   // byte
