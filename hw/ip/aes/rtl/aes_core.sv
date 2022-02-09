@@ -61,6 +61,7 @@ module aes_core
   aes_op_e                                    aes_op_q;
   aes_mode_e                                  aes_mode_q;
   ciph_op_e                                   cipher_op;
+  ciph_op_e                                   cipher_op_buf;
   key_len_e                                   key_len_q;
   logic                                       sideload_q;
   prs_rate_e                                  prng_reseed_rate_q;
@@ -362,6 +363,17 @@ module aes_core
                      (aes_mode_q == AES_OFB)                        ? CIPH_FWD :
                      (aes_mode_q == AES_CTR)                        ? CIPH_FWD : CIPH_FWD;
 
+  // This primitive is used to place a size-only constraint on the
+  // buffers to act as a synthesis optimization barrier.
+  logic [$bits(ciph_op_e)-1:0] cipher_op_raw;
+  prim_buf #(
+    .Width($bits(ciph_op_e))
+  ) u_prim_buf_op (
+    .in_i(cipher_op),
+    .out_o(cipher_op_raw)
+  );
+  assign cipher_op_buf = ciph_op_e'(cipher_op_raw);
+
   for (genvar s = 0; s < NumShares; s++) begin : gen_cipher_prd_clearing
     assign cipher_prd_clearing[s] = prd_clearing[s];
   end
@@ -427,7 +439,7 @@ module aes_core
     .out_ready_i        ( cipher_out_ready           ),
 
     .cfg_valid_i        ( ~ctrl_err_storage          ), // Used for gating assertions only.
-    .op_i               ( cipher_op                  ),
+    .op_i               ( cipher_op_buf              ),
     .key_len_i          ( key_len_q                  ),
     .crypt_i            ( cipher_crypt               ),
     .crypt_o            ( cipher_crypt_busy          ),
@@ -542,7 +554,7 @@ module aes_core
     .ctrl_err_storage_i        ( ctrl_err_storage                       ),
     .op_i                      ( aes_op_q                               ),
     .mode_i                    ( aes_mode_q                             ),
-    .cipher_op_i               ( cipher_op                              ),
+    .cipher_op_i               ( cipher_op_buf                          ),
     .sideload_i                ( sideload_q                             ),
     .prng_reseed_rate_i        ( prng_reseed_rate_q                     ),
     .manual_operation_i        ( manual_operation_q                     ),

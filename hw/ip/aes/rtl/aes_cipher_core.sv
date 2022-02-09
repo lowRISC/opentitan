@@ -160,7 +160,6 @@ module aes_cipher_core import aes_pkg::*;
   state_sel_e                         state_sel;
   logic                               state_sel_err;
 
-  ciph_op_e                           op;
   sp2v_e                              sub_bytes_en;
   sp2v_e                              sub_bytes_out_req;
   sp2v_e                              sub_bytes_out_ack;
@@ -242,19 +241,9 @@ module aes_cipher_core import aes_pkg::*;
     end
   end
 
-  // op_i is one-hot encoded. Check the provided value and use the checked version internally.
-
-  // This primitive is used to place a size-only constraint on the
-  // buffers to act as a synthesis optimization barrier.
-  logic [$bits(ciph_op_e)-1:0] op_raw;
-  prim_buf #(
-    .Width($bits(ciph_op_e))
-  ) u_prim_buf_op (
-    .in_i(op_i),
-    .out_o(op_raw)
-  );
-  assign op        = ciph_op_e'(op_raw);
-  assign op_err    = ~(op == CIPH_FWD || op == CIPH_INV);
+  // op_i is one-hot encoded. Check the provided value and trigger an alert upon detecing invalid
+  // encodings.
+  assign op_err    = ~(op_i == CIPH_FWD || op_i == CIPH_INV);
   assign cfg_valid = cfg_valid_i & ~op_err;
 
   //////////
@@ -376,7 +365,7 @@ module aes_cipher_core import aes_pkg::*;
     .en_i      ( sub_bytes_en      ),
     .out_req_o ( sub_bytes_out_req ),
     .out_ack_i ( sub_bytes_out_ack ),
-    .op_i      ( op                ),
+    .op_i      ( op_i              ),
     .data_i    ( state_q[0]        ),
     .mask_i    ( sb_in_mask        ),
     .prd_i     ( prd_sub_bytes     ),
@@ -395,13 +384,13 @@ module aes_cipher_core import aes_pkg::*;
     end
 
     aes_shift_rows u_aes_shift_rows (
-      .op_i   ( op                ),
+      .op_i   ( op_i              ),
       .data_i ( shift_rows_in[s]  ),
       .data_o ( shift_rows_out[s] )
     );
 
     aes_mix_columns u_aes_mix_columns (
-      .op_i   ( op                 ),
+      .op_i   ( op_i               ),
       .data_i ( shift_rows_out[s]  ),
       .data_o ( mix_columns_out[s] )
     );
@@ -532,7 +521,7 @@ module aes_cipher_core import aes_pkg::*;
     .out_ready_i          ( out_ready_i         ),
 
     .cfg_valid_i          ( cfg_valid           ),
-    .op_i                 ( op                  ),
+    .op_i                 ( op_i                ),
     .key_len_i            ( key_len_i           ),
     .crypt_i              ( crypt_i             ),
     .crypt_o              ( crypt_o             ),
