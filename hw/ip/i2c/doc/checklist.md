@@ -42,7 +42,7 @@ Documentation | [BLOCK_DIAGRAM][]       | Done        |
 Documentation | [DOC_INTERFACE][]       | Done        |
 Documentation | [MISSING_FUNC][]        | N/A         |
 Documentation | [FEATURE_FROZEN][]      | Done        |
-RTL           | [FEATURE_COMPLETE][]    | Done        | 
+RTL           | [FEATURE_COMPLETE][]    | Done        |
 RTL           | [AREA_CHECK][]          | Done        | Area check done on FPGA
 RTL           | [PORT_FROZEN][]         | Done        |
 RTL           | [ARCHITECTURE_FROZEN][] | Done        |
@@ -78,7 +78,7 @@ Security      | [SEC_RND_CNST][]        | N/A         |
  Type         | Item                         | Resolution  | Note/Collaterals
 --------------|------------------------------|-------------|------------------
 Security      | [SEC_CM_ASSETS_LISTED][]     | Done        |
-Security      | [SEC_CM_IMPLEMENTED][]       | Done        | 
+Security      | [SEC_CM_IMPLEMENTED][]       | Done        |
 Security      | [SEC_CM_RTL_REVIEWED][]      | N/A         |
 Security      | [SEC_CM_COUNCIL_REVIEWED][]  | N/A         | This block only contains the bus-integrity CM.
 
@@ -224,11 +224,15 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
+Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Not Started |
 Tests         | [FPV_SEC_CM_VERIFIED][]                 | Not Started |
 Tests         | [SIM_SEC_CM_VERIFIED][]                 | Not Started |
- 
+Review        | [SEC_CM_DV_REVIEWED][]                  | Not Started |
+
+[SEC_CM_TESTPLAN_COMPLETED]:          {{<relref "/doc/project/checklist.md#sec_cm_testplan_completed" >}}
 [FPV_SEC_CM_VERIFIED]:                {{<relref "/doc/project/checklist.md#fpv_sec_cm_verified" >}}
 [SIM_SEC_CM_VERIFIED]:                {{<relref "/doc/project/checklist.md#sim_sec_cm_verified" >}}
+[SEC_CM_DV_REVIEWED]:                 {{<relref "/doc/project/checklist.md#sec_cm_dv_reviewed" >}}
 
 ### V3
 

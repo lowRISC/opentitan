@@ -144,7 +144,7 @@ Code Quality  | [TB_LINT_SETUP][]                     | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A         |
 Review        | [DESIGN_SPEC_REVIEWED][]              | Done        |
 Review        | [TESTPLAN_REVIEWED][]                 | Done        |
-Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done        | 
+Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done        |
 Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 
 [DV_DOC_DRAFT_COMPLETED]:             {{<relref "/doc/project/checklist.md#dv_doc_draft_completed" >}}
@@ -222,11 +222,15 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
+Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Not Started |
 Tests         | [FPV_SEC_CM_VERIFIED][]                 | Not Started |
 Tests         | [SIM_SEC_CM_VERIFIED][]                 | Not Started |
- 
+Review        | [SEC_CM_DV_REVIEWED][]                  | Not Started |
+
+[SEC_CM_TESTPLAN_COMPLETED]:          {{<relref "/doc/project/checklist.md#sec_cm_testplan_completed" >}}
 [FPV_SEC_CM_VERIFIED]:                {{<relref "/doc/project/checklist.md#fpv_sec_cm_verified" >}}
 [SIM_SEC_CM_VERIFIED]:                {{<relref "/doc/project/checklist.md#sim_sec_cm_verified" >}}
+[SEC_CM_DV_REVIEWED]:                 {{<relref "/doc/project/checklist.md#sec_cm_dv_reviewed" >}}
 
 ### V3
 
