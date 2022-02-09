@@ -11,6 +11,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
@@ -23,6 +24,7 @@
 #include "keymgr_regs.h"
 #include "lc_ctrl_regs.h"
 #include "otp_ctrl_regs.h"
+#include "rstmgr_regs.h"
 #include "rv_core_ibex_regs.h"
 #include "sram_ctrl_regs.h"
 
@@ -306,9 +308,16 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_flash_kill(void)) {
 }
 
 SHUTDOWN_FUNC(noreturn, shutdown_hang(void)) {
-  enum { kSramCtrlBase = TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR };
+  enum {
+    kSramCtrlBase = TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR,
+    kRstmgrBase = TOP_EARLGREY_RSTMGR_AON_BASE_ADDR,
+  };
 
   // Disable SRAM execution and lock the register.
+  // Note: In addition to this register, which is disabled by default at reset,
+  // SRAM execution is gated by the lifecycle state
+  // (SRAM_CTRL.INSTR.BUS.LC_GATED) and EN_SRAM_IFETCH item in the HW_CFG OTP
+  // partition.
   abs_mmio_write32(kSramCtrlBase + SRAM_CTRL_EXEC_EN_OFFSET, 0);
   abs_mmio_write32(kSramCtrlBase + SRAM_CTRL_EXEC_REGWEN_REG_OFFSET, 0);
 
@@ -316,9 +325,11 @@ SHUTDOWN_FUNC(noreturn, shutdown_hang(void)) {
 #ifdef OT_PLATFORM_RV32
   while (true) {
     asm volatile(
-        // Request a new scrambling key, then lock the SRAM control register.
-        "sw %[kRenewKey], %[kCtrlOffset](%[kMainRamCtrlBase]);"
-        "sw zero, %[kRegWriteEn](%[kMainRamCtrlBase]);"
+        "1:"
+        // Request a new scrambling key.
+        "sw %[kSramRenewKey], %[kSramCtrlCtrlReg](%[kSramCtrlBase]);"
+        // Request a system reset.
+        "sw %[kMultiBitBool4True], %[kRstmgrResetReqReg](%[kRstmgrBase]);"
 
         // TODO(lowRISC/opentitan#7148): restrict the ePMP such that only
         // ROM may execute.  mundaym's suggestion: set entry 2 as a NAPOT
@@ -327,16 +338,17 @@ SHUTDOWN_FUNC(noreturn, shutdown_hang(void)) {
         // any further modifications.
 
         // Generate a halt-maze.
-        "1:"
         "wfi; wfi; wfi; wfi; j 1b;"
         "wfi; wfi; j 1b;"
         "wfi; j 1b;"
         "wfi;"
         :
-        : [kRenewKey] "r"(1 << SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT),
-          [kCtrlOffset] "I"(SRAM_CTRL_CTRL_REG_OFFSET),
-          [kMainRamCtrlBase] "r"(kSramCtrlBase),
-          [kRegWriteEn] "I"(SRAM_CTRL_CTRL_REGWEN_REG_OFFSET));
+        : [kSramRenewKey] "r"(1 << SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT),
+          [kSramCtrlCtrlReg] "I"(SRAM_CTRL_CTRL_REG_OFFSET),
+          [kSramCtrlBase] "r"(kSramCtrlBase),
+          [kMultiBitBool4True] "r"(kMultiBitBool4True),
+          [kRstmgrBase] "r"(kRstmgrBase),
+          [kRstmgrResetReqReg] "I"(RSTMGR_RESET_REQ_REG_OFFSET));
   }
 #endif
 }
