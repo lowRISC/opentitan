@@ -5,3 +5,11 @@
 # waiver file for rstmgr
 
 set_reset_drivers prim_clock_mux2 prim_flop prim_flop_2sync
+
+# All leaf resets have a reset multiplexer for scan reset
+waive -rules RESET_MUX -location {rstmgr.sv} -regexp {Asynchronous reset .*resets_o.* is driven by a multiplexer} \
+      -comment "This is dedicated reset infrastructure, thus permissible"
+
+# All leaf resets have a reset multiplexer for scan reset
+waive -rules RESET_MUX -location {rstmgr.sv} -regexp {Asynchronous reset .*resets_o.* is driven by a multiplexer} \
+      -comment "This is dedicated reset infrastructure, thus permissible"

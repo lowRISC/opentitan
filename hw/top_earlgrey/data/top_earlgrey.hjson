@@ -370,7 +370,7 @@
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb",
                    clk_io_div2_i: "io_div2", clk_io_div4_i: "io_div4"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "por_io_div4"},
+      reset_connections: {rst_ni: "por_io_div4"}
       domain: ["Aon"],
       base_addr: "0x40410000",
       attr: "templated",

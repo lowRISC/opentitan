@@ -89,8 +89,8 @@ module rstmgr
         .NumCopies(1),
         .AsyncOn(0)
       ) u_por_scanmode_sync (
-        .clk_i(1'b0),  // unused clock
-        .rst_ni(1'b1), // unused reset
+        .clk_i,
+        .rst_ni,
         .mubi_i(scanmode_i),
         .mubi_o(por_scanmode)
       );
@@ -259,8 +259,8 @@ module rstmgr
     .NumCopies(1),
     .AsyncOn(0)
   ) u_ctrl_scanmode_sync (
-    .clk_i(1'b0),  // unused clock
-    .rst_ni(1'b1), // unused reset
+    .clk_i,
+    .rst_ni,
     .mubi_i(scanmode_i),
     .mubi_o(rst_ctrl_scanmode)
   );
@@ -270,9 +270,8 @@ module rstmgr
     .clk_i,
     .scanmode_i(prim_mubi_pkg::mubi4_test_true_strict(rst_ctrl_scanmode[0])),
     .scan_rst_ni,
-    .rst_ni,
     .rst_req_i(pwr_i.rst_lc_req),
-    .rst_parent_ni({PowerDomains{1'b1}}),
+    .rst_parent_ni(rst_por_aon_n),
     .rst_no(rst_lc_src_n)
   );
 
@@ -281,7 +280,6 @@ module rstmgr
     .clk_i,
     .scanmode_i(prim_mubi_pkg::mubi4_test_true_strict(rst_ctrl_scanmode[0])),
     .scan_rst_ni,
-    .rst_ni,
     .rst_req_i(pwr_i.rst_sys_req | {PowerDomains{ndm_req_valid}}),
     .rst_parent_ni(rst_lc_src_n),
     .rst_no(rst_sys_src_n)
@@ -326,8 +324,8 @@ module rstmgr
     .NumCopies(19),
     .AsyncOn(0)
     ) u_leaf_rst_scanmode_sync  (
-    .clk_i(1'b0),  // unused clock
-    .rst_ni(1'b1), // unused reset
+    .clk_i,
+    .rst_ni,
     .mubi_i(scanmode_i),
     .mubi_o(leaf_rst_scanmode)
  );

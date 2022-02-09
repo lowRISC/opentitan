@@ -12,7 +12,6 @@ module rstmgr_ctrl
   import rstmgr_reg_pkg::*;
 (
   input clk_i,
-  input rst_ni,
   input [PowerDomains-1:0] rst_req_i,
   input [PowerDomains-1:0] rst_parent_ni, // parent reset
   output logic [PowerDomains-1:0] rst_no,
@@ -26,24 +25,14 @@ module rstmgr_ctrl
   // the remaining resets
   logic [OffDomains-1:0] rst_pd_nd, rst_pd_nq;
 
-  // Parent resets may assert asynchronously, so we need to sync before using it as part
-  // of the control path
-  logic [PowerDomains-1:0] rst_parent_synced;
-  prim_flop_2sync #(
-    .Width(PowerDomains),
-    .ResetValue('0)
-  ) u_lc (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(rst_parent_ni),
-    .q_o(rst_parent_synced)
-  );
-
   // always on handling
-  prim_flop u_aon_rst (
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_aon_rst (
     .clk_i,
-    .rst_ni,
-    .d_i(~rst_req_i[DomainAonSel] & rst_parent_synced[DomainAonSel]),
+    .rst_ni(rst_parent_ni[DomainAonSel]),
+    .d_i(~rst_req_i[DomainAonSel]),
     .q_o(rst_aon_n_premux)
   );
 
@@ -60,14 +49,17 @@ module rstmgr_ctrl
   // the non-always-on domains
   // These reset whenever the always on domain reset, to ensure power definition consistency.
   // By extension, they also reset whenever the root (rst_ni) resets
-  assign rst_pd_nd = ~rst_req_i[Domain0Sel +: OffDomains] &
-                     rst_parent_synced[Domain0Sel +: OffDomains];
+  assign rst_pd_nd = ~rst_req_i[Domain0Sel +: OffDomains];
 
   localparam int DomainPdStartIdx = DomainAonSel + 1;
   for(genvar i = 0; i < OffDomains; i++) begin : gen_rst_pd_n
-    prim_flop u_pd_rst (
+    prim_flop_2sync #(
+      .Width(1),
+      .ResetValue('0)
+    ) u_pd_rst (
       .clk_i,
-      .rst_ni(rst_aon_n),
+      // when the always on portion resets, always reset the non-always-on portion as well.
+      .rst_ni(rst_aon_n & rst_parent_ni[DomainPdStartIdx + i]),
       .d_i(rst_pd_nd[i]),
       .q_o(rst_pd_nq[i])
     );
