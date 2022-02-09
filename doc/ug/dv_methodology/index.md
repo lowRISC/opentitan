@@ -548,6 +548,24 @@ For example, when a_valid is 0 in the TLUL interface, we drive data, address and
 
 This section is TBD.
 
+## Security Verification
+
+Security verification is one of the critical challenges in OpenTitan.
+Each design IP contains certain security countermeasures.
+There are several common countermeasures that are widely used in the blocks.
+Therefore, a common verification framework is built up in the DV base libraries.
+The following common countermeasures can be either automatically or semi-automatically verified by this framework.
+
+1. Countermeasures using common primitives can be verified by the [Security Countermeasure Verification Framework]({{< relref "sec_cm_dv_framework" >}}).
+2. The following common countermeasures can be verified by cip_lib.
+The steps to enabling them is described in cip_lib [document]({{< relref "hw/dv/sv/cip_lib/doc#security-verification-in-cip_lib" >}}).
+  - Bus integrity
+  - Shadowed CSRs
+  - REGWEN CSRs
+  - MUBI type CSRs/ports
+
+For custom countermeasures, they have to be handled in a case-by-case manner.
+
 ## Reviews
 
 One of the best ways to convince ourselves that we have done our job right is by seeking from, as well as providing feedback to, our contributors.
