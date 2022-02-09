@@ -256,6 +256,11 @@ A testplan has been written (in HJson format) indicating:
 - The functional coverage plan captured as a list of covergroups, with a description highlighting which feature is expected to be covered by each covergroup.
   It may optionally contain additional details such as coverpoints and crosses of individual aspects of the said feature that is covered.
 
+If the DUT has a CPU for which a ROM firmware is developed (burnt-in during manufacturing):
+- A detailed ROM firmware testplan has been written to adequately verify all functions of the ROM firmware in a pre-silicon simulation environment (i.e. a DV testbench).
+- The testing framework may validate each functionality of the ROM firmware discretetly as an individual unit test.
+- Depending on the ROM firmware development progress, this may be postponed for V2.
+
 ### TB_TOP_CREATED
 
 A top level testbench has been created with the DUT instantiated.
@@ -283,7 +288,7 @@ A CSR check is generated using [regtool]({{< relref "/util/reggen/README.md" >}}
 ### TB_GEN_AUTOMATED
 
 Full testbench automation has been completed if applicable.
-This may be required for verifying multiple flavors of parameterized DUT designs.
+This may be required for verifying multiple flavors of parameterized designs.
 
 ### SIM_SMOKE_TEST_PASSING
 
@@ -427,7 +432,11 @@ All assumptions have been implemented and reviewed.
 
 ### SIM_FW_SIMULATED
 
-Chip-level tests exist to verify example firmware code (DIFs) in simulation.
+If the DUT has a CPU for which a ROM firmware is developed (burnt-in during manufacturing):
+- The ROM firmware testplan is fully written.
+- SIM_ALL_TESTS_PASSING checklist item is met, including these tests.
+
+This checklist item is marked N.A. if the DUT does not have a CPU.
 
 ### SIM_NIGHTLY_REGRESSION_V2
 
