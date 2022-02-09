@@ -18,7 +18,7 @@ module tb;
   wire devmode;
   wire intr_pkt_received;
   wire intr_pkt_sent;
-  wire intr_connected;
+  wire intr_powered;
   wire intr_disconnected;
   wire intr_host_lost;
   wire intr_link_reset;
@@ -108,7 +108,7 @@ module tb;
     // Interrupts
     .intr_pkt_received_o    (intr_pkt_received    ),
     .intr_pkt_sent_o        (intr_pkt_sent        ),
-    .intr_connected_o       (intr_connected       ),
+    .intr_powered_o         (intr_powered       ),
     .intr_disconnected_o    (intr_disconnected    ),
     .intr_host_lost_o       (intr_host_lost       ),
     .intr_link_reset_o      (intr_link_reset      ),
@@ -128,7 +128,7 @@ module tb;
   // Hook up the interrupt pins to the intr_if
   assign interrupts[IntrPktReceived]    = intr_pkt_received;
   assign interrupts[IntrPktSent]        = intr_pkt_sent;
-  assign interrupts[IntrConnected]      = intr_connected;
+  assign interrupts[IntrPowered]        = intr_powered;
   assign interrupts[IntrDisconnected]   = intr_disconnected;
   assign interrupts[IntrHostLost]       = intr_host_lost;
   assign interrupts[IntrLinkReset]      = intr_link_reset;

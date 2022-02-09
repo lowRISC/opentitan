@@ -65,7 +65,7 @@ package usbdev_reg_pkg;
     } frame;
     struct packed {
       logic        q;
-    } connected;
+    } powered;
     struct packed {
       logic        q;
     } link_out_err;
@@ -119,7 +119,7 @@ package usbdev_reg_pkg;
     } frame;
     struct packed {
       logic        q;
-    } connected;
+    } powered;
     struct packed {
       logic        q;
     } link_out_err;
@@ -189,7 +189,7 @@ package usbdev_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } connected;
+    } powered;
     struct packed {
       logic        q;
       logic        qe;
@@ -417,7 +417,7 @@ package usbdev_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } connected;
+    } powered;
     struct packed {
       logic        d;
       logic        de;
@@ -637,7 +637,7 @@ package usbdev_reg_pkg;
   parameter logic [0:0] USBDEV_INTR_TEST_RX_PID_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] USBDEV_INTR_TEST_RX_BITSTUFF_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] USBDEV_INTR_TEST_FRAME_RESVAL = 1'h 0;
-  parameter logic [0:0] USBDEV_INTR_TEST_CONNECTED_RESVAL = 1'h 0;
+  parameter logic [0:0] USBDEV_INTR_TEST_POWERED_RESVAL = 1'h 0;
   parameter logic [0:0] USBDEV_INTR_TEST_LINK_OUT_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] USBDEV_ALERT_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] USBDEV_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;

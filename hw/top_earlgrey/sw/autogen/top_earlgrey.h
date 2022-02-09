@@ -1156,7 +1156,7 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdUsbdevRxPidErr = 139, /**< usbdev_rx_pid_err */
   kTopEarlgreyPlicIrqIdUsbdevRxBitstuffErr = 140, /**< usbdev_rx_bitstuff_err */
   kTopEarlgreyPlicIrqIdUsbdevFrame = 141, /**< usbdev_frame */
-  kTopEarlgreyPlicIrqIdUsbdevConnected = 142, /**< usbdev_connected */
+  kTopEarlgreyPlicIrqIdUsbdevPowered = 142, /**< usbdev_powered */
   kTopEarlgreyPlicIrqIdUsbdevLinkOutErr = 143, /**< usbdev_link_out_err */
   kTopEarlgreyPlicIrqIdOtpCtrlOtpOperationDone = 144, /**< otp_ctrl_otp_operation_done */
   kTopEarlgreyPlicIrqIdOtpCtrlOtpError = 145, /**< otp_ctrl_otp_error */

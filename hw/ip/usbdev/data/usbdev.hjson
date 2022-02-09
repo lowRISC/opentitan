@@ -184,7 +184,7 @@
             Raised when the USB frame number is updated with a valid SOF.
             '''
     }
-    { name: "connected",
+    { name: "powered",
       desc: "Raised if VBUS is applied."
     }
     { name: "link_out_err",

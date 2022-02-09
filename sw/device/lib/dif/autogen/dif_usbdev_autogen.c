@@ -97,8 +97,8 @@ static bool usbdev_get_irq_bit_index(dif_usbdev_irq_t irq,
     case kDifUsbdevIrqFrame:
       *index_out = USBDEV_INTR_COMMON_FRAME_BIT;
       break;
-    case kDifUsbdevIrqConnected:
-      *index_out = USBDEV_INTR_COMMON_CONNECTED_BIT;
+    case kDifUsbdevIrqPowered:
+      *index_out = USBDEV_INTR_COMMON_POWERED_BIT;
       break;
     case kDifUsbdevIrqLinkOutErr:
       *index_out = USBDEV_INTR_COMMON_LINK_OUT_ERR_BIT;
