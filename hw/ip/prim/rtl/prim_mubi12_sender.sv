@@ -19,6 +19,8 @@ module prim_mubi12_sender
   // In special cases where the sender is in the same clock domain as the receiver,
   // this can be set to 0. However, it is recommended to leave this at 1.
   parameter bit AsyncOn = 1,
+  // Enable anchor buffer
+  parameter bit EnSecBuf = 0,
   // Reset value for the sender flops
   parameter mubi12_t ResetValue = MuBi12False
 ) (
@@ -28,9 +30,10 @@ module prim_mubi12_sender
   output mubi12_t mubi_o
 );
 
-  logic [MuBi12Width-1:0] mubi, mubi_out;
+  logic [MuBi12Width-1:0] mubi, mubi_int, mubi_out;
   assign mubi = MuBi12Width'(mubi_i);
 
+  // first generation block decides whether a flop should be present
   if (AsyncOn) begin : gen_flops
     prim_flop #(
       .Width(MuBi12Width),
@@ -39,15 +42,10 @@ module prim_mubi12_sender
       .clk_i,
       .rst_ni,
       .d_i   ( mubi     ),
-      .q_o   ( mubi_out )
+      .q_o   ( mubi_int )
     );
   end else begin : gen_no_flops
-    for (genvar k = 0; k < MuBi12Width; k++) begin : gen_bits
-      prim_buf u_prim_buf (
-        .in_i(mubi[k]),
-        .out_o(mubi_out[k])
-      );
-    end
+    assign mubi_int = mubi;
 
     // This unused companion logic helps remove lint errors
     // for modules where clock and reset are used for assertions only
@@ -60,6 +58,28 @@ module prim_mubi12_sender
          unused_logic <= mubi_i;
       end
     end
+  end
+
+  // second generation block determines output buffer type
+  // 1. If EnSecBuf -> always leads to a sec buffer regardless of first block
+  // 2. If not EnSecBuf and not AsyncOn -> use normal buffer
+  // 3. If not EnSecBuf and AsyncOn -> feed through
+  if (EnSecBuf) begin : gen_sec_buf
+    prim_sec_anchor_buf #(
+      .Width(12)
+    ) u_prim_sec_buf (
+      .in_i(mubi_int),
+      .out_o(mubi_out)
+    );
+  end else if (!AsyncOn) begin : gen_prim_buf
+    prim_buf #(
+      .Width(12)
+    ) u_prim_buf (
+      .in_i(mubi_int),
+      .out_o(mubi_out)
+    );
+  end else begin : gen_feedthru
+    assign mubi_out = mubi_int;
   end
 
   assign mubi_o = mubi12_t'(mubi_out);
