@@ -37,4 +37,14 @@ class kmac_common_vseq extends kmac_base_vseq;
       end
     end
   endfunction
+
+  virtual task check_tl_intg_error_response();
+    // For tl integrity fatal error, the kmac `cfg_regwen` register will be set to 0 internally to
+    // lock all cfg related CSRs. Because it is a `RO` register, the logic below manually locks the
+    // write access for its lockable register fields. (If the regwen is `W0C` access policy, the
+    // lockable fields will be updated automatically in `do_predict` function)
+    ral.cfg_regwen.en.set_lockable_flds_access(.lock(1));
+    super.check_tl_intg_error_response();
+  endtask
+
 endclass
