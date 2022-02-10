@@ -154,19 +154,14 @@ $ pip3 install --user -r python-requirements.txt
 
 ## Software development
 
-### Device compiler toolchain (RV32IMC)
+### Device compiler toolchain
 
-To build device software you need a baremetal RV32IMC compiler toolchain.
+To build device software you need a baremetal RISC-V toolchain.
 We recommend using a prebuilt toolchain provided by lowRISC.
-Alternatively, you can build your own.
-Whichever option you choose, we recommend installing the toolchain to `/tools/riscv`.
+The prebuilt toolchains contain both GCC and Clang, targeting RISC-V.
+By default the OpenTitan device software is built with Clang.
 
-#### Option 1 (recommended): Use the lowRISC-provided prebuilt toolchain
-
-lowRISC provides a prebuilt toolchain for the OpenTitan project.
-This toolchain contains both GCC and Clang, targeting RISC-V.
-By default the device software is built with Clang.
-We recommend using the `util/get-toolchain.py` tool to download and install the latest version of this toolchain.
+We recommend using the `util/get-toolchain.py` tool to download and install the latest version of this toolchain, and that you install the toolchain to the default path, `/tools/riscv`.
 
 ```cmd
 $ cd $REPO_TOP
@@ -175,52 +170,7 @@ $ ./util/get-toolchain.py
 
 This tool will automatically adjust the toolchain configuration if you override the installation directory (by using the `--install-dir` option).
 It also provides the ability to perform a staged installation (by supplying a `--dest-dir` option), if the toolchain needs to be unpacked first at a temporary staging directory, before it can be moved to the final installation directory.
-Alternatively, manually download the file starting with `lowrisc-toolchain-rv32imc-` from [GitHub releases](https://github.com/lowRISC/lowrisc-toolchains/releases/latest) and unpack it to the desired installation directory.
-
-#### Option 2: Compile your own GCC toolchain
-
-1. Install all build prerequisites listed [in the documentation](https://github.com/riscv/riscv-gnu-toolchain/#prerequisites).
-
-2. Build the toolchain (this should be done outside the `$REPO_TOP` directory):
-    ```console
-    $ git clone --recursive https://github.com/riscv/riscv-gnu-toolchain
-    $ cd riscv-gnu-toolchain
-    $ ./configure --prefix=/tools/riscv --with-abi=ilp32 --with-arch=rv32imc --with-cmodel=medany
-    $ make
-    ```
-
-    The `make` command installs the toolchain to `/tools/riscv`, no additional `make install` step is needed.
-
-3. Write a [meson toolchain configuration file](https://mesonbuild.com/Cross-compilation.html#defining-the-environment) for your toolchain.
-   It should look like the following (though your paths may be different):
-    ```ini
-    [binaries]
-    c = '/tools/riscv/bin/riscv32-unknown-elf-gcc'
-    cpp = '/tools/riscv/bin/riscv32-unknown-elf-g++'
-    ar = '/tools/riscv/bin/riscv32-unknown-elf-ar'
-    ld = '/tools/riscv/bin/riscv32-unknown-elf-ld'
-    objdump = '/tools/riscv/bin/riscv32-unknown-elf-objdump'
-    objcopy = '/tools/riscv/bin/riscv32-unknown-elf-objcopy'
-    strip = '/tools/riscv/bin/riscv32-unknown-elf-strip'
-    as = '/tools/riscv/bin/riscv32-unknown-elf-as'
-
-    [properties]
-    needs_exe_wrapper = true
-    has_function_printf = false
-    c_args = ['-march=rv32imc', '-mabi=ilp32', '-mcmodel=medany']
-    c_link_args = ['-march=rv32imc', '-mabi=ilp32', '-mcmodel=medany']
-    cpp_args = ['-march=rv32imc', '-mabi=ilp32', '-mcmodel=medany']
-    cpp_link_args = ['-march=rv32imc', '-mabi=ilp32', '-mcmodel=medany']
-
-    [host_machine]
-    system = 'bare metal'
-    cpu_family = 'riscv32'
-    cpu = 'ibex'
-    endian = 'little'
-    ```
-
-    You will need to pass the path to this file to `./meson_init.sh` using the `-t FILE` option.
-
+Alternatively, manually download the file starting with `lowrisc-toolchain-rv32imcb-` from [GitHub releases](https://github.com/lowRISC/lowrisc-toolchains/releases/latest) and unpack it to the desired installation directory.
 
 ### OpenOCD
 
