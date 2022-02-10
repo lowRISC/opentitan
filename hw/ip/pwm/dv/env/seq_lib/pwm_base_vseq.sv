@@ -1,7 +1,19 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+/*
+  typedef struct packed {
+    bit          BlinkEn;
+    bit          HtbtEn;
+    bit [13:0]   RsvParam;
+    bit [15:0]   PhaseDelay;
+  } param_reg_t;
 
+  typedef struct packed {
+    bit [15:0]   B;
+    bit [15:0]   A;
+  } dc_blink_t;
+ */ 
 class pwm_base_vseq extends cip_base_vseq #(
   .RAL_T              (pwm_reg_block),
   .CFG_T              (pwm_env_cfg),
@@ -43,6 +55,14 @@ class pwm_base_vseq extends cip_base_vseq #(
     csr_update(ral.duty_cycle[channel]);
   endtask
 
+  //virtual task set_polarity(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel, bit [$bits(PWM_NUM_CHANNELS)-1:0] value);
+  virtual task set_polarity(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel, value);
+    ral.invert[channel].set(value);
+    csr_update(ral.invert[channel]);
+    // also set invert in the monitor
+    cfg.m_pwm_monitor_cfg[channel].invert = value;
+  endtask
+
   virtual task set_blink(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel, dc_blink_t value);
     ral.blink_param[channel].set(value);
     csr_update(ral.blink_param[channel]);
@@ -77,4 +97,20 @@ class pwm_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("disabling channel"), UVM_HIGH)
     set_ch_enables(6'b0);
   endtask
+
+  function void set_basics(input int dcresn, int clkdiv, int cntren);
+    cfg.pwm_cfg.DcResn       = dcresn;
+    cfg.pwm_cfg.ClkDiv       = clkdiv;
+    cfg.pwm_cfg.CntrEn       = cntren;
+  endfunction
+
+  function void set_blk_htbt(input int dca, int dcb, int blka, int blkb, bit blken, bit htbten);
+    cfg.duty_cycle[0].A      = dca;
+    cfg.duty_cycle[0].B      = dcb;
+    cfg.blink[0].A           = blka;
+    cfg.blink[0].B           = blkb;
+    cfg.pwm_param[0].BlinkEn = blken;
+    cfg.pwm_param[0].HtbtEn  = htbten;
+  endfunction
+
 endclass : pwm_base_vseq
