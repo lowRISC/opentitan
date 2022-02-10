@@ -96,6 +96,7 @@ module aes_core
 
   logic                [NumRegsKey-1:0][31:0] key_init [NumSharesKey];
   logic                [NumRegsKey-1:0]       key_init_qe [NumSharesKey];
+  logic                [NumRegsKey-1:0]       key_init_qe_buf [NumSharesKey];
   logic                [NumRegsKey-1:0][31:0] key_init_d [NumSharesKey];
   logic                [NumRegsKey-1:0][31:0] key_init_q [NumSharesKey];
   logic                [NumRegsKey-1:0][31:0] key_init_cipher [NumShares];
@@ -109,6 +110,7 @@ module aes_core
 
   logic                 [NumRegsIv-1:0][31:0] iv;
   logic                 [NumRegsIv-1:0]       iv_qe;
+  logic                 [NumRegsIv-1:0]       iv_qe_buf;
   logic  [NumSlicesCtr-1:0][SliceSizeCtr-1:0] iv_d;
   logic  [NumSlicesCtr-1:0][SliceSizeCtr-1:0] iv_q;
   sp2v_e [NumSlicesCtr-1:0]                   iv_we_ctrl;
@@ -135,6 +137,7 @@ module aes_core
 
   logic               [NumRegsData-1:0][31:0] data_in;
   logic               [NumRegsData-1:0]       data_in_qe;
+  logic               [NumRegsData-1:0]       data_in_qe_buf;
   logic                                       data_in_we;
 
   logic                       [3:0][3:0][7:0] add_state_out;
@@ -148,6 +151,7 @@ module aes_core
   sp2v_e                                      data_out_we_ctrl;
   sp2v_e                                      data_out_we;
   logic               [NumRegsData-1:0]       data_out_re;
+  logic               [NumRegsData-1:0]       data_out_re_buf;
 
   sp2v_e                                      cipher_in_valid;
   sp2v_e                                      cipher_in_ready;
@@ -229,6 +233,13 @@ module aes_core
     end
   end
 
+  prim_sec_anchor_buf #(
+    .Width ( NumSharesKey * NumRegsKey )
+  ) u_prim_buf_key_init_qe (
+    .in_i  ( {key_init_qe[1],     key_init_qe[0]}     ),
+    .out_o ( {key_init_qe_buf[1], key_init_qe_buf[0]} )
+  );
+
   always_comb begin : key_sideload_get
     for (int s = 0; s < NumSharesKey; s++) begin
       for (int i = 0; i < NumRegsKey; i++) begin
@@ -244,12 +255,26 @@ module aes_core
     end
   end
 
+  prim_sec_anchor_buf #(
+    .Width ( NumRegsIv )
+  ) u_prim_buf_iv_qe (
+    .in_i  ( iv_qe     ),
+    .out_o ( iv_qe_buf )
+  );
+
   always_comb begin : data_in_get
     for (int i = 0; i < NumRegsData; i++) begin
       data_in[i]    = reg2hw.data_in[i].q;
       data_in_qe[i] = reg2hw.data_in[i].qe;
     end
   end
+
+  prim_sec_anchor_buf #(
+    .Width ( NumRegsData )
+  ) u_prim_buf_data_in_qe (
+    .in_i  ( data_in_qe     ),
+    .out_o ( data_in_qe_buf )
+  );
 
   always_comb begin : data_out_get
     for (int i = 0; i < NumRegsData; i++) begin
@@ -258,6 +283,13 @@ module aes_core
       data_out_re[i]       = reg2hw.data_out[i].re;
     end
   end
+
+  prim_sec_anchor_buf #(
+    .Width ( NumRegsData )
+  ) u_prim_buf_data_out_re (
+    .in_i  ( data_out_re     ),
+    .out_o ( data_out_re_buf )
+  );
 
   //////////////////////
   // Key, IV and Data //
@@ -570,10 +602,10 @@ module aes_core
     .alert_o                   ( ctrl_alert                             ),
 
     .key_sideload_valid_i      ( keymgr_key_i.valid                     ),
-    .key_init_qe_i             ( key_init_qe                            ),
-    .iv_qe_i                   ( iv_qe                                  ),
-    .data_in_qe_i              ( data_in_qe                             ),
-    .data_out_re_i             ( data_out_re                            ),
+    .key_init_qe_i             ( key_init_qe_buf                        ),
+    .iv_qe_i                   ( iv_qe_buf                              ),
+    .data_in_qe_i              ( data_in_qe_buf                         ),
+    .data_out_re_i             ( data_out_re_buf                        ),
     .data_in_we_o              ( data_in_we                             ),
     .data_out_we_o             ( data_out_we_ctrl                       ),
 
