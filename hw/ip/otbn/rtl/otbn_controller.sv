@@ -201,6 +201,7 @@ module otbn_controller
 
   logic lsu_load_req_raw;
   logic lsu_store_req_raw;
+  logic rnd_req_raw;
 
   // Register read data with integrity stripped off
   logic [31:0]     rf_base_rd_data_a_no_intg;
@@ -266,7 +267,7 @@ module otbn_controller
   assign mem_stall = lsu_load_req_raw;
 
   // Reads to RND must stall until data is available
-  assign ispr_stall = rnd_req_o & ~rnd_valid_i;
+  assign ispr_stall = rnd_req_raw & ~rnd_valid_i;
 
   assign stall = mem_stall | ispr_stall;
 
@@ -1114,8 +1115,9 @@ module otbn_controller
                                                                dmem_addr_unaligned_bignum |
                                                                dmem_addr_unaligned_base);
 
-  assign rnd_req_o = insn_valid_i & ispr_rd_insn & (ispr_addr_o == IsprRnd);
+  assign rnd_req_raw = insn_valid_i & ispr_rd_insn & (ispr_addr_o == IsprRnd);
+  assign rnd_req_o = rnd_req_raw & insn_executing;
 
-  assign rnd_prefetch_req_o = insn_valid_i & ispr_wr_insn &
+  assign rnd_prefetch_req_o = insn_executing & ispr_wr_insn &
       (insn_dec_shared_i.subset == InsnSubsetBase) & (csr_addr == CsrRndPrefetch);
 endmodule
