@@ -149,6 +149,11 @@
       uvm_test: aes_manual_config_err_test
       uvm_test_seq: aes_manual_config_err_vseq
     }
+    {
+      name: aes_reseed
+      uvm_test: aes_reseed_test
+      uvm_test_seq: aes_reseed_vseq
+    }
   ]
 
   // List of regressions.
