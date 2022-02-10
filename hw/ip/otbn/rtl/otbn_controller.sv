@@ -64,6 +64,7 @@ module otbn_controller
   // Bignum register file (WDRs)
   output logic [4:0]         rf_bignum_wr_addr_o,
   output logic [1:0]         rf_bignum_wr_en_o,
+  output logic               rf_bignum_wr_commit_o,
   output logic [WLEN-1:0]    rf_bignum_wr_data_no_intg_o,
   output logic [ExtWLEN-1:0] rf_bignum_wr_data_intg_o,
   output logic               rf_bignum_wr_data_intg_sel_o,
@@ -78,6 +79,11 @@ module otbn_controller
 
   input logic rf_bignum_rd_data_err_i,
 
+  output logic [NWdr-1:0] rf_bignum_rd_a_indirect_onehot_o,
+  output logic [NWdr-1:0] rf_bignum_rd_b_indirect_onehot_o,
+  output logic [NWdr-1:0] rf_bignum_wr_indirect_onehot_o,
+  output logic            rf_bignum_indirect_en_o,
+
   // Execution units
 
   // Base ALU
@@ -88,6 +94,7 @@ module otbn_controller
 
   // Bignum ALU
   output alu_bignum_operation_t alu_bignum_operation_o,
+  output logic                  alu_bignum_operation_commit_o,
   input  logic [WLEN-1:0]       alu_bignum_operation_result_i,
   input  logic                  alu_bignum_selection_flag_i,
 
@@ -95,12 +102,14 @@ module otbn_controller
   output mac_bignum_operation_t mac_bignum_operation_o,
   input  logic [WLEN-1:0]       mac_bignum_operation_result_i,
   output logic                  mac_bignum_en_o,
+  output logic                  mac_bignum_commit_o,
 
   // LSU
   output logic                     lsu_load_req_o,
   output logic                     lsu_store_req_o,
   output insn_subset_e             lsu_req_subset_o,
   output logic [DmemAddrWidth-1:0] lsu_addr_o,
+  input  logic                     lsu_addr_en_predec_i,
 
   output logic [BaseIntgWidth-1:0] lsu_base_wdata_o,
   output logic [ExtWLEN-1:0]       lsu_bignum_wdata_o,
@@ -114,7 +123,9 @@ module otbn_controller
   output logic [BaseWordsPerWLEN-1:0] ispr_base_wr_en_o,
   output logic [WLEN-1:0]             ispr_bignum_wdata_o,
   output logic                        ispr_bignum_wr_en_o,
+  output logic                        ispr_wr_commit_o,
   input  logic [WLEN-1:0]             ispr_rdata_i,
+  output logic                        ispr_rd_en_o,
 
   output logic rnd_req_o,
   output logic rnd_prefetch_req_o,
@@ -139,7 +150,9 @@ module otbn_controller
   output logic                     prefetch_loop_active_o,
   output logic [31:0]              prefetch_loop_iterations_o,
   output logic [ImemAddrWidth:0]   prefetch_loop_end_addr_o,
-  output logic [ImemAddrWidth-1:0] prefetch_loop_jump_addr_o
+  output logic [ImemAddrWidth-1:0] prefetch_loop_jump_addr_o,
+
+  output logic                     predec_error_o
 );
   import prim_mubi_pkg::*;
 
@@ -166,6 +179,7 @@ module otbn_controller
   logic stall;
   logic ispr_stall;
   logic mem_stall;
+  logic rf_indirect_stall;
   logic jump_or_branch;
   logic branch_taken;
   logic insn_executing;
@@ -196,8 +210,12 @@ module otbn_controller
   logic                                ispr_wr_bignum_insn;
   logic                                ispr_rd_bignum_insn;
 
-  logic lsu_load_req_raw;
-  logic lsu_store_req_raw;
+  logic                     lsu_load_req_raw;
+  logic                     lsu_store_req_raw;
+  logic [DmemAddrWidth-1:0] lsu_addr, lsu_addr_blanked, lsu_addr_saved_d, lsu_addr_saved_q;
+  logic                     lsu_addr_saved_sel;
+  logic                     expected_lsu_addr_en;
+
   logic rnd_req_raw;
 
   // Register read data with integrity stripped off
@@ -207,6 +225,10 @@ module otbn_controller
   logic [WLEN-1:0] rf_bignum_rd_data_b_no_intg;
 
   logic [ExtWLEN-1:0] selection_result;
+
+  logic rf_bignum_rd_a_indirect_en;
+  logic rf_bignum_rd_b_indirect_en;
+  logic rf_bignum_wr_indirect_en;
 
   // Computed increments for indirect register index and memory address in BN.LID/BN.SID/BN.MOVR
   // instructions.
@@ -237,7 +259,8 @@ module otbn_controller
 
   logic csr_illegal_addr, wsr_illegal_addr, ispr_illegal_addr;
   logic imem_addr_err, loop_err, ispr_err;
-  logic dmem_addr_err, dmem_addr_unaligned_base, dmem_addr_unaligned_bignum, dmem_addr_overflow;
+  logic dmem_addr_err_check, dmem_addr_err;
+  logic dmem_addr_unaligned_base, dmem_addr_unaligned_bignum, dmem_addr_overflow;
   logic illegal_insn_static;
   logic key_invalid;
 
@@ -254,7 +277,7 @@ module otbn_controller
   logic [31:0] insn_cnt_d, insn_cnt_q;
   logic        insn_cnt_clear;
 
-  logic [4:0] ld_insn_bignum_wr_addr_q;
+  logic [4:0] insn_bignum_rd_addr_a_q, insn_bignum_rd_addr_b_q, insn_bignum_wr_addr_q;
 
   // Stall a cycle on loads to allow load data writeback to happen the following cycle. Stall not
   // required on stores as there is no response to deal with.
@@ -263,7 +286,14 @@ module otbn_controller
   // Reads to RND must stall until data is available
   assign ispr_stall = rnd_req_raw & ~rnd_valid_i;
 
-  assign stall = mem_stall | ispr_stall;
+  assign rf_indirect_stall = insn_valid_i &
+                             (state_q != OtbnStateStall) &
+                             (insn_dec_shared_i.subset == InsnSubsetBignum) &
+                             (insn_dec_bignum_i.rf_a_indirect |
+                              insn_dec_bignum_i.rf_b_indirect |
+                              insn_dec_bignum_i.rf_d_indirect);
+
+  assign stall = mem_stall | ispr_stall | rf_indirect_stall;
 
   // OTBN is done when it was executing something (in state OtbnStateRun or OtbnStateStall)
   // and either it executes an ecall or an error occurs. A pulse on the done signal raises the
@@ -618,15 +648,19 @@ module otbn_controller
 
     if (insn_valid_i) begin
       if (insn_dec_shared_i.st_insn) begin
-        // For stores, both base reads happen in the same cycle as the request because they give the
-        // address and data, which make up the request.
-        rf_base_rd_en_a_raw = insn_dec_base_i.rf_ren_a & lsu_store_req_raw;
-        rf_base_rd_en_b_raw = insn_dec_base_i.rf_ren_b & lsu_store_req_raw;
+        // For stores, both base reads happen in the first cycle of the store instruction. For base
+        // stores this is the same cycle as the request. For bignum stores this is the cycle before
+        // the request (as the indirect register read to get the store data occurs the following
+        // cycle).
+        rf_base_rd_en_a_raw = insn_dec_base_i.rf_ren_a &
+          (rf_indirect_stall | (insn_dec_shared_i.subset == InsnSubsetBase));
+        rf_base_rd_en_b_raw = insn_dec_base_i.rf_ren_b &
+          (rf_indirect_stall | (insn_dec_shared_i.subset == InsnSubsetBase));
 
         // Bignum stores can update the base register file where an increment is used.
         rf_base_wr_en_raw   = (insn_dec_shared_i.subset == InsnSubsetBignum) &
                               insn_dec_base_i.rf_we                          &
-                              lsu_store_req_raw;
+                              rf_indirect_stall;
       end else if (insn_dec_shared_i.ld_insn) begin
         // For loads, both base reads happen in the same cycle as the request. The address is
         // required for the request and the indirect destination register (only used for Bignum
@@ -639,12 +673,18 @@ module otbn_controller
           // Bignum loads can update the base register file where an increment is used. This must
           // always happen in the same cycle as the request as this is where both registers are
           // read.
-          rf_base_wr_en_raw = insn_dec_base_i.rf_we & lsu_load_req_raw;
+          rf_base_wr_en_raw = insn_dec_base_i.rf_we & lsu_load_req_raw & rf_indirect_stall;
         end else begin
           // For Base loads write the base register file when the instruction is unstalled (meaning
           // the load data is available).
           rf_base_wr_en_raw = insn_dec_base_i.rf_we & ~stall;
         end
+      end else if (insn_dec_bignum_i.rf_wdata_sel == RfWdSelMovSel) begin
+        // For MOVR base register reads occur in the first cycle of the instruction. The indirect
+        // register read for the bignum data occurs in the following cycle.
+        rf_base_rd_en_a_raw = insn_dec_base_i.rf_ren_a & rf_indirect_stall;
+        rf_base_rd_en_b_raw = insn_dec_base_i.rf_ren_b & rf_indirect_stall;
+        rf_base_wr_en_raw   = insn_dec_base_i.rf_we    & rf_indirect_stall;
       end else begin
         // For all other instructions the read and write happen when the instruction is unstalled.
         rf_base_rd_en_a_raw = insn_dec_base_i.rf_ren_a & ~stall;
@@ -739,13 +779,13 @@ module otbn_controller
     assign rf_bignum_rd_data_b_no_intg[i*32+:32] = rf_bignum_rd_data_b_intg_i[i*39+:32];
   end
 
-  assign rf_bignum_rd_addr_a_o = insn_dec_bignum_i.rf_a_indirect ? rf_base_rd_data_a_no_intg[4:0] :
+  assign rf_bignum_rd_addr_a_o = insn_dec_bignum_i.rf_a_indirect ? insn_bignum_rd_addr_a_q :
                                                                    insn_dec_bignum_i.a;
-  assign rf_bignum_rd_en_a_o = insn_dec_bignum_i.rf_ren_a & insn_valid_i;
+  assign rf_bignum_rd_en_a_o = insn_dec_bignum_i.rf_ren_a & insn_valid_i & ~stall;
 
-  assign rf_bignum_rd_addr_b_o = insn_dec_bignum_i.rf_b_indirect ? rf_base_rd_data_b_no_intg[4:0] :
+  assign rf_bignum_rd_addr_b_o = insn_dec_bignum_i.rf_b_indirect ? insn_bignum_rd_addr_b_q :
                                                                    insn_dec_bignum_i.b;
-  assign rf_bignum_rd_en_b_o = insn_dec_bignum_i.rf_ren_b & insn_valid_i;
+  assign rf_bignum_rd_en_b_o = insn_dec_bignum_i.rf_ren_b & insn_valid_i & ~stall;
 
   assign alu_bignum_operation_o.operand_a = rf_bignum_rd_data_a_no_intg;
 
@@ -763,8 +803,10 @@ module otbn_controller
   assign alu_bignum_operation_o.shift_amt   = insn_dec_bignum_i.alu_shift_amt;
   assign alu_bignum_operation_o.flag_group  = insn_dec_bignum_i.alu_flag_group;
   assign alu_bignum_operation_o.sel_flag    = insn_dec_bignum_i.alu_sel_flag;
-  assign alu_bignum_operation_o.alu_flag_en = insn_dec_bignum_i.alu_flag_en & insn_executing;
-  assign alu_bignum_operation_o.mac_flag_en = insn_dec_bignum_i.mac_flag_en & insn_executing;
+  assign alu_bignum_operation_o.alu_flag_en = insn_dec_bignum_i.alu_flag_en & insn_valid_i;
+  assign alu_bignum_operation_o.mac_flag_en = insn_dec_bignum_i.mac_flag_en & insn_valid_i;
+
+  assign alu_bignum_operation_commit_o = insn_executing;
 
   assign mac_bignum_operation_o.operand_a         = rf_bignum_rd_data_a_no_intg;
   assign mac_bignum_operation_o.operand_b         = rf_bignum_rd_data_b_no_intg;
@@ -775,7 +817,8 @@ module otbn_controller
   assign mac_bignum_operation_o.zero_acc          = insn_dec_bignum_i.mac_zero_acc;
   assign mac_bignum_operation_o.shift_acc         = insn_dec_bignum_i.mac_shift_out;
 
-  assign mac_bignum_en_o = insn_executing & insn_dec_bignum_i.mac_en;
+  assign mac_bignum_en_o     = insn_valid_i & insn_dec_bignum_i.mac_en;
+  assign mac_bignum_commit_o = insn_executing;
 
   // Move / Conditional Select. Only select B register data when a selection instruction is being
   // executed and the selection flag isn't set.
@@ -791,11 +834,11 @@ module otbn_controller
 
   always_comb begin
     // By default write nothing
-    rf_bignum_wr_en_o = 2'b00;
+    rf_bignum_wr_en_o     = 2'b00;
 
-    // Only write if executing instruction wants a bignum rf write and it isn't stalled and there is
-    // no error
-    if (insn_executing && insn_dec_bignum_i.rf_we && !err && !stall) begin
+    // Only write if valid instruction wants a bignum rf write and it isn't stalled. If instruction
+    // doesn't execute (e.g. due to an error) the write won't commit.
+    if (insn_valid_i && insn_dec_bignum_i.rf_we && !rf_indirect_stall) begin
       if (insn_dec_bignum_i.mac_en && insn_dec_bignum_i.mac_shift_out) begin
         // Special handling for BN.MULQACC.SO, only enable upper or lower half depending on
         // mac_wr_hw_sel_upper.
@@ -807,28 +850,55 @@ module otbn_controller
     end
   end
 
+  assign rf_bignum_wr_commit_o = |rf_bignum_wr_en_o & insn_executing & !stall;
+
+  assign rf_bignum_indirect_en_o    = insn_executing & rf_indirect_stall;
+  assign rf_bignum_rd_a_indirect_en = insn_executing & insn_dec_bignum_i.rf_a_indirect;
+  assign rf_bignum_rd_b_indirect_en = insn_executing & insn_dec_bignum_i.rf_b_indirect;
+  assign rf_bignum_wr_indirect_en   = insn_executing & insn_dec_bignum_i.rf_d_indirect;
+
+  prim_onehot_enc #(
+    .OneHotWidth(NWdr)
+  ) rf_bignum_rd_a_idirect_onehot__enc (
+    .in_i  (rf_base_rd_data_a_no_intg[4:0]),
+    .en_i  (rf_bignum_rd_a_indirect_en),
+    .out_o (rf_bignum_rd_a_indirect_onehot_o)
+  );
+
+  prim_onehot_enc #(
+    .OneHotWidth(NWdr)
+  ) rf_bignum_rd_b_indirect_onehot_enc (
+    .in_i  (rf_base_rd_data_b_no_intg[4:0]),
+    .en_i  (rf_bignum_rd_b_indirect_en),
+    .out_o (rf_bignum_rd_b_indirect_onehot_o)
+  );
+
+  prim_onehot_enc #(
+    .OneHotWidth(NWdr)
+  ) rf_bignum_wr_indirect_onehot_enc (
+    .in_i  (rf_base_rd_data_b_no_intg[4:0]),
+    .en_i  (rf_bignum_wr_indirect_en),
+    .out_o (rf_bignum_wr_indirect_onehot_o)
+  );
+
   // For BN.LID sample the indirect destination register index in first cycle as an increment might
   // change it for the second cycle where the load data is written to the bignum register file.
   always_ff @(posedge clk_i) begin
-    if (insn_dec_bignum_i.rf_d_indirect & lsu_load_req_raw) begin
-      ld_insn_bignum_wr_addr_q <= rf_base_rd_data_b_no_intg[4:0];
-    end
-  end
-
-  always_comb begin
-    rf_bignum_wr_addr_o = insn_dec_bignum_i.d;
-
     if (insn_dec_bignum_i.rf_d_indirect) begin
-      if (insn_dec_shared_i.ld_insn) begin
-        // Use sampled register index from first cycle of the load (in case the increment has
-        // changed the value in the mean-time).
-        rf_bignum_wr_addr_o = ld_insn_bignum_wr_addr_q;
-      end else begin
-        // Use read register index directly
-        rf_bignum_wr_addr_o = rf_base_rd_data_b_no_intg[4:0];
-      end
+      insn_bignum_wr_addr_q <= rf_base_rd_data_b_no_intg[4:0];
+    end
+
+    if (insn_dec_bignum_i.rf_a_indirect) begin
+      insn_bignum_rd_addr_a_q <= rf_base_rd_data_a_no_intg[4:0];
+    end
+
+    if (insn_dec_bignum_i.rf_b_indirect) begin
+      insn_bignum_rd_addr_b_q <= rf_base_rd_data_b_no_intg[4:0];
     end
   end
+
+  assign rf_bignum_wr_addr_o = insn_dec_bignum_i.rf_d_indirect ? insn_bignum_wr_addr_q :
+                                                                 insn_dec_bignum_i.d;
 
   // For the shift-out variant of BN.MULQACC the bottom half of the MAC result is written to one
   // half of a desintation register specified by the instruction (mac_wr_hw_sel_upper). The bottom
@@ -1034,11 +1104,26 @@ module otbn_controller
   assign ispr_addr_o         = insn_dec_shared_i.subset == InsnSubsetBase ? ispr_addr_base :
                                                                             ispr_addr_bignum;
   assign ispr_base_wdata_o   = csr_wdata;
-  assign ispr_base_wr_en_o   = {BaseWordsPerWLEN{ispr_wr_base_insn & insn_executing}} &
+  assign ispr_base_wr_en_o   = {BaseWordsPerWLEN{ispr_wr_base_insn & insn_valid_i}} &
                                ispr_word_sel_base;
 
   assign ispr_bignum_wdata_o = wsr_wdata;
-  assign ispr_bignum_wr_en_o = ispr_wr_bignum_insn & insn_executing;
+  assign ispr_bignum_wr_en_o = ispr_wr_bignum_insn & insn_valid_i;
+
+  assign ispr_wr_commit_o = ispr_wr_insn & insn_executing;
+  assign ispr_rd_en_o     = ispr_rd_insn & insn_valid_i &
+    ~((insn_dec_shared_i.subset == InsnSubsetBase) & (csr_addr == CsrRndPrefetch));
+
+  // For BN.SID the LSU address is computed in the first cycle by the base ALU. The store request
+  // itself occurs in the second cycle when the store data is available (from the indirect register
+  // read). The calculated address is saved in a flop here so it's available for use in the second
+  // cycle.
+  assign lsu_addr_saved_d = alu_base_operation_result_i[DmemAddrWidth-1:0];
+  always_ff @(posedge clk_i) begin
+    lsu_addr_saved_q <= lsu_addr_saved_d;
+  end
+
+  //assign expected_lsu_addr_en_predec = insn_valid & insn_dec_shared_i.ld_insn
 
   // lsu_load_req_raw/lsu_store_req_raw indicate an instruction wishes to perform a store or a load.
   // lsu_load_req_o/lsu_store_req_o factor in whether an instruction is actually executing (it may
@@ -1046,12 +1131,41 @@ module otbn_controller
   assign lsu_load_req_raw = insn_valid_i & insn_dec_shared_i.ld_insn & (state_q == OtbnStateRun);
   assign lsu_load_req_o   = insn_executing & lsu_load_req_raw;
 
-  assign lsu_store_req_raw = insn_valid_i & insn_dec_shared_i.st_insn & (state_q == OtbnStateRun);
+  assign lsu_store_req_raw = insn_valid_i & insn_dec_shared_i.st_insn & ~rf_indirect_stall;
   assign lsu_store_req_o   = insn_executing & lsu_store_req_raw;
 
   assign lsu_req_subset_o = insn_dec_shared_i.subset;
 
-  assign lsu_addr_o         = alu_base_operation_result_i[DmemAddrWidth-1:0];
+  // To simplify blanking logic all two cycle memory operations (BN.LID, BN.SID, LW) present the
+  // calculated address in their first cycle and the saved address in the second cycle. This results
+  // in lsu_addr_o remaining stable for the entire instruction. Only SW is a single cycle
+  // instruction so it only presents the calculated address. The stability property is checked by an
+  // assertion.
+  assign lsu_addr_saved_sel =
+    insn_valid_i & ((insn_dec_shared_i.subset == InsnSubsetBignum) ||
+                    insn_dec_shared_i.ld_insn                         ? ~stall : 1'b0);
+
+  assign lsu_addr = lsu_addr_saved_sel ? lsu_addr_saved_q                                :
+                                         alu_base_operation_result_i[DmemAddrWidth-1:0];
+
+  // SEC_CM: CTRL.REDUN
+  assign expected_lsu_addr_en =
+    insn_valid_i & (insn_dec_shared_i.ld_insn | insn_dec_shared_i.st_insn);
+
+  assign predec_error_o = expected_lsu_addr_en != lsu_addr_en_predec_i;
+
+  // SEC_CM: DATA_REG_SW.SCA
+  prim_blanker #(.Width(DmemAddrWidth)) u_lsu_addr_blanker (
+    .in_i (lsu_addr),
+    .en_i (lsu_addr_en_predec_i),
+    .out_o(lsu_addr_blanked)
+  );
+
+  // Check stability property described above (see the lsu_addr_saved_sel signal) holds.
+  `ASSERT(LsuAddrBlankedStable_A, insn_valid_i & stall & ~err |=> $stable(lsu_addr_blanked))
+
+  assign lsu_addr_o = lsu_addr_blanked;
+
   assign lsu_base_wdata_o   = rf_base_rd_data_b_intg_i;
   assign lsu_bignum_wdata_o = rf_bignum_rd_data_b_intg_i;
 
@@ -1061,10 +1175,18 @@ module otbn_controller
       (lsu_req_subset_o == InsnSubsetBase)   & (|lsu_addr_o[1:0]);
   assign dmem_addr_overflow         = |alu_base_operation_result_i[31:DmemAddrWidth];
 
+  // A dmem address is checked the cycle it is available. For bignum stores this is the first cycle
+  // where the base register file read occurs, with the store request occurring the following cycle.
+  // For all other loads and stores the dmem address is available the same cycle as the request.
+  assign dmem_addr_err_check =
+    (lsu_req_subset_o == InsnSubsetBignum) &
+    insn_dec_shared_i.st_insn               ? rf_indirect_stall :
+                                              lsu_load_req_raw | lsu_store_req_raw;
+
   assign dmem_addr_err =
-      insn_valid_i & (lsu_load_req_raw | lsu_store_req_raw) & (dmem_addr_overflow         |
-                                                               dmem_addr_unaligned_bignum |
-                                                               dmem_addr_unaligned_base);
+      insn_valid_i & dmem_addr_err_check & (dmem_addr_overflow         |
+                                            dmem_addr_unaligned_bignum |
+                                            dmem_addr_unaligned_base);
 
   assign rnd_req_raw = insn_valid_i & ispr_rd_insn & (ispr_addr_o == IsprRnd);
   assign rnd_req_o = rnd_req_raw & insn_executing;

@@ -160,6 +160,12 @@
     { name: "START_STOP_CTRL.FSM.SPARSE",
       desc: "The start-stop control FSM uses a sparse state encoding."
     }
+    { name: "DATA_REG_SW.SCA",
+      desc: "Blanking of bignum data paths when unused by the executing instruction."
+    }
+    { name: "CTRL.REDUN",
+      desc: "Check pre-decoded control used for blanking matches seperately decoded control from main decoder."
+    }
   ]
 
   regwidth: "32"

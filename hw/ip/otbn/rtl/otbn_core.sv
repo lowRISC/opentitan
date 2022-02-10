@@ -96,6 +96,17 @@ module otbn_core
   logic                     insn_fetch_resp_clear;
   logic                     insn_fetch_err;
 
+  rf_predec_bignum_t   rf_predec_bignum;
+  alu_predec_bignum_t  alu_predec_bignum;
+  ispr_predec_bignum_t ispr_predec_bignum;
+  mac_predec_bignum_t  mac_predec_bignum;
+  logic                lsu_addr_en_predec;
+
+  logic [NWdr-1:0] rf_bignum_rd_a_indirect_onehot;
+  logic [NWdr-1:0] rf_bignum_rd_b_indirect_onehot;
+  logic [NWdr-1:0] rf_bignum_wr_indirect_onehot;
+  logic            rf_bignum_indirect_en;
+
   // The currently executed instruction.
   logic                     insn_valid;
   logic                     insn_illegal;
@@ -145,6 +156,8 @@ module otbn_core
   logic [WdrAw-1:0]   rf_bignum_wr_addr_ctrl;
   logic [1:0]         rf_bignum_wr_en;
   logic [1:0]         rf_bignum_wr_en_ctrl;
+  logic               rf_bignum_wr_commit;
+  logic               rf_bignum_wr_commit_ctrl;
   logic [WLEN-1:0]    rf_bignum_wr_data_no_intg;
   logic [WLEN-1:0]    rf_bignum_wr_data_no_intg_ctrl;
   logic [ExtWLEN-1:0] rf_bignum_wr_data_intg;
@@ -158,6 +171,7 @@ module otbn_core
   logic               rf_bignum_rd_data_err;
 
   alu_bignum_operation_t alu_bignum_operation;
+  logic                  alu_bignum_operation_commit;
   logic [WLEN-1:0]       alu_bignum_operation_result;
   logic                  alu_bignum_selection_flag;
 
@@ -166,13 +180,16 @@ module otbn_core
   flags_t                mac_bignum_operation_flags;
   flags_t                mac_bignum_operation_flags_en;
   logic                  mac_bignum_en;
+  logic                  mac_bignum_commit;
 
   ispr_e                       ispr_addr;
   logic [31:0]                 ispr_base_wdata;
   logic [BaseWordsPerWLEN-1:0] ispr_base_wr_en;
   logic [WLEN-1:0]             ispr_bignum_wdata;
   logic                        ispr_bignum_wr_en;
+  logic                        ispr_wr_commit;
   logic [WLEN-1:0]             ispr_rdata;
+  logic                        ispr_rd_en;
   logic [WLEN-1:0]             ispr_acc;
   logic [WLEN-1:0]             ispr_acc_wr_data;
   logic                        ispr_acc_wr_en;
@@ -198,11 +215,11 @@ module otbn_core
   logic start_secure_wipe;
   logic secure_wipe_running;
 
-  logic sec_wipe_wdr;
-  logic sec_wipe_wdr_urnd;
+  logic sec_wipe_wdr_d, sec_wipe_wdr_q;
+  logic sec_wipe_wdr_urnd_d, sec_wipe_wdr_urnd_q;
   logic sec_wipe_base;
   logic sec_wipe_base_urnd;
-  logic [4:0] sec_wipe_addr;
+  logic [4:0] sec_wipe_addr, sec_wipe_wdr_addr_q;
 
   logic sec_wipe_acc_urnd;
   logic sec_wipe_mod_urnd;
@@ -220,6 +237,9 @@ module otbn_core
   core_err_bits_t err_bits_q, err_bits_d;
 
   logic start_stop_state_error;
+  logic rf_bignum_predec_error, alu_bignum_predec_error, ispr_predec_error, mac_bignum_predec_error;
+  logic controller_predec_error;
+  logic rd_predec_error, predec_error;
 
   logic req_sec_wipe_urnd_keys_q;
 
@@ -244,8 +264,8 @@ module otbn_core
     .secure_wipe_running_o(secure_wipe_running),
     .done_o,
 
-    .sec_wipe_wdr_o      (sec_wipe_wdr),
-    .sec_wipe_wdr_urnd_o (sec_wipe_wdr_urnd),
+    .sec_wipe_wdr_o      (sec_wipe_wdr_d),
+    .sec_wipe_wdr_urnd_o (sec_wipe_wdr_urnd_d),
     .sec_wipe_base_o     (sec_wipe_base),
     .sec_wipe_base_urnd_o(sec_wipe_base_urnd),
     .sec_wipe_addr_o     (sec_wipe_addr),
@@ -289,11 +309,25 @@ module otbn_core
     .insn_fetch_resp_clear_i(insn_fetch_resp_clear),
     .insn_fetch_err_o       (insn_fetch_err),
 
+    .rf_predec_bignum_o  (rf_predec_bignum),
+    .alu_predec_bignum_o (alu_predec_bignum),
+    .ispr_predec_bignum_o(ispr_predec_bignum),
+    .mac_predec_bignum_o (mac_predec_bignum),
+    .lsu_addr_en_predec_o(lsu_addr_en_predec),
+
+    .rf_bignum_rd_a_indirect_onehot_i(rf_bignum_rd_a_indirect_onehot),
+    .rf_bignum_rd_b_indirect_onehot_i(rf_bignum_rd_b_indirect_onehot),
+    .rf_bignum_wr_indirect_onehot_i  (rf_bignum_wr_indirect_onehot),
+    .rf_bignum_indirect_en_i         (rf_bignum_indirect_en),
+
     .prefetch_en_i             (prefetch_en),
     .prefetch_loop_active_i    (prefetch_loop_active),
     .prefetch_loop_iterations_i(prefetch_loop_iterations),
     .prefetch_loop_end_addr_i  (prefetch_loop_end_addr),
-    .prefetch_loop_jump_addr_i (prefetch_loop_jump_addr)
+    .prefetch_loop_jump_addr_i (prefetch_loop_jump_addr),
+
+    .sec_wipe_wdr_en_i  (sec_wipe_wdr_d),
+    .sec_wipe_wdr_addr_i(sec_wipe_addr)
   );
 
   // Instruction decoder
@@ -313,6 +347,21 @@ module otbn_core
     .insn_dec_bignum_o(insn_dec_bignum),
     .insn_dec_shared_o(insn_dec_shared)
   );
+
+  // SEC_CM: DATA_REG_SW.SCA
+  // ALU and MAC predecode is only relevant when there is a valid instruction, as without one it is
+  // guaranteed there are no register reads (hence no sensitive data bits being fed into the blanked
+  // data paths). RF and ISPR predecode must always be checked to ensure read and write data paths
+  // are always correctly blanked.
+  assign rd_predec_error = |{rf_predec_bignum.rf_ren_a,
+                             rf_predec_bignum.rf_ren_b,
+                             ispr_predec_bignum.ispr_rd_en} & ~insn_valid;
+
+  assign predec_error =
+    ((alu_bignum_predec_error | mac_bignum_predec_error | controller_predec_error) & insn_valid) |
+     rf_bignum_predec_error                                                                      |
+     ispr_predec_error                                                                           |
+     rd_predec_error;
 
   // Controller: coordinate between functional units, prepare their inputs (e.g. by muxing between
   // operand sources), and post-process their outputs as needed.
@@ -364,6 +413,7 @@ module otbn_core
     // To/from bignunm register file
     .rf_bignum_wr_addr_o         (rf_bignum_wr_addr_ctrl),
     .rf_bignum_wr_en_o           (rf_bignum_wr_en_ctrl),
+    .rf_bignum_wr_commit_o       (rf_bignum_wr_commit_ctrl),
     .rf_bignum_wr_data_no_intg_o (rf_bignum_wr_data_no_intg_ctrl),
     .rf_bignum_wr_data_intg_o    (rf_bignum_wr_data_intg),
     .rf_bignum_wr_data_intg_sel_o(rf_bignum_wr_data_intg_sel_ctrl),
@@ -375,6 +425,11 @@ module otbn_core
     .rf_bignum_rd_data_b_intg_i  (rf_bignum_rd_data_b_intg),
     .rf_bignum_rd_data_err_i     (rf_bignum_rd_data_err),
 
+    .rf_bignum_rd_a_indirect_onehot_o(rf_bignum_rd_a_indirect_onehot),
+    .rf_bignum_rd_b_indirect_onehot_o(rf_bignum_rd_b_indirect_onehot),
+    .rf_bignum_wr_indirect_onehot_o  (rf_bignum_wr_indirect_onehot),
+    .rf_bignum_indirect_en_o         (rf_bignum_indirect_en),
+
     // To/from base ALU
     .alu_base_operation_o        (alu_base_operation),
     .alu_base_comparison_o       (alu_base_comparison),
@@ -383,6 +438,7 @@ module otbn_core
 
     // To/from bignum ALU
     .alu_bignum_operation_o       (alu_bignum_operation),
+    .alu_bignum_operation_commit_o(alu_bignum_operation_commit),
     .alu_bignum_operation_result_i(alu_bignum_operation_result),
     .alu_bignum_selection_flag_i  (alu_bignum_selection_flag),
 
@@ -390,12 +446,14 @@ module otbn_core
     .mac_bignum_operation_o       (mac_bignum_operation),
     .mac_bignum_operation_result_i(mac_bignum_operation_result),
     .mac_bignum_en_o              (mac_bignum_en),
+    .mac_bignum_commit_o          (mac_bignum_commit),
 
     // To/from LSU (base and bignum)
-    .lsu_load_req_o  (lsu_load_req),
-    .lsu_store_req_o (lsu_store_req),
-    .lsu_req_subset_o(lsu_req_subset),
-    .lsu_addr_o      (lsu_addr),
+    .lsu_load_req_o          (lsu_load_req),
+    .lsu_store_req_o         (lsu_store_req),
+    .lsu_req_subset_o        (lsu_req_subset),
+    .lsu_addr_o              (lsu_addr),
+    .lsu_addr_en_predec_i    (lsu_addr_en_predec),
 
     .lsu_base_wdata_o  (lsu_base_wdata),
     .lsu_bignum_wdata_o(lsu_bignum_wdata),
@@ -409,7 +467,9 @@ module otbn_core
     .ispr_base_wr_en_o  (ispr_base_wr_en),
     .ispr_bignum_wdata_o(ispr_bignum_wdata),
     .ispr_bignum_wr_en_o(ispr_bignum_wr_en),
+    .ispr_wr_commit_o   (ispr_wr_commit),
     .ispr_rdata_i       (ispr_rdata),
+    .ispr_rd_en_o       (ispr_rd_en),
 
     .rnd_req_o         (rnd_req),
     .rnd_prefetch_req_o(rnd_prefetch_req),
@@ -433,7 +493,9 @@ module otbn_core
     .prefetch_loop_active_o    (prefetch_loop_active),
     .prefetch_loop_iterations_o(prefetch_loop_iterations),
     .prefetch_loop_end_addr_o  (prefetch_loop_end_addr),
-    .prefetch_loop_jump_addr_o (prefetch_loop_jump_addr)
+    .prefetch_loop_jump_addr_o (prefetch_loop_jump_addr),
+
+    .predec_error_o(controller_predec_error)
   );
 
   `ASSERT(InsnDataStableInStall, u_otbn_controller.state_q == OtbnStateStall |->
@@ -450,7 +512,8 @@ module otbn_core
     fatal_software:      controller_err_bits.fatal_software,
     bad_internal_state:  |{controller_err_bits.bad_internal_state,
                            start_stop_state_error,
-                           urnd_all_zero},
+                           urnd_all_zero,
+                           predec_error},
     reg_intg_violation:  |{controller_err_bits.reg_intg_violation,
                            rf_base_rd_data_err},
     dmem_intg_violation: lsu_rdata_err,
@@ -481,13 +544,13 @@ module otbn_core
   // appears somewhere in err_bits_o above (checked in ErrBitsIfControllerEscalate_A)
   assign controller_escalate_en =
       mubi4_or_hi(escalate_en_i,
-                  mubi4_bool_to_mubi(|{start_stop_state_error, urnd_all_zero,
+                  mubi4_bool_to_mubi(|{start_stop_state_error, urnd_all_zero, predec_error,
                                        rf_base_rd_data_err, lsu_rdata_err, insn_fetch_err}));
 
   // Similarly for the start/stop controller
   assign start_stop_escalate_en =
       mubi4_or_hi(escalate_en_i,
-                  mubi4_bool_to_mubi(|{urnd_all_zero, rf_base_rd_data_err,
+                  mubi4_bool_to_mubi(|{urnd_all_zero, rf_base_rd_data_err, predec_error,
                                        lsu_rdata_err, insn_fetch_err, controller_fatal_err}));
 
   assign insn_cnt_o = insn_cnt;
@@ -589,6 +652,7 @@ module otbn_core
 
     .wr_addr_i         (rf_bignum_wr_addr),
     .wr_en_i           (rf_bignum_wr_en),
+    .wr_commit_i       (rf_bignum_wr_commit),
     .wr_data_no_intg_i (rf_bignum_wr_data_no_intg),
     .wr_data_intg_i    (rf_bignum_wr_data_intg),
     .wr_data_intg_sel_i(rf_bignum_wr_data_intg_sel),
@@ -600,17 +664,36 @@ module otbn_core
     .rd_en_b_i       (rf_bignum_rd_en_b),
     .rd_data_b_intg_o(rf_bignum_rd_data_b_intg),
 
-    .rd_data_err_o(rf_bignum_rd_data_err)
+    .rd_data_err_o(rf_bignum_rd_data_err),
+
+    .rf_predec_bignum_i(rf_predec_bignum),
+    .predec_error_o    (rf_bignum_predec_error)
   );
 
-  assign rf_bignum_wr_addr         = sec_wipe_wdr ? sec_wipe_addr : rf_bignum_wr_addr_ctrl;
-  assign rf_bignum_wr_en           = sec_wipe_wdr ? 2'b11         : rf_bignum_wr_en_ctrl;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if(!rst_ni) begin
+      sec_wipe_wdr_q <= 1'b0;
+    end else begin
+      sec_wipe_wdr_q <= sec_wipe_wdr_d;
+    end
+  end
+
+  always_ff @(posedge clk_i) begin
+    if (sec_wipe_wdr_d) begin
+      sec_wipe_wdr_addr_q <= sec_wipe_addr;
+      sec_wipe_wdr_urnd_q <= sec_wipe_wdr_urnd_d;
+    end
+  end
+
+  assign rf_bignum_wr_addr   = sec_wipe_wdr_q ? sec_wipe_wdr_addr_q : rf_bignum_wr_addr_ctrl;
+  assign rf_bignum_wr_en     = sec_wipe_wdr_q ? 2'b11               : rf_bignum_wr_en_ctrl;
+  assign rf_bignum_wr_commit = sec_wipe_wdr_q ? 1'b1                : rf_bignum_wr_commit_ctrl;
 
   // Write data to WDR
   always_comb begin
-    if (sec_wipe_wdr) begin
+    if (sec_wipe_wdr_q) begin
       // Wipe the WDR with either random numbers or zeroes.
-      if (sec_wipe_wdr_urnd) begin
+      if (sec_wipe_wdr_urnd_q) begin
         rf_bignum_wr_data_no_intg = urnd_data;
       end else begin
         rf_bignum_wr_data_no_intg = 256'b0;
@@ -627,16 +710,22 @@ module otbn_core
     .rst_ni,
 
     .operation_i       (alu_bignum_operation),
+    .operation_commit_i(alu_bignum_operation_commit),
     .operation_result_o(alu_bignum_operation_result),
     .selection_flag_o  (alu_bignum_selection_flag),
+
+    .alu_predec_bignum_i (alu_predec_bignum),
+    .ispr_predec_bignum_i(ispr_predec_bignum),
 
     .ispr_addr_i        (ispr_addr),
     .ispr_base_wdata_i  (ispr_base_wdata),
     .ispr_base_wr_en_i  (ispr_base_wr_en),
     .ispr_bignum_wdata_i(ispr_bignum_wdata),
     .ispr_bignum_wr_en_i(ispr_bignum_wr_en),
+    .ispr_wr_commit_i   (ispr_wr_commit),
     .ispr_init_i        (ispr_init),
     .ispr_rdata_o       (ispr_rdata),
+    .ispr_rd_en_i       (ispr_rd_en),
 
     .ispr_acc_i        (ispr_acc),
     .ispr_acc_wr_data_o(ispr_acc_wr_data),
@@ -651,7 +740,10 @@ module otbn_core
     .rnd_data_i (rnd_data),
     .urnd_data_i(urnd_data),
 
-    .sideload_key_shares_i
+    .sideload_key_shares_i,
+
+    .alu_predec_error_o(alu_bignum_predec_error),
+    .ispr_predec_error_o(ispr_predec_error)
   );
 
   otbn_mac_bignum u_otbn_mac_bignum (
@@ -663,11 +755,15 @@ module otbn_core
     .operation_flags_o   (mac_bignum_operation_flags),
     .operation_flags_en_o(mac_bignum_operation_flags_en),
 
+    .mac_predec_bignum_i(mac_predec_bignum),
+    .predec_error_o     (mac_bignum_predec_error),
+
     .urnd_data_i        (urnd_data),
     .sec_wipe_acc_urnd_i(sec_wipe_acc_urnd),
     .sec_wipe_zero_i    (sec_wipe_zero),
 
-    .mac_en_i(mac_bignum_en),
+    .mac_en_i    (mac_bignum_en),
+    .mac_commit_i(mac_bignum_commit),
 
     .ispr_acc_o        (ispr_acc),
     .ispr_acc_wr_data_i(ispr_acc_wr_data),
