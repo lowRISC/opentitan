@@ -51,11 +51,11 @@ ${hdr}
       ## field.
 <%
       field = r.get_field_list()[0]
-      field_q_width = field.get_n_bits(r0.hwext, r0.hwqe, r0.hwre, ['q'])
+      field_q_width = field.get_n_bits(r0.hwext, r0.hwre, ['q'])
       field_q_bits = lib.bitarray(field_q_width, 2)
 %>\
     logic ${field_q_bits} q;
-      % if r0.hwqe:
+      % if field.hwqe:
     logic        qe;
       % endif
       % if r0.hwre or (r0.shadowed and r0.hwext):
@@ -71,7 +71,7 @@ ${hdr}
       ## the register.
       % for f in r0.fields:
 <%
-          field_q_width = f.get_n_bits(r0.hwext, r0.hwqe, r0.hwre, ["q"])
+          field_q_width = f.get_n_bits(r0.hwext, r0.hwre, ["q"])
 %>\
         % if field_q_width:
 <%
@@ -80,7 +80,7 @@ ${hdr}
 %>\
     struct packed {
       logic ${field_q_bits} q;
-          % if r0.hwqe:
+          % if f.hwqe:
       logic        qe;
           % endif
           % if r0.hwre or (r0.shadowed and r0.hwext):
@@ -115,7 +115,7 @@ ${hdr}
       ## field.
 <%
       field = r.get_field_list()[0]
-      field_d_width = field.get_n_bits(r0.hwext, r0.hwqe, r0.hwre, ['d'])
+      field_d_width = field.get_n_bits(r0.hwext, r0.hwre, ['d'])
       field_d_bits = lib.bitarray(field_d_width, 2)
 %>\
     logic ${field_d_bits} d;
@@ -128,7 +128,7 @@ ${hdr}
       ## the register.
       % for f in r0.fields:
 <%
-          field_d_width = f.get_n_bits(r0.hwext, r0.hwqe, r0.hwre, ["d"])
+          field_d_width = f.get_n_bits(r0.hwext, r0.hwre, ["d"])
 %>\
         % if field_d_width:
 <%

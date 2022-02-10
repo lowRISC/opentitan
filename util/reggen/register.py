@@ -152,7 +152,7 @@ class Register(RegBase):
                                      .format(self.name,
                                              field.name,
                                              field.swaccess.key))
-                if not self.hwqe and field.sw_writable():
+                if not field.hwqe and field.sw_writable():
                     raise ValueError('The {} register has hwext set and field '
                                      '{} is writable by software (mode {}), '
                                      'so the register must also enable hwqe.'
@@ -304,6 +304,7 @@ class Register(RegBase):
                                     reg_width,
                                     params,
                                     hwext,
+                                    hwqe,
                                     shadowed,
                                     rf))
 
@@ -341,7 +342,7 @@ class Register(RegBase):
         return self.offset + addrsep
 
     def get_n_bits(self, bittype: List[str]) -> int:
-        return sum(field.get_n_bits(self.hwext, self.hwqe, self.hwre, bittype)
+        return sum(field.get_n_bits(self.hwext, self.hwre, bittype)
                    for field in self.fields)
 
     def get_field_list(self) -> List[Field]:
