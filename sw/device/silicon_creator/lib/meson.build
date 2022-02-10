@@ -120,13 +120,13 @@ sw_silicon_creator_lib_shutdown = declare_dependency(
       hw_ip_flash_ctrl_reg_h,
       hw_ip_ibex_reg_h,
       hw_ip_rstmgr_reg_h,
+      hw_ip_uart_reg_h,
       'shutdown.c',
     ],
     dependencies: [
       sw_lib_abs_mmio,
       sw_lib_hardened,
       sw_silicon_creator_lib_driver_alert,
-      sw_silicon_creator_lib_log,
     ],
   ),
 )
@@ -177,6 +177,7 @@ test('sw_silicon_creator_lib_shutdown_unittest', executable(
       hw_ip_flash_ctrl_reg_h,
       hw_ip_ibex_reg_h,
       hw_ip_rstmgr_reg_h,
+      hw_ip_uart_reg_h,
       'shutdown.c',
       'shutdown_unittest.cc',
     ],
