@@ -58,9 +58,6 @@ module prim_generic_flash #(
   assign prog_type_avail_o[flash_ctrl_pkg::FlashProgRepair] = 1'b1;
 
   for (genvar bank = 0; bank < NumBanks; bank++) begin : gen_prim_flash_banks
-    logic erase_suspend_req;
-    assign erase_suspend_req = flash_req_i[bank].erase_suspend_req &
-                               (flash_req_i[bank].pg_erase_req | flash_req_i[bank].bk_erase_req);
 
     prim_generic_flash_bank #(
       .InfosPerBank(InfosPerBank),
@@ -78,7 +75,7 @@ module prim_generic_flash #(
       .prog_type_i(flash_req_i[bank].prog_type),
       .pg_erase_i(flash_req_i[bank].pg_erase_req),
       .bk_erase_i(flash_req_i[bank].bk_erase_req),
-      .erase_suspend_req_i(erase_suspend_req),
+      .erase_suspend_req_i(flash_req_i[bank].erase_suspend_req),
       .he_i(flash_req_i[bank].he),
       .addr_i(flash_req_i[bank].addr),
       .part_i(flash_req_i[bank].part),

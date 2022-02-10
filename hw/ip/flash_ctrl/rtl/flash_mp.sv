@@ -282,7 +282,8 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   logic erase_valid;
   assign erase_valid = pg_erase_o | bk_erase_o;
   assign erase_suspend_o = erase_valid & erase_suspend_i;
-  assign erase_suspend_done_o = erase_suspend_o & erase_done_o;
+  assign erase_suspend_done_o = erase_suspend_i & ~erase_valid |
+                                erase_suspend_o & erase_done_o;
 
 
   //////////////////////////////////////////////
