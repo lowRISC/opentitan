@@ -133,16 +133,16 @@ interface rstmgr_cascading_sva_if (
   `CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv4, effective_aon_rst_n[0],
                     resets_o.rst_por_io_div4_n[0], SyncCycles, clk_io_div4_i)
 
-  // The internal reset is triggered by one of the generated reset outputs.
-  logic [rstmgr_pkg::PowerDomains-1:0] local_rst_n;
+  // The internal reset is triggered by one of synchronized por.
+  logic [rstmgr_pkg::PowerDomains-1:0] por_rst_n;
   always_comb
-    local_rst_n = {rstmgr_pkg::PowerDomains{resets_o.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]}};
+    por_rst_n = resets_o.rst_por_aon_n;
 
   logic [rstmgr_pkg::PowerDomains-1:0] local_rst_or_lc_req_n;
-  always_comb local_rst_or_lc_req_n = local_rst_n & ~rst_lc_req;
+  always_comb local_rst_or_lc_req_n = por_rst_n & ~rst_lc_req;
 
   logic [rstmgr_pkg::PowerDomains-1:0] lc_rst_or_sys_req_n;
-  always_comb lc_rst_or_sys_req_n = rst_lc_src_n & ~rst_sys_req;
+  always_comb lc_rst_or_sys_req_n = por_rst_n & ~rst_sys_req;
 
   for (genvar pd = 0; pd < rstmgr_pkg::PowerDomains; ++pd) begin : g_power_domains
     // The root lc reset is triggered either by the internal reset, or by the pwr_i.rst_lc_req
