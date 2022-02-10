@@ -80,9 +80,9 @@ class aes_base_test extends cip_base_test #(
   //  001: configuration errors
   //  010: malicous injection
   //  100: random resets
-    cfg.error_types                 = 3'b111;
+  // 1000: pull lc_escalate
+    cfg.error_types                 = 4'b1111;
     cfg.config_error_pct            = 0;           // percentage of configuration errors
-    cfg.flip_rst_split_pct          = 60;
     cfg.sideload_pct                = 0;
   endfunction
 endclass : aes_base_test

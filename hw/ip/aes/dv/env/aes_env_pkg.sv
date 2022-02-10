@@ -30,7 +30,7 @@ package aes_env_pkg;
   parameter uint NUM_EDN = 1;
 
   typedef enum int { AES_CFG=0, AES_DATA=1, AES_ERR_INJ=2 } aes_item_type_e;
-  typedef enum bit { Flip_bits = 0, Pull_reset = 1 } flip_rst_e;
+  typedef enum int { Flip_bits = 0, Pull_reset = 1, Lc_escalate = 2 } flip_rst_lc_esc_e;
 
   typedef struct packed {
     bit          dataout;
@@ -38,6 +38,7 @@ package aes_env_pkg;
   } clear_t;
 
   typedef struct packed {
+    bit          lc_esc;
     bit          reset;
     bit          mal_inject;
     bit          cfg;

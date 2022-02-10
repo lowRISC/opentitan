@@ -8,6 +8,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   `uvm_object_utils_end
   `uvm_object_new
 
+  virtual pins_if #($bits(lc_ctrl_pkg::lc_tx_t) + 1) lc_escalate_vif;
 
   rand key_sideload_agent_cfg keymgr_sideload_agent_cfg;
   // test environment constraints //
@@ -64,30 +65,26 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   //   [0]: configuration errors
   //   [1]: malicous injection
   //   [2]: random resets
-  error_types_t      error_types                = 3'b111;
+  //   [3]: inject Lc_escalate
+  error_types_t      error_types                = 4'b1111;
 
   //   [1]: mode error
   //   [0]: key_len
   cfg_error_type_t   config_error_type          = 2'b00;
+  int                config_error_pct           = 30;
 
   // min and max wait (clk) before an error injection
   // this is only for injection and random reset
   int                inj_min_delay              = 10;
   int                inj_max_delay              = 500;
   rand int           inj_delay;
-  // split between bit flipping and pulling reset
-  // pct of how many will be bitflips
-  int                flip_rst_split_pct          = 70;
-  rand flip_rst_e    flip_rst;
+
+  rand flip_rst_lc_esc_e    flip_rst_lc_esc;
 
   // number of messages that was selected to be corrupt
   // these should be excluded from the num_messages count
   // when checking that all messages was processed
   int                num_corrupt_messages       = 0;
-  // percentage of configuration errors
-  int                config_error_pct           = 10;
-  int                mal_error_pct              = 5;
-  int                random_reset_pct           = 10;
 
   // clear register percentage
   // percentage of items that will try to clear
@@ -134,8 +131,15 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
 
   constraint inj_delay_c    {inj_delay    inside {[inj_min_delay : inj_max_delay]};}
 
-  constraint flip_rst_c { flip_rst dist { 0:/flip_rst_split_pct,
-                                          1:/(100-flip_rst_split_pct) };}
+  constraint flip_rst_lc_esc_c { if ( |error_types[3:1]) {
+                                   flip_rst_lc_esc dist { Flip_bits   :/ error_types.mal_inject,
+                                                          Pull_reset  :/ error_types.reset,
+                                                          Lc_escalate :/ error_types.lc_esc};
+                                 } else {
+                                   flip_rst_lc_esc == Flip_bits;
+                                 }
+                               }
+
 
   function void post_randomize();
     if (use_key_mask) key_mask = 1;

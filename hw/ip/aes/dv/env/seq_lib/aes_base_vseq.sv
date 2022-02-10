@@ -32,6 +32,7 @@ class aes_base_vseq extends cip_base_vseq #(
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
+
     if (do_aes_init) aes_init();
     aes_item = new();
     aes_message_init();
@@ -555,7 +556,7 @@ class aes_base_vseq extends cip_base_vseq #(
       // check status and act accordingly //
       if (status.alert_fatal_fault) begin
         // stuck pull reset //
-        if (cfg.error_types[1]) begin
+        if (cfg.error_types.mal_inject || cfg.error_types.lc_esc) begin
           `uvm_info(`gfn,
                   $sformatf("\n\t ----| Saw expected Fatal alert - trying to recover \n\t ----| %s",
                               status2string(status)), UVM_MEDIUM)

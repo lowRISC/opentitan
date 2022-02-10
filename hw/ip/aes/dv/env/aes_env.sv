@@ -20,6 +20,10 @@ class aes_env extends cip_base_env #(
     keymgr_sideload_agent = key_sideload_agent::type_id::create("keymgr_sideload_agent", this);
     uvm_config_db#(key_sideload_agent_cfg)::set(this, "keymgr_sideload_agent*",
                                                 "cfg", cfg.keymgr_sideload_agent_cfg);
+    if (!uvm_config_db#(virtual pins_if #($bits(lc_ctrl_pkg::lc_tx_t) +1 ))::
+         get(this, "", "lc_escalate_vif", cfg.lc_escalate_vif)) begin
+      `uvm_fatal(`gfn, "failed to get lc_escalate_vif from uvm_config_db")
+    end
   endfunction
 
   function void connect_phase(uvm_phase phase);
