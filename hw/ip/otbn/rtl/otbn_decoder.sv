@@ -65,8 +65,8 @@ module otbn_decoder
   logic [31:0] imm_l_type_base;
   logic [31:0] imm_x_type_base;
 
-  alu_op_base_e   alu_operator_base;   // ALU operation selection for base ISA
-  alu_op_bignum_e alu_operator_bignum; // ALU operation selection for bignum ISA
+  alu_op_base_e   alu_operator_base;      // ALU operation selection for base ISA
+  alu_op_bignum_e alu_operator_bignum;    // ALU operation selection for bignum ISA
 
   op_a_sel_e alu_op_a_mux_sel_base; // operand a selection for base ISA: reg value, PC or zero
   op_b_sel_e alu_op_b_mux_sel_base; // operand b selection for base ISA: reg value or immediate
@@ -461,8 +461,12 @@ module otbn_decoder
           rf_ren_a_base     = 1'b1;
 
           if (insn[14:12] == 3'b001) begin
-            // No read if destination is x0
-            ispr_rd_insn = insn_rd != 5'b0;
+            // No read if destination is x0 unless read is to flags CSR. Both flag groups are in
+            // a single ISPR so to write one group the other must be read to write it back
+            // unchanged.
+            ispr_rd_insn = (insn_rd != 5'b0)            |
+                           (imm_b_base[11:0] == CsrFg0) |
+                           (imm_b_base[11:0] == CsrFg1);
             ispr_wr_insn = 1'b1;
           end else if (insn[14:12] == 3'b010) begin
             // Read and set if source register isn't x0, otherwise read only
@@ -518,7 +522,7 @@ module otbn_decoder
           3'b101: begin  // BN.NOT
             insn_subset     = InsnSubsetBignum;
             rf_we_bignum    = 1'b1;
-            rf_ren_a_bignum = 1'b1;
+            rf_ren_b_bignum = 1'b1;
           end
           default: illegal_insn = 1'b1;
         endcase
@@ -684,7 +688,7 @@ module otbn_decoder
 
     imm_b_mux_sel_base       = ImmBaseBI;
 
-    alu_operator_bignum      = AluOpBignumAdd;
+    alu_operator_bignum      = AluOpBignumNone;
     alu_op_b_mux_sel_bignum  = OpBSelImmediate;
 
     shift_amt_mux_sel_bignum = ShamtSelBignumA;
