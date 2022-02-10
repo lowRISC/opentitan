@@ -516,6 +516,11 @@ class OTBNState:
     def invalidate_imem(self) -> None:
         self._time_to_imem_invalidation = 2
 
+    def clear_imem_invalidation(self) -> None:
+        '''Clear any effective or pending IMEM invalidation'''
+        self._time_to_imem_invalidation = None
+        self.invalidated_imem = False
+
     def wipe(self) -> None:
         if not self.secure_wipe_enabled:
             return

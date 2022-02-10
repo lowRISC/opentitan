@@ -34,6 +34,7 @@ class OTBNSim:
 
     def load_program(self, program: List[OTBNInsn]) -> None:
         self.program = program.copy()
+        self.state.clear_imem_invalidation()
 
     def add_loop_warp(self, addr: int, from_cnt: int, to_cnt: int) -> None:
         '''Add a new loop warp to the simulation'''
