@@ -21,12 +21,17 @@ parameters:
   AST_BYPASS_CLK:
     datatype: bool
     paramtype: vlogdefine
+  IBEX_CUSTOM_PMP_RESET_VALUES:
+    datatype: bool
+    default: true
+    paramtype: vlogdefine
 
 targets:
   default: &default_target
     filesets:
       - files_sim_verilator
     parameters:
+      - IBEX_CUSTOM_PMP_RESET_VALUES
       - AST_BYPASS_CLK=true
     toplevel: chip_earlgrey_verilator
 

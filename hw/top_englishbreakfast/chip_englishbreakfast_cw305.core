@@ -49,6 +49,10 @@ parameters:
   AST_BYPASS_CLK:
     datatype: bool
     paramtype: vlogdefine
+  IBEX_CUSTOM_PMP_RESET_VALUES:
+    datatype: bool
+    default: true
+    paramtype: vlogdefine
 
 targets:
   default: &default_target
@@ -67,6 +71,7 @@ targets:
       - BootRomInitFile
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
       - AST_BYPASS_CLK=true
+      - IBEX_CUSTOM_PMP_RESET_VALUES
     tools:
       vivado:
         part: "xc7a100tftg256-2" # CW305 Board
