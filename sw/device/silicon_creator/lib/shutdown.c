@@ -104,22 +104,26 @@ rom_error_t shutdown_init(lifecycle_state_t lc_state) {
   // Get the enable and escalation settings for all four alert classes.
   // Each of these OTP words is composed of 4 byte enums with the enable and
   // escalate configs per alert class (a/b/c/d).
+  size_t i = 0;
+  rom_error_t error = kErrorOk;
   uint32_t class_enable = otp_read32(OTP_CTRL_PARAM_ROM_ALERT_CLASS_EN_OFFSET);
   uint32_t class_escalate =
       otp_read32(OTP_CTRL_PARAM_ROM_ALERT_ESCALATION_OFFSET);
   alert_enable_t enable[ALERT_CLASSES];
   alert_escalate_t escalate[ALERT_CLASSES];
-  for (size_t i = 0; i < ALERT_CLASSES; ++i) {
+  for (i = 0; launder32(i) < ALERT_CLASSES; ++i) {
     enable[i] = (alert_enable_t)bitfield_field32_read(
         class_enable, (bitfield_field32_t){.mask = 0xff, .index = i * 8});
     escalate[i] = (alert_escalate_t)bitfield_field32_read(
         class_escalate, (bitfield_field32_t){.mask = 0xff, .index = i * 8});
   }
+  if (i != ALERT_CLASSES) {
+    error = kErrorUnknown;
+  }
 
   // For each alert, read its corresponding OTP word and extract the class
   // configuration for the current lifecycle state.
-  rom_error_t error = kErrorOk;
-  for (size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
+  for (i = 0; launder32(i) < ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
        ++i) {
     uint32_t value = otp_read32(OTP_CTRL_PARAM_ROM_ALERT_CLASSIFICATION_OFFSET +
                                 i * sizeof(uint32_t));
@@ -132,10 +136,14 @@ rom_error_t shutdown_init(lifecycle_state_t lc_state) {
       error = e;
     }
   }
+  if (i != ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT) {
+    error = kErrorUnknown;
+  }
 
   // For each local alert, read its corresponding OTP word and extract the class
   // configuration for the current lifecycle state.
-  for (size_t i = 0; i < ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
+  for (i = 0;
+       launder32(i) < ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
        ++i) {
     uint32_t value =
         otp_read32(OTP_CTRL_PARAM_ROM_LOCAL_ALERT_CLASSIFICATION_OFFSET +
@@ -149,6 +157,9 @@ rom_error_t shutdown_init(lifecycle_state_t lc_state) {
       error = e;
     }
   }
+  if (i != ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT) {
+    error = kErrorUnknown;
+  }
 
   // For each alert class, configure the various escalation parameters.
   const alert_class_t kClasses[] = {
@@ -158,17 +169,21 @@ rom_error_t shutdown_init(lifecycle_state_t lc_state) {
       kAlertClassD,
   };
   alert_class_config_t config;
-  for (size_t i = 0; i < ALERT_CLASSES; ++i) {
+  for (i = 0; launder32(i) < ALERT_CLASSES; ++i) {
     config.enabled = enable[i];
     config.escalation = escalate[i];
     config.accum_threshold = otp_read32(
         OTP_CTRL_PARAM_ROM_ALERT_ACCUM_THRESH_OFFSET + i * sizeof(uint32_t));
     config.timeout_cycles = otp_read32(
         OTP_CTRL_PARAM_ROM_ALERT_TIMEOUT_CYCLES_OFFSET + i * sizeof(uint32_t));
-    for (size_t phase = 0; phase < ARRAYSIZE(config.phase_cycles); ++phase) {
+    size_t phase = 0;
+    for (; launder32(phase) < ARRAYSIZE(config.phase_cycles); ++phase) {
       config.phase_cycles[phase] = otp_read32(
           OTP_CTRL_PARAM_ROM_ALERT_PHASE_CYCLES_OFFSET +
           (i * ARRAYSIZE(config.phase_cycles) + phase) * sizeof(uint32_t));
+    }
+    if (phase != ARRAYSIZE(config.phase_cycles)) {
+      error = kErrorUnknown;
     }
 
     rom_error_t e = alert_class_configure(kClasses[i], &config);
@@ -177,6 +192,9 @@ rom_error_t shutdown_init(lifecycle_state_t lc_state) {
       // program them all.
       error = e;
     }
+  }
+  if (i != ALERT_CLASSES) {
+    error = kErrorUnknown;
   }
   return error;
 }
