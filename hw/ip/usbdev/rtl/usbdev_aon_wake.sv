@@ -19,9 +19,9 @@ module usbdev_aon_wake import usbdev_pkg::*;(
   input  logic usb_dn_async_alw_i,
   input  logic usb_sense_async_alw_i,
 
-  // These come from post pinmux sleep handling logic
-  input  logic usb_dppullup_en_alw_i,
-  input  logic usb_dnpullup_en_alw_i,
+  // These come from the IP
+  input  logic usb_dppullup_en_upwr_i,
+  input  logic usb_dnpullup_en_upwr_i,
 
   // Register signals from IP
   input  logic usb_out_of_rst_upwr_i,
@@ -30,6 +30,10 @@ module usbdev_aon_wake import usbdev_pkg::*;(
 
   // Status from IP, must be valid for long enough for aon clock to catch (>15us)
   input  logic usb_suspended_upwr_i,
+
+  // The I/Os that need to be maintained in low-power mode
+  output logic usb_dppullup_en_o,
+  output logic usb_dnpullup_en_o,
 
   // wake/powerup request
   output logic wake_req_alw_o,
@@ -80,8 +84,8 @@ module usbdev_aon_wake import usbdev_pkg::*;(
   // so if the input value differs then the host is doing something
   // This covers both host generated wake (J->K) and host generated reset (J->SE0)
   // Use of the pullups takes care of pinflipping
-  assign notidle_async = (usb_dp_async_alw_i != usb_dppullup_en_alw_i) |
-                         (usb_dn_async_alw_i != usb_dnpullup_en_alw_i);
+  assign notidle_async = (usb_dp_async_alw_i != usb_dppullup_en_o) |
+                         (usb_dn_async_alw_i != usb_dnpullup_en_o);
 
   // aon clock is ~200kHz so 4 cycle filter is about 20us
   // as well as noise debounce this gives the main IP time to detect resume if it didn't turn off
@@ -229,6 +233,40 @@ module usbdev_aon_wake import usbdev_pkg::*;(
   assign wake_req_alw_o = (astate_q == AwkWoken);
 
   assign state_debug_o = astate_q;
+
+  // Control the pullup enable outputs from the AON module when it's active
+  logic usb_dppullup_en_alw, usb_dnpullup_en_alw;
+  logic aon_dppullup_en_d, aon_dppullup_en_q;
+  logic aon_dnpullup_en_d, aon_dnpullup_en_q;
+
+  prim_flop_2sync #(
+    .Width(2)
+  ) u_pullup_en_cdc (
+    .clk_i(clk_aon_i),
+    .rst_ni(rst_aon_ni),
+    .d_i({usb_dppullup_en_upwr_i, usb_dnpullup_en_upwr_i}),
+    .q_o({usb_dppullup_en_alw, usb_dnpullup_en_alw})
+  );
+
+  assign aon_dppullup_en_d = aon_usb_events_active ? aon_dppullup_en_q
+                                                   : usb_dppullup_en_alw;
+  assign aon_dnpullup_en_d = aon_usb_events_active ? aon_dnpullup_en_q
+                                                   : usb_dnpullup_en_alw;
+
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin : proc_reg_pullup_en
+    if (!rst_aon_ni) begin
+      aon_dppullup_en_q <= 1'b0;
+      aon_dnpullup_en_q <= 1'b0;
+    end else begin
+      aon_dppullup_en_q <= aon_dppullup_en_d;
+      aon_dnpullup_en_q <= aon_dnpullup_en_d;
+    end
+  end
+
+  assign usb_dppullup_en_o = aon_usb_events_active ? aon_dppullup_en_q
+                                                   : usb_dppullup_en_upwr_i;
+  assign usb_dnpullup_en_o = aon_usb_events_active ? aon_dnpullup_en_q
+                                                   : usb_dnpullup_en_upwr_i;
 
   // The wakeup signal is not latched in the pwrmgr so must be held until acked by software
   `ASSERT(UsbWkupStable_A, wake_req_alw_o |=> wake_req_alw_o ||

@@ -234,7 +234,7 @@ dif_result_t dif_usbdev_configure(const dif_usbdev_t *usbdev,
 
   // Check enum fields.
   if (!is_valid_toggle(config.differential_rx) ||
-      !is_valid_toggle(config.differential_tx) ||
+      !is_valid_toggle(config.use_tx_d_se0) ||
       !is_valid_toggle(config.single_bit_eop) ||
       !is_valid_toggle(config.pin_flip) ||
       !is_valid_toggle(config.clock_sync_signals)) {
@@ -254,14 +254,14 @@ dif_result_t dif_usbdev_configure(const dif_usbdev_t *usbdev,
         1);
   }
 
-  if (config.differential_tx == kDifToggleEnabled) {
-    phy_config_val = bitfield_field32_write(
-        phy_config_val,
-        (bitfield_field32_t){
-            .mask = 1,
-            .index = USBDEV_PHY_CONFIG_TX_DIFFERENTIAL_MODE_BIT,
-        },
-        1);
+  if (config.use_tx_d_se0 == kDifToggleEnabled) {
+    phy_config_val =
+        bitfield_field32_write(phy_config_val,
+                               (bitfield_field32_t){
+                                   .mask = 1,
+                                   .index = USBDEV_PHY_CONFIG_TX_USE_D_SE0_BIT,
+                               },
+                               1);
   }
 
   if (config.single_bit_eop == kDifToggleEnabled) {

@@ -107,7 +107,7 @@ static void usb_send_str(const char *string, usb_ss_ctx_t *ss_ctx) {
 
 // These GPIO bits control USB PHY configuration
 static const uint32_t kPinflipMask = 1;
-static const uint32_t kDiffMask = 2;
+static const uint32_t kDiffXcvrMask = 2;
 static const uint32_t kUPhyMask = 4;
 
 int main(int argc, char **argv) {
@@ -153,10 +153,10 @@ int main(int argc, char **argv) {
   uint32_t gpio_state;
   CHECK_DIF_OK(dif_gpio_read_all(&gpio, &gpio_state));
   bool pinflip = gpio_state & kPinflipMask ? true : false;
-  bool differential = gpio_state & kDiffMask ? true : false;
+  bool differential_xcvr = gpio_state & kDiffXcvrMask ? true : false;
   bool uphy = gpio_state & kUPhyMask ? true : false;
-  LOG_INFO("PHY settings: pinflip=%d differential=%d USB Phy=%d", pinflip,
-           differential, uphy);
+  LOG_INFO("PHY settings: pinflip=%d differential_xcvr=%d USB Phy=%d", pinflip,
+           differential_xcvr, uphy);
   // Connect correct VBUS detection pin
   if (uphy) {
     CHECK_DIF_OK(dif_pinmux_input_select(
@@ -170,8 +170,8 @@ int main(int argc, char **argv) {
   CHECK_DIF_OK(
       dif_spi_device_send(&spi, &spi_config, "SPI!", 4, /*bytes_sent=*/NULL));
 
-  // The TI phy always uses single ended TX
-  usbdev_init(&usbdev, pinflip, differential, differential && !uphy);
+  // The TI phy always uses a differential TX interface
+  usbdev_init(&usbdev, pinflip, differential_xcvr, differential_xcvr && !uphy);
 
   usb_controlep_init(&usbdev_control, &usbdev, 0, config_descriptors,
                      sizeof(config_descriptors));

@@ -46,6 +46,10 @@ module pinmux
   output jtag_pkg::jtag_req_t      dft_jtag_o,
   input  jtag_pkg::jtag_rsp_t      dft_jtag_i,
   // Direct USB connection
+  input                            usb_dppullup_en_upwr_i,
+  input                            usb_dnpullup_en_upwr_i,
+  output                           usb_dppullup_en_o,
+  output                           usb_dnpullup_en_o,
   input                            usb_out_of_rst_i,
   input                            usb_aon_wake_en_i,
   input                            usb_aon_wake_ack_i,
@@ -248,8 +252,12 @@ module pinmux
     .usb_dp_async_alw_i(dio_to_periph_o[TargetCfg.usb_dp_idx]),
     .usb_dn_async_alw_i(dio_to_periph_o[TargetCfg.usb_dn_idx]),
     .usb_sense_async_alw_i(mio_to_periph_o[TargetCfg.usb_sense_idx]),
-    .usb_dppullup_en_alw_i(dio_out_o[TargetCfg.usb_dp_pullup_idx]),
-    .usb_dnpullup_en_alw_i(dio_out_o[TargetCfg.usb_dn_pullup_idx]),
+    .usb_dppullup_en_upwr_i(usb_dppullup_en_upwr_i),
+    .usb_dnpullup_en_upwr_i(usb_dnpullup_en_upwr_i),
+
+    // output signals for pullup connectivity
+    .usb_dppullup_en_o(usb_dppullup_en_o),
+    .usb_dnpullup_en_o(usb_dnpullup_en_o),
 
     // tie this to something from usbdev to indicate its out of reset
     .usb_out_of_rst_upwr_i(usb_out_of_rst_i),

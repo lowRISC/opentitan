@@ -560,12 +560,14 @@
       'pwrmgr_aon.fetch_en'     : ['rv_core_ibex.pwrmgr_cpu_en'],
 
       // usbdev connection to pinmux
-      'usbdev.usb_out_of_rst'      : ['pinmux_aon.usb_out_of_rst'],
-      'usbdev.usb_aon_wake_en'     : ['pinmux_aon.usb_aon_wake_en'],
-      'usbdev.usb_aon_wake_ack'    : ['pinmux_aon.usb_aon_wake_ack'],
-      'usbdev.usb_suspend'         : ['pinmux_aon.usb_suspend'],
-      'usbdev.usb_aon_bus_reset'   : ['pinmux_aon.usb_bus_reset'],
-      'usbdev.usb_aon_sense_lost'  : ['pinmux_aon.usb_sense_lost'],
+      'usbdev.usb_dp_pullup'      : ['pinmux_aon.usb_dppullup_en_upwr'],
+      'usbdev.usb_dn_pullup'      : ['pinmux_aon.usb_dnpullup_en_upwr'],
+      'usbdev.usb_out_of_rst'     : ['pinmux_aon.usb_out_of_rst'],
+      'usbdev.usb_aon_wake_en'    : ['pinmux_aon.usb_aon_wake_en'],
+      'usbdev.usb_aon_wake_ack'   : ['pinmux_aon.usb_aon_wake_ack'],
+      'usbdev.usb_suspend'        : ['pinmux_aon.usb_suspend'],
+      'usbdev.usb_aon_bus_reset'  : ['pinmux_aon.usb_bus_reset'],
+      'usbdev.usb_aon_sense_lost' : ['pinmux_aon.usb_sense_lost'],
       'pinmux_aon.usb_state_debug' : ['usbdev.usb_state_debug'],
 
       // The idle connection is automatically connected through topgen.
@@ -663,11 +665,19 @@
         'peri.tl_ast'                  : 'ast_tl',
         'pinmux_aon.dft_strap_test'    : 'dft_strap_test'
         'pinmux_aon.dft_hold_tap_sel'  : 'dft_hold_tap_sel',
+        'pinmux_aon.usb_dppullup_en'   : 'usb_dp_pullup_en',
+        'pinmux_aon.usb_dnpullup_en'   : 'usb_dn_pullup_en',
         'pwrmgr_aon.pwr_ast'           : 'pwrmgr_ast',
         # 'otp_ctrl.otp_ast_pwr_seq'     : '',
         # 'otp_ctrl.otp_ast_pwr_seq_h'   : '',
         # 'otp_ctrl.otp_alert'           : 'otp_alert',
         'rstmgr_aon.por_n'               : 'por_n'
+        'usbdev.usb_rx_d'                : '',
+        'usbdev.usb_tx_d'                : '',
+        'usbdev.usb_tx_se0'              : '',
+        'usbdev.usb_tx_use_d_se0'        : '',
+        'usbdev.usb_suspend'             : '',
+        'usbdev.usb_rx_enable'           : '',
         'usbdev.usb_ref_val'             : '',
         'usbdev.usb_ref_pulse'           : '',
         'spi_device.sck_monitor'         : 'sck_monitor',
@@ -862,7 +872,8 @@
       { instance: 'spi_device',      port: 'sd[2]', connection: 'direct', pad: 'SPI_DEV_D2'   , desc: ''},
       { instance: 'spi_device',      port: 'sd[3]', connection: 'direct', pad: 'SPI_DEV_D3'   , desc: ''},
       // USBDEV
-      { instance: 'usbdev',          port: '',      connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
+      { instance: 'usbdev',          port: 'usb_dp',         connection: 'manual', pad: ''             , desc: ''},
+      { instance: 'usbdev',          port: 'usb_dn',         connection: 'manual', pad: ''             , desc: ''},
       // MIOs
       { instance: "gpio",            port: '',      connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "uart0",           port: '',      connection: 'muxed' , pad: ''             , desc: ''},
