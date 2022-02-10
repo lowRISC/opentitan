@@ -184,7 +184,7 @@ module kmac
 
   // state is de-muxed in keymgr interface logic.
   // the output from keymgr logic goes into staterd module to be visible to SW
-  logic unused_reg_state_valid;
+  logic reg_state_valid;
   logic [sha3_pkg::StateW-1:0] reg_state [Share];
 
   // SHA3 Entropy interface
@@ -990,7 +990,7 @@ module kmac
     .keccak_state_i       (state),
 
     // to STATE TL Window
-    .reg_state_valid_o    (unused_reg_state_valid),
+    .reg_state_valid_o    (reg_state_valid),
     .reg_state_o          (reg_state),
 
     // Configuration: Sideloaded Key
@@ -1045,6 +1045,13 @@ module kmac
     .process_o (msgfifo2kmac_process)
   );
 
+  logic [sha3_pkg::StateW-1:0] reg_state_tl [Share];
+  always_comb begin
+    for (int i = 0 ; i < Share; i++) begin
+      reg_state_tl[i] = reg_state_valid ? reg_state[i] : 'b0;
+    end
+  end
+
   // State (Digest) reader
   kmac_staterd #(
     .AddrW     (9), // 512B
@@ -1056,7 +1063,7 @@ module kmac
     .tl_i (tl_win_h2d[WinState]),
     .tl_o (tl_win_d2h[WinState]),
 
-    .state_i (reg_state),
+    .state_i (reg_state_tl),
 
     .endian_swap_i (reg2hw.cfg_shadowed.state_endianness.q)
   );
