@@ -29,10 +29,6 @@ using ::testing::Return;
 using ::testing::Test;
 
 namespace {
-extern "C" {
-// Dummy out log_printf.
-rom_error_t log_printf(const char *fmt, ...) { return kErrorOk; }
-}  // extern "C"
 
 // TODO(lowRISC/opentitan#7148): Refactor mocks into their own headers.
 namespace internal {

@@ -71,6 +71,25 @@ typedef enum shutdown_error_redact {
 } shutdown_error_redact_t;
 
 /**
+ * Helper macro for encoding a 4 character prefix as a 32-bit value. The
+ * resulting prefix is the concatenation of the given characters and '_'.
+ */
+#define LOG_PREFIX_(a_, b_, c_) ('_' << 24 | (c_) << 16 | (b_) << 8 | (a_))
+
+/**
+ * Prefixes for error messages printed over UART.
+ *
+ * Note: Defined here for future use. These values are currently used only by
+ * this module internally.
+ *
+ * See `ERROR_PREFIX_()`.
+ */
+typedef enum shutdown_log_prefix {
+  kShutdownLogPrefixBootFault = LOG_PREFIX_('B', 'F', 'V'),
+  kShutdownLogPrefixLifecycle = LOG_PREFIX_('L', 'C', 'V'),
+} shutdown_log_prefix_t;
+
+/**
  * Calculate the error redaction level required given the current lifecycle
  * state and OTP configuration.
  *
