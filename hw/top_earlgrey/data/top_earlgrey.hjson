@@ -1202,14 +1202,12 @@
       { instance: 'spi_device',      port: 'sd[2]',          connection: 'direct', pad: 'SPI_DEV_D2'   , desc: ''},
       { instance: 'spi_device',      port: 'sd[3]',          connection: 'direct', pad: 'SPI_DEV_D3'   , desc: ''},
       // USBDEV
-      // TODO: #6043
       { instance: 'usbdev',          port: 'd',              connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
       { instance: 'usbdev',          port: 'dp',             connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
       { instance: 'usbdev',          port: 'dn',             connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
       { instance: 'usbdev',          port: 'se0',            connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
       { instance: 'usbdev',          port: 'dp_pullup',      connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
       { instance: 'usbdev',          port: 'dn_pullup',      connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
-      { instance: 'usbdev',          port: 'tx_mode_se',     connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
       { instance: 'usbdev',          port: 'suspend',        connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
       { instance: 'usbdev',          port: 'rx_enable',      connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
       // MIOs

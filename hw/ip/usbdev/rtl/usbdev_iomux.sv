@@ -34,8 +34,8 @@ module usbdev_iomux
   output logic                          cio_usb_dn_o,
   output logic                          cio_usb_oe_o,
 
-  output logic                          cio_usb_tx_mode_se_o,
   input  logic                          cio_usb_sense_i,
+  output logic                          cio_usb_se0_en_o,
   output logic                          cio_usb_dp_pullup_en_o,
   output logic                          cio_usb_dn_pullup_en_o,
   output logic                          cio_usb_suspend_o,
@@ -162,7 +162,7 @@ module usbdev_iomux
       cio_usb_dn_o           = sys_reg2hw_drive_i.dn_o.q;
       cio_usb_dp_pullup_en_o = sys_reg2hw_drive_i.dp_pullup_en_o.q;
       cio_usb_dn_pullup_en_o = sys_reg2hw_drive_i.dn_pullup_en_o.q;
-      cio_usb_tx_mode_se_o   = sys_reg2hw_drive_i.tx_mode_se_o.q;
+      cio_usb_se0_en_o       = sys_reg2hw_drive_i.tx_mode_se_o.q;
       cio_usb_suspend_o      = sys_reg2hw_drive_i.suspend_o.q;
 
     end else begin
@@ -171,14 +171,13 @@ module usbdev_iomux
       cio_usb_dn_pullup_en_o = cio_usb_dn_pullup_en;
       cio_usb_suspend_o      = usb_suspend_i;
 
-      if(sys_reg2hw_config_i.tx_differential_mode.q) begin
-        // Differential TX mode (physical IO takes d and se0)
-        // i.e. expect the "else" logic to be in the physical interface
-        cio_usb_tx_mode_se_o   = 1'b0;
-
+      if(sys_reg2hw_config_i.tx_single_ended.q) begin
+        // Single-ended TX interface (physical IO takes d and se0)
+        cio_usb_se0_en_o = 1'b1;
       end else begin
-        // Single-ended mode (physical IO takes dp and dn)
-        cio_usb_tx_mode_se_o   = 1'b1;
+        // Differential TX interface (physical IO takes dp and dn)
+        // i.e. expect the "else" logic to be in the physical interface
+        cio_usb_se0_en_o = 1'b0;
         if (usb_tx_se0_i) begin
           cio_usb_dp_o = 1'b0;
           cio_usb_dn_o = 1'b0;

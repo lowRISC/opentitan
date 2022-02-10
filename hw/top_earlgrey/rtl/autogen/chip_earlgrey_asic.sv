@@ -124,7 +124,6 @@ module chip_earlgrey_asic (
     dio_pad_type: {
       BidirTol, // DIO usbdev_rx_enable
       BidirTol, // DIO usbdev_suspend
-      BidirTol, // DIO usbdev_tx_mode_se
       BidirTol, // DIO usbdev_dn_pullup
       BidirTol, // DIO usbdev_dp_pullup
       BidirTol, // DIO usbdev_se0
@@ -1068,7 +1067,6 @@ module chip_earlgrey_asic (
   assign dio_in[DioUsbdevSe0] = 1'b0;
   assign dio_in[DioUsbdevDpPullup] = 1'b0;
   assign dio_in[DioUsbdevDnPullup] = 1'b0;
-  assign dio_in[DioUsbdevTxModeSe] = 1'b0;
   assign dio_in[DioUsbdevSuspend] = 1'b0;
   assign dio_in[DioUsbdevRxEnable] = 1'b0;
 
@@ -1078,10 +1076,6 @@ module chip_earlgrey_asic (
     dio_out[DioUsbdevSe0],
     dio_oe[DioUsbdevSe0],
     dio_attr[DioUsbdevSe0],
-    // TX Mode
-    dio_out[DioUsbdevTxModeSe],
-    dio_oe[DioUsbdevTxModeSe],
-    dio_attr[DioUsbdevTxModeSe],
     // Suspend
     dio_out[DioUsbdevSuspend],
     dio_oe[DioUsbdevSuspend],

@@ -106,9 +106,9 @@ module top_earlgrey #(
   output logic [46:0] mio_out_o,
   output logic [46:0] mio_oe_o,
   // Dedicated I/O
-  input        [22:0] dio_in_i,
-  output logic [22:0] dio_out_o,
-  output logic [22:0] dio_oe_o,
+  input        [21:0] dio_in_i,
+  output logic [21:0] dio_out_o,
+  output logic [21:0] dio_oe_o,
 
   // pad attributes to padring
   output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_attr_o,
@@ -198,9 +198,9 @@ module top_earlgrey #(
   logic [56:0] mio_p2d;
   logic [74:0] mio_d2p;
   logic [74:0] mio_en_d2p;
-  logic [22:0] dio_p2d;
-  logic [22:0] dio_d2p;
-  logic [22:0] dio_en_d2p;
+  logic [21:0] dio_p2d;
+  logic [21:0] dio_d2p;
+  logic [21:0] dio_en_d2p;
   // uart0
   logic        cio_uart0_rx_p2d;
   logic        cio_uart0_tx_d2p;
@@ -270,8 +270,6 @@ module top_earlgrey #(
   logic        cio_usbdev_dp_pullup_en_d2p;
   logic        cio_usbdev_dn_pullup_d2p;
   logic        cio_usbdev_dn_pullup_en_d2p;
-  logic        cio_usbdev_tx_mode_se_d2p;
-  logic        cio_usbdev_tx_mode_se_en_d2p;
   logic        cio_usbdev_suspend_d2p;
   logic        cio_usbdev_suspend_en_d2p;
   logic        cio_usbdev_rx_enable_d2p;
@@ -1373,30 +1371,28 @@ module top_earlgrey #(
   ) u_usbdev (
 
       // Input
-      .cio_sense_i         (cio_usbdev_sense_p2d),
-      .cio_d_i             (cio_usbdev_d_p2d),
-      .cio_dp_i            (cio_usbdev_dp_p2d),
-      .cio_dn_i            (cio_usbdev_dn_p2d),
+      .cio_sense_i        (cio_usbdev_sense_p2d),
+      .cio_d_i            (cio_usbdev_d_p2d),
+      .cio_dp_i           (cio_usbdev_dp_p2d),
+      .cio_dn_i           (cio_usbdev_dn_p2d),
 
       // Output
-      .cio_se0_o           (cio_usbdev_se0_d2p),
-      .cio_se0_en_o        (cio_usbdev_se0_en_d2p),
-      .cio_dp_pullup_o     (cio_usbdev_dp_pullup_d2p),
-      .cio_dp_pullup_en_o  (cio_usbdev_dp_pullup_en_d2p),
-      .cio_dn_pullup_o     (cio_usbdev_dn_pullup_d2p),
-      .cio_dn_pullup_en_o  (cio_usbdev_dn_pullup_en_d2p),
-      .cio_tx_mode_se_o    (cio_usbdev_tx_mode_se_d2p),
-      .cio_tx_mode_se_en_o (cio_usbdev_tx_mode_se_en_d2p),
-      .cio_suspend_o       (cio_usbdev_suspend_d2p),
-      .cio_suspend_en_o    (cio_usbdev_suspend_en_d2p),
-      .cio_rx_enable_o     (cio_usbdev_rx_enable_d2p),
-      .cio_rx_enable_en_o  (cio_usbdev_rx_enable_en_d2p),
-      .cio_d_o             (cio_usbdev_d_d2p),
-      .cio_d_en_o          (cio_usbdev_d_en_d2p),
-      .cio_dp_o            (cio_usbdev_dp_d2p),
-      .cio_dp_en_o         (cio_usbdev_dp_en_d2p),
-      .cio_dn_o            (cio_usbdev_dn_d2p),
-      .cio_dn_en_o         (cio_usbdev_dn_en_d2p),
+      .cio_se0_o          (cio_usbdev_se0_d2p),
+      .cio_se0_en_o       (cio_usbdev_se0_en_d2p),
+      .cio_dp_pullup_o    (cio_usbdev_dp_pullup_d2p),
+      .cio_dp_pullup_en_o (cio_usbdev_dp_pullup_en_d2p),
+      .cio_dn_pullup_o    (cio_usbdev_dn_pullup_d2p),
+      .cio_dn_pullup_en_o (cio_usbdev_dn_pullup_en_d2p),
+      .cio_suspend_o      (cio_usbdev_suspend_d2p),
+      .cio_suspend_en_o   (cio_usbdev_suspend_en_d2p),
+      .cio_rx_enable_o    (cio_usbdev_rx_enable_d2p),
+      .cio_rx_enable_en_o (cio_usbdev_rx_enable_en_d2p),
+      .cio_d_o            (cio_usbdev_d_d2p),
+      .cio_d_en_o         (cio_usbdev_d_en_d2p),
+      .cio_dp_o           (cio_usbdev_dp_d2p),
+      .cio_dp_en_o        (cio_usbdev_dp_en_d2p),
+      .cio_dn_o           (cio_usbdev_dn_d2p),
+      .cio_dn_en_o        (cio_usbdev_dn_en_d2p),
 
       // Interrupt
       .intr_pkt_received_o    (intr_usbdev_pkt_received),
@@ -3180,7 +3176,7 @@ module top_earlgrey #(
   assign mio_en_d2p[MioOutSysrstCtrlAonZ3Wakeup] = cio_sysrst_ctrl_aon_z3_wakeup_en_d2p;
 
   // All dedicated inputs
-  logic [22:0] unused_dio_p2d;
+  logic [21:0] unused_dio_p2d;
   assign unused_dio_p2d = dio_p2d;
   assign cio_spi_host0_sd_p2d[0] = dio_p2d[DioSpiHost0Sd0];
   assign cio_spi_host0_sd_p2d[1] = dio_p2d[DioSpiHost0Sd1];
@@ -3219,7 +3215,6 @@ module top_earlgrey #(
   assign dio_d2p[DioUsbdevSe0] = cio_usbdev_se0_d2p;
   assign dio_d2p[DioUsbdevDpPullup] = cio_usbdev_dp_pullup_d2p;
   assign dio_d2p[DioUsbdevDnPullup] = cio_usbdev_dn_pullup_d2p;
-  assign dio_d2p[DioUsbdevTxModeSe] = cio_usbdev_tx_mode_se_d2p;
   assign dio_d2p[DioUsbdevSuspend] = cio_usbdev_suspend_d2p;
   assign dio_d2p[DioUsbdevRxEnable] = cio_usbdev_rx_enable_d2p;
 
@@ -3244,7 +3239,6 @@ module top_earlgrey #(
   assign dio_en_d2p[DioUsbdevSe0] = cio_usbdev_se0_en_d2p;
   assign dio_en_d2p[DioUsbdevDpPullup] = cio_usbdev_dp_pullup_en_d2p;
   assign dio_en_d2p[DioUsbdevDnPullup] = cio_usbdev_dn_pullup_en_d2p;
-  assign dio_en_d2p[DioUsbdevTxModeSe] = cio_usbdev_tx_mode_se_en_d2p;
   assign dio_en_d2p[DioUsbdevSuspend] = cio_usbdev_suspend_en_d2p;
   assign dio_en_d2p[DioUsbdevRxEnable] = cio_usbdev_rx_enable_en_d2p;
 

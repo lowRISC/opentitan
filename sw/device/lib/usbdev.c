@@ -299,7 +299,7 @@ void usbdev_connect(usbdev_ctx_t *ctx) {
       (1 << USBDEV_USBCTRL_ENABLE_BIT);
 }
 
-void usbdev_init(usbdev_ctx_t *ctx, bool pinflip, bool diff_rx, bool diff_tx) {
+void usbdev_init(usbdev_ctx_t *ctx, bool pinflip, bool diff_rx, bool tx_se) {
   // setup context
   for (int i = 0; i < NUM_ENDPOINTS; i++) {
     usbdev_endpoint_setup(ctx, i, 0, NULL, NULL, NULL, NULL, NULL);
@@ -328,7 +328,7 @@ void usbdev_init(usbdev_ctx_t *ctx, bool pinflip, bool diff_rx, bool diff_tx) {
   uint32_t phy_config =
       (pinflip << USBDEV_PHY_CONFIG_PINFLIP_BIT) |
       (diff_rx << USBDEV_PHY_CONFIG_RX_DIFFERENTIAL_MODE_BIT) |
-      (diff_tx << USBDEV_PHY_CONFIG_TX_DIFFERENTIAL_MODE_BIT) |
+      (tx_se << USBDEV_PHY_CONFIG_TX_SINGLE_ENDED_BIT) |
       (1 << USBDEV_PHY_CONFIG_EOP_SINGLE_BIT_BIT);
   REG32(USBDEV_BASE_ADDR + USBDEV_PHY_CONFIG_REG_OFFSET) = phy_config;
 }

@@ -41,8 +41,10 @@ module chip_earlgrey_verilator (
   output logic cio_usbdev_d_en_d2p_o,
   output logic cio_usbdev_se0_d2p_o,
   output logic cio_usbdev_se0_en_d2p_o,
-  output logic cio_usbdev_tx_mode_se_d2p_o,
-  output logic cio_usbdev_tx_mode_se_en_d2p_o
+  output logic cio_usbdev_rx_enable_d2p_o,
+  output logic cio_usbdev_rx_enable_en_d2p_o,
+  output logic cio_usbdev_suspend_d2p_o,
+  output logic cio_usbdev_suspend_en_d2p_o
 );
 
   import top_earlgrey_pkg::*;
@@ -69,20 +71,20 @@ module chip_earlgrey_verilator (
   assign cio_usbdev_dp_d2p_o = dio_out[DioUsbdevDp];
   assign cio_usbdev_d_d2p_o  = dio_out[DioUsbdevD];
   assign cio_usbdev_suspend_d2p_o = dio_out[DioUsbdevSuspend];
-  assign cio_usbdev_tx_mode_se_d2p_o = dio_out[DioUsbdevTxModeSe];
   assign cio_usbdev_dn_pullup_d2p_o = dio_out[DioUsbdevDnPullup];
   assign cio_usbdev_dp_pullup_d2p_o = dio_out[DioUsbdevDpPullup];
   assign cio_usbdev_se0_d2p_o = dio_out[DioUsbdevSe0];
+  assign cio_usbdev_rx_enable_d2p_o = dio_out[DioUsbdevRxEnable];
   assign cio_spi_device_sdo_d2p_o = dio_out[DioSpiDeviceSd1];
 
   assign cio_usbdev_dn_en_d2p_o = dio_oe[DioUsbdevDn];
   assign cio_usbdev_dp_en_d2p_o = dio_oe[DioUsbdevDp];
   assign cio_usbdev_d_en_d2p_o  = dio_oe[DioUsbdevD];
   assign cio_usbdev_suspend_en_d2p_o = dio_oe[DioUsbdevSuspend];
-  assign cio_usbdev_tx_mode_se_en_d2p_o = dio_oe[DioUsbdevTxModeSe];
   assign cio_usbdev_dn_pullup_en_d2p_o = dio_oe[DioUsbdevDnPullup];
   assign cio_usbdev_dp_pullup_en_d2p_o = dio_oe[DioUsbdevDpPullup];
   assign cio_usbdev_se0_en_d2p_o = dio_oe[DioUsbdevSe0];
+  assign cio_usbdev_rx_enable_d2p_en_o = dio_oe[DioUsbdevRxEnable];
   assign cio_spi_device_sdo_en_d2p_o = dio_oe[DioSpiDeviceSd1];
 
   logic [pinmux_pkg::NMioPads-1:0] mio_in;

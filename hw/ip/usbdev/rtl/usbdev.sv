@@ -52,8 +52,6 @@ module usbdev
   output logic       cio_dn_pullup_en_o,
   output logic       cio_suspend_o,
   output logic       cio_suspend_en_o,
-  output logic       cio_tx_mode_se_o,
-  output logic       cio_tx_mode_se_en_o,
   output logic       cio_rx_enable_o,
   output logic       cio_rx_enable_en_o,
 
@@ -1046,8 +1044,8 @@ module usbdev
     .cio_usb_dp_o           (cio_dp_o),
     .cio_usb_dn_o           (cio_dn_o),
     .cio_usb_oe_o           (cio_oe),
-    .cio_usb_tx_mode_se_o   (cio_tx_mode_se_o),
     .cio_usb_sense_i        (cio_sense_i),
+    .cio_usb_se0_en_o       (cio_se0_en_o),
     .cio_usb_dp_pullup_en_o (cio_dp_pullup_en_o),
     .cio_usb_dn_pullup_en_o (cio_dn_pullup_en_o),
     .cio_usb_suspend_o      (cio_suspend_o),
@@ -1077,9 +1075,7 @@ module usbdev
   assign cio_dn_en_o = cio_oe;
 
   // Non-data outputs - always enabled.
-  assign cio_se0_en_o        = 1'b1;
   assign cio_suspend_en_o    = 1'b1;
-  assign cio_tx_mode_se_en_o = 1'b1;
   assign cio_rx_enable_en_o  = 1'b1;
 
   // Pullup
@@ -1175,8 +1171,6 @@ module usbdev
   `ASSERT_KNOWN(CIODnPUEnKnown_A, cio_dn_pullup_en_o)
   `ASSERT_KNOWN(CIOSuspendKnown_A, cio_suspend_o)
   `ASSERT_KNOWN(CIOSuspendEnKnown_A, cio_suspend_en_o)
-  `ASSERT_KNOWN(CIOTxModeKnown_A, cio_tx_mode_se_o)
-  `ASSERT_KNOWN(CIOTxModeEnKnown_A, cio_tx_mode_se_en_o)
   `ASSERT_KNOWN(USBOoRKnown_A, usb_out_of_rst_o)
   `ASSERT_KNOWN(USBAonWakeEnKnown_A, usb_aon_wake_en_o)
   `ASSERT_KNOWN(USBAonWakeAckKnown_A, usb_aon_wake_ack_o)

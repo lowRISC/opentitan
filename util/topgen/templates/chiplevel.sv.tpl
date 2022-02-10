@@ -376,7 +376,6 @@ module chip_${top["name"]}_${target["name"]} (
 
   // Tie-off unused signals
   assign dio_in[DioUsbdevSe0] = 1'b0;
-  assign dio_in[DioUsbdevTxModeSe] = 1'b0;
   assign dio_in[DioUsbdevSuspend] = 1'b0;
 
   logic unused_usb_sigs;
@@ -385,10 +384,6 @@ module chip_${top["name"]}_${target["name"]} (
     dio_out[DioUsbdevSe0],
     dio_oe[DioUsbdevSe0],
     dio_attr[DioUsbdevSe0],
-    // TX Mode
-    dio_out[DioUsbdevTxModeSe],
-    dio_oe[DioUsbdevTxModeSe],
-    dio_attr[DioUsbdevTxModeSe],
     // Suspend
     dio_out[DioUsbdevSuspend],
     dio_oe[DioUsbdevSuspend],
@@ -452,7 +447,6 @@ module chip_${top["name"]}_${target["name"]} (
   // Tie-off unused signals
   assign dio_in[DioUsbdevDnPullup] = 1'b0;
   assign dio_in[DioUsbdevSe0] = 1'b0;
-  assign dio_in[DioUsbdevTxModeSe] = 1'b0;
 
   logic unused_usb_sigs;
   assign unused_usb_sigs = ^{
@@ -464,10 +458,6 @@ module chip_${top["name"]}_${target["name"]} (
     dio_out[DioUsbdevSe0],
     dio_oe[DioUsbdevSe0],
     dio_attr[DioUsbdevSe0],
-    // TX Mode
-    dio_out[DioUsbdevTxModeSe],
-    dio_oe[DioUsbdevTxModeSe],
-    dio_attr[DioUsbdevTxModeSe],
     // Suspend
     dio_oe[DioUsbdevSuspend],
     dio_attr[DioUsbdevSuspend],
@@ -1043,7 +1033,6 @@ module chip_${top["name"]}_${target["name"]} (
   assign dio_in[DioUsbdevSe0] = 1'b0;
   assign dio_in[DioUsbdevDpPullup] = 1'b0;
   assign dio_in[DioUsbdevDnPullup] = 1'b0;
-  assign dio_in[DioUsbdevTxModeSe] = 1'b0;
   assign dio_in[DioUsbdevSuspend] = 1'b0;
   assign dio_in[DioUsbdevRxEnable] = 1'b0;
 
@@ -1053,10 +1042,6 @@ module chip_${top["name"]}_${target["name"]} (
     dio_out[DioUsbdevSe0],
     dio_oe[DioUsbdevSe0],
     dio_attr[DioUsbdevSe0],
-    // TX Mode
-    dio_out[DioUsbdevTxModeSe],
-    dio_oe[DioUsbdevTxModeSe],
-    dio_attr[DioUsbdevTxModeSe],
     // Suspend
     dio_out[DioUsbdevSuspend],
     dio_oe[DioUsbdevSuspend],

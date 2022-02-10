@@ -109,7 +109,6 @@ module chip_earlgrey_nexysvideo #(
     dio_pad_type: {
       BidirTol, // DIO usbdev_rx_enable
       BidirTol, // DIO usbdev_suspend
-      BidirTol, // DIO usbdev_tx_mode_se
       BidirTol, // DIO usbdev_dn_pullup
       BidirTol, // DIO usbdev_dp_pullup
       BidirTol, // DIO usbdev_se0

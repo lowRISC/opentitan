@@ -680,8 +680,8 @@ module usbdev_reg_top (
   logic phy_config_we;
   logic phy_config_rx_differential_mode_qs;
   logic phy_config_rx_differential_mode_wd;
-  logic phy_config_tx_differential_mode_qs;
-  logic phy_config_tx_differential_mode_wd;
+  logic phy_config_tx_single_ended_qs;
+  logic phy_config_tx_single_ended_wd;
   logic phy_config_eop_single_bit_qs;
   logic phy_config_eop_single_bit_wd;
   logic phy_config_pinflip_qs;
@@ -6878,18 +6878,18 @@ module usbdev_reg_top (
     .qs     (phy_config_rx_differential_mode_qs)
   );
 
-  //   F[tx_differential_mode]: 1:1
+  //   F[tx_single_ended]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_phy_config_tx_differential_mode (
+  ) u_phy_config_tx_single_ended (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_config_we),
-    .wd     (phy_config_tx_differential_mode_wd),
+    .wd     (phy_config_tx_single_ended_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6897,10 +6897,10 @@ module usbdev_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_config.tx_differential_mode.q),
+    .q      (reg2hw.phy_config.tx_single_ended.q),
 
     // to register interface (read)
-    .qs     (phy_config_tx_differential_mode_qs)
+    .qs     (phy_config_tx_single_ended_qs)
   );
 
   //   F[eop_single_bit]: 2:2
@@ -7716,7 +7716,7 @@ module usbdev_reg_top (
 
   assign phy_config_rx_differential_mode_wd = reg_wdata[0];
 
-  assign phy_config_tx_differential_mode_wd = reg_wdata[1];
+  assign phy_config_tx_single_ended_wd = reg_wdata[1];
 
   assign phy_config_eop_single_bit_wd = reg_wdata[2];
 
@@ -8084,7 +8084,7 @@ module usbdev_reg_top (
 
       addr_hit[32]: begin
         reg_rdata_next[0] = phy_config_rx_differential_mode_qs;
-        reg_rdata_next[1] = phy_config_tx_differential_mode_qs;
+        reg_rdata_next[1] = phy_config_tx_single_ended_qs;
         reg_rdata_next[2] = phy_config_eop_single_bit_qs;
         reg_rdata_next[5] = phy_config_pinflip_qs;
         reg_rdata_next[6] = phy_config_usb_ref_disable_qs;

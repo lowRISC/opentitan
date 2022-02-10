@@ -329,7 +329,7 @@ package usbdev_reg_pkg;
     } rx_differential_mode;
     struct packed {
       logic        q;
-    } tx_differential_mode;
+    } tx_single_ended;
     struct packed {
       logic        q;
     } eop_single_bit;

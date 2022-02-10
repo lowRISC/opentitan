@@ -80,8 +80,6 @@ module tb;
     .cio_dp_pullup_en_o   (),
     .cio_dn_pullup_o      (),
     .cio_dn_pullup_en_o   (),
-    .cio_tx_mode_se_o     (),
-    .cio_tx_mode_se_en_o  (),
     .cio_suspend_o        (),
     .cio_suspend_en_o     (),
     .cio_rx_enable_o      (),

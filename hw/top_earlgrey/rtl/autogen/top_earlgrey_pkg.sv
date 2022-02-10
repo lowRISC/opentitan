@@ -724,10 +724,9 @@ package top_earlgrey_pkg;
     DioUsbdevSe0 = 17,
     DioUsbdevDpPullup = 18,
     DioUsbdevDnPullup = 19,
-    DioUsbdevTxModeSe = 20,
-    DioUsbdevSuspend = 21,
-    DioUsbdevRxEnable = 22,
-    DioCount = 23
+    DioUsbdevSuspend = 20,
+    DioUsbdevRxEnable = 21,
+    DioCount = 22
   } dio_e;
 
   // Raw MIO/DIO input array indices on chip-level.

@@ -10380,14 +10380,6 @@
       }
       {
         instance: usbdev
-        port: tx_mode_se
-        connection: manual
-        pad: ""
-        desc: ""
-        attr: BidirTol
-      }
-      {
-        instance: usbdev
         port: suspend
         connection: manual
         pad: ""
@@ -11495,7 +11487,7 @@
         glob_idx: 19
       }
       {
-        name: usbdev_tx_mode_se
+        name: usbdev_suspend
         width: 1
         type: output
         idx: -1
@@ -11506,17 +11498,6 @@
         glob_idx: 20
       }
       {
-        name: usbdev_suspend
-        width: 1
-        type: output
-        idx: -1
-        pad: ""
-        attr: BidirTol
-        connection: manual
-        desc: ""
-        glob_idx: 21
-      }
-      {
         name: usbdev_rx_enable
         width: 1
         type: output
@@ -11525,7 +11506,7 @@
         attr: BidirTol
         connection: manual
         desc: ""
-        glob_idx: 22
+        glob_idx: 21
       }
       {
         name: uart0_tx
@@ -11897,7 +11878,7 @@
       {
         inouts: 13
         inputs: 2
-        outputs: 8
+        outputs: 7
         pads: 23
       }
       muxed:

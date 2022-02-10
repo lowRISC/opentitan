@@ -22,7 +22,6 @@
     { name: "se0", desc: "USB single-ended zero link state" }
     { name: "dp_pullup", desc: "USB D+ pullup control" }
     { name: "dn_pullup", desc: "USB D- pullup control" }
-    { name: "tx_mode_se", desc: "USB single-ended transmit mode control" }
     { name: "suspend", desc: "USB link suspend state" }
     { name: "rx_enable", desc: "USB phy differential receive enable" }
   ],
@@ -710,22 +709,22 @@
         {
           bits: "8",
           name: "tx_dp_o",
-          desc: "USB D+ output (readback)."
+          desc: "USB differential D+ output (readback)."
         }
         {
           bits: "9",
           name: "tx_dn_o",
-          desc: "USB D- output (readback)."
+          desc: "USB differential D- output (readback)."
         }
         {
           bits: "10",
           name: "tx_d_o",
-          desc: "USB differential output (readback)."
+          desc: "USB single-ended output (readback)."
         }
         {
           bits: "11",
           name: "tx_se0_o",
-          desc: "USB SE0 output (readback)."
+          desc: "USB single-ended SE0 output (readback)."
         }
         {
           bits: "12",
@@ -759,22 +758,22 @@
         {
           bits: "0",
           name: "dp_o",
-          desc: "USB D+ output."
+          desc: "USB differential D+ output."
         }
         {
           bits: "1",
           name: "dn_o",
-          desc: "USB D- output."
+          desc: "USB differential D- output."
         }
         {
           bits: "2",
           name: "d_o",
-          desc: "USB differential output."
+          desc: "USB single-ended output."
         }
         {
           bits: "3",
           name: "se0_o",
-          desc: "USB SE0 output."
+          desc: "USB single-ended SE0 output."
         }
         {
           bits: "4",
@@ -830,10 +829,9 @@
         {
           bits: "1",
           resval: "0",
-          name: "tx_differential_mode",
+          name: "tx_single_ended",
           desc: '''
-                Use the differential TX signal instead of the single-ended signals.
-                Currently only 0 (single-ended operation) is supported.
+                If 1, use the single-ended signals (d/se0) instead of the differential TX signals (dp/dn).
                 '''
         }
         {
