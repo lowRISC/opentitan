@@ -725,7 +725,7 @@ ${bits.msb}\
     qre_expr = f'reg2hw.{fsig_name}.re' if reg.hwre or reg.shadowed else ""
 
     if field.hwaccess.allows_read():
-      qe_expr = f'reg2hw.{fsig_name}.qe' if reg.hwqe else ''
+      qe_expr = f'reg2hw.{fsig_name}.qe' if field.hwqe else ''
       q_expr = f'reg2hw.{fsig_name}.q'
     else:
       qe_expr = ''
