@@ -86,7 +86,7 @@
             Read affected bank in order to verify erase suspension feature.
             '''
       milestone: V2
-      tests: []
+      tests: ["flash_ctrl_erase_suspend"]
     }
     {
       name: full_memory_access

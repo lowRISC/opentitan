@@ -14,3 +14,4 @@
 `include "flash_ctrl_rd_buff_evict_vseq.sv"
 `include "flash_ctrl_phy_arb_vseq.sv"
 `include "flash_ctrl_hw_sec_otp_vseq.sv"
+`include "flash_ctrl_erase_suspend_vseq.sv"
