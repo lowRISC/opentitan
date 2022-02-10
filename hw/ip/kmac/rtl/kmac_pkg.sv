@@ -188,11 +188,30 @@ package kmac_pkg;
 
   // Exporting the app internal mux selection enum into the package. So that DV
   // can use this enum in its scoreboard.
-  typedef enum logic [2:0] {
-    SelNone   = 3'b 000,
-    SelApp    = 3'b 101,
-    SelOutLen = 3'b 110,
-    SelSw     = 3'b 010
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 5 \
+  //      -s 713832113 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (66.67%)
+  //  4: |||||||||| (33.33%)
+  //  5: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 4
+  // Minimum Hamming weight: 1
+  // Maximum Hamming weight: 4
+  //
+  localparam int AppMuxWidth = 5;
+  typedef enum logic [AppMuxWidth-1:0] {
+    SelNone   = 5'b10100,
+    SelApp    = 5'b11001,
+    SelOutLen = 5'b00010,
+    SelSw     = 5'b01111
   } app_mux_sel_e ;
 
 
