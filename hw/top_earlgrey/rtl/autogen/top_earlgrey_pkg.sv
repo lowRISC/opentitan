@@ -704,30 +704,23 @@ package top_earlgrey_pkg;
 
   // Enumeration for DIO signals, used on both the top and chip-levels.
   typedef enum int unsigned {
-    DioSpiHost0Sd0 = 0,
-    DioSpiHost0Sd1 = 1,
-    DioSpiHost0Sd2 = 2,
-    DioSpiHost0Sd3 = 3,
-    DioSpiDeviceSd0 = 4,
-    DioSpiDeviceSd1 = 5,
-    DioSpiDeviceSd2 = 6,
-    DioSpiDeviceSd3 = 7,
-    DioUsbdevD = 8,
-    DioUsbdevDp = 9,
-    DioUsbdevDn = 10,
-    DioSysrstCtrlAonEcRstL = 11,
-    DioSysrstCtrlAonFlashWpL = 12,
-    DioSpiDeviceSck = 13,
-    DioSpiDeviceCsb = 14,
-    DioSpiHost0Sck = 15,
-    DioSpiHost0Csb = 16,
-    DioUsbdevSe0 = 17,
-    DioUsbdevDpPullup = 18,
-    DioUsbdevDnPullup = 19,
-    DioUsbdevTxModeSe = 20,
-    DioUsbdevSuspend = 21,
-    DioUsbdevRxEnable = 22,
-    DioCount = 23
+    DioUsbdevUsbDp = 0,
+    DioUsbdevUsbDn = 1,
+    DioSpiHost0Sd0 = 2,
+    DioSpiHost0Sd1 = 3,
+    DioSpiHost0Sd2 = 4,
+    DioSpiHost0Sd3 = 5,
+    DioSpiDeviceSd0 = 6,
+    DioSpiDeviceSd1 = 7,
+    DioSpiDeviceSd2 = 8,
+    DioSpiDeviceSd3 = 9,
+    DioSysrstCtrlAonEcRstL = 10,
+    DioSysrstCtrlAonFlashWpL = 11,
+    DioSpiDeviceSck = 12,
+    DioSpiDeviceCsb = 13,
+    DioSpiHost0Sck = 14,
+    DioSpiHost0Csb = 15,
+    DioCount = 16
   } dio_e;
 
   // Raw MIO/DIO input array indices on chip-level.

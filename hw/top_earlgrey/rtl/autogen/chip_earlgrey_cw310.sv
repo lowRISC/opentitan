@@ -87,11 +87,11 @@ module chip_earlgrey_cw310 #(
   parameter int Tap1PadIdx = 16;
   parameter int Dft0PadIdx = 23;
   parameter int Dft1PadIdx = 34;
-  parameter int TckPadIdx = 60;
-  parameter int TmsPadIdx = 61;
+  parameter int TckPadIdx = 59;
+  parameter int TmsPadIdx = 60;
   parameter int TrstNPadIdx = 18;
-  parameter int TdiPadIdx = 51;
-  parameter int TdoPadIdx = 52;
+  parameter int TdiPadIdx = 53;
+  parameter int TdoPadIdx = 54;
 
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
@@ -105,28 +105,17 @@ module chip_earlgrey_cw310 #(
     dft_strap0_idx:    Dft0PadIdx,
     dft_strap1_idx:    Dft1PadIdx,
     // TODO: check whether there is a better way to pass these USB-specific params
-    usb_dp_idx:        DioUsbdevDp,
-    usb_dn_idx:        DioUsbdevDn,
-    usb_dp_pullup_idx: DioUsbdevDpPullup,
-    usb_dn_pullup_idx: DioUsbdevDnPullup,
+    usb_dp_idx:        DioUsbdevUsbDp,
+    usb_dn_idx:        DioUsbdevUsbDn,
     usb_sense_idx:     MioInUsbdevSense,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
-      BidirTol, // DIO usbdev_rx_enable
-      BidirTol, // DIO usbdev_suspend
-      BidirTol, // DIO usbdev_tx_mode_se
-      BidirTol, // DIO usbdev_dn_pullup
-      BidirTol, // DIO usbdev_dp_pullup
-      BidirTol, // DIO usbdev_se0
       BidirStd, // DIO spi_host0_csb
       BidirStd, // DIO spi_host0_sck
       InputStd, // DIO spi_device_csb
       InputStd, // DIO spi_device_sck
       BidirOd, // DIO sysrst_ctrl_aon_flash_wp_l
       BidirOd, // DIO sysrst_ctrl_aon_ec_rst_l
-      BidirTol, // DIO usbdev_dn
-      BidirTol, // DIO usbdev_dp
-      BidirTol, // DIO usbdev_d
       BidirStd, // DIO spi_device_sd
       BidirStd, // DIO spi_device_sd
       BidirStd, // DIO spi_device_sd
@@ -134,7 +123,9 @@ module chip_earlgrey_cw310 #(
       BidirStd, // DIO spi_host0_sd
       BidirStd, // DIO spi_host0_sd
       BidirStd, // DIO spi_host0_sd
-      BidirStd  // DIO spi_host0_sd
+      BidirStd, // DIO spi_host0_sd
+      BidirStd, // DIO usbdev_usb_dn
+      BidirStd  // DIO usbdev_usb_dp
     },
     mio_pad_type: {
       BidirOd, // MIO Pad 46
@@ -575,77 +566,61 @@ module chip_earlgrey_cw310 #(
   // TODO: generalize this USB mux code and align with other tops.
 
   // Only use the UPHY on CW310, which does not support pin flipping.
+  logic usb_dp_pullup_en;
+  logic usb_dn_pullup_en;
+  logic usb_rx_d;
+  logic usb_tx_d;
+  logic usb_tx_se0;
+  logic usb_suspend;
+  logic usb_rx_enable;
 
-  // DioUsbdevDn
+  // DioUsbdevUsbDn
   assign manual_attr_io_usb_dn_tx = '0;
-  assign manual_out_io_usb_dn_tx = dio_out[DioUsbdevDn];
-  assign manual_oe_io_usb_dn_tx = dio_oe[DioUsbdevDn];
-  assign dio_in[DioUsbdevDn] = manual_in_io_usb_dn_rx;
-  // DioUsbdevDp
+  assign manual_out_io_usb_dn_tx = dio_out[DioUsbdevUsbDn];
+  assign manual_oe_io_usb_dn_tx = 1'b1;
+  assign dio_in[DioUsbdevUsbDn] = manual_in_io_usb_dn_rx;
+  // DioUsbdevUsbDp
   assign manual_attr_io_usb_dp_tx = '0;
-  assign manual_out_io_usb_dp_tx = dio_out[DioUsbdevDp];
-  assign manual_oe_io_usb_dp_tx = dio_oe[DioUsbdevDp];
-  assign dio_in[DioUsbdevDp] = manual_in_io_usb_dp_rx;
+  assign manual_out_io_usb_dp_tx = dio_out[DioUsbdevUsbDp];
+  assign manual_oe_io_usb_dp_tx = 1'b1;
+  assign dio_in[DioUsbdevUsbDp] = manual_in_io_usb_dp_rx;
 
   assign manual_attr_io_usb_oe_n = '0;
-  assign manual_out_io_usb_oe_n = ~dio_oe[DioUsbdevDp];
+  assign manual_out_io_usb_oe_n = ~dio_oe[DioUsbdevUsbDp];
   assign manual_oe_io_usb_oe_n = 1'b1;
-
-  logic unused_in_io_usb_oe_n;
-  assign unused_in_io_usb_oe_n = manual_in_io_usb_oe_n;
 
   // DioUsbdevD
   assign manual_attr_io_usb_d_rx = '0;
-  assign dio_in[DioUsbdevD] = manual_in_io_usb_d_rx;
+  assign usb_rx_d = manual_in_io_usb_d_rx;
 
-  // DioUsbdevDpPullup
+  // Pull-up / soft connect pin
   assign manual_attr_io_usb_connect = '0;
-  assign manual_out_io_usb_connect = dio_out[DioUsbdevDpPullup] &
-                                     dio_oe[DioUsbdevDpPullup];
+  assign manual_out_io_usb_connect = usb_dp_pullup_en;
   assign manual_oe_io_usb_connect = 1'b1;
-  assign dio_in[DioUsbdevDpPullup] = manual_in_io_usb_connect;
 
   // Set SPD to full-speed
   assign manual_out_io_usb_speed = 1'b1;
   assign manual_oe_io_usb_speed = 1'b1;
 
-  logic unused_in_io_usb_speed;
-  assign unused_in_io_usb_speed = manual_in_io_usb_speed;
-
   // TUSB1106 low-power mode
-  assign manual_out_io_usb_suspend = dio_out[DioUsbdevSuspend];
+  assign manual_out_io_usb_suspend = usb_suspend;
   assign manual_oe_io_usb_suspend = 1'b1;
-  assign dio_in[DioUsbdevSuspend] = manual_in_io_usb_suspend;
-
-  // Tie-off unused signals
-  assign dio_in[DioUsbdevDnPullup] = 1'b0;
-  assign dio_in[DioUsbdevSe0] = 1'b0;
-  assign dio_in[DioUsbdevTxModeSe] = 1'b0;
 
   logic unused_usb_sigs;
   assign unused_usb_sigs = ^{
-    // DN pull-up
-    dio_out[DioUsbdevDnPullup],
-    dio_oe[DioUsbdevDnPullup],
-    dio_attr[DioUsbdevDnPullup],
-    // SE0
-    dio_out[DioUsbdevSe0],
-    dio_oe[DioUsbdevSe0],
-    dio_attr[DioUsbdevSe0],
-    // TX Mode
-    dio_out[DioUsbdevTxModeSe],
-    dio_oe[DioUsbdevTxModeSe],
-    dio_attr[DioUsbdevTxModeSe],
-    // Suspend
-    dio_oe[DioUsbdevSuspend],
-    dio_attr[DioUsbdevSuspend],
-    // D is used as an input only
-    dio_out[DioUsbdevD],
-    dio_oe[DioUsbdevD],
-    dio_attr[DioUsbdevD],
+    usb_dn_pullup_en,
+    usb_tx_d,
+    usb_tx_se0,
+    usb_rx_enable,
+    manual_in_io_usb_connect,
+    manual_in_io_usb_oe_n,
+    manual_in_io_usb_speed,
+    manual_in_io_usb_suspend,
     // DP and DN are broken out into multiple unidirectional pins
-    dio_attr[DioUsbdevDp],
-    dio_attr[DioUsbdevDn]
+    dio_oe[DioUsbdevUsbDp],
+    dio_oe[DioUsbdevUsbDn],
+    dio_attr[DioUsbdevUsbDp],
+    dio_attr[DioUsbdevUsbDn]
   };
 
 
@@ -1009,6 +984,14 @@ module chip_earlgrey_cw310 #(
     .sck_monitor_o                ( sck_monitor           ),
     .pwrmgr_ast_req_o             ( base_ast_pwr          ),
     .pwrmgr_ast_rsp_i             ( ast_base_pwr          ),
+    .usb_dp_pullup_en_o           ( usb_dp_pullup_en      ),
+    .usb_dn_pullup_en_o           ( usb_dn_pullup_en      ),
+    .usbdev_usb_rx_d_i            ( usb_rx_d              ),
+    .usbdev_usb_tx_d_o            ( usb_tx_d              ),
+    .usbdev_usb_tx_se0_o          ( usb_tx_se0            ),
+    .usbdev_usb_tx_use_d_se0_o    ( usb_tx_use_d_se0      ),
+    .usbdev_usb_suspend_o         ( usb_suspend           ),
+    .usbdev_usb_rx_enable_o       ( usb_rx_enable         ),
     .usbdev_usb_ref_val_o         ( usb_ref_val           ),
     .usbdev_usb_ref_pulse_o       ( usb_ref_pulse         ),
     .ast_edn_req_i                ( ast_edn_edn_req       ),

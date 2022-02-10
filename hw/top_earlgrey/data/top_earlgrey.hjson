@@ -840,6 +840,8 @@
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
 
       // usbdev connection to pinmux
+      'usbdev.usb_dp_pullup'      : ['pinmux_aon.usb_dppullup_en_upwr'],
+      'usbdev.usb_dn_pullup'      : ['pinmux_aon.usb_dnpullup_en_upwr'],
       'usbdev.usb_out_of_rst'     : ['pinmux_aon.usb_out_of_rst'],
       'usbdev.usb_aon_wake_en'    : ['pinmux_aon.usb_aon_wake_en'],
       'usbdev.usb_aon_wake_ack'   : ['pinmux_aon.usb_aon_wake_ack'],
@@ -1016,6 +1018,8 @@
         'peri.tl_ast'                     : 'ast_tl',
         'pinmux_aon.dft_strap_test'       : 'dft_strap_test'
         'pinmux_aon.dft_hold_tap_sel'     : 'dft_hold_tap_sel',
+        'pinmux_aon.usb_dppullup_en'      : 'usb_dp_pullup_en',
+        'pinmux_aon.usb_dnpullup_en'      : 'usb_dn_pullup_en',
         'pwrmgr_aon.pwr_ast'              : 'pwrmgr_ast',
         'otp_ctrl.otp_ast_pwr_seq'        : '',
         'otp_ctrl.otp_ast_pwr_seq_h'      : '',
@@ -1028,6 +1032,12 @@
         'sensor_ctrl.ast2pinmux'          : 'ast2pinmux',
         'sensor_ctrl.ast_init_done'       : 'ast_init_done',
         'spi_device.sck_monitor'          : 'sck_monitor',
+        'usbdev.usb_rx_d'                 : '',
+        'usbdev.usb_tx_d'                 : '',
+        'usbdev.usb_tx_se0'               : '',
+        'usbdev.usb_tx_use_d_se0'         : '',
+        'usbdev.usb_suspend'              : '',
+        'usbdev.usb_rx_enable'            : '',
         'usbdev.usb_ref_val'              : '',
         'usbdev.usb_ref_pulse'            : '',
     },
@@ -1201,6 +1211,9 @@
     //         DIO is manual, there is no way to automatically infer the corresponding pad type).
     //
     signals: [
+      // USB
+      { instance: 'usbdev',          port: 'usb_dp',         connection: 'manual', pad: ''             , desc: ''},
+      { instance: 'usbdev',          port: 'usb_dn',         connection: 'manual', pad: ''             , desc: ''},
       // SPI Host0
       { instance: 'spi_host0',       port: 'sck',            connection: 'direct', pad: 'SPI_HOST_CLK' , desc: ''},
       { instance: 'spi_host0',       port: 'csb',            connection: 'direct', pad: 'SPI_HOST_CS_L', desc: ''},
@@ -1215,17 +1228,6 @@
       { instance: 'spi_device',      port: 'sd[1]',          connection: 'direct', pad: 'SPI_DEV_D1'   , desc: ''},
       { instance: 'spi_device',      port: 'sd[2]',          connection: 'direct', pad: 'SPI_DEV_D2'   , desc: ''},
       { instance: 'spi_device',      port: 'sd[3]',          connection: 'direct', pad: 'SPI_DEV_D3'   , desc: ''},
-      // USBDEV
-      // TODO: #6043
-      { instance: 'usbdev',          port: 'd',              connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
-      { instance: 'usbdev',          port: 'dp',             connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
-      { instance: 'usbdev',          port: 'dn',             connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
-      { instance: 'usbdev',          port: 'se0',            connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
-      { instance: 'usbdev',          port: 'dp_pullup',      connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
-      { instance: 'usbdev',          port: 'dn_pullup',      connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
-      { instance: 'usbdev',          port: 'tx_mode_se',     connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
-      { instance: 'usbdev',          port: 'suspend',        connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
-      { instance: 'usbdev',          port: 'rx_enable',      connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
       // MIOs
       { instance: "gpio",            port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "uart0",           port: '',               connection: 'muxed' , pad: ''             , desc: ''},

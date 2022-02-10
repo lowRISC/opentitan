@@ -16,11 +16,12 @@ module chip_sim_tb (
   logic cio_spi_device_sdo_d2p, cio_spi_device_sdo_en_d2p;
 
   logic cio_usbdev_sense_p2d;
-  logic cio_usbdev_se0_d2p, cio_usbdev_se0_en_d2p;
-  logic cio_usbdev_dp_pullup_d2p, cio_usbdev_dp_pullup_en_d2p;
-  logic cio_usbdev_dn_pullup_d2p, cio_usbdev_dn_pullup_en_d2p;
-  logic cio_usbdev_tx_mode_se_d2p, cio_usbdev_tx_mode_se_en_d2p;
-  logic cio_usbdev_suspend_d2p, cio_usbdev_suspend_en_d2p;
+  logic cio_usbdev_se0_d2p;
+  logic cio_usbdev_dp_pullup_d2p;
+  logic cio_usbdev_dn_pullup_d2p;
+  logic cio_usbdev_suspend_d2p;
+  logic cio_usbdev_rx_enable_d2p;
+  logic cio_usbdev_tx_use_d_se0_d2p;
   logic cio_usbdev_d_p2d, cio_usbdev_d_d2p, cio_usbdev_d_en_d2p;
   logic cio_usbdev_dp_p2d, cio_usbdev_dp_d2p, cio_usbdev_dp_en_d2p;
   logic cio_usbdev_dn_p2d, cio_usbdev_dn_d2p, cio_usbdev_dn_en_d2p;
@@ -48,9 +49,7 @@ module chip_sim_tb (
     // communication with USB
     .cio_usbdev_sense_p2d_i(cio_usbdev_sense_p2d),
     .cio_usbdev_dp_pullup_d2p_o(cio_usbdev_dp_pullup_d2p),
-    .cio_usbdev_dp_pullup_en_d2p_o(cio_usbdev_dp_pullup_en_d2p),
     .cio_usbdev_dn_pullup_d2p_o(cio_usbdev_dn_pullup_d2p),
-    .cio_usbdev_dn_pullup_en_d2p_o(cio_usbdev_dn_pullup_en_d2p),
     .cio_usbdev_dp_p2d_i(cio_usbdev_dp_p2d),
     .cio_usbdev_dp_d2p_o(cio_usbdev_dp_d2p),
     .cio_usbdev_dp_en_d2p_o(cio_usbdev_dp_en_d2p),
@@ -61,9 +60,9 @@ module chip_sim_tb (
     .cio_usbdev_d_d2p_o(cio_usbdev_d_d2p),
     .cio_usbdev_d_en_d2p_o(cio_usbdev_d_en_d2p),
     .cio_usbdev_se0_d2p_o(cio_usbdev_se0_d2p),
-    .cio_usbdev_se0_en_d2p_o(cio_usbdev_se0_en_d2p),
-    .cio_usbdev_tx_mode_se_d2p_o(cio_usbdev_tx_mode_se_d2p),
-    .cio_usbdev_tx_mode_se_en_d2p_o(cio_usbdev_tx_mode_se_en_d2p)
+    .cio_usbdev_rx_enable_d2p_o(cio_usbdev_rx_enable_d2p),
+    .cio_usbdev_tx_use_d_se0_d2p_o(cio_usbdev_tx_use_d_se0_d2p),
+    .cio_usbdev_suspend_d2p_o(cio_usbdev_suspend_d2p)
   );
 
   // GPIO DPI
@@ -142,9 +141,7 @@ module chip_sim_tb (
     .clk_48MHz_i     (clk_i),
     .sense_p2d       (cio_usbdev_sense_p2d),
     .pullupdp_d2p    (cio_usbdev_dp_pullup_d2p),
-    .pullupdp_en_d2p (cio_usbdev_dp_pullup_en_d2p),
     .pullupdn_d2p    (cio_usbdev_dn_pullup_d2p),
-    .pullupdn_en_d2p (cio_usbdev_dn_pullup_en_d2p),
     .dp_p2d          (cio_usbdev_dp_p2d),
     .dp_d2p          (cio_usbdev_dp_d2p),
     .dp_en_d2p       (cio_usbdev_dp_en_d2p),
@@ -155,9 +152,8 @@ module chip_sim_tb (
     .d_d2p           (cio_usbdev_d_d2p),
     .d_en_d2p        (cio_usbdev_d_en_d2p),
     .se0_d2p         (cio_usbdev_se0_d2p),
-    .se0_en_d2p      (cio_usbdev_se0_en_d2p),
-    .txmode_d2p      (cio_usbdev_tx_mode_se_d2p),
-    .txmode_en_d2p   (cio_usbdev_tx_mode_se_en_d2p)
+    .rx_enable_d2p   (cio_usbdev_rx_enable_d2p),
+    .tx_use_d_se0_d2p(cio_usbdev_tx_use_d_se0_d2p)
   );
 
   `define RV_CORE_IBEX      u_dut.top_earlgrey.u_rv_core_ibex

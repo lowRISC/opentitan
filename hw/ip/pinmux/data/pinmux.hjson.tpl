@@ -116,6 +116,36 @@
       package: "",
       default: "1'b0"
     },
+    { name:    "usb_dppullup_en_upwr",
+      type:    "uni",
+      act:     "rcv",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    },
+    { name:    "usb_dnpullup_en_upwr",
+      type:    "uni",
+      act:     "rcv",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    },
+    { name:    "usb_dppullup_en",
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+      default: "1'b0"
+    },
+    { name:    "usb_dnpullup_en",
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+      default: "1'b0"
+    },
     { struct:  "logic",
       type:    "uni",
       name:    "usb_wkup_req",

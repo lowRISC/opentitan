@@ -41,10 +41,10 @@
 #define D2P_D 64
 #define D2P_D_EN 32
 #define D2P_SE0 16
-#define D2P_SE0_EN 8
+#define D2P_TX_USE_D_SE0 8
 #define D2P_DPPU 4
 #define D2P_DNPU 2
-#define D2P_TXMODE_SE 1
+#define D2P_RX_ENABLE 1
 // Either pullup (dp/dn swapped if the pullup is on DN)
 #define D2P_PU (D2P_DPPU | D2P_DNPU)
 

@@ -26,15 +26,12 @@ module usbdpi #(
   input  logic d_d2p,
   input  logic d_en_d2p,
   input  logic se0_d2p,
-  input  logic se0_en_d2p,
-  input  logic txmode_d2p,
-  input  logic txmode_en_d2p,
+  input  logic rx_enable_d2p,
+  input  logic tx_use_d_se0_d2p,
 
   output logic sense_p2d,
   input  logic pullupdp_d2p,
-  input  logic pullupdp_en_d2p,
-  input  logic pullupdn_d2p,
-  input  logic pullupdn_en_d2p
+  input  logic pullupdn_d2p
 );
   import "DPI-C" function
     chandle usbdpi_create(input string name, input int loglevel);
@@ -64,18 +61,20 @@ module usbdpi #(
   logic       unused_dummy;
   logic       unused_clk = clk_i;
   logic       unused_rst = rst_ni;
-  logic       dp_int, dn_int, d_int;
-  logic       flip_detect, pullup_detect;
+  logic       dp_int, dn_int, d_last;
+  logic       flip_detect, pullup_detect, rx_enable;
 
   // Detect a request to flip pins by the DN resistor being applied
-  assign flip_detect = pullupdn_d2p && pullupdn_en_d2p;
-  assign pullup_detect = (pullupdp_d2p && pullupdp_en_d2p) || (pullupdn_d2p && pullupdn_en_d2p);
+  assign flip_detect = pullupdn_d2p;
+  assign pullup_detect = pullupdp_d2p || pullupdn_d2p;
+  assign rx_enable = rx_enable_d2p;
 
-  assign d2p = {dp_d2p, dp_en_d2p, dn_d2p, dn_en_d2p, d_d2p, d_en_d2p, se0_d2p, se0_en_d2p, pullupdp_d2p & pullupdp_en_d2p, pullupdn_d2p & pullupdn_en_d2p, txmode_d2p & txmode_en_d2p};
+  assign d2p = {dp_d2p, dp_en_d2p, dn_d2p, dn_en_d2p, d_d2p, d_en_d2p, se0_d2p, tx_use_d_se0_d2p,
+                pullupdp_d2p, pullupdn_d2p, rx_enable};
   always_ff @(posedge clk_48MHz_i) begin
     if (!sense_p2d || pullup_detect) begin
       automatic byte p2d = usbdpi_host_to_device(ctx, d2p);
-      d_int <= p2d[3];
+      d_last <= d_p2d;
       dp_int <= p2d[2];
       dn_int <= p2d[1];
       sense_p2d <= p2d[0];
@@ -84,33 +83,41 @@ module usbdpi #(
       if (d2p_r != d2p) begin
         usbdpi_device_to_host(ctx, d2p);
       end
-    end else begin // if (pullupdp_d2p && pullupdp_en_d2p)
-      d_int <= 0;
+    end else begin // if (pullup_detect)
+      d_last <= 0;
       dp_int <= 0;
       dn_int <= 0;
     end
   end
 
   always_comb begin : proc_data
-    if (d_en_d2p) begin
-      d_p2d = d_d2p;
-    end else begin
-      d_p2d = d_int;
+    d_p2d = d_last;
+    if (rx_enable) begin
+      // Differential receiver is enabled.
+      // If host is driving, update d_p2d only if there is a valid differential
+      // value.
+      if (d_en_d2p) begin
+        d_p2d = d_d2p;
+      end else if (dp_int && !dn_int) begin
+        d_p2d = 1'b1;
+      end else if (!dp_int && dn_int) begin
+        d_p2d = 1'b0;
+      end
     end
     if (dp_en_d2p) begin
-      if (txmode_d2p) begin
-        dp_p2d = dp_d2p;
-      end else begin // decode differential and flip
+      if (tx_use_d_se0_d2p) begin
         dp_p2d = se0_d2p ? 1'b0 : flip_detect ^ d_d2p;
+      end else begin
+        dp_p2d = dp_d2p;
       end
     end else begin
       dp_p2d = dp_int;
     end
     if (dn_en_d2p) begin
-      if (txmode_d2p) begin
-        dn_p2d = dn_d2p;
-      end else begin // decode differential and flip
+      if (tx_use_d_se0_d2p) begin
         dn_p2d = se0_d2p ? 1'b0 : flip_detect ^ ~d_d2p;
+      end else begin
+        dn_p2d = dn_d2p;
       end
     end else begin
       dn_p2d = dn_int;

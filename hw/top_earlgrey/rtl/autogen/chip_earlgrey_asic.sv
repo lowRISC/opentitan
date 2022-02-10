@@ -115,28 +115,17 @@ module chip_earlgrey_asic (
     dft_strap0_idx:    Dft0PadIdx,
     dft_strap1_idx:    Dft1PadIdx,
     // TODO: check whether there is a better way to pass these USB-specific params
-    usb_dp_idx:        DioUsbdevDp,
-    usb_dn_idx:        DioUsbdevDn,
-    usb_dp_pullup_idx: DioUsbdevDpPullup,
-    usb_dn_pullup_idx: DioUsbdevDnPullup,
+    usb_dp_idx:        DioUsbdevUsbDp,
+    usb_dn_idx:        DioUsbdevUsbDn,
     usb_sense_idx:     MioInUsbdevSense,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
-      BidirTol, // DIO usbdev_rx_enable
-      BidirTol, // DIO usbdev_suspend
-      BidirTol, // DIO usbdev_tx_mode_se
-      BidirTol, // DIO usbdev_dn_pullup
-      BidirTol, // DIO usbdev_dp_pullup
-      BidirTol, // DIO usbdev_se0
       BidirStd, // DIO spi_host0_csb
       BidirStd, // DIO spi_host0_sck
       InputStd, // DIO spi_device_csb
       InputStd, // DIO spi_device_sck
       BidirOd, // DIO sysrst_ctrl_aon_flash_wp_l
       BidirOd, // DIO sysrst_ctrl_aon_ec_rst_l
-      BidirTol, // DIO usbdev_dn
-      BidirTol, // DIO usbdev_dp
-      BidirTol, // DIO usbdev_d
       BidirStd, // DIO spi_device_sd
       BidirStd, // DIO spi_device_sd
       BidirStd, // DIO spi_device_sd
@@ -144,7 +133,9 @@ module chip_earlgrey_asic (
       BidirStd, // DIO spi_host0_sd
       BidirStd, // DIO spi_host0_sd
       BidirStd, // DIO spi_host0_sd
-      BidirStd  // DIO spi_host0_sd
+      BidirStd, // DIO spi_host0_sd
+      BidirStd, // DIO usbdev_usb_dn
+      BidirStd  // DIO usbdev_usb_dp
     },
     mio_pad_type: {
       BidirOd, // MIO Pad 46
@@ -1039,25 +1030,23 @@ module chip_earlgrey_asic (
 
   // Connect the D+ pad
   // Note that we use two pads in parallel for the D+ channel to meet electrical specifications.
-  assign dio_in[DioUsbdevDp] = manual_in_usb_p;
-  assign manual_out_usb_p = dio_out[DioUsbdevDp];
-  assign manual_oe_usb_p = dio_oe[DioUsbdevDp];
-  assign manual_attr_usb_p = dio_attr[DioUsbdevDp];
+  assign dio_in[DioUsbdevUsbDp] = manual_in_usb_p;
+  assign manual_out_usb_p = dio_out[DioUsbdevUsbDp];
+  assign manual_oe_usb_p = dio_oe[DioUsbdevUsbDp];
+  assign manual_attr_usb_p = dio_attr[DioUsbdevUsbDp];
 
   // Connect the D- pads
   // Note that we use two pads in parallel for the D- channel to meet electrical specifications.
-  assign dio_in[DioUsbdevDn] = manual_in_usb_n;
-  assign manual_out_usb_n = dio_out[DioUsbdevDn];
-  assign manual_oe_usb_n = dio_oe[DioUsbdevDn];
-  assign manual_attr_usb_n = dio_attr[DioUsbdevDn];
+  assign dio_in[DioUsbdevUsbDn] = manual_in_usb_n;
+  assign manual_out_usb_n = dio_out[DioUsbdevUsbDn];
+  assign manual_oe_usb_n = dio_oe[DioUsbdevUsbDn];
+  assign manual_attr_usb_n = dio_attr[DioUsbdevUsbDn];
 
-  // Pullups
-  logic usb_pullup_p_en, usb_pullup_n_en;
-  assign usb_pullup_p_en = dio_out[DioUsbdevDpPullup];
-  assign usb_pullup_n_en = dio_out[DioUsbdevDnPullup];
+  logic usb_rx_d;
 
+  // Pullups and differential receiver enable
+  logic usb_dp_pullup_en, usb_dn_pullup_en;
   logic usb_rx_enable;
-  assign usb_rx_enable = dio_out[DioUsbdevRxEnable];
 
   prim_usb_diff_rx #(
     .CalibW(ast_pkg::UsbCalibWidth)
@@ -1066,48 +1055,12 @@ module chip_earlgrey_asic (
     .input_ni          ( USB_N                 ),
     .input_en_i        ( usb_rx_enable         ),
     .core_pok_h_i      ( ast_pwst_h.aon_pok    ),
-    .pullup_p_en_i     ( usb_pullup_p_en       ),
-    .pullup_n_en_i     ( usb_pullup_n_en       ),
+    .pullup_p_en_i     ( usb_dp_pullup_en      ),
+    .pullup_n_en_i     ( usb_dn_pullup_en      ),
     .calibration_i     ( usb_io_pu_cal         ),
     .usb_diff_rx_obs_o ( usb_diff_rx_obs       ),
-    .input_o           ( dio_in[DioUsbdevD]    )
+    .input_o           ( usb_rx_d              )
   );
-
-  // Tie-off unused signals
-  assign dio_in[DioUsbdevSe0] = 1'b0;
-  assign dio_in[DioUsbdevDpPullup] = 1'b0;
-  assign dio_in[DioUsbdevDnPullup] = 1'b0;
-  assign dio_in[DioUsbdevTxModeSe] = 1'b0;
-  assign dio_in[DioUsbdevSuspend] = 1'b0;
-  assign dio_in[DioUsbdevRxEnable] = 1'b0;
-
-  logic unused_usb_sigs;
-  assign unused_usb_sigs = ^{
-    // SE0
-    dio_out[DioUsbdevSe0],
-    dio_oe[DioUsbdevSe0],
-    dio_attr[DioUsbdevSe0],
-    // TX Mode
-    dio_out[DioUsbdevTxModeSe],
-    dio_oe[DioUsbdevTxModeSe],
-    dio_attr[DioUsbdevTxModeSe],
-    // Suspend
-    dio_out[DioUsbdevSuspend],
-    dio_oe[DioUsbdevSuspend],
-    dio_attr[DioUsbdevSuspend],
-    // Rx enable
-    dio_oe[DioUsbdevRxEnable],
-    dio_attr[DioUsbdevRxEnable],
-    // D is used as an input only
-    dio_out[DioUsbdevD],
-    dio_oe[DioUsbdevD],
-    dio_attr[DioUsbdevD],
-    // Pullup/down
-    dio_oe[DioUsbdevDpPullup],
-    dio_oe[DioUsbdevDnPullup],
-    dio_attr[DioUsbdevDpPullup],
-    dio_attr[DioUsbdevDnPullup]
-  };
 
   //////////////////////
   // Top-level design //
@@ -1133,6 +1086,14 @@ module chip_earlgrey_asic (
     .sensor_ctrl_ast_alert_req_i  ( ast_alert_req              ),
     .sensor_ctrl_ast_alert_rsp_o  ( ast_alert_rsp              ),
     .sensor_ctrl_ast_status_i     ( ast_pwst.io_pok            ),
+    .usb_dp_pullup_en_o           ( usb_dp_pullup_en           ),
+    .usb_dn_pullup_en_o           ( usb_dn_pullup_en           ),
+    .usbdev_usb_rx_d_i            ( usb_rx_d                   ),
+    .usbdev_usb_tx_d_o            (                            ),
+    .usbdev_usb_tx_se0_o          (                            ),
+    .usbdev_usb_tx_use_d_se0_o    (                            ),
+    .usbdev_usb_suspend_o         (                            ),
+    .usbdev_usb_rx_enable_o       ( usb_rx_enable              ),
     .usbdev_usb_ref_val_o         ( usb_ref_val                ),
     .usbdev_usb_ref_pulse_o       ( usb_ref_pulse              ),
     .ast_tl_req_o                 ( base_ast_bus               ),

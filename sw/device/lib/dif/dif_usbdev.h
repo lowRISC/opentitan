@@ -127,9 +127,10 @@ typedef struct dif_usbdev_config {
    */
   dif_toggle_t differential_rx;
   /**
-   * Use the differential tx signal instead of the single-ended signals.
+   * Use the TX interface with D and SE0 signals instead of Dp/Dn, for use with
+   * certain transceivers.
    */
-  dif_toggle_t differential_tx;
+  dif_toggle_t use_tx_d_se0;
   /*
    * Recognize a single SE0 bit as end of packet instead of requiring
    * two bits.

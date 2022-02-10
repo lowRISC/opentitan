@@ -101,10 +101,7 @@ void monitor_usb(void *mon_void, FILE *mon_file, int loglevel, int tick,
     if (hdrive) {
       fprintf(mon_file, "mon: %8d: Bus clash\n", tick);
     }
-    if (d2p & D2P_TXMODE_SE) {
-      dp = ((d2p & D2P_DP_EN) && (d2p & D2P_DP)) ? 1 : 0;
-      dn = ((d2p & D2P_DN_EN) && (d2p & D2P_DN)) ? 1 : 0;
-    } else {
+    if (d2p & D2P_TX_USE_D_SE0) {
       if ((d2p & D2P_SE0) || !(d2p & D2P_D_EN)) {
         dp = 0;
         dn = 0;
@@ -112,13 +109,13 @@ void monitor_usb(void *mon_void, FILE *mon_file, int loglevel, int tick,
         dp = (d2p & D2P_D) ? 1 : 0;
         dn = (d2p & D2P_D) ? 0 : 1;
       }
+    } else {
+      dp = ((d2p & D2P_DP_EN) && (d2p & D2P_DP)) ? 1 : 0;
+      dn = ((d2p & D2P_DN_EN) && (d2p & D2P_DN)) ? 1 : 0;
     }
     mon->driver = M_DEVICE;
   } else if (hdrive) {
-    if (d2p & D2P_TXMODE_SE) {
-      dp = (p2d & P2D_DP) ? 1 : 0;
-      dn = (p2d & P2D_DN) ? 1 : 0;
-    } else {
+    if (d2p & D2P_RX_ENABLE) {
       if (p2d & (P2D_DP | P2D_DN)) {
         dp = (p2d & P2D_D) ? 1 : 0;
         dn = (p2d & P2D_D) ? 0 : 1;
@@ -126,6 +123,9 @@ void monitor_usb(void *mon_void, FILE *mon_file, int loglevel, int tick,
         dp = 0;
         dn = 0;
       }
+    } else {
+      dp = (p2d & P2D_DP) ? 1 : 0;
+      dn = (p2d & P2D_DN) ? 1 : 0;
     }
     mon->driver = M_HOST;
   } else {
