@@ -11,22 +11,70 @@
     { protocol: "tlul", direction: "device" }
   ],
   available_inout_list: [
-    { name: "d", desc: "USB data differential" }
-    { name: "dp", desc: "USB data D+" }
-    { name: "dn", desc: "USB data D-" }
+    { name: "usb_dp", desc: "USB data D+" }
+    { name: "usb_dn", desc: "USB data D-" }
   ],
   available_input_list: [
     {  name: "sense", desc: "USB host VBUS sense" }
   ],
-  available_output_list: [
-    { name: "se0", desc: "USB single-ended zero link state" }
-    { name: "dp_pullup", desc: "USB D+ pullup control" }
-    { name: "dn_pullup", desc: "USB D- pullup control" }
-    { name: "tx_mode_se", desc: "USB single-ended transmit mode control" }
-    { name: "suspend", desc: "USB link suspend state" }
-    { name: "rx_enable", desc: "USB phy differential receive enable" }
-  ],
+  available_output_list: [],
   inter_signal_list: [
+    { name:    "usb_rx_d",
+      desc:    "USB RX data from an external differential receiver, if available"
+      type:    "uni",
+      act:     "rcv",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    }
+    { name:    "usb_tx_d",
+      desc:    "USB transmit data value (not used if usb_tx_se0 is set)"
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    }
+    { name:    "usb_tx_se0",
+      desc:    "Force transmission of a USB single-ended zero (i.e. both D+ and D- are low) regardless of usb_tx_d"
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    }
+    { name:    "usb_tx_use_d_se0",
+      desc:    "Use the usb_tx_d and usb_tx_se0 TX interface, instead of usb_dp_o and usb_dn_o"
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    }
+    { name:    "usb_dp_pullup",
+      desc:    "USB D+ pullup control"
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    }
+    { name:    "usb_dn_pullup",
+      desc:    "USB D- pullup control"
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    }
+    { name:    "usb_rx_enable",
+      desc:    "USB differential receiver enable"
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    }
     { name:    "usb_ref_val",
       type:    "uni",
       act:     "req",
@@ -344,10 +392,10 @@
               name: "active_nosof",
               desc: "Link active but no SOF has been received since the last reset."
             },
-	    { value: "6",
-	      name: "resuming",
-	      desc: "Link resuming to an active state, pending the end of resume signaling"
-	    },
+            { value: "6",
+              name: "resuming",
+              desc: "Link resuming to an active state, pending the end of resume signaling"
+            },
           ]
         }
         {
@@ -705,27 +753,27 @@
         {
           bits: "2",
           name: "rx_d_i",
-          desc: "USB differential input."
+          desc: "USB data input from an external differential receiver, if available."
         }
         {
           bits: "8",
           name: "tx_dp_o",
-          desc: "USB D+ output (readback)."
+          desc: "USB differential D+ output (readback)."
         }
         {
           bits: "9",
           name: "tx_dn_o",
-          desc: "USB D- output (readback)."
+          desc: "USB differential D- output (readback)."
         }
         {
           bits: "10",
           name: "tx_d_o",
-          desc: "USB differential output (readback)."
+          desc: "USB single-ended output (readback)."
         }
         {
           bits: "11",
           name: "tx_se0_o",
-          desc: "USB SE0 output (readback)."
+          desc: "USB single-ended SE0 output (readback)."
         }
         {
           bits: "12",
@@ -759,22 +807,22 @@
         {
           bits: "0",
           name: "dp_o",
-          desc: "USB D+ output."
+          desc: "USB differential D+ output."
         }
         {
           bits: "1",
           name: "dn_o",
-          desc: "USB D- output."
+          desc: "USB differential D- output."
         }
         {
           bits: "2",
           name: "d_o",
-          desc: "USB differential output."
+          desc: "USB single-ended output."
         }
         {
           bits: "3",
           name: "se0_o",
-          desc: "USB SE0 output."
+          desc: "USB single-ended SE0 output."
         }
         {
           bits: "4",
@@ -783,8 +831,8 @@
         }
         {
           bits: "5",
-          name: "tx_mode_se_o",
-          desc: "USB TX mode. 0: Differential, 1: Single-ended."
+          name: "tx_use_d_se0_o",
+          desc: "USB TX mode, intended to enable a variety of transceivers. 0: use dp/dn interface, 1: use d/se0 interface"
         }
         {
           bits: "6",
@@ -830,10 +878,12 @@
         {
           bits: "1",
           resval: "0",
-          name: "tx_differential_mode",
+          name: "tx_use_d_se0",
           desc: '''
-                Use the differential TX signal instead of the single-ended signals.
-                Currently only 0 (single-ended operation) is supported.
+                If 1, select the d and se0 TX interface.
+                If 0, select the dp and dn TX interface.
+                This directly controls the output pin of the same name.
+                It is intended to be used to enable the use of a variety of external transceivers.
                 '''
         }
         {

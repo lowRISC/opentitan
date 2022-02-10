@@ -1356,7 +1356,7 @@ extern const top_earlgrey_alert_peripheral_t
 // PERIPH_INSEL ranges from 0 to NUM_MIO_PADS + 2 -1}
 //  0 and 1 are tied to value 0 and 1
 #define NUM_MIO_PADS 47
-#define NUM_DIO_PADS 23
+#define NUM_DIO_PADS 16
 
 #define PINMUX_PERIPH_OUTSEL_IDX_OFFSET 3
 

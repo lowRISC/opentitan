@@ -667,8 +667,8 @@ module usbdev_reg_top (
   logic phy_pins_drive_se0_o_wd;
   logic phy_pins_drive_oe_o_qs;
   logic phy_pins_drive_oe_o_wd;
-  logic phy_pins_drive_tx_mode_se_o_qs;
-  logic phy_pins_drive_tx_mode_se_o_wd;
+  logic phy_pins_drive_tx_use_d_se0_o_qs;
+  logic phy_pins_drive_tx_use_d_se0_o_wd;
   logic phy_pins_drive_dp_pullup_en_o_qs;
   logic phy_pins_drive_dp_pullup_en_o_wd;
   logic phy_pins_drive_dn_pullup_en_o_qs;
@@ -680,8 +680,8 @@ module usbdev_reg_top (
   logic phy_config_we;
   logic phy_config_rx_differential_mode_qs;
   logic phy_config_rx_differential_mode_wd;
-  logic phy_config_tx_differential_mode_qs;
-  logic phy_config_tx_differential_mode_wd;
+  logic phy_config_tx_use_d_se0_qs;
+  logic phy_config_tx_use_d_se0_wd;
   logic phy_config_eop_single_bit_qs;
   logic phy_config_eop_single_bit_wd;
   logic phy_config_pinflip_qs;
@@ -6726,18 +6726,18 @@ module usbdev_reg_top (
     .qs     (phy_pins_drive_oe_o_qs)
   );
 
-  //   F[tx_mode_se_o]: 5:5
+  //   F[tx_use_d_se0_o]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_phy_pins_drive_tx_mode_se_o (
+  ) u_phy_pins_drive_tx_use_d_se0_o (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_pins_drive_we),
-    .wd     (phy_pins_drive_tx_mode_se_o_wd),
+    .wd     (phy_pins_drive_tx_use_d_se0_o_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6745,10 +6745,10 @@ module usbdev_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_pins_drive.tx_mode_se_o.q),
+    .q      (reg2hw.phy_pins_drive.tx_use_d_se0_o.q),
 
     // to register interface (read)
-    .qs     (phy_pins_drive_tx_mode_se_o_qs)
+    .qs     (phy_pins_drive_tx_use_d_se0_o_qs)
   );
 
   //   F[dp_pullup_en_o]: 6:6
@@ -6878,18 +6878,18 @@ module usbdev_reg_top (
     .qs     (phy_config_rx_differential_mode_qs)
   );
 
-  //   F[tx_differential_mode]: 1:1
+  //   F[tx_use_d_se0]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_phy_config_tx_differential_mode (
+  ) u_phy_config_tx_use_d_se0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_config_we),
-    .wd     (phy_config_tx_differential_mode_wd),
+    .wd     (phy_config_tx_use_d_se0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6897,10 +6897,10 @@ module usbdev_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_config.tx_differential_mode.q),
+    .q      (reg2hw.phy_config.tx_use_d_se0.q),
 
     // to register interface (read)
-    .qs     (phy_config_tx_differential_mode_qs)
+    .qs     (phy_config_tx_use_d_se0_qs)
   );
 
   //   F[eop_single_bit]: 2:2
@@ -7703,7 +7703,7 @@ module usbdev_reg_top (
 
   assign phy_pins_drive_oe_o_wd = reg_wdata[4];
 
-  assign phy_pins_drive_tx_mode_se_o_wd = reg_wdata[5];
+  assign phy_pins_drive_tx_use_d_se0_o_wd = reg_wdata[5];
 
   assign phy_pins_drive_dp_pullup_en_o_wd = reg_wdata[6];
 
@@ -7716,7 +7716,7 @@ module usbdev_reg_top (
 
   assign phy_config_rx_differential_mode_wd = reg_wdata[0];
 
-  assign phy_config_tx_differential_mode_wd = reg_wdata[1];
+  assign phy_config_tx_use_d_se0_wd = reg_wdata[1];
 
   assign phy_config_eop_single_bit_wd = reg_wdata[2];
 
@@ -8075,7 +8075,7 @@ module usbdev_reg_top (
         reg_rdata_next[2] = phy_pins_drive_d_o_qs;
         reg_rdata_next[3] = phy_pins_drive_se0_o_qs;
         reg_rdata_next[4] = phy_pins_drive_oe_o_qs;
-        reg_rdata_next[5] = phy_pins_drive_tx_mode_se_o_qs;
+        reg_rdata_next[5] = phy_pins_drive_tx_use_d_se0_o_qs;
         reg_rdata_next[6] = phy_pins_drive_dp_pullup_en_o_qs;
         reg_rdata_next[7] = phy_pins_drive_dn_pullup_en_o_qs;
         reg_rdata_next[8] = phy_pins_drive_suspend_o_qs;
@@ -8084,7 +8084,7 @@ module usbdev_reg_top (
 
       addr_hit[32]: begin
         reg_rdata_next[0] = phy_config_rx_differential_mode_qs;
-        reg_rdata_next[1] = phy_config_tx_differential_mode_qs;
+        reg_rdata_next[1] = phy_config_tx_use_d_se0_qs;
         reg_rdata_next[2] = phy_config_eop_single_bit_qs;
         reg_rdata_next[5] = phy_config_pinflip_qs;
         reg_rdata_next[6] = phy_config_usb_ref_disable_qs;

@@ -30,32 +30,24 @@ module usbdev
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   // Data inputs
-  input  logic       cio_d_i, // differential
-  input  logic       cio_dp_i, // single-ended, can be used in differential mode to detect SE0
-  input  logic       cio_dn_i, // single-ended, can be used in differential mode to detect SE0
+  input  logic       cio_usb_dp_i, // differential P, can be used in single-ended mode to detect SE0
+  input  logic       cio_usb_dn_i, // differential N, can be used in single-ended mode to detect SE0
+  input  logic       usb_rx_d_i, // single-ended input from the differential receiver
 
   // Data outputs
-  output logic       cio_d_o,
-  output logic       cio_d_en_o,
-  output logic       cio_dp_o,
-  output logic       cio_dp_en_o,
-  output logic       cio_dn_o,
-  output logic       cio_dn_en_o,
+  output logic       cio_usb_dp_o,
+  output logic       cio_usb_dp_en_o,
+  output logic       cio_usb_dn_o,
+  output logic       cio_usb_dn_en_o,
+  output logic       usb_tx_se0_o, // single-ended zero output
+  output logic       usb_tx_d_o,
 
   // Non-data I/O
   input  logic       cio_sense_i,
-  output logic       cio_se0_o,
-  output logic       cio_se0_en_o,
-  output logic       cio_dp_pullup_o,
-  output logic       cio_dp_pullup_en_o,
-  output logic       cio_dn_pullup_o,
-  output logic       cio_dn_pullup_en_o,
-  output logic       cio_suspend_o,
-  output logic       cio_suspend_en_o,
-  output logic       cio_tx_mode_se_o,
-  output logic       cio_tx_mode_se_en_o,
-  output logic       cio_rx_enable_o,
-  output logic       cio_rx_enable_en_o,
+  output logic       usb_dp_pullup_o,
+  output logic       usb_dn_pullup_o,
+  output logic       usb_rx_enable_o,
+  output logic       usb_tx_use_d_se0_o,
 
   // Direct pinmux aon detect connections
   output logic       usb_out_of_rst_o,
@@ -1023,7 +1015,7 @@ module usbdev
   /////////////////////////////////
   // USB IO Muxing               //
   /////////////////////////////////
-  logic cio_oe;
+  assign cio_usb_dn_en_o = cio_usb_dp_en_o;
 
   usbdev_iomux i_usbdev_iomux (
     .clk_i                  (clk_i),
@@ -1038,19 +1030,19 @@ module usbdev
     .sys_usb_sense_o        (hw2reg.usbstat.sense.d),
 
     // Chip IO
-    .cio_usb_d_i            (cio_d_i),
-    .cio_usb_dp_i           (cio_dp_i),
-    .cio_usb_dn_i           (cio_dn_i),
-    .cio_usb_d_o            (cio_d_o),
-    .cio_usb_se0_o          (cio_se0_o),
-    .cio_usb_dp_o           (cio_dp_o),
-    .cio_usb_dn_o           (cio_dn_o),
-    .cio_usb_oe_o           (cio_oe),
-    .cio_usb_tx_mode_se_o   (cio_tx_mode_se_o),
+    .usb_rx_d_i             (usb_rx_d_i),
+    .usb_rx_dp_i            (cio_usb_dp_i),
+    .usb_rx_dn_i            (cio_usb_dn_i),
+    .usb_tx_d_o             (usb_tx_d_o),
+    .usb_tx_se0_o           (usb_tx_se0_o),
+    .usb_tx_dp_o            (cio_usb_dp_o),
+    .usb_tx_dn_o            (cio_usb_dn_o),
+    .usb_tx_oe_o            (cio_usb_dp_en_o),
+    .usb_tx_use_d_se0_o     (usb_tx_use_d_se0_o),
     .cio_usb_sense_i        (cio_sense_i),
-    .cio_usb_dp_pullup_en_o (cio_dp_pullup_en_o),
-    .cio_usb_dn_pullup_en_o (cio_dn_pullup_en_o),
-    .cio_usb_suspend_o      (cio_suspend_o),
+    .usb_dp_pullup_en_o     (usb_dp_pullup_o),
+    .usb_dn_pullup_en_o     (usb_dn_pullup_o),
+    .usb_suspend_o          (usb_suspend_o),
 
     // Internal interface
     .usb_rx_d_o             (usb_rx_d),
@@ -1064,27 +1056,11 @@ module usbdev
     .usb_suspend_i          (usb_event_link_suspend)
   );
 
-  // enable rx only when in differential mode and not suspended.
-  assign cio_rx_enable_o = reg2hw.phy_config.rx_differential_mode.q & ~usb_suspend_o;
-
-  ////////////////////////
-  // USB Output Enables //
-  ////////////////////////
-
-  // Data outputs
-  assign cio_d_en_o  = cio_oe;
-  assign cio_dp_en_o = cio_oe;
-  assign cio_dn_en_o = cio_oe;
-
-  // Non-data outputs - always enabled.
-  assign cio_se0_en_o        = 1'b1;
-  assign cio_suspend_en_o    = 1'b1;
-  assign cio_tx_mode_se_en_o = 1'b1;
-  assign cio_rx_enable_en_o  = 1'b1;
-
-  // Pullup
-  assign cio_dp_pullup_o     = cio_dp_pullup_en_o;
-  assign cio_dn_pullup_o     = cio_dn_pullup_en_o;
+  // enable rx only when the single-ended input is enabled and the device is
+  // not suspended.
+  // TODO(#10901): This can cause undefined behavior if this module stays
+  // powered to detect resume (instead of the AON module).
+  assign usb_rx_enable_o = reg2hw.phy_config.rx_differential_mode.q & ~usb_suspend_o;
 
   /////////////////////////////////////////
   // SOF Reference for Clock Calibration //
@@ -1139,8 +1115,6 @@ module usbdev
   assign usb_aon_wake_en_o = reg2hw.wake_config.wake_en.q;
   assign usb_aon_wake_ack_o = reg2hw.wake_config.wake_ack.qe &
                               reg2hw.wake_config.wake_ack.q;
-  // re-use I/O version to allow software override if needed
-  assign usb_suspend_o = cio_suspend_o;
 
   /////////////////////////////////////////
   // capture async event and debug info  //
@@ -1161,26 +1135,18 @@ module usbdev
   `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
   // These pins are not necessarily associated with any clock but it probably makes most sense to
   // check them on the fastest clock.
-  `ASSERT_KNOWN(CIODKnown_A, cio_d_o)
-  `ASSERT_KNOWN(CIODEnKnown_A, cio_d_en_o)
-  `ASSERT_KNOWN(CIODpKnown_A, cio_dp_o)
-  `ASSERT_KNOWN(CIODpEnKnown_A, cio_dp_en_o)
-  `ASSERT_KNOWN(CIODnKnown_A, cio_dn_o)
-  `ASSERT_KNOWN(CIODnEnKnown_A, cio_dn_en_o)
-  `ASSERT_KNOWN(CIOSe0Known_A, cio_se0_o)
-  `ASSERT_KNOWN(CIOSe0EnKnown_A, cio_se0_en_o)
-  `ASSERT_KNOWN(CIODpPUKnown_A, cio_dp_pullup_o)
-  `ASSERT_KNOWN(CIODpPUEnKnown_A, cio_dp_pullup_en_o)
-  `ASSERT_KNOWN(CIODnPUKnown_A, cio_dn_pullup_o)
-  `ASSERT_KNOWN(CIODnPUEnKnown_A, cio_dn_pullup_en_o)
-  `ASSERT_KNOWN(CIOSuspendKnown_A, cio_suspend_o)
-  `ASSERT_KNOWN(CIOSuspendEnKnown_A, cio_suspend_en_o)
-  `ASSERT_KNOWN(CIOTxModeKnown_A, cio_tx_mode_se_o)
-  `ASSERT_KNOWN(CIOTxModeEnKnown_A, cio_tx_mode_se_en_o)
+  `ASSERT_KNOWN(USBTxDKnown_A, usb_tx_d_o)
+  `ASSERT_KNOWN(CIODpKnown_A, cio_usb_dp_o)
+  `ASSERT_KNOWN(CIODpEnKnown_A, cio_usb_dp_en_o)
+  `ASSERT_KNOWN(CIODnKnown_A, cio_usb_dn_o)
+  `ASSERT_KNOWN(CIODnEnKnown_A, cio_usb_dn_en_o)
+  `ASSERT_KNOWN(USBTxSe0Known_A, usb_tx_se0_o)
+  `ASSERT_KNOWN(USBDpPUKnown_A, usb_dp_pullup_o)
+  `ASSERT_KNOWN(USBDnPUKnown_A, usb_dn_pullup_o)
+  `ASSERT_KNOWN(USBSuspendKnown_A, usb_suspend_o)
   `ASSERT_KNOWN(USBOoRKnown_A, usb_out_of_rst_o)
   `ASSERT_KNOWN(USBAonWakeEnKnown_A, usb_aon_wake_en_o)
   `ASSERT_KNOWN(USBAonWakeAckKnown_A, usb_aon_wake_ack_o)
-  `ASSERT_KNOWN(USBSuspendKnown_A, usb_suspend_o)
   `ASSERT_KNOWN(USBRefValKnown_A, usb_ref_val_o, clk_usb_48mhz_i, !rst_usb_48mhz_ni)
   `ASSERT_KNOWN(USBRefPulseKnown_A, usb_ref_pulse_o, clk_usb_48mhz_i, !rst_usb_48mhz_ni)
   // Assert Known for alerts

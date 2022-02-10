@@ -123,26 +123,13 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
     n = snprintf(obuf, MAX_OBUF, "%4x %8d Pullup change to %s%s%s\n",
                  ctx->frame, ctx->tick, (d2p & D2P_DPPU) ? "DP Pulled up " : "",
                  (d2p & D2P_DNPU) ? "DN Pulled up " : "",
-                 (d2p & D2P_TXMODE_SE) ? "SingleEnded" : "Differential");
+                 (d2p & D2P_TX_USE_D_SE0) ? "SingleEnded" : "Differential");
     ssize_t written = fwrite(obuf, sizeof(char), (size_t)n, ctx->mon_file);
     assert(written == n);
     ctx->last_pu = d2p & D2P_PU;
   }
-  if (d2p & D2P_TXMODE_SE) {
-    // Normal D+/D- mode
-    if (d2p & D2P_DNPU) {
-      // DN pullup would say DP and DN are swapped
-      dp = ((d2p & D2P_DN_EN) && (d2p & D2P_DN)) ||
-           (!(d2p & D2P_DN_EN) && (d2p & D2P_DNPU));
-      dn = (d2p & D2P_DP_EN) && (d2p & D2P_DP);
-    } else {
-      // No DN pullup so normal orientation
-      dp = ((d2p & D2P_DP_EN) && (d2p & D2P_DP)) ||
-           (!(d2p & D2P_DP_EN) && (d2p & D2P_DPPU));
-      dn = (d2p & D2P_DN_EN) && (d2p & D2P_DN);
-    }
-  } else {
-    // "differential" mode uses D and SE0
+  if (d2p & D2P_TX_USE_D_SE0) {
+    // Single-ended mode uses D and SE0
     if (d2p & D2P_D_EN) {
       if (d2p & D2P_DNPU) {
         // Pullup says swap i.e. D is inverted
@@ -155,6 +142,19 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
     } else {
       dp = (d2p & D2P_PU) ? 1 : 0;
       dn = 0;
+    }
+  } else {
+    // Normal D+/D- mode
+    if (d2p & D2P_DNPU) {
+      // DN pullup would say DP and DN are swapped
+      dp = ((d2p & D2P_DN_EN) && (d2p & D2P_DN)) ||
+           (!(d2p & D2P_DN_EN) && (d2p & D2P_DNPU));
+      dn = (d2p & D2P_DP_EN) && (d2p & D2P_DP);
+    } else {
+      // No DN pullup so normal orientation
+      dp = ((d2p & D2P_DP_EN) && (d2p & D2P_DP)) ||
+           (!(d2p & D2P_DP_EN) && (d2p & D2P_DPPU));
+      dn = (d2p & D2P_DN_EN) && (d2p & D2P_DN);
     }
   }
 
@@ -721,35 +721,30 @@ void testUnimplEp(struct usbdpi_ctx *ctx, uint8_t pid) {
   }
 }
 
+// Change DP and DN outputs from host
 int set_driving(struct usbdpi_ctx *ctx, int d2p, int newval) {
+  // Always maintain the current state of VBUS
+  int driving = ctx->driving & P2D_SENSE;
   if (d2p & D2P_DNPU) {
-    if (d2p & D2P_TXMODE_SE) {
-      return (ctx->driving & P2D_SENSE) | ((newval & P2D_DP) ? P2D_DN : 0) |
-             ((newval & P2D_DN) ? P2D_DP : 0);
+    // Have dn pull-up, so must be flipping pins
+    if (newval & P2D_DP) {
+      driving |= P2D_DN | P2D_D;
+    } else if (newval & P2D_DN) {
+      driving |= P2D_DP;
     }
-    if (newval & (P2D_DP | P2D_DN)) {
-      // sets single ended lines to K after swapping
-      return (ctx->driving & P2D_SENSE) | P2D_DP |
-             ((newval & P2D_DN) ? P2D_D : 0);
+  } else {
+    if (newval & P2D_DP) {
+      driving |= P2D_DP | P2D_D;
+    } else if (newval & P2D_DN) {
+      driving |= P2D_DN;
     }
-    // SE0 so D could be anything (make it 1 after swapping)
-    return ctx->driving & P2D_SENSE;
   }
-  if (d2p & D2P_TXMODE_SE) {
-    return (ctx->driving & P2D_SENSE) | newval;
-  }
-  if (newval & (P2D_DP | P2D_DN)) {
-    // sets single ended lines to K
-    return (ctx->driving & P2D_SENSE) | P2D_DN |
-           ((newval & P2D_DP) ? P2D_D : 0);
-  }
-  // SE0 so D could be anything (make it 1)
-  return (ctx->driving & P2D_SENSE) | P2D_D;
+  return driving;
 }
 
 int inv_driving(struct usbdpi_ctx *ctx, int d2p) {
   // works for either orientation
-  return ctx->driving ^ ((d2p & D2P_TXMODE_SE) ? (P2D_DP | P2D_DN) : P2D_D);
+  return ctx->driving ^ (P2D_DP | P2D_DN | P2D_D);
 }
 
 char usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {

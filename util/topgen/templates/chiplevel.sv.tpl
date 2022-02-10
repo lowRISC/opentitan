@@ -140,10 +140,8 @@ module chip_${top["name"]}_${target["name"]} (
     dft_strap0_idx:    Dft0PadIdx,
     dft_strap1_idx:    Dft1PadIdx,
     // TODO: check whether there is a better way to pass these USB-specific params
-    usb_dp_idx:        DioUsbdevDp,
-    usb_dn_idx:        DioUsbdevDn,
-    usb_dp_pullup_idx: DioUsbdevDpPullup,
-    usb_dn_pullup_idx: DioUsbdevDnPullup,
+    usb_dp_idx:        DioUsbdevUsbDp,
+    usb_dn_idx:        DioUsbdevUsbDn,
     usb_sense_idx:     MioInUsbdevSense,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
@@ -350,54 +348,39 @@ module chip_${top["name"]}_${target["name"]} (
 ## USB for CW305                                                 ##
 ###################################################################
 % if target["name"] == "cw305":
+  logic usb_dp_pullup_en;
+  logic usb_dn_pullup_en;
+  logic usb_rx_d;
+  logic usb_tx_d;
+  logic usb_tx_se0;
+  logic usb_tx_use_d_se0;
+  logic usb_suspend;
+  logic usb_rx_enable;
+
   // Connect the DP pad
-  assign dio_in[DioUsbdevDp] = manual_in_usb_p;
-  assign manual_out_usb_p = dio_out[DioUsbdevDp];
-  assign manual_oe_usb_p = dio_oe[DioUsbdevDp];
-  assign manual_attr_usb_p = dio_attr[DioUsbdevDp];
+  assign dio_in[DioUsbdevUsbDp] = manual_in_usb_p;
+  assign manual_out_usb_p = dio_out[DioUsbdevUsbDp];
+  assign manual_oe_usb_p = dio_oe[DioUsbdevUsbDp];
+  assign manual_attr_usb_p = dio_attr[DioUsbdevUsbDp];
 
   // Connect the DN pad
-  assign dio_in[DioUsbdevDn] = manual_in_usb_n;
-  assign manual_out_usb_n = dio_out[DioUsbdevDn];
-  assign manual_oe_usb_n = dio_oe[DioUsbdevDn];
-  assign manual_attr_usb_n = dio_attr[DioUsbdevDn];
+  assign dio_in[DioUsbdevUsbDn] = manual_in_usb_n;
+  assign manual_out_usb_n = dio_out[DioUsbdevUsbDn];
+  assign manual_oe_usb_n = dio_oe[DioUsbdevUsbDn];
+  assign manual_attr_usb_n = dio_attr[DioUsbdevUsbDn];
 
   // Connect DN pullup
-  assign dio_in[DioUsbdevDnPullup] = manual_in_io_usb_dnpullup0;
-  assign manual_out_io_usb_dnpullup0 = dio_out[DioUsbdevDnPullup];
-  assign manual_oe_io_usb_dnpullup0 = dio_oe[DioUsbdevDnPullup];
-  assign manual_attr_io_dnpullup0 = dio_attr[DioUsbdevDnPullup];
+  assign manual_out_io_usb_dnpullup0 = usb_dn_pullup_en;
+  assign manual_oe_io_usb_dnpullup0 = 1'b1;
+  assign manual_attr_io_dnpullup0 = '0;
 
   // Connect DP pullup
-  assign dio_in[DioUsbdevDpPullup] = manual_in_io_usb_dppullup0;
-  assign manual_out_io_usb_dppullup0 = dio_out[DioUsbdevDpPullup];
-  assign manual_oe_io_usb_dppullup0 = dio_oe[DioUsbdevDpPullup];
-  assign manual_attr_io_dppullup0 = dio_attr[DioUsbdevDpPullup];
+  assign manual_out_io_usb_dppullup0 = usb_dp_pullup_en;
+  assign manual_oe_io_usb_dppullup0 = 1'b1;
+  assign manual_attr_io_dppullup0 = '0;
 
   // Tie-off unused signals
-  assign dio_in[DioUsbdevSe0] = 1'b0;
-  assign dio_in[DioUsbdevTxModeSe] = 1'b0;
-  assign dio_in[DioUsbdevSuspend] = 1'b0;
-
-  logic unused_usb_sigs;
-  assign unused_usb_sigs = ^{
-    // SE0
-    dio_out[DioUsbdevSe0],
-    dio_oe[DioUsbdevSe0],
-    dio_attr[DioUsbdevSe0],
-    // TX Mode
-    dio_out[DioUsbdevTxModeSe],
-    dio_oe[DioUsbdevTxModeSe],
-    dio_attr[DioUsbdevTxModeSe],
-    // Suspend
-    dio_out[DioUsbdevSuspend],
-    dio_oe[DioUsbdevSuspend],
-    dio_attr[DioUsbdevSuspend],
-    // D is used as an input only
-    dio_out[DioUsbdevD],
-    dio_oe[DioUsbdevD],
-    dio_attr[DioUsbdevD]
-  };
+  assign usb_rx_d = 1'b0;
 
 % endif
 ###################################################################
@@ -407,77 +390,61 @@ module chip_${top["name"]}_${target["name"]} (
   // TODO: generalize this USB mux code and align with other tops.
 
   // Only use the UPHY on CW310, which does not support pin flipping.
+  logic usb_dp_pullup_en;
+  logic usb_dn_pullup_en;
+  logic usb_rx_d;
+  logic usb_tx_d;
+  logic usb_tx_se0;
+  logic usb_suspend;
+  logic usb_rx_enable;
 
-  // DioUsbdevDn
+  // DioUsbdevUsbDn
   assign manual_attr_io_usb_dn_tx = '0;
-  assign manual_out_io_usb_dn_tx = dio_out[DioUsbdevDn];
-  assign manual_oe_io_usb_dn_tx = dio_oe[DioUsbdevDn];
-  assign dio_in[DioUsbdevDn] = manual_in_io_usb_dn_rx;
-  // DioUsbdevDp
+  assign manual_out_io_usb_dn_tx = dio_out[DioUsbdevUsbDn];
+  assign manual_oe_io_usb_dn_tx = 1'b1;
+  assign dio_in[DioUsbdevUsbDn] = manual_in_io_usb_dn_rx;
+  // DioUsbdevUsbDp
   assign manual_attr_io_usb_dp_tx = '0;
-  assign manual_out_io_usb_dp_tx = dio_out[DioUsbdevDp];
-  assign manual_oe_io_usb_dp_tx = dio_oe[DioUsbdevDp];
-  assign dio_in[DioUsbdevDp] = manual_in_io_usb_dp_rx;
+  assign manual_out_io_usb_dp_tx = dio_out[DioUsbdevUsbDp];
+  assign manual_oe_io_usb_dp_tx = 1'b1;
+  assign dio_in[DioUsbdevUsbDp] = manual_in_io_usb_dp_rx;
 
   assign manual_attr_io_usb_oe_n = '0;
-  assign manual_out_io_usb_oe_n = ~dio_oe[DioUsbdevDp];
+  assign manual_out_io_usb_oe_n = ~dio_oe[DioUsbdevUsbDp];
   assign manual_oe_io_usb_oe_n = 1'b1;
-
-  logic unused_in_io_usb_oe_n;
-  assign unused_in_io_usb_oe_n = manual_in_io_usb_oe_n;
 
   // DioUsbdevD
   assign manual_attr_io_usb_d_rx = '0;
-  assign dio_in[DioUsbdevD] = manual_in_io_usb_d_rx;
+  assign usb_rx_d = manual_in_io_usb_d_rx;
 
-  // DioUsbdevDpPullup
+  // Pull-up / soft connect pin
   assign manual_attr_io_usb_connect = '0;
-  assign manual_out_io_usb_connect = dio_out[DioUsbdevDpPullup] &
-                                     dio_oe[DioUsbdevDpPullup];
+  assign manual_out_io_usb_connect = usb_dp_pullup_en;
   assign manual_oe_io_usb_connect = 1'b1;
-  assign dio_in[DioUsbdevDpPullup] = manual_in_io_usb_connect;
 
   // Set SPD to full-speed
   assign manual_out_io_usb_speed = 1'b1;
   assign manual_oe_io_usb_speed = 1'b1;
 
-  logic unused_in_io_usb_speed;
-  assign unused_in_io_usb_speed = manual_in_io_usb_speed;
-
   // TUSB1106 low-power mode
-  assign manual_out_io_usb_suspend = dio_out[DioUsbdevSuspend];
+  assign manual_out_io_usb_suspend = usb_suspend;
   assign manual_oe_io_usb_suspend = 1'b1;
-  assign dio_in[DioUsbdevSuspend] = manual_in_io_usb_suspend;
-
-  // Tie-off unused signals
-  assign dio_in[DioUsbdevDnPullup] = 1'b0;
-  assign dio_in[DioUsbdevSe0] = 1'b0;
-  assign dio_in[DioUsbdevTxModeSe] = 1'b0;
 
   logic unused_usb_sigs;
   assign unused_usb_sigs = ^{
-    // DN pull-up
-    dio_out[DioUsbdevDnPullup],
-    dio_oe[DioUsbdevDnPullup],
-    dio_attr[DioUsbdevDnPullup],
-    // SE0
-    dio_out[DioUsbdevSe0],
-    dio_oe[DioUsbdevSe0],
-    dio_attr[DioUsbdevSe0],
-    // TX Mode
-    dio_out[DioUsbdevTxModeSe],
-    dio_oe[DioUsbdevTxModeSe],
-    dio_attr[DioUsbdevTxModeSe],
-    // Suspend
-    dio_oe[DioUsbdevSuspend],
-    dio_attr[DioUsbdevSuspend],
-    // D is used as an input only
-    dio_out[DioUsbdevD],
-    dio_oe[DioUsbdevD],
-    dio_attr[DioUsbdevD],
+    usb_dn_pullup_en,
+    usb_tx_d,
+    usb_tx_se0,
+    usb_rx_enable,
+    manual_in_io_usb_connect,
+    manual_in_io_usb_oe_n,
+    manual_in_io_usb_speed,
+    manual_in_io_usb_suspend,
     // DP and DN are broken out into multiple unidirectional pins
-    dio_attr[DioUsbdevDp],
-    dio_attr[DioUsbdevDn]
+    dio_oe[DioUsbdevUsbDp],
+    dio_oe[DioUsbdevUsbDn],
+    dio_attr[DioUsbdevUsbDp],
+    dio_attr[DioUsbdevUsbDn]
   };
 
 % endif
@@ -508,55 +475,62 @@ module chip_${top["name"]}_${target["name"]} (
   // Outputs always drive and just copy the value
   // Let them go to the normal place too because it won't do any harm
   // and it simplifies the changes needed
+  logic usb_dp_pullup_en;
+  logic usb_dn_pullup_en;
+  logic usb_rx_d;
+  logic usb_tx_d;
+  logic usb_tx_se0;
+  logic usb_tx_use_d_se0;
+  logic usb_suspend;
+  logic usb_rx_enable;
 
-  // The output enable for IO_USB_DNPULLUP0 is used to decide whether we need to undo the swapping.
+  // The value for IO_USB_DNPULLUP0 is used to decide whether we need to undo the swapping.
   logic undo_swap;
-  assign undo_swap = dio_oe[DioUsbdevDnPullup];
+  assign undo_swap = usb_dn_pullup_en;
 
   // GPIO[2] = Switch 2 on board is used to select using the UPHY
   // Keep GPIO[1] for selecting differential in sw
   logic use_uphy;
   assign use_uphy = mio_in[MioPadIoa2];
 
-  // DioUsbdevDn
+  // DioUsbdevUsbDn
   assign manual_attr_usb_n = '0;
   assign manual_attr_io_uphy_dn_tx = '0;
 
   assign manual_out_io_uphy_dn_tx = manual_out_usb_n;
-  assign manual_out_usb_n = undo_swap ? dio_out[DioUsbdevDp] :
-                                        dio_out[DioUsbdevDn];
+  assign manual_out_usb_n = undo_swap ? dio_out[DioUsbdevUsbDp] :
+                                        dio_out[DioUsbdevUsbDn];
 
   assign manual_oe_io_uphy_dn_tx = manual_oe_usb_n;
-  assign manual_oe_usb_n = undo_swap ? dio_oe[DioUsbdevDp] :
-                                       dio_oe[DioUsbdevDn];
+  assign manual_oe_usb_n = undo_swap ? dio_oe[DioUsbdevUsbDp] :
+                                       dio_oe[DioUsbdevUsbDn];
 
-  assign dio_in[DioUsbdevDn] = use_uphy ?
-                               (undo_swap ? manual_in_io_uphy_dp_rx :
-                                            manual_in_io_uphy_dn_rx) :
-                               (undo_swap ? manual_in_usb_p :
-                                            manual_in_usb_n);
-  // DioUsbdevDp
+  assign dio_in[DioUsbdevUsbDn] = use_uphy ?
+                                  (undo_swap ? manual_in_io_uphy_dp_rx :
+                                               manual_in_io_uphy_dn_rx) :
+                                  (undo_swap ? manual_in_usb_p :
+                                               manual_in_usb_n);
+  // DioUsbdevUsbDp
   assign manual_attr_usb_p = '0;
   assign manual_attr_io_uphy_dp_tx = '0;
 
   assign manual_out_io_uphy_dp_tx = manual_out_usb_p;
-  assign manual_out_usb_p = undo_swap ? dio_out[DioUsbdevDn] :
-                                       dio_out[DioUsbdevDp];
+  assign manual_out_usb_p = undo_swap ? dio_out[DioUsbdevUsbDn] :
+                                        dio_out[DioUsbdevUsbDp];
 
   assign manual_oe_io_uphy_dp_tx = manual_oe_usb_p;
-  assign manual_oe_usb_p = undo_swap ? dio_oe[DioUsbdevDn] :
-                                       dio_oe[DioUsbdevDp];
-  assign dio_in[DioUsbdevDp] = use_uphy ?
-                               (undo_swap ? manual_in_io_uphy_dn_rx :
-                                            manual_in_io_uphy_dp_rx) :
-                               (undo_swap ? manual_in_usb_n :
-                                            manual_in_usb_p);
-  // DioUsbdevD
+  assign manual_oe_usb_p = undo_swap ? dio_oe[DioUsbdevUsbDn] :
+                                       dio_oe[DioUsbdevUsbDp];
+  assign dio_in[DioUsbdevUsbDp] = use_uphy ?
+                                  (undo_swap ? manual_in_io_uphy_dn_rx :
+                                               manual_in_io_uphy_dp_rx) :
+                                  (undo_swap ? manual_in_usb_n :
+                                               manual_in_usb_p);
+  // UsbdevD
   // This is not connected at the moment
   logic unused_out_usb_d;
-  assign unused_out_usb_d = dio_out[DioUsbdevD] ^
-                            dio_oe[DioUsbdevD];
-  assign dio_in[DioUsbdevD] = use_uphy ?
+  assign unused_out_usb_d = usb_tx_d;
+  assign usb_rx_d = use_uphy ?
                               (undo_swap ? ~manual_in_io_uphy_d_rx :
                                             manual_in_io_uphy_d_rx) :
                               // This is not connected at the moment
@@ -564,24 +538,15 @@ module chip_${top["name"]}_${target["name"]} (
   assign manual_out_io_uphy_d_rx = 1'b0;
   assign manual_oe_io_uphy_d_rx = 1'b0;
 
-  // DioUsbdevDnPullup
+  // UsbdevDnPullup
   assign manual_attr_io_usb_dnpullup0 = '0;
-  assign manual_out_io_usb_dnpullup0 = undo_swap ? dio_out[DioUsbdevDpPullup] :
-                                                   dio_out[DioUsbdevDnPullup];
-  assign manual_oe_io_usb_dnpullup0 = undo_swap ? dio_oe[DioUsbdevDpPullup] :
-                                                  dio_oe[DioUsbdevDnPullup];
-  assign dio_in[DioUsbdevDnPullup] = manual_in_io_usb_dnpullup0;
+  assign manual_out_io_usb_dnpullup0 = usb_dn_pullup_en;
+  assign manual_oe_io_usb_dnpullup0 = undo_swap ? usb_dp_pullup_en : usb_dn_pullup_en;
 
   // DioUsbdevDpPullup
   assign manual_attr_io_usb_dppullup0 = '0;
-  assign manual_out_io_usb_dppullup0 = undo_swap ? dio_out[DioUsbdevDnPullup] :
-                                                   dio_out[DioUsbdevDpPullup];
-  assign manual_oe_io_usb_dppullup0 = undo_swap ? dio_oe[DioUsbdevDnPullup] :
-                                                  dio_oe[DioUsbdevDpPullup];
-  assign dio_in[DioUsbdevDpPullup] = manual_in_io_usb_dppullup0;
-
-  // DioUsbdevRxEnable
-  assign dio_in[DioUsbdevRxEnable] = 1'b0;
+  assign manual_out_io_usb_dppullup0 = usb_dp_pullup_en;
+  assign manual_oe_io_usb_dppullup0 = undo_swap ? usb_dn_pullup_en : usb_dp_pullup_en;
 
   // Additional outputs for uphy
   assign manual_oe_io_uphy_dppullup = 1'b1;
@@ -1014,25 +979,23 @@ module chip_${top["name"]}_${target["name"]} (
 
   // Connect the D+ pad
   // Note that we use two pads in parallel for the D+ channel to meet electrical specifications.
-  assign dio_in[DioUsbdevDp] = manual_in_usb_p;
-  assign manual_out_usb_p = dio_out[DioUsbdevDp];
-  assign manual_oe_usb_p = dio_oe[DioUsbdevDp];
-  assign manual_attr_usb_p = dio_attr[DioUsbdevDp];
+  assign dio_in[DioUsbdevUsbDp] = manual_in_usb_p;
+  assign manual_out_usb_p = dio_out[DioUsbdevUsbDp];
+  assign manual_oe_usb_p = dio_oe[DioUsbdevUsbDp];
+  assign manual_attr_usb_p = dio_attr[DioUsbdevUsbDp];
 
   // Connect the D- pads
   // Note that we use two pads in parallel for the D- channel to meet electrical specifications.
-  assign dio_in[DioUsbdevDn] = manual_in_usb_n;
-  assign manual_out_usb_n = dio_out[DioUsbdevDn];
-  assign manual_oe_usb_n = dio_oe[DioUsbdevDn];
-  assign manual_attr_usb_n = dio_attr[DioUsbdevDn];
+  assign dio_in[DioUsbdevUsbDn] = manual_in_usb_n;
+  assign manual_out_usb_n = dio_out[DioUsbdevUsbDn];
+  assign manual_oe_usb_n = dio_oe[DioUsbdevUsbDn];
+  assign manual_attr_usb_n = dio_attr[DioUsbdevUsbDn];
 
-  // Pullups
-  logic usb_pullup_p_en, usb_pullup_n_en;
-  assign usb_pullup_p_en = dio_out[DioUsbdevDpPullup];
-  assign usb_pullup_n_en = dio_out[DioUsbdevDnPullup];
+  logic usb_rx_d;
 
+  // Pullups and differential receiver enable
+  logic usb_dp_pullup_en, usb_dn_pullup_en;
   logic usb_rx_enable;
-  assign usb_rx_enable = dio_out[DioUsbdevRxEnable];
 
   prim_usb_diff_rx #(
     .CalibW(ast_pkg::UsbCalibWidth)
@@ -1041,48 +1004,12 @@ module chip_${top["name"]}_${target["name"]} (
     .input_ni          ( USB_N                 ),
     .input_en_i        ( usb_rx_enable         ),
     .core_pok_h_i      ( ast_pwst_h.aon_pok    ),
-    .pullup_p_en_i     ( usb_pullup_p_en       ),
-    .pullup_n_en_i     ( usb_pullup_n_en       ),
+    .pullup_p_en_i     ( usb_dp_pullup_en      ),
+    .pullup_n_en_i     ( usb_dn_pullup_en      ),
     .calibration_i     ( usb_io_pu_cal         ),
     .usb_diff_rx_obs_o ( usb_diff_rx_obs       ),
-    .input_o           ( dio_in[DioUsbdevD]    )
+    .input_o           ( usb_rx_d              )
   );
-
-  // Tie-off unused signals
-  assign dio_in[DioUsbdevSe0] = 1'b0;
-  assign dio_in[DioUsbdevDpPullup] = 1'b0;
-  assign dio_in[DioUsbdevDnPullup] = 1'b0;
-  assign dio_in[DioUsbdevTxModeSe] = 1'b0;
-  assign dio_in[DioUsbdevSuspend] = 1'b0;
-  assign dio_in[DioUsbdevRxEnable] = 1'b0;
-
-  logic unused_usb_sigs;
-  assign unused_usb_sigs = ^{
-    // SE0
-    dio_out[DioUsbdevSe0],
-    dio_oe[DioUsbdevSe0],
-    dio_attr[DioUsbdevSe0],
-    // TX Mode
-    dio_out[DioUsbdevTxModeSe],
-    dio_oe[DioUsbdevTxModeSe],
-    dio_attr[DioUsbdevTxModeSe],
-    // Suspend
-    dio_out[DioUsbdevSuspend],
-    dio_oe[DioUsbdevSuspend],
-    dio_attr[DioUsbdevSuspend],
-    // Rx enable
-    dio_oe[DioUsbdevRxEnable],
-    dio_attr[DioUsbdevRxEnable],
-    // D is used as an input only
-    dio_out[DioUsbdevD],
-    dio_oe[DioUsbdevD],
-    dio_attr[DioUsbdevD],
-    // Pullup/down
-    dio_oe[DioUsbdevDpPullup],
-    dio_oe[DioUsbdevDnPullup],
-    dio_attr[DioUsbdevDpPullup],
-    dio_attr[DioUsbdevDnPullup]
-  };
 
   //////////////////////
   // Top-level design //
@@ -1108,6 +1035,14 @@ module chip_${top["name"]}_${target["name"]} (
     .sensor_ctrl_ast_alert_req_i  ( ast_alert_req              ),
     .sensor_ctrl_ast_alert_rsp_o  ( ast_alert_rsp              ),
     .sensor_ctrl_ast_status_i     ( ast_pwst.io_pok            ),
+    .usb_dp_pullup_en_o           ( usb_dp_pullup_en           ),
+    .usb_dn_pullup_en_o           ( usb_dn_pullup_en           ),
+    .usbdev_usb_rx_d_i            ( usb_rx_d                   ),
+    .usbdev_usb_tx_d_o            (                            ),
+    .usbdev_usb_tx_se0_o          (                            ),
+    .usbdev_usb_tx_use_d_se0_o    (                            ),
+    .usbdev_usb_suspend_o         (                            ),
+    .usbdev_usb_rx_enable_o       ( usb_rx_enable              ),
     .usbdev_usb_ref_val_o         ( usb_ref_val                ),
     .usbdev_usb_ref_pulse_o       ( usb_ref_pulse              ),
     .ast_tl_req_o                 ( base_ast_bus               ),
@@ -1264,6 +1199,14 @@ module chip_${top["name"]}_${target["name"]} (
     .sck_monitor_o                ( sck_monitor           ),
     .pwrmgr_ast_req_o             ( base_ast_pwr          ),
     .pwrmgr_ast_rsp_i             ( ast_base_pwr          ),
+    .usb_dp_pullup_en_o           ( usb_dp_pullup_en      ),
+    .usb_dn_pullup_en_o           ( usb_dn_pullup_en      ),
+    .usbdev_usb_rx_d_i            ( usb_rx_d              ),
+    .usbdev_usb_tx_d_o            ( usb_tx_d              ),
+    .usbdev_usb_tx_se0_o          ( usb_tx_se0            ),
+    .usbdev_usb_tx_use_d_se0_o    ( usb_tx_use_d_se0      ),
+    .usbdev_usb_suspend_o         ( usb_suspend           ),
+    .usbdev_usb_rx_enable_o       ( usb_rx_enable         ),
     .usbdev_usb_ref_val_o         ( usb_ref_val           ),
     .usbdev_usb_ref_pulse_o       ( usb_ref_pulse         ),
     .ast_edn_req_i                ( ast_edn_edn_req       ),

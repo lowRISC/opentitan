@@ -27,8 +27,6 @@ package pinmux_pkg;
     integer                   dft_strap1_idx;
     integer                   usb_dp_idx;
     integer                   usb_dn_idx;
-    integer                   usb_dp_pullup_idx;
-    integer                   usb_dn_pullup_idx;
     integer                   usb_sense_idx;
     pad_type_e [NDioPads-1:0] dio_pad_type;
     pad_type_e [NMioPads-1:0] mio_pad_type;
@@ -46,8 +44,6 @@ package pinmux_pkg;
     dft_strap1_idx:    0,
     usb_dp_idx:        0,
     usb_dn_idx:        0,
-    usb_dp_pullup_idx: 0,
-    usb_dn_pullup_idx: 0,
     usb_sense_idx:     0,
     dio_pad_type:      {NDioPads{BidirStd}},
     mio_pad_type:      {NMioPads{BidirStd}}
