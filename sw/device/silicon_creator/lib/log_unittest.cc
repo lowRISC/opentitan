@@ -5,6 +5,7 @@
 #include "sw/device/silicon_creator/lib/log.h"
 
 #include "gtest/gtest.h"
+#include "sw/device/lib/base/testing/global_mock.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/testing/mask_rom_test.h"
@@ -14,7 +15,7 @@ namespace log_unittest {
 namespace internal {
 // Create a mock for shutdown functions.
 // TODO: move mock UART into its own header file.
-class MockUart : public ::mask_rom_test::GlobalMock<MockUart> {
+class MockUart : public ::global_mock::GlobalMock<MockUart> {
  public:
   MOCK_METHOD(void, UartPutchar, (char));
 };
