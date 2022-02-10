@@ -95,6 +95,11 @@
     {
       name: flash_ctrl_hw_sec_otp
       uvm_test_seq: flash_ctrl_hw_sec_otp_vseq
+    }
+	{
+      name: flash_ctrl_erase_suspend
+      uvm_test_seq: flash_ctrl_erase_suspend_vseq
+      run_opts: ["+zero_delays=1"]
       reseed: 5
     }
   

@@ -147,7 +147,7 @@ class flash_ctrl_scoreboard #(
       "intr_test": begin
       end
 
-      "op_status", "status": begin
+      "op_status", "status", "erase_suspend": begin
         // TODO: FIXME
         do_read_check = 1'b0;
       end

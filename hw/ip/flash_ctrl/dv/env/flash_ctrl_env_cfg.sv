@@ -94,17 +94,55 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // The addr arg need not be word aligned - its the same addr programmed into the `control` CSR.
   // TODO: add support for partition.
   virtual function void flash_mem_bkdr_read(flash_op_t flash_op, ref data_q_t data);
-    flash_mem_addr_attrs addr_attrs = new(flash_op.addr);
+    flash_mem_addr_attrs             addr_attrs = new(flash_op.addr);
+    bit                  [TL_AW-1:0] read_addr;
+
+    if (flash_op.op == flash_ctrl_pkg::FlashOpErase) begin
+      case (flash_op.erase_type)
+        flash_ctrl_pkg::FlashErasePage: begin
+          read_addr = addr_attrs.page_start_addr;
+          flash_op.num_words = FlashNumBusWordsPerPage;
+        end
+        flash_ctrl_pkg::FlashEraseBank: begin
+          read_addr = 0;
+          case (flash_op.partition)
+            FlashPartData: begin
+              flash_op.num_words = FlashNumBusWordsPerBank;
+            end
+            FlashPartInfo: begin
+              flash_op.num_words = InfoTypeBusWords[0];
+            end
+            default: begin
+              `uvm_fatal(`gfn, $sformatf(
+                         {
+                           "Invalid partition for bank_erase: %0s. ",
+                           "Bank erase is only valid in the data partition ",
+                           "(FlashPartData) and the first info partition ",
+                           "(FlashPartInfo)."
+                         },
+                         flash_op.partition.name()
+                         ))
+            end
+          endcase
+        end
+        default: begin
+          `uvm_fatal(`gfn, $sformatf("Invalid erase_type: %0s", flash_op.erase_type.name()))
+        end
+      endcase
+    end else begin  // FlashOpProgram, FlashOpRead
+      read_addr = addr_attrs.bank_addr;
+    end
+
     data.delete();
     for (int i = 0; i < flash_op.num_words; i++) begin
-      data[i] = mem_bkdr_util_h[flash_op.partition][addr_attrs.bank].read32(addr_attrs.bank_addr);
+      data[i] = mem_bkdr_util_h[flash_op.partition][addr_attrs.bank].read32(read_addr);
       `uvm_info(`gfn, $sformatf(
                 "flash_mem_bkdr_read: partition = %s , {%s} = 0x%0h",
                 flash_op.partition.name(),
                 addr_attrs.sprint(),
                 data[i]
                 ), UVM_MEDIUM)
-      addr_attrs.incr(TL_DBW);
+      read_addr += TL_DBW;
     end
   endfunction : flash_mem_bkdr_read
 

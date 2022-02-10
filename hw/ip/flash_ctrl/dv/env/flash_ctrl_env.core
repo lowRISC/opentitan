@@ -39,6 +39,7 @@ filesets:
       - seq_lib/flash_ctrl_rd_buff_evict_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_phy_arb_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_hw_sec_otp_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_erase_suspend_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
