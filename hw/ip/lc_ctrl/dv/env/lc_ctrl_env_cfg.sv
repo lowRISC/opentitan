@@ -44,8 +44,8 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
   // OTP
   rand otp_device_id_t otp_device_id;
   rand otp_device_id_t otp_manuf_state;
-  rand int otp_vendor_test_ctrl;
-  rand int otp_vendor_test_status;
+  rand logic [OtpTestCtrlWidth-1:0]  otp_vendor_test_ctrl;
+  rand logic [OtpTestStatusWidth-1:0]  otp_vendor_test_status;
 
 
 

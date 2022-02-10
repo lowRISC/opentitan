@@ -159,7 +159,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
       for(int i=0; i<16; i++) begin
         token_data[i*8 +: 8] = item_rcv.byte_data_q[i];
       end
-      `uvm_info(`gfn, $sformatf("process_kmac_app_req: token received %h", token_data), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("process_kmac_app_req: token received %h", token_data), UVM_MEDIUM)
 
       if (cfg.en_scb) begin
         `DV_CHECK_EQ(token_data, {`gmv(ral.transition_token[3]),

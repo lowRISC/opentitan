@@ -4,6 +4,5 @@
 //
 // Binds LC_CTRL functional coverage interaface to the top level LC_CTRL module.
 module lc_ctrl_cov_bind;
-  bind lc_ctrl lc_ctrl_cov_if u_lc_ctrl_cov_if (.*);
   bind lc_ctrl_fsm lc_ctrl_fsm_cov_if u_lc_ctrl_fsm_cov_if (.*);
 endmodule
