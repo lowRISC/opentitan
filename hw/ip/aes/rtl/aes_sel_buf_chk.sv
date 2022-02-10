@@ -12,8 +12,9 @@
 `include "prim_assert.sv"
 
 module aes_sel_buf_chk #(
-  parameter int Num   = 2,
-  parameter int Width = 1
+  parameter int Num      = 2,
+  parameter int Width    = 1,
+  parameter bit EnSecBuf = 1'b0
 ) (
   input  logic             clk_i,  // Used for assertions only.
   input  logic             rst_ni, // Used for assertions only.
@@ -34,10 +35,19 @@ module aes_sel_buf_chk #(
   // Buffer //
   ////////////
 
-  for (genvar i = 0; i < Width; i++) begin : gen_sel_buf
-    prim_buf u_prim_buf_sel_i (
-      .in_i  ( sel_i[i] ),
-      .out_o ( sel_o[i] )
+  if (EnSecBuf) begin : gen_sec_buf
+    prim_sec_anchor_buf #(
+      .Width ( Width )
+    ) u_prim_buf_sel_i (
+      .in_i  ( sel_i ),
+      .out_o ( sel_o )
+    );
+  end else begin : gen_buf
+    prim_buf  #(
+      .Width ( Width )
+    ) u_prim_buf_sel_i (
+      .in_i  ( sel_i ),
+      .out_o ( sel_o )
     );
   end
 

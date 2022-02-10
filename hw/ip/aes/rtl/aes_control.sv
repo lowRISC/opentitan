@@ -532,11 +532,15 @@ module aes_control
     assign sp2v_sig[5+i] = ctr_we_i[i];
   end
 
+  // All signals inside sp2v_sig are driven and consumed by multi-rail FSMs.
+  localparam bit [NumSp2VSig-1:0] Sp2VEnSecBuf = '0;
+
   // Individually check sparsely encoded signals.
   for (genvar i = 0; i < NumSp2VSig; i++) begin : gen_sel_buf_chk
     aes_sel_buf_chk #(
-      .Num   ( Sp2VNum   ),
-      .Width ( Sp2VWidth )
+      .Num      ( Sp2VNum         ),
+      .Width    ( Sp2VWidth       ),
+      .EnSecBuf ( Sp2VEnSecBuf[i] )
     ) u_aes_sp2v_sig_buf_chk_i (
       .clk_i  ( clk_i               ),
       .rst_ni ( rst_ni              ),

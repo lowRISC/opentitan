@@ -661,8 +661,9 @@ module aes_core
   // registers.
 
   aes_sel_buf_chk #(
-    .Num   ( DIPSelNum   ),
-    .Width ( DIPSelWidth )
+    .Num      ( DIPSelNum   ),
+    .Width    ( DIPSelWidth ),
+    .EnSecBuf ( 1'b1        )
   ) u_aes_data_in_prev_sel_buf_chk (
     .clk_i  ( clk_i                 ),
     .rst_ni ( rst_ni                ),
@@ -673,8 +674,9 @@ module aes_core
   assign data_in_prev_sel = dip_sel_e'(data_in_prev_sel_raw);
 
   aes_sel_buf_chk #(
-    .Num   ( SISelNum   ),
-    .Width ( SISelWidth )
+    .Num      ( SISelNum   ),
+    .Width    ( SISelWidth ),
+    .EnSecBuf ( 1'b1       )
   ) u_aes_state_in_sel_buf_chk (
     .clk_i  ( clk_i             ),
     .rst_ni ( rst_ni            ),
@@ -685,8 +687,9 @@ module aes_core
   assign state_in_sel = si_sel_e'(state_in_sel_raw);
 
   aes_sel_buf_chk #(
-    .Num   ( AddSISelNum   ),
-    .Width ( AddSISelWidth )
+    .Num      ( AddSISelNum   ),
+    .Width    ( AddSISelWidth ),
+    .EnSecBuf ( 1'b1          )
   ) u_aes_add_state_in_sel_buf_chk (
     .clk_i  ( clk_i                 ),
     .rst_ni ( rst_ni                ),
@@ -697,8 +700,9 @@ module aes_core
   assign add_state_in_sel = add_si_sel_e'(add_state_in_sel_raw);
 
   aes_sel_buf_chk #(
-    .Num   ( AddSOSelNum   ),
-    .Width ( AddSOSelWidth )
+    .Num      ( AddSOSelNum   ),
+    .Width    ( AddSOSelWidth ),
+    .EnSecBuf ( 1'b1          )
   ) u_aes_add_state_out_sel_buf_chk (
     .clk_i  ( clk_i                  ),
     .rst_ni ( rst_ni                 ),
@@ -709,8 +713,9 @@ module aes_core
   assign add_state_out_sel = add_so_sel_e'(add_state_out_sel_raw);
 
   aes_sel_buf_chk #(
-    .Num   ( KeyInitSelNum   ),
-    .Width ( KeyInitSelWidth )
+    .Num      ( KeyInitSelNum   ),
+    .Width    ( KeyInitSelWidth ),
+    .EnSecBuf ( 1'b1            )
   ) u_aes_key_init_sel_buf_chk (
     .clk_i  ( clk_i             ),
     .rst_ni ( rst_ni            ),
@@ -721,8 +726,9 @@ module aes_core
   assign key_init_sel = key_init_sel_e'(key_init_sel_raw);
 
   aes_sel_buf_chk #(
-    .Num   ( IVSelNum   ),
-    .Width ( IVSelWidth )
+    .Num      ( IVSelNum   ),
+    .Width    ( IVSelWidth ),
+    .EnSecBuf ( 1'b1       )
   ) u_aes_iv_sel_buf_chk (
     .clk_i  ( clk_i       ),
     .rst_ni ( rst_ni      ),
@@ -769,11 +775,15 @@ module aes_core
   assign sp2v_sig[NumSharesKey * NumRegsKey + NumSlicesCtr + 0] = data_in_prev_we_ctrl;
   assign sp2v_sig[NumSharesKey * NumRegsKey + NumSlicesCtr + 1] = data_out_we_ctrl;
 
+  // All signals inside sp2v_sig are eventually converted to single-rail signals.
+  localparam bit [NumSp2VSig-1:0] Sp2VEnSecBuf = {NumSp2VSig{1'b1}};
+
   // Individually check sparsely encoded signals.
   for (genvar i = 0; i < NumSp2VSig; i++) begin : gen_sel_buf_chk
     aes_sel_buf_chk #(
-      .Num   ( Sp2VNum   ),
-      .Width ( Sp2VWidth )
+      .Num      ( Sp2VNum         ),
+      .Width    ( Sp2VWidth       ),
+      .EnSecBuf ( Sp2VEnSecBuf[i] )
     ) u_aes_sp2v_sig_buf_chk_i (
       .clk_i  ( clk_i               ),
       .rst_ni ( rst_ni              ),

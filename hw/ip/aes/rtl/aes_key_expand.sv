@@ -404,8 +404,9 @@ module aes_key_expand import aes_pkg::*;
 
   logic [Sp2VWidth-1:0] en_raw;
   aes_sel_buf_chk #(
-    .Num   ( Sp2VNum   ),
-    .Width ( Sp2VWidth )
+    .Num      ( Sp2VNum   ),
+    .Width    ( Sp2VWidth ),
+    .EnSecBuf ( 1'b1      )
   ) u_aes_key_expand_en_buf_chk (
     .clk_i  ( clk_i  ),
     .rst_ni ( rst_ni ),
@@ -417,8 +418,9 @@ module aes_key_expand import aes_pkg::*;
 
   logic [Sp2VWidth-1:0] out_ack_raw;
   aes_sel_buf_chk #(
-    .Num   ( Sp2VNum   ),
-    .Width ( Sp2VWidth )
+    .Num      ( Sp2VNum   ),
+    .Width    ( Sp2VWidth ),
+    .EnSecBuf ( 1'b1      )
   ) u_aes_key_expand_out_ack_buf_chk (
     .clk_i  ( clk_i       ),
     .rst_ni ( rst_ni      ),
