@@ -13,7 +13,6 @@ filesets:
     depend:
       - lowrisc:dv:dv_utils
     files:
-      - lc_ctrl_cov_if.sv
       - lc_ctrl_fsm_cov_if.sv
       - lc_ctrl_cov_bind.sv
     file_type: systemVerilogSource
