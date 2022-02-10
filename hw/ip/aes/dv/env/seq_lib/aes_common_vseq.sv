@@ -21,14 +21,18 @@ class aes_common_vseq extends aes_base_vseq;
                                              uvm_reg_data_t wdata,
                                              bit            predict = 1);
     bit [TL_DW-1:0] rdata;
-    csr_rd(ral.status, rdata);
-    // Only update `ctrl_shadowed` register if AES is idle.
-    if (get_field_val(ral.status.idle, rdata) == 1) begin
-      csr_wr(.ptr(csr), .value(wdata), .en_shadow_wr(0), .predict(0));
-      if (predict) begin
-        ctrl_reg_map_invalid_value(wdata);
-        void'(csr.predict(.value(wdata), .kind(UVM_PREDICT_WRITE)));
+    if (csr.get_name() == "ctrl_shadowed") begin
+      csr_rd(ral.status, rdata);
+      // Only update `ctrl_shadowed` register if AES is idle.
+      if (get_field_val(ral.status.idle, rdata) == 1) begin
+        csr_wr(.ptr(csr), .value(wdata), .en_shadow_wr(0), .predict(0));
+        if (predict) begin
+          ctrl_reg_map_invalid_value(wdata);
+          void'(csr.predict(.value(wdata), .kind(UVM_PREDICT_WRITE)));
+        end
       end
+    end else begin
+      super.csr_wr_for_shadow_reg_predict(csr, wdata, predict);
     end
   endtask
 
@@ -36,22 +40,28 @@ class aes_common_vseq extends aes_base_vseq;
     aes_mode_e      mode_e;
     key_len_e       key_len_e;
     prs_rate_e      prs_rate_e;
+    bit [1:0]       aes_val = get_field_val(ral.ctrl_shadowed.operation, val);
     bit [TL_DW-1:0] mode_val = get_field_val(ral.ctrl_shadowed.mode, val);
     bit [TL_DW-1:0] key_len_val = get_field_val(ral.ctrl_shadowed.key_len, val);
     bit [TL_DW-1:0] prs_rate_val = get_field_val(ral.ctrl_shadowed.prng_reseed_rate, val);
 
+    if (aes_val != 2'b10) aes_val = 2'b01;
+    val = get_csr_val_with_updated_field(ral.ctrl_shadowed.operation, val, aes_val);
+
     if (!$cast(mode_e, mode_val)) begin
       val = get_csr_val_with_updated_field(ral.ctrl_shadowed.mode, val, AES_NONE);
     end
+
     if (!$cast(key_len_e, key_len_val)) begin
       val = get_csr_val_with_updated_field(ral.ctrl_shadowed.key_len, val, AES_256);
     end
+
     if (!$cast(prs_rate_e, prs_rate_val)) begin
       val = get_csr_val_with_updated_field(ral.ctrl_shadowed.prng_reseed_rate, val, PER_1);
     end
-    // TODO: find a better way than hardcode it. Force_zero_masks field should be 0 unless the
-    // maksing parameters are enabled.
-    val[15] = 0;
+
+    // Force_zero_masks field should be 0 unless the maksing parameters are enabled.
+    val[ral.ctrl_shadowed.force_zero_masks.get_lsb_pos()] = 0;
   endfunction
 
   // Discussed in Issue #8460, fatal storage error will clear storage error status bit.
