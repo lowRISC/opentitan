@@ -45,7 +45,8 @@ module clkmgr_byp
                             MuBi4False;
 
   prim_mubi4_sender #(
-    .ResetValue(MuBi4False)
+    .ResetValue(MuBi4False),
+    .EnSecBuf(1)
   ) u_io_byp_req (
     .clk_i,
     .rst_ni,
@@ -69,7 +70,8 @@ module clkmgr_byp
   assign all_clk_byp_req_d = mubi4_and_hi(byp_req_i, dft_en);
 
   prim_mubi4_sender #(
-    .ResetValue(MuBi4False)
+    .ResetValue(MuBi4False),
+    .EnSecBuf(1)
   ) u_all_byp_req (
     .clk_i,
     .rst_ni,
