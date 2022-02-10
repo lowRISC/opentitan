@@ -76,8 +76,9 @@ module aes_ctr import aes_pkg::*;
   // Check sparsely encoded incr signal.
   logic [Sp2VWidth-1:0] incr_raw;
   aes_sel_buf_chk #(
-    .Num   ( Sp2VNum   ),
-    .Width ( Sp2VWidth )
+    .Num      ( Sp2VNum   ),
+    .Width    ( Sp2VWidth ),
+    .EnSecBuf ( 1'b0      )
   ) u_aes_sb_en_buf_chk (
     .clk_i  ( clk_i    ),
     .rst_ni ( rst_ni   ),
