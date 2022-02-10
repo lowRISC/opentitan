@@ -255,6 +255,10 @@ module kmac_app
   // state output
   // Mux selection signal
   app_mux_sel_e mux_sel;
+  app_mux_sel_e mux_sel_buf_output;
+  app_mux_sel_e mux_sel_buf_err_check;
+  app_mux_sel_e mux_sel_buf_key;
+  app_mux_sel_e mux_sel_buf_kmac;
 
   // Error checking logic
 
@@ -555,7 +559,7 @@ module kmac_app
     kmac_data_o = '0;
     kmac_mask_o = '0;
 
-    unique case (mux_sel)
+    unique case (mux_sel_buf_kmac)
       SelApp: begin
         // app_id is valid at this time
         kmac_valid_o = app_i[app_id].valid;
@@ -594,12 +598,12 @@ module kmac_app
   always_comb begin
     mux_err = '{valid: 1'b 0, code: ErrNone, info: '0};
 
-    if (mux_sel != SelSw && sw_valid_i) begin
+    if (mux_sel_buf_err_check != SelSw && sw_valid_i) begin
       // If SW writes message into FIFO
       mux_err = '{
         valid: 1'b 1,
         code: ErrSwPushedMsgFifo,
-        info: 24'({8'h 00, 8'(st), 8'(mux_sel)})
+        info: 24'({8'h 00, 8'(st), 8'(mux_sel_buf_err_check)})
       };
     end else if (app_active_o && sw_cmd_i != CmdNone) begin
       // If SW issues command except start
@@ -611,14 +615,50 @@ module kmac_app
     end
   end
 
+  prim_sec_anchor_buf #(
+   .Width(AppMuxWidth)
+  ) u_prim_buf_state_output_sel (
+    .in_i(mux_sel),
+    .out_o(mux_sel_buf_output)
+  );
+
+  prim_sec_anchor_buf #(
+   .Width(AppMuxWidth)
+  ) u_prim_buf_state_err_check (
+    .in_i(mux_sel),
+    .out_o(mux_sel_buf_err_check)
+  );
+
+  prim_sec_anchor_buf #(
+   .Width(AppMuxWidth)
+  ) u_prim_buf_state_kmac_sel (
+    .in_i(mux_sel),
+    .out_o(mux_sel_buf_kmac)
+  );
+
+  prim_sec_anchor_buf #(
+   .Width(AppMuxWidth)
+  ) u_prim_buf_state_key_sel (
+    .in_i(mux_sel),
+    .out_o(mux_sel_buf_key)
+  );
+
+  logic reg_state_valid;
+  prim_sec_anchor_buf #(
+   .Width(1)
+  ) u_prim_buf_state_output_valid (
+    .in_i(reg_state_valid),
+    .out_o(reg_state_valid_o)
+  );
+
   // Keccak state Demux
   // Keccak state --> Register output is enabled when state is in StSw
   always_comb begin
-    if (mux_sel == SelSw) begin
-      reg_state_valid_o = keccak_state_valid_i;
+    if ((mux_sel_buf_output == SelSw) && (lc_escalate_en_i == lc_ctrl_pkg::Off)) begin
+      reg_state_valid = keccak_state_valid_i;
       reg_state_o = keccak_state_i;
     end else begin
-      reg_state_valid_o = 1'b 0;
+      reg_state_valid = 1'b 0;
       reg_state_o = '{default:'0};
     end
   end
@@ -627,7 +667,8 @@ module kmac_app
   always_comb begin
     app_digest_done = 1'b 0;
     app_digest = '{default:'0};
-    if (st == StAppWait && absorbed_i) begin
+    if (st == StAppWait && absorbed_i &&
+        lc_escalate_en_i == lc_ctrl_pkg::Off) begin
       // SHA3 engine has calculated the hash. Return the data to KeyMgr
       app_digest_done = 1'b 1;
 
@@ -660,7 +701,7 @@ module kmac_app
 
   // Sideloaded key is used when KeyMgr KDF is active or !!CFG.sideload is set
   always_comb begin
-    if (keymgr_key_en_i || (mux_sel == SelApp)) begin
+    if (keymgr_key_en_i || (mux_sel_buf_key == SelApp)) begin
       // KeyLen is fixed to the $bits(sideloaded_key)
       key_len_o = SideloadedKey;
     end else begin
@@ -669,7 +710,7 @@ module kmac_app
   end
 
   for (genvar i = 0 ; i < Share ; i++) begin : g_key_assign
-    assign key_data_o[i] = (keymgr_key_en_i || (mux_sel == SelApp))
+    assign key_data_o[i] = (keymgr_key_en_i || (mux_sel_buf_key == SelApp))
                          ? keymgr_key[i]
                          : reg_key_data_i[i] ;
   end
