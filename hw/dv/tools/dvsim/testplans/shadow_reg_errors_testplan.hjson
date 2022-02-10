@@ -48,7 +48,7 @@
             - Read all CSRs to ensure the DUT is properly reset.
             - Repeat the above steps a bunch of times.
             '''
-      milestone: V1
+      milestone: V2S
       tests: ["{name}_shadow_reg_errors"]
     }
 
@@ -65,7 +65,7 @@
             - Read all CSRs to ensure the DUT is properly reset.
             - Repeat the above steps a bunch of times.
             '''
-      milestone: V1
+      milestone: V2S
       tests: ["{name}_shadow_reg_errors"]
     }
 
@@ -79,7 +79,7 @@
               shadowed registers' write/read to be executed without aborting.
             - Repeat the above steps a bunch of times.
             '''
-      milestone: V1
+      milestone: V2S
       tests: ["{name}_shadow_reg_errors_with_csr_rw"]
     }
   ]
