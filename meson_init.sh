@@ -166,4 +166,5 @@ meson $reconf \
   -Dkeep_includes="$FLAGS_keep_includes" \
   -Dcoverage="$FLAGS_coverage" \
   --cross-file="$ARG_toolchain_file" \
+  --cross-file="meson-config.txt" \
   "$OBJ_DIR"

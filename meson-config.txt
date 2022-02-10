@@ -1,0 +1,3 @@
+[constants]
+march = 'rv32imc'
+default_extra_args = []
