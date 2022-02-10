@@ -33,6 +33,8 @@ class otbn_imem_err_vseq extends otbn_base_vseq;
     // Mask to corrupt 1 to 2 bits of the imem memory
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
 
+    `uvm_info(`gfn, "Injecting IMEM errors", UVM_MEDIUM)
+
     for (int i = 0; i < otbn_reg_pkg::OTBN_IMEM_SIZE / 4; i++) begin
       bit [38:0] good_data = cfg.read_imem_word(i, key, nonce);
       bit [38:0] bad_data = good_data ^ mask;
@@ -41,7 +43,19 @@ class otbn_imem_err_vseq extends otbn_base_vseq;
 
     cfg.model_agent_cfg.vif.invalidate_imem();
 
-    // Wait until the ISS and RTL move to a locked state
+    // If we were unlucky, we might have injected the errors while OTBN was executing an instruction
+    // that was already causing it to stop. To allow for this specific case, we wait exactly one
+    // cycle.
+    @(cfg.clk_rst_vif.cbn);
+    // If OTBN is now idle, we hit this exact window and the test didn't do anything useful. Ho
+    // hum... Note that we don't need to apply a reset in this case.
+    if (cfg.model_agent_cfg.vif.status == otbn_pkg::StatusIdle) begin
+      `uvm_info(`gfn, "Skipping test: we happened to inject the IMEM error at a bad time", UVM_LOW)
+      return;
+    end
+
+    // Looks like the injected error should have some effect. Wait until the ISS and RTL move to a
+    // locked state.
     wait (cfg.model_agent_cfg.vif.status != otbn_pkg::StatusBusyExecute);
     `DV_CHECK_FATAL(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked);
 
