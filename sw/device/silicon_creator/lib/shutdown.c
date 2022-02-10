@@ -73,8 +73,17 @@ static size_t clsindex(alert_class_t cls) {
 }
 
 rom_error_t shutdown_init(lifecycle_state_t lc_state) {
+  // `lc_shift` values for different lifecycle states.
+  enum {
+    kLcShiftProd = 0,
+    kLcShiftProdEnd = 8,
+    kLcShiftDev = 16,
+    kLcShiftRma = 24,
+  };
+
   // Are we in a lifecycle state which needs alert configuration?
   uint32_t lc_shift;
+  uint32_t lc_shift_masked;
   switch (launder32(lc_state)) {
     case kLcStateTest:
       HARDENED_CHECK_EQ(lc_state, kLcStateTest);
@@ -83,19 +92,25 @@ rom_error_t shutdown_init(lifecycle_state_t lc_state) {
       return kErrorOk;
     case kLcStateProd:
       HARDENED_CHECK_EQ(lc_state, kLcStateProd);
-      lc_shift = 0;
+      lc_shift = kLcShiftProd;
+      // First operand is laundered to prevent constant-folding of
+      // xor-of-constants.
+      lc_shift_masked = launder32(kLcShiftProd) ^ kLcStateProd;
       break;
     case kLcStateProdEnd:
       HARDENED_CHECK_EQ(lc_state, kLcStateProdEnd);
-      lc_shift = 8;
+      lc_shift = kLcShiftProdEnd;
+      lc_shift_masked = launder32(kLcShiftProdEnd) ^ kLcStateProdEnd;
       break;
     case kLcStateDev:
       HARDENED_CHECK_EQ(lc_state, kLcStateDev);
-      lc_shift = 16;
+      lc_shift = kLcShiftDev;
+      lc_shift_masked = launder32(kLcShiftDev) ^ kLcStateDev;
       break;
     case kLcStateRma:
       HARDENED_CHECK_EQ(lc_state, kLcStateRma);
-      lc_shift = 24;
+      lc_shift = kLcShiftRma;
+      lc_shift_masked = launder32(kLcShiftRma) ^ kLcStateRma;
       break;
     default:
       HARDENED_UNREACHABLE();
@@ -158,6 +173,11 @@ rom_error_t shutdown_init(lifecycle_state_t lc_state) {
     }
   }
   if (i != ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT) {
+    error = kErrorUnknown;
+  }
+
+  // Check `lc_shift` value.
+  if ((lc_shift_masked ^ lc_state) != lc_shift) {
     error = kErrorUnknown;
   }
 
