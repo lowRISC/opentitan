@@ -25,6 +25,8 @@ class aon_timer_env_cfg extends cip_base_env_cfg #(.RAL_T(aon_timer_reg_block));
     list_of_alerts = aon_timer_env_pkg::LIST_OF_ALERTS;
     super.initialize(csr_base_addr);
 
+    m_tl_agent_cfg.max_outstanding_req = 1;
+
     // set num_interrupts & num_alerts
     begin
       uvm_reg rg = ral.get_reg_by_name("intr_state");
