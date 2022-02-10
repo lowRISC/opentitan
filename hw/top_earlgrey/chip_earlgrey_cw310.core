@@ -57,12 +57,19 @@ parameters:
   AST_BYPASS_CLK:
     datatype: bool
     paramtype: vlogdefine
+  IBEX_CUSTOM_PMP_RESET_VALUES:
+    datatype: bool
+    default: true
+    paramtype: vlogdefine
 
 targets:
   default: &default_target
     filesets:
       - files_rtl_cw310
     toplevel: chip_earlgrey_cw310
+    parameters:
+      - IBEX_CUSTOM_PMP_RESET_VALUES
+      - AST_BYPASS_CLK=true
 
   synth:
     default_tool: vivado
@@ -75,6 +82,7 @@ targets:
       - BootRomInitFile
       - OtpCtrlMemInitFile
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
+      - IBEX_CUSTOM_PMP_RESET_VALUES
       - AST_BYPASS_CLK=true
     tools:
       vivado:
