@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_MOCK_OTP_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_MOCK_OTP_H_
 
+#include "sw/device/lib/base/testing/global_mock.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/testing/mask_rom_test.h"
 
@@ -14,7 +15,7 @@ namespace internal {
 /**
  * Mock class for otp.c.
  */
-class MockOtp : public GlobalMock<MockOtp> {
+class MockOtp : public global_mock::GlobalMock<MockOtp> {
  public:
   MOCK_METHOD(uint32_t, read32, (uint32_t address));
   MOCK_METHOD(uint32_t, read64, (uint32_t address));

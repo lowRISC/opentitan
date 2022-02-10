@@ -37,6 +37,7 @@ cc_library(
     hdrs = ["mock_boot_data.h"],
     deps = [
         ":boot_data_intf",
+        "//sw/device/lib/base/testing:global_mock",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest",
     ],
@@ -190,6 +191,7 @@ cc_test(
     deps = [
         ":error",
         ":log",
+        "//sw/device/lib/base/testing:global_mock",
         "//sw/device/silicon_creator/lib/drivers:uart",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
@@ -230,6 +232,7 @@ cc_library(
     hdrs = ["mock_manifest.h"],
     deps = [
         ":manifest_intf",
+        "//sw/device/lib/base/testing:global_mock",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest",
     ],
@@ -282,6 +285,7 @@ cc_library(
     hdrs = ["mock_shutdown.h"],
     deps = [
         ":shutdown_intf",
+        "//sw/device/lib/base/testing:global_mock",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest",
     ],
@@ -525,6 +529,7 @@ cc_library(
     ],
     deps = [
         ":sigverify_internal",
+        "//sw/device/lib/base/testing:global_mock",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest",
     ],

@@ -5,8 +5,9 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_MOCK_HMAC_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_MOCK_HMAC_H_
 
-#include "sw/device/lib/testing/mask_rom_test.h"
+#include "sw/device/lib/base/testing/global_mock.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
+#include "sw/device/silicon_creator/testing/mask_rom_test.h"
 
 namespace mask_rom_test {
 namespace internal {
@@ -14,7 +15,7 @@ namespace internal {
 /**
  * Mock class for hmac.c.
  */
-class MockHmac : public GlobalMock<MockHmac> {
+class MockHmac : public global_mock::GlobalMock<MockHmac> {
  public:
   MOCK_METHOD(void, sha256_init, ());
   MOCK_METHOD(rom_error_t, sha256_update, (const void *, size_t));

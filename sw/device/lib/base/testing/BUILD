@@ -6,7 +6,6 @@ package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "global_mock",
-    testonly = True,
     hdrs = ["global_mock.h"],
 )
 

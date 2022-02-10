@@ -27,6 +27,7 @@ cc_library(
     testonly = True,
     hdrs = ["mock_boot_policy_ptrs.h"],
     deps = [
+        "//sw/device/lib/base/testing:global_mock",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest",
     ],

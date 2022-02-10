@@ -28,6 +28,7 @@ cc_library(
         "mock_alert.h",
     ],
     deps = [
+        "//sw/device/lib/base/testing:global_mock",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest",
     ],
@@ -127,6 +128,7 @@ cc_library(
     hdrs = ["mock_hmac.h"],
     deps = [
         ":hmac",
+        "//sw/device/lib/base/testing:global_mock",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest",
     ],
@@ -235,6 +237,7 @@ cc_library(
         "mock_lifecycle.h",
     ],
     deps = [
+      "//sw/device/lib/base/testing:global_mock",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest",
     ],
@@ -318,6 +321,7 @@ cc_library(
         "otp.h",
     ],
     deps = [
+      "//sw/device/lib/base/testing:global_mock",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest",
     ],
@@ -334,6 +338,7 @@ cc_test(
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
+        "//sw/device/lib/base/testing:global_mock",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
         "//sw/device/silicon_creator/testing:mask_rom_test",
@@ -424,6 +429,7 @@ cc_library(
         "rnd.h",
     ],
     deps = [
+        "//sw/device/lib/base/testing:global_mock",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest",
     ],
