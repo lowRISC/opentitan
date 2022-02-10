@@ -399,27 +399,32 @@ class aes_base_vseq extends cip_base_vseq #(
 
     bit           read;
     bit           write;
-
+    bit           wait_for_idle = 1;
     rst_set  = 0;
     cfg_item = aes_item_queue.pop_back();
 
 
     // check idle before starting
+
     status_fsm(cfg_item, data_item, new_msg, manual_operation, sideload_en, 1, 0, status, rst_set);
     setup_dut(cfg_item);
     // check idle before starting
-    status_fsm(cfg_item, data_item, new_msg, manual_operation, sideload_en, 1, 0, status, rst_set);
+    wait_for_idle = 1 ;
     if (unbalanced == 0 || manual_operation) begin
        data_item = new();
       while ((aes_item_queue.size() > 0) && !rst_set) begin
         status_fsm(cfg_item, data_item, new_msg, manual_operation,
-                   sideload_en, 0, 0, status, rst_set);
+                   sideload_en, wait_for_idle, 0, status, rst_set);
+        // provide data as fast as the DUT allows
+        wait_for_idle = 0;
         if (status.input_ready && status.idle) begin
           data_item = aes_item_queue.pop_back();
           config_and_transmit(cfg_item, data_item, new_msg,
                               manual_operation, sideload_en, 1, rst_set);
           new_msg = 0;
         end else if (cfg_item.mode == AES_NONE) begin
+          status_fsm(cfg_item, data_item, new_msg, manual_operation,
+                   sideload_en, 0, 0, status, rst_set);
           // just write the data - don't expect and output
           config_and_transmit(cfg_item, data_item, new_msg,
                               manual_operation, sideload_en, 0, rst_set);
@@ -431,8 +436,8 @@ class aes_base_vseq extends cip_base_vseq #(
         // get the status to make sure we can provide data - but don't wait for output //
         if (aes_item_queue.size() > 0 ) data_item = new();
         status_fsm(cfg_item, data_item, new_msg,
-                   manual_operation, sideload_en, 0, 0, status, rst_set);
-
+                   manual_operation, sideload_en, wait_for_idle, 0, status, rst_set);
+        wait_for_idle = 0;
         read  = ($urandom_range(0, 100) <= read_prob);
         write = ($urandom_range(0, 100) <= write_prob);
 
