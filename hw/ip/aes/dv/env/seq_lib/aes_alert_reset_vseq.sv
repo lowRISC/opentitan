@@ -12,8 +12,8 @@ class aes_alert_reset_vseq extends aes_base_vseq;
   status_t aes_status;
   bit  finished_all_msgs = 0;
 
-  rand bit [$bits(aes_mode_e) -1 : 0] mal_error;
- // constraint mal_error_c { $countones(mal_error.mode) > 1; };
+  rand bit [$bits(aes_mode_e) -1 : 0]           mal_error;
+  rand bit [$bits(lc_ctrl_pkg::lc_tx_t)-1 :0 ]  lc_esc;
 
   task body();
     `uvm_info(`gfn, $sformatf("\n\n\t ----| STARTING AES MAIN SEQUENCE |----\n %s",
@@ -22,14 +22,13 @@ class aes_alert_reset_vseq extends aes_base_vseq;
     // generate list of messages //
     generate_message_queue();
 
-
     // process all messages //
     fork
       begin: isolation_fork
         fork
           error: begin
             cfg.clk_rst_vif.wait_clks(cfg.inj_delay);
-            if (cfg.error_types.mal_inject && (cfg.flip_rst == Flip_bits)) begin
+            if (cfg.flip_rst_lc_esc == Flip_bits) begin
               void'(randomize(mal_error)  with { $countones(mal_error) > 1; });
               if (!uvm_hdl_check_path(
                   "tb.dut.u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_mode.committed_q"
@@ -48,12 +47,23 @@ class aes_alert_reset_vseq extends aes_base_vseq;
                 $asserton(0, "tb.dut.u_aes_core.AesModeValid");
                 $asserton(0, "tb.dut.u_aes_core.u_aes_control.AesModeValid");
               end
-            end else if (cfg.error_types.reset && (cfg.flip_rst == Pull_reset)) begin
+            end else if (cfg.flip_rst_lc_esc == Pull_reset) begin
               // only do reset injection if we are not already
               // injecting other errors (which will pull reset anyway)
               aes_reset();
               #10ps;
               wait(!cfg.under_reset);
+            end else if (cfg.flip_rst_lc_esc == Lc_escalate) begin
+              if (!(randomize(lc_esc)  with { lc_esc != lc_ctrl_pkg::Off;})) begin
+                `uvm_fatal(`gfn, $sformatf("Randomization failes"))
+              end
+              $assertoff(0,"tb.dut.u_prim_lc_sync.PrimLcSyncCheckTransients0_A");
+              $assertoff(0,"tb.dut.u_prim_lc_sync.PrimLcSyncCheckTransients_A");
+               cfg.lc_escalate_vif.drive({lc_esc,1'b1});
+               wait(!cfg.clk_rst_vif.rst_n);
+               cfg.lc_escalate_vif.drive('0);
+              $asserton(0,"tb.dut.u_prim_lc_sync.PrimLcSyncCheckTransients0_A");
+              $asserton(0,"tb.dut.u_prim_lc_sync.PrimLcSyncCheckTransients_A");
             end
           end
           basic: begin
