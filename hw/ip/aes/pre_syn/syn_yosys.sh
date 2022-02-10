@@ -66,7 +66,7 @@ OT_DEP_SOURCES=(
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_sync_reqack.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_packer_fifo.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_lfsr.sv
-    "$LR_SYNTH_SRC_DIR"/../prim_generic/rtl/prim_generic_flop_2sync.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_flop_2sync.sv
     "$LR_SYNTH_SRC_DIR"/../prim_generic/rtl/prim_generic_flop.sv
     "$LR_SYNTH_SRC_DIR"/../prim_xilinx/rtl/prim_xilinx_flop.sv
     "$LR_SYNTH_SRC_DIR"/../prim_xilinx/rtl/prim_xilinx_flop_en.sv
@@ -103,8 +103,8 @@ for file in ${OT_DEP_SOURCES[@]}; do
 
     # Make sure auto-generated primitives are resolved to generic or Xilinx-specific primitives
     # where available.
-    sed -i 's/prim_flop_2sync/prim_generic_flop_2sync/g' $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_flop/prim_xilinx_flop/g'              $LR_SYNTH_OUT_DIR/generated/${module}.v
+    sed -i 's/prim_xilinx_flop_2sync/prim_flop_2sync/g'  $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_sec_anchor_flop/prim_xilinx_flop/g'   $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_buf/prim_xilinx_buf/g'                $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_sec_anchor_buf/prim_xilinx_buf/g'     $LR_SYNTH_OUT_DIR/generated/${module}.v
@@ -134,8 +134,8 @@ for file in "$LR_SYNTH_SRC_DIR"/rtl/*.sv; do
 
     # Make sure auto-generated primitives are resolved to generic or Xilinx-specific primitives
     # where available.
-    sed -i 's/prim_flop_2sync/prim_generic_flop_2sync/g' $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_flop/prim_xilinx_flop/g'              $LR_SYNTH_OUT_DIR/generated/${module}.v
+    sed -i 's/prim_xilinx_flop_2sync/prim_flop_2sync/g'  $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_sec_anchor_flop/prim_xilinx_flop/g'   $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_buf/prim_xilinx_buf/g'                $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_sec_anchor_buf/prim_xilinx_buf/g'     $LR_SYNTH_OUT_DIR/generated/${module}.v
