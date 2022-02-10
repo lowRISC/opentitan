@@ -36,6 +36,7 @@ filesets:
       - seq_lib/aes_nist_vectors_vseq.sv: {is_include_file: true}
       - seq_lib/aes_deinit_vseq.sv: {is_include_file: true}
       - seq_lib/aes_manual_config_err_vseq.sv: {is_include_file: true}
+      - seq_lib/aes_reseed_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

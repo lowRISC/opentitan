@@ -124,6 +124,13 @@
       milestone: V2
       tests: ["aes_deinit"]
     }
+    {
+      name: reseed
+      desc: '''
+            Verify that clearing/masking prng is reseeded correctly at the specified rate '''
+      milestone: V2
+      tests: ["aes_reseed"]
+    }
   ]
 
 
@@ -182,6 +189,7 @@ covergroups: [
      name: reseed_cg
      desc: '''
            Cover that the different reseed configurations has been used.
+           - reseed_rate (per_1, per_64, per_8k)
            '''
     }
     {
