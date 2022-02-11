@@ -7,12 +7,12 @@ use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 use thiserror::Error;
 
-use opentitanlib::app::conf::ConfigurationFile;
-use opentitanlib::app::TransportWrapper;
-use opentitanlib::transport::hyperdebug::c2d2::C2d2Flavor;
-use opentitanlib::transport::hyperdebug::StandardFlavor;
-use opentitanlib::transport::{EmptyTransport, Transport};
-use opentitanlib::util::parse_int::ParseInt;
+use crate::app::conf::ConfigurationFile;
+use crate::app::TransportWrapper;
+use crate::transport::hyperdebug::c2d2::C2d2Flavor;
+use crate::transport::hyperdebug::StandardFlavor;
+use crate::transport::{EmptyTransport, Transport};
+use crate::util::parse_int::ParseInt;
 
 pub mod cw310;
 pub mod hyperdebug;

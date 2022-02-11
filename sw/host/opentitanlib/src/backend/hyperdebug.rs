@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use opentitanlib::transport::hyperdebug::{Flavor, Hyperdebug};
-use opentitanlib::transport::Transport;
+use crate::transport::hyperdebug::{Flavor, Hyperdebug};
+use crate::transport::Transport;
 
 use crate::backend::BackendOpts;
 

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use opentitanlib::transport::cw310::CW310;
-use opentitanlib::transport::Transport;
+use crate::transport::cw310::CW310;
+use crate::transport::Transport;
 
 use crate::backend::BackendOpts;
 
