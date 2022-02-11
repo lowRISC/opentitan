@@ -1217,8 +1217,6 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                           cfg.ral_models[ral_name].mem_ranges[0].start_addr + VendorTestOffset +
                           VendorTestSize - 1]}) begin
           predict_err(OtpVendorTestErrIdx, OtpAccessError);
-          `DV_CHECK_EQ(item.d_data, 0,
-                       $sformatf("locked mem read mismatch at TLUL addr %0h in VendorTest", addr))
           return 0;
         end
       end
@@ -1227,8 +1225,6 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                           cfg.ral_models[ral_name].mem_ranges[0].start_addr + CreatorSwCfgOffset +
                           CreatorSwCfgSize - 1]}) begin
           predict_err(OtpCreatorSwCfgErrIdx, OtpAccessError);
-          `DV_CHECK_EQ(item.d_data, 0,
-                       $sformatf("locked mem read mismatch at TLUL addr %0h in CreatorSwCfg", addr))
           return 0;
         end
       end
@@ -1237,8 +1233,6 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                           cfg.ral_models[ral_name].mem_ranges[0].start_addr + OwnerSwCfgOffset +
                           OwnerSwCfgSize - 1]}) begin
           predict_err(OtpOwnerSwCfgErrIdx, OtpAccessError);
-          `DV_CHECK_EQ(item.d_data, 0,
-                       $sformatf("locked mem read mismatch at TLUL addr %0h in OwnerSwCfg", addr))
           return 0;
         end
       end
@@ -1251,8 +1245,6 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         if (ecc_err == OtpEccUncorrErr && !ecc_corr_err_only_part(part_idx)) begin
             predict_err(part_idx, OtpMacroEccUncorrError);
             set_exp_alert("fatal_macro_error", 1, 20);
-            `DV_CHECK_EQ(item.d_data, 0, $sformatf(
-                         "ECC uncorrectable error exp to readout all 0s at TLUL addr %0h", addr))
            return 0;
         end
       end

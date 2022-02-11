@@ -409,6 +409,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                     item.sprint(uvm_default_line_printer), is_tl_unmapped_addr, mem_access_err,
                     csr_size_err, tl_item_err, has_intg_err))
 
+      // TODO: check d_data to be all ones when memory related error occurs.
+
       // these errors all have the same outcome. Only sample coverages when there is just one
       // error, so that we know the error actually triggers the outcome
       if (is_tl_unmapped_addr + csr_size_err + mem_byte_access_err + mem_wo_err +
