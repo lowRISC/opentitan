@@ -55,14 +55,14 @@ The protocol controller currently supports the following features:
 The flash physical controller wraps the actual flash memory and translates both host and controller initiated requests into low level flash transactions.
 
 The physical controller supports the following features
-*  Multiple banks of flash memory
-*  For each flash bank, parameterized support for number of flash pages (default to 256)
-*  For each flash page, parameterized support for number of words and word size (default to 256 words of 8-bytes each)
-*  Data and informational partitions within each bank of flash memory
-*  Arbitration between host requests and controller requests at the bank level
-   *  Host requests are always favored, however the controller priority can escalate if it repeatedly loses arbitration
+*  Multiple banks of flash memory.
+*  For each flash bank, parameterized support for number of flash pages (default to 256).
+*  For each flash page, parameterized support for number of words and word size (default to 256 words of 8-bytes each).
+*  Data and informational partitions within each bank of flash memory.
+*  Arbitration between host requests and controller requests at the bank level.
+   *  Host requests are always favored, however the controller priority can escalate if it repeatedly loses arbitration.
    *  Since banks are arbitrated independently and transactions may take different amounts of times to complete, the physical controller is also responsible for ensuring in-order response to both the controller and host.
-*  Flash read stage
+*  Flash read stage.
    *  Each bank maintains a parameterizable number of read buffers in front of the flash memory (default to 4).
    *  The read buffers behave as miniature read-only-caches to store flash data when flash words are greater than bus words.
    *  When a program or erase collides with an entry already stored in the read buffer, the buffer contents are invalidated.
@@ -70,9 +70,9 @@ The physical controller supports the following features
 *  Flash program stage
    *  Flash data word packing when flash word size is an integer multiple of bus word size.
 *  Flash scrambling
-   * Flash supports XEX scrambling using the prince cipher
+   * Flash supports XEX scrambling using the prince cipher.
    * Scrambling is optional based on page boundaries and is configurable by software.
-*  Two types of Flash ECC support
+*  Two types of Flash ECC support.
    * A pre-scramble ECC used for integrity verification, this is required on every word.
    * A post-scramble ECC used for reliability detection, this is configurable on a page boundary.
 *  Life cycle modulated JTAG connection to the vendor flash module.
@@ -345,16 +345,16 @@ When a read transaction is sent to flash, the following steps are taken:
 *  The tweak is calculated using the transaction address and a secret address key through a galois multiplier.
 *  The data content is read out of flash.
 *  If the data content is scrambled, the tweak is XOR'd with the scrambled text and then decrypted through the prince block cipher using a secret data key.
-*  The output of the prince cipher is XOR'd again with the tweak and the final results are presented
+*  The output of the prince cipher is XOR'd again with the tweak and the final results are presented.
 *  If the data content is not scrambled, the prince and XOR steps are skipped and data provided directly back to the requestor.
 
 When a program transaction is sent to flash, the same steps are taken if the address in question has scrambling enabled.
 During a program, the text is scrambled through the prince block cipher.
 
 Scramble enablement is done differently depending on the type of partitions.
-*  For data partitions, the scramble enablement is done on contiugous page boundaries.
+*  For data partitions, the scramble enablement is done on contiguous page boundaries.
    *  Software has the ability to configure these regions and whether scramble is enabled.
-*  For information partitions,the scramble enablement is done on a per page basis.
+*  For information partitions, the scramble enablement is done on a per page basis.
    *  Software can configure for each page whether scramble is enabled.
 
 ### Flash ECC
@@ -392,7 +392,7 @@ Likewise a flash word that is completely 0 is also valid ECC.
 Unlike the integrity ECC, the reliability ECC is actually used for error correction if an accidental bit-flip is seen, it is thus fully stored and not truncated.
 
 ECC enablement is done differently depending on the type of partitions.
-*  For data partitions, the ECC enablement is done on contiugous page boundaries.
+*  For data partitions, the ECC enablement is done on contiguous page boundaries.
    *  Software has the ability to configure these regions and whether ECC is enabled.
 *  For information partitions,the ECC enablement is done on a per page basis.
    *  Software can configure for each page whether ECC is enabled.
@@ -401,7 +401,7 @@ ECC enablement is done differently depending on the type of partitions.
 
 The flash physical controller does not keep a history of when a particular memory location has scrambling enabled or disabled.
 This means if a memory locaiton was programmed while scrambled, disabling scrambling and then reading it back will result in garbage.
-Similarly, if a location was programmed while non-scrambled, enabling scrambling and then reading it back will also result in gargabe.
+Similarly, if a location was programmed while non-scrambled, enabling scrambling and then reading it back will also result in garbage.
 
 It it thus the programmer's responsibility to maintain a consistent definition of whether a location is scrambled.
 It is also highly recommended in a normal use case to setup up scramble and non-scramble regions and not change it further.
@@ -448,8 +448,8 @@ When an RMA entry sequence is received, the flash buffers are disabled.
 
 As an example, assume a flash word is made up of 2 bus words.
 Assume also the following address to word mapping:
-- Address 0 - flash word 0 , bus word 0 / bus word 1
-- Address 2 - flash word 1 , bus word 2 / bus word 3
+- Address 0 - flash word 0, bus word 0 / bus word 1
+- Address 2 - flash word 1, bus word 2 / bus word 3
 
 When software reads bus word 1, the entire flash word 0 is captured into the flash buffer.
 When software comes back to read bus word 0, instead of accessing the flash again, the data is retrieved directly from the buffer.
