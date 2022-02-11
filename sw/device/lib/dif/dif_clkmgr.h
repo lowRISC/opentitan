@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/clkmgr/doc/">Clock manager</a> Device Interface
+ * @brief <a href="/hw/ip/clkmgr/doc/">Clock Manager</a> Device Interface
  * Functions
  */
 
