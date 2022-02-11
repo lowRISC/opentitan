@@ -18,6 +18,7 @@ package csrng_env_pkg;
   import prim_mubi_pkg::*;
   import entropy_src_pkg::*;
   import csrng_pkg::*;
+  import lc_ctrl_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -34,6 +35,8 @@ package csrng_env_pkg;
   parameter uint     BLOCK_LEN        = 128;
   parameter uint     CTR_LEN          = 32;
   parameter uint     RSD_CTR_LEN      = 32;
+  parameter uint     LC_HW_DEBUG_EN_ON_DATA      = 123456789;
+  parameter uint     LC_HW_DEBUG_EN_OFF_DATA     = 987654321;
 
   // types
   typedef enum int {
