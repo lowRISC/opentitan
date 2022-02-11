@@ -25,7 +25,7 @@ import sys
 from contextlib import redirect_stdout
 from enum import Enum
 from pathlib import Path
-from typing import List, Set
+from typing import List
 
 import enlighten
 import gitfame
@@ -34,7 +34,7 @@ import pydriller
 from tabulate import tabulate
 from termcolor import colored
 
-from make_new_dif.ip import IPS_USING_IPGEN
+import topgen.lib as lib
 
 # Maintain a list of IPs that only exist in the top-level area.
 #
@@ -82,10 +82,11 @@ class DIFStatus:
         funcs_unimplemented (Set[str]): Set of unimplemted DIF functions.
 
     """
-    def __init__(self, top_level, dif_name):
+    def __init__(self, ipgen_ips, top_level, dif_name):
         """Mines metadata to populate this DIFStatus object.
 
         Args:
+            ipgen_ips: List of IPs generated with the ipgen.py tool.
             top_level: Name of the top level design.
             dif_name: Full name of the DIF including the IP name.
 
@@ -105,8 +106,8 @@ class DIFStatus:
         has_started = self.dif_path.with_suffix(".h").is_file()
 
         # Get (relative) HW RTL path.
-        if self.ip in IPS_USING_IPGEN:
-            self.hw_path = Path(f"hw/ip_templates/{self.ip}")
+        if self.ip in ipgen_ips:
+            self.hw_path = Path(f"hw/{top_level}/ip_autogen/{self.ip}")
         elif self.ip in _TOP_LEVEL_IPS:
             self.hw_path = Path(f"hw/{top_level}/ip/{self.ip}")
         else:
@@ -221,6 +222,14 @@ class DIFStatus:
         self.num_functions_implemented = len(implemented_funcs)
         self.api_complete = bool(defined_funcs and
                                  defined_funcs == implemented_funcs)
+        if len(defined_funcs) < len(implemented_funcs):
+            logging.warning(
+                f"number of defined functions is less than implemented "
+                f"functions for {self.ip}. Results possibly invalid.")
+            print("Functions missing definitions:")
+            for impl_func in implemented_funcs:
+                if impl_func not in defined_funcs:
+                    print(f"\t{impl_func}")
         return defined_funcs - implemented_funcs
 
     def _get_defined_funcs(self):
@@ -243,31 +252,14 @@ class DIFStatus:
         return implemented_funcs
 
     def _get_funcs(self, file_path):
-        func_pattern = re.compile(r"^dif_result_t (dif_.*)\(.*")
+        func_pattern = re.compile(r"dif_result_t (dif_.*)\(.*")
         funcs = set()
         with open(file_path, "r") as fp:
             for line in fp:
                 result = func_pattern.search(line)
-                if result is not None:
+                if result is not None and not line.startswith("static"):
                     funcs.add(result.group(1))
         return funcs
-
-
-def get_list_of_difs(shared_headers: List[str]) -> Set[str]:
-    """Get a list of the root filenames of the DIFs.
-
-    Args:
-        shared_headers: Header file(s) shared amongst DIFs.
-
-    Returns:
-        difs: Set of IP DIF library names.
-    """
-    dif_headers = sorted(DIFS_RELATIVE_PATH.glob("*.h"))
-    difs = list(map(lambda s: Path(s).resolve().stem, dif_headers))
-    for header in shared_headers:
-        if header in difs:
-            difs.remove(header)
-    return difs
 
 
 def print_status_table(dif_statuses: List[DIFStatus],
@@ -363,10 +355,6 @@ def main(argv):
         prog="check_dif_statuses",
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument(
-        "--top-hjson",
-        help="""Path to the top-level HJSON configuration file relative to
-        REPO_TOP.""")
-    parser.add_argument(
         "--show-unimplemented",
         action="store_true",
         help="""Show unimplemented functions for each incomplete DIF.""")
@@ -375,6 +363,10 @@ def main(argv):
                         choices=["grid", "github", "pipe"],
                         default="grid",
                         help="""Format to print status tables in.""")
+    parser.add_argument(
+        "top_hjson",
+        help="""Path to the top-level HJSON configuration file relative to
+        REPO_TOP.""")
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.WARNING)
 
@@ -383,30 +375,22 @@ def main(argv):
         logging.error(f"Must call script from \"$REPO_TOP\": {REPO_TOP}")
         sys.exit(1)
 
-    if args.top_hjson:
-        # Get the list of IP blocks by invoking the topgen tool.
-        topgen_tool = REPO_TOP / "util/topgen.py"
-        top_hjson = REPO_TOP / args.top_hjson
-        top_level = top_hjson.stem
-        # yapf: disable
-        topgen_process = subprocess.run([topgen_tool, "-t", top_hjson,
-                                         "--get_blocks", "-o", REPO_TOP],
-                                        universal_newlines=True,
-                                        stdout=subprocess.PIPE,
-                                        check=True)
-        # yapf: enable
-        # All DIF names are prefixed with `dif_`.
-        difs = {f"dif_{dif.strip()}" for dif in topgen_process.stdout.split()}
-    else:
-        # Get list of all DIF basenames.
-        # TODO: automatically get the list below by cross referencing DIF names
-        # with IP block names. Hardcoded for now.
-        print("WARNING: It is recommended to pass the --top-hjson switch to "
-              "get a more accurate representation of the DIF progress. The "
-              "list of IPs for which no DIF sources exist is unknown.")
-        shared_headers = ["dif_base"]
-        top_level = "top_earlgrey"
-        difs = get_list_of_difs(shared_headers)
+    # Get the list of IP blocks by invoking the topgen tool.
+    topgen_tool = REPO_TOP / "util/topgen.py"
+    top_hjson = REPO_TOP / args.top_hjson
+    top_level = top_hjson.stem
+    top_hjson_text = top_hjson.read_text()
+    topcfg = hjson.loads(top_hjson_text, use_decimal=True)
+    ipgen_ips = lib.get_ipgen_modules(topcfg)
+    # yapf: disable
+    topgen_process = subprocess.run([topgen_tool, "-t", top_hjson,
+                                     "--get_blocks", "-o", REPO_TOP],
+                                    universal_newlines=True,
+                                    stdout=subprocess.PIPE,
+                                    check=True)
+    # yapf: enable
+    # All DIF names are prefixed with `dif_`.
+    difs = {f"dif_{dif.strip()}" for dif in topgen_process.stdout.split()}
 
     # Get DIF statuses (while displaying a progress bar).
     dif_statuses = []
@@ -414,8 +398,9 @@ def main(argv):
                                      desc="Analyzing statuses of DIFs ...",
                                      unit="DIFs")
     for dif in difs:
-        dif_statuses.append(DIFStatus(top_level, dif))
+        dif_statuses.append(DIFStatus(ipgen_ips, top_level, dif))
         progress_bar.update()
+    dif_statuses.sort(key=lambda x: x.ip)
 
     # Build table and print it to STDOUT.
     print_status_table(dif_statuses, args.table_format)
