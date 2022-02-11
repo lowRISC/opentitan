@@ -7,7 +7,7 @@ class csrng_cmds_vseq extends csrng_base_vseq;
   `uvm_object_new
 
   csrng_item   cs_item, cs_item_q[NUM_HW_APPS + 1][$];
-  uint         num_cmds, cmds_gen, cmds_sent;
+  uint         num_cmds, cmds_gen, cmds_sent, aes_halt_clks;
   bit          uninstantiate[NUM_HW_APPS + 1];
 
   function void gen_seed(uint app);
@@ -70,6 +70,8 @@ class csrng_cmds_vseq extends csrng_base_vseq;
     // Create entropy_src sequence
     m_entropy_src_pull_seq = push_pull_device_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)::
         type_id::create("m_entropy_src_pull_seq");
+    // Create aes_halt sequence
+    m_aes_halt_pull_seq = push_pull_host_seq#(1)::type_id::create("m_aes_halt_pull_seq");
     // Create edn host sequences
     for (int i = 0; i < NUM_HW_APPS; i++) begin
       m_edn_push_seq[i] = push_pull_host_seq#(csrng_pkg::CSRNG_CMD_WIDTH)::type_id::create
@@ -108,7 +110,17 @@ class csrng_cmds_vseq extends csrng_base_vseq;
         join_none;
       end
 
-      wait (cmds_sent == cmds_gen);
+      do begin
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(aes_halt_clks, aes_halt_clks inside
+            { [cfg.min_aes_halt_clks:cfg.max_aes_halt_clks] };)
+        `uvm_info(`gfn, $sformatf("aes_halt_clks = %0d, cmds_sent = %0d, cmds_gen = %0d",
+                  aes_halt_clks, cmds_sent, cmds_gen), UVM_DEBUG)
+        cfg.clk_rst_vif.wait_clks(aes_halt_clks);
+        if (cfg.aes_halt) begin
+          m_aes_halt_pull_seq.start(p_sequencer.aes_halt_sequencer_h);
+        end
+      end
+      while (cmds_sent < cmds_gen);
     join
 
     // Check internal state, then uninstantiate if not already

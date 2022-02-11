@@ -11,19 +11,22 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
 
   // ext component cfgs
   rand push_pull_agent_cfg#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
-       m_entropy_src_agent_cfg;
+                                                 m_entropy_src_agent_cfg;
+  rand push_pull_agent_cfg#(.HostDataWidth(1))   m_aes_halt_agent_cfg;
+  rand csrng_agent_cfg                           m_edn_agent_cfg[NUM_HW_APPS];
 
-  rand csrng_agent_cfg   m_edn_agent_cfg[NUM_HW_APPS];
-
-  virtual pins_if#(8)    otp_en_cs_sw_app_read_vif;
+  virtual pins_if#(MuBi8Width)   otp_en_cs_sw_app_read_vif;
+  virtual pins_if#(MuBi4Width)   lc_hw_debug_en_vif;
 
   // Knobs & Weights
-  uint   otp_en_cs_sw_app_read_pct, regwen_pct,
+  uint   otp_en_cs_sw_app_read_pct, lc_hw_debug_en_pct, regwen_pct,
          enable_pct, sw_app_enable_pct, read_int_state_pct,
-         check_int_state_pct, num_cmds_min, num_cmds_max;
+         check_int_state_pct, num_cmds_min, num_cmds_max, aes_halt_pct,
+         min_aes_halt_clks, max_aes_halt_clks;
 
-  rand bit       check_int_state, regwen, hw_app[NUM_HW_APPS], sw_app;
+  rand bit       check_int_state, regwen, hw_app[NUM_HW_APPS], sw_app, aes_halt;
   rand mubi4_t   enable, sw_app_enable, read_int_state;
+  rand lc_tx_t   lc_hw_debug_en;
   rand mubi8_t   otp_en_cs_sw_app_read;
 
   // Variables (+1 is for the SW APP)
@@ -32,9 +35,12 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   bit [csrng_env_pkg::BLOCK_LEN-1:0]     v[NUM_HW_APPS + 1];
   bit [csrng_env_pkg::RSD_CTR_LEN-1:0]   reseed_counter[NUM_HW_APPS + 1];
 
-  constraint otp_en_cs_sw_app_read_c {otp_en_cs_sw_app_read dist {
-                                      MuBi8True  :/ otp_en_cs_sw_app_read_pct,
-                                      MuBi8False :/ (100 - otp_en_cs_sw_app_read_pct) };}
+  constraint otp_en_cs_sw_app_read_c { otp_en_cs_sw_app_read dist {
+                                       MuBi8True  :/ otp_en_cs_sw_app_read_pct,
+                                       MuBi8False :/ (100 - otp_en_cs_sw_app_read_pct) };}
+
+  constraint lc_hw_debug_en_c { `DV_LC_TX_DIST(lc_hw_debug_en, lc_hw_debug_en_pct,
+                                (100 - lc_hw_debug_en_pct) / 2,  (100 - lc_hw_debug_en_pct) / 2)}
 
   constraint regwen_c { regwen dist {
                         1 :/ regwen_pct,
@@ -56,6 +62,10 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
                                  1 :/ check_int_state_pct,
                                  0 :/ (100 - check_int_state_pct) };}
 
+  constraint aes_halt_c { aes_halt dist {
+                          1 :/ aes_halt_pct,
+                          0 :/ (100 - aes_halt_pct) };}
+
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = csrng_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_alert";
@@ -64,6 +74,9 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
     // create agent configs
     m_entropy_src_agent_cfg = push_pull_agent_cfg#(.HostDataWidth(entropy_src_pkg::
                               FIPS_CSRNG_BUS_WIDTH))::type_id::create("m_entropy_src_agent_cfg");
+
+    m_aes_halt_agent_cfg    = push_pull_agent_cfg#(.HostDataWidth(1))::type_id::create
+                              ("m_aes_halt_agent_cfg");
 
     for (int i = 0; i < NUM_HW_APPS; i++) begin
       m_edn_agent_cfg[i] = csrng_agent_cfg::type_id::create($sformatf("m_edn_agent_cfg[%0d]", i));
@@ -136,37 +149,45 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   virtual function string convert2string();
     string str = "";
     str = {str, "\n"};
-    str = {str,  $sformatf("\n\t |************** csrng_env_cfg *****************| \t")};
-    str = {str,  $sformatf("\n\t |***** otp_en_cs_sw_app_read     : 0x%4h *****| \t",
-           otp_en_cs_sw_app_read)};
-    str = {str,  $sformatf("\n\t |***** enable                    : 0x%4h *****| \t",
-           enable)};
-    str = {str,  $sformatf("\n\t |***** sw_app_enable             : 0x%4h *****| \t",
-           sw_app_enable)};
-    str = {str,  $sformatf("\n\t |***** read_int_state            : 0x%4h *****| \t",
-           read_int_state)};
-    str = {str,  $sformatf("\n\t |***** regwen                    :   %4d *****| \t",
+    str = {str,  $sformatf("\n\t |**************** csrng_env_cfg *******************| \t")};
+    str = {str,  $sformatf("\n\t |***** otp_en_cs_sw_app_read     : %10s *****| \t",
+           otp_en_cs_sw_app_read.name())};
+    str = {str,  $sformatf("\n\t |***** lc_hw_debug_en            : %10s *****| \t",
+           lc_hw_debug_en.name())};
+    str = {str,  $sformatf("\n\t |***** enable                    : %10s *****| \t",
+           enable.name())};
+    str = {str,  $sformatf("\n\t |***** sw_app_enable             : %10s *****| \t",
+           sw_app_enable.name())};
+    str = {str,  $sformatf("\n\t |***** read_int_state            : %10s *****| \t",
+           read_int_state.name())};
+    str = {str,  $sformatf("\n\t |***** regwen                    : %10d *****| \t",
            regwen)};
-    str = {str,  $sformatf("\n\t |***** check_int_state           :   %4d *****| \t",
+    str = {str,  $sformatf("\n\t |***** check_int_state           : %10d *****| \t",
            check_int_state)};
-    str = {str,  $sformatf("\n\t |-------------- knobs -------------------------| \t")};
-    str = {str,  $sformatf("\n\t |***** otp_en_cs_sw_app_read_pct :   %4d *****| \t",
+    str = {str,  $sformatf("\n\t |---------------- knobs ---------------------------| \t")};
+    str = {str,  $sformatf("\n\t |***** otp_en_cs_sw_app_read_pct : %10d *****| \t",
            otp_en_cs_sw_app_read_pct) };
-    str = {str,  $sformatf("\n\t |***** regwen_pct                :   %4d *****| \t",
-           regwen_pct)};
-    str = {str,  $sformatf("\n\t |***** enable_pct                :   %4d *****| \t",
+    str = {str,  $sformatf("\n\t |***** lc_hw_debug_en_pct        : %10d *****| \t",
+           lc_hw_debug_en_pct) };
+    str = {str,  $sformatf("\n\t |***** enable_pct                : %10d *****| \t",
            enable_pct)};
-    str = {str,  $sformatf("\n\t |***** sw_app_enable_pct         :   %4d *****| \t",
+    str = {str,  $sformatf("\n\t |***** sw_app_enable_pct         : %10d *****| \t",
            sw_app_enable_pct)};
-    str = {str,  $sformatf("\n\t |***** read_int_state_pct        :   %4d *****| \t",
+    str = {str,  $sformatf("\n\t |***** read_int_state_pct        : %10d *****| \t",
            read_int_state_pct)};
-    str = {str,  $sformatf("\n\t |***** check_int_state_pct       :   %4d *****| \t",
+    str = {str,  $sformatf("\n\t |***** regwen_pct                : %10d *****| \t",
+           regwen_pct)};
+    str = {str,  $sformatf("\n\t |***** check_int_state_pct       : %10d *****| \t",
            check_int_state_pct)};
-    str = {str,  $sformatf("\n\t |***** num_cmds_min              :   %4d *****| \t",
+    str = {str,  $sformatf("\n\t |***** num_cmds_min              : %10d *****| \t",
            num_cmds_min)};
-    str = {str,  $sformatf("\n\t |***** num_cmds_max              :   %4d *****| \t",
+    str = {str,  $sformatf("\n\t |***** num_cmds_max              : %10d *****| \t",
            num_cmds_max)};
-    str = {str,  $sformatf("\n\t |**********************************************| \t")};
+    str = {str,  $sformatf("\n\t |***** min_aes_halt_clks         : %10d *****| \t",
+           min_aes_halt_clks)};
+    str = {str,  $sformatf("\n\t |***** max_aes_halt_clks         : %10d *****| \t",
+           max_aes_halt_clks)};
+    str = {str,  $sformatf("\n\t |**************************************************| \t")};
     str = {str, "\n"};
     return str;
   endfunction

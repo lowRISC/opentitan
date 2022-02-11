@@ -25,6 +25,7 @@ class csrng_base_test extends cip_base_test #(
 
   virtual function void configure_env();
     cfg.otp_en_cs_sw_app_read_pct = 90;
+    cfg.lc_hw_debug_en_pct        = 50;
     cfg.regwen_pct                = 100;
     cfg.enable_pct                = 100;
     cfg.sw_app_enable_pct         = 90;

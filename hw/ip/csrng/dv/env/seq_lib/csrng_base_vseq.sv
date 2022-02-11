@@ -13,12 +13,13 @@ class csrng_base_vseq extends cip_base_vseq #(
 
   bit                    do_csrng_init = 1'b1;
   bit [TL_DW-1:0]        rdata;
-
   virtual csrng_cov_if   cov_vif;
 
-
-  push_pull_device_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)   m_entropy_src_pull_seq;
-  push_pull_host_seq#(csrng_pkg::CSRNG_CMD_WIDTH)                m_edn_push_seq[NUM_HW_APPS];
+  push_pull_device_seq#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
+      m_entropy_src_pull_seq;
+  push_pull_host_seq#(.HostDataWidth(csrng_pkg::CSRNG_CMD_WIDTH))
+      m_edn_push_seq[NUM_HW_APPS];
+  push_pull_host_seq#(.HostDataWidth(1))   m_aes_halt_pull_seq;
 
   virtual task body();
     if (!uvm_config_db#(virtual csrng_cov_if)::get(null, "*.env" , "csrng_cov_if", cov_vif)) begin
@@ -30,6 +31,7 @@ class csrng_base_vseq extends cip_base_vseq #(
 
   virtual task dut_init(string reset_kind = "HARD");
     cfg.otp_en_cs_sw_app_read_vif.drive(.val(cfg.otp_en_cs_sw_app_read));
+    cfg.lc_hw_debug_en_vif.drive(.val(cfg.lc_hw_debug_en));
 
     super.dut_init(reset_kind);
 
@@ -52,13 +54,13 @@ class csrng_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.ctrl));
   endtask
 
-  task automatic wait_cmd_req_done();
+  task wait_cmd_req_done();
     csr_spinwait(.ptr(ral.intr_state.cs_cmd_req_done), .exp_data(1'b1));
     csr_rd_check(.ptr(ral.sw_cmd_sts.cmd_sts), .compare_value(1'b0));
     check_interrupts(.interrupts((1 << CmdReqDone)), .check_set(1'b1));
   endtask
 
-  task automatic send_cmd_req(uint app, csrng_item cs_item);
+  task send_cmd_req(uint app, csrng_item cs_item);
     bit [csrng_pkg::CSRNG_CMD_WIDTH-1:0]   cmd;
     // Gen cmd_req
     cmd = {cs_item.glen, cs_item.flags, cs_item.clen, 1'b0, cs_item.acmd};
