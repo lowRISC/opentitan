@@ -73,7 +73,8 @@ module usbdev_usbif  #(
   output logic                     clr_devaddr_o,
   input  logic [NEndpoints-1:0]    in_ep_enabled_i,
   input  logic [NEndpoints-1:0]    out_ep_enabled_i,
-  input  logic [NEndpoints-1:0]    ep_iso_i,
+  input  logic [NEndpoints-1:0]    out_ep_iso_i,
+  input  logic [NEndpoints-1:0]    in_ep_iso_i,
   input  logic                     cfg_eop_single_bit_i, // 1: detect a single SE0 bit as EOP
   input  logic                     cfg_rx_differential_i, // 1: use differential rx data on usb_d_i
   input  logic                     tx_osc_test_mode_i, // Oscillator test mode: constant JK output
@@ -302,7 +303,7 @@ module usbdev_usbif  #(
     .out_ep_control_i      (rx_setup_i),
     .out_ep_full_i         (out_ep_full),
     .out_ep_stall_i        (out_ep_stall),
-    .out_ep_iso_i          (ep_iso_i),
+    .out_ep_iso_i          (out_ep_iso_i),
 
     // in endpoint interfaces
     .in_ep_current_o       (in_ep_current),
@@ -316,7 +317,7 @@ module usbdev_usbif  #(
     .in_ep_has_data_i      (in_rdy_i),
     .in_ep_data_i          (in_ep_data),
     .in_ep_data_done_i     (in_ep_data_done),
-    .in_ep_iso_i           (ep_iso_i),
+    .in_ep_iso_i           (in_ep_iso_i),
 
     // rx status
     .rx_jjj_det_o          (rx_jjj_det),

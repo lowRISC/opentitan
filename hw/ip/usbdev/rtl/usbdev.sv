@@ -268,7 +268,7 @@ module usbdev
   logic [NEndpoints-1:0] usb_in_rdy;
   logic [NEndpoints-1:0] clear_rdybit, set_sentbit, update_pend;
   logic                  usb_setup_received, setup_received, usb_set_sent, set_sent;
-  logic [NEndpoints-1:0] ep_iso;
+  logic [NEndpoints-1:0] ep_out_iso, ep_in_iso;
   logic [NEndpoints-1:0] enable_setup, enable_out, in_ep_stall, out_ep_stall;
   logic [NEndpoints-1:0] usb_enable_setup, usb_enable_out;
   logic [NEndpoints-1:0] usb_in_ep_stall, usb_out_ep_stall;
@@ -322,7 +322,8 @@ module usbdev
   // CDC: ok, quasi-static
   always_comb begin : proc_map_iso
     for (int i = 0; i < NEndpoints; i++) begin
-      ep_iso[i] = reg2hw.iso[i].q;
+      ep_out_iso[i] = reg2hw.out_iso[i].q;
+      ep_in_iso[i] = reg2hw.in_iso[i].q;
     end
   end
 
@@ -580,7 +581,8 @@ module usbdev
     .clr_devaddr_o        (usb_clr_devaddr),
     .in_ep_enabled_i      (usb_ep_in_enable),
     .out_ep_enabled_i     (usb_ep_out_enable),
-    .ep_iso_i             (ep_iso), // cdc ok, quasi-static
+    .out_ep_iso_i         (ep_out_iso), // cdc ok, quasi-static
+    .in_ep_iso_i          (ep_in_iso), // cdc ok, quasi-static
     .cfg_eop_single_bit_i (reg2hw.phy_config.eop_single_bit.q), // cdc ok: quasi-static
     .tx_osc_test_mode_i   (reg2hw.phy_config.tx_osc_test_mode.q), // cdc ok: quasi-static
     .cfg_rx_differential_i (reg2hw.phy_config.rx_differential_mode.q), // cdc ok: quasi-static

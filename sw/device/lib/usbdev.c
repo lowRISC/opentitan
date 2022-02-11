@@ -216,28 +216,35 @@ void usbdev_set_deviceid(usbdev_ctx_t *ctx, int deviceid) {
 }
 
 void usbdev_halt(usbdev_ctx_t *ctx, int endpoint, int enable) {
-  // FIXME: The two endpoints are supposed to be independent
-  uint32_t epbit = 1 << endpoint;
-  uint32_t stall = REG32(USBDEV_BASE_ADDR + USBDEV_IN_STALL_REG_OFFSET);
+  uint32_t reg_offset = endpoint_is_in(endpoint) ? USBDEV_IN_STALL_REG_OFFSET
+                                                 : USBDEV_OUT_STALL_REG_OFFSET;
+  uint32_t epbit = 1 << endpoint_number(endpoint);
+  uint32_t stall = REG32(USBDEV_BASE_ADDR + reg_offset);
   if (enable) {
     stall |= epbit;
   } else {
     stall &= ~epbit;
   }
-  REG32(USBDEV_BASE_ADDR + USBDEV_IN_STALL_REG_OFFSET) = stall;
-  REG32(USBDEV_BASE_ADDR + USBDEV_OUT_STALL_REG_OFFSET) = stall;
+  REG32(USBDEV_BASE_ADDR + reg_offset) = stall;
   ctx->halted = stall;
   // TODO future addition would be to callback the endpoint driver
   // for now it just sees its traffic has stopped
 }
 
 void usbdev_set_iso(usbdev_ctx_t *ctx, int endpoint, int enable) {
-  if (enable) {
-    REG32(USBDEV_BASE_ADDR + USBDEV_ISO_REG_OFFSET) =
-        SETBIT(REG32(USBDEV_BASE_ADDR + USBDEV_ISO_REG_OFFSET), endpoint);
+  uint32_t reg_offset;
+  uint32_t ep_number = endpoint_number(endpoint);
+  if (endpoint_is_in(endpoint)) {
+    reg_offset = USBDEV_IN_ISO_REG_OFFSET;
   } else {
-    REG32(USBDEV_BASE_ADDR + USBDEV_ISO_REG_OFFSET) =
-        CLRBIT(REG32(USBDEV_BASE_ADDR + USBDEV_ISO_REG_OFFSET), endpoint);
+    reg_offset = USBDEV_OUT_ISO_REG_OFFSET;
+  }
+  if (enable) {
+    REG32(USBDEV_BASE_ADDR + reg_offset) =
+        SETBIT(REG32(USBDEV_BASE_ADDR + reg_offset), ep_number);
+  } else {
+    REG32(USBDEV_BASE_ADDR + reg_offset) =
+        CLRBIT(REG32(USBDEV_BASE_ADDR + reg_offset), ep_number);
   }
 }
 
