@@ -409,7 +409,10 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                     item.sprint(uvm_default_line_printer), is_tl_unmapped_addr, mem_access_err,
                     csr_size_err, tl_item_err, has_intg_err))
 
-      // TODO: check d_data to be all ones when memory related error occurs.
+      // In data read phase, check d_data when d_error = 1.
+      if (item.d_error && (item.d_opcode == tlul_pkg::AccessAckData)) begin
+       `DV_CHECK_EQ(item.d_data, 32'hFFFF_FFFF, "d_data mismatch when d_error = 1")
+      end
 
       // these errors all have the same outcome. Only sample coverages when there is just one
       // error, so that we know the error actually triggers the outcome
