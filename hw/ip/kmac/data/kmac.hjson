@@ -164,17 +164,17 @@
       desc: '''Data storage and secret key are two share to guard against 1st
         order attack.'''
     }
-    { name: "CONFIG.SHADOW"
+    { name: "CFG_SHADOWED.CONFIG.SHADOW"
       desc: "Shadowed CFG register."
     }
     { name: "FSM.SPARSE"
       desc: "FSMs in KMAC are sparsely encoded."
     }
     { name: "LFSR.REDUN"
-      desc: "LFSR in entropy generator uses prim_lfsr"
+      desc: "LFSR in the entropy generator uses prim_double_lfsr"
     }
     { name: "CTR.REDUN"
-      desc: "Round counter uses prim_counter for redundency"
+      desc: "Round counter uses prim_count for redundancy"
     }
   ]
   regwidth: "32"

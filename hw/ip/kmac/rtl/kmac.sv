@@ -1193,7 +1193,7 @@ module kmac
     .devmode_i (devmode)
   );
 
-  // SEC_CM: CONFIG.SHADOW
+  // SEC_CM: CFG_SHADOWED.CONFIG.SHADOW
   assign shadowed_storage_err = |{
       reg2hw.cfg_shadowed.kmac_en.err_storage             ,
       reg2hw.cfg_shadowed.kstrength.err_storage           ,

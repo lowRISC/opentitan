@@ -36,8 +36,8 @@
       tests: []
     }
     {
-      name: sec_cm_config_shadow
-      desc: "Verify the countermeasure(s) CONFIG.SHADOW."
+      name: sec_cm_cfg_shadowed_config_shadow
+      desc: "Verify the countermeasure(s) CFG_SHADOWED.CONFIG.SHADOW."
       milestone: V2S
       tests: []
     }
