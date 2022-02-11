@@ -9,8 +9,10 @@ filesets:
     depend:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
+      - lowrisc:ip:aes
     files:
       - aes_bind.sv
+      - aes_idle_check.sv
     file_type: systemVerilogSource
 
   files_formal:
