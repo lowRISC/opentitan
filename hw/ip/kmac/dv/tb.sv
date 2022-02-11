@@ -16,21 +16,19 @@ module tb;
 
   wire clk, rst_n, rst_shadowed_n;
   wire devmode;
-  wire idle;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   // keymgr/kmac sideload wires
   keymgr_pkg::hw_key_req_t kmac_sideload_key;
   // kmac_app interfaces
   kmac_pkg::app_req_t [kmac_pkg::NumAppIntf-1:0] app_req;
   kmac_pkg::app_rsp_t [kmac_pkg::NumAppIntf-1:0] app_rsp;
-  logic en_masking;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   rst_shadowed_if rst_shadowed_if(.rst_n(rst_n), .rst_shadowed_n(rst_shadowed_n));
+  kmac_if kmac_if(.clk_i(clk), .rst_ni(rst_n));
 
   pins_if #(1)                   devmode_if(devmode);
-  pins_if #(1)                   idle_if(idle);
   pins_if #(NUM_MAX_INTERRUPTS)  intr_if(interrupts);
 
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
@@ -64,7 +62,7 @@ module tb;
     .alert_tx_o         (alert_tx ),
 
     // life cycle escalation input
-    .lc_escalate_en_i   (lc_ctrl_pkg::Off ),
+    .lc_escalate_en_i   (kmac_if.lc_escalate_en_i ),
 
     // KeyMgr sideload key interface
     .keymgr_key_i       (kmac_sideload_key),
@@ -82,10 +80,10 @@ module tb;
     .intr_kmac_err_o    (interrupts[KmacErr]       ),
 
     // Idle interface
-    .idle_o             (idle),
+    .idle_o             (kmac_if.idle_o ),
 
     // TODO: check this output signal.
-    .en_masking_o       (en_masking),
+    .en_masking_o       (kmac_if.en_masking_o ),
 
     // EDN interface
     .clk_edn_i          (edn_clk                           ),
@@ -113,9 +111,9 @@ module tb;
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
-    uvm_config_db#(virtual pins_if#(1))::set(null, "*.env", "idle_vif", idle_if);
     uvm_config_db#(virtual key_sideload_if)::set(null, "*.env.keymgr_sideload_agent*",
                                                  "vif", sideload_if);
+    uvm_config_db#(virtual kmac_if)::set(null, "*.env", "kmac_vif", kmac_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
