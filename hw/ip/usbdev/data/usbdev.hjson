@@ -621,10 +621,10 @@
       }
     }
     { multireg: {
-        name: "iso",
+        name: "out_iso",
         count: "NEndpoints"
         cname: "Endpoint"
-        desc: "Endpoint ISO setting",
+        desc: "OUT Endpoint isochronous setting",
         swaccess: "rw",
         hwaccess: "hro",
         fields: [
@@ -632,8 +632,31 @@
             bits: "0",
             name: "iso",
             desc: '''
-                  If this bit is set then the endpoint will be treated as an ISO endpoint.
-                  No handshake packet will be sent for an OUT transaction and no handshake packet will be expected for an IN transaction.
+                  If this bit is set then the endpoint will be treated as an isochronous endpoint.
+                  No handshake packet will be sent for an OUT transaction.
+                  Note that if a rxenable_setup is set for this endpoint's number, this bit will not take effect.
+                  Control endpoint configuration trumps isochronous endpoint configuration.
+                  '''
+          }
+        ]
+      }
+    }
+    { multireg: {
+        name: "in_iso",
+        count: "NEndpoints"
+        cname: "Endpoint"
+        desc: "IN Endpoint isochronous setting",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          {
+            bits: "0",
+            name: "iso",
+            desc: '''
+                  If this bit is set then the endpoint will be treated as an isochronous endpoint.
+                  No handshake packet will be expected for an IN transaction.
+                  Note that if a rxenable_setup is set for this endpoint's number, this bit will not take effect.
+                  Control endpoint configuration trumps isochronous endpoint configuration.
                   '''
           }
         ]

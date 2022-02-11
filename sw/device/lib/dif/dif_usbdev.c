@@ -372,10 +372,13 @@ dif_result_t dif_usbdev_endpoint_stall_get(const dif_usbdev_t *usbdev,
 dif_result_t dif_usbdev_endpoint_iso_enable(const dif_usbdev_t *usbdev,
                                             dif_usbdev_endpoint_id_t endpoint,
                                             dif_toggle_t new_state) {
-  // TODO: Support configuring IN and OUT endpoints independently when the
-  // hardware does.
-  return endpoint_functionality_enable(usbdev, USBDEV_ISO_REG_OFFSET,
-                                       endpoint.number, new_state);
+  if (endpoint.direction == USBDEV_ENDPOINT_DIR_IN) {
+    return endpoint_functionality_enable(usbdev, USBDEV_IN_ISO_REG_OFFSET,
+                                         endpoint.number, new_state);
+  } else {
+    return endpoint_functionality_enable(usbdev, USBDEV_OUT_ISO_REG_OFFSET,
+                                         endpoint.number, new_state);
+  }
 }
 
 dif_result_t dif_usbdev_endpoint_enable(const dif_usbdev_t *usbdev,
