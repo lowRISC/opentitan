@@ -27,6 +27,9 @@ const uint64_t kUartBaudrate = 7200;
 const uint32_t kUartNCOValue =
     CALCULATE_UART_NCO(kUartBaudrate, kClockFreqPeripheralHz);
 
+const uint32_t kUartTxFifoCpuCycles =
+    CALCULATE_UART_TX_FIFO_CPU_CYCLES(kUartBaudrate, kClockFreqCpuHz);
+
 // Defined in `hw/top_earlgrey/chip_earlgrey_verilator.core`
 const uintptr_t kDeviceTestStatusAddress = 0x30000000;
 
