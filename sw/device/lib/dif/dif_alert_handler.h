@@ -367,11 +367,12 @@ dif_result_t dif_alert_handler_configure_local_alert(
  * @param locked The locked state to configure the class in.
  * @return The result of the operation.
  */
-OT_WARN_UNUSED_RESULT dif_result_t
-dif_alert_handler_configure_class(const dif_alert_handler_t *alert_handler,
-                                  dif_alert_handler_class_t alert_class,
-                                  dif_alert_handler_class_config_t config,
-                                  dif_toggle_t enabled, dif_toggle_t locked);
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_alert_handler_configure_class(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_class_t alert_class,
+    dif_alert_handler_class_config_t config, dif_toggle_t enabled,
+    dif_toggle_t locked);
 
 /**
  * Configures the ping timer in the alert handler.
