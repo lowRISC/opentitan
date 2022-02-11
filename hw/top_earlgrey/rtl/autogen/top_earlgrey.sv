@@ -314,10 +314,9 @@ module top_earlgrey #(
   logic        cio_sysrst_ctrl_aon_pwrb_in_p2d;
   logic        cio_sysrst_ctrl_aon_lid_open_p2d;
   logic        cio_sysrst_ctrl_aon_ec_rst_l_p2d;
+  logic        cio_sysrst_ctrl_aon_flash_wp_l_p2d;
   logic        cio_sysrst_ctrl_aon_bat_disable_d2p;
   logic        cio_sysrst_ctrl_aon_bat_disable_en_d2p;
-  logic        cio_sysrst_ctrl_aon_flash_wp_l_d2p;
-  logic        cio_sysrst_ctrl_aon_flash_wp_l_en_d2p;
   logic        cio_sysrst_ctrl_aon_key0_out_d2p;
   logic        cio_sysrst_ctrl_aon_key0_out_en_d2p;
   logic        cio_sysrst_ctrl_aon_key1_out_d2p;
@@ -330,6 +329,8 @@ module top_earlgrey #(
   logic        cio_sysrst_ctrl_aon_z3_wakeup_en_d2p;
   logic        cio_sysrst_ctrl_aon_ec_rst_l_d2p;
   logic        cio_sysrst_ctrl_aon_ec_rst_l_en_d2p;
+  logic        cio_sysrst_ctrl_aon_flash_wp_l_d2p;
+  logic        cio_sysrst_ctrl_aon_flash_wp_l_en_d2p;
   // adc_ctrl_aon
   // pwm_aon
   logic [5:0]  cio_pwm_aon_pwm_d2p;
@@ -1794,12 +1795,11 @@ module top_earlgrey #(
       .cio_pwrb_in_i        (cio_sysrst_ctrl_aon_pwrb_in_p2d),
       .cio_lid_open_i       (cio_sysrst_ctrl_aon_lid_open_p2d),
       .cio_ec_rst_l_i       (cio_sysrst_ctrl_aon_ec_rst_l_p2d),
+      .cio_flash_wp_l_i     (cio_sysrst_ctrl_aon_flash_wp_l_p2d),
 
       // Output
       .cio_bat_disable_o    (cio_sysrst_ctrl_aon_bat_disable_d2p),
       .cio_bat_disable_en_o (cio_sysrst_ctrl_aon_bat_disable_en_d2p),
-      .cio_flash_wp_l_o     (cio_sysrst_ctrl_aon_flash_wp_l_d2p),
-      .cio_flash_wp_l_en_o  (cio_sysrst_ctrl_aon_flash_wp_l_en_d2p),
       .cio_key0_out_o       (cio_sysrst_ctrl_aon_key0_out_d2p),
       .cio_key0_out_en_o    (cio_sysrst_ctrl_aon_key0_out_en_d2p),
       .cio_key1_out_o       (cio_sysrst_ctrl_aon_key1_out_d2p),
@@ -1812,6 +1812,8 @@ module top_earlgrey #(
       .cio_z3_wakeup_en_o   (cio_sysrst_ctrl_aon_z3_wakeup_en_d2p),
       .cio_ec_rst_l_o       (cio_sysrst_ctrl_aon_ec_rst_l_d2p),
       .cio_ec_rst_l_en_o    (cio_sysrst_ctrl_aon_ec_rst_l_en_d2p),
+      .cio_flash_wp_l_o     (cio_sysrst_ctrl_aon_flash_wp_l_d2p),
+      .cio_flash_wp_l_en_o  (cio_sysrst_ctrl_aon_flash_wp_l_en_d2p),
 
       // Interrupt
       .intr_sysrst_ctrl_o (intr_sysrst_ctrl_aon_sysrst_ctrl),
@@ -3191,6 +3193,7 @@ module top_earlgrey #(
   assign cio_usbdev_dp_p2d = dio_p2d[DioUsbdevDp];
   assign cio_usbdev_dn_p2d = dio_p2d[DioUsbdevDn];
   assign cio_sysrst_ctrl_aon_ec_rst_l_p2d = dio_p2d[DioSysrstCtrlAonEcRstL];
+  assign cio_sysrst_ctrl_aon_flash_wp_l_p2d = dio_p2d[DioSysrstCtrlAonFlashWpL];
   assign cio_spi_device_sck_p2d = dio_p2d[DioSpiDeviceSck];
   assign cio_spi_device_csb_p2d = dio_p2d[DioSpiDeviceCsb];
 
@@ -3207,6 +3210,7 @@ module top_earlgrey #(
   assign dio_d2p[DioUsbdevDp] = cio_usbdev_dp_d2p;
   assign dio_d2p[DioUsbdevDn] = cio_usbdev_dn_d2p;
   assign dio_d2p[DioSysrstCtrlAonEcRstL] = cio_sysrst_ctrl_aon_ec_rst_l_d2p;
+  assign dio_d2p[DioSysrstCtrlAonFlashWpL] = cio_sysrst_ctrl_aon_flash_wp_l_d2p;
   assign dio_d2p[DioSpiDeviceSck] = 1'b0;
   assign dio_d2p[DioSpiDeviceCsb] = 1'b0;
   assign dio_d2p[DioSpiHost0Sck] = cio_spi_host0_sck_d2p;
@@ -3217,7 +3221,6 @@ module top_earlgrey #(
   assign dio_d2p[DioUsbdevTxModeSe] = cio_usbdev_tx_mode_se_d2p;
   assign dio_d2p[DioUsbdevSuspend] = cio_usbdev_suspend_d2p;
   assign dio_d2p[DioUsbdevRxEnable] = cio_usbdev_rx_enable_d2p;
-  assign dio_d2p[DioSysrstCtrlAonFlashWpL] = cio_sysrst_ctrl_aon_flash_wp_l_d2p;
 
   // All dedicated output enables
   assign dio_en_d2p[DioSpiHost0Sd0] = cio_spi_host0_sd_en_d2p[0];
@@ -3232,6 +3235,7 @@ module top_earlgrey #(
   assign dio_en_d2p[DioUsbdevDp] = cio_usbdev_dp_en_d2p;
   assign dio_en_d2p[DioUsbdevDn] = cio_usbdev_dn_en_d2p;
   assign dio_en_d2p[DioSysrstCtrlAonEcRstL] = cio_sysrst_ctrl_aon_ec_rst_l_en_d2p;
+  assign dio_en_d2p[DioSysrstCtrlAonFlashWpL] = cio_sysrst_ctrl_aon_flash_wp_l_en_d2p;
   assign dio_en_d2p[DioSpiDeviceSck] = 1'b0;
   assign dio_en_d2p[DioSpiDeviceCsb] = 1'b0;
   assign dio_en_d2p[DioSpiHost0Sck] = cio_spi_host0_sck_en_d2p;
@@ -3242,7 +3246,6 @@ module top_earlgrey #(
   assign dio_en_d2p[DioUsbdevTxModeSe] = cio_usbdev_tx_mode_se_en_d2p;
   assign dio_en_d2p[DioUsbdevSuspend] = cio_usbdev_suspend_en_d2p;
   assign dio_en_d2p[DioUsbdevRxEnable] = cio_usbdev_rx_enable_en_d2p;
-  assign dio_en_d2p[DioSysrstCtrlAonFlashWpL] = cio_sysrst_ctrl_aon_flash_wp_l_en_d2p;
 
 
   // make sure scanmode_i is never X (including during reset)

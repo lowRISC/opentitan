@@ -11232,6 +11232,17 @@
         glob_idx: 11
       }
       {
+        name: sysrst_ctrl_aon_flash_wp_l
+        width: 1
+        type: inout
+        idx: -1
+        pad: IOR9
+        attr: BidirOd
+        connection: direct
+        desc: ""
+        glob_idx: 12
+      }
+      {
         name: spi_device_sck
         width: 1
         type: input
@@ -11240,7 +11251,7 @@
         attr: InputStd
         connection: direct
         desc: ""
-        glob_idx: 12
+        glob_idx: 13
       }
       {
         name: spi_device_csb
@@ -11251,7 +11262,7 @@
         attr: InputStd
         connection: direct
         desc: ""
-        glob_idx: 13
+        glob_idx: 14
       }
       {
         name: uart0_rx
@@ -11427,7 +11438,7 @@
         attr: BidirStd
         connection: direct
         desc: ""
-        glob_idx: 14
+        glob_idx: 15
       }
       {
         name: spi_host0_csb
@@ -11438,7 +11449,7 @@
         attr: BidirStd
         connection: direct
         desc: ""
-        glob_idx: 15
+        glob_idx: 16
       }
       {
         name: usbdev_se0
@@ -11449,7 +11460,7 @@
         attr: BidirTol
         connection: manual
         desc: ""
-        glob_idx: 16
+        glob_idx: 17
       }
       {
         name: usbdev_dp_pullup
@@ -11460,7 +11471,7 @@
         attr: BidirTol
         connection: manual
         desc: ""
-        glob_idx: 17
+        glob_idx: 18
       }
       {
         name: usbdev_dn_pullup
@@ -11471,7 +11482,7 @@
         attr: BidirTol
         connection: manual
         desc: ""
-        glob_idx: 18
+        glob_idx: 19
       }
       {
         name: usbdev_tx_mode_se
@@ -11482,7 +11493,7 @@
         attr: BidirTol
         connection: manual
         desc: ""
-        glob_idx: 19
+        glob_idx: 20
       }
       {
         name: usbdev_suspend
@@ -11493,7 +11504,7 @@
         attr: BidirTol
         connection: manual
         desc: ""
-        glob_idx: 20
+        glob_idx: 21
       }
       {
         name: usbdev_rx_enable
@@ -11504,7 +11515,7 @@
         attr: BidirTol
         connection: manual
         desc: ""
-        glob_idx: 21
+        glob_idx: 22
       }
       {
         name: uart0_tx
@@ -11815,17 +11826,6 @@
         glob_idx: 69
       }
       {
-        name: sysrst_ctrl_aon_flash_wp_l
-        width: 1
-        type: output
-        idx: -1
-        pad: IOR9
-        attr: BidirOd
-        connection: direct
-        desc: ""
-        glob_idx: 22
-      }
-      {
         name: sysrst_ctrl_aon_key0_out
         width: 1
         type: output
@@ -11885,9 +11885,9 @@
     {
       dedicated:
       {
-        inouts: 12
+        inouts: 13
         inputs: 2
-        outputs: 9
+        outputs: 8
         pads: 23
       }
       muxed:
@@ -12143,13 +12143,13 @@
             name: tck
             pad: SPI_DEV_CLK
             desc: JTAG tck signal, overlaid on SPI_DEV.
-            idx: 59
+            idx: 60
           }
           {
             name: tms
             pad: SPI_DEV_CS_L
             desc: JTAG tms signal, overlaid on SPI_DEV.
-            idx: 60
+            idx: 61
           }
           {
             name: trst_n
@@ -12325,13 +12325,13 @@
             name: tck
             pad: SPI_DEV_CLK
             desc: JTAG tck signal, overlaid on SPI_DEV.
-            idx: 59
+            idx: 60
           }
           {
             name: tms
             pad: SPI_DEV_CS_L
             desc: JTAG tms signal, overlaid on SPI_DEV.
-            idx: 60
+            idx: 61
           }
           {
             name: trst_n

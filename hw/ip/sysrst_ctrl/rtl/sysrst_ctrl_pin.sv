@@ -17,6 +17,7 @@ module sysrst_ctrl_pin
   input cio_key2_in_i,
   input cio_ac_present_i,
   input cio_ec_rst_l_i,
+  input cio_flash_wp_l_i,
   input cio_lid_open_i,
   // Signals from autoblock (not synced to AON clock)
   input pwrb_out_hw_i,
@@ -49,37 +50,40 @@ module sysrst_ctrl_pin
   // Synchronize between GPIO and cfg(24MHz)
   // Use the raw input values here (not the inverted pass through values)
   prim_flop_2sync #(
-    .Width(7)
+    .Width(8)
   ) u_cfg_ac_present_i_pin (
     .clk_i,
     .rst_ni,
     .d_i({
-      cio_ac_present_i,
-      cio_ec_rst_l_i,
       cio_pwrb_in_i,
       cio_key0_in_i,
       cio_key1_in_i,
       cio_key2_in_i,
-      cio_lid_open_i
+      cio_lid_open_i,
+      cio_ac_present_i,
+      cio_ec_rst_l_i,
+      cio_flash_wp_l_i
     }),
     .q_o({
-      pin_in_value_o.ac_present.d,
-      pin_in_value_o.ec_rst_l.d,
       pin_in_value_o.pwrb_in.d,
       pin_in_value_o.key0_in.d,
       pin_in_value_o.key1_in.d,
       pin_in_value_o.key2_in.d,
-      pin_in_value_o.lid_open.d
+      pin_in_value_o.lid_open.d,
+      pin_in_value_o.ac_present.d,
+      pin_in_value_o.ec_rst_l.d,
+      pin_in_value_o.flash_wp_l.d
     })
   );
 
-  assign pin_in_value_o.ac_present.de = 1'b1;
-  assign pin_in_value_o.ec_rst_l.de   = 1'b1;
   assign pin_in_value_o.pwrb_in.de    = 1'b1;
   assign pin_in_value_o.key0_in.de    = 1'b1;
   assign pin_in_value_o.key1_in.de    = 1'b1;
   assign pin_in_value_o.key2_in.de    = 1'b1;
   assign pin_in_value_o.lid_open.de   = 1'b1;
+  assign pin_in_value_o.ac_present.de = 1'b1;
+  assign pin_in_value_o.ec_rst_l.de   = 1'b1;
+  assign pin_in_value_o.flash_wp_l.de = 1'b1;
 
   // Pin override logic.
   localparam int NumSignals = 8;
