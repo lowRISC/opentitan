@@ -1952,7 +1952,7 @@
               some data.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_otbn_randomness"]
     }
     {
       name: chip_sw_otbn_urnd_entropy
@@ -1961,7 +1961,7 @@
             - Similar to chip_otbn_rnd_entropy, but verifies the URND bits.
             '''
       milestone: V2
-      tests: []
+      tests:  ["chip_sw_otbn_randomness"]
     }
     {
       name: chip_sw_otbn_idle
