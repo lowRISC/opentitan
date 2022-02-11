@@ -134,6 +134,20 @@
       tests: ["{variant}_error"]
     }
     {
+      name: lc_escalation
+      desc: '''
+            Randomly set `lc_escalate_en` to value that is not `Off` during Kmac operations.
+
+            **Checks**:
+            - Fatal alert fires continuously until reset is issued.
+            - Status fields: `alert_fatal_fault` is set to 1 and `sha3_idle` is reset to 0.
+            - Kmac does not accept any SW or APP requests.
+            - Digest window always output all 0s.
+            '''
+      milestone: V2
+      tests: ["{variant}_lc_escalation"]
+    }
+    {
       name: entropy_timers
       desc: ''' Test entropy interface for KMAC.
 

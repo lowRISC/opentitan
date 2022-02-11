@@ -377,9 +377,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             @(posedge sha3_idle);
           end
           ,
-          wait(cfg.under_reset || kmac_err.code == ErrKeyNotValid);
+          wait(cfg.under_reset || kmac_err.code == ErrKeyNotValid ||
+               cfg.kmac_vif.lc_escalate_en_i != lc_ctrl_pkg::Off)
       )
-      if (cfg.under_reset) begin
+      if (cfg.under_reset || cfg.kmac_vif.lc_escalate_en_i != lc_ctrl_pkg::Off) begin
         @(negedge cfg.under_reset);
       end
       if (kmac_err.code == ErrKeyNotValid) begin
@@ -483,6 +484,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                 app_fsm_active = 0;
               end
             endcase
+            if (cfg.kmac_vif.lc_escalate_en_i != lc_ctrl_pkg::Off) app_st = StError;
             cfg.clk_rst_vif.wait_clks(1);
             #0;
           end
@@ -680,8 +682,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             `uvm_info(`gfn, "raised sha3_idle", UVM_HIGH)
           end
           ,
-          wait(cfg.under_reset);
+          wait(cfg.under_reset || cfg.kmac_vif.lc_escalate_en_i != lc_ctrl_pkg::Off);
       )
+      wait (cfg.under_reset);
     end
   endtask
 
@@ -689,8 +692,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   virtual task process_sha3_absorb();
     @(negedge cfg.under_reset);
     forever begin
-      wait(!cfg.under_reset);
       sha3_absorb = ral.status.sha3_absorb.get_reset();
+      wait(!cfg.under_reset);
       `DV_SPINWAIT_EXIT(
           forever begin
             // sha3_absorb should go high when CmdStart is written or

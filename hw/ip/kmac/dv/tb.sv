@@ -95,6 +95,7 @@ module tb;
   for (genvar i = 0; i < kmac_pkg::NumAppIntf; i++) begin : gen_kmac_app_intf
     assign app_req[i]                   = kmac_app_if[i].kmac_data_req;
     assign kmac_app_if[i].kmac_data_rsp = app_rsp[i];
+    assign kmac_if.app_err_o[i] = app_rsp[i].error;
 
     initial begin
       uvm_config_db#(virtual kmac_app_intf)::set(null,
@@ -114,8 +115,26 @@ module tb;
     uvm_config_db#(virtual key_sideload_if)::set(null, "*.env.keymgr_sideload_agent*",
                                                  "vif", sideload_if);
     uvm_config_db#(virtual kmac_if)::set(null, "*.env", "kmac_vif", kmac_if);
+
+    // Random drive lc_escalation signals.
+    $assertoff(0, tb.dut.u_prim_lc_sync.PrimLcSyncCheckTransients_A);
+    $assertoff(0, tb.dut.u_prim_lc_sync.PrimLcSyncCheckTransients0_A);
+    $assertoff(0, tb.dut.u_prim_lc_sync.PrimLcSyncCheckTransients1_A);
+
     $timeformat(-12, 0, " ps", 12);
     run_test();
+  end
+
+  // This assertion only exists when en_masking parameter is set.
+  // This assertion will not be true if Kmac is interrupted by lc_escalate_en signal.
+  if (`EN_MASKING) begin : gen_assert_disable_for_masking_mode
+    initial begin
+      bit disable_lc_asserts;
+      void'($value$plusargs("disable_lc_asserts=%0b", disable_lc_asserts));
+      if (disable_lc_asserts) begin
+        $assertoff(0, tb.dut.u_sha3.u_keccak.u_keccak_p.gen_selperiod_chk.SelStayTwoCycleIf1_A);
+      end
+    end
   end
 
 endmodule
