@@ -62,8 +62,8 @@ bool test_main() {
   if (rv != 0) {
     uint32_t fail_idx;
     CHECK(otbn_copy_data_from_otbn(&otbn_ctx, /*len_bytes=*/4, kVarFailIdx,
-                                   &fail_idx) == kOtbnOk);
-    LOG_INFO("ERROR: Test with index %d failed.", fail_idx);
+                                   &fail_idx) == kOtbnOk,
+          "ERROR: Test with index %d failed.", fail_idx);
     return false;
   }
 
