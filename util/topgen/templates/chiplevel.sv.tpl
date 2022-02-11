@@ -400,11 +400,92 @@ module chip_${top["name"]}_${target["name"]} (
   };
 
 % endif
+###################################################################
+## USB for CW310                                                 ##
+###################################################################
+% if target["name"] == "cw310":
+  // TODO: generalize this USB mux code and align with other tops.
 
+  // Only use the UPHY on CW310, which does not support pin flipping.
+
+  // DioUsbdevDn
+  assign manual_attr_io_usb_dn_tx = '0;
+  assign manual_out_io_usb_dn_tx = dio_out[DioUsbdevDn];
+  assign manual_oe_io_usb_dn_tx = dio_oe[DioUsbdevDn];
+  assign dio_in[DioUsbdevDn] = manual_in_io_usb_dn_rx;
+  // DioUsbdevDp
+  assign manual_attr_io_usb_dp_tx = '0;
+  assign manual_out_io_usb_dp_tx = dio_out[DioUsbdevDp];
+  assign manual_oe_io_usb_dp_tx = dio_oe[DioUsbdevDp];
+  assign dio_in[DioUsbdevDp] = manual_in_io_usb_dp_rx;
+
+  assign manual_attr_io_usb_oe_n = '0;
+  assign manual_out_io_usb_oe_n = ~dio_oe[DioUsbdevDp];
+  assign manual_oe_io_usb_oe_n = 1'b1;
+
+  logic unused_in_io_usb_oe_n;
+  assign unused_in_io_usb_oe_n = manual_in_io_usb_oe_n;
+
+  // DioUsbdevD
+  assign manual_attr_io_usb_d_rx = '0;
+  assign dio_in[DioUsbdevD] = manual_in_io_usb_d_rx;
+
+  // DioUsbdevDpPullup
+  assign manual_attr_io_usb_connect = '0;
+  assign manual_out_io_usb_connect = dio_out[DioUsbdevDpPullup] &
+                                     dio_oe[DioUsbdevDpPullup];
+  assign manual_oe_io_usb_connect = 1'b1;
+  assign dio_in[DioUsbdevDpPullup] = manual_in_io_usb_connect;
+
+  // Set SPD to full-speed
+  assign manual_out_io_usb_speed = 1'b1;
+  assign manual_oe_io_usb_speed = 1'b1;
+
+  logic unused_in_io_usb_speed;
+  assign unused_in_io_usb_speed = manual_in_io_usb_speed;
+
+  // TUSB1106 low-power mode
+  assign manual_out_io_usb_suspend = dio_out[DioUsbdevSuspend];
+  assign manual_oe_io_usb_suspend = 1'b1;
+  assign dio_in[DioUsbdevSuspend] = manual_in_io_usb_suspend;
+
+  // Tie-off unused signals
+  assign dio_in[DioUsbdevDnPullup] = 1'b0;
+  assign dio_in[DioUsbdevSe0] = 1'b0;
+  assign dio_in[DioUsbdevTxModeSe] = 1'b0;
+
+  logic unused_usb_sigs;
+  assign unused_usb_sigs = ^{
+    // DN pull-up
+    dio_out[DioUsbdevDnPullup],
+    dio_oe[DioUsbdevDnPullup],
+    dio_attr[DioUsbdevDnPullup],
+    // SE0
+    dio_out[DioUsbdevSe0],
+    dio_oe[DioUsbdevSe0],
+    dio_attr[DioUsbdevSe0],
+    // TX Mode
+    dio_out[DioUsbdevTxModeSe],
+    dio_oe[DioUsbdevTxModeSe],
+    dio_attr[DioUsbdevTxModeSe],
+    // Suspend
+    dio_oe[DioUsbdevSuspend],
+    dio_attr[DioUsbdevSuspend],
+    // D is used as an input only
+    dio_out[DioUsbdevD],
+    dio_oe[DioUsbdevD],
+    dio_attr[DioUsbdevD],
+    // DP and DN are broken out into multiple unidirectional pins
+    dio_attr[DioUsbdevDp],
+    dio_attr[DioUsbdevDn]
+  };
+
+% endif
+
+% if target["name"] == "nexysvideo":
 ###################################################################
-## USB for CW310 and Nexysvideo                                  ##
+## USB for Nexysvideo                                            ##
 ###################################################################
-% if target["name"] in ["cw310", "nexysvideo"]:
 
   /////////////////////
   // USB Overlay Mux //
@@ -516,21 +597,6 @@ module chip_${top["name"]}_${target["name"]} (
   logic unused_in_io_uphy_oe_n;
   assign unused_in_io_uphy_oe_n = manual_in_io_uphy_oe_n;
 
-% endif
-% if target["name"] == "cw310":
-  // Set SPD to full-speed
-  assign manual_oe_io_uphy_spd = 1'b1;
-  assign manual_out_io_uphy_spd = 1'b1;
-
-  logic unused_in_io_uphy_spd;
-  assign unused_in_io_uphy_spd = manual_in_io_uphy_spd;
-
-  // Disable TUSB1106 low-power mode (for now?)
-  assign manual_oe_io_uphy_sus = 1'b1;
-  assign manual_out_io_uphy_sus = 1'b0;
-
-  logic unused_in_io_uphy_sus;
-  assign unused_in_io_uphy_sus = manual_in_io_uphy_sus;
 % endif
 
 ###################################################################

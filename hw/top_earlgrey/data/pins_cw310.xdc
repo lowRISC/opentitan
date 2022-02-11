@@ -78,16 +78,16 @@ set_property -dict { PACKAGE_PIN AF24 IOSTANDARD LVCMOS33 } [get_ports { IO_TRIG
 set_property -dict { PACKAGE_PIN AB21 IOSTANDARD LVCMOS33 } [get_ports { IO_CLKOUT }];  #J14 PIN  4 CWIO_HS1 - Target clock
 
 ## TI TUSB1106 USB PHY usbdev testing
-set_property -dict { PACKAGE_PIN AF19  IOSTANDARD LVCMOS18 } [get_ports { IO_UPHY_DP_TX }]; #USRUSB_VPO
-set_property -dict { PACKAGE_PIN AF20  IOSTANDARD LVCMOS18 } [get_ports { IO_UPHY_DN_TX }]; #USRUSB_VMO
-set_property -dict { PACKAGE_PIN V16   IOSTANDARD LVCMOS18 } [get_ports { IO_UPHY_DP_RX }]; #USRUSB_VP
-set_property -dict { PACKAGE_PIN V13   IOSTANDARD LVCMOS18 } [get_ports { IO_UPHY_DN_RX }]; #USRUSB_VM
-set_property -dict { PACKAGE_PIN AF14  IOSTANDARD LVCMOS18 } [get_ports { IO_UPHY_DPPULLUP }]; #USRUSB_SOFTCONN
+set_property -dict { PACKAGE_PIN AF19  IOSTANDARD LVCMOS18 } [get_ports { IO_USB_DP_TX }]; #USRUSB_VPO
+set_property -dict { PACKAGE_PIN AF20  IOSTANDARD LVCMOS18 } [get_ports { IO_USB_DN_TX }]; #USRUSB_VMO
+set_property -dict { PACKAGE_PIN V16   IOSTANDARD LVCMOS18 } [get_ports { IO_USB_DP_RX }]; #USRUSB_VP
+set_property -dict { PACKAGE_PIN V13   IOSTANDARD LVCMOS18 } [get_ports { IO_USB_DN_RX }]; #USRUSB_VM
+set_property -dict { PACKAGE_PIN AF14  IOSTANDARD LVCMOS18 } [get_ports { IO_USB_CONNECT }]; #USRUSB_SOFTCONN
 set_property -dict { PACKAGE_PIN P18   IOSTANDARD LVCMOS33 } [get_ports { IOR0 }]; #USRUSB_VBUS_DETECT
-set_property -dict { PACKAGE_PIN AE15  IOSTANDARD LVCMOS18 } [get_ports { IO_UPHY_OE_N }]; #USRUSB_OE
-set_property -dict { PACKAGE_PIN V17   IOSTANDARD LVCMOS18 } [get_ports { IO_UPHY_D_RX }]; #USRUSB_RCV
-set_property -dict { PACKAGE_PIN AE16  IOSTANDARD LVCMOS18 } [get_ports { IO_UPHY_SPD  }]; #USRUSB_SPD
-set_property -dict { PACKAGE_PIN AF15  IOSTANDARD LVCMOS18 } [get_ports { IO_UPHY_SUS  }]; #USRUSB_SUS
+set_property -dict { PACKAGE_PIN AE15  IOSTANDARD LVCMOS18 } [get_ports { IO_USB_OE_N }]; #USRUSB_OE
+set_property -dict { PACKAGE_PIN V17   IOSTANDARD LVCMOS18 } [get_ports { IO_USB_D_RX }]; #USRUSB_RCV
+set_property -dict { PACKAGE_PIN AE16  IOSTANDARD LVCMOS18 } [get_ports { IO_USB_SPEED }]; #USRUSB_SPD
+set_property -dict { PACKAGE_PIN AF15  IOSTANDARD LVCMOS18 } [get_ports { IO_USB_SUSPEND }]; #USRUSB_SUS
 
 ## USB input delay to accommodate T_FST (full-speed transition time) and the
 ## PHY's sampling logic. The PHY expects to only see up to one transient / fake
@@ -96,22 +96,15 @@ set_property -dict { PACKAGE_PIN AF15  IOSTANDARD LVCMOS18 } [get_ports { IO_UPH
 ## `T_sample - T_FST(max)` to help keep the P/N skew from slipping beyond one
 ## sample period.
 set clks_48_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT1]]
-set_input_delay -clock ${clks_48_unbuf} -min 3 [get_ports {IO_UPHY_DP_RX IO_UPHY_DN_RX IO_UPHY_D_RX}]
-set_input_delay -clock ${clks_48_unbuf} -add_delay -max 17 [get_ports {IO_UPHY_DP_RX IO_UPHY_DN_RX IO_UPHY_D_RX}]
+set_input_delay -clock ${clks_48_unbuf} -min 3 [get_ports {IO_USB_DP_RX IO_USB_DN_RX IO_USB_D_RX}]
+set_input_delay -clock ${clks_48_unbuf} -add_delay -max 17 [get_ports {IO_USB_DP_RX IO_USB_DN_RX IO_USB_D_RX}]
 
 ## USB output max skew constraint
 ## Use the output-enable as a "clock" and time the P/N relative to it. Keep the skew within T_FST.
-set usb_embed_out_clk [create_generated_clock -name usb_embed_out_clk -source [get_pin clkgen/pll/CLKOUT1] -multiply_by 1 [get_ports IO_UPHY_OE_N]]
+set usb_embed_out_clk [create_generated_clock -name usb_embed_out_clk -source [get_pin clkgen/pll/CLKOUT1] -multiply_by 1 [get_ports IO_USB_OE_N]]
 set_false_path -from [get_clocks -include_generated_clocks clk_io_div4] -to ${usb_embed_out_clk}
-set_output_delay -min -clock ${usb_embed_out_clk} 7 [get_ports {IO_UPHY_DP_TX IO_UPHY_DN_TX}]
-set_output_delay -max -clock ${usb_embed_out_clk} 14 [get_ports {IO_UPHY_DP_TX IO_UPHY_DN_TX}] -add_delay
-
-## Not used - route to header for now?
-set_property -dict { PACKAGE_PIN A10   IOSTANDARD LVCMOS33 } [get_ports { USB_P }]; #USERIOB-19
-set_property -dict { PACKAGE_PIN B11   IOSTANDARD LVCMOS33 } [get_ports { USB_N }]; #USERIOB-21
-set_property -dict { PACKAGE_PIN B12   IOSTANDARD LVCMOS33 } [get_ports { IOR1 }]; #USERIOB-23
-set_property -dict { PACKAGE_PIN A12   IOSTANDARD LVCMOS33 } [get_ports { IO_USB_DNPULLUP0 }]; #USERIOB-25
-set_property -dict { PACKAGE_PIN A13   IOSTANDARD LVCMOS33 } [get_ports { IO_USB_DPPULLUP0 }]; #USERIOB-27
+set_output_delay -min -clock ${usb_embed_out_clk} 7 [get_ports {IO_USB_DP_TX IO_USB_DN_TX}]
+set_output_delay -max -clock ${usb_embed_out_clk} 14 [get_ports {IO_USB_DP_TX IO_USB_DN_TX}] -add_delay
 
 ## UART
 set_property -dict { PACKAGE_PIN AA22 IOSTANDARD LVCMOS33 } [get_ports { IOC4 }]; #UART1RXD - OpenTitan UART0 TX

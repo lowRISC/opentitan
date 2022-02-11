@@ -11990,6 +11990,7 @@
           IOC0
           IOC1
           IOC12
+          IOR1
           IOR2
           IOR3
           IOR4
@@ -12002,6 +12003,8 @@
           IOR11
           IOR12
           IOR13
+          USB_P
+          USB_N
         ]
         add_pads:
         [
@@ -12020,77 +12023,63 @@
             desc: Dedicated JTAG system reset input
           }
           {
-            name: IO_USB_DNPULLUP0
-            type: BidirStd
-            bank: VCC
-            connection: manual
-            desc: Manual USB signal for FPGA target
-          }
-          {
-            name: IO_USB_DPPULLUP0
-            type: BidirStd
-            bank: VCC
-            connection: manual
-            desc: Manual USB signal for FPGA target
-          }
-          {
-            name: IO_UPHY_DP_TX
+            name: IO_USB_CONNECT
             type: BidirStd
             bank: VCC
             connection: manual
             desc: Manual USB UPHY signal for FPGA target
           }
           {
-            name: IO_UPHY_DN_TX
+            name: IO_USB_DP_TX
             type: BidirStd
             bank: VCC
             connection: manual
             desc: Manual USB UPHY signal for FPGA target
           }
           {
-            name: IO_UPHY_DP_RX
+            name: IO_USB_DN_TX
             type: BidirStd
             bank: VCC
             connection: manual
             desc: Manual USB UPHY signal for FPGA target
           }
           {
-            name: IO_UPHY_DN_RX
+            name: IO_USB_D_RX
             type: BidirStd
             bank: VCC
             connection: manual
             desc: Manual USB UPHY signal for FPGA target
           }
           {
-            name: IO_UPHY_D_RX
+            name: IO_USB_DP_RX
             type: BidirStd
             bank: VCC
             connection: manual
             desc: Manual USB UPHY signal for FPGA target
           }
           {
-            name: IO_UPHY_OE_N
+            name: IO_USB_DN_RX
             type: BidirStd
             bank: VCC
             connection: manual
             desc: Manual USB UPHY signal for FPGA target
           }
           {
-            name: IO_UPHY_DPPULLUP
+            name: IO_USB_OE_N
             type: BidirStd
             bank: VCC
             connection: manual
             desc: Manual USB UPHY signal for FPGA target
           }
           {
-            name: IO_UPHY_SPD
+            name: IO_USB_SPEED
             type: BidirStd
             bank: VCC
             connection: manual
             desc: Manual USB UPHY signal for FPGA target
           }
           {
-            name: IO_UPHY_SUS
+            name: IO_USB_SUSPEND
             type: BidirStd
             bank: VCC
             connection: manual

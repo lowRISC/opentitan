@@ -1335,7 +1335,8 @@
           'FLASH_TEST_MODE0', 'FLASH_TEST_MODE1',
           'IOB10', 'IOB11', 'IOB12',
           'IOC0', 'IOC1', 'IOC12',
-          'IOR2', 'IOR3', 'IOR4', 'IOR5', 'IOR6', 'IOR7', 'IOR8', 'IOR9', 'IOR10', 'IOR11', 'IOR12', 'IOR13'
+          'IOR1', 'IOR2', 'IOR3', 'IOR4', 'IOR5', 'IOR6', 'IOR7', 'IOR8', 'IOR9', 'IOR10', 'IOR11', 'IOR12', 'IOR13',
+          'USB_P', 'USB_N'
         ],
 
         add_pads: [
@@ -1343,17 +1344,15 @@
           { name: 'IO_CLK',           type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Extra clock input for FPGA target'}
           { name: 'IO_JSRST_N',       type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Dedicated JTAG system reset input'}
           // Custom USB pads
-          { name: 'IO_USB_DNPULLUP0', type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB signal for FPGA target'}
-          { name: 'IO_USB_DPPULLUP0', type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB signal for FPGA target'}
-          { name: 'IO_UPHY_DP_TX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_UPHY_DN_TX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_UPHY_DP_RX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_UPHY_DN_RX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_UPHY_D_RX',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_UPHY_OE_N',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_UPHY_DPPULLUP', type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_UPHY_SPD',      type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_UPHY_SUS',      type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          { name: 'IO_USB_CONNECT',  type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          { name: 'IO_USB_DP_TX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          { name: 'IO_USB_DN_TX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          { name: 'IO_USB_D_RX',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          { name: 'IO_USB_DP_RX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          { name: 'IO_USB_DN_RX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          { name: 'IO_USB_OE_N',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          { name: 'IO_USB_SPEED',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          { name: 'IO_USB_SUSPEND',  type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
           // ChipWhisperer IO
           { name: 'IO_CLKOUT',        type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual clock output for SCA setup'}
           { name: 'IO_TRIGGER',       type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual trigger output for SCA setup'}
