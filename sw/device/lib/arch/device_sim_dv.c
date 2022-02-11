@@ -26,6 +26,9 @@ const uint64_t kUartBaudrate = 1 * 1000 * 1000;  // 1Mbps
 const uint32_t kUartNCOValue =
     CALCULATE_UART_NCO(kUartBaudrate, kClockFreqPeripheralHz);
 
+const uint32_t kUartTxFifoCpuCycles =
+    CALCULATE_UART_TX_FIFO_CPU_CYCLES(kUartBaudrate, kClockFreqCpuHz);
+
 // Defined in `hw/top_earlgrey/dv/env/chip_env_pkg.sv`
 const uintptr_t kDeviceTestStatusAddress = 0x30000000;
 
