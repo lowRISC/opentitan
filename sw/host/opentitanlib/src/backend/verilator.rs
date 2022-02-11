@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use opentitanlib::transport::verilator::{Options, Verilator};
-use opentitanlib::transport::Transport;
+use crate::transport::verilator::{Options, Verilator};
+use crate::transport::Transport;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]

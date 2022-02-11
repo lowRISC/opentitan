@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use opentitanlib::transport::ultradebug::Ultradebug;
-use opentitanlib::transport::Transport;
+use crate::transport::ultradebug::Ultradebug;
+use crate::transport::Transport;
 
 use crate::backend::BackendOpts;
 

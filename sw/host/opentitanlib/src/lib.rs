@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 pub mod app;
+pub mod backend;
 pub mod bootstrap;
 pub mod crypto;
 pub mod io;

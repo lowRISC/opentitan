@@ -12,10 +12,10 @@ use std::iter::{IntoIterator, Iterator};
 use std::path::PathBuf;
 use structopt::StructOpt;
 
-mod backend;
 mod command;
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::backend;
 
 #[derive(Debug, StructOpt, CommandDispatch)]
 enum RootCommandHierarchy {
