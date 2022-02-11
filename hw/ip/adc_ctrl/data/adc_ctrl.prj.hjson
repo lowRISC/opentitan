@@ -7,9 +7,11 @@
     design_spec:        "../doc",
     dv_doc:             "../doc/dv",
     hw_checklist:       "../doc/checklist",
+    sw_checklist:       "/sw/device/lib/dif/dif_adc_ctrl",
     version:            "1.0",
     life_stage:         "L1",
     design_stage:       "D2S",
     verification_stage: "V1",
+    dif_stage:          "S0",
     notes:              "DV resource allocation pending.",
 }
