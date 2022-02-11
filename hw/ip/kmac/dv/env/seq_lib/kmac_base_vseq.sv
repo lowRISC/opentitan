@@ -245,6 +245,10 @@ class kmac_base_vseq extends cip_base_vseq #(
   }
 
   virtual task dut_init(string reset_kind = "HARD");
+    // KMAC has dut and edn reset. If assign kmac_vif_init() values after `super.dut_init()`,
+    // and if dut reset deasserts earlier than edn reset, some KMAC outputs might remain X or Z
+    // when dut clock is running.
+    kmac_vif_init();
     super.dut_init();
     if (do_kmac_init) kmac_init();
   endtask
@@ -260,10 +264,14 @@ class kmac_base_vseq extends cip_base_vseq #(
         static_entropy_mode inside {EntropyModeSw, EntropyModeEdn};)
   endtask
 
+  virtual task kmac_vif_init();
+    cfg.kmac_vif.drive_lc_escalate(lc_ctrl_pkg::Off);
+  endtask
+
   // setup basic kmac features
   virtual task kmac_init();
     // Wait for KMAC to reach idle state
-    wait (cfg.idle_vif.pins == 1);
+    wait (cfg.kmac_vif.idle_o == 1);
     `uvm_info(`gfn, "reached idle state", UVM_HIGH)
 
     // set interrupts

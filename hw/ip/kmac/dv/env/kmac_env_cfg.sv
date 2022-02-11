@@ -5,7 +5,7 @@
 class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
 
   // ext interfaces
-  idle_vif        idle_vif;
+  kmac_vif kmac_vif;
 
   rand kmac_app_agent_cfg m_kmac_app_agent_cfg[kmac_pkg::NumAppIntf];
   rand key_sideload_agent_cfg keymgr_sideload_agent_cfg;

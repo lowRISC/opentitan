@@ -18,6 +18,7 @@ filesets:
       - lowrisc:ip:kmac
     files:
       - kmac_env_pkg.sv
+      - kmac_if.sv
       - kmac_env_cfg.sv: {is_include_file: true}
       - kmac_env_cov.sv: {is_include_file: true}
       - kmac_virtual_sequencer.sv: {is_include_file: true}
