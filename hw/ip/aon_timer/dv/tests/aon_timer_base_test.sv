@@ -17,4 +17,16 @@ class aon_timer_base_test extends cip_base_test #(
   // the base class also looks up UVM_TEST_SEQ plusarg to create and run that seq in
   // the run_phase; as such, nothing more needs to be done
 
+  // Add message demotes here
+  virtual function void add_message_demotes(dv_report_catcher catcher);
+    string msg;
+
+    super.add_message_demotes(catcher);
+
+    // Demote intr_enable register non-existent warnings to infos
+    msg = "\s*Unable to locate register 'intr_enable' in block 'aon_timer_reg_block'*";
+    catcher.add_change_sev("RegModel", msg, UVM_INFO);
+
+  endfunction
+
 endclass : aon_timer_base_test
