@@ -265,14 +265,17 @@ class kmac_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task kmac_vif_init();
+    // Any value that is not `lc_ctrl_pkg::On` is considered `lc_ctrl_pkg::Off`.
     cfg.kmac_vif.drive_lc_escalate(lc_ctrl_pkg::Off);
   endtask
 
   // setup basic kmac features
-  virtual task kmac_init();
+  virtual task kmac_init(bit wait_init = 1);
     // Wait for KMAC to reach idle state
-    wait (cfg.kmac_vif.idle_o == 1);
-    `uvm_info(`gfn, "reached idle state", UVM_HIGH)
+    if (wait_init) begin
+      wait (cfg.kmac_vif.idle_o == 1);
+      `uvm_info(`gfn, "reached idle state", UVM_HIGH)
+    end
 
     // set interrupts
     cfg_interrupts(.interrupts(enable_intr));

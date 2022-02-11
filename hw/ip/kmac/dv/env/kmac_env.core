@@ -38,6 +38,7 @@ filesets:
       - seq_lib/kmac_burst_write_vseq.sv: {is_include_file: true}
       - seq_lib/kmac_app_vseq.sv: {is_include_file: true}
       - seq_lib/kmac_error_vseq.sv: {is_include_file: true}
+      - seq_lib/kmac_lc_escalation_vseq.sv: {is_include_file: true}
       - seq_lib/kmac_stress_all_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
