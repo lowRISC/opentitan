@@ -98,15 +98,14 @@ module tb;
     pullup (weak1) pd_in_i (si_pulldown[i]);
     pullup (weak1) pd_out_i (so_pulldown[i]);
     assign spi_if.sio[i]  = (sd_out_en[i]) ? sd_out[i] : so_pulldown[i];
-    assign si_pulldown[i] = {3'b000, spi_if.sio[i]};
+    assign si_pulldown[i] = spi_if.sio[i];
   end
 
   assign spi_if_pass.sck = pass_out.sck;
   assign spi_if_pass.csb = pass_out.csb;
-  assign sd_out = pass_out.s;
   assign pass_in.s = pass_si_pulldown;
   for (genvar i = 0; i < 4; i++) begin : gen_tri_state_passthrough
-    pullup (weak1) pd_in_i (pass_in.s[i]);
+    pullup (weak1) pd_in_i (pass_si_pulldown[i]);
     pullup (weak1) pd_out_i (pass_so_pulldown[i]);
     assign spi_if_pass.sio[i]  = (pass_out.s_en[i]) ? pass_out.s[i] : pass_so_pulldown[i];
     assign pass_si_pulldown[i] = spi_if_pass.sio[i];
