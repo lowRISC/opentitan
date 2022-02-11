@@ -18,6 +18,7 @@ filesets:
       - lowrisc:dv:sram_ctrl_sva
     files:
       - tb.sv
+      - cov/sram_ctrl_cov_bind.sv
     file_type: systemVerilogSource
 
 targets:
