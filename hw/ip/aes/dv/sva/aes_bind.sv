@@ -20,4 +20,12 @@ module aes_bind;
     .d2h    (tl_o)
   );
 
+  bind aes aes_idle_check idle_check (
+    .clk_i    (clk_i),
+    .rst_ni   (rst_ni),
+    .reg2hw   (reg2hw),
+    .idle_i   (idle_o)
+   );
+
+
 endmodule
