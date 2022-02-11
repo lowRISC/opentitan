@@ -37,6 +37,7 @@ module sysrst_ctrl
   input cio_key2_in_i,  // TBD button in tablet; row input from keyboard matrix in a laptop
   input cio_pwrb_in_i,  // Power button in both tablet and laptop
   input cio_lid_open_i,  // lid is open from GMR
+  input cio_flash_wp_l_i, // read back of the flash_wp_l output pad
   output logic cio_bat_disable_o,  // Battery is disconnected
   output logic cio_flash_wp_l_o,//Flash write protect is asserted by sysrst_ctrl
   output logic cio_ec_rst_l_o,  // EC reset is asserted by sysrst_ctrl
@@ -100,25 +101,34 @@ module sysrst_ctrl
   ///////////////////////////////////////
 
   // Optionally invert some of the input signals
-  logic pwrb_int, key0_int, key1_int, key2_int, ac_present_int, lid_open_int, ec_rst_l_int;
+  logic pwrb_int, key0_int, key1_int, key2_int, ac_present_int, lid_open_int;
+  logic ec_rst_l_int, flash_wp_l_int;
   assign pwrb_int       = reg2hw.key_invert_ctl.pwrb_in.q ^ cio_pwrb_in_i;
   assign key0_int       = reg2hw.key_invert_ctl.key0_in.q ^ cio_key0_in_i;
   assign key1_int       = reg2hw.key_invert_ctl.key1_in.q ^ cio_key1_in_i;
   assign key2_int       = reg2hw.key_invert_ctl.key2_in.q ^ cio_key2_in_i;
   assign ac_present_int = reg2hw.key_invert_ctl.ac_present.q ^ cio_ac_present_i;
   assign lid_open_int   = reg2hw.key_invert_ctl.lid_open.q ^ cio_lid_open_i;
-  // Uninverted input
+  // Uninverted inputs
   assign ec_rst_l_int   = cio_ec_rst_l_i;
+  assign flash_wp_l_int = cio_flash_wp_l_i;
 
   // Synchronize input signals to AON clock
   logic aon_pwrb_int, aon_key0_int, aon_key1_int, aon_key2_int;
-  logic aon_ac_present_int, aon_lid_open_int, aon_ec_rst_l_int;
+  logic aon_ac_present_int, aon_lid_open_int, aon_ec_rst_l_int, aon_flash_wp_l_int;
   prim_flop_2sync #(
-    .Width(7)
+    .Width(8)
   ) u_prim_flop_2sync_input (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
-    .d_i({pwrb_int, key0_int, key1_int, key2_int, ac_present_int, lid_open_int, ec_rst_l_int}),
+    .d_i({pwrb_int,
+          key0_int,
+          key1_int,
+          key2_int,
+          ac_present_int,
+          lid_open_int,
+          ec_rst_l_int,
+          flash_wp_l_int}),
     .q_o({
       aon_pwrb_int,
       aon_key0_int,
@@ -126,7 +136,8 @@ module sysrst_ctrl
       aon_key2_int,
       aon_ac_present_int,
       aon_lid_open_int,
-      aon_ec_rst_l_int
+      aon_ec_rst_l_int,
+      aon_flash_wp_l_int
     })
   );
 
@@ -200,6 +211,7 @@ module sysrst_ctrl
     .key2_int_i(aon_key2_int),
     .ac_present_int_i(aon_ac_present_int),
     .ec_rst_l_int_i(aon_ec_rst_l_int),
+    .flash_wp_l_int_i(aon_flash_wp_l_int),
     // CSRs synced to AON clock
     .key_intr_ctl_i(reg2hw.key_intr_ctl),
     .key_intr_debounce_ctl_i(reg2hw.key_intr_debounce_ctl),
@@ -257,6 +269,7 @@ module sysrst_ctrl
     .cio_key2_in_i,
     .cio_ac_present_i,
     .cio_ec_rst_l_i,
+    .cio_flash_wp_l_i,
     .cio_lid_open_i,
     // Signals from autoblock (not synced to AON clock)
     .pwrb_out_hw_i(pwrb_out_hw),

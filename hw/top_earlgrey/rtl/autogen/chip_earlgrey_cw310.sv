@@ -92,8 +92,8 @@ module chip_earlgrey_cw310 #(
   parameter int Tap1PadIdx = 16;
   parameter int Dft0PadIdx = 23;
   parameter int Dft1PadIdx = 34;
-  parameter int TckPadIdx = 59;
-  parameter int TmsPadIdx = 60;
+  parameter int TckPadIdx = 60;
+  parameter int TmsPadIdx = 61;
   parameter int TrstNPadIdx = 18;
   parameter int TdiPadIdx = 51;
   parameter int TdoPadIdx = 52;
@@ -117,7 +117,6 @@ module chip_earlgrey_cw310 #(
     usb_sense_idx:     MioInUsbdevSense,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
-      BidirOd, // DIO sysrst_ctrl_aon_flash_wp_l
       BidirTol, // DIO usbdev_rx_enable
       BidirTol, // DIO usbdev_suspend
       BidirTol, // DIO usbdev_tx_mode_se
@@ -128,6 +127,7 @@ module chip_earlgrey_cw310 #(
       BidirStd, // DIO spi_host0_sck
       InputStd, // DIO spi_device_csb
       InputStd, // DIO spi_device_sck
+      BidirOd, // DIO sysrst_ctrl_aon_flash_wp_l
       BidirOd, // DIO sysrst_ctrl_aon_ec_rst_l
       BidirTol, // DIO usbdev_dn
       BidirTol, // DIO usbdev_dp

@@ -53,6 +53,7 @@
   ],
   available_inout_list: [
     { name: "ec_rst_l", desc: "ec_rst_l as an inout to/from the open drain IO" }
+    { name: "flash_wp_l", desc: "flash_wp_l as an inout to/from the open drain IO" }
   ],
   available_input_list: [
     { name: "ac_present", desc: "A/C power is present" }
@@ -64,7 +65,6 @@
   ],
   available_output_list: [
     { name: "bat_disable", desc: "Battery is disconnected" }
-    { name: "flash_wp_l", desc: "flash_wp_l as an output to the open drain IO" }
     { name: "key0_out", desc: "Passthrough from key0_in, can be configured to invert" }
     { name: "key1_out", desc: "Passthrough from key1_in, can be configured to invert" }
     { name: "key2_out", desc: "Passthrough from key2_in, can be configured to invert" }
@@ -483,38 +483,43 @@
               "excl:CsrAllTests:CsrExclCheck"],
       fields: [
         { bits:   "0",
-          name:   "ac_present",
-          desc:   "raw ac_present value; before the invert logic",
-          resval: "0",
-        }
-        { bits:   "1",
-          name:   "ec_rst_l",
-          desc:   "raw ec_rst_l value; before the invert logic",
-          resval: "0",
-        }
-        { bits:   "2",
           name:   "pwrb_in",
           desc:   "raw pwrb_in value; before the invert logic",
           resval: "0",
         }
-        { bits:   "3",
+        { bits:   "1",
           name:   "key0_in",
           desc:   "raw key0_in value; before the invert logic",
           resval: "0",
         }
-        { bits:   "4",
+        { bits:   "2",
           name:   "key1_in",
           desc:   "raw key1_in value; before the invert logic",
           resval: "0",
         }
-        { bits:   "5",
+        { bits:   "3",
           name:   "key2_in",
           desc:   "raw key2_in value; before the invert logic",
           resval: "0",
         }
-        { bits:   "6",
+        { bits:   "4",
           name:   "lid_open",
           desc:   "raw lid_open value; before the invert logic",
+          resval: "0",
+        }
+        { bits:   "5",
+          name:   "ac_present",
+          desc:   "raw ac_present value; before the invert logic",
+          resval: "0",
+        }
+        { bits:   "6",
+          name:   "ec_rst_l",
+          desc:   "raw ec_rst_l value; before the invert logic",
+          resval: "0",
+        }
+        { bits:   "7",
+          name:   "flash_wp_l",
+          desc:   "raw flash_wp_l value; before the invert logic",
           resval: "0",
         }
       ]
@@ -557,6 +562,11 @@
           desc:   "0: disable, 1: enable",
           resval: "0",
         }
+        { bits:   "6",
+          name:   "flash_wp_l_H2L",
+          desc:   "0: disable, 1: enable",
+          resval: "0",
+        }
         { bits:   "8",
           name:   "pwrb_in_L2H",
           desc:   "0: disable, 1: enable",
@@ -584,6 +594,11 @@
         }
         { bits:   "13",
           name:   "ec_rst_l_L2H",
+          desc:   "0: disable, 1: enable",
+          resval: "0",
+        }
+        { bits:   "14",
+          name:   "flash_wp_l_L2H",
           desc:   "0: disable, 1: enable",
           resval: "0",
         }
@@ -845,32 +860,42 @@
           resval: "0",
         }
         { bits:   "6",
-          name:   "pwrb_L2H",
+          name:   "flash_wp_l_H2L",
           desc:   "0: case not detected;1: case detected",
           resval: "0",
         }
         { bits:   "7",
-          name:   "key0_in_L2H",
+          name:   "pwrb_L2H",
           desc:   "0: case not detected;1: case detected",
           resval: "0",
         }
         { bits:   "8",
-          name:   "key1_in_L2H",
+          name:   "key0_in_L2H",
           desc:   "0: case not detected;1: case detected",
           resval: "0",
         }
         { bits:   "9",
-          name:   "key2_in_L2H",
+          name:   "key1_in_L2H",
           desc:   "0: case not detected;1: case detected",
           resval: "0",
         }
         { bits:   "10",
-          name:   "ac_present_L2H",
+          name:   "key2_in_L2H",
           desc:   "0: case not detected;1: case detected",
           resval: "0",
         }
         { bits:   "11",
+          name:   "ac_present_L2H",
+          desc:   "0: case not detected;1: case detected",
+          resval: "0",
+        }
+        { bits:   "12",
           name:   "ec_rst_l_L2H",
+          desc:   "0: case not detected;1: case detected",
+          resval: "0",
+        }
+        { bits:   "13",
+          name:   "flash_wp_l_L2H",
           desc:   "0: case not detected;1: case detected",
           resval: "0",
         }
