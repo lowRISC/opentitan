@@ -30,6 +30,7 @@ module kmac
   parameter bit SecIdleAcceptSwMsg = 1'b0,
 
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
+  parameter msg_perm_t  RndCnstMsgPerm  = RndCnstMsgPermDefault,
 
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
@@ -232,6 +233,7 @@ module kmac
   // KMAC to SHA3 core
   logic                          msg_valid       ;
   logic [kmac_pkg::MsgWidth-1:0] msg_data [Share];
+  logic [kmac_pkg::MsgWidth-1:0] msg_data_masked [Share];
   logic [kmac_pkg::MsgStrbW-1:0] msg_strb        ;
   logic                          msg_ready       ;
 
@@ -282,6 +284,10 @@ module kmac
   logic entropy_ready;
   entropy_mode_e entropy_mode;
   logic entropy_fast_process;
+
+  // Message Masking
+  logic msg_mask_en, cfg_msg_mask;
+  logic [MsgWidth-1:0] msg_mask;
 
   // SHA3 Error response
   sha3_pkg::err_t sha3_err;
@@ -505,6 +511,10 @@ module kmac
                        & reg2hw.cfg_shadowed.entropy_ready.qe;
   assign entropy_mode  = entropy_mode_e'(reg2hw.cfg_shadowed.entropy_mode.q);
   assign entropy_fast_process = reg2hw.cfg_shadowed.entropy_fast_process.q;
+
+  // msg_mask_en turns on the message LFSR when KMAC is enabled.
+  assign cfg_msg_mask = reg2hw.cfg_shadowed.msg_mask.q;
+  assign msg_mask_en = cfg_msg_mask & msg_valid & msg_ready;
 
   `ASSERT(EntropyReadyLatched_A, $rose(entropy_ready) |=> !entropy_ready)
 
@@ -797,6 +807,30 @@ module kmac
   );
 
   // SHA3 hashing engine
+
+  // msg_data masking
+  if (EnMasking == 1) begin: g_msg_mask
+    logic [MsgWidth-1:0] msg_mask_permuted;
+
+    // Permute the LFSR output to avoid same lfsr applied to multiple times
+    always_comb begin
+      msg_mask_permuted = '0;
+      for (int unsigned i = 0 ; i < MsgWidth ; i++) begin
+        // Loop through the MsgPerm constant and swap between the bits
+        msg_mask_permuted[i] = msg_mask[RndCnstMsgPerm[i]];
+      end
+    end
+
+    for (genvar i = 0 ; i < Share ; i++) begin: g_msg_mask
+      assign msg_data_masked[i] = msg_data[i]
+                                ^ ({MsgWidth{cfg_msg_mask}} & msg_mask_permuted);
+    end : g_msg_mask
+  end else begin : g_no_msg_mask
+    assign msg_data_masked[0] = msg_data[0];
+
+    logic unused_msgmask;
+    assign unused_msgmask = ^{msg_mask, cfg_msg_mask, msg_mask_en};
+  end
   sha3 #(
     .EnMasking (EnMasking),
     .ReuseShare (ReuseShare)
@@ -806,7 +840,7 @@ module kmac
 
     // MSG_FIFO interface (or from KMAC)
     .msg_valid_i (msg_valid),
-    .msg_data_i  (msg_data ), // always store to 0 regardless of EnMasking
+    .msg_data_i  (msg_data_masked ),
     .msg_strb_i  (msg_strb ),
     .msg_ready_o (msg_ready),
 
@@ -1112,6 +1146,10 @@ module kmac
       .wait_timer_prescaler_i (wait_timer_prescaler),
       .wait_timer_limit_i     (wait_timer_limit),
 
+      //// Message Masking
+      .msg_mask_en_i (msg_mask_en),
+      .lfsr_data_o   (msg_mask),
+
       //// SW update of seed
       .seed_update_i         (entropy_seed_update),
       .seed_data_i           (entropy_seed_data),
@@ -1203,6 +1241,7 @@ module kmac
       reg2hw.cfg_shadowed.sideload.err_storage            ,
       reg2hw.cfg_shadowed.entropy_mode.err_storage        ,
       reg2hw.cfg_shadowed.entropy_fast_process.err_storage,
+      reg2hw.cfg_shadowed.msg_mask.err_storage            ,
       reg2hw.cfg_shadowed.entropy_ready.err_storage       ,
       reg2hw.cfg_shadowed.err_processed.err_storage
     };
@@ -1216,6 +1255,7 @@ module kmac
       reg2hw.cfg_shadowed.sideload.err_update             ,
       reg2hw.cfg_shadowed.entropy_mode.err_update         ,
       reg2hw.cfg_shadowed.entropy_fast_process.err_update ,
+      reg2hw.cfg_shadowed.msg_mask.err_update             ,
       reg2hw.cfg_shadowed.entropy_ready.err_update        ,
       reg2hw.cfg_shadowed.err_processed.err_update
     };
@@ -1229,7 +1269,8 @@ module kmac
     reg2hw.cfg_shadowed.state_endianness.qe     ,
     reg2hw.cfg_shadowed.sideload.qe             ,
     reg2hw.cfg_shadowed.entropy_mode.qe         ,
-    reg2hw.cfg_shadowed.entropy_fast_process.qe
+    reg2hw.cfg_shadowed.entropy_fast_process.qe ,
+    reg2hw.cfg_shadowed.msg_mask.qe
     };
 
   // Alerts

@@ -209,6 +209,8 @@ module kmac_reg_top (
   logic [1:0] cfg_shadowed_entropy_mode_wd;
   logic cfg_shadowed_entropy_fast_process_qs;
   logic cfg_shadowed_entropy_fast_process_wd;
+  logic cfg_shadowed_msg_mask_qs;
+  logic cfg_shadowed_msg_mask_wd;
   logic cfg_shadowed_entropy_ready_qs;
   logic cfg_shadowed_entropy_ready_wd;
   logic cfg_shadowed_err_processed_qs;
@@ -857,6 +859,40 @@ module kmac_reg_top (
     // Shadow register error conditions
     .err_update  (reg2hw.cfg_shadowed.entropy_fast_process.err_update),
     .err_storage (reg2hw.cfg_shadowed.entropy_fast_process.err_storage)
+  );
+
+  //   F[msg_mask]: 20:20
+  prim_subreg_shadow #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cfg_shadowed_msg_mask (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
+
+    // from register interface
+    .re     (cfg_shadowed_re),
+    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .wd     (cfg_shadowed_msg_mask_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (reg2hw.cfg_shadowed.msg_mask.qe),
+    .q      (reg2hw.cfg_shadowed.msg_mask.q),
+
+    // to register interface (read)
+    .qs     (cfg_shadowed_msg_mask_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.cfg_shadowed.msg_mask.err_update),
+    .err_storage (reg2hw.cfg_shadowed.msg_mask.err_storage)
   );
 
   //   F[entropy_ready]: 24:24
@@ -2275,6 +2311,8 @@ module kmac_reg_top (
 
   assign cfg_shadowed_entropy_fast_process_wd = reg_wdata[19];
 
+  assign cfg_shadowed_msg_mask_wd = reg_wdata[20];
+
   assign cfg_shadowed_entropy_ready_wd = reg_wdata[24];
 
   assign cfg_shadowed_err_processed_wd = reg_wdata[25];
@@ -2473,6 +2511,7 @@ module kmac_reg_top (
         reg_rdata_next[12] = cfg_shadowed_sideload_qs;
         reg_rdata_next[17:16] = cfg_shadowed_entropy_mode_qs;
         reg_rdata_next[19] = cfg_shadowed_entropy_fast_process_qs;
+        reg_rdata_next[20] = cfg_shadowed_msg_mask_qs;
         reg_rdata_next[24] = cfg_shadowed_entropy_ready_qs;
         reg_rdata_next[25] = cfg_shadowed_err_processed_qs;
       end

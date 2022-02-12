@@ -98,6 +98,15 @@ package kmac_pkg;
     256'h970d171aa41948cbe3a58167d3b47c268acfcbb2fa627b9c0a2fdf578f4ed32b
   };
 
+  // These LFSR parameters have been generated with
+  // $ ./util/design/gen-lfsr-seed.py --width 64 --seed 1201202158 --prefix ""
+  // And changed the type name from lfsr_perm_t to msg_perm_t
+  typedef logic [EntropyLfsrW-1:0][$clog2(EntropyLfsrW)-1:0] msg_perm_t;
+  parameter msg_perm_t RndCnstMsgPermDefault = {
+    128'h382af41849db4cfb9c885f72f118c102,
+    256'hcb5526978defac799192f65f54148379af21d7e10d82a5a33c3f31a1eaf964b8
+  };
+
   ///////////////////////////
   // Application interface //
   ///////////////////////////

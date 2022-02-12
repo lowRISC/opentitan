@@ -37,6 +37,11 @@ module kmac_entropy
   //// rand_valid_o unless it is not processing KeyBlock.
   input fast_process_i,
 
+  //// LFSR Enable for Message Masking
+  //// If 1, LFSR advances to create 64-bit PRNG. This input is used to mask the message fed into SHA3 (Keccak).
+  input                       msg_mask_en_i,
+  output logic [MsgWidth-1:0] lfsr_data_o,
+
   //// SW update of seed
   input        seed_update_i,
   input [63:0] seed_data_i,
@@ -320,11 +325,13 @@ module kmac_entropy
     .rst_ni,
     .seed_en_i(lfsr_seed_en),
     .seed_i   (lfsr_seed),
-    .lfsr_en_i(lfsr_en),
+    .lfsr_en_i(lfsr_en || msg_mask_en_i ),
     .entropy_i('0),          // Does not use additional entropy while operating
     .state_o  (lfsr_data),   // (partial) LFSR state output StateOutDw
     .err_o    (lfsr_error_o)
   );
+  assign lfsr_data_o = lfsr_data; // For masking the message
+
   // LFSR ---------------------------------------------------------------------
 
   // 320-bit storage ==========================================================
