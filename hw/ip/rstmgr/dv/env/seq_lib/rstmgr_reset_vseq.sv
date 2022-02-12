@@ -3,6 +3,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Tests the reset_info CSR settings for random resets.
+// Notice as far as rstmgr once POR or scan reset are asserted, they have
+// identical side-effects for rstmgr.
+//
+// Each run releases rst_cpu_n a few cycles after a scan reset. This requires
+// the responder to be disabled from automatically deactivating rst_cpu_n after
+// rst_sys_src_n goes inactive.
+//
+// It is simpler to manipulate the responder once running so we cause a scan
+// reset after disabling it, and before the other resets. This tests that resets
+// other than scan don't update the reset_info CSR, and don't capture cpu or
+// alert dumps.
 class rstmgr_reset_vseq extends rstmgr_base_vseq;
   `uvm_object_utils(rstmgr_reset_vseq)
 
@@ -11,54 +22,45 @@ class rstmgr_reset_vseq extends rstmgr_base_vseq;
   rand logic enable_alert_info;
   rand logic enable_cpu_info;
 
-  constraint sw_reset_c {
-    sw_reset dist {
-      1 := 1,
-      0 := 3
-    };
-  }
-  constraint scan_reset_c {
-    solve sw_reset before scan_reset;
-    if (sw_reset == 0) {
-      scan_reset dist {
-        1 := 1,
-        0 := 3
-      };
-    } else {
-      scan_reset == 0;
-    }
-  }
-  constraint low_power_reset_c {
-    solve scan_reset before low_power_reset;
-    if (scan_reset == 0) {
-      low_power_reset dist {
-        1 := 1,
-        0 := 3
-      };
-    } else {
-      low_power_reset == 0;
-    }
-  }
-  constraint ndm_reset_c {
-    solve low_power_reset before ndm_reset;
-    if (low_power_reset == 0) {
-      ndm_reset dist {
-        1 := 1,
-        0 := 3
-      };
-    } else {
-      ndm_reset == 0;
-    }
-  }
-  constraint rstreqs_c {
-    solve ndm_reset before rstreqs;
-    if (ndm_reset == 0) {rstreqs != '0;} else {rstreqs == '0;}
+  rand int   wait_for_release_response_update_cycles;
+  constraint wait_for_release_response_update_cycles_c {
+    wait_for_release_response_update_cycles inside {[4 : 12]};
   }
 
+  rand int rand_trans_before_enabling_cpu_rst_response;
+  constraint rand_trans_before_enabling_cpu_rst_response_c {
+    rand_trans_before_enabling_cpu_rst_response >= 0;
+    rand_trans_before_enabling_cpu_rst_response < 4;
+  }
+
+  rand reset_e start_reset;
+  constraint start_reset_c {start_reset inside {ResetPOR, ResetScan};}
+
+  local task update_cpu_to_sys_rst_release_response(bit enable);
+    enable_cpu_to_sys_rst_release_response = enable;
+    `uvm_info(`gfn, $sformatf("%0sabling sys_rst_responder", enable ? "En" : "Dis"), UVM_MEDIUM)
+    // Wait a small number of cycles for this to take effect.
+    // If wait too little capture may be unpredictable.
+    cfg.clk_rst_vif.wait_clks(wait_for_release_response_update_cycles);
+  endtask
+
+  // Disable automatic deassertion of rst_cpu_n when running standalone,
+  // in order to test info capture.
+  task pre_start();
+    super.pre_start();
+    `uvm_info(`gfn, "In pre_start", UVM_MEDIUM)
+    update_cpu_to_sys_rst_release_response(.enable(0));
+  endtask
+
   task body();
-    int expected_reset_info;
+    reset_test_info_t reset_test_info;
+    int expected_reset_info_code;
+    logic expected_alert_enable;
+    logic expected_cpu_enable;
     alert_pkg::alert_crashdump_t prev_alert_dump = '0;
     ibex_pkg::crash_dump_t prev_cpu_dump = '0;
+    int trans_before_enabling_cpu_rst_response;
+    bit capture = 0;
 
     // Expect reset info to be POR when running the sequence standalone.
     if (is_running_sequence("rstmgr_reset_vseq")) begin
@@ -66,76 +68,100 @@ class rstmgr_reset_vseq extends rstmgr_base_vseq;
       check_alert_and_cpu_info_after_reset(.alert_dump('0), .cpu_dump('0), .enable(1'b0));
     end
 
+    `DV_CHECK_RANDOMIZE_FATAL(this)
+
+    // Run with cpu_rst_response disabled for a few cycles to make sure no capture happens
+    // until rst_cpu_n is inactive.
+    trans_before_enabling_cpu_rst_response = rand_trans_before_enabling_cpu_rst_response;
+    `uvm_info(`gfn, $sformatf(
+              "Will wait for %0d resets before enabling rst_cpu_n response",
+              trans_before_enabling_cpu_rst_response
+              ), UVM_MEDIUM)
+
     // Clear reset_info register, and enable cpu and alert info capture.
+    set_alert_info_for_capture(alert_dump, enable_alert_info);
+    set_cpu_info_for_capture(cpu_dump, enable_cpu_info);
     csr_wr(.ptr(ral.reset_info), .value('1));
 
-    for (int i = 0; i < num_trans; ++i) begin
-      logic  [TL_DW-1:0] value;
-      string             reset_type;
-      logic              expected_info_enable;
-      logic              expected_info_update;
+    // We need to start with an AON reset to process non-capturing resets.
+    if (start_reset == ResetPOR) por_reset();
+    else if (start_reset == ResetScan) send_scan_reset();
 
-      `uvm_info(`gfn, "Starting new round", UVM_MEDIUM)
+    reset_test_info = reset_test_infos[start_reset];
+    cfg.clk_rst_vif.wait_clks(8);
+    // Wait till rst_lc_n is inactive for non-aon.
+    wait(cfg.rstmgr_vif.resets_o.rst_lc_n[1]);
+
+    check_reset_info(reset_test_info.expects.code, reset_test_info.description);
+    check_alert_info_after_reset('0, 0);
+    check_cpu_info_after_reset('0, 0);
+
+    for (int i = 0; i < num_trans; ++i) begin
+      `uvm_info(`gfn, $sformatf("Starting new round %0d", i), UVM_MEDIUM)
       `DV_CHECK_RANDOMIZE_FATAL(this)
       set_alert_info_for_capture(alert_dump, enable_alert_info);
       set_cpu_info_for_capture(cpu_dump, enable_cpu_info);
       csr_wr(.ptr(ral.reset_info), .value('1));
+      reset_test_info = reset_test_infos[which_reset];
 
-      if (scan_reset) begin
-        // This resets the info registers, which means the previous info contents become zero.
-        expected_reset_info = 1;
-        expected_info_enable = 0;
-        expected_info_update = 0;
-        prev_alert_dump = '0;
-        prev_cpu_dump = '0;
-        send_scan_reset();
-        reset_type = "scan reset POR";
-      end else if (low_power_reset) begin
-        expected_reset_info  = 2;
-        expected_info_enable = 1;
-        expected_info_update = 1;
-        send_reset(pwrmgr_pkg::LowPwrEntry, 0);
-        reset_type = "low power reset";
-      end else if (ndm_reset) begin
-        expected_reset_info  = 4;
-        expected_info_enable = 1;
-        expected_info_update = 1;
-        send_ndm_reset();
-        reset_type = "ndm reset";
-      end else if (sw_reset) begin
-        expected_reset_info  = 8;
-        expected_info_enable = 0;
-        expected_info_update = 1;
-        send_sw_reset();
-        reset_type = "sw reset reset";
-      end else if (rstreqs) begin
-        expected_reset_info  = {'0, rstreqs, 4'b0};
-        expected_info_enable = 0;
-        expected_info_update = 1;
-        send_reset(pwrmgr_pkg::HwReq, rstreqs);
-        reset_type = "hw reset";
+      if (i == trans_before_enabling_cpu_rst_response) begin
+        update_cpu_to_sys_rst_release_response(.enable(1));
+        capture = 1;
       end
+      expected_reset_info_code = reset_test_info.expects.code;
+      expected_alert_enable = enable_alert_info && (!capture || reset_test_info.expects.enable);
+      expected_cpu_enable = enable_cpu_info && (!capture || reset_test_info.expects.enable);
+
+      case (which_reset)
+        ResetPOR, ResetScan: begin
+          // This resets the info registers, which means the previous info contents become zero.
+          prev_alert_dump = '0;
+          prev_cpu_dump = '0;
+          expected_alert_enable = 0;
+          expected_cpu_enable = 0;
+          if (which_reset == ResetPOR) por_reset();
+          else if (which_reset == ResetScan) send_scan_reset();
+        end
+        ResetLowPower: send_reset(pwrmgr_pkg::LowPwrEntry, 0);
+        ResetNdm: send_ndm_reset();
+        ResetSw: send_sw_reset();
+        ResetHw: begin
+          expected_reset_info_code = {'0, rstreqs, 4'b0};
+          send_reset(pwrmgr_pkg::HwReq, rstreqs);
+        end
+        default: `uvm_fatal(`gfn, $sformatf("Unexpected reset type %0d", which_reset))
+      endcase
 
       cfg.clk_rst_vif.wait_clks(8);
-      wait(cfg.rstmgr_vif.resets_o.rst_lc_n);
-      check_reset_info(expected_reset_info, reset_type);
-
-      if (expected_info_update && enable_alert_info) begin
-        check_alert_info_after_reset(alert_dump, enable_alert_info && expected_info_enable);
-        prev_alert_dump = alert_dump;
+      wait(cfg.rstmgr_vif.resets_o.rst_lc_n[1]);
+      if (!capture) begin
+        `uvm_info(`gfn, $sformatf("In no capture %0d", i), UVM_MEDIUM)
+        check_reset_info(which_reset inside {ResetPOR, ResetScan} ? expected_reset_info_code : 0,
+                         reset_test_info.description);
+        check_alert_info_after_reset(.alert_dump('0), .enable(expected_alert_enable));
+        check_cpu_info_after_reset(.cpu_dump('0), .enable(expected_cpu_enable));
       end else begin
-        check_alert_info_after_reset(prev_alert_dump, enable_alert_info && expected_info_enable);
-      end
+        `uvm_info(`gfn, $sformatf("In capture %0d", i), UVM_MEDIUM)
+        check_reset_info(expected_reset_info_code, reset_test_info.description);
 
-      if (expected_info_update && enable_cpu_info) begin
-        check_cpu_info_after_reset(cpu_dump, enable_cpu_info && expected_info_enable);
-        prev_cpu_dump = cpu_dump;
-      end else begin
-        check_cpu_info_after_reset(prev_cpu_dump, enable_cpu_info && expected_info_enable);
+        if (reset_test_info.expects.update && enable_alert_info) begin
+          check_alert_info_after_reset(alert_dump, expected_alert_enable);
+          prev_alert_dump = alert_dump;
+        end else begin
+          check_alert_info_after_reset(prev_alert_dump, expected_alert_enable);
+        end
+
+        if (reset_test_info.expects.update && enable_cpu_info) begin
+          check_cpu_info_after_reset(cpu_dump, expected_cpu_enable);
+          prev_cpu_dump = cpu_dump;
+        end else begin
+          check_cpu_info_after_reset(prev_cpu_dump, expected_cpu_enable);
+        end
       end
     end
     csr_wr(.ptr(ral.reset_info), .value('1));
     // This clears the info registers to cancel side-effects into other sequences with stress tests.
+    update_cpu_to_sys_rst_release_response(.enable(1));
     clear_alert_and_cpu_info();
   endtask
 

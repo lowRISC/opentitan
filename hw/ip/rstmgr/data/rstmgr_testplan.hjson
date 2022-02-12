@@ -20,6 +20,7 @@
             Checks the behavior of rstmgr when receiving various reset requests.
 
             **Stimulus**:
+            - Send a scan reset.
             - Send a low power entry reset.
             - Send a peripheral reset request.
             - Send a debug reset.
@@ -153,6 +154,23 @@
             - Verify the `alert_info` is only captured when enabled.
             - Verify the `alert_info` contents at each `alert_info_ctrl.index`
               matches the expected value.
+            '''
+      milestone: V2
+      tests: ["rstmgr_reset"]
+    }
+    {
+      name: reset_info_capture
+      desc: '''Test the capture blocking effect of rst_cpu_n input.
+
+            After an AON reset reset capture is blocked until the input
+            rst_cpu_n goes inactive.
+
+            **Stimulus**:
+            - Wait for a random number of resets before setting rst_cpu_n
+              inactive.
+
+            **Checks**:
+            - Non-AON resets prior to this event don't capture.
             '''
       milestone: V2
       tests: ["rstmgr_reset"]
