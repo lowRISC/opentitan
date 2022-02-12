@@ -367,7 +367,7 @@ module spi_host_fsm
       shift_size = 0;
       start_bit = 3'h0;
     end else begin
-      unique case (cmd_speed_q)
+      unique case (cmd_speed_d)
         Standard: begin
           shift_size = 3'h1;
           start_bit  = 3'h7;
