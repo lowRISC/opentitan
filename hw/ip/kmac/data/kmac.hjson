@@ -114,6 +114,12 @@
       randcount: "64",
       randtype:  "perm",
     }
+    { name:      "RndCnstMsgPerm"
+      desc:      "Compile-time random permutation for LFSR Message output"
+      type:      "kmac_pkg::msg_perm_t"
+      randcount: "64"
+      randtype:  "perm"
+    }
   ]
   inter_signal_list: [
     { struct:  "hw_key_req"
@@ -371,6 +377,14 @@
           '''
           tags: ["shadowed_reg_path:u_cfg_reg_shadowed.u_cfg_reg_shadowed_entropy_fast_process"]
         } // f: entropy_fast_process
+        { bits: "20"
+          name: msg_mask
+          desc: '''Message Masking with PRNG.
+
+            If 1, KMAC applies PRNG to the input messages to the Keccak module
+            when KMAC mode is on.
+            '''
+        } // f: msg_mask
         { bits: "24"
           name: entropy_ready
           desc: '''Entropy Ready status.
