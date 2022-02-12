@@ -22,7 +22,7 @@
         life_stage:         "L1",
         design_stage:       "D2S",
         verification_stage: "V2",
-        dif_stage:          "S0",
+        dif_stage:          "S1",
         notes:              "Rolled back to D2 in order to add the first alert",
       }
     ]
