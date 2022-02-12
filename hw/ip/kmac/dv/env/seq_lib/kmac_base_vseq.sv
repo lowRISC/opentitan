@@ -71,6 +71,9 @@ class kmac_base_vseq extends cip_base_vseq #(
   // entropy ready
   rand bit entropy_ready;
 
+  // Message masking
+  rand bit msg_mask;
+
   // output length in bytes.
   rand int unsigned output_len;
 
@@ -293,6 +296,7 @@ class kmac_base_vseq extends cip_base_vseq #(
     ral.cfg_shadowed.entropy_mode.set(entropy_mode);
     ral.cfg_shadowed.entropy_fast_process.set(entropy_fast_process);
     ral.cfg_shadowed.entropy_ready.set(entropy_ready);
+    ral.cfg_shadowed.msg_mask.set(msg_mask);
     ral.cfg_shadowed.err_processed.set(1'b0);
     csr_update(.csr(ral.cfg_shadowed));
 
