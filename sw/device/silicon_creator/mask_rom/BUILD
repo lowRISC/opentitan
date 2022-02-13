@@ -191,6 +191,8 @@ cc_library(
         "//sw/device/silicon_creator/lib:log",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:watchdog",
     ],
 )
 

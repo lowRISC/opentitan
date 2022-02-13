@@ -15,6 +15,7 @@
 #include "sw/device/lib/testing/test_rom/spiflash_frame.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
+#include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/log.h"
 
@@ -185,13 +186,7 @@ static rom_error_t bootstrap_flash(void) {
   return kErrorBootstrapUnknown;
 }
 
-rom_error_t primitive_bootstrap(void) {
-  bool bootstrap_request_pending = false;
-  RETURN_IF_ERROR(bootstrap_requested(&bootstrap_request_pending));
-  if (!bootstrap_request_pending) {
-    return kErrorOk;
-  }
-
+static rom_error_t primitive_bootstrap_impl(void) {
   log_printf("Bootstrap: BEGIN\n\r");
 
   flash_init_block();
@@ -200,10 +195,30 @@ rom_error_t primitive_bootstrap(void) {
   rom_error_t error = bootstrap_flash();
   if (error != kErrorOk) {
     if (erase_flash() != kErrorOk) {
-      return kErrorBootstrapEraseExit;
+      error = kErrorBootstrapEraseExit;
     }
-    return error;
   }
+
+  return error;
+}
+
+rom_error_t primitive_bootstrap(lifecycle_state_t lc_state) {
+  bool bootstrap_request_pending = false;
+  RETURN_IF_ERROR(bootstrap_requested(&bootstrap_request_pending));
+  if (!bootstrap_request_pending) {
+    return kErrorOk;
+  }
+
+  // Disable the watchdog timer before entering bootstrap.
+  // TODO(lowRISC/opentitan#10631): decide on watchdog strategy for bootstrap.
+  watchdog_disable();
+  SEC_MMIO_WRITE_INCREMENT(kWatchdogSecMmioDisable);
+
+  rom_error_t error = primitive_bootstrap_impl();
+
+  // Re-initialize the watchdog timer once bootstrap is complete.
+  watchdog_init(lc_state);
+  SEC_MMIO_WRITE_INCREMENT(kWatchdogSecMmioInit);
 
   // Always make sure to revert flash_ctrl access to default settings.
   // bootstrap_flash enables access to flash to perform update.
