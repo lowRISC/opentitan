@@ -20,17 +20,20 @@ module entropy_src_adaptp_ht #(
   input logic [RegWidth-1:0]    thresh_hi_i,
   input logic [RegWidth-1:0]    thresh_lo_i,
   input logic                   window_wrap_pulse_i,
-  output logic [RegWidth-1:0]   test_cnt_o,
+  input logic                   threshold_scope_i,
+  output logic [RegWidth-1:0]   test_cnt_hi_o,
+  output logic [RegWidth-1:0]   test_cnt_lo_o,
   output logic                  test_fail_hi_pulse_o,
   output logic                  test_fail_lo_pulse_o,
   output logic                  count_err_o
 );
 
   // signals
-  logic [RegWidth-1:0] column_cnt;
-  logic [RegWidth-1:0] test_cnt;
-  logic                test_cnt_err;
-
+  logic [RegWidth-1:0]                  test_cnt_max;
+  logic [RegWidth-1:0]                  test_cnt_min, test_cnt_min_tmp;
+  logic [RegWidth-1:0]                  test_cnt_sum;
+  logic [RngBusWidth-1:0][RegWidth-1:0] test_cnt;
+  logic [RngBusWidth-1:0]               test_cnt_err;
 
   // Adaptive Proportion Test
   //
@@ -40,16 +43,11 @@ module entropy_src_adaptp_ht #(
   //  only the 1's on all four bit streams and accumulate for the during of the
   //  window size (W) of the test.
 
+  for (genvar sh = 0; sh < RngBusWidth; sh = sh+1) begin : gen_cntrs
 
-  // number of ones per column
-  assign column_cnt =  RegWidth'(entropy_bit_i[3]) +
-                       RegWidth'(entropy_bit_i[2]) +
-                       RegWidth'(entropy_bit_i[1]) +
-                       RegWidth'(entropy_bit_i[0]);
-
-  // cumulative ones counter
-  // SEC_CM: CTR.REDUN
-  prim_count #(
+    // cumulative ones counter
+    // SEC_CM: CTR.REDUN
+    prim_count #(
       .Width(RegWidth),
       .OutSelDnCnt(1'b0), // count up
       .CntStyle(prim_count_pkg::DupCnt)
@@ -60,17 +58,62 @@ module entropy_src_adaptp_ht #(
       .set_i(!active_i || clear_i),
       .set_cnt_i(RegWidth'(0)),
       .en_i(entropy_bit_vld_i),
-      .step_i(column_cnt),
-      .cnt_o(test_cnt),
-      .err_o(test_cnt_err)
+      .step_i(RegWidth'(entropy_bit_i[sh])),
+      .cnt_o(test_cnt[sh]),
+      .err_o(test_cnt_err[sh])
     );
+  end : gen_cntrs
 
+  // determine the highest counter counter value
+  prim_max_tree #(
+    .NumSrc(RngBusWidth),
+    .Width(RegWidth)
+  ) u_max (
+    .clk_i       (clk_i),
+    .rst_ni      (rst_ni),
+    .values_i    (test_cnt),
+    .valid_i     ({RngBusWidth{1'b1}}),
+    .max_value_o (test_cnt_max),
+    .max_idx_o   (),
+    .max_valid_o ()
+  );
+
+  // determine the lowest counter value
+  // Negate the inputs and outputs of prim_max_tree to find the minimum
+  // For this unsigned application, one's complement negation (i.e. logical inversion) is fine.
+  prim_max_tree #(
+    .NumSrc(RngBusWidth),
+    .Width(RegWidth)
+  ) u_min (
+    .clk_i       (clk_i),
+    .rst_ni      (rst_ni),
+    .values_i    (~test_cnt),
+    .valid_i     ({RngBusWidth{1'b1}}),
+    .max_value_o (test_cnt_min_tmp),
+    .max_idx_o   (),
+    .max_valid_o ()
+  );
+
+  assign test_cnt_min = ~test_cnt_min_tmp;
+
+  prim_sum_tree #(
+    .NumSrc(RngBusWidth),
+    .Width(RegWidth)
+  ) u_sum (
+    .clk_i       (clk_i),
+    .rst_ni      (rst_ni),
+    .values_i    (test_cnt),
+    .valid_i     ({RngBusWidth{1'b1}}),
+    .sum_value_o (test_cnt_sum),
+    .sum_valid_o ()
+  );
+
+  assign test_cnt_hi_o = threshold_scope_i ? test_cnt_sum : test_cnt_max;
+  assign test_cnt_lo_o = threshold_scope_i ? test_cnt_sum : test_cnt_min;
 
   // the pulses will be only one clock in length
-  assign test_fail_hi_pulse_o = active_i && window_wrap_pulse_i && (test_cnt > thresh_hi_i);
-  assign test_fail_lo_pulse_o = active_i && window_wrap_pulse_i && (test_cnt < thresh_lo_i);
-  assign test_cnt_o = test_cnt;
-  assign count_err_o = test_cnt_err;
-
+  assign test_fail_hi_pulse_o = active_i && window_wrap_pulse_i && (test_cnt_hi_o > thresh_hi_i);
+  assign test_fail_lo_pulse_o = active_i && window_wrap_pulse_i && (test_cnt_lo_o < thresh_lo_i);
+  assign count_err_o = |test_cnt_err;
 
 endmodule

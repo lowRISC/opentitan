@@ -298,9 +298,16 @@ This NIST test is intended to signal a catastrophic failure with the PTRNG noise
 {{< /wavejson >}}
 
 ### Adaptive Proportion Test
+This NIST-defined test is intended to detect statistical bias in the raw entropy data.
+The test counts the number of 1's in a given sample, and applies thresholds to reject samples which deviate too far from the ideal mean of 50%.
+
+Depending on the value of the {{< regref "CONF.THRESHOLD_SCOPE" >}} field, the thresholds can either be applied collectively to the all RNG inputs, or the thresholds can be applied on a line-by-line basis.
+Setting {{< regref "CONF.THRESHOLD_SCOPE" >}} to `kMuBi4True` will apply the thresholds to the aggregated RNG stream.
+This can be useful for lowering the likelihood of coincidental test failures (higher &alpha;).
+Meanwhile, setting {{< regref "CONF.THRESHOLD_SCOPE" >}} to `kMuBi4False` will apply thresholds on a line-by-line basis which allows the ENTROPY_SRC to detect single line failures.
+
 The following waveform shows how a sampling of a data pattern will be tested by the Adaptive Proportion test.
-Operating on all four bit streams, this test will count how many ones are present in the full sample period.
-This NIST test is intended to find bias when either too many or too few ones are present.
+In this example, the sum is taken over all RNG lines (i.e., {{< regref "CONF.THRESHOLD_SCOPE" >}} is True).
 
 {{< wavejson >}}
 {signal: [
@@ -311,7 +318,7 @@ This NIST test is intended to find bias when either too many or too few ones are
    {name: 'rng_bus[1]'     , wave: '101.0.10..1...01'},
    {name: 'rng_bus[0]'     , wave: '10.10..1...0101.'},
    ],
-   {name: 'column_cnt (hex)'   , wave: '3333333333333333',data: ['3','2','2','2','1','1','1','1','2','3', '4', '3', '3', '2', '2','3']},
+   {name: 'Column-wise sum'   , wave: '3333333333333333',data: ['3','2','2','2','1','1','1','1','2','3', '4', '3', '3', '2', '2','3']},
    {name: 'test_cnt_q (hex)'   , wave: '4444444444444444',data: ['0','3','5','7','9','a','b','c','d','f','12','16','19','1c','1e','20']},
    {name: 'window_cnt_q (hex)' , wave: '5555555555555555',data: ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f']},
 ], head:{
@@ -351,8 +358,20 @@ This test is intended to find bias with a symbol or symbols.
 
 ### Markov Test
 The following waveform shows how a sampling of a data pattern will be tested by the Markov test.
-Operating on all four bit streams, this test will identify pairs of transitions in time per bit stream.
-Specifically, only pairs of `0b01` and `0b10` will be counted.
+
+The test aims to detect either:
+
+1. Oversampling of AST/RNG outputs leading to "clustered" input values that eventually change, but often are just repeats of the previous sample.
+For example the string: "00111111000011000111000111000001111" has roughly equal numbers of 1's and 0's, but no good entropy source should generate such strings, because each bit is likely just a repeat of the previous one.
+
+2. Wild oscillations of the RNG, in a distinctly non-random way.
+For instance the string: "010101010101010101" has almost zero entropy, even though the number of 1's and 0's appears unbiased.
+
+The test counts the number of changes in the a fixed number of RNG samples, and comparing the number of "01"/"10" pairs to the number of "00"/"11" pairs.
+On average, the number of switching (e.g., "01") vs. non-switching (e.g., "00") pairs should be 50% of the total, with a variance proportional to the sample size.
+
+Like the Adaptive Proportion test, the Markov Test can be computed either cumulatively (summing the results over all RNG lines) or on a per-line basis.
+In this example, the RNG lines are scored individually (i.e., {{< regref "CONF.THRESHOLD_SCOPE" >}} is False).
 
 {{< wavejson >}}
 {signal: [
