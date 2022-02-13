@@ -278,18 +278,9 @@ void mask_rom_main(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomMain, 3);
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomInit, 3);
 
-  // Disable the watchdog timer before entering bootstrap.
-  // TODO(lowRISC/opentitan#10631): decide on watchdog strategy for bootstrap.
-  watchdog_disable();
-  SEC_MMIO_WRITE_INCREMENT(kWatchdogSecMmioDisable);
-
   // TODO(lowrisc/opentitan#1513): Switch to EEPROM SPI device bootstrap
   // protocol.
-  SHUTDOWN_IF_ERROR(primitive_bootstrap());
-
-  // Re-initialize the watchdog timer once bootstrap is complete.
-  watchdog_init(lc_state);
-  SEC_MMIO_WRITE_INCREMENT(kWatchdogSecMmioInit);
+  SHUTDOWN_IF_ERROR(primitive_bootstrap(lc_state));
 
   // `mask_rom_try_boot` will not return unless there is an error.
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomMain, 4, kCfiRomTryBoot);

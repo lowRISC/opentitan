@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_PRIMITIVE_BOOTSTRAP_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_PRIMITIVE_BOOTSTRAP_H_
 
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 /**
@@ -17,8 +18,9 @@
  * The last frame must be ord with `FRAME_EOF_MARKER` to signal the end of
  * payload transmission.
  *
+ * @param lc_state Lifecycle state.
  * @return Bootstrap status code.
  */
-rom_error_t primitive_bootstrap(void);
+rom_error_t primitive_bootstrap(lifecycle_state_t lc_state);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_PRIMITIVE_BOOTSTRAP_H_
