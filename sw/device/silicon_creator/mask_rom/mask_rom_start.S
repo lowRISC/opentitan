@@ -106,6 +106,17 @@ _mask_rom_interrupt_vector_c:
   .option pop
 
 /**
+ * Mask ROM shadow stack.
+ */
+
+  .bss
+  .globl _mask_rom_shadow_stack
+  .align 4
+_mask_rom_shadow_stack:
+  .space 256*4
+  .size _mask_rom_shadow_stack, .-_mask_rom_shadow_stack
+
+/**
  * Mask ROM runtime initialization code.
  */
 
@@ -287,6 +298,11 @@ _mask_rom_start_boot:
   // If an exception fires, the handler is conventionally only allowed to clobber
   // memory at addresses below `sp`.
   la sp, (_stack_end - 16)
+
+  // Set up shadow stack pointer.
+  //
+  // The shadow stack, unlike the regular stack, grows upwards.
+  la x18, _mask_rom_shadow_stack
 
   // Set up global pointer.
   //
