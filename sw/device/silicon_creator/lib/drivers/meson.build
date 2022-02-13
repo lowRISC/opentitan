@@ -472,6 +472,7 @@ test('sw_silicon_creator_lib_driver_watchdog_unittest', executable(
     ],
     dependencies: [
       sw_vendor_gtest,
+      sw_lib_testing_hardened,
       sw_silicon_creator_lib_base_mock_sec_mmio,
     ],
     native: true,

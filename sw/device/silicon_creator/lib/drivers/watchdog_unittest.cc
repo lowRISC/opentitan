@@ -46,8 +46,6 @@ class WatchdogTest : public mask_rom_test::MaskRomTest {
                        kBiteThreshold);
     EXPECT_SEC_WRITE32(wdog_ + AON_TIMER_WDOG_CTRL_REG_OFFSET,
                        enabled << AON_TIMER_WDOG_CTRL_ENABLE_BIT);
-    EXPECT_ABS_READ32(wdog_ + AON_TIMER_WDOG_CTRL_REG_OFFSET,
-                      enabled << AON_TIMER_WDOG_CTRL_ENABLE_BIT);
     EXPECT_ABS_WRITE32(pwrmgr_ + PWRMGR_CFG_CDC_SYNC_REG_OFFSET, 1);
   }
 

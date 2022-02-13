@@ -26,9 +26,9 @@ extern "C" {
  * ```
  */
 enum {
-  kWatchdogSecMmioEnable = 4,
+  kWatchdogSecMmioInit = 4,
+  kWatchdogSecMmioConfigure = 4,
   kWatchdogSecMmioDisable = 1,
-  kWatchdogSecMmioInit = kWatchdogSecMmioEnable,
 };
 
 /**
