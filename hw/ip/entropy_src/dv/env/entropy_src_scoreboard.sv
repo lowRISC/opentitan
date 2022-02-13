@@ -147,15 +147,20 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     max_repcnt_symbol = (repcnt_symbol > max_repcnt_symbol) ? repcnt_symbol : max_repcnt_symbol;
   endfunction
 
-  // TODO: Revisit after resolution of #9759
-  function int calc_adaptp_test(queue_of_rng_val_t window);
+  function int calc_adaptp_test(queue_of_rng_val_t window, output int maxval, output int minval);
+    int test_cnt[RNG_BUS_WIDTH];
+    int minq[$], maxq[$];
     int result = '0;
     for (int i = 0; i < window.size(); i++) begin
       for (int j = 0; j < RNG_BUS_WIDTH; j++) begin
-         result += window[i][j];
+         test_cnt[j] += window[i][j];
       end
     end
-    return result;
+    maxq = test_cnt.max();
+    maxval = maxq[0];
+    minq = test_cnt.min();
+    minval = minq[0];
+    return test_cnt.sum();
   endfunction
 
   function int calc_bucket_test(queue_of_rng_val_t window);
@@ -382,18 +387,19 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   endfunction
 
-  // TODO: Revisit after resolution of #9759
   function bit evaluate_adaptp_test(queue_of_rng_val_t window, bit fips_mode);
-    int value;
+    int value, minval, maxval;
     bit fail_hi, fail_lo;
+    bit total_scope;
+    total_scope = (ral.conf.threshold_scope.get_mirrored_value() == prim_mubi_pkg::MuBi4True);
 
-    value = calc_adaptp_test(window);
+    value = calc_adaptp_test(window, maxval, minval);
 
-    update_watermark("adaptp_lo", fips_mode, value);
-    update_watermark("adaptp_hi", fips_mode, value);
+    update_watermark("adaptp_lo", fips_mode, total_scope ? value : minval);
+    update_watermark("adaptp_hi", fips_mode, total_scope ? value : maxval);
 
-    fail_lo = check_threshold("adaptp_lo", fips_mode, value);
-    fail_hi = check_threshold("adaptp_hi", fips_mode, value);
+    fail_lo = check_threshold("adaptp_lo", fips_mode, total_scope ? value : minval);
+    fail_hi = check_threshold("adaptp_hi", fips_mode, total_scope ? value : maxval);
 
     return (fail_hi || fail_lo);
   endfunction
@@ -411,18 +417,19 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     return fail;
   endfunction
 
-  // TODO: Revisit after resolution of #9759
   function bit evaluate_markov_test(queue_of_rng_val_t window, bit fips_mode);
     int value, minval, maxval;
     bit fail_hi, fail_lo;
+    bit total_scope;
+    total_scope = (ral.conf.threshold_scope.get_mirrored_value() == prim_mubi_pkg::MuBi4True);
 
     value = calc_markov_test(window, maxval, minval);
 
-    update_watermark("markov_lo", fips_mode, minval);
-    update_watermark("markov_hi", fips_mode, maxval);
+    update_watermark("markov_lo", fips_mode, total_scope ? value : minval);
+    update_watermark("markov_hi", fips_mode, total_scope ? value : maxval);
 
-    fail_lo = check_threshold("markov_lo", fips_mode, minval);
-    fail_hi = check_threshold("markov_hi", fips_mode, maxval);
+    fail_lo = check_threshold("markov_lo", fips_mode, total_scope ? value : minval);
+    fail_hi = check_threshold("markov_hi", fips_mode, total_scope ? value : maxval);
 
     return (fail_hi || fail_lo);
   endfunction

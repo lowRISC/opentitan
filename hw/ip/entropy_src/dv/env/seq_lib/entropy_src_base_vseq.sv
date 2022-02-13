@@ -121,6 +121,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     ral.conf.entropy_data_reg_enable.set(cfg.entropy_data_reg_enable);
     ral.conf.rng_bit_enable.set(cfg.rng_bit_enable);
     ral.conf.rng_bit_sel.set(cfg.rng_bit_sel);
+    ral.conf.threshold_scope.set(cfg.ht_threshold_scope);
     csr_update(.csr(ral.conf));
 
     // Register write enable lock is on be default

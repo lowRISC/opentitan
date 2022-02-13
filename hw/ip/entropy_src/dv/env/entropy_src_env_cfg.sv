@@ -41,15 +41,34 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // Knobs & Weights //
   /////////////////////
 
+  // Constraint knob for module_enable field
+  uint          module_enable_pct;
 
-  // Knobs & Weights
-  uint          module_enable_pct, fips_enable_pct, route_software_pct,
-                sw_regupd_pct, me_regwen_pct, fw_read_pct, fw_over_pct,
-                otp_en_es_fw_read_pct, otp_en_es_fw_over_pct,
-                type_bypass_pct, entropy_data_reg_enable_pct,
-                rng_bit_enable_pct, do_check_ht_diag_pct;
+  // Constraint knob for SW-accessible REGWEN-related fields
+  uint          me_regwen_pct, sw_regupd_pct;
 
-  // Health test knobs:
+  // Constraint knobs for Boolean fields in CONF register
+  // (RNG_BIT_SEL is always uniform)
+  uint          fips_enable_pct, entropy_data_reg_enable_pct, ht_threshold_scope_pct,
+                rng_bit_enable_pct;
+
+  // Constraint knobs for Boolean fields in ENTROPY_CONTROL register
+  uint          route_software_pct, type_bypass_pct;
+
+  // Constraint knobs for Boolean fields in FW_OV_CONTROL register
+  uint          fw_read_pct, fw_over_pct;
+
+  // Constraint knobs for OTP-driven inputs
+  uint          otp_en_es_fw_read_pct, otp_en_es_fw_over_pct;
+
+  // Behavioral constrint knob: dictates how often each sequence
+  // performs a seurvey of the health test diagnostics.
+  // (100% corresponds to a full diagnostic chack after every HT alert,
+  // If less than 100%, this full-diagnostic is skipped after some alerts)
+  uint          do_check_ht_diag_pct;
+
+  // Health test-related knobs
+  // Real constraints on sigma ranges (floating point value)
   real adaptp_sigma_max, adaptp_sigma_min;
   real markov_sigma_max, markov_sigma_min;
   real bucket_sigma_max, bucket_sigma_min;
@@ -58,12 +77,11 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // Randomized fields //
   ///////////////////////
 
-  rand bit         sw_regupd, me_regwen;
-  rand bit [1:0]   rng_bit_sel;
+  rand bit                      sw_regupd, me_regwen;
+  rand bit [1:0]                rng_bit_sel;
 
   rand prim_mubi_pkg::mubi4_t   module_enable, fips_enable, route_software, type_bypass,
-                                entropy_data_reg_enable, rng_bit_enable;
-
+                                entropy_data_reg_enable, rng_bit_enable, ht_threshold_scope;
 
   rand int                      observe_fifo_thresh;
 
@@ -143,6 +161,10 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   constraint rng_bit_enable_c {rng_bit_enable dist {
       prim_mubi_pkg::MuBi4True  :/ rng_bit_enable_pct,
       prim_mubi_pkg::MuBi4False :/ (100 - rng_bit_enable_pct)};}
+
+  constraint ht_threshold_scope_c {ht_threshold_scope dist {
+      prim_mubi_pkg::MuBi4True  :/ ht_threshold_scope_pct,
+      prim_mubi_pkg::MuBi4False :/ (100 - ht_threshold_scope_pct)};}
 
   // TODO: Is zero a valid value for this register?
   // What does the DUT do with a value of zero?

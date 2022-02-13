@@ -244,8 +244,13 @@
           name: "THRESHOLD_SCOPE",
           mubi: true,
           desc: '''
-                Setting this field to kMuBi4True will enable threshold scope mode.
-                TODO(#9759): add more description.
+                This field controls the scope (either by-line or by-sum) of the health checks.
+                If set to kMuBi4True, the Adaptive Proportion and Markov Tests will accumulate all
+                RNG input lines into a single score, and thresholds will be applied to the sum all
+                the entropy input lines.  If set to kMuBi4False, the RNG input lines are all scored
+                individually.  A statistical deviation in any one input line, be it due to
+                coincidence or failure, will force rejection of the sample, and count toward the
+                total alert count.
                 '''
           resval: false
         },
