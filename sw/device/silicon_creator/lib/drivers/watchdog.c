@@ -23,27 +23,43 @@ enum {
 };
 
 void watchdog_init(lifecycle_state_t lc_state) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kWatchdogSecMmioInit,
+                                  kWatchdogSecMmioConfigure);
   // Disable the watchdog bite when in test and RMA lifecycle states.
   hardened_bool_t enable = kHardenedBoolTrue;
-  switch (lc_state) {
+  switch (launder32(lc_state)) {
     case kLcStateTest:
-      enable = kHardenedBoolFalse;
       HARDENED_CHECK_EQ(lc_state, kLcStateTest);
+      enable = kHardenedBoolFalse;
+      break;
+    case kLcStateDev:
+      HARDENED_CHECK_EQ(lc_state, kLcStateDev);
+      enable = kHardenedBoolTrue;
+      break;
+    case kLcStateProd:
+      HARDENED_CHECK_EQ(lc_state, kLcStateProd);
+      enable = kHardenedBoolTrue;
+      break;
+    case kLcStateProdEnd:
+      HARDENED_CHECK_EQ(lc_state, kLcStateProdEnd);
+      enable = kHardenedBoolTrue;
       break;
     case kLcStateRma:
-      enable = kHardenedBoolFalse;
       HARDENED_CHECK_EQ(lc_state, kLcStateRma);
+      enable = kHardenedBoolFalse;
       break;
     default:
-      break;
+      HARDENED_UNREACHABLE();
   }
 
   uint32_t threshold =
       otp_read32(OTP_CTRL_PARAM_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES_OFFSET);
+
   watchdog_configure(threshold, enable);
 }
 
 void watchdog_configure(uint32_t threshold, hardened_bool_t enable) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kWatchdogSecMmioConfigure, 4);
   // Tell pwrmgr we want watchdog reset events to reset the chip.
   sec_mmio_write32(
       kPwrMgrBase + PWRMGR_RESET_EN_REG_OFFSET,
@@ -60,17 +76,19 @@ void watchdog_configure(uint32_t threshold, hardened_bool_t enable) {
 
   // Enable or disable the watchdog as requested.
   uint32_t ctrl = kCtrlEnable;
-  if (enable == kHardenedBoolFalse) {
-    ctrl = kCtrlDisable;
-    HARDENED_CHECK_EQ(enable, kHardenedBoolFalse);
+  switch (launder32(enable)) {
+    case kHardenedBoolTrue:
+      HARDENED_CHECK_EQ(enable, kHardenedBoolTrue);
+      ctrl = kCtrlEnable;
+      break;
+    case kHardenedBoolFalse:
+      HARDENED_CHECK_EQ(enable, kHardenedBoolFalse);
+      ctrl = kCtrlDisable;
+      break;
+    default:
+      HARDENED_UNREACHABLE();
   }
   sec_mmio_write32(kBase + AON_TIMER_WDOG_CTRL_REG_OFFSET, ctrl);
-
-  // Read back the control register to ensure it was set as expected.
-  if ((abs_mmio_read32(kBase + AON_TIMER_WDOG_CTRL_REG_OFFSET) & kCtrlEnable) !=
-      kCtrlEnable) {
-    HARDENED_CHECK_EQ(enable, kHardenedBoolFalse);
-  }
 
   // Redundantly re-request the pwrmgr configuration sync since it isn't
   // possible to use sec_mmio for it.
@@ -78,6 +96,7 @@ void watchdog_configure(uint32_t threshold, hardened_bool_t enable) {
 }
 
 void watchdog_disable(void) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kWatchdogSecMmioDisable, 1);
   sec_mmio_write32(kBase + AON_TIMER_WDOG_CTRL_REG_OFFSET, kCtrlDisable);
 }
 
