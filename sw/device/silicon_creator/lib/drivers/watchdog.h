@@ -32,6 +32,15 @@ enum {
 };
 
 /**
+ * Minimum watchdog threshold. Watchdog will not be enabled if the value in the
+ * OTP is less than this value.
+ */
+enum {
+  // TODO(#10808): Determine this value.
+  kWatchdogMinThreshold = 1,
+};
+
+/**
  * Initialize the watchdog timer.
  *
  * The watchdog bite threshold will be initialized to a value determined by
