@@ -38,6 +38,16 @@ _chip_info_start = _chip_info_end - _chip_info_size;
 _dv_log_offset = 0x0;
 
 /**
+ * This symbol is used as a jump target when an error is detected by the
+ * hardened shadow call stack implementation. We set it to 0 which will
+ * trigger an instruction access exception.
+ *
+ * If a compiler without hardened shadow call stack support is used this
+ * symbol will be ignored.
+ */
+__abi_shutdown$ = 0x0;
+
+/**
  * Physical Memory Protection (PMP) encoded address register values.
  *
  * Some addresses required for PMP entries are known only at link time.

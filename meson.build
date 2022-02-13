@@ -123,6 +123,11 @@ c_cpp_cross_args = [
   # Place each function into its own section (used in conjunction with
   # --gc-sections to remove unused functions from output files).
   '-ffunction-sections',
+  # Hardening
+  # Shadow call stack is disabled because only a subset of the project supports
+  # it.
+  # '-fsanitize=shadow-call-stack',
+  # '-ffixed-x18',
 ]
 
 # Add extra warning flags for cross builds, if they are supported.
