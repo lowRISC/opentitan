@@ -69,6 +69,7 @@ module kmac_entropy
   output err_t err_o,
   output logic sparse_fsm_error_o,
   output logic lfsr_error_o,
+  output logic count_error_o,
   input        err_processed_i
 );
 
@@ -274,15 +275,29 @@ module kmac_entropy
 
   assign hash_progress_d = in_keyblock_i;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      hash_cnt_o <= '0;
-    end else if (hash_cnt_clr_i || threshold_hit || entropy_refresh_req_i) begin
-      hash_cnt_o <= '0;
-    end else if (hash_progress_q && !hash_progress_d) begin
-      hash_cnt_o <= hash_cnt_o + 1'b 1;
-    end
-  end
+  logic hash_cnt_clr;
+  assign hash_cnt_clr = hash_cnt_clr_i || threshold_hit || entropy_refresh_req_i;
+
+  logic hash_cnt_en;
+  assign hash_cnt_en = hash_progress_q && !hash_progress_d;
+
+  // SEC_CM CTR.REDUN
+  // This primitive is used to place a hardened counter
+  prim_count #(
+    .Width(kmac_reg_pkg::HashCntW),
+    .OutSelDnCnt(1'b0), // 0 selects up count
+    .CntStyle(prim_count_pkg::DupCnt)
+  ) u_hash_count (
+    .clk_i,
+    .rst_ni,
+    .clr_i(hash_cnt_clr),
+    .set_i(1'b0),
+    .set_cnt_i(kmac_reg_pkg::HashCntW'(0)),
+    .en_i(hash_cnt_en),
+    .step_i(kmac_reg_pkg::HashCntW'(1)),
+    .cnt_o(hash_cnt_o),
+    .err_o(count_error_o)
+  );
 
   assign threshold_hit = |hash_threshold_i && (hash_threshold_i <= hash_cnt_o);
 

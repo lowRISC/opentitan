@@ -186,7 +186,7 @@
       desc: "LFSR in the entropy generator uses prim_double_lfsr"
     }
     { name: "CTR.REDUN"
-      desc: "Round counter uses prim_count for redundancy"
+      desc: "Round and hash counter use prim_count for redundancy"
     }
   ]
   regwidth: "32"
