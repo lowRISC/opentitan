@@ -58,7 +58,7 @@ This includes the Device Interface Functions (DIFs).
 
 All DIFs are also documented on their respective [Hardware IP Specification]({{< relref "hw" >}})
 
-## Vendored in Code see [Vendor Tool User Guide]({{< relref "doc/ug/vendor_hw.md" >}})
+## Vendored in Code see [Vendor Tool User Guide]({{% relref "doc/ug/vendor_hw.md" %}})
 
 * [CoreMark](https://github.com/eembc/coremark)
 * [RISC-V Compliance](https://github.com/riscv/riscv-compliance)

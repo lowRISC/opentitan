@@ -57,7 +57,7 @@ The KEYMGR testbench instantiates a `push_pull_agent` in `Pull` mode as the agen
 This agent will return random data as entropy when the KEYMGR sends a request.
 
 ### KMAC_APP Agent
-The KEYMGR testbench instantiates a [`kmac_app_agent`](<{{ relref "hw/dv/sv/kmac_app_agent/README.md" >}}) to request a KMAC hash operation on the secret data.
+The KEYMGR testbench instantiates a [`kmac_app_agent`]({{< relref "hw/dv/sv/kmac_app_agent/README.md" >}}) to request a KMAC hash operation on the secret data.
 
 ### UVM RAL Model
 The KEYMGR RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
