@@ -432,13 +432,38 @@ Functional coverage for REGWEN CSRs and their related lockable CSRs is generated
 The details of functional coverage is described in [csr_testplan](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/testplans/csr_testplan.hjson).
 
 ### Security Verification for MUBI type CSRs
-TODO, add soon
+A functional covergroup of MUBI type CSR is automatically created in the RAL model for each MUBI CSR, which ensures `True`, `False` and at least N of other values (N = width of the MUBI type) have been collected.
+This covergroup won't be sampled in CSR tests, since CSR tests only test the correctness of the value of register read / write but it won't check the block behavior when a different value is supplied to the MUBI CSR.
+Users should randomize the values of all the MUBI CSRs in non-CSR tests and check the design behaves correctly.
+The helper functions `cip_lib_pkg::get_rand_mubi4|8|12|16_val(t_weight, f_weight, other_weight)` can be used to get the random values.
 
 ### Security Verification for MUBI type ports
-TODO, add soon
+In OpenTitan [Design Verification Methodology]({{< relref "doc/ug/dv_methodology" >}}), it's mandatory to have 100% toggle coverage on all the ports.
+However, the MUBI defined values (`True` and `False`) are complement numbers.
+If users only test with `True` and `False` without using other values, toggle coverage can be 100%.
+Hence, user should add a functional covergroup for each MUBI type input port, via binding the interface `cip_mubi_cov_if` which contains a covergroup for MUBI.
+The type `lc_ctrl_pkg::lc_tx_t` should be treated as a Mubi4 type, which also needs to be bound with the interface `cip_mubi_cov_if`.
+The helper functions `cip_lib_pkg::get_rand_mubi4|8|12|16_val(t_weight, f_weight, other_weight)` and `cip_lib_pkg::get_rand_lc_tx_val` can be used to get the random values.
+
+The following is an example from `sram_ctrl`, in which it binds the coverage interface to 2 MUBI input ports.
+```systemverilog
+module sram_ctrl_cov_bind;
+
+  bind sram_ctrl cip_mubi_cov_if #(.Width(4)) u_hw_debug_en_mubi_cov_if (
+    .rst_ni (rst_ni),
+    .mubi   (lc_hw_debug_en_i)
+  );
+
+  bind sram_ctrl cip_mubi_cov_if #(.Width(8)) u_otp_en_sram_ifetch_mubi_cov_if (
+    .rst_ni (rst_ni),
+    .mubi   (otp_en_sram_ifetch_i)
+  );
+endmodule
+```
+Note: The `sim_tops` in sim_cfg.hjson should be updated to include this bind file.
 
 ### Security Verification for common countermeasure primitives
-TODO, add methodology docs for security verification and add the link here
+A [security countermeasure verification framework]({{< relref "doc/ug/sec_cm_dv_framework" >}}) is implemented in cip_lib to verify common countermeasure primitives in a semi-uutomated way.
 
 cip_lib imports [sec_cm_pkg](https://github.com/lowRISC/opentitan/tree/master/hw/dv/sv/sec_cm), which automatically locates all the common countermeasure primitives and binds an interface to each of them.
 In the cib_base_vseq, it injects a fault to each of these primitives and verifies that the fault will lead to a fatal alert.
