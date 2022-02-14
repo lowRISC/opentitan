@@ -368,6 +368,9 @@ module kmac_app
     .state_o ( st_raw )
   );
 
+  // Create a lint error to reduce the risk of accidentally enabling this feature.
+  `ASSERT_STATIC_LINT_ERROR(KmacSecIdleAcceptSwMsgNonDefault, SecIdleAcceptSwMsg == 0)
+
   // Next State & output logic
   // SEC_CM: FSM.SPARSE
   always_comb begin
@@ -528,12 +531,6 @@ module kmac_app
     if (lc_escalate_en_i != lc_ctrl_pkg::Off) begin
       st_d = StTerminalError;
     end
-  end
-
-  if (SecIdleAcceptSwMsg != 1'b0) begin : gen_lint_err
-    // Create a lint error to reduce the risk of accidentally enabling this feature.
-    logic sec_idle_accept_sw_msg_dummy;
-    assign sec_idle_accept_sw_msg_dummy = (st == StIdle);
   end
 
   //////////////

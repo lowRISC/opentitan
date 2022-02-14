@@ -50,11 +50,9 @@ module aes_prng_clearing import aes_pkg::*;
   // the SecSkipPRNGReseeding parameter is set. Performing the reseeding without proper entropy
   // provided from CSRNG would result in quickly repeating, fully deterministic PRNG output,
   // which prevents meaningful SCA resistance evaluations.
-  if (SecSkipPRNGReseeding) begin : gen_skip_prng_reseeding
-    // Create a lint error to reduce the risk of accidentally enabling this feature.
-    logic sec_skip_prng_reseeding;
-    assign sec_skip_prng_reseeding = SecSkipPRNGReseeding;
-  end
+
+  // Create a lint error to reduce the risk of accidentally enabling this feature.
+  `ASSERT_STATIC_LINT_ERROR(AesSecSkipPRNGReseedingNonDefault, SecSkipPRNGReseeding == 0)
 
   // LFSR control
   assign lfsr_en = data_req_i & data_ack_o;
