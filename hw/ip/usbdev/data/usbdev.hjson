@@ -212,7 +212,6 @@
       desc: "USB Control",
       swaccess: "rw",
       hwaccess: "hro",
-      hwqe: "true",
       async: "clk_usb_48mhz_i",
       fields: [
         {
@@ -228,6 +227,7 @@
           bits: "1",
           name: "resume_link_active",
           swaccess: "wo"
+          hwqe: "true",
           desc: '''
                 Write a 1 to this bit to instruct usbdev to jump to the LinkResuming state.
                 The write will only have an effect when the device is in the LinkPowered state.

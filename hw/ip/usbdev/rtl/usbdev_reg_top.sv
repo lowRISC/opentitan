@@ -1911,7 +1911,7 @@ module usbdev_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.usbctrl.enable.qe),
+    .qe     (),
     .q      (reg2hw.usbctrl.enable.q),
 
     // to register interface (read)
@@ -1961,7 +1961,7 @@ module usbdev_reg_top (
     .d      (hw2reg.usbctrl.device_address.d),
 
     // to internal hardware
-    .qe     (reg2hw.usbctrl.device_address.qe),
+    .qe     (),
     .q      (reg2hw.usbctrl.device_address.q),
 
     // to register interface (read)
