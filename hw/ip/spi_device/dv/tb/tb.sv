@@ -17,8 +17,6 @@ module tb;
   wire clk, rst_n;
   wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
-  wire [3:0]                    si_pulldown;
-  wire [3:0]                    so_pulldown;
   wire [3:0]                    pass_so_pulldown;
   wire [3:0]                    pass_si_pulldown;
 
@@ -68,7 +66,7 @@ module tb;
     .cio_csb_i      (csb       ),
     .cio_sd_o       (sd_out    ),
     .cio_sd_en_o    (sd_out_en ),
-    .cio_sd_i       (si_pulldown),
+    .cio_sd_i       (sd_in     ),
 
     .cio_tpm_csb_i  (tpm_csb   ),
 
@@ -93,13 +91,16 @@ module tb;
   assign sck           = spi_if.sck;
   assign csb           = spi_if.csb[0];
   assign tpm_csb       = spi_if.csb[1];
-  // TODO: quad SPI mode is currently not yet implemented
-  for (genvar i = 0; i < 4; i++) begin : gen_tri_state
-    pullup (weak1) pd_in_i (si_pulldown[i]);
-    pullup (weak1) pd_out_i (so_pulldown[i]);
-    assign spi_if.sio[i]  = (sd_out_en[i]) ? sd_out[i] : so_pulldown[i];
-    assign si_pulldown[i] = spi_if.sio[i];
-  end
+
+  `define CONNECT_SPI_IO(_INTF, _SD_IN, _SD_OUT, _SD_OUT_EN, _IDX) \
+    wire sd_out_en_``_IDX`` = _SD_OUT_EN[_IDX]; \
+    assign _INTF.sio[_IDX]  = (sd_out_en_``_IDX``) ? _SD_OUT[_IDX] : 1'bz; \
+    assign _SD_IN[_IDX] = _INTF.sio[_IDX];
+
+  `CONNECT_SPI_IO(spi_if, sd_in, sd_out, sd_out_en, 0)
+  `CONNECT_SPI_IO(spi_if, sd_in, sd_out, sd_out_en, 1)
+  `CONNECT_SPI_IO(spi_if, sd_in, sd_out, sd_out_en, 2)
+  `CONNECT_SPI_IO(spi_if, sd_in, sd_out, sd_out_en, 3)
 
   assign spi_if_pass.sck = pass_out.sck;
   assign spi_if_pass.csb = pass_out.csb;
@@ -137,3 +138,4 @@ module tb;
   end
 
 endmodule
+`undef CONNECT_SPI_IO
