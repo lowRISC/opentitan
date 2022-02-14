@@ -833,16 +833,19 @@ module aes_control_fsm
   if (Masking) begin : gen_block_ctr
     logic                     block_ctr_set;
     logic [BlockCtrWidth-1:0] block_ctr_d, block_ctr_q;
+    logic [BlockCtrWidth-1:0] block_ctr_set_val, block_ctr_decr_val;
 
     assign block_ctr_expr = block_ctr_q == '0;
     assign block_ctr_set  = ctrl_we_q | (block_ctr_decr & (block_ctr_expr | cipher_prng_reseed_i));
 
-    assign block_ctr_d =
-        block_ctr_set  ?
-            (prng_reseed_rate_i == PER_1  ? BlockCtrWidth'(0)    :
-             prng_reseed_rate_i == PER_64 ? BlockCtrWidth'(63)   :
-             prng_reseed_rate_i == PER_8K ? BlockCtrWidth'(8191) : BlockCtrWidth'(0)) :
-        block_ctr_decr ? block_ctr_q - BlockCtrWidth'(1) : block_ctr_q;
+    assign block_ctr_set_val  = prng_reseed_rate_i == PER_1  ? '0                   :
+                                prng_reseed_rate_i == PER_64 ? BlockCtrWidth'(63)   :
+                                prng_reseed_rate_i == PER_8K ? BlockCtrWidth'(8191) : '0;
+
+    assign block_ctr_decr_val = block_ctr_q - BlockCtrWidth'(1);
+
+    assign block_ctr_d = block_ctr_set  ? block_ctr_set_val  :
+                         block_ctr_decr ? block_ctr_decr_val : block_ctr_q;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : reg_block_ctr
       if (!rst_ni) begin
