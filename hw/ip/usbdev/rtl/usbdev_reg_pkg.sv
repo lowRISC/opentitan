@@ -204,7 +204,6 @@ package usbdev_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        qe;
     } enable;
     struct packed {
       logic        q;
@@ -212,7 +211,6 @@ package usbdev_reg_pkg;
     } resume_link_active;
     struct packed {
       logic [6:0]  q;
-      logic        qe;
     } device_address;
   } usbdev_reg2hw_usbctrl_reg_t;
 
@@ -549,11 +547,11 @@ package usbdev_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    usbdev_reg2hw_intr_state_reg_t intr_state; // [404:388]
-    usbdev_reg2hw_intr_enable_reg_t intr_enable; // [387:371]
-    usbdev_reg2hw_intr_test_reg_t intr_test; // [370:337]
-    usbdev_reg2hw_alert_test_reg_t alert_test; // [336:335]
-    usbdev_reg2hw_usbctrl_reg_t usbctrl; // [334:323]
+    usbdev_reg2hw_intr_state_reg_t intr_state; // [402:386]
+    usbdev_reg2hw_intr_enable_reg_t intr_enable; // [385:369]
+    usbdev_reg2hw_intr_test_reg_t intr_test; // [368:335]
+    usbdev_reg2hw_alert_test_reg_t alert_test; // [334:333]
+    usbdev_reg2hw_usbctrl_reg_t usbctrl; // [332:323]
     usbdev_reg2hw_ep_out_enable_mreg_t [11:0] ep_out_enable; // [322:311]
     usbdev_reg2hw_ep_in_enable_mreg_t [11:0] ep_in_enable; // [310:299]
     usbdev_reg2hw_avbuffer_reg_t avbuffer; // [298:293]
