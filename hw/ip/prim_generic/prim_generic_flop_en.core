@@ -7,6 +7,8 @@ name: "lowrisc:prim_generic:flop_en"
 description: "generic enable flop"
 filesets:
   files_rtl:
+    depend:
+      - lowrisc:prim:sec_anchor
     files:
       - rtl/prim_generic_flop_en.sv
     file_type: systemVerilogSource
