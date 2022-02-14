@@ -1293,8 +1293,9 @@ module kmac
     end
   end
 
-  assign lc_escalate_en = (alerts_q[1] || (lc_escalate_en_sync == lc_ctrl_pkg::On))
-                          ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
+  lc_ctrl_pkg::lc_tx_t alert_to_lc_tx;
+  assign alert_to_lc_tx = lc_ctrl_pkg::lc_tx_bool_to_lc_tx(alerts_q[1]);
+  assign lc_escalate_en = lc_ctrl_pkg::lc_tx_or_hi(alert_to_lc_tx, lc_escalate_en_sync);
 
   // Synchronize life cycle input
   prim_lc_sync #(
