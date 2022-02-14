@@ -6,7 +6,9 @@
 // It supports Keccak with up to 1600b of state
 // Only when EnMasking is enabled, rand_i and sel_i are used
 `include "prim_assert.sv"
-module keccak_2share #(
+module keccak_2share
+  import prim_mubi_pkg::*;
+#(
   parameter int Width = 1600, // b= {25, 50, 100, 200, 400, 800, 1600}
 
   // Derived
@@ -25,7 +27,7 @@ module keccak_2share #(
   input        [RndW-1:0]  rnd_i,   // Current Round
   input                    rand_valid_i,
   input        [Width-1:0] rand_i,  // Random values. Used when 2Share enabled
-  input                    sel_i,   // Select input/output mux. Used when EnMasking := 1
+  input mubi4_t            sel_i,   // Select input/output mux. Used when EnMasking := 1
   input        [Width-1:0] s_i      [Share],
   output logic [Width-1:0] s_o      [Share]
 );
@@ -64,7 +66,7 @@ module keccak_2share #(
   if (!EnMasking) begin : gen_tie_unused
     logic unused_clk, unused_rst_n, unused_rand_valid;
     logic [Width-1:0] unused_rand_data;
-    logic unused_sel;
+    mubi4_t unused_sel;
     assign unused_clk = clk_i;
     assign unused_rst_n = rst_ni;
     assign unused_rand_valid = rand_valid_i;
@@ -92,13 +94,13 @@ module keccak_2share #(
   end : g_state_inout
 
   if (EnMasking) begin : g_2share_data
-    assign phase1_in = (sel_i == 1'b 0) ? state_in : '{default:'0};
-    assign phase2_in = (sel_i == 1'b 1) ? state_in : '{default:'0};
+    assign phase1_in = (mubi4_test_false_strict(sel_i)) ? state_in : '{default:'0};
+    assign phase2_in = (mubi4_test_true_strict(sel_i)) ? state_in : '{default:'0};
 
     always_comb begin
       unique case (sel_i)
-        1'b 0:  state_out = phase1_out;
-        1'b 1:  state_out = phase2_out;
+        MuBi4False:  state_out = phase1_out;
+        MuBi4True:  state_out = phase2_out;
         default: state_out = '{default: '0};
       endcase
     end
@@ -255,7 +257,8 @@ module keccak_2share #(
 
   // sel_i shall stay for two cycle after change to 1.
   if (EnMasking) begin : gen_selperiod_chk
-    `ASSUME(SelStayTwoCycleIf1_A, $rose(sel_i) |=> sel_i, clk_i, !rst_ni)
+    `ASSUME(SelStayTwoCycleIfTrue_A, $past(sel_i)==MuBi4False && (sel_i==MuBi4True)
+       |=> sel_i == MuBi4True, clk_i, !rst_ni)
   end
 
   ///////////////
