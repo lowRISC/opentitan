@@ -93,7 +93,7 @@ The KMAC testbench instantiates a `push_pull_agent` in `Pull` mode as the agent 
 This agent will return random data as entropy after a random delay any time the KMAC sends a request.
 
 ### KMAC_APP Agent
-The KMAC testbench instantiates an array of [`kmac_app_agent`](<{{ relref "hw/dv/sv/kmac_app_agent/README.md" >}}) to model the application interfaces used by other IP blocks to request a KMAC hash operation on some data.
+The KMAC testbench instantiates an array of [`kmac_app_agent`]({{< relref "hw/dv/sv/kmac_app_agent/README.md" >}}) to model the application interfaces used by other IP blocks to request a KMAC hash operation on some data.
 These interfaces are used to send in message data to the KMAC, and to receive an output digest.
 
 ### UVM RAL Model
@@ -102,7 +102,7 @@ The KMAC RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen
 It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
 
 ### Reference models
-The KMAC testbench utilizes a [C++ reference model](<{{ relref "hw/ip/dv/kmac/dpi/vendor/kerukuro_digestpp/README.md" >}}) for various hashing operations (SHA3, SHAKE, CSHAKE, KMAC) to check the DUT's digest output for correctness.
+The KMAC testbench utilizes a [C++ reference model]({{< relref "hw/ip/kmac/dv/dpi/vendor/kerukuro_digestpp/README.md" >}}) for various hashing operations (SHA3, SHAKE, CSHAKE, KMAC) to check the DUT's digest output for correctness.
 
 ### Stimulus strategy
 #### Test sequences
