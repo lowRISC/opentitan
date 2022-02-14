@@ -142,7 +142,11 @@ class Dmem:
 
         '''
         ret = b''
-        for u32 in self.data:
+        for idx, u32 in enumerate(self.data):
+            # If there's a pending store, apply it. This matches the RTL, where
+            # we only observe the memory after that store has landed.
+            u32 = self.pending.get(idx, u32)
+
             if u32 is None:
                 ret += struct.pack('<BI', 0, 0)
             else:
