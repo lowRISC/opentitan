@@ -927,6 +927,10 @@ module aes_core
   logic unused_alert_signals;
   assign unused_alert_signals = ^reg2hw.alert_test;
 
+  // Unused inputs
+  logic unused_idle;
+  assign unused_idle = reg2hw.status.idle.q;
+
   ////////////////
   // Assertions //
   ////////////////

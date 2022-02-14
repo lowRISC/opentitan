@@ -68,6 +68,3 @@ waive -rules {RESET_USE} -location {aes_ctr.sv} -regexp {'rst_ni' is connected t
 
 waive -rules {ONE_BRANCH} -location {aes_sel_buf_chk.sv} -regexp {unique case statement has only one branch} \
       -comment "check for legal combinations only, assert error signal otherwise"
-
-waive -rules {MIXED_SIGN} -location {aes_control_fsm.sv} -regexp {Signed operand '(prng_reseed_rate_i == PER_1 ? BlockCtrWidth'(0) : prng_reseed_rate_i == PER_64 ? BlockCtrWidth'(63) : prng_reseed_rate_i == PER_8K ? BlockCtrWidth'(8191) : BlockCtrWidth'(0))' and unsigned operand 'block_ctr_decr ? gen_block_ctr.block_ctr_q - BlockCtrWidth'(1) : gen_block_ctr.block_ctr_q' encountered in a conditional expression} \
-      -comment "In line with our style guide, BlockCtrWidth'(x) results in a signed operand"
