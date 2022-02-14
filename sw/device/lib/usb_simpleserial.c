@@ -68,7 +68,8 @@ void usb_simpleserial_send_byte(usb_ss_ctx_t *ssctx, uint8_t c) {
 
 void usb_simpleserial_init(usb_ss_ctx_t *ssctx, usbdev_ctx_t *ctx, int ep,
                            void (*got_byte)(uint8_t)) {
-  usbdev_endpoint_setup(ctx, ep, 1, ssctx, NULL, ss_rx, ss_flush, NULL);
+  usbdev_endpoint_setup(ctx, ep, kUsbdevOutStream, ssctx, NULL, ss_rx, ss_flush,
+                        NULL);
   ssctx->ctx = ctx;
   ssctx->ep = ep;
   ssctx->got_byte = got_byte;

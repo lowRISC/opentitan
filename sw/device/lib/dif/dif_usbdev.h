@@ -212,6 +212,24 @@ dif_result_t dif_usbdev_endpoint_out_enable(const dif_usbdev_t *usbdev,
                                             dif_toggle_t new_state);
 
 /**
+ * Enable or disable clearing the out_enable bit after completion of an OUT
+ * transaction to an endpoint.
+ *
+ * If set_nak_out is enabled, an OUT endpoint will disable reception of OUT
+ * packets after each successful OUT transaction to that endpoint, requiring a
+ * call to `dif_usbdev_endpoint_out_enable()` to enable reception again.
+ *
+ * @param usbdev A USB device.
+ * @param endpoint An OUT endpoint number.
+ * @param new_state New set_nak_on_out state.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_endpoint_set_nak_out_enable(const dif_usbdev_t *usbdev,
+                                                    uint8_t endpoint,
+                                                    dif_toggle_t new_state);
+
+/**
  * Enable or disable STALL for an endpoint.
  *
  * @param usbdev A USB device.

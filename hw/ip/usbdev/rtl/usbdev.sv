@@ -216,6 +216,8 @@ module usbdev
   logic [AVFifoWidth - 1:0] usb_av_rdata;
   logic [RXFifoWidth - 1:0] usb_rx_wdata, rx_rdata_raw, rx_rdata;
 
+  logic [NEndpoints-1:0] clear_rxenable_out;
+
   assign event_av_overflow = reg2hw.avbuffer.qe & (~av_fifo_wready);
   assign hw2reg.usbstat.av_full.d = ~av_fifo_wready;
   assign hw2reg.usbstat.rx_empty.d = ~rx_fifo_rvalid;
@@ -287,8 +289,8 @@ module usbdev
   logic [NEndpoints-1:0] clear_rdybit, set_sentbit, update_pend;
   logic                  usb_setup_received, setup_received, usb_set_sent, set_sent;
   logic [NEndpoints-1:0] ep_out_iso, ep_in_iso;
-  logic [NEndpoints-1:0] enable_setup, enable_out, in_ep_stall, out_ep_stall;
-  logic [NEndpoints-1:0] usb_enable_setup, usb_enable_out;
+  logic [NEndpoints-1:0] enable_setup, in_ep_stall, out_ep_stall;
+  logic [NEndpoints-1:0] usb_enable_setup, usb_enable_out, ep_set_nak_on_out;
   logic [NEndpoints-1:0] usb_in_ep_stall, usb_out_ep_stall;
   logic [NEndpoints-1:0] ep_in_enable, ep_out_enable, usb_ep_in_enable, usb_ep_out_enable;
   logic [NEndpoints-1:0] in_rdy_async;
@@ -307,8 +309,8 @@ module usbdev
   // RX enables
   always_comb begin : proc_map_rxenable
     for (int i = 0; i < NEndpoints; i++) begin
-      enable_setup[i] = reg2hw.rxenable_setup[i].q;
-      enable_out[i]   = reg2hw.rxenable_out[i].q;
+      enable_setup[i]   = reg2hw.rxenable_setup[i].q;
+      usb_enable_out[i] = reg2hw.rxenable_out[i].q;
     end
   end
 
@@ -321,12 +323,12 @@ module usbdev
   end
 
   prim_flop_2sync #(
-    .Width(4*NEndpoints)
+    .Width(3*NEndpoints)
   ) usbdev_sync_ep_cfg (
     .clk_i  (clk_usb_48mhz_i),
     .rst_ni (rst_usb_48mhz_ni),
-    .d_i    ({enable_setup, enable_out, in_ep_stall, out_ep_stall}),
-    .q_o    ({usb_enable_setup, usb_enable_out, usb_in_ep_stall, usb_out_ep_stall})
+    .d_i    ({enable_setup, in_ep_stall, out_ep_stall}),
+    .q_o    ({usb_enable_setup, usb_in_ep_stall, usb_out_ep_stall})
   );
 
   prim_flop_2sync #(
@@ -343,6 +345,7 @@ module usbdev
     for (int i = 0; i < NEndpoints; i++) begin
       ep_out_iso[i] = reg2hw.out_iso[i].q;
       ep_in_iso[i] = reg2hw.in_iso[i].q;
+      ep_set_nak_on_out[i] = reg2hw.set_nak_out[i].q;
     end
   end
 
@@ -420,6 +423,25 @@ module usbdev
     for (int i = 0; i < NEndpoints; i++) begin
       hw2reg.in_sent[i].de = set_sentbit[i];
       hw2reg.in_sent[i].d  = 1'b1;
+    end
+  end
+
+  // Clear of rxenable_out bit
+  // If so configured, for every received transaction on a given endpoint, clear
+  // the rxenable_out bit. In this configuration, hardware defaults to NAKing
+  // any subsequent transaction, so software has time to decide the next
+  // response.
+  always_comb begin
+    clear_rxenable_out = '0;
+    if (usb_rx_wvalid && usb_out_endpoint_val) begin
+      clear_rxenable_out[usb_out_endpoint] = ep_set_nak_on_out[usb_out_endpoint];
+    end
+  end
+
+  always_comb begin
+    for (int i = 0; i < NEndpoints; i++) begin
+      hw2reg.rxenable_out[i].d = 1'b0;
+      hw2reg.rxenable_out[i].de = clear_rxenable_out[i];
     end
   end
 

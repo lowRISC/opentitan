@@ -256,6 +256,10 @@ package usbdev_reg_pkg;
 
   typedef struct packed {
     logic        q;
+  } usbdev_reg2hw_set_nak_out_mreg_t;
+
+  typedef struct packed {
+    logic        q;
   } usbdev_reg2hw_out_stall_mreg_t;
 
   typedef struct packed {
@@ -477,6 +481,11 @@ package usbdev_reg_pkg;
   typedef struct packed {
     logic        d;
     logic        de;
+  } usbdev_hw2reg_rxenable_out_mreg_t;
+
+  typedef struct packed {
+    logic        d;
+    logic        de;
   } usbdev_hw2reg_in_sent_mreg_t;
 
   typedef struct packed {
@@ -550,17 +559,18 @@ package usbdev_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    usbdev_reg2hw_intr_state_reg_t intr_state; // [413:397]
-    usbdev_reg2hw_intr_enable_reg_t intr_enable; // [396:380]
-    usbdev_reg2hw_intr_test_reg_t intr_test; // [379:346]
-    usbdev_reg2hw_alert_test_reg_t alert_test; // [345:344]
-    usbdev_reg2hw_usbctrl_reg_t usbctrl; // [343:334]
-    usbdev_reg2hw_ep_out_enable_mreg_t [11:0] ep_out_enable; // [333:322]
-    usbdev_reg2hw_ep_in_enable_mreg_t [11:0] ep_in_enable; // [321:310]
-    usbdev_reg2hw_avbuffer_reg_t avbuffer; // [309:304]
-    usbdev_reg2hw_rxfifo_reg_t rxfifo; // [303:283]
-    usbdev_reg2hw_rxenable_setup_mreg_t [11:0] rxenable_setup; // [282:271]
-    usbdev_reg2hw_rxenable_out_mreg_t [11:0] rxenable_out; // [270:259]
+    usbdev_reg2hw_intr_state_reg_t intr_state; // [425:409]
+    usbdev_reg2hw_intr_enable_reg_t intr_enable; // [408:392]
+    usbdev_reg2hw_intr_test_reg_t intr_test; // [391:358]
+    usbdev_reg2hw_alert_test_reg_t alert_test; // [357:356]
+    usbdev_reg2hw_usbctrl_reg_t usbctrl; // [355:346]
+    usbdev_reg2hw_ep_out_enable_mreg_t [11:0] ep_out_enable; // [345:334]
+    usbdev_reg2hw_ep_in_enable_mreg_t [11:0] ep_in_enable; // [333:322]
+    usbdev_reg2hw_avbuffer_reg_t avbuffer; // [321:316]
+    usbdev_reg2hw_rxfifo_reg_t rxfifo; // [315:295]
+    usbdev_reg2hw_rxenable_setup_mreg_t [11:0] rxenable_setup; // [294:283]
+    usbdev_reg2hw_rxenable_out_mreg_t [11:0] rxenable_out; // [282:271]
+    usbdev_reg2hw_set_nak_out_mreg_t [11:0] set_nak_out; // [270:259]
     usbdev_reg2hw_out_stall_mreg_t [11:0] out_stall; // [258:247]
     usbdev_reg2hw_in_stall_mreg_t [11:0] in_stall; // [246:235]
     usbdev_reg2hw_configin_mreg_t [11:0] configin; // [234:67]
@@ -574,10 +584,11 @@ package usbdev_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    usbdev_hw2reg_intr_state_reg_t intr_state; // [220:187]
-    usbdev_hw2reg_usbctrl_reg_t usbctrl; // [186:179]
-    usbdev_hw2reg_usbstat_reg_t usbstat; // [178:155]
-    usbdev_hw2reg_rxfifo_reg_t rxfifo; // [154:138]
+    usbdev_hw2reg_intr_state_reg_t intr_state; // [244:211]
+    usbdev_hw2reg_usbctrl_reg_t usbctrl; // [210:203]
+    usbdev_hw2reg_usbstat_reg_t usbstat; // [202:179]
+    usbdev_hw2reg_rxfifo_reg_t rxfifo; // [178:162]
+    usbdev_hw2reg_rxenable_out_mreg_t [11:0] rxenable_out; // [161:138]
     usbdev_hw2reg_in_sent_mreg_t [11:0] in_sent; // [137:114]
     usbdev_hw2reg_out_stall_mreg_t [11:0] out_stall; // [113:90]
     usbdev_hw2reg_in_stall_mreg_t [11:0] in_stall; // [89:66]
@@ -599,29 +610,30 @@ package usbdev_reg_pkg;
   parameter logic [BlockAw-1:0] USBDEV_RXFIFO_OFFSET = 12'h 24;
   parameter logic [BlockAw-1:0] USBDEV_RXENABLE_SETUP_OFFSET = 12'h 28;
   parameter logic [BlockAw-1:0] USBDEV_RXENABLE_OUT_OFFSET = 12'h 2c;
-  parameter logic [BlockAw-1:0] USBDEV_IN_SENT_OFFSET = 12'h 30;
-  parameter logic [BlockAw-1:0] USBDEV_OUT_STALL_OFFSET = 12'h 34;
-  parameter logic [BlockAw-1:0] USBDEV_IN_STALL_OFFSET = 12'h 38;
-  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_0_OFFSET = 12'h 3c;
-  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_1_OFFSET = 12'h 40;
-  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_2_OFFSET = 12'h 44;
-  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_3_OFFSET = 12'h 48;
-  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_4_OFFSET = 12'h 4c;
-  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_5_OFFSET = 12'h 50;
-  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_6_OFFSET = 12'h 54;
-  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_7_OFFSET = 12'h 58;
-  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_8_OFFSET = 12'h 5c;
-  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_9_OFFSET = 12'h 60;
-  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_10_OFFSET = 12'h 64;
-  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_11_OFFSET = 12'h 68;
-  parameter logic [BlockAw-1:0] USBDEV_OUT_ISO_OFFSET = 12'h 6c;
-  parameter logic [BlockAw-1:0] USBDEV_IN_ISO_OFFSET = 12'h 70;
-  parameter logic [BlockAw-1:0] USBDEV_DATA_TOGGLE_CLEAR_OFFSET = 12'h 74;
-  parameter logic [BlockAw-1:0] USBDEV_PHY_PINS_SENSE_OFFSET = 12'h 78;
-  parameter logic [BlockAw-1:0] USBDEV_PHY_PINS_DRIVE_OFFSET = 12'h 7c;
-  parameter logic [BlockAw-1:0] USBDEV_PHY_CONFIG_OFFSET = 12'h 80;
-  parameter logic [BlockAw-1:0] USBDEV_WAKE_CONFIG_OFFSET = 12'h 84;
-  parameter logic [BlockAw-1:0] USBDEV_WAKE_EVENTS_OFFSET = 12'h 88;
+  parameter logic [BlockAw-1:0] USBDEV_SET_NAK_OUT_OFFSET = 12'h 30;
+  parameter logic [BlockAw-1:0] USBDEV_IN_SENT_OFFSET = 12'h 34;
+  parameter logic [BlockAw-1:0] USBDEV_OUT_STALL_OFFSET = 12'h 38;
+  parameter logic [BlockAw-1:0] USBDEV_IN_STALL_OFFSET = 12'h 3c;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_0_OFFSET = 12'h 40;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_1_OFFSET = 12'h 44;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_2_OFFSET = 12'h 48;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_3_OFFSET = 12'h 4c;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_4_OFFSET = 12'h 50;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_5_OFFSET = 12'h 54;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_6_OFFSET = 12'h 58;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_7_OFFSET = 12'h 5c;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_8_OFFSET = 12'h 60;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_9_OFFSET = 12'h 64;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_10_OFFSET = 12'h 68;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_11_OFFSET = 12'h 6c;
+  parameter logic [BlockAw-1:0] USBDEV_OUT_ISO_OFFSET = 12'h 70;
+  parameter logic [BlockAw-1:0] USBDEV_IN_ISO_OFFSET = 12'h 74;
+  parameter logic [BlockAw-1:0] USBDEV_DATA_TOGGLE_CLEAR_OFFSET = 12'h 78;
+  parameter logic [BlockAw-1:0] USBDEV_PHY_PINS_SENSE_OFFSET = 12'h 7c;
+  parameter logic [BlockAw-1:0] USBDEV_PHY_PINS_DRIVE_OFFSET = 12'h 80;
+  parameter logic [BlockAw-1:0] USBDEV_PHY_CONFIG_OFFSET = 12'h 84;
+  parameter logic [BlockAw-1:0] USBDEV_WAKE_CONFIG_OFFSET = 12'h 88;
+  parameter logic [BlockAw-1:0] USBDEV_WAKE_EVENTS_OFFSET = 12'h 8c;
 
   // Reset values for hwext registers and their fields
   parameter logic [16:0] USBDEV_INTR_TEST_RESVAL = 17'h 0;
@@ -667,6 +679,7 @@ package usbdev_reg_pkg;
     USBDEV_RXFIFO,
     USBDEV_RXENABLE_SETUP,
     USBDEV_RXENABLE_OUT,
+    USBDEV_SET_NAK_OUT,
     USBDEV_IN_SENT,
     USBDEV_OUT_STALL,
     USBDEV_IN_STALL,
@@ -693,7 +706,7 @@ package usbdev_reg_pkg;
   } usbdev_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] USBDEV_PERMIT [35] = '{
+  parameter logic [3:0] USBDEV_PERMIT [36] = '{
     4'b 0111, // index[ 0] USBDEV_INTR_STATE
     4'b 0111, // index[ 1] USBDEV_INTR_ENABLE
     4'b 0111, // index[ 2] USBDEV_INTR_TEST
@@ -706,29 +719,30 @@ package usbdev_reg_pkg;
     4'b 0111, // index[ 9] USBDEV_RXFIFO
     4'b 0011, // index[10] USBDEV_RXENABLE_SETUP
     4'b 0011, // index[11] USBDEV_RXENABLE_OUT
-    4'b 0011, // index[12] USBDEV_IN_SENT
-    4'b 0011, // index[13] USBDEV_OUT_STALL
-    4'b 0011, // index[14] USBDEV_IN_STALL
-    4'b 1111, // index[15] USBDEV_CONFIGIN_0
-    4'b 1111, // index[16] USBDEV_CONFIGIN_1
-    4'b 1111, // index[17] USBDEV_CONFIGIN_2
-    4'b 1111, // index[18] USBDEV_CONFIGIN_3
-    4'b 1111, // index[19] USBDEV_CONFIGIN_4
-    4'b 1111, // index[20] USBDEV_CONFIGIN_5
-    4'b 1111, // index[21] USBDEV_CONFIGIN_6
-    4'b 1111, // index[22] USBDEV_CONFIGIN_7
-    4'b 1111, // index[23] USBDEV_CONFIGIN_8
-    4'b 1111, // index[24] USBDEV_CONFIGIN_9
-    4'b 1111, // index[25] USBDEV_CONFIGIN_10
-    4'b 1111, // index[26] USBDEV_CONFIGIN_11
-    4'b 0011, // index[27] USBDEV_OUT_ISO
-    4'b 0011, // index[28] USBDEV_IN_ISO
-    4'b 0011, // index[29] USBDEV_DATA_TOGGLE_CLEAR
-    4'b 0111, // index[30] USBDEV_PHY_PINS_SENSE
-    4'b 0111, // index[31] USBDEV_PHY_PINS_DRIVE
-    4'b 0001, // index[32] USBDEV_PHY_CONFIG
-    4'b 0001, // index[33] USBDEV_WAKE_CONFIG
-    4'b 0011  // index[34] USBDEV_WAKE_EVENTS
+    4'b 0011, // index[12] USBDEV_SET_NAK_OUT
+    4'b 0011, // index[13] USBDEV_IN_SENT
+    4'b 0011, // index[14] USBDEV_OUT_STALL
+    4'b 0011, // index[15] USBDEV_IN_STALL
+    4'b 1111, // index[16] USBDEV_CONFIGIN_0
+    4'b 1111, // index[17] USBDEV_CONFIGIN_1
+    4'b 1111, // index[18] USBDEV_CONFIGIN_2
+    4'b 1111, // index[19] USBDEV_CONFIGIN_3
+    4'b 1111, // index[20] USBDEV_CONFIGIN_4
+    4'b 1111, // index[21] USBDEV_CONFIGIN_5
+    4'b 1111, // index[22] USBDEV_CONFIGIN_6
+    4'b 1111, // index[23] USBDEV_CONFIGIN_7
+    4'b 1111, // index[24] USBDEV_CONFIGIN_8
+    4'b 1111, // index[25] USBDEV_CONFIGIN_9
+    4'b 1111, // index[26] USBDEV_CONFIGIN_10
+    4'b 1111, // index[27] USBDEV_CONFIGIN_11
+    4'b 0011, // index[28] USBDEV_OUT_ISO
+    4'b 0011, // index[29] USBDEV_IN_ISO
+    4'b 0011, // index[30] USBDEV_DATA_TOGGLE_CLEAR
+    4'b 0111, // index[31] USBDEV_PHY_PINS_SENSE
+    4'b 0111, // index[32] USBDEV_PHY_PINS_DRIVE
+    4'b 0001, // index[33] USBDEV_PHY_CONFIG
+    4'b 0001, // index[34] USBDEV_WAKE_CONFIG
+    4'b 0011  // index[35] USBDEV_WAKE_EVENTS
   };
 
 endpackage
