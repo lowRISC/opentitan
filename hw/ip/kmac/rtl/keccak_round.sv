@@ -7,7 +7,9 @@
 
 `include "prim_assert.sv"
 
-module keccak_round #(
+module keccak_round
+  import prim_mubi_pkg::*;
+#(
   parameter int Width = 1600, // b= {25, 50, 100, 200, 400, 800, 1600}
 
   // Derived
@@ -80,7 +82,7 @@ module keccak_round #(
   // 1: Select Phase2 (Chi -> Iota)
   // `sel_mux` need to be asserted until the Chi stage is consumed,
   // It means sel_mux should be 1 until one cycle after `rand_valid_i` is asserted.
-  logic sel_mux;
+  mubi4_t sel_mux;
 
 
   // Increase/ Reset Round number
@@ -218,7 +220,7 @@ module keccak_round #(
 
     keccak_rand_consumed = 1'b 0;
 
-    sel_mux = 1'b 0;
+    sel_mux = MuBi4False;
 
     complete_d = 1'b 0;
 
@@ -272,12 +274,12 @@ module keccak_round #(
         keccak_st_d = StPhase2;
 
         update_storage = 1'b 1;
-        sel_mux        = 1'b 0;
+        sel_mux        = MuBi4False;
       end
 
       StPhase2: begin
         // Second phase (Chi 1/2)
-        sel_mux = 1'b 1;
+        sel_mux = MuBi4True;
 
         if (keccak_rand_valid) begin
           keccak_st_d = StPhase3;
@@ -289,7 +291,7 @@ module keccak_round #(
       end
 
       StPhase3: begin
-        sel_mux = 1'b 1;
+        sel_mux = MuBi4True;
         update_storage = 1'b 1;
 
         if (rnd_eq_end) begin
