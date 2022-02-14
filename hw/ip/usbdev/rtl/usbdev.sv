@@ -136,7 +136,7 @@ module usbdev
   logic              usb_event_rx_bitstuff_err;
   logic              usb_event_in_err;
   logic              usb_event_out_err;
-  logic              usb_event_frame;
+  logic              usb_event_frame, usb_event_sof;
   logic              usb_link_active;
 
   logic              event_link_reset, event_link_suspend, event_link_resume;
@@ -585,6 +585,7 @@ module usbdev
     // status
     .frame_o              (usb_frame),
     .frame_start_o        (usb_event_frame),
+    .sof_valid_o          (usb_event_sof),
     .link_state_o         (usb_link_state),
     .link_disconnect_o    (usb_event_disconnect),
     .link_powered_o       (usb_event_powered),
@@ -1080,7 +1081,7 @@ module usbdev
   );
 
   // Directly forward the pulse unless disabled.
-  assign usb_ref_pulse_o = usb_ref_disable ? 1'b0 : usb_event_frame;
+  assign usb_ref_pulse_o = usb_ref_disable ? 1'b0 : usb_event_sof;
 
   // The first pulse is always ignored, but causes the valid to be asserted.
   // The valid signal is deasserted when:
