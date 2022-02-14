@@ -538,16 +538,37 @@
         cname: "Endpoint"
         desc: "Receive OUT transaction enable",
         swaccess: "rw",
-        hwaccess: "hro",
+        hwaccess: "hrw",
+        async: "clk_usb_48mhz_i"
         fields: [
           {
             bits: "0",
             name: "out",
             desc: '''
-                  This bit must be set to enable OUT transactions to be
-                  received on the endpoint. If the bit is clear then an
-                  OUT request will be responded to with a NAK, if the endpoint
-                  is enabled.
+                  This bit must be set to enable OUT transactions to be received on the endpoint.
+                  If the bit is clear then an OUT request will be responded to with a NAK, if the endpoint is enabled.
+                  If set_nak_out for this endpoint is set, hardware will clear this bit whenever an OUT transaction is received on this endpoint.
+                  Software must set this bit again to receive the next OUT transaction.
+                  Until that happens, hardware will continue to NAK any OUT transaction to this endpoint.
+                  '''
+          }
+        ]
+      }
+    }
+    { multireg: {
+        name: "set_nak_out",
+        count: "NEndpoints"
+        cname: "Endpoint"
+        desc: "Set NAK after OUT transactions",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          {
+            bits: "0",
+            name: "enable",
+            desc: '''
+                  When this bit is set, hardware will clear this endpoint's rxenable_out bit whenever an OUT transaction is received on this endpoint.
+                  This bit should not be changed while the endpoint is active.
                   '''
           }
         ]

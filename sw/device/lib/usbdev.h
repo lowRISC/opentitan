@@ -206,12 +206,41 @@ inline void usbdev_rem_wake_en(usbdev_ctx_t *ctx, int enable) {
 int usbdev_can_rem_wake(usbdev_ctx_t *ctx);
 
 /**
+ * Re-enable OUT transactions for a given endpoint.
+ *
+ * This function must be called after reception of a packet for a given
+ * endpoint, else the endpoint will NAK the next packet.
+ *
+ * @param ctx usbdev context pointer
+ * @param endpoint endpoint number
+ */
+void usbdev_clear_out_nak(usbdev_ctx_t *ctx, int ep);
+
+typedef enum usbdev_out_transfer_mode {
+  /**
+   * The endpoint does not support OUT transactions.
+   */
+  kUsbdevOutDisabled = 0,
+  /**
+   * Software does NOT need to call usbdev_clear_out_nak() after every received
+   * transaction. If software takes no action, usbdev will allow an endpoint's
+   * transactions to proceed as long as a buffer is available.
+   */
+  kUsbdevOutStream = 1,
+  /**
+   * Software must call usbdev_clear_out_nak() after every received transaction
+   * to re-enable packet reception. This gives software time to respond with the
+   * appropriate handshake when it's ready.
+   */
+  kUsbdevOutMessage = 2,
+} usbdev_out_transfer_mode_t;
+
+/**
  * Call to setup an endpoint
  *
  * @param ctx usbdev context pointer
  * @param ep endpoint number
- * @param enableout boolean, true to enable OUT transactions on the endpoint
- *             (OUT means host->device, ie receive by us)
+ * @param out_mode the transfer mode for OUT transactions
  * @param ep_ctx context pointer for callee
  * @param tx_done(void *ep_ctx) callback once send has been Acked
  * @param rx(void *ep_ctx, usbbufid_t buf, int size, int setup)
@@ -219,8 +248,9 @@ int usbdev_can_rem_wake(usbdev_ctx_t *ctx);
  * @param flush(void *ep_ctx) called every 16ms based USB host timebase
  * @param reset(void *ep_ctx) called when an USB link reset is detected
  */
-void usbdev_endpoint_setup(usbdev_ctx_t *ctx, int ep, int enableout,
-                           void *ep_ctx, void (*tx_done)(void *),
+void usbdev_endpoint_setup(usbdev_ctx_t *ctx, int ep,
+                           usbdev_out_transfer_mode_t out_mode, void *ep_ctx,
+                           void (*tx_done)(void *),
                            void (*rx)(void *, usbbufid_t, int, int),
                            void (*flush)(void *), void (*reset)(void *));
 

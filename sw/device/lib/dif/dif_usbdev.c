@@ -337,6 +337,13 @@ dif_result_t dif_usbdev_endpoint_out_enable(const dif_usbdev_t *usbdev,
                                        endpoint, new_state);
 }
 
+dif_result_t dif_usbdev_endpoint_set_nak_out_enable(const dif_usbdev_t *usbdev,
+                                                    uint8_t endpoint,
+                                                    dif_toggle_t new_state) {
+  return endpoint_functionality_enable(usbdev, USBDEV_SET_NAK_OUT_REG_OFFSET,
+                                       endpoint, new_state);
+}
+
 dif_result_t dif_usbdev_endpoint_stall_enable(const dif_usbdev_t *usbdev,
                                               dif_usbdev_endpoint_id_t endpoint,
                                               dif_toggle_t new_state) {

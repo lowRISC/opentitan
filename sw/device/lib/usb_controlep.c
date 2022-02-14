@@ -187,6 +187,7 @@ static void ctrl_tx_done(void *ctctx_v) {
 static void ctrl_rx(void *ctctx_v, usbbufid_t buf, int size, int setup) {
   usb_controlep_ctx_t *ctctx = (usb_controlep_ctx_t *)ctctx_v;
   void *ctx = ctctx->ctx;
+  usbdev_clear_out_nak(ctx, 0);
   volatile uint8_t *bp = (volatile uint8_t *)usbdev_buf_idtoaddr(ctx, buf);
   if (size > BUF_LENGTH) {
     size = BUF_LENGTH;
@@ -246,8 +247,8 @@ void ctrl_reset(void *ctctx_v) {
 void usb_controlep_init(usb_controlep_ctx_t *ctctx, usbdev_ctx_t *ctx, int ep,
                         const uint8_t *cfg_dscr, size_t cfg_dscr_len) {
   ctctx->ctx = ctx;
-  usbdev_endpoint_setup(ctx, ep, 1, ctctx, ctrl_tx_done, ctrl_rx, NULL,
-                        ctrl_reset);
+  usbdev_endpoint_setup(ctx, ep, kUsbdevOutMessage, ctctx, ctrl_tx_done,
+                        ctrl_rx, NULL, ctrl_reset);
   ctctx->ctrlstate = kCtIdle;
   ctctx->cfg_dscr = cfg_dscr;
   ctctx->cfg_dscr_len = cfg_dscr_len;
