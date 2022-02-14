@@ -6,6 +6,8 @@
 //
 // This module controls the interplay of input/output registers and the AES cipher core.
 
+`include "prim_assert.sv"
+
 module aes_control
   import aes_pkg::*;
   import aes_reg_pkg::*;
@@ -117,6 +119,10 @@ module aes_control
 
   // Optional delay of manual start trigger
   logic start_trigger;
+
+  // Create a lint error to reduce the risk of accidentally enabling this feature.
+  `ASSERT_STATIC_LINT_ERROR(AesSecStartTriggerDelayNonDefault, SecStartTriggerDelay == 0)
+
   if (SecStartTriggerDelay > 0) begin : gen_start_delay
     // Delay the manual start trigger input for SCA measurements.
     localparam int unsigned WidthCounter = $clog2(SecStartTriggerDelay+1);
@@ -134,10 +140,6 @@ module aes_control
         count_q <= count_d;
       end
     end
-
-    // Create a lint error to reduce the risk of accidentally enabling this feature.
-    logic sec_start_trigger_delay;
-    assign sec_start_trigger_delay = count_q[0];
 
   end else begin : gen_no_start_delay
     // Directly forward the manual start trigger input.

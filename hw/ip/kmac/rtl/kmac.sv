@@ -321,6 +321,9 @@ module kmac
     end
   end
 
+  // Create a lint error to reduce the risk of accidentally enabling this feature.
+  `ASSERT_STATIC_LINT_ERROR(KmacSecCmdDelayNonDefault, SecCmdDelay == 0)
+
   if (SecCmdDelay > 0) begin : gen_cmd_delay_buf
     // Delay and buffer commands for SCA measurements.
     localparam int unsigned WidthCounter = $clog2(SecCmdDelay+1);
@@ -385,10 +388,6 @@ module kmac
         end
       end
     end
-
-    // Create a lint error to reduce the risk of accidentally enabling this feature.
-    logic sec_cmd_delay_dummy;
-    assign sec_cmd_delay_dummy = cmd_update;
 
   end else begin : gen_no_cmd_delay_buf
     // Directly forward signals from register IF.
