@@ -288,9 +288,9 @@ module tlul_adapter_sram
                                  error_data_integ;
 
   logic [top_pkg::TL_DW-1:0] d_data;
-  assign d_data = (vld_rd_rsp && d_error) ? error_blanking_data : // TL-UL error
-                  (vld_rd_rsp)            ? rspfifo_rdata.data  : // valid read
-                                            '0;                   // valid write
+  assign d_data = (vld_rd_rsp & ~d_error) ? rspfifo_rdata.data   // valid read
+                                          : error_blanking_data; // write or TL-UL error
+
   // If this a write response with data fields set to 0, we have to set all ECC bits correctly
   // since we are using an inverted Hsiao code.
   logic [DataIntgWidth-1:0] data_intg;
