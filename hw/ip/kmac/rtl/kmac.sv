@@ -620,7 +620,9 @@ module kmac
 
   // Counter errors
   logic counter_error, sha3_count_error, key_index_error;
+  logic kmac_entropy_hash_counter_error;
   assign counter_error = sha3_count_error
+                       | kmac_entropy_hash_counter_error
                        | key_index_error;
 
   // State Errors
@@ -1129,6 +1131,7 @@ module kmac
       .err_o              (entropy_err),
       .sparse_fsm_error_o (kmac_entropy_state_error),
       .lfsr_error_o       (kmac_entropy_lfsr_error),
+      .count_error_o      (kmac_entropy_hash_counter_error),
       .err_processed_i    (err_processed)
     );
   end else begin : gen_empty_entropy
@@ -1165,6 +1168,7 @@ module kmac
 
     assign kmac_entropy_state_error = 1'b 0;
     assign kmac_entropy_lfsr_error  = 1'b 0;
+    assign kmac_entropy_hash_counter_error  = 1'b 0;
 
     logic [1:0] unused_entropy_status;
     assign unused_entropy_status = entropy_in_keyblock;
@@ -1340,6 +1344,7 @@ module kmac
                                          alert_tx_o[1])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(KeyIndexCountCheck_A, u_kmac_core.u_key_index_count,
                                          alert_tx_o[1])
+
   // Sparse FSM state error
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacCoreFsmCheck_A, u_kmac_core.u_state_regs, alert_tx_o[1])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacAppFsmCheck_A, u_app_intf.u_state_regs, alert_tx_o[1])
@@ -1357,6 +1362,9 @@ module kmac
     // Alert assertions for double LFSR.
     `ASSERT_PRIM_DOUBLE_LFSR_ERROR_TRIGGER_ALERT(DoubleLfsrCheck_A,
         gen_entropy.u_entropy.u_lfsr, alert_tx_o[1])
+
+    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(HashCountCheck_A, gen_entropy.u_entropy.u_hash_count,
+                                         alert_tx_o[1])
   end
 `endif
 endmodule
