@@ -82,8 +82,10 @@ module usbdev_usbif  #(
   input  logic                     resume_link_active_i, // Jump from LinkPowered to LinkResuming
 
   // status
-  output logic                     frame_start_o,
+  output logic                     frame_start_o, // Pulses with host-generated and internal SOF
   output logic [10:0]              frame_o,
+  output logic                     sof_valid_o, // Pulses with only host-generated SOF.
+                                                // Used for clock sync.
   output logic [2:0]               link_state_o,
   output logic                     link_disconnect_o,
   output logic                     link_powered_o,
@@ -116,7 +118,6 @@ module usbdev_usbif  #(
   logic                              mem_read;
   logic [SramAw-1:0]                 mem_waddr, mem_raddr;
   logic                              link_reset;
-  logic                              sof_valid;
 
   // Make sure out_endpoint_o can safely be used to index signals of NEndpoints width.
   assign out_endpoint_val_o = int'(out_ep_current) < NEndpoints;
@@ -124,7 +125,6 @@ module usbdev_usbif  #(
 
   assign link_reset_o   = link_reset;
   assign clr_devaddr_o  = ~enable_i | link_reset;
-  assign frame_start_o  = sof_valid;
   assign link_out_err_o = out_ep_rollback;
 
   always_comb begin
@@ -329,13 +329,14 @@ module usbdev_usbif  #(
     .rx_bitstuff_err_o     (rx_bitstuff_err_o),
 
     // sof interface
-    .sof_valid_o           (sof_valid),
+    .sof_valid_o           (sof_valid_o),
     .frame_index_o         (frame_index_raw)
   );
 
   // us_tick ticks for one cycle every us
   logic [5:0]   ns_cnt;
   logic         us_tick;
+  logic         do_internal_sof;
 
   assign us_tick = (ns_cnt == 6'd48);
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
@@ -350,15 +351,27 @@ module usbdev_usbif  #(
     end
   end
 
-  // Capture frame number (host sends evert 1ms)
-  // TODO(#10678): Handle missing SOF packets
+  // Capture frame number (host sends every 1ms)
+  // Generate an internal SOF if the host's is missing.
+  logic [10:0] frame_d, frame_q;
+
+  assign frame_o = frame_q;
+  assign frame_start_o = (frame_q != frame_d);
+
+  always_comb begin
+    frame_d = frame_q;
+    if (sof_valid_o) begin
+      frame_d = frame_index_raw;
+    end else if (do_internal_sof) begin
+      frame_d = frame_q + 1;
+    end
+  end
+
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      frame_o <= '0;
+      frame_q <= '0;
     end else begin
-      if (sof_valid) begin
-        frame_o <= frame_index_raw;
-      end
+      frame_q <= frame_d;
     end
   end
 
@@ -373,7 +386,7 @@ module usbdev_usbif  #(
     .usb_pullup_en_i       (enable_i),
     .rx_jjj_det_i          (rx_jjj_det),
     .rx_j_det_i            (rx_j_det),
-    .sof_valid_i           (sof_valid),
+    .sof_valid_i           (sof_valid_o),
     .resume_link_active_i  (resume_link_active_i),
     .link_disconnect_o     (link_disconnect_o),
     .link_powered_o        (link_powered_o),
@@ -382,7 +395,8 @@ module usbdev_usbif  #(
     .link_suspend_o        (link_suspend_o),
     .link_resume_o         (link_resume_o),
     .link_state_o          (link_state_o),
-    .host_lost_o           (host_lost_o)
+    .host_lost_o           (host_lost_o),
+    .sof_missed_o          (do_internal_sof)
   );
 
   ////////////////
