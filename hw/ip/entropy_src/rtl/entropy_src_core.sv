@@ -1938,6 +1938,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign recov_alert_o =
          es_enable_pfa ||
+         fips_enable_pfa ||
          entropy_data_reg_en_pfa ||
          boot_bypass_disable_pfa ||
          health_test_clr_pfa ||
