@@ -187,6 +187,7 @@ module sha3pad
   logic inc_sentmsg, clr_sentmsg;
 
   // This primitive is used to place a hardened counter
+  // SEC_CM: CTR.REDUN
   prim_count #(
     .Width(KeccakCountW),
     .OutSelDnCnt(1'b0), // 0 selects up count

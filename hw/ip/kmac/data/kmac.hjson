@@ -198,7 +198,8 @@
       desc: "LFSR in the entropy generator uses prim_double_lfsr"
     }
     { name: "CTR.REDUN"
-      desc: "Round and hash counter use prim_count for redundancy"
+      desc: '''Round counter, key index counter, sentmsg counter and hash counter
+        use prim_count for redundancy'''
     }
     { name: "CFG_SHADOWED.CONFIG.REGWEN"
       desc: "CFG_SHADOWED is protected by REGWEN"
