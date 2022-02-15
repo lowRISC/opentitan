@@ -48,6 +48,8 @@ package otbn_env_pkg;
   typedef virtual pins_if #(1)     idle_vif;
   typedef virtual otbn_escalate_if escalate_vif;
   typedef logic [TL_AIW-1:0]       tl_source_t;
+  typedef key_sideload_agent#(keymgr_pkg::otbn_key_req_t) otbn_sideload_agent;
+  typedef key_sideload_agent_cfg#(keymgr_pkg::otbn_key_req_t) otbn_sideload_agent_cfg;
 
   // Expected data for a pending read (see exp_read_values in otbn_scoreboard.sv)
   typedef struct packed {
