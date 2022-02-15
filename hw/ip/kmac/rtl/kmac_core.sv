@@ -403,6 +403,7 @@ module kmac_core
   assign inc_keyidx = kmac_valid & msg_ready_i ;
 
   // This primitive is used to place a hardened counter
+  // SEC_CM: CTR.REDUN
   prim_count #(
     .Width(sha3_pkg::KeccakMsgAddrW),
     .OutSelDnCnt(1'b0), // 0 selects up count
