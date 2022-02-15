@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// AES SBox testbench
+// AES wrap testbench
 
 module aes_wrap_tb #(
 ) (
@@ -15,6 +15,7 @@ module aes_wrap_tb #(
 
   logic [127:0] aes_output;
   logic         test_done;
+  logic         alert_recov, alert_fatal;
   logic   [7:0] count_d, count_q;
 
   // Instantiate DUT
@@ -22,11 +23,14 @@ module aes_wrap_tb #(
     .clk_i,
     .rst_ni,
 
-    .aes_input   ( 128'h0     ),
-    .aes_key     ( 256'h0     ),
-    .aes_output  ( aes_output ),
+    .aes_input     ( 128'h0      ),
+    .aes_key       ( 256'h0      ),
+    .aes_output    ( aes_output  ),
 
-    .test_done_o ( test_done  )
+    .alert_recov_o ( alert_recov ),
+    .alert_fatal_o ( alert_fatal ),
+
+    .test_done_o   ( test_done   )
   );
 
   // Count the time.
@@ -53,6 +57,13 @@ module aes_wrap_tb #(
         $display("\nERROR: AES output does not match expected value.");
         test_passed_o <= 1'b0;
         test_done_o   <= 1'b1;
+      end
+
+      if (alert_recov) begin
+        $display("\nINFO: Recoverable alert condition detected.");
+      end
+      if (alert_fatal) begin
+        $display("\nINFO: Fatal alert condition detected.");
       end
     end
 
