@@ -10,9 +10,10 @@ class otbn_env extends cip_base_env #(
   );
   `uvm_component_utils(otbn_env)
 
-  otbn_model_agent   model_agent;
-  otbn_trace_monitor trace_monitor;
+  otbn_model_agent    model_agent;
+  otbn_trace_monitor  trace_monitor;
   otbn_sideload_agent keymgr_sideload_agent;
+  otp_key_agent       key_agent;
 
   `uvm_component_new
 
@@ -26,9 +27,28 @@ class otbn_env extends cip_base_env #(
     uvm_config_db#(otbn_model_agent_cfg)::set(this, "model_agent*", "cfg", cfg.model_agent_cfg);
     cfg.model_agent_cfg.en_cov = cfg.en_cov;
 
+    // Get the OTP clk/rst interface
+    if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "otp_clk_rst_vif",
+        cfg.otp_clk_rst_vif)) begin
+      `uvm_fatal(`gfn, "failed to get otp_clk_rst_if from uvm_config_db")
+    end
+    cfg.otp_clk_rst_vif.set_freq_mhz(cfg.otp_freq_mhz);
+
     keymgr_sideload_agent = otbn_sideload_agent::type_id::create("keymgr_sideload_agent", this);
-    uvm_config_db#(otbn_sideload_agent_cfg)::set(this, "keymgr_sideload_agent*",
-                                                  "cfg", cfg.keymgr_sideload_agent_cfg);
+    uvm_config_db#(otbn_sideload_agent_cfg)::set(
+      this, "keymgr_sideload_agent*", "cfg", cfg.keymgr_sideload_agent_cfg);
+
+    key_agent = otp_key_agent::type_id::create("key_agent", this);
+    uvm_config_db#(otp_key_agent_cfg)::set(this, "key_agent", "cfg", cfg.key_cfg);
+    cfg.key_cfg.agent_type = push_pull_agent_pkg::PullAgent;
+    cfg.key_cfg.if_mode = dv_utils_pkg::Device;
+    // CDC synchronization between OTP and OTBN clock domains requires that the scrambling seed data
+    // should be held for at least a few cycles before it can be safely latched by the OTBN domain.
+    // Easy way to do this is just to force the push_pull_agent to hold the data until the next key
+    // request is sent out.
+    cfg.key_cfg.hold_d_data_until_next_req = 1'b1;
+    cfg.key_cfg.zero_delays = 1'b1;
+    cfg.key_cfg.en_cov = cfg.en_cov;
 
     if (!uvm_config_db#(virtual otbn_trace_if)::get(this, "", "trace_vif", cfg.trace_vif)) begin
       `uvm_fatal(`gfn, "failed to get otbn_trace_if handle from uvm_config_db")
