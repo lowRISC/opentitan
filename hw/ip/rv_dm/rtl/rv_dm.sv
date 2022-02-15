@@ -456,7 +456,7 @@ module rv_dm
 `endif
 
   prim_mubi_pkg::mubi4_t en_ifetch;
-  // SEC_CM: DM_EN.CTRL.LC_GATED
+  // SEC_CM: DM_EN.CTRL.LC_GATED, EXEC.CTRL.MUBI
   assign en_ifetch = (lc_hw_debug_en[EnFetch] == lc_ctrl_pkg::On) ?
                      prim_mubi_pkg::MuBi4True :
                      prim_mubi_pkg::MuBi4False;
@@ -475,6 +475,7 @@ module rv_dm
   ) tl_adapter_device_mem (
     .clk_i,
     .rst_ni,
+    // SEC_CM: EXEC.CTRL.MUBI
     .en_ifetch_i (en_ifetch),
     .req_o       (req),
     .req_type_o  (),

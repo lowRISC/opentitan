@@ -41,5 +41,11 @@
       milestone: V2S
       tests: []
     }
+    {
+      name: sec_cm_exec_ctrl_mubi
+      desc: "Verify the countermeasure(s) EXEC.CTRL.MUBI."
+      milestone: V2S
+      tests: []
+    }
   ]
 }
