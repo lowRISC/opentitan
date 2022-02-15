@@ -6,8 +6,8 @@
     name:               "rv_dm",
     design_spec:        "../doc",
     hw_checklist:       "../doc/checklist"
-    version:            "0.5",
+    version:            "1.0",
     life_stage:         "L1",
-    design_stage:       "D2",
+    design_stage:       "D2S",
     verification_stage: "V0",
 }
