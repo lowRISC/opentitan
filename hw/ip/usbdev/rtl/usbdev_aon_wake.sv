@@ -5,6 +5,8 @@
 // Always On USB wake detect
 //
 
+`include "prim_assert.sv"
+
 module usbdev_aon_wake import usbdev_pkg::*;(
   input  logic clk_aon_i,
   input  logic rst_aon_ni,

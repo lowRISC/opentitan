@@ -5,6 +5,8 @@
 // Link state detection
 //
 
+`include "prim_assert.sv"
+
 module usbdev_linkstate (
   input  logic clk_48mhz_i,
   input  logic rst_ni,
