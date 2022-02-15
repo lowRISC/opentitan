@@ -18,6 +18,9 @@ class rv_dm_env extends cip_base_env #(
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
 
+    // TODO(#10765): The debug mem RAL space does not support byte access at this time.
+    m_tl_reg_adapters[cfg.rom_ral_name].supports_byte_enable = 1'b0;
+
     // set knobs
     if (cfg.zero_delays) begin
       cfg.m_tl_sba_agent_cfg.a_valid_delay_min = 0;
