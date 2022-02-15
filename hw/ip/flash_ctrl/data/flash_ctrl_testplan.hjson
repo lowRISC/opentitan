@@ -58,15 +58,13 @@
       tests: ["flash_ctrl_host_dir_rd"]
     }
     {
-      name: host_ctrl_hw_if
+      name: rma_hw_if
       desc: '''
-            Perform read of seed materials via Hardware Interface of the Flash Protocol Controller.
-            Perform RMA entry request and check afterwards that software has no granted access.
-            During RMA entry, check if content of flash is wiped out via Host Interface direct
-            reads.
+            Perform RMA entry requests and check afterwards that the  software has no access to 
+            the Flash.  After RMA entry, verify that the content of the flash is wiped out.
             '''
       milestone: V2
-      tests: []
+      tests: ["flash_ctrl_hw_rma"]
     }
     {
       name: host_controller_arb
@@ -230,11 +228,12 @@
     {
       name: isolation_partition
       desc: '''
-            Verify the isolated information partitions. Accessiblity is controlled by the Life Cycle Controller
-            
+            Verify the isolated information partitions. Accessablity is controlled by Life
+            Cycle Controller.  Verify Partition can be erase, written and programmed, with
+            HW control, and wipes after an RMA.
             '''
       milestone: V2
-      tests: []
+      tests: ["flash_ctrl_hw_rma"]
     }
     {
       name: interrupts

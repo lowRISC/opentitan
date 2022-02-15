@@ -95,6 +95,9 @@ class flash_ctrl_seq_cfg extends uvm_object;
   // Timeout for erase transaction
   uint erase_timeout_ns;
 
+  // Timeout for read transaction
+  uint read_timeout_ns;
+
   // Enable/Disable the Secret Seeds and Keys during Initialisation
   bit en_init_keys_seeds;
 
@@ -185,6 +188,8 @@ class flash_ctrl_seq_cfg extends uvm_object;
     check_mem_post_tran = 1'b1;
 
     prog_timeout_ns = 10_000_000;  // 10ms
+
+    read_timeout_ns = 10_000_000;  // 10ms
 
     erase_timeout_ns = 120_000_000;  // 120ms
 
