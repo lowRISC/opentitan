@@ -47,9 +47,3 @@ module prim_sparse_fsm_flop #(
   `endif
 
 endmodule
-
-`define ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(NAME_, PRIM_HIER_, ALERT_, MAX_CYCLES_ = 5) \
-  `ASSERT(NAME_, $fell(PRIM_HIER_.unused_valid_st) |-> ##[1:MAX_CYCLES_] $rose(ALERT_.alert_p)) \
-  `ifdef INC_ASSERT \
-  assign PRIM_HIER_.unused_assert_connected = 1'b1; \
-  `endif

@@ -229,7 +229,6 @@ module aes
   `ASSERT_KNOWN(EdnReqKnown, edn_o)
   `ASSERT_KNOWN(AlertTxKnown, alert_tx_o)
 
-`ifndef SYNTHESIS
   // Alert assertions for sparse FSMs.
   for (genvar i = 0; i < Sp2VWidth; i++) begin : gen_control_fsm_svas
     if (SP2V_LOGIC_HIGH[i] == 1'b1) begin : gen_control_fsm_svas_p
@@ -272,6 +271,4 @@ module aes
           alert_tx_o[1])
     end
   end
-`endif
-
 endmodule
