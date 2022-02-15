@@ -73,6 +73,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=winapi-x86_64-pc-windows-gnu",
         "manual",
     ],
     version = "0.4.0",

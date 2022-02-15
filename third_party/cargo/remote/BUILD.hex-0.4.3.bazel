@@ -49,6 +49,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=hex",
         "manual",
     ],
     version = "0.4.3",

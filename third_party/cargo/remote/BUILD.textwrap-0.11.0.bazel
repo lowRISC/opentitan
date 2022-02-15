@@ -50,6 +50,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=textwrap",
         "manual",
     ],
     version = "0.11.0",

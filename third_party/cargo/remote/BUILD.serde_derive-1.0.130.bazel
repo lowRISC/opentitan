@@ -75,6 +75,7 @@ rust_proc_macro(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=serde_derive",
         "manual",
     ],
     version = "1.0.130",

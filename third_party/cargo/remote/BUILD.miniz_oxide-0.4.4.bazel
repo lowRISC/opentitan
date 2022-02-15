@@ -26,7 +26,7 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "MIT OR Apache-2.0"
+    "notice",  # MIT from expression "MIT OR (Zlib OR Apache-2.0)"
 ])
 
 # Generated Targets
@@ -38,12 +38,11 @@ load(
 )
 
 cargo_build_script(
-    name = "libm_build_script",
+    name = "miniz_oxide_build_script",
     srcs = glob(["**/*.rs"]),
     build_script_env = {
     },
     crate_features = [
-        "default",
     ],
     crate_root = "build.rs",
     data = glob(["**"]),
@@ -55,17 +54,17 @@ cargo_build_script(
         "cargo-raze",
         "manual",
     ],
-    version = "0.2.1",
+    version = "0.4.4",
     visibility = ["//visibility:private"],
     deps = [
+        "@raze__autocfg__1_1_0//:autocfg",
     ],
 )
 
 rust_library(
-    name = "libm",
+    name = "miniz_oxide",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "default",
     ],
     crate_root = "src/lib.rs",
     data = [],
@@ -75,11 +74,13 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=miniz_oxide",
         "manual",
     ],
-    version = "0.2.1",
+    version = "0.4.4",
     # buildifier: leave-alone
     deps = [
-        ":libm_build_script",
+        ":miniz_oxide_build_script",
+        "@raze__adler__1_0_2//:adler",
     ],
 )

@@ -47,6 +47,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=zerocopy",
         "manual",
     ],
     version = "0.5.0",

@@ -47,6 +47,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=smallvec",
         "manual",
     ],
     version = "1.8.0",

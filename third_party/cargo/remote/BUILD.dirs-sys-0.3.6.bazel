@@ -46,6 +46,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=dirs-sys",
         "manual",
     ],
     version = "0.3.6",

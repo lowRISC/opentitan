@@ -44,6 +44,7 @@ rust_proc_macro(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=thiserror-impl",
         "manual",
     ],
     version = "1.0.30",

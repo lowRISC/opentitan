@@ -64,6 +64,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=serialport",
         "manual",
     ],
     version = "4.0.1",

@@ -46,6 +46,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=lazy_static",
         "manual",
     ],
     version = "1.4.0",

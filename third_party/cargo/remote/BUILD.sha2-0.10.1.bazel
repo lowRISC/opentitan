@@ -50,13 +50,14 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=sha2",
         "manual",
     ],
     version = "0.10.1",
     # buildifier: leave-alone
     deps = [
         "@raze__cfg_if__1_0_0//:cfg_if",
-        "@raze__digest__0_10_1//:digest",
+        "@raze__digest__0_10_2//:digest",
     ] + selects.with_or({
         # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
         (

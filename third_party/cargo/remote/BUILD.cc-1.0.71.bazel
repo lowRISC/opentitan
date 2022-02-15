@@ -46,6 +46,7 @@ rust_binary(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=gcc-shim",
         "manual",
     ],
     version = "1.0.71",
@@ -68,6 +69,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=cc",
         "manual",
     ],
     version = "1.0.71",

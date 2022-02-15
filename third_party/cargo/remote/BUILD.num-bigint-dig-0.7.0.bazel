@@ -63,7 +63,7 @@ cargo_build_script(
     version = "0.7.0",
     visibility = ["//visibility:private"],
     deps = [
-        "@raze__autocfg__0_1_7//:autocfg",
+        "@raze__autocfg__0_1_8//:autocfg",
     ],
 )
 
@@ -86,6 +86,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=num-bigint-dig",
         "manual",
     ],
     version = "0.7.0",
@@ -94,11 +95,11 @@ rust_library(
         ":num_bigint_dig_build_script",
         "@raze__byteorder__1_4_3//:byteorder",
         "@raze__lazy_static__1_4_0//:lazy_static",
-        "@raze__libm__0_2_1//:libm",
+        "@raze__libm__0_2_2//:libm",
         "@raze__num_integer__0_1_44//:num_integer",
         "@raze__num_iter__0_1_42//:num_iter",
         "@raze__num_traits__0_2_14//:num_traits",
-        "@raze__rand__0_8_4//:rand",
+        "@raze__rand__0_8_5//:rand",
         "@raze__serde__1_0_130//:serde",
         "@raze__smallvec__1_8_0//:smallvec",
     ],
