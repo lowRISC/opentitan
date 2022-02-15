@@ -91,6 +91,12 @@
             being fed into the TL-UL adapter for the debug ROM.
             '''
     }
+    { name: "EXEC.CTRL.MUBI",
+      desc: '''
+            The instruction fetch enable signal that is modulated with LC_HW_DEBUG_EN
+            and that feeds into the TL-UL adapter is multibit encoded.
+            '''
+    }
   ]
   regwidth: "32",
   registers: {
