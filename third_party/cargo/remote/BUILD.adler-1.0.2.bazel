@@ -26,30 +26,31 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "MIT OR Apache-2.0"
+    "notice",  # MIT from expression "0BSD OR (MIT OR Apache-2.0)"
 ])
 
 # Generated Targets
 
+# Unsupported target "bench" with type "bench" omitted
+
 rust_library(
-    name = "crypto_common",
+    name = "adler",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "std",
     ],
     crate_root = "src/lib.rs",
     data = [],
-    edition = "2018",
+    edition = "2015",
     rustc_flags = [
         "--cap-lints=allow",
     ],
     tags = [
         "cargo-raze",
+        "crate-name=adler",
         "manual",
     ],
-    version = "0.1.1",
+    version = "1.0.2",
     # buildifier: leave-alone
     deps = [
-        "@raze__generic_array__0_14_5//:generic_array",
     ],
 )

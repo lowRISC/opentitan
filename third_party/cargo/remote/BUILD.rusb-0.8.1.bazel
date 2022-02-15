@@ -82,6 +82,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=rusb",
         "manual",
     ],
     version = "0.8.1",

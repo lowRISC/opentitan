@@ -8,11 +8,6 @@ version = "0.1.0"
 authors = ["lowRISC contributors"]
 edition = "2018"
 
-[workspace]
-members = [
-    "image"
-]
-
 [profile.dev]
 lto = false
 opt-level = 2

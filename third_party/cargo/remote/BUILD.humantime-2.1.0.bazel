@@ -48,6 +48,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=humantime",
         "manual",
     ],
     version = "2.1.0",

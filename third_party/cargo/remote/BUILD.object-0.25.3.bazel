@@ -31,10 +31,36 @@ licenses([
 
 # Generated Targets
 
-rust_proc_macro(
-    name = "structopt_derive",
+# Unsupported target "ar" with type "example" omitted
+
+# Unsupported target "dyldcachedump" with type "example" omitted
+
+# Unsupported target "nm" with type "example" omitted
+
+# Unsupported target "objcopy" with type "example" omitted
+
+# Unsupported target "objdump" with type "example" omitted
+
+# Unsupported target "objectmap" with type "example" omitted
+
+# Unsupported target "readobj" with type "example" omitted
+
+rust_library(
+    name = "object",
     srcs = glob(["**/*.rs"]),
     crate_features = [
+        "archive",
+        "coff",
+        "compression",
+        "default",
+        "elf",
+        "flate2",
+        "macho",
+        "pe",
+        "read",
+        "read_core",
+        "std",
+        "unaligned",
     ],
     crate_root = "src/lib.rs",
     data = [],
@@ -44,16 +70,17 @@ rust_proc_macro(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=structopt-derive",
+        "crate-name=object",
         "manual",
     ],
-    version = "0.4.18",
+    version = "0.25.3",
     # buildifier: leave-alone
     deps = [
-        "@raze__heck__0_3_3//:heck",
-        "@raze__proc_macro2__1_0_32//:proc_macro2",
-        "@raze__proc_macro_error__1_0_4//:proc_macro_error",
-        "@raze__quote__1_0_10//:quote",
-        "@raze__syn__1_0_81//:syn",
+        "@raze__flate2__1_0_22//:flate2",
+        "@raze__memchr__2_4_1//:memchr",
     ],
 )
+
+# Unsupported target "integration" with type "test" omitted
+
+# Unsupported target "parse_self" with type "test" omitted

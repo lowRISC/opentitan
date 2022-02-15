@@ -32,23 +32,26 @@ licenses([
 # Generated Targets
 
 rust_library(
-    name = "version_check",
+    name = "block_buffer",
     srcs = glob(["**/*.rs"]),
     crate_features = [
     ],
     crate_root = "src/lib.rs",
     data = [],
-    edition = "2015",
+    edition = "2018",
     rustc_flags = [
         "--cap-lints=allow",
     ],
     tags = [
         "cargo-raze",
-        "crate-name=version_check",
+        "crate-name=block-buffer",
         "manual",
     ],
-    version = "0.9.3",
+    version = "0.10.2",
     # buildifier: leave-alone
     deps = [
+        "@raze__generic_array__0_14_5//:generic_array",
     ],
 )
+
+# Unsupported target "mod" with type "test" omitted

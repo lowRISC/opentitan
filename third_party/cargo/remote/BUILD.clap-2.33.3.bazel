@@ -53,6 +53,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=clap",
         "manual",
     ],
     version = "2.33.3",

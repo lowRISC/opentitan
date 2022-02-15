@@ -44,6 +44,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=vec_map",
         "manual",
     ],
     version = "0.8.2",

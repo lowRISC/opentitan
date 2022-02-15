@@ -6,6 +6,8 @@
 members = [
     "opentitanlib",
     "opentitantool",
+    "rom_ext_image_tools/signer",
+    "rom_ext_image_tools/signer/image",
 ]
 
 [workspace.metadata.raze]

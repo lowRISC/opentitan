@@ -46,6 +46,7 @@ rust_proc_macro(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=num_enum_derive",
         "manual",
     ],
     version = "0.5.4",

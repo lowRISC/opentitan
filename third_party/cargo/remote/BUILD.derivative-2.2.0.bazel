@@ -45,6 +45,7 @@ rust_proc_macro(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=derivative",
         "manual",
     ],
     version = "2.2.0",

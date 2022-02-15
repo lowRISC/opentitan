@@ -92,6 +92,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=structopt",
         "manual",
     ],
     version = "0.3.25",
