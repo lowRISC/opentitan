@@ -132,6 +132,23 @@ class spi_device_base_vseq extends cip_base_vseq #(
     cfg.m_spi_agent_cfg.csb_sel = 0;
     cfg.m_spi_agent_cfg.partial_byte = 0;
     cfg.m_spi_agent_cfg.csb_consecutive = 0;
+    cfg.m_spi_agent_cfg.passthrough = 0;
+
+    if (spi_freq_faster) begin
+      cfg.spi_device_agent_cfg.sck_period_ps = cfg.clk_rst_vif.clk_period_ps / core_spi_freq_ratio;
+    end else begin
+      cfg.spi_device_agent_cfg.sck_period_ps = cfg.clk_rst_vif.clk_period_ps * core_spi_freq_ratio;
+    end
+    // update spi_device agent
+    cfg.spi_device_agent_cfg.sck_polarity[0] = sck_polarity;
+    cfg.spi_device_agent_cfg.sck_phase[0] = sck_phase;
+    cfg.spi_device_agent_cfg.host_bit_dir = host_bit_dir;
+    cfg.spi_device_agent_cfg.device_bit_dir = device_bit_dir;
+    cfg.spi_device_agent_cfg.csb_sel = 0;
+    cfg.spi_device_agent_cfg.partial_byte = 0;
+    cfg.spi_device_agent_cfg.csb_consecutive = 0;
+    cfg.spi_device_agent_cfg.passthrough = 0;
+
     // update device rtl
     ral.control.mode.set(spi_mode);
     csr_update(.csr(ral.control));

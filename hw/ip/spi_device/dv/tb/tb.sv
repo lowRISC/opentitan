@@ -17,6 +17,8 @@ module tb;
   wire clk, rst_n;
   wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
+  wire [3:0]                    pass_so_pulldown;
+  wire [3:0]                    pass_si_pulldown;
 
   wire sck;
   wire csb;
@@ -24,6 +26,8 @@ module tb;
   wire [3:0] sd_out;
   wire [3:0] sd_out_en;
   wire [3:0] sd_in;
+  spi_device_pkg::passthrough_req_t pass_out;
+  spi_device_pkg::passthrough_req_t pass_in;
 
   wire intr_rxf;
   wire intr_rxlvl;
@@ -43,6 +47,7 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(.pins(interrupts));
   pins_if #(1) devmode_if(devmode);
   spi_if  spi_if(.rst_n(rst_n));
+  spi_if  spi_if_pass(.rst_n(rst_n));
 
   `DV_ALERT_IF_CONNECT
 
@@ -65,6 +70,9 @@ module tb;
 
     .cio_tpm_csb_i  (tpm_csb   ),
 
+    .passthrough_i  (pass_in   ),
+    .passthrough_o  (pass_out  ),
+
     .intr_generic_rx_full_o             (intr_rxf  ),
     .intr_generic_rx_watermark_o        (intr_rxlvl),
     .intr_generic_tx_watermark_o        (intr_txlvl),
@@ -83,9 +91,28 @@ module tb;
   assign sck           = spi_if.sck;
   assign csb           = spi_if.csb[0];
   assign tpm_csb       = spi_if.csb[1];
-  // TODO: quad SPI mode is currently not yet implemented
-  assign sd_in         = {3'b000, spi_if.sio[0]};
-  assign spi_if.sio[1] = sd_out_en[1] ? sd_out[1] : 1'bz;
+
+  // Issue 10832 - bi-direction assignment issue in Xcelium
+  `define CONNECT_SPI_IO(_INTF, _SD_IN, _SD_OUT, _SD_OUT_EN, _IDX) \
+    wire sd_out_en_``_IDX`` = _SD_OUT_EN[_IDX]; \
+    assign _INTF.sio[_IDX]  = (sd_out_en_``_IDX``) ? _SD_OUT[_IDX] : 1'bz; \
+    assign _SD_IN[_IDX] = _INTF.sio[_IDX];
+  `define CONNECT_SPI_IO_PASS(_INTF, _SD_IN, _SD_OUT, _SD_OUT_EN, _IDX) \
+    wire sd_out_en_pass_``_IDX`` = _SD_OUT_EN[_IDX]; \
+    assign _INTF.sio[_IDX]  = (sd_out_en_pass_``_IDX``) ? _SD_OUT[_IDX] : 1'bz; \
+    assign _SD_IN[_IDX] = _INTF.sio[_IDX];
+
+  `CONNECT_SPI_IO(spi_if, sd_in, sd_out, sd_out_en, 0)
+  `CONNECT_SPI_IO(spi_if, sd_in, sd_out, sd_out_en, 1)
+  `CONNECT_SPI_IO(spi_if, sd_in, sd_out, sd_out_en, 2)
+  `CONNECT_SPI_IO(spi_if, sd_in, sd_out, sd_out_en, 3)
+
+  assign spi_if_pass.sck = pass_out.sck;
+  assign spi_if_pass.csb = pass_out.csb;
+  `CONNECT_SPI_IO_PASS(spi_if_pass, pass_in.s, pass_out.s, pass_out.s_en, 0)
+  `CONNECT_SPI_IO_PASS(spi_if_pass, pass_in.s, pass_out.s, pass_out.s_en, 1)
+  `CONNECT_SPI_IO_PASS(spi_if_pass, pass_in.s, pass_out.s, pass_out.s_en, 2)
+  `CONNECT_SPI_IO_PASS(spi_if_pass, pass_in.s, pass_out.s, pass_out.s_en, 3)
 
   assign interrupts[RxFifoFull]      = intr_rxf;
   assign interrupts[RxFifoGeLevel]   = intr_rxlvl;
@@ -107,8 +134,10 @@ module tb;
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_agent*", "vif", spi_if);
+    uvm_config_db#(virtual spi_if)::set(null, "*.env.spi_device*", "vif", spi_if_pass);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
 
 endmodule
+`undef CONNECT_SPI_IO

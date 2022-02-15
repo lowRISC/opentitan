@@ -13,6 +13,8 @@ class spi_device_base_test extends cip_base_test #(.ENV_T(spi_device_env),
     super.build_phase(phase);
     // configure the spi agent to be in Host mode
     cfg.m_spi_agent_cfg.if_mode = Host;
+    // configure passthrough agent to be in Device mode
+    cfg.spi_device_agent_cfg.if_mode = Device;
   endfunction
 
 endclass : spi_device_base_test
