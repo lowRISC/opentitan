@@ -125,6 +125,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
   aes_cipher_ctrl_e aes_cipher_ctrl_ns, aes_cipher_ctrl_cs;
   logic             advance;
   logic       [2:0] cyc_ctr_d, cyc_ctr_q;
+  logic             cyc_ctr_expr;
   logic             prng_reseed_done_d, prng_reseed_done_q;
   logic       [3:0] rnd_ctr_d, rnd_ctr_q;
   logic       [3:0] num_rounds_d, num_rounds_q;
@@ -266,7 +267,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
           // only in the first clock cycle. By requesting the PRNG update in any clock cycle
           // other than the last one, the PRD fed into the DOM S-Boxes is guaranteed to be stable.
           // This is better in terms of SCA resistance. Request the PRNG update in the first cycle.
-          advance         = key_expand_out_req_i;
+          advance         = key_expand_out_req_i & cyc_ctr_expr;
           prng_update_o   = (SBoxImpl == SBoxImplDom) ? cyc_ctr_q == 3'd0 : Masking;
           key_expand_en_o = 1'b1;
           if (advance) begin
@@ -309,7 +310,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
         // than the last one, the PRD fed into the DOM S-Boxes is guaranteed to be stable. This is
         // better in terms of SCA resistance. Request the PRNG update in the first cycle. Non-DOM
         // S-Boxes need fresh PRD in every clock cycle.
-        advance         = (dec_key_gen_q_i | sub_bytes_out_req_i) & key_expand_out_req_i;
+        advance = key_expand_out_req_i & cyc_ctr_expr & (dec_key_gen_q_i | sub_bytes_out_req_i);
         prng_update_o   = (SBoxImpl == SBoxImplDom) ? cyc_ctr_q == 3'd0 : Masking;
         sub_bytes_en_o  = ~dec_key_gen_q_i;
         key_expand_en_o = 1'b1;
@@ -378,7 +379,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
         // - all mux selector signals are valid (don't release data in case of errors), and
         // - all sparsely encoded signals are valid (don't release data in case of errors).
         // Perform both handshakes simultaneously.
-        advance        = sub_bytes_out_req_i | dec_key_gen_q_i;
+        advance        = (sub_bytes_out_req_i & cyc_ctr_expr) | dec_key_gen_q_i;
         sub_bytes_en_o = ~dec_key_gen_q_i;
         out_valid_o    = (mux_sel_err_i || sp_enc_err_i || op_err_i) ? 1'b0      :
             Masking ? (prng_reseed_q_i ? prng_reseed_done_q & advance : advance) : advance;
@@ -502,7 +503,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
 
   assign rnd_ctr_o = rnd_ctr_q;
 
-  if (SBoxImpl == SBoxImplDom) begin : gen_reg_cyc_ctr
+  if (SBoxImpl == SBoxImplDom) begin : gen_cyc_ctr
     always_ff @(posedge clk_i or negedge rst_ni) begin : reg_cyc_ctr
       if (!rst_ni) begin
         cyc_ctr_q <= 3'd0;
@@ -510,10 +511,12 @@ module aes_cipher_control_fsm import aes_pkg::*;
         cyc_ctr_q <= cyc_ctr_d;
       end
     end
+    assign cyc_ctr_expr = cyc_ctr_q >= 3'd4;
   end else begin : gen_no_cyc_ctr
     logic [2:0] unused_cyc_ctr;
     assign cyc_ctr_q      = cyc_ctr_d;
     assign unused_cyc_ctr = cyc_ctr_q;
+    assign cyc_ctr_expr   = 1'b1;
   end
 
   ////////////////
