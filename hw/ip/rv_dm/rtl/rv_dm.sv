@@ -326,6 +326,11 @@ module rv_dm
     .rdata_o      (host_r_rdata),
     .rdata_intg_o (),
     .err_o        (host_r_err),
+    // Note: This bus integrity error is not connected to the alert due to a few reasons:
+    // 1) the SBA module is not active in production life cycle states.
+    // 2) there may be value in being able to accept incoming transactions with integrity
+    //    errors during test / debug life cycle states so that the system can be debugged
+    //    without triggering alerts.
     .intg_err_o   (),
     .tl_o         (sba_tl_h_o_int),
     .tl_i         (sba_tl_h_i_int)
