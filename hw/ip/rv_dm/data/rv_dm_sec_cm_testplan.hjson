@@ -29,5 +29,17 @@
       milestone: V2S
       tests: []
     }
+    {
+      name: sec_cm_lc_hw_debug_en_intersig_mubi
+      desc: "Verify the countermeasure(s) LC_HW_DEBUG_EN.INTERSIG.MUBI."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_dm_en_ctrl_lc_gated
+      desc: "Verify the countermeasure(s) DM_EN.CTRL.LC_GATED."
+      milestone: V2S
+      tests: []
+    }
   ]
 }

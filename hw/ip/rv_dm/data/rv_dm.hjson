@@ -77,6 +77,20 @@
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
+    { name: "LC_HW_DEBUG_EN.INTERSIG.MUBI",
+      desc: "The life cycle hardware debug enable signal is multibit encoded."
+    }
+    { name: "DM_EN.CTRL.LC_GATED",
+      desc: '''
+            The debug module is enabled with the LC_HW_DEBUG_EN signal.
+            This enablement is implemented by gating / enabling critical
+            blocks with separately buffered copies of the life cycle signal.
+            This comprises the debug module interface (DMI) attached to the TAP,
+            the reset request line, the system bus access module (SBA), the debug
+            request output, the TL-UL adapter for the debug ROM, and the ifetch indicator
+            being fed into the TL-UL adapter for the debug ROM.
+            '''
+    }
   ]
   regwidth: "32",
   registers: {

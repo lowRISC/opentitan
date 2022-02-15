@@ -21,6 +21,7 @@ module rv_dm
   input  logic                clk_i,       // clock
   input  logic                rst_ni,      // asynchronous reset active low, connect PoR
                                            // here, not the system reset
+  // SEC_CM: LC_HW_DEBUG_EN.INTERSIG.MUBI
   input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i, // Debug module lifecycle enable/disable
   input  prim_mubi_pkg::mubi4_t scanmode_i,
   input                       scan_rst_ni,
@@ -194,10 +195,12 @@ module rv_dm
 
   logic reset_req_en;
   logic ndmreset_req;
+  // SEC_CM: DM_EN.CTRL.LC_GATED
   assign reset_req_en = (lc_hw_debug_en[EnResetReq] == lc_ctrl_pkg::On);
   assign ndmreset_req_o = ndmreset_req & reset_req_en;
 
   logic dmi_en;
+  // SEC_CM: DM_EN.CTRL.LC_GATED
   assign dmi_en = (lc_hw_debug_en[EnDmiReq] == lc_ctrl_pkg::On);
 
   dm_csrs #(
@@ -295,6 +298,7 @@ module rv_dm
   logic sba_en;
   tlul_pkg::tl_h2d_t  sba_tl_h_o_int;
   tlul_pkg::tl_d2h_t  sba_tl_h_i_int;
+  // SEC_CM: DM_EN.CTRL.LC_GATED
   assign sba_en = (lc_hw_debug_en[EnSba] == lc_ctrl_pkg::On);
 
   always_comb begin
@@ -354,6 +358,7 @@ module rv_dm
 
   logic debug_req_en;
   logic debug_req;
+  // SEC_CM: DM_EN.CTRL.LC_GATED
   assign debug_req_en = (lc_hw_debug_en[EnDebugReq] == lc_ctrl_pkg::On);
   assign debug_req_o = debug_req & debug_req_en;
 
@@ -446,11 +451,13 @@ module rv_dm
 `endif
 
   prim_mubi_pkg::mubi4_t en_ifetch;
+  // SEC_CM: DM_EN.CTRL.LC_GATED
   assign en_ifetch = (lc_hw_debug_en[EnFetch] == lc_ctrl_pkg::On) ?
                      prim_mubi_pkg::MuBi4True :
                      prim_mubi_pkg::MuBi4False;
 
   logic rom_en;
+  // SEC_CM: DM_EN.CTRL.LC_GATED
   assign rom_en = (lc_hw_debug_en[EnRom] == lc_ctrl_pkg::On);
 
   tlul_adapter_sram #(
