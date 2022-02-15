@@ -153,22 +153,28 @@ package top_earlgrey_rnd_cnst_pkg;
     256'hCD1FF9B890459FFDB129D5A5AD41AEECF11E430E0D4DC2A26E08E8B76D184257
   };
 
+  // Compile-time random permutation for LFSR Message output
+  parameter kmac_pkg::msg_perm_t RndCnstKmacMsgPerm = {
+    128'hB611EA5A679945F8EFCD75159E5C4EB1,
+    256'hCEEB0DA136BBA3FD48133074B4F463F279A5B206DFCE22175340FB280A402928
+  };
+
   ////////////////////////////////////////////
   // otbn
   ////////////////////////////////////////////
   // Default seed of the PRNG used for URND.
   parameter otbn_pkg::urnd_prng_seed_t RndCnstOtbnUrndPrngSeed = {
-    256'h93BF7D52C8A744AD83D2630B2AF4EC91410D0BD90B447E3291B8E6CB502BF90B
+    256'h4093F0EC256B2646079C10F2F41F73AF3FC6AFBEC695054A0407221FB798AB78
   };
 
   // Compile-time random reset value for IMem/DMem scrambling key.
   parameter otp_ctrl_pkg::otbn_key_t RndCnstOtbnOtbnKey = {
-    128'hD4CD7F1BDCE673B937A6D75202FEDBF8
+    128'hEEFA4D4C2E269435471A7A682A6260EB
   };
 
   // Compile-time random reset value for IMem/DMem scrambling nonce.
   parameter otp_ctrl_pkg::otbn_nonce_t RndCnstOtbnOtbnNonce = {
-    64'hE3E8D3F817A9838D
+    64'hF4E341F211C9D00B
   };
 
   ////////////////////////////////////////////
@@ -176,68 +182,68 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random bits for initial LFSR seed
   parameter keymgr_pkg::lfsr_seed_t RndCnstKeymgrLfsrSeed = {
-    64'h8AAA4783F2B5E094
+    64'h8A789BDC189F345C
   };
 
   // Compile-time random permutation for LFSR output
   parameter keymgr_pkg::lfsr_perm_t RndCnstKeymgrLfsrPerm = {
-    128'h3FF5949AE5EC2A7733679AF7D4D134BE,
-    256'h31DEF65B50383855F22EDA45F09207833E74B4F617AA98A09CA4A5BC481B0020
+    128'h4968855C0C55B1F3111EAE5E298BD9DB,
+    256'h2266BBE1B0F4E735437EBB504D2976B225F20FDB85A0422F88C34E4CCDA2D9CF
   };
 
   // Compile-time random permutation for entropy used in share overriding
   parameter keymgr_pkg::rand_perm_t RndCnstKeymgrRandPerm = {
-    160'h3BDBC56FE25E188AB805B8532366DAED27088FC4
+    160'h3E671D543B79A1267DA0F13AA45062B393C2DF0B
   };
 
   // Compile-time random bits for revision seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrRevisionSeed = {
-    256'h40D7D8470E011CF1B1987A780AF5815CF779EE523615334390CF654EC6352ADF
+    256'h5E08B2317FB3E9032DB9EDDF8DB302ED56B78538C92BA96FE7BA5D882E53C384
   };
 
   // Compile-time random bits for creator identity seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrCreatorIdentitySeed = {
-    256'hE8F6679035DA35061952CD5387F9FB727236A121E1E0FF0A4FD70234BB32EA72
+    256'h9A981B7BDC91865141701FD5B00FE9A3A2BE362BC57CE4588424F90946B441FA
   };
 
   // Compile-time random bits for owner intermediate identity seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrOwnerIntIdentitySeed = {
-    256'h9E8E5600260058176D17F3660EBAD9424AE5E2CF5E723B547CB4949B21B3DECF
+    256'hEDA142FCE033C343E179C299D05781D31C4B4DAB379C12B6681950E6D5265448
   };
 
   // Compile-time random bits for owner identity seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrOwnerIdentitySeed = {
-    256'h7D8490DC838E24FAFE4257BCD0D4AF885661E47D54C36F827B99DCC91893C0CE
+    256'h8676E230226A9635BEA51C6E1AECA9607328C3621EE7FD88C63032EB50EE437E
   };
 
   // Compile-time random bits for software generation seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrSoftOutputSeed = {
-    256'h062CA8D4D838B3501E1CBEBB834986E64BE66E95792C3D8EAFD0BC4DE80468FD
+    256'hD8235C2F90C064C4849172A245A488652C63C1F68CECF9596CDA21A8D5398CED
   };
 
   // Compile-time random bits for hardware generation seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrHardOutputSeed = {
-    256'h56CBEEFC913B5FF592BBC26408E95BDBE8BC8757CC921F3C920C664026717440
+    256'h0EB63A613068D71D5186D12D4DFB68EAEA920C1E6C7B2DC4B639BA1AE564B19D
   };
 
   // Compile-time random bits for generation seed when aes destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrAesSeed = {
-    256'h740AABD84D6481D22FE896642A15985EB9ECDE94C6064C512F50996293612AD0
+    256'h7556A5BCA2E5F635E555C46C406D9D57C967EAA9FC47E9E7507D72B87001FA7B
   };
 
   // Compile-time random bits for generation seed when kmac destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrKmacSeed = {
-    256'hBFAFCBEBD7C3361357BEE83E46164C82A0C86B9C1EF6117215C2E6FCB683D3A9
+    256'h2D76DA13A1276809927DC4D31864D4FEBC9DEF4F7C50B1E1906EBCB1B8E9F214
   };
 
   // Compile-time random bits for generation seed when otbn destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrOtbnSeed = {
-    256'hDF2A87ABF7C57A6D06F2E1721E3A5F3B217D62ACF1C966C712691421CEF76350
+    256'h43ED6321C82C19BE70B04C0519A51F55617306D35C573898670C91F249102456
   };
 
   // Compile-time random bits for generation seed when no destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrNoneSeed = {
-    256'h5910642E0F9946CB60F5F7D233A13B89BFC3162D205B4D60C9B16A8EB0AA75FA
+    256'hDD2627C23D66719FED700C0708BAC50EF39DAF7229CF1EDB4FEDB1E5ACEBE933
   };
 
   ////////////////////////////////////////////
@@ -245,14 +251,14 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random bits for csrng state group diversification value
   parameter csrng_pkg::cs_keymgr_div_t RndCnstCsrngCsKeymgrDivNonProduction = {
-    128'h2E53C3844212490CED20E7E16F71067E,
-    256'h30AC79EEC48E320BDCFA32F724F82840FDACED02DA0253D803D1CDF325AFFF8B
+    128'hE669DB2BB820745F88B8C659500EB3DE,
+    256'h01E08CC3C42651ACF224B8FA88718E7E70DD1F65626CA84C70BF2E1E39FB2C1E
   };
 
   // Compile-time random bits for csrng state group diversification value
   parameter csrng_pkg::cs_keymgr_div_t RndCnstCsrngCsKeymgrDivProduction = {
-    128'hB00FE9A3A2BE362BC57CE4588424F909,
-    256'h46B441FA5E08B2317FB3E9032DB9EDDF8DB302ED56B78538C92BA96FE7BA5D88
+    128'h544D2843FD5085A07D6DBE2BAAA9D9AE,
+    256'hBCCA11BB02DB54F315734080FB2B4F3D6A2DE011FADA5FD756C256DA7E563805
   };
 
   ////////////////////////////////////////////
@@ -260,22 +266,22 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random reset value for SRAM scrambling key.
   parameter otp_ctrl_pkg::sram_key_t RndCnstSramCtrlMainSramKey = {
-    128'hD52654489A981B7BDC91865141701FD5
+    128'hA22F562F7A036B33BD122153B3E369E9
   };
 
   // Compile-time random reset value for SRAM scrambling nonce.
   parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramCtrlMainSramNonce = {
-    128'hD05781D31C4B4DAB379C12B6681950E6
+    128'h40138BADD29520FF3668C5EDCE09AD84
   };
 
   // Compile-time random bits for initial LFSR seed
   parameter sram_ctrl_pkg::lfsr_seed_t RndCnstSramCtrlMainLfsrSeed = {
-    32'hE179C299
+    32'h7AB5C00B
   };
 
   // Compile-time random permutation for LFSR output
   parameter sram_ctrl_pkg::lfsr_perm_t RndCnstSramCtrlMainLfsrPerm = {
-    160'hB70C2FADE19B3353836A4EA5E4162D812FD70F14
+    160'hB0EBC8D0E2EB20D79BC9D38809AD48BEF19F9432
   };
 
   ////////////////////////////////////////////
@@ -283,12 +289,12 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Fixed nonce used for address / data scrambling
   parameter bit [63:0] RndCnstRomCtrlScrNonce = {
-    64'h19A51F55617306D3
+    64'h955734CEB9AD23A8
   };
 
   // Randomised constant used as a scrambling key for ROM data
   parameter bit [127:0] RndCnstRomCtrlScrKey = {
-    128'hACEBE93343ED6321C82C19BE70B04C05
+    128'h84B9DE0426E5E9984AA8CFE779A59758
   };
 
   ////////////////////////////////////////////
@@ -296,22 +302,22 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Default seed of the PRNG used for random instructions.
   parameter ibex_pkg::lfsr_seed_t RndCnstRvCoreIbexLfsrSeed = {
-    32'h4FEDB1E5
+    32'h2F8A1682
   };
 
   // Permutation applied to the LFSR of the PRNG used for random instructions.
   parameter ibex_pkg::lfsr_perm_t RndCnstRvCoreIbexLfsrPerm = {
-    160'hC74D7925041C0BA9AEA26D1F6F823963B9B387CA
+    160'h2C97C7761543C0C1467A69C39D928A4FF061FAD7
   };
 
   // Default icache scrambling key
   parameter logic [ibex_pkg::SCRAMBLE_KEY_W-1:0] RndCnstRvCoreIbexIbexKeyDefault = {
-    128'h9932A2605B23CB7AFBD120F152A9EF95
+    128'h68D0EBD51BCAAC53447BD851813E6CBD
   };
 
   // Default icache scrambling nonce
   parameter logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0] RndCnstRvCoreIbexIbexNonceDefault = {
-    64'h018D5A1FE3B04FF0
+    64'hF20B6CCB1963C014
   };
 
 endpackage : top_earlgrey_rnd_cnst_pkg
