@@ -112,6 +112,10 @@ waive -rules RESET_DRIVER         -location {ibex_lockstep.sv} -regexp {'(rst_sh
       -comment "A synchronous counter is needed to release the shadow core reset with a delay of LockstepOffset clock cycles"
 waive -rules RESET_DRIVER         -location {ibex_lockstep.sv} -regexp {'(rst_shadow_set_q|rst_shadow_n)' driven in module 'ibex_lockstep'}
       -comment "A synchronous counter is needed to release the shadow core reset with a delay of LockstepOffset clock cycles"
+waive -rules RESET_DRIVER         -location {ibex_lockstep.sv} -regexp {'rst_shadow_set_q' is driven by instance 'u_prim_rst_shadow_set_flop' of module 'prim_flop', and used as an asynchronous reset 'rst_ni' at}
+      -comment "A synchronous counter is needed to release the shadow core reset with a delay of LockstepOffset clock cycles"
+waive -rules RESET_DRIVER         -location {ibex_lockstep.sv} -regexp {'q_o[0]' is driven in module '(prim_flop|prim_generic_flop)'}
+      -comment "A synchronous counter is needed to release the shadow core reset with a delay of LockstepOffset clock cycles"
 waive -rules RESET_MUX            -location {ibex_lockstep.sv} -regexp {Asynchronous reset 'rst_shadow_n' is driven by a multiplexer here}
       -comment "The test enable input used to control the bypass can be considered static"
 waive -rules RESET_USE            -location {ibex_lockstep.sv} -regexp {'rst_shadow_set_q' is used for some other purpose, and as asynchronous reset 'rst_ni' at}
