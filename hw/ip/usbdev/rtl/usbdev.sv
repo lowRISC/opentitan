@@ -6,6 +6,7 @@
 //
 //
 
+`include "prim_assert.sv"
 
 module usbdev
   import usbdev_pkg::*;

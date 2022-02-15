@@ -14,6 +14,8 @@
 // Based on usb_fs_pe.v from the TinyFPGA-Bootloader project but
 // this version contains no packet buffers
 
+`include "prim_assert.sv"
+
 module usb_fs_nb_pe #(
   // Currently only accepts NumOutEps == NumInEps
   parameter int unsigned NumOutEps = 2,
@@ -98,6 +100,10 @@ module usb_fs_nb_pe #(
 );
 
   import usb_consts_pkg::*;
+
+  // The code below assumes the number of OUT endpoints and IN endpoints are
+  // interchangeable. Require them to be equal.
+  `ASSERT_INIT(NumOutEpsEqualsNumInEps_A, NumOutEps == NumInEps)
 
   // rx interface
   logic bit_strobe;
