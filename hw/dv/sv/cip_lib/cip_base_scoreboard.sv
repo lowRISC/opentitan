@@ -327,7 +327,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     return 0;
   endfunction
 
-  // Check if there is any tl error.
+  // Checks if the TL access is valid.
   //
   // On the Addr channel, returns 1 if the item should cause a TL error.
   //
@@ -341,36 +341,47 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   //
   //  - unmapped address
   //  - write address isn't word-aligned
+  //  - partial writes to a bus that does not support it
   //  - memory write isn't a full word
   //  - register write size is less than actual register width
   //  - TL protocol violation
+  //
+  // Returns true if invalid access, else false. Caller proceses the packet further if the access is
+  // valid.
   virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
-    bit is_tl_unmapped_addr, is_tl_err, mem_access_err;
-    bit csr_size_err, tl_item_err;
-    bit has_intg_err;
-    bit mem_byte_access_err, mem_wo_err, mem_ro_err;
-    bit is_passthru_mem = is_data_intg_passthru_mem(item, ral_name);
+    bit invalid_access;
+    bit exp_d_error;
 
-    if (!is_tl_access_mapped_addr(item, ral_name)) begin
-      is_tl_unmapped_addr = 1;
+    bit unmapped_err, mem_access_err, bus_intg_err, byte_wr_err, csr_size_err, tl_item_err;
+    bit mem_byte_access_err, mem_wo_err, mem_ro_err;
+
+    unmapped_err = !is_tl_access_mapped_addr(item, ral_name);
+    if (unmapped_err) begin
       // if devmode is enabled, d_error will be set
       if (cfg.en_devmode || cfg.devmode_vif.sample()) begin
-        is_tl_err = 1;
+        exp_d_error = !cfg.ral_models[ral_name].get_unmapped_access_ok();
       end
     end
 
-    mem_access_err  = !is_tl_mem_access_allowed(item, ral_name, mem_byte_access_err, mem_wo_err,
-                                                mem_ro_err);
-    csr_size_err    = !is_tl_csr_write_size_gte_csr_width(item, ral_name);
-    tl_item_err     = item.get_exp_d_error();
+    mem_access_err = !is_tl_mem_access_allowed(item, ral_name, mem_byte_access_err, mem_wo_err,
+                                               mem_ro_err);
+    if (mem_access_err) begin
+      // Some memory implementations may not return an error response on invalid accesses.
+      exp_d_error |= mem_byte_access_err | mem_wo_err | mem_ro_err;
+    end
 
-    has_intg_err = !item.is_a_chan_intg_ok(.throw_error(0));
-
-    // If we got an error response caused by an integrity failure, update the mirrored value for
-    // any bus integrity alert field (if there is one).
-    if (has_intg_err) begin
+    bus_intg_err = !item.is_a_chan_intg_ok(.throw_error(0));
+    if (bus_intg_err) begin
+      // On bus integrity error, update the mirrored value of bus integrity alert CSR fields.
       update_tl_alert_field_prediction();
     end
+
+    byte_wr_err = is_tl_access_unsupported_byte_wr(item, ral_name);
+    csr_size_err = !is_tl_csr_write_size_gte_csr_width(item, ral_name);
+    tl_item_err = item.get_exp_d_error();
+    exp_d_error |= byte_wr_err | bus_intg_err | csr_size_err | tl_item_err;
+
+    invalid_access  = unmapped_err | mem_access_err | bus_intg_err | csr_size_err | tl_item_err;
 
     if (channel == DataChannel) begin
       cip_tl_seq_item cip_item;
@@ -380,7 +391,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       // integrity at d_user is from DUT, which should be always correct, except data integrity for
       // passthru memory
       void'(item.is_d_chan_intg_ok(
-            .en_data_intg_chk(!is_passthru_mem ||
+            .en_data_intg_chk(!is_data_intg_passthru_mem(item, ral_name) ||
                               !cfg.disable_d_user_data_intg_check_for_passthru_mem),
             .throw_error(1)));
 
@@ -398,16 +409,12 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       end
     end
 
-    if (!is_tl_err && (mem_access_err || csr_size_err || tl_item_err ||
-                       has_intg_err)) begin
-      is_tl_err = 1;
-    end
     if (channel == DataChannel) begin
-      `DV_CHECK_EQ(item.d_error, is_tl_err,
-          $sformatf({"On interface %0s, TL item: %0s, unmapped: %0d, mem_access_err: %0d, ",
-                    "csr_size_err: %0d, tl_item_err: %0d, has_intg_err: %0d"}, ral_name,
-                    item.sprint(uvm_default_line_printer), is_tl_unmapped_addr, mem_access_err,
-                    csr_size_err, tl_item_err, has_intg_err))
+      `DV_CHECK_EQ(item.d_error, exp_d_error,
+          $sformatf({"On interface %0s, TL item: %0s, unmapped_err: %0d, mem_access_err: %0d, ",
+                    "bus_intg_err: %0d, byte_wr_err: %0d, csr_size_err: %0d, tl_item_err: %0d"},
+                    ral_name, item.sprint(uvm_default_line_printer), unmapped_err, mem_access_err,
+                    bus_intg_err, byte_wr_err, csr_size_err, tl_item_err))
 
       // In data read phase, check d_data when d_error = 1.
       if (item.d_error && (item.d_opcode == tlul_pkg::AccessAckData)) begin
@@ -416,9 +423,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
       // these errors all have the same outcome. Only sample coverages when there is just one
       // error, so that we know the error actually triggers the outcome
-      if (is_tl_unmapped_addr + csr_size_err + mem_byte_access_err + mem_wo_err +
-          mem_ro_err + tl_item_err == 1) begin
-        tl_errors_cgs_wrap[ral_name].sample(.unmapped_err(is_tl_unmapped_addr),
+      if ($onehot({unmapped_err, mem_byte_access_err, mem_wo_err, mem_ro_err,
+                   bus_intg_err, byte_wr_err, csr_size_err, tl_item_err})) begin
+        tl_errors_cgs_wrap[ral_name].sample(.unmapped_err(unmapped_err),
                                             .csr_size_err(csr_size_err),
                                             .mem_byte_access_err(mem_byte_access_err),
                                             .mem_wo_err(mem_wo_err),
@@ -427,7 +434,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       end
 
     end
-    return (is_tl_unmapped_addr || is_tl_err);
+    return invalid_access;
   endfunction
 
   virtual function void check_tl_read_value_after_error(tl_seq_item item, string ral_name);
@@ -447,33 +454,62 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                                                 output bit mem_wo_err,
                                                 output bit mem_ro_err);
     if (is_mem_addr(item, ral_name)) begin
-      bit mem_partial_write_support;
       dv_base_mem mem;
+      bit invalid_access;
       uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
       string mem_access = get_mem_access_by_addr(cfg.ral_models[ral_name], addr);
 
       `downcast(mem, get_mem_by_addr(cfg.ral_models[ral_name], addr))
-      mem_partial_write_support = mem.get_mem_partial_write_support();
 
-      // check if write isn't full word for mem that doesn't allow byte access
-      if (!mem_partial_write_support && (item.a_size != 2 || item.a_mask != '1) &&
-           item.a_opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData}) begin
+      // Check if write isn't full word for mem that doesn't allow byte access.
+      if (!mem.get_mem_partial_write_support() &&
+          (item.a_size != 2 || item.a_mask != '1) &&
+          item.a_opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData}) begin
+        invalid_access = 1;
         mem_byte_access_err = 1;
       end
 
       // check if mem read happens while mem doesn't allow read (WO)
-      mem_wo_err = (mem_access == "WO") && (item.a_opcode == tlul_pkg::Get);
+      if ((mem_access == "WO") && (item.a_opcode == tlul_pkg::Get)) begin
+        invalid_access = 1;
+        mem_wo_err = !mem.get_read_to_wo_mem_ok();
+      end
 
       // check if mem write happens while mem is RO
-      mem_ro_err = (mem_access == "RO") && (item.a_opcode != tlul_pkg::Get);
+      if ((mem_access == "RO") && (item.a_opcode != tlul_pkg::Get)) begin
+        invalid_access = 1;
+        mem_ro_err = !mem.get_write_to_ro_mem_ok();
+      end
 
-      if (mem_byte_access_err || mem_wo_err || mem_ro_err) begin
+      if (invalid_access) begin
         `uvm_info(`gfn, $sformatf("mem_byte_access_err = %0d, mem_wo_err = %0d, mem_ro_err = %0d",
                                   mem_byte_access_err, mem_wo_err, mem_ro_err), UVM_HIGH)
         return 0;
       end
     end
     return 1;
+  endfunction
+
+  // Returns true on encountering a byte write on a TL interface that does not support it, else
+  // false.
+  //
+  // Typically, this is a TLUL adapter SRAM feature, which means it applies to a memory element
+  // within the RAL (the is_tl_mem_access_allowed() method above already does this), not to the
+  // entire TL interface. We however have an example in rv_dm where the OpenTitan codebase
+  // exposes a 'window' (a.k.a. a memory region) accessed via a TLUL adapter SRAM instance, but
+  // in reality, behind it is a full set of CSRs, ROM and SRAM, which are not specified within
+  // our comportable framework. We custom-build the RAL model for this region by writing the Hjson
+  // file specifically for DV purposes, using an externally sourced specification as reference
+  // (third party 'vendored-in' code). The end result is - the TL adapter prevents non-word writes
+  // to the entire region. See issue #10765 for more details.
+  virtual function bit is_tl_access_unsupported_byte_wr(tl_seq_item item, string ral_name);
+    // TODO: We should infer byte enable support from TL reg adapter attached to the interface (i.e.
+    // the map) instead. To do that, more extensive changes may be needed, because we do not know
+    // which map to pick - we only know the ral_name of the interface. For now,
+    // dv_base_reg_block::supports_byte_enable serves this need.
+    return !cfg.ral_models[ral_name].get_supports_byte_enable() &&
+        item.a_opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData} &&
+        (item.a_size != 2 || item.a_mask != '1);
   endfunction
 
   virtual function bit is_data_intg_passthru_mem(tl_seq_item item, string ral_name);
