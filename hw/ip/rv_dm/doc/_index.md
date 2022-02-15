@@ -51,6 +51,22 @@ There is no access to these via the TL-UL device interface.
 
 All hardware interfaces of the debug system are documented in the [PULP RISC-V Debug System Documentation](https://github.com/lowRISC/opentitan/blob/master/hw/vendor/pulp_riscv_dbg/doc/debug-system.md), with the exception of the bus interfaces, which are converted to TL-UL by this wrapper.
 
+### Signals
+
+{{< incGenFromIpDesc "../data/rv_dm.hjson" "hwcfg" >}}
+
+The table below lists other debug module signals.
+
+Signal                     | Direction        | Type                               | Description
+---------------------------|------------------|------------------------------------|---------------
+`lc_hw_debug_en_i`         | `input`          | `lc_ctrl_pkg::lc_tx_t`             | Multibit life cycle hardware debug enable signal coming from life cycle controller, asserted when the hardware debug mechanisms are enabled in the system.
+`ndmreset_req_o`           | `output`         | `logic`                            | Non-debug module reset request going to the system reset infrastructure.
+`dmactive_o`               | `output`         | `logic`                            | This signal indicates whether the debug module is active and can be used to prevent power down of the core and bus-attached peripherals.
+`debug_req_o`              | `output`         | `logic`                            | This is the debug request interrupt going to the main processor.
+`unavailable_i`            | `input`          | `logic`                            | This signal indicates to the debug module that the main processor is not available for debug (e.g. due to a low-power state).
+`jtag_i`                   | `input`          | `jtag_pkg::jtag_req_t`             | JTAG input signals
+`jtag_o`                   | `output`         | `jtag_pkg::jtag_rsp_t`             | JTAG output signals
+
 ### Life Cycle Control
 
 Debug system functionality is controlled by the [HW_DEBUG_EN]({{< relref "hw/ip/lc_ctrl/doc/#hw_debug_en" >}}) function of the life cycle controller.
@@ -76,7 +92,7 @@ output logic               tdo_oe_o         // Data out output enable
 
 ### System interface
 
-The debug system is able to reset the system through its JTAG connection; the non-debug module reset (`ndmreset_o`) signals this intent.
+The debug system is able to reset the system through its JTAG connection; the non-debug module reset (`ndmreset_req_o`) signals this intent.
 It is up to the larger system design to specify which parts of the system are actually reset by this signal.
 
 The `dmactive_o` signals that some kind of debugging is ongoing.
@@ -90,7 +106,7 @@ output logic                  dmactive_o,  // debug module is active
 ### Core interface
 
 Most communication between the core and the debug system is performed through the debug memory.
-To enter debug mode due to an external debug request, the debug system provides a `debug_req` interrupt.
+To enter debug mode due to an external debug request, the debug system provides a `debug_req_o` interrupt.
 If the core is unavailable to the debug system, e.g. because it is powered down or in a locked-down state, the `unavailable_i` signal can signal this condition to the debug system.
 
 ```verilog
