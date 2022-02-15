@@ -30,6 +30,12 @@ generate:
     parameters:
       name: rv_dm
       ip_hjson: ../../data/rv_dm.hjson
+  debug_mem_ral:
+    generator: ralgen
+    parameters:
+      name: rv_dm_debug_mem
+      ip_hjson: ../../data/rv_dm_debug_mem.hjson
+
 
 targets:
   default:
@@ -37,3 +43,4 @@ targets:
       - files_dv
     generate:
       - ral
+      - debug_mem_ral
