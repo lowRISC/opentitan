@@ -69,7 +69,11 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
           a_addr    == rw.addr;
           a_data    == rw.data;
           a_mask[0] == 1;
-          $countones(a_mask) > (msb / 8);)
+          if (supports_byte_enable) {
+            $countones(a_mask) > (msb / 8);
+          } else {
+            a_mask  == '1;
+          })
     end
     if (cfg.csr_access_abort_pct_in_adapter > $urandom_range(0, 100)) begin
       bus_req.req_abort_after_a_valid_len = 1;
