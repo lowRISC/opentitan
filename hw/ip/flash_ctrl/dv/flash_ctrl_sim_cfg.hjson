@@ -97,6 +97,12 @@
       uvm_test_seq: flash_ctrl_hw_sec_otp_vseq
       reseed: 5
     }
+    {
+      name: flash_ctrl_hw_rma
+      uvm_test_seq: flash_ctrl_hw_rma_vseq
+      run_opts: ["+test_timeout_ns=10000000000"]
+      reseed: 3
+    }
   
   ]
 
