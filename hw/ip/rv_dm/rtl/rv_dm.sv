@@ -117,13 +117,15 @@ module rv_dm
   end
 
   // debug enable gating
-  typedef enum logic [2:0] {
+  typedef enum logic [3:0] {
     EnFetch,
     EnRom,
     EnSba,
     EnDebugReq,
     EnResetReq,
     EnDmiReq,
+    EnJtagIn,
+    EnJtagOut,
     EnLastPos
   } rv_dm_en_e;
 
@@ -409,6 +411,13 @@ module rv_dm
     .rdata_o                 ( rdata                 )
   );
 
+  // Gating of JTAG signals
+  jtag_pkg::jtag_req_t jtag_in_int;
+  jtag_pkg::jtag_rsp_t jtag_out_int;
+
+  assign jtag_in_int = (lc_tx_test_true_strict(lc_hw_debug_en[EnJtagIn]))  ? jtag_i       : '0;
+  assign jtag_o      = (lc_tx_test_true_strict(lc_hw_debug_en[EnJtagOut])) ? jtag_out_int : '0;
+
   // Bound-in DPI module replaces the TAP
 `ifndef DMIDirectTAP
 
@@ -417,7 +426,7 @@ module rv_dm
   prim_clock_mux2 #(
     .NoFpgaBufG(1'b1)
   ) u_prim_clock_mux2 (
-    .clk0_i(jtag_i.tck),
+    .clk0_i(jtag_in_int.tck),
     .clk1_i(clk_i),
     .sel_i (testmode),
     .clk_o (tck_muxed)
@@ -426,7 +435,7 @@ module rv_dm
   prim_clock_mux2 #(
     .NoFpgaBufG(1'b1)
   ) u_prim_rst_n_mux2 (
-    .clk0_i(jtag_i.trst_n),
+    .clk0_i(jtag_in_int.trst_n),
     .clk1_i(scan_rst_ni),
     .sel_i (testmode),
     .clk_o (trst_n_muxed)
@@ -451,11 +460,11 @@ module rv_dm
 
     //JTAG
     .tck_i            (tck_muxed),
-    .tms_i            (jtag_i.tms),
+    .tms_i            (jtag_in_int.tms),
     .trst_ni          (trst_n_muxed),
-    .td_i             (jtag_i.tdi),
-    .td_o             (jtag_o.tdo),
-    .tdo_oe_o         (jtag_o.tdo_oe)
+    .td_i             (jtag_in_int.tdi),
+    .td_o             (jtag_out_int.tdo),
+    .tdo_oe_o         (jtag_out_int.tdo_oe)
   );
 `endif
 
