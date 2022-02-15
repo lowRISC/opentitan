@@ -29,6 +29,16 @@ class dv_base_reg_block extends uvm_reg_block;
 
   addr_range_t mapped_addr_ranges[$];
 
+  // Indicates whether accesses to unmapped regions of this block returns an error response (0).
+  protected bit unmapped_access_ok;
+
+  // Indicates whether byte writes are supported (enabled by default).
+  // TODO: Remove this in future - this is really a property of the physical interface that is used
+  // to access design through this RAL model (a.k.a, the map & adapter), and not the RAL model
+  // itself. This information should be sought using uvm_reg_adapter::supports_byte_enable instead.
+  // This is added for ease of rv_dm testbench development.
+  protected bit supports_byte_enable = 1'b1;
+
   bit has_unmapped_addrs;
   addr_range_t unmapped_addr_ranges[$];
 
@@ -50,6 +60,22 @@ class dv_base_reg_block extends uvm_reg_block;
   // Returns the CSR exclusion item attached to the block.
   virtual function csr_excl_item get_excl_item();
     return csr_excl;
+  endfunction
+
+  function void set_unmapped_access_ok(bit ok);
+    unmapped_access_ok = ok;
+  endfunction
+
+  function bit get_unmapped_access_ok();
+    return unmapped_access_ok;
+  endfunction
+
+  function void set_support_byte_enable(bit enable);
+    supports_byte_enable = enable;
+  endfunction
+
+  function bit get_supports_byte_enable();
+    return supports_byte_enable;
   endfunction
 
   // provide build function to supply base addr
