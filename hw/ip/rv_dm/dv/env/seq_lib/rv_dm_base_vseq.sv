@@ -11,15 +11,25 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   `uvm_object_utils(rv_dm_base_vseq)
   `uvm_object_new
 
+  // Randomize the initial inputs to the DUT.
+  rand lc_ctrl_pkg::lc_tx_t   lc_hw_debug_en;
+  rand prim_mubi_pkg::mubi4_t scanmode;
+  rand logic [NUM_HARTS-1:0]  unavailable;
+
+  task pre_start();
+    // Initialize the input signals with defaults at the start of the sim.
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(lc_hw_debug_en)
+    cfg.rv_dm_vif.lc_hw_debug_en <= lc_hw_debug_en;
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(scanmode)
+    cfg.rv_dm_vif.scanmode <= scanmode;
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(unavailable)
+    cfg.rv_dm_vif.unavailable <= unavailable;
+    super.pre_start();
+  endtask
+
   virtual task dut_init(string reset_kind = "HARD");
-    // Initialize input pins with known values.
-    cfg.rv_dm_vif.lc_hw_debug_en = lc_ctrl_pkg::Off;
-    cfg.rv_dm_vif.scanmode = prim_mubi_pkg::MuBi4False;
-    cfg.rv_dm_vif.unavailable = '{default:0};
-
     super.dut_init();
-
-    // Randomize the contents of debug ROM once out of reset.
+    // TODO: Randomize the contents of the debug ROM & the program buffer once out of reset.
   endtask
 
   // Have scan reset also applied at the start.
@@ -45,7 +55,7 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task dut_shutdown();
-    // check for pending rv_dm operations and wait for them to complete
+    // Check for pending rv_dm operations and wait for them to complete.
   endtask
 
 endclass : rv_dm_base_vseq
