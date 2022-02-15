@@ -51,6 +51,10 @@ module rv_dm
   output jtag_pkg::jtag_rsp_t jtag_o
 );
 
+  import prim_mubi_pkg::mubi4_bool_to_mubi;
+  import prim_mubi_pkg::mubi4_test_true_strict;
+  import lc_ctrl_pkg::lc_tx_test_true_strict;
+
   `ASSERT_INIT(paramCheckNrHarts, NrHarts > 0)
 
   // Currently only 32 bit busses are supported by our TL-UL IP
@@ -178,7 +182,7 @@ module rv_dm
   logic testmode;
 
   // Decode multibit scanmode enable
-  assign testmode = prim_mubi_pkg::mubi4_test_true_strict(scanmode_i);
+  assign testmode = mubi4_test_true_strict(scanmode_i);
 
   // static debug hartinfo
   localparam dm::hartinfo_t DebugHartInfo = '{
@@ -196,12 +200,12 @@ module rv_dm
   logic reset_req_en;
   logic ndmreset_req;
   // SEC_CM: DM_EN.CTRL.LC_GATED
-  assign reset_req_en = (lc_hw_debug_en[EnResetReq] == lc_ctrl_pkg::On);
+  assign reset_req_en = lc_tx_test_true_strict(lc_hw_debug_en[EnResetReq]);
   assign ndmreset_req_o = ndmreset_req & reset_req_en;
 
   logic dmi_en;
   // SEC_CM: DM_EN.CTRL.LC_GATED
-  assign dmi_en = (lc_hw_debug_en[EnDmiReq] == lc_ctrl_pkg::On);
+  assign dmi_en = lc_tx_test_true_strict(lc_hw_debug_en[EnDmiReq]);
 
   dm_csrs #(
     .NrHarts(NrHarts),
@@ -299,7 +303,7 @@ module rv_dm
   tlul_pkg::tl_h2d_t  sba_tl_h_o_int;
   tlul_pkg::tl_d2h_t  sba_tl_h_i_int;
   // SEC_CM: DM_EN.CTRL.LC_GATED
-  assign sba_en = (lc_hw_debug_en[EnSba] == lc_ctrl_pkg::On);
+  assign sba_en = lc_tx_test_true_strict(lc_hw_debug_en[EnSba]);
 
   always_comb begin
     sba_tl_h_o = sba_tl_h_o_int;
@@ -364,7 +368,7 @@ module rv_dm
   logic debug_req_en;
   logic debug_req;
   // SEC_CM: DM_EN.CTRL.LC_GATED
-  assign debug_req_en = (lc_hw_debug_en[EnDebugReq] == lc_ctrl_pkg::On);
+  assign debug_req_en = lc_tx_test_true_strict(lc_hw_debug_en[EnDebugReq]);
   assign debug_req_o = debug_req & debug_req_en;
 
 
@@ -457,13 +461,11 @@ module rv_dm
 
   prim_mubi_pkg::mubi4_t en_ifetch;
   // SEC_CM: DM_EN.CTRL.LC_GATED, EXEC.CTRL.MUBI
-  assign en_ifetch = (lc_hw_debug_en[EnFetch] == lc_ctrl_pkg::On) ?
-                     prim_mubi_pkg::MuBi4True :
-                     prim_mubi_pkg::MuBi4False;
+  assign en_ifetch = mubi4_bool_to_mubi(lc_tx_test_true_strict(lc_hw_debug_en[EnFetch]));
 
   logic rom_en;
   // SEC_CM: DM_EN.CTRL.LC_GATED
-  assign rom_en = (lc_hw_debug_en[EnRom] == lc_ctrl_pkg::On);
+  assign rom_en = lc_tx_test_true_strict(lc_hw_debug_en[EnRom]);
 
   tlul_adapter_sram #(
     .SramAw(AddressWidthWords),
