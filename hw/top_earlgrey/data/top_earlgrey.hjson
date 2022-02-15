@@ -568,8 +568,8 @@
       clock_group: "trans",
       reset_connections: {rst_ni: "sys", rst_edn_ni: "sys"},
       param_decl: {
-        Masking: "1",
-        SBoxImpl: "aes_pkg::SBoxImplDom"
+        SecMasking: "1",
+        SecSBoxImpl: "aes_pkg::SBoxImplDom"
       }
       base_addr: "0x41100000",
     },

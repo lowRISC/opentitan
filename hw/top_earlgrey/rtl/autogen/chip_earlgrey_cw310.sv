@@ -971,8 +971,8 @@ module chip_earlgrey_cw310 #(
 // Also need to add AST simulation and FPGA emulation models for things like entropy source -
 // otherwise Verilator / FPGA will hang.
   top_earlgrey #(
-    .AesMasking(1'b1),
-    .AesSBoxImpl(aes_pkg::SBoxImplDom),
+    .SecAesMasking(1'b1),
+    .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
     .SecAesStartTriggerDelay(40),
     .SecAesAllowForcingMasks(1'b1),
     .SecAesSkipPRNGReseeding(1'b1),

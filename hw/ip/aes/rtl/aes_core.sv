@@ -11,14 +11,14 @@ module aes_core
   import aes_reg_pkg::*;
 #(
   parameter bit          AES192Enable         = 1,
-  parameter bit          Masking              = 1,
-  parameter sbox_impl_e  SBoxImpl             = SBoxImplDom,
+  parameter bit          SecMasking           = 1,
+  parameter sbox_impl_e  SecSBoxImpl          = SBoxImplDom,
   parameter int unsigned SecStartTriggerDelay = 0,
   parameter bit          SecAllowForcingMasks = 0,
   parameter bit          SecSkipPRNGReseeding = 0,
   parameter int unsigned EntropyWidth         = edn_pkg::ENDPOINT_BUS_WIDTH,
 
-  localparam int         NumShares            = Masking ? 2 : 1, // derived parameter
+  localparam int         NumShares            = SecMasking ? 2 : 1, // derived parameter
 
   parameter clearing_lfsr_seed_t RndCnstClearingLfsrSeed  = RndCnstClearingLfsrSeedDefault,
   parameter clearing_lfsr_perm_t RndCnstClearingLfsrPerm  = RndCnstClearingLfsrPermDefault,
@@ -429,7 +429,7 @@ module aes_core
     endcase
   end
 
-  if (!Masking) begin : gen_state_init_unmasked
+  if (!SecMasking) begin : gen_state_init_unmasked
     assign state_init[0] = state_in ^ add_state_in;
 
     logic [3:0][3:0][7:0] unused_state_mask;
@@ -440,7 +440,7 @@ module aes_core
     assign state_init[1] = state_mask;                             // Mask share
   end
 
-  if (!Masking) begin : gen_key_init_unmasked
+  if (!SecMasking) begin : gen_key_init_unmasked
     // Combine the two key shares for the unmasked cipher core. This causes SCA leakage of the key
     // and thus should be avoided.
     assign key_init_cipher[0] = key_init_q[0] ^ key_init_q[1];
@@ -454,8 +454,8 @@ module aes_core
   // Cipher core
   aes_cipher_core #(
     .AES192Enable           ( AES192Enable           ),
-    .Masking                ( Masking                ),
-    .SBoxImpl               ( SBoxImpl               ),
+    .SecMasking             ( SecMasking             ),
+    .SecSBoxImpl            ( SecSBoxImpl            ),
     .SecAllowForcingMasks   ( SecAllowForcingMasks   ),
     .SecSkipPRNGReseeding   ( SecSkipPRNGReseeding   ),
     .RndCnstMaskingLfsrSeed ( RndCnstMaskingLfsrSeed ),
@@ -499,7 +499,7 @@ module aes_core
     .state_o            ( state_done                 )
   );
 
-  if (!Masking) begin : gen_state_out_unmasked
+  if (!SecMasking) begin : gen_state_out_unmasked
     assign state_out = state_done[0];
   end else begin : gen_state_out_masked
     // Unmask the cipher core output. This might get reworked in the future when masking the
@@ -574,7 +574,7 @@ module aes_core
 
   // Control
   aes_control #(
-    .Masking              ( Masking              ),
+    .SecMasking           ( SecMasking           ),
     .SecStartTriggerDelay ( SecStartTriggerDelay )
   ) u_aes_control (
     .clk_i                     ( clk_i                                  ),
@@ -934,6 +934,9 @@ module aes_core
   ////////////////
   // Assertions //
   ////////////////
+
+  // Create a lint error to reduce the risk of accidentally disabling the masking.
+  `ASSERT_STATIC_LINT_ERROR(AesCoreSecMaskingNonDefault, SecMasking == 1)
 
   // Selectors must be known/valid
   `ASSERT(AesModeValid, !ctrl_err_storage |-> aes_mode_q inside {

@@ -19,8 +19,8 @@ set_flow_var rpt_out "./${lr_synth_out_dir}/reports" "Report output directory"
 set_flow_bool_var flatten 1 "flatten"
 set_flow_bool_var timing_run 0 "timing run"
 set_flow_bool_var aes_192_enable 1 "Enable support of 192-bit key length"
-set_flow_bool_var masking 1 "Enable 1st order masking of the AES cipher core"
-set_flow_var s_box_impl 4 "AES S-Box implementation"
+set_flow_bool_var sec_masking 1 "Enable 1st order masking of the AES cipher core"
+set_flow_var sec_s_box_impl 4 "AES S-Box implementation"
 
 source $lr_synth_config_file
 

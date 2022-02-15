@@ -13,7 +13,7 @@ module aes_control_fsm
   import aes_pkg::*;
   import aes_reg_pkg::*;
 #(
-  parameter bit Masking = 0
+  parameter bit SecMasking = 0
 ) (
   input  logic                                    clk_i,
   input  logic                                    rst_ni,
@@ -370,7 +370,7 @@ module aes_control_fsm
 
         if (prng_reseed_i) begin
           // PRNG reseeding has highest priority.
-          if (!Masking) begin
+          if (!SecMasking) begin
             prng_reseed_done_d = 1'b0;
             aes_ctrl_ns        = PRNG_RESEED;
           end else begin
@@ -499,7 +499,7 @@ module aes_control_fsm
         // Request a reseed of the clearing PRNG.
         prng_reseed_req_o = ~prng_reseed_done_q;
 
-        if (!Masking) begin
+        if (!SecMasking) begin
           if (prng_reseed_done_q) begin
             // Clear the trigger and return.
             prng_reseed_we     = 1'b1;
@@ -830,7 +830,7 @@ module aes_control_fsm
   ////////////////////////////
   // Count the number of blocks since the start of the message to determine when the masking PRNG
   // inside the cipher core needs to be reseeded.
-  if (Masking) begin : gen_block_ctr
+  if (SecMasking) begin : gen_block_ctr
     logic                     block_ctr_set;
     logic [BlockCtrWidth-1:0] block_ctr_d, block_ctr_q;
     logic [BlockCtrWidth-1:0] block_ctr_set_val, block_ctr_decr_val;
@@ -870,6 +870,9 @@ module aes_control_fsm
   ////////////////
   // Assertions //
   ////////////////
+
+  // Create a lint error to reduce the risk of accidentally disabling the masking.
+  `ASSERT_STATIC_LINT_ERROR(AesControlFsmSecMaskingNonDefault, SecMasking == 1)
 
   // Selectors must be known/valid
   `ASSERT(AesModeValid, !ctrl_err_storage_i |-> mode_i inside {

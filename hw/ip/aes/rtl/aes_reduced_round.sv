@@ -8,7 +8,7 @@
 
 module aes_reduced_round import aes_pkg::*;
 #(
-  parameter sbox_impl_e SBoxImpl = SBoxImplLut
+  parameter sbox_impl_e SecSBoxImpl = SBoxImplDom
 ) (
   input  logic                              clk_i,
   input  logic                              rst_ni,
@@ -35,7 +35,7 @@ module aes_reduced_round import aes_pkg::*;
 
   // A single reduced (no AddKey) round of the cipher data path
   aes_sub_bytes #(
-    .SBoxImpl ( SBoxImpl )
+    .SecSBoxImpl ( SecSBoxImpl )
   ) u_aes_sub_bytes (
     .clk_i     ( clk_i             ),
     .rst_ni    ( rst_ni            ),

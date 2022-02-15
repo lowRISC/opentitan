@@ -18,7 +18,7 @@ module aes_control_fsm_n
   import aes_pkg::*;
   import aes_reg_pkg::*;
 #(
-  parameter bit Masking = 0
+  parameter bit SecMasking = 0
 ) (
   input  logic                                    clk_i,
   input  logic                                    rst_ni,
@@ -334,7 +334,7 @@ module aes_control_fsm_n
   // negated outputs, important output signals are inverted further below. Thanks to the prim_buf
   // synthesis optimization barriers, tools will push the inverters into the regular FSM.
   aes_control_fsm #(
-    .Masking ( Masking )
+    .SecMasking ( SecMasking )
   ) u_aes_control_fsm (
     .clk_i                     ( clk_i                         ),
     .rst_ni                    ( rst_ni                        ),

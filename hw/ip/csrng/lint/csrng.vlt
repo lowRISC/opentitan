@@ -4,3 +4,10 @@
 //
 // waiver file for csrng
 
+`verilator_config
+
+// CSRNG intentionally uses an unmasked AES implementation.
+lint_off -rule WIDTH -file "*/rtl/aes_cipher_control_fsm.sv" -match "Operator ASSIGN expects 1 bits on the Assign RHS, but Assign RHS's EXTEND generates 2 bits."
+lint_off -rule WIDTH -file "*/rtl/aes_sbox.sv"               -match "Operator ASSIGN expects 1 bits on the Assign RHS, but Assign RHS's EXTEND generates 2 bits."
+lint_off -rule WIDTH -file "*/rtl/aes_key_expand.sv"         -match "Operator ASSIGN expects 1 bits on the Assign RHS, but Assign RHS's EXTEND generates 2 bits."
+lint_off -rule WIDTH -file "*/rtl/aes_cipher_core.sv"        -match "Operator ASSIGN expects 1 bits on the Assign RHS, but Assign RHS's EXTEND generates 2 bits."

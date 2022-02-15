@@ -4767,8 +4767,8 @@
       }
       param_decl:
       {
-        Masking: "1"
-        SBoxImpl: aes_pkg::SBoxImplDom
+        SecMasking: "1"
+        SecSBoxImpl: aes_pkg::SBoxImplDom
       }
       clock_connections:
       {
@@ -4791,24 +4791,24 @@
           name_top: AesAES192Enable
         }
         {
-          name: Masking
+          name: SecMasking
           desc:
             '''
             Disable (0) or enable (1) first-order masking of the AES cipher core.
-            Masking requires the use of a masked S-Box, see SBoxImpl parameter.
+            Masking requires the use of a masked S-Box, see SecSBoxImpl parameter.
             '''
           type: bit
           default: "1"
           expose: "true"
-          name_top: AesMasking
+          name_top: SecAesMasking
         }
         {
-          name: SBoxImpl
+          name: SecSBoxImpl
           desc: Selection of the S-Box implementation. See aes_pkg.sv.
           type: aes_pkg::sbox_impl_e
           default: aes_pkg::SBoxImplDom
           expose: "true"
-          name_top: AesSBoxImpl
+          name_top: SecAesSBoxImpl
         }
         {
           name: SecStartTriggerDelay

@@ -95,13 +95,13 @@
 module aes_cipher_core import aes_pkg::*;
 #(
   parameter bit          AES192Enable         = 1,
-  parameter bit          Masking              = 1,
-  parameter sbox_impl_e  SBoxImpl             = SBoxImplDom,
+  parameter bit          SecMasking           = 1,
+  parameter sbox_impl_e  SecSBoxImpl          = SBoxImplDom,
   parameter bit          SecAllowForcingMasks = 0,
   parameter bit          SecSkipPRNGReseeding = 0,
   parameter int unsigned EntropyWidth         = edn_pkg::ENDPOINT_BUS_WIDTH,
 
-  localparam int         NumShares            = Masking ? 2 : 1, // derived parameter
+  localparam int         NumShares            = SecMasking ? 2 : 1, // derived parameter
 
   parameter masking_lfsr_seed_t RndCnstMaskingLfsrSeed = RndCnstMaskingLfsrSeedDefault,
   parameter masking_lfsr_perm_t RndCnstMaskingLfsrPerm = RndCnstMaskingLfsrPermDefault
@@ -270,7 +270,7 @@ module aes_cipher_core import aes_pkg::*;
   end
 
   // Masking
-  if (!Masking) begin : gen_no_masks
+  if (!SecMasking) begin : gen_no_masks
     // The masks are ignored anyway, they can be 0.
     assign sb_in_mask  = '0;
     assign prd_masking = '0;
@@ -358,7 +358,7 @@ module aes_cipher_core import aes_pkg::*;
 
   // Cipher data path
   aes_sub_bytes #(
-    .SBoxImpl ( SBoxImpl )
+    .SecSBoxImpl ( SecSBoxImpl )
   ) u_aes_sub_bytes (
     .clk_i     ( clk_i             ),
     .rst_ni    ( rst_ni            ),
@@ -454,8 +454,8 @@ module aes_cipher_core import aes_pkg::*;
   // Key expand data path
   aes_key_expand #(
     .AES192Enable ( AES192Enable ),
-    .Masking      ( Masking      ),
-    .SBoxImpl     ( SBoxImpl     )
+    .SecMasking   ( SecMasking   ),
+    .SecSBoxImpl  ( SecSBoxImpl  )
   ) u_aes_key_expand (
     .clk_i       ( clk_i              ),
     .rst_ni      ( rst_ni             ),
@@ -508,8 +508,8 @@ module aes_cipher_core import aes_pkg::*;
 
   // Control
   aes_cipher_control #(
-    .Masking  ( Masking  ),
-    .SBoxImpl ( SBoxImpl )
+    .SecMasking  ( SecMasking  ),
+    .SecSBoxImpl ( SecSBoxImpl )
   ) u_aes_cipher_control (
     .clk_i                ( clk_i               ),
     .rst_ni               ( rst_ni              ),
@@ -736,15 +736,18 @@ module aes_cipher_core import aes_pkg::*;
   // Assertions //
   ////////////////
 
+  // Create a lint error to reduce the risk of accidentally disabling the masking.
+  `ASSERT_STATIC_LINT_ERROR(AesSecMaskingNonDefault, SecMasking == 1)
+
   // Cipher core masking requires a masked SBox and vice versa.
   `ASSERT_INIT(AesMaskedCoreAndSBox,
-      (Masking &&
-      (SBoxImpl == SBoxImplCanrightMasked ||
-       SBoxImpl == SBoxImplCanrightMaskedNoreuse ||
-       SBoxImpl == SBoxImplDom)) ||
-      (!Masking &&
-      (SBoxImpl == SBoxImplLut ||
-       SBoxImpl == SBoxImplCanright)))
+      (SecMasking &&
+      (SecSBoxImpl == SBoxImplCanrightMasked ||
+       SecSBoxImpl == SBoxImplCanrightMaskedNoreuse ||
+       SecSBoxImpl == SBoxImplDom)) ||
+      (!SecMasking &&
+      (SecSBoxImpl == SBoxImplLut ||
+       SecSBoxImpl == SBoxImplCanright)))
 
 // the code below is not meant to be synthesized,
 // but it is intended to be used in simulation and FPV

@@ -12,7 +12,7 @@ module aes_control
   import aes_pkg::*;
   import aes_reg_pkg::*;
 #(
-  parameter bit          Masking              = 0,
+  parameter bit          SecMasking           = 0,
   parameter int unsigned SecStartTriggerDelay = 0
 ) (
   input  logic                      clk_i,
@@ -247,7 +247,7 @@ module aes_control
   for (genvar i = 0; i < Sp2VWidth; i++) begin : gen_fsm
     if (SP2V_LOGIC_HIGH[i] == 1'b1) begin : gen_fsm_p
       aes_control_fsm_p #(
-        .Masking ( Masking )
+        .SecMasking ( SecMasking )
       ) u_aes_control_fsm_i (
         .clk_i                     ( clk_i                         ),
         .rst_ni                    ( rst_ni                        ),
@@ -338,7 +338,7 @@ module aes_control
       );
     end else begin : gen_fsm_n
       aes_control_fsm_n #(
-        .Masking ( Masking )
+        .SecMasking ( SecMasking )
       ) u_aes_control_fsm_i (
         .clk_i                     ( clk_i                         ),
         .rst_ni                    ( rst_ni                        ),

@@ -6,7 +6,7 @@
 
 module aes_sub_bytes import aes_pkg::*;
 #(
-  parameter sbox_impl_e SBoxImpl = SBoxImplLut
+  parameter sbox_impl_e SecSBoxImpl = SBoxImplDom
 ) (
   input  logic                              clk_i,
   input  logic                              rst_ni,
@@ -74,7 +74,7 @@ module aes_sub_bytes import aes_pkg::*;
       assign in_prd[i][j] = {out_prd[i][aes_rot_int(j,4)], prd_i[i][j]};
 
       aes_sbox #(
-        .SBoxImpl ( SBoxImpl )
+        .SecSBoxImpl ( SecSBoxImpl )
       ) u_aes_sbox_ij (
         .clk_i     ( clk_i                ),
         .rst_ni    ( rst_ni               ),

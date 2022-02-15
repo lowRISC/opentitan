@@ -36,8 +36,8 @@ module tb;
   // dut
   aes #(
     // for now keep testing the unmasked implementation
-    .Masking  ( 0                    ),
-    .SBoxImpl ( aes_pkg::SBoxImplLut )
+    .SecMasking  ( 0                    ),
+    .SecSBoxImpl ( aes_pkg::SBoxImplLut )
   ) dut (
     .clk_i            ( clk                               ),
     .rst_ni           ( rst_n                             ),

@@ -1192,8 +1192,8 @@ module chip_${top["name"]}_${target["name"]} (
 // otherwise Verilator / FPGA will hang.
   top_${top["name"]} #(
 % if target["name"] == "cw310":
-    .AesMasking(1'b1),
-    .AesSBoxImpl(aes_pkg::SBoxImplDom),
+    .SecAesMasking(1'b1),
+    .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
     .SecAesStartTriggerDelay(40),
     .SecAesAllowForcingMasks(1'b1),
     .SecAesSkipPRNGReseeding(1'b1),
@@ -1205,8 +1205,8 @@ module chip_${top["name"]}_${target["name"]} (
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
 % elif target["name"] == "cw305":
-    .AesMasking(1'b1),
-    .AesSBoxImpl(aes_pkg::SBoxImplDom),
+    .SecAesMasking(1'b1),
+    .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
     .SecAesStartTriggerDelay(40),
     .SecAesAllowForcingMasks(1'b1),
     .SecAesSkipPRNGReseeding(1'b1),
@@ -1215,8 +1215,8 @@ module chip_${top["name"]}_${target["name"]} (
     .RvCoreIbexBranchTargetALU(0),
     .RvCoreIbexWritebackStage(0),
 % else:
-    .AesMasking(1'b0),
-    .AesSBoxImpl(aes_pkg::SBoxImplLut),
+    .SecAesMasking(1'b0),
+    .SecAesSBoxImpl(aes_pkg::SBoxImplLut),
     .KmacEnMasking(1'b0),
     .KeymgrKmacEnMasking(0),
     .SecAesStartTriggerDelay(0),

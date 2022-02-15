@@ -976,8 +976,8 @@ module chip_earlgrey_nexysvideo #(
 // Also need to add AST simulation and FPGA emulation models for things like entropy source -
 // otherwise Verilator / FPGA will hang.
   top_earlgrey #(
-    .AesMasking(1'b0),
-    .AesSBoxImpl(aes_pkg::SBoxImplLut),
+    .SecAesMasking(1'b0),
+    .SecAesSBoxImpl(aes_pkg::SBoxImplLut),
     .KmacEnMasking(1'b0),
     .KeymgrKmacEnMasking(0),
     .SecAesStartTriggerDelay(0),

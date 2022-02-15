@@ -23,9 +23,9 @@ yosys "read_verilog -sv $lr_synth_out_dir/generated/*.v"
 # To print the available parameters.
 if { $lr_synth_top_module != "aes_sbox" && $lr_synth_top_module != "aes_sub_bytes" && $lr_synth_top_module != "aes_reduced_round"} {
   yosys "chparam -set AES192Enable $lr_synth_aes_192_enable $lr_synth_top_module"
-  yosys "chparam -set Masking $lr_synth_masking $lr_synth_top_module"
+  yosys "chparam -set SecMasking $lr_synth_sec_masking $lr_synth_top_module"
 }
-yosys "chparam -set SBoxImpl $lr_synth_s_box_impl $lr_synth_top_module"
+yosys "chparam -set SecSBoxImpl $lr_synth_sec_s_box_impl $lr_synth_top_module"
 
 # Remap Xilinx Vivado "dont_touch" attributes to Yosys "keep" attributes.
 yosys "attrmap -tocase keep -imap dont_touch=\"yes\" keep=1 -imap dont_touch=\"no\" keep=0 -remove keep=0"
