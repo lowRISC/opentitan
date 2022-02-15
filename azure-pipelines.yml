@@ -285,8 +285,7 @@ jobs:
   displayName: Build Verilator simulation of the Earl Grey toplevel design
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
-  pool:
-    vmImage: ubuntu-18.04
+  pool: ci-public
   steps:
   - template: ci/install-package-dependencies.yml
   - bash: |
