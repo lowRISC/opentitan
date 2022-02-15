@@ -17,6 +17,9 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
   rand kmac_app_e app_mode;
 
+  // Set this bit to one if entropy fetched successfully without timeout error.
+  bit entropy_fetched;
+
   constraint num_trans_c {
     num_trans inside {[1:200]};
     if (cfg.smoke_test) {
@@ -114,6 +117,13 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
       if (cfg.enable_masking && kmac_err_type == kmac_pkg::ErrIncorrectEntropyMode) begin
         check_err();
+      end
+
+      if (cfg.enable_masking && kmac_err_type == kmac_pkg::ErrWaitTimerExpired &&
+          entropy_mode == EntropyModeEdn) begin
+        if (entropy_fetched == 0) check_err();
+      end else if (cfg.enable_masking && entropy_mode == EntropyModeEdn) begin
+        entropy_fetched = 1;
       end
 
       set_prefix();

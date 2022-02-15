@@ -2550,8 +2550,12 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     // Intermediate array for streaming `unmasked_key` into `dpi_key_arr`
     bit [7:0] unmasked_key_bytes[];
 
-    int key_word_len = get_key_size_words(key_len);
-    int key_byte_len = get_key_size_bytes(key_len);
+    int key_word_len, key_byte_len;
+
+    if (cfg.en_scb == 0) return;
+
+    key_word_len = get_key_size_words(key_len);
+    key_byte_len = get_key_size_bytes(key_len);
 
     `uvm_info(`gfn, $sformatf("key_word_len: %0d", key_word_len), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("key_byte_len: %0d", key_byte_len), UVM_HIGH)
