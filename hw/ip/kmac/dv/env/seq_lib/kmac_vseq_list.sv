@@ -16,5 +16,6 @@
 `include "kmac_app_vseq.sv"
 `include "kmac_error_vseq.sv"
 `include "kmac_key_error_vseq.sv"
+`include "kmac_edn_timeout_error_vseq.sv"
 `include "kmac_lc_escalation_vseq.sv"
 `include "kmac_stress_all_vseq.sv"

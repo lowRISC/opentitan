@@ -153,6 +153,21 @@
       tests: ["{variant}_key_error"]
     }
     {
+      name: edn_timeout_error
+      desc: ''' Test kmac responses correctly when EDN response timeout.
+            Based on kmac app sequence, this sequence write `ral.entropy_period.wait_timer` with
+            the minimal value (timeout after 1 cycle) to ensure a EDN timeout request.
+            **Check**:
+            - Check error related registers including `err_code`, `status`, and `interrupt`.
+            - Check keymgr interface responses with error bit sets to 1.
+            - Check kmac can resume normal functionalities after processing this error case.
+            - Check timeout error will not trigger if the `entropy_mode` is set to SW, or masking
+              is disabled.
+            '''
+      milestone: V2
+      tests: ["{variant}_edn_timeout_error"]
+    }
+    {
       name: lc_escalation
       desc: '''
             Randomly set `lc_escalate_en` to value that is not `Off` during Kmac operations.

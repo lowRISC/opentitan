@@ -150,6 +150,11 @@
       uvm_test_seq: kmac_key_error_vseq
     }
     {
+      name: "{variant}_edn_timeout_error"
+      uvm_test_seq: kmac_edn_timeout_error_vseq
+      reseed: 20
+    }
+    {
       name: "{variant}_lc_escalation"
       uvm_test_seq: kmac_lc_escalation_vseq
       run_opts: ["+disable_lc_asserts=1"]
