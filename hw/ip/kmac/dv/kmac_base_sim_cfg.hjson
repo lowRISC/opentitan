@@ -146,6 +146,10 @@
       uvm_test_seq: kmac_error_vseq
     }
     {
+      name: "{variant}_key_error"
+      uvm_test_seq: kmac_key_error_vseq
+    }
+    {
       name: "{variant}_lc_escalation"
       uvm_test_seq: kmac_lc_escalation_vseq
       run_opts: ["+disable_lc_asserts=1"]

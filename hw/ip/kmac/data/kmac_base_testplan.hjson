@@ -134,6 +134,25 @@
       tests: ["{variant}_error"]
     }
     {
+      name: key_error
+      desc: ''' Test kmac responses correctly when keymgr app sends request but key is not valid.
+            **Stimulus**:
+            - Configure kmac and send keymgr request, but did not set valid bit for keymgr key
+              input.
+            - Wait randomly clock cycles.
+            - Issue `err_processed`, then wait for the keymgr interface handshake to finish.
+            - Repeat the above sequence a few times.
+            - Issue correct kmac request from app or sw interface.
+
+            **Check**:
+            - Check error related registers including `err_code`, `status`, and `interrupt`.
+            - Check keymgr interface responses with all zero digests and error bit is set.
+            - Check kmac can resume normal functionalities after processing this error case.
+            '''
+      milestone: V2
+      tests: ["{variant}_key_error"]
+    }
+    {
       name: lc_escalation
       desc: '''
             Randomly set `lc_escalate_en` to value that is not `Off` during Kmac operations.
