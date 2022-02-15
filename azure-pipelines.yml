@@ -145,6 +145,33 @@ jobs:
       includePatterns:
         - "/sw/***"
 
+- job: cw310_sw_build
+  displayName: Build Software required for CW310 FPGA synthesis
+  dependsOn: lint
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
+  pool:
+    vmImage: ubuntu-18.04
+  steps:
+  - template: ci/install-package-dependencies.yml
+  - bash: |
+      set -x
+      sudo util/get-toolchain.py \
+        --install-dir="$TOOLCHAIN_PATH" \
+        --release-version="$TOOLCHAIN_VERSION" \
+        --update
+    displayName: Install toolchain
+  - bash: |
+      . util/build_consts.sh
+      ./meson_init.sh -A
+      ninja -C "$OBJ_DIR" \
+        sw/device/otp_img/otp_img_export_fpga_cw310 \
+        sw/device/lib/testing/test_rom/test_rom_export_fpga_cw310
+    displayName: Build embedded targets
+  - template: ci/upload-artifacts-template.yml
+    parameters:
+      includePatterns:
+        - "/sw/***"
+
 # Software targeting the Nexys Video board is produced by patching the source
 # tree before building. This produces a full sw build tree, however only the
 # artifacts with "nexysvideo" in the name are actually the ones we're looking
@@ -397,7 +424,7 @@ jobs:
   dependsOn:
     - lint
     # The bootrom is built into the FPGA image at synthesis time.
-    - sw_build
+    - cw310_sw_build
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
   pool: ci-public
   timeoutInMinutes: 120 # 2 hours
@@ -406,7 +433,7 @@ jobs:
   - template: ci/download-artifacts-template.yml
     parameters:
       downloadPartialBuildBinFrom:
-        - sw_build
+        - cw310_sw_build
   - bash: |
       set -e
       . util/build_consts.sh
