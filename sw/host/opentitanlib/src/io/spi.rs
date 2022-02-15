@@ -65,7 +65,7 @@ pub enum SpiError {
 /// Represents the SPI transfer mode.
 /// See https://en.wikipedia.org/wiki/Serial_Peripheral_Interface#Clock_polarity_and_phase
 /// for details about SPI transfer modes.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum TransferMode {
     /// `Mode0` is CPOL=0, CPHA=0.
     Mode0,
@@ -90,13 +90,13 @@ impl FromStr for TransferMode {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum ClockPhase {
     SampleLeading,
     SampleTrailing,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum ClockPolarity {
     IdleLow,
     IdleHigh,

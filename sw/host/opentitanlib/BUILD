@@ -43,6 +43,8 @@ rust_library(
         "src/spiflash/flash.rs",
         "src/spiflash/mod.rs",
         "src/spiflash/sfdp.rs",
+        "src/proxy/mod.rs",
+        "src/proxy/protocol.rs",
         "src/transport/common/mod.rs",
         "src/transport/common/uart.rs",
         "src/transport/cw310/gpio.rs",
