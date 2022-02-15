@@ -2,29 +2,36 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use structopt::clap::arg_enum;
 use thiserror::Error;
 
-#[derive(Debug, Error)]
+use crate::transport::Result;
+
+/// Errors related to the GPIO interface.  These error messages will be printed in the context of
+/// a TransportError::GpioError, that is "GPIO error: {}".  So including the words "error" or
+/// "gpio" in texts below will probably be redundant.
+#[derive(Debug, Error, Serialize, Deserialize)]
 pub enum GpioError {
-    #[error("Invalid GPIO pin name {0}")]
+    #[error("Invalid pin name {0}")]
     InvalidPinName(String),
-    #[error("Invalid GPIO pin number {0}")]
+    #[error("Invalid pin number {0}")]
     InvalidPinNumber(u8),
     /// The current mode of the pin (input) does not support the requested operation (set
     /// level).
-    #[error("Invalid GPIO mode for pin {0}")]
+    #[error("Invalid mode for pin {0}")]
     InvalidPinMode(u8),
     /// The hardware does not support the requested mode (open drain, pull down input, etc.)
-    #[error("Unsupported GPIO mode requested")]
-    UnsupportedPinMode(),
+    #[error("Unsupported mode {0} requested")]
+    UnsupportedPinMode(PinMode),
+    /// The hardware does not support the requested mode (open drain, pull down input, etc.)
+    #[error("Unsupported pull mode {0} requested")]
+    UnsupportedPullMode(PullMode),
 }
 
 arg_enum! {
     /// Mode of I/O pins.
-    #[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+    #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
     pub enum PinMode {
         Input,
         PushPull,
@@ -34,7 +41,7 @@ arg_enum! {
 
 arg_enum! {
     /// Mode of weak pull (relevant in Input and OpenDrain modes).
-    #[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+    #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
     pub enum PullMode {
         None,
         PullUp,

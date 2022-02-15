@@ -51,9 +51,9 @@ impl BootstrapCommand {
             !(self.filename.len() > 1 || self.filename[0].contains('@')),
             "The `emulator` protocol does not support image assembly"
         );
-        transport.dispatch(&transport::Bootstrap {
+        Ok(transport.dispatch(&transport::Bootstrap {
             image_path: PathBuf::from(&self.filename[0]),
-        })
+        })?)
     }
 
     fn payload(&self) -> Result<Vec<u8>> {

@@ -2,23 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Result};
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 use std::time::Duration;
-use thiserror::Error;
 
 use crate::collection;
+use crate::ensure;
 use crate::io::gpio::GpioError;
 use crate::io::spi::SpiError;
+use crate::transport::{Result, TransportError, TransportInterfaceType, WrapInTransportError};
 use crate::util::parse_int::ParseInt;
 use crate::util::usb::UsbBackend;
-
-#[derive(Debug, Error)]
-pub enum Error {
-    #[error("FPGA programming failed: {0}")]
-    FpgaProgramFailed(String),
-}
 
 /// The `Backend` struct provides high-level access to the CW310 board.
 pub struct Backend {
@@ -148,9 +142,12 @@ impl Backend {
 
     /// Get the state of GPIO `pinname`.
     pub fn pin_get_state(&self, pinname: &str) -> Result<u8> {
-        let pinnum = Backend::pin_name_to_number(pinname)? as u16;
+        let pinnum = Backend::pin_name_to_number(pinname).ok().ok_or_else(|| {
+            TransportError::InvalidInstance(TransportInterfaceType::Gpio, pinname.to_string())
+        })? as u16;
         let mut buf = [0u8; 1];
-        self.read_ctrl(Backend::CMD_FPGAIO_UTIL, pinnum, &mut buf)?;
+        self.read_ctrl(Backend::CMD_FPGAIO_UTIL, pinnum, &mut buf)
+            .wrap(TransportError::UsbGenericError)?;
         Ok(buf[0])
     }
 
@@ -330,9 +327,9 @@ impl Backend {
         self.send_ctrl(Backend::CMD_FPGA_PROGRAM, Backend::PROGRAM_EXIT, &[])?;
 
         if let Err(e) = result {
-            Err(Error::FpgaProgramFailed(e.to_string()).into())
+            Err(TransportError::FpgaProgramFailed(e.to_string()).into())
         } else if !status {
-            Err(Error::FpgaProgramFailed("unknown error".to_string()).into())
+            Err(TransportError::FpgaProgramFailed("unknown error".to_string()).into())
         } else {
             Ok(())
         }

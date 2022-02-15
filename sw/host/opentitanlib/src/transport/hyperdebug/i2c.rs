@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Result};
 use std::cmp;
 use std::rc::Rc;
 use zerocopy::{AsBytes, FromBytes};
 
+use crate::{bail, ensure};
 use crate::io::i2c::{Bus, I2cError, Transfer};
-use crate::transport::hyperdebug::{BulkInterface, Error, Inner};
+use crate::transport::hyperdebug::{BulkInterface, Inner};
+use crate::transport::{Result, TransportError};
 
 pub struct HyperdebugI2cBus {
     inner: Rc<Inner>,
@@ -131,12 +132,14 @@ impl HyperdebugI2cBus {
         let bytecount = self.usb_read_bulk(&mut resp.as_bytes_mut())?;
         ensure!(
             bytecount >= 4,
-            Error::CommunicationError("Unrecognized response to I2C request")
+            TransportError::CommunicationError("Unrecognized response to I2C request".to_string())
         );
-        ensure!(
-            resp.status_code == 0,
-            Error::CommunicationError("I2C error")
-        );
+        match resp.status_code {
+            0 => (),
+            1 => bail!(I2cError::Timeout),
+            2 => bail!(I2cError::Busy),
+            n => bail!(TransportError::CommunicationError(format!("I2C error: {}", n))),
+        }
         let databytes = bytecount - 4;
         rbuf[..databytes].clone_from_slice(&resp.data[..databytes]);
         let mut index = databytes;
@@ -144,7 +147,9 @@ impl HyperdebugI2cBus {
             let databytes = self.usb_read_bulk(&mut resp.data[index..])?;
             ensure!(
                 databytes > 0,
-                Error::CommunicationError("Unrecognized reponse to I2C request")
+                TransportError::CommunicationError(
+                    "Unrecognized reponse to I2C request".to_string()
+                )
             );
             index += databytes;
         }

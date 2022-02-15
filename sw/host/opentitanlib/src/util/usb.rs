@@ -2,18 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Result};
 use rusb;
 use std::time::Duration;
-use thiserror::Error;
 
-#[derive(Debug, Error)]
-pub enum Error {
-    #[error("Could not find USB device")]
-    NotFound,
-    #[error("Found multiple USB devices, use --serial")]
-    MultipleDevices,
-}
+use crate::ensure;
+use crate::transport::{Result, TransportError, WrapInTransportError};
 
 /// The `UsbBackend` provides low-level USB access to debugging devices.
 pub struct UsbBackend {
@@ -32,7 +25,7 @@ impl UsbBackend {
         usb_serial: Option<&str>,
     ) -> Result<Vec<(rusb::Device<rusb::GlobalContext>, String)>> {
         let mut devices = Vec::new();
-        for device in rusb::devices()?.iter() {
+        for device in rusb::devices().wrap(TransportError::UsbGenericError)?.iter() {
             let descriptor = match device.device_descriptor() {
                 Ok(desc) => desc,
                 _ => {
@@ -85,12 +78,12 @@ impl UsbBackend {
     /// Create a new UsbBackend.
     pub fn new(usb_vid: u16, usb_pid: u16, usb_serial: Option<&str>) -> Result<Self> {
         let mut devices = UsbBackend::scan(usb_vid, usb_pid, usb_serial)?;
-        ensure!(!devices.is_empty(), Error::NotFound);
-        ensure!(devices.len() == 1, Error::MultipleDevices);
+        ensure!(!devices.is_empty(), TransportError::NoDevice);
+        ensure!(devices.len() == 1, TransportError::MultipleDevices);
 
         let (device, serial_number) = devices.remove(0);
         Ok(UsbBackend {
-            handle: device.open()?,
+            handle: device.open().wrap(TransportError::UsbOpenError)?,
             device,
             serial_number,
             timeout: Duration::from_millis(500),
@@ -109,11 +102,11 @@ impl UsbBackend {
     //
 
     pub fn claim_interface(&mut self, iface: u8) -> Result<()> {
-        Ok(self.handle.claim_interface(iface)?)
+        Ok(self.handle.claim_interface(iface).wrap(TransportError::UsbGenericError)?)
     }
 
     pub fn active_config_descriptor(&self) -> Result<rusb::ConfigDescriptor> {
-        Ok(self.device.active_config_descriptor()?)
+        Ok(self.device.active_config_descriptor().wrap(TransportError::UsbGenericError)?)
     }
 
     pub fn bus_number(&self) -> u8 {
@@ -121,11 +114,11 @@ impl UsbBackend {
     }
 
     pub fn port_numbers(&self) -> Result<Vec<u8>> {
-        Ok(self.device.port_numbers()?)
+        Ok(self.device.port_numbers().wrap(TransportError::UsbGenericError)?)
     }
 
     pub fn read_string_descriptor_ascii(&self, idx: u8) -> Result<String> {
-        Ok(self.handle.read_string_descriptor_ascii(idx)?)
+        Ok(self.handle.read_string_descriptor_ascii(idx).wrap(TransportError::UsbGenericError)?)
     }
 
     //
@@ -143,7 +136,8 @@ impl UsbBackend {
     ) -> Result<usize> {
         Ok(self
             .handle
-            .write_control(request_type, request, value, index, buf, self.timeout)?)
+            .write_control(request_type, request, value, index, buf, self.timeout)
+            .wrap(TransportError::UsbGenericError)?)
     }
 
     /// Issue a USB control request with optional device-to-host data.
@@ -157,18 +151,25 @@ impl UsbBackend {
     ) -> Result<usize> {
         Ok(self
             .handle
-            .read_control(request_type, request, value, index, buf, self.timeout)?)
+            .read_control(request_type, request, value, index, buf, self.timeout)
+            .wrap(TransportError::UsbGenericError)?)
     }
 
     /// Read bulk data bytes to given USB endpoint.
     pub fn read_bulk(&self, endpoint: u8, data: &mut [u8]) -> Result<usize> {
-        let len = self.handle.read_bulk(endpoint, data, self.timeout)?;
+        let len = self
+            .handle
+            .read_bulk(endpoint, data, self.timeout)
+            .wrap(TransportError::UsbGenericError)?;
         Ok(len)
     }
 
     /// Write bulk data bytes to given USB endpoint.
     pub fn write_bulk(&self, endpoint: u8, data: &[u8]) -> Result<usize> {
-        let len = self.handle.write_bulk(endpoint, data, self.timeout)?;
+        let len = self
+            .handle
+            .write_bulk(endpoint, data, self.timeout)
+            .wrap(TransportError::UsbGenericError)?;
         Ok(len)
     }
 }

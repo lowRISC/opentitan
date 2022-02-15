@@ -134,7 +134,8 @@ impl SpiFlash {
     /// Send the WRITE_ENABLE opcode to the `spi` target.
     pub fn set_write_enable(spi: &dyn Target) -> Result<()> {
         let wren = [SpiFlash::WRITE_ENABLE];
-        spi.run_transaction(&mut [Transfer::Write(&wren)])
+        spi.run_transaction(&mut [Transfer::Write(&wren)])?;
+        Ok(())
     }
 
     /// Read and parse the SFDP table from the `spi` target.

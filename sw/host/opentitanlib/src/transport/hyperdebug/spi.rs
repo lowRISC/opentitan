@@ -2,14 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Result};
 use rusb::{Direction, Recipient, RequestType};
 use std::mem::size_of;
 use std::rc::Rc;
 use zerocopy::{AsBytes, FromBytes};
 
+use crate::ensure;
 use crate::io::spi::{SpiError, Target, Transfer, TransferMode};
-use crate::transport::hyperdebug::{BulkInterface, Error, Inner};
+use crate::transport::hyperdebug::{BulkInterface, Inner};
+use crate::transport::{Result, TransportError};
 
 pub struct HyperdebugSpiTarget {
     inner: Rc<Inner>,
@@ -136,16 +137,22 @@ impl HyperdebugSpiTarget {
         let rc = usb_handle.read_bulk(spi_interface.in_endpoint, resp.as_bytes_mut())?;
         ensure!(
             rc == size_of::<RspUsbSpiConfig>(),
-            Error::CommunicationError("Unrecognized reponse to GET_USB_SPI_CONFIG")
+            TransportError::CommunicationError(
+                "Unrecognized reponse to GET_USB_SPI_CONFIG".to_string()
+            )
         );
         ensure!(
             resp.packet_id == USB_SPI_PKT_ID_RSP_USB_SPI_CONFIG,
-            Error::CommunicationError("Unrecognized reponse to GET_USB_SPI_CONFIG")
+            TransportError::CommunicationError(
+                "Unrecognized reponse to GET_USB_SPI_CONFIG".to_string()
+            )
         );
         // Verify that interface supports concurrent read/write.
         ensure!(
             (resp.feature_bitmap & 0x0001) != 0,
-            Error::CommunicationError("HyperDebug does not support bidirectional SPI")
+            TransportError::CommunicationError(
+                "HyperDebug does not support bidirectional SPI".to_string()
+            )
         );
 
         Ok(Self {
@@ -183,15 +190,19 @@ impl HyperdebugSpiTarget {
         let bytecount = self.usb_read_bulk(&mut resp.as_bytes_mut())?;
         ensure!(
             bytecount >= 4,
-            Error::CommunicationError("Unrecognized reponse to TRANSFER_START")
+            TransportError::CommunicationError(
+                "Unrecognized reponse to TRANSFER_START".to_string()
+            )
         );
         ensure!(
             resp.packet_id == USB_SPI_PKT_ID_RSP_TRANSFER_START,
-            Error::CommunicationError("Unrecognized reponse to TRANSFER_START")
+            TransportError::CommunicationError(
+                "Unrecognized reponse to TRANSFER_START".to_string()
+            )
         );
         ensure!(
             resp.status_code == 0,
-            Error::CommunicationError("SPI error")
+            TransportError::CommunicationError("SPI error".to_string())
         );
         let databytes = bytecount - 4;
         rbuf[0..databytes].clone_from_slice(&resp.data[0..databytes]);
@@ -201,15 +212,21 @@ impl HyperdebugSpiTarget {
             let bytecount = self.usb_read_bulk(&mut resp.as_bytes_mut())?;
             ensure!(
                 bytecount > 4,
-                Error::CommunicationError("Unrecognized reponse to TRANSFER_START")
+                TransportError::CommunicationError(
+                    "Unrecognized reponse to TRANSFER_START".to_string()
+                )
             );
             ensure!(
                 resp.packet_id == USB_SPI_PKT_ID_RSP_TRANSFER_CONTINUE,
-                Error::CommunicationError("Unrecognized reponse to TRANSFER_START")
+                TransportError::CommunicationError(
+                    "Unrecognized reponse to TRANSFER_START".to_string()
+                )
             );
             ensure!(
                 resp.data_index == index as u16,
-                Error::CommunicationError("Unexpected byte index in reponse to TRANSFER_START")
+                TransportError::CommunicationError(
+                    "Unexpected byte index in reponse to TRANSFER_START".to_string()
+                )
             );
             let databytes = bytecount - 4;
             rbuf[index..index + databytes].clone_from_slice(&resp.data[0..0 + databytes]);

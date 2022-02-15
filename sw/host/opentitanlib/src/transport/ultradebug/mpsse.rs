@@ -2,14 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::Result;
 use bitflags::bitflags;
 use log;
 use safe_ftdi as ftdi;
 use std::time::{Duration, Instant};
 use thiserror::Error;
 
+use crate::bail;
 use crate::io::gpio::GpioError;
+use crate::io::spi::SpiError;
 
 pub const MPSSE_WRCLK_FALLING: u8 = 0x01;
 pub const MPSSE_RDCLK_FALLING: u8 = 0x04;
@@ -140,22 +142,25 @@ impl Command<'_, '_> {
         match self {
             Command::ReadData(options, data) => {
                 if data.len() > Command::MAX_LENGTH {
-                    bail!(Error::InvalidDataLength(data.len()));
+                    bail!(SpiError::InvalidDataLength(data.len()));
                 }
                 buf.push(options.as_opcode());
                 buf.extend_from_slice(&((data.len() - 1) as u16).to_le_bytes());
             }
             Command::WriteData(options, data) => {
                 if data.len() > Command::MAX_LENGTH {
-                    bail!(Error::InvalidDataLength(data.len()));
+                    bail!(SpiError::InvalidDataLength(data.len()));
                 }
                 buf.push(options.as_opcode());
                 buf.extend_from_slice(&((data.len() - 1) as u16).to_le_bytes());
                 buf.extend(data.iter());
             }
             Command::TransactData(woptions, wdata, roptions, rdata) => {
-                if wdata.len() > Command::MAX_LENGTH || wdata.len() != rdata.len() {
-                    bail!(Error::InvalidDataLength(wdata.len()));
+                if wdata.len() > Command::MAX_LENGTH {
+                    bail!(SpiError::InvalidDataLength(wdata.len()));
+                }
+                if wdata.len() != rdata.len() {
+                    bail!(SpiError::MismatchedDataLength(wdata.len(), rdata.len()));
                 }
                 buf.push(woptions.as_opcode() | roptions.as_opcode());
                 buf.extend_from_slice(&((wdata.len() - 1) as u16).to_le_bytes());
@@ -186,12 +191,8 @@ impl Command<'_, '_> {
 
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("timeout waiting for MPSSE")]
-    MpsseTimeout,
     #[error("unknown MPSSE error: {0:02x} {1:02x}")]
     MpsseUnknown(u8, u8),
-    #[error("Invalid data length: {0}")]
-    InvalidDataLength(usize),
 }
 
 /// An MPSSE `Context` is the high-level interface to an MPSSE FTDI interface.
@@ -238,7 +239,7 @@ impl Context {
         let mut rxlen = 0;
         while rxlen < rxbuf.len() {
             if Instant::now() > deadline {
-                return Err(Error::MpsseTimeout.into());
+                return Ok(0);
             }
             let n = self.device.read_data(&mut rxbuf[rxlen..])?;
             rxlen += n as usize;

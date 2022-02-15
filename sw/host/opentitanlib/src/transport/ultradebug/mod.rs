@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Result};
-
 use safe_ftdi as ftdi;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -11,7 +9,11 @@ use std::rc::Rc;
 use crate::io::gpio::GpioPin;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
-use crate::transport::{Capabilities, Capability, Transport, TransportError};
+use crate::transport::{
+    Capabilities, Capability, Result, Transport, TransportError, TransportInterfaceType,
+    WrapInTransportError,
+};
+use crate::{bail, ensure};
 
 pub mod gpio;
 pub mod mpsse;
@@ -58,7 +60,8 @@ impl Ultradebug {
             self.usb_pid.unwrap_or(Ultradebug::PID_ULTRADEBUG),
             None,
             self.usb_serial.clone(),
-        )?)
+        )
+        .wrap(TransportError::FtdiError)?)
     }
 
     // Create an instance of an MPSSE context bound to Ultradebug interface B.
@@ -71,7 +74,7 @@ impl Ultradebug {
             device.set_timeouts(5000, 5000);
 
             // Create a new MPSSE context and configure it
-            let mut mpdev = mpsse::Context::new(device)?;
+            let mut mpdev = mpsse::Context::new(device).wrap(TransportError::FtdiError)?;
             mpdev.gpio_direction.insert(
                 mpsse::GpioDirection::OUT_0 |   // Clock out
                 mpsse::GpioDirection::OUT_1 |   // Master out
@@ -83,7 +86,7 @@ impl Ultradebug {
                 mpsse::GpioDirection::OUT_7, // TGT_RESET
             );
 
-            let _ = mpdev.gpio_get()?;
+            let _ = mpdev.gpio_get().wrap(TransportError::FtdiError)?;
             // Clear the low 3 bits as they are mapped to the SPI pins.
             // The SPI chip select is managed like a normal GPIO.
             // We don't need to change the GPIOs immediately; it is sufficient
@@ -102,10 +105,10 @@ impl Ultradebug {
             // For now, only interface B is supported.
             ftdi::Interface::B => self.mpsse_interface_b(),
             _ => {
-                bail!(
+                bail!(TransportError::UsbOpenError(format!(
                     "I don't know how to create an MPSSE context for interface {:?}",
                     interface
-                );
+                )));
             }
         }
     }
@@ -119,11 +122,13 @@ impl Transport for Ultradebug {
     fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
         ensure!(
             instance == "0",
-            TransportError::InvalidInstance("uart", instance.to_string())
+            TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
         );
         let mut inner = self.inner.borrow_mut();
         if inner.uart.is_none() {
-            inner.uart = Some(Rc::new(uart::UltradebugUart::open(self)?));
+            inner.uart = Some(Rc::new(
+                uart::UltradebugUart::open(self)?,
+            ));
         }
         Ok(Rc::clone(inner.uart.as_ref().unwrap()))
     }
@@ -139,7 +144,7 @@ impl Transport for Ultradebug {
     fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
         ensure!(
             instance == "0",
-            TransportError::InvalidInstance("spi", instance.to_string())
+            TransportError::InvalidInstance(TransportInterfaceType::Spi, instance.to_string())
         );
         let mut inner = self.inner.borrow_mut();
         if inner.spi.is_none() {

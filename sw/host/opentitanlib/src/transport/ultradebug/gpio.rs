@@ -2,18 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Result};
 use lazy_static::lazy_static;
 use safe_ftdi as ftdi;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::collection;
 use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
 use crate::transport::ultradebug::mpsse;
 use crate::transport::ultradebug::Ultradebug;
+use crate::transport::{Result, TransportError, WrapInTransportError};
 use crate::util::parse_int::ParseInt;
+use crate::{collection, ensure};
 
 /// Represents the Ultradebug GPIO pins.
 pub struct UltradebugGpio {
@@ -73,13 +73,14 @@ pub struct UltradebugGpioPin {
 impl GpioPin for UltradebugGpioPin {
     /// Reads the value of the the GPIO pin `id`.
     fn read(&self) -> Result<bool> {
-        let bits = self.device.borrow_mut().gpio_get()?;
+        let bits = self.device.borrow_mut().gpio_get().wrap(TransportError::FtdiError)?;
         Ok(bits & (1 << self.pin_id) != 0)
     }
 
     /// Sets the value of the GPIO pin `id` to `value`.
     fn write(&self, value: bool) -> Result<()> {
-        self.device.borrow_mut().gpio_set(self.pin_id, value)
+        self.device.borrow_mut().gpio_set(self.pin_id, value).wrap(TransportError::FtdiError)?;
+        Ok(())
     }
 
     /// Sets the `direction` of GPIO `id` as input or output.
@@ -87,15 +88,17 @@ impl GpioPin for UltradebugGpioPin {
         let direction = match mode {
             PinMode::Input => false,
             PinMode::PushPull => true,
-            PinMode::OpenDrain => return Err(GpioError::UnsupportedPinMode().into()),
+            PinMode::OpenDrain => return Err(GpioError::UnsupportedPinMode(mode).into()),
         };
         self.device
             .borrow_mut()
             .gpio_set_direction(self.pin_id, direction)
+            .wrap(TransportError::FtdiError)?;
+        Ok(())
     }
 
-    fn set_pull_mode(&self, _mode: PullMode) -> Result<()> {
-        Err(GpioError::UnsupportedPinMode().into())
+    fn set_pull_mode(&self, mode: PullMode) -> Result<()> {
+        Err(GpioError::UnsupportedPullMode(mode).into())
     }
 }
 

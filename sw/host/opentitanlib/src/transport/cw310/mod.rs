@@ -2,23 +2,27 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Result};
 use erased_serde::Serialize;
+use serialport::SerialPortType;
 use std::any::Any;
 use std::cell::RefCell;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::rc::Rc;
 
+use crate::ensure;
 use crate::io::gpio::GpioPin;
 use crate::io::spi::Target;
-use crate::io::uart::Uart;
-use crate::transport::{Capabilities, Capability, Transport, TransportError};
+use crate::io::uart::{Uart, UartError};
+use crate::transport::{
+    Capabilities, Capability, Result, Transport, TransportError, TransportInterfaceType,
+    WrapInTransportError,
+};
+use crate::transport::common::uart::SerialPortUart;
 use crate::util::parse_int::ParseInt;
 
 pub mod gpio;
 pub mod spi;
-pub mod uart;
 pub mod usb;
 
 #[derive(Default)]
@@ -48,7 +52,7 @@ impl CW310 {
         usb_vid: Option<u16>,
         usb_pid: Option<u16>,
         usb_serial: Option<&str>,
-    ) -> Result<Self> {
+    ) -> anyhow::Result<Self> {
         let board = CW310 {
             device: Rc::new(RefCell::new(usb::Backend::new(
                 usb_vid, usb_pid, usb_serial,
@@ -60,12 +64,35 @@ impl CW310 {
     }
 
     // Initialize the IO direction of some basic pins on the board.
-    fn init_direction(&self) -> Result<()> {
+    fn init_direction(&self) -> anyhow::Result<()> {
         let device = self.device.borrow();
         device.pin_set_output(Self::PIN_SRST, true)?;
         device.pin_set_output(Self::PIN_JTAG, true)?;
         device.pin_set_output(Self::PIN_BOOTSTRAP, true)?;
         Ok(())
+    }
+
+    fn open_uart(&self, instance: u32) -> Result<SerialPortUart> {
+        let usb = self.device.borrow();
+        let serial_number = usb.get_serial_number();
+
+        let mut ports = serialport::available_ports().wrap(UartError::EnumerationError)?;
+        ports.retain(|port| {
+            if let SerialPortType::UsbPort(info) = &port.port_type {
+                if info.serial_number.as_deref() == Some(serial_number) {
+                    return true;
+                }
+            }
+            false
+        });
+        // The CW board seems to have the last port connected as OpenTitan UART 0.
+        // Reverse the sort order so the last port will be instance 0.
+        ports.sort_by(|a, b| b.port_name.cmp(&a.port_name));
+
+        let port = ports.get(instance as usize).ok_or_else(|| {
+            TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
+        })?;
+        SerialPortUart::open(&port.port_name)
     }
 }
 
@@ -76,11 +103,12 @@ impl Transport for CW310 {
 
     fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
         let mut inner = self.inner.borrow_mut();
-        let instance = u32::from_str(instance)?;
+        let instance = u32::from_str(instance).ok().ok_or_else(|| {
+            TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
+        })?;
         let uart = match inner.uart.entry(instance) {
             Entry::Vacant(v) => {
-                let u = v.insert(Rc::new(uart::CW310Uart::open(
-                    Rc::clone(&self.device),
+                let u = v.insert(Rc::new(self.open_uart(
                     instance,
                 )?));
                 Rc::clone(u)
@@ -107,7 +135,7 @@ impl Transport for CW310 {
     fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
         ensure!(
             instance == "0",
-            TransportError::InvalidInstance("spi", instance.to_string())
+            TransportError::InvalidInstance(TransportInterfaceType::Spi, instance.to_string())
         );
         let mut inner = self.inner.borrow_mut();
         if inner.spi.is_none() {

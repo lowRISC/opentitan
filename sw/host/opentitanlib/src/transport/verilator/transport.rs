@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Result};
+use anyhow::Result;
 use lazy_static::lazy_static;
 use log::info;
 use regex::Regex;
@@ -10,10 +10,13 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::time::Duration;
 
+use crate::ensure;
 use crate::io::uart::Uart;
 use crate::transport::verilator::subprocess::{Options, Subprocess};
 use crate::transport::verilator::uart::VerilatorUart;
-use crate::transport::{Capabilities, Capability, Transport, TransportError};
+use crate::transport::{
+    Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
+};
 
 #[derive(Default)]
 struct Inner {
@@ -85,10 +88,10 @@ impl Transport for Verilator {
         Capabilities::new(Capability::UART)
     }
 
-    fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
+    fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>, TransportError> {
         ensure!(
             instance == "0",
-            TransportError::InvalidInstance("uart", instance.to_string())
+            TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
         );
         let mut inner = self.inner.borrow_mut();
         if inner.uart.is_none() {
