@@ -137,6 +137,11 @@ module tb;
         null, "*.env.m_tl_agent_sram_ctrl_prim_reg_block*", "vif", sram_tl_if);
     uvm_config_db#(mem_bkdr_util)::set(null, "*.env", "mem_bkdr_util", m_mem_bkdr_util);
 
+    // Seq may drive lc_escalation with values other than on or off.
+    $assertoff(0, tb.dut.u_prim_lc_sync.PrimLcSyncCheckTransients_A);
+    $assertoff(0, tb.dut.u_prim_lc_sync.PrimLcSyncCheckTransients0_A);
+    $assertoff(0, tb.dut.u_prim_lc_sync.PrimLcSyncCheckTransients1_A);
+
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

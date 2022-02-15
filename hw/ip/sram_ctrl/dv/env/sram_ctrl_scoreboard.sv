@@ -367,7 +367,8 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
   virtual task process_lc_escalation();
     forever begin
-      wait(cfg.lc_vif.lc_esc_en == lc_ctrl_pkg::On);
+      // any non-off value is treated as true
+      wait(cfg.lc_vif.lc_esc_en != lc_ctrl_pkg::Off);
       `uvm_info(`gfn, "LC escalation request detected", UVM_HIGH)
 
       // clear exp_mem, scramble is changed due to escalation.

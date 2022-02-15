@@ -48,7 +48,10 @@ class sram_ctrl_lc_escalation_vseq extends sram_ctrl_multiple_keys_vseq;
         begin
           #lc_esc_delay;
 
-          cfg.lc_vif.drive_lc_esc_en(lc_ctrl_pkg::On);
+          // any non-off value is treated as true
+          cfg.lc_vif.drive_lc_esc_en(get_rand_lc_tx_val(.t_weight(1),
+                                                        .f_weight(0),
+                                                        .other_weight(1)));
           // after escalation, key will become invalid and design will returns invalid integrity
           cfg.disable_d_user_data_intg_check_for_passthru_mem = 1;
         end
