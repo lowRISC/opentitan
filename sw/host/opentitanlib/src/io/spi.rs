@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 use std::str::FromStr;
 use structopt::StructOpt;
 use thiserror::Error;
 
 use crate::app::TransportWrapper;
+use crate::transport::Result;
 use crate::util::voltage::Voltage;
 
 #[derive(Debug, StructOpt)]
@@ -42,8 +43,10 @@ impl SpiParams {
     }
 }
 
-/// Errors related to the SPI interface and SPI transactions.
-#[derive(Error, Debug)]
+/// Errors related to the SPI interface and SPI transactions.  These error messages will be
+/// printed in the context of a TransportError::SpiError, that is "SPI error: {}".  So including
+/// the words "error" or "spi" in texts below will probably be redundant.
+#[derive(Error, Debug, Serialize, Deserialize)]
 pub enum SpiError {
     #[error("Invalid option: {0}")]
     InvalidOption(String),

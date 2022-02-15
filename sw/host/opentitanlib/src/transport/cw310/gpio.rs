@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
 use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
 use crate::transport::cw310::usb::Backend;
+use crate::transport::Result;
 
 pub struct CW310GpioPin {
     device: Rc<RefCell<Backend>>,
@@ -41,12 +41,15 @@ impl GpioPin for CW310GpioPin {
         match mode {
             PinMode::Input => usb.pin_set_output(&self.pinname, false)?,
             PinMode::PushPull => usb.pin_set_output(&self.pinname, true)?,
-            PinMode::OpenDrain => return Err(GpioError::UnsupportedPinMode().into()),
+            PinMode::OpenDrain => return Err(GpioError::UnsupportedPinMode(mode).into()),
         }
         Ok(())
     }
 
-    fn set_pull_mode(&self, _mode: PullMode) -> Result<()> {
-        Err(GpioError::UnsupportedPinMode().into())
+    fn set_pull_mode(&self, mode: PullMode) -> Result<()> {
+        match mode {
+            PullMode::None => Ok(()),
+            _ => Err(GpioError::UnsupportedPullMode(mode).into()),
+        }
     }
 }
