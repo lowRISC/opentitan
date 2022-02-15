@@ -226,7 +226,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:rnd",
-        "//sw/device/silicon_creator/mask_rom/keys:test_keys",
+        "//sw/device/silicon_creator/mask_rom/keys:test_public_keys",
     ],
 )
 
@@ -252,7 +252,7 @@ cc_test(
         "//sw/device/silicon_creator/lib/drivers:mock_lifecycle",
         "//sw/device/silicon_creator/lib/drivers:mock_otp",
         "//sw/device/silicon_creator/lib/drivers:mock_rnd",
-        "//sw/device/silicon_creator/mask_rom/keys:test_keys",
+        "//sw/device/silicon_creator/mask_rom/keys:test_public_keys",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
