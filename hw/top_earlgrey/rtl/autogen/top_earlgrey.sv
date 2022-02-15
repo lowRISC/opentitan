@@ -50,8 +50,8 @@ module top_earlgrey #(
   parameter logic [31:0] RvDmIdcodeValue = 32'h 0000_0001,
   // parameters for rv_plic
   // parameters for aes
-  parameter bit AesMasking = 1,
-  parameter aes_pkg::sbox_impl_e AesSBoxImpl = aes_pkg::SBoxImplDom,
+  parameter bit SecAesMasking = 1,
+  parameter aes_pkg::sbox_impl_e SecAesSBoxImpl = aes_pkg::SBoxImplDom,
   parameter int unsigned SecAesStartTriggerDelay = 0,
   parameter bit SecAesAllowForcingMasks = 1'b0,
   parameter bit SecAesSkipPRNGReseeding = 1'b0,
@@ -2139,8 +2139,8 @@ module top_earlgrey #(
   aes #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[37:36]),
     .AES192Enable(1'b1),
-    .Masking(AesMasking),
-    .SBoxImpl(AesSBoxImpl),
+    .SecMasking(SecAesMasking),
+    .SecSBoxImpl(SecAesSBoxImpl),
     .SecStartTriggerDelay(SecAesStartTriggerDelay),
     .SecAllowForcingMasks(SecAesAllowForcingMasks),
     .SecSkipPRNGReseeding(SecAesSkipPRNGReseeding),

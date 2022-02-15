@@ -95,8 +95,8 @@ module csrng_block_encrypt import csrng_pkg::*; #(
 
   aes_cipher_core #(
     .AES192Enable ( 1'b0 ),  // AES192Enable disabled
-    .Masking      ( 1'b0 ),  // Masking disable
-    .SBoxImpl     ( SBoxImpl )
+    .SecMasking   ( 1'b0 ),  // Masking disable
+    .SecSBoxImpl  ( SBoxImpl )
   ) u_aes_cipher_core   (
     .clk_i              (clk_i),
     .rst_ni             (rst_ni),

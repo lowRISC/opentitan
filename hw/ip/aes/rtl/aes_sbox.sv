@@ -8,7 +8,7 @@
 
 module aes_sbox import aes_pkg::*;
 #(
-  parameter sbox_impl_e SBoxImpl = SBoxImplLut
+  parameter sbox_impl_e SecSBoxImpl = SBoxImplLut
 ) (
   input  logic                     clk_i,
   input  logic                     rst_ni,
@@ -24,11 +24,15 @@ module aes_sbox import aes_pkg::*;
   output logic              [19:0] prd_o
 );
 
-  localparam bit SBoxMasked = (SBoxImpl == SBoxImplCanrightMasked ||
-                               SBoxImpl == SBoxImplCanrightMaskedNoreuse ||
-                               SBoxImpl == SBoxImplDom) ? 1'b1 : 1'b0;
+  // Create a lint error to reduce the risk of accidentally using a less secure SBox
+  // implementation.
+  `ASSERT_STATIC_LINT_ERROR(AesSBoxSecSBoxImplNonDefault, SecSBoxImpl == SBoxImplDom)
 
-  localparam bit SBoxSingleCycle = (SBoxImpl == SBoxImplDom) ? 1'b0 : 1'b1;
+  localparam bit SBoxMasked = (SecSBoxImpl == SBoxImplCanrightMasked ||
+                               SecSBoxImpl == SBoxImplCanrightMaskedNoreuse ||
+                               SecSBoxImpl == SBoxImplDom) ? 1'b1 : 1'b0;
+
+  localparam bit SBoxSingleCycle = (SecSBoxImpl == SBoxImplDom) ? 1'b0 : 1'b1;
 
   if (!SBoxMasked) begin : gen_sbox_unmasked
     // Tie off unused inputs.
@@ -41,14 +45,14 @@ module aes_sbox import aes_pkg::*;
     assign unused_mask = mask_i;
     assign unused_prd  = prd_i;
 
-    if (SBoxImpl == SBoxImplCanright) begin : gen_sbox_canright
+    if (SecSBoxImpl == SBoxImplCanright) begin : gen_sbox_canright
       aes_sbox_canright u_aes_sbox (
         .op_i   ( op_i   ),
         .data_i ( data_i ),
         .data_o ( data_o )
       );
 
-    end else begin : gen_sbox_lut // SBoxImpl == SBoxImplLut
+    end else begin : gen_sbox_lut // SecSBoxImpl == SBoxImplLut
       aes_sbox_lut u_aes_sbox (
         .op_i   ( op_i   ),
         .data_i ( data_i ),
@@ -62,7 +66,7 @@ module aes_sbox import aes_pkg::*;
   end else begin : gen_sbox_masked
 
     // SEC_CM: KEY.MASKING
-    if (SBoxImpl == SBoxImplDom) begin : gen_sbox_dom
+    if (SecSBoxImpl == SBoxImplDom) begin : gen_sbox_dom
 
       aes_sbox_dom u_aes_sbox (
         .clk_i      ( clk_i       ),
@@ -81,7 +85,8 @@ module aes_sbox import aes_pkg::*;
 
       `ASSERT_INIT(AesWidthPRDSBox, WidthPRDSBox == 8)
 
-    end else if (SBoxImpl == SBoxImplCanrightMaskedNoreuse) begin : gen_sbox_canright_masked_noreuse
+    end else if (SecSBoxImpl == SBoxImplCanrightMaskedNoreuse) begin :
+        gen_sbox_canright_masked_noreuse
       // Tie off unused inputs.
       logic        unused_clk;
       logic        unused_rst;
@@ -103,7 +108,7 @@ module aes_sbox import aes_pkg::*;
 
       `ASSERT_INIT(AesWidthPRDSBox, WidthPRDSBox == 18)
 
-    end else begin : gen_sbox_canright_masked // SBoxImpl == SBoxImplCanrightMasked
+    end else begin : gen_sbox_canright_masked // SecSBoxImpl == SBoxImplCanrightMasked
       // Tie off unused inputs.
       logic        unused_clk;
       logic        unused_rst;

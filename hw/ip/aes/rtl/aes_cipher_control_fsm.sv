@@ -10,8 +10,8 @@
 
 module aes_cipher_control_fsm import aes_pkg::*;
 #(
-  parameter bit         Masking  = 0,
-  parameter sbox_impl_e SBoxImpl = SBoxImplLut
+  parameter bit         SecMasking  = 0,
+  parameter sbox_impl_e SecSBoxImpl = SBoxImplDom
 ) (
   input  logic             clk_i,
   input  logic             rst_ni,
@@ -116,7 +116,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
   assign unused_cfg_valid = cfg_valid_i;
 
   // Tie off unused inputs.
-  if (!Masking) begin : gen_unused_prng_reseed
+  if (!SecMasking) begin : gen_unused_prng_reseed
     logic unused_prng_reseed;
     assign unused_prng_reseed = prng_reseed_i;
   end
@@ -174,7 +174,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
     data_out_clear_d_o   = data_out_clear_q_i;
     prng_reseed_done_d   = prng_reseed_done_q | prng_reseed_ack_i;
     advance              = 1'b0;
-    cyc_ctr_d            = (SBoxImpl == SBoxImplDom) ? cyc_ctr_q + 3'd1 : 3'd0;
+    cyc_ctr_d            = (SecSBoxImpl == SBoxImplDom) ? cyc_ctr_q + 3'd1 : 3'd0;
 
     // Alert
     alert_o              = 1'b0;
@@ -187,7 +187,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
         // Signal that we are ready, wait for handshake.
         in_ready_o = 1'b1;
         if (in_valid_i) begin
-          if (Masking && prng_reseed_i && !dec_key_gen_i && !crypt_i) begin
+          if (SecMasking && prng_reseed_i && !dec_key_gen_i && !crypt_i) begin
             // Reseed the masking PRNG without starting encryption/decryption or generation of the
             // start key for decryption.
             prng_reseed_d_o    = 1'b1;
@@ -209,7 +209,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
             dec_key_gen_d_o =  dec_key_gen_i;
 
             // Latch whether we shall reseed the masking PRNG.
-            prng_reseed_d_o = Masking & prng_reseed_i;
+            prng_reseed_d_o = SecMasking & prng_reseed_i;
 
             // Load input data to state
             state_sel_o = dec_key_gen_i ? STATE_CLEAR : STATE_INIT;
@@ -217,7 +217,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
 
             // Make the masking PRNG advance. The current pseudo-random data is used to mask the
             // input data.
-            prng_update_o = dec_key_gen_i ? 1'b0 : Masking;
+            prng_update_o = dec_key_gen_i ? 1'b0 : SecMasking;
 
             // Init key expand
             key_expand_clear_o = 1'b1;
@@ -268,7 +268,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
           // other than the last one, the PRD fed into the DOM S-Boxes is guaranteed to be stable.
           // This is better in terms of SCA resistance. Request the PRNG update in the first cycle.
           advance         = key_expand_out_req_i & cyc_ctr_expr;
-          prng_update_o   = (SBoxImpl == SBoxImplDom) ? cyc_ctr_q == 3'd0 : Masking;
+          prng_update_o   = (SecSBoxImpl == SBoxImplDom) ? cyc_ctr_q == 3'd0 : SecMasking;
           key_expand_en_o = 1'b1;
           if (advance) begin
             key_expand_out_ack_o = 1'b1;
@@ -298,7 +298,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
             (key_len_i == AES_256 && op_i == CIPH_INV) ? KEY_WORDS_0123 : KEY_WORDS_ZERO;
 
         // Keep requesting PRNG reseeding until it is acknowledged.
-        prng_reseed_req_o = Masking & prng_reseed_q_i & ~prng_reseed_done_q;
+        prng_reseed_req_o = SecMasking & prng_reseed_q_i & ~prng_reseed_done_q;
 
         // Select round key: direct or mixed (equivalent inverse cipher)
         round_key_sel_o = (op_i == CIPH_FWD) ? ROUND_KEY_DIRECT :
@@ -311,7 +311,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
         // better in terms of SCA resistance. Request the PRNG update in the first cycle. Non-DOM
         // S-Boxes need fresh PRD in every clock cycle.
         advance = key_expand_out_req_i & cyc_ctr_expr & (dec_key_gen_q_i | sub_bytes_out_req_i);
-        prng_update_o   = (SBoxImpl == SBoxImplDom) ? cyc_ctr_q == 3'd0 : Masking;
+        prng_update_o   = (SecSBoxImpl == SBoxImplDom) ? cyc_ctr_q == 3'd0 : SecMasking;
         sub_bytes_en_o  = ~dec_key_gen_q_i;
         key_expand_en_o = 1'b1;
 
@@ -337,7 +337,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
               // Indicate that we are done, try to perform the handshake. But we don't wait here.
               // If we don't get the handshake now, we will wait in the finish state. When using
               // masking, we only finish if the masking PRNG has been reseeded.
-              out_valid_o = Masking ? (prng_reseed_q_i ? prng_reseed_done_q : 1'b1) : 1'b1;
+              out_valid_o = SecMasking ? (prng_reseed_q_i ? prng_reseed_done_q : 1'b1) : 1'b1;
               if (out_valid_o && out_ready_i) begin
                 // Go to idle state directly.
                 dec_key_gen_d_o    = 1'b0;
@@ -364,7 +364,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
         add_rk_sel_o = ADD_RK_FINAL;
 
         // Keep requesting PRNG reseeding until it is acknowledged.
-        prng_reseed_req_o = Masking & prng_reseed_q_i & ~prng_reseed_done_q;
+        prng_reseed_req_o = SecMasking & prng_reseed_q_i & ~prng_reseed_done_q;
 
         // SEC_CM: DATA_REG.KEY.SCA
         // Once we're done, we won't need the state anymore. We actually clear it when progressing
@@ -381,11 +381,12 @@ module aes_cipher_control_fsm import aes_pkg::*;
         // Perform both handshakes simultaneously.
         advance        = (sub_bytes_out_req_i & cyc_ctr_expr) | dec_key_gen_q_i;
         sub_bytes_en_o = ~dec_key_gen_q_i;
-        out_valid_o    = (mux_sel_err_i || sp_enc_err_i || op_err_i) ? 1'b0      :
-            Masking ? (prng_reseed_q_i ? prng_reseed_done_q & advance : advance) : advance;
+        out_valid_o    = (mux_sel_err_i || sp_enc_err_i || op_err_i) ? 1'b0         :
+            SecMasking ? (prng_reseed_q_i ? prng_reseed_done_q & advance : advance) : advance;
 
         // Stop updating the cycle counter once we have valid output.
-        cyc_ctr_d = (SBoxImpl == SBoxImplDom) ? (!advance ? cyc_ctr_q + 3'd1 : cyc_ctr_q) : 3'd0;
+        cyc_ctr_d =
+            (SecSBoxImpl == SBoxImplDom) ? (!advance ? cyc_ctr_q + 3'd1 : cyc_ctr_q) : 3'd0;
 
         // The DOM S-Boxes consume fresh PRD only in the first clock cycle. By requesting the PRNG
         // update in any clock cycle other than the last one, the PRD fed into the DOM S-Boxes is
@@ -393,7 +394,8 @@ module aes_cipher_control_fsm import aes_pkg::*;
         // update in the first cycle. We update it only once and in the last cycle for non-DOM
         // S-Boxes where otherwise updating the PRNG while being stalled would cause the S-Boxes
         // to be re-evaluated, thereby creating additional SCA leakage.
-        prng_update_o = (SBoxImpl == SBoxImplDom) ? cyc_ctr_q == 3'd0 : out_valid_o & out_ready_i;
+        prng_update_o =
+            (SecSBoxImpl == SBoxImplDom) ? cyc_ctr_q == 3'd0 : out_valid_o & out_ready_i;
 
         if (out_valid_o && out_ready_i) begin
           sub_bytes_out_ack_o = ~dec_key_gen_q_i;
@@ -503,7 +505,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
 
   assign rnd_ctr_o = rnd_ctr_q;
 
-  if (SBoxImpl == SBoxImplDom) begin : gen_cyc_ctr
+  if (SecSBoxImpl == SBoxImplDom) begin : gen_cyc_ctr
     always_ff @(posedge clk_i or negedge rst_ni) begin : reg_cyc_ctr
       if (!rst_ni) begin
         cyc_ctr_q <= 3'd0;
@@ -522,6 +524,13 @@ module aes_cipher_control_fsm import aes_pkg::*;
   ////////////////
   // Assertions //
   ////////////////
+
+  // Create a lint error to reduce the risk of accidentally disabling the masking.
+  `ASSERT_STATIC_LINT_ERROR(AesCipherControlFsmSecMaskingNonDefault, SecMasking == 1)
+
+  // Create a lint error to reduce the risk of accidentally using a less secure SBox
+  // implementation.
+  `ASSERT_STATIC_LINT_ERROR(AesCipherControlFsmSecSBoxImplNonDefault, SecSBoxImpl == SBoxImplDom)
 
   // Selectors must be known/valid
   `ASSERT(AesCiphOpValid, cfg_valid_i |-> op_i inside {

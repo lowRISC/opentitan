@@ -28,17 +28,17 @@
       local:   "false",
       expose:  "false"
     },
-    { name:    "Masking",
+    { name:    "SecMasking",
       type:    "bit",
       default: "1'b1",
       desc:    '''
         Disable (0) or enable (1) first-order masking of the AES cipher core.
-        Masking requires the use of a masked S-Box, see SBoxImpl parameter.
+        Masking requires the use of a masked S-Box, see SecSBoxImpl parameter.
       '''
       local:   "false",
       expose:  "true"
     },
-    { name:    "SBoxImpl",
+    { name:    "SecSBoxImpl",
       type:    "aes_pkg::sbox_impl_e",
       default: "aes_pkg::SBoxImplDom",
       desc:    '''

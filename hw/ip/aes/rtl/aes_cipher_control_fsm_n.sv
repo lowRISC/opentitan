@@ -13,8 +13,8 @@
 
 module aes_cipher_control_fsm_n import aes_pkg::*;
 #(
-  parameter bit         Masking  = 0,
-  parameter sbox_impl_e SBoxImpl = SBoxImplLut
+  parameter bit         SecMasking  = 0,
+  parameter sbox_impl_e SecSBoxImpl = SBoxImplDom
 ) (
   input  logic             clk_i,
   input  logic             rst_ni,
@@ -236,8 +236,8 @@ module aes_cipher_control_fsm_n import aes_pkg::*;
   // negated outputs, important output signals are inverted further below. Thanks to the prim_buf
   // synthesis optimization barriers, tools will push the inverters into the regular FSM.
   aes_cipher_control_fsm #(
-    .Masking  ( Masking  ),
-    .SBoxImpl ( SBoxImpl )
+    .SecMasking  ( SecMasking  ),
+    .SecSBoxImpl ( SecSBoxImpl )
   ) u_aes_cipher_control_fsm (
     .clk_i                 ( clk_i                 ),
     .rst_ni                ( rst_ni                ),

@@ -6,4 +6,3 @@
 
 waive -rules {ONE_BIT_MEM_WIDTH} -location {prim_arbiter_ppc.sv} -regexp {.*has word width which is single bit wide.*} \
       -comment "Usage case specific to CSRNG and how the arbiter is used."
-

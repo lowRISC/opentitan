@@ -9,10 +9,10 @@
 module aes_key_expand import aes_pkg::*;
 #(
   parameter bit         AES192Enable = 1,
-  parameter bit         Masking      = 0,
-  parameter sbox_impl_e SBoxImpl     = SBoxImplLut,
+  parameter bit         SecMasking   = 0,
+  parameter sbox_impl_e SecSBoxImpl  = SBoxImplLut,
 
-  localparam int        NumShares    = Masking ? 2 : 1 // derived parameter
+  localparam int        NumShares    = SecMasking ? 2 : 1 // derived parameter
 ) (
   input  logic                   clk_i,
   input  logic                   rst_ni,
@@ -192,7 +192,7 @@ module aes_key_expand import aes_pkg::*;
   assign sub_word_in = use_rot_word ? rot_word_out[0] : rot_word_in[0];
 
   // Masking
-  if (!Masking) begin : gen_no_sw_in_mask
+  if (!SecMasking) begin : gen_no_sw_in_mask
     // The mask share is ignored anyway, it can be 0.
     assign sw_in_mask  = '0;
 
@@ -218,7 +218,7 @@ module aes_key_expand import aes_pkg::*;
     assign in_prd[i] = {out_prd[aes_rot_int(i,4)], prd_i[WidthPRDSBox*i +: WidthPRDSBox]};
 
     aes_sbox #(
-      .SBoxImpl ( SBoxImpl )
+      .SecSBoxImpl ( SecSBoxImpl )
     ) u_aes_sbox_i (
       .clk_i     ( clk_i                  ),
       .rst_ni    ( rst_ni                 ),
@@ -437,15 +437,18 @@ module aes_key_expand import aes_pkg::*;
   // Assertions //
   ////////////////
 
+  // Create a lint error to reduce the risk of accidentally disabling the masking.
+  `ASSERT_STATIC_LINT_ERROR(AesKeyExpandSecMaskingNonDefault, SecMasking == 1)
+
   // Cipher core masking requires a masked SBox and vice versa.
   `ASSERT_INIT(AesMaskedCoreAndSBox,
-      (Masking &&
-      (SBoxImpl == SBoxImplCanrightMasked ||
-       SBoxImpl == SBoxImplCanrightMaskedNoreuse ||
-       SBoxImpl == SBoxImplDom)) ||
-      (!Masking &&
-      (SBoxImpl == SBoxImplLut ||
-       SBoxImpl == SBoxImplCanright)))
+      (SecMasking &&
+      (SecSBoxImpl == SBoxImplCanrightMasked ||
+       SecSBoxImpl == SBoxImplCanrightMaskedNoreuse ||
+       SecSBoxImpl == SBoxImplDom)) ||
+      (!SecMasking &&
+      (SecSBoxImpl == SBoxImplLut ||
+       SecSBoxImpl == SBoxImplCanright)))
 
   // Selectors must be known/valid
   `ASSERT(AesCiphOpValid, cfg_valid_i |-> op_i inside {
