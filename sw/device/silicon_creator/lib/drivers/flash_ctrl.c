@@ -36,10 +36,6 @@ enum {
    * Base address of the flash_ctrl registers.
    */
   kBase = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR,
-  /**
-   * Base address of the flash memory.
-   */
-  kMemBase = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
 };
 
 /**
@@ -211,10 +207,10 @@ static rom_error_t write(uint32_t addr, flash_ctrl_partition_t partition,
  * @return Base address of the given page.
  */
 static uint32_t info_page_addr(flash_ctrl_info_page_t info_page) {
-#define INFO_PAGE_ADDR_CASE_(name_, value_, bank_, page_)       \
-  case (name_):                                                 \
-    HARDENED_CHECK_EQ(launder32(info_page), (name_));           \
-    return kMemBase + (bank_)*FLASH_CTRL_PARAM_BYTES_PER_BANK + \
+#define INFO_PAGE_ADDR_CASE_(name_, value_, bank_, page_) \
+  case (name_):                                           \
+    HARDENED_CHECK_EQ(launder32(info_page), (name_));     \
+    return (bank_)*FLASH_CTRL_PARAM_BYTES_PER_BANK +      \
            (page_)*FLASH_CTRL_PARAM_BYTES_PER_PAGE;
 
   switch (launder32(info_page)) {
