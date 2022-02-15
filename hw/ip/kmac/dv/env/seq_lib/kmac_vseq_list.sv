@@ -15,5 +15,6 @@
 `include "kmac_burst_write_vseq.sv"
 `include "kmac_app_vseq.sv"
 `include "kmac_error_vseq.sv"
+`include "kmac_key_error_vseq.sv"
 `include "kmac_lc_escalation_vseq.sv"
 `include "kmac_stress_all_vseq.sv"
