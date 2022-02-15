@@ -15,8 +15,8 @@ interface flash_ctrl_if ();
   lc_tx_t                           lc_owner_seed_sw_rw_en = lc_ctrl_pkg::Off;
   lc_tx_t                           lc_seed_hw_rd_en = lc_ctrl_pkg::On;
 
-  lc_tx_t                           lc_iso_part_sw_rd_en = lc_ctrl_pkg::On;
-  lc_tx_t                           lc_iso_part_sw_wr_en = lc_ctrl_pkg::On;
+  lc_tx_t                           lc_iso_part_sw_rd_en = lc_ctrl_pkg::Off;
+  lc_tx_t                           lc_iso_part_sw_wr_en = lc_ctrl_pkg::Off;
 
   lc_tx_t                           lc_nvm_debug_en = lc_ctrl_pkg::Off;
   lc_tx_t                           lc_escalate_en = lc_ctrl_pkg::Off;

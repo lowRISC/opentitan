@@ -8,7 +8,10 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   .COV_T              (flash_ctrl_env_cov),
   .VIRTUAL_SEQUENCER_T(flash_ctrl_virtual_sequencer)
 );
+
   `uvm_object_utils(flash_ctrl_base_vseq)
+
+  import lc_ctrl_pkg::*;
 
   // OTP Scramble Keys, Used In OTP MODEL
   logic [KeyWidth-1:0] otp_addr_key;
@@ -324,18 +327,18 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     // Secret partition 1 (used for owner):   Bank 0, information partition 0, page 2
 
     // Local Signals
-    bit                    poll_fifo_status;
-    logic      [TL_DW-1:0] exp_data         [$];
-    flash_op_t             flash_op;
+    bit               poll_fifo_status;
+    logic [TL_DW-1:0] exp_data [$];
+    flash_op_t        flash_op;
 
     // Flash Operation Assignments
-    flash_op.op                         = op;
-    flash_op.partition                  = FlashPartInfo;
-    flash_op.erase_type                 = FlashErasePage;
-    flash_op.num_words                  = FlashSecretPartWords;
-    poll_fifo_status                    = 1;
+    flash_op.op         = op;
+    flash_op.partition  = FlashPartInfo;
+    flash_op.erase_type = FlashErasePage;
+    flash_op.num_words  = FlashSecretPartWords;
+    poll_fifo_status    = 1;
 
-    // Enable Secret Partition from Life Cycle Controller Interface (Write/Read/Erase)
+    // Disable HW Access to Secret Partition from Life Cycle Controller Interface (Write/Read/Erase)
     cfg.flash_ctrl_vif.lc_seed_hw_rd_en = lc_ctrl_pkg::Off;  // Disable Secret Partition HW Access
 
     unique case (secret_part)
@@ -380,7 +383,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       default: `uvm_error(`gfn, "Flash Operation Unrecognised, FAIL")
     endcase
 
-    // Disable Secret Partitions from Life Cycle Contoller Interface (Write/Read/Erase)
+    // Disable Secret Partitions from Life Cycle Controller Interface (Write/Read/Erase)
     unique case (secret_part)
       FlashCreatorPart: begin
         cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = lc_ctrl_pkg::Off;
@@ -432,8 +435,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en   = lc_ctrl_pkg::Off;
     cfg.flash_ctrl_vif.lc_seed_hw_rd_en         = lc_ctrl_pkg::On;
 
-    cfg.flash_ctrl_vif.lc_iso_part_sw_rd_en     = lc_ctrl_pkg::On;
-    cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en     = lc_ctrl_pkg::On;
+    cfg.flash_ctrl_vif.lc_iso_part_sw_rd_en     = lc_ctrl_pkg::Off;
+    cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en     = lc_ctrl_pkg::Off;
 
     cfg.flash_ctrl_vif.lc_nvm_debug_en          = lc_ctrl_pkg::Off;
     cfg.flash_ctrl_vif.lc_escalate_en           = lc_ctrl_pkg::Off;
@@ -443,11 +446,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   endtask : lc_ctrl_if_rst
 
-  // ----------------------
-  // -- Task : otp_model --
-  // ----------------------
-
-  // Simple Model Of The OTP Key Seeds
+  // Simple Model For The OTP Key Seeds
   virtual task otp_model();
 
     `uvm_info(`gfn, "Starting OTP Model", UVM_LOW)
@@ -492,5 +491,437 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
                    "Expected : 0x%0x, Read : 0x%0x, FAIL", exp_data[i], data[i]))
     end
   endfunction : check_data_match
+
+  // Wait for Flash Operation, or Timeout ... Timeout Expected
+  virtual task wait_flash_op_done_expect_timeout(input time timeout_ns = 10_000_000,
+                                                 output bit result);
+
+    // Looks for Status Returning in the Timeout Period
+
+    // Expect a Timeout, with No Status Returned
+    // Result 0 - Response Returned (timeout = 0, status = 1) - FAIL
+    //        1 - Timeout, No Response Returned (timeout = 1, status = 0) - PASS
+
+    // Local Variables
+    uvm_reg_data_t data;
+    bit timeout;
+    bit status;
+    bit finished;
+
+    finished = 0;
+    timeout  = 0;
+    fork
+      fork
+
+        begin  // Poll Status Bit
+          `uvm_info(`gfn, "Polling Flash Status ...", UVM_LOW)
+          while (finished == 0) begin
+            csr_rd(.ptr(ral.op_status), .value(data));
+            status = get_field_val(ral.op_status.done, data);
+            if (status == 1) finished = 1;
+          end
+        end
+
+        begin  // Timeout - Expected
+          #(timeout_ns);
+          `uvm_info(`gfn, "Exiting Timeout Check ... Timeout Occured, Expected", UVM_LOW)
+          timeout  = 1;
+          finished = 1;
+        end
+
+      join
+    join
+    // Exit Gracefully
+
+    // Decide Result
+    if ((timeout == 1'b1) && (status == 1'b0)) result = 1'b1;
+    else result = 1'b0;
+
+  endtask : wait_flash_op_done_expect_timeout
+
+  // Task to Read/Erase/Program the RMA Partitions Creator, Owner, Isolated, Data0 and Data1
+  virtual task do_flash_op_rma(input flash_sec_part_e part, input flash_op_e op,
+                               ref data_q_t flash_op_wdata, input bit cmp = READ_CHECK_NORM,
+                               input uint data_part_addr, input uint data_part_num_words);
+
+    // Note:
+    // Special Partition (used for Creator)  : Bank 0, Information Partition 0, Page 1
+    // Special Partition (used for Owner)    : Bank 0, Information Partition 0, Page 2
+    // Special Partition (used for Isolated) : Bank 0, Information Partition 0, Page 3
+
+    // Local Variables
+    bit                    poll_fifo_status;
+    logic      [TL_DW-1:0] exp_data [$];
+    flash_op_t             flash_op;
+    data_q_t               flash_op_rdata;
+    int                    match_cnt;
+    string                 msg;
+
+    // Assign
+    flash_op.op = op;
+    poll_fifo_status = 1;
+
+    `uvm_info(`gfn, $sformatf("Operation : %s, Partition : %s ", op.name(), part.name()),
+              UVM_MEDIUM)
+
+    // Disable HW Access to Secret Partition from Life Cycle Controller Interface (Write/Read/Erase)
+    cfg.flash_ctrl_vif.lc_seed_hw_rd_en = lc_ctrl_pkg::Off;  // Disable Secret Partition HW Access
+
+    // Select Options
+    unique case (part)
+      FlashCreatorPart: begin
+        flash_op.addr                               = FlashCreatorPartStartAddr;  // Fixed Val
+        flash_op.num_words                          = FullPageNumWords;  // Fixed Val
+        flash_op.partition                          = FlashPartInfo;
+        cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = lc_ctrl_pkg::On;
+      end
+      FlashOwnerPart: begin
+        flash_op.addr                             = FlashOwnerPartStartAddr;  // Fixed Val
+        flash_op.num_words                        = FullPageNumWords;  // Fixed Val
+        flash_op.partition                        = FlashPartInfo;
+        cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en = lc_ctrl_pkg::On;
+      end
+      FlashIsolPart: begin
+        flash_op.addr                           = FlashIsolPartStartAddr;  // Fixed Val
+        flash_op.num_words                      = FullPageNumWords;  // Fixed Val
+        flash_op.partition                      = FlashPartInfo;
+        cfg.flash_ctrl_vif.lc_iso_part_sw_rd_en = lc_ctrl_pkg::On;
+        cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en = lc_ctrl_pkg::On;
+      end
+      FlashData0Part, FlashData1Part: begin
+        flash_op.addr      = data_part_addr;  // Variable Val
+        flash_op.num_words = data_part_num_words;  // Fixed Val
+        flash_op.partition = FlashPartData;
+      end
+      default: `uvm_error(`gfn, "Unrecognised Partiton, FAIL")
+    endcase
+
+    // Perform Flash Operations via the Host Interface
+    case (flash_op.op)
+
+      flash_ctrl_pkg::FlashOpErase: begin
+        if (part inside {FlashCreatorPart, FlashOwnerPart, FlashIsolPart})
+          flash_op.erase_type = flash_ctrl_pkg::FlashErasePage;
+        else flash_op.erase_type = flash_ctrl_pkg::FlashEraseBank;
+        flash_ctrl_start_op(flash_op);
+        wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
+        if (cfg.seq_cfg.check_mem_post_tran) cfg.flash_mem_bkdr_erase_check(flash_op, exp_data);
+      end
+
+      flash_ctrl_pkg::FlashOpProgram: begin
+        // Write Frontdoor, Read/Compare Backdoor
+        // Random Data
+        for (int i = 0; i < flash_op.num_words; i++)
+          flash_op_wdata[i] = $urandom_range(0, 2 ** (TL_DW) - 1);
+        flash_ctrl_write_extra(flash_op, flash_op_wdata);
+      end
+
+      flash_ctrl_pkg::FlashOpRead: begin
+        flash_ctrl_read_extra(flash_op, flash_op_rdata);
+        // Compare
+        if (cfg.seq_cfg.check_mem_post_tran) begin
+
+          if (cmp == 0) begin
+            `uvm_info(`gfn, "Read : Compare Backdoor with Frontdoor", UVM_MEDIUM)
+            cfg.flash_mem_bkdr_read_check(flash_op,
+                                          flash_op_rdata);  // Compare Backdoor with Frontdoor
+          end else begin
+            `uvm_info(`gfn, "Read : Compare Backdoor with Erased Status", UVM_MEDIUM)
+            match_cnt = 0;
+            foreach (flash_op_rdata[i]) begin
+              if (flash_op_rdata[i] === '1) begin
+                // Data Match - Unexpected, but theoretically possible
+                // Theoretically if locations are all '1 then
+                // RMA Erase Worked but RMA Program did not
+                `uvm_info(`gfn, "Read : Data Match (Erased), UNEXPECTED", UVM_MEDIUM)
+                match_cnt++;
+              end
+            end
+
+            // Decide Pass/Fail Based on Match Count
+            if (match_cnt > 1)
+              `uvm_error(`gfn, {
+                         "Read : Data Matches Seen (Erase), UNEXPECTED",
+                         $sformatf(
+                             "Flash Content Should Be Random (RMA Wipe) (Matches : %0d)", match_cnt
+                         )
+                         })
+
+            `uvm_info(`gfn, "Read : Compare Backdoor with Data Previously Written", UVM_MEDIUM)
+            match_cnt = 0;
+            foreach (flash_op_rdata[i]) begin
+              if (flash_op_rdata[i] === flash_op_wdata[i]) begin
+                // Data Match - Unlikely, but theoretically possible
+                `uvm_info(`gfn, "Read :  Data Match, UNEXPECTED", UVM_MEDIUM)
+                match_cnt++;
+              end
+            end
+            // Decide Pass/Fail Based on Match Count
+            if (match_cnt > 1)
+              `uvm_error(`gfn, {
+                         "Read : Data Matches Seen, UNEXPECTED, Flash Content Should Be ",
+                         $sformatf("Random (RMA Wipe) (Matches : %0d)", match_cnt)
+                         })
+          end
+        end
+      end
+      default: `uvm_error(`gfn, "Unrecognised Partiton, FAIL")
+    endcase
+
+    // Deselect Life Cycle Controller HW Options
+    unique case (part)
+      FlashCreatorPart: begin
+        cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = lc_ctrl_pkg::Off;
+      end
+      FlashOwnerPart: begin
+        cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en = lc_ctrl_pkg::Off;
+      end
+      FlashIsolPart: begin
+        cfg.flash_ctrl_vif.lc_iso_part_sw_rd_en = lc_ctrl_pkg::Off;
+        cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en = lc_ctrl_pkg::Off;
+      end
+      FlashData0Part, FlashData1Part: ;  // No Operation
+      default: `uvm_error(`gfn, "Unrecognised Partiton, FAIL")
+    endcase
+
+  endtask : do_flash_op_rma
+
+  // Task to Program the Entire Flash Memory
+  virtual task flash_ctrl_write_extra(flash_op_t flash_op, data_q_t data);
+
+    // Local Signals
+    uvm_reg_data_t           reg_data;
+    flash_part_e             partition_sel;
+    bit [InfoTypesWidth-1:0] info_sel;
+    int                      num;
+    int                      num_full;
+    int                      num_part;
+    logic [TL_DW-1:0]        fifo_data;
+    logic [TL_AW-1:0]        flash_addr;
+    logic [TL_DW-1:0]        exp_data [$];
+    flash_op_t               flash_op_copy;
+    data_q_t                 data_copy;
+
+    // Calculate Number of Complete Cycles and Partial Cycle Words
+    num      = data.size();
+    num_full = num / FIFO_DEPTH;
+    num_part = num % FIFO_DEPTH;
+
+    // Other
+    partition_sel = |flash_op.partition;
+    info_sel      = flash_op.partition >> 1;
+    flash_addr    = flash_op.addr;
+
+    `uvm_info(`gfn, $sformatf(
+              "Flash Write Summary : Words : %0d, Full Cycles : %0d, Partial Cycle Words : %0d",
+              num,
+              num_full,
+              num_part
+              ), UVM_LOW)
+
+    // Copies
+    flash_op_copy = flash_op;
+    data_copy     = data;
+
+    // If num_full > 0
+    for (int cycle = 0; cycle < num_full; cycle++) begin
+
+      `uvm_info(`gfn, $sformatf("Write Cycle : %0d, flash_addr = 0x%0x", cycle, flash_addr),
+                UVM_MEDIUM)
+
+      csr_wr(.ptr(ral.addr), .value(flash_addr));
+
+      reg_data = '0;
+      reg_data = get_csr_val_with_updated_field(ral.control.start, reg_data, 1'b1) |
+          get_csr_val_with_updated_field(ral.control.op, reg_data, flash_op.op) |
+          get_csr_val_with_updated_field(ral.control.erase_sel, reg_data, flash_op.erase_type) |
+          get_csr_val_with_updated_field(ral.control.partition_sel, reg_data, partition_sel) |
+          get_csr_val_with_updated_field(ral.control.info_sel, reg_data, info_sel) |
+          get_csr_val_with_updated_field(ral.control.num, reg_data, FIFO_DEPTH - 1);
+      csr_wr(.ptr(ral.control), .value(reg_data));
+
+      for (int i = 0; i < FIFO_DEPTH; i++) begin
+        fifo_data = data.pop_front();
+        mem_wr(.ptr(ral.prog_fifo), .offset(0), .data(fifo_data));
+      end
+      wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
+
+      flash_addr += FIFO_DEPTH * 4;
+
+    end
+
+    // If there is a partial cycle
+    if (num_part > 0) begin
+      if (num_full == 0) flash_addr = flash_op.addr;
+      `uvm_info(`gfn, $sformatf("Last Write : flash_addr = 0x%0x", flash_addr), UVM_MEDIUM)
+
+      csr_wr(.ptr(ral.addr), .value(flash_addr));
+
+      reg_data = '0;
+      reg_data = get_csr_val_with_updated_field(ral.control.start, reg_data, 1'b1) |
+          get_csr_val_with_updated_field(ral.control.op, reg_data, flash_op.op) |
+          get_csr_val_with_updated_field(ral.control.erase_sel, reg_data, flash_op.erase_type) |
+          get_csr_val_with_updated_field(ral.control.partition_sel, reg_data, partition_sel) |
+          get_csr_val_with_updated_field(ral.control.info_sel, reg_data, info_sel) |
+          get_csr_val_with_updated_field(ral.control.num, reg_data, num_part - 1);
+      csr_wr(.ptr(ral.control), .value(reg_data));
+      for (int i = 0; i < num_part; i++) begin
+        fifo_data = data.pop_front();
+        mem_wr(.ptr(ral.prog_fifo), .offset(0), .data(fifo_data));
+      end
+      wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
+
+    end
+
+    exp_data = cfg.calculate_expected_data(flash_op_copy, data_copy);
+
+    if (cfg.seq_cfg.check_mem_post_tran) cfg.flash_mem_bkdr_read_check(flash_op_copy, exp_data);
+
+  endtask : flash_ctrl_write_extra
+
+  // Task to Program the Entire Flash Memory
+  virtual task flash_ctrl_read_extra(flash_op_t flash_op, ref data_q_t data);
+
+    // Local Signals
+    uvm_reg_data_t             reg_data;
+    flash_part_e               partition_sel;
+    bit   [InfoTypesWidth-1:0] info_sel;
+    logic [TL_AW:0]            flash_addr;
+    int                        num;
+    int                        num_full;
+    int                        num_part;
+    int                        num_words;
+    int                        idx;
+
+    // Calculate Number of Complete Cycles and Partial Cycle Words
+    num      = flash_op.num_words;
+    num_full = num / FIFO_DEPTH;
+    num_part = num % FIFO_DEPTH;
+
+    `uvm_info(`gfn, $sformatf(
+              "Flash Read Summary : Words : %0d, Full Cycles : %0d, Partial Cycle Words : %0d",
+              num,
+              num_full,
+              num_part
+              ), UVM_LOW)
+
+    // Other
+    partition_sel = |flash_op.partition;
+    info_sel      = flash_op.partition >> 1;
+    num_words     = flash_op.num_words;
+    flash_addr    = flash_op.addr;
+
+    // If num_full > 0
+    idx = 0;
+    for (int cycle = 0; cycle < num_full; cycle++) begin
+
+      `uvm_info(`gfn, $sformatf("Read Cycle : %0d, flash_addr = 0x%0x", cycle, flash_addr),
+                UVM_MEDIUM)
+
+      csr_wr(.ptr(ral.addr), .value(flash_addr));  // Write Address
+
+      reg_data = '0;
+      reg_data = get_csr_val_with_updated_field(ral.control.start, reg_data, 1'b1) |
+          get_csr_val_with_updated_field(ral.control.op, reg_data, flash_op.op) |
+          get_csr_val_with_updated_field(ral.control.erase_sel, reg_data, flash_op.erase_type) |
+          get_csr_val_with_updated_field(ral.control.partition_sel, reg_data, partition_sel) |
+          get_csr_val_with_updated_field(ral.control.info_sel, reg_data, info_sel) |
+          get_csr_val_with_updated_field(ral.control.num, reg_data, FIFO_DEPTH - 1);
+      csr_wr(.ptr(ral.control), .value(reg_data));
+
+      wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
+
+      // Read from FIFO
+      for (int i = 0; i < FIFO_DEPTH; i++) begin
+        mem_rd(.ptr(ral.rd_fifo), .offset(0), .data(data[idx++]));
+      end
+
+      flash_addr += FIFO_DEPTH * 4;
+
+    end
+
+    // If there is a partial Cycle
+    if (num_part > 0) begin
+      if (num_full == 0) flash_addr = flash_op.addr;
+      `uvm_info(`gfn, $sformatf("Last Read Cycle : flash_addr = 0x%0x", flash_addr), UVM_MEDIUM)
+
+      csr_wr(.ptr(ral.addr), .value(flash_addr));  // Write Address
+
+      reg_data = '0;
+      reg_data = get_csr_val_with_updated_field(ral.control.start, reg_data, 1'b1) |
+          get_csr_val_with_updated_field(ral.control.op, reg_data, flash_op.op) |
+          get_csr_val_with_updated_field(ral.control.erase_sel, reg_data, flash_op.erase_type) |
+          get_csr_val_with_updated_field(ral.control.partition_sel, reg_data, partition_sel) |
+          get_csr_val_with_updated_field(ral.control.info_sel, reg_data, info_sel) |
+          get_csr_val_with_updated_field(ral.control.num, reg_data, FIFO_DEPTH - 1);
+      csr_wr(.ptr(ral.control), .value(reg_data));
+
+      wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
+
+      // Read from FIFO
+      for (int i = 0; i < FIFO_DEPTH; i++) begin
+        mem_rd(.ptr(ral.rd_fifo), .offset(0), .data(data[idx++]));
+      end
+
+    end
+
+  endtask : flash_ctrl_read_extra
+
+  // Task to send an RMA Request (with a given seed) to the Flash Controller
+  virtual task send_rma_req(lc_flash_rma_seed_t rma_seed = LC_FLASH_RMA_SEED_DEFAULT);
+
+    // Local Variables
+    lc_ctrl_pkg::lc_tx_t done;
+    time timeout_ns = 1000_000_000;
+    time start_time;
+    bit rma_ack_seen;
+
+    `uvm_info(`gfn, $sformatf("RMA Seed : 0x%08x", rma_seed), UVM_LOW)
+
+    // Set Seed and Send Req
+    @(posedge cfg.clk_rst_vif.clk);
+    cfg.flash_ctrl_vif.rma_seed = rma_seed;
+    cfg.flash_ctrl_vif.rma_req = lc_ctrl_pkg::On;
+
+    // RMA Start Time
+    start_time = $time();
+
+    // Wait for RMA Ack to Rise (NOTE LONG DURATION)
+    `uvm_info(`gfn, "Waiting for RMA to complete ... ", UVM_LOW)
+
+    done = 0;
+    rma_ack_seen = 0;
+    fork
+      begin
+        fork
+          begin  // Poll RMA ACK
+            do begin
+              `uvm_info(`gfn, "Polling RMA ACK ...", UVM_LOW)
+              #10ms;  // Jump Ahead (Not Sampling Clocks)
+              @(posedge cfg.clk_rst_vif.clk);  // Align to Clock
+              if (cfg.flash_ctrl_vif.rma_ack == lc_ctrl_pkg::On) done = 1;
+            end while (done == 0);
+          end
+          begin  // Timeout - Unexpected
+            `uvm_info(`gfn, "Starting RMA Timeout Check ...", UVM_LOW)
+            #(timeout_ns);
+            `uvm_error(`gfn, {
+                       "RMA ACK NOT seen within the expected time frame, Timeout - FAIL",
+                       $sformatf("FAIL (%0t)", timeout_ns)
+                       })
+          end
+        join_any
+        disable fork;
+      end
+    join
+
+    // Note: After a valid RMA Ack is sent, the RMA State Machine remains in its last state,
+    //       until reset
+
+    // RMA End Time
+    `uvm_info(`gfn, "RMA complete", UVM_LOW)
+    `uvm_info(`gfn, $sformatf("RMA Duration : %t", $time() - start_time), UVM_LOW);
+
+  endtask : send_rma_req
 
 endclass : flash_ctrl_base_vseq
