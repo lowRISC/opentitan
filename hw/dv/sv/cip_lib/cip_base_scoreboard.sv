@@ -411,7 +411,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
       // In data read phase, check d_data when d_error = 1.
       if (item.d_error && (item.d_opcode == tlul_pkg::AccessAckData)) begin
-       `DV_CHECK_EQ(item.d_data, 32'hFFFF_FFFF, "d_data mismatch when d_error = 1")
+        check_tl_read_value_after_error(item, ral_name);
       end
 
       // these errors all have the same outcome. Only sample coverages when there is just one
@@ -428,6 +428,10 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
     end
     return (is_tl_unmapped_addr || is_tl_err);
+  endfunction
+
+  virtual function void check_tl_read_value_after_error(tl_seq_item item, string ral_name);
+    `DV_CHECK_EQ(item.d_data, 32'hFFFF_FFFF, "d_data mismatch when d_error = 1")
   endfunction
 
   // check if address is mapped

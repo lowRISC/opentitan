@@ -202,6 +202,17 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     return super.predict_tl_err(item, channel, ral_name);
   endfunction
 
+  virtual function void check_tl_read_value_after_error(tl_seq_item item, string ral_name);
+    bit [TL_DW-1:0] exp_data;
+    tlul_pkg::tl_a_user_t a_user = tlul_pkg::tl_a_user_t'(item.a_user);
+
+    // if error occurs when it's an instrution, return all 0 since it's an illegal instruction
+    if (a_user.instr_type == prim_mubi_pkg::MuBi4True) exp_data = 0;
+    else                                               exp_data = '1;
+
+    `DV_CHECK_EQ(item.d_data, exp_data, "d_data mismatch when d_error = 1")
+  endfunction
+
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     kdi_fifo = new("kdi_fifo", this);
