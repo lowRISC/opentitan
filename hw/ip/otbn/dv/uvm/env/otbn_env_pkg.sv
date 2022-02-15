@@ -11,6 +11,7 @@ package otbn_env_pkg;
   import dv_base_reg_pkg::*;
   import tl_agent_pkg::*;
   import cip_base_pkg::*;
+  import push_pull_agent_pkg::*;
   import otbn_model_pkg::*;
   import otbn_model_agent_pkg::*;
   import otbn_memutil_pkg::*;
@@ -44,12 +45,19 @@ package otbn_env_pkg;
   parameter uint NUM_ALERTS = otbn_reg_pkg::NumAlerts;
   parameter uint NUM_EDN = 2;
 
+  // Number of bits in the otp_ctrl_pkg::otbn_otp_key_rsp_t struct:
+  parameter int KEY_RSP_DATA_SIZE = $bits(otp_ctrl_pkg::otbn_otp_key_rsp_t);
+
   // typedefs
   typedef virtual pins_if #(1)     idle_vif;
   typedef virtual otbn_escalate_if escalate_vif;
   typedef logic [TL_AIW-1:0]       tl_source_t;
   typedef key_sideload_agent#(keymgr_pkg::otbn_key_req_t) otbn_sideload_agent;
   typedef key_sideload_agent_cfg#(keymgr_pkg::otbn_key_req_t) otbn_sideload_agent_cfg;
+
+  typedef push_pull_agent#(.DeviceDataWidth(KEY_RSP_DATA_SIZE)) otp_key_agent;
+  typedef push_pull_agent_cfg#(.DeviceDataWidth(KEY_RSP_DATA_SIZE)) otp_key_agent_cfg;
+  typedef virtual push_pull_if#(.DeviceDataWidth(KEY_RSP_DATA_SIZE)) otp_key_vif;
 
   // Expected data for a pending read (see exp_read_values in otbn_scoreboard.sv)
   typedef struct packed {

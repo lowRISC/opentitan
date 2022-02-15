@@ -54,6 +54,38 @@ module tb;
     .keymgr_key_i  (sideload_key)
   );
 
+  // OTP Interface related connections
+  localparam logic [127:0] TestScrambleKey = 128'h48ecf6c738f0f108a5b08620695ffd4d;
+  localparam logic [63:0]  TestScrambleNonce = 64'hf88c2578fa4cd123;
+
+  otbn_otp_key_req_t otp_key_req;
+  otbn_otp_key_rsp_t otp_key_rsp;
+
+  otp_ctrl_pkg::otbn_key_t   key;
+  otp_ctrl_pkg::otbn_nonce_t nonce;
+  wire seed_valid;
+
+  wire otp_rst_n = rst_n;
+  wire otp_clk;
+
+  clk_rst_if otp_clk_rst_if(.clk(otp_clk), .rst_n(otp_rst_n));
+
+  // Initiate push pull interface for the OTP<->OTBN connections
+  push_pull_if #(
+    .DeviceDataWidth(KEY_RSP_DATA_SIZE)
+  ) otp_key_if (
+    .clk(otp_clk),
+    .rst_n(otp_rst_n)
+  );
+
+  // OTP Key interface assignments
+  assign otp_key_if.req         = otp_key_req.req;
+  assign otp_key_rsp.ack        = otp_key_if.ack;
+  assign otp_key_rsp.key        = key;
+  assign otp_key_rsp.nonce      = nonce;
+  assign otp_key_rsp.seed_valid = seed_valid;
+  // key, nonce, seed_valid all driven by push_pull Device interface
+  assign {key, nonce, seed_valid} = otp_key_if.d_data;
 
   // edn_clk, edn_rst_n and edn_if is defined and driven in below macro
   `DV_EDN_IF_CONNECT
@@ -81,27 +113,6 @@ module tb;
       $asserton(0, `URND_REQ_PATH.SyncReqAckDataHoldDst2SrcB);
     end
   end
-
-  otbn_otp_key_req_t otp_key_req;
-  otbn_otp_key_rsp_t otp_key_rsp;
-
-  logic otp_key_ack_q;
-
-  always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-      otp_key_ack_q <= 1'b0;
-    end else begin
-      otp_key_ack_q <= otp_key_req.req;
-    end
-  end
-
-  localparam logic [127:0] TestScrambleKey = 128'h48ecf6c738f0f108a5b08620695ffd4d;
-  localparam logic [63:0]  TestScrambleNonce = 64'hf88c2578fa4cd123;
-
-  assign otp_key_rsp.ack = otp_key_ack_q;
-  assign otp_key_rsp.key = TestScrambleKey;
-  assign otp_key_rsp.nonce = TestScrambleNonce;
-  assign otp_key_rsp.seed_valid = 1'b0;
 
   // dut
   otbn # (
@@ -136,8 +147,8 @@ module tb;
     .edn_urnd_o(edn_if[1].req),
     .edn_urnd_i({edn_if[1].ack, edn_if[1].d_data}),
 
-    .clk_otp_i     (clk),
-    .rst_otp_ni    (rst_n),
+    .clk_otp_i     (otp_clk),
+    .rst_otp_ni    (otp_rst_n),
     .otbn_otp_key_o(otp_key_req),
     .otbn_otp_key_i(otp_key_rsp),
 
@@ -283,7 +294,9 @@ module tb;
 
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
+    otp_clk_rst_if.set_active(.drive_rst_n_val(1'b0));
 
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "otp_clk_rst_vif", otp_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(idle_vif)::set(null, "*.env", "idle_vif", idle_if);
@@ -292,6 +305,9 @@ module tb;
     uvm_config_db#(virtual otbn_model_if)::set(null, "*.env.model_agent", "vif", model_if);
     uvm_config_db#(virtual key_sideload_if#(keymgr_pkg::otbn_key_req_t))::set(
       null, "*.env.keymgr_sideload_agent", "vif", keymgr_if);
+
+    uvm_config_db#(otp_key_vif)::set(
+      null, "*.env.key_agent*", "vif", otp_key_if);
 
     uvm_config_db#(virtual otbn_trace_if)::set(null, "*.env", "trace_vif",
                                                dut.u_otbn_core.i_otbn_trace_if);

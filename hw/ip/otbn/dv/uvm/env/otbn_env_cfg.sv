@@ -9,6 +9,10 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
 
   rand otbn_sideload_agent_cfg keymgr_sideload_agent_cfg;
 
+  rand otp_key_agent_cfg key_cfg;
+
+  virtual clk_rst_if otp_clk_rst_vif;
+
   `uvm_object_utils_begin(otbn_env_cfg)
   `uvm_object_utils_end
 
@@ -62,6 +66,12 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
   // Copied from dv_base_agent_cfg so that we can use a monitor without defining a separate agent.
   int ok_to_end_delay_ns = 1000;
 
+  // otp clk freq
+  rand uint otp_freq_mhz;
+  constraint otp_freq_mhz_c {
+    `DV_COMMON_CLK_CONSTRAINT(otp_freq_mhz)
+  }
+
   function void initialize(bit [31:0] csr_base_addr = '1);
     num_edn = 2;
     // Tell the CIP base code not to look for a "devmode" interface. OTBN doesn't have one.
@@ -80,6 +90,10 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     model_agent_cfg  = otbn_model_agent_cfg  ::type_id::create("model_agent_cfg");
     keymgr_sideload_agent_cfg = otbn_sideload_agent_cfg::type_id::create(
       "keymgr_sideload_agent_cfg");
+
+
+    // Build OTP Key cfg object
+    key_cfg = otp_key_agent_cfg::type_id::create("key_cfg");
 
     super.initialize(csr_base_addr);
 
