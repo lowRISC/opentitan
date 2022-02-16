@@ -46,6 +46,7 @@ class aes_config_error_test extends aes_base_test;
     cfg.fixed_iv_en              = 0;
 
     cfg.random_data_key_iv_order = 0;
+    cfg.sideload_pct             = 30;
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
   endfunction
