@@ -182,7 +182,7 @@
     { name: "FSM.SPARSE"
       desc: "FSMs in KMAC are sparsely encoded."
     }
-    { name: "LFSR.REDUN"
+    { name: "PRNG.LFSR.REDUN"
       desc: "LFSR in the entropy generator uses prim_double_lfsr"
     }
     { name: "CTR.REDUN"

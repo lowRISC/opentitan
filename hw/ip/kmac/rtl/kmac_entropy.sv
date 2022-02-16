@@ -307,7 +307,7 @@ module kmac_entropy
   // We employ two redundant LFSRs to guard against FI attacks.
   // If any of the two is glitched and the two LFSR states do not agree,
   // KMAC reports the fatal error via alert interface.
-  // SEC_CM: LFSR.REDUN
+  // SEC_CM: PRNG.LFSR.REDUN
   prim_double_lfsr #(
     .LfsrDw(EntropyLfsrW),
     .EntropyDw(EntropyLfsrW),
