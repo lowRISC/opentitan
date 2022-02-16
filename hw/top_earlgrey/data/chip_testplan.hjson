@@ -2587,6 +2587,45 @@
       tests: []
     }
 
+    //////////////////
+    // CPU          //
+    // RV_CORE_IBEX //
+    //////////////////
+
+    {
+      name: chip_sw_rv_core_ibex_rnd
+      desc: '''Verify the functionality of the random number generation CSRs.
+
+               - Enable entropy complex so `RND_DATA` can get entropy.
+               - Perform multiple reads from `RND_DATA` polling `RND_STATUS` in
+                 between to only read valid data. Check different random bits
+                 are provided each time.
+               - Ensure `RND_STATUS` indicate invalid data immediately after
+                 `RND_DATA` read.
+               - Perform repeated reads from `RND_DATA` without `RND_STATUS`
+                 polling to check read when invalid doesn't block.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sw_rv_core_ibex_address_translation
+      desc: '''Verify the simple address translation functionality.
+
+               - Setup address translation for both slots on the the I and D
+                 side and check correct translation for I and D accesses.
+               - Switch address translation to use different regions that
+                 overlap for both slots and check translation again. Ensure some
+                 test accesses match both regions, where the lowest indexed one
+                 takes priority.
+               - Turn off address translation and confirm regions are no longer
+                 being remapped.
+            '''
+      milestone: V2
+      tests: []
+   }
+
+
     ////////////////////////////
     // System level scenarios //
     ////////////////////////////
