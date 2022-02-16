@@ -48,8 +48,8 @@
       tests: []
     }
     {
-      name: sec_cm_lfsr_redun
-      desc: "Verify the countermeasure(s) LFSR.REDUN."
+      name: sec_cm_prng_lfsr_redun
+      desc: "Verify the countermeasure(s) PRNG.LFSR.REDUN."
       milestone: V2S
       tests: []
     }
