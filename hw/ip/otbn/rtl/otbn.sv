@@ -709,7 +709,6 @@ module otbn
                               otbn_imem_scramble_key_req_busy,
                               idle})
 
-  `ASSERT(OtbnSomeStatesExclusive, $onehot0({locked, busy_execute_q, idle}))
   `ASSERT(OtbnOnlyIdleIfNoActivity, idle |-> ~|{locked,
                                                 busy_execute_q,
                                                 otbn_dmem_scramble_key_req_busy,
