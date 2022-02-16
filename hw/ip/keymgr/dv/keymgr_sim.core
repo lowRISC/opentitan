@@ -8,8 +8,6 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:keymgr
-      - lowrisc:dv:sec_cm_prim_count_bind
-      - lowrisc:dv:sec_cm_prim_sparse_fsm_flop_bind
 
   files_dv:
     depend:
