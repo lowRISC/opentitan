@@ -580,12 +580,13 @@ sw_tests += {
   }
 }
 
-otbn_ecdsa_p256_test_lib = declare_dependency(
+otbn_ecdsa_op_irq_test_lib = declare_dependency(
   link_with: static_library(
-    'otbn_ecdsa_p256_test_lib',
-    sources: ['otbn_ecdsa_p256_test.c'],
+    'otbn_ecdsa_op_irq_test_lib',
+    sources: ['otbn_ecdsa_op_irq_test.c'],
     dependencies: [
       sw_lib_testing_entropy_testutils,
+      sw_lib_dif_rv_plic,
       sw_lib_runtime_otbn,
       sw_lib_runtime_log,
       sw_lib_runtime_ibex,
@@ -595,8 +596,8 @@ otbn_ecdsa_p256_test_lib = declare_dependency(
   ),
 )
 sw_tests += {
-  'otbn_ecdsa_p256_test': {
-    'library': otbn_ecdsa_p256_test_lib
+  'otbn_ecdsa_op_irq_test': {
+    'library': otbn_ecdsa_op_irq_test_lib
   }
 }
 
