@@ -758,22 +758,22 @@
         {
           bits: "8",
           name: "tx_dp_o",
-          desc: "USB differential D+ output (readback)."
+          desc: "USB transmit D+ output (readback)."
         }
         {
           bits: "9",
           name: "tx_dn_o",
-          desc: "USB differential D- output (readback)."
+          desc: "USB transmit D- output (readback)."
         }
         {
           bits: "10",
           name: "tx_d_o",
-          desc: "USB single-ended output (readback)."
+          desc: "USB transmit data value (readback)."
         }
         {
           bits: "11",
           name: "tx_se0_o",
-          desc: "USB single-ended SE0 output (readback)."
+          desc: "USB single-ended zero output (readback)."
         }
         {
           bits: "12",
@@ -807,22 +807,22 @@
         {
           bits: "0",
           name: "dp_o",
-          desc: "USB differential D+ output."
+          desc: "USB transmit D+ output, used with dn_o."
         }
         {
           bits: "1",
           name: "dn_o",
-          desc: "USB differential D- output."
+          desc: "USB transmit D- output, used with dp_o."
         }
         {
           bits: "2",
           name: "d_o",
-          desc: "USB single-ended output."
+          desc: "USB transmit data output, encoding K and J when se0_o is 0."
         }
         {
           bits: "3",
           name: "se0_o",
-          desc: "USB single-ended SE0 output."
+          desc: "USB single-ended zero output."
         }
         {
           bits: "4",
@@ -869,10 +869,13 @@
         {
           bits: "0",
           resval: "0",
-          name: "rx_differential_mode",
+          name: "use_diff_rcvr",
           desc: '''
-                Use the differential RX signal instead of the single-ended signals.
-                Currently only 0 (single-ended operation) is supported.
+                Detect received K and J symbols from the usb_rx_d signal, which must be driven from an external differential receiver.
+                If 1, make use of the usb_rx_d input.
+                If 0, the usb_rx_d input is ignored and the usb_rx_dp and usb_rx_dn pair are used to detect K and J (useful for some environments, but will be unlikely to pass full USB compliance).
+                Regardless of the state of this field usb_rx_dp and usb_rx_dn are always used to detect SE0.
+                This bit also feeds the rx_enable pin, activating the receiver when the device is not suspended.
                 '''
         }
         {
@@ -883,7 +886,7 @@
                 If 1, select the d and se0 TX interface.
                 If 0, select the dp and dn TX interface.
                 This directly controls the output pin of the same name.
-                It is intended to be used to enable the use of a variety of external transceivers.
+                It is intended to be used to enable the use of a variety of external transceivers, to select an encoding that matches the transceiver.
                 '''
         }
         {

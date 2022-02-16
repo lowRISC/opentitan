@@ -678,8 +678,8 @@ module usbdev_reg_top (
   logic phy_pins_drive_en_qs;
   logic phy_pins_drive_en_wd;
   logic phy_config_we;
-  logic phy_config_rx_differential_mode_qs;
-  logic phy_config_rx_differential_mode_wd;
+  logic phy_config_use_diff_rcvr_qs;
+  logic phy_config_use_diff_rcvr_wd;
   logic phy_config_tx_use_d_se0_qs;
   logic phy_config_tx_use_d_se0_wd;
   logic phy_config_eop_single_bit_qs;
@@ -6853,18 +6853,18 @@ module usbdev_reg_top (
 
 
   // R[phy_config]: V(False)
-  //   F[rx_differential_mode]: 0:0
+  //   F[use_diff_rcvr]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_phy_config_rx_differential_mode (
+  ) u_phy_config_use_diff_rcvr (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_config_we),
-    .wd     (phy_config_rx_differential_mode_wd),
+    .wd     (phy_config_use_diff_rcvr_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6872,10 +6872,10 @@ module usbdev_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_config.rx_differential_mode.q),
+    .q      (reg2hw.phy_config.use_diff_rcvr.q),
 
     // to register interface (read)
-    .qs     (phy_config_rx_differential_mode_qs)
+    .qs     (phy_config_use_diff_rcvr_qs)
   );
 
   //   F[tx_use_d_se0]: 1:1
@@ -7714,7 +7714,7 @@ module usbdev_reg_top (
   assign phy_pins_drive_en_wd = reg_wdata[16];
   assign phy_config_we = addr_hit[32] & reg_we & !reg_error;
 
-  assign phy_config_rx_differential_mode_wd = reg_wdata[0];
+  assign phy_config_use_diff_rcvr_wd = reg_wdata[0];
 
   assign phy_config_tx_use_d_se0_wd = reg_wdata[1];
 
@@ -8083,7 +8083,7 @@ module usbdev_reg_top (
       end
 
       addr_hit[32]: begin
-        reg_rdata_next[0] = phy_config_rx_differential_mode_qs;
+        reg_rdata_next[0] = phy_config_use_diff_rcvr_qs;
         reg_rdata_next[1] = phy_config_tx_use_d_se0_qs;
         reg_rdata_next[2] = phy_config_eop_single_bit_qs;
         reg_rdata_next[5] = phy_config_pinflip_qs;

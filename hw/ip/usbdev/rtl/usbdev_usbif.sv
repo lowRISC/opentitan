@@ -76,7 +76,7 @@ module usbdev_usbif  #(
   input  logic [NEndpoints-1:0]    out_ep_iso_i,
   input  logic [NEndpoints-1:0]    in_ep_iso_i,
   input  logic                     cfg_eop_single_bit_i, // 1: detect a single SE0 bit as EOP
-  input  logic                     cfg_rx_differential_i, // 1: use differential rx data on usb_d_i
+  input  logic                     cfg_use_diff_rcvr_i, // 1: use single-ended rx data on usb_d_i
   input  logic                     tx_osc_test_mode_i, // Oscillator test mode: constant JK output
   input  logic [NEndpoints-1:0]    data_toggle_clear_i, // Clear the data toggles for an EP
   input  logic                     resume_link_active_i, // Jump from LinkPowered to LinkResuming
@@ -277,7 +277,7 @@ module usbdev_usbif  #(
     .link_active_i         (link_active_o),
 
     .cfg_eop_single_bit_i  (cfg_eop_single_bit_i),
-    .cfg_rx_differential_i (cfg_rx_differential_i),
+    .cfg_use_diff_rcvr_i   (cfg_use_diff_rcvr_i),
     .tx_osc_test_mode_i    (tx_osc_test_mode_i),
     .data_toggle_clear_i   (data_toggle_clear_i),
 

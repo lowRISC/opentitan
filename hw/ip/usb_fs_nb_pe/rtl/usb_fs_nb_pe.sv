@@ -31,7 +31,7 @@ module usb_fs_nb_pe #(
   input  logic [6:0]             dev_addr_i,
 
   input  logic                   cfg_eop_single_bit_i, // 1: detect a single SE0 bit as EOP
-  input  logic                   cfg_rx_differential_i, // 1: use differential rx data on usb_d_i
+  input  logic                   cfg_use_diff_rcvr_i, // 1: use usb_d_i from a differential receiver
   input  logic                   tx_osc_test_mode_i, // Oscillator test mode (constantly output JK)
   input  logic [NumOutEps-1:0]   data_toggle_clear_i, // Clear the data toggles for an EP
 
@@ -233,7 +233,7 @@ module usb_fs_nb_pe #(
     .rst_ni                 (rst_ni),
     .link_reset_i           (link_reset_i),
     .cfg_eop_single_bit_i   (cfg_eop_single_bit_i),
-    .cfg_rx_differential_i  (cfg_rx_differential_i),
+    .cfg_use_diff_rcvr_i    (cfg_use_diff_rcvr_i),
     .usb_d_i                (usb_d_i),
     .usb_dp_i               (usb_dp_i),
     .usb_dn_i               (usb_dn_i),
