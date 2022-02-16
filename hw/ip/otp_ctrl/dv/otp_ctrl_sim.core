@@ -8,9 +8,6 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:otp_ctrl
-      - lowrisc:dv:sec_cm_prim_count_bind
-      - lowrisc:dv:sec_cm_prim_sparse_fsm_flop_bind
-      - lowrisc:dv:sec_cm_prim_double_lfsr_bind
 
   files_dv:
     depend:
