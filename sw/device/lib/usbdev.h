@@ -239,11 +239,13 @@ void usbdev_connect(usbdev_ctx_t *ctx);
  *
  * @param ctx uninitialized usbdev context pointer
  * @param pinflip boolean to indicate if PHY should be configured for D+/D- flip
- * @param diff_rx boolean to indicate if PHY uses differential RX
+ * @param en_diff_rcvr boolean to indicate if PHY should enable an external
+ *                     differential receiver, activating the single-ended D
+ *                     input
  * @param tx_use_d_se0 boolean to indicate if PHY uses D/SE0 for TX instead of
  *                     Dp/Dn
  */
-void usbdev_init(usbdev_ctx_t *ctx, bool pinflip, bool diff_rx,
+void usbdev_init(usbdev_ctx_t *ctx, bool pinflip, bool en_diff_rcvr,
                  bool tx_use_d_se0);
 
 /**
