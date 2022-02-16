@@ -167,7 +167,21 @@
       milestone: V2
       tests: ["{variant}_edn_timeout_error"]
     }
-    {
+     {
+      name: entropy_mode_error
+      desc: ''' Test kmac responses correctly when entropy mode is configured incorrectly.
+            Based on kmac edn_timeout sequence, this sequence write incorrect
+            `ral.cfg_shadowed.entropy_mode` before entropy is fetched.
+            **Check**:
+            - Check error related registers including `err_code`, `status`, and `interrupt`.
+            - Check keymgr interface responses with error bit sets to 1.
+            - Check kmac can resume normal functionalities after processing this error case.
+            - Check timeout error will not trigger if masking is disabled.
+            '''
+      milestone: V2
+      tests: ["{variant}_entropy_mode_error"]
+    }
+   {
       name: lc_escalation
       desc: '''
             Randomly set `lc_escalate_en` to value that is not `Off` during Kmac operations.
