@@ -19,11 +19,11 @@ Expectations of Technical Committee members include the following:
 
 ## Membership
 The OpenTitan Technical Committee membership is:
-* Alex Bradbury (chair)
+* Michael Schaffner (chair)
 * Richard Bohn
 * Cyril Guyot
 * Felix Miller
 * Dominic Rizzo (observer)
-* Michael Schaffner
 * Alphan Ulusoy
 * Michael Munday
+* Rupert Swarbrick
