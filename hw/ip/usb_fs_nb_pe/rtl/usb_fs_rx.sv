@@ -12,7 +12,7 @@ module usb_fs_rx (
 
   // configuration
   input  logic cfg_eop_single_bit_i,
-  input  logic cfg_rx_differential_i,
+  input  logic cfg_rx_single_ended_i,
 
   // USB data+ and data- lines (synchronous)
   input  logic usb_d_i,
@@ -68,17 +68,22 @@ module usb_fs_rx (
   // line state recovery state machine //
   ///////////////////////////////////////
 
-  // If the receive path is set not to use a differential reciever:
-  // There is a chance that one of the differential pairs will appear to have
-  // changed to the new state while the other is still in the old state.  the
+  // If the receive path is set NOT to use an external differential receiver:
+  // This block is in differential mode, and it samples data purely from the
+  // differential pair.
+  // There is a chance that one of the signals in the pair will appear to have
+  // changed to the new state while the other is still in the old state.  The
   // following state machine detects transitions and waits an extra sampling clock
-  // before decoding the state on the differential pair.  this transition period
+  // before decoding the state on the differential pair.  This transition period
   // will only ever last for one clock as long as there is no noise on the line.
-  // if there is enough noise on the line then the data may be corrupted and the
+  // If there is enough noise on the line then the data may be corrupted and the
   // packet will fail the data integrity checks.
 
-  // If the receive path uses a differential receiver:
-  // The single ended signals must still be recovered to detect SE0
+  // If the receive path uses an external differential receiver:
+  // This block is in single-ended mode, and it detects K and J symbols from
+  // the single-ended usb_d_i input.
+  // The individual signals of the differential pair must still be connected
+  // to this block to detect SE0.
   // Note that the spec warns in section 7.1.4.1:
   // Both D+ and D- may temporarily be less than VIH (min) during differential
   // signal transitions. This period can be up to 14 ns (TFST) for full-speed
@@ -87,7 +92,7 @@ module usb_fs_rx (
   // Since the 48MHz sample clock is 20.833ns period we will either miss this or
   // sample it only once, so it will be covered by line_state=DT and the next
   // sample will not be SE0 unless this was a real SE0 transition
-  // Note: if it is a real SE0 the differential rx could be doing anything
+  // Note: if it is a real SE0 the single-ended rx could be doing anything
 
   logic [2:0] line_state_qq, line_state_q, line_state_d;
   logic [2:0] diff_state_q, diff_state_d;
@@ -101,6 +106,12 @@ module usb_fs_rx (
   // localparam logic [2:0] SE1 = 3'b011; // single-ended 1 - illegal
 
   // Mute the input if we're transmitting
+  // dpair is the differential pair, used in both modes. In single-ended
+  // mode, only used for detecting SE0 and transitions. In differential mode,
+  // used for all symbols.
+  // ddiff is the decoded data input from an external differential receiver,
+  // if available, and is used only in single-ended mode (and only for K and
+  // J symbols, plus transition detection).
   logic [1:0] dpair, ddiff;
   always_comb begin : proc_dpair_mute
     if (tx_en_i) begin
@@ -167,13 +178,13 @@ module usb_fs_rx (
   end
 
   // The received line state depends on how the receiver is configured:
-  // Single ended only: it is just the line_state_q that was captured
+  // Differential only: it is just the line_state_q that was captured
   //
-  // Differential: recovered from the differential receiver (diff_state_q)
-  //               unless the single ended indicate SE0 when the differential
+  // Single-ended: recovered from the differential receiver (diff_state_q)
+  //               unless the diff pair indicate SE0 when the differential
   //               receiver could produce any value
   //
-  // Transition where single ended happens to see SE0 look like (driven by diff DT)
+  // Transition where the diff pair happen to see SE0 look like (driven by diff DT)
   // line_state    D? DT D?...
   // diff_state    Dx DT Dy         (expect Dy to be inverse of Dx since diff changed)
   //
@@ -203,7 +214,7 @@ module usb_fs_rx (
   // bit_phase      ?   ?   ?  0  1  2
 
   assign use_se = (line_state_q == SE0) || ((line_state_q == DT) && (line_state_qq == SE0));
-  assign line_state_rx = cfg_rx_differential_i ? (use_se ? line_state_q : diff_state_q) :
+  assign line_state_rx = cfg_rx_single_ended_i ? (use_se ? line_state_q : diff_state_q) :
                                                  line_state_q;
 
   ////////////////////

@@ -90,7 +90,7 @@ For reasons of flexibility, this IP block features both differential and single-
 For better receive sensitivity, lower transmit jitter and to be standard compliant, a dedicated, differential USB transceiver such as the [USB1T11A](https://www.mouser.com/datasheet/2/149/fairchild%20semiconductor_usb1t11a-320893.pdf) or the [USB1T20](https://www.onsemi.com/pub/Collateral/USB1T20-D.pdf) must be used (see Section 7.1.4.1 of the [USB 2.0 specification](https://www.usb.org/document-library/usb-20-specification)).
 Depending on the selected USB transceiver, either the differential or the single-ended transmit and receive paths or a combination of the two can be used to interface the IP block with the transceiver.
 
-When prototyping on FPGAs (here the interface can be implemented with pseudo-differential 3.3V GPIO pins and an oversampling receiver for recovery of the bitstream and clock alignment), the single-ended signal pairs can be used.
+When prototyping on FPGAs (here the interface can be implemented with pseudo-differential 3.3V GPIO pins and an oversampling receiver for recovery of the bitstream and clock alignment), the differential signal pairs can be used with LVCMOS I/O buffers, driven as though they were single-ended.
 External to the IP, these should be combined to drive the actual pins when transmit is enabled and receive otherwise.
 Using standard 3.3V IO pads allows use on most FPGAs although the drive strength and series termination resistors may need to be adjusted to meet the USB signal eye.
 On a Xilinx Artix-7 (and less well tested Spartan-7) part, setting the driver to the 8mA, FAST setting seems to work well with a 22R series termination (and with a 0R series termination).
@@ -107,10 +107,10 @@ The following table summarizes how the different output signals relate to the US
 
 |  External Pins | Internal Signals | Notes |
 |----------------|------------------|-------|
-| D+, D-         | d_o              | Data output for interfacing with a differential USB transceiver. |
-| \"             | se0_o            | Signal Single-Ended Zero (SE0) link state to a differential USB transceiver. |
-| \"             | dp_o, dn_o       | Single-ended data output signals. These can be used to interface to regular IO cells for prototyping on an FPGA, but such an interface will probably not be USB compliant. |
-|   [TX Mode]    | tx_mode_se_o     | Indicates the selected TX mode: single-ended (1) or differential (0) operation. |
+| D+, D-         | d_o              | Single-ended data output for interfacing with a USB transceiver. |
+| \"             | se0_o            | Signal Single-Ended Zero (SE0) link state to a USB transceiver. |
+| \"             | dp_o, dn_o       | Differential data output signals. These can be used to interface to regular IO cells for prototyping on an FPGA, but such an interface will probably not be USB compliant. A USB transceiver with a differential interface may also be used. |
+|   [TX Mode]    | tx_mode_se_o     | Indicates the selected TX mode: differential (0) or single-ended (1) operation. |
 
 Note that according to the [Comportable guideline for peripheral functionality]({{< relref "doc/rm/comportability_specification" >}}), every output signal `name_o` has a dedicated output enable `name_en_o`.
 For TX data, these separate signals `d_en_o`, `dp_en_o` and `dn_en_o` all correspond to the same TX or output enable signal (`OE` in the USB spec).
@@ -125,8 +125,8 @@ The following table summarizes how the different input signals relate to the USB
 
 |  External Pins | Internal Signals | Notes |
 |----------------|------------------|-------|
-| D+, D-         | d_i              | Data input for interfacing with a differential USB transceiver. Used in differential RX mode only. |
-| \"             | dp_i, dn_i       | Single-ended data input signals. These signals are used to detect the SE0 link state in differential RX mode. They can further be used to interface to regular IO cells for prototyping on an FPGA, but such an interface will probably not be USB compliant. |
+| D+, D-         | d_i              | Single-ended data input for interfacing with a USB transceiver. Used in single-ended RX mode only. |
+| \"             | dp_i, dn_i       | Differential data input signals. These signals are used to detect the SE0 link state in differential RX mode. They can further be used to interface to regular IO cells for prototyping on an FPGA, but such an interface will probably not be USB compliant. A USB transceiver with a differential interface may also be used. |
 
 
 ### Non-Data Pins

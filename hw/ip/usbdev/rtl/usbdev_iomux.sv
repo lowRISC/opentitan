@@ -59,14 +59,14 @@ module usbdev_iomux
   logic cio_usb_dp, cio_usb_dn, cio_usb_d;
   logic pinflip;
   logic unused_eop_single_bit;
-  logic unused_rx_differential_mode;
+  logic unused_rx_single_ended;
   logic unused_usb_ref_disable;
   logic unused_tx_osc_test_mode;
 
   assign unused_eop_single_bit       = sys_reg2hw_config_i.eop_single_bit.q;
   assign unused_usb_ref_disable      = sys_reg2hw_config_i.usb_ref_disable.q;
   assign unused_tx_osc_test_mode     = sys_reg2hw_config_i.tx_osc_test_mode.q;
-  assign unused_rx_differential_mode = sys_reg2hw_config_i.rx_differential_mode.q;
+  assign unused_rx_single_ended      = sys_reg2hw_config_i.rx_single_ended.q;
 
   //////////
   // CDCs //

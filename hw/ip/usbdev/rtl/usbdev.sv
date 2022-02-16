@@ -30,9 +30,9 @@ module usbdev
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   // Data inputs
-  input  logic       cio_d_i, // differential
-  input  logic       cio_dp_i, // single-ended, can be used in differential mode to detect SE0
-  input  logic       cio_dn_i, // single-ended, can be used in differential mode to detect SE0
+  input  logic       cio_d_i, // single-ended
+  input  logic       cio_dp_i, // differential P, can be used in single-ended mode to detect SE0
+  input  logic       cio_dn_i, // differential N, can be used in single-ended mode to detect SE0
 
   // Data outputs
   output logic       cio_d_o,
@@ -44,7 +44,7 @@ module usbdev
 
   // Non-data I/O
   input  logic       cio_sense_i,
-  output logic       cio_se0_o,
+  output logic       cio_se0_o, // single-ended zero
   output logic       cio_se0_en_o,
   output logic       cio_dp_pullup_o,
   output logic       cio_dp_pullup_en_o,
@@ -584,7 +584,7 @@ module usbdev
     .in_ep_iso_i          (ep_in_iso), // cdc ok, quasi-static
     .cfg_eop_single_bit_i (reg2hw.phy_config.eop_single_bit.q), // cdc ok: quasi-static
     .tx_osc_test_mode_i   (reg2hw.phy_config.tx_osc_test_mode.q), // cdc ok: quasi-static
-    .cfg_rx_differential_i (reg2hw.phy_config.rx_differential_mode.q), // cdc ok: quasi-static
+    .cfg_rx_single_ended_i (reg2hw.phy_config.rx_single_ended.q), // cdc ok: quasi-static
     .data_toggle_clear_i  (usb_data_toggle_clear),
     .resume_link_active_i (usb_resume_link_active),
 
@@ -1062,8 +1062,11 @@ module usbdev
     .usb_suspend_i          (usb_event_link_suspend)
   );
 
-  // enable rx only when in differential mode and not suspended.
-  assign cio_rx_enable_o = reg2hw.phy_config.rx_differential_mode.q & ~usb_suspend_o;
+  // enable rx only when the single-ended input is enabled and the device is
+  // not suspended.
+  // TODO(#10901): This can cause undefined behavior if this module stays
+  // powered to detect resume (instead of the AON module).
+  assign cio_rx_enable_o = reg2hw.phy_config.rx_single_ended.q & ~usb_suspend_o;
 
   ////////////////////////
   // USB Output Enables //

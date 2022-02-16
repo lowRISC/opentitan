@@ -21,6 +21,7 @@ module chip_englishbreakfast_verilator (
   logic cio_usbdev_se0_d2p, cio_usbdev_se0_en_d2p;
   logic cio_usbdev_dp_pullup_d2p, cio_usbdev_dp_pullup_en_d2p;
   logic cio_usbdev_dn_pullup_d2p, cio_usbdev_dn_pullup_en_d2p;
+  logic cio_usbdev_rx_enable_d2p, cio_usbdev_rx_enable_en_d2p;
   logic cio_usbdev_suspend_d2p, cio_usbdev_suspend_en_d2p;
   logic cio_usbdev_d_p2d, cio_usbdev_d_d2p, cio_usbdev_d_en_d2p;
   logic cio_usbdev_dp_p2d, cio_usbdev_dp_d2p, cio_usbdev_dp_en_d2p;
@@ -50,6 +51,7 @@ module chip_englishbreakfast_verilator (
   assign cio_usbdev_dn_pullup_d2p = dio_out[DioUsbdevDnPullup];
   assign cio_usbdev_dp_pullup_d2p = dio_out[DioUsbdevDpPullup];
   assign cio_usbdev_se0_d2p = dio_out[DioUsbdevSe0];
+  assign cio_usbdev_rx_enable_d2p = dio_out[DioUsbdevRxEnable];
   assign cio_spi_device_sdo_d2p = dio_out[DioSpiDeviceSd1];
 
   assign cio_usbdev_dn_en_d2p = dio_oe[DioUsbdevDn];
@@ -59,6 +61,7 @@ module chip_englishbreakfast_verilator (
   assign cio_usbdev_dn_pullup_en_d2p = dio_oe[DioUsbdevDnPullup];
   assign cio_usbdev_dp_pullup_en_d2p = dio_oe[DioUsbdevDpPullup];
   assign cio_usbdev_se0_en_d2p = dio_oe[DioUsbdevSe0];
+  assign cio_usbdev_rx_enable_d2p_en_o = dio_oe[DioUsbdevRxEnable];
   assign cio_spi_device_sdo_en_d2p = dio_oe[DioSpiDeviceSd1];
 
   logic [pinmux_pkg::NMioPads-1:0] mio_in;
@@ -299,8 +302,8 @@ module chip_englishbreakfast_verilator (
     .d_en_d2p        (cio_usbdev_d_en_d2p),
     .se0_d2p         (cio_usbdev_se0_d2p),
     .se0_en_d2p      (cio_usbdev_se0_en_d2p),
-    .txmode_d2p      (cio_usbdev_se0_en_d2p),
-    .txmode_en_d2p   (1'b1)
+    .rx_enable_d2p   (cio_usbdev_rx_enable_d2p),
+    .rx_enable_en_d2p(cio_usbdev_rx_enable_en_d2p)
   );
 
   // Tie off unused signals.

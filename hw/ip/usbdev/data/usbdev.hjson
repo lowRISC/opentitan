@@ -11,7 +11,7 @@
     { protocol: "tlul", direction: "device" }
   ],
   available_inout_list: [
-    { name: "d", desc: "USB data differential" }
+    { name: "d", desc: "USB data single-ended, from a differential receiver" }
     { name: "dp", desc: "USB data D+" }
     { name: "dn", desc: "USB data D-" }
   ],
@@ -23,7 +23,7 @@
     { name: "dp_pullup", desc: "USB D+ pullup control" }
     { name: "dn_pullup", desc: "USB D- pullup control" }
     { name: "suspend", desc: "USB link suspend state" }
-    { name: "rx_enable", desc: "USB phy differential receive enable" }
+    { name: "rx_enable", desc: "USB differential receiver enable" }
   ],
   inter_signal_list: [
     { name:    "usb_ref_val",
@@ -343,10 +343,10 @@
               name: "active_nosof",
               desc: "Link active but no SOF has been received since the last reset."
             },
-	    { value: "6",
-	      name: "resuming",
-	      desc: "Link resuming to an active state, pending the end of resume signaling"
-	    },
+            { value: "6",
+              name: "resuming",
+              desc: "Link resuming to an active state, pending the end of resume signaling"
+            },
           ]
         }
         {
@@ -694,17 +694,17 @@
         {
           bits: "0",
           name: "rx_dp_i",
-          desc: "USB D+ input."
+          desc: "USB differential D+ input."
         }
         {
           bits: "1",
           name: "rx_dn_i",
-          desc: "USB D- input."
+          desc: "USB differential D- input."
         }
         {
           bits: "2",
           name: "rx_d_i",
-          desc: "USB differential input."
+          desc: "USB single-ended input."
         }
         {
           bits: "8",
@@ -820,10 +820,11 @@
         {
           bits: "0",
           resval: "0",
-          name: "rx_differential_mode",
+          name: "rx_single_ended",
           desc: '''
-                Use the differential RX signal instead of the single-ended signals.
-                Currently only 0 (single-ended operation) is supported.
+                Detect received K and J symbols from the single-ended RX signal.
+                If 1, this field activates the single-ended D input, which must be driven from a differential receiver.
+                If 0, the usbdev IP acts like a differential receiver and detects K and J from the dp and dn pair.
                 '''
         }
         {
