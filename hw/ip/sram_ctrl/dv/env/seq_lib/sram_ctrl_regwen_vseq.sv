@@ -20,6 +20,18 @@ class sram_ctrl_regwen_vseq extends sram_ctrl_executable_vseq;
     csr_update(ral.ctrl_regwen);
     `uvm_info(`gfn, $sformatf("exec_regwen: %0d, ctrl_regwen: %0d",
                               `gmv(ral.exec_regwen), `gmv(ral.ctrl_regwen)), UVM_MEDIUM)
+
+    // req_mem_init in base seq only write 'b11 to this CSR
+    // do some dummy write here to gain 100% coverage for regwen
+    if (`gmv(ral.ctrl_regwen)) begin
+      // when regwen=1, writing 0 to ctrl won't affect anything.
+      csr_wr(.ptr(ral.ctrl), .value(0));
+    end else begin
+      // when regwen=0, writing any value to ctrl won't affect anything.
+      csr_wr(.ptr(ral.ctrl), .value($urandom));
+    end
+    // regwen coverage sample happens at read. ctrl is WO, so it always returns 0.
+    csr_rd_check(.ptr(ral.ctrl), .compare_value(0));
   endtask
 
 endclass
