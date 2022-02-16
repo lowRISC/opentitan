@@ -19,10 +19,6 @@ package key_sideload_agent_pkg;
   typedef class key_sideload_item;
   typedef class key_sideload_agent_cfg;
 
-  // reuse dv_base_sequencer as is with the right parameter set
-  typedef dv_base_sequencer #(.ITEM_T(key_sideload_item),
-                              .CFG_T (key_sideload_agent_cfg)) key_sideload_sequencer;
-
   // functions
 
   // package sources
@@ -31,6 +27,7 @@ package key_sideload_agent_pkg;
   `include "key_sideload_agent_cov.sv"
   `include "key_sideload_driver.sv"
   `include "key_sideload_monitor.sv"
+  `include "key_sideload_sequencer.sv"
   `include "key_sideload_seq_list.sv"
   `include "key_sideload_agent.sv"
 
