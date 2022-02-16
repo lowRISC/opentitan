@@ -17,6 +17,9 @@ class jtag_riscv_agent_cfg extends dv_base_agent_cfg;
   // while RV_DM jtag uses the original DM CSR addresses without the normalization.
   bit is_rv_dm = 0;
 
+  // Max attempts to activate rv_dm.
+  int max_rv_dm_activation_attempts = 100;
+
   // status to return if we assert in_reset
   logic [DMI_OPW-1:0] status_in_reset;
 
