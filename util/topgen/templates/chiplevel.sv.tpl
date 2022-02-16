@@ -242,6 +242,25 @@ module chip_${top["name"]}_${target["name"]} (
 % endfor
 %endif
 
+% if target["name"] == "cw310":
+  //////////////////////////////
+  // SPI device debug signals //
+  //////////////////////////////
+
+  assign manual_oe_spi_dev_dbg_clk = 1'b1;
+  assign manual_in_spi_dev_dbg_clk = 1'b0;
+  assign manual_out_spi_dev_dbg_clk = dio_in[DioSpiDeviceSck];
+  assign manual_oe_spi_dev_dbg_cs_l = 1'b1;
+  assign manual_in_spi_dev_dbg_cs_l = 1'b0;
+  assign manual_out_spi_dev_dbg_cs_l = dio_in[DioSpiDeviceCsb];
+  assign manual_oe_spi_dev_dbg_d0 = 1'b1;
+  assign manual_in_spi_dev_dbg_d0 = 1'b0;
+  assign manual_out_spi_dev_dbg_d0 = dio_in[DioSpiDeviceSd0];
+  assign manual_oe_spi_dev_dbg_d1 = 1'b1;
+  assign manual_in_spi_dev_dbg_d1 = 1'b0;
+  assign manual_out_spi_dev_dbg_d1 = dio_out[DioSpiDeviceSd1];
+
+% endif
   //////////////////////
   // Padring Instance //
   //////////////////////

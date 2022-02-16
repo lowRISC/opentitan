@@ -60,6 +60,12 @@ set_property -dict { PACKAGE_PIN  V21  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [
 set_property -dict { PACKAGE_PIN  W21  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC8 }];       #USB_A18 (SAM3X)
 set_property -dict { PACKAGE_PIN  W20  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC5 }];       #USB_A19 (SAM3X)
 
+## SPI Debug
+set_property -dict { PACKAGE_PIN N18 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_DBG_CLK }]; #SCK (USR_DBG_TCK)
+set_property -dict { PACKAGE_PIN R16 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_DBG_D0 }]; #SDI (USR_DBG_TDI)
+set_property -dict { PACKAGE_PIN P16 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_DBG_D1 }]; #SDO (USR_DBG_TDO)
+set_property -dict { PACKAGE_PIN N16 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_DBG_CS_L }]; #CSB (USR_DBG_TMS)
+
 ## SPI HOST
 set_property -dict { PACKAGE_PIN AF8 IOSTANDARD LVCMOS18 } [get_ports { SPI_HOST_CLK }];   #SCK (USR_SPI0CLK)
 set_property -dict { PACKAGE_PIN AE8 IOSTANDARD LVCMOS18 PULLTYPE PULLUP } [get_ports { SPI_HOST_D0 }];    #SDO (USR_SPI0DQ0)
