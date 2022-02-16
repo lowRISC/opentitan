@@ -40,15 +40,20 @@ class kmac_edn_timeout_error_vseq extends kmac_app_vseq;
 
   virtual task pre_start();
     super.pre_start();
-    if (cfg.enable_masking) begin
-      $assertoff(0, "tb.dut.gen_entropy.u_edn_req.u_prim_sync_reqack_data.u_prim_sync_reqack.SyncReqAckHoldReq");
-      $assertoff(0, "tb.dut.gen_entropy.u_edn_req.u_prim_sync_reqack_data.u_prim_sync_reqack.SyncReqAckAckNeedsReq");
-      $assertoff(0, "tb.edn_if[0].ReqHighUntilAck_A");
-      $assertoff(0, "tb.edn_if[0].AckAssertedOnlyWhenReqAsserted_A");
-    end
+    if (cfg.enable_masking) disable_asserts();
     cfg.en_scb = 0;
     check_keymgr_rsp_nonblocking();
   endtask
+
+  virtual function void disable_asserts();
+    $assertoff(0,
+      "tb.dut.gen_entropy.u_edn_req.u_prim_sync_reqack_data.u_prim_sync_reqack.SyncReqAckHoldReq");
+    $assertoff(0,
+      // verilog_lint: waive line-length-exceeds-max
+      "tb.dut.gen_entropy.u_edn_req.u_prim_sync_reqack_data.u_prim_sync_reqack.SyncReqAckAckNeedsReq");
+    $assertoff(0, "tb.edn_if[0].ReqHighUntilAck_A");
+    $assertoff(0, "tb.edn_if[0].AckAssertedOnlyWhenReqAsserted_A");
+  endfunction
 
   virtual task post_start();
     super.post_start();
@@ -59,10 +64,14 @@ class kmac_edn_timeout_error_vseq extends kmac_app_vseq;
 
   // Because scb is disabled, use sequence to check if `err_code` is correct.
   virtual task check_err(bit clear_err = 1'b1);
+    super.check_err(clear_err);
+    check_err_code();
+  endtask
+
+  virtual task check_err_code();
     kmac_pkg::err_t kmac_err = '{valid: 1'b1,
                                  code: kmac_pkg::ErrWaitTimerExpired,
                                  info: '0};
-    super.check_err(clear_err);
     csr_rd_check(.ptr(ral.err_code), .compare_value(kmac_err));
   endtask
 
