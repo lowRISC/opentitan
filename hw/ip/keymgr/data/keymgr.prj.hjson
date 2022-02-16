@@ -7,12 +7,14 @@
     design_spec:        "../doc",
     dv_doc:             "../doc/dv",
     hw_checklist:       "../doc/checklist",
+    sw_checklist:       "/sw/device/lib/dif/dif_keymgr",
     revisions: [
       {
         version:            "0.1",
         life_stage:         "L1",
         design_stage:       "D2",
         verification_stage: "V2",
+        dif_stage:          "S0",
       }
     ]
 }
