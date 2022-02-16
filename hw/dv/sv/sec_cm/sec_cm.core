@@ -19,6 +19,9 @@ filesets:
       - prim_count_if.sv
       - prim_sparse_fsm_flop_if.sv
       - prim_double_lfsr_if.sv
+      - sec_cm_prim_count_bind.sv
+      - sec_cm_prim_sparse_fsm_flop_bind.sv
+      - sec_cm_prim_double_lfsr_bind.sv
     file_type: systemVerilogSource
 
 targets:
