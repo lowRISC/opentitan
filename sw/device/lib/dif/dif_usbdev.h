@@ -123,9 +123,10 @@ typedef struct dif_usbdev_buffer {
  */
 typedef struct dif_usbdev_config {
   /**
-   * Use the differential rx signal instead of the single-ended signals.
+   * Activate the single-ended D signal for detecting K and J symbols, for use
+   * with a differential receiver.
    */
-  dif_toggle_t differential_rx;
+  dif_toggle_t have_differential_receiver;
   /**
    * Use the TX interface with D and SE0 signals instead of Dp/Dn, for use with
    * certain transceivers.

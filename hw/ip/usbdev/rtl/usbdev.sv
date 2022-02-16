@@ -578,7 +578,7 @@ module usbdev
     .in_ep_iso_i          (ep_in_iso), // cdc ok, quasi-static
     .cfg_eop_single_bit_i (reg2hw.phy_config.eop_single_bit.q), // cdc ok: quasi-static
     .tx_osc_test_mode_i   (reg2hw.phy_config.tx_osc_test_mode.q), // cdc ok: quasi-static
-    .cfg_rx_differential_i (reg2hw.phy_config.rx_differential_mode.q), // cdc ok: quasi-static
+    .cfg_use_diff_rcvr_i  (reg2hw.phy_config.use_diff_rcvr.q), // cdc ok: quasi-static
     .data_toggle_clear_i  (usb_data_toggle_clear),
     .resume_link_active_i (usb_resume_link_active),
 
@@ -1060,7 +1060,7 @@ module usbdev
   // not suspended.
   // TODO(#10901): This can cause undefined behavior if this module stays
   // powered to detect resume (instead of the AON module).
-  assign usb_rx_enable_o = reg2hw.phy_config.rx_differential_mode.q & ~usb_suspend_o;
+  assign usb_rx_enable_o = reg2hw.phy_config.use_diff_rcvr.q & ~usb_suspend_o;
 
   /////////////////////////////////////////
   // SOF Reference for Clock Calibration //

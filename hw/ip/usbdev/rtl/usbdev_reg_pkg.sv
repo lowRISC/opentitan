@@ -326,7 +326,7 @@ package usbdev_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } rx_differential_mode;
+    } use_diff_rcvr;
     struct packed {
       logic        q;
     } tx_use_d_se0;
