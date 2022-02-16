@@ -199,8 +199,8 @@ def main():
     # If this block has countermeasures, we grep for RTL annotations in all
     # .sv implementation files and check whether they match up with what is
     # defined inside the Hjson.
-    # Perform this check only when generating the RTL.
-    if format == 'rtl':
+    # Skip this check when generating DV code - its not needed.
+    if format != 'dv':
         sv_files = Path(infile.name).parents[1].joinpath('rtl').glob('*.sv')
         rtl_names = CounterMeasure.search_rtl_files(sv_files)
         obj.check_cm_annotations(rtl_names, infile.name)
