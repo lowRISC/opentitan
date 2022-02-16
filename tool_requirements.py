@@ -38,7 +38,7 @@ __TOOL_REQUIREMENTS__ = {
         'as_needed': True
     },
     'rust': {
-        'min_version': '1.55.0',
+        'min_version': '1.58.0',
         'as_needed': True
     },
     'vivado': {
