@@ -18,6 +18,9 @@ sw_otbn_sources += {
   'pseudo-ops': files(
     'pseudo-ops.s',
   ),
+  'solinas384': files(
+    'solinas384.s',
+  ),
   'err_test': files(
     'err_test.s',
   ),
