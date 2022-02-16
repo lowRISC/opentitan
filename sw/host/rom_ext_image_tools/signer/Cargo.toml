@@ -25,6 +25,10 @@ rom_ext_image = { path = "image" }
 thiserror = "1.0.24"
 zerocopy = "0.5.0"
 
+# We depend on mundane, but `cargo raze` can't auto generate bazel rules for it.
+# In order to not break the current meson-based build system, we'll leave
+# mundane as a dependency.  To regenerate the bazel dependency rules via
+# `cargo raze`, you'll have to temporarily comment out `mundane`.
 [dependencies.mundane]
 version = "0.5.0"
 features = ["rsa-pkcs1v15"]

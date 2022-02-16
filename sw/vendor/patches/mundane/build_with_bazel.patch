@@ -12,7 +12,7 @@ new file mode 100644
 index 0000000..649d2b5
 --- /dev/null
 +++ b/BUILD.bazel
-@@ -0,0 +1,47 @@
+@@ -0,0 +1,48 @@
 +load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 +
 +package(default_visibility = ["//visibility:public"])
@@ -46,6 +46,7 @@ index 0000000..649d2b5
 +    ],
 +    crate_features = [
 +        "bazel_build",
++        "rsa-pkcs1v15",
 +    ],
 +    edition = "2015",
 +    deps = [
