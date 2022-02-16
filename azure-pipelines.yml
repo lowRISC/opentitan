@@ -14,7 +14,7 @@ variables:
   OPENOCD_VERSION: 0.11.0
   TOOLCHAIN_PATH: /opt/buildcache/riscv
   VERIBLE_VERSION: v0.0-1213-g9e5c085
-  RUST_VERSION: 1.55.0
+  RUST_VERSION: 1.58.0
   # Release tag from https://github.com/lowRISC/lowrisc-toolchains/releases
   TOOLCHAIN_VERSION: 20220210-1
   # This controls where builds happen, and gets picked up by build_consts.sh.
