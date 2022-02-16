@@ -50,7 +50,7 @@ TEST_APPS_SELFCHECKING = [
         "targets": ["fpga_cw310"],
     },
     {
-        "name": "otbn_ecdsa_p256_test",
+        "name": "otbn_ecdsa_op_irq_test",
         "targets": ["fpga_cw310"],
     },
     {
