@@ -59,6 +59,59 @@ obj_transform = rule(
     toolchains = ["@rules_cc//cc:toolchain_type"],
 )
 
+def _sign_image_impl(ctx):
+    outputs = []
+    signed_image = ctx.actions.declare_file(
+        "{0}.{1}.signed.bin".format(
+            ctx.file.bin.basename.rstrip(".bin"),
+            ctx.attr.key_name,
+        ),
+    )
+    outputs.append(signed_image)
+    ctx.actions.run(
+        outputs = [signed_image],
+        inputs = [
+            ctx.file.bin,
+            ctx.file.elf,
+            ctx.file.key,
+            ctx.file._tool,
+        ],
+        arguments = [
+            "rom_ext",
+            ctx.file.bin.path,
+            ctx.file.key.path,
+            ctx.file.elf.path,
+            signed_image.path,
+        ],
+        executable = ctx.file._tool.path,
+    )
+    return [DefaultInfo(
+        files = depset(outputs),
+        data_runfiles = ctx.runfiles(files = outputs),
+    )]
+
+sign_image = rule(
+    implementation = _sign_image_impl,
+    cfg = opentitan_transition,
+    attrs = {
+        "bin": attr.label(allow_single_file = True),
+        "elf": attr.label(allow_single_file = True),
+        "key": attr.label(
+            default = "//sw/device/silicon_creator/mask_rom/keys:test_private_key_0",
+            allow_single_file = True,
+        ),
+        "key_name": attr.string(),
+        "platform": attr.string(default = "@local_config_platform//:host"),
+        "_tool": attr.label(
+            default = "//sw/host/rom_ext_image_tools/signer:rom_ext_signer",
+            allow_single_file = True,
+        ),
+        "_allowlist_function_transition": attr.label(
+            default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
+        ),
+    },
+)
+
 def _elf_to_disassembly(ctx):
     cc_toolchain = find_cc_toolchain(ctx)
     outputs = []
@@ -136,8 +189,12 @@ def opentitan_binary(
             "fpga_nexysvideo": ["//sw/device/lib/arch:fpga_nexysvideo"],
             "cw310": ["//sw/device/lib/arch:fpga_cw310"],
         },
+        signing_keys = {
+            "test_key_0": "//sw/device/silicon_creator/mask_rom/keys:test_private_key_0",
+        },
         output_bin = True,
         output_disassembly = True,
+        output_signed = False,
         output_scrambled = False,
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts.
@@ -152,6 +209,7 @@ def opentitan_binary(
       @param per_device_deps: The deps for each of the execution environments.
       @param output_bin: Whether or not to emit a BIN file.
       @param output_disassembly: Whether or not to emit a disassembly file.
+      @param output_signed: Whether or not to emit a signed binary.
       @param output_scrambled: Whether or not to emit a SCR file.
       @param **kwargs: Arguments to forward to `cc_binary`.
     Emits rules:
@@ -202,7 +260,6 @@ def opentitan_binary(
                 srcs = [devname],
                 platform = platform,
             )
-
         if output_disassembly:
             targets.append(":" + devname + "_dis")
             elf_to_disassembly(
@@ -217,6 +274,17 @@ def opentitan_binary(
                 srcs = [devname],
                 platform = platform,
             )
+
+        if output_signed:
+            for (key_name, key) in signing_keys.items():
+                targets.append(":" + devname + "_bin_signed_" + key_name)
+                sign_image(
+                    name = devname + "_bin_signed_" + key_name,
+                    bin = devname + "_bin",
+                    elf = devname + "_elf",
+                    key = key,
+                    key_name = key_name,
+                )
 
     native.filegroup(
         name = name,
