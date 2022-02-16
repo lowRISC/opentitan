@@ -1939,7 +1939,7 @@
               pre-computed using a reference model.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_otbn_ecdsa_op_irq"]
     }
     {
       name: chip_sw_otbn_rnd_entropy

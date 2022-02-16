@@ -3,11 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/dif/dif_otbn.h"
+#include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/otbn.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
+#include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -73,6 +75,122 @@ static const otbn_addr_t kOtbnVarD = OTBN_ADDR_T_INIT(p256_ecdsa, d);
 static const otbn_addr_t kOtbnVarXR = OTBN_ADDR_T_INIT(p256_ecdsa, x_r);
 
 const test_config_t kTestConfig;
+
+/**
+ * The plic dif to access the hardware.
+ */
+static dif_rv_plic_t plic;
+
+/**
+ * The otbn context handler.
+ */
+static otbn_t otbn_ctx;
+
+/**
+ * The peripheral which fired the irq to be filled by the irq handler.
+ */
+static volatile top_earlgrey_plic_peripheral_t plic_peripheral;
+
+/**
+ * The irq id to be filled by the irq handler.
+ */
+static volatile dif_rv_plic_irq_id_t irq_id;
+
+/**
+ * The otbn irq to be filled by the irq handler.
+ */
+static volatile dif_otbn_irq_t irq;
+
+/**
+ * Provides external IRQ handling for otbn tests.
+ *
+ * This function overrides the default OTTF external ISR.
+ *
+ * It performs the following:
+ * 1. Claims the IRQ fired (finds PLIC IRQ index).
+ * 2. Compute the OTBN peripheral.
+ * 3. Compute the otbn irq.
+ * 4. Clears the IRQ at the peripheral.
+ * 5. Completes the IRQ service at PLIC.
+ */
+void ottf_external_isr(void) {
+  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kTopEarlgreyPlicTargetIbex0,
+                                     (dif_rv_plic_irq_id_t *)&irq_id));
+
+  plic_peripheral = (top_earlgrey_plic_peripheral_t)
+      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
+
+  irq = (dif_otbn_irq_t)(irq_id -
+                         (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdOtbnDone);
+
+  CHECK_DIF_OK(dif_otbn_irq_acknowledge(&otbn_ctx.dif, irq));
+
+  // Complete the IRQ by writing the IRQ source to the Ibex specific CC.
+  // register.
+  CHECK_DIF_OK(
+      dif_rv_plic_irq_complete(&plic, kTopEarlgreyPlicTargetIbex0, irq_id));
+}
+
+static void otbn_wait_for_done_irq(otbn_t *otbn_ctx) {
+  // Clear the otbn irq variable: we'll set it in the interrupt handler when
+  // we see the Done interrupt fire.
+  irq = UINT32_MAX;
+  irq_id = UINT32_MAX;
+  plic_peripheral = UINT32_MAX;
+  // Enable Done interrupt.
+  CHECK_DIF_OK(dif_otbn_irq_set_enabled(&otbn_ctx->dif, kDifOtbnIrqDone,
+                                        kDifToggleEnabled));
+
+  // At this point, OTBN should be running. Wait for an interrupt that says
+  // it's done.
+  while (true) {
+    // This looks a bit odd, but is needed to avoid a race condition where the
+    // OTBN interrupt comes in after we load the otbn_finished flag but before
+    // we run the WFI instruction. The trick is that WFI returns when an
+    // interrupt comes in even if interrupts are globally disabled, which means
+    // that the WFI can actually sit *inside* the critical section.
+    irq_global_ctrl(false);
+    if (plic_peripheral != UINT32_MAX) {
+      break;
+    }
+    wait_for_interrupt();
+    irq_global_ctrl(true);
+  }
+  irq_global_ctrl(true);
+
+  CHECK(plic_peripheral == kTopEarlgreyPlicPeripheralOtbn,
+        "Interrupt from incorrect peripheral: (exp: %d, obs: %s)",
+        kTopEarlgreyPlicPeripheralOtbn, plic_peripheral);
+
+  // Check this is the interrupt we expected.
+  CHECK(irq_id == kTopEarlgreyPlicIrqIdOtbnDone);
+
+  // Disable Done interrupt.
+  CHECK_DIF_OK(dif_otbn_irq_set_enabled(&otbn_ctx->dif, kDifOtbnIrqDone,
+                                        kDifToggleDisabled));
+}
+
+static void otbn_init_irq(void) {
+  mmio_region_t plic_base_addr =
+      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+  // Initialize PLIC and configure OTBN interrupt.
+  CHECK_DIF_OK(dif_rv_plic_init(plic_base_addr, &plic));
+
+  // Set interrupt priority to be positive.
+  dif_rv_plic_irq_id_t irq_id = kTopEarlgreyPlicIrqIdOtbnDone;
+  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(&plic, irq_id, 0x1));
+
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+      &plic, irq_id, kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+
+  // Set the threshold for Ibex to 0.
+  CHECK_DIF_OK(dif_rv_plic_target_set_threshold(
+      &plic, kTopEarlgreyPlicTargetIbex0, 0x0));
+
+  // Enable the external IRQ (so that we see the interrupt from the PLIC).
+  irq_global_ctrl(true);
+  irq_external_ctrl(true);
+}
 
 /**
  * CHECK()s that the actual data matches the expected data.
@@ -177,7 +295,7 @@ static void p256_ecdsa_sign(otbn_t *otbn_ctx, const uint8_t *msg,
 
   // Call OTBN to perform operation, and wait for it to complete.
   CHECK(otbn_execute(otbn_ctx) == kOtbnOk);
-  CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOk);
+  otbn_wait_for_done_irq(otbn_ctx);
 
   // Read back results.
   CHECK(otbn_copy_data_from_otbn(otbn_ctx, /*len_bytes=*/32, kOtbnVarR,
@@ -226,7 +344,7 @@ static void p256_ecdsa_verify(otbn_t *otbn_ctx, const uint8_t *msg,
 
   // Call OTBN to perform operation, and wait for it to complete.
   CHECK(otbn_execute(otbn_ctx) == kOtbnOk);
-  CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOk);
+  otbn_wait_for_done_irq(otbn_ctx);
 
   // Read back results.
   CHECK(otbn_copy_data_from_otbn(otbn_ctx, /*len_bytes=*/32, kOtbnVarXR,
@@ -261,10 +379,10 @@ static void test_ecdsa_p256_roundtrip(void) {
       0x0b, 0xda, 0x7a, 0xbb, 0xe6, 0x8f, 0xb7, 0xa0, 0x45, 0x55};
 
   // Initialize
-  otbn_t otbn_ctx;
   uint64_t t_start_init = profile_start();
   CHECK(otbn_init(&otbn_ctx, mmio_region_from_addr(
                                  TOP_EARLGREY_OTBN_BASE_ADDR)) == kOtbnOk);
+  otbn_init_irq();
   CHECK(otbn_load_app(&otbn_ctx, kOtbnAppP256Ecdsa) == kOtbnOk);
   profile_end(t_start_init, "Initialization");
 
