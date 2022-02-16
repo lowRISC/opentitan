@@ -4,6 +4,7 @@
 
 `define HOST_CB   cfg.vif.host_mp.host_cb
 `define DEVICE_CB cfg.vif.device_mp.device_cb
+`define MON_CB    cfg.vif.mon_mp.mon_cb
 
 class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   `uvm_component_utils(jtag_driver)
@@ -129,16 +130,17 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
       // stay in ShiftDR
       `HOST_CB.tms <= 1'b0;
       `HOST_CB.tdi <= dr[i];
-      // tdo is updated at negedge clock
-      if (i > 0) dout[i - 1] = `HOST_CB.tdo;
+      // tdo is updated at negedge clock, to avoid race condition, will sample its value at posedge
+      @(`MON_CB);
+      dout[i] = `MON_CB.tdo;
     end
     @(`HOST_CB);
     // go to Exit1DR
     `HOST_CB.tms <= 1'b1;
     `HOST_CB.tdi <= dr[len - 1];
-    dout[len - 2] = `HOST_CB.tdo;
+    @(`MON_CB);
+    dout[len-1] = `MON_CB.tdo;
     @(`HOST_CB);
-    dout[len - 1] = `HOST_CB.tdo;
     // go to UpdateIR
     `HOST_CB.tms <= 1'b1;
     `HOST_CB.tdi <= 1'b0;

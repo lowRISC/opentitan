@@ -182,12 +182,16 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
   protected virtual task activate_rv_dm();
     bit [bus_params_pkg::BUS_DW-1:0] dmctrl_val, sbcs_val;
     bit [DMI_OPW-1:0] status;
+    int cnter;
 
     // Set dmcontrol's dmactive bit.
-    while (dmctrl_val == 0) begin
+    while (dmctrl_val == 0 && cnter < cfg.max_rv_dm_activation_attempts) begin
+      cnter++;
       send_csr_req(.op(DmiWrite), .data(1), .addr(DmControl), .dout(dmctrl_val), .status(status));
       send_csr_req(.op(DmiRead), .data(0), .addr(DmControl), .dout(dmctrl_val), .status(status));
     end
+    `DV_CHECK_FATAL(cnter < cfg.max_rv_dm_activation_attempts, $sformatf(
+        "Could not activate RV_DM after %0d attempts!", cfg.max_rv_dm_activation_attempts))
 
     // Read system bus access control and status register.
     // Once the sbcs value is not 0, then RV_DM jtag is ready.
