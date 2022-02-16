@@ -108,26 +108,11 @@ package cip_base_pkg;
   function automatic lc_ctrl_pkg::lc_tx_t get_rand_lc_tx_val(int t_weight = 2,
                                                              int f_weight = 2,
                                                              int other_weight = 1);
-    // The lc_tx_t encoding is (intentionally) different from the mubi4_t encoding, but they do
-    // roughly the same thing. To pick a random value, we pick a mubi4_t first and then apply a
-    // bijection to map it to an lc_tx_t so that the special "true" and "false" values get mapped
-    // appropriately.
-    logic [3:0] as_mubi, as_lc;
-    as_mubi = get_rand_mubi4_val(t_weight, f_weight, other_weight);
+    bit[3:0] val;
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(val,
+        `DV_LC_TX_DIST(val, t_weight, f_weight, other_weight), , msg_id)
 
-    // The mapping that we choose swaps MuBi4True <-> On and MuBi4False <-> Off and leaves all other
-    // values fixed. Note that this is a bijection so long as MuBi4True != MuBi4False and On != Off.
-    // We don't need to assume anything about the relation between the two types' encodings (if
-    // there are any collisions, we're just permuting fewer special points).
-    case (as_mubi)
-      MuBi4True:        as_lc = lc_ctrl_pkg::On;
-      MuBi4False:       as_lc = lc_ctrl_pkg::Off;
-      lc_ctrl_pkg::On:  as_lc = MuBi4True;
-      lc_ctrl_pkg::Off: as_lc = MuBi4False;
-      default:          as_lc = as_mubi;
-    endcase
-
-    return lc_ctrl_pkg::lc_tx_t'(as_lc);
+    return lc_ctrl_pkg::lc_tx_t'(val);
   endfunction
 
   // package sources

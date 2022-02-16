@@ -76,6 +76,12 @@
 // T_WEIGHT_: randomization weight of the value True
 // F_WEIGHT_: randomization weight of the value False
 // OTHER_WEIGHT_: randomization weight of values other than True or False
+`ifndef DV_LC_TX_DIST
+`define DV_LC_TX_DIST(VAR_, T_WEIGHT_ = 2, F_WEIGHT_ = 2, OTHER_WEIGHT_ = 1) \
+  `_DV_MUBI_DIST(VAR_, lc_ctrl_pkg::On, lc_ctrl_pkg::Off, (1 << 4) - 1, T_WEIGHT_, F_WEIGHT_, \
+                 OTHER_WEIGHT_)
+`endif
+
 `ifndef DV_MUBI4_DIST
 `define DV_MUBI4_DIST(VAR_, T_WEIGHT_ = 2, F_WEIGHT_ = 2, OTHER_WEIGHT_ = 1) \
   `_DV_MUBI_DIST(VAR_, MuBi4True, MuBi4False, (1 << 4) - 1, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_)
