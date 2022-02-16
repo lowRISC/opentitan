@@ -310,7 +310,9 @@ module kmac
   logic alert_intg_err;
 
   // Life cycle
-  lc_ctrl_pkg::lc_tx_t  lc_escalate_en_sync, lc_escalate_en;
+  localparam int unsigned NumLcSyncCopies = 6;
+  lc_ctrl_pkg::lc_tx_t [NumLcSyncCopies-1:0] lc_escalate_en_sync;
+  lc_ctrl_pkg::lc_tx_t [NumLcSyncCopies-1:0] lc_escalate_en;
 
   //////////////////////////////////////
   // Connecting Register IF to logics //
@@ -759,7 +761,7 @@ module kmac
 
     // Unconditionally jump into the terminal error state
     // if the life cycle controller triggers an escalation.
-    if (lc_escalate_en != lc_ctrl_pkg::Off) begin
+    if (lc_escalate_en[0] != lc_ctrl_pkg::Off) begin
       kmac_st_d = KmacTerminalError;
     end
   end
@@ -804,7 +806,7 @@ module kmac
     .process_o (kmac2sha3_process   ),
 
     // LC escalation
-    .lc_escalate_en_i (lc_escalate_en),
+    .lc_escalate_en_i (lc_escalate_en[1]),
 
     // Error detection
     .sparse_fsm_error_o (kmac_core_state_error),
@@ -868,7 +870,7 @@ module kmac
     .done_i     (sha3_done        ),
 
     // LC escalation
-    .lc_escalate_en_i (lc_escalate_en),
+    .lc_escalate_en_i (lc_escalate_en[2]),
 
     .absorbed_o  (sha3_absorbed),
     .squeezing_o (unused_sha3_squeeze),
@@ -1013,7 +1015,7 @@ module kmac
     .cmd_o    (kmac_cmd),
 
     // LC escalation
-    .lc_escalate_en_i (lc_escalate_en),
+    .lc_escalate_en_i (lc_escalate_en[3]),
 
     // Error report
     .error_o            (app_err),
@@ -1096,7 +1098,7 @@ module kmac
     .keccak_done_i  (sha3_block_processed),
 
     // LC escalation
-    .lc_escalate_en_i (lc_escalate_en),
+    .lc_escalate_en_i (lc_escalate_en[4]),
 
     .error_o            (errchecker_err),
     .sparse_fsm_error_o (kmac_errchk_state_error)
@@ -1175,7 +1177,7 @@ module kmac
       .hash_threshold_i (entropy_hash_threshold),
 
       // LC escalation
-      .lc_escalate_en_i (lc_escalate_en),
+      .lc_escalate_en_i (lc_escalate_en[5]),
 
       // Error
       .err_o              (entropy_err),
@@ -1357,11 +1359,13 @@ module kmac
   // SEC_CM: LC_ESCALATE_EN.INTERSIG.MUBI
   lc_ctrl_pkg::lc_tx_t alert_to_lc_tx;
   assign alert_to_lc_tx = lc_ctrl_pkg::lc_tx_bool_to_lc_tx(alerts_q[1]);
-  assign lc_escalate_en = lc_ctrl_pkg::lc_tx_or_hi(alert_to_lc_tx, lc_escalate_en_sync);
+  for (genvar i = 0; i < NumLcSyncCopies; i++) begin : gen_or_alert_lc_sync
+      assign lc_escalate_en[i] = lc_ctrl_pkg::lc_tx_or_hi(alert_to_lc_tx, lc_escalate_en_sync[i]);
+  end
 
   // Synchronize life cycle input
   prim_lc_sync #(
-    .NumCopies (1)
+    .NumCopies (NumLcSyncCopies)
   ) u_prim_lc_sync (
     .clk_i,
     .rst_ni,
