@@ -147,16 +147,21 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // kmac
   ////////////////////////////////////////////
+  // Compile-time random data for LFSR default seed
+  parameter kmac_pkg::lfsr_seed_t RndCnstKmacLfsrSeed = {
+    64'h2E658548C5420BE5
+  };
+
   // Compile-time random permutation for LFSR output
   parameter kmac_pkg::lfsr_perm_t RndCnstKmacLfsrPerm = {
-    128'h58560FBDE2B6CA5EC0360AB98E1F13C1,
-    256'hCD1FF9B890459FFDB129D5A5AD41AEECF11E430E0D4DC2A26E08E8B76D184257
+    128'h60A70D8AB7859F7CE38655C03F06FAB9,
+    256'h6F537D1A60649431FBCFF556A6B606CBF4C8790C3835380A89B923B2DDB46112
   };
 
   // Compile-time random permutation for LFSR Message output
   parameter kmac_pkg::msg_perm_t RndCnstKmacMsgPerm = {
-    128'hB611EA5A679945F8EFCD75159E5C4EB1,
-    256'hCEEB0DA136BBA3FD48133074B4F463F279A5B206DFCE22175340FB280A402928
+    128'h515E0F5E7B6B69CF6CC634475AA9B339,
+    256'h997E783B84E6F85F09204CF1D2D3D98A09D296C81B0E90EE2175DCD024CBF2A0
   };
 
   ////////////////////////////////////////////
@@ -164,17 +169,17 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Default seed of the PRNG used for URND.
   parameter otbn_pkg::urnd_prng_seed_t RndCnstOtbnUrndPrngSeed = {
-    256'h4093F0EC256B2646079C10F2F41F73AF3FC6AFBEC695054A0407221FB798AB78
+    256'h471A7A682A6260EB4093F0EC256B2646079C10F2F41F73AF3FC6AFBEC695054A
   };
 
   // Compile-time random reset value for IMem/DMem scrambling key.
   parameter otp_ctrl_pkg::otbn_key_t RndCnstOtbnOtbnKey = {
-    128'hEEFA4D4C2E269435471A7A682A6260EB
+    128'hF4E341F211C9D00BEEFA4D4C2E269435
   };
 
   // Compile-time random reset value for IMem/DMem scrambling nonce.
   parameter otp_ctrl_pkg::otbn_nonce_t RndCnstOtbnOtbnNonce = {
-    64'hF4E341F211C9D00B
+    64'h8A789BDC189F345C
   };
 
   ////////////////////////////////////////////
@@ -182,7 +187,7 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random bits for initial LFSR seed
   parameter keymgr_pkg::lfsr_seed_t RndCnstKeymgrLfsrSeed = {
-    64'h8A789BDC189F345C
+    64'h9DF4DE1E830F9365
   };
 
   // Compile-time random permutation for LFSR output

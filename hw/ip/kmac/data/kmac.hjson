@@ -108,6 +108,12 @@
       desc:    "Width of the hash counter in the entropy"
       local:   "true"
     }
+    { name:      "RndCnstLfsrSeed"
+      desc:      "Compile-time random data for LFSR default seed"
+      type:      "kmac_pkg::lfsr_seed_t"
+      randcount: "64"
+      randtype:  "data"
+    }
     { name:      "RndCnstLfsrPerm",
       desc:      "Compile-time random permutation for LFSR output",
       type:      "kmac_pkg::lfsr_perm_t"

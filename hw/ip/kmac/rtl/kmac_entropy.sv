@@ -8,7 +8,8 @@
 
 module kmac_entropy
   import kmac_pkg::*; #(
-  parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault
+  parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
+  parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault
 ) (
   input clk_i,
   input rst_ni,
@@ -319,6 +320,7 @@ module kmac_entropy
     .StateOutDw(EntropyLfsrW),
     .StatePermEn(1'b1),
     .StatePerm(RndCnstLfsrPerm),
+    .DefaultSeed(RndCnstLfsrSeed),
     .NonLinearOut(1'b1)
   ) u_lfsr (
     .clk_i,

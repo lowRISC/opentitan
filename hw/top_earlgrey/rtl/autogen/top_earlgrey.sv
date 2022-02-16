@@ -2198,6 +2198,7 @@ module top_earlgrey #(
     .ReuseShare(KmacReuseShare),
     .SecCmdDelay(SecKmacCmdDelay),
     .SecIdleAcceptSwMsg(SecKmacIdleAcceptSwMsg),
+    .RndCnstLfsrSeed(RndCnstKmacLfsrSeed),
     .RndCnstLfsrPerm(RndCnstKmacLfsrPerm),
     .RndCnstMsgPerm(RndCnstKmacMsgPerm)
   ) u_kmac (

@@ -30,6 +30,7 @@ module kmac
   parameter bit SecIdleAcceptSwMsg = 1'b0,
 
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
+  parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter msg_perm_t  RndCnstMsgPerm  = RndCnstMsgPermDefault,
 
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
@@ -1118,7 +1119,8 @@ module kmac
     );
 
     kmac_entropy #(
-     .RndCnstLfsrPerm(RndCnstLfsrPerm)
+     .RndCnstLfsrPerm(RndCnstLfsrPerm),
+     .RndCnstLfsrSeed(RndCnstLfsrSeed)
     ) u_entropy (
       .clk_i,
       .rst_ni,
