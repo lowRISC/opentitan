@@ -281,7 +281,7 @@ module kmac_app
           digest_share0: app_digest[0],
           digest_share1: app_digest[1],
           // if fsm asserts done, should be an error case.
-          error:         error_i | fsm_digest_done_q
+          error:         error_i | fsm_digest_done_q | sparse_fsm_error_o
         };
       end else begin
         app_o[i] = '{
@@ -516,6 +516,9 @@ module kmac_app
         // this state is terminal
         st_d = st;
         sparse_fsm_error_o = 1'b 1;
+        fsm_err.valid = 1'b 1;
+        fsm_err.code = ErrFatalError;
+        fsm_err.info = 24'(app_id);
       end
 
       default: begin

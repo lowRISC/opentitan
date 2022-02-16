@@ -302,7 +302,10 @@ package kmac_pkg;
     ErrSwCmdSequence = 8'h 08,
 
     // Error Shadow register update
-    ErrShadowRegUpdate = 8'h C0
+    ErrShadowRegUpdate = 8'h C0,
+
+    // Error due to lc_escalation_en_i or fatal fault
+    ErrFatalError = 8'h C1
   } err_code_e;
 
   typedef struct packed {
