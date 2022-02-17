@@ -118,9 +118,10 @@ hmac_smoketest_lib = declare_dependency(
     sources: ['hmac_smoketest.c'],
     dependencies: [
       sw_lib_dif_hmac,
-      sw_lib_runtime_log,
       sw_lib_mmio,
       sw_lib_runtime_hart,
+      sw_lib_runtime_log,
+      sw_lib_testing_hmac_testutils,
     ],
   ),
 )
@@ -918,6 +919,7 @@ hmac_enc_irq_test_lib = declare_dependency(
       sw_lib_mmio,
       sw_lib_runtime_ibex,
       sw_lib_runtime_log,
+      sw_lib_testing_hmac_testutils,
       sw_lib_testing_isr_testutils,
       sw_lib_testing_rv_plic_testutils,
       top_earlgrey,
