@@ -158,9 +158,11 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
 
   //Instantiate the interrupt module
   adc_ctrl_intr u_adc_ctrl_intr (
+    .clk_aon_i,
+    .rst_aon_ni,
+    .aon_filter_match_i(match_pulse),
     .clk_i,
     .rst_ni,
-    .aon_filter_status_i(reg2hw_i.filter_status.q),
     .cfg_intr_en_i(reg2hw_i.adc_intr_ctl.q),
     .cfg_oneshot_done_i(cfg_oneshot_done),
     .intr_state_i(reg2hw_i.intr_state),

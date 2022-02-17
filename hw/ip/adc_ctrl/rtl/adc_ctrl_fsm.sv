@@ -373,6 +373,14 @@ module adc_ctrl_fsm
         // do not transition forward until handshake with ADC is complete
         if (!adc_d_val_i) begin
           ld_match = 1'b1;
+          // if there is no match, clear counter and begin sampling again.
+          // if there is a match, there are 3 conditions:
+          // 1. the sample count is less than the threshold -> still attempting to make a new match,
+          //    keep sampling.
+          // 2. the sample count is equal to the threshold -> a new match has just been made, go to
+          //    DONE.
+          // 3, the sample count is greater than the threshold -> this is a continued stable match,
+          //    keep sampling.
           if (!stay_match) begin
             fsm_state_d = NP_0;
             np_sample_cnt_clr = 1'b1;
@@ -381,7 +389,9 @@ module adc_ctrl_fsm
             np_sample_cnt_en = 1'b1;
           end else if (np_sample_cnt_q == np_sample_cnt_thresh) begin
             fsm_state_d = NP_DONE;
-            np_sample_cnt_clr = 1'b1;
+            np_sample_cnt_en = 1'b1;
+          end else if (np_sample_cnt_q > np_sample_cnt_thresh) begin
+            fsm_state_d = NP_0;
           end
         end
       end
@@ -391,7 +401,6 @@ module adc_ctrl_fsm
         adc_ctrl_done_o = 1'b1;
         fsm_state_d = NP_0;
       end
-
 
       default: fsm_state_d = PWRDN;
     endcase
