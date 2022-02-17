@@ -27,7 +27,7 @@
                 were executed correctly using the `mem_bkdr_util`
             '''
       milestone: V1
-      tests: ["{variant}_smoke"]
+      tests: ["{name}_smoke"]
     }
     {
       name: multiple_keys
@@ -45,7 +45,7 @@
                 intervals
             '''
       milestone: V2
-      tests: ["{variant}_multiple_keys"]
+      tests: ["{name}_multiple_keys"]
     }
     {
       name: stress_pipeline
@@ -55,7 +55,7 @@
             stress the encryption pipeline.
             '''
       milestone: V2
-      tests: ["{variant}_stress_pipeline"]
+      tests: ["{name}_stress_pipeline"]
     }
     {
       name: bijection
@@ -76,7 +76,7 @@
             This process will be repeated for a number of new key seeds.
             '''
       milestone: V2
-      tests: ["{variant}_bijection"]
+      tests: ["{name}_bijection"]
     }
     {
       name: access_during_key_req
@@ -89,7 +89,7 @@
                   should be reflected in TB.
             '''
       milestone: V2
-      tests: ["{variant}_access_during_key_req"]
+      tests: ["{name}_access_during_key_req"]
     }
     {
       name: lc_escalation
@@ -104,7 +104,7 @@
             couple of memory accesses just to make sure everything is still in working order.
             '''
       milestone: V2
-      tests: ["{variant}_lc_escalation"]
+      tests: ["{name}_lc_escalation"]
     }
     {
       name: executable
@@ -122,7 +122,7 @@
             configured to be executable.
             '''
       milestone: V2
-      tests: ["{variant}_executable"]
+      tests: ["{name}_executable"]
     }
     {
       name: partial_access
@@ -133,7 +133,7 @@
             Reuse the `smoke` and `stress_pipeline` by setting `partial_access_pct` = 90%
             '''
       milestone: V2
-      tests: ["{variant}_partial_access", "{variant}_partial_access_b2b"]
+      tests: ["{name}_partial_access", "{name}_partial_access_b2b"]
     }
     {
       name: max_throughput
@@ -145,7 +145,7 @@
             With partial write, it needs 2 extra cycles per partial write.
             '''
       milestone: V2
-      tests: ["{variant}_max_throughput", "{variant}_throughput_w_partial_write"]
+      tests: ["{name}_max_throughput", "{name}_throughput_w_partial_write"]
     }
     {
       name: regwen
@@ -163,7 +163,7 @@
             locked.
             '''
       milestone: V2
-      tests: ["{variant}_regwen"]
+      tests: ["{name}_regwen"]
     }
     {
       name: stress_all
