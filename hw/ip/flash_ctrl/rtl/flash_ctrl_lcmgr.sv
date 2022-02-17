@@ -815,12 +815,14 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   // assertion
 
 `ifdef INC_ASSERT
-  logic [DataWidth-1:0] rma_data;
+  logic [DataWidth-1:0] rma_data_q, rma_data;
   always_ff @(posedge clk_i) begin
     if (rma_start && rvalid_i && rready_o) begin
-      rma_data <= {rma_data[(DataWidth-1) -: BusWidth], rdata_i};
+      rma_data_q <= rma_data;
     end
   end
+
+  assign rma_data = {rdata_i, rma_data_q[DataWidth-1 : BusWidth]};
 
   // check the rma programmed value actually matches what was read back
   `ASSERT(ProgRdVerify_A, rma_start & rd_cnt_en & done_i |-> prog_data == rma_data)
