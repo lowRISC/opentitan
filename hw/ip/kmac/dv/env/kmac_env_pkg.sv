@@ -143,6 +143,13 @@ package kmac_env_pkg;
     KmacWaitTimer = 16
   } kmac_entropy_period_e;
 
+
+  typedef enum int {
+    KmacCmdIdx = 3,
+    KmacEntropyReqIdx = 8,
+    KmacHashCntClrIdx = 9
+  } kmac_cmd_idx_e;
+
   typedef enum int {
     AppKeymgr,
     AppLc,

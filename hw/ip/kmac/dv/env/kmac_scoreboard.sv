@@ -2066,19 +2066,20 @@ class kmac_scoreboard extends cip_base_scoreboard #(
         //
         // TODO - handle error cases
         if (addr_phase_write) begin
+          bit [KmacCmdIdx:0] kmac_cmd = item.a_data[KmacCmdIdx:0];
           if (app_fsm_active) begin
             // As per designer comment in https://github.com/lowRISC/opentitan/issues/7716,
             // if CmdStart is sent during an active App operation, KMAC will throw
             // ErrSwIssuedCmdInAppActive, but for any other command the KMAC will throw a
             // ErrSwCmdSequence.
-            if (kmac_cmd_e'(item.a_data) != CmdNone) begin
+            if (kmac_cmd_e'(kmac_cmd) != CmdNone) begin
               kmac_err.valid = 1;
               kmac_err.code  = kmac_pkg::ErrSwIssuedCmdInAppActive;
               kmac_err.info  = 24'(item.a_data);
               predict_err(.is_kmac_err(1));
             end
           end else begin
-            case (kmac_cmd_e'(item.a_data))
+            case (kmac_cmd_e'(kmac_cmd))
               CmdStart: begin
 
                 // Mode/Strength configuration error
@@ -2126,7 +2127,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
                   kmac_err.valid = 1;
                   kmac_err.code  = kmac_pkg::ErrSwCmdSequence;
-                  kmac_err.info  = {6'h1, 11'h0, 3'(err_st), item.a_data[3:0]};
+                  kmac_err.info  = {6'h1, 11'h0, 3'(err_st), kmac_cmd};
 
                   predict_err(.is_kmac_err(1));
                 end
@@ -2145,7 +2146,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
                   kmac_err.valid = 1;
                   kmac_err.code  = kmac_pkg::ErrSwCmdSequence;
-                  kmac_err.info  = {6'h1, 11'h0, 3'(err_st), item.a_data[3:0]};
+                  kmac_err.info  = {6'h1, 11'h0, 3'(err_st), kmac_cmd};
 
                   predict_err(.is_kmac_err(1));
                 end
@@ -2161,7 +2162,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
                   kmac_err.valid = 1;
                   kmac_err.code  = kmac_pkg::ErrSwCmdSequence;
-                  kmac_err.info  = {6'h1, 11'h0, 3'(err_st), item.a_data[3:0]};
+                  kmac_err.info  = {6'h1, 11'h0, 3'(err_st), kmac_cmd};
 
                   predict_err(.is_kmac_err(1));
                 end
@@ -2189,7 +2190,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
                   kmac_err.valid = 1;
                   kmac_err.code  = kmac_pkg::ErrSwCmdSequence;
-                  kmac_err.info  = {6'h1, 11'h0, 3'(err_st), item.a_data[3:0]};
+                  kmac_err.info  = {6'h1, 11'h0, 3'(err_st), kmac_cmd};
 
                   predict_err(.is_kmac_err(1));
                 end
@@ -2198,7 +2199,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                 // RTL internal value, doesn't actually do anything
               end
               default: begin
-                `uvm_fatal(`gfn, $sformatf("%0d is an illegal CMD value", item.a_data))
+                `uvm_fatal(`gfn, $sformatf("%0d is an illegal CMD value", kmac_cmd))
               end
             endcase
           end
