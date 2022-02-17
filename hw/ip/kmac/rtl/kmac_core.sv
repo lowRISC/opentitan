@@ -258,10 +258,10 @@ module kmac_core
 
   // DATA Mux depending on kmac_en
   // When Key write happens, hold the FIFO request. so fifo_ready_o is tied to 0
-  assign msg_valid_o  = (kmac_en_i && en_kmac_datapath) ? kmac_valid : fifo_valid_i;
-  assign msg_data_o   = (kmac_en_i && en_kmac_datapath) ? kmac_data  : fifo_data_i ;
-  assign msg_strb_o   = (kmac_en_i && en_kmac_datapath) ? kmac_strb  : fifo_strb_i ;
-  assign fifo_ready_o = (kmac_en_i && en_kmac_datapath) ? 1'b 0      : msg_ready_i ;
+  assign msg_valid_o  = (en_kmac_datapath) ? kmac_valid : fifo_valid_i;
+  assign msg_data_o   = (en_kmac_datapath) ? kmac_data  : fifo_data_i ;
+  assign msg_strb_o   = (en_kmac_datapath) ? kmac_strb  : fifo_strb_i ;
+  assign fifo_ready_o = (en_kmac_datapath) ? 1'b 0      : msg_ready_i ;
 
   // secret key write request to SHA3 hashing engine is always full width write.
   // KeyMgr is fixed 256 bit output. So `right_encode(256)` is 0x020100 --> strb 3
