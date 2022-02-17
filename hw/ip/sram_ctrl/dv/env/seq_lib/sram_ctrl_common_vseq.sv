@@ -59,4 +59,27 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
                                                    flip_bits);
   endfunction
 
+  // Check alert and `status.init_error` is set.
+  // After injecting faults, reading any address should return 0. #10909
+  virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
+    bit [TL_AW-1:0]  addr;
+    bit [TL_DBW-1:0] mask;
+    bit [TL_DW-1:0]  rdata;
+
+    super.check_sec_cm_fi_resp(if_proxy);
+
+    csr_rd_check(.ptr(ral.status.init_error), .compare_value(1));
+
+    // intg won't be correct after injecting faults
+    cfg.disable_d_user_data_intg_check_for_passthru_mem = 1;
+    repeat ($urandom_range(1, 10)) begin
+      `DV_CHECK_STD_RANDOMIZE_FATAL(addr)
+      mask = get_rand_mask(.write(0));
+      do_single_read(.addr(addr), .mask(mask), .rdata(rdata), .check_rdata(1),
+                     .exp_rdata(0));
+      `uvm_info(`gfn, $sformatf("addr: 0x%0h mask: 'b%0b, rdata: 0x%0h",
+                                addr, mask, rdata), UVM_HIGH)
+    end
+    cfg.disable_d_user_data_intg_check_for_passthru_mem = 0;
+  endtask : check_sec_cm_fi_resp
 endclass
