@@ -379,9 +379,8 @@ module adc_ctrl_fsm
           end else if (np_sample_cnt_q < np_sample_cnt_thresh) begin
             fsm_state_d = NP_0;
             np_sample_cnt_en = 1'b1;
-          end else if (np_sample_cnt_q == np_sample_cnt_thresh) begin
+          end else if (np_sample_cnt_q >= np_sample_cnt_thresh) begin
             fsm_state_d = NP_DONE;
-            np_sample_cnt_clr = 1'b1;
           end
         end
       end
@@ -391,7 +390,6 @@ module adc_ctrl_fsm
         adc_ctrl_done_o = 1'b1;
         fsm_state_d = NP_0;
       end
-
 
       default: fsm_state_d = PWRDN;
     endcase
