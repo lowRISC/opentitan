@@ -431,8 +431,6 @@ module kmac_app
 
       StAppMsg: begin
         mux_sel = SelApp;
-        // Wait until the completion (done) from KeyMgr?
-        // Or absorb completion?
         if (app_i[app_id].valid && app_o[app_id].ready && app_i[app_id].last) begin
           if (AppCfg[app_id].Mode == AppKMAC) begin
             st_d = StAppOutLen;
