@@ -47,6 +47,7 @@ package aes_env_pkg;
   typedef struct packed {
     bit          key_len;
     bit          mode;
+    bit          rsd_rate;
   } cfg_error_type_t;
 
 
