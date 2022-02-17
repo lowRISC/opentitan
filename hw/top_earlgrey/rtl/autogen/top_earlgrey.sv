@@ -2200,7 +2200,8 @@ module top_earlgrey #(
     .SecIdleAcceptSwMsg(SecKmacIdleAcceptSwMsg),
     .RndCnstLfsrSeed(RndCnstKmacLfsrSeed),
     .RndCnstLfsrPerm(RndCnstKmacLfsrPerm),
-    .RndCnstMsgPerm(RndCnstKmacMsgPerm)
+    .RndCnstMsgPerm(RndCnstKmacMsgPerm),
+    .RndCnstStoragePerm(RndCnstKmacStoragePerm)
   ) u_kmac (
 
       // Interrupt
