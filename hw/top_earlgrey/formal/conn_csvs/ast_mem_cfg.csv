@@ -28,10 +28,10 @@ CONNECTION,AST_DFT_OTBN_IMEM_RAM_1P_CFG,u_ast.u_ast_dft,"{spram_rm_o, sprgf_rm_o
 CONNECTION,AST_DFT_OTBN_DMEM_RAM_1P_CFG,u_ast.u_ast_dft,"{spram_rm_o, sprgf_rm_o}",top_earlgrey.u_otbn.u_dmem.u_prim_ram_1p_adv.u_mem.gen_generic.u_impl_generic,cfg_i
 
 # To rv_core_ibex.
-CONNECTION,AST_DFT_RV_CORE_IBEX_TAG0_RAM_1P_CFG,u_ast.u_ast_dft,"{spram_rm_o, sprgf_rm_o}",top_earlgrey.u_rv_core_ibex.u_core.gen_rams.gen_rams_inner[0].tag_bank.gen_generic.u_impl_generic,cfg_i
-CONNECTION,AST_DFT_RV_CORE_IBEX_TAG1_RAM_1P_CFG,u_ast.u_ast_dft,"{spram_rm_o, sprgf_rm_o}",top_earlgrey.u_rv_core_ibex.u_core.gen_rams.gen_rams_inner[1].tag_bank.gen_generic.u_impl_generic,cfg_i
-CONNECTION,AST_DFT_RV_CORE_IBEX_DATA0_RAM_1P_CFG,u_ast.u_ast_dft,"{spram_rm_o, sprgf_rm_o}",top_earlgrey.u_rv_core_ibex.u_core.gen_rams.gen_rams_inner[0].data_bank.gen_generic.u_impl_generic,cfg_i
-CONNECTION,AST_DFT_RV_CORE_IBEX_DATA1_RAM_1P_CFG,u_ast.u_ast_dft,"{spram_rm_o, sprgf_rm_o}",top_earlgrey.u_rv_core_ibex.u_core.gen_rams.gen_rams_inner[1].data_bank.gen_generic.u_impl_generic,cfg_i
+CONNECTION,AST_DFT_RV_CORE_IBEX_TAG0_RAM_1P_CFG,u_ast.u_ast_dft,"{spram_rm_o, sprgf_rm_o}",top_earlgrey.u_rv_core_ibex.u_core.gen_rams.gen_rams_inner[0].tag_bank.u_prim_ram_1p_adv.u_mem.gen_generic.u_impl_generic,cfg_i
+CONNECTION,AST_DFT_RV_CORE_IBEX_TAG1_RAM_1P_CFG,u_ast.u_ast_dft,"{spram_rm_o, sprgf_rm_o}",top_earlgrey.u_rv_core_ibex.u_core.gen_rams.gen_rams_inner[1].tag_bank.u_prim_ram_1p_adv.u_mem.gen_generic.u_impl_generic,cfg_i
+CONNECTION,AST_DFT_RV_CORE_IBEX_DATA0_RAM_1P_CFG,u_ast.u_ast_dft,"{spram_rm_o, sprgf_rm_o}",top_earlgrey.u_rv_core_ibex.u_core.gen_rams.gen_rams_inner[0].data_bank.u_prim_ram_1p_adv.u_mem.gen_generic.u_impl_generic,cfg_i
+CONNECTION,AST_DFT_RV_CORE_IBEX_DATA1_RAM_1P_CFG,u_ast.u_ast_dft,"{spram_rm_o, sprgf_rm_o}",top_earlgrey.u_rv_core_ibex.u_core.gen_rams.gen_rams_inner[1].data_bank.u_prim_ram_1p_adv.u_mem.gen_generic.u_impl_generic,cfg_i
 
 # To sram_ctrl (main).
 CONNECTION,AST_DFT_SRAM_MAIN_RAM_1P_CFG,u_ast.u_ast_dft,"{spram_rm_o, sprgf_rm_o}",top_earlgrey.u_sram_ctrl_main.u_prim_ram_1p_scr.u_prim_ram_1p_adv.u_mem.gen_generic.u_impl_generic,cfg_i
