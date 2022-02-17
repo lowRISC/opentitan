@@ -447,7 +447,7 @@ jobs:
       OTP_VMEM="$BIN_DIR/sw/device/otp_img/otp_img_fpga_cw310.vmem"
       test -f "$OTP_VMEM"
 
-      fusesoc --cores-root=. \
+      fusesoc --verbose --cores-root=. \
         run --flag=fileset_top --target=synth --setup --build \
         --build-root="$OBJ_DIR/hw" \
         lowrisc:systems:chip_earlgrey_cw310 \
@@ -541,7 +541,7 @@ jobs:
       OTP_VMEM="$BIN_DIR/sw/device/otp_img/otp_img_fpga_nexysvideo.vmem"
       test -f "$OTP_VMEM"
 
-      fusesoc --cores-root=. \
+      fusesoc --verbose --cores-root=. \
         run --flag=fileset_top --target=synth --setup --build \
         --build-root="$OBJ_DIR/hw" \
         lowrisc:systems:chip_earlgrey_nexysvideo \
@@ -596,7 +596,7 @@ jobs:
       test -f "$BOOTROM_VMEM"
 
       util/topgen-fusesoc.py --files-root=. --topname=top_englishbreakfast
-      fusesoc --cores-root=. \
+      fusesoc --verbose --cores-root=. \
         run --flag=fileset_topgen --target=synth --setup --build \
         --build-root="$OBJ_DIR/hw" \
         lowrisc:systems:chip_englishbreakfast_cw305 \
