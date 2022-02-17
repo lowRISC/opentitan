@@ -2,14 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include <assert.h>
-
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/flash_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/hmac_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -17,14 +16,6 @@
 #define MAX_FIFO_FILL 10
 
 const test_config_t kTestConfig;
-
-// This test needs to understand the byte order of the data in the string and
-// the digest values below, as they are laid out for the current processor.
-// RISC-V is little-endian, so the first of these `kHmacTransactionConfig`
-// values is the one we expect to be used, but we include the other for
-// completeness.
-static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
-              "This test assumes the target platform is little endian.");
 
 static const dif_hmac_transaction_t kHmacTransactionConfig = {
     .digest_endianness = kDifHmacEndiannessLittle,
@@ -110,21 +101,6 @@ static void wait_for_fifo_empty(const dif_hmac_t *hmac) {
 }
 
 /**
- * Read and compare the length of the message in the HMAC engine to the length
- * of the message sent in bits.
- */
-static void check_message_length(const dif_hmac_t *hmac,
-                                 uint64_t expected_sent_bits) {
-  uint64_t sent_bits;
-  CHECK_DIF_OK(dif_hmac_get_message_length(hmac, &sent_bits));
-
-  // TODO: Support 64-bit integers in logging.
-  CHECK(expected_sent_bits == sent_bits,
-        "Message length mismatch. Expected %u bits but got %u bits.",
-        (uint32_t)expected_sent_bits, (uint32_t)sent_bits);
-}
-
-/**
  * Kick off the HMAC (or SHA256) run.
  */
 static void run_hmac(const dif_hmac_t *hmac) {
@@ -163,7 +139,7 @@ static void run_test(const dif_hmac_t *hmac, const char *data, size_t len,
   test_start(hmac, key);
   push_message(hmac, data, len);
   wait_for_fifo_empty(hmac);
-  check_message_length(hmac, len * 8);
+  hmac_testutils_check_message_length(hmac, len * 8);
   run_hmac(hmac);
   check_digest(hmac, expected_digest);
 }
