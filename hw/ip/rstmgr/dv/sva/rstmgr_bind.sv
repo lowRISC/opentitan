@@ -10,11 +10,11 @@ module rstmgr_bind;
 
   bind rstmgr rstmgr_csr_assert_fpv rstmgr_csr_assert (.clk_i, .rst_ni, .h2d(tl_i), .d2h(tl_o));
 
-  bind rstmgr pwrmgr_rstmgr_sva_if #(
-    .CHECK_RSTREQS(0)
-  ) pwrmgr_rstmgr_sva_if (
+  bind rstmgr pwrmgr_rstmgr_sva_if pwrmgr_rstmgr_sva_if (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
+    .clk_slow_i(clk_aon_i),
+    .rst_slow_ni(&rst_por_aon_n),
     // These inputs from pwrmgr are ignored since they check pwrmgr's rstreqs output.
     .rstreqs_i('0),
     .reset_en('0),

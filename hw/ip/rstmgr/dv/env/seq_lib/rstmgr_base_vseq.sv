@@ -87,6 +87,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   // various knobs to enable certain routines
   bit do_rstmgr_init = 1'b1;
   bit responders_running = 0;
+  bit check_rstreqs_en = 0;
   static bit enable_cpu_to_sys_rst_release_response = 1'b1;
 
   mubi4_t scanmode;
@@ -150,43 +151,43 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     scanmode = get_rand_mubi4_val(scanmode_on_weight, 4, 4);
   endfunction
 
-  function void update_scanmode(prim_mubi_pkg::mubi4_t value);
+  local function void update_scanmode(prim_mubi_pkg::mubi4_t value);
     cfg.rstmgr_vif.scanmode_i = value;
   endfunction
 
-  function void update_scan_rst_n(logic value);
+  local function void update_scan_rst_n(logic value);
     cfg.rstmgr_vif.scan_rst_ni = value;
   endfunction
 
-  function void set_pwrmgr_rst_reqs(logic rst_lc_req, logic rst_sys_req);
+  local function void set_pwrmgr_rst_reqs(logic rst_lc_req, logic rst_sys_req);
     `uvm_info(`gfn, $sformatf("Setting pwr_i lc_req=%x sys_req=%x", rst_lc_req, rst_sys_req),
               UVM_MEDIUM)
     cfg.rstmgr_vif.pwr_i.rst_lc_req  = {rstmgr_pkg::PowerDomains{rst_lc_req}};
     cfg.rstmgr_vif.pwr_i.rst_sys_req = {rstmgr_pkg::PowerDomains{rst_sys_req}};
   endfunction
 
-  function void set_rstreqs(logic [pwrmgr_pkg::HwResetWidth:0] rstreqs);
+  local function void set_rstreqs(logic [pwrmgr_pkg::HwResetWidth:0] rstreqs);
     cfg.rstmgr_vif.pwr_i.rstreqs = rstreqs;
   endfunction
 
-  function void set_reset_cause(pwrmgr_pkg::reset_cause_e reset_cause);
+  local function void set_reset_cause(pwrmgr_pkg::reset_cause_e reset_cause);
     cfg.rstmgr_vif.pwr_i.reset_cause = reset_cause;
   endfunction
 
-  function void set_ndmreset_req(logic value);
+  virtual function void set_ndmreset_req(logic value);
     cfg.rstmgr_vif.cpu_i.ndmreset_req = value;
   endfunction
 
-  function logic get_rst_cpu_n();
+  local function logic get_rst_cpu_n();
     return cfg.rstmgr_vif.cpu_i.rst_cpu_n;
   endfunction
 
-  function void set_rst_cpu_n(logic value);
+  virtual function void set_rst_cpu_n(logic value);
     `uvm_info(`gfn, $sformatf("Setting rst_cpu_n=%b", value), UVM_MEDIUM)
     cfg.rstmgr_vif.cpu_i.rst_cpu_n = value;
   endfunction
 
-  function logic is_running_sequence(string seq_name);
+  static function logic is_running_sequence(string seq_name);
     string actual_sequence = "none";
     // Okay to ignore return value since the default won't match.
     void'($value$plusargs("UVM_TEST_SEQ=%0s", actual_sequence));
@@ -475,6 +476,8 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   endtask : responders
 
   local task start_responders();
+    // Initialize rst_cpu_n once for consistency.
+    set_rst_cpu_n(cfg.rstmgr_vif.resets_o.rst_sys_n[1]);
     fork : isolation_fork
       fork
         `uvm_info(`gfn, "Starting responders", UVM_MEDIUM)
@@ -487,6 +490,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   task pre_start();
     if (do_rstmgr_init) rstmgr_init();
     super.pre_start();
+    cfg.pwrmgr_rstmgr_sva_vif.check_rstreqs_en = 0;
     start_responders();
     `uvm_info(`gfn, "Started responders", UVM_MEDIUM)
   endtask

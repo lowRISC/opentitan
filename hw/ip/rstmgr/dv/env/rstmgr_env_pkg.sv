@@ -35,8 +35,6 @@ package rstmgr_env_pkg;
 
   typedef logic [$bits(alert_pkg::alert_crashdump_t)-1:0] linearized_alert_dump_t;
 
-  typedef virtual pwrmgr_rstmgr_sva_if #(.CHECK_RSTREQS(0)) parameterized_pwrmgr_rstmgr_sva_vif;
-
   // functions
 
   // package sources
