@@ -43,25 +43,28 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   endtask
 
   task monitor_all_clk_byp();
-    lc_tx_t prev_all_clk_byp_req = Off;
+    mubi4_t prev_all_clk_byp_req = MuBi4False;
     forever
       @cfg.clkmgr_vif.clk_cb begin
         if (cfg.clkmgr_vif.all_clk_byp_req != prev_all_clk_byp_req) begin
           `uvm_info(`gfn, $sformatf(
-                    "Got all_clk_byp_req %s", cfg.clkmgr_vif.all_clk_byp_req == On ? "On" : "Off"),
-                    UVM_MEDIUM)
-          prev_all_clk_byp_req = lc_tx_t'(cfg.clkmgr_vif.all_clk_byp_req);
+                    "Got all_clk_byp_req %s",
+                    cfg.clkmgr_vif.all_clk_byp_req == MuBi4True ? "True" : "False"
+                    ), UVM_MEDIUM)
+          prev_all_clk_byp_req = cfg.clkmgr_vif.all_clk_byp_req;
         end
         if (cfg.clk_rst_vif.rst_n) begin
-          if ((cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel == On) &&
+          if ((cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel == MuBi4True) &&
               (cfg.clkmgr_vif.clk_cb.lc_hw_debug_en_i == On)) begin
-            `DV_CHECK_EQ(cfg.clkmgr_vif.all_clk_byp_req, On, "Expected all_clk_byp_req to be On")
+            `DV_CHECK_EQ(cfg.clkmgr_vif.all_clk_byp_req, MuBi4True,
+                         "Expected all_clk_byp_req to be On")
           end
           if (cfg.en_cov) begin
-            cov.extclk_cg.sample(cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel,
-                                 cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_step_down,
-                                 cfg.clkmgr_vif.clk_cb.lc_hw_debug_en_i,
-                                 cfg.clkmgr_vif.clk_cb.lc_clk_byp_req, cfg.clkmgr_vif.scanmode_i);
+            cov.extclk_cg.sample(cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel == MuBi4True,
+                                 cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_step_down == MuBi4True,
+                                 cfg.clkmgr_vif.clk_cb.lc_hw_debug_en_i == On,
+                                 cfg.clkmgr_vif.clk_cb.lc_clk_byp_req == On,
+                                 cfg.clkmgr_vif.scanmode_i == MuBi4True);
           end
         end
       end
@@ -79,13 +82,15 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
         end
         if (cfg.clk_rst_vif.rst_n) begin
           if (cfg.clkmgr_vif.clk_cb.lc_clk_byp_req == On) begin
-            `DV_CHECK_EQ(cfg.clkmgr_vif.io_clk_byp_req, On, "Expected io_clk_byp_req to be On")
+            `DV_CHECK_EQ(cfg.clkmgr_vif.io_clk_byp_req, MuBi4True,
+                         "Expected io_clk_byp_req to be True")
           end
           if (cfg.en_cov) begin
-            cov.extclk_cg.sample(cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel,
-                                 cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_step_down,
-                                 cfg.clkmgr_vif.clk_cb.lc_hw_debug_en_i,
-                                 cfg.clkmgr_vif.clk_cb.lc_clk_byp_req, cfg.clkmgr_vif.scanmode_i);
+            cov.extclk_cg.sample(cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel == MuBi4True,
+                                 cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_step_down == MuBi4True,
+                                 cfg.clkmgr_vif.clk_cb.lc_hw_debug_en_i == On,
+                                 cfg.clkmgr_vif.clk_cb.lc_clk_byp_req == On,
+                                 cfg.clkmgr_vif.scanmode_i == MuBi4True);
           end
         end
       end
@@ -123,7 +128,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
             cov.peri_cg_wrap[PeriIo].sample(cfg.clkmgr_vif.peri_io_cb.clk_enable,
                                             cfg.clkmgr_vif.peri_io_cb.ip_clk_en,
-                                            cfg.clkmgr_vif.scanmode_i == prim_mubi_pkg::MuBi4True);
+                                            cfg.clkmgr_vif.scanmode_i == MuBi4True);
           end
         end
       forever
@@ -131,8 +136,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
             cov.peri_cg_wrap[PeriDiv2].sample(cfg.clkmgr_vif.peri_div2_cb.clk_enable,
                                               cfg.clkmgr_vif.peri_div2_cb.ip_clk_en,
-                                              cfg.clkmgr_vif.scanmode_i == prim_mubi_pkg::MuBi4True
-                                              );
+                                              cfg.clkmgr_vif.scanmode_i == MuBi4True);
           end
         end
       forever
@@ -140,8 +144,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
             cov.peri_cg_wrap[PeriDiv4].sample(cfg.clkmgr_vif.peri_div4_cb.clk_enable,
                                               cfg.clkmgr_vif.peri_div4_cb.ip_clk_en,
-                                              cfg.clkmgr_vif.scanmode_i == prim_mubi_pkg::MuBi4True
-                                              );
+                                              cfg.clkmgr_vif.scanmode_i == MuBi4True);
           end
         end
       forever
@@ -149,7 +152,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
             cov.peri_cg_wrap[PeriUsb].sample(cfg.clkmgr_vif.peri_usb_cb.clk_enable,
                                              cfg.clkmgr_vif.peri_usb_cb.ip_clk_en,
-                                             cfg.clkmgr_vif.scanmode_i == prim_mubi_pkg::MuBi4True);
+                                             cfg.clkmgr_vif.scanmode_i == MuBi4True);
           end
         end
     join
