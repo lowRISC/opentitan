@@ -126,6 +126,12 @@
       randcount: "64"
       randtype:  "perm"
     }
+    { name:      "RndCnstStoragePerm"
+      desc:      "Compile-time random permutation for Storage Entropy"
+      type:      "kmac_pkg::storage_perm_t"
+      randcount: "1600"
+      randtype:  "perm"
+    }
   ]
   inter_signal_list: [
     { struct:  "hw_key_req"
