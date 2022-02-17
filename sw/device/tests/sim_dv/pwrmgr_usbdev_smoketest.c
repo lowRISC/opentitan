@@ -71,7 +71,7 @@ bool test_main(void) {
     usbdev_force_dx_pullup(kDnSel, false);
 
     // give the hardware a chance to recognize the wakeup values are the same
-    usleep(20);  // 20us
+    busy_spin_micros(20);  // 20us
 
     // Enable low power on the next WFI with default settings.
     pwrmgr_testutils_enable_low_power(

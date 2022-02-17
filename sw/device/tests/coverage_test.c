@@ -20,7 +20,7 @@ static void spin_45(uint8_t state) {
 static void spin_180(void) {
   for (uint8_t state = 0; state < 4; ++state) {
     spin_45(state);
-    usleep(100 * 1000);  // 0.1s
+    busy_spin_micros(100 * 1000);  // 0.1s
   }
 }
 

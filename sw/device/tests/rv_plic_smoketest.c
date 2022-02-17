@@ -135,7 +135,7 @@ static void execute_test(dif_uart_t *uart) {
   CHECK_DIF_OK(dif_uart_irq_force(uart, kDifUartIrqRxOverflow));
   // Check if the IRQ has occured and has been handled appropriately.
   if (!uart_rx_overflow_handled) {
-    usleep(10);
+    busy_spin_micros(10);
   }
   CHECK(uart_rx_overflow_handled, "RX overflow IRQ has not been handled!");
 
@@ -144,7 +144,7 @@ static void execute_test(dif_uart_t *uart) {
   CHECK_DIF_OK(dif_uart_irq_force(uart, kDifUartIrqTxEmpty));
   // Check if the IRQ has occured and has been handled appropriately.
   if (!uart_tx_empty_handled) {
-    usleep(10);
+    busy_spin_micros(10);
   }
   CHECK(uart_tx_empty_handled, "TX empty IRQ has not been handled!");
 }

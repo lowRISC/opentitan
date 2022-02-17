@@ -32,7 +32,7 @@ static rom_error_t watchdog_pet_test(void) {
     watchdog_pet();
 
     // Sleep for 1ms.
-    usleep(1 * 1000);
+    busy_spin_micros(1 * 1000);
   }
   watchdog_disable();
   return kErrorOk;
@@ -46,7 +46,7 @@ static rom_error_t watchdog_configure_disabled_test(void) {
   watchdog_configure(threshold, kHardenedBoolFalse);
 
   // Sleep for 5ms.
-  usleep(5 * 1000);
+  busy_spin_micros(5 * 1000);
   return kErrorOk;
 }
 
@@ -58,7 +58,7 @@ static rom_error_t watchdog_bite_test(void) {
   watchdog_configure(threshold, kHardenedBoolTrue);
 
   // Sleep for 6ms.
-  usleep(6 * 1000);
+  busy_spin_micros(6 * 1000);
 
   watchdog_disable();
   return kErrorUnknown;
