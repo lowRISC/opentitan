@@ -9,7 +9,9 @@
 module kmac_entropy
   import kmac_pkg::*; #(
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
-  parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault
+  parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
+
+  parameter storage_perm_t RndCnstStoragePerm = RndCnstStoragePermDefault
 ) (
   input clk_i,
   input rst_ni,
@@ -20,9 +22,9 @@ module kmac_entropy
   input  [MsgWidth-1:0] entropy_data_i,
 
   // Entropy to internal
-  output logic                  rand_valid_o,
-  output [sha3_pkg::StateW-1:0] rand_data_o,
-  input                         rand_consumed_i,
+  output logic                        rand_valid_o,
+  output logic [sha3_pkg::StateW-1:0] rand_data_o,
+  input                               rand_consumed_i,
 
   // Status
   input in_keyblock_i,
@@ -380,7 +382,21 @@ module kmac_entropy
   // Storage expands to StateW ================================================
   // May adopt fancy shuffling scheme to obsfucate
   // Or, convert the 320bit to sheet then multiply then unroll into 1600bit
-  assign rand_data_o = {EntropyMultiply{entropy_storage}};
+  logic [sha3_pkg::StateW-1:0] rand_data_concat;
+  assign rand_data_concat = {EntropyMultiply{entropy_storage}};
+  // Shuffle the StateW
+  always_comb begin
+    rand_data_o = '0;
+    for (int unsigned i = 0 ; i < sha3_pkg::StateW ; i++) begin
+      rand_data_o[i] = rand_data_concat[RndCnstStoragePerm[i]];
+    end
+  end
+
+  // Check if RndCnstStoragePerm < StateW
+  for (genvar i = 0 ; i < sha3_pkg::StateW; i++) begin : g_storage_perm_check
+    `ASSERT_INIT(RndCnstStoragePermInBound_A,
+      RndCnstStoragePerm[i] < sha3_pkg::StateW)
+  end
 
   // entropy valid
   always_ff @(posedge clk_i or negedge rst_ni) begin
