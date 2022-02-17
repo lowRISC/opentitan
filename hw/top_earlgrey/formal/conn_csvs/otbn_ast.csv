@@ -8,4 +8,4 @@
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
 # Verify that the ram_cfg signal from AST is connected to OTBN.
-CONNECTION,OTBN_RAM_CFG_AST,top_earlgrey.u_otbn,ram_cfg_i,u_ast,spram_rm_o
+CONNECTION,OTBN_RAM_CFG_AST,top_earlgrey.u_otbn,ram_cfg_i,u_ast,"{spram_rm_o, sprgf_rm_o}"
