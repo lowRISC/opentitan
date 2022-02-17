@@ -79,59 +79,59 @@
   // List of test specifications.
   tests: [
     {
-      name: "{variant}_smoke"
+      name: "{name}_smoke"
       uvm_test_seq: sram_ctrl_smoke_vseq
     }
     {
-      name: "{variant}_multiple_keys"
+      name: "{name}_multiple_keys"
       uvm_test_seq: sram_ctrl_multiple_keys_vseq
     }
     {
-      name: "{variant}_bijection"
+      name: "{name}_bijection"
       uvm_test_seq: sram_ctrl_bijection_vseq
       run_opts: ["+test_timeout_ns=1000000000"]
     }
     {
-      name: "{variant}_stress_pipeline"
+      name: "{name}_stress_pipeline"
       uvm_test_seq: sram_ctrl_stress_pipeline_vseq
       run_opts: ["+zero_delays=1"]
     }
     {
-      name: "{variant}_partial_access"
+      name: "{name}_partial_access"
       uvm_test_seq: sram_ctrl_smoke_vseq
       run_opts: ["+partial_access_pct=90"]
     }
     {
-      name: "{variant}_partial_access_b2b"
+      name: "{name}_partial_access_b2b"
       uvm_test_seq: sram_ctrl_stress_pipeline_vseq
       run_opts: ["+partial_access_pct=90"]
     }
     {
-      name: "{variant}_max_throughput"
+      name: "{name}_max_throughput"
       uvm_test_seq: sram_ctrl_throughput_vseq
       run_opts: ["+zero_delays=1 +partial_access_pct=0"]
     }
     {
-      name: "{variant}_throughput_w_partial_write"
+      name: "{name}_throughput_w_partial_write"
       uvm_test_seq: sram_ctrl_throughput_vseq
       run_opts: ["+zero_delays=1 +partial_access_pct=20"]
     }
     {
-      name: "{variant}_lc_escalation"
+      name: "{name}_lc_escalation"
       uvm_test_seq: sram_ctrl_lc_escalation_vseq
     }
     {
-      name: "{variant}_access_during_key_req"
+      name: "{name}_access_during_key_req"
       uvm_test_seq: sram_ctrl_access_during_key_req_vseq
       // Need to make sure no sram access when we just request new key or init, so use zero_delays
       run_opts: ["+zero_delays=1"]
     }
     {
-      name: "{variant}_executable"
+      name: "{name}_executable"
       uvm_test_seq: sram_ctrl_executable_vseq
     }
     {
-      name: "{variant}_regwen"
+      name: "{name}_regwen"
       uvm_test_seq: sram_ctrl_regwen_vseq
     }
     // Below 2 tests are same as the tests in dvsim/tests/mem_tests.hjson
