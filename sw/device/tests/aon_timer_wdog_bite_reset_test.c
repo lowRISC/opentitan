@@ -56,14 +56,14 @@ static void wdog_bite_test(const dif_aon_timer_t *aon_timer,
   config_wdog(aon_timer, pwrmgr, bark_time_us, bite_time_us);
 
   // Wait bark time and check that the bark interrupt requested.
-  usleep(bark_time_us);
+  busy_spin_micros(bark_time_us);
   bool is_pending = false;
   CHECK_DIF_OK(dif_aon_timer_irq_is_pending(
       aon_timer, kDifAonTimerIrqWdogTimerBark, &is_pending));
   CHECK(is_pending);
 
   // Wait for the remaining time to the wdog bite.
-  usleep(bite_time_us - bark_time_us);
+  busy_spin_micros(bite_time_us - bark_time_us);
   // If we arrive here the test must fail.
   CHECK(false, "Timeout waiting for Wdog bite reset!");
 }

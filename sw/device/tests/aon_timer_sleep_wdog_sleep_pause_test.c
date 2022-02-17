@@ -91,7 +91,7 @@ bool test_main(void) {
     // Executing the wdog bite reset during sleep test.
 
     // Wait for the remaining time to the wdog bark.
-    usleep(WDOG_BARK_TIME_US);
+    busy_spin_micros(WDOG_BARK_TIME_US);
     CHECK_DIF_OK(dif_aon_timer_irq_is_pending(
         &aon_timer, kDifAonTimerIrqWkupTimerExpired, &is_pending));
     CHECK(is_pending);
@@ -100,7 +100,7 @@ bool test_main(void) {
 
     CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(
         &aon_timer, kDifAonTimerIrqWkupTimerExpired));
-    usleep(WDOG_BITE_TIME_US - WDOG_BARK_TIME_US + 10);
+    busy_spin_micros(WDOG_BITE_TIME_US - WDOG_BARK_TIME_US + 10);
     LOG_ERROR("Should have got a watchdog reset");
   } else if (rst_info == kDifRstmgrResetInfoWatchdog) {
     LOG_INFO("Booting for the third time due to wdog bite reset");

@@ -9,7 +9,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/runtime/ibex.h"
 
-void usleep(uint32_t usec) {
+void busy_spin_micros(uint32_t usec) {
   uint64_t cycles = kClockFreqCpuHz * usec / 1000000;
   uint64_t start = ibex_mcycle_read();
   while ((ibex_mcycle_read() - start) < cycles) {

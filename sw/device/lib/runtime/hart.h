@@ -30,7 +30,7 @@ inline void wait_for_interrupt(void) { asm volatile("wfi"); }
  *
  * @param usec Duration in microseconds.
  */
-void usleep(uint32_t usec);
+void busy_spin_micros(uint32_t usec);
 
 /**
  * Immediately halt program execution.

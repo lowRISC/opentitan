@@ -22,7 +22,7 @@ static void aon_timer_test_wakeup_timer(dif_aon_timer_t *aon) {
   // to be on a cautious side - lets keep it at 100 for now).
   aon_timer_testutils_wakeup_config(aon, 1);
 
-  usleep(100);
+  busy_spin_micros(100);
 
   // Make sure that the timer has expired.
   bool is_pending;
@@ -41,7 +41,7 @@ static void aon_timer_test_watchdog_timer(dif_aon_timer_t *aon) {
   // counter. Delay to compensate for AON Timer 200kHz clock (less should
   // suffice, but to be on a cautious side - lets keep it at 100 for now).
   aon_timer_testutils_watchdog_config(aon, 1, UINT32_MAX, false);
-  usleep(100);
+  busy_spin_micros(100);
 
   // Make sure that the timer has expired.
   bool is_pending;
