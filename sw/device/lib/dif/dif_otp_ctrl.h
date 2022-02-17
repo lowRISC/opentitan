@@ -7,7 +7,8 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/otp_ctrl/doc/">OTP</a> Device Interface Functions
+ * @brief <a href="/hw/ip/otp_ctrl/doc/">OTP Controller</a> Device Interface
+ * Functions
  */
 
 #include <stdint.h>
