@@ -22,7 +22,7 @@
         life_stage:         "L1",
         design_stage:       "D2",
         verification_stage: "V2",
-        dif_stage:          "S0",
+        dif_stage:          "S2",
       }
     ]
 }
