@@ -68,8 +68,8 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
   // local queues to hold incoming packets pending comparison
 
-  otp_ctrl_pkg::sram_key_t key     = sram_ctrl_pkg::RndCnstSramKeyDefault;
-  otp_ctrl_pkg::sram_nonce_t nonce = sram_ctrl_pkg::RndCnstSramNonceDefault;
+  otp_ctrl_pkg::sram_key_t key;
+  otp_ctrl_pkg::sram_nonce_t nonce;
 
   // Data holding "register" and transaction info for use in forwarding situations
   // e.g. if a write is followed by a read, the write transaction is held
@@ -84,12 +84,6 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
   bit in_raw_hazard = 0;
 
   bit [TL_AW-1:0] sram_addr_mask = (1 << (AddrWidth + 2)) - 1;
-
-  // utility function to word-align an input TL address
-  // (SRAM is indexed at word granularity)
-  function bit [TL_AW-1:0] word_align_addr(bit [TL_AW-1:0] addr);
-    return {addr[TL_AW-1:2], 2'b00};
-  endfunction
 
   // Only LSB is used in the sram, the other MSB bits will be ignored. Use the simplified
   // address for mem_bkdr_scb
@@ -110,45 +104,6 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     decrypt_addr_arr = sram_scrambler_pkg::decrypt_sram_addr(addr_arr, AddrWidth, nonce_arr);
 
     return {<<{decrypt_addr_arr}};
-  endfunction
-
-  // utility function to check whether two addresses map to the same SRAM memory line
-  function bit eq_sram_addr(bit [TL_AW-1:0] addr1, bit [TL_AW-1:0] addr2);
-    bit [TL_AW-1:0] addr_mask = '0;
-
-    addr1 = word_align_addr(addr1);
-    addr2 = word_align_addr(addr2);
-
-    for (int i = 0; i < cfg.mem_bkdr_util_h.get_addr_width() + 2; i++) begin
-      addr_mask[i] = 1;
-    end
-
-    return (addr1 & addr_mask) == (addr2 & addr_mask);
-  endfunction
-
-  // utility function to reset all fields of a sram_trans_t
-  function void clear_trans(ref sram_trans_t t);
-    t.we    = 0;
-    t.addr  = '0;
-    t.data  = '0;
-    t.mask  = '0;
-    t.key   = sram_ctrl_pkg::RndCnstSramKeyDefault;
-    t.nonce = sram_ctrl_pkg::RndCnstSramNonceDefault;
-  endfunction
-
-  // utility function used by `process_sram_tl_d_chan_item()` to check that
-  // the current data_phase transaction matches the transaction pulled from the `addr_phase_mbox`
-  //
-  // can also be more generally used to check equality of two transactions
-  function bit eq_trans(sram_trans_t t1, sram_trans_t t2);
-    bit equal = (t1.we == t2.we) && (eq_sram_addr(t1.addr, t2.addr)) &&
-                (t1.mask == t2.mask) && (t1.key == t2.key) && (t1.nonce == t2.nonce);
-    `uvm_info(`gfn, $sformatf("Comparing 2 transactions:\nt1: %0p\nt2: %0p", t1, t2), UVM_MEDIUM)
-    // as one of the sram_trans_t structs will be still in address phase,
-    // it may not have the data field available if it is a READ operation
-    //
-    // in this case, only compare the data field if these are write transactions
-    return (equal && t1.we) ? (equal && (t1.data == t2.data)) : equal;
   endfunction
 
   // Check if the input tl_seq_item has any tl errors.
@@ -398,8 +353,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       exp_status[SramCtrlInitDone]        = 0;
 
       // escalation resets the key and nonce back to defaults
-      key   = sram_ctrl_pkg::RndCnstSramKeyDefault;
-      nonce = sram_ctrl_pkg::RndCnstSramNonceDefault;
+      reset_key_nonce();
 
       // insert a small delay before dropping `handling_lc_esc`.
       //
@@ -609,14 +563,18 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     end
   endtask
 
+  virtual function void reset_key_nonce();
+    key = sram_ctrl_pkg::RndCnstSramKeyDefault;
+    nonce = sram_ctrl_pkg::RndCnstSramNonceDefault;
+  endfunction
+
   virtual function void reset(string kind = "HARD");
     sram_trans_t t;
     super.reset(kind);
 
+    reset_key_nonce();
     in_init = 0;
     in_key_req = 0;
-    key = sram_ctrl_pkg::RndCnstSramKeyDefault;
-    nonce = sram_ctrl_pkg::RndCnstSramNonceDefault;
     mem_bkdr_scb.reset();
     mem_bkdr_scb.update_key(key, nonce);
     exp_status = '0;
