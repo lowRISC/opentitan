@@ -186,7 +186,7 @@ test('sw_silicon_creator_lib_shutdown_unittest', executable(
     ],
     dependencies: [
       sw_vendor_gtest,
-      sw_silicon_creator_lib_base_mock_abs_mmio,
+      sw_lib_testing_mock_abs_mmio,
       sw_lib_testing_hardened,
     ],
     native: true,
