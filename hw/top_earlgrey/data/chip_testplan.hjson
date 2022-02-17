@@ -1624,7 +1624,7 @@
             the HMAC done and FIFO empty interrupts as a part of this test.
             '''
       milestone: V2
-      tests: ["chip_sw_hmac_enc_irq"]
+      tests: ["chip_sw_hmac_enc_irq", "chip_sw_hmac_enc"]
     }
     {
       name: chip_sw_hmac_idle
