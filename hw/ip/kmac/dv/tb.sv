@@ -132,7 +132,7 @@ module tb;
       bit disable_lc_asserts;
       void'($value$plusargs("disable_lc_asserts=%0b", disable_lc_asserts));
       if (disable_lc_asserts) begin
-        $assertoff(0, tb.dut.u_sha3.u_keccak.u_keccak_p.gen_selperiod_chk.SelStayTwoCycleIf1_A);
+        $assertoff(0, tb.dut.u_sha3.u_keccak.u_keccak_p.gen_selperiod_chk.SelStayTwoCycleIfTrue_A);
       end
     end
   end
