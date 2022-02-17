@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include <assert.h>
-
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
@@ -11,6 +9,7 @@
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/hmac_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf.h"
 
@@ -90,23 +89,6 @@ static void enable_irqs(void) {
   irq_external_ctrl(true);
 }
 
-/**
- * Read and compare the length of the message in the HMAC engine to the length
- * of the message sent in bits.
- */
-static void check_message_length(uint64_t expected_sent_bits) {
-  uint64_t sent_bits;
-  CHECK_DIF_OK(dif_hmac_get_message_length(&hmac, &sent_bits));
-
-  // 64bit formatting is not supported, so split into hi and lo hex 32bit
-  // values. These should appear as 64bit hex values in the debug output.
-  CHECK(expected_sent_bits == sent_bits,
-        "Message length mismatch. "
-        "Expected 0x%08x%08x bits but got 0x%08x%08x bits.",
-        (uint32_t)(expected_sent_bits >> 32), (uint32_t)expected_sent_bits,
-        (uint32_t)(sent_bits >> 32), (uint32_t)sent_bits);
-}
-
 bool test_main() {
   mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
   CHECK_DIF_OK(dif_hmac_init(base_addr, &hmac));
@@ -122,7 +104,7 @@ bool test_main() {
   hmac_ctx.expected_irq = kDifHmacIrqFifoEmpty;
   CHECK_DIF_OK(
       dif_hmac_fifo_push(&hmac, &data[0], ARRAYSIZE(data), &sent_bytes));
-  check_message_length(32);
+  hmac_testutils_check_message_length(&hmac, 32);
 
   // Spin waiting for the "empty" interrupt.
   IBEX_SPIN_FOR(irq_serviced == hmac_ctx.expected_irq,
