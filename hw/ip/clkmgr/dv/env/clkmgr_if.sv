@@ -74,16 +74,14 @@ interface clkmgr_if (
     aes: `CLKMGR_HIER.reg2hw.clk_hints.clk_main_aes_hint.q
   };
 
-  // TODO: Change this to mubi4_t type.
-  lc_ctrl_pkg::lc_tx_t extclk_ctrl_csr_sel;
+  prim_mubi_pkg::mubi4_t extclk_ctrl_csr_sel;
   always_comb begin
-    extclk_ctrl_csr_sel = lc_ctrl_pkg::lc_tx_t'(`CLKMGR_HIER.reg2hw.extclk_ctrl.sel.q);
+    extclk_ctrl_csr_sel = prim_mubi_pkg::mubi4_t'(`CLKMGR_HIER.reg2hw.extclk_ctrl.sel.q);
   end
 
-  // TODO: Change this to mubi4_t type.
-  lc_ctrl_pkg::lc_tx_t extclk_ctrl_csr_step_down;
+  prim_mubi_pkg::mubi4_t extclk_ctrl_csr_step_down;
   always_comb begin
-    extclk_ctrl_csr_step_down = lc_ctrl_pkg::lc_tx_t'(
+    extclk_ctrl_csr_step_down = prim_mubi_pkg::mubi4_t'(
         `CLKMGR_HIER.reg2hw.extclk_ctrl.low_speed_sel.q);
   end
 
