@@ -27,91 +27,134 @@
       name: sec_cm_bus_integrity
       desc: "Verify the countermeasure(s) BUS.INTEGRITY."
       milestone: V2S
-      tests: []
+      tests: ["{name}_tl_intg_err"]
     }
     {
       name: sec_cm_ctrl_config_regwen
-      desc: "Verify the countermeasure(s) CTRL.CONFIG.REGWEN."
+      desc: '''Verify the countermeasure(s) CTRL.CONFIG.REGWEN.
+
+            The `ctrl` CSR is excluded in CSR tests, add another test to verify:
+             - When `ctrl_regwen` is 1, writting to `ctrl` can take effect.
+             - When `ctrl_regwen` is 0, writting to `ctrl` has no effect.
+            '''
       milestone: V2S
-      tests: []
+      tests: ["{name}_regwen"]
     }
     {
       name: sec_cm_exec_config_regwen
       desc: "Verify the countermeasure(s) EXEC.CONFIG.REGWEN."
       milestone: V2S
-      tests: []
+      tests: ["{name}_csr_rw"]
     }
     {
       name: sec_cm_exec_config_mubi
-      desc: "Verify the countermeasure(s) EXEC.CONFIG.MUBI."
+      desc: '''Verify the countermeasure(s) EXEC.CONFIG.MUBI.
+
+            Refer to the testpoint `executable` for the detail scenario.
+            '''
       milestone: V2S
-      tests: []
+      tests: ["{name}_executable"]
     }
     {
       name: sec_cm_exec_intersig_mubi
-      desc: "Verify the countermeasure(s) EXEC.INTERSIG.MUBI."
+      desc: '''Verify the countermeasure(s) EXEC.INTERSIG.MUBI.
+
+            Refer to the testpoint `executable` for the detail scenario.
+            `cip_mubi_cov_if` is bound to this port.
+            '''
       milestone: V2S
-      tests: []
-    }
-    {
-      name: sec_cm_lc_escalate_en_intersig_mubi
-      desc: "Verify the countermeasure(s) LC_ESCALATE_EN.INTERSIG.MUBI."
-      milestone: V2S
-      tests: []
+      tests: ["{name}_executable"]
     }
     {
       name: sec_cm_lc_hw_debug_en_intersig_mubi
-      desc: "Verify the countermeasure(s) LC_HW_DEBUG_EN.INTERSIG.MUBI."
+      desc: '''Verify the countermeasure(s) LC_HW_DEBUG_EN.INTERSIG.MUBI.
+
+            Refer to the testpoint `executable` for the detail scenario.
+            `cip_mubi_cov_if` is bound to this port.
+            '''
       milestone: V2S
-      tests: []
+      tests: ["{name}_executable"]
+    }
+    {
+      name: sec_cm_lc_escalate_en_intersig_mubi
+      desc: '''Verify the countermeasure(s) LC_ESCALATE_EN.INTERSIG.MUBI.
+
+            Refer to the testpoint `lc_escalation` for the detail scenario.
+            `cip_lc_tx_cov_if` is bound to this port.
+            '''
+      milestone: V2S
+      tests: ["{name}_lc_escalation"]
     }
     {
       name: sec_cm_mem_integrity
       desc: "Verify the countermeasure(s) MEM.INTEGRITY."
       milestone: V2S
-      tests: []
+      tests: ["{name}_passthru_mem_tl_intg_err"]
     }
     {
       name: sec_cm_mem_scramble
-      desc: "Verify the countermeasure(s) MEM.SCRAMBLE."
+      desc: '''Verify the countermeasure(s) MEM.SCRAMBLE.
+
+            This is verified in all non-CSR tests.
+            '''
       milestone: V2S
-      tests: []
+      tests: ["{name}_smoke"]
     }
     {
       name: sec_cm_addr_scramble
-      desc: "Verify the countermeasure(s) ADDR.SCRAMBLE."
+      desc: '''Verify the countermeasure(s) ADDR.SCRAMBLE.
+
+            This is verified in all non-CSR tests.
+            '''
       milestone: V2S
-      tests: []
+      tests: ["{name}_smoke"]
     }
     {
       name: sec_cm_instr_bus_lc_gated
-      desc: "Verify the countermeasure(s) INSTR.BUS.LC_GATED."
+      desc: '''Verify the countermeasure(s) INSTR.BUS.LC_GATED."
+
+            Refer to the testpoint `executable` for the detail scenario.
+            '''
       milestone: V2S
-      tests: []
+      tests: ["{name}_executable"]
     }
     {
       name: sec_cm_key_global_esc
       desc: "Verify the countermeasure(s) KEY.GLOBAL_ESC."
       milestone: V2S
-      tests: []
+      tests: ["{name}_lc_escalation"]
     }
     {
       name: sec_cm_key_local_esc
-      desc: "Verify the countermeasure(s) KEY.LOCAL_ESC."
+      desc: '''Verify the countermeasure(s) KEY.LOCAL_ESC.
+
+            Refer to `sec_cm` and `sec_cm_additional_check`.
+            '''
       milestone: V2S
-      tests: []
+      tests: ["{name}_sec_cm"]
     }
     {
       name: sec_cm_ctr_redun
-      desc: "Verify the countermeasure(s) CTR.REDUN."
+      desc: '''Verify the countermeasure(s) CTR.REDUN.
+
+            Besides the stimulus and checks mentioned in `prim_count_check`, also have
+            following checks:
+            - Check alert and `status.init_error` is set.
+            - Check reading any SRAM address returns 0, after fault injection.
+            '''
       milestone: V2S
-      tests: []
+      tests: ["{name}_sec_cm"]
     }
     {
       name: sec_cm_scramble_key_sideload
-      desc: "Verify the countermeasure(s) SCRAMBLE.KEY.SIDELOAD."
+      desc: '''Verify the countermeasure(s) SCRAMBLE.KEY.SIDELOAD.
+
+            Simulation can't really prove that the sideload key is unreachable by SW.
+            However, from defined CSRs and memory returned data, there is no way to read
+            scramble key by SW.
+            '''
       milestone: V2S
-      tests: []
+      tests: ["{name}_smoke"]
     }
   ]
 }
