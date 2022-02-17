@@ -42,6 +42,11 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   int                key_192b_weight            = 10;
   int                key_256b_weight            = 10;
 
+  // reseed weigth
+  int                per8_weight                = 60;
+  int                per64_weight               = 30;
+  int                per8k_weight               = 10;
+
   // use manual operation mode percentage
   int                manual_operation_pct       = 10;
   // enable reseed on key touch
@@ -70,7 +75,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
 
   //   [1]: mode error
   //   [0]: key_len
-  cfg_error_type_t   config_error_type          = 2'b00;
+  cfg_error_type_t   config_error_type          = 3'b000;
   int                config_error_pct           = 30;
 
   // min and max wait (clk) before an error injection
@@ -162,10 +167,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
         m_tl_agent_cfg.d_ready_delay_max = 0;
         zero_delays                      = 1;
       end
-    endcase // case (host_resp_speed)
-
-
-    if (config_error_type[0] == 1'b1) num_corrupt_messages += 1;
+    endcase
   endfunction
 
 
