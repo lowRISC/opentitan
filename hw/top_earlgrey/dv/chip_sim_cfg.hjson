@@ -420,6 +420,12 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_hmac_enc_test
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/hmac_enc_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_kmac_mode_cshake
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/kmac_mode_cshake_test:1"]
