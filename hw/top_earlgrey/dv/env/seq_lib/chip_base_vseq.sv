@@ -25,9 +25,15 @@ class chip_base_vseq #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_ba
 
   `uvm_object_new
 
+  virtual function void set_sva_check_rstreqs(bit enable);
+    `uvm_info(`gfn, $sformatf("Remote setting check_rstreqs_en=%b", enable), UVM_MEDIUM)
+    uvm_config_db#(bit)::set(null, "pwrmgr_rstmgr_sva_if", "check_rstreqs_en", enable);
+  endfunction
+
   task post_start();
     do_clear_all_interrupts = 0;
     super.post_start();
+    set_sva_check_rstreqs(0);
   endtask
 
   virtual task apply_reset(string kind = "HARD");

@@ -51,8 +51,10 @@ module pwrmgr_bind;
   );
 
   bind pwrmgr pwrmgr_rstmgr_sva_if pwrmgr_rstmgr_sva_if (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
+    .clk_i,
+    .rst_ni,
+    .clk_slow_i,
+    .rst_slow_ni,
     // Input resets.
     .rstreqs_i(rstreqs_i),
     .reset_en(reg2hw.reset_en),
