@@ -114,6 +114,10 @@ class kmac_base_vseq extends cip_base_vseq #(
   rand sha3_pkg::sha3_st_e err_sw_cmd_seq_st;
   rand kmac_pkg::kmac_cmd_e err_sw_cmd_seq_cmd;
 
+  // Entropy related variables
+  rand bit [9:0] hash_threshold;
+  rand bit hash_cnt_clr;
+
   // array to store `right_encode(output_len)`
   bit [7:0] output_len_enc[];
 
@@ -296,6 +300,9 @@ class kmac_base_vseq extends cip_base_vseq #(
       // TODO: write random large values that can avoid timeout.
       csr_wr(.ptr(ral.entropy_period), .value(0));
     end
+
+    csr_wr(.ptr(ral.entropy_refresh), .value(hash_threshold));
+    csr_wr(.ptr(ral.cmd), .value(hash_cnt_clr << KmacHashCntClrIdx));
 
     // setup CFG csr with default random values
     ral.cfg_shadowed.kmac_en.set(kmac_en);
