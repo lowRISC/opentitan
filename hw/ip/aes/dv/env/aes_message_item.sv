@@ -66,6 +66,11 @@ class aes_message_item extends uvm_sequence_item;
   int    key_192b_weight      = 10;
   int    key_256b_weight      = 10;
 
+  // reseed weight
+  int    per8_weight          = 60;
+  int    per64_weight         = 30;
+  int    per8k_weight         = 10;
+
   // set if this message should not be
   // validated
   // due to a premature trigger
@@ -94,6 +99,8 @@ class aes_message_item extends uvm_sequence_item;
   rand cfg_error_type_t  cfg_error_type;
   // run AES in manual mode
   rand bit               manual_operation;
+  // reseed rate
+  rand bit [2:0]         reseed_rate;
 
 
   ///////////////////////////////////////
@@ -129,6 +136,20 @@ class aes_message_item extends uvm_sequence_item;
       aes_keylen == fixed_keylen
     };
   }
+
+  constraint rsd_rate_c {
+    solve has_config_error before reseed_rate;
+    solve cfg_error_type before reseed_rate;
+    if (!(has_config_error && cfg_error_type.rsd_rate) ) {
+      reseed_rate inside { 3'b001, 3'b010, 3'b100 };
+      reseed_rate dist   { 3'b001 :/ per8_weight,
+                           3'b010 :/ per64_weight,
+                           3'b100 :/ per8k_weight };
+    } else {
+      !( reseed_rate  inside { 3'b001, 3'b010, 3'b100 });
+    }
+  }
+
 
   constraint key_c {
     if (fixed_key_en) {
@@ -179,9 +200,9 @@ class aes_message_item extends uvm_sequence_item;
     solve has_config_error before cfg_error_type;
     solve sideload_en before cfg_error_type;
     if (has_config_error & !sideload_en) {
-      cfg_error_type inside {[1:3]};
+      cfg_error_type inside {[1:7]};
     } else {
-      cfg_error_type == 2'b00;
+      cfg_error_type == 3'b000;
     }
   }
 
@@ -335,5 +356,6 @@ class aes_message_item extends uvm_sequence_item;
     fixed_iv_en      = rhs_.fixed_iv_en;
     skip_msg         = rhs_.skip_msg;
     sideload_en      = rhs_.sideload_en;
+    reseed_rate      = rhs_.reseed_rate;
   endfunction // copy
 endclass
