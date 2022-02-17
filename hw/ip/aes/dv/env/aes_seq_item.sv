@@ -33,6 +33,7 @@ class aes_seq_item extends uvm_sequence_item;
   // indicate if the initialization vector is valid
   bit [3:0]       iv_vld;
   aes_mode_e      mode;
+  bit [2:0]       reseed_rate;
 
   bit             en_b2b_transactions  = 1;
   int             b2b_pct              = 80;
@@ -302,6 +303,7 @@ class aes_seq_item extends uvm_sequence_item;
     split_item       = rhs_.split_item;
     data_was_cleared = rhs_.data_was_cleared;
     sideload_en      = rhs_.sideload_en;
+    reseed_rate      = rhs_.reseed_rate;
   endfunction // copy
 
 
