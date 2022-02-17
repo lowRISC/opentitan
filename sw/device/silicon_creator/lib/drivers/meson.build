@@ -60,7 +60,7 @@ test('sw_silicon_creator_lib_driver_hmac_unittest', executable(
     ],
     dependencies: [
       sw_vendor_gtest,
-      sw_silicon_creator_lib_base_mock_abs_mmio,
+      sw_lib_testing_mock_abs_mmio,
       sw_lib_testing_memory,
     ],
     native: true,
@@ -109,7 +109,7 @@ test('sw_silicon_creator_lib_driver_keymgr_unittest', executable(
     ],
     dependencies: [
       sw_vendor_gtest,
-      sw_silicon_creator_lib_base_mock_abs_mmio,
+      sw_lib_testing_mock_abs_mmio,
     ],
     native: true,
     c_args: ['-DMOCK_ABS_MMIO'],
@@ -168,7 +168,7 @@ test('sw_silicon_creator_lib_driver_uart_unittest', executable(
     ],
     dependencies: [
       sw_vendor_gtest,
-      sw_silicon_creator_lib_base_mock_abs_mmio,
+      sw_lib_testing_mock_abs_mmio,
     ],
     native: true,
     c_args: ['-DMOCK_ABS_MMIO'],
@@ -246,7 +246,7 @@ test('sw_silicon_creator_lib_driver_retention_sram_unittest', executable(
     ],
     dependencies: [
       sw_vendor_gtest,
-      sw_silicon_creator_lib_base_mock_abs_mmio,
+      sw_lib_testing_mock_abs_mmio,
     ],
     native: true,
     c_args: ['-DMOCK_ABS_MMIO'],
@@ -324,7 +324,7 @@ test('sw_silicon_creator_lib_driver_rstmgr_unittest', executable(
     ],
     dependencies: [
       sw_vendor_gtest,
-      sw_silicon_creator_lib_base_mock_abs_mmio,
+      sw_lib_testing_mock_abs_mmio,
     ],
     native: true,
     c_args: ['-DMOCK_ABS_MMIO', '-DOT_OFF_TARGET_TEST'],
@@ -433,7 +433,7 @@ test('sw_silicon_creator_lib_driver_pinmux_unittest', executable(
     ],
     dependencies: [
       sw_vendor_gtest,
-      sw_silicon_creator_lib_base_mock_abs_mmio,
+      sw_lib_testing_mock_abs_mmio,
     ],
     native: true,
     c_args: ['-DMOCK_ABS_MMIO'],
@@ -505,7 +505,7 @@ test('sw_silicon_creator_lib_driver_otbn_unittest', executable(
     ],
     dependencies: [
       sw_vendor_gtest,
-      sw_silicon_creator_lib_base_mock_abs_mmio,
+      sw_lib_testing_mock_abs_mmio,
       sw_lib_testing_hardened,
     ],
     native: true,
@@ -564,7 +564,7 @@ test('sw_silicon_creator_lib_driver_flash_ctrl_unittest', executable(
     ],
     dependencies: [
       sw_vendor_gtest,
-      sw_silicon_creator_lib_base_mock_abs_mmio,
+      sw_lib_testing_mock_abs_mmio,
       sw_silicon_creator_lib_base_mock_sec_mmio,
       sw_lib_testing_hardened,
       sw_lib_testing_memory,

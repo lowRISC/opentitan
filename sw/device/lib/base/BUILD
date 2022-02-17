@@ -4,6 +4,8 @@
 
 package(default_visibility = ["//visibility:public"])
 
+load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+
 cc_library(
     name = "base",
     srcs = [
@@ -36,16 +38,10 @@ cc_library(
     hdrs = [
         "abs_mmio.h",
     ],
+    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":base",
     ],
-)
-
-# mock_abs_mmio is currently under sw/silicon_creator/lib/base and we need this
-# header to be able to build unit tests.
-filegroup(
-    name = "abs_mmio_h",
-    srcs = ["abs_mmio.h"],
 )
 
 cc_library(

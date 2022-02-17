@@ -30,22 +30,6 @@ test('mock_csr_test', executable(
   cpp_args: ['-DMOCK_CSR'],
 ))
 
-sw_silicon_creator_lib_base_mock_abs_mmio = declare_dependency(
-  link_with: static_library(
-    'mock_abs_mmio',
-    sources: [
-      'mock_abs_mmio.h',
-    ],
-    dependencies: [
-      sw_vendor_gtest,
-      sw_lib_testing_bitfield,
-    ],
-    native: true,
-    c_args: ['-DMOCK_ABS_MMIO'],
-    cpp_args: ['-DMOCK_ABS_MMIO'],
-  )
-)
-
 # Mask ROM Secure MMIO module
 sw_silicon_creator_lib_base_sec_mmio = declare_dependency(
   link_with: static_library(
@@ -82,7 +66,7 @@ test('sw_silicon_creator_lib_base_sec_mmio_unittest', executable(
     dependencies: [
       sw_vendor_gtest,
       sw_lib_testing_hardened,
-      sw_silicon_creator_lib_base_mock_abs_mmio,
+      sw_lib_testing_mock_abs_mmio,
     ],
     native: true,
     c_args: [
