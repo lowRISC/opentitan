@@ -5,10 +5,12 @@
 // Description: adc_ctrl interrupt Module
 //
 module adc_ctrl_intr import adc_ctrl_reg_pkg::*; (
+  input  clk_aon_i,
+  input  rst_aon_ni,
   input  clk_i,
   input  rst_ni,
 
-  input  [NumAdcFilter-1:0] aon_filter_status_i,
+  input  [NumAdcFilter-1:0] aon_filter_match_i,
   input  [8:0] cfg_intr_en_i,
   input  cfg_oneshot_done_i,
 
@@ -23,42 +25,31 @@ module adc_ctrl_intr import adc_ctrl_reg_pkg::*; (
 );
 
   // synchronize status into appropriate interrupts
-  logic [NumAdcFilter-1:0] cfg_filter_status;
   logic [NumAdcFilter-1:0] filter_match_event;
   for (genvar i = 0; i < NumAdcFilter; i++) begin : gen_filter_status_sync
-    prim_flop_2sync #(
-      .Width(1),
-      .ResetValue('0)
-    ) u_sync (
-      .clk_i,
-      .rst_ni,
-      .d_i(aon_filter_status_i[i]),
-      .q_o(cfg_filter_status[i])
+    prim_pulse_sync u_sync (
+      .clk_src_i(clk_aon_i),
+      .rst_src_ni(rst_aon_ni),
+      .src_pulse_i(aon_filter_match_i[i]),
+      .clk_dst_i(clk_i),
+      .rst_dst_ni(rst_ni),
+      .dst_pulse_o(filter_match_event[i])
     );
-
-    logic cfg_filter_status_q;
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        cfg_filter_status_q <= '0;
-      end else begin
-        cfg_filter_status_q <= cfg_filter_status[i];
-      end
-    end
-
-    // rising detection is captured as interrupt
-    assign filter_match_event[i] = cfg_filter_status[i] & ~cfg_filter_status_q;
   end
 
   //To write into interrupt status register
-  assign adc_intr_status_o.cc_sink_det.de = filter_match_event[0];
-  assign adc_intr_status_o.cc_1a5_sink_det.de = filter_match_event[1];
-  assign adc_intr_status_o.cc_3a0_sink_det.de = filter_match_event[2];
-  assign adc_intr_status_o.cc_src_det.de = filter_match_event[3];
-  assign adc_intr_status_o.cc_1a5_src_det.de = filter_match_event[4];
-  assign adc_intr_status_o.cc_src_det_flip.de = filter_match_event[5];
-  assign adc_intr_status_o.cc_1a5_src_det_flip.de = filter_match_event[6];
-  assign adc_intr_status_o.cc_discon.de = filter_match_event[7];
-  assign adc_intr_status_o.oneshot.de = cfg_oneshot_done_i;
+  logic [1+NumAdcFilter-1:0] intr_events;
+  assign intr_events = {cfg_oneshot_done_i, filter_match_event} & cfg_intr_en_i;
+
+  assign adc_intr_status_o.cc_sink_det.de = intr_events[0];
+  assign adc_intr_status_o.cc_1a5_sink_det.de = intr_events[1];
+  assign adc_intr_status_o.cc_3a0_sink_det.de = intr_events[2];
+  assign adc_intr_status_o.cc_src_det.de = intr_events[3];
+  assign adc_intr_status_o.cc_1a5_src_det.de = intr_events[4];
+  assign adc_intr_status_o.cc_src_det_flip.de = intr_events[5];
+  assign adc_intr_status_o.cc_1a5_src_det_flip.de = intr_events[6];
+  assign adc_intr_status_o.cc_discon.de = intr_events[7];
+  assign adc_intr_status_o.oneshot.de = intr_events[8];
 
   assign adc_intr_status_o.cc_sink_det.d = 1'b1;
   assign adc_intr_status_o.cc_1a5_sink_det.d = 1'b1;
@@ -70,17 +61,11 @@ module adc_ctrl_intr import adc_ctrl_reg_pkg::*; (
   assign adc_intr_status_o.cc_discon.d = 1'b1;
   assign adc_intr_status_o.oneshot.d = 1'b1;
 
-  //Qualify each bit with intr_en
-  logic [8:0] intr_events;
-  logic adc_ctrl_event;
-  assign intr_events = {cfg_oneshot_done_i, filter_match_event};
-  assign adc_ctrl_event = |(intr_events & cfg_intr_en_i);
-
   // instantiate interrupt hardware primitive
   prim_intr_hw #(.Width(1)) i_adc_ctrl_intr_o (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .event_intr_i           (adc_ctrl_event),
+    .event_intr_i           (|intr_events),
     .reg2hw_intr_enable_q_i (intr_enable_i.q),
     .reg2hw_intr_test_q_i   (intr_test_i.q),
     .reg2hw_intr_test_qe_i  (intr_test_i.qe),
