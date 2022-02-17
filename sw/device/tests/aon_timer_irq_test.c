@@ -118,7 +118,8 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
     // Setup the wdog bark interrupt.
     aon_timer_testutils_watchdog_config(aon_timer,
                                         /*bark_cycles=*/count_cycles,
-                                        /*bite_cycles=*/count_cycles * 4);
+                                        /*bite_cycles=*/count_cycles * 4,
+                                        /*pause_in_sleep=*/false);
   }
 
   // Disable interrupts to be certain interrupt doesn't occur between while

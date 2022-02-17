@@ -39,11 +39,12 @@ static void config_wdog(const dif_aon_timer_t *aon_timer,
 
   // Set wdog as a reset source.
   CHECK_DIF_OK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrWakeupRequestSourceTwo,
+                                              kDifPwrmgrResetRequestSourceTwo,
                                               kDifToggleEnabled));
 
   // Setup the wdog bark and bite timeouts.
-  aon_timer_testutils_watchdog_config(aon_timer, bark_cycles, bite_cycles);
+  aon_timer_testutils_watchdog_config(aon_timer, bark_cycles, bite_cycles,
+                                      false);
 }
 
 /**
