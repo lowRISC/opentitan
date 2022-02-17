@@ -23,9 +23,11 @@ void aon_timer_testutils_wakeup_config(const dif_aon_timer_t *aon_timer,
  * pause for low power.
  * @param bark_cycles The number of AON clock cycles till barking.
  * @param bite_cycles The number of AON clock cycles till biting.
+ * @param pause_in_sleep Don't increment while sleeping.
  */
 void aon_timer_testutils_watchdog_config(const dif_aon_timer_t *aon_timer,
                                          uint32_t bark_cycles,
-                                         uint32_t bite_cycles);
+                                         uint32_t bite_cycles,
+                                         bool pause_in_sleep);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_AON_TIMER_TESTUTILS_H_

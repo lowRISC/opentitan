@@ -327,6 +327,13 @@
       run_opts: ["+sw_test_timeout_ns=18000000"]
     }
     {
+      name: chip_sw_aon_timer_sleep_wdog_sleep_pause
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/aon_timer_sleep_wdog_sleep_pause_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=18000000"]
+    }
+    {
       name: chip_sw_aon_timer_wdog_bite_reset
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/aon_timer_wdog_bite_reset_test:1"]
