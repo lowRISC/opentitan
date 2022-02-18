@@ -22,6 +22,8 @@ _DEPENDENCIES = {
         "lazy_static": "@raze__lazy_static__1_4_0//:lazy_static",
         "log": "@raze__log__0_4_14//:log",
         "memoffset": "@raze__memoffset__0_6_5//:memoffset",
+        "mio": "@raze__mio__0_7_14//:mio",
+        "mio-signals": "@raze__mio_signals__0_1_5//:mio_signals",
         "nix": "@raze__nix__0_17_0//:nix",
         "num-bigint-dig": "@raze__num_bigint_dig__0_7_0//:num_bigint_dig",
         "num-traits": "@raze__num_traits__0_2_14//:num_traits",
@@ -43,6 +45,23 @@ _DEPENDENCIES = {
         "proc-macro2": "@raze__proc_macro2__1_0_32//:proc_macro2",
         "quote": "@raze__quote__1_0_10//:quote",
         "syn": "@raze__syn__1_0_81//:syn",
+    },
+    "sw/host/opentitansession": {
+        "anyhow": "@raze__anyhow__1_0_46//:anyhow",
+        "directories": "@raze__directories__4_0_1//:directories",
+        "env_logger": "@raze__env_logger__0_8_4//:env_logger",
+        "erased-serde": "@raze__erased_serde__0_3_16//:erased_serde",
+        "hex": "@raze__hex__0_4_3//:hex",
+        "indicatif": "@raze__indicatif__0_16_2//:indicatif",
+        "log": "@raze__log__0_4_14//:log",
+        "nix": "@raze__nix__0_17_0//:nix",
+        "raw_tty": "@raze__raw_tty__0_1_0//:raw_tty",
+        "regex": "@raze__regex__1_5_4//:regex",
+        "serde": "@raze__serde__1_0_130//:serde",
+        "serde_json": "@raze__serde_json__1_0_69//:serde_json",
+        "shellwords": "@raze__shellwords__1_1_0//:shellwords",
+        "structopt": "@raze__structopt__0_3_25//:structopt",
+        "thiserror": "@raze__thiserror__1_0_30//:thiserror",
     },
     "sw/host/opentitantool": {
         "anyhow": "@raze__anyhow__1_0_46//:anyhow",
@@ -94,6 +113,8 @@ _DEV_DEPENDENCIES = {
     },
     "sw/host/opentitanlib/opentitantool_derive": {
     },
+    "sw/host/opentitansession": {
+    },
     "sw/host/opentitantool": {
     },
     "sw/host/rom_ext_image_tools/signer": {
@@ -107,6 +128,8 @@ _DEV_PROC_MACRO_DEPENDENCIES = {
     "sw/host/opentitanlib": {
     },
     "sw/host/opentitanlib/opentitantool_derive": {
+    },
+    "sw/host/opentitansession": {
     },
     "sw/host/opentitantool": {
     },
@@ -761,6 +784,33 @@ def raze_fetch_remote_crates():
         type = "tar.gz",
         strip_prefix = "miniz_oxide-0.4.4",
         build_file = Label("//third_party/cargo/remote:BUILD.miniz_oxide-0.4.4.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__mio__0_7_14",
+        url = "https://crates.io/api/v1/crates/mio/0.7.14/download",
+        type = "tar.gz",
+        strip_prefix = "mio-0.7.14",
+        build_file = Label("//third_party/cargo/remote:BUILD.mio-0.7.14.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__mio_signals__0_1_5",
+        url = "https://crates.io/api/v1/crates/mio-signals/0.1.5/download",
+        type = "tar.gz",
+        strip_prefix = "mio-signals-0.1.5",
+        build_file = Label("//third_party/cargo/remote:BUILD.mio-signals-0.1.5.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__miow__0_3_7",
+        url = "https://crates.io/api/v1/crates/miow/0.3.7/download",
+        type = "tar.gz",
+        strip_prefix = "miow-0.3.7",
+        build_file = Label("//third_party/cargo/remote:BUILD.miow-0.3.7.bazel"),
     )
 
     maybe(

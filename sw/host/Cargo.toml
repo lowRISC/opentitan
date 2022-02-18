@@ -5,6 +5,7 @@
 [workspace]
 members = [
     "opentitanlib",
+    "opentitansession",
     "opentitantool",
     "rom_ext_image_tools/signer",
     "rom_ext_image_tools/signer/image",
