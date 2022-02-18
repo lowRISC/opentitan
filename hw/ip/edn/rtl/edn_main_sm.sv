@@ -6,32 +6,35 @@
 //
 //   does hardware-based csrng app interface command requests
 
-module edn_main_sm (
-  input logic                clk_i,
-  input logic                rst_ni,
+module edn_main_sm #(
+  localparam int StateWidth = 9
+) (
+  input logic                   clk_i,
+  input logic                   rst_ni,
 
-  input logic                edn_enable_i,
-  input logic                boot_req_mode_i,
-  input logic                auto_req_mode_i,
-  input logic                sw_cmd_req_load_i,
-  output logic               boot_wr_cmd_reg_o,
-  output logic               boot_wr_cmd_genfifo_o,
-  output logic               auto_set_intr_gate_o,
-  output logic               auto_clr_intr_gate_o,
-  output logic               auto_first_ack_wait_o,
-  output logic               main_sm_done_pulse_o,
-  input logic                csrng_cmd_ack_i,
-  output logic               capt_gencmd_fifo_cnt_o,
-  output logic               boot_send_gencmd_o,
-  output logic               send_gencmd_o,
-  input logic                max_reqs_cnt_zero_i,
-  output logic               capt_rescmd_fifo_cnt_o,
-  output logic               send_rescmd_o,
-  input logic                cmd_sent_i,
-  input logic                local_escalate_i,
-  output logic               auto_req_mode_busy_o,
-  output logic               main_sm_busy_o,
-  output logic               main_sm_err_o
+  input logic                   edn_enable_i,
+  input logic                   boot_req_mode_i,
+  input logic                   auto_req_mode_i,
+  input logic                   sw_cmd_req_load_i,
+  output logic                  boot_wr_cmd_reg_o,
+  output logic                  boot_wr_cmd_genfifo_o,
+  output logic                  auto_set_intr_gate_o,
+  output logic                  auto_clr_intr_gate_o,
+  output logic                  auto_first_ack_wait_o,
+  output logic                  main_sm_done_pulse_o,
+  input logic                   csrng_cmd_ack_i,
+  output logic                  capt_gencmd_fifo_cnt_o,
+  output logic                  boot_send_gencmd_o,
+  output logic                  send_gencmd_o,
+  input logic                   max_reqs_cnt_zero_i,
+  output logic                  capt_rescmd_fifo_cnt_o,
+  output logic                  send_rescmd_o,
+  input logic                   cmd_sent_i,
+  input logic                   local_escalate_i,
+  output logic                  auto_req_mode_busy_o,
+  output logic                  main_sm_busy_o,
+  output logic [StateWidth-1:0] main_sm_state_o,
+  output logic                  main_sm_err_o
 );
 //
 // Hamming distance histogram:
@@ -53,7 +56,6 @@ module edn_main_sm (
 // Maximum Hamming weight: 7
 //
 
-  localparam int StateWidth = 9;
   typedef enum logic [StateWidth-1:0] {
     Idle              = 9'b110000101, // idle
     BootLoadIns       = 9'b110110111, // boot: load the instantiate command
@@ -96,6 +98,8 @@ module edn_main_sm (
   );
 
   assign state_q = state_e'(state_raw_q);
+  assign main_sm_state_o = state_raw_q;
+
   assign main_sm_busy_o = (state_q != Idle) && (state_q != BootPulse) &&
          (state_q != BootDone) && (state_q != SWPortMode);
 

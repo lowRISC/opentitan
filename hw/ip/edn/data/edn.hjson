@@ -143,8 +143,8 @@
           name: "CMD_FIFO_RST",
           mubi: true,
           desc: '''
-                Setting this field to kMultiBitBool4True clears the three command FIFOs: the
-                SW_CMD_REQ FIFO, the RESEED_CMD FIFO, and the GENERATE_CMD FIFO. This field must be
+                Setting this field to kMultiBitBool4True clears the two command FIFOs: the
+                RESEED_CMD FIFO and the GENERATE_CMD FIFO. This field must be
                 set to the reset state by software before any further commands can be issued to
                 these FIFOs.
                 '''
@@ -152,32 +152,17 @@
         },
       ]
     },
-    { name: "SUM_STS",
-      desc: "EDN summary status register",
-      swaccess: "rw",
+    { name: "DEBUG_STATUS",
+      desc: "Debug status register",
+      swaccess: "ro",
       hwaccess: "hwo",
       tags: [ // EDN internal HW can modify status register
               "excl:CsrAllTests:CsrExclCheck"]
       fields: [
-        { bits: "0",
-          name: "REQ_MODE_SM_STS",
-          desc: '''
-                This bit reflects the status of the EDN command state machine. This bit is asserted
-                whenever the the state machine is actively managing commands in either auto
-                request mode, or boot-time request mode.  After the state machine has
-                been suspended, this status bit will reflect that the hardware operations are
-                completed. At this point it is safe to issue custom
-                commands via the software command forwarding interface. A value of zero indicates
-                that all commands have completed, and the state machine is idle.
-                '''
-        }
-        { bits: "1",
-          name: "BOOT_INST_ACK",
-          desc: '''
-                This bit indicates that the EDN state machine has started the instantiation
-                process. If this bit is asserted it means the state machine has started in
-                boot-time request mode and that the CSRNG has confirmed that this
-                EDN will be the next application to receive a seed from the entropy_src IP.
+        { bits: "8:0",
+          name: "MAIN_SM_STATE",
+          desc: '''This is the state of the edn main state machine.
+                See the RTL file `edn_main_sm` for the meaning of the values.
                 '''
         }
       ]
