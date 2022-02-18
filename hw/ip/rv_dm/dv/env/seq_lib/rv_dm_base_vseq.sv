@@ -35,7 +35,7 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   // Have scan reset also applied at the start.
   virtual task apply_reset(string kind = "HARD");
     fork
-      if (kind inside {"HARD", "TRST"}) cfg.m_jtag_agent_cfg.do_trst_n();
+      if (kind inside {"HARD", "TRST"}) cfg.m_jtag_agent_cfg.vif.do_trst_n();
       if (kind inside {"HARD", "SCAN"}) apply_scan_reset();
       if (kind == "HARD")               super.apply_reset(kind);
     join

@@ -12,14 +12,4 @@ class jtag_agent_cfg extends dv_base_agent_cfg;
 
   `uvm_object_new
 
-  // control tck
-  function void set_tck_en(bit en);
-    vif.tck_en = en;
-  endfunction
-
-  // assert trst_n for a number of cycles
-  task do_trst_n(int cycles = $urandom_range(5, 20));
-    vif.do_trst_n(cycles);
-  endtask
-
 endclass
