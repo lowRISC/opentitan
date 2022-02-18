@@ -8,11 +8,12 @@ description: "Reset manager component without the generated portions"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:tlul
-      - lowrisc:prim:esc
-      - lowrisc:prim:clock_mux2
-      - lowrisc:prim:lc_sync
       - lowrisc:ip:alert_handler_component
+      - lowrisc:ip:rv_core_ibex_pkg
+      - lowrisc:ip:tlul
+      - lowrisc:prim:clock_mux2
+      - lowrisc:prim:esc
+      - lowrisc:prim:lc_sync
       - lowrisc:prim:mubi
       - lowrisc:prim:sparse_fsm
       - "fileset_ip     ? (lowrisc:ip:rstmgr_pkg)"

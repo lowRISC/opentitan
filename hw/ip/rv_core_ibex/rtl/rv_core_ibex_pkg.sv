@@ -13,4 +13,11 @@ package rv_core_ibex_pkg;
     logic [31:0] remap_addr;
   } region_cfg_t;
 
+  typedef struct packed {
+    // previous valid is true only during double fault
+    logic previous_valid;
+    ibex_pkg::crash_dump_t previous;
+    ibex_pkg::crash_dump_t current;
+  } cpu_crash_dump_t;
+
 endpackage // rv_core_ibex_pkg
