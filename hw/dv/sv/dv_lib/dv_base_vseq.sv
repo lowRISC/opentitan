@@ -166,11 +166,13 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
   // wrapper task around run_csr_vseq - the purpose is to be able to call this directly for actual
   // csr tests (as opposed to higher level stress test that could also run csr seq as a fork by
   // calling run_csr_vseq(..) task)
-  virtual task run_csr_vseq_wrapper(int num_times = 1);
+  virtual task run_csr_vseq_wrapper(int num_times = 1, dv_base_reg_block models[$] = {});
     string        csr_test_type;
 
     // Env needs to have a ral instance.
-    `DV_CHECK_GE_FATAL(cfg.ral_models.size(), 1)
+    if (models.size() == 0) begin
+      `DV_CHECK_GE_FATAL(cfg.ral_models.size(), 1)
+    end
 
     // Get csr_test_type from plusarg
     void'($value$plusargs("csr_%0s", csr_test_type));
@@ -179,7 +181,7 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
     for (int i = 1; i <= num_times; i++) begin
       `uvm_info(`gfn, $sformatf("Running csr %0s vseq iteration %0d/%0d.",
                                 csr_test_type, i, num_times), UVM_LOW)
-      run_csr_vseq(.csr_test_type(csr_test_type));
+      run_csr_vseq(.csr_test_type(csr_test_type), .models(models));
     end
   endtask
 
@@ -187,22 +189,28 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
   // arg csr_test_type: what csr test to run {hw_reset, rw, bit_bash, aliasing}
   // arg num_test_csrs:instead of testing the entire ral model or passing test chunk info via
   // plusarg, provide ability to set a random number of csrs to test from higher level sequence
+  // `models` is the list of RAL models to run the common sequences on.
+  // `ral_name` is the string name of the RAL to run the common sequences on.
+  // Both of these inputs are 'null' by default. If externally set, `models` takes precedence over
+  // `ral_name`.
   virtual task run_csr_vseq(string csr_test_type,
                             int    num_test_csrs = 0,
                             bit    do_rand_wr_and_reset = 1,
+                            dv_base_reg_block models[$] = {},
                             string ral_name = "");
-    csr_base_seq      m_csr_seq;
-    dv_base_reg_block models[$];
+    csr_base_seq m_csr_seq;
 
     // env needs to have at least one ral instance
     `DV_CHECK_GE_FATAL(cfg.ral_models.size(), 1)
 
     // Filter out the RAL blocks under test with the supplied name, if available.
-    if (ral_name != "") begin
-      `DV_CHECK_FATAL(cfg.ral_models.exists(ral_name))
-      models.push_back(cfg.ral_models[ral_name]);
-    end else begin
-      foreach (cfg.ral_models[i]) models.push_back(cfg.ral_models[i]);
+    if (models.size() == 0) begin
+      if (ral_name != "") begin
+        `DV_CHECK_FATAL(cfg.ral_models.exists(ral_name))
+        models.push_back(cfg.ral_models[ral_name]);
+      end else begin
+        foreach (cfg.ral_models[i]) models.push_back(cfg.ral_models[i]);
+      end
     end
 
     // check which csr test type
