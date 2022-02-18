@@ -828,10 +828,10 @@ module kmac
       end
     end
 
-    for (genvar i = 0 ; i < Share ; i++) begin: g_msg_mask
+    for (genvar i = 0 ; i < Share ; i++) begin: g_msg_data_mask
       assign msg_data_masked[i] = msg_data[i]
                                 ^ ({MsgWidth{cfg_msg_mask}} & msg_mask_permuted);
-    end : g_msg_mask
+    end : g_msg_data_mask
   end else begin : g_no_msg_mask
     assign msg_data_masked[0] = msg_data[0];
 
