@@ -28,10 +28,10 @@ impl VerilatorUart {
 }
 
 impl Uart for VerilatorUart {
-    fn get_baudrate(&self) -> u32 {
+    fn get_baudrate(&self) -> Result<u32> {
         // The verilator UART operates at 7200 baud.
         // See `sw/device/lib/arch/device_sim_verilator.c`.
-        7200
+        Ok(7200)
     }
 
     fn set_baudrate(&self, _baudrate: u32) -> Result<()> {

@@ -39,8 +39,8 @@ impl UltradebugUart {
 }
 
 impl Uart for UltradebugUart {
-    fn get_baudrate(&self) -> u32 {
-        self.inner.borrow().baudrate
+    fn get_baudrate(&self) -> Result<u32> {
+        Ok(self.inner.borrow().baudrate)
     }
 
     fn set_baudrate(&self, baudrate: u32) -> Result<()> {

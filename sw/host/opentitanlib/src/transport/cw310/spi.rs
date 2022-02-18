@@ -84,13 +84,13 @@ impl Target for CW310Spi {
         Ok(())
     }
 
-    fn get_max_transfer_count(&self) -> usize {
+    fn get_max_transfer_count(&self) -> Result<usize> {
         // Arbitrary value: number of `Transfers` that can be in a single transaction.
-        42
+        Ok(42)
     }
 
-    fn max_chunk_size(&self) -> usize {
-        65536
+    fn max_chunk_size(&self) -> Result<usize> {
+        Ok(65536)
     }
 
     fn run_transaction(&self, transaction: &mut [Transfer]) -> Result<()> {

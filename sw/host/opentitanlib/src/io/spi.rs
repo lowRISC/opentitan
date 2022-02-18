@@ -142,10 +142,10 @@ pub trait Target {
     fn set_max_speed(&self, max_speed: u32) -> Result<()>;
 
     /// Returns the maximum number of transfers allowed in a single transaction.
-    fn get_max_transfer_count(&self) -> usize;
+    fn get_max_transfer_count(&self) -> Result<usize>;
 
     /// Maximum chunksize handled by this SPI device.
-    fn max_chunk_size(&self) -> usize;
+    fn max_chunk_size(&self) -> Result<usize>;
 
     fn set_voltage(&self, _voltage: Voltage) -> Result<()> {
         Err(SpiError::InvalidOption("This target does not support set_voltage".to_string()).into())

@@ -34,8 +34,8 @@ impl SerialPortUart {
 
 impl Uart for SerialPortUart {
     /// Returns the UART baudrate.  May return zero for virtual UARTs.
-    fn get_baudrate(&self) -> u32 {
-        self.port.borrow().baud_rate().unwrap()
+    fn get_baudrate(&self) -> Result<u32> {
+        self.port.borrow().baud_rate().wrap(UartError::GenericError)
     }
 
     /// Sets the UART baudrate.  May do nothing for virtual UARTs.
