@@ -159,6 +159,7 @@ class dv_base_reg_block extends uvm_reg_block;
     foreach (csrs[i]) begin
       csr_addrs.push_back(csrs[i].get_address());
     end
+    `uvm_info(`gfn, $sformatf("csr_addrs: %0p", csr_addrs), UVM_HIGH)
   endfunction
 
   // Internal function, used to get a list of all valid memory ranges
@@ -172,6 +173,7 @@ class dv_base_reg_block extends uvm_reg_block;
                              mems[i].get_size() * mems[i].get_n_bytes() - 1;
       mem_ranges.push_back(mem_range);
     end
+    `uvm_info(`gfn, $sformatf("mem_ranges: %0p", mem_ranges), UVM_HIGH)
   endfunction
 
   // Used to get a list of all valid address ranges covered by this reg block
@@ -195,7 +197,7 @@ class dv_base_reg_block extends uvm_reg_block;
 
     // Sort the mapped address ranges in ascending order based on the start_addr of each range
     mapped_addr_ranges.sort(m) with (m.start_addr);
-
+    `uvm_info(`gfn, $sformatf("mapped_addr_ranges: %0p", mapped_addr_ranges), UVM_HIGH)
   endfunction
 
   // Used to get a list of all invalid address ranges in this reg block
@@ -242,6 +244,7 @@ class dv_base_reg_block extends uvm_reg_block;
       end
     end
     has_unmapped_addrs = (unmapped_addr_ranges.size() > 0);
+    `uvm_info(`gfn, $sformatf("unmapped_addr_ranges: %0p", unmapped_addr_ranges), UVM_HIGH)
   endfunction
 
   // Return the offset of the highest byte contained in either a register or a memory
