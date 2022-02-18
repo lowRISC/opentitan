@@ -179,6 +179,17 @@ _start:
   li   t0, 0x55aa
   sw   t0, EDN_CTRL_REG_OFFSET(a0)
 
+  // Remove address space protections by configuring entry 15 as
+  // read-write-execute for the entire address space and then clearing
+  // all other entries.
+  li   t0, (0x9f << 24) // Locked NAPOT read-write-execute.
+  csrw pmpcfg3, t0
+  li   t0, -1           // NAPOT encoded region covering entire 32-bit address space.
+  csrw pmpaddr15, t0
+  csrw pmpcfg0, zero
+  csrw pmpcfg1, zero
+  csrw pmpcfg2, zero
+
   // Zero out the `.bss` segment.
   la   a0, _bss_start
   la   a1, _bss_end
