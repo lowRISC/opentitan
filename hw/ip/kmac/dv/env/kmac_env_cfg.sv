@@ -13,6 +13,9 @@ class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
   // Masked KMAC is the default configuration
   bit enable_masking = 1;
 
+  // Disable scb cycle accurate check ("status" and "intr_state" registers).
+  bit do_cycle_accurate_check = 1;
+
   // These values are used by the test vector tests to select the correct vector text files.
   // These are unused by all other tests.
   int sha3_variant;

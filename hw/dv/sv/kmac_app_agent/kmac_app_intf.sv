@@ -54,13 +54,24 @@ interface kmac_app_intf (input clk, input rst_n);
   assign kmac_data_rsp = (if_mode == dv_utils_pkg::Device) ?
          {req_data_if.ready, rsp_done, rsp_digest_share0, rsp_digest_share1, rsp_error} : 'z;
 
+  // The following assertions only apply to device mode.
   // strb should never be 0
-  `ASSERT(StrbNotZero_A, kmac_data_req.valid |-> kmac_data_req.strb > 0, clk, !rst_n)
+  `ASSERT(StrbNotZero_A, kmac_data_req.valid |-> kmac_data_req.strb > 0,
+          clk, !rst_n || if_mode == dv_utils_pkg::Host)
 
   // strb should be all 1s unless it's last cycle
   `ASSERT(StrbAllSetIfNotLast_A, kmac_data_req.valid && !kmac_data_req.last |->
-                                 kmac_data_req.strb == '1, clk, !rst_n)
+                                 kmac_data_req.strb == '1,
+                                 clk, !rst_n || if_mode == dv_utils_pkg::Host)
 
+  // Check strb is aligned to LSB, for example: if strb[1]==0, strb[$:2] should be 0 too
+  for (genvar k = 1; k < KmacDataIfWidth / 8 - 1; k++) begin : gen_strb_check
+    `ASSERT(StrbAlignLSB_A, kmac_data_req.valid && kmac_data_req.strb[k] === 0 |->
+                            kmac_data_req.strb[k+1] === 0,
+                            clk, !rst_n || if_mode == dv_utils_pkg::Host)
+  end
+
+  // The following assertions apply for this interface for all modes.
   // last can only be asserted along with valid
   `ASSERT(LastAssertWithValid_A, kmac_data_req.last |-> kmac_data_req.valid, clk, !rst_n)
 
@@ -69,9 +80,4 @@ interface kmac_app_intf (input clk, input rst_n);
     (kmac_data_req.last && kmac_data_req.valid && kmac_data_rsp.ready) |=>
     !kmac_data_req.valid throughout rsp_done[->1], clk, !rst_n)
 
-  // Check strb is aligned to LSB, for example: if strb[1]==0, strb[$:2] should be 0 too
-  for (genvar k = 1; k < KmacDataIfWidth / 8 - 1; k++) begin : gen_strb_check
-    `ASSERT(StrbAlignLSB_A, kmac_data_req.valid && kmac_data_req.strb[k] === 0 |->
-                            kmac_data_req.strb[k+1] === 0, clk, !rst_n)
-  end
 endinterface

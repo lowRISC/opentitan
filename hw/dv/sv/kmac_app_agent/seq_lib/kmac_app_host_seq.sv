@@ -29,7 +29,7 @@ class kmac_app_host_seq extends kmac_app_base_seq;
     while (msg_size_bytes > 0) begin
 
       bit [KmacDataIfWidth-1:0] req_data = '0;
-      bit [KmacDataIfWidth/8-1:0] req_strb = '0;
+      bit [KmacDataIfWidth/8-1:0] req_strb = '1;
       bit req_last = 0;
 
       // create push_pull_host_seq
@@ -41,13 +41,19 @@ class kmac_app_host_seq extends kmac_app_base_seq;
       for (int i = 0; i < KmacDataIfWidth / 8; i ++) begin
         if (msg_size_bytes == 0) break;
 
-        req_data[i*8 +: 8] = 8'(req.byte_data_q.pop_front());
-
-        req_strb[i] = 1'b1;
-
-        msg_size_bytes -= 1;
+        if (cfg.inject_zero_in_host_strb) begin
+          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(req_strb,
+              ($countones(req_strb ^ {req_strb[KmacDataIfWidth/8-2:0], 1'b0}) <= 2);)
+        end
+        if (req_strb[i] == 1) begin
+          req_data[i*8 +: 8] = 8'(req.byte_data_q.pop_front());
+          req_strb[i] = 1'b1;
+          msg_size_bytes -= 1;
+        end else begin
+          req_data[i*8 +: 8] = $urandom_range(0, (1'b1<<9)-1);
+          req_strb[i] = 1'b0;
+        end
       end
-
 
       // Set the last bit
       req_last = (msg_size_bytes == 0);

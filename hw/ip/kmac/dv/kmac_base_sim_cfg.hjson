@@ -142,6 +142,11 @@
       uvm_test_seq: kmac_app_vseq
     }
     {
+      name: "{variant}_app_with_partial_data"
+      uvm_test_seq: kmac_app_with_partial_data_vseq
+      reseed: 10
+    }
+    {
       name: "{variant}_error"
       uvm_test_seq: kmac_error_vseq
     }
