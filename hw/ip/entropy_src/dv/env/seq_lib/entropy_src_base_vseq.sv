@@ -106,7 +106,6 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.entropy_control));
 
     // Thresholds managed in derived vseq classes
-    // TODO: Study how this interacts with sw_regupd/regwen
 
     // FW_OV registers
     ral.fw_ov_control.fw_ov_mode.set(cfg.fw_read_enable);
@@ -126,11 +125,10 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
     // Register write enable lock is on be default
     // Setting this to zero will lock future writes
-    // TODO Do we need to check main_sm_idle before writing DUT registers?
     csr_wr(.ptr(ral.sw_regupd), .value(cfg.sw_regupd));
 
     // Module_enables (should be done last)
-    ral.module_enable.set(cfg.module_enable); // TODO: Change config here?
+    ral.module_enable.set(cfg.module_enable);
     csr_update(.csr(ral.module_enable));
 
     ral.me_regwen.set(cfg.me_regwen);

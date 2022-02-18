@@ -70,7 +70,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   virtual task entropy_src_init();
     int hi_thresh, lo_thresh;
 
-    super.entropy_src_init();
 
     // TODO: RepCnt and RepCntS thresholds
     // TODO: Separate sigmas for bypass and FIPS operation
@@ -108,6 +107,10 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     ral.markov_lo_thresholds.bypass_thresh.set(lo_thresh[15:0]);
     csr_update(.csr(ral.markov_hi_thresholds));
     csr_update(.csr(ral.markov_lo_thresholds));
+
+    // configure the rest of the variables afterwards so that sw_regupd & module_enable get written last
+    super.entropy_src_init();
+
   endtask
 
   //
