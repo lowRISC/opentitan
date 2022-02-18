@@ -114,7 +114,7 @@ module usbdev_aon_wake import usbdev_pkg::*;(
     .Cycles(3)
   ) filter_bus_reset (
     .clk_i    (clk_aon_i),
-    .rst_ni   (aon_usb_events_active),
+    .rst_ni   (rst_aon_ni),
     .enable_i (1'b1),
     .filter_i (se0_async),
     .filter_o (event_bus_reset)
@@ -125,14 +125,14 @@ module usbdev_aon_wake import usbdev_pkg::*;(
     .Cycles(3)
   ) filter_sense (
     .clk_i    (clk_aon_i),
-    .rst_ni   (aon_usb_events_active),
+    .rst_ni   (rst_aon_ni),
     .enable_i (1'b1),
     .filter_i (sense_lost_async),
     .filter_o (event_sense_lost)
   );
 
-  assign bus_reset_d = event_bus_reset | (bus_reset_q & aon_usb_events_active);
-  assign sense_lost_d = event_sense_lost | (sense_lost_q & aon_usb_events_active);
+  assign bus_reset_d = (event_bus_reset | bus_reset_q) & aon_usb_events_active;
+  assign sense_lost_d = (event_sense_lost | sense_lost_q) & aon_usb_events_active;
 
   assign bus_reset_alw_o = bus_reset_q;
   assign sense_lost_alw_o = sense_lost_q;
