@@ -141,6 +141,11 @@
       uvm_test: aes_deinit_test
       uvm_test_seq: aes_deinit_vseq
     }
+    {
+      name: aes_man_cfg_err
+      uvm_test: aes_manual_config_err_test
+      uvm_test_seq: aes_manual_config_err_vseq
+    }
   ]
 
   // List of regressions.

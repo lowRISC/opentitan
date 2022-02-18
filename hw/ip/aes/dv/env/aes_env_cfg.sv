@@ -73,6 +73,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   //   [3]: inject Lc_escalate
   error_types_t      error_types                = 4'b1111;
 
+  //   [2]: reseed error
   //   [1]: mode error
   //   [0]: key_len
   cfg_error_type_t   config_error_type          = 3'b000;
