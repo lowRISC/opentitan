@@ -1354,6 +1354,7 @@ module kmac
     end
   end
 
+  // SEC_CM: LC_ESCALATE_EN.INTERSIG.MUBI
   lc_ctrl_pkg::lc_tx_t alert_to_lc_tx;
   assign alert_to_lc_tx = lc_ctrl_pkg::lc_tx_bool_to_lc_tx(alerts_q[1]);
   assign lc_escalate_en = lc_ctrl_pkg::lc_tx_or_hi(alert_to_lc_tx, lc_escalate_en_sync);

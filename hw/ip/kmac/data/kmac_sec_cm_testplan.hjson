@@ -30,6 +30,12 @@
       tests: []
     }
     {
+      name: sec_cm_lc_escalate_en_intersig_mubi
+      desc: "Verify global LC_ESCALATE_EN mubi"
+      milestone: V2S
+      tests: []
+    }
+    {
       name: sec_cm_sw_key_key_masking
       desc: "Verify the countermeasure(s) SW_KEY.KEY_MASKING."
       milestone: V2S
