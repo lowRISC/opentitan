@@ -141,13 +141,14 @@ class adc_ctrl_env_cfg extends cip_base_env_cfg #(
     printer.print_array_footer();
   endfunction
 
-  virtual function void do_copy(uvm_object rhs);
-    type_id::T rhs_;  // type_id::T == this class (set in `uvm_object_utils)
-    super.do_copy(rhs);
-    $cast(rhs_, rhs);
-
-    // Implement filter_cfg
-    filter_cfg = rhs_.filter_cfg;
-  endfunction
+  //virtual function void do_copy(uvm_object rhs);
+  //  type_id::T rhs_;  // type_id::T == this class (set in `uvm_object_utils)
+  //  `downcast(rhs_, rhs);
+  //  super.do_copy(rhs);
+  //
+  //
+  //  // Implement filter_cfg
+  //  filter_cfg = rhs_.filter_cfg;
+  //endfunction
 
 endclass
