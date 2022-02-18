@@ -30,7 +30,7 @@ index 3561ef52f..879c4502c 100644
    reg32 =
        mmio_region_from_addr(PINMUX0_BASE_ADDR + PINMUX_MIO_OUTSEL_0_REG_OFFSET);
 diff --git a/sw/device/lib/testing/test_rom/test_rom_start.S b/sw/device/lib/testing/test_rom/test_rom_start.S
-index ab2fb7bd4..b15fde33a 100644
+index ea9f7e7ba..cf1c931f9 100644
 --- a/sw/device/lib/testing/test_rom/test_rom_start.S
 +++ b/sw/device/lib/testing/test_rom/test_rom_start.S
 @@ -138,47 +138,6 @@ _reset_start:
@@ -78,9 +78,9 @@ index ab2fb7bd4..b15fde33a 100644
 -  li   t0, 0x55aa
 -  sw   t0, EDN_CTRL_REG_OFFSET(a0)
 -
-   // Zero out the `.bss` segment.
-   la   a0, _bss_start
-   la   a1, _bss_end
+   // Remove address space protections by configuring entry 15 as
+   // read-write-execute for the entire address space and then clearing
+   // all other entries.
 diff --git a/sw/device/sca/aes_serial.c b/sw/device/sca/aes_serial.c
 index a4d57e1c7..d12c776b7 100644
 --- a/sw/device/sca/aes_serial.c
