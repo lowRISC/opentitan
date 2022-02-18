@@ -87,6 +87,6 @@ otp_image = rule(
     attrs = {
         "src": attr.label(allow_files = True),
         "deps": attr.label_list(allow_files = True),
-        "_tool": attr.label(default = "//util:design/gen-otp-img.py", allow_files = True),
+        "_tool": attr.label(default = "//util/design:gen-otp-img.py", allow_files = True),
     },
 )

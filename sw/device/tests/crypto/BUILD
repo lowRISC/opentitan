@@ -2,9 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-package(default_visibility = ["//visibility:public"])
+load("//rules:opentitan.bzl", "opentitan_functest")
 
-load("//rules:opentitan.bzl", "opentitan_functest", "OPENTITAN_CPU")
+package(default_visibility = ["//visibility:public"])
 
 opentitan_functest(
     name = "ecdsa_p256_functest",
@@ -14,8 +14,8 @@ opentitan_functest(
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/ecdsa_p256",
-        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
     ],
 )
 
