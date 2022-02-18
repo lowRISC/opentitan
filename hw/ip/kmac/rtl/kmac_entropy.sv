@@ -41,7 +41,8 @@ module kmac_entropy
   input fast_process_i,
 
   //// LFSR Enable for Message Masking
-  //// If 1, LFSR advances to create 64-bit PRNG. This input is used to mask the message fed into SHA3 (Keccak).
+  //// If 1, LFSR advances to create 64-bit PRNG. This input is used to mask
+  //// the message fed into SHA3 (Keccak).
   input                       msg_mask_en_i,
   output logic [MsgWidth-1:0] lfsr_data_o,
 
