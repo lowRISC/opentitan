@@ -68,8 +68,8 @@ module csrng_core import csrng_pkg::*; #(
   localparam int MaxClen = 12;
   localparam int ADataDepthWidth = SeedLen/AppCmdWidth;
   localparam unsigned ADataDepthClog = $clog2(ADataDepthWidth)+1;
-  localparam int CsEnableCopies = 55;
-  localparam int LcHwDebugCopies = 5;
+  localparam int CsEnableCopies = 51;
+  localparam int LcHwDebugCopies = 1;
   localparam int Flag0Copies = 3;
 
   // signals
@@ -147,7 +147,6 @@ module csrng_core import csrng_pkg::*; #(
   logic [BlkLen-1:0]      gen_result_bits;
 
   logic                   acmd_accept;
-  logic                   acmd_hdr_capt;
   logic                   instant_req;
   logic                   reseed_req;
   logic                   generate_req;
@@ -190,7 +189,8 @@ module csrng_core import csrng_pkg::*; #(
   logic                   cmd_gen_cnt_err_sum;
   logic                   cmd_stage_sm_err_sum;
   logic                   main_sm_err_sum;
-  logic                   main_sm_err;
+  logic                   cs_main_sm_err;
+  logic [7:0]             cs_main_sm_state;
   logic                   drbg_gen_sm_err_sum;
   logic                   drbg_gen_sm_err;
   logic                   drbg_updbe_sm_err_sum;
@@ -336,10 +336,6 @@ module csrng_core import csrng_pkg::*; #(
   logic                    ctr_drbg_upd_es_ack;
   logic                    ctr_drbg_gen_es_ack;
   logic                    block_encrypt_quiet;
-
-  logic [StateId-1:0]      track_inst_id[NApps];
-  logic [7:0]              track_sm[16];
-  logic [1:0]              sel_track_sm_grp;
 
   logic                    cs_rdata_capt_vld;
   logic                    cs_bus_cmp_alert;
@@ -537,7 +533,7 @@ module csrng_core import csrng_pkg::*; #(
          err_code_test_bit[15];
   assign cmd_stage_sm_err_sum = (|cmd_stage_sm_err) ||
          err_code_test_bit[20];
-  assign main_sm_err_sum = main_sm_err ||
+  assign main_sm_err_sum = cs_main_sm_err ||
          err_code_test_bit[21];
   assign drbg_gen_sm_err_sum = drbg_gen_sm_err ||
          err_code_test_bit[22];
@@ -1061,27 +1057,27 @@ module csrng_core import csrng_pkg::*; #(
   // SEC_CM: MAIN_SM.CTR.LOCAL_ESC
   // SEC_CM: MAIN_SM.FSM.SPARSE
   csrng_main_sm u_csrng_main_sm (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .enable_i(cs_enable_fo[36]),
-    .acmd_avail_i(acmd_avail),
-    .acmd_accept_o(acmd_accept),
-    .acmd_hdr_capt_o(acmd_hdr_capt),
-    .acmd_i(acmd_hold),
-    .acmd_eop_i(acmd_eop),
-    .ctr_drbg_cmd_req_rdy_i(ctr_drbg_cmd_req_rdy),
-    .flag0_i(flag0_fo[0]),
-    .cmd_entropy_req_o(cmd_entropy_req),
-    .cmd_entropy_avail_i(cmd_entropy_avail),
-    .instant_req_o(instant_req),
-    .reseed_req_o(reseed_req),
-    .generate_req_o(generate_req),
-    .update_req_o(update_req),
-    .uninstant_req_o(uninstant_req),
-    .clr_adata_packer_o(clr_adata_packer),
-    .cmd_complete_i(state_db_wr_req),
-    .local_escalate_i(cmd_gen_cnt_err_sum),
-    .main_sm_err_o(main_sm_err)
+    .clk_i                  (clk_i),
+    .rst_ni                 (rst_ni),
+    .enable_i               (cs_enable_fo[36]),
+    .acmd_avail_i           (acmd_avail),
+    .acmd_accept_o          (acmd_accept),
+    .acmd_i                 (acmd_hold),
+    .acmd_eop_i             (acmd_eop),
+    .ctr_drbg_cmd_req_rdy_i (ctr_drbg_cmd_req_rdy),
+    .flag0_i                (flag0_fo[0]),
+    .cmd_entropy_req_o      (cmd_entropy_req),
+    .cmd_entropy_avail_i    (cmd_entropy_avail),
+    .instant_req_o          (instant_req),
+    .reseed_req_o           (reseed_req),
+    .generate_req_o         (generate_req),
+    .update_req_o           (update_req),
+    .uninstant_req_o        (uninstant_req),
+    .clr_adata_packer_o     (clr_adata_packer),
+    .cmd_complete_i         (state_db_wr_req),
+    .local_escalate_i       (cmd_gen_cnt_err_sum),
+    .main_sm_state_o        (cs_main_sm_state),
+    .main_sm_err_o          (cs_main_sm_err)
   );
 
   // interrupt for sw app interface only
@@ -1611,112 +1607,18 @@ module csrng_core import csrng_pkg::*; #(
   assign cs_aes_halt_o.cs_aes_halt_ack = cs_aes_halt_q;
 
   //--------------------------------------------
-  // tracking state machine
+  // observe state machine
   //--------------------------------------------
 
-  for (genvar i = 0; i < NApps; i = i+1) begin : gen_track_sm
-
-    assign track_inst_id[i] = i;
-
-
-  csrng_track_sm #(
-    .Cmd(Cmd),
-    .StateId(StateId)
-  ) u_csrng_track_sm (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .inst_id_i(track_inst_id[i]),
-    .acmd_hdr_capt_i(acmd_hdr_capt),
-    .acmd_i(acmd_hold),
-    .shid_i(shid_q),
-    .ctr_drbg_cmd_req_i(ctr_drbg_cmd_req),
-    .ctr_drbg_cmd_req_rdy_i(ctr_drbg_cmd_req_rdy),
-    .ctr_drbg_cmd_ccmd_i(ctr_drbg_cmd_ccmd),
-    .ctr_drbg_cmd_inst_id_i(shid_q),
-    .updblk_arb_vld_i(updblk_arb_vld),
-    .updblk_arb_rdy_i(updblk_arb_rdy),
-    .updblk_arb_ccmd_i(updblk_arb_ccmd),
-    .updblk_arb_inst_id_i(updblk_arb_inst_id),
-    .benblk_arb_vld_i(benblk_arb_vld),
-    .benblk_arb_rdy_i(benblk_arb_rdy),
-    .benblk_arb_ccmd_i(benblk_arb_cmd),
-    .benblk_arb_inst_id_i(benblk_arb_inst_id),
-    .benblk_updblk_ack_i(benblk_updblk_ack),
-    .updblk_benblk_ack_rdy_i(updblk_benblk_ack_rdy),
-    .benblk_cmd_i(benblk_cmd),
-    .benblk_inst_id_i(benblk_inst_id),
-    .updblk_cmdblk_ack_i(updblk_cmdblk_ack),
-    .cmdblk_updblk_ack_rdy_i(cmdblk_updblk_ack_rdy),
-    .updblk_cmdblk_ccmd_i(updblk_ccmd),
-    .updblk_cmdblk_inst_id_i(updblk_inst_id),
-    .ctr_drbg_gen_req_i(ctr_drbg_gen_req),
-    .ctr_drbg_gen_req_rdy_i(ctr_drbg_gen_req_rdy),
-    .ctr_drbg_gen_ccmd_i(cmd_result_ccmd),
-    .ctr_drbg_gen_inst_id_i(cmd_result_inst_id),
-    .benblk_genblk_ack_i(benblk_genblk_ack),
-    .genblk_benblk_ack_rdy_i(genblk_benblk_ack_rdy),
-    .updblk_genblk_ack_i(updblk_genblk_ack),
-    .genblk_updblk_ack_rdy_i(genblk_updblk_ack_rdy),
-    .updblk_ccmd_i(updblk_ccmd),
-    .updblk_inst_id_i(updblk_inst_id),
-    .genbits_stage_vld_i(genbits_stage_vld[i]),
-    .genbits_stage_rdy_i(genbits_stage_rdy[i]),
-    .state_db_wr_req_i(state_db_wr_req),
-    .state_db_wr_req_rdy_i(state_db_wr_req_rdy),
-    .state_db_wr_ccmd_i(state_db_wr_ccmd),
-    .state_db_wr_inst_id_i(state_db_wr_inst_id),
-    .cmd_core_ack_i(cmd_core_ack[i]),
-    .cmd_stage_ack_i(cmd_stage_ack[i]),
-    .track_sm_o(track_sm[i])
-  );
-
-  end : gen_track_sm
-
-  for (genvar i = NApps; i < 16; i = i+1) begin : gen_track_sm_null
-    assign track_sm[i] = '0;
-  end : gen_track_sm_null
-
-
-  // attach track sm output to observation register
-
-  assign sel_track_sm_grp = reg2hw.sel_tracking_sm.q;
-
-  // SEC_CM: FSM.LC_GATED
-  assign hw2reg.tracking_sm_obs.tracking_sm_obs0.de = cs_enable_fo[50] && lc_hw_debug_on_fo[1];
-  assign hw2reg.tracking_sm_obs.tracking_sm_obs1.de = cs_enable_fo[51] && lc_hw_debug_on_fo[2];
-  assign hw2reg.tracking_sm_obs.tracking_sm_obs2.de = cs_enable_fo[52] && lc_hw_debug_on_fo[3];
-  assign hw2reg.tracking_sm_obs.tracking_sm_obs3.de = cs_enable_fo[53] && lc_hw_debug_on_fo[4];
-
-  assign hw2reg.tracking_sm_obs.tracking_sm_obs3.d =
-         (sel_track_sm_grp == 2'h3) ? track_sm[15] :
-         (sel_track_sm_grp == 2'h2) ? track_sm[11] :
-         (sel_track_sm_grp == 2'h1) ? track_sm[7] :
-         track_sm[3];
-
-  assign hw2reg.tracking_sm_obs.tracking_sm_obs2.d =
-         (sel_track_sm_grp == 2'h3) ? track_sm[14] :
-         (sel_track_sm_grp == 2'h2) ? track_sm[10] :
-         (sel_track_sm_grp == 2'h1) ? track_sm[6] :
-         track_sm[2];
-
-  assign hw2reg.tracking_sm_obs.tracking_sm_obs1.d =
-         (sel_track_sm_grp == 2'h3) ? track_sm[13] :
-         (sel_track_sm_grp == 2'h2) ? track_sm[9] :
-         (sel_track_sm_grp == 2'h1) ? track_sm[5] :
-         track_sm[1];
-
-  assign hw2reg.tracking_sm_obs.tracking_sm_obs0.d =
-         (sel_track_sm_grp == 2'h3) ? track_sm[12] :
-         (sel_track_sm_grp == 2'h2) ? track_sm[8] :
-         (sel_track_sm_grp == 2'h1) ? track_sm[4] :
-         track_sm[0];
+  assign hw2reg.debug_status.de = 1'b1;
+  assign hw2reg.debug_status.d = cs_main_sm_state;
 
   //--------------------------------------------
   // report csrng request summary
   //--------------------------------------------
   // Misc status
 
-  assign hw2reg.hw_exc_sts.de = cs_enable_fo[54];
+  assign hw2reg.hw_exc_sts.de = cs_enable_fo[50];
   assign hw2reg.hw_exc_sts.d  = hw_exception_sts;
 
   // unused signals
