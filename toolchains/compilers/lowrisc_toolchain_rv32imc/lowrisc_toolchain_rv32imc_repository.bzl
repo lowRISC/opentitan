@@ -19,7 +19,7 @@ def _com_lowrisc_toolchain_rv32imc_repository_impl(repository_ctx):
     else:
         os = "linux"
     response = repository_ctx.execute(include_tools.ShellCommand(
-        "bin/riscv32-unknown-elf-cpp" + postfix,
+        "bin/riscv32-unknown-elf-clang++" + postfix,
         [
             "-specs=nano.specs",
             "-specs=nosys.specs",
@@ -57,7 +57,7 @@ lowrisc_toolchain_rv32imc_repository = repository_rule(
     attrs = {
         "version": attr.string(
             default = "9",
-            doc = "GCC version, version 9 currently only version supported",
+            doc = "Clang version, version 11 currently only version supported, it depends on lib/gcc 9.2.0 as far as I know",
             values = TOOLCHAIN_VERSIONS.keys(),
         ),
     },

@@ -60,26 +60,51 @@ def ClangIncludeFeature(include_paths, sysroot):
 def ClangAchitectureFeature(architecture, float_abi, endian, fpu):
     if fpu == "none":
         fpu = "auto"
-    _ARCHITECTURE_FEATURE = feature(
-        name = "architecture",
-        enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = _CPP_ALL_COMPILE_ACTIONS + _C_ALL_COMPILE_ACTIONS +
-                          _LD_ALL_ACTIONS,
-                flag_groups = [
-                    flag_group(
-                        flags = [
-                            # Set the system architecture/cpu
-                            "-march=" + architecture,
-                            # Set the endianess of the architecture
-                            "-m{}-endian".format(endian),
-                        ],
-                    ),
-                ],
-            ),
-        ],
-    )
+    if architecture == 'riscv32':
+        _ARCHITECTURE_FEATURE = feature(
+            name = "architecture",
+            enabled = True,
+            flag_sets = [
+                flag_set(
+                    actions = _CPP_ALL_COMPILE_ACTIONS + _C_ALL_COMPILE_ACTIONS +
+                              _LD_ALL_ACTIONS,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                # Set the system architecture/cpu
+                                "-march=rv32imc",
+                                "-mabi=ilp32",
+                                "-mcmodel=medany",
+                                # FIXME, I look like I'm formatted differently here from below.
+                                # TODO find what here is supported in lowrisc clang and try to make it as consistent with below conditional
+                                "-m{}-endian".format(endian),
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        )
+    else:
+        _ARCHITECTURE_FEATURE = feature(
+            name = "architecture",
+            enabled = True,
+            flag_sets = [
+                flag_set(
+                    actions = _CPP_ALL_COMPILE_ACTIONS + _C_ALL_COMPILE_ACTIONS +
+                              _LD_ALL_ACTIONS,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                # Set the system architecture/cpu
+                                "-march=" + architecture,
+                                # Set the endianess of the architecture
+                                "-m{}-endian".format(endian),
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        )
     return _ARCHITECTURE_FEATURE
 
 _ALL_WARNINGS_FEATURE = feature(

@@ -80,40 +80,40 @@ def _get_additional_system_include_paths(ctx):
 def _lowrisc_toolchain_rv32imc_toolchain_config_info_impl(ctx):
     tool_paths = [
         tool_path(
-            name = "gcc",
-            path = "gcc_wrappers/{os}/gcc",
-        ),
-        tool_path(
-            name = "ld",
-            path = "gcc_wrappers/{os}/ld",
-        ),
-        tool_path(
-            name = "ar",
-            path = "gcc_wrappers/{os}/ar",
-        ),
-        tool_path(
             name = "cpp",
-            path = "gcc_wrappers/{os}/cpp",
+            path = "clang_wrappers/{os}/cpp",
+        ),
+        tool_path(
+            name = "gcc",
+            path = "clang_wrappers/{os}/gcc",
         ),
         tool_path(
             name = "gcov",
-            path = "gcc_wrappers/{os}/gcov",
+            path = "clang_wrappers/{os}/gcov",
+        ),
+        tool_path(
+            name = "ld",
+            path = "clang_wrappers/{os}/ld",
+        ),
+        tool_path(
+            name = "ar",
+            path = "clang_wrappers/{os}/ar",
         ),
         tool_path(
             name = "nm",
-            path = "gcc_wrappers/{os}/nm",
+            path = "clang_wrappers/{os}/nm",
         ),
         tool_path(
             name = "objcopy",
-            path = "gcc_wrappers/{os}/objcopy",
+            path = "clang_wrappers/{os}/objcopy",
         ),
         tool_path(
             name = "objdump",
-            path = "gcc_wrappers/{os}/objdump",
+            path = "clang_wrappers/{os}/objdump",
         ),
         tool_path(
             name = "strip",
-            path = "gcc_wrappers/{os}/strip",
+            path = "clang_wrappers/{os}/strip",
         ),
     ]
     os = "nix"
@@ -124,7 +124,7 @@ def _lowrisc_toolchain_rv32imc_toolchain_config_info_impl(ctx):
     tool_paths = [tool_path(name = t.name, path = t.path.format(os = os) + postfix) for t in tool_paths]
 
     common_features = GetCommonFeatures(
-        compiler = "GCC",
+        compiler = "CLANG",
         architecture = ctx.attr.architecture,
         float_abi = ctx.attr.float_abi,
         endian = ctx.attr.endian,
@@ -135,7 +135,7 @@ def _lowrisc_toolchain_rv32imc_toolchain_config_info_impl(ctx):
         sysroot = None,
     )
     embedded_features = GetEmbeddedFeatures(
-        compiler = "GCC",
+        compiler = "CLANG",
         architecture = ctx.attr.architecture,
         float_abi = ctx.attr.float_abi,
         endian = ctx.attr.endian,
@@ -219,9 +219,9 @@ lowrisc_toolchain_rv32imc_toolchain_config = rule(
             mandatory = True,
             doc = "Indentifier used by the toolchain, this should be consistent with the cc_toolchain rule attribute",
         ),
-        "_gcc_wrappers": attr.label(
-            doc = "Passthrough gcc wrappers used for the compiler",
-            default = "//toolchains/lowrisc_toolchain_rv32imc/gcc_wrappers:all",
+        "_clang_wrappers": attr.label(
+            doc = "Passthrough clang wrappers used for the compiler",
+            default = "//toolchains/lowrisc_toolchain_rv32imc/clang_wrappers:all",
         ),
     },
     provides = [CcToolchainConfigInfo],
@@ -238,7 +238,7 @@ def compiler_components(system_hdr_deps, injected_hdr_deps):
     native.filegroup(
         name = "compiler_components",
         srcs = [
-            "//toolchains/lowrisc_toolchain_rv32imc/gcc_wrappers:all",
+            "//toolchains/lowrisc_toolchain_rv32imc/clang_wrappers:all",
             "@com_lowrisc_toolchain_rv32imc_compiler//:all",
             ":additional_headers",
         ],

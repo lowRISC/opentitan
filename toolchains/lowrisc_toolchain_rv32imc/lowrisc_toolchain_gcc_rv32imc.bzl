@@ -26,10 +26,11 @@ load(
     "tool_path",
 )
 load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
-load("@com_llvm_compiler//:defs.bzl", "SYSTEM_INCLUDE_COMMAND_LINE", "SYSTEM_INCLUDE_PATHS", "SYSTEM_SYSROOT")
+load("@com_lowrisc_toolchain_rv32imc_compiler//:defs.bzl", "SYSTEM_INCLUDE_COMMAND_LINE", "SYSTEM_INCLUDE_PATHS")
 load("//toolchains/features/common:defs.bzl", "GetCommonFeatures")
+load("//toolchains/features/embedded:defs.bzl", "GetEmbeddedFeatures")
 
-_ARM_NONE_VERSION = "9.2.1"
+_RISCV32_UNKNOWN_ELF_VERSION = "9.2.0"
 _CPP_ALL_COMPILE_ACTIONS = [
     ACTION_NAMES.assemble,
     ACTION_NAMES.preprocess_assemble,
@@ -76,43 +77,43 @@ def _get_additional_system_include_paths(ctx):
                 include_paths.append(inc)
     return include_paths
 
-def _clang_toolchain_config_info_impl(ctx):
+def _lowrisc_toolchain_rv32imc_toolchain_config_info_impl(ctx):
     tool_paths = [
         tool_path(
-            name = "cpp",
-            path = "clang_wrappers/{os}/cpp",
-        ),
-        tool_path(
             name = "gcc",
-            path = "clang_wrappers/{os}/gcc",
+            path = "gcc_wrappers/{os}/gcc",
         ),
         tool_path(
             name = "ld",
-            path = "clang_wrappers/{os}/ld",
+            path = "gcc_wrappers/{os}/ld",
         ),
         tool_path(
             name = "ar",
-            path = "clang_wrappers/{os}/ar",
+            path = "gcc_wrappers/{os}/ar",
+        ),
+        tool_path(
+            name = "cpp",
+            path = "gcc_wrappers/{os}/cpp",
         ),
         tool_path(
             name = "gcov",
-            path = "clang_wrappers/{os}/gcov",
+            path = "gcc_wrappers/{os}/gcov",
         ),
         tool_path(
             name = "nm",
-            path = "clang_wrappers/{os}/nm",
+            path = "gcc_wrappers/{os}/nm",
+        ),
+        tool_path(
+            name = "objcopy",
+            path = "gcc_wrappers/{os}/objcopy",
         ),
         tool_path(
             name = "objdump",
-            path = "clang_wrappers/{os}/objdump",
+            path = "gcc_wrappers/{os}/objdump",
         ),
         tool_path(
             name = "strip",
-            path = "clang_wrappers/{os}/strip",
-        ),
-        tool_path(
-            name = "llvm-cov",
-            path = "clang_wrappers/{os}/llvm-cov",
+            path = "gcc_wrappers/{os}/strip",
         ),
     ]
     os = "nix"
@@ -123,23 +124,32 @@ def _clang_toolchain_config_info_impl(ctx):
     tool_paths = [tool_path(name = t.name, path = t.path.format(os = os) + postfix) for t in tool_paths]
 
     common_features = GetCommonFeatures(
-        compiler = "CLANG",
-        architecture = "x86-64",
-        float_abi = "auto",
-        endian = "little",
-        fpu = "auto",
-        include_paths = _get_additional_system_includes_command_line(ctx) + SYSTEM_INCLUDE_COMMAND_LINE + _get_injected_headers_command_line(ctx),
-        sysroot = SYSTEM_SYSROOT,
+        compiler = "GCC",
+        architecture = ctx.attr.architecture,
+        float_abi = ctx.attr.float_abi,
+        endian = ctx.attr.endian,
+        fpu = ctx.attr.fpu,
+        include_paths = _get_additional_system_includes_command_line(ctx) +
+                        SYSTEM_INCLUDE_COMMAND_LINE +
+                        _get_injected_headers_command_line(ctx),
+        sysroot = None,
+    )
+    embedded_features = GetEmbeddedFeatures(
+        compiler = "GCC",
+        architecture = ctx.attr.architecture,
+        float_abi = ctx.attr.float_abi,
+        endian = ctx.attr.endian,
+        fpu = ctx.attr.fpu,
     )
     toolchain_config_info = cc_common.create_cc_toolchain_config_info(
         ctx = ctx,
         toolchain_identifier = ctx.attr.toolchain_identifier,
-        cxx_builtin_include_directories = SYSTEM_INCLUDE_PATHS + _get_additional_system_include_paths(ctx),
+        cxx_builtin_include_directories = SYSTEM_INCLUDE_PATHS,
         host_system_name = "i686-unknown-linux-gnu",
-        target_system_name = "arm-none-eabi",
-        target_cpu = "x86_64",
+        target_system_name = "riscv32-unknown-elf",
+        target_cpu = ctx.attr.architecture,
         target_libc = "unknown",
-        compiler = "clang",
+        compiler = "riscv32-unknown-elf-gcc",
         abi_version = "unknown",
         abi_libc_version = "unknown",
         tool_paths = tool_paths,
@@ -154,18 +164,30 @@ def _clang_toolchain_config_info_impl(ctx):
             common_features.opt,
             common_features.fastbuild,
             common_features.output_format,
-            common_features.coverage,
-            common_features.misc,
+            embedded_features.exceptions,
+            embedded_features.runtime_type_information,
+            embedded_features.sys_spec,
+            embedded_features.cc_constructor_destructor,
         ],
     )
     return toolchain_config_info
 
-clang_toolchain_config = rule(
-    implementation = _clang_toolchain_config_info_impl,
+lowrisc_toolchain_rv32imc_toolchain_config = rule(
+    implementation = _lowrisc_toolchain_rv32imc_toolchain_config_info_impl,
     attrs = {
-        "toolchain_identifier": attr.string(
-            mandatory = True,
-            doc = "Identifier used by the toolchain, this should be consistent with the cc_toolchain rule attribute",
+        "architecture": attr.string(
+            default = "riscv32",
+            doc = "System architecture",
+            mandatory = False,
+            values = [
+                "riscv32",
+            ],
+        ),
+        "float_abi": attr.string(
+            default = "soft",
+            doc = "Application Binary Interface",
+            mandatory = False,
+            values = ["soft", "softfp", "hard"],
         ),
         "system_hdr_deps": attr.label_list(
             doc = "A set of additional system header libraries that are added as a dependency of every cc_<target>",
@@ -177,9 +199,29 @@ clang_toolchain_config = rule(
             default = ["@bazel_embedded_upstream_toolchain//:injected_headers"],
             providers = [CcInfo],
         ),
-        "_clang_wrappers": attr.label(
+        "fpu": attr.string(
+            default = "none",
+            doc = "Floating point unit",
+            mandatory = False,
+            values = [
+                "none",
+                "auto",
+                # TODO(cfrantz) what other values are relevant here?
+            ],
+        ),
+        "endian": attr.string(
+            default = "little",
+            doc = "Endianess",
+            mandatory = False,
+            values = ["little", "big"],
+        ),
+        "toolchain_identifier": attr.string(
+            mandatory = True,
+            doc = "Indentifier used by the toolchain, this should be consistent with the cc_toolchain rule attribute",
+        ),
+        "_gcc_wrappers": attr.label(
             doc = "Passthrough gcc wrappers used for the compiler",
-            default = "//toolchains/clang/clang_wrappers:all",
+            default = "//toolchains/lowrisc_toolchain_rv32imc/gcc_wrappers:all",
         ),
     },
     provides = [CcToolchainConfigInfo],
@@ -192,59 +234,56 @@ def compiler_components(system_hdr_deps, injected_hdr_deps):
             system_hdr_deps,
             injected_hdr_deps,
         ],
-        #output_group = "CcInfo",
     )
     native.filegroup(
         name = "compiler_components",
         srcs = [
-            "//toolchains/clang/clang_wrappers:all",
-            "@com_llvm_compiler//:all",
+            "//toolchains/lowrisc_toolchain_rv32imc/gcc_wrappers:all",
+            "@com_lowrisc_toolchain_rv32imc_compiler//:all",
             ":additional_headers",
         ],
     )
 
-def clang_toolchain(name):
+def lowrisc_toolchain_rv32imc_toolchain(name, compiler_components, architecture, float_abi, endian, fpu):
     toolchain_config = name + "_config"
 
-    compiler_components(
-        system_hdr_deps = "@bazel_embedded_upstream_toolchain//:polyfill",
-        injected_hdr_deps = "@bazel_embedded_upstream_toolchain//:injected_headers",
-    )
-    compiler_components_target = ":compiler_components"
-
-    clang_toolchain_config(
+    lowrisc_toolchain_rv32imc_toolchain_config(
         name = toolchain_config,
-        toolchain_identifier = "clang",
+        architecture = architecture,
+        float_abi = float_abi,
+        endian = endian,
+        fpu = fpu,
+        toolchain_identifier = "riscv32-unknown-elf",
     )
 
     cc_toolchain(
         name = name,
-        all_files = compiler_components_target,
-        compiler_files = compiler_components_target,
-        dwp_files = compiler_components_target,
-        linker_files = compiler_components_target,
-        objcopy_files = compiler_components_target,
-        strip_files = compiler_components_target,
-        as_files = compiler_components_target,
-        ar_files = compiler_components_target,
+        all_files = compiler_components,
+        compiler_files = compiler_components,
+        dwp_files = compiler_components,
+        linker_files = compiler_components,
+        objcopy_files = compiler_components,
+        strip_files = compiler_components,
+        as_files = compiler_components,
+        ar_files = compiler_components,
         supports_param_files = 0,
         toolchain_config = ":" + toolchain_config,
-        toolchain_identifier = "clang",
+        toolchain_identifier = "riscv32-unknown-elf",
     )
 
     native.toolchain(
-        name = name + "_cc_toolchain",
+        name = "-".join(["cc-toolchain", architecture, fpu]),
         exec_compatible_with = [
             "@platforms//cpu:x86_64",
-            "@platforms//os:linux",
         ],
         target_compatible_with = [
-            "@platforms//cpu:x86_64",
-            "@platforms//os:linux",
+            # TODO(cfrantz): change to platforms package after upstreaming.
+            "@bazel_embedded//constraints/cpu:" + architecture,
+            "//constraints/fpu:" + fpu,
         ],
         toolchain = ":" + name,
         toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
     )
 
-def register_clang_toolchain():
-    native.register_toolchains("@bazel_embedded//toolchains/clang:all")
+def register_lowrisc_toolchain_rv32imc_toolchain():
+    native.register_toolchains("@bazel_embedded//toolchains/lowrisc_toolchain_rv32imc:all")
