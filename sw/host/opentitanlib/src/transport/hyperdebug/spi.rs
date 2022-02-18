@@ -280,14 +280,14 @@ impl Target for HyperdebugSpiTarget {
         Ok(())
     }
 
-    fn get_max_transfer_count(&self) -> usize {
+    fn get_max_transfer_count(&self) -> Result<usize> {
         // The protocol imposes no limits to the number of Transfers
         // in a transaction.
-        usize::MAX
+        Ok(usize::MAX)
     }
 
-    fn max_chunk_size(&self) -> usize {
-        self.max_chunk_size
+    fn max_chunk_size(&self) -> Result<usize> {
+        Ok(self.max_chunk_size)
     }
 
     fn run_transaction(&self, transaction: &mut [Transfer]) -> Result<()> {

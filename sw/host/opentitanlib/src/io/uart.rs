@@ -33,7 +33,7 @@ impl UartParams {
 /// A trait which represents a UART.
 pub trait Uart {
     /// Returns the UART baudrate.  May return zero for virtual UARTs.
-    fn get_baudrate(&self) -> u32;
+    fn get_baudrate(&self) -> Result<u32>;
 
     /// Sets the UART baudrate.  May do nothing for virtual UARTs.
     fn set_baudrate(&self, baudrate: u32) -> Result<()>;
@@ -68,5 +68,7 @@ pub enum UartError {
     ReadError(String),
     #[error("Writing: {0}")]
     WriteError(String),
+    #[error("{0}")]
+    GenericError(String),
 }
 

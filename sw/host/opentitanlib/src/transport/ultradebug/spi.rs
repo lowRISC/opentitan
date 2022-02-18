@@ -75,15 +75,15 @@ impl Target for UltradebugSpi {
         Ok(())
     }
 
-    fn get_max_transfer_count(&self) -> usize {
+    fn get_max_transfer_count(&self) -> Result<usize> {
         // Arbitrary value: number of `Transfers` that can be in a single transaction.
-        42
+        Ok(42)
     }
 
-    fn max_chunk_size(&self) -> usize {
+    fn max_chunk_size(&self) -> Result<usize> {
         // Size of the FTDI read buffer.  We can't perform a read larger than this;
         // the FTDI device simply won't read any more.
-        65536
+        Ok(65536)
     }
 
     fn run_transaction(&self, transaction: &mut [Transfer]) -> Result<()> {
