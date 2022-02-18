@@ -178,6 +178,9 @@
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
+    { name: "LC_ESCALATE_EN.INTERSIG.MUBI"
+      desc: "The global escalation input signal from the life cycle is multibit encoded"
+    }
     { name: "SW_KEY.KEY.MASKING"
       desc: '''Data storage and secret key are two share to guard against 1st
         order attack.'''
