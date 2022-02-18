@@ -26,14 +26,14 @@ class jtag_riscv_monitor extends dv_base_monitor #(
     logic [DMI_DATAW-1:0] data;
     jtag_op_status_e status;
     // Saved op field from initial transaction
-    jtag_op_e saved_op = 'X;
+    jtag_op_e saved_op;
     bit dmi_selected;
     ITEM_T monitor_item;
 
     forever begin
       jtag_item_fifo.get(item);
       `uvm_info(`gfn, item.sprint(uvm_default_line_printer), UVM_HIGH)
-      if (item.select_ir == 1) begin
+      if (item.ir_len) begin
         // Instruction register transaction
         if (item.ir == JtagDmiAccess) dmi_selected = 1;
         else dmi_selected = 0;
