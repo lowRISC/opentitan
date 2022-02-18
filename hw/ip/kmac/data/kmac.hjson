@@ -414,15 +414,10 @@
                  Error handling state, SW may process the error based on
                  ERR_CODE, then let FSM back to the reset state
                 '''
-          tags: [// Randomly write mem will cause this reg updated by design
-                 "excl:CsrNonInitTests:CsrExclCheck",
-                 "shadowed_reg_path:u_cfg_reg_shadowed.u_cfg_reg_shadowed_err_processed"]
+          tags: ["shadowed_reg_path:u_cfg_reg_shadowed.u_cfg_reg_shadowed_err_processed"]
         } // f: err_processed
       ]
-      tags: [
-        "excl:CsrNonInitTests:CsrExclWriteCheck",
-        "shadowed_reg_path:u_cfg_reg_shadowed"
-      ]
+      tags: ["shadowed_reg_path:u_cfg_reg_shadowed"]
     } // R: CFG
     { name: "CMD"
       desc: '''KMAC/ SHA3 command register.
@@ -796,7 +791,7 @@
                 Please take a look at `hw/ip/kmac/rtl/kmac_pkg.sv:err_code_e enum type.
                 '''
           tags: [// Randomly write mem will cause this reg updated by design
-                 "excl:CsrNonInitTests:CsrExclCheck"]
+                 "excl:CsrNonInitTests:CsrExclWriteCheck"]
         }
       ]
     } // R: ERR_CODE
