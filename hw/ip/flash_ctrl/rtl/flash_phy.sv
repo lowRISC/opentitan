@@ -38,6 +38,8 @@ module flash_phy
   inout flash_test_voltage_h_io,
   input prim_mubi_pkg::mubi4_t flash_bist_enable_i,
   input lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i,
+  input ast_pkg::ast_obs_ctrl_t obs_ctrl_i,
+  output logic [7:0] fla_obs_o,
   output ast_pkg::ast_dif_t flash_alert_o
 );
 
@@ -302,6 +304,8 @@ module flash_phy
     .tms_i(flash_ctrl_i.jtag_req.tms & (lc_nvm_debug_en[FlashLcTmsSel] == lc_ctrl_pkg::On)),
     .tdo_o(tdo),
     .bist_enable_i(bist_enable_qual),
+    .obs_ctrl_i,
+    .fla_obs_o,
     .scanmode_i,
     .scan_en_i,
     .scan_rst_ni,

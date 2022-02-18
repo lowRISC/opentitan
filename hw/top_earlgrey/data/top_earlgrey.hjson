@@ -774,6 +774,15 @@
           // what the external module actually needs.
           act:     "rcv"
         }
+
+        { struct: "ast_obs_ctrl",
+          type: "uni",
+          name: "obs_ctrl",
+          // The activity direction for a port inter-signal is "opposite" of
+          // what the external module actually needs.
+          act:  "rcv",
+          package: "ast_pkg",
+        },
       ]
     },
   ]
@@ -786,6 +795,8 @@
   //  e.g flash_ctrl0.flash: [flash_phy0.flash_ctrl]
   inter_module: {
     'connect': {
+      'ast.obs_ctrl'            : ['flash_ctrl.obs_ctrl',
+                                   'otp_ctrl.obs_ctrl']
       'ast.ram_1p_cfg'          : ['otbn.ram_cfg',
                                    'sram_ctrl_main.cfg',
                                    'sram_ctrl_ret_aon.cfg',
@@ -983,6 +994,7 @@
         'adc_ctrl_aon.adc'                : 'adc'
         'ast.edn'                         : '',
         'ast.lc_dft_en'                   : '',
+        'ast.obs_ctrl'                    : 'obs_ctrl',
         'ast.ram_1p_cfg'                  : 'ram_1p_cfg',
         'ast.ram_2p_cfg'                  : 'ram_2p_cfg',
         'ast.rom_cfg'                     : 'rom_cfg',
@@ -997,7 +1009,8 @@
         'flash_ctrl.flash_power_down_h'   : 'flash_power_down_h',
         'flash_ctrl.flash_power_ready_h'  : 'flash_power_ready_h',
         'flash_ctrl.flash_test_mode_a'    : 'flash_test_mode_a',
-        'flash_ctrl.flash_test_voltage_h ': 'flash_test_voltage_h',
+        'flash_ctrl.flash_test_voltage_h' : 'flash_test_voltage_h',
+        'flash_ctrl.fla_obs'              : 'flash_obs',
         'entropy_src.entropy_src_rng'     : 'es_rng',
         'entropy_src.rng_fips'            : 'es_rng_fips',
         'peri.tl_ast'                     : 'ast_tl',
@@ -1008,6 +1021,7 @@
         'otp_ctrl.otp_ast_pwr_seq_h'      : '',
         'otp_ctrl.otp_ext_voltage_h'      : 'otp_ext_voltage_h',
         'otp_ctrl.otp_alert'              : 'otp_alert',
+        'otp_ctrl.otp_obs'                : 'otp_obs',
         'rstmgr_aon.por_n'                : 'por_n'
         'sensor_ctrl.ast_alert'           : 'sensor_ctrl_ast_alert',
         'sensor_ctrl.ast_status'          : 'sensor_ctrl_ast_status',

@@ -121,6 +121,7 @@ module top_earlgrey #(
   input  edn_pkg::edn_req_t       ast_edn_req_i,
   output edn_pkg::edn_rsp_t       ast_edn_rsp_o,
   output lc_ctrl_pkg::lc_tx_t       ast_lc_dft_en_o,
+  input  ast_pkg::ast_obs_ctrl_t       obs_ctrl_i,
   input  prim_ram_1p_pkg::ram_1p_cfg_t       ram_1p_cfg_i,
   input  prim_ram_2p_pkg::ram_2p_cfg_t       ram_2p_cfg_i,
   input  prim_rom_pkg::rom_cfg_t       rom_cfg_i,
@@ -136,6 +137,7 @@ module top_earlgrey #(
   input  logic       flash_power_ready_h_i,
   inout   [1:0] flash_test_mode_a_io,
   inout         flash_test_voltage_h_io,
+  output logic [7:0] flash_obs_o,
   output entropy_src_pkg::entropy_src_rng_req_t       es_rng_req_o,
   input  entropy_src_pkg::entropy_src_rng_rsp_t       es_rng_rsp_i,
   output logic       es_rng_fips_o,
@@ -149,6 +151,7 @@ module top_earlgrey #(
   input  otp_ctrl_pkg::otp_ast_rsp_t       otp_ctrl_otp_ast_pwr_seq_h_i,
   inout         otp_ext_voltage_h_io,
   output ast_pkg::ast_dif_t       otp_alert_o,
+  output logic [7:0] otp_obs_o,
   input  logic [1:0] por_n_i,
   input  ast_pkg::ast_alert_req_t       sensor_ctrl_ast_alert_req_i,
   output ast_pkg::ast_alert_rsp_t       sensor_ctrl_ast_alert_rsp_o,
@@ -525,6 +528,7 @@ module top_earlgrey #(
 
 
   // define inter-module signals
+  ast_pkg::ast_obs_ctrl_t       ast_obs_ctrl;
   prim_ram_1p_pkg::ram_1p_cfg_t       ast_ram_1p_cfg;
   prim_ram_2p_pkg::ram_2p_cfg_t       ast_ram_2p_cfg;
   prim_rom_pkg::rom_cfg_t       ast_rom_cfg;
@@ -745,6 +749,7 @@ module top_earlgrey #(
   assign edn0_edn_req[2] = ast_edn_req_i;
   assign ast_edn_rsp_o = edn0_edn_rsp[2];
   assign ast_lc_dft_en_o = lc_ctrl_lc_dft_en;
+  assign ast_obs_ctrl = obs_ctrl_i;
   assign ast_ram_1p_cfg = ram_1p_cfg_i;
   assign ast_ram_2p_cfg = ram_2p_cfg_i;
   assign ast_rom_cfg = rom_cfg_i;
@@ -1489,6 +1494,8 @@ module top_earlgrey #(
       .otbn_otp_key_i(otp_ctrl_otbn_otp_key_req),
       .otbn_otp_key_o(otp_ctrl_otbn_otp_key_rsp),
       .otp_hw_cfg_o(otp_ctrl_otp_hw_cfg),
+      .obs_ctrl_i(ast_obs_ctrl),
+      .otp_obs_o(otp_obs_o),
       .core_tl_i(otp_ctrl_core_tl_req),
       .core_tl_o(otp_ctrl_core_tl_rsp),
       .prim_tl_i(otp_ctrl_prim_tl_req),
@@ -2071,6 +2078,8 @@ module top_earlgrey #(
       .rma_seed_i(flash_ctrl_rma_seed),
       .pwrmgr_o(pwrmgr_aon_pwr_flash),
       .keymgr_o(flash_ctrl_keymgr),
+      .obs_ctrl_i(ast_obs_ctrl),
+      .fla_obs_o(flash_obs_o),
       .core_tl_i(flash_ctrl_core_tl_req),
       .core_tl_o(flash_ctrl_core_tl_rsp),
       .prim_tl_i(flash_ctrl_prim_tl_req),
