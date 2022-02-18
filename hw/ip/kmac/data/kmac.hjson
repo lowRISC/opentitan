@@ -182,6 +182,9 @@
       desc: '''Data storage and secret key are two share to guard against 1st
         order attack.'''
     }
+    { name: "KEY.SIDELOAD"
+      desc: "Key from KeyMgr is sideloaded."
+    }
     { name: "CFG_SHADOWED.CONFIG.SHADOW"
       desc: "Shadowed CFG register."
     }
