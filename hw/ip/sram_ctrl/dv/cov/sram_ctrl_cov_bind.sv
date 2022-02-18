@@ -15,4 +15,8 @@ module sram_ctrl_cov_bind;
     .mubi   (otp_en_sram_ifetch_i)
   );
 
+  bind sram_ctrl cip_lc_tx_cov_if u_lc_escalate_en_cov_if (
+    .rst_ni (rst_ni),
+    .val    (lc_escalate_en_i)
+  );
 endmodule
