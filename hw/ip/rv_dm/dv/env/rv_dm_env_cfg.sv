@@ -40,6 +40,10 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
     m_jtag_agent_cfg = jtag_agent_cfg::type_id::create("m_jtag_agent_cfg");
     m_jtag_agent_cfg.if_mode = dv_utils_pkg::Host;
     m_jtag_agent_cfg.is_active = 1'b1;
+    m_jtag_agent_cfg.ir_len = JTAG_IR_LEN;
+
+    // Set the 'correct' IDCODE register value to the JTAG DTM RAL.
+    m_jtag_agent_cfg.jtag_dtm_ral.idcode.set_reset(RV_DM_JTAG_IDCODE);
 
     // Create TL agent config obj for the SBA port.
     m_tl_sba_agent_cfg =  tl_agent_cfg::type_id::create("m_tl_sba_agent_cfg");

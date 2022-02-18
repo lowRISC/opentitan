@@ -29,7 +29,9 @@ module tb;
   `DV_ALERT_IF_CONNECT
 
   // dut
-  rv_dm dut (
+  rv_dm #(
+    .IdcodeValue          (rv_dm_env_pkg::RV_DM_JTAG_IDCODE)
+  ) dut (
     .clk_i                (clk  ),
     .rst_ni               (rst_n),
 

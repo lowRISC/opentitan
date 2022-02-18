@@ -25,6 +25,17 @@ package rv_dm_env_pkg;
   // parameters
   parameter uint NUM_HARTS = rv_dm_reg_pkg::NrHarts;
 
+`ifndef RV_DM_JTAG_IDCODE
+`define RV_DM_JTAG_IDCODE 32'h0000_0001 // Match the RTL default.
+`endif
+
+  parameter uint RV_DM_JTAG_IDCODE = `RV_DM_JTAG_IDCODE;
+
+`undef RV_DM_JTAG_IDCODE
+
+  // Design uses 5 bits for IR.
+  parameter uint JTAG_IR_LEN = 5;
+
   // See hw/ip/rm_dm/data/rv_dm.hjson for alert names.
   parameter uint NUM_ALERTS = rv_dm_reg_pkg::NumAlerts;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
