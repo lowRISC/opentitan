@@ -102,12 +102,6 @@
       tests: []
     }
     {
-      name: sec_cm_fsm_lc_gated
-      desc: "Verify the countermeasure(s) FSM.LC_GATED."
-      milestone: V2S
-      tests: []
-    }
-    {
       name: sec_cm_sw_genbits_bus_consistency
       desc: "Verify the countermeasure(s) SW_GENBITS.BUS.CONSISTENCY."
       milestone: V2S

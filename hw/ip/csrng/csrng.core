@@ -20,7 +20,6 @@ filesets:
     files:
       - rtl/csrng_reg_top.sv
       - rtl/csrng_main_sm.sv
-      - rtl/csrng_track_sm.sv
       - rtl/csrng_state_db.sv
       - rtl/csrng_cmd_stage.sv
       - rtl/csrng_block_encrypt.sv

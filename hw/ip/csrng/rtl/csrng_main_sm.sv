@@ -6,29 +6,31 @@
 //
 //  - handles all app cmd requests from all requesting interfaces
 
-module csrng_main_sm import csrng_pkg::*; (
-  input logic                clk_i,
-  input logic                rst_ni,
+module csrng_main_sm import csrng_pkg::*; #(
+  localparam int StateWidth = 8
+) (
+  input logic                   clk_i,
+  input logic                   rst_ni,
 
-  input logic                enable_i,
-  input logic                acmd_avail_i,
-  output logic               acmd_accept_o,
-  output logic               acmd_hdr_capt_o,
-  input logic [2:0]          acmd_i,
-  input logic                acmd_eop_i,
-  input logic                ctr_drbg_cmd_req_rdy_i,
-  input logic                flag0_i,
-  output logic               cmd_entropy_req_o,
-  input logic                cmd_entropy_avail_i,
-  output logic               instant_req_o,
-  output logic               reseed_req_o,
-  output logic               generate_req_o,
-  output logic               update_req_o,
-  output logic               uninstant_req_o,
-  output logic               clr_adata_packer_o,
-  input logic                cmd_complete_i,
-  input logic                local_escalate_i,
-  output logic               main_sm_err_o
+  input logic                   enable_i,
+  input logic                   acmd_avail_i,
+  output logic                  acmd_accept_o,
+  input logic [2:0]             acmd_i,
+  input logic                   acmd_eop_i,
+  input logic                   ctr_drbg_cmd_req_rdy_i,
+  input logic                   flag0_i,
+  output logic                  cmd_entropy_req_o,
+  input logic                   cmd_entropy_avail_i,
+  output logic                  instant_req_o,
+  output logic                  reseed_req_o,
+  output logic                  generate_req_o,
+  output logic                  update_req_o,
+  output logic                  uninstant_req_o,
+  output logic                  clr_adata_packer_o,
+  input logic                   cmd_complete_i,
+  input logic                   local_escalate_i,
+  output logic [StateWidth-1:0] main_sm_state_o,
+  output logic                  main_sm_err_o
 );
 // Encoding generated with:
 // $ ./util/design/sparse-fsm-encode.py -d 3 -m 15 -n 8 \
@@ -52,7 +54,6 @@ module csrng_main_sm import csrng_pkg::*; (
 // Maximum Hamming weight: 7
 //
 
-  localparam int StateWidth = 8;
   typedef    enum logic [StateWidth-1:0] {
     Idle          = 8'b01001110, // idle
     ParseCmd      = 8'b10111011, // parse the cmd
@@ -90,11 +91,11 @@ module csrng_main_sm import csrng_pkg::*; (
   );
 
   assign state_q = state_e'(state_raw_q);
+  assign main_sm_state_o = state_raw_q;
 
   always_comb begin
     state_d = state_q;
     acmd_accept_o = 1'b0;
-    acmd_hdr_capt_o = 1'b0;
     cmd_entropy_req_o = 1'b0;
     instant_req_o = 1'b0;
     reseed_req_o = 1'b0;
@@ -120,27 +121,22 @@ module csrng_main_sm import csrng_pkg::*; (
           if (ctr_drbg_cmd_req_rdy_i) begin
             if (acmd_i == INS) begin
               if (acmd_eop_i) begin
-                acmd_hdr_capt_o = 1'b1;
                 state_d = InstantPrep;
               end
             end else if (acmd_i == RES) begin
               if (acmd_eop_i) begin
-                acmd_hdr_capt_o = 1'b1;
                 state_d = ReseedPrep;
               end
             end else if (acmd_i == GEN) begin
               if (acmd_eop_i) begin
-                acmd_hdr_capt_o = 1'b1;
                 state_d = GeneratePrep;
               end
             end else if (acmd_i == UPD) begin
               if (acmd_eop_i) begin
-                acmd_hdr_capt_o = 1'b1;
                 state_d = UpdatePrep;
               end
             end else if (acmd_i == UNI) begin
               if (acmd_eop_i) begin
-                acmd_hdr_capt_o = 1'b1;
                 state_d = UninstantPrep;
               end
             end
