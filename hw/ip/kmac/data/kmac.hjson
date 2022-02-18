@@ -194,6 +194,9 @@
     { name: "CTR.REDUN"
       desc: "Round and hash counter use prim_count for redundancy"
     }
+    { name: "CFG_SHADOWED.CONFIG.REGWEN"
+      desc: "CFG_SHADOWED is protected by REGWEN"
+    }
   ]
   regwidth: "32"
   registers: [
