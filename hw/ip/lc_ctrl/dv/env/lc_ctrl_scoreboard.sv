@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`define gmv32(csr) 32'(`gmv(csr))
+
 class lc_ctrl_scoreboard extends cip_base_scoreboard #(
   .CFG_T(lc_ctrl_env_cfg),
   .RAL_T(lc_ctrl_reg_block),
@@ -162,12 +164,11 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
       `uvm_info(`gfn, $sformatf("process_kmac_app_req: token received %h", token_data), UVM_MEDIUM)
 
       if (cfg.en_scb) begin
-        `DV_CHECK_EQ(token_data, {`gmv(ral.transition_token[3]),
-                                  `gmv(ral.transition_token[2]),
-                                  `gmv(ral.transition_token[1]),
-                                  `gmv(ral.transition_token[0])})
+        `DV_CHECK_EQ(token_data, {`gmv32(ral.transition_token[3]),
+                                  `gmv32(ral.transition_token[2]),
+                                  `gmv32(ral.transition_token[1]),
+                                  `gmv32(ral.transition_token[0])})
       end
-
     end
   endtask
   // verilog_format: on
@@ -179,8 +180,6 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
       `uvm_info(`gfn, item_rcv.sprint(uvm_default_line_printer), UVM_HIGH)
     end
   endtask
-
-
 
   virtual task process_jtag_riscv();
     jtag_riscv_item      jt_item;
@@ -450,14 +449,12 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
       end
     endcase
 
-
     `uvm_info(`gfn, $sformatf(
               "predict_lc_transition_cnt: lc_transition_cnt_exp= %0d", lc_transition_cnt_exp),
               UVM_MEDIUM)
 
     return lc_transition_cnt_exp;
   endfunction
-
 
   virtual function otp_ctrl_pkg::lc_otp_program_req_t predict_otp_prog_req();
     // Convert state and count back to enums
@@ -524,7 +521,6 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     end else return 0;
   endfunction
 
-
   // this function check if the triggered alert is expected
   // to turn off this check, user can set `do_alert_check` to 0
   // We overload this to trigger events in the config object when an alert is triggered
@@ -561,5 +557,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     super.check_phase(phase);
     // post test checks - ensure that all local fifos and queues are empty
   endfunction
+
+`undef gmv32
 
 endclass
