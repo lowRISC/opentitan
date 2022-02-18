@@ -6,7 +6,6 @@
 
   // TODO: remove the common testplans if not applicable
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/enable_reg_testplan.hjson",
                      // TODO #5484, comment these 2 lines out because spi host memory is dummy
                      // "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",

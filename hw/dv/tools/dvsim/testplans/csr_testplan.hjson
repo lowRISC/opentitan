@@ -92,6 +92,8 @@
             - If regwen CSR is HW read-only, this feature can be fully tested by common
               CSR tests - csr_rw and csr_aliasing.
             - If regwen CSR is HW updated, a separate test should be created to test it.
+
+            This is only applicable if the block contains regwen and locakable CSRs.
             '''
       milestone: V1
       tests: ["{name}{intf}_csr_rw", "{name}{intf}_csr_aliasing"]
@@ -106,6 +108,8 @@
               occurs after that.
             - When regwen = 0, a different value is written to the lockable CSR field, and a read
               occurs after that.
+
+            This is only applicable if the block contains regwen and locakable CSRs.
             '''
     }
   ]
