@@ -48,6 +48,15 @@
       name: default_vcs_cov_cfg_file
       value: "-cm_hier {dv_root}/tools/vcs/cover.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg+{proj_root}/hw/ip/lc_ctrl/dv/cov/lc_ctrl_cover.cfg"
     }
+    // The jtag agent requires the data and bytenable widths to be increased.
+    {
+      name: tl_dw
+      value: 64
+    }
+    {
+      name: tl_dbw
+      value: 8
+    }
   ]
 
   // Add LC_CTRL specific exclusion files.

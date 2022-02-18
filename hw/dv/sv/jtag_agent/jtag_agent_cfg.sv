@@ -7,9 +7,24 @@ class jtag_agent_cfg extends dv_base_agent_cfg;
   // interface handle used by driver, monitor & the sequencer, via cfg handle
   virtual jtag_if vif;
 
+  // Length of IR register. Update this field based on the actual width used in the design.
+  uint ir_len = JTAG_IRW;
+
+  // JTAG debug transport module (DTM) RAL model based off of RISCV spec 0.13.2 (section 6.1.2).
+  jtag_dtm_reg_block jtag_dtm_ral;
+
   `uvm_object_utils_begin(jtag_agent_cfg)
   `uvm_object_utils_end
 
-  `uvm_object_new
+  function new (string name= "");
+    super.new(name);
+    jtag_dtm_ral = jtag_dtm_reg_block::type_id::create("jtag_dtm_ral");
+    jtag_dtm_ral.build(.base_addr(0), .csr_excl(null));
+    jtag_dtm_ral.set_support_byte_enable(1'b0);
+    jtag_dtm_ral.lock_model();
+    jtag_dtm_ral.compute_mapped_addr_ranges();
+    jtag_dtm_ral.compute_unmapped_addr_ranges();
+    // TODO: fix the computation of mapped and unmapped ranges.
+  endfunction : new
 
 endclass

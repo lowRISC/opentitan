@@ -80,6 +80,15 @@
       name: design_level
       value: "top"
     }
+    // The jtag agent requires the data and bytenable widths to be increased.
+    {
+      name: tl_dw
+      value: 64
+    }
+    {
+      name: tl_dbw
+      value: 8
+    }
   ]
 
   // exclusion files
@@ -346,7 +355,7 @@
       sw_images: ["sw/device/tests/aon_timer_wdog_bite_reset_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=18000000"]
-    }    
+    }
     {
       name: chip_sw_otbn_randomness
       uvm_test_seq: chip_sw_base_vseq

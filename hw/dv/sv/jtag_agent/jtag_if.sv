@@ -17,7 +17,8 @@ interface jtag_if #(time JtagDefaultTckPeriodNs = 20ns) ();
   time  tck_period_ns = JtagDefaultTckPeriodNs;
 
   // Use negedge to drive jtag inputs because design also use posedge clock edge to sample.
-  clocking host_cb @(negedge tck);
+  clocking host_cb @(posedge tck);
+    default output #1ns;
     output  tms;
     output  tdi;
     input   tdo;
