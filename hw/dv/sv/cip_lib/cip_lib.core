@@ -35,6 +35,7 @@ filesets:
       - seq_lib/cip_tl_host_single_seq.sv: {is_include_file: true}
       - cip_base_test.sv: {is_include_file: true}
       - cip_mubi_cov_if.sv
+      - cip_lc_tx_cov_if.sv
     file_type: systemVerilogSource
 
 targets:
