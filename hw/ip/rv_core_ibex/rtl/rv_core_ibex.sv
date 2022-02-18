@@ -81,7 +81,7 @@ module rv_core_ibex
   input  logic        debug_req_i,
 
   // Crash dump information
-  output ibex_pkg::crash_dump_t crash_dump_o,
+  output cpu_crash_dump_t crash_dump_o,
 
   // CPU Control Signals
   input lc_ctrl_pkg::lc_tx_t lc_cpu_en_i,
@@ -314,6 +314,7 @@ module rv_core_ibex
   lc_ctrl_pkg::lc_tx_t fetch_enable;
   assign fetch_enable = lc_ctrl_pkg::lc_tx_and_hi(lc_cpu_en[0], pwrmgr_cpu_en[0]);
 
+  ibex_pkg::crash_dump_t crash_dump;
   ibex_top #(
     .PMPEnable                ( PMPEnable                ),
     .PMPGranularity           ( PMPGranularity           ),
@@ -378,7 +379,7 @@ module rv_core_ibex
     .irq_nm_i           ( irq_nm           ),
 
     .debug_req_i,
-    .crash_dump_o,
+    .crash_dump_o       ( crash_dump       ),
 
     // icache scramble interface
     .scramble_key_valid_i (key_ack),
@@ -421,6 +422,23 @@ module rv_core_ibex
     .alert_major_o    (alert_major),
     .core_sleep_o     (pwrmgr_o.core_sleeping)
   );
+
+  ibex_pkg::crash_dump_t crash_dump_previous;
+  logic previous_valid;
+
+  assign crash_dump_o.current = crash_dump;
+  assign crash_dump_o.previous = crash_dump_previous;
+  assign crash_dump_o.previous_valid = previous_valid;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      previous_valid <= '0;
+    end else if (double_fault) begin
+      previous_valid <= '1;
+      crash_dump_previous <= crash_dump;
+    end
+  end
+
 
   //
   // Convert ibex data/instruction bus to TL-UL

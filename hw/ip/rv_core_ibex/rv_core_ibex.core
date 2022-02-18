@@ -11,6 +11,7 @@ filesets:
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:pwrmgr_pkg
+      - lowrisc:ip:rv_core_ibex_pkg
       - lowrisc:ip:tlul
       - lowrisc:ip_interfaces:alert_handler_reg
       - lowrisc:prim:all
@@ -22,7 +23,6 @@ filesets:
       - lowrisc:tlul:adapter_host
 
     files:
-      - rtl/rv_core_ibex_pkg.sv
       - rtl/rv_core_ibex_reg_pkg.sv
       - rtl/rv_core_ibex_cfg_reg_top.sv
       - rtl/rv_core_ibex.sv
