@@ -72,6 +72,10 @@ module flash_ctrl
   input  prim_alert_pkg::alert_rx_t [flash_ctrl_reg_pkg::NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [flash_ctrl_reg_pkg::NumAlerts-1:0] alert_tx_o,
 
+  // Observability
+  input ast_pkg::ast_obs_ctrl_t obs_ctrl_i,
+  output logic [7:0] fla_obs_o,
+
   // Flash test interface
   input scan_en_i,
   input prim_mubi_pkg::mubi4_t scanmode_i,
@@ -1162,6 +1166,8 @@ module flash_ctrl
     .flash_ctrl_o      (flash_phy_rsp),
     .tl_i              (prim_tl_i),
     .tl_o              (prim_tl_o),
+    .obs_ctrl_i,
+    .fla_obs_o,
     .lc_nvm_debug_en_i,
     .flash_bist_enable_i,
     .flash_power_down_h_i,

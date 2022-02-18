@@ -172,6 +172,21 @@
       package: "flash_ctrl_pkg"
     }
 
+    { struct: "ast_obs_ctrl",
+      type: "uni",
+      name: "obs_ctrl",
+      act: "rcv",
+      package: "ast_pkg"
+    }
+
+    { struct: "logic",
+      type: "uni",
+      name: "fla_obs",
+      act: "req",
+      width: "8",
+      package: ""
+    }
+
   ],
   countermeasures: [
     { name: "BUS.INTEGRITY",

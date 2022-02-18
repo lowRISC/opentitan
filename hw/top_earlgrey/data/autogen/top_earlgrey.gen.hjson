@@ -1579,6 +1579,31 @@
           index: -1
         }
         {
+          name: obs_ctrl
+          struct: ast_obs_ctrl
+          package: ast_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: otp_ctrl
+          default: ""
+          top_signame: ast_obs_ctrl
+          index: -1
+        }
+        {
+          name: otp_obs
+          struct: logic
+          type: uni
+          act: req
+          width: 8
+          inst_name: otp_ctrl
+          default: ""
+          package: ""
+          external: true
+          top_signame: otp_obs
+          index: -1
+        }
+        {
           name: core_tl
           struct: tl
           package: tlul_pkg
@@ -4463,6 +4488,31 @@
           index: -1
         }
         {
+          name: obs_ctrl
+          struct: ast_obs_ctrl
+          package: ast_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: flash_ctrl
+          default: ""
+          top_signame: ast_obs_ctrl
+          index: -1
+        }
+        {
+          name: fla_obs
+          struct: logic
+          type: uni
+          act: req
+          width: 8
+          inst_name: flash_ctrl
+          default: ""
+          package: ""
+          external: true
+          top_signame: flash_obs
+          index: -1
+        }
+        {
           name: core_tl
           struct: tl
           package: tlul_pkg
@@ -7226,6 +7276,21 @@
           index: -1
           external: true
         }
+        {
+          struct: ast_obs_ctrl
+          type: uni
+          name: obs_ctrl
+          act: rcv
+          package: ast_pkg
+          inst_name: ast
+          width: 1
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: ast_obs_ctrl
+          index: -1
+          external: true
+        }
       ]
     }
   ]
@@ -7233,6 +7298,11 @@
   {
     connect:
     {
+      ast.obs_ctrl:
+      [
+        flash_ctrl.obs_ctrl
+        otp_ctrl.obs_ctrl
+      ]
       ast.ram_1p_cfg:
       [
         otbn.ram_cfg
@@ -7817,6 +7887,7 @@
       adc_ctrl_aon.adc: adc
       ast.edn: ""
       ast.lc_dft_en: ""
+      ast.obs_ctrl: obs_ctrl
       ast.ram_1p_cfg: ram_1p_cfg
       ast.ram_2p_cfg: ram_2p_cfg
       ast.rom_cfg: rom_cfg
@@ -7831,7 +7902,8 @@
       flash_ctrl.flash_power_down_h: flash_power_down_h
       flash_ctrl.flash_power_ready_h: flash_power_ready_h
       flash_ctrl.flash_test_mode_a: flash_test_mode_a
-      "flash_ctrl.flash_test_voltage_h ": flash_test_voltage_h
+      flash_ctrl.flash_test_voltage_h: flash_test_voltage_h
+      flash_ctrl.fla_obs: flash_obs
       entropy_src.entropy_src_rng: es_rng
       entropy_src.rng_fips: es_rng_fips
       peri.tl_ast: ast_tl
@@ -7842,6 +7914,7 @@
       otp_ctrl.otp_ast_pwr_seq_h: ""
       otp_ctrl.otp_ext_voltage_h: otp_ext_voltage_h
       otp_ctrl.otp_alert: otp_alert
+      otp_ctrl.otp_obs: otp_obs
       rstmgr_aon.por_n: por_n
       sensor_ctrl.ast_alert: sensor_ctrl_ast_alert
       sensor_ctrl.ast_status: sensor_ctrl_ast_status
@@ -14738,6 +14811,31 @@
         index: -1
       }
       {
+        name: obs_ctrl
+        struct: ast_obs_ctrl
+        package: ast_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: otp_ctrl
+        default: ""
+        top_signame: ast_obs_ctrl
+        index: -1
+      }
+      {
+        name: otp_obs
+        struct: logic
+        type: uni
+        act: req
+        width: 8
+        inst_name: otp_ctrl
+        default: ""
+        package: ""
+        external: true
+        top_signame: otp_obs
+        index: -1
+      }
+      {
         name: core_tl
         struct: tl
         package: tlul_pkg
@@ -16641,6 +16739,31 @@
         end_idx: -1
         top_type: broadcast
         top_signame: flash_ctrl_keymgr
+        index: -1
+      }
+      {
+        name: obs_ctrl
+        struct: ast_obs_ctrl
+        package: ast_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: flash_ctrl
+        default: ""
+        top_signame: ast_obs_ctrl
+        index: -1
+      }
+      {
+        name: fla_obs
+        struct: logic
+        type: uni
+        act: req
+        width: 8
+        inst_name: flash_ctrl
+        default: ""
+        package: ""
+        external: true
+        top_signame: flash_obs
         index: -1
       }
       {
@@ -18705,6 +18828,21 @@
         index: -1
         external: true
       }
+      {
+        struct: ast_obs_ctrl
+        type: uni
+        name: obs_ctrl
+        act: rcv
+        package: ast_pkg
+        inst_name: ast
+        width: 1
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: ast_obs_ctrl
+        index: -1
+        external: true
+      }
     ]
     external:
     [
@@ -18767,6 +18905,18 @@
         conn_type: true
         index: -1
         netname: lc_ctrl_lc_dft_en
+      }
+      {
+        package: ast_pkg
+        struct: ast_obs_ctrl
+        signame: obs_ctrl_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: true
+        index: -1
+        netname: ast_obs_ctrl
       }
       {
         package: prim_ram_1p_pkg
@@ -18949,6 +19099,18 @@
         netname: flash_test_voltage_h
       }
       {
+        package: ""
+        struct: logic
+        signame: flash_obs_o
+        width: 8
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: flash_obs
+      }
+      {
         package: entropy_src_pkg
         struct: entropy_src_rng_req
         signame: es_rng_req_o
@@ -19107,6 +19269,18 @@
       {
         package: ""
         struct: logic
+        signame: otp_obs_o
+        width: 8
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: otp_obs
+      }
+      {
+        package: ""
+        struct: logic
         signame: por_n_i
         width: 2
         type: uni
@@ -19215,6 +19389,17 @@
     ]
     definitions:
     [
+      {
+        package: ast_pkg
+        struct: ast_obs_ctrl
+        signame: ast_obs_ctrl
+        width: 1
+        type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
+        default: ast_pkg::AST_OBS_CTRL_DEFAULT
+      }
       {
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg

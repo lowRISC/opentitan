@@ -683,12 +683,9 @@ module chip_earlgrey_nexysvideo #(
   logic sck_monitor;
 
   // observe interface
-  logic [8-1:0] fla_obs;
-  logic [8-1:0] otp_obs;
+  logic [7:0] fla_obs;
+  logic [7:0] otp_obs;
   ast_pkg::ast_obs_ctrl_t obs_ctrl;
-
-  assign fla_obs = 8'h00;
-  assign otp_obs = 8'h00;
 
   // otp power sequence
   otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
@@ -1021,9 +1018,11 @@ module chip_earlgrey_nexysvideo #(
     .usbdev_usb_ref_pulse_o       ( usb_ref_pulse         ),
     .ast_edn_req_i                ( ast_edn_edn_req       ),
     .ast_edn_rsp_o                ( ast_edn_edn_rsp       ),
+    .obs_ctrl_i                   ( obs_ctrl              ),
     .flash_bist_enable_i          ( flash_bist_enable     ),
     .flash_power_down_h_i         ( 1'b0                  ),
     .flash_power_ready_h_i        ( 1'b1                  ),
+    .flash_obs_o                  ( flash_obs             ),
     .io_clk_byp_req_o             ( io_clk_byp_req        ),
     .io_clk_byp_ack_i             ( io_clk_byp_ack        ),
     .all_clk_byp_req_o            ( all_clk_byp_req       ),
@@ -1037,6 +1036,7 @@ module chip_earlgrey_nexysvideo #(
     .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
     .otp_alert_o                  ( otp_alert                  ),
+    .otp_obs_o                    ( otp_obs                    ),
     .sensor_ctrl_ast_alert_req_i  ( ast_alert_req              ),
     .sensor_ctrl_ast_alert_rsp_o  ( ast_alert_rsp              ),
     .sensor_ctrl_ast_status_i     ( ast_pwst.io_pok            ),
