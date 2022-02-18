@@ -147,11 +147,11 @@
       package: "alert_pkg",
     },
 
-    { struct:  "crash_dump",
+    { struct:  "cpu_crash_dump",
       type:    "uni",
       name:    "cpu_dump",
       act:     "rcv",
-      package: "ibex_pkg",
+      package: "rv_core_ibex_pkg",
     },
 
     { struct:  "mubi4",
