@@ -140,14 +140,6 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
       // Get list of valid csr addresses (useful in seq to randomize addr as well as in scb checks)
       reg_blk.compute_mapped_addr_ranges();
       reg_blk.compute_unmapped_addr_ranges();
-      `uvm_info(msg_id,
-                $sformatf("RAL[%0s] mapped addresses: %0p",
-                          ral_name, reg_blk.mapped_addr_ranges),
-                UVM_HIGH)
-      `uvm_info(msg_id,
-                $sformatf("RAL[%0s] unmapped addresses: %0p",
-                          ral_name, reg_blk.unmapped_addr_ranges),
-                UVM_HIGH)
       ral_models[ral_name] = reg_blk;
     end
 
