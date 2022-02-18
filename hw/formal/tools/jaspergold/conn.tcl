@@ -12,7 +12,7 @@ if {$env(COV) == 1} {
   -enable_prove_based_proof_core
 }
 
-set conn_csvs [regexp -all -inline {\S+} $env(CONN_CSVS)]
+set conn_csvs [regexp -all -inline {[^\s\']+} $env(CONN_CSVS)]
 if {$conn_csvs eq ""} {
   puts "ERROR: CONN_CSVS environment variable is empty."
   quit
@@ -64,6 +64,7 @@ set_proofgrid_per_engine_max_local_jobs 16
 # set_proofgrid_per_engine_max_jobs 16
 
 foreach i $conn_csvs {
+  puts [format "Processing connectivity file %s" $i]
   check_conn -load $i
 }
 
