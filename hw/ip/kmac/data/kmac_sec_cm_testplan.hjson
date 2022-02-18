@@ -59,5 +59,11 @@
       milestone: V2S
       tests: []
     }
+    {
+      name: sec_cm_cfg_shadowed_config_regwen
+      desc: "Verify the countermeasure(s) CFG_SHADOWED.CONFIG.REGWEN"
+      milestone: V2S
+      tests: []
+    }
   ]
 }

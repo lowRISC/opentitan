@@ -452,6 +452,7 @@ module kmac
   logic engine_stable;
   assign engine_stable = sha3_fsm == sha3_pkg::StIdle;
 
+  // SEC_CM: CFG_SHADOWED.CONFIG.REGWEN
   assign hw2reg.cfg_regwen.d = engine_stable;
 
   // Secret Key
