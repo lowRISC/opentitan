@@ -1,0 +1,35 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "opentitansession"
+version = "0.1.0"
+authors = ["lowRISC contributors"]
+edition = "2018"
+
+[[bin]]
+name = "opentitansession"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0"
+hex = "0.4"
+thiserror = "1.0"
+opentitanlib = {path="../opentitanlib"}
+structopt = "0.3"
+log = "0.4"
+env_logger = "0.8.3"
+raw_tty = "0.1.0"
+regex = "1"
+nix = "0.17.0"
+indicatif = "0.16.2"
+directories = "4.0.1"
+shellwords = "1.1.0"
+
+serde = {version="1", features=["serde_derive"]}
+serde_json = "1"
+erased-serde = "0.3.12"
+
+[features]
+demo_commands = []
