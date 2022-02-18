@@ -1,0 +1,24 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+# clkmgr powerup clock connectivity
+CONNECTION,CLKMGR_POWERUP_CLK0_CLKMGR,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_powerup,top_earlgrey.u_clkmgr_aon,clk_i
+CONNECTION,CLKMGR_POWERUP_CLK0_PINMUX,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_powerup,top_earlgrey.u_pinmux_aon,clk_i
+CONNECTION,CLKMGR_POWERUP_CLK1_PINMUX,top_earlgrey.u_clkmgr_aon,clocks_o.clk_aon_powerup,top_earlgrey.u_pinmux_aon,clk_aon_i
+CONNECTION,CLKMGR_POWERUP_CLK0_PWM,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_powerup,top_earlgrey.u_pwm_aon,clk_i
+CONNECTION,CLKMGR_POWERUP_CLK1_PWM,top_earlgrey.u_clkmgr_aon,clocks_o.clk_aon_powerup,top_earlgrey.u_pwm_aon,clk_core_i
+CONNECTION,CLKMGR_POWERUP_CLK0_PWRMGR,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_powerup,top_earlgrey.u_pwrmgr_aon,clk_i
+CONNECTION,CLKMGR_POWERUP_CLK1_PWRMGR,top_earlgrey.u_clkmgr_aon,clocks_o.clk_aon_powerup,top_earlgrey.u_pwrmgr_aon,clk_slow_i
+CONNECTION,CLKMGR_POWERUP_CLK0_RSTMGR,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_powerup,top_earlgrey.u_rstmgr_aon,clk_i
+CONNECTION,CLKMGR_POWERUP_CLK1_RSTMGR,top_earlgrey.u_clkmgr_aon,clocks_o.clk_aon_powerup,top_earlgrey.u_rstmgr_aon,clk_aon_i
+CONNECTION,CLKMGR_POWERUP_CLK2_RSTMGR,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_powerup,top_earlgrey.u_rstmgr_aon,clk_main_i
+CONNECTION,CLKMGR_POWERUP_CLK3_RSTMGR,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_powerup,top_earlgrey.u_rstmgr_aon,clk_io_i
+CONNECTION,CLKMGR_POWERUP_CLK4_RSTMGR,top_earlgrey.u_clkmgr_aon,clocks_o.clk_usb_powerup,top_earlgrey.u_rstmgr_aon,clk_usb_i
+CONNECTION,CLKMGR_POWERUP_CLK5_RSTMGR,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div2_powerup,top_earlgrey.u_rstmgr_aon,clk_io_div2_i
+CONNECTION,CLKMGR_POWERUP_CLK6_RSTMGR,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_powerup,top_earlgrey.u_rstmgr_aon,clk_io_div4_i

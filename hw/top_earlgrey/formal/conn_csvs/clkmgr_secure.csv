@@ -1,0 +1,35 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+# clkmgr powerup clock connectivity
+CONNECTION,CLKMGR_SECURE_CLK0_ALERT_HANDLER,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_secure,top_earlgrey.u_alert_handler,clk_i
+CONNECTION,CLKMGR_SECURE_CLK1_ALERT_HANDLER,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_secure,top_earlgrey.u_alert_handler,clk_edn_i
+CONNECTION,CLKMGR_SECURE_CLK0_AST,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_secure,u_ast,clk_ast_tlul_i
+CONNECTION,CLKMGR_SECURE_CLK1_AST,top_earlgrey.u_clkmgr_aon,clocks_o.clk_aon_secure,u_ast,clk_ast_adc_i
+CONNECTION,CLKMGR_SECURE_CLK2_AST,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_secure,u_ast,clk_ast_alert_i
+CONNECTION,CLKMGR_SECURE_CLK3_AST,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_secure,u_ast,clk_ast_es_i
+CONNECTION,CLKMGR_SECURE_CLK4_AST,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_secure,u_ast,clk_ast_rng_i
+CONNECTION,CLKMGR_SECURE_CLK5_AST,top_earlgrey.u_clkmgr_aon,clocks_o.clk_usb_secure,u_ast,clk_ast_usb_i
+CONNECTION,CLKMGR_SECURE_CLK0_CSRNG,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_secure,top_earlgrey.u_csrng,clk_i
+CONNECTION,CLKMGR_SECURE_CLK0_EDN0,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_secure,top_earlgrey.u_edn0,clk_i
+CONNECTION,CLKMGR_SECURE_CLK0_EDN1,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_secure,top_earlgrey.u_edn1,clk_i
+CONNECTION,CLKMGR_SECURE_CLK0_ENTROPY_SRC,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_secure,top_earlgrey.u_entropy_src,clk_i
+CONNECTION,CLKMGR_SECURE_CLK0_KEYMGR,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_secure,top_earlgrey.u_keymgr,clk_i
+CONNECTION,CLKMGR_SECURE_CLK1_KEYMGR,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_secure,top_earlgrey.u_keymgr,clk_edn_i
+CONNECTION,CLKMGR_SECURE_CLK0_LC_CTRL,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_secure,top_earlgrey.u_lc_ctrl,clk_i
+CONNECTION,CLKMGR_SECURE_CLK1_LC_CTRL,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_secure,top_earlgrey.u_lc_ctrl,clk_kmac_i
+CONNECTION,CLKMGR_SECURE_CLK0_OTP_CTRL,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_secure,top_earlgrey.u_otp_ctrl,clk_i
+CONNECTION,CLKMGR_SECURE_CLK1_OTP_CTRL,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_secure,top_earlgrey.u_otp_ctrl,clk_edn_i
+CONNECTION,CLKMGR_SECURE_CLK0_PWRMGR,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_secure,top_earlgrey.u_pwrmgr_aon,clk_esc_i
+CONNECTION,CLKMGR_SECURE_CLK0_RV_CORE_IBEX,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_secure,top_earlgrey.u_rv_core_ibex,clk_esc_i
+CONNECTION,CLKMGR_SECURE_CLK1_RV_CORE_IBEX,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_secure,top_earlgrey.u_rv_core_ibex,clk_otp_i
+CONNECTION,CLKMGR_SECURE_CLK0_RV_PLIC,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_secure,top_earlgrey.u_rv_plic,clk_i
+CONNECTION,CLKMGR_SECURE_CLK0_SENSOR_CTRL,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_secure,top_earlgrey.u_sensor_ctrl,clk_i
+CONNECTION,CLKMGR_SECURE_CLK1_SENSOR_CTRL,top_earlgrey.u_clkmgr_aon,clocks_o.clk_aon_secure,top_earlgrey.u_sensor_ctrl,clk_aon_i
+
