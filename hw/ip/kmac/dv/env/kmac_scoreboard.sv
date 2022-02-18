@@ -404,6 +404,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             app_mux_sel = SelNone;
             case (app_st)
               StIdle: begin
+                app_fsm_active = 0;
                 if (!in_kmac_app &&
                     (cfg.m_kmac_app_agent_cfg[AppKeymgr].vif.req_data_if.valid ||
                      cfg.m_kmac_app_agent_cfg[AppLc].vif.req_data_if.valid ||
@@ -2403,6 +2404,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (data_phase_read && csr_name != "") begin
+      if (!cfg.do_cycle_accurate_check && csr_name inside {"intr_state", "status"}) begin
+        do_read_check = 0;
+      end
       if (do_read_check) begin
         `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
                      $sformatf("reg name: %0s", csr.get_full_name()))

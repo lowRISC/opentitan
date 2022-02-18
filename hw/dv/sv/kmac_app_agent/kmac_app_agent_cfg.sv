@@ -23,8 +23,11 @@ class kmac_app_agent_cfg extends dv_base_agent_cfg;
   // Knob to enable percentage of error response in auto-response sequence.
   int unsigned error_rsp_pct = 0;
 
+  // Knob to allow injecting zeros in strb.
+  bit inject_zero_in_host_strb = 0;
+
   rand push_pull_agent_cfg#(`CONNECT_DATA_WIDTH) m_data_push_agent_cfg;
-  
+
   // KMAC digest share0/1 that can be set from test env.
   kmac_pkg::rsp_digest_t rsp_digest_hs[$];
 

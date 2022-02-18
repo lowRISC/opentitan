@@ -111,6 +111,18 @@
       tests: ["{variant}_app"]
     }
     {
+      name: app_with_partial_data
+      desc: '''
+            Basd on the kmac_app test, this test will send partial data from application interface
+            by sending `strb` with values other than `8'hFF`.
+            Because the scoreboard is cycle accurate and does not support this feature, this test
+            will not check `status` and `intr_state` registers, but will check other registers and
+            all interface data including digest.
+            '''
+      milestone: V2
+      tests: ["{variant}_app_with_partial_data"]
+   }
+   {
       name: error
       desc: '''
             Try several error sequences:
