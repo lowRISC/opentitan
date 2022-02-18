@@ -32,11 +32,12 @@ class alert_handler_common_vseq extends alert_handler_base_vseq;
   virtual task run_csr_vseq(string csr_test_type,
                             int    num_test_csrs = 0,
                             bit    do_rand_wr_and_reset = 1,
+                            dv_base_reg_block models[$] = {},
                             string ral_name = "");
     if (common_seq_type == "tl_intg_err") begin
       csr_wr(.ptr(ral.loc_alert_regwen[LocalBusIntgFail]), .value(0), .predict(1));
     end
-    super.run_csr_vseq(csr_test_type, num_test_csrs, do_rand_wr_and_reset);
+    super.run_csr_vseq(csr_test_type, num_test_csrs, do_rand_wr_and_reset, models, ral_name);
   endtask
 
   virtual function void predict_shadow_reg_status(bit predict_update_err  = 0,

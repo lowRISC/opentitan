@@ -263,7 +263,6 @@ class csr_rw_seq extends csr_base_seq;
   virtual task body();
     foreach (test_csrs[i]) begin
       uvm_reg_data_t wdata;
-      uvm_reg_data_t compare_mask;
       uvm_reg_field  test_fields[$];
       dv_base_reg    test_dv_csr;
       bit            supports_byte_enable;
