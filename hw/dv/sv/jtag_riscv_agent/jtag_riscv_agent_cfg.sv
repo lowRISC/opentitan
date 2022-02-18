@@ -30,9 +30,4 @@ class jtag_riscv_agent_cfg extends dv_base_agent_cfg;
     status_in_reset = DmiNoErr;
   endfunction : new
 
-  // assert trst_n for a number of cycles
-  task do_trst_n(int cycles = $urandom_range(5, 20));
-    m_jtag_agent_cfg.do_trst_n(cycles);
-  endtask
-
 endclass

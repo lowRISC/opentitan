@@ -21,7 +21,7 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
   virtual task apply_reset(string kind = "HARD");
     if (kind == "HARD") begin
       fork
-        cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.do_trst_n();
+        cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif.do_trst_n();
         super.apply_reset(kind);
       join
     end
