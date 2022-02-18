@@ -36,6 +36,12 @@
       tests: []
     }
     {
+      name: sec_cm_key_sideload
+      desc: "Verify the key from KeyMgr is sideloaded."
+      milestone: V2S
+      tests: []
+    }
+    {
       name: sec_cm_cfg_shadowed_config_shadow
       desc: "Verify the countermeasure(s) CFG_SHADOWED.CONFIG.SHADOW."
       milestone: V2S

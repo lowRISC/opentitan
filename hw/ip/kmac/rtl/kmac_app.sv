@@ -680,6 +680,7 @@ module kmac_app
 
   // Prepare merged key if EnMasking is not set.
   // Combine share keys into unpacked array for logic below to assign easily.
+  // SEC_CM: KEY.SIDELOAD
   logic [MaxKeyLen-1:0] keymgr_key [Share];
   if (EnMasking == 1) begin : g_masked_key
     for (genvar i = 0; i < Share; i++) begin : gen_key_pad
