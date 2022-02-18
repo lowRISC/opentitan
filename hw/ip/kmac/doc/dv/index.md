@@ -117,9 +117,7 @@ Some of the most commonly used tasks / functions are as follows:
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
-The following covergroups have been developed to prove that the test intent has been adequately met:
-* cg1:
-* cg2:
+Please refer to the covergroups section under [testplan](#testplan) for coverpoints that are implemented.
 
 ### Self-checking strategy
 #### Scoreboard
@@ -152,5 +150,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/kmac/dv/kmac_sim_cfg.hjson -i km
 ```
 
 ## Testplan
-<!-- TODO: uncomment the line below after adding the Testplan -->
-{{</* testplan "hw/ip/kmac/data/kmac_testplan.hjson" */>}}
+{{< incGenFromIpDesc "../../data/kmac_base_testplan.hjson" "testplan" >}}
