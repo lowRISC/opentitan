@@ -2,9 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-package(default_visibility = ["//visibility:public"])
+load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_functest", "verilator_params")
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_binary", "opentitan_functest", "verilator_params")
+package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "alert",
@@ -37,8 +37,8 @@ cc_library(
 cc_test(
     name = "alert_unittest",
     srcs = [
-        "alert.h",
         "alert.c",
+        "alert.h",
         "alert_unittest.cc",
     ],
     deps = [
@@ -178,9 +178,9 @@ cc_library(
 cc_test(
     name = "keymgr_unittest",
     srcs = [
-        "keymgr.h",
         "keymgr.c",
-        "keymgr_unittest.cc"
+        "keymgr.h",
+        "keymgr_unittest.cc",
     ],
     deps = [
         "//hw/ip/keymgr/data:keymgr_regs",
@@ -237,7 +237,7 @@ cc_library(
         "mock_lifecycle.h",
     ],
     deps = [
-      "//sw/device/lib/base/testing:global_mock",
+        "//sw/device/lib/base/testing:global_mock",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest",
     ],
@@ -283,7 +283,7 @@ cc_test(
     srcs = [
         "otbn.c",
         "otbn.h",
-        "otbn_unittest.cc"
+        "otbn_unittest.cc",
     ],
     defines = [
         "OT_OFF_TARGET_TEST",
@@ -321,7 +321,7 @@ cc_library(
         "otp.h",
     ],
     deps = [
-      "//sw/device/lib/base/testing:global_mock",
+        "//sw/device/lib/base/testing:global_mock",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest",
     ],
@@ -330,8 +330,8 @@ cc_library(
 cc_test(
     name = "otp_unittest",
     srcs = [
-        "otp.h",
         "otp.c",
+        "otp.h",
         "otp_unittest.cc",
     ],
     deps = [
@@ -528,8 +528,8 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
     ],
 )
 
