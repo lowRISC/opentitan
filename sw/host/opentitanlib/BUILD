@@ -44,6 +44,8 @@ rust_library(
         "src/spiflash/flash.rs",
         "src/spiflash/mod.rs",
         "src/spiflash/sfdp.rs",
+        "src/proxy/socket_server.rs",
+        "src/proxy/handler.rs",
         "src/proxy/mod.rs",
         "src/proxy/protocol.rs",
         "src/transport/common/mod.rs",
