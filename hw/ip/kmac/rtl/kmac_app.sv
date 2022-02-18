@@ -610,32 +610,44 @@ module kmac_app
     end
   end
 
+  logic [AppMuxWidth-1:0] mux_sel_buf_output_logic;
+  assign mux_sel_buf_output = app_mux_sel_e'(mux_sel_buf_output_logic);
+
   prim_sec_anchor_buf #(
    .Width(AppMuxWidth)
   ) u_prim_buf_state_output_sel (
     .in_i(mux_sel),
-    .out_o(mux_sel_buf_output)
+    .out_o(mux_sel_buf_output_logic)
   );
+
+  logic [AppMuxWidth-1:0] mux_sel_buf_err_check_logic;
+  assign mux_sel_buf_err_check = app_mux_sel_e'(mux_sel_buf_err_check_logic);
 
   prim_sec_anchor_buf #(
    .Width(AppMuxWidth)
   ) u_prim_buf_state_err_check (
     .in_i(mux_sel),
-    .out_o(mux_sel_buf_err_check)
+    .out_o(mux_sel_buf_err_check_logic)
   );
+
+  logic [AppMuxWidth-1:0] mux_sel_buf_kmac_logic;
+  assign mux_sel_buf_kmac = app_mux_sel_e'(mux_sel_buf_kmac_logic);
 
   prim_sec_anchor_buf #(
    .Width(AppMuxWidth)
   ) u_prim_buf_state_kmac_sel (
     .in_i(mux_sel),
-    .out_o(mux_sel_buf_kmac)
+    .out_o(mux_sel_buf_kmac_logic)
   );
+
+  logic [AppMuxWidth-1:0] mux_sel_buf_key_logic;
+  assign mux_sel_buf_key = app_mux_sel_e'(mux_sel_buf_key_logic);
 
   prim_sec_anchor_buf #(
    .Width(AppMuxWidth)
   ) u_prim_buf_state_key_sel (
     .in_i(mux_sel),
-    .out_o(mux_sel_buf_key)
+    .out_o(mux_sel_buf_key_logic)
   );
 
   logic reg_state_valid;
