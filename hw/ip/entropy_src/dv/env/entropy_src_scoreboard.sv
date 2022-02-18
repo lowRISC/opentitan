@@ -1074,13 +1074,19 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       end
 
       while (window.size() < window_rng_frames) begin
+        string fmt;
         wait_rng_queue(rng_val, disable_detected);
+
         if (disable_detected) begin
           // Exit this task.
           return;
         end else begin
           window.push_back(rng_val);
           observe_data.push_back(rng_val);
+
+          fmt = "RNG element: %0x, idx: %0d";
+          `uvm_info(`gfn, $sformatf(fmt, rng_val, window.size()), UVM_DEBUG)
+
           // The repetition count is updated continuously.
           // The other health checks only operate on complete windows, and are processed later.
           // TODO: Confirm how repcnt is applied in bit-select mode
