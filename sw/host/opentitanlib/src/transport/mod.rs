@@ -16,6 +16,7 @@ use crate::io::uart::Uart;
 pub mod common;
 pub mod cw310;
 pub mod hyperdebug;
+pub mod proxy;
 pub mod ultradebug;
 pub mod verilator;
 

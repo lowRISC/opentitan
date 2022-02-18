@@ -40,6 +40,12 @@ pub enum TransportError {
     FtdiError(String),
     #[error("Error communicating with debugger: {0}")]
     CommunicationError(String),
+    #[error("Proxy unable to resolve `{0}`: {1}")]
+    ProxyLookupError(String, String),
+    #[error("Proxy unable to connect to `{0}`: {1}")]
+    ProxyConnectError(String, String),
+    #[error("Proxy communication error: {0}")]
+    ProxyCommunicationError(#[from] crate::transport::proxy::ProxyError),
 
     // Include sub-enums for the various sub-traits of Tranport.
     #[error("GPIO error: {0}")]
