@@ -10,6 +10,7 @@ filesets:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - lowrisc:dv:jtag_agent
+      - lowrisc:dv:dv_base_reg
     files:
       - rv_dm_env_pkg.sv
       - rv_dm_if.sv
@@ -22,6 +23,7 @@ filesets:
       - seq_lib/rv_dm_base_vseq.sv: {is_include_file: true}
       - seq_lib/rv_dm_common_vseq.sv: {is_include_file: true}
       - seq_lib/rv_dm_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/rv_dm_jtag_dtm_csr_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

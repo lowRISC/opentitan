@@ -39,9 +39,39 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
+  // TODO: Set JTAG ID code value to a build-time random value.
+  build_opts: ["+define+RV_DM_JTAG_IDCODE=12345678"]
+
+  overrides: [
+    {
+      // This sets the width of UVM data (UVM_REG_DATA_WIDTH) to sufficiently large value. RV_DM DV
+      // contains a heterogeneous set of CSR RAL models accessed via TL and the JTAG interface, each
+      // requiring a different data width to be set.
+      // TODO: Remove these overrides here and the original ones in common_sim_cfg.hjson. None of
+      // tese settings are needed.
+      name: tl_dw
+      value: 64
+    }
+    {
+      name: tl_dbw
+      value: 8
+    }
+  ]
+
   // Default UVM test and seq class name.
   uvm_test: rv_dm_base_test
   uvm_test_seq: rv_dm_base_vseq
+
+  run_modes: [
+    {
+      name: jtag_dtm_csr_tests_mode
+      uvm_test_seq: rv_dm_jtag_dtm_csr_vseq
+      run_opts: ["+en_scb=0"]
+    }
+  ]
+
+  // TODO: Update cover_reg_top hier file to accommodate JTAG DTM, DM CSRs and debug mem TL
+  // interfaces.
 
   // List of test specifications.
   tests: [
@@ -49,13 +79,44 @@
       name: rv_dm_smoke
       uvm_test_seq: rv_dm_smoke_vseq
     }
+    {
+      name: rv_dm_jtag_dtm_csr_hw_reset
+      build_mode: "cover_reg_top"
+      run_opts: ["+csr_hw_reset"]
+      en_run_modes: ["jtag_dtm_csr_tests_mode"]
+      reseed: 5
+    }
+    {
+      name: rv_dm_jtag_dtm_csr_rw
+      build_mode: "cover_reg_top"
+      run_opts: ["+csr_rw"]
+      en_run_modes: ["jtag_dtm_csr_tests_mode"]
+      reseed: 20
+    }
+    {
+      name: rv_dm_jtag_dtm_csr_bit_bash
+      build_mode: "cover_reg_top"
+      run_opts: ["+csr_bit_bash"]
+      en_run_modes: ["jtag_dtm_csr_tests_mode"]
+      reseed: 5
+    }
+    {
+      name: rv_dm_jtag_dtm_csr_aliasing
+      build_mode: "cover_reg_top"
+      run_opts: ["+csr_aliasing"]
+      en_run_modes: ["jtag_dtm_csr_tests_mode"]
+      reseed: 5
+    }
+
   ]
 
   // List of regressions.
   regressions: [
     {
       name: smoke
-      tests: ["rv_dm_smoke"]
+      tests: [// "rv_dm_smoke",
+              "rv_dm_jtag_dtm_csr_hw_reset",
+              "rv_dm_jtag_dtm_csr_rw"]
     }
   ]
 }

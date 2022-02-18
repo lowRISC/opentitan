@@ -16,6 +16,14 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   rand prim_mubi_pkg::mubi4_t scanmode;
   rand logic [NUM_HARTS-1:0]  unavailable;
 
+  // Handles for convenience.
+  jtag_dtm_reg_block jtag_dtm_ral;
+
+  virtual function void set_handles();
+    super.set_handles();
+    jtag_dtm_ral = cfg.m_jtag_agent_cfg.jtag_dtm_ral;
+  endfunction
+
   task pre_start();
     // Initialize the input signals with defaults at the start of the sim.
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(lc_hw_debug_en)
@@ -35,9 +43,12 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   // Have scan reset also applied at the start.
   virtual task apply_reset(string kind = "HARD");
     fork
-      if (kind inside {"HARD", "TRST"}) cfg.m_jtag_agent_cfg.vif.do_trst_n();
+      if (kind inside {"HARD", "TRST"}) begin
+        jtag_dtm_ral.reset(kind);
+        cfg.m_jtag_agent_cfg.vif.do_trst_n();
+      end
       if (kind inside {"HARD", "SCAN"}) apply_scan_reset();
-      if (kind == "HARD")               super.apply_reset(kind);
+      super.apply_reset(kind);
     join
   endtask
 
@@ -56,6 +67,8 @@ class rv_dm_base_vseq extends cip_base_vseq #(
 
   virtual task dut_shutdown();
     // Check for pending rv_dm operations and wait for them to complete.
+    // TODO: Improve this later.
+    cfg.clk_rst_vif.wait_clks(200);
   endtask
 
 endclass : rv_dm_base_vseq
