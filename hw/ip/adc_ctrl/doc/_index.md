@@ -69,7 +69,7 @@ Note that the time taken in this step depends on the properties of the ADC.
 When the ADC signals complete the value is stored in {{< regref "adc_chn_val[1].adc_chn_value" >}}.
 Note that the time taken in this step depends on the properties of the ADC.
 
-5. *Evaluate Filters*: The filters are evaluated and debounce logic applied (see [next section](#filters-and-debounce).
+5. *Evaluate Filters*: The filters are evaluated and debounce logic applied (see [next section](#filters-and-debounce)).
 
 6. *Scan type check*: At this point if the {{< regref "adc_pd_ctl.lp_mode" >}} bit is clear scanning continues at step (3).
    If the bit is set the next step depends on how many samples have hit the filters.
@@ -81,22 +81,22 @@ Note that the time taken in this step depends on the properties of the ADC.
 
 In active operation the controller is in continuous scanning mode:
 * The ADC is continually powered on.
-* The sampling cycle time is the time taken for the ADC to take two samples (450us) plus NNN (fill in based on implementation but probably 4-10)) number of slow clock cycles x (5us; always-on clock frequency is 200KHz).
-* The debounce timer will trigger the filter status (and interrupt) after {{< regref "adc_sample_ctl" >}} multiplied by the continuous sampling cycle time.
+* The sampling cycle time is the time taken for the ADC to take two samples (450us) plus internal processing time (4 clock cycles) from the adc controller.
+* The debounce timer will trigger the {{< regref "filter_status" >}} and interrupt after a configurable number of matching ADC samples have been seen, as determined by {{< regref "adc_sample_ctl" >}}.
 
 For low power operation the periodic scanning mode can be used.
 In this mode samples are taken using a slower periodic sampling cycle time with the ADC powered down most of the time.
 Once a small number of cycles have hit the filter with periodic scanning then the controller switches to continuous scanning in order to more accurately debounce the signal.
 In low power mode:
-* The ADC is only powered up for {{< regref "adc_pd_ctl.pwrup_time" >}} slow clock cycles plus the time taken for the ADC to take two samples plus NNN slow clock cycles.
-* The total time between samples for a periodic scan is the time the ADC is powered up plus {{< regref "adc_pd_ctl.wakeup_time" >}} cycles of the slow clock.
-* The time taken to transition to the continuous scanning mode is the total time of a slow scan multiplied by the {{< regref "adc_lp_sample_ctl" >}}.
-* The debounce timer will trigger the filter status (and interrupt) after the time taken to transition to fast mode plus {{< regref "adc_sample_ctl" >}} multiplied by the fast sampling cycle time.
+* The ADC is periodically powered up to take samples; this interval is determined by {{< regref "adc_pd_ctl.wakeup_time" >}}.
+* Similar to normal operation, the ADC power-up delay is controlled by {{< regref "adc_pd_ctl.pwrup_time" >}}.
+* Once the ADC is powered up, two samples are taken and compared to the filter thresholds.
+* If a configurable number of matches, as determined by {{< regref "adc_lp_sample_ctl" >}}, are seen, the adc controller transitions to normal operation for continuous sampling.
 
 Although it can be used at any time, the periodic operation mode and use of the slow clock allows the ADC controller to continue to scan when most of the chip is in sleep or power-down modes.
 The controller can be configured to issue a wakeup to the rest of the chip.
-In this case if any filter enabled in the {{< regref "adc_wakeup_ctl" >}} register is hit then the wakeup will be issued.
-The filter that hit is recorded in the  {{< regref "adc_wakeup_status" >}} register and the bit should be cleared to acknowledge the wake has happened (no further wake events will be issued until this is done).
+
+If a filter is enabled for wakeup in {{< regref "adc_wakeup_ctl" >}} and {{< regref "filter_status" >}} indicates a match, a wakeup is generated to the system power manager.
 
 
 ## Filters and debounce
@@ -127,14 +127,19 @@ The filter result is passed to the periodic scan counter if enabled and not at i
 The list below describes how the counters interpret the filter results:
 * If no filters are hit then the counter will reset to zero.
 * If one or more filters are hit but the set hit differs from the previous evaluation the counter resets to zero.
-* If one or more filters are hit and either none was hit in the previous evaluation or the same set was hit in the previous evaluation and the counter is not at its limit then the counter will increment.
-* If the counter is the periodic scan counter and it reaches its limit then continuous scanning is enabled and the debounce counter will be used for future evaluations.
-* If the counter is the debounce counter and it reaches its limit then:
-  * If an interrupt is not already being raised then the current sample values are latched into {{< regref "adc_chn_val[0].adc_chn_value_intr" >}} and  {{< regref "adc_chn_val[1].adc_chn_value_intr" >}}. i.e. these registers only record the value of the first debounced hit.
+* If one or more filters are hit and either none was hit in the previous evaluation or the same set was hit in the previous evaluation and the counter is not at its threshold then the counter will increment.
+* If one or more filters are hit and the same set was hit in the previous evaluation and the counter is at its threshold then the counter stays at the threshold.
+* If the counter is the periodic scan counter and it reaches its threshold, as defined by {{< regref "adc_lp_sample_ctl.lp_sample_cnt" >}}, then continuous scanning is enabled and the debounce counter will be used for future evaluations.
+* If the counter is the debounce counter and it reaches its threshold, as defined by {{< regref "adc_sample_ctl.np_sample_cnt" >}}, then:
+  * An interrupt is raised if the threshold is met for the first time.
+  * The current sample values are latched into {{< regref "adc_chn_val[0].adc_chn_value_intr" >}} and  {{< regref "adc_chn_val[1].adc_chn_value_intr" >}}.
+    *  If a series of interrupts and matches are seen, these registers only record the value of the last debounced hit.
   * The {{< regref adc_intr_status >}} register is updated by setting the bits corresponding to filters that are hit (note that bits that are already set will not be cleared).
     This will cause the block to raise an interrupt if it was not already doing so.
-  * If any filters are hit that are enabled in {{< regref "adc_wakeup_ctl" >}} the corresponding bits in the {{< regref "adc_wakeup_status" >}} register are set which may initiate a wakeup.
-  * Note that the debounce counter will remain at its limit until the set of filters that are set changes when it will be reset to zero and start to debounce the next event.
+  * If a filter is a hit and is also enabled in {{< regref "adc_wakeup_ctl" >}} the corresponding filter generates a wakeup.
+  * Note that the debounce counter will remain at its threshold until the set of filters are changed by software to debounce a different event or if the current match changes.
+    *  This implies that a stable matching event continuously matches until some condition in the system (changed filter settings or changed ADC output) alters the result.
+
 
 Because scanning continues the {{< regref "adc_intr_status" >}} register will reflect any debounced events that are detected between the controller raising an interrupt and the status bits being cleared (by having 1 written to them).
 However, the {{< regref "adc_chn_val[0].adc_chn_value_intr" >}} and {{< regref "adc_chn_val[1].adc_chn_value_intr" >}}registers record the value at the time the interrupt was first raised and thus reflect the filter state from that point.
@@ -164,7 +169,7 @@ The controller should be initialized with the properties of the ADC and scan tim
 * The number of samples for debounce should be set in {{< regref "adc_sample_ctl" >}}.
 * The filter registers {{< regref "adc_chnX_filter_ctlN" >}} should be programmed.
 * The interrupt {{< regref "adc_intr_ctl" >}} and wakeup {{< regref "adc_wakeup_ctl" >}} enables should be configured.
-* All ones should be written to {{< regref "adc_intr_status" >}} and  {{< regref "adc_wakeup_status" >}} to ensure there are no spurious pending triggers.
+* All ones should be written to {{< regref "adc_intr_status" >}} and  {{< regref "filter_status" >}} to ensure there are no spurious pending triggers.
 * Optionally, the low-power mode should be set in {{< regref "adc_pd_ctl.lp_mode" >}} if the system is going to the low-power mode.
 * The state machine will only start running when {{< regref "adc_en_ctl" >}} is set.
 
@@ -226,7 +231,7 @@ The controller should be initialized with the properties of the ADC and scan tim
 
 
 * The interrupt {{< regref "adc_intr_ctl" >}} and wakeup {{< regref "adc_wakeup_ctl" >}} enables should be configured.
-* All ones should be written to {{< regref "adc_intr_status" >}} and  {{< regref "adc_wakeup_status" >}} to ensure there are no spurious pending triggers.
+* All ones should be written to {{< regref "adc_intr_status" >}} and  {{< regref "filter_status" >}} to ensure there are no spurious pending triggers.
 * The state machine will only start running when {{< regref "adc_en_ctl" >}} is set.
 
 Note that for the debug controller (DTS in USB-C specification) as a power source the filter that is hit will indicate the orientation of the connector.
