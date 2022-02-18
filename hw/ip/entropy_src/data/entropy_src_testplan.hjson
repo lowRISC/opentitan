@@ -22,11 +22,12 @@
       name: firmware
       desc: '''
             Verify ability to access entropy register based on value of efuse input
-            Verify es_regen bit enables/disables write access to control registers
+            Verify sw_regupd, me_regwen bits enables/disables write access to control registers
+            Verify control registers are read-only while DUT is enabled
             Verify registers at End-Of-Test
             '''
       milestone: V2
-      tests: []
+      tests: ["entropy_src_smoke", "entropy_src_fw_ov", "entropy_src_rng"]
     }
     {
       name: firmware_mode
@@ -37,7 +38,7 @@
             - Random FIFO depths
             '''
       milestone: V2
-      tests: []
+      tests: ["entropy_src_fw_ov"]
     }
     {
       name: rng_mode
@@ -66,7 +67,7 @@
             - Verify health testing stops when no demand for entropy
             '''
       milestone: V2
-      tests: []
+      tests: ["entropy_src_rng"]
     }
     {
       name: conditioning
@@ -75,7 +76,7 @@
             Verify genbits seeds after shah3 conditioning as predicted.
             '''
       milestone: V2
-      tests: []
+      tests: ["entropy_src_rng"]
     }
     {
       name: interrupts
