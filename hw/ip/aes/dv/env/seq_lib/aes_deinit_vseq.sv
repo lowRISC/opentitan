@@ -17,6 +17,7 @@ class aes_deinit_vseq extends aes_base_vseq;
   bit                back2back = 0;
   clear_t            clear     = 2'b00;
   string             txt ="";
+  status_t           status;
 
   task body();
     `uvm_info(`gfn, $sformatf("\n\n\t ----| STARTING AES DE-INIT SEQUENCE |----\n %s",
@@ -66,5 +67,18 @@ class aes_deinit_vseq extends aes_base_vseq;
       end
     end
 
+    // now clear key/iv/data and try to manually trigger an operation
+    clear.key_iv_data_in = 1'b1;
+    clear_regs(clear);
+
+    trigger();
+    csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
+    for (int nn = 0; nn <10; nn++) begin
+        csr_rd(.ptr(ral.status), .value(status), .blocking(1));
+        if ((!status.idle && !status.alert_fatal_fault) || status.output_valid)
+          `uvm_fatal(`gfn, $sformatf("WAS ABLE TO TRIGGER OPERATION AFTER CLEAR MODE"))
+
+        cfg.clk_rst_vif.wait_clks(25);
+      end
   endtask : body
 endclass

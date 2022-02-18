@@ -78,7 +78,7 @@
               Will result match plain text and vice.
             - Write unsupported configurations (Key length and mode are 1 hot, what happens if more than one bit is set.)'''
       milestone: V2
-        tests: ["aes_config_error", "aes_alert_reset", "aes_manual_cfg_err"]
+      tests: ["aes_config_error", "aes_alert_reset", "aes_manual_cfg_err"]
     }
     {
       name: trigger_clear_test
@@ -115,7 +115,7 @@
             Verify that DUT uses sideload correctly when sideload is enabled.
             and that it ignores any valid on the bus when disabled.'''
       milestone: V2
-        tests: ["aes_stress", "aes_sideload"]
+      tests: ["aes_stress", "aes_sideload"]
     }
     {
       name: deinitialization
