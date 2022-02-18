@@ -49,7 +49,7 @@ module edn_core import edn_pkg::*;
   localparam int RescmdFifoIdxWidth = $clog2(RescmdFifoDepth);
   localparam int EdnEnableCopies = 27;
   localparam int FifoRstCopies = 4;
-  localparam int BootReqCopies = 3;
+  localparam int BootReqCopies = 2;
 
   // signals
   logic event_edn_cmd_req_done;
@@ -136,6 +136,7 @@ module edn_core import edn_pkg::*;
   logic                               sfifo_gencmd_not_empty;
 
   logic                               edn_main_sm_err_sum;
+  logic [8:0]                         edn_main_sm_state;
   logic                               edn_main_sm_err;
   logic [30:0]                        err_code_test_bit;
   logic                               fifo_write_err_sum;
@@ -407,10 +408,6 @@ module edn_core import edn_pkg::*;
   // cmd req
   assign sw_cmd_req_load = reg2hw.sw_cmd_req.qe;
   assign sw_cmd_req_bus = reg2hw.sw_cmd_req.q;
-  assign hw2reg.sum_sts.req_mode_sm_sts.de = 1'b1;
-  assign hw2reg.sum_sts.req_mode_sm_sts.d = main_sm_busy;
-  assign hw2reg.sum_sts.boot_inst_ack.de = 1'b1;
-  assign hw2reg.sum_sts.boot_inst_ack.d = csrng_cmd_ack && boot_req_mode_fo[1];
 
   assign max_reqs_between_reseed_load = reg2hw.max_num_reqs_between_reseeds.qe;
   assign max_reqs_between_reseed_bus = reg2hw.max_num_reqs_between_reseeds.q;
@@ -565,30 +562,31 @@ module edn_core import edn_pkg::*;
   // SEC_CM: MAIN_SM.FSM.SPARSE
   // SEC_CM: MAIN_SM.CTR.LOCAL_ESC
   edn_main_sm u_edn_main_sm (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .edn_enable_i(edn_enable_fo[19]),
-    .boot_req_mode_i(boot_req_mode_fo[2]),
-    .auto_req_mode_i(auto_req_mode_pfe),
-    .sw_cmd_req_load_i(sw_cmd_req_load),
-    .boot_wr_cmd_reg_o(boot_wr_cmd_reg),
-    .boot_wr_cmd_genfifo_o(boot_wr_cmd_genfifo),
-    .auto_set_intr_gate_o(auto_set_intr_gate),
-    .auto_clr_intr_gate_o(auto_clr_intr_gate),
-    .auto_first_ack_wait_o(auto_first_ack_wait),
-    .main_sm_done_pulse_o(main_sm_done_pulse),
-    .csrng_cmd_ack_i(csrng_cmd_ack),
-    .capt_gencmd_fifo_cnt_o(capt_gencmd_fifo_cnt),
-    .boot_send_gencmd_o(boot_send_gencmd),
-    .send_gencmd_o(send_gencmd),
-    .max_reqs_cnt_zero_i(max_reqs_cnt_zero),
-    .capt_rescmd_fifo_cnt_o(capt_rescmd_fifo_cnt),
-    .send_rescmd_o(send_rescmd),
-    .cmd_sent_i(cmd_sent),
-    .local_escalate_i(edn_cntr_err_sum),
-    .auto_req_mode_busy_o(auto_req_mode_busy),
-    .main_sm_busy_o(main_sm_busy),
-    .main_sm_err_o(edn_main_sm_err)
+    .clk_i                  (clk_i),
+    .rst_ni                 (rst_ni),
+    .edn_enable_i           (edn_enable_fo[19]),
+    .boot_req_mode_i        (boot_req_mode_fo[1]),
+    .auto_req_mode_i        (auto_req_mode_pfe),
+    .sw_cmd_req_load_i      (sw_cmd_req_load),
+    .boot_wr_cmd_reg_o      (boot_wr_cmd_reg),
+    .boot_wr_cmd_genfifo_o  (boot_wr_cmd_genfifo),
+    .auto_set_intr_gate_o   (auto_set_intr_gate),
+    .auto_clr_intr_gate_o   (auto_clr_intr_gate),
+    .auto_first_ack_wait_o  (auto_first_ack_wait),
+    .main_sm_done_pulse_o   (main_sm_done_pulse),
+    .csrng_cmd_ack_i        (csrng_cmd_ack),
+    .capt_gencmd_fifo_cnt_o (capt_gencmd_fifo_cnt),
+    .boot_send_gencmd_o     (boot_send_gencmd),
+    .send_gencmd_o          (send_gencmd),
+    .max_reqs_cnt_zero_i    (max_reqs_cnt_zero),
+    .capt_rescmd_fifo_cnt_o (capt_rescmd_fifo_cnt),
+    .send_rescmd_o          (send_rescmd),
+    .cmd_sent_i             (cmd_sent),
+    .local_escalate_i       (edn_cntr_err_sum),
+    .auto_req_mode_busy_o   (auto_req_mode_busy),
+    .main_sm_busy_o         (main_sm_busy),
+    .main_sm_state_o        (edn_main_sm_state),
+    .main_sm_err_o          (edn_main_sm_err)
   );
 
 
@@ -790,6 +788,9 @@ module edn_core import edn_pkg::*;
 
   end
 
+  // state machine status
+  assign hw2reg.debug_status.de = 1'b1;
+  assign hw2reg.debug_status.d = edn_main_sm_state;
 
   //--------------------------------------------
   // unused signals

@@ -116,15 +116,9 @@ package edn_reg_pkg;
   } edn_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        d;
-      logic        de;
-    } req_mode_sm_sts;
-    struct packed {
-      logic        d;
-      logic        de;
-    } boot_inst_ack;
-  } edn_hw2reg_sum_sts_reg_t;
+    logic [8:0]  d;
+    logic        de;
+  } edn_hw2reg_debug_status_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -213,8 +207,8 @@ package edn_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    edn_hw2reg_intr_state_reg_t intr_state; // [37:34]
-    edn_hw2reg_sum_sts_reg_t sum_sts; // [33:30]
+    edn_hw2reg_intr_state_reg_t intr_state; // [43:40]
+    edn_hw2reg_debug_status_reg_t debug_status; // [39:30]
     edn_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [29:26]
     edn_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [25:16]
     edn_hw2reg_err_code_reg_t err_code; // [15:0]
@@ -227,7 +221,7 @@ package edn_reg_pkg;
   parameter logic [BlockAw-1:0] EDN_ALERT_TEST_OFFSET = 7'h c;
   parameter logic [BlockAw-1:0] EDN_REGWEN_OFFSET = 7'h 10;
   parameter logic [BlockAw-1:0] EDN_CTRL_OFFSET = 7'h 14;
-  parameter logic [BlockAw-1:0] EDN_SUM_STS_OFFSET = 7'h 18;
+  parameter logic [BlockAw-1:0] EDN_DEBUG_STATUS_OFFSET = 7'h 18;
   parameter logic [BlockAw-1:0] EDN_BOOT_INS_CMD_OFFSET = 7'h 1c;
   parameter logic [BlockAw-1:0] EDN_BOOT_GEN_CMD_OFFSET = 7'h 20;
   parameter logic [BlockAw-1:0] EDN_SW_CMD_REQ_OFFSET = 7'h 24;
@@ -258,7 +252,7 @@ package edn_reg_pkg;
     EDN_ALERT_TEST,
     EDN_REGWEN,
     EDN_CTRL,
-    EDN_SUM_STS,
+    EDN_DEBUG_STATUS,
     EDN_BOOT_INS_CMD,
     EDN_BOOT_GEN_CMD,
     EDN_SW_CMD_REQ,
@@ -279,7 +273,7 @@ package edn_reg_pkg;
     4'b 0001, // index[ 3] EDN_ALERT_TEST
     4'b 0001, // index[ 4] EDN_REGWEN
     4'b 0011, // index[ 5] EDN_CTRL
-    4'b 0001, // index[ 6] EDN_SUM_STS
+    4'b 0011, // index[ 6] EDN_DEBUG_STATUS
     4'b 1111, // index[ 7] EDN_BOOT_INS_CMD
     4'b 1111, // index[ 8] EDN_BOOT_GEN_CMD
     4'b 1111, // index[ 9] EDN_SW_CMD_REQ

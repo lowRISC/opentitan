@@ -136,11 +136,7 @@ module edn_reg_top (
   logic [3:0] ctrl_auto_req_mode_wd;
   logic [3:0] ctrl_cmd_fifo_rst_qs;
   logic [3:0] ctrl_cmd_fifo_rst_wd;
-  logic sum_sts_we;
-  logic sum_sts_req_mode_sm_sts_qs;
-  logic sum_sts_req_mode_sm_sts_wd;
-  logic sum_sts_boot_inst_ack_qs;
-  logic sum_sts_boot_inst_ack_wd;
+  logic [8:0] debug_status_qs;
   logic boot_ins_cmd_we;
   logic [31:0] boot_ins_cmd_qs;
   logic [31:0] boot_ins_cmd_wd;
@@ -474,55 +470,29 @@ module edn_reg_top (
   );
 
 
-  // R[sum_sts]: V(False)
-  //   F[req_mode_sm_sts]: 0:0
+  // R[debug_status]: V(False)
   prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
-  ) u_sum_sts_req_mode_sm_sts (
+    .DW      (9),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (9'h0)
+  ) u_debug_status (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (sum_sts_we),
-    .wd     (sum_sts_req_mode_sm_sts_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.sum_sts.req_mode_sm_sts.de),
-    .d      (hw2reg.sum_sts.req_mode_sm_sts.d),
+    .de     (hw2reg.debug_status.de),
+    .d      (hw2reg.debug_status.d),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (sum_sts_req_mode_sm_sts_qs)
-  );
-
-  //   F[boot_inst_ack]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
-  ) u_sum_sts_boot_inst_ack (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (sum_sts_we),
-    .wd     (sum_sts_boot_inst_ack_wd),
-
-    // from internal hardware
-    .de     (hw2reg.sum_sts.boot_inst_ack.de),
-    .d      (hw2reg.sum_sts.boot_inst_ack.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (sum_sts_boot_inst_ack_qs)
+    .qs     (debug_status_qs)
   );
 
 
@@ -1066,7 +1036,7 @@ module edn_reg_top (
     addr_hit[ 3] = (reg_addr == EDN_ALERT_TEST_OFFSET);
     addr_hit[ 4] = (reg_addr == EDN_REGWEN_OFFSET);
     addr_hit[ 5] = (reg_addr == EDN_CTRL_OFFSET);
-    addr_hit[ 6] = (reg_addr == EDN_SUM_STS_OFFSET);
+    addr_hit[ 6] = (reg_addr == EDN_DEBUG_STATUS_OFFSET);
     addr_hit[ 7] = (reg_addr == EDN_BOOT_INS_CMD_OFFSET);
     addr_hit[ 8] = (reg_addr == EDN_BOOT_GEN_CMD_OFFSET);
     addr_hit[ 9] = (reg_addr == EDN_SW_CMD_REQ_OFFSET);
@@ -1134,11 +1104,6 @@ module edn_reg_top (
   assign ctrl_auto_req_mode_wd = reg_wdata[11:8];
 
   assign ctrl_cmd_fifo_rst_wd = reg_wdata[15:12];
-  assign sum_sts_we = addr_hit[6] & reg_we & !reg_error;
-
-  assign sum_sts_req_mode_sm_sts_wd = reg_wdata[0];
-
-  assign sum_sts_boot_inst_ack_wd = reg_wdata[1];
   assign boot_ins_cmd_we = addr_hit[7] & reg_we & !reg_error;
 
   assign boot_ins_cmd_wd = reg_wdata[31:0];
@@ -1208,8 +1173,7 @@ module edn_reg_top (
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[0] = sum_sts_req_mode_sm_sts_qs;
-        reg_rdata_next[1] = sum_sts_boot_inst_ack_qs;
+        reg_rdata_next[8:0] = debug_status_qs;
       end
 
       addr_hit[7]: begin
