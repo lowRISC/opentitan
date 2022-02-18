@@ -78,7 +78,7 @@
               Will result match plain text and vice.
             - Write unsupported configurations (Key length and mode are 1 hot, what happens if more than one bit is set.)'''
       milestone: V2
-      tests: ["aes_config_error", "aes_alert_reset"]
+        tests: ["aes_config_error", "aes_alert_reset", "aes_manual_cfg_err"]
     }
     {
       name: trigger_clear_test
@@ -209,7 +209,6 @@ covergroups: [
      desc: '''
            Cover that a busy DUT cannot be manipulated.
            This includes:
-           - Reading output registers does not reveal internal states.
            - Trying to change the configuration (CTRL)
            - Trying to change the key
            - Trying to change the IV

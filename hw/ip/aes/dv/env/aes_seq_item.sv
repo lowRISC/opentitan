@@ -252,7 +252,8 @@ class aes_seq_item extends uvm_sequence_item;
         return ((&key_vld[0] && &key_vld[1]) && &iv_vld);
       end
       default: begin
-        `uvm_fatal(`gfn, $sformatf("\n\t ----| I AM IN DEFAULT CASE I SHOULD NOT BE HERE"))
+        // only happen in illegal cases so always return "not start"
+        return 0;
       end
     endcase // case (mode)
   endfunction // message_start

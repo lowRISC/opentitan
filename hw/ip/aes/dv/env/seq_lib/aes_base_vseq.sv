@@ -646,6 +646,7 @@ class aes_base_vseq extends cip_base_vseq #(
       end // else: !if(status.alert_fatal_fault)
     end // while (!done)
 
+
     if (global_reset) begin
       rst_set = 1;
     end
@@ -823,6 +824,7 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_message.message_len_min      = cfg.message_len_min;
     aes_message.config_error_pct     = cfg.config_error_pct;
     aes_message.error_types          = cfg.error_types;
+    aes_message.config_error_type_en = cfg.config_error_type;
     aes_message.manual_operation_pct = cfg.manual_operation_pct;
     aes_message.keymask              = cfg.key_mask;
     aes_message.fixed_key_en         = cfg.fixed_key_en;
