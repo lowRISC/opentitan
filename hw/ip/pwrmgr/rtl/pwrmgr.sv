@@ -143,7 +143,7 @@ module pwrmgr
   assign peri_reqs_raw.wakeups = wakeups_i;
   assign peri_reqs_raw.rstreqs[NumRstReqs-1:0] = rstreqs_i;
   assign peri_reqs_raw.rstreqs[ResetMainPwrIdx] = slow_rst_req;
-  // SEC_CM: ESC_RX.CLK.LOCAL_ESC, FSM.GLOBAL_ESC
+  // SEC_CM: ESC_RX.CLK.LOCAL_ESC, CTRL_FLOW.GLOBAL_ESC
   assign peri_reqs_raw.rstreqs[ResetEscIdx] = esc_rst_req | esc_timeout;
 
   ////////////////////////////
