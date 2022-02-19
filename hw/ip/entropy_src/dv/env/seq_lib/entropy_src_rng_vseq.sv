@@ -14,10 +14,12 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
   rand uint dly_to_access_intr;
   rand uint dly_to_access_alert_sts;
+  rand uint dly_to_insert_entropy;
+  rand int  fw_ov_insert_per_seed;
   rand bit  do_check_ht_diag;
   rand bit  do_clear_ht_alert;
 
-  int do_interrupts;
+  int do_background_procs;
 
   constraint dly_to_access_intr_c {
     dly_to_access_intr dist {
@@ -33,6 +35,19 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       [1      :100]       :/ 5,
       [101    :10_000]    :/ 3
     };
+  }
+
+  constraint dly_to_insert_entropy_c {
+    dly_to_insert_entropy dist {
+      0                   :/ 1,
+      [1      :100]       :/ 3,
+      [101    :1000]      :/ 2,
+      [1001   :10_000]    :/ 1
+    };
+  }
+
+  constraint fw_ov_insert_per_seed_c {
+    fw_ov_insert_per_seed inside { 16, 32, 64, 128, 256 };
   }
 
   constraint do_check_ht_diag_c {
@@ -75,40 +90,43 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     // TODO: Separate sigmas for bypass and FIPS operation
     // TODO: cfg for threshold_rec per_line arguments
 
-    // AdaptP thresholds
-    m_rng_push_seq.threshold_rec(cfg.fips_window_size, entropy_src_base_rng_seq::AdaptP, 0,
-                                 cfg.adaptp_sigma, lo_thresh, hi_thresh);
-    ral.adaptp_hi_thresholds.fips_thresh.set(hi_thresh[15:0]);
-    ral.adaptp_lo_thresholds.fips_thresh.set(lo_thresh[15:0]);
-    m_rng_push_seq.threshold_rec(cfg.bypass_window_size, entropy_src_base_rng_seq::AdaptP, 0,
-                                 cfg.adaptp_sigma, lo_thresh, hi_thresh);
-    ral.adaptp_hi_thresholds.bypass_thresh.set(hi_thresh[15:0]);
-    ral.adaptp_lo_thresholds.bypass_thresh.set(lo_thresh[15:0]);
-    csr_update(.csr(ral.adaptp_hi_thresholds));
-    csr_update(.csr(ral.adaptp_lo_thresholds));
+    if (!cfg.default_ht_thresholds) begin
+      // AdaptP thresholds
+      m_rng_push_seq.threshold_rec(cfg.fips_window_size, entropy_src_base_rng_seq::AdaptP, 0,
+                                   cfg.adaptp_sigma, lo_thresh, hi_thresh);
+      ral.adaptp_hi_thresholds.fips_thresh.set(hi_thresh[15:0]);
+      ral.adaptp_lo_thresholds.fips_thresh.set(lo_thresh[15:0]);
+      m_rng_push_seq.threshold_rec(cfg.bypass_window_size, entropy_src_base_rng_seq::AdaptP, 0,
+                                   cfg.adaptp_sigma, lo_thresh, hi_thresh);
+      ral.adaptp_hi_thresholds.bypass_thresh.set(hi_thresh[15:0]);
+      ral.adaptp_lo_thresholds.bypass_thresh.set(lo_thresh[15:0]);
+      csr_update(.csr(ral.adaptp_hi_thresholds));
+      csr_update(.csr(ral.adaptp_lo_thresholds));
 
-    // Bucket thresholds
-    m_rng_push_seq.threshold_rec(cfg.fips_window_size, entropy_src_base_rng_seq::Bucket, 0,
-                                 cfg.bucket_sigma, lo_thresh, hi_thresh);
-    ral.bucket_thresholds.fips_thresh.set(hi_thresh[15:0]);
-    m_rng_push_seq.threshold_rec(cfg.bypass_window_size, entropy_src_base_rng_seq::Bucket, 0,
-                                 cfg.bucket_sigma, lo_thresh, hi_thresh);
-    ral.bucket_thresholds.bypass_thresh.set(hi_thresh[15:0]);
-    csr_update(.csr(ral.bucket_thresholds));
+      // Bucket thresholds
+      m_rng_push_seq.threshold_rec(cfg.fips_window_size, entropy_src_base_rng_seq::Bucket, 0,
+                                   cfg.bucket_sigma, lo_thresh, hi_thresh);
+      ral.bucket_thresholds.fips_thresh.set(hi_thresh[15:0]);
+      m_rng_push_seq.threshold_rec(cfg.bypass_window_size, entropy_src_base_rng_seq::Bucket, 0,
+                                   cfg.bucket_sigma, lo_thresh, hi_thresh);
+      ral.bucket_thresholds.bypass_thresh.set(hi_thresh[15:0]);
+      csr_update(.csr(ral.bucket_thresholds));
 
-    // TODO: Markov DUT is currently cofigured for per_line operation (see Issue #9759)
-    m_rng_push_seq.threshold_rec(cfg.fips_window_size, entropy_src_base_rng_seq::Markov, 1,
-                                 cfg.markov_sigma, lo_thresh, hi_thresh);
-    ral.markov_hi_thresholds.fips_thresh.set(hi_thresh[15:0]);
-    ral.markov_lo_thresholds.fips_thresh.set(lo_thresh[15:0]);
-    m_rng_push_seq.threshold_rec(cfg.bypass_window_size, entropy_src_base_rng_seq::Markov, 1,
-                                 cfg.markov_sigma, lo_thresh, hi_thresh);
-    ral.markov_hi_thresholds.bypass_thresh.set(hi_thresh[15:0]);
-    ral.markov_lo_thresholds.bypass_thresh.set(lo_thresh[15:0]);
-    csr_update(.csr(ral.markov_hi_thresholds));
-    csr_update(.csr(ral.markov_lo_thresholds));
+      // TODO: Markov DUT is currently cofigured for per_line operation (see Issue #9759)
+      m_rng_push_seq.threshold_rec(cfg.fips_window_size, entropy_src_base_rng_seq::Markov, 1,
+                                   cfg.markov_sigma, lo_thresh, hi_thresh);
+      ral.markov_hi_thresholds.fips_thresh.set(hi_thresh[15:0]);
+      ral.markov_lo_thresholds.fips_thresh.set(lo_thresh[15:0]);
+      m_rng_push_seq.threshold_rec(cfg.bypass_window_size, entropy_src_base_rng_seq::Markov, 1,
+                                   cfg.markov_sigma, lo_thresh, hi_thresh);
+      ral.markov_hi_thresholds.bypass_thresh.set(hi_thresh[15:0]);
+      ral.markov_lo_thresholds.bypass_thresh.set(lo_thresh[15:0]);
+      csr_update(.csr(ral.markov_hi_thresholds));
+      csr_update(.csr(ral.markov_lo_thresholds));
+    end
 
-    // configure the rest of the variables afterwards so that sw_regupd & module_enable get written last
+    // configure the rest of the variables afterwards so that sw_regupd & module_enable
+    // get written last
     super.entropy_src_init();
 
   endtask
@@ -142,7 +160,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     m_rng_push_seq.hard_mtbf = cfg.hard_mtbf;
     m_rng_push_seq.soft_mtbf = cfg.soft_mtbf;
 
-    do_interrupts = 1'b1;
+    do_background_procs = 1'b1;
 
     super.pre_start();
   endtask
@@ -159,6 +177,11 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_alert_sts)
       cfg.clk_rst_vif.wait_clks(dly_to_access_alert_sts);
       csr_wr(.ptr(ral.module_enable.module_enable), .value(prim_mubi_pkg::MuBi4False));
+      // Disabling the module will clear the error state,
+      // as well as the observe and entropy_data FIFOs
+      // Clear all three related interupts here
+      csr_wr(.ptr(ral.intr_state), .value(32'h7));
+
       csr_wr(.ptr(ral.recov_alert_sts.es_main_sm_alert), .value(1'b1));
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(do_check_ht_diag)
       if (do_check_ht_diag) begin
@@ -184,14 +207,25 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     cfg.clk_rst_vif.wait_clks(dly_to_access_intr);
     csr_rd(.ptr(ral.intr_state), .value(intr_status));
     if (intr_status[HealthTestFailed]) begin
-       // TODO: I think there is a distinction between health test failure and alert.
-       //       We may be able to economize (or diversify) this test by only doing this on alerts.
+      // TODO: I think there is a distinction between health test failure and alert.
+      //       We may be able to economize (or diversify) this test by only doing this on alerts.
       `uvm_info(`gfn, "Health test failure detected", UVM_HIGH)
       clear_ht_alert();
+      // Note: clear_ht_alert may purge the internal fifos.
+      //       Don't service any of the other interrupts without first querying the interrupt status
+      //       again
+      csr_rd(.ptr(ral.intr_state), .value(intr_status));
+    end
+    if (intr_status[ObserveFifoReady]) begin
+      int bundles_found;
+      // Read all currently available data
+      do_entropy_data_read(.source(TlSrcObserveFIFO),
+                           .bundles_found(bundles_found));
     end
   endtask
 
   task body();
+    bit [TL_DW - 1:0] fw_ov_value;
     super.body();
     // Start sequences
     fork
@@ -199,8 +233,31 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       m_csrng_pull_seq.start(p_sequencer.csrng_sequencer_h);
       begin
         `uvm_info(`gfn, "Starting interrupt loop", UVM_HIGH)
-        while (do_interrupts) process_interrupts();
+        while (do_background_procs) process_interrupts();
         `uvm_info(`gfn, "Exiting interrupt loop", UVM_HIGH)
+      end
+      // Inject entropy if
+      // 1. the DUT config requires it, or
+      // 2. the env config wants to inject it spuriously
+      if (cfg.spurious_inject_entropy ||
+          ((cfg.fw_over_enable == MuBi4True) && (cfg.fw_read_enable == MuBi4True)) ) begin
+        while (do_background_procs) begin
+          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fw_ov_insert_per_seed);
+          ral.fw_ov_sha3_start.fw_ov_insert_start.set(MuBi4True);
+          csr_update(.csr(ral.fw_ov_sha3_start));
+          for(int i = 0; i < fw_ov_insert_per_seed; i++) begin
+            `DV_CHECK_STD_RANDOMIZE_FATAL(fw_ov_value);
+            `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_insert_entropy);
+            cfg.clk_rst_vif.wait_clks(dly_to_insert_entropy);
+            `uvm_info(`gfn, $sformatf("injecting entropy: %08x", fw_ov_value), UVM_FULL)
+            ral.fw_ov_wr_data.set(fw_ov_value);
+            csr_update(.csr(ral.fw_ov_wr_data));
+          end
+          ral.fw_ov_sha3_start.fw_ov_insert_start.set(MuBi4False);
+          csr_update(.csr(ral.fw_ov_sha3_start));
+          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_insert_entropy);
+          cfg.clk_rst_vif.wait_clks(dly_to_insert_entropy);
+        end
       end
       begin
         csr_access_seq();
@@ -215,7 +272,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
         m_rng_push_seq.stop(.hard(0));
         m_rng_push_seq.wait_for_sequence_state(UVM_FINISHED);
         `uvm_info(`gfn, "Exiting test body.", UVM_LOW)
-        do_interrupts = 1'b0;
+        do_background_procs = 1'b0;
       end
     join
   endtask : body
