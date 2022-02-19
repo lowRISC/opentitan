@@ -436,7 +436,7 @@ module edn_core import edn_pkg::*;
 
   assign cs_cmd_req_vld_out_d =
          (!edn_enable_fo[12]) ? '0 :
-         ((send_rescmd || send_gencmd || boot_send_gencmd) && cmd_sent) ? 1'b1 :
+         (send_rescmd || send_gencmd || (boot_send_gencmd && cmd_sent)) ? 1'b1 :
          cs_cmd_req_vld_q;
 
   // drive outputs
