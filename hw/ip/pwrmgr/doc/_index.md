@@ -49,6 +49,9 @@ Blocks outlined with a solid magenta line are always on; while blocks outlined w
 
 ![Power Manager Connectivity Diagram](pwrmgr_connectivity.svg)
 
+## Hardware Interfaces
+
+{{< incGenFromIpDesc "/hw/top_earlgrey/ip/pwrmgr/data/autogen/pwrmgr.hjson" "hwcfg" >}}
 
 ## Overall Sequencing
 
