@@ -2,6 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// Higher level testbench can override these values if needed.
+`ifndef JTAG_IF_HOST_CB_INPUT_SKEW
+  `define JTAG_IF_HOST_CB_INPUT_SKEW #1step
+`endif
+
+`ifndef JTAG_IF_HOST_CB_OUTPUT_SKEW
+  `define JTAG_IF_HOST_CB_OUTPUT_SKEW #0
+`endif
+
 // jtag interface with default 50MHz tck
 interface jtag_if #(time JtagDefaultTckPeriodNs = 20ns) ();
 
@@ -16,9 +25,9 @@ interface jtag_if #(time JtagDefaultTckPeriodNs = 20ns) ();
   bit   tck_en;
   time  tck_period_ns = JtagDefaultTckPeriodNs;
 
-  // Use negedge to drive jtag inputs because design also use posedge clock edge to sample.
   clocking host_cb @(posedge tck);
-    default output #1ns;
+    default input `JTAG_IF_HOST_CB_INPUT_SKEW
+            output `JTAG_IF_HOST_CB_OUTPUT_SKEW;
     output  tms;
     output  tdi;
     input   tdo;
@@ -72,3 +81,6 @@ interface jtag_if #(time JtagDefaultTckPeriodNs = 20ns) ();
   end
 
 endinterface
+
+`undef JTAG_IF_HOST_CB_INPUT_SKEW
+`undef JTAG_IF_HOST_CB_OUTPUT_SKEW
