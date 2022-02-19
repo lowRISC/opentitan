@@ -67,7 +67,7 @@
     {
       name: entropy_src_fw_ov
       uvm_test: entropy_src_fw_ov_test
-      uvm_test_seq: entropy_src_fw_ov_vseq
+      uvm_test_seq: entropy_src_rng_vseq
     }
 
     {
@@ -105,7 +105,7 @@
 
   component_b: "uvm_test_top.env.virtual_sequencer"
   id_b : _ALL_
-  verbosity_b: UVM_HIGH
+  verbosity_b: UVM_FULL
   phase_b: run
 
   run_modes: [
@@ -116,6 +116,10 @@
     {
       name: set_verbosity_comp_b_uvm_debug
       run_opts: ["+uvm_set_verbosity={component_b},{id_b},{verbosity_b},{phase_b}"]
+    }
+    {
+      name: short_run
+      run_opts: ["+test_timeout_ns=1000000"]
     }
   ]
 }

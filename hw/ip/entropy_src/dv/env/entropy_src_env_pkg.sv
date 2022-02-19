@@ -14,6 +14,7 @@ package entropy_src_env_pkg;
   import entropy_src_ral_pkg::*;
   import push_pull_agent_pkg::*;
   import entropy_src_pkg::*;
+  import prim_mubi_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -111,7 +112,9 @@ package entropy_src_env_pkg;
 
   typedef enum { BOOT, STARTUP, CONTINUOUS, HALTED } entropy_phase_e;
   typedef bit [RNG_BUS_WIDTH-1:0] rng_val_t;
+  typedef bit [TL_DW-1:0]         tl_val_t;
   typedef rng_val_t queue_of_rng_val_t[$];
+  typedef tl_val_t  queue_of_tl_val_t[$];
 
   //
   // general helper function that converts the "seed index", the number of CSRNG seeds which the DUT
@@ -126,10 +129,11 @@ package entropy_src_env_pkg;
   // satisfy both the startup and (optional) boot phases.
   //
   function automatic entropy_phase_e convert_seed_idx_to_phase(int seed_idx,
-                                                               bit fips_enable);
+                                                               bit fips_enable,
+                                                               bit fw_ov_insert);
 
     if (!fips_enable) begin
-      if (seed_idx == 0) begin
+      if (fw_ov_insert || (seed_idx == 0)) begin
         return BOOT;
       end else begin
         return HALTED;
@@ -152,13 +156,14 @@ package entropy_src_env_pkg;
   //
   // The window size also dictates the ammount of data needed to create a single seed.
   //
-  function automatic int rng_window_size(int seed_idx, bit fips_enable, int fips_window_size);
+  function automatic int rng_window_size(int seed_idx, bit fips_enable, bit fw_ov_insert,
+                                         int fips_window_size);
     entropy_phase_e phase;
 
     // Counts the number of seeds that have been successfully generated
     // in any post-boot phase.
 
-    phase = convert_seed_idx_to_phase(seed_idx, fips_enable);
+    phase = convert_seed_idx_to_phase(seed_idx, fips_enable, fw_ov_insert);
 
     return (phase == BOOT) ? entropy_src_pkg::CSRNG_BUS_WIDTH : fips_window_size;
 

@@ -64,6 +64,9 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // Constraint knobs for Boolean fields in FW_OV_CONTROL register
   uint          fw_read_pct, fw_over_pct;
 
+  // Knob to inject entropy even if the DUT is configured to not accept it
+  rand bit      spurious_inject_entropy_pct;
+
   // Constraint knobs for OTP-driven inputs
   uint          otp_en_es_fw_read_pct, otp_en_es_fw_over_pct;
 
@@ -79,6 +82,9 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   real markov_sigma_max, markov_sigma_min;
   real bucket_sigma_max, bucket_sigma_min;
 
+  // Knob to leave thresholds at default, completely disabling them
+  uint          default_ht_thresholds_pct;
+
   ///////////////////////
   // Randomized fields //
   ///////////////////////
@@ -93,6 +99,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
   rand prim_mubi_pkg::mubi8_t   otp_en_es_fw_read, otp_en_es_fw_over;
   rand prim_mubi_pkg::mubi4_t   fw_read_enable, fw_over_enable;
+  rand bit                      spurious_inject_entropy;
 
 
   // Note: These integer-valued fields are used to derive their real-valued counterparts.
@@ -101,6 +108,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // Randomized real values: to be managed in post_randomize
   // Controlled by the knobs <test>_sigma_max, <test>_sigma_min
   real              adaptp_sigma, markov_sigma, bucket_sigma;
+  rand int          default_ht_thresholds;
 
   /////////////////////////////////////////////////////////////////
   // Implementation-specific constants related to the DUT        //
@@ -161,6 +169,10 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
       prim_mubi_pkg::MuBi4True  :/ fw_over_pct,
       prim_mubi_pkg::MuBi4False :/ (100 - fw_over_pct) };}
 
+  constraint spurious_inject_entropy_c {spurious_inject_entropy dist {
+      1                         :/ spurious_inject_entropy_pct,
+      0                         :/ (100 - spurious_inject_entropy_pct) };}
+
   constraint module_enable_c {module_enable dist {
       prim_mubi_pkg::MuBi4True  :/ module_enable_pct,
       prim_mubi_pkg::MuBi4False :/ (100 - module_enable_pct) };}
@@ -188,6 +200,10 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   constraint ht_threshold_scope_c {ht_threshold_scope dist {
       prim_mubi_pkg::MuBi4True  :/ ht_threshold_scope_pct,
       prim_mubi_pkg::MuBi4False :/ (100 - ht_threshold_scope_pct)};}
+
+  constraint default_ht_thresholds_c {default_ht_thresholds dist {
+      1 :/ default_ht_thresholds_pct,
+      0 :/ (100 - default_ht_thresholds_pct)};}
 
   // TODO: Is zero a valid value for this register?
   // What does the DUT do with a value of zero?
