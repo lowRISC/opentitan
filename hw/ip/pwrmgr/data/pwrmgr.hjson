@@ -144,7 +144,7 @@
     { name: "FSM.LOCAL_ESC",
       desc: "When FSMs reach a bad state, escalate directly and force user reset."
     }
-    { name: "FSM.GLOBAL_ESC",
+    { name: "CTRL_FLOW.GLOBAL_ESC",
       desc: "When global escalation is received, proceed directly to reset."
     }
     { name: "MAIN_PD.RST.LOCAL_ESC",

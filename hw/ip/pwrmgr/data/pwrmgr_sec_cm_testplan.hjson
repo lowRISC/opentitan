@@ -72,8 +72,8 @@
       tests: []
     }
     {
-      name: sec_cm_fsm_global_esc
-      desc: "Verify the countermeasure(s) FSM.GLOBAL_ESC."
+      name: sec_cm_ctrl_flow_global_esc
+      desc: "Verify the countermeasure(s) CTRL_FLOW.GLOBAL_ESC."
       milestone: V2S
       tests: []
     }
