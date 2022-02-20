@@ -260,7 +260,7 @@ module entropy_src
   `ASSERT_KNOWN(EsXhtActiveKnownO_A, entropy_src_xht_o.active)
   `ASSERT_KNOWN(EsXhtThreshHiKnownO_A, entropy_src_xht_o.thresh_hi)
   `ASSERT_KNOWN(EsXhtThreshLoKnownO_A, entropy_src_xht_o.thresh_lo)
-  `ASSERT_KNOWN(EsXhtWindowKnownO_A, entropy_src_xht_o.window)
+  `ASSERT_KNOWN(EsXhtWindowKnownO_A, entropy_src_xht_o.window_wrap_pulse)
 
   // Alerts
   `ASSERT_KNOWN(AlertTxKnownO_A, alert_tx_o)

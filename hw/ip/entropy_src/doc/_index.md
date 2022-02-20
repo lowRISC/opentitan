@@ -158,7 +158,8 @@ Below is a description of this interface:
 - active: signal to indicate when the test should run, and is register driven.
 - thresh_hi: field to indicate what high threshold the test should use, and is register driven.
 - thresh_lo: field to indicate what low threshold the test should use, and is register driven.
-- window: field to indicate what the size of the test window is, and is register driven.
+- window_wrap_pulse: field to indicate the end of the current window.
+- threshold_scope: field to indicate whether the thresholds are intended to be applied to all entropy lines collectively or on a line-by-line basis, to be read from a register.
 - test_cnt: generic test count result, to be read from a register.
 - test_fail_hi_pulse: indication that a high threshold comparison failed, to be read from a register.
 - test_fail_lo_pulse: indication that a low threshold comparison failed, to be read from a register.

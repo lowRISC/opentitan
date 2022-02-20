@@ -1900,7 +1900,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign entropy_src_xht_o.active = extht_active;
   assign entropy_src_xht_o.thresh_hi = extht_hi_threshold;
   assign entropy_src_xht_o.thresh_lo = extht_lo_threshold;
-  assign entropy_src_xht_o.window = health_test_window;
+  assign entropy_src_xht_o.window_wrap_pulse = health_test_done_pulse;
+  assign entropy_src_xht_o.threshold_scope = threshold_scope;
   // get inputs from external health test
   assign extht_event_cnt = entropy_src_xht_i.test_cnt;
   assign extht_hi_fail_pulse = entropy_src_xht_i.test_fail_hi_pulse;
