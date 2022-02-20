@@ -65,7 +65,8 @@ package entropy_src_pkg;
     logic active;
     logic [15:0] thresh_hi;
     logic [15:0] thresh_lo;
-    logic [15:0] window;
+    logic window_wrap_pulse;
+    logic threshold_scope;
   } entropy_src_xht_req_t;
 
   typedef struct packed {
