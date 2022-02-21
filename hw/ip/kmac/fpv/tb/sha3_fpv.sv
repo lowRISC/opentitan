@@ -20,6 +20,7 @@ module sha3_fpv
 
   // Entropy interface
   input                     rand_valid_i,
+  input                     rand_early_i,
   input        [StateW-1:0] rand_data_i,
   output logic              rand_consumed_o,
 
@@ -49,8 +50,7 @@ module sha3_fpv
 );
 
   sha3 #(
-    .EnMasking(EnMasking),
-    .ReuseShare (0)
+    .EnMasking(EnMasking)
   ) u_sha3 (
     .*
   );

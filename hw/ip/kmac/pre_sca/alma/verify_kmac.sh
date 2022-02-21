@@ -31,8 +31,10 @@ echo "Verifying ${TOP_MODULE} using Alma"
 
 # Label
 # Extract WIDTH from label file.
-WIDTH_MIN_1=`cat tmp/labels.txt | grep rand_i | sed 's/^[^0-9]*\([0-9]\+\).*/\1/'`
-WIDTH=$((WIDTH_MIN_1 + 1))
+WIDTH_DOUBLE_MIN_1=`cat tmp/labels.txt | grep s_i | sed 's/^[^0-9]*\([0-9]\+\).*/\1/'`
+WIDTH_DOUBLE=$((WIDTH_DOUBLE_MIN_1 + 1))
+WIDTH=$((WIDTH_DOUBLE / 2))
+WIDTH_MIN_1=$((WIDTH - 1))
 # Modify label template
 # Change rand_i
 sed -i 's/\(rand_i\s\[[0-9]\+:0\]\s=\s\)unimportant/\1random/g' tmp/labels.txt
@@ -52,4 +54,4 @@ sed -i "s/\(s_i\s\[\)\([0-9]\+:0\)\(\]\s=\s\)unimportant/${S_I}/g" tmp/labels.tx
    --vcd tmp/tmp.vcd \
    --rst-name rst_ni --rst-phase 0 \
    --probe-duration once --mode transient \
-   --glitch-behavior loose --cycles 3
+   --glitch-behavior loose --cycles 8

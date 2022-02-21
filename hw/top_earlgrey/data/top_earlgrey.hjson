@@ -598,7 +598,6 @@
       type: "kmac",
       param_decl: {
         EnMasking: "1",
-        ReuseShare: "0"
       }
       clock_srcs: {clk_i: "main", clk_edn_i: "main"}
       clock_group: "trans"

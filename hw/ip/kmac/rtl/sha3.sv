@@ -14,12 +14,7 @@ module sha3
   // Enable Masked Keccak if 1
   parameter  bit EnMasking = 0,
   // derived parameter
-  localparam int Share = (EnMasking) ? 2 : 1,
-
-  // Configurations
-  // Decide if implements Re-use the adjacent shares as entropy
-  // in DOM AND logic
-  parameter bit ReuseShare = 0
+  localparam int Share = (EnMasking) ? 2 : 1
 ) (
   input clk_i,
   input rst_ni,
@@ -32,7 +27,8 @@ module sha3
 
   // Entropy interface
   input                     rand_valid_i,
-  input        [StateW-1:0] rand_data_i,
+  input                     rand_early_i,
+  input      [StateW/2-1:0] rand_data_i,
   output logic              rand_consumed_o,
 
   // N, S: Used in cSHAKE mode only
@@ -416,8 +412,7 @@ module sha3
     .Width    (sha3_pkg::StateW),
     .DInWidth (sha3_pkg::MsgWidth),
 
-    .EnMasking  (EnMasking),
-    .ReuseShare (ReuseShare)
+    .EnMasking  (EnMasking)
   ) u_keccak (
     .clk_i,
     .rst_ni,
@@ -428,6 +423,7 @@ module sha3
     .ready_o (keccak_ready),
 
     .rand_valid_i,
+    .rand_early_i,
     .rand_data_i,
     .rand_consumed_o,
 
@@ -475,4 +471,3 @@ module sha3
      != {keccak_start, keccak_process, sw_keccak_run, keccak_done})
 
 endmodule
-

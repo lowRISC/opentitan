@@ -8,7 +8,3 @@
 
 // index_z is of type int but we only use bits 5:0.
 lint_off -rule UNUSED -file "*/rtl/keccak_2share.sv" -match "*index_z*"
-
-// ReuseShare doesn't yet have any effect in keccak_round (this should
-// eventually be implemented in keccak_2share)
-lint_off -rule UNUSED -file "*/rtl/keccak_round.sv" -match "Parameter is not used: 'ReuseShare'"

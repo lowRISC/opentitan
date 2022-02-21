@@ -47,22 +47,6 @@
       default: "1"
       desc:    '''
         Disable(0) or enable(1) first-order masking of Keccak round.
-
-        If masking is enabled, ReuseShare parameter will impact the design.
-        '''
-      local:   "false"
-      expose:  "true"
-    }
-    { name:    "ReuseShare"
-      type:    "int"
-      default: "0"
-      desc:    '''
-        If enabled (1), the internal Keccak round logic will re-use the
-        adjacent shares as entropy in Domain-Oriented Masking AND logic.
-        It improves the throughput of Keccak, as it only requires small
-        amount of entropy rather than 1600 bit per round.
-
-        This feature is not implemented yet.
         '''
       local:   "false"
       expose:  "true"
@@ -129,7 +113,7 @@
     { name:      "RndCnstStoragePerm"
       desc:      "Compile-time random permutation for Storage Entropy"
       type:      "kmac_pkg::storage_perm_t"
-      randcount: "1600"
+      randcount: "800"
       randtype:  "perm"
     }
   ]
