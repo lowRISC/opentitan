@@ -122,20 +122,22 @@
             Covers that all health test fails, fatal errors, all counters errors and
             all error codes of entropy_src have been tested.
             Individual config settings that will be covered include:
-            - which_ht_fail (0 to 3), 4 health tests, repcnt, adaptp, bucket and markov test
-            - which_ht (0 to 1), some health tests have low and high fails
-            - which_markov_cntr (0 to 3), markov test has 4 counters
+            - which_ht_fail (0 to 3), 4 possible health test fails, repcnt, adaptp, bucket and
+              markov test fails
+            - which_ht (0 to 1), adaptp and markov health tests have low and high tests
             - which_fatal_err (0 to 5), 6 fatal errors, esrng, observe, esfinal fifo errors,
               main state machine, ack state machine errors, and counter error
-            - which_fifo_err_2 (0 to 1), esrng and observe fifo has only read and state errors
-            - which_fifo_err_3 (0 to 2), esfinal fifo has write, read and state errors
+            - which_fifo_err (0 to 2), fifo has write, read and state errors
+            - which_fifo (0 to 2), esrng, observe and esfinal fifos
             - which_cntr (0 to 5), 6 possible counter errors, window counter, repcnt ht counter,
               repcnts ht counter, adaptive proportion ht counter, bucket ht counter and
               markov ht counter
             - which_err_code (0 to 17), ERR_CODE has 9 fields, plus 9 ERR_CODE_TEST bits test
-            - which_fifo_read_err (0 to 2), esrng, observe and esfinal fifos
-            - which_fifo_state_err (0 to 2), esrng, observe and esfinal fifos
             - which_invalid_mubi (0 to 8), 9 possible invalid mubi value fields
+            - which_cntr_replicate (0 to RNG_BUS_WIDTH-1), reptcnt, adaptp, markov health tests
+              have RNG_BUS_WIDTH copies of counters
+            - which_bin (0 to 2**RNG_BUS_WIDTH-1), bucket health test has 2**RNG_BUS_WIDTH copies
+              of counters
             '''
     }
   ]
