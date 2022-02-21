@@ -72,12 +72,6 @@
       tests: []
     }
     {
-      name: sec_cm_iv_config_sw_unreadable
-      desc: "Verify the countermeasure(s) IV.CONFIG.SW_UNREADABLE."
-      milestone: V2S
-      tests: []
-    }
-    {
       name: sec_cm_data_reg_sw_unreadable
       desc: "Verify the countermeasure(s) DATA_REG.SW_UNREADABLE."
       milestone: V2S

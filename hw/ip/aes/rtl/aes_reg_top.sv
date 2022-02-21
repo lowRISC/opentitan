@@ -144,13 +144,21 @@ module aes_reg_top (
   logic [31:0] key_share1_6_wd;
   logic key_share1_7_we;
   logic [31:0] key_share1_7_wd;
+  logic iv_0_re;
   logic iv_0_we;
+  logic [31:0] iv_0_qs;
   logic [31:0] iv_0_wd;
+  logic iv_1_re;
   logic iv_1_we;
+  logic [31:0] iv_1_qs;
   logic [31:0] iv_1_wd;
+  logic iv_2_re;
   logic iv_2_we;
+  logic [31:0] iv_2_qs;
   logic [31:0] iv_2_wd;
+  logic iv_3_re;
   logic iv_3_we;
+  logic [31:0] iv_3_qs;
   logic [31:0] iv_3_wd;
   logic data_in_0_we;
   logic [31:0] data_in_0_wd;
@@ -496,14 +504,14 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (32)
   ) u_iv_0 (
-    .re     (1'b0),
+    .re     (iv_0_re),
     .we     (iv_0_we),
     .wd     (iv_0_wd),
     .d      (hw2reg.iv[0].d),
     .qre    (),
     .qe     (reg2hw.iv[0].qe),
     .q      (reg2hw.iv[0].q),
-    .qs     ()
+    .qs     (iv_0_qs)
   );
 
 
@@ -512,14 +520,14 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (32)
   ) u_iv_1 (
-    .re     (1'b0),
+    .re     (iv_1_re),
     .we     (iv_1_we),
     .wd     (iv_1_wd),
     .d      (hw2reg.iv[1].d),
     .qre    (),
     .qe     (reg2hw.iv[1].qe),
     .q      (reg2hw.iv[1].q),
-    .qs     ()
+    .qs     (iv_1_qs)
   );
 
 
@@ -528,14 +536,14 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (32)
   ) u_iv_2 (
-    .re     (1'b0),
+    .re     (iv_2_re),
     .we     (iv_2_we),
     .wd     (iv_2_wd),
     .d      (hw2reg.iv[2].d),
     .qre    (),
     .qe     (reg2hw.iv[2].qe),
     .q      (reg2hw.iv[2].q),
-    .qs     ()
+    .qs     (iv_2_qs)
   );
 
 
@@ -544,14 +552,14 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (32)
   ) u_iv_3 (
-    .re     (1'b0),
+    .re     (iv_3_re),
     .we     (iv_3_we),
     .wd     (iv_3_wd),
     .d      (hw2reg.iv[3].d),
     .qre    (),
     .qe     (reg2hw.iv[3].qe),
     .q      (reg2hw.iv[3].q),
-    .qs     ()
+    .qs     (iv_3_qs)
   );
 
 
@@ -1300,15 +1308,19 @@ module aes_reg_top (
   assign key_share1_7_we = addr_hit[16] & reg_we & !reg_error;
 
   assign key_share1_7_wd = reg_wdata[31:0];
+  assign iv_0_re = addr_hit[17] & reg_re & !reg_error;
   assign iv_0_we = addr_hit[17] & reg_we & !reg_error;
 
   assign iv_0_wd = reg_wdata[31:0];
+  assign iv_1_re = addr_hit[18] & reg_re & !reg_error;
   assign iv_1_we = addr_hit[18] & reg_we & !reg_error;
 
   assign iv_1_wd = reg_wdata[31:0];
+  assign iv_2_re = addr_hit[19] & reg_re & !reg_error;
   assign iv_2_we = addr_hit[19] & reg_we & !reg_error;
 
   assign iv_2_wd = reg_wdata[31:0];
+  assign iv_3_re = addr_hit[20] & reg_re & !reg_error;
   assign iv_3_we = addr_hit[20] & reg_we & !reg_error;
 
   assign iv_3_wd = reg_wdata[31:0];
@@ -1435,19 +1447,19 @@ module aes_reg_top (
       end
 
       addr_hit[17]: begin
-        reg_rdata_next[31:0] = '0;
+        reg_rdata_next[31:0] = iv_0_qs;
       end
 
       addr_hit[18]: begin
-        reg_rdata_next[31:0] = '0;
+        reg_rdata_next[31:0] = iv_1_qs;
       end
 
       addr_hit[19]: begin
-        reg_rdata_next[31:0] = '0;
+        reg_rdata_next[31:0] = iv_2_qs;
       end
 
       addr_hit[20]: begin
-        reg_rdata_next[31:0] = '0;
+        reg_rdata_next[31:0] = iv_3_qs;
       end
 
       addr_hit[21]: begin

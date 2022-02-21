@@ -88,7 +88,6 @@ module aes
   // SEC_CM: AUX.CONFIG.SHADOW
   // SEC_CM: AUX.CONFIG.REGWEN
   // SEC_CM: KEY.SW_UNREADABLE
-  // SEC_CM: IV.CONFIG.SW_UNREADABLE
   // SEC_CM: DATA_REG.SW_UNREADABLE
   // Register interface
   logic intg_err_alert;
