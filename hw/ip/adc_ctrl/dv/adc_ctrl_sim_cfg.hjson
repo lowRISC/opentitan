@@ -56,6 +56,23 @@
       name: adc_ctrl_filters_polled
       uvm_test_seq: adc_ctrl_filters_polled_vseq
     }
+
+    {
+      name: adc_ctrl_filters_polled_fixed
+      uvm_test_seq: adc_ctrl_filters_polled_vseq
+      run_opts: ["+filters_fixed=1"]
+    }
+
+    {
+      name: adc_ctrl_filters_interrupt
+      uvm_test_seq: adc_ctrl_filters_interrupt_vseq
+    }
+
+    {
+      name: adc_ctrl_filters_interrupt_fixed
+      uvm_test_seq: adc_ctrl_filters_interrupt_vseq
+      run_opts: ["+filters_fixed=1"]
+    }
     // TODO: add more tests here
   ]
 
