@@ -79,23 +79,23 @@ pub trait Transport {
 
     /// Returns a SPI [`Target`] implementation.
     fn spi(&self, _instance: &str) -> Result<Rc<dyn Target>> {
-        unimplemented!();
+        Err(TransportError::InvalidInterface(TransportInterfaceType::Spi))
     }
     /// Returns a I2C [`Bus`] implementation.
     fn i2c(&self, _instance: &str) -> Result<Rc<dyn Bus>> {
-        unimplemented!();
+        Err(TransportError::InvalidInterface(TransportInterfaceType::I2c))
     }
     /// Returns a [`Uart`] implementation.
     fn uart(&self, _instance: &str) -> Result<Rc<dyn Uart>> {
-        unimplemented!();
+        Err(TransportError::InvalidInterface(TransportInterfaceType::Uart))
     }
     /// Returns a [`GpioPin`] implementation.
     fn gpio_pin(&self, _instance: &str) -> Result<Rc<dyn GpioPin>> {
-        unimplemented!();
+        Err(TransportError::InvalidInterface(TransportInterfaceType::Gpio))
     }
     /// Invoke non-standard functionality of some Transport implementations.
     fn dispatch(&self, _action: &dyn Any) -> Result<Option<Box<dyn Serialize>>> {
-        Err(TransportError::UnsupportedOperation.into())
+        Err(TransportError::UnsupportedOperation)
     }
 }
 

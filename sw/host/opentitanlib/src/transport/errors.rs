@@ -20,6 +20,8 @@ pub enum TransportError {
     UsbGenericError(String),
     #[error("Error opening USB device: {0}")]
     UsbOpenError(String),
+    #[error("Transport does not support {0:?}")]
+    InvalidInterface(TransportInterfaceType),
     #[error("Transport does not support {0:?} instance {1}")]
     InvalidInstance(TransportInterfaceType, String),
     #[error("Encountered non-unicode device path")]
