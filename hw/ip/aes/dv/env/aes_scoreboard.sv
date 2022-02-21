@@ -130,7 +130,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
                                   get_field_val(ral.ctrl_shadowed.key_len, item.a_data),
                                   get_field_val(ral.ctrl_shadowed.manual_operation, item.a_data),
                                   get_field_val(ral.ctrl_shadowed.sideload, item.a_data),
-                                  get_field_val(ral.ctrl_shadowed.force_zero_masks, item.a_data)
+                                  get_field_val(ral.ctrl_shadowed.prng_reseed_rate, item.a_data)
                                   );
 
             input_item.clean();
@@ -147,6 +147,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
             if (keyname == csr_name) begin
                input_item.key[0][i]     = item.a_data;
                input_item.key_vld[0][i] = 1'b1;
+               cov_if.cg_key_sample(i);
             end
           end
         end
@@ -157,6 +158,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
             if (keyname == csr_name) begin
                input_item.key[1][i]     = item.a_data;
                input_item.key_vld[1][i] = 1'b1;
+               cov_if.cg_key_sample(i+8);
             end
           end
         end
@@ -167,6 +169,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
             if (keyname == csr_name) begin
               input_item.data_in[i]      = item.a_data;
               input_item.data_in_vld[i]  = 1'b1;
+              cov_if.cg_wr_data_sample(i);
             end
           end
         end
@@ -177,6 +180,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
             if (keyname == csr_name) begin
               input_item.iv[i]      = item.a_data;
               input_item.iv_vld[i]  = 1'b1;
+              cov_if.cg_iv_sample(i);
             end
           end
        end
@@ -227,6 +231,10 @@ class aes_scoreboard extends cip_base_scoreboard #(
          if (item.a_data[5]) begin
            // nothing to do for DV
         end
+       end
+
+       (!uvm_re_match("ctrl_aux_regwen", csr_name)): begin
+          cov_if.cg_aux_regwen_sample(item.a_data[0]);
        end
 
       // (!uvm_re_match("status", csr_name)): begin
@@ -402,18 +410,22 @@ class aes_scoreboard extends cip_base_scoreboard #(
         "data_out_0": begin
           output_item.data_out[0]     = item.d_data;
           output_item.data_out_vld[0] = 1;
+          cov_if.cg_rd_data_sample(0);
         end
         "data_out_1": begin
           output_item.data_out[1]     = item.d_data;
           output_item.data_out_vld[1] = 1;
+          cov_if.cg_rd_data_sample(1);
         end
         "data_out_2": begin
           output_item.data_out[2]     = item.d_data;
           output_item.data_out_vld[2] = 1;
+          cov_if.cg_rd_data_sample(2);
         end
         "data_out_3": begin
           output_item.data_out[3]     = item.d_data;
           output_item.data_out_vld[3] = 1;
+          cov_if.cg_rd_data_sample(3);
         end
 
         "status": begin
