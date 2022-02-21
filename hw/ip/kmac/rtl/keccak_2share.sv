@@ -155,7 +155,7 @@ module keccak_2share
       assign sheet1[0] = phase2_in[0][X2];
       assign sheet1[1] = phase2_in[1][X2];
 
-      logic [$bits(sheet_t)-1:0] a0, a1, b0, b1, c0, c1, q0, q1;
+      logic [$bits(sheet_t)-1:0] a0, a1, b0, b1, c, q0, q1;
 
       // Convert sheet_t to 1D array
       // TODO: Make this smarter :)
@@ -167,13 +167,8 @@ module keccak_2share
 
       // This keccak_f implementation doesn't use the states as entropy sources.
       // It rather receives the entropy from random number generator.
-      // The module needs 1600b of entropy per round (3 cycles). It is expensive
-      // to make 1600b entropy in every three cycles.
-      //
-      // It is recommended to duplicates smaller size of entropy but expands to
-      // 1600b by not concatenating but shuffling.
-      assign c0 = rand_i[x*$bits(sheet_t)+:$bits(sheet_t)];
-      assign c1 = rand_i[x*$bits(sheet_t)+:$bits(sheet_t)];
+      // The module needs 1600b of entropy per round (3 cycles).
+      assign c = rand_i[x*$bits(sheet_t)+:$bits(sheet_t)];
 
       prim_dom_and_2share #(
         .DW ($bits(sheet_t)), // sheet
@@ -186,9 +181,8 @@ module keccak_2share
         .a1_i      (a1),
         .b0_i      (b0),
         .b1_i      (b1),
-        .c_valid_i (rand_valid_i),
-        .c0_i      (c0),
-        .c1_i      (c1),
+        .z_valid_i (rand_valid_i),
+        .z_i       (c),
         .q0_o      (q0),
         .q1_o      (q1)
       );
