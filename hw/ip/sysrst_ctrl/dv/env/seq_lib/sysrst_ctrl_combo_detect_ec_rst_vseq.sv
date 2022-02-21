@@ -2,26 +2,27 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This sequence will assert the ec_rst_out_l and raise an interrupt when certain combos are detected.
+// This sequence will assert the ec_rst_out_l and raise an interrupt
+// when certain combos are detected.
 class sysrst_ctrl_combo_detect_ec_rst_vseq extends sysrst_ctrl_base_vseq;
   `uvm_object_utils(sysrst_ctrl_combo_detect_ec_rst_vseq)
 
   `uvm_object_new
 
    task body();
-    uvm_reg_data_t rdata, rdata1;
+    uvm_reg_data_t rdata = 0;
 
     `uvm_info(`gfn, "Starting the body from combo detect ec_rst", UVM_LOW)
 
     // Enable the override function and set the override value for ec_rst_l pin
-    ral.pin_out_ctl.ec_rst_l.set(1);
+    ral.pin_out_ctl.ec_rst_l.set(0);
     csr_update(ral.pin_out_ctl);
 
-    ral.pin_out_value.ec_rst_l.set(1);
+    ral.pin_out_value.ec_rst_l.set(0);
     csr_update(ral.pin_out_value);
 
     ral.pin_allowed_ctl.ec_rst_l_0.set(1);
-    ral.pin_allowed_ctl.ec_rst_l_1.set(1);
+    ral.pin_allowed_ctl.ec_rst_l_1.set(0);
     csr_update(ral.pin_allowed_ctl);
 
     // Enabled key0_in, key1_in, key2_in to trigger the combo
@@ -34,34 +35,42 @@ class sysrst_ctrl_combo_detect_ec_rst_vseq extends sysrst_ctrl_base_vseq;
     csr_wr(ral.com_out_ctl[0], 'h6);
 
     // Set the ec_rst_0 pulse width
-    csr_wr(ral.ec_rst_ctl, 'h5);
+    csr_wr(ral.ec_rst_ctl, 'h10);
+
+    // Set the key triggered debounce timer
+    csr_wr(ral.key_intr_debounce_ctl, 'h20);
+
+    // It takes 2-3 clock cycles to sync the register values
+    cfg.clk_aon_rst_vif.wait_clks(2);
 
     repeat ($urandom_range(1,3)) begin
       // Trigger the input pins
       cfg.vif.key0_in = 1;
       cfg.vif.key1_in = 1;
       cfg.vif.key2_in = 1;
-      #50us;
+      cfg.clk_aon_rst_vif.wait_clks(10);
       cfg.vif.key0_in = 0;
       cfg.vif.key1_in = 0;
       cfg.vif.key2_in = 0;
-      #50us;
+      cfg.clk_aon_rst_vif.wait_clks(10);
     end
 
-    // Wait for interrupt to raise
-    #100us;
+    // Wait for debouncer timer + detect timer
+    cfg.clk_aon_rst_vif.wait_clks(25);
 
-    csr_rd_check(.ptr(ral.combo_intr_status), .compare_value(1));
-    `uvm_info(`gfn, ral.combo_intr_status.sprint(), UVM_MEDIUM)
+    // Read the combo status register
+    while (rdata != 1) begin
+      csr_rd(.ptr(ral.combo_intr_status), .value(rdata));
+    end
 
     // Write to clear the interrupt
     csr_wr(ral.combo_intr_status, 'h1);
 
-    #100us;
+    cfg.clk_aon_rst_vif.wait_clks(20);
     // check if the interrupt is cleared
     csr_rd_check(.ptr(ral.combo_intr_status), .compare_value(0));
 
-    #100us;
+    cfg.clk_aon_rst_vif.wait_clks(20);
   endtask : body
 
 endclass : sysrst_ctrl_combo_detect_ec_rst_vseq
