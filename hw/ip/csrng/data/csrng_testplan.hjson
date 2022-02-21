@@ -92,9 +92,7 @@
             - which_hw_inst_exc (0 to NHwApps-1), NHwApps possible hw instance exceptions
             - which_sp2v (0 to Sp2VWidth-1), SP2V_HIGH_LOGIC width
             - which_fatal_err (0 to 25), 26 possible fatal errors
-            - which_fifo_write_err (0 to 15), 16 different fifos
-            - which_fifo_read_err (0 to 15), 16 different fifos
-            - which_fifo_state_err (0 to 15), 16 different fifos
+            - which_fifo (0 to 15), 16 different fifos
             - which_err_code (0 to 51), 26 possible fatal errors, plus 26 ERR_CODE_TEST bits test
             - which_fifo_err (0 to 2), fifo write/read/state errors
             - which_invalid_mubi (0 to 2), 3 possible invalid mubi4 fields
