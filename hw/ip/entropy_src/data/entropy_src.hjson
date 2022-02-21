@@ -1124,6 +1124,43 @@
         },
       ]
     },
+    { name: "FW_OV_SHA3_START",
+      desc: "Firmware override sha3 block start control register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [// Exclude from writes to these field because they cause side affects.
+             "excl:CsrAllTests:CsrExclAll"]
+      fields: [
+        { bits: "3:0",
+          name: "FW_OV_INSERT_START",
+          desc: '''
+                Setting this field to 0xA will instruct the ENTROPY_SRC main state machine
+                to start the SHA3 process and be ready to accept entropy data. This field should
+                be set prior to writting the FW_OV_WR_DATA register. Once all data has been written,
+                this field should be set to 0x5. Once that happened, the SHA3 block will finish
+                processing and push the result into the ESFINAL FIFO.
+                '''
+          resval: "0x5"
+        },
+      ]
+    },
+    { name:     "FW_OV_WR_FIFO_FULL",
+      desc:     "Firmware override FIFO write full status register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      tags: [// Internal HW can modify status register
+             "excl:CsrAllTests:CsrExclCheck"]
+      fields: [
+        { bits: "0",
+          name: "FW_OV_WR_FIFO_FULL",
+          desc: '''"When this bit is clear, writes to the FW_OV_WR_DATA register are allowed.
+                If this bit is set, it is the equivalent to a FIFO full condition, and writes
+                to the FW_OV_WR_DATA register must be delayed until this bit is reset.
+                '''
+        }
+      ]
+    },
     { name: "FW_OV_RD_DATA",
       desc: "Firmware override Observe FIFO read register",
       swaccess: "ro",
@@ -1254,6 +1291,14 @@
           name: "RNG_BIT_ENABLE_FIELD_ALERT",
           desc: '''
                 This bit is set when the RNG_BIT_ENABLE field in the !!CONF register is set to
+                a value other than 0x5 or 0xA.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "7",
+          name: "FW_OV_SHA3_START_FIELD_ALERT",
+          desc: '''
+                This bit is set when the FW_OV_SHA3_START field in the !!FW_OV_SHA3_START register is set to
                 a value other than 0x5 or 0xA.
                 Writing a zero resets this status bit.
                 '''
