@@ -69,8 +69,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //-----------------------
   // Do not enable masking
   localparam bit Sha3EnMasking = 0;
-  // Needs EnMasking active to take effect
-  localparam bit Sha3ReuseShare = 0;
   // derived parameter
   localparam int Sha3Share = (Sha3EnMasking) ? 2 : 1;
 
@@ -2258,8 +2256,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // SHA3 hashing engine
   sha3 #(
-    .EnMasking (Sha3EnMasking),
-    .ReuseShare (Sha3ReuseShare)
+    .EnMasking (Sha3EnMasking)
   ) u_sha3 (
     .clk_i,
     .rst_ni,
@@ -2272,6 +2269,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
     // Entropy interface - not using
     .rand_valid_i    (1'b0),
+    .rand_early_i    (1'b0),
     .rand_data_i     ('0),
     .rand_consumed_o (),
 

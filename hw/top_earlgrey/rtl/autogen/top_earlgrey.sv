@@ -66,7 +66,6 @@ module top_earlgrey #(
   // parameters for hmac
   // parameters for kmac
   parameter bit KmacEnMasking = 1,
-  parameter int KmacReuseShare = 0,
   parameter int SecKmacCmdDelay = 0,
   parameter bit SecKmacIdleAcceptSwMsg = 0,
   // parameters for otbn
@@ -2209,7 +2208,6 @@ module top_earlgrey #(
   kmac #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[42:41]),
     .EnMasking(KmacEnMasking),
-    .ReuseShare(KmacReuseShare),
     .SecCmdDelay(SecKmacCmdDelay),
     .SecIdleAcceptSwMsg(SecKmacIdleAcceptSwMsg),
     .RndCnstLfsrSeed(RndCnstKmacLfsrSeed),

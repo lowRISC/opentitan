@@ -22,9 +22,10 @@ module kmac_entropy
   input  [MsgWidth-1:0] entropy_data_i,
 
   // Entropy to internal
-  output logic                        rand_valid_o,
-  output logic [sha3_pkg::StateW-1:0] rand_data_o,
-  input                               rand_consumed_i,
+  output logic                          rand_valid_o,
+  output logic                          rand_early_o,
+  output logic [sha3_pkg::StateW/2-1:0] rand_data_o,
+  input                                 rand_consumed_i,
 
   // Status
   input in_keyblock_i,
@@ -84,8 +85,8 @@ module kmac_entropy
 
   // storage width
   localparam int unsigned EntropyStorageW = 320;
-  localparam int unsigned EntropyMultiply = sha3_pkg::StateW / EntropyStorageW;
-  `ASSERT_INIT(StorageNoRemainder_A, (sha3_pkg::StateW%EntropyStorageW) == 0)
+  localparam int unsigned EntropyMultiply = sha3_pkg::StateW/2 / EntropyStorageW;
+  localparam int unsigned EntropyRemainder = sha3_pkg::StateW/2 % EntropyStorageW;
   `ASSERT_INIT(LfsrNoRemainder_A, (EntropyStorageW%EntropyLfsrW) == 0)
 
   localparam int unsigned StorageEntries = EntropyStorageW / EntropyLfsrW ;
@@ -153,8 +154,8 @@ module kmac_entropy
 
     // Expand: The SW or EDN provides 64-bit entropy (seed). In this state, this
     // entropy generator expands the 64-bit entropy into 320-bit entropy using
-    // LFSR. Then it expands 320-bit pseudo random entropy into 1600-bit by
-    // replicating the PR entropy five times w/ compile-time shuffling scheme.
+    // LFSR. Then it expands 320-bit pseudo random entropy into 800-bit by
+    // replicating the PR entropy 2.5 times w/ compile-time shuffling scheme.
     StRandExpand = 10'b0000001100,
 
     // ErrWaitExpired: If Edn timer expires, FSM moves to this state and wait
@@ -208,6 +209,7 @@ module kmac_entropy
   logic storage_update;
   logic storage_idx_clear;
   logic storage_filled;
+  logic storage_last;
 
   // Entropy valid signal
   // FSM set and clear the valid signal, rand_consume signal clear the valid
@@ -378,25 +380,28 @@ module kmac_entropy
   end
 
   assign storage_filled = (storage_idx == StorageIndexW'(StorageEntries));
+  assign storage_last   = (storage_idx == StorageIndexW'(StorageEntries-1));
   // 320-bit storage ----------------------------------------------------------
 
-  // Storage expands to StateW ================================================
+  // Storage expands to StateW/2 ==============================================
   // May adopt fancy shuffling scheme to obsfucate
-  // Or, convert the 320bit to sheet then multiply then unroll into 1600bit
-  logic [sha3_pkg::StateW-1:0] rand_data_concat;
-  assign rand_data_concat = {EntropyMultiply{entropy_storage}};
-  // Shuffle the StateW
+  // Or, convert the 320bit to sheet then multiply then unroll into 800bit
+  logic [sha3_pkg::StateW/2-1:0] rand_data_concat;
+  assign rand_data_concat =
+      {{EntropyMultiply{entropy_storage}},
+      entropy_storage[EntropyRemainder-1:0]};
+  // Shuffle the StateW/2
   always_comb begin
     rand_data_o = '0;
-    for (int unsigned i = 0 ; i < sha3_pkg::StateW ; i++) begin
+    for (int unsigned i = 0 ; i < sha3_pkg::StateW/2 ; i++) begin
       rand_data_o[i] = rand_data_concat[RndCnstStoragePerm[i]];
     end
   end
 
-  // Check if RndCnstStoragePerm < StateW
-  for (genvar i = 0 ; i < sha3_pkg::StateW; i++) begin : g_storage_perm_check
+  // Check if RndCnstStoragePerm < StateW/2
+  for (genvar i = 0 ; i < sha3_pkg::StateW/2; i++) begin : g_storage_perm_check
     `ASSERT_INIT(RndCnstStoragePermInBound_A,
-      RndCnstStoragePerm[i] < sha3_pkg::StateW)
+      RndCnstStoragePerm[i] < sha3_pkg::StateW/2)
   end
 
   // entropy valid
@@ -410,9 +415,12 @@ module kmac_entropy
     end
   end
 
+  // Let consumers know that the randomness will be valid in the next clock cycle.
+  assign rand_early_o = rand_valid_set;
+
   `ASSUME(ConsumeNotAseertWhenNotReady_M, rand_consumed_i |-> rand_valid_o)
 
-  // Storage expands to StateW ------------------------------------------------
+  // Storage expands to StateW/2 ----------------------------------------------
 
   ///////////////////
   // State Machine //
@@ -582,17 +590,15 @@ module kmac_entropy
 
       StRandExpand: begin
         lfsr_en = 1'b 1;
-        if (storage_filled) begin
-          st_d = StRandReady;
+        storage_update = 1'b 1;
 
-          storage_update = 1'b 0;
+        if (storage_last) begin
+          st_d = StRandReady;
 
           rand_valid_set = 1'b 1;
 
         end else begin
           st_d = StRandExpand;
-
-          storage_update = 1'b 1;
         end
       end
 

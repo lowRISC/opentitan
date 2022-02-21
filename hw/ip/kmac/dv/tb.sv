@@ -48,7 +48,7 @@ module tb;
 
   // dut
 
-  kmac #(.EnMasking(`EN_MASKING), .ReuseShare(`REUSE_SHARE)) dut (
+  kmac #(.EnMasking(`EN_MASKING)) dut (
     .clk_i              (clk            ),
     .rst_ni             (rst_n          ),
     .rst_shadowed_ni    (rst_shadowed_n ),

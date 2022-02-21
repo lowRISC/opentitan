@@ -11,6 +11,7 @@ module keccak_2share_fpv #(
   input                    rst_ni,
   input                    valid_i,
   input                    rand_valid_i,
+  input                    rand_early_i,
   input        [Width-1:0] rand_i,
   input        [Width-1:0] state_i,
   output logic             done_o,
@@ -29,18 +30,20 @@ module keccak_2share_fpv #(
   logic [Width-1:0] golden_state_d[1];
 
   logic [Width-1:0] compare_states;
-  typedef enum logic [1:0] {
+  typedef enum logic [2:0] {
     StIdle,
     StPhase1,
-    StPhase2,
-    StPhase3
+    StPhase2Cycle1,
+    StPhase2Cycle2,
+    StPhase2Cycle3
   } share_state_e;
 
   share_state_e keccak_st, keccak_st_d;
 
   logic inc_round;
   logic update_state;
-  logic sel_mux;
+  mubi4_t sel_mux;
+  logic [1:0] cycle;
 
   always_ff @(posedge clk_i, negedge rst_ni) begin
     if (!rst_ni) begin
@@ -55,10 +58,11 @@ module keccak_2share_fpv #(
 
     inc_round = 1'b0;
     update_state = 1'b0;
-    sel_mux = 1'b0;
+    sel_mux = MuBi4False;
+    cycle = 2'h0;
     unique case (keccak_st)
       StIdle: begin
-        sel_mux = 1'b 0;
+        sel_mux = MuBi4False;
         if (valid_i) begin
           keccak_st_d = StPhase1;
 
@@ -67,21 +71,29 @@ module keccak_2share_fpv #(
         end
       end
       StPhase1: begin
-        keccak_st_d = StPhase2;
+        sel_mux = MuBi4False;
+        cycle = 2'h0;
 
-        update_state = 1'b1;
-        sel_mux = 1'b0;
-      end
-      StPhase2: begin
-        sel_mux = 1'b1;
-        if (rand_valid_i) begin
-          keccak_st_d = StPhase3;
+        if (rand_early_i || rand_valid_i) begin
+          keccak_st_d = StPhase2Cycle1;
+          update_state = 1'b1;
         end else begin
-          keccak_st_d = StPhase2;
-        end
+          keccak_st_d = StPhase1;
       end
-      StPhase3: begin
-        sel_mux = 1'b1;
+      StPhase2Cycle1: begin
+        sel_mux = MuBi4True;
+        cycle = 2'h1;
+        keccak_st_d = StPhase2Cycle2;
+      end
+      StPhase2Cycle2: begin
+        sel_mux = MuBi4True;
+        cycle = 2'h2;
+        update_state = 1'b1;
+        keccak_st_d = StPhase2Cycle3;
+      end
+      StPhase2Cycle3: begin
+        sel_mux = MuBi4True;
+        cycle = 2'h3;
         update_state = 1'b1;
         if (round == NumRound-1) begin
           keccak_st_d = StIdle;
@@ -129,9 +141,9 @@ module keccak_2share_fpv #(
     .rst_ni,
 
     .rnd_i        (round),
-    .rand_valid_i (rand_valid_i),
-    .rand_i       (rand_i),
-    .sel_i        (sel_mux),
+    .phase_sel_i  (sel_mux),
+    .cycle_i      (cycle),
+    .rand_i       (rand_i[Width/2-1:0]), // keccak_2share requires just Width/2 randomness bits.
     .s_i          (keccak_in),
     .s_o          (keccak_out)
   );
@@ -142,7 +154,7 @@ module keccak_2share_fpv #(
       golden_state <= '0;
     end else if (valid_i) begin
       golden_state <= state_i;
-    end else if (keccak_st == StPhase3) begin
+    end else if (keccak_st == StPhase2Cycle3) begin
       golden_state <= golden_state_d[0];
     end
   end
@@ -154,11 +166,12 @@ module keccak_2share_fpv #(
     .clk_i,
     .rst_ni,
 
-    .rnd_i (round),
-    .rand_i ('0),
-    .sel_i  ('0),
-    .s_i    ('{golden_state}),
-    .s_o    (golden_state_d)
+    .rnd_i      (round),
+    .phase_sel_i('0),
+    .cycle_i    ('0),
+    .rand_i     ('0),
+    .s_i        ('{golden_state}),
+    .s_o        (golden_state_d)
   );
 
   assign compare_states = golden_state ^ state_o;
@@ -185,4 +198,3 @@ module keccak_2share_fpv #(
   `ASSERT(MaskedSameToUnmasked_A, keccak_st inside {StIdle, StPhase1} |-> compare_states == '0)
 
 endmodule
-

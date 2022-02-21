@@ -97,11 +97,11 @@ package kmac_env_pkg;
   // ENTROPY_LFSR_WIDTH bits per cycles
   parameter int CYCLES_TO_FILL_ENTROPY = ENTROPY_STORAGE_WIDTH / ENTROPY_LFSR_WIDTH;
 
-  // 7 cycles total:                                     5 cycles        + 2 cycles (latch/consume entropy)
-  parameter int ENTROPY_FULL_EXPANSION_CYCLES = CYCLES_TO_FILL_ENTROPY + 2;
+  // 6 cycles total:                            5 cycles (only 2 cannot be overlapped) + 4 cycles (for core)
+  parameter int ENTROPY_FULL_EXPANSION_CYCLES = CYCLES_TO_FILL_ENTROPY - 3 + 4;
 
-  // 3 cycles total:                         1 cycle, entropy is reused + 2 cycles (latch/consume)
-  parameter int ENTROPY_FAST_PROCESSING_CYCLES = 3;
+  // 4 cycles total:                             4 cycles (for core)
+  parameter int ENTROPY_FAST_PROCESSING_CYCLES = 4;
 
   // interrupt types
   typedef enum int {
