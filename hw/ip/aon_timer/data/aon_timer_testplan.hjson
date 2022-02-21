@@ -69,6 +69,20 @@
       milestone: V2
       tests: ["aon_timer_jump"]
     }
+    {
+      name: stress_all
+      desc: '''
+            This runs random sequences in succession.
+
+            Randomly chooses from the following sequences:
+            - aon_timer_intr_test
+            - aon_timer_jump
+            - aon_timer_prescaler
+            - aon_timer_smoke
+            '''
+      milestone: V2
+      tests: ["aon_timer_stress_all"]
+    }
   ]
 
   covergroups: [
