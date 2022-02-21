@@ -10,6 +10,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   // TLM fifos to pick up the packets
   uvm_tlm_analysis_fifo #(spi_item) host_spi_data_fifo;
   uvm_tlm_analysis_fifo #(spi_item) device_spi_data_fifo;
+  uvm_tlm_analysis_fifo #(spi_item) pass_spi_data_fifo;
 
   // mem model to save expected value
   local mem_model tx_mem;
@@ -30,6 +31,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     super.build_phase(phase);
     host_spi_data_fifo = new("host_spi_data_fifo", this);
     device_spi_data_fifo = new("device_spi_data_fifo", this);
+    pass_spi_data_fifo = new("pass_spi_data_fifo", this);
     tx_mem = mem_model#()::type_id::create("tx_mem", this);
     rx_mem = mem_model#()::type_id::create("rx_mem", this);
   endfunction
@@ -39,6 +41,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     fork
       process_host_spi_fifo();
       process_device_spi_fifo();
+      process_pass_spi_fifo();
     join_none
   endtask
 
@@ -59,6 +62,15 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       device_spi_data_fifo.get(item);
       sendout_spi_tx_data({item.data[3], item.data[2], item.data[1], item.data[0]});
       `uvm_info(`gfn, $sformatf("received device spi item:\n%0s", item.sprint()), UVM_HIGH)
+    end
+  endtask
+
+  virtual task process_pass_spi_fifo();
+    spi_item item;
+    forever begin
+      pass_spi_data_fifo.get(item);
+      //TODO Implement checking of passthrough data
+      `uvm_info(`gfn, $sformatf("received pass spi item:\n%0s", item.sprint()), UVM_HIGH)
     end
   endtask
 
