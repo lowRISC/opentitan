@@ -79,6 +79,7 @@ module aes
   logic                      unused_edn_fips;
   logic                      entropy_clearing_req, entropy_masking_req;
   logic                      entropy_clearing_ack, entropy_masking_ack;
+  logic                      edn_req_chk;
 
   ////////////
   // Inputs //
@@ -114,23 +115,27 @@ module aes
     .lc_en_o ( {lc_escalate_en} )
   );
 
+  // Upon escalation or detection of a fatal alert, an EDN request signal can be dropped before
+  // getting acknowledged. This is okay as the module will need to be reset anyway.
+  assign edn_req_chk = (lc_escalate_en[0] == lc_ctrl_pkg::Off) & ~alert[1];
+
   // Synchronize EDN interface
   prim_sync_reqack_data #(
     .Width(EntropyWidth),
     .DataSrc2Dst(1'b0),
     .DataReg(1'b0)
   ) u_prim_sync_reqack_data (
-    .clk_src_i  ( clk_i                                 ),
-    .rst_src_ni ( rst_ni                                ),
-    .clk_dst_i  ( clk_edn_i                             ),
-    .rst_dst_ni ( rst_edn_ni                            ),
-    .req_chk_i  ( lc_escalate_en[0] == lc_ctrl_pkg::Off ),
-    .src_req_i  ( edn_req                               ),
-    .src_ack_o  ( edn_ack                               ),
-    .dst_req_o  ( edn_o.edn_req                         ),
-    .dst_ack_i  ( edn_i.edn_ack                         ),
-    .data_i     ( edn_i.edn_bus                         ),
-    .data_o     ( edn_data                              )
+    .clk_src_i  ( clk_i         ),
+    .rst_src_ni ( rst_ni        ),
+    .clk_dst_i  ( clk_edn_i     ),
+    .rst_dst_ni ( rst_edn_ni    ),
+    .req_chk_i  ( edn_req_chk   ),
+    .src_req_i  ( edn_req       ),
+    .src_ack_o  ( edn_ack       ),
+    .dst_req_o  ( edn_o.edn_req ),
+    .dst_ack_i  ( edn_i.edn_ack ),
+    .data_i     ( edn_i.edn_bus ),
+    .data_o     ( edn_data      )
   );
   // We don't track whether the entropy is pre-FIPS or not inside AES.
   assign unused_edn_fips = edn_i.edn_fips;
