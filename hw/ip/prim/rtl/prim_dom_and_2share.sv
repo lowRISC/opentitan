@@ -26,7 +26,8 @@
 `include "prim_assert.sv"
 
 module prim_dom_and_2share #(
-  parameter int DW = 64 // Input width
+  parameter int DW = 64, // Input width
+  parameter bit Pipeline = 1'b0 // Enable full pipelining
 ) (
   input clk_i,
   input rst_ni,
@@ -43,14 +44,16 @@ module prim_dom_and_2share #(
 );
 
   logic [DW-1:0] t0_d, t0_q, t1_d, t1_q;
-  logic [DW-1:0] t_a0b1, t_a1b0, t_a0b0, t_a1b1;
+  logic [DW-1:0] t_a0b0, t_a1b1;
+  logic [DW-1:0] t_a0b0_d, t_a1b1_d;
+  logic [DW-1:0] t_a0b1, t_a1b0;
 
   /////////////////
   // Calculation //
   /////////////////
   // Inner-domain terms
-  assign t_a0b0 = a0_i & b0_i;
-  assign t_a1b1 = a1_i & b1_i;
+  assign t_a0b0_d = a0_i & b0_i;
+  assign t_a1b1_d = a1_i & b1_i;
 
   // Cross-domain terms
   assign t_a0b1 = a0_i & b1_i;
@@ -82,6 +85,40 @@ module prim_dom_and_2share #(
     .q_o    ( {t0_q, t1_q} )
   );
 
+  /////////////////////////
+  // Optional Pipelining //
+  /////////////////////////
+
+  if (Pipeline == 1'b1) begin : gen_inner_domain_regs
+    // Add pipeline registers on inner-domain terms prior to integration. This allows accepting new
+    // input data every clock cycle and prevents SCA leakage occurring due to the integration of
+    // reshared cross-domain terms with inner-domain terms derived from different input data.
+
+    logic [DW-1:0] t_a0b0_q, t_a1b1_q;
+    prim_flop_en #(
+      .Width      ( DW*2 ),
+      .ResetValue ( '0   )
+    ) u_prim_flop_tab01 (
+      .clk_i  ( clk_i                ),
+      .rst_ni ( rst_ni               ),
+      .en_i   ( z_valid_i            ),
+      .d_i    ( {t_a0b0_d, t_a1b1_d} ),
+      .q_o    ( {t_a0b0_q, t_a1b1_q} )
+    );
+
+    assign t_a0b0 = t_a0b0_q;
+    assign t_a1b1 = t_a1b1_q;
+
+  end else begin : gen_no_inner_domain_regs
+    // Do not add the optional pipeline registers on the inner-domain terms. This allows to save
+    // some area in case the multiplier does not need to accept new data in every cycle. However,
+    // this can cause SCA leakage as during the clock cycle in which new data arrives, the new
+    // inner-domain terms are integrated with the previous, reshared cross-domain terms.
+
+    assign t_a0b0 = t_a0b0_d;
+    assign t_a1b1 = t_a1b1_d;
+  end
+
   /////////////////
   // Integration //
   /////////////////
@@ -96,11 +133,10 @@ module prim_dom_and_2share #(
   );
 
   // DOM AND should be same as unmasked computation
-  // TODO: Put assumption that input need to be stable for at least two cycles
   // The correct test sequence will be:
   //   1. inputs are changed
   //   2. check if z_valid_i,
-  //   3. at the next cycle, inputs are still stable (assumption)
+  //   3. at the next cycle, inputs are still stable (assumption) - only in case Pipeline = 0
   //   4. and results Q == A & B (assertion)
 
   // To speed up the FPV process, random value is ready in less than or
@@ -117,4 +153,3 @@ module prim_dom_and_2share #(
     clk_i, !rst_ni)
 
 endmodule
-
