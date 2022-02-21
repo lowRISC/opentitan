@@ -14,12 +14,6 @@ module kmac
   // If it is enabled, the result digest will be two set of 1600bit.
   parameter bit EnMasking = 1,
 
-  // ReuseShare: If set, keccak_round logic only consumes small portion of
-  // entropy, not 1600bit of entropy at every round. It uses adjacent shares
-  // as entropy inside Domain-Oriented Masking AND logic.
-  // This parameter only affects when `EnMasking` is set.
-  parameter bit ReuseShare = 0,
-
   // Command delay, useful for SCA measurements only. A value of e.g. 40 allows the processor to go
   // into sleep before KMAC starts operation. If a value > 0 is chosen, the processor can provide
   // two commands subsquently and then go to sleep. The second command is buffered internally and
@@ -189,8 +183,8 @@ module kmac
   logic [sha3_pkg::StateW-1:0] reg_state [Share];
 
   // SHA3 Entropy interface
-  logic sha3_rand_valid, sha3_rand_consumed;
-  logic [sha3_pkg::StateW-1:0] sha3_rand_data;
+  logic sha3_rand_valid, sha3_rand_early, sha3_rand_consumed;
+  logic [sha3_pkg::StateW/2-1:0] sha3_rand_data;
 
   // FIFO related signals
   logic msgfifo_empty, msgfifo_full;
@@ -834,8 +828,7 @@ module kmac
     assign unused_msgmask = ^{msg_mask, cfg_msg_mask, msg_mask_en};
   end
   sha3 #(
-    .EnMasking (EnMasking),
-    .ReuseShare (ReuseShare)
+    .EnMasking (EnMasking)
   ) u_sha3 (
     .clk_i,
     .rst_ni,
@@ -848,6 +841,7 @@ module kmac
 
     // Entropy interface
     .rand_valid_i    (sha3_rand_valid),
+    .rand_early_i    (sha3_rand_early),
     .rand_data_i     (sha3_rand_data),
     .rand_consumed_o (sha3_rand_consumed),
 
@@ -1144,6 +1138,7 @@ module kmac
 
       // Entropy to internal logic (DOM AND)
       .rand_valid_o    (sha3_rand_valid),
+      .rand_early_o    (sha3_rand_early),
       .rand_data_o     (sha3_rand_data),
       .rand_consumed_i (sha3_rand_consumed),
 
@@ -1198,6 +1193,7 @@ module kmac
 
     logic unused_sha3_rand_consumed;
     assign sha3_rand_valid = 1'b 1;
+    assign sha3_rand_early = 1'b 1;
     assign sha3_rand_data = '0;
     assign unused_sha3_rand_consumed = sha3_rand_consumed;
 
