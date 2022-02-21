@@ -13,6 +13,8 @@ module entropy_src_main_sm #(
   input logic                   rst_ni,
 
   input logic                   enable_i,
+  input logic                   fw_ov_ent_insert_i,
+  input logic                   fw_ov_sha3_start_i,
   input logic                   ht_done_pulse_i,
   input logic                   ht_fail_pulse_i,
   input logic                   alert_thresh_fail_i,
@@ -38,48 +40,50 @@ module entropy_src_main_sm #(
 );
 
 // Encoding generated with:
-// $ ./util/design/sparse-fsm-encode.py -d 3 -m 19 -n 9 \
-//      -s 1097041703 --language=sv
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 21 -n 9 \
+//      -s 2359261201 --language=sv
 //
 // Hamming distance histogram:
 //
 //  0: --
 //  1: --
 //  2: --
-//  3: |||||||||||||| (19.88%)
-//  4: |||||||||||||||||||| (27.49%)
-//  5: |||||||||||||||||| (25.73%)
-//  6: |||||||||||| (17.54%)
-//  7: ||||| (7.02%)
-//  8: | (2.34%)
-//  9: --
+//  3: |||||||||||| (19.05%)
+//  4: |||||||||||||||||||| (30.48%)
+//  5: ||||||||||||||||| (26.19%)
+//  6: |||||||||| (15.71%)
+//  7: ||| (5.71%)
+//  8: | (2.38%)
+//  9:  (0.48%)
 //
 // Minimum Hamming distance: 3
-// Maximum Hamming distance: 8
-// Minimum Hamming weight: 2
-// Maximum Hamming weight: 7
+// Maximum Hamming distance: 9
+// Minimum Hamming weight: 1
+// Maximum Hamming weight: 8
 //
 
   typedef enum logic [StateWidth-1:0] {
-    Idle              = 9'b001011110, // idle
-    BootHTRunning     = 9'b010101111, // boot mode, wait for health test done pulse
-    BootPostHTChk     = 9'b011001101, // boot mode, wait for post health test packer not empty state
-    BootPhaseDone     = 9'b101011000, // boot mode, stay here until master enable is off
-    StartupHTStart    = 9'b000111011, // startup mode, pulse the sha3 start input
-    StartupPhase1     = 9'b010111000, // startup mode, look for first test pass/fail
-    StartupPass1      = 9'b000010101, // startup mode, look for first test pass/fail, done if pass
-    StartupFail1      = 9'b001100100, // startup mode, look for second fail, alert if fail
-    ContHTStart       = 9'b111010011, // continuous test mode, pulse the sha3 start input
-    ContHTRunning     = 9'b100101000, // continuous test mode, wait for health test done pulse
-    Sha3MsgDone       = 9'b000100001, // sha3 mode, all input messages added, ready to process
-    Sha3Prep          = 9'b011100010, // sha3 mode, request csrng arb to reduce power
-    Sha3Process       = 9'b101001111, // sha3 mode, pulse the sha3 process input
-    Sha3Valid         = 9'b110111110, // sha3 mode, wait for sha3 valid indication
-    Sha3Done          = 9'b011010000, // sha3 mode, capture sha3 result, pulse done input
-    Sha3Quiesce       = 9'b110010100, // sha3 mode, goto alert state or continuous check mode
-    AlertState        = 9'b110100011, // if some alert condition occurs, pulse an alert indication
-    AlertHang         = 9'b100010010, // after pulsing alert signal, hang here until sw handles
-    Error             = 9'b100100110  // illegal state reached and hang
+    Idle              = 9'b011110101, // idle
+    BootHTRunning     = 9'b111010010, // boot mode, wait for health test done pulse
+    BootPostHTChk     = 9'b101101110, // boot mode, wait for post health test packer not empty state
+    BootPhaseDone     = 9'b010001110, // boot mode, stay here until master enable is off
+    StartupHTStart    = 9'b000101100, // startup mode, pulse the sha3 start input
+    StartupPhase1     = 9'b100000001, // startup mode, look for first test pass/fail
+    StartupPass1      = 9'b110100101, // startup mode, look for first test pass/fail, done if pass
+    StartupFail1      = 9'b000010111, // startup mode, look for second fail, alert if fail
+    ContHTStart       = 9'b001000000, // continuous test mode, pulse the sha3 start input
+    ContHTRunning     = 9'b110100010, // continuous test mode, wait for health test done pulse
+    FWInsertStart     = 9'b011000011, // fw ov mode, start the sha3 block
+    FWInsertMsg       = 9'b001011001, // fw ov mode, insert fw message into sha3 block
+    Sha3MsgDone       = 9'b100001111, // sha3 mode, all input messages added, ready to process
+    Sha3Prep          = 9'b011111000, // sha3 mode, request csrng arb to reduce power
+    Sha3Process       = 9'b010111111, // sha3 mode, pulse the sha3 process input
+    Sha3Valid         = 9'b101110001, // sha3 mode, wait for sha3 valid indication
+    Sha3Done          = 9'b110011000, // sha3 mode, capture sha3 result, pulse done input
+    Sha3Quiesce       = 9'b111001101, // sha3 mode, goto alert state or continuous check mode
+    AlertState        = 9'b111111011, // if some alert condition occurs, pulse an alert indication
+    AlertHang         = 9'b101011100, // after pulsing alert signal, hang here until sw handles
+    Error             = 9'b100111101  // illegal state reached and hang
   } state_e;
 
   state_e state_d, state_q;
@@ -120,8 +124,15 @@ module entropy_src_main_sm #(
       Idle: begin
         main_sm_idle_o = 1'b1;
         if (enable_i) begin
-          if (bypass_mode_i) begin
+          // running fw override mode and in sha3 mode
+          if (fw_ov_ent_insert_i && !bypass_mode_i) begin
+            state_d = FWInsertStart;
+          // running in bypass_mode and not fw override mode
+          end else if (bypass_mode_i && !fw_ov_ent_insert_i) begin
             state_d = BootHTRunning;
+          // running in bypass_mode and fw override mode
+          end else if (bypass_mode_i && fw_ov_ent_insert_i) begin
+            state_d = Idle;
           end else begin
             state_d = StartupHTStart;
           end
@@ -229,6 +240,21 @@ module entropy_src_main_sm #(
           state_d = Sha3MsgDone;
         end
       end
+      FWInsertStart: begin
+        if (fw_ov_sha3_start_i || !enable_i) begin
+          sha3_start_o = 1'b1;
+          state_d = FWInsertMsg;
+        end
+      end
+      FWInsertMsg: begin
+        if (!enable_i) begin
+          state_d = Idle;
+        end else begin
+          if (!fw_ov_sha3_start_i) begin
+            state_d = Sha3MsgDone;
+          end
+        end
+      end
       Sha3MsgDone: begin
         state_d = Sha3Prep;
       end
@@ -259,7 +285,11 @@ module entropy_src_main_sm #(
           if (main_stage_rdy_i) begin
             sha3_done_o = 1'b1;
             main_stage_push_o = 1'b1;
-            state_d = Sha3Quiesce;
+            if (fw_ov_ent_insert_i) begin
+              state_d = Idle;
+            end else begin
+              state_d = Sha3Quiesce;
+            end
           end
         end
       end
