@@ -185,18 +185,19 @@ module rv_core_ibex
   logic [31:0] rvfi_mem_wdata;
 `endif
 
-  // integrity errors and core alert events
+  // errors and core alert events
   logic ibus_intg_err, dbus_intg_err;
   logic alert_minor, alert_major_internal, alert_major_bus;
   logic double_fault;
+  logic fatal_intg_err, fatal_core_err, recov_core_err;
 
   // alert events to peripheral module
   logic fatal_intg_event;
   logic fatal_core_event;
   logic recov_core_event;
   assign fatal_intg_event = ibus_intg_err | dbus_intg_err | alert_major_bus;
-  assign fatal_core_event = alert_major_internal;
-  assign recov_core_event = alert_minor | double_fault;
+  assign fatal_core_event = alert_major_internal | double_fault;
+  assign recov_core_event = alert_minor;
 
   // configurations for address translation
   region_cfg_t [NumRegions-1:0] ibus_region_cfg;
@@ -309,10 +310,30 @@ module rv_core_ibex
   logic unused_nonce;
   assign unused_nonce = |icache_otp_key_i.nonce;
 
+  // Local fetch enable control.
+  // Whenever a fatal core error is seen disable local fetch enable.
+  lc_ctrl_pkg::lc_tx_t local_fetch_enable_q, local_fetch_enable_d, local_fetch_enable_buf;
 
-  // Multibit AND computation for fetch enable.
+  assign local_fetch_enable_d = fatal_core_err ? lc_ctrl_pkg::Off : local_fetch_enable_q;
+
+  always @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      local_fetch_enable_q <= lc_ctrl_pkg::On;
+    end else begin
+      local_fetch_enable_q <= local_fetch_enable_d;
+    end
+  end
+
+  prim_buf #(.Width(lc_ctrl_pkg::TxWidth)) u_local_fetch_enable_prim_buf (
+    .in_i (local_fetch_enable_q),
+    .out_o(local_fetch_enable_buf)
+  );
+
+  // Multibit AND computation for fetch enable. Fetch is only enabled when local fetch enable,
+  // lifecycle CPU enable and power manager CPU enable are all enabled.
   lc_ctrl_pkg::lc_tx_t fetch_enable;
-  assign fetch_enable = lc_ctrl_pkg::lc_tx_and_hi(lc_cpu_en[0], pwrmgr_cpu_en[0]);
+  assign fetch_enable = lc_ctrl_pkg::lc_tx_and_hi(local_fetch_enable_buf,
+    lc_ctrl_pkg::lc_tx_and_hi(lc_cpu_en[0], pwrmgr_cpu_en[0]));
 
   ibex_pkg::crash_dump_t crash_dump;
   ibex_top #(
@@ -635,7 +656,6 @@ module rv_core_ibex
   ///////////////////////
   // Error assignment
   ///////////////////////
-  logic fatal_intg_err, fatal_core_err, recov_core_err;
 
   assign fatal_intg_err = fatal_intg_event;
   assign fatal_core_err = fatal_core_event;
