@@ -1069,8 +1069,8 @@ module chip_${top["name"]}_${target["name"]} #(
 // otherwise Verilator / FPGA will hang.
   top_${top["name"]} #(
 % if target["name"] == "cw310":
-    .SecAesMasking(1'b1),
-    .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
+    .SecAesMasking(1'b0),
+    .SecAesSBoxImpl(aes_pkg::SBoxImplLut),
     .SecAesStartTriggerDelay(40),
     .SecAesAllowForcingMasks(1'b1),
     .KmacEnMasking(0),
