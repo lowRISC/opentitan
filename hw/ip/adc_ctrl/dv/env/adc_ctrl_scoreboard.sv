@@ -8,7 +8,6 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
   .COV_T(adc_ctrl_env_cov)
 );
 
-
   // Analysis FIFOs for ADC push pull monitor transactions
   adc_push_pull_fifo_t m_adc_push_pull_fifo[ADC_CTRL_CHANNELS];
 
@@ -18,14 +17,8 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
   // Interrupt value for each channel
   protected adc_value_logic_t m_adc_interrupt_values[int];
 
-  // Sampled interrupts
-  protected logic [NUM_MAX_INTERRUPTS-1:0] m_interrupts;
-
-  // Our interrupt line
-  protected logic m_interrupt;
-
-  // Interrupt asserted this ADC sample
-  protected logic m_interrupt_posedge;
+  // Interrupt line
+  protected logic m_interrupt, m_interrupt_prev;
 
   // ADC Model variables
   // Filter match for each filter of each channel
@@ -35,9 +28,21 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
   // Normal power and low power sample match counters
   protected uint16_t m_np_counter, m_lp_counter;
   // Expected filter status bits
-  protected bit [ADC_CTRL_NUM_FILTERS - 1 : 0] m_expected_filter_status;
+  protected
+  bit [ADC_CTRL_NUM_FILTERS - 1 : 0]
+      m_expected_filter_status, m_expected_filter_status_prev;
   // Debounce detected
   protected bit m_debounced;
+  // Expected adc_intr_status (1 bit per filter + oneshot mode)
+  protected bit [ADC_CTRL_NUM_FILTERS : 0] m_expected_adc_intr_status;
+  // Expected intr_state register
+  protected bit m_expected_intr_state;
+  // Write to filter_status
+  protected event m_filter_status_wr_ev;
+  // Write to adc_intr_status
+  protected event m_adc_intr_status_wr_ev;
+  // Write to intr_state
+  protected event m_intr_state_wr_ev;
 
   `uvm_component_utils(adc_ctrl_scoreboard)
 
@@ -82,20 +87,23 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
   // Monitor interrupt line
   protected virtual task monitor_intr_proc();
     forever begin
-      cfg.clk_rst_vif.wait_clks(1);
-      // Sample the interrupt lines
-      m_interrupts = cfg.intr_vif.sample();
-      `uvm_info(`gfn, $sformatf("interrupts=%b", m_interrupts), UVM_DEBUG)
+      cfg.clk_aon_rst_vif.wait_clks(1);
+      m_interrupt_prev = m_interrupt;
+      m_interrupt = cfg.intr_vif.sample_pin(ADC_CTRL_INTERRUPT_INDEX);
 
-      // Detect a positive edge on our interrupt line
-      m_interrupt_posedge = ~m_interrupt & m_interrupts[ADC_CTRL_INTERRUPT_INDEX];
-      m_interrupt         = m_interrupts[ADC_CTRL_INTERRUPT_INDEX];
-
-      // If we see a positive edge on the interrupt line capture the lastest values
-      if (m_interrupt_posedge) begin
+      // If we see a positive edge on the interrupt line capture the latest values
+      if (m_interrupt & ~m_interrupt_prev) begin
         foreach (m_adc_latest_values[channel]) begin
           m_adc_interrupt_values[channel] = m_adc_latest_values[channel];
         end
+      end
+
+      // Compare against expected every change of interrupt line
+      if (cfg.en_scb & (m_interrupt ^ m_interrupt_prev)) begin
+        `uvm_info(`gfn, $sformatf(
+                  "monitor_intr_proc: interrupt pin change m_interrupt=%b", m_interrupt),
+                  UVM_MEDIUM)
+        `DV_CHECK_EQ(m_interrupt, m_expected_intr_state)
       end
 
     end
@@ -167,8 +175,16 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
-        // FIXME
-        do_read_check = 1'b0;
+        // TODO: update modeling for One Shot mode
+        do_read_check = !(cfg.testmode inside {AdcCtrlOneShot});
+        if (addr_phase_write) begin
+          ->m_intr_state_wr_ev;
+          // Implement W1C
+          m_expected_intr_state &= (~item.a_data);
+        end
+        if (addr_phase_read) begin
+          `DV_CHECK(csr.predict(.value(m_expected_intr_state), .kind(UVM_PREDICT_READ)))
+        end
       end
       "intr_enable": begin
         // FIXME
@@ -177,7 +193,16 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
         // FIXME
       end
       "adc_intr_status": begin
-        do_read_check = 1'b0;
+        // TODO: update modeling for One Shot mode
+        do_read_check = !(cfg.testmode inside {AdcCtrlOneShot});
+        if (addr_phase_write) begin
+          ->m_adc_intr_status_wr_ev;
+          // Implement W1C
+          m_expected_adc_intr_status &= (~item.a_data);
+        end
+        if (addr_phase_read) begin
+          `DV_CHECK(csr.predict(.value(m_expected_adc_intr_status), .kind(UVM_PREDICT_READ)))
+        end
       end
       "adc_intr_ctl": begin
         // FIXME
@@ -193,10 +218,17 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
               .value(m_expected_filter_status), .kind(UVM_PREDICT_READ)
           ));
         end
-        // Reg model should have implemented the W1C functionality
-        // Need to update the expected value
         if (addr_phase_write) begin
-          m_expected_filter_status = ral.filter_status.get();
+          ->m_filter_status_wr_ev;
+          // Implement W1C
+          m_expected_filter_status &= (~item.a_data);
+          // Update m_expected_filter_status_prev after 1 clock
+          fork
+            begin
+              cfg.clk_aon_rst_vif.wait_clks(1);
+              m_expected_filter_status_prev = m_expected_filter_status;
+            end
+          join_none
         end
 
       end
@@ -325,23 +357,27 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
           // Not at it's limit
           m_np_counter++;
         end else if (!m_debounced) begin
+          bit intr_enable = ral.intr_enable.debug_cable.get_mirrored_value();
           // Capture matches
-          m_expected_filter_status = m_expected_filter_status | m_match;
           m_debounced = 1;
+          m_expected_filter_status |= m_match;
+          m_expected_adc_intr_status |= (m_expected_filter_status & ~m_expected_filter_status_prev);
+          m_expected_intr_state = intr_enable & (|(m_expected_adc_intr_status & cfg.adc_intr_ctl));
         end
       end else begin
-        // Pervious matched set different to current
+        // Previous matched set different to current
         m_np_counter = 0;
-        m_debounced = 0;
+        m_debounced  = 0;
       end
     end else begin
       // No filters hit
       m_np_counter = 0;
-      m_debounced = 0;
+      m_debounced  = 0;
     end
+    // Delayfor edge detection
     m_match_prev = m_match;
+    m_expected_filter_status_prev = m_expected_filter_status;
   endfunction
-
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
@@ -356,6 +392,9 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     m_np_counter = 0;
     m_lp_counter = 0;
     m_expected_filter_status = 0;
+    m_expected_filter_status_prev = 0;
+    m_expected_adc_intr_status = 0;
+    m_expected_intr_state = 0;
   endfunction
 
   function void check_phase(uvm_phase phase);

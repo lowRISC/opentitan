@@ -59,7 +59,7 @@
           As filters_polled but with filter parameters fixed during the test.
           '''
       milestone: V2
-      tests: []
+      tests: ["adc_ctrl_filters_polled_fixed"]
     }
     {
       name: filters_interrupt
@@ -81,7 +81,7 @@
           - Check interrupt signal operates as expected.
           '''
       milestone: V2
-      tests: []
+      tests: ["adc_ctrl_filters_interrupt"]
     }
     {
       name: filters_interrupt_fixed
@@ -89,7 +89,7 @@
           As filters_interrupt but with filter parameters fixed during the test.
           '''
       milestone: V2
-      tests: []
+      tests: ["adc_ctrl_filters_interrupt_fixed"]
     }
     {
       name: filters_wakeup

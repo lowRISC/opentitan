@@ -55,7 +55,7 @@ package adc_ctrl_env_pkg;
 
   // Type of test we are executing
   typedef enum {
-    AdcCtrlOnehot,
+    AdcCtrlOneShot,
     AdcCtrlNormal,
     AdcCtrlLowpower
   } adc_ctrl_testmode_e;
