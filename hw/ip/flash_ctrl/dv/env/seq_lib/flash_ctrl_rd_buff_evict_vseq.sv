@@ -401,7 +401,7 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
   endtask : host_read_op_data
 
   // Controller read data.
-  virtual task controller_read_op_data(flash_op_t flash_op);
+  virtual task controller_read_op_data(ref flash_op_t flash_op);
     flash_op.op = flash_ctrl_pkg::FlashOpRead;
     flash_rd_data.delete();
     flash_ctrl_start_op(flash_op);
@@ -411,7 +411,7 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
   endtask : controller_read_op_data
 
   // Controller program data.
-  virtual task controller_program_data(flash_op_t flash_op, data_q_t flash_op_data);
+  virtual task controller_program_data(ref flash_op_t flash_op, data_q_t flash_op_data);
     flash_op.op = flash_ctrl_pkg::FlashOpProgram;
     cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));
     flash_ctrl_start_op(flash_op);
@@ -421,7 +421,7 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
   endtask : controller_program_data
 
   // Erase data.
-  virtual task erase_data(flash_op_t flash_op);
+  virtual task erase_data(ref flash_op_t flash_op);
     flash_op.op = flash_ctrl_pkg::FlashOpErase;
     flash_ctrl_start_op(flash_op);
     wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
