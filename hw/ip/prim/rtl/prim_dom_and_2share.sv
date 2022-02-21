@@ -45,44 +45,56 @@ module prim_dom_and_2share #(
 
   logic [DW-1:0] t0_d, t0_q, t1_d, t1_q;
   logic [DW-1:0] t_a0b1, t_a1b0, t_a0b0, t_a1b1;
-  //synopsys keep_signal_name t_a0b1
-  //synopsys keep_signal_name t_a1b0
-  //synopsys keep_signal_name t_a0b0
-  //synopsys keep_signal_name t_a1b1
 
-  // Preserve the logic sequence for XOR not to preceed the AND
-  assign t_a0b1 = a0_i & b1_i;
-  assign t_a1b0 = a1_i & b0_i;
-  assign t0_d = t_a0b1 ^ z_i;
-  assign t1_d = t_a1b0 ^ z_i;
-
-  if (EnNegedge == 1) begin: gen_negreg
-    // TODO: Make inverted clock and use.
-    always_ff @(negedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        t0_q <= '0;
-        t1_q <= '0;
-      end else if (z_valid_i) begin
-        t0_q <= t0_d;
-        t1_q <= t1_d;
-      end
-    end
-  end else begin: gen_posreg
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        t0_q <= '0;
-        t1_q <= '0;
-      end else if (z_valid_i) begin
-        t0_q <= t0_d;
-        t1_q <= t1_d;
-      end
-    end
-  end
-
+  /////////////////
+  // Calculation //
+  /////////////////
+  // Inner-domain terms
   assign t_a0b0 = a0_i & b0_i;
   assign t_a1b1 = a1_i & b1_i;
-  assign q0_o = t_a0b0 ^ t0_q;
-  assign q1_o = t_a1b1 ^ t1_q;
+
+  // Cross-domain terms
+  assign t_a0b1 = a0_i & b1_i;
+  assign t_a1b0 = a1_i & b0_i;
+
+  ///////////////
+  // Resharing //
+  ///////////////
+  // Resharing of cross-domain terms
+
+  // Preserve the logic sequence for XOR not to proceed cross-domain AND.
+  prim_xor2 #(
+    .Width ( DW*2 )
+  ) u_prim_xor_t01 (
+    .in0_i ( {t_a0b1, t_a1b0} ),
+    .in1_i ( {z_i,    z_i}    ),
+    .out_o ( {t0_d,   t1_d}   )
+  );
+
+  // Register stage
+  prim_flop_en #(
+    .Width      ( DW*2 ),
+    .ResetValue ( '0   )
+  ) u_prim_flop_t01 (
+    .clk_i  ( clk_i        ),
+    .rst_ni ( rst_ni       ),
+    .en_i   ( z_valid_i    ),
+    .d_i    ( {t0_d, t1_d} ),
+    .q_o    ( {t0_q, t1_q} )
+  );
+
+  /////////////////
+  // Integration //
+  /////////////////
+
+  // Preserve the logic sequence for XOR not to proceed the inner-domain AND.
+  prim_xor2 #(
+    .Width ( DW*2 )
+  ) u_prim_xor_q01 (
+    .in0_i ( {t_a0b0, t_a1b1} ),
+    .in1_i ( {t0_q,   t1_q}   ),
+    .out_o ( {q0_o,   q1_o}   )
+  );
 
   // Negative Edge isn't yet supported. Need inverted clock and use
   // inside always_ff not `negedge clk_i`.
