@@ -109,7 +109,7 @@
           - Check wakeup signal operates as expected.
           '''
       milestone: V2
-      tests: []
+      tests: ["adc_ctrl_filters_wakeup"]
     }
     {
       name: filters_wakeup_fixed
@@ -117,7 +117,7 @@
           As filters_wakeup but with filter parameters fixed during the test.
           '''
       milestone: V2
-      tests: []
+      tests: ["adc_ctrl_filters_wakeup_fixed"]
     }
     {
       name: filters_both

@@ -8,6 +8,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
   .COV_T(adc_ctrl_env_cov)
 );
 
+
   // Analysis FIFOs for ADC push pull monitor transactions
   adc_push_pull_fifo_t m_adc_push_pull_fifo[ADC_CTRL_CHANNELS];
 
@@ -19,6 +20,8 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // Interrupt line
   protected logic m_interrupt, m_interrupt_prev;
+  // Wakeup line
+  protected logic m_wakeup, m_wakeup_prev;
 
   // ADC Model variables
   // Filter match for each filter of each channel
@@ -43,6 +46,8 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
   protected event m_adc_intr_status_wr_ev;
   // Write to intr_state
   protected event m_intr_state_wr_ev;
+  // Expected wakeup line
+  protected bit m_expected_wakeup;
 
   `uvm_component_utils(adc_ctrl_scoreboard)
 
@@ -72,6 +77,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     super.run_phase(phase);
     fork
       monitor_intr_proc();
+      monitor_wakeup_proc();
     join_none
 
     for (idx = 0; idx < ADC_CTRL_CHANNELS; idx++) begin
@@ -106,6 +112,21 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
         `DV_CHECK_EQ(m_interrupt, m_expected_intr_state)
       end
 
+    end
+  endtask
+
+  // Monitor wakeup line
+  protected virtual task monitor_wakeup_proc();
+    forever begin
+      cfg.clk_aon_rst_vif.wait_clks(1);
+      m_wakeup_prev = m_wakeup;
+      m_wakeup = cfg.wakeup_vif.sample_pin(0);
+      // Compare against expected every change of wakeup line
+      if (cfg.en_scb & (m_wakeup ^ m_wakeup_prev)) begin
+        `uvm_info(`gfn, $sformatf("monitor_wakeup_proc: wakeup pin change m_wakeup=%b", m_wakeup),
+                  UVM_MEDIUM)
+        `DV_CHECK_EQ(m_wakeup, m_expected_wakeup)
+      end
     end
   endtask
 
@@ -377,7 +398,11 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     // Delayfor edge detection
     m_match_prev = m_match;
     m_expected_filter_status_prev = m_expected_filter_status;
+
+    // Decode expected wakeup - allow dynamic control
+    m_expected_wakeup = |(m_expected_filter_status & cfg.ral.adc_wakeup_ctl.get_mirrored_value());
   endfunction
+
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
