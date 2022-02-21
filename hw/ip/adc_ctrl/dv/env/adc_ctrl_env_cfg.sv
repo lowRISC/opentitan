@@ -22,7 +22,11 @@ class adc_ctrl_env_cfg extends cip_base_env_cfg #(
   adc_ctrl_testmode_e testmode;
 
   // Interrupt control bits
-  rand bit [8:0] adc_intr_ctl;
+  rand bit [ADC_CTRL_CHANNELS:0] adc_intr_ctl;
+
+  // Wakeup control bits
+  rand bit [ADC_CTRL_CHANNELS-1:0] adc_wakeup_ctl;
+
 
   // Power up / wake up time
   rand int pwrup_time;

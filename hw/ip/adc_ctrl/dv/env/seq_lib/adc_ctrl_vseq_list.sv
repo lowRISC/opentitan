@@ -8,4 +8,4 @@
 `include "adc_ctrl_random_ramp_vseq.sv"
 `include "adc_ctrl_filters_polled_vseq.sv"
 `include "adc_ctrl_filters_interrupt_vseq.sv"
-
+`include "adc_ctrl_filters_wakeup_vseq.sv"

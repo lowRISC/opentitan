@@ -73,6 +73,17 @@
       uvm_test_seq: adc_ctrl_filters_interrupt_vseq
       run_opts: ["+filters_fixed=1"]
     }
+
+    {
+      name: adc_ctrl_filters_wakeup
+      uvm_test_seq: adc_ctrl_filters_wakeup_vseq
+    }
+
+    {
+      name: adc_ctrl_filters_wakeup_fixed
+      uvm_test_seq: adc_ctrl_filters_wakeup_vseq
+      run_opts: ["+filters_fixed=1"]
+    }
     // TODO: add more tests here
   ]
 
