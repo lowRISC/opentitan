@@ -136,7 +136,7 @@ module otbn_reg_top (
       [16384:20479]: begin
         reg_steer = 0;
       end
-      [32768:34815]: begin
+      [32768:35839]: begin
         reg_steer = 1;
       end
       default: begin

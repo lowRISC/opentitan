@@ -577,8 +577,8 @@ Functionally it should be impossible for either OTBN or a host processor to make
 OTBN is in the busy state whilst keys are requested so OTBN will not execute any programs and a host processor access will generated an `ILLEGAL_BUS_ACCESS` fatal error.
 Should a request not be granted due to a fault, a `BAD_INTERNAL_STATE` fatal error will be raised.
 
-While DMEM is 4kiB, only the first 2kiB (at addresses `0x0` to `0x7ff`) is visible through the register interface.
-This is to allow OTBN applications to store sensitive information in the other half, making it harder for that information to leak back to Ibex.
+While DMEM is 4kiB, only the first 3kiB (at addresses `0x0` to `0xbff`) is visible through the register interface.
+This is to allow OTBN applications to store sensitive information in the other 1kiB, making it harder for that information to leak back to Ibex.
 
 Each memory write through the register interface updates a checksum.
 See the [Memory Load Integrity]({{< relref "#mem-load-integrity" >}}) section for more details.

@@ -308,7 +308,7 @@ package otbn_reg_pkg;
   parameter logic [BlockAw-1:0] OTBN_IMEM_OFFSET = 16'h 4000;
   parameter int unsigned        OTBN_IMEM_SIZE   = 'h 1000;
   parameter logic [BlockAw-1:0] OTBN_DMEM_OFFSET = 16'h 8000;
-  parameter int unsigned        OTBN_DMEM_SIZE   = 'h 800;
+  parameter int unsigned        OTBN_DMEM_SIZE   = 'h c00;
 
   // Register index
   typedef enum int {
