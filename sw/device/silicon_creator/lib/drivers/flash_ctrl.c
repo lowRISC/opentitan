@@ -90,7 +90,19 @@ static void transaction_start(transaction_params_t params) {
       bitfield_bit32_read(params.partition, FLASH_CTRL_PARTITION_BIT_IS_INFO);
   const uint32_t info_type = bitfield_field32_read(
       params.partition, FLASH_CTRL_PARTITION_FIELD_INFO_TYPE);
-  const bool bank_erase = params.erase_type == kFlashCtrlEraseTypeBank;
+  bool bank_erase = true;
+  switch (launder32(params.erase_type)) {
+    case kFlashCtrlEraseTypeBank:
+      HARDENED_CHECK_EQ(params.erase_type, kFlashCtrlEraseTypeBank);
+      bank_erase = true;
+      break;
+    case kFlashCtrlEraseTypePage:
+      HARDENED_CHECK_EQ(params.erase_type, kFlashCtrlEraseTypePage);
+      bank_erase = false;
+      break;
+    default:
+      HARDENED_UNREACHABLE();
+  }
   uint32_t reg = bitfield_bit32_write(0, FLASH_CTRL_CONTROL_START_BIT, true);
   reg =
       bitfield_field32_write(reg, FLASH_CTRL_CONTROL_OP_FIELD, params.op_type);
