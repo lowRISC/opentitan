@@ -25,3 +25,16 @@ option(
   type: 'boolean',
   value: false,
 )
+
+option(
+  'partner',
+  type: 'boolean',
+  value: false,
+)
+
+option(
+  'partnerdir',
+  type: 'string',
+  value: '',
+)
+
