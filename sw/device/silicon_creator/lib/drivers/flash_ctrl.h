@@ -155,6 +155,15 @@ enum {
   kFlashCtrlSecMmioInit = 5,
 };
 
+
+
+/**
+ * Value of a word in flash after erase.
+ */
+enum {
+  kFlashCtrlErasedWord = UINT32_MAX,
+};
+
 /**
  * Kicks of the initialization of the flash controller.
  *

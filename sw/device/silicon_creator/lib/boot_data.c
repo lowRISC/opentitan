@@ -73,19 +73,19 @@ static void boot_data_digest_compute(const void *boot_data,
  * @return Whether the entry is empty.
  */
 static hardened_bool_t boot_data_is_empty(const void *boot_data) {
-  static_assert(kBootDataEmptyWordValue == UINT32_MAX,
-                "kBootDataEmptyWordValue must be UINT32_MAX");
+  static_assert(kFlashCtrlErasedWord == UINT32_MAX,
+                "kFlashCtrlErasedWord must be UINT32_MAX");
   size_t i = 0;
   hardened_bool_t is_empty = kHardenedBoolTrue;
-  uint32_t res = kBootDataEmptyWordValue;
+  uint32_t res = kFlashCtrlErasedWord;
   for (; launder32(i) < kBootDataNumWords; ++i) {
     res &= read_32(boot_data);
     is_empty &= read_32(boot_data);
     boot_data = (char *)boot_data + sizeof(uint32_t);
   }
   HARDENED_CHECK_EQ(i, kBootDataNumWords);
-  if (launder32(res) == kBootDataEmptyWordValue) {
-    HARDENED_CHECK_EQ(res, kBootDataEmptyWordValue);
+  if (launder32(res) == kFlashCtrlErasedWord) {
+    HARDENED_CHECK_EQ(res, kFlashCtrlErasedWord);
     return is_empty;
   }
   return kHardenedBoolFalse;
@@ -97,7 +97,7 @@ static hardened_bool_t boot_data_is_empty(const void *boot_data) {
  *
  * This function can be used to quickly determine if an entry can be empty or
  * valid. Due to the values chosen for valid and invalid entries,
- * `masked_identifier` will be `kBootDataEmptyWordValue` for entries that can be
+ * `masked_identifier` will be `kFlashCtrlErasedWord` for entries that can be
  * empty, `kBootDataIdentifier` for entries that are not invalidated, and `0`
  * for invalidated entries.
  *
@@ -328,7 +328,7 @@ static rom_error_t boot_data_page_info_update_impl(
     // empty or valid.
     HARDENED_RETURN_IF_ERROR(boot_data_sniff(page, i, &sniff_results[i]));
     // Check all words of this entry only if it can be empty.
-    if (sniff_results[i] == kBootDataEmptyWordValue) {
+    if (sniff_results[i] == kFlashCtrlErasedWord) {
       HARDENED_RETURN_IF_ERROR(boot_data_entry_read(page, i, &buf));
       has_empty_entry = boot_data_is_empty(&buf);
       if (launder32(has_empty_entry) == kHardenedBoolTrue) {
