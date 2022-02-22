@@ -37,7 +37,6 @@ pub struct TransportWrapper {
     uart_map: HashMap<String, String>,
     spi_map: HashMap<String, String>,
     i2c_map: HashMap<String, String>,
-    flash_map: HashMap<String, conf::FlashConfiguration>,
     pin_conf_map: HashMap<String, PinConfiguration>,
     strapping_conf_map: HashMap<String, HashMap<String, PinConfiguration>>,
 }
@@ -50,7 +49,6 @@ impl TransportWrapper {
             uart_map: HashMap::new(),
             spi_map: HashMap::new(),
             i2c_map: HashMap::new(),
-            flash_map: HashMap::new(),
             pin_conf_map: HashMap::new(),
             strapping_conf_map: HashMap::new(),
         }
@@ -217,10 +215,6 @@ impl TransportWrapper {
             }
             // TODO(#8769): Record baud / parity configration for later
             // use when opening uart.
-        }
-        for flash_conf in file.flash {
-            self.flash_map
-                .insert(flash_conf.name.clone(), flash_conf.clone());
         }
         Ok(())
     }

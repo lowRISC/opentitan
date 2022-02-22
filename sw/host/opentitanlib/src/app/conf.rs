@@ -76,56 +76,6 @@ pub struct SpiConfiguration {
     pub alias_of: Option<String>,
 }
 
-#[derive(Deserialize, Clone, Debug, PartialEq, Eq)]
-pub enum FlashAddressMode {
-    Mode3b,
-    Mode4b,
-}
-
-/// Chip programmed via an EEPROM-like SPI protocol.
-#[derive(Deserialize, Clone, Debug)]
-pub struct SpiEeprom {
-    size: u32,
-    erase_block_size: u32,
-    erase_opcode: u8,
-    program_block_size: u32,
-    address_mode: FlashAddressMode,
-    /// Name of spi bus as defined by transport.
-    spi_bus: String,
-    // Possibly add more fields to declare SPI mode/speed
-}
-
-/// Temporary measure to allow external program to implement SPI protocol.
-#[derive(Deserialize, Clone, Debug)]
-pub struct SpiExternalDriver {
-    command: String,
-    /// Name of spi bus as defined by transport.
-    spi_bus: String,
-    // Possibly add more fields to declare SPI mode/speed
-}
-
-/// Defines the protocol used by a particular programmable chip.
-#[derive(Deserialize, Clone, Debug)]
-pub enum FlashDriver {
-    /// Chip programmed via an EEPROM-like SPI protocol.
-    SpiEeprom(SpiEeprom),
-    /// Temporary measure to allow external program to implement SPI protocol.
-    SpiExternalDriver(SpiExternalDriver),
-}
-
-/// Defines the way to reach and program flash storage.
-#[derive(Deserialize, Clone, Debug)]
-pub struct FlashConfiguration {
-    /// The user-visible name of the flash storage.
-    pub name: String,
-    /// Name of the reset pin to be used.
-    pub reset_pin: String,
-    /// Name of the bootloade pin to be held high during reset.
-    pub bootloader_pin: Option<String>,
-    /// Declaration of the particular flashing protocol to be used.
-    pub driver: FlashDriver,
-}
-
 /// Representation of the complete and unresolved content of a single
 /// confguration file.
 #[derive(Deserialize, Clone, Debug)]
@@ -145,7 +95,4 @@ pub struct ConfigurationFile {
     /// List of UART configurations.
     #[serde(default)]
     pub uarts: Vec<UartConfiguration>,
-    /// List of configurations of programmable storage.
-    #[serde(default)]
-    pub flash: Vec<FlashConfiguration>,
 }
