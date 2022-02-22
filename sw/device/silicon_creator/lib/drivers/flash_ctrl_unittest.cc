@@ -605,5 +605,89 @@ TEST_F(FlashCtrlTest, CreatorInfoLockdown) {
   flash_ctrl_creator_info_pages_lockdown();
 }
 
+struct EraseVerifyCase {
+  /**
+   * Address.
+   */
+  uint32_t addr;
+  /**
+   * Truncated address aligned to closest lower page/bank.
+   */
+  uint32_t aligned_addr;
+  /**
+   * Erase type.
+   */
+  flash_ctrl_erase_type_t erase_type;
+  /**
+   * Value of the last word read from flash (for testing failure cases).
+   */
+  uint32_t last_word_val;
+  /**
+   * Expected return value.
+   */
+  rom_error_t error;
+};
+
+class EraseVerifyTest : public FlashCtrlTest,
+                        public testing::WithParamInterface<EraseVerifyCase> {};
+
+TEST_P(EraseVerifyTest, DataEraseVerify) {
+  size_t byte_count;
+  switch (GetParam().erase_type) {
+    case kFlashCtrlEraseTypeBank:
+      byte_count = FLASH_CTRL_PARAM_BYTES_PER_BANK;
+      break;
+    case kFlashCtrlEraseTypePage:
+      byte_count = FLASH_CTRL_PARAM_BYTES_PER_PAGE;
+      break;
+    default:
+      FAIL();
+  }
+
+  size_t i = 0;
+  for (; i < byte_count - sizeof(uint32_t); i += sizeof(uint32_t)) {
+    EXPECT_ABS_READ32(
+        TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + GetParam().aligned_addr + i,
+        kFlashCtrlErasedWord);
+  }
+  EXPECT_ABS_READ32(
+      TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + GetParam().aligned_addr + i,
+      GetParam().last_word_val);
+
+  EXPECT_EQ(
+      flash_ctrl_data_erase_verify(GetParam().addr, GetParam().erase_type),
+      GetParam().error);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    AllCases, EraseVerifyTest,
+    testing::Values(
+        // Verify first page.
+        EraseVerifyCase{
+            .addr = 0,
+            .aligned_addr = 0,
+            .erase_type = kFlashCtrlEraseTypePage,
+            .last_word_val = kFlashCtrlErasedWord,
+            .error = kErrorOk,
+        },
+        // Verify 10th page, unaligned address.
+        EraseVerifyCase{
+            .addr = 10 * FLASH_CTRL_PARAM_BYTES_PER_PAGE + 128,
+            .aligned_addr = 10 * FLASH_CTRL_PARAM_BYTES_PER_PAGE,
+            .erase_type = kFlashCtrlEraseTypePage,
+            .last_word_val = kFlashCtrlErasedWord,
+            .error = kErrorOk,
+        },
+        // Fail to verify 10th page, unaligned address.
+        EraseVerifyCase{
+            .addr = 10 * FLASH_CTRL_PARAM_BYTES_PER_PAGE + 128,
+            .aligned_addr = 10 * FLASH_CTRL_PARAM_BYTES_PER_PAGE,
+            .erase_type = kFlashCtrlEraseTypePage,
+            .last_word_val = 0xfffffff0,
+            .error = kErrorFlashCtrlDataEraseVerify,
+        }  // Note: No cases for bank erases since the test times out due to
+           // large number of expectations.
+        ));
+
 }  // namespace
 }  // namespace flash_ctrl_unittest

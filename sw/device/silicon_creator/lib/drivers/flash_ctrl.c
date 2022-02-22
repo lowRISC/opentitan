@@ -400,6 +400,50 @@ rom_error_t flash_ctrl_data_erase(uint32_t addr,
   return wait_for_done(kErrorFlashCtrlDataErase);
 }
 
+rom_error_t flash_ctrl_data_erase_verify(uint32_t addr,
+                                         flash_ctrl_erase_type_t erase_type) {
+  static_assert(__builtin_popcount(FLASH_CTRL_PARAM_BYTES_PER_BANK) == 1,
+                "Bytes per bank must be a power of two.");
+  static_assert(__builtin_popcount(FLASH_CTRL_PARAM_BYTES_PER_PAGE) == 1,
+                "Bytes per page must be a power of two.");
+
+  size_t byte_count;
+  rom_error_t error = kErrorFlashCtrlDataEraseVerify;
+  switch (launder32(erase_type)) {
+    case kFlashCtrlEraseTypeBank:
+      HARDENED_CHECK_EQ(erase_type, kFlashCtrlEraseTypeBank);
+      byte_count = FLASH_CTRL_PARAM_BYTES_PER_BANK;
+      error = kErrorOk ^ (byte_count - 1);
+      break;
+    case kFlashCtrlEraseTypePage:
+      HARDENED_CHECK_EQ(erase_type, kFlashCtrlEraseTypePage);
+      byte_count = FLASH_CTRL_PARAM_BYTES_PER_PAGE;
+      error = kErrorOk ^ (byte_count - 1);
+      break;
+    default:
+      HARDENED_UNREACHABLE();
+  }
+
+  // Truncate to the closest lower bank/page aligned address.
+  addr &= ~byte_count + 1;
+  uint32_t mask = kFlashCtrlErasedWord;
+  size_t i = 0;
+  for (; launder32(i) < byte_count; i += sizeof(uint32_t)) {
+    uint32_t word =
+        abs_mmio_read32(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + addr + i);
+    mask &= word;
+    error &= word;
+  }
+  HARDENED_CHECK_EQ(i, byte_count);
+
+  if (launder32(mask) == kFlashCtrlErasedWord) {
+    HARDENED_CHECK_EQ(mask, kFlashCtrlErasedWord);
+    return error ^ (byte_count - 1);
+  }
+
+  return kErrorFlashCtrlDataEraseVerify;
+}
+
 rom_error_t flash_ctrl_info_erase(flash_ctrl_info_page_t info_page,
                                   flash_ctrl_erase_type_t erase_type) {
   const uint32_t addr = info_page_addr(info_page);
