@@ -346,7 +346,7 @@ class aes_base_vseq extends cip_base_vseq #(
   // enable sideload sequence
   // and get it to generate a key a random times
   task start_sideload_seq();
-    sideload_seq = key_sideload_set_seq::type_id::create("sideload_seq");
+    sideload_seq = key_sideload_set_seq#(keymgr_pkg::hw_key_req_t)::type_id::create("sideload_seq");
     `DV_CHECK_RANDOMIZE_FATAL(sideload_seq)
     sideload_seq.start(p_sequencer.key_sideload_sequencer_h);
     forever begin
@@ -358,7 +358,7 @@ class aes_base_vseq extends cip_base_vseq #(
   endtask
 
   task req_sideload_key();
-    req_key_seq = key_sideload_set_seq::type_id::create("req_key_seq");
+    req_key_seq = key_sideload_set_seq#(keymgr_pkg::hw_key_req_t)::type_id::create("req_key_seq");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req_key_seq, sideload_key.valid == 1;)
     req_key_seq.start(p_sequencer.key_sideload_sequencer_h);
     while (!key_used) begin
