@@ -82,7 +82,37 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   //    bins mnem_add = {mnem_add};
 `define DEF_MNEM_BIN(NAME) bins NAME = {NAME}
 
-  // Equivalents of DEF_MNEM and DEF_MNEM_BIN, but for external CSRs. Again, we want to use the CSR
+  // Generate a bin for each mnemonic except ECALL
+`define DEF_MNEM_BINS_EXCEPT_ECALL                                     \
+    `DEF_MNEM_BIN(mnem_add); `DEF_MNEM_BIN(mnem_addi);                 \
+    `DEF_MNEM_BIN(mnem_lui); `DEF_MNEM_BIN(mnem_sub);                  \
+    `DEF_MNEM_BIN(mnem_sll); `DEF_MNEM_BIN(mnem_slli);                 \
+    `DEF_MNEM_BIN(mnem_srl); `DEF_MNEM_BIN(mnem_srli);                 \
+    `DEF_MNEM_BIN(mnem_sra); `DEF_MNEM_BIN(mnem_srai);                 \
+    `DEF_MNEM_BIN(mnem_and); `DEF_MNEM_BIN(mnem_andi);                 \
+    `DEF_MNEM_BIN(mnem_or); `DEF_MNEM_BIN(mnem_ori);                   \
+    `DEF_MNEM_BIN(mnem_xor); `DEF_MNEM_BIN(mnem_xori);                 \
+    `DEF_MNEM_BIN(mnem_lw); `DEF_MNEM_BIN(mnem_sw);                    \
+    `DEF_MNEM_BIN(mnem_beq); `DEF_MNEM_BIN(mnem_bne);                  \
+    `DEF_MNEM_BIN(mnem_jal); `DEF_MNEM_BIN(mnem_jalr);                 \
+    `DEF_MNEM_BIN(mnem_csrrs); `DEF_MNEM_BIN(mnem_csrrw);              \
+    `DEF_MNEM_BIN(mnem_loop); `DEF_MNEM_BIN(mnem_loopi);               \
+    `DEF_MNEM_BIN(mnem_bn_add); `DEF_MNEM_BIN(mnem_bn_addc);           \
+    `DEF_MNEM_BIN(mnem_bn_addi); `DEF_MNEM_BIN(mnem_bn_addm);          \
+    `DEF_MNEM_BIN(mnem_bn_mulqacc); `DEF_MNEM_BIN(mnem_bn_mulqacc_wo); \
+    `DEF_MNEM_BIN(mnem_bn_mulqacc_so);                                 \
+    `DEF_MNEM_BIN(mnem_bn_sub); `DEF_MNEM_BIN(mnem_bn_subb);           \
+    `DEF_MNEM_BIN(mnem_bn_subi); `DEF_MNEM_BIN(mnem_bn_subm);          \
+    `DEF_MNEM_BIN(mnem_bn_and); `DEF_MNEM_BIN(mnem_bn_or);             \
+    `DEF_MNEM_BIN(mnem_bn_not); `DEF_MNEM_BIN(mnem_bn_xor);            \
+    `DEF_MNEM_BIN(mnem_bn_rshi);                                       \
+    `DEF_MNEM_BIN(mnem_bn_sel);                                        \
+    `DEF_MNEM_BIN(mnem_bn_cmp); `DEF_MNEM_BIN(mnem_bn_cmpb);           \
+    `DEF_MNEM_BIN(mnem_bn_lid); `DEF_MNEM_BIN(mnem_bn_sid);            \
+    `DEF_MNEM_BIN(mnem_bn_mov); `DEF_MNEM_BIN(mnem_bn_movr);           \
+    `DEF_MNEM_BIN(mnem_bn_wsrr); `DEF_MNEM_BIN(mnem_bn_wsrw);
+
+  // Equivalents of DEF_MNEM and DEF_MNEM_BINp, but for external CSRs. Again, we want to use the CSR
   // names as bins in coverpoints and need sized literals.
 `define DEF_CSR(CSR_NAME, STR) \
   csr_str_t CSR_NAME = csr_str_t'(STR)
@@ -350,6 +380,10 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   // ERR_BITS since the last operation finished.
   logic [31:0] last_err_bits = 0;
 
+  // The last mnemonic that we saw. Used to implement the pairwise mnemonic covergroup. Gets
+  // initialised to 0 (not a valid mnemonic!)
+  mnem_str_t last_mnem = '0;
+
   // Non-core covergroups //////////////////////////////////////////////////////
 
   // CMD external CSR
@@ -584,6 +618,21 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     clr_L_cross: cross fg_cp, clr_L_cp;
     clr_M_cross: cross fg_cp, clr_M_cp;
     clr_C_cross: cross fg_cp, clr_C_cp;
+  endgroup
+
+  // Pairwise instructions /////////////////////////////////////////////////////
+
+  covergroup pairwise_insn_cg with function sample(mnem_str_t last, mnem_str_t cur);
+    last_cp: coverpoint last {
+      `DEF_MNEM_BINS_EXCEPT_ECALL
+      illegal_bins other = default;
+    }
+    cur_cp: coverpoint cur {
+      `DEF_MNEM_BINS_EXCEPT_ECALL
+      `DEF_MNEM_BIN(mnem_ecall);
+      illegal_bins other = default;
+    }
+    pair_cross: cross last_cp, cur_cp;
   endgroup
 
   // Per-encoding covergroups //////////////////////////////////////////////////
@@ -1990,6 +2039,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     call_stack_cg = new;
     flag_write_cg = new;
+    pairwise_insn_cg = new;
 
     enc_bna_cg = new;
     enc_bnaf_cg = new;
@@ -2105,11 +2155,13 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     wur_state = WUR_IDLE;
     last_write_state.delete();
     last_err_bits = 0;
+    last_mnem = '0;
   endfunction
 
   // Called on each change of operational state
   function void on_state_change(operational_state_e new_state);
     last_err_bits = 0;
+    last_mnem = '0;
   endfunction
 
   function void on_write_to_wr_csr(uvm_reg csr, logic [31:0] data, operational_state_e state);
@@ -2274,6 +2326,13 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
         flag_write_cg.sample(fg[0], rtl_item.flags_read_data[fg], rtl_item.flags_write_data[fg]);
       end
     end
+
+    // Track pairwise instructions. last_mnem is zero if this is the first instruction since
+    // starting an operation.
+    if (last_mnem != '0) begin
+      pairwise_insn_cg.sample(last_mnem, mnem);
+    end
+    last_mnem = mnem;
 
     // Per-encoding coverage. First, use insn_encodings to find the encoding for the instruction.
     // Every instruction mnemonic should have an associated encoding schema.
@@ -2541,6 +2600,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   endfunction
 
 `undef DEF_MNEM_BIN
+`undef DEF_MNEM_BINS_EXCEPT_ECALL
 `undef DEF_MNEM_CROSS
 `undef DEF_MNEM_CROSS2
 `undef DEF_MNEM_CROSS3
