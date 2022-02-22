@@ -2081,7 +2081,7 @@
             TODO: how to deal with the scramble keys on low power exit?
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_sleep_sram_ret_contents"]
     }
     {
       name: chip_sw_sram_execution

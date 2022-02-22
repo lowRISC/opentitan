@@ -384,6 +384,13 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_sleep_sram_ret_contents
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/sram_ctrl_sleep_sram_ret_contents_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=7000000"]
+    }
+    {
       name: chip_sw_coremark
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/benchmarks/coremark/coremark_top_earlgrey:1:external"]
