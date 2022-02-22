@@ -31,12 +31,10 @@ p384_proj_add_test:
   bn.lid   x2++, 0(x3)
   bn.lid   x2++, 32(x3)
 
-  /* load Barrett constant u for modulus p
-     [w15, w14] = u_p */
-  li       x2, 14
-  la       x3, p384_u_p
-  bn.lid   x2++, 0(x3)
-  bn.lid   x2++, 32(x3)
+  /* Compute Solinas constant k for modulus p (we know it is only 129 bits, so
+     no need to compute the high part):
+     w14 <= 2^256 - p[255:0] = (2^384 - p) mod (2^256) = 2^384 - p */
+  bn.sub    w14, w31, w12
 
   /* init all-zero reg */
   bn.xor   w31, w31, w31
