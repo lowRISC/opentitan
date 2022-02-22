@@ -493,7 +493,11 @@
   );
 
   prim_clock_gating #(
+% if clk == "clk_main_kmac":
+    .FpgaBufGlobal(1'b1) // KMAC is getting too big for a single clock region.
+% else:
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
+% endif
   ) u_${clk}_cg (
     .clk_i(clk_${sig.src.name}_root),
     .en_i(${clk}_combined_en),

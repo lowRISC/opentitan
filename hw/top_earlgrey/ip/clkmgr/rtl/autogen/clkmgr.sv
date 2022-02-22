@@ -1216,7 +1216,7 @@
   );
 
   prim_clock_gating #(
-    .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
+    .FpgaBufGlobal(1'b1) // KMAC is getting too big for a single clock region.
   ) u_clk_main_kmac_cg (
     .clk_i(clk_main_root),
     .en_i(clk_main_kmac_combined_en),
