@@ -179,6 +179,7 @@ Signal                  | Direction | Description
 `ast_i.aon_pok`         | `input`   | Input from `ast`.  This signal is the root reset of the design and is used to generate `rst_por_n`.
 `cpu_i.rst_cpu_n`       | `input`   | CPU reset indication.  This informs the reset manager that the processor has reset.
 `cpu_i.ndmreset_req`    | `input`   | Non-debug-module reset request from `rv_dm`.
+`cpu_dump_i`            | `input`   | CPU crash dump state from `rv_core_ibex`.
 `pwr_i.rst_lc_req`      | `input`   | Power manager request to assert the `rst_lc_n` tree.
 `pwr_i.rst_sys_req`     | `input`   | Power manager request to assert the `rst_sys_n` tree.
 `pwr_i.reset_cause`     | `input`   | Power manager indication for why it requested reset, the cause can be low power entry or peripheral issued request.
@@ -329,6 +330,8 @@ Software then simply needs to write in {{< regref "ALERT_INFO_CTRL.INDEX" >}} wh
 
 The cpu information register contains the value of the cpu state prior to a triggered reset.
 Since this information differs in length between system implementation, the information register only displays 32-bits at a time.
+
+For more details on the cpu dump details, please see [crash dump]({{< relref "hw/ip/rv_core_ibex/doc/_index.md#crash_dump_collection" >}}).
 
 The {{< regref "CPU_INFO_ATTR" >}} register indicates how many 32-bit data segments must be read.
 Software then simply needs to write in {{< regref "CPU_INFO_CTRL.INDEX" >}} which segment it wishes and then read out the {{< regref "CPU_INFO" >}} register.
