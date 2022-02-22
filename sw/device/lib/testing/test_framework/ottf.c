@@ -54,11 +54,25 @@ static void report_test_status(bool result) {
   test_status_set(result ? kTestStatusPassed : kTestStatusFailed);
 }
 
+OT_ATTR_WEAK
+void closed_source_preconfig(void) {} 
+
+OT_ATTR_WEAK
+void closed_source_postconfig(void) {} 
+
 // A wrapper function is required to enable `test_main()` and test teardown
 // logic to be invoked as a FreeRTOS task. This wrapper can be used by tests
 // that are run on bare-metal.
 static void test_wrapper(void *task_parameters) {
-  bool result = test_main();
+  bool result ;
+  
+  // Invoke weak symbol that can be overriden in closed source code.  
+  closed_source_preconfig(); 
+  
+  result = test_main();
+  
+  // Invoke weak symbol that can be overriden in closed source code. 
+  closed_source_postconfig();
   report_test_status(result);
 }
 
