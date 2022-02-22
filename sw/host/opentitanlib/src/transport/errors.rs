@@ -68,7 +68,7 @@ pub type Result<T> = anyhow::Result<T, TransportError>;
 #[macro_export]
 macro_rules! bail {
     ($err:expr $(,)?) => {
-        return Err($err.into());
+        return Err($err.into())
     };
 }
 
