@@ -51,7 +51,7 @@ package otbn_pkg;
   // that some of the Python tooling depends on this parameter (it needs to know the full DMEM size,
   // but regtool only gives it OTBN_DMEM_SIZE). If changing this, you'll also need to edit
   // _DmemScratchSizeBytes in util/shared/mem_layout.py
-  parameter int DmemScratchSizeByte = 2048;
+  parameter int DmemScratchSizeByte = 1024;
 
   // Toplevel constants ============================================================================
 

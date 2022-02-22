@@ -19,9 +19,9 @@ MEMORY
     /*
       LMA addresses (for VMAs in imem/dmem, respectively)
 
-      Note that the DMEM load region is half the size of DMEM itself,
+      Note that the DMEM load region is the first 3kiB of DMEM itself,
       to model the fact that OTBN can write to the whole region but
-      only the first ${dmem_length // 2} bytes are bus-accessible.
+      only the first 3kiB are bus-accessible.
     */
     imem_load (rw) : ORIGIN = ${imem_lma}, LENGTH = ${imem_length}
     dmem_load (rw) : ORIGIN = ${dmem_lma}, LENGTH = ${dmem_bus_length}
