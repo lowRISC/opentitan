@@ -314,6 +314,16 @@ rom_error_t flash_ctrl_data_erase(uint32_t addr,
                                   flash_ctrl_erase_type_t erase_type);
 
 /**
+ * Verifies that a data partition page or bank was erased.
+ *
+ * @param addr Address that falls within the bank or page erased.
+ * @param erase_type Whether to verify a page or a bank.
+ * @return Result of the operation.
+ */
+rom_error_t flash_ctrl_data_erase_verify(uint32_t addr,
+                                         flash_ctrl_erase_type_t erase_type);
+
+/**
  * Erases an information partition page or bank.
  *
  * @param info_page Information page to erase for page erases, or a page within

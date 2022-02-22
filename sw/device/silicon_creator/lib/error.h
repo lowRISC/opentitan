@@ -100,6 +100,7 @@ enum module_ {
   X(kErrorFlashCtrlInfoWrite,         ERROR_(4, kModuleFlashCtrl, kInternal)), \
   X(kErrorFlashCtrlDataErase,         ERROR_(5, kModuleFlashCtrl, kInternal)), \
   X(kErrorFlashCtrlInfoErase,         ERROR_(6, kModuleFlashCtrl, kInternal)), \
+  X(kErrorFlashCtrlDataEraseVerify,   ERROR_(7, kModuleFlashCtrl, kInternal)), \
   X(kErrorSecMmioRegFileSize,         ERROR_(0, kModuleSecMmio, kResourceExhausted)), \
   X(kErrorSecMmioReadFault,           ERROR_(1, kModuleSecMmio, kInternal)), \
   X(kErrorSecMmioWriteFault,          ERROR_(2, kModuleSecMmio, kInternal)), \
