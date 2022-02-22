@@ -18,7 +18,8 @@
              "{proj_root}/hw/dv/sv/tl_agent/dv/tl_agent_sim_cfg.hjson",
              // IPs.
              "{proj_root}/hw/ip/adc_ctrl/dv/adc_ctrl_sim_cfg.hjson",
-             "{proj_root}/hw/ip/aes/dv/aes_sim_cfg.hjson",
+             "{proj_root}/hw/ip/aes/dv/aes_no_masking_sim_cfg.hjson",
+             "{proj_root}/hw/ip/aes/dv/aes_masking_sim_cfg.hjson",
              "{proj_root}/hw/ip/aon_timer/dv/aon_timer_sim_cfg.hjson",
              "{proj_root}/hw/ip/clkmgr/dv/clkmgr_sim_cfg.hjson",
              "{proj_root}/hw/ip/csrng/dv/csrng_sim_cfg.hjson",

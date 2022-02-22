@@ -40,9 +40,8 @@ module tb;
                           lc_escalate[$bits(lc_ctrl_pkg::lc_tx_t):1] : lc_ctrl_pkg::Off;
   // dut
   aes #(
-    // for now keep testing the unmasked implementation
-    .SecMasking  ( 0                    ),
-    .SecSBoxImpl ( aes_pkg::SBoxImplLut )
+    .SecMasking  ( `EN_MASKING   ),
+    .SecSBoxImpl ( `SBOX_IMPL    )
   ) dut (
     .clk_i            ( clk                               ),
     .rst_ni           ( rst_n                             ),
