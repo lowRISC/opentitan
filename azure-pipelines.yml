@@ -16,7 +16,7 @@ variables:
   VERIBLE_VERSION: v0.0-1213-g9e5c085
   RUST_VERSION: 1.55.0
   # Release tag from https://github.com/lowRISC/lowrisc-toolchains/releases
-  TOOLCHAIN_VERSION: 20210412-1
+  TOOLCHAIN_VERSION: 20220210-1
   # This controls where builds happen, and gets picked up by build_consts.sh.
   BUILD_ROOT: $(Build.ArtifactStagingDirectory)
   VIVADO_VERSION: "2020.2"

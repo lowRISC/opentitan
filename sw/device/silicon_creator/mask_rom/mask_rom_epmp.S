@@ -37,14 +37,6 @@
 /**
  * Configure the CPU's Enhanced Physical Memory Protection (ePMP) feature.
  *
- * The steps are:
- *
- *   1. Enable Rule Locking Bypass (RLB). RLB allows later boot stages to
- *      modify locked PMP entries.
- *   2. Configure access permissions for each address space of interest.
- *   3. Enable Machine Mode Whitelist Policy (MMWP). MMWP stops any access
- *      that does not match a PMP entry.
- *
  * This function follows the standard ILP32 calling convention but does not
  * require a valid stack pointer, thread pointer or global pointer.
  *
@@ -53,15 +45,6 @@
 mask_rom_epmp_init:
   .globl mask_rom_epmp_init
   .type mask_rom_epmp_init, @function
-
-  // Enable Rule Locking Bypass (RLB).
-  csrsi EPMP_MSECCFG, EPMP_MSECCFG_RLB
-
-  // Clear all PMP configuration registers.
-  csrw pmpcfg0, zero
-  csrw pmpcfg1, zero
-  csrw pmpcfg2, zero
-  csrw pmpcfg3, zero
 
   // Pre-encoded addresses defined in linker script.
   .extern _epmp_text_tor_lo
@@ -88,21 +71,11 @@ mask_rom_epmp_init:
   li   t0, NAPOT(TOP_EARLGREY_EFLASH_BASE_ADDR, TOP_EARLGREY_EFLASH_SIZE_BYTES)
   csrw pmpaddr5, t0
 
-  // Free entries
-  csrw pmpaddr6, zero
-  csrw pmpaddr7, zero
-  csrw pmpaddr8, zero
-  csrw pmpaddr9, zero
-
   // MMIO
   li   t0, TOR(0x40000000) // TODO(#7117): generate MMIO start address.
   csrw pmpaddr10, t0
   li   t0, TOR(0x50000000) // TODO(#7117): generate MMIO end address.
   csrw pmpaddr11, t0
-
-  // Free entries
-  csrw pmpaddr12, zero
-  csrw pmpaddr13, zero
 
   // Stack guard
   la   t0, _epmp_stack_guard_na4
@@ -123,10 +96,6 @@ mask_rom_epmp_init:
   csrw pmpcfg1, t1
   csrw pmpcfg2, t2
   csrw pmpcfg3, t3
-
-  // Enable Machine Mode Whitelist Policy (MMWP).
-  // TODO(#5653): Enable Machine Mode Lockdown (MML)?
-  csrsi EPMP_MSECCFG, EPMP_MSECCFG_MMWP
 
   ret
 

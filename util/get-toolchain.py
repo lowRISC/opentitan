@@ -19,8 +19,8 @@ log.basicConfig(level=log.INFO, format="%(levelname)s: %(message)s")
 # the keys in this dictionary specify valid toolchain kinds
 ASSET_PREFIXES = {
     # kind : prefix,
-    "combined": "lowrisc-toolchain-rv32imc-",
-    "gcc-only": "lowrisc-toolchain-gcc-rv32imc-",
+    "combined": "lowrisc-toolchain-rv32imcb-",
+    "gcc-only": "lowrisc-toolchain-gcc-rv32imcb-",
 }
 ASSET_SUFFIX = ".tar.xz"
 RELEASES_URL_BASE = 'https://api.github.com/repos/lowRISC/lowrisc-toolchains/releases'
