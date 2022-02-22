@@ -14,6 +14,7 @@ This document specifies Ibex CPU core wrapper functionality.
 * Simple address translation.
 * NMI support for security alert events for watchdog bark.
 * General error status collection and alert generation.
+* Crash dump collection for software debug.
 
 ## Description
 
@@ -68,6 +69,34 @@ A request is made to the EDN immediately out of reset, this will not be answered
 Software should take care not to enable the EDN until the entropy complex configuration is as desired.
 When the entropy complex configuration is changed reading {{< regref "RND_DATA" >}} when it is valid will suffice to flush any old random data to trigger a new request under the new configuration.
 If a EDN request is pending when the entropy complex configuration is changed ({{< regref "RND_STATUS.RND_DATA_VALID" >}} is clear), it is advisable to wait until it is complete and then flush out the data to ensure the fresh value was produced under the new configuration.
+
+## Crash Dump Collection
+
+In general, when the CPU encounters an error, it is software's responsibility to collect error status and supply it for debug.
+
+However, there are situations where it may not be possible for software to collect any error logging.
+These situations include but are not limited to:
+* A hung transaction that causes watchdog to expire.
+* An alert escalation that directly resets the system without any software intervention.
+
+Under these situations, the software has no hints as to where the error occurred.
+To mitigate this issue, Ibex provides crash dump information that can be directly captured in the `rstmgr` for last resort debug after the reset event.
+
+The Ibex crash dump state includes the following information:
+* The current PC
+* The next PC
+* The last data access address
+* The last exception address
+
+The crash dump information transmitted to the `rstmgr` is the following:
+* The current crash dump state
+* The previous crash dump state
+* A valid indication for whether the previous state is valid.
+
+Under normal circumstances, only the current crash dump state is valid.
+When the CPU encounters a double fault, the current crash dump is moved to previous, and the new crash dump is shown in current.
+
+This allows the software to see both fault locations and debug accordingly.
 
 
 ## Register Table

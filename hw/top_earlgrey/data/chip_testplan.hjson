@@ -2625,6 +2625,28 @@
       tests: []
    }
 
+   {
+      name: chip_sw_rv_core_ibex_fault_dump
+      desc: '''Verify the functionality of the ibex fault dump.
+
+               - Purposely create an ibex exception during execution through reads to an ummapped address.
+               - Ensure the rstmgr fault dump correctly captures the related addresses to the exception.
+            '''
+      milestone: V2
+      tests: []
+   }
+
+   {
+      name: chip_sw_rv_core_ibex_double_fault
+      desc: '''Verify the functionality of the ibex double fault dump.
+
+               - Purposely create an ibex double exception during execution, by performing an unmapped read and in the exception handler perform another unmapped read.
+               - Ensure the rstmgr fault dump correctly captures both dumps correctly and indicates the previous dump is valid.
+            '''
+      milestone: V2
+      tests: []
+   }
+
 
     ////////////////////////////
     // System level scenarios //
