@@ -69,13 +69,6 @@ p384_isoncurve:
   bn.lid    x2++, 0(x3)
   bn.lid    x2++, 32(x3)
 
-  /* load Barrett constant u for modulus p from dmem
-     [w15, w14] = u_p = dmem[p384_u_p] */
-  li        x2, 14
-  la        x3, p384_u_p
-  bn.lid    x2++, 0(x3)
-  bn.lid    x2++, 32(x3)
-
   /* load domain parameter b from dmem
      [w4, w5] = b = dmem[p384_b] */
   li        x2, 4
@@ -88,7 +81,7 @@ p384_isoncurve:
   bn.mov    w11, w3
   bn.mov    w16, w2
   bn.mov    w17, w3
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
 
   /* store result (left side): dmem[dptr_s] <= y^2 = [w17,w16] */
   la        x3, dptr_s
@@ -102,10 +95,10 @@ p384_isoncurve:
   bn.mov    w11, w1
   bn.mov    w16, w0
   bn.mov    w17, w1
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
   bn.mov    w10, w0
   bn.mov    w11, w1
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
 
   /* for curve P-384, 'a' can be written as a = -3, therefore we subtract
      x three times from x^3.
@@ -457,12 +450,10 @@ p384_verify:
   bn.mov    w8, w16
   bn.mov    w9, w17
 
-  /* load Barrett constant u_n for modulus n for scalar operations
-     [w15, w14] <= u_n = dmem[p384_u_n] */
-  li        x2, 14
-  la        x3, p384_u_n
-  bn.lid    x2++, 0(x3)
-  bn.lid    x2++, 32(x3)
+  /* Compute Solinas constant k for modulus n (we know it is only 191 bits, so
+     no need to compute the high part):
+     w14 <= 2^256 - n[255:0] = (2^384 - n) mod (2^256) = 2^384 - n */
+  bn.sub    w14, w31, w12
 
   /* set regfile pointers to in/out regs of Barrett routine */
   li        x22, 10
@@ -494,7 +485,7 @@ p384_verify:
 
   /* u2 = [w3,w2] <= [w17,w16] <= r*s^-1 mod n
         = [w11,w10]*[w17,w16] mod [w13,w12] */
-  jal x1, barrett384_p384
+  jal x1, p384_mulmod_n
   bn.mov    w2, w16
   bn.mov    w3, w17
   /* left align */
@@ -513,7 +504,7 @@ p384_verify:
         = [w11,w10]*[w9,w8] mod [w13,w12] */
   bn.mov    w16, w8
   bn.mov    w17, w9
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_n
   bn.mov    w0, w16
   bn.mov    w1, w17
   /* left align */
@@ -533,13 +524,6 @@ p384_verify:
      [w13, w12] <= p = dmem[p384_p] */
   li        x2, 12
   la        x3, p384_p
-  bn.lid    x2++, 0(x3)
-  bn.lid    x2++, 32(x3)
-
-  /* load Barrett constant u_p for modulus p
-     [w15, w14] = u_p = dmem[p384_u_p] */
-  li        x2, 14
-  la        x3, p384_u_p
   bn.lid    x2++, 0(x3)
   bn.lid    x2++, 32(x3)
 
@@ -673,7 +657,7 @@ p384_verify:
   /* convert x-coordinate of C back to affine: x1 = x_c * z_c^-1  mod p */
   bn.mov    w10, w25
   bn.mov    w11, w26
-  jal x1, barrett384_p384
+  jal x1, p384_mulmod_p
 
   /* load domain parameter n (order of base point)
      [w13, w12] <= n = dmem[p384_n] */

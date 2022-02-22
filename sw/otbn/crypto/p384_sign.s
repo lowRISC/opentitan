@@ -35,9 +35,7 @@
  * @param[in]  [w26,w25]: y, y-coordinate of curve point (projective).
  * @param[in]  [w30,w29]: z, z-coordinate of curve point (projective).
  * @param[in]  [w13, w12]: p, modulus of P-384.
- * @param[in]  [w15, w14]: u, pre-computed Barrett constant for p,
- *                            lower 384 bits, i.e. (2^(2*384) div p)[383:0].
- * @param[in] w31: all-zero.
+ * @param[in]  w31: all-zero.
  * @param[out] [w26, w25]: x_a, affine x-coordinate of resulting point.
  * @param[out] [w28, w27]: y_a, affine y-coordinate of resulting point.
  *
@@ -53,28 +51,28 @@ proj_to_affine_p384:
   bn.mov    w11, w30
   bn.mov    w16, w29
   bn.mov    w17, w30
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
 
   /* Exp: 0b11 = 0b1+0b10
      Val: r11 <= z*r10 mod p
           [w17,w16] <= [w30,w29]*[w17,w16] mod [w13,w12] */
   bn.mov    w10, w29
   bn.mov    w11, w30
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
 
   /* Exp: 0b110 = 2*0b11
      Val: r110 = r11^2 mod p
           [w17,w16] <= [w17,w16]^2 mod [w13,w12] */
   bn.mov    w10, w16
   bn.mov    w11, w17
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
 
   /* Exp: 0b111 = 0b1+0b110
      Val: r111 <= z*r110  mod p
           [w1,w0] = [w17,w16] <= [w30,w29]*[w17,w16] mod [w13,w12] */
   bn.mov    w10, w29
   bn.mov    w11, w30
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
   bn.mov    w0, w16
   bn.mov    w1, w17
 
@@ -84,7 +82,7 @@ proj_to_affine_p384:
   loopi     3, 4
     bn.mov    w10, w16
     bn.mov    w11, w17
-    jal       x1, barrett384_p384
+    jal       x1, p384_mulmod_p
     nop
 
   /* Exp: 0b1111111 = 0b111+0b111000
@@ -92,7 +90,7 @@ proj_to_affine_p384:
           [w3,w2] = [w17,w16] <= [w1,w0]*[w17,w16] mod [w13,w12] */
   bn.mov    w10, w0
   bn.mov    w11, w1
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
   bn.mov    w2, w16
   bn.mov    w3, w17
 
@@ -102,11 +100,11 @@ proj_to_affine_p384:
   loopi     6, 4
     bn.mov    w10, w16
     bn.mov    w11, w17
-    jal       x1, barrett384_p384
+    jal       x1, p384_mulmod_p
     nop
   bn.mov    w10, w2
   bn.mov    w11, w3
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
   bn.mov    w4, w16
   bn.mov    w5, w17
 
@@ -116,11 +114,11 @@ proj_to_affine_p384:
   loopi     12, 4
     bn.mov    w10, w16
     bn.mov    w11, w17
-    jal       x1, barrett384_p384
+    jal       x1, p384_mulmod_p
     nop
   bn.mov    w10, w4
   bn.mov    w11, w5
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
 
   /* Exp: 2^30-1 = ((2^24-1)<<6)+0b111111
      Val: r_30_1 <= r_24_1^(2^6)*r111111 mod p
@@ -128,11 +126,11 @@ proj_to_affine_p384:
   loopi     6, 4
     bn.mov    w10, w16
     bn.mov    w11, w17
-    jal       x1, barrett384_p384
+    jal       x1, p384_mulmod_p
     nop
   bn.mov    w10, w2
   bn.mov    w11, w3
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
   bn.mov    w2, w16
   bn.mov    w3, w17
 
@@ -141,10 +139,10 @@ proj_to_affine_p384:
           [w7,w6] = [w17,w16] <= [w17,w16]^2*[w30,w29] mod [w13,w12] */
   bn.mov    w10, w16
   bn.mov    w11, w17
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
   bn.mov    w10, w29
   bn.mov    w11, w30
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
   bn.mov    w6, w16
   bn.mov    w7, w17
 
@@ -153,10 +151,10 @@ proj_to_affine_p384:
           [w9,w8] = [w17,w16] <= [w17,w16]^2*[w30,w29] mod [w13,w12] */
   bn.mov    w10, w16
   bn.mov    w11, w17
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
   bn.mov    w10, w29
   bn.mov    w11, w30
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
   bn.mov    w9, w16
   bn.mov    w8, w17
 
@@ -166,11 +164,11 @@ proj_to_affine_p384:
   loopi     31, 4
     bn.mov    w10, w16
     bn.mov    w11, w17
-    jal       x1, barrett384_p384
+    jal       x1, p384_mulmod_p
     nop
   bn.mov    w10, w6
   bn.mov    w11, w7
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
   bn.mov    w6, w16
   bn.mov    w7,w17
 
@@ -180,11 +178,11 @@ proj_to_affine_p384:
   loopi     63, 4
     bn.mov    w10, w16
     bn.mov    w11, w17
-    jal       x1, barrett384_p384
+    jal       x1, p384_mulmod_p
     nop
   bn.mov    w10, w6
   bn.mov    w11, w7
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
   bn.mov    w6, w16
   bn.mov    w7, w17
 
@@ -194,11 +192,11 @@ proj_to_affine_p384:
   loopi     126, 4
     bn.mov    w10, w16
     bn.mov    w11, w17
-    jal       x1, barrett384_p384
+    jal       x1, p384_mulmod_p
     nop
   bn.mov    w10, w6
   bn.mov    w11, w7
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
 
   /* Exp: 2^255-1 = ((2^252-1)<<3)+0b111
      Val: r_255_1 <= r_252_1^(2^3)*r111 mod p
@@ -206,11 +204,11 @@ proj_to_affine_p384:
   loopi     3, 4
     bn.mov    w10, w16
     bn.mov    w11, w17
-    jal       x1, barrett384_p384
+    jal       x1, p384_mulmod_p
     nop
   bn.mov    w10, w0
   bn.mov    w11, w1
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
 
   /* Exp: p-2 = ((((((2^255-1)<<33)+(2^32-1))<<94)+(2^30-1))<<2)+0b1
      Val: x_inv <=((r_255_1^(2^33)*r_32_1)^(2^94)*r_30_1)^(2^2)*z mod p
@@ -219,27 +217,27 @@ proj_to_affine_p384:
   loopi     33, 4
     bn.mov    w10, w16
     bn.mov    w11, w17
-    jal       x1, barrett384_p384
+    jal       x1, p384_mulmod_p
     nop
   bn.mov    w10, w9
   bn.mov    w11, w8
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
   loopi     94, 4
     bn.mov    w10, w16
     bn.mov    w11, w17
-    jal       x1, barrett384_p384
+    jal       x1, p384_mulmod_p
     nop
   bn.mov    w10, w2
   bn.mov    w11, w3
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
   loopi     2, 4
     bn.mov    w10, w16
     bn.mov    w11, w17
-    jal       x1, barrett384_p384
+    jal       x1, p384_mulmod_p
     nop
   bn.mov    w10, w29
   bn.mov    w11, w30
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
 
   /* store inverse [w1,w0] <= [w17,w16] = z_inv*/
   bn.mov w0, w16
@@ -249,7 +247,7 @@ proj_to_affine_p384:
      [w26,w25] <= [w17,w16] = x_a <= x/z = x*z_inv = [w26,w25]*[w1,w0] mod p */
   bn.mov    w10, w25
   bn.mov    w11, w26
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
   bn.mov    w25, w16
   bn.mov    w26, w17
 
@@ -259,7 +257,7 @@ proj_to_affine_p384:
   bn.mov    w11, w28
   bn.mov    w16, w0
   bn.mov    w17, w1
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
   bn.mov    w27, w16
   bn.mov    w28, w17
 
@@ -335,7 +333,7 @@ store_proj_randomize:
      [dmem[dptr_p_p], dmem[dptr_p_p+32]] = [w17, w16] =
        x_p <= [w11, w10] * [w17, w16] = z*x  mod p */
 
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
   bn.sid    x12,  0(x18)
   bn.sid    x13, 32(x18)
 
@@ -349,7 +347,7 @@ store_proj_randomize:
        y_p <= [w11, w10] * [w17, w16] = z*y  mod p */
   bn.mov w10, w2
   bn.mov w11, w3
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_p
   bn.sid    x12, 64(x18)
   bn.sid    x13, 96(x18)
 
@@ -380,8 +378,6 @@ store_proj_randomize:
  * @param[in]  x21: dptr_y, pointer to affine y-coordinate in dmem
  * @param[in]  x28: dptr_b, pointer to domain parameter b of P-384 in dmem
  * @param[in]  x30: dptr_sp, pointer to 704 bytes of scratchpad memory in dmem
- * @param[in]  [w15, w14]: u[383:0] lower 384 bit of Barrett constant u
- *                                  corresponding to modulus p
  * @param[in]  [w13, w12]: p, modulus of P-384 underlying finite field
  * @param[in]  [w11, w10]: n, domain parameter of P-384 curve
  *                            (order of base point G)
@@ -611,7 +607,7 @@ scalar_mult_int_p384:
     bn.mov    w11, w3
     bn.lid    x2, 256(x30)
     bn.lid    x3, 288(x30)
-    jal       x1, barrett384_p384
+    jal       x1, p384_mulmod_p
     bn.sid    x2, 256(x30)
     bn.sid    x3, 288(x30)
     /* y-coordinate */
@@ -619,7 +615,7 @@ scalar_mult_int_p384:
     bn.mov    w11, w3
     bn.lid    x2, 320(x30)
     bn.lid    x3, 352(x30)
-    jal       x1, barrett384_p384
+    jal       x1, p384_mulmod_p
     bn.sid    x2, 320(x30)
     bn.sid    x3, 352(x30)
     /* z-coordinate */
@@ -627,7 +623,7 @@ scalar_mult_int_p384:
     bn.mov    w11, w3
     bn.lid    x2, 384(x30)
     bn.lid    x3, 416(x30)
-    jal       x1, barrett384_p384
+    jal       x1, p384_mulmod_p
     bn.sid    x2, 384(x30)
     bn.sid    x3, 416(x30)
 
@@ -692,13 +688,6 @@ scalar_mult_p384:
      [w13, w12] = p = dmem[p384_p] */
   li        x2, 12
   la        x3, p384_p
-  bn.lid    x2++, 0(x3)
-  bn.lid    x2++, 32(x3)
-
-  /* load Barrett constant u for modulus p
-     [w15, w14] = u_p = dmem[p384_u_p] */
-  li        x2, 14
-  la        x3, p384_u_p
   bn.lid    x2++, 0(x3)
   bn.lid    x2++, 32(x3)
 
@@ -782,13 +771,6 @@ p384_base_mult:
   bn.lid    x2++, 0(x3)
   bn.lid    x2++, 32(x3)
 
-  /* load Barrett constant u for modulus p
-     [w15, w14] = u_p = dmem[p384_u_p] */
-  li        x2, 14
-  la        x3, p384_u_p
-  bn.lid    x2++, 0(x3)
-  bn.lid    x2++, 32(x3)
-
   /* load domain parameter n (order of base point)
      [w11, w10] = n = dmem[p384_n] */
   li        x2, 10
@@ -846,8 +828,7 @@ p384_base_mult:
  * be used with a non-secret modulus.
  *
  * @param[in]  [w13, w12]: m, 384 bit modulus
- * @param[in]  [w15, w14]: u[383:0], lower 384 bit of pre-computed Barrett
- *                          constant corresponding to modulus m
+ * @param[in]  w14: k, Solinas constant (2^384 - m) (max. length 191 bits).
  * @param[in]  [w30, w29]: x, 384 bit operand
  * @param[in]  w31, all-zero
  * @param[out] [w17, w16]: x_inv, modular multiplicative inverse
@@ -876,7 +857,7 @@ mod_inv_n_p384:
     /* square: [w17,w16] <= [w17, w16]*[w11,w10] mod [w13, w12] */
     bn.mov    w10, w16
     bn.mov    w11, w17
-    jal       x1, barrett384_p384
+    jal       x1, p384_mulmod_n
 
     /* shift MSB into carry flag
        [w3,w2] = 2*[w3,w2] = [w3,w2] << 1 */
@@ -891,7 +872,7 @@ mod_inv_n_p384:
     /* multiply: [w17,w16] <= [w17, w16]*[w30,w29] mod [w13, w12] */
     bn.mov    w10, w29
     bn.mov    w11, w30
-    jal       x1, barrett384_p384
+    jal       x1, p384_mulmod_n
 
     nomul:
     nop
@@ -962,13 +943,6 @@ p384_sign:
   bn.lid    x2++, 0(x3)
   bn.lid    x2++, 32(x3)
 
-  /* load Barrett constant u for modulus p
-     [w15, w14] = u_p = dmem[p384_u_p] */
-  li        x2, 14
-  la        x3, p384_u_p
-  bn.lid    x2++, 0(x3)
-  bn.lid    x2++, 32(x3)
-
   /* load domain parameter n (order of base point)
      [w11, w10] = n = dmem[p384_n] */
   li        x2, 10
@@ -1000,12 +974,10 @@ p384_sign:
   bn.lid    x2++, 0(x3)
   bn.lid    x2++, 32(x3)
 
-  /* load Barrett constant u_n for modulus n for scalar operations
-     [w15, w14] <= u_m = dmem[p384_u_n] */
-  li        x2, 14
-  la        x3, p384_u_n
-  bn.lid    x2++, 0(x3)
-  bn.lid    x2++, 32(x3)
+  /* Compute Solinas constant k for modulus n (we know it is only 191 bits, so
+     no need to compute the high part):
+     w14 <= 2^256 - n[255:0] = (2^384 - n) mod (2^256) = 2^384 - n */
+  bn.sub    w14, w31, w12
 
   /* modular multiplicative inverse of k
      [w3, w2] <= [w17, w16] <= k^(-1) mod n */
@@ -1022,13 +994,13 @@ p384_sign:
   bn.lid    x2++, 32(x3)
 
   /* [w17, w16] <= k^(-1)*d mod n = [w17, w16] * [w11, w10] mod [w13, w12] */
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_n
 
   /*  [w5, w4] <= [w17, w16]
         <= r * (k^(-1)*d) mod n = [w26, w25] * [w17, w16] mod [w13, w12] */
   bn.mov    w10, w25
   bn.mov    w11, w26
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_n
   bn.mov    w4, w16
   bn.mov    w5, w17
 
@@ -1043,7 +1015,7 @@ p384_sign:
   /* [w17, w16] <= k^(-1) * msg = [w3, w2]*[w17, w16] mod n */
   bn.mov    w16, w2
   bn.mov    w17, w3
-  jal       x1, barrett384_p384
+  jal       x1, p384_mulmod_n
 
   /* [w28, w27] <= s' = k^(-1)*msg + k^(-1)*r*d  = [w17, w16] + [w5, w4]*/
   bn.add    w27, w16, w4
