@@ -42,6 +42,19 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
+  build_modes: [
+    {
+      name: aes_no_masking
+      build_opts: ["+define+EN_MASKING=0",
+                   "+define+SBOX_IMPL=aes_pkg::SBoxImplLut" ]
+    }
+    {
+      name: aes_masking
+        build_opts: ["+define+EN_MASKING=1",
+                     "+define+SBOX_IMPL=aes_pkg::SBoxImplDom" ]
+    }
+  ]
+
   // Default UVM test and seq class name.
   uvm_test: aes_base_test
   uvm_test_seq: aes_wake_up_vseq
