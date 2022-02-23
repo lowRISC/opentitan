@@ -370,11 +370,16 @@ int OtbnModel::check() const {
 
   good &= OtbnTraceChecker::get().Finish();
 
-  try {
-    good &= check_dmem(*iss);
-  } catch (const std::exception &err) {
-    std::cerr << "Failed to check DMEM: " << err.what() << "\n";
-    return -1;
+  // Check DMEM only when we are about to start Secure Wipe because otherwise
+  // we would not have a valid scrambling key anymore. That would result with
+  // not getting a valid nonce and therefore an error.
+  if (iss->get_mirrored().wipe_start) {
+    try {
+      good &= check_dmem(*iss);
+    } catch (const std::exception &err) {
+      std::cerr << "Failed to check DMEM: " << err.what() << "\n";
+      return -1;
+    }
   }
 
   try {
