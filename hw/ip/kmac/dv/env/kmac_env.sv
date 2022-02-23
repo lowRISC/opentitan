@@ -25,9 +25,10 @@ class kmac_env extends cip_base_env #(
     end
 
     // get ext interfaces
-    keymgr_sideload_agent = key_sideload_agent::type_id::create("keymgr_sideload_agent", this);
-    uvm_config_db#(key_sideload_agent_cfg)::set(this, "keymgr_sideload_agent*",
-                                                "cfg", cfg.keymgr_sideload_agent_cfg);
+    keymgr_sideload_agent = key_sideload_agent#(keymgr_pkg::hw_key_req_t)::type_id::create(
+      "keymgr_sideload_agent", this);
+    uvm_config_db#(key_sideload_agent_cfg#(keymgr_pkg::hw_key_req_t))::set(
+      this, "keymgr_sideload_agent*", "cfg", cfg.keymgr_sideload_agent_cfg);
 
     // config kmac virtual interface
     if (!uvm_config_db#(kmac_vif)::get(this, "", "kmac_vif", cfg.kmac_vif)) begin

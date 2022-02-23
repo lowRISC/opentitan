@@ -375,7 +375,7 @@ class otbn_base_vseq extends cip_base_vseq #(
     end else begin
       // If absent keys are not allowed, we want to generate our own sequence that doesn't allow
       // keys to be invalid. We send it with a higher priority to override the default sequence.
-      key_sideload_set_seq sideload_seq;
+      key_sideload_set_seq#(keymgr_pkg::otbn_key_req_t) sideload_seq;
       `uvm_create_on(sideload_seq, p_sequencer.key_sideload_sequencer_h)
       while (stop_tokens == 0) begin
         `DV_CHECK_RANDOMIZE_WITH_FATAL(sideload_seq, sideload_key.valid == 1'b1;)

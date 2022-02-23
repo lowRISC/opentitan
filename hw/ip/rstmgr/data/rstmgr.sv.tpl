@@ -52,7 +52,7 @@ module rstmgr
   input alert_pkg::alert_crashdump_t alert_dump_i,
 
   // Interface to cpu crash dump
-  input ibex_pkg::crash_dump_t cpu_dump_i,
+  input rv_core_ibex_pkg::cpu_crash_dump_t cpu_dump_i,
 
   // dft bypass
   input scan_rst_ni,
@@ -478,7 +478,7 @@ module rstmgr
   );
 
   rstmgr_crash_info #(
-    .CrashDumpWidth($bits(ibex_pkg::crash_dump_t))
+    .CrashDumpWidth($bits(rv_core_ibex_pkg::cpu_crash_dump_t))
   ) u_cpu_info (
     .clk_i,
     .rst_ni,

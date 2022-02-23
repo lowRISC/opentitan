@@ -72,8 +72,6 @@ interface kmac_app_intf (input clk, input rst_n);
   end
 
   // The following assertions apply for this interface for all modes.
-  // last can only be asserted along with valid
-  `ASSERT(LastAssertWithValid_A, kmac_data_req.last |-> kmac_data_req.valid, clk, !rst_n)
 
   // Done should be asserted after last, before we start another request
   `ASSERT(DoneAssertAfterLast_A,

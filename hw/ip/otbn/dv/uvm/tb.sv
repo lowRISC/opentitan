@@ -39,23 +39,19 @@ module tb;
   // needed for sequences that trigger alerts (locking OTBN) without telling the model.
   `DV_ASSERT_CTRL("otbn_status_assert_en", tb.MatchingStatus_A)
 
-  otbn_key_req_t keymgr_key;
-  hw_key_req_t   sideload_key;
-  key_sideload_if keymgr_if (
+  otbn_key_req_t sideload_key;
+  key_sideload_if#(keymgr_pkg::otbn_key_req_t) keymgr_if (
     .clk_i        (clk),
     .rst_ni       (rst_n),
     .sideload_key (sideload_key)
   );
-  assign keymgr_key.valid  = sideload_key.valid;
-  assign keymgr_key.key[0] = sideload_key.key[0];
-  assign keymgr_key.key[1] = sideload_key.key[1];
 
   otbn_model_if #(
     .ImemSizeByte (otbn_reg_pkg::OTBN_IMEM_SIZE)
   ) model_if (
     .clk_i         (clk),
     .rst_ni        (rst_n),
-    .keymgr_key_i  (keymgr_key)
+    .keymgr_key_i  (sideload_key)
   );
 
 
@@ -145,7 +141,7 @@ module tb;
     .otbn_otp_key_o(otp_key_req),
     .otbn_otp_key_i(otp_key_rsp),
 
-    .keymgr_key_i(keymgr_key)
+    .keymgr_key_i(sideload_key)
   );
 
   bind dut.u_otbn_core otbn_trace_if #(
@@ -294,8 +290,8 @@ module tb;
     uvm_config_db#(escalate_vif)::set(null, "*.env", "escalate_vif", escalate_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual otbn_model_if)::set(null, "*.env.model_agent", "vif", model_if);
-    uvm_config_db#(virtual key_sideload_if)::set(null, "*.env.keymgr_sideload_agent",
-    "vif", keymgr_if);
+    uvm_config_db#(virtual key_sideload_if#(keymgr_pkg::otbn_key_req_t))::set(
+      null, "*.env.keymgr_sideload_agent", "vif", keymgr_if);
 
     uvm_config_db#(virtual otbn_trace_if)::set(null, "*.env", "trace_vif",
                                                dut.u_otbn_core.i_otbn_trace_if);

@@ -34,13 +34,14 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"
                 "{proj_root}/hw/dv/tools/dvsim/tests/passthru_mem_intg_tests.hjson"
+                "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"
                 ]
 
   en_build_modes: ["{tool}_memutil_dpi_scrambled_build_opts"]
 
   // Add additional tops for simulation.
-  sim_tops: ["sram_ctrl_bind", "sram_ctrl_cov_bind"]
+  sim_tops: ["sram_ctrl_bind", "sram_ctrl_cov_bind", "sec_cm_prim_count_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50

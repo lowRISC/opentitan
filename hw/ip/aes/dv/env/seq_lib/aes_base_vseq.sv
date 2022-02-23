@@ -206,6 +206,7 @@ class aes_base_vseq extends cip_base_vseq #(
       ral.ctrl_shadowed.key_len.set(item.key_len);
       ral.ctrl_shadowed.sideload.set(item.sideload_en);
       ral.ctrl_shadowed.manual_operation.set(item.manual_op);
+      ral.ctrl_shadowed.prng_reseed_rate.set(item.reseed_rate);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
     end
   endtask
@@ -345,7 +346,7 @@ class aes_base_vseq extends cip_base_vseq #(
   // enable sideload sequence
   // and get it to generate a key a random times
   task start_sideload_seq();
-    sideload_seq = key_sideload_set_seq::type_id::create("sideload_seq");
+    sideload_seq = key_sideload_set_seq#(keymgr_pkg::hw_key_req_t)::type_id::create("sideload_seq");
     `DV_CHECK_RANDOMIZE_FATAL(sideload_seq)
     sideload_seq.start(p_sequencer.key_sideload_sequencer_h);
     forever begin
@@ -357,7 +358,7 @@ class aes_base_vseq extends cip_base_vseq #(
   endtask
 
   task req_sideload_key();
-    req_key_seq = key_sideload_set_seq::type_id::create("req_key_seq");
+    req_key_seq = key_sideload_set_seq#(keymgr_pkg::hw_key_req_t)::type_id::create("req_key_seq");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req_key_seq, sideload_key.valid == 1;)
     req_key_seq.start(p_sequencer.key_sideload_sequencer_h);
     while (!key_used) begin
@@ -787,6 +788,7 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_item.manual_op        = message_item.manual_operation;
     aes_item.key_mask         = message_item.keymask;
     aes_item.sideload_en      = message_item.sideload_en;
+    aes_item.reseed_rate      = message_item.reseed_rate;
     aes_item.clear_reg_pct    = cfg.clear_reg_pct;
     aes_item.clear_reg_w_rand = cfg.clear_reg_w_rand;
   endfunction // aes_item_init
@@ -831,6 +833,9 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_message.fixed_keylen         = cfg.fixed_keylen;
     aes_message.fixed_iv_en          = cfg.fixed_iv_en;
     aes_message.sideload_pct         = cfg.sideload_pct;
+    aes_message.per8_weight          = cfg.per8_weight;
+    aes_message.per64_weight         = cfg.per64_weight;
+    aes_message.per8k_weight         = cfg.per8k_weight;
   endfunction
 
 
@@ -838,7 +843,7 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_message_item cloned_message;
     for (int i=0; i < cfg.num_messages; i++) begin
       `DV_CHECK_RANDOMIZE_FATAL(aes_message)
-      if (aes_message.cfg_error_type[0] == 1'b1) cfg.num_corrupt_messages += 1;
+      if (aes_message.cfg_error_type[1] == 1'b1) cfg.num_corrupt_messages += 1;
       `downcast(cloned_message, aes_message.clone());
       message_queue.push_front(cloned_message);
       `uvm_info(`gfn, $sformatf("\n\t ----| MESSAGE # %d \n %s",i, cloned_message.convert2string())
