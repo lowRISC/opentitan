@@ -859,8 +859,8 @@
         }
         {
           bits: "5",
-          name: "tx_use_d_se0_o",
-          desc: "USB TX mode, intended to enable a variety of transceivers. 0: use dp/dn interface, 1: use d/se0 interface"
+          name: "rx_enable_o",
+          desc: "Enable differential receiver."
         }
         {
           bits: "6",
