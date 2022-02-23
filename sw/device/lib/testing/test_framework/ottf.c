@@ -55,7 +55,7 @@ static void report_test_status(bool result) {
 }
 
 OT_ATTR_WEAK
-bool closed_source_pre_test_hook(void) { return true;}
+bool closed_source_pre_test_hook(void)  {return true;}
 
 OT_ATTR_WEAK
 bool closed_source_post_test_hook(void) {return true;}
