@@ -3,13 +3,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/clkmgr_testutils.h"
 #include "sw/device/lib/testing/hmac_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+static dif_clkmgr_t clkmgr;
+static dif_hmac_t hmac;
 
 static const dif_hmac_transaction_t kHmacTransactionConfig = {
     .digest_endianness = kDifHmacEndiannessLittle,
@@ -79,29 +84,105 @@ static const dif_hmac_digest_t kExpectedHmacDigest = {
         },
 };
 
-bool test_main() {
-  dif_hmac_t hmac;
-  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
-  CHECK_DIF_OK(dif_hmac_init(base_addr, &hmac));
-
-  // Use HMAC in SHA256 mode to generate a 256bit key from `kHmacLongKey`.
+/**
+ * Uses HMAC in SHA256 mode to generate a 256bit key from the `kHmacLongKey`.
+ */
+static void long_key_sha256_digest(dif_hmac_digest_t *key_digest_out) {
   CHECK_DIF_OK(dif_hmac_mode_sha256_start(&hmac, kHmacTransactionConfig));
   hmac_testutils_push_message(&hmac, (char *)kHmacLongKey,
                               sizeof(kHmacLongKey));
   hmac_testutils_check_message_length(&hmac, sizeof(kHmacLongKey) * 8);
   CHECK_DIF_OK(dif_hmac_process(&hmac));
+  hmac_testutils_finish_polled(&hmac, key_digest_out);
+}
+
+/**
+ * Sets hint in the Clock Manager to gate the HMAC clock.
+ *
+ * Checks that the clock gating does not take effect whilst HMAC is still
+ * in operation.
+ *
+ * This function should be called after `dif_hmac_mode_*_start`, which brings
+ * HMAC out of the idle state.
+ */
+static void hint_clock_disable_and_check(void) {
+  CHECK_DIF_OK(dif_clkmgr_hintable_clock_set_hint(
+      &clkmgr, kTopEarlgreyHintableClocksMainHmac, kDifToggleDisabled));
+  CHECK(clkmgr_testutils_get_trans_clock_status(
+      &clkmgr, kTopEarlgreyHintableClocksMainHmac));
+}
+
+/**
+ * Spin waits for the Clock Manager to gate the HMAC clock.
+ *
+ * This occurs as soon as the HMAC IP is idle, and serves as an indirect
+ * check for the HMAC done.
+ *
+ * Please note that we should not poll on any of the HMAC registers. As soon
+ * as HMAC becomes idle, the clock is gated, and the registers cannot be
+ * accessed. The clock must be re-enabled to "finish" the HMAC operation, and
+ * read out the digest.
+ *
+ * This function should be called after `dif_hmac_process`, and before
+ * `dif_hmac_finish`.
+ */
+static void wait_clock_disabled_and_toggle(void) {
+  IBEX_SPIN_FOR(!clkmgr_testutils_get_trans_clock_status(
+                    &clkmgr, kTopEarlgreyHintableClocksMainHmac),
+                HMAC_TESTUTILS_FINISH_TIMEOUT_USEC);
+
+  CHECK_DIF_OK(dif_clkmgr_hintable_clock_set_hint(
+      &clkmgr, kTopEarlgreyHintableClocksMainHmac, kDifToggleEnabled));
+}
+
+/**
+ * Checks that clock can be disabled and re-enabled when HMAC is idle.
+ *
+ * This function should be called before `dif_hmac_start`.
+ */
+static void basic_idle_test(void) {
+  // It is expected that HMAC clock is enabled at this point.
+  CHECK(clkmgr_testutils_get_trans_clock_status(
+      &clkmgr, kTopEarlgreyHintableClocksMainHmac));
+
+  // Disable and enable clock. It is expected that the clock will be disabled
+  // straight away, if the HMAC is idle. It then re-enables the clock,
+  // to be able to proceed with the test. The time-out is arbitrary large
+  // number that should be enough for the clock to toggle.
+  clkmgr_testutils_check_trans_clock_gating(
+      &clkmgr, kTopEarlgreyHintableClocksMainHmac, false, 10);
+
+  // It is expected that HMAC clock is enabled at this point.
+  CHECK(clkmgr_testutils_get_trans_clock_status(
+      &clkmgr, kTopEarlgreyHintableClocksMainHmac));
+}
+
+/**
+ * Performs the chip_sw_hmac_enc and chip_sw_hmac_idle tests.
+ */
+bool test_main() {
+  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
+  CHECK_DIF_OK(dif_hmac_init(base_addr, &hmac));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
+  CHECK_DIF_OK(dif_clkmgr_init(base_addr, &clkmgr));
+
+  basic_idle_test();
+
+  // Generate block sized key.
   dif_hmac_digest_t key_digest;
-  hmac_testutils_finish_polled(&hmac, &key_digest);
+  long_key_sha256_digest(&key_digest);
   CHECK_BUFFER(key_digest.digest, kExpectedShaDigest.digest,
                ARRAYSIZE(key_digest.digest));
 
-  // Generate HMAC final digest, using the resulted SHA256 digest over the
-  // `kHmacLongKey`.
+  // Start HMAC mode transaction with the SHA256 digest as the input key.
   CHECK_DIF_OK(dif_hmac_mode_hmac_start(&hmac, (uint8_t *)&key_digest.digest[0],
                                         kHmacTransactionConfig));
+  hint_clock_disable_and_check();
   hmac_testutils_push_message(&hmac, kData, sizeof(kData));
   hmac_testutils_check_message_length(&hmac, sizeof(kData) * 8);
   CHECK_DIF_OK(dif_hmac_process(&hmac));
+  wait_clock_disabled_and_toggle();
   hmac_testutils_finish_and_check_polled(&hmac, &kExpectedHmacDigest);
 
   return true;

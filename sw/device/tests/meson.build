@@ -1018,9 +1018,11 @@ hmac_enc_test_lib = declare_dependency(
     'hmac_enc_test_lib',
     sources: ['hmac_enc_test.c'],
     dependencies: [
+      sw_lib_dif_clkmgr,
       sw_lib_dif_hmac,
       sw_lib_mmio,
       sw_lib_runtime_log,
+      sw_lib_testing_clkmgr_testutils,
       sw_lib_testing_hmac_testutils,
       top_earlgrey,
     ],
