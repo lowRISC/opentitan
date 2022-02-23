@@ -374,4 +374,11 @@ module prim_alert_sender
       clk_i, !rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n))
 `endif
 
+`ifdef FPV_SEC_CM_ON
+  // Assumptions for FPV security countermeasures to ensure the alert protocol functions collectly.
+  `ASSUME_FPV(AckPFollowsAlertP_S, alert_rx_i.ack_p == $past(alert_tx_o.alert_p))
+  `ASSUME_FPV(AckNFollowsAlertN_S, alert_rx_i.ack_n == $past(alert_tx_o.alert_n))
+  `ASSUME_FPV(TriggerAlertInit_S, $stable(rst_ni) == 0 |=> alert_rx_i.ping_p == alert_rx_i.ping_n)
+  `ASSUME_FPV(PingDiffPair_S, ##2 alert_rx_i.ping_p != alert_rx_i.ping_n)
+`endif
 endmodule : prim_alert_sender
