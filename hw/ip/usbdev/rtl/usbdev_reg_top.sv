@@ -670,8 +670,8 @@ module usbdev_reg_top (
   logic phy_pins_drive_se0_o_wd;
   logic phy_pins_drive_oe_o_qs;
   logic phy_pins_drive_oe_o_wd;
-  logic phy_pins_drive_tx_use_d_se0_o_qs;
-  logic phy_pins_drive_tx_use_d_se0_o_wd;
+  logic phy_pins_drive_rx_enable_o_qs;
+  logic phy_pins_drive_rx_enable_o_wd;
   logic phy_pins_drive_dp_pullup_en_o_qs;
   logic phy_pins_drive_dp_pullup_en_o_wd;
   logic phy_pins_drive_dn_pullup_en_o_qs;
@@ -7161,18 +7161,18 @@ module usbdev_reg_top (
     .qs     (phy_pins_drive_oe_o_qs)
   );
 
-  //   F[tx_use_d_se0_o]: 5:5
+  //   F[rx_enable_o]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_phy_pins_drive_tx_use_d_se0_o (
+  ) u_phy_pins_drive_rx_enable_o (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_pins_drive_we),
-    .wd     (phy_pins_drive_tx_use_d_se0_o_wd),
+    .wd     (phy_pins_drive_rx_enable_o_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7180,10 +7180,10 @@ module usbdev_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_pins_drive.tx_use_d_se0_o.q),
+    .q      (reg2hw.phy_pins_drive.rx_enable_o.q),
 
     // to register interface (read)
-    .qs     (phy_pins_drive_tx_use_d_se0_o_qs)
+    .qs     (phy_pins_drive_rx_enable_o_qs)
   );
 
   //   F[dp_pullup_en_o]: 6:6
@@ -8165,7 +8165,7 @@ module usbdev_reg_top (
 
   assign phy_pins_drive_oe_o_wd = reg_wdata[4];
 
-  assign phy_pins_drive_tx_use_d_se0_o_wd = reg_wdata[5];
+  assign phy_pins_drive_rx_enable_o_wd = reg_wdata[5];
 
   assign phy_pins_drive_dp_pullup_en_o_wd = reg_wdata[6];
 
@@ -8540,7 +8540,7 @@ module usbdev_reg_top (
         reg_rdata_next[2] = phy_pins_drive_d_o_qs;
         reg_rdata_next[3] = phy_pins_drive_se0_o_qs;
         reg_rdata_next[4] = phy_pins_drive_oe_o_qs;
-        reg_rdata_next[5] = phy_pins_drive_tx_use_d_se0_o_qs;
+        reg_rdata_next[5] = phy_pins_drive_rx_enable_o_qs;
         reg_rdata_next[6] = phy_pins_drive_dp_pullup_en_o_qs;
         reg_rdata_next[7] = phy_pins_drive_dn_pullup_en_o_qs;
         reg_rdata_next[8] = phy_pins_drive_suspend_o_qs;

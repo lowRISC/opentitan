@@ -175,12 +175,16 @@ module usbdev
   /////////////////////////////////
   logic usb_tx_d;
   logic usb_tx_se0;
+  logic usb_tx_dp;
+  logic usb_tx_dn;
   logic usb_tx_oe;
   /////////////////////////////////
   // USB contol pins after CDC   //
   /////////////////////////////////
   logic usb_pwr_sense;
   logic usb_pullup_en;
+  logic usb_dp_pullup_en;
+  logic usb_dn_pullup_en;
 
   //////////////////////////////////
   // Microsecond timing reference //
@@ -562,6 +566,10 @@ module usbdev
   ////////////////////////////////////////////////////////
   // USB interface -- everything is in USB clock domain //
   ////////////////////////////////////////////////////////
+  wire cfg_pinflip = reg2hw.phy_config.pinflip.q; // cdc ok: quasi-static
+  assign usb_dp_pullup_en = cfg_pinflip ? 1'b0 : usb_pullup_en;
+  assign usb_dn_pullup_en = !cfg_pinflip ? 1'b0 : usb_pullup_en;
+
 
   usbdev_usbif #(
     .NEndpoints     (NEndpoints),
@@ -581,6 +589,8 @@ module usbdev
     .usb_oe_o             (usb_tx_oe),
     .usb_d_o              (usb_tx_d),
     .usb_se0_o            (usb_tx_se0),
+    .usb_dp_o             (usb_tx_dp),
+    .usb_dn_o             (usb_tx_dn),
     .usb_sense_i          (usb_pwr_sense),
     .usb_pullup_en_o      (usb_pullup_en),
 
@@ -631,7 +641,8 @@ module usbdev
     .diff_rx_ok_i         (usb_diff_rx_ok),
     .cfg_eop_single_bit_i (reg2hw.phy_config.eop_single_bit.q), // cdc ok: quasi-static
     .tx_osc_test_mode_i   (reg2hw.phy_config.tx_osc_test_mode.q), // cdc ok: quasi-static
-    .cfg_use_diff_rcvr_i  (reg2hw.phy_config.use_diff_rcvr.q), // cdc ok: quasi-static
+    .cfg_use_diff_rcvr_i  (usb_rx_enable_o),
+    .cfg_pinflip_i        (cfg_pinflip),
     .data_toggle_clear_i  (usb_data_toggle_clear),
     .resume_link_active_i (usb_resume_link_active),
 
@@ -1069,7 +1080,11 @@ module usbdev
   /////////////////////////////////
   // USB IO Muxing               //
   /////////////////////////////////
-  assign cio_usb_dn_en_o = cio_usb_dp_en_o;
+  logic cio_usb_oe;
+  logic usb_rx_enable;
+  assign cio_usb_dp_en_o = cio_usb_oe;
+  assign cio_usb_dn_en_o = cio_usb_oe;
+  assign usb_tx_use_d_se0_o = reg2hw.phy_config.tx_use_d_se0.q; // cdc ok: quasi-static
 
   usbdev_iomux i_usbdev_iomux (
     .clk_i                  (clk_i),
@@ -1080,7 +1095,6 @@ module usbdev
     // Register interface
     .sys_hw2reg_sense_o     (hw2reg.phy_pins_sense),
     .sys_reg2hw_drive_i     (reg2hw.phy_pins_drive),
-    .sys_reg2hw_config_i    (reg2hw.phy_config),
     .sys_usb_sense_o        (hw2reg.usbstat.sense.d),
 
     // Chip IO
@@ -1091,12 +1105,12 @@ module usbdev
     .usb_tx_se0_o           (usb_tx_se0_o),
     .usb_tx_dp_o            (cio_usb_dp_o),
     .usb_tx_dn_o            (cio_usb_dn_o),
-    .usb_tx_oe_o            (cio_usb_dp_en_o),
-    .usb_tx_use_d_se0_o     (usb_tx_use_d_se0_o),
+    .usb_tx_oe_o            (cio_usb_oe),
     .cio_usb_sense_i        (cio_sense_i),
     .usb_dp_pullup_en_o     (usb_dp_pullup_o),
     .usb_dn_pullup_en_o     (usb_dn_pullup_o),
     .usb_suspend_o          (usb_suspend_o),
+    .usb_rx_enable_o        (usb_rx_enable_o),
 
     // Internal interface
     .usb_rx_d_o             (usb_rx_d),
@@ -1104,10 +1118,14 @@ module usbdev
     .usb_rx_dn_o            (usb_rx_dn),
     .usb_tx_d_i             (usb_tx_d),
     .usb_tx_se0_i           (usb_tx_se0),
+    .usb_tx_dp_i            (usb_tx_dp),
+    .usb_tx_dn_i            (usb_tx_dn),
     .usb_tx_oe_i            (usb_tx_oe),
     .usb_pwr_sense_o        (usb_pwr_sense),
-    .usb_pullup_en_i        (usb_pullup_en),
-    .usb_suspend_i          (usb_event_link_suspend)
+    .usb_dp_pullup_en_i     (usb_dp_pullup_en),
+    .usb_dn_pullup_en_i     (usb_dn_pullup_en),
+    .usb_suspend_i          (usb_event_link_suspend),
+    .usb_rx_enable_i        (usb_rx_enable)
   );
 
   // Differential receiver enable
@@ -1120,8 +1138,8 @@ module usbdev
     .q_o    (usb_use_diff_rcvr)
   );
   // enable rx only when the single-ended input is enabled and the device is
-  // not suspended.
-  assign usb_rx_enable_o = usb_use_diff_rcvr & ~usb_suspend_o;
+  // not suspended (unless it is forced on in the I/O mux).
+  assign usb_rx_enable = usb_use_diff_rcvr & ~usb_suspend_o;
 
   // Symbols from the differential receiver are invalid until it has finished
   // waking up / powering on

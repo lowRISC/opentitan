@@ -29,6 +29,8 @@ module usbdev_usbif  #(
 
   output logic                     usb_d_o,
   output logic                     usb_se0_o,
+  output logic                     usb_dp_o,
+  output logic                     usb_dn_o,
   output logic                     usb_oe_o,
 
   output logic                     usb_pullup_en_o,
@@ -81,6 +83,8 @@ module usbdev_usbif  #(
   input  logic                     diff_rx_ok_i, // 1: differential symbols (K/J) are valid
   input  logic                     cfg_eop_single_bit_i, // 1: detect a single SE0 bit as EOP
   input  logic                     cfg_use_diff_rcvr_i, // 1: use single-ended rx data on usb_d_i
+  input  logic                     cfg_pinflip_i, // 1: Treat outputs and inputs as though D+/D-
+                                                  // are flipped
   input  logic                     tx_osc_test_mode_i, // Oscillator test mode: constant JK output
   input  logic [NEndpoints-1:0]    data_toggle_clear_i, // Clear the data toggles for an EP
   input  logic                     resume_link_active_i, // Jump from LinkPowered to LinkResuming
@@ -282,6 +286,7 @@ module usbdev_usbif  #(
 
     .cfg_eop_single_bit_i  (cfg_eop_single_bit_i),
     .cfg_use_diff_rcvr_i   (cfg_use_diff_rcvr_i),
+    .cfg_pinflip_i         (cfg_pinflip_i),
     .tx_osc_test_mode_i    (tx_osc_test_mode_i),
     .data_toggle_clear_i   (data_toggle_clear_i),
     .diff_rx_ok_i          (diff_rx_ok_i),
@@ -291,6 +296,8 @@ module usbdev_usbif  #(
     .usb_dn_i              (usb_dn_i),
     .usb_d_o               (usb_d_o),
     .usb_se0_o             (usb_se0_o),
+    .usb_dp_o              (usb_dp_o),
+    .usb_dn_o              (usb_dn_o),
     .usb_oe_o              (usb_oe_o),
 
     .dev_addr_i            (devaddr_i),

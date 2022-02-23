@@ -10,6 +10,7 @@ module usb_fs_tx (
   input  logic clk_i,
   input  logic rst_ni,  // asyc reset
   input  logic link_reset_i, // USB reset, sync to 48 MHz, active high
+  input  logic cfg_pinflip_i,
 
   // Oscillator test mode (constantly output JK)
   input  logic tx_osc_test_mode_i,
@@ -21,6 +22,8 @@ module usb_fs_tx (
   output logic usb_oe_o,
   output logic usb_d_o,
   output logic usb_se0_o,
+  output logic usb_dp_o,
+  output logic usb_dn_o,
 
   // pulse to initiate new packet transmission
   input  logic pkt_start_i,
@@ -449,8 +452,61 @@ module usb_fs_tx (
     .q_o(usb_se0_q)
   );
 
+  // Handle the D+ / D- pin flip on the USB side, and provide both the
+  // dp/dn and d/se0 interfaces, for compatibility with multiple driver types.
+  logic usb_d_flipped, usb_se0_flipped, usb_dp_flipped, usb_dn_flipped;
+
+  always_comb begin
+    if (link_reset_i) begin
+      usb_d_flipped = 1'b0 ^ cfg_pinflip_i;
+      usb_se0_flipped = 1'b0;
+      usb_dp_flipped = 1'b0 ^ cfg_pinflip_i;
+      usb_dn_flipped = 1'b1 ^ cfg_pinflip_i;
+    end else begin
+      usb_d_flipped = usb_d_d ^ cfg_pinflip_i;
+      usb_se0_flipped = usb_se0_d;
+      usb_dp_flipped = (usb_d_d & ~usb_se0_d) ^ cfg_pinflip_i;
+      usb_dn_flipped = (~usb_d_d & ~usb_se0_d) ^ cfg_pinflip_i;
+    end
+  end
+
+  // Use registered outputs for the I/Os
+  prim_flop #(
+    .ResetValue(1) // J state = idle state
+  ) u_usb_d_o_flop (
+    .clk_i,
+    .rst_ni,
+    .d_i(usb_d_flipped),
+    .q_o(usb_d_o)
+  );
+
+  prim_flop #(
+    .ResetValue(0) // J state = idle state
+  ) u_usb_se0_o_flop (
+    .clk_i,
+    .rst_ni,
+    .d_i(usb_se0_flipped),
+    .q_o(usb_se0_o)
+  );
+
+  prim_flop #(
+    .ResetValue(1) // J state = idle state
+  ) u_usb_dp_o_flop (
+    .clk_i,
+    .rst_ni,
+    .d_i(usb_dp_flipped),
+    .q_o(usb_dp_o)
+  );
+
+  prim_flop #(
+    .ResetValue(0) // J state = idle state
+  ) u_usb_dn_o_flop (
+    .clk_i,
+    .rst_ni,
+    .d_i(usb_dn_flipped),
+    .q_o(usb_dn_o)
+  );
+
   assign usb_oe_o  = oe_q;
-  assign usb_d_o   = usb_d_q;
-  assign usb_se0_o = usb_se0_q;
 
 endmodule
