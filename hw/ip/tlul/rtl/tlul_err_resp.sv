@@ -18,6 +18,15 @@ module tlul_err_resp (
   logic [$bits(tl_h_i.a_source)-1:0] err_source;
   logic [$bits(tl_h_i.a_size)-1:0]   err_size;
   logic                              err_req_pending, err_rsp_pending;
+  tlul_pkg::tl_d2h_t                 tl_h_o_int;
+
+  tlul_rsp_intg_gen #(
+    .EnableRspIntgGen(1),
+    .EnableDataIntgGen(1)
+  ) u_intg_gen (
+    .tl_i(tl_h_o_int),
+    .tl_o(tl_h_o)
+  );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -25,7 +34,7 @@ module tlul_err_resp (
       err_source      <= {top_pkg::TL_AIW{1'b0}};
       err_opcode      <= Get;
       err_size        <= '0;
-    end else if (tl_h_i.a_valid && tl_h_o.a_ready) begin
+    end else if (tl_h_i.a_valid && tl_h_o_int.a_ready) begin
       err_req_pending <= 1'b1;
       err_source      <= tl_h_i.a_source;
       err_opcode      <= tl_h_i.a_opcode;
@@ -35,16 +44,16 @@ module tlul_err_resp (
     end
   end
 
-  assign tl_h_o.a_ready  = ~err_rsp_pending & ~(err_req_pending & ~tl_h_i.d_ready);
-  assign tl_h_o.d_valid  = err_req_pending | err_rsp_pending;
-  assign tl_h_o.d_data   = '1; // Return all F
-  assign tl_h_o.d_source = err_source;
-  assign tl_h_o.d_sink   = '0;
-  assign tl_h_o.d_param  = '0;
-  assign tl_h_o.d_size   = err_size;
-  assign tl_h_o.d_opcode = (err_opcode == Get) ? AccessAckData : AccessAck;
-  assign tl_h_o.d_user   = '0;
-  assign tl_h_o.d_error  = 1'b1;
+  assign tl_h_o_int.a_ready  = ~err_rsp_pending & ~(err_req_pending & ~tl_h_i.d_ready);
+  assign tl_h_o_int.d_valid  = err_req_pending | err_rsp_pending;
+  assign tl_h_o_int.d_data   = '1; // Return all F
+  assign tl_h_o_int.d_source = err_source;
+  assign tl_h_o_int.d_sink   = '0;
+  assign tl_h_o_int.d_param  = '0;
+  assign tl_h_o_int.d_size   = err_size;
+  assign tl_h_o_int.d_opcode = (err_opcode == Get) ? AccessAckData : AccessAck;
+  assign tl_h_o_int.d_user   = '0;
+  assign tl_h_o_int.d_error  = 1'b1;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
