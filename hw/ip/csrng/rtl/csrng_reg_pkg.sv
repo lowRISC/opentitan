@@ -294,7 +294,7 @@ package csrng_reg_pkg;
   typedef struct packed {
     logic [7:0]  d;
     logic        de;
-  } csrng_hw2reg_debug_status_reg_t;
+  } csrng_hw2reg_main_sm_state_reg_t;
 
   // Register -> HW type
   typedef struct packed {
@@ -320,7 +320,7 @@ package csrng_reg_pkg;
     csrng_hw2reg_hw_exc_sts_reg_t hw_exc_sts; // [84:69]
     csrng_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [68:61]
     csrng_hw2reg_err_code_reg_t err_code; // [60:9]
-    csrng_hw2reg_debug_status_reg_t debug_status; // [8:0]
+    csrng_hw2reg_main_sm_state_reg_t main_sm_state; // [8:0]
   } csrng_hw2reg_t;
 
   // Register offsets
@@ -340,7 +340,7 @@ package csrng_reg_pkg;
   parameter logic [BlockAw-1:0] CSRNG_RECOV_ALERT_STS_OFFSET = 7'h 34;
   parameter logic [BlockAw-1:0] CSRNG_ERR_CODE_OFFSET = 7'h 38;
   parameter logic [BlockAw-1:0] CSRNG_ERR_CODE_TEST_OFFSET = 7'h 3c;
-  parameter logic [BlockAw-1:0] CSRNG_DEBUG_STATUS_OFFSET = 7'h 40;
+  parameter logic [BlockAw-1:0] CSRNG_MAIN_SM_STATE_OFFSET = 7'h 40;
 
   // Reset values for hwext registers and their fields
   parameter logic [3:0] CSRNG_INTR_TEST_RESVAL = 4'h 0;
@@ -373,7 +373,7 @@ package csrng_reg_pkg;
     CSRNG_RECOV_ALERT_STS,
     CSRNG_ERR_CODE,
     CSRNG_ERR_CODE_TEST,
-    CSRNG_DEBUG_STATUS
+    CSRNG_MAIN_SM_STATE
   } csrng_id_e;
 
   // Register width information to check illegal writes
@@ -394,7 +394,7 @@ package csrng_reg_pkg;
     4'b 0011, // index[13] CSRNG_RECOV_ALERT_STS
     4'b 1111, // index[14] CSRNG_ERR_CODE
     4'b 0001, // index[15] CSRNG_ERR_CODE_TEST
-    4'b 0001  // index[16] CSRNG_DEBUG_STATUS
+    4'b 0001  // index[16] CSRNG_MAIN_SM_STATE
   };
 
 endpackage

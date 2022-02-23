@@ -199,7 +199,7 @@ module csrng_reg_top (
   logic err_code_test_we;
   logic [4:0] err_code_test_qs;
   logic [4:0] err_code_test_wd;
-  logic [7:0] debug_status_qs;
+  logic [7:0] main_sm_state_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -1567,12 +1567,12 @@ module csrng_reg_top (
   );
 
 
-  // R[debug_status]: V(False)
+  // R[main_sm_state]: V(False)
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (8'h0)
-  ) u_debug_status (
+    .RESVAL  (8'h4e)
+  ) u_main_sm_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -1581,15 +1581,15 @@ module csrng_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.debug_status.de),
-    .d      (hw2reg.debug_status.d),
+    .de     (hw2reg.main_sm_state.de),
+    .d      (hw2reg.main_sm_state.d),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (debug_status_qs)
+    .qs     (main_sm_state_qs)
   );
 
 
@@ -1613,7 +1613,7 @@ module csrng_reg_top (
     addr_hit[13] = (reg_addr == CSRNG_RECOV_ALERT_STS_OFFSET);
     addr_hit[14] = (reg_addr == CSRNG_ERR_CODE_OFFSET);
     addr_hit[15] = (reg_addr == CSRNG_ERR_CODE_TEST_OFFSET);
-    addr_hit[16] = (reg_addr == CSRNG_DEBUG_STATUS_OFFSET);
+    addr_hit[16] = (reg_addr == CSRNG_MAIN_SM_STATE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1817,7 +1817,7 @@ module csrng_reg_top (
       end
 
       addr_hit[16]: begin
-        reg_rdata_next[7:0] = debug_status_qs;
+        reg_rdata_next[7:0] = main_sm_state_qs;
       end
 
       default: begin
