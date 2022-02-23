@@ -46,6 +46,8 @@ module otbn_core_model
   output logic               edn_urnd_o, // EDN request interface for URND seed
   input  logic               edn_urnd_cdc_done_i, // URND seed from EDN is valid (DUT perspective)
 
+  input  logic           otp_key_cdc_done_i, // Scrambling key from OTP is valid (DUT perspective)
+
   output bit [7:0]       status_o,   // STATUS register
   output bit [31:0]      insn_cnt_o, // INSN_CNT register
 
