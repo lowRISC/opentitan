@@ -62,8 +62,11 @@ module otbn_scramble_ctrl
   logic dmem_key_en, dmem_nonce_en;
   logic imem_key_en, imem_nonce_en;
 
-  otp_ctrl_pkg::otbn_key_t dmem_key_q, dmem_key_d, dmem_key_sel_otp;
-  otp_ctrl_pkg::otbn_key_t imem_key_q, imem_key_d, imem_key_sel_otp;
+  logic dmem_key_sel_otp;
+  logic imem_key_sel_otp;
+
+  otp_ctrl_pkg::otbn_key_t dmem_key_q, dmem_key_d;
+  otp_ctrl_pkg::otbn_key_t imem_key_q, imem_key_d;
 
   otbn_dmem_nonce_t dmem_nonce_q;
   otbn_imem_nonce_t imem_nonce_q;
