@@ -276,6 +276,31 @@ sw_tests += {
   }
 }
 
+clkmgr_peri_off_test_lib = declare_dependency(
+  link_with: static_library(
+    'clkmgr_peri_off_test_lib',
+    sources: ['clkmgr_peri_off_test.c'],
+    dependencies: [
+      sw_lib_dif_aon_timer,
+      sw_lib_dif_clkmgr,
+      sw_lib_dif_pwrmgr,
+      sw_lib_dif_rstmgr,
+      sw_lib_dif_uart,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+      sw_lib_runtime_ibex,
+      sw_lib_testing_aon_timer_testutils,
+      sw_lib_testing_rstmgr_testutils,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'clkmgr_peri_off_test': {
+    'library': clkmgr_peri_off_test_lib,
+  }
+}
+
 clkmgr_jitter_test_lib = declare_dependency(
   link_with: static_library(
     'clkmgr_jitter_test_lib',
@@ -761,7 +786,6 @@ aon_timer_irq_test = declare_dependency(
       sw_lib_dif_rstmgr,
       sw_lib_dif_aon_timer,
       sw_lib_dif_rv_timer,
-      sw_lib_dif_pwrmgr,
       sw_lib_dif_rv_plic,
       sw_lib_runtime_log,
       sw_lib_runtime_ibex,

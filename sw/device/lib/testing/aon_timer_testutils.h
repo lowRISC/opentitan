@@ -10,6 +10,11 @@
 #include "sw/device/lib/dif/dif_aon_timer.h"
 
 /**
+ * Returns the number of AON cycles corresponding to the given microseconds.
+ */
+uint32_t aon_timer_testutils_get_aon_cycles_from_us(uint64_t microseconds);
+
+/**
  * Configure wakeup counter for a number of AON clock cycles.
  * @param cycles The number of AON clock cycles.
  */

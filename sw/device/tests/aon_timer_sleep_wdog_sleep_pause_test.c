@@ -24,17 +24,6 @@
 #define WKUP_TIME_US 2000
 const test_config_t kTestConfig;
 
-static uint64_t us_to_aon_cycles(uint64_t time_us) {
-  return time_us * kClockFreqAonHz / 1000000;
-}
-
-static uint32_t cycles_to_32_bits(uint64_t cycles, const char *label) {
-  CHECK(cycles < UINT32_MAX,
-        "The %s value 0x%08x%08x can't fit into the 32 bits timer counter",
-        label, (uint32_t)(cycles >> 32), (uint32_t)cycles);
-  return (uint32_t)cycles;
-}
-
 bool test_main(void) {
   // Initialize pwrmgr.
   dif_pwrmgr_t pwrmgr;
@@ -69,11 +58,11 @@ bool test_main(void) {
     CHECK(WKUP_TIME_US > WDOG_BITE_TIME_US);
     CHECK(WDOG_BARK_TIME_US < WDOG_BITE_TIME_US);
     uint32_t wkup_cycles =
-        cycles_to_32_bits(us_to_aon_cycles(WKUP_TIME_US), "wkup_time");
+        aon_timer_testutils_get_aon_cycles_from_us(WKUP_TIME_US);
     uint32_t bark_cycles =
-        cycles_to_32_bits(us_to_aon_cycles(WDOG_BARK_TIME_US), "bark_time");
+        aon_timer_testutils_get_aon_cycles_from_us(WDOG_BARK_TIME_US);
     uint32_t bite_cycles =
-        cycles_to_32_bits(us_to_aon_cycles(WDOG_BITE_TIME_US), "bite_time");
+        aon_timer_testutils_get_aon_cycles_from_us(WDOG_BITE_TIME_US);
     aon_timer_testutils_wakeup_config(&aon_timer, wkup_cycles);
     aon_timer_testutils_watchdog_config(&aon_timer, bark_cycles, bite_cycles,
                                         true);
