@@ -23,6 +23,7 @@ module pinmux_tb
   parameter int DioUsbdevDn = 10,
   parameter int DioUsbdevDpPullup = 11,
   parameter int DioUsbdevDnPullup = 12,
+  parameter int MioInUsbdevSense = 13,
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
   input  clk_i,
@@ -48,6 +49,8 @@ module pinmux_tb
   input  usb_aon_wake_en_i,
   input  usb_aon_wake_ack_i,
   input  usb_suspend_i,
+  output usb_bus_reset_o,
+  output usb_sense_lost_o,
   output usbdev_pkg::awk_state_t usb_state_debug_o,
   input tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
@@ -84,6 +87,7 @@ module pinmux_tb
     usb_dn_idx:        DioUsbdevDn,
     usb_dp_pullup_idx: DioUsbdevDpPullup,
     usb_dn_pullup_idx: DioUsbdevDnPullup,
+    usb_sense_idx:     MioInUsbdevSense,
     // Pad types for attribute WARL behavior
     dio_pad_type:      {NDioPads{BidirStd}},
     mio_pad_type:      {NMioPads{BidirStd}}
