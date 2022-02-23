@@ -115,6 +115,7 @@ config = {
         "hw/ip/gpio/data/gpio_testplan.hjson",
         "hw/ip/hmac/data/hmac_testplan.hjson",
         "hw/ip/i2c/data/i2c_testplan.hjson",
+        "hw/ip/kmac/data/kmac_base_testplan.hjson",
         "hw/ip/keymgr/data/keymgr_testplan.hjson",
         "hw/ip/lc_ctrl/data/lc_ctrl_testplan.hjson",
         "hw/ip/otbn/data/otbn_testplan.hjson",

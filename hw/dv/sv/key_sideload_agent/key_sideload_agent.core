@@ -18,6 +18,7 @@ filesets:
       - key_sideload_agent_cov.sv: {is_include_file: true}
       - key_sideload_driver.sv: {is_include_file: true}
       - key_sideload_monitor.sv: {is_include_file: true}
+      - key_sideload_sequencer.sv: {is_include_file: true}
       - key_sideload_agent.sv: {is_include_file: true}
       - seq_lib/key_sideload_base_seq.sv: {is_include_file: true}
       - seq_lib/key_sideload_set_seq.sv: {is_include_file: true}

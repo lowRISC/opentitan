@@ -27,7 +27,7 @@ interface rstmgr_if (
   alert_pkg::alert_crashdump_t                    alert_dump_i;
 
   // Interface to cpu crash dump
-  ibex_pkg::crash_dump_t                          cpu_dump_i;
+  rv_core_ibex_pkg::cpu_crash_dump_t              cpu_dump_i;
 
   // dft bypass
   logic                                           scan_rst_ni;

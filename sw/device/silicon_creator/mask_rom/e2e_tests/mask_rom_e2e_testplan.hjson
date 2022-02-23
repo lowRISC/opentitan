@@ -1,0 +1,422 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Testplan TODOs:
+// - TODO(lowRISC/opentitan#10791): Add tests across lifecycle states
+//   - Test functionality that exists in some LC states but fails in others
+//   - This could make use of test tags (#10536)
+// - TODO(lowRISC/opentitan#10792): Add tests for behavior during manufacture
+//   - Bringup keys for manufacturing and RMA
+
+{
+  name: "mask_rom_e2e"
+
+  testpoints: [
+    // Bootup without ROM_EXT
+    {
+      name: mask_rom_e2e_bootup_no_rom_ext
+      desc: '''Verify device fails to boot with no ROM_EXT.
+
+            - Test runner loads the Mask ROM and no ROM_EXT.
+            - Attempt to boot.
+            - Verify that the chip indicates the correct boot fault.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    // Bootup with ROM_EXT
+    {
+      name: mask_rom_e2e_bootup_success
+      desc: '''Verify device boots with a good ROM_EXT.
+
+            - Generate a ROM_EXT with a sufficiently high version number.
+            - Sign the ROM_EXT with a valid key.
+            - Test runner loads the Mask ROM and prepared ROM_EXT.
+            - Attempt to boot.
+            - Verify that the chip successfully boots into the ROM_EXT.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    // TODO(lowrisc/opentitan#10929): test both A/B partitions
+    // TODO(lowrisc/opentitan#10930): consider testing with both SW and OTBN sigverify
+    {
+      name: mask_rom_e2e_bootup_bad_rom_ext_signature
+      desc: '''Verify device fails to boot with an improperly-signed ROM_EXT.
+
+            - Generate a ROM_EXT with a sufficiently high version number.
+            - Sign the ROM_EXT with a valid key.
+            - Flip one bit in the signature.
+            - Test runner loads the Mask ROM and the improperly-signed ROM_EXT.
+            - Attempt to boot.
+            - Verify that the chip indicates the correct boot fault.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: mask_rom_e2e_bootup_bad_manifest_usage_constraint
+      desc: '''Verify device fails to boot with an invalid manifest usage constraints.
+
+            - Generate an otherwise valid ROM_EXT with invalid manifest usage constraints.
+            - Sign the ROM_EXT with a valid key.
+            - Test runner loads the Mask ROM and the ROM_EXT.
+            - Attempt to boot.
+            - Verify that the chip indicates the correct boot fault.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: mask_rom_e2e_bootup_rom_ext_invalidated_key
+      desc: '''Verify device fails to boot with a ROM_EXT signed with an invalidated key.
+
+            - Generate a ROM_EXT with a sufficiently high version number.
+            - Sign the ROM_EXT with a test key.
+            - Generate an OTP with that test key disabled.
+            - Test runner loads the Mask ROM, the signed ROM_EXT, and the OTP image.
+            - Verify that the chip indicates the correct boot fault.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: mask_rom_e2e_bootup_bad_rom_ext_version
+      desc: '''Verify device fails to boot with a bad minimum version.
+
+            - Test runner loads the Mask ROM and a properly-signed ROM_EXT with a version number that is below the minimum version.
+            - Attempt to boot.
+            - Verify that the chip indicates the correct boot fault.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    // Entering Bootstrap Mode
+    {
+      name: mask_rom_e2e_bootstrap_success
+      desc: '''Verify device enters bootstrap mode when strapping pins are set correctly.
+
+            - Test runner loads an OTP image with bootstrap mode enabled.
+            - Test runner sets the strapping pins to the correct levels.
+            - Attempt to boot the chip.
+            - Verify that the chip entered bootstrap mode.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: mask_rom_e2e_bootstrap_bad_pin_config
+      desc: '''Verify the device does not enter bootstrap mode when strapping pins are set incorrectly.
+
+            - Test runner loads an OTP image with bootstrap mode enabled.
+            - Test runner sets the strapping pins to levels that do not correspond to entering bootstrap mode.
+            - Attempt to boot the chip.
+            - Verify that the chip does not enter bootstrap mode.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: mask_rom_e2e_bootstrap_disabled
+      desc: '''Verify device does not enter bootstrap mode when strapping pins are set correctly, but bootstrap
+            is disabled in the OTP.
+
+            - Test runner loads an OTP image that has bootstrapping mode disabled.
+            - Set the strapping pins to the correct levels for bootstrapping.
+            - Attempt to boot the chip.
+            - Verify that the chip does not enter bootstrap mode.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    // Bootstrap mode
+    {
+      name: mask_rom_e2e_bootstrap_config
+      desc: '''Verify that JEDEC ID and SFDP are configured.
+
+            - Test runner configures chip to enter bootstrap mode.
+            - In bootstrap mode, read JEDEC Device ID
+            - Verify that it matches the lowRISC JEDEC ID.
+            - SW reads SFDP and verifies that it is correct.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: mask_rom_e2e_bootstrap_phase1_reset_op
+      desc: '''Verify that phase 1 of bootstrap handles RESET ops correctly.
+
+            - Enter bootstrap mode.
+            - Test runner issues a RESET opcode.
+            - Verify that the bootstrap process aborted.
+            - Verify that the flash does not change. Phase 1 only allows the ERASE opcode.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: mask_rom_e2e_bootstrap_phase1_read_op
+      desc: '''Verify that phase 1 of bootstrap handles READ ops correctly.
+
+            - Enter bootstrap mode.
+            - Test runner issues a READ opcode.
+            - Verify that the flash returns 0xFF. Phase 1 only allows the ERASE opcode.
+            - Abort the bootstrap process.
+            - Verify that the flash contents are unchanged.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: mask_rom_e2e_bootstrap_phase1_page_program_op
+      desc: '''Verify that phase 1 of bootstrap handles PAGE_PROGRAM ops correctly.
+
+            - Enter bootstrap mode.
+            - Test runner issues a PAGE_PROGRAM opcode.
+            - Abort the bootstrap process.
+            - Verify that the flash does not change. Phase 1 only allows the ERASE opcode.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: mask_rom_e2e_bootstrap_phase1_erase_op
+      desc: '''Verify that phase 1 of bootstrap handles ERASE ops correctly.
+
+            - Enter bootstrap mode.
+            - Test runner issues an ERASE opcode.
+            - Abort the bootstrap process.
+            - Verify that the entire flash DATA segment is erased.
+            - Verify that the flash INFO segment is unchanged.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: mask_rom_e2e_bootstrap_phase2_reset_op
+      desc: '''Verify that phase 2 of bootstrap handles RESET ops correctly.
+
+            - Enter bootstrap mode.
+            - Issue ERASE opcode to enter phase 2.
+            - Issue RSTEN opcode.
+            - Issue RESET opcode.
+            - Verify that bootstrap was exited and that the chip was reset.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: mask_rom_e2e_phase2_page_program_op
+      desc: '''Verify that phase 2 of bootstrap correctly handles the PAGE_PROGRAM opcode.
+
+            - Enter bootstrap mode.
+            - Issue ERASE opcode to enter phase 2.
+            - Issue PAGE_PROGRAM opcode with an invalid address.
+            - Issue PAGE_PROGRAM opcode with a valid address.
+            - Issue RESET opcode to exit bootstrap and reset the chip.
+            - Verify that the valid address is correctly programmed and that the rest of flash is unchanged.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: mask_rom_e2e_phase2_erase_op
+      desc: '''Verify that phase 2 of bootstrap correctly handles the ERASE opcode.
+
+            - Enter bootstrap mode.
+            - Issue ERASE opcode to enter phase 2.
+            - Issue PAGE_PROGRAM opcode to program a target address.
+            - Issue ERASE opcode to the same target address.
+            - Issue RESET opcode to exit bootstrap and reset the chip.
+            - Verify that the target address was erased and that the rest of flash is unchanged.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: mask_rom_e2e_phase2_read_op
+      desc: '''Verify that phase 2 of bootstrap correctly handles the READ opcode.
+
+            - Enter bootstrap mode.
+            - Issue ERASE opcode to enter phase 2.
+            - Issue PAGE_PROGRAM opcode to program a target address.
+            - Issue READ opcode to read the same target address.
+            - Verify that the READ behaves correctly.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    // Chip-specific startup
+    {
+      // TODO(lowrisc/opentitan#10928): SRAM scrambling may be controlled by OTP
+      name: mask_rom_e2e_startup_ast_main_sram_init
+      desc: '''Verify that the AST and main SRAM are initialized correctly after POR.
+
+            For each lifecycle state, perform the following:
+            - Load an OTP image corresponding to this state.
+            - Boot the chip.
+            - Check the SENSOR_CTRL_STATUS_AST_INIT_DONE bit.
+              - This bit should be 1 if the AST should be initialized and 0 otherwise.
+            - Check the following main SRAM registers in SRAM_CTRL.CTRL:
+              - SCR_KEY_VALID = 1
+              - SCR_KEY_SEED_VALID = 1
+              - INIT_DONE = 1
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      // TODO(lowrisc/opentitan#10928): SRAM scrambling may be controlled by OTP
+      name: mask_rom_e2e_startup_retention_sram_init
+      desc: '''Verify that the retention SRAM is initialized correctly after POR.
+
+            - Initiate a POR.
+            - Check the following retention SRAM registers in SRAM_CTRL.CTRL:
+              - SCR_KEY_VALID = 1
+              - SCR_KEY_SEED_VALID = 1
+              - INIT_DONE = 1
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: mask_rom_e2e_startup_retention_sram_saved
+      desc: '''Verify that retention SRAM saves data across low-power entry/exit.
+
+            - Write known data into silicon_owner section of retention SRAM.
+            - Trigger a low-power entry/exit.
+            - Read the silicon_owner section of retention SRAM.
+            - Verify that the data has been retained.
+            - Verify that silicon_creator section has been wiped.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      // TODO: the retention SRAM may be initialized with an LFSR instead of
+      //   just being cleared.
+      // TODO: create a matrix of reset reasons and the expected retention SRAM
+      //   state after the reset.
+      name: mask_rom_e2e_startup_retention_sram_wiped
+      desc: '''Verify that retention SRAM is wiped after a POR.
+
+            - Write known data into all sections of retention SRAM.
+            - Trigger a POR.
+            - Verify that that all sections of retention SRAM have been cleared.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    // Shutdown
+    {
+      name: mask_rom_e2e_shutdown_boot_failure
+      desc: '''Verify that all boot failure cases enter shutdown.
+
+            - Ensure that all invocations of `shutdown_finalize` and
+              `SHUTDOWN_IF_ERROR` result in a shutdown.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: mask_rom_e2e_shutdown_alert_configuration
+      desc: '''Verify that alert-handler is configured correctly.
+
+            - Verify alert-handler CSRs are configured as expected per the OTP.
+            - Test program forces an alert to trigger full escalation path.
+            - Verify that a reset occurs.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: mask_rom_e2e_shutdown_mask_rom_alert_shutdown
+      desc: '''Verify that alerts during Mask ROM execution lead to shutdown.
+
+            - Trigger an alert while the Mask ROM is executing.
+            - Verify that the chip undergoes expected shutdown sequence.
+            '''
+      tags: ["mask_rom", "verilator", "dv"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: mask_rom_e2e_shutdown_interrupts
+      desc: '''Verify that interrupts lead to shutdown.
+
+            - Randomly select a group of interrupts.
+            - Force those interrupts during Mask ROM execution.
+            - Verify that shutdown occurs when the IRQ is triggered.
+            '''
+      tags: ["mask_rom", "dv"]
+      milestone: V2
+      tests: []
+    }
+
+    // Upgrade
+    {
+      name: mask_rom_e2e_upgradable
+      desc: '''Verify that new firmware allows for upgrades.
+
+            - Load new firmware of version N.
+            - Attempt to upgrade to version N+1.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: mask_rom_e2e_upgrade_min_sec_version
+      desc: '''Verify that Mask ROM checks minimum security version before booting.
+
+            - Load ROM_EXT that updates min_security_version past its own version.
+            - Attempt to boot again.
+            - Verify that the same ROM_EXT cannot be booted again.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: mask_rom_e2e_upgrade_power_loss
+      desc: '''Verify that losing power during a ROM_EXT upgrade does not brick the chip.
+
+            - Initiate a ROM_EXT update.
+            - After the new ROM_EXT is loaded into flash, trigger a reset.
+            - Verify that the chip can boot.
+            '''
+      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+]
+}

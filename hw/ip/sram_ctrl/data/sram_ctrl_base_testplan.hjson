@@ -11,6 +11,7 @@
                      "hw/dv/sv/mem_bkdr_scb/data/mem_access_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/sec_cm_count_testplan.hjson",
                      "sram_ctrl_sec_cm_testplan.hjson"]
   testpoints: [
     {

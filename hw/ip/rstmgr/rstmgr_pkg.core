@@ -8,11 +8,10 @@ description: "Reset manager package"
 filesets:
   files_rtl:
     depend:
+      - lowrisc:ip:alert_handler_component
       - lowrisc:ip:pwrmgr_pkg
       - lowrisc:ip:rstmgr_reg
       - lowrisc:ip_interfaces:alert_handler_reg
-      - lowrisc:ip:alert_handler_component
-      - lowrisc:ibex:ibex_pkg
       - "fileset_top    ? (lowrisc:systems:rstmgr_pkg)"
       - "fileset_topgen ? (lowrisc:systems:topgen)"
     files:

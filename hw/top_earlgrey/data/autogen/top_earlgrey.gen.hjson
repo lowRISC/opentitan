@@ -2816,8 +2816,8 @@
         }
         {
           name: cpu_dump
-          struct: crash_dump
-          package: ibex_pkg
+          struct: cpu_crash_dump
+          package: rv_core_ibex_pkg
           type: uni
           act: rcv
           width: 1
@@ -7068,8 +7068,8 @@
         }
         {
           name: crash_dump
-          struct: crash_dump
-          package: ibex_pkg
+          struct: cpu_crash_dump
+          package: rv_core_ibex_pkg
           type: uni
           act: req
           width: 1
@@ -15714,8 +15714,8 @@
       }
       {
         name: cpu_dump
-        struct: crash_dump
-        package: ibex_pkg
+        struct: cpu_crash_dump
+        package: rv_core_ibex_pkg
         type: uni
         act: rcv
         width: 1
@@ -17969,8 +17969,8 @@
       }
       {
         name: crash_dump
-        struct: crash_dump
-        package: ibex_pkg
+        struct: cpu_crash_dump
+        package: rv_core_ibex_pkg
         type: uni
         act: req
         width: 1
@@ -20325,15 +20325,15 @@
         default: "'0"
       }
       {
-        package: ibex_pkg
-        struct: crash_dump
+        package: rv_core_ibex_pkg
+        struct: cpu_crash_dump
         signame: rv_core_ibex_crash_dump
         width: 1
         type: uni
         end_idx: -1
         act: req
         suffix: ""
-        default: ibex_pkg::CRASH_DUMP_DEFAULT
+        default: rv_core_ibex_pkg::CPU_CRASH_DUMP_DEFAULT
       }
       {
         package: pwrmgr_pkg
