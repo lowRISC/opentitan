@@ -1291,7 +1291,7 @@ module otp_ctrl
   assign otp_lc_data_o.rma_token         = part_buf_data[RmaTokenOffset +:
                                                          RmaTokenSize];
 
-  logic [lc_ctrl_pkg::TxWidth-1:0] test_tokens_valid, rma_token_valid, secrets_valid;
+  lc_ctrl_pkg::lc_tx_t test_tokens_valid, rma_token_valid, secrets_valid;
   // The test tokens have been provisioned.
   assign test_tokens_valid = (part_digest[Secret0Idx] != '0) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
   // The rma token has been provisioned.
