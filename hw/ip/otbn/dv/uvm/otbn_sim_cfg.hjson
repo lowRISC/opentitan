@@ -155,21 +155,26 @@ name:
     }
 
     // This test runs 10 binaries each time, so we give it a reseed value
-    // that's about a tenth of the value for otbn_single: these tests should
-    // equally good at catching errors within a program, so there's no need to
-    // run it more.
+    // that's much less than for otbn_single: these tests should equally good
+    // at catching errors within a single run, so the coverage that they give
+    // is specifically to do with improper clearing of state when starting or
+    // ending an operation.
     {
       name: "otbn_multi"
       uvm_test_seq: "otbn_multi_vseq"
       en_run_modes: ["build_otbn_rig_binaries_mode"]
-      reseed: 5
+      reseed: 10
     }
 
+    // This test asserts reset somewhere in the middle of an operation. It is
+    // good for flushing out testbench bugs that are triggered on a reset, but
+    // it will also catch incorrect initialisation of state and hit some
+    // FSM/toggle coverage points that need a reset.
     {
       name: "otbn_reset"
       uvm_test_seq: "otbn_reset_vseq"
       en_run_modes: ["build_otbn_rig_binary_mode"]
-      reseed: 5
+      reseed: 10
     }
 
     // This test runs a fixed set of binaries, one after the other. Since this
@@ -182,20 +187,34 @@ name:
       reseed: 1
     }
 
+    // This test causes a fault in the middle of an execution by triggering an
+    // IMEM error. We run it several times because (historically) some of the
+    // bugs it has found have been depended on unfortunate timing coincidences,
+    // so we want to have a chance of seeing them.
     {
       name: "otbn_imem_err"
       uvm_test_seq: "otbn_imem_err_vseq"
       en_run_modes: ["build_otbn_rig_binary_mode"]
-      reseed: 5
+      reseed: 10
     }
 
+    // This test causes a fault in the middle of an execution by triggering an
+    // DMEM error. As with the IMEM case, we want a reasonable number of
+    // reseeds to see awkward timing corners. Also, there's a possibility of an
+    // otbn_dmem_err test not actually generating an error (if we don't load
+    // from DMEM after invalidating it), so we bump things up slightly further
+    // to correct for that.
     {
       name: "otbn_dmem_err"
       uvm_test_seq: "otbn_dmem_err_vseq"
       en_run_modes: ["build_otbn_rig_binary_mode"]
-      reseed: 5
+      reseed: 15
     }
 
+    // This test sets the lc_escalate_en_i signal somewhere in the middle of an
+    // operation and makes sure that we see an alert. There's not much
+    // interesting that can happen here, so a small number of seeds should
+    // suffice.
     {
       name: "otbn_escalate"
       uvm_test_seq: "otbn_escalate_vseq"
@@ -203,17 +222,21 @@ name:
       reseed: 5
     }
 
+    // This test runs several sequences back-to-back. Unlike otbn_multi, these
+    // sequences can include imem or dmem error sequences. We shouldn't need
+    // many seeds here because each test runs several operations.
     {
       name: "otbn_stress_all"
       uvm_test_seq: "otbn_stress_all_vseq"
       en_run_modes: ["build_otbn_rig_binaries_mode"]
-      reseed: 5
+      reseed: 10
     }
 
+    // A combination of otbn_stress_all and otbn_reset.
     {
       name: "otbn_stress_all_with_rand_reset"
       en_run_modes: ["build_otbn_rig_binaries_mode"]
-      reseed: 5
+      reseed: 10
     }
 
   ]
