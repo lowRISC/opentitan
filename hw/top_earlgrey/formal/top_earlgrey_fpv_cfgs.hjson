@@ -592,6 +592,7 @@
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/sram_ctrl/{sub_flow}/{tool}"
                cov: false
+               task: "FpvSecCm"
              }
              { name: sysrst_ctrl
                dut: sysrst_ctrl
