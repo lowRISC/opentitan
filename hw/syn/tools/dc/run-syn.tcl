@@ -28,6 +28,7 @@ set CONSTRAINT         [get_env_var "CONSTRAINT"]
 set FOUNDRY_CONSTRAINT [get_env_var "FOUNDRY_CONSTRAINT"]
 set PARAMS             [get_env_var "PARAMS"]
 set POST_ELAB_SCRIPT   [get_env_var "POST_ELAB_SCRIPT"]
+set TERMINATION_STAGE  [get_env_var "TERMINATION_STAGE"]
 
 # This is not a CDC run.
 set IS_CDC_RUN 0
@@ -108,6 +109,7 @@ remove_design -designs
 sh rm -rf $WORKLIB/*
 
 analyze -vcs "-sverilog +define+${DEFINE} -f ${SV_FLIST}" > "${REPDIR}/analyze.rpt"
+if { $TERMINATION_STAGE == "analyze" } { exit }
 elaborate  ${DUT} -parameters ${PARAMS}                   > "${REPDIR}/elab.rpt"
 link                                                      > "${REPDIR}/link.rpt"
 check_design                                              > "${REPDIR}/check.rpt"
@@ -119,6 +121,8 @@ if {$POST_ELAB_SCRIPT != ""} {
 }
 
 write_file -format ddc -hierarchy -output "${DDCDIR}/elab.ddc"
+
+if { $TERMINATION_STAGE == "elab" } { exit }
 
 #############################
 ##   CLOCK GATING SETUP    ##
@@ -171,24 +175,6 @@ if {$FOUNDRY_ROOT == ""} {
 }
 
 #################
-##   REPORTS   ##
-#################
-
-# write NAND2 equivalent to file for the reporting scripts
-sh echo ${NAND2_GATE_EQUIVALENT} > "${REPDIR}/gate_equiv.rpt"
-
-report_clocks                                 > "${REPDIR}/clocks.rpt"
-report_clock -groups                          > "${REPDIR}/clock.groups.rpt"
-report_path_group                             > "${REPDIR}/path_group.rpt"
-report_clock_gating -multi_stage -nosplit     > "${REPDIR}/clock_gating.rpt"
-report_timing -nosplit -slack_lesser_than 0.0 > "${REPDIR}/timing.rpt"
-report_area   -hier -nosplit                  > "${REPDIR}/area.rpt"
-report_power  -hier -nosplit                  > "${REPDIR}/power.rpt"
-report_constraints -all_violators             > "${REPDIR}/constraints.rpt"
-
-report_timing      -nosplit -nworst 1000 -input -net -trans -cap > "${REPDIR}/timing_long.rpt"
-
-#################
 ##   NETLIST   ##
 #################
 
@@ -210,6 +196,27 @@ write_file -format verilog -hierarchy -output "${VLOGDIR}/${NETLIST_NAME}.v"
 write_sdc -nosplit ${RESULTDIR}/${DUT}.final.sdc
 # If SAIF is used, write out SAIF name mapping file for PrimeTime-PX
 saif_map -type ptpx -write_map ${RESULTDIR}/${DUT}.${NETLIST_NAME}.SAIF.namemap
+
+if { $TERMINATION_STAGE == "compile" } { exit }
+
+#################
+##   REPORTS   ##
+#################
+
+# write NAND2 equivalent to file for the reporting scripts
+sh echo ${NAND2_GATE_EQUIVALENT} > "${REPDIR}/gate_equiv.rpt"
+
+report_clocks                                 > "${REPDIR}/clocks.rpt"
+report_clock -groups                          > "${REPDIR}/clock.groups.rpt"
+report_path_group                             > "${REPDIR}/path_group.rpt"
+report_clock_gating -multi_stage -nosplit     > "${REPDIR}/clock_gating.rpt"
+report_timing -nosplit -slack_lesser_than 0.0 > "${REPDIR}/timing.rpt"
+report_area   -hier -nosplit                  > "${REPDIR}/area.rpt"
+report_power  -hier -nosplit                  > "${REPDIR}/power.rpt"
+report_constraints -all_violators             > "${REPDIR}/constraints.rpt"
+
+report_timing      -nosplit -nworst 1000 -input -net -trans -cap > "${REPDIR}/timing_long.rpt"
+
 # ##############################
 # ##  INCREMENTAL FLATTENING  ##
 # ##############################

@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
+  // Synopsys Design Compiler
+  tool: dc
+
   // Environment variables that are needed in the synthesis script
   exports: [
     { CONSTRAINT:         "{sdc_file}" },
@@ -19,7 +22,8 @@
                 "--expand-depth {expand_depth}",
                 "--log-path {build_dir} ",
                 "--rep-path {build_dir}/REPORTS",
-                "--out-dir {build_dir}"]
+                "--out-dir {build_dir}",
+                "--termination-stage {termination_stage}"]
 
   // By default, 1 level of hierarchy is always expanded in the area report.
   // This can be changed by setting the expansion depth to a higher value,
