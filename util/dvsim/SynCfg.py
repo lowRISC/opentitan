@@ -176,13 +176,13 @@ class SynCfg(OneShotCfg):
                 self.result = {
                     "messages": {
                         "flow_errors": ["IOError: %s" % err],
-                        "flow_warnings": [],
-                        "analyze_errors": [],
-                        "analyze_warnings": [],
-                        "elab_errors": [],
-                        "elab_warnings": [],
-                        "compile_errors": [],
-                        "compile_warnings": [],
+                        "flow_warnings": None,
+                        "analyze_errors": None,
+                        "analyze_warnings": None,
+                        "elab_errors": None,
+                        "elab_warnings": None,
+                        "compile_errors": None,
+                        "compile_warnings": None,
                     },
                 }
 
@@ -198,18 +198,26 @@ class SynCfg(OneShotCfg):
                 colalign = ("left", ) + ("center", ) * (len(header) - 1)
                 table = [header]
 
-                messages = self.result["messages"]
-                table.append([
-                    mode.name,
-                    str(len(messages["flow_warnings"])) + " W ",
-                    str(len(messages["flow_errors"])) + " E ",
-                    str(len(messages["analyze_warnings"])) + " W ",
-                    str(len(messages["analyze_errors"])) + " E ",
-                    str(len(messages["elab_warnings"])) + " W ",
-                    str(len(messages["elab_errors"])) + " E ",
-                    str(len(messages["compile_warnings"])) + " W ",
-                    str(len(messages["compile_errors"])) + " E ",
-                ])
+                msg_list = [
+                    ("flow_warnings", " W "),
+                    ("flow_errors", " E "),
+                    ("analyze_warnings", " W "),
+                    ("analyze_errors", " E "),
+                    ("elab_warnings", " W "),
+                    ("elab_errors", " E "),
+                    ("compile_warnings", " W "),
+                    ("compile_errors", " E "),
+                ]
+
+                msgs = [mode.name]
+                for key, sev in msg_list:
+                    if self.result["messages"][key] is None:
+                        msgs.append("--")
+                    else:
+                        msgs.append(str(len(
+                            self.result["messages"][key])) + sev)
+
+                table.append(msgs)
 
                 if len(table) > 1:
                     results_str += tabulate(table,
@@ -355,27 +363,28 @@ class SynCfg(OneShotCfg):
 
             # Append detailed messages if they exist
             # Note that these messages are omitted in publication mode
-            hdr_key_pairs = [("Flow Warnings", "flow_warnings"),
-                             ("Flow Errors", "flow_errors"),
-                             ("Analyze Warnings", "analyze_warnings"),
-                             ("Analyze Errors", "analyze_errors"),
-                             ("Elab Warnings", "elab_warnings"),
-                             ("Elab Errors", "elab_errors"),
-                             ("Compile Warnings", "compile_warnings"),
-                             ("Compile Errors", "compile_errors")]
+            hdr_key_pairs = [("Flow Warnings", "flow_warnings", False),
+                             ("Flow Errors", "flow_errors", True),
+                             ("Analyze Warnings", "analyze_warnings", False),
+                             ("Analyze Errors", "analyze_errors", True),
+                             ("Elab Warnings", "elab_warnings", False),
+                             ("Elab Errors", "elab_errors", True),
+                             ("Compile Warnings", "compile_warnings", False),
+                             ("Compile Errors", "compile_errors", True)]
 
-            # Synthesis fails if any warning or error message has occurred
+            # Synthesis fails if any error messages have occurred
             self.errors_seen = False
+            msgs_seen = False
             fail_msgs = ""
-            for _, key in hdr_key_pairs:
+            for _, key, fail in hdr_key_pairs:
                 if key in self.result['messages']:
                     if self.result['messages'].get(key):
-                        self.errors_seen = True
-                        break
+                        self.errors_seen = fail or self.errors_seen
+                        msgs_seen = True
 
-            if self.errors_seen:
+            if msgs_seen:
                 fail_msgs += "\n### Errors and Warnings for Build Mode `'" + mode.name + "'`\n"
-                for hdr, key in hdr_key_pairs:
+                for hdr, key, _ in hdr_key_pairs:
                     msgs = self.result['messages'].get(key)
                     fail_msgs += print_msg_list("#### " + hdr, msgs, self.max_msg_count)
 
