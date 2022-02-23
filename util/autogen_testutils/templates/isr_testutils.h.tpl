@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-${autogen_banner}
-
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_AUTOGEN_ISR_TESTUTILS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_AUTOGEN_ISR_TESTUTILS_H_
+
+${autogen_banner}
 
 #include "sw/device/lib/dif/dif_rv_plic.h"
 % for ip in ips_with_difs:
