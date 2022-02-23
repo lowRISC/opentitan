@@ -46,17 +46,30 @@
   // Can be used to hook in an additional post elab scripting step.
   post_elab_script: ""
 
+  // By default we run full synthesis including ATP reporting.
+  // This can be overridden with either of the following
+  // values in order to terminate earlier (listed in order):
+  // - "analyze"
+  // - "elab"
+  // - "compile"
+  // - "reports"
+  // Every stage includes the prior stages, and the report parsing script
+  // will expect the associated reports to be available (otherwise an
+  // error will be generated and the flow will fail).
+  termination_stage: "reports"
+
   // Common fail patterns.
   build_fail_patterns: [// FuseSoC build error
                         "^ERROR:.*$"]
 
   exports: [
-    { SYN_ROOT:         "{syn_root}" },
-    { FOUNDRY_ROOT:     "{foundry_root}" },
-    { BUILD_DIR:        "{build_dir}" },
-    { DUT:              "{dut}" },
-    { PARAMS:           "{params}" },
-    { SV_FLIST:         "{sv_flist}" },
-    { POST_ELAB_SCRIPT: "{post_elab_script}" }
+    { SYN_ROOT:          "{syn_root}" },
+    { FOUNDRY_ROOT:      "{foundry_root}" },
+    { BUILD_DIR:         "{build_dir}" },
+    { DUT:               "{dut}" },
+    { PARAMS:            "{params}" },
+    { SV_FLIST:          "{sv_flist}" },
+    { POST_ELAB_SCRIPT:  "{post_elab_script}" }
+    { TERMINATION_STAGE: "{termination_stage}" }
   ]
 }

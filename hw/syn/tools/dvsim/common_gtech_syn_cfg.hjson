@@ -14,6 +14,12 @@
       name: foundry_root
       value: ""
     }
+    // The GTECH flow does not create any meaningful ATP reports, hence
+    // we terminate after compilation.
+    {
+      name: termination_stage
+      value: "compile"
+    }
   ]
 
   // Load common dont_touch wildcard constraints for the primitives. No other
