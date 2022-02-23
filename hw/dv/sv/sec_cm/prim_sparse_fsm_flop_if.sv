@@ -12,6 +12,10 @@ interface prim_sparse_fsm_flop_if #(
   input clk_i,
   input rst_ni);
 
+  `include "dv_macros.svh"
+  `include "uvm_macros.svh"
+  import uvm_pkg::*;
+
   localparam int MaxFlipBits = 2;
 
   string msg_id = $sformatf("%m");

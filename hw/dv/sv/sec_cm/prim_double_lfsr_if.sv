@@ -12,6 +12,10 @@ interface prim_double_lfsr_if #(
   input clk_i,
   input rst_ni);
 
+  `include "dv_macros.svh"
+  `include "uvm_macros.svh"
+  import uvm_pkg::*;
+
   string msg_id = $sformatf("%m");
 
   string path = dv_utils_pkg::get_parent_hier($sformatf("%m"));
