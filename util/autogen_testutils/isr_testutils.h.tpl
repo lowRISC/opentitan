@@ -7,23 +7,71 @@ ${autogen_banner}
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_AUTOGEN_ISR_TESTUTILS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_AUTOGEN_ISR_TESTUTILS_H_
 
+#include "sw/device/lib/dif/dif_rv_plic.h"
 % for ip in ips_with_difs:
   % if ip.irqs:
-  /* 
-   * Services an ${ip.name_snake} IRQ at the IP that raised it, and verifies this
-   * matches the IRQ that was raised at the PLIC.
-   *  
-   * @param ${ip.name_snake} A(n) ${ip.name_snake} DIF handle. 
-   * @param plic_irq_id The triggered PLIC IRQ ID. 
-   * @param plic_${ip.name_snake}_start_irq_id The PLIC IRQ ID where ${ip.name_snake} starts. 
-   * @param expected_${ip.name_snake}_irq The expected ${ip.name_snake} IRQ. 
-   * @param is_only_irq This is the only IRQ expected to be raised.
+    #include "sw/device/lib/dif/dif_${ip.name_snake}.h"
+  % endif
+% endfor
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h" // Generated.
+
+/**
+ * A handle to a PLIC ISR context struct.
+ */
+typedef struct plic_isr_ctx {
+  /**
+   * A handle to a rv_plic.
    */
-  void isr_testutils_${ip.name_snake}(dif_${ip.name_snake}_t *${ip.name_snake}, 
-                                      dif_rv_plic_irq_id_t plic_irq_id, 
-                                      dif_rv_plic_irq_id_t plic_${ip.name_snake}_start_irq_id, 
-                                      dif_${ip.name_snake}_irq_id_t expected_${ip.name_snake}_irq,
-                                      bool is_only_irq);
+  dif_rv_plic_t *rv_plic;
+  /**
+   * The HART ID associated with the PLIC (correspond to a PLIC "target").
+   */
+  uint32_t hart_id;
+} plic_isr_ctx_t;
+
+% for ip in ips_with_difs:
+  % if ip.irqs:
+    /**
+     * A handle to a ${ip.name_snake} ISR context struct.
+     */
+    typedef struct ${ip.name_snake}_isr_ctx {
+      /**
+       * A handle to a ${ip.name_snake}.
+       */
+      dif_${ip.name_snake}_t *${ip.name_snake};
+      /**
+       * The PLIC IRQ ID where this ${ip.name_snake} instance's IRQs start.
+       */
+      dif_rv_plic_irq_id_t plic_${ip.name_snake}_start_irq_id;
+      /**
+       * The ${ip.name_snake} IRQ that is expected to be encountered in the ISR.
+       */
+      dif_${ip.name_snake}_irq_t expected_irq;
+      /**
+       * Whether or not a single IRQ is expected to be encountered in the ISR.
+       */
+      bool is_only_irq;
+    } ${ip.name_snake}_isr_ctx;
+
+  % endif
+% endfor
+
+% for ip in ips_with_difs:
+  % if ip.irqs:
+    /**
+     * Services an ${ip.name_snake} IRQ.
+     *
+     * @param plic_ctx A PLIC ISR context handle.
+     * @param ${ip.name_snake}_ctx A(n) ${ip.name_snake} ISR context handle.
+     * @param[out] peripheral_serviced Out param for the peripheral that was serviced.
+     * @param[out] irq_serviced Out param for the IRQ that was serviced.
+     */
+    void isr_testutils_${ip.name_snake}_isr(
+      plic_isr_ctx_t plic_ctx,
+      ${ip.name_snake}_isr_ctx ${ip.name_snake}_ctx,
+      top_earlgrey_plic_peripheral_t *peripheral_serviced,
+      dif_${ip.name_snake}_irq_t *irq_serviced);
 
   % endif
 % endfor
