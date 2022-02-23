@@ -13,6 +13,10 @@ interface prim_count_if #(
   input clk_i,
   input rst_ni);
 
+  `include "dv_macros.svh"
+  `include "uvm_macros.svh"
+  import uvm_pkg::*;
+
   string msg_id = $sformatf("%m");
 
   prim_count_pkg::prim_count_style_e cnt_style = CntStyle;
