@@ -33,6 +33,8 @@ module pinmux_bind_fpv;
     .usb_aon_wake_en_i,
     .usb_aon_wake_ack_i,
     .usb_suspend_i,
+    .usb_bus_reset_o,
+    .usb_sense_lost_o,
     .usb_state_debug_o,
     .tl_i,
     .tl_o,

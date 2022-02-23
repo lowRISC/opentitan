@@ -38,6 +38,8 @@ module pinmux_assert_fpv
   input  usb_aon_wake_en_i,
   input  usb_aon_wake_ack_i,
   input  usb_suspend_i,
+  output usb_bus_reset_o,
+  output usb_sense_lost_o,
   input usbdev_pkg::awk_state_t usb_state_debug_o,
   input tlul_pkg::tl_h2d_t tl_i,
   input tlul_pkg::tl_d2h_t tl_o,
