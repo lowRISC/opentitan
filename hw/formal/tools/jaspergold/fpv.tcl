@@ -2,6 +2,15 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# Environment varibles:
+# CHECK: flag to turn on or off conflict and deadloop checks.
+# COMMON_MSG_TCL_PATH: string to indicate the path to `jaspergold_common_message_process.tcl` file,
+#                      which sets common message configurations.
+# COV: flag to turn on or off coverage collection.
+# DUT_TOP: string to indicate the top-level module name.
+# STOPATS: string to indicate the name of the signal to insert `stopat`.
+# TASK: string to collect and prove a subset of assertions that contains these string.
+
 # clear previous settings
 clear -all
 
@@ -16,10 +25,18 @@ if {$env(COV) == 1} {
 # read design
 #-------------------------------------------------------------------------
 
-# only one scr file exists in this folder
-analyze -sv09     \
-  +define+FPV_ON  \
-  -f [glob *.scr]
+if {$env(TASK) == "FpvSecCm"} {
+  analyze -sv09 \
+    +define+FPV_ON \
+    +define+FPV_SEC_CM_ON \
+    -bbox_m prim_count \
+    -bbox_m prim_double_lfsr \
+    -f [glob *.scr]
+} else {
+  analyze -sv09 \
+    +define+FPV_ON \
+    -f [glob *.scr]
+}
 
 if {$env(DUT_TOP) == "prim_count_tb"} {
   elaborate -top $env(DUT_TOP) \
@@ -148,13 +165,6 @@ assume -from_assert -remove_original {sram2tlul.validNotReady*}
 # Input scanmode_i should not be X
 assume -from_assert -remove_original -regexp {^\w*\.scanmodeKnown}
 
-# TODO: If scanmode is set to 0, then JasperGold errors out complaining
-# about combo loops, which should be debugged further. For now, below
-# lines work around this issue
-if {$env(DUT_TOP) == "top_earlgrey"} {
-  assume {scanmode_i == 1}
-}
-
 # run once to check if assumptions have any conflict
 if {[info exists ::env(CHECK)]} {
   if {$env(CHECK)} {
@@ -162,6 +172,12 @@ if {[info exists ::env(CHECK)]} {
     check_assumptions -live
     check_assumptions -dead_end
   }
+}
+
+# If `TASK` variable is set, choose the subset of assertions that contain ${TASK} in their
+# assertion names.
+if {$env(TASK) ne ""} {
+  task -create $env(TASK) -source_task <embedded> -copy *$env(TASK)* -copy_assumes -set
 }
 
 # TODO: support the following feature.
@@ -181,9 +197,15 @@ set_proofgrid_per_engine_max_local_jobs 2
 # prove all assertions & report
 #-------------------------------------------------------------------------
 
-# time limit set to 2 hours
 get_reset_info -x_value -with_reset_pin
-prove -all -time_limit 2h
+
+# time limit set to 2 hours
+if {$env(TASK) ne ""} {
+  prove -task $env(TASK) -time_limit 2h
+} else {
+  prove -all -time_limit 2h
+}
+
 report
 
 #-------------------------------------------------------------------------
