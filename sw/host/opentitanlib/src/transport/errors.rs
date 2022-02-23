@@ -60,6 +60,8 @@ pub enum TransportError {
     SpiError(#[from] crate::io::spi::SpiError),
     #[error("SPI error: {0}")]
     I2cError(#[from] crate::io::i2c::I2cError),
+    #[error("Emulator error: {0}")]
+    EmuError(#[from] crate::io::emu::EmuError),
 }
 
 /// Enum value used by `TransportError::InvalidInstance`.
@@ -69,6 +71,7 @@ pub enum TransportInterfaceType {
     Uart,
     Spi,
     I2c,
+    Emulator,
 }
 
 /// Return type to be used in `Transport` methods.

@@ -7,9 +7,9 @@ use anyhow::{bail, Result};
 use std::time::Duration;
 
 use super::protocol::{
-    GpioRequest, GpioResponse, I2cRequest, I2cResponse, I2cTransferRequest, I2cTransferResponse,
-    Message, Request, Response, SpiRequest, SpiResponse, SpiTransferRequest, SpiTransferResponse,
-    UartRequest, UartResponse,
+    EmuRequest, EmuResponse, GpioRequest, GpioResponse, I2cRequest, I2cResponse,
+    I2cTransferRequest, I2cTransferResponse, Message, Request, Response, SpiRequest, SpiResponse,
+    SpiTransferRequest, SpiTransferResponse, UartRequest, UartResponse,
 };
 use super::CommandHandler;
 use crate::app::TransportWrapper;
@@ -156,11 +156,11 @@ impl<'a> TransportCommandHandler<'a> {
                                 (
                                     SpiTransferRequest::Write { data },
                                     SpiTransferResponse::Write,
-                                ) => spi::Transfer::Write(&data),
+                                ) => spi::Transfer::Write(data),
                                 (
                                     SpiTransferRequest::Both { data: wdata },
                                     SpiTransferResponse::Both { data },
-                                ) => spi::Transfer::Both(&wdata, data),
+                                ) => spi::Transfer::Both(wdata, data),
                                 _ => {
                                     // This can only happen if the logic in this method is
                                     // flawed.  (Never due to network input.)
@@ -207,7 +207,7 @@ impl<'a> TransportCommandHandler<'a> {
                                 (
                                     I2cTransferRequest::Write { data },
                                     I2cTransferResponse::Write,
-                                ) => i2c::Transfer::Write(&data),
+                                ) => i2c::Transfer::Write(data),
                                 _ => {
                                     // This can only happen if the logic in this method is
                                     // flawed.  (Never due to network input.)
@@ -219,6 +219,25 @@ impl<'a> TransportCommandHandler<'a> {
                         Ok(Response::I2c(I2cResponse::RunTransaction {
                             transaction: resps,
                         }))
+                    }
+                }
+            }
+            Request::Emu { command } => {
+                let instance = self.transport.emulator()?;
+                match command {
+                    EmuRequest::GetState => Ok(Response::Emu(EmuResponse::GetState {
+                        state: instance.get_state()?,
+                    })),
+                    EmuRequest::Start {
+                        factory_reset,
+                        args,
+                    } => {
+                        instance.start(*factory_reset, args)?;
+                        Ok(Response::Emu(EmuResponse::Start))
+                    }
+                    EmuRequest::Stop => {
+                        instance.stop()?;
+                        Ok(Response::Emu(EmuResponse::Stop))
                     }
                 }
             }
@@ -234,7 +253,7 @@ impl<'a> CommandHandler<Message> for TransportCommandHandler<'a> {
     fn execute_cmd(&self, msg: &Message) -> Result<Message> {
         if let Message::Req(req) = msg {
             // Package either `Ok()` or `Err()` into a `Message`, to be sent via network.
-            return Ok(Message::Res(self.do_execute_cmd(&req)));
+            return Ok(Message::Res(self.do_execute_cmd(req)));
         }
         bail!("Client sent non-Request to server!!!");
     }

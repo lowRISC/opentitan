@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
+use crate::io::emu::{EmuState, EmuValue};
 use crate::io::gpio::{PinMode, PullMode};
 use crate::io::spi::TransferMode;
 use crate::transport::{Capabilities, TransportError};
@@ -22,6 +24,7 @@ pub enum Request {
     Uart { id: String, command: UartRequest },
     Spi { id: String, command: SpiRequest },
     I2c { id: String, command: I2cRequest },
+    Emu { command: EmuRequest },
 }
 
 #[derive(Serialize, Deserialize)]
@@ -31,6 +34,7 @@ pub enum Response {
     Uart(UartResponse),
     Spi(SpiResponse),
     I2c(I2cResponse),
+    Emu(EmuResponse),
 }
 
 #[derive(Serialize, Deserialize)]
@@ -161,4 +165,20 @@ pub enum I2cResponse {
     RunTransaction {
         transaction: Vec<I2cTransferResponse>,
     },
+}
+#[derive(Serialize, Deserialize)]
+pub enum EmuRequest {
+    GetState,
+    Start {
+        factory_reset: bool,
+        args: HashMap<String, EmuValue>,
+    },
+    Stop,
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum EmuResponse {
+    GetState { state: EmuState },
+    Start,
+    Stop,
 }

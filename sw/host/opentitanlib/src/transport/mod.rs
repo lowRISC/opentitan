@@ -8,6 +8,7 @@ use std::any::Any;
 use std::path::PathBuf;
 use std::rc::Rc;
 
+use crate::io::emu::Emulator;
 use crate::io::gpio::GpioPin;
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
@@ -34,6 +35,7 @@ bitflags! {
         const GPIO = 0x00000004;
         const I2C = 0x00000008;
         const PROXY = 0x00000010;
+        const EMULATOR = 0x00000020;
     }
 }
 
@@ -116,6 +118,13 @@ pub trait Transport {
             TransportInterfaceType::Gpio,
         ))
     }
+    /// Returns a [`Emulator`] implementation.
+    fn emulator(&self) -> Result<Rc<dyn Emulator>> {
+        Err(TransportError::InvalidInterface(
+            TransportInterfaceType::Emulator,
+        ))
+    }
+
     /// Invoke non-standard functionality of some Transport implementations.
     fn dispatch(&self, _action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         Err(TransportError::UnsupportedOperation)
