@@ -30,13 +30,19 @@ module lc_ctrl_state_decode
   // The decoded life cycle state uses a redundant representation that is used internally
   // and in the CSR node.
   ext_dec_lc_state_t dec_lc_state;
+  logic [$bits(ext_dec_lc_state_t)-1:0] dec_lc_state_buf;
   prim_sec_anchor_buf #(
     .Width($bits(ext_dec_lc_state_t))
   ) u_prim_sec_anchor_buf (
     .in_i(dec_lc_state),
-    .out_o(dec_lc_state_o)
+    .out_o(dec_lc_state_buf)
   );
 
+  // This cast is needed so that VCS does not throw warnings.
+  for (genvar k = 0; k < DecLcStateNumRep; k++) begin : gen_enum_casts
+    assign dec_lc_state_o[k] = dec_lc_state_e'(dec_lc_state_buf[k*DecLcStateWidth +:
+                                                                DecLcStateWidth]);
+  end
   // The decoder logic below decodes the life cycle state vector and counter
   // into a format that can be exposed in the CSRs. If the state is invalid,
   // this will be flagged as well.
