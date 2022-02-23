@@ -13,6 +13,14 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+uint32_t aon_timer_testutils_get_aon_cycles_from_us(uint64_t microseconds) {
+  uint64_t cycles = (microseconds * kClockFreqAonHz / 1000000);
+  CHECK(cycles < UINT32_MAX,
+        "The value 0x%08x%08x can't fit into the 32 bits timer counter.",
+        (cycles >> 32), (uint32_t)cycles);
+  return (uint32_t)cycles;
+}
+
 void aon_timer_testutils_wakeup_config(const dif_aon_timer_t *aon_timer,
                                        uint32_t cycles) {
   // Make sure that wake-up timer is stopped.

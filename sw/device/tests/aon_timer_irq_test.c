@@ -9,7 +9,6 @@
 #include "sw/device/lib/base/freestanding/limits.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
-#include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
 #include "sw/device/lib/irq.h"
@@ -98,11 +97,10 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
   uint64_t sleep_range_h = irq_time_us + variation;
   uint64_t sleep_range_l = irq_time_us - variation;
 
-  uint64_t count_cycles = (irq_time_us * kClockFreqAonHz / 1000000);
-  CHECK(count_cycles < UINT32_MAX,
-        "The value %u can't fit into the 32 bits timer counter.", count_cycles);
+  uint32_t count_cycles =
+      aon_timer_testutils_get_aon_cycles_from_us(irq_time_us);
   LOG_INFO("Setting interrupt for %u us (%u cycles)", (uint32_t)irq_time_us,
-           (uint32_t)count_cycles);
+           count_cycles);
 
   // Set the default value to a different value than expected.
   peripheral = kTopEarlgreyPlicPeripheralUnknown;
@@ -113,7 +111,7 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
     // Setup the wake up interrupt.
     aon_timer_testutils_wakeup_config(aon_timer, count_cycles);
   } else {
-    // Change the default value since the expectation is diffent.
+    // Change the default value since the expectation is different.
     irq = kDifAonTimerIrqWkupTimerExpired;
     // Setup the wdog bark interrupt.
     aon_timer_testutils_watchdog_config(aon_timer,
@@ -195,17 +193,9 @@ bool test_main(void) {
   // Initialize the rv timer to compute the tick.
   tick_init();
 
-  // Initialize pwrmgr.
-  dif_pwrmgr_t pwrmgr;
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
-
   // Initialize aon timer.
   CHECK_DIF_OK(dif_aon_timer_init(
       mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
-
-  CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, kDifPwrmgrIrqWakeup,
-                                          kDifToggleEnabled));
 
   // Initialize the PLIC.
   mmio_region_t plic_base_addr =

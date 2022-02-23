@@ -803,7 +803,7 @@
             watchdog event results, and verify the rstmgr crash dump info records the CSR address.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_clkmgr_peri_off"]
     }
     {
       name: chip_conn_clk_div
@@ -879,7 +879,7 @@
             wakeup.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_pwrmgr_smoketest"]
     }
     {
       name: chip_sw_pwrmgr_sleep_all_reset_reqs
@@ -892,7 +892,7 @@
             rstmgr's `reset_info` indicates the expected reset.
             '''
       milestone: V2
-      tests: []
+      tests: ["aon_timer_wdog_bite_reset"]
     }
     {
       name: chip_sw_pwrmgr_deep_sleep_all_wake_ups
@@ -917,7 +917,7 @@
             chip_pwrmgr_sleep_all_reset_reqs, except `control.main_pd_n` is set to 0.
             '''
       milestone: V2
-      tests: []
+      tests: ["aon_timer_wdog_bite_reset"]
     }
     {
       name: chip_sw_pwrmgr_all_reset_reqs
