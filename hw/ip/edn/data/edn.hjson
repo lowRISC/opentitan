@@ -100,7 +100,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       regwen: "REGWEN",
-      tags: [// Internal HW can modify status register
+      tags: [// Keep HW from affecting other registers.
                 "excl:CsrAllTests:CsrExclWrite"]
      fields: [
         { bits: "3:0",
@@ -152,26 +152,11 @@
         },
       ]
     },
-    { name: "DEBUG_STATUS",
-      desc: "Debug status register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      tags: [ // EDN internal HW can modify status register
-              "excl:CsrAllTests:CsrExclCheck"]
-      fields: [
-        { bits: "8:0",
-          name: "MAIN_SM_STATE",
-          desc: '''This is the state of the edn main state machine.
-                See the RTL file `edn_main_sm` for the meaning of the values.
-                '''
-        }
-      ]
-    },
     { name: "BOOT_INS_CMD",
       desc: "EDN boot instantiate command register",
       swaccess: "rw",
       hwaccess: "hro",
-      tags: [// Internal HW can modify status register
+      tags: [// Keep HW from affecting other registers.
                 "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         { bits: "31:0",
@@ -187,7 +172,7 @@
       desc: "EDN boot generate command register",
       swaccess: "rw",
       hwaccess: "hro",
-      tags: [// Internal HW can modify status register
+      tags: [// Keep HW from affecting other registers.
                 "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         { bits: "31:0",
@@ -313,7 +298,7 @@
       desc: "Recoverable alert status register",
       swaccess: "rw0c",
       hwaccess: "hwo",
-          tags: [// Internal HW can modify status register
+          tags: [ // The internal HW can modify the error code registers
                  "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "0",
@@ -363,8 +348,6 @@
       desc: "Hardware detection of error conditions status register",
       swaccess: "ro",
       hwaccess: "hwo",
-      tags: [ // The internal HW can modify the error code registers
-              "excl:CsrAllTests:CsrExclCheck"],
       fields: [
         { bits: "0",
           name: "SFIFO_RESCMD_ERR",
@@ -442,8 +425,8 @@
       swaccess: "rw",
       hwaccess: "hro",
       hwqe: "true",
-      tags: [// Setting this register will force an unwanted fatal alert.
-                 "excl:CsrAllTests:CsrExclWrite"]
+      tags: [// Keep HW from affecting other registers.
+                "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         {
             bits: "4:0",
@@ -457,6 +440,20 @@
                   an interrupt or an alert.
                   '''
         },
+      ]
+    },
+    { name: "MAIN_SM_STATE",
+      desc: "Main state machine state debug register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "8:0",
+          name: "MAIN_SM_STATE",
+          desc: '''This is the state of the EDN main state machine.
+                See the RTL file `edn_main_sm` for the meaning of the values.
+                '''
+          resval: 0x185
+        }
       ]
     },
   ]
