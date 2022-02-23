@@ -190,7 +190,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       regwen: "REGWEN",
-      tags: [// Internal HW can modify status register
+      tags: [// Keep HW from affecting other registers.
                  "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         {
@@ -415,8 +415,6 @@
       desc: "Hardware detection of error conditions status register",
       swaccess: "ro",
       hwaccess: "hwo",
-      tags: [ // The internal HW can modify the error code registers
-              "excl:CsrAllTests:CsrExclCheck"],
       fields: [
         { bits: "0",
           name: "SFIFO_CMD_ERR",
@@ -661,8 +659,8 @@
       hwaccess: "hro",
       hwqe: "true",
       regwen: "REGWEN",
-      tags: [// Setting this register will force an unwanted fatal alert.
-                 "excl:CsrAllTests:CsrExclWrite"]
+      tags: [// Keep HW from affecting other registers.
+                "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         {
             bits: "4:0",
@@ -678,18 +676,17 @@
         },
       ]
     },
-    { name: "DEBUG_STATUS",
-      desc: "Debug status register",
+    { name: "MAIN_SM_STATE",
+      desc: "Main state machine state debug register",
       swaccess: "ro",
       hwaccess: "hwo",
-      tags: [ // CSRNG internal HW can modify status register
-              "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "7:0",
           name: "MAIN_SM_STATE",
           desc: '''This is the state of the CSRNG main state machine.
                 See the RTL file `csrng_main_sm` for the meaning of the values.
                 '''
+          resval: 0x4e
         }
       ]
     },

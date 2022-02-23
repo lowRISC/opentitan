@@ -1610,8 +1610,8 @@ module csrng_core import csrng_pkg::*; #(
   // observe state machine
   //--------------------------------------------
 
-  assign hw2reg.debug_status.de = 1'b1;
-  assign hw2reg.debug_status.d = cs_main_sm_state;
+  assign hw2reg.main_sm_state.de = 1'b1;
+  assign hw2reg.main_sm_state.d = cs_main_sm_state;
 
   //--------------------------------------------
   // report csrng request summary
