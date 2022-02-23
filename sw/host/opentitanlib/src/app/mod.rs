@@ -6,6 +6,7 @@
 pub mod command;
 pub mod conf;
 
+use crate::io::emu::Emulator;
 use crate::io::gpio::{GpioPin, PinMode, PullMode};
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
@@ -86,6 +87,11 @@ impl TransportWrapper {
         self.transport
             .borrow()
             .gpio_pin(Self::map_name(&self.pin_map, name).as_str())
+    }
+
+    /// Returns a [`Emulator`] implementation.
+    pub fn emulator(&self) -> Result<Rc<dyn Emulator>> {
+        self.transport.borrow().emulator()
     }
 
     /// Invoke non-standard functionality of some Transport implementations.
