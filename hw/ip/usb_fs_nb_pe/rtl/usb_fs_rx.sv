@@ -13,6 +13,7 @@ module usb_fs_rx (
   // configuration
   input  logic cfg_eop_single_bit_i,
   input  logic cfg_use_diff_rcvr_i,
+  input  logic cfg_pinflip_i,
   input  logic diff_rx_ok_i,
 
   // USB data+ and data- lines (synchronous)
@@ -63,7 +64,11 @@ module usb_fs_rx (
   //////////////////////
   // usb receive path //
   //////////////////////
-
+  // Adjust inputs when D+/D- are flipped on the USB side
+  logic usb_dp_flipped, usb_dn_flipped, usb_d_flipped;
+  assign usb_dp_flipped = usb_dp_i ^ cfg_pinflip_i;
+  assign usb_dn_flipped = usb_dn_i ^ cfg_pinflip_i;
+  assign usb_d_flipped = usb_d_i ^ cfg_pinflip_i;
 
   ///////////////////////////////////////
   // line state recovery state machine //
@@ -117,8 +122,8 @@ module usb_fs_rx (
       dpair = DJ[1:0]; // J
       ddiff = DJ[1:0]; // J
     end else begin
-      dpair = {usb_dp_i, usb_dn_i};
-      ddiff = usb_d_i ? DJ[1:0] : DK[1:0]; // equiv to {usb_d_i, ~usb_d_i}
+      dpair = {usb_dp_flipped, usb_dn_flipped};
+      ddiff = usb_d_flipped ? DJ[1:0] : DK[1:0]; // equiv to {usb_d_i, ~usb_d_i}
     end
   end
 

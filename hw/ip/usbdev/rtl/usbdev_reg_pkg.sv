@@ -312,7 +312,7 @@ package usbdev_reg_pkg;
     } oe_o;
     struct packed {
       logic        q;
-    } tx_use_d_se0_o;
+    } rx_enable_o;
     struct packed {
       logic        q;
     } dp_pullup_en_o;

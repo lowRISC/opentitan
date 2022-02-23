@@ -32,6 +32,8 @@ module usb_fs_nb_pe #(
 
   input  logic                   cfg_eop_single_bit_i, // 1: detect a single SE0 bit as EOP
   input  logic                   cfg_use_diff_rcvr_i, // 1: use usb_d_i from a differential receiver
+  input  logic                   cfg_pinflip_i, // 1: USB-side D+ and D- pins are flipped.
+                                                // Change values in logic to accommodate.
   input  logic                   tx_osc_test_mode_i, // Oscillator test mode (constantly output JK)
   input  logic [NumOutEps-1:0]   data_toggle_clear_i, // Clear the data toggles for an EP
   input  logic                   diff_rx_ok_i, // 1: received differential data symbols are valid.
@@ -100,6 +102,8 @@ module usb_fs_nb_pe #(
   ///////////////////////////////////////
   output logic                   usb_d_o,
   output logic                   usb_se0_o,
+  output logic                   usb_dp_o,
+  output logic                   usb_dn_o,
   output logic                   usb_oe_o
 );
 
@@ -238,6 +242,7 @@ module usb_fs_nb_pe #(
     .link_reset_i           (link_reset_i),
     .cfg_eop_single_bit_i   (cfg_eop_single_bit_i),
     .cfg_use_diff_rcvr_i    (cfg_use_diff_rcvr_i),
+    .cfg_pinflip_i          (cfg_pinflip_i),
     .diff_rx_ok_i           (diff_rx_ok_i),
     .usb_d_i                (usb_d_i),
     .usb_dp_i               (usb_dp_i),
@@ -278,10 +283,13 @@ module usb_fs_nb_pe #(
     .clk_i                  (clk_48mhz_i),
     .rst_ni                 (rst_ni),
     .link_reset_i           (link_reset_i),
+    .cfg_pinflip_i          (cfg_pinflip_i),
     .tx_osc_test_mode_i     (tx_osc_test_mode_i),
     .bit_strobe_i           (bit_strobe),
     .usb_d_o                (usb_d_o),
     .usb_se0_o              (usb_se0_o),
+    .usb_dp_o               (usb_dp_o),
+    .usb_dn_o               (usb_dn_o),
     .usb_oe_o               (usb_oe),
     .pkt_start_i            (tx_pkt_start),
     .pkt_end_o              (tx_pkt_end),
