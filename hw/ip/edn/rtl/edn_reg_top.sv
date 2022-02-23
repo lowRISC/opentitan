@@ -136,7 +136,6 @@ module edn_reg_top (
   logic [3:0] ctrl_auto_req_mode_wd;
   logic [3:0] ctrl_cmd_fifo_rst_qs;
   logic [3:0] ctrl_cmd_fifo_rst_wd;
-  logic [8:0] debug_status_qs;
   logic boot_ins_cmd_we;
   logic [31:0] boot_ins_cmd_qs;
   logic [31:0] boot_ins_cmd_wd;
@@ -176,6 +175,7 @@ module edn_reg_top (
   logic err_code_test_we;
   logic [4:0] err_code_test_qs;
   logic [4:0] err_code_test_wd;
+  logic [8:0] main_sm_state_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -467,32 +467,6 @@ module edn_reg_top (
 
     // to register interface (read)
     .qs     (ctrl_cmd_fifo_rst_qs)
-  );
-
-
-  // R[debug_status]: V(False)
-  prim_subreg #(
-    .DW      (9),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (9'h0)
-  ) u_debug_status (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.debug_status.de),
-    .d      (hw2reg.debug_status.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (debug_status_qs)
   );
 
 
@@ -1026,6 +1000,32 @@ module edn_reg_top (
   );
 
 
+  // R[main_sm_state]: V(False)
+  prim_subreg #(
+    .DW      (9),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (9'h185)
+  ) u_main_sm_state (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.main_sm_state.de),
+    .d      (hw2reg.main_sm_state.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (main_sm_state_qs)
+  );
+
+
 
   logic [16:0] addr_hit;
   always_comb begin
@@ -1036,17 +1036,17 @@ module edn_reg_top (
     addr_hit[ 3] = (reg_addr == EDN_ALERT_TEST_OFFSET);
     addr_hit[ 4] = (reg_addr == EDN_REGWEN_OFFSET);
     addr_hit[ 5] = (reg_addr == EDN_CTRL_OFFSET);
-    addr_hit[ 6] = (reg_addr == EDN_DEBUG_STATUS_OFFSET);
-    addr_hit[ 7] = (reg_addr == EDN_BOOT_INS_CMD_OFFSET);
-    addr_hit[ 8] = (reg_addr == EDN_BOOT_GEN_CMD_OFFSET);
-    addr_hit[ 9] = (reg_addr == EDN_SW_CMD_REQ_OFFSET);
-    addr_hit[10] = (reg_addr == EDN_SW_CMD_STS_OFFSET);
-    addr_hit[11] = (reg_addr == EDN_RESEED_CMD_OFFSET);
-    addr_hit[12] = (reg_addr == EDN_GENERATE_CMD_OFFSET);
-    addr_hit[13] = (reg_addr == EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_OFFSET);
-    addr_hit[14] = (reg_addr == EDN_RECOV_ALERT_STS_OFFSET);
-    addr_hit[15] = (reg_addr == EDN_ERR_CODE_OFFSET);
-    addr_hit[16] = (reg_addr == EDN_ERR_CODE_TEST_OFFSET);
+    addr_hit[ 6] = (reg_addr == EDN_BOOT_INS_CMD_OFFSET);
+    addr_hit[ 7] = (reg_addr == EDN_BOOT_GEN_CMD_OFFSET);
+    addr_hit[ 8] = (reg_addr == EDN_SW_CMD_REQ_OFFSET);
+    addr_hit[ 9] = (reg_addr == EDN_SW_CMD_STS_OFFSET);
+    addr_hit[10] = (reg_addr == EDN_RESEED_CMD_OFFSET);
+    addr_hit[11] = (reg_addr == EDN_GENERATE_CMD_OFFSET);
+    addr_hit[12] = (reg_addr == EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_OFFSET);
+    addr_hit[13] = (reg_addr == EDN_RECOV_ALERT_STS_OFFSET);
+    addr_hit[14] = (reg_addr == EDN_ERR_CODE_OFFSET);
+    addr_hit[15] = (reg_addr == EDN_ERR_CODE_TEST_OFFSET);
+    addr_hit[16] = (reg_addr == EDN_MAIN_SM_STATE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1104,25 +1104,25 @@ module edn_reg_top (
   assign ctrl_auto_req_mode_wd = reg_wdata[11:8];
 
   assign ctrl_cmd_fifo_rst_wd = reg_wdata[15:12];
-  assign boot_ins_cmd_we = addr_hit[7] & reg_we & !reg_error;
+  assign boot_ins_cmd_we = addr_hit[6] & reg_we & !reg_error;
 
   assign boot_ins_cmd_wd = reg_wdata[31:0];
-  assign boot_gen_cmd_we = addr_hit[8] & reg_we & !reg_error;
+  assign boot_gen_cmd_we = addr_hit[7] & reg_we & !reg_error;
 
   assign boot_gen_cmd_wd = reg_wdata[31:0];
-  assign sw_cmd_req_we = addr_hit[9] & reg_we & !reg_error;
+  assign sw_cmd_req_we = addr_hit[8] & reg_we & !reg_error;
 
   assign sw_cmd_req_wd = reg_wdata[31:0];
-  assign reseed_cmd_we = addr_hit[11] & reg_we & !reg_error;
+  assign reseed_cmd_we = addr_hit[10] & reg_we & !reg_error;
 
   assign reseed_cmd_wd = reg_wdata[31:0];
-  assign generate_cmd_we = addr_hit[12] & reg_we & !reg_error;
+  assign generate_cmd_we = addr_hit[11] & reg_we & !reg_error;
 
   assign generate_cmd_wd = reg_wdata[31:0];
-  assign max_num_reqs_between_reseeds_we = addr_hit[13] & reg_we & !reg_error;
+  assign max_num_reqs_between_reseeds_we = addr_hit[12] & reg_we & !reg_error;
 
   assign max_num_reqs_between_reseeds_wd = reg_wdata[31:0];
-  assign recov_alert_sts_we = addr_hit[14] & reg_we & !reg_error;
+  assign recov_alert_sts_we = addr_hit[13] & reg_we & !reg_error;
 
   assign recov_alert_sts_edn_enable_field_alert_wd = reg_wdata[0];
 
@@ -1133,7 +1133,7 @@ module edn_reg_top (
   assign recov_alert_sts_cmd_fifo_rst_field_alert_wd = reg_wdata[3];
 
   assign recov_alert_sts_edn_bus_cmp_alert_wd = reg_wdata[12];
-  assign err_code_test_we = addr_hit[16] & reg_we & !reg_error;
+  assign err_code_test_we = addr_hit[15] & reg_we & !reg_error;
 
   assign err_code_test_wd = reg_wdata[4:0];
 
@@ -1173,24 +1173,24 @@ module edn_reg_top (
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[8:0] = debug_status_qs;
-      end
-
-      addr_hit[7]: begin
         reg_rdata_next[31:0] = boot_ins_cmd_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[7]: begin
         reg_rdata_next[31:0] = boot_gen_cmd_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[8]: begin
         reg_rdata_next[31:0] = '0;
       end
 
-      addr_hit[10]: begin
+      addr_hit[9]: begin
         reg_rdata_next[0] = sw_cmd_sts_cmd_rdy_qs;
         reg_rdata_next[1] = sw_cmd_sts_cmd_sts_qs;
+      end
+
+      addr_hit[10]: begin
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[11]: begin
@@ -1198,14 +1198,10 @@ module edn_reg_top (
       end
 
       addr_hit[12]: begin
-        reg_rdata_next[31:0] = '0;
-      end
-
-      addr_hit[13]: begin
         reg_rdata_next[31:0] = max_num_reqs_between_reseeds_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[13]: begin
         reg_rdata_next[0] = recov_alert_sts_edn_enable_field_alert_qs;
         reg_rdata_next[1] = recov_alert_sts_boot_req_mode_field_alert_qs;
         reg_rdata_next[2] = recov_alert_sts_auto_req_mode_field_alert_qs;
@@ -1213,7 +1209,7 @@ module edn_reg_top (
         reg_rdata_next[12] = recov_alert_sts_edn_bus_cmp_alert_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[14]: begin
         reg_rdata_next[0] = err_code_sfifo_rescmd_err_qs;
         reg_rdata_next[1] = err_code_sfifo_gencmd_err_qs;
         reg_rdata_next[20] = err_code_edn_ack_sm_err_qs;
@@ -1224,8 +1220,12 @@ module edn_reg_top (
         reg_rdata_next[30] = err_code_fifo_state_err_qs;
       end
 
-      addr_hit[16]: begin
+      addr_hit[15]: begin
         reg_rdata_next[4:0] = err_code_test_qs;
+      end
+
+      addr_hit[16]: begin
+        reg_rdata_next[8:0] = main_sm_state_qs;
       end
 
       default: begin

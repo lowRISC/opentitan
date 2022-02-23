@@ -789,8 +789,8 @@ module edn_core import edn_pkg::*;
   end
 
   // state machine status
-  assign hw2reg.debug_status.de = 1'b1;
-  assign hw2reg.debug_status.d = edn_main_sm_state;
+  assign hw2reg.main_sm_state.de = 1'b1;
+  assign hw2reg.main_sm_state.d = edn_main_sm_state;
 
   //--------------------------------------------
   // unused signals
