@@ -94,6 +94,10 @@
                "-error=TMPO",
                // Class objects must not hide other class members due to same name
                "-error=SV-OHCM",
+               // ENUMASSIGN issues can cause LEC warnings later down the road (see #10083
+               // and #10952 for context). The warning is therefore promoted to an error
+               // in simulations in order to catch this as early as possible.
+               "-error=ENUMASSIGN"
                ]
 
   run_opts:   ["-licqueue",
