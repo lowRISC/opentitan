@@ -137,7 +137,7 @@ module ibex_core import ibex_pkg::*; #(
 `endif
 
   // CPU Control Signals
-  input  logic                         fetch_enable_i,
+  input  fetch_enable_t                fetch_enable_i,
   output logic                         alert_minor_o,
   output logic                         alert_major_o,
   output logic                         icache_inval_o,
@@ -450,8 +450,25 @@ module ibex_core import ibex_pkg::*; #(
   // available
   assign perf_iside_wait = id_in_ready & ~instr_valid_id;
 
+  // Multi-bit fetch enable used when SecureIbex == 1. When SecureIbex == 0 only use the bottom-bit
+  // of fetch_enable_i. Ensure the multi-bit encoding has the bottom bit set for on and unset for
+  // off so FetchEnableOn/FetchEnableOff can be used without needing to know the value of
+  // SecureIbex.
+  `ASSERT_INIT(FetchEnableSecureOnBottomBitSet,    FetchEnableOn[0] == 1'b1)
+  `ASSERT_INIT(FetchEnableSecureOffBottomBitClear, FetchEnableOff[0] == 1'b0)
+
   // fetch_enable_i can be used to stop the core fetching new instructions
-  assign instr_req_gated = instr_req_int & fetch_enable_i;
+  if (SecureIbex) begin : g_instr_req_gated_secure
+    // For secure Ibex fetch_enable_i must be a specific multi-bit pattern to enable instruction
+    // fetch
+    assign instr_req_gated = instr_req_int & (fetch_enable_i == FetchEnableOn);
+  end else begin : g_instr_req_gated_non_secure
+    // For non secure Ibex only the bottom bit of fetch enable is considered
+    logic unused_fetch_enable;
+    assign unused_fetch_enable = ^fetch_enable_i[$bits(fetch_enable_t)-1:1];
+
+    assign instr_req_gated = instr_req_int & fetch_enable_i[0];
+  end
 
   //////////////
   // ID stage //

@@ -187,15 +187,15 @@ module rv_core_ibex
 
   // integrity errors and core alert events
   logic ibus_intg_err, dbus_intg_err;
-  logic alert_minor, alert_major;
+  logic alert_minor, alert_major_internal, alert_major_bus;
   logic double_fault;
 
   // alert events to peripheral module
   logic fatal_intg_event;
   logic fatal_core_event;
   logic recov_core_event;
-  assign fatal_intg_event = ibus_intg_err | dbus_intg_err;
-  assign fatal_core_event = alert_major;
+  assign fatal_intg_event = ibus_intg_err | dbus_intg_err | alert_major_bus;
+  assign fatal_core_event = alert_major_internal;
   assign recov_core_event = alert_minor | double_fault;
 
   // configurations for address translation
@@ -415,12 +415,11 @@ module rv_core_ibex
     .rvfi_mem_rdata,
     .rvfi_mem_wdata,
 `endif
-    // TODO(D2S): this needs to be pulled into both the primary core and into the shadow core
-    // before decoding it to a single bit.
-    .fetch_enable_i   (lc_ctrl_pkg::lc_tx_test_true_strict(fetch_enable)),
-    .alert_minor_o    (alert_minor),
-    .alert_major_o    (alert_major),
-    .core_sleep_o     (pwrmgr_o.core_sleeping)
+    .fetch_enable_i         (fetch_enable),
+    .alert_minor_o          (alert_minor),
+    .alert_major_internal_o (alert_major_internal),
+    .alert_major_bus_o      (alert_major_bus),
+    .core_sleep_o           (pwrmgr_o.core_sleeping)
   );
 
   ibex_pkg::crash_dump_t crash_dump_previous;

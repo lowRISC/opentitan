@@ -9,8 +9,9 @@ All features are runtime configurable via bits in the **cpuctrl** custom CSR.
 Outputs
 -------
 
-Ibex has two alert outputs for signalling security issues.
-The major alert (**alert_major_o**) indicates a critical security issue from which the core cannot recover.
+Ibex has three alert outputs for signalling security issues.
+The internal major alert (**alert_major_internal_o**) indicates a critical security issue from which the core cannot recover which was detected internally in `ibex_top`.
+The bus major alert (**alert_major_internal_o**) indicates a critical security issue from which the core cannot recover which was detected on incoming bus data.
 The minor alert (**alert_minor_o**) indicates potential security issues which can be monitored over time by a system.
 
 Data Independent Timing
@@ -29,6 +30,11 @@ When data-independent timing is enabled:
 Note that data memory operations to unaligned addresses might result in multiple bus accesses being made.
 This in turn could expose information about the address as a timing side-channel.
 It is therefore recommended to stick to aligned memory accesses when using this feature for critical code regions.
+
+When Ibex is configured to use an instruction cache, stalls on instruction fetch can see variable latency (depending on whether or not they hit in the cache).
+Software that has need of data independent timing may wish to disable the instruction cache to avoid this or to carefully analyse execution to determine if variable latency introduced by the cache causes unacceptable leakage.
+The instruction cache is controlled by the **icache_enable** bit in the **cpuctrl** register.
+Precise details of fetch timing will depend upon the memory system Ibex is connected to.
 
 Dummy Instruction Insertion
 ---------------------------
@@ -65,7 +71,7 @@ Bus integrity checking
 ----------------------
 
 Extra signals are available alongside the instruction and data side memory channels to support bus integrity checking.
-When the SecureIbex parameter is set, incoming data will be checked against the supplied checkbits, and a major alert signalled if there is a mismatch.
+When the SecureIbex parameter is set, incoming data will be checked against the supplied checkbits, and a bus major alert signalled if there is a mismatch.
 Write data can be checked against the supplied checkbits at its destination to confirm integrity.
 
 Register file ECC
@@ -73,7 +79,7 @@ Register file ECC
 
 When Ibex is configured with the SecureIbex parameter, ECC checking is added to all reads of the register file.
 This can be useful to detect fault injection attacks since the register file covers a reasonably large area.
-No attempt is made to correct detected errors, but an external alert is raised for the system to take action.
+No attempt is made to correct detected errors, but an internal major alert is signaled for the system to take action.
 
 Hardened PC
 -----------
@@ -81,14 +87,14 @@ Hardened PC
 This adds a check that the PC driven from the IF stage has not been modified.
 A check is asserted that the current IF stage PC equals the previous PC plus the correct increment.
 The check is disabled after branches and after reset.
-If a mismatch is detected, a major alert is signaled.
+If a mismatch is detected, an internal major alert is signaled.
 
 Shadow CSRs
 -----------
 
 Certain critical CSRs (`mstatus`, `mtvec`, `cpuctrl`, `pmpcfg` and `pmpaddr`) have extra glitch detection enabled.
 This creates a second copy of the register which stores a complemented version of the main CSR data.
-A constant check is made that the two copies are consistent, and a major alert is signalled if not.
+A constant check is made that the two copies are consistent, and an internal major alert is signalled if not.
 Note that this feature is not currently used when the SecureIbex parameter is set due to overlap with dual core lockstep.
 
 Dual core lockstep
@@ -97,6 +103,6 @@ Dual core lockstep
 This configuration option instantiates a second copy of the core logic, referred to as the shadow core.
 The shadow core executes using a delayed version of all inputs supplied to the main core.
 All outputs of the shadow core are compared against a delayed version of the outputs of the main core.
-Any mismatch between the two sets of outputs will trigger a major alert.
+Any mismatch between the two sets of outputs will trigger an internal major alert.
 
 Note that the register file and icache RAMs are not duplicated since these units are covered by ECC protection.

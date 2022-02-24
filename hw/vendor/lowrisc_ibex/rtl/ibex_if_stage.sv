@@ -462,7 +462,7 @@ module ibex_if_stage import ibex_pkg::*; #(
 
   // Check for expected increments of the PC when security hardening enabled
   if (PCIncrCheck) begin : g_secure_pc
-    logic [31:0] prev_instr_addr_incr;
+    logic [31:0] prev_instr_addr_incr, prev_instr_addr_incr_buf;
     logic        prev_instr_seq_q, prev_instr_seq_d;
 
     // Do not check for sequential increase after a branch, jump, exception, interrupt or debug
@@ -480,8 +480,14 @@ module ibex_if_stage import ibex_pkg::*; #(
 
     assign prev_instr_addr_incr = pc_id_o + (instr_is_compressed_id_o ? 32'd2 : 32'd4);
 
+    // Buffer anticipated next PC address to ensure optimiser cannot remove the check.
+    prim_buf #(.Width(32)) u_prev_instr_addr_incr_buf (
+      .in_i (prev_instr_addr_incr),
+      .out_o(prev_instr_addr_incr_buf)
+    );
+
     // Check that the address equals the previous address +2/+4
-    assign pc_mismatch_alert_o = prev_instr_seq_q & (pc_if_o != prev_instr_addr_incr);
+    assign pc_mismatch_alert_o = prev_instr_seq_q & (pc_if_o != prev_instr_addr_incr_buf);
 
   end else begin : g_no_secure_pc
     assign pc_mismatch_alert_o = 1'b0;
