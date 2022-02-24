@@ -17,7 +17,8 @@ module rstmgr
   import prim_mubi_pkg::mubi4_t;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  parameter bit SecCheck = 1
+  parameter bit SecCheck = 1,
+  parameter int SecMaxSyncDelay = 2
 ) (
   // Primary module clocks
   input clk_i,
@@ -192,14 +193,16 @@ module rstmgr
 
   // All of these are fatal alerts
   assign alerts[0] = reg_intg_err ||
-                     |cnsty_chk_errs ||
-                     |shadow_cnsty_chk_errs ||
                      |fsm_errs ||
                      |shadow_fsm_errs;
 
+  assign alerts[1] = |cnsty_chk_errs ||
+                     |shadow_cnsty_chk_errs;
+
+
   assign alert_test = {
-    reg2hw.alert_test.q &
-    reg2hw.alert_test.qe
+    reg2hw.alert_test.fatal_fault.q & reg2hw.alert_test.fatal_fault.qe,
+    reg2hw.alert_test.fatal_cnsty_fault.q & reg2hw.alert_test.fatal_cnsty_fault.qe
   };
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
@@ -210,7 +213,7 @@ module rstmgr
       .clk_i,
       .rst_ni,
       .alert_test_i  ( alert_test[i] ),
-      .alert_req_i   ( alerts[0]     ),
+      .alert_req_i   ( alerts[i]     ),
       .alert_ack_o   (               ),
       .alert_state_o (               ),
       .alert_rx_i    ( alert_rx_i[i] ),
@@ -316,17 +319,6 @@ module rstmgr
   // To simplify generation, each reset generates all associated power domain outputs.
   // If a reset does not support a particular power domain, that reset is always hard-wired to 0.
 
-  prim_mubi_pkg::mubi4_t [${len(leaf_rsts)-1}:0] leaf_rst_scanmode;
-  prim_mubi4_sync #(
-    .NumCopies(${len(leaf_rsts)}),
-    .AsyncOn(0)
-    ) u_leaf_rst_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
-    .mubi_i(scanmode_i),
-    .mubi_o(leaf_rst_scanmode)
- );
-
 % for i, rst in enumerate(leaf_rsts):
 <%
   names = [rst.name]
@@ -344,7 +336,8 @@ module rstmgr
     % for domain in power_domains:
        % if domain in rst.domains:
   rstmgr_leaf_rst #(
-    .SecCheck(SecCheck)
+    .SecCheck(SecCheck),
+    .SecMaxSyncDelay(SecMaxSyncDelay)
   ) u_d${domain.lower()}_${name} (
     .clk_i,
     .rst_ni,
@@ -356,7 +349,7 @@ module rstmgr
     .sw_rst_req_ni(1'b1),
          % endif
     .scan_rst_ni,
-    .scan_sel(prim_mubi_pkg::mubi4_test_true_strict(leaf_rst_scanmode[${i}])),
+    .scanmode_i,
     .rst_en_o(rst_en_o.${name}[Domain${domain}Sel]),
     .leaf_rst_o(resets_o.rst_${name}_n[Domain${domain}Sel]),
     .err_o(${err_prefix[j]}cnsty_chk_errs[${i}][Domain${domain}Sel]),

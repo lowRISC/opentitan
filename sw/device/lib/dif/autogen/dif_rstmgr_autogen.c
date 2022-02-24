@@ -32,6 +32,9 @@ dif_result_t dif_rstmgr_alert_force(const dif_rstmgr_t *rstmgr,
     case kDifRstmgrAlertFatalFault:
       alert_idx = RSTMGR_ALERT_TEST_FATAL_FAULT_BIT;
       break;
+    case kDifRstmgrAlertFatalCnstyFault:
+      alert_idx = RSTMGR_ALERT_TEST_FATAL_CNSTY_FAULT_BIT;
+      break;
     default:
       return kDifBadArg;
   }

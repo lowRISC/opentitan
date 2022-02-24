@@ -14,7 +14,9 @@
 module rstmgr_cnsty_chk
   import rstmgr_pkg::*;
   import rstmgr_reg_pkg::*;
-(
+#(
+  parameter int SecMaxSyncDelay = 2
+) (
   input clk_i,
   input rst_ni,
   input child_clk_i,
@@ -26,11 +28,9 @@ module rstmgr_cnsty_chk
   output logic fsm_err_o
 );
 
-  localparam int MaxSyncDelay = 2;
-
   // The "+ 2" here is because the cnt counter that uses this width needs to be able to count up to
-  // MaxSyncDelay + 1.
-  localparam int CntWidth = $clog2(MaxSyncDelay + 2);
+  // SecMaxSyncDelay + 1.
+  localparam int CntWidth = $clog2(SecMaxSyncDelay + 2);
 
   // These two flops below are completely async.
   // The value from these flops are always fed through synchronizers before use.
@@ -95,13 +95,14 @@ module rstmgr_cnsty_chk
   //
   localparam int StateWidth = 6;
   typedef enum logic [StateWidth-1:0] {
-    Reset               = 6'b011001,
-    Idle                = 6'b111100,
-    WaitForParent       = 6'b010010,
-    WaitForChild        = 6'b110111,
-    WaitForSrcRelease   = 6'b001111,
-    WaitForChildRelease = 6'b000100,
-    Error               = 6'b101010
+    Reset               = 6'b010001,
+    Idle                = 6'b100011,
+    WaitForParent       = 6'b111101,
+    WaitForChild        = 6'b001111,
+    WaitForSrcRelease   = 6'b100100,
+    WaitForChildRelease = 6'b111010,
+    Error               = 6'b010110,
+    FsmError            = 6'b001000
   } state_e;
 
   state_e state_q, state_d;
@@ -132,7 +133,7 @@ module rstmgr_cnsty_chk
   // also operating on clk_i.  We are mainly trying to wait out the reset assertion delays.
   // parent resets are asynchronous assertion so there is at most a one cycle separation.
   // if needed we can make this timeout bigger.
-  assign timeout = int'(cnt) > MaxSyncDelay;
+  assign timeout = int'(cnt) > SecMaxSyncDelay;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -251,8 +252,12 @@ module rstmgr_cnsty_chk
         err_o = 1'b1;
       end
 
-      default: begin
+      FsmError: begin
         fsm_err_o = 1'b1;
+      end
+
+      default: begin
+        state_d = FsmError;
       end
     endcase // unique case (state_q)
   end // always_comb

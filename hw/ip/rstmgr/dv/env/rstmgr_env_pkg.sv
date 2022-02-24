@@ -30,8 +30,8 @@ package rstmgr_env_pkg;
 
   // parameters
   // TODO: add the names of alerts in order
-  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
-  parameter uint NUM_ALERTS = 1;
+  parameter string LIST_OF_ALERTS[] = {"fatal_fault", "fatal_cnsty_fault"};
+  parameter uint NUM_ALERTS = 2;
 
   // types
   typedef logic [NumSwResets-1:0] sw_rst_t;

@@ -54,6 +54,12 @@ TEST_F(AlertForceTest, Success) {
                  {{RSTMGR_ALERT_TEST_FATAL_FAULT_BIT, true}});
   EXPECT_EQ(dif_rstmgr_alert_force(&rstmgr_, kDifRstmgrAlertFatalFault),
             kDifOk);
+
+  // Force last alert.
+  EXPECT_WRITE32(RSTMGR_ALERT_TEST_REG_OFFSET,
+                 {{RSTMGR_ALERT_TEST_FATAL_CNSTY_FAULT_BIT, true}});
+  EXPECT_EQ(dif_rstmgr_alert_force(&rstmgr_, kDifRstmgrAlertFatalCnstyFault),
+            kDifOk);
 }
 
 }  // namespace
