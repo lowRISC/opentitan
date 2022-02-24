@@ -32,6 +32,11 @@ if {$env(TASK) == "FpvSecCm"} {
     -bbox_m prim_count \
     -bbox_m prim_double_lfsr \
     -f [glob *.scr]
+} elseif {$env(DUT_TOP) == "pinmux_tb"} {
+  analyze -sv09 \
+    +define+FPV_ON \
+    -bbox_m usbdev_aon_wake \
+    -f [glob *.scr]
 } else {
   analyze -sv09 \
     +define+FPV_ON \
@@ -120,6 +125,13 @@ if {$env(DUT_TOP) == "rv_dm"} {
   reset -expr {!rst_ni}
   clock -rate -default clk_i
 }
+
+#-------------------------------------------------------------------------
+# disable assertions
+#-------------------------------------------------------------------------
+assert -disable {*SyncCheckTransients_A}
+assert -disable {*SyncCheckTransients0_A}
+assert -disable {*SyncCheckTransients1_A}
 
 # Use counter abstractions to reduce the run time.
 if {$env(DUT_TOP) == "alert_handler"} {
