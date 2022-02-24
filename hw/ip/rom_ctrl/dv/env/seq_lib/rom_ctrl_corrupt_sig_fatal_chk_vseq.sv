@@ -12,6 +12,7 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
 
   typedef enum bit [2:0] {
       CheckerCtrConsistency,
+      CheckerCtrlFlowConsistency,
       CompareCtrlFlowConsistency,
       CompareCtrConsistency,
       MuxMubi,
@@ -45,6 +46,26 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
           chk_fsm_state();
         end
         // The main checker FSM steps on internal 'done' signals, coming from its address counter,
+        // the KMAC response and its comparison counter. If any of these are asserted at times we
+        // don't expect, the FSM jumps to an invalid state. This triggers an alert and will not set
+        // the external 'done' signal for pwrmgr to continue boot.
+        CheckerCtrlFlowConsistency: begin
+          wait_with_bound(100);
+          force_sig("tb.dut.kmac_data_i.done", 1);
+          check_for_alert();
+          chk_fsm_state();
+          dut_init();
+          wait_with_bound(100);
+          force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.checker_done", 1);
+          check_for_alert();
+          chk_fsm_state();
+          dut_init();
+          wait_with_bound(100);
+          force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.counter_done", 1);
+          check_for_alert();
+          chk_fsm_state();
+        end
+        // The main checker FSM steps on internal 'done' signals, coming from its address counter,
         // the KMAC response and its comparison counter. If any of these are asserted at times
         // we don't expect, the FSM jumps to an invalid state. This triggers an alert and will not
         // set the external 'done' signal for pwrmgr to continue boot. To test this start_checker_q
@@ -63,7 +84,7 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
         end
         // The hash comparison module has an internal count. If this glitches to a nonzero value
         // before the comparison starts or to a value other than the last index after the
-        // comparison ends then an fatal alert is generated.
+        // comparison ends then a fatal alert is generated.
         CompareCtrConsistency: begin
           bit [2:0] invalid_addr;
           $assertoff(0, "tb.dut.KeymgrValidChk_A");
