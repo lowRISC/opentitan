@@ -47,6 +47,12 @@ package otbn_pkg;
   localparam logic [BaseIntgWidth-1:0] EccZeroWord     = prim_secded_pkg::SecdedInv3932ZeroWord;
   localparam logic [ExtWLEN-1:0]       EccWideZeroWord = {BaseWordsPerWLEN{EccZeroWord}};
 
+  // Size of DMEM scratch area. The total DMEM size is OTBN_DMEM_SIZE + DmemScratchSizeByte. Note
+  // that some of the Python tooling depends on this parameter (it needs to know the full DMEM size,
+  // but regtool only gives it OTBN_DMEM_SIZE). If changing this, you'll also need to edit
+  // _DmemScratchSizeBytes in util/shared/mem_layout.py
+  parameter int DmemScratchSizeByte = 2048;
+
   // Toplevel constants ============================================================================
 
   parameter int AlertFatal = 0;

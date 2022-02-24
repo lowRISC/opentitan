@@ -138,8 +138,12 @@ package otbn_env_pkg;
   // Forward declaration to allow the config to hold a scoreboard handle.
   typedef class otbn_scoreboard;
 
-  parameter int ImemIndexWidth = vbits(int'(otbn_reg_pkg::OTBN_IMEM_SIZE) / 4);
-  parameter int DmemIndexWidth = vbits(2 * int'(otbn_reg_pkg::OTBN_DMEM_SIZE) / 32);
+  localparam int unsigned ImemSizeByte = int'(otbn_reg_pkg::OTBN_IMEM_SIZE);
+  localparam int unsigned DmemSizeByte =
+    int'(otbn_reg_pkg::OTBN_DMEM_SIZE) + otbn_pkg::DmemScratchSizeByte;
+
+  parameter int unsigned ImemIndexWidth = vbits(ImemSizeByte / 4);
+  parameter int unsigned DmemIndexWidth = vbits(DmemSizeByte / 32);
 
   // package sources
   `include "otbn_env_cfg.sv"

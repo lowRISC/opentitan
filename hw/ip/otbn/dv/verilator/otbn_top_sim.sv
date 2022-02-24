@@ -13,7 +13,7 @@ module otbn_top_sim (
   // Size of the instruction memory, in bytes
   parameter int ImemSizeByte = otbn_reg_pkg::OTBN_IMEM_SIZE;
   // Size of the data memory, in bytes
-  parameter int DmemSizeByte = 2 * otbn_reg_pkg::OTBN_DMEM_SIZE;
+  parameter int DmemSizeByte = otbn_reg_pkg::OTBN_DMEM_SIZE + otbn_pkg::DmemScratchSizeByte;
 
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte);
   localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte);
