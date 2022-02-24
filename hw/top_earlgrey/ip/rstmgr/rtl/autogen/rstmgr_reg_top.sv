@@ -109,7 +109,8 @@ module rstmgr_reg_top (
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
   logic alert_test_we;
-  logic alert_test_wd;
+  logic alert_test_fatal_fault_wd;
+  logic alert_test_fatal_cnsty_fault_wd;
   logic reset_req_we;
   logic [3:0] reset_req_qs;
   logic [3:0] reset_req_wd;
@@ -191,16 +192,31 @@ module rstmgr_reg_top (
 
   // Register instances
   // R[alert_test]: V(True)
+  //   F[fatal_fault]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test (
+  ) u_alert_test_fatal_fault (
     .re     (1'b0),
     .we     (alert_test_we),
-    .wd     (alert_test_wd),
+    .wd     (alert_test_fatal_fault_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.qe),
-    .q      (reg2hw.alert_test.q),
+    .qe     (reg2hw.alert_test.fatal_fault.qe),
+    .q      (reg2hw.alert_test.fatal_fault.q),
+    .qs     ()
+  );
+
+  //   F[fatal_cnsty_fault]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_fatal_cnsty_fault (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_fatal_cnsty_fault_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.fatal_cnsty_fault.qe),
+    .q      (reg2hw.alert_test.fatal_cnsty_fault.q),
     .qs     ()
   );
 
@@ -986,7 +1002,9 @@ module rstmgr_reg_top (
   end
   assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign alert_test_wd = reg_wdata[0];
+  assign alert_test_fatal_fault_wd = reg_wdata[0];
+
+  assign alert_test_fatal_cnsty_fault_wd = reg_wdata[1];
   assign reset_req_we = addr_hit[1] & reg_we & !reg_error;
 
   assign reset_req_wd = reg_wdata[3:0];
@@ -1068,6 +1086,7 @@ module rstmgr_reg_top (
     unique case (1'b1)
       addr_hit[0]: begin
         reg_rdata_next[0] = '0;
+        reg_rdata_next[1] = '0;
       end
 
       addr_hit[1]: begin

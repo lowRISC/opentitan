@@ -2842,6 +2842,14 @@
           expose: "true"
           name_top: SecRstmgrAonCheck
         }
+        {
+          name: SecMaxSyncDelay
+          desc: The maximum synchronization delay for parent / child reset checks.
+          type: int
+          default: "2"
+          expose: "true"
+          name_top: SecRstmgrAonMaxSyncDelay
+        }
       ]
       inter_signal_list:
       [
@@ -13766,6 +13774,15 @@
     }
     {
       name: rstmgr_aon_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: rstmgr_aon
+      lpg_name: powerup_por_io_div4_Aon
+      lpg_idx: 10
+    }
+    {
+      name: rstmgr_aon_fatal_cnsty_fault
       width: 1
       type: alert
       async: "1"
