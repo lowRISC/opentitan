@@ -36,6 +36,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     'test_rom_' + device_name,
     sources: [
       hw_ip_ast_reg_h,
+      hw_ip_clkmgr_reg_h,
       hw_ip_csrng_reg_h,
       hw_ip_edn_reg_h,
       hw_ip_entropy_src_reg_h,
