@@ -44,9 +44,11 @@ class otbn_imem_err_vseq extends otbn_base_vseq;
     cfg.model_agent_cfg.vif.invalidate_imem();
 
     // If we were unlucky, we might have injected the errors while OTBN was executing an instruction
-    // that was already causing it to stop. To allow for this specific case, we wait exactly one
-    // cycle.
-    @(cfg.clk_rst_vif.cbn);
+    // that was already causing it to stop. To allow for this specific case, we wait three cycles to
+    // let that instruction flush through. We need this much time to handle things like branches
+    // that might take until the second cycle before realising that something failed and then one
+    // more cycle to clean up.
+    repeat (3) @(cfg.clk_rst_vif.cbn);
     // If OTBN is now idle, we hit this exact window and the test didn't do anything useful. Ho
     // hum... Note that we don't need to apply a reset in this case.
     if (cfg.model_agent_cfg.vif.status == otbn_pkg::StatusIdle) begin
