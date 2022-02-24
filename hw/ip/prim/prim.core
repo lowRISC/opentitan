@@ -26,6 +26,7 @@ filesets:
       - lowrisc:prim:subreg
       - lowrisc:prim:cipher
       - lowrisc:prim:xor2
+      - lowrisc:prim:and2
     files:
       - rtl/prim_clock_gating_sync.sv
       - rtl/prim_sram_arbiter.sv
