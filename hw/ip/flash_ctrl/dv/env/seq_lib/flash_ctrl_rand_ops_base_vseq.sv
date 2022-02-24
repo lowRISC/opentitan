@@ -204,6 +204,16 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
           1 :/ cfg.seq_cfg.mp_info_page_erase_en_pc[i][j]
         };
 
+        mp_info_pages[i][j][k].scramble_en dist {
+          0 :/ (100 - cfg.seq_cfg.mp_info_page_scramble_en_pc[i][j]),
+          1 :/ cfg.seq_cfg.mp_info_page_scramble_en_pc[i][j]
+        };
+
+        mp_info_pages[i][j][k].ecc_en dist {
+          0 :/ (100 - cfg.seq_cfg.mp_info_page_ecc_en_pc[i][j]),
+          1 :/ cfg.seq_cfg.mp_info_page_ecc_en_pc[i][j]
+        };
+
         mp_info_pages[i][j][k].he_en dist {
           0 :/ (100 - cfg.seq_cfg.mp_info_page_he_en_pc[i][j]),
           1 :/ cfg.seq_cfg.mp_info_page_he_en_pc[i][j]
