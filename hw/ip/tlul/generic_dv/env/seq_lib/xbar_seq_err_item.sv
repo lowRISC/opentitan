@@ -5,7 +5,7 @@
 // ---------------------------------------------
 // TileLink sequence item with all protocol related constraint disabled
 // ---------------------------------------------
-class xbar_seq_err_item extends tl_seq_item;
+class xbar_seq_err_item extends cip_tl_seq_item;
 
   `uvm_object_utils(xbar_seq_err_item)
   `uvm_object_new
