@@ -38,7 +38,10 @@ filesets:
       - seq_lib/spi_device_abort_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_tpm_locality_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_tpm_read_vseq.sv: {is_include_file: true}
+      - seq_lib/spi_device_pass_base_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_pass_cmd_filtering_vseq.sv: {is_include_file: true}
+      - seq_lib/spi_device_pass_addr_translation_vseq.sv: {is_include_file: true}
+      - seq_lib/spi_device_pass_data_translation_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
