@@ -89,8 +89,7 @@ class OTBNState:
         self.pc = 0
         self._pc_next_override = None  # type: Optional[int]
 
-        _, imem_size = get_memory_layout()['IMEM']
-        self.imem_size = imem_size
+        self.imem_size = get_memory_layout().imem_size_bytes
 
         self.dmem = Dmem()
 

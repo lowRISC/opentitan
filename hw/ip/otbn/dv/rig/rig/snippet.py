@@ -129,9 +129,8 @@ class Snippet:
         # at address 0: a strict Harvard architecture. (mems[x][0] is the LMA
         # for memory x, not the VMA)
         mems = get_memory_layout()
-        imem_lma, imem_size = mems['IMEM']
-        dmem_lma, dmem_size = mems['DMEM']
-        program = Program(imem_lma, imem_size, dmem_lma, dmem_size)
+        program = Program(mems.imem_address, mems.imem_size_bytes,
+                          mems.dmem_address, mems.dmem_size_bytes)
         self.insert_into_program(program)
         return program
 

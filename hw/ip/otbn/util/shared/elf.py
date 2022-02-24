@@ -140,8 +140,8 @@ def read_elf(path: str) -> Tuple[bytes,
 
     '''
     mems = get_memory_layout()
-    imem_desc = mems['IMEM']
-    dmem_desc = mems['DMEM']
+    imem_desc = (mems.imem_address, mems.imem_size_bytes)
+    dmem_desc = (mems.dmem_address, mems.dmem_bus_size_bytes)
 
     with open(path, 'rb') as handle:
         elf_file = ELFFile(handle)
