@@ -40,7 +40,7 @@
       desc: "Background consistency checks for each leaf reset."
     }
     { name: "LEAF.RST.SHADOW",
-      desc: "Lead resets to blocks containing shadow registers are shadowed"
+      desc: "Leaf resets to blocks containing shadow registers are shadowed"
     }
     { name: "LEAF.FSM.SPARSE",
       desc: "Sparsely encoded fsm for each leaf rst check. The Hamming delta is only 3 as there are a significant number of leaf resets"
