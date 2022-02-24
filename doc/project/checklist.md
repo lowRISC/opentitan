@@ -514,15 +514,28 @@ On OpenTitan, a security countermeasures testplan is auto-generated (the first t
 This testplan has been imported into the main testplan written for the DUT.
 Tests implemented to verify the security countermeasures have been mapped to these testpoints.
 
+Common countermeasures can be fully verified or partially handled by cip_lib.
+Follow this [document]({{< relref "hw/dv/sv/cip_lib/doc#security-verification-in-cip_lib" >}}) to enable them.
+Make sure to import the applicable common sec_cm [tests](https://github.com/lowRISC/opentitan/tree/master/hw/dv/tools/dvsim/tests) and [testplans](https://github.com/lowRISC/opentitan/tree/master/hw/dv/tools/dvsim/testplans).
+
 ### FPV_SEC_CM_PROVEN
 
-<!-- TODO, add the link to cm verif methodology doc -->
 All security countermeasure assertions are proven in FPV.
+The required assertions for countermeasure are defined in [Security Countermeasure Verification Framework]({{< relref "doc/ug/sec_cm_dv_framework" >}}).
 
 ### SIM_SEC_CM_VERIFIED
 
-<!-- TODO, add the link to cm verif methodology doc -->
 All security countermeasures are verified in simulation.
+Common countermeasures can be fully verified or partially handled by cip_lib.
+Refer to the [cip_lib document]({{< relref "hw/dv/sv/cip_lib/doc#security-verification-in-cip_lib" >}}) for details.
+
+### SIM_COVERAGE_REVIEWED
+
+Security countermeasure blocks may have been excluded in order to satisfy the V2 sign-off criteria.
+If so, these exclusions should be removed.
+
+If UNR exclusion has been generated, it needs to be re-generated and reviewed after all security countermeasure tests have been implemented, as fault injection can exercise countermeasures which are deemed as unreachable code.
+The V2S coverage requirement is the same as V2 (90% code coverage and 70% functional coverage).
 
 ### SEC_CM_DV_REVIEWED
 
