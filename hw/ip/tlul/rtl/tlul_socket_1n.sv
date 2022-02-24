@@ -137,19 +137,36 @@ module tlul_socket_1n #(
   tlul_pkg::tl_h2d_t   tl_u_o [N+1];
   tlul_pkg::tl_d2h_t   tl_u_i [N+1];
 
-  for (genvar i = 0 ; i < N ; i++) begin : gen_u_o
-    assign tl_u_o[i].a_valid   = tl_t_o.a_valid &
-                                 (dev_select_t == NWD'(i)) &
-                                 ~hold_all_requests;
-    assign tl_u_o[i].a_opcode  = tl_t_o.a_opcode;
-    assign tl_u_o[i].a_param   = tl_t_o.a_param;
-    assign tl_u_o[i].a_size    = tl_t_o.a_size;
-    assign tl_u_o[i].a_source  = tl_t_o.a_source;
-    assign tl_u_o[i].a_address = tl_t_o.a_address;
-    assign tl_u_o[i].a_mask    = tl_t_o.a_mask;
-    assign tl_u_o[i].a_data    = tl_t_o.a_data;
-    assign tl_u_o[i].a_user    = tl_t_o.a_user;
+  // ensure that when a device is not selected, both command
+  // data integrity can never match
+  tlul_pkg::tl_h2d_t blanked_tl;
+
+  always_comb begin
+    blanked_tl = tlul_pkg::TL_H2D_DEFAULT;
+    blanked_tl.a_user.cmd_intg = tlul_pkg::get_bad_cmd_intg(tlul_pkg::TL_H2D_DEFAULT);
+    blanked_tl.a_user.data_intg = tlul_pkg::get_bad_data_intg(tlul_pkg::TL_H2D_DEFAULT);
   end
+
+  // if a host is not selected, or if requests are held off, blank the bus
+  for (genvar i = 0 ; i < N ; i++) begin : gen_u_o
+    logic dev_select;
+    assign dev_select = dev_select_t == NWD'(i);
+
+    always_comb begin
+       // unless selected always blank
+       tl_u_o[i] = blanked_tl;
+
+       // if selected, send out host request
+       if (tl_t_o.a_valid && dev_select && ~hold_all_requests) begin
+          tl_u_o[i] = tl_t_o;
+       end
+
+       // always accept resopnses
+       tl_u_o[i].d_ready = tl_t_o.d_ready;
+    end
+
+  end
+
 
   tlul_pkg::tl_d2h_t tl_t_p ;
 
@@ -182,12 +199,6 @@ module tlul_socket_1n #(
   assign tl_t_i.d_data   = tl_t_p.d_data  ;
   assign tl_t_i.d_user   = tl_t_p.d_user  ;
   assign tl_t_i.d_error  = tl_t_p.d_error ;
-
-
-  // accept responses from devices when selected if upstream is accepting
-  for (genvar i = 0 ; i < N ; i++) begin : gen_u_o_d_ready
-    assign tl_u_o[i].d_ready = tl_t_o.d_ready;
-  end
 
   // Instantiate all the device FIFOs
   for (genvar i = 0 ; i < N ; i++) begin : gen_dfifo

@@ -5,7 +5,7 @@
 # waiver file for TLUL elements lint
 
 # socket 1:N
-waive -rules INVALID_COMPARE   -location {tlul_socket_1n.sv} -regexp {Comparison '.dev_select_t == NWD'.*can never be true} \
+waive -rules INVALID_COMPARE   -location {tlul_socket_1n.sv} -regexp {Comparison '.*dev_select_t == NWD'.*can never be true} \
       -comment "lint appears to be confused about the width expansion of NWD'(2)'"
 waive -rules MIXED_SIGN        -location {tlul_socket_1n.sv} -regexp {Unsigned operand .* and signed .NWD} \
       -comment "is there a way to make NWD'(idx)' an unsigned operand?"
