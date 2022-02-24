@@ -360,6 +360,8 @@ logic clk_osc_sys, clk_osc_sys_val;
 assign rst_sys_clk_n = rst_osc_clk_n;  // Scan reset included
 assign clk_sys_pd_n  = !deep_sleep;
 
+logic sys_io_osc_cal;
+
 `ifdef AST_BYPASS_CLK
 logic clk_sys_ext;
 assign clk_sys_ext = clk_osc_byp_i.sys;
@@ -373,6 +375,7 @@ sys_clk u_sys_clk (
   .vcore_pok_h_i ( vcaon_pok_h ),
   .scan_mode_i ( scan_mode ),
   .scan_reset_ni ( scan_reset_n ),
+  .sys_osc_cal_i ( sys_io_osc_cal ),
 `ifdef AST_BYPASS_CLK
   .clk_sys_ext_i ( clk_sys_ext ),
 `endif
@@ -390,6 +393,8 @@ logic clk_osc_usb, clk_osc_usb_val;
 assign rst_usb_clk_n = rst_osc_clk_n;  // Scan reset included
 assign clk_usb_pd_n  = !deep_sleep;
 
+logic usb_osc_cal;
+
 `ifdef AST_BYPASS_CLK
 logic clk_usb_ext;
 assign clk_usb_ext = clk_osc_byp_i.usb;
@@ -404,6 +409,7 @@ usb_clk u_usb_clk (
   .usb_ref_pulse_i ( usb_ref_pulse_i ),
   .scan_mode_i ( scan_mode ),
   .scan_reset_ni ( scan_reset_n ),
+  .usb_osc_cal_i ( usb_osc_cal ),
 `ifdef AST_BYPASS_CLK
   .clk_usb_ext_i ( clk_usb_ext ),
 `endif
@@ -417,6 +423,7 @@ usb_clk u_usb_clk (
 ///////////////////////////////////////
 logic rst_aon_clk_n;
 logic  clk_osc_aon, clk_osc_aon_val;
+logic aon_osc_cal;
 `ifdef AST_BYPASS_CLK
 logic clk_aon_ext;
 
@@ -431,6 +438,7 @@ aon_clk  u_aon_clk (
   .clk_src_aon_en_i ( 1'b1 ),  // Always Enabled
   .scan_mode_i ( scan_mode ),
   .scan_reset_ni ( scan_reset_n ),
+  .aon_osc_cal_i ( aon_osc_cal ),
 `ifdef AST_BYPASS_CLK
   .clk_aon_ext_i ( clk_aon_ext ),
 `endif
@@ -476,6 +484,7 @@ io_clk u_io_clk (
   .clk_src_io_en_i ( clk_src_io_en_i ),
   .scan_mode_i ( scan_mode ),
   .scan_reset_ni ( scan_reset_n ),
+  .io_osc_cal_i ( sys_io_osc_cal ),
 `ifdef AST_BYPASS_CLK
   .clk_io_ext_i ( clk_io_ext ),
 `endif
@@ -846,6 +855,30 @@ always_ff @( posedge clk_ast_tlul_i, negedge regal_rst_n ) begin
   end
 end
 
+always_ff @( posedge clk_ast_tlul_i, negedge rst_ast_tlul_ni ) begin
+  if ( !rst_ast_tlul_ni ) begin
+    sys_io_osc_cal <= 1'b0;
+  end else if ( regal_we ) begin
+    sys_io_osc_cal <= 1'b1;
+  end
+end
+
+always_ff @( posedge clk_ast_tlul_i, negedge vcaon_pok_por ) begin
+  if ( !vcaon_pok_por ) begin
+    usb_osc_cal <= 1'b0;
+  end else if ( regal_we ) begin
+    usb_osc_cal <= 1'b1;
+  end
+end
+
+always_ff @( posedge clk_ast_tlul_i, negedge vcaon_pok ) begin
+  if ( !vcaon_pok ) begin
+    aon_osc_cal <= 1'b0;
+  end else if ( regal_we ) begin
+    aon_osc_cal <= 1'b1;
+  end
+end
+
 // TLUL Integrity Error
 assign ot0_alert_src = '{p: intg_err, n: !intg_err};
 
@@ -888,6 +921,7 @@ assign ast2pad_t1_ao = 1'bz;
 `ASSERT_KNOWN(ClkSrcAonValKnownO_A, clk_src_aon_val_o, clk_src_aon_o, rst_aon_clk_n)
 `ASSERT_KNOWN(ClkSrcIoKnownO_A, clk_src_io_o, 1, ast_pwst_o.main_pok)                    // TODO
 `ASSERT_KNOWN(ClkSrcIoValKnownO_A, clk_src_io_val_o, clk_src_io_o, rst_io_clk_n)
+`ASSERT_KNOWN(ClkSrcIo48mKnownO_A, clk_src_io_48m_o, clk_src_io_o, rst_io_clk_n)
 `ASSERT_KNOWN(ClkSrcSysKnownO_A, clk_src_sys_o, 1, ast_pwst_o.main_pok)                  // TODO
 `ASSERT_KNOWN(ClkSrcSysValKnownO_A, clk_src_sys_val_o, clk_src_sys_o, rst_sys_clk_n)
 `ASSERT_KNOWN(ClkSrcUsbKnownO_A, clk_src_usb_o, 1, ast_pwst_o.main_pok)                  // TODO
