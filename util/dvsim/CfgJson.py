@@ -37,10 +37,11 @@ def load_hjson(path, initial_values):
     while worklist:
         next_path = worklist.pop()
         new_paths = _load_single_file(ret, next_path, is_first, arg_keys)
-        if set(new_paths) & seen:
-            raise RuntimeError('{!r}: The file {!r} appears more than once '
-                               'when processing includes.'
-                               .format(path, next_path))
+        paths_seen = set(new_paths) & seen
+        if paths_seen:
+            raise RuntimeError('The files {!r} appears more than once '
+                               'when processing include {!r} for {!r}.'
+                               .format(list(paths_seen), next_path, path))
         seen |= set(new_paths)
         worklist += new_paths
         is_first = False
