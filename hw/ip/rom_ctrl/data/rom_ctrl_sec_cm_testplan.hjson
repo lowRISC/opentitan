@@ -25,87 +25,125 @@
   testpoints: [
     {
       name: sec_cm_checker_ctr_consistency
-      desc: "Verify the countermeasure(s) CHECKER.CTR.CONSISTENCY."
+      desc: '''Verify the countermeasure(s) CHECKER.CTR.CONSISTENCY.
+             Once rom_ctrl has handed control of the mux to the bus, the internal FSM counter should
+             point at the top of ROM. The unexpected_counter_change signal in rom_ctrl_fsm goes high
+             and generates a fatal alert if that counter is perturbed in any way. To test this,
+             addr_q in the counter is corrupted with any value other than the ROM's top address.'''
       milestone: V2S
-      tests: []
+      tests: ['''rom_ctrl_corrupt_sig_fatal_chk''']
     }
     {
       name: sec_cm_checker_ctrl_flow_consistency
-      desc: "Verify the countermeasure(s) CHECKER.CTRL_FLOW.CONSISTENCY."
+      desc: '''Verify the countermeasure(s) CHECKER.CTRL_FLOW.CONSISTENCY.
+             The main checker FSM steps on internal 'done' signals, coming from its address counter,
+             the KMAC response and its comparison counter. If any of these are asserted at times we
+             don't expect, the FSM jumps to an invalid state. This triggers an alert and will not
+             set the external 'done' signal for pwrmgr to continue boot.'''
       milestone: V2S
-      tests: []
+      tests: ['''rom_ctrl_corrupt_sig_fatal_chk''']
     }
     {
       name: sec_cm_checker_fsm_local_esc
-      desc: "Verify the countermeasure(s) CHECKER.FSM.LOCAL_ESC."
+      desc: '''Verify the countermeasure(s) CHECKER.FSM.LOCAL_ESC.
+             Check that fsm_state reaches invalid state whenever a fatal alert is signalled.'''
       milestone: V2S
-      tests: []
+      tests: ['''rom_ctrl_corrupt_sig_fatal_chk''']
     }
     {
       name: sec_cm_compare_ctrl_flow_consistency
-      desc: "Verify the countermeasure(s) COMPARE.CTRL_FLOW.CONSISTENCY."
+      desc: '''Verify the countermeasure(s) COMPARE.CTRL_FLOW.CONSISTENCY.
+             The main checker FSM steps on internal 'done' signals, coming from its address counter,
+             the KMAC response and its comparison counter. If any of these are asserted at times
+             we don't expect, the FSM jumps to an invalid state. This triggers an alert and will not
+             set the external 'done' signal for pwrmgr to continue boot. To test this start_checker
+             signal from rom_ctrl_fsm is asserted randomly.'''
       milestone: V2S
-      tests: []
+      tests: ['''rom_ctrl_corrupt_sig_fatal_chk''']
     }
     {
       name: sec_cm_compare_ctr_consistency
-      desc: "Verify the countermeasure(s) COMPARE.CTR.CONSISTENCY."
+      desc: '''Verify the countermeasure(s) COMPARE.CTR.CONSISTENCY.
+             The hash comparison module has an internal count. If this glitches to a nonzero value
+             before the comparison starts or to a value other than the last index after the
+             comparison ends then a fatal alert is generated.'''
       milestone: V2S
-      tests: []
+      tests: ['''rom_ctrl_corrupt_sig_fatal_chk''']
     }
     {
       name: sec_cm_fsm_sparse
-      desc: "Verify the countermeasure(s) FSM.SPARSE."
+      desc: '''Verify the countermeasure(s) FSM.SPARSE.'''
       milestone: V2S
-      tests: []
+      tests: ['''rom_ctrl_sec_cm''']
     }
     {
       name: sec_cm_mem_scramble
-      desc: "Verify the countermeasure(s) MEM.SCRAMBLE."
+      desc: '''Verify the countermeasure(s) MEM.SCRAMBLE.
+             Check that The ROM is scrambled.'''
       milestone: V2S
-      tests: []
+      tests: ['''rom_ctrl_smoke''']
     }
     {
       name: sec_cm_mem_digest
-      desc: "Verify the countermeasure(s) MEM.DIGEST."
+      desc: '''Verify the countermeasure(s) MEM.DIGEST.
+             Check that a cSHAKE digest is computed of the ROM contents.'''
       milestone: V2S
-      tests: []
+      tests: ['''rom_ctrl_smoke''']
     }
     {
       name: sec_cm_intersig_mubi
-      desc: "Verify the countermeasure(s) INTERSIG.MUBI."
+      desc: '''Verify the countermeasure(s) INTERSIG.MUBI.'''
       milestone: V2S
-      tests: []
+      tests: ['''rom_ctrl_smoke''']
     }
     {
       name: sec_cm_bus_integrity
-      desc: "Verify the countermeasure(s) BUS.INTEGRITY."
+      desc: '''Verify the countermeasure(s) BUS.INTEGRITY.'''
       milestone: V2S
-      tests: []
+      tests: ['''rom_ctrl_tl_intg_err''']
     }
     {
       name: sec_cm_bus_local_esc
-      desc: "Verify the countermeasure(s) BUS.LOCAL_ESC."
+      desc: '''Verify the countermeasure(s) BUS.LOCAL_ESC.
+             Check that in invalid state, rvalid is not asserted.'''
       milestone: V2S
-      tests: []
+      tests: ['''rom_ctrl_corrupt_sig_fatal_chk''', '''rom_ctrl_kmac_err_chk''']
     }
     {
       name: sec_cm_mux_mubi
-      desc: "Verify the countermeasure(s) MUX.MUBI."
+      desc: '''Verify the countermeasure(s) MUX.MUBI.
+             The mux that arbitrates between the checker and the bus is multi-bit encoded.
+             An invalid value generates a fatal alert with the sel_invalid signal in rom_ctrl_mux
+             module. To test this rom_select_bus_o is forced with any value other than MuBi4True and
+             MuBi4False.'''
       milestone: V2S
-      tests: []
+      tests: ['''rom_ctrl_corrupt_sig_fatal_chk''']
     }
     {
       name: sec_cm_mux_consistency
-      desc: "Verify the countermeasure(s) MUX.CONSISTENCY."
+      desc: '''Verify the countermeasure(s) MUX.CONSISTENCY.
+             The mux that arbitrates between the checker and the bus gives access to the checker at
+             the start of time and then switches to the bus, never going back. If a glitch does
+             cause it to switch back, a fatal alert is generated with the sel_reverted or
+             sel_q_reverted_q signals in the rom_ctrl_mux module. To test this rom_select_bus_o is
+             forced to MuBi4False after rom check is completed.'''
       milestone: V2S
-      tests: []
+      tests: ['''rom_ctrl_corrupt_sig_fatal_chk''']
     }
     {
       name: sec_cm_ctrl_redun
-      desc: "Verify the countermeasure(s) CTRL.REDUN."
+      desc: '''Verify the countermeasure(s) CTRL.REDUN.
+             Inject errors into bus_rom_rom_index (which is how an attacker would get a different
+             memory word) and then check that the data that gets read doesn't match the data stored
+             at the glitched address.'''
       milestone: V2S
-      tests: []
+      tests: ['''rom_ctrl_corrupt_sig_fatal_chk''']
+    }
+    {
+      name: sec_cm_ctrl_mem_integrity
+      desc: '''Verify the countermeasure(s) MEM.INTEGRITY.'''
+      milestone: V2S
+      tests: ['''rom_ctrl_passthru_mem_tl_intg_err''']
     }
   ]
 }

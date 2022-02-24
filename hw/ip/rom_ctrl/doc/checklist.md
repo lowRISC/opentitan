@@ -222,9 +222,9 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Not Started |
-Tests         | [FPV_SEC_CM_VERIFIED][]                 | Not Started |
-Tests         | [SIM_SEC_CM_VERIFIED][]                 | Not Started |
+Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           |     Done    |
+Tests         | [FPV_SEC_CM_VERIFIED][]                 |     Done    |
+Tests         | [SIM_SEC_CM_VERIFIED][]                 |     Done    |
 Coverage      | [SIM_COVERAGE_REVIEWED][]               | Not Started |
 Review        | [SEC_CM_DV_REVIEWED][]                  | Not Started |
 

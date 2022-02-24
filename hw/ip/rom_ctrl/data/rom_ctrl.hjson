@@ -195,6 +195,10 @@
         and bus_rom_rom_index signals in the rom_ctrl module.
       '''
     },
+    {
+      name: "CTRL.MEM.INTEGRITY"
+      desc: "End-to-end data/memory integrity scheme."
+    },
   ]
   regwidth: "32"
   registers: {
