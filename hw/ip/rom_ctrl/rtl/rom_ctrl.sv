@@ -520,4 +520,9 @@ module rom_ctrl
           (pwrmgr_data_o.done == prim_mubi_pkg::MuBi4False) |->
           (!rom_tl_o.d_valid || (rom_tl_o.d_valid && rom_tl_o.d_error)))
 
+  // Check that whenever there is an alert triggered and FSM state is Invalid, there is no response
+  // to read requests.
+  `ASSERT(BusLocalEscChk_A,
+          (gen_fsm_scramble_enabled.u_checker_fsm.state_d == rom_ctrl_pkg::Invalid)
+          |-> always(!bus_rom_rvalid))
 endmodule
