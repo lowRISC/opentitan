@@ -208,7 +208,7 @@ The stretch parameters are design time configurations.
 
 *   The filter acts as a synchronizer and is by default 3 stages.
 *   The count by default is 32.
-    *   The counter increments only when the last two stages of the filter are both '1'
+    *   The counter increments only when all stages of the filter are 1.
     *   If any stage at any point becomes '0', the reset counter returns to 0 and downstream logic is driven to reset again.
 *   Both functions are expected to operate on slow, always available KHz clocks.
 
@@ -280,7 +280,7 @@ Reset Cause             | Description
 `POR`                   | Cold boot, the system was reset through POR circuitry.
 `LOW_POWER_EXIT`        | Warm boot, the system was reset through low power exit.
 `NDM RESET`             | Warm boot, the system was reset through `rv_dm` non-debug-module request.
-`SW_REQ`                | Warm boot, the system was reset through {{< regref "RST_REQ" >}}.
+`SW_REQ`                | Warm boot, the system was reset through {{< regref "RESET_REQ" >}}.
 `HW_REQ`                | Warm boot, the system was reset through peripheral requests.  There may be multiple such requests.
 
 
@@ -322,9 +322,11 @@ The enable for such debug capture can be locked such that it never captures.
 
 The alert information register contains the value of the alert crash dump prior to a triggered reset.
 Since this information differs in length between system implementation, the alert information register only displays 32-bits at a time.
-
 The {{< regref "ALERT_INFO_ATTR" >}} register indicates how many 32-bit data segments must be read.
-Software then simply needs to write in {{< regref "ALERT_INFO_CTRL.INDEX" >}} which segment it wishes and then read out the {{< regref "ALERT_INFO" >}} register.
+
+To enable alert crash dump capture, set {{< regref "ALERT_INFO_CTRL.EN" >}} to 1.
+Once the system has reset, check {{< regref "ALERT_INFO_ATTR.CNT_AVAIL" >}} for how many reads need to be done.
+Set {{< regref "ALERT_INFO_CTRL.INDEX" >}} to the desired segment, and then read the output from {{< regref "ALERT_INFO" >}}.
 
 ### CPU Information
 
@@ -337,12 +339,6 @@ The {{< regref "CPU_INFO_ATTR" >}} register indicates how many 32-bit data segme
 Software then simply needs to write in {{< regref "CPU_INFO_CTRL.INDEX" >}} which segment it wishes and then read out the {{< regref "CPU_INFO" >}} register.
 
 # Programmers Guide
-
-## Alert Information Gathering and Reading
-
-To enable alert crash dump capture, set {{< regref "ALERT_INFO_CTRL.EN" >}} to 1.
-Once the system has reset, check {{< regref "ALERT_INFO_ATTR.CNT_AVAIL" >}} for how many reads need to be done.
-Set {{< regref "ALERT_INFO_CTRL.INDEX" >}} to the desired segment, and then read the output from {{< regref "ALERT_INFO" >}}.
 
 ## Register Table
 
