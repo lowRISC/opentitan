@@ -167,11 +167,8 @@ mod tests {
 
     #[test]
     fn test_manifest_from_hjson() {
-        let def: ManifestDef = from_str(
-            &std::fs::read_to_string(testdata!("manifest.hjson"))
-                .unwrap(),
-        )
-        .unwrap();
+        let def: ManifestDef =
+            from_str(&std::fs::read_to_string(testdata!("manifest.hjson")).unwrap()).unwrap();
 
         let _: Manifest = def.unpack("").unwrap();
     }

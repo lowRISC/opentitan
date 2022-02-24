@@ -17,11 +17,11 @@ use crate::io::gpio::GpioPin;
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
+use crate::transport::common::uart::SerialPortUart;
 use crate::transport::{
     Capabilities, Capability, Result, Transport, TransportError, TransportInterfaceType,
     WrapInTransportError,
 };
-use crate::transport::common::uart::SerialPortUart;
 use crate::util::usb::UsbBackend;
 use crate::{bail, collection, ensure};
 
@@ -197,8 +197,11 @@ impl<T: Flavor> Hyperdebug<T> {
     /// Locates the /dev/ttyUSBn node corresponding to a given interface in the sys directory
     /// tree, e.g. /sys/bus/usb/devices/1-4/1-4:1.0 .
     fn find_tty(path: &Path) -> Result<PathBuf> {
-        for entry in fs::read_dir(path).wrap(|e| TransportError::ReadError(path.to_str().unwrap().to_string(), e))? {
-            let entry = entry.wrap(|e| TransportError::ReadError(path.to_str().unwrap().to_string(), e))?;
+        for entry in fs::read_dir(path)
+            .wrap(|e| TransportError::ReadError(path.to_str().unwrap().to_string(), e))?
+        {
+            let entry =
+                entry.wrap(|e| TransportError::ReadError(path.to_str().unwrap().to_string(), e))?;
             if let Ok(filename) = entry.file_name().into_string() {
                 if filename.starts_with("tty") {
                     return Ok(PathBuf::from("/dev").join(entry.file_name()));
@@ -274,7 +277,9 @@ impl Inner {
     /// Send a command to HyperDebug firmware, with a callback to receive any output.
     pub fn execute_command(&self, cmd: &str, mut callback: impl FnMut(&str)) -> Result<()> {
         let mut port = serialport::new(
-            self.console_tty.to_str().ok_or(TransportError::UnicodePathError)?,
+            self.console_tty
+                .to_str()
+                .ok_or(TransportError::UnicodePathError)?,
             115_200,
         )
         .timeout(std::time::Duration::from_millis(10))
@@ -350,8 +355,7 @@ impl Inner {
                     }
                 }
                 Err(error) if error.kind() == ErrorKind::TimedOut => {
-                    if std::str::from_utf8(&buf[0..len])
-                        .wrap(TransportError::CommunicationError)?
+                    if std::str::from_utf8(&buf[0..len]).wrap(TransportError::CommunicationError)?
                         == "> "
                     {
                         // No data arrived for a while, and the last we got was a command
@@ -390,7 +394,10 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
             return Ok(Rc::clone(instance));
         }
         let instance: Rc<dyn Target> = Rc::new(spi::HyperdebugSpiTarget::open(
-            &self.inner, &self.spi_interface, idx)?);
+            &self.inner,
+            &self.spi_interface,
+            idx,
+        )?);
         self.inner
             .spis
             .borrow_mut()
@@ -407,7 +414,10 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
             return Ok(Rc::clone(instance));
         }
         let instance: Rc<dyn Bus> = Rc::new(i2c::HyperdebugI2cBus::open(
-            &self.inner, &self.i2c_interface, idx)?);
+            &self.inner,
+            &self.i2c_interface,
+            idx,
+        )?);
         self.inner
             .i2cs
             .borrow_mut()
@@ -422,9 +432,9 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 if let Some(instance) = self.inner.uarts.borrow().get(tty) {
                     return Ok(Rc::clone(instance));
                 }
-                let instance: Rc<dyn Uart> = Rc::new(
-                    SerialPortUart::open(tty.to_str().ok_or(TransportError::UnicodePathError)?)?,
-                );
+                let instance: Rc<dyn Uart> = Rc::new(SerialPortUart::open(
+                    tty.to_str().ok_or(TransportError::UnicodePathError)?,
+                )?);
                 self.inner
                     .uarts
                     .borrow_mut()

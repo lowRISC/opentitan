@@ -14,11 +14,11 @@ use crate::ensure;
 use crate::io::gpio::GpioPin;
 use crate::io::spi::Target;
 use crate::io::uart::{Uart, UartError};
+use crate::transport::common::uart::SerialPortUart;
 use crate::transport::{
     Capabilities, Capability, Result, Transport, TransportError, TransportInterfaceType,
     WrapInTransportError,
 };
-use crate::transport::common::uart::SerialPortUart;
 use crate::util::parse_int::ParseInt;
 
 pub mod gpio;
@@ -108,9 +108,7 @@ impl Transport for CW310 {
         })?;
         let uart = match inner.uart.entry(instance) {
             Entry::Vacant(v) => {
-                let u = v.insert(Rc::new(self.open_uart(
-                    instance,
-                )?));
+                let u = v.insert(Rc::new(self.open_uart(instance)?));
                 Rc::clone(u)
             }
             Entry::Occupied(o) => Rc::clone(o.get()),

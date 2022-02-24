@@ -36,7 +36,8 @@ impl UltradebugSpi {
         log::debug!("Setting SPI_ZB");
         mpsse
             .borrow_mut()
-            .gpio_set(UltradebugSpi::PIN_SPI_ZB, false).wrap(TransportError::FtdiError)?;
+            .gpio_set(UltradebugSpi::PIN_SPI_ZB, false)
+            .wrap(TransportError::FtdiError)?;
 
         Ok(UltradebugSpi {
             device: mpsse,
@@ -71,7 +72,9 @@ impl Target for UltradebugSpi {
     }
     fn set_max_speed(&self, frequency: u32) -> Result<()> {
         let mut device = self.device.borrow_mut();
-        device.set_clock_frequency(frequency).wrap(TransportError::FtdiError)?;
+        device
+            .set_clock_frequency(frequency)
+            .wrap(TransportError::FtdiError)?;
         Ok(())
     }
 
@@ -140,7 +143,9 @@ impl Target for UltradebugSpi {
             device.gpio_direction,
             device.gpio_value | chip_select,
         ));
-        device.execute(&mut command).wrap(TransportError::FtdiError)?;
+        device
+            .execute(&mut command)
+            .wrap(TransportError::FtdiError)?;
         Ok(())
     }
 }

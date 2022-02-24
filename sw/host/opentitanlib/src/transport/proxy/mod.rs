@@ -50,13 +50,12 @@ impl Proxy {
             .map_err(|e| TransportError::ProxyLookupError(host.to_string(), e.to_string()))?
             .next()
             .unwrap();
-        let conn = TcpStream::connect(addr).map_err(|e| {
-            TransportError::ProxyConnectError(addr.to_string(), e.to_string())
-        })?;
+        let conn = TcpStream::connect(addr)
+            .map_err(|e| TransportError::ProxyConnectError(addr.to_string(), e.to_string()))?;
         Ok(Self {
             inner: Rc::new(Inner {
                 reader: RefCell::new(BufReader::new(conn.try_clone()?)),
-                writer: RefCell::new(BufWriter::new(conn))
+                writer: RefCell::new(BufWriter::new(conn)),
             }),
         })
     }

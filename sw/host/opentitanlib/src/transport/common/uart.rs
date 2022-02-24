@@ -26,7 +26,9 @@ impl SerialPortUart {
     pub fn open(port_name: &str) -> Result<Self> {
         Ok(SerialPortUart {
             port: RefCell::new(
-                serialport::new(port_name, 115200).open().wrap(UartError::OpenError)?,
+                serialport::new(port_name, 115200)
+                    .open()
+                    .wrap(UartError::OpenError)?,
             ),
         })
     }
@@ -50,7 +52,11 @@ impl Uart for SerialPortUart {
     /// Reads UART receive data into `buf`, returning the number of bytes read.
     /// This function _may_ block.
     fn read(&self, buf: &mut [u8]) -> Result<usize> {
-        Ok(self.port.borrow_mut().read(buf).wrap(UartError::ReadError)?)
+        Ok(self
+            .port
+            .borrow_mut()
+            .read(buf)
+            .wrap(UartError::ReadError)?)
     }
 
     /// Reads UART receive data into `buf`, returning the number of bytes read.
@@ -66,7 +72,11 @@ impl Uart for SerialPortUart {
     /// Writes data from `buf` to the UART.
     fn write(&self, mut buf: &[u8]) -> Result<()> {
         while buf.len() > 0 {
-            let written = self.port.borrow_mut().write(buf).wrap(UartError::WriteError)?;
+            let written = self
+                .port
+                .borrow_mut()
+                .write(buf)
+                .wrap(UartError::WriteError)?;
             buf = &buf[written..];
         }
         Ok(())

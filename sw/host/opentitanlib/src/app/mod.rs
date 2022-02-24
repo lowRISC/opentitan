@@ -138,7 +138,9 @@ impl TransportWrapper {
         if let Some(strapping_conf_map) = self.strapping_conf_map.get(strapping_name) {
             self.apply_pin_configurations(&strapping_conf_map)
         } else {
-            Err(TransportError::InvalidStrappingName(strapping_name.to_string()))
+            Err(TransportError::InvalidStrappingName(
+                strapping_name.to_string(),
+            ))
         }
     }
 
@@ -154,7 +156,9 @@ impl TransportWrapper {
             }
             Ok(())
         } else {
-            Err(TransportError::InvalidStrappingName(strapping_name.to_string()))
+            Err(TransportError::InvalidStrappingName(
+                strapping_name.to_string(),
+            ))
         }
     }
 
