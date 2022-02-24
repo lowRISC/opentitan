@@ -71,15 +71,16 @@ module aes
   aes_hw2reg_t               hw2reg;
 
   logic      [NumAlerts-1:0] alert;
-  lc_ctrl_pkg::lc_tx_t [1:0] lc_escalate_en;
+  lc_ctrl_pkg::lc_tx_t       lc_escalate_en;
 
+  logic                      edn_req_int;
+  logic                      edn_req_hold_d, edn_req_hold_q;
   logic                      edn_req;
   logic                      edn_ack;
   logic   [EntropyWidth-1:0] edn_data;
   logic                      unused_edn_fips;
   logic                      entropy_clearing_req, entropy_masking_req;
   logic                      entropy_clearing_ack, entropy_masking_ack;
-  logic                      edn_req_chk;
 
   ////////////
   // Inputs //
@@ -106,7 +107,7 @@ module aes
   // SEC_CM: LC_ESCALATE_EN.INTERSIG.MUBI
   // Synchronize life cycle input
   prim_lc_sync #(
-    .NumCopies (2)
+    .NumCopies (1)
   ) u_prim_lc_sync (
     .clk_i,
     .rst_ni,
@@ -114,9 +115,33 @@ module aes
     .lc_en_o ( {lc_escalate_en} )
   );
 
+  ///////////////////
+  // EDN Interface //
+  ///////////////////
+
+  // Internally, we have up to two PRNGs that share the EDN interface for reseeding. Here, we just
+  // arbitrate the requests. Upsizing of the entropy to the correct width is performed inside the
+  // PRNGs.
+  // Reseed operations for the clearing PRNG are initiated by software. Reseed operations for the
+  // masking PRNG can also be automatically initiated.
+  assign edn_req_int          = entropy_clearing_req | entropy_masking_req;
+  // Only forward ACK to PRNG currently requesting entropy. Give higher priority to clearing PRNG.
+  assign entropy_clearing_ack =  entropy_clearing_req & edn_ack;
+  assign entropy_masking_ack  = ~entropy_clearing_req & entropy_masking_req & edn_ack;
+
   // Upon escalation or detection of a fatal alert, an EDN request signal can be dropped before
-  // getting acknowledged. This is okay as the module will need to be reset anyway.
-  assign edn_req_chk = (lc_escalate_en[0] == lc_ctrl_pkg::Off) & ~alert[1];
+  // getting acknowledged. This is okay with respect to AES as the module will need to be reset
+  // anyway. However, to not leave EDN in a strange state, we hold the request until it's actually
+  // acknowledged.
+  assign edn_req        = edn_req_int | edn_req_hold_q;
+  assign edn_req_hold_d = (edn_req_hold_q | edn_req) & ~edn_ack;
+  always_ff @(posedge clk_i or negedge rst_ni) begin : edn_req_reg
+    if (!rst_ni) begin
+      edn_req_hold_q <= '0;
+    end else begin
+      edn_req_hold_q <= edn_req_hold_d;
+    end
+  end
 
   // Synchronize EDN interface
   prim_sync_reqack_data #(
@@ -128,7 +153,7 @@ module aes
     .rst_src_ni ( rst_ni        ),
     .clk_dst_i  ( clk_edn_i     ),
     .rst_dst_ni ( rst_edn_ni    ),
-    .req_chk_i  ( edn_req_chk   ),
+    .req_chk_i  ( 1'b1          ),
     .src_req_i  ( edn_req       ),
     .src_ack_o  ( edn_ack       ),
     .dst_req_o  ( edn_o.edn_req ),
@@ -142,18 +167,6 @@ module aes
   //////////
   // Core //
   //////////
-
-  // Entropy distribution
-  // Internally, we have up to two PRNGs that share the EDN interface for reseeding. Here, we just
-  // arbitrate the requests. Upsizing of the entropy to the correct width is performed inside the
-  // PRNGs.
-  // Reseed operations for the clearing PRNG are initiated by software. Reseed operations for the
-  // masking PRNG are automatically initiated. Reseeding operations of the two PRNGs are not
-  // expected to take place simultaneously.
-  assign edn_req              = entropy_clearing_req | entropy_masking_req;
-  // Only forward ACK to PRNG currently requesting entropy. Give higher priority to clearing PRNG.
-  assign entropy_clearing_ack =  entropy_clearing_req & edn_ack;
-  assign entropy_masking_ack  = ~entropy_clearing_req & entropy_masking_req & edn_ack;
 
   // AES core
   aes_core #(
@@ -182,7 +195,7 @@ module aes
 
     .keymgr_key_i           ( keymgr_key_i         ),
 
-    .lc_escalate_en_i       ( lc_escalate_en[1]    ),
+    .lc_escalate_en_i       ( lc_escalate_en       ),
 
     .intg_err_alert_i       ( intg_err_alert       ),
     .alert_recov_o          ( alert[0]             ),
