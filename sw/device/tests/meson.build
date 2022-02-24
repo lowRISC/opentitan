@@ -724,6 +724,24 @@ sw_tests += {
   }
 }
 
+otbn_mem_scramble_test_lib = declare_dependency(
+  link_with: static_library(
+    'otbn_mem_scramble_test_lib',
+    sources: ['otbn_mem_scramble_test.c'],
+    dependencies: [
+      sw_lib_runtime_otbn,
+      sw_lib_runtime_log,
+      top_earlgrey,
+      sw_otbn['randomness']['rv32embed_dependency'],
+    ],
+  ),
+)
+sw_tests += {
+  'otbn_mem_scramble_test': {
+    'library': otbn_mem_scramble_test_lib
+  }
+}
+
 otbn_irq_test_lib = declare_dependency(
   link_with: static_library(
     'otbn_irq_test_lib',

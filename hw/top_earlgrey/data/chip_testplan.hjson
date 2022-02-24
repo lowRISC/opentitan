@@ -2000,7 +2000,7 @@
               DMEM cannot be read anymore.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_otbn_mem_scramble"]
     }
 
     /////////////////////////////////////////////////////
