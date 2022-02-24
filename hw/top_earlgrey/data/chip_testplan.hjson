@@ -1624,7 +1624,7 @@
             the HMAC done and FIFO empty interrupts as a part of this test.
             '''
       milestone: V2
-      tests: ["chip_sw_hmac_enc_irq", "chip_sw_hmac_enc"]
+      tests: ["chip_sw_hmac_enc_irq", "chip_sw_hmac_enc_idle"]
     }
     {
       name: chip_sw_hmac_idle
@@ -1640,7 +1640,7 @@
               after the HMAC operation is complete.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_hmac_enc_idle"]
     }
 
     // KMAC pre-verified IP) integration tests:
