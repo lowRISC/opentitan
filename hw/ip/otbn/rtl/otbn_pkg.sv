@@ -101,7 +101,6 @@ package otbn_pkg;
     InsnOpcodeBaseLoad       = 7'h03,
     InsnOpcodeBaseMemMisc    = 7'h0f,
     InsnOpcodeBaseOpImm      = 7'h13,
-    InsnOpcodeBaseAuipc      = 7'h17,
     InsnOpcodeBaseStore      = 7'h23,
     InsnOpcodeBaseOp         = 7'h33,
     InsnOpcodeBaseLui        = 7'h37,

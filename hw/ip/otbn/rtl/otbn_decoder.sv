@@ -706,13 +706,6 @@ module otbn_decoder
         alu_operator_base     = AluOpBaseAdd;
       end
 
-      InsnOpcodeBaseAuipc: begin  // Add Upper Immediate to PC
-        alu_op_a_mux_sel_base = OpASelCurrPc;
-        alu_op_b_mux_sel_base = OpBSelImmediate;
-        imm_b_mux_sel_base    = ImmBaseBU;
-        alu_operator_base     = AluOpBaseAdd;
-      end
-
       InsnOpcodeBaseOpImm: begin  // Register-Immediate ALU Operations
         alu_op_a_mux_sel_base = OpASelRegister;
         alu_op_b_mux_sel_base = OpBSelImmediate;
