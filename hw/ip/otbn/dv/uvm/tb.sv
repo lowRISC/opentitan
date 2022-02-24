@@ -43,7 +43,7 @@ module tb;
   );
 
   otbn_model_if #(
-    .ImemSizeByte (otbn_reg_pkg::OTBN_IMEM_SIZE)
+    .ImemSizeByte (ImemSizeByte)
   ) model_if (
     .clk_i         (clk),
     .rst_ni        (rst_n),
@@ -294,7 +294,6 @@ module tb;
 
   initial begin
     mem_bkdr_util imem_util, dmem_util;
-    int unsigned real_dmem_size, dmem_depth;
 
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
@@ -339,19 +338,16 @@ module tb;
     imem_util = new(.name ("imem_util"),
                     .path ({"tb.dut.u_imem.u_prim_ram_1p_adv.",
                             "u_mem.gen_generic.u_impl_generic.mem"}),
-                    .depth (otbn_reg_pkg::OTBN_IMEM_SIZE / 4),
-                    .n_bits (otbn_reg_pkg::OTBN_IMEM_SIZE / 4 * 39),
+                    .depth (ImemSizeByte / 4),
+                    .n_bits (ImemSizeByte / 4 * 39),
                     .err_detection_scheme (mem_bkdr_util_pkg::EccInv_39_32));
 
     // DMEM is twice as big as the bus-accessible part
-    real_dmem_size = 2 * otbn_reg_pkg::OTBN_DMEM_SIZE;
-    dmem_depth = real_dmem_size / 32;
-
     dmem_util = new(.name ("dmem_util"),
                     .path ({"tb.dut.u_dmem.u_prim_ram_1p_adv.",
                             "u_mem.gen_generic.u_impl_generic.mem"}),
-                    .depth (dmem_depth),
-                    .n_bits (dmem_depth * 312),
+                    .depth (DmemSizeByte / 32),
+                    .n_bits (DmemSizeByte / 32 * 312),
                     .err_detection_scheme (mem_bkdr_util_pkg::EccInv_39_32));
 
     uvm_config_db#(mem_bkdr_util)::set(null, "*.env", imem_util.get_name(), imem_util);

@@ -34,7 +34,7 @@ class otbn_dmem_err_vseq extends otbn_base_vseq;
     // Inject error at negedge of clock to avoid racing with second cycle of store instruction.
     @(cfg.clk_rst_vif.cbn);
 
-    for (int i = 0; i < 2 * otbn_reg_pkg::OTBN_DMEM_SIZE / 32; i++) begin
+    for (int i = 0; i < DmemSizeByte / 32; i++) begin
       bit [ExtWLEN-1:0] old_data = cfg.read_dmem_word(i, key, nonce);
       bit [ExtWLEN-1:0] good_data = cfg.fix_integrity_wlen(old_data);
       bit [ExtWLEN-1:0] bad_data = good_data ^ {BaseWordsPerWLEN{mask}};

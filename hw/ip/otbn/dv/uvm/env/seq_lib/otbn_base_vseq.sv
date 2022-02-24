@@ -800,7 +800,7 @@ class otbn_base_vseq extends cip_base_vseq #(
     // We can't just use the mem_bkdr_util randomize_mem function because that doesn't obey the
     // scrambling key. This wouldn't be a problem (the memory is supposed to be random!), except
     // that we also need to pick ECC values that match.
-    for (int i = 0; i <= otbn_reg_pkg::OTBN_IMEM_SIZE / 4; i++) begin
+    for (int i = 0; i <= ImemSizeByte / 4; i++) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(rnd_data)
       integ_data = prim_secded_pkg::prim_secded_inv_39_32_enc(rnd_data);
       cfg.write_imem_word(i, integ_data, key, nonce);
@@ -824,7 +824,7 @@ class otbn_base_vseq extends cip_base_vseq #(
     // We can't just use the mem_bkdr_util randomize_mem function because that doesn't obey the
     // scrambling key. This wouldn't be a problem (the memory is supposed to be random!), except
     // that we also need to pick ECC values that match.
-    for (int i = 0; i <= otbn_reg_pkg::OTBN_DMEM_SIZE / 4; i++) begin
+    for (int i = 0; i <= DmemSizeByte / 4; i++) begin
       for (int j = 0; j < 8; j++) begin
         `DV_CHECK_STD_RANDOMIZE_FATAL(rnd_data)
         integ_data = prim_secded_pkg::prim_secded_inv_39_32_enc(rnd_data);

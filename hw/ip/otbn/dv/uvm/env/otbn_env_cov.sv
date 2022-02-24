@@ -11,9 +11,6 @@
 class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   `uvm_component_utils(otbn_env_cov)
 
-  localparam int DmemSizeByte = 2 * int'(otbn_reg_pkg::OTBN_DMEM_SIZE);
-  localparam int ImemSizeByte = int'(otbn_reg_pkg::OTBN_IMEM_SIZE);
-
   // A field for each known mnemonic, cast to a mnem_str_t. We have to do this because VCS (at
   // least) complains if you put an uncast string literal in a position where it expects an integral
   // value.
@@ -571,7 +568,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     // See attempted writes to the bottom and top address in the scratchpad memory
     addr_cp: coverpoint addr {
       bins low  = {OTBN_DMEM_OFFSET + OTBN_DMEM_SIZE};
-      bins high = {OTBN_DMEM_OFFSET + 2 * OTBN_DMEM_SIZE - 1};
+      bins high = {OTBN_DMEM_OFFSET + DmemSizeByte - 1};
     }
   endgroup
 
