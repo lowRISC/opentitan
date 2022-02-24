@@ -113,11 +113,14 @@ Note that the key and nonce output signals on the OTP controller side are guaran
 Hence, if the SRAM controller clock `clk_i` is faster or in the same order of magnitude as `clk_otp_i`, the data can be directly sampled upon assertion of `src_ack_o`.
 If the SRAM controller runs on a significantly slower clock than OTP, an additional register (as indicated with dashed grey lines in the figure) has to be added.
 
-#### Lifecycle Escalation
+#### Global and Local Escalation
 
 If `lc_escalate_en_i` is set to any different value than `lc_ctrl_pkg::Off`, the current scrambling keys are discarded and reset to `RndCnstSramKey` and `RndCnstSramNonce` in the subsequent cycle.
 Any subsequent memory request to `prim_ram_1p_scr` will then be blocked as well.
-This mechanism is part of the [life cycle]({{< relref "hw/ip/lc_ctrl/doc" >}}) state scrapping and secret wiping countermeasure triggered by the alert handler.
+This mechanism is part of the [life cycle]({{< relref "hw/ip/lc_ctrl/doc" >}}) state scrapping and secret wiping countermeasure triggered by the alert handler (global escalation).
+
+Note that if any local bus integrity or counter errors are detected, the SRAM controller will locally escalate without assertion of `lc_escalate_en_i`.
+The behavior of local escalation is identical to global escalation via `lc_escalate_en_i`.
 
 ## Scrambling Primitive
 

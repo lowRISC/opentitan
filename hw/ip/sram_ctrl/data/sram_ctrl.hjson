@@ -151,10 +151,10 @@
       desc: "Prevent code execution from SRAM in non-test lifecycle states."
     }
     { name: "KEY.GLOBAL_ESC",
-      desc: "Scrambling key and nonce are reset to a fixed value upon escalation."
+      desc: "Scrambling key and nonce are reset to a fixed value upon escalation, and bus transactions going to the memory will be blocked."
     }
     { name: "KEY.LOCAL_ESC",
-      desc: "Scrambling key and nonce are reset to a fixed value upon local escalation due to bus integrity or counter errors."
+      desc: "Scrambling key and nonce are reset to a fixed value upon local escalation due to bus integrity or counter errors, and bus transactions going to the memory will be blocked."
     }
     { name: "CTR.REDUN",
       desc: "The initialization counter is duplicated."
