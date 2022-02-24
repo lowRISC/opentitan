@@ -956,6 +956,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                  cfg.m_flash_addr_pull_agent_cfg.vif.req ||
                  cfg.m_sram_pull_agent_cfg[0].vif.req ||
                  cfg.m_sram_pull_agent_cfg[1].vif.req ||
+                 cfg.m_sram_pull_agent_cfg[2].vif.req ||
                  cfg.m_lc_prog_pull_agent_cfg.vif.req ||
                  // When lc_escalation is on, the DAI interface goes to ErrorSt, so ignore
                  // otp_idle checking.

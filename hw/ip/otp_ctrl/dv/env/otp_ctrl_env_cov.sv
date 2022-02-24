@@ -132,8 +132,7 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
   // This covergroup is sampled only if sram request passed scb check.
   covergroup sram_req_cg with function sample (int index, bit locked);
     sram_index: coverpoint index {
-      bins sram_key0  = {0};
-      bins sram_key1  = {1};
+      bins sram_key[NumSramKeyReqSlots]  = {[0:(NumSramKeyReqSlots-1)]};
       illegal_bins il = default;
     }
     secret1_lock: coverpoint locked;
