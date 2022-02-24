@@ -10,6 +10,7 @@ module sys_osc (
   input vcore_pok_h_i,    // VCORE POK @3.3V
   input sys_en_i,         // System Source Clock Enable
   input sys_jen_i,        // System Source Clock Jitter Enable
+  input sys_osc_cal_i,    // System Oscillator Calibrated
 `ifdef AST_BYPASS_CLK
   input clk_sys_ext_i,    // FPGA/VERILATOR Clock input
 `endif
@@ -23,10 +24,12 @@ module sys_osc (
 timeunit  1ns / 1ps;
 import ast_bhv_pkg::* ;
 
-localparam real SysClkPeriod = 10000; // 10000ps (100Mhz)
-shortreal jitter;
 reg init_start = 1'b0;
-real CLK_PERIOD;
+real CLK_PERIOD, CalSysClkPeriod, UncSysClkPeriod, SysClkPeriod;
+
+assign CalSysClkPeriod = $itor( 10000 );                         // 10000ps (100MHz)
+assign UncSysClkPeriod = $itor( $urandom_range(40000, 16667) );  // 40000-16667ps (25-60MHz)
+assign SysClkPeriod = (sys_osc_cal_i && init_start) ? CalSysClkPeriod : UncSysClkPeriod;
 
 initial begin
   #1; init_start  = 1'b1;
@@ -40,20 +43,21 @@ assign en_osc_re = en_osc_re_buf && init_start;
 
 // Clock Oscillator
 ////////////////////////////////////////
-logic en_osc;
-reg clk_osc = 1'b1;
+real jitter;
+
+assign CLK_PERIOD = (SysClkPeriod + jitter)/1000;
 
 // Free running oscillator
+reg clk_osc = 1'b0;
+
 always begin
   // 0-2000ps is upto +20% Jitter
-  jitter = sys_jen_i ? $urandom_range(2000, 0) : 0;
-  CLK_PERIOD = $itor((SysClkPeriod + jitter)/1000);
-  //
+  jitter = sys_jen_i ? $itor($urandom_range(2000, 0)) : 0.0;
   #(CLK_PERIOD/2) clk_osc = ~clk_osc;
 end
 
 // HDL Clock Gate
-logic clk;
+logic clk, en_osc;
 reg en_clk;
 
 always_latch begin
@@ -118,7 +122,7 @@ prim_clock_buf #(
 // Unused Signals
 /////////////////////////
 logic unused_sigs;
-assign unused_sigs = ^{ sys_jen_i };      // Used in ASIC implementation
+assign unused_sigs = ^{ sys_osc_cal_i, sys_jen_i };
 `endif
 
 endmodule : sys_osc
