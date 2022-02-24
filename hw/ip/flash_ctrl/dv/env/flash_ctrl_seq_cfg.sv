@@ -53,6 +53,8 @@ class flash_ctrl_seq_cfg extends uvm_object;
   uint mp_info_page_read_en_pc[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes];
   uint mp_info_page_program_en_pc[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes];
   uint mp_info_page_erase_en_pc[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes];
+  uint mp_info_page_scramble_en_pc[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes];
+  uint mp_info_page_ecc_en_pc[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes];
   uint mp_info_page_he_en_pc[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes];
 
   // Control the number of flash ops.
@@ -162,6 +164,8 @@ class flash_ctrl_seq_cfg extends uvm_object;
       mp_info_page_read_en_pc[i][j] = 50;
       mp_info_page_program_en_pc[i][j] = 50;
       mp_info_page_erase_en_pc[i][j] = 50;
+      mp_info_page_scramble_en_pc[i][j] = 0;
+      mp_info_page_ecc_en_pc[i][j] = 0;
       mp_info_page_he_en_pc[i][j] = 0;
     end
 
