@@ -130,6 +130,7 @@ volatile uintptr_t exception_pc = 0;
  *
  * For all other exceptions hang (could also shutdown) so as not to hide them.
  */
+void mask_rom_exception_handler(void) __attribute__((interrupt));
 void mask_rom_exception_handler(void) {
   uint32_t mcause = get_mcause();
   if (mcause == kExceptionInstructionAccessFault ||
