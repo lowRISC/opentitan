@@ -171,8 +171,7 @@ module keccak_2share
       assign c = rand_i[x*$bits(sheet_t)+:$bits(sheet_t)];
 
       prim_dom_and_2share #(
-        .DW ($bits(sheet_t)), // sheet
-        .EnNegedge(0)         // takes two cycle to complete DOM
+        .DW ($bits(sheet_t)) // sheet
       ) u_dom (
         .clk_i,
         .rst_ni,
