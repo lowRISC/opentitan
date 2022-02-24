@@ -425,8 +425,12 @@ class ip_env_cfg extends cip_base_env_cfg #(.RAL_T(ip_reg_block));
 ```
 
 ### Security Verification for REGWEN CSRs
-If the REGWEN CSR is HW read-only, it can be fully verified by the common [csr_tests](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/tests/csr_tests.hjson).
-If it’s a HW updated CSR, users need to write a test to verify it separately since cip_lib and dv_base_reg can’t predict its value.
+If the REGWEN CSR meets the following criteria, it can be fully verified by the common [csr_tests](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/tests/csr_tests.hjson).
+ - The REGWEN CSR and its related lockable CSRs are HW read-only registers.
+ - The related lockable CSRs are not WO type, otherwise the read value is always 0 and CSR tests can't really verify if the write value is taken or not.
+ - No CSR exclusions have been added to the REGWEN CSR and its related lockable CSRs.
+If not, users need to write a test to verify it separately since cip_lib and dv_base_reg can't predict its value.
+For example, the [sram_ctrl_regwen_vseq](https://github.com/lowRISC/opentitan/blob/master/hw/ip/sram_ctrl/dv/env/seq_lib/sram_ctrl_regwen_vseq.sv) has been added to verify `ctrl_regwen` and the the lockable register `ctrl` since `ctrl` is a `WO` register and excluded in CSR tests.
 
 Functional coverage for REGWEN CSRs and their related lockable CSRs is generated automatically in dv_base_reg.
 The details of functional coverage is described in [csr_testplan](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/testplans/csr_testplan.hjson).
@@ -435,7 +439,7 @@ The details of functional coverage is described in [csr_testplan](https://github
 A functional covergroup of MUBI type CSR is automatically created in the RAL model for each MUBI CSR, which ensures `True`, `False` and at least N of other values (N = width of the MUBI type) have been collected.
 This covergroup won't be sampled in CSR tests, since CSR tests only test the correctness of the value of register read / write but it won't check the block behavior when a different value is supplied to the MUBI CSR.
 Users should randomize the values of all the MUBI CSRs in non-CSR tests and check the design behaves correctly.
-The helper functions `cip_lib_pkg::get_rand_mubi4|8|12|16_val(t_weight, f_weight, other_weight)` can be used to get the random values.
+The helper functions `cip_base_pkg::get_rand_mubi4|8|12|16_val(t_weight, f_weight, other_weight)` can be used to get the random values.
 
 ### Security Verification for MUBI type ports
 In OpenTitan [Design Verification Methodology]({{< relref "doc/ug/dv_methodology" >}}), it's mandatory to have 100% toggle coverage on all the ports.
@@ -443,7 +447,7 @@ However, the MUBI defined values (`True` and `False`) are complement numbers.
 If users only test with `True` and `False` without using other values, toggle coverage can be 100%.
 Hence, user should add a functional covergroup for each MUBI type input port, via binding the interface `cip_mubi_cov_if` which contains a covergroup for MUBI.
 The type `lc_ctrl_pkg::lc_tx_t` should be treated as a Mubi4 type, which also needs to be bound with the interface `cip_mubi_cov_if`.
-The helper functions `cip_lib_pkg::get_rand_mubi4|8|12|16_val(t_weight, f_weight, other_weight)` and `cip_lib_pkg::get_rand_lc_tx_val` can be used to get the random values.
+The helper functions `cip_base_pkg::get_rand_mubi4|8|12|16_val(t_weight, f_weight, other_weight)` and `cip_base_pkg::get_rand_lc_tx_val` can be used to get the random values.
 
 The following is an example from `sram_ctrl`, in which it binds the coverage interface to 2 MUBI input ports.
 ```systemverilog
