@@ -29,7 +29,14 @@
   alert_list: [
     { name: "fatal_fault",
       desc: '''
-      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
+        This fatal alert is triggered when a fatal structural fault is detected.
+        Structural faults include errors such as sparse fsm errors and tlul integrity errors.
+      '''
+    }
+    { name: "fatal_cnsty_fault",
+      desc: '''
+        This fatal alert is triggered when a reset consistency fault is detected.
+        It is separated from the category above for clearer error collection and debug.
       '''
     }
   ],
@@ -94,6 +101,16 @@
       desc:    '''
         When 1, enable rstmgr reset consistency checks.
         When 0, there are no consistency checks.
+      '''
+      local:   "false",
+      expose:  "true"
+    },
+
+    { name:    "SecMaxSyncDelay",
+      type:    "int",
+      default: "2",
+      desc:    '''
+        The maximum synchronization delay for parent / child reset checks.
       '''
       local:   "false",
       expose:  "true"

@@ -53,10 +53,17 @@ dif_result_t dif_rstmgr_init(mmio_region_t base_addr, dif_rstmgr_t *rstmgr);
  */
 typedef enum dif_rstmgr_alert {
   /**
-   * This fatal alert is triggered when a fatal TL-UL bus integrity fault is
-   * detected.
+   * This fatal alert is triggered when a fatal structural fault is detected.
+   * Structural faults include errors such as sparse fsm errors and tlul
+   * integrity errors.
    */
   kDifRstmgrAlertFatalFault = 0,
+  /**
+   * This fatal alert is triggered when a reset consistency fault is detected.
+   * It is separated from the category above for clearer error collection and
+   * debug.
+   */
+  kDifRstmgrAlertFatalCnstyFault = 1,
 } dif_rstmgr_alert_t;
 
 /**

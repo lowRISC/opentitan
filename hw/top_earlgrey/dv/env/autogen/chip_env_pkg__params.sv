@@ -27,6 +27,7 @@ parameter string LIST_OF_ALERTS[] = {
   "spi_host1_fatal_fault",
   "pwrmgr_aon_fatal_fault",
   "rstmgr_aon_fatal_fault",
+  "rstmgr_aon_fatal_cnsty_fault",
   "clkmgr_aon_recov_fault",
   "clkmgr_aon_fatal_fault",
   "sysrst_ctrl_aon_fatal_fault",
@@ -66,4 +67,4 @@ parameter string LIST_OF_ALERTS[] = {
   "rv_core_ibex_recov_hw_err"
 };
 
-parameter uint NUM_ALERTS = 59;
+parameter uint NUM_ALERTS = 60;
