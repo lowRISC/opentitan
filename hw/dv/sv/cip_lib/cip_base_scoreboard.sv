@@ -353,7 +353,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     bit exp_d_error;
 
     bit unmapped_err, mem_access_err, bus_intg_err, byte_wr_err, csr_size_err, tl_item_err;
-    bit mem_byte_access_err, mem_wo_err, mem_ro_err;
+    bit mem_byte_access_err, mem_wo_err, mem_ro_err, customized_err;
 
     unmapped_err = !is_tl_access_mapped_addr(item, ral_name);
     if (unmapped_err) begin
@@ -364,10 +364,10 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     end
 
     mem_access_err = !is_tl_mem_access_allowed(item, ral_name, mem_byte_access_err, mem_wo_err,
-                                               mem_ro_err);
+                                               mem_ro_err, customized_err);
     if (mem_access_err) begin
       // Some memory implementations may not return an error response on invalid accesses.
-      exp_d_error |= mem_byte_access_err | mem_wo_err | mem_ro_err;
+      exp_d_error |= mem_byte_access_err | mem_wo_err | mem_ro_err | customized_err;
     end
 
     bus_intg_err = !item.is_a_chan_intg_ok(.throw_error(0));
@@ -449,10 +449,14 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   endfunction
 
   // check if tl mem access will trigger error or not
+  // Output `customized_err` is not assigned in this function, but intended to be used if IPs
+  // return `d_error` on certain behaviors. User can override this function and set
+  // `customized_err`.
   virtual function bit is_tl_mem_access_allowed(input tl_seq_item item, input string ral_name,
                                                 output bit mem_byte_access_err,
                                                 output bit mem_wo_err,
-                                                output bit mem_ro_err);
+                                                output bit mem_ro_err,
+                                                output bit customized_err);
     if (is_mem_addr(item, ral_name)) begin
       dv_base_mem mem;
       bit invalid_access;
