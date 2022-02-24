@@ -74,6 +74,10 @@
       name: sysrst_ctrl_ec_pwr_on_rst
       uvm_test_seq: sysrst_ctrl_ec_pwr_on_rst_vseq
     }
+    {
+      name: sysrst_ctrl_auto_blk_key_output
+      uvm_test_seq: sysrst_ctrl_auto_blk_key_output_vseq
+    }
 
   ]
 
