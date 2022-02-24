@@ -33,11 +33,7 @@ class Dmem:
     '''
 
     def __init__(self) -> None:
-        _, dmem_bus_size = get_memory_layout()['DMEM']
-
-        # DMEM is actually twice as big as the layout from reggen would have us
-        # believe!
-        dmem_size = 2 * dmem_bus_size
+        dmem_size = get_memory_layout().dmem_size_bytes
 
         # Check the arguments look sensible, to avoid allocating massive chunks
         # of memory. We know we won't have more than 1 MiB of DMEM.
