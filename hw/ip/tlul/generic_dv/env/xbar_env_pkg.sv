@@ -12,6 +12,7 @@ package xbar_env_pkg;
   import dv_utils_pkg::*;
   import tl_agent_pkg::*;
   import dv_lib_pkg::*;
+  import cip_base_pkg::*;
 
   typedef struct {
     string                      device_name;
