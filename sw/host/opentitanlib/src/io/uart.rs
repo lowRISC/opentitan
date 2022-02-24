@@ -71,4 +71,3 @@ pub enum UartError {
     #[error("{0}")]
     GenericError(String),
 }
-

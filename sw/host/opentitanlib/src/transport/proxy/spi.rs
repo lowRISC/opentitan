@@ -4,14 +4,14 @@
 
 use std::rc::Rc;
 
-use crate::{bail, ensure};
+use super::ProxyError;
 use crate::io::spi::{SpiError, Target, Transfer, TransferMode};
 use crate::proxy::protocol::{
     Request, Response, SpiRequest, SpiResponse, SpiTransferRequest, SpiTransferResponse,
 };
 use crate::transport::proxy::{Inner, Proxy, Result};
 use crate::util::voltage::Voltage;
-use super::ProxyError;
+use crate::{bail, ensure};
 
 pub struct ProxySpi {
     inner: Rc<Inner>,
@@ -27,7 +27,7 @@ impl ProxySpi {
         Ok(result)
     }
 
-    // Convenience method for issuing SPI commands via proxy protocol. 
+    // Convenience method for issuing SPI commands via proxy protocol.
     fn execute_command(&self, command: SpiRequest) -> Result<SpiResponse> {
         match self.inner.execute_command(Request::Spi {
             id: self.instance.clone(),

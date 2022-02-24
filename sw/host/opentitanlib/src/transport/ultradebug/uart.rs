@@ -24,9 +24,15 @@ pub struct UltradebugUart {
 
 impl UltradebugUart {
     pub fn open(ultradebug: &Ultradebug) -> Result<Self> {
-        let device = ultradebug.from_interface(ftdi::Interface::C).wrap(TransportError::FtdiError)?;
-        device.set_bitmode(0, ftdi::BitMode::Reset).wrap(TransportError::FtdiError)?;
-        device.set_baudrate(115200).wrap(TransportError::FtdiError)?;
+        let device = ultradebug
+            .from_interface(ftdi::Interface::C)
+            .wrap(TransportError::FtdiError)?;
+        device
+            .set_bitmode(0, ftdi::BitMode::Reset)
+            .wrap(TransportError::FtdiError)?;
+        device
+            .set_baudrate(115200)
+            .wrap(TransportError::FtdiError)?;
         // Read and write timeouts:
         device.set_timeouts(5000, 5000);
         Ok(UltradebugUart {
@@ -45,7 +51,10 @@ impl Uart for UltradebugUart {
 
     fn set_baudrate(&self, baudrate: u32) -> Result<()> {
         let mut inner = self.inner.borrow_mut();
-        inner.device.set_baudrate(baudrate).wrap(TransportError::FtdiError)?;
+        inner
+            .device
+            .set_baudrate(baudrate)
+            .wrap(TransportError::FtdiError)?;
         inner.baudrate = baudrate;
         Ok(())
     }
@@ -68,7 +77,12 @@ impl Uart for UltradebugUart {
     }
 
     fn read(&self, buf: &mut [u8]) -> Result<usize> {
-        let n = self.inner.borrow().device.read_data(buf).wrap(UartError::ReadError)?;
+        let n = self
+            .inner
+            .borrow()
+            .device
+            .read_data(buf)
+            .wrap(UartError::ReadError)?;
         Ok(n as usize)
     }
 

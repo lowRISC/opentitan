@@ -25,7 +25,10 @@ impl UsbBackend {
         usb_serial: Option<&str>,
     ) -> Result<Vec<(rusb::Device<rusb::GlobalContext>, String)>> {
         let mut devices = Vec::new();
-        for device in rusb::devices().wrap(TransportError::UsbGenericError)?.iter() {
+        for device in rusb::devices()
+            .wrap(TransportError::UsbGenericError)?
+            .iter()
+        {
             let descriptor = match device.device_descriptor() {
                 Ok(desc) => desc,
                 _ => {
@@ -102,11 +105,17 @@ impl UsbBackend {
     //
 
     pub fn claim_interface(&mut self, iface: u8) -> Result<()> {
-        Ok(self.handle.claim_interface(iface).wrap(TransportError::UsbGenericError)?)
+        Ok(self
+            .handle
+            .claim_interface(iface)
+            .wrap(TransportError::UsbGenericError)?)
     }
 
     pub fn active_config_descriptor(&self) -> Result<rusb::ConfigDescriptor> {
-        Ok(self.device.active_config_descriptor().wrap(TransportError::UsbGenericError)?)
+        Ok(self
+            .device
+            .active_config_descriptor()
+            .wrap(TransportError::UsbGenericError)?)
     }
 
     pub fn bus_number(&self) -> u8 {
@@ -114,11 +123,17 @@ impl UsbBackend {
     }
 
     pub fn port_numbers(&self) -> Result<Vec<u8>> {
-        Ok(self.device.port_numbers().wrap(TransportError::UsbGenericError)?)
+        Ok(self
+            .device
+            .port_numbers()
+            .wrap(TransportError::UsbGenericError)?)
     }
 
     pub fn read_string_descriptor_ascii(&self, idx: u8) -> Result<String> {
-        Ok(self.handle.read_string_descriptor_ascii(idx).wrap(TransportError::UsbGenericError)?)
+        Ok(self
+            .handle
+            .read_string_descriptor_ascii(idx)
+            .wrap(TransportError::UsbGenericError)?)
     }
 
     //

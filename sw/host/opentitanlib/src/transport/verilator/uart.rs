@@ -21,8 +21,13 @@ pub struct VerilatorUart {
 impl VerilatorUart {
     pub fn open(path: &str) -> Result<Self> {
         Ok(VerilatorUart {
-            file: RefCell::new(OpenOptions::new().read(true).write(true).open(path)
-                               .wrap(|e| TransportError::OpenError(path.to_string(), e))?),
+            file: RefCell::new(
+                OpenOptions::new()
+                    .read(true)
+                    .write(true)
+                    .open(path)
+                    .wrap(|e| TransportError::OpenError(path.to_string(), e))?,
+            ),
         })
     }
 }
@@ -57,10 +62,18 @@ impl Uart for VerilatorUart {
     }
 
     fn read(&self, buf: &mut [u8]) -> Result<usize> {
-        Ok(self.file.borrow_mut().read(buf).wrap(UartError::ReadError)?)
+        Ok(self
+            .file
+            .borrow_mut()
+            .read(buf)
+            .wrap(UartError::ReadError)?)
     }
 
     fn write(&self, buf: &[u8]) -> Result<()> {
-        Ok(self.file.borrow_mut().write_all(buf).wrap(UartError::WriteError)?)
+        Ok(self
+            .file
+            .borrow_mut()
+            .write_all(buf)
+            .wrap(UartError::WriteError)?)
     }
 }

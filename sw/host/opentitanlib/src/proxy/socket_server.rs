@@ -83,13 +83,13 @@ impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg>> JsonSocketServer
                     self.process_signals()?;
                 } else {
                     match self.process_connection(event) {
-                        Ok(shutdown) => if shutdown { self.shutdown_connection(event)?; }
+                        Ok(shutdown) => {
+                            if shutdown {
+                                self.shutdown_connection(event)?;
+                            }
+                        }
                         Err(e) => {
-                            log::warn!(
-                                "Connection {:#X} error: {}",
-                                event.token().0,
-                                e,
-                            );
+                            log::warn!("Connection {:#X} error: {}", event.token().0, e,);
                             self.shutdown_connection(event)?;
                         }
                     }
@@ -197,10 +197,7 @@ impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg>> JsonSocketServer
     }
 
     // Look for any completely received requests in the rx_buf, and handle them one by one.
-    fn process_any_requests(
-        conn: &mut Connection,
-        command_handler: &T,
-    ) -> Result<()> {
+    fn process_any_requests(conn: &mut Connection, command_handler: &T) -> Result<()> {
         while let Some(request) = Self::get_complete_request(conn)? {
             // One complete request received, execute it.
             let resp = command_handler.execute_cmd(&request)?;
