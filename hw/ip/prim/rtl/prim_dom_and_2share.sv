@@ -26,8 +26,7 @@
 `include "prim_assert.sv"
 
 module prim_dom_and_2share #(
-  parameter int DW = 64, // Input width
-  parameter int EnNegedge  = 0 // Enable negedge of clk for register
+  parameter int DW = 64 // Input width
 ) (
   input clk_i,
   input rst_ni,
@@ -95,10 +94,6 @@ module prim_dom_and_2share #(
     .in1_i ( {t0_q,   t1_q}   ),
     .out_o ( {q0_o,   q1_o}   )
   );
-
-  // Negative Edge isn't yet supported. Need inverted clock and use
-  // inside always_ff not `negedge clk_i`.
-  `ASSERT_INIT(NegedgeNotSupported_A, EnNegedge == 0)
 
   // DOM AND should be same as unmasked computation
   // TODO: Put assumption that input need to be stable for at least two cycles
