@@ -89,8 +89,6 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
       end
       "auto_block_debounce_ctl", "auto_block_out_ctl": begin
       end
-      "wkup_status": begin
-      end
       "pin_in_value": begin
         do_read_check = 1'b0;  //This check is done in sequence
       end
@@ -98,7 +96,7 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
         do_read_check = 1'b0;  //This check is done in sequence
       end
       default: begin
-        `uvm_error(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+       `uvm_error(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end
     endcase
 
