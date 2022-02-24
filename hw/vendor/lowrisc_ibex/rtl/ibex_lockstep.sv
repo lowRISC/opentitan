@@ -94,9 +94,10 @@ module ibex_lockstep import ibex_pkg::*; #(
   input  crash_dump_t                  crash_dump_i,
   input  logic                         double_fault_seen_i,
 
-  input  logic                         fetch_enable_i,
+  input  fetch_enable_t                fetch_enable_i,
   output logic                         alert_minor_o,
-  output logic                         alert_major_o,
+  output logic                         alert_major_internal_o,
+  output logic                         alert_major_bus_o,
   input  logic                         icache_inval_i,
   input  logic                         core_busy_i,
   input  logic                         test_en_i,
@@ -117,16 +118,17 @@ module ibex_lockstep import ibex_pkg::*; #(
   // - The reset of the shadow core is synchronously released.
   // The comparison is started in the following clock cycle.
 
-  logic [LockstepOffsetW-1:0] rst_shadow_cnt_d, rst_shadow_cnt_q;
+  logic [LockstepOffsetW-1:0] rst_shadow_cnt_d, rst_shadow_cnt_q, rst_shadow_cnt_incr;
   // Internally generated resets cause IMPERFECTSCH warnings
   /* verilator lint_off IMPERFECTSCH */
   logic                       rst_shadow_set_d, rst_shadow_set_q;
   logic                       rst_shadow_n, enable_cmp_q;
   /* verilator lint_on IMPERFECTSCH */
 
+  assign rst_shadow_cnt_incr = rst_shadow_cnt_q + LockstepOffsetW'(1);
+
   assign rst_shadow_set_d = (rst_shadow_cnt_q == LockstepOffsetW'(LockstepOffset - 1));
-  assign rst_shadow_cnt_d = rst_shadow_set_d ? rst_shadow_cnt_q :
-                                               (rst_shadow_cnt_q + LockstepOffsetW'(1));
+  assign rst_shadow_cnt_d = rst_shadow_set_d ? rst_shadow_cnt_q : rst_shadow_cnt_incr;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -180,7 +182,7 @@ module ibex_lockstep import ibex_pkg::*; #(
     logic [14:0]                 irq_fast;
     logic                        irq_nm;
     logic                        debug_req;
-    logic                        fetch_enable;
+    fetch_enable_t               fetch_enable;
     logic                        ic_scr_key_valid;
   } delayed_inputs_t;
 
@@ -478,8 +480,9 @@ module ibex_lockstep import ibex_pkg::*; #(
 
   logic outputs_mismatch;
 
-  assign outputs_mismatch = enable_cmp_q & (shadow_outputs_q != core_outputs_q[0]);
-  assign alert_major_o    = outputs_mismatch | shadow_alert_major | bus_intg_err;
-  assign alert_minor_o    = shadow_alert_minor;
+  assign outputs_mismatch       = enable_cmp_q & (shadow_outputs_q != core_outputs_q[0]);
+  assign alert_major_internal_o = outputs_mismatch | shadow_alert_major;
+  assign alert_major_bus_o      = bus_intg_err;
+  assign alert_minor_o          = shadow_alert_minor;
 
 endmodule

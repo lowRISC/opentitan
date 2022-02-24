@@ -695,7 +695,7 @@ module ibex_cs_registers #(
           // save previous status for recoverable NMI
           mstack_en      = 1'b1;
 
-          if (!csr_mcause_i[5]) begin
+          if (!mcause_d[5]) begin
             cpuctrl_we = 1'b1;
 
             cpuctrl_d.sync_exc_seen = 1'b1;

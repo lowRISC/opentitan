@@ -94,21 +94,18 @@ In order to run the co-simulation flow, you'll need:
 
   The flow is currently tested with VCS.
 
-- A RISC-V instruction set simulator, such as Spike or OVPsim.
+- The Spike RISC-V instruction set simulator
 
-  Ibex is tested using Spike.
-
-  To use Spike_, it must be built with the ``--enable-commitlog`` and ``--enable-misaligned`` options.
+  Spike must be built with the ``--enable-commitlog`` and ``--enable-misaligned`` options.
   ``--enable-commitlog`` is needed to produce log output to track the instructions that were executed.
   ``--enable-misaligned`` tells Spike to simulate a core that handles misaligned accesses in hardware (rather than jumping to a trap handler).
 
-  Ibex supports version 0.92 of the draft Bitmanip specification.
-  The ``master`` branch of Spike may support a different version.
-  lowRISC maintains a `lowRISC-specific branch of Spike <LRSpike_>`_ that matches the supported Bitmanip specification.
+  Ibex supports v.1.0.0 of the RISC-V Bit-Manipulation Extension together with the remaining sub-extensions of draft v.0.93 of the bitmanip spec.
+  lowRISC maintains a `lowRISC-specific branch of Spike <LRSpike_>`_ that matches the supported Bitmanip specification plus some custom CSRs.
   This branch must also be used in order to to simulate the core with the Icache enabled.
 
-  OVPsim_ is a commercial instruction set simulator with RISC-V support.
-  To specify the v0.92 Bitmanip specification, you need "riscvOVPsimPlus", which can be downloaded free of charge with registration.
+  Note that Ibex used to support the commercial OVPsim simulator.
+  This is not currently possble because OVPsim doesn't support the co-simulation approach that we use.
 
 - A working RISC-V toolchain (to compile / assemble the generated programs before simulating them).
 
@@ -125,14 +122,8 @@ to tell the RISCV-DV code where to find them:
     export RISCV_GCC="$RISCV_TOOLCHAIN/bin/riscv32-unknown-elf-gcc"
     export RISCV_OBJCOPY="$RISCV_TOOLCHAIN/bin/riscv32-unknown-elf-objcopy"
     export SPIKE_PATH=/path/to/spike/bin
-    export OVPSIM_PATH=/path/to/ovpsim/bin
 
-(Obviously, you only need to set ``SPIKE_PATH`` or ``OVPSIM_PATH`` if
-you have installed the corresponding instruction set simulator)
-
-.. _Spike: https://github.com/riscv/riscv-isa-sim
-.. _LRSpike: https://github.com/lowRISC/riscv-isa-sim/tree/ibex
-.. _OVPsim: https://www.ovpworld.org/riscvOVPsimPlus/
+.. _LRSpike: https://github.com/lowRISC/riscv-isa-sim/tree/ibex_cosim
 .. _riscv-toolchain-source: https://github.com/riscv/riscv-gnu-toolchain
 .. _riscv-toolchain-releases: https://github.com/lowRISC/lowrisc-toolchains/releases
 .. _bitmanip-patches: https://github.com/lowRISC/lowrisc-toolchains#how-to-generate-the-bitmanip-patches

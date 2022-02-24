@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include <cassert>
 #include <fstream>
 #include <iostream>
 
+#include "Vibex_simple_system__Syms.h"
 #include "ibex_pcounts.h"
 #include "ibex_simple_system.h"
 #include "verilated_toplevel.h"
@@ -29,6 +31,35 @@ int SimpleSystem::Main(int argc, char **argv) {
   }
 
   return 0;
+}
+
+std::string SimpleSystem::GetIsaString() const {
+  const Vibex_simple_system &top = _top;
+  assert(top.ibex_simple_system);
+
+  std::string base = top.ibex_simple_system->RV32E ? "rv32e" : "rv32i";
+
+  std::string extensions = "c";
+  if (top.ibex_simple_system->RV32M)
+    extensions += "m";
+
+  // See the equivalent get_isa_string() function in core_ibex_base_test.sv for
+  // an explanation of the different ISA strings
+  switch (top.ibex_simple_system->RV32B) {
+    case 0:  // RV32BNone
+      break;
+
+    case 1:  // RV32BBalanced
+      extensions += "_Zba_Zbb_Zbs_Xbitmanip";
+      break;
+
+    case 2:  // RV32BOTEarlGrey
+    case 3:  // RV32BFull
+      extensions += "_Zba_Zbb_Zbc_Zbs_Xbitmanip";
+      break;
+  }
+
+  return base + extensions;
 }
 
 int SimpleSystem::Setup(int argc, char **argv, bool &exit_app) {

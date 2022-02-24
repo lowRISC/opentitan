@@ -30,3 +30,11 @@
 //
 lint_off -rule WIDTH -file "*/rtl/ibex_simple_system.sv"
          -match "*expects 1 bits*Initial value's CONST '32'h1'*"
+
+// This isn't a waiver, as such, but rather tells Verilator to expose
+// the given parameters' values to C++. This allows cosim to figure
+// out what flavour of core it is running, which allows us to call
+// Spike with the right ISA.
+public -module "ibex_simple_system" -var "RV32E"
+public -module "ibex_simple_system" -var "RV32M"
+public -module "ibex_simple_system" -var "RV32B"
