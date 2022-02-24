@@ -420,7 +420,7 @@
             the sync completes, this bit then self clears.
 
             Software should write this bit to 1, wait for it to clear, before assuming the slow clock
-            domain has assumed the programmed values.
+            domain has accepted the programmed values.
           ''',
           resval: "0",
         },
