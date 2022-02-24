@@ -1243,10 +1243,6 @@
           name: "MAIN_SM_BOOT_DONE",
           desc: "The entropy_src main state machine is in the boot phase done state."
         }
-        { bits: "28:20",
-          name: "MAIN_SM_STATE",
-          desc: "This is the state of the entropy_src main state machine."
-        }
       ]
     },
     {
@@ -1365,8 +1361,6 @@
       desc: "Hardware detection of error conditions status register",
       swaccess: "ro",
       hwaccess: "hwo",
-      tags: [ // The internal HW can modify the error code registers
-              "excl:CsrAllTests:CsrExclCheck"],
       fields: [
         { bits: "0",
           name: "SFIFO_ESRNG_ERR",
@@ -1472,6 +1466,20 @@
                   an interrupt or an alert.
                   '''
         },
+      ]
+    },
+    { name: "MAIN_SM_STATE",
+      desc: "Main state machine state debug register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "8:0",
+          name: "MAIN_SM_STATE",
+          desc: '''This is the state of the ENTROPY_SRC main state machine.
+                See the RTL file `entropy_src_main_sm` for the meaning of the values.
+                '''
+          resval: 0xf5
+        }
       ]
     },
   ]

@@ -814,7 +814,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // state machine status
   assign hw2reg.debug_status.main_sm_idle.d = es_main_sm_idle;
   assign hw2reg.debug_status.main_sm_boot_done.d = boot_phase_done;
-  assign hw2reg.debug_status.main_sm_state.d = es_main_sm_state;
+  assign hw2reg.main_sm_state.de = 1'b1;
+  assign hw2reg.main_sm_state.d = es_main_sm_state;
 
   // fw override wr data status indication
   assign fw_ov_wr_fifo_full = fw_ov_mode_entropy_insert && !pfifo_precon_not_full;

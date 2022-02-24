@@ -313,7 +313,6 @@ module entropy_src_reg_top (
   logic debug_status_sha3_err_qs;
   logic debug_status_main_sm_idle_qs;
   logic debug_status_main_sm_boot_done_qs;
-  logic [8:0] debug_status_main_sm_state_qs;
   logic recov_alert_sts_we;
   logic recov_alert_sts_fips_enable_field_alert_qs;
   logic recov_alert_sts_fips_enable_field_alert_wd;
@@ -353,6 +352,7 @@ module entropy_src_reg_top (
   logic err_code_test_we;
   logic [4:0] err_code_test_qs;
   logic [4:0] err_code_test_wd;
+  logic [8:0] main_sm_state_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -2145,20 +2145,6 @@ module entropy_src_reg_top (
     .qs     (debug_status_main_sm_boot_done_qs)
   );
 
-  //   F[main_sm_state]: 28:20
-  prim_subreg_ext #(
-    .DW    (9)
-  ) u_debug_status_main_sm_state (
-    .re     (debug_status_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.debug_status.main_sm_state.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (debug_status_main_sm_state_qs)
-  );
-
 
   // R[recov_alert_sts]: V(False)
   //   F[fips_enable_field_alert]: 0:0
@@ -2740,8 +2726,34 @@ module entropy_src_reg_top (
   );
 
 
+  // R[main_sm_state]: V(False)
+  prim_subreg #(
+    .DW      (9),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (9'hf5)
+  ) u_main_sm_state (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  logic [53:0] addr_hit;
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.main_sm_state.de),
+    .d      (hw2reg.main_sm_state.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (main_sm_state_qs)
+  );
+
+
+
+  logic [54:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == ENTROPY_SRC_INTR_STATE_OFFSET);
@@ -2798,6 +2810,7 @@ module entropy_src_reg_top (
     addr_hit[51] = (reg_addr == ENTROPY_SRC_RECOV_ALERT_STS_OFFSET);
     addr_hit[52] = (reg_addr == ENTROPY_SRC_ERR_CODE_OFFSET);
     addr_hit[53] = (reg_addr == ENTROPY_SRC_ERR_CODE_TEST_OFFSET);
+    addr_hit[54] = (reg_addr == ENTROPY_SRC_MAIN_SM_STATE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2858,7 +2871,8 @@ module entropy_src_reg_top (
                (addr_hit[50] & (|(ENTROPY_SRC_PERMIT[50] & ~reg_be))) |
                (addr_hit[51] & (|(ENTROPY_SRC_PERMIT[51] & ~reg_be))) |
                (addr_hit[52] & (|(ENTROPY_SRC_PERMIT[52] & ~reg_be))) |
-               (addr_hit[53] & (|(ENTROPY_SRC_PERMIT[53] & ~reg_be)))));
+               (addr_hit[53] & (|(ENTROPY_SRC_PERMIT[53] & ~reg_be))) |
+               (addr_hit[54] & (|(ENTROPY_SRC_PERMIT[54] & ~reg_be)))));
   end
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -3309,7 +3323,6 @@ module entropy_src_reg_top (
         reg_rdata_next[9] = debug_status_sha3_err_qs;
         reg_rdata_next[16] = debug_status_main_sm_idle_qs;
         reg_rdata_next[17] = debug_status_main_sm_boot_done_qs;
-        reg_rdata_next[28:20] = debug_status_main_sm_state_qs;
       end
 
       addr_hit[51]: begin
@@ -3342,6 +3355,10 @@ module entropy_src_reg_top (
 
       addr_hit[53]: begin
         reg_rdata_next[4:0] = err_code_test_qs;
+      end
+
+      addr_hit[54]: begin
+        reg_rdata_next[8:0] = main_sm_state_qs;
       end
 
       default: begin
