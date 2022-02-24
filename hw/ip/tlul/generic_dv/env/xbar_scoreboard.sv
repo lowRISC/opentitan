@@ -104,7 +104,7 @@ class xbar_scoreboard extends scoreboard_pkg::scoreboard #(.ITEM_T(tl_seq_item),
       if (modified_tr.d_opcode == tlul_pkg::AccessAck) modified_tr.d_data = 0;
       transformed_tr = {modified_tr};
     end else begin
-      tl_seq_item rsp;
+      cip_tl_seq_item rsp;
       `downcast(rsp, tr.clone());
       rsp.d_source    = tr.a_source;
       rsp.d_size      = tr.a_size;
@@ -112,6 +112,8 @@ class xbar_scoreboard extends scoreboard_pkg::scoreboard #(.ITEM_T(tl_seq_item),
       rsp.d_data      = rsp.a_opcode == tlul_pkg::Get ? '1 : 0;
       rsp.d_opcode    = rsp.a_opcode == tlul_pkg::Get ?
                         tlul_pkg::AccessAckData : tlul_pkg::AccessAck;
+      rsp.d_user      = rsp.compute_d_user;
+
       transformed_tr  = {rsp};
     end
   endfunction
