@@ -22,4 +22,7 @@
 `include "spi_device_abort_vseq.sv"
 `include "spi_device_tpm_locality_vseq.sv"
 `include "spi_device_tpm_read_vseq.sv"
+`include "spi_device_pass_base_vseq.sv"
 `include "spi_device_pass_cmd_filtering_vseq.sv"
+`include "spi_device_pass_addr_translation_vseq.sv"
+`include "spi_device_pass_data_translation_vseq.sv"
