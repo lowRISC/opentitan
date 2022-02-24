@@ -1201,7 +1201,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   virtual function bit is_tl_mem_access_allowed(input tl_seq_item item, input string ral_name,
                                                 output bit mem_byte_access_err,
                                                 output bit mem_wo_err,
-                                                output bit mem_ro_err);
+                                                output bit mem_ro_err,
+                                                output bit customized_err);
     uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
     uvm_reg_addr_t csr_addr   = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
     bit [TL_AW-1:0] addr_mask = ral.get_addr_mask();
@@ -1217,6 +1218,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                           cfg.ral_models[ral_name].mem_ranges[0].start_addr + VendorTestOffset +
                           VendorTestSize - 1]}) begin
           predict_err(OtpVendorTestErrIdx, OtpAccessError);
+          customized_err = 1;
           return 0;
         end
       end
@@ -1225,6 +1227,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                           cfg.ral_models[ral_name].mem_ranges[0].start_addr + CreatorSwCfgOffset +
                           CreatorSwCfgSize - 1]}) begin
           predict_err(OtpCreatorSwCfgErrIdx, OtpAccessError);
+          customized_err = 1;
           return 0;
         end
       end
@@ -1233,6 +1236,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                           cfg.ral_models[ral_name].mem_ranges[0].start_addr + OwnerSwCfgOffset +
                           OwnerSwCfgSize - 1]}) begin
           predict_err(OtpOwnerSwCfgErrIdx, OtpAccessError);
+          customized_err = 1;
           return 0;
         end
       end
@@ -1243,15 +1247,16 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         bit [TL_DW-1:0] read_out;
         int ecc_err = read_a_word_with_ecc(dai_addr, read_out);
         if (ecc_err == OtpEccUncorrErr && !ecc_corr_err_only_part(part_idx)) begin
-            predict_err(part_idx, OtpMacroEccUncorrError);
-            set_exp_alert("fatal_macro_error", 1, 20);
+           predict_err(part_idx, OtpMacroEccUncorrError);
+           set_exp_alert("fatal_macro_error", 1, 20);
+           customized_err = 1;
            return 0;
         end
       end
     end
 
     return super.is_tl_mem_access_allowed(item, ral_name, mem_byte_access_err, mem_wo_err,
-                                          mem_ro_err);
+                                          mem_ro_err, customized_err);
   endfunction
 
   virtual function void set_exp_alert(string alert_name, bit is_fatal = 0, int max_delay = 0);
