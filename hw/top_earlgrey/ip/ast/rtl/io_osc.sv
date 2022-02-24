@@ -9,6 +9,7 @@
 module io_osc (
   input vcore_pok_h_i,    // VCORE POK @3.3V
   input io_en_i,          // IO Source Clock Enable
+  input io_osc_cal_i,     // IO Oscillator Calibrated
 `ifdef AST_BYPASS_CLK
   input clk_io_ext_i,     // FPGA/VERILATOR Clock input
 `endif
@@ -22,12 +23,14 @@ module io_osc (
 timeunit 1ns / 1ps;
 import ast_bhv_pkg::* ;
 
-localparam real IoClkPeriod = 1000000/96;  // ~10416.666667ps (96Mhz)
 reg init_start = 1'b0;
-real CLK_PERIOD;
+real CLK_PERIOD, CalIoClkPeriod, UncIoClkPeriod, IoClkPeriod;
+
+assign CalIoClkPeriod = $itor( 1000000/96 );                    // ~10416.666667ps (96MHz)
+assign UncIoClkPeriod = $itor( $urandom_range(40000, 16667) );  // 40000-16667ps (25-60MHz)
+assign IoClkPeriod = (io_osc_cal_i && init_start) ? CalIoClkPeriod : UncIoClkPeriod;
 
 initial begin
-  CLK_PERIOD = $itor(IoClkPeriod/1000);
   #1; init_start  = 1'b1;
   $display("\nIO Power-up Clock Frequency: %0d Hz", $rtoi(10**9/CLK_PERIOD));
 end
@@ -40,16 +43,17 @@ assign en_osc_re = en_osc_re_buf && init_start;
 
 // Clock Oscillator
 ////////////////////////////////////////
-logic en_osc;
-reg clk_osc = 1'b1;
+assign CLK_PERIOD = IoClkPeriod/1000;
 
 // Free running oscillator
+reg clk_osc = 1'b0;
+
 always begin
    #(CLK_PERIOD/2) clk_osc = ~clk_osc;
 end
 
 // HDL Clock Gate
-logic clk;
+logic clk, en_osc;
 reg en_clk;
 
 always_latch begin
@@ -107,5 +111,14 @@ prim_clock_buf #(
   .clk_i ( clk ),
   .clk_o ( io_clk_o )
 );
+
+
+`ifdef SYNTHESIS
+/////////////////////////
+// Unused Signals
+/////////////////////////
+logic unused_sigs;
+assign unused_sigs = ^{ io_osc_cal_i };
+`endif
 
 endmodule : io_osc

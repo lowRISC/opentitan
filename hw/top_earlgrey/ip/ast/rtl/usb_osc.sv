@@ -10,6 +10,7 @@ module usb_osc (
   input vcore_pok_h_i,    // VCORE POK @3.3V
   input usb_en_i,         // USB Source Clock Enable
   input usb_ref_val_i,    // USB Reference Valid
+  input usb_osc_cal_i,    // USB Oscillator Calibrated
 `ifdef AST_BYPASS_CLK
   input clk_usb_ext_i,    // FPGA/VERILATOR Clock input
 `endif
@@ -23,10 +24,13 @@ module usb_osc (
 timeunit 1ns / 1ps;
 import ast_bhv_pkg::* ;
 
-localparam real UsbClkPeriod = 1000000/48;  // ~20833.33333ps (48Mhz)
-reg init_start = 1'b0;
-real CLK_PERIOD;
 integer rand32;
+reg init_start = 1'b0;
+real CLK_PERIOD, CalUsbClkPeriod, UncUsbClkPeriod, UsbClkPeriod;
+
+assign CalUsbClkPeriod = $itor( 1000000/48 );                    // ~20833.33333ps (48MHz)
+assign UncUsbClkPeriod = $itor( $urandom_range(55555, 25000) );  // 55555-25000ps (18-40MHz)
+assign UsbClkPeriod = (usb_osc_cal_i && init_start) ? CalUsbClkPeriod : UncUsbClkPeriod;
 
 initial begin
   #1; init_start  = 1'b1;
@@ -46,21 +50,20 @@ assign ref_val = ref_val_buf && init_start;
 
 // Clock Oscillator
 ////////////////////////////////////////
-logic en_osc;
-reg clk_osc = 1'b1;
+real drift;
 
-shortreal drift;
-assign drift = ref_val ? 0 : rand32;
-
-assign CLK_PERIOD = $itor(UsbClkPeriod + drift)/1000;
+assign drift = ref_val ? 0.0 : $itor(rand32);
+assign CLK_PERIOD = (UsbClkPeriod + drift)/1000;
 
 // Free running oscillator
+reg clk_osc = 1'b0;
+
 always begin
   #(CLK_PERIOD/2) clk_osc = ~clk_osc;
 end
 
 // HDL Clock Gate
-logic clk;
+logic clk, en_osc;
 reg en_clk;
 
 always_latch begin
@@ -125,7 +128,7 @@ prim_clock_buf #(
 // Unused Signals
 ///////////////////////
 logic unused_sigs;
-assign unused_sigs = ^{ usb_ref_val_i };  // Used in ASIC implementation
+assign unused_sigs = ^{ usb_osc_cal_i, usb_ref_val_i };
 `endif
 
 endmodule : usb_osc
