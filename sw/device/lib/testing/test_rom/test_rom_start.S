@@ -5,6 +5,7 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
 #include "sw/device/lib/base/multibits_asm.h"
 #include "ast_regs.h"
+#include "clkmgr_regs.h"
 #include "csrng_regs.h"
 #include "edn_regs.h"
 #include "entropy_src_regs.h"
@@ -137,6 +138,13 @@ _reset_start:
  */
 _start:
   .globl _start
+
+  // Re-enable all SW gateable clocks in case the clkmgr was not reset.
+  li   a0, TOP_EARLGREY_CLKMGR_AON_BASE_ADDR
+  li   t0, CLKMGR_CLK_ENABLES_REG_RESVAL
+  sw   t0, CLKMGR_CLK_ENABLES_REG_OFFSET(a0)
+  li   t0, CLKMGR_CLK_HINTS_REG_RESVAL
+  sw   t0, CLKMGR_CLK_HINTS_REG_OFFSET(a0)
 
   // Check if AST initialization should be skipped.
   li   t0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
