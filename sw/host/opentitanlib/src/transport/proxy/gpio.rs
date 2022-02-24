@@ -4,11 +4,11 @@
 
 use std::rc::Rc;
 
+use super::ProxyError;
 use crate::bail;
 use crate::io::gpio::{GpioPin, PinMode, PullMode};
 use crate::proxy::protocol::{GpioRequest, GpioResponse, Request, Response};
 use crate::transport::proxy::{Inner, Proxy, Result};
-use super::ProxyError;
 
 pub struct ProxyGpioPin {
     inner: Rc<Inner>,
@@ -24,7 +24,7 @@ impl ProxyGpioPin {
         Ok(result)
     }
 
-    // Convenience method for issuing GPIO commands via proxy protocol. 
+    // Convenience method for issuing GPIO commands via proxy protocol.
     fn execute_command(&self, command: GpioRequest) -> Result<GpioResponse> {
         match self.inner.execute_command(Request::Gpio {
             id: self.pinname.clone(),

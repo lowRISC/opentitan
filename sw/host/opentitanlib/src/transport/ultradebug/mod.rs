@@ -126,9 +126,7 @@ impl Transport for Ultradebug {
         );
         let mut inner = self.inner.borrow_mut();
         if inner.uart.is_none() {
-            inner.uart = Some(Rc::new(
-                uart::UltradebugUart::open(self)?,
-            ));
+            inner.uart = Some(Rc::new(uart::UltradebugUart::open(self)?));
         }
         Ok(Rc::clone(inner.uart.as_ref().unwrap()))
     }

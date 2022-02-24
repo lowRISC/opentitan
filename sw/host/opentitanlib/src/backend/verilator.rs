@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
 use crate::transport::verilator::{Options, Verilator};
 use crate::transport::Transport;
+use anyhow::Result;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]

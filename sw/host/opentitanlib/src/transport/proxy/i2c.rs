@@ -4,13 +4,13 @@
 
 use std::rc::Rc;
 
-use crate::{bail, ensure};
+use super::ProxyError;
 use crate::io::i2c::{Bus, Transfer};
 use crate::proxy::protocol::{
     I2cRequest, I2cResponse, I2cTransferRequest, I2cTransferResponse, Request, Response,
 };
 use crate::transport::proxy::{Inner, Proxy, Result};
-use super::ProxyError;
+use crate::{bail, ensure};
 
 pub struct ProxyI2c {
     inner: Rc<Inner>,
@@ -26,7 +26,7 @@ impl ProxyI2c {
         Ok(result)
     }
 
-    // Convenience method for issuing I2C commands via proxy protocol. 
+    // Convenience method for issuing I2C commands via proxy protocol.
     fn execute_command(&self, command: I2cRequest) -> Result<I2cResponse> {
         match self.inner.execute_command(Request::I2c {
             id: self.instance.clone(),
@@ -41,7 +41,8 @@ impl ProxyI2c {
 impl Bus for ProxyI2c {
     fn run_transaction(&self, address: u8, transaction: &mut [Transfer]) -> Result<()> {
         let mut req: Vec<I2cTransferRequest> = Vec::new();
-        for transfer in &*transaction { // &* to treat as non-mutable in this loop
+        for transfer in &*transaction {
+            // &* to treat as non-mutable in this loop
             match transfer {
                 Transfer::Read(rbuf) => req.push(I2cTransferRequest::Read {
                     len: rbuf.len() as u32,

@@ -6,10 +6,10 @@ use std::cmp;
 use std::rc::Rc;
 use zerocopy::{AsBytes, FromBytes};
 
-use crate::{bail, ensure};
 use crate::io::i2c::{Bus, I2cError, Transfer};
 use crate::transport::hyperdebug::{BulkInterface, Inner};
 use crate::transport::{Result, TransportError};
+use crate::{bail, ensure};
 
 pub struct HyperdebugI2cBus {
     inner: Rc<Inner>,
@@ -138,7 +138,10 @@ impl HyperdebugI2cBus {
             0 => (),
             1 => bail!(I2cError::Timeout),
             2 => bail!(I2cError::Busy),
-            n => bail!(TransportError::CommunicationError(format!("I2C error: {}", n))),
+            n => bail!(TransportError::CommunicationError(format!(
+                "I2C error: {}",
+                n
+            ))),
         }
         let databytes = bytecount - 4;
         rbuf[..databytes].clone_from_slice(&resp.data[..databytes]);

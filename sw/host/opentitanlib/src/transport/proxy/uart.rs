@@ -5,11 +5,11 @@
 use std::rc::Rc;
 use std::time::Duration;
 
+use super::ProxyError;
 use crate::bail;
 use crate::io::uart::Uart;
 use crate::proxy::protocol::{Request, Response, UartRequest, UartResponse};
 use crate::transport::proxy::{Inner, Proxy, Result};
-use super::ProxyError;
 
 pub struct ProxyUart {
     inner: Rc<Inner>,
@@ -25,7 +25,7 @@ impl ProxyUart {
         Ok(result)
     }
 
-    // Convenience method for issuing UART commands via proxy protocol. 
+    // Convenience method for issuing UART commands via proxy protocol.
     fn execute_command(&self, command: UartRequest) -> Result<UartResponse> {
         match self.inner.execute_command(Request::Uart {
             id: self.instance.clone(),

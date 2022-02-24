@@ -73,13 +73,20 @@ pub struct UltradebugGpioPin {
 impl GpioPin for UltradebugGpioPin {
     /// Reads the value of the the GPIO pin `id`.
     fn read(&self) -> Result<bool> {
-        let bits = self.device.borrow_mut().gpio_get().wrap(TransportError::FtdiError)?;
+        let bits = self
+            .device
+            .borrow_mut()
+            .gpio_get()
+            .wrap(TransportError::FtdiError)?;
         Ok(bits & (1 << self.pin_id) != 0)
     }
 
     /// Sets the value of the GPIO pin `id` to `value`.
     fn write(&self, value: bool) -> Result<()> {
-        self.device.borrow_mut().gpio_set(self.pin_id, value).wrap(TransportError::FtdiError)?;
+        self.device
+            .borrow_mut()
+            .gpio_set(self.pin_id, value)
+            .wrap(TransportError::FtdiError)?;
         Ok(())
     }
 

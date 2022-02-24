@@ -11,8 +11,8 @@ use structopt::StructOpt;
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::bootstrap::{Bootstrap, BootstrapOptions, BootstrapProtocol};
-use opentitanlib::transport;
 use opentitanlib::image::image::ImageAssembler;
+use opentitanlib::transport;
 use opentitanlib::util::parse_int::ParseInt;
 
 /// Bootstrap the target device.
