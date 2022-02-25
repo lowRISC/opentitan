@@ -188,8 +188,11 @@ module clkmgr_reg_top (
   logic extclk_ctrl_we;
   logic [3:0] extclk_ctrl_sel_qs;
   logic [3:0] extclk_ctrl_sel_wd;
-  logic [3:0] extclk_ctrl_low_speed_sel_qs;
-  logic [3:0] extclk_ctrl_low_speed_sel_wd;
+  logic [3:0] extclk_ctrl_hi_speed_sel_qs;
+  logic [3:0] extclk_ctrl_hi_speed_sel_wd;
+  logic jitter_regwen_we;
+  logic jitter_regwen_qs;
+  logic jitter_regwen_wd;
   logic jitter_enable_we;
   logic [3:0] jitter_enable_qs;
   logic [3:0] jitter_enable_wd;
@@ -574,18 +577,18 @@ module clkmgr_reg_top (
     .qs     (extclk_ctrl_sel_qs)
   );
 
-  //   F[low_speed_sel]: 7:4
+  //   F[hi_speed_sel]: 7:4
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h5)
-  ) u_extclk_ctrl_low_speed_sel (
+  ) u_extclk_ctrl_hi_speed_sel (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (extclk_ctrl_we & extclk_ctrl_regwen_qs),
-    .wd     (extclk_ctrl_low_speed_sel_wd),
+    .wd     (extclk_ctrl_hi_speed_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -593,10 +596,36 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.extclk_ctrl.low_speed_sel.q),
+    .q      (reg2hw.extclk_ctrl.hi_speed_sel.q),
 
     // to register interface (read)
-    .qs     (extclk_ctrl_low_speed_sel_qs)
+    .qs     (extclk_ctrl_hi_speed_sel_qs)
+  );
+
+
+  // R[jitter_regwen]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1)
+  ) u_jitter_regwen (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (jitter_regwen_we),
+    .wd     (jitter_regwen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (jitter_regwen_qs)
   );
 
 
@@ -2418,24 +2447,25 @@ module clkmgr_reg_top (
 
 
 
-  logic [14:0] addr_hit;
+  logic [15:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == CLKMGR_ALERT_TEST_OFFSET);
     addr_hit[ 1] = (reg_addr == CLKMGR_EXTCLK_CTRL_REGWEN_OFFSET);
     addr_hit[ 2] = (reg_addr == CLKMGR_EXTCLK_CTRL_OFFSET);
-    addr_hit[ 3] = (reg_addr == CLKMGR_JITTER_ENABLE_OFFSET);
-    addr_hit[ 4] = (reg_addr == CLKMGR_CLK_ENABLES_OFFSET);
-    addr_hit[ 5] = (reg_addr == CLKMGR_CLK_HINTS_OFFSET);
-    addr_hit[ 6] = (reg_addr == CLKMGR_CLK_HINTS_STATUS_OFFSET);
-    addr_hit[ 7] = (reg_addr == CLKMGR_MEASURE_CTRL_REGWEN_OFFSET);
-    addr_hit[ 8] = (reg_addr == CLKMGR_IO_MEAS_CTRL_SHADOWED_OFFSET);
-    addr_hit[ 9] = (reg_addr == CLKMGR_IO_DIV2_MEAS_CTRL_SHADOWED_OFFSET);
-    addr_hit[10] = (reg_addr == CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED_OFFSET);
-    addr_hit[11] = (reg_addr == CLKMGR_MAIN_MEAS_CTRL_SHADOWED_OFFSET);
-    addr_hit[12] = (reg_addr == CLKMGR_USB_MEAS_CTRL_SHADOWED_OFFSET);
-    addr_hit[13] = (reg_addr == CLKMGR_RECOV_ERR_CODE_OFFSET);
-    addr_hit[14] = (reg_addr == CLKMGR_FATAL_ERR_CODE_OFFSET);
+    addr_hit[ 3] = (reg_addr == CLKMGR_JITTER_REGWEN_OFFSET);
+    addr_hit[ 4] = (reg_addr == CLKMGR_JITTER_ENABLE_OFFSET);
+    addr_hit[ 5] = (reg_addr == CLKMGR_CLK_ENABLES_OFFSET);
+    addr_hit[ 6] = (reg_addr == CLKMGR_CLK_HINTS_OFFSET);
+    addr_hit[ 7] = (reg_addr == CLKMGR_CLK_HINTS_STATUS_OFFSET);
+    addr_hit[ 8] = (reg_addr == CLKMGR_MEASURE_CTRL_REGWEN_OFFSET);
+    addr_hit[ 9] = (reg_addr == CLKMGR_IO_MEAS_CTRL_SHADOWED_OFFSET);
+    addr_hit[10] = (reg_addr == CLKMGR_IO_DIV2_MEAS_CTRL_SHADOWED_OFFSET);
+    addr_hit[11] = (reg_addr == CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED_OFFSET);
+    addr_hit[12] = (reg_addr == CLKMGR_MAIN_MEAS_CTRL_SHADOWED_OFFSET);
+    addr_hit[13] = (reg_addr == CLKMGR_USB_MEAS_CTRL_SHADOWED_OFFSET);
+    addr_hit[14] = (reg_addr == CLKMGR_RECOV_ERR_CODE_OFFSET);
+    addr_hit[15] = (reg_addr == CLKMGR_FATAL_ERR_CODE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2457,7 +2487,8 @@ module clkmgr_reg_top (
                (addr_hit[11] & (|(CLKMGR_PERMIT[11] & ~reg_be))) |
                (addr_hit[12] & (|(CLKMGR_PERMIT[12] & ~reg_be))) |
                (addr_hit[13] & (|(CLKMGR_PERMIT[13] & ~reg_be))) |
-               (addr_hit[14] & (|(CLKMGR_PERMIT[14] & ~reg_be)))));
+               (addr_hit[14] & (|(CLKMGR_PERMIT[14] & ~reg_be))) |
+               (addr_hit[15] & (|(CLKMGR_PERMIT[15] & ~reg_be)))));
   end
   assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -2471,11 +2502,14 @@ module clkmgr_reg_top (
 
   assign extclk_ctrl_sel_wd = reg_wdata[3:0];
 
-  assign extclk_ctrl_low_speed_sel_wd = reg_wdata[7:4];
-  assign jitter_enable_we = addr_hit[3] & reg_we & !reg_error;
+  assign extclk_ctrl_hi_speed_sel_wd = reg_wdata[7:4];
+  assign jitter_regwen_we = addr_hit[3] & reg_we & !reg_error;
+
+  assign jitter_regwen_wd = reg_wdata[0];
+  assign jitter_enable_we = addr_hit[4] & reg_we & !reg_error;
 
   assign jitter_enable_wd = reg_wdata[3:0];
-  assign clk_enables_we = addr_hit[4] & reg_we & !reg_error;
+  assign clk_enables_we = addr_hit[5] & reg_we & !reg_error;
 
   assign clk_enables_clk_io_div4_peri_en_wd = reg_wdata[0];
 
@@ -2484,7 +2518,7 @@ module clkmgr_reg_top (
   assign clk_enables_clk_usb_peri_en_wd = reg_wdata[2];
 
   assign clk_enables_clk_io_peri_en_wd = reg_wdata[3];
-  assign clk_hints_we = addr_hit[5] & reg_we & !reg_error;
+  assign clk_hints_we = addr_hit[6] & reg_we & !reg_error;
 
   assign clk_hints_clk_main_aes_hint_wd = reg_wdata[0];
 
@@ -2495,35 +2529,35 @@ module clkmgr_reg_top (
   assign clk_hints_clk_io_div4_otbn_hint_wd = reg_wdata[3];
 
   assign clk_hints_clk_main_otbn_hint_wd = reg_wdata[4];
-  assign measure_ctrl_regwen_we = addr_hit[7] & reg_we & !reg_error;
+  assign measure_ctrl_regwen_we = addr_hit[8] & reg_we & !reg_error;
 
   assign measure_ctrl_regwen_wd = reg_wdata[0];
-  assign io_meas_ctrl_shadowed_re = addr_hit[8] & reg_re & !reg_error;
-  assign io_meas_ctrl_shadowed_we = addr_hit[8] & reg_we & !reg_error;
+  assign io_meas_ctrl_shadowed_re = addr_hit[9] & reg_re & !reg_error;
+  assign io_meas_ctrl_shadowed_we = addr_hit[9] & reg_we & !reg_error;
 
 
 
-  assign io_div2_meas_ctrl_shadowed_re = addr_hit[9] & reg_re & !reg_error;
-  assign io_div2_meas_ctrl_shadowed_we = addr_hit[9] & reg_we & !reg_error;
+  assign io_div2_meas_ctrl_shadowed_re = addr_hit[10] & reg_re & !reg_error;
+  assign io_div2_meas_ctrl_shadowed_we = addr_hit[10] & reg_we & !reg_error;
 
 
 
-  assign io_div4_meas_ctrl_shadowed_re = addr_hit[10] & reg_re & !reg_error;
-  assign io_div4_meas_ctrl_shadowed_we = addr_hit[10] & reg_we & !reg_error;
+  assign io_div4_meas_ctrl_shadowed_re = addr_hit[11] & reg_re & !reg_error;
+  assign io_div4_meas_ctrl_shadowed_we = addr_hit[11] & reg_we & !reg_error;
 
 
 
-  assign main_meas_ctrl_shadowed_re = addr_hit[11] & reg_re & !reg_error;
-  assign main_meas_ctrl_shadowed_we = addr_hit[11] & reg_we & !reg_error;
+  assign main_meas_ctrl_shadowed_re = addr_hit[12] & reg_re & !reg_error;
+  assign main_meas_ctrl_shadowed_we = addr_hit[12] & reg_we & !reg_error;
 
 
 
-  assign usb_meas_ctrl_shadowed_re = addr_hit[12] & reg_re & !reg_error;
-  assign usb_meas_ctrl_shadowed_we = addr_hit[12] & reg_we & !reg_error;
+  assign usb_meas_ctrl_shadowed_re = addr_hit[13] & reg_re & !reg_error;
+  assign usb_meas_ctrl_shadowed_we = addr_hit[13] & reg_we & !reg_error;
 
 
 
-  assign recov_err_code_we = addr_hit[13] & reg_we & !reg_error;
+  assign recov_err_code_we = addr_hit[14] & reg_we & !reg_error;
 
   assign recov_err_code_io_measure_err_wd = reg_wdata[0];
 
@@ -2570,21 +2604,25 @@ module clkmgr_reg_top (
 
       addr_hit[2]: begin
         reg_rdata_next[3:0] = extclk_ctrl_sel_qs;
-        reg_rdata_next[7:4] = extclk_ctrl_low_speed_sel_qs;
+        reg_rdata_next[7:4] = extclk_ctrl_hi_speed_sel_qs;
       end
 
       addr_hit[3]: begin
-        reg_rdata_next[3:0] = jitter_enable_qs;
+        reg_rdata_next[0] = jitter_regwen_qs;
       end
 
       addr_hit[4]: begin
+        reg_rdata_next[3:0] = jitter_enable_qs;
+      end
+
+      addr_hit[5]: begin
         reg_rdata_next[0] = clk_enables_clk_io_div4_peri_en_qs;
         reg_rdata_next[1] = clk_enables_clk_io_div2_peri_en_qs;
         reg_rdata_next[2] = clk_enables_clk_usb_peri_en_qs;
         reg_rdata_next[3] = clk_enables_clk_io_peri_en_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[6]: begin
         reg_rdata_next[0] = clk_hints_clk_main_aes_hint_qs;
         reg_rdata_next[1] = clk_hints_clk_main_hmac_hint_qs;
         reg_rdata_next[2] = clk_hints_clk_main_kmac_hint_qs;
@@ -2592,7 +2630,7 @@ module clkmgr_reg_top (
         reg_rdata_next[4] = clk_hints_clk_main_otbn_hint_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[7]: begin
         reg_rdata_next[0] = clk_hints_status_clk_main_aes_val_qs;
         reg_rdata_next[1] = clk_hints_status_clk_main_hmac_val_qs;
         reg_rdata_next[2] = clk_hints_status_clk_main_kmac_val_qs;
@@ -2600,26 +2638,26 @@ module clkmgr_reg_top (
         reg_rdata_next[4] = clk_hints_status_clk_main_otbn_val_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[8]: begin
         reg_rdata_next[0] = measure_ctrl_regwen_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[9]: begin
         reg_rdata_next = DW'(io_meas_ctrl_shadowed_qs);
       end
-      addr_hit[9]: begin
+      addr_hit[10]: begin
         reg_rdata_next = DW'(io_div2_meas_ctrl_shadowed_qs);
       end
-      addr_hit[10]: begin
+      addr_hit[11]: begin
         reg_rdata_next = DW'(io_div4_meas_ctrl_shadowed_qs);
       end
-      addr_hit[11]: begin
+      addr_hit[12]: begin
         reg_rdata_next = DW'(main_meas_ctrl_shadowed_qs);
       end
-      addr_hit[12]: begin
+      addr_hit[13]: begin
         reg_rdata_next = DW'(usb_meas_ctrl_shadowed_qs);
       end
-      addr_hit[13]: begin
+      addr_hit[14]: begin
         reg_rdata_next[0] = recov_err_code_io_measure_err_qs;
         reg_rdata_next[1] = recov_err_code_io_div2_measure_err_qs;
         reg_rdata_next[2] = recov_err_code_io_div4_measure_err_qs;
@@ -2637,7 +2675,7 @@ module clkmgr_reg_top (
         reg_rdata_next[14] = recov_err_code_usb_update_err_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[15]: begin
         reg_rdata_next[0] = fatal_err_code_reg_intg_qs;
         reg_rdata_next[1] = fatal_err_code_io_storage_err_qs;
         reg_rdata_next[2] = fatal_err_code_io_div2_storage_err_qs;
@@ -2681,19 +2719,19 @@ module clkmgr_reg_top (
   always_comb begin
     reg_busy_sel = '0;
     unique case (1'b1)
-      addr_hit[8]: begin
+      addr_hit[9]: begin
         reg_busy_sel = io_meas_ctrl_shadowed_busy;
       end
-      addr_hit[9]: begin
+      addr_hit[10]: begin
         reg_busy_sel = io_div2_meas_ctrl_shadowed_busy;
       end
-      addr_hit[10]: begin
+      addr_hit[11]: begin
         reg_busy_sel = io_div4_meas_ctrl_shadowed_busy;
       end
-      addr_hit[11]: begin
+      addr_hit[12]: begin
         reg_busy_sel = main_meas_ctrl_shadowed_busy;
       end
-      addr_hit[12]: begin
+      addr_hit[13]: begin
         reg_busy_sel = usb_meas_ctrl_shadowed_busy;
       end
       default: begin

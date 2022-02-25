@@ -66,10 +66,10 @@
   input mubi4_t io_clk_byp_ack_i,
   output mubi4_t all_clk_byp_req_o,
   input mubi4_t all_clk_byp_ack_i,
-  output logic hi_speed_sel_o,
+  output mubi4_t hi_speed_sel_o,
 
   // jittery enable
-  output logic jitter_en_o,
+  output mubi4_t jitter_en_o,
 
   // clock gated indications going to alert handlers
   output clkmgr_cg_en_t cg_en_o,
@@ -84,6 +84,7 @@
 
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4True;
+  import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::mubi4_test_true_loose;
   import prim_mubi_pkg::mubi4_test_false_loose;
 
@@ -91,7 +92,7 @@
   // Divided clocks
   ////////////////////////////////////////////////////
 
-  logic step_down_req;
+  mubi4_t step_down_req;
   logic [${len(clocks.derived_srcs)-1}:0] step_down_acks;
 
 % for src_name in clocks.derived_srcs:
@@ -99,14 +100,17 @@
 % endfor
 
 % for src_name in clocks.all_derived_srcs():
-  logic ${src_name}_step_down_req;
-  prim_flop_2sync #(
-    .Width(1)
+  mubi4_t ${src_name}_step_down_req;
+  prim_mubi4_sync #(
+    .NumCopies(1),
+    .AsyncOn(1),
+    .StabilityCheck(1),
+    .ResetValue(MuBi4False)
   ) u_${src_name}_step_down_req_sync (
     .clk_i(clk_${src_name}_i),
     .rst_ni(rst_${src_name}_ni),
-    .d_i(step_down_req),
-    .q_o(${src_name}_step_down_req)
+    .mubi_i(step_down_req),
+    .mubi_o(${src_name}_step_down_req)
   );
 
 % endfor
@@ -129,9 +133,9 @@
   ) u_no_scan_${src.name}_div (
     .clk_i(clk_${src.src.name}_i),
     .rst_ni(rst_${src.src.name}_ni),
-    .step_down_req_i(${src.src.name}_step_down_req),
+    .step_down_req_i(mubi4_test_true_strict(${src.src.name}_step_down_req)),
     .step_down_ack_o(step_down_acks[${loop.index}]),
-    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(${src.name}_div_scanmode[0])),
+    .test_en_i(mubi4_test_true_strict(${src.name}_div_scanmode[0])),
     .clk_o(clk_${src.name}_i)
   );
 % endfor
@@ -209,8 +213,6 @@
   // Clock bypass request
   ////////////////////////////////////////////////////
 
-  mubi4_t low_speed_sel;
-  assign low_speed_sel = mubi4_t'(reg2hw.extclk_ctrl.low_speed_sel.q);
   clkmgr_byp #(
     .NumDivClks(${len(clocks.derived_srcs)})
   ) u_clkmgr_byp (
@@ -220,7 +222,6 @@
     .lc_clk_byp_req_i,
     .lc_clk_byp_ack_o,
     .byp_req_i(mubi4_t'(reg2hw.extclk_ctrl.sel.q)),
-    .low_speed_sel_i(low_speed_sel),
     .all_clk_byp_req_o,
     .all_clk_byp_ack_i,
     .io_clk_byp_req_o,
@@ -229,16 +230,6 @@
     // divider step down controls
     .step_down_acks_i(step_down_acks),
     .step_down_req_o(step_down_req)
-  );
-
-  // the external consumer of this signal requires the opposite polarity
-  prim_flop #(
-    .ResetValue(1'b1)
-  ) u_high_speed_sel (
-    .clk_i,
-    .rst_ni,
-    .d_i(mubi4_test_false_loose(low_speed_sel)),
-    .q_o(hi_speed_sel_o)
   );
 
   ////////////////////////////////////////////////////
@@ -433,7 +424,7 @@
   ) u_${k}_cg (
     .clk_i(clk_${v.src.name}_root),
     .en_i(${k}_combined_en),
-    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(${k}_scanmode[0])),
+    .test_en_i(mubi4_test_true_strict(${k}_scanmode[0])),
     .clk_o(clocks_o.${k})
   );
 
@@ -501,7 +492,7 @@
   ) u_${clk}_cg (
     .clk_i(clk_${sig.src.name}_root),
     .en_i(${clk}_combined_en),
-    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(${clk}_scanmode[0])),
+    .test_en_i(mubi4_test_true_strict(${clk}_scanmode[0])),
     .clk_o(clocks_o.${clk})
   );
 
@@ -524,7 +515,10 @@
 % endfor
 
   // SEC_CM: JITTER.CONFIG.MUBI
-  assign jitter_en_o = mubi4_test_true_loose(mubi4_t'(reg2hw.jitter_enable.q));
+  assign jitter_en_o = mubi4_t'(reg2hw.jitter_enable.q);
+
+
+  assign hi_speed_sel_o = mubi4_t'(reg2hw.extclk_ctrl.hi_speed_sel.q);
 
   ////////////////////////////////////////////////////
   // Exported clocks

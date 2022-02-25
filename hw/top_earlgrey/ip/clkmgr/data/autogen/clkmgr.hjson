@@ -109,11 +109,11 @@
       package: "prim_mubi_pkg",
     },
 
-    { struct:  "logic",
+    { struct:  "mubi4",
       type:    "uni",
       name:    "hi_speed_sel",
       act:     "req",
-      package: "",
+      package: "prim_mubi_pkg",
     },
 
     { struct:  "lc_tx",
@@ -130,11 +130,11 @@
       package: "lc_ctrl_pkg",
     },
 
-    { struct:  "logic",
+    { struct:  "mubi4",
       type:    "uni",
       name:    "jitter_en",
       act:     "req",
-      package: ""
+      package: "prim_mubi_pkg"
     },
 
   // Exported clocks
@@ -230,17 +230,33 @@
         },
         {
           bits: "7:4",
-          name: "LOW_SPEED_SEL",
+          name: "HI_SPEED_SEL",
           mubi: true,
           desc: '''
-            A value of kMultiBitBool4True selects low speed external clocks.
-            All other values selects nominal speed clocks.
+            A value of kMultiBitBool4True selects nominal speed external clocks.
+            All other values selects low speed clocks.
 
             Note this field only has an effect when the !!EXTCLK_CTRL.SEL field is set to
             kMultiBitBool4True.
           '''
           resval: false
         }
+      ]
+    },
+
+    { name: "JITTER_REGWEN",
+      desc: "Jitter write enable",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            When 1, the value of !!JITTER_ENALBE can be changed.  When 0, writes have no
+            effect.
+          '''
+        },
       ]
     },
 
