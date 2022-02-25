@@ -15,7 +15,8 @@ module rstmgr_cnsty_chk
   import rstmgr_pkg::*;
   import rstmgr_reg_pkg::*;
 #(
-  parameter int SecMaxSyncDelay = 2
+  parameter int SecMaxSyncDelay = 2,
+  parameter bit SwRstReq = 1
 ) (
   input clk_i,
   input rst_ni,
@@ -146,11 +147,19 @@ module rstmgr_cnsty_chk
   end
 
   logic src_valid;
-  assign src_valid = sync_parent_rst || sw_rst_req_i;
+  // The following code makes it easier for tools such as UNR,
+  // it is not functionally required.
+  if (SwRstReq) begin : gen_sw_rst_req
+    assign src_valid = sync_parent_rst || sw_rst_req_i;
+  end else begin : gen_no_sw_rst_req
+    assign src_valid = sync_parent_rst;
+
+    logic unused_sw_rst_req;
+    assign unused_sw_rst_req = sw_rst_req_i;
+  end
 
   logic sync_child_ack;
 
-  // TODO - make this a sparse fsm
   always_comb begin
     state_d = state_q;
     err_o = '0;

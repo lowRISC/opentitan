@@ -327,7 +327,8 @@ module rstmgr
   // Shadowed: False
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b0)
   ) u_daon_por (
     .clk_i,
     .rst_ni,
@@ -361,7 +362,8 @@ module rstmgr
   // Shadowed: False
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b0)
   ) u_daon_por_io (
     .clk_i,
     .rst_ni,
@@ -395,7 +397,8 @@ module rstmgr
   // Shadowed: False
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b0)
   ) u_daon_por_io_div2 (
     .clk_i,
     .rst_ni,
@@ -429,7 +432,8 @@ module rstmgr
   // Shadowed: True
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b0)
   ) u_daon_por_io_div4 (
     .clk_i,
     .rst_ni,
@@ -457,7 +461,8 @@ module rstmgr
   assign rst_en_o.por_io_div4[Domain0Sel] = MuBi4True;
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b0)
   ) u_daon_por_io_div4_shadowed (
     .clk_i,
     .rst_ni,
@@ -489,7 +494,8 @@ module rstmgr
   // Shadowed: False
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b0)
   ) u_daon_por_usb (
     .clk_i,
     .rst_ni,
@@ -527,7 +533,8 @@ module rstmgr
   assign rst_en_o.lc[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b0)
   ) u_d0_lc (
     .clk_i,
     .rst_ni,
@@ -555,7 +562,8 @@ module rstmgr
   assign rst_en_o.lc_shadowed[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b0)
   ) u_d0_lc_shadowed (
     .clk_i,
     .rst_ni,
@@ -583,7 +591,8 @@ module rstmgr
   // Shadowed: True
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b0)
   ) u_daon_lc_io_div4 (
     .clk_i,
     .rst_ni,
@@ -607,7 +616,8 @@ module rstmgr
 
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b0)
   ) u_d0_lc_io_div4 (
     .clk_i,
     .rst_ni,
@@ -631,7 +641,8 @@ module rstmgr
 
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b0)
   ) u_daon_lc_io_div4_shadowed (
     .clk_i,
     .rst_ni,
@@ -655,7 +666,8 @@ module rstmgr
 
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b0)
   ) u_d0_lc_io_div4_shadowed (
     .clk_i,
     .rst_ni,
@@ -683,7 +695,8 @@ module rstmgr
   // Shadowed: False
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b0)
   ) u_daon_lc_aon (
     .clk_i,
     .rst_ni,
@@ -721,7 +734,8 @@ module rstmgr
   assign rst_en_o.sys[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b0)
   ) u_d0_sys (
     .clk_i,
     .rst_ni,
@@ -749,7 +763,8 @@ module rstmgr
   assign rst_en_o.sys_shadowed[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b0)
   ) u_d0_sys_shadowed (
     .clk_i,
     .rst_ni,
@@ -777,7 +792,8 @@ module rstmgr
   // Shadowed: False
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b0)
   ) u_daon_sys_io_div4 (
     .clk_i,
     .rst_ni,
@@ -801,7 +817,8 @@ module rstmgr
 
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b0)
   ) u_d0_sys_io_div4 (
     .clk_i,
     .rst_ni,
@@ -831,7 +848,8 @@ module rstmgr
   // Shadowed: False
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b0)
   ) u_daon_sys_aon (
     .clk_i,
     .rst_ni,
@@ -855,7 +873,8 @@ module rstmgr
 
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b0)
   ) u_d0_sys_aon (
     .clk_i,
     .rst_ni,
@@ -889,7 +908,8 @@ module rstmgr
   assign rst_en_o.spi_device[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b1)
   ) u_d0_spi_device (
     .clk_i,
     .rst_ni,
@@ -923,7 +943,8 @@ module rstmgr
   assign rst_en_o.spi_host0[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b1)
   ) u_d0_spi_host0 (
     .clk_i,
     .rst_ni,
@@ -957,7 +978,8 @@ module rstmgr
   assign rst_en_o.spi_host1[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b1)
   ) u_d0_spi_host1 (
     .clk_i,
     .rst_ni,
@@ -991,7 +1013,8 @@ module rstmgr
   assign rst_en_o.usb[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b1)
   ) u_d0_usb (
     .clk_i,
     .rst_ni,
@@ -1025,7 +1048,8 @@ module rstmgr
   assign rst_en_o.usbif[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b1)
   ) u_d0_usbif (
     .clk_i,
     .rst_ni,
@@ -1059,7 +1083,8 @@ module rstmgr
   assign rst_en_o.i2c0[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b1)
   ) u_d0_i2c0 (
     .clk_i,
     .rst_ni,
@@ -1093,7 +1118,8 @@ module rstmgr
   assign rst_en_o.i2c1[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b1)
   ) u_d0_i2c1 (
     .clk_i,
     .rst_ni,
@@ -1127,7 +1153,8 @@ module rstmgr
   assign rst_en_o.i2c2[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b1)
   ) u_d0_i2c2 (
     .clk_i,
     .rst_ni,

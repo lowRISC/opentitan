@@ -337,7 +337,12 @@ module rstmgr
        % if domain in rst.domains:
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay)
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    % if rst.sw:
+    .SwRstReq(1'b1)
+    % else:
+    .SwRstReq(1'b0)
+    % endif
   ) u_d${domain.lower()}_${name} (
     .clk_i,
     .rst_ni,
