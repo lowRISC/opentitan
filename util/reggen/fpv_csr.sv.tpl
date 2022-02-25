@@ -98,12 +98,23 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
 % endif
 
 % if num_hro_regs > 0:
+  typedef enum bit {
+    FpvDefault,
+    FpvRw0c
+  } fpv_reg_access_e;
+  fpv_reg_access_e access_policy [${num_hro_regs + 1}];
+
   // for write HRO registers, store the write data into exp_vals
   always_ff @(negedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
        pend_trans <= '0;
   % for hro_reg in hro_regs_list:
        exp_vals[${hro_map.get(hro_reg.offset)[0]}] <= 'h${f'{hro_reg.resval:0x}'};
+      % if len(hro_reg.fields) == 1 and hro_reg.fields[0].swaccess.key.lower() == "rw0c":
+       access_policy[${hro_map.get(hro_reg.offset)[0]}] <= FpvRw0c;
+      % else:
+       access_policy[${hro_map.get(hro_reg.offset)[0]}] <= FpvDefault;
+      % endif
   % endfor
     end else begin
       if (h2d.a_valid && d2h.a_ready) begin
@@ -118,7 +129,12 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
       if (d2h.d_valid) begin
         if (pend_trans[d2h.d_source].wr_pending == 1) begin
           if (!d2h.d_error) begin
-            exp_vals[hro_idx] <= pend_trans[d2h.d_source].wr_data;
+            if (access_policy[hro_idx] == FpvRw0c) begin
+              // Assume FpvWr0c policy only has one field that is wr0c.
+              exp_vals[hro_idx] <= exp_vals[hro_idx][0] == 0 ? 0 : pend_trans[d2h.d_source].wr_data;
+            end else begin
+              exp_vals[hro_idx] <= pend_trans[d2h.d_source].wr_data;
+            end
           end
           pend_trans[d2h.d_source].wr_pending <= 1'b0;
         end
