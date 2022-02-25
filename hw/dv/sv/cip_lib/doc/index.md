@@ -399,7 +399,7 @@ CIP contains reusable security verification components, sequences and function c
 This section describes the details of them and the steps to enable them.
 
 ### Security Verification for bus integrity
-The countermeasure of bus integrity can be fully verified via importing [tl_access_tests](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/tests//tl_access_tests.hjson) and [tl_device_access_types_testplan](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson).
+The countermeasure of bus integrity can be fully verified via importing [tl_access_tests](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/tests/tl_access_tests.hjson) and [tl_device_access_types_testplan](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson).
 The `tl_intg_err` test injects errors on control, data, or the ECC bits and verifies that the integrity error will trigger a fatal alert (provided via `cfg.tl_intg_alert_name`) and error status (provided via `cfg.tl_intg_alert_fields`) is set.
 Refer to section [cip_base_env_cfg](#cip_base_env_cfg) for more information on these 2 variables.
 The user may update these 2 variables as follows.
@@ -412,9 +412,37 @@ class ip_env_cfg extends cip_base_env_cfg #(.RAL_T(ip_reg_block));
     tl_intg_alert_fields[ral.fault_status.intg_err] = 1;
 ```
 
+### Security Verification for memory integrity
+The memory integrity countermeasure stores the data integrity in the memory rather than generating the integrity on-the-fly during a read.
+The [passthru_mem_intg_tests](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/tests/passthru_mem_intg_tests.hjson) can fully verify this countermeasure.
+The details of the test sequences are described in the [tl_device_access_types_testplan](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/testplans/passthru_mem_intg_testplan.hjson). Users need to override the task `inject_intg_fault_in_passthru_mem` to inject an integrity fault to the memory in the block common_vseq.
+
+The following is an example from `sram_ctrl`, in which it flips up to `MAX_TL_ECC_ERRORS` bits of the data and generates a backdoor write to the memory.
+```systemverilog
+class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
+  ...
+  virtual function void inject_intg_fault_in_passthru_mem(dv_base_mem mem,
+                                                          bit [bus_params_pkg::BUS_AW-1:0] addr);
+    bit[bus_params_pkg::BUS_DW-1:0] rdata;
+    bit[tlul_pkg::DataIntgWidth+bus_params_pkg::BUS_DW-1:0] flip_bits;
+
+    rdata = cfg.mem_bkdr_util_h.sram_encrypt_read32_integ(addr, cfg.scb.key, cfg.scb.nonce);
+
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(flip_bits,
+        $countones(flip_bits) inside {[1:cip_base_pkg::MAX_TL_ECC_ERRORS]};)
+
+    `uvm_info(`gfn, $sformatf("Backdoor change mem (addr 0x%0h) value 0x%0h by flipping bits %0h",
+                              addr, rdata, flip_bits), UVM_LOW)
+
+    cfg.mem_bkdr_util_h.sram_encrypt_write32_integ(addr, rdata, cfg.scb.key, cfg.scb.nonce,
+                                                   flip_bits);
+  endfunction
+endclass
+```
+
 ### Security Verification for shadow CSRs
 The countermeasure of shadow CSRs can be fully verified via importing [shadow_reg_errors_tests](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/tests/shadow_reg_errors_tests.hjson) and [shadow_reg_errors_testplan](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson).
-The details of the test sequences are described in the testplan, users need to assign the status CSR fields to `cfg.shadow_update_err_status_fields` and `cfg.shadow_storage_err_status_fields` for update error and storage error respectively.
+The details of the test sequences are described in the testplan. Users need to assign the status CSR fields to `cfg.shadow_update_err_status_fields` and `cfg.shadow_storage_err_status_fields` for update error and storage error respectively.
 ```systemverilog
 class ip_env_cfg extends cip_base_env_cfg #(.RAL_T(ip_reg_block));
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
