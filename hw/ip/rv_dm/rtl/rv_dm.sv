@@ -353,6 +353,7 @@ module rv_dm
   logic                         req;
   logic                         we;
   logic [BusWidth/8-1:0]        be;
+  logic   [BusWidth-1:0]        wmask;
   logic   [BusWidth-1:0]        wdata;
   logic   [BusWidth-1:0]        rdata;
   logic                         rvalid;
@@ -360,10 +361,10 @@ module rv_dm
   logic [BusWidth-1:0]          addr_b;
   logic [AddressWidthWords-1:0] addr_w;
 
-  // TODO: The tlul_adapter_sram give us a bitwise write mask currently,
-  // but dm_mem only supports byte write masks. Disable sub-word access in the
-  // adapter for now until we figure out a good strategy to deal with this.
-  assign be = {BusWidth/8{1'b1}};
+  // Bit-write masks are byte-aligned, so we can reduce them to byte-write enables here.
+  for (genvar k = 0; k < BusWidth/8; k++) begin : gen_byte_write
+    assign be[k] = &wmask[8*k +: 8];
+  end
 
   assign addr_b = {addr_w, {$clog2(BusWidth/8){1'b0}}};
 
@@ -480,7 +481,7 @@ module rv_dm
     .SramAw(AddressWidthWords),
     .SramDw(BusWidth),
     .Outstanding(1),
-    .ByteAccess(0),
+    .ByteAccess(1),
     .CmdIntgCheck(1),
     .EnableRspIntgGen(1)
   ) tl_adapter_device_mem (
@@ -494,7 +495,7 @@ module rv_dm
     .we_o        (we),
     .addr_o      (addr_w),
     .wdata_o     (wdata),
-    .wmask_o     (),
+    .wmask_o     (wmask),
     // SEC_CM: BUS.INTEGRITY
     .intg_error_o(rom_intg_error),
     .rdata_i     (rdata & {BusWidth{rom_en}}),
