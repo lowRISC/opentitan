@@ -103,8 +103,8 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           if (cfg.clk_rst_vif.rst_n) begin
             @cfg.clkmgr_vif.jitter_enable_csr begin
               cfg.clk_rst_vif.wait_clks(2);
-              `DV_CHECK_EQ(cfg.clkmgr_vif.jitter_en_o, prim_mubi_pkg::mubi4_test_true_loose(
-                           cfg.clkmgr_vif.jitter_enable_csr), "Mismatching jitter enable output")
+              `DV_CHECK_EQ(cfg.clkmgr_vif.jitter_en_o, cfg.clkmgr_vif.jitter_enable_csr,
+                           "Mismatching jitter enable output")
             end
           end
         end
@@ -113,8 +113,8 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           if (cfg.clk_rst_vif.rst_n) begin
             @cfg.clkmgr_vif.jitter_en_o begin
               cfg.clk_rst_vif.wait_clks(2);
-              `DV_CHECK_EQ(cfg.clkmgr_vif.jitter_en_o, prim_mubi_pkg::mubi4_test_true_loose(
-                           cfg.clkmgr_vif.jitter_enable_csr), "Mismatching jitter enable output")
+              `DV_CHECK_EQ(cfg.clkmgr_vif.jitter_en_o, cfg.clkmgr_vif.jitter_enable_csr,
+                           "Mismatching jitter enable output")
             end
           end
         end

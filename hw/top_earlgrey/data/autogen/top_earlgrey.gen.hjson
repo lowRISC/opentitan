@@ -3171,13 +3171,13 @@
         }
         {
           name: hi_speed_sel
-          struct: logic
+          struct: mubi4
+          package: prim_mubi_pkg
           type: uni
           act: req
           width: 1
           inst_name: clkmgr_aon
           default: ""
-          package: ""
           external: true
           top_signame: hi_speed_sel
           conn_type: false
@@ -3209,13 +3209,13 @@
         }
         {
           name: jitter_en
-          struct: logic
+          struct: mubi4
+          package: prim_mubi_pkg
           type: uni
           act: req
           width: 1
           inst_name: clkmgr_aon
           default: ""
-          package: ""
           external: true
           top_signame: clk_main_jitter_en
           conn_type: false
@@ -16070,13 +16070,13 @@
       }
       {
         name: hi_speed_sel
-        struct: logic
+        struct: mubi4
+        package: prim_mubi_pkg
         type: uni
         act: req
         width: 1
         inst_name: clkmgr_aon
         default: ""
-        package: ""
         external: true
         top_signame: hi_speed_sel
         conn_type: false
@@ -16108,13 +16108,13 @@
       }
       {
         name: jitter_en
-        struct: logic
+        struct: mubi4
+        package: prim_mubi_pkg
         type: uni
         act: req
         width: 1
         inst_name: clkmgr_aon
         default: ""
-        package: ""
         external: true
         top_signame: clk_main_jitter_en
         conn_type: false
@@ -19261,8 +19261,8 @@
         netname: ast_rom_cfg
       }
       {
-        package: ""
-        struct: logic
+        package: prim_mubi_pkg
+        struct: mubi4
         signame: clk_main_jitter_en_o
         width: 1
         type: uni
@@ -19321,8 +19321,8 @@
         netname: all_clk_byp_ack
       }
       {
-        package: ""
-        struct: logic
+        package: prim_mubi_pkg
+        struct: mubi4
         signame: hi_speed_sel_o
         width: 1
         type: uni

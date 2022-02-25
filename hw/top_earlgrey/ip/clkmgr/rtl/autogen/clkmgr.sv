@@ -75,10 +75,10 @@
   input mubi4_t io_clk_byp_ack_i,
   output mubi4_t all_clk_byp_req_o,
   input mubi4_t all_clk_byp_ack_i,
-  output logic hi_speed_sel_o,
+  output mubi4_t hi_speed_sel_o,
 
   // jittery enable
-  output logic jitter_en_o,
+  output mubi4_t jitter_en_o,
 
   // clock gated indications going to alert handlers
   output clkmgr_cg_en_t cg_en_o,
@@ -90,6 +90,7 @@
 
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4True;
+  import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::mubi4_test_true_loose;
   import prim_mubi_pkg::mubi4_test_false_loose;
 
@@ -97,20 +98,23 @@
   // Divided clocks
   ////////////////////////////////////////////////////
 
-  logic step_down_req;
+  mubi4_t step_down_req;
   logic [1:0] step_down_acks;
 
   logic clk_io_div2_i;
   logic clk_io_div4_i;
 
-  logic io_step_down_req;
-  prim_flop_2sync #(
-    .Width(1)
+  mubi4_t io_step_down_req;
+  prim_mubi4_sync #(
+    .NumCopies(1),
+    .AsyncOn(1),
+    .StabilityCheck(1),
+    .ResetValue(MuBi4False)
   ) u_io_step_down_req_sync (
     .clk_i(clk_io_i),
     .rst_ni(rst_io_ni),
-    .d_i(step_down_req),
-    .q_o(io_step_down_req)
+    .mubi_i(step_down_req),
+    .mubi_o(io_step_down_req)
   );
 
 
@@ -131,9 +135,9 @@
   ) u_no_scan_io_div2_div (
     .clk_i(clk_io_i),
     .rst_ni(rst_io_ni),
-    .step_down_req_i(io_step_down_req),
+    .step_down_req_i(mubi4_test_true_strict(io_step_down_req)),
     .step_down_ack_o(step_down_acks[0]),
-    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(io_div2_div_scanmode[0])),
+    .test_en_i(mubi4_test_true_strict(io_div2_div_scanmode[0])),
     .clk_o(clk_io_div2_i)
   );
 
@@ -154,9 +158,9 @@
   ) u_no_scan_io_div4_div (
     .clk_i(clk_io_i),
     .rst_ni(rst_io_ni),
-    .step_down_req_i(io_step_down_req),
+    .step_down_req_i(mubi4_test_true_strict(io_step_down_req)),
     .step_down_ack_o(step_down_acks[1]),
-    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(io_div4_div_scanmode[0])),
+    .test_en_i(mubi4_test_true_strict(io_div4_div_scanmode[0])),
     .clk_o(clk_io_div4_i)
   );
 
@@ -249,8 +253,6 @@
   // Clock bypass request
   ////////////////////////////////////////////////////
 
-  mubi4_t low_speed_sel;
-  assign low_speed_sel = mubi4_t'(reg2hw.extclk_ctrl.low_speed_sel.q);
   clkmgr_byp #(
     .NumDivClks(2)
   ) u_clkmgr_byp (
@@ -260,7 +262,6 @@
     .lc_clk_byp_req_i,
     .lc_clk_byp_ack_o,
     .byp_req_i(mubi4_t'(reg2hw.extclk_ctrl.sel.q)),
-    .low_speed_sel_i(low_speed_sel),
     .all_clk_byp_req_o,
     .all_clk_byp_ack_i,
     .io_clk_byp_req_o,
@@ -269,16 +270,6 @@
     // divider step down controls
     .step_down_acks_i(step_down_acks),
     .step_down_req_o(step_down_req)
-  );
-
-  // the external consumer of this signal requires the opposite polarity
-  prim_flop #(
-    .ResetValue(1'b1)
-  ) u_high_speed_sel (
-    .clk_i,
-    .rst_ni,
-    .d_i(mubi4_test_false_loose(low_speed_sel)),
-    .q_o(hi_speed_sel_o)
   );
 
   ////////////////////////////////////////////////////
@@ -926,7 +917,7 @@
   ) u_clk_io_div4_peri_cg (
     .clk_i(clk_io_div4_root),
     .en_i(clk_io_div4_peri_combined_en),
-    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_io_div4_peri_scanmode[0])),
+    .test_en_i(mubi4_test_true_strict(clk_io_div4_peri_scanmode[0])),
     .clk_o(clocks_o.clk_io_div4_peri)
   );
 
@@ -968,7 +959,7 @@
   ) u_clk_io_div2_peri_cg (
     .clk_i(clk_io_div2_root),
     .en_i(clk_io_div2_peri_combined_en),
-    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_io_div2_peri_scanmode[0])),
+    .test_en_i(mubi4_test_true_strict(clk_io_div2_peri_scanmode[0])),
     .clk_o(clocks_o.clk_io_div2_peri)
   );
 
@@ -1010,7 +1001,7 @@
   ) u_clk_usb_peri_cg (
     .clk_i(clk_usb_root),
     .en_i(clk_usb_peri_combined_en),
-    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_usb_peri_scanmode[0])),
+    .test_en_i(mubi4_test_true_strict(clk_usb_peri_scanmode[0])),
     .clk_o(clocks_o.clk_usb_peri)
   );
 
@@ -1052,7 +1043,7 @@
   ) u_clk_io_peri_cg (
     .clk_i(clk_io_root),
     .en_i(clk_io_peri_combined_en),
-    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_io_peri_scanmode[0])),
+    .test_en_i(mubi4_test_true_strict(clk_io_peri_scanmode[0])),
     .clk_o(clocks_o.clk_io_peri)
   );
 
@@ -1120,7 +1111,7 @@
   ) u_clk_main_aes_cg (
     .clk_i(clk_main_root),
     .en_i(clk_main_aes_combined_en),
-    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_main_aes_scanmode[0])),
+    .test_en_i(mubi4_test_true_strict(clk_main_aes_scanmode[0])),
     .clk_o(clocks_o.clk_main_aes)
   );
 
@@ -1170,7 +1161,7 @@
   ) u_clk_main_hmac_cg (
     .clk_i(clk_main_root),
     .en_i(clk_main_hmac_combined_en),
-    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_main_hmac_scanmode[0])),
+    .test_en_i(mubi4_test_true_strict(clk_main_hmac_scanmode[0])),
     .clk_o(clocks_o.clk_main_hmac)
   );
 
@@ -1220,7 +1211,7 @@
   ) u_clk_main_kmac_cg (
     .clk_i(clk_main_root),
     .en_i(clk_main_kmac_combined_en),
-    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_main_kmac_scanmode[0])),
+    .test_en_i(mubi4_test_true_strict(clk_main_kmac_scanmode[0])),
     .clk_o(clocks_o.clk_main_kmac)
   );
 
@@ -1270,7 +1261,7 @@
   ) u_clk_main_otbn_cg (
     .clk_i(clk_main_root),
     .en_i(clk_main_otbn_combined_en),
-    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_main_otbn_scanmode[0])),
+    .test_en_i(mubi4_test_true_strict(clk_main_otbn_scanmode[0])),
     .clk_o(clocks_o.clk_main_otbn)
   );
 
@@ -1320,7 +1311,7 @@
   ) u_clk_io_div4_otbn_cg (
     .clk_i(clk_io_div4_root),
     .en_i(clk_io_div4_otbn_combined_en),
-    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_io_div4_otbn_scanmode[0])),
+    .test_en_i(mubi4_test_true_strict(clk_io_div4_otbn_scanmode[0])),
     .clk_o(clocks_o.clk_io_div4_otbn)
   );
 
@@ -1348,7 +1339,10 @@
   assign hw2reg.clk_hints_status.clk_io_div4_otbn_val.d = clk_io_div4_otbn_en;
 
   // SEC_CM: JITTER.CONFIG.MUBI
-  assign jitter_en_o = mubi4_test_true_loose(mubi4_t'(reg2hw.jitter_enable.q));
+  assign jitter_en_o = mubi4_t'(reg2hw.jitter_enable.q);
+
+
+  assign hi_speed_sel_o = mubi4_t'(reg2hw.extclk_ctrl.hi_speed_sel.q);
 
   ////////////////////////////////////////////////////
   // Exported clocks
