@@ -58,6 +58,10 @@ module kmac_errchk
   input        kmac_en_i,
   input [47:0] cfg_prefix_6B_i, // first 6B of PREFIX
 
+  // If the signal below is set, errchk propagates the command to the rest of
+  // the blocks even with err_modestrength.
+  input        cfg_en_unsupported_modestrength_i,
+
   // SW commands: Only valid command is sent out to the rest of the modules
   input  kmac_cmd_e sw_cmd_i,
   output kmac_cmd_e sw_cmd_o,
@@ -142,12 +146,17 @@ module kmac_errchk
 
   // `err_modestrength` occcurs when Mode & Strength combinations are not
   // allowed. This error does not block the hashing operation.
+  // UnexpectedModeStrength may stop the processing based on CFG
+  // The error raises when SW issues CmdStart.
   logic err_modestrength;
 
   // `err_prefix` occurs when the first 6B of !!PREFIX is not
   // `encode_string("KMAC")` and kmac is enabled. This error does not block the
   // KMAC operation.
   logic err_prefix;
+
+  // Signal to block the SW command propagation
+  logic block_swcmd;
 
   ///////////////////
   // Error Checker //
@@ -206,11 +215,15 @@ module kmac_errchk
     endcase
   end
 
+  assign block_swcmd =  (err_swsequence)
+                     || (err_modestrength
+                         && !cfg_en_unsupported_modestrength_i);
+
   // sw_cmd_o latch
   // To reduce the command path delay, sw_cmd is latched here
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni)              sw_cmd_o <= CmdNone;
-    else if (!err_swsequence) sw_cmd_o <= sw_cmd_i;
+    if (!rst_ni)           sw_cmd_o <= CmdNone;
+    else if (!block_swcmd) sw_cmd_o <= sw_cmd_i;
   end
 
   // Mode & Strength
