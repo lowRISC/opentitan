@@ -322,8 +322,9 @@
             The number of 32-bit values contained in the ${dump_src} info dump.
             '''
           resval: "0",
-          tags: [// This field only reflects the status of the design, thus the
-                 // default value is likely to change and not remain 0
+          tags: [// This field is tied to a design constant, thus the
+                 // default value is never 0.  Since there is not a way
+                 // to express this behavior at the moment, exclude from automated checks.
                  "excl:CsrAllTests:CsrExclCheck"]
         },
       ]
