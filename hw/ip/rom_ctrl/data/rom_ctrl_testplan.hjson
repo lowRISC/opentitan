@@ -8,6 +8,7 @@
                      "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/passthru_mem_intg_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/sec_cm_fsm_testplan.hjson",
                      "rom_ctrl_sec_cm_testplan.hjson"]
   testpoints: [
     {
