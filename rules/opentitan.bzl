@@ -476,7 +476,7 @@ def opentitan_functest(
         cargs = _format_list("args", args, cw310, test_bin = test_bin)
         cdata = _format_list("data", data, cw310, test_bin = test_bin)
 
-        if "manual" not in verilator.get("tags", []):
+        if "manual" not in cw310.get("tags", []):
             all_tests.append(test_name)
 
         native.sh_test(
