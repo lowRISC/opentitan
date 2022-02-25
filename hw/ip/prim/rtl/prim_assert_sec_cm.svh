@@ -13,7 +13,8 @@
   `ifdef INC_ASSERT \
   assign PRIM_HIER_.unused_assert_connected = 1'b1; \
   `endif \
-  `ASSUME_FPV(ErrTriggerAfterAlertInit_S, $stable(rst_ni) == 0 |-> PRIM_HIER_.ERR_NAME_ == 0 [*10])
+  `ASSUME_FPV(``NAME_``TriggerAfterAlertInit_S, $stable(rst_ni) == 0 |-> \
+              PRIM_HIER_.ERR_NAME_ == 0 [*10])
 
 // macros for security countermeasures
 `define ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(NAME_, PRIM_HIER_, ALERT_, MAX_CYCLES_ = 7) \
