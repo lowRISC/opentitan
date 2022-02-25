@@ -74,8 +74,8 @@ interface rstmgr_cascading_sva_if (
 
   // Macros to avoid excessive boiler-plate code below.
   `define FALL_ASSERT(_name, _from, _to, _cycles, _clk) \
-    `ASSERT(_name``AboveFallBelowHigh_A, \
-            $fell(_from) && _to |-> ##[_cycles.fall.min:_cycles.fall.max] _to, _clk, \
+    `ASSERT(_name``AboveFall_A, \
+            $fell(_from) |-> ##[_cycles.fall.min:_cycles.fall.max] _from || !_to, _clk, \
             disable_sva)
 
   `define RISE_ASSERTS(_name, _from, _to, _cycles, _clk) \
@@ -135,8 +135,7 @@ interface rstmgr_cascading_sva_if (
 
   // The internal reset is triggered by one of synchronized por.
   logic [rstmgr_pkg::PowerDomains-1:0] por_rst_n;
-  always_comb
-    por_rst_n = resets_o.rst_por_aon_n;
+  always_comb por_rst_n = resets_o.rst_por_aon_n;
 
   logic [rstmgr_pkg::PowerDomains-1:0] local_rst_or_lc_req_n;
   always_comb local_rst_or_lc_req_n = por_rst_n & ~rst_lc_req;
