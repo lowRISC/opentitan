@@ -128,7 +128,10 @@
       name: sec_cm_key_local_esc
       desc: '''Verify the countermeasure(s) KEY.LOCAL_ESC.
 
-            Refer to `sec_cm` and `sec_cm_additional_check`.
+            Besides the stimulus and checks mentioned in `prim_count_check``, also have
+            following checks:
+            - Check internal key/nonce are reset to the default values.
+            - Check SRAM access is blocked after a fault injection.
             '''
       milestone: V2S
       tests: ["{name}_sec_cm"]
@@ -137,10 +140,9 @@
       name: sec_cm_ctr_redun
       desc: '''Verify the countermeasure(s) CTR.REDUN.
 
-            Besides the stimulus and checks mentioned in `prim_count_check`, also have
-            following checks:
+            Besides the stimulus and checks mentioned in `prim_count_check` and
+            `sec_cm_key_local_esc`, also have following checks:
             - Check alert and `status.init_error` is set.
-            - Check reading any SRAM address returns 0, after fault injection.
             '''
       milestone: V2S
       tests: ["{name}_sec_cm"]

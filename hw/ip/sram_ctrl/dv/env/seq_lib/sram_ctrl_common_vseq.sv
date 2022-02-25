@@ -12,14 +12,22 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
 
   bit first_reset;
 
+  string path_sram_key = {`DUT_HIER_STR, ".key_q"};
+  string path_sram_nonce = {`DUT_HIER_STR, ".nonce_q"};
+
   virtual task pre_start();
     string common_seq_type;
+
+    `DV_CHECK_FATAL(uvm_hdl_check_path(path_sram_key))
+    `DV_CHECK_FATAL(uvm_hdl_check_path(path_sram_nonce))
+
     void'($value$plusargs("run_%0s", common_seq_type));
 
     // To avoid reading out unknown data from mem, do init for mem test after 1st reset
     // Also do init for integrity test to make sure mem has correct integrity
     if ((!uvm_re_match("*mem*", common_seq_type) ||
-         !uvm_re_match("*passthru_mem_tl_intg_err", common_seq_type)) &&
+         !uvm_re_match("*passthru_mem_tl_intg_err", common_seq_type) ||
+         !uvm_re_match("*sec_cm", common_seq_type)) &&
         !first_reset) begin
       do_sram_ctrl_init = 1;
       first_reset       = 1;
@@ -59,6 +67,36 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
                                                    flip_bits);
   endfunction
 
+  // Check internal key/nonce are reset to default
+  // Check sram access is blocked after a fault injection
+  virtual task check_sram_access_blocked_after_fi();
+    bit sram_access_pending;
+    otp_ctrl_pkg::sram_key_t internal_key;
+    otp_ctrl_pkg::sram_nonce_t internal_nonce;
+
+    `DV_CHECK(uvm_hdl_read(path_sram_key, internal_key))
+    `DV_CHECK_EQ(internal_key, sram_ctrl_pkg::RndCnstSramKeyDefault)
+    `DV_CHECK(uvm_hdl_read(path_sram_nonce, internal_nonce))
+    `DV_CHECK_EQ(internal_nonce, sram_ctrl_pkg::RndCnstSramNonceDefault)
+
+    fork
+      begin
+        $assertoff(0, "tb.dut.u_tlul_adapter_sram.rvalidHighReqFifoEmpty");
+        sram_access_pending = 1;
+
+        // this access will be blocked until reset occurs and TL agent clears the transaction
+        do_rand_ops(.num_ops(1), .blocking(1));
+
+        sram_access_pending = 0;
+        $asserton(0, "tb.dut.u_tlul_adapter_sram.rvalidHighReqFifoEmpty");
+      end
+      begin
+        cfg.clk_rst_vif.wait_clks($urandom_range(100, 2000));
+      end
+    join_any
+    `DV_CHECK_EQ(sram_access_pending, 1)
+  endtask : check_sram_access_blocked_after_fi
+
   // Check alert and `status.init_error` is set.
   // After injecting faults, reading any address should return 0. #10909
   virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
@@ -70,16 +108,13 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
 
     csr_rd_check(.ptr(ral.status.init_error), .compare_value(1));
 
-    // intg won't be correct after injecting faults
-    cfg.disable_d_user_data_intg_check_for_passthru_mem = 1;
-    repeat ($urandom_range(1, 10)) begin
-      `DV_CHECK_STD_RANDOMIZE_FATAL(addr)
-      mask = get_rand_mask(.write(0));
-      do_single_read(.addr(addr), .mask(mask), .rdata(rdata), .check_rdata(1),
-                     .exp_rdata(0));
-      `uvm_info(`gfn, $sformatf("addr: 0x%0h mask: 'b%0b, rdata: 0x%0h",
-                                addr, mask, rdata), UVM_HIGH)
-    end
-    cfg.disable_d_user_data_intg_check_for_passthru_mem = 0;
+    check_sram_access_blocked_after_fi();
   endtask : check_sec_cm_fi_resp
+
+  virtual task check_tl_intg_error_response();
+    super.check_tl_intg_error_response();
+
+    check_sram_access_blocked_after_fi();
+  endtask : check_tl_intg_error_response
+
 endclass
