@@ -62,6 +62,7 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
 
     // Tell the CIP base code what bit gets set if we see a TL fault.
     tl_intg_alert_fields[ral.fatal_alert_cause.integrity_error] = 1;
+    sec_cm_alert_name = "fatal";
   endfunction
 
 endclass
