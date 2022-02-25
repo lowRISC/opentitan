@@ -60,7 +60,7 @@ interface pwrmgr_if (
   logic                       [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_status;
 
   // Internal DUT signals.
-`ifndef PATO_TO_DUT
+`ifndef PATH_TO_DUT
   `define PATH_TO_DUT tb.dut
 `endif
 
