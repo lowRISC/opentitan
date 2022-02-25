@@ -74,7 +74,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
     logic wr_txn;
     logic byte_wr_txn;
     logic byte_req_ack;
-    logic [prim_util_pkg::vbits(Outstanding):0] pending_txn_cnt;
+    logic [prim_util_pkg::vbits(Outstanding+1)-1:0] pending_txn_cnt;
 
     assign a_ack = tl_i.a_valid & tl_o.a_ready;
     assign d_ack = tl_o.d_valid & tl_i.d_ready;
