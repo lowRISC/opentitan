@@ -200,39 +200,37 @@
             '''
     }
     {
-      name: alert_info_cg
-      desc: '''Collects coverage on the controls of alert_info.
-
-            The alert_info capture uses coverpoints `regwen_cp` capturing
-            `alert_regwen` CSR, `ctrl_en_cp` capturing `alert_info_ctrl.en` CSR,
-            and `ctrl_index` capturing `alert_info_ctrl.index` CSR.
-            '''
-    }
-    {
-      name: cpu_info_cg
-      desc: '''Collects coverage on the controls of cpu_info.
-
-            The cpu_info capture uses coverpoints `regwen_cp` capturing
-            `cpu_regwen` CSR, `ctrl_en_cp` capturing `cpu_info_ctrl.en` CSR,
-            and `ctrl_index` capturing `cpu_info_ctrl.index` CSR.
-            '''
-    }
-    {
       name: alert_info_capture_cg
-      desc: '''Collects coverage on the reset and enable when reset occurs.
+      desc: '''Collects coverage on reset type and enable when reset occurs.
 
-            Uses `reset_cp` that records the reset when it occurs, encoded
-            as in `reset_info` CSR, and `ctrl_en_cp` as described in
-            `alert_info_cg`, and creates their cross.
+            Uses `reset_cp` that records the reset encoded as in `reset_info`
+            CSR, and `ctrl_en_cp` capturing `alert_info_ctrl.en` CSR, and
+            creates the per-reset_cp bit cross.
+            '''
+    }
+    {
+      name: alert_info_access_cg
+      desc: '''Collects coverage on the reads of alert_info.
+
+            This captures `alert_info_ctrl.index` CSR to verify all fields
+            of alert_info have been read.
             '''
     }
     {
       name: cpu_info_capture_cg
       desc: '''Collects coverage on the reset and enable when reset occurs.
 
-            Uses `reset_cp` that records the reset when it occurs, encoded
-            as in `reset_info` CSR, and `ctrl_en_cp` as described in
-            `cpu_info_cg`, and creates their cross.
+            Uses `reset_cp` that records the reset encoded as in `reset_info`
+            CSR, and `ctrl_en_cp` capturing `cpu_info_ctrl.en` CSR, and creates
+            the per-reset_cp bit cross.
+            '''
+    }
+    {
+      name: cpu_info_access_cg
+      desc: '''Collects coverage on the reads of cpu_info.
+
+            This captures `cpu_info_ctrl.index` CSR to verify all fields
+            of cpu_info have been read.
             '''
     }
     {
@@ -241,7 +239,7 @@
 
             Each bit of the pair `sw_rst_regwen` and `sw_rst_ctrl_n` CSRs
             independently control if the corresponding output reset is
-            asserted (active low).
+            activated.
             This collects one coverpoint for each, and their cross.
             '''
     }
