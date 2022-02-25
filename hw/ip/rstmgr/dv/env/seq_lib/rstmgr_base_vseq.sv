@@ -58,8 +58,8 @@ class rstmgr_base_vseq extends cip_base_vseq #(
 
   bit                                       reset_once;
 
-  rand rv_core_ibex_pkg::cpu_crash_dump_t   cpu_dump;
-  rand alert_pkg::alert_crashdump_t         alert_dump;
+  rand cpu_crash_dump_t                     cpu_dump;
+  rand alert_crashdump_t                    alert_dump;
 
   rand logic [pwrmgr_pkg::HwResetWidth-1:0] rstreqs;
 
@@ -199,35 +199,50 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     csr_rd_check(.ptr(ral.reset_info), .compare_value(expected_value), .err_msg(msg));
   endtask
 
-  local function void set_cpu_dump_info(rv_core_ibex_pkg::cpu_crash_dump_t cpu_dump);
+  local function void set_cpu_dump_info(cpu_crash_dump_t cpu_dump);
     `uvm_info(`gfn, $sformatf("Setting cpu_dump_i to %p", cpu_dump), UVM_MEDIUM)
     cfg.rstmgr_vif.cpu_dump_i = cpu_dump;
   endfunction
 
-  local task check_cpu_dump_info(rv_core_ibex_pkg::cpu_crash_dump_t cpu_dump);
+  local task check_cpu_dump_info(cpu_crash_dump_t cpu_dump);
     `uvm_info(`gfn, "Checking cpu_info", UVM_MEDIUM)
+    csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(8));
+    csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.previous_valid),
+                 .err_msg("checking previous_valid"));
+    csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(7));
+    csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.previous.current_pc),
+                 .err_msg("checking previous current_pc"));
+    csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(6));
+    csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.previous.next_pc),
+                 .err_msg("checking previous next_pc"));
+    csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(5));
+    csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.previous.last_data_addr),
+                 .err_msg("checking previous last_data_addr"));
+    csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(4));
+    csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.previous.exception_addr),
+                 .err_msg("checking previous exception_addr"));
     csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(3));
     csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.current.current_pc),
-                 .err_msg("checking current_pc"));
+                 .err_msg("checking current current_pc"));
     csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(2));
     csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.current.next_pc),
-                 .err_msg("checking next_pc"));
+                 .err_msg("checking current next_pc"));
     csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(1));
     csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.current.last_data_addr),
-                 .err_msg("checking last_data_addr"));
+                 .err_msg("checking current last_data_addr"));
     csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(0));
     csr_rd_check(.ptr(ral.cpu_info), .compare_value(cpu_dump.current.exception_addr),
-                 .err_msg("checking exception_addr"));
+                 .err_msg("checking current exception_addr"));
   endtask
 
-  local function void set_alert_dump_info(alert_pkg::alert_crashdump_t alert_dump);
+  local function void set_alert_dump_info(alert_crashdump_t alert_dump);
     `uvm_info(`gfn, $sformatf(
               "Setting alert_dump_i to 0x%x", linearized_alert_dump_t'({>>{alert_dump}})),
               UVM_MEDIUM)
     cfg.rstmgr_vif.alert_dump_i = alert_dump;
   endfunction
 
-  local task check_alert_dump_info(alert_pkg::alert_crashdump_t alert_dump);
+  local task check_alert_dump_info(alert_crashdump_t alert_dump);
     localparam int DumpWidth = $bits(alert_dump);
     localparam int WordWidth = 32;
     logic [DumpWidth-1:0] linear_dump = {>>{alert_dump}};
@@ -246,36 +261,32 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  virtual protected task set_alert_info_for_capture(alert_pkg::alert_crashdump_t alert_dump,
-                                                    logic enable);
+  virtual protected task set_alert_info_for_capture(alert_crashdump_t alert_dump, logic enable);
     set_alert_dump_info(alert_dump);
     `uvm_info(`gfn, $sformatf("%0sabling alert_info capture", (enable ? "En" : "Dis")), UVM_MEDIUM)
     csr_wr(.ptr(ral.alert_info_ctrl.en), .value(enable));
   endtask
 
-  virtual protected task set_cpu_info_for_capture(rv_core_ibex_pkg::cpu_crash_dump_t cpu_dump,
-                                                  logic enable);
+  virtual protected task set_cpu_info_for_capture(cpu_crash_dump_t cpu_dump, logic enable);
     set_cpu_dump_info(cpu_dump);
     `uvm_info(`gfn, $sformatf("%0sabling cpu_info capture", (enable ? "En" : "Dis")), UVM_MEDIUM)
     csr_wr(.ptr(ral.cpu_info_ctrl.en), .value(enable));
   endtask
 
-  virtual protected task set_alert_and_cpu_info_for_capture(alert_pkg::alert_crashdump_t alert_dump,
-      rv_core_ibex_pkg::cpu_crash_dump_t cpu_dump);
+  virtual protected task set_alert_and_cpu_info_for_capture(alert_crashdump_t alert_dump,
+                                                            cpu_crash_dump_t cpu_dump);
     set_alert_info_for_capture(alert_dump, 1'b1);
     set_cpu_info_for_capture(cpu_dump, 1'b1);
   endtask
 
-  virtual protected task check_alert_info_after_reset(alert_pkg::alert_crashdump_t alert_dump,
-                                                      logic enable);
+  virtual protected task check_alert_info_after_reset(alert_crashdump_t alert_dump, logic enable);
     csr_rd_check(.ptr(ral.alert_info_ctrl.en), .compare_value(enable),
                  .err_msg($sformatf("Expected alert info capture enable %b", enable)));
     csr_wr(.ptr(ral.alert_info_ctrl.en), .value(enable));
     check_alert_dump_info(alert_dump);
   endtask
 
-  virtual protected task check_cpu_info_after_reset(rv_core_ibex_pkg::cpu_crash_dump_t cpu_dump,
-                                                    logic enable);
+  virtual protected task check_cpu_info_after_reset(cpu_crash_dump_t cpu_dump, logic enable);
     csr_rd_check(.ptr(ral.cpu_info_ctrl.en), .compare_value(enable),
                  .err_msg($sformatf("Expected cpu info capture enable %b", enable)));
     csr_wr(.ptr(ral.cpu_info_ctrl.en), .value(enable));
@@ -288,7 +299,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   // field to overwrite the .en field. To make things simpler, after checking .en's expected
   // value we write it to update the mirrored value.
   virtual protected task check_alert_and_cpu_info_after_reset(
-      alert_pkg::alert_crashdump_t alert_dump, ibex_pkg::crash_dump_t cpu_dump, logic enable);
+      alert_crashdump_t alert_dump, cpu_crash_dump_t cpu_dump, logic enable);
     check_alert_info_after_reset(alert_dump, enable);
     check_cpu_info_after_reset(cpu_dump, enable);
   endtask

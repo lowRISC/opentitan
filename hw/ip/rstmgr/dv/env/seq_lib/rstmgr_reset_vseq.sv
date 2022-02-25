@@ -57,8 +57,8 @@ class rstmgr_reset_vseq extends rstmgr_base_vseq;
     int expected_reset_info_code;
     logic expected_alert_enable;
     logic expected_cpu_enable;
-    alert_pkg::alert_crashdump_t prev_alert_dump = '0;
-    ibex_pkg::crash_dump_t prev_cpu_dump = '0;
+    alert_crashdump_t prev_alert_dump = '0;
+    cpu_crash_dump_t prev_cpu_dump = '0;
     int trans_before_enabling_cpu_rst_response;
     bit capture = 0;
 

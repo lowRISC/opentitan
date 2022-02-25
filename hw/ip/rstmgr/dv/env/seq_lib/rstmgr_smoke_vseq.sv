@@ -80,8 +80,8 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
     if (is_standalone) begin : sw_rst
       logic [NumSwResets-1:0] exp_ctrl_n;
       const logic [NumSwResets-1:0] sw_rst_all_ones = '1;
-      alert_pkg::alert_crashdump_t bogus_alert_dump = '1;
-      rv_core_ibex_pkg::cpu_crash_dump_t bogus_cpu_dump = '1;
+      alert_crashdump_t bogus_alert_dump = '1;
+      cpu_crash_dump_t bogus_cpu_dump = '1;
 
       set_alert_and_cpu_info_for_capture(bogus_alert_dump, bogus_cpu_dump);
       csr_rd_check(.ptr(ral.sw_rst_ctrl_n[0]), .compare_value(sw_rst_all_ones),
