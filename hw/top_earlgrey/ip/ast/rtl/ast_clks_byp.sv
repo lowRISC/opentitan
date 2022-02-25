@@ -25,7 +25,7 @@ module ast_clks_byp (
   input clk_ast_ext_i,                      // External Clock
   input prim_mubi_pkg::mubi4_t io_clk_byp_req_i,  // External IO clock mux for OTP bootstrap
   input prim_mubi_pkg::mubi4_t all_clk_byp_req_i, // External all clock mux override
-  input ext_freq_is_96m_i,                  // External Clock Frequecy is 96MHz (else 48MHz)
+  input prim_mubi_pkg::mubi4_t ext_freq_is_96m_i, // External Clock Frequecy is 96MHz (else 48MHz)
   output prim_mubi_pkg::mubi4_t io_clk_byp_ack_o,   // Switch IO clock to External clock
   output prim_mubi_pkg::mubi4_t all_clk_byp_ack_o,  // Switch all clocks to External clock
   output logic clk_src_sys_o,               // SYS Source Clock
@@ -202,7 +202,7 @@ prim_clock_gating #(
 
 // Sync to local AON clcok
 prim_mubi_pkg::mubi4_t io_clk_byp_req, all_clk_byp_req;
-logic sw_ext_freq_is_96m;
+prim_mubi_pkg::mubi4_t sw_ext_freq_is_96m;
 
 prim_mubi4_sync #(
   .StabilityCheck ( 1 ),
@@ -224,14 +224,14 @@ prim_mubi4_sync #(
   .mubi_o ( all_clk_byp_req )
 );
 
-prim_flop_2sync #(
-  .Width ( 1 ),
-  .ResetValue ( 1'b0 )
+prim_mubi4_sync #(
+  .StabilityCheck ( 1 ),
+  .ResetValue ( prim_mubi_pkg::MuBi4False )
 ) u_sw_ext_freq_sync (
   .clk_i ( clk_ext ),
   .rst_ni ( rst_aon_n ),
-  .d_i ( ext_freq_is_96m_i ),
-  .q_o ( sw_ext_freq_is_96m )
+  .mubi_i ( ext_freq_is_96m_i ),
+  .mubi_o ( sw_ext_freq_is_96m )
 );
 
 // Decode logic
@@ -268,7 +268,7 @@ assign sys_clk_byp_sel = sw_sys_clk_byp;
 assign io_clk_byp_sel  = sw_io_clk_byp || sw_all_clk_byp;
 assign usb_clk_byp_sel = sw_usb_clk_byp;
 assign aon_clk_byp_sel = sw_aon_clk_byp;
-assign ext_freq_is_96m = sw_ext_freq_is_96m;
+assign ext_freq_is_96m = prim_mubi_pkg::mubi4_test_true_strict(sw_ext_freq_is_96m);
 
 
 ////////////////////////////////////////

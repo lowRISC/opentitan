@@ -71,7 +71,7 @@ module ast #(
 
   // system source clock
   input clk_src_sys_en_i,                     // SYS Source Clock Enable
-  input clk_src_sys_jen_i,                    // SYS Source Clock Jitter Enable
+  input prim_mubi_pkg::mubi4_t clk_src_sys_jen_i, // SYS Source Clock Jitter Enable
   output logic clk_src_sys_o,                 // SYS Source Clock
   output logic clk_src_sys_val_o,             // SYS Source Clock Valid
 
@@ -139,7 +139,7 @@ module ast #(
 `endif
 
   // flash and external clocks
-  input ext_freq_is_96m_i,                          // External clock frequecy is 96MHz
+  input prim_mubi_pkg::mubi4_t ext_freq_is_96m_i,   // External clock frequecy is 96MHz
   input prim_mubi_pkg::mubi4_t all_clk_byp_req_i,   // All clocks bypass request
   output prim_mubi_pkg::mubi4_t all_clk_byp_ack_o,  // Switch all clocks to External clocks
   input prim_mubi_pkg::mubi4_t io_clk_byp_req_i,    // IO clock bypass request (for OTP bootstrap)
@@ -167,6 +167,9 @@ logic scan_mode, shift_en, scan_clk, scan_reset_n;
 logic vcc_pok, vcc_pok_h, vcc_pok_str;
 logic vcaon_pok, vcaon_pok_h, vcmain_pok;
 logic vcaon_pok_por, vcmain_pok_por;
+
+
+prim_mubi_pkg::mubi4_t jen;
 
 // Local (AST) System clock buffer
 ////////////////////////////////////////
@@ -368,7 +371,7 @@ assign clk_sys_ext = clk_osc_byp_i.sys;
 `endif
 
 sys_clk u_sys_clk (
-  .clk_src_sys_jen_i ( clk_src_sys_jen_i ),
+  .clk_src_sys_jen_i ( prim_mubi_pkg::mubi4_test_true_strict(jen) ),
   .clk_src_sys_en_i ( clk_src_sys_en_i ),
   .clk_sys_pd_ni ( clk_sys_pd_n ),
   .rst_sys_clk_ni ( rst_sys_clk_n ),
@@ -592,6 +595,19 @@ localparam int EntropyRateWidth = 4;
 logic [EntropyRateWidth-1:0] entropy_rate_o;
 logic vcmain_pok_por_sys, rst_src_sys_n;
 
+prim_mubi4_sync #(
+  .NumCopies(1),
+  .AsyncOn(1),
+  .StabilityCheck(1),
+  .ResetValue(prim_mubi_pkg::MuBi4False)
+) u_jitter_en_sync (
+  // not sure if the right clock / reset is used
+  .clk_i(clk_sys),
+  .rst_ni(rst_src_sys_n),
+  .mubi_i(clk_src_sys_jen_i),
+  .mubi_o(jen)
+);
+
 // Reset De-Assert Sync
 prim_flop_2sync #(
   .Width ( 1 ),
@@ -617,7 +633,7 @@ ast_entropy #(
   .clk_src_sys_i ( clk_sys ),
   .rst_src_sys_ni ( rst_src_sys_n ),
   .clk_src_sys_val_i ( clk_src_sys_val_o ),
-  .clk_src_sys_jen_i ( clk_src_sys_jen_i ),
+  .clk_src_sys_jen_i ( prim_mubi_pkg::mubi4_test_true_strict(jen) ),
   .entropy_req_o ( entropy_req_o )
 );  // of u_entropy
 
