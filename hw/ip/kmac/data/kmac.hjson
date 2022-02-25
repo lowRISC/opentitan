@@ -426,6 +426,20 @@
                 '''
           tags: ["shadowed_reg_path:u_cfg_reg_shadowed.u_cfg_reg_shadowed_err_processed"]
         } // f: err_processed
+        { bits: "26"
+          name: en_unsupported_modestrength
+          desc: '''Enable Unsupported Mode and Strength configs.
+
+            SW may set this field for KMAC to move forward with unsupported
+            Keccak Mode and Strength configurations, such as cSHAKE512.
+
+            If not set, KMAC won't propagate the SW command (CmdStart) to the
+            rest of the blocks (AppIntf, KMAC Core, SHA3).
+            '''
+          tags: [// Randomly write mem will cause this reg updated by design
+                 "excl:CsrAllTests:CsrExclWrite",
+                 "shadowed_reg_path:u_cfg_reg_shadowed.u_cfg_reg_shadowed_en_unsupported_modestrength"]
+        } // f: en_unsupported_modestrength
       ]
       tags: ["shadowed_reg_path:u_cfg_reg_shadowed"]
     } // R: CFG

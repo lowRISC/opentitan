@@ -215,6 +215,8 @@ module kmac_reg_top (
   logic cfg_shadowed_entropy_ready_wd;
   logic cfg_shadowed_err_processed_qs;
   logic cfg_shadowed_err_processed_wd;
+  logic cfg_shadowed_en_unsupported_modestrength_qs;
+  logic cfg_shadowed_en_unsupported_modestrength_wd;
   logic cmd_we;
   logic [3:0] cmd_cmd_wd;
   logic cmd_entropy_req_wd;
@@ -961,6 +963,40 @@ module kmac_reg_top (
     // Shadow register error conditions
     .err_update  (reg2hw.cfg_shadowed.err_processed.err_update),
     .err_storage (reg2hw.cfg_shadowed.err_processed.err_storage)
+  );
+
+  //   F[en_unsupported_modestrength]: 26:26
+  prim_subreg_shadow #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cfg_shadowed_en_unsupported_modestrength (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
+
+    // from register interface
+    .re     (cfg_shadowed_re),
+    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .wd     (cfg_shadowed_en_unsupported_modestrength_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (reg2hw.cfg_shadowed.en_unsupported_modestrength.qe),
+    .q      (reg2hw.cfg_shadowed.en_unsupported_modestrength.q),
+
+    // to register interface (read)
+    .qs     (cfg_shadowed_en_unsupported_modestrength_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.cfg_shadowed.en_unsupported_modestrength.err_update),
+    .err_storage (reg2hw.cfg_shadowed.en_unsupported_modestrength.err_storage)
   );
 
 
@@ -2316,6 +2352,8 @@ module kmac_reg_top (
   assign cfg_shadowed_entropy_ready_wd = reg_wdata[24];
 
   assign cfg_shadowed_err_processed_wd = reg_wdata[25];
+
+  assign cfg_shadowed_en_unsupported_modestrength_wd = reg_wdata[26];
   assign cmd_we = addr_hit[6] & reg_we & !reg_error;
 
   assign cmd_cmd_wd = reg_wdata[3:0];
@@ -2514,6 +2552,7 @@ module kmac_reg_top (
         reg_rdata_next[20] = cfg_shadowed_msg_mask_qs;
         reg_rdata_next[24] = cfg_shadowed_entropy_ready_qs;
         reg_rdata_next[25] = cfg_shadowed_err_processed_qs;
+        reg_rdata_next[26] = cfg_shadowed_en_unsupported_modestrength_qs;
       end
 
       addr_hit[6]: begin

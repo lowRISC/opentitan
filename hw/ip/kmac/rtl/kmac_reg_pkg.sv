@@ -136,6 +136,12 @@ package kmac_reg_pkg;
       logic        err_update;
       logic        err_storage;
     } err_processed;
+    struct packed {
+      logic        q;
+      logic        qe;
+      logic        err_update;
+      logic        err_storage;
+    } en_unsupported_modestrength;
   } kmac_reg2hw_cfg_shadowed_reg_t;
 
   typedef struct packed {
@@ -256,11 +262,11 @@ package kmac_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    kmac_reg2hw_intr_state_reg_t intr_state; // [1563:1561]
-    kmac_reg2hw_intr_enable_reg_t intr_enable; // [1560:1558]
-    kmac_reg2hw_intr_test_reg_t intr_test; // [1557:1552]
-    kmac_reg2hw_alert_test_reg_t alert_test; // [1551:1548]
-    kmac_reg2hw_cfg_shadowed_reg_t cfg_shadowed; // [1547:1522]
+    kmac_reg2hw_intr_state_reg_t intr_state; // [1565:1563]
+    kmac_reg2hw_intr_enable_reg_t intr_enable; // [1562:1560]
+    kmac_reg2hw_intr_test_reg_t intr_test; // [1559:1554]
+    kmac_reg2hw_alert_test_reg_t alert_test; // [1553:1550]
+    kmac_reg2hw_cfg_shadowed_reg_t cfg_shadowed; // [1549:1522]
     kmac_reg2hw_cmd_reg_t cmd; // [1521:1513]
     kmac_reg2hw_entropy_period_reg_t entropy_period; // [1512:1487]
     kmac_reg2hw_entropy_refresh_reg_t entropy_refresh; // [1486:1477]

@@ -259,7 +259,7 @@ module kmac
   sha3_pkg::keccak_strength_e reg_keccak_strength, app_keccak_strength;
 
   // RegIF of enabling unsupported mode & strength
-  logic cfg_en_unsupported_mode_strength;
+  logic cfg_en_unsupported_modestrength;
 
   // Indicating AppIntf is active. This signal is used to check SW error
   logic app_active;
@@ -525,7 +525,8 @@ module kmac
   assign msg_mask_en = cfg_msg_mask & msg_valid & msg_ready;
 
   // Enable unsupported mode & strength combination
-  assign cfg_en_unsupported_mode_strength = 1'b 1;
+  assign cfg_en_unsupported_modestrength =
+    reg2hw.cfg_shadowed.en_unsupported_modestrength.q;
 
   `ASSERT(EntropyReadyLatched_A, $rose(entropy_ready) |=> !entropy_ready)
 
@@ -1092,7 +1093,7 @@ module kmac
     .kmac_en_i      (reg_kmac_en        ),
     .cfg_prefix_6B_i(reg_ns_prefix[47:0]), // first 6B of PREFIX
 
-    .cfg_en_unsupported_modestrength_i (cfg_en_unsupported_mode_strength),
+    .cfg_en_unsupported_modestrength_i (cfg_en_unsupported_modestrength),
 
     // SW commands
     .sw_cmd_i(sw_cmd),
@@ -1259,44 +1260,47 @@ module kmac
 
   // SEC_CM: CFG_SHADOWED.CONFIG.SHADOW
   assign shadowed_storage_err = |{
-      reg2hw.cfg_shadowed.kmac_en.err_storage             ,
-      reg2hw.cfg_shadowed.kstrength.err_storage           ,
-      reg2hw.cfg_shadowed.mode.err_storage                ,
-      reg2hw.cfg_shadowed.msg_endianness.err_storage      ,
-      reg2hw.cfg_shadowed.state_endianness.err_storage    ,
-      reg2hw.cfg_shadowed.sideload.err_storage            ,
-      reg2hw.cfg_shadowed.entropy_mode.err_storage        ,
-      reg2hw.cfg_shadowed.entropy_fast_process.err_storage,
-      reg2hw.cfg_shadowed.msg_mask.err_storage            ,
-      reg2hw.cfg_shadowed.entropy_ready.err_storage       ,
-      reg2hw.cfg_shadowed.err_processed.err_storage
+      reg2hw.cfg_shadowed.kmac_en.err_storage                     ,
+      reg2hw.cfg_shadowed.kstrength.err_storage                   ,
+      reg2hw.cfg_shadowed.mode.err_storage                        ,
+      reg2hw.cfg_shadowed.msg_endianness.err_storage              ,
+      reg2hw.cfg_shadowed.state_endianness.err_storage            ,
+      reg2hw.cfg_shadowed.sideload.err_storage                    ,
+      reg2hw.cfg_shadowed.entropy_mode.err_storage                ,
+      reg2hw.cfg_shadowed.entropy_fast_process.err_storage        ,
+      reg2hw.cfg_shadowed.msg_mask.err_storage                    ,
+      reg2hw.cfg_shadowed.entropy_ready.err_storage               ,
+      reg2hw.cfg_shadowed.err_processed.err_storage               ,
+      reg2hw.cfg_shadowed.en_unsupported_modestrength.err_storage
     };
 
   assign shadowed_update_err  = |{
-      reg2hw.cfg_shadowed.kmac_en.err_update              ,
-      reg2hw.cfg_shadowed.kstrength.err_update            ,
-      reg2hw.cfg_shadowed.mode.err_update                 ,
-      reg2hw.cfg_shadowed.msg_endianness.err_update       ,
-      reg2hw.cfg_shadowed.state_endianness.err_update     ,
-      reg2hw.cfg_shadowed.sideload.err_update             ,
-      reg2hw.cfg_shadowed.entropy_mode.err_update         ,
-      reg2hw.cfg_shadowed.entropy_fast_process.err_update ,
-      reg2hw.cfg_shadowed.msg_mask.err_update             ,
-      reg2hw.cfg_shadowed.entropy_ready.err_update        ,
-      reg2hw.cfg_shadowed.err_processed.err_update
+      reg2hw.cfg_shadowed.kmac_en.err_update                     ,
+      reg2hw.cfg_shadowed.kstrength.err_update                   ,
+      reg2hw.cfg_shadowed.mode.err_update                        ,
+      reg2hw.cfg_shadowed.msg_endianness.err_update              ,
+      reg2hw.cfg_shadowed.state_endianness.err_update            ,
+      reg2hw.cfg_shadowed.sideload.err_update                    ,
+      reg2hw.cfg_shadowed.entropy_mode.err_update                ,
+      reg2hw.cfg_shadowed.entropy_fast_process.err_update        ,
+      reg2hw.cfg_shadowed.msg_mask.err_update                    ,
+      reg2hw.cfg_shadowed.entropy_ready.err_update               ,
+      reg2hw.cfg_shadowed.err_processed.err_update               ,
+      reg2hw.cfg_shadowed.en_unsupported_modestrength.err_update
     };
 
   logic unused_cfg_shadowed_qe;
   assign unused_cfg_shadowed_qe = ^{
-    reg2hw.cfg_shadowed.kmac_en.qe              ,
-    reg2hw.cfg_shadowed.kstrength.qe            ,
-    reg2hw.cfg_shadowed.mode.qe                 ,
-    reg2hw.cfg_shadowed.msg_endianness.qe       ,
-    reg2hw.cfg_shadowed.state_endianness.qe     ,
-    reg2hw.cfg_shadowed.sideload.qe             ,
-    reg2hw.cfg_shadowed.entropy_mode.qe         ,
-    reg2hw.cfg_shadowed.entropy_fast_process.qe ,
-    reg2hw.cfg_shadowed.msg_mask.qe
+    reg2hw.cfg_shadowed.kmac_en.qe                     ,
+    reg2hw.cfg_shadowed.kstrength.qe                   ,
+    reg2hw.cfg_shadowed.mode.qe                        ,
+    reg2hw.cfg_shadowed.msg_endianness.qe              ,
+    reg2hw.cfg_shadowed.state_endianness.qe            ,
+    reg2hw.cfg_shadowed.sideload.qe                    ,
+    reg2hw.cfg_shadowed.entropy_mode.qe                ,
+    reg2hw.cfg_shadowed.entropy_fast_process.qe        ,
+    reg2hw.cfg_shadowed.msg_mask.qe                    ,
+    reg2hw.cfg_shadowed.en_unsupported_modestrength.qe
     };
 
   // Alerts
