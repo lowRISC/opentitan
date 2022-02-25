@@ -42,6 +42,18 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
+  // Need to override the default output directory
+  overrides: [
+    {
+      name: scratch_path
+      value: "{scratch_base_path}/{variant}-{flow}-{tool}"
+    }
+    {
+      name: rel_path
+      value: "hw/ip/{variant}/dv"
+    }
+  ]
+
   build_modes: [
     {
       name: aes_no_masking
