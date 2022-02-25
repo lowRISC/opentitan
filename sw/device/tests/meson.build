@@ -830,6 +830,29 @@ sw_tests += {
   }
 }
 
+#PWM test
+pwm_test_lib = declare_dependency(
+  link_with: static_library(
+    'pwm_test_lib',
+    sources: ['pwm_test.c'],
+    dependencies: [
+      sw_lib_dif_aon_timer,
+      sw_lib_dif_pwrmgr,
+      sw_lib_dif_rstmgr,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+      sw_lib_testing_aon_timer_testutils,
+      sw_lib_testing_pwrmgr_testutils,
+      sw_lib_testing_rstmgr_testutils,
+    ],
+  ),
+)
+sw_tests += {
+  'pwm_test': {
+    'library': pwm_test_lib,
+  }
+}
+
 ###############################################################################
 # Auto-generated tests
 ###############################################################################
