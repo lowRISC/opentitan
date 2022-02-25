@@ -27,10 +27,10 @@ int main(int argc, char **argv) {
                                // stalls to test muxing.
 
   // Phase 1 - Theta, Rho, Pi - Takes 1 cycle.
-  tb.m_core.sel_i = 0;
+  tb.m_core.sel_i = 0x5;
   tb.tick();
   // Phase 2 - Chi, Iota - Takes 2 cycles.
-  tb.m_core.sel_i = 1;
+  tb.m_core.sel_i = 0xA;
   tb.tick();
   tb.tick();
 
