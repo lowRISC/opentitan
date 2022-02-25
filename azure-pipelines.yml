@@ -79,10 +79,6 @@ jobs:
   - bash: ci/scripts/include-guard.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Check formatting on header guards
-  - bash: ci/scripts/verible-format.sh
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Check formatting of files on allow list with Verible
-    continueOnError: true
   - bash: ci/scripts/verible-lint.sh rtl
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Style-Lint RTL Verilog source files with Verible
