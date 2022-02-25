@@ -273,7 +273,9 @@ class csr_rw_seq extends csr_base_seq;
       begin
         uvm_reg_map map = test_csrs[i].get_default_map();
         uvm_reg_adapter adapter = map.get_adapter();
-        supports_byte_enable = adapter.supports_byte_enable;
+        if (adapter != null) begin
+          supports_byte_enable = adapter.supports_byte_enable;
+        end
       end
 
       // check if parent block or register is excluded from write
