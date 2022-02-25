@@ -31,6 +31,7 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
     super.run_phase(phase);
     fork
       monitor_por();
+      monitor_capture();
     join_none
   endtask
 
@@ -49,6 +50,17 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
           ++reset_count;
           `DV_CHECK_GT(stretch_cycles, 0)
           cov.reset_stretcher_cg.sample(stretch_cycles, reset_count);
+        end
+      end
+  endtask
+
+  task monitor_capture();
+    if (!cfg.en_cov) return;
+    forever
+      @cfg.rstmgr_vif.reset_info begin
+        if (cfg.rstmgr_vif.reset_info != '0) begin
+          cov.alert_info_capture_cg.sample(cfg.rstmgr_vif.reset_info, cfg.rstmgr_vif.alert_info_en);
+          cov.cpu_info_capture_cg.sample(cfg.rstmgr_vif.reset_info, cfg.rstmgr_vif.cpu_info_en);
         end
       end
   endtask
@@ -108,6 +120,9 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
       "alert_info": begin
         // Read only.
         do_read_check = 1'b0;
+        if (cfg.en_cov) begin
+          cov.alert_info_access_cg.sample(ral.alert_info_ctrl.index.get());
+        end
       end
       "cpu_regwen": begin
         // RW0C.
@@ -124,12 +139,21 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
       "cpu_info": begin
         // Read only.
         do_read_check = 1'b0;
+        if (cfg.en_cov) begin
+          cov.cpu_info_access_cg.sample(ral.cpu_info_ctrl.index.get());
+        end
       end
       "sw_rst_regwen": begin
       end
       "sw_rst_ctrl_n": begin
         // TODO Check with bitwise enables from sw_rst_regwen.
         do_read_check = 1'b0;
+        if (cfg.en_cov && addr_phase_write) begin
+          sw_rst_t enables = ral.sw_rst_regwen[0].get();
+          foreach (cov.sw_rst_cg_wrap[i]) begin
+            cov.sw_rst_cg_wrap[i].sample(enables[i], item.a_data[i]);
+          end
+        end
       end
       "err_code": begin
         // Set by hardware.
