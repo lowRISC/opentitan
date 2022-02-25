@@ -20,9 +20,11 @@
               "{conn_csvs_dir}/clkmgr_secure.csv",
               "{conn_csvs_dir}/clkmgr_timers.csv",
               "{conn_csvs_dir}/clkmgr_trans.csv",
+              "{conn_csvs_dir}/flash_ast.csv",
               "{conn_csvs_dir}/otbn_ast.csv",
+              "{conn_csvs_dir}/pwrmgr_rstmgr.csv",
               "{conn_csvs_dir}/rom_ctrl_ast.csv",
-              "{conn_csvs_dir}/pwrmgr_rstmgr.csv"]
+              "{conn_csvs_dir}/spi_device_ast.csv"]
 
   // TODO: reduce run time and turn on coverage
   cov: false
