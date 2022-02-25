@@ -38,9 +38,9 @@ index 7092c858a..101d3bc7e 100644
    sw   t0, CLKMGR_CLK_HINTS_REG_OFFSET(a0)
 
 -  // Check if AST initialization should be skipped.
--  li   t0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
--            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + \
--            OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET)
+-  li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+-            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
+-  lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET(a0)
 -  li   t1, MULTIBIT_ASM_BOOL4_TRUE
 -  bne  t0, t1, .L_ast_init_skip
 -

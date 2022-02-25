@@ -59,6 +59,11 @@ class chip_base_vseq #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_ba
     cfg.mem_bkdr_util_h[FlashBank1Info].set_mem();
     // Backdoor load the OTP image.
     cfg.mem_bkdr_util_h[Otp].load_mem_from_file(cfg.otp_images[cfg.use_otp_image]);
+    // Backdoor load AST setup.
+    // The delay here is required to avoid race condition with the image load above
+    #0;
+    cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgAstInitEnOffset,
+                                     prim_mubi_pkg::MuBi4True);
     // Randomize the ROM image. Subclasses that have an actual ROM image will load it later.
     cfg.mem_bkdr_util_h[Rom].randomize_mem();
     // Bring the chip out of reset.
