@@ -494,6 +494,7 @@ def elab_intermodule(topcfg: OrderedDict):
             sig["top_signame"] = sig_name
         else:
             conn_type = True
+        sig["conn_type"] = conn_type
 
         if "index" not in sig:
             sig["index"] = -1
@@ -963,16 +964,28 @@ def im_netname(sig: OrderedDict,
 
     # External signal handling
     if "external" in obj and obj["external"]:
-        pairs = {
-            # act , suffix: additional suffix
-            ("req", "req"): "_o",
-            ("req", "rsp"): "_i",
-            ("rsp", "req"): "_i",
-            ("rsp", "rsp"): "_o",
-            ("req", ""): "_o",
-            ("rcv", ""): "_i",
-            ("none", "io"): "_io"
-        }
+        if obj["conn_type"]:
+            pairs = {
+                # act , suffix: additional suffix
+                ("req", "req"): "",
+                ("req", "rsp"): "_i",
+                ("rsp", "req"): "_i",
+                ("rsp", "rsp"): "",
+                ("req", ""): "",
+                ("rcv", ""): "_i",
+                ("none", "io"): ""
+            }
+        else:
+            pairs = {
+                # act , suffix: additional suffix
+                ("req", "req"): "_o",
+                ("req", "rsp"): "_i",
+                ("rsp", "req"): "_i",
+                ("rsp", "rsp"): "_o",
+                ("req", ""): "_o",
+                ("rcv", ""): "_i",
+                ("none", "io"): "_io"
+            }
         suffix_s += pairs[(obj['act'], suffix)]
 
     return "{top_signame}{suffix}{index}".format(
