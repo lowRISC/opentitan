@@ -342,8 +342,7 @@ module rv_dm
     .tl_i         (sba_tl_h_i_int)
   );
 
-  // DBG doesn't handle error responses so raise assertion if we see one
-  `ASSERT(dbgNoErrorResponse, host_r_valid |-> !host_r_err)
+  // DBG doesn't handle error responses - we silently drop it.
 
   logic unused_host_r_err;
   assign unused_host_r_err = host_r_err;
