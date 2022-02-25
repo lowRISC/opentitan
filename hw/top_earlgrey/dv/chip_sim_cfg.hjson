@@ -193,6 +193,13 @@
   // This allows an arbitrary number of SW images to be supplied to the TB.
   tests: [
     {
+      name: chip_sw_sleep_pwm_pulses
+      uvm_test_seq: chip_sw_pwm_pulses_vseq
+      sw_images: ["sw/device/tests/pwm_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=4000000"]
+    }
+    {
       name: chip_sw_uart_tx_rx
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
       sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
