@@ -1,0 +1,26 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:jtag_dmi_agent"
+description: "JTAG_DMI DV UVM monitor and RAL."
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_utils
+      - lowrisc:dv:dv_base_reg
+      - lowrisc:dv:csr_utils
+      - lowrisc:dv:dv_lib
+      - lowrisc:dv:jtag_agent
+    files:
+      - jtag_dmi_agent_pkg.sv
+      - jtag_dmi_reg_block.sv: {is_include_file: true}
+      - jtag_dmi_reg_frontdoor.sv: {is_include_file: true}
+      - jtag_dmi_item.sv: {is_include_file: true}
+      - jtag_dmi_monitor.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

@@ -1,0 +1,554 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Expansion of JTAG DMI CSRs within rv_dm used for DV purposes.
+//
+// The DM CSRs is specified in the PULP debug system documentation here:
+// https://github.com/pulp-platform/riscv-dbg/blob/master/doc/debug-system.md#debug-module-registers
+//
+// The full list of CSRs are defined in the RISCV debug specification 0.13.2, section 3.12:
+// https://github.com/riscv/riscv-debug-spec/raw/4e0bb0fc2d843473db2356623792c6b7603b94d4/riscv-debug-release.pdf
+//
+// Not all CSRs are described here - only the ones implemented in the PULP design (spec
+// referenced above).
+// TODO: define ALL CSRs.
+//
+// These CSRs are accessible only from the JTAG interfaces via the DMI DTM register. These CSRs are
+// hence, not 'comportable' in nature, and are not captured in any design Hjson spec. This portion
+// of the design is also not maintained in the OpenTitan repo, but externally in the PULP repo that
+// is vendored into our repo. Please see hw/vendor/pulp_riscv_dbg/src/dm_pkg.sv and other relevant
+// sources in that area for more details.
+//
+// This file enables the RAL model generation, which makes the DV testing a bit more effecive. The
+// generated source is further hand-edited and checked-in alongside this file as
+// jtag_dmi_ral_pkg.sv.
+{ name: "jtag_dmi",
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni"}
+  ]
+  // Actually, the bus interface is JTAG, which is not relevant for our purposes.
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
+  regwidth: "32",
+  registers: [
+    { skipto: "0x4" }
+    { multireg: {
+        cname: "ABSTRACTDATA"
+        name:  "ABSTRACTDATA"
+        desc:  "Abstract Data"
+        count: "12"
+        swaccess: "rw"
+        hwaccess: "hro"
+        fields: [
+          { bits: "31:0"
+            resval: "0"
+          }
+        ]
+      }
+    },
+    { name: "DMCONTROL",
+      desc: "DM control",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          name: "dmactive",
+          desc: "",
+          swaccess: "rw",
+          resval: "0"
+        },
+        { bits: "1",
+          name: "ndmreset",
+          desc: "",
+          swaccess: "rw",
+          resval: "0"
+        },
+        { bits: "2",
+          name: "clrresethaltreq",
+          desc: "",
+          swaccess: "rw1c",
+          resval: "0"
+        },
+        { bits: "3",
+          name: "setresethaltreq",
+          desc: "",
+          swaccess: "rw1c",
+          resval: "0"
+        },
+        { bits: "15:6",
+          name: "hartselhi",
+          desc: "",
+          swaccess: "rw",
+          resval: "0"
+        },
+        { bits: "25:16",
+          name: "hartsello",
+          desc: "",
+          swaccess: "rw",
+          resval: "0"
+        },
+        { bits: "26",
+          name: "hasel",
+          desc: "",
+          swaccess: "rw",
+          resval: "0"
+        },
+        { bits: "28",
+          name: "ackhavereset",
+          desc: "",
+          swaccess: "rw1c",
+          resval: "0"
+        },
+        { bits: "29",
+          name: "hartreset",
+          desc: "",
+          swaccess: "rw",
+          resval: "0"
+        },
+        { bits: "30",
+          name: "resumereq",
+          desc: "",
+          swaccess: "rw1c",
+          resval: "0"
+        },
+        { bits: "31",
+          name: "haltreq",
+          desc: "",
+          swaccess: "wo",
+          resval: "0"
+        },
+      ]
+    },
+    { name: "DMSTATUS",
+      desc: "DM satus",
+      swaccess: "ro",
+      hwaccess: "hro",
+      fields: [
+        { bits: "3:0",
+          name: "version",
+          desc: "",
+          resval: "2"
+        },
+        { bits: "4",
+          name: "confstrptrvalid",
+          desc: "",
+          resval: "0"
+        },
+        { bits: "5",
+          name: "hasresethaltreq",
+          desc: "",
+          resval: "0"
+        },
+        { bits: "6",
+          name: "authbusy",
+          desc: "",
+          resval: "0"
+        },
+        { bits: "7",
+          name: "authenticated",
+          desc: "",
+          resval: "0"
+        },
+        { bits: "8",
+          name: "anyhalted",
+          desc: "",
+          resval: "0"
+        },
+        { bits: "9",
+          name: "allhalted",
+          desc: "",
+          resval: "0"
+        },
+        { bits: "10",
+          name: "anyrunning",
+          desc: "",
+          resval: "0"
+        },
+        { bits: "11",
+          name: "allrunning",
+          desc: "",
+          resval: "0"
+        },
+        { bits: "12",
+          name: "anyunavail",
+          desc: "",
+          resval: "0"
+        },
+        { bits: "13",
+          name: "allunavail",
+          desc: "",
+          resval: "0"
+        },
+        { bits: "14",
+          name: "anynonexistent",
+          desc: "",
+          resval: "0"
+        },
+        { bits: "15",
+          name: "allnonexistent",
+          desc: "",
+          resval: "0"
+        },
+        { bits: "16",
+          name: "anyresumeack",
+          desc: "",
+          resval: "0"
+        },
+        { bits: "17",
+          name: "allresumeack",
+          desc: "",
+          resval: "0"
+        },
+        { bits: "18",
+          name: "anyhavereset",
+          desc: "",
+          resval: "0"
+        },
+        { bits: "19",
+          name: "allhavereset",
+          desc: "",
+          resval: "0"
+        },
+        { bits: "22",
+          name: "impebreak",
+          desc: "",
+          resval: "0"
+        },
+      ]
+    },
+    { name: "HARTINFO",
+      desc: "Hart info",
+      swaccess: "ro",
+      hwaccess: "hro",
+      fields: [
+        { bits: "11:0",
+          name: "dataaddr",
+          desc: "",
+          resval: "0"
+        },
+        { bits: "15:12",
+          name: "datasize",
+          desc: "",
+          resval: "0"
+        },
+        { bits: "16",
+          name: "dataaccess",
+          desc: "",
+          resval: "0"
+        },
+        { bits: "23:20",
+          name: "nscratch",
+          desc: "",
+          resval: "0"
+        },
+      ]
+    },
+    { name: "HALTSUM1",
+      desc: "Halt Summary 1",
+      swaccess: "ro",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0",
+          resval: "0"
+        },
+      ]
+    },
+    { name: "ABSTRACTCS",
+      desc: "Abstract Control and Status",
+      hwaccess: "hro",
+      fields: [
+        { bits: "3:0",
+          name: "datacount",
+          desc: "",
+          swaccess: "ro",
+          resval: "0"
+        },
+        { bits: "10:8",
+          name: "cmderr",
+          desc: "",
+          swaccess: "rw1c",
+          resval: "0"
+        },
+        { bits: "12",
+          name: "busy",
+          desc: "",
+          swaccess: "ro",
+          resval: "0"
+        },
+        { bits: "31:29",
+          name: "progbufsize",
+          desc: "",
+          swaccess: "ro",
+          resval: "0"
+        },
+      ]
+    },
+    { name: "COMMAND",
+      desc: "Abstract Command",
+      swaccess: "wo",
+      hwaccess: "hro",
+      fields: [
+        { bits: "23:0",
+          name: "control",
+          desc: "",
+          resval: "0"
+        },
+        { bits: "31:24",
+          name: "cmdtype",
+          desc: "",
+          resval: "0"
+        },
+      ]
+    },
+    { name: "ABSTRACTAUTO",
+      desc: "Abstract Command Autoexec",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "11:0",
+          name: "autoexecdata",
+          desc: "",
+          resval: "0"
+        },
+        { bits: "31:16",
+          name: "autoexecprogbuf",
+          desc: "",
+          resval: "0"
+        },
+      ]
+    },
+    { multireg: {
+        cname: "PROGBUF"
+        name:  "PROGBUF"
+        desc:  "Program Buffer"
+        count: "16"
+        swaccess: "rw"
+        hwaccess: "hro"
+        fields: [
+          { bits: "31:0"
+            name: "data",
+            desc: "",
+            resval: "0"
+          }
+        ]
+      }
+    },
+    { name: "HALTSUM2",
+      desc: "Halt Summary 2",
+      swaccess: "ro",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0",
+          resval: "0"
+        },
+      ]
+    },
+    { name: "HALTSUM3",
+      desc: "Halt Summary 3",
+      swaccess: "ro",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0",
+          resval: "0"
+        },
+      ]
+    },
+    { name: "SBCS",
+      desc: "System Bus Access Control and Status",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          name: "sbaccess8",
+          desc: "",
+          swaccess: "ro",
+          resval: "0"
+        },
+        { bits: "1",
+          name: "sbaccess16",
+          desc: "",
+          swaccess: "ro",
+          resval: "0"
+        },
+        { bits: "2",
+          name: "sbaccess32",
+          desc: "",
+          swaccess: "ro",
+          resval: "0"
+        },
+        { bits: "3",
+          name: "sbaccess64",
+          desc: "",
+          swaccess: "ro",
+          resval: "0"
+        },
+        { bits: "4",
+          name: "sbaccess128",
+          desc: "",
+          swaccess: "ro",
+          resval: "0"
+        },
+        { bits: "11:5",
+          name: "sbasize",
+          desc: "",
+          swaccess: "ro",
+          resval: "0"
+        },
+        { bits: "14:12",
+          name: "sberror",
+          desc: "",
+          swaccess: "rw1c",
+          resval: "0"
+        },
+        { bits: "15",
+          name: "sbreadondata",
+          desc: "",
+          swaccess: "rw",
+          resval: "0"
+        },
+        { bits: "16",
+          name: "sbautoincrement",
+          desc: "",
+          swaccess: "rw",
+          resval: "0"
+        },
+        { bits: "19:17",
+          name: "sbaccess",
+          desc: "",
+          swaccess: "rw",
+          resval: "2"
+        },
+        { bits: "20",
+          name: "sbreadonaddr",
+          desc: "",
+          swaccess: "rw",
+          resval: "0"
+        },
+        { bits: "21",
+          name: "sbbusy",
+          desc: "",
+          swaccess: "ro",
+          resval: "0"
+        },
+        { bits: "22",
+          name: "sbbusyerror",
+          desc: "",
+          swaccess: "rw1c",
+          resval: "0"
+        },
+        { bits: "31:29",
+          name: "sbversion",
+          desc: "",
+          swaccess: "ro",
+          resval: "1"
+        },
+      ]
+    },
+    { name: "SBADDRESS0",
+      desc: "System Bus Address 31:0",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0",
+          name: "address",
+          desc: "",
+          resval: "0"
+        },
+      ]
+    },
+    { name: "SBADDRESS1",
+      desc: "System Bus Address 63:32",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0",
+          name: "address",
+          desc: "",
+          resval: "0"
+        },
+      ]
+    },
+    { name: "SBADDRESS2",
+      desc: "System Bus Address 95:64",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0",
+          name: "address",
+          desc: "",
+          resval: "0"
+        },
+      ]
+    },
+    { name: "SBADDRESS3",
+      desc: "System Bus Address 127:96",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0",
+          name: "address",
+          desc: "",
+          resval: "0"
+        },
+      ]
+    },
+    { name: "SBDATA0",
+      desc: "System Bus Data 31:0",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0",
+          name: "data",
+          desc: "",
+          resval: "0"
+        },
+      ]
+    },
+    { name: "SBDATA1",
+      desc: "System Bus Data 63:32",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0",
+          name: "data",
+          desc: "",
+          resval: "0"
+        },
+      ]
+    },
+    { name: "SBDATA2",
+      desc: "System Bus Data 95:64",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0",
+          name: "data",
+          desc: "",
+          resval: "0"
+        },
+      ]
+    },
+    { name: "SBDATA3",
+      desc: "System Bus Data 127:96",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0",
+          name: "data",
+          desc: "",
+          resval: "0"
+        },
+      ]
+    },
+    { name: "HALTSUM0",
+      desc: "Halt Summary 0",
+      swaccess: "ro",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0",
+          resval: "0"
+        },
+      ]
+    },
+  ]
+}
