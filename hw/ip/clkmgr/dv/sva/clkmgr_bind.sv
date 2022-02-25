@@ -112,7 +112,7 @@ module clkmgr_bind;
     .lc_step_down_ack(io_clk_byp_ack_i == prim_mubi_pkg::MuBi4True),
     .sw_step_down_ctrl(lc_hw_debug_en_i == lc_ctrl_pkg::On &&
                        reg2hw.extclk_ctrl.sel.q == prim_mubi_pkg::MuBi4True &&
-                       reg2hw.extclk_ctrl.low_speed_sel.q == prim_mubi_pkg::MuBi4True),
+                       reg2hw.extclk_ctrl.hi_speed_sel.q == prim_mubi_pkg::MuBi4False),
     .sw_step_down_ack(all_clk_byp_ack_i == prim_mubi_pkg::MuBi4True),
     .sw_step_up_ack(all_clk_byp_ack_i == prim_mubi_pkg::MuBi4False),
     .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True)
@@ -129,7 +129,7 @@ module clkmgr_bind;
     .lc_step_down_ack(io_clk_byp_ack_i == prim_mubi_pkg::MuBi4True),
     .sw_step_down_ctrl(lc_hw_debug_en_i == lc_ctrl_pkg::On &&
                        reg2hw.extclk_ctrl.sel.q == prim_mubi_pkg::MuBi4True &&
-                       reg2hw.extclk_ctrl.low_speed_sel.q == prim_mubi_pkg::MuBi4True),
+                       reg2hw.extclk_ctrl.hi_speed_sel.q == prim_mubi_pkg::MuBi4False),
     .sw_step_down_ack(all_clk_byp_ack_i == prim_mubi_pkg::MuBi4True),
     .sw_step_up_ack(all_clk_byp_ack_i == prim_mubi_pkg::MuBi4False),
     .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True)

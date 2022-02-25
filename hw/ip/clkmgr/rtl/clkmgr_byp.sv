@@ -19,7 +19,6 @@ module clkmgr_byp
   output lc_tx_t          lc_clk_byp_ack_o,
   // interaction with software
   input  mubi4_t          byp_req_i,
-  input  mubi4_t          low_speed_sel_i,
   // interaction with ast
   output mubi4_t          all_clk_byp_req_o,
   input  mubi4_t          all_clk_byp_ack_i,
@@ -27,7 +26,7 @@ module clkmgr_byp
   input  mubi4_t          io_clk_byp_ack_i,
   // interaction with dividers
   input  [NumDivClks-1:0] step_down_acks_i,
-  output logic            step_down_req_o
+  output mubi4_t          step_down_req_o
 );
 
   import prim_mubi_pkg::MuBi4Width;
@@ -38,9 +37,52 @@ module clkmgr_byp
   import prim_mubi_pkg::mubi4_test_false_strict;
   import prim_mubi_pkg::mubi4_test_true_strict;
 
+  // synchornize incoming lc signals
+  lc_tx_t en;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(1),
+    .ResetValueIsOn(0)
+  ) u_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(en_i),
+    .lc_en_o(en)
+  );
+
+  typedef enum logic [1:0] {
+    LcClkBypReqIoReq,
+    LcClkBypReqLcAck,
+    LcClkBypReqLast
+  } lc_clk_byp_req_e;
+
+  lc_tx_t [LcClkBypReqLast-1:0] lc_clk_byp_req;
+  prim_lc_sync #(
+    .NumCopies(int'(LcClkBypReqLast)),
+    .AsyncOn(1),
+    .ResetValueIsOn(0)
+  ) u_lc_byp_req (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_clk_byp_req_i),
+    .lc_en_o(lc_clk_byp_req)
+  );
+
+  // synchronize step down acks
+  logic [NumDivClks-1:0] step_down_acks_sync;
+  prim_flop #(
+    .Width(NumDivClks),
+    .ResetValue(0)
+  ) u_step_down_acks_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(step_down_acks_i),
+    .q_o(step_down_acks_sync)
+  );
+
   // life cycle handling
   mubi4_t io_clk_byp_req_d;
-  assign io_clk_byp_req_d = (lc_clk_byp_req_i == lc_ctrl_pkg::On) ?
+  assign io_clk_byp_req_d = (lc_clk_byp_req[LcClkBypReqIoReq] == lc_ctrl_pkg::On) ?
                             MuBi4True :
                             MuBi4False;
 
@@ -58,18 +100,19 @@ module clkmgr_byp
   prim_lc_sender u_send (
    .clk_i,
    .rst_ni,
-   .lc_en_i((&step_down_acks_i) ? lc_clk_byp_req_i : lc_ctrl_pkg::Off),
+   .lc_en_i(&step_down_acks_sync ? lc_clk_byp_req[LcClkBypReqLcAck] : lc_ctrl_pkg::Off),
    .lc_en_o(lc_clk_byp_ack_o)
   );
 
   // software switch request handling
   mubi4_t dft_en;
-  assign dft_en = (en_i == lc_ctrl_pkg::On) ? MuBi4True : MuBi4False;
+  assign dft_en = (en == lc_ctrl_pkg::On) ? MuBi4True : MuBi4False;
 
   mubi4_t all_clk_byp_req_d;
   assign all_clk_byp_req_d = mubi4_and_hi(byp_req_i, dft_en);
 
   prim_mubi4_sender #(
+    .AsyncOn(1),
     .ResetValue(MuBi4False),
     .EnSecBuf(1)
   ) u_all_byp_req (
@@ -127,15 +170,17 @@ module clkmgr_byp
   end
   // when in external clock state, allow low speed select to directly control
   // clock divider.
-  assign sw_step_down_req = mubi4_and_hi(sw_step_down_en, low_speed_sel_i);
+
+  // TODO
+  // This will be updated to a different signaling, see #10890
+  assign sw_step_down_req = sw_step_down_en;
 
   // combine requests
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      step_down_req_o <= '0;
+      step_down_req_o <= MuBi4False;
     end else begin
-      step_down_req_o <=
-        mubi4_test_true_strict(mubi4_or_hi(lc_step_down_req, sw_step_down_req));
+      step_down_req_o <= mubi4_or_hi(lc_step_down_req, sw_step_down_req);
     end
   end
 

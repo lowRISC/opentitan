@@ -43,7 +43,7 @@ interface clkmgr_if (
   prim_mubi_pkg::mubi4_t all_clk_byp_req;
   prim_mubi_pkg::mubi4_t all_clk_byp_ack;
 
-  logic jitter_en_o;
+  prim_mubi_pkg::mubi4_t jitter_en_o;
   clkmgr_pkg::clkmgr_out_t clocks_o;
 
   // Internal DUT signals.
@@ -81,8 +81,7 @@ interface clkmgr_if (
 
   prim_mubi_pkg::mubi4_t extclk_ctrl_csr_step_down;
   always_comb begin
-    extclk_ctrl_csr_step_down = prim_mubi_pkg::mubi4_t'(
-        `CLKMGR_HIER.reg2hw.extclk_ctrl.low_speed_sel.q);
+     extclk_ctrl_csr_step_down = ~`CLKMGR_HIER.hi_speed_sel_o;
   end
 
   prim_mubi_pkg::mubi4_t jitter_enable_csr;
