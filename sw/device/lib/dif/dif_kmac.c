@@ -157,6 +157,7 @@ dif_result_t dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config) {
       break;
     case kDifKmacEntropyModeSoftware:
       entropy_mode_value = KMAC_CFG_SHADOWED_ENTROPY_MODE_VALUE_SW_MODE;
+      entropy_ready = true;
       break;
     default:
       return kDifBadArg;
