@@ -11,10 +11,7 @@ cc_library(
 
 cc_library(
     name = "testing",
-    srcs = [
-        "mock_mmio.cc",
-        "//sw/device/lib/base:mmio_src",
-    ],
+    srcs = ["mock_mmio.cc"],
     hdrs = [
         "mock_mmio.h",
         "mock_mmio_test_utils.h",
