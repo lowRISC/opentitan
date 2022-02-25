@@ -5,7 +5,26 @@
 // JTAG DTM registers based on RISCV JTAG debug spec (see section 6.1.2):
 // https://github.com/riscv/riscv-debug-spec/raw/4e0bb0fc2d843473db2356623792c6b7603b94d4/riscv-debug-release.pdf
 
-class jtag_dtm_reg_bypass extends dv_base_reg;
+class jtag_dtm_base_reg extends dv_base_reg;
+  `uvm_object_utils(jtag_dtm_base_reg)
+
+  function new(string       name = "jtag_dtm_base_reg",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  // When reading DTM CSR, we write the previous value that we through we wrote before, to maintain
+  // consistency, since the JTAG protocol parallely writes and reads the DR at all times. This
+  // function is used to return the data we want to write to the DTM DR on reads. For the most part,
+  // it is the mirrored value. But in some cases, we may not want to rewrite some fields.
+  virtual function uvm_reg_data_t get_wdata_for_read();
+    return get_mirrored_value();
+  endfunction
+
+endclass
+
+class jtag_dtm_reg_bypass extends jtag_dtm_base_reg;
   // fields
   rand dv_base_reg_field bypass;
 
@@ -36,7 +55,7 @@ class jtag_dtm_reg_bypass extends dv_base_reg;
   endfunction : build
 endclass : jtag_dtm_reg_bypass
 
-class jtag_dtm_reg_idcode extends dv_base_reg;
+class jtag_dtm_reg_idcode extends jtag_dtm_base_reg;
   // fields
   rand dv_base_reg_field rsvd;
   rand dv_base_reg_field manufld;
@@ -115,7 +134,7 @@ class jtag_dtm_reg_idcode extends dv_base_reg;
   endfunction : build
 endclass : jtag_dtm_reg_idcode
 
-class jtag_dtm_reg_dtmcs extends dv_base_reg;
+class jtag_dtm_reg_dtmcs extends jtag_dtm_base_reg;
   // fields
   rand dv_base_reg_field version;
   rand dv_base_reg_field abits;
@@ -252,11 +271,11 @@ class jtag_dtm_reg_dtmcs extends dv_base_reg;
   endfunction : build
 endclass : jtag_dtm_reg_dtmcs
 
-class jtag_dtm_reg_dmi extends dv_base_reg;
+class jtag_dtm_reg_dmi extends jtag_dtm_base_reg;
   // fields
   rand dv_base_reg_field op;
   rand dv_base_reg_field data;
-  rand dv_base_reg_field addresss;
+  rand dv_base_reg_field address;
 
   `uvm_object_utils(jtag_dtm_reg_dmi)
 
@@ -274,14 +293,15 @@ class jtag_dtm_reg_dmi extends dv_base_reg;
       .size(2),
       .lsb_pos(0),
       .access("RW"),
-      .volatile(0),
+      .volatile(1),
       .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
 
     op.set_original_access("RW");
-    csr_excl.add_excl(op.get_full_name(), CsrExclWrite, CsrAllTests);
+    // op is modified by the HW.
+    csr_excl.add_excl(op.get_full_name(), CsrExclCheck, CsrAllTests);
 
     data = (dv_base_reg_field::type_id::create("data"));
     data.configure(
@@ -297,8 +317,8 @@ class jtag_dtm_reg_dmi extends dv_base_reg;
 
     data.set_original_access("RW");
 
-    addresss = (dv_base_reg_field::type_id::create("addresss"));
-    addresss.configure(
+    address = (dv_base_reg_field::type_id::create("address"));
+    address.configure(
       .parent(this),
       .size(7 /* Same as abits. */),
       .lsb_pos(34),
@@ -309,9 +329,14 @@ class jtag_dtm_reg_dmi extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    addresss.set_original_access("RW");
+    address.set_original_access("RW");
 
   endfunction : build
+
+  // On reads, we do not want to write the op field.
+  virtual function uvm_reg_data_t get_wdata_for_read();
+    return get_csr_val_with_updated_field(op, get_mirrored_value(), 0);
+  endfunction
 endclass : jtag_dtm_reg_dmi
 
 class jtag_dtm_reg_block extends dv_base_reg_block;

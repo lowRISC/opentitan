@@ -7,7 +7,7 @@ class jtag_dtm_reg_adapter extends uvm_reg_adapter;
   `uvm_object_utils(jtag_dtm_reg_adapter)
 
   // Ensure that when an instance of this adapter is created, the cfg handle below is initialized
-  // to the `jtag_riscv_agent_cfg` instance associated with this adapter instance.
+  // to the `jtag_agent_cfg` instance associated with this adapter instance.
   jtag_agent_cfg cfg;
 
   function new(string name = "jtag_dtm_reg_adapter");
@@ -29,13 +29,13 @@ class jtag_dtm_reg_adapter extends uvm_reg_adapter;
     // know which map is associated with this adapter, so this does not support a multi-map system
     // at this point.
     if (rw.kind == UVM_READ) begin
-      uvm_reg rg;
+      jtag_dtm_base_reg rg;
       uvm_reg_map maps[$];
       cfg.jtag_dtm_ral.get_maps(maps);
       `DV_CHECK_EQ_FATAL(maps.size(), 1, $sformatf("Multiple maps in RAL %0s is not supported",
                                                    cfg.jtag_dtm_ral.get_full_name()))
-      rg = maps[0].get_reg_by_offset(rw.addr);
-      data = rg.get();
+      `downcast(rg, maps[0].get_reg_by_offset(rw.addr))
+      data = rg.get_wdata_for_read();
     end else begin
       data = rw.data[JTAG_DRW-1:0];
     end
@@ -46,7 +46,8 @@ class jtag_dtm_reg_adapter extends uvm_reg_adapter;
         ir     == rw.addr[JTAG_IRW-1:0];
         dr_len == rw.n_bits;
         dr     == local::data;
-        bus_op == (rw.kind == UVM_WRITE) ? dv_utils_pkg::BusOpWrite : dv_utils_pkg::BusOpRead;)
+        bus_op == (rw.kind == UVM_WRITE) ? dv_utils_pkg::BusOpWrite : dv_utils_pkg::BusOpRead;
+        skip_reselected_ir == 1;)
     `uvm_info(`gfn, $sformatf("reg2bus: %0s", req.sprint(uvm_default_line_printer)), UVM_HIGH)
     return req;
   endfunction
@@ -61,10 +62,15 @@ class jtag_dtm_reg_adapter extends uvm_reg_adapter;
     `DV_CHECK_GT_FATAL(rsp.dr_len, 0, $sformatf("No DR transation found in rsp: %0s",
                                                 rsp.sprint(uvm_default_line_printer)))
     rw.addr = rsp.ir;
-    rw.kind = (rsp.bus_op == dv_utils_pkg::BusOpWrite) ? UVM_WRITE : UVM_READ;
-    rw.data = (rsp.bus_op == dv_utils_pkg::BusOpWrite) ? rsp.dr : rsp.dout;
+    if (rsp.bus_op == dv_utils_pkg::BusOpWrite) begin
+      rw.kind = UVM_WRITE;
+    end else begin
+      rw.kind = UVM_READ;
+      rw.data = rsp.dout;
+    end
+    // TODO: detect bad packet status.
     rw.status = UVM_IS_OK;
-    `uvm_info(`gfn, $sformatf("bus2reg: %0p", rw), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("bus2reg: %0s", rsp.sprint(uvm_default_line_printer)), UVM_HIGH)
   endfunction
 
 endclass

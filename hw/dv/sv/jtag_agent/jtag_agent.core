@@ -10,6 +10,7 @@ filesets:
       - lowrisc:dv:dv_utils
       - lowrisc:dv:dv_lib
       - lowrisc:dv:dv_base_reg
+      - lowrisc:dv:csr_utils
     files:
       - jtag_if.sv
       - jtag_agent_pkg.sv

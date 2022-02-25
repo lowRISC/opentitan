@@ -17,12 +17,11 @@ class jtag_monitor extends dv_base_monitor #(
 
   `uvm_component_new
 
-  function void build_phase(uvm_phase phase);
-    super.build_phase(phase);
-  endfunction
-
   task run_phase(uvm_phase phase);
-    super.run_phase(phase);
+    fork
+      super.run_phase(phase);
+      monitor_reset();
+    join
   endtask
 
   // collect transactions forever - already forked in dv_base_monitor::run_phase
@@ -42,7 +41,7 @@ class jtag_monitor extends dv_base_monitor #(
       end
 
       `uvm_info(`gfn, $sformatf("state = %0s, ir = 0x%0h, dr = 0x%0h dout = 0x%0h counter = %0d",
-                                jtag_state.name, ir, dr, dout, counter), UVM_HIGH)
+                                jtag_state.name, ir, dr, dout, counter), UVM_DEBUG)
       case (jtag_state)
         JtagResetState: begin
           if (!`MON_CB.tms) jtag_state = JtagIdleState;
@@ -135,6 +134,13 @@ class jtag_monitor extends dv_base_monitor #(
       endcase
 
       // TODO: sample the covergroups
+    end
+  endtask
+
+  virtual protected task monitor_reset();
+    forever begin
+      @(cfg.vif.trst_n);
+      cfg.in_reset = !cfg.vif.trst_n;
     end
   endtask
 
