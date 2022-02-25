@@ -14,7 +14,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(tl_seq_item)  tl_sba_a_chan_fifo;
   uvm_tlm_analysis_fifo #(tl_seq_item)  tl_sba_d_chan_fifo;
-  uvm_tlm_analysis_fifo #(jtag_item)    jtag_fifo;
+  uvm_tlm_analysis_fifo #(jtag_dmi_item)jtag_dmi_fifo;
 
   // local queues to hold incoming packets pending comparison
   jtag_item jtag_q[$];
@@ -23,7 +23,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    jtag_fifo = new("jtag_fifo", this);
+    jtag_dmi_fifo = new("jtag_dmi_fifo", this);
     tl_sba_a_chan_fifo = new("tl_sba_a_chan_fifo", this);
     tl_sba_d_chan_fifo = new("tl_sba_d_chan_fifo", this);
     // TODO: remove once support alert checking
@@ -37,17 +37,17 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
-      process_jtag_fifo();
+      process_jtag_dmi_fifo();
       process_tl_sba_a_chan_fifo();
       process_tl_sba_d_chan_fifo();
     join_none
   endtask
 
-  virtual task process_jtag_fifo();
-    jtag_item item;
+  virtual task process_jtag_dmi_fifo();
+    jtag_dmi_item item;
     forever begin
-      jtag_fifo.get(item);
-      `uvm_info(`gfn, $sformatf("Received jtag item:\n%0s", item.sprint()), UVM_HIGH)
+      jtag_dmi_fifo.get(item);
+      `uvm_info(`gfn, $sformatf("Received jtag DMI item:\n%0s", item.sprint()), UVM_HIGH)
     end
   endtask
 
@@ -133,14 +133,14 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
-    jtag_fifo.flush();
+    jtag_dmi_fifo.flush();
     tl_sba_a_chan_fifo.flush();
     tl_sba_d_chan_fifo.flush();
   endfunction
 
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(jtag_item, jtag_fifo)
+    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(jtag_dmi_item, jtag_dmi_fifo)
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, tl_sba_a_chan_fifo)
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, tl_sba_d_chan_fifo)
   endfunction

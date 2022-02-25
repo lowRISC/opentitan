@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Run the JTAG DMT CSRs through our standard CSR suite via JTAG.
-class rv_dm_jtag_dtm_csr_vseq extends rv_dm_base_vseq;
-  `uvm_object_utils(rv_dm_jtag_dtm_csr_vseq)
+class rv_dm_jtag_dmi_csr_vseq extends rv_dm_base_vseq;
+  `uvm_object_utils(rv_dm_jtag_dmi_csr_vseq)
   `uvm_object_new
 
   constraint num_trans_c {
@@ -24,7 +24,9 @@ class rv_dm_jtag_dtm_csr_vseq extends rv_dm_base_vseq;
   }
 
   virtual task body();
-    run_csr_vseq_wrapper(.num_times(num_trans), .models({jtag_dtm_ral}));
+    // If writes to DMI SBA registers triggers an access, then ensure the response is sent.
+    launch_tl_sba_device_seq();
+    run_csr_vseq_wrapper(.num_times(num_trans), .models({jtag_dmi_ral}));
   endtask : body
 
 endclass

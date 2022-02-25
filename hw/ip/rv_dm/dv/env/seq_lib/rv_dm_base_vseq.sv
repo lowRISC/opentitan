@@ -18,10 +18,12 @@ class rv_dm_base_vseq extends cip_base_vseq #(
 
   // Handles for convenience.
   jtag_dtm_reg_block jtag_dtm_ral;
+  jtag_dmi_reg_block jtag_dmi_ral;
 
   virtual function void set_handles();
     super.set_handles();
     jtag_dtm_ral = cfg.m_jtag_agent_cfg.jtag_dtm_ral;
+    jtag_dmi_ral = cfg.jtag_dmi_ral;
   endfunction
 
   task pre_start();
@@ -38,13 +40,17 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
     // TODO: Randomize the contents of the debug ROM & the program buffer once out of reset.
+
+    // "Activate" the DM to facilitate ease of testing.
+    csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(1), .blocking(1), .predict(1));
   endtask
 
   // Have scan reset also applied at the start.
   virtual task apply_reset(string kind = "HARD");
     fork
       if (kind inside {"HARD", "TRST"}) begin
-        jtag_dtm_ral.reset(kind);
+        jtag_dtm_ral.reset("HARD");
+        jtag_dmi_ral.reset("HARD");
         cfg.m_jtag_agent_cfg.vif.do_trst_n();
       end
       if (kind inside {"HARD", "SCAN"}) apply_scan_reset();
@@ -69,6 +75,24 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     // Check for pending rv_dm operations and wait for them to complete.
     // TODO: Improve this later.
     cfg.clk_rst_vif.wait_clks(200);
+  endtask
+
+  // Spawns off a thread to auto-respond to incoming TL accesses on the SBA host interface.
+  // TODO: Drive intg error on D channel.
+  // TODO: Drive d_error.
+  virtual task launch_tl_sba_device_seq(bit blocking = 1'b0);
+    cip_tl_device_seq m_tl_sba_device_seq;
+    m_tl_sba_device_seq = cip_tl_device_seq::type_id::create("m_tl_sba_device_seq");
+    m_tl_sba_device_seq.max_rsp_delay = 80;
+    m_tl_sba_device_seq.rsp_abort_pct = 25;
+    `DV_CHECK_RANDOMIZE_FATAL(m_tl_sba_device_seq)
+    if (blocking) begin
+      m_tl_sba_device_seq.start(p_sequencer.tl_sba_sequencer_h);
+    end else begin
+      fork m_tl_sba_device_seq.start(p_sequencer.tl_sba_sequencer_h); join_none
+      // To ensure the seq above starts executing before the code following it starts executing.
+      #0;
+    end
   endtask
 
 endclass : rv_dm_base_vseq
