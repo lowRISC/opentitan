@@ -16,8 +16,8 @@ class rstmgr_sw_rst_vseq extends rstmgr_base_vseq;
   task body();
     bit [NumSwResets-1:0] exp_ctrl_n;
     bit [NumSwResets-1:0] sw_rst_regwen = '1;
-    alert_pkg::alert_crashdump_t bogus_alert_dump = '1;
-    ibex_pkg::crash_dump_t bogus_cpu_dump = '1;
+    alert_crashdump_t bogus_alert_dump = '1;
+    cpu_crash_dump_t bogus_cpu_dump = '1;
     set_alert_and_cpu_info_for_capture(bogus_alert_dump, bogus_cpu_dump);
 
     for (int i = 0; i < num_trans; ++i) begin
