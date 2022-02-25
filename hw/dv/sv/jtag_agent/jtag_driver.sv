@@ -51,7 +51,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
       seq_item_port.get_next_item(req);
       $cast(rsp, req.clone());
       rsp.set_id_info(req);
-      `uvm_info(`gfn, $sformatf("rcvd item:\n%0s", req.sprint()), UVM_HIGH)
+      `uvm_info(`gfn, req.sprint(uvm_default_line_printer), UVM_HIGH)
       `DV_SPINWAIT_EXIT(drive_jtag_req(req, rsp);,
                         wait (!cfg.vif.trst_n);)
       seq_item_port.item_done(rsp);

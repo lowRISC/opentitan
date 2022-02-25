@@ -8,6 +8,7 @@ package jtag_agent_pkg;
   import dv_utils_pkg::*;
   import dv_lib_pkg::*;
   import dv_base_reg_pkg::*;
+  import csr_utils_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

@@ -14,10 +14,12 @@ class jtag_agent_cfg extends dv_base_agent_cfg;
   jtag_dtm_reg_block jtag_dtm_ral;
 
   `uvm_object_utils_begin(jtag_agent_cfg)
+    `uvm_field_object(jtag_dtm_ral, UVM_DEFAULT)
   `uvm_object_utils_end
 
-  function new (string name= "");
+  function new (string name = "");
     super.new(name);
+    // Create the JTAG DTM RAL.
     jtag_dtm_ral = jtag_dtm_reg_block::type_id::create("jtag_dtm_ral");
     jtag_dtm_ral.build(.base_addr(0), .csr_excl(null));
     jtag_dtm_ral.set_support_byte_enable(1'b0);
