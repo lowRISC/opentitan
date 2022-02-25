@@ -554,12 +554,13 @@
                ]
              }
              {
-               name: rom_ctrl
+               name: rom_ctrl_sec_cm
                dut: rom_ctrl
                fusesoc_core: lowrisc:dv:rom_ctrl_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/rom_ctrl/{sub_flow}/{tool}"
                cov: false
+               task: "FpvSecCm"
              }
              {
                name: rv_dm
@@ -586,7 +587,7 @@
                cov: false
              }
              {
-               name: sram_ctrl
+               name: sram_ctrl_sec_cm
                dut: sram_ctrl
                fusesoc_core: lowrisc:dv:sram_ctrl_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
