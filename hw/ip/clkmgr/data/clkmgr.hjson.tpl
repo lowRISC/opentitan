@@ -244,6 +244,9 @@
           resval: false
         }
       ]
+      // avoid writing random values to this register as it could trigger transient checks
+      // in mubi sync
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 
     { name: "JITTER_REGWEN",
@@ -279,6 +282,9 @@
             while all other values enable jittery clock.
           ''',
           resval: false
+          // avoid writing random values to this register as it could trigger transient checks
+          // in mubi sync
+          tags: ["excl:CsrAllTests:CsrExclWrite"]
         }
       ]
     },
