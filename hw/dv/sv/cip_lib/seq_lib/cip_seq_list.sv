@@ -5,8 +5,9 @@
 // customized tl_seq_item for cmd integrity
 `include "cip_tl_seq_item.sv"
 
-// customized tl_host_single_seq for cmd integrity
+// customized tl sequences to address integrity
 `include "cip_tl_host_single_seq.sv"
+`include "cip_tl_device_seq.sv"
 
 // vseqs
 `include "cip_base_vseq.sv"
