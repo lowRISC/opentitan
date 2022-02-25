@@ -21,6 +21,9 @@ package rstmgr_env_pkg;
   import rstmgr_reg_pkg::NumHwResets;
   import rstmgr_reg_pkg::NumSwResets;
 
+  import alert_pkg::alert_crashdump_t;
+  import rv_core_ibex_pkg::cpu_crash_dump_t;
+
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
@@ -33,7 +36,7 @@ package rstmgr_env_pkg;
   // types
   typedef logic [NumSwResets-1:0] sw_rst_t;
 
-  typedef logic [$bits(alert_pkg::alert_crashdump_t)-1:0] linearized_alert_dump_t;
+  typedef logic [$bits(alert_crashdump_t)-1:0] linearized_alert_dump_t;
 
   // functions
 
