@@ -12,7 +12,8 @@ module rstmgr_leaf_rst
   import rstmgr_reg_pkg::*;
   import prim_mubi_pkg::mubi4_t; #(
   parameter bit SecCheck = 1,
-  parameter int SecMaxSyncDelay = 2
+  parameter int SecMaxSyncDelay = 2,
+  parameter bit SwRstReq = 1
 ) (
   input clk_i,
   input rst_ni,
@@ -58,24 +59,32 @@ module rstmgr_leaf_rst
     .clk_o(leaf_rst_o)
   );
 
-  // once software requests a reset, hold on to the request until the consistency
-  // checker passes the assertion check point
   logic sw_rst_req_q;
   logic clr_sw_rst_req;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-       sw_rst_req_q <= '0;
-    end else if (sw_rst_req_q && clr_sw_rst_req) begin
-       sw_rst_req_q <= '0;
-    end else if (!sw_rst_req_q && !sw_rst_req_ni && !clr_sw_rst_req) begin
-       sw_rst_req_q <= 1'b1;
+  if (SwRstReq) begin : gen_sw_rst_req
+    // once software requests a reset, hold on to the request until the consistency
+    // checker passes the assertion check point
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+         sw_rst_req_q <= '0;
+      end else if (sw_rst_req_q && clr_sw_rst_req) begin
+         sw_rst_req_q <= '0;
+      end else if (!sw_rst_req_q && !sw_rst_req_ni && !clr_sw_rst_req) begin
+         sw_rst_req_q <= 1'b1;
+      end
     end
+  end else begin : gen_no_sw_rst_req
+    assign sw_rst_req_q = '0;
+
+    logic unused_clr_sw_rst_req;
+    assign unused_clr_sw_rst_req = clr_sw_rst_req;
   end
 
   if (SecCheck) begin : gen_rst_chk
     // SEC_CM: LEAF.RST.BKGN_CHK
     rstmgr_cnsty_chk #(
-      .SecMaxSyncDelay(SecMaxSyncDelay)
+      .SecMaxSyncDelay(SecMaxSyncDelay),
+      .SwRstReq(SwRstReq)
     ) u_rst_chk (
       .clk_i,
       .rst_ni,
