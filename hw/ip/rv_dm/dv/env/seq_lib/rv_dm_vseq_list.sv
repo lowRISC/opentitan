@@ -6,3 +6,4 @@
 `include "rv_dm_smoke_vseq.sv"
 `include "rv_dm_common_vseq.sv"
 `include "rv_dm_jtag_dtm_csr_vseq.sv"
+`include "rv_dm_jtag_dmi_csr_vseq.sv"

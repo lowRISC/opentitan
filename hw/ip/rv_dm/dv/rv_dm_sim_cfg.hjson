@@ -62,14 +62,6 @@
   uvm_test: rv_dm_base_test
   uvm_test_seq: rv_dm_base_vseq
 
-  run_modes: [
-    {
-      name: jtag_dtm_csr_tests_mode
-      uvm_test_seq: rv_dm_jtag_dtm_csr_vseq
-      run_opts: ["+en_scb=0"]
-    }
-  ]
-
   // TODO: Update cover_reg_top hier file to accommodate JTAG DTM, DM CSRs and debug mem TL
   // interfaces.
 
@@ -81,33 +73,60 @@
     }
     {
       name: rv_dm_jtag_dtm_csr_hw_reset
+      uvm_test_seq: rv_dm_jtag_dtm_csr_vseq
       build_mode: "cover_reg_top"
-      run_opts: ["+csr_hw_reset"]
-      en_run_modes: ["jtag_dtm_csr_tests_mode"]
+      run_opts: ["+en_scb=0", "+csr_hw_reset"]
       reseed: 5
     }
     {
       name: rv_dm_jtag_dtm_csr_rw
+      uvm_test_seq: rv_dm_jtag_dtm_csr_vseq
       build_mode: "cover_reg_top"
-      run_opts: ["+csr_rw"]
-      en_run_modes: ["jtag_dtm_csr_tests_mode"]
+      run_opts: ["+en_scb=0", "+csr_rw"]
       reseed: 20
     }
     {
       name: rv_dm_jtag_dtm_csr_bit_bash
+      uvm_test_seq: rv_dm_jtag_dtm_csr_vseq
       build_mode: "cover_reg_top"
-      run_opts: ["+csr_bit_bash"]
-      en_run_modes: ["jtag_dtm_csr_tests_mode"]
+      run_opts: ["+en_scb=0", "+csr_bit_bash"]
       reseed: 5
     }
     {
       name: rv_dm_jtag_dtm_csr_aliasing
+      uvm_test_seq: rv_dm_jtag_dtm_csr_vseq
       build_mode: "cover_reg_top"
-      run_opts: ["+csr_aliasing"]
-      en_run_modes: ["jtag_dtm_csr_tests_mode"]
+      run_opts: ["+en_scb=0", "+csr_aliasing"]
       reseed: 5
     }
-
+    {
+      name: rv_dm_jtag_dmi_csr_hw_reset
+      uvm_test_seq: rv_dm_jtag_dmi_csr_vseq
+      build_mode: "cover_reg_top"
+      run_opts: ["+en_scb=0", "+csr_hw_reset"]
+      reseed: 5
+    }
+    {
+      name: rv_dm_jtag_dmi_csr_rw
+      uvm_test_seq: rv_dm_jtag_dmi_csr_vseq
+      build_mode: "cover_reg_top"
+      run_opts: ["+en_scb=0", "+csr_rw"]
+      reseed: 20
+    }
+    {
+      name: rv_dm_jtag_dmi_csr_bit_bash
+      uvm_test_seq: rv_dm_jtag_dmi_csr_vseq
+      build_mode: "cover_reg_top"
+      run_opts: ["+en_scb=0", "+csr_bit_bash"]
+      reseed: 5
+    }
+    {
+      name: rv_dm_jtag_dmi_csr_aliasing
+      uvm_test_seq: rv_dm_jtag_dmi_csr_vseq
+      build_mode: "cover_reg_top"
+      run_opts: ["+en_scb=0", "+csr_aliasing"]
+      reseed: 5
+    }
   ]
 
   // List of regressions.
@@ -116,7 +135,9 @@
       name: smoke
       tests: [// "rv_dm_smoke",
               "rv_dm_jtag_dtm_csr_hw_reset",
-              "rv_dm_jtag_dtm_csr_rw"]
+              "rv_dm_jtag_dtm_csr_rw",
+              "rv_dm_jtag_dmi_csr_hw_reset",
+              "rv_dm_jtag_dmi_csr_rw"]
     }
   ]
 }

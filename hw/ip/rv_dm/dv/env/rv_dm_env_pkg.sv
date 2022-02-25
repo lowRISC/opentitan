@@ -8,6 +8,7 @@ package rv_dm_env_pkg;
   import top_pkg::*;
   import dv_utils_pkg::*;
   import jtag_agent_pkg::*;
+  import jtag_dmi_agent_pkg::*;
   import dv_lib_pkg::*;
   import tl_agent_pkg::*;
   import cip_base_pkg::*;
