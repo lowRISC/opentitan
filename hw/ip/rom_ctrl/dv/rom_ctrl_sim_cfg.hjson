@@ -34,13 +34,14 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/passthru_mem_intg_tests.hjson"
+                "{proj_root}/hw/dv/tools/dvsim/tests/passthru_mem_intg_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
 
   en_build_modes: ["{tool}_crypto_dpi_prince_build_opts"]
 
   // Add additional tops for simulation.
-  sim_tops: ["rom_ctrl_bind", "rom_ctrl_cov_bind"]
+  sim_tops: ["rom_ctrl_bind", "rom_ctrl_cov_bind", "sec_cm_prim_sparse_fsm_flop_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50

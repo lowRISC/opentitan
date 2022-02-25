@@ -31,4 +31,9 @@ class rom_ctrl_common_vseq extends rom_ctrl_base_vseq;
     cfg.mem_bkdr_util_h.rom_encrypt_write32_integ(addr, rdata, RND_CNST_SCR_KEY, RND_CNST_SCR_NONCE,
                                                   1'b1, flip_bits);
   endfunction
+
+  virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
+    $assertoff(0, "tb.dut.KeymgrValidChk_A");
+    $assertoff(0, "tb.kmac_app_if.req_data_if.ValidHighUntilReady_A");
+  endfunction: sec_cm_fi_ctrl_svas
 endclass

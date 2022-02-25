@@ -17,6 +17,7 @@ package rom_ctrl_env_pkg;
   import kmac_app_agent_pkg::*;
   import mem_bkdr_util_pkg::*;
   import prim_mubi_pkg::*;
+  import sec_cm_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
