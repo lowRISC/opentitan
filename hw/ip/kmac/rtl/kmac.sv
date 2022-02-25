@@ -258,6 +258,9 @@ module kmac
   sha3_pkg::sha3_mode_e       reg_sha3_mode,       app_sha3_mode;
   sha3_pkg::keccak_strength_e reg_keccak_strength, app_keccak_strength;
 
+  // RegIF of enabling unsupported mode & strength
+  logic cfg_en_unsupported_mode_strength;
+
   // Indicating AppIntf is active. This signal is used to check SW error
   logic app_active;
 
@@ -520,6 +523,9 @@ module kmac
   // msg_mask_en turns on the message LFSR when KMAC is enabled.
   assign cfg_msg_mask = reg2hw.cfg_shadowed.msg_mask.q;
   assign msg_mask_en = cfg_msg_mask & msg_valid & msg_ready;
+
+  // Enable unsupported mode & strength combination
+  assign cfg_en_unsupported_mode_strength = 1'b 1;
 
   `ASSERT(EntropyReadyLatched_A, $rose(entropy_ready) |=> !entropy_ready)
 
@@ -1085,6 +1091,8 @@ module kmac
 
     .kmac_en_i      (reg_kmac_en        ),
     .cfg_prefix_6B_i(reg_ns_prefix[47:0]), // first 6B of PREFIX
+
+    .cfg_en_unsupported_modestrength_i (cfg_en_unsupported_mode_strength),
 
     // SW commands
     .sw_cmd_i(sw_cmd),
