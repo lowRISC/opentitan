@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // TL device sequence supports in-order and out-of-order response
-class tl_device_seq #(type REQ_T = tl_seq_item) extends dv_base_seq #(
-    .REQ        (REQ_T),
+class tl_device_seq #(type REQ = tl_seq_item) extends dv_base_seq #(
+    .REQ        (REQ),
     .CFG_T      (tl_agent_cfg),
     .SEQUENCER_T(tl_sequencer));
 
@@ -18,6 +18,9 @@ class tl_device_seq #(type REQ_T = tl_seq_item) extends dv_base_seq #(
   mem_model_pkg::mem_model mem;
   REQ                      req_q[$];
   bit                      out_of_order_rsp = 0;
+
+  // Indicates if all req's have been serviced.
+  protected bit all_reqs_serviced = 1;
 
   // chance to set d_error
   int                      d_error_pct = 0;
@@ -33,24 +36,25 @@ class tl_device_seq #(type REQ_T = tl_seq_item) extends dv_base_seq #(
   }
 
   virtual task body();
+    int req_cnt, rsp_cnt;
     fork
       forever begin // collect req thread
-        int req_cnt;
+        tl_seq_item item;
         REQ req;
 
-        p_sequencer.a_chan_req_fifo.get(req);
+        p_sequencer.a_chan_req_fifo.get(item);
+        `downcast(req, item)
         req_q.push_back(req);
         `uvm_info(`gfn, $sformatf("Received req[%0d] : %0s",
                                    req_cnt, req.convert2string()), UVM_HIGH)
         req_cnt++;
       end
       forever begin // response thread
-        int rsp_cnt;
         REQ req, rsp;
 
         wait(req_q.size > 0);
         if (out_of_order_rsp) req_q.shuffle();
-        req = req_q.pop_front();
+        req = req_q[0];  // 'peek' pop_front.
         $cast(rsp, req.clone());
         randomize_rsp(rsp);
         post_randomize_rsp(rsp);
@@ -58,12 +62,15 @@ class tl_device_seq #(type REQ_T = tl_seq_item) extends dv_base_seq #(
         start_item(rsp);
         finish_item(rsp);
         get_response(rsp);
-        // put it back to the top of queue to re-send rsp later if it's not completed
-        if (!rsp.rsp_completed) req_q.push_front(rsp);
-        `uvm_info(`gfn, $sformatf("Sent rsp[%0d] : %0s, req: %0s",
-                                   rsp_cnt, rsp.convert2string(), req.convert2string()), UVM_HIGH)
-        rsp_cnt++;
+        // Remove from req_q if response is completed.
+        if (rsp.rsp_completed) begin
+          req_q = req_q[1:$];
+          `uvm_info(`gfn, $sformatf("Sent rsp[%0d] : %0s, req: %0s",
+                                    rsp_cnt, rsp.convert2string(), req.convert2string()), UVM_HIGH)
+          rsp_cnt++;
+        end
       end
+      forever @(req_cnt, rsp_cnt) all_reqs_serviced = (req_cnt == rsp_cnt);
     join
   endtask
 
@@ -110,5 +117,10 @@ class tl_device_seq #(type REQ_T = tl_seq_item) extends dv_base_seq #(
       end
     end
   endfunction
+
+  // Indicates whether all reqs are serviced, to allow an external entity to safely kill the seq.
+  task wait_all_reqs_serviced();
+    wait (all_reqs_serviced);
+  endtask
 
 endclass : tl_device_seq
