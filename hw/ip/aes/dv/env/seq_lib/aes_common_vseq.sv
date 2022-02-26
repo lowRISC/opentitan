@@ -36,7 +36,7 @@ class aes_common_vseq extends aes_base_vseq;
     end
   endtask
 
-  virtual function void ctrl_reg_map_invalid_value(ref bit [TL_DW-1:0] val);
+  virtual function void ctrl_reg_map_invalid_value(ref uvm_reg_data_t val);
     aes_mode_e      mode_e;
     key_len_e       key_len_e;
     prs_rate_e      prs_rate_e;
