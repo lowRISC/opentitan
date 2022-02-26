@@ -31,8 +31,19 @@ module prim_sparse_fsm_flop #(
   );
 
   `ifdef INC_ASSERT
-    StateEnumT tmp;
-    assign unused_valid_st = $cast(tmp, state_o);
+    StateEnumT tmp = tmp.first;
+    // An array to hold all possible enum values based on the given width.
+    StateEnumT declared_fsms [2**Width];
+
+    // Loop through all possible FSM values and store the listed StateEnumT enum value in
+    // `declared_fsms`.
+    // Ideally we can use `i < tmp.num`, but Xcelium does not support this syntax. (error msg:
+    // Hierarchical name ('tmp.num()') not allowed within a constant expression)
+    for (genvar i = 0; i < 2**Width; i++) begin : gen_declared_enum_list
+      if (i == 0) assign declared_fsms[0] = tmp;
+      else assign declared_fsms[i] = declared_fsms[i-1].next;
+    end
+    assign unused_valid_st = !(state_o inside {declared_fsms});
   `else
     assign unused_valid_st = 1'b1;
   `endif
