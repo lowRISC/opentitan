@@ -6,6 +6,20 @@
 class dv_base_reg_block extends uvm_reg_block;
   `uvm_object_utils(dv_base_reg_block)
 
+  // The default addr, data and byte widths.
+  //
+  // The UVM reg data structures are built on `UVM_REG_ADDR|DATA|BYTEENABLE_WIDTH settings which
+  // are compile time, i.e. fixed for all RAL models across the project. What if we have multiple
+  // RAL models that have different width needs? The solution is to let the UVM data structures be
+  // created with large enough widths to accommodate a heterogeneous set of RAL models, and use
+  // these runtime settings below instead, to perform associated computations. Values retrieved
+  // for comparisons, such as uvm_reg::get_mirrored_value() may return data that is wider than
+  // needed. It would then be upto the testbench to cast it to the appropriate width if necessary.
+  // TODO: These are ideally passed via `build` method.
+  uint addr_width = `UVM_REG_ADDR_WIDTH;
+  uint data_width = `UVM_REG_DATA_WIDTH;
+  uint be_width = `UVM_REG_BYTENABLE_WIDTH;
+
   // Since an IP may contains more than one reg block we construct reg_block name as
   // {ip_name}_{reg_interface_name}.
   // All the reg_blocks in the IP share the same alert. In top-level, We construct the alert
@@ -287,24 +301,26 @@ class dv_base_reg_block extends uvm_reg_block;
 
   // Set the base address for the given register map
   //
-  // Check that base_addr is aligned as required by the register block. If the supplied base_addr is
-  // the "magic" address '1, randomly pick an appropriately aligned base address and set it for the
-  // specified map.
-  function void set_base_addr(uvm_reg_addr_t base_addr = '1, uvm_reg_map map = null);
+  // Checks if the provided base_addr is aligned as required by the register block. If
+  // randomize_base_addr arg is set, then the base_addr arg is ignored - the function randomizes and
+  // sets the base_addr itself.
+  function void set_base_addr(uvm_reg_addr_t base_addr, uvm_reg_map map = null,
+                              bit randomize_base_addr = 0);
     uvm_reg_addr_t mask;
 
     if (map == null) map = get_default_map();
     mask = get_addr_mask(map);
 
-
-    // If base_addr is '1, randomly pick an aligned base address
-    if (base_addr == '1) begin
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(base_addr, (base_addr & mask) == '0;)
+    // If randomize_base_addr is set, randomly pick an aligned base address.
+    if (randomize_base_addr) begin
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(base_addr,
+                                         (base_addr & mask) == '0;
+                                         base_addr >> addr_width == 0;)
+    end else begin
+      `DV_CHECK_FATAL((base_addr & mask) == '0)
+      `DV_CHECK_FATAL((base_addr >> addr_width) == '0)
     end
 
-    // Check base addr alignment (which should be guaranteed if we just picked it, but needs
-    // checking if not).
-    `DV_CHECK_FATAL((base_addr & mask) == '0)
     `uvm_info(`gfn, $sformatf("Setting register base address to 0x%0h", base_addr), UVM_HIGH)
     map.set_base_addr(base_addr);
   endfunction
@@ -315,7 +331,7 @@ class dv_base_reg_block extends uvm_reg_block;
   // This is useful if you have a possibly misaligned address and you want to know whether it hits a
   // register (since get_reg_by_offset needs the aligned address for the start of the register).
   function uvm_reg_addr_t get_word_aligned_addr(uvm_reg_addr_t byte_addr);
-    uvm_reg_addr_t shift = $clog2(`UVM_REG_BYTENABLE_WIDTH);
+    uvm_reg_addr_t shift = $clog2(be_width);
     return (byte_addr >> shift) << shift;
   endfunction
 
