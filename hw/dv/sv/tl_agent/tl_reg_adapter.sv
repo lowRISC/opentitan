@@ -45,7 +45,7 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
         `DV_CHECK_RANDOMIZE_WITH_FATAL(bus_req,
             a_opcode              == tlul_pkg::Get;
             a_addr[AddrWidth-1:2] == rw.addr[AddrWidth-1:2];
-            a_mask                == rw.byte_en;)
+            a_mask                == rw.byte_en[MaskWidth-1:0];)
       end
     end else begin // randomize CSR partial or full write
       // Actual width of the CSR may be < DataWidth bits depending on fields and their widths
@@ -66,8 +66,8 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
       end
       `DV_CHECK_RANDOMIZE_WITH_FATAL(bus_req,
           a_opcode inside {PutFullData, PutPartialData};
-          a_addr    == rw.addr;
-          a_data    == rw.data;
+          a_addr    == AddrWidth'(rw.addr);
+          a_data    == DataWidth'(rw.data);
           a_mask[0] == 1;
           if (supports_byte_enable) {
             $countones(a_mask) > (msb / 8);

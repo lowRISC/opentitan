@@ -110,11 +110,15 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
     csr_utils_pkg::reset_deasserted();
   endfunction
 
+  // Creates RAL models and sets their base address based on the supplied arg.
+  //
+  // csr_base_addr is the base address to set to the RAL models. If it is all 1s, then we treat that
+  // as an indication to randomize the base address internally instead.
   virtual function void create_ral_models(bit [bus_params_pkg::BUS_AW-1:0] csr_base_addr = '1);
 
     foreach (ral_model_names[i]) begin
       string ral_name = ral_model_names[i];
-      uvm_reg_addr_t base_addr;
+      bit randomize_base_addr = &csr_base_addr;
       dv_base_reg_block reg_blk = create_ral_by_name(ral_name);
 
       if (reg_blk.get_name() == RAL_T::type_name) `downcast(ral, reg_blk)
@@ -123,19 +127,15 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
       // later.
       pre_build_ral_settings(reg_blk);
       reg_blk.build(.base_addr(0), .csr_excl(null));
+      reg_blk.addr_width = bus_params_pkg::BUS_AW;
+      reg_blk.data_width = bus_params_pkg::BUS_DW;
+      reg_blk.be_width = bus_params_pkg::BUS_DBW;
       post_build_ral_settings(reg_blk);
       reg_blk.lock_model();
 
       // Now the model is locked, we know its layout. Set the base address for the register block.
-      // The function internally picks a random one if we pass '1 to it, and performs an integrity
-      // check on the set address.
-      //
-      // The definition of base_addr explicitly casts from a bus address to a uvm_reg_addr_t (to
-      // correctly handle the case where a bus address is narrower than a uvm_reg_addr_t).
-      base_addr = (&csr_base_addr ?
-                   {`UVM_REG_ADDR_WIDTH{1'b1}} :
-                   {{(`UVM_REG_ADDR_WIDTH - bus_params_pkg::BUS_AW){1'b0}}, csr_base_addr});
-      reg_blk.set_base_addr(base_addr);
+      reg_blk.set_base_addr(.base_addr(`UVM_REG_ADDR_WIDTH'(csr_base_addr)),
+                            .randomize_base_addr(randomize_base_addr));
 
       // Get list of valid csr addresses (useful in seq to randomize addr as well as in scb checks)
       reg_blk.compute_mapped_addr_ranges();
