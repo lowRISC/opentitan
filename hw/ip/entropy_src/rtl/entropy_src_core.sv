@@ -2105,6 +2105,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign hw2reg.extht_fail_counts.extht_lo_fail_count.d = extht_lo_fail_count;
 
+
   //--------------------------------------------
   // pack tested entropy into 32 bit packer
   //--------------------------------------------
@@ -2156,11 +2157,33 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .depth_o    (sfifo_observe_depth)
   );
 
+  // The Observe fifo is intended to hold kilobits of contiguous data, yet still gracefully
+  // drop data when full.  This flop gates the observe fifo. If it ever overflows, no new data is
+  // allowed until it is empty.  Thus if the rate of CSR uptake almost matches the RNG data rate
+  // the FIFO avoids unnecessary segmentation, and guarantees that the remaining RNG data is as
+  // contiguous as possible.
+  logic sfifo_observe_gate_d, sfifo_observe_gate_q;
+
+  assign sfifo_observe_gate_d = (sfifo_observe_push && sfifo_observe_full) ? 1'b0 :
+                                !sfifo_observe_not_empty                   ? 1'b1 :
+                                sfifo_observe_gate_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      sfifo_observe_gate_q <= 1'b1;
+    end else begin
+      sfifo_observe_gate_q <= sfifo_observe_gate_d;
+    end
+  end
+
+  assign hw2reg.fw_ov_rd_fifo_overflow.d  = (pfifo_postht_pop && sfifo_observe_full);
+  assign hw2reg.fw_ov_rd_fifo_overflow.de = 1'b1;
 
   assign observe_fifo_thresh_met = fw_ov_mode && (observe_fifo_thresh <= sfifo_observe_depth);
 
   // fifo controls
-  assign sfifo_observe_push = fw_ov_mode && pfifo_postht_pop;
+  assign sfifo_observe_push = fw_ov_mode && pfifo_postht_pop && !sfifo_observe_full &&
+                              (sfifo_observe_gate_q || !sfifo_observe_not_empty);
 
   assign sfifo_observe_clr  = !es_enable_q_fo[22];
 
