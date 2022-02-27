@@ -816,11 +816,11 @@ subdir('autogen')
 ###############################################################################
 subdir('sim_dv')
 
-if get_option('partner') == true
 ###############################################################################
 # Closed Source Test Libraries
 ###############################################################################
-subdir('closed_source')
+if get_option('build_closed_source')
+  subdir('closed_source')
 endif
 
 ###############################################################################
@@ -885,7 +885,7 @@ foreach sw_test_name, sw_test_info : sw_tests
       ]
     endif
        
-    if get_option('partner') == true and \
+    if get_option('build_closed_source') and \
       'link_with_closed_configs' in sw_test_info and \
       sw_test_info['link_with_closed_configs']
       sw_test_elf = executable(

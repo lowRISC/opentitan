@@ -2,15 +2,15 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# All build targets below in `sw_tests` or `sw_signed_tests` will have names
-# starting with `sw/device/tests/<test_name>`. They will not contain the
-# subdirectory name (e.g., `sim_dv/`), because the build targets are really
-# declared in the for loops in this build file.
+# All build targets below will be build in closed source envirounment only. 
+# In order to build these targets, 'build_closed_source' and 'closed_source_dir'
+# compilation flags should be defined.
 
-partner_dir = get_option('partnerdir')
-partner_tests_path = 'sw/device/tests/'
+closed_source_dir = get_option('closed_source_dir')
+closed_source_test_path = 'sw/device/tests/'
 
-hookfile = join_paths(get_option('partnerdir') , partner_tests_path, 'ip_config_hooks.c')
+hookfile = join_paths(closed_source_dir , closed_source_test_path, \
+                      'ip_config_hooks.c')
 
 ###############################################################################
 # Closed source test libraries.

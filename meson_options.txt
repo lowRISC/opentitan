@@ -27,14 +27,13 @@ option(
 )
 
 option(
-  'partner',
+  'build_closed_source',
   type: 'boolean',
   value: false,
 )
 
 option(
-  'partnerdir',
+  'closed_source_dir',
   type: 'string',
   value: '',
 )
-
