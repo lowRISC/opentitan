@@ -55,12 +55,13 @@ module prim_generic_flash_bank #(
   localparam int InfoAddrW = $clog2(WordsPerInfoBank);
 
   typedef enum logic [2:0] {
-    StReset    = 'h0,
-    StInit     = 'h1,
-    StIdle     = 'h2,
-    StRead     = 'h3,
-    StProg     = 'h4,
-    StErase    = 'h5
+    StReset     = 'h0,
+    StInit      = 'h1,
+    StIdle      = 'h2,
+    StRead      = 'h3,
+    StProg      = 'h4,
+    StErase     = 'h5,
+    StErSuspend = 'h6
   } state_e;
 
   state_e st_q, st_d;
@@ -330,12 +331,8 @@ module prim_generic_flash_bank #(
 
       StErase: begin
         // Actual erasing of the page
-        if (erase_suspend_req_i) begin
-          st_d = StIdle;
-          pop_cmd = 1'b1;
-          done_o = 1'b1;
-          time_cnt_clr = 1'b1;
-          index_cnt_clr = 1'b1;
+        if (erase_suspend_req_i && ack_o) begin
+          st_d = StErSuspend;
         end else if (index_cnt < index_limit_q || time_cnt < time_limit_q) begin
           mem_req = 1'b1;
           mem_wr = 1'b1;
@@ -349,7 +346,19 @@ module prim_generic_flash_bank #(
           time_cnt_clr = 1'b1;
           index_cnt_clr = 1'b1;
         end
+      end // case: StErase
+
+      // The done can actually be signaled back in `StErase`, but move it
+      // to a different state to better model the ack_o/done_o timing separation
+      StErSuspend: begin
+         done_o = 1'b1;
+         pop_cmd = 1'b1;
+         time_cnt_clr = 1'b1;
+         index_cnt_clr = 1'b1;
+         st_d = StIdle;
       end
+
+
       default: begin
         st_d = StIdle;
       end

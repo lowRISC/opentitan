@@ -1122,7 +1122,6 @@ module flash_ctrl
   // flash phy module
   //////////////////////////////////////
   logic flash_host_req;
-  mubi4_t flash_host_instr_type;
   logic flash_host_req_rdy;
   logic flash_host_req_done;
   logic flash_host_rderr;
@@ -1146,7 +1145,7 @@ module flash_ctrl
     .tl_o        (mem_tl_o),
     .en_ifetch_i (flash_exec_en),
     .req_o       (flash_host_req),
-    .req_type_o  (flash_host_instr_type),
+    .req_type_o  (),
     .gnt_i       (flash_host_req_rdy),
     .we_o        (),
     .addr_o      (flash_host_addr),
@@ -1163,7 +1162,6 @@ module flash_ctrl
     .rst_ni,
     .host_req_i        (flash_host_req),
     .host_intg_err_i   (flash_host_intg_err),
-    .host_instr_type_i (flash_host_instr_type),
     .host_addr_i       (flash_host_addr),
     .host_req_rdy_o    (flash_host_req_rdy),
     .host_req_done_o   (flash_host_req_done),
