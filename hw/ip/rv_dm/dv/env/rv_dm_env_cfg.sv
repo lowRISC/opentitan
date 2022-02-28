@@ -84,20 +84,13 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
         regs[i].clear_hdl_path("ALL");
       end
 
-      // ROM within debug mem supports partial accesses, but strangely, the TL adapter does not
-      // allow byte accesses. See #10765.
-      `downcast(debug_mem_ral, ral)
-      debug_mem_ral.rom.set_mem_partial_write_support(1);
-
       // ROM within the debug mem is RO - it ignores writes instead of throwing an error response.
+      `downcast(debug_mem_ral, ral)
       debug_mem_ral.rom.set_write_to_ro_mem_ok(1);
 
       // TODO(#10837): Accesses to unmapped regions of debug mem RAL space does not return an error
       // response. Fix this if design is updated.
       debug_mem_ral.set_unmapped_access_ok(1);
-
-      //TODO(#10765): We don't support byte writes at this time.
-      debug_mem_ral.set_support_byte_enable(1'b0);
     end
   endfunction
 
