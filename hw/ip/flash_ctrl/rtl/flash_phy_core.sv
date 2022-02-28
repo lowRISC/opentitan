@@ -18,7 +18,6 @@ module flash_phy_core
   input                              rst_ni,
   input                              intg_err_i,
   input                              host_req_i,   // host request - read only
-  input mubi4_t                      host_instr_type_i,
   input                              host_scramble_en_i,
   input                              host_ecc_en_i,
   input [BusBankAddrW-1:0]           host_addr_i,
@@ -72,9 +71,6 @@ module flash_phy_core
 
   // request signals to flash macro
   logic [PhyOps-1:0] reqs;
-
-  // the type of transaction to flash macro
-  mubi4_t muxed_instr_type;
 
   // host select for address
   logic host_sel;
@@ -250,7 +246,6 @@ module flash_phy_core
   end // always_comb
 
   // transactions coming from flash controller are always data type
-  assign muxed_instr_type = host_sel ? host_instr_type_i : prim_mubi_pkg::MuBi4False;
   assign muxed_addr = host_sel ? host_addr_i : addr_i;
   assign muxed_part = host_sel ? flash_ctrl_pkg::FlashPartData : part_i;
   assign muxed_scramble_en = host_sel ? host_scramble_en_i : scramble_en_i;
@@ -276,7 +271,6 @@ module flash_phy_core
     .rst_ni,
     .buf_en_i(rd_buf_en_i),
     .req_i(reqs[PhyRead]),
-    .instr_type_i(muxed_instr_type),
     .descramble_i(muxed_scramble_en),
     .ecc_i(muxed_ecc_en),
     .prog_i(reqs[PhyProg]),
@@ -358,14 +352,17 @@ module flash_phy_core
 
   logic flash_pg_erase_req;
   logic flash_bk_erase_req;
+  logic erase_suspend_req;
   flash_phy_erase u_erase (
     .clk_i,
     .rst_ni,
     .pg_erase_req_i(reqs[PhyPgErase]),
     .bk_erase_req_i(reqs[PhyBkErase]),
+    .suspend_req_i(erase_suspend_req_i),
     .ack_o(erase_ack),
     .pg_erase_req_o(flash_pg_erase_req),
     .bk_erase_req_o(flash_bk_erase_req),
+    .suspend_req_o(erase_suspend_req),
     .ack_i(ack),
     .done_i(done)
   );
@@ -414,7 +411,7 @@ module flash_phy_core
     prog_type: prog_type_i,
     pg_erase_req: flash_pg_erase_req,
     bk_erase_req: flash_bk_erase_req,
-    erase_suspend_req: erase_suspend_req_i,
+    erase_suspend_req: erase_suspend_req,
     // high endurance enable does not cause changes to
     // transaction protocol and is forwarded directly to the wrapper
     he: he_en_i,
