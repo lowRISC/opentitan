@@ -64,12 +64,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     super.pre_start();
   endtask : pre_start
 
-  // After finishing basic dut_init do some additional required actions with callback_vseq
-  virtual task dut_init(string reset_kind = "HARD");
-    super.dut_init(reset_kind);
-    callback_vseq.dut_init_callback();
-  endtask : dut_init
-
   virtual task dut_shutdown();
     // check for pending flash_ctrl operations and wait for them to complete
     // TODO
@@ -89,7 +83,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     csr_spinwait(.ptr(ral.status.init_wip), .exp_data(1'b0));
   endtask : reset_flash
 
-  // Apply a Reset to the DUT
+  // Apply a Reset to the DUT, then do some additional required actions with callback_vseq
   virtual task apply_reset(string kind = "HARD");
     uvm_reg_data_t data;
 
@@ -106,6 +100,9 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     if (cfg.seq_cfg.en_init_keys_seeds == 1) begin
       csr_wr(.ptr(ral.init), .value(1));  // Enable Secret Seed Output during INIT
     end
+
+    // Do some additional required actions
+    callback_vseq.apply_reset_callback();
 
   endtask : apply_reset
 
