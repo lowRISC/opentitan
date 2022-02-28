@@ -21,7 +21,7 @@ using testing::Test;
 // Base class for the rest fixtures in this file.
 class AesTest : public testing::Test, public mock_mmio::MmioTest {
  public:
-  void setExpectedKey(const dif_aes_key_share_t &key, uint32_t key_size = 8) {
+  void setExpectedKey(const dif_aes_key_share_t &key, uint32_t key_size) {
     for (uint32_t i = 0; i < key_size; ++i) {
       ptrdiff_t offset = AES_KEY_SHARE0_0_REG_OFFSET + (i * sizeof(uint32_t));
       EXPECT_WRITE32(offset, key.share0[i]);
@@ -185,6 +185,38 @@ TEST_F(DecryptTest, start) {
   setExpectedConfig(AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_128,
                     AES_CTRL_SHADOWED_MODE_VALUE_AES_ECB,
                     AES_CTRL_SHADOWED_OPERATION_VALUE_AES_DEC);
+  setExpectedKey(kKey_, 8);
+
+  EXPECT_EQ(dif_aes_start(&aes_, &transaction, kKey_, NULL), kDifOk);
+}
+
+// Key size test
+class Key192Test : public AesTestInitialized {
+ protected:
+  Key192Test() { transaction.key_len = kDifAesKey192; }
+};
+
+TEST_F(Key192Test, start) {
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, 1);
+  setExpectedConfig(AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_192,
+                    AES_CTRL_SHADOWED_MODE_VALUE_AES_ECB,
+                    AES_CTRL_SHADOWED_OPERATION_VALUE_AES_ENC);
+  setExpectedKey(kKey_, 8);
+
+  EXPECT_EQ(dif_aes_start(&aes_, &transaction, kKey_, NULL), kDifOk);
+}
+
+// Key size test
+class Key256Test : public AesTestInitialized {
+ protected:
+  Key256Test() { transaction.key_len = kDifAesKey256; }
+};
+
+TEST_F(Key256Test, start) {
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, 1);
+  setExpectedConfig(AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_256,
+                    AES_CTRL_SHADOWED_MODE_VALUE_AES_ECB,
+                    AES_CTRL_SHADOWED_OPERATION_VALUE_AES_ENC);
   setExpectedKey(kKey_, 8);
 
   EXPECT_EQ(dif_aes_start(&aes_, &transaction, kKey_, NULL), kDifOk);
