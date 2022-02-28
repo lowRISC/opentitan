@@ -16,7 +16,7 @@ module usbdev_linkstate (
   input  logic usb_dn_i,
   input  logic usb_oe_i,
   input  logic usb_pullup_en_i,
-  input  logic rx_jjj_det_i,
+  input  logic rx_idle_det_i,
   input  logic rx_j_det_i,
   input  logic sof_valid_i,
   input  logic resume_link_active_i, // pulse
@@ -130,7 +130,7 @@ module usbdev_linkstate (
   );
 
   // Simple events
-  assign ev_bus_active = !rx_jjj_det_i;
+  assign ev_bus_active = !rx_idle_det_i;
 
   assign monitor_inac = see_pwr_sense ? ((link_state_q == LinkPowered) | link_active_o) :
                         1'b0;
