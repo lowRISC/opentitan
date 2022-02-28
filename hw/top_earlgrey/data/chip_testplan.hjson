@@ -1630,14 +1630,13 @@
       name: chip_sw_hmac_idle
       desc: '''Verify the HMAC clk idle signal to clkmgr.
 
-            - Write the HMAC clk hint to 1 within clkmgr to indicate HMAC clk is ready to be gated.
-              Verify that the HMAC clk hint status within clkmgr reads 0 (HMAC is idle).
-            - Initiate an HMAC operation with a known key, plain text and digest.
-              Verify that the HMAC clk hint status within clkmgr now reads 1 (HMAC is not idle),
-              before the HMAC operation is complete.
+            - Program the HMAC clk hint within clkmgr to indicate HMAC clk is ready to be gated.
+              Verify that the HMAC clk hint status within clkmgr reads disabled (HMAC is idle).
+            - Initiate a HMAC operation with a known key, plain text and digest.
+              Verify that when hint to gate the HMAC clk is provided after the operation has started
+              but is not yet complete, the clk hint status in clkmgr stays enabled (HMAC is not idle).
             - After the HMAC operation is complete, verify the digest for correctness.
-              Verify that the HMAC clk hint status within clkmgr now reads 0 again (HMAC is idle),
-              after the HMAC operation is complete.
+              Verify that the HMAC clk hint status reads as disabled (HMAC is idle).
             '''
       milestone: V2
       tests: ["chip_sw_hmac_enc_idle"]
