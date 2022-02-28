@@ -38,7 +38,6 @@ module flash_phy_rd
 
   // interface with arbitration unit
   input req_i,
-  input mubi4_t instr_type_i,
   input descramble_i,
   input ecc_i,
   input prog_i,
@@ -315,7 +314,7 @@ module flash_phy_rd
       rd_attrs.addr <= addr_i[BusBankAddrW-1:LsbAddrBit];
       rd_attrs.descramble <= descramble_i;
       rd_attrs.ecc <= ecc_i;
-      rd_attrs.instr_type <= instr_type_i;
+
     end else if (rd_done) begin
       rd_busy <= 1'b0;
     end

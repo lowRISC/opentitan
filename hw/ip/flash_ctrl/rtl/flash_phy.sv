@@ -19,7 +19,6 @@ module flash_phy
   input rst_ni,
   input host_req_i,
   input host_intg_err_i,
-  input mubi4_t host_instr_type_i,
   input [BusAddrW-1:0] host_addr_i,
   output logic host_req_rdy_o,
   output logic host_req_done_o,
@@ -224,7 +223,6 @@ module flash_phy
       // host request must be suppressed if response fifo cannot hold more
       // otherwise the flash_phy_core and flash_phy will get out of sync
       .host_req_i(host_req),
-      .host_instr_type_i,
       .host_scramble_en_i(host_scramble_en),
       .host_ecc_en_i(host_ecc_en),
       .host_addr_i(host_addr_i[0 +: BusBankAddrW]),
