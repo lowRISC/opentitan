@@ -47,7 +47,6 @@ module rom_ctrl_counter
   output [vbits(RomDepth)-1:0] data_addr_o,
 
   input                        data_rdy_i,
-  output                       data_vld_o,
   output                       data_last_nontop_o
 );
 
@@ -97,8 +96,8 @@ module rom_ctrl_counter
       vld_q <= 1'b0;
     end else begin
       // The first ROM request goes out immediately after reset (once we reach the top of ROM, we
-      // signal done_o, after which data_vld_o is unused). We could clear it again when we are done,
-      // but there's no need: the mux will switch away from us anyway.
+      // signal done_o, after which the request signal is unused). We could clear it again when we
+      // are done, but there's no need: the mux will switch away from us anyway.
       req_q <= 1'b1;
 
       // ROM data is valid from one cycle after the request goes out.
@@ -106,7 +105,7 @@ module rom_ctrl_counter
     end
   end
 
-  assign go = data_rdy_i & data_vld_o & ~done_d;
+  assign go = data_rdy_i & vld_q & ~done_d;
 
   assign addr_d        = addr_q + {{AW-1{1'b0}}, 1'b1};
   assign last_nontop_d = addr_q == TNTAddr;
@@ -115,7 +114,6 @@ module rom_ctrl_counter
   assign read_addr_o        = go ? addr_d : addr_q;
   assign read_req_o         = req_q;
   assign data_addr_o        = addr_q;
-  assign data_vld_o         = vld_q;
   assign data_last_nontop_o = last_nontop_q;
 
 endmodule
