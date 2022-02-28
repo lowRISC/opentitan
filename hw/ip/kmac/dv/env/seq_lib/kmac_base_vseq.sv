@@ -301,7 +301,7 @@ class kmac_base_vseq extends cip_base_vseq #(
       csr_wr(.ptr(ral.entropy_period), .value(0));
     end
 
-    csr_wr(.ptr(ral.entropy_refresh), .value(hash_threshold));
+    csr_wr(.ptr(ral.entropy_refresh_threshold_shadowed), .value(hash_threshold));
     csr_wr(.ptr(ral.cmd), .value(hash_cnt_clr << KmacHashCntClrIdx));
 
     // setup CFG csr with default random values

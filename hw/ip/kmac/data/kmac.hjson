@@ -609,12 +609,36 @@
       ]
     } // R: ENTROPY_PERIOD
     {
-      name: "ENTROPY_REFRESH"
-      desc: '''Entropy Refresh Threshold and Counter
+      name: "ENTROPY_REFRESH_HASH_CNT"
+      desc: '''Entropy Refresh Counter
 
       KMAC entropy can be refreshed after the given threshold KMAC operations
-      run. If the KMAC hash counter hits (GTE) the configured threshold, the
-      entropy module in the KMAC IP requests new seed to EDN and reset the KMAC
+      run. If the KMAC hash counter !!ENTROPY_REFRESH_HASH_CNT hits (GTE) the
+      configured threshold !!ENTROPY_REFRESH_THRESHOLD_SHADOWED, the entropy
+      module in the KMAC IP requests new seed to EDN and reset the KMAC
+      hash counter.
+
+      If the threshold is 0, the refresh by the counter does not work. And the
+      counter is only reset by the CMD.hash_cnt_clr CSR bit.
+      '''
+      swaccess: "ro"
+      hwaccess: "hwo"
+      regwen: "CFG_REGWEN"
+      fields: [
+        { bits: "HashCntW-1:0"
+          name: "hash_cnt"
+          desc: "Hash (KMAC) counter"
+        }
+      ]
+    } // R: ENTROPY_REFRESH_HASH_CNT
+    {
+      name: "ENTROPY_REFRESH_THRESHOLD_SHADOWED"
+      desc: '''Entropy Refresh Threshold
+
+      KMAC entropy can be refreshed after the given threshold KMAC operations
+      run. If the KMAC hash counter !!ENTROPY_REFRESH_HASH_CNT hits (GTE) the
+      configured threshold !!ENTROPY_REFRESH_THRESHOLD_SHADOWED, the entropy
+      module in the KMAC IP requests new seed to EDN and reset the KMAC
       hash counter.
 
       If the threshold is 0, the refresh by the counter does not work. And the
@@ -623,19 +647,17 @@
       swaccess: "rw"
       hwaccess: "hro"
       regwen: "CFG_REGWEN"
+      shadowed: "true"
+      hwqe:     "true"
+      update_err_alert:  "recov_operation_err"
+      storage_err_alert: "fatal_fault_err"
       fields: [
         { bits: "HashCntW-1:0"
           name: "threshold"
           desc: "Hash Threshold"
         }
-        { bits: "HashCntW+15:16"
-          name: "hash_cnt"
-          desc: "Hash (KMAC) counter"
-          swaccess: "ro"
-          hwaccess: "hwo"
-        }
       ]
-    } // R: ENTROPY_REFRESH
+    } // R: ENTROPY_REFRESH_THRESHOLD_SHADOWED
     { name: "ENTROPY_SEED_LOWER"
       desc: '''Entropy Seed [31:0].
 
