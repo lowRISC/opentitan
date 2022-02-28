@@ -46,7 +46,7 @@ module usb_fs_rx (
   output logic valid_packet_o,
 
   // line status for the status detection (actual rx bits after clock recovery)
-  output logic rx_jjj_det_o,
+  output logic rx_idle_det_o,
   output logic rx_j_det_o,
 
   // Error detection
@@ -326,8 +326,19 @@ module usb_fs_rx (
     end
   end
 
-  // mask out jjj detection when transmitting (because rx is forced to J)
-  assign rx_jjj_det_o = ~tx_en_i & (line_history_q[5:0] == 6'b101010); // three Js
+  // mask out idle detection when transmitting (because rx may be forced to
+  // J and look like an idle symbol)
+  logic rx_idle_det_d, rx_idle_det_q;
+  assign rx_idle_det_d = (~tx_en_i & line_state_valid) ? (line_state_q == DJ) : rx_idle_det_q;
+  assign rx_idle_det_o = rx_idle_det_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_reg_idle_det
+    if (!rst_ni) begin
+      rx_idle_det_q <= 1'b0;
+    end else begin
+      rx_idle_det_q <= rx_idle_det_d;
+    end
+  end
 
   // Used for seeing a J after the completion of resume signaling
   assign rx_j_det_o = ~tx_en_i & (line_history_q[1:0] == 2'b10);

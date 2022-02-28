@@ -263,7 +263,7 @@ module usbdev_usbif  #(
   assign set_sent_o = in_ep_xact_end;
 
   logic [10:0]     frame_index_raw;
-  logic            rx_jjj_det;
+  logic            rx_idle_det;
   logic            rx_j_det;
 
   usb_fs_nb_pe #(
@@ -320,7 +320,7 @@ module usbdev_usbif  #(
     .in_ep_iso_i           (in_ep_iso_i),
 
     // rx status
-    .rx_jjj_det_o          (rx_jjj_det),
+    .rx_idle_det_o         (rx_idle_det),
     .rx_j_det_o            (rx_j_det),
 
     // error signals
@@ -384,7 +384,7 @@ module usbdev_usbif  #(
     .usb_dn_i              (usb_dn_i),
     .usb_oe_i              (usb_oe_o),
     .usb_pullup_en_i       (enable_i),
-    .rx_jjj_det_i          (rx_jjj_det),
+    .rx_idle_det_i         (rx_idle_det),
     .rx_j_det_i            (rx_j_det),
     .sof_valid_i           (sof_valid_o),
     .resume_link_active_i  (resume_link_active_i),
