@@ -16,9 +16,7 @@ class aes_config_error_test extends aes_base_test;
   function void configure_env();
     super.configure_env();
 
-//    the feature below is waiting in anther PR
-//    cfg.zero_delay_pct           = 100;
-    cfg.error_types              = 3'b001;
+    cfg.error_types              = 4'b0001;
     cfg.config_error_pct         = 75;
     cfg.num_messages_min         = 3;
     cfg.num_messages_max         = 10;

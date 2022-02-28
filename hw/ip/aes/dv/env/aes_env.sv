@@ -25,6 +25,10 @@ class aes_env extends cip_base_env #(
          get(this, "", "lc_escalate_vif", cfg.lc_escalate_vif)) begin
       `uvm_fatal(`gfn, "failed to get lc_escalate_vif from uvm_config_db")
     end
+    if (!uvm_config_db#(virtual pins_if #(1))::
+         get(this, "", "idle_vif", cfg.idle_vif)) begin
+      `uvm_fatal(`gfn, "failed to get idle_vif from uvm_config_db")
+    end
   endfunction
 
   function void connect_phase(uvm_phase phase);

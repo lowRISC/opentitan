@@ -9,6 +9,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   `uvm_object_new
 
   virtual pins_if #($bits(lc_ctrl_pkg::lc_tx_t) + 1) lc_escalate_vif;
+  virtual pins_if #(1) idle_vif;
 
   rand key_sideload_agent_cfg keymgr_sideload_agent_cfg;
   // test environment constraints //
