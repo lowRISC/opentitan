@@ -1348,6 +1348,9 @@ module kmac
     );
   end
 
+  // Below assumes NumAlerts == 2
+  `ASSERT_INIT(NumAlerts2_A, NumAlerts == 2)
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
   // break up the combinatorial path for local escalation
     if (!rst_ni) begin
@@ -1367,6 +1370,11 @@ module kmac
       alerts_q[0] <= alerts[0];
     end
   end
+
+  // Latched recoverable alert[0] is not used. Rather removing above,
+  // keep alert_q[1:0] and make alert_q[0] unused (lint waive).
+  logic unused_alerts_q0;
+  assign unused_alerts_q0 = alerts_q[0];
 
   // SEC_CM: LC_ESCALATE_EN.INTERSIG.MUBI
   lc_ctrl_pkg::lc_tx_t alert_to_lc_tx;
