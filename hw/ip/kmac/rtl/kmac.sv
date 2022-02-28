@@ -507,9 +507,10 @@ module kmac
   assign entropy_refresh_req = reg2hw.cmd.entropy_req.q
                             && reg2hw.cmd.entropy_req.qe;
 
-  assign entropy_hash_threshold = reg2hw.entropy_refresh.threshold.q;
-  assign hw2reg.entropy_refresh.hash_cnt.de = 1'b 1;
-  assign hw2reg.entropy_refresh.hash_cnt.d  = entropy_hash_cnt;
+  assign entropy_hash_threshold = reg2hw.entropy_refresh_threshold_shadowed.q
+                                & reg2hw.entropy_refresh_threshold_shadowed.qe;
+  assign hw2reg.entropy_refresh_hash_cnt.de = 1'b 1;
+  assign hw2reg.entropy_refresh_hash_cnt.d  = entropy_hash_cnt;
 
   assign entropy_hash_clr = reg2hw.cmd.hash_cnt_clr.qe
                          && reg2hw.cmd.hash_cnt_clr.q;
@@ -1271,7 +1272,8 @@ module kmac
       reg2hw.cfg_shadowed.msg_mask.err_storage                    ,
       reg2hw.cfg_shadowed.entropy_ready.err_storage               ,
       reg2hw.cfg_shadowed.err_processed.err_storage               ,
-      reg2hw.cfg_shadowed.en_unsupported_modestrength.err_storage
+      reg2hw.cfg_shadowed.en_unsupported_modestrength.err_storage ,
+      reg2hw.entropy_refresh_threshold_shadowed.err_storage
     };
 
   assign shadowed_update_err  = |{
@@ -1286,7 +1288,8 @@ module kmac
       reg2hw.cfg_shadowed.msg_mask.err_update                    ,
       reg2hw.cfg_shadowed.entropy_ready.err_update               ,
       reg2hw.cfg_shadowed.err_processed.err_update               ,
-      reg2hw.cfg_shadowed.en_unsupported_modestrength.err_update
+      reg2hw.cfg_shadowed.en_unsupported_modestrength.err_update ,
+      reg2hw.entropy_refresh_threshold_shadowed.err_update
     };
 
   logic unused_cfg_shadowed_qe;
