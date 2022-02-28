@@ -52,7 +52,6 @@ module rstmgr
   output mubi4_t sw_rst_req_o,
 
   // cpu related inputs
-  input logic rst_cpu_n_i,
   input logic ndmreset_req_i,
 
   // Interface to alert handler
@@ -1187,20 +1186,18 @@ module rstmgr
   logic rst_hw_req;
   logic rst_low_power;
   logic rst_ndm;
-  logic rst_cpu_nq;
-  logic first_reset;
   logic pwrmgr_rst_req;
 
   // there is a valid reset request from pwrmgr
   assign pwrmgr_rst_req = |pwr_i.rst_lc_req || |pwr_i.rst_sys_req;
 
-  // The qualification of first reset below could technically be POR as well.
-  // However, that would enforce software to clear POR upon cold power up.  While that is
-  // the most likely outcome anyways, hardware should not require that.
-  assign rst_hw_req    = ~first_reset & pwrmgr_rst_req &
+  // a reset reason is only valid if the related processing element is also reset.
+  // In the future, if ever there are multiple processing elements, this code here
+  // must be updated to account for each individual core.
+  assign rst_hw_req    = pwrmgr_rst_req &
                          (pwr_i.reset_cause == pwrmgr_pkg::HwReq);
-  assign rst_ndm       = ~first_reset & ndm_req_valid;
-  assign rst_low_power = ~first_reset & pwrmgr_rst_req &
+  assign rst_ndm       = ndm_req_valid;
+  assign rst_low_power = pwrmgr_rst_req &
                          (pwr_i.reset_cause == pwrmgr_pkg::LowPwrEntry);
 
   // software initiated reset request
@@ -1210,25 +1207,6 @@ module rstmgr
   // request so we are not in an infinite reset loop.
   assign hw2reg.reset_req.de = pwrmgr_rst_req;
   assign hw2reg.reset_req.d  = prim_mubi_pkg::MuBi4False;
-
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_cpu_reset_synced (
-    .clk_i,
-    .rst_ni,
-    .d_i(rst_cpu_n_i),
-    .q_o(rst_cpu_nq)
-  );
-
-  // first reset is a flag that blocks reset recording until first de-assertion
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      first_reset <= 1'b1;
-    end else if (rst_cpu_nq) begin
-      first_reset <= 1'b0;
-    end
-  end
 
   // Only sw is allowed to clear a reset reason, hw is only allowed to set it.
   assign hw2reg.reset_info.low_power_exit.d  = 1'b1;

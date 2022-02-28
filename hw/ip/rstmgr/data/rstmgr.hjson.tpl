@@ -144,11 +144,6 @@
 
     { struct:  "logic",
       type:    "uni",
-      name:    "rst_cpu_n",
-      act:     "rcv",
-    },
-    { struct:  "logic",
-      type:    "uni",
       name:    "ndmreset_req",
       act:     "rcv",
     },
