@@ -111,13 +111,16 @@ class csrng_cmds_vseq extends csrng_base_vseq;
       end
 
       do begin
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(aes_halt_clks, aes_halt_clks inside
-            { [cfg.min_aes_halt_clks:cfg.max_aes_halt_clks] };)
         `uvm_info(`gfn, $sformatf("aes_halt_clks = %0d, cmds_sent = %0d, cmds_gen = %0d",
                   aes_halt_clks, cmds_sent, cmds_gen), UVM_DEBUG)
-        cfg.clk_rst_vif.wait_clks(aes_halt_clks);
         if (cfg.aes_halt) begin
+          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(aes_halt_clks, aes_halt_clks inside
+              { [cfg.min_aes_halt_clks:cfg.max_aes_halt_clks] };)
+          cfg.clk_rst_vif.wait_clks(aes_halt_clks);
           m_aes_halt_pull_seq.start(p_sequencer.aes_halt_sequencer_h);
+        end
+        else begin
+          cfg.clk_rst_vif.wait_clks(500);
         end
       end
       while (cmds_sent < cmds_gen);
