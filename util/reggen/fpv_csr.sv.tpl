@@ -156,8 +156,9 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
 
     for f in hro_reg.get_field_list():
       f_access = f.swaccess.key.lower()
-      if f_access == "rw" and regwen == None:
-        reg_mask = reg_mask | f.bits.bitmask()
+      if regwen == None:
+        if f_access == "rw" or (f_access == "rw0c" and f_size == 1):
+          reg_mask = reg_mask | f.bits.bitmask()
 %>\
     % if reg_mask != 0:
 <%  reg_mask_hex = format(reg_mask, 'x') %>\
