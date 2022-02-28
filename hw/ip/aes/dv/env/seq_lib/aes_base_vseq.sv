@@ -329,6 +329,17 @@ class aes_base_vseq extends cip_base_vseq #(
       endcase // case interleave_queue[i]
 
       if (wait_on_reseed == 0) begin
+        // inject write to reg if enabled 25% of the time
+        if (cfg.error_types.mal_inject && $urandom(3)==0 && !manual_operation) begin
+          int wr_reg = $urandom_range(3,1);
+          case (wr_reg)
+            1: csr_wr(.ptr(ral.key_share0[$urandom(7)]), .value($urandom()),
+                      .blocking(is_blocking));
+            2: csr_wr(.ptr(ral.iv[$urandom(3)]), .value($urandom()), .blocking(is_blocking));
+            3: csr_wr(.ptr(ral.data_in[$urandom(3)]), .value($urandom()), .blocking(is_blocking));
+            default: `uvm_fatal(`gfn, $sformatf("UNREACHABLE BUT NEEDED DUE TO SYNTAX CHECK"))
+          endcase
+        end
         status_fsm(item, data_item, new_msg,
                    manual_operation, sideload_en, return_on_idle, read_output, status, rst_set);
         wait_on_reseed = 16;
@@ -500,6 +511,16 @@ class aes_base_vseq extends cip_base_vseq #(
                    manual_operation, sideload_en, 0, rst_set);
     end else begin
       add_data(data_item.data_in, cfg_item.do_b2b);
+      // sometimes randomly write a reg while busy
+      if (!manual_operation && cfg.error_types.mal_inject && ($urandom(3) == 1)) begin
+        int wr_reg = $urandom_range(3,1);
+        case (wr_reg)
+          1: csr_wr(.ptr(ral.key_share0[$urandom(7)]), .value($urandom()), .blocking(is_blocking));
+          2: csr_wr(.ptr(ral.iv[$urandom(3)]), .value($urandom()), .blocking(is_blocking));
+          3: csr_wr(.ptr(ral.data_in[$urandom(3)]), .value($urandom()), .blocking(is_blocking));
+          default: `uvm_fatal(`gfn, $sformatf("UNREACHABLE BUT NEEDED DUE TO SYNTAX CHECK"))
+        endcase
+      end
     end
     if (manual_operation && !rst_set) trigger();
     if (read_output && !rst_set) begin
@@ -734,7 +755,6 @@ class aes_base_vseq extends cip_base_vseq #(
         // stay in for until a valid key is ready
         wait(key_rdy);
       join_any
-
       send_msg(my_message.manual_operation, my_message.sideload_en,
                unbalanced, read_prob, write_prob, rst_set);
       if (my_message.sideload_en) begin

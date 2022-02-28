@@ -17,7 +17,7 @@ class aes_manual_config_err_test extends aes_base_test;
     super.configure_env();
     // disable scoreboard for this test
     cfg.en_scb                   = 0;
-    cfg.error_types              = 3'b001;
+    cfg.error_types              = 4'b0001;
     // all should have error
     cfg.config_error_pct         = 100;
     // only allow mode errors

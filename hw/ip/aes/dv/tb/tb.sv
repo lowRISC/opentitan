@@ -18,6 +18,8 @@ module tb;
   wire [NUM_MAX_INTERRUPTS-1:0]           interrupts;
   wire                                    edn_req;
   wire [$bits(lc_ctrl_pkg::lc_tx_t) : 0]  lc_escalate;
+  wire                                    idle;
+  prim_mubi_pkg::mubi4_t                  idle_s;
   lc_ctrl_pkg::lc_tx_t                    lc_escalate_en;
   keymgr_pkg::hw_key_req_t                keymgr_key;
 
@@ -28,6 +30,7 @@ module tb;
 
   pins_if #(1) devmode_if(devmode);
   pins_if #($bits(lc_escalate)) lc_escalate_if (lc_escalate);
+  pins_if #(1) idle_if (idle);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
   // edn_clk, edn_rst_n and edn_if is defined and driven in below macro
@@ -39,6 +42,8 @@ module tb;
   assign lc_escalate_en = lc_escalate[0] ?
                           lc_ctrl_pkg::lc_tx_t'(lc_escalate[$bits(lc_ctrl_pkg::lc_tx_t):1]) :
                           lc_ctrl_pkg::Off;
+
+  assign idle = (idle_s == prim_mubi_pkg::MuBi4True) ? 1 : 0;
   // dut
   aes #(
     .SecMasking  ( `EN_MASKING   ),
@@ -48,7 +53,7 @@ module tb;
     .rst_ni           ( rst_n                             ),
     .rst_shadowed_ni  ( rst_shadowed_n                    ),
 
-    .idle_o           (                                   ),
+    .idle_o           ( idle_s                            ),
     .lc_escalate_en_i ( lc_escalate_en                    ),
     .clk_edn_i        ( edn_clk                           ),
     .rst_edn_ni       ( edn_rst_n                         ),
@@ -80,6 +85,8 @@ module tb;
 
     uvm_config_db#(virtual pins_if #($bits(lc_ctrl_pkg::lc_tx_t) + 1))
                    ::set(null, "*.env", "lc_escalate_vif", lc_escalate_if);
+    uvm_config_db#(virtual pins_if #(1))
+                   ::set(null, "*.env", "idle_vif", idle_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

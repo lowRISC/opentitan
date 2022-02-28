@@ -27,9 +27,9 @@ class aes_scoreboard extends cip_base_scoreboard #(
   int          skipped_cnt        = 0;        // number of skipped messages
   bit          reset_compare      = 0;        // reset compare task
   bit          exp_clear          = 0;        // if using sideload - we are expecting a clear
-
   keymgr_pkg::hw_key_req_t sideload_key = 0;  // will hold the key from sideload
   uvm_tlm_analysis_fifo #(key_sideload_item)  key_manager_fifo;
+  bit [3:0]    datain_rdy         = '0;       // indicate if DATA_IN can be updated
 
   virtual      aes_cov_if   cov_if;           // handle to aes coverage interface
   // local queues to hold incoming packets pending comparison //
@@ -100,65 +100,77 @@ class aes_scoreboard extends cip_base_scoreboard #(
       end
       `uvm_info(`gfn, $sformatf("\n\t ----| ITEM received reg name : %s",csr.get_name() ), UVM_FULL)
       csr_name = csr.get_name();
+
       case (1)
         // add individual case item for each csr
         (!uvm_re_match("alert_test", csr_name)): begin
           cov_if.cg_alert_test_sample(item.a_data);
         end
 
-
         (!uvm_re_match("ctrl_shadowed", csr_name)): begin
-          if (write) begin
-            input_item.manual_op   = get_field_val(ral.ctrl_shadowed.manual_operation, item.a_data);
-            input_item.key_len     = get_field_val(ral.ctrl_shadowed.key_len, item.a_data);
-            input_item.sideload_en = get_field_val(ral.ctrl_shadowed.sideload, item.a_data);
-            `downcast(input_item.operation,
-                      get_field_val(ral.ctrl_shadowed.operation ,item.a_data));
-            input_item.valid = 1'b1;
-            case (get_field_val(ral.ctrl_shadowed.mode, item.a_data))
-              6'b00_0001:  input_item.mode = AES_ECB;
-              6'b00_0010:  input_item.mode = AES_CBC;
-              6'b00_0100:  input_item.mode = AES_CFB;
-              6'b00_1000:  input_item.mode = AES_OFB;
-              6'b01_0000:  input_item.mode = AES_CTR;
-              6'b10_0000:  input_item.mode = AES_NONE;
-              default:     input_item.mode = AES_NONE;
-            endcase
-            // sample coverage on ctrl register
-            cov_if.cg_ctrl_sample(get_field_val(ral.ctrl_shadowed.operation, item.a_data),
-                                  get_field_val(ral.ctrl_shadowed.mode, item.a_data),
-                                  get_field_val(ral.ctrl_shadowed.key_len, item.a_data),
-                                  get_field_val(ral.ctrl_shadowed.manual_operation, item.a_data),
-                                  get_field_val(ral.ctrl_shadowed.sideload, item.a_data),
-                                  get_field_val(ral.ctrl_shadowed.prng_reseed_rate, item.a_data)
-                                  );
+          // ignore reg write if busy
+          if (cfg.idle_vif) begin
+            if (write) begin
+              input_item.manual_op   =
+                                      get_field_val(ral.ctrl_shadowed.manual_operation, item.a_data);
+              input_item.key_len     = get_field_val(ral.ctrl_shadowed.key_len, item.a_data);
+              input_item.sideload_en = get_field_val(ral.ctrl_shadowed.sideload, item.a_data);
+              `downcast(input_item.operation,
+                        get_field_val(ral.ctrl_shadowed.operation ,item.a_data));
+              input_item.valid = 1'b1;
+              case (get_field_val(ral.ctrl_shadowed.mode, item.a_data))
+                6'b00_0001:  input_item.mode = AES_ECB;
+                6'b00_0010:  input_item.mode = AES_CBC;
+                6'b00_0100:  input_item.mode = AES_CFB;
+                6'b00_1000:  input_item.mode = AES_OFB;
+                6'b01_0000:  input_item.mode = AES_CTR;
+                6'b10_0000:  input_item.mode = AES_NONE;
+                default:     input_item.mode = AES_NONE;
+              endcase
+              // sample coverage on ctrl register
+              cov_if.cg_ctrl_sample(
+                                    get_field_val(ral.ctrl_shadowed.operation, item.a_data),
+                                    get_field_val(ral.ctrl_shadowed.mode, item.a_data),
+                                    get_field_val(ral.ctrl_shadowed.key_len, item.a_data),
+                                    get_field_val(ral.ctrl_shadowed.manual_operation, item.a_data),
+                                    get_field_val(ral.ctrl_shadowed.sideload, item.a_data),
+                                    get_field_val(ral.ctrl_shadowed.prng_reseed_rate, item.a_data)
+                                    );
 
-            input_item.clean();
-            input_item.start_item = 1;
-            if (input_item.sideload_en) begin
-              exp_clear = 1;
+              input_item.clean();
+              input_item.start_item = 1;
+              if (input_item.sideload_en) begin
+                exp_clear = 1;
+              end
             end
           end
         end
 
+
         (!uvm_re_match("key_share0*", csr_name)): begin
-          for (int i = 0; i < 8; i++) begin
-            string keyname = $sformatf("key_share0_%0d", i);
-            if (keyname == csr_name) begin
-               input_item.key[0][i]     = item.a_data;
-               input_item.key_vld[0][i] = 1'b1;
-               cov_if.cg_key_sample(i);
+          // ignore reg write if busy
+          if (cfg.idle_vif) begin
+            for (int i = 0; i < 8; i++) begin
+              string keyname = $sformatf("key_share0_%0d", i);
+              if (keyname == csr_name) begin
+                input_item.key[0][i]     = item.a_data;
+                input_item.key_vld[0][i] = 1'b1;
+                cov_if.cg_key_sample(i);
+              end
             end
           end
         end
 
         (!uvm_re_match("key_share1*", csr_name)): begin
-          for (int i = 0; i < 8; i++) begin
-            string keyname = $sformatf("key_share1_%0d", i);
-            if (keyname == csr_name) begin
-               input_item.key[1][i]     = item.a_data;
-               input_item.key_vld[1][i] = 1'b1;
-               cov_if.cg_key_sample(i+8);
+          // ignore reg write if busy
+          if (cfg.idle_vif) begin
+            for (int i = 0; i < 8; i++) begin
+              string keyname = $sformatf("key_share1_%0d", i);
+              if (keyname == csr_name) begin
+                input_item.key[1][i]     = item.a_data;
+                input_item.key_vld[1][i] = 1'b1;
+                cov_if.cg_key_sample(i+8);
+              end
             end
           end
         end
@@ -166,85 +178,94 @@ class aes_scoreboard extends cip_base_scoreboard #(
         (!uvm_re_match("data_in_*", csr_name)): begin
           for (int i = 0; i < 4; i++) begin
             string keyname = $sformatf("data_in_%0d", i);
-            if (keyname == csr_name) begin
+            // you can update datain until all have been
+            // updated then DUT will auto start
+            if (keyname == csr_name && (|datain_rdy || input_item.manual_op)) begin
               input_item.data_in[i]      = item.a_data;
               input_item.data_in_vld[i]  = 1'b1;
               cov_if.cg_wr_data_sample(i);
+              datain_rdy[i] = 0;
             end
           end
         end
 
-       (!uvm_re_match("iv_*", csr_name)): begin
-          for (int i = 0; i < 4; i++) begin
-            string keyname = $sformatf("iv_%0d", i);
-            if (keyname == csr_name) begin
-              input_item.iv[i]      = item.a_data;
-              input_item.iv_vld[i]  = 1'b1;
-              cov_if.cg_iv_sample(i);
+        (!uvm_re_match("iv_*", csr_name)): begin
+          // ignore reg write if busy
+          if (cfg.idle_vif) begin
+            for (int i = 0; i < 4; i++) begin
+              string keyname = $sformatf("iv_%0d", i);
+              if (keyname == csr_name) begin
+                input_item.iv[i]      = item.a_data;
+                input_item.iv_vld[i]  = 1'b1;
+                cov_if.cg_iv_sample(i);
+              end
             end
           end
-       end
+        end
 
-      (!uvm_re_match("trigger", csr_name)): begin
-        //start triggered
-        cov_if.cg_trigger_sample(get_field_val(ral.trigger.start, item.a_data),
-                                 get_field_val(ral.trigger.key_iv_data_in_clear, item.a_data),
-                                 get_field_val(ral.trigger.data_out_clear, item.a_data),
-                                 get_field_val(ral.trigger.prng_reseed, item.a_data)
-                                );
-        `uvm_info(`gfn, $sformatf("\n CLEAR REGISTER SEEN 0x%h", item.a_data), UVM_MEDIUM)
-        if (get_field_val(ral.trigger.start, item.a_data)) begin
-          ok_to_fwd                = 1;
-        end
-        // clear key, IV, data_in
-        if (get_field_val(ral.trigger.key_iv_data_in_clear, item.a_data)) begin
-          void'(input_item.key_clean(0, 1));
-          void'(input_item.iv_clean(0, 1));
-          void'(key_item.key_clean(0, 1));
-          input_item.clean_data_in();
-          // if in the middle of a message
-          // this is seen as the beginning of a new message
-          if (!input_item.start_item) begin
-            input_item.start_item = 1;
-            if (!exp_clear) input_item.split_item = 1;
-            exp_clear = 0;
-            `uvm_info(`gfn, $sformatf("splitting message"), UVM_MEDIUM)
+        (!uvm_re_match("trigger", csr_name)): begin
+          //start triggered
+          cov_if.cg_trigger_sample(get_field_val(ral.trigger.start, item.a_data),
+                                   get_field_val(ral.trigger.key_iv_data_in_clear, item.a_data),
+                                   get_field_val(ral.trigger.data_out_clear, item.a_data),
+                                   get_field_val(ral.trigger.prng_reseed, item.a_data)
+                                   );
+          `uvm_info(`gfn, $sformatf("\n CLEAR REGISTER SEEN 0x%h", item.a_data), UVM_MEDIUM)
+          if (get_field_val(ral.trigger.start, item.a_data)) begin
+            ok_to_fwd                = 1;
           end
-          `uvm_info(`gfn, $sformatf("\n\t ----| clearing KEY"), UVM_MEDIUM)
-          `uvm_info(`gfn, $sformatf("\n\t ----| clearing IV"), UVM_MEDIUM)
-          `uvm_info(`gfn, $sformatf("\n\t ----| clearing DATA_IN"), UVM_MEDIUM)
-        end
-        // clear data out
-        if (get_field_val(ral.trigger.data_out_clear, item.a_data)) begin
-           `uvm_info(`gfn, $sformatf("\n\t ----| clearing DATA_OUT"), UVM_MEDIUM)
-          if (cfg.clear_reg_w_rand) begin
-            input_item.data_out = {4{$urandom()}};
-          end else begin
-            input_item.data_out = '0;
+          // clear key, IV, data_in
+          if (get_field_val(ral.trigger.key_iv_data_in_clear, item.a_data)) begin
+            void'(input_item.key_clean(0, 1));
+            void'(input_item.iv_clean(0, 1));
+            void'(key_item.key_clean(0, 1));
+            input_item.clean_data_in();
+            datain_rdy = 4'b0;
+            // if in the middle of a message
+            // this is seen as the beginning of a new message
+            if (!input_item.start_item) begin
+              input_item.start_item = 1;
+              if (!exp_clear) input_item.split_item = 1;
+              exp_clear = 0;
+              `uvm_info(`gfn, $sformatf("splitting message"), UVM_MEDIUM)
+            end
+            `uvm_info(`gfn, $sformatf("\n\t ----| clearing KEY"), UVM_MEDIUM)
+            `uvm_info(`gfn, $sformatf("\n\t ----| clearing IV"), UVM_MEDIUM)
+            `uvm_info(`gfn, $sformatf("\n\t ----| clearing DATA_IN"), UVM_MEDIUM)
           end
-          // marking the output item as potentially bad
-          output_item.data_was_cleared = 1;
-          // set to make sure any input item
-          // waiting for output data is forwarded without the data.
-        end
-        // reseed
-         if (item.a_data[5]) begin
-           // nothing to do for DV
-        end
-       end
+          // clear data out
+          if (get_field_val(ral.trigger.data_out_clear, item.a_data)) begin
+            `uvm_info(`gfn, $sformatf("\n\t ----| clearing DATA_OUT"), UVM_MEDIUM)
+            if (cfg.clear_reg_w_rand) begin
+              input_item.data_out = {4{$urandom()}};
+            end else begin
+              input_item.data_out = '0;
+            end
+            // marking the output item as potentially bad
+            output_item.data_was_cleared = 1;
+            // set to make sure any input item
+            // waiting for output data is forwarded without the data.
+          end
+          // reseed
+          if (item.a_data[5]) begin
+            // nothing to do for DV
+          end
+        end // case: (!uvm_re_match("trigger", csr_name))
 
-       (!uvm_re_match("ctrl_aux_regwen", csr_name)): begin
+        (!uvm_re_match("ctrl_aux_regwen", csr_name)): begin
           cov_if.cg_aux_regwen_sample(item.a_data[0]);
-       end
+        end
 
-      // (!uvm_re_match("status", csr_name)): begin
-      //   // not used in scoreboard
-      //  end
+        // (!uvm_re_match("status", csr_name)): begin
+        //   // not used in scoreboard
+        //  end
 
-       default: begin
-         // DO nothing- trying to write to a read only register
-       end
-     endcase
+        default: begin
+          // DO nothing- trying to write to a read only register
+        end
+      endcase // case (1)
+    end // if (cfg.idle_vif)
+
 
 
       ///////////////////////////////////////
@@ -389,7 +410,6 @@ class aes_scoreboard extends cip_base_scoreboard #(
         // is written
         input_item.split_item = 0;
       end
-    end
 
 
     //////////////////////////////////////////////////////////////////////////////
@@ -404,7 +424,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
       end
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
       `uvm_info(`gfn, $sformatf("\n\t ----| SAW READ - %s data %02h",csr.get_name(),  item.d_data)
-                , UVM_FULL)
+                , UVM_MEDIUM)
 
       case (csr.get_name())
         "data_out_0": begin
@@ -430,7 +450,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
         "status": begin
           cov_if.cg_status_sample(item.d_data);
-
+          datain_rdy = (get_field_val(ral.status.input_ready, item.d_data) == 1) ? '1 : '0;
           // if dut IDLE and able to accept input
           // and no output is ready
           // there won't be a response for this item

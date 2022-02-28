@@ -15,7 +15,7 @@ class aes_alert_reset_test extends aes_base_test;
 
   function void configure_env();
     super.configure_env();
-    cfg.error_types              = 4'b1000; // inject errors in regs and fsm errors
+    cfg.error_types              = 4'b1110; // inject errors in regs and fsm errors
     cfg.num_messages_min         = 3;
     cfg.num_messages_max         = 6;
     cfg.unbalanced               = 0;
