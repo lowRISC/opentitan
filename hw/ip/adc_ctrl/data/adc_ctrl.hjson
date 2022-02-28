@@ -95,12 +95,15 @@
         }
         { bits: "7:4",
           name: "pwrup_time",
-          desc: "ADC power up time. unit in cycles, 200KHz(5us)",
+          desc: '''
+            ADC power up time, measured in always on clock cycles".
+            After power up time is reached, the adc controller needs two more cycles before an ADC channel is selected for access.
+          '''
           resval: "6",
         }
         { bits: "31:8",
           name: "wakeup_time",
-          desc: "How often FSM wakes up from ADC PD mode to take a sample. unit in cycles, 200KHz(5us)",
+          desc: "How often FSM wakes up from ADC PD mode to take a sample, measured in always on clock cycles",
           resval: "1600",
         }
       ]
@@ -148,12 +151,12 @@
         name: "adc_chn0_filter_ctl",
         desc: '''ADC channel0 filter range
 
-	      There are 8 filters to define the potential range(min, max)
+              There are 8 filters to define the potential range(min, max)
               [11:0]: min value [1:0] RO 0
               [12]: condition(in the box or out of the box)
-	      [27:16]: max value [17:16] RO 0
-	      each step is 2.148mV
-	      ''',
+              [27:16]: max value [17:16] RO 0
+              each step is 2.148mV
+              ''',
         count: "NumAdcFilter",
         cname: "ADC_CTRL",
         swaccess: "rw",
@@ -162,29 +165,29 @@
         resval: "0",
         fields: [
 //          { bits: "1:0",
-//	    name: "min_ext",
-//	    desc: "2-bit extension; RO 0",
-//	  }
+//          name: "min_ext",
+//          desc: "2-bit extension; RO 0",
+//        }
           { bits: "11:2",
-	    name: "min_v",
-	    desc: "10-bit for chn0 filter min value ",
-	  }
+            name: "min_v",
+            desc: "10-bit for chn0 filter min value ",
+          }
           { bits: "12",
-	    name: "cond",
-	    desc: "1-bit for the condition; 1'b0 means min<=ADC<=max, 1'b1 means ADC>max or ADC<min ",
-	  }
+            name: "cond",
+            desc: "1-bit for the condition; 1'b0 means min<=ADC<=max, 1'b1 means ADC>max or ADC<min ",
+          }
 //          { bits: "17:16",
-//	    name: "max_ext",
-//	    desc: "2-bit extension; RO 0",
-//	  }
+//          name: "max_ext",
+//          desc: "2-bit extension; RO 0",
+//        }
           { bits: "27:18",
-	    name: "max_v",
-	    desc: "10-bit for chn0 filter max value ",
-	  },
+            name: "max_v",
+            desc: "10-bit for chn0 filter max value ",
+          },
           { bits: "31",
-	    name: "EN",
-	    desc: "Enable for filter",
-	  }
+            name: "EN",
+            desc: "Enable for filter",
+          }
         ],
       }
     }
@@ -193,12 +196,12 @@
         name: "adc_chn1_filter_ctl",
         desc: '''ADC channel1 filter range
 
-	      There are 8 filters to define the potential range(min, max)
+              There are 8 filters to define the potential range(min, max)
               [11:0]: min value [1:0] RO 0
               [12]: condition(in the box or out of the box)
-	      [27:16]: max value [17:16] RO 0
-	      each step is 2.148mV
-	      ''',
+              [27:16]: max value [17:16] RO 0
+              each step is 2.148mV
+              ''',
         count: "NumAdcFilter",
         cname: "ADC_CTRL",
         swaccess: "rw",
@@ -207,29 +210,29 @@
         resval: "0",
         fields: [
 //          { bits: "1:0",
-//	    name: "min_ext",
-//	    desc: "2-bit extension; RO 0",
-//	  }
+//          name: "min_ext",
+//          desc: "2-bit extension; RO 0",
+//        }
           { bits: "11:2",
-	    name: "min_v",
-	    desc: "10-bit for chn0 filter min value ",
-	  }
+            name: "min_v",
+            desc: "10-bit for chn0 filter min value ",
+          }
           { bits: "12",
-	    name: "cond",
-	    desc: "1-bit for the condition; 1'b0 means min<=ADC<=max, 1'b1 means ADC>max or ADC<min ",
-	  }
+            name: "cond",
+            desc: "1-bit for the condition; 1'b0 means min<=ADC<=max, 1'b1 means ADC>max or ADC<min ",
+          }
 //          { bits: "17:16",
-//	    name: "max_ext",
-//	    desc: "2-bit extension; RO 0",
-//	  }
+//          name: "max_ext",
+//          desc: "2-bit extension; RO 0",
+//        }
           { bits: "27:18",
-	    name: "max_v",
-	    desc: "10-bit for chn0 filter max value ",
-	  },
+            name: "max_v",
+            desc: "10-bit for chn0 filter max value ",
+          },
           { bits: "31",
-	    name: "EN",
-	    desc: "Enable for filter",
-	  }
+            name: "EN",
+            desc: "Enable for filter",
+          }
         ],
       }
     },
@@ -245,21 +248,21 @@
         resval: "0",
         fields: [
           { bits: "1:0",
-	    name: "adc_chn_value_ext",
-	    desc: "2-bit extension; RO 0",
-	  }
+            name: "adc_chn_value_ext",
+            desc: "2-bit extension; RO 0",
+          }
           { bits: "11:2",
-	    name: "adc_chn_value",
-	    desc: "Latest ADC value sampled on channel. each step is 2.148mV",
-	  }
+            name: "adc_chn_value",
+            desc: "Latest ADC value sampled on channel. each step is 2.148mV",
+          }
           { bits: "17:16",
-	    name: "adc_chn_value_intr_ext",
-	    desc: "2-bit extension; RO 0",
-	  }
+            name: "adc_chn_value_intr_ext",
+            desc: "2-bit extension; RO 0",
+          }
           { bits: "27:18",
-	    name: "adc_chn_value_intr",
-	    desc: "ADC value sampled on channel when the interrupt is raised(debug cable is attached or disconnected)each step is 2.148mV",
-	  }
+            name: "adc_chn_value_intr",
+            desc: "ADC value sampled on channel when the interrupt is raised(debug cable is attached or disconnected)each step is 2.148mV",
+          }
         ],
       }
     }
@@ -274,7 +277,7 @@
       resval: "0",
       fields: [
         { bits: "NumAdcFilter-1:0",
-	  name: "EN",
+          name: "EN",
           desc: "0: filter match wil not generate wakeupe; 1: filter match will generate wakeup",
         }
       ]
@@ -292,7 +295,7 @@
       resval: "0",
       fields: [
         { bits: "7:0",
-	  name: "COND",
+          name: "COND",
           desc: "0: filter condition is not met; 1: filter condition is met",
         }
       ]
@@ -312,7 +315,7 @@
       resval: "0",
       fields: [
         { bits: "8:0",
-	  name: "EN",
+          name: "EN",
           desc: "0: interrupt source is enabled; 1: interrupt source not enabled",
         }
       ]
@@ -328,38 +331,38 @@
               "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
         { bits: "0",
-	  name: "cc_sink_det",
+          name: "cc_sink_det",
           desc: "0: filter0 condition is not met; 1: filter0 condition is met",
         }
-	{ bits: "1",
+        { bits: "1",
           name: "cc_1A5_sink_det",
           desc: "0: filter1 condition is not met; 1: filter1 condition is met",
         }
-	{ bits: "2",
+        { bits: "2",
           name: "cc_3A0_sink_det",
           desc: "0: filter2 condition is not met; 1: filter2 condition is met",
         }
-	{ bits: "3",
+        { bits: "3",
           name: "cc_src_det",
           desc: "0: filter3 condition is not met; 1: filter3 condition is met",
         }
-	{ bits: "4",
+        { bits: "4",
           name: "cc_1A5_src_det",
           desc: "0: filter4 condition is not met; 1: filter4 condition is met",
         }
-	{ bits: "5",
+        { bits: "5",
           name: "cc_src_det_flip",
           desc: "0: filter5 condition is not met; 1: filter5 condition is met",
         }
-	{ bits: "6",
+        { bits: "6",
           name: "cc_1A5_src_det_flip",
           desc: "0: filter6 condition is not met; 1: filter6 condition is met",
         }
-	{ bits: "7",
+        { bits: "7",
           name: "cc_discon",
           desc: "0: filter7 condition is not met; 1: filter7 condition is met",
         }
-	{ bits: "8",
+        { bits: "8",
           name: "oneshot",
           desc: "0: oneshot sample is not done ; 1: oneshot sample is done",
         }
