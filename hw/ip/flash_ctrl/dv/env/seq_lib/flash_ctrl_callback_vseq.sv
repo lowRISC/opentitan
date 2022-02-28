@@ -12,7 +12,7 @@ class flash_ctrl_callback_vseq extends cip_base_vseq #(
   `uvm_object_utils(flash_ctrl_callback_vseq)
   `uvm_object_new
 
-  virtual task dut_init_callback();
+  virtual task apply_reset_callback();
     // Do nothing but can be overridden in closed source environment.
   endtask
 
