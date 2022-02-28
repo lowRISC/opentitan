@@ -64,13 +64,10 @@ bool closed_source_post_test_hook(void) {return true;}
 // logic to be invoked as a FreeRTOS task. This wrapper can be used by tests
 // that are run on bare-metal.
 static void test_wrapper(void *task_parameters) {
-
   // Invoke weak symbol that can be overriden in closed source code.
   bool result = closed_source_pre_test_hook();
   
-  result = result && test_main();
-  // Invoke weak symbol that can be overriden in closed source code. 
-  result = result && closed_source_post_test_hook();
+  result = result && test_main() && closed_source_post_test_hook();
   report_test_status(result);
 }
 
