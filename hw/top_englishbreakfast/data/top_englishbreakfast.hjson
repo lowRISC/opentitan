@@ -589,7 +589,6 @@
 
 
       // rv core ibex connections
-      'rv_core_ibex.rst_cpu_n'  : ['rstmgr_aon.rst_cpu_n'],
       'rv_core_ibex.crash_dump' : ['rstmgr_aon.cpu_dump'],
       'rv_core_ibex.pwrmgr'     : ['pwrmgr_aon.pwr_cpu'],
 
