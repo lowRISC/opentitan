@@ -101,7 +101,6 @@ module tb;
     .pwr_o(rstmgr_if.pwr_o),
 
     .sw_rst_req_o(rstmgr_if.sw_rst_req_o),
-    .rst_cpu_n_i(rstmgr_if.cpu_i.rst_cpu_n),
     .ndmreset_req_i(rstmgr_if.cpu_i.ndmreset_req),
 
     .alert_dump_i(rstmgr_if.alert_dump_i),

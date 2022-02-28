@@ -608,7 +608,6 @@ module top_earlgrey #(
   logic       rv_plic_msip;
   logic       rv_plic_irq;
   logic       rv_dm_debug_req;
-  logic       rv_core_ibex_rst_cpu_n;
   rv_core_ibex_pkg::cpu_crash_dump_t       rv_core_ibex_crash_dump;
   pwrmgr_pkg::pwr_cpu_t       rv_core_ibex_pwrmgr;
   spi_device_pkg::passthrough_req_t       spi_device_passthrough_req;
@@ -1720,7 +1719,6 @@ module top_earlgrey #(
       .pwr_o(pwrmgr_aon_pwr_rst_rsp),
       .resets_o(rstmgr_aon_resets),
       .rst_en_o(rstmgr_aon_rst_en),
-      .rst_cpu_n_i(rv_core_ibex_rst_cpu_n),
       .ndmreset_req_i(rv_dm_ndmreset_req),
       .alert_dump_i(alert_handler_crashdump),
       .cpu_dump_i(rv_core_ibex_crash_dump),
@@ -2533,7 +2531,7 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[59:56] ),
 
       // Inter-module signals
-      .rst_cpu_n_o(rv_core_ibex_rst_cpu_n),
+      .rst_cpu_n_o(),
       .ram_cfg_i(ast_ram_1p_cfg),
       .hart_id_i(rv_core_ibex_hart_id),
       .boot_addr_i(rv_core_ibex_boot_addr),

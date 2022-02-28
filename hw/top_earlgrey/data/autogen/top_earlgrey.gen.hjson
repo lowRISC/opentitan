@@ -2914,18 +2914,6 @@
           index: -1
         }
         {
-          name: rst_cpu_n
-          struct: logic
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: rstmgr_aon
-          default: ""
-          package: ""
-          top_signame: rv_core_ibex_rst_cpu_n
-          index: -1
-        }
-        {
           name: ndmreset_req
           struct: logic
           type: uni
@@ -7160,11 +7148,6 @@
           act: req
           width: 1
           inst_name: rv_core_ibex
-          default: ""
-          package: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: rv_core_ibex_rst_cpu_n
           index: -1
         }
         {
@@ -7834,10 +7817,6 @@
       rv_dm.debug_req:
       [
         rv_core_ibex.debug_req
-      ]
-      rv_core_ibex.rst_cpu_n:
-      [
-        rstmgr_aon.rst_cpu_n
       ]
       rv_core_ibex.crash_dump:
       [
@@ -15902,18 +15881,6 @@
         index: -1
       }
       {
-        name: rst_cpu_n
-        struct: logic
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: rstmgr_aon
-        default: ""
-        package: ""
-        top_signame: rv_core_ibex_rst_cpu_n
-        index: -1
-      }
-      {
         name: ndmreset_req
         struct: logic
         type: uni
@@ -18151,11 +18118,6 @@
         act: req
         width: 1
         inst_name: rv_core_ibex
-        default: ""
-        package: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: rv_core_ibex_rst_cpu_n
         index: -1
       }
       {
@@ -20730,17 +20692,6 @@
         package: ""
         struct: logic [rv_dm_reg_pkg::NrHarts-1:0]
         signame: rv_dm_debug_req
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: "'0"
-      }
-      {
-        package: ""
-        struct: logic
-        signame: rv_core_ibex_rst_cpu_n
         width: 1
         type: uni
         end_idx: -1
