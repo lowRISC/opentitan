@@ -147,11 +147,11 @@
       act:     "rsp",
     },
 
-    { struct:  "logic",
+    { struct:  "mubi4",
       type:    "uni",
       name:    "idle",
       act:     "rcv",
-      package: "",
+      package: "prim_mubi_pkg",
       width:   "${len(hint_names)}"
     },
   ],
@@ -492,9 +492,16 @@
             Register file has experienced a fatal integrity error.
           '''
         },
+        { bits: "1",
+          name: "IDLE_CNT",
+          resval: 0
+          desc: '''
+            One of the idle counts encountered a duplicate error.
+          '''
+        },
 % for src in typed_clocks.rg_srcs:
         {
-          bits: "${loop.index + 1}",
+          bits: "${loop.index + 2}",
           name: "${src.upper()}_STORAGE_ERR",
           resval: 0,
           desc: '''

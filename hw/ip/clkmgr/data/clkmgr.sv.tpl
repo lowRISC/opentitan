@@ -4,6 +4,10 @@
 //
 // The overall clock manager
 
+<%
+from topgen.lib import Name
+%>\
+
 `include "prim_assert.sv"
 
   module clkmgr
@@ -49,7 +53,7 @@
   input prim_mubi_pkg::mubi4_t scanmode_i,
 
   // idle hints
-  input [${len(typed_clocks.hint_clks)-1}:0] idle_i,
+  input prim_mubi_pkg::mubi4_t [${len(typed_clocks.hint_clks)-1}:0] idle_i,
 
   // life cycle state output
   // SEC_CM: LC_CTRL.INTERSIG.MUBI
@@ -85,8 +89,6 @@
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4True;
   import prim_mubi_pkg::mubi4_test_true_strict;
-  import prim_mubi_pkg::mubi4_test_true_loose;
-  import prim_mubi_pkg::mubi4_test_false_loose;
 
   ////////////////////////////////////////////////////
   // Divided clocks
@@ -446,72 +448,40 @@
   // clock target
   ////////////////////////////////////////////////////
 
-% for clk in typed_clocks.hint_clks.keys():
-  logic ${clk}_hint;
-  logic ${clk}_en;
-% endfor
-
+  logic [${len(typed_clocks.hint_clks)-1}:0] idle_cnt_err;
 % for clk, sig in typed_clocks.hint_clks.items():
-  assign ${clk}_en = ${clk}_hint | ~idle_i[${hint_names[clk]}];
-
-  prim_flop_2sync #(
-    .Width(1)
-  ) u_${clk}_hint_sync (
-    .clk_i(clk_${sig.src.name}_i),
-    .rst_ni(rst_${sig.src.name}_ni),
-    .d_i(reg2hw.clk_hints.${clk}_hint.q),
-    .q_o(${clk}_hint)
-  );
-
-  // Declared as size 1 packed array to avoid FPV warning.
-  prim_mubi_pkg::mubi4_t [0:0] ${clk}_scanmode;
-  prim_mubi4_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_${clk}_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
-    .mubi_i(scanmode_i),
-    .mubi_o(${clk}_scanmode)
-  );
-
-  // Add a prim buf here to make sure the CG and the lc sender inputs
-  // are derived from the same physical signal.
-  logic ${clk}_combined_en;
-  prim_buf u_prim_buf_${clk}_en (
-    .in_i(${clk}_en & clk_${sig.src.name}_en),
-    .out_o(${clk}_combined_en)
-  );
-
-  prim_clock_gating #(
+<%assert_name = Name.from_snake_case(clk)
+%>
+  clkmgr_trans #(
 % if clk == "clk_main_kmac":
     .FpgaBufGlobal(1'b1) // KMAC is getting too big for a single clock region.
 % else:
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
 % endif
-  ) u_${clk}_cg (
-    .clk_i(clk_${sig.src.name}_root),
-    .en_i(${clk}_combined_en),
-    .test_en_i(mubi4_test_true_strict(${clk}_scanmode[0])),
-    .clk_o(clocks_o.${clk})
-  );
-
-  // clock gated indication for alert handler
-  prim_mubi4_sender #(
-    .ResetValue(MuBi4True)
-  ) u_prim_mubi4_sender_${clk} (
+  ) u_${clk}_trans (
     .clk_i(clk_${sig.src.name}_i),
     .rst_ni(rst_${sig.src.name}_ni),
-    .mubi_i(((${clk}_combined_en) ? MuBi4False : MuBi4True)),
-    .mubi_o(cg_en_o.${clk.split('clk_')[-1]})
+    .clk_root_i(clk_${sig.src.name}_root),
+    .clk_root_en_i(clk_${sig.src.name}_en),
+    .idle_i(idle_i[${hint_names[clk]}]),
+    .sw_hint_i(reg2hw.clk_hints.${clk}_hint.q),
+    .scanmode_i,
+    .alert_cg_en_o(cg_en_o.${clk.split('clk_')[-1]}),
+    .clk_o(clocks_o.${clk}),
+    .clk_en_o(hw2reg.clk_hints_status.${clk}_val.d),
+    .cnt_err_o(idle_cnt_err[${hint_names[clk]}])
   );
-
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
+    ${assert_name.as_camel_case()}CountCheck_A,
+    u_${clk}_trans.u_idle_cnt,
+    alert_tx_o[0])
 % endfor
+  assign hw2reg.fatal_err_code.idle_cnt.d = 1'b1;
+  assign hw2reg.fatal_err_code.idle_cnt.de = |idle_cnt_err;
 
   // state readback
 % for clk in typed_clocks.hint_clks.keys():
   assign hw2reg.clk_hints_status.${clk}_val.de = 1'b1;
-  assign hw2reg.clk_hints_status.${clk}_val.d = ${clk}_en;
 % endfor
 
   // SEC_CM: JITTER.CONFIG.MUBI
