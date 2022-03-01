@@ -153,6 +153,7 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
     reg_addr_hex = format(reg_addr, 'x')
     regwen       = hro_reg.regwen
     reg_mask     = 0
+    f_size       = len(hro_reg.fields)
 
     for f in hro_reg.get_field_list():
       f_access = f.swaccess.key.lower()
