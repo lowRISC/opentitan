@@ -334,5 +334,41 @@ TEST_F(Data, DataOut) {
   EXPECT_THAT(out.data, ElementsAreArray(data_.data));
 }
 
+// Trigger
+class Trigger : public AesTestInitialized {};
+
+TEST_F(Trigger, Start) {
+  EXPECT_WRITE32(AES_TRIGGER_REG_OFFSET, {{AES_TRIGGER_START_BIT, true}});
+
+  EXPECT_EQ(dif_aes_trigger(&aes_, kDifAesTriggerStart), kDifOk);
+}
+
+TEST_F(Trigger, KeyIvDataInClear) {
+  EXPECT_WRITE32(AES_TRIGGER_REG_OFFSET,
+                 {
+                     {AES_TRIGGER_KEY_IV_DATA_IN_CLEAR_BIT, true},
+                 });
+
+  EXPECT_EQ(dif_aes_trigger(&aes_, kDifAesTriggerKeyIvDataInClear), kDifOk);
+}
+
+TEST_F(Trigger, DataOutClear) {
+  EXPECT_WRITE32(AES_TRIGGER_REG_OFFSET,
+                 {
+                     {AES_TRIGGER_DATA_OUT_CLEAR_BIT, true},
+                 });
+
+  EXPECT_EQ(dif_aes_trigger(&aes_, kDifAesTriggerDataOutClear), kDifOk);
+}
+
+TEST_F(Trigger, PrngReseed) {
+  EXPECT_WRITE32(AES_TRIGGER_REG_OFFSET,
+                 {
+                     {AES_TRIGGER_PRNG_RESEED_BIT, true},
+                 });
+
+  EXPECT_EQ(dif_aes_trigger(&aes_, kDifAesTriggerPrngReseed), kDifOk);
+}
+
 }  // namespace
 }  // namespace dif_aes_test
