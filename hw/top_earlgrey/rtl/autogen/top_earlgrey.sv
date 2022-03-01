@@ -26,6 +26,7 @@ module top_earlgrey #(
   // parameters for pattgen
   // parameters for rv_timer
   // parameters for usbdev
+  parameter int UsbdevRcvrWakeTimeUs = 1,
   // parameters for otp_ctrl
   parameter OtpCtrlMemInitFile = "",
   // parameters for lc_ctrl
@@ -1368,7 +1369,8 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
   usbdev #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[11:11])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[11:11]),
+    .RcvrWakeTimeUs(UsbdevRcvrWakeTimeUs)
   ) u_usbdev (
 
       // Input
