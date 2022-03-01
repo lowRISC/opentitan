@@ -69,7 +69,7 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
     set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
 
     // Send sw reset.
-    send_sw_reset();
+    send_sw_reset(MuBi4True);
     check_reset_info(8, "Expected reset_info to indicate sw reset");
     check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 0);
 

@@ -11,6 +11,8 @@ class rstmgr_base_vseq extends cip_base_vseq #(
 
   `uvm_object_utils(rstmgr_base_vseq)
 
+  `uvm_object_new
+
   // Set clock frequencies per spec, except the aon is 200kHZ, which is
   // too slow and could slow testing down for no good reason.
   localparam int AON_FREQ_MHZ = 3;
@@ -41,14 +43,8 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   } reset_e;
 
   typedef struct {
-    int code;
-    logic enable;
-    logic update;
-  } reset_expectations_t;
-
-  typedef struct {
     string description;
-    reset_expectations_t expects;
+    int code;
   } reset_test_info_t;
 
   rand reset_e                              which_reset;
@@ -97,55 +93,37 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   reset_test_info_t reset_test_infos[reset_e] = '{
     ResetPOR: '{
       description: "POR reset",
-      expects: '{
-        code: 1,
-        enable: 1'b0,
-        update: 1'b0
-      }
+      code: 1
     },
     ResetScan: '{
       description: "scan reset",
-      expects: '{
-        code: 1,
-        enable: 1'b0,
-        update: 1'b0
-      }
+      code: 1
     },
     ResetLowPower: '{
       description: "low power reset",
-      expects: '{
-        code: 2,
-        enable: 1'b1,
-        update: 1'b1
-      }
+      code: 2
     },
     ResetNdm: '{
       description: "ndm reset",
-      expects: '{
-        code: 4,
-        enable: 1'b1,
-        update: 1'b1
-      }
+      code: 4
     },
     ResetSw: '{
       description: "software reset",
-      expects: '{
-        code: 8,
-        enable: 1'b0,
-        update: 1'b1
-      }
+      code: 8
     },
     ResetHw: '{
       description: "hardware reset",
-      expects: '{
-        code: 16,
-        enable: 1'b0,
-        update: 1'b1
-      }
+      code: 16
     }
   };
 
-  `uvm_object_new
+  function bit aon_reset(reset_e reset);
+    return reset inside {ResetPOR, ResetScan};
+  endfunction
+
+  function bit clear_capture_enable(reset_e reset);
+    return !(reset inside {ResetLowPower, ResetNdm});
+  endfunction
 
   function void post_randomize();
     scanmode = get_rand_mubi4_val(scanmode_on_weight, 4, 4);
@@ -306,7 +284,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
 
   virtual protected task clear_alert_and_cpu_info();
     set_alert_and_cpu_info_for_capture('0, '0);
-    send_sw_reset();
+    send_sw_reset(MuBi4True);
     check_alert_and_cpu_info_after_reset(.alert_dump('0), .cpu_dump('0), .enable(0));
   endtask
 
@@ -400,12 +378,14 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   // Requests a sw reset. It is cleared by hardware once the reset is taken.
-  virtual protected task send_sw_reset();
-    `uvm_info(`gfn, "Sending sw reset", UVM_LOW)
-    csr_wr(.ptr(ral.reset_req), .value(prim_mubi_pkg::MuBi4True));
-    reset_start(pwrmgr_pkg::HwReq);
-    cfg.io_div4_clk_rst_vif.wait_clks(non_ndm_reset_cycles);
-    reset_done();
+  virtual protected task send_sw_reset(mubi4_t value);
+    csr_wr(.ptr(ral.reset_req), .value(value));
+    if (value == prim_mubi_pkg::MuBi4True) begin
+      `uvm_info(`gfn, "Sending sw reset", UVM_LOW)
+      reset_start(pwrmgr_pkg::HwReq);
+      cfg.io_div4_clk_rst_vif.wait_clks(non_ndm_reset_cycles);
+      reset_done();
+    end
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
