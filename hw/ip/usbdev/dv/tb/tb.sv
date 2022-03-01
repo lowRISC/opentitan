@@ -88,7 +88,7 @@ module tb;
     // Events and debug info from wakeup module
     .usb_aon_bus_reset_i  ('0),
     .usb_aon_sense_lost_i ('0),
-    .usb_state_debug_i    ('0),
+    .usb_state_debug_i    (usbdev_pkg::AwkIdle),
 
     // SOF reference for clock calibration
     .usb_ref_val_o        (),
