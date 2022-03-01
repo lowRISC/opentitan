@@ -67,6 +67,9 @@ module usbdev_usbif  #(
   output logic [31:0]              mem_wdata_o,
   input  logic [31:0]              mem_rdata_i,
 
+  // time reference
+  input  logic                     us_tick_i,
+
   // control
   input  logic                     enable_i,
   input  logic [6:0]               devaddr_i,
@@ -75,6 +78,7 @@ module usbdev_usbif  #(
   input  logic [NEndpoints-1:0]    out_ep_enabled_i,
   input  logic [NEndpoints-1:0]    out_ep_iso_i,
   input  logic [NEndpoints-1:0]    in_ep_iso_i,
+  input  logic                     diff_rx_ok_i, // 1: differential symbols (K/J) are valid
   input  logic                     cfg_eop_single_bit_i, // 1: detect a single SE0 bit as EOP
   input  logic                     cfg_use_diff_rcvr_i, // 1: use single-ended rx data on usb_d_i
   input  logic                     tx_osc_test_mode_i, // Oscillator test mode: constant JK output
@@ -280,6 +284,7 @@ module usbdev_usbif  #(
     .cfg_use_diff_rcvr_i   (cfg_use_diff_rcvr_i),
     .tx_osc_test_mode_i    (tx_osc_test_mode_i),
     .data_toggle_clear_i   (data_toggle_clear_i),
+    .diff_rx_ok_i          (diff_rx_ok_i),
 
     .usb_d_i               (usb_d_i),
     .usb_dp_i              (usb_dp_i),
@@ -333,26 +338,9 @@ module usbdev_usbif  #(
     .frame_index_o         (frame_index_raw)
   );
 
-  // us_tick ticks for one cycle every us
-  logic [5:0]   ns_cnt;
-  logic         us_tick;
-  logic         do_internal_sof;
-
-  assign us_tick = (ns_cnt == 6'd48);
-  always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      ns_cnt <= '0;
-    end else begin
-      if (us_tick) begin
-        ns_cnt <= '0;
-      end else begin
-        ns_cnt <= ns_cnt + 1'b1;
-      end
-    end
-  end
-
   // Capture frame number (host sends every 1ms)
   // Generate an internal SOF if the host's is missing.
+  logic do_internal_sof;
   logic [10:0] frame_d, frame_q;
 
   assign frame_o = frame_q;
@@ -378,7 +366,7 @@ module usbdev_usbif  #(
   usbdev_linkstate u_usbdev_linkstate (
     .clk_48mhz_i           (clk_48mhz_i),
     .rst_ni                (rst_ni),
-    .us_tick_i             (us_tick),
+    .us_tick_i             (us_tick_i),
     .usb_sense_i           (usb_sense_i),
     .usb_dp_i              (usb_dp_i),
     .usb_dn_i              (usb_dn_i),

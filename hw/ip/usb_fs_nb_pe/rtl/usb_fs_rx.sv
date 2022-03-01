@@ -13,6 +13,7 @@ module usb_fs_rx (
   // configuration
   input  logic cfg_eop_single_bit_i,
   input  logic cfg_use_diff_rcvr_i,
+  input  logic diff_rx_ok_i,
 
   // USB data+ and data- lines (synchronous)
   input  logic usb_d_i,
@@ -290,8 +291,12 @@ module usb_fs_rx (
 
   always_comb begin : proc_packet_valid_d
     if (line_state_valid) begin
+      // If the differential K and J symbols are not valid, reject the
+      // containing packet as invalid.
+      if (~diff_rx_ok_i) begin
+        packet_valid_d = 0;
       // check for packet start: KJKJKK, we use the last 6 bits
-      if (!packet_valid_q && line_history_q[11:0] == 12'b011001100101) begin
+      end else if (!packet_valid_q && line_history_q[11:0] == 12'b011001100101) begin
         packet_valid_d = 1;
       end
 
@@ -341,7 +346,7 @@ module usb_fs_rx (
   end
 
   // Used for seeing a J after the completion of resume signaling
-  assign rx_j_det_o = ~tx_en_i & (line_history_q[1:0] == 2'b10);
+  assign rx_j_det_o = diff_rx_ok_i & ~tx_en_i & (line_history_q[1:0] == 2'b10);
 
   /////////////////
   // NRZI decode //
