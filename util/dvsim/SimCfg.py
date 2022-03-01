@@ -97,6 +97,8 @@ class SimCfg(FlowCfg):
             self.en_build_modes.append("gui")
         if args.waves is not None:
             self.en_build_modes.append("waves")
+        else:
+            self.en_build_modes.append("waves_off")
         if self.cov is True:
             self.en_build_modes.append("cov")
         if args.profile is not None:
