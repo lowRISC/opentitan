@@ -68,7 +68,8 @@ module tb;
     .cio_key2_out_o   (sysrst_ctrl_if.key2_out),
     .cio_pwrb_out_o   (sysrst_ctrl_if.pwrb_out),
     .cio_z3_wakeup_o  (sysrst_ctrl_if.z3_wakeup),
-    .intr_sysrst_ctrl_o (intr_sysrst_ctrl)
+    .intr_sysrst_ctrl_o (intr_sysrst_ctrl),
+    .aon_sysrst_ctrl_rst_req_o (sysrst_ctrl_if.sysrst_ctrl_rst_req)
   );
 
   assign interrupts[IntrSysrstCtrl]      = intr_sysrst_ctrl;

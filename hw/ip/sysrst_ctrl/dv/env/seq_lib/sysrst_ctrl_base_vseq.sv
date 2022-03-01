@@ -12,6 +12,7 @@ class sysrst_ctrl_base_vseq extends cip_base_vseq #(
 
   // various knobs to enable certain routines
   bit do_sysrst_ctrl_init = 1'b1;
+  rand bit en_intr;
 
   `uvm_object_new
 
@@ -72,6 +73,8 @@ class sysrst_ctrl_base_vseq extends cip_base_vseq #(
   // setup basic sysrst_ctrl features
   virtual task sysrst_ctrl_init();
     // A place holder to add any basic feature or initialization in future
+    ral.intr_enable.sysrst_ctrl.set(en_intr);
+    csr_update(ral.intr_enable);
   endtask
 
   virtual task apply_reset(string kind = "HARD");
