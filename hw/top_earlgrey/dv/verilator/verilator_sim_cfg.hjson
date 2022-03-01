@@ -146,14 +146,7 @@
     {
       name: otbn_smoketest_rtl
       sw_images: ["sw/device/tests/otbn_smoketest:1"]
-      run_opts: ["+OTBN_USE_MODEL=0"]
     }
-    // TODO: Needs to be debugged.
-    // {
-    //   name: otbn_smoketest_model
-    //   sw_images: ["sw/device/tests/otbn_smoketest:1"]
-    //   run_opts: ["+OTBN_USE_MODEL=1"]
-    // }
     {
       name: otp_ctrl_smoketest
       sw_images: ["sw/device/tests/otp_ctrl_smoketest:1"]

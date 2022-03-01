@@ -223,8 +223,8 @@ class OTBNExtRegs:
         # where they expected to finish.
         self.regs['STOP_PC'] = make_flag_reg('STOP_PC', True)
 
-        # Add a fake "RND_REQ" register to pass it through otbn_core_model
-        # when OTBN_USE_MODEL parameter is enabled in system level tests.
+        # Add a fake "RND_REQ" register to allow us to tell otbn_core_model to
+        # generate an EDN request.
         self.regs['RND_REQ'] = make_flag_reg('RND_REQ', True)
 
         # Add a fake "WIPE_START" register. We set this for a single cycle when

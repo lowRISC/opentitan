@@ -24,13 +24,6 @@ TEST_APPS_SELFCHECKING = [
     {
         "name": "otbn_smoketest_rtl",
         "binary_name": "otbn_smoketest",
-        "verilator_extra_args": ['+OTBN_USE_MODEL=0'],
-        "targets": ["sim_verilator"],
-    },
-    {
-        "name": "otbn_smoketest_model",
-        "binary_name": "otbn_smoketest",
-        "verilator_extra_args": ['+OTBN_USE_MODEL=1'],
         "targets": ["sim_verilator"],
     },
     {

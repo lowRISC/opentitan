@@ -83,9 +83,6 @@ targets:
       - rominit
       - otpinit
       - DMIDirectTAP
-      # Always build OTBN with model and RTL. Switch between the two at runtime
-      # by passing "+OTBN_USE_MODEL=1" to the simulation.
-      - OTBN_BUILD_MODEL=true
       - RV_CORE_IBEX_SIM_SRAM=true
     default_tool: verilator
     filesets:
