@@ -37,7 +37,8 @@ module tb;
   key_sideload_if sideload_if(.clk_i(clk), .rst_ni(rst_n));
  //lc_ctrl_pkg::On
   assign lc_escalate_en = lc_escalate[0] ?
-                          lc_escalate[$bits(lc_ctrl_pkg::lc_tx_t):1] : lc_ctrl_pkg::Off;
+                          lc_ctrl_pkg::lc_tx_t'(lc_escalate[$bits(lc_ctrl_pkg::lc_tx_t):1]) :
+                          lc_ctrl_pkg::Off;
   // dut
   aes #(
     .SecMasking  ( `EN_MASKING   ),
