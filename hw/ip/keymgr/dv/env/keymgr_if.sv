@@ -290,7 +290,7 @@ interface keymgr_if(input clk, input rst_n);
     keys_a_array[state][cdi_type][dest.name] = trun_key_shares;
   endfunction
 
-  function automatic void clear_sideload_key(bit[2:0] clear_dest);
+  function automatic void clear_sideload_key(keymgr_pkg::keymgr_sideload_clr_e clear_dest);
     // reset from Clear to NotAvail
     if (kmac_sideload_status == SideLoadClear) kmac_sideload_status <= SideLoadNotAvail;
     if (aes_sideload_status == SideLoadClear)  aes_sideload_status  <= SideLoadNotAvail;
@@ -376,19 +376,19 @@ interface keymgr_if(input clk, input rst_n);
       end
       1: begin
         `uvm_info(msg_id, "Force KMC_IF FSM", UVM_LOW)
-        prev_state = tb.dut.u_kmac_if.state_q;
+        prev_state = tb.dut.u_kmac_if.state_raw_q;
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_state,
             !(invalid_state inside {KmacIfValidStates});,
             , msg_id)
 
-        force tb.dut.u_kmac_if.state_q = invalid_state;
+        force tb.dut.u_kmac_if.state_raw_q = invalid_state;
         @(posedge clk);
 
         if ($urandom_range(0, 1)) begin
-          force tb.dut.u_kmac_if.state_q = prev_state;
+          force tb.dut.u_kmac_if.state_raw_q = prev_state;
           @(posedge clk);
         end
-        release tb.dut.u_kmac_if.state_q;
+        release tb.dut.u_kmac_if.state_raw_q;
         is_kmac_if_fsm_err = 1;
       end
       1: begin
@@ -423,19 +423,19 @@ interface keymgr_if(input clk, input rst_n);
       end
       1: begin
         `uvm_info(msg_id, "Force ctrl FSM", UVM_LOW)
-        prev_state = tb.dut.u_ctrl.state_q;
+        prev_state = tb.dut.u_ctrl.state_raw_q;
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_state,
             !(invalid_state inside {CtrlValidStates});,
             , msg_id)
 
-        force tb.dut.u_ctrl.state_q = invalid_state;
+        force tb.dut.u_ctrl.state_raw_q = invalid_state;
         @(posedge clk);
 
         if ($urandom_range(0, 1)) begin
-          force tb.dut.u_ctrl.state_q = prev_state;
+          force tb.dut.u_ctrl.state_raw_q = prev_state;
           @(posedge clk);
         end
-        release tb.dut.u_ctrl.state_q;
+        release tb.dut.u_ctrl.state_raw_q;
         is_ctrl_fsm_err = 1;
       end
       1: begin
