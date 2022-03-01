@@ -32,6 +32,7 @@
     //  sw_images: ["sw/device/tests/csrng_smoketest:1"]
     //  en_run_modes: ["sw_test_mode_test_rom"]
     // }
+    // TODO(lowrisc/opentitan#10092): Remove dependency on uncontrolled environment.
     {
       name: chip_sw_entropy_src_smoketest
       uvm_test_seq: chip_sw_base_vseq
@@ -118,6 +119,7 @@
               "chip_sw_clkmgr_smoketest",
               // TODO(lowrisc/opentitan#7505): Debug CSRNG generate bits mismatch.
               // "chip_sw_csrng_smoketest",
+              // TODO(lowrisc/opentitan#10092): Remove dependency on uncontrolled environment.
               "chip_sw_entropy_src_smoketest",
               "chip_sw_gpio_smoketest",
               "chip_sw_hmac_smoketest",

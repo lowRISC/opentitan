@@ -98,10 +98,12 @@ TEST_APPS_SELFCHECKING = [
     #    "name": "csrng_smoketest",
     #   "targets": ["sim_verilator", "fpga_cw310"],
     # },
-    {
-        "name": "entropy_src_smoketest",
-        "targets": ["sim_verilator", "fpga_cw310"],
-    },
+    # TODO(lowrisc/opentitan#10092): Remove dependency on uncontrolled
+    # environment.
+    # {
+    #     "name": "entropy_src_smoketest",
+    #     "targets": ["sim_verilator", "fpga_cw310"],
+    # },
     {
         "name": "kmac_smoketest",
         "targets": ["sim_verilator", "fpga_cw310"],
