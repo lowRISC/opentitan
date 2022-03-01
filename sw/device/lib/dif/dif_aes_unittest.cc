@@ -88,7 +88,7 @@ class AesTestInitialized : public AesTest {
   }
 };
 
-// ECB tests
+// ECB tests.
 class EcbTest : public AesTestInitialized {
  protected:
   EcbTest() { transaction.mode = kDifAesModeEcb; }
@@ -120,7 +120,7 @@ TEST_F(CbcTest, start) {
   EXPECT_EQ(dif_aes_start(&aes_, &transaction, kKey_, &kIv_), kDifOk);
 }
 
-// CFB tests
+// CFB tests.
 class CFBTest : public AesTestInitialized {
  protected:
   CFBTest() { transaction.mode = kDifAesModeCfb; }
@@ -137,7 +137,7 @@ TEST_F(CFBTest, start) {
   EXPECT_EQ(dif_aes_start(&aes_, &transaction, kKey_, &kIv_), kDifOk);
 }
 
-// OFB tests
+// OFB tests.
 class OFBTest : public AesTestInitialized {
  protected:
   OFBTest() { transaction.mode = kDifAesModeOfb; }
@@ -154,7 +154,7 @@ TEST_F(OFBTest, start) {
   EXPECT_EQ(dif_aes_start(&aes_, &transaction, kKey_, &kIv_), kDifOk);
 }
 
-// CTR tests
+// CTR tests.
 class CTRTest : public AesTestInitialized {
  protected:
   CTRTest() { transaction.mode = kDifAesModeCtr; }
@@ -171,7 +171,7 @@ TEST_F(CTRTest, start) {
   EXPECT_EQ(dif_aes_start(&aes_, &transaction, kKey_, &kIv_), kDifOk);
 }
 
-// Decrypt tests
+// Decrypt tests.
 class DecryptTest : public AesTestInitialized {
  protected:
   DecryptTest() {
@@ -190,7 +190,7 @@ TEST_F(DecryptTest, start) {
   EXPECT_EQ(dif_aes_start(&aes_, &transaction, kKey_, NULL), kDifOk);
 }
 
-// Key size test
+// Key size test.
 class Key192Test : public AesTestInitialized {
  protected:
   Key192Test() { transaction.key_len = kDifAesKey192; }
@@ -206,7 +206,7 @@ TEST_F(Key192Test, start) {
   EXPECT_EQ(dif_aes_start(&aes_, &transaction, kKey_, NULL), kDifOk);
 }
 
-// Key size test
+// Key size test.
 class Key256Test : public AesTestInitialized {
  protected:
   Key256Test() { transaction.key_len = kDifAesKey256; }
@@ -220,6 +220,64 @@ TEST_F(Key256Test, start) {
   setExpectedKey(kKey_, 8);
 
   EXPECT_EQ(dif_aes_start(&aes_, &transaction, kKey_, NULL), kDifOk);
+}
+
+// Alert test.
+class AlertTest : public AesTestInitialized {};
+
+TEST_F(AlertTest, RecovCtrlUpdateErr) {
+  EXPECT_WRITE32(AES_ALERT_TEST_REG_OFFSET,
+                 {{AES_ALERT_TEST_RECOV_CTRL_UPDATE_ERR_BIT, true},
+                  {AES_ALERT_TEST_FATAL_FAULT_BIT, false}});
+
+  EXPECT_EQ(dif_aes_alert_force(&aes_, kDifAesAlertRecovCtrlUpdateErr), kDifOk);
+}
+
+TEST_F(AlertTest, AlertFatalFault) {
+  EXPECT_WRITE32(AES_ALERT_TEST_REG_OFFSET,
+                 {{AES_ALERT_TEST_RECOV_CTRL_UPDATE_ERR_BIT, false},
+                  {AES_ALERT_TEST_FATAL_FAULT_BIT, true}});
+
+  EXPECT_EQ(dif_aes_alert_force(&aes_, kDifAesAlertFatalFault), kDifOk);
+}
+
+// Data in
+class Data : public AesTestInitialized {
+ protected:
+  const dif_aes_data_t data_ = {
+      .data = {0xA55AA55A, 0xA55AA55A, 0xA55AA55A, 0xA55AA55A}};
+};
+
+TEST_F(Data, DataIn) {
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, {
+                                           {AES_STATUS_INPUT_READY_BIT, true},
+                                       });
+
+  for (uint32_t i = 0; i < sizeof(data_.data) / sizeof(data_.data[0]); i++) {
+    ptrdiff_t offset = AES_DATA_IN_0_REG_OFFSET + (i * sizeof(uint32_t));
+    EXPECT_WRITE32(offset, data_.data[i]);
+  }
+
+  EXPECT_EQ(dif_aes_load_data(&aes_, data_), kDifOk);
+}
+
+TEST_F(Data, DataOut) {
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, {
+                                           {AES_STATUS_INPUT_READY_BIT, true},
+                                           {AES_STATUS_OUTPUT_VALID_BIT, true},
+                                       });
+
+  for (uint32_t i = 0; i < sizeof(data_.data) / sizeof(data_.data[0]); i++) {
+    ptrdiff_t offset = AES_DATA_OUT_0_REG_OFFSET + (i * sizeof(uint32_t));
+    EXPECT_READ32(offset, data_.data[i]);
+  }
+
+  dif_aes_data_t out;
+  EXPECT_EQ(dif_aes_read_output(&aes_, &out), kDifOk);
+
+  EXPECT_EQ(
+      memcmp(out.data, data_.data, sizeof(data_.data) / sizeof(data_.data[0])),
+      0);
 }
 
 }  // namespace
