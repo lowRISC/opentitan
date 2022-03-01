@@ -47,8 +47,8 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
   constraint num_trans_c {
     if (cfg.smoke_test) {
-      num_trans  inside {[1:2]};
-      num_dai_op inside {[5:10]};
+      num_trans == 1;
+      num_dai_op inside {[1:2]};
     } else {
       num_trans  inside {[1:2]};
       num_dai_op inside {[1:50]};
@@ -198,7 +198,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
         if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code[0]), .value(tlul_val));
       end
 
-      if (do_req_keys && !cfg.otp_ctrl_vif.alert_reqs) begin
+      if (do_req_keys && !cfg.otp_ctrl_vif.alert_reqs && !cfg.smoke_test) begin
         req_otbn_key();
         req_flash_addr_key();
         req_flash_data_key();
