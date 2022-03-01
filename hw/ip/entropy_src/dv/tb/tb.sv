@@ -52,8 +52,8 @@ module tb;
     .tl_i                         (tl_if.h2d  ),
     .tl_o                         (tl_if.d2h  ),
 
-    .otp_en_entropy_src_fw_read_i (otp_en_es_fw_read),
-    .otp_en_entropy_src_fw_over_i (otp_en_es_fw_over),
+    .otp_en_entropy_src_fw_read_i (prim_mubi_pkg::mubi8_t'(otp_en_es_fw_read)),
+    .otp_en_entropy_src_fw_over_i (prim_mubi_pkg::mubi8_t'(otp_en_es_fw_over)),
 
     .entropy_src_hw_if_o          ({csrng_if.ack,
                                     csrng_if.d_data[entropy_src_pkg::CSRNG_BUS_WIDTH-1:0],
