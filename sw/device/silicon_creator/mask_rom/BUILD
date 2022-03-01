@@ -90,6 +90,7 @@ opentitan_rom_binary(
         "//sw/device/silicon_creator/lib:epmp",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:irq_asm",
+        "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib:shutdown",
         "//sw/device/silicon_creator/lib:sigverify",
         "//sw/device/silicon_creator/lib:sigverify_intf",
