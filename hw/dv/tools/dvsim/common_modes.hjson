@@ -18,6 +18,11 @@
       en_build_modes: ["{tool}_waves"]
     }
     {
+      name: waves_off
+      is_sim_mode: 1
+      en_build_modes: ["{tool}_waves_off"]
+    }
+    {
       name: cov
       is_sim_mode: 1
       en_build_modes: ["{tool}_cov"]

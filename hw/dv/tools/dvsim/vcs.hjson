@@ -258,6 +258,12 @@
                    "-debug_access"]
     }
     {
+      name: vcs_waves_off
+      is_sim_mode: 1
+      build_opts: [// disable dumping assertion failures to improve runtime performance
+                   "-assert novpi+dbgopt"]
+    }
+    {
       name: vcs_cov
       is_sim_mode: 1
       build_opts: [// Enable the required cov metrics
@@ -278,7 +284,10 @@
                    // Ignore warnings about not applying cm_glitch to path and FSM
                    "+warn=noVCM-OPTIGN",
                    // Coverage database output location
-                   "-cm_dir {cov_db_dir}"]
+                   "-cm_dir {cov_db_dir}",
+                   // The following option is to improve runtime performance
+                   "-Xkeyopt=rtopt"
+                   ]
 
       run_opts:   [// Enable the required cov metrics
                    "-cm {cov_metrics}",
@@ -292,7 +301,9 @@
     {
       name: vcs_xprop
       is_sim_mode: 1
-      build_opts: ["-xprop={dv_root}/tools/vcs/xprop.cfg"]
+      build_opts: ["-xprop={dv_root}/tools/vcs/xprop.cfg",
+                   // Enable xmerge mode specific performance optimization
+                   "-xprop=mmsopt"]
     }
     {
       name: vcs_profile
