@@ -205,9 +205,6 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
   }
   if (disable & kScaPeripheralOtbn) {
     IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
-        &clkmgr, CLKMGR_CLK_HINTS_CLK_IO_DIV4_OTBN_HINT_BIT,
-        kDifToggleDisabled));
-    IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
         &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_OTBN_HINT_BIT, kDifToggleDisabled));
   }
   if (disable & kScaPeripheralUsb) {

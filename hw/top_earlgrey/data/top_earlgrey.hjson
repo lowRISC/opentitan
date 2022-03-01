@@ -593,7 +593,20 @@
     },
     { name: "otbn",
       type: "otbn",
-      clock_srcs: {clk_i: "main", clk_edn_i: "main", clk_otp_i: "io_div4"},
+      clock_srcs: {
+        clk_i: {
+	  clock: "main", 
+	  group: "trans"
+	},
+	clk_edn_i: {
+          clock: "main", 
+          group: "secure"
+        },
+        clk_otp_i: {
+          clock: "io_div4",
+          group: "secure"
+        },
+      },
       clock_group: "trans",
       reset_connections: {rst_ni: "sys", rst_edn_ni: "sys", rst_otp_ni: "lc_io_div4"},
       base_addr: "0x41130000",
