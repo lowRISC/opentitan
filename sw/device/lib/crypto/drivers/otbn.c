@@ -8,8 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/mmio.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otbn_regs.h"  // Generated.
@@ -41,8 +41,6 @@ ASSERT_ERR_BIT_MATCH(kOtbnErrBitsFatalSoftware,
 const size_t kOtbnDMemSizeBytes = OTBN_DMEM_SIZE_BYTES;
 const size_t kOtbnIMemSizeBytes = OTBN_IMEM_SIZE_BYTES;
 
-enum { kBase = TOP_EARLGREY_OTBN_BASE_ADDR };
-
 /**
  * Ensures that `offset_bytes` and `len` are valid for a given `mem_size`.
  */
@@ -57,31 +55,30 @@ static otbn_error_t check_offset_len(uint32_t offset_bytes, size_t num_words,
 }
 
 void otbn_execute(void) {
-  mmio_region_write32(mmio_region_from_addr(kBase), OTBN_CMD_REG_OFFSET,
-                      kOtbnCmdExecute);
+  abs_mmio_write32(TOP_EARLGREY_OTBN_BASE_ADDR + OTBN_CMD_REG_OFFSET,
+                   kOtbnCmdExecute);
 }
 
 bool otbn_is_busy() {
   uint32_t status =
-      mmio_region_read32(mmio_region_from_addr(kBase), OTBN_STATUS_REG_OFFSET);
+      abs_mmio_read32(TOP_EARLGREY_OTBN_BASE_ADDR + OTBN_STATUS_REG_OFFSET);
   return status != kOtbnStatusIdle && status != kOtbnStatusLocked;
 }
 
 void otbn_get_err_bits(otbn_err_bits_t *err_bits) {
-  *err_bits = mmio_region_read32(mmio_region_from_addr(kBase),
-                                 OTBN_ERR_BITS_REG_OFFSET);
+  *err_bits =
+      abs_mmio_read32(TOP_EARLGREY_OTBN_BASE_ADDR + OTBN_ERR_BITS_REG_OFFSET);
 }
 
 otbn_error_t otbn_imem_write(uint32_t offset_bytes, const uint32_t *src,
                              size_t num_words) {
   OTBN_RETURN_IF_ERROR(
       check_offset_len(offset_bytes, num_words, kOtbnIMemSizeBytes));
-  mmio_region_t otbn_base = mmio_region_from_addr(kBase);
 
   for (size_t i = 0; i < num_words; ++i) {
-    mmio_region_write32(
-        otbn_base, OTBN_IMEM_REG_OFFSET + offset_bytes + i * sizeof(uint32_t),
-        src[i]);
+    abs_mmio_write32(TOP_EARLGREY_OTBN_BASE_ADDR + OTBN_IMEM_REG_OFFSET +
+                         offset_bytes + i * sizeof(uint32_t),
+                     src[i]);
   }
 
   return kOtbnErrorOk;
@@ -91,12 +88,11 @@ otbn_error_t otbn_dmem_write(uint32_t offset_bytes, const uint32_t *src,
                              size_t num_words) {
   OTBN_RETURN_IF_ERROR(
       check_offset_len(offset_bytes, num_words, kOtbnDMemSizeBytes));
-  mmio_region_t otbn_base = mmio_region_from_addr(kBase);
 
   for (size_t i = 0; i < num_words; ++i) {
-    mmio_region_write32(
-        otbn_base, OTBN_DMEM_REG_OFFSET + offset_bytes + i * sizeof(uint32_t),
-        src[i]);
+    abs_mmio_write32(TOP_EARLGREY_OTBN_BASE_ADDR + OTBN_DMEM_REG_OFFSET +
+                         offset_bytes + i * sizeof(uint32_t),
+                     src[i]);
   }
 
   return kOtbnErrorOk;
@@ -106,20 +102,20 @@ otbn_error_t otbn_dmem_read(uint32_t offset_bytes, uint32_t *dest,
                             size_t num_words) {
   OTBN_RETURN_IF_ERROR(
       check_offset_len(offset_bytes, num_words, kOtbnDMemSizeBytes));
-  mmio_region_t otbn_base = mmio_region_from_addr(kBase);
 
   for (size_t i = 0; i < num_words; ++i) {
-    dest[i] = mmio_region_read32(
-        otbn_base, OTBN_DMEM_REG_OFFSET + offset_bytes + i * sizeof(uint32_t));
+    dest[i] =
+        abs_mmio_read32(TOP_EARLGREY_OTBN_BASE_ADDR + OTBN_DMEM_REG_OFFSET +
+                        offset_bytes + i * sizeof(uint32_t));
   }
 
   return kOtbnErrorOk;
 }
 
 void otbn_zero_dmem(void) {
-  mmio_region_t otbn_base = mmio_region_from_addr(kBase);
   for (size_t i = 0; i < kOtbnDMemSizeBytes; i += sizeof(uint32_t)) {
-    mmio_region_write32(otbn_base, OTBN_DMEM_REG_OFFSET + i, 0u);
+    abs_mmio_write32(TOP_EARLGREY_OTBN_BASE_ADDR + OTBN_DMEM_REG_OFFSET + i,
+                     0u);
   }
 }
 
@@ -133,9 +129,10 @@ otbn_error_t otbn_set_ctrl_software_errs_fatal(bool enable) {
     new_ctrl = 0;
   }
 
-  mmio_region_t otbn_base = mmio_region_from_addr(kBase);
-  mmio_region_write32(otbn_base, OTBN_CTRL_REG_OFFSET, new_ctrl);
-  if (mmio_region_read32(otbn_base, OTBN_CTRL_REG_OFFSET) != new_ctrl) {
+  abs_mmio_write32(TOP_EARLGREY_OTBN_BASE_ADDR + OTBN_CTRL_REG_OFFSET,
+                   new_ctrl);
+  if (abs_mmio_read32(TOP_EARLGREY_OTBN_BASE_ADDR + OTBN_CTRL_REG_OFFSET) !=
+      new_ctrl) {
     return kOtbnErrorUnavailable;
   }
 

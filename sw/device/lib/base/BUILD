@@ -143,7 +143,6 @@ cc_library(
     name = "abs_mmio",
     srcs = ["abs_mmio.c"],
     hdrs = ["abs_mmio.h"],
-    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":mmio",
         ":macros",
