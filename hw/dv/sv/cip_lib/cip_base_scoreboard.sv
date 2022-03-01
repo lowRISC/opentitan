@@ -506,7 +506,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // (third party 'vendored-in' code). The end result is - the TL adapter prevents non-word writes
   // to the entire region. See issue #10765 for more details.
   virtual function bit is_tl_access_unsupported_byte_wr(tl_seq_item item, string ral_name);
-    // TODO: We should infer byte enable support from TL reg adapter attached to the interface (i.e.
+    // TODO: We should infer byte enable support from the adapter attached to the interface (i.e.
     // the map) instead. To do that, more extensive changes may be needed, because we do not know
     // which map to pick - we only know the ral_name of the interface. For now,
     // dv_base_reg_block::supports_byte_enable serves this need.
