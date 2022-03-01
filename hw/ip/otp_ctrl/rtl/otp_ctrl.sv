@@ -17,6 +17,7 @@ module otp_ctrl
   // Compile time random constants, to be overriden by topgen.
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
+  parameter scrmbl_key_init_t RndCnstScrmblKeyInit = RndCnstScrmblKeyInitDefault,
   // Hexfile file to initialize the OTP macro.
   // Note that the hexdump needs to account for ECC.
   parameter MemInitFile = ""
@@ -1020,7 +1021,9 @@ module otp_ctrl
   logic [SramKeySeedWidth-1:0] sram_data_key_seed;
   logic [FlashKeySeedWidth-1:0] flash_data_key_seed, flash_addr_key_seed;
 
-  otp_ctrl_kdi u_otp_ctrl_kdi (
+  otp_ctrl_kdi #(
+    .RndCnstScrmblKeyInit(RndCnstScrmblKeyInit)
+  ) u_otp_ctrl_kdi (
     .clk_i,
     .rst_ni,
     .kdi_en_i                ( pwr_otp_o.otp_done      ),
