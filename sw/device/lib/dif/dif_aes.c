@@ -236,24 +236,7 @@ dif_result_t dif_aes_trigger(const dif_aes_t *aes, dif_aes_trigger_t trigger) {
     return kDifBadArg;
   }
 
-  uint32_t reg;
-  switch (trigger) {
-    case kDifAesTriggerStart:
-      reg = bitfield_bit32_write(0, AES_TRIGGER_START_BIT, true);
-      break;
-    case kDifAesTriggerKeyIvDataInClear:
-      reg = bitfield_bit32_write(0, AES_TRIGGER_KEY_IV_DATA_IN_CLEAR_BIT, true);
-      break;
-    case kDifAesTriggerDataOutClear:
-      reg = bitfield_bit32_write(0, AES_TRIGGER_DATA_OUT_CLEAR_BIT, true);
-      break;
-    case kDifAesTriggerPrngReseed:
-      reg = bitfield_bit32_write(0, AES_TRIGGER_PRNG_RESEED_BIT, true);
-      break;
-    default:
-      return kDifError;
-  }
-
+  uint32_t reg = bitfield_bit32_write(0, trigger, true);
   mmio_region_write32(aes->base_addr, AES_TRIGGER_REG_OFFSET, reg);
 
   return kDifOk;
