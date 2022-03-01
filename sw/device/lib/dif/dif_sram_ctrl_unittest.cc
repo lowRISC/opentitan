@@ -23,6 +23,60 @@ class SramCtrlTest : public Test, public MmioTest {
   dif_sram_ctrl_t sram_ctrl_ = {.base_addr = dev().region()};
 };
 
+class Scramble : public SramCtrlTest {};
+
+TEST_F(Scramble, NullArgs) {
+  EXPECT_EQ(dif_sram_ctrl_scramble(nullptr), kDifBadArg);
+}
+
+TEST_F(Scramble, Locked) {
+  EXPECT_READ32(SRAM_CTRL_CTRL_REGWEN_REG_OFFSET, 0);
+  EXPECT_EQ(dif_sram_ctrl_scramble(&sram_ctrl_), kDifLocked);
+}
+
+TEST_F(Scramble, Failure) {
+  EXPECT_READ32(SRAM_CTRL_CTRL_REGWEN_REG_OFFSET, 1);
+
+  // Issue request for new scrambling key.
+  EXPECT_WRITE32(SRAM_CTRL_CTRL_REG_OFFSET,
+                 {{SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT, true},
+                  {SRAM_CTRL_CTRL_INIT_BIT, false}});
+  EXPECT_READ32(SRAM_CTRL_STATUS_REG_OFFSET, kDifSramCtrlStatusScrKeyValid);
+
+  // Overwrite memory with pseudo random data.
+  EXPECT_WRITE32(SRAM_CTRL_CTRL_REG_OFFSET,
+                 {{SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT, false},
+                  {SRAM_CTRL_CTRL_INIT_BIT, true}});
+  EXPECT_READ32(SRAM_CTRL_STATUS_REG_OFFSET,
+                std::numeric_limits<uint32_t>::max());
+
+  EXPECT_EQ(dif_sram_ctrl_scramble(&sram_ctrl_), kDifError);
+}
+
+TEST_F(Scramble, Success) {
+  EXPECT_READ32(SRAM_CTRL_CTRL_REGWEN_REG_OFFSET, 1);
+
+  // Issue request for new scrambling key, and emulate three iteration status
+  // read loop.
+  EXPECT_WRITE32(SRAM_CTRL_CTRL_REG_OFFSET,
+                 {{SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT, true},
+                  {SRAM_CTRL_CTRL_INIT_BIT, false}});
+  EXPECT_READ32(SRAM_CTRL_STATUS_REG_OFFSET, 0);
+  EXPECT_READ32(SRAM_CTRL_STATUS_REG_OFFSET, 0);
+  EXPECT_READ32(SRAM_CTRL_STATUS_REG_OFFSET, kDifSramCtrlStatusScrKeyValid);
+
+  // Overwrite memory with pseudo random data, and emulate three iteration
+  // status read loop.
+  EXPECT_WRITE32(SRAM_CTRL_CTRL_REG_OFFSET,
+                 {{SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT, false},
+                  {SRAM_CTRL_CTRL_INIT_BIT, true}});
+  EXPECT_READ32(SRAM_CTRL_STATUS_REG_OFFSET, 0);
+  EXPECT_READ32(SRAM_CTRL_STATUS_REG_OFFSET, 0);
+  EXPECT_READ32(SRAM_CTRL_STATUS_REG_OFFSET, kDifSramCtrlStatusInitDone);
+
+  EXPECT_EQ(dif_sram_ctrl_scramble(&sram_ctrl_), kDifOk);
+}
+
 class RequestNewKeyTest : public SramCtrlTest {};
 
 TEST_F(RequestNewKeyTest, NullArgs) {
