@@ -16,7 +16,7 @@ cc_library(
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/base:abs_mmio",
     ],
 )
 
@@ -28,6 +28,6 @@ cc_library(
         "//hw/ip/otbn/data:otbn_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/base:abs_mmio",
     ],
 )

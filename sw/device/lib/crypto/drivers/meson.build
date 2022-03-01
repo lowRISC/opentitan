@@ -11,7 +11,7 @@ sw_lib_crypto_hmac = declare_dependency(
       'hmac.c',
     ],
     dependencies: [
-      sw_lib_mmio,
+      sw_lib_abs_mmio,
       sw_lib_bitfield,
       top_earlgrey,
     ]
@@ -27,7 +27,7 @@ sw_lib_crypto_otbn = declare_dependency(
       'otbn.c',
     ],
     dependencies: [
-      sw_lib_mmio,
+      sw_lib_abs_mmio,
       sw_lib_bitfield,
       top_earlgrey,
     ]
