@@ -1087,7 +1087,6 @@ module chip_earlgrey_cw310 #(
       3'b000:  trigger_sel = clkmgr_pkg::HintMainAes;
       3'b001:  trigger_sel = clkmgr_pkg::HintMainHmac;
       3'b010:  trigger_sel = clkmgr_pkg::HintMainKmac;
-      3'b011:  trigger_sel = clkmgr_pkg::HintIoDiv4Otbn;
       3'b100:  trigger_sel = clkmgr_pkg::HintMainOtbn;
       default: trigger_sel = clkmgr_pkg::HintMainAes;
     endcase;
