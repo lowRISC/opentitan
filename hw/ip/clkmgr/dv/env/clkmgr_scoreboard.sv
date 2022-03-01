@@ -162,19 +162,11 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     logic hint, clk_en, idle, src_rst_en;
     trans_e trans = trans_e'(trans_index);
     forever begin
-      if (trans == TransOtbnIoDiv4) begin
-        @cfg.clkmgr_vif.peri_div4_cb;
-        hint = cfg.clkmgr_vif.peri_div4_cb.clk_hint_otbn;
-        idle = cfg.clkmgr_vif.peri_div4_cb.otbn_idle;
-        clk_en = cfg.clkmgr_vif.peri_div4_cb.ip_clk_en;
-        src_rst_en = cfg.io_clk_rst_vif.rst_n;
-      end else begin
-        @cfg.clkmgr_vif.trans_cb;
-        hint = cfg.clkmgr_vif.trans_cb.clk_hints[trans_index];
-        idle = cfg.clkmgr_vif.trans_cb.idle_i[trans_index];
-        clk_en = cfg.clkmgr_vif.trans_cb.ip_clk_en;
-        src_rst_en = cfg.main_clk_rst_vif.rst_n;
-      end
+      @cfg.clkmgr_vif.trans_cb;
+      hint = cfg.clkmgr_vif.trans_cb.clk_hints[trans_index];
+      idle = cfg.clkmgr_vif.trans_cb.idle_i[trans_index];
+      clk_en = cfg.clkmgr_vif.trans_cb.ip_clk_en;
+      src_rst_en = cfg.main_clk_rst_vif.rst_n;
       if (src_rst_en && cfg.en_cov) begin
         logic scan_en = cfg.clkmgr_vif.scanmode_i == prim_mubi_pkg::MuBi4True;
         cov.trans_cg_wrap[trans].sample(hint, clk_en, scan_en, idle);
