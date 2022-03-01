@@ -580,7 +580,7 @@ module top_earlgrey #(
   kmac_pkg::app_req_t [2:0] kmac_app_req;
   kmac_pkg::app_rsp_t [2:0] kmac_app_rsp;
   logic       kmac_en_masking;
-  logic [4:0] clkmgr_aon_idle;
+  prim_mubi_pkg::mubi4_t [3:0] clkmgr_aon_idle;
   jtag_pkg::jtag_req_t       pinmux_aon_lc_jtag_req;
   jtag_pkg::jtag_rsp_t       pinmux_aon_lc_jtag_rsp;
   jtag_pkg::jtag_req_t       pinmux_aon_rv_jtag_req;
@@ -912,15 +912,13 @@ module top_earlgrey #(
     prim_mubi_pkg::mubi4_t unused_cg_en_11;
     assign unused_cg_en_11 = clkmgr_aon_cg_en.main_otbn;
     prim_mubi_pkg::mubi4_t unused_cg_en_12;
-    assign unused_cg_en_12 = clkmgr_aon_cg_en.io_div4_otbn;
+    assign unused_cg_en_12 = clkmgr_aon_cg_en.io_infra;
     prim_mubi_pkg::mubi4_t unused_cg_en_13;
-    assign unused_cg_en_13 = clkmgr_aon_cg_en.io_infra;
+    assign unused_cg_en_13 = clkmgr_aon_cg_en.io_div2_infra;
     prim_mubi_pkg::mubi4_t unused_cg_en_14;
-    assign unused_cg_en_14 = clkmgr_aon_cg_en.io_div2_infra;
+    assign unused_cg_en_14 = clkmgr_aon_cg_en.usb_secure;
     prim_mubi_pkg::mubi4_t unused_cg_en_15;
-    assign unused_cg_en_15 = clkmgr_aon_cg_en.usb_secure;
-    prim_mubi_pkg::mubi4_t unused_cg_en_16;
-    assign unused_cg_en_16 = clkmgr_aon_cg_en.usb_peri;
+    assign unused_cg_en_15 = clkmgr_aon_cg_en.usb_peri;
     prim_mubi_pkg::mubi4_t unused_rst_en_0;
     assign unused_rst_en_0 = rstmgr_aon_rst_en.por_aon[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_1;
@@ -2258,8 +2256,7 @@ module top_earlgrey #(
       .edn_rnd_i(edn1_edn_rsp[0]),
       .edn_urnd_o(edn0_edn_req[6]),
       .edn_urnd_i(edn0_edn_rsp[6]),
-      .idle_o(clkmgr_aon_idle[4]),
-      .idle_otp_o(clkmgr_aon_idle[3]),
+      .idle_o(clkmgr_aon_idle[3]),
       .ram_cfg_i(ast_ram_1p_cfg),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .keymgr_key_i(keymgr_otbn_key),
@@ -2268,8 +2265,8 @@ module top_earlgrey #(
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_otbn),
-      .clk_edn_i (clkmgr_aon_clocks.clk_main_otbn),
-      .clk_otp_i (clkmgr_aon_clocks.clk_io_div4_otbn),
+      .clk_edn_i (clkmgr_aon_clocks.clk_main_secure),
+      .clk_otp_i (clkmgr_aon_clocks.clk_io_div4_secure),
       .rst_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
       .rst_edn_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
       .rst_otp_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])

@@ -1681,8 +1681,7 @@ typedef enum top_earlgrey_hintable_clocks {
   kTopEarlgreyHintableClocksMainHmac = 1, /**< Clock clk_main_hmac in group trans */
   kTopEarlgreyHintableClocksMainKmac = 2, /**< Clock clk_main_kmac in group trans */
   kTopEarlgreyHintableClocksMainOtbn = 3, /**< Clock clk_main_otbn in group trans */
-  kTopEarlgreyHintableClocksIoDiv4Otbn = 4, /**< Clock clk_io_div4_otbn in group trans */
-  kTopEarlgreyHintableClocksLast = 4, /**< \internal Last Valid Hintable Clock */
+  kTopEarlgreyHintableClocksLast = 3, /**< \internal Last Valid Hintable Clock */
 } top_earlgrey_hintable_clocks_t;
 
 // Header Extern Guard

@@ -118,7 +118,6 @@
           clk_main_hmac: main
           clk_main_kmac: main
           clk_main_otbn: main
-          clk_io_div4_otbn: io_div4
         }
       }
       {
@@ -3223,13 +3222,13 @@
         }
         {
           name: idle
-          struct: logic
+          struct: mubi4
+          package: prim_mubi_pkg
           type: uni
           act: rcv
-          width: 5
+          width: 4
           inst_name: clkmgr_aon
           default: ""
-          package: ""
           end_idx: -1
           top_type: one-to-N
           top_signame: clkmgr_aon_idle
@@ -5148,13 +5147,13 @@
       [
         {
           name: idle
-          struct: logic
+          struct: mubi4
+          package: prim_mubi_pkg
           type: uni
           act: req
           width: 1
           inst_name: aes
           default: ""
-          package: ""
           top_signame: clkmgr_aon_idle
           index: 0
         }
@@ -5243,13 +5242,13 @@
       [
         {
           name: idle
-          struct: logic
+          struct: mubi4
+          package: prim_mubi_pkg
           type: uni
           act: req
           width: 1
           inst_name: hmac
           default: ""
-          package: ""
           top_signame: clkmgr_aon_idle
           index: 1
         }
@@ -5450,13 +5449,13 @@
         }
         {
           name: idle
-          struct: logic
+          struct: mubi4
+          package: prim_mubi_pkg
           type: uni
           act: req
           width: 1
           inst_name: kmac
           default: ""
-          package: ""
           top_signame: clkmgr_aon_idle
           index: 2
         }
@@ -5510,9 +5509,21 @@
       type: otbn
       clock_srcs:
       {
-        clk_i: main
-        clk_edn_i: main
-        clk_otp_i: io_div4
+        clk_i:
+        {
+          clock: main
+          group: trans
+        }
+        clk_edn_i:
+        {
+          clock: main
+          group: secure
+        }
+        clk_otp_i:
+        {
+          clock: io_div4
+          group: secure
+        }
       }
       clock_group: trans
       reset_connections:
@@ -5536,8 +5547,8 @@
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_otbn
-        clk_edn_i: clkmgr_aon_clocks.clk_main_otbn
-        clk_otp_i: clkmgr_aon_clocks.clk_io_div4_otbn
+        clk_edn_i: clkmgr_aon_clocks.clk_main_secure
+        clk_otp_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       domain:
       [
@@ -5634,25 +5645,13 @@
         }
         {
           name: idle
-          struct: logic
+          struct: mubi4
+          package: prim_mubi_pkg
           type: uni
           act: req
           width: 1
           inst_name: otbn
           default: ""
-          package: ""
-          top_signame: clkmgr_aon_idle
-          index: 4
-        }
-        {
-          name: idle_otp
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          inst_name: otbn
-          default: ""
-          package: ""
           top_signame: clkmgr_aon_idle
           index: 3
         }
@@ -7705,7 +7704,6 @@
         aes.idle
         hmac.idle
         kmac.idle
-        otbn.idle_otp
         otbn.idle
       ]
       pinmux_aon.lc_jtag:
@@ -16101,13 +16099,13 @@
       }
       {
         name: idle
-        struct: logic
+        struct: mubi4
+        package: prim_mubi_pkg
         type: uni
         act: rcv
-        width: 5
+        width: 4
         inst_name: clkmgr_aon
         default: ""
-        package: ""
         end_idx: -1
         top_type: one-to-N
         top_signame: clkmgr_aon_idle
@@ -17230,13 +17228,13 @@
       }
       {
         name: idle
-        struct: logic
+        struct: mubi4
+        package: prim_mubi_pkg
         type: uni
         act: req
         width: 1
         inst_name: aes
         default: ""
-        package: ""
         top_signame: clkmgr_aon_idle
         index: 0
       }
@@ -17291,13 +17289,13 @@
       }
       {
         name: idle
-        struct: logic
+        struct: mubi4
+        package: prim_mubi_pkg
         type: uni
         act: req
         width: 1
         inst_name: hmac
         default: ""
-        package: ""
         top_signame: clkmgr_aon_idle
         index: 1
       }
@@ -17354,13 +17352,13 @@
       }
       {
         name: idle
-        struct: logic
+        struct: mubi4
+        package: prim_mubi_pkg
         type: uni
         act: req
         width: 1
         inst_name: kmac
         default: ""
-        package: ""
         top_signame: clkmgr_aon_idle
         index: 2
       }
@@ -17441,25 +17439,13 @@
       }
       {
         name: idle
-        struct: logic
+        struct: mubi4
+        package: prim_mubi_pkg
         type: uni
         act: req
         width: 1
         inst_name: otbn
         default: ""
-        package: ""
-        top_signame: clkmgr_aon_idle
-        index: 4
-      }
-      {
-        name: idle_otp
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        inst_name: otbn
-        default: ""
-        package: ""
         top_signame: clkmgr_aon_idle
         index: 3
       }
@@ -20392,15 +20378,15 @@
         default: "'0"
       }
       {
-        package: ""
-        struct: logic
+        package: prim_mubi_pkg
+        struct: mubi4
         signame: clkmgr_aon_idle
-        width: 5
+        width: 4
         type: uni
         end_idx: -1
         act: rcv
         suffix: ""
-        default: "'0"
+        default: prim_mubi_pkg::MUBI4_DEFAULT
       }
       {
         package: jtag_pkg
