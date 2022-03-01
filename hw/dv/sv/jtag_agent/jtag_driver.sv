@@ -67,6 +67,8 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     if (req.ir_len) begin
       if (!(req.skip_reselected_ir && req.ir == selected_ir && req.ir_len == selected_ir_len)) begin
         drive_jtag_ir(req.ir_len, req.ir);
+      end else begin
+        `uvm_info(`gfn, $sformatf("UpdateIR for 0x%0h skipped", selected_ir), UVM_HIGH)
       end
     end
     if (req.dr_len) begin
