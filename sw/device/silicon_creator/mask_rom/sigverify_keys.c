@@ -242,3 +242,4 @@ rom_error_t sigverify_rsa_key_get(uint32_t key_id, lifecycle_state_t lc_state,
 
 extern const sigverify_mask_rom_key_t *sigverify_rsa_keys_ptr_get(void);
 extern size_t sigverify_num_rsa_keys_get(void);
+extern size_t sigverify_rsa_keys_step_get(void);
