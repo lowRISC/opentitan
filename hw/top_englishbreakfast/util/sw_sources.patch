@@ -207,7 +207,7 @@ index 3c0c86f26..7354aa9cb 100644
    // Disable HMAC, KMAC, OTBN and USB clocks through CLKMGR DIF.
    dif_clkmgr_t clkmgr;
    IGNORE_RESULT(dif_clkmgr_init(
-@@ -199,17 +156,6 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
+@@ -199,14 +156,6 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
      IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
          &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_HMAC_HINT_BIT, kDifToggleDisabled));
    }
@@ -216,9 +216,6 @@ index 3c0c86f26..7354aa9cb 100644
 -        &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_KMAC_HINT_BIT, kDifToggleDisabled));
 -  }
 -  if (disable & kScaPeripheralOtbn) {
--    IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
--        &clkmgr, CLKMGR_CLK_HINTS_CLK_IO_DIV4_OTBN_HINT_BIT,
--        kDifToggleDisabled));
 -    IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
 -        &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_OTBN_HINT_BIT, kDifToggleDisabled));
 -  }
