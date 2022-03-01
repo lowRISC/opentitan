@@ -53,6 +53,9 @@ class dv_base_reg_block extends uvm_reg_block;
   // This is added for ease of rv_dm testbench development.
   protected bit supports_byte_enable = 1'b1;
 
+  // Custom RAL models may support sub-word CSR writes smaller than CSR width.
+  protected bit supports_sub_word_csr_writes = 1'b0;
+
   bit has_unmapped_addrs;
   addr_range_t unmapped_addr_ranges[$];
 
@@ -84,12 +87,20 @@ class dv_base_reg_block extends uvm_reg_block;
     return unmapped_access_ok;
   endfunction
 
-  function void set_support_byte_enable(bit enable);
+  function void set_supports_byte_enable(bit enable);
     supports_byte_enable = enable;
   endfunction
 
   function bit get_supports_byte_enable();
     return supports_byte_enable;
+  endfunction
+
+  function void set_supports_sub_word_csr_writes(bit enable);
+    supports_sub_word_csr_writes = enable;
+  endfunction
+
+  function bit get_supports_sub_word_csr_writes();
+    return supports_sub_word_csr_writes;
   endfunction
 
   // provide build function to supply base addr

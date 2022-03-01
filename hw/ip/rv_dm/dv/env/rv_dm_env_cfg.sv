@@ -87,10 +87,14 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
       // ROM within the debug mem is RO - it ignores writes instead of throwing an error response.
       `downcast(debug_mem_ral, ral)
       debug_mem_ral.rom.set_write_to_ro_mem_ok(1);
+      debug_mem_ral.rom.set_mem_partial_write_support(1);
 
       // TODO(#10837): Accesses to unmapped regions of debug mem RAL space does not return an error
       // response. Fix this if design is updated.
       debug_mem_ral.set_unmapped_access_ok(1);
+
+      // Debug mem does not error on any type of sub-word writes.
+      debug_mem_ral.set_supports_sub_word_csr_writes(1);
     end
   endfunction
 

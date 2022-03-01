@@ -71,6 +71,15 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     cfg.rv_dm_vif.scan_rst_n <= 1'b1;
   endtask
 
+  virtual task apply_resets_concurrently(int reset_duration_ps = 0);
+    int trst_n_duration_ps = cfg.m_jtag_agent_cfg.vif.tck_period_ns * $urandom_range(5, 20) * 1000;
+    cfg.rv_dm_vif.scan_rst_n <= 1'b0;
+    cfg.m_jtag_agent_cfg.vif.trst_n <= 1'b0;
+    super.apply_resets_concurrently(dv_utils_pkg::max2(reset_duration_ps, trst_n_duration_ps));
+    cfg.m_jtag_agent_cfg.vif.trst_n <= 1'b1;
+    cfg.rv_dm_vif.scan_rst_n <= 1'b1;
+  endtask
+
   virtual task dut_shutdown();
     // Check for pending rv_dm operations and wait for them to complete.
     // TODO: Improve this later.
@@ -78,13 +87,19 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   endtask
 
   // Spawns off a thread to auto-respond to incoming TL accesses on the SBA host interface.
-  // TODO: Drive intg error on D channel.
-  // TODO: Drive d_error.
-  virtual task launch_tl_sba_device_seq(bit blocking = 1'b0);
+  virtual task launch_tl_sba_device_seq(bit blocking = 1'b0,
+                                        int min_rsp_delay = 0,
+                                        int max_rsp_delay = 80,
+                                        int rsp_abort_pct = 25,
+                                        int d_error_pct = 0,
+                                        int d_chan_intg_err_pct = 0);
     cip_tl_device_seq m_tl_sba_device_seq;
     m_tl_sba_device_seq = cip_tl_device_seq::type_id::create("m_tl_sba_device_seq");
-    m_tl_sba_device_seq.max_rsp_delay = 80;
-    m_tl_sba_device_seq.rsp_abort_pct = 25;
+    m_tl_sba_device_seq.min_rsp_delay = min_rsp_delay;
+    m_tl_sba_device_seq.max_rsp_delay = max_rsp_delay;
+    m_tl_sba_device_seq.rsp_abort_pct = rsp_abort_pct;
+    m_tl_sba_device_seq.d_error_pct = d_error_pct;
+    m_tl_sba_device_seq.d_chan_intg_err_pct = d_chan_intg_err_pct;
     `DV_CHECK_RANDOMIZE_FATAL(m_tl_sba_device_seq)
     if (blocking) begin
       m_tl_sba_device_seq.start(p_sequencer.tl_sba_sequencer_h);

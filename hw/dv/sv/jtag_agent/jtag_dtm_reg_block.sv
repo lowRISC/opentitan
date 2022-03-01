@@ -300,8 +300,10 @@ class jtag_dtm_reg_dmi extends jtag_dtm_base_reg;
       .individually_accessible(0));
 
     op.set_original_access("RW");
-    // op is modified by the HW.
-    csr_excl.add_excl(op.get_full_name(), CsrExclCheck, CsrAllTests);
+    // Writing to op can affect the DM hardware, and result in unintended consequences.
+    // Reading op may not result in expected value to be returned, since read op value always
+    // differs from the written op value.
+    csr_excl.add_excl(op.get_full_name(), CsrExclAll, CsrAllTests);
 
     data = (dv_base_reg_field::type_id::create("data"));
     data.configure(
