@@ -895,223 +895,68 @@ module otbn
   end
   assign busy_execute_d = (busy_execute_q | start_d) & ~done;
 
-  `ifdef OTBN_BUILD_MODEL
-    // Build both model and RTL implementation into the design, and switch at runtime through a
-    // plusarg.
+  otbn_core #(
+    .RegFile(RegFile),
+    .DmemSizeByte(DmemSizeByte),
+    .ImemSizeByte(ImemSizeByte),
+    .SecWipeEn(SecWipeEn),
+    .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed)
+  ) u_otbn_core (
+    .clk_i,
+    .rst_ni                      (rst_n),
 
-    // Set the plusarg +OTBN_USE_MODEL=1 to use the model (ISS) instead of the RTL implementation.
-    bit otbn_use_model;
-    initial begin
-      $value$plusargs("OTBN_USE_MODEL=%d", otbn_use_model);
-    end
+    .start_i                     (start_q),
+    .done_o                      (done),
+    .locked_o                    (locked),
 
-    // Mux between model and RTL implementation at runtime.
-    logic         done_rr_model, done_rtl;
-    logic         locked_model, locked_rtl;
-    logic         start_model, start_rtl;
-    err_bits_t    err_bits_model, err_bits_rtl;
-    logic         recoverable_err_model, recoverable_err_rtl;
-    logic [31:0]  insn_cnt_model, insn_cnt_rtl;
-    logic         edn_rnd_req_model, edn_rnd_req_rtl;
-    logic         edn_urnd_req_model, edn_urnd_req_rtl;
+    .err_bits_o                  (err_bits),
+    .recoverable_err_o           (recoverable_err),
+    .reg_intg_violation_o        (reg_intg_violation),
 
-    edn_pkg::edn_rsp_t  edn_rnd_model_i;
+    .imem_req_o                  (imem_req_core),
+    .imem_addr_o                 (imem_addr_core),
+    .imem_rdata_i                (imem_rdata_core),
+    .imem_rvalid_i               (imem_rvalid_core),
 
-    edn_pkg::edn_rsp_t  edn_urnd_model_i;
+    .insn_fetch_err_o            (insn_fetch_err),
 
-    logic       edn_rnd_data_valid;
-    logic       edn_urnd_data_valid;
+    .dmem_req_o                  (dmem_req_core),
+    .dmem_write_o                (dmem_write_core),
+    .dmem_addr_o                 (dmem_addr_core),
+    .dmem_wdata_o                (dmem_wdata_core),
+    .dmem_wmask_o                (dmem_wmask_core),
+    .dmem_rmask_o                (dmem_rmask_core_d),
+    .dmem_rdata_i                (dmem_rdata_core),
+    .dmem_rvalid_i               (dmem_rvalid_core),
+    .dmem_rerror_i               (dmem_rerror_core),
 
-    // Note that the "done" signal will come two cycles later when using the model as a core than it
-    // does when using the RTL
-    assign done = otbn_use_model ? done_rr_model : done_rtl;
-    assign locked = otbn_use_model ? locked_model : locked_rtl;
-    assign err_bits = otbn_use_model ? err_bits_model : err_bits_rtl;
-    assign recoverable_err = otbn_use_model ? recoverable_err_model : recoverable_err_rtl;
-    assign insn_cnt = otbn_use_model ? insn_cnt_model : insn_cnt_rtl;
-    assign start_model = start_q & otbn_use_model;
-    assign start_rtl = start_q & ~otbn_use_model;
+    .edn_rnd_req_o               (edn_rnd_req),
+    .edn_rnd_ack_i               (edn_rnd_ack),
+    .edn_rnd_data_i              (edn_rnd_data),
 
-    // Model (Instruction Set Simulator)
-    assign edn_rnd_model_i    = otbn_use_model ? edn_rnd_i : '0;
-    assign edn_rnd_req        = otbn_use_model ? edn_rnd_req_model : edn_rnd_req_rtl;
-    assign edn_rnd_data_valid = edn_rnd_req & edn_rnd_ack;
+    .edn_urnd_req_o              (edn_urnd_req),
+    .edn_urnd_ack_i              (edn_urnd_ack),
+    .edn_urnd_data_i             (edn_urnd_data),
 
-    assign edn_urnd_model_i    = otbn_use_model ? edn_urnd_i : '0;
-    assign edn_urnd_req        = otbn_use_model ? edn_urnd_req_model : edn_urnd_req_rtl;
-    assign edn_urnd_data_valid = edn_urnd_req & edn_urnd_ack;
+    .insn_cnt_o                  (insn_cnt),
+    .insn_cnt_clear_i            (insn_cnt_clear),
 
-    otbn_core_model #(
-      .MemScope(".."),
-      .DesignScope(""),
-      .SecWipeEn(SecWipeEn)
-    ) u_otbn_core_model (
-      .clk_i,
-      .clk_edn_i,
+    .mems_sec_wipe_o             (mems_sec_wipe),
+    .dmem_sec_wipe_urnd_key_o    (dmem_sec_wipe_urnd_key),
+    .imem_sec_wipe_urnd_key_o    (imem_sec_wipe_urnd_key),
+    .req_sec_wipe_urnd_keys_i    (req_sec_wipe_urnd_keys),
 
-      .rst_ni                (rst_n),
-      .rst_edn_ni,
+    .bus_intg_violation_i        (bus_intg_violation),
+    .illegal_bus_access_i        (illegal_bus_access_q),
+    .lifecycle_escalation_i      (lifecycle_escalation),
 
-      .start_i               (start_model),
+    .software_errs_fatal_i       (software_errs_fatal_q),
 
-      .lc_escalate_en_i      (lc_escalate_en_i == lc_ctrl_pkg::On),
+    .otbn_scramble_state_error_i (otbn_scramble_state_error),
 
-      .err_bits_o            (err_bits_model),
-
-      .edn_rnd_i             (edn_rnd_model_i),
-      .edn_rnd_o             (edn_rnd_req_model),
-      .edn_rnd_cdc_done_i    (edn_rnd_data_valid),
-
-      .edn_urnd_i            (edn_urnd_model_i),
-      .edn_urnd_o            (edn_urnd_req_model),
-      .edn_urnd_cdc_done_i   (edn_urnd_data_valid),
-
-      .status_o              (),
-      .insn_cnt_o            (insn_cnt_model),
-
-      .done_rr_o (done_rr_model),
-
-      .err_o ()
-    );
-
-    assign recoverable_err_model = |{err_bits_model.key_invalid,
-                                     err_bits_model.loop,
-                                     err_bits_model.illegal_insn,
-                                     err_bits_model.call_stack,
-                                     err_bits_model.bad_insn_addr,
-                                     err_bits_model.bad_data_addr} &
-                                    ~software_errs_fatal_q;
-
-    assign locked_model = 1'b0;
-
-    // RTL implementation
-    otbn_core #(
-      .RegFile(RegFile),
-      .DmemSizeByte(DmemSizeByte),
-      .ImemSizeByte(ImemSizeByte),
-      .SecWipeEn(SecWipeEn),
-      .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed)
-    ) u_otbn_core (
-      .clk_i,
-      .rst_ni                      (rst_n),
-
-      .start_i                     (start_rtl),
-      .done_o                      (done_rtl),
-      .locked_o                    (locked_rtl),
-
-      .err_bits_o                  (err_bits_rtl),
-      .recoverable_err_o           (recoverable_err_rtl),
-      .reg_intg_violation_o        (reg_intg_violation),
-
-      .imem_req_o                  (imem_req_core),
-      .imem_addr_o                 (imem_addr_core),
-      .imem_rdata_i                (imem_rdata_core),
-      .imem_rvalid_i               (imem_rvalid_core),
-
-      .insn_fetch_err_o            (insn_fetch_err),
-
-      .dmem_req_o                  (dmem_req_core),
-      .dmem_write_o                (dmem_write_core),
-      .dmem_addr_o                 (dmem_addr_core),
-      .dmem_wdata_o                (dmem_wdata_core),
-      .dmem_wmask_o                (dmem_wmask_core),
-      .dmem_rmask_o                (dmem_rmask_core_d),
-      .dmem_rdata_i                (dmem_rdata_core),
-      .dmem_rvalid_i               (dmem_rvalid_core),
-      .dmem_rerror_i               (dmem_rerror_core),
-
-      .edn_rnd_req_o               (edn_rnd_req_rtl),
-      .edn_rnd_ack_i               (edn_rnd_ack),
-      .edn_rnd_data_i              (edn_rnd_data),
-
-      .edn_urnd_req_o              (edn_urnd_req_rtl),
-      .edn_urnd_ack_i              (edn_urnd_ack),
-      .edn_urnd_data_i             (edn_urnd_data),
-
-      .insn_cnt_o                  (insn_cnt_rtl),
-      .insn_cnt_clear_i            (insn_cnt_clear),
-
-      .mems_sec_wipe_o             (mems_sec_wipe),
-      .dmem_sec_wipe_urnd_key_o    (dmem_sec_wipe_urnd_key),
-      .imem_sec_wipe_urnd_key_o    (imem_sec_wipe_urnd_key),
-      .req_sec_wipe_urnd_keys_i    (req_sec_wipe_urnd_keys),
-
-      .bus_intg_violation_i        (bus_intg_violation),
-      .illegal_bus_access_i        (illegal_bus_access_q),
-      .lifecycle_escalation_i      (lifecycle_escalation),
-
-      .software_errs_fatal_i       (software_errs_fatal_q),
-
-      .otbn_scramble_state_error_i (otbn_scramble_state_error),
-
-      .sideload_key_shares_i       (keymgr_key_i.key),
-      .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}})
-    );
-  `else
-
-    otbn_core #(
-      .RegFile(RegFile),
-      .DmemSizeByte(DmemSizeByte),
-      .ImemSizeByte(ImemSizeByte),
-      .SecWipeEn(SecWipeEn),
-      .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed)
-    ) u_otbn_core (
-      .clk_i,
-      .rst_ni                      (rst_n),
-
-      .start_i                     (start_q),
-      .done_o                      (done),
-      .locked_o                    (locked),
-
-      .err_bits_o                  (err_bits),
-      .recoverable_err_o           (recoverable_err),
-      .reg_intg_violation_o        (reg_intg_violation),
-
-      .imem_req_o                  (imem_req_core),
-      .imem_addr_o                 (imem_addr_core),
-      .imem_rdata_i                (imem_rdata_core),
-      .imem_rvalid_i               (imem_rvalid_core),
-
-      .insn_fetch_err_o            (insn_fetch_err),
-
-      .dmem_req_o                  (dmem_req_core),
-      .dmem_write_o                (dmem_write_core),
-      .dmem_addr_o                 (dmem_addr_core),
-      .dmem_wdata_o                (dmem_wdata_core),
-      .dmem_wmask_o                (dmem_wmask_core),
-      .dmem_rmask_o                (dmem_rmask_core_d),
-      .dmem_rdata_i                (dmem_rdata_core),
-      .dmem_rvalid_i               (dmem_rvalid_core),
-      .dmem_rerror_i               (dmem_rerror_core),
-
-      .edn_rnd_req_o               (edn_rnd_req),
-      .edn_rnd_ack_i               (edn_rnd_ack),
-      .edn_rnd_data_i              (edn_rnd_data),
-
-      .edn_urnd_req_o              (edn_urnd_req),
-      .edn_urnd_ack_i              (edn_urnd_ack),
-      .edn_urnd_data_i             (edn_urnd_data),
-
-      .insn_cnt_o                  (insn_cnt),
-      .insn_cnt_clear_i            (insn_cnt_clear),
-
-      .mems_sec_wipe_o             (mems_sec_wipe),
-      .dmem_sec_wipe_urnd_key_o    (dmem_sec_wipe_urnd_key),
-      .imem_sec_wipe_urnd_key_o    (imem_sec_wipe_urnd_key),
-      .req_sec_wipe_urnd_keys_i    (req_sec_wipe_urnd_keys),
-
-      .bus_intg_violation_i        (bus_intg_violation),
-      .illegal_bus_access_i        (illegal_bus_access_q),
-      .lifecycle_escalation_i      (lifecycle_escalation),
-
-      .software_errs_fatal_i       (software_errs_fatal_q),
-
-      .otbn_scramble_state_error_i (otbn_scramble_state_error),
-
-      .sideload_key_shares_i       (keymgr_key_i.key),
-      .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}})
-    );
-  `endif
+    .sideload_key_shares_i       (keymgr_key_i.key),
+    .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}})
+  );
 
   // We're idle if we're neither busy executing something nor locked
   assign idle = ~(busy_execute_q | locked | otbn_dmem_scramble_key_req_busy |
