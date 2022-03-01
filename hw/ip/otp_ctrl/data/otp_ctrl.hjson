@@ -78,6 +78,12 @@
       randcount: "40",
       randtype:  "perm", // random permutation for randcount elements
     }
+    { name:      "RndCnstScrmblKeyInit",
+      desc:      "Compile-time random permutation for scrambling key/nonce register reset value",
+      type:      "otp_ctrl_pkg::scrmbl_key_init_t"
+      randcount: "256",
+      randtype:  "data", // random permutation for randcount elements
+    }
     // Normal parameters
     { name: "NumSramKeyReqSlots",
       desc: "Number of key slots",
