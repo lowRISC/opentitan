@@ -82,6 +82,10 @@
       name: sysrst_ctrl_ultra_low_pwr
       uvm_test_seq: sysrst_ctrl_ultra_low_pwr_vseq
     }
+    {
+      name: sysrst_ctrl_combo_detect
+      uvm_test_seq: sysrst_ctrl_combo_detect_vseq
+    }
   ]
 
   // List of regressions.
