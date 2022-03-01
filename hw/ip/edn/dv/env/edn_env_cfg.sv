@@ -17,9 +17,6 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
   `uvm_object_utils_end
   `uvm_object_new
 
-  // Variables
-  uint   reseed_cnt, generate_cnt, generate_between_reseeds_cnt;
-
   // Knobs & Weights
   uint   enable_pct, boot_req_mode_pct, auto_req_mode_pct,
          min_num_boot_reqs, max_num_boot_reqs,

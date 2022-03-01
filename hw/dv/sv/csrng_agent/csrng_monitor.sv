@@ -99,8 +99,25 @@ class csrng_monitor extends dv_base_monitor #(
         // TODO: Implement suggestion in PR #5456
         cs_item = csrng_item::type_id::create("cs_item");
         cs_item.acmd = acmd_e'(cfg.vif.mon_cb.cmd_req.csrng_req_bus[3:0]);
-        if (cs_item.acmd == csrng_pkg::GEN)
+        cs_item.clen = cfg.vif.mon_cb.cmd_req.csrng_req_bus[7:4];
+        cs_item.flags = cfg.vif.mon_cb.cmd_req.csrng_req_bus[11:8];
+        if (cs_item.acmd == csrng_pkg::RES) begin
+          cfg.reseed_cnt += 1;
+        end
+        if (cs_item.acmd == csrng_pkg::GEN) begin
+          cfg.generate_cnt += 1;
+          if (cfg.reseed_cnt == 1) begin
+            cfg.generate_between_reseeds_cnt += 1;
+          end
           cs_item.glen = cfg.vif.mon_cb.cmd_req.csrng_req_bus[30:12];
+        end
+        for (int i = 0; i < cs_item.clen; i++) begin
+          do begin
+            @(cfg.vif.cmd_push_if.mon_cb);
+          end
+          while (!(cfg.vif.cmd_push_if.mon_cb.valid) || !(cfg.vif.cmd_push_if.mon_cb.ready));
+          cs_item.cmd_data_q.push_back(cfg.vif.mon_cb.cmd_req.csrng_req_bus);
+        end
         `uvm_info(`gfn, $sformatf("Writing req_analysis_port: %s", cs_item.convert2string()),
              UVM_HIGH)
         req_analysis_port.write(cs_item);

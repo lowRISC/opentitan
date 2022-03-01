@@ -48,7 +48,6 @@ class edn_scoreboard extends cip_base_scoreboard #(
 
     fork
       process_genbits_fifo();
-      process_cs_cmd_fifo();
     join_none
 
     for (int i = 0; i < cfg.num_endpoints; i++) begin
@@ -147,29 +146,6 @@ class edn_scoreboard extends cip_base_scoreboard #(
         endpoint_data = genbits_item.h_data >> (i * ENDPOINT_BUS_WIDTH);
         endpoint_data_q.push_back({fips, endpoint_data});
       end
-    end
-  endtask
-
-  task process_cs_cmd_fifo();
-    push_pull_item#(.HostDataWidth(csrng_pkg::CSRNG_CMD_WIDTH))   cs_cmd;
-    bit[3:0]   acmd;
-
-    forever begin
-      cs_cmd_fifo.get(cs_cmd);
-      acmd = cs_cmd.h_data[3:0];
-
-      case (acmd)
-        csrng_pkg::RES: begin
-          cfg.reseed_cnt += 1;
-        end
-        csrng_pkg::GEN: begin
-          cfg.generate_cnt += 1;
-          if (cfg.reseed_cnt == 1) begin
-            cfg.generate_between_reseeds_cnt += 1;
-          end
-        end
-        default: `uvm_info(`gfn, "Not a reseed/generate command", UVM_DEBUG)
-      endcase
     end
   endtask
 

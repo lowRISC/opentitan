@@ -16,7 +16,8 @@ class csrng_agent_cfg extends dv_base_agent_cfg;
   `uvm_object_new
 
   uint   min_cmd_ack_dly, max_cmd_ack_dly,
-         min_genbits_dly, max_genbits_dly;
+         min_genbits_dly, max_genbits_dly,
+         reseed_cnt, generate_cnt, generate_between_reseeds_cnt;
   bit    cmd_ack_zero_delays;
 
 endclass
