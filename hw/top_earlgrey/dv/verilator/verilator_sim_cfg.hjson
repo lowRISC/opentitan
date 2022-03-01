@@ -114,6 +114,7 @@
     //  name: csrng_smoketest
     //  sw_images: ["sw/device/tests/csrng_smoketest:1"]
     // }
+    // TODO(lowrisc/opentitan#10092): Remove dependency on uncontrolled environment.
     {
       name: entropy_src_smoketest
       sw_images: ["sw/device/tests/entropy_src_smoketest:1"]
