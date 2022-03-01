@@ -68,7 +68,6 @@ interface clkmgr_if (
   always_comb
     clk_hints_csr = '{
     otbn_main: `CLKMGR_HIER.reg2hw.clk_hints.clk_main_otbn_hint.q,
-    otbn_io_div4: `CLKMGR_HIER.reg2hw.clk_hints.clk_io_div4_otbn_hint.q,
     kmac: `CLKMGR_HIER.reg2hw.clk_hints.clk_main_kmac_hint.q,
     hmac: `CLKMGR_HIER.reg2hw.clk_hints.clk_main_hmac_hint.q,
     aes: `CLKMGR_HIER.reg2hw.clk_hints.clk_main_aes_hint.q
@@ -81,7 +80,9 @@ interface clkmgr_if (
 
   prim_mubi_pkg::mubi4_t extclk_ctrl_csr_step_down;
   always_comb begin
-     extclk_ctrl_csr_step_down = prim_mubi_pkg::mubi4_t'(~`CLKMGR_HIER.hi_speed_sel_o);
+     extclk_ctrl_csr_step_down = (`CLKMGR_HIER.hi_speed_sel_o == prim_mubi_pkg::MuBi4False) ?
+                                 prim_mubi_pkg::MuBi4True :
+                                 prim_mubi_pkg::MuBi4False;
   end
 
   prim_mubi_pkg::mubi4_t jitter_enable_csr;
@@ -229,28 +230,21 @@ interface clkmgr_if (
   // Pipelines and clocking blocks for peripheral clocks.
 
   logic [PIPELINE_DEPTH-1:0] clk_enable_div4_ffs;
-  logic [PIPELINE_DEPTH-1:0] clk_hint_otbn_div4_ffs;
   logic [PIPELINE_DEPTH-1:0] ip_clk_en_div4_ffs;
   always @(posedge clocks_o.clk_io_div4_powerup or negedge rst_io_n) begin
     if (rst_io_n) begin
       clk_enable_div4_ffs <= {
         clk_enable_div4_ffs[PIPELINE_DEPTH-2:0], clk_enables_csr.io_div4_peri_en
       };
-      clk_hint_otbn_div4_ffs <= {
-        clk_hint_otbn_div4_ffs[PIPELINE_DEPTH-2:0], clk_hints_csr[TransOtbnIoDiv4]
-      };
       ip_clk_en_div4_ffs <= {ip_clk_en_div4_ffs[PIPELINE_DEPTH-2:0], pwr_i.io_ip_clk_en};
     end else begin
       clk_enable_div4_ffs <= '0;
-      clk_hint_otbn_div4_ffs <= '0;
       ip_clk_en_div4_ffs <= '0;
     end
   end
   clocking peri_div4_cb @(posedge clocks_o.clk_io_div4_powerup or negedge rst_io_n);
     input ip_clk_en = ip_clk_en_div4_ffs[PIPELINE_DEPTH-1];
     input clk_enable = clk_enable_div4_ffs[PIPELINE_DEPTH-1];
-    input clk_hint_otbn = clk_hint_otbn_div4_ffs[PIPELINE_DEPTH-1];
-    input otbn_idle = idle_i[TransOtbnIoDiv4];
   endclocking
 
   logic [PIPELINE_DEPTH-1:0] clk_enable_div2_ffs;
