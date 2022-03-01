@@ -11,7 +11,9 @@ module otp_ctrl_kdi
   import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;
   import otp_ctrl_part_pkg::*;
-(
+#(
+  parameter scrmbl_key_init_t RndCnstScrmblKeyInit = RndCnstScrmblKeyInitDefault
+) (
   input                                              clk_i,
   input                                              rst_ni,
   // Pulse to enable this module after OTP partitions have
@@ -71,15 +73,8 @@ module otp_ctrl_kdi
   // Make sure EDN interface has compatible width.
   `ASSERT_INIT(EntropyWidthDividesDigestBlockWidth_A, (ScrmblKeyWidth % EdnDataWidth) == 0)
 
-  localparam int OtbnNonceSel  = OtbnNonceWidth / ScrmblBlockWidth;
-  localparam int FlashNonceSel = FlashKeyWidth / ScrmblBlockWidth;
-  localparam int SramNonceSel  = SramNonceWidth / ScrmblBlockWidth;
-
-  // Get maximum nonce width
-  localparam int NumNonceChunks =
-    (OtbnNonceWidth > FlashKeyWidth) ?
-    ((OtbnNonceWidth > SramNonceSel) ? OtbnNonceWidth : SramNonceSel) :
-    ((FlashKeyWidth > SramNonceSel)  ? FlashKeyWidth  : SramNonceSel);
+  // Currently the assumption is that the SRAM nonce is the widest.
+  `ASSERT_INIT(NonceWidth_A, NumNonceChunks * ScrmblBlockWidth == SramNonceWidth)
 
   ///////////////////////////////////
   // Input Mapping and Arbitration //
@@ -276,7 +271,7 @@ module otp_ctrl_kdi
   // Connect keys/nonce outputs to output regs.
   prim_sec_anchor_flop #(
     .Width(ScrmblKeyWidth),
-    .ResetValue('0)
+    .ResetValue(RndCnstScrmblKeyInit.key)
   ) u_key_out_anchor (
     .clk_i,
     .rst_ni,
@@ -588,7 +583,7 @@ module otp_ctrl_kdi
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      nonce_out_q   <= '0;
+      nonce_out_q   <= RndCnstScrmblKeyInit.nonce;
       seed_valid_q  <= 1'b0;
       edn_req_q     <= 1'b0;
     end else begin

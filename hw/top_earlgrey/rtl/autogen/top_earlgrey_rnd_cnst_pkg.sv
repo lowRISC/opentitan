@@ -25,30 +25,35 @@ package top_earlgrey_rnd_cnst_pkg;
     240'h5D294061E29A7C404F4593035A19097666E37072064153623855022D39E0
   };
 
+  // Compile-time random permutation for scrambling key/nonce register reset value
+  parameter otp_ctrl_pkg::scrmbl_key_init_t RndCnstOtpCtrlScrmblKeyInit = {
+    256'h6FAF88F22BCCD612D1C09F5C02B2C8D1FDB92558E2D9C5D24440722325A93144
+  };
+
   ////////////////////////////////////////////
   // lc_ctrl
   ////////////////////////////////////////////
   // Compile-time random bits for lc state group diversification value
   parameter lc_ctrl_pkg::lc_keymgr_div_t RndCnstLcCtrlLcKeymgrDivInvalid = {
-    128'hFDB92558E2D9C5D24440722325A93144
+    128'h79EE911CE801484BA8373086F9DD4EEE
   };
 
   // Compile-time random bits for lc state group diversification value
   parameter lc_ctrl_pkg::lc_keymgr_div_t RndCnstLcCtrlLcKeymgrDivTestDevRma = {
-    128'h6FAF88F22BCCD612D1C09F5C02B2C8D1
+    128'h03A0B091DC41D062DD10CA2D7B93136F
   };
 
   // Compile-time random bits for lc state group diversification value
   parameter lc_ctrl_pkg::lc_keymgr_div_t RndCnstLcCtrlLcKeymgrDivProduction = {
-    128'h79EE911CE801484BA8373086F9DD4EEE
+    128'h0EE2A465FD4DABCBD877AFB6BCFEED7E
   };
 
   // Compile-time random bits used for invalid tokens in the token mux
   parameter lc_ctrl_pkg::lc_token_mux_t RndCnstLcCtrlInvalidTokens = {
+    256'h699679EDD5369F11B49BAC9198BD1FF344C5DA2242D290BEDE094CA8F1435F85,
     256'hE0F7489A309CBE57B77F07FF3D7297200D5AB25561AF49C696466A983E534682,
     256'h6A43628219E5A91389B9FE0D3B818E46CE7D846469A3B8E35A6BD38295BD2FB3,
-    256'h66B3D62126C75EEAEB93D32F5CBC77463C91917516D51A2FA4400ADC2669E253,
-    256'h0EE2A465FD4DABCBD877AFB6BCFEED7E03A0B091DC41D062DD10CA2D7B93136F
+    256'h66B3D62126C75EEAEB93D32F5CBC77463C91917516D51A2FA4400ADC2669E253
   };
 
   ////////////////////////////////////////////
@@ -56,12 +61,12 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random bits for initial LFSR seed
   parameter alert_pkg::lfsr_seed_t RndCnstAlertHandlerLfsrSeed = {
-    32'hF1435F85
+    32'hE10023EC
   };
 
   // Compile-time random permutation for LFSR output
   parameter alert_pkg::lfsr_perm_t RndCnstAlertHandlerLfsrPerm = {
-    160'h8A9E933B2126CBFC2E87AF8121B39DB89BAB4D10
+    160'h74449A374B5678FFC0A1C18FB47BB50486CB4EE4
   };
 
   ////////////////////////////////////////////
@@ -69,22 +74,22 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random reset value for SRAM scrambling key.
   parameter otp_ctrl_pkg::sram_key_t RndCnstSramCtrlRetAonSramKey = {
-    128'h3AF5FA0AAF8C6A6B90F868A3F2590E4A
+    128'h3635D1F47C8F05AFFC85F7D889ECD94B
   };
 
   // Compile-time random reset value for SRAM scrambling nonce.
   parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramCtrlRetAonSramNonce = {
-    128'h67EB674BBDF38D62D362249384B1A5A6
+    128'hC87B69111A24D5E4442BCFB7032949CC
   };
 
   // Compile-time random bits for initial LFSR seed
   parameter sram_ctrl_pkg::lfsr_seed_t RndCnstSramCtrlRetAonLfsrSeed = {
-    32'h89ECD94B
+    32'h48BAE844
   };
 
   // Compile-time random permutation for LFSR output
   parameter sram_ctrl_pkg::lfsr_perm_t RndCnstSramCtrlRetAonLfsrPerm = {
-    160'h3D96CED1F5B89D2E422A2B71B9FB440A723400DF
+    160'h46B0E5D9F9E80FCF3212FC76A2B6A11D2F332482
   };
 
   ////////////////////////////////////////////
@@ -92,22 +97,22 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random bits for default address key
   parameter flash_ctrl_pkg::flash_key_t RndCnstFlashCtrlAddrKey = {
-    128'h8440934DCB834F93689FE9E88EBD5340
+    128'h0AF06B42350BB6B68440934DCB834F93
   };
 
   // Compile-time random bits for default data key
   parameter flash_ctrl_pkg::flash_key_t RndCnstFlashCtrlDataKey = {
-    128'h192AADBB7C918ACB0AF06B42350BB6B6
+    128'hED204633871CB178192AADBB7C918ACB
   };
 
   // Compile-time random bits for initial LFSR seed
   parameter flash_ctrl_pkg::lfsr_seed_t RndCnstFlashCtrlLfsrSeed = {
-    32'h871CB178
+    32'h33A4AC96
   };
 
   // Compile-time random permutation for LFSR output
   parameter flash_ctrl_pkg::lfsr_perm_t RndCnstFlashCtrlLfsrPerm = {
-    160'h3580D1897F7CB7DC51419F8B7D5630E65C441D2C
+    160'h3480D1896C7FF9ED5941BD125C6EB18772E220F3
   };
 
   ////////////////////////////////////////////
