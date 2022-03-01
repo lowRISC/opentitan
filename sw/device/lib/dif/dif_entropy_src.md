@@ -13,7 +13,7 @@ Type           | Item                 | Resolution  | Note/Collaterals
 ---------------|----------------------|-------------|------------------
 Implementation | [DIF_EXISTS][]       | Done        |
 Implementation | [DIF_USED_IN_TREE][] | Done        |
-Tests          | [DIF_TEST_SMOKE][]   | Done        |
+Tests          | [DIF_TEST_SMOKE][]   | In Progress |
 
 [DIF_EXISTS]:       {{< relref "/doc/project/checklist.md#dif_exists" >}}
 [DIF_USED_IN_TREE]: {{< relref "/doc/project/checklist.md#dif_used_in_tree" >}}
