@@ -9,7 +9,7 @@ package clkmgr_reg_pkg;
   // Param list
   parameter int NumGroups = 7;
   parameter int NumSwGateableClocks = 4;
-  parameter int NumHintableClocks = 5;
+  parameter int NumHintableClocks = 4;
   parameter int NumAlerts = 2;
 
   // Address widths within the block
@@ -68,9 +68,6 @@ package clkmgr_reg_pkg;
     struct packed {
       logic        q;
     } clk_main_kmac_hint;
-    struct packed {
-      logic        q;
-    } clk_io_div4_otbn_hint;
     struct packed {
       logic        q;
     } clk_main_otbn_hint;
@@ -172,6 +169,9 @@ package clkmgr_reg_pkg;
     } reg_intg;
     struct packed {
       logic        q;
+    } idle_cnt;
+    struct packed {
+      logic        q;
     } io_storage_err;
     struct packed {
       logic        q;
@@ -200,10 +200,6 @@ package clkmgr_reg_pkg;
       logic        d;
       logic        de;
     } clk_main_kmac_val;
-    struct packed {
-      logic        d;
-      logic        de;
-    } clk_io_div4_otbn_val;
     struct packed {
       logic        d;
       logic        de;
@@ -281,6 +277,10 @@ package clkmgr_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } idle_cnt;
+    struct packed {
+      logic        d;
+      logic        de;
     } io_storage_err;
     struct packed {
       logic        d;
@@ -306,20 +306,20 @@ package clkmgr_reg_pkg;
     clkmgr_reg2hw_extclk_ctrl_reg_t extclk_ctrl; // [123:116]
     clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [115:112]
     clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [111:108]
-    clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [107:103]
-    clkmgr_reg2hw_io_meas_ctrl_shadowed_reg_t io_meas_ctrl_shadowed; // [102:82]
-    clkmgr_reg2hw_io_div2_meas_ctrl_shadowed_reg_t io_div2_meas_ctrl_shadowed; // [81:63]
-    clkmgr_reg2hw_io_div4_meas_ctrl_shadowed_reg_t io_div4_meas_ctrl_shadowed; // [62:46]
-    clkmgr_reg2hw_main_meas_ctrl_shadowed_reg_t main_meas_ctrl_shadowed; // [45:25]
-    clkmgr_reg2hw_usb_meas_ctrl_shadowed_reg_t usb_meas_ctrl_shadowed; // [24:6]
-    clkmgr_reg2hw_fatal_err_code_reg_t fatal_err_code; // [5:0]
+    clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [107:104]
+    clkmgr_reg2hw_io_meas_ctrl_shadowed_reg_t io_meas_ctrl_shadowed; // [103:83]
+    clkmgr_reg2hw_io_div2_meas_ctrl_shadowed_reg_t io_div2_meas_ctrl_shadowed; // [82:64]
+    clkmgr_reg2hw_io_div4_meas_ctrl_shadowed_reg_t io_div4_meas_ctrl_shadowed; // [63:47]
+    clkmgr_reg2hw_main_meas_ctrl_shadowed_reg_t main_meas_ctrl_shadowed; // [46:26]
+    clkmgr_reg2hw_usb_meas_ctrl_shadowed_reg_t usb_meas_ctrl_shadowed; // [25:7]
+    clkmgr_reg2hw_fatal_err_code_reg_t fatal_err_code; // [6:0]
   } clkmgr_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status; // [51:42]
-    clkmgr_hw2reg_recov_err_code_reg_t recov_err_code; // [41:12]
-    clkmgr_hw2reg_fatal_err_code_reg_t fatal_err_code; // [11:0]
+    clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status; // [51:44]
+    clkmgr_hw2reg_recov_err_code_reg_t recov_err_code; // [43:14]
+    clkmgr_hw2reg_fatal_err_code_reg_t fatal_err_code; // [13:0]
   } clkmgr_hw2reg_t;
 
   // Register offsets

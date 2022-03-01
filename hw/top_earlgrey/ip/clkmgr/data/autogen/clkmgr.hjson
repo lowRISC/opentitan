@@ -54,7 +54,7 @@
     { name: "NumHintableClocks",
       desc: "Number of hintable clocks",
       type: "int",
-      default: "5",
+      default: "4",
       local: "true"
     },
   ],
@@ -145,12 +145,12 @@
       act:     "rsp",
     },
 
-    { struct:  "logic",
+    { struct:  "mubi4",
       type:    "uni",
       name:    "idle",
       act:     "rcv",
-      package: "",
-      width:   "5"
+      package: "prim_mubi_pkg",
+      width:   "4"
     },
   ],
 
@@ -384,15 +384,6 @@
         }
         {
           bits: "3",
-          name: "CLK_IO_DIV4_OTBN_HINT",
-          resval: 1,
-          desc: '''
-            0 CLK_IO_DIV4_OTBN can be disabled.
-            1 CLK_IO_DIV4_OTBN is enabled.
-          '''
-        }
-        {
-          bits: "4",
           name: "CLK_MAIN_OTBN_HINT",
           resval: 1,
           desc: '''
@@ -445,15 +436,6 @@
         }
         {
           bits: "3",
-          name: "CLK_IO_DIV4_OTBN_VAL",
-          resval: 1,
-          desc: '''
-            0 CLK_IO_DIV4_OTBN is disabled.
-            1 CLK_IO_DIV4_OTBN is enabled.
-          '''
-        }
-        {
-          bits: "4",
           name: "CLK_MAIN_OTBN_VAL",
           resval: 1,
           desc: '''
@@ -835,8 +817,15 @@
             Register file has experienced a fatal integrity error.
           '''
         },
+        { bits: "1",
+          name: "IDLE_CNT",
+          resval: 0
+          desc: '''
+            One of the idle counts encountered a duplicate error.
+          '''
+        },
         {
-          bits: "1",
+          bits: "2",
           name: "IO_STORAGE_ERR",
           resval: 0,
           desc: '''
@@ -844,7 +833,7 @@
           '''
         },
         {
-          bits: "2",
+          bits: "3",
           name: "IO_DIV2_STORAGE_ERR",
           resval: 0,
           desc: '''
@@ -852,7 +841,7 @@
           '''
         },
         {
-          bits: "3",
+          bits: "4",
           name: "IO_DIV4_STORAGE_ERR",
           resval: 0,
           desc: '''
@@ -860,7 +849,7 @@
           '''
         },
         {
-          bits: "4",
+          bits: "5",
           name: "MAIN_STORAGE_ERR",
           resval: 0,
           desc: '''
@@ -868,7 +857,7 @@
           '''
         },
         {
-          bits: "5",
+          bits: "6",
           name: "USB_STORAGE_ERR",
           resval: 0,
           desc: '''

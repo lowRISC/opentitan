@@ -10,6 +10,7 @@
 //
 // The overall clock manager
 
+
 `include "prim_assert.sv"
 
   module clkmgr
@@ -58,7 +59,7 @@
   input prim_mubi_pkg::mubi4_t scanmode_i,
 
   // idle hints
-  input [4:0] idle_i,
+  input prim_mubi_pkg::mubi4_t [3:0] idle_i,
 
   // life cycle state output
   // SEC_CM: LC_CTRL.INTERSIG.MUBI
@@ -91,8 +92,6 @@
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4True;
   import prim_mubi_pkg::mubi4_test_true_strict;
-  import prim_mubi_pkg::mubi4_test_true_loose;
-  import prim_mubi_pkg::mubi4_test_false_loose;
 
   ////////////////////////////////////////////////////
   // Divided clocks
@@ -1064,279 +1063,95 @@
   // clock target
   ////////////////////////////////////////////////////
 
-  logic clk_main_aes_hint;
-  logic clk_main_aes_en;
-  logic clk_main_hmac_hint;
-  logic clk_main_hmac_en;
-  logic clk_main_kmac_hint;
-  logic clk_main_kmac_en;
-  logic clk_main_otbn_hint;
-  logic clk_main_otbn_en;
-  logic clk_io_div4_otbn_hint;
-  logic clk_io_div4_otbn_en;
+  logic [3:0] idle_cnt_err;
 
-  assign clk_main_aes_en = clk_main_aes_hint | ~idle_i[HintMainAes];
-
-  prim_flop_2sync #(
-    .Width(1)
-  ) u_clk_main_aes_hint_sync (
-    .clk_i(clk_main_i),
-    .rst_ni(rst_main_ni),
-    .d_i(reg2hw.clk_hints.clk_main_aes_hint.q),
-    .q_o(clk_main_aes_hint)
-  );
-
-  // Declared as size 1 packed array to avoid FPV warning.
-  prim_mubi_pkg::mubi4_t [0:0] clk_main_aes_scanmode;
-  prim_mubi4_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_clk_main_aes_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
-    .mubi_i(scanmode_i),
-    .mubi_o(clk_main_aes_scanmode)
-  );
-
-  // Add a prim buf here to make sure the CG and the lc sender inputs
-  // are derived from the same physical signal.
-  logic clk_main_aes_combined_en;
-  prim_buf u_prim_buf_clk_main_aes_en (
-    .in_i(clk_main_aes_en & clk_main_en),
-    .out_o(clk_main_aes_combined_en)
-  );
-
-  prim_clock_gating #(
+  clkmgr_trans #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
-  ) u_clk_main_aes_cg (
-    .clk_i(clk_main_root),
-    .en_i(clk_main_aes_combined_en),
-    .test_en_i(mubi4_test_true_strict(clk_main_aes_scanmode[0])),
-    .clk_o(clocks_o.clk_main_aes)
-  );
-
-  // clock gated indication for alert handler
-  prim_mubi4_sender #(
-    .ResetValue(MuBi4True)
-  ) u_prim_mubi4_sender_clk_main_aes (
+  ) u_clk_main_aes_trans (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .mubi_i(((clk_main_aes_combined_en) ? MuBi4False : MuBi4True)),
-    .mubi_o(cg_en_o.main_aes)
+    .clk_root_i(clk_main_root),
+    .clk_root_en_i(clk_main_en),
+    .idle_i(idle_i[HintMainAes]),
+    .sw_hint_i(reg2hw.clk_hints.clk_main_aes_hint.q),
+    .scanmode_i,
+    .alert_cg_en_o(cg_en_o.main_aes),
+    .clk_o(clocks_o.clk_main_aes),
+    .clk_en_o(hw2reg.clk_hints_status.clk_main_aes_val.d),
+    .cnt_err_o(idle_cnt_err[HintMainAes])
   );
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
+    ClkMainAesCountCheck_A,
+    u_clk_main_aes_trans.u_idle_cnt,
+    alert_tx_o[0])
 
-  assign clk_main_hmac_en = clk_main_hmac_hint | ~idle_i[HintMainHmac];
-
-  prim_flop_2sync #(
-    .Width(1)
-  ) u_clk_main_hmac_hint_sync (
-    .clk_i(clk_main_i),
-    .rst_ni(rst_main_ni),
-    .d_i(reg2hw.clk_hints.clk_main_hmac_hint.q),
-    .q_o(clk_main_hmac_hint)
-  );
-
-  // Declared as size 1 packed array to avoid FPV warning.
-  prim_mubi_pkg::mubi4_t [0:0] clk_main_hmac_scanmode;
-  prim_mubi4_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_clk_main_hmac_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
-    .mubi_i(scanmode_i),
-    .mubi_o(clk_main_hmac_scanmode)
-  );
-
-  // Add a prim buf here to make sure the CG and the lc sender inputs
-  // are derived from the same physical signal.
-  logic clk_main_hmac_combined_en;
-  prim_buf u_prim_buf_clk_main_hmac_en (
-    .in_i(clk_main_hmac_en & clk_main_en),
-    .out_o(clk_main_hmac_combined_en)
-  );
-
-  prim_clock_gating #(
+  clkmgr_trans #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
-  ) u_clk_main_hmac_cg (
-    .clk_i(clk_main_root),
-    .en_i(clk_main_hmac_combined_en),
-    .test_en_i(mubi4_test_true_strict(clk_main_hmac_scanmode[0])),
-    .clk_o(clocks_o.clk_main_hmac)
-  );
-
-  // clock gated indication for alert handler
-  prim_mubi4_sender #(
-    .ResetValue(MuBi4True)
-  ) u_prim_mubi4_sender_clk_main_hmac (
+  ) u_clk_main_hmac_trans (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .mubi_i(((clk_main_hmac_combined_en) ? MuBi4False : MuBi4True)),
-    .mubi_o(cg_en_o.main_hmac)
+    .clk_root_i(clk_main_root),
+    .clk_root_en_i(clk_main_en),
+    .idle_i(idle_i[HintMainHmac]),
+    .sw_hint_i(reg2hw.clk_hints.clk_main_hmac_hint.q),
+    .scanmode_i,
+    .alert_cg_en_o(cg_en_o.main_hmac),
+    .clk_o(clocks_o.clk_main_hmac),
+    .clk_en_o(hw2reg.clk_hints_status.clk_main_hmac_val.d),
+    .cnt_err_o(idle_cnt_err[HintMainHmac])
   );
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
+    ClkMainHmacCountCheck_A,
+    u_clk_main_hmac_trans.u_idle_cnt,
+    alert_tx_o[0])
 
-  assign clk_main_kmac_en = clk_main_kmac_hint | ~idle_i[HintMainKmac];
-
-  prim_flop_2sync #(
-    .Width(1)
-  ) u_clk_main_kmac_hint_sync (
-    .clk_i(clk_main_i),
-    .rst_ni(rst_main_ni),
-    .d_i(reg2hw.clk_hints.clk_main_kmac_hint.q),
-    .q_o(clk_main_kmac_hint)
-  );
-
-  // Declared as size 1 packed array to avoid FPV warning.
-  prim_mubi_pkg::mubi4_t [0:0] clk_main_kmac_scanmode;
-  prim_mubi4_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_clk_main_kmac_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
-    .mubi_i(scanmode_i),
-    .mubi_o(clk_main_kmac_scanmode)
-  );
-
-  // Add a prim buf here to make sure the CG and the lc sender inputs
-  // are derived from the same physical signal.
-  logic clk_main_kmac_combined_en;
-  prim_buf u_prim_buf_clk_main_kmac_en (
-    .in_i(clk_main_kmac_en & clk_main_en),
-    .out_o(clk_main_kmac_combined_en)
-  );
-
-  prim_clock_gating #(
+  clkmgr_trans #(
     .FpgaBufGlobal(1'b1) // KMAC is getting too big for a single clock region.
-  ) u_clk_main_kmac_cg (
-    .clk_i(clk_main_root),
-    .en_i(clk_main_kmac_combined_en),
-    .test_en_i(mubi4_test_true_strict(clk_main_kmac_scanmode[0])),
-    .clk_o(clocks_o.clk_main_kmac)
-  );
-
-  // clock gated indication for alert handler
-  prim_mubi4_sender #(
-    .ResetValue(MuBi4True)
-  ) u_prim_mubi4_sender_clk_main_kmac (
+  ) u_clk_main_kmac_trans (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .mubi_i(((clk_main_kmac_combined_en) ? MuBi4False : MuBi4True)),
-    .mubi_o(cg_en_o.main_kmac)
+    .clk_root_i(clk_main_root),
+    .clk_root_en_i(clk_main_en),
+    .idle_i(idle_i[HintMainKmac]),
+    .sw_hint_i(reg2hw.clk_hints.clk_main_kmac_hint.q),
+    .scanmode_i,
+    .alert_cg_en_o(cg_en_o.main_kmac),
+    .clk_o(clocks_o.clk_main_kmac),
+    .clk_en_o(hw2reg.clk_hints_status.clk_main_kmac_val.d),
+    .cnt_err_o(idle_cnt_err[HintMainKmac])
   );
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
+    ClkMainKmacCountCheck_A,
+    u_clk_main_kmac_trans.u_idle_cnt,
+    alert_tx_o[0])
 
-  assign clk_main_otbn_en = clk_main_otbn_hint | ~idle_i[HintMainOtbn];
-
-  prim_flop_2sync #(
-    .Width(1)
-  ) u_clk_main_otbn_hint_sync (
-    .clk_i(clk_main_i),
-    .rst_ni(rst_main_ni),
-    .d_i(reg2hw.clk_hints.clk_main_otbn_hint.q),
-    .q_o(clk_main_otbn_hint)
-  );
-
-  // Declared as size 1 packed array to avoid FPV warning.
-  prim_mubi_pkg::mubi4_t [0:0] clk_main_otbn_scanmode;
-  prim_mubi4_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_clk_main_otbn_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
-    .mubi_i(scanmode_i),
-    .mubi_o(clk_main_otbn_scanmode)
-  );
-
-  // Add a prim buf here to make sure the CG and the lc sender inputs
-  // are derived from the same physical signal.
-  logic clk_main_otbn_combined_en;
-  prim_buf u_prim_buf_clk_main_otbn_en (
-    .in_i(clk_main_otbn_en & clk_main_en),
-    .out_o(clk_main_otbn_combined_en)
-  );
-
-  prim_clock_gating #(
+  clkmgr_trans #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
-  ) u_clk_main_otbn_cg (
-    .clk_i(clk_main_root),
-    .en_i(clk_main_otbn_combined_en),
-    .test_en_i(mubi4_test_true_strict(clk_main_otbn_scanmode[0])),
-    .clk_o(clocks_o.clk_main_otbn)
-  );
-
-  // clock gated indication for alert handler
-  prim_mubi4_sender #(
-    .ResetValue(MuBi4True)
-  ) u_prim_mubi4_sender_clk_main_otbn (
+  ) u_clk_main_otbn_trans (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .mubi_i(((clk_main_otbn_combined_en) ? MuBi4False : MuBi4True)),
-    .mubi_o(cg_en_o.main_otbn)
+    .clk_root_i(clk_main_root),
+    .clk_root_en_i(clk_main_en),
+    .idle_i(idle_i[HintMainOtbn]),
+    .sw_hint_i(reg2hw.clk_hints.clk_main_otbn_hint.q),
+    .scanmode_i,
+    .alert_cg_en_o(cg_en_o.main_otbn),
+    .clk_o(clocks_o.clk_main_otbn),
+    .clk_en_o(hw2reg.clk_hints_status.clk_main_otbn_val.d),
+    .cnt_err_o(idle_cnt_err[HintMainOtbn])
   );
-
-  assign clk_io_div4_otbn_en = clk_io_div4_otbn_hint | ~idle_i[HintIoDiv4Otbn];
-
-  prim_flop_2sync #(
-    .Width(1)
-  ) u_clk_io_div4_otbn_hint_sync (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_io_div4_ni),
-    .d_i(reg2hw.clk_hints.clk_io_div4_otbn_hint.q),
-    .q_o(clk_io_div4_otbn_hint)
-  );
-
-  // Declared as size 1 packed array to avoid FPV warning.
-  prim_mubi_pkg::mubi4_t [0:0] clk_io_div4_otbn_scanmode;
-  prim_mubi4_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_clk_io_div4_otbn_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
-    .mubi_i(scanmode_i),
-    .mubi_o(clk_io_div4_otbn_scanmode)
-  );
-
-  // Add a prim buf here to make sure the CG and the lc sender inputs
-  // are derived from the same physical signal.
-  logic clk_io_div4_otbn_combined_en;
-  prim_buf u_prim_buf_clk_io_div4_otbn_en (
-    .in_i(clk_io_div4_otbn_en & clk_io_div4_en),
-    .out_o(clk_io_div4_otbn_combined_en)
-  );
-
-  prim_clock_gating #(
-    .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
-  ) u_clk_io_div4_otbn_cg (
-    .clk_i(clk_io_div4_root),
-    .en_i(clk_io_div4_otbn_combined_en),
-    .test_en_i(mubi4_test_true_strict(clk_io_div4_otbn_scanmode[0])),
-    .clk_o(clocks_o.clk_io_div4_otbn)
-  );
-
-  // clock gated indication for alert handler
-  prim_mubi4_sender #(
-    .ResetValue(MuBi4True)
-  ) u_prim_mubi4_sender_clk_io_div4_otbn (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_io_div4_ni),
-    .mubi_i(((clk_io_div4_otbn_combined_en) ? MuBi4False : MuBi4True)),
-    .mubi_o(cg_en_o.io_div4_otbn)
-  );
-
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
+    ClkMainOtbnCountCheck_A,
+    u_clk_main_otbn_trans.u_idle_cnt,
+    alert_tx_o[0])
+  assign hw2reg.fatal_err_code.idle_cnt.d = 1'b1;
+  assign hw2reg.fatal_err_code.idle_cnt.de = |idle_cnt_err;
 
   // state readback
   assign hw2reg.clk_hints_status.clk_main_aes_val.de = 1'b1;
-  assign hw2reg.clk_hints_status.clk_main_aes_val.d = clk_main_aes_en;
   assign hw2reg.clk_hints_status.clk_main_hmac_val.de = 1'b1;
-  assign hw2reg.clk_hints_status.clk_main_hmac_val.d = clk_main_hmac_en;
   assign hw2reg.clk_hints_status.clk_main_kmac_val.de = 1'b1;
-  assign hw2reg.clk_hints_status.clk_main_kmac_val.d = clk_main_kmac_en;
   assign hw2reg.clk_hints_status.clk_main_otbn_val.de = 1'b1;
-  assign hw2reg.clk_hints_status.clk_main_otbn_val.d = clk_main_otbn_en;
-  assign hw2reg.clk_hints_status.clk_io_div4_otbn_val.de = 1'b1;
-  assign hw2reg.clk_hints_status.clk_io_div4_otbn_val.d = clk_io_div4_otbn_en;
 
   // SEC_CM: JITTER.CONFIG.MUBI
   assign jitter_en_o = mubi4_t'(reg2hw.jitter_enable.q);
