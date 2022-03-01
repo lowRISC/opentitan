@@ -30,10 +30,11 @@ package clkmgr_env_pkg;
 
   // parameters
   parameter int NUM_PERI = 4;
-  parameter int NUM_TRANS = 5;
+  parameter int NUM_TRANS = 4;
 
   typedef logic [NUM_PERI-1:0] peri_enables_t;
-  typedef logic [NUM_TRANS-1:0] hintables_t;
+  typedef mubi4_t [NUM_TRANS-1:0] hintables_t;
+  parameter mubi4_t [NUM_TRANS-1:0] IdleAllBusy = {NUM_TRANS{prim_mubi_pkg::MuBi4False}};
 
   parameter int MainClkHz = 100_000_000;
   parameter int IoClkHz = 96_000_000;
@@ -68,12 +69,10 @@ package clkmgr_env_pkg;
     TransAes,
     TransHmac,
     TransKmac,
-    TransOtbnIoDiv4,
     TransOtbnMain
   } trans_e;
   typedef struct packed {
     logic otbn_main;
-    logic otbn_io_div4;
     logic kmac;
     logic hmac;
     logic aes;
