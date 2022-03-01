@@ -180,6 +180,11 @@
       build_opts: ["-access +c"]
     }
     {
+      name: xcelium_waves_off
+      is_sim_mode: 1
+      build_opts: []
+    }
+    {
       name: xcelium_cov
       is_sim_mode: 1
       build_opts: [// Enable the required cov metrics.

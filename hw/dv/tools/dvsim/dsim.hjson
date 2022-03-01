@@ -113,6 +113,11 @@
                    // Dump unpacked structs and arrays.
                    "-dump-agg"]
     }
+    {
+      name: dsim_waves_off
+      is_sim_mode: 1
+      build_opts: []
+    }
     // TODO: support coverage mode
     // Note: no specific build or run options are required for dsim to produce functional
     // coverage. Code coverage support is evolving.

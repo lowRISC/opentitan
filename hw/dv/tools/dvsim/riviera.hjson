@@ -73,6 +73,11 @@
       name: riviera_waves
       is_sim_mode: 1
     }
+    {
+      name: riviera_waves_off
+      is_sim_mode: 1
+      build_opts: []
+    }
     // TODO support coverage for riviera
     {
       name: riviera_cov
