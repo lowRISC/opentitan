@@ -15,6 +15,7 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:dv:chip_test
+      - lowrisc:dv:clkmgr_sva
       - lowrisc:dv:pwrmgr_sva
       - lowrisc:dv:rstmgr_sva
       - lowrisc:dv:xbar_main_bind
