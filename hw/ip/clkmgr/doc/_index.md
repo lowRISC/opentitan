@@ -65,6 +65,9 @@ The `Idle` signal must be sourced from the transactional modules and sent to the
 For this group software can only express its intent to shut-off, and does not have full control over the final state.
 This intent is indicated with a register in the clock manager register file, see {{< regref "CLK_HINTS" >}}.
 
+Even when the hint is set, the `Idle` does not directly manipulate the clock.  When an idle indicaiton is received, the `clkmgr` counts for a period of 10 local clocks to ensure
+the idle was not an accidental or malicious glitch.
+
 Wait-for-interrupt based control is already a software hint, it can thus be applied to this group with the same `Idle` requirement.
 
 For modules in this group, each module can be individually influenced, and thus each has its own dedicated clock gating logic.
