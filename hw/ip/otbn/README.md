@@ -99,37 +99,6 @@ hw/ip/otbn/dv/smoke/run_smoke.sh
 This will build the standalone simulation, build the smoke test binary, run it
 and check the results are as expected.
 
-### Run OT earlgrey simulation with the OTBN model, rather than the RTL design
-
-For simulation targets, the OTBN block can be built with both the RTL
-implementation and the Python-based instruction set simulator (hereafter called
-the ISS) compiled in. When running the simulation the plusarg `OTBN_USE_MODEL`
-can be used to switch between the RTL implementation and the model, without
-recompiling the simulation.
-
-The Verilator simulation of Earl Grey (`lowrisc:systems:chip_earlgrey_verilator`)
-builds the model by default when compiling the simulation and nothing else needs
-to be done. For other simulation targets, set the `OTBN_BUILD_MODEL` define,
-e.g. by passing `--OTBN_BUILD_MODEL` to fusesoc.
-
-To run the simulation against the OTBN ISS pass `+OTBN_USE_MODEL=1` to the
-simulation run, e.g.
-
-```sh
-build/lowrisc_systems_chip_earlgrey_verilator_0.1/sim-verilator/Vchip_earlgrey_verilator \
-  --meminit=rom,build-bin/sw/device/lib/testing/test_rom/test_rom_sim_verilator.scr.39.vmem \
-  --meminit=flash,build-bin/sw/device/tests/otbn_smoketest_sim_verilator.elf \
-  --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem \
-  +UARTDPI_LOG_uart0=- \
-  +OTBN_USE_MODEL=1
-```
-
-The simulation communicates with the model by creating a directory in
-the temporary directory (/tmp or TMPDIR) and filling it with files.
-Normally, it cleans up after itself. If something goes wrong and you'd
-like to look at these files, set the `OTBN_MODEL_KEEP_TMP` environment
-variable to `1`.
-
 ### Run the ISS on its own
 
 There are currently two versions of the ISS and they can be found in
