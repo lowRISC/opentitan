@@ -294,6 +294,9 @@
       clock_group: "peri",
       reset_connections: {rst_ni: "usb", rst_aon_ni: "sys_aon", rst_usb_48mhz_ni: "usbif"},
       base_addr: "0x40110000",
+      param_decl: {
+        RcvrWakeTimeUs: "100"
+      },
     },
     { name: "otp_ctrl",
       type: "otp_ctrl",
