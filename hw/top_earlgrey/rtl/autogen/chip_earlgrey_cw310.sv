@@ -965,6 +965,7 @@ module chip_earlgrey_cw310 #(
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
+    .UsbdevRcvrWakeTimeUs(10000),
     .RomCtrlBootRomInitFile(BootRomInitFile),
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
     .RvCoreIbexPipeLine(1),
