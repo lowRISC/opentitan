@@ -150,6 +150,13 @@
       default: "12",
       desc:    "Number of endpoints",
       local:   "true"
+    },
+    { name:    "RcvrWakeTimeUs",
+      type:    "int",
+      default: "1",
+      desc:    "Maximum number of microseconds for the differential receiver to become operational",
+      local:   "false",
+      expose:  "true"
     }
   ],
   interrupt_list: [

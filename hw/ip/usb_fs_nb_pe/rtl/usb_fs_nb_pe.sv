@@ -34,6 +34,10 @@ module usb_fs_nb_pe #(
   input  logic                   cfg_use_diff_rcvr_i, // 1: use usb_d_i from a differential receiver
   input  logic                   tx_osc_test_mode_i, // Oscillator test mode (constantly output JK)
   input  logic [NumOutEps-1:0]   data_toggle_clear_i, // Clear the data toggles for an EP
+  input  logic                   diff_rx_ok_i, // 1: received differential data symbols are valid.
+                                               // Set low if K and J symbols might be invalid, such
+                                               // as when an external differential receiver is
+                                               // powering on.
 
   ////////////////////////////
   // USB Endpoint Interface //
@@ -234,6 +238,7 @@ module usb_fs_nb_pe #(
     .link_reset_i           (link_reset_i),
     .cfg_eop_single_bit_i   (cfg_eop_single_bit_i),
     .cfg_use_diff_rcvr_i    (cfg_use_diff_rcvr_i),
+    .diff_rx_ok_i           (diff_rx_ok_i),
     .usb_d_i                (usb_d_i),
     .usb_dp_i               (usb_dp_i),
     .usb_dn_i               (usb_dn_i),

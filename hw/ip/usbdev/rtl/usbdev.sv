@@ -11,8 +11,12 @@
 module usbdev
   import usbdev_pkg::*;
   import usbdev_reg_pkg::*;
+  import prim_util_pkg::vbits;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter int RcvrWakeTimeUs = 1 // Max time (in microseconds) from rx_enable_o high to the
+                                   // external differential receiver outputting valid data (when
+                                   // configured to use one).
 ) (
   input  logic       clk_i,
   input  logic       rst_ni,
@@ -177,6 +181,27 @@ module usbdev
   logic usb_pwr_sense;
   logic usb_pullup_en;
 
+  //////////////////////////////////
+  // Microsecond timing reference //
+  //////////////////////////////////
+  // us_tick ticks for one cycle every us, and it is based off a free-running
+  // counter.
+  logic [5:0]   ns_cnt;
+  logic         us_tick;
+
+  assign us_tick = (ns_cnt == 6'd48);
+  always_ff @(posedge clk_usb_48mhz_i or negedge rst_usb_48mhz_ni) begin
+    if (!rst_usb_48mhz_ni) begin
+      ns_cnt <= '0;
+    end else begin
+      if (us_tick) begin
+        ns_cnt <= '0;
+      end else begin
+        ns_cnt <= ns_cnt + 1'b1;
+      end
+    end
+  end
+
   /////////////////////////////
   // Receive interface fifos //
   /////////////////////////////
@@ -269,6 +294,7 @@ module usbdev
   logic [NEndpoints-1:0] in_rdy_async;
   logic [3:0]            usb_out_endpoint;
   logic                  usb_out_endpoint_val;
+  logic                  usb_use_diff_rcvr, usb_diff_rx_ok;
 
   // Endpoint enables
   always_comb begin : proc_map_ep_enable
@@ -568,6 +594,9 @@ module usbdev
     .mem_wdata_o          (usb_mem_b_wdata),
     .mem_rdata_i          (usb_mem_b_rdata),
 
+    // time reference
+    .us_tick_i            (us_tick),
+
     // control
     .enable_i             (usb_enable),
     .devaddr_i            (usb_device_addr),
@@ -576,6 +605,7 @@ module usbdev
     .out_ep_enabled_i     (usb_ep_out_enable),
     .out_ep_iso_i         (ep_out_iso), // cdc ok, quasi-static
     .in_ep_iso_i          (ep_in_iso), // cdc ok, quasi-static
+    .diff_rx_ok_i         (usb_diff_rx_ok),
     .cfg_eop_single_bit_i (reg2hw.phy_config.eop_single_bit.q), // cdc ok: quasi-static
     .tx_osc_test_mode_i   (reg2hw.phy_config.tx_osc_test_mode.q), // cdc ok: quasi-static
     .cfg_use_diff_rcvr_i  (reg2hw.phy_config.use_diff_rcvr.q), // cdc ok: quasi-static
@@ -1057,11 +1087,44 @@ module usbdev
     .usb_suspend_i          (usb_event_link_suspend)
   );
 
+  // Differential receiver enable
+  prim_flop_2sync #(
+    .Width      (1)
+  ) usbdev_sync_rcvr_enable (
+    .clk_i  (clk_usb_48mhz_i),
+    .rst_ni (rst_usb_48mhz_ni),
+    .d_i    (reg2hw.phy_config.use_diff_rcvr.q),
+    .q_o    (usb_use_diff_rcvr)
+  );
   // enable rx only when the single-ended input is enabled and the device is
   // not suspended.
-  // TODO(#10901): This can cause undefined behavior if this module stays
-  // powered to detect resume (instead of the AON module).
-  assign usb_rx_enable_o = reg2hw.phy_config.use_diff_rcvr.q & ~usb_suspend_o;
+  assign usb_rx_enable_o = usb_use_diff_rcvr & ~usb_suspend_o;
+
+  // Symbols from the differential receiver are invalid until it has finished
+  // waking up / powering on
+  // Add 1 to the specified time to account for uncertainty in the
+  // free-running counter for us_tick.
+  localparam int RcvrWakeTimeWidth = vbits(RcvrWakeTimeUs + 1);
+  logic [RcvrWakeTimeWidth-1:0] usb_rcvr_ok_counter_d, usb_rcvr_ok_counter_q;
+
+  assign usb_diff_rx_ok = (usb_rcvr_ok_counter_q == '0);
+  always_comb begin
+    // When don't need to use a differential receiver, RX is always ready
+    usb_rcvr_ok_counter_d = '0;
+    if (usb_use_diff_rcvr & !usb_rx_enable_o) begin
+      usb_rcvr_ok_counter_d = RcvrWakeTimeUs[0 +: RcvrWakeTimeWidth] + '1;
+    end else if (us_tick && (usb_rcvr_ok_counter_q > '0)) begin
+      usb_rcvr_ok_counter_d = usb_rcvr_ok_counter_q - '1;
+    end
+  end
+
+  always_ff @(posedge clk_usb_48mhz_i or negedge rst_usb_48mhz_ni) begin
+    if (!rst_usb_48mhz_ni) begin
+      usb_rcvr_ok_counter_q <= RcvrWakeTimeUs[0 +: RcvrWakeTimeWidth] + '1;
+    end else begin
+      usb_rcvr_ok_counter_q <= usb_rcvr_ok_counter_d;
+    end
+  end
 
   /////////////////////////////////////////
   // SOF Reference for Clock Calibration //

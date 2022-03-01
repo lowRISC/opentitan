@@ -1112,7 +1112,18 @@
         "0"
       ]
       param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: RcvrWakeTimeUs
+          desc: Maximum number of microseconds for the differential receiver to become operational
+          type: int
+          default: "1"
+          expose: "true"
+          name_top: UsbdevRcvrWakeTimeUs
+        }
+      ]
       inter_signal_list:
       [
         {
