@@ -94,7 +94,7 @@ typedef enum dif_sram_ctrl_lock {
 } dif_sram_ctrl_lock_t;
 
 /**
- * Performs SRAM scrambling.
+ * Performs blocking SRAM scrambling operation.
  *
  * This function should only be called when the data is no longer used.
  *
@@ -107,13 +107,10 @@ typedef enum dif_sram_ctrl_lock {
  * values or predictable data that could potentially make "unscrambling"
  * easier.
  *
- * This operation is expected to take a significant amount of CPU cycles. The
- * status can be checked via `dif_sram_ctrl_scramble_is_busy`, which is useful
- * when a non-blocking work flow is desirable. Otherwise any SRAM access will
- * automatically block until this operation has finished.
- *
- * The equivalent effect can be achieved by calling
- * `dif_sram_ctrl_request_new_key`, followed by `dif_sram_ctrl_wipe`.
+ * This operation is expected to take a significant amount of CPU cycles. If
+ * a non-blocking alternative is required, then `dif_sram_ctrl_request_new_key`,
+ * should be used followed by `dif_sram_ctrl_wipe`. The status of these
+ * operations can be found through `dif_sram_ctrl_get_status`.
  *
  * Note: when dealing with the Main RAM, additional implication is that the
  *       C runtime can be invalidated by the call to this function, and must be
@@ -124,19 +121,6 @@ typedef enum dif_sram_ctrl_lock {
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_sram_ctrl_scramble(const dif_sram_ctrl_t *sram_ctrl);
-
-/**
- * Checks whether SRAM scramble is still progress.
- *
- * Useful when a non-blocking work flow is desirable.
- *
- * @param sram_ctrl A SRAM Controller handle.
- * @param[out] is_busy Out-param for the busy state.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_sram_ctrl_scramble_is_busy(const dif_sram_ctrl_t *sram_ctrl,
-                                            bool *is_busy);
 
 /**
  * Requests a new scrambling key.

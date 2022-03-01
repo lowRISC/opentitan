@@ -64,6 +64,39 @@ static uint32_t sram_ctrl_get_status(const dif_sram_ctrl_t *sram_ctrl) {
   return mmio_region_read32(sram_ctrl->base_addr, SRAM_CTRL_STATUS_REG_OFFSET);
 }
 
+dif_result_t dif_sram_ctrl_scramble(const dif_sram_ctrl_t *sram_ctrl) {
+  if (sram_ctrl == NULL) {
+    return kDifBadArg;
+  }
+
+  if (sram_ctrl_locked_ctrl(sram_ctrl)) {
+    return kDifLocked;
+  }
+
+  // Issue request for new scrambling key.
+  uint32_t reg =
+      bitfield_bit32_write(0, SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT, true);
+  mmio_region_write32(sram_ctrl->base_addr, SRAM_CTRL_CTRL_REG_OFFSET, reg);
+
+  // Wait until the scrambling key has been updated.
+  dif_sram_ctrl_status_bitfield_t status;
+  do {
+    status = sram_ctrl_get_status(sram_ctrl);
+  } while ((status & kDifSramCtrlStatusScrKeyValid) == 0);
+
+  // Overwrite memory with pseudo random data.
+  reg = bitfield_bit32_write(0, SRAM_CTRL_CTRL_INIT_BIT, true);
+  mmio_region_write32(sram_ctrl->base_addr, SRAM_CTRL_CTRL_REG_OFFSET, reg);
+
+  // Wait for memory to be overwritten with pseudo random data.
+  do {
+    status = sram_ctrl_get_status(sram_ctrl);
+  } while ((status & kDifSramCtrlStatusInitDone) == 0);
+
+  // Check for the errors during memory overwriting.
+  return (status & kDifSramCtrlStatusInitErr) == 0 ? kDifOk : kDifError;
+}
+
 dif_result_t dif_sram_ctrl_request_new_key(const dif_sram_ctrl_t *sram_ctrl) {
   if (sram_ctrl == NULL) {
     return kDifBadArg;
