@@ -53,4 +53,4 @@ git+https://github.com/lowRISC/edalize.git@ot#egg=edalize >= 0.2.4
 # Prefer the archive download over a git clone to decrease installation time
 # (The chipwhisperer repository is rather large and uses additionally uses
 # submodules, which need to be fetched as well.)
-https://github.com/newaetech/chipwhisperer/archive/9b6825b495f14f85aae8b11007c63c59a1654584.tar.gz
+https://github.com/newaetech/chipwhisperer/archive/b81f4e7fb7438eec99ebc47fbe49a01d5b47dafd.tar.gz
