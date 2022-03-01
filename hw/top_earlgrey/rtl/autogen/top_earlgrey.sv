@@ -26,7 +26,7 @@ module top_earlgrey #(
   // parameters for pattgen
   // parameters for rv_timer
   // parameters for usbdev
-  parameter int UsbdevRcvrWakeTimeUs = 1,
+  parameter int UsbdevRcvrWakeTimeUs = 100,
   // parameters for otp_ctrl
   parameter OtpCtrlMemInitFile = "",
   // parameters for lc_ctrl
