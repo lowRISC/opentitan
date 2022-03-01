@@ -212,14 +212,11 @@ module clkmgr_reg_top (
   logic clk_hints_clk_main_hmac_hint_wd;
   logic clk_hints_clk_main_kmac_hint_qs;
   logic clk_hints_clk_main_kmac_hint_wd;
-  logic clk_hints_clk_io_div4_otbn_hint_qs;
-  logic clk_hints_clk_io_div4_otbn_hint_wd;
   logic clk_hints_clk_main_otbn_hint_qs;
   logic clk_hints_clk_main_otbn_hint_wd;
   logic clk_hints_status_clk_main_aes_val_qs;
   logic clk_hints_status_clk_main_hmac_val_qs;
   logic clk_hints_status_clk_main_kmac_val_qs;
-  logic clk_hints_status_clk_io_div4_otbn_val_qs;
   logic clk_hints_status_clk_main_otbn_val_qs;
   logic measure_ctrl_regwen_we;
   logic measure_ctrl_regwen_qs;
@@ -276,6 +273,7 @@ module clkmgr_reg_top (
   logic recov_err_code_usb_update_err_qs;
   logic recov_err_code_usb_update_err_wd;
   logic fatal_err_code_reg_intg_qs;
+  logic fatal_err_code_idle_cnt_qs;
   logic fatal_err_code_io_storage_err_qs;
   logic fatal_err_code_io_div2_storage_err_qs;
   logic fatal_err_code_io_div4_storage_err_qs;
@@ -833,32 +831,7 @@ module clkmgr_reg_top (
     .qs     (clk_hints_clk_main_kmac_hint_qs)
   );
 
-  //   F[clk_io_div4_otbn_hint]: 3:3
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h1)
-  ) u_clk_hints_clk_io_div4_otbn_hint (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (clk_hints_we),
-    .wd     (clk_hints_clk_io_div4_otbn_hint_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.clk_hints.clk_io_div4_otbn_hint.q),
-
-    // to register interface (read)
-    .qs     (clk_hints_clk_io_div4_otbn_hint_qs)
-  );
-
-  //   F[clk_main_otbn_hint]: 4:4
+  //   F[clk_main_otbn_hint]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -960,32 +933,7 @@ module clkmgr_reg_top (
     .qs     (clk_hints_status_clk_main_kmac_val_qs)
   );
 
-  //   F[clk_io_div4_otbn_val]: 3:3
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h1)
-  ) u_clk_hints_status_clk_io_div4_otbn_val (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.clk_hints_status.clk_io_div4_otbn_val.de),
-    .d      (hw2reg.clk_hints_status.clk_io_div4_otbn_val.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (clk_hints_status_clk_io_div4_otbn_val_qs)
-  );
-
-  //   F[clk_main_otbn_val]: 4:4
+  //   F[clk_main_otbn_val]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -2320,7 +2268,32 @@ module clkmgr_reg_top (
     .qs     (fatal_err_code_reg_intg_qs)
   );
 
-  //   F[io_storage_err]: 1:1
+  //   F[idle_cnt]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_fatal_err_code_idle_cnt (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fatal_err_code.idle_cnt.de),
+    .d      (hw2reg.fatal_err_code.idle_cnt.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.fatal_err_code.idle_cnt.q),
+
+    // to register interface (read)
+    .qs     (fatal_err_code_idle_cnt_qs)
+  );
+
+  //   F[io_storage_err]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -2345,7 +2318,7 @@ module clkmgr_reg_top (
     .qs     (fatal_err_code_io_storage_err_qs)
   );
 
-  //   F[io_div2_storage_err]: 2:2
+  //   F[io_div2_storage_err]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -2370,7 +2343,7 @@ module clkmgr_reg_top (
     .qs     (fatal_err_code_io_div2_storage_err_qs)
   );
 
-  //   F[io_div4_storage_err]: 3:3
+  //   F[io_div4_storage_err]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -2395,7 +2368,7 @@ module clkmgr_reg_top (
     .qs     (fatal_err_code_io_div4_storage_err_qs)
   );
 
-  //   F[main_storage_err]: 4:4
+  //   F[main_storage_err]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -2420,7 +2393,7 @@ module clkmgr_reg_top (
     .qs     (fatal_err_code_main_storage_err_qs)
   );
 
-  //   F[usb_storage_err]: 5:5
+  //   F[usb_storage_err]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -2526,9 +2499,7 @@ module clkmgr_reg_top (
 
   assign clk_hints_clk_main_kmac_hint_wd = reg_wdata[2];
 
-  assign clk_hints_clk_io_div4_otbn_hint_wd = reg_wdata[3];
-
-  assign clk_hints_clk_main_otbn_hint_wd = reg_wdata[4];
+  assign clk_hints_clk_main_otbn_hint_wd = reg_wdata[3];
   assign measure_ctrl_regwen_we = addr_hit[8] & reg_we & !reg_error;
 
   assign measure_ctrl_regwen_wd = reg_wdata[0];
@@ -2626,16 +2597,14 @@ module clkmgr_reg_top (
         reg_rdata_next[0] = clk_hints_clk_main_aes_hint_qs;
         reg_rdata_next[1] = clk_hints_clk_main_hmac_hint_qs;
         reg_rdata_next[2] = clk_hints_clk_main_kmac_hint_qs;
-        reg_rdata_next[3] = clk_hints_clk_io_div4_otbn_hint_qs;
-        reg_rdata_next[4] = clk_hints_clk_main_otbn_hint_qs;
+        reg_rdata_next[3] = clk_hints_clk_main_otbn_hint_qs;
       end
 
       addr_hit[7]: begin
         reg_rdata_next[0] = clk_hints_status_clk_main_aes_val_qs;
         reg_rdata_next[1] = clk_hints_status_clk_main_hmac_val_qs;
         reg_rdata_next[2] = clk_hints_status_clk_main_kmac_val_qs;
-        reg_rdata_next[3] = clk_hints_status_clk_io_div4_otbn_val_qs;
-        reg_rdata_next[4] = clk_hints_status_clk_main_otbn_val_qs;
+        reg_rdata_next[3] = clk_hints_status_clk_main_otbn_val_qs;
       end
 
       addr_hit[8]: begin
@@ -2677,11 +2646,12 @@ module clkmgr_reg_top (
 
       addr_hit[15]: begin
         reg_rdata_next[0] = fatal_err_code_reg_intg_qs;
-        reg_rdata_next[1] = fatal_err_code_io_storage_err_qs;
-        reg_rdata_next[2] = fatal_err_code_io_div2_storage_err_qs;
-        reg_rdata_next[3] = fatal_err_code_io_div4_storage_err_qs;
-        reg_rdata_next[4] = fatal_err_code_main_storage_err_qs;
-        reg_rdata_next[5] = fatal_err_code_usb_storage_err_qs;
+        reg_rdata_next[1] = fatal_err_code_idle_cnt_qs;
+        reg_rdata_next[2] = fatal_err_code_io_storage_err_qs;
+        reg_rdata_next[3] = fatal_err_code_io_div2_storage_err_qs;
+        reg_rdata_next[4] = fatal_err_code_io_div4_storage_err_qs;
+        reg_rdata_next[5] = fatal_err_code_main_storage_err_qs;
+        reg_rdata_next[6] = fatal_err_code_usb_storage_err_qs;
       end
 
       default: begin

@@ -16,8 +16,7 @@ package clkmgr_pkg;
     HintMainAes = 0,
     HintMainHmac = 1,
     HintMainKmac = 2,
-    HintIoDiv4Otbn = 3,
-    HintMainOtbn = 4
+    HintMainOtbn = 3
   } hint_names_e;
 
   // clocks generated and broadcast
@@ -36,7 +35,6 @@ package clkmgr_pkg;
     logic clk_main_hmac;
     logic clk_main_kmac;
     logic clk_main_otbn;
-    logic clk_io_div4_otbn;
     logic clk_io_div4_infra;
     logic clk_main_infra;
     logic clk_io_infra;
@@ -67,7 +65,6 @@ package clkmgr_pkg;
     prim_mubi_pkg::mubi4_t main_hmac;
     prim_mubi_pkg::mubi4_t main_kmac;
     prim_mubi_pkg::mubi4_t main_otbn;
-    prim_mubi_pkg::mubi4_t io_div4_otbn;
     prim_mubi_pkg::mubi4_t io_div4_infra;
     prim_mubi_pkg::mubi4_t main_infra;
     prim_mubi_pkg::mubi4_t io_infra;
@@ -82,15 +79,15 @@ package clkmgr_pkg;
     prim_mubi_pkg::mubi4_t io_peri;
   } clkmgr_cg_en_t;
 
-  parameter int NumOutputClk = 27;
+  parameter int NumOutputClk = 26;
 
 
   typedef struct packed {
-    logic [5-1:0] idle;
+    logic [4-1:0] idle;
   } clk_hint_status_t;
 
   parameter clk_hint_status_t CLK_HINT_STATUS_DEFAULT = '{
-    idle: {5{1'b1}}
+    idle: {4{1'b1}}
   };
 
 endpackage // clkmgr_pkg
