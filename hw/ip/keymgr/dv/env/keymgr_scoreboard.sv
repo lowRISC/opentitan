@@ -688,7 +688,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
           fork
             begin
               cfg.clk_rst_vif.wait_clks(1);
-              cfg.keymgr_vif.clear_sideload_key(`gmv(ral.sideload_clear.val));
+              cfg.keymgr_vif.clear_sideload_key(
+                  keymgr_pkg::keymgr_sideload_clr_e'(`gmv(ral.sideload_clear.val)));
             end
           join_none
         end
