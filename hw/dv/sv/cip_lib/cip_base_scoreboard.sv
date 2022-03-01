@@ -531,6 +531,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // check if csr write size greater or equal to csr width
   virtual function bit is_tl_csr_write_size_gte_csr_width(tl_seq_item item, string ral_name);
     if (!is_tl_access_mapped_addr(item, ral_name) || is_mem_addr(item, ral_name)) return 1;
+    if (cfg.ral_models[ral_name].get_supports_sub_word_csr_writes()) return 1;
     if (item.is_write()) begin
       dv_base_reg    csr;
       uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);

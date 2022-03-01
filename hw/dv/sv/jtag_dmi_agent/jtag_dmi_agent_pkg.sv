@@ -46,7 +46,7 @@ package jtag_dmi_agent_pkg;
   function automatic jtag_dmi_reg_block create_jtag_dmi_reg_block(jtag_agent_cfg cfg);
     jtag_dmi_reg_block jtag_dmi_ral = jtag_dmi_reg_block::type_id::create("jtag_dmi_ral");
     jtag_dmi_ral.build(.base_addr(0), .csr_excl(null));
-    jtag_dmi_ral.set_support_byte_enable(1'b0);
+    jtag_dmi_ral.set_supports_byte_enable(1'b0);
     jtag_dmi_ral.lock_model();
     jtag_dmi_ral.compute_mapped_addr_ranges();
     jtag_dmi_ral.compute_unmapped_addr_ranges();
