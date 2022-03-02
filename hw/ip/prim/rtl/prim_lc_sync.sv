@@ -47,10 +47,19 @@ module prim_lc_sync #(
       .q_o(lc_en)
     );
   end else begin : gen_no_flops
-    logic unused_clk;
-    logic unused_rst;
-    assign unused_clk = clk_i;
-    assign unused_rst = rst_ni;
+    // This unused companion logic helps remove lint errors
+    // for modules where clock and reset are used for assertions only
+    // or nothing at all.
+    // This logic will be removed for sythesis since it is unloaded.
+    lc_ctrl_pkg::lc_tx_t unused_logic;
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+         unused_logic <= lc_ctrl_pkg::Off;
+      end else begin
+         unused_logic <= lc_en_i;
+      end
+    end
+
     assign lc_en = lc_en_i;
   end
 
