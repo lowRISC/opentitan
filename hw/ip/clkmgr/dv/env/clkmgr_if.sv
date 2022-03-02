@@ -81,7 +81,7 @@ interface clkmgr_if (
 
   prim_mubi_pkg::mubi4_t extclk_ctrl_csr_step_down;
   always_comb begin
-     extclk_ctrl_csr_step_down = ~`CLKMGR_HIER.hi_speed_sel_o;
+     extclk_ctrl_csr_step_down = prim_mubi_pkg::mubi4_t'(~`CLKMGR_HIER.hi_speed_sel_o);
   end
 
   prim_mubi_pkg::mubi4_t jitter_enable_csr;
