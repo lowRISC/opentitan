@@ -22,6 +22,20 @@ foreach flag : cargo_flags_array
   cargo_flags += '--' + flag + ' '
 endforeach
 
+# CARGO FMT FLAGS:
+# These flags will only be used for checking code formatting
+cargo_fmt_flags_array = [
+  'verbose',
+  'all',
+  'manifest-path=' + manifest_path,
+  'check',
+]
+
+cargo_fmt_flag = ''
+foreach flag : cargo_fmt_flags_array
+  cargo_fmt_flag += '--' + flag + ' '
+endforeach
+
 # RUSTFLAGS:
 # These flags will apply to all the dependencies, as well as the final
 # binary. Linker and linker flavor amongst other things can be passed through
@@ -39,6 +53,7 @@ opentitansession = custom_target(
     cargo_invoke_cmd,
     cargo,
     cargo_flags,
+    cargo_fmt_flag,
     rust_flags,
     meson.project_source_root(),
     meson.project_build_root(),
