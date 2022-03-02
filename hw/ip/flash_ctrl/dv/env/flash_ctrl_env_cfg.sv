@@ -24,6 +24,18 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // Knob for blocking host reads
   bit block_host_rd = 1;
 
+  // Knob for scoreboard write and check on reads
+  bit scb_check = 0;
+
+  // Knob for scoreboard set expected alert
+  bit scb_set_exp_alert = 0;
+
+  // Max delay for alerts in clocks
+  uint alert_max_delay;
+
+  // A handle to the scoreboard
+  flash_ctrl_scoreboard scoreboard;
+
   // read data by host if
   data_q_t flash_rd_data;
 
@@ -63,6 +75,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
       end
     end
 
+    alert_max_delay = 20000;
     `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW)
   endfunction : initialize
 
