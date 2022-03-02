@@ -127,11 +127,18 @@ module ${mod_name} (
 ## registers, only one window and isn't marked asynchronous. In that case, add
 ## an unused_ signal to avoid lint warnings.
 % if not rb.all_regs and num_wins == 1 and not rb.async_if:
-  // Because we have no registers and only one window, this block is purely
-  // combinatorial. Mark the clk and reset inputs as unused.
-  logic unused_clk, unused_rst_n;
-  assign unused_clk = clk_i;
-  assign unused_rst_n = rst_ni;
+  // Add an unloaded flop to make use of clock / reset
+  // This is done to specifically address lint complaints of unused clocks/resets
+  // Since the flop is unloaded it will be removed during synthesis
+  logic unused_reg;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      unused_reg <= '0;
+    end else begin
+      unused_reg <= tl_i.a_valid;
+    end
+  end
+
 
 % endif
 % if rb.async_if:
@@ -369,12 +376,12 @@ ${field_sig_decl(f, sig_name, r.hwext, r.shadowed, r.async_clk)}\
 %>
       % if len(r.fields) > 1:
         % for f in r.fields:
-	  % if f.swaccess.allows_read():
+          % if f.swaccess.allows_read():
   logic ${str_arr_sv(f.bits)} ${base_name}_${r_name}_${f.name.lower()}_qs_int;
           % endif
         % endfor
       % else:
-	% if r.fields[0].swaccess.allows_read():
+        % if r.fields[0].swaccess.allows_read():
   logic ${str_arr_sv(r.fields[0].bits)} ${base_name}_${r_name}_qs_int;
         % endif
       % endif
@@ -395,14 +402,14 @@ ${field_sig_decl(f, sig_name, r.hwext, r.shadowed, r.async_clk)}\
     ${base_name}_${r_name}_d = '0;
       % if len(r.fields) > 1:
         % for f in r.fields:
-	  % if f.swaccess.allows_read():
+          % if f.swaccess.allows_read():
     ${base_name}_${r_name}_d[${str_bits_sv(f.bits)}] = ${base_name}_${r_name}_${f.name.lower()}_qs_int;
-	  % endif
+          % endif
         % endfor
       % else:
-	  % if f.swaccess.allows_read():
+          % if f.swaccess.allows_read():
     ${base_name}_${r_name}_d = ${base_name}_${r_name}_qs_int;
-	  % endif
+          % endif
       % endif
   end
 

@@ -7023,7 +7023,7 @@ module usbdev_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.wake_config.wake_en.qe),
+    .qe     (),
     .q      (reg2hw.wake_config.wake_en.q),
 
     // to register interface (read)

@@ -24,6 +24,9 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
+    files:
+      - lint/prim_double_lfsr.waiver
+    file_type: waiver
 
   files_veriblelint_waiver:
     depend:

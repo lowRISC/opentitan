@@ -206,6 +206,7 @@
             resval: 0,
           }
           { bits: "3"
+            hwaccess: "hwo",
             name: "SCR_KEY_VALID"
             desc: '''
                   Set to 1 if a new scrambling key has been successfully obtained from OTP.

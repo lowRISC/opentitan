@@ -176,11 +176,16 @@ module clkmgr_byp
   assign sw_step_down_req = sw_step_down_en;
 
   // combine requests
+  // mubi4_or_hi is not directly used in the always block because it causes confusion
+  // with the lint tool and makes it think `rst_ni` is not appropriately used for some
+  // reason.
+  mubi4_t step_down_req_d;
+  assign step_down_req_d = mubi4_or_hi(lc_step_down_req, sw_step_down_req);
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       step_down_req_o <= MuBi4False;
     end else begin
-      step_down_req_o <= mubi4_or_hi(lc_step_down_req, sw_step_down_req);
+      step_down_req_o <= step_down_req_d;
     end
   end
 

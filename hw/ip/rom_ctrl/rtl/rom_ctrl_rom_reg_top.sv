@@ -28,11 +28,18 @@ module rom_ctrl_rom_reg_top (
   import rom_ctrl_reg_pkg::* ;
 
 
-  // Because we have no registers and only one window, this block is purely
-  // combinatorial. Mark the clk and reset inputs as unused.
-  logic unused_clk, unused_rst_n;
-  assign unused_clk = clk_i;
-  assign unused_rst_n = rst_ni;
+  // Add an unloaded flop to make use of clock / reset
+  // This is done to specifically address lint complaints of unused clocks/resets
+  // Since the flop is unloaded it will be removed during synthesis
+  logic unused_reg;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      unused_reg <= '0;
+    end else begin
+      unused_reg <= tl_i.a_valid;
+    end
+  end
+
 
 
   // Since there are no registers in this block, commands are routed through to windows which
