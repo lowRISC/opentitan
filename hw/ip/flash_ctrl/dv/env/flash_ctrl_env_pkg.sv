@@ -170,9 +170,6 @@ package flash_ctrl_env_pkg;
   typedef bit [TL_DW-1:0] data_t;
   typedef bit [TL_AW-1:0] addr_t;
 
-  // types
-  typedef class flash_ctrl_scoreboard;
-
   // Parameter for Probing into the DUT RMA FSM
   parameter string PRB_RMA_FSM = "tb.dut.u_flash_hw_if.state_q";
   // Taken from enum type lcmgr_state_e in flash_ctrl_lcmgr.sv

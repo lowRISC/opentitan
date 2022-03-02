@@ -30,6 +30,19 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // Knob for scoreboard set expected alert
   bit scb_set_exp_alert = 0;
 
+  // Knob for scoreboard delete memory
+  bit scb_empty_mem = 0;
+
+  // Knob for Bank Erase
+  bit bank_erase_enable = 1;
+
+  // Parameters for set backdoor scb memory
+  bit                         scb_set_mem = 0;
+  int                         bkd_num_words;
+  flash_dv_part_e             bkd_partition;
+  bit             [TL_AW-1:0] write_bkd_addr;
+  bit             [TL_DW-1:0] set_bkd_val;
+
   // Max delay for alerts in clocks
   uint alert_max_delay;
 
@@ -147,7 +160,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     for (int i = 0; i < flash_op.num_words; i++) begin
       data[i] = mem_bkdr_util_h[flash_op.partition][addr_attrs.bank].read32(read_addr);
       `uvm_info(`gfn, $sformatf(
-                "flash_mem_bkdr_read: partition = %s, {%s} = 0x%0h",
+                "flash_mem_bkdr_read: partition = %s , {%s} = 0x%0h",
                 flash_op.partition.name(),
                 addr_attrs.sprint(),
                 data[i]
@@ -195,7 +208,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
       _flash_full_write(flash_op.partition, addr_attrs.bank, addr_attrs.bank_addr, loc_data);
 
       `uvm_info(`gfn, $sformatf(
-                "flash_mem_bkdr_write: partition = %s, {%s} = 0x%0h",
+                "flash_mem_bkdr_write: partition = %s , {%s} = 0x%0h",
                 flash_op.partition.name(),
                 addr_attrs.sprint(),
                 loc_data
@@ -321,7 +334,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     `uvm_info(`gfn, $sformatf(
               {
                 "flash_mem_bkdr_erase_check: Erase type = %s, bank = %0d, ",
-                "partition = %s, %snum_words = %0d"
+                "partition = %s , %snum_words = %0d"
               },
               flash_op.erase_type.name(),
               addr_attrs.bank,
@@ -336,7 +349,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
       `uvm_info(`gfn, $sformatf(
                 {
                   "flash_mem_bkdr_erase_check: Erase type = %s, bank: %0d, ",
-                  "partition: %s, %saddr: 0x%0h, data: 0x%0h"
+                  "partition: %s , %saddr: 0x%0h, data: 0x%0h"
                 },
                 flash_op.erase_type.name(),
                 addr_attrs.bank,

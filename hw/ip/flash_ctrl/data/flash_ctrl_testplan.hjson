@@ -144,7 +144,7 @@
             region wins arbitration. Covergroup is region_range_cg.
             '''
       milestone: V2
-      tests: []
+      tests: ["flash_ctrl_mp_regions"]
     }
     {
       name: fetch_code

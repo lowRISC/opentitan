@@ -207,7 +207,7 @@ class flash_ctrl_scoreboard #(
               // `uvm_fatal(`gfn, $sformatf("CSR access not processed: %0s", csr.get_full_name()))
             end
           endcase
-          // On reads, if do_read_check, is set, then check mirrored_value against item.d_data     
+          // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
           if (do_read_check) begin
             `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data, $sformatf(
                          "reg name: %0s", csr.get_full_name()))
