@@ -199,7 +199,9 @@ module otbn_core_model
     end
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
+  // Note: This can't be an always_ff block because we write to model_state here and also in an
+  // initial block (see declaration of the variable above)
+  always @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       otbn_model_reset(model_handle);
       model_state <= 0;
