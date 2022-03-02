@@ -150,7 +150,7 @@ module otbn
     .clk_i,
     .rst_ni,
     .lc_en_i(lc_escalate_en_i),
-    .lc_en_o(lc_escalate_en)
+    .lc_en_o({lc_escalate_en})
   );
 
   // Reduce the life cycle escalation signal to a single bit to be used within this cycle.
