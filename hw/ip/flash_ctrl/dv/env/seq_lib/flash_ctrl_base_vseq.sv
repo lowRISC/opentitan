@@ -28,6 +28,9 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   // Determine post-reset initialization method.
   rand flash_mem_init_e flash_init;
 
+  // rand data for program
+  rand data_q_t flash_program_data;
+
   // default region cfg
   flash_mp_region_cfg_t default_region_cfg = '{
       default: 1,
@@ -60,7 +63,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task pre_start();
     `uvm_create_on(callback_vseq, p_sequencer);
-    otp_model();  // Start OTP Model
+    //otp_model();  // Start OTP Model
     super.pre_start();
   endtask : pre_start
 
@@ -112,7 +115,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     uvm_reg_data_t data;
     uvm_reg csr;
     data =
-        get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].en, data, region_cfg.en);
+         get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].en, data, region_cfg.en);
     data = data | get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].rd_en, data,
                                                  region_cfg.read_en);
     data = data | get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].prog_en, data,
@@ -138,12 +141,12 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
                                              bit scramble_en = 0, bit ecc_en = 0, bit he_en = 0);
     uvm_reg_data_t data;
     data = get_csr_val_with_updated_field(ral.default_region_shadowed.rd_en, data, read_en);
-    data = data |
-        get_csr_val_with_updated_field(ral.default_region_shadowed.prog_en, data, program_en);
-    data = data |
-        get_csr_val_with_updated_field(ral.default_region_shadowed.erase_en, data, erase_en);
-    data = data |
-        get_csr_val_with_updated_field(ral.default_region_shadowed.scramble_en, data, scramble_en);
+    data = data | get_csr_val_with_updated_field(ral.default_region_shadowed.prog_en, data,
+                                                 program_en);
+    data = data | get_csr_val_with_updated_field(ral.default_region_shadowed.erase_en, data,
+                                                 erase_en);
+    data = data | get_csr_val_with_updated_field(ral.default_region_shadowed.scramble_en, data,
+                                                 scramble_en);
     data = data | get_csr_val_with_updated_field(ral.default_region_shadowed.ecc_en, data, ecc_en);
     data = data | get_csr_val_with_updated_field(ral.default_region_shadowed.he_en, data, he_en);
     csr_wr(.ptr(ral.default_region_shadowed), .value(data));
@@ -166,18 +169,18 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     end
     csr = ral.get_reg_by_name(csr_name);
     data = get_csr_val_with_updated_field(csr.get_field_by_name("en"), data, page_cfg.en);
-    data = data |
-        get_csr_val_with_updated_field(csr.get_field_by_name("rd_en"), data, page_cfg.read_en);
-    data = data |
-        get_csr_val_with_updated_field(csr.get_field_by_name("prog_en"), data, page_cfg.program_en);
-    data = data |
-        get_csr_val_with_updated_field(csr.get_field_by_name("erase_en"), data, page_cfg.erase_en);
+    data = data | get_csr_val_with_updated_field(csr.get_field_by_name("rd_en"), data,
+                                                 page_cfg.read_en);
+    data = data | get_csr_val_with_updated_field(csr.get_field_by_name("prog_en"), data,
+                                                 page_cfg.program_en);
+    data = data | get_csr_val_with_updated_field(csr.get_field_by_name("erase_en"), data,
+                                                 page_cfg.erase_en);
     data = data | get_csr_val_with_updated_field(csr.get_field_by_name("scramble_en"), data,
                                                  page_cfg.scramble_en);
-    data = data |
-        get_csr_val_with_updated_field(csr.get_field_by_name("ecc_en"), data, page_cfg.ecc_en);
-    data = data |
-        get_csr_val_with_updated_field(csr.get_field_by_name("he_en"), data, page_cfg.he_en);
+    data = data | get_csr_val_with_updated_field(csr.get_field_by_name("ecc_en"), data,
+                                                 page_cfg.ecc_en);
+    data = data | get_csr_val_with_updated_field(csr.get_field_by_name("he_en"), data,
+                                                 page_cfg.he_en);
     csr_wr(.ptr(csr), .value(data));
   endtask : flash_ctrl_mp_info_page_cfg
 
@@ -931,5 +934,56 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en     = val;
     end
   endtask : en_sw_rw_part_info
+
+  // Controller read page.
+  virtual task controller_read_page(flash_op_t flash_op_r);
+    data_q_t flash_read_data;
+    bit poll_fifo_status = 1;
+    flash_op_r.op = flash_ctrl_pkg::FlashOpRead;
+    flash_op_r.num_words = 16;
+    flash_op_r.addr = {flash_op_r.addr[19:11], {11{1'b0}}};
+    for (int i = 0; i < 32; i++) begin
+      flash_ctrl_start_op(flash_op_r);
+      flash_ctrl_read(flash_op_r.num_words, flash_read_data, poll_fifo_status);
+      wait_flash_op_done();
+      flash_op_r.addr = flash_op_r.addr + 64; //64B was read, 16 words
+    end
+  endtask : controller_read_page
+
+  // Controller program page.
+  virtual task controller_program_page(flash_op_t flash_op_p);
+    bit poll_fifo_status = 1;
+    flash_op_p.op = flash_ctrl_pkg::FlashOpProgram;
+    flash_op_p.num_words = 16;
+    flash_op_p.addr = {flash_op_p.addr[19:11], {11{1'b0}}};
+    for (int i = 0; i < 32; i++) begin
+      `uvm_info(`gfn, $sformatf("PROGRAM ADDRESS: 0x%0h", flash_op_p.addr), UVM_HIGH)
+      // Randomize Write Data
+      `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(flash_program_data,
+                                            flash_program_data.size == flash_op_p.num_words;)
+      cfg.flash_mem_bkdr_write(.flash_op(flash_op_p), .scheme(FlashMemInitSet));
+      flash_ctrl_start_op(flash_op_p);
+      flash_ctrl_write(flash_program_data, poll_fifo_status);
+      wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
+      flash_op_p.addr = flash_op_p.addr + 64; //64B was written, 16 words
+    end
+  endtask : controller_program_page
+
+  virtual task reset_scb_mem();
+    cfg.scb_empty_mem = 1;
+    cfg.clk_rst_vif.wait_clks(1);
+    cfg.scb_empty_mem = 0;
+  endtask : reset_scb_mem
+
+  virtual task set_scb_mem(int bkd_num_words,flash_dv_part_e bkd_partition,
+                         bit [TL_AW-1:0] write_bkd_addr,bit [TL_DW-1:0] set_bkd_val);
+    cfg.bkd_num_words  = bkd_num_words;
+    cfg.bkd_partition  = bkd_partition;
+    cfg.write_bkd_addr = write_bkd_addr;
+    cfg.set_bkd_val    = set_bkd_val;
+    `uvm_info(`gfn, $sformatf("SET SCB MEM TEST part: %0s addr:%0h data:0x%0h num: %0d",
+                             bkd_partition.name,write_bkd_addr,set_bkd_val,bkd_num_words),UVM_HIGH)
+    cfg.clk_rst_vif.wait_clks(1);
+  endtask : set_scb_mem
 
 endclass : flash_ctrl_base_vseq
