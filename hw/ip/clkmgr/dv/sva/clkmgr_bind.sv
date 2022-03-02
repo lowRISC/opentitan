@@ -92,7 +92,7 @@ module clkmgr_bind;
     .clk(clocks_o.clk_main_powerup),
     .rst_n(rst_main_ni),
     .ip_clk_en(pwr_i.main_ip_clk_en),
-    .sw_clk_en(reg2hw.clk_hints.clk_main_otbn_hint.q || !idle_i[4]),
+    .sw_clk_en(reg2hw.clk_hints.clk_main_otbn_hint.q || !idle_i[3]),
     .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
     .gated_clk(clocks_o.clk_main_otbn)
   );

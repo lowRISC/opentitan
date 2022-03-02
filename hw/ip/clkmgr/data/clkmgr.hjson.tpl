@@ -110,6 +110,13 @@
       package: "prim_mubi_pkg",
     },
 
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "div_step_down_req",
+      act:     "rcv",
+      package: "prim_mubi_pkg",
+    },
+
     { struct:  "lc_tx",
       type:    "uni",
       name:    "lc_clk_byp_req",
@@ -166,6 +173,9 @@
     { name: "MEAS.CLK.BKGN_CHK",
       desc: "Background check for clock frequency."
     },
+    { name: "IDLE.INTERSIG.MUBI",
+      desc: "Idle inputs are multibit encoded."
+    }
     { name: "LC_CTRL.INTERSIG.MUBI",
       desc: "The life cycle control signals are multibit encoded."
     }
@@ -175,8 +185,14 @@
     { name: "CLK_HANDSHAKE.INTERSIG.MUBI",
       desc: "The external clock req/ack signals are multibit encoded."
     }
+    { name: "DIV.INTERSIG.MUBI",
+      desc: "Divider step down request is multibit encoded."
+    }
     { name: "JITTER.CONFIG.MUBI",
       desc: "The jitter enable configuration is multibit encoded."
+    }
+    { name: "IDLE.CTR.REDUN",
+      desc: "Idle counter is duplicated."
     }
     { name: "MEAS.CONFIG.REGWEN",
       desc: "The measurement controls protected with regwen."

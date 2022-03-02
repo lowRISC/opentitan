@@ -59,6 +59,7 @@
   input prim_mubi_pkg::mubi4_t scanmode_i,
 
   // idle hints
+  // SEC_CM: IDLE.INTERSIG.MUBI
   input prim_mubi_pkg::mubi4_t [3:0] idle_i,
 
   // life cycle state output
@@ -78,8 +79,12 @@
   input mubi4_t all_clk_byp_ack_i,
   output mubi4_t hi_speed_sel_o,
 
-  // jittery enable
+  // jittery enable to ast
   output mubi4_t jitter_en_o,
+
+  // external indication for whether dividers should be stepped down
+  // SEC_CM: DIV.INTERSIG.MUBI
+  input mubi4_t div_step_down_req_i,
 
   // clock gated indications going to alert handlers
   output clkmgr_cg_en_t cg_en_o,
@@ -97,7 +102,6 @@
   // Divided clocks
   ////////////////////////////////////////////////////
 
-  mubi4_t step_down_req;
   logic [1:0] step_down_acks;
 
   logic clk_io_div2_i;
@@ -112,7 +116,7 @@
   ) u_io_step_down_req_sync (
     .clk_i(clk_io_i),
     .rst_ni(rst_io_ni),
-    .mubi_i(step_down_req),
+    .mubi_i(div_step_down_req_i),
     .mubi_o(io_step_down_req)
   );
 
@@ -261,14 +265,15 @@
     .lc_clk_byp_req_i,
     .lc_clk_byp_ack_o,
     .byp_req_i(mubi4_t'(reg2hw.extclk_ctrl.sel.q)),
+    .hi_speed_sel_i(mubi4_t'(reg2hw.extclk_ctrl.hi_speed_sel.q)),
     .all_clk_byp_req_o,
     .all_clk_byp_ack_i,
     .io_clk_byp_req_o,
     .io_clk_byp_ack_i,
+    .hi_speed_sel_o,
 
     // divider step down controls
-    .step_down_acks_i(step_down_acks),
-    .step_down_req_o(step_down_req)
+    .step_down_acks_i(step_down_acks)
   );
 
   ////////////////////////////////////////////////////
@@ -1155,9 +1160,6 @@
 
   // SEC_CM: JITTER.CONFIG.MUBI
   assign jitter_en_o = mubi4_t'(reg2hw.jitter_enable.q);
-
-
-  assign hi_speed_sel_o = mubi4_t'(reg2hw.extclk_ctrl.hi_speed_sel.q);
 
   ////////////////////////////////////////////////////
   // Exported clocks
