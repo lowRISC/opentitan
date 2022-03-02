@@ -52,7 +52,7 @@ typedef struct plic_isr_ctx {
        * Whether or not a single IRQ is expected to be encountered in the ISR.
        */
       bool is_only_irq;
-    } ${ip.name_snake}_isr_ctx;
+    } ${ip.name_snake}_isr_ctx_t;
 
   % endif
 % endfor
@@ -69,7 +69,7 @@ typedef struct plic_isr_ctx {
      */
     void isr_testutils_${ip.name_snake}_isr(
       plic_isr_ctx_t plic_ctx,
-      ${ip.name_snake}_isr_ctx ${ip.name_snake}_ctx,
+      ${ip.name_snake}_isr_ctx_t ${ip.name_snake}_ctx,
       top_earlgrey_plic_peripheral_t *peripheral_serviced,
       dif_${ip.name_snake}_irq_t *irq_serviced);
 
