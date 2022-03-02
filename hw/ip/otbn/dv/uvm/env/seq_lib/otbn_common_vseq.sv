@@ -67,16 +67,16 @@ class otbn_common_vseq extends otbn_base_vseq;
 
   virtual function void inject_intg_fault_in_passthru_mem(dv_base_mem mem,
                                                           bit [bus_params_pkg::BUS_AW-1:0] addr);
-    logic [127:0] key;
-    logic [63:0]  nonce;
-    bit [38:0]    flip_bits;
+    logic [otp_ctrl_pkg::OtbnKeyWidth-1:0]   key;
+    logic [otp_ctrl_pkg::OtbnNonceWidth-1:0] nonce;
+    bit [BaseIntgWidth-1:0]                  flip_bits;
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(
         flip_bits,
         $countones(flip_bits) inside {[1:cip_base_pkg::MAX_TL_ECC_ERRORS]};)
 
     if(mem.get_name() == "imem") begin
-      bit [38:0] rdata;
+      bit [BaseIntgWidth-1:0] rdata;
 
       key   = cfg.get_imem_key();
       nonce = cfg.get_imem_nonce();
@@ -88,21 +88,21 @@ class otbn_common_vseq extends otbn_base_vseq;
       cfg.write_imem_word(addr / 4, rdata, key, nonce, flip_bits);
     end
     else begin
-      bit [311:0] rdata;
-      bit [311:0] rep_flip_bits;
+      bit [ExtWLEN-1:0] rdata;
+      bit [ExtWLEN-1:0] rep_flip_bits;
 
-      rep_flip_bits = {8{flip_bits}};
+      rep_flip_bits = {BaseWordsPerWLEN{flip_bits}};
 
       key   = cfg.get_dmem_key();
       nonce = cfg.get_dmem_nonce();
-      rdata = cfg.read_dmem_word(addr / 32, key, nonce);
+      rdata = cfg.read_dmem_word(addr / (4 * BaseWordsPerWLEN), key, nonce);
 
       `uvm_info(`gfn,
                 $sformatf("Backdoor change DMEM (addr 0x%0h) value 0x%0h by flipping bits %0h",
                           addr, rdata, rep_flip_bits),
                 UVM_LOW)
 
-      cfg.write_dmem_word(addr / 32, rdata, key, nonce, flip_bits);
+      cfg.write_dmem_word(addr / (4 * BaseWordsPerWLEN), rdata, key, nonce, flip_bits);
     end
 
   endfunction
