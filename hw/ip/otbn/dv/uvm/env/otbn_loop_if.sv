@@ -111,7 +111,7 @@ interface otbn_loop_if (
       lengths.delete();
     end else begin
       if (current_loop_finish && lengths.size()) begin
-        lengths.pop_front();
+        void'(lengths.pop_front());
       end
       if (loop_start_req_i && loop_start_commit_i) begin
         lengths.push_front(loop_iterations_i);
