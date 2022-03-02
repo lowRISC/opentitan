@@ -1040,6 +1040,44 @@ cc_test(
 )
 
 cc_library(
+    name = "pwm",
+    srcs = [
+        "autogen/dif_pwm_autogen.c",
+        "autogen/dif_pwm_autogen.h",
+        "dif_pwm.c",
+    ],
+    hdrs = [
+        "dif_pwm.h",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/pwm/data:pwm_regs",
+        "//sw/device/lib/base",
+    ],
+)
+
+cc_test(
+    name = "pwm_unittest",
+    srcs = [
+        "autogen/dif_pwm_autogen.c",
+        "autogen/dif_pwm_autogen.h",
+        "autogen/dif_pwm_autogen_unittest.cc",
+        "dif_pwm.c",
+        "dif_pwm.h",
+    ],
+    defines = [
+        "MOCK_MMIO=1",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/pwm/data:pwm_regs",
+        "//sw/device/lib/base",
+        "//sw/device/lib/base/testing",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "sram_ctrl",
     srcs = [
         "autogen/dif_sram_ctrl_autogen.c",

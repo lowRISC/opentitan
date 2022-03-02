@@ -1069,3 +1069,38 @@ test('dif_pattgen_unittest', executable(
   ),
   suite: 'dif',
 )
+
+# PWM DIF library
+sw_lib_dif_pwm = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_pwm',
+    sources: [
+      hw_ip_pwm_reg_h,
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_bitfield,
+      sw_lib_dif_autogen_pwm,
+    ],
+  )
+)
+
+test('dif_pwm_unittest', executable(
+    'dif_pwm_unittest',
+    sources: [
+      'dif_pwm_unittest.cc',
+      'autogen/dif_pwm_autogen_unittest.cc',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_pwm.c',
+      meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_pwm_autogen.c',
+      hw_ip_pwm_reg_h,
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
+)

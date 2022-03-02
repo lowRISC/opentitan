@@ -24,7 +24,7 @@
  * |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-| ... |-|-|-|-|
  *
  * |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-| ... |-|-|-|-|
- * min beat size = 1 phase counter ticks --> 2^16 "beats" / "pulse cycle"
+ * min beat size = 1 phase counter tick --> 2^16 "beats" / "pulse cycle"
  *
  * |---------------------------------------------- ... | ... --|
  *    max beat size = 2^15 phase counter ticks --> 2 "beats" / "pulse cycle"
@@ -128,11 +128,11 @@ typedef enum dif_pwm_polarity {
   /**
    * A PWM signal is active-high.
    */
-  kDifPwmActiveHigh = 0,
+  kDifPwmPolarityActiveHigh = 0,
   /**
    * A PWM signal is active-low.
    */
-  kDifPwmActiveLow = 1,
+  kDifPwmPolarityActiveLow = 1,
 } dif_pwm_polarity_t;
 
 /**
@@ -143,14 +143,9 @@ typedef enum dif_pwm_polarity {
  */
 typedef struct dif_pwm_channel_config {
   /**
-   * Phase delay at the beginning of a "pulse cycle" to delay the active
-   * duty cycle "beats" for.
-   */
-  uint16_t phase_delay;
-  /**
    * Primary duty cycle, in number of "beats" / "pulse cycle".
    *
-   * Valid range: [0, beats_per_cycle)
+   * Valid range: [0, beats_per_pulse_cycle)
    *
    * Note: the raw value written to the `A_*` bitfield in each PWM channel's
    *       `DUTY_CYCLE_*` CSR is in units of "phase counter ticks", not "beats".
@@ -158,18 +153,25 @@ typedef struct dif_pwm_channel_config {
    *       MSBs of the raw duty cycle value to determine the number of "beats"
    *       for a given duty cycle. To make this configuration easier, the
    *       software manages the conversion from "beats_per_cycle" to
-   *       "phase_counter_ticks". under the hood.
+   *       "phase_counter_ticks" under the hood.
    */
   uint16_t duty_cycle_a;
   /**
    * Secondary duty cycle, in number of "beats" / "pulse cycle", that is only
    * relevant in heartbeat and blink modes.
    *
-   * Valid range: [0, beats_per_cycle)
+   * Valid range: [0, beats_per_pulse_cycle)
    *
-   * Note: above note for `duty_cycle_a` applies here too.
+   * Note: above notes for `duty_cycle_a` apply here too.
    */
   uint16_t duty_cycle_b;
+  /**
+   * Phase delay at the beginning of a "pulse cycle" to delay the active
+   * duty cycle "beats" for, in number of "beats".
+   *
+   * Valid range: [0, beats_per_pulse_cycle)
+   */
+  uint16_t phase_delay;
   /**
    * The operation mode to configure the channel in, see `dif_pwm_mode_t`.
    */
@@ -243,9 +245,10 @@ dif_result_t dif_pwm_configure(const dif_pwm_t *pwm, dif_pwm_config_t config);
  * @param config Runtime configuration parameters for the channel.
  * @return The result of the operation.
  */
-OT_WARN_UNUSED_RESULT dif_result_t
-dif_pwm_channel_configure(const dif_pwm_t *pwm, dif_pwm_channel_t channel,
-                          dif_pwm_channel_config_t config);
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_pwm_configure_channel(const dif_pwm_t *pwm,
+                                       dif_pwm_channel_t channel,
+                                       dif_pwm_channel_config_t config);
 
 /**
  * Sets the enablement state of the PWM phase counter, which controls the

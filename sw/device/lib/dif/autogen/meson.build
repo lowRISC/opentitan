@@ -287,6 +287,21 @@ sw_lib_dif_autogen_pinmux = declare_dependency(
   )
 )
 
+# Autogen PWM DIF library
+sw_lib_dif_autogen_pwm = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_pwm',
+    sources: [
+      hw_ip_pwm_reg_h,
+      'dif_pwm_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_dif_base,
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # Autogen Power Manager DIF library
 sw_lib_dif_autogen_pwrmgr = declare_dependency(
   link_with: static_library(

@@ -1,0 +1,159 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+#include "sw/device/lib/dif/dif_pwm.h"
+
+#include <assert.h>
+
+#include "sw/device/lib/base/bitfield.h"
+
+#include "pwm_regs.h"  // Generated.
+
+static_assert(PWM_PARAM_N_OUTPUTS == 6,
+              "Expected six PWM channels. May need to update `dif_pwm.h`");
+static_assert(PWM_CFG_DC_RESN_MASK == 0xf,
+              "Expected duty cycle configuration register to be 4 bits.");
+
+dif_result_t dif_pwm_configure(const dif_pwm_t *pwm, dif_pwm_config_t config) {
+  if (pwm == NULL || config.clock_divisor > PWM_CFG_CLK_DIV_MASK ||
+      config.beats_per_pulse_cycle < 2 ||
+      config.beats_per_pulse_cycle > (1U << 16)) {
+    return kDifBadArg;
+  }
+
+  if (!mmio_region_read32(pwm->base_addr, PWM_REGWEN_REG_OFFSET)) {
+    return kDifLocked;
+  }
+
+  // We do a read-modify-write to restore the enablement state of the phase
+  // counter enablement bit, after temporarily disabling it to update the
+  // other configuration register fields.
+  uint32_t config_reg = mmio_region_read32(pwm->base_addr, PWM_CFG_REG_OFFSET);
+  config_reg = bitfield_field32_write(config_reg, PWM_CFG_CLK_DIV_FIELD,
+                                      config.clock_divisor);
+
+  // Since `beats_per_pulse_cycle` = 2 ^ (`duty_cycle_resolution` + 1), we can
+  // compute the duty cycle resolution by:
+  //
+  // `DC_RESN` = log2(`beats_per_pulse_cycle`) - 1
+  //
+  // To compute the log2, we can find the index of the most-significant 1-bit,
+  // the lastly, substract 1.
+  uint32_t dc_resn_val =
+      30 - bitfield_count_leading_zeroes32(config.beats_per_pulse_cycle);
+  config_reg =
+      bitfield_field32_write(config_reg, PWM_CFG_DC_RESN_FIELD, dc_resn_val);
+
+  // Clear the phase counter enable bit before updating the register.
+  mmio_region_write32(pwm->base_addr, PWM_CFG_REG_OFFSET, 0);
+  mmio_region_write32(pwm->base_addr, PWM_CFG_REG_OFFSET, config_reg);
+
+  return kDifOk;
+}
+
+dif_result_t dif_pwm_configure_channel(const dif_pwm_t *pwm,
+                                       dif_pwm_channel_t channel,
+                                       dif_pwm_channel_config_t config) {
+  if (pwm == NULL || (config.polarity != kDifPwmPolarityActiveHigh &&
+                      config.polarity != kDifPwmPolarityActiveLow)) {
+    return kDifBadArg;
+  }
+
+  if (!mmio_region_read32(pwm->base_addr, PWM_REGWEN_REG_OFFSET)) {
+    return kDifLocked;
+  }
+
+  // Configure duty cycle register.
+
+  // Get "beats_per_pulse_cycle" from the PWM config register.
+  // There are 2 ^ (`duty_cycle_resolution` + 1) "beats" per "pulse cycle".
+  uint8_t duty_cycle_resolution = bitfield_field32_read(
+      mmio_region_read32(pwm->base_addr, PWM_CFG_REG_OFFSET),
+      PWM_CFG_DC_RESN_FIELD);
+  uint32_t beats_per_pulse_cycle = 1U << (duty_cycle_resolution + 1);
+
+  // Check duty cycle and phase delay configurations.
+  if (config.duty_cycle_a >= beats_per_pulse_cycle ||
+      config.duty_cycle_b >= beats_per_pulse_cycle ||
+      config.phase_delay >= beats_per_pulse_cycle) {
+    return kDifBadArg;
+  }
+
+  // There are 2 ^ 16 "phase counter ticks" in one "pulse cycle", and therefore
+  // 2 ^ (16 - `duty_cycle_resolution` - 1) "phase counter ticks" in one "beat".
+  uint16_t phase_cntr_ticks_per_beat = 1U << (16 - duty_cycle_resolution - 1);
+  uint32_t duty_cycle_reg =
+      bitfield_field32_write(0, PWM_DUTY_CYCLE_0_A_0_FIELD,
+                             phase_cntr_ticks_per_beat * config.duty_cycle_a);
+  duty_cycle_reg =
+      bitfield_field32_write(duty_cycle_reg, PWM_DUTY_CYCLE_0_B_0_FIELD,
+                             phase_cntr_ticks_per_beat * config.duty_cycle_b);
+
+  // Configure parameter register.
+  uint32_t param_reg =
+      bitfield_field32_write(0, PWM_PWM_PARAM_0_PHASE_DELAY_0_FIELD,
+                             phase_cntr_ticks_per_beat * config.phase_delay);
+  if (config.mode == kDifPwmModeHeartbeat) {
+    param_reg =
+        bitfield_bit32_write(param_reg, PWM_PWM_PARAM_0_HTBT_EN_0_BIT, true);
+  } else if (config.mode == kDifPwmModeBlink) {
+    param_reg =
+        bitfield_bit32_write(param_reg, PWM_PWM_PARAM_0_BLINK_EN_0_BIT, true);
+  }
+
+  // Configure polarity register.
+  uint32_t invert_reg =
+      mmio_region_read32(pwm->base_addr, PWM_INVERT_REG_OFFSET);
+
+  // Configure blink mode parameter register.
+  uint32_t blink_param_reg = 0;
+  if (config.mode == kDifPwmModeHeartbeat || config.mode == kDifPwmModeBlink) {
+    blink_param_reg = bitfield_field32_write(
+        blink_param_reg, PWM_BLINK_PARAM_0_X_0_FIELD, config.blink_parameter_x);
+    if (config.mode == kDifPwmModeHeartbeat) {
+      if (config.blink_parameter_y >= beats_per_pulse_cycle) {
+        return kDifBadArg;
+      }
+      // Convert "beats" to "phase counter ticks", since this value is added to
+      // the duty cycle (which hardware computes in "phase counter ticks").
+      blink_param_reg = bitfield_field32_write(
+          blink_param_reg, PWM_BLINK_PARAM_0_Y_0_FIELD,
+          phase_cntr_ticks_per_beat * config.blink_parameter_y);
+    } else if (config.mode == kDifPwmModeBlink) {
+      blink_param_reg =
+          bitfield_field32_write(blink_param_reg, PWM_BLINK_PARAM_0_Y_0_FIELD,
+                                 config.blink_parameter_y);
+    }
+  } else if (config.mode != kDifPwmModeFirmware) {
+    return kDifBadArg;
+  }
+
+#define PWM_CHANNEL_CONFIG_CASE_(channel_)                                     \
+  case kDifPwmChannel##channel_:                                               \
+    invert_reg = bitfield_bit32_write(                                         \
+        invert_reg, PWM_INVERT_INVERT_##channel_##_BIT, config.polarity);      \
+    mmio_region_write32(pwm->base_addr,                                        \
+                        PWM_DUTY_CYCLE_##channel_##_REG_OFFSET,                \
+                        duty_cycle_reg);                                       \
+    mmio_region_write32(pwm->base_addr, PWM_PWM_PARAM_##channel_##_REG_OFFSET, \
+                        param_reg);                                            \
+    if (config.mode == kDifPwmModeHeartbeat ||                                 \
+        config.mode == kDifPwmModeBlink) {                                     \
+      mmio_region_write32(pwm->base_addr,                                      \
+                          PWM_BLINK_PARAM_##channel_##_REG_OFFSET,             \
+                          blink_param_reg);                                    \
+    }                                                                          \
+    break;
+
+  switch (channel) {
+    LIST_OF_CHANNELS(PWM_CHANNEL_CONFIG_CASE_)
+    default:
+      return kDifBadArg;
+  }
+#undef PWM_CHANNEL_CONFIG_CASE_
+
+  mmio_region_write32(pwm->base_addr, PWM_INVERT_REG_OFFSET, invert_reg);
+
+  return kDifOk;
+}
