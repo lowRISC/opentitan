@@ -39,14 +39,6 @@ interface otbn_model_if
     end
   endtask
 
-  // Start model by setting start for a cycle. Waits until not in reset.
-  task automatic start_model();
-    wait(rst_ni);
-    start = 1'b1;
-    @(posedge clk_i or negedge rst_ni);
-    start = 1'b0;
-  endtask
-
   // Mark the entirety of IMEM as invalid
   //
   // Call this on a negedge of clk_i to ensure sequencing with the otbn_model_step on the following
