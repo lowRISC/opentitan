@@ -10,7 +10,7 @@ module aes_idle_check
  input logic               clk_i,
  input logic               rst_ni,
  input aes_reg2hw_t        reg2hw,
- input logic               idle_i
+ input prim_mubi_pkg::mubi4_t idle_i
  );
 
 
@@ -20,5 +20,5 @@ module aes_idle_check
   assign idle = (reg2hw.status.idle.q == 1'b1);
 
   // make sure idle_i always matched the register idle state
-  `ASSERT(IdleNotIdle_A, idle == idle_i);
+  `ASSERT(IdleNotIdle_A, prim_mubi_pkg::mubi4_bool_to_mubi(idle) == idle_i);
 endmodule

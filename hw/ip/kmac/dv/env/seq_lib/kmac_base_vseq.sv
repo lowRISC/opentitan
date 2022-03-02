@@ -280,7 +280,7 @@ class kmac_base_vseq extends cip_base_vseq #(
   virtual task kmac_init(bit wait_init = 1);
     // Wait for KMAC to reach idle state
     if (wait_init) begin
-      wait (cfg.kmac_vif.idle_o == 1);
+      wait (cfg.kmac_vif.idle_o == prim_mubi_pkg::MuBi4True);
       `uvm_info(`gfn, "reached idle state", UVM_HIGH)
     end
 

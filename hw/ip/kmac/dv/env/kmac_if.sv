@@ -6,7 +6,7 @@ interface kmac_if(input clk_i, input rst_ni);
 
   lc_ctrl_pkg::lc_tx_t lc_escalate_en_i;
 
-  logic idle_o;
+  prim_mubi_pkg::mubi4_t idle_o;
   logic en_masking_o;
   logic [kmac_pkg::NumAppIntf-1:0] app_err_o;
 
