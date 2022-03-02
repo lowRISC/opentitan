@@ -12,7 +12,7 @@ import hjson
 from tabulate import tabulate
 
 from OneShotCfg import OneShotCfg
-from utils import VERBOSE, print_msg_list, subst_wildcards
+from utils import print_msg_list, subst_wildcards
 
 
 class SynCfg(OneShotCfg):
@@ -253,11 +253,10 @@ class SynCfg(OneShotCfg):
 
                         for field in ["comb", "buf", "reg", "logic", "macro", "total"]:
                             entry = _create_entry(
-                                        self.result["area"]["instances"][name]
-                                        [field], kge)
+                                self.result["area"]["instances"][name]
+                                [field], kge)
                             entry = "**" + entry + "**" if is_top else entry
                             row.append(entry)
-
 
                         for k, field in enumerate(["logic", "macro", "total"]):
                             if is_top:
@@ -372,17 +371,21 @@ class SynCfg(OneShotCfg):
                              ("Compile Warnings", "compile_warnings", False),
                              ("Compile Errors", "compile_errors", True)]
 
+            # helper function
+            def _getlen(x):
+                return len(x) if x is not None else 0
+
             # Synthesis fails if any error messages have occurred
-            self.errors_seen = False
-            msgs_seen = False
+            self.errors_seen = 0
+            msgs_seen = 0
             fail_msgs = ""
             for _, key, fail in hdr_key_pairs:
                 if key in self.result['messages']:
-                    if self.result['messages'].get(key):
-                        self.errors_seen = fail or self.errors_seen
-                        msgs_seen = True
+                    num_msgs = _getlen(self.result['messages'][key])
+                    msgs_seen += num_msgs
+                    self.errors_seen += num_msgs if fail else 0
 
-            if msgs_seen:
+            if msgs_seen > 0:
                 fail_msgs += "\n### Errors and Warnings for Build Mode `'" + mode.name + "'`\n"
                 for hdr, key, _ in hdr_key_pairs:
                     msgs = self.result['messages'].get(key)
