@@ -2179,7 +2179,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.fw_ov_rd_fifo_overflow.d  = (pfifo_postht_pop && sfifo_observe_full);
   assign hw2reg.fw_ov_rd_fifo_overflow.de = 1'b1;
 
-  assign observe_fifo_thresh_met = fw_ov_mode && (observe_fifo_thresh <= sfifo_observe_depth);
+  assign observe_fifo_thresh_met = fw_ov_mode && (observe_fifo_thresh != '0) &&
+         (observe_fifo_thresh <= sfifo_observe_depth);
+
+  assign hw2reg.observe_fifo_depth.d = sfifo_observe_depth;
 
   // fifo controls
   assign sfifo_observe_push = fw_ov_mode && pfifo_postht_pop && !sfifo_observe_full &&
