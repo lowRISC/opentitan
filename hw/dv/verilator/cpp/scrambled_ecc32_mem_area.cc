@@ -81,27 +81,12 @@ static uint32_t vbits(uint32_t size) {
   return width;
 }
 
-// These functions come from SV code, exposed over DPI. They are defined inside
-// a module (prim_ram1p_scr) and, awkwardly, if a design doesn't happen to use
-// that module then some simulators (Verilator!) will discard it, together with
-// the DPI functions.
-//
-// We'd like to be able to use the memutil_dpi_scrambled.core whether or not we
-// actually instantiated prim_ram1p_scr: we'll just spit out an error if we
-// call GetScrambleKey() or GetScrambleNonce() if we didn't instantiate it. To
-// make this work, we mark both symbols weak.
 extern "C" {
-int __attribute__((weak)) simutil_get_scramble_key(svBitVecVal *key);
-int __attribute__((weak)) simutil_get_scramble_nonce(svBitVecVal *nonce);
+int simutil_get_scramble_key(svBitVecVal *key);
+int simutil_get_scramble_nonce(svBitVecVal *nonce);
 }
 
 std::vector<uint8_t> ScrambledEcc32MemArea::GetScrambleKey() const {
-  if (!simutil_get_scramble_key) {
-    throw std::runtime_error(
-        "No definition of simutil_get_scramble_key. "
-        "Does the design actually use prim_ram1p_scr?");
-  }
-
   SVScoped scoped(scr_scope_);
   svBitVecVal key_minibuf[((kPrinceWidthByte * 2) + 3) / 4];
 
@@ -116,12 +101,6 @@ std::vector<uint8_t> ScrambledEcc32MemArea::GetScrambleKey() const {
 
 std::vector<uint8_t> ScrambledEcc32MemArea::GetScrambleNonce() const {
   assert(GetNonceWidthByte() <= kScrMaxNonceWidthByte);
-
-  if (!simutil_get_scramble_nonce) {
-    throw std::runtime_error(
-        "No definition of simutil_get_scramble_nonce. "
-        "Does the design actually use prim_ram1p_scr?");
-  }
 
   SVScoped scoped(scr_scope_);
   svBitVecVal nonce_minibuf[(kScrMaxNonceWidthByte + 3) / 4];
