@@ -25,7 +25,7 @@ module hmac
   output logic intr_fifo_empty_o,
   output logic intr_hmac_err_o,
 
-  output logic idle_o
+  output prim_mubi_pkg::mubi4_t idle_o
 );
 
 
@@ -560,9 +560,9 @@ module hmac
               && hmac_core_idle && sha_core_idle;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      idle_o <= 1'b 1;
+      idle_o <= prim_mubi_pkg::MuBi4False;
     end else begin
-      idle_o <= idle;
+      idle_o <= prim_mubi_pkg::mubi4_bool_to_mubi(idle);
     end
   end
 

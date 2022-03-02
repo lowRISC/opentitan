@@ -41,7 +41,7 @@ module aes
   input  logic                                      rst_shadowed_ni,
 
   // Idle indicator for clock manager
-  output logic                                      idle_o,
+  output prim_mubi_pkg::mubi4_t                     idle_o,
 
   // Life cycle
   input  lc_ctrl_pkg::lc_tx_t                       lc_escalate_en_i,
@@ -205,7 +205,7 @@ module aes
     .hw2reg                 ( hw2reg               )
   );
 
-  assign idle_o = reg2hw.status.idle.q;
+  assign idle_o = prim_mubi_pkg::mubi4_bool_to_mubi(reg2hw.status.idle.q);
 
   ////////////
   // Alerts //
