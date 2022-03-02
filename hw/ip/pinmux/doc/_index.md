@@ -184,6 +184,9 @@ This means that the input signal needs to remain stable for at least one AON clo
 
 If a pattern is detected, the wakeup detector will send a wakeup request to the power manager, and the cause bit corresponding to that detector will be set in the {{< regref "WKUP_CAUSE" >}} register.
 
+Note that the wkup detector should be disabled by setting {{< regref "WKUP_DETECTOR_EN_0" >}} before changing the detection mode.
+The reason for that is that the pulse width counter is NOT cleared upon a mode change while the detector is enabled.
+
 ## Strap Sampling and TAP Isolation
 
 The `pinmux` contains a set of dedicated HW "straps", which are essentially signals that are multiplexed onto fixed MIO pad locations.
