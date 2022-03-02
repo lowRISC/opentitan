@@ -15,3 +15,7 @@ waive -rules EMPTY_PARAM_LIST -location {prim_clock_gating.sv} -regexp {.*} \
 
 waive -rules OUTPUT_NOT_DRIVEN -location {prim_clock_gating.sv} -regexp {.*} \
       -comment "Generated abstraction files do not detect drivers"
+
+# clock mux errors
+waive -rules CLOCK_MUX -location {clkmgr.sv} -regexp {.*clk_io_div.* is driven by a multiplexer here} \
+      -comment "All divided clocks terminate with a scan mux"

@@ -240,7 +240,7 @@ module sram_ctrl_regs_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.status.scr_key_valid.q),
+    .q      (),
 
     // to register interface (read)
     .qs     (status_scr_key_valid_qs)
