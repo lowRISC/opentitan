@@ -20,7 +20,7 @@ ${autogen_banner}
   % if ip.irqs:
     void isr_testutils_${ip.name_snake}_isr(
       plic_isr_ctx_t plic_ctx,
-      ${ip.name_snake}_isr_ctx ${ip.name_snake}_ctx,
+      ${ip.name_snake}_isr_ctx_t ${ip.name_snake}_ctx,
       top_earlgrey_plic_peripheral_t *peripheral_serviced,
       dif_${ip.name_snake}_irq_t *irq_serviced) {
 
