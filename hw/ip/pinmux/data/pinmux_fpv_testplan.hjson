@@ -36,10 +36,26 @@
       milestone: V1
       tests: ["pinmux_assert"]
     }
+
+    // `mio_to_periph_o` backward tests
+    // Symbolic variable `periph_sel_i` is used to select a specific `mio_to_periph_o` pin.
     {
-      name: MioToPeriphO_A
-      desc: '''This assertion checks that any changes from the mio_to_periph_o output are due to
-            the changes from `mio_in_i`, jtag or register `periph_insel`.'''
+      name: MioToPeriph0Backward_A
+      desc: '''`mio_to_periph_o` should output 0 only if one of the following conditions meets:
+            - Register `periph_insel` is set to 0.
+            - The corresponding `mio_in_i` is 0.
+            - Jtag is enabled.
+            '''
+      milestone: V2
+      tests: ["pinmux_assert"]
+    }
+    {
+      name: MioToPeriph1Backward_A
+      desc: '''`mio_to_periph_o` should output 1 only if one of the following conditions meets:
+            - Register `periph_insel` is set to 1.
+            - The corresponding `mio_in_i` is 1.
+            - Jtag is enabled.
+            '''
       milestone: V2
       tests: ["pinmux_assert"]
     }
@@ -92,10 +108,26 @@
       milestone: V1
       tests: ["pinmux_assert"]
     }
+
+    // `mio_out_o` backward tests
+    // Symbolic variable `mio_sel_i` is used to select a specific `mio_out_o` pin.
     {
-      name: MioOutO_A
-      desc: '''This assertion checks that any changes from the mio_out_o output are due to the
-            changes from `periph_to_mio_i`, sleep_mode, jtag or register `mio_outsel`.'''
+      name: MioOut0Backward_A
+      desc: '''`mio_out_o` should output 0 only if one of the following conditions meets:
+            - Register `mio_insel` is set to 0 or 2.
+            - The corresponding `periph_to_mio_i` is 0.
+            - Sleep mode is enabled.
+            '''
+      milestone: V2
+      tests: ["pinmux_assert"]
+    }
+    {
+      name: MioOut1Backward_A
+      desc: '''`mio_out_o` should output 1 only if one of the following conditions meets:
+            - Register `mio_insel` is set to 1.
+            - The corresponding `periph_to_mio_i` is 1.
+            - Sleep mode is enabled.
+            '''
       milestone: V2
       tests: ["pinmux_assert"]
     }
@@ -140,10 +172,26 @@
       milestone: V1
       tests: ["pinmux_assert"]
     }
+
+    // `mio_oe_o` backward tests
+    // Symbolic variable `mio_sel_i` is used to select a specific `mio_oe_o` pin.
     {
-      name: MioOeO_A
-      desc: '''This assertion checks that any changes from the `mio_oe_o` output are due to the
-            changes from `periph_to_mio_oe_i`, sleep_mode, jtag or register `mio_outsel`.'''
+      name: MioOe0Backward_A
+      desc: '''`mio_oe_o` should output 0 only if one of the following conditions meets:
+            - Register `mio_insel` is set to 2.
+            - The corresponding `periph_to_mio_oe_i` is 0.
+            - Sleep mode is enabled.
+            '''
+      milestone: V2
+      tests: ["pinmux_assert"]
+    }
+    {
+      name: MioOe1Backward_A
+      desc: '''`mio_oe_o` should output 1 only if one of the following conditions meets:
+            - Register `mio_insel` is set to 0 or 1.
+            - The corresponding `periph_to_mio_oe_i` is 1.
+            - Sleep mode is enabled.
+            '''
       milestone: V2
       tests: ["pinmux_assert"]
     }
@@ -248,13 +296,11 @@
       tests: ["pinmux_assert"]
     }
 
-    // `mio_out_o` backward tests
+    // `mio_out_o` sleep mode related backward tests
     // Symbolic variable `mio_sel_i` is used to select a specific `mio_out_o` pin.
     {
-      name: Mio0Backward_A
+      name: MioSleep0Backward_A
       desc: '''`mio_out_o` should output 0 only if one of the following conditions meets:
-            - Register `mio_outsel` is set to 0 or 2.
-            - The corresponding `periph_to_mio_i` is 0.
             - In sleep mode, register `mio_pad_sleep_mode` is set to 0 or 2.
             - In sleep mode, previous `mio_out_o` is 0 and `mio_pad_sleep_mode` is set to 3.
             - In sleep mode, previous `mio_out_o` is 0 and input `sleep_en_i` is not at posedge.
@@ -263,10 +309,8 @@
       tests: ["pinmux_assert"]
     }
     {
-      name: Mio1Backward_A
+      name: MioSleep1Backward_A
       desc: '''`mio_out_o` should output 1 only if one of the following conditions meets:
-            - Register `mio_outsel` is set to 1.
-            - The corresponding `periph_to_dio_i` is 1.
             - In sleep mode, register `mio_pad_sleep_mode` is set to 1.
             - In sleep mode, previous `mio_out_o` is 1 and `mio_pad_sleep_mode` is set to 3.
             - In sleep mode, previous `mio_out_o` is 1 and input `sleep_en_i` is not at posedge.
@@ -275,13 +319,11 @@
       tests: ["pinmux_assert"]
     }
 
-    // `mio_oe_o` backward tests
+    // `mio_oe_o` sleep mode related backward tests
     // Symbolic variable `mio_sel_i` is used to select a specific `mio_oe_o` pin.
     {
-      name: MioOe0Backward_A
+      name: MioOeSleep0Backward_A
       desc: '''`mio_oe_o` should output 0 only if one of the following conditions meets:
-            - Register `mio_outsel` is set to 2.
-            - The corresponding `periph_to_dio_i` is 0.
             - In sleep mode, register `mio_pad_sleep_mode` is set to 2.
             - In sleep mode, previous `mio_oe_o` is 0 and `mio_pad_sleep_mode` is set to 3.
             - In sleep mode, previous `mio_oe_o` is 0 and input `sleep_en_i` is not at posedge.
@@ -290,10 +332,8 @@
       tests: ["pinmux_assert"]
     }
     {
-      name: MioOe1Backward_A
+      name: MioOeSleep1Backward_A
       desc: '''`mio_oe_o` should output 1 only if one of the following conditions meets:
-            - Register `mio_outsel` is set to 0 or 1.
-            - The corresponding `periph_to_mio_i` is 1.
             - In sleep mode, register `mio_pad_sleep_mode` is set to 0 or 1.
             - In sleep mode, previous `mio_oe_o` is 1 and `mio_pad_sleep_mode` is set to 3.
             - In sleep mode, previous `mio_oe_o` is 1 and input `sleep_en_i` is not at posedge.
@@ -593,18 +633,11 @@
       tests: ["pinmux_assert"]
     }
     {
-      name: LcJtagO0Backward_A
-      desc: '''`lc_jtag_o` pins are zero if one of the following conditions are met:
-            - Lc Jtag is enabled and the corresponding pins are 0.
-            - Lc Jtag is disabled.
-            '''
-      milestone: V2
-      tests: ["pinmux_assert"]
-    }
-    {
-      name: LcJtagO1Backward_A
-      desc: '''`lc_jtag_o` pins are ones if one of the following conditions are met:
-            - Lc Jtag is enabled and the corresponding pins are 1.
+      name: LcJtagOBackward_A
+      desc: '''`lc_jtag_o` pins are equal to the corresponding `mio_in_i` inputs if one of the
+            following conditions are met:
+            - Lc Jtag is disabled and the corresponding pins are 0.
+            - Lc Jtag is enabled.
             '''
       milestone: V2
       tests: ["pinmux_assert"]
@@ -637,18 +670,11 @@
       tests: ["pinmux_assert"]
     }
     {
-      name: RvJtagO0Backward_A
-      desc: '''`rv_jtag_o` pins are zero if one of the following conditions are met:
-            - Rv Jtag is enabled and the corresponding pins are 0.
-            - Rv Jtag is disabled.
-            '''
-      milestone: V2
-      tests: ["pinmux_assert"]
-    }
-    {
-      name: RvJtagO1Backward_A
-      desc: '''`rv_jtag_o` pins are ones if one of the following conditions are met:
-            - Rv Jtag is enabled and the corresponding pins are 1.
+      name: RvJtagOBackward_A
+      desc: '''`rv_jtag_o` pins are equal to the corresponding `mio_in_i` inputs if one of the
+            following conditions are met:
+            - Rv Jtag is disabled and the corresponding pins are 0.
+            - Rv Jtag is enabled.
             '''
       milestone: V2
       tests: ["pinmux_assert"]
@@ -680,10 +706,11 @@
       tests: ["pinmux_assert"]
     }
     {
-      name: DftJtagO0Backward_A
-      desc: '''`dft_jtag_o` pins are zero if one of the following conditions are met:
-            - Dft Jtag is enabled and the corresponding pins are 0.
-            - Dft Jtag is disabled.
+      name: DftJtagOBackward_A
+      desc: '''`dft_jtag_o` pins are equal to the corresponding `mio_in_i` inputs if one of the
+            following conditions are met:
+            - Dft Jtag is disabled and the corresponding pins are 0.
+            - Dft Jtag is enabled.
             '''
       milestone: V2
       tests: ["pinmux_assert"]
