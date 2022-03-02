@@ -18,6 +18,9 @@ waive -rules RESET_MUX -location {rstmgr.sv rstmgr_por.sv rstmgr_ctrl.sv} -regex
 waive -rules RESET_MUX -location {rstmgr.sv} -regexp {Asynchronous reset 'scan_rst_ni' reaches a multiplexer} \
       -comment "This is dedicated reset infrastructure, and hence permissible"
 
+waive -rules RESET_MUX -location {spi_device.sv} -regexp {Asynchronous reset '(rst_ni|rst_spi_n)' reaches a multiplexer} \
+      -comment "This is dedicated reset infrastructure, and hence permissible"
+
 waive -rules CLOCK_USE -location {top_earlgrey.sv} -regexp {'clkmgr_aon_clocks.clk_io_div2_peri' is connected to 'spi_device' port 'scan_clk_i', and used as a clock} \
       -comment "This connection is a scan clock connection."
 
@@ -39,8 +42,17 @@ waive -rules {COMBO_LOOP} -location {chip_earlgrey_asic.sv} -regexp {'cio_key2_o
 waive -rules {SAME_NAME_TYPE} -location {*} -regexp {.*} \
       -comment "same names across modules are allowed to exist at the top level"
 
+# intentionally unused
+waive -rules {NOT_READ HIER_NET_NOT_READ} -location {top_earlgrey.sv} -regexp {.*cio_otp_ctrl_test_(en_)?d2p\[7:1\].* is not read} \
+      -comment "otp test bus made deliberately larger on purpose"
+
 ## xbar
 #waive -rules HIER_NET_NOT_READ -location {tlul_xbar.sv} -regexp {a_source.* is not read from} \
 #      -comment "upper bits of a_source are shifted off when going through M:1 sockets"
 #waive -rules LINE_LENGTH -location {xbar_main.sv} -regexp {Line length of .* exceeds 100 character limit} \
 #      -comment "This is a generated file and it is hence permissible to have line lengths that exceed this limit"
+
+# Possible tool shortcomings
+
+waive -rules CLOCK_USE -location {top_earlgrey.sv} -regexp {'clkmgr_aon_clocks.clk_io_div4_secure' is connected to 'pwrmgr' port 'clk_esc_i', and used as a clock 'clk_i' at tlul_socket_1n.sv} \
+      -comment "The tool for reasons unknown is unable to trace through a prim buf wrap cell to understand the clock is being used as a clock. If a direct assign is used, the error goes away."

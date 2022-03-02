@@ -16,3 +16,6 @@ waive -rules CLOCK_MUX -location {prim_clock_div.sv} -regexp {.*reaches a multip
 waive -rules CLOCK_USE -location {prim_clock_div.sv} -regexp {'clk_i' is connected to 'prim_clock_mux2' port 'clk1_i', and used as a clock} \
       -comment "This clock mux usage is OK."
 
+waive -rules SAME_NAME_TYPE -location {prim_clock_div.sv} -regexp {'ResetValue' is used as a parameter here, and as an enumeration value at} \
+      -comment "Reused parameter name."
+

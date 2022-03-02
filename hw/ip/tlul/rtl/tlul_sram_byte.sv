@@ -269,7 +269,12 @@ module tlul_sram_byte import tlul_pkg::*; #(
       // transaction size in cases where a read modify write operation is
       // performed. Hence, we always return the registered size here.
       tl_o.d_size  = a_size;
-    end
+    end // always_comb
+
+    // unused info from tl_sram_i
+    // see explanation in above block
+    logic unused_tl;
+    assign unused_tl = |tl_sram_i.d_size;
 
     // when byte access detected, go to wait read
     `ASSERT(ByteAccessStateChange_A, a_ack & wr_txn & ~&tl_i.a_mask & ~error_i |=>
