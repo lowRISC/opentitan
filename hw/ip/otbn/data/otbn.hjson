@@ -89,19 +89,13 @@
       package: "edn_pkg"
     },
 
-    // OTBN is not performing any operation and can be clock/power-gated. One
-    // idle for each clock domain (see assignments in "clocking" dictionary above).
+    // OTBN is not performing any operation and can be clock/power-gated. 
     { name:    "idle",
       type:    "uni",
-      struct:  "logic",
+      struct:  "mubi4", 
       width:   "1",
       act:     "req",
-    },
-    { name:    "idle_otp",
-      type:    "uni",
-      struct:  "logic",
-      width:   "1",
-      act:     "req",
+      package: "prim_mubi_pkg"
     },
 
     // ram configuration
