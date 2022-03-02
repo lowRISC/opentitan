@@ -501,45 +501,50 @@
     {
       name: WkupPosedge_A
       desc: '''When register `wkup_detector_en` is set to 1 and `wkup_detector.mode` is set to 0,
-            which means rising edge is used to detect wakeup. If in the past two clock cycles, the
-            `final_pin_val` is at posedge and register `aon_wkup_cause` is not written, then
-            `wkup_cause` register should be set to 1.'''
+            which means rising edge is used to detect wakeup. If variable `final_pin_val` is at
+            posedge then `wkup_cause` register's `de` attribute should be set to 1.'''
       milestone: V1
       tests: ["pinmux_assert"]
     }
     {
       name: WkupNegedge_A
       desc: '''When register `wkup_detector_en` is set to 1 and `wkup_detector.mode` is set to 1,
-            which means falling edge is used to detect wakeup. If in the past two clock cycles, the
-            `final_pin_val` is at negedge and register `aon_wkup_cause` is not written, then
-            `wkup_cause` register should be set to 1.'''
+            which means falling edge is used to detect wakeup. If variable `final_pin_val` is at
+            negedge, then `wkup_cause` register's `de` attribute should be set to 1.'''
       milestone: V1
       tests: ["pinmux_assert"]
     }
     {
       name: WkupEdge_A
       desc: '''When register `wkup_detector_en` is set to 1 and `wkup_detector.mode` is set to 2,
-            which means either rising or falling edge is used to detect wakeup. If in the past two
-            clock cycles, the `final_pin_val` is at posedge or negedge and register
-            `aon_wkup_cause` is not written, then `wkup_cause` register should be set to 1.'''
+            which means either rising or falling edge is used to detect wakeup. If variable
+            `final_pin_val` is at posedge or negedge, then `wkup_cause` register's `de` attribute
+            should be set to 1.'''
       milestone: V1
       tests: ["pinmux_assert"]
     }
     {
       name: WkupTimedHigh_A
       desc: '''When register `wkup_detector_en` is set to 1 and `wkup_detector.mode` is set to 3,
-            which means postive pulse cycles are used to detect wakeup. If in the past two
-            clock cycles, the `final_pin_val` stays high longer than the threshold and register
-            `aon_wkup_cause` is not written, then `wkup_cause` register should be set to 1.'''
+            which means postive pulse cycles are used to detect wakeup. If variable `final_pin_val`
+            stays high longer than the threshold, then `wkup_cause` register's `de` attribute
+            should be set to 1.'''
       milestone: V1
       tests: ["pinmux_assert"]
     }
     {
       name: WkupTimedLow_A
       desc: '''When register `wkup_detector_en` is set to 1 and `wkup_detector.mode` is set to 4,
-            which means negative pulse cycles are used to detect wakeup. If in the past two
-            clock cycles, the `final_pin_val` stays low longer than the threshold and register
-            `aon_wkup_cause` is not written, then `wkup_cause` register should be set to 1.'''
+            which means negative pulse cycles are used to detect wakeup. If variable `final_pin_val`
+            stays low longer than the threshold, then `wkup_cause` register's `de` attribute should
+            be set to 1.'''
+      milestone: V1
+      tests: ["pinmux_assert"]
+    }
+    {
+      name: WkupCauseQ_A
+      desc: '''When `wkup_cause` register's `de` attribute is set to 1 and user is not writing to
+            `wkup_cause` at the same cycle, then `wkup_cause.q` should be set to 1.'''
       milestone: V1
       tests: ["pinmux_assert"]
     }
