@@ -539,8 +539,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
   endtask
 
   // Overridden from cip_base_scoreboard. Called when an alert happens.
-  protected function void on_alert(string alert_name,
-                                   alert_esc_agent_pkg::alert_esc_seq_item item);
+  function void on_alert(string alert_name, alert_esc_agent_pkg::alert_esc_seq_item item);
 
     `uvm_info(`gfn, $sformatf("on_alert(%0s)", alert_name), UVM_HIGH)
 
