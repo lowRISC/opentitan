@@ -33,8 +33,7 @@ module otbn
   output tlul_pkg::tl_d2h_t tl_o,
 
   // Inter-module signals
-  output logic idle_o,
-  output logic idle_otp_o,
+  output prim_mubi_pkg::mubi4_t idle_o,
 
   // Interrupts
   output logic intr_done_o,
@@ -135,11 +134,7 @@ module otbn
 
   // Note: This is not the same thing as STATUS == IDLE. For example, we want to allow clock gating
   // when locked.
-  assign idle_o = is_not_running;
-
-  // TODO: These two signals aren't technically in the same clock domain. Sort out how we do the
-  // signalling properly.
-  assign idle_otp_o = idle_o;
+  assign idle_o = prim_mubi_pkg::mubi4_bool_to_mubi(is_not_running);
 
   // Lifecycle ==================================================================
 
@@ -972,7 +967,6 @@ module otbn
   `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
   `ASSERT_KNOWN(IdleOKnown_A, idle_o)
-  `ASSERT_KNOWN(IdleOtpOKnown_A, idle_otp_o, clk_otp_i, !rst_otp_ni)
   `ASSERT_KNOWN(IntrDoneOKnown_A, intr_done_o)
   `ASSERT_KNOWN(AlertTxOKnown_A, alert_tx_o)
   `ASSERT_KNOWN(EdnRndOKnown_A, edn_rnd_o, clk_edn_i, !rst_edn_ni)

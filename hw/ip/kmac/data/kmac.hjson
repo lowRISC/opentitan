@@ -157,8 +157,8 @@
     { name:    "idle",
       type:    "uni",
       act:     "req",
-      package: "",
-      struct:  "logic",
+      package: "prim_mubi_pkg",
+      struct:  "mubi4",
       width:   "1"
     }
     { struct:  "logic"

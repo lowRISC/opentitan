@@ -75,7 +75,7 @@ module kmac
   output logic en_masking_o,
 
   // Idle signal
-  output logic idle_o
+  output prim_mubi_pkg::mubi4_t idle_o
 );
 
   ////////////////
@@ -534,11 +534,11 @@ module kmac
   // The logic checks idle of SHA3 engine, MSG_FIFO, KMAC_CORE, KEYMGR interface
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      idle_o <= 1'b 1;
+      idle_o <= prim_mubi_pkg::MuBi4True;
     end else if ((sha3_fsm == sha3_pkg::StIdle) && (msgfifo_empty || SecIdleAcceptSwMsg)) begin
-      idle_o <= 1'b 1;
+      idle_o <= prim_mubi_pkg::MuBi4True;
     end else begin
-      idle_o <= 1'b 0;
+      idle_o <= prim_mubi_pkg::MuBi4False;
     end
   end
 
