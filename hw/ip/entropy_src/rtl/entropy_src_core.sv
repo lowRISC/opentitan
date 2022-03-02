@@ -1336,7 +1336,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign es_bypass_mode = (!fips_enable_pfe) || (es_bypass_to_sw && es_route_to_sw);
 
   // send off to AST RNG for possibly faster entropy generation
-  assign rng_fips_o = es_bypass_mode;
+  assign rng_fips_o = !es_bypass_mode;
 
   //--------------------------------------------
   // common health test window counter
