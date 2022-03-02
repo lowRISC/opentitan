@@ -160,7 +160,7 @@ module tlul_adapter_sram
 
   // byte handling for integrity
   tlul_sram_byte #(
-    .EnableIntg(ByteAccess & CmdIntgCheck & !ErrOnWrite),
+    .EnableIntg(ByteAccess & EnableDataIntgPt & !ErrOnWrite),
     .Outstanding(Outstanding)
   ) u_sram_byte (
     .clk_i,
