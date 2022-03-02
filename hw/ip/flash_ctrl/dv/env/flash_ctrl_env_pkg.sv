@@ -167,8 +167,11 @@ package flash_ctrl_env_pkg;
 
   // Data queue for flash transactions
   typedef logic [TL_DW-1:0] data_q_t[$];
+  typedef bit [TL_DW-1:0] data_t;
+  typedef bit [TL_AW-1:0] addr_t;
 
-  // functions
+  // types
+  typedef class flash_ctrl_scoreboard;
 
   // package sources
   `include "flash_mem_bkdr_util.sv"

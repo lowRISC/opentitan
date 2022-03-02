@@ -42,7 +42,7 @@ class flash_ctrl_env #(
         end
       end
     end
-
+    cfg.scoreboard = scoreboard;
   endfunction
 
   virtual function void connect_phase(uvm_phase phase);
