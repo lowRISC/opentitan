@@ -14,7 +14,7 @@ module otbn_idle_checker
   input otbn_hw2reg_t hw2reg,
   input logic         done_i,
 
-  input logic         idle_o_i
+  input prim_mubi_pkg::mubi4_t idle_o_i
 );
 
   // Detect writes of CmdExecute to CMD. They only take effect if we are in state IDLE
@@ -41,6 +41,6 @@ module otbn_idle_checker
 
   // Check that we've modelled the running/not-running logic correctly. The idle_o pin from OTBN
   // should be true iff running is false
-  `ASSERT(IdleIfNotRunning_A, idle_o_i ^ running_q)
+  `ASSERT(IdleIfNotRunning_A, (idle_o_i == prim_mubi_pkg::MuBi4True) ^ running_q)
 
 endmodule

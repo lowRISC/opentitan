@@ -127,8 +127,6 @@ module tb;
     .tl_o(tl_if.d2h),
 
     .idle_o(idle),
-    // TODO: Once this signal's behaviour is specified, check that it behaves as we expect.
-    .idle_otp_o (),
 
     .intr_done_o(intr_done),
 
