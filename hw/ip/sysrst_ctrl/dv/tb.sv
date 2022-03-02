@@ -18,6 +18,7 @@ module tb;
 
   wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
+  wire intr_sysrst_ctrl;
 
   // interfaces
   clk_rst_if clk_rst_if (
@@ -66,8 +67,11 @@ module tb;
     .cio_key1_out_o   (sysrst_ctrl_if.key1_out),
     .cio_key2_out_o   (sysrst_ctrl_if.key2_out),
     .cio_pwrb_out_o   (sysrst_ctrl_if.pwrb_out),
-    .cio_z3_wakeup_o  (sysrst_ctrl_if.z3_wakeup)
+    .cio_z3_wakeup_o  (sysrst_ctrl_if.z3_wakeup),
+    .intr_sysrst_ctrl_o (intr_sysrst_ctrl)
   );
+
+  assign interrupts[IntrSysrstCtrl]      = intr_sysrst_ctrl;
 
   initial begin
     // drive clk and rst_n from clk_if
