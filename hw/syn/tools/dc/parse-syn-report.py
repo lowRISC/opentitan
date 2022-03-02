@@ -593,12 +593,16 @@ def main():
                    for_json=True,
                    use_decimal=True)
 
+    # helper function
+    def _getlen(x):
+        return len(x) if x is not None else 0
+
     # return nonzero status if any warnings or errors are present
     # lint infos do not count as failures
-    nr_errors = (len(results["messages"]["flow_errors"]) +
-                 len(results["messages"]["analyze_errors"]) +
-                 len(results["messages"]["elab_errors"]) +
-                 len(results["messages"]["compile_errors"]))
+    nr_errors = (_getlen(results["messages"]["flow_errors"]) +
+                 _getlen(results["messages"]["analyze_errors"]) +
+                 _getlen(results["messages"]["elab_errors"]) +
+                 _getlen(results["messages"]["compile_errors"]))
 
     print("""------------- Summary -------------
 Flow Warnings:      %s
@@ -610,14 +614,14 @@ Elab Errors:        %s
 Compile Warnings:   %s
 Compile Errors:     %s
 -----------------------------------""" %
-          (len(results["messages"]["flow_warnings"]),
-           len(results["messages"]["flow_errors"]),
-           len(results["messages"]["analyze_warnings"]),
-           len(results["messages"]["analyze_errors"]),
-           len(results["messages"]["elab_warnings"]),
-           len(results["messages"]["elab_errors"]),
-           len(results["messages"]["compile_warnings"]),
-           len(results["messages"]["compile_errors"])))
+          (_getlen(results["messages"]["flow_warnings"]),
+           _getlen(results["messages"]["flow_errors"]),
+           _getlen(results["messages"]["analyze_warnings"]),
+           _getlen(results["messages"]["analyze_errors"]),
+           _getlen(results["messages"]["elab_warnings"]),
+           _getlen(results["messages"]["elab_errors"]),
+           _getlen(results["messages"]["compile_warnings"]),
+           _getlen(results["messages"]["compile_errors"])))
 
     if nr_errors > 0:
         print("Synthesis not successful.")
