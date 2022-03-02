@@ -46,6 +46,7 @@ module clkmgr_trans
     .q_o(sw_hint_synced)
   );
 
+  // SEC_CM: IDLE.CTR.REDUN
   prim_count #(
     .Width(IdleCntWidth),
     .OutSelDnCnt('0),

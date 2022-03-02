@@ -107,6 +107,8 @@ module tb;
     .io_clk_byp_ack_i (clkmgr_if.io_clk_byp_ack),
     .lc_clk_byp_req_i (clkmgr_if.lc_clk_byp_req),
     .lc_clk_byp_ack_o (clkmgr_if.lc_clk_byp_ack),
+    // TODO: The new external step down signal must be verified
+    .div_step_down_req_i (prim_mubi_pkg::MuBi4False),
 
     .cg_en_o(),
 

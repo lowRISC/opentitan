@@ -3185,6 +3185,20 @@
           index: -1
         }
         {
+          name: div_step_down_req
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: clkmgr_aon
+          default: ""
+          external: true
+          top_signame: div_step_down_req
+          conn_type: false
+          index: -1
+        }
+        {
           name: lc_clk_byp_req
           struct: lc_tx
           package: lc_ctrl_pkg
@@ -8111,6 +8125,7 @@
       clkmgr_aon.all_clk_byp_req: all_clk_byp_req
       clkmgr_aon.all_clk_byp_ack: all_clk_byp_ack
       clkmgr_aon.hi_speed_sel: hi_speed_sel
+      clkmgr_aon.div_step_down_req: div_step_down_req
       flash_ctrl.flash_alert: flash_alert
       flash_ctrl.flash_bist_enable: flash_bist_enable
       flash_ctrl.flash_power_down_h: flash_power_down_h
@@ -16062,6 +16077,20 @@
         index: -1
       }
       {
+        name: div_step_down_req
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: clkmgr_aon
+        default: ""
+        external: true
+        top_signame: div_step_down_req
+        conn_type: false
+        index: -1
+      }
+      {
         name: lc_clk_byp_req
         struct: lc_tx
         package: lc_ctrl_pkg
@@ -19293,6 +19322,18 @@
         conn_type: false
         index: -1
         netname: hi_speed_sel
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi4
+        signame: div_step_down_req_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: div_step_down_req
       }
       {
         package: ast_pkg

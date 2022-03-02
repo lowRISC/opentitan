@@ -221,8 +221,8 @@ module chip_earlgrey_verilator (
   prim_mubi_pkg::mubi4_t all_clk_byp_ack;
   prim_mubi_pkg::mubi4_t io_clk_byp_req;
   prim_mubi_pkg::mubi4_t io_clk_byp_ack;
+  prim_mubi_pkg::mubi4_t div_step_down_req;
   logic hi_speed_sel;
-
 
   // DFT connections
   logic scan_en;
@@ -334,7 +334,7 @@ module chip_earlgrey_verilator (
     .clk_src_io_en_i       ( base_ast_pwr.io_clk_en ),
     .clk_src_io_o          ( ast_base_clks.clk_io ),
     .clk_src_io_val_o      ( ast_base_pwr.io_clk_val ),
-    .clk_src_io_48m_o      (  ),
+    .clk_src_io_48m_o      ( div_step_down_req ),
     // usb source clock
     .usb_ref_pulse_i       ( usb_ref_pulse ),
     .usb_ref_val_i         ( usb_ref_val ),
@@ -462,6 +462,7 @@ module chip_earlgrey_verilator (
     .io_clk_byp_req_o             ( io_clk_byp_req             ),
     .io_clk_byp_ack_i             ( io_clk_byp_ack             ),
     .hi_speed_sel_o               ( hi_speed_sel               ),
+    .div_step_down_req_i          ( div_step_down_req          ),
     .ast2pinmux_i                 ( ast2pinmux                 ),
     .ast_init_done_i              ( ast_init_done              ),
 

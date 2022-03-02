@@ -34,7 +34,7 @@ package clkmgr_env_pkg;
 
   typedef logic [NUM_PERI-1:0] peri_enables_t;
   typedef mubi4_t [NUM_TRANS-1:0] hintables_t;
-  parameter mubi4_t [NUM_TRANS-1:0] IdleAllBusy = {NUM_TRANS{prim_mubi_pkg::MuBi4False}};
+  parameter hintables_t IdleAllBusy = {NUM_TRANS{prim_mubi_pkg::MuBi4False}};
 
   parameter int MainClkHz = 100_000_000;
   parameter int IoClkHz = 96_000_000;

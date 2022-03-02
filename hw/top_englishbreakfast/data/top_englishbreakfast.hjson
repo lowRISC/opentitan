@@ -649,6 +649,7 @@
         'ast.rom_cfg'                  : 'rom_cfg',
         'clkmgr_aon.jitter_en'         : 'clk_main_jitter_en',
         'clkmgr_aon.hi_speed_sel'      : 'hi_speed_sel',
+        'clkmgr_aon.div_step_down_req' : 'div_step_down_req',
         'clkmgr_aon.all_clk_byp_req'   : 'all_clk_byp_req',
         'clkmgr_aon.all_clk_byp_ack'   : 'all_clk_byp_ack',
         'clkmgr_aon.io_clk_byp_req'    : 'io_clk_byp_req',
