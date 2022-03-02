@@ -53,6 +53,7 @@ from topgen.lib import Name
   input prim_mubi_pkg::mubi4_t scanmode_i,
 
   // idle hints
+  // SEC_CM: IDLE.INTERSIG.MUBI
   input prim_mubi_pkg::mubi4_t [${len(typed_clocks.hint_clks)-1}:0] idle_i,
 
   // life cycle state output
@@ -72,8 +73,12 @@ from topgen.lib import Name
   input mubi4_t all_clk_byp_ack_i,
   output mubi4_t hi_speed_sel_o,
 
-  // jittery enable
+  // jittery enable to ast
   output mubi4_t jitter_en_o,
+
+  // external indication for whether dividers should be stepped down
+  // SEC_CM: DIV.INTERSIG.MUBI
+  input mubi4_t div_step_down_req_i,
 
   // clock gated indications going to alert handlers
   output clkmgr_cg_en_t cg_en_o,
@@ -94,7 +99,6 @@ from topgen.lib import Name
   // Divided clocks
   ////////////////////////////////////////////////////
 
-  mubi4_t step_down_req;
   logic [${len(clocks.derived_srcs)-1}:0] step_down_acks;
 
 % for src_name in clocks.derived_srcs:
@@ -111,7 +115,7 @@ from topgen.lib import Name
   ) u_${src_name}_step_down_req_sync (
     .clk_i(clk_${src_name}_i),
     .rst_ni(rst_${src_name}_ni),
-    .mubi_i(step_down_req),
+    .mubi_i(div_step_down_req_i),
     .mubi_o(${src_name}_step_down_req)
   );
 
@@ -224,14 +228,15 @@ from topgen.lib import Name
     .lc_clk_byp_req_i,
     .lc_clk_byp_ack_o,
     .byp_req_i(mubi4_t'(reg2hw.extclk_ctrl.sel.q)),
+    .hi_speed_sel_i(mubi4_t'(reg2hw.extclk_ctrl.hi_speed_sel.q)),
     .all_clk_byp_req_o,
     .all_clk_byp_ack_i,
     .io_clk_byp_req_o,
     .io_clk_byp_ack_i,
+    .hi_speed_sel_o,
 
     // divider step down controls
-    .step_down_acks_i(step_down_acks),
-    .step_down_req_o(step_down_req)
+    .step_down_acks_i(step_down_acks)
   );
 
   ////////////////////////////////////////////////////
@@ -486,9 +491,6 @@ from topgen.lib import Name
 
   // SEC_CM: JITTER.CONFIG.MUBI
   assign jitter_en_o = mubi4_t'(reg2hw.jitter_enable.q);
-
-
-  assign hi_speed_sel_o = mubi4_t'(reg2hw.extclk_ctrl.hi_speed_sel.q);
 
   ////////////////////////////////////////////////////
   // Exported clocks
