@@ -19,6 +19,7 @@ filesets:
       - lowrisc:prim:edn_req
       - lowrisc:prim:esc
       - lowrisc:prim:lc_sync
+      - lowrisc:prim:lc_sender
       - lowrisc:prim:mubi
       - lowrisc:tlul:adapter_host
 
