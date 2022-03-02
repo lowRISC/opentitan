@@ -312,7 +312,8 @@ module rv_core_ibex
 
   // Local fetch enable control.
   // Whenever a fatal core error is seen disable local fetch enable.
-  lc_ctrl_pkg::lc_tx_t local_fetch_enable_q, local_fetch_enable_d, local_fetch_enable_buf;
+  lc_ctrl_pkg::lc_tx_t local_fetch_enable_q, local_fetch_enable_d;
+  logic [lc_ctrl_pkg::TxWidth-1:0] local_fetch_enable_buf;
 
   assign local_fetch_enable_d = fatal_core_err ? lc_ctrl_pkg::Off : local_fetch_enable_q;
 
@@ -325,14 +326,14 @@ module rv_core_ibex
   end
 
   prim_buf #(.Width(lc_ctrl_pkg::TxWidth)) u_local_fetch_enable_prim_buf (
-    .in_i (local_fetch_enable_q),
+    .in_i (lc_ctrl_pkg::TxWidth'(local_fetch_enable_q)),
     .out_o(local_fetch_enable_buf)
   );
 
   // Multibit AND computation for fetch enable. Fetch is only enabled when local fetch enable,
   // lifecycle CPU enable and power manager CPU enable are all enabled.
   lc_ctrl_pkg::lc_tx_t fetch_enable;
-  assign fetch_enable = lc_ctrl_pkg::lc_tx_and_hi(local_fetch_enable_buf,
+  assign fetch_enable = lc_ctrl_pkg::lc_tx_and_hi(lc_ctrl_pkg::lc_tx_t'(local_fetch_enable_buf),
     lc_ctrl_pkg::lc_tx_and_hi(lc_cpu_en[0], pwrmgr_cpu_en[0]));
 
   ibex_pkg::crash_dump_t crash_dump;
