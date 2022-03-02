@@ -11,20 +11,23 @@ set -e
 
 CARGO="${1}"
 CARGO_FLAGS="${2}"
-export RUSTFLAGS="${3}"
+CARGO_FMT_FLAG="${3}"
+export RUSTFLAGS="${4}"
 
-TOOLCHAIN_FILE="${4}"
+TOOLCHAIN_FILE="${5}"
 if [[ -f $TOOLCHAIN_FILE ]]; then
     TOOLCHAIN="$(cat ${TOOLCHAIN_FILE})"
 fi
 
-export MESON_SOURCE_ROOT="${5}"
-export MESON_BUILD_ROOT="${6}"
+export MESON_SOURCE_ROOT="${6}"
+export MESON_BUILD_ROOT="${7}"
 
 if [ "${CARGO_TEST}" == 1 ]; then
     echo "CARGO TEST BUILD!"
+    "${CARGO}" fmt ${CARGO_FMT_FLAG}
     "${CARGO}" +"${TOOLCHAIN}" test ${CARGO_FLAGS} --workspace
     "${CARGO}" +"${TOOLCHAIN}" build ${CARGO_FLAGS}
 else
+    "${CARGO}" fmt ${CARGO_FMT_FLAG}
     "${CARGO}" +"${TOOLCHAIN}" build ${CARGO_FLAGS}  
 fi
