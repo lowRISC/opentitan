@@ -48,10 +48,19 @@ module prim_lc_sender #(
         .out_o(lc_en_out[k])
       );
     end
-    logic unused_clk;
-    logic unused_rst;
-    assign unused_clk = clk_i;
-    assign unused_rst = rst_ni;
+
+    // This unused companion logic helps remove lint errors
+    // for modules where clock and reset are used for assertions only
+    // or nothing at all.
+    // This logic will be removed for sythesis since it is unloaded.
+    lc_ctrl_pkg::lc_tx_t unused_logic;
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+         unused_logic <= lc_ctrl_pkg::Off;
+      end else begin
+         unused_logic <= lc_en_i;
+      end
+    end
   end
 
   assign lc_en_o = lc_ctrl_pkg::lc_tx_t'(lc_en_out);
