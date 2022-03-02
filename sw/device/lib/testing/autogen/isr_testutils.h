@@ -68,7 +68,7 @@ typedef struct adc_ctrl_isr_ctx {
    * Whether or not a single IRQ is expected to be encountered in the ISR.
    */
   bool is_only_irq;
-} adc_ctrl_isr_ctx;
+} adc_ctrl_isr_ctx_t;
 
 /**
  * A handle to a alert_handler ISR context struct.
@@ -90,7 +90,7 @@ typedef struct alert_handler_isr_ctx {
    * Whether or not a single IRQ is expected to be encountered in the ISR.
    */
   bool is_only_irq;
-} alert_handler_isr_ctx;
+} alert_handler_isr_ctx_t;
 
 /**
  * A handle to a aon_timer ISR context struct.
@@ -112,7 +112,7 @@ typedef struct aon_timer_isr_ctx {
    * Whether or not a single IRQ is expected to be encountered in the ISR.
    */
   bool is_only_irq;
-} aon_timer_isr_ctx;
+} aon_timer_isr_ctx_t;
 
 /**
  * A handle to a csrng ISR context struct.
@@ -134,7 +134,7 @@ typedef struct csrng_isr_ctx {
    * Whether or not a single IRQ is expected to be encountered in the ISR.
    */
   bool is_only_irq;
-} csrng_isr_ctx;
+} csrng_isr_ctx_t;
 
 /**
  * A handle to a edn ISR context struct.
@@ -156,7 +156,7 @@ typedef struct edn_isr_ctx {
    * Whether or not a single IRQ is expected to be encountered in the ISR.
    */
   bool is_only_irq;
-} edn_isr_ctx;
+} edn_isr_ctx_t;
 
 /**
  * A handle to a entropy_src ISR context struct.
@@ -178,7 +178,7 @@ typedef struct entropy_src_isr_ctx {
    * Whether or not a single IRQ is expected to be encountered in the ISR.
    */
   bool is_only_irq;
-} entropy_src_isr_ctx;
+} entropy_src_isr_ctx_t;
 
 /**
  * A handle to a flash_ctrl ISR context struct.
@@ -200,7 +200,7 @@ typedef struct flash_ctrl_isr_ctx {
    * Whether or not a single IRQ is expected to be encountered in the ISR.
    */
   bool is_only_irq;
-} flash_ctrl_isr_ctx;
+} flash_ctrl_isr_ctx_t;
 
 /**
  * A handle to a gpio ISR context struct.
@@ -222,7 +222,7 @@ typedef struct gpio_isr_ctx {
    * Whether or not a single IRQ is expected to be encountered in the ISR.
    */
   bool is_only_irq;
-} gpio_isr_ctx;
+} gpio_isr_ctx_t;
 
 /**
  * A handle to a hmac ISR context struct.
@@ -244,7 +244,7 @@ typedef struct hmac_isr_ctx {
    * Whether or not a single IRQ is expected to be encountered in the ISR.
    */
   bool is_only_irq;
-} hmac_isr_ctx;
+} hmac_isr_ctx_t;
 
 /**
  * A handle to a i2c ISR context struct.
@@ -266,7 +266,7 @@ typedef struct i2c_isr_ctx {
    * Whether or not a single IRQ is expected to be encountered in the ISR.
    */
   bool is_only_irq;
-} i2c_isr_ctx;
+} i2c_isr_ctx_t;
 
 /**
  * A handle to a keymgr ISR context struct.
@@ -288,7 +288,7 @@ typedef struct keymgr_isr_ctx {
    * Whether or not a single IRQ is expected to be encountered in the ISR.
    */
   bool is_only_irq;
-} keymgr_isr_ctx;
+} keymgr_isr_ctx_t;
 
 /**
  * A handle to a kmac ISR context struct.
@@ -310,7 +310,7 @@ typedef struct kmac_isr_ctx {
    * Whether or not a single IRQ is expected to be encountered in the ISR.
    */
   bool is_only_irq;
-} kmac_isr_ctx;
+} kmac_isr_ctx_t;
 
 /**
  * A handle to a otbn ISR context struct.
@@ -332,7 +332,7 @@ typedef struct otbn_isr_ctx {
    * Whether or not a single IRQ is expected to be encountered in the ISR.
    */
   bool is_only_irq;
-} otbn_isr_ctx;
+} otbn_isr_ctx_t;
 
 /**
  * A handle to a otp_ctrl ISR context struct.
@@ -354,7 +354,7 @@ typedef struct otp_ctrl_isr_ctx {
    * Whether or not a single IRQ is expected to be encountered in the ISR.
    */
   bool is_only_irq;
-} otp_ctrl_isr_ctx;
+} otp_ctrl_isr_ctx_t;
 
 /**
  * A handle to a pattgen ISR context struct.
@@ -376,7 +376,7 @@ typedef struct pattgen_isr_ctx {
    * Whether or not a single IRQ is expected to be encountered in the ISR.
    */
   bool is_only_irq;
-} pattgen_isr_ctx;
+} pattgen_isr_ctx_t;
 
 /**
  * A handle to a pwrmgr ISR context struct.
@@ -398,7 +398,7 @@ typedef struct pwrmgr_isr_ctx {
    * Whether or not a single IRQ is expected to be encountered in the ISR.
    */
   bool is_only_irq;
-} pwrmgr_isr_ctx;
+} pwrmgr_isr_ctx_t;
 
 /**
  * A handle to a rv_timer ISR context struct.
@@ -420,7 +420,7 @@ typedef struct rv_timer_isr_ctx {
    * Whether or not a single IRQ is expected to be encountered in the ISR.
    */
   bool is_only_irq;
-} rv_timer_isr_ctx;
+} rv_timer_isr_ctx_t;
 
 /**
  * A handle to a spi_device ISR context struct.
@@ -442,7 +442,7 @@ typedef struct spi_device_isr_ctx {
    * Whether or not a single IRQ is expected to be encountered in the ISR.
    */
   bool is_only_irq;
-} spi_device_isr_ctx;
+} spi_device_isr_ctx_t;
 
 /**
  * A handle to a spi_host ISR context struct.
@@ -464,7 +464,7 @@ typedef struct spi_host_isr_ctx {
    * Whether or not a single IRQ is expected to be encountered in the ISR.
    */
   bool is_only_irq;
-} spi_host_isr_ctx;
+} spi_host_isr_ctx_t;
 
 /**
  * A handle to a sysrst_ctrl ISR context struct.
@@ -486,7 +486,7 @@ typedef struct sysrst_ctrl_isr_ctx {
    * Whether or not a single IRQ is expected to be encountered in the ISR.
    */
   bool is_only_irq;
-} sysrst_ctrl_isr_ctx;
+} sysrst_ctrl_isr_ctx_t;
 
 /**
  * A handle to a uart ISR context struct.
@@ -508,7 +508,7 @@ typedef struct uart_isr_ctx {
    * Whether or not a single IRQ is expected to be encountered in the ISR.
    */
   bool is_only_irq;
-} uart_isr_ctx;
+} uart_isr_ctx_t;
 
 /**
  * A handle to a usbdev ISR context struct.
@@ -530,7 +530,7 @@ typedef struct usbdev_isr_ctx {
    * Whether or not a single IRQ is expected to be encountered in the ISR.
    */
   bool is_only_irq;
-} usbdev_isr_ctx;
+} usbdev_isr_ctx_t;
 
 /**
  * Services an adc_ctrl IRQ.
@@ -542,7 +542,7 @@ typedef struct usbdev_isr_ctx {
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_adc_ctrl_isr(
-    plic_isr_ctx_t plic_ctx, adc_ctrl_isr_ctx adc_ctrl_ctx,
+    plic_isr_ctx_t plic_ctx, adc_ctrl_isr_ctx_t adc_ctrl_ctx,
     top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_adc_ctrl_irq_t *irq_serviced);
 
@@ -556,7 +556,7 @@ void isr_testutils_adc_ctrl_isr(
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_alert_handler_isr(
-    plic_isr_ctx_t plic_ctx, alert_handler_isr_ctx alert_handler_ctx,
+    plic_isr_ctx_t plic_ctx, alert_handler_isr_ctx_t alert_handler_ctx,
     top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_alert_handler_irq_t *irq_serviced);
 
@@ -570,7 +570,7 @@ void isr_testutils_alert_handler_isr(
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_aon_timer_isr(
-    plic_isr_ctx_t plic_ctx, aon_timer_isr_ctx aon_timer_ctx,
+    plic_isr_ctx_t plic_ctx, aon_timer_isr_ctx_t aon_timer_ctx,
     top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_aon_timer_irq_t *irq_serviced);
 
@@ -584,7 +584,7 @@ void isr_testutils_aon_timer_isr(
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_csrng_isr(
-    plic_isr_ctx_t plic_ctx, csrng_isr_ctx csrng_ctx,
+    plic_isr_ctx_t plic_ctx, csrng_isr_ctx_t csrng_ctx,
     top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_csrng_irq_t *irq_serviced);
 
@@ -597,7 +597,7 @@ void isr_testutils_csrng_isr(
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
-void isr_testutils_edn_isr(plic_isr_ctx_t plic_ctx, edn_isr_ctx edn_ctx,
+void isr_testutils_edn_isr(plic_isr_ctx_t plic_ctx, edn_isr_ctx_t edn_ctx,
                            top_earlgrey_plic_peripheral_t *peripheral_serviced,
                            dif_edn_irq_t *irq_serviced);
 
@@ -611,7 +611,7 @@ void isr_testutils_edn_isr(plic_isr_ctx_t plic_ctx, edn_isr_ctx edn_ctx,
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_entropy_src_isr(
-    plic_isr_ctx_t plic_ctx, entropy_src_isr_ctx entropy_src_ctx,
+    plic_isr_ctx_t plic_ctx, entropy_src_isr_ctx_t entropy_src_ctx,
     top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_entropy_src_irq_t *irq_serviced);
 
@@ -625,7 +625,7 @@ void isr_testutils_entropy_src_isr(
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_flash_ctrl_isr(
-    plic_isr_ctx_t plic_ctx, flash_ctrl_isr_ctx flash_ctrl_ctx,
+    plic_isr_ctx_t plic_ctx, flash_ctrl_isr_ctx_t flash_ctrl_ctx,
     top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_flash_ctrl_irq_t *irq_serviced);
 
@@ -638,7 +638,7 @@ void isr_testutils_flash_ctrl_isr(
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
-void isr_testutils_gpio_isr(plic_isr_ctx_t plic_ctx, gpio_isr_ctx gpio_ctx,
+void isr_testutils_gpio_isr(plic_isr_ctx_t plic_ctx, gpio_isr_ctx_t gpio_ctx,
                             top_earlgrey_plic_peripheral_t *peripheral_serviced,
                             dif_gpio_irq_t *irq_serviced);
 
@@ -651,7 +651,7 @@ void isr_testutils_gpio_isr(plic_isr_ctx_t plic_ctx, gpio_isr_ctx gpio_ctx,
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
-void isr_testutils_hmac_isr(plic_isr_ctx_t plic_ctx, hmac_isr_ctx hmac_ctx,
+void isr_testutils_hmac_isr(plic_isr_ctx_t plic_ctx, hmac_isr_ctx_t hmac_ctx,
                             top_earlgrey_plic_peripheral_t *peripheral_serviced,
                             dif_hmac_irq_t *irq_serviced);
 
@@ -664,7 +664,7 @@ void isr_testutils_hmac_isr(plic_isr_ctx_t plic_ctx, hmac_isr_ctx hmac_ctx,
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
-void isr_testutils_i2c_isr(plic_isr_ctx_t plic_ctx, i2c_isr_ctx i2c_ctx,
+void isr_testutils_i2c_isr(plic_isr_ctx_t plic_ctx, i2c_isr_ctx_t i2c_ctx,
                            top_earlgrey_plic_peripheral_t *peripheral_serviced,
                            dif_i2c_irq_t *irq_serviced);
 
@@ -678,7 +678,7 @@ void isr_testutils_i2c_isr(plic_isr_ctx_t plic_ctx, i2c_isr_ctx i2c_ctx,
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_keymgr_isr(
-    plic_isr_ctx_t plic_ctx, keymgr_isr_ctx keymgr_ctx,
+    plic_isr_ctx_t plic_ctx, keymgr_isr_ctx_t keymgr_ctx,
     top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_keymgr_irq_t *irq_serviced);
 
@@ -691,7 +691,7 @@ void isr_testutils_keymgr_isr(
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
-void isr_testutils_kmac_isr(plic_isr_ctx_t plic_ctx, kmac_isr_ctx kmac_ctx,
+void isr_testutils_kmac_isr(plic_isr_ctx_t plic_ctx, kmac_isr_ctx_t kmac_ctx,
                             top_earlgrey_plic_peripheral_t *peripheral_serviced,
                             dif_kmac_irq_t *irq_serviced);
 
@@ -704,7 +704,7 @@ void isr_testutils_kmac_isr(plic_isr_ctx_t plic_ctx, kmac_isr_ctx kmac_ctx,
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
-void isr_testutils_otbn_isr(plic_isr_ctx_t plic_ctx, otbn_isr_ctx otbn_ctx,
+void isr_testutils_otbn_isr(plic_isr_ctx_t plic_ctx, otbn_isr_ctx_t otbn_ctx,
                             top_earlgrey_plic_peripheral_t *peripheral_serviced,
                             dif_otbn_irq_t *irq_serviced);
 
@@ -718,7 +718,7 @@ void isr_testutils_otbn_isr(plic_isr_ctx_t plic_ctx, otbn_isr_ctx otbn_ctx,
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_otp_ctrl_isr(
-    plic_isr_ctx_t plic_ctx, otp_ctrl_isr_ctx otp_ctrl_ctx,
+    plic_isr_ctx_t plic_ctx, otp_ctrl_isr_ctx_t otp_ctrl_ctx,
     top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_otp_ctrl_irq_t *irq_serviced);
 
@@ -732,7 +732,7 @@ void isr_testutils_otp_ctrl_isr(
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_pattgen_isr(
-    plic_isr_ctx_t plic_ctx, pattgen_isr_ctx pattgen_ctx,
+    plic_isr_ctx_t plic_ctx, pattgen_isr_ctx_t pattgen_ctx,
     top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_pattgen_irq_t *irq_serviced);
 
@@ -746,7 +746,7 @@ void isr_testutils_pattgen_isr(
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_pwrmgr_isr(
-    plic_isr_ctx_t plic_ctx, pwrmgr_isr_ctx pwrmgr_ctx,
+    plic_isr_ctx_t plic_ctx, pwrmgr_isr_ctx_t pwrmgr_ctx,
     top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_pwrmgr_irq_t *irq_serviced);
 
@@ -760,7 +760,7 @@ void isr_testutils_pwrmgr_isr(
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_rv_timer_isr(
-    plic_isr_ctx_t plic_ctx, rv_timer_isr_ctx rv_timer_ctx,
+    plic_isr_ctx_t plic_ctx, rv_timer_isr_ctx_t rv_timer_ctx,
     top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_rv_timer_irq_t *irq_serviced);
 
@@ -774,7 +774,7 @@ void isr_testutils_rv_timer_isr(
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_spi_device_isr(
-    plic_isr_ctx_t plic_ctx, spi_device_isr_ctx spi_device_ctx,
+    plic_isr_ctx_t plic_ctx, spi_device_isr_ctx_t spi_device_ctx,
     top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_spi_device_irq_t *irq_serviced);
 
@@ -788,7 +788,7 @@ void isr_testutils_spi_device_isr(
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_spi_host_isr(
-    plic_isr_ctx_t plic_ctx, spi_host_isr_ctx spi_host_ctx,
+    plic_isr_ctx_t plic_ctx, spi_host_isr_ctx_t spi_host_ctx,
     top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_spi_host_irq_t *irq_serviced);
 
@@ -802,7 +802,7 @@ void isr_testutils_spi_host_isr(
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_sysrst_ctrl_isr(
-    plic_isr_ctx_t plic_ctx, sysrst_ctrl_isr_ctx sysrst_ctrl_ctx,
+    plic_isr_ctx_t plic_ctx, sysrst_ctrl_isr_ctx_t sysrst_ctrl_ctx,
     top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_sysrst_ctrl_irq_t *irq_serviced);
 
@@ -815,7 +815,7 @@ void isr_testutils_sysrst_ctrl_isr(
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
-void isr_testutils_uart_isr(plic_isr_ctx_t plic_ctx, uart_isr_ctx uart_ctx,
+void isr_testutils_uart_isr(plic_isr_ctx_t plic_ctx, uart_isr_ctx_t uart_ctx,
                             top_earlgrey_plic_peripheral_t *peripheral_serviced,
                             dif_uart_irq_t *irq_serviced);
 
@@ -829,7 +829,7 @@ void isr_testutils_uart_isr(plic_isr_ctx_t plic_ctx, uart_isr_ctx uart_ctx,
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_usbdev_isr(
-    plic_isr_ctx_t plic_ctx, usbdev_isr_ctx usbdev_ctx,
+    plic_isr_ctx_t plic_ctx, usbdev_isr_ctx_t usbdev_ctx,
     top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_usbdev_irq_t *irq_serviced);
 
