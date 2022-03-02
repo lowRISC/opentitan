@@ -1218,8 +1218,21 @@
         { bits: "6:0",
           desc: '''This field will set the threshold that the depth of the Observe FIFO
                 will be compared with when setting the interrupt status bit.
+                Note: a value of zero is reserved and not to be used.
                 '''
           resval: "0x20"
+        }
+      ]
+    },
+    { name: "OBSERVE_FIFO_DEPTH",
+      desc: "Observe FIFO depth register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "6:0",
+          desc: '''This field will hold the current depth of the Observe FIFO.
+                '''
         }
       ]
     },
