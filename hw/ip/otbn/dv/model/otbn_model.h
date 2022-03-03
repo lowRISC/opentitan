@@ -33,6 +33,12 @@ class OtbnModel {
   // zero. Returns 0 on success; -1 on failure.
   int start();
 
+  // Starts an IMEM Secure wipe operation
+  int imem_wipe();
+
+  // Starts an DMEM Secure wipe operation
+  int dmem_wipe();
+
   // Flush EDN data from model because of edn_rst_n
   void edn_flush();
 
@@ -47,6 +53,9 @@ class OtbnModel {
 
   // EDN Step sends ISS the URND related EDN data when ACK signal is high.
   void edn_urnd_step(svLogicVecVal *edn_urnd_data /* logic [31:0] */);
+
+  // Signals that RTL is finished processing OTP key
+  void otp_key_cdc_done();
 
   // Signals that RTL is finished processing RND data from EDN
   void edn_rnd_cdc_done();

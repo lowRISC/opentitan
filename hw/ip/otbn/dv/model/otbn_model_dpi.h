@@ -36,6 +36,9 @@ void edn_model_urnd_step(OtbnModel *model,
 // Signal RTL is finished processing RND data to Model
 void edn_model_rnd_cdc_done(OtbnModel *model);
 
+// Signal RTL is finished processing OTP key to the Model
+void otp_key_cdc_done(OtbnModel *model);
+
 // Signal RTL is finished processing EDN data for URND to Model
 void edn_model_urnd_cdc_done(OtbnModel *model);
 
@@ -67,8 +70,8 @@ int otbn_model_set_keymgr_value(OtbnModel *model, svLogicVecVal *key0,
 // write out err_bits and stop_pc and set check_due to ensure otbn_model_check
 // runs on the next negedge of the clock.
 //
-// If start is true, we start the model and then step once (as above).
-unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned model_state,
+unsigned otbn_model_step(OtbnModel *model, unsigned model_state,
+                         svBitVecVal *cmd /* bit [7:0] */,
                          svBitVecVal *status /* bit [7:0] */,
                          svBitVecVal *insn_cnt /* bit [31:0] */,
                          svBitVecVal *rnd_req /* bit [0:0] */,

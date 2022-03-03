@@ -152,6 +152,7 @@ class OTBNSim:
         # self.state.injected_err_bits. If True, then we expect the stepper
         # function to handle them.
         steppers = {
+            FsmState.MEM_SEC_WIPE: (self._step_ext_wipe, False),
             FsmState.IDLE: (self._step_idle, False),
             FsmState.PRE_EXEC: (self._step_pre_exec, False),
             FsmState.FETCH_WAIT: (self._step_fetch_wait, False),
@@ -177,6 +178,23 @@ class OTBNSim:
 
         changes = self.state.changes()
         self.state.commit(sim_stalled=True)
+        return (None, changes)
+
+    def _step_ext_wipe(self, verbose: bool) -> StepRes:
+        '''Step the simulation DMEM/IMEM wipe operation'''
+
+        if self.state.dmem_req_pending:
+            self.state.ext_regs.write('STATUS', Status.BUSY_SEC_WIPE_DMEM, True)
+            self.state.commit(sim_stalled=True)
+        elif self.state.imem_req_pending:
+            self.state.ext_regs.write('STATUS', Status.BUSY_SEC_WIPE_IMEM, True)
+            self.state.commit(sim_stalled=True)
+        else:
+            self.state.commit(sim_stalled=True)
+            self.state.ext_regs.write('STATUS', Status.IDLE, True)
+            self.state.set_fsm_state(FsmState.IDLE)
+
+        changes = self.state.changes()
         return (None, changes)
 
     def _step_pre_exec(self, verbose: bool) -> StepRes:
@@ -298,3 +316,22 @@ class OTBNSim:
     def on_lc_escalation(self) -> None:
         '''React to a lifecycle controller escalation signal'''
         self.state.injected_err_bits |= ErrBits.LIFECYCLE_ESCALATION
+
+    def on_otp_cdc_done(self) -> None:
+        '''Signifies when the scrambling key request gets processed'''
+        self.state.imem_req_pending = False
+        self.state.dmem_req_pending = False
+
+    def on_imem_wipe(self) -> None:
+        '''Sets Status register and changes FsmState'''
+        old_state = self.state.get_fsm_state()
+        if old_state in [FsmState.IDLE]:
+            self.state.set_fsm_state(FsmState.MEM_SEC_WIPE)
+            self.state.imem_req_pending = True
+
+    def on_dmem_wipe(self) -> None:
+        '''Sets Status register and changes FsmState'''
+        old_state = self.state.get_fsm_state()
+        if old_state in [FsmState.IDLE]:
+            self.state.set_fsm_state(FsmState.MEM_SEC_WIPE)
+            self.state.dmem_req_pending = True

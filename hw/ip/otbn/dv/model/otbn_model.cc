@@ -27,6 +27,11 @@ int otbn_stack_element_peek(int index, svBitVecVal *val);
 #define CHECK_DUE_BIT (1U << 1)
 #define FAILED_STEP_BIT (1U << 2)
 
+// Values come from otbn_pkg to signify the value for specific operations.
+#define CMD_EXECUTE 0xD8
+#define CMD_SECWIPE_DMEM 0xC3
+#define CMD_SECWIPE_IMEM 0x1E
+
 // Read (the start of) the contents of a file at path as a vector of bytes.
 // Expects num_bytes bytes of data. On failure, throws a std::runtime_error.
 static Ecc32MemArea::EccWords read_words_from_file(const std::string &path,
@@ -245,6 +250,36 @@ int OtbnModel::start() {
   return 0;
 }
 
+int OtbnModel::dmem_wipe() {
+  ISSWrapper *iss = ensure_wrapper();
+  if (!iss)
+    return -1;
+
+  try {
+    iss->dmem_wipe();
+  } catch (const std::runtime_error &err) {
+    std::cerr << "Error when stepping DMEM wipe: " << err.what() << "\n";
+    return -1;
+  }
+
+  return 0;
+}
+
+int OtbnModel::imem_wipe() {
+  ISSWrapper *iss = ensure_wrapper();
+  if (!iss)
+    return -1;
+
+  try {
+    iss->imem_wipe();
+  } catch (const std::runtime_error &err) {
+    std::cerr << "Error when stepping IMEM wipe: " << err.what() << "\n";
+    return -1;
+  }
+
+  return 0;
+}
+
 void OtbnModel::edn_flush() {
   ISSWrapper *iss = ensure_wrapper();
 
@@ -294,6 +329,11 @@ void OtbnModel::edn_urnd_cdc_done() {
 void OtbnModel::edn_rnd_cdc_done() {
   ISSWrapper *iss = ensure_wrapper();
   iss->edn_rnd_cdc_done();
+}
+
+void OtbnModel::otp_key_cdc_done() {
+  ISSWrapper *iss = ensure_wrapper();
+  iss->otp_key_cdc_done();
 }
 
 int OtbnModel::step(svBitVecVal *status /* bit [7:0] */,
@@ -701,35 +741,59 @@ void edn_model_urnd_step(OtbnModel *model,
   model->edn_urnd_step(edn_urnd_data);
 }
 
+void otp_key_cdc_done(OtbnModel *model) { model->otp_key_cdc_done(); }
+
 void edn_model_rnd_cdc_done(OtbnModel *model) { model->edn_rnd_cdc_done(); }
 
 void edn_model_urnd_cdc_done(OtbnModel *model) { model->edn_urnd_cdc_done(); }
 
-unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned model_state,
+unsigned otbn_model_step(OtbnModel *model, unsigned model_state,
+                         svBitVecVal *cmd /* bit [7:0] */,
                          svBitVecVal *status /* bit [7:0] */,
                          svBitVecVal *insn_cnt /* bit [31:0] */,
                          svBitVecVal *rnd_req /* bit [0:0] */,
                          svBitVecVal *err_bits /* bit [31:0] */,
                          svBitVecVal *stop_pc /* bit [31:0] */) {
   assert(model && status && insn_cnt && err_bits && stop_pc);
-  assert(!is_xz(start));
 
   // Clear any check due bit (we hopefully ran the check on the previous
   // negedge)
   model_state = model_state & ~CHECK_DUE_BIT;
 
-  // Start the model if requested
-  if (start) {
-    switch (model->start()) {
-      case 0:
-        // All good
-        model_state |= RUNNING_BIT;
-        break;
+  int result;
+  unsigned new_state_bits;
 
-      default:
-        // Something went wrong.
-        return (model_state & ~RUNNING_BIT) | FAILED_STEP_BIT;
-    }
+  switch (*cmd) {
+    case CMD_EXECUTE:
+      result = model->start();
+      new_state_bits = RUNNING_BIT;
+      break;
+    case CMD_SECWIPE_DMEM:
+      result = model->dmem_wipe();
+      new_state_bits = RUNNING_BIT;
+      break;
+    case CMD_SECWIPE_IMEM:
+      result = model->imem_wipe();
+      new_state_bits = RUNNING_BIT;
+      break;
+    default:
+      result = 0;
+      new_state_bits = 0;
+      break;
+  }
+
+  switch (result) {
+    case 0:
+      // Starting an operation succeeded. Set any required bits in the
+      // state.
+      model_state |= new_state_bits;
+      break;
+
+    default:
+      // Something went wrong in the model when starting the operation.
+      // Stop running and set FAILED_STEP_BIT to signal the error back
+      // to the SV side.
+      return (model_state & ~RUNNING_BIT) | FAILED_STEP_BIT;
   }
 
   // Step the model once

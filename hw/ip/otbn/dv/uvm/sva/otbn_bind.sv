@@ -25,7 +25,7 @@ module otbn_bind;
     .rst_ni   (rst_ni),
     .reg2hw   (reg2hw),
     .hw2reg   (hw2reg),
-    .done_i   (done_core),
+    .done_i   (done),
     .idle_o_i (idle_o),
 
     .otbn_dmem_scramble_key_req_busy_i(otbn_dmem_scramble_key_req_busy),

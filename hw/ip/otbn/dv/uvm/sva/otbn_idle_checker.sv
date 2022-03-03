@@ -22,9 +22,15 @@ module otbn_idle_checker
   input logic [7:0] status_q_i
 );
 
-  // Detect writes of CmdExecute to CMD. They only take effect if we are in state IDLE
-  logic start_req, do_start;
-  assign start_req = reg2hw.cmd.qe && (reg2hw.cmd.q == otbn_pkg::CmdExecute);
+  // Detect writes to CMD. They only take effect if we are in state IDLE
+  logic cmd_operation, start_req, do_start;
+
+  assign cmd_operation = reg2hw.cmd.q inside {otbn_pkg::CmdSecWipeImem,
+                                              otbn_pkg::CmdSecWipeDmem,
+                                              otbn_pkg::CmdExecute};
+
+  assign start_req = reg2hw.cmd.qe && cmd_operation;
+
   assign do_start = start_req && (hw2reg.status.d == otbn_pkg::StatusIdle);
 
   // Our model of whether OTBN is running or not. We start on do_start and stop on done.
@@ -85,7 +91,7 @@ module otbn_idle_checker
   //  - We should never think we're running when STATUS has value LOCKED (NotRunningWhenLocked_A)
 
   `ASSERT(NotIdleIfRunning_A,
-          running_qq |-> (idle_o_i == prim_mubi_pkg::MuBi4False))
+          running_q |-> ##[0:1] (idle_o_i == prim_mubi_pkg::MuBi4False))
 
   `ASSERT(IdleIfNotRunningOrLocked_A,
           !(running_qq || status_q_i == otbn_pkg::StatusLocked) |->
@@ -102,9 +108,9 @@ module otbn_idle_checker
           (status_q_i == otbn_pkg::StatusLocked) |-> !$rose(keys_busy))
 
   `ASSERT(OnlyKeyRotationWhenRunningOrLocked_A,
-          keys_busy |-> (running_qq || (status_q_i == otbn_pkg::StatusLocked)))
+          keys_busy |-> (running_q || (status_q_i == otbn_pkg::StatusLocked)))
 
   `ASSERT(NotRunningWhenLocked_A,
-          !((status_q_i == otbn_pkg::StatusLocked) && (running_q || running_qq)))
+          !((status_q_i == otbn_pkg::StatusLocked) && running_q))
 
 endmodule
