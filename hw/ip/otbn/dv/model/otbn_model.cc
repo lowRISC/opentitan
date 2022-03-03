@@ -19,12 +19,8 @@
 #include "sv_utils.h"
 
 extern "C" {
-// These functions are only implemented if DesignScope != "", i.e. if we're
-// running a block-level simulation. Code needs to check at runtime if
-// otbn_rf_peek() and otbn_stack_element_peek() are available before calling
-// them.
-int otbn_rf_peek(int index, svBitVecVal *val) __attribute__((weak));
-int otbn_stack_element_peek(int index, svBitVecVal *val) __attribute__((weak));
+int otbn_rf_peek(int index, svBitVecVal *val);
+int otbn_stack_element_peek(int index, svBitVecVal *val);
 }
 
 #define RUNNING_BIT (1U << 0)
@@ -124,11 +120,6 @@ static std::array<T, 32> get_rtl_regs(const std::string &reg_scope) {
   // 32/sizeof(svBitVecVal) words on the stack.
   svBitVecVal buf[256 / 8 / sizeof(svBitVecVal)];
 
-  // The implementation of otbn_rf_peek() is only available if DesignScope != ""
-  // (the function is implemented in SystemVerilog, and imported through DPI).
-  // We should not reach the code here if that's the case.
-  assert(otbn_rf_peek);
-
   for (int i = 0; i < 32; ++i) {
     if (!otbn_rf_peek(i, buf)) {
       std::ostringstream oss;
@@ -153,12 +144,6 @@ static std::vector<T> get_stack(const std::string &stack_scope) {
   // (for a "bit [255:0]" argument). Allocate 256 bits (= 32 bytes) as
   // 32/sizeof(svBitVecVal) words on the stack.
   svBitVecVal buf[256 / 8 / sizeof(svBitVecVal)];
-
-  // The implementation of otbn_stack_element_peek() is only available if
-  // DesignScope != "" (the function is implemented in SystemVerilog, and
-  // imported through DPI).  We should not reach the code here if that's the
-  // case.
-  assert(otbn_stack_element_peek);
 
   int i = 0;
 
@@ -197,7 +182,9 @@ OtbnModel::OtbnModel(const std::string &mem_scope,
                      const std::string &design_scope, bool enable_secure_wipe)
     : mem_util_(mem_scope),
       design_scope_(design_scope),
-      enable_secure_wipe_(enable_secure_wipe) {}
+      enable_secure_wipe_(enable_secure_wipe) {
+  assert(mem_scope.size() && design_scope.size());
+}
 
 OtbnModel::~OtbnModel() {}
 
@@ -592,8 +579,6 @@ bool OtbnModel::check_dmem(ISSWrapper &iss) const {
 }
 
 bool OtbnModel::check_regs(ISSWrapper &iss) const {
-  assert(design_scope_.size());
-
   std::string base_scope =
       design_scope_ +
       ".u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.u_snooper";
@@ -653,8 +638,6 @@ bool OtbnModel::check_regs(ISSWrapper &iss) const {
 }
 
 bool OtbnModel::check_call_stack(ISSWrapper &iss) const {
-  assert(design_scope_.size());
-
   std::string call_stack_snooper_scope =
       design_scope_ + ".u_otbn_rf_base.u_call_stack_snooper";
 
