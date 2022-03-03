@@ -25,6 +25,12 @@
   import uvm_pkg::*;
 `endif
 
+`ifndef FPV_ON
+  `define REGWEN_PATH tb.dut.${reg_block_path}
+`else
+  `define REGWEN_PATH ${lblock}.${reg_block_path}
+`endif
+
 // Block: ${lblock}
 module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
     import top_pkg::*;(
@@ -98,11 +104,22 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
 % endif
 
 % if num_hro_regs > 0:
+  // Assign regwen to registers. If the register does not have regwen, it will default to value 1.
+  logic [${num_hro_regs}-1:0] regwen;
+  % for hro_reg in hro_regs_list:
+<% regwen = hro_reg.regwen %>\
+    % if regwen == None:
+      assign regwen[${hro_map.get(hro_reg.offset)[0]}] = 1;
+    % else:
+      assign regwen[${hro_map.get(hro_reg.offset)[0]}] = `REGWEN_PATH.${regwen.lower()}_qs;
+    % endif
+  % endfor
+
   typedef enum bit {
     FpvDefault,
     FpvRw0c
   } fpv_reg_access_e;
-  fpv_reg_access_e access_policy [${num_hro_regs + 1}];
+  fpv_reg_access_e access_policy [${num_hro_regs}];
 
   // for write HRO registers, store the write data into exp_vals
   always_ff @(negedge clk_i or negedge rst_ni) begin
@@ -128,7 +145,7 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
       end
       if (d2h.d_valid) begin
         if (pend_trans[d2h.d_source].wr_pending == 1) begin
-          if (!d2h.d_error) begin
+          if (!d2h.d_error && regwen[hro_idx]) begin
             if (access_policy[hro_idx] == FpvRw0c) begin
               // Assume FpvWr0c policy only has one field that is wr0c.
               exp_vals[hro_idx] <= exp_vals[hro_idx][0] == 0 ? 0 : pend_trans[d2h.d_source].wr_data;
@@ -151,15 +168,13 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
     r_name       = hro_reg.name.lower()
     reg_addr     = hro_reg.offset
     reg_addr_hex = format(reg_addr, 'x')
-    regwen       = hro_reg.regwen
     reg_mask     = 0
     f_size       = len(hro_reg.fields)
 
     for f in hro_reg.get_field_list():
       f_access = f.swaccess.key.lower()
-      if regwen == None:
-        if f_access == "rw" or (f_access == "rw0c" and f_size == 1):
-          reg_mask = reg_mask | f.bits.bitmask()
+      if f_access == "rw" or (f_access == "rw0c" and f_size == 1):
+        reg_mask = reg_mask | f.bits.bitmask()
 %>\
     % if reg_mask != 0:
 <%  reg_mask_hex = format(reg_mask, 'x') %>\
