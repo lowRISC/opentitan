@@ -161,8 +161,85 @@ dif_result_t dif_clkmgr_external_clock_set_enabled(const dif_clkmgr_t *clkmgr,
       extclk_ctrl_reg, CLKMGR_EXTCLK_CTRL_SEL_FIELD, kMultiBitBool4True);
   extclk_ctrl_reg = bitfield_field32_write(
       extclk_ctrl_reg, CLKMGR_EXTCLK_CTRL_LOW_SPEED_SEL_FIELD,
+
       is_low_speed ? kMultiBitBool4True : kMultiBitBool4False);
   mmio_region_write32(clkmgr->base_addr, CLKMGR_EXTCLK_CTRL_REG_OFFSET,
                       extclk_ctrl_reg);
   return kDifOk;
+}
+
+dif_result_t dif_clkmgr_disable_measure_frequency_control(const dif_clkmgr_t *clkmgr) {
+  if (clkmgr == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(clkmgr->base_addr, CLKMGR_MEASURE_CTRL_REGWEN_REG_OFFSET, 0);
+  return kDifOk;
+}
+
+dif_result_t dif_clkmgr_enable_measure_frequency(const dif_clkmgr_t *clkmgr,
+                                                 dif_clkmgr_measure_frequency_t clock,
+                                                 uint32_t lo_threshold,
+                                                 uint32_t hi_threshold) {
+  uint32_t reg_offset;
+  bitfield_bit32_index_t en_index;
+  bitfield_field32_t lo_field;
+  bitfield_field32_t hi_field;
+  uint32_t measure_ctrl_reg = 0;
+
+  if (clkmgr == NULL) {
+    return kDifBadArg;
+  }
+
+  switch (clock) {
+    case kDifClkmgrMeasureIoFrequency:
+      reg_offset = CLKMGR_IO_MEAS_CTRL_SHADOWED_REG_OFFSET;
+      en_index = CLKMGR_IO_MEAS_CTRL_SHADOWED_EN_BIT;
+      lo_field = CLKMGR_IO_MEAS_CTRL_SHADOWED_LO_FIELD;
+      hi_field = CLKMGR_IO_MEAS_CTRL_SHADOWED_HI_FIELD;
+      break;
+    case kDifClkmgrMeasureIoDiv2Frequency:
+      reg_offset = CLKMGR_IO_DIV2_MEAS_CTRL_SHADOWED_REG_OFFSET;
+      en_index = CLKMGR_IO_DIV2_MEAS_CTRL_SHADOWED_EN_BIT;
+      lo_field = CLKMGR_IO_DIV2_MEAS_CTRL_SHADOWED_LO_FIELD;
+      hi_field = CLKMGR_IO_DIV2_MEAS_CTRL_SHADOWED_HI_FIELD;
+      break;
+    case kDifClkmgrMeasureIoDiv4Frequency:
+      reg_offset = CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED_REG_OFFSET;
+      en_index = CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED_EN_BIT;
+      lo_field = CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED_LO_FIELD;
+      hi_field = CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED_HI_FIELD;
+      break;
+    case kDifClkmgrMeasureMainFrequency:
+      reg_offset = CLKMGR_MAIN_MEAS_CTRL_SHADOWED_REG_OFFSET;
+      en_index = CLKMGR_MAIN_MEAS_CTRL_SHADOWED_EN_BIT;
+      lo_field = CLKMGR_MAIN_MEAS_CTRL_SHADOWED_LO_FIELD;
+      hi_field = CLKMGR_MAIN_MEAS_CTRL_SHADOWED_HI_FIELD;
+      break;
+    case kDifClkmgrMeasureUsbFrequency:
+      reg_offset = CLKMGR_USB_MEAS_CTRL_SHADOWED_REG_OFFSET;
+      en_index = CLKMGR_USB_MEAS_CTRL_SHADOWED_EN_BIT;
+      lo_field = CLKMGR_USB_MEAS_CTRL_SHADOWED_LO_FIELD;
+      hi_field = CLKMGR_USB_MEAS_CTRL_SHADOWED_HI_FIELD;
+      break;
+    default:
+      return kDifBadArg;
+  }
+
+  measure_ctrl_reg = bitfield_bit32_write(measure_ctrl_reg, en_index, 1);
+  measure_ctrl_reg = bitfield_field32_write(
+      measure_ctrl_reg, lo_field, lo_threshold);
+  measure_ctrl_reg = bitfield_field32_write(
+      measure_ctrl_reg, hi_field, hi_threshold);
+  mmio_region_write32(clkmgr->base_addr, reg_offset, measure_ctrl_reg);
+
+  return kDifOk;
+}
+
+dif_result_t dif_clkmgr_recov_err_code_get_codes(const dif_clkmgr_t *clkmgr,
+                                                 dif_clkmgr_recov_err_codes_t *codes) {
+  if (clkmgr == NULL || codes == NULL) {
+    return kDifBadArg;
+  }
+  return mmio_region_read32(clkmgr->base_addr, CLKMGR_RECOV_ERR_CODE_REG_OFFSET);
 }

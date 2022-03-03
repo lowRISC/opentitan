@@ -149,7 +149,7 @@ inline ibex_timeout_t ibex_timeout_init(uint32_t timeout_usec) {
  * @return Boolean indicating the timeout expired.
  */
 inline bool ibex_timeout_check(const ibex_timeout_t *timeout) {
-  return ibex_mcycle_read() - timeout->start < timeout->cycles;
+  return ibex_mcycle_read() - timeout->start > timeout->cycles;
 }
 
 /**

@@ -96,6 +96,7 @@ prim_clock_gating #(
 logic en_osc_fe;
 
 // Syncronize en_osc to clk FE for glitch free disable
+// Use clk_osc here?
 always_ff @( negedge clk, negedge vcore_pok_h_i ) begin
   if ( !vcore_pok_h_i ) begin
     en_osc_fe <= 1'b0;

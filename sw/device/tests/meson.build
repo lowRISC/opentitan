@@ -301,6 +301,25 @@ sw_tests += {
   }
 }
 
+clkmgr_external_clk_src_for_sw_test_lib = declare_dependency(
+  link_with: static_library(
+    'clkmgr_external_clk_src_for_sw_test_lib',
+    sources: ['clkmgr_external_clk_src_for_sw.c'],
+    dependencies: [
+      sw_lib_dif_clkmgr,
+      sw_lib_mmio,
+      sw_lib_runtime_ibex,
+      sw_lib_runtime_log,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'clkmgr_external_clk_src_for_sw_test': {
+    'library': clkmgr_external_clk_src_for_sw_test_lib,
+  }
+}
+
 clkmgr_jitter_test_lib = declare_dependency(
   link_with: static_library(
     'clkmgr_jitter_test_lib',
