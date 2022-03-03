@@ -471,7 +471,7 @@ uint32_t ISSWrapper::step_crc(const std::array<uint8_t, 6> &item,
 
   std::ostringstream oss;
   oss << std::hex << "step_crc 0x" << std::setfill('0');
-  for (int i = 0; i < item.size(); ++i) {
+  for (size_t i = 0; i < item.size(); ++i) {
     oss << std::setw(2) << (int)item[5 - i];
   }
   oss << " 0x" << std::setw(8) << state << "\n";

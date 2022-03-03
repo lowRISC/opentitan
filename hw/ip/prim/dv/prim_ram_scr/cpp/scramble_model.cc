@@ -68,7 +68,7 @@ static std::vector<uint8_t> scramble_sbox_layer(const std::vector<uint8_t> &in,
   std::vector<uint8_t> out(in.size(), 0);
 
   // Iterate through each 4 bit chunk of the data and apply the appropriate SBOX
-  for (int i = 0; i < bit_width / 4; ++i) {
+  for (uint32_t i = 0; i < bit_width / 4; ++i) {
     uint8_t sbox_in, sbox_out;
 
     sbox_in = in[i / 2];
@@ -97,7 +97,7 @@ static std::vector<uint8_t> scramble_flip_layer(const std::vector<uint8_t> &in,
   assert(in.size() == ((bit_width + 7) / 8));
   std::vector<uint8_t> out(in.size(), 0);
 
-  for (int i = 0; i < bit_width; ++i) {
+  for (uint32_t i = 0; i < bit_width; ++i) {
     or_vector_bit(out, bit_width - i - 1, read_vector_bit(in, i));
   }
 
@@ -112,7 +112,7 @@ static std::vector<uint8_t> scramble_perm_layer(const std::vector<uint8_t> &in,
   assert(in.size() == ((bit_width + 7) / 8));
   std::vector<uint8_t> out(in.size(), 0);
 
-  for (int i = 0; i < bit_width / 2; ++i) {
+  for (uint32_t i = 0; i < bit_width / 2; ++i) {
     if (invert) {
       or_vector_bit(out, i * 2, read_vector_bit(in, i));
       or_vector_bit(out, i * 2 + 1, read_vector_bit(in, i + (bit_width / 2)));
@@ -141,7 +141,7 @@ static std::vector<uint8_t> scramble_subst_perm_enc(
 
   std::vector<uint8_t> state(in);
 
-  for (int i = 0; i < num_rounds; ++i) {
+  for (uint32_t i = 0; i < num_rounds; ++i) {
     state = xor_vectors(state, key);
 
     state = scramble_sbox_layer(state, bit_width, PRESENT_SBOX4);
@@ -164,7 +164,7 @@ static std::vector<uint8_t> scramble_subst_perm_dec(
 
   std::vector<uint8_t> state(in);
 
-  for (int i = 0; i < num_rounds; ++i) {
+  for (uint32_t i = 0; i < num_rounds; ++i) {
     state = xor_vectors(state, key);
 
     state = scramble_perm_layer(state, bit_width, true);
@@ -199,12 +199,12 @@ static std::vector<uint8_t> scramble_gen_keystream(
 
   std::vector<uint8_t> keystream;
 
-  for (int i = 0; i < num_princes; ++i) {
+  for (uint32_t i = 0; i < num_princes; ++i) {
     // Initial vector is data for PRINCE to encrypt. Formed from nonce and data
     // address
     std::vector<uint8_t> iv(8, 0);
 
-    for (int j = 0; j < kPrinceWidth; ++j) {
+    for (uint32_t j = 0; j < kPrinceWidth; ++j) {
       if (j < addr_width) {
         // Bottom addr_width bits of IV are address
         or_vector_bit(iv, j, read_vector_bit(addr, j));
@@ -228,7 +228,7 @@ static std::vector<uint8_t> scramble_gen_keystream(
     // Flip keystream into little endian order and add to keystream vector
     keystream_block = byte_reverse_vector(keystream_block);
     // Repeat the output of a single PRINCE instance if needed
-    for (int k = 0; k < num_repetitions; ++k) {
+    for (uint32_t k = 0; k < num_repetitions; ++k) {
       keystream.insert(keystream.end(), keystream_block.begin(),
                        keystream_block.end());
     }
@@ -269,7 +269,7 @@ static std::vector<uint8_t> scramble_subst_perm_full_width(
 
   auto sp_scrambler = enc ? scramble_subst_perm_enc : scramble_subst_perm_dec;
 
-  for (int i = 0; i < subst_perm_blocks; ++i) {
+  for (uint32_t i = 0; i < subst_perm_blocks; ++i) {
     // Where bit_width does not evenly divide into subst_perm_width the
     // final block is smaller.
     uint32_t bits_so_far = subst_perm_width * i;
@@ -278,7 +278,7 @@ static std::vector<uint8_t> scramble_subst_perm_full_width(
     std::vector<uint8_t> subst_perm_data(subst_perm_bytes, 0);
 
     // Extract bits from in for this chunk
-    for (int j = 0; j < block_width; ++j) {
+    for (uint32_t j = 0; j < block_width; ++j) {
       or_vector_bit(subst_perm_data, j,
                     read_vector_bit(in, j + i * subst_perm_width));
     }
@@ -288,7 +288,7 @@ static std::vector<uint8_t> scramble_subst_perm_full_width(
                                        kNumDataSubstPermRounds);
 
     // Write the result to the `out` vector
-    for (int j = 0; j < block_width; ++j) {
+    for (uint32_t j = 0; j < block_width; ++j) {
       or_vector_bit(out, j + i * subst_perm_width,
                     read_vector_bit(subst_perm_out, j));
     }
@@ -308,7 +308,7 @@ std::vector<uint8_t> scramble_addr(const std::vector<uint8_t> &addr_in,
   // Address is scrambled by using substitution/permutation layer with the nonce
   // used as a key.
   // Extract relevant nonce bits for key
-  for (int i = 0; i < addr_width; ++i) {
+  for (uint32_t i = 0; i < addr_width; ++i) {
     or_vector_bit(addr_enc_nonce, i,
                   read_vector_bit(nonce, nonce_width - addr_width + i));
   }
