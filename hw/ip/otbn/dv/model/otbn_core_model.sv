@@ -20,9 +20,9 @@ module otbn_core_model
   // The scope that contains the instruction and data memory (for DPI)
   parameter string MemScope = "",
 
-  // Scope of an RTL OTBN implementation (for DPI). If empty, this is a "standalone" model, which
-  // should update DMEM on completion. If not empty, we assume it's the scope for the top-level of a
-  // real implementation running alongside and we check DMEM contents on completion.
+  // Scope of an RTL OTBN implementation (for DPI). This should be give the scope for the top-level
+  // of a real implementation running alongside. We will use it to check DMEM and register file
+  // contents on completion of an operation.
   parameter string DesignScope = "",
 
   // Enable internal secure wipe
@@ -269,34 +269,30 @@ module otbn_core_model
   assign status_o = status_q;
   assign insn_cnt_o = insn_cnt_q;
 
-  // If DesignScope is not empty, we have a design to check. Bind a copy of otbn_rf_snooper_if into
-  // each register file. The otbn_model_check() function will use these to extract memory contents.
-  if (DesignScope != "") begin: g_check_design
-    // TODO: This bind is by module, rather than by instance, because I couldn't get the by-instance
-    // syntax plus upwards name referencing to work with Verilator. Obviously, this won't work with
-    // multiple OTBN instances, so it would be nice to get it right.
-    bind otbn_rf_base_ff otbn_rf_snooper_if #(
-      .Width           (BaseIntgWidth),
-      .Depth           (NGpr),
-      .IntegrityEnabled(1)
-    ) u_snooper (
-      .rf (rf_reg)
-    );
+  // TODO: This bind is by module, rather than by instance, because I couldn't get the by-instance
+  // syntax plus upwards name referencing to work with Verilator. Obviously, this won't work with
+  // multiple OTBN instances, so it would be nice to get it right.
+  bind otbn_rf_base_ff otbn_rf_snooper_if #(
+    .Width           (BaseIntgWidth),
+    .Depth           (NGpr),
+    .IntegrityEnabled(1)
+  ) u_snooper (
+    .rf (rf_reg)
+  );
 
-    bind otbn_rf_bignum_ff otbn_rf_snooper_if #(
-      .Width           (ExtWLEN),
-      .Depth           (NWdr),
-      .IntegrityEnabled(1)
-    ) u_snooper (
-      .rf (rf)
-    );
+  bind otbn_rf_bignum_ff otbn_rf_snooper_if #(
+    .Width           (ExtWLEN),
+    .Depth           (NWdr),
+    .IntegrityEnabled(1)
+  ) u_snooper (
+    .rf (rf)
+  );
 
-    bind otbn_rf_base otbn_stack_snooper_if #(.StackIntgWidth(39), .StackWidth(32), .StackDepth(8))
-      u_call_stack_snooper (
-        .stack_storage(u_call_stack.stack_storage),
-        .stack_wr_ptr_q(u_call_stack.stack_wr_ptr_q)
-      );
-  end
+  bind otbn_rf_base otbn_stack_snooper_if #(.StackIntgWidth(39), .StackWidth(32), .StackDepth(8))
+    u_call_stack_snooper (
+      .stack_storage(u_call_stack.stack_storage),
+      .stack_wr_ptr_q(u_call_stack.stack_wr_ptr_q)
+    );
 
   assign err_o = failed_step | failed_check | check_mismatch_q | failed_lc_escalate;
 
