@@ -22,8 +22,8 @@ mod verilator;
 
 #[derive(Debug, StructOpt)]
 pub struct BackendOpts {
-    #[structopt(long, help = "Name of the debug interface")]
-    interface: Option<String>,
+    #[structopt(long, default_value = "", help = "Name of the debug interface")]
+    interface: String,
 
     #[structopt(long, parse(try_from_str = u16::from_str),
                 help="USB Vendor ID of the interface")]
@@ -55,10 +55,10 @@ pub enum Error {
 }
 
 /// Creates the requested backend interface according to [`BackendOpts`].
-pub fn create(args: &BackendOpts, default_interface: &str) -> Result<TransportWrapper> {
-    let interface = args.interface.as_deref().unwrap_or(default_interface);
+pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
+    let interface = args.interface.as_str();
     let mut env = TransportWrapper::new(match interface {
-        "null" => create_empty_transport(),
+        "" => create_empty_transport(),
         "proxy" => proxy::create(&args.proxy_opts),
         "verilator" => verilator::create(&args.verilator_opts),
         "ultradebug" => ultradebug::create(args),

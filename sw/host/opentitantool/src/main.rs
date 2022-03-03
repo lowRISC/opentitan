@@ -141,7 +141,7 @@ where
 fn main() -> Result<()> {
     let opts = parse_command_line(Opts::from_args(), args_os())?;
 
-    let transport = backend::create(&opts.backend_opts, "proxy")?;
+    let transport = backend::create(&opts.backend_opts)?;
 
     for command in &opts.exec {
         execute(
