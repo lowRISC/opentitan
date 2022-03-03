@@ -16,13 +16,13 @@ filesets:
       - otbn_model.cc: { file_type: cppSource }
       - otbn_model.h: { file_type: cppSource, is_include_file: true }
       - otbn_model_dpi.h: { file_type: cppSource, is_include_file: true }
+      - otbn_model_dpi.svh: { is_include_file: true }
       - iss_wrapper.cc: { file_type: cppSource }
       - iss_wrapper.h: { file_type: cppSource, is_include_file: true }
       - otbn_trace_checker.h: { file_type: cppSource, is_include_file: true }
       - otbn_trace_checker.cc: { file_type: cppSource }
       - otbn_trace_entry.h: { file_type: cppSource, is_include_file: true }
       - otbn_trace_entry.cc: { file_type: cppSource }
-      - otbn_model_pkg.sv
       - otbn_core_model.sv
       - otbn_rf_snooper_if.sv
       - otbn_stack_snooper_if.sv

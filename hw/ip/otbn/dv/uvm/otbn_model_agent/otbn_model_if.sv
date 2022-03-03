@@ -2,6 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// If using this, instantiate it somewhere that "u_model" will resolve to the corresponding instance
+// of the otbn_core_model module. For example, you might instantiate it in your testbench next to
+// your model. In that case, SystemVerilog's symbol resolution rules ("go up until it works") should
+// do the right thing.
+
 interface otbn_model_if
   import keymgr_pkg::otbn_key_req_t;
 #(
@@ -45,7 +50,7 @@ interface otbn_model_if
   // posedge.
   function automatic void invalidate_imem();
     `uvm_info("otbn_model_if", "Invalidating IMEM", UVM_HIGH)
-    `DV_CHECK_FATAL(otbn_model_pkg::otbn_model_invalidate_imem(handle) == 0,
+    `DV_CHECK_FATAL(u_model.otbn_model_invalidate_imem(handle) == 0,
                     "Failed to invalidate IMEM", "otbn_model_if")
   endfunction
 
@@ -55,7 +60,7 @@ interface otbn_model_if
   // posedge.
   function automatic void invalidate_dmem();
     `uvm_info("otbn_model_if", "Invalidating DMEM", UVM_HIGH)
-    `DV_CHECK_FATAL(otbn_model_pkg::otbn_model_invalidate_dmem(handle) == 0,
+    `DV_CHECK_FATAL(u_model.otbn_model_invalidate_dmem(handle) == 0,
                     "Failed to invalidate DMEM", "otbn_model_if")
   endfunction
 
@@ -66,9 +71,14 @@ interface otbn_model_if
   // to write our own CRC function and ensures that the RTL matches the standardised CRC-32-IEEE
   // checksum.
   function automatic bit [31:0] step_crc(bit [47:0] item, bit [31:0] crc_state);
-    `DV_CHECK_FATAL(otbn_model_pkg::otbn_model_step_crc(handle, item, crc_state) == 0,
+    `DV_CHECK_FATAL(u_model.otbn_model_step_crc(handle, item, crc_state) == 0,
                     "Failed to update CRC", "otbn_model_if")
     return crc_state;
+  endfunction
+
+  // Pass loop warp rules to the model
+  function automatic void take_loop_warps(chandle memutil);
+    u_model.otbn_take_loop_warps(handle, memutil);
   endfunction
 
   // The err signal is asserted by the model if it fails to find the DUT or if it finds a mismatch

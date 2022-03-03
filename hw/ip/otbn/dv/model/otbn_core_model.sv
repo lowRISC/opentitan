@@ -13,7 +13,6 @@
 
 module otbn_core_model
   import otbn_pkg::*;
-  import otbn_model_pkg::*;
   import edn_pkg::*;
   import keymgr_pkg::otbn_key_req_t;
 #(
@@ -56,6 +55,8 @@ module otbn_core_model
 
   output bit             err_o // something went wrong
 );
+
+`include "otbn_model_dpi.svh"
 
   // Create and destroy an object through which we can talk to the ISS.
   chandle model_handle;
