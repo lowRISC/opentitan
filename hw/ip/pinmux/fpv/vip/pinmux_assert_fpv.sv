@@ -686,4 +686,46 @@ module pinmux_assert_fpv
           (dft_strap_test_o.straps == $past({mio_in_i[TargetCfg.dft_strap1_idx],
                                              mio_in_i[TargetCfg.dft_strap0_idx]})))
 
+  // ------ Check USB connectivity ------
+  // TODO: the ones that added ##1 delays have cex, which might related to USB module being
+  // black-boxed. Working on solving these cexs.
+  `ASSERT(UsbSleepEnI_A, sleep_en_i <->
+          u_usbdev_aon_wake.low_power_alw_i, clk_aon_i, !rst_aon_ni)
+
+  `ASSERT(UsbDppullupEnUpwrI_A, usb_dppullup_en_upwr_i <->
+          u_usbdev_aon_wake.usb_dppullup_en_upwr_i, clk_aon_i, !rst_aon_ni)
+
+  `ASSERT(UsbDnpullupEnUpwrI_A, usb_dnpullup_en_upwr_i <->
+          u_usbdev_aon_wake.usb_dnpullup_en_upwr_i, clk_aon_i, !rst_aon_ni)
+
+  `ASSERT(UsbDppullupEnO_A, ##1 usb_dppullup_en_o <->
+          u_usbdev_aon_wake.usb_dppullup_en_o, clk_aon_i, !rst_aon_ni)
+
+  `ASSERT(UsbDnpullupEnO_A, ##1 usb_dnpullup_en_o <->
+          u_usbdev_aon_wake.usb_dnpullup_en_o, clk_aon_i, !rst_aon_ni)
+
+  `ASSERT(UsbOutOfRstI_A, usb_out_of_rst_i <->
+          u_usbdev_aon_wake.usb_out_of_rst_upwr_i, clk_aon_i, !rst_aon_ni)
+
+  `ASSERT(UsbAonWakeEnUpwrI_A, usb_aon_wake_en_i <->
+          u_usbdev_aon_wake.usb_aon_wake_en_upwr_i, clk_aon_i, !rst_aon_ni)
+
+  `ASSERT(UsbAonWakeAckUpwrI_A, usb_aon_wake_ack_i <->
+          u_usbdev_aon_wake.usb_aon_woken_upwr_i, clk_aon_i, !rst_aon_ni)
+
+  `ASSERT(UsbSuspendI_A, ##1 usb_suspend_i <->
+          u_usbdev_aon_wake.usb_suspend_upwr_i, clk_aon_i, !rst_aon_ni)
+
+  `ASSERT(UsbWkupReqO_A, usb_wkup_req_o <->
+          u_usbdev_aon_wake.wake_req_alw_o, clk_aon_i, !rst_aon_ni)
+
+  `ASSERT(UsbBusResetO_A, ##1 usb_bus_reset_o <->
+          u_usbdev_aon_wake.bus_reset_alw_o, clk_aon_i, !rst_aon_ni)
+
+  `ASSERT(UsbSenseLostO_A, ##1 usb_sense_lost_o <->
+          u_usbdev_aon_wake.bus_lost_alw_o, clk_aon_i, !rst_aon_ni)
+
+  `ASSERT(UsbStateDebugO_A, ##1 usb_state_debug_o <->
+          u_usbdev_aon_wake.bus_debug_o, clk_aon_i, !rst_aon_ni)
+
 endmodule : pinmux_assert_fpv
