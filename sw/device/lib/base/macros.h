@@ -170,4 +170,91 @@
  */
 #define OT_ALIAS(name) __attribute__((alias(name)))
 
+/**
+ * Defines a local symbol named `kName_` whose address resolves to the
+ * program counter value an inline assembly block at this location would
+ * see.
+ *
+ * The primary intention of this macro is to allow for peripheral tests to be
+ * written that want to assert that a specific program counter reported by the
+ * hardware corresponds to actual code that executed.
+ *
+ * For example, suppose that we're waiting for an interrupt to fire, and want
+ * to verify that it fired in a specific region. We have two volatile globals:
+ * `irq_happened`, which the ISR sets before returning, and `irq_pc`, which
+ * the ISR sets to whatever PC the hardware reports it came from. The
+ * code below tests that the reported PC matches expectations.
+ *
+ * ```
+ * OT_ADDRESSABLE_LABEL(kIrqWaitStart);
+ * enable_interrupts();
+ * while(!irq_happened) {
+ *   wait_for_interrupt();
+ * }
+ * OT_ADDRESSABLE_LABEL(kIrqWaitEnd);
+ *
+ * CHECK(irq_pc >= &kIrqWaitStart && irq_pc < &IrqWaitEnd);
+ * ```
+ *
+ * Note that this only works if all functions called between the two labels
+ * are actually inlined; if the interrupt fires inside of one of those two
+ * functions, it will appear to not have the right PC, even though it is
+ * logically inside the pair of labels.
+ *
+ * # Volatile Semantics
+ *
+ * This has the same semantics as a `volatile` inline assembly block: it
+ * may be reordered with respect to all operations except other volatile
+ * operations (i.e. volatile assembly and volatile read/write, such as
+ * MMIO). For example, in the following code, `kBefore` and `kAfter` can
+ * wind up having the same address:
+ *
+ * ```
+ * OT_ADDRESSABLE_LABEL(kBefore);
+ * x += 5;
+ * OT_ADDRESSABLE_LABEL(kAfter);
+ * ```
+ *
+ * Because it can be reordered and the compiler is free to emit whatever
+ * instructions it likes, comparing a program counter value obtained from
+ * the hardware with a symbol emitted by this macro is brittle (and,
+ * ultimately, futile). Instead, it should be used in pairs to create a
+ * range of addresses that a value can be checked for being within.
+ *
+ * For this primitive to work correctly there must be something that counts as
+ * a volatile operation between the two labels. These include:
+ *
+ * - Direct reads or writes to MMIO registers or CSRs.
+ * - A volatile assembly block with at least one instruction.
+ * - Any DIF or driver call that may touch an MMIO register or a CSR.
+ * - `LOG`ging, `printf`ing, or `CHECK`ing.
+ * - `wait_for_interrupt()`.
+ * - `barrier32()`, but NOT `launder32()`.
+ *
+ * This macro should not be used on the host side. It will compile, but will
+ * probably not provide any meaningful values. In the future, it may start
+ * producing a garbage value on the host side.
+ *
+ * # Symbol Access
+ *
+ * The symbol reference `kName_` will only be scoped to the current block
+ * in a function, but it can be redeclared in the same file with
+ *
+ * ```
+ * extern const char kName_[];
+ * ```
+ *
+ * if needed elsewhere (although this should be avoided for readability's sake).
+ * The name of the constant is global to the current `.c` file only.
+ *
+ * # Example Uses
+ */
+#define OT_ADDRESSABLE_LABEL(kName_)                                         \
+  extern const char kName_[];                                                \
+  asm volatile(".local " #kName_ "; " #kName_ ":;");                         \
+  /* Force this to be at function scope. It could go at global scope, but it \
+   * would give a garbage value dependent on the whims of the linker. */     \
+  do {                                                                       \
+  } while (false)
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_
