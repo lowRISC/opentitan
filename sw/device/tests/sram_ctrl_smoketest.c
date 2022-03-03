@@ -30,7 +30,7 @@ static const uint32_t kRandomData[SRAM_CTRL_TEST_DATA_SIZE_WORDS] = {
 // Buffer to allow the compiler to allocate a safe area in Main SRAM where
 // we can do the write/read test without the risk of clobbering data
 // used by the program.
-OT_ATTR_SECTION(".data")
+OT_SECTION(".data")
 static volatile uint32_t sram_main_buffer[SRAM_CTRL_TEST_DATA_SIZE_WORDS];
 
 // Write / Read small chunks of data to SRAM to test

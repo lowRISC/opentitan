@@ -58,8 +58,8 @@ static const uint32_t kOtpIfetchHwRelativeOffset =
  * This function will return on success, or cause an exception if the
  * execution is disabled.
  */
-OT_ATTR_NAKED
-OT_ATTR_SECTION(".data")
+OT_NAKED
+OT_SECTION(".data")
 void execute_code_in_sram(void) { asm volatile("jalr zero, 0(ra)"); }
 
 static bool otp_ifetch_enabled(void) {

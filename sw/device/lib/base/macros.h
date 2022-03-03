@@ -125,7 +125,7 @@
 /**
  * Attribute for weak functions that can be overridden, e.g., ISRs.
  */
-#define OT_ATTR_WEAK __attribute__((weak))
+#define OT_WEAK __attribute__((weak))
 
 /**
  * Attribute to construct functions without prologue/epilogue sequences.
@@ -135,7 +135,7 @@
  * See https://gcc.gnu.org/onlinedocs/gcc/RISC-V-Function-Attributes.html
  * #RISC-V-Function-Attributes
  */
-#define OT_ATTR_NAKED __attribute__((naked))
+#define OT_NAKED __attribute__((naked))
 
 /**
  * Attribute to place symbols into particular sections.
@@ -143,7 +143,7 @@
  * See https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html
  * #Common-Function-Attributes
  */
-#define OT_ATTR_SECTION(name) __attribute__((section(name)))
+#define OT_SECTION(name) __attribute__((section(name)))
 
 /**
  * Returns the address of the current function stack frame.
