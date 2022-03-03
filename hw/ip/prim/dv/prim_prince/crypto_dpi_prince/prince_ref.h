@@ -232,7 +232,7 @@ static uint64_t prince_core(const uint64_t core_input, const uint64_t k0_new,
   PRINCE_PRINT(core_input);
   PRINCE_PRINT(k1);
   uint64_t round_input = core_input ^ k1 ^ prince_round_constant(0);
-  for (unsigned int round = 1; round <= num_half_rounds; round++) {
+  for (int round = 1; round <= num_half_rounds; round++) {
     PRINCE_PRINT(round_input);
     const uint64_t s_out = prince_s_layer(round_input);
     PRINCE_PRINT(s_out);
@@ -248,8 +248,7 @@ static uint64_t prince_core(const uint64_t core_input, const uint64_t k0_new,
   PRINCE_PRINT(m_prime_out);
   const uint64_t middle_round_s_inv_out = prince_s_inv_layer(m_prime_out);
   round_input = middle_round_s_inv_out;
-  // for(unsigned int round = 6; round < num_half_rounds * 2 + 1; round ++){
-  for (unsigned int round = 1; round <= num_half_rounds; round++) {
+  for (int round = 1; round <= num_half_rounds; round++) {
     PRINCE_PRINT(round_input);
     const uint64_t constant_idx = 10 - num_half_rounds + round;
     const uint64_t m_inv_in =
