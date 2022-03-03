@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_ROM_SPIFLASH_FRAME_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_ROM_SPIFLASH_FRAME_H_
 
+#include <assert.h>
 #include <stdint.h>
 
 #include "sw/device/lib/dif/dif_hmac.h"
@@ -71,7 +72,7 @@ typedef struct spiflash_frame {
   uint32_t data[SPIFLASH_FRAME_DATA_WORDS];
 } spiflash_frame_t;
 
-_Static_assert(sizeof(spiflash_frame_t) == SPIFLASH_RAW_BUFFER_SIZE,
-               "spiflash_frame_t is the wrong size!");
+static_assert(sizeof(spiflash_frame_t) == SPIFLASH_RAW_BUFFER_SIZE,
+              "spiflash_frame_t is the wrong size!");
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_ROM_SPIFLASH_FRAME_H_
