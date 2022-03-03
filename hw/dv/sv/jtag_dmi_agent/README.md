@@ -67,3 +67,16 @@ It uses an externally created semaphore `jtag_dtm_ral_sem_h` to atomicize
 accesses to the DTM `dmi` register, since accesses to all DMI registers go
 through this shared resource. This semaphore is also created and set by the
 convenience function `jtag_dmi_agent_pkg::create_jtag_dmi_reg_block()`.
+
+## sba_access_utils_pkg
+
+The JTAG DMI register space has registers to initiate and manage accesses into
+the system through an exernal system bus (whatever that may be). Please see the
+RISCV debug specification for more details. These registers are already
+a part of the `jtag_dmi_reg_block` model.
+
+This package provides some convenience tasks to initiate and manage accesses
+into the system bus access interface (SBA) using these SBA registers, including
+starting an access, waiting for completion and clearing the error bits. These
+tasks take the handle to the `jtag_dmi_reg_block` model as one of the
+arguments.
