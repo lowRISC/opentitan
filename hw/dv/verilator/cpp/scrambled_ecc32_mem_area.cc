@@ -37,8 +37,8 @@ static uint32_t AddrBytesToInt(const std::vector<uint8_t> &addr) {
   uint32_t addr_out = 0;
   int cur_shift = 0;
 
-  for (int i = 0; i < addr.size(); ++i) {
-    addr_out |= (addr[i] << cur_shift);
+  for (uint8_t byte : addr) {
+    addr_out |= ((uint32_t)byte << cur_shift);
     cur_shift += 8;
   }
 
