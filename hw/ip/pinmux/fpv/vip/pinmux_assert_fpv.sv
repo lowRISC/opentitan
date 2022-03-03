@@ -297,6 +297,13 @@ module pinmux_assert_fpv
 
   `ASSERT(MioAttrO_A, mio_attr_o[mio_sel_i] == (mio_pad_attr & mio_pad_attr_mask))
 
+  `ASSERT(MioJtagAttrO_A, pinmux.u_pinmux_strap_sampling.jtag_en |->
+                          mio_attr_o[TargetCfg.tck_idx] == 0 &&
+                          mio_attr_o[TargetCfg.tms_idx] == 0 &&
+                          mio_attr_o[TargetCfg.trst_idx] == 0 &&
+                          mio_attr_o[TargetCfg.tdi_idx] == 0 &&
+                          mio_attr_o[TargetCfg.tdo_idx] == 0)
+
   // ------ Dio_attr_o ------
   pinmux_reg_pkg::pinmux_reg2hw_dio_pad_attr_mreg_t dio_pad_attr;
   assign dio_pad_attr = pinmux.dio_pad_attr_q[dio_sel_i];
@@ -572,9 +579,6 @@ module pinmux_assert_fpv
                         mio_in_i[TargetCfg.tms_idx],
                         rst_ni,
                         mio_in_i[TargetCfg.tdi_idx]})
-  `ASSERT(LcJtagOStable_A, u_pinmux_strap_sampling.tap_strap != pinmux_pkg::LcTapSel &&
-          $past(u_pinmux_strap_sampling.tap_strap) != pinmux_pkg::LcTapSel |->
-          $stable(lc_jtag_o))
   `ASSERT(LcJtagODefault_A, u_pinmux_strap_sampling.tap_strap != pinmux_pkg::LcTapSel |->
           lc_jtag_o == '0)
 
@@ -600,11 +604,6 @@ module pinmux_assert_fpv
                         mio_in_i[TargetCfg.tms_idx],
                         rst_ni,
                         mio_in_i[TargetCfg.tdi_idx]})
-  `ASSERT(RvJtagOStable_A, (u_pinmux_strap_sampling.tap_strap != pinmux_pkg::RvTapSel &&
-          $past(u_pinmux_strap_sampling.tap_strap) != pinmux_pkg::RvTapSel) ||
-          ($past(lc_hw_debug_en_i, 2) != lc_ctrl_pkg::On &&
-           $past(lc_hw_debug_en_i, 3) != lc_ctrl_pkg::On) |->
-          $stable(rv_jtag_o))
   `ASSERT(RvJtagODefault_A, u_pinmux_strap_sampling.tap_strap != pinmux_pkg::RvTapSel ||
           $past(lc_hw_debug_en_i, 2) != lc_ctrl_pkg::On |->
           rv_jtag_o == '0)
@@ -632,11 +631,6 @@ module pinmux_assert_fpv
                          mio_in_i[TargetCfg.tms_idx],
                          rst_ni,
                          mio_in_i[TargetCfg.tdi_idx]})
-  `ASSERT(DftJtagOStable_A, (u_pinmux_strap_sampling.tap_strap != pinmux_pkg::DftTapSel &&
-          $past(u_pinmux_strap_sampling.tap_strap) != pinmux_pkg::DftTapSel) ||
-          ($past(lc_dft_en_i, 2) != lc_ctrl_pkg::On &&
-           $past(lc_dft_en_i, 3) != lc_ctrl_pkg::On) |->
-          $stable(dft_jtag_o))
   `ASSERT(DftJtagODefault_A, u_pinmux_strap_sampling.tap_strap != pinmux_pkg::DftTapSel ||
           $past(lc_dft_en_i, 2) != lc_ctrl_pkg::On |->
           dft_jtag_o == '0)
