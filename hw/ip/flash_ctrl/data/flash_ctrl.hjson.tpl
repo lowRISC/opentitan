@@ -377,7 +377,7 @@
     // hex value of 0xa26a38f7
     { name:      "ExecEn",
       desc:      "Constant value that enables flash execution",
-      type:      "int"
+      type:      "int unsigned"
       default:   "${int("0xa26a38f7", 16)}",
       local:     "true"
     },
