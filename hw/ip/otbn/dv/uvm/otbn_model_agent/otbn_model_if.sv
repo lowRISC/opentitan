@@ -22,7 +22,8 @@ interface otbn_model_if
   import uvm_pkg::*;
 
   // Inputs to DUT
-  logic                     start;        // Start the operation
+  logic [7:0]               cmd_q;        // CMD register
+  logic                     cmd_qe;       // CMD register enable
 
   // Outputs from DUT
   bit                       err;          // Something went wrong

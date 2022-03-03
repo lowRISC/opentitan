@@ -31,10 +31,13 @@ import "DPI-C" function
 import "DPI-C" function
   void edn_model_rnd_cdc_done(chandle model);
 
+import "DPI-C" function
+  void otp_key_cdc_done(chandle model);
+
 import "DPI-C" context function
   int unsigned otbn_model_step(chandle          model,
-                               logic            start,
                                int unsigned     model_state,
+                               bit       [7:0]  cmd,
                                inout bit [7:0]  status,
                                inout bit [31:0] insn_cnt,
                                inout bit        rnd_req,

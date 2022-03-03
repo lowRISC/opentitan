@@ -381,6 +381,14 @@ void ISSWrapper::start() {
   run_command(oss.str(), nullptr);
 }
 
+void ISSWrapper::dmem_wipe() { run_command("dmem_wipe\n", nullptr); }
+
+void ISSWrapper::imem_wipe() { run_command("imem_wipe\n", nullptr); }
+
+void ISSWrapper::otp_key_cdc_done() {
+  run_command("otp_key_cdc_done\n", nullptr);
+}
+
 void ISSWrapper::edn_rnd_cdc_done() {
   run_command("edn_rnd_cdc_done\n", nullptr);
 }

@@ -74,6 +74,12 @@ struct ISSWrapper {
   // Jump to address zero and start running
   void start();
 
+  // Start DMEM Secure wipe operation, set status accordingly
+  void dmem_wipe();
+
+  // Start IMEM Secure wipe operation, set status accordingly
+  void imem_wipe();
+
   // Flush EDN related content in model because of edn_rst_n
   void edn_flush();
 
@@ -90,6 +96,9 @@ struct ISSWrapper {
   // Provide keymgr values to model
   void set_keymgr_value(const std::array<uint32_t, 12> &key0_arr,
                         const std::array<uint32_t, 12> &key1_arr, bool valid);
+
+  // Signals that the received OTP key is valid in the RTL.
+  void otp_key_cdc_done();
 
   // Signals 256b EDN random number for RND is valid in the RTL.
   void edn_rnd_cdc_done();

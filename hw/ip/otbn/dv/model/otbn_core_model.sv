@@ -32,7 +32,8 @@ module otbn_core_model
   input  logic               rst_ni,
   input  logic               rst_edn_ni,
 
-  input  logic               start_i, // start the operation
+  input  logic [7:0]         cmd_i,    // CMD register for OTBN commands
+  input  logic               cmd_en_i, // CMD register enable for OTBN commands
 
   input  logic               lc_escalate_en_i,
 
@@ -85,6 +86,10 @@ module otbn_core_model
   bit failed_step, check_due, running;
   assign {failed_step, check_due, running} = model_state[2:0];
 
+  // Process incoming CMD command only when it is allowed to do so.
+  logic [7:0]  cmd;
+
+  assign cmd = cmd_en_i ? cmd_i : 8'h0;
   bit [7:0]  status_d, status_q;
   bit [31:0] insn_cnt_d, insn_cnt_q;
   bit [31:0] raw_err_bits_d, raw_err_bits_q;
@@ -119,9 +124,10 @@ module otbn_core_model
   end
 
   // EDN URND Seed Request Logic
-  logic edn_urnd_req_q, edn_urnd_req_d, start_q;
+  logic edn_urnd_req_q, edn_urnd_req_d, start_q, start_d;
 
-  // URND Reseeding is only done when we are starting OTBN from fresh.
+  // URND Reseeding is only done when OTBN receives EXECUTE command.
+  assign start_d = (cmd == CmdExecute);
   assign edn_urnd_req_d = ~edn_urnd_cdc_done_i & (edn_urnd_req_q | start_q);
 
   assign edn_urnd_o = edn_urnd_req_q;
@@ -132,7 +138,7 @@ module otbn_core_model
       start_q <= 1'b0;
     end else begin
       edn_urnd_req_q <= edn_urnd_req_d;
-      start_q <= start_i;
+      start_q <= start_d;
     end
   end
 
@@ -177,7 +183,8 @@ module otbn_core_model
   logic [3:0] busy_counter_q, busy_counter_d;
   logic       reset_busy_counter, step_iss;
 
-  assign reset_busy_counter = start_i | running | check_due | new_escalation | edn_rnd_cdc_done_i;
+  assign reset_busy_counter = cmd_en_i | running | check_due | new_escalation | edn_rnd_cdc_done_i;
+
   assign step_iss = reset_busy_counter || (busy_counter_q != 0);
 
   always_comb begin
@@ -225,10 +232,13 @@ module otbn_core_model
       if (edn_rnd_cdc_done_i) begin
         edn_model_rnd_cdc_done(model_handle);
       end
+      if (otp_key_cdc_done_i) begin
+        otp_key_cdc_done(model_handle);
+      end
       if (step_iss) begin
         model_state <= otbn_model_step(model_handle,
-                                       start_i,
                                        model_state,
+                                       cmd,
                                        status_d,
                                        insn_cnt_d,
                                        rnd_req_start_d,

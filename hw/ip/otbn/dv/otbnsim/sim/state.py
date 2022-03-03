@@ -29,16 +29,23 @@ class FsmState(IntEnum):
 
     The FSM diagram looks like:
 
-
-          IDLE -> PRE_EXEC -> FETCH_WAIT -> EXEC
-            ^                                | |
-            \---------------- WIPING_GOOD <--/ |
-                                               |
-                  LOCKED <--  WIPING_BAD  <----/
+        MEM_SEC_WIPE <--\
+             |          |
+             \-------> IDLE -> PRE_EXEC -> FETCH_WAIT -> EXEC
+                         ^                       | |
+                         \------- WIPING_GOOD <--/ |
+                                                   |
+                      LOCKED <--  WIPING_BAD  <----/
 
     IDLE represents the state when nothing is going on but there have been no
     fatal errors. It matches Status.IDLE. LOCKED represents the state when
     there has been a fatal error. It matches Status.LOCKED.
+
+    MEM_SEC_WIPE only represents the state where OTBN is busy operating on
+    secure wipe of DMEM/IMEM using SEC_WIPE_I(D)MEM command. Secure wipe of the
+    memories also happen when we encounter a fatal error while on
+    Status.BUSY_EXECUTE. However, if we are getting a fatal error Status would
+    be LOCKED.
 
     PRE_EXEC, FETCH_WAIT, EXEC, WIPING_GOOD and WIPING_BAD correspond to
     Status.BUSY_EXECUTE. PRE_EXEC is the period after starting OTBN where we're
@@ -62,6 +69,7 @@ class FsmState(IntEnum):
     EXEC = 12
     WIPING_GOOD = 13
     WIPING_BAD = 14
+    MEM_SEC_WIPE = 20
     LOCKED = 2550
 
 
@@ -105,6 +113,9 @@ class OTBNState:
         self.rnd_256b = 0
         self.urnd_256b = 4 * [0]
         self.urnd_64b = 0
+
+        self.imem_req_pending = 0
+        self.dmem_req_pending = 0
 
         # To simulate injecting integrity errors, we set a flag to say that
         # IMEM is no longer readable without getting an error. This can't take
@@ -284,7 +295,9 @@ class OTBNState:
         return c
 
     def executing(self) -> bool:
-        return self._fsm_state not in [FsmState.IDLE, FsmState.LOCKED]
+        return self._fsm_state not in [FsmState.IDLE,
+                                       FsmState.LOCKED,
+                                       FsmState.MEM_SEC_WIPE]
 
     def wiping(self) -> bool:
         return self._fsm_state in [FsmState.WIPING_GOOD, FsmState.WIPING_BAD]
