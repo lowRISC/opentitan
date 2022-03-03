@@ -24,12 +24,10 @@ module sys_osc (
 timeunit  1ns / 1ps;
 import ast_bhv_pkg::* ;
 
-reg init_start = 1'b0;
-real CLK_PERIOD, CalSysClkPeriod, UncSysClkPeriod, SysClkPeriod;
+real CLK_PERIOD;
 
-assign CalSysClkPeriod = $itor( 10000 );                         // 10000ps (100MHz)
-assign UncSysClkPeriod = $itor( $urandom_range(40000, 16667) );  // 40000-16667ps (25-60MHz)
-assign SysClkPeriod = (sys_osc_cal_i && init_start) ? CalSysClkPeriod : UncSysClkPeriod;
+reg init_start;
+initial init_start = 1'b0;
 
 initial begin
   #1; init_start  = 1'b1;
@@ -37,28 +35,35 @@ initial begin
 end
 
 // Enable 5us RC Delay on rise
-wire en_osc_re_buf, en_osc_re;
+wire en_osc_re_buf, en_osc_re, sys_jen;
 buf #(SYS_EN_RDLY, 0) b0 (en_osc_re_buf, (vcore_pok_h_i && sys_en_i));
 assign en_osc_re = en_osc_re_buf && init_start;
+assign sys_jen = sys_jen_i && en_osc_re_buf && init_start;
 
 // Clock Oscillator
 ////////////////////////////////////////
-real jitter;
+real CalSysClkPeriod, UncSysClkPeriod, SysClkPeriod, jitter;
 
+initial CalSysClkPeriod = $itor( 10000 );                         // 10000ps (100MHz)
+initial UncSysClkPeriod = $itor( $urandom_range(40000, 16667) );  // 40000-16667ps (25-60MHz)
+
+assign SysClkPeriod = (sys_osc_cal_i && init_start) ? CalSysClkPeriod : UncSysClkPeriod;
 assign CLK_PERIOD = (SysClkPeriod + jitter)/1000;
 
 // Free running oscillator
-reg clk_osc = 1'b0;
+reg clk_osc;
+initial clk_osc = 1'b1;
 
 always begin
   // 0-2000ps is upto +20% Jitter
-  jitter = sys_jen_i ? $itor($urandom_range(2000, 0)) : 0.0;
+  jitter = sys_jen ? $itor($urandom_range(2000, 0)) : 0.0;
   #(CLK_PERIOD/2) clk_osc = ~clk_osc;
 end
 
+logic en_osc;
+
 // HDL Clock Gate
-logic clk, en_osc;
-reg en_clk;
+logic en_clk, clk;
 
 always_latch begin
   if ( !clk_osc ) en_clk <= en_osc;

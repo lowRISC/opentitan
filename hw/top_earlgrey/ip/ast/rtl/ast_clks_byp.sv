@@ -23,9 +23,9 @@ module ast_clks_byp (
   input clk_osc_aon_i,                      // AON Oscillator Clock
   input clk_osc_aon_val_i,                  // AON Oscillator Clock Valid
   input clk_ast_ext_i,                      // External Clock
-  input prim_mubi_pkg::mubi4_t io_clk_byp_req_i,  // External IO clock mux for OTP bootstrap
-  input prim_mubi_pkg::mubi4_t all_clk_byp_req_i, // External all clock mux override
-  input prim_mubi_pkg::mubi4_t ext_freq_is_96m_i, // External Clock Frequecy is 96MHz (else 48MHz)
+  input prim_mubi_pkg::mubi4_t io_clk_byp_req_i,    // External IO clock mux for OTP bootstrap
+  input prim_mubi_pkg::mubi4_t all_clk_byp_req_i,   // External all clock mux override
+  input prim_mubi_pkg::mubi4_t ext_freq_is_96m_i,   // External Clock Frequecy is 96MHz (else 48MHz)
   output prim_mubi_pkg::mubi4_t io_clk_byp_ack_o,   // Switch IO clock to External clock
   output prim_mubi_pkg::mubi4_t all_clk_byp_ack_o,  // Switch all clocks to External clock
   output logic clk_src_sys_o,               // SYS Source Clock
@@ -199,7 +199,6 @@ prim_clock_gating #(
 ////////////////////////////////////////
 // SW Bypass select logic
 ////////////////////////////////////////
-
 // Sync to local AON clcok
 prim_mubi_pkg::mubi4_t io_clk_byp_req, all_clk_byp_req;
 prim_mubi_pkg::mubi4_t sw_ext_freq_is_96m;
@@ -388,7 +387,19 @@ prim_mubi4_sender #(
 ////////////////////////////////////////
 // Oscillator source is always 96MHz.
 // External Bypass source is assume to be 96MHz until it is ebabled as 48MHz
-assign clk_src_io_48m_o = io_clk_byp_sel && io_clk_byp_en && !ext_freq_is_96m;
+logic clk_src_io_is_48m;
+
+assign clk_src_io_is_48m = io_clk_byp_sel && io_clk_byp_en && !ext_freq_is_96m;
+
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_clk_src_io_48m_sync (
+  .clk_i ( clk_src_io_o ),
+  .rst_ni ( rst_aon_n ),
+  .d_i ( clk_src_io_is_48m ),
+  .q_o ( clk_src_io_48m_o )
+);
 
 
 /////////////////////
