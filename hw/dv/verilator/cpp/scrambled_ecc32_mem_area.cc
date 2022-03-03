@@ -23,7 +23,7 @@ static std::vector<uint8_t> AddrIntToBytes(uint32_t addr, uint32_t addr_width) {
   uint32_t addr_width_bytes = (addr_width + 7) / 8;
   std::vector<uint8_t> addr_bytes(addr_width_bytes);
 
-  for (int i = 0; i < addr_width_bytes; ++i) {
+  for (uint32_t i = 0; i < addr_width_bytes; ++i) {
     addr_bytes[i] = addr & 0xff;
     addr >>= 8;
   }
@@ -50,7 +50,7 @@ static std::vector<uint8_t> ByteVecFromSV(svBitVecVal sv_val[],
                                           uint32_t bytes) {
   int shift = 0;
   std::vector<uint8_t> vec(bytes);
-  for (int i = 0; i < bytes; ++i) {
+  for (uint32_t i = 0; i < bytes; ++i) {
     vec[i] = (sv_val[i / 4] >> shift) & 0xff;
 
     shift += 8;

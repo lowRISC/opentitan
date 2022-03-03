@@ -458,7 +458,7 @@ int OtbnModel::step_crc(const svBitVecVal *item /* bit [47:0] */,
     return -1;
 
   std::array<uint8_t, 6> item_arr;
-  for (int i = 0; i < item_arr.size(); ++i) {
+  for (size_t i = 0; i < item_arr.size(); ++i) {
     item_arr[i] = item[i / 4] >> 8 * (i % 4);
   }
   uint32_t state32 = state[0];

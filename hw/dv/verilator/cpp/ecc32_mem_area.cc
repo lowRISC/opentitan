@@ -157,7 +157,7 @@ void Ecc32MemArea::WriteBuffer(uint8_t buf[SV_MEM_WIDTH_BYTES],
                                const std::vector<uint8_t> &data,
                                size_t start_idx, uint32_t dst_word) const {
   zero_buffer(buf, width_byte_);
-  for (int i = 0; i < width_byte_ / 4; ++i) {
+  for (uint32_t i = 0; i < width_byte_ / 4; ++i) {
     const uint8_t *src_data = &data[start_idx + 4 * i];
     insert_word(buf, 39 * i, src_data, enc_secded_inv_39_32(src_data));
   }
@@ -170,9 +170,9 @@ void Ecc32MemArea::WriteBufferWithIntegrity(uint8_t buf[SV_MEM_WIDTH_BYTES],
   uint8_t src_data[4];
 
   zero_buffer(buf, width_byte_);
-  for (int i = 0; i < width_byte_ / 4; ++i) {
+  for (uint32_t i = 0; i < width_byte_ / 4; ++i) {
     const EccWord &word = data[start_idx + i];
-    for (int j = 0; j < 4; ++j) {
+    for (uint32_t j = 0; j < 4; ++j) {
       src_data[j] = (word.second >> 8 * j) & 0xff;
     }
     uint8_t check_bits = enc_secded_inv_39_32(src_data);
@@ -188,8 +188,8 @@ void Ecc32MemArea::WriteBufferWithIntegrity(uint8_t buf[SV_MEM_WIDTH_BYTES],
 void Ecc32MemArea::ReadBuffer(std::vector<uint8_t> &data,
                               const uint8_t buf[SV_MEM_WIDTH_BYTES],
                               uint32_t src_word) const {
-  for (int i = 0; i < width_byte_ / 4; ++i) {
-    for (int j = 0; j < 4; ++j) {
+  for (uint32_t i = 0; i < width_byte_ / 4; ++i) {
+    for (uint32_t j = 0; j < 4; ++j) {
       data.push_back(extract_bits(buf, 39 * i + 8 * j, 8));
     }
   }
@@ -198,10 +198,10 @@ void Ecc32MemArea::ReadBuffer(std::vector<uint8_t> &data,
 void Ecc32MemArea::ReadBufferWithIntegrity(
     EccWords &data, const uint8_t buf[SV_MEM_WIDTH_BYTES],
     uint32_t src_word) const {
-  for (int i = 0; i < width_byte_ / 4; ++i) {
+  for (uint32_t i = 0; i < width_byte_ / 4; ++i) {
     uint8_t buf32[4];
     uint32_t w32 = 0;
-    for (int j = 0; j < 4; ++j) {
+    for (uint32_t j = 0; j < 4; ++j) {
       uint8_t byte = extract_bits(buf, 39 * i + 8 * j, 8);
       buf32[j] = byte;
       w32 |= (uint32_t)byte << 8 * j;
