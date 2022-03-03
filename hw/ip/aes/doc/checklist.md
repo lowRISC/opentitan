@@ -169,17 +169,17 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 --------------|-----------------------------------------|-------------|------------------
 Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Done        |
 Documentation | [DV_DOC_COMPLETED][]                    | Done        |
-Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | In Progress |
+Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Done        |
 Testbench     | [ALL_INTERFACES_EXERCISED][]            | Done        |
 Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Done        |
 Testbench     | [SIM_TB_ENV_COMPLETED][]                | Done        |
 Tests         | [SIM_ALL_TESTS_PASSING][]               | Done        |
 Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | N/A         |
 Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | N/A         |
-Tests         | [SIM_FW_SIMULATED][]                    | In Progress |
+Tests         | [SIM_FW_SIMULATED][]                    | N/A         |
 Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Done        |
-Coverage      | [SIM_CODE_COVERAGE_V2][]                | In Progress |
-Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | In Progress |
+Coverage      | [SIM_CODE_COVERAGE_V2][]                | Done        |
+Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Done        |
 Coverage      | [FPV_CODE_COVERAGE_V2][]                | N/A         |
 Coverage      | [FPV_COI_COVERAGE_V2][]                 | N/A         |
 Code Quality  | [TB_LINT_PASS][]                        | Done        |
