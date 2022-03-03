@@ -56,6 +56,10 @@
       name: tl_dbw
       value: 8
     }
+    {
+      name: cover_reg_top_vcs_cov_cfg_file
+      value: "-cm_hier {proj_root}/hw/dv/tools/vcs/cover_reg_top.cfg+{proj_root}/hw/ip/rv_dm/dv/cov/cover_reg_top.cfg"
+    }
   ]
 
   // Default UVM test and seq class name.
