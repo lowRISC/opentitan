@@ -12,6 +12,7 @@ from mako.template import Template  # type: ignore
 from pkg_resources import resource_filename
 
 from .ip_block import IpBlock
+from .lib import check_int
 from .multi_register import MultiRegister
 from .reg_base import RegBase
 from .register import Register
@@ -134,3 +135,25 @@ def gen_rtl(block: IpBlock, outdir: str) -> int:
                 return 1
 
     return 0
+
+
+def render_param(dst_type: str, value: str) -> str:
+    '''Render a parameter value as used for the destination type
+
+    The value is itself a string but we have already checked that if dst_type
+    happens to be "int" or "int unsigned" then it can be parsed as an integer.
+
+    If dst_type is "int unsigned" and the value is larger than 2^31 then
+    explicitly generate a 32-bit hex value. This allows 32-bit literals whose
+    top bits are set (which can't be written as bare integers in SystemVerilog
+    without warnings, because those are interpreted as ints).
+
+    '''
+    if dst_type == 'int unsigned':
+        # This shouldn't fail because we've already checked it in
+        # _parse_parameter in params.py
+        int_val = check_int(value, "integer parameter")
+        if int_val >= (1 << 31):
+            return "32'h{:08x}".format(int_val)
+
+    return value

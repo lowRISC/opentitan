@@ -363,7 +363,7 @@ package ${lblock}_reg_pkg;
 
   // Param list
 % for param in localparams:
-  parameter ${param.param_type} ${param.name} = ${param.value};
+  parameter ${param.param_type} ${param.name} = ${gen_rtl.render_param(param.param_type, param.value)};
 % endfor
 % endif
 
