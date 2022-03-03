@@ -2,7 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// TL device sequence supports in-order and out-of-order response
+// A forever running sequence that responds to a TL request.
+//
+// This sequence supports in-order and out-of-order responses. It maintains a
+// memory to record the write requests, so that when the same address is read,
+// the originally written data is returned. This sequence runs forever, i.e.
+// it needs to be forked off as a separate thread. It can be stopped gracefully
+// by invoking the seq_stop() method.
 class tl_device_seq #(type REQ = tl_seq_item) extends dv_base_seq #(
     .REQ        (REQ),
     .CFG_T      (tl_agent_cfg),
@@ -19,8 +25,8 @@ class tl_device_seq #(type REQ = tl_seq_item) extends dv_base_seq #(
   REQ                      req_q[$];
   bit                      out_of_order_rsp = 0;
 
-  // Indicates if all req's have been serviced.
-  protected bit all_reqs_serviced = 1;
+  // Stops running this sequence.
+  protected bit stop;
 
   // chance to set d_error
   int                      d_error_pct = 0;
@@ -36,41 +42,63 @@ class tl_device_seq #(type REQ = tl_seq_item) extends dv_base_seq #(
   }
 
   virtual task body();
-    int req_cnt, rsp_cnt;
     fork
-      forever begin // collect req thread
-        tl_seq_item item;
-        REQ req;
+      begin:isolation_thread
+        fork
+          forever begin // collect req thread
+            int req_cnt;
+            tl_seq_item item;
+            REQ req;
 
-        p_sequencer.a_chan_req_fifo.get(item);
-        `downcast(req, item)
-        req_q.push_back(req);
-        `uvm_info(`gfn, $sformatf("Received req[%0d] : %0s",
-                                   req_cnt, req.convert2string()), UVM_HIGH)
-        req_cnt++;
-      end
-      forever begin // response thread
-        REQ req, rsp;
+            fork
+              begin: isolation_thread
+                fork
+                  p_sequencer.a_chan_req_fifo.get(item);
+                  wait (stop);
+                join_any
+                disable fork;
+              end
+            join
 
-        wait(req_q.size > 0);
-        if (out_of_order_rsp) req_q.shuffle();
-        req = req_q[0];  // 'peek' pop_front.
-        $cast(rsp, req.clone());
-        randomize_rsp(rsp);
-        post_randomize_rsp(rsp);
-        update_mem(rsp);
-        start_item(rsp);
-        finish_item(rsp);
-        get_response(rsp);
-        // Remove from req_q if response is completed.
-        if (rsp.rsp_completed) begin
-          req_q = req_q[1:$];
-          `uvm_info(`gfn, $sformatf("Sent rsp[%0d] : %0s, req: %0s",
-                                    rsp_cnt, rsp.convert2string(), req.convert2string()), UVM_HIGH)
-          rsp_cnt++;
-        end
+            // If an item was retrieved from the fifo, accept it.
+            if (item != null) begin
+              `downcast(req, item)
+              req_q.push_back(req);
+              `uvm_info(`gfn, $sformatf("Received req[%0d] : %0s",
+                                         req_cnt, req.convert2string()), UVM_HIGH)
+              req_cnt++;
+            end
+
+            // Exit the forever loop if a stop req was seen.
+            if (stop) break;
+          end
+          forever begin // response thread
+            int rsp_cnt;
+            REQ req, rsp;
+
+            wait(req_q.size > 0);
+            if (out_of_order_rsp) req_q.shuffle();
+            req = req_q[0];  // 'peek' pop_front.
+            $cast(rsp, req.clone());
+            randomize_rsp(rsp);
+            post_randomize_rsp(rsp);
+            update_mem(rsp);
+            start_item(rsp);
+            finish_item(rsp);
+            get_response(rsp);
+            // Remove from req_q if response is completed.
+            if (rsp.rsp_completed) begin
+              req_q = req_q[1:$];
+              `uvm_info(`gfn, $sformatf("Sent rsp[%0d] : %0s, req: %0s",
+                                        rsp_cnt, rsp.convert2string(), req.convert2string()),
+                        UVM_HIGH)
+              rsp_cnt++;
+            end
+          end
+        join_any
+        wait (req_q.size() == 0);
+        disable fork;
       end
-      forever @(req_cnt, rsp_cnt) all_reqs_serviced = (req_cnt == rsp_cnt);
     join
   endtask
 
@@ -118,9 +146,10 @@ class tl_device_seq #(type REQ = tl_seq_item) extends dv_base_seq #(
     end
   endfunction
 
-  // Indicates whether all reqs are serviced, to allow an external entity to safely kill the seq.
-  task wait_all_reqs_serviced();
-    wait (all_reqs_serviced);
+  // Stop running this seq and wait until it has finished gracefully.
+  virtual task seq_stop();
+    stop = 1'b1;
+    wait_for_sequence_state(UVM_FINISHED);
   endtask
 
 endclass : tl_device_seq

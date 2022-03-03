@@ -135,10 +135,10 @@ class cip_tl_seq_item extends tl_seq_item;
       bit [DataIntgWidth + $bits(tl_d2h_rsp_intg_t) - 1 : 0] rsp_and_intg_err_mask;
       // Pre-populate str with format specifiers for the updated values that will be set later.
       string str = {"TL data or integrity bits have been flipped, see the changes as below:\n",
-                   $sformatf("\t d_opcode: 0x%0x\n", d_opcode), " -> 0x%0x",
-                   $sformatf("\t d_size: 0x%0x\n", d_size), " -> 0x%0x",
-                   $sformatf("\t d_error: 0x%0x\n", d_error), " -> 0x%0x",
-                   $sformatf("\t rsp_intg: 0x%0x\n", l_d_user.rsp_intg), " -> 0x%0x"};
+                   $sformatf("\td_opcode: 0x%0x", d_opcode), " -> 0x%0x\n",
+                   $sformatf("\td_size: 0x%0x", d_size), " -> 0x%0x\n",
+                   $sformatf("\td_error: 0x%0x", d_error), " -> 0x%0x\n",
+                   $sformatf("\trsp_intg: 0x%0x", l_d_user.rsp_intg), " -> 0x%0x\n"};
 
     // Flip cmd or intg ecc
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(rsp_and_intg_err_mask,
