@@ -12,7 +12,6 @@ package otbn_env_pkg;
   import tl_agent_pkg::*;
   import cip_base_pkg::*;
   import push_pull_agent_pkg::*;
-  import otbn_model_pkg::*;
   import otbn_model_agent_pkg::*;
   import otbn_memutil_pkg::*;
   import mem_bkdr_util_pkg::mem_bkdr_util;

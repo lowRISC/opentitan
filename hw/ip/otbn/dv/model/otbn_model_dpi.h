@@ -4,8 +4,8 @@
 #ifndef OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_MODEL_DPI_H_
 #define OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_MODEL_DPI_H_
 
-// The DPI exports for OtbnModel. See also otbn_model_pkg.sv, where they are
-// declared for the SystemVerilog side.
+// The DPI exports for OtbnModel. See also otbn_model_dpi.svh, where
+// they are declared for the SystemVerilog side.
 //
 // These are defined in a separate file from otbn_model.h because otherwise
 // something like otbn_top_sim.cc will see both these defines and the
