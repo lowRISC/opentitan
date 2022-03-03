@@ -21,7 +21,7 @@ package flash_ctrl_reg_pkg;
   parameter int BytesPerWord = 8;
   parameter int BytesPerPage = 2048;
   parameter int BytesPerBank = 524288;
-  parameter int ExecEn = 2724870391;
+  parameter int unsigned ExecEn = 32'ha26a38f7;
   parameter int NumAlerts = 2;
 
   // Address widths within the block
