@@ -390,7 +390,8 @@ dif_result_t dif_alert_handler_configure_class(
  * @param locked The locked state to configure ping timer in.
  * @return The result of the operation.
  */
-OT_WARN_UNUSED_RESULT dif_result_t dif_alert_handler_configure_ping_timer(
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_alert_handler_configure_ping_timer(
     const dif_alert_handler_t *alert_handler, uint32_t ping_timeout,
     dif_toggle_t enabled, dif_toggle_t locked);
 
@@ -408,7 +409,8 @@ OT_WARN_UNUSED_RESULT dif_result_t dif_alert_handler_configure_ping_timer(
  * @param locked The locked state to configure ping timer in after enabling it.
  * @return The result of the operation.
  */
-OT_WARN_UNUSED_RESULT dif_result_t dif_alert_handler_ping_timer_set_enabled(
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_alert_handler_ping_timer_set_enabled(
     const dif_alert_handler_t *alert_handler, dif_toggle_t locked);
 
 /**
