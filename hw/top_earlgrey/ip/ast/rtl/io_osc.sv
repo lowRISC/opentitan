@@ -23,12 +23,10 @@ module io_osc (
 timeunit 1ns / 1ps;
 import ast_bhv_pkg::* ;
 
-reg init_start = 1'b0;
-real CLK_PERIOD, CalIoClkPeriod, UncIoClkPeriod, IoClkPeriod;
+real CLK_PERIOD;
 
-assign CalIoClkPeriod = $itor( 1000000/96 );                    // ~10416.666667ps (96MHz)
-assign UncIoClkPeriod = $itor( $urandom_range(40000, 16667) );  // 40000-16667ps (25-60MHz)
-assign IoClkPeriod = (io_osc_cal_i && init_start) ? CalIoClkPeriod : UncIoClkPeriod;
+reg init_start;
+initial init_start = 1'b0;
 
 initial begin
   #1; init_start  = 1'b1;
@@ -43,18 +41,26 @@ assign en_osc_re = en_osc_re_buf && init_start;
 
 // Clock Oscillator
 ////////////////////////////////////////
+real CalIoClkPeriod, UncIoClkPeriod, IoClkPeriod;
+
+initial CalIoClkPeriod = $itor( 1000000/96 );                    // ~10416.666667ps (96MHz)
+initial UncIoClkPeriod = $itor( $urandom_range(40000, 16667) );  // 40000-16667ps (25-60MHz)
+
+assign IoClkPeriod = (io_osc_cal_i && init_start) ? CalIoClkPeriod : UncIoClkPeriod;
 assign CLK_PERIOD = IoClkPeriod/1000;
 
 // Free running oscillator
-reg clk_osc = 1'b0;
+reg clk_osc;
+initial clk_osc = 1'b1;
 
 always begin
    #(CLK_PERIOD/2) clk_osc = ~clk_osc;
 end
 
+logic en_osc;
+
 // HDL Clock Gate
-logic clk, en_osc;
-reg en_clk;
+logic en_clk, clk;
 
 always_latch begin
   if ( !clk_osc ) en_clk <= en_osc;

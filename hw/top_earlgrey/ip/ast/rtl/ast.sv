@@ -71,7 +71,7 @@ module ast #(
 
   // system source clock
   input clk_src_sys_en_i,                     // SYS Source Clock Enable
-  input prim_mubi_pkg::mubi4_t clk_src_sys_jen_i, // SYS Source Clock Jitter Enable
+  input prim_mubi_pkg::mubi4_t clk_src_sys_jen_i,  // SYS Source Clock Jitter Enable
   output logic clk_src_sys_o,                 // SYS Source Clock
   output logic clk_src_sys_val_o,             // SYS Source Clock Valid
 
@@ -167,9 +167,6 @@ logic scan_mode, shift_en, scan_clk, scan_reset_n;
 logic vcc_pok, vcc_pok_h, vcc_pok_str;
 logic vcaon_pok, vcaon_pok_h, vcmain_pok;
 logic vcaon_pok_por, vcmain_pok_por;
-
-
-prim_mubi_pkg::mubi4_t jen;
 
 // Local (AST) System clock buffer
 ////////////////////////////////////////
@@ -363,6 +360,10 @@ logic clk_osc_sys, clk_osc_sys_val;
 assign rst_sys_clk_n = rst_osc_clk_n;  // Scan reset included
 assign clk_sys_pd_n  = !deep_sleep;
 
+prim_mubi_pkg::mubi4_t clk_src_sys_jen;
+
+
+
 logic sys_io_osc_cal;
 
 `ifdef AST_BYPASS_CLK
@@ -371,7 +372,7 @@ assign clk_sys_ext = clk_osc_byp_i.sys;
 `endif
 
 sys_clk u_sys_clk (
-  .clk_src_sys_jen_i ( prim_mubi_pkg::mubi4_test_true_strict(jen) ),
+  .clk_src_sys_jen_i ( prim_mubi_pkg::mubi4_test_true_strict(clk_src_sys_jen) ),
   .clk_src_sys_en_i ( clk_src_sys_en_i ),
   .clk_sys_pd_ni ( clk_sys_pd_n ),
   .rst_sys_clk_ni ( rst_sys_clk_n ),
@@ -595,17 +596,17 @@ localparam int EntropyRateWidth = 4;
 logic [EntropyRateWidth-1:0] entropy_rate_o;
 logic vcmain_pok_por_sys, rst_src_sys_n;
 
+// Sync clk_src_sys_jen_i to clk_sys
 prim_mubi4_sync #(
-  .NumCopies(1),
-  .AsyncOn(1),
-  .StabilityCheck(1),
-  .ResetValue(prim_mubi_pkg::MuBi4False)
+  .NumCopies ( 1 ),
+  .AsyncOn ( 1 ),
+  .StabilityCheck ( 1 ),
+  .ResetValue (prim_mubi_pkg::MuBi4False )
 ) u_jitter_en_sync (
-  // not sure if the right clock / reset is used
-  .clk_i(clk_sys),
-  .rst_ni(rst_src_sys_n),
-  .mubi_i(clk_src_sys_jen_i),
-  .mubi_o(jen)
+  .clk_i ( clk_sys ),
+  .rst_ni ( rst_src_sys_n ),
+  .mubi_i ( clk_src_sys_jen_i ),
+  .mubi_o ( clk_src_sys_jen )
 );
 
 // Reset De-Assert Sync
@@ -633,7 +634,7 @@ ast_entropy #(
   .clk_src_sys_i ( clk_sys ),
   .rst_src_sys_ni ( rst_src_sys_n ),
   .clk_src_sys_val_i ( clk_src_sys_val_o ),
-  .clk_src_sys_jen_i ( prim_mubi_pkg::mubi4_test_true_strict(jen) ),
+  .clk_src_sys_jen_i ( prim_mubi_pkg::mubi4_test_true_strict(clk_src_sys_jen) ),
   .entropy_req_o ( entropy_req_o )
 );  // of u_entropy
 

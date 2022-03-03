@@ -331,17 +331,7 @@ assign vcc_pok_str_1p1_h_o = vcc_pok_str_h[VccPokStrNum-1];
 ///////////////////////////////////////
 // Deep Sleep Indication
 ///////////////////////////////////////
-logic deep_sleep_h;
-
-assign deep_sleep_h = !(main_pd_h_ni && !main_pd_str_h && vcmain_pok_por_h_o);
-
-always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
-  if ( !rgls_rst_h_n ) begin
-    deep_sleep_h_o <= 1'b0;
-  end else begin
-    deep_sleep_h_o <= deep_sleep_h;
-  end
-end
+assign deep_sleep_h_o = !(main_pd_h_ni && !main_pd_str_h);
 
 
 ///////////////////////////////////////
