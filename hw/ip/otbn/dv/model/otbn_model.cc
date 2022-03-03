@@ -231,8 +231,6 @@ int OtbnModel::take_loop_warps(const OtbnMemUtil &memutil) {
 }
 
 int OtbnModel::start() {
-  const MemArea &imem = mem_util_.GetMemArea(true);
-
   ISSWrapper *iss = ensure_wrapper();
   if (!iss)
     return -1;
