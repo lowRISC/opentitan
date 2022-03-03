@@ -184,11 +184,11 @@ rom_error_t alert_class_configure(alert_class_t cls,
     case kAlertEnableLocked:
       reg = bitfield_bit32_write(
           reg, ALERT_HANDLER_CLASSA_CTRL_SHADOWED_LOCK_BIT, true);
-      FALLTHROUGH_INTENDED;
+      OT_FALLTHROUGH_INTENDED;
     case kAlertEnableEnabled:
       reg = bitfield_bit32_write(reg, ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_BIT,
                                  true);
-      FALLTHROUGH_INTENDED;
+      OT_FALLTHROUGH_INTENDED;
     case kAlertEnableNone:
       break;
     default:
@@ -198,19 +198,19 @@ rom_error_t alert_class_configure(alert_class_t cls,
     case kAlertEscalatePhase3:
       reg = bitfield_bit32_write(
           reg, ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E3_BIT, true);
-      FALLTHROUGH_INTENDED;
+      OT_FALLTHROUGH_INTENDED;
     case kAlertEscalatePhase2:
       reg = bitfield_bit32_write(
           reg, ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E2_BIT, true);
-      FALLTHROUGH_INTENDED;
+      OT_FALLTHROUGH_INTENDED;
     case kAlertEscalatePhase1:
       reg = bitfield_bit32_write(
           reg, ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E1_BIT, true);
-      FALLTHROUGH_INTENDED;
+      OT_FALLTHROUGH_INTENDED;
     case kAlertEscalatePhase0:
       reg = bitfield_bit32_write(
           reg, ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E0_BIT, true);
-      FALLTHROUGH_INTENDED;
+      OT_FALLTHROUGH_INTENDED;
     case kAlertEscalateNone:
       break;
     default:
