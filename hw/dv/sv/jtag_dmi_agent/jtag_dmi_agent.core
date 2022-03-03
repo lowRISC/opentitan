@@ -12,12 +12,14 @@ filesets:
       - lowrisc:dv:csr_utils
       - lowrisc:dv:dv_lib
       - lowrisc:dv:jtag_agent
+      - lowrisc:opentitan:bus_params_pkg
     files:
       - jtag_dmi_agent_pkg.sv
       - jtag_dmi_reg_block.sv: {is_include_file: true}
       - jtag_dmi_reg_frontdoor.sv: {is_include_file: true}
       - jtag_dmi_item.sv: {is_include_file: true}
       - jtag_dmi_monitor.sv: {is_include_file: true}
+      - sba_access_utils_pkg.sv
     file_type: systemVerilogSource
 
 targets:
