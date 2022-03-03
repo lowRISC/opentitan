@@ -24,13 +24,11 @@ module usb_osc (
 timeunit 1ns / 1ps;
 import ast_bhv_pkg::* ;
 
+real CLK_PERIOD;
 integer rand32;
-reg init_start = 1'b0;
-real CLK_PERIOD, CalUsbClkPeriod, UncUsbClkPeriod, UsbClkPeriod;
 
-assign CalUsbClkPeriod = $itor( 1000000/48 );                    // ~20833.33333ps (48MHz)
-assign UncUsbClkPeriod = $itor( $urandom_range(55555, 25000) );  // 55555-25000ps (18-40MHz)
-assign UsbClkPeriod = (usb_osc_cal_i && init_start) ? CalUsbClkPeriod : UncUsbClkPeriod;
+reg init_start = 1'b0;
+initial init_start = 1'b0;
 
 initial begin
   #1; init_start  = 1'b1;
@@ -45,26 +43,32 @@ buf #(IO_EN_RDLY, 0) b0 (en_osc_re_buf, (vcore_pok_h_i && usb_en_i));
 assign en_osc_re = en_osc_re_buf && init_start;
 
 logic ref_val_buf, ref_val;
-buf #(USB_VAL_RDLY, USB_VAL_FDLY) b1 (ref_val_buf, usb_ref_val_i);
+buf #(USB_VAL_RDLY, USB_VAL_FDLY) b1 (ref_val_buf, (vcore_pok_h_i && usb_ref_val_i));
 assign ref_val = ref_val_buf && init_start;
 
 // Clock Oscillator
 ////////////////////////////////////////
-real drift;
+real CalUsbClkPeriod, UncUsbClkPeriod, UsbClkPeriod, drift;
+
+initial CalUsbClkPeriod = $itor( 1000000/48 );                    // ~20833.33333ps (48MHz)
+initial UncUsbClkPeriod = $itor( $urandom_range(55555, 25000) );  // 55555-25000ps (18-40MHz)
 
 assign drift = ref_val ? 0.0 : $itor(rand32);
+assign UsbClkPeriod = (usb_osc_cal_i && init_start) ? CalUsbClkPeriod : UncUsbClkPeriod;
 assign CLK_PERIOD = (UsbClkPeriod + drift)/1000;
 
 // Free running oscillator
-reg clk_osc = 1'b0;
+reg clk_osc;
+initial clk_osc = 1'b1;
 
 always begin
   #(CLK_PERIOD/2) clk_osc = ~clk_osc;
 end
 
+logic en_osc;
+
 // HDL Clock Gate
-logic clk, en_osc;
-reg en_clk;
+logic en_clk, clk;
 
 always_latch begin
   if ( !clk_osc ) en_clk <= en_osc;
