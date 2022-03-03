@@ -156,6 +156,26 @@
       name: spi_device_quad_mode
       uvm_test_seq: spi_device_quad_mode_vseq
     }
+
+    {
+      name: spi_device_read_status
+      uvm_test_seq: spi_device_read_status_vseq
+    }
+
+    {
+      name: spi_device_pass_cmd_info
+      uvm_test_seq: spi_device_pass_cmd_info_vseq
+    }
+
+    {
+      name: spi_device_read_jedec
+      uvm_test_seq: spi_device_read_jedec_vseq
+    }
+
+    {
+      name: spi_device_read_sfdp
+      uvm_test_seq: spi_device_read_sfdp_vseq
+    }
   ]
 
   // List of regressions.

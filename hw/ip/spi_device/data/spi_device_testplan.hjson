@@ -252,7 +252,7 @@
             - Disable some cmd info slots.
             - Check no propagation of disabled commands.'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_pass_cmd_info"]
     }
     {
       name: cmd_read_status
@@ -263,7 +263,7 @@
             - Initiate response to the read status.
             - Check proper reception of response.'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_read_status"]
     }
     {
       name: cmd_read_jedec
@@ -274,7 +274,7 @@
             - Initiate response to the read jedec.
             - Check proper reception of response.'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_read_jedec"]
     }
     {
       name: cmd_read_sfdp
@@ -285,7 +285,7 @@
             - Initiate response to the read sfdp.
             - Check proper reception of response.'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_read_sfdp"]
     }
     {
       name: cmd_fast_read

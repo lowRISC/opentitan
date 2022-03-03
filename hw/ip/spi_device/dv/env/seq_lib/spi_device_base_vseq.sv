@@ -442,4 +442,17 @@ class spi_device_base_vseq extends cip_base_vseq #(
     end
   endtask
 
+  // Task for keeping opcode integrity regardless of rx_order config
+  virtual task order_cmd_bits(bit [7:0] pass_cmd, bit[23:0] pass_addr, ref bit [31:0] addr_cmd);
+    bit rx_order;
+    csr_rd(.ptr(ral.cfg.rx_order), .value(rx_order));
+    if (rx_order == 0) begin
+      pass_cmd = {<<1{pass_cmd}};
+      pass_addr = {<<1{pass_addr}};
+      addr_cmd = {pass_addr, pass_cmd};
+    end else begin
+      addr_cmd = {pass_addr, pass_cmd};
+    end
+  endtask : order_cmd_bits
+
 endclass : spi_device_base_vseq

@@ -28,3 +28,7 @@
 `include "spi_device_pass_data_translation_vseq.sv"
 `include "spi_device_dual_mode_vseq.sv"
 `include "spi_device_quad_mode_vseq.sv"
+`include "spi_device_read_status_vseq.sv"
+`include "spi_device_pass_cmd_info_vseq.sv"
+`include "spi_device_read_jedec_vseq.sv"
+`include "spi_device_read_sfdp_vseq.sv"
