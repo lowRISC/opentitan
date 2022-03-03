@@ -44,7 +44,7 @@
         { bits: "0",
           desc: ''' When true, all writable registers can be modified.
                     When false, they become read-only. Defaults true, write
-                    one to clear. This can be cleared after initial
+                    zero to clear. This can be cleared after initial
                     configuration at boot in order to lock in the listed
                     register settings.'''
           resval: 1
