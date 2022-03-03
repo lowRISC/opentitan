@@ -208,8 +208,7 @@ module keymgr_ctrl
   assign op_err = sync_err[SyncErrInvalidOp] |
                   sync_err[SyncErrInvalidIn];
 
-  assign op_fault_err = |sync_fault |
-                        |async_fault;
+  assign op_fault_err = |{sync_fault, async_fault};
 
 
   ///////////////////////////
@@ -813,7 +812,7 @@ module keymgr_ctrl
   always_comb begin
     status_o = OpIdle;
     if (op_done_o) begin
-      status_o = |error_o | |fault_o ? OpDoneFail : OpDoneSuccess;
+      status_o = |{error_o, fault_o} ? OpDoneFail : OpDoneSuccess;
     end else if (op_start_i) begin
       status_o = OpWip;
     end
