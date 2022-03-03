@@ -1090,6 +1090,7 @@ test('dif_pwm_unittest', executable(
     sources: [
       'dif_pwm_unittest.cc',
       'autogen/dif_pwm_autogen_unittest.cc',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_base.c',
       meson.project_source_root() / 'sw/device/lib/dif/dif_pwm.c',
       meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_pwm_autogen.c',
       hw_ip_pwm_reg_h,
