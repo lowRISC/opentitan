@@ -185,11 +185,15 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
         "digest_0", "digest_1", "digest_2", "digest_3", "digest_4", "digest_5", "digest_6",
         "digest_7": begin
           int digest_idx = get_digest_index(csr_name);
-          // HW default output Littie Endian for each digest (32 bits)
-          // But standard DPI function expect output is in Big Endian
-          // So digest_swap = 0 will require flip the expect value
-          bit [TL_DW-1:0] real_digest_val = (ral.cfg.digest_swap.get_mirrored_value() == 1'b0) ?
-                                            {<<8{item.d_data}} : item.d_data;
+          // By default, the hardware outputs little-endian data for each digest (32 bits). But DPI
+          // functions expect output to be big-endian. Thus we should flip the expected value if
+          // digest_swap is zero.
+          bit [TL_DW-1:0] real_digest_val;
+          if (ral.cfg.digest_swap.get_mirrored_value() == 1'b0) begin
+            real_digest_val = {<<8{item.d_data}};
+          end else begin
+            real_digest_val = item.d_data;
+          end
           // If wipe_secret is triggered, ensure the predicted value does not match the readout
           // digest.
           if (cfg.wipe_secret_triggered) begin
