@@ -7,6 +7,7 @@ package rv_dm_env_pkg;
   import uvm_pkg::*;
   import top_pkg::*;
   import dv_utils_pkg::*;
+  import bus_params_pkg::*;
   import jtag_agent_pkg::*;
   import jtag_dmi_agent_pkg::*;
   import dv_lib_pkg::*;
@@ -18,6 +19,7 @@ package rv_dm_env_pkg;
   import rv_dm_debug_mem_ral_pkg::*;
   import rv_dm_reg_pkg::NrHarts;
   import rv_dm_reg_pkg::NumAlerts;
+  import sba_access_utils_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -40,10 +42,6 @@ package rv_dm_env_pkg;
   // See hw/ip/rm_dm/data/rv_dm.hjson for alert names.
   parameter uint NUM_ALERTS = rv_dm_reg_pkg::NumAlerts;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
-
-  // types
-
-  // functions
 
   // package sources
   `include "rv_dm_env_cfg.sv"
