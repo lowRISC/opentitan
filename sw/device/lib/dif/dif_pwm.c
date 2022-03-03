@@ -7,11 +7,12 @@
 #include <assert.h>
 
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/dif/dif_base.h"
 
 #include "pwm_regs.h"  // Generated.
 
 static_assert(PWM_PARAM_N_OUTPUTS == 6,
-              "Expected six PWM channels. May need to update `dif_pwm.h`");
+              "Expected six PWM channels. May need to update `dif_pwm.h`.");
 static_assert(PWM_CFG_DC_RESN_MASK == 0xf,
               "Expected duty cycle configuration register to be 4 bits.");
 
@@ -154,6 +155,105 @@ dif_result_t dif_pwm_configure_channel(const dif_pwm_t *pwm,
 #undef PWM_CHANNEL_CONFIG_CASE_
 
   mmio_region_write32(pwm->base_addr, PWM_INVERT_REG_OFFSET, invert_reg);
+
+  return kDifOk;
+}
+
+dif_result_t dif_pwm_phase_cntr_set_enabled(const dif_pwm_t *pwm,
+                                            dif_toggle_t enabled) {
+  if (pwm == NULL || !dif_is_valid_toggle(enabled)) {
+    return kDifBadArg;
+  }
+
+  if (!mmio_region_read32(pwm->base_addr, PWM_REGWEN_REG_OFFSET)) {
+    return kDifLocked;
+  }
+
+  uint32_t config_reg = mmio_region_read32(pwm->base_addr, PWM_CFG_REG_OFFSET);
+  config_reg = bitfield_bit32_write(config_reg, PWM_CFG_CNTR_EN_BIT,
+                                    dif_toggle_to_bool(enabled));
+  mmio_region_write32(pwm->base_addr, PWM_CFG_REG_OFFSET, config_reg);
+
+  return kDifOk;
+}
+
+dif_result_t dif_pwm_phase_cntr_get_enabled(const dif_pwm_t *pwm,
+                                            dif_toggle_t *is_enabled) {
+  if (pwm == NULL || is_enabled == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t config_reg = mmio_region_read32(pwm->base_addr, PWM_CFG_REG_OFFSET);
+  *is_enabled =
+      dif_bool_to_toggle(bitfield_bit32_read(config_reg, PWM_CFG_CNTR_EN_BIT));
+
+  return kDifOk;
+}
+
+dif_result_t dif_pwm_channel_set_enabled(const dif_pwm_t *pwm,
+                                         uint32_t channels,
+                                         dif_toggle_t enabled) {
+  if (pwm == NULL || channels >= (1U << PWM_PARAM_N_OUTPUTS) ||
+      !dif_is_valid_toggle(enabled)) {
+    return kDifBadArg;
+  }
+
+  if (!mmio_region_read32(pwm->base_addr, PWM_REGWEN_REG_OFFSET)) {
+    return kDifLocked;
+  }
+
+  uint32_t enable_reg =
+      mmio_region_read32(pwm->base_addr, PWM_PWM_EN_REG_OFFSET);
+
+  if (dif_toggle_to_bool(enabled)) {
+    enable_reg |= channels;
+  } else {
+    enable_reg &= ~channels;
+  }
+
+  mmio_region_write32(pwm->base_addr, PWM_PWM_EN_REG_OFFSET, enable_reg);
+
+  return kDifOk;
+}
+
+dif_result_t dif_pwm_channel_get_enabled(const dif_pwm_t *pwm,
+                                         dif_pwm_channel_t channel,
+                                         dif_toggle_t *is_enabled) {
+  if (pwm == NULL || is_enabled == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t channel_bit = bitfield_count_trailing_zeroes32(channel);
+
+  if (channel_bit >= PWM_PARAM_N_OUTPUTS) {
+    return kDifBadArg;
+  }
+
+  uint32_t enable_reg =
+      mmio_region_read32(pwm->base_addr, PWM_PWM_EN_REG_OFFSET);
+  *is_enabled =
+      dif_bool_to_toggle(bitfield_bit32_read(enable_reg, channel_bit));
+
+  return kDifOk;
+}
+
+dif_result_t dif_pwm_lock(const dif_pwm_t *pwm) {
+  if (pwm == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(pwm->base_addr, PWM_REGWEN_REG_OFFSET, 0);
+
+  return kDifOk;
+}
+
+dif_result_t dif_pwm_is_locked(const dif_pwm_t *pwm, bool *is_locked) {
+  if (pwm == NULL || is_locked == NULL) {
+    return kDifBadArg;
+  }
+
+  *is_locked =
+      mmio_region_read32(pwm->base_addr, PWM_REGWEN_REG_OFFSET) ? false : true;
 
   return kDifOk;
 }

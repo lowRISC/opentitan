@@ -289,7 +289,7 @@ dif_result_t dif_pwm_channel_set_enabled(const dif_pwm_t *pwm,
                                          dif_toggle_t enabled);
 
 /**
- * Gets the enablement state of a PWM channel.
+ * Gets the enablement state of one PWM channel.
  *
  * @param pwm A PWM handle.
  * @param channel The PWM channel to get the enablement state of.
