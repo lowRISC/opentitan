@@ -338,7 +338,6 @@ static inline void prince_decrypt(const uint8_t in_bytes[8],
                                   int old_key_schedule) {
   prince_enc_dec(in_bytes, key_bytes, out_bytes, 1, num_half_rounds,
                  old_key_schedule);
-  uint64_t m16[2][16];
 }
 
 #endif  // OPENTITAN_HW_IP_PRIM_DV_PRIM_PRINCE_CRYPTO_DPI_PRINCE_PRINCE_REF_H_
