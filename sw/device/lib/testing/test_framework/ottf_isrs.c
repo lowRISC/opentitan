@@ -16,12 +16,12 @@
  * ISRs for testing, while also enabling writing tests that do not make use of
  * the OTTF. See the `crt_test` in `sw/device/tests/crt_test.c` for an example.
  */
-OT_ATTR_WEAK
+OT_WEAK
 void *pxCurrentTCB = NULL;
-OT_ATTR_WEAK
+OT_WEAK
 void *kTestConfig = NULL;
 
-OT_ATTR_WEAK
+OT_WEAK
 void ottf_exception_handler(void) {
   uint32_t mcause = ibex_mcause_read();
 
@@ -56,66 +56,66 @@ void ottf_exception_handler(void) {
   }
 }
 
-OT_ATTR_WEAK
+OT_WEAK
 void ottf_instr_misaligned_fault_handler(void) {
   LOG_INFO("Misaligned instruction, mtval holds the fault address.");
   LOG_INFO("MTVAL value is 0x%x", ibex_mtval_read());
   abort();
 }
 
-OT_ATTR_WEAK
+OT_WEAK
 void ottf_instr_access_fault_handler(void) {
   LOG_INFO("Instruction access fault, mtval holds the fault address.");
   LOG_INFO("MTVAL value is 0x%x", ibex_mtval_read());
   abort();
 }
 
-OT_ATTR_WEAK
+OT_WEAK
 void ottf_illegal_instr_fault_handler(void) {
   LOG_INFO("Illegal instruction fault, mtval shows the faulting instruction.");
   LOG_INFO("MTVAL value is 0x%x", ibex_mtval_read());
   abort();
 }
 
-OT_ATTR_WEAK
+OT_WEAK
 void ottf_breakpoint_handler(void) {
   LOG_INFO("Breakpoint triggered, mtval holds the breakpoint address.");
   LOG_INFO("MTVAL value is 0x%x", ibex_mtval_read());
   abort();
 }
 
-OT_ATTR_WEAK
+OT_WEAK
 void ottf_load_store_fault_handler(void) {
   LOG_INFO("Load/Store fault, mtval holds the fault address.");
   LOG_INFO("MTVAL value is 0x%x", ibex_mtval_read());
   abort();
 }
 
-OT_ATTR_WEAK
+OT_WEAK
 void ottf_machine_ecall_handler(void) {
   LOG_INFO("Machine-mode environment call (syscall).");
   abort();
 }
 
-OT_ATTR_WEAK
+OT_WEAK
 void ottf_user_ecall_handler(void) {
   LOG_INFO("User-mode environment call (syscall).");
   abort();
 }
 
-OT_ATTR_WEAK
+OT_WEAK
 void ottf_software_isr(void) {
   LOG_INFO("Software IRQ triggered!");
   abort();
 }
 
-OT_ATTR_WEAK
+OT_WEAK
 void ottf_timer_isr(void) {
   LOG_INFO("Timer IRQ triggered!");
   abort();
 }
 
-OT_ATTR_WEAK
+OT_WEAK
 void ottf_external_isr(void) {
   LOG_INFO("External IRQ triggered!");
   abort();
