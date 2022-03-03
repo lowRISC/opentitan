@@ -922,6 +922,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     bit [FIPS_BUS_WIDTH - 1:0]       fips_data;
     entropy_phase_e                  dut_phase;
     bit                              predict_conditioned;
+    prim_mubi_pkg::mubi4_t           rng_single_bit;
 
     int                              sample_frames;
     int                              pass_cnt_threshold;
@@ -937,6 +938,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     fw_ov_insert = (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True) &&
                    (ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value() == MuBi4True);
 
+    rng_single_bit = ral.conf.rng_bit_enable.get_mirrored_value();
+
     dut_phase = convert_seed_idx_to_phase(seed_idx,
                                           cfg.fips_enable == prim_mubi_pkg::MuBi4True,
                                           fw_ov_insert);
@@ -947,9 +950,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     predict_conditioned = !((route_sw && sw_bypass) || (dut_phase == BOOT));
 
-    // TODO: for now assume that data is fips certified if it has been conditioned
-    //       need to check that no other conditions apply for released data.
-    fips_data    = predict_conditioned;
+    fips_data = predict_conditioned && (rng_single_bit == prim_mubi_pkg::MuBi4False);
 
     if (predict_conditioned) begin
       localparam int BytesPerWord = TL_DW / 8;
@@ -1234,6 +1235,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         end else begin
           csrng_drops++;
           `uvm_info(`gfn, $sformatf("CSRNG Dropped seed: %d\n", csrng_drops), UVM_FULL)
+          `uvm_info(`gfn, $sformatf("item: %0x\n", item.d_data), UVM_FULL)
+          `uvm_info(`gfn, $sformatf("pred: %0x\n", prediction), UVM_FULL)
         end
       end : seed_trial_loop
       `DV_CHECK_EQ_FATAL(match_found, 1,
