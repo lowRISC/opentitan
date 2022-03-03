@@ -8,9 +8,6 @@
 # your PR. Anyone is able to contribute to pull request review, and is
 # encouraged to do so
 
-# Default Reviewers
-# *     @asb
-
 # Order: last matching pattern takes the most precedence.
 #   Please refer the link for the detail
 #   https://help.github.com/en/articles/about-code-owners
@@ -29,7 +26,6 @@ BUILD.bazel         @cfrantz @drewmacrae
 /.bazelrc           @cfrantz @drewmacrae
 
 # Utils: reggen, topgen, tlgen
-util/*.py           @asb
 util/*gen/          @msfschaffner @tjaychen
 util/uvmdvgen*      @sriyerg
 util/regtool.py     @Jacob-Levy
@@ -64,12 +60,12 @@ formal/             @lowRISC/ot-dv-reviewers
 # lint/             # TBD
 
 # Common docs
-/doc/               @asb
+/doc/               @mundaym
 
 # License related files
-LICENSE*            @asb
-COPYING*            @asb
-/util/licence-checker.hjson  @asb
+LICENSE*            @mundaym
+COPYING*            @mundaym
+/util/licence-checker.hjson  @mundaym
 
 # CI and testing
 /ci/                @mcy @milesdai @rswarbrick
