@@ -16,6 +16,9 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   rand prim_mubi_pkg::mubi4_t scanmode;
   rand logic [NUM_HARTS-1:0]  unavailable;
 
+  // SBA TL device sequence. Class member for more controllability.
+  protected cip_tl_device_seq m_tl_sba_device_seq;
+
   // Handles for convenience.
   jtag_dtm_reg_block jtag_dtm_ral;
   jtag_dmi_reg_block jtag_dmi_ral;
@@ -43,6 +46,9 @@ class rv_dm_base_vseq extends cip_base_vseq #(
 
     // "Activate" the DM to facilitate ease of testing.
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(1), .blocking(1), .predict(1));
+
+    // Start the SBA TL device seq.
+    sba_tl_device_seq_start();
   endtask
 
   // Have scan reset also applied at the start.
@@ -81,19 +87,18 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task dut_shutdown();
+    sba_tl_device_seq_stop();
     // Check for pending rv_dm operations and wait for them to complete.
     // TODO: Improve this later.
     cfg.clk_rst_vif.wait_clks(200);
   endtask
 
   // Spawns off a thread to auto-respond to incoming TL accesses on the SBA host interface.
-  virtual task launch_tl_sba_device_seq(bit blocking = 1'b0,
-                                        int min_rsp_delay = 0,
-                                        int max_rsp_delay = 80,
-                                        int rsp_abort_pct = 25,
-                                        int d_error_pct = 0,
-                                        int d_chan_intg_err_pct = 0);
-    cip_tl_device_seq m_tl_sba_device_seq;
+  virtual task sba_tl_device_seq_start(int min_rsp_delay = 0,
+                                       int max_rsp_delay = 80,
+                                       int rsp_abort_pct = 25,
+                                       int d_error_pct = 0,
+                                       int d_chan_intg_err_pct = 0);
     m_tl_sba_device_seq = cip_tl_device_seq::type_id::create("m_tl_sba_device_seq");
     m_tl_sba_device_seq.min_rsp_delay = min_rsp_delay;
     m_tl_sba_device_seq.max_rsp_delay = max_rsp_delay;
@@ -101,13 +106,34 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     m_tl_sba_device_seq.d_error_pct = d_error_pct;
     m_tl_sba_device_seq.d_chan_intg_err_pct = d_chan_intg_err_pct;
     `DV_CHECK_RANDOMIZE_FATAL(m_tl_sba_device_seq)
-    if (blocking) begin
-      m_tl_sba_device_seq.start(p_sequencer.tl_sba_sequencer_h);
-    end else begin
-      fork m_tl_sba_device_seq.start(p_sequencer.tl_sba_sequencer_h); join_none
-      // To ensure the seq above starts executing before the code following it starts executing.
-      #0;
-    end
+    `uvm_info(`gfn, "Started running m_tl_sba_device_seq", UVM_MEDIUM)
+    fork m_tl_sba_device_seq.start(p_sequencer.tl_sba_sequencer_h); join_none
+    // To ensure the seq above starts executing before the code following it starts executing.
+    #0;
+    // TODO: sba_tl_device_seq_disable_tlul_assert_host_sba_resp_svas();
+  endtask
+
+  // Stop running the m_tl_sba_device_seq seq.
+  virtual task sba_tl_device_seq_stop();
+    m_tl_sba_device_seq.seq_stop();
+    `uvm_info(`gfn, "Stopped running m_tl_sba_device_seq", UVM_MEDIUM)
+  endtask
+
+  // Task forked off to disable TLUL host SBA assertions when injecting intg errors on the response
+  // channel.
+  virtual task sba_tl_device_seq_disable_tlul_assert_host_sba_resp_svas();
+    fork
+      begin: isolation_thread
+        fork
+          forever @m_tl_sba_device_seq.inject_d_chan_intg_err begin
+            cfg.rv_dm_vif.disable_tlul_assert_host_sba_resp_svas =
+                m_tl_sba_device_seq.inject_d_chan_intg_err;
+          end
+          m_tl_sba_device_seq.wait_for_sequence_state(UVM_FINISHED);
+        join_any
+        disable fork;
+      end
+    join_none
   endtask
 
 endclass : rv_dm_base_vseq

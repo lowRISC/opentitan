@@ -66,7 +66,8 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
       tl_sba_d_chan_fifo.get(item);
       `uvm_info(`gfn, $sformatf("Received SBA TL d_chan item:\n%0s", item.sprint()), UVM_HIGH)
       // check tl packet integrity
-      void'(item.is_ok());
+      // TODO: deal with item not being ok.
+      void'(item.is_ok(.throw_error(0)));
       process_tl_sba_access(item, DataChannel);
     end
   endtask

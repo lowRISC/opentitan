@@ -17,6 +17,9 @@ interface rv_dm_if(input logic clk, input logic rst_n);
   logic dmactive;
   logic [NUM_HARTS-1:0] debug_req;
 
+  // Disable TLUL host SBA assertions when injecting intg errors on the response channel.
+  bit disable_tlul_assert_host_sba_resp_svas;
+
   // TODO: add clocking blocks.
 
 endinterface

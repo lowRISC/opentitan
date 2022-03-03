@@ -8,8 +8,6 @@ class rv_dm_jtag_dtm_csr_vseq extends rv_dm_common_vseq;
   `uvm_object_new
 
   virtual task body();
-    // If writes to DMI SBA registers triggers an access, then ensure the response is sent.
-    launch_tl_sba_device_seq();
     run_csr_vseq_wrapper(.num_times(num_trans), .models({jtag_dtm_ral}));
   endtask : body
 
