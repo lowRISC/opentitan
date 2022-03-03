@@ -994,6 +994,13 @@ subdir('autogen')
 subdir('sim_dv')
 
 ###############################################################################
+# Closed Source Test Libraries
+###############################################################################
+if (get_option('closed_source_dir') != '')
+  subdir('closed_source')
+endif
+
+###############################################################################
 # Other Tests
 ###############################################################################
 coverage_test_lib = declare_dependency(
@@ -1054,16 +1061,33 @@ foreach sw_test_name, sw_test_info : sw_tests
         ottf_lib,
       ]
     endif
-
-    sw_test_elf = executable(
-      sw_test_name + '_' + device_name,
-      name_suffix: 'elf',
-      dependencies: [
-        shared_test_deps,
-        sw_test_info['library'],
-      ],
-    )
-
+       
+    if (get_option('closed_source_dir') != '') and \
+      'link_with_closed_configs' in sw_test_info and \
+      sw_test_info['link_with_closed_configs']
+      sw_test_elf = executable(
+        sw_test_name + '_' + device_name,
+        name_suffix: 'elf',
+        # Need to force the linker to examine (strong) symbols that may have a
+        # weak implementation in the (static) test library.
+        link_whole: closed_source_config_hooks_lib,
+        dependencies: [
+          shared_test_deps,
+          sw_test_info['library'],
+          closed_source_config_hooks_dep,
+        ],
+      )
+    else
+      sw_test_elf = executable(
+        sw_test_name + '_' + device_name,
+        name_suffix: 'elf',
+        dependencies: [
+          shared_test_deps,
+          sw_test_info['library'],
+        ],
+      )
+    endif
+    
     target_name = sw_test_name + '_@0@_' + device_name
 
     sw_test_dis = custom_target(
