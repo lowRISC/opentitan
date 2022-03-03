@@ -53,7 +53,7 @@ class otbn_base_vseq extends cip_base_vseq #(
     end
 
     // Pass loop warp rules that we've just loaded into otbn_memutil into the model.
-    otbn_take_loop_warps(cfg.model_agent_cfg.vif.handle, cfg.mem_util);
+    cfg.model_agent_cfg.vif.take_loop_warps(cfg.mem_util);
 
     // We're loading a new program, so the tracking that we've been doing for how long runs take is
     // no longer valid.
