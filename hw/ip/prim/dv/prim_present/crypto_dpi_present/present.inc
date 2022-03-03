@@ -312,7 +312,7 @@ uint64_t encrypt(uint64_t in, uint64_t *subkey, uint16_t Rounds,
     //----------------------------------
     for (PBit = 0, out = 0; PBit < 64; PBit++) {
       out = rotate1l_64(out);  // next(rotate by one bit)
-      out |= ((text >> 63 - Pbox[PBit]) &
+      out |= ((text >> (63 - Pbox[PBit])) &
               1);  // put new value to lowest bit (pbox)
     }
 
@@ -343,7 +343,6 @@ uint64_t decrypt(uint64_t in, uint64_t *subkey, uint16_t Rounds,
     v_dec_start(in);
 
   for (RoundNr = 1; RoundNr <= Rounds; RoundNr++) {  // Start "for"
-    uint64_t key_temp;
     uint16_t temp;
 #define SboxNr temp
 #define PBit temp
@@ -364,7 +363,7 @@ uint64_t decrypt(uint64_t in, uint64_t *subkey, uint16_t Rounds,
     //----------------------------------
     for (PBit = 0, out = 0; PBit < 64; PBit++) {
       out = rotate1l_64(out);  // next(rotate by one bit)
-      out |= ((text >> 63 - PboxInv[PBit]) &
+      out |= ((text >> (63 - PboxInv[PBit])) &
               1);  // put new value to lowest bit (pbox)
     }
 
