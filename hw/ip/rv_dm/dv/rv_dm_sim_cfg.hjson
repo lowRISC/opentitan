@@ -127,6 +127,12 @@
       run_opts: ["+en_scb=0", "+csr_aliasing"]
       reseed: 5
     }
+    {
+      name: rv_dm_sba_tl_access
+      uvm_test_seq: rv_dm_sba_tl_access_vseq
+      reseed: 20
+    }
+
   ]
 
   // List of regressions.
