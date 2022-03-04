@@ -49,6 +49,8 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   logic req_pwrup_q, req_pwrup_d;
   logic ack_pwrdn_q, ack_pwrdn_d;
 
+  logic clk_active;
+
   // All power signals and signals going to analog logic are flopped to avoid transitional glitches
   logic pd_nq, pd_nd;
   logic pwr_clamp_q, pwr_clamp_d;
@@ -92,6 +94,12 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   assign all_clks_invalid = (core_clk_en | ~ast_i.core_clk_val) &
                             (io_clk_en | ~ast_i.io_clk_val) &
                             (usb_clk_en_lp | ~ast_i.usb_clk_val);
+
+  // ensure that clock controls are constantly re-evaluated and not just
+  // in one specific state
+  assign core_clk_en_d = ~fsm_invalid_q & (clk_active | core_clk_en);
+  assign io_clk_en_d   = ~fsm_invalid_q & (clk_active | io_clk_en);
+  assign usb_clk_en_d  = ~fsm_invalid_q & (clk_active ? usb_clk_en_active_i : usb_clk_en_lp);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -143,9 +151,6 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
     cause_toggle_d = cause_toggle_q;
     pwr_clamp_d    = pwr_clamp_q;
     pwr_clamp_env_d = pwr_clamp_env_q;
-    core_clk_en_d  = core_clk_en_q;
-    io_clk_en_d    = io_clk_en_q;
-    usb_clk_en_d   = usb_clk_en_q;
 
     req_pwrup_d    = req_pwrup_q;
     ack_pwrdn_d    = ack_pwrdn_q;
@@ -153,6 +158,8 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
 
     mon_main_pok   = '0;
     set_main_pok   = '0;
+
+    clk_active     = '0;
 
     unique case(state_q)
 
@@ -190,9 +197,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       end
 
       SlowPwrStateClocksOn: begin
-        core_clk_en_d = 1'b1;
-        io_clk_en_d = 1'b1;
-        usb_clk_en_d = usb_clk_en_active_i;
+        clk_active = 1'b1;
 
         if (all_clks_valid) begin
           state_d = SlowPwrStateReqPwrUp;
@@ -200,6 +205,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       end
 
       SlowPwrStateReqPwrUp: begin
+        clk_active = 1'b1;
         req_pwrup_d = 1'b1;
 
         // req_pwrdn_i should be 0 here to indicate
@@ -213,8 +219,8 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       SlowPwrStateIdle: begin
         // ack_pwrup_i should be 0 here to indicate
         // the ack from the previous round has definitively completed
+        clk_active = 1'b1;
         mon_main_pok = 1'b1;
-        usb_clk_en_d = usb_clk_en_active_i;
 
         if (req_pwrdn_i && !ack_pwrup_i) begin
           state_d = SlowPwrStateAckPwrDn;
@@ -222,6 +228,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       end
 
       SlowPwrStateAckPwrDn: begin
+        clk_active = 1'b1;
         ack_pwrdn_d = 1'b1;
 
         if (!req_pwrdn_i) begin
@@ -231,10 +238,6 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       end
 
       SlowPwrStateClocksOff: begin
-        core_clk_en_d = core_clk_en;
-        io_clk_en_d = io_clk_en;
-        usb_clk_en_d = usb_clk_en_lp;
-
         if (all_clks_invalid) begin
           // if main power is turned off, assert early clamp ahead
           pwr_clamp_env_d = ~main_pd_ni;
@@ -266,9 +269,6 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
         fsm_invalid_d = 1'b1;
         pd_nd         = 1'b0;
         pwr_clamp_d   = 1'b1;
-        core_clk_en_d = 1'b0;
-        io_clk_en_d   = 1'b0;
-        usb_clk_en_d  = 1'b0;
       end
     endcase // unique case (state_q)
   end // always_comb
