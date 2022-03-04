@@ -20,6 +20,7 @@
 `define SPI_DEVICE_HIER       `CHIP_HIER.u_spi_device
 `define UART_HIER             `CHIP_HIER.u_uart
 `define USBDEV_HIER           `CHIP_HIER.u_usbdev
+`define PWRMGR_HIER           `CHIP_HIER.u_pwrmgr_aon
 
 // The path to the actual memory array in rom_ctrl. This is a bit of a hack to allow a long path
 // without overflowing 100 characters or including any whitespace (which breaks a DV_STRINGIFY call

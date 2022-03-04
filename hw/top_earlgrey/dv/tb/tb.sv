@@ -65,6 +65,11 @@ module tb;
   tl_if cpu_d_tl_if(.clk(cpu_clk), .rst_n(cpu_rst_n));
   uart_if uart_if[NUM_UARTS-1:0]();
   jtag_if jtag_if();
+  pwm_if pwm_if[NUM_PWM_CHANNELS]();
+  pwrmgr_low_power_if pwrmgr_low_power_if(.clk(`CLKMGR_HIER.clocks_o.clk_aon_powerup),
+                      .rst_n(`RSTMGR_HIER.resets_o.rst_por_io_div4_n[0]));
+
+  assign pwrmgr_low_power_if.low_power = `PWRMGR_HIER.low_power_o;
 
   bind dut ast_supply_if ast_supply_if (
     .clk(top_earlgrey.clk_aon_i),
@@ -91,6 +96,17 @@ module tb;
   assign uart_if[0].uart_tx = ioc4;
   assign (weak0, weak1) ioc3 = 1'b1;
   assign (weak0, weak1) ioc4 = 1'b1;
+
+  // wires for pwm test
+  wire iob10, iob11, iob12;
+  wire ioc10, ioc11, ioc12;
+
+  assign (weak0, weak1) iob10 = 1'b0;
+  assign (weak0, weak1) iob11 = 1'b0;
+  assign (weak0, weak1) iob12 = 1'b0;
+  assign (weak0, weak1) ioc10 = 1'b0;
+  assign (weak0, weak1) ioc11 = 1'b0;
+  assign (weak0, weak1) ioc12 = 1'b0;
 
   // TODO: the external clk is currently not connected.
   // We will need to feed this in via a muxed pin, once that function implemented.
@@ -135,9 +151,9 @@ module tb;
     // Connect this to IOB8 to align with SW bootstrap.c
     .IOB8(sw_straps[0]),   // MIO 17
     .IOB9(tie_off[1]),     // MIO 18
-    .IOB10(tie_off[2]),    // MIO 19
-    .IOB11(tie_off[3]),    // MIO 20
-    .IOB12(tie_off[4]),    // MIO 21
+    .IOB10(iob10),         // MIO 19
+    .IOB11(iob11),         // MIO 20
+    .IOB12(iob12),         // MIO 21
     // Bank C (VCC domain)
     .IOC0(tie_off[5]),     // MIO 22
     .IOC1(sw_straps[1]),   // MIO 23
@@ -149,9 +165,9 @@ module tb;
     .IOC7(tie_off[7]),     // MIO 29
     .IOC8(tap_straps[0]),  // MIO 30
     .IOC9(tie_off[8]),     // MIO 31
-    .IOC10(tie_off[9]),    // MIO 32
-    .IOC11(tie_off[10]),   // MIO 33
-    .IOC12(tie_off[11]),   // MIO 34
+    .IOC10(ioc10),         // MIO 32
+    .IOC11(ioc11),         // MIO 33
+    .IOC12(ioc12),         // MIO 34
     // Bank R (VCC domain)
     .IOR0(jtag_tms),       // MIO 35
     .IOR1(jtag_tdo),       // MIO 36
@@ -289,6 +305,10 @@ module tb;
     uvm_config_db#(virtual ast_supply_if)::set(
         null, "*.env", "ast_supply_vif", dut.ast_supply_if);
 
+    // PWRGMR.low_power_o only
+    uvm_config_db#(virtual pwrmgr_low_power_if)::set(
+        null, "*.env*", "pwrmgr_low_power_vif", pwrmgr_low_power_if);
+
     // temp disable pinmux assertion AonWkupReqKnownO_A because driving X in spi_device.sdi and
     // WkupPadSel choose IO_DPS1 in MIO will trigger this assertion
     // TODO: remove this assertion once pinmux is templatized
@@ -314,6 +334,29 @@ module tb;
                                            "vif", uart_if[i]);
     end
   end
+
+  for (genvar i = 0; i < NUM_PWM_CHANNELS; i++) begin : gen_pwm2io
+    assign pwm_if[i].clk    = `CLKMGR_HIER.clocks_o.clk_aon_powerup;
+    assign pwm_if[i].rst_n  = `RSTMGR_HIER.resets_o.rst_sys_aon_n[0];
+    assign pwm_if[i].pwm_en = 1;
+  end
+
+  assign pwm_if[0].pwm = iob10;
+  assign pwm_if[1].pwm = iob11;
+  assign pwm_if[2].pwm = iob12;
+  assign pwm_if[3].pwm = ioc10;
+  assign pwm_if[4].pwm = ioc11;
+  assign pwm_if[5].pwm = ioc12;
+
+  for (genvar n = 0; n < NUM_PWM_CHANNELS; n++) begin : gen_pwm_monitor_if
+    initial begin
+      uvm_config_db#(virtual pwm_if)::set(null, $sformatf("*.env.m_pwm_monitor%0d*", n),
+                                          $sformatf("m_pwm_monitor%0d_vif", n), pwm_if[n]);
+    end
+  end
+
+
+
   `undef SIM_SRAM_IF
 
   // Instantitate the memory backdoor util instances.
@@ -455,6 +498,7 @@ module tb;
         csr_seq_type == "mem_walk") begin
       force tb.dut.top_earlgrey.u_otp_ctrl.lc_dft_en_i = lc_ctrl_pkg::On;
     end
+//    void'($value$plusargs("pwm_chk_enable=%0d", pwm_chk_en));
   end
 
   // Control assertions in the DUT with UVM resource string "dut_assert_en".

@@ -25,6 +25,8 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   virtual pins_if#(3) sw_straps_vif;
   virtual pins_if#(1) rst_n_mon_vif;
 
+  // pwrmgr probe interface
+  virtual pwrmgr_low_power_if   pwrmgr_low_power_vif;
   // Memory backdoor util instances for all memory instances in the chip.
   mem_bkdr_util mem_bkdr_util_h[chip_mem_e];
 
@@ -71,6 +73,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   rand uart_agent_cfg       m_uart_agent_cfgs[NUM_UARTS];
   rand jtag_riscv_agent_cfg m_jtag_riscv_agent_cfg;
   rand spi_agent_cfg        m_spi_agent_cfg;
+  pwm_monitor_cfg           m_pwm_monitor_cfg[NUM_PWM_CHANNELS];
 
   `uvm_object_utils_begin(chip_env_cfg)
     `uvm_field_int   (stub_cpu,               UVM_DEFAULT)
@@ -87,7 +90,6 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   `uvm_object_new
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
-
     has_devmode = 0;
     list_of_alerts = chip_env_pkg::LIST_OF_ALERTS;
 
@@ -107,6 +109,12 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
     // create spi agent config obj
     m_spi_agent_cfg = spi_agent_cfg::type_id::create("m_spi_agent_cfg");
+
+    // create pwm monitor config obj
+    foreach (m_pwm_monitor_cfg[i]) begin
+      m_pwm_monitor_cfg[i] = pwm_monitor_cfg::type_id::create($sformatf("m_pwm_monitor%0d_cfg", i));
+      m_pwm_monitor_cfg[i].is_active = 0;
+    end
 
     // By default, assume SW images in PWD with these generic names.
     sw_images[SwTypeRom] = "./rom";

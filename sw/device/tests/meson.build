@@ -856,14 +856,19 @@ sw_tests += {
 }
 
 #PWM test
-pwm_test_lib = declare_dependency(
+sleep_pwm_pulses_test_lib = declare_dependency(
   link_with: static_library(
-    'pwm_test_lib',
-    sources: ['pwm_test.c'],
+    'sleep_pwm_pulses_test_lib',
+    sources: [
+      hw_top_earlgrey_pinmux_reg_h,
+      hw_ip_pwm_reg_h,
+      'sleep_pwm_pulses_test.c'],
     dependencies: [
       sw_lib_dif_aon_timer,
       sw_lib_dif_pwrmgr,
       sw_lib_dif_rstmgr,
+      sw_lib_dif_pwm,
+      sw_lib_dif_pinmux,
       sw_lib_mmio,
       sw_lib_runtime_log,
       sw_lib_testing_aon_timer_testutils,
@@ -873,8 +878,8 @@ pwm_test_lib = declare_dependency(
   ),
 )
 sw_tests += {
-  'pwm_test': {
-    'library': pwm_test_lib,
+  'sleep_pwm_pulses_test': {
+    'library': sleep_pwm_pulses_test_lib,
   }
 }
 

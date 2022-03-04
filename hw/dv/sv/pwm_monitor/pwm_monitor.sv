@@ -45,16 +45,12 @@ class pwm_monitor extends dv_base_monitor #(
     end
   endfunction
 
-  task run_phase(uvm_phase phase);
-    wait(vif.rst_n);
-    `uvm_info(`gfn, $sformatf("gettign delay %d", cfg.ok_to_end_delay_ns), UVM_LOW)
-    collect_trans(phase);
-  endtask : run_phase
-
   // collect transactions forever - already forked in dv_base_monitor::run_phase
   virtual protected task collect_trans(uvm_phase phase);
-
+    wait(vif.rst_n);
+    `uvm_info(`gfn, $sformatf("getting delay %d", cfg.ok_to_end_delay_ns), UVM_HIGH)
     dut_item = pwm_item::type_id::create($sformatf("%s_item", this.get_name()));
+
     forever begin
 
       @(vif.cb);
