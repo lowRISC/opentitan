@@ -762,3 +762,11 @@ dif_result_t dif_kmac_end(const dif_kmac_t *kmac,
 
   return kDifOk;
 }
+
+dif_result_t dif_kmac_config_is_locked(const dif_kmac_t *kmac,
+                                       bool *is_locked) {
+  uint32_t reg =
+      mmio_region_read32(kmac->base_addr, KMAC_CFG_REGWEN_REG_OFFSET);
+  *is_locked = bitfield_bit32_read(reg, KMAC_CFG_REGWEN_EN_BIT);
+  return kDifOk;
+}
