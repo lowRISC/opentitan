@@ -83,7 +83,7 @@ module ast #(
   input clk_src_io_en_i,                      // IO Source Clock Enable
   output logic clk_src_io_o,                  // IO Source Clock
   output logic clk_src_io_val_o,              // IO Source Clock Valid
-  output logic clk_src_io_48m_o,              // IO Source Clock is 48MHz
+  output prim_mubi_pkg::mubi4_t clk_src_io_48m_o,  // IO Source Clock is 48MHz
 
   // usb source clock
   input usb_ref_pulse_i,                      // USB Reference Pulse
