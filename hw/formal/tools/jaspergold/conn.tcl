@@ -24,8 +24,8 @@ if {$conn_csvs eq ""} {
 
 # only one scr file exists in this folder
 # Blackbox ast related modules to avoid compile errors.
-analyze -sv09     \
-  +define+FPV_ON  \
+analyze -sv09 \
+  +define+SYNTHESIS \
   -f [glob *.scr] \
   -bbox_m aon_osc \
   -bbox_m io_osc  \
