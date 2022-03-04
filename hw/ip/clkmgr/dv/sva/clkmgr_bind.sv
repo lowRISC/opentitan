@@ -8,7 +8,11 @@ module clkmgr_bind;
     .EndpointType("Device")
   ) tlul_assert_device (.clk_i, .rst_ni, .h2d(tl_i), .d2h(tl_o));
 
+
+  // In top-level testbench, do not bind the csr_assert_fpv to reduce simulation time.
+  `ifndef TOP_LEVEL_DV
   bind clkmgr clkmgr_csr_assert_fpv clkmgr_csr_assert (.clk_i, .rst_ni, .h2d(tl_i), .d2h(tl_o));
+  `endif
 
   bind clkmgr clkmgr_pwrmgr_sva_if clkmgr_pwrmgr_sva_if (
     .clk_i,

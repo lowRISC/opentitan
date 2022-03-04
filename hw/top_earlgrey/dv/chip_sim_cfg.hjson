@@ -103,6 +103,9 @@
   uvm_test_seq: chip_sw_base_vseq
   sw_build_device: sim_dv
 
+  // Add a default build option to indicate it is a top-level DV testbench.
+  build_opts: ["+define+TOP_LEVEL_DV"]
+
   // Add build modes.
   build_modes: [
     {
