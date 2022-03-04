@@ -97,7 +97,7 @@
           name: "pwrup_time",
           desc: '''
             ADC power up time, measured in always on clock cycles".
-            After power up time is reached, the adc controller needs two more cycles before an ADC channel is selected for access.
+            After power up time is reached, the adc controller needs one additional cycle before an ADC channel is selected for access.
           '''
           resval: "6",
         }

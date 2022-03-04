@@ -33,6 +33,7 @@ module adc_ctrl_fsm
   logic trigger_q;
   logic trigger_l2h, trigger_h2l;
 
+
   logic [3:0] pwrup_timer_cnt_d, pwrup_timer_cnt_q;
   logic pwrup_timer_cnt_clr, pwrup_timer_cnt_en;
   logic [9:0] chn0_val_d, chn1_val_d;
@@ -50,14 +51,13 @@ module adc_ctrl_fsm
   logic [15:0] np_sample_cnt_thresh;
 
   //FSM flow
-  //1. PWRDN->PWRUP->IDLE->ONEST_0->ONEST_021->ONEST_1->ONEST_DONE->PWRDN
-  //2. PWRDN->PWRUP->IDLE->LP_0->LP_021->LP_1->LP_EVAL->LP_SLP->LP_PWRUP->LP0->
+  //1. PWRDN->PWRUP->ONEST_0->ONEST_021->ONEST_1->ONEST_DONE->PWRDN
+  //2. PWRDN->PWRUP->LP_0->LP_021->LP_1->LP_EVAL->LP_SLP->LP_PWRUP->LP0->
   //   LP_021->LP_1->LP_EVAL->NP_0->NP_021->NP_1->NP_EVAL->NP_0...repeat
-  //3. PWRDN->PWRUP->IDLE->NP_0->NP_021->NP_1->NP_EVAL->NP_0/NP_DONE....repeat
+  //3. PWRDN->PWRUP->NP_0->NP_021->NP_1->NP_EVAL->NP_0/NP_DONE....repeat
   typedef enum logic [4:0] {
     PWRDN,// in the power down state
     PWRUP,// being powered up
-    IDLE,// powered up after the pwrup_timer
     ONEST_0,// in oneshot mode; sample channel0 value
     ONEST_021,// in oneshot mode; transition from chn0 to chn1
     ONEST_1,// in oneshot mode; sample channel1 value
@@ -97,7 +97,7 @@ module adc_ctrl_fsm
     if (!rst_aon_ni) begin
       pwrup_timer_cnt_q    <= '0;
     end
-    else if (pwrup_timer_cnt_clr || cfg_fsm_rst_i) begin
+    else if (pwrup_timer_cnt_clr || cfg_fsm_rst_i || trigger_h2l) begin
        pwrup_timer_cnt_q <= '0;
     end else begin
        pwrup_timer_cnt_q <= pwrup_timer_cnt_d;
@@ -110,7 +110,7 @@ module adc_ctrl_fsm
     if (!rst_aon_ni) begin
       lp_sample_cnt_q    <= '0;
     end
-    else if (lp_sample_cnt_clr || cfg_fsm_rst_i) begin
+    else if (lp_sample_cnt_clr || cfg_fsm_rst_i || trigger_h2l) begin
       lp_sample_cnt_q <= '0;
     end else begin
       lp_sample_cnt_q <= lp_sample_cnt_d;
@@ -123,7 +123,7 @@ module adc_ctrl_fsm
     if (!rst_aon_ni) begin
       np_sample_cnt_q    <= '0;
     end
-    else if (np_sample_cnt_clr || cfg_fsm_rst_i) begin
+    else if (np_sample_cnt_clr || cfg_fsm_rst_i || trigger_h2l) begin
       np_sample_cnt_q <= '0;
     end else begin
       np_sample_cnt_q <= np_sample_cnt_d;
@@ -137,7 +137,7 @@ module adc_ctrl_fsm
     if (!rst_aon_ni) begin
       wakeup_timer_cnt_q    <= '0;
     end
-    else if (wakeup_timer_cnt_clr || cfg_fsm_rst_i) begin
+    else if (wakeup_timer_cnt_clr || cfg_fsm_rst_i || trigger_h2l) begin
       wakeup_timer_cnt_q <= '0;
     end else begin
       wakeup_timer_cnt_q <= wakeup_timer_cnt_d;
@@ -249,19 +249,15 @@ module adc_ctrl_fsm
         end
         else if (pwrup_timer_cnt_q == cfg_pwrup_time_i) begin
           pwrup_timer_cnt_clr = 1'b1;
-          fsm_state_d = IDLE;
-        end
-      end
-
-      IDLE: begin
-        if (cfg_oneshot_mode_i) begin
-          fsm_state_d = ONEST_0;
-        end
-        else if (cfg_lp_mode_i) begin
-          fsm_state_d = LP_0;
-        end
-        else if (!cfg_lp_mode_i) begin
-          fsm_state_d = NP_0;
+          if (cfg_oneshot_mode_i) begin
+            fsm_state_d = ONEST_0;
+          end
+          else if (cfg_lp_mode_i) begin
+            fsm_state_d = LP_0;
+          end
+          else if (!cfg_lp_mode_i) begin
+            fsm_state_d = NP_0;
+          end
         end
       end
 
@@ -330,6 +326,7 @@ module adc_ctrl_fsm
       end
 
       LP_SLP: begin
+        adc_pd_o = 1'b1;
         if (wakeup_timer_cnt_q  != cfg_wakeup_time_i) begin
           wakeup_timer_cnt_en = 1'b1;
         end
