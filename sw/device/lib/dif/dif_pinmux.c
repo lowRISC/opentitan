@@ -24,3 +24,17 @@ dif_result_t dif_pinmux_input_select(const dif_pinmux_t *pinmux,
   mmio_region_write32(pinmux->base_addr, reg_offset, reg_value);
   return kDifOk;
 }
+
+dif_result_t dif_pinmux_output_select(const dif_pinmux_t *pinmux,
+                                      dif_pinmux_index_t mio_pad_output,
+                                      dif_pinmux_index_t outsel) {
+  if (pinmux == NULL || mio_pad_output >= PINMUX_PARAM_N_MIO_PADS ||
+      outsel >= (2 + PINMUX_PARAM_N_MIO_PERIPH_OUT)) {
+    return kDifBadArg;
+  }
+  uint32_t reg_offset = PINMUX_MIO_OUTSEL_0_REG_OFFSET + (mio_pad_output << 2);
+  uint32_t reg_value =
+      bitfield_field32_write(0, PINMUX_MIO_OUTSEL_0_OUT_0_FIELD, outsel);
+  mmio_region_write32(pinmux->base_addr, reg_offset, reg_value);
+  return kDifOk;
+}

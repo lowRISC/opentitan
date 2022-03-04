@@ -30,6 +30,8 @@ package chip_env_pkg;
   import uart_agent_pkg::*;
   import xbar_env_pkg::*;
   import top_earlgrey_rnd_cnst_pkg::*;
+  import pwm_monitor_pkg::*;
+  import pwm_reg_pkg::NOutputs;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -41,6 +43,8 @@ package chip_env_pkg;
   // local parameters and types
   parameter uint NUM_GPIOS = 16;
   parameter uint NUM_UARTS = 4;
+  parameter uint NUM_PWM_CHANNELS = pwm_reg_pkg::NOutputs;
+
   // Buffer is half of SPI_DEVICE Dual Port SRAM
   parameter uint SPI_FRAME_BYTE_SIZE = spi_device_reg_pkg::SPI_DEVICE_BUFFER_SIZE/2;
 

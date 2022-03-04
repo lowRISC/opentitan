@@ -22,6 +22,7 @@ filesets:
       - lowrisc:dv:sw_test_status
       - lowrisc:dv:sw_logger_if
       - lowrisc:dv:uart_agent
+      - lowrisc:dv:pwm_monitor
     files:
       - chip_env_pkg.sv
       - chip_env_cfg.sv: {is_include_file: true}
@@ -50,6 +51,7 @@ filesets:
       - seq_lib/chip_sw_sram_ctrl_execution_main_vseq.sv: {is_include_file: true}
       - autogen/chip_env_pkg__params.sv: {is_include_file: true}
       - ast_supply_if.sv
+      - pwrmgr_low_power_if.sv
     file_type: systemVerilogSource
 
 generate:
