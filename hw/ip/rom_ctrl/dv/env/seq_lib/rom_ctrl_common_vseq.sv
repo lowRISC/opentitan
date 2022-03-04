@@ -32,8 +32,17 @@ class rom_ctrl_common_vseq extends rom_ctrl_base_vseq;
                                                   1'b1, flip_bits);
   endfunction
 
+  virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
+    rom_ctrl_pkg::fsm_state_e rdata_state;
+    super.check_sec_cm_fi_resp(if_proxy);
+    `DV_CHECK_EQ(rdata_state, rom_ctrl_pkg::Invalid)
+  endtask : check_sec_cm_fi_resp
+
   virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
-    $assertoff(0, "tb.dut.KeymgrValidChk_A");
-    $assertoff(0, "tb.kmac_app_if.req_data_if.ValidHighUntilReady_A");
+    if (enable) begin
+      $asserton(0, "tb.dut.KeymgrValidChk_A");
+    end else begin
+      $assertoff(0, "tb.dut.KeymgrValidChk_A");
+    end
   endfunction: sec_cm_fi_ctrl_svas
 endclass
