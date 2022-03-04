@@ -353,6 +353,10 @@ module aes_control_fsm
         idle    = ~(start_core | (prng_reseed_o & prng_reseed_we_o));
         idle_we = 1'b1;
 
+        // Clear the start trigger when seeing invalid configurations or performing automatic
+        // operation.
+        start_we = start_i & ((mode_i == AES_NONE) | ~manual_operation_i);
+
         if (!start_core) begin
           // Initial key and IV updates are ignored if the core is about to start. If key sideload
           // is enabled, software writes to the initial key registers are ignored.
