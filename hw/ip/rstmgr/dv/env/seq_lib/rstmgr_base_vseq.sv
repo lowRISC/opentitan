@@ -74,17 +74,9 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   rand int non_ndm_reset_cycles;
   constraint non_ndm_reset_cycles_c {non_ndm_reset_cycles inside {[4 : 16]};}
 
-  rand int sys_to_cpu_rst_active_cycles;
-  constraint sys_to_cpu_rst_active_cycles_c {sys_to_cpu_rst_active_cycles inside {[0 : 4]};}
-
-  rand int sys_to_cpu_rst_inactive_cycles;
-  constraint sys_to_cpu_rst_inactive_cycles_c {sys_to_cpu_rst_inactive_cycles inside {[0 : 4]};}
-
   // various knobs to enable certain routines
   bit do_rstmgr_init = 1'b1;
-  bit responders_running = 0;
   bit check_rstreqs_en = 0;
-  static bit enable_cpu_to_sys_rst_release_response = 1'b1;
 
   mubi4_t scanmode;
   int scanmode_on_weight = 8;
@@ -154,15 +146,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
 
   virtual function void set_ndmreset_req(logic value);
     cfg.rstmgr_vif.cpu_i.ndmreset_req = value;
-  endfunction
-
-  local function logic get_rst_cpu_n();
-    return cfg.rstmgr_vif.cpu_i.rst_cpu_n;
-  endfunction
-
-  virtual function void set_rst_cpu_n(logic value);
-    `uvm_info(`gfn, $sformatf("Setting rst_cpu_n=%b", value), UVM_MEDIUM)
-    cfg.rstmgr_vif.cpu_i.rst_cpu_n = value;
   endfunction
 
   static function logic is_running_sequence(string seq_name);
@@ -424,14 +407,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     reset_start(pwrmgr_pkg::ResetUndefined);
     cfg.io_div4_clk_rst_vif.wait_clks(non_ndm_reset_cycles);
     reset_done();
-    `DV_SPINWAIT_EXIT(wait (cfg.rstmgr_vif.resets_o.rst_sys_n[1] == 1'b1);,
-                      cfg.clk_rst_vif.wait_clks(CPU_RESET_CLK_CYCLES);,
-                      "timeout waiting for cpu reset inactive")
-    if (!responders_running) begin
-      `uvm_info(`gfn, "Responders not running, release cpu reset", UVM_MEDIUM)
-      cfg.clk_rst_vif.wait_clks(sys_to_cpu_rst_active_cycles);
-      set_rst_cpu_n(1);
-    end
   endtask
 
   virtual task apply_reset(string kind = "HARD");
@@ -449,43 +424,10 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     join
   endtask
 
-  virtual protected task responders();
-    fork
-      forever
-        @(negedge cfg.rstmgr_vif.resets_o.rst_sys_n[1]) begin
-          cfg.clk_rst_vif.wait_clks(sys_to_cpu_rst_active_cycles);
-          set_rst_cpu_n(0);
-        end
-      forever
-        @cfg.clk_rst_vif.cb begin
-          if (enable_cpu_to_sys_rst_release_response && cfg.rstmgr_vif.resets_o.rst_sys_n[1] &&
-              !get_rst_cpu_n()) begin
-            `uvm_info(`gfn, "release responder activated", UVM_MEDIUM)
-            cfg.clk_rst_vif.wait_clks(sys_to_cpu_rst_active_cycles);
-            set_rst_cpu_n(1);
-          end
-        end
-    join_none
-  endtask : responders
-
-  local task start_responders();
-    // Initialize rst_cpu_n once for consistency.
-    set_rst_cpu_n(cfg.rstmgr_vif.resets_o.rst_sys_n[1]);
-    fork : isolation_fork
-      fork
-        `uvm_info(`gfn, "Starting responders", UVM_MEDIUM)
-        responders();
-      join
-    join
-    responders_running = 1;
-  endtask
-
   task pre_start();
     if (do_rstmgr_init) rstmgr_init();
     super.pre_start();
     cfg.pwrmgr_rstmgr_sva_vif.check_rstreqs_en = 0;
-    start_responders();
-    `uvm_info(`gfn, "Started responders", UVM_MEDIUM)
   endtask
 
   // setup basic rstmgr features
@@ -503,7 +445,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     set_rstreqs('0);
     set_reset_cause(pwrmgr_pkg::ResetNone);
     set_ndmreset_req('0);
-    set_rst_cpu_n('0);
   endtask
 
 endclass : rstmgr_base_vseq
