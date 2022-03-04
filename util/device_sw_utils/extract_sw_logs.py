@@ -52,20 +52,24 @@ def cleanup_newlines(string):
 def cleanup_format(_format):
     '''Converts C style format specifiers to SV style.
 
-    It makes the folllowing substitutions:
+    It makes the following substitutions:
     - Change %[N]?i, %[N]?u --> %[N]?d
     - Change %[N]?x, %[N]?p --> %[N]?h
     - Change %[N]?X         --> %[N]?H
 
     The below is a non-standard format specifier added in OpenTitan
-    (see sw/device/lib/base/print.c for more details). A single %z specifier
+    (see sw/device/lib/base/print.c for more details). A single %!s specifier
     consumes 2 arguments instead of 1 and hence has to converted as such to
     prevent the log monitor in SystemVerilog from throwing an error at runtime.
-    - Change %[N]?z         --> %[N]?s[%d].'''
-    _format = re.sub(r"(%-?\d*)[iu]", r"\1d", _format)
-    _format = re.sub(r"(%-?\d*)[xp]", r"\1h", _format)
-    _format = re.sub(r"(%-?\d*)X", r"\1H", _format)
-    _format = re.sub(r"(%-?\d*)z", r"\1s[%d]", _format)
+    The %!{x, X, y, Y} specifiers have the same property, but can print garbage,
+    so they're converted to pointers instead.
+    - Change %![N]?s        --> %[N]?s[%d].
+    - Change %![N]?[xXyY]   --> %[N]?h.'''
+    _format = re.sub(r"%(-?\d*)[iu]", r"%\1d", _format)
+    _format = re.sub(r"%(-?\d*)[xp]", r"%\1h", _format)
+    _format = re.sub(r"%(-?\d*)X", r"%\1H", _format)
+    _format = re.sub(r"%!(-?\d*)s", r"%\1s[%d]", _format)
+    _format = re.sub(r"%!(-?\d*)[xXyY]", r"%\1h[%d]", _format)
     _format = re.sub(r"%([bcodhHs])", r"%0\1", _format)
     return cleanup_newlines(_format)
 
