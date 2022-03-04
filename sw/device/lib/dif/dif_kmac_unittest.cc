@@ -169,4 +169,22 @@ TEST_F(AbsorbalignmentMessage, Success) {
         dif_kmac_absorb(&kmac_, &op_state_, pMsg, kMsg_.size(), NULL));
   }
 }
+
+class ConfigLock : public KmacTest {};
+
+TEST_F(ConfigLock, Locked) {
+  EXPECT_READ32(KMAC_CFG_REGWEN_REG_OFFSET, true);
+
+  bool lock = false;
+  EXPECT_EQ(dif_kmac_config_is_locked(&kmac_, &lock), kDifOk);
+  EXPECT_TRUE(lock);
+}
+
+TEST_F(ConfigLock, Unlocked) {
+  EXPECT_READ32(KMAC_CFG_REGWEN_REG_OFFSET, false);
+
+  bool lock = true;
+  EXPECT_EQ(dif_kmac_config_is_locked(&kmac_, &lock), kDifOk);
+  EXPECT_FALSE(lock);
+}
 }  // namespace dif_kmac_unittest
