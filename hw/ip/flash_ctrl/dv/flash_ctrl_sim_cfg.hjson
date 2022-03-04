@@ -108,7 +108,13 @@
       run_opts: ["+test_timeout_ns=10000000000"]
       reseed: 3
     }
-  
+    {
+      name: flash_ctrl_host_ctrl_arb
+      uvm_test_seq: flash_ctrl_host_ctrl_arb_vseq
+      run_opts: ["+zero_delays=1", "+test_timeout_ns=10000000000"]
+      reseed: 3
+    }
+
   ]
 
   // List of regressions.

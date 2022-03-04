@@ -921,4 +921,15 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   endtask : send_rma_req
 
+  // Task to Enable/Disable the 'Info' Partitions, Creator, Owner and Isolated, via the Lifetime
+  // Controller Interface
+  virtual task en_sw_rw_part_info (input flash_op_t flash_op, input lc_ctrl_pkg::lc_tx_t val);
+    if (flash_op.partition == FlashPartInfo) begin
+      cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = val;
+      cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en   = val;
+      cfg.flash_ctrl_vif.lc_iso_part_sw_rd_en     = val;
+      cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en     = val;
+    end
+  endtask : en_sw_rw_part_info
+
 endclass : flash_ctrl_base_vseq
