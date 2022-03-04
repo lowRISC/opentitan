@@ -32,7 +32,7 @@ interface flash_ctrl_if ();
   otp_ctrl_pkg::flash_otp_key_req_t otp_req;
   otp_ctrl_pkg::flash_otp_key_rsp_t otp_rsp = flash_ctrl_env_pkg::FLASH_OTP_RSP_DEFAULT;
 
-  //JTAG
+  // JTAG
   logic                             cio_tck;
   logic                             cio_tms;
   logic                             cio_tdi;
@@ -42,4 +42,4 @@ interface flash_ctrl_if ();
   // alert
   ast_dif_t                         flash_alert;
 
-endinterface
+endinterface : flash_ctrl_if
