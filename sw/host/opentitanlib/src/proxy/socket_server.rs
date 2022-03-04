@@ -14,7 +14,6 @@ use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::collections::HashMap;
 use std::io::{ErrorKind, Read, Write};
 use std::marker::PhantomData;
-use std::net::SocketAddr;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use super::CommandHandler;
@@ -44,12 +43,9 @@ pub struct JsonSocketServer<Msg: DeserializeOwned + Serialize, T: CommandHandler
 }
 
 impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg>> JsonSocketServer<Msg, T> {
-    pub fn new(command_handler: T, port: u16) -> Result<Self> {
+    pub fn new(command_handler: T, mut socket: TcpListener) -> Result<Self> {
         let poll = Poll::new()?;
         let socket_token = get_next_token();
-        let addr = SocketAddr::from(([0u8; 4], port));
-        log::info!("Setup JsonSocketServer: {}", &addr);
-        let mut socket = TcpListener::bind(addr)?;
         poll.registry()
             .register(&mut socket, socket_token, Interest::READABLE)?;
         // Create a `Signals` instance that will catch given set of signals for us.

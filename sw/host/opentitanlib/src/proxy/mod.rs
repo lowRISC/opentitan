@@ -4,8 +4,10 @@
 
 use anyhow::{bail, Result};
 use handler::TransportCommandHandler;
+use mio::net::TcpListener;
 use protocol::Message;
 use socket_server::JsonSocketServer;
+use std::net::SocketAddr;
 
 use crate::app::TransportWrapper;
 
@@ -31,21 +33,23 @@ impl<'a> SessionHandler<'a> {
         let mut port = listen_port.unwrap_or(9900);
         let limit = listen_port.unwrap_or(9999);
         // Find a suitable port to bind to.
-        loop {
-            match JsonSocketServer::new(TransportCommandHandler::new(&transport), port) {
-                Ok(socket_server) => {
-                    // Configure all GPIO pins to default direction and level, according to
-                    // configuration files provided.
-                    transport.apply_default_pin_configurations()?;
-                    return Ok(Self {
-                        port,
-                        socket_server,
-                    });
-                }
+        let socket = loop {
+            let addr = SocketAddr::from(([0u8; 4], port));
+            match TcpListener::bind(addr) {
+                Ok(socket) => break socket,
                 Err(e) if port >= limit => bail!(e),
                 Err(_) => port += 1,
             }
-        }
+        };
+        let socket_server =
+            JsonSocketServer::new(TransportCommandHandler::new(&transport), socket)?;
+        // Configure all GPIO pins to default direction and level, according to
+        // configuration files provided.
+        transport.apply_default_pin_configurations()?;
+        Ok(Self {
+            port,
+            socket_server,
+        })
     }
 
     pub fn get_port(&self) -> u16 {
