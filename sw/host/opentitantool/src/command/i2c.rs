@@ -30,7 +30,7 @@ impl CommandDispatch for I2cRawRead {
         context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
-        transport.capabilities().request(Capability::I2C).ok()?;
+        transport.capabilities()?.request(Capability::I2C).ok()?;
         let context = context.downcast_ref::<I2cCommand>().unwrap();
         let i2c_bus = context.params.create(transport)?;
         let mut v = vec![0u8; self.length];
@@ -54,7 +54,7 @@ impl CommandDispatch for I2cRawWrite {
         context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
-        transport.capabilities().request(Capability::I2C).ok()?;
+        transport.capabilities()?.request(Capability::I2C).ok()?;
         let context = context.downcast_ref::<I2cCommand>().unwrap();
         let i2c_bus = context.params.create(transport)?;
         i2c_bus.run_transaction(

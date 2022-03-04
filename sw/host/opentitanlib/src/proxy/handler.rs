@@ -34,6 +34,9 @@ impl<'a> TransportCommandHandler<'a> {
     /// logging.
     fn do_execute_cmd(&self, req: &Request) -> Result<Response, TransportError> {
         match req {
+            Request::GetCapabilities => {
+                Ok(Response::GetCapabilities(self.transport.capabilities()?))
+            }
             Request::Gpio { id, command } => {
                 let instance = self.transport.gpio_pin(id)?;
                 match command {

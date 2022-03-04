@@ -31,7 +31,7 @@ impl CommandDispatch for GpioRead {
         _context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
-        transport.capabilities().request(Capability::GPIO).ok()?;
+        transport.capabilities()?.request(Capability::GPIO).ok()?;
         let gpio_pin = transport.gpio_pin(&self.pin)?;
         let value = gpio_pin.read()?;
         Ok(Some(Box::new(GpioReadResult {
@@ -60,7 +60,7 @@ impl CommandDispatch for GpioWrite {
         _context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
-        transport.capabilities().request(Capability::GPIO).ok()?;
+        transport.capabilities()?.request(Capability::GPIO).ok()?;
         let gpio_pin = transport.gpio_pin(&self.pin)?;
 
         gpio_pin.write(self.value)?;
@@ -88,7 +88,7 @@ impl CommandDispatch for GpioSetMode {
         _context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
-        transport.capabilities().request(Capability::GPIO).ok()?;
+        transport.capabilities()?.request(Capability::GPIO).ok()?;
         let gpio_pin = transport.gpio_pin(&self.pin)?;
         gpio_pin.set_mode(self.mode)?;
         Ok(None)
@@ -115,7 +115,7 @@ impl CommandDispatch for GpioSetPullMode {
         _context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
-        transport.capabilities().request(Capability::GPIO).ok()?;
+        transport.capabilities()?.request(Capability::GPIO).ok()?;
         let gpio_pin = transport.gpio_pin(&self.pin)?;
         gpio_pin.set_pull_mode(self.pull_mode)?;
         Ok(None)

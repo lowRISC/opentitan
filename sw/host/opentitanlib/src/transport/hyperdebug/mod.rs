@@ -381,8 +381,10 @@ impl Inner {
 }
 
 impl<T: Flavor> Transport for Hyperdebug<T> {
-    fn capabilities(&self) -> Capabilities {
-        Capabilities::new(Capability::UART | Capability::GPIO | Capability::SPI | Capability::I2C)
+    fn capabilities(&self) -> Result<Capabilities> {
+        Ok(Capabilities::new(
+            Capability::UART | Capability::GPIO | Capability::SPI | Capability::I2C,
+        ))
     }
 
     // Crate SPI Target instance, or return one from a cache of previously created instances.

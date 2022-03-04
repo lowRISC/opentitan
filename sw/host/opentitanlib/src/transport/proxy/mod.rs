@@ -15,8 +15,7 @@ use crate::io::gpio::GpioPin;
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
-use crate::proxy::protocol;
-use crate::proxy::protocol::Message;
+use crate::proxy::protocol::{Message, Request, Response};
 use crate::transport::{
     Capabilities, Capability, Result, Transport, TransportError, WrapInTransportError,
 };
@@ -69,7 +68,7 @@ struct Inner {
 impl Inner {
     /// Helper method for sending one JSON request and receiving the response.  Called as part
     /// of the implementation of every method of the sub-traits (gpio, uart, spi, i2c).
-    fn execute_command(&self, req: protocol::Request) -> Result<protocol::Response> {
+    fn execute_command(&self, req: Request) -> Result<Response> {
         self.send_json_request(req).wrap(ProxyError::JsonEncoding)?;
         match self.recv_json_response().wrap(ProxyError::JsonDecoding)? {
             Message::Res(res) => res,
@@ -78,7 +77,7 @@ impl Inner {
     }
 
     /// Send a one-line JSON encoded requests, terminated with one newline.
-    fn send_json_request(&self, req: protocol::Request) -> anyhow::Result<()> {
+    fn send_json_request(&self, req: Request) -> anyhow::Result<()> {
         let mut conn = self.writer.borrow_mut();
         serde_json::to_writer(&mut *conn, &Message::Req(req))?;
         conn.write(&[b'\n'])?;
@@ -107,8 +106,11 @@ impl Inner {
 }
 
 impl Transport for Proxy {
-    fn capabilities(&self) -> Capabilities {
-        Capabilities::new(Capability::UART | Capability::GPIO | Capability::SPI | Capability::I2C)
+    fn capabilities(&self) -> Result<Capabilities> {
+        match self.inner.execute_command(Request::GetCapabilities)? {
+            Response::GetCapabilities(capabilities) => Ok(capabilities.add(Capability::PROXY)),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
     }
 
     // Create SPI Target instance, or return one from a cache of previously created instances.

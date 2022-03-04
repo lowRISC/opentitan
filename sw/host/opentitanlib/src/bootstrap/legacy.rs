@@ -213,7 +213,7 @@ impl UpdateProtocol for Legacy {
         transport: &TransportWrapper,
     ) -> Result<()> {
         transport
-            .capabilities()
+            .capabilities()?
             .request(Capability::GPIO | Capability::SPI)
             .ok()?;
         Ok(())

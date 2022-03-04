@@ -76,7 +76,7 @@ impl CommandDispatch for SpiSfdp {
         context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
-        transport.capabilities().request(Capability::SPI).ok()?;
+        transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = context.params.create(transport)?;
 
@@ -118,7 +118,7 @@ impl CommandDispatch for SpiReadId {
         context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
-        transport.capabilities().request(Capability::SPI).ok()?;
+        transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = context.params.create(transport)?;
         let jedec_id = SpiFlash::read_jedec_id(&*spi, self.length)?;
@@ -167,7 +167,7 @@ impl CommandDispatch for SpiRead {
         context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
-        transport.capabilities().request(Capability::SPI).ok()?;
+        transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = context.params.create(transport)?;
         let mut flash = SpiFlash::from_spi(&*spi)?;
@@ -217,7 +217,7 @@ impl CommandDispatch for SpiErase {
         context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
-        transport.capabilities().request(Capability::SPI).ok()?;
+        transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = context.params.create(transport)?;
         let mut flash = SpiFlash::from_spi(&*spi)?;
@@ -259,7 +259,7 @@ impl CommandDispatch for SpiProgram {
         context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
-        transport.capabilities().request(Capability::SPI).ok()?;
+        transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = context.params.create(transport)?;
         let mut flash = SpiFlash::from_spi(&*spi)?;
