@@ -119,7 +119,7 @@
     {
       name: err_test_cg
       desc: '''
-            Covers that all health test fails, fatal errors, all counters errors and
+            Covers that all health test failures, fatal errors, all counter errors and
             all error codes of entropy_src have been tested.
             Individual config settings that will be covered include:
             - which_ht_fail (0 to 3), 4 possible health test fails, repcnt, adaptp, bucket and
@@ -136,8 +136,64 @@
             - which_invalid_mubi (0 to 8), 9 possible invalid mubi value fields
             - which_cntr_replicate (0 to RNG_BUS_WIDTH-1), reptcnt, adaptp, markov health tests
               have RNG_BUS_WIDTH copies of counters
-            - which_bin (0 to 2**RNG_BUS_WIDTH-1), bucket health test has 2**RNG_BUS_WIDTH copies
+            - which_bin (0 to 2<sup>RNG_BUS_WIDTH-1</sup>), bucket health test has 2<sup>RNG_BUS_WIDTH</sup> copies
               of counters
+            '''
+    }
+    {
+      name: seed_output_cg
+      desc: '''
+            Covers that data output is observed at the csrng, entropy_src, and fw_ov interfaces for
+            all possible modes of operation, including:
+            - CONF.FIPS_ENABLE (True and False)
+            - CONF.ENTROPY_DATA_REG_ENABLE (True and False)
+            - CONF.THRESHOLD_SCOPE (True and False)
+            - CONF.RNG_BIT_ENABLE (True and False)
+            - CONF.RNG_BIT_SEL (0 to 3)
+            - ENTROPY_CONTROL.ES_ROUTE (True and False), If True, data must be observed at the
+              ENTROPY_DATA CSR.  If False, data must be observed at the CSRNG port.
+            - ENTROPY_CONTROL.ES_TYPE (True and False)
+            - FW_OV_MODE (True or False)
+            - FW_OV_ENTROPY_INSERT (True or False)
+            Since the scoreboard permits data to be dropped or rejected by the intropy source we
+            must explicitly confirm that the data is observed at the outputs for all possible
+            configurations.
+            '''
+    }
+    {
+      name: sw_update_cg
+      desc: '''
+            Covers that the TB has attempted to update DUT configurations while the module is
+            enabled, to ensure that the sw_regupd CSR is working
+            '''
+    }
+    {
+      name: ht_threshold_cg
+      desc: '''
+            Covers a range of values for all health test thresholds.  For each test we need:
+            - Test: ADAPTB, BUCKET, MARKOV, REPCNT, and REPTCNTS.
+              No cross between tests. EXT HT not used or covered for ES
+            - Mode: Bypass or FIPS
+            - window_size: {384, 512, 1024, 2048, 4096, plus other non-powers of two}
+            - Range buckets:
+               - For the ADAPTP, BUCKET and MARKOV test, the configuration sets the thresholds
+                 in units the likelihood of HT failure (i.e., sigma values):
+                 covers minimum, maximum, 0-2 sigma, 1-2 sigma, 2-4 sigma, 4-6 sigma, &gt; 6 sigma
+               - For REPCNT and REPCNTS tests covers buckets of 0-32, 32-64, 64-96, &gt; 96
+            - Result: HT Pass and Failure
+            '''
+    }
+    {
+      name: alert_cnt_cg
+      desc: '''
+            Covers a range of values (1 to 16, plus &gt; 16) for ALERT_THRESHOLD
+            '''
+    }
+    {
+      name: observe_fifo_thresh_cg
+      desc: '''
+            Covers a range of values (1-64) for OBSERVE_FIFO_THRESH. Interrupts
+            and data must be observed for all values.
             '''
     }
   ]

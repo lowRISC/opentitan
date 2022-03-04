@@ -29,9 +29,9 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
 * [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 * ENTROPY_SRC IOs
-* Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
-* Alerts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
-* Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
+* Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
+* Alerts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
+* Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
@@ -45,8 +45,16 @@ TODO-->
 ### Global types & methods
 All common types and methods defined at the package level can be found in
 `entropy_src_env_pkg`. Some of them in use are:
-<!--TODO-->
 ```systemverilog
+typedef bit [RNG_BUS_WIDTH-1:0] rng_val_t;
+
+typedef enum { BOOT, STARTUP, CONTINUOUS, HALTED } entropy_phase_e;
+
+// A function to predict the current state (or phase) of the entropy_src DUT
+// based on the current setting and number of seeds generated
+function automatic entropy_phase_e convert_seed_idx_to_phase(int seed_idx,
+                                                             bit fips_enable,
+                                                             bit fw_ov_insert);
 ```
 
 ### TL_agent
