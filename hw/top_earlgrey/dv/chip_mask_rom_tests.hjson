@@ -7,29 +7,28 @@
 
   # Note: Please maintain alphabetical order.
   tests: [
+    // Signed chip-level tests to be run with mask ROM, instead of test ROM.
+    {
+      name: chip_sw_uart_smoketest_signed
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/uart_smoketest:1:signed"]
+      en_run_modes: ["sw_test_mode_mask_rom"]
+    }
+
     // Mask ROM func tests to be run with test ROM.
     {
-      name: chip_sw_mask_rom_keymgr_functest
+      name: mask_rom_keymgr_functest
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/silicon_creator/testing/sw_silicon_creator_lib_driver_keymgr_functest:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=5000000"]
     }
-
-    // Chip-level tests to be run with mask ROM, i.e., ROM_EXT tests.
-    // Note, these tests will be signed with test keys, prior to loading.
-    {
-      name: chip_sw_mask_rom_uart_smoketest_signed
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/rom_ext_uart_smoketest:1:signed"]
-      en_run_modes: ["sw_test_mode_mask_rom"]
-    }
   ]
 
   regressions: [
     {
-      name: mask_rom_functest
-      tests: ["chip_sw_mask_rom_keymgr_functest"]
+      name: mask_rom_functests
+      tests: ["mask_rom_keymgr_functest"]
     }
   ]
 }
