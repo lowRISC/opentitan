@@ -18,7 +18,7 @@ module prim_sparse_fsm_flop #(
   output logic [Width-1:0] state_o
 );
 
-  logic unused_valid_st;
+  logic unused_err_o;
 
   prim_flop #(
     .Width(Width),
@@ -31,21 +31,17 @@ module prim_sparse_fsm_flop #(
   );
 
   `ifdef INC_ASSERT
-    StateEnumT tmp = tmp.first;
-    // An array to hold all possible enum values based on the given width.
-    StateEnumT declared_fsms [2**Width];
+  assign unused_err_o = is_undefined_state(state_o);
 
-    // Loop through all possible FSM values and store the listed StateEnumT enum value in
-    // `declared_fsms`.
-    // Ideally we can use `i < tmp.num`, but Xcelium does not support this syntax. (error msg:
-    // Hierarchical name ('tmp.num()') not allowed within a constant expression)
-    for (genvar i = 0; i < 2**Width; i++) begin : gen_declared_enum_list
-      if (i == 0) assign declared_fsms[0] = tmp;
-      else assign declared_fsms[i] = declared_fsms[i-1].next;
+  function automatic logic is_undefined_state(logic [Width-1:0] sig);
+    for (int i = 0, StateEnumT t = t.first(); i < t.num(); i += 1, t = t.next()) begin
+      if (StateEnumT'(sig) === t) return 0;
     end
-    assign unused_valid_st = !(state_o inside {declared_fsms});
+    return 1;
+  endfunction
+
   `else
-    assign unused_valid_st = 1'b1;
+    assign unused_err_o = 1'b0;
   `endif
 
   // If ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT is declared, the unused_assert_connected signal will
