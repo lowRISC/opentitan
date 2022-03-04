@@ -301,9 +301,7 @@
     {
       name: vcs_xprop
       is_sim_mode: 1
-      build_opts: ["-xprop={dv_root}/tools/vcs/xprop.cfg",
-                   // Enable xmerge mode specific performance optimization
-                   "-xprop=mmsopt"]
+      build_opts: ["-xprop={dv_root}/tools/vcs/xprop.cfg"]
     }
     {
       name: vcs_profile
