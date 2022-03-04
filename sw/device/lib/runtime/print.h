@@ -73,8 +73,9 @@ typedef struct buffer_sink {
  * garbage, and are, as such, unsupported.
  *
  * This function furthermore supports width modifiers for integer specifiers,
- * such as `%10d`. It does not support dynamic widths like `%*d`, and will also
- * always pad with zeroes, rather than spaces.
+ * such as `%010d`. It does not support dynamic widths like `%*d`. If the width
+ * specifier starts with a `0`, it is padded with zeroes; otherwise, it is
+ * padded with spaces, consistent with the standard C behavior.
  *
  * Of course, providing arguments for formatting which are incompatible with a
  * given format specifier is Undefined Behavior.

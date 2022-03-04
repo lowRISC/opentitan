@@ -104,11 +104,21 @@ TEST_F(PrintfTest, SignedIntNegative) {
 
 TEST_F(PrintfTest, SignedIntWithWidth) {
   EXPECT_EQ(base_printf("Hello, %3i!\n", 42), 12);
-  EXPECT_EQ(buf_, "Hello, 042!\n");
+  EXPECT_EQ(buf_, "Hello,  42!\n");
 }
 
 TEST_F(PrintfTest, SignedIntWithWidthTooShort) {
   EXPECT_EQ(base_printf("Hello, %3i!\n", 9001), 13);
+  EXPECT_EQ(buf_, "Hello, 9001!\n");
+}
+
+TEST_F(PrintfTest, SignedIntWithZeros) {
+  EXPECT_EQ(base_printf("Hello, %03i!\n", 42), 12);
+  EXPECT_EQ(buf_, "Hello, 042!\n");
+}
+
+TEST_F(PrintfTest, SignedIntWithZerosTooShort) {
+  EXPECT_EQ(base_printf("Hello, %03i!\n", 9001), 13);
   EXPECT_EQ(buf_, "Hello, 9001!\n");
 }
 
@@ -128,7 +138,7 @@ TEST_F(PrintfTest, HexFromDec) {
 }
 
 TEST_F(PrintfTest, HexFromDecWithWidth) {
-  EXPECT_EQ(base_printf("Hello, %8x!\n", 1024), 17);
+  EXPECT_EQ(base_printf("Hello, %08x!\n", 1024), 17);
   EXPECT_EQ(buf_, "Hello, 00000400!\n");
 }
 
@@ -199,7 +209,7 @@ TEST_F(PrintfTest, Binary) {
 }
 
 TEST_F(PrintfTest, BinaryWithWidth) {
-  EXPECT_EQ(base_printf("Hello, %32b!\n", 0b1010'1010), 41);
+  EXPECT_EQ(base_printf("Hello, %032b!\n", 0b1010'1010), 41);
   EXPECT_EQ(buf_, "Hello, 00000000000000000000000010101010!\n");
 }
 
