@@ -654,7 +654,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
             // advance OP completes
             if (current_op_status == keymgr_pkg::OpWip &&
                 item.d_data inside {keymgr_pkg::OpDoneSuccess, keymgr_pkg::OpDoneFail}) begin
-              current_op_status = item.d_data;
+              current_op_status = keymgr_pkg::keymgr_op_status_e'(item.d_data);
 
               if (cfg.en_cov) begin
                 keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
@@ -1168,7 +1168,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   virtual function void wipe_hw_keys();
     fork
       begin
-        keymgr_pkg::keymgr_working_state_e current_design_state;
+        uvm_reg_data_t current_design_state;
         cfg.clk_rst_vif.wait_n_clks(1);
         // When LC disables keymgr across with an operation, will have InvalidOp error.
         // If no operation at that time, no error.
