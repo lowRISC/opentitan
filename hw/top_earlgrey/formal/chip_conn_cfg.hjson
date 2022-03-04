@@ -21,6 +21,7 @@
               "{conn_csvs_dir}/clkmgr_timers.csv",
               "{conn_csvs_dir}/clkmgr_trans.csv",
               "{conn_csvs_dir}/flash_ast.csv",
+              "{conn_csvs_dir}/lc_escalate_en.csv",
               "{conn_csvs_dir}/otbn_ast.csv",
               "{conn_csvs_dir}/pwrmgr_rstmgr.csv",
               "{conn_csvs_dir}/rom_ctrl_ast.csv",
