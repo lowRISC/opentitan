@@ -222,7 +222,7 @@ void simple_serial_send_status(uint8_t res) {
 void simple_serial_print_hex(const uint8_t *data, size_t data_len) {
   char buf[2];
   for (size_t i = 0; i < data_len; ++i) {
-    base_snprintf(&buf[0], 2, "%2x", data[i]);
+    base_snprintf(&buf[0], 2, "%02x", data[i]);
     IGNORE_RESULT(dif_uart_byte_send_polled(uart, buf[0]));
     IGNORE_RESULT(dif_uart_byte_send_polled(uart, buf[1]));
   }

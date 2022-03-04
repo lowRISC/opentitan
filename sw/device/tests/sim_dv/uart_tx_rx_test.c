@@ -528,7 +528,7 @@ const test_config_t kTestConfig;
 bool test_main(void) {
   update_uart_base_addr_and_irq_id();
 
-  LOG_INFO("Test UART%d with base_addr: %8x", kUartIdx, uart_base_addr);
+  LOG_INFO("Test UART%d with base_addr: %08x", kUartIdx, uart_base_addr);
 
   // TODO, remove thse once pinout configuration is provided
   pinmux_connect_uart_to_pads(

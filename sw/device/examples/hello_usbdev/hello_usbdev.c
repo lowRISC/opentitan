@@ -206,7 +206,7 @@ int main(int argc, char **argv) {
         uint32_t usb_irq_state =
             REG32(USBDEV_BASE_ADDR + USBDEV_INTR_STATE_REG_OFFSET);
         uint32_t usb_stat = REG32(USBDEV_BASE_ADDR + USBDEV_USBSTAT_REG_OFFSET);
-        LOG_INFO("I%4x-%8x", usb_irq_state, usb_stat);
+        LOG_INFO("I%04x-%08x", usb_irq_state, usb_stat);
       } else {
         usb_simpleserial_send_byte(&simple_serial0, rcv_char);
         usb_simpleserial_send_byte(&simple_serial1, rcv_char + 1);

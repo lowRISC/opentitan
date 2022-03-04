@@ -42,8 +42,8 @@ static void write_read_check(mmio_region_t base_addr_region,
     mmio_region_write32(base_addr_region, i * sizeof(uint32_t), kRandomData[i]);
     rw_data_32 = mmio_region_read32(base_addr_region, i * sizeof(uint32_t));
     CHECK(rw_data_32 == kRandomData[i],
-          "Memory Write/Read Mismatch for %s, index %d, data read = %8x "
-          "data_expected = %8x.",
+          "Memory Write/Read Mismatch for %s, index %d, data read = %08x "
+          "data_expected = %08x.",
           sram_name, i, rw_data_32, kRandomData[i]);
   }
 }
@@ -67,9 +67,9 @@ bool test_main() {
   CHECK_DIF_OK(dif_sram_ctrl_get_status(&sram_ctrl_main, &status_main));
 
   CHECK((status_main & kStatusRegMask) == 0x0,
-        "SRAM main status error bits set, status = %8x.", status_main);
+        "SRAM main status error bits set, status = %08x.", status_main);
   CHECK((status_ret & kStatusRegMask) == 0x0,
-        "SRAM ret status error bits set, status = %8x.", status_ret);
+        "SRAM ret status error bits set, status = %08x.", status_ret);
 
   // Read and Write to/from SRAMs. Main SRAM will use the address of the
   // buffer that has been allocated. Ret SRAM can start at the base address.
