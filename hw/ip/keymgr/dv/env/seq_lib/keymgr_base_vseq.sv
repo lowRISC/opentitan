@@ -141,7 +141,8 @@ class keymgr_base_vseq extends cip_base_vseq #(
     keymgr_pkg::keymgr_op_status_e exp_status;
     bit is_good_op = 1;
     int key_verion = `gmv(ral.key_version[0]);
-    keymgr_pkg::keymgr_ops_e operation = `gmv(ral.control_shadowed.operation);
+    logic [2:0] operation = `gmv(ral.control_shadowed.operation);
+    keymgr_pkg::keymgr_ops_e cast_operation = keymgr_pkg::keymgr_ops_e'(operation);
     bit[TL_DW-1:0] rd_val;
 
     if (operation inside {keymgr_pkg::OpGenSwOut, keymgr_pkg::OpGenHwOut}) begin
@@ -167,7 +168,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
       is_good_op = !(current_state inside {keymgr_pkg::StReset, keymgr_pkg::StDisabled});
     end
     `uvm_info(`gfn, $sformatf("Wait for operation done in state %0s, operation %0s, good_op %0d",
-                              current_state.name, operation.name, is_good_op), UVM_MEDIUM)
+                              current_state.name, cast_operation.name, is_good_op), UVM_MEDIUM)
 
     // wait for status to get out of OpWip and check
     csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_pkg::OpWip), .timeout_ns(1000_000),
