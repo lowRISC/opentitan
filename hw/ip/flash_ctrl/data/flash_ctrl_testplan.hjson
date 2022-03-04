@@ -60,7 +60,7 @@
     {
       name: rma_hw_if
       desc: '''
-            Perform RMA entry requests and check afterwards that the  software has no access to 
+            Perform RMA entry requests and check afterwards that the  software has no access to
             the Flash.  After RMA entry, verify that the content of the flash is wiped out.
             '''
       milestone: V2
@@ -69,11 +69,14 @@
     {
       name: host_controller_arb
       desc: '''
-            Perform back-to-back operations via Software Interface and via Hardware Interface(key
-            manager,life cycle) in order to test arbitration within Flash Protocol Controller.
+            Perform operations via the Flash Software Interface, and at the same time invoke a
+            Hardware RMA operation. This verifies the arbitration within the Flash Protocol
+            Controller. The arbiter should allow any outstanding Software operations to complete
+            before the RMA starts. When the RMA completes the RMA FSM remains in its final state
+            until Reset and software access is blocked.
             '''
       milestone: V2
-      tests: []
+      tests: ["flash_ctrl_host_ctrl_arb"]
     }
     {
       name: erase_suspend
@@ -123,14 +126,14 @@
     {
       name: host_interleave
       desc: '''
-            At same time, perform two read operations and the same time via hardware host and via
-            controller. At same time, perform read operation via hardware host and program
+            At same time, perform two read operations and the same time via host and via
+            controller. At same time, perform read operation via host and program
             operation via controller. Perform mentioned parallel operations at different addresses
-            and on the same address (i.e. seed material). Expect that operations are successfully
+            and on the same address. Expect that operations are successfully
             executed.
             '''
       milestone: V2
-      tests: []
+      tests: ["flash_ctrl_phy_arb"]
     }
     {
       name: memory_protection
@@ -146,7 +149,7 @@
     {
       name: fetch_code
       desc: '''
-            Test code fetch feature. 
+            Test code fetch feature.
             '''
       milestone: V2
       tests: []
