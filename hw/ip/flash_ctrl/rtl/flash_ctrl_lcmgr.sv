@@ -419,16 +419,17 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
         end
       end // case: StReadSeeds
 
-     StReadEval: begin
-         addr_cnt_clr = 1'b1;
-         state_d = StReadSeeds;
+      StReadEval: begin
+        phase = PhaseSeed;
+        addr_cnt_clr = 1'b1;
+        state_d = StReadSeeds;
 
-         if (validate_q) begin
-            seed_cnt_en = 1'b1;
-            validate_d = 1'b0;
-         end else begin
-            validate_d = 1'b1;
-         end
+        if (validate_q) begin
+          seed_cnt_en = 1'b1;
+          validate_d = 1'b0;
+        end else begin
+          validate_d = 1'b1;
+        end
       end
 
       // Waiting for an rma entry command
