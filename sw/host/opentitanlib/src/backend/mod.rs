@@ -46,8 +46,12 @@ pub struct BackendOpts {
 
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("unknown interface {0}")]
+    #[error("Unknown interface {0}")]
     UnknownInterface(String),
+    #[error("Loading configuration file `{0}`: {1}")]
+    ConfReadError(PathBuf, anyhow::Error),
+    #[error("Parsing configuration file `{0}`: {1}")]
+    ConfParseError(PathBuf, anyhow::Error),
 }
 
 /// Creates the requested backend interface according to [`BackendOpts`].
@@ -75,9 +79,10 @@ pub fn create_empty_transport() -> Result<Box<dyn Transport>> {
 
 fn process_config_file(env: &mut TransportWrapper, conf_file: &Path) -> Result<()> {
     log::debug!("Reading config file {:?}", conf_file);
-    let conf_data = std::fs::read_to_string(conf_file).expect("Unable to read configuration file");
-    let res: ConfigurationFile =
-        serde_json::from_str(&conf_data).expect("Unable to parse configuration file");
+    let conf_data = std::fs::read_to_string(conf_file)
+        .map_err(|e| Error::ConfReadError(conf_file.to_path_buf(), e.into()))?;
+    let res: ConfigurationFile = serde_json::from_str(&conf_data)
+        .map_err(|e| Error::ConfParseError(conf_file.to_path_buf(), e.into()))?;
 
     let subdir = conf_file.parent().unwrap_or_else(|| Path::new(""));
     for included_conf_file in &res.includes {
