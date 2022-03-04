@@ -13,6 +13,22 @@
   name: "mask_rom_e2e"
 
   testpoints: [
+    // Functests
+    {
+      name: mask_rom_functests
+      desc: '''Run functests developed for mask ROM.
+
+            Functests test mask ROM components (e.g., drivers, libraries, etc.)
+            work as intended on-chip. However, unlike when these components are
+            embedded in the mask ROM, functests are linked with the OTTF, and
+            run out of flash. Additionally, unlike the mask ROM E2E tests,
+            functests are booted by the test ROM.
+            '''
+      tags: ["verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: ["mask_rom_keymgr_functest"]
+    }
+
     // Bootup without ROM_EXT
     {
       name: mask_rom_e2e_bootup_no_rom_ext
