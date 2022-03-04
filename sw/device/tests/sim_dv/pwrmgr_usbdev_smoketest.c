@@ -57,7 +57,7 @@ bool test_main(void) {
     low_power_exit = true;
     LOG_INFO("USB wakeup detected");
   } else {
-    LOG_ERROR("Unexpected wakeup reason (types: %2x, sources: %8x)",
+    LOG_ERROR("Unexpected wakeup reason (types: %02x, sources: %08x)",
               wakeup_reason.types, wakeup_reason.request_sources);
     return false;
   }
