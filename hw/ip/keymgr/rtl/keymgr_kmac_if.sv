@@ -222,10 +222,6 @@ module keymgr_kmac_if import keymgr_pkg::*;(
           end
         end
 
-        if (cnt_err) begin
-          state_d = StError;
-        end
-
       end
 
       StTxLast: begin
@@ -244,9 +240,6 @@ module keymgr_kmac_if import keymgr_pkg::*;(
         cnt_clr = kmac_data_i.ready;
         state_d = kmac_data_i.ready ? StOpWait : StTxLast;
 
-        if (cnt_err) begin
-          state_d = StError;
-        end
       end
 
       StOpWait: begin
@@ -275,8 +268,12 @@ module keymgr_kmac_if import keymgr_pkg::*;(
         fsm_error_o = 1'b1;
       end
 
-
     endcase // unique case (state_q)
+
+    // unconditional error transitions
+    if (cnt_err) begin
+      state_d = StError;
+    end
   end
 
   // If an fsm error is detected, there is no guarantee the transaction can completely gracefully.
