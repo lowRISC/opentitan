@@ -478,7 +478,7 @@ sw_lib_dif_kmac = declare_dependency(
       sw_lib_bitfield,
       sw_lib_mmio,
       sw_lib_dif_autogen_kmac,
-      sw_lib_mem,  
+      sw_lib_mem,
     ],
   )
 )
@@ -1076,6 +1076,7 @@ sw_lib_dif_pwm = declare_dependency(
     'sw_lib_dif_pwm',
     sources: [
       hw_ip_pwm_reg_h,
+      'dif_pwm.c',
     ],
     dependencies: [
       sw_lib_mmio,

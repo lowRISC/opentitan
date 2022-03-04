@@ -14,6 +14,7 @@ class chip_env extends cip_base_env #(
   jtag_riscv_agent       m_jtag_riscv_agent;
   jtag_riscv_reg_adapter m_jtag_riscv_reg_adapter;
   spi_agent              m_spi_agent;
+  pwm_monitor            m_pwm_monitor[NUM_PWM_CHANNELS];
 
   `uvm_component_new
 
@@ -76,6 +77,12 @@ class chip_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get ast_supply_vif from uvm_config_db")
     end
 
+    // get the handle to the pwrmgr interface
+    if(!uvm_config_db#(virtual pwrmgr_low_power_if)::get(this, "", "pwrmgr_low_power_vif",
+       cfg.pwrmgr_low_power_vif)) begin
+      `uvm_fatal(`gfn, "failed to get pwrmgr_low_power_vif from uvm_config_db")
+    end
+
     // create components
     foreach (m_uart_agents[i]) begin
       m_uart_agents[i] = uart_agent::type_id::create($sformatf("m_uart_agent%0d", i), this);
@@ -93,6 +100,14 @@ class chip_env extends cip_base_env #(
 
     m_spi_agent = spi_agent::type_id::create("m_spi_agent", this);
     uvm_config_db#(spi_agent_cfg)::set(this, "m_spi_agent*", "cfg", cfg.m_spi_agent_cfg);
+
+    // instantiate pwm_monitor
+    foreach (m_pwm_monitor[i]) begin
+      m_pwm_monitor[i] = pwm_monitor::type_id::create($sformatf("m_pwm_monitor%0d", i), this);
+      uvm_config_db#(pwm_monitor_cfg)::set(this, $sformatf("m_pwm_monitor%0d*", i),
+                                           $sformatf("m_pwm_monitor%0d_cfg", i),
+                                           cfg.m_pwm_monitor_cfg[i]);
+    end
 
     // disable alert_esc_agent's driver and only use its monitor
     foreach (LIST_OF_ALERTS[i]) begin
@@ -121,6 +136,12 @@ class chip_env extends cip_base_env #(
     foreach (m_uart_agents[i]) begin
       m_uart_agents[i].monitor.tx_analysis_port.connect(
           virtual_sequencer.uart_tx_fifos[i].analysis_export);
+    end
+
+    // Connect pwm_monitor analysis_port to sequencer.
+    foreach (m_pwm_monitor[i]) begin
+      m_pwm_monitor[i].item_port.connect(
+          virtual_sequencer.pwm_rx_fifo[i].analysis_export);
     end
   endfunction
 

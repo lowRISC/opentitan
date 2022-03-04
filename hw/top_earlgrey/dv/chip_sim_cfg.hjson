@@ -208,9 +208,9 @@
     {
       name: chip_sw_sleep_pwm_pulses
       uvm_test_seq: chip_sw_pwm_pulses_vseq
-      sw_images: ["sw/device/tests/pwm_test:1"]
+      sw_images: ["sw/device/tests/sleep_pwm_pulses_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=4000000"]
+      run_opts: ["+sw_test_timeout_ns=11000000"]
     }
     {
       name: chip_sw_uart_tx_rx
