@@ -48,7 +48,7 @@ impl CommandDispatch for Console {
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
         // We need the UART for the console command to operate.
-        transport.capabilities().request(Capability::UART).ok()?;
+        transport.capabilities()?.request(Capability::UART).ok()?;
         let mut stdout = std::io::stdout();
         let mut stdin = std::io::stdin();
 

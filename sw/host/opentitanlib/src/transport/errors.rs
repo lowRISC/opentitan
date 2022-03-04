@@ -5,6 +5,8 @@
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+use super::Capability;
+
 /// Contains all the errors that any method on the `Transport` trait could generate.  This
 /// struct is serializable, such that it can be transmitted across a network for instance as
 /// part of the session proxy functionality.
@@ -46,6 +48,8 @@ pub enum TransportError {
     ProxyConnectError(String, String),
     #[error("Proxy communication error: {0}")]
     ProxyCommunicationError(#[from] crate::transport::proxy::ProxyError),
+    #[error("Requested capabilities {0:?}, but capabilities {1:?} are supplied")]
+    MissingCapabilities(Capability, Capability),
 
     // Include sub-enums for the various sub-traits of Tranport.
     #[error("GPIO error: {0}")]

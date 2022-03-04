@@ -97,8 +97,10 @@ impl CW310 {
 }
 
 impl Transport for CW310 {
-    fn capabilities(&self) -> Capabilities {
-        Capabilities::new(Capability::SPI | Capability::GPIO | Capability::UART)
+    fn capabilities(&self) -> Result<Capabilities> {
+        Ok(Capabilities::new(
+            Capability::SPI | Capability::GPIO | Capability::UART,
+        ))
     }
 
     fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {

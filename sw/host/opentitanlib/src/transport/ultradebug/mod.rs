@@ -115,8 +115,10 @@ impl Ultradebug {
 }
 
 impl Transport for Ultradebug {
-    fn capabilities(&self) -> Capabilities {
-        Capabilities::new(Capability::UART | Capability::GPIO | Capability::SPI)
+    fn capabilities(&self) -> Result<Capabilities> {
+        Ok(Capabilities::new(
+            Capability::UART | Capability::GPIO | Capability::SPI,
+        ))
     }
 
     fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {

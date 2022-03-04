@@ -56,7 +56,7 @@ impl TransportWrapper {
 
     /// Returns a `Capabilities` object to check the capabilities of this
     /// transport object.
-    pub fn capabilities(&self) -> crate::transport::Capabilities {
+    pub fn capabilities(&self) -> Result<crate::transport::Capabilities> {
         self.transport.borrow().capabilities()
     }
 

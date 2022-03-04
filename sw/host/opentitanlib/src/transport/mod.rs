@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use bitflags::bitflags;
-use erased_serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::path::PathBuf;
 use std::rc::Rc;
@@ -26,44 +26,58 @@ pub use errors::{Result, TransportError, TransportInterfaceType, WrapInTransport
 
 bitflags! {
     /// A bitmap of capabilities which may be provided by a transport.
+    #[derive(Serialize, Deserialize)]
     pub struct Capability: u32 {
         const NONE = 0x00000000;
         const UART = 0x00000001;
         const SPI = 0x00000002;
         const GPIO = 0x00000004;
         const I2C = 0x00000008;
+        const PROXY = 0x00000010;
     }
 }
 
-/// A struct which can check that needed capability requirements are met.
+/// A struct which represents what features a particular Transport instance supports.
+#[derive(Serialize, Deserialize)]
 pub struct Capabilities {
     capabilities: Capability,
-    needed: Capability,
 }
 
 impl Capabilities {
     /// Create a new Capabilities object representing a provider of
     /// capabilities specified by `cap`.
-    pub fn new(cap: Capability) -> Self {
+    fn new(cap: Capability) -> Self {
+        Self { capabilities: cap }
+    }
+
+    fn add(&self, extra: Capability) -> Self {
         Self {
-            capabilities: cap,
-            needed: Capability::NONE,
+            capabilities: self.capabilities | extra,
         }
     }
 
     /// Request the capabilities specified by `cap`.
-    pub fn request(&mut self, cap: Capability) -> &mut Self {
-        self.needed |= cap;
-        self
+    pub fn request(&self, needed: Capability) -> NeededCapabilities {
+        NeededCapabilities {
+            capabilities: self.capabilities,
+            needed,
+        }
     }
+}
 
+/// A struct which can check that needed capability requirements are met.
+pub struct NeededCapabilities {
+    capabilities: Capability,
+    needed: Capability,
+}
+
+impl NeededCapabilities {
     /// Checks that the requested capabilities are provided.
-    pub fn ok(&self) -> anyhow::Result<()> {
+    pub fn ok(&self) -> Result<()> {
         if self.capabilities & self.needed != self.needed {
-            Err(anyhow::anyhow!(
-                "Requested capabilities {:?}, but capabilities {:?} are supplied",
+            Err(TransportError::MissingCapabilities(
                 self.needed,
-                self.capabilities
+                self.capabilities,
             ))
         } else {
             Ok(())
@@ -76,7 +90,7 @@ impl Capabilities {
 pub trait Transport {
     /// Returns a `Capabilities` object to check the capabilities of this
     /// transport object.
-    fn capabilities(&self) -> Capabilities;
+    fn capabilities(&self) -> Result<Capabilities>;
 
     /// Returns a SPI [`Target`] implementation.
     fn spi(&self, _instance: &str) -> Result<Rc<dyn Target>> {
@@ -103,7 +117,7 @@ pub trait Transport {
         ))
     }
     /// Invoke non-standard functionality of some Transport implementations.
-    fn dispatch(&self, _action: &dyn Any) -> Result<Option<Box<dyn Serialize>>> {
+    fn dispatch(&self, _action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         Err(TransportError::UnsupportedOperation)
     }
 }
@@ -121,8 +135,8 @@ pub struct Bootstrap {
 pub struct EmptyTransport;
 
 impl Transport for EmptyTransport {
-    fn capabilities(&self) -> Capabilities {
-        Capabilities::new(Capability::NONE)
+    fn capabilities(&self) -> Result<Capabilities> {
+        Ok(Capabilities::new(Capability::NONE))
     }
 }
 
