@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::io::gpio::{PinMode, PullMode};
 use crate::io::spi::TransferMode;
-use crate::transport::TransportError;
+use crate::transport::{Capabilities, TransportError};
 use crate::util::voltage::Voltage;
 
 #[derive(Serialize, Deserialize)]
@@ -17,6 +17,7 @@ pub enum Message {
 
 #[derive(Serialize, Deserialize)]
 pub enum Request {
+    GetCapabilities,
     Gpio { id: String, command: GpioRequest },
     Uart { id: String, command: UartRequest },
     Spi { id: String, command: SpiRequest },
@@ -25,6 +26,7 @@ pub enum Request {
 
 #[derive(Serialize, Deserialize)]
 pub enum Response {
+    GetCapabilities(Capabilities),
     Gpio(GpioResponse),
     Uart(UartResponse),
     Spi(SpiResponse),

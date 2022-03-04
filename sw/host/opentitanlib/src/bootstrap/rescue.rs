@@ -283,7 +283,7 @@ impl UpdateProtocol for Rescue {
         transport: &TransportWrapper,
     ) -> Result<()> {
         transport
-            .capabilities()
+            .capabilities()?
             .request(Capability::GPIO | Capability::UART)
             .ok()?;
         Ok(())
