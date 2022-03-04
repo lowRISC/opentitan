@@ -2646,11 +2646,9 @@
       tests: []
    }
 
-
     ////////////////////////////
     // System level scenarios //
     ////////////////////////////
-
     {
       name: chip_sw_smoketest
       desc: '''Run smoke tests developed for each IP.
@@ -2679,6 +2677,18 @@
               "chip_sw_sram_ctrl_smoketest",
               "chip_sw_uart_smoketest",
             ]
+    }
+    {
+      name: chip_sw_signed
+      desc: '''Run some chip-level tests with mask ROM.
+
+            In addition to mask ROM E2E tests, we select at least one (or a few)
+            tests defined in this file to sign, and run via mask ROM instead of
+            test ROM. We need to ensure our test infrastructure and mask ROM can
+            boot and run one (or a few) of the same tests our test ROM can.
+            '''
+      milestone: V2
+      tests: ["chip_sw_uart_smoketest_signed"]
     }
     {
       name: chip_sw_coremark
