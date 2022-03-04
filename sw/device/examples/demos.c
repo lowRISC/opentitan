@@ -73,7 +73,7 @@ void demo_spi_to_log_echo(const dif_spi_device_t *spi,
     CHECK_DIF_OK(dif_spi_device_send(spi, spi_config, &echo_word,
                                      sizeof(uint32_t),
                                      /*bytes_sent=*/NULL));
-    LOG_INFO("SPI: %z", spi_len, spi_buf);
+    LOG_INFO("SPI: %!s", spi_len, spi_buf);
   }
 }
 
