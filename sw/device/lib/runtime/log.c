@@ -59,7 +59,7 @@ void base_log_internal_core(log_fields_t log, ...) {
   // nothing was printed for some time.
   static uint16_t global_log_counter = 0;
 
-  base_printf("%s%5d %s:%d] ", stringify_severity(log.severity),
+  base_printf("%s%05d %s:%d] ", stringify_severity(log.severity),
               global_log_counter, base_name, log.line);
   ++global_log_counter;
 

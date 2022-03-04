@@ -49,7 +49,7 @@ static uint32_t crc32(uint8_t *buf, size_t len) {
  */
 static void send_buffer(uint8_t *buf, size_t len) {
   for (uint32_t i = 0; i < len; ++i) {
-    base_printf("%2X", buf[i]);
+    base_printf("%02X", buf[i]);
   }
 }
 
