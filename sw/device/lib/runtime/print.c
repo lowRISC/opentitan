@@ -163,6 +163,7 @@ static bool consume_until_percent(buffer_sink_t out, const char **format,
 typedef struct format_specifier {
   char type;
   size_t width;
+  char padding;
 } format_specifier_t;
 
 /**
@@ -185,8 +186,10 @@ static bool consume_format_specifier(buffer_sink_t out, const char **format,
   // Attempt to parse out an unsigned, decimal number, a "width",
   // after the percent sign; the format specifier is the character
   // immediately after this width.
+  //
+  // `spec->padding` is used to indicate whether we've seen a width;
+  // if nonzero, we have an actual width.
   size_t spec_len = 0;
-  bool has_width = false;
   while (true) {
     char c = (*format)[spec_len];
     if (c == '\0') {
@@ -196,13 +199,20 @@ static bool consume_format_specifier(buffer_sink_t out, const char **format,
     if (c < '0' || c > '9') {
       break;
     }
-    has_width = true;
+    if (spec->padding == 0) {
+      if (c == '0') {
+        spec->padding = '0';
+        ++spec_len;
+        continue;
+      }
+      spec->padding = ' ';
+    }
     spec->width *= 10;
     spec->width += (c - '0');
     ++spec_len;
   }
 
-  if ((spec->width == 0 && has_width) || spec->width > 32) {
+  if ((spec->width == 0 && spec->padding != 0) || spec->width > 32) {
     *bytes_written += out.sink(out.data, kErrorTooWide, sizeof(kErrorTooWide));
     return false;
   }
@@ -225,7 +235,7 @@ static bool consume_format_specifier(buffer_sink_t out, const char **format,
  * @return the number of bytes written.
  */
 static size_t write_digits(buffer_sink_t out, uint32_t value, uint32_t width,
-                           uint32_t base, const char *glyphs) {
+                           char padding, uint32_t base, const char *glyphs) {
   // All allocations are done relative to a buffer that could hold the longest
   // textual representation of a number: ~0x0 in base 2, i.e., 32 ones.
   static const int kWordBits = sizeof(uint32_t) * 8;
@@ -241,7 +251,7 @@ static size_t write_digits(buffer_sink_t out, uint32_t value, uint32_t width,
   width = width == 0 ? 1 : width;
   width = width > kWordBits ? kWordBits : width;
   while (len < width) {
-    buffer[kWordBits - len - 1] = '0';
+    buffer[kWordBits - len - 1] = padding;
     ++len;
   }
   return out.sink(out.data, buffer + (kWordBits - len), len);
@@ -295,12 +305,14 @@ static void process_specifier(buffer_sink_t out, format_specifier_t spec,
         *bytes_written += out.sink(out.data, "-", 1);
         value = -value;
       }
-      *bytes_written += write_digits(out, value, spec.width, 10, kDigitsLow);
+      *bytes_written +=
+          write_digits(out, value, spec.width, spec.padding, 10, kDigitsLow);
       break;
     }
     case kUnsignedOct: {
       uint32_t value = va_arg(*args, uint32_t);
-      *bytes_written += write_digits(out, value, spec.width, 8, kDigitsLow);
+      *bytes_written +=
+          write_digits(out, value, spec.width, spec.padding, 8, kDigitsLow);
       break;
     }
     case kPointer: {
@@ -313,29 +325,33 @@ static void process_specifier(buffer_sink_t out, format_specifier_t spec,
       *bytes_written += out.sink(out.data, "0x", 2);
       uintptr_t value = va_arg(*args, uintptr_t);
       *bytes_written +=
-          write_digits(out, value, sizeof(uintptr_t) * 2, 16, kDigitsLow);
+          write_digits(out, value, sizeof(uintptr_t) * 2, '0', 16, kDigitsLow);
       break;
     }
     case kSvHexLow:
     case kUnsignedHexLow: {
       uint32_t value = va_arg(*args, uint32_t);
-      *bytes_written += write_digits(out, value, spec.width, 16, kDigitsLow);
+      *bytes_written +=
+          write_digits(out, value, spec.width, spec.padding, 16, kDigitsLow);
       break;
     }
     case kSvHexHigh:
     case kUnsignedHexHigh: {
       uint32_t value = va_arg(*args, uint32_t);
-      *bytes_written += write_digits(out, value, spec.width, 16, kDigitsHigh);
+      *bytes_written +=
+          write_digits(out, value, spec.width, spec.padding, 16, kDigitsHigh);
       break;
     }
     case kUnsignedDec: {
       uint32_t value = va_arg(*args, uint32_t);
-      *bytes_written += write_digits(out, value, spec.width, 10, kDigitsLow);
+      *bytes_written +=
+          write_digits(out, value, spec.width, spec.padding, 10, kDigitsLow);
       break;
     }
     case kSvBinary: {
       uint32_t value = va_arg(*args, uint32_t);
-      *bytes_written += write_digits(out, value, spec.width, 2, kDigitsLow);
+      *bytes_written +=
+          write_digits(out, value, spec.width, spec.padding, 2, kDigitsLow);
       break;
     }
     default: {
