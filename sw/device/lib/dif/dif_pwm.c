@@ -130,7 +130,7 @@ dif_result_t dif_pwm_configure_channel(const dif_pwm_t *pwm,
     return kDifBadArg;
   }
 
-#define PWM_CHANNEL_CONFIG_CASE_(channel_)                                     \
+#define DIF_PWM_CHANNEL_CONFIG_CASE_(channel_)                                 \
   case kDifPwmChannel##channel_:                                               \
     invert_reg = bitfield_bit32_write(                                         \
         invert_reg, PWM_INVERT_INVERT_##channel_##_BIT, config.polarity);      \
@@ -148,11 +148,11 @@ dif_result_t dif_pwm_configure_channel(const dif_pwm_t *pwm,
     break;
 
   switch (channel) {
-    LIST_OF_CHANNELS(PWM_CHANNEL_CONFIG_CASE_)
+    DIF_PWM_CHANNEL_LIST(DIF_PWM_CHANNEL_CONFIG_CASE_)
     default:
       return kDifBadArg;
   }
-#undef PWM_CHANNEL_CONFIG_CASE_
+#undef DIF_PWM_CHANNEL_CONFIG_CASE_
 
   mmio_region_write32(pwm->base_addr, PWM_INVERT_REG_OFFSET, invert_reg);
 
