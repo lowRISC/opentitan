@@ -551,6 +551,7 @@ module otp_ctrl_kdi
       // error state, where an alert will be triggered.
       default: begin
         state_d = ErrorSt;
+        fsm_err_o = 1'b1;
       end
       ///////////////////////////////////////////////////////////////////
     endcase // state_q
