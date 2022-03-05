@@ -34,6 +34,13 @@ module otp_ctrl_lci
   // Note that most errors are not recoverable and move the partition FSM into
   // a terminal error state.
   output otp_err_e                          error_o,
+  // This error signal is pulsed high if the FSM has been glitched into an invalid state.
+  // Although it is somewhat redundant with the error code in error_o above, it is
+  // meant to cover cases where we already latched an error code while the FSM is
+  // glitched into an invalid state (since in that case, the error code will not be
+  // overridden with the FSM error code so that the original error code is still
+  // discoverable).
+  output logic                              fsm_err_o,
   output logic                              lci_prog_idle_o,
   // OTP interface
   output logic                              otp_req_o,
@@ -126,6 +133,7 @@ module otp_ctrl_lci
 
     // Error Register
     error_d = error_q;
+    fsm_err_o = 1'b0;
 
     unique case (state_q)
       ///////////////////////////////////////////////////////////////////
@@ -204,6 +212,7 @@ module otp_ctrl_lci
       // glitch), error out immediately.
       default: begin
         state_d = ErrorSt;
+        fsm_err_o = 1'b1;
       end
       ///////////////////////////////////////////////////////////////////
     endcase // state_q
@@ -212,6 +221,7 @@ module otp_ctrl_lci
     // SEC_CM: LCI.FSM.LOCAL_ESC, LCI.FSM.GLOBAL_ESC
     if (escalate_en_i != lc_ctrl_pkg::Off || cnt_err) begin
       state_d = ErrorSt;
+      fsm_err_o = 1'b1;
       if (error_q == NoError) begin
         error_d = FsmStateError;
       end

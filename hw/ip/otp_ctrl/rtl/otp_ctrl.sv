@@ -411,13 +411,14 @@ module otp_ctrl
 
   // Status and error reporting CSRs, error interrupt generation and alerts.
   otp_err_e [NumPart+1:0] part_error;
+  logic [NumAgents-1:0] part_fsm_err;
   logic [NumPart+1:0] part_errors_reduced;
   logic otp_operation_done, otp_error;
   logic fatal_macro_error_d, fatal_macro_error_q;
   logic fatal_check_error_d, fatal_check_error_q;
   logic fatal_bus_integ_error_d, fatal_bus_integ_error_q;
   logic chk_pending, chk_timeout;
-  logic lfsr_fsm_err, key_deriv_fsm_err, scrmbl_fsm_err;
+  logic lfsr_fsm_err, scrmbl_fsm_err;
   always_comb begin : p_errors_alerts
     hw2reg.err_code = part_error;
     // Note: since these are all fatal alert events, we latch them and keep on sending
@@ -469,7 +470,7 @@ module otp_ctrl
     fatal_check_error_d |= chk_timeout       |
                            lfsr_fsm_err      |
                            scrmbl_fsm_err    |
-                           key_deriv_fsm_err;
+                           |part_fsm_err;
   end
 
   // Assign these to the status register.
@@ -477,7 +478,7 @@ module otp_ctrl
                           chk_timeout,
                           lfsr_fsm_err,
                           scrmbl_fsm_err,
-                          key_deriv_fsm_err,
+                          part_fsm_err[KdiIdx],
                           fatal_bus_integ_error_q,
                           dai_idle,
                           chk_pending};
@@ -491,7 +492,7 @@ module otp_ctrl
     chk_timeout,
     lfsr_fsm_err,
     scrmbl_fsm_err,
-    key_deriv_fsm_err
+    |part_fsm_err
   };
 
   assign otp_error = |(interrupt_triggers_d & ~interrupt_triggers_q);
@@ -948,6 +949,7 @@ module otp_ctrl
     .part_init_done_i ( part_init_done                        ),
     .escalate_en_i    ( lc_escalate_en[DaiIdx]                ),
     .error_o          ( part_error[DaiIdx]                    ),
+    .fsm_err_o        ( part_fsm_err[DaiIdx]                  ),
     .part_access_i    ( part_access_dai                       ),
     .dai_addr_i       ( dai_addr                              ),
     .dai_cmd_i        ( dai_cmd                               ),
@@ -996,6 +998,7 @@ module otp_ctrl
     .lci_en_i         ( pwr_otp_o.otp_done                ),
     .escalate_en_i    ( lc_escalate_en[LciIdx]            ),
     .error_o          ( part_error[LciIdx]                ),
+    .fsm_err_o        ( part_fsm_err[LciIdx]              ),
     .lci_prog_idle_o  ( lci_prog_idle                     ),
     .lc_req_i         ( lc_otp_program_i.req              ),
     .lc_data_i        ( lc_otp_program_data               ),
@@ -1037,7 +1040,7 @@ module otp_ctrl
     .rst_ni,
     .kdi_en_i                ( pwr_otp_o.otp_done      ),
     .escalate_en_i           ( lc_escalate_en[KdiIdx]  ),
-    .fsm_err_o               ( key_deriv_fsm_err       ),
+    .fsm_err_o               ( part_fsm_err[KdiIdx]    ),
     .scrmbl_key_seed_valid_i ( scrmbl_key_seed_valid   ),
     .flash_data_key_seed_i   ( flash_data_key_seed     ),
     .flash_addr_key_seed_i   ( flash_addr_key_seed     ),
@@ -1090,6 +1093,7 @@ module otp_ctrl
         .init_done_o   ( part_init_done[k]            ),
         .escalate_en_i ( lc_escalate_en[k]            ),
         .error_o       ( part_error[k]                ),
+        .fsm_err_o     ( part_fsm_err[k]              ),
         .access_i      ( part_access[k]               ),
         .access_o      ( part_access_dai[k]           ),
         .digest_o      ( part_digest[k]               ),
@@ -1150,6 +1154,7 @@ module otp_ctrl
         // Only supported by life cycle partition (see further below).
         .check_byp_en_i    ( lc_ctrl_pkg::Off                ),
         .error_o           ( part_error[k]                   ),
+        .fsm_err_o         ( part_fsm_err[k]                 ),
         .access_i          ( part_access[k]                  ),
         .access_o          ( part_access_dai[k]              ),
         .digest_o          ( part_digest[k]                  ),
@@ -1208,6 +1213,7 @@ module otp_ctrl
         // consistent with the values in the buffer regs anymore).
         .check_byp_en_i    ( lc_check_byp_en                 ),
         .error_o           ( part_error[k]                   ),
+        .fsm_err_o         ( part_fsm_err[k]                 ),
         .access_i          ( part_access[k]                  ),
         .access_o          ( part_access_dai[k]              ),
         .digest_o          ( part_digest[k]                  ),
