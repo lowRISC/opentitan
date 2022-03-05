@@ -12,9 +12,10 @@
 # The evaluation has been performed using commit 85910ce3c2dfd94f860f4002b4be0cd0985aa058.
 # It may become necessary in the future to tweak this if other congestion issues arise.
 
-# Clock net "top_earlgrey/u_clkmgr_aon/u_clk_main_aes_cg/gen_xilinx.u_impl_xilinx/clocks_o[clk_main_aes]" driven by instance "top_earlgrey/u_clkmgr_aon/u_clk_main_aes_cg/gen_xilinx.u_impl_xilinx/gen_gate.gen_bufhce.u_bufhce" located at site "BUFHCE_X0Y4"
+# Clock net "top_earlgrey/u_clkmgr_aon/u_clk_main_aes_trans/u_cg/gen_xilinx.u_impl_xilinx/clocks_o[clk_main_aes]" driven by instance "top_earlgrey/u_clkmgr_aon/u_clk_main_aes_trans/u_cg/gen_xilinx.u_impl_xilinx/gen_gate.gen_bufhce.u_bufhce" located at site "BUFHCE_X0Y4"
 #startgroup
-create_pblock {CLKAG_top_earlgrey/u_clkmgr_aon/u_clk_main_aes_cg/gen_xilinx.u_impl_xilinx/clocks_o[clk_main_aes]}
-add_cells_to_pblock [get_pblocks  {CLKAG_top_earlgrey/u_clkmgr_aon/u_clk_main_aes_cg/gen_xilinx.u_impl_xilinx/clocks_o[clk_main_aes]}] [get_cells -filter { PRIMITIVE_GROUP != I/O && IS_PRIMITIVE==1 && PRIMITIVE_LEVEL !=INTERNAL } -of_object [get_pins -filter {DIRECTION==IN} -of_objects [get_nets -hierarchical -filter {PARENT=="top_earlgrey/u_clkmgr_aon/u_clk_main_aes_cg/gen_xilinx.u_impl_xilinx/clocks_o[clk_main_aes]"}]]]
-resize_pblock [get_pblocks {CLKAG_top_earlgrey/u_clkmgr_aon/u_clk_main_aes_cg/gen_xilinx.u_impl_xilinx/clocks_o[clk_main_aes]}] -add {CLOCKREGION_X0Y4:CLOCKREGION_X0Y4}
+create_pblock {CLKAG_top_earlgrey/u_clkmgr_aon/u_clk_main_aes_trans/u_cg/gen_xilinx.u_impl_xilinx/clocks_o[clk_main_aes]}
+set aes_cells [get_cells -filter { PRIMITIVE_GROUP != I/O && IS_PRIMITIVE==1 && PRIMITIVE_LEVEL !=INTERNAL } -of_object [get_pins -filter {DIRECTION==IN} -of_objects [get_nets -hierarchical -filter {PARENT=="top_earlgrey/u_clkmgr_aon/u_clk_main_aes_trans/u_cg/gen_xilinx.u_impl_xilinx/clocks_o[clk_main_aes]"}]]]
+add_cells_to_pblock [get_pblocks  {CLKAG_top_earlgrey/u_clkmgr_aon/u_clk_main_aes_trans/u_cg/gen_xilinx.u_impl_xilinx/clocks_o[clk_main_aes]}] ${aes_cells}
+resize_pblock [get_pblocks {CLKAG_top_earlgrey/u_clkmgr_aon/u_clk_main_aes_trans/u_cg/gen_xilinx.u_impl_xilinx/clocks_o[clk_main_aes]}] -add {CLOCKREGION_X0Y4:CLOCKREGION_X0Y4}
 #endgroup
