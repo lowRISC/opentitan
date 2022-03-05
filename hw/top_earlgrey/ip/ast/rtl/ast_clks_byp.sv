@@ -347,39 +347,33 @@ gfr_clk_mux2 u_clk_src_aon_sel (
 // All Clocks Bypass Acknowledge
 ////////////////////////////////////////
 logic all_clks_byp_en;
-prim_mubi_pkg::mubi4_t all_clk_byp_ack;
 
+// TODO: Sync & rst_aon_n deasset to io clock
 assign all_clks_byp_en = sw_all_clk_byp && sys_clk_byp_en && io_clk_byp_en &&
                          usb_clk_byp_en && aon_clk_byp_en;
-
-assign all_clk_byp_ack = all_clks_byp_en ? prim_mubi_pkg::MuBi4True :
-                                           prim_mubi_pkg::MuBi4False;
 
 prim_mubi4_sender #(
   .ResetValue ( prim_mubi_pkg::MuBi4False )
 ) u_all_clk_byp_ack (
   .clk_i ( clk_aon ),
   .rst_ni ( rst_aon_n ),
-  .mubi_i ( all_clk_byp_ack ),
+  .mubi_i ( prim_mubi_pkg::mubi4_bool_to_mubi(all_clks_byp_en) ),
   .mubi_o ( all_clk_byp_ack_o )
 );
 
 // IO Clock Bypass Acknowledge
 ////////////////////////////////////////
 logic only_io_clk_byp_en;
-prim_mubi_pkg::mubi4_t io_clk_byp_ack;
 
+// TODO: Sync & rst_aon_n deasset to io clock
 assign only_io_clk_byp_en = sw_io_clk_byp && io_clk_byp_en;
-
-assign io_clk_byp_ack = only_io_clk_byp_en ? prim_mubi_pkg::MuBi4True :
-                                             prim_mubi_pkg::MuBi4False;
 
 prim_mubi4_sender #(
   .ResetValue ( prim_mubi_pkg::MuBi4False )
 ) u_io_clk_byp_ack (
   .clk_i ( clk_aon ),
   .rst_ni ( rst_aon_n ),
-  .mubi_i ( io_clk_byp_ack ),
+  .mubi_i ( prim_mubi_pkg::mubi4_bool_to_mubi(only_io_clk_byp_en) ),
   .mubi_o ( io_clk_byp_ack_o )
 );
 
@@ -390,25 +384,21 @@ prim_mubi4_sender #(
 // be 96MHz until it is ebabled as 48MHz
 ////////////////////////////////////////
 logic io_clk_byp_is_48m;
-prim_mubi_pkg::mubi4_t clk_src_io_is_48m;
 
 always_ff @ ( posedge clk_src_io_o, negedge rst_aon_n ) begin
   if ( !rst_aon_n ) begin
-    io_clk_byp_is_48m <= 1'b0;
-  end else begin
+    io_clk_byp_is_48m <= 1'b0;  // 96MHz
+  end else begin                // 96MHz or 48MHz
     io_clk_byp_is_48m <= (io_clk_byp_sel && io_clk_byp_en && !ext_freq_is_96m);
   end
 end
-
-assign clk_src_io_is_48m = io_clk_byp_is_48m ? prim_mubi_pkg::MuBi4True :  // 48MHz
-                                               prim_mubi_pkg::MuBi4False;  // 96MHz
 
 prim_mubi4_sender #(
   .ResetValue ( prim_mubi_pkg::MuBi4False )
 ) u_clk_src_io_48m_sync (
   .clk_i ( clk_src_io_o ),
   .rst_ni ( rst_aon_n ),
-  .mubi_i ( clk_src_io_is_48m ),
+  .mubi_i ( prim_mubi_pkg::mubi4_bool_to_mubi(io_clk_byp_is_48m) ),
   .mubi_o ( clk_src_io_48m_o )
 );
 

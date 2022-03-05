@@ -26,11 +26,23 @@ import ast_bhv_pkg::* ;
 
 real CLK_PERIOD;
 integer rand32;
+integer BEACON_RDLY;
+logic beacon_on;
+logic usb_clk_calibrated;
 
 reg init_start = 1'b0;
 initial init_start = 1'b0;
 
 initial begin
+  if ( !$value$plusargs("usb_beacon_on=%d", BEACON_RDLY) ) begin
+    BEACON_RDLY = 0;
+    beacon_on = 1'b0;
+  end else begin
+    beacon_on = 1'b1;
+  end
+  if ( !$value$plusargs("usb_clk_calibrated=%d", usb_clk_calibrated) ) begin
+    usb_clk_calibrated = 1'b0;
+  end
   #1; init_start  = 1'b1;
   $display("\nUSB Power-up Clock Frequency: %0d Hz", $rtoi(10**9/CLK_PERIOD));
   rand32 = $urandom_range((9'd416), -(9'd416));  // +/-416ps (+/-2% max)
@@ -42,9 +54,10 @@ wire en_osc_re_buf, en_osc_re;
 buf #(IO_EN_RDLY, 0) b0 (en_osc_re_buf, (vcore_pok_h_i && usb_en_i));
 assign en_osc_re = en_osc_re_buf && init_start;
 
-logic ref_val_buf, ref_val;
-buf #(USB_VAL_RDLY, USB_VAL_FDLY) b1 (ref_val_buf, (vcore_pok_h_i && usb_ref_val_i));
-assign ref_val = ref_val_buf && init_start;
+logic usb_ref_val_buf, ref_val;
+buf #(USB_VAL_RDLY, USB_VAL_FDLY) b1 (usb_ref_val_buf, (vcore_pok_h_i && usb_ref_val_i));
+buf #(BEACON_RDLY, 0) b2 (beacon_on_buf, (usb_osc_cal_i && beacon_on));
+assign ref_val = (usb_ref_val_buf || beacon_on_buf || usb_clk_calibrated) && init_start;
 
 // Clock Oscillator
 ////////////////////////////////////////
@@ -54,7 +67,8 @@ initial CalUsbClkPeriod = $itor( 1000000/48 );                    // ~20833.3333
 initial UncUsbClkPeriod = $itor( $urandom_range(55555, 25000) );  // 55555-25000ps (18-40MHz)
 
 assign drift = ref_val ? 0.0 : $itor(rand32);
-assign UsbClkPeriod = (usb_osc_cal_i && init_start) ? CalUsbClkPeriod : UncUsbClkPeriod;
+assign UsbClkPeriod = ((usb_osc_cal_i || usb_clk_calibrated) && init_start) ? CalUsbClkPeriod :
+                                                                              UncUsbClkPeriod;
 assign CLK_PERIOD = (UsbClkPeriod + drift)/1000;
 
 // Free running oscillator
