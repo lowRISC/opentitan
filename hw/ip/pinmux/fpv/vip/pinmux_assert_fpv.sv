@@ -498,28 +498,25 @@ module pinmux_assert_fpv
 
   // Threshold counters.
   // Adding one more bit for the counters to check overflow case.
-  bit [WkupCntWidth:0] high_cnter, low_cnter;
+  // Issue #11194 documented design will use one counter to count for both low and high threshold.
+  bit [WkupCntWidth:0] cnter;
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
     if (!rst_aon_ni || !wkup_detector_en.q) begin
-      high_cnter <= 0;
-      low_cnter  <= 0;
+      cnter <= 0;
     end else if (wkup_detector.mode.q == 3) begin
-      low_cnter <= 0;
-      if (final_pin_val && (high_cnter < wkup_detector_cnt_th.q)) begin
-        high_cnter <= high_cnter + 1;
+      if (final_pin_val && (cnter < wkup_detector_cnt_th.q)) begin
+        cnter <= cnter + 1;
       end else begin
-        high_cnter <= 0;
+        cnter <= 0;
       end
     end else if (wkup_detector.mode.q == 4) begin
-      high_cnter  <= 0;
-      if (!final_pin_val && (low_cnter < wkup_detector_cnt_th.q)) begin
-        low_cnter <= low_cnter + 1;
+      if (!final_pin_val && (cnter < wkup_detector_cnt_th.q)) begin
+        cnter <= cnter + 1;
       end else begin
-        low_cnter <= 0;
+        cnter <= 0;
       end
     end else begin
-      high_cnter <= 0;
-      low_cnter  <= 0;
+      cnter  <= 0;
     end
   end
 
@@ -532,11 +529,10 @@ module pinmux_assert_fpv
   `ASSERT(WkupEdge_A, wkup_detector_en.q && wkup_detector.mode.q == 2 &&
           ($fell(final_pin_val) || $rose(final_pin_val)) |-> wkup_cause.de,
           clk_aon_i, !rst_aon_ni)
-  // TODO(#11194): The two assertions below will have cex.
-  `ASSERT(WkupTimedHigh_A, (high_cnter >= wkup_detector_cnt_th.q) && wkup_detector_en.q &&
+  `ASSERT(WkupTimedHigh_A, (cnter >= wkup_detector_cnt_th.q) && wkup_detector_en.q &&
           wkup_detector.mode.q == 3 |-> wkup_cause.de,
           clk_aon_i, !rst_aon_ni)
-  `ASSERT(WkupTimedLow_A, (low_cnter >= wkup_detector_cnt_th.q) && wkup_detector_en.q &&
+  `ASSERT(WkupTimedLow_A, (cnter >= wkup_detector_cnt_th.q) && wkup_detector_en.q &&
           wkup_detector.mode.q == 4 |-> wkup_cause.de,
           clk_aon_i, !rst_aon_ni)
 
@@ -552,8 +548,8 @@ module pinmux_assert_fpv
             (wkup_detector.mode.q > 4 && !$rose(final_pin_val)) ||
             (wkup_detector.mode.q == 1 && !$fell(final_pin_val)) ||
             (wkup_detector.mode.q == 2 && !$changed(final_pin_val)) ||
-            (wkup_detector.mode.q == 3 && (high_cnter < wkup_detector_cnt_th.q)) ||
-            (wkup_detector.mode.q == 4 && (low_cnter < wkup_detector_cnt_th.q)))),
+            (wkup_detector.mode.q == 3 && (cnter < wkup_detector_cnt_th.q)) ||
+            (wkup_detector.mode.q == 4 && (cnter < wkup_detector_cnt_th.q)))),
           clk_aon_i, !rst_aon_ni)
 
   `ASSERT(WkupCause1_A, wkup_cause.de == 1 |->
@@ -562,8 +558,8 @@ module pinmux_assert_fpv
             (wkup_detector.mode.q > 4 && $rose(final_pin_val)) ||
             (wkup_detector.mode.q == 1 && $fell(final_pin_val)) ||
             (wkup_detector.mode.q == 2 && $changed(final_pin_val)) ||
-            (wkup_detector.mode.q == 3 && (high_cnter >= wkup_detector_cnt_th.q)) ||
-            (wkup_detector.mode.q == 4 && (low_cnter >= wkup_detector_cnt_th.q))),
+            (wkup_detector.mode.q == 3 && (cnter >= wkup_detector_cnt_th.q)) ||
+            (wkup_detector.mode.q == 4 && (cnter >= wkup_detector_cnt_th.q))),
           clk_aon_i, !rst_aon_ni)
 
   // ------ JTAG pinmux input assertions ------
