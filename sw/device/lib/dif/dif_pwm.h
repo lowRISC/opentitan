@@ -43,12 +43,12 @@ extern "C" {
  * channels. If an additional channel is ever added to the hardware, this list
  * can be updated.
  */
-#define LIST_OF_CHANNELS(X) \
-  X(0)                      \
-  X(1)                      \
-  X(2)                      \
-  X(3)                      \
-  X(4)                      \
+#define DIF_PWM_CHANNEL_LIST(X) \
+  X(0)                          \
+  X(1)                          \
+  X(2)                          \
+  X(3)                          \
+  X(4)                          \
   X(5)
 
 /**
@@ -62,7 +62,7 @@ extern "C" {
  * A PWM channel.
  */
 typedef enum dif_pwm_channel {
-  LIST_OF_CHANNELS(PWM_CHANNEL_ENUM_INIT_)
+  DIF_PWM_CHANNEL_LIST(PWM_CHANNEL_ENUM_INIT_)
 } dif_pwm_channel_t;
 
 #undef PWM_CHANNEL_ENUM_INIT_
