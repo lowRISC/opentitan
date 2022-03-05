@@ -49,9 +49,9 @@ module chip_earlgrey_verilator (
   logic IO_JTCK, IO_JTMS, IO_JTRST_N, IO_JTDI, IO_JTDO;
 
   // TODO: instantiate padring and route these signals through that module
-  logic [pinmux_pkg::NDioPads-1:0] dio_in;
-  logic [pinmux_pkg::NDioPads-1:0] dio_out;
-  logic [pinmux_pkg::NDioPads-1:0] dio_oe;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_out;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
 
   always_comb begin : assign_dio_in
     dio_in = '0;
@@ -90,9 +90,9 @@ module chip_earlgrey_verilator (
   assign cio_spi_device_sdo_d2p_o = dio_out[DioSpiDeviceSd1];
   assign cio_spi_device_sdo_en_d2p_o = dio_oe[DioSpiDeviceSd1];
 
-  logic [pinmux_pkg::NMioPads-1:0] mio_in;
-  logic [pinmux_pkg::NMioPads-1:0] mio_out;
-  logic [pinmux_pkg::NMioPads-1:0] mio_oe;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_out;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe;
 
   always_comb begin : assign_mio_in
     mio_in = '0;
