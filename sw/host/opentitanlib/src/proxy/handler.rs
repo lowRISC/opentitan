@@ -8,11 +8,13 @@ use std::time::Duration;
 
 use super::protocol::{
     EmuRequest, EmuResponse, GpioRequest, GpioResponse, I2cRequest, I2cResponse,
-    I2cTransferRequest, I2cTransferResponse, Message, Request, Response, SpiRequest, SpiResponse,
-    SpiTransferRequest, SpiTransferResponse, UartRequest, UartResponse,
+    I2cTransferRequest, I2cTransferResponse, Message, ProxyRequest, ProxyResponse, Request,
+    Response, SpiRequest, SpiResponse, SpiTransferRequest, SpiTransferResponse, UartRequest,
+    UartResponse,
 };
 use super::CommandHandler;
 use crate::app::TransportWrapper;
+use crate::bootstrap::Bootstrap;
 use crate::io::i2c;
 use crate::io::spi;
 use crate::transport::TransportError;
@@ -241,6 +243,12 @@ impl<'a> TransportCommandHandler<'a> {
                     }
                 }
             }
+            Request::Proxy(command) => match command {
+                ProxyRequest::Bootstrap { options, payload } => {
+                    Bootstrap::update(self.transport, options, payload)?;
+                    Ok(Response::Proxy(ProxyResponse::Bootstrap))
+                }
+            },
         }
     }
 }

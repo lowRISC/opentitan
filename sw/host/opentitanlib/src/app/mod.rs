@@ -11,7 +11,7 @@ use crate::io::gpio::{GpioPin, PinMode, PullMode};
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
-use crate::transport::{Result, Transport, TransportError};
+use crate::transport::{ProxyOps, Result, Transport, TransportError};
 
 use erased_serde::Serialize;
 use std::any::Any;
@@ -92,6 +92,11 @@ impl TransportWrapper {
     /// Returns a [`Emulator`] implementation.
     pub fn emulator(&self) -> Result<Rc<dyn Emulator>> {
         self.transport.borrow().emulator()
+    }
+
+    /// Methods available only on Proxy implementation.
+    pub fn proxy_ops(&self) -> Result<Rc<dyn ProxyOps>> {
+        self.transport.borrow().proxy_ops()
     }
 
     /// Invoke non-standard functionality of some Transport implementations.

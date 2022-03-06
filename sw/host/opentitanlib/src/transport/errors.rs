@@ -62,6 +62,15 @@ pub enum TransportError {
     I2cError(#[from] crate::io::i2c::I2cError),
     #[error("Emulator error: {0}")]
     EmuError(#[from] crate::io::emu::EmuError),
+
+    // Other sub-enums used by proxy logic (that is, opentitanlib logic running in session daemon
+    // process for efficiency).
+    #[error("Bootstrapping: {0}")]
+    BootstrapError(#[from] crate::bootstrap::BootstrapError),
+    #[error("Bootstrapping: {0}")]
+    LegacyBootstrapError(#[from] crate::bootstrap::LegacyBootstrapError),
+    #[error("Bootstrapping: {0}")]
+    RescueError(#[from] crate::bootstrap::RescueError),
 }
 
 /// Enum value used by `TransportError::InvalidInstance`.
@@ -72,6 +81,7 @@ pub enum TransportInterfaceType {
     Spi,
     I2c,
     Emulator,
+    ProxyOps,
 }
 
 /// Return type to be used in `Transport` methods.
@@ -81,7 +91,7 @@ pub type Result<T> = anyhow::Result<T, TransportError>;
 #[macro_export]
 macro_rules! bail {
     ($err:expr $(,)?) => {
-        return Err($err.into())
+        return Err($err.into());
     };
 }
 

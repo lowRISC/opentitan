@@ -8,6 +8,7 @@ use std::any::Any;
 use std::path::PathBuf;
 use std::rc::Rc;
 
+use crate::bootstrap::BootstrapOptions;
 use crate::io::emu::Emulator;
 use crate::io::gpio::GpioPin;
 use crate::io::i2c::Bus;
@@ -125,10 +126,22 @@ pub trait Transport {
         ))
     }
 
+    /// Methods available only on Proxy implementation.
+    fn proxy_ops(&self) -> Result<Rc<dyn ProxyOps>> {
+        Err(TransportError::InvalidInterface(
+            TransportInterfaceType::ProxyOps,
+        ))
+    }
+
     /// Invoke non-standard functionality of some Transport implementations.
     fn dispatch(&self, _action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         Err(TransportError::UnsupportedOperation)
     }
+}
+
+/// Methods available only on the Proxy implementation of the Transport trait.
+pub trait ProxyOps {
+    fn bootstrap(&self, options: &BootstrapOptions, payload: &[u8]) -> Result<()>;
 }
 
 /// Used by Transport implementations dealing with emulated OpenTitan
