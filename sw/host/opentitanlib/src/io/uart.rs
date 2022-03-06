@@ -11,7 +11,7 @@ use thiserror::Error;
 use crate::app::TransportWrapper;
 use crate::transport::Result;
 
-#[derive(Debug, StructOpt)]
+#[derive(Clone, Debug, StructOpt, Serialize, Deserialize)]
 pub struct UartParams {
     #[structopt(long, help = "UART instance", default_value = "CONSOLE")]
     uart: String,

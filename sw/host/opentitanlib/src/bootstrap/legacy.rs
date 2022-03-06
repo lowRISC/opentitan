@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
 use mundane::hash::{Digest, Hasher, Sha256};
 use std::time::Duration;
 use thiserror::Error;
@@ -11,7 +10,7 @@ use zerocopy::AsBytes;
 use crate::app::TransportWrapper;
 use crate::bootstrap::{Bootstrap, BootstrapOptions, UpdateProtocol};
 use crate::io::spi::Transfer;
-use crate::transport::Capability;
+use crate::transport::{Capability, Result};
 
 #[derive(AsBytes, Debug, Default)]
 #[repr(C)]
@@ -140,7 +139,7 @@ impl Legacy {
     }
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, serde::Serialize, serde::Deserialize)]
 pub enum LegacyBootstrapError {
     #[error("Boot rom not ready")]
     NotReady,

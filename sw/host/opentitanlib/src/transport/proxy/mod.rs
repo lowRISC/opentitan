@@ -11,13 +11,14 @@ use std::rc::Rc;
 use thiserror::Error;
 
 use crate::bail;
+use crate::bootstrap::BootstrapOptions;
 use crate::io::gpio::GpioPin;
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
-use crate::proxy::protocol::{Message, Request, Response};
+use crate::proxy::protocol::{Message, ProxyRequest, ProxyResponse, Request, Response};
 use crate::transport::{
-    Capabilities, Capability, Result, Transport, TransportError, WrapInTransportError,
+    Capabilities, Capability, ProxyOps, Result, Transport, TransportError, WrapInTransportError,
 };
 
 mod gpio;
@@ -105,6 +106,38 @@ impl Inner {
     }
 }
 
+pub struct ProxyOpsImpl {
+    inner: Rc<Inner>,
+}
+
+impl ProxyOpsImpl {
+    pub fn new(proxy: &Proxy) -> Result<Self> {
+        Ok(Self {
+            inner: Rc::clone(&proxy.inner),
+        })
+    }
+
+    // Convenience method for issuing Proxy-only commands via proxy protocol.
+    fn execute_command(&self, command: ProxyRequest) -> Result<ProxyResponse> {
+        match self.inner.execute_command(Request::Proxy(command))? {
+            Response::Proxy(resp) => Ok(resp),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+}
+
+impl ProxyOps for ProxyOpsImpl {
+    fn bootstrap(&self, options: &BootstrapOptions, payload: &[u8]) -> Result<()> {
+        match self.execute_command(ProxyRequest::Bootstrap {
+            options: options.clone(),
+            payload: payload.to_vec(),
+        })? {
+            ProxyResponse::Bootstrap => Ok(()),
+            //_ => bail!(ProxyError::UnexpectedReply()), // Enable when second option is added
+        }
+    }
+}
+
 impl Transport for Proxy {
     fn capabilities(&self) -> Result<Capabilities> {
         match self.inner.execute_command(Request::GetCapabilities)? {
@@ -131,5 +164,10 @@ impl Transport for Proxy {
     // Create GpioPin instance, or return one from a cache of previously created instances.
     fn gpio_pin(&self, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         Ok(Rc::new(gpio::ProxyGpioPin::open(self, pinname)?))
+    }
+
+    // Create ProxyOps instance.
+    fn proxy_ops(&self) -> Result<Rc<dyn ProxyOps>> {
+        Ok(Rc::new(ProxyOpsImpl::new(self)?))
     }
 }

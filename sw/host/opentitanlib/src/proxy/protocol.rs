@@ -5,6 +5,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+use crate::bootstrap::BootstrapOptions;
 use crate::io::emu::{EmuState, EmuValue};
 use crate::io::gpio::{PinMode, PullMode};
 use crate::io::spi::TransferMode;
@@ -25,6 +26,7 @@ pub enum Request {
     Spi { id: String, command: SpiRequest },
     I2c { id: String, command: I2cRequest },
     Emu { command: EmuRequest },
+    Proxy(ProxyRequest),
 }
 
 #[derive(Serialize, Deserialize)]
@@ -35,6 +37,7 @@ pub enum Response {
     Spi(SpiResponse),
     I2c(I2cResponse),
     Emu(EmuResponse),
+    Proxy(ProxyResponse),
 }
 
 #[derive(Serialize, Deserialize)]
@@ -181,4 +184,17 @@ pub enum EmuResponse {
     GetState { state: EmuState },
     Start,
     Stop,
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum ProxyRequest {
+    Bootstrap {
+        options: BootstrapOptions,
+        payload: Vec<u8>,
+    },
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum ProxyResponse {
+    Bootstrap,
 }

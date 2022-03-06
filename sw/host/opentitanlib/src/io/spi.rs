@@ -12,7 +12,7 @@ use crate::app::TransportWrapper;
 use crate::transport::Result;
 use crate::util::voltage::Voltage;
 
-#[derive(Debug, StructOpt)]
+#[derive(Clone, Debug, StructOpt, Serialize, Deserialize)]
 pub struct SpiParams {
     #[structopt(long, help = "SPI instance", default_value = "0")]
     pub bus: String,
