@@ -507,8 +507,7 @@ module kmac
   assign entropy_refresh_req = reg2hw.cmd.entropy_req.q
                             && reg2hw.cmd.entropy_req.qe;
 
-  assign entropy_hash_threshold = reg2hw.entropy_refresh_threshold_shadowed.q
-                                & reg2hw.entropy_refresh_threshold_shadowed.qe;
+  assign entropy_hash_threshold = reg2hw.entropy_refresh_threshold_shadowed.q;
   assign hw2reg.entropy_refresh_hash_cnt.de = 1'b 1;
   assign hw2reg.entropy_refresh_hash_cnt.d  = entropy_hash_cnt;
 

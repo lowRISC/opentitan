@@ -170,7 +170,6 @@ package kmac_reg_pkg;
 
   typedef struct packed {
     logic [9:0] q;
-    logic        qe;
     logic        err_update;
     logic        err_storage;
   } kmac_reg2hw_entropy_refresh_threshold_shadowed_reg_t;
@@ -261,15 +260,15 @@ package kmac_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    kmac_reg2hw_intr_state_reg_t intr_state; // [1566:1564]
-    kmac_reg2hw_intr_enable_reg_t intr_enable; // [1563:1561]
-    kmac_reg2hw_intr_test_reg_t intr_test; // [1560:1555]
-    kmac_reg2hw_alert_test_reg_t alert_test; // [1554:1551]
-    kmac_reg2hw_cfg_shadowed_reg_t cfg_shadowed; // [1550:1523]
-    kmac_reg2hw_cmd_reg_t cmd; // [1522:1514]
-    kmac_reg2hw_entropy_period_reg_t entropy_period; // [1513:1488]
+    kmac_reg2hw_intr_state_reg_t intr_state; // [1565:1563]
+    kmac_reg2hw_intr_enable_reg_t intr_enable; // [1562:1560]
+    kmac_reg2hw_intr_test_reg_t intr_test; // [1559:1554]
+    kmac_reg2hw_alert_test_reg_t alert_test; // [1553:1550]
+    kmac_reg2hw_cfg_shadowed_reg_t cfg_shadowed; // [1549:1522]
+    kmac_reg2hw_cmd_reg_t cmd; // [1521:1513]
+    kmac_reg2hw_entropy_period_reg_t entropy_period; // [1512:1487]
     kmac_reg2hw_entropy_refresh_threshold_shadowed_reg_t
-        entropy_refresh_threshold_shadowed; // [1487:1477]
+        entropy_refresh_threshold_shadowed; // [1486:1477]
     kmac_reg2hw_entropy_seed_lower_reg_t entropy_seed_lower; // [1476:1444]
     kmac_reg2hw_entropy_seed_upper_reg_t entropy_seed_upper; // [1443:1411]
     kmac_reg2hw_key_share0_mreg_t [15:0] key_share0; // [1410:883]

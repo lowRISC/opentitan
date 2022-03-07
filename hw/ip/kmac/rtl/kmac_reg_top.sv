@@ -1257,7 +1257,7 @@ module kmac_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.entropy_refresh_threshold_shadowed.qe),
+    .qe     (),
     .q      (reg2hw.entropy_refresh_threshold_shadowed.q),
 
     // to register interface (read)
