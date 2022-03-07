@@ -71,7 +71,13 @@ impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg>> JsonSocketServer
     pub fn run_loop(&mut self) -> Result<()> {
         let mut events = Events::with_capacity(1024);
         while !self.exit_requested {
-            self.poll.poll(&mut events, None)?;
+            match self.poll.poll(&mut events, None) {
+                Ok(()) => (),
+                Err(err) if err.kind() == ErrorKind::Interrupted => {
+                    continue;
+                }
+                Err(err) => bail!("poll: {}", err),
+            }
             for event in events.iter() {
                 if event.token() == self.socket_token {
                     self.process_new_connection()?;
