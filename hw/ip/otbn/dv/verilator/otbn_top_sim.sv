@@ -26,6 +26,7 @@ module otbn_top_sim (
   localparam logic [63:0]  TestScrambleNonce = 64'hf88c2578fa4cd123;
 
   logic      otbn_done, otbn_done_r, otbn_done_rr;
+  core_err_bits_t core_err_bits;
   err_bits_t otbn_err_bits, otbn_err_bits_r, otbn_err_bits_rr;
   logic      otbn_start;
 
@@ -78,16 +79,13 @@ module otbn_top_sim (
     .done_o                      ( otbn_done           ),
     .locked_o                    (                     ),
 
-    .err_bits_o                  ( otbn_err_bits       ),
+    .err_bits_o                  ( core_err_bits       ),
     .recoverable_err_o           (                     ),
-    .reg_intg_violation_o        (                     ),
 
     .imem_req_o                  ( imem_req            ),
     .imem_addr_o                 ( imem_addr           ),
     .imem_rdata_i                ( imem_rdata          ),
     .imem_rvalid_i               ( imem_rvalid         ),
-
-    .insn_fetch_err_o            (                     ),
 
     .dmem_req_o                  ( dmem_req            ),
     .dmem_write_o                ( dmem_write          ),
@@ -115,11 +113,9 @@ module otbn_top_sim (
     .imem_sec_wipe_urnd_key_o    (                     ),
     .req_sec_wipe_urnd_keys_i    ( 1'b0                ),
 
-    .bus_intg_violation_i        ( 1'b0                ),
-    .illegal_bus_access_i        ( 1'b0                ),
-    .lifecycle_escalation_i      ( 1'b0                ),
+    .escalate_en_i               ( 1'b0                ),
+
     .software_errs_fatal_i       ( 1'b0                ),
-    .otbn_scramble_state_error_i ( 1'b0                ),
 
     .sideload_key_shares_i       ( sideload_key_shares ),
     .sideload_key_shares_valid_i ( 2'b11               )
@@ -171,6 +167,24 @@ module otbn_top_sim (
 
   bind otbn_core otbn_trace_if #(.ImemAddrWidth, .DmemAddrWidth) i_otbn_trace_if (.*);
   bind otbn_core otbn_tracer #(.SecWipeEn) u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
+
+  // Convert from core_err_bits_t to err_bits_t
+  assign otbn_err_bits = '{
+    fatal_software:       core_err_bits.fatal_software,
+    lifecycle_escalation: 0,
+    illegal_bus_access:   0,
+    bad_internal_state:   core_err_bits.bad_internal_state,
+    bus_intg_violation:   0,
+    reg_intg_violation:   core_err_bits.reg_intg_violation,
+    dmem_intg_violation:  core_err_bits.dmem_intg_violation,
+    imem_intg_violation:  core_err_bits.imem_intg_violation,
+    key_invalid:          core_err_bits.key_invalid,
+    loop:                 core_err_bits.loop,
+    illegal_insn:         core_err_bits.illegal_insn,
+    call_stack:           core_err_bits.call_stack,
+    bad_insn_addr:        core_err_bits.bad_insn_addr,
+    bad_data_addr:        core_err_bits.bad_data_addr
+  };
 
   // Pulse otbn_start for 1 cycle immediately out of reset.
   // Flop `done_o` from otbn_core to match up with model done signal.

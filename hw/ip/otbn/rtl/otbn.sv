@@ -102,7 +102,8 @@ module otbn
   logic [127:0] dmem_sec_wipe_urnd_key, imem_sec_wipe_urnd_key;
 
   logic core_recoverable_err, recoverable_err_d, recoverable_err_q;
-  logic reg_intg_violation;
+  logic core_escalate_en;
+  core_err_bits_t core_err_bits;
   err_bits_t err_bits, err_bits_d, err_bits_q;
   logic err_bits_en;
 
@@ -210,7 +211,6 @@ module otbn
   logic [ImemIndexWidth-1:0] imem_index_core;
   logic [38:0] imem_rdata_core;
   logic imem_rvalid_core;
-  logic insn_fetch_err;
 
   logic imem_req_bus;
   logic imem_dummy_response_q, imem_dummy_response_d;
@@ -794,22 +794,20 @@ module otbn
 
   // FATAL_ALERT_CAUSE register. The .de and .d values are equal for each bit, so that it can only
   // be set, not cleared.
-  assign hw2reg.fatal_alert_cause.imem_intg_violation.de = insn_fetch_err;
-  assign hw2reg.fatal_alert_cause.imem_intg_violation.d = insn_fetch_err;
-  assign hw2reg.fatal_alert_cause.dmem_intg_violation.de = dmem_rerror;
-  assign hw2reg.fatal_alert_cause.dmem_intg_violation.d = dmem_rerror;
-  assign hw2reg.fatal_alert_cause.reg_intg_violation.de = reg_intg_violation;
-  assign hw2reg.fatal_alert_cause.reg_intg_violation.d = reg_intg_violation;
-  assign hw2reg.fatal_alert_cause.bus_intg_violation.de = bus_intg_violation;
-  assign hw2reg.fatal_alert_cause.bus_intg_violation.d = bus_intg_violation;
-  assign hw2reg.fatal_alert_cause.bad_internal_state.de = 0;
-  assign hw2reg.fatal_alert_cause.bad_internal_state.d = 0;
-  assign hw2reg.fatal_alert_cause.illegal_bus_access.de = illegal_bus_access_d;
-  assign hw2reg.fatal_alert_cause.illegal_bus_access.d = illegal_bus_access_d;
-  assign hw2reg.fatal_alert_cause.lifecycle_escalation.de = lifecycle_escalation;
-  assign hw2reg.fatal_alert_cause.lifecycle_escalation.d = lifecycle_escalation;
-  assign hw2reg.fatal_alert_cause.fatal_software.de = done_core;
-  assign hw2reg.fatal_alert_cause.fatal_software.d = err_bits_d.fatal_software;
+`define DEF_FAC_BIT(NAME)                                         \
+  assign hw2reg.fatal_alert_cause.``NAME``.d = 1'b1;              \
+  assign hw2reg.fatal_alert_cause.``NAME``.de = err_bits.``NAME;
+
+  `DEF_FAC_BIT(fatal_software)
+  `DEF_FAC_BIT(lifecycle_escalation)
+  `DEF_FAC_BIT(illegal_bus_access)
+  `DEF_FAC_BIT(bad_internal_state)
+  `DEF_FAC_BIT(bus_intg_violation)
+  `DEF_FAC_BIT(reg_intg_violation)
+  `DEF_FAC_BIT(dmem_intg_violation)
+  `DEF_FAC_BIT(imem_intg_violation)
+
+`undef DEF_FAC_BIT
 
   // INSN_CNT register
   logic [31:0] insn_cnt;
@@ -827,15 +825,16 @@ module otbn
   assign alert_test[AlertRecov] = reg2hw.alert_test.recov.q & reg2hw.alert_test.recov.qe;
 
   logic [NumAlerts-1:0] alerts;
-  assign alerts[AlertFatal] = insn_fetch_err       |
-                              dmem_rerror          |
-                              bus_intg_violation   |
-                              reg_intg_violation   |
-                              illegal_bus_access_d |
-                              lifecycle_escalation |
-                              err_bits.fatal_software;
+  assign alerts[AlertFatal] = |{err_bits_q.fatal_software,
+                                err_bits_q.lifecycle_escalation,
+                                err_bits_q.illegal_bus_access,
+                                err_bits_q.bad_internal_state,
+                                err_bits_q.bus_intg_violation,
+                                err_bits_q.reg_intg_violation,
+                                err_bits_q.dmem_intg_violation,
+                                err_bits_q.imem_intg_violation};
 
-  assign alerts[AlertRecov] = recoverable_err_q & done_core;
+  assign alerts[AlertRecov] = (core_recoverable_err | recoverable_err_q) & done_core;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
@@ -925,16 +924,13 @@ module otbn
     .done_o                      (done_core),
     .locked_o                    (locked),
 
-    .err_bits_o                  (err_bits),
+    .err_bits_o                  (core_err_bits),
     .recoverable_err_o           (core_recoverable_err),
-    .reg_intg_violation_o        (reg_intg_violation),
 
     .imem_req_o                  (imem_req_core),
     .imem_addr_o                 (imem_addr_core),
     .imem_rdata_i                (imem_rdata_core),
     .imem_rvalid_i               (imem_rvalid_core),
-
-    .insn_fetch_err_o            (insn_fetch_err),
 
     .dmem_req_o                  (dmem_req_core),
     .dmem_write_o                (dmem_write_core),
@@ -962,17 +958,38 @@ module otbn
     .imem_sec_wipe_urnd_key_o    (imem_sec_wipe_urnd_key),
     .req_sec_wipe_urnd_keys_i    (req_sec_wipe_urnd_keys),
 
-    .bus_intg_violation_i        (bus_intg_violation),
-    .illegal_bus_access_i        (illegal_bus_access_q),
-    .lifecycle_escalation_i      (lifecycle_escalation),
+    .escalate_en_i               (core_escalate_en),
 
     .software_errs_fatal_i       (software_errs_fatal_q),
-
-    .otbn_scramble_state_error_i (otbn_scramble_state_error),
 
     .sideload_key_shares_i       (keymgr_key_i.key),
     .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}})
   );
+
+  // Construct a full set of error bits from the core output
+  assign err_bits = '{
+    fatal_software:       core_err_bits.fatal_software,
+    lifecycle_escalation: lifecycle_escalation,
+    illegal_bus_access:   illegal_bus_access_q,
+    bad_internal_state:   |{core_err_bits.bad_internal_state,
+                            otbn_scramble_state_error},
+    bus_intg_violation:   bus_intg_violation,
+    reg_intg_violation:   core_err_bits.reg_intg_violation,
+    dmem_intg_violation:  core_err_bits.dmem_intg_violation,
+    imem_intg_violation:  core_err_bits.imem_intg_violation,
+    key_invalid:          core_err_bits.key_invalid,
+    loop:                 core_err_bits.loop,
+    illegal_insn:         core_err_bits.illegal_insn,
+    call_stack:           core_err_bits.call_stack,
+    bad_insn_addr:        core_err_bits.bad_insn_addr,
+    bad_data_addr:        core_err_bits.bad_data_addr
+  };
+
+  // An error signal going down into the core to show that it should locally escalate
+  assign core_escalate_en = |{lifecycle_escalation,
+                              illegal_bus_access_q,
+                              otbn_scramble_state_error,
+                              bus_intg_violation};
 
   // We're idle if we're neither busy executing something nor locked
   assign idle = ~(busy_execute_q | locked | otbn_dmem_scramble_key_req_busy |

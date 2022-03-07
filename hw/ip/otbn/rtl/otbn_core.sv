@@ -35,17 +35,14 @@ module otbn_core
   output logic done_o,   // operation done
   output logic locked_o, // otbn locked, reset required to perform further commands
 
-  output err_bits_t err_bits_o,  // valid when done_o is asserted
-  output logic recoverable_err_o,
-  output logic reg_intg_violation_o,
+  output core_err_bits_t err_bits_o,  // valid when done_o is asserted
+  output logic           recoverable_err_o,
 
   // Instruction memory (IMEM)
   output logic                     imem_req_o,
   output logic [ImemAddrWidth-1:0] imem_addr_o,
   input  logic [38:0]              imem_rdata_i,
   input  logic                     imem_rvalid_i,
-
-  output logic insn_fetch_err_o,
 
   // Data memory (DMEM)
   output logic                        dmem_req_o,
@@ -77,21 +74,12 @@ module otbn_core
   output logic [127:0] dmem_sec_wipe_urnd_key_o, // URND bits to give temporary dmem scramble key
   output logic [127:0] imem_sec_wipe_urnd_key_o, // URND bits to give temporary imem scramble key
 
-  // An integrity check on an incoming bus transaction failed. Results in a fatal error.
-  input logic bus_intg_violation_i,
-
-  // Asserted by system when bus tries to access OTBN memories whilst OTBN is active. Results in a
-  // fatal error.
-  input logic illegal_bus_access_i,
-
-  // Indicates an incoming escalation from the life cycle manager. Results in a fatal error.
-  input logic lifecycle_escalation_i,
+  // Indicates an incoming escalation from the life cycle manager or some other fatal error at the
+  // level above.
+  input logic escalate_en_i,
 
   // When set software errors become fatal errors.
   input logic software_errs_fatal_i,
-
-  // Indicates an invalid state of the scramble controller. Results in a fatal error.
-  input logic otbn_scramble_state_error_i,
 
   input logic [1:0]                       sideload_key_shares_valid_i,
   input logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares_i
@@ -225,11 +213,14 @@ module otbn_core
   logic [ImemAddrWidth:0]   prefetch_loop_end_addr;
   logic [ImemAddrWidth-1:0] prefetch_loop_jump_addr;
 
+  logic                 controller_escalate_en;
+  controller_err_bits_t controller_err_bits;
+
+  core_err_bits_t err_bits_q, err_bits_d;
+
   logic start_stop_state_error;
 
   logic req_sec_wipe_urnd_keys_q;
-
-  err_bits_t err_bits_q, controller_err_bits;
 
   // Start stop control start OTBN execution when requested and deals with any pre start or post
   // stop actions.
@@ -303,8 +294,6 @@ module otbn_core
     .prefetch_loop_jump_addr_i (prefetch_loop_jump_addr)
   );
 
-  assign insn_fetch_err_o = insn_fetch_err;
-
   // Instruction decoder
   otbn_decoder u_otbn_decoder (
     // The decoder is combinatorial; clk and rst are only used for assertions.
@@ -327,25 +316,22 @@ module otbn_core
   // operand sources), and post-process their outputs as needed.
   otbn_controller #(
     .ImemSizeByte(ImemSizeByte),
-    .DmemSizeByte(DmemSizeByte),
-    .SecWipeEn(SecWipeEn)
+    .DmemSizeByte(DmemSizeByte)
   ) u_otbn_controller (
     .clk_i,
     .rst_ni,
 
-    .start_i(controller_start),
+    .start_i      (controller_start),
     .locked_o,
 
-    .err_bits_o(controller_err_bits),
+    .escalate_en_i(controller_escalate_en),
+    .err_bits_o   (controller_err_bits),
     .recoverable_err_o,
-    .reg_intg_violation_o,
 
     // Next instruction selection (to instruction fetch)
     .insn_fetch_req_addr_o  (insn_fetch_req_addr),
     .insn_fetch_req_valid_o (insn_fetch_req_valid),
     .insn_fetch_resp_clear_o(insn_fetch_resp_clear),
-    // Error from fetch requested last cycle
-    .insn_fetch_err_i       (insn_fetch_err),
 
     // The current instruction
     .insn_valid_i  (insn_valid),
@@ -372,7 +358,6 @@ module otbn_core
     .rf_base_rd_data_b_intg_i  (rf_base_rd_data_b_intg),
     .rf_base_rd_commit_o       (rf_base_rd_commit),
     .rf_base_call_stack_err_i  (rf_base_call_stack_err),
-    .rf_base_rd_data_err_i     (rf_base_rd_data_err),
 
     // To/from bignunm register file
     .rf_bignum_wr_addr_o         (rf_bignum_wr_addr_ctrl),
@@ -415,7 +400,6 @@ module otbn_core
 
     .lsu_base_rdata_i  (lsu_base_rdata),
     .lsu_bignum_rdata_i(lsu_bignum_rdata),
-    .lsu_rdata_err_i   (lsu_rdata_err),
 
     // Isprs read/write (base and bignum)
     .ispr_addr_o        (ispr_addr),
@@ -428,7 +412,6 @@ module otbn_core
     .rnd_req_o         (rnd_req),
     .rnd_prefetch_req_o(rnd_prefetch_req),
     .rnd_valid_i       (rnd_valid),
-    .urnd_state_err_i  (urnd_all_zero),
 
     // Secure wipe
     .secure_wipe_running_i(secure_wipe_running),
@@ -439,12 +422,8 @@ module otbn_core
     .insn_cnt_o   (insn_cnt),
     .insn_cnt_clear_i,
     .mems_sec_wipe_o,
-    .bus_intg_violation_i,
-    .illegal_bus_access_i,
-    .lifecycle_escalation_i,
+
     .software_errs_fatal_i,
-    .start_stop_state_error_i(start_stop_state_error),
-    .otbn_scramble_state_error_i,
 
     .sideload_key_shares_valid_i,
 
@@ -457,6 +436,47 @@ module otbn_core
 
   `ASSERT(InsnDataStableInStall, u_otbn_controller.state_q == OtbnStateStall |->
                                  insn_fetch_resp_data == $past(insn_fetch_resp_data))
+
+  // Generate an err_bits output by combining errors from all the blocks in otbn_core
+  assign err_bits_d = '{
+    fatal_software:      controller_err_bits.fatal_software,
+    bad_internal_state:  |{controller_err_bits.bad_internal_state,
+                           start_stop_state_error,
+                           urnd_all_zero},
+    reg_intg_violation:  |{controller_err_bits.reg_intg_violation,
+                           rf_base_rd_data_err},
+    dmem_intg_violation: lsu_rdata_err,
+    imem_intg_violation: insn_fetch_err,
+    key_invalid:         controller_err_bits.key_invalid,
+    loop:                controller_err_bits.loop,
+    illegal_insn:        controller_err_bits.illegal_insn,
+    call_stack:          controller_err_bits.call_stack,
+    bad_insn_addr:       controller_err_bits.bad_insn_addr,
+    bad_data_addr:       controller_err_bits.bad_data_addr
+  };
+
+  always @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      err_bits_q <= '0;
+    end else begin
+      if (start_i && !locked_o) begin
+        err_bits_q <= '0;
+      end else begin
+        err_bits_q <= err_bits_q | err_bits_d;
+      end
+    end
+  end
+  assign err_bits_o = err_bits_q | err_bits_d;
+
+  // Pass an "escalation" signal down to the controller by ORing in error signals from the other
+  // modules in otbn_core. Note that each error that appears here also appears somewhere in
+  // err_bits_o above.
+  assign controller_escalate_en = |{escalate_en_i,
+                                    start_stop_state_error,
+                                    urnd_all_zero,
+                                    rf_base_rd_data_err,
+                                    lsu_rdata_err,
+                                    insn_fetch_err};
 
   assign insn_cnt_o = insn_cnt;
 
@@ -680,18 +700,6 @@ module otbn_core
 
   assign dmem_sec_wipe_urnd_key_o = urnd_data[127:0];
   assign imem_sec_wipe_urnd_key_o = urnd_data[255:128];
-
-  // Cache err_bits, taking the value from u_otbn_controller when its start_secure_wipe_o signal is
-  // asserted.
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      err_bits_q <= '0;
-    end else begin
-      if (start_secure_wipe) err_bits_q <= controller_err_bits;
-    end
-  end
-  assign err_bits_o = err_bits_q;
-
 
   // Asserts =======================================================================================
 
