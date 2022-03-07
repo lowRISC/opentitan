@@ -241,7 +241,7 @@ module tb;
   `ASSERT(ChannelSelOnehot_A, $onehot0(adc_o.channel_sel), clk_aon, ~rst_aon_n)
   `ASSERT_KNOWN(ChannelSelKnown_A, adc_o.channel_sel, clk_aon, ~rst_aon_n)
   `ASSERT_KNOWN(PdKnown_A, adc_o.pd, clk_aon, ~rst_aon_n)
-  `ASSERT(PwrupTime_A, $rose(pwrup_time_chk) |-> pwrup_time == (cfg_pwrup_time + 2), clk_aon,
+  `ASSERT(PwrupTime_A, $rose(pwrup_time_chk) |-> pwrup_time == (cfg_pwrup_time + 1), clk_aon,
           ~rst_aon_n)
   `ASSERT(WakeupTime_A, $rose(wakeup_time_chk) |-> wakeup_time == cfg_wakeup_time, clk_aon,
           ~rst_aon_n)
