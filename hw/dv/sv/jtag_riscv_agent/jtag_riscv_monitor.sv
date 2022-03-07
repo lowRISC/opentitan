@@ -21,10 +21,10 @@ class jtag_riscv_monitor extends dv_base_monitor #(
   // collect transactions
   virtual protected task collect_trans(uvm_phase phase);
     jtag_item item;
+    logic [DMI_OPW-1:0] op_raw;
     jtag_op_e op;
     logic [DMI_ADDRW-1:0] addr;
     logic [DMI_DATAW-1:0] data;
-    jtag_op_status_e status;
     // Saved op field from initial transaction
     jtag_op_e saved_op;
     bit dmi_selected;
@@ -40,8 +40,9 @@ class jtag_riscv_monitor extends dv_base_monitor #(
       end else if (dmi_selected) begin
         // DR transaction and DMI selected by the instruction register.
         // Extract op from the transaction data register.
-        op = item.dr[DMI_OPW-1 : 0];
-        if (op === DmiRead || op === DmiWrite) begin
+        op_raw = item.dr[DMI_OPW-1 : 0];
+        op = jtag_op_e'(op_raw);
+        if (op_raw === DmiRead || op_raw === DmiWrite) begin
           // Read / write request
           addr = item.dr[DMI_ADDRW+DMI_DATAW+DMI_OPW-1 : DMI_DATAW+DMI_OPW];
           data = item.dr[DMI_DATAW+DMI_OPW-1 : DMI_OPW];
@@ -49,15 +50,19 @@ class jtag_riscv_monitor extends dv_base_monitor #(
                     "Got request - op:%0s addr:0x%0h data:0x%0h", op.name, addr, data), UVM_HIGH)
           // Save 'op' field to use when a successful status transaction arrives below
           saved_op = op;
-        end else if (op === DmiStatus) begin
+        end else if (op_raw === DmiStatus) begin
+          logic [DMI_OPW-1:0] status_raw;
+          jtag_op_status_e status;
+
           // Status / response DR transaction
           // Extract status fields
-          status = item.dout[DMI_OPW-1 : 0];
+          status_raw = item.dout[DMI_OPW-1 : 0];
+          status = jtag_op_status_e'(status_raw);
           addr   = item.dout[DMI_ADDRW+DMI_DATAW+DMI_OPW-1 : DMI_DATAW+DMI_OPW];
           data   = item.dout[DMI_DATAW+DMI_OPW-1 : DMI_OPW];
           // Only monitor packets for completed transactions -
           // Not retries (status===DmiInProgress)
-          if (status === DmiNoErr || status === DmiFail) begin
+          if (status_raw === DmiNoErr || status_raw === DmiFail) begin
             `uvm_create_obj(ITEM_T, monitor_item)
             monitor_item.addr   = addr;
             monitor_item.op     = saved_op;
@@ -65,19 +70,20 @@ class jtag_riscv_monitor extends dv_base_monitor #(
             monitor_item.status = status;
             analysis_port.write(monitor_item);
             `uvm_info(`gfn, monitor_item.sprint(uvm_default_line_printer), UVM_MEDIUM)
-          end else if (status === DmiInProgress) begin
+          end else if (status_raw === DmiInProgress) begin
             `uvm_info(`gfn, $sformatf(
                       "Got busy status %0s - op:%0s addr:0x%0h", status.name, op.name, addr),
                       UVM_HIGH)
           end else begin
+            string msg = $sformatf("Bad status - %0s(0x%0h) ", status.name, status_raw);
             if (!cfg.allow_errors) begin
-              `uvm_error(`gfn, $sformatf("Bad status - %0s(0x%0h) ", status.name, status))
+              `uvm_error(`gfn, msg)
             end else begin
-              `uvm_info(`gfn, $sformatf("Bad status - %0s(0x%0h) ", status.name, status), UVM_HIGH)
+              `uvm_info(`gfn, msg, UVM_HIGH)
             end
           end
         end else begin
-          `uvm_error(`gfn, $sformatf("Bad op - %0s(0x%0h)", op.name, op))
+          `uvm_error(`gfn, $sformatf("Bad op - %0s(0x%0h)", op.name, op_raw))
         end
       end
     end
