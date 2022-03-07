@@ -204,6 +204,30 @@ module tlul_assert #(
     ((!d_mask[7]) || (d_mask[7] && !$isunknown(d_data[8*7 +: 8])));
   endsequence
 
+  /////////////////////////////////////////
+  // define sequences for d_error checks //
+  /////////////////////////////////////////
+
+  sequence d_error_pre_S;
+    h2d.a_valid && d2h.a_ready;
+  endsequence
+
+  sequence legalAOpcodeErr_S;
+    !(h2d.a_opcode inside {PutFullData, Get, PutPartialData});
+  endsequence
+
+  sequence sizeGTEMaskErr_S;
+    (1 << h2d.a_size) < $countones(h2d.a_mask);
+  endsequence
+
+  sequence sizeMatchesMaskErr_S;
+    (h2d.a_opcode == PutFullData) && ((1 << h2d.a_size) != $countones(h2d.a_mask));
+  endsequence
+
+  sequence addrSizeAlignedErr_S;
+    (h2d.a_address & ((1 << h2d.a_size)-1)) != '0;
+  endsequence
+
   ///////////////////////////////////
   // assemble properties and check //
   ///////////////////////////////////
@@ -231,15 +255,11 @@ module tlul_assert #(
   // in this case all signals coming from the host side have an assumed property
   end else if (EndpointType == "Device") begin : gen_device
     // h2d
-    `ASSUME(legalAOpcode_M,      h2d_pre_S |-> legalAOpcode_S,     !clk_i, !rst_ni || disable_sva)
     `ASSUME(legalAParam_M,       h2d_pre_S |-> legalAParam_S,      !clk_i, !rst_ni)
-    `ASSUME(sizeGTEMask_M,       h2d_pre_S |-> sizeGTEMask_S,      !clk_i, !rst_ni || disable_sva)
-    `ASSUME(sizeMatchesMask_M,   h2d_pre_S |-> sizeMatchesMask_S,  !clk_i, !rst_ni || disable_sva)
     `ASSUME(pendingReqPerSrc_M,  h2d_pre_S |-> pendingReqPerSrc_S, !clk_i, !rst_ni)
-    `ASSUME(addrSizeAligned_M,   h2d_pre_S |-> addrSizeAligned_S,  !clk_i, !rst_ni || disable_sva)
-    `ASSUME(contigMask_M,        h2d_pre_S and contigMask_pre_S |-> contigMask_S,
-          !clk_i, !rst_ni || disable_sva)
     `ASSUME(aDataKnown_M,        h2d_pre_S and aDataKnown_pre_S |-> aDataKnown_S, !clk_i, !rst_ni)
+    `ASSUME(contigMask_M,        h2d_pre_S and contigMask_pre_S |-> contigMask_S,
+            !clk_i, !rst_ni || disable_sva)
     // d2h
     `ASSERT(respOpcode_A,        d2h_pre_S |-> respOpcode_S,       !clk_i, !rst_ni)
     `ASSERT(legalDParam_A,       d2h_pre_S |-> legalDParam_S,      !clk_i, !rst_ni)
@@ -247,6 +267,15 @@ module tlul_assert #(
     `ASSERT(respMustHaveReq_A,   d2h_pre_S |-> respMustHaveReq_S,  !clk_i, !rst_ni)
     `ASSERT(dDataKnown_A,        d2h_pre_S and dDataKnown_pre_S |-> dDataKnown_S,
           !clk_i, !rst_ni || disable_sva)
+    // d2h error cases
+    `ASSERT(legalAOpcodeErr_A, d_error_pre_S and legalAOpcodeErr_S |=>
+            s_eventually (d2h.d_valid && d2h.d_error))
+    `ASSERT(sizeGTEMaskErr_A, d_error_pre_S and sizeGTEMaskErr_S |=>
+            s_eventually (d2h.d_valid && d2h.d_error))
+    `ASSERT(sizeMatchesMaskErr_A, d_error_pre_S and sizeMatchesMaskErr_S |=>
+            s_eventually (d2h.d_valid && d2h.d_error))
+    `ASSERT(addrSizeAlignedErr_A, d_error_pre_S and addrSizeAlignedErr_S |=>
+            s_eventually (d2h.d_valid && d2h.d_error))
   end else begin : gen_unknown
     initial begin : p_unknonw
       `ASSERT_I(unknownConfig_A, 0 == 1)
