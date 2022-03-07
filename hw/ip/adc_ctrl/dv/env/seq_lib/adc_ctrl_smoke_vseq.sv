@@ -23,13 +23,6 @@ class adc_ctrl_smoke_vseq extends adc_ctrl_base_vseq;
 
   `uvm_object_new
 
-  virtual task pre_start();
-    super.pre_start();
-    cfg.testmode = AdcCtrlOneShot;
-    cfg.adc_intr_ctl = 0;
-    cfg.adc_wakeup_ctl = 0;
-  endtask
-
   task body();
     uvm_reg_data_t rdata;
     // Vector with onehot interrupt status bit position = 1
@@ -40,13 +33,6 @@ class adc_ctrl_smoke_vseq extends adc_ctrl_base_vseq;
 
     // Set one shot interrupt enable
     csr_wr(ral.adc_intr_ctl, ONE_SHOT_INTR);
-    // Copy to config object for scoreboard
-    cfg.adc_intr_ctl = ONE_SHOT_INTR;
-
-    // Configure power control register
-    ral.adc_pd_ctl.pwrup_time.set(cfg.pwrup_time);
-    ral.adc_pd_ctl.wakeup_time.set(cfg.wakeup_time);
-    csr_wr(ral.adc_pd_ctl, ral.adc_pd_ctl.get());
 
     repeat (20) begin
 

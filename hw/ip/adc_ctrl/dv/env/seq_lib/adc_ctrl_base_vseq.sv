@@ -110,7 +110,7 @@ class adc_ctrl_base_vseq extends cip_base_vseq #(
   endfunction
 
   // Turn off ADC CTRL without triggering assertions
-  virtual task adc_ctrl_off();
+  task adc_ctrl_off();
     // Disable assertions which will trigger because of the abrupt turn off
     `DV_ASSERT_CTRL_REQ("ADC_IF_A_CTRL", 0)
     csr_wr(ral.adc_en_ctl, 'h0);
@@ -121,18 +121,6 @@ class adc_ctrl_base_vseq extends cip_base_vseq #(
         `DV_ASSERT_CTRL_REQ("ADC_IF_A_CTRL", 1)
       end
     join_none
-  endtask
-
-  // Perform software reset
-  virtual task do_adc_fsm_reset();
-    // Disable assertions which will trigger because of the abrupt reset
-    `DV_ASSERT_CTRL_REQ("ADC_IF_A_CTRL", 0)
-    csr_wr(ral.adc_fsm_rst, 1);
-    cfg.clk_aon_rst_vif.wait_clks($urandom_range(5, 10));
-    csr_wr(ral.adc_fsm_rst, 0);
-    cfg.clk_aon_rst_vif.wait_clks($urandom_range(5, 10));
-    // Re-enable assertions
-    `DV_ASSERT_CTRL_REQ("ADC_IF_A_CTRL", 1)
   endtask
 
 endclass : adc_ctrl_base_vseq
