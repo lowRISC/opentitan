@@ -263,9 +263,9 @@ void OtbnModel::edn_urnd_step(svLogicVecVal *edn_urnd_data /* logic [31:0] */) {
   iss->edn_urnd_step(edn_urnd_data->aval);
 }
 
-void OtbnModel::set_keymgr_value(svLogicVecVal *key0 /* logic [383:0] */,
-                                 svLogicVecVal *key1 /* logic [383:0] */,
-                                 unsigned char valid) {
+int OtbnModel::set_keymgr_value(svLogicVecVal *key0 /* logic [383:0] */,
+                                svLogicVecVal *key1 /* logic [383:0] */,
+                                unsigned char valid) {
   ISSWrapper *iss = ensure_wrapper();
 
   std::array<uint32_t, 12> key0_arr;
@@ -276,7 +276,14 @@ void OtbnModel::set_keymgr_value(svLogicVecVal *key0 /* logic [383:0] */,
     key1_arr[i] = key1[i].aval;
   }
 
-  iss->set_keymgr_value(key0_arr, key1_arr, valid != 0);
+  try {
+    iss->set_keymgr_value(key0_arr, key1_arr, valid != 0);
+  } catch (const std::runtime_error &err) {
+    std::cerr << "Error when setting keymgr value: " << err.what() << "\n";
+    return -1;
+  }
+
+  return 0;
 }
 
 void OtbnModel::edn_urnd_cdc_done() {
@@ -807,10 +814,10 @@ void otbn_take_loop_warps(OtbnModel *model, OtbnMemUtil *memutil) {
   model->take_loop_warps(*memutil);
 }
 
-void otbn_model_set_keymgr_value(OtbnModel *model, svLogicVecVal *key0,
-                                 svLogicVecVal *key1, unsigned char valid) {
+int otbn_model_set_keymgr_value(OtbnModel *model, svLogicVecVal *key0,
+                                svLogicVecVal *key1, unsigned char valid) {
   assert(model && key0 && key1);
-  model->set_keymgr_value(key0, key1, valid);
+  return model->set_keymgr_value(key0, key1, valid);
 }
 
 int otbn_model_send_lc_escalation(OtbnModel *model) {

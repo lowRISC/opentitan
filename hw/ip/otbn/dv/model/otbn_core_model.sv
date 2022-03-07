@@ -88,7 +88,7 @@ module otbn_core_model
   bit [31:0] raw_err_bits_d, raw_err_bits_q;
   bit [31:0] stop_pc_d, stop_pc_q;
   bit        rnd_req_start_d, rnd_req_start_q;
-  bit        failed_lc_escalate;
+  bit        failed_lc_escalate, failed_keymgr_value;
 
   bit unused_raw_err_bits;
   logic unused_edn_rsp_fips;
@@ -216,8 +216,10 @@ module otbn_core_model
         failed_lc_escalate <= (otbn_model_send_lc_escalation(model_handle) != 0);
       end
       if (!$stable(keymgr_key_i) || $rose(rst_ni)) begin
-        otbn_model_set_keymgr_value(model_handle, keymgr_key_i.key[0], keymgr_key_i.key[1],
-                                    keymgr_key_i.valid);
+        failed_keymgr_value <= (otbn_model_set_keymgr_value(model_handle,
+                                                            keymgr_key_i.key[0],
+                                                            keymgr_key_i.key[1],
+                                                            keymgr_key_i.valid) != 0);
       end
       if (edn_urnd_cdc_done_i) begin
         edn_model_urnd_cdc_done(model_handle);
@@ -295,7 +297,8 @@ module otbn_core_model
       .stack_wr_ptr_q(u_call_stack.stack_wr_ptr_q)
     );
 
-  assign err_o = failed_step | failed_check | check_mismatch_q | failed_lc_escalate;
+  assign err_o = |{failed_step, failed_check, check_mismatch_q,
+                   failed_lc_escalate, failed_keymgr_value};
 
   // Derive a "done" signal. This should trigger for a single cycle when OTBN finishes its work.
   // It's analogous to the done_o signal on otbn_core, but this signal is delayed by a single cycle
