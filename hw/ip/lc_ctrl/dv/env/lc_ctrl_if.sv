@@ -133,7 +133,7 @@ interface lc_ctrl_if (
     flash_rma_ack_i = val;
   endtask
 
-  function automatic clear_static_signals();
+  function automatic void clear_static_signals();
     otp_device_id_i = 0;
     otp_manuf_state_i = 0;
     otp_vendor_test_status_i = 0;
@@ -229,7 +229,7 @@ interface lc_ctrl_if (
     return `LC_CTRL_COUNT_PATH;
   endfunction
 
-  function automatic set_test_sequence_typename(string name);
+  function automatic void set_test_sequence_typename(string name);
     test_sequence_typename = name;
   endfunction
 
