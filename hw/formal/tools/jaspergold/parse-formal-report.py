@@ -75,9 +75,10 @@ def get_summary(str_buffer):
                         ("unreachable", r"^\[\d+\].*unreachable.*")]
     summary = extract_messages_count(str_buffer, message_patterns)
 
-    summary["pass_rate"] = format_percentage(summary["proven"],
-                                             summary["cex"] + summary["undetermined"] +
-                                             summary["unreachable"])
+    # Undetermined properties are categorized as pass because we could not find
+    # any counter-cases within the limited time of running.
+    summary["pass_rate"] = format_percentage(summary["proven"] + summary["undetermined"],
+                                             summary["cex"] + summary["unreachable"])
     summary["cov_rate"] = format_percentage(summary["covered"], summary["unreachable"])
 
     return summary
