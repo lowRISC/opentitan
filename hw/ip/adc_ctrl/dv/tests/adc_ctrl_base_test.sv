@@ -18,7 +18,6 @@ class adc_ctrl_base_test extends cip_base_test #(
   // the run_phase; as such, nothing more needs to be done
   virtual function void build_phase(uvm_phase phase);
     bit print_ral = 0;
-    bit pwrup_time_chk = 1;
     bit filters_fixed = 0;
 
     // Defaults - can be overridden by plusargs
@@ -34,14 +33,12 @@ class adc_ctrl_base_test extends cip_base_test #(
       `uvm_info(`gfn, cfg.ral.sprint(), UVM_LOW)
     end
 
-    // Enable power up check
-    void'($value$plusargs("pwrup_time_chk=%0b", pwrup_time_chk));
-    `DV_ASSERT_CTRL_REQ("PwrupTime_A_CTRL", pwrup_time_chk)
-
     // Enable fixed filters
     void'($value$plusargs("filters_fixed=%0b", filters_fixed));
     cfg.filters_fixed = filters_fixed;
 
+    // Disable wake up assertion - is periodically enabled by the test sequence
+    `DV_ASSERT_CTRL_REQ("WakeupTime_A_CTRL", 0)
 
     // Print test config
     `uvm_info(`gfn, cfg.sprint(), UVM_LOW)

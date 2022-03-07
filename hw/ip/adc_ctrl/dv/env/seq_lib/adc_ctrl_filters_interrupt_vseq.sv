@@ -10,8 +10,11 @@ class adc_ctrl_filters_interrupt_vseq extends adc_ctrl_filters_polled_vseq;
   `uvm_object_new
 
   virtual task configure_adc_ctrl();
+    bit [ADC_CTRL_NUM_FILTERS:0] adc_intr_ctl;
     super.configure_adc_ctrl();
     // Enable interrupts
+    `DV_CHECK_STD_RANDOMIZE_FATAL(adc_intr_ctl)
+    cfg.adc_intr_ctl = adc_intr_ctl;
     csr_wr(ral.adc_intr_ctl, cfg.adc_intr_ctl);
     csr_wr(ral.intr_enable, 'h1);
   endtask

@@ -31,9 +31,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
   // Normal power and low power sample match counters
   protected uint16_t m_np_counter, m_lp_counter;
   // Expected filter status bits
-  protected
-  bit [ADC_CTRL_NUM_FILTERS - 1 : 0]
-      m_expected_filter_status, m_expected_filter_status_prev;
+  protected bit [ADC_CTRL_NUM_FILTERS - 1 : 0] m_expected_filter_status;
   // Debounce detected
   protected bit m_debounced;
   // Expected adc_intr_status (1 bit per filter + oneshot mode)
@@ -48,6 +46,10 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
   protected event m_intr_state_wr_ev;
   // Expected wakeup line
   protected bit m_expected_wakeup;
+  // Write to adc_fsm_reset
+  protected event m_adc_fsm_reset_wr_ev;
+  // FSM reset reg value
+  protected bit m_adc_fsm_reset;
 
   `uvm_component_utils(adc_ctrl_scoreboard)
 
@@ -106,10 +108,14 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
 
       // Compare against expected every change of interrupt line
       if (cfg.en_scb & (m_interrupt ^ m_interrupt_prev)) begin
-        `uvm_info(`gfn, $sformatf(
-                  "monitor_intr_proc: interrupt pin change m_interrupt=%b", m_interrupt),
-                  UVM_MEDIUM)
-        `DV_CHECK_EQ(m_interrupt, m_expected_intr_state)
+        fork
+          begin
+            `uvm_info(`gfn, $sformatf(
+                      "monitor_intr_proc: interrupt pin change m_interrupt=%b", m_interrupt),
+                      UVM_MEDIUM)
+            `DV_CHECK_EQ(m_interrupt, m_expected_intr_state)
+          end
+        join_none
       end
 
     end
@@ -196,8 +202,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
-        // TODO: update modeling for One Shot mode
-        do_read_check = !(cfg.testmode inside {AdcCtrlOneShot});
+        do_read_check = 1;
         if (addr_phase_write) begin
           ->m_intr_state_wr_ev;
           // Implement W1C
@@ -215,7 +220,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
       end
       "adc_intr_status": begin
         // TODO: update modeling for One Shot mode
-        do_read_check = !(cfg.testmode inside {AdcCtrlOneShot});
+        do_read_check = 1;
         if (addr_phase_write) begin
           ->m_adc_intr_status_wr_ev;
           // Implement W1C
@@ -243,15 +248,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
           ->m_filter_status_wr_ev;
           // Implement W1C
           m_expected_filter_status &= (~item.a_data);
-          // Update m_expected_filter_status_prev after 1 clock
-          fork
-            begin
-              cfg.clk_aon_rst_vif.wait_clks(1);
-              m_expected_filter_status_prev = m_expected_filter_status;
-            end
-          join_none
         end
-
       end
       "adc_chn0_filter_ctl_0", "adc_chn0_filter_ctl_1", "adc_chn0_filter_ctl_2",
           "adc_chn0_filter_ctl_3", "adc_chn0_filter_ctl_4", "adc_chn0_filter_ctl_5",
@@ -305,6 +302,13 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
         end
       end
 
+      // FSM Reset
+      "adc_fsm_rst": begin
+        if (addr_phase_write) begin
+          ->m_adc_fsm_reset_wr_ev;
+          do_adc_fsm_reset(item.a_data[0]);
+        end
+      end
 
       default: begin
         //`uvm_error(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
@@ -313,7 +317,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
 
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (data_phase_read) begin
-      if (do_read_check) begin
+      if (do_read_check && cfg.en_scb) begin
         `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data, $sformatf(
                      "reg name: %0s", csr.get_full_name()))
       end
@@ -349,41 +353,61 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // Process debounce
   // From the spec:
-  // All pairs of filters that are enabled in adc_chn0_filter_ctl[7:0] and adc_chn1_filter_ctl[7:0] are evaluated
-  // after each pair of samples has been taken. The filter result is passed to the periodic scan counter if enabled and not at its limit
-  // otherwise the result is passed to the debounce counter. The list below describes how the counters interpret the filter results:
+  // All pairs of filters that are enabled in adc_chn0_filter_ctl[7:0] and adc_chn1_filter_ctl[7:0]
+  // are evaluated after each pair of samples has been taken. The filter result is passed to the
+  // periodic scan counter if enabled and not at its limit otherwise the result is passed to the
+  // debounce counter. The list below describes how the counters interpret the filter results:
   // If no filters are hit then the counter will reset to zero.
-  // If one or more filters are hit but the set hit differs from the previous evaluation the counter resets to zero.
-  // If one or more filters are hit and either none was hit in the previous evaluation or the same set was hit in the previous
-  // evaluation and the counter is not at its limit then the counter will increment.
-  // If the counter is the periodic scan counter and it reaches its limit then continuous scanning is enabled and the debounce
-  // counter will be used for future evaluations.
-  // If the counter is the debounce counter and it reaches its limit then:
-  // If an interrupt is not already being raised then the current sample values are latched into adc_chn_val[0].adc_chn_value_intr
-  // and adc_chn_val[1].adc_chn_value_intr. i.e. these registers only record the value of the first debounced hit.
-  // The adc_intr_status register is updated by setting the bits corresponding to filters that are hit (note that bits that
-  // are already set will not be cleared). This will cause the block to raise an interrupt if it was not already doing so.
-  // If any filters are hit that are enabled in adc_wakeup_ctl the corresponding bits in the adc_wakeup_status register are set
-  // which may initiate a wakeup.
-  // Note that the debounce counter will remain at its limit until the set of filters that are set changes when it will be
-  // reset to zero and start to debounce the next event.
+  // If one or more filters are hit but the set hit differs from the previous evaluation the
+  // counter resets to zero.
+  // If one or more filters are hit and either none was hit in the previous evaluation or the same
+  // set was hit in the previous evaluation and the counter is not at its threshold then the
+  // counter will increment.
+  // If one or more filters are hit and the same set was hit in the previous evaluation and the
+  // counter is at its threshold then the counter stays at the threshold.
+  // If the counter is the periodic scan counter and it reaches its threshold, as defined by
+  // adc_lp_sample_ctl.lp_sample_cnt, then continuous scanning is enabled and the debounce counter
+  // will be used for future evaluations.
+  // If the counter is the debounce counter and it reaches its threshold, as defined by
+  // adc_sample_ctl.np_sample_cnt, then:
+  // An interrupt is raised if the threshold is met for the first time.
+  // The current sample values are latched into adc_chn_val[0].adc_chn_value_intr and
+  // adc_chn_val[1].adc_chn_value_intr.
+  // If a series of interrupts and matches are seen, these registers only record the value
+  // of the last debounced hit.
+  // The adc_intr_status register is updated by setting the bits corresponding to filters that
+  // are hit (note that bits that are already set will not be cleared). This will cause the block
+  // to raise an interrupt if it was not already doing so.
+  // If a filter is a hit and is also enabled in adc_wakeup_ctl the corresponding filter
+  // generates a wakeup.
+  // Note that the debounce counter will remain at its threshold until the set of filters are
+  // changed by software to debounce a different event or if the current match changes.
+  // This implies that a stable matching event continuously matches until some condition in the
+  // system (changed filter settings or changed ADC output) alters the result.
+  // Because scanning continues the adc_intr_status register will reflect any debounced events
+  // that are detected between the controller raising an interrupt and the status bits being
+  // cleared (by having 1 written to them). However, the adc_chn_val[0].adc_chn_value_intr and
+  // adc_chn_val[1].adc_chn_value_intrregisters record the value at the time the interrupt was
+  // first raised and thus reflect the filter state from that point.
 
   virtual function void process_debounce();
-    if (m_match != 0) begin
+    if (m_match != 0 && !m_adc_fsm_reset) begin
       if ((m_match == m_match_prev) || (m_match_prev == 0)) begin
         // If one or more filters are hit and either none was hit in the previous evaluation
         // or the same set was hit in the previous evaluation and the counter is not
         // at its limit then the counter will increment.
-        if (m_np_counter < (cfg.np_sample_cnt - 1)) begin
+        if (m_np_counter < cfg.np_sample_cnt) begin
           // Not at it's limit
           m_np_counter++;
-        end else if (!m_debounced) begin
-          bit intr_enable = ral.intr_enable.debug_cable.get_mirrored_value();
-          // Capture matches
-          m_debounced = 1;
-          m_expected_filter_status |= m_match;
-          m_expected_adc_intr_status |= (m_expected_filter_status & ~m_expected_filter_status_prev);
-          m_expected_intr_state = intr_enable & (|(m_expected_adc_intr_status & cfg.adc_intr_ctl));
+          // Note m_np_counter has now been incremented below so we can detect the
+          // transition from (cfg.np_sample_cnt - 1) to cfg.np_sample_cnt
+          if (m_np_counter == cfg.np_sample_cnt && !m_debounced) begin
+            // Capture matches
+            m_debounced = 1;
+            m_expected_filter_status |= m_match;
+            m_expected_adc_intr_status |= m_match & cfg.adc_intr_ctl;
+            m_expected_intr_state |= (|(m_match & cfg.adc_intr_ctl));
+          end
         end
       end else begin
         // Previous matched set different to current
@@ -395,12 +419,20 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
       m_np_counter = 0;
       m_debounced  = 0;
     end
+
+    // Implement One Shot Mode
+    // One hot interrupt is one bit above the last filter's interrupt
+    if (cfg.testmode inside {AdcCtrlOneShot}) begin
+      m_expected_adc_intr_status[ADC_CTRL_NUM_FILTERS] = cfg.adc_intr_ctl[ADC_CTRL_NUM_FILTERS];
+      m_expected_intr_state |= cfg.adc_intr_ctl[ADC_CTRL_NUM_FILTERS];
+    end
+
     // Delayfor edge detection
     m_match_prev = m_match;
-    m_expected_filter_status_prev = m_expected_filter_status;
 
     // Decode expected wakeup - allow dynamic control
     m_expected_wakeup = |(m_expected_filter_status & cfg.ral.adc_wakeup_ctl.get_mirrored_value());
+
   endfunction
 
 
@@ -416,11 +448,27 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     m_chn_match = 0;
     m_np_counter = 0;
     m_lp_counter = 0;
+    m_debounced = 0;
     m_expected_filter_status = 0;
-    m_expected_filter_status_prev = 0;
     m_expected_adc_intr_status = 0;
     m_expected_intr_state = 0;
   endfunction
+
+  // Software reset
+  // val = register value
+  virtual function void do_adc_fsm_reset(bit val);
+    m_adc_fsm_reset = val;
+    if (val) begin
+      // Clear model state
+      m_match = 0;
+      m_match_prev = 0;
+      m_chn_match = 0;
+      m_np_counter = 0;
+      m_lp_counter = 0;
+      m_debounced = 0;
+    end
+  endfunction
+
 
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
