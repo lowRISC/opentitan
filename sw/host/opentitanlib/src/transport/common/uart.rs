@@ -4,6 +4,7 @@
 
 use serialport::SerialPort;
 use std::cell::RefCell;
+use std::io::ErrorKind;
 use std::time::Duration;
 
 use crate::io::uart::{Uart, UartError};
@@ -64,7 +65,11 @@ impl Uart for SerialPortUart {
     fn read_timeout(&self, buf: &mut [u8], timeout: Duration) -> Result<usize> {
         let mut port = self.port.borrow_mut();
         port.set_timeout(timeout).wrap(UartError::ReadError)?;
-        let len = port.read(buf);
+        let result = port.read(buf);
+        let len = match result {
+            Err(ioerr) if ioerr.kind() == ErrorKind::TimedOut => Ok(0),
+            _ => result,
+        };
         port.set_timeout(Self::FOREVER).wrap(UartError::ReadError)?;
         Ok(len.wrap(UartError::ReadError)?)
     }

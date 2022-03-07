@@ -52,7 +52,7 @@ impl Uart for VerilatorUart {
                 // If we got a timeout from the uart, return 0 as per convention.
                 // Let all other errors propagate (wrapped in TransportError).
                 if let Some(ioerr) = e.downcast_ref::<io::Error>() {
-                    if ioerr.kind() != ErrorKind::TimedOut {
+                    if ioerr.kind() == ErrorKind::TimedOut {
                         return Ok(0);
                     }
                 }
