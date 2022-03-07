@@ -465,11 +465,6 @@ dif_result_t dif_kmac_mode_kmac_start(
     return kDifBadArg;
   }
 
-  // Hardware must be idle to start an operation.
-  if (!is_state_idle(kmac)) {
-    return kDifError;
-  }
-
   // Set key strength and calculate rate (r).
   uint32_t kstrength;
   switch (mode) {
@@ -510,6 +505,10 @@ dif_result_t dif_kmac_mode_kmac_start(
       return kDifBadArg;
   }
 
+  // Hardware must be idle to start an operation.
+  if (!is_state_idle(kmac)) {
+    return kDifError;
+  }
   // Set key length and shares.
   mmio_region_write32(kmac->base_addr, KMAC_KEY_LEN_REG_OFFSET, key_len);
   for (int i = 0; i < ARRAYSIZE(k->share0); ++i) {

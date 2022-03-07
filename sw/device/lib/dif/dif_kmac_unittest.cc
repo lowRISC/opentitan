@@ -103,6 +103,21 @@ class KmacTest : public testing::Test, public mock_mmio::MmioTest {
       0xa7, 0x48, 0x47, 0x93, 0x0a, 0x03, 0xab, 0xee, 0xa4,
       0x73, 0xe1, 0xf3, 0xdc, 0x30, 0xb8, 0x88, 0x15};
 
+  struct ConfigRegister {
+    bool enable = false;
+    uint8_t key_strength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L256;
+    uint8_t mode = KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE;
+    bool msg_big_endian = false;
+    bool state_big_endian = false;
+    bool sideload = false;
+    uint8_t entropy_mode = KMAC_CFG_SHADOWED_ENTROPY_MODE_VALUE_IDLE_MODE;
+    bool entropy_fast_process = false;
+    bool msg_mask = false;
+    bool entropy_ready = false;
+    bool err_processed = false;
+    bool enable_unsupported_mode_strength = false;
+  } config_reg_;
+
   KmacTest() { EXPECT_DIF_OK(dif_kmac_init(dev().region(), &kmac_)); }
 
   /**
@@ -111,7 +126,7 @@ class KmacTest : public testing::Test, public mock_mmio::MmioTest {
    * @param message Buffer with the data.
    * @param size Len of the buffer.
    */
-  void setExpectedMessageByte(const uint8_t *message, const size_t size) {
+  void ExpectMessageByte(const uint8_t *message, const size_t size) {
     for (size_t i = 0; i < size; ++i) {
       EXPECT_WRITE8(KMAC_MSG_FIFO_REG_OFFSET, message[i]);
     }
@@ -124,14 +139,14 @@ class KmacTest : public testing::Test, public mock_mmio::MmioTest {
    * @param message Buffer with the data.
    * @param size Len of the buffer.
    */
-  void setExpectedMessageInt32(const uint8_t *message, const size_t size) {
+  void ExpectMessageInt32(const uint8_t *message, const size_t size) {
     // Check if the buffer is unaligned.
     size_t remaining = size;
     size_t unalignment = ((uintptr_t)message) % sizeof(uint32_t);
     if (unalignment) {
       // write unaligned data in bytes.
       unalignment = sizeof(uint32_t) - unalignment;
-      setExpectedMessageByte(message, unalignment);
+      ExpectMessageByte(message, unalignment);
       message += unalignment;
       remaining -= unalignment;
     }
@@ -147,10 +162,144 @@ class KmacTest : public testing::Test, public mock_mmio::MmioTest {
     // Check if there still unaligned data in the buffer tail.
     if (remaining) {
       // write unaligned data in bytes.
-      setExpectedMessageByte(message, remaining);
+      ExpectMessageByte(message, remaining);
+    }
+  }
+
+  void ExpectConfig(void) {
+    EXPECT_WRITE32_SHADOWED(
+        KMAC_CFG_SHADOWED_REG_OFFSET,
+        {{KMAC_CFG_SHADOWED_KMAC_EN_BIT, config_reg_.enable},
+         {KMAC_CFG_SHADOWED_KSTRENGTH_OFFSET, config_reg_.key_strength},
+         {KMAC_CFG_SHADOWED_MODE_OFFSET, config_reg_.mode},
+         {KMAC_CFG_SHADOWED_MSG_ENDIANNESS_BIT, config_reg_.msg_big_endian},
+         {KMAC_CFG_SHADOWED_STATE_ENDIANNESS_BIT, config_reg_.state_big_endian},
+         {KMAC_CFG_SHADOWED_SIDELOAD_BIT, config_reg_.sideload},
+         {KMAC_CFG_SHADOWED_ENTROPY_MODE_OFFSET, config_reg_.entropy_mode},
+         {KMAC_CFG_SHADOWED_ENTROPY_FAST_PROCESS_BIT,
+          config_reg_.entropy_fast_process},
+         {KMAC_CFG_SHADOWED_MSG_MASK_BIT, config_reg_.msg_mask},
+         {KMAC_CFG_SHADOWED_ENTROPY_READY_BIT, config_reg_.entropy_ready},
+         {KMAC_CFG_SHADOWED_ERR_PROCESSED_BIT, config_reg_.err_processed},
+         {KMAC_CFG_SHADOWED_EN_UNSUPPORTED_MODESTRENGTH_BIT,
+          config_reg_.enable_unsupported_mode_strength}});
+  }
+
+  void ExpectKey(const dif_kmac_key_t &key) {
+    std::map<dif_kmac_key_length_t, uint32_t> key_size_map = {
+        {kDifKmacKeyLen128, KMAC_KEY_LEN_LEN_VALUE_KEY128},
+        {kDifKmacKeyLen192, KMAC_KEY_LEN_LEN_VALUE_KEY192},
+        {kDifKmacKeyLen256, KMAC_KEY_LEN_LEN_VALUE_KEY256},
+        {kDifKmacKeyLen384, KMAC_KEY_LEN_LEN_VALUE_KEY384},
+        {kDifKmacKeyLen512, KMAC_KEY_LEN_LEN_VALUE_KEY512},
+    };
+
+    EXPECT_WRITE32(KMAC_KEY_LEN_REG_OFFSET, key_size_map[key.length]);
+    for (uint32_t i = 0; i < ARRAYSIZE(key.share0); ++i) {
+      ptrdiff_t offset = KMAC_KEY_SHARE0_0_REG_OFFSET + (i * sizeof(uint32_t));
+      EXPECT_WRITE32(offset, key.share0[i]);
+      offset = KMAC_KEY_SHARE1_0_REG_OFFSET + (i * sizeof(uint32_t));
+      EXPECT_WRITE32(offset, key.share1[i]);
+    }
+  }
+
+  void ExpectPrefix(const uint32_t *prefix_regs, uint32_t size) {
+    for (uint32_t i = 0; i < size; ++i) {
+      ptrdiff_t offset = KMAC_PREFIX_0_REG_OFFSET + i * sizeof(uint32_t);
+      EXPECT_WRITE32(offset, prefix_regs[i]);
     }
   }
 };
+
+class Kmac256Test : public KmacTest {
+ protected:
+  dif_kmac_key_t key_ = {
+      .share0 = {0x43424140, 0x47464544, 0x4B4A4948, 0x4F4E4D4C, 0x53525150,
+                 0x57565554, 0x5B5A5958, 0x5F5E5D5C},
+      .share1 = {0},
+      .length = kDifKmacKeyLen256,
+  };
+  dif_kmac_mode_kmac_t mode_ = kDifKmacModeKmacLen256;
+  dif_kmac_customization_string_t custom_string_;
+
+  Kmac256Test() {
+    const std::string string = "My Tagged Application";
+    EXPECT_DIF_OK(dif_kmac_customization_string_init(
+        string.c_str(), string.size(), &custom_string_));
+    config_reg_.enable = true;
+    config_reg_.mode = KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE;
+  }
+
+  void ExpectPrefix(const dif_kmac_customization_string_t &s) {
+    // Initialize prefix registers with function name ("KMAC") and empty
+    // customization string. The empty customization string will be overwritten
+    // if a non-empty string is provided.
+    std::string prefix_str("\001 KMAC\001");
+
+    // Encoded customization string (s) must be at least 3 bytes long if it is
+    // not the empty string.
+    if (s.length >= 3) {
+      // First two bytes overwrite the pre-encoded empty customization string.
+      prefix_str[prefix_str.size() - 1] |= s.buffer[0] & 0xFF;
+      prefix_str.push_back(s.buffer[1] & 0xFF);
+      prefix_str.insert(prefix_str.end(), &s.buffer[2], &s.buffer[s.length]);
+    }
+
+    std::vector<uint32_t> prefix_regs(11, 0);
+    memcpy(prefix_regs.data(), prefix_str.data(), prefix_str.size());
+    KmacTest::ExpectPrefix(prefix_regs.data(), prefix_regs.size());
+  }
+};
+
+TEST_F(Kmac256Test, StartSuccess) {
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_IDLE_BIT, true}});
+  ExpectKey(key_);
+  EXPECT_READ32(KMAC_CFG_SHADOWED_REG_OFFSET, 0);
+  ExpectConfig();
+  ExpectPrefix(custom_string_);
+  EXPECT_WRITE32(KMAC_CMD_REG_OFFSET,
+                 {{KMAC_CMD_CMD_OFFSET, KMAC_CMD_CMD_VALUE_START}});
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_ABSORB_BIT, true}});
+
+  EXPECT_DIF_OK(dif_kmac_mode_kmac_start(&kmac_, &op_state_, mode_, 0, &key_,
+                                         &custom_string_));
+  EXPECT_EQ(op_state_.squeezing, false);
+  EXPECT_EQ(op_state_.append_d, true);
+  EXPECT_EQ(op_state_.offset, 0);
+  EXPECT_EQ(op_state_.r, (1600 - 2 * 256) / 32);
+  EXPECT_EQ(op_state_.d, 0);
+}
+
+TEST_F(Kmac256Test, StartBadArg) {
+  EXPECT_DIF_BADARG(dif_kmac_mode_kmac_start(NULL, &op_state_, mode_, 0, &key_,
+                                             &custom_string_));
+
+  EXPECT_DIF_BADARG(
+      dif_kmac_mode_kmac_start(&kmac_, NULL, mode_, 0, &key_, &custom_string_));
+
+  EXPECT_DIF_BADARG(dif_kmac_mode_kmac_start(&kmac_, &op_state_, mode_,
+                                             kDifKmacMaxOutputLenWords + 1,
+                                             &key_, &custom_string_));
+
+  EXPECT_DIF_BADARG(dif_kmac_mode_kmac_start(&kmac_, &op_state_,
+                                             (dif_kmac_mode_kmac_t)0xff, 0,
+                                             &key_, &custom_string_));
+
+  EXPECT_DIF_BADARG(dif_kmac_mode_kmac_start(&kmac_, &op_state_, mode_, 0, NULL,
+                                             &custom_string_));
+
+  key_.length = static_cast<dif_kmac_key_length_t>(0xFF);
+  EXPECT_DIF_BADARG(dif_kmac_mode_kmac_start(&kmac_, &op_state_, mode_, 0,
+                                             &key_, &custom_string_));
+}
+
+TEST_F(Kmac256Test, StartError) {
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_IDLE_BIT, false}});
+  EXPECT_EQ(dif_kmac_mode_kmac_start(&kmac_, &op_state_, mode_, 0, &key_,
+                                     &custom_string_),
+            kDifError);
+}
+
 constexpr std::array<uint8_t, 17> KmacTest::kMsg_;
 
 class AbsorbalignmentMessage : public KmacTest {};
@@ -163,7 +312,7 @@ TEST_F(AbsorbalignmentMessage, Success) {
     std::copy(kMsg_.begin(), kMsg_.end(), pMsg);
 
     EXPECT_READ32(KMAC_STATUS_REG_OFFSET, 3);
-    setExpectedMessageInt32(pMsg, kMsg_.size());
+    ExpectMessageInt32(pMsg, kMsg_.size());
 
     EXPECT_DIF_OK(
         dif_kmac_absorb(&kmac_, &op_state_, pMsg, kMsg_.size(), NULL));
