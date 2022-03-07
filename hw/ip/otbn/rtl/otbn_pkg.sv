@@ -92,6 +92,36 @@ package otbn_pkg;
     logic bad_data_addr;
   } err_bits_t;
 
+  // All the error signals that can be generated directly from the controller. Note that this is
+  // organised to include every software error (including 'call_stack', which actually gets fed in
+  // from the base register file)
+  typedef struct packed {
+    logic fatal_software;
+    logic bad_internal_state;
+    logic reg_intg_violation;
+    logic key_invalid;
+    logic loop;
+    logic illegal_insn;
+    logic call_stack;
+    logic bad_insn_addr;
+    logic bad_data_addr;
+  } controller_err_bits_t;
+
+  // All the error signals that can be generated somewhere inside otbn_core
+  typedef struct packed {
+    logic fatal_software;
+    logic bad_internal_state;
+    logic reg_intg_violation;
+    logic dmem_intg_violation;
+    logic imem_intg_violation;
+    logic key_invalid;
+    logic loop;
+    logic illegal_insn;
+    logic call_stack;
+    logic bad_insn_addr;
+    logic bad_data_addr;
+  } core_err_bits_t;
+
   // Constants =====================================================================================
 
   typedef enum logic {
