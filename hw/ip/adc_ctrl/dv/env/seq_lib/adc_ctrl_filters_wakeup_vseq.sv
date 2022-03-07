@@ -10,11 +10,8 @@ class adc_ctrl_filters_wakeup_vseq extends adc_ctrl_filters_polled_vseq;
   `uvm_object_new
 
   virtual task configure_adc_ctrl();
-    bit [ADC_CTRL_NUM_FILTERS-1:0] adc_wakeup_ctl;
     super.configure_adc_ctrl();
     // Enable wakeup
-    `DV_CHECK_STD_RANDOMIZE_FATAL(adc_wakeup_ctl)
-    cfg.adc_wakeup_ctl = adc_wakeup_ctl;
     csr_wr(ral.adc_wakeup_ctl, cfg.adc_wakeup_ctl);
   endtask
 

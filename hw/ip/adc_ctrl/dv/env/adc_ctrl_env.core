@@ -24,9 +24,6 @@ filesets:
       - seq_lib/adc_ctrl_filters_polled_vseq.sv: {is_include_file: true}
       - seq_lib/adc_ctrl_filters_interrupt_vseq.sv: {is_include_file: true}
       - seq_lib/adc_ctrl_filters_wakeup_vseq.sv: {is_include_file: true}
-      - seq_lib/adc_ctrl_counter_vseq.sv: {is_include_file: true}
-      - seq_lib/adc_ctrl_poweron_counter_vseq.sv: {is_include_file: true}
-      - seq_lib/adc_ctrl_lowpower_counter_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

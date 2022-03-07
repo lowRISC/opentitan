@@ -31,11 +31,6 @@ package adc_ctrl_env_pkg;
   parameter int unsigned ADC_CTRL_NUM_FILTERS = 8;
   // Interrupt index in interrupts interface
   parameter int ADC_CTRL_INTERRUPT_INDEX = 0;
-  // Width of pwrup_width field
-  parameter int ADC_CTRL_PWRUP_TIME_WIDTH = 4;
-  // Width of wakeup field
-  parameter int ADC_CTRL_WAKEUP_TIME_WIDTH = 24;
-
 
   // types
 

@@ -9,7 +9,3 @@
 `include "adc_ctrl_filters_polled_vseq.sv"
 `include "adc_ctrl_filters_interrupt_vseq.sv"
 `include "adc_ctrl_filters_wakeup_vseq.sv"
-`include "adc_ctrl_counter_vseq.sv"
-`include "adc_ctrl_poweron_counter_vseq.sv"
-`include "adc_ctrl_lowpower_counter_vseq.sv"
-
