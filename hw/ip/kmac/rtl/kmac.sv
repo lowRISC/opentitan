@@ -1322,7 +1322,18 @@ module kmac
 
   // The recoverable alert is observable via status register until the KMAC operation is restarted
   // by re-writing the Control Register.
-  assign hw2reg.status.alert_recov_ctrl_update_err.d  = alert_recov_operation;
+  logic status_alert_recov_ctrl_update_err;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      status_alert_recov_ctrl_update_err <= 1'b 0;
+    end else if (alert_recov_operation) begin
+      status_alert_recov_ctrl_update_err <= 1'b 1;
+    end else if (err_processed) begin
+      status_alert_recov_ctrl_update_err <= 1'b 0;
+    end
+  end
+
+  assign hw2reg.status.alert_recov_ctrl_update_err.d  = status_alert_recov_ctrl_update_err;
 
   assign alert_fatal = shadowed_storage_err
                      | alert_intg_err
@@ -1332,7 +1343,17 @@ module kmac
                      ;
 
   // Make the fatal alert observable via status register.
-  assign hw2reg.status.alert_fatal_fault.d  = alert_fatal;
+  // Cannot be reset except the hardware reset
+  logic status_alert_fatal_fault;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      status_alert_fatal_fault <= 1'b 0;
+    end else if (alert_fatal) begin
+      status_alert_fatal_fault <= 1'b 1;
+    end
+  end
+  assign hw2reg.status.alert_fatal_fault.d  = status_alert_fatal_fault;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
