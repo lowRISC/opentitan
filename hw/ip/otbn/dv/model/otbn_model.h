@@ -39,9 +39,11 @@ class OtbnModel {
   // EDN Step sends ISS the RND data when ACK signal is high.
   void edn_rnd_step(svLogicVecVal *edn_rnd_data /* logic [31:0] */);
 
-  void set_keymgr_value(svLogicVecVal *key0 /* logic [383:0] */,
-                        svLogicVecVal *key1 /* logic [383:0] */,
-                        unsigned char valid);
+  // Set or unset the two keys from keymgr. Returns 0 on success or -1
+  // on error.
+  int set_keymgr_value(svLogicVecVal *key0 /* logic [383:0] */,
+                       svLogicVecVal *key1 /* logic [383:0] */,
+                       unsigned char valid);
 
   // EDN Step sends ISS the URND related EDN data when ACK signal is high.
   void edn_urnd_step(svLogicVecVal *edn_urnd_data /* logic [31:0] */);

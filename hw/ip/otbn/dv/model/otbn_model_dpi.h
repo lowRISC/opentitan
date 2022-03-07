@@ -39,9 +39,9 @@ void edn_model_rnd_cdc_done(OtbnModel *model);
 // Signal RTL is finished processing EDN data for URND to Model
 void edn_model_urnd_cdc_done(OtbnModel *model);
 
-// Pass keymgr data to model
-void otbn_model_set_keymgr_value(OtbnModel *model, svLogicVecVal *key0,
-                                 svLogicVecVal *key1, unsigned char valid);
+// Pass keymgr data to model. Returns 0 on success; -1 on error.
+int otbn_model_set_keymgr_value(OtbnModel *model, svLogicVecVal *key0,
+                                svLogicVecVal *key1, unsigned char valid);
 
 // The main entry point to the OTBN model, exported from here and used in
 // otbn_core_model.sv.
