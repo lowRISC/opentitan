@@ -1057,7 +1057,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     end
     foreach (cfg.keymgr_vif.keys_a_array[state, cdi, dest]) begin
       `DV_CHECK_NE(act, cfg.keymgr_vif.keys_a_array[state][cdi][dest],
-                   $sformatf("key at state %0s for %s %s", state.name, cdi.name, dest))
+                   $sformatf("key at state %0d for %s %s", state, cdi.name, dest))
     end
   endfunction
 
