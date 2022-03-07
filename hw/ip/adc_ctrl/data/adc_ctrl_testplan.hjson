@@ -183,7 +183,7 @@
           - Confirm timing of power down and channel select signals to ADC.
           '''
       milestone: V2
-      tests: ["adc_ctrl_poweron_counter"]
+      tests: []
     }
     {
       name: lowpower_counter
@@ -202,7 +202,7 @@
           - Confirm return to fast sampling happens as expected.
         '''
       milestone: V2
-      tests: ["adc_ctrl_lowpower_counter"]
+      tests: []
     }
     {
       name: fsm_reset

@@ -74,15 +74,12 @@ class adc_ctrl_filters_polled_vseq extends adc_ctrl_base_vseq;
       // Now turn off ADC_CTRL
       adc_ctrl_off();
 
-      // FSM reset to synchronise RTL & model
-      do_adc_fsm_reset();
-
       // Re-randomize configuration if enabled
       if (!cfg.filters_fixed) `DV_CHECK_RANDOMIZE_FATAL(cfg);
 
     end
     // A short delay to allow all CDC to complete
-    cfg.clk_aon_rst_vif.wait_clks($urandom_range(10, 15));
+    cfg.clk_aon_rst_vif.wait_clks($urandom_range(3, 5));
   endtask : body
 
   // Check the status registers after every ADC sample (all channels)
