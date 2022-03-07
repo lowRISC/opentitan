@@ -648,7 +648,6 @@
       hwaccess: "hro"
       regwen: "CFG_REGWEN"
       shadowed: "true"
-      hwqe:     "true"
       update_err_alert:  "recov_operation_err"
       storage_err_alert: "fatal_fault_err"
       fields: [
