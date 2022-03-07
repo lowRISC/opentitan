@@ -10,7 +10,6 @@ from .isa import OTBNInsn
 from .state import OTBNState, FsmState
 from .stats import ExecutionStats
 from .trace import Trace
-from .ext_regs import TraceExtRegChange, ExtRegChange
 
 
 # A dictionary that defines a function of the form "address -> from -> to". If
@@ -143,8 +142,6 @@ class OTBNSim:
             # cycle after that until we start executing instructions, but that
             # doesn't really matter)
             changes = self._on_stall(verbose, fetch_next=False)
-            changes += [TraceExtRegChange('RND_REQ',
-                                          ExtRegChange('=', 0, True, 0))]
             self.state.ext_regs.write('INSN_CNT', 0, True)
             return (None, changes)
 
