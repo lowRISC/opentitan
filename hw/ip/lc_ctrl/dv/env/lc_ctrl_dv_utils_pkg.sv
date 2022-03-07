@@ -337,7 +337,7 @@ package lc_ctrl_dv_utils_pkg;
   endfunction
 
   //Convert a binary representation to a lc_state representation 0=Axx 1=Bxx
-  function static bit [LcStateWidth-1:0] bin_to_lc_state(lc_state_bin_t val, bit err_inj = 0);
+  function automatic bit [LcStateWidth-1:0] bin_to_lc_state(lc_state_bin_t val, bit err_inj = 0);
     int err_inj_idx = -1;
     bin_to_lc_state = 0;
     if (err_inj) begin
@@ -370,7 +370,7 @@ package lc_ctrl_dv_utils_pkg;
   endfunction
 
   //Convert a binary representation to a lc_count representation 0=Cxx 1=Dxx
-  function static bit [LcCountWidth-1:0] bin_to_lc_count(lc_count_bin_t val, bit err_inj = 0);
+  function automatic bit [LcCountWidth-1:0] bin_to_lc_count(lc_count_bin_t val, bit err_inj = 0);
     int err_inj_idx = -1;
     bin_to_lc_count = 0;
     if (err_inj) begin
