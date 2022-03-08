@@ -276,10 +276,10 @@ sw_tests += {
   }
 }
 
-clkmgr_peri_off_test_lib = declare_dependency(
+clkmgr_off_peri_test_lib = declare_dependency(
   link_with: static_library(
-    'clkmgr_peri_off_test_lib',
-    sources: ['clkmgr_peri_off_test.c'],
+    'clkmgr_off_peri_test_lib',
+    sources: ['clkmgr_off_peri_test.c'],
     dependencies: [
       sw_lib_dif_aon_timer,
       sw_lib_dif_clkmgr,
@@ -296,15 +296,15 @@ clkmgr_peri_off_test_lib = declare_dependency(
   ),
 )
 sw_tests += {
-  'clkmgr_peri_off_test': {
-    'library': clkmgr_peri_off_test_lib,
+  'clkmgr_off_peri_test': {
+    'library': clkmgr_off_peri_test_lib,
   }
 }
 
 clkmgr_jitter_test_lib = declare_dependency(
   link_with: static_library(
     'clkmgr_jitter_test_lib',
-    sources: ['clkmgr_jitter.c'],
+    sources: ['clkmgr_jitter_test.c'],
     dependencies: [
       sw_lib_dif_clkmgr,
       sw_lib_mmio,
