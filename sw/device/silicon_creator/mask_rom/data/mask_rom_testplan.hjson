@@ -10,7 +10,7 @@
 //   - Bringup keys for manufacturing and RMA
 
 {
-  name: "mask_rom_e2e"
+  name: "mask_rom"
 
   testpoints: [
     // Functests
