@@ -296,5 +296,37 @@ TEST_F(HintableClockTest, GetEnabledError) {
             kDifBadArg);
 }
 
+class MeasureCtrlTest : public ClkMgrTest {};
+
+TEST_F(MeasureCtrlTest, Disable) {
+  EXPECT_WRITE32(CLKMGR_MEASURE_CTRL_REGWEN_REG_OFFSET, 0);
+  EXPECT_EQ(dif_clkmgr_measure_ctrl_disable(&clkmgr_), kDifOk);
+}
+
+TEST_F(MeasureCtrlTest, DisableError) {
+  EXPECT_EQ(dif_clkmgr_measure_ctrl_disable(nullptr), kDifBadArg);
+}
+
+TEST_F(MeasureCtrlTest, GetEnable) {
+  {  // enabled
+    dif_toggle_t state = kDifToggleDisabled;
+    EXPECT_READ32(CLKMGR_MEASURE_CTRL_REGWEN_REG_OFFSET,
+                  {{CLKMGR_MEASURE_CTRL_REGWEN_EN_BIT, true}});
+    EXPECT_EQ(dif_clkmgr_measure_ctrl_get_enable(&clkmgr_, &state), kDifOk);
+    EXPECT_EQ(state, kDifToggleEnabled);
+  }
+  {  // disabled
+    dif_toggle_t state = kDifToggleDisabled;
+    EXPECT_READ32(CLKMGR_MEASURE_CTRL_REGWEN_REG_OFFSET,
+                  {{CLKMGR_MEASURE_CTRL_REGWEN_EN_BIT, false}});
+    EXPECT_EQ(dif_clkmgr_measure_ctrl_get_enable(&clkmgr_, &state), kDifOk);
+    EXPECT_EQ(state, kDifToggleDisabled);
+  }
+}
+
+TEST_F(MeasureCtrlTest, GetEnableError) {
+  EXPECT_EQ(dif_clkmgr_measure_ctrl_disable(nullptr), kDifBadArg);
+}
+
 }  // namespace
 }  // namespace dif_clkmgr_unittest
