@@ -209,7 +209,7 @@ def _bin_to_flash_vmem_impl(ctx):
     outputs = []
     vmem = ctx.actions.declare_file("{}.{}.vmem".format(
         # Remove ".bin" from file basename.
-        ctx.file.bin.basename[:-4],
+        ctx.file.bin.basename.replace("." + ctx.file.bin.extension, ""),
         ctx.attr.word_size,
     ))
     outputs.append(vmem)
@@ -271,7 +271,7 @@ def _scramble_flash_vmem_impl(ctx):
     outputs = []
     scrambled_vmem = ctx.actions.declare_file("{}.scr.vmem".format(
         # Remove ".vmem" from file basename.
-        ctx.file.vmem.basename[:-4],
+        ctx.file.vmem.basename.replace("." + ctx.file.vmem.extension, ""),
     ))
     outputs.append(scrambled_vmem)
     ctx.actions.run(
