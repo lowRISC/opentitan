@@ -92,25 +92,26 @@
  * @param ... Arguments to a LOG_* macro, which are evaluated if the check
  * fails.
  */
-#define CHECK_DIF_OK(dif_call, ...)                  \
-  do {                                               \
-    if (dif_call != kDifOk) {                        \
-      /* NOTE: because the condition in this if      \
-         statement can be statically determined,     \
-         only one of the below string constants      \
-         will be included in the final binary.*/     \
-      if (OT_VA_ARGS_COUNT(_, ##__VA_ARGS__) == 0) { \
-        LOG_ERROR("DIF-fail: " #dif_call);           \
-      } else {                                       \
-        LOG_ERROR("DIF-fail: " __VA_ARGS__);         \
-      }                                              \
-      /* Currently, this macro will call into        \
-         the test failure code, which logs           \
-         "FAIL" and aborts. In the future,           \
-         we will try to condition on whether         \
-         or not this is a test.*/                    \
-      test_status_set(kTestStatusFailed);            \
-    }                                                \
+#define CHECK_DIF_OK(dif_call, ...)                                   \
+  do {                                                                \
+    dif_result_t dif_result = dif_call;                               \
+    if (dif_result != kDifOk) {                                       \
+      /* NOTE: because the condition in this if                       \
+         statement can be statically determined,                      \
+         only one of the below string constants                       \
+         will be included in the final binary.*/                      \
+      if (OT_VA_ARGS_COUNT(_, ##__VA_ARGS__) == 0) {                  \
+        LOG_ERROR("DIF-fail: " #dif_call " returns %0d", dif_result); \
+      } else {                                                        \
+        LOG_ERROR("DIF-fail: " __VA_ARGS__);                          \
+      }                                                               \
+      /* Currently, this macro will call into                         \
+         the test failure code, which logs                            \
+         "FAIL" and aborts. In the future,                            \
+         we will try to condition on whether                          \
+         or not this is a test.*/                                     \
+      test_status_set(kTestStatusFailed);                             \
+    }                                                                 \
   } while (false)
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_CHECK_H_
