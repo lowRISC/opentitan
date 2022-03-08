@@ -198,6 +198,13 @@ def main() -> int:
         required=False,
         help="Name of the application, used as basename for the output. "
              "Default: basename of the first source file.")
+    parser.add_argument(
+        '--no-assembler',
+        '-x',
+        action='store_true',
+        required=False,
+        help="Use when input files have already been assembled into object "
+             "files and only linking is required.")
     parser.add_argument('src_files', nargs='+', type=str, metavar='SRC_FILE')
     args = parser.parse_args()
 
@@ -218,8 +225,9 @@ def main() -> int:
     archive = args.archive
 
     try:
-        for src_file, obj_file in zip(src_files, obj_files):
-            call_otbn_as(src_file, obj_file)
+        if not args.no_assembler:
+            for src_file, obj_file in zip(src_files, obj_files):
+                call_otbn_as(src_file, obj_file)
 
         out_elf = out_dir / (app_name + '.elf')
         call_otbn_ld(obj_files, out_elf, linker_script = args.linker_script)
