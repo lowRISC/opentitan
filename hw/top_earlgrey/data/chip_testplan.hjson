@@ -2355,10 +2355,10 @@
             - Initiate flash program or erase over the controller.
             - Program the pwrmgr to go into deep sleep.
             - Issue a WFI.
-            - Ensure that the low power entry is gated until the flash operation completes.
+            - Ensure that the low power entry does not happen due to the ongoing flash operation.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_flash_ctrl_idle_low_power"]
     }
     {
       name: chip_sw_flash_keymgr_seeds

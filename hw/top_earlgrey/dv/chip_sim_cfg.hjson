@@ -299,6 +299,12 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_flash_ctrl_idle_low_power
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/flash_ctrl_idle_low_power_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }    
+    {
       name: chip_sw_lc_ctrl_otp_hw_cfg
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/lc_ctrl_otp_hw_cfg_test:1"]
