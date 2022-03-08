@@ -33,7 +33,7 @@ static dif_rv_plic_t plic;
 
 static volatile dif_aon_timer_irq_t irq;
 static volatile top_earlgrey_plic_peripheral_t peripheral;
-static volatile uint64_t time_elapsed;
+static volatile uint64_t irq_tick;
 
 // TODO:(lowrisc/opentitan#9984): Add timing API to the test framework
 /**
@@ -92,10 +92,11 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
   // The interrupt time should be `irq_time_us ±5%`.
   uint64_t variation = irq_time_us * 5 / 100;
   CHECK(variation > 0);
-  // Add 200us of overhead on the irq handling
-  variation += 200;
   uint64_t sleep_range_h = irq_time_us + variation;
   uint64_t sleep_range_l = irq_time_us - variation;
+
+  // Add 500 cpu cycles of overhead to cover irq handling.
+  sleep_range_h += 500 * 1000000 / kClockFreqCpuHz;
 
   uint32_t count_cycles =
       aon_timer_testutils_get_aon_cycles_from_us(irq_time_us);
@@ -105,8 +106,6 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
   // Set the default value to a different value than expected.
   peripheral = kTopEarlgreyPlicPeripheralUnknown;
   irq = kDifAonTimerIrqWdogTimerBark;
-  // Capture the current tick to measure the time the IRQ will take.
-  time_elapsed = tick_count_get();
   if (expected_irq == kDifAonTimerIrqWkupTimerExpired) {
     // Setup the wake up interrupt.
     aon_timer_testutils_wakeup_config(aon_timer, count_cycles);
@@ -119,6 +118,9 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
                                         /*bite_cycles=*/count_cycles * 4,
                                         /*pause_in_sleep=*/false);
   }
+  // Capture the current tick to measure the time the IRQ will take.
+  uint32_t start_tick = tick_count_get();
+  uint32_t time_elapsed = 0;
 
   // Disable interrupts to be certain interrupt doesn't occur between while
   // condition check and `wait_for_interrupt` (so WFI misses that interrupt).
@@ -134,6 +136,7 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
       // to a known place avoiding missed wakeup issues.
       irq_global_ctrl(true);
       irq_global_ctrl(false);
+      time_elapsed = irq_tick - start_tick;
     } while (peripheral != kTopEarlgreyPlicPeripheralAonTimerAon &&
              time_elapsed < sleep_range_h);
   }
@@ -158,7 +161,7 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
  */
 void ottf_external_isr(void) {
   // Calc the elapsed time since the activation of the IRQ.
-  time_elapsed = tick_count_get() - time_elapsed;
+  irq_tick = tick_count_get();
 
   dif_rv_plic_irq_id_t irq_id;
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
@@ -211,11 +214,15 @@ bool test_main(void) {
   // frequency to make sure the aon timer is generating the interrupt after the
   // choosen time and there's no error in the reference time measurement. This
   // calculation is required as the various platforms used for testing have
-  // differing clocks frequencies. A few hundred cycles is required for the
-  // interrupt to note the elapsed time so the test fails with an unacceptable
-  // time variance when the sleep time is too low.
-  uint64_t low_time_range = ((1000000 * 500) / kClockFreqCpuHz) * 20;
-  uint64_t high_time_range = ((1000000 * 500) / kClockFreqCpuHz) * 40;
+  // differing clocks frequencies. A minimum amount of cycles is required for
+  // the interrupt to note the elapsed time so the test fails with an
+  // unacceptable time variance when the sleep time is too low.
+  enum {
+    kMinCycles = 30 * 1000,
+    kMaxCycles = 45 * 1000,
+  };
+  uint64_t low_time_range = (kMinCycles * (uint64_t)1000000) / kClockFreqCpuHz;
+  uint64_t high_time_range = (kMaxCycles * (uint64_t)1000000) / kClockFreqCpuHz;
 
   // no error in the reference time measurement.
   uint64_t irq_time =
