@@ -225,11 +225,13 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Done        |
 Tests         | [FPV_SEC_CM_VERIFIED][]                 | Done        | Sub-module prim_count is proven in FPV
 Tests         | [SIM_SEC_CM_VERIFIED][]                 | Done        |
+Coverage      | [SIM_COVERAGE_REVIEWED][]               | Done        |
 Review        | [SEC_CM_DV_REVIEWED][]                  | Done        |
 
 [SEC_CM_TESTPLAN_COMPLETED]:          {{<relref "/doc/project/checklist.md#sec_cm_testplan_completed" >}}
 [FPV_SEC_CM_VERIFIED]:                {{<relref "/doc/project/checklist.md#fpv_sec_cm_verified" >}}
 [SIM_SEC_CM_VERIFIED]:                {{<relref "/doc/project/checklist.md#sim_sec_cm_verified" >}}
+[SIM_COVERAGE_REVIEWED]:              {{<relref "/doc/project/checklist.md#sim_coverage_reviewed" >}}
 [SEC_CM_DV_REVIEWED]:                 {{<relref "/doc/project/checklist.md#sec_cm_dv_reviewed" >}}
 
 ### V3
