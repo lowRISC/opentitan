@@ -19,7 +19,8 @@ class uart_driver extends dv_base_driver #(uart_item, uart_agent_cfg);
 
   // Sets the value of rx after randomly glitching for 10% of uart clk
   task set_rx(input bit val);
-    uint glitch_ns = uint'(cfg.vif.uart_clk_period_ns * cfg.get_uart_period_glitch_pct() / 100);
+    uint glitch_ns = uint'(cfg.vif.uart_clk_period_ns * cfg.get_uart_period_glitch_pct() / 100
+                           / 1ns);
     repeat (glitch_ns) begin
       if (!cfg.under_reset) begin
         cfg.vif.uart_rx <= $urandom_range(0, 1);
