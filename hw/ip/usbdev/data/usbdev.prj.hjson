@@ -12,6 +12,6 @@
     life_stage:         "L1",
     design_stage:       "D1",
     verification_stage: "V0",
-    dif_stage:          "S0",
+    dif_stage:          "S1",
     notes:              "DV resource allocation pending.",
 }
