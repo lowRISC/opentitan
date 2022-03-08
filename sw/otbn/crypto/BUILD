@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:otbn.bzl", "otbn_binary")
+load("//rules:otbn.bzl", "otbn_binary", "otbn_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -14,11 +14,46 @@ otbn_binary(
     ],
 )
 
+otbn_library(
+    name = "rsa_verify_3072",
+    srcs = [
+        "//sw/vendor:veri-titan/gen/rsa_verify_3072.s",
+    ],
+)
+
+otbn_library(
+    name = "rsa_verify_3072_m0inv",
+    srcs = [
+        "rsa_verify_3072_m0inv.s",
+    ],
+)
+
+otbn_library(
+    name = "rsa_verify_3072_rr",
+    srcs = [
+        "rsa_verify_3072_rr.s",
+    ],
+)
+
+otbn_binary(
+    name = "run_rsa_verify_3072",
+    srcs = [
+        "run_rsa_verify_3072.s",
+    ],
+    deps = [
+        ":rsa_verify_3072_rr",
+        ":rsa_verify_3072_m0inv",
+        ":rsa_verify_3072"
+    ],
+)
+
 otbn_binary(
     name = "run_rsa_verify_3072_rr_modexp",
     srcs = [
-        "rsa_verify_3072_rr.s",
         "run_rsa_verify_3072_rr_modexp.s",
-        "//sw/vendor:veri-titan/gen/rsa_verify_3072.s",
+    ],
+    deps = [
+        ":rsa_verify_3072_rr",
+        ":rsa_verify_3072"
     ],
 )
