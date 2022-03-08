@@ -40,6 +40,99 @@ typedef uint32_t dif_clkmgr_gateable_clock_t;
  */
 typedef uint32_t dif_clkmgr_hintable_clock_t;
 
+typedef enum dif_clkmgr_measure_clock {
+  /**
+   * The Io clock.
+   */
+  kDifClkmgrMeasureClockIo,
+  /**
+   * The Io_div2 clock.
+   */
+  kDifClkmgrMeasureClockIoDiv2,
+  /**
+   * The Io div4 clock.
+   */
+  kDifClkmgrMeasureClockIoDiv4,
+  /**
+   * The Main clock.
+   */
+  kDifClkmgrMeasureClockMain,
+  /**
+   * The Usb clock.
+   */
+  kDifClkmgrMeasureClockUsb,
+} dif_clkmgr_measure_clock_t;
+
+typedef enum dif_clkmgr_recov_err_type {
+  /**
+   * A recoverable measurement error for IO clock.
+   */
+  kDifClkmgrRecovErrTypeIoMeas = 1u << 0,
+  /**
+   * A recoverable measurement error for IO_DIV2 clock.
+   */
+  kDifClkmgrRecovErrTypeIoDiv2Meas = 1u << 1,
+  /**
+   * A recoverable measurement error for IO_DIV4 clock.
+   */
+  kDifClkmgrRecovErrTypeIoDiv4Meas = 1u << 2,
+  /**
+   * A recoverable measurement error for MAIN clock.
+   */
+  kDifClkmgrRecovErrTypeMainMeas = 1u << 3,
+  /**
+   * A recoverable measurement error for USB clock.
+   */
+  kDifClkmgrRecovErrTypeUsbMeas = 1u << 4,
+  /**
+   * A recoverable timeout error for IO clock.
+   */
+  kDifClkmgrRecovErrTypeIoTimeout = 1u << 5,
+  /**
+   * A recoverable timeout error for IO_DIV2 clock.
+   */
+  kDifClkmgrRecovErrTypeIoDiv2Timeout = 1u << 6,
+  /**
+   * A recoverable timeout error for IO_DIV4 clock.
+   */
+  kDifClkmgrRecovErrTypeIoDiv4Timeout = 1u << 7,
+  /**
+   * A recoverable timeout error for MAIN clock.
+   */
+  kDifClkmgrRecovErrTypeMainTimeout = 1u << 8,
+  /**
+   * A recoverable timeout error for USB clock.
+   */
+  kDifClkmgrRecovErrTypeUsbTimeout = 1u << 9,
+  /**
+   * A recoverable update error for IO clock.
+   */
+  kDifClkmgrRecovErrTypeIoUpdate = 1u << 10,
+  /**
+   * A recoverable update error for IO_DIV2 clock.
+   */
+  kDifClkmgrRecovErrTypeIoDiv2Update = 1u << 11,
+  /**
+   * A recoverable update error for IO_DIV4 clock.
+   */
+  kDifClkmgrRecovErrTypeIoDiv4Update = 1u << 12,
+  /**
+   * A recoverable update error for MAIN clock.
+   */
+  kDifClkmgrRecovErrTypeMainUpdate = 1u << 13,
+  /**
+   * A recoverable update error for USB clock.
+   */
+  kDifClkmgrRecovErrTypeUsbUpdate = 1u << 14,
+} dif_clkmgr_recov_err_type_t;
+
+/**
+ * A set of recoverable errors.
+ *
+ * This type is used to clear and read the recoverable error codes.
+ */
+typedef uint32_t dif_clkmgr_recov_err_codes_t;
+
 /**
  * Check if jitter is Enabled.
  * @param clkmgr Clock Manager Handle.
@@ -153,6 +246,7 @@ dif_result_t dif_clkmgr_hintable_clock_get_hint(
  *
  * @param clkmgr Clock Manager Handle.
  * @param is_low_speed External clock is low speed or high speed.
+ * @returns The result of the operation.
  * High speed - external clock is close to nominal speeds (e.g. external clock
  * is 96MHz and nominal frequency is 96MHz-100MHz). Low speed - external clock
  * is half of nominal speeds (e.g. external clock is 48MHz and nominal frequency
@@ -162,6 +256,76 @@ dif_result_t dif_clkmgr_hintable_clock_get_hint(
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_external_clock_set_enabled(const dif_clkmgr_t *clkmgr,
                                                    bool is_low_speed);
+
+/**
+ * Disable measurement control updates.
+ *
+ * This can only be disabled, and stays disabled until the next POR.
+ *
+ * @param clkmgr Clock Manager Handle.
+ * @returns The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_clkmgr_measure_ctrl_disable(const dif_clkmgr_t *clkmgr);
+
+/**
+ * Get measurement control state.
+ *
+ * @param clkmgr Clock Manager Handle.
+ * @param[out] state The state of control enable.
+ * @returns The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_clkmgr_measure_ctrl_get_enable(const dif_clkmgr_t *clkmgr,
+                                                dif_toggle_t *state);
+
+/**
+ * Configure count measurements.
+ *
+ * @param clkmgr Clock Manager Handle.
+ * @param clock A clock to be measured.
+ * @param min_threshold The smallest permissible cycle count.
+ * @param max_threshold The largest permissible cycle count.
+ * @returns The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_clkmgr_enable_measure_counts(const dif_clkmgr_t *clkmgr,
+                                              dif_clkmgr_measure_clock_t clock,
+                                              uint32_t min_threshold,
+                                              uint32_t max_threshold);
+
+/**
+ * Disable count measurements.
+ *
+ * @param clkmgr Clock Manager Handle.
+ * @param clock A clock to be measured.
+ * @returns The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_clkmgr_disable_measure_counts(
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_measure_clock_t clock);
+
+/**
+ * Read the recoverable error codes.
+ *
+ * @param clkmgr Clock Manager Handle.
+ * @param[out] codes The recoverable error codes.
+ * @returns The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_clkmgr_recov_err_code_get_codes(
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_recov_err_codes_t *codes);
+
+/**
+ * Clear selected recoverable error codes.
+ *
+ * @param clkmgr Clock Manager Handle.
+ * @param codes The recoverable error codes to be cleared.
+ * @returns The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_clkmgr_recov_err_code_clear_codes(
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_recov_err_codes_t codes);
 
 #ifdef __cplusplus
 }  // extern "C"
