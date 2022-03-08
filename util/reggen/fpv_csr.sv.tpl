@@ -47,12 +47,16 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
   hro_regs_list = [r for r in rb.flat_regs if (not r.is_hw_writable() and not r.shadowed)]
   num_hro_regs = len(hro_regs_list)
   hro_map = {r.offset: (idx, r) for idx, r in enumerate(hro_regs_list)}
+  max_reg_addr = rb.flat_regs[-1].offset
+  windows = rb.windows
 %>\
 
 // Currently FPV csr assertion only support HRO registers.
 % if num_hro_regs > 0:
 `ifndef VERILATOR
 `ifndef SYNTHESIS
+
+  logic oob_addr_err;
 
   parameter bit[3:0] MAX_A_SOURCE = 10; // used for FPV only to reduce runtime
 
@@ -124,6 +128,7 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
   // for write HRO registers, store the write data into exp_vals
   always_ff @(negedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
+       oob_addr_err <= 1'b0;
        pend_trans <= '0;
   % for hro_reg in hro_regs_list:
        exp_vals[${hro_map.get(hro_reg.offset)[0]}] <= 'h${f'{hro_reg.resval:0x}'};
@@ -134,13 +139,22 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
       % endif
   % endfor
     end else begin
+      oob_addr_err <= 1'b0;
       if (h2d.a_valid && d2h.a_ready) begin
-        pend_trans[h2d.a_source].addr <= normalized_addr;
-        if (h2d.a_opcode inside {PutFullData, PutPartialData}) begin
-          pend_trans[h2d.a_source].wr_data <= h2d.a_data & a_mask_bit;
-          pend_trans[h2d.a_source].wr_pending <= 1'b1;
-        end else if (h2d.a_opcode == Get) begin
-          pend_trans[h2d.a_source].rd_pending <= 1'b1;
+        if ((normalized_addr inside {[0:${max_reg_addr}]})
+ % for window in windows:
+            || (normalized_addr inside {[${window.offset}: (${window.offset}+${window.items}*8)]})
+ % endfor
+           ) begin
+          pend_trans[h2d.a_source].addr <= normalized_addr;
+          if (h2d.a_opcode inside {PutFullData, PutPartialData}) begin
+            pend_trans[h2d.a_source].wr_data <= h2d.a_data & a_mask_bit;
+            pend_trans[h2d.a_source].wr_pending <= 1'b1;
+          end else if (h2d.a_opcode == Get) begin
+            pend_trans[h2d.a_source].rd_pending <= 1'b1;
+          end
+        end else begin
+          oob_addr_err <= 1'b1;
         end
       end
       if (d2h.d_valid) begin
@@ -186,6 +200,8 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
     % endif
   % endfor
 % endif
+
+  `ASSERT(TlulOOBAddrErr_A, oob_addr_err |-> s_eventually(d2h.d_valid && d2h.d_error))
 
   // This FPV only assumption is to reduce the FPV runtime.
   `ASSUME_FPV(TlulSource_M, h2d.a_source >=  0 && h2d.a_source <= MAX_A_SOURCE, clk_i, !rst_ni)
