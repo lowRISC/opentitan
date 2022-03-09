@@ -393,6 +393,9 @@ module hmac_reg_top (
 
 
   // R[intr_test]: V(True)
+  logic intr_test_qe;
+  logic [2:0] intr_test_flds_we;
+  assign intr_test_qe = &intr_test_flds_we;
   //   F[hmac_done]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -402,10 +405,11 @@ module hmac_reg_top (
     .wd     (intr_test_hmac_done_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.hmac_done.qe),
+    .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.hmac_done.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.hmac_done.qe = intr_test_qe;
 
   //   F[fifo_empty]: 1:1
   prim_subreg_ext #(
@@ -416,10 +420,11 @@ module hmac_reg_top (
     .wd     (intr_test_fifo_empty_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.fifo_empty.qe),
+    .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.fifo_empty.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.fifo_empty.qe = intr_test_qe;
 
   //   F[hmac_err]: 2:2
   prim_subreg_ext #(
@@ -430,13 +435,17 @@ module hmac_reg_top (
     .wd     (intr_test_hmac_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.hmac_err.qe),
+    .qe     (intr_test_flds_we[2]),
     .q      (reg2hw.intr_test.hmac_err.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.hmac_err.qe = intr_test_qe;
 
 
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [0:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
@@ -445,13 +454,17 @@ module hmac_reg_top (
     .wd     (alert_test_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.qe = alert_test_qe;
 
 
   // R[cfg]: V(True)
+  logic cfg_qe;
+  logic [3:0] cfg_flds_we;
+  assign cfg_qe = &cfg_flds_we;
   //   F[hmac_en]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -461,10 +474,11 @@ module hmac_reg_top (
     .wd     (cfg_hmac_en_wd),
     .d      (hw2reg.cfg.hmac_en.d),
     .qre    (),
-    .qe     (reg2hw.cfg.hmac_en.qe),
+    .qe     (cfg_flds_we[0]),
     .q      (reg2hw.cfg.hmac_en.q),
     .qs     (cfg_hmac_en_qs)
   );
+  assign reg2hw.cfg.hmac_en.qe = cfg_qe;
 
   //   F[sha_en]: 1:1
   prim_subreg_ext #(
@@ -475,10 +489,11 @@ module hmac_reg_top (
     .wd     (cfg_sha_en_wd),
     .d      (hw2reg.cfg.sha_en.d),
     .qre    (),
-    .qe     (reg2hw.cfg.sha_en.qe),
+    .qe     (cfg_flds_we[1]),
     .q      (reg2hw.cfg.sha_en.q),
     .qs     (cfg_sha_en_qs)
   );
+  assign reg2hw.cfg.sha_en.qe = cfg_qe;
 
   //   F[endian_swap]: 2:2
   prim_subreg_ext #(
@@ -489,10 +504,11 @@ module hmac_reg_top (
     .wd     (cfg_endian_swap_wd),
     .d      (hw2reg.cfg.endian_swap.d),
     .qre    (),
-    .qe     (reg2hw.cfg.endian_swap.qe),
+    .qe     (cfg_flds_we[2]),
     .q      (reg2hw.cfg.endian_swap.q),
     .qs     (cfg_endian_swap_qs)
   );
+  assign reg2hw.cfg.endian_swap.qe = cfg_qe;
 
   //   F[digest_swap]: 3:3
   prim_subreg_ext #(
@@ -503,13 +519,17 @@ module hmac_reg_top (
     .wd     (cfg_digest_swap_wd),
     .d      (hw2reg.cfg.digest_swap.d),
     .qre    (),
-    .qe     (reg2hw.cfg.digest_swap.qe),
+    .qe     (cfg_flds_we[3]),
     .q      (reg2hw.cfg.digest_swap.q),
     .qs     (cfg_digest_swap_qs)
   );
+  assign reg2hw.cfg.digest_swap.qe = cfg_qe;
 
 
   // R[cmd]: V(True)
+  logic cmd_qe;
+  logic [1:0] cmd_flds_we;
+  assign cmd_qe = &cmd_flds_we;
   //   F[hash_start]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -519,10 +539,11 @@ module hmac_reg_top (
     .wd     (cmd_hash_start_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.cmd.hash_start.qe),
+    .qe     (cmd_flds_we[0]),
     .q      (reg2hw.cmd.hash_start.q),
     .qs     ()
   );
+  assign reg2hw.cmd.hash_start.qe = cmd_qe;
 
   //   F[hash_process]: 1:1
   prim_subreg_ext #(
@@ -533,10 +554,11 @@ module hmac_reg_top (
     .wd     (cmd_hash_process_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.cmd.hash_process.qe),
+    .qe     (cmd_flds_we[1]),
     .q      (reg2hw.cmd.hash_process.q),
     .qs     ()
   );
+  assign reg2hw.cmd.hash_process.qe = cmd_qe;
 
 
   // R[status]: V(True)
@@ -610,6 +632,9 @@ module hmac_reg_top (
 
 
   // R[wipe_secret]: V(True)
+  logic wipe_secret_qe;
+  logic [0:0] wipe_secret_flds_we;
+  assign wipe_secret_qe = &wipe_secret_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_wipe_secret (
@@ -618,14 +643,18 @@ module hmac_reg_top (
     .wd     (wipe_secret_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.wipe_secret.qe),
+    .qe     (wipe_secret_flds_we[0]),
     .q      (reg2hw.wipe_secret.q),
     .qs     ()
   );
+  assign reg2hw.wipe_secret.qe = wipe_secret_qe;
 
 
   // Subregister 0 of Multireg key
   // R[key_0]: V(True)
+  logic key_0_qe;
+  logic [0:0] key_0_flds_we;
+  assign key_0_qe = &key_0_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_0 (
@@ -634,14 +663,18 @@ module hmac_reg_top (
     .wd     (key_0_wd),
     .d      (hw2reg.key[0].d),
     .qre    (),
-    .qe     (reg2hw.key[0].qe),
+    .qe     (key_0_flds_we[0]),
     .q      (reg2hw.key[0].q),
     .qs     ()
   );
+  assign reg2hw.key[0].qe = key_0_qe;
 
 
   // Subregister 1 of Multireg key
   // R[key_1]: V(True)
+  logic key_1_qe;
+  logic [0:0] key_1_flds_we;
+  assign key_1_qe = &key_1_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_1 (
@@ -650,14 +683,18 @@ module hmac_reg_top (
     .wd     (key_1_wd),
     .d      (hw2reg.key[1].d),
     .qre    (),
-    .qe     (reg2hw.key[1].qe),
+    .qe     (key_1_flds_we[0]),
     .q      (reg2hw.key[1].q),
     .qs     ()
   );
+  assign reg2hw.key[1].qe = key_1_qe;
 
 
   // Subregister 2 of Multireg key
   // R[key_2]: V(True)
+  logic key_2_qe;
+  logic [0:0] key_2_flds_we;
+  assign key_2_qe = &key_2_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_2 (
@@ -666,14 +703,18 @@ module hmac_reg_top (
     .wd     (key_2_wd),
     .d      (hw2reg.key[2].d),
     .qre    (),
-    .qe     (reg2hw.key[2].qe),
+    .qe     (key_2_flds_we[0]),
     .q      (reg2hw.key[2].q),
     .qs     ()
   );
+  assign reg2hw.key[2].qe = key_2_qe;
 
 
   // Subregister 3 of Multireg key
   // R[key_3]: V(True)
+  logic key_3_qe;
+  logic [0:0] key_3_flds_we;
+  assign key_3_qe = &key_3_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_3 (
@@ -682,14 +723,18 @@ module hmac_reg_top (
     .wd     (key_3_wd),
     .d      (hw2reg.key[3].d),
     .qre    (),
-    .qe     (reg2hw.key[3].qe),
+    .qe     (key_3_flds_we[0]),
     .q      (reg2hw.key[3].q),
     .qs     ()
   );
+  assign reg2hw.key[3].qe = key_3_qe;
 
 
   // Subregister 4 of Multireg key
   // R[key_4]: V(True)
+  logic key_4_qe;
+  logic [0:0] key_4_flds_we;
+  assign key_4_qe = &key_4_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_4 (
@@ -698,14 +743,18 @@ module hmac_reg_top (
     .wd     (key_4_wd),
     .d      (hw2reg.key[4].d),
     .qre    (),
-    .qe     (reg2hw.key[4].qe),
+    .qe     (key_4_flds_we[0]),
     .q      (reg2hw.key[4].q),
     .qs     ()
   );
+  assign reg2hw.key[4].qe = key_4_qe;
 
 
   // Subregister 5 of Multireg key
   // R[key_5]: V(True)
+  logic key_5_qe;
+  logic [0:0] key_5_flds_we;
+  assign key_5_qe = &key_5_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_5 (
@@ -714,14 +763,18 @@ module hmac_reg_top (
     .wd     (key_5_wd),
     .d      (hw2reg.key[5].d),
     .qre    (),
-    .qe     (reg2hw.key[5].qe),
+    .qe     (key_5_flds_we[0]),
     .q      (reg2hw.key[5].q),
     .qs     ()
   );
+  assign reg2hw.key[5].qe = key_5_qe;
 
 
   // Subregister 6 of Multireg key
   // R[key_6]: V(True)
+  logic key_6_qe;
+  logic [0:0] key_6_flds_we;
+  assign key_6_qe = &key_6_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_6 (
@@ -730,14 +783,18 @@ module hmac_reg_top (
     .wd     (key_6_wd),
     .d      (hw2reg.key[6].d),
     .qre    (),
-    .qe     (reg2hw.key[6].qe),
+    .qe     (key_6_flds_we[0]),
     .q      (reg2hw.key[6].q),
     .qs     ()
   );
+  assign reg2hw.key[6].qe = key_6_qe;
 
 
   // Subregister 7 of Multireg key
   // R[key_7]: V(True)
+  logic key_7_qe;
+  logic [0:0] key_7_flds_we;
+  assign key_7_qe = &key_7_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_7 (
@@ -746,10 +803,11 @@ module hmac_reg_top (
     .wd     (key_7_wd),
     .d      (hw2reg.key[7].d),
     .qre    (),
-    .qe     (reg2hw.key[7].qe),
+    .qe     (key_7_flds_we[0]),
     .q      (reg2hw.key[7].q),
     .qs     ()
   );
+  assign reg2hw.key[7].qe = key_7_qe;
 
 
   // Subregister 0 of Multireg digest

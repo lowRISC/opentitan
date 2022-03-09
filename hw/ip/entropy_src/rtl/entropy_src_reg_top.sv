@@ -565,6 +565,9 @@ module entropy_src_reg_top (
 
 
   // R[intr_test]: V(True)
+  logic intr_test_qe;
+  logic [3:0] intr_test_flds_we;
+  assign intr_test_qe = &intr_test_flds_we;
   //   F[es_entropy_valid]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -574,10 +577,11 @@ module entropy_src_reg_top (
     .wd     (intr_test_es_entropy_valid_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.es_entropy_valid.qe),
+    .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.es_entropy_valid.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.es_entropy_valid.qe = intr_test_qe;
 
   //   F[es_health_test_failed]: 1:1
   prim_subreg_ext #(
@@ -588,10 +592,11 @@ module entropy_src_reg_top (
     .wd     (intr_test_es_health_test_failed_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.es_health_test_failed.qe),
+    .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.es_health_test_failed.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.es_health_test_failed.qe = intr_test_qe;
 
   //   F[es_observe_fifo_ready]: 2:2
   prim_subreg_ext #(
@@ -602,10 +607,11 @@ module entropy_src_reg_top (
     .wd     (intr_test_es_observe_fifo_ready_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.es_observe_fifo_ready.qe),
+    .qe     (intr_test_flds_we[2]),
     .q      (reg2hw.intr_test.es_observe_fifo_ready.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.es_observe_fifo_ready.qe = intr_test_qe;
 
   //   F[es_fatal_err]: 3:3
   prim_subreg_ext #(
@@ -616,13 +622,17 @@ module entropy_src_reg_top (
     .wd     (intr_test_es_fatal_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.es_fatal_err.qe),
+    .qe     (intr_test_flds_we[3]),
     .q      (reg2hw.intr_test.es_fatal_err.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.es_fatal_err.qe = intr_test_qe;
 
 
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [1:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   //   F[recov_alert]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -632,10 +642,11 @@ module entropy_src_reg_top (
     .wd     (alert_test_recov_alert_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.recov_alert.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.recov_alert.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.recov_alert.qe = alert_test_qe;
 
   //   F[fatal_alert]: 1:1
   prim_subreg_ext #(
@@ -646,10 +657,11 @@ module entropy_src_reg_top (
     .wd     (alert_test_fatal_alert_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.fatal_alert.qe),
+    .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.fatal_alert.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.fatal_alert.qe = alert_test_qe;
 
 
   // R[me_regwen]: V(False)
@@ -1017,6 +1029,9 @@ module entropy_src_reg_top (
 
 
   // R[repcnt_thresholds]: V(True)
+  logic repcnt_thresholds_qe;
+  logic [1:0] repcnt_thresholds_flds_we;
+  assign repcnt_thresholds_qe = &repcnt_thresholds_flds_we;
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1026,10 +1041,11 @@ module entropy_src_reg_top (
     .wd     (repcnt_thresholds_fips_thresh_wd),
     .d      (hw2reg.repcnt_thresholds.fips_thresh.d),
     .qre    (),
-    .qe     (reg2hw.repcnt_thresholds.fips_thresh.qe),
+    .qe     (repcnt_thresholds_flds_we[0]),
     .q      (reg2hw.repcnt_thresholds.fips_thresh.q),
     .qs     (repcnt_thresholds_fips_thresh_qs)
   );
+  assign reg2hw.repcnt_thresholds.fips_thresh.qe = repcnt_thresholds_qe;
 
   //   F[bypass_thresh]: 31:16
   prim_subreg_ext #(
@@ -1040,13 +1056,17 @@ module entropy_src_reg_top (
     .wd     (repcnt_thresholds_bypass_thresh_wd),
     .d      (hw2reg.repcnt_thresholds.bypass_thresh.d),
     .qre    (),
-    .qe     (reg2hw.repcnt_thresholds.bypass_thresh.qe),
+    .qe     (repcnt_thresholds_flds_we[1]),
     .q      (reg2hw.repcnt_thresholds.bypass_thresh.q),
     .qs     (repcnt_thresholds_bypass_thresh_qs)
   );
+  assign reg2hw.repcnt_thresholds.bypass_thresh.qe = repcnt_thresholds_qe;
 
 
   // R[repcnts_thresholds]: V(True)
+  logic repcnts_thresholds_qe;
+  logic [1:0] repcnts_thresholds_flds_we;
+  assign repcnts_thresholds_qe = &repcnts_thresholds_flds_we;
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1056,10 +1076,11 @@ module entropy_src_reg_top (
     .wd     (repcnts_thresholds_fips_thresh_wd),
     .d      (hw2reg.repcnts_thresholds.fips_thresh.d),
     .qre    (),
-    .qe     (reg2hw.repcnts_thresholds.fips_thresh.qe),
+    .qe     (repcnts_thresholds_flds_we[0]),
     .q      (reg2hw.repcnts_thresholds.fips_thresh.q),
     .qs     (repcnts_thresholds_fips_thresh_qs)
   );
+  assign reg2hw.repcnts_thresholds.fips_thresh.qe = repcnts_thresholds_qe;
 
   //   F[bypass_thresh]: 31:16
   prim_subreg_ext #(
@@ -1070,13 +1091,17 @@ module entropy_src_reg_top (
     .wd     (repcnts_thresholds_bypass_thresh_wd),
     .d      (hw2reg.repcnts_thresholds.bypass_thresh.d),
     .qre    (),
-    .qe     (reg2hw.repcnts_thresholds.bypass_thresh.qe),
+    .qe     (repcnts_thresholds_flds_we[1]),
     .q      (reg2hw.repcnts_thresholds.bypass_thresh.q),
     .qs     (repcnts_thresholds_bypass_thresh_qs)
   );
+  assign reg2hw.repcnts_thresholds.bypass_thresh.qe = repcnts_thresholds_qe;
 
 
   // R[adaptp_hi_thresholds]: V(True)
+  logic adaptp_hi_thresholds_qe;
+  logic [1:0] adaptp_hi_thresholds_flds_we;
+  assign adaptp_hi_thresholds_qe = &adaptp_hi_thresholds_flds_we;
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1086,10 +1111,11 @@ module entropy_src_reg_top (
     .wd     (adaptp_hi_thresholds_fips_thresh_wd),
     .d      (hw2reg.adaptp_hi_thresholds.fips_thresh.d),
     .qre    (),
-    .qe     (reg2hw.adaptp_hi_thresholds.fips_thresh.qe),
+    .qe     (adaptp_hi_thresholds_flds_we[0]),
     .q      (reg2hw.adaptp_hi_thresholds.fips_thresh.q),
     .qs     (adaptp_hi_thresholds_fips_thresh_qs)
   );
+  assign reg2hw.adaptp_hi_thresholds.fips_thresh.qe = adaptp_hi_thresholds_qe;
 
   //   F[bypass_thresh]: 31:16
   prim_subreg_ext #(
@@ -1100,13 +1126,17 @@ module entropy_src_reg_top (
     .wd     (adaptp_hi_thresholds_bypass_thresh_wd),
     .d      (hw2reg.adaptp_hi_thresholds.bypass_thresh.d),
     .qre    (),
-    .qe     (reg2hw.adaptp_hi_thresholds.bypass_thresh.qe),
+    .qe     (adaptp_hi_thresholds_flds_we[1]),
     .q      (reg2hw.adaptp_hi_thresholds.bypass_thresh.q),
     .qs     (adaptp_hi_thresholds_bypass_thresh_qs)
   );
+  assign reg2hw.adaptp_hi_thresholds.bypass_thresh.qe = adaptp_hi_thresholds_qe;
 
 
   // R[adaptp_lo_thresholds]: V(True)
+  logic adaptp_lo_thresholds_qe;
+  logic [1:0] adaptp_lo_thresholds_flds_we;
+  assign adaptp_lo_thresholds_qe = &adaptp_lo_thresholds_flds_we;
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1116,10 +1146,11 @@ module entropy_src_reg_top (
     .wd     (adaptp_lo_thresholds_fips_thresh_wd),
     .d      (hw2reg.adaptp_lo_thresholds.fips_thresh.d),
     .qre    (),
-    .qe     (reg2hw.adaptp_lo_thresholds.fips_thresh.qe),
+    .qe     (adaptp_lo_thresholds_flds_we[0]),
     .q      (reg2hw.adaptp_lo_thresholds.fips_thresh.q),
     .qs     (adaptp_lo_thresholds_fips_thresh_qs)
   );
+  assign reg2hw.adaptp_lo_thresholds.fips_thresh.qe = adaptp_lo_thresholds_qe;
 
   //   F[bypass_thresh]: 31:16
   prim_subreg_ext #(
@@ -1130,13 +1161,17 @@ module entropy_src_reg_top (
     .wd     (adaptp_lo_thresholds_bypass_thresh_wd),
     .d      (hw2reg.adaptp_lo_thresholds.bypass_thresh.d),
     .qre    (),
-    .qe     (reg2hw.adaptp_lo_thresholds.bypass_thresh.qe),
+    .qe     (adaptp_lo_thresholds_flds_we[1]),
     .q      (reg2hw.adaptp_lo_thresholds.bypass_thresh.q),
     .qs     (adaptp_lo_thresholds_bypass_thresh_qs)
   );
+  assign reg2hw.adaptp_lo_thresholds.bypass_thresh.qe = adaptp_lo_thresholds_qe;
 
 
   // R[bucket_thresholds]: V(True)
+  logic bucket_thresholds_qe;
+  logic [1:0] bucket_thresholds_flds_we;
+  assign bucket_thresholds_qe = &bucket_thresholds_flds_we;
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1146,10 +1181,11 @@ module entropy_src_reg_top (
     .wd     (bucket_thresholds_fips_thresh_wd),
     .d      (hw2reg.bucket_thresholds.fips_thresh.d),
     .qre    (),
-    .qe     (reg2hw.bucket_thresholds.fips_thresh.qe),
+    .qe     (bucket_thresholds_flds_we[0]),
     .q      (reg2hw.bucket_thresholds.fips_thresh.q),
     .qs     (bucket_thresholds_fips_thresh_qs)
   );
+  assign reg2hw.bucket_thresholds.fips_thresh.qe = bucket_thresholds_qe;
 
   //   F[bypass_thresh]: 31:16
   prim_subreg_ext #(
@@ -1160,13 +1196,17 @@ module entropy_src_reg_top (
     .wd     (bucket_thresholds_bypass_thresh_wd),
     .d      (hw2reg.bucket_thresholds.bypass_thresh.d),
     .qre    (),
-    .qe     (reg2hw.bucket_thresholds.bypass_thresh.qe),
+    .qe     (bucket_thresholds_flds_we[1]),
     .q      (reg2hw.bucket_thresholds.bypass_thresh.q),
     .qs     (bucket_thresholds_bypass_thresh_qs)
   );
+  assign reg2hw.bucket_thresholds.bypass_thresh.qe = bucket_thresholds_qe;
 
 
   // R[markov_hi_thresholds]: V(True)
+  logic markov_hi_thresholds_qe;
+  logic [1:0] markov_hi_thresholds_flds_we;
+  assign markov_hi_thresholds_qe = &markov_hi_thresholds_flds_we;
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1176,10 +1216,11 @@ module entropy_src_reg_top (
     .wd     (markov_hi_thresholds_fips_thresh_wd),
     .d      (hw2reg.markov_hi_thresholds.fips_thresh.d),
     .qre    (),
-    .qe     (reg2hw.markov_hi_thresholds.fips_thresh.qe),
+    .qe     (markov_hi_thresholds_flds_we[0]),
     .q      (reg2hw.markov_hi_thresholds.fips_thresh.q),
     .qs     (markov_hi_thresholds_fips_thresh_qs)
   );
+  assign reg2hw.markov_hi_thresholds.fips_thresh.qe = markov_hi_thresholds_qe;
 
   //   F[bypass_thresh]: 31:16
   prim_subreg_ext #(
@@ -1190,13 +1231,17 @@ module entropy_src_reg_top (
     .wd     (markov_hi_thresholds_bypass_thresh_wd),
     .d      (hw2reg.markov_hi_thresholds.bypass_thresh.d),
     .qre    (),
-    .qe     (reg2hw.markov_hi_thresholds.bypass_thresh.qe),
+    .qe     (markov_hi_thresholds_flds_we[1]),
     .q      (reg2hw.markov_hi_thresholds.bypass_thresh.q),
     .qs     (markov_hi_thresholds_bypass_thresh_qs)
   );
+  assign reg2hw.markov_hi_thresholds.bypass_thresh.qe = markov_hi_thresholds_qe;
 
 
   // R[markov_lo_thresholds]: V(True)
+  logic markov_lo_thresholds_qe;
+  logic [1:0] markov_lo_thresholds_flds_we;
+  assign markov_lo_thresholds_qe = &markov_lo_thresholds_flds_we;
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1206,10 +1251,11 @@ module entropy_src_reg_top (
     .wd     (markov_lo_thresholds_fips_thresh_wd),
     .d      (hw2reg.markov_lo_thresholds.fips_thresh.d),
     .qre    (),
-    .qe     (reg2hw.markov_lo_thresholds.fips_thresh.qe),
+    .qe     (markov_lo_thresholds_flds_we[0]),
     .q      (reg2hw.markov_lo_thresholds.fips_thresh.q),
     .qs     (markov_lo_thresholds_fips_thresh_qs)
   );
+  assign reg2hw.markov_lo_thresholds.fips_thresh.qe = markov_lo_thresholds_qe;
 
   //   F[bypass_thresh]: 31:16
   prim_subreg_ext #(
@@ -1220,13 +1266,17 @@ module entropy_src_reg_top (
     .wd     (markov_lo_thresholds_bypass_thresh_wd),
     .d      (hw2reg.markov_lo_thresholds.bypass_thresh.d),
     .qre    (),
-    .qe     (reg2hw.markov_lo_thresholds.bypass_thresh.qe),
+    .qe     (markov_lo_thresholds_flds_we[1]),
     .q      (reg2hw.markov_lo_thresholds.bypass_thresh.q),
     .qs     (markov_lo_thresholds_bypass_thresh_qs)
   );
+  assign reg2hw.markov_lo_thresholds.bypass_thresh.qe = markov_lo_thresholds_qe;
 
 
   // R[extht_hi_thresholds]: V(True)
+  logic extht_hi_thresholds_qe;
+  logic [1:0] extht_hi_thresholds_flds_we;
+  assign extht_hi_thresholds_qe = &extht_hi_thresholds_flds_we;
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1236,10 +1286,11 @@ module entropy_src_reg_top (
     .wd     (extht_hi_thresholds_fips_thresh_wd),
     .d      (hw2reg.extht_hi_thresholds.fips_thresh.d),
     .qre    (),
-    .qe     (reg2hw.extht_hi_thresholds.fips_thresh.qe),
+    .qe     (extht_hi_thresholds_flds_we[0]),
     .q      (reg2hw.extht_hi_thresholds.fips_thresh.q),
     .qs     (extht_hi_thresholds_fips_thresh_qs)
   );
+  assign reg2hw.extht_hi_thresholds.fips_thresh.qe = extht_hi_thresholds_qe;
 
   //   F[bypass_thresh]: 31:16
   prim_subreg_ext #(
@@ -1250,13 +1301,17 @@ module entropy_src_reg_top (
     .wd     (extht_hi_thresholds_bypass_thresh_wd),
     .d      (hw2reg.extht_hi_thresholds.bypass_thresh.d),
     .qre    (),
-    .qe     (reg2hw.extht_hi_thresholds.bypass_thresh.qe),
+    .qe     (extht_hi_thresholds_flds_we[1]),
     .q      (reg2hw.extht_hi_thresholds.bypass_thresh.q),
     .qs     (extht_hi_thresholds_bypass_thresh_qs)
   );
+  assign reg2hw.extht_hi_thresholds.bypass_thresh.qe = extht_hi_thresholds_qe;
 
 
   // R[extht_lo_thresholds]: V(True)
+  logic extht_lo_thresholds_qe;
+  logic [1:0] extht_lo_thresholds_flds_we;
+  assign extht_lo_thresholds_qe = &extht_lo_thresholds_flds_we;
   //   F[fips_thresh]: 15:0
   prim_subreg_ext #(
     .DW    (16)
@@ -1266,10 +1321,11 @@ module entropy_src_reg_top (
     .wd     (extht_lo_thresholds_fips_thresh_wd),
     .d      (hw2reg.extht_lo_thresholds.fips_thresh.d),
     .qre    (),
-    .qe     (reg2hw.extht_lo_thresholds.fips_thresh.qe),
+    .qe     (extht_lo_thresholds_flds_we[0]),
     .q      (reg2hw.extht_lo_thresholds.fips_thresh.q),
     .qs     (extht_lo_thresholds_fips_thresh_qs)
   );
+  assign reg2hw.extht_lo_thresholds.fips_thresh.qe = extht_lo_thresholds_qe;
 
   //   F[bypass_thresh]: 31:16
   prim_subreg_ext #(
@@ -1280,10 +1336,11 @@ module entropy_src_reg_top (
     .wd     (extht_lo_thresholds_bypass_thresh_wd),
     .d      (hw2reg.extht_lo_thresholds.bypass_thresh.d),
     .qre    (),
-    .qe     (reg2hw.extht_lo_thresholds.bypass_thresh.qe),
+    .qe     (extht_lo_thresholds_flds_we[1]),
     .q      (reg2hw.extht_lo_thresholds.bypass_thresh.q),
     .qs     (extht_lo_thresholds_bypass_thresh_qs)
   );
+  assign reg2hw.extht_lo_thresholds.bypass_thresh.qe = extht_lo_thresholds_qe;
 
 
   // R[repcnt_hi_watermarks]: V(True)
@@ -2023,6 +2080,9 @@ module entropy_src_reg_top (
 
 
   // R[fw_ov_wr_data]: V(True)
+  logic fw_ov_wr_data_qe;
+  logic [0:0] fw_ov_wr_data_flds_we;
+  assign fw_ov_wr_data_qe = &fw_ov_wr_data_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_fw_ov_wr_data (
@@ -2031,10 +2091,11 @@ module entropy_src_reg_top (
     .wd     (fw_ov_wr_data_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.fw_ov_wr_data.qe),
+    .qe     (fw_ov_wr_data_flds_we[0]),
     .q      (reg2hw.fw_ov_wr_data.q),
     .qs     ()
   );
+  assign reg2hw.fw_ov_wr_data.qe = fw_ov_wr_data_qe;
 
 
   // R[observe_fifo_thresh]: V(False)
@@ -2747,6 +2808,17 @@ module entropy_src_reg_top (
 
 
   // R[err_code_test]: V(False)
+  logic err_code_test_qe;
+  logic [0:0] err_code_test_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_err_code_test0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&err_code_test_flds_we),
+    .q_o(err_code_test_qe)
+  );
   prim_subreg #(
     .DW      (5),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2764,12 +2836,13 @@ module entropy_src_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.err_code_test.qe),
+    .qe     (err_code_test_flds_we[0]),
     .q      (reg2hw.err_code_test.q),
 
     // to register interface (read)
     .qs     (err_code_test_qs)
   );
+  assign reg2hw.err_code_test.qe = err_code_test_qe;
 
 
   // R[main_sm_state]: V(False)

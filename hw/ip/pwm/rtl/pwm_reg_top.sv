@@ -1043,6 +1043,9 @@ module pwm_reg_top (
 
   // Register instances
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [0:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
@@ -1051,10 +1054,11 @@ module pwm_reg_top (
     .wd     (alert_test_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.qe = alert_test_qe;
 
 
   // R[regwen]: V(False)
@@ -1084,6 +1088,17 @@ module pwm_reg_top (
 
 
   // R[cfg]: V(False)
+  logic cfg_qe;
+  logic [2:0] cfg_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_cfg0_qe (
+    .clk_i(clk_core_i),
+    .rst_ni(rst_core_ni),
+    .d_i(&cfg_flds_we),
+    .q_o(cfg_qe)
+  );
   //   F[clk_div]: 26:0
   prim_subreg #(
     .DW      (27),
@@ -1102,12 +1117,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.cfg.clk_div.qe),
+    .qe     (cfg_flds_we[0]),
     .q      (reg2hw.cfg.clk_div.q),
 
     // to register interface (read)
     .qs     (core_cfg_clk_div_qs_int)
   );
+  assign reg2hw.cfg.clk_div.qe = cfg_qe;
 
   //   F[dc_resn]: 30:27
   prim_subreg #(
@@ -1127,12 +1143,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.cfg.dc_resn.qe),
+    .qe     (cfg_flds_we[1]),
     .q      (reg2hw.cfg.dc_resn.q),
 
     // to register interface (read)
     .qs     (core_cfg_dc_resn_qs_int)
   );
+  assign reg2hw.cfg.dc_resn.qe = cfg_qe;
 
   //   F[cntr_en]: 31:31
   prim_subreg #(
@@ -1152,16 +1169,28 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.cfg.cntr_en.qe),
+    .qe     (cfg_flds_we[2]),
     .q      (reg2hw.cfg.cntr_en.q),
 
     // to register interface (read)
     .qs     (core_cfg_cntr_en_qs_int)
   );
+  assign reg2hw.cfg.cntr_en.qe = cfg_qe;
 
 
   // Subregister 0 of Multireg pwm_en
   // R[pwm_en]: V(False)
+  logic pwm_en_qe;
+  logic [5:0] pwm_en_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_pwm_en0_qe (
+    .clk_i(clk_core_i),
+    .rst_ni(rst_core_ni),
+    .d_i(&pwm_en_flds_we),
+    .q_o(pwm_en_qe)
+  );
   //   F[en_0]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1180,12 +1209,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_en[0].qe),
+    .qe     (pwm_en_flds_we[0]),
     .q      (reg2hw.pwm_en[0].q),
 
     // to register interface (read)
     .qs     (core_pwm_en_en_0_qs_int)
   );
+  assign reg2hw.pwm_en[0].qe = pwm_en_qe;
 
   //   F[en_1]: 1:1
   prim_subreg #(
@@ -1205,12 +1235,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_en[1].qe),
+    .qe     (pwm_en_flds_we[1]),
     .q      (reg2hw.pwm_en[1].q),
 
     // to register interface (read)
     .qs     (core_pwm_en_en_1_qs_int)
   );
+  assign reg2hw.pwm_en[1].qe = pwm_en_qe;
 
   //   F[en_2]: 2:2
   prim_subreg #(
@@ -1230,12 +1261,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_en[2].qe),
+    .qe     (pwm_en_flds_we[2]),
     .q      (reg2hw.pwm_en[2].q),
 
     // to register interface (read)
     .qs     (core_pwm_en_en_2_qs_int)
   );
+  assign reg2hw.pwm_en[2].qe = pwm_en_qe;
 
   //   F[en_3]: 3:3
   prim_subreg #(
@@ -1255,12 +1287,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_en[3].qe),
+    .qe     (pwm_en_flds_we[3]),
     .q      (reg2hw.pwm_en[3].q),
 
     // to register interface (read)
     .qs     (core_pwm_en_en_3_qs_int)
   );
+  assign reg2hw.pwm_en[3].qe = pwm_en_qe;
 
   //   F[en_4]: 4:4
   prim_subreg #(
@@ -1280,12 +1313,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_en[4].qe),
+    .qe     (pwm_en_flds_we[4]),
     .q      (reg2hw.pwm_en[4].q),
 
     // to register interface (read)
     .qs     (core_pwm_en_en_4_qs_int)
   );
+  assign reg2hw.pwm_en[4].qe = pwm_en_qe;
 
   //   F[en_5]: 5:5
   prim_subreg #(
@@ -1305,16 +1339,28 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_en[5].qe),
+    .qe     (pwm_en_flds_we[5]),
     .q      (reg2hw.pwm_en[5].q),
 
     // to register interface (read)
     .qs     (core_pwm_en_en_5_qs_int)
   );
+  assign reg2hw.pwm_en[5].qe = pwm_en_qe;
 
 
   // Subregister 0 of Multireg invert
   // R[invert]: V(False)
+  logic invert_qe;
+  logic [5:0] invert_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_invert0_qe (
+    .clk_i(clk_core_i),
+    .rst_ni(rst_core_ni),
+    .d_i(&invert_flds_we),
+    .q_o(invert_qe)
+  );
   //   F[invert_0]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1333,12 +1379,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.invert[0].qe),
+    .qe     (invert_flds_we[0]),
     .q      (reg2hw.invert[0].q),
 
     // to register interface (read)
     .qs     (core_invert_invert_0_qs_int)
   );
+  assign reg2hw.invert[0].qe = invert_qe;
 
   //   F[invert_1]: 1:1
   prim_subreg #(
@@ -1358,12 +1405,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.invert[1].qe),
+    .qe     (invert_flds_we[1]),
     .q      (reg2hw.invert[1].q),
 
     // to register interface (read)
     .qs     (core_invert_invert_1_qs_int)
   );
+  assign reg2hw.invert[1].qe = invert_qe;
 
   //   F[invert_2]: 2:2
   prim_subreg #(
@@ -1383,12 +1431,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.invert[2].qe),
+    .qe     (invert_flds_we[2]),
     .q      (reg2hw.invert[2].q),
 
     // to register interface (read)
     .qs     (core_invert_invert_2_qs_int)
   );
+  assign reg2hw.invert[2].qe = invert_qe;
 
   //   F[invert_3]: 3:3
   prim_subreg #(
@@ -1408,12 +1457,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.invert[3].qe),
+    .qe     (invert_flds_we[3]),
     .q      (reg2hw.invert[3].q),
 
     // to register interface (read)
     .qs     (core_invert_invert_3_qs_int)
   );
+  assign reg2hw.invert[3].qe = invert_qe;
 
   //   F[invert_4]: 4:4
   prim_subreg #(
@@ -1433,12 +1483,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.invert[4].qe),
+    .qe     (invert_flds_we[4]),
     .q      (reg2hw.invert[4].q),
 
     // to register interface (read)
     .qs     (core_invert_invert_4_qs_int)
   );
+  assign reg2hw.invert[4].qe = invert_qe;
 
   //   F[invert_5]: 5:5
   prim_subreg #(
@@ -1458,16 +1509,28 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.invert[5].qe),
+    .qe     (invert_flds_we[5]),
     .q      (reg2hw.invert[5].q),
 
     // to register interface (read)
     .qs     (core_invert_invert_5_qs_int)
   );
+  assign reg2hw.invert[5].qe = invert_qe;
 
 
   // Subregister 0 of Multireg pwm_param
   // R[pwm_param_0]: V(False)
+  logic pwm_param_0_qe;
+  logic [2:0] pwm_param_0_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_pwm_param0_qe (
+    .clk_i(clk_core_i),
+    .rst_ni(rst_core_ni),
+    .d_i(&pwm_param_0_flds_we),
+    .q_o(pwm_param_0_qe)
+  );
   //   F[phase_delay_0]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -1486,12 +1549,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_param[0].phase_delay.qe),
+    .qe     (pwm_param_0_flds_we[0]),
     .q      (reg2hw.pwm_param[0].phase_delay.q),
 
     // to register interface (read)
     .qs     (core_pwm_param_0_phase_delay_0_qs_int)
   );
+  assign reg2hw.pwm_param[0].phase_delay.qe = pwm_param_0_qe;
 
   //   F[htbt_en_0]: 30:30
   prim_subreg #(
@@ -1511,12 +1575,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_param[0].htbt_en.qe),
+    .qe     (pwm_param_0_flds_we[1]),
     .q      (reg2hw.pwm_param[0].htbt_en.q),
 
     // to register interface (read)
     .qs     (core_pwm_param_0_htbt_en_0_qs_int)
   );
+  assign reg2hw.pwm_param[0].htbt_en.qe = pwm_param_0_qe;
 
   //   F[blink_en_0]: 31:31
   prim_subreg #(
@@ -1536,16 +1601,28 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_param[0].blink_en.qe),
+    .qe     (pwm_param_0_flds_we[2]),
     .q      (reg2hw.pwm_param[0].blink_en.q),
 
     // to register interface (read)
     .qs     (core_pwm_param_0_blink_en_0_qs_int)
   );
+  assign reg2hw.pwm_param[0].blink_en.qe = pwm_param_0_qe;
 
 
   // Subregister 1 of Multireg pwm_param
   // R[pwm_param_1]: V(False)
+  logic pwm_param_1_qe;
+  logic [2:0] pwm_param_1_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_pwm_param1_qe (
+    .clk_i(clk_core_i),
+    .rst_ni(rst_core_ni),
+    .d_i(&pwm_param_1_flds_we),
+    .q_o(pwm_param_1_qe)
+  );
   //   F[phase_delay_1]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -1564,12 +1641,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_param[1].phase_delay.qe),
+    .qe     (pwm_param_1_flds_we[0]),
     .q      (reg2hw.pwm_param[1].phase_delay.q),
 
     // to register interface (read)
     .qs     (core_pwm_param_1_phase_delay_1_qs_int)
   );
+  assign reg2hw.pwm_param[1].phase_delay.qe = pwm_param_1_qe;
 
   //   F[htbt_en_1]: 30:30
   prim_subreg #(
@@ -1589,12 +1667,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_param[1].htbt_en.qe),
+    .qe     (pwm_param_1_flds_we[1]),
     .q      (reg2hw.pwm_param[1].htbt_en.q),
 
     // to register interface (read)
     .qs     (core_pwm_param_1_htbt_en_1_qs_int)
   );
+  assign reg2hw.pwm_param[1].htbt_en.qe = pwm_param_1_qe;
 
   //   F[blink_en_1]: 31:31
   prim_subreg #(
@@ -1614,16 +1693,28 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_param[1].blink_en.qe),
+    .qe     (pwm_param_1_flds_we[2]),
     .q      (reg2hw.pwm_param[1].blink_en.q),
 
     // to register interface (read)
     .qs     (core_pwm_param_1_blink_en_1_qs_int)
   );
+  assign reg2hw.pwm_param[1].blink_en.qe = pwm_param_1_qe;
 
 
   // Subregister 2 of Multireg pwm_param
   // R[pwm_param_2]: V(False)
+  logic pwm_param_2_qe;
+  logic [2:0] pwm_param_2_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_pwm_param2_qe (
+    .clk_i(clk_core_i),
+    .rst_ni(rst_core_ni),
+    .d_i(&pwm_param_2_flds_we),
+    .q_o(pwm_param_2_qe)
+  );
   //   F[phase_delay_2]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -1642,12 +1733,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_param[2].phase_delay.qe),
+    .qe     (pwm_param_2_flds_we[0]),
     .q      (reg2hw.pwm_param[2].phase_delay.q),
 
     // to register interface (read)
     .qs     (core_pwm_param_2_phase_delay_2_qs_int)
   );
+  assign reg2hw.pwm_param[2].phase_delay.qe = pwm_param_2_qe;
 
   //   F[htbt_en_2]: 30:30
   prim_subreg #(
@@ -1667,12 +1759,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_param[2].htbt_en.qe),
+    .qe     (pwm_param_2_flds_we[1]),
     .q      (reg2hw.pwm_param[2].htbt_en.q),
 
     // to register interface (read)
     .qs     (core_pwm_param_2_htbt_en_2_qs_int)
   );
+  assign reg2hw.pwm_param[2].htbt_en.qe = pwm_param_2_qe;
 
   //   F[blink_en_2]: 31:31
   prim_subreg #(
@@ -1692,16 +1785,28 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_param[2].blink_en.qe),
+    .qe     (pwm_param_2_flds_we[2]),
     .q      (reg2hw.pwm_param[2].blink_en.q),
 
     // to register interface (read)
     .qs     (core_pwm_param_2_blink_en_2_qs_int)
   );
+  assign reg2hw.pwm_param[2].blink_en.qe = pwm_param_2_qe;
 
 
   // Subregister 3 of Multireg pwm_param
   // R[pwm_param_3]: V(False)
+  logic pwm_param_3_qe;
+  logic [2:0] pwm_param_3_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_pwm_param3_qe (
+    .clk_i(clk_core_i),
+    .rst_ni(rst_core_ni),
+    .d_i(&pwm_param_3_flds_we),
+    .q_o(pwm_param_3_qe)
+  );
   //   F[phase_delay_3]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -1720,12 +1825,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_param[3].phase_delay.qe),
+    .qe     (pwm_param_3_flds_we[0]),
     .q      (reg2hw.pwm_param[3].phase_delay.q),
 
     // to register interface (read)
     .qs     (core_pwm_param_3_phase_delay_3_qs_int)
   );
+  assign reg2hw.pwm_param[3].phase_delay.qe = pwm_param_3_qe;
 
   //   F[htbt_en_3]: 30:30
   prim_subreg #(
@@ -1745,12 +1851,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_param[3].htbt_en.qe),
+    .qe     (pwm_param_3_flds_we[1]),
     .q      (reg2hw.pwm_param[3].htbt_en.q),
 
     // to register interface (read)
     .qs     (core_pwm_param_3_htbt_en_3_qs_int)
   );
+  assign reg2hw.pwm_param[3].htbt_en.qe = pwm_param_3_qe;
 
   //   F[blink_en_3]: 31:31
   prim_subreg #(
@@ -1770,16 +1877,28 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_param[3].blink_en.qe),
+    .qe     (pwm_param_3_flds_we[2]),
     .q      (reg2hw.pwm_param[3].blink_en.q),
 
     // to register interface (read)
     .qs     (core_pwm_param_3_blink_en_3_qs_int)
   );
+  assign reg2hw.pwm_param[3].blink_en.qe = pwm_param_3_qe;
 
 
   // Subregister 4 of Multireg pwm_param
   // R[pwm_param_4]: V(False)
+  logic pwm_param_4_qe;
+  logic [2:0] pwm_param_4_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_pwm_param4_qe (
+    .clk_i(clk_core_i),
+    .rst_ni(rst_core_ni),
+    .d_i(&pwm_param_4_flds_we),
+    .q_o(pwm_param_4_qe)
+  );
   //   F[phase_delay_4]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -1798,12 +1917,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_param[4].phase_delay.qe),
+    .qe     (pwm_param_4_flds_we[0]),
     .q      (reg2hw.pwm_param[4].phase_delay.q),
 
     // to register interface (read)
     .qs     (core_pwm_param_4_phase_delay_4_qs_int)
   );
+  assign reg2hw.pwm_param[4].phase_delay.qe = pwm_param_4_qe;
 
   //   F[htbt_en_4]: 30:30
   prim_subreg #(
@@ -1823,12 +1943,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_param[4].htbt_en.qe),
+    .qe     (pwm_param_4_flds_we[1]),
     .q      (reg2hw.pwm_param[4].htbt_en.q),
 
     // to register interface (read)
     .qs     (core_pwm_param_4_htbt_en_4_qs_int)
   );
+  assign reg2hw.pwm_param[4].htbt_en.qe = pwm_param_4_qe;
 
   //   F[blink_en_4]: 31:31
   prim_subreg #(
@@ -1848,16 +1969,28 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_param[4].blink_en.qe),
+    .qe     (pwm_param_4_flds_we[2]),
     .q      (reg2hw.pwm_param[4].blink_en.q),
 
     // to register interface (read)
     .qs     (core_pwm_param_4_blink_en_4_qs_int)
   );
+  assign reg2hw.pwm_param[4].blink_en.qe = pwm_param_4_qe;
 
 
   // Subregister 5 of Multireg pwm_param
   // R[pwm_param_5]: V(False)
+  logic pwm_param_5_qe;
+  logic [2:0] pwm_param_5_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_pwm_param5_qe (
+    .clk_i(clk_core_i),
+    .rst_ni(rst_core_ni),
+    .d_i(&pwm_param_5_flds_we),
+    .q_o(pwm_param_5_qe)
+  );
   //   F[phase_delay_5]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -1876,12 +2009,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_param[5].phase_delay.qe),
+    .qe     (pwm_param_5_flds_we[0]),
     .q      (reg2hw.pwm_param[5].phase_delay.q),
 
     // to register interface (read)
     .qs     (core_pwm_param_5_phase_delay_5_qs_int)
   );
+  assign reg2hw.pwm_param[5].phase_delay.qe = pwm_param_5_qe;
 
   //   F[htbt_en_5]: 30:30
   prim_subreg #(
@@ -1901,12 +2035,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_param[5].htbt_en.qe),
+    .qe     (pwm_param_5_flds_we[1]),
     .q      (reg2hw.pwm_param[5].htbt_en.q),
 
     // to register interface (read)
     .qs     (core_pwm_param_5_htbt_en_5_qs_int)
   );
+  assign reg2hw.pwm_param[5].htbt_en.qe = pwm_param_5_qe;
 
   //   F[blink_en_5]: 31:31
   prim_subreg #(
@@ -1926,16 +2061,28 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.pwm_param[5].blink_en.qe),
+    .qe     (pwm_param_5_flds_we[2]),
     .q      (reg2hw.pwm_param[5].blink_en.q),
 
     // to register interface (read)
     .qs     (core_pwm_param_5_blink_en_5_qs_int)
   );
+  assign reg2hw.pwm_param[5].blink_en.qe = pwm_param_5_qe;
 
 
   // Subregister 0 of Multireg duty_cycle
   // R[duty_cycle_0]: V(False)
+  logic duty_cycle_0_qe;
+  logic [1:0] duty_cycle_0_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_duty_cycle0_qe (
+    .clk_i(clk_core_i),
+    .rst_ni(rst_core_ni),
+    .d_i(&duty_cycle_0_flds_we),
+    .q_o(duty_cycle_0_qe)
+  );
   //   F[a_0]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -1954,12 +2101,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.duty_cycle[0].a.qe),
+    .qe     (duty_cycle_0_flds_we[0]),
     .q      (reg2hw.duty_cycle[0].a.q),
 
     // to register interface (read)
     .qs     (core_duty_cycle_0_a_0_qs_int)
   );
+  assign reg2hw.duty_cycle[0].a.qe = duty_cycle_0_qe;
 
   //   F[b_0]: 31:16
   prim_subreg #(
@@ -1979,16 +2127,28 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.duty_cycle[0].b.qe),
+    .qe     (duty_cycle_0_flds_we[1]),
     .q      (reg2hw.duty_cycle[0].b.q),
 
     // to register interface (read)
     .qs     (core_duty_cycle_0_b_0_qs_int)
   );
+  assign reg2hw.duty_cycle[0].b.qe = duty_cycle_0_qe;
 
 
   // Subregister 1 of Multireg duty_cycle
   // R[duty_cycle_1]: V(False)
+  logic duty_cycle_1_qe;
+  logic [1:0] duty_cycle_1_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_duty_cycle1_qe (
+    .clk_i(clk_core_i),
+    .rst_ni(rst_core_ni),
+    .d_i(&duty_cycle_1_flds_we),
+    .q_o(duty_cycle_1_qe)
+  );
   //   F[a_1]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2007,12 +2167,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.duty_cycle[1].a.qe),
+    .qe     (duty_cycle_1_flds_we[0]),
     .q      (reg2hw.duty_cycle[1].a.q),
 
     // to register interface (read)
     .qs     (core_duty_cycle_1_a_1_qs_int)
   );
+  assign reg2hw.duty_cycle[1].a.qe = duty_cycle_1_qe;
 
   //   F[b_1]: 31:16
   prim_subreg #(
@@ -2032,16 +2193,28 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.duty_cycle[1].b.qe),
+    .qe     (duty_cycle_1_flds_we[1]),
     .q      (reg2hw.duty_cycle[1].b.q),
 
     // to register interface (read)
     .qs     (core_duty_cycle_1_b_1_qs_int)
   );
+  assign reg2hw.duty_cycle[1].b.qe = duty_cycle_1_qe;
 
 
   // Subregister 2 of Multireg duty_cycle
   // R[duty_cycle_2]: V(False)
+  logic duty_cycle_2_qe;
+  logic [1:0] duty_cycle_2_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_duty_cycle2_qe (
+    .clk_i(clk_core_i),
+    .rst_ni(rst_core_ni),
+    .d_i(&duty_cycle_2_flds_we),
+    .q_o(duty_cycle_2_qe)
+  );
   //   F[a_2]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2060,12 +2233,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.duty_cycle[2].a.qe),
+    .qe     (duty_cycle_2_flds_we[0]),
     .q      (reg2hw.duty_cycle[2].a.q),
 
     // to register interface (read)
     .qs     (core_duty_cycle_2_a_2_qs_int)
   );
+  assign reg2hw.duty_cycle[2].a.qe = duty_cycle_2_qe;
 
   //   F[b_2]: 31:16
   prim_subreg #(
@@ -2085,16 +2259,28 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.duty_cycle[2].b.qe),
+    .qe     (duty_cycle_2_flds_we[1]),
     .q      (reg2hw.duty_cycle[2].b.q),
 
     // to register interface (read)
     .qs     (core_duty_cycle_2_b_2_qs_int)
   );
+  assign reg2hw.duty_cycle[2].b.qe = duty_cycle_2_qe;
 
 
   // Subregister 3 of Multireg duty_cycle
   // R[duty_cycle_3]: V(False)
+  logic duty_cycle_3_qe;
+  logic [1:0] duty_cycle_3_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_duty_cycle3_qe (
+    .clk_i(clk_core_i),
+    .rst_ni(rst_core_ni),
+    .d_i(&duty_cycle_3_flds_we),
+    .q_o(duty_cycle_3_qe)
+  );
   //   F[a_3]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2113,12 +2299,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.duty_cycle[3].a.qe),
+    .qe     (duty_cycle_3_flds_we[0]),
     .q      (reg2hw.duty_cycle[3].a.q),
 
     // to register interface (read)
     .qs     (core_duty_cycle_3_a_3_qs_int)
   );
+  assign reg2hw.duty_cycle[3].a.qe = duty_cycle_3_qe;
 
   //   F[b_3]: 31:16
   prim_subreg #(
@@ -2138,16 +2325,28 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.duty_cycle[3].b.qe),
+    .qe     (duty_cycle_3_flds_we[1]),
     .q      (reg2hw.duty_cycle[3].b.q),
 
     // to register interface (read)
     .qs     (core_duty_cycle_3_b_3_qs_int)
   );
+  assign reg2hw.duty_cycle[3].b.qe = duty_cycle_3_qe;
 
 
   // Subregister 4 of Multireg duty_cycle
   // R[duty_cycle_4]: V(False)
+  logic duty_cycle_4_qe;
+  logic [1:0] duty_cycle_4_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_duty_cycle4_qe (
+    .clk_i(clk_core_i),
+    .rst_ni(rst_core_ni),
+    .d_i(&duty_cycle_4_flds_we),
+    .q_o(duty_cycle_4_qe)
+  );
   //   F[a_4]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2166,12 +2365,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.duty_cycle[4].a.qe),
+    .qe     (duty_cycle_4_flds_we[0]),
     .q      (reg2hw.duty_cycle[4].a.q),
 
     // to register interface (read)
     .qs     (core_duty_cycle_4_a_4_qs_int)
   );
+  assign reg2hw.duty_cycle[4].a.qe = duty_cycle_4_qe;
 
   //   F[b_4]: 31:16
   prim_subreg #(
@@ -2191,16 +2391,28 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.duty_cycle[4].b.qe),
+    .qe     (duty_cycle_4_flds_we[1]),
     .q      (reg2hw.duty_cycle[4].b.q),
 
     // to register interface (read)
     .qs     (core_duty_cycle_4_b_4_qs_int)
   );
+  assign reg2hw.duty_cycle[4].b.qe = duty_cycle_4_qe;
 
 
   // Subregister 5 of Multireg duty_cycle
   // R[duty_cycle_5]: V(False)
+  logic duty_cycle_5_qe;
+  logic [1:0] duty_cycle_5_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_duty_cycle5_qe (
+    .clk_i(clk_core_i),
+    .rst_ni(rst_core_ni),
+    .d_i(&duty_cycle_5_flds_we),
+    .q_o(duty_cycle_5_qe)
+  );
   //   F[a_5]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2219,12 +2431,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.duty_cycle[5].a.qe),
+    .qe     (duty_cycle_5_flds_we[0]),
     .q      (reg2hw.duty_cycle[5].a.q),
 
     // to register interface (read)
     .qs     (core_duty_cycle_5_a_5_qs_int)
   );
+  assign reg2hw.duty_cycle[5].a.qe = duty_cycle_5_qe;
 
   //   F[b_5]: 31:16
   prim_subreg #(
@@ -2244,16 +2457,28 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.duty_cycle[5].b.qe),
+    .qe     (duty_cycle_5_flds_we[1]),
     .q      (reg2hw.duty_cycle[5].b.q),
 
     // to register interface (read)
     .qs     (core_duty_cycle_5_b_5_qs_int)
   );
+  assign reg2hw.duty_cycle[5].b.qe = duty_cycle_5_qe;
 
 
   // Subregister 0 of Multireg blink_param
   // R[blink_param_0]: V(False)
+  logic blink_param_0_qe;
+  logic [1:0] blink_param_0_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_blink_param0_qe (
+    .clk_i(clk_core_i),
+    .rst_ni(rst_core_ni),
+    .d_i(&blink_param_0_flds_we),
+    .q_o(blink_param_0_qe)
+  );
   //   F[x_0]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2272,12 +2497,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.blink_param[0].x.qe),
+    .qe     (blink_param_0_flds_we[0]),
     .q      (reg2hw.blink_param[0].x.q),
 
     // to register interface (read)
     .qs     (core_blink_param_0_x_0_qs_int)
   );
+  assign reg2hw.blink_param[0].x.qe = blink_param_0_qe;
 
   //   F[y_0]: 31:16
   prim_subreg #(
@@ -2297,16 +2523,28 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.blink_param[0].y.qe),
+    .qe     (blink_param_0_flds_we[1]),
     .q      (reg2hw.blink_param[0].y.q),
 
     // to register interface (read)
     .qs     (core_blink_param_0_y_0_qs_int)
   );
+  assign reg2hw.blink_param[0].y.qe = blink_param_0_qe;
 
 
   // Subregister 1 of Multireg blink_param
   // R[blink_param_1]: V(False)
+  logic blink_param_1_qe;
+  logic [1:0] blink_param_1_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_blink_param1_qe (
+    .clk_i(clk_core_i),
+    .rst_ni(rst_core_ni),
+    .d_i(&blink_param_1_flds_we),
+    .q_o(blink_param_1_qe)
+  );
   //   F[x_1]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2325,12 +2563,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.blink_param[1].x.qe),
+    .qe     (blink_param_1_flds_we[0]),
     .q      (reg2hw.blink_param[1].x.q),
 
     // to register interface (read)
     .qs     (core_blink_param_1_x_1_qs_int)
   );
+  assign reg2hw.blink_param[1].x.qe = blink_param_1_qe;
 
   //   F[y_1]: 31:16
   prim_subreg #(
@@ -2350,16 +2589,28 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.blink_param[1].y.qe),
+    .qe     (blink_param_1_flds_we[1]),
     .q      (reg2hw.blink_param[1].y.q),
 
     // to register interface (read)
     .qs     (core_blink_param_1_y_1_qs_int)
   );
+  assign reg2hw.blink_param[1].y.qe = blink_param_1_qe;
 
 
   // Subregister 2 of Multireg blink_param
   // R[blink_param_2]: V(False)
+  logic blink_param_2_qe;
+  logic [1:0] blink_param_2_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_blink_param2_qe (
+    .clk_i(clk_core_i),
+    .rst_ni(rst_core_ni),
+    .d_i(&blink_param_2_flds_we),
+    .q_o(blink_param_2_qe)
+  );
   //   F[x_2]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2378,12 +2629,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.blink_param[2].x.qe),
+    .qe     (blink_param_2_flds_we[0]),
     .q      (reg2hw.blink_param[2].x.q),
 
     // to register interface (read)
     .qs     (core_blink_param_2_x_2_qs_int)
   );
+  assign reg2hw.blink_param[2].x.qe = blink_param_2_qe;
 
   //   F[y_2]: 31:16
   prim_subreg #(
@@ -2403,16 +2655,28 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.blink_param[2].y.qe),
+    .qe     (blink_param_2_flds_we[1]),
     .q      (reg2hw.blink_param[2].y.q),
 
     // to register interface (read)
     .qs     (core_blink_param_2_y_2_qs_int)
   );
+  assign reg2hw.blink_param[2].y.qe = blink_param_2_qe;
 
 
   // Subregister 3 of Multireg blink_param
   // R[blink_param_3]: V(False)
+  logic blink_param_3_qe;
+  logic [1:0] blink_param_3_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_blink_param3_qe (
+    .clk_i(clk_core_i),
+    .rst_ni(rst_core_ni),
+    .d_i(&blink_param_3_flds_we),
+    .q_o(blink_param_3_qe)
+  );
   //   F[x_3]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2431,12 +2695,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.blink_param[3].x.qe),
+    .qe     (blink_param_3_flds_we[0]),
     .q      (reg2hw.blink_param[3].x.q),
 
     // to register interface (read)
     .qs     (core_blink_param_3_x_3_qs_int)
   );
+  assign reg2hw.blink_param[3].x.qe = blink_param_3_qe;
 
   //   F[y_3]: 31:16
   prim_subreg #(
@@ -2456,16 +2721,28 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.blink_param[3].y.qe),
+    .qe     (blink_param_3_flds_we[1]),
     .q      (reg2hw.blink_param[3].y.q),
 
     // to register interface (read)
     .qs     (core_blink_param_3_y_3_qs_int)
   );
+  assign reg2hw.blink_param[3].y.qe = blink_param_3_qe;
 
 
   // Subregister 4 of Multireg blink_param
   // R[blink_param_4]: V(False)
+  logic blink_param_4_qe;
+  logic [1:0] blink_param_4_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_blink_param4_qe (
+    .clk_i(clk_core_i),
+    .rst_ni(rst_core_ni),
+    .d_i(&blink_param_4_flds_we),
+    .q_o(blink_param_4_qe)
+  );
   //   F[x_4]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2484,12 +2761,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.blink_param[4].x.qe),
+    .qe     (blink_param_4_flds_we[0]),
     .q      (reg2hw.blink_param[4].x.q),
 
     // to register interface (read)
     .qs     (core_blink_param_4_x_4_qs_int)
   );
+  assign reg2hw.blink_param[4].x.qe = blink_param_4_qe;
 
   //   F[y_4]: 31:16
   prim_subreg #(
@@ -2509,16 +2787,28 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.blink_param[4].y.qe),
+    .qe     (blink_param_4_flds_we[1]),
     .q      (reg2hw.blink_param[4].y.q),
 
     // to register interface (read)
     .qs     (core_blink_param_4_y_4_qs_int)
   );
+  assign reg2hw.blink_param[4].y.qe = blink_param_4_qe;
 
 
   // Subregister 5 of Multireg blink_param
   // R[blink_param_5]: V(False)
+  logic blink_param_5_qe;
+  logic [1:0] blink_param_5_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_blink_param5_qe (
+    .clk_i(clk_core_i),
+    .rst_ni(rst_core_ni),
+    .d_i(&blink_param_5_flds_we),
+    .q_o(blink_param_5_qe)
+  );
   //   F[x_5]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2537,12 +2827,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.blink_param[5].x.qe),
+    .qe     (blink_param_5_flds_we[0]),
     .q      (reg2hw.blink_param[5].x.q),
 
     // to register interface (read)
     .qs     (core_blink_param_5_x_5_qs_int)
   );
+  assign reg2hw.blink_param[5].x.qe = blink_param_5_qe;
 
   //   F[y_5]: 31:16
   prim_subreg #(
@@ -2562,12 +2853,13 @@ module pwm_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.blink_param[5].y.qe),
+    .qe     (blink_param_5_flds_we[1]),
     .q      (reg2hw.blink_param[5].y.q),
 
     // to register interface (read)
     .qs     (core_blink_param_5_y_5_qs_int)
   );
+  assign reg2hw.blink_param[5].y.qe = blink_param_5_qe;
 
 
 

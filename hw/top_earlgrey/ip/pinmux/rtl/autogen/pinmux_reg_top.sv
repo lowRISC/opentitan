@@ -2983,6 +2983,9 @@ module pinmux_reg_top (
 
   // Register instances
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [0:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
@@ -2991,10 +2994,11 @@ module pinmux_reg_top (
     .wd     (alert_test_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.qe = alert_test_qe;
 
 
   // Subregister 0 of Multireg mio_periph_insel_regwen
@@ -9884,6 +9888,9 @@ module pinmux_reg_top (
 
   // Subregister 0 of Multireg mio_pad_attr
   // R[mio_pad_attr_0]: V(True)
+  logic mio_pad_attr_0_qe;
+  logic [0:0] mio_pad_attr_0_flds_we;
+  assign mio_pad_attr_0_qe = &mio_pad_attr_0_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_0 (
@@ -9892,14 +9899,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_0_wd),
     .d      (hw2reg.mio_pad_attr[0].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[0].qe),
+    .qe     (mio_pad_attr_0_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[0].q),
     .qs     (mio_pad_attr_0_qs)
   );
+  assign reg2hw.mio_pad_attr[0].qe = mio_pad_attr_0_qe;
 
 
   // Subregister 1 of Multireg mio_pad_attr
   // R[mio_pad_attr_1]: V(True)
+  logic mio_pad_attr_1_qe;
+  logic [0:0] mio_pad_attr_1_flds_we;
+  assign mio_pad_attr_1_qe = &mio_pad_attr_1_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_1 (
@@ -9908,14 +9919,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_1_wd),
     .d      (hw2reg.mio_pad_attr[1].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[1].qe),
+    .qe     (mio_pad_attr_1_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[1].q),
     .qs     (mio_pad_attr_1_qs)
   );
+  assign reg2hw.mio_pad_attr[1].qe = mio_pad_attr_1_qe;
 
 
   // Subregister 2 of Multireg mio_pad_attr
   // R[mio_pad_attr_2]: V(True)
+  logic mio_pad_attr_2_qe;
+  logic [0:0] mio_pad_attr_2_flds_we;
+  assign mio_pad_attr_2_qe = &mio_pad_attr_2_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_2 (
@@ -9924,14 +9939,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_2_wd),
     .d      (hw2reg.mio_pad_attr[2].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[2].qe),
+    .qe     (mio_pad_attr_2_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[2].q),
     .qs     (mio_pad_attr_2_qs)
   );
+  assign reg2hw.mio_pad_attr[2].qe = mio_pad_attr_2_qe;
 
 
   // Subregister 3 of Multireg mio_pad_attr
   // R[mio_pad_attr_3]: V(True)
+  logic mio_pad_attr_3_qe;
+  logic [0:0] mio_pad_attr_3_flds_we;
+  assign mio_pad_attr_3_qe = &mio_pad_attr_3_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_3 (
@@ -9940,14 +9959,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_3_wd),
     .d      (hw2reg.mio_pad_attr[3].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[3].qe),
+    .qe     (mio_pad_attr_3_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[3].q),
     .qs     (mio_pad_attr_3_qs)
   );
+  assign reg2hw.mio_pad_attr[3].qe = mio_pad_attr_3_qe;
 
 
   // Subregister 4 of Multireg mio_pad_attr
   // R[mio_pad_attr_4]: V(True)
+  logic mio_pad_attr_4_qe;
+  logic [0:0] mio_pad_attr_4_flds_we;
+  assign mio_pad_attr_4_qe = &mio_pad_attr_4_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_4 (
@@ -9956,14 +9979,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_4_wd),
     .d      (hw2reg.mio_pad_attr[4].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[4].qe),
+    .qe     (mio_pad_attr_4_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[4].q),
     .qs     (mio_pad_attr_4_qs)
   );
+  assign reg2hw.mio_pad_attr[4].qe = mio_pad_attr_4_qe;
 
 
   // Subregister 5 of Multireg mio_pad_attr
   // R[mio_pad_attr_5]: V(True)
+  logic mio_pad_attr_5_qe;
+  logic [0:0] mio_pad_attr_5_flds_we;
+  assign mio_pad_attr_5_qe = &mio_pad_attr_5_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_5 (
@@ -9972,14 +9999,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_5_wd),
     .d      (hw2reg.mio_pad_attr[5].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[5].qe),
+    .qe     (mio_pad_attr_5_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[5].q),
     .qs     (mio_pad_attr_5_qs)
   );
+  assign reg2hw.mio_pad_attr[5].qe = mio_pad_attr_5_qe;
 
 
   // Subregister 6 of Multireg mio_pad_attr
   // R[mio_pad_attr_6]: V(True)
+  logic mio_pad_attr_6_qe;
+  logic [0:0] mio_pad_attr_6_flds_we;
+  assign mio_pad_attr_6_qe = &mio_pad_attr_6_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_6 (
@@ -9988,14 +10019,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_6_wd),
     .d      (hw2reg.mio_pad_attr[6].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[6].qe),
+    .qe     (mio_pad_attr_6_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[6].q),
     .qs     (mio_pad_attr_6_qs)
   );
+  assign reg2hw.mio_pad_attr[6].qe = mio_pad_attr_6_qe;
 
 
   // Subregister 7 of Multireg mio_pad_attr
   // R[mio_pad_attr_7]: V(True)
+  logic mio_pad_attr_7_qe;
+  logic [0:0] mio_pad_attr_7_flds_we;
+  assign mio_pad_attr_7_qe = &mio_pad_attr_7_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_7 (
@@ -10004,14 +10039,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_7_wd),
     .d      (hw2reg.mio_pad_attr[7].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[7].qe),
+    .qe     (mio_pad_attr_7_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[7].q),
     .qs     (mio_pad_attr_7_qs)
   );
+  assign reg2hw.mio_pad_attr[7].qe = mio_pad_attr_7_qe;
 
 
   // Subregister 8 of Multireg mio_pad_attr
   // R[mio_pad_attr_8]: V(True)
+  logic mio_pad_attr_8_qe;
+  logic [0:0] mio_pad_attr_8_flds_we;
+  assign mio_pad_attr_8_qe = &mio_pad_attr_8_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_8 (
@@ -10020,14 +10059,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_8_wd),
     .d      (hw2reg.mio_pad_attr[8].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[8].qe),
+    .qe     (mio_pad_attr_8_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[8].q),
     .qs     (mio_pad_attr_8_qs)
   );
+  assign reg2hw.mio_pad_attr[8].qe = mio_pad_attr_8_qe;
 
 
   // Subregister 9 of Multireg mio_pad_attr
   // R[mio_pad_attr_9]: V(True)
+  logic mio_pad_attr_9_qe;
+  logic [0:0] mio_pad_attr_9_flds_we;
+  assign mio_pad_attr_9_qe = &mio_pad_attr_9_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_9 (
@@ -10036,14 +10079,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_9_wd),
     .d      (hw2reg.mio_pad_attr[9].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[9].qe),
+    .qe     (mio_pad_attr_9_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[9].q),
     .qs     (mio_pad_attr_9_qs)
   );
+  assign reg2hw.mio_pad_attr[9].qe = mio_pad_attr_9_qe;
 
 
   // Subregister 10 of Multireg mio_pad_attr
   // R[mio_pad_attr_10]: V(True)
+  logic mio_pad_attr_10_qe;
+  logic [0:0] mio_pad_attr_10_flds_we;
+  assign mio_pad_attr_10_qe = &mio_pad_attr_10_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_10 (
@@ -10052,14 +10099,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_10_wd),
     .d      (hw2reg.mio_pad_attr[10].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[10].qe),
+    .qe     (mio_pad_attr_10_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[10].q),
     .qs     (mio_pad_attr_10_qs)
   );
+  assign reg2hw.mio_pad_attr[10].qe = mio_pad_attr_10_qe;
 
 
   // Subregister 11 of Multireg mio_pad_attr
   // R[mio_pad_attr_11]: V(True)
+  logic mio_pad_attr_11_qe;
+  logic [0:0] mio_pad_attr_11_flds_we;
+  assign mio_pad_attr_11_qe = &mio_pad_attr_11_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_11 (
@@ -10068,14 +10119,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_11_wd),
     .d      (hw2reg.mio_pad_attr[11].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[11].qe),
+    .qe     (mio_pad_attr_11_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[11].q),
     .qs     (mio_pad_attr_11_qs)
   );
+  assign reg2hw.mio_pad_attr[11].qe = mio_pad_attr_11_qe;
 
 
   // Subregister 12 of Multireg mio_pad_attr
   // R[mio_pad_attr_12]: V(True)
+  logic mio_pad_attr_12_qe;
+  logic [0:0] mio_pad_attr_12_flds_we;
+  assign mio_pad_attr_12_qe = &mio_pad_attr_12_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_12 (
@@ -10084,14 +10139,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_12_wd),
     .d      (hw2reg.mio_pad_attr[12].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[12].qe),
+    .qe     (mio_pad_attr_12_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[12].q),
     .qs     (mio_pad_attr_12_qs)
   );
+  assign reg2hw.mio_pad_attr[12].qe = mio_pad_attr_12_qe;
 
 
   // Subregister 13 of Multireg mio_pad_attr
   // R[mio_pad_attr_13]: V(True)
+  logic mio_pad_attr_13_qe;
+  logic [0:0] mio_pad_attr_13_flds_we;
+  assign mio_pad_attr_13_qe = &mio_pad_attr_13_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_13 (
@@ -10100,14 +10159,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_13_wd),
     .d      (hw2reg.mio_pad_attr[13].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[13].qe),
+    .qe     (mio_pad_attr_13_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[13].q),
     .qs     (mio_pad_attr_13_qs)
   );
+  assign reg2hw.mio_pad_attr[13].qe = mio_pad_attr_13_qe;
 
 
   // Subregister 14 of Multireg mio_pad_attr
   // R[mio_pad_attr_14]: V(True)
+  logic mio_pad_attr_14_qe;
+  logic [0:0] mio_pad_attr_14_flds_we;
+  assign mio_pad_attr_14_qe = &mio_pad_attr_14_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_14 (
@@ -10116,14 +10179,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_14_wd),
     .d      (hw2reg.mio_pad_attr[14].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[14].qe),
+    .qe     (mio_pad_attr_14_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[14].q),
     .qs     (mio_pad_attr_14_qs)
   );
+  assign reg2hw.mio_pad_attr[14].qe = mio_pad_attr_14_qe;
 
 
   // Subregister 15 of Multireg mio_pad_attr
   // R[mio_pad_attr_15]: V(True)
+  logic mio_pad_attr_15_qe;
+  logic [0:0] mio_pad_attr_15_flds_we;
+  assign mio_pad_attr_15_qe = &mio_pad_attr_15_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_15 (
@@ -10132,14 +10199,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_15_wd),
     .d      (hw2reg.mio_pad_attr[15].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[15].qe),
+    .qe     (mio_pad_attr_15_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[15].q),
     .qs     (mio_pad_attr_15_qs)
   );
+  assign reg2hw.mio_pad_attr[15].qe = mio_pad_attr_15_qe;
 
 
   // Subregister 16 of Multireg mio_pad_attr
   // R[mio_pad_attr_16]: V(True)
+  logic mio_pad_attr_16_qe;
+  logic [0:0] mio_pad_attr_16_flds_we;
+  assign mio_pad_attr_16_qe = &mio_pad_attr_16_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_16 (
@@ -10148,14 +10219,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_16_wd),
     .d      (hw2reg.mio_pad_attr[16].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[16].qe),
+    .qe     (mio_pad_attr_16_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[16].q),
     .qs     (mio_pad_attr_16_qs)
   );
+  assign reg2hw.mio_pad_attr[16].qe = mio_pad_attr_16_qe;
 
 
   // Subregister 17 of Multireg mio_pad_attr
   // R[mio_pad_attr_17]: V(True)
+  logic mio_pad_attr_17_qe;
+  logic [0:0] mio_pad_attr_17_flds_we;
+  assign mio_pad_attr_17_qe = &mio_pad_attr_17_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_17 (
@@ -10164,14 +10239,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_17_wd),
     .d      (hw2reg.mio_pad_attr[17].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[17].qe),
+    .qe     (mio_pad_attr_17_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[17].q),
     .qs     (mio_pad_attr_17_qs)
   );
+  assign reg2hw.mio_pad_attr[17].qe = mio_pad_attr_17_qe;
 
 
   // Subregister 18 of Multireg mio_pad_attr
   // R[mio_pad_attr_18]: V(True)
+  logic mio_pad_attr_18_qe;
+  logic [0:0] mio_pad_attr_18_flds_we;
+  assign mio_pad_attr_18_qe = &mio_pad_attr_18_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_18 (
@@ -10180,14 +10259,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_18_wd),
     .d      (hw2reg.mio_pad_attr[18].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[18].qe),
+    .qe     (mio_pad_attr_18_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[18].q),
     .qs     (mio_pad_attr_18_qs)
   );
+  assign reg2hw.mio_pad_attr[18].qe = mio_pad_attr_18_qe;
 
 
   // Subregister 19 of Multireg mio_pad_attr
   // R[mio_pad_attr_19]: V(True)
+  logic mio_pad_attr_19_qe;
+  logic [0:0] mio_pad_attr_19_flds_we;
+  assign mio_pad_attr_19_qe = &mio_pad_attr_19_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_19 (
@@ -10196,14 +10279,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_19_wd),
     .d      (hw2reg.mio_pad_attr[19].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[19].qe),
+    .qe     (mio_pad_attr_19_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[19].q),
     .qs     (mio_pad_attr_19_qs)
   );
+  assign reg2hw.mio_pad_attr[19].qe = mio_pad_attr_19_qe;
 
 
   // Subregister 20 of Multireg mio_pad_attr
   // R[mio_pad_attr_20]: V(True)
+  logic mio_pad_attr_20_qe;
+  logic [0:0] mio_pad_attr_20_flds_we;
+  assign mio_pad_attr_20_qe = &mio_pad_attr_20_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_20 (
@@ -10212,14 +10299,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_20_wd),
     .d      (hw2reg.mio_pad_attr[20].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[20].qe),
+    .qe     (mio_pad_attr_20_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[20].q),
     .qs     (mio_pad_attr_20_qs)
   );
+  assign reg2hw.mio_pad_attr[20].qe = mio_pad_attr_20_qe;
 
 
   // Subregister 21 of Multireg mio_pad_attr
   // R[mio_pad_attr_21]: V(True)
+  logic mio_pad_attr_21_qe;
+  logic [0:0] mio_pad_attr_21_flds_we;
+  assign mio_pad_attr_21_qe = &mio_pad_attr_21_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_21 (
@@ -10228,14 +10319,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_21_wd),
     .d      (hw2reg.mio_pad_attr[21].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[21].qe),
+    .qe     (mio_pad_attr_21_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[21].q),
     .qs     (mio_pad_attr_21_qs)
   );
+  assign reg2hw.mio_pad_attr[21].qe = mio_pad_attr_21_qe;
 
 
   // Subregister 22 of Multireg mio_pad_attr
   // R[mio_pad_attr_22]: V(True)
+  logic mio_pad_attr_22_qe;
+  logic [0:0] mio_pad_attr_22_flds_we;
+  assign mio_pad_attr_22_qe = &mio_pad_attr_22_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_22 (
@@ -10244,14 +10339,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_22_wd),
     .d      (hw2reg.mio_pad_attr[22].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[22].qe),
+    .qe     (mio_pad_attr_22_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[22].q),
     .qs     (mio_pad_attr_22_qs)
   );
+  assign reg2hw.mio_pad_attr[22].qe = mio_pad_attr_22_qe;
 
 
   // Subregister 23 of Multireg mio_pad_attr
   // R[mio_pad_attr_23]: V(True)
+  logic mio_pad_attr_23_qe;
+  logic [0:0] mio_pad_attr_23_flds_we;
+  assign mio_pad_attr_23_qe = &mio_pad_attr_23_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_23 (
@@ -10260,14 +10359,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_23_wd),
     .d      (hw2reg.mio_pad_attr[23].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[23].qe),
+    .qe     (mio_pad_attr_23_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[23].q),
     .qs     (mio_pad_attr_23_qs)
   );
+  assign reg2hw.mio_pad_attr[23].qe = mio_pad_attr_23_qe;
 
 
   // Subregister 24 of Multireg mio_pad_attr
   // R[mio_pad_attr_24]: V(True)
+  logic mio_pad_attr_24_qe;
+  logic [0:0] mio_pad_attr_24_flds_we;
+  assign mio_pad_attr_24_qe = &mio_pad_attr_24_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_24 (
@@ -10276,14 +10379,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_24_wd),
     .d      (hw2reg.mio_pad_attr[24].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[24].qe),
+    .qe     (mio_pad_attr_24_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[24].q),
     .qs     (mio_pad_attr_24_qs)
   );
+  assign reg2hw.mio_pad_attr[24].qe = mio_pad_attr_24_qe;
 
 
   // Subregister 25 of Multireg mio_pad_attr
   // R[mio_pad_attr_25]: V(True)
+  logic mio_pad_attr_25_qe;
+  logic [0:0] mio_pad_attr_25_flds_we;
+  assign mio_pad_attr_25_qe = &mio_pad_attr_25_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_25 (
@@ -10292,14 +10399,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_25_wd),
     .d      (hw2reg.mio_pad_attr[25].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[25].qe),
+    .qe     (mio_pad_attr_25_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[25].q),
     .qs     (mio_pad_attr_25_qs)
   );
+  assign reg2hw.mio_pad_attr[25].qe = mio_pad_attr_25_qe;
 
 
   // Subregister 26 of Multireg mio_pad_attr
   // R[mio_pad_attr_26]: V(True)
+  logic mio_pad_attr_26_qe;
+  logic [0:0] mio_pad_attr_26_flds_we;
+  assign mio_pad_attr_26_qe = &mio_pad_attr_26_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_26 (
@@ -10308,14 +10419,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_26_wd),
     .d      (hw2reg.mio_pad_attr[26].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[26].qe),
+    .qe     (mio_pad_attr_26_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[26].q),
     .qs     (mio_pad_attr_26_qs)
   );
+  assign reg2hw.mio_pad_attr[26].qe = mio_pad_attr_26_qe;
 
 
   // Subregister 27 of Multireg mio_pad_attr
   // R[mio_pad_attr_27]: V(True)
+  logic mio_pad_attr_27_qe;
+  logic [0:0] mio_pad_attr_27_flds_we;
+  assign mio_pad_attr_27_qe = &mio_pad_attr_27_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_27 (
@@ -10324,14 +10439,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_27_wd),
     .d      (hw2reg.mio_pad_attr[27].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[27].qe),
+    .qe     (mio_pad_attr_27_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[27].q),
     .qs     (mio_pad_attr_27_qs)
   );
+  assign reg2hw.mio_pad_attr[27].qe = mio_pad_attr_27_qe;
 
 
   // Subregister 28 of Multireg mio_pad_attr
   // R[mio_pad_attr_28]: V(True)
+  logic mio_pad_attr_28_qe;
+  logic [0:0] mio_pad_attr_28_flds_we;
+  assign mio_pad_attr_28_qe = &mio_pad_attr_28_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_28 (
@@ -10340,14 +10459,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_28_wd),
     .d      (hw2reg.mio_pad_attr[28].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[28].qe),
+    .qe     (mio_pad_attr_28_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[28].q),
     .qs     (mio_pad_attr_28_qs)
   );
+  assign reg2hw.mio_pad_attr[28].qe = mio_pad_attr_28_qe;
 
 
   // Subregister 29 of Multireg mio_pad_attr
   // R[mio_pad_attr_29]: V(True)
+  logic mio_pad_attr_29_qe;
+  logic [0:0] mio_pad_attr_29_flds_we;
+  assign mio_pad_attr_29_qe = &mio_pad_attr_29_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_29 (
@@ -10356,14 +10479,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_29_wd),
     .d      (hw2reg.mio_pad_attr[29].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[29].qe),
+    .qe     (mio_pad_attr_29_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[29].q),
     .qs     (mio_pad_attr_29_qs)
   );
+  assign reg2hw.mio_pad_attr[29].qe = mio_pad_attr_29_qe;
 
 
   // Subregister 30 of Multireg mio_pad_attr
   // R[mio_pad_attr_30]: V(True)
+  logic mio_pad_attr_30_qe;
+  logic [0:0] mio_pad_attr_30_flds_we;
+  assign mio_pad_attr_30_qe = &mio_pad_attr_30_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_30 (
@@ -10372,14 +10499,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_30_wd),
     .d      (hw2reg.mio_pad_attr[30].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[30].qe),
+    .qe     (mio_pad_attr_30_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[30].q),
     .qs     (mio_pad_attr_30_qs)
   );
+  assign reg2hw.mio_pad_attr[30].qe = mio_pad_attr_30_qe;
 
 
   // Subregister 31 of Multireg mio_pad_attr
   // R[mio_pad_attr_31]: V(True)
+  logic mio_pad_attr_31_qe;
+  logic [0:0] mio_pad_attr_31_flds_we;
+  assign mio_pad_attr_31_qe = &mio_pad_attr_31_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_31 (
@@ -10388,14 +10519,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_31_wd),
     .d      (hw2reg.mio_pad_attr[31].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[31].qe),
+    .qe     (mio_pad_attr_31_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[31].q),
     .qs     (mio_pad_attr_31_qs)
   );
+  assign reg2hw.mio_pad_attr[31].qe = mio_pad_attr_31_qe;
 
 
   // Subregister 32 of Multireg mio_pad_attr
   // R[mio_pad_attr_32]: V(True)
+  logic mio_pad_attr_32_qe;
+  logic [0:0] mio_pad_attr_32_flds_we;
+  assign mio_pad_attr_32_qe = &mio_pad_attr_32_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_32 (
@@ -10404,14 +10539,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_32_wd),
     .d      (hw2reg.mio_pad_attr[32].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[32].qe),
+    .qe     (mio_pad_attr_32_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[32].q),
     .qs     (mio_pad_attr_32_qs)
   );
+  assign reg2hw.mio_pad_attr[32].qe = mio_pad_attr_32_qe;
 
 
   // Subregister 33 of Multireg mio_pad_attr
   // R[mio_pad_attr_33]: V(True)
+  logic mio_pad_attr_33_qe;
+  logic [0:0] mio_pad_attr_33_flds_we;
+  assign mio_pad_attr_33_qe = &mio_pad_attr_33_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_33 (
@@ -10420,14 +10559,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_33_wd),
     .d      (hw2reg.mio_pad_attr[33].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[33].qe),
+    .qe     (mio_pad_attr_33_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[33].q),
     .qs     (mio_pad_attr_33_qs)
   );
+  assign reg2hw.mio_pad_attr[33].qe = mio_pad_attr_33_qe;
 
 
   // Subregister 34 of Multireg mio_pad_attr
   // R[mio_pad_attr_34]: V(True)
+  logic mio_pad_attr_34_qe;
+  logic [0:0] mio_pad_attr_34_flds_we;
+  assign mio_pad_attr_34_qe = &mio_pad_attr_34_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_34 (
@@ -10436,14 +10579,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_34_wd),
     .d      (hw2reg.mio_pad_attr[34].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[34].qe),
+    .qe     (mio_pad_attr_34_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[34].q),
     .qs     (mio_pad_attr_34_qs)
   );
+  assign reg2hw.mio_pad_attr[34].qe = mio_pad_attr_34_qe;
 
 
   // Subregister 35 of Multireg mio_pad_attr
   // R[mio_pad_attr_35]: V(True)
+  logic mio_pad_attr_35_qe;
+  logic [0:0] mio_pad_attr_35_flds_we;
+  assign mio_pad_attr_35_qe = &mio_pad_attr_35_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_35 (
@@ -10452,14 +10599,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_35_wd),
     .d      (hw2reg.mio_pad_attr[35].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[35].qe),
+    .qe     (mio_pad_attr_35_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[35].q),
     .qs     (mio_pad_attr_35_qs)
   );
+  assign reg2hw.mio_pad_attr[35].qe = mio_pad_attr_35_qe;
 
 
   // Subregister 36 of Multireg mio_pad_attr
   // R[mio_pad_attr_36]: V(True)
+  logic mio_pad_attr_36_qe;
+  logic [0:0] mio_pad_attr_36_flds_we;
+  assign mio_pad_attr_36_qe = &mio_pad_attr_36_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_36 (
@@ -10468,14 +10619,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_36_wd),
     .d      (hw2reg.mio_pad_attr[36].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[36].qe),
+    .qe     (mio_pad_attr_36_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[36].q),
     .qs     (mio_pad_attr_36_qs)
   );
+  assign reg2hw.mio_pad_attr[36].qe = mio_pad_attr_36_qe;
 
 
   // Subregister 37 of Multireg mio_pad_attr
   // R[mio_pad_attr_37]: V(True)
+  logic mio_pad_attr_37_qe;
+  logic [0:0] mio_pad_attr_37_flds_we;
+  assign mio_pad_attr_37_qe = &mio_pad_attr_37_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_37 (
@@ -10484,14 +10639,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_37_wd),
     .d      (hw2reg.mio_pad_attr[37].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[37].qe),
+    .qe     (mio_pad_attr_37_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[37].q),
     .qs     (mio_pad_attr_37_qs)
   );
+  assign reg2hw.mio_pad_attr[37].qe = mio_pad_attr_37_qe;
 
 
   // Subregister 38 of Multireg mio_pad_attr
   // R[mio_pad_attr_38]: V(True)
+  logic mio_pad_attr_38_qe;
+  logic [0:0] mio_pad_attr_38_flds_we;
+  assign mio_pad_attr_38_qe = &mio_pad_attr_38_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_38 (
@@ -10500,14 +10659,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_38_wd),
     .d      (hw2reg.mio_pad_attr[38].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[38].qe),
+    .qe     (mio_pad_attr_38_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[38].q),
     .qs     (mio_pad_attr_38_qs)
   );
+  assign reg2hw.mio_pad_attr[38].qe = mio_pad_attr_38_qe;
 
 
   // Subregister 39 of Multireg mio_pad_attr
   // R[mio_pad_attr_39]: V(True)
+  logic mio_pad_attr_39_qe;
+  logic [0:0] mio_pad_attr_39_flds_we;
+  assign mio_pad_attr_39_qe = &mio_pad_attr_39_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_39 (
@@ -10516,14 +10679,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_39_wd),
     .d      (hw2reg.mio_pad_attr[39].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[39].qe),
+    .qe     (mio_pad_attr_39_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[39].q),
     .qs     (mio_pad_attr_39_qs)
   );
+  assign reg2hw.mio_pad_attr[39].qe = mio_pad_attr_39_qe;
 
 
   // Subregister 40 of Multireg mio_pad_attr
   // R[mio_pad_attr_40]: V(True)
+  logic mio_pad_attr_40_qe;
+  logic [0:0] mio_pad_attr_40_flds_we;
+  assign mio_pad_attr_40_qe = &mio_pad_attr_40_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_40 (
@@ -10532,14 +10699,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_40_wd),
     .d      (hw2reg.mio_pad_attr[40].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[40].qe),
+    .qe     (mio_pad_attr_40_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[40].q),
     .qs     (mio_pad_attr_40_qs)
   );
+  assign reg2hw.mio_pad_attr[40].qe = mio_pad_attr_40_qe;
 
 
   // Subregister 41 of Multireg mio_pad_attr
   // R[mio_pad_attr_41]: V(True)
+  logic mio_pad_attr_41_qe;
+  logic [0:0] mio_pad_attr_41_flds_we;
+  assign mio_pad_attr_41_qe = &mio_pad_attr_41_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_41 (
@@ -10548,14 +10719,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_41_wd),
     .d      (hw2reg.mio_pad_attr[41].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[41].qe),
+    .qe     (mio_pad_attr_41_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[41].q),
     .qs     (mio_pad_attr_41_qs)
   );
+  assign reg2hw.mio_pad_attr[41].qe = mio_pad_attr_41_qe;
 
 
   // Subregister 42 of Multireg mio_pad_attr
   // R[mio_pad_attr_42]: V(True)
+  logic mio_pad_attr_42_qe;
+  logic [0:0] mio_pad_attr_42_flds_we;
+  assign mio_pad_attr_42_qe = &mio_pad_attr_42_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_42 (
@@ -10564,14 +10739,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_42_wd),
     .d      (hw2reg.mio_pad_attr[42].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[42].qe),
+    .qe     (mio_pad_attr_42_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[42].q),
     .qs     (mio_pad_attr_42_qs)
   );
+  assign reg2hw.mio_pad_attr[42].qe = mio_pad_attr_42_qe;
 
 
   // Subregister 43 of Multireg mio_pad_attr
   // R[mio_pad_attr_43]: V(True)
+  logic mio_pad_attr_43_qe;
+  logic [0:0] mio_pad_attr_43_flds_we;
+  assign mio_pad_attr_43_qe = &mio_pad_attr_43_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_43 (
@@ -10580,14 +10759,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_43_wd),
     .d      (hw2reg.mio_pad_attr[43].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[43].qe),
+    .qe     (mio_pad_attr_43_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[43].q),
     .qs     (mio_pad_attr_43_qs)
   );
+  assign reg2hw.mio_pad_attr[43].qe = mio_pad_attr_43_qe;
 
 
   // Subregister 44 of Multireg mio_pad_attr
   // R[mio_pad_attr_44]: V(True)
+  logic mio_pad_attr_44_qe;
+  logic [0:0] mio_pad_attr_44_flds_we;
+  assign mio_pad_attr_44_qe = &mio_pad_attr_44_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_44 (
@@ -10596,14 +10779,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_44_wd),
     .d      (hw2reg.mio_pad_attr[44].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[44].qe),
+    .qe     (mio_pad_attr_44_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[44].q),
     .qs     (mio_pad_attr_44_qs)
   );
+  assign reg2hw.mio_pad_attr[44].qe = mio_pad_attr_44_qe;
 
 
   // Subregister 45 of Multireg mio_pad_attr
   // R[mio_pad_attr_45]: V(True)
+  logic mio_pad_attr_45_qe;
+  logic [0:0] mio_pad_attr_45_flds_we;
+  assign mio_pad_attr_45_qe = &mio_pad_attr_45_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_45 (
@@ -10612,14 +10799,18 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_45_wd),
     .d      (hw2reg.mio_pad_attr[45].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[45].qe),
+    .qe     (mio_pad_attr_45_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[45].q),
     .qs     (mio_pad_attr_45_qs)
   );
+  assign reg2hw.mio_pad_attr[45].qe = mio_pad_attr_45_qe;
 
 
   // Subregister 46 of Multireg mio_pad_attr
   // R[mio_pad_attr_46]: V(True)
+  logic mio_pad_attr_46_qe;
+  logic [0:0] mio_pad_attr_46_flds_we;
+  assign mio_pad_attr_46_qe = &mio_pad_attr_46_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_mio_pad_attr_46 (
@@ -10628,10 +10819,11 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_46_wd),
     .d      (hw2reg.mio_pad_attr[46].d),
     .qre    (),
-    .qe     (reg2hw.mio_pad_attr[46].qe),
+    .qe     (mio_pad_attr_46_flds_we[0]),
     .q      (reg2hw.mio_pad_attr[46].q),
     .qs     (mio_pad_attr_46_qs)
   );
+  assign reg2hw.mio_pad_attr[46].qe = mio_pad_attr_46_qe;
 
 
   // Subregister 0 of Multireg dio_pad_attr_regwen
@@ -11068,6 +11260,9 @@ module pinmux_reg_top (
 
   // Subregister 0 of Multireg dio_pad_attr
   // R[dio_pad_attr_0]: V(True)
+  logic dio_pad_attr_0_qe;
+  logic [0:0] dio_pad_attr_0_flds_we;
+  assign dio_pad_attr_0_qe = &dio_pad_attr_0_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_0 (
@@ -11076,14 +11271,18 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_0_wd),
     .d      (hw2reg.dio_pad_attr[0].d),
     .qre    (),
-    .qe     (reg2hw.dio_pad_attr[0].qe),
+    .qe     (dio_pad_attr_0_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[0].q),
     .qs     (dio_pad_attr_0_qs)
   );
+  assign reg2hw.dio_pad_attr[0].qe = dio_pad_attr_0_qe;
 
 
   // Subregister 1 of Multireg dio_pad_attr
   // R[dio_pad_attr_1]: V(True)
+  logic dio_pad_attr_1_qe;
+  logic [0:0] dio_pad_attr_1_flds_we;
+  assign dio_pad_attr_1_qe = &dio_pad_attr_1_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_1 (
@@ -11092,14 +11291,18 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_1_wd),
     .d      (hw2reg.dio_pad_attr[1].d),
     .qre    (),
-    .qe     (reg2hw.dio_pad_attr[1].qe),
+    .qe     (dio_pad_attr_1_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[1].q),
     .qs     (dio_pad_attr_1_qs)
   );
+  assign reg2hw.dio_pad_attr[1].qe = dio_pad_attr_1_qe;
 
 
   // Subregister 2 of Multireg dio_pad_attr
   // R[dio_pad_attr_2]: V(True)
+  logic dio_pad_attr_2_qe;
+  logic [0:0] dio_pad_attr_2_flds_we;
+  assign dio_pad_attr_2_qe = &dio_pad_attr_2_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_2 (
@@ -11108,14 +11311,18 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_2_wd),
     .d      (hw2reg.dio_pad_attr[2].d),
     .qre    (),
-    .qe     (reg2hw.dio_pad_attr[2].qe),
+    .qe     (dio_pad_attr_2_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[2].q),
     .qs     (dio_pad_attr_2_qs)
   );
+  assign reg2hw.dio_pad_attr[2].qe = dio_pad_attr_2_qe;
 
 
   // Subregister 3 of Multireg dio_pad_attr
   // R[dio_pad_attr_3]: V(True)
+  logic dio_pad_attr_3_qe;
+  logic [0:0] dio_pad_attr_3_flds_we;
+  assign dio_pad_attr_3_qe = &dio_pad_attr_3_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_3 (
@@ -11124,14 +11331,18 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_3_wd),
     .d      (hw2reg.dio_pad_attr[3].d),
     .qre    (),
-    .qe     (reg2hw.dio_pad_attr[3].qe),
+    .qe     (dio_pad_attr_3_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[3].q),
     .qs     (dio_pad_attr_3_qs)
   );
+  assign reg2hw.dio_pad_attr[3].qe = dio_pad_attr_3_qe;
 
 
   // Subregister 4 of Multireg dio_pad_attr
   // R[dio_pad_attr_4]: V(True)
+  logic dio_pad_attr_4_qe;
+  logic [0:0] dio_pad_attr_4_flds_we;
+  assign dio_pad_attr_4_qe = &dio_pad_attr_4_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_4 (
@@ -11140,14 +11351,18 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_4_wd),
     .d      (hw2reg.dio_pad_attr[4].d),
     .qre    (),
-    .qe     (reg2hw.dio_pad_attr[4].qe),
+    .qe     (dio_pad_attr_4_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[4].q),
     .qs     (dio_pad_attr_4_qs)
   );
+  assign reg2hw.dio_pad_attr[4].qe = dio_pad_attr_4_qe;
 
 
   // Subregister 5 of Multireg dio_pad_attr
   // R[dio_pad_attr_5]: V(True)
+  logic dio_pad_attr_5_qe;
+  logic [0:0] dio_pad_attr_5_flds_we;
+  assign dio_pad_attr_5_qe = &dio_pad_attr_5_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_5 (
@@ -11156,14 +11371,18 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_5_wd),
     .d      (hw2reg.dio_pad_attr[5].d),
     .qre    (),
-    .qe     (reg2hw.dio_pad_attr[5].qe),
+    .qe     (dio_pad_attr_5_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[5].q),
     .qs     (dio_pad_attr_5_qs)
   );
+  assign reg2hw.dio_pad_attr[5].qe = dio_pad_attr_5_qe;
 
 
   // Subregister 6 of Multireg dio_pad_attr
   // R[dio_pad_attr_6]: V(True)
+  logic dio_pad_attr_6_qe;
+  logic [0:0] dio_pad_attr_6_flds_we;
+  assign dio_pad_attr_6_qe = &dio_pad_attr_6_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_6 (
@@ -11172,14 +11391,18 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_6_wd),
     .d      (hw2reg.dio_pad_attr[6].d),
     .qre    (),
-    .qe     (reg2hw.dio_pad_attr[6].qe),
+    .qe     (dio_pad_attr_6_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[6].q),
     .qs     (dio_pad_attr_6_qs)
   );
+  assign reg2hw.dio_pad_attr[6].qe = dio_pad_attr_6_qe;
 
 
   // Subregister 7 of Multireg dio_pad_attr
   // R[dio_pad_attr_7]: V(True)
+  logic dio_pad_attr_7_qe;
+  logic [0:0] dio_pad_attr_7_flds_we;
+  assign dio_pad_attr_7_qe = &dio_pad_attr_7_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_7 (
@@ -11188,14 +11411,18 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_7_wd),
     .d      (hw2reg.dio_pad_attr[7].d),
     .qre    (),
-    .qe     (reg2hw.dio_pad_attr[7].qe),
+    .qe     (dio_pad_attr_7_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[7].q),
     .qs     (dio_pad_attr_7_qs)
   );
+  assign reg2hw.dio_pad_attr[7].qe = dio_pad_attr_7_qe;
 
 
   // Subregister 8 of Multireg dio_pad_attr
   // R[dio_pad_attr_8]: V(True)
+  logic dio_pad_attr_8_qe;
+  logic [0:0] dio_pad_attr_8_flds_we;
+  assign dio_pad_attr_8_qe = &dio_pad_attr_8_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_8 (
@@ -11204,14 +11431,18 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_8_wd),
     .d      (hw2reg.dio_pad_attr[8].d),
     .qre    (),
-    .qe     (reg2hw.dio_pad_attr[8].qe),
+    .qe     (dio_pad_attr_8_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[8].q),
     .qs     (dio_pad_attr_8_qs)
   );
+  assign reg2hw.dio_pad_attr[8].qe = dio_pad_attr_8_qe;
 
 
   // Subregister 9 of Multireg dio_pad_attr
   // R[dio_pad_attr_9]: V(True)
+  logic dio_pad_attr_9_qe;
+  logic [0:0] dio_pad_attr_9_flds_we;
+  assign dio_pad_attr_9_qe = &dio_pad_attr_9_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_9 (
@@ -11220,14 +11451,18 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_9_wd),
     .d      (hw2reg.dio_pad_attr[9].d),
     .qre    (),
-    .qe     (reg2hw.dio_pad_attr[9].qe),
+    .qe     (dio_pad_attr_9_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[9].q),
     .qs     (dio_pad_attr_9_qs)
   );
+  assign reg2hw.dio_pad_attr[9].qe = dio_pad_attr_9_qe;
 
 
   // Subregister 10 of Multireg dio_pad_attr
   // R[dio_pad_attr_10]: V(True)
+  logic dio_pad_attr_10_qe;
+  logic [0:0] dio_pad_attr_10_flds_we;
+  assign dio_pad_attr_10_qe = &dio_pad_attr_10_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_10 (
@@ -11236,14 +11471,18 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_10_wd),
     .d      (hw2reg.dio_pad_attr[10].d),
     .qre    (),
-    .qe     (reg2hw.dio_pad_attr[10].qe),
+    .qe     (dio_pad_attr_10_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[10].q),
     .qs     (dio_pad_attr_10_qs)
   );
+  assign reg2hw.dio_pad_attr[10].qe = dio_pad_attr_10_qe;
 
 
   // Subregister 11 of Multireg dio_pad_attr
   // R[dio_pad_attr_11]: V(True)
+  logic dio_pad_attr_11_qe;
+  logic [0:0] dio_pad_attr_11_flds_we;
+  assign dio_pad_attr_11_qe = &dio_pad_attr_11_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_11 (
@@ -11252,14 +11491,18 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_11_wd),
     .d      (hw2reg.dio_pad_attr[11].d),
     .qre    (),
-    .qe     (reg2hw.dio_pad_attr[11].qe),
+    .qe     (dio_pad_attr_11_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[11].q),
     .qs     (dio_pad_attr_11_qs)
   );
+  assign reg2hw.dio_pad_attr[11].qe = dio_pad_attr_11_qe;
 
 
   // Subregister 12 of Multireg dio_pad_attr
   // R[dio_pad_attr_12]: V(True)
+  logic dio_pad_attr_12_qe;
+  logic [0:0] dio_pad_attr_12_flds_we;
+  assign dio_pad_attr_12_qe = &dio_pad_attr_12_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_12 (
@@ -11268,14 +11511,18 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_12_wd),
     .d      (hw2reg.dio_pad_attr[12].d),
     .qre    (),
-    .qe     (reg2hw.dio_pad_attr[12].qe),
+    .qe     (dio_pad_attr_12_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[12].q),
     .qs     (dio_pad_attr_12_qs)
   );
+  assign reg2hw.dio_pad_attr[12].qe = dio_pad_attr_12_qe;
 
 
   // Subregister 13 of Multireg dio_pad_attr
   // R[dio_pad_attr_13]: V(True)
+  logic dio_pad_attr_13_qe;
+  logic [0:0] dio_pad_attr_13_flds_we;
+  assign dio_pad_attr_13_qe = &dio_pad_attr_13_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_13 (
@@ -11284,14 +11531,18 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_13_wd),
     .d      (hw2reg.dio_pad_attr[13].d),
     .qre    (),
-    .qe     (reg2hw.dio_pad_attr[13].qe),
+    .qe     (dio_pad_attr_13_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[13].q),
     .qs     (dio_pad_attr_13_qs)
   );
+  assign reg2hw.dio_pad_attr[13].qe = dio_pad_attr_13_qe;
 
 
   // Subregister 14 of Multireg dio_pad_attr
   // R[dio_pad_attr_14]: V(True)
+  logic dio_pad_attr_14_qe;
+  logic [0:0] dio_pad_attr_14_flds_we;
+  assign dio_pad_attr_14_qe = &dio_pad_attr_14_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_14 (
@@ -11300,14 +11551,18 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_14_wd),
     .d      (hw2reg.dio_pad_attr[14].d),
     .qre    (),
-    .qe     (reg2hw.dio_pad_attr[14].qe),
+    .qe     (dio_pad_attr_14_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[14].q),
     .qs     (dio_pad_attr_14_qs)
   );
+  assign reg2hw.dio_pad_attr[14].qe = dio_pad_attr_14_qe;
 
 
   // Subregister 15 of Multireg dio_pad_attr
   // R[dio_pad_attr_15]: V(True)
+  logic dio_pad_attr_15_qe;
+  logic [0:0] dio_pad_attr_15_flds_we;
+  assign dio_pad_attr_15_qe = &dio_pad_attr_15_flds_we;
   prim_subreg_ext #(
     .DW    (13)
   ) u_dio_pad_attr_15 (
@@ -11316,10 +11571,11 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_15_wd),
     .d      (hw2reg.dio_pad_attr[15].d),
     .qre    (),
-    .qe     (reg2hw.dio_pad_attr[15].qe),
+    .qe     (dio_pad_attr_15_flds_we[0]),
     .q      (reg2hw.dio_pad_attr[15].q),
     .qs     (dio_pad_attr_15_qs)
   );
+  assign reg2hw.dio_pad_attr[15].qe = dio_pad_attr_15_qe;
 
 
   // Subregister 0 of Multireg mio_pad_sleep_status

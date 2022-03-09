@@ -407,6 +407,9 @@ module csrng_reg_top (
 
 
   // R[intr_test]: V(True)
+  logic intr_test_qe;
+  logic [3:0] intr_test_flds_we;
+  assign intr_test_qe = &intr_test_flds_we;
   //   F[cs_cmd_req_done]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -416,10 +419,11 @@ module csrng_reg_top (
     .wd     (intr_test_cs_cmd_req_done_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.cs_cmd_req_done.qe),
+    .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.cs_cmd_req_done.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.cs_cmd_req_done.qe = intr_test_qe;
 
   //   F[cs_entropy_req]: 1:1
   prim_subreg_ext #(
@@ -430,10 +434,11 @@ module csrng_reg_top (
     .wd     (intr_test_cs_entropy_req_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.cs_entropy_req.qe),
+    .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.cs_entropy_req.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.cs_entropy_req.qe = intr_test_qe;
 
   //   F[cs_hw_inst_exc]: 2:2
   prim_subreg_ext #(
@@ -444,10 +449,11 @@ module csrng_reg_top (
     .wd     (intr_test_cs_hw_inst_exc_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.cs_hw_inst_exc.qe),
+    .qe     (intr_test_flds_we[2]),
     .q      (reg2hw.intr_test.cs_hw_inst_exc.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.cs_hw_inst_exc.qe = intr_test_qe;
 
   //   F[cs_fatal_err]: 3:3
   prim_subreg_ext #(
@@ -458,13 +464,17 @@ module csrng_reg_top (
     .wd     (intr_test_cs_fatal_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.cs_fatal_err.qe),
+    .qe     (intr_test_flds_we[3]),
     .q      (reg2hw.intr_test.cs_fatal_err.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.cs_fatal_err.qe = intr_test_qe;
 
 
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [1:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   //   F[recov_alert]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -474,10 +484,11 @@ module csrng_reg_top (
     .wd     (alert_test_recov_alert_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.recov_alert.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.recov_alert.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.recov_alert.qe = alert_test_qe;
 
   //   F[fatal_alert]: 1:1
   prim_subreg_ext #(
@@ -488,10 +499,11 @@ module csrng_reg_top (
     .wd     (alert_test_fatal_alert_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.fatal_alert.qe),
+    .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.fatal_alert.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.fatal_alert.qe = alert_test_qe;
 
 
   // R[regwen]: V(False)
@@ -598,6 +610,17 @@ module csrng_reg_top (
 
 
   // R[cmd_req]: V(False)
+  logic cmd_req_qe;
+  logic [0:0] cmd_req_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_cmd_req0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&cmd_req_flds_we),
+    .q_o(cmd_req_qe)
+  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
@@ -615,12 +638,13 @@ module csrng_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.cmd_req.qe),
+    .qe     (cmd_req_flds_we[0]),
     .q      (reg2hw.cmd_req.q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.cmd_req.qe = cmd_req_qe;
 
 
   // R[sw_cmd_sts]: V(False)
@@ -721,6 +745,17 @@ module csrng_reg_top (
 
 
   // R[int_state_num]: V(False)
+  logic int_state_num_qe;
+  logic [0:0] int_state_num_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_int_state_num0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&int_state_num_flds_we),
+    .q_o(int_state_num_qe)
+  );
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -738,12 +773,13 @@ module csrng_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.int_state_num.qe),
+    .qe     (int_state_num_flds_we[0]),
     .q      (reg2hw.int_state_num.q),
 
     // to register interface (read)
     .qs     (int_state_num_qs)
   );
+  assign reg2hw.int_state_num.qe = int_state_num_qe;
 
 
   // R[int_state_val]: V(True)
@@ -1542,6 +1578,17 @@ module csrng_reg_top (
 
 
   // R[err_code_test]: V(False)
+  logic err_code_test_qe;
+  logic [0:0] err_code_test_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_err_code_test0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&err_code_test_flds_we),
+    .q_o(err_code_test_qe)
+  );
   prim_subreg #(
     .DW      (5),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1559,12 +1606,13 @@ module csrng_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.err_code_test.qe),
+    .qe     (err_code_test_flds_we[0]),
     .q      (reg2hw.err_code_test.q),
 
     // to register interface (read)
     .qs     (err_code_test_qs)
   );
+  assign reg2hw.err_code_test.qe = err_code_test_qe;
 
 
   // R[main_sm_state]: V(False)

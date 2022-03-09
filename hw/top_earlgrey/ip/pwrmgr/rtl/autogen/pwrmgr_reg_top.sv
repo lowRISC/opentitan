@@ -237,6 +237,9 @@ module pwrmgr_reg_top (
 
 
   // R[intr_test]: V(True)
+  logic intr_test_qe;
+  logic [0:0] intr_test_flds_we;
+  assign intr_test_qe = &intr_test_flds_we;
   prim_subreg_ext #(
     .DW    (1)
   ) u_intr_test (
@@ -245,13 +248,17 @@ module pwrmgr_reg_top (
     .wd     (intr_test_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.qe),
+    .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.qe = intr_test_qe;
 
 
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [0:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
@@ -260,10 +267,11 @@ module pwrmgr_reg_top (
     .wd     (alert_test_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.qe = alert_test_qe;
 
 
   // R[ctrl_cfg_regwen]: V(True)
@@ -434,6 +442,17 @@ module pwrmgr_reg_top (
 
 
   // R[cfg_cdc_sync]: V(False)
+  logic cfg_cdc_sync_qe;
+  logic [0:0] cfg_cdc_sync_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_cfg_cdc_sync0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&cfg_cdc_sync_flds_we),
+    .q_o(cfg_cdc_sync_qe)
+  );
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -451,12 +470,13 @@ module pwrmgr_reg_top (
     .d      (hw2reg.cfg_cdc_sync.d),
 
     // to internal hardware
-    .qe     (reg2hw.cfg_cdc_sync.qe),
+    .qe     (cfg_cdc_sync_flds_we[0]),
     .q      (reg2hw.cfg_cdc_sync.q),
 
     // to register interface (read)
     .qs     (cfg_cdc_sync_qs)
   );
+  assign reg2hw.cfg_cdc_sync.qe = cfg_cdc_sync_qe;
 
 
   // R[wakeup_en_regwen]: V(False)
@@ -976,6 +996,9 @@ module pwrmgr_reg_top (
 
 
   // R[wake_info]: V(True)
+  logic wake_info_qe;
+  logic [2:0] wake_info_flds_we;
+  assign wake_info_qe = &wake_info_flds_we;
   //   F[reasons]: 5:0
   prim_subreg_ext #(
     .DW    (6)
@@ -985,10 +1008,11 @@ module pwrmgr_reg_top (
     .wd     (wake_info_reasons_wd),
     .d      (hw2reg.wake_info.reasons.d),
     .qre    (),
-    .qe     (reg2hw.wake_info.reasons.qe),
+    .qe     (wake_info_flds_we[0]),
     .q      (reg2hw.wake_info.reasons.q),
     .qs     (wake_info_reasons_qs)
   );
+  assign reg2hw.wake_info.reasons.qe = wake_info_qe;
 
   //   F[fall_through]: 6:6
   prim_subreg_ext #(
@@ -999,10 +1023,11 @@ module pwrmgr_reg_top (
     .wd     (wake_info_fall_through_wd),
     .d      (hw2reg.wake_info.fall_through.d),
     .qre    (),
-    .qe     (reg2hw.wake_info.fall_through.qe),
+    .qe     (wake_info_flds_we[1]),
     .q      (reg2hw.wake_info.fall_through.q),
     .qs     (wake_info_fall_through_qs)
   );
+  assign reg2hw.wake_info.fall_through.qe = wake_info_qe;
 
   //   F[abort]: 7:7
   prim_subreg_ext #(
@@ -1013,10 +1038,11 @@ module pwrmgr_reg_top (
     .wd     (wake_info_abort_wd),
     .d      (hw2reg.wake_info.abort.d),
     .qre    (),
-    .qe     (reg2hw.wake_info.abort.qe),
+    .qe     (wake_info_flds_we[2]),
     .q      (reg2hw.wake_info.abort.q),
     .qs     (wake_info_abort_qs)
   );
+  assign reg2hw.wake_info.abort.qe = wake_info_qe;
 
 
   // R[fault_status]: V(False)

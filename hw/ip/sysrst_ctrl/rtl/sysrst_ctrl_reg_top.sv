@@ -1559,6 +1559,9 @@ module sysrst_ctrl_reg_top (
 
 
   // R[intr_test]: V(True)
+  logic intr_test_qe;
+  logic [0:0] intr_test_flds_we;
+  assign intr_test_qe = &intr_test_flds_we;
   prim_subreg_ext #(
     .DW    (1)
   ) u_intr_test (
@@ -1567,13 +1570,17 @@ module sysrst_ctrl_reg_top (
     .wd     (intr_test_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.qe),
+    .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.qe = intr_test_qe;
 
 
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [0:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
@@ -1582,10 +1589,11 @@ module sysrst_ctrl_reg_top (
     .wd     (alert_test_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.qe = alert_test_qe;
 
 
   // R[regwen]: V(False)

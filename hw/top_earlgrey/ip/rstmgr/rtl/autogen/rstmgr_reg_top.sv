@@ -192,6 +192,9 @@ module rstmgr_reg_top (
 
   // Register instances
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [1:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   //   F[fatal_fault]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -201,10 +204,11 @@ module rstmgr_reg_top (
     .wd     (alert_test_fatal_fault_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.fatal_fault.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.fatal_fault.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.fatal_fault.qe = alert_test_qe;
 
   //   F[fatal_cnsty_fault]: 1:1
   prim_subreg_ext #(
@@ -215,10 +219,11 @@ module rstmgr_reg_top (
     .wd     (alert_test_fatal_cnsty_fault_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.fatal_cnsty_fault.qe),
+    .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.fatal_cnsty_fault.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.fatal_cnsty_fault.qe = alert_test_qe;
 
 
   // R[reset_req]: V(False)
@@ -795,6 +800,9 @@ module rstmgr_reg_top (
 
   // Subregister 0 of Multireg sw_rst_ctrl_n
   // R[sw_rst_ctrl_n]: V(True)
+  logic sw_rst_ctrl_n_qe;
+  logic [7:0] sw_rst_ctrl_n_flds_we;
+  assign sw_rst_ctrl_n_qe = &sw_rst_ctrl_n_flds_we;
   //   F[val_0]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -804,10 +812,11 @@ module rstmgr_reg_top (
     .wd     (sw_rst_ctrl_n_val_0_wd),
     .d      (hw2reg.sw_rst_ctrl_n[0].d),
     .qre    (),
-    .qe     (reg2hw.sw_rst_ctrl_n[0].qe),
+    .qe     (sw_rst_ctrl_n_flds_we[0]),
     .q      (reg2hw.sw_rst_ctrl_n[0].q),
     .qs     (sw_rst_ctrl_n_val_0_qs)
   );
+  assign reg2hw.sw_rst_ctrl_n[0].qe = sw_rst_ctrl_n_qe;
 
   //   F[val_1]: 1:1
   prim_subreg_ext #(
@@ -818,10 +827,11 @@ module rstmgr_reg_top (
     .wd     (sw_rst_ctrl_n_val_1_wd),
     .d      (hw2reg.sw_rst_ctrl_n[1].d),
     .qre    (),
-    .qe     (reg2hw.sw_rst_ctrl_n[1].qe),
+    .qe     (sw_rst_ctrl_n_flds_we[1]),
     .q      (reg2hw.sw_rst_ctrl_n[1].q),
     .qs     (sw_rst_ctrl_n_val_1_qs)
   );
+  assign reg2hw.sw_rst_ctrl_n[1].qe = sw_rst_ctrl_n_qe;
 
   //   F[val_2]: 2:2
   prim_subreg_ext #(
@@ -832,10 +842,11 @@ module rstmgr_reg_top (
     .wd     (sw_rst_ctrl_n_val_2_wd),
     .d      (hw2reg.sw_rst_ctrl_n[2].d),
     .qre    (),
-    .qe     (reg2hw.sw_rst_ctrl_n[2].qe),
+    .qe     (sw_rst_ctrl_n_flds_we[2]),
     .q      (reg2hw.sw_rst_ctrl_n[2].q),
     .qs     (sw_rst_ctrl_n_val_2_qs)
   );
+  assign reg2hw.sw_rst_ctrl_n[2].qe = sw_rst_ctrl_n_qe;
 
   //   F[val_3]: 3:3
   prim_subreg_ext #(
@@ -846,10 +857,11 @@ module rstmgr_reg_top (
     .wd     (sw_rst_ctrl_n_val_3_wd),
     .d      (hw2reg.sw_rst_ctrl_n[3].d),
     .qre    (),
-    .qe     (reg2hw.sw_rst_ctrl_n[3].qe),
+    .qe     (sw_rst_ctrl_n_flds_we[3]),
     .q      (reg2hw.sw_rst_ctrl_n[3].q),
     .qs     (sw_rst_ctrl_n_val_3_qs)
   );
+  assign reg2hw.sw_rst_ctrl_n[3].qe = sw_rst_ctrl_n_qe;
 
   //   F[val_4]: 4:4
   prim_subreg_ext #(
@@ -860,10 +872,11 @@ module rstmgr_reg_top (
     .wd     (sw_rst_ctrl_n_val_4_wd),
     .d      (hw2reg.sw_rst_ctrl_n[4].d),
     .qre    (),
-    .qe     (reg2hw.sw_rst_ctrl_n[4].qe),
+    .qe     (sw_rst_ctrl_n_flds_we[4]),
     .q      (reg2hw.sw_rst_ctrl_n[4].q),
     .qs     (sw_rst_ctrl_n_val_4_qs)
   );
+  assign reg2hw.sw_rst_ctrl_n[4].qe = sw_rst_ctrl_n_qe;
 
   //   F[val_5]: 5:5
   prim_subreg_ext #(
@@ -874,10 +887,11 @@ module rstmgr_reg_top (
     .wd     (sw_rst_ctrl_n_val_5_wd),
     .d      (hw2reg.sw_rst_ctrl_n[5].d),
     .qre    (),
-    .qe     (reg2hw.sw_rst_ctrl_n[5].qe),
+    .qe     (sw_rst_ctrl_n_flds_we[5]),
     .q      (reg2hw.sw_rst_ctrl_n[5].q),
     .qs     (sw_rst_ctrl_n_val_5_qs)
   );
+  assign reg2hw.sw_rst_ctrl_n[5].qe = sw_rst_ctrl_n_qe;
 
   //   F[val_6]: 6:6
   prim_subreg_ext #(
@@ -888,10 +902,11 @@ module rstmgr_reg_top (
     .wd     (sw_rst_ctrl_n_val_6_wd),
     .d      (hw2reg.sw_rst_ctrl_n[6].d),
     .qre    (),
-    .qe     (reg2hw.sw_rst_ctrl_n[6].qe),
+    .qe     (sw_rst_ctrl_n_flds_we[6]),
     .q      (reg2hw.sw_rst_ctrl_n[6].q),
     .qs     (sw_rst_ctrl_n_val_6_qs)
   );
+  assign reg2hw.sw_rst_ctrl_n[6].qe = sw_rst_ctrl_n_qe;
 
   //   F[val_7]: 7:7
   prim_subreg_ext #(
@@ -902,10 +917,11 @@ module rstmgr_reg_top (
     .wd     (sw_rst_ctrl_n_val_7_wd),
     .d      (hw2reg.sw_rst_ctrl_n[7].d),
     .qre    (),
-    .qe     (reg2hw.sw_rst_ctrl_n[7].qe),
+    .qe     (sw_rst_ctrl_n_flds_we[7]),
     .q      (reg2hw.sw_rst_ctrl_n[7].q),
     .qs     (sw_rst_ctrl_n_val_7_qs)
   );
+  assign reg2hw.sw_rst_ctrl_n[7].qe = sw_rst_ctrl_n_qe;
 
 
   // R[err_code]: V(False)

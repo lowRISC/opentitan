@@ -389,6 +389,9 @@ module otp_ctrl_core_reg_top (
 
 
   // R[intr_test]: V(True)
+  logic intr_test_qe;
+  logic [1:0] intr_test_flds_we;
+  assign intr_test_qe = &intr_test_flds_we;
   //   F[otp_operation_done]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -398,10 +401,11 @@ module otp_ctrl_core_reg_top (
     .wd     (intr_test_otp_operation_done_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.otp_operation_done.qe),
+    .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.otp_operation_done.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.otp_operation_done.qe = intr_test_qe;
 
   //   F[otp_error]: 1:1
   prim_subreg_ext #(
@@ -412,13 +416,17 @@ module otp_ctrl_core_reg_top (
     .wd     (intr_test_otp_error_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.otp_error.qe),
+    .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.otp_error.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.otp_error.qe = intr_test_qe;
 
 
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [2:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   //   F[fatal_macro_error]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -428,10 +436,11 @@ module otp_ctrl_core_reg_top (
     .wd     (alert_test_fatal_macro_error_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.fatal_macro_error.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.fatal_macro_error.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.fatal_macro_error.qe = alert_test_qe;
 
   //   F[fatal_check_error]: 1:1
   prim_subreg_ext #(
@@ -442,10 +451,11 @@ module otp_ctrl_core_reg_top (
     .wd     (alert_test_fatal_check_error_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.fatal_check_error.qe),
+    .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.fatal_check_error.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.fatal_check_error.qe = alert_test_qe;
 
   //   F[fatal_bus_integ_error]: 2:2
   prim_subreg_ext #(
@@ -456,10 +466,11 @@ module otp_ctrl_core_reg_top (
     .wd     (alert_test_fatal_bus_integ_error_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.fatal_bus_integ_error.qe),
+    .qe     (alert_test_flds_we[2]),
     .q      (reg2hw.alert_test.fatal_bus_integ_error.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.fatal_bus_integ_error.qe = alert_test_qe;
 
 
   // R[status]: V(True)
@@ -861,6 +872,9 @@ module otp_ctrl_core_reg_top (
 
 
   // R[direct_access_cmd]: V(True)
+  logic direct_access_cmd_qe;
+  logic [2:0] direct_access_cmd_flds_we;
+  assign direct_access_cmd_qe = &direct_access_cmd_flds_we;
   //   F[rd]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -870,10 +884,11 @@ module otp_ctrl_core_reg_top (
     .wd     (direct_access_cmd_rd_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.direct_access_cmd.rd.qe),
+    .qe     (direct_access_cmd_flds_we[0]),
     .q      (reg2hw.direct_access_cmd.rd.q),
     .qs     ()
   );
+  assign reg2hw.direct_access_cmd.rd.qe = direct_access_cmd_qe;
 
   //   F[wr]: 1:1
   prim_subreg_ext #(
@@ -884,10 +899,11 @@ module otp_ctrl_core_reg_top (
     .wd     (direct_access_cmd_wr_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.direct_access_cmd.wr.qe),
+    .qe     (direct_access_cmd_flds_we[1]),
     .q      (reg2hw.direct_access_cmd.wr.q),
     .qs     ()
   );
+  assign reg2hw.direct_access_cmd.wr.qe = direct_access_cmd_qe;
 
   //   F[digest]: 2:2
   prim_subreg_ext #(
@@ -898,10 +914,11 @@ module otp_ctrl_core_reg_top (
     .wd     (direct_access_cmd_digest_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.direct_access_cmd.digest.qe),
+    .qe     (direct_access_cmd_flds_we[2]),
     .q      (reg2hw.direct_access_cmd.digest.q),
     .qs     ()
   );
+  assign reg2hw.direct_access_cmd.digest.qe = direct_access_cmd_qe;
 
 
   // R[direct_access_address]: V(False)
@@ -1043,6 +1060,9 @@ module otp_ctrl_core_reg_top (
 
 
   // R[check_trigger]: V(True)
+  logic check_trigger_qe;
+  logic [1:0] check_trigger_flds_we;
+  assign check_trigger_qe = &check_trigger_flds_we;
   //   F[integrity]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -1052,10 +1072,11 @@ module otp_ctrl_core_reg_top (
     .wd     (check_trigger_integrity_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.check_trigger.integrity.qe),
+    .qe     (check_trigger_flds_we[0]),
     .q      (reg2hw.check_trigger.integrity.q),
     .qs     ()
   );
+  assign reg2hw.check_trigger.integrity.qe = check_trigger_qe;
 
   //   F[consistency]: 1:1
   prim_subreg_ext #(
@@ -1066,10 +1087,11 @@ module otp_ctrl_core_reg_top (
     .wd     (check_trigger_consistency_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.check_trigger.consistency.qe),
+    .qe     (check_trigger_flds_we[1]),
     .q      (reg2hw.check_trigger.consistency.q),
     .qs     ()
   );
+  assign reg2hw.check_trigger.consistency.qe = check_trigger_qe;
 
 
   // R[check_regwen]: V(False)

@@ -131,6 +131,9 @@ module sram_ctrl_regs_reg_top (
 
   // Register instances
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [0:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
@@ -139,10 +142,11 @@ module sram_ctrl_regs_reg_top (
     .wd     (alert_test_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.qe = alert_test_qe;
 
 
   // R[status]: V(False)
@@ -376,6 +380,17 @@ module sram_ctrl_regs_reg_top (
 
 
   // R[ctrl]: V(False)
+  logic ctrl_qe;
+  logic [1:0] ctrl_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_ctrl0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&ctrl_flds_we),
+    .q_o(ctrl_qe)
+  );
   //   F[renew_scr_key]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -394,12 +409,13 @@ module sram_ctrl_regs_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.ctrl.renew_scr_key.qe),
+    .qe     (ctrl_flds_we[0]),
     .q      (reg2hw.ctrl.renew_scr_key.q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.ctrl.renew_scr_key.qe = ctrl_qe;
 
   //   F[init]: 1:1
   prim_subreg #(
@@ -419,12 +435,13 @@ module sram_ctrl_regs_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.ctrl.init.qe),
+    .qe     (ctrl_flds_we[1]),
     .q      (reg2hw.ctrl.init.q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.ctrl.init.qe = ctrl_qe;
 
 
 
