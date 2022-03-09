@@ -81,7 +81,8 @@ class OTBNState:
 
         self.dmem = Dmem()
 
-        self.fsm_state = FsmState.IDLE
+        self._fsm_state = FsmState.IDLE
+        self._next_fsm_state = FsmState.IDLE
 
         self.loop_stack = LoopStack()
         self.ext_regs = OTBNExtRegs()
@@ -275,10 +276,10 @@ class OTBNState:
         return c
 
     def running(self) -> bool:
-        return self.fsm_state not in [FsmState.IDLE, FsmState.LOCKED]
+        return self._fsm_state not in [FsmState.IDLE, FsmState.LOCKED]
 
     def wiping(self) -> bool:
-        return self.fsm_state in [FsmState.WIPING_GOOD, FsmState.WIPING_BAD]
+        return self._fsm_state in [FsmState.WIPING_GOOD, FsmState.WIPING_BAD]
 
     def commit(self, sim_stalled: bool) -> None:
         if self._time_to_imem_invalidation is not None:
@@ -304,75 +305,20 @@ class OTBNState:
         if self.urnd_cdc_pending:
             self.urnd_cdc_counter += 1
 
-        # If we are in PRE_EXEC mode, we should commit external registers
-        # (which lets us reflect things like the update to the STATUS
-        # register). Then we wait until URND processing is done, at which
-        # point, we'll switch to EXEC mode.
-        if self.fsm_state == FsmState.PRE_EXEC:
-            self.ext_regs.commit()
-            if self.wsrs.URND.running:
-                # This part is strictly for standalone simulation. Otherwise
-                # we would set fsm_state before commit (at urnd_completed)
-                self.fsm_state = FsmState.FETCH_WAIT
+        old_state = self._fsm_state
 
-            return
-
-        # FETCH_WAIT works like PRE_EXEC, but it's only ever a single cycle
-        # wait.
-        if self.fsm_state == FsmState.FETCH_WAIT:
-            self.ext_regs.commit()
-            self.fsm_state = FsmState.EXEC
-
-            return
-
-        # If we are in either WIPING_GOOD or WIPING_BAD, we're busy wiping all
-        # internal state. Our wipe_cycles counter will have been decremented by
-        # Sim::step() and we're done if it gets to zero.
-        if self.fsm_state in [FsmState.WIPING_GOOD, FsmState.WIPING_BAD]:
-            self.ext_regs.commit()
-            self.gprs.commit()
-            self.wdrs.commit()
-            self.wsrs.commit()
-            self.csrs.flags.commit()
-            assert self.wipe_cycles >= 0
-            if self.wipe_cycles == 0:
-                self.fsm_state = (FsmState.IDLE
-                                  if self.fsm_state == FsmState.WIPING_GOOD
-                                  else FsmState.LOCKED)
-                self.wipe_cycles = -1
-            return
-
-        # If we are in LOCKED mode, commit external registers but do nothing
-        # else.
-        if self.fsm_state == FsmState.LOCKED:
-            self.ext_regs.commit()
-            return
-
-        # Otherwise, we're in EXEC mode.
-        assert self.fsm_state in [FsmState.EXEC, FsmState.IDLE]
-
-        # In case of a pending halt, commit the external registers, which
-        # contain e.g. the ERR_BITS field, but nothing else. Switch to
-        # POST_EXEC to allow one more cycle.
-        if self.pending_halt:
-            self.ext_regs.commit()
-
-            should_lock = (self._err_bits >> 16) != 0
-            if should_lock:
-                self.ext_regs.write('INSN_CNT', 0, True)
-
-            if self.fsm_state == FsmState.EXEC:
-                self.fsm_state = (FsmState.WIPING_BAD if should_lock
-                                  else FsmState.WIPING_GOOD)
-                self.wipe_cycles = (_WIPE_CYCLES
-                                    if self.secure_wipe_enabled else 1)
-
-            return
-
-        # As pending_halt wasn't set, there shouldn't be any pending error bits
-        assert self._err_bits == 0
-
+        self._fsm_state = self._next_fsm_state
         self.ext_regs.commit()
+
+        # In some states, we can get away with just committing external
+        # registers (which lets us reflect things like the update to the STATUS
+        # register) but nothing else. This is just an optimisation: if
+        # everything is working properly, there won't be any other pending
+        # changes.
+        if old_state not in [FsmState.EXEC,
+                             FsmState.WIPING_GOOD, FsmState.WIPING_BAD]:
+            return
+
         self.gprs.commit()
 
         # If we're stalled, there's nothing more to do: we only commit the rest
@@ -405,7 +351,8 @@ class OTBNState:
         self.pending_halt = False
         self._err_bits = 0
 
-        self.fsm_state = FsmState.PRE_EXEC
+        self._fsm_state = FsmState.PRE_EXEC
+        self._next_fsm_state = FsmState.PRE_EXEC
 
         self.pc = 0
 
@@ -441,11 +388,13 @@ class OTBNState:
         # set) is the 'done' flag.
         self.ext_regs.set_bits('INTR_STATE', 1 << 0)
 
+        should_lock = (self._err_bits >> 16) != 0
+
         if not self.secure_wipe_enabled:
             # STATUS is a status register. If there are any pending error bits
             # greater than 16, this was a fatal error so we should lock
             # ourselves. Otherwise, go back to IDLE.
-            new_status = Status.LOCKED if self._err_bits >> 16 else Status.IDLE
+            new_status = Status.LOCKED if should_lock else Status.IDLE
             self.ext_regs.write('STATUS', new_status, True)
 
         # Make any error bits visible
@@ -460,8 +409,19 @@ class OTBNState:
         # C++ model code that this is a good time to inspect DMEM and check
         # that the RTL and model match. The flag will be cleared again on the
         # next cycle.
-        if self.fsm_state in [FsmState.FETCH_WAIT, FsmState.EXEC]:
+        if self._fsm_state in [FsmState.FETCH_WAIT, FsmState.EXEC]:
             self.ext_regs.write('WIPE_START', 1, True)
+
+        # Switch to a 'wiping' state
+        self._next_fsm_state = (FsmState.WIPING_BAD if should_lock
+                                else FsmState.WIPING_GOOD)
+        self.wipe_cycles = (_WIPE_CYCLES if self.secure_wipe_enabled else 1)
+
+    def get_fsm_state(self) -> FsmState:
+        return self._fsm_state
+
+    def set_fsm_state(self, new_state: FsmState) -> None:
+        self._next_fsm_state = new_state
 
     def set_flags(self, fg: int, flags: FlagReg) -> None:
         '''Update flags for a flag group'''
