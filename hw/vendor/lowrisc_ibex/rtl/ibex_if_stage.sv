@@ -87,12 +87,13 @@ module ibex_if_stage import ibex_pkg::*; #(
   input  exc_pc_sel_e                 exc_pc_mux_i,             // selects ISR address
   input  exc_cause_e                  exc_cause,                // selects ISR address for
                                                                 // vectorized interrupt lines
-  input logic                         dummy_instr_en_i,
-  input logic [2:0]                   dummy_instr_mask_i,
-  input logic                         dummy_instr_seed_en_i,
-  input logic [31:0]                  dummy_instr_seed_i,
-  input logic                         icache_enable_i,
-  input logic                         icache_inval_i,
+  input  logic                        dummy_instr_en_i,
+  input  logic [2:0]                  dummy_instr_mask_i,
+  input  logic                        dummy_instr_seed_en_i,
+  input  logic [31:0]                 dummy_instr_seed_i,
+  input  logic                        icache_enable_i,
+  input  logic                        icache_inval_i,
+  output logic                        icache_ecc_error_o,
 
   // jump and branch target
   input  logic [31:0]                 branch_target_ex_i,       // branch/jump target address
@@ -251,7 +252,8 @@ module ibex_if_stage import ibex_pkg::*; #(
 
         .icache_enable_i     ( icache_enable_i            ),
         .icache_inval_i      ( icache_inval_i             ),
-        .busy_o              ( prefetch_busy              )
+        .busy_o              ( prefetch_busy              ),
+        .ecc_error_o         ( icache_ecc_error_o         )
     );
   end else begin : gen_prefetch_buffer
     // prefetch buffer, caches a fixed number of instructions
@@ -301,6 +303,23 @@ module ibex_if_stage import ibex_pkg::*; #(
     assign ic_data_write_o       = 'b0;
     assign ic_data_addr_o        = 'b0;
     assign ic_data_wdata_o       = 'b0;
+    assign icache_ecc_error_o    = 'b0;
+
+`ifndef SYNTHESIS
+    // If we don't instantiate an icache and this is a simulation then we have a problem because the
+    // simulator might discard the icache module entirely, including some DPI exports that it
+    // implies. This then causes problems for linking against C++ testbench code that expected them.
+    // As a slightly ugly hack, let's define the DPI functions here (the real versions are defined
+    // in prim_util_get_scramble_params.svh)
+    export "DPI-C" function simutil_get_scramble_key;
+    export "DPI-C" function simutil_get_scramble_nonce;
+    function automatic int simutil_get_scramble_key(output bit [127:0] val);
+      return 0;
+    endfunction
+    function automatic int simutil_get_scramble_nonce(output bit [319:0] nonce);
+      return 0;
+    endfunction
+`endif
   end
 
   assign unused_fetch_addr_n0 = fetch_addr_n[0];
@@ -340,6 +359,7 @@ module ibex_if_stage import ibex_pkg::*; #(
 
   // Dummy instruction insertion
   if (DummyInstructions) begin : gen_dummy_instr
+    // SEC_CM: CTRL_FLOW.UNPREDICTABLE
     logic        insert_dummy_instr;
     logic [31:0] dummy_instr_data;
 
@@ -462,6 +482,7 @@ module ibex_if_stage import ibex_pkg::*; #(
 
   // Check for expected increments of the PC when security hardening enabled
   if (PCIncrCheck) begin : g_secure_pc
+    // SEC_CM: PC.CTRL_FLOW.CONSISTENCY
     logic [31:0] prev_instr_addr_incr, prev_instr_addr_incr_buf;
     logic        prev_instr_seq_q, prev_instr_seq_d;
 

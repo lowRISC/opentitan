@@ -64,7 +64,8 @@ module ibex_icache import ibex_pkg::*; #(
   // Cache status
   input  logic                           icache_enable_i,
   input  logic                           icache_inval_i,
-  output logic                           busy_o
+  output logic                           busy_o,
+  output logic                           ecc_error_o
 );
 
   // Number of fill buffers (must be >= 2)
@@ -276,7 +277,7 @@ module ibex_icache import ibex_pkg::*; #(
 
   // Append ECC checkbits to write data if required
   if (ICacheECC) begin : gen_ecc_wdata
-
+    // SEC_CM: ICACHE.MEM.INTEGRITY
     // Tagram ECC
     // Reuse the same ecc encoding module for larger cache sizes by padding with zeros
     logic [21:0]             tag_ecc_input_padded;
@@ -401,6 +402,7 @@ module ibex_icache import ibex_pkg::*; #(
 
   // ECC checking logic
   if (ICacheECC) begin : gen_data_ecc_checking
+    // SEC_CM: ICACHE.MEM.INTEGRITY
     logic [IC_NUM_WAYS-1:0]     tag_err_ic1;
     logic [IC_LINE_BEATS*2-1:0] data_err_ic1;
     logic                       ecc_correction_write_d, ecc_correction_write_q;
@@ -441,7 +443,12 @@ module ibex_icache import ibex_pkg::*; #(
 
     end
 
-    assign ecc_err_ic1 = lookup_valid_ic1 & ((|data_err_ic1) | (|tag_err_ic1));
+    // Tag ECC across all ways is always expected to be correct so the check does not need to be
+    // qualified by hit or tag valid. Initial (invalid with correct ECC) tags are written on reset
+    // and all further tag writes produce correct ECC. For data ECC no initialisation is done on
+    // reset so unused data (in particular those ways that don't have a valid tag) may have
+    // incorrect ECC. We only check data ECC where tags indicate it is valid and we have hit on it.
+    assign ecc_err_ic1 = lookup_valid_ic1 & (((|data_err_ic1) & tag_hit_ic1) | (|tag_err_ic1));
 
     // Error correction
     // All ways will be invalidated on a tag error to prevent X-propagation from data_err_ic1 on
@@ -500,12 +507,15 @@ module ibex_icache import ibex_pkg::*; #(
     assign ecc_write_ways  = ecc_correction_ways_q;
     assign ecc_write_index = ecc_correction_index_q;
 
+    assign ecc_error_o = ecc_err_ic1;
   end else begin : gen_no_data_ecc
     assign ecc_err_ic1     = 1'b0;
     assign ecc_write_req   = 1'b0;
     assign ecc_write_ways  = '0;
     assign ecc_write_index = '0;
     assign hit_data_ic1    = hit_data_ecc_ic1;
+
+    assign ecc_error_o = 1'b0;
   end
 
   ///////////////////////////////

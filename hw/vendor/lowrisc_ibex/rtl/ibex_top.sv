@@ -422,8 +422,9 @@ module ibex_top import ibex_pkg::*; #(
 
   if (ICacheScramble) begin : gen_scramble
 
-  // Scramble key valid starts with OTP returning new valid key and stays high
-  // until we request a new valid key.
+    // SEC_CM: ICACHE.MEM.SCRAMBLE
+    // Scramble key valid starts with OTP returning new valid key and stays high
+    // until we request a new valid key.
     assign scramble_key_valid_d = scramble_req_q ? scramble_key_valid_i :
                                   icache_inval   ? 1'b0                 :
                                                    scramble_key_valid_q;
@@ -476,6 +477,7 @@ module ibex_top import ibex_pkg::*; #(
 
     for (genvar way = 0; way < IC_NUM_WAYS; way++) begin : gen_rams_inner
 
+      // SEC_CM: ICACHE.MEM.SCRAMBLE
       // Tag RAM instantiation
       prim_ram_1p_scr #(
         .Width            (TagSizeECC),
@@ -563,6 +565,7 @@ module ibex_top import ibex_pkg::*; #(
 
   // Redundant lockstep core implementation
   if (Lockstep) begin : gen_lockstep
+    // SEC_CM: LOGIC.SHADOW
     // Note: certain synthesis tools like DC are very smart at optimizing away redundant logic.
     // Hence, we have to insert an optimization barrier at the IOs of the lockstep Ibex.
     // This is achieved by manually buffering each bit using prim_buf.

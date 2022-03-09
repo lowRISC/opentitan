@@ -8,6 +8,7 @@
  * Provides pseudo-randomly inserted fake instructions for secure code obfuscation
  */
 
+// SEC_CM: CTRL_FLOW.UNPREDICTABLE
 module ibex_dummy_instr import ibex_pkg::*; #(
     parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
     parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault
