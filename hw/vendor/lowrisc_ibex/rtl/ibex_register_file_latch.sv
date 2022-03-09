@@ -122,6 +122,7 @@ module ibex_register_file_latch #(
   // With dummy instructions enabled, R0 behaves as a real register but will always return 0 for
   // real instructions.
   if (DummyInstructions) begin : g_dummy_r0
+    // SEC_CM: CTRL_FLOW.UNPREDICTABLE
     logic                 we_r0_dummy;
     logic                 r0_clock;
     logic [DataWidth-1:0] mem_r0;

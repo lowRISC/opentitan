@@ -164,6 +164,8 @@ The remaining data from hits is buffered in the fill buffer data storage and sup
 
 To deal with misalignment caused by compressed instructions, there is a 16bit skid buffer to store the upper halfword.
 
+.. _icache-ecc:
+
 Cache ECC protection
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -193,6 +195,7 @@ Any error (single or double bit) in any RAM will effectively cancel a cache hit 
 The request which observed an error will fetch it's data from the main instruction memory as normal for a cache miss.
 The cache index and way (or ways) with errors are stored in IC1, and a cache write is forced the next cycle to invalidate that line.
 Lookup requests will be blocked in IC0 while the invalidation write is performed.
+If an ECC error is seen a minor alert will be signaled.
 
 Cache invalidation
 ^^^^^^^^^^^^^^^^^^

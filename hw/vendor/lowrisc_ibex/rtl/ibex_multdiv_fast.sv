@@ -423,6 +423,7 @@ module ibex_multdiv_fast #(
           // Note with data-independent time option, the full divide operation will proceed as
           // normal and will naturally return -1
           op_remainder_d = '1;
+          // SEC_CM: CORE.DATA_REG_SW.SCA
           md_state_d     = (!data_ind_timing_i && equal_to_zero_i) ? MD_FINISH : MD_ABS_A;
           // Record that this is a div by zero to stop the sign change at the end of the
           // division (in data_ind_timing mode).
@@ -433,6 +434,7 @@ module ibex_multdiv_fast #(
           // Note with data-independent time option, the full divide operation will proceed as
           // normal and will naturally return operand a
           op_remainder_d = {2'b0, op_a_i};
+          // SEC_CM: CORE.DATA_REG_SW.SCA
           md_state_d     = (!data_ind_timing_i && equal_to_zero_i) ? MD_FINISH : MD_ABS_A;
         end
         // 0 - B = 0 iff B == 0

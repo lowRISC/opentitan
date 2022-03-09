@@ -6,6 +6,8 @@
 // This module instantiates a second copy of the core logic, and compares it's outputs against
 // those from the main core. The second core runs synchronously with the main core, delayed by
 // LockstepOffset cycles.
+
+// SEC_CM: LOGIC.SHADOW
 module ibex_lockstep import ibex_pkg::*; #(
   parameter int unsigned LockstepOffset    = 2,
   parameter bit          PMPEnable         = 1'b0,
@@ -241,6 +243,7 @@ module ibex_lockstep import ibex_pkg::*; #(
   // Bus integrity checking //
   ////////////////////////////
 
+  // SEC_CM: BUS.INTEGRITY
   logic        bus_intg_err;
   logic [1:0]  instr_intg_err, data_intg_err;
   logic [31:0] unused_wdata;

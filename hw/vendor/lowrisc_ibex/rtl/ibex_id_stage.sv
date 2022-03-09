@@ -658,6 +658,7 @@ module ibex_id_stage #(
     // (condition pass/fail used same cycle as generated instruction request)
     assign branch_set_raw      = branch_set_raw_d;
   end else begin : g_branch_set_flop
+    // SEC_CM: CORE.DATA_REG_SW.SCA
     // Branch set flopped without branch target ALU, or in fixed time execution mode
     // (condition pass/fail used next cycle where branch target is calculated)
     logic branch_set_raw_q;
@@ -703,6 +704,7 @@ module ibex_id_stage #(
   // Branch condition is calculated in the first cycle and flopped for use in the second cycle
   // (only used in fixed time execution mode to determine branch destination).
   if (DataIndTiming) begin : g_sec_branch_taken
+    // SEC_CM: CORE.DATA_REG_SW.SCA
     logic branch_taken_q;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -799,6 +801,7 @@ module ibex_id_stage #(
               // cond branch operation
               // All branches take two cycles in fixed time execution mode, regardless of branch
               // condition.
+              // SEC_CM: CORE.DATA_REG_SW.SCA
               id_fsm_d         = (data_ind_timing_i || (!BranchTargetALU && branch_decision_i)) ?
                                      MULTI_CYCLE : FIRST_CYCLE;
               stall_branch     = (~BranchTargetALU & branch_decision_i) | data_ind_timing_i;
