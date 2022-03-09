@@ -301,18 +301,20 @@ module rv_dm
     .sberror_o               ( sberror               )
   );
 
-  logic sba_en;
+  // SEC_CM: DM_EN.CTRL.LC_GATED
   tlul_pkg::tl_h2d_t  sba_tl_h_o_int;
   tlul_pkg::tl_d2h_t  sba_tl_h_i_int;
-  // SEC_CM: DM_EN.CTRL.LC_GATED
-  assign sba_en = lc_tx_test_true_strict(lc_hw_debug_en[EnSba]);
-
-  always_comb begin
-    sba_tl_h_o = sba_tl_h_o_int;
-    sba_tl_h_i_int = sba_tl_h_i;
-    sba_tl_h_o.a_valid = sba_tl_h_o_int.a_valid & sba_en;
-    sba_tl_h_i_int.d_valid = sba_tl_h_i.d_valid & sba_en;
-  end
+  tlul_lc_gate #(
+    .NumGatesPerDirection(2)
+  ) u_tlul_lc_gate_sba (
+    .clk_i,
+    .rst_ni,
+    .tl_h2d_i(sba_tl_h_o_int),
+    .tl_d2h_o(sba_tl_h_i_int),
+    .tl_h2d_o(sba_tl_h_o),
+    .tl_d2h_i(sba_tl_h_i),
+    .lc_en_i (lc_hw_debug_en[EnSba])
+  );
 
   tlul_adapter_host #(
     .EnableDataIntgGen(1),
@@ -468,13 +470,24 @@ module rv_dm
   );
 `endif
 
+  // SEC_CM: DM_EN.CTRL.LC_GATED
+  tlul_pkg::tl_h2d_t rom_tl_win_h2d_gated;
+  tlul_pkg::tl_d2h_t rom_tl_win_d2h_gated;
+  tlul_lc_gate #(
+    .NumGatesPerDirection(2)
+  ) u_tlul_lc_gate_rom (
+    .clk_i,
+    .rst_ni,
+    .tl_h2d_i(rom_tl_win_h2d),
+    .tl_d2h_o(rom_tl_win_d2h),
+    .tl_h2d_o(rom_tl_win_h2d_gated),
+    .tl_d2h_i(rom_tl_win_d2h_gated),
+    .lc_en_i (lc_hw_debug_en[EnRom])
+  );
+
   prim_mubi_pkg::mubi4_t en_ifetch;
   // SEC_CM: DM_EN.CTRL.LC_GATED, EXEC.CTRL.MUBI
   assign en_ifetch = mubi4_bool_to_mubi(lc_tx_test_true_strict(lc_hw_debug_en[EnFetch]));
-
-  logic rom_en;
-  // SEC_CM: DM_EN.CTRL.LC_GATED
-  assign rom_en = lc_tx_test_true_strict(lc_hw_debug_en[EnRom]);
 
   tlul_adapter_sram #(
     .SramAw(AddressWidthWords),
@@ -490,19 +503,19 @@ module rv_dm
     .en_ifetch_i (en_ifetch),
     .req_o       (req),
     .req_type_o  (),
-    .gnt_i       (rom_en),
+    .gnt_i       (1'b1),
     .we_o        (we),
     .addr_o      (addr_w),
     .wdata_o     (wdata),
     .wmask_o     (wmask),
     // SEC_CM: BUS.INTEGRITY
     .intg_error_o(rom_intg_error),
-    .rdata_i     (rdata & {BusWidth{rom_en}}),
-    .rvalid_i    (rvalid & rom_en),
-    .rerror_i    ({2{~rom_en}}),
+    .rdata_i     (rdata),
+    .rvalid_i    (rvalid),
+    .rerror_i    ('0),
 
-    .tl_o        (rom_tl_win_d2h),
-    .tl_i        (rom_tl_win_h2d)
+    .tl_o        (rom_tl_win_d2h_gated),
+    .tl_i        (rom_tl_win_h2d_gated)
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
