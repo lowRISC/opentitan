@@ -2,5 +2,4 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-INSN_CNT = 0
 ERR_BITS = 0x5  # BAD_DATA_ADDR, CALL_STACK
