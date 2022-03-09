@@ -33,7 +33,6 @@ inline bool clkmgr_testutils_get_trans_clock_status(
  * sets the hint back to 1 afterwards. Inlined due to latency-sensitivity.
  *
  * @param clkmgr A clkmgr DIF handle.
- * @param params clkmgr hardware instance parameters.
  * @param clock The transactional clock ID.
  * @param exp_clock_enabled Expected clock status.
  * @param timeout_usec Timeout in microseconds.
@@ -49,5 +48,33 @@ inline void clkmgr_testutils_check_trans_clock_gating(
 
   CHECK_DIF_OK(dif_clkmgr_hintable_clock_set_hint(clkmgr, clock, 0x1));
 }
+
+extern const char *measure_clock_names[kDifClkmgrMeasureClockUsb + 1];
+
+/**
+ * Enables clock measurements.
+ *
+ * This enables measurements with lo and hi count bounds for a given clock.
+ *
+ * @param clkmgr A clkmgr DIF handle.
+ * @param clock The clock to be measured.
+ * @param lo_threshold Expected minimum cycle count.
+ * @param hi_threshold Expected maximum cycle count.
+ */
+inline void clkmgr_testutils_enable_clock_count_measurement(
+    dif_clkmgr_t *clkmgr, dif_clkmgr_measure_clock_t clock,
+    uint32_t lo_threshold, uint32_t hi_threshold) {
+  LOG_INFO("Enabling clock count measurement for %0s lo %0d hi %0d",
+           measure_clock_names[clock], lo_threshold, hi_threshold);
+  CHECK_DIF_OK(dif_clkmgr_enable_measure_counts(clkmgr, clock, lo_threshold,
+                                                hi_threshold));
+}
+
+/**
+ * Disable all clock measurements.
+ *
+ * @param clkmgr A clkmgr DIF handle.
+ */
+void clkmgr_testutils_disable_clock_count_measurements(dif_clkmgr_t *clkmgr);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_CLKMGR_TESTUTILS_H_
