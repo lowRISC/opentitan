@@ -57,16 +57,26 @@ MAKE_INIT_FUNC(usbdev);
 MAKE_INIT_FUNC(i2c);
 
 static void spi_device_config(void *dif) {
+  uintptr_t handle_address =
+      ((uintptr_t)dif - offsetof(dif_spi_device_handle_t, dev));
+  dif_spi_device_handle_t *handle = (dif_spi_device_handle_t *)handle_address;
   dif_spi_device_config_t cfg = {
       .clock_polarity = kDifSpiDeviceEdgePositive,
       .data_phase = kDifSpiDeviceEdgeNegative,
       .tx_order = kDifSpiDeviceBitOrderLsbToMsb,
       .rx_order = kDifSpiDeviceBitOrderLsbToMsb,
-      .rx_fifo_timeout = 63,
-      .rx_fifo_len = 0x800,
-      .tx_fifo_len = 0x800,
+      .device_mode = kDifSpiDeviceModeGeneric,
+      .mode_cfg =
+          {
+              .generic =
+                  {
+                      .rx_fifo_commit_wait = 63,
+                      .rx_fifo_len = 0x800,
+                      .tx_fifo_len = 0x800,
+                  },
+          },
   };
-  CHECK_DIF_OK(dif_spi_device_configure(dif, &cfg));
+  CHECK_DIF_OK(dif_spi_device_configure(handle, cfg));
 }
 
 static void spi_host0_config(void *dif) {
@@ -127,7 +137,7 @@ static void i2c2_config(void *dif) {
   CHECK_DIF_OK(dif_i2c_configure(dif, cfg));
 }
 
-static dif_spi_device_t spi_dev;
+static dif_spi_device_handle_t spi_dev;
 static dif_spi_host_t spi_host0;
 static dif_spi_host_t spi_host1;
 static dif_usbdev_t usbdev;
@@ -180,7 +190,7 @@ static const test_t kPeripherals[] = {
         .name = "SPI_DEVICE",
         .base = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
         .offset = SPI_DEVICE_CFG_REG_OFFSET,
-        .dif = &spi_dev,
+        .dif = &spi_dev.dev,
         .init = spi_device_init,
         .config = spi_device_config,
         .program_val = 0x3f0c,

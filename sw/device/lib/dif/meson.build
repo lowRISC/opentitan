@@ -281,6 +281,7 @@ test('dif_spi_device_unittest', executable(
     sources: [
       'dif_spi_device_unittest.cc',
       'autogen/dif_spi_device_autogen_unittest.cc',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_base.c',
       meson.project_source_root() / 'sw/device/lib/dif/dif_spi_device.c',
       meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_spi_device_autogen.c',
       hw_ip_spi_device_reg_h,

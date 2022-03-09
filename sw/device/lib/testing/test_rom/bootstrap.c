@@ -145,19 +145,16 @@ static bool check_frame_hash(const dif_hmac_t *hmac,
  * This function checks that the sequence numbers and hashes of the frames are
  * correct before programming them into flash.
  */
-static int bootstrap_flash(const dif_spi_device_t *spi,
-                           const dif_spi_device_config_t *spi_config,
-                           const dif_hmac_t *hmac,
+static int bootstrap_flash(dif_spi_device_handle_t *spi, const dif_hmac_t *hmac,
                            dif_flash_ctrl_state_t *flash_ctrl) {
   dif_hmac_digest_t ack = {0};
   uint32_t expected_frame_num = 0;
   while (true) {
     size_t bytes_available;
-    CHECK_DIF_OK(dif_spi_device_rx_pending(spi, spi_config, &bytes_available));
+    CHECK_DIF_OK(dif_spi_device_rx_pending(spi, &bytes_available));
     if (bytes_available >= sizeof(spiflash_frame_t)) {
       spiflash_frame_t frame;
-      CHECK_DIF_OK(dif_spi_device_recv(spi, spi_config, &frame,
-                                       sizeof(spiflash_frame_t),
+      CHECK_DIF_OK(dif_spi_device_recv(spi, &frame, sizeof(spiflash_frame_t),
                                        /*bytes_received=*/NULL));
 
       uint32_t frame_num = SPIFLASH_FRAME_NUM(frame.header.frame_num);
@@ -167,16 +164,16 @@ static int bootstrap_flash(const dif_spi_device_t *spi,
       if (frame_num == expected_frame_num) {
         if (!check_frame_hash(hmac, &frame)) {
           LOG_ERROR("Detected hash mismatch on frame #%d", frame_num);
-          CHECK_DIF_OK(dif_spi_device_send(
-              spi, spi_config, (uint8_t *)&ack.digest, sizeof(ack.digest),
-              /*bytes_received=*/NULL));
+          CHECK_DIF_OK(dif_spi_device_send(spi, (uint8_t *)&ack.digest,
+                                           sizeof(ack.digest),
+                                           /*bytes_received=*/NULL));
           continue;
         }
 
         compute_sha256(hmac, &frame, sizeof(spiflash_frame_t), &ack);
-        CHECK_DIF_OK(dif_spi_device_send(
-            spi, spi_config, (uint8_t *)&ack.digest, sizeof(ack.digest),
-            /*bytes_received=*/NULL));
+        CHECK_DIF_OK(dif_spi_device_send(spi, (uint8_t *)&ack.digest,
+                                         sizeof(ack.digest),
+                                         /*bytes_received=*/NULL));
 
         if (expected_frame_num == 0) {
           // Set up default access for data partition.
@@ -211,9 +208,9 @@ static int bootstrap_flash(const dif_spi_device_t *spi,
         }
       } else {
         // Send previous ack if unable to verify current frame.
-        CHECK_DIF_OK(dif_spi_device_send(
-            spi, spi_config, (uint8_t *)&ack.digest, sizeof(ack.digest),
-            /*bytes_received=*/NULL));
+        CHECK_DIF_OK(dif_spi_device_send(spi, (uint8_t *)&ack.digest,
+                                         sizeof(ack.digest),
+                                         /*bytes_received=*/NULL));
       }
     }
   }
@@ -228,26 +225,30 @@ int bootstrap(dif_flash_ctrl_state_t *flash_ctrl) {
   LOG_INFO("Bootstrap requested, initialising HW...");
   flash_ctrl_testutils_wait_for_init(flash_ctrl);
 
-  dif_spi_device_t spi;
+  dif_spi_device_handle_t spi;
   dif_spi_device_config_t spi_config = {
       .clock_polarity = kDifSpiDeviceEdgePositive,
       .data_phase = kDifSpiDeviceEdgeNegative,
       .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
       .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
-      .rx_fifo_timeout = 63,
-      .rx_fifo_len = kDifSpiDeviceBufferLen / 2,
-      .tx_fifo_len = kDifSpiDeviceBufferLen / 2,
+      .device_mode = kDifSpiDeviceModeGeneric,
+      .mode_cfg = {.generic =
+                       {
+                           .rx_fifo_commit_wait = 63,
+                           .rx_fifo_len = kDifSpiDeviceBufferLen / 2,
+                           .tx_fifo_len = kDifSpiDeviceBufferLen / 2,
+                       }},
   };
-  CHECK_DIF_OK(dif_spi_device_init(
+  CHECK_DIF_OK(dif_spi_device_init_handle(
       mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR), &spi));
-  CHECK_DIF_OK(dif_spi_device_configure(&spi, &spi_config));
+  CHECK_DIF_OK(dif_spi_device_configure(&spi, spi_config));
 
   dif_hmac_t hmac;
   CHECK_DIF_OK(
       dif_hmac_init(mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR), &hmac));
 
   LOG_INFO("HW initialisation completed, waiting for SPI input...");
-  int error = bootstrap_flash(&spi, &spi_config, &hmac, flash_ctrl);
+  int error = bootstrap_flash(&spi, &hmac, flash_ctrl);
   if (error != 0) {
     error |= erase_flash(flash_ctrl);
     LOG_ERROR("Bootstrap error: 0x%x", error);

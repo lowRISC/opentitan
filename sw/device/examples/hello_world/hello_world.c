@@ -18,8 +18,7 @@
 
 static dif_gpio_t gpio;
 static dif_pinmux_t pinmux;
-static dif_spi_device_t spi;
-static dif_spi_device_config_t spi_config;
+static dif_spi_device_handle_t spi;
 static dif_uart_t uart;
 
 void _ottf_main(void) {
@@ -38,16 +37,25 @@ void _ottf_main(void) {
 
   pinmux_testutils_init(&pinmux);
 
-  CHECK_DIF_OK(dif_spi_device_init(
+  CHECK_DIF_OK(dif_spi_device_init_handle(
       mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR), &spi));
-  spi_config.clock_polarity = kDifSpiDeviceEdgePositive;
-  spi_config.data_phase = kDifSpiDeviceEdgeNegative;
-  spi_config.tx_order = kDifSpiDeviceBitOrderMsbToLsb;
-  spi_config.rx_order = kDifSpiDeviceBitOrderMsbToLsb;
-  spi_config.rx_fifo_timeout = 63;
-  spi_config.rx_fifo_len = kDifSpiDeviceBufferLen / 2;
-  spi_config.tx_fifo_len = kDifSpiDeviceBufferLen / 2;
-  CHECK_DIF_OK(dif_spi_device_configure(&spi, &spi_config));
+  dif_spi_device_config_t spi_config = {
+      .clock_polarity = kDifSpiDeviceEdgePositive,
+      .data_phase = kDifSpiDeviceEdgeNegative,
+      .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
+      .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
+      .device_mode = kDifSpiDeviceModeGeneric,
+      .mode_cfg =
+          {
+              .generic =
+                  {
+                      .rx_fifo_commit_wait = 63,
+                      .rx_fifo_len = kDifSpiDeviceBufferLen / 2,
+                      .tx_fifo_len = kDifSpiDeviceBufferLen / 2,
+                  },
+          },
+  };
+  CHECK_DIF_OK(dif_spi_device_configure(&spi, spi_config));
 
   CHECK_DIF_OK(
       dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
@@ -67,14 +75,14 @@ void _ottf_main(void) {
   LOG_INFO("or type anything into the console window.");
   LOG_INFO("The LEDs show the ASCII code of the last character.");
 
-  CHECK_DIF_OK(dif_spi_device_send(&spi, &spi_config, "SPI!", 4,
+  CHECK_DIF_OK(dif_spi_device_send(&spi, "SPI!", 4,
                                    /*bytes_sent=*/NULL));
 
   uint32_t gpio_state = 0;
   while (true) {
     busy_spin_micros(10 * 1000);  // 10 ms
     gpio_state = demo_gpio_to_log_echo(&gpio, gpio_state);
-    demo_spi_to_log_echo(&spi, &spi_config);
+    demo_spi_to_log_echo(&spi);
     demo_uart_to_uart_and_gpio_echo(&uart, &gpio);
   }
 }
