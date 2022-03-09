@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 ### Fixed
 
+## [0.4.1] - 2021-05-04
+### Added
+### Changed
+### Fixed
+- Remove superfluous helper variable in dm_csrs.sv
+- Synchronized Bender.yml entries
+- Various Lint warnings
+
 ## [0.4.0] - 2020-11-06
 ### Added
 - Added parameter ReadByteEnable that may be disabled to revert SBA _be_ behavior to 0 on reads
