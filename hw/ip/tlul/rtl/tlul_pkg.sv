@@ -11,7 +11,7 @@ package tlul_pkg;
   // is not critical, whereas BINTREE is favorable when timing pressure is high (but this
   // may also result in a larger implementation). on FPGA targets, BINTREE is favorable
   // both in terms of area and timing.
-  parameter ArbiterImpl = "PPC";
+  parameter ArbiterImpl = "BINTREE";
 
   typedef enum logic [2:0] {
     PutFullData    = 3'h 0,
