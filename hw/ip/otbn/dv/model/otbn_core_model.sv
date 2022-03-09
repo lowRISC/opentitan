@@ -154,20 +154,16 @@ module otbn_core_model
   // exactly two cycles of delay (this is a synchroniser, not a CDC, so its behaviour is easy to
   // predict). Model that delay in the SystemVerilog here, since it's much easier than handling it
   // in the Python.
-  //
-  // We actually do another hack here, where we only delay by one cycle. This is because the easiest
-  // way to make the escalation signal work is to apply it at the *end* of the Python cycle, which
-  // means we gain an extra cycle of delay on the Python side.
-  logic [1:0] escalate_fifo;
+  logic [2:0] escalate_fifo;
   logic       new_escalation;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       escalate_fifo <= '0;
     end else begin
-      escalate_fifo <= {escalate_fifo[0], lc_escalate_en_i};
+      escalate_fifo <= {escalate_fifo[1:0], lc_escalate_en_i};
     end
   end
-  assign new_escalation = escalate_fifo[0] & ~escalate_fifo[1];
+  assign new_escalation = escalate_fifo[1] & ~escalate_fifo[2];
 
   // A "busy" counter. We'd like to avoid stepping the Python process on every cycle when there's
   // nothing going on (since it's rather expensive). But exactly modelling *when* we can safely
