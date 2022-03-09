@@ -18,6 +18,10 @@ from .trace import Trace
 # new_cnt.
 LoopWarps = Dict[int, Dict[int, int]]
 
+# The return type of the Step function: a possible instruction that was
+# executed, together with a list of changes.
+StepRes = Tuple[Optional[OTBNInsn], List[Trace]]
+
 
 class OTBNSim:
     def __init__(self) -> None:
@@ -124,7 +128,7 @@ class OTBNSim:
 
         return changes
 
-    def step(self, verbose: bool) -> Tuple[Optional[OTBNInsn], List[Trace]]:
+    def step(self, verbose: bool) -> StepRes:
         '''Run a single cycle.
 
         Returns the instruction, together with a list of the architectural
@@ -134,65 +138,56 @@ class OTBNSim:
         '''
         fsm_state = self.state.get_fsm_state()
 
-        if not self.state.running():
-            changes = self.state.changes()
-            self.state.commit(sim_stalled=True)
-            return (None, changes)
+        steppers = {
+            FsmState.IDLE: self._step_idle,
+            FsmState.PRE_EXEC: self._step_pre_exec,
+            FsmState.FETCH_WAIT: self._step_fetch_wait,
+            FsmState.EXEC: self._step_exec,
+            FsmState.WIPING_GOOD: self._step_wiping,
+            FsmState.WIPING_BAD: self._step_wiping,
+            FsmState.LOCKED: self._step_idle
+        }
 
-        if fsm_state == FsmState.PRE_EXEC:
-            if self.state.wsrs.URND.running:
-                self.state.set_fsm_state(FsmState.FETCH_WAIT)
+        return steppers[fsm_state](verbose)
 
-            changes = self._on_stall(verbose, fetch_next=False)
-            # Zero INSN_CNT the cycle after we are told to start (and every
-            # cycle after that until we start executing instructions, but that
-            # doesn't really matter)
-            self.state.ext_regs.write('INSN_CNT', 0, True)
+    def _step_idle(self, verbose: bool) -> StepRes:
+        '''Step the simulation when OTBN is IDLE or LOCKED'''
+        changes = self.state.changes()
+        self.state.commit(sim_stalled=True)
+        return (None, changes)
 
-            return (None, changes)
+    def _step_pre_exec(self, verbose: bool) -> StepRes:
+        '''Step the simulation in the PRE_EXEC state
 
-        # If we are not in PRE_EXEC, then we have a valid URND seed. So we
-        # should step URND regardless of whether we're actually executing
-        # instructions.
-        self.state.wsrs.URND.commit()
+        In this state, we're waiting for a URND seed. Once that appears, we
+        switch to FETCH_WAIT.
+        '''
+        if self.state.wsrs.URND.running:
+            self.state.set_fsm_state(FsmState.FETCH_WAIT)
+
+        changes = self._on_stall(verbose, fetch_next=False)
+
+        # Zero INSN_CNT the cycle after we are told to start (and every
+        # cycle after that until we start executing instructions, but that
+        # doesn't really matter)
+        self.state.ext_regs.write('INSN_CNT', 0, True)
+
+        return (None, changes)
+
+    def _step_fetch_wait(self, verbose: bool) -> StepRes:
+        '''Step the simulation in the FETCH_WAIT state
+
+        This state lasts a single cycle while we fetch our first instruction
+        and then jump to EXEC.
+        '''
         self.state.wsrs.URND.step()
+        self.state.set_fsm_state(FsmState.EXEC)
+        changes = self._on_stall(verbose, fetch_next=False)
+        return (None, changes)
 
-        if fsm_state == FsmState.FETCH_WAIT:
-            self.state.set_fsm_state(FsmState.EXEC)
-            changes = self._on_stall(verbose, fetch_next=False)
-            return (None, changes)
-
-        if fsm_state in [FsmState.WIPING_GOOD, FsmState.WIPING_BAD]:
-            assert self.state.wipe_cycles > 0
-            self.state.wipe_cycles -= 1
-
-            # Clear the WIPE_START register if it was set
-            if self.state.ext_regs.read('WIPE_START', True):
-                self.state.ext_regs.write('WIPE_START', 0, True)
-
-            is_good = self.state.get_fsm_state() == FsmState.WIPING_GOOD
-
-            # Wipe all registers and set STATUS on the penultimate cycle.
-            if self.state.wipe_cycles == 1:
-                next_status = Status.IDLE if is_good else Status.LOCKED
-                self.state.ext_regs.write('STATUS', next_status, True)
-                self.state.wipe()
-
-            # On the final cycle, set the next state to IDLE or LOCKED. If
-            # switching to LOCKED, zero INSN_CNT too.
-            if self.state.wipe_cycles == 0:
-                next_state = FsmState.IDLE if is_good else FsmState.LOCKED
-                self.state.set_fsm_state(next_state)
-                if not is_good:
-                    self.state.ext_regs.write('INSN_CNT', 0, True)
-
-                # Also, set wipe_cycles to an invalid value to make really sure
-                # we've left the wiping code.
-                self.wipe_cycles = -1
-
-            return (None, self._on_stall(verbose, fetch_next=False))
-
-        assert fsm_state == FsmState.EXEC
+    def _step_exec(self, verbose: bool) -> StepRes:
+        '''Step the simulation when executing code'''
+        self.state.wsrs.URND.step()
 
         insn = self._next_insn
         if insn is None:
@@ -229,6 +224,37 @@ class OTBNSim:
         sim_stalled = (self._execute_generator is not None)
         if not sim_stalled:
             return (insn, self._on_retire(verbose, insn))
+
+        return (None, self._on_stall(verbose, fetch_next=False))
+
+    def _step_wiping(self, verbose: bool) -> StepRes:
+        '''Step the simulation when wiping'''
+        assert self.state.wipe_cycles > 0
+        self.state.wipe_cycles -= 1
+
+        # Clear the WIPE_START register if it was set
+        if self.state.ext_regs.read('WIPE_START', True):
+            self.state.ext_regs.write('WIPE_START', 0, True)
+
+        is_good = self.state.get_fsm_state() == FsmState.WIPING_GOOD
+
+        # Wipe all registers and set STATUS on the penultimate cycle.
+        if self.state.wipe_cycles == 1:
+            next_status = Status.IDLE if is_good else Status.LOCKED
+            self.state.ext_regs.write('STATUS', next_status, True)
+            self.state.wipe()
+
+        # On the final cycle, set the next state to IDLE or LOCKED. If
+        # switching to LOCKED, zero INSN_CNT too.
+        if self.state.wipe_cycles == 0:
+            next_state = FsmState.IDLE if is_good else FsmState.LOCKED
+            self.state.set_fsm_state(next_state)
+            if not is_good:
+                self.state.ext_regs.write('INSN_CNT', 0, True)
+
+            # Also, set wipe_cycles to an invalid value to make really sure
+            # we've left the wiping code.
+            self.wipe_cycles = -1
 
         return (None, self._on_stall(verbose, fetch_next=False))
 
