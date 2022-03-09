@@ -158,6 +158,9 @@ class MultiRegister(RegBase):
     def is_homogeneous(self) -> bool:
         return self.reg.is_homogeneous()
 
+    def needs_qe(self) -> bool:
+        return self.reg.needs_qe()
+
     def _asdict(self) -> Dict[str, object]:
         rd = self.reg._asdict()
         rd['count'] = str(self.count)

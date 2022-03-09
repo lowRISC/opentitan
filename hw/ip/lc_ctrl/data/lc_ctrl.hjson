@@ -808,7 +808,6 @@
                 ''',
       swaccess: "ro",
       hwaccess: "hwo",
-      hwqe:     "true",
       hwext:    "true",
       regwen:   "TRANSITION_REGWEN",
       tags: [ // To update this register, SW needs to claim the associated hardware mutex via
