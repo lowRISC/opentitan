@@ -113,10 +113,10 @@ class OTBNSim:
         pc_before = self.state.pc
         self.state.commit(sim_stalled=False)
 
-        # Fetch the next instruction unless this instruction had
-        # `has_fetch_stall` set, in which case we inject a single cycle stall.
-        self._next_insn = (None if insn.has_fetch_stall
-                           else self._fetch(self.state.pc))
+        # Fetch the next instruction unless we're done or this instruction had
+        # `has_fetch_stall` set (in which case we inject a single cycle stall).
+        no_fetch = self.state.pending_halt or insn.has_fetch_stall
+        self._next_insn = None if no_fetch else self._fetch(self.state.pc)
 
         disasm = insn.disassemble(pc_before)
         if verbose:
@@ -132,17 +132,23 @@ class OTBNSim:
         returns no instruction and no changes.
 
         '''
+        fsm_state = self.state.get_fsm_state()
+
         if not self.state.running():
             changes = self.state.changes()
             self.state.commit(sim_stalled=True)
             return (None, changes)
 
-        if self.state.fsm_state == FsmState.PRE_EXEC:
+        if fsm_state == FsmState.PRE_EXEC:
+            if self.state.wsrs.URND.running:
+                self.state.set_fsm_state(FsmState.FETCH_WAIT)
+
+            changes = self._on_stall(verbose, fetch_next=False)
             # Zero INSN_CNT the cycle after we are told to start (and every
             # cycle after that until we start executing instructions, but that
             # doesn't really matter)
-            changes = self._on_stall(verbose, fetch_next=False)
             self.state.ext_regs.write('INSN_CNT', 0, True)
+
             return (None, changes)
 
         # If we are not in PRE_EXEC, then we have a valid URND seed. So we
@@ -151,11 +157,12 @@ class OTBNSim:
         self.state.wsrs.URND.commit()
         self.state.wsrs.URND.step()
 
-        if self.state.fsm_state == FsmState.FETCH_WAIT:
+        if fsm_state == FsmState.FETCH_WAIT:
+            self.state.set_fsm_state(FsmState.EXEC)
             changes = self._on_stall(verbose, fetch_next=False)
             return (None, changes)
 
-        if self.state.fsm_state in [FsmState.WIPING_GOOD, FsmState.WIPING_BAD]:
+        if fsm_state in [FsmState.WIPING_GOOD, FsmState.WIPING_BAD]:
             assert self.state.wipe_cycles > 0
             self.state.wipe_cycles -= 1
 
@@ -163,17 +170,29 @@ class OTBNSim:
             if self.state.ext_regs.read('WIPE_START', True):
                 self.state.ext_regs.write('WIPE_START', 0, True)
 
+            is_good = self.state.get_fsm_state() == FsmState.WIPING_GOOD
+
             # Wipe all registers and set STATUS on the penultimate cycle.
             if self.state.wipe_cycles == 1:
-                next_status = (Status.IDLE
-                               if self.state.fsm_state == FsmState.WIPING_GOOD
-                               else Status.LOCKED)
+                next_status = Status.IDLE if is_good else Status.LOCKED
                 self.state.ext_regs.write('STATUS', next_status, True)
                 self.state.wipe()
 
+            # On the final cycle, set the next state to IDLE or LOCKED. If
+            # switching to LOCKED, zero INSN_CNT too.
+            if self.state.wipe_cycles == 0:
+                next_state = FsmState.IDLE if is_good else FsmState.LOCKED
+                self.state.set_fsm_state(next_state)
+                if not is_good:
+                    self.state.ext_regs.write('INSN_CNT', 0, True)
+
+                # Also, set wipe_cycles to an invalid value to make really sure
+                # we've left the wiping code.
+                self.wipe_cycles = -1
+
             return (None, self._on_stall(verbose, fetch_next=False))
 
-        assert self.state.fsm_state == FsmState.EXEC
+        assert fsm_state == FsmState.EXEC
 
         insn = self._next_insn
         if insn is None:
