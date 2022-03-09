@@ -31,12 +31,6 @@ module tlul_adapter_sram
   parameter bit EnableRspIntgGen  = 0,  // 1: Generate response integrity
   parameter bit EnableDataIntgGen = 0,  // 1: Generate response data integrity
   parameter bit EnableDataIntgPt  = 0,  // 1: Passthrough command/response data integrity
-  // Data that is returned upon an a TL-UL error belonging to an instruction fetch.
-  // Note that this data will be returned with the correct bus integrity value.
-  parameter logic [top_pkg::TL_DW-1:0] DataWhenInstrError = '0,
-  // Data that is returned upon an a TL-UL error not belonging to an instruction fetch.
-  // Note that this data will be returned with the correct bus integrity value.
-  parameter logic [top_pkg::TL_DW-1:0] DataWhenError      = {top_pkg::TL_DW{1'b1}},
   localparam int WidthMult        = SramDw / top_pkg::TL_DW,
   localparam int IntgWidth        = tlul_pkg::DataIntgWidth * WidthMult,
   localparam int DataOutW         = EnableDataIntgPt ? SramDw + IntgWidth : SramDw
