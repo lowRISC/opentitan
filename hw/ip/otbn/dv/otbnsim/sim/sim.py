@@ -86,6 +86,11 @@ class OTBNSim:
                   verbose: bool,
                   fetch_next: bool) -> List[Trace]:
         '''This is run on a stall cycle'''
+        if self.state.pending_halt:
+            # We've reached the end of the run because of some error. Register
+            # it on the next cycle.
+            self.state.stop()
+
         changes = self.state.changes()
         self.state.commit(sim_stalled=True)
         if fetch_next:
@@ -94,11 +99,6 @@ class OTBNSim:
             self.stats.record_stall()
         if verbose:
             self._print_trace(self.state.pc, '(stall)', changes)
-
-        if self.state.pending_halt:
-            # We've reached the end of the run because of some error. Register
-            # it on the next cycle.
-            self.state.stop()
 
         return changes
 
