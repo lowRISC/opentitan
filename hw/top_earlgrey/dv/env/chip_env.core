@@ -23,6 +23,7 @@ filesets:
       - lowrisc:dv:sw_logger_if
       - lowrisc:dv:uart_agent
       - lowrisc:dv:pwm_monitor
+      - lowrisc:ip:otp_ctrl_pkg
     files:
       - chip_env_pkg.sv
       - chip_env_cfg.sv: {is_include_file: true}
