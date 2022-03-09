@@ -483,11 +483,14 @@ class mem_bkdr_util extends uvm_object;
   endfunction
 
   // load mem from file
-  virtual function void load_mem_from_file(string file);
+  virtual task load_mem_from_file(string file);
     check_file(file, "r");
     this.file = file;
     ->readmemh_event;
-  endfunction
+    // The delay below avoids a race condition between this mem backdoor load and a subsequent
+    // backdoor write to a particular location.
+    #0;
+  endtask
 
   // save mem contents to file
   virtual function void write_mem_to_file(string file);
