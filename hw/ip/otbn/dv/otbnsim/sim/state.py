@@ -421,6 +421,9 @@ class OTBNState:
                                 else FsmState.WIPING_GOOD)
         self.wipe_cycles = (_WIPE_CYCLES if self.secure_wipe_enabled else 1)
 
+        # Clear the "we should stop soon" flag
+        self.pending_halt = False
+
     def get_fsm_state(self) -> FsmState:
         return self._fsm_state
 
