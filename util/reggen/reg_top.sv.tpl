@@ -464,9 +464,28 @@ ${field_sig_decl(f, sig_name, r.hwext, r.shadowed, r.async_clk)}\
                      f'  // R[{sr_name}]: V({sr.hwext})')
         else:
           reg_hdr = (f'  // R[{sr_name}]: V({sr.hwext})')
+        clk_expr = sr.async_clk.clock if sr.async_clk else reg_clk_expr
+        rst_expr = sr.async_clk.reset if sr.async_clk else reg_rst_expr
 %>\
 ${reg_hdr}
-      % for field in sr.fields:
+      % if sr.needs_qe():
+  logic ${sr_name}_qe;
+  logic [${len(sr.fields)-1}:0] ${sr_name}_flds_we;
+        % if sr.hwext:
+  assign ${sr_name}_qe = &${sr_name}_flds_we;
+        % else:
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_${reg_name}${sr_idx}_qe (
+    .clk_i(${clk_expr}),
+    .rst_ni(${rst_expr}),
+    .d_i(&${sr_name}_flds_we),
+    .q_o(${sr_name}_qe)
+  );
+        % endif
+      % endif
+      % for fidx, field in enumerate(sr.fields):
 <%
           if isinstance(r, MultiRegister):
             sig_idx = fld_count if r.is_homogeneous() else sr_idx
@@ -493,7 +512,7 @@ ${reg_hdr}
         % if len(sr.fields) > 1:
   //   F[${fld_name}]: ${field.bits.msb}:${field.bits.lsb}
         % endif
-${finst_gen(sr, field, finst_name, fsig_name)}
+${finst_gen(sr, field, finst_name, fsig_name, fidx)}
       % endfor
 
     % endfor
@@ -684,7 +703,7 @@ ${bits.msb}\
   logic ${str_arr_sv(field.bits)}${sig_name}_wd;
   % endif
 </%def>\
-<%def name="finst_gen(reg, field, finst_name, fsig_name)">\
+<%def name="finst_gen(reg, field, finst_name, fsig_name, fidx)">\
 <%
 
     clk_base_name = f"{reg.async_clk.clock_base_name}_" if reg.async_clk else ""
@@ -732,7 +751,8 @@ ${bits.msb}\
     qre_expr = f'reg2hw.{fsig_name}.re' if reg.hwre or reg.shadowed else ""
 
     if field.hwaccess.allows_read():
-      qe_expr = f'reg2hw.{fsig_name}.qe' if field.hwqe else ''
+      qe_expr = f'{reg_name}_flds_we[{fidx}]' if reg.needs_qe() else ''
+      qe_reg_expr = f'reg2hw.{fsig_name}.qe'
       q_expr = f'reg2hw.{fsig_name}.q'
     else:
       qe_expr = ''
@@ -848,6 +868,9 @@ ${bits.msb}\
       % endif
   );
     % endif  ## end non-constant prim_subreg
+  % endif
+  % if field.hwaccess.allows_read() and field.hwqe:
+  assign ${qe_reg_expr} = ${reg_name}_qe;
   % endif
 </%def>\
 <%def name="reg_enable_gen(reg, idx)">\

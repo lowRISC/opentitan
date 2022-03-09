@@ -45,14 +45,6 @@ module prim_subreg
     .wr_data
   );
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      qe <= 1'b0;
-    end else begin
-      qe <= we;
-    end
-  end
-
   logic wr_en_buf;
   prim_buf #(
     .Width(1)
@@ -60,6 +52,9 @@ module prim_subreg
     .in_i(wr_en),
     .out_o(wr_en_buf)
   );
+
+  // feed back out for consolidation
+  assign qe = wr_en_buf;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
