@@ -189,10 +189,9 @@ class OTBNSim:
 
         changes = self._on_stall(verbose, fetch_next=False)
 
-        # Zero INSN_CNT the cycle after we are told to start (and every
-        # cycle after that until we start executing instructions, but that
-        # doesn't really matter)
-        self.state.ext_regs.write('INSN_CNT', 0, True)
+        # Zero INSN_CNT the cycle after we are told to start
+        if self.state.ext_regs.read('INSN_CNT', True) != 0:
+            self.state.ext_regs.write('INSN_CNT', 0, True)
 
         return (None, changes)
 
