@@ -376,6 +376,15 @@ class Register(RegBase):
                 return True
         return False
 
+    def needs_qe(self) -> bool:
+        '''Return true if the register or at least one field needs a q-enable'''
+        if self.hwqe:
+            return True
+        for fld in self.fields:
+            if fld.hwqe:
+                return True
+        return False
+
     def needs_re(self) -> bool:
         '''Return true if at least one field needs a read-enable
 

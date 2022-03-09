@@ -367,6 +367,9 @@ module keymgr_reg_top (
 
 
   // R[intr_test]: V(True)
+  logic intr_test_qe;
+  logic [0:0] intr_test_flds_we;
+  assign intr_test_qe = &intr_test_flds_we;
   prim_subreg_ext #(
     .DW    (1)
   ) u_intr_test (
@@ -375,13 +378,17 @@ module keymgr_reg_top (
     .wd     (intr_test_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.qe),
+    .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.qe = intr_test_qe;
 
 
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [1:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   //   F[fatal_fault_err]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -391,10 +398,11 @@ module keymgr_reg_top (
     .wd     (alert_test_fatal_fault_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.fatal_fault_err.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.fatal_fault_err.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.fatal_fault_err.qe = alert_test_qe;
 
   //   F[recov_operation_err]: 1:1
   prim_subreg_ext #(
@@ -405,10 +413,11 @@ module keymgr_reg_top (
     .wd     (alert_test_recov_operation_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.recov_operation_err.qe),
+    .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.recov_operation_err.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.recov_operation_err.qe = alert_test_qe;
 
 
   // R[cfg_regwen]: V(True)
@@ -644,6 +653,9 @@ module keymgr_reg_top (
 
 
   // R[sw_binding_regwen]: V(True)
+  logic sw_binding_regwen_qe;
+  logic [0:0] sw_binding_regwen_flds_we;
+  assign sw_binding_regwen_qe = &sw_binding_regwen_flds_we;
   prim_subreg_ext #(
     .DW    (1)
   ) u_sw_binding_regwen (
@@ -652,10 +664,11 @@ module keymgr_reg_top (
     .wd     (sw_binding_regwen_wd),
     .d      (hw2reg.sw_binding_regwen.d),
     .qre    (),
-    .qe     (reg2hw.sw_binding_regwen.qe),
+    .qe     (sw_binding_regwen_flds_we[0]),
     .q      (reg2hw.sw_binding_regwen.q),
     .qs     (sw_binding_regwen_qs)
   );
+  assign reg2hw.sw_binding_regwen.qe = sw_binding_regwen_qe;
 
 
   // Subregister 0 of Multireg sealing_sw_binding
