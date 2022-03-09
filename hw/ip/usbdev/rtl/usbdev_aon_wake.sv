@@ -55,7 +55,7 @@ module usbdev_aon_wake import usbdev_pkg::*;(
   // note the _upwr signals are only valid when usb_out_of_rst_upwr_i is set
   assign suspend_req_async = usb_aon_wake_en_upwr_i & usb_suspended_upwr_i & usb_out_of_rst_upwr_i;
   assign wake_ack_async = usb_aon_woken_upwr_i & usb_out_of_rst_upwr_i;
-  assign low_power_async = low_power_alw_i & ~usb_out_of_rst_upwr_i;
+  assign low_power_async = low_power_alw_i;
 
   // The suspend_req / wake ack / low power construction come from multiple clock domains.
   // As a result the 2 flop sync could glitch for up to 1 cycle.  Place a filter after
