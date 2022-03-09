@@ -94,6 +94,12 @@ class OTBNSim:
             self.stats.record_stall()
         if verbose:
             self._print_trace(self.state.pc, '(stall)', changes)
+
+        if self.state.pending_halt:
+            # We've reached the end of the run because of some error. Register
+            # it on the next cycle.
+            self.state.stop()
+
         return changes
 
     def _on_retire(self,
@@ -106,7 +112,9 @@ class OTBNSim:
         if self.stats is not None:
             self.stats.record_insn(insn, self.state)
 
-        if self.state.pending_halt:
+        halting = self.state.pending_halt
+
+        if halting:
             # We've reached the end of the run (either because of an ECALL
             # instruction or an error).
             self.state.stop()
@@ -119,7 +127,7 @@ class OTBNSim:
 
         # Fetch the next instruction unless we're done or this instruction had
         # `has_fetch_stall` set (in which case we inject a single cycle stall).
-        no_fetch = self.state.pending_halt or insn.has_fetch_stall
+        no_fetch = halting or insn.has_fetch_stall
         self._next_insn = None if no_fetch else self._fetch(self.state.pc)
 
         disasm = insn.disassemble(pc_before)
@@ -152,6 +160,11 @@ class OTBNSim:
 
     def _step_idle(self, verbose: bool) -> StepRes:
         '''Step the simulation when OTBN is IDLE or LOCKED'''
+        if self.state.pending_halt:
+            # We've reached the end of the run because of some error. Register
+            # it on the next cycle.
+            self.state.stop()
+
         changes = self.state.changes()
         self.state.commit(sim_stalled=True)
         return (None, changes)
