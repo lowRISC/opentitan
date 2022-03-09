@@ -310,6 +310,10 @@ class OTBNState:
         self._fsm_state = self._next_fsm_state
         self.ext_regs.commit()
 
+        # Pull URND out separately because we also want to commit this in some
+        # "idle-ish" states (FETCH_WAIT)
+        self.wsrs.URND.commit()
+
         # In some states, we can get away with just committing external
         # registers (which lets us reflect things like the update to the STATUS
         # register) but nothing else. This is just an optimisation: if
