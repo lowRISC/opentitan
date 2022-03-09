@@ -34,10 +34,10 @@ const test_config_t kTestConfig;
  * wdog is programed to bark.
  */
 enum {
-  kWdogBarkMicros = 4 * 1000,          // 4 ms
-  kWdogBiteMicros = 5 * 1000,          // 5 ms
-  kEscalationPhase0Micros = 3 * 1000,  // 3 ms
-  kEscalationPhase1Micros = 3 * 1000,  // 3 ms
+  kWdogBarkMicros = 3 * 1000,          // 3 ms
+  kWdogBiteMicros = 4 * 1000,          // 4 ms
+  kEscalationPhase0Micros = 1 * 1000,  // 1 ms
+  kEscalationPhase1Micros = 5 * 1000,  // 5 ms
   kEscalationPhase2Micros = 500,       // 500 us
 };
 
@@ -206,6 +206,7 @@ static void execute_test(dif_aon_timer_t *aon_timer) {
   // Trigger the alert handler to escalate.
   dif_pwrmgr_alert_t alert = kDifPwrmgrAlertFatalFault;
   CHECK_DIF_OK(dif_pwrmgr_alert_force(&pwrmgr, alert));
+  busy_spin_micros(kEscalationPhase0Micros);
   CHECK(false, "The alert handler failed to escalate");
 }
 
