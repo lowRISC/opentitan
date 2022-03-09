@@ -814,7 +814,7 @@ module otbn
   logic        insn_cnt_clear;
   logic        unused_insn_cnt_q;
   assign hw2reg.insn_cnt.d = insn_cnt;
-  assign insn_cnt_clear = (reg2hw.insn_cnt.qe & is_not_running) | lifecycle_escalation;
+  assign insn_cnt_clear = reg2hw.insn_cnt.qe & is_not_running;
   // Ignore all write data to insn_cnt. All writes zero the register.
   assign unused_insn_cnt_q = ^reg2hw.insn_cnt.q;
 
