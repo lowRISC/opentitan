@@ -36,3 +36,21 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
     ],
 )
+
+cc_library(
+    name = "rsa_3072_verify_testvectors",
+    hdrs = ["rsa_3072_verify_testvectors.h"],
+)
+
+opentitan_functest(
+    name = "rsa_3072_verify_functest",
+    srcs = ["rsa_3072_verify_functest.c"],
+    deps = [
+        ":rsa_3072_verify_testvectors",
+        "//sw/device/lib/crypto:otbn_util",
+        "//sw/device/lib/crypto/drivers:hmac",
+        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/rsa_3072:rsa_3072_verify",
+        "//sw/device/lib/runtime:log",
+    ],
+)
