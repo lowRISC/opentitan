@@ -141,11 +141,19 @@ module dm_sba #(
     endcase
 
     // handle error case
-    if (sbaccess_i > 3 && state_q != dm::Idle) begin
+    if (sbaccess_i > $clog2(BusWidth/8) && state_q != dm::Idle) begin
       req             = 1'b0;
       state_d         = dm::Idle;
       sberror_valid_o = 1'b1;
-      sberror_o       = 3'd3;
+      sberror_o       = 3'd4; // unsupported size was requested
+    end
+
+    //if sbaccess_i lsbs of address are not 0 - report misalignment error
+    if (|(sbaddress_i & ~('1<<sbaccess_i)) && state_q != dm::Idle) begin
+      req             = 1'b0;
+      state_d         = dm::Idle;
+      sberror_valid_o = 1'b1;
+      sberror_o       = 3'd3; // alignment error
     end
     // further error handling should go here ...
   end
@@ -161,10 +169,10 @@ module dm_sba #(
   assign master_req_o    = req;
   assign master_add_o    = address[BusWidth-1:0];
   assign master_we_o     = we;
-  assign master_wdata_o  = sbdata_i[BusWidth-1:0];
+  assign master_wdata_o  = sbdata_i[BusWidth-1:0] << (8*(be_idx & ('1<<sbaccess_i)));
   assign master_be_o     = be[BusWidth/8-1:0];
   assign gnt             = master_gnt_i;
   assign sbdata_valid_o  = master_r_valid_i;
-  assign sbdata_o        = master_r_rdata_i[BusWidth-1:0];
+  assign sbdata_o        = master_r_rdata_i[BusWidth-1:0] >> (8*(be_idx & '1<<sbaccess_i));
 
 endmodule : dm_sba
