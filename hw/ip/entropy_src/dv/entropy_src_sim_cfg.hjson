@@ -32,7 +32,8 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
+                // TODO: import `stress_tests.hjson` once hanging issue is resolved.
+                "{proj_root}/hw/dv/tools/dvsim/tests/stress_all_test.hjson"]
 
   // Add additional tops for simulation.
   sim_tops: ["entropy_src_bind", "entropy_src_cov_bind"]

@@ -1,0 +1,17 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Different from `stress_tests.hjson`, this hjson only include `stress_all` test to serve as a
+// temporary import for IPs that are at V2 stage and does not support `stress_all_with_rand_reset`
+// sequence.
+{
+  tests: [
+    {
+      name: "{name}_stress_all"
+      uvm_test_seq: "{name}_stress_all_vseq"
+      // 10ms
+      run_opts: ["+test_timeout_ns=10000000000"]
+    }
+  ]
+}
