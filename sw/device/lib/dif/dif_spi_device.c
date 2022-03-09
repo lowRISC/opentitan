@@ -16,86 +16,130 @@ const uint16_t kDifSpiDeviceBufferLen = SPI_DEVICE_BUFFER_SIZE_BYTES;
  * Computes the required value of the control register from a given
  * configuration.
  */
-static uint32_t build_control_word(const dif_spi_device_config_t *config) {
+static inline uint32_t build_control_word(
+    const dif_spi_device_config_t config) {
   uint32_t val = 0;
 
   val =
       bitfield_bit32_write(val, SPI_DEVICE_CFG_CPOL_BIT,
-                           config->clock_polarity == kDifSpiDeviceEdgeNegative);
+                           config.clock_polarity == kDifSpiDeviceEdgeNegative);
   val = bitfield_bit32_write(val, SPI_DEVICE_CFG_CPHA_BIT,
-                             config->data_phase == kDifSpiDeviceEdgePositive);
+                             config.data_phase == kDifSpiDeviceEdgePositive);
   val = bitfield_bit32_write(val, SPI_DEVICE_CFG_TX_ORDER_BIT,
-                             config->tx_order == kDifSpiDeviceBitOrderLsbToMsb);
+                             config.tx_order == kDifSpiDeviceBitOrderLsbToMsb);
   val = bitfield_bit32_write(val, SPI_DEVICE_CFG_RX_ORDER_BIT,
-                             config->rx_order == kDifSpiDeviceBitOrderLsbToMsb);
-  val = bitfield_field32_write(val, SPI_DEVICE_CFG_TIMER_V_FIELD,
-                               config->rx_fifo_timeout);
+                             config.rx_order == kDifSpiDeviceBitOrderLsbToMsb);
+  if (config.device_mode == kDifSpiDeviceModeGeneric) {
+    val = bitfield_field32_write(val, SPI_DEVICE_CFG_TIMER_V_FIELD,
+                                 config.mode_cfg.generic.rx_fifo_commit_wait);
+  }
 
   return val;
 }
 
-dif_result_t dif_spi_device_configure(const dif_spi_device_t *spi,
-                                      const dif_spi_device_config_t *config) {
-  if (spi == NULL || config == NULL) {
+dif_result_t dif_spi_device_init_handle(mmio_region_t base_addr,
+                                        dif_spi_device_handle_t *spi) {
+  if (spi == NULL) {
     return kDifBadArg;
+  }
+  return dif_spi_device_init(base_addr, &spi->dev);
+}
+
+dif_result_t dif_spi_device_configure(dif_spi_device_handle_t *spi,
+                                      dif_spi_device_config_t config) {
+  if (spi == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t device_mode;
+  switch (config.device_mode) {
+    case kDifSpiDeviceModeGeneric:
+      device_mode = SPI_DEVICE_CONTROL_MODE_VALUE_FWMODE;
+      break;
+    default:
+      return kDifBadArg;
   }
 
   // NOTE: we do not write to any registers until performing all
   // function argument checks, to avoid a halfway-configured SPI.
 
-  uint32_t device_config = build_control_word(config);
+  if (config.device_mode == kDifSpiDeviceModeGeneric) {
+    uint16_t rx_fifo_start = 0x0;
+    uint16_t rx_fifo_end = config.mode_cfg.generic.rx_fifo_len - 1;
+    uint16_t tx_fifo_start = rx_fifo_end + 1;
+    uint16_t tx_fifo_end =
+        tx_fifo_start + config.mode_cfg.generic.tx_fifo_len - 1;
+    if (tx_fifo_end >= kDifSpiDeviceBufferLen) {
+      // We've overflown the SRAM region...
+      return kDifBadArg;
+    }
 
-  uint16_t rx_fifo_start = 0x0;
-  uint16_t rx_fifo_end = config->rx_fifo_len - 1;
-  uint16_t tx_fifo_start = rx_fifo_end + 1;
-  uint16_t tx_fifo_end = tx_fifo_start + config->tx_fifo_len - 1;
-  if (tx_fifo_end >= kDifSpiDeviceBufferLen) {
-    // We've overflown the SRAM region...
-    return kDifBadArg;
+    uint32_t rx_fifo_bounds = 0;
+    rx_fifo_bounds = bitfield_field32_write(
+        rx_fifo_bounds, SPI_DEVICE_RXF_ADDR_BASE_FIELD, rx_fifo_start);
+    rx_fifo_bounds = bitfield_field32_write(
+        rx_fifo_bounds, SPI_DEVICE_RXF_ADDR_LIMIT_FIELD, rx_fifo_end);
+
+    uint32_t tx_fifo_bounds = 0;
+    tx_fifo_bounds = bitfield_field32_write(
+        tx_fifo_bounds, SPI_DEVICE_TXF_ADDR_BASE_FIELD, tx_fifo_start);
+    tx_fifo_bounds = bitfield_field32_write(
+        tx_fifo_bounds, SPI_DEVICE_TXF_ADDR_LIMIT_FIELD, tx_fifo_end);
+
+    mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_RXF_ADDR_REG_OFFSET,
+                        rx_fifo_bounds);
+    mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_TXF_ADDR_REG_OFFSET,
+                        tx_fifo_bounds);
   }
 
-  uint32_t rx_fifo_bounds = 0;
-  rx_fifo_bounds = bitfield_field32_write(
-      rx_fifo_bounds, SPI_DEVICE_RXF_ADDR_BASE_FIELD, rx_fifo_start);
-  rx_fifo_bounds = bitfield_field32_write(
-      rx_fifo_bounds, SPI_DEVICE_RXF_ADDR_LIMIT_FIELD, rx_fifo_end);
+  uint32_t device_config = build_control_word(config);
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_CFG_REG_OFFSET,
+                      device_config);
 
-  uint32_t tx_fifo_bounds = 0;
-  tx_fifo_bounds = bitfield_field32_write(
-      tx_fifo_bounds, SPI_DEVICE_TXF_ADDR_BASE_FIELD, tx_fifo_start);
-  tx_fifo_bounds = bitfield_field32_write(
-      tx_fifo_bounds, SPI_DEVICE_TXF_ADDR_LIMIT_FIELD, tx_fifo_end);
+  // Turn off SRAM clock to change modes.
+  uint32_t control =
+      mmio_region_read32(spi->dev.base_addr, SPI_DEVICE_CONTROL_REG_OFFSET);
+  control =
+      bitfield_bit32_write(control, SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, false);
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_CONTROL_REG_OFFSET,
+                      control);
 
-  mmio_region_write32(spi->base_addr, SPI_DEVICE_CFG_REG_OFFSET, device_config);
-  mmio_region_write32(spi->base_addr, SPI_DEVICE_RXF_ADDR_REG_OFFSET,
-                      rx_fifo_bounds);
-  mmio_region_write32(spi->base_addr, SPI_DEVICE_TXF_ADDR_REG_OFFSET,
-                      tx_fifo_bounds);
+  // Change mode.
+  control = bitfield_field32_write(control, SPI_DEVICE_CONTROL_MODE_FIELD,
+                                   device_mode);
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_CONTROL_REG_OFFSET,
+                      control);
 
+  // Re-enable SRAM clock.
+  control =
+      bitfield_bit32_write(control, SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, true);
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_CONTROL_REG_OFFSET,
+                      control);
+  spi->config = config;
   return kDifOk;
 }
 
-dif_result_t dif_spi_device_abort(const dif_spi_device_t *spi) {
+dif_result_t dif_spi_device_abort(dif_spi_device_handle_t *spi) {
   if (spi == NULL) {
     return kDifBadArg;
   }
 
   // Set the `abort` bit, and then spin until `abort_done` is asserted.
   uint32_t reg =
-      mmio_region_read32(spi->base_addr, SPI_DEVICE_CONTROL_REG_OFFSET);
+      mmio_region_read32(spi->dev.base_addr, SPI_DEVICE_CONTROL_REG_OFFSET);
   reg = bitfield_bit32_write(reg, SPI_DEVICE_CONTROL_ABORT_BIT, true);
-  mmio_region_write32(spi->base_addr, SPI_DEVICE_CONTROL_REG_OFFSET, reg);
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_CONTROL_REG_OFFSET, reg);
 
   while (true) {
     uint32_t reg =
-        mmio_region_read32(spi->base_addr, SPI_DEVICE_STATUS_REG_OFFSET);
+        mmio_region_read32(spi->dev.base_addr, SPI_DEVICE_STATUS_REG_OFFSET);
     if (bitfield_bit32_read(reg, SPI_DEVICE_STATUS_ABORT_DONE_BIT)) {
       return kDifOk;
     }
   }
 }
 
-dif_result_t dif_spi_device_set_irq_levels(const dif_spi_device_t *spi,
+dif_result_t dif_spi_device_set_irq_levels(dif_spi_device_handle_t *spi,
                                            uint16_t rx_level,
                                            uint16_t tx_level) {
   if (spi == NULL) {
@@ -107,7 +151,7 @@ dif_result_t dif_spi_device_set_irq_levels(const dif_spi_device_t *spi,
       compressed_limit, SPI_DEVICE_FIFO_LEVEL_RXLVL_FIELD, rx_level);
   compressed_limit = bitfield_field32_write(
       compressed_limit, SPI_DEVICE_FIFO_LEVEL_TXLVL_FIELD, tx_level);
-  mmio_region_write32(spi->base_addr, SPI_DEVICE_FIFO_LEVEL_REG_OFFSET,
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_FIFO_LEVEL_REG_OFFSET,
                       compressed_limit);
 
   return kDifOk;
@@ -205,9 +249,9 @@ typedef struct fifo_ptrs {
  * @param params bitfield parameters for the FIFO.
  * @return expanded pointers read out of `spi`.
  */
-static fifo_ptrs_t decompress_ptrs(const dif_spi_device_t *spi,
+static fifo_ptrs_t decompress_ptrs(const dif_spi_device_handle_t *spi,
                                    fifo_ptr_params_t params) {
-  uint32_t ptr = mmio_region_read32(spi->base_addr, params.reg_offset);
+  uint32_t ptr = mmio_region_read32(spi->dev.base_addr, params.reg_offset);
   uint16_t write_val =
       (uint16_t)((ptr >> params.write_offset) & params.write_mask);
   uint16_t read_val =
@@ -234,8 +278,8 @@ static fifo_ptrs_t decompress_ptrs(const dif_spi_device_t *spi,
  * @param params bitfield parameters for the FIFO.
  * @param ptrs the new pointer values.
  */
-static void compress_ptrs(const dif_spi_device_t *spi, fifo_ptr_params_t params,
-                          fifo_ptrs_t ptrs) {
+static void compress_ptrs(dif_spi_device_handle_t *spi,
+                          fifo_ptr_params_t params, fifo_ptrs_t ptrs) {
   uint16_t write_val = ptrs.write_ptr.offset;
   if (ptrs.write_ptr.phase) {
     write_val |= kFifoPhaseMask;
@@ -258,7 +302,7 @@ static void compress_ptrs(const dif_spi_device_t *spi, fifo_ptr_params_t params,
                                    .index = params.read_offset,
                                },
                                read_val);
-  mmio_region_write32(spi->base_addr, params.reg_offset, ptr);
+  mmio_region_write32(spi->dev.base_addr, params.reg_offset, ptr);
 }
 
 /**
@@ -291,28 +335,28 @@ static uint16_t fifo_bytes_in_use(fifo_ptrs_t ptrs, uint16_t fifo_len) {
   return fifo_len - (ptrs.read_ptr.offset - ptrs.write_ptr.offset);
 }
 
-dif_result_t dif_spi_device_rx_pending(const dif_spi_device_t *spi,
-                                       const dif_spi_device_config_t *config,
+dif_result_t dif_spi_device_rx_pending(const dif_spi_device_handle_t *spi,
                                        size_t *bytes_pending) {
-  if (spi == NULL || config == NULL || bytes_pending == NULL) {
+  if (spi == NULL || bytes_pending == NULL) {
     return kDifBadArg;
   }
 
   fifo_ptrs_t ptrs = decompress_ptrs(spi, kRxFifoParams);
-  *bytes_pending = fifo_bytes_in_use(ptrs, config->rx_fifo_len);
+  *bytes_pending =
+      fifo_bytes_in_use(ptrs, spi->config.mode_cfg.generic.rx_fifo_len);
 
   return kDifOk;
 }
 
-dif_result_t dif_spi_device_tx_pending(const dif_spi_device_t *spi,
-                                       const dif_spi_device_config_t *config,
+dif_result_t dif_spi_device_tx_pending(const dif_spi_device_handle_t *spi,
                                        size_t *bytes_pending) {
-  if (spi == NULL || config == NULL || bytes_pending == NULL) {
+  if (spi == NULL || bytes_pending == NULL) {
     return kDifBadArg;
   }
 
   fifo_ptrs_t ptrs = decompress_ptrs(spi, kTxFifoParams);
-  *bytes_pending = fifo_bytes_in_use(ptrs, config->tx_fifo_len);
+  *bytes_pending =
+      fifo_bytes_in_use(ptrs, spi->config.mode_cfg.generic.tx_fifo_len);
 
   return kDifOk;
 }
@@ -333,7 +377,7 @@ dif_result_t dif_spi_device_tx_pending(const dif_spi_device_t *spi,
  * @param is_recv whether this is a SPI reciept or SPI transmit transaction.
  * @return the number of bytes copied.
  */
-static size_t spi_memcpy(const dif_spi_device_t *spi, fifo_ptrs_t *fifo,
+static size_t spi_memcpy(dif_spi_device_handle_t *spi, fifo_ptrs_t *fifo,
                          uint16_t fifo_base, uint16_t fifo_len,
                          uint8_t *byte_buf, size_t buf_len, bool is_recv) {
   uint16_t bytes_left = fifo_bytes_in_use(*fifo, fifo_len);
@@ -373,11 +417,11 @@ static size_t spi_memcpy(const dif_spi_device_t *spi, fifo_ptrs_t *fifo,
     }
     if (is_recv) {
       // SPI device buffer -> `byte_buf`
-      mmio_region_memcpy_from_mmio32(spi->base_addr, mmio_offset, byte_buf,
+      mmio_region_memcpy_from_mmio32(spi->dev.base_addr, mmio_offset, byte_buf,
                                      bytes_to_copy);
     } else {
       // `byte_buf` -> SPI device buffer
-      mmio_region_memcpy_to_mmio32(spi->base_addr, mmio_offset, byte_buf,
+      mmio_region_memcpy_to_mmio32(spi->dev.base_addr, mmio_offset, byte_buf,
                                    bytes_to_copy);
     }
     fifo_ptr_increment(ptr, bytes_to_copy, fifo_len);
@@ -388,18 +432,17 @@ static size_t spi_memcpy(const dif_spi_device_t *spi, fifo_ptrs_t *fifo,
   return total_bytes;
 }
 
-dif_result_t dif_spi_device_recv(const dif_spi_device_t *spi,
-                                 const dif_spi_device_config_t *config,
-                                 void *buf, size_t buf_len,
-                                 size_t *bytes_received) {
-  if (spi == NULL || config == NULL || buf == NULL) {
+dif_result_t dif_spi_device_recv(dif_spi_device_handle_t *spi, void *buf,
+                                 size_t buf_len, size_t *bytes_received) {
+  if (spi == NULL || buf == NULL) {
     return kDifBadArg;
   }
 
   uint16_t fifo_base = 0;
   fifo_ptrs_t fifo = decompress_ptrs(spi, kRxFifoParams);
 
-  size_t bytes = spi_memcpy(spi, &fifo, fifo_base, config->rx_fifo_len,
+  size_t bytes = spi_memcpy(spi, &fifo, fifo_base,
+                            spi->config.mode_cfg.generic.rx_fifo_len,
                             (uint8_t *)buf, buf_len, /*is_recv=*/true);
   if (bytes_received != NULL) {
     *bytes_received = bytes;
@@ -411,11 +454,9 @@ dif_result_t dif_spi_device_recv(const dif_spi_device_t *spi,
   return kDifOk;
 }
 
-dif_result_t dif_spi_device_send(const dif_spi_device_t *spi,
-                                 const dif_spi_device_config_t *config,
-                                 const void *buf, size_t buf_len,
-                                 size_t *bytes_sent) {
-  if (spi == NULL || config == NULL || buf == NULL) {
+dif_result_t dif_spi_device_send(dif_spi_device_handle_t *spi, const void *buf,
+                                 size_t buf_len, size_t *bytes_sent) {
+  if (spi == NULL || buf == NULL) {
     return kDifBadArg;
   }
 
@@ -423,8 +464,9 @@ dif_result_t dif_spi_device_send(const dif_spi_device_t *spi,
   fifo_ptrs_t fifo = decompress_ptrs(spi, kTxFifoParams);
 
   size_t bytes =
-      spi_memcpy(spi, &fifo, config->rx_fifo_len, config->tx_fifo_len,
-                 (uint8_t *)buf, buf_len, /*is_recv=*/false);
+      spi_memcpy(spi, &fifo, spi->config.mode_cfg.generic.rx_fifo_len,
+                 spi->config.mode_cfg.generic.tx_fifo_len, (uint8_t *)buf,
+                 buf_len, /*is_recv=*/false);
   if (bytes_sent != NULL) {
     *bytes_sent = bytes;
   }

@@ -20,7 +20,7 @@
 
 static const uint16_t kFifoLen = 0x400;
 static dif_rv_plic_t plic0;
-static dif_spi_device_t spi_device;
+static dif_spi_device_handle_t spi_device;
 
 // A set of bytes to be send out by spi_device.
 // This array will be override with random values in UVM sequence.
@@ -111,7 +111,8 @@ void ottf_external_isr(void) {
       // back to the main program, disable the interrupt here instead of in the
       // main program.
       CHECK_DIF_OK(dif_spi_device_irq_set_enabled(
-          &spi_device, kDifSpiDeviceIrqGenericTxUnderflow, kDifToggleDisabled));
+          &spi_device.dev, kDifSpiDeviceIrqGenericTxUnderflow,
+          kDifToggleDisabled));
       break;
     default:
       LOG_ERROR("Unexpected interrupt (at PLIC): %d", plic_irq_id);
@@ -121,13 +122,13 @@ void ottf_external_isr(void) {
 
   // Check if the same interrupt fired at SPI DEVICE as well.
   bool flag_out;
-  CHECK_DIF_OK(
-      dif_spi_device_irq_is_pending(&spi_device, spi_device_irq, &flag_out));
+  CHECK_DIF_OK(dif_spi_device_irq_is_pending(&spi_device.dev, spi_device_irq,
+                                             &flag_out));
   CHECK(flag_out,
         "SPI_DEVICE interrupt fired at PLIC did not fire at SPI_DEVICE");
 
   // Clear the interrupt at SPI DEVICE.
-  CHECK_DIF_OK(dif_spi_device_irq_acknowledge(&spi_device, spi_device_irq));
+  CHECK_DIF_OK(dif_spi_device_irq_acknowledge(&spi_device.dev, spi_device_irq));
 
   // Complete the IRQ at PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic0, kTopEarlgreyPlicTargetIbex0,
@@ -138,24 +139,24 @@ void ottf_external_isr(void) {
  * Initializes SPI_DEVICE and enables the relevant interrupts.
  */
 static void spi_device_init_with_irqs(
-    mmio_region_t base_addr, dif_spi_device_t *spi_device,
-    const dif_spi_device_config_t *spi_device_config) {
+    mmio_region_t base_addr, dif_spi_device_handle_t *spi_device,
+    dif_spi_device_config_t spi_device_config) {
   LOG_INFO("Initializing the SPI_DEVICE.");
-  CHECK_DIF_OK(dif_spi_device_init(base_addr, spi_device));
+  CHECK_DIF_OK(dif_spi_device_init_handle(base_addr, spi_device));
   CHECK_DIF_OK(dif_spi_device_configure(spi_device, spi_device_config));
 
   CHECK_DIF_OK(dif_spi_device_irq_set_enabled(
-      spi_device, kDifSpiDeviceIrqGenericRxFull, kDifToggleEnabled));
+      &spi_device->dev, kDifSpiDeviceIrqGenericRxFull, kDifToggleEnabled));
   CHECK_DIF_OK(dif_spi_device_irq_set_enabled(
-      spi_device, kDifSpiDeviceIrqGenericRxWatermark, kDifToggleEnabled));
+      &spi_device->dev, kDifSpiDeviceIrqGenericRxWatermark, kDifToggleEnabled));
   CHECK_DIF_OK(dif_spi_device_irq_set_enabled(
-      spi_device, kDifSpiDeviceIrqGenericTxWatermark, kDifToggleEnabled));
+      &spi_device->dev, kDifSpiDeviceIrqGenericTxWatermark, kDifToggleEnabled));
   CHECK_DIF_OK(dif_spi_device_irq_set_enabled(
-      spi_device, kDifSpiDeviceIrqGenericRxError, kDifToggleEnabled));
+      &spi_device->dev, kDifSpiDeviceIrqGenericRxError, kDifToggleEnabled));
   CHECK_DIF_OK(dif_spi_device_irq_set_enabled(
-      spi_device, kDifSpiDeviceIrqGenericRxOverflow, kDifToggleEnabled));
+      &spi_device->dev, kDifSpiDeviceIrqGenericRxOverflow, kDifToggleEnabled));
   CHECK_DIF_OK(dif_spi_device_irq_set_enabled(
-      spi_device, kDifSpiDeviceIrqGenericTxUnderflow, kDifToggleEnabled));
+      &spi_device->dev, kDifSpiDeviceIrqGenericTxUnderflow, kDifToggleEnabled));
 
   // Initialize the volatile irq variables.
   for (int i = 0; i < SPI_DEVICE_NUM_IRQS; i++) {
@@ -230,13 +231,12 @@ static bool exp_irqs_fired(void) {
          fired_irqs[kDifSpiDeviceIrqGenericRxFull];
 }
 
-static bool execute_test(const dif_spi_device_t *spi_device,
-                         const dif_spi_device_config_t *spi_device_config) {
+static bool execute_test(dif_spi_device_handle_t *spi_device) {
   LOG_INFO("Executing the test.");
 
   size_t bytes_transferred = 0;
-  CHECK_DIF_OK(dif_spi_device_send(spi_device, spi_device_config,
-                                   spi_device_tx_data, SPI_DEVICE_DATASET_SIZE,
+  CHECK_DIF_OK(dif_spi_device_send(spi_device, spi_device_tx_data,
+                                   SPI_DEVICE_DATASET_SIZE,
                                    &bytes_transferred));
   if (bytes_transferred != SPI_DEVICE_DATASET_SIZE) {
     LOG_ERROR(
@@ -274,8 +274,7 @@ static bool execute_test(const dif_spi_device_t *spi_device,
     if (fired_irqs[kDifSpiDeviceIrqGenericRxWatermark] && !read_rx_fifo_done) {
       size_t bytes_recved = 0;
       uint8_t spi_device_rx_data[SPI_DEVICE_DATASET_SIZE];
-      CHECK_DIF_OK(dif_spi_device_recv(spi_device, spi_device_config,
-                                       spi_device_rx_data,
+      CHECK_DIF_OK(dif_spi_device_recv(spi_device, spi_device_rx_data,
                                        SPI_DEVICE_DATASET_SIZE, &bytes_recved));
       if (bytes_recved == SPI_DEVICE_DATASET_SIZE) {
         LOG_INFO("Received %0d bytes from SPI_DEVICE RX_FIFO.", bytes_recved);
@@ -335,14 +334,21 @@ bool test_main(void) {
       .data_phase = kDifSpiDeviceEdgeNegative,
       .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
       .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
-      .rx_fifo_timeout = 63,
-      .rx_fifo_len = kFifoLen,
-      .tx_fifo_len = kFifoLen,
+      .device_mode = kDifSpiDeviceModeGeneric,
+      .mode_cfg =
+          {
+              .generic =
+                  {
+                      .rx_fifo_commit_wait = 63,
+                      .rx_fifo_len = kFifoLen,
+                      .tx_fifo_len = kFifoLen,
+                  },
+          },
   };
 
   // Initialize SPI_DEVICE
   spi_device_init_with_irqs(spi_device_base_addr, &spi_device,
-                            &spi_device_config);
+                            spi_device_config);
 
   mmio_region_t plic_base_addr =
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
@@ -353,5 +359,5 @@ bool test_main(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);
 
-  return execute_test(&spi_device, &spi_device_config);
+  return execute_test(&spi_device);
 }
