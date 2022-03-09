@@ -158,7 +158,7 @@
       swaccess: "ro",  // this particular enable bit is meant to be fully HW managed
       hwaccess: "hwo",
       tags: [// Internal HW can modify status register
-             "excl:CsrAllTests:CsrExclCheck"]
+             "excl:CsrNonInitTests:CsrExclCheck"]
       fields: [
         {
             bits: "0",
@@ -352,7 +352,7 @@
       hwqe:  "true",
       regwen:   "REGWEN",
       tags: [// Exclude from writes to these field because they are one-way updates
-             "excl:CsrAllTests:CsrExclWrite"]
+             "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
@@ -388,7 +388,7 @@
       hwqe:  "true",
       regwen:   "REGWEN",
       tags: [// Exclude from writes to these field because they are one-way updates
-             "excl:CsrAllTests:CsrExclWrite"]
+             "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
@@ -424,7 +424,7 @@
       hwqe:  "true",
       regwen:   "REGWEN",
       tags: [// Exclude from writes to these field because they are one-way updates
-             "excl:CsrAllTests:CsrExclWrite"]
+             "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
@@ -460,7 +460,7 @@
       hwqe:  "true",
       regwen:   "REGWEN",
       tags: [// Exclude from writes to these field because they are one-way updates
-             "excl:CsrAllTests:CsrExclWrite"]
+             "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
@@ -496,7 +496,7 @@
       hwqe:  "true",
       regwen:   "REGWEN",
       tags: [// Exclude from writes to these field because they are one-way updates
-             "excl:CsrAllTests:CsrExclWrite"]
+             "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
@@ -532,7 +532,7 @@
       hwqe:  "true",
       regwen:   "REGWEN",
       tags: [// Exclude from writes to these field because they are one-way updates
-             "excl:CsrAllTests:CsrExclWrite"]
+             "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
@@ -568,7 +568,7 @@
       hwqe:  "true",
       regwen:   "REGWEN",
       tags: [// Exclude from writes to these field because they are one-way updates
-             "excl:CsrAllTests:CsrExclWrite"]
+             "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
@@ -604,7 +604,7 @@
       hwqe:  "true",
       regwen:   "REGWEN",
       tags: [// Exclude from writes to these field because they are one-way updates
-             "excl:CsrAllTests:CsrExclWrite"]
+             "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
@@ -640,7 +640,7 @@
       hwqe:  "true",
       regwen:   "REGWEN",
       tags: [// Exclude from writes to these field because they are one-way updates
-             "excl:CsrAllTests:CsrExclWrite"]
+             "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
@@ -709,8 +709,6 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
           name: "FIPS_WATERMARK",
@@ -728,7 +726,7 @@
       hwaccess: "hwo",
       hwext: "true",
       tags: [// Internal HW can modify status register
-             "excl:CsrAllTests:CsrExclCheck"]
+             "excl:CsrNonInitTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
           name: "FIPS_WATERMARK",
@@ -747,8 +745,6 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
           name: "FIPS_WATERMARK",
@@ -765,8 +761,6 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
           name: "FIPS_WATERMARK",
@@ -785,8 +779,6 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
           name: "FIPS_WATERMARK",
@@ -802,8 +794,6 @@
       desc:     "Markov test high watermarks register",
       swaccess: "ro",
       hwaccess: "hwo",
-      tags: [// Internal HW can modify status register
-             "excl:CsrAllTests:CsrExclCheck"]
       hwext: "true",
       fields: [
         { bits: "15:0",
@@ -821,8 +811,6 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
           name: "FIPS_WATERMARK",
@@ -1149,8 +1137,6 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "0",
           name: "FW_OV_WR_FIFO_FULL",
@@ -1166,8 +1152,6 @@
       swaccess: "rw0c",
       hwaccess: "hwo",
       hwext: "false",
-      tags: [// Internal HW can modify status register
-             "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "0",
           name: "FW_OV_DR_FIFO_OVERFLOW",
@@ -1241,8 +1225,6 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "2:0",
           name: "ENTROPY_FIFO_DEPTH",
@@ -1271,6 +1253,7 @@
         { bits: "16",
           name: "MAIN_SM_IDLE",
           desc: "The entropy_src main state machine is in the idle state."
+          resval: 1
         }
         { bits: "17",
           name: "MAIN_SM_BOOT_DONE",
@@ -1485,7 +1468,7 @@
       hwqe: "true",
       regwen: "REGWEN",
       tags: [// Setting this register will force an unwanted fatal alert.
-                 "excl:CsrAllTests:CsrExclWrite"]
+                 "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         {
             bits: "4:0",
