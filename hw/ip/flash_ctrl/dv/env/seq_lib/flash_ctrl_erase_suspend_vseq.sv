@@ -179,7 +179,6 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
 
   data_q_t flash_rd_data;
   uvm_reg_data_t data;
-  time timeout_ns = 1_000;
   localparam bit [TL_DW-1:0] ALL_ONES = {TL_DW{1'b1}};
 
   virtual task body();
@@ -258,7 +257,7 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
     `DV_SPINWAIT(do begin
     csr_rd(.ptr(ral.erase_suspend), .value(data));
       `uvm_info(`gfn, $sformatf("ERASE SUSPEND REQ: %0p", data), UVM_HIGH)
-    end while (data == 1);, "ERASE SUSPEND TIMEOUT OCCURED!", timeout_ns)
+    end while (data == 1);, "ERASE SUSPEND TIMEOUT OCCURED!", cfg.seq_cfg.erase_timeout_ns)
 
     cfg.flash_mem_bkdr_read(flash_op, flash_rd_data);
 
