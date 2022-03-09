@@ -139,32 +139,34 @@ module tlul_socket_1n #(
 
   // ensure that when a device is not selected, both command
   // data integrity can never match
-  tlul_pkg::tl_h2d_t blanked_tl;
-
-  always_comb begin
-    blanked_tl = tlul_pkg::TL_H2D_DEFAULT;
-    blanked_tl.a_user.cmd_intg = tlul_pkg::get_bad_cmd_intg(tlul_pkg::TL_H2D_DEFAULT);
-    blanked_tl.a_user.data_intg = tlul_pkg::get_bad_data_intg(tlul_pkg::TL_H2D_DEFAULT);
-  end
+  tlul_pkg::tl_a_user_t blanked_auser;
+  assign blanked_auser = '{
+    rsvd: tl_t_o.a_user.rsvd,
+    instr_type: tl_t_o.a_user.instr_type,
+    cmd_intg: tlul_pkg::get_bad_cmd_intg(tl_t_o),
+    data_intg: tlul_pkg::get_bad_data_intg(tlul_pkg::BlankedAData)
+  };
 
   // if a host is not selected, or if requests are held off, blank the bus
   for (genvar i = 0 ; i < N ; i++) begin : gen_u_o
     logic dev_select;
-    assign dev_select = dev_select_t == NWD'(i);
+    assign dev_select = dev_select_t == NWD'(i) & ~hold_all_requests;
 
-    always_comb begin
-       // unless selected always blank
-       tl_u_o[i] = blanked_tl;
+    assign tl_u_o[i].a_valid   = tl_t_o.a_valid & dev_select;
+    assign tl_u_o[i].a_opcode  = tl_t_o.a_opcode;
+    assign tl_u_o[i].a_param   = tl_t_o.a_param;
+    assign tl_u_o[i].a_size    = tl_t_o.a_size;
+    assign tl_u_o[i].a_source  = tl_t_o.a_source;
+    assign tl_u_o[i].a_address = tl_t_o.a_address;
+    assign tl_u_o[i].a_mask    = tl_t_o.a_mask;
+    assign tl_u_o[i].a_data    = dev_select ?
+                                 tl_t_o.a_data :
+                                 tlul_pkg::BlankedAData;
+    assign tl_u_o[i].a_user    = dev_select ?
+                                 tl_t_o.a_user :
+                                 blanked_auser;
 
-       // if selected, send out host request
-       if (tl_t_o.a_valid && dev_select && ~hold_all_requests) begin
-          tl_u_o[i] = tl_t_o;
-       end
-
-       // always accept resopnses
-       tl_u_o[i].d_ready = tl_t_o.d_ready;
-    end
-
+    assign tl_u_o[i].d_ready   = tl_t_o.d_ready;
   end
 
 
