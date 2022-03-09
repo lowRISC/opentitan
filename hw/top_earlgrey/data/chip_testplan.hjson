@@ -814,9 +814,10 @@
 
             The IP level checks the divided clocks via SVA, and these are also bound at chip level.
             Connectivity tests check peripherals are connected to the clock they expect.
+            Use the clkmgr count measurement feature to verify clock division.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_clkmgr_external_clk_src_for_sw"]
       tags: ["conn"]
     }
     {
@@ -840,7 +841,7 @@
             X-ref with chip_sw_uart_tx_rx_alt_clk_freq, which needs to deal with this as well.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_clkmgr_external_clk_src_for_sw"]
     }
     {
       name: chip_sw_clkmgr_jitter
