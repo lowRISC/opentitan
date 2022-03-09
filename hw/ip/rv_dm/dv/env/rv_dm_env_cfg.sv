@@ -65,9 +65,9 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
     jtag_dmi_ral.abstractcs.progbufsize.set_reset(dm::ProgBufSize);
     jtag_dmi_ral.dmstatus.authenticated.set_reset(1);  // No authentication performed.
     jtag_dmi_ral.sbcs.sbaccess32.set_reset(1);
+    jtag_dmi_ral.sbcs.sbaccess16.set_reset(1);
+    jtag_dmi_ral.sbcs.sbaccess8.set_reset(1);
     jtag_dmi_ral.sbcs.sbasize.set_reset(32);
-    // TODO(#11095): Sub-word accesses are not implemented.
-    void'(jtag_dmi_ral.sbcs.sbaccess.set_access("RO"));
     apply_jtag_dmi_ral_csr_excl();
   endfunction
 
