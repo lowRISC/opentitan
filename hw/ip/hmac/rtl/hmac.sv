@@ -558,13 +558,17 @@ module hmac
   logic idle;
   assign idle = !reg_fifo_wvalid && !fifo_rvalid
               && hmac_core_idle && sha_core_idle;
+
+  prim_mubi_pkg::mubi4_t idle_q, idle_d;
+  assign idle_d = prim_mubi_pkg::mubi4_bool_to_mubi(idle);
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      idle_o <= prim_mubi_pkg::MuBi4False;
+      idle_q <= prim_mubi_pkg::MuBi4False;
     end else begin
-      idle_o <= prim_mubi_pkg::mubi4_bool_to_mubi(idle);
+      idle_q <= idle_d;
     end
   end
+  assign idle_o = idle_q;
 
   //////////////////////////////////////////////
   // Assertions, Assumptions, and Coverpoints //
