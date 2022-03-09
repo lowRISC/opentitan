@@ -1,0 +1,65 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+  
+# Azure template for uploading artifacts to a Google Cloud Platform (GCP)
+# bucket.
+#
+# This template first installs gsutil to interact with GCP resources. Then,
+# files located under parentDir and at paths specified by includeFiles will be
+# packed into archiveName (a tar.gz file) and uploaded to a GCP bucket located
+# at bucketURI using gsutil.
+#
+# Writing to a GCP bucket requires a GCP service account key with sufficient
+# permisions. This key must be uploaded to Azure as a Secure File. The name of
+# the key file should be provided as gcpKeyFile.
+#
+
+parameters:
+  - name: parentDir
+    type: string
+    default: ""
+  - name: includeFiles
+    type: object
+    default: []
+  - name: archiveName
+    type: string
+    default: ""
+  - name: gcpKeyFile
+    type: string
+    default: ""
+  - name: bucketURI
+    type: string
+    default: ""
+
+steps:
+  - task: DownloadSecureFile@1
+    name: gcpkey
+    inputs:
+      secureFile: ${{ parameters.gcpKeyFile }}
+  - bash: |
+      echo "Installing gsutil"
+      sudo apt-get install -y apt-transport-https ca-certificates gnupg
+      echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | \
+        sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
+      echo "vvvvvvvvv cat /etc/apt/sources.list.d/google-cloud-sdk.list"
+      cat /etc/apt/sources.list.d/google-cloud-sdk.list 
+      echo "^^^^^^^^"
+      curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo tee /usr/share/keyrings/cloud.google.gpg
+      sudo apt-get update || {
+        error "Failed to run apt-get update"
+      }
+      sudo apt-get install -y google-cloud-cli
+
+      . util/build_consts.sh
+      printf "$(date -u +%Y-%m-%dT%H:%M:%S)\n$(Build.SourceVersion)" > latest.txt
+      printf  "${{ join('\n', parameters.includeFiles) }}" > include_files.txt
+      tar -C ${{ parameters.parentDir }} -zcvf ${{ parameters.archiveName }} -T include_files.txt
+
+      gsutil -o Credentials:gs_service_key_file=$(gcpkey.secureFilePath) \
+        cp latest.txt ${{ parameters.bucketURI }}/latest.txt
+      gsutil -o Credentials:gs_service_key_file=$(gcpkey.secureFilePath) \
+        cp -r ${{ parameters.archiveName }} ${{ parameters.bucketURI }}/${{ parameters.archiveName }}
+    condition: succeeded()
+    displayName: Upload artifacts to GCP bucket
+
