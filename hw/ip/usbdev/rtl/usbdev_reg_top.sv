@@ -1724,6 +1724,9 @@ module usbdev_reg_top (
 
 
   // R[intr_test]: V(True)
+  logic intr_test_qe;
+  logic [16:0] intr_test_flds_we;
+  assign intr_test_qe = &intr_test_flds_we;
   //   F[pkt_received]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -1733,10 +1736,11 @@ module usbdev_reg_top (
     .wd     (intr_test_pkt_received_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.pkt_received.qe),
+    .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.pkt_received.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.pkt_received.qe = intr_test_qe;
 
   //   F[pkt_sent]: 1:1
   prim_subreg_ext #(
@@ -1747,10 +1751,11 @@ module usbdev_reg_top (
     .wd     (intr_test_pkt_sent_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.pkt_sent.qe),
+    .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.pkt_sent.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.pkt_sent.qe = intr_test_qe;
 
   //   F[disconnected]: 2:2
   prim_subreg_ext #(
@@ -1761,10 +1766,11 @@ module usbdev_reg_top (
     .wd     (intr_test_disconnected_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.disconnected.qe),
+    .qe     (intr_test_flds_we[2]),
     .q      (reg2hw.intr_test.disconnected.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.disconnected.qe = intr_test_qe;
 
   //   F[host_lost]: 3:3
   prim_subreg_ext #(
@@ -1775,10 +1781,11 @@ module usbdev_reg_top (
     .wd     (intr_test_host_lost_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.host_lost.qe),
+    .qe     (intr_test_flds_we[3]),
     .q      (reg2hw.intr_test.host_lost.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.host_lost.qe = intr_test_qe;
 
   //   F[link_reset]: 4:4
   prim_subreg_ext #(
@@ -1789,10 +1796,11 @@ module usbdev_reg_top (
     .wd     (intr_test_link_reset_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.link_reset.qe),
+    .qe     (intr_test_flds_we[4]),
     .q      (reg2hw.intr_test.link_reset.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.link_reset.qe = intr_test_qe;
 
   //   F[link_suspend]: 5:5
   prim_subreg_ext #(
@@ -1803,10 +1811,11 @@ module usbdev_reg_top (
     .wd     (intr_test_link_suspend_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.link_suspend.qe),
+    .qe     (intr_test_flds_we[5]),
     .q      (reg2hw.intr_test.link_suspend.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.link_suspend.qe = intr_test_qe;
 
   //   F[link_resume]: 6:6
   prim_subreg_ext #(
@@ -1817,10 +1826,11 @@ module usbdev_reg_top (
     .wd     (intr_test_link_resume_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.link_resume.qe),
+    .qe     (intr_test_flds_we[6]),
     .q      (reg2hw.intr_test.link_resume.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.link_resume.qe = intr_test_qe;
 
   //   F[av_empty]: 7:7
   prim_subreg_ext #(
@@ -1831,10 +1841,11 @@ module usbdev_reg_top (
     .wd     (intr_test_av_empty_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.av_empty.qe),
+    .qe     (intr_test_flds_we[7]),
     .q      (reg2hw.intr_test.av_empty.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.av_empty.qe = intr_test_qe;
 
   //   F[rx_full]: 8:8
   prim_subreg_ext #(
@@ -1845,10 +1856,11 @@ module usbdev_reg_top (
     .wd     (intr_test_rx_full_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rx_full.qe),
+    .qe     (intr_test_flds_we[8]),
     .q      (reg2hw.intr_test.rx_full.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.rx_full.qe = intr_test_qe;
 
   //   F[av_overflow]: 9:9
   prim_subreg_ext #(
@@ -1859,10 +1871,11 @@ module usbdev_reg_top (
     .wd     (intr_test_av_overflow_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.av_overflow.qe),
+    .qe     (intr_test_flds_we[9]),
     .q      (reg2hw.intr_test.av_overflow.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.av_overflow.qe = intr_test_qe;
 
   //   F[link_in_err]: 10:10
   prim_subreg_ext #(
@@ -1873,10 +1886,11 @@ module usbdev_reg_top (
     .wd     (intr_test_link_in_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.link_in_err.qe),
+    .qe     (intr_test_flds_we[10]),
     .q      (reg2hw.intr_test.link_in_err.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.link_in_err.qe = intr_test_qe;
 
   //   F[rx_crc_err]: 11:11
   prim_subreg_ext #(
@@ -1887,10 +1901,11 @@ module usbdev_reg_top (
     .wd     (intr_test_rx_crc_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rx_crc_err.qe),
+    .qe     (intr_test_flds_we[11]),
     .q      (reg2hw.intr_test.rx_crc_err.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.rx_crc_err.qe = intr_test_qe;
 
   //   F[rx_pid_err]: 12:12
   prim_subreg_ext #(
@@ -1901,10 +1916,11 @@ module usbdev_reg_top (
     .wd     (intr_test_rx_pid_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rx_pid_err.qe),
+    .qe     (intr_test_flds_we[12]),
     .q      (reg2hw.intr_test.rx_pid_err.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.rx_pid_err.qe = intr_test_qe;
 
   //   F[rx_bitstuff_err]: 13:13
   prim_subreg_ext #(
@@ -1915,10 +1931,11 @@ module usbdev_reg_top (
     .wd     (intr_test_rx_bitstuff_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rx_bitstuff_err.qe),
+    .qe     (intr_test_flds_we[13]),
     .q      (reg2hw.intr_test.rx_bitstuff_err.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.rx_bitstuff_err.qe = intr_test_qe;
 
   //   F[frame]: 14:14
   prim_subreg_ext #(
@@ -1929,10 +1946,11 @@ module usbdev_reg_top (
     .wd     (intr_test_frame_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.frame.qe),
+    .qe     (intr_test_flds_we[14]),
     .q      (reg2hw.intr_test.frame.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.frame.qe = intr_test_qe;
 
   //   F[powered]: 15:15
   prim_subreg_ext #(
@@ -1943,10 +1961,11 @@ module usbdev_reg_top (
     .wd     (intr_test_powered_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.powered.qe),
+    .qe     (intr_test_flds_we[15]),
     .q      (reg2hw.intr_test.powered.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.powered.qe = intr_test_qe;
 
   //   F[link_out_err]: 16:16
   prim_subreg_ext #(
@@ -1957,13 +1976,17 @@ module usbdev_reg_top (
     .wd     (intr_test_link_out_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.link_out_err.qe),
+    .qe     (intr_test_flds_we[16]),
     .q      (reg2hw.intr_test.link_out_err.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.link_out_err.qe = intr_test_qe;
 
 
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [0:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
@@ -1972,13 +1995,25 @@ module usbdev_reg_top (
     .wd     (alert_test_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.qe = alert_test_qe;
 
 
   // R[usbctrl]: V(False)
+  logic usbctrl_qe;
+  logic [2:0] usbctrl_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_usbctrl0_qe (
+    .clk_i(clk_usb_48mhz_i),
+    .rst_ni(rst_usb_48mhz_ni),
+    .d_i(&usbctrl_flds_we),
+    .q_o(usbctrl_qe)
+  );
   //   F[enable]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1997,7 +2032,7 @@ module usbdev_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (usbctrl_flds_we[0]),
     .q      (reg2hw.usbctrl.enable.q),
 
     // to register interface (read)
@@ -2022,12 +2057,13 @@ module usbdev_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.usbctrl.resume_link_active.qe),
+    .qe     (usbctrl_flds_we[1]),
     .q      (reg2hw.usbctrl.resume_link_active.q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.usbctrl.resume_link_active.qe = usbctrl_qe;
 
   //   F[device_address]: 22:16
   prim_subreg #(
@@ -2047,7 +2083,7 @@ module usbdev_reg_top (
     .d      (hw2reg.usbctrl.device_address.d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (usbctrl_flds_we[2]),
     .q      (reg2hw.usbctrl.device_address.q),
 
     // to register interface (read)
@@ -2776,6 +2812,17 @@ module usbdev_reg_top (
 
 
   // R[avbuffer]: V(False)
+  logic avbuffer_qe;
+  logic [0:0] avbuffer_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_avbuffer0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&avbuffer_flds_we),
+    .q_o(avbuffer_qe)
+  );
   prim_subreg #(
     .DW      (5),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
@@ -2793,12 +2840,13 @@ module usbdev_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.avbuffer.qe),
+    .qe     (avbuffer_flds_we[0]),
     .q      (reg2hw.avbuffer.q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.avbuffer.qe = avbuffer_qe;
 
 
   // R[rxfifo]: V(True)
@@ -6521,6 +6569,17 @@ module usbdev_reg_top (
 
   // Subregister 0 of Multireg data_toggle_clear
   // R[data_toggle_clear]: V(False)
+  logic data_toggle_clear_qe;
+  logic [11:0] data_toggle_clear_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_data_toggle_clear0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&data_toggle_clear_flds_we),
+    .q_o(data_toggle_clear_qe)
+  );
   //   F[clear_0]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -6539,12 +6598,13 @@ module usbdev_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.data_toggle_clear[0].qe),
+    .qe     (data_toggle_clear_flds_we[0]),
     .q      (reg2hw.data_toggle_clear[0].q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.data_toggle_clear[0].qe = data_toggle_clear_qe;
 
   //   F[clear_1]: 1:1
   prim_subreg #(
@@ -6564,12 +6624,13 @@ module usbdev_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.data_toggle_clear[1].qe),
+    .qe     (data_toggle_clear_flds_we[1]),
     .q      (reg2hw.data_toggle_clear[1].q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.data_toggle_clear[1].qe = data_toggle_clear_qe;
 
   //   F[clear_2]: 2:2
   prim_subreg #(
@@ -6589,12 +6650,13 @@ module usbdev_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.data_toggle_clear[2].qe),
+    .qe     (data_toggle_clear_flds_we[2]),
     .q      (reg2hw.data_toggle_clear[2].q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.data_toggle_clear[2].qe = data_toggle_clear_qe;
 
   //   F[clear_3]: 3:3
   prim_subreg #(
@@ -6614,12 +6676,13 @@ module usbdev_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.data_toggle_clear[3].qe),
+    .qe     (data_toggle_clear_flds_we[3]),
     .q      (reg2hw.data_toggle_clear[3].q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.data_toggle_clear[3].qe = data_toggle_clear_qe;
 
   //   F[clear_4]: 4:4
   prim_subreg #(
@@ -6639,12 +6702,13 @@ module usbdev_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.data_toggle_clear[4].qe),
+    .qe     (data_toggle_clear_flds_we[4]),
     .q      (reg2hw.data_toggle_clear[4].q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.data_toggle_clear[4].qe = data_toggle_clear_qe;
 
   //   F[clear_5]: 5:5
   prim_subreg #(
@@ -6664,12 +6728,13 @@ module usbdev_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.data_toggle_clear[5].qe),
+    .qe     (data_toggle_clear_flds_we[5]),
     .q      (reg2hw.data_toggle_clear[5].q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.data_toggle_clear[5].qe = data_toggle_clear_qe;
 
   //   F[clear_6]: 6:6
   prim_subreg #(
@@ -6689,12 +6754,13 @@ module usbdev_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.data_toggle_clear[6].qe),
+    .qe     (data_toggle_clear_flds_we[6]),
     .q      (reg2hw.data_toggle_clear[6].q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.data_toggle_clear[6].qe = data_toggle_clear_qe;
 
   //   F[clear_7]: 7:7
   prim_subreg #(
@@ -6714,12 +6780,13 @@ module usbdev_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.data_toggle_clear[7].qe),
+    .qe     (data_toggle_clear_flds_we[7]),
     .q      (reg2hw.data_toggle_clear[7].q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.data_toggle_clear[7].qe = data_toggle_clear_qe;
 
   //   F[clear_8]: 8:8
   prim_subreg #(
@@ -6739,12 +6806,13 @@ module usbdev_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.data_toggle_clear[8].qe),
+    .qe     (data_toggle_clear_flds_we[8]),
     .q      (reg2hw.data_toggle_clear[8].q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.data_toggle_clear[8].qe = data_toggle_clear_qe;
 
   //   F[clear_9]: 9:9
   prim_subreg #(
@@ -6764,12 +6832,13 @@ module usbdev_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.data_toggle_clear[9].qe),
+    .qe     (data_toggle_clear_flds_we[9]),
     .q      (reg2hw.data_toggle_clear[9].q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.data_toggle_clear[9].qe = data_toggle_clear_qe;
 
   //   F[clear_10]: 10:10
   prim_subreg #(
@@ -6789,12 +6858,13 @@ module usbdev_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.data_toggle_clear[10].qe),
+    .qe     (data_toggle_clear_flds_we[10]),
     .q      (reg2hw.data_toggle_clear[10].q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.data_toggle_clear[10].qe = data_toggle_clear_qe;
 
   //   F[clear_11]: 11:11
   prim_subreg #(
@@ -6814,12 +6884,13 @@ module usbdev_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.data_toggle_clear[11].qe),
+    .qe     (data_toggle_clear_flds_we[11]),
     .q      (reg2hw.data_toggle_clear[11].q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.data_toggle_clear[11].qe = data_toggle_clear_qe;
 
 
   // R[phy_pins_sense]: V(True)
@@ -7369,6 +7440,17 @@ module usbdev_reg_top (
 
 
   // R[wake_config]: V(False)
+  logic wake_config_qe;
+  logic [1:0] wake_config_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_wake_config0_qe (
+    .clk_i(clk_aon_i),
+    .rst_ni(rst_aon_ni),
+    .d_i(&wake_config_flds_we),
+    .q_o(wake_config_qe)
+  );
   //   F[wake_en]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -7387,7 +7469,7 @@ module usbdev_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (wake_config_flds_we[0]),
     .q      (reg2hw.wake_config.wake_en.q),
 
     // to register interface (read)
@@ -7412,12 +7494,13 @@ module usbdev_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.wake_config.wake_ack.qe),
+    .qe     (wake_config_flds_we[1]),
     .q      (reg2hw.wake_config.wake_ack.q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.wake_config.wake_ack.qe = wake_config_qe;
 
 
   // R[wake_events]: V(False)

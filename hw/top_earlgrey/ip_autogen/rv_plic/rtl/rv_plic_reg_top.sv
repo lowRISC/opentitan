@@ -15361,6 +15361,9 @@ module rv_plic_reg_top (
 
 
   // R[cc0]: V(True)
+  logic cc0_qe;
+  logic [0:0] cc0_flds_we;
+  assign cc0_qe = &cc0_flds_we;
   prim_subreg_ext #(
     .DW    (8)
   ) u_cc0 (
@@ -15369,10 +15372,11 @@ module rv_plic_reg_top (
     .wd     (cc0_wd),
     .d      (hw2reg.cc0.d),
     .qre    (reg2hw.cc0.re),
-    .qe     (reg2hw.cc0.qe),
+    .qe     (cc0_flds_we[0]),
     .q      (reg2hw.cc0.q),
     .qs     (cc0_qs)
   );
+  assign reg2hw.cc0.qe = cc0_qe;
 
 
   // R[msip0]: V(False)
@@ -15402,6 +15406,9 @@ module rv_plic_reg_top (
 
 
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [0:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
@@ -15410,10 +15417,11 @@ module rv_plic_reg_top (
     .wd     (alert_test_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.qe = alert_test_qe;
 
 
 

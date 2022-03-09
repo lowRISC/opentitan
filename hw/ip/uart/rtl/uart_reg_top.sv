@@ -612,6 +612,9 @@ module uart_reg_top (
 
 
   // R[intr_test]: V(True)
+  logic intr_test_qe;
+  logic [7:0] intr_test_flds_we;
+  assign intr_test_qe = &intr_test_flds_we;
   //   F[tx_watermark]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -621,10 +624,11 @@ module uart_reg_top (
     .wd     (intr_test_tx_watermark_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.tx_watermark.qe),
+    .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.tx_watermark.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.tx_watermark.qe = intr_test_qe;
 
   //   F[rx_watermark]: 1:1
   prim_subreg_ext #(
@@ -635,10 +639,11 @@ module uart_reg_top (
     .wd     (intr_test_rx_watermark_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rx_watermark.qe),
+    .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.rx_watermark.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.rx_watermark.qe = intr_test_qe;
 
   //   F[tx_empty]: 2:2
   prim_subreg_ext #(
@@ -649,10 +654,11 @@ module uart_reg_top (
     .wd     (intr_test_tx_empty_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.tx_empty.qe),
+    .qe     (intr_test_flds_we[2]),
     .q      (reg2hw.intr_test.tx_empty.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.tx_empty.qe = intr_test_qe;
 
   //   F[rx_overflow]: 3:3
   prim_subreg_ext #(
@@ -663,10 +669,11 @@ module uart_reg_top (
     .wd     (intr_test_rx_overflow_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rx_overflow.qe),
+    .qe     (intr_test_flds_we[3]),
     .q      (reg2hw.intr_test.rx_overflow.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.rx_overflow.qe = intr_test_qe;
 
   //   F[rx_frame_err]: 4:4
   prim_subreg_ext #(
@@ -677,10 +684,11 @@ module uart_reg_top (
     .wd     (intr_test_rx_frame_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rx_frame_err.qe),
+    .qe     (intr_test_flds_we[4]),
     .q      (reg2hw.intr_test.rx_frame_err.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.rx_frame_err.qe = intr_test_qe;
 
   //   F[rx_break_err]: 5:5
   prim_subreg_ext #(
@@ -691,10 +699,11 @@ module uart_reg_top (
     .wd     (intr_test_rx_break_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rx_break_err.qe),
+    .qe     (intr_test_flds_we[5]),
     .q      (reg2hw.intr_test.rx_break_err.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.rx_break_err.qe = intr_test_qe;
 
   //   F[rx_timeout]: 6:6
   prim_subreg_ext #(
@@ -705,10 +714,11 @@ module uart_reg_top (
     .wd     (intr_test_rx_timeout_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rx_timeout.qe),
+    .qe     (intr_test_flds_we[6]),
     .q      (reg2hw.intr_test.rx_timeout.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.rx_timeout.qe = intr_test_qe;
 
   //   F[rx_parity_err]: 7:7
   prim_subreg_ext #(
@@ -719,13 +729,17 @@ module uart_reg_top (
     .wd     (intr_test_rx_parity_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rx_parity_err.qe),
+    .qe     (intr_test_flds_we[7]),
     .q      (reg2hw.intr_test.rx_parity_err.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.rx_parity_err.qe = intr_test_qe;
 
 
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [0:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
@@ -734,10 +748,11 @@ module uart_reg_top (
     .wd     (alert_test_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.qe = alert_test_qe;
 
 
   // R[ctrl]: V(False)
@@ -1069,6 +1084,17 @@ module uart_reg_top (
 
 
   // R[wdata]: V(False)
+  logic wdata_qe;
+  logic [0:0] wdata_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_wdata0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&wdata_flds_we),
+    .q_o(wdata_qe)
+  );
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
@@ -1086,15 +1112,27 @@ module uart_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.wdata.qe),
+    .qe     (wdata_flds_we[0]),
     .q      (reg2hw.wdata.q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.wdata.qe = wdata_qe;
 
 
   // R[fifo_ctrl]: V(False)
+  logic fifo_ctrl_qe;
+  logic [3:0] fifo_ctrl_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_fifo_ctrl0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&fifo_ctrl_flds_we),
+    .q_o(fifo_ctrl_qe)
+  );
   //   F[rxrst]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1113,12 +1151,13 @@ module uart_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.fifo_ctrl.rxrst.qe),
+    .qe     (fifo_ctrl_flds_we[0]),
     .q      (reg2hw.fifo_ctrl.rxrst.q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.fifo_ctrl.rxrst.qe = fifo_ctrl_qe;
 
   //   F[txrst]: 1:1
   prim_subreg #(
@@ -1138,12 +1177,13 @@ module uart_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.fifo_ctrl.txrst.qe),
+    .qe     (fifo_ctrl_flds_we[1]),
     .q      (reg2hw.fifo_ctrl.txrst.q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.fifo_ctrl.txrst.qe = fifo_ctrl_qe;
 
   //   F[rxilvl]: 4:2
   prim_subreg #(
@@ -1163,12 +1203,13 @@ module uart_reg_top (
     .d      (hw2reg.fifo_ctrl.rxilvl.d),
 
     // to internal hardware
-    .qe     (reg2hw.fifo_ctrl.rxilvl.qe),
+    .qe     (fifo_ctrl_flds_we[2]),
     .q      (reg2hw.fifo_ctrl.rxilvl.q),
 
     // to register interface (read)
     .qs     (fifo_ctrl_rxilvl_qs)
   );
+  assign reg2hw.fifo_ctrl.rxilvl.qe = fifo_ctrl_qe;
 
   //   F[txilvl]: 6:5
   prim_subreg #(
@@ -1188,12 +1229,13 @@ module uart_reg_top (
     .d      (hw2reg.fifo_ctrl.txilvl.d),
 
     // to internal hardware
-    .qe     (reg2hw.fifo_ctrl.txilvl.qe),
+    .qe     (fifo_ctrl_flds_we[3]),
     .q      (reg2hw.fifo_ctrl.txilvl.q),
 
     // to register interface (read)
     .qs     (fifo_ctrl_txilvl_qs)
   );
+  assign reg2hw.fifo_ctrl.txilvl.qe = fifo_ctrl_qe;
 
 
   // R[fifo_status]: V(True)

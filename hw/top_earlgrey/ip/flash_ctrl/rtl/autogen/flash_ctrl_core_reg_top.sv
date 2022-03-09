@@ -1310,6 +1310,9 @@ module flash_ctrl_core_reg_top (
 
 
   // R[intr_test]: V(True)
+  logic intr_test_qe;
+  logic [5:0] intr_test_flds_we;
+  assign intr_test_qe = &intr_test_flds_we;
   //   F[prog_empty]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -1319,10 +1322,11 @@ module flash_ctrl_core_reg_top (
     .wd     (intr_test_prog_empty_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.prog_empty.qe),
+    .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.prog_empty.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.prog_empty.qe = intr_test_qe;
 
   //   F[prog_lvl]: 1:1
   prim_subreg_ext #(
@@ -1333,10 +1337,11 @@ module flash_ctrl_core_reg_top (
     .wd     (intr_test_prog_lvl_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.prog_lvl.qe),
+    .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.prog_lvl.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.prog_lvl.qe = intr_test_qe;
 
   //   F[rd_full]: 2:2
   prim_subreg_ext #(
@@ -1347,10 +1352,11 @@ module flash_ctrl_core_reg_top (
     .wd     (intr_test_rd_full_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rd_full.qe),
+    .qe     (intr_test_flds_we[2]),
     .q      (reg2hw.intr_test.rd_full.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.rd_full.qe = intr_test_qe;
 
   //   F[rd_lvl]: 3:3
   prim_subreg_ext #(
@@ -1361,10 +1367,11 @@ module flash_ctrl_core_reg_top (
     .wd     (intr_test_rd_lvl_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rd_lvl.qe),
+    .qe     (intr_test_flds_we[3]),
     .q      (reg2hw.intr_test.rd_lvl.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.rd_lvl.qe = intr_test_qe;
 
   //   F[op_done]: 4:4
   prim_subreg_ext #(
@@ -1375,10 +1382,11 @@ module flash_ctrl_core_reg_top (
     .wd     (intr_test_op_done_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.op_done.qe),
+    .qe     (intr_test_flds_we[4]),
     .q      (reg2hw.intr_test.op_done.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.op_done.qe = intr_test_qe;
 
   //   F[corr_err]: 5:5
   prim_subreg_ext #(
@@ -1389,13 +1397,17 @@ module flash_ctrl_core_reg_top (
     .wd     (intr_test_corr_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.corr_err.qe),
+    .qe     (intr_test_flds_we[5]),
     .q      (reg2hw.intr_test.corr_err.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.corr_err.qe = intr_test_qe;
 
 
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [1:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   //   F[recov_err]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -1405,10 +1417,11 @@ module flash_ctrl_core_reg_top (
     .wd     (alert_test_recov_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.recov_err.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.recov_err.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.recov_err.qe = alert_test_qe;
 
   //   F[fatal_err]: 1:1
   prim_subreg_ext #(
@@ -1419,10 +1432,11 @@ module flash_ctrl_core_reg_top (
     .wd     (alert_test_fatal_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.fatal_err.qe),
+    .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.fatal_err.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.fatal_err.qe = alert_test_qe;
 
 
   // R[dis]: V(False)

@@ -459,6 +459,9 @@ module aon_timer_reg_top (
 
   // Register instances
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [0:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
@@ -467,10 +470,11 @@ module aon_timer_reg_top (
     .wd     (alert_test_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.qe = alert_test_qe;
 
 
   // R[wkup_ctrl]: V(False)
@@ -786,6 +790,9 @@ module aon_timer_reg_top (
 
 
   // R[intr_test]: V(True)
+  logic intr_test_qe;
+  logic [1:0] intr_test_flds_we;
+  assign intr_test_qe = &intr_test_flds_we;
   //   F[wkup_timer_expired]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -795,10 +802,11 @@ module aon_timer_reg_top (
     .wd     (intr_test_wkup_timer_expired_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.wkup_timer_expired.qe),
+    .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.wkup_timer_expired.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.wkup_timer_expired.qe = intr_test_qe;
 
   //   F[wdog_timer_bark]: 1:1
   prim_subreg_ext #(
@@ -809,10 +817,11 @@ module aon_timer_reg_top (
     .wd     (intr_test_wdog_timer_bark_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.wdog_timer_bark.qe),
+    .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.wdog_timer_bark.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.wdog_timer_bark.qe = intr_test_qe;
 
 
   // R[wkup_cause]: V(False)
