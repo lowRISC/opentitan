@@ -187,8 +187,6 @@ module otbn_alu_bignum
         default:             mod_d[i_word*32+:32] = ispr_bignum_wdata_i[i_word*32+:32];
       endcase
 
-      `ASSERT(ModSecWipeSelOneHot, $onehot0({sec_wipe_mod_urnd_i, sec_wipe_zero_i}))
-
       unique case (1'b1)
         ispr_init_i:               mod_d[i_word*32+:32] = '0;
         ispr_base_wr_en_i[i_word]: mod_d[i_word*32+:32] = ispr_base_wdata_i;
@@ -196,6 +194,7 @@ module otbn_alu_bignum
       endcase
     end
 
+    `ASSERT(ModSecWipeSelOneHot, $onehot0({sec_wipe_mod_urnd_i, sec_wipe_zero_i}))
     `ASSERT(ModWrSelOneHot, $onehot0({ispr_init_i, ispr_base_wr_en_i[i_word]}))
 
     assign mod_wr_en[i_word] = ispr_init_i |
