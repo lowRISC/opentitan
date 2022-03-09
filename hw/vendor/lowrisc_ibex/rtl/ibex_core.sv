@@ -101,6 +101,8 @@ module ibex_core import ibex_pkg::*; #(
   // Debug Interface
   input  logic                         debug_req_i,
   output crash_dump_t                  crash_dump_o,
+  // SEC_CM: EXCEPTION.CTRL_FLOW.LOCAL_ESC
+  // SEC_CM: EXCEPTION.CTRL_FLOW.GLOBAL_ESC
   output logic                         double_fault_seen_o,
 
   // RISC-V Formal Interface
@@ -137,6 +139,7 @@ module ibex_core import ibex_pkg::*; #(
 `endif
 
   // CPU Control Signals
+  // SEC_CM: FETCH.CTRL.LC_GATED
   input  fetch_enable_t                fetch_enable_i,
   output logic                         alert_minor_o,
   output logic                         alert_major_o,
@@ -145,6 +148,7 @@ module ibex_core import ibex_pkg::*; #(
 );
 
   localparam int unsigned PMP_NUM_CHAN      = 3;
+  // SEC_CM: CORE.DATA_REG_SW.SCA
   localparam bit          DataIndTiming     = SecureIbex;
   localparam bit          PCIncrCheck       = SecureIbex;
   localparam bit          ShadowCSR         = 1'b0;
@@ -177,6 +181,7 @@ module ibex_core import ibex_pkg::*; #(
   logic [31:0] dummy_instr_seed;
   logic        icache_enable;
   logic        icache_inval;
+  logic        icache_ecc_error;
   logic        pc_mismatch_alert;
   logic        csr_shadow_err;
 
@@ -428,6 +433,7 @@ module ibex_core import ibex_pkg::*; #(
     .dummy_instr_seed_i    (dummy_instr_seed),
     .icache_enable_i       (icache_enable),
     .icache_inval_i        (icache_inval),
+    .icache_ecc_error_o    (icache_ecc_error),
 
     // branch targets
     .branch_target_ex_i(branch_target_ex),
@@ -461,6 +467,7 @@ module ibex_core import ibex_pkg::*; #(
   if (SecureIbex) begin : g_instr_req_gated_secure
     // For secure Ibex fetch_enable_i must be a specific multi-bit pattern to enable instruction
     // fetch
+    // SEC_CM: FETCH.CTRL.LC_GATED
     assign instr_req_gated = instr_req_int & (fetch_enable_i == FetchEnableOn);
   end else begin : g_instr_req_gated_non_secure
     // For non secure Ibex only the bottom bit of fetch enable is considered
@@ -784,6 +791,7 @@ module ibex_core import ibex_pkg::*; #(
 
   if (RegFileECC) begin : gen_regfile_ecc
 
+    // SEC_CM: DATA_REG_SW.INTEGRITY
     logic [1:0] rf_ecc_err_a, rf_ecc_err_b;
     logic       rf_ecc_err_a_id, rf_ecc_err_b_id;
 
@@ -846,8 +854,7 @@ module ibex_core import ibex_pkg::*; #(
   ///////////////////
 
   // Minor alert - core is in a recoverable state
-  // TODO add I$ ECC errors here
-  assign alert_minor_o = 1'b0;
+  assign alert_minor_o = icache_ecc_error;
 
   // Major alert - core is unrecoverable
   assign alert_major_o = rf_ecc_err_comb | pc_mismatch_alert | csr_shadow_err;

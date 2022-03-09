@@ -81,6 +81,13 @@ When Ibex is configured with the SecureIbex parameter, ECC checking is added to 
 This can be useful to detect fault injection attacks since the register file covers a reasonably large area.
 No attempt is made to correct detected errors, but an internal major alert is signaled for the system to take action.
 
+ICache ECC
+----------
+
+The ICache can be configured with ECC protection.
+When an ECC error is detected a minor alert is signaled.
+See :ref:`icache-ecc` for more information.
+
 Hardened PC
 -----------
 

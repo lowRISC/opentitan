@@ -696,6 +696,8 @@ module ibex_cs_registers #(
           mstack_en      = 1'b1;
 
           if (!mcause_d[5]) begin
+            // SEC_CM: EXCEPTION.CTRL_FLOW.LOCAL_ESC
+            // SEC_CM: EXCEPTION.CTRL_FLOW.GLOBAL_ESC
             cpuctrl_we = 1'b1;
 
             cpuctrl_d.sync_exc_seen = 1'b1;
@@ -716,6 +718,8 @@ module ibex_cs_registers #(
         mstatus_en     = 1'b1;
         mstatus_d.mie  = mstatus_q.mpie; // re-enable interrupts
 
+        // SEC_CM: EXCEPTION.CTRL_FLOW.LOCAL_ESC
+        // SEC_CM: EXCEPTION.CTRL_FLOW.GLOBAL_ESC
         cpuctrl_we              = 1'b1;
         cpuctrl_d.sync_exc_seen = 1'b0;
 
@@ -1502,6 +1506,7 @@ module ibex_cs_registers #(
 
   // Generate fixed time execution bit
   if (DataIndTiming) begin : gen_dit
+    // SEC_CM: CORE.DATA_REG_SW.SCA
     assign cpuctrl_wdata.data_ind_timing = cpuctrl_wdata_raw.data_ind_timing;
 
   end else begin : gen_no_dit
@@ -1517,6 +1522,7 @@ module ibex_cs_registers #(
 
   // Generate dummy instruction signals
   if (DummyInstructions) begin : gen_dummy
+    // SEC_CM: CTRL_FLOW.UNPREDICTABLE
     assign cpuctrl_wdata.dummy_instr_en   = cpuctrl_wdata_raw.dummy_instr_en;
     assign cpuctrl_wdata.dummy_instr_mask = cpuctrl_wdata_raw.dummy_instr_mask;
 

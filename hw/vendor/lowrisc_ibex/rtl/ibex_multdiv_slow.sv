@@ -190,6 +190,7 @@ module ibex_multdiv_slow
                                          op_a_ext[31:0] & {32{op_b_i[0]}}  };
               op_b_shift_d   = op_b_ext >> 1;
               // Proceed with multiplication by 0/1 in data-independent time mode
+              // SEC_CM: CORE.DATA_REG_SW.SCA
               md_state_d     = (!data_ind_timing_i && ((op_b_ext >> 1) == 0)) ? MD_LAST : MD_COMP;
             end
             MD_OP_MULH: begin
@@ -205,6 +206,7 @@ module ibex_multdiv_slow
               // Note with data-independent time option, the full divide operation will proceed as
               // normal and will naturally return -1
               accum_window_d = {33{1'b1}};
+              // SEC_CM: CORE.DATA_REG_SW.SCA
               md_state_d     = (!data_ind_timing_i && equal_to_zero_i) ? MD_FINISH : MD_ABS_A;
               // Record that this is a div by zero to stop the sign change at the end of the
               // division (in data_ind_timing mode).
@@ -216,6 +218,7 @@ module ibex_multdiv_slow
               // Note with data-independent time option, the full divide operation will proceed as
               // normal and will naturally return operand a
               accum_window_d = op_a_ext;
+              // SEC_CM: CORE.DATA_REG_SW.SCA
               md_state_d     = (!data_ind_timing_i && equal_to_zero_i) ? MD_FINISH : MD_ABS_A;
             end
             default:;
@@ -248,6 +251,7 @@ module ibex_multdiv_slow
               op_b_shift_d   = op_b_shift_q >> 1;
               // Multiplication is complete once op_b is zero, unless in data_ind_timing mode where
               // the maximum possible shift-add operations will be completed regardless of op_b
+              // SEC_CM: CORE.DATA_REG_SW.SCA
               md_state_d     = ((!data_ind_timing_i && (op_b_shift_d == 0)) ||
                                 (multdiv_count_q == 5'd1)) ? MD_LAST : MD_COMP;
             end
