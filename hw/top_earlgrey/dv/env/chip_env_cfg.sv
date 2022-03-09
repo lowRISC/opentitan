@@ -30,6 +30,18 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // Memory backdoor util instances for all memory instances in the chip.
   mem_bkdr_util mem_bkdr_util_h[chip_mem_e];
 
+  // Creator SW config region in OTP that holds the AST config data. Randomized for open source.
+  //
+  // These are written via backdoor to the OTP region that starts at
+  // otp_ctrl_reg_pkg::CreatorSwCfgAstCfgOffset. SW based tests (via test ROM or the production mask
+  // ROM) will read out from this OTP region and write blindly to AST at the start. Non-SW based
+  // tests will do the same, prior to the test starting, see
+  // chip_stub_cpu_base_vseq::dut_init().
+  //
+  // In closed source, tests can modify this data directly in the extended sequence's dut_init(),
+  // before invoking super.dut_init(), or any other suitable place.
+  rand uint creator_sw_cfg_ast_cfg_data[otp_ctrl_reg_pkg::CreatorSwCfgAstCfgSize / 4];
+
   // sw related
   // Directory from where to pick up the SW test images -default to PWD {run_dir}.
   string sw_build_bin_dir = ".";

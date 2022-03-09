@@ -6,8 +6,8 @@ class chip_base_test extends cip_base_test #(
     .ENV_T(chip_env),
     .CFG_T(chip_env_cfg)
   );
-  `uvm_component_utils(chip_base_test)
   `uvm_component_new
+  `uvm_component_utils(chip_base_test)
 
   // The base class dv_base_test creates the following instances:
   // chip_env_cfg: cfg
@@ -58,6 +58,12 @@ class chip_base_test extends cip_base_test #(
     // Knob to set custom sw image names for rom and sw.
     if ($value$plusargs("sw_images=%0s", sw_images_plusarg)) begin
       cfg.parse_sw_images_string(sw_images_plusarg);
+    end
+
+    // Override the initial AST configuration data at runtime via plusarg.
+    foreach (cfg.creator_sw_cfg_ast_cfg_data[i]) begin
+      void'($value$plusargs({$sformatf("creator_sw_cfg_ast_cfg_data[%0d]", i), "=%0h"},
+                            cfg.creator_sw_cfg_ast_cfg_data[i]));
     end
 
     // Knob to select the OTP image based on LC state.

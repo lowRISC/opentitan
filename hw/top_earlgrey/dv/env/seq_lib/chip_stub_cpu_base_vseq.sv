@@ -35,9 +35,6 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
 
   virtual task apply_reset(string kind = "HARD");
     super.apply_reset(kind);
-    // Backdoor load the OTP image.
-    cfg.mem_bkdr_util_h[Otp].load_mem_from_file(cfg.otp_images[cfg.use_otp_image]);
-
     // internal reset does not immediately go to 0 when external reset is applied
     wait (cfg.rst_n_mon_vif.pins[0] === 0);
     wait (cfg.rst_n_mon_vif.pins[0] === 1);
@@ -49,8 +46,26 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
     cfg.tap_straps_vif.drive(SelectRVJtagTap);
     super.dut_init(reset_kind);
     if (cfg.jtag_riscv_map == null) cfg.tap_straps_vif.drive(DeselectJtagTap);
+    // Program the AST with the configuration data loaded in OTP creator SW config region.
+    do_ast_cfg();
+  endtask
+
+  // Write AST registers with the configuration data backdoor loaded into OTP creator SW cfg region.
+  //
+  // This mimics what the test ROM / mask ROM does in SW based tests, but for non-SW tests. Invoked
+  // in dut_init(), which is called in pre_start().
+  virtual task do_ast_cfg();
+    logic [31:0] data;
+
+    foreach (ral.ast.rega[i]) begin
+      data = cfg.mem_bkdr_util_h[Otp].read32(otp_ctrl_reg_pkg::CreatorSwCfgAstCfgOffset + i * 4);
+      `uvm_info(`gfn, $sformatf("Writing 0x%0h to %0s", data, ral.ast.rega[i].`gfn), UVM_MEDIUM)
+      csr_wr(.ptr(ral.ast.rega[i]), .value(data), .predict(1));
+    end
+
+    data = cfg.mem_bkdr_util_h[Otp].read32(otp_ctrl_reg_pkg::CreatorSwCfgAstInitEnOffset);
+    `uvm_info(`gfn, $sformatf("Writing 0x%0h to %0s", data, ral.ast.regal.`gfn), UVM_MEDIUM)
+    csr_wr(.ptr(ral.ast.regal), .value(data), .predict(1));
   endtask
 
 endclass
-
-`undef add_ip_csr_exclusions

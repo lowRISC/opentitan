@@ -24,7 +24,6 @@ class chip_sw_base_vseq extends chip_base_vseq;
      int size_bytes;
      int total_bytes;
 
-
     `uvm_info(`gfn, "Started cpu_init", UVM_MEDIUM)
     // TODO: Fixing this for now - need to find a way to pass this on to the SW test.
     foreach (cfg.m_uart_agent_cfgs[i]) begin
@@ -77,10 +76,6 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.sw_test_status_vif.sw_test_status = SwTestStatusBooted;
 
     `uvm_info(`gfn, "CPU_init done", UVM_MEDIUM)
-    // If we load the mem with a file in the same time step as overwriting a symbol in the
-    // ELF file, then adding zero delay helps with avoiding a race condition. Do all symbol
-    // overrides after this zero delay.
-    #0;
   endtask
 
   virtual function void main_sram_bkdr_write32(
