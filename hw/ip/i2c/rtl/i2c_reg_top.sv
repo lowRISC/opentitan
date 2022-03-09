@@ -1107,6 +1107,9 @@ module i2c_reg_top (
 
 
   // R[intr_test]: V(True)
+  logic intr_test_qe;
+  logic [15:0] intr_test_flds_we;
+  assign intr_test_qe = &intr_test_flds_we;
   //   F[fmt_watermark]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -1116,10 +1119,11 @@ module i2c_reg_top (
     .wd     (intr_test_fmt_watermark_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.fmt_watermark.qe),
+    .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.fmt_watermark.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.fmt_watermark.qe = intr_test_qe;
 
   //   F[rx_watermark]: 1:1
   prim_subreg_ext #(
@@ -1130,10 +1134,11 @@ module i2c_reg_top (
     .wd     (intr_test_rx_watermark_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rx_watermark.qe),
+    .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.rx_watermark.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.rx_watermark.qe = intr_test_qe;
 
   //   F[fmt_overflow]: 2:2
   prim_subreg_ext #(
@@ -1144,10 +1149,11 @@ module i2c_reg_top (
     .wd     (intr_test_fmt_overflow_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.fmt_overflow.qe),
+    .qe     (intr_test_flds_we[2]),
     .q      (reg2hw.intr_test.fmt_overflow.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.fmt_overflow.qe = intr_test_qe;
 
   //   F[rx_overflow]: 3:3
   prim_subreg_ext #(
@@ -1158,10 +1164,11 @@ module i2c_reg_top (
     .wd     (intr_test_rx_overflow_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rx_overflow.qe),
+    .qe     (intr_test_flds_we[3]),
     .q      (reg2hw.intr_test.rx_overflow.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.rx_overflow.qe = intr_test_qe;
 
   //   F[nak]: 4:4
   prim_subreg_ext #(
@@ -1172,10 +1179,11 @@ module i2c_reg_top (
     .wd     (intr_test_nak_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.nak.qe),
+    .qe     (intr_test_flds_we[4]),
     .q      (reg2hw.intr_test.nak.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.nak.qe = intr_test_qe;
 
   //   F[scl_interference]: 5:5
   prim_subreg_ext #(
@@ -1186,10 +1194,11 @@ module i2c_reg_top (
     .wd     (intr_test_scl_interference_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.scl_interference.qe),
+    .qe     (intr_test_flds_we[5]),
     .q      (reg2hw.intr_test.scl_interference.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.scl_interference.qe = intr_test_qe;
 
   //   F[sda_interference]: 6:6
   prim_subreg_ext #(
@@ -1200,10 +1209,11 @@ module i2c_reg_top (
     .wd     (intr_test_sda_interference_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.sda_interference.qe),
+    .qe     (intr_test_flds_we[6]),
     .q      (reg2hw.intr_test.sda_interference.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.sda_interference.qe = intr_test_qe;
 
   //   F[stretch_timeout]: 7:7
   prim_subreg_ext #(
@@ -1214,10 +1224,11 @@ module i2c_reg_top (
     .wd     (intr_test_stretch_timeout_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.stretch_timeout.qe),
+    .qe     (intr_test_flds_we[7]),
     .q      (reg2hw.intr_test.stretch_timeout.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.stretch_timeout.qe = intr_test_qe;
 
   //   F[sda_unstable]: 8:8
   prim_subreg_ext #(
@@ -1228,10 +1239,11 @@ module i2c_reg_top (
     .wd     (intr_test_sda_unstable_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.sda_unstable.qe),
+    .qe     (intr_test_flds_we[8]),
     .q      (reg2hw.intr_test.sda_unstable.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.sda_unstable.qe = intr_test_qe;
 
   //   F[trans_complete]: 9:9
   prim_subreg_ext #(
@@ -1242,10 +1254,11 @@ module i2c_reg_top (
     .wd     (intr_test_trans_complete_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.trans_complete.qe),
+    .qe     (intr_test_flds_we[9]),
     .q      (reg2hw.intr_test.trans_complete.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.trans_complete.qe = intr_test_qe;
 
   //   F[tx_empty]: 10:10
   prim_subreg_ext #(
@@ -1256,10 +1269,11 @@ module i2c_reg_top (
     .wd     (intr_test_tx_empty_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.tx_empty.qe),
+    .qe     (intr_test_flds_we[10]),
     .q      (reg2hw.intr_test.tx_empty.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.tx_empty.qe = intr_test_qe;
 
   //   F[tx_nonempty]: 11:11
   prim_subreg_ext #(
@@ -1270,10 +1284,11 @@ module i2c_reg_top (
     .wd     (intr_test_tx_nonempty_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.tx_nonempty.qe),
+    .qe     (intr_test_flds_we[11]),
     .q      (reg2hw.intr_test.tx_nonempty.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.tx_nonempty.qe = intr_test_qe;
 
   //   F[tx_overflow]: 12:12
   prim_subreg_ext #(
@@ -1284,10 +1299,11 @@ module i2c_reg_top (
     .wd     (intr_test_tx_overflow_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.tx_overflow.qe),
+    .qe     (intr_test_flds_we[12]),
     .q      (reg2hw.intr_test.tx_overflow.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.tx_overflow.qe = intr_test_qe;
 
   //   F[acq_overflow]: 13:13
   prim_subreg_ext #(
@@ -1298,10 +1314,11 @@ module i2c_reg_top (
     .wd     (intr_test_acq_overflow_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.acq_overflow.qe),
+    .qe     (intr_test_flds_we[13]),
     .q      (reg2hw.intr_test.acq_overflow.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.acq_overflow.qe = intr_test_qe;
 
   //   F[ack_stop]: 14:14
   prim_subreg_ext #(
@@ -1312,10 +1329,11 @@ module i2c_reg_top (
     .wd     (intr_test_ack_stop_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.ack_stop.qe),
+    .qe     (intr_test_flds_we[14]),
     .q      (reg2hw.intr_test.ack_stop.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.ack_stop.qe = intr_test_qe;
 
   //   F[host_timeout]: 15:15
   prim_subreg_ext #(
@@ -1326,13 +1344,17 @@ module i2c_reg_top (
     .wd     (intr_test_host_timeout_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.host_timeout.qe),
+    .qe     (intr_test_flds_we[15]),
     .q      (reg2hw.intr_test.host_timeout.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.host_timeout.qe = intr_test_qe;
 
 
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [0:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
@@ -1341,10 +1363,11 @@ module i2c_reg_top (
     .wd     (alert_test_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.qe = alert_test_qe;
 
 
   // R[ctrl]: V(False)
@@ -1582,6 +1605,17 @@ module i2c_reg_top (
 
 
   // R[fdata]: V(False)
+  logic fdata_qe;
+  logic [5:0] fdata_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_fdata0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&fdata_flds_we),
+    .q_o(fdata_qe)
+  );
   //   F[fbyte]: 7:0
   prim_subreg #(
     .DW      (8),
@@ -1600,12 +1634,13 @@ module i2c_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.fdata.fbyte.qe),
+    .qe     (fdata_flds_we[0]),
     .q      (reg2hw.fdata.fbyte.q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.fdata.fbyte.qe = fdata_qe;
 
   //   F[start]: 8:8
   prim_subreg #(
@@ -1625,12 +1660,13 @@ module i2c_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.fdata.start.qe),
+    .qe     (fdata_flds_we[1]),
     .q      (reg2hw.fdata.start.q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.fdata.start.qe = fdata_qe;
 
   //   F[stop]: 9:9
   prim_subreg #(
@@ -1650,12 +1686,13 @@ module i2c_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.fdata.stop.qe),
+    .qe     (fdata_flds_we[2]),
     .q      (reg2hw.fdata.stop.q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.fdata.stop.qe = fdata_qe;
 
   //   F[read]: 10:10
   prim_subreg #(
@@ -1675,12 +1712,13 @@ module i2c_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.fdata.read.qe),
+    .qe     (fdata_flds_we[3]),
     .q      (reg2hw.fdata.read.q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.fdata.read.qe = fdata_qe;
 
   //   F[rcont]: 11:11
   prim_subreg #(
@@ -1700,12 +1738,13 @@ module i2c_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.fdata.rcont.qe),
+    .qe     (fdata_flds_we[4]),
     .q      (reg2hw.fdata.rcont.q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.fdata.rcont.qe = fdata_qe;
 
   //   F[nakok]: 12:12
   prim_subreg #(
@@ -1725,15 +1764,27 @@ module i2c_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.fdata.nakok.qe),
+    .qe     (fdata_flds_we[5]),
     .q      (reg2hw.fdata.nakok.q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.fdata.nakok.qe = fdata_qe;
 
 
   // R[fifo_ctrl]: V(False)
+  logic fifo_ctrl_qe;
+  logic [5:0] fifo_ctrl_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_fifo_ctrl0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&fifo_ctrl_flds_we),
+    .q_o(fifo_ctrl_qe)
+  );
   //   F[rxrst]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1752,12 +1803,13 @@ module i2c_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.fifo_ctrl.rxrst.qe),
+    .qe     (fifo_ctrl_flds_we[0]),
     .q      (reg2hw.fifo_ctrl.rxrst.q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.fifo_ctrl.rxrst.qe = fifo_ctrl_qe;
 
   //   F[fmtrst]: 1:1
   prim_subreg #(
@@ -1777,12 +1829,13 @@ module i2c_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.fifo_ctrl.fmtrst.qe),
+    .qe     (fifo_ctrl_flds_we[1]),
     .q      (reg2hw.fifo_ctrl.fmtrst.q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.fifo_ctrl.fmtrst.qe = fifo_ctrl_qe;
 
   //   F[rxilvl]: 4:2
   prim_subreg #(
@@ -1802,12 +1855,13 @@ module i2c_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.fifo_ctrl.rxilvl.qe),
+    .qe     (fifo_ctrl_flds_we[2]),
     .q      (reg2hw.fifo_ctrl.rxilvl.q),
 
     // to register interface (read)
     .qs     (fifo_ctrl_rxilvl_qs)
   );
+  assign reg2hw.fifo_ctrl.rxilvl.qe = fifo_ctrl_qe;
 
   //   F[fmtilvl]: 6:5
   prim_subreg #(
@@ -1827,12 +1881,13 @@ module i2c_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.fifo_ctrl.fmtilvl.qe),
+    .qe     (fifo_ctrl_flds_we[3]),
     .q      (reg2hw.fifo_ctrl.fmtilvl.q),
 
     // to register interface (read)
     .qs     (fifo_ctrl_fmtilvl_qs)
   );
+  assign reg2hw.fifo_ctrl.fmtilvl.qe = fifo_ctrl_qe;
 
   //   F[acqrst]: 7:7
   prim_subreg #(
@@ -1852,12 +1907,13 @@ module i2c_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.fifo_ctrl.acqrst.qe),
+    .qe     (fifo_ctrl_flds_we[4]),
     .q      (reg2hw.fifo_ctrl.acqrst.q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.fifo_ctrl.acqrst.qe = fifo_ctrl_qe;
 
   //   F[txrst]: 8:8
   prim_subreg #(
@@ -1877,12 +1933,13 @@ module i2c_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.fifo_ctrl.txrst.qe),
+    .qe     (fifo_ctrl_flds_we[5]),
     .q      (reg2hw.fifo_ctrl.txrst.q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.fifo_ctrl.txrst.qe = fifo_ctrl_qe;
 
 
   // R[fifo_status]: V(True)
@@ -2495,6 +2552,17 @@ module i2c_reg_top (
 
 
   // R[txdata]: V(False)
+  logic txdata_qe;
+  logic [0:0] txdata_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_txdata0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&txdata_flds_we),
+    .q_o(txdata_qe)
+  );
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
@@ -2512,12 +2580,13 @@ module i2c_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.txdata.qe),
+    .qe     (txdata_flds_we[0]),
     .q      (reg2hw.txdata.q),
 
     // to register interface (read)
     .qs     ()
   );
+  assign reg2hw.txdata.qe = txdata_qe;
 
 
   // R[stretch_ctrl]: V(False)

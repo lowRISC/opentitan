@@ -494,6 +494,9 @@ module clkmgr_reg_top (
 
   // Register instances
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [1:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   //   F[recov_fault]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -503,10 +506,11 @@ module clkmgr_reg_top (
     .wd     (alert_test_recov_fault_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.recov_fault.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.recov_fault.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.recov_fault.qe = alert_test_qe;
 
   //   F[fatal_fault]: 1:1
   prim_subreg_ext #(
@@ -517,10 +521,11 @@ module clkmgr_reg_top (
     .wd     (alert_test_fatal_fault_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.fatal_fault.qe),
+    .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.fatal_fault.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.fatal_fault.qe = alert_test_qe;
 
 
   // R[extclk_ctrl_regwen]: V(False)

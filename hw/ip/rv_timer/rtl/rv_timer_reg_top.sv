@@ -141,6 +141,9 @@ module rv_timer_reg_top (
 
   // Register instances
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [0:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
@@ -149,10 +152,11 @@ module rv_timer_reg_top (
     .wd     (alert_test_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.qe = alert_test_qe;
 
 
   // Subregister 0 of Multireg ctrl
@@ -287,6 +291,17 @@ module rv_timer_reg_top (
 
 
   // R[compare_lower0_0]: V(False)
+  logic compare_lower0_0_qe;
+  logic [0:0] compare_lower0_0_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_compare_lower0_00_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&compare_lower0_0_flds_we),
+    .q_o(compare_lower0_0_qe)
+  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -304,15 +319,27 @@ module rv_timer_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.compare_lower0_0.qe),
+    .qe     (compare_lower0_0_flds_we[0]),
     .q      (reg2hw.compare_lower0_0.q),
 
     // to register interface (read)
     .qs     (compare_lower0_0_qs)
   );
+  assign reg2hw.compare_lower0_0.qe = compare_lower0_0_qe;
 
 
   // R[compare_upper0_0]: V(False)
+  logic compare_upper0_0_qe;
+  logic [0:0] compare_upper0_0_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_compare_upper0_00_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&compare_upper0_0_flds_we),
+    .q_o(compare_upper0_0_qe)
+  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -330,12 +357,13 @@ module rv_timer_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.compare_upper0_0.qe),
+    .qe     (compare_upper0_0_flds_we[0]),
     .q      (reg2hw.compare_upper0_0.q),
 
     // to register interface (read)
     .qs     (compare_upper0_0_qs)
   );
+  assign reg2hw.compare_upper0_0.qe = compare_upper0_0_qe;
 
 
   // Subregister 0 of Multireg intr_enable0
@@ -394,6 +422,9 @@ module rv_timer_reg_top (
 
   // Subregister 0 of Multireg intr_test0
   // R[intr_test0]: V(True)
+  logic intr_test0_qe;
+  logic [0:0] intr_test0_flds_we;
+  assign intr_test0_qe = &intr_test0_flds_we;
   prim_subreg_ext #(
     .DW    (1)
   ) u_intr_test0 (
@@ -402,10 +433,11 @@ module rv_timer_reg_top (
     .wd     (intr_test0_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test0[0].qe),
+    .qe     (intr_test0_flds_we[0]),
     .q      (reg2hw.intr_test0[0].q),
     .qs     ()
   );
+  assign reg2hw.intr_test0[0].qe = intr_test0_qe;
 
 
 

@@ -202,6 +202,9 @@ module lc_ctrl_reg_top (
 
   // Register instances
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [2:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   //   F[fatal_prog_error]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -211,10 +214,11 @@ module lc_ctrl_reg_top (
     .wd     (alert_test_fatal_prog_error_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.fatal_prog_error.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.fatal_prog_error.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.fatal_prog_error.qe = alert_test_qe;
 
   //   F[fatal_state_error]: 1:1
   prim_subreg_ext #(
@@ -225,10 +229,11 @@ module lc_ctrl_reg_top (
     .wd     (alert_test_fatal_state_error_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.fatal_state_error.qe),
+    .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.fatal_state_error.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.fatal_state_error.qe = alert_test_qe;
 
   //   F[fatal_bus_integ_error]: 2:2
   prim_subreg_ext #(
@@ -239,10 +244,11 @@ module lc_ctrl_reg_top (
     .wd     (alert_test_fatal_bus_integ_error_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.fatal_bus_integ_error.qe),
+    .qe     (alert_test_flds_we[2]),
     .q      (reg2hw.alert_test.fatal_bus_integ_error.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.fatal_bus_integ_error.qe = alert_test_qe;
 
 
   // R[status]: V(True)
@@ -388,6 +394,9 @@ module lc_ctrl_reg_top (
 
 
   // R[claim_transition_if]: V(True)
+  logic claim_transition_if_qe;
+  logic [0:0] claim_transition_if_flds_we;
+  assign claim_transition_if_qe = &claim_transition_if_flds_we;
   prim_subreg_ext #(
     .DW    (8)
   ) u_claim_transition_if (
@@ -396,10 +405,11 @@ module lc_ctrl_reg_top (
     .wd     (claim_transition_if_wd),
     .d      (hw2reg.claim_transition_if.d),
     .qre    (),
-    .qe     (reg2hw.claim_transition_if.qe),
+    .qe     (claim_transition_if_flds_we[0]),
     .q      (reg2hw.claim_transition_if.q),
     .qs     (claim_transition_if_qs)
   );
+  assign reg2hw.claim_transition_if.qe = claim_transition_if_qe;
 
 
   // R[transition_regwen]: V(True)
@@ -418,6 +428,9 @@ module lc_ctrl_reg_top (
 
 
   // R[transition_cmd]: V(True)
+  logic transition_cmd_qe;
+  logic [0:0] transition_cmd_flds_we;
+  assign transition_cmd_qe = &transition_cmd_flds_we;
   prim_subreg_ext #(
     .DW    (1)
   ) u_transition_cmd (
@@ -426,13 +439,17 @@ module lc_ctrl_reg_top (
     .wd     (transition_cmd_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.transition_cmd.qe),
+    .qe     (transition_cmd_flds_we[0]),
     .q      (reg2hw.transition_cmd.q),
     .qs     ()
   );
+  assign reg2hw.transition_cmd.qe = transition_cmd_qe;
 
 
   // R[transition_ctrl]: V(True)
+  logic transition_ctrl_qe;
+  logic [0:0] transition_ctrl_flds_we;
+  assign transition_ctrl_qe = &transition_ctrl_flds_we;
   prim_subreg_ext #(
     .DW    (1)
   ) u_transition_ctrl (
@@ -441,14 +458,18 @@ module lc_ctrl_reg_top (
     .wd     (transition_ctrl_wd),
     .d      (hw2reg.transition_ctrl.d),
     .qre    (),
-    .qe     (reg2hw.transition_ctrl.qe),
+    .qe     (transition_ctrl_flds_we[0]),
     .q      (reg2hw.transition_ctrl.q),
     .qs     (transition_ctrl_qs)
   );
+  assign reg2hw.transition_ctrl.qe = transition_ctrl_qe;
 
 
   // Subregister 0 of Multireg transition_token
   // R[transition_token_0]: V(True)
+  logic transition_token_0_qe;
+  logic [0:0] transition_token_0_flds_we;
+  assign transition_token_0_qe = &transition_token_0_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_transition_token_0 (
@@ -457,14 +478,18 @@ module lc_ctrl_reg_top (
     .wd     (transition_token_0_wd),
     .d      (hw2reg.transition_token[0].d),
     .qre    (),
-    .qe     (reg2hw.transition_token[0].qe),
+    .qe     (transition_token_0_flds_we[0]),
     .q      (reg2hw.transition_token[0].q),
     .qs     (transition_token_0_qs)
   );
+  assign reg2hw.transition_token[0].qe = transition_token_0_qe;
 
 
   // Subregister 1 of Multireg transition_token
   // R[transition_token_1]: V(True)
+  logic transition_token_1_qe;
+  logic [0:0] transition_token_1_flds_we;
+  assign transition_token_1_qe = &transition_token_1_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_transition_token_1 (
@@ -473,14 +498,18 @@ module lc_ctrl_reg_top (
     .wd     (transition_token_1_wd),
     .d      (hw2reg.transition_token[1].d),
     .qre    (),
-    .qe     (reg2hw.transition_token[1].qe),
+    .qe     (transition_token_1_flds_we[0]),
     .q      (reg2hw.transition_token[1].q),
     .qs     (transition_token_1_qs)
   );
+  assign reg2hw.transition_token[1].qe = transition_token_1_qe;
 
 
   // Subregister 2 of Multireg transition_token
   // R[transition_token_2]: V(True)
+  logic transition_token_2_qe;
+  logic [0:0] transition_token_2_flds_we;
+  assign transition_token_2_qe = &transition_token_2_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_transition_token_2 (
@@ -489,14 +518,18 @@ module lc_ctrl_reg_top (
     .wd     (transition_token_2_wd),
     .d      (hw2reg.transition_token[2].d),
     .qre    (),
-    .qe     (reg2hw.transition_token[2].qe),
+    .qe     (transition_token_2_flds_we[0]),
     .q      (reg2hw.transition_token[2].q),
     .qs     (transition_token_2_qs)
   );
+  assign reg2hw.transition_token[2].qe = transition_token_2_qe;
 
 
   // Subregister 3 of Multireg transition_token
   // R[transition_token_3]: V(True)
+  logic transition_token_3_qe;
+  logic [0:0] transition_token_3_flds_we;
+  assign transition_token_3_qe = &transition_token_3_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_transition_token_3 (
@@ -505,13 +538,17 @@ module lc_ctrl_reg_top (
     .wd     (transition_token_3_wd),
     .d      (hw2reg.transition_token[3].d),
     .qre    (),
-    .qe     (reg2hw.transition_token[3].qe),
+    .qe     (transition_token_3_flds_we[0]),
     .q      (reg2hw.transition_token[3].q),
     .qs     (transition_token_3_qs)
   );
+  assign reg2hw.transition_token[3].qe = transition_token_3_qe;
 
 
   // R[transition_target]: V(True)
+  logic transition_target_qe;
+  logic [0:0] transition_target_flds_we;
+  assign transition_target_qe = &transition_target_flds_we;
   prim_subreg_ext #(
     .DW    (30)
   ) u_transition_target (
@@ -520,13 +557,17 @@ module lc_ctrl_reg_top (
     .wd     (transition_target_wd),
     .d      (hw2reg.transition_target.d),
     .qre    (),
-    .qe     (reg2hw.transition_target.qe),
+    .qe     (transition_target_flds_we[0]),
     .q      (reg2hw.transition_target.q),
     .qs     (transition_target_qs)
   );
+  assign reg2hw.transition_target.qe = transition_target_qe;
 
 
   // R[otp_vendor_test_ctrl]: V(True)
+  logic otp_vendor_test_ctrl_qe;
+  logic [0:0] otp_vendor_test_ctrl_flds_we;
+  assign otp_vendor_test_ctrl_qe = &otp_vendor_test_ctrl_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_otp_vendor_test_ctrl (
@@ -535,10 +576,11 @@ module lc_ctrl_reg_top (
     .wd     (otp_vendor_test_ctrl_wd),
     .d      (hw2reg.otp_vendor_test_ctrl.d),
     .qre    (),
-    .qe     (reg2hw.otp_vendor_test_ctrl.qe),
+    .qe     (otp_vendor_test_ctrl_flds_we[0]),
     .q      (reg2hw.otp_vendor_test_ctrl.q),
     .qs     (otp_vendor_test_ctrl_qs)
   );
+  assign reg2hw.otp_vendor_test_ctrl.qe = otp_vendor_test_ctrl_qe;
 
 
   // R[otp_vendor_test_status]: V(True)

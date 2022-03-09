@@ -194,6 +194,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // Register instances
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [3:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   //   F[fatal_sw_err]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -203,10 +206,11 @@ module rv_core_ibex_cfg_reg_top (
     .wd     (alert_test_fatal_sw_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.fatal_sw_err.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.fatal_sw_err.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.fatal_sw_err.qe = alert_test_qe;
 
   //   F[recov_sw_err]: 1:1
   prim_subreg_ext #(
@@ -217,10 +221,11 @@ module rv_core_ibex_cfg_reg_top (
     .wd     (alert_test_recov_sw_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.recov_sw_err.qe),
+    .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.recov_sw_err.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.recov_sw_err.qe = alert_test_qe;
 
   //   F[fatal_hw_err]: 2:2
   prim_subreg_ext #(
@@ -231,10 +236,11 @@ module rv_core_ibex_cfg_reg_top (
     .wd     (alert_test_fatal_hw_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.fatal_hw_err.qe),
+    .qe     (alert_test_flds_we[2]),
     .q      (reg2hw.alert_test.fatal_hw_err.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.fatal_hw_err.qe = alert_test_qe;
 
   //   F[recov_hw_err]: 3:3
   prim_subreg_ext #(
@@ -245,10 +251,11 @@ module rv_core_ibex_cfg_reg_top (
     .wd     (alert_test_recov_hw_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.recov_hw_err.qe),
+    .qe     (alert_test_flds_we[3]),
     .q      (reg2hw.alert_test.recov_hw_err.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.recov_hw_err.qe = alert_test_qe;
 
 
   // R[sw_recov_err]: V(False)

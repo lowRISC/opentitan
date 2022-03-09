@@ -1552,6 +1552,9 @@ module alert_handler_reg_top (
 
 
   // R[intr_test]: V(True)
+  logic intr_test_qe;
+  logic [3:0] intr_test_flds_we;
+  assign intr_test_qe = &intr_test_flds_we;
   //   F[classa]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -1561,10 +1564,11 @@ module alert_handler_reg_top (
     .wd     (intr_test_classa_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.classa.qe),
+    .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.classa.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.classa.qe = intr_test_qe;
 
   //   F[classb]: 1:1
   prim_subreg_ext #(
@@ -1575,10 +1579,11 @@ module alert_handler_reg_top (
     .wd     (intr_test_classb_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.classb.qe),
+    .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.classb.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.classb.qe = intr_test_qe;
 
   //   F[classc]: 2:2
   prim_subreg_ext #(
@@ -1589,10 +1594,11 @@ module alert_handler_reg_top (
     .wd     (intr_test_classc_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.classc.qe),
+    .qe     (intr_test_flds_we[2]),
     .q      (reg2hw.intr_test.classc.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.classc.qe = intr_test_qe;
 
   //   F[classd]: 3:3
   prim_subreg_ext #(
@@ -1603,10 +1609,11 @@ module alert_handler_reg_top (
     .wd     (intr_test_classd_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.classd.qe),
+    .qe     (intr_test_flds_we[3]),
     .q      (reg2hw.intr_test.classd.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.classd.qe = intr_test_qe;
 
 
   // R[ping_timer_regwen]: V(False)
@@ -10542,6 +10549,17 @@ module alert_handler_reg_top (
 
 
   // R[classa_clr_shadowed]: V(False)
+  logic classa_clr_shadowed_qe;
+  logic [0:0] classa_clr_shadowed_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_classa_clr_shadowed0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&classa_clr_shadowed_flds_we),
+    .q_o(classa_clr_shadowed_qe)
+  );
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -10561,7 +10579,7 @@ module alert_handler_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.classa_clr_shadowed.qe),
+    .qe     (classa_clr_shadowed_flds_we[0]),
     .q      (reg2hw.classa_clr_shadowed.q),
 
     // to register interface (read)
@@ -10574,6 +10592,7 @@ module alert_handler_reg_top (
     .err_update  (reg2hw.classa_clr_shadowed.err_update),
     .err_storage (reg2hw.classa_clr_shadowed.err_storage)
   );
+  assign reg2hw.classa_clr_shadowed.qe = classa_clr_shadowed_qe;
 
 
   // R[classa_accum_cnt]: V(True)
@@ -11261,6 +11280,17 @@ module alert_handler_reg_top (
 
 
   // R[classb_clr_shadowed]: V(False)
+  logic classb_clr_shadowed_qe;
+  logic [0:0] classb_clr_shadowed_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_classb_clr_shadowed0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&classb_clr_shadowed_flds_we),
+    .q_o(classb_clr_shadowed_qe)
+  );
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11280,7 +11310,7 @@ module alert_handler_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.classb_clr_shadowed.qe),
+    .qe     (classb_clr_shadowed_flds_we[0]),
     .q      (reg2hw.classb_clr_shadowed.q),
 
     // to register interface (read)
@@ -11293,6 +11323,7 @@ module alert_handler_reg_top (
     .err_update  (reg2hw.classb_clr_shadowed.err_update),
     .err_storage (reg2hw.classb_clr_shadowed.err_storage)
   );
+  assign reg2hw.classb_clr_shadowed.qe = classb_clr_shadowed_qe;
 
 
   // R[classb_accum_cnt]: V(True)
@@ -11980,6 +12011,17 @@ module alert_handler_reg_top (
 
 
   // R[classc_clr_shadowed]: V(False)
+  logic classc_clr_shadowed_qe;
+  logic [0:0] classc_clr_shadowed_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_classc_clr_shadowed0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&classc_clr_shadowed_flds_we),
+    .q_o(classc_clr_shadowed_qe)
+  );
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11999,7 +12041,7 @@ module alert_handler_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.classc_clr_shadowed.qe),
+    .qe     (classc_clr_shadowed_flds_we[0]),
     .q      (reg2hw.classc_clr_shadowed.q),
 
     // to register interface (read)
@@ -12012,6 +12054,7 @@ module alert_handler_reg_top (
     .err_update  (reg2hw.classc_clr_shadowed.err_update),
     .err_storage (reg2hw.classc_clr_shadowed.err_storage)
   );
+  assign reg2hw.classc_clr_shadowed.qe = classc_clr_shadowed_qe;
 
 
   // R[classc_accum_cnt]: V(True)
@@ -12699,6 +12742,17 @@ module alert_handler_reg_top (
 
 
   // R[classd_clr_shadowed]: V(False)
+  logic classd_clr_shadowed_qe;
+  logic [0:0] classd_clr_shadowed_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_classd_clr_shadowed0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&classd_clr_shadowed_flds_we),
+    .q_o(classd_clr_shadowed_qe)
+  );
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12718,7 +12772,7 @@ module alert_handler_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.classd_clr_shadowed.qe),
+    .qe     (classd_clr_shadowed_flds_we[0]),
     .q      (reg2hw.classd_clr_shadowed.q),
 
     // to register interface (read)
@@ -12731,6 +12785,7 @@ module alert_handler_reg_top (
     .err_update  (reg2hw.classd_clr_shadowed.err_update),
     .err_storage (reg2hw.classd_clr_shadowed.err_storage)
   );
+  assign reg2hw.classd_clr_shadowed.qe = classd_clr_shadowed_qe;
 
 
   // R[classd_accum_cnt]: V(True)

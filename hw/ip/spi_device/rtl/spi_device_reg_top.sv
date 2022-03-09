@@ -2082,6 +2082,9 @@ module spi_device_reg_top (
 
 
   // R[intr_test]: V(True)
+  logic intr_test_qe;
+  logic [10:0] intr_test_flds_we;
+  assign intr_test_qe = &intr_test_flds_we;
   //   F[generic_rx_full]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -2091,10 +2094,11 @@ module spi_device_reg_top (
     .wd     (intr_test_generic_rx_full_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.generic_rx_full.qe),
+    .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.generic_rx_full.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.generic_rx_full.qe = intr_test_qe;
 
   //   F[generic_rx_watermark]: 1:1
   prim_subreg_ext #(
@@ -2105,10 +2109,11 @@ module spi_device_reg_top (
     .wd     (intr_test_generic_rx_watermark_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.generic_rx_watermark.qe),
+    .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.generic_rx_watermark.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.generic_rx_watermark.qe = intr_test_qe;
 
   //   F[generic_tx_watermark]: 2:2
   prim_subreg_ext #(
@@ -2119,10 +2124,11 @@ module spi_device_reg_top (
     .wd     (intr_test_generic_tx_watermark_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.generic_tx_watermark.qe),
+    .qe     (intr_test_flds_we[2]),
     .q      (reg2hw.intr_test.generic_tx_watermark.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.generic_tx_watermark.qe = intr_test_qe;
 
   //   F[generic_rx_error]: 3:3
   prim_subreg_ext #(
@@ -2133,10 +2139,11 @@ module spi_device_reg_top (
     .wd     (intr_test_generic_rx_error_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.generic_rx_error.qe),
+    .qe     (intr_test_flds_we[3]),
     .q      (reg2hw.intr_test.generic_rx_error.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.generic_rx_error.qe = intr_test_qe;
 
   //   F[generic_rx_overflow]: 4:4
   prim_subreg_ext #(
@@ -2147,10 +2154,11 @@ module spi_device_reg_top (
     .wd     (intr_test_generic_rx_overflow_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.generic_rx_overflow.qe),
+    .qe     (intr_test_flds_we[4]),
     .q      (reg2hw.intr_test.generic_rx_overflow.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.generic_rx_overflow.qe = intr_test_qe;
 
   //   F[generic_tx_underflow]: 5:5
   prim_subreg_ext #(
@@ -2161,10 +2169,11 @@ module spi_device_reg_top (
     .wd     (intr_test_generic_tx_underflow_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.generic_tx_underflow.qe),
+    .qe     (intr_test_flds_we[5]),
     .q      (reg2hw.intr_test.generic_tx_underflow.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.generic_tx_underflow.qe = intr_test_qe;
 
   //   F[upload_cmdfifo_not_empty]: 6:6
   prim_subreg_ext #(
@@ -2175,10 +2184,11 @@ module spi_device_reg_top (
     .wd     (intr_test_upload_cmdfifo_not_empty_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.upload_cmdfifo_not_empty.qe),
+    .qe     (intr_test_flds_we[6]),
     .q      (reg2hw.intr_test.upload_cmdfifo_not_empty.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.upload_cmdfifo_not_empty.qe = intr_test_qe;
 
   //   F[upload_payload_not_empty]: 7:7
   prim_subreg_ext #(
@@ -2189,10 +2199,11 @@ module spi_device_reg_top (
     .wd     (intr_test_upload_payload_not_empty_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.upload_payload_not_empty.qe),
+    .qe     (intr_test_flds_we[7]),
     .q      (reg2hw.intr_test.upload_payload_not_empty.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.upload_payload_not_empty.qe = intr_test_qe;
 
   //   F[readbuf_watermark]: 8:8
   prim_subreg_ext #(
@@ -2203,10 +2214,11 @@ module spi_device_reg_top (
     .wd     (intr_test_readbuf_watermark_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.readbuf_watermark.qe),
+    .qe     (intr_test_flds_we[8]),
     .q      (reg2hw.intr_test.readbuf_watermark.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.readbuf_watermark.qe = intr_test_qe;
 
   //   F[readbuf_flip]: 9:9
   prim_subreg_ext #(
@@ -2217,10 +2229,11 @@ module spi_device_reg_top (
     .wd     (intr_test_readbuf_flip_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.readbuf_flip.qe),
+    .qe     (intr_test_flds_we[9]),
     .q      (reg2hw.intr_test.readbuf_flip.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.readbuf_flip.qe = intr_test_qe;
 
   //   F[tpm_header_not_empty]: 10:10
   prim_subreg_ext #(
@@ -2231,13 +2244,17 @@ module spi_device_reg_top (
     .wd     (intr_test_tpm_header_not_empty_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.tpm_header_not_empty.qe),
+    .qe     (intr_test_flds_we[10]),
     .q      (reg2hw.intr_test.tpm_header_not_empty.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.tpm_header_not_empty.qe = intr_test_qe;
 
 
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [0:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
@@ -2246,10 +2263,11 @@ module spi_device_reg_top (
     .wd     (alert_test_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.qe = alert_test_qe;
 
 
   // R[control]: V(False)
@@ -3050,6 +3068,9 @@ module spi_device_reg_top (
 
 
   // R[flash_status]: V(True)
+  logic flash_status_qe;
+  logic [1:0] flash_status_flds_we;
+  assign flash_status_qe = &flash_status_flds_we;
   //   F[busy]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -3059,10 +3080,11 @@ module spi_device_reg_top (
     .wd     (flash_status_busy_wd),
     .d      (hw2reg.flash_status.busy.d),
     .qre    (),
-    .qe     (reg2hw.flash_status.busy.qe),
+    .qe     (flash_status_flds_we[0]),
     .q      (reg2hw.flash_status.busy.q),
     .qs     (flash_status_busy_qs)
   );
+  assign reg2hw.flash_status.busy.qe = flash_status_qe;
 
   //   F[status]: 23:1
   prim_subreg_ext #(
@@ -3073,10 +3095,11 @@ module spi_device_reg_top (
     .wd     (flash_status_status_wd),
     .d      (hw2reg.flash_status.status.d),
     .qre    (),
-    .qe     (reg2hw.flash_status.status.qe),
+    .qe     (flash_status_flds_we[1]),
     .q      (reg2hw.flash_status.status.q),
     .qs     (flash_status_status_qs)
   );
+  assign reg2hw.flash_status.status.qe = flash_status_qe;
 
 
   // R[jedec_cc]: V(False)
@@ -17941,6 +17964,9 @@ module spi_device_reg_top (
 
 
   // R[tpm_cmd_addr]: V(True)
+  logic tpm_cmd_addr_qe;
+  logic [1:0] tpm_cmd_addr_flds_we;
+  assign tpm_cmd_addr_qe = &tpm_cmd_addr_flds_we;
   //   F[addr]: 23:0
   prim_subreg_ext #(
     .DW    (24)
@@ -17950,10 +17976,11 @@ module spi_device_reg_top (
     .wd     ('0),
     .d      (hw2reg.tpm_cmd_addr.addr.d),
     .qre    (reg2hw.tpm_cmd_addr.addr.re),
-    .qe     (reg2hw.tpm_cmd_addr.addr.qe),
+    .qe     (tpm_cmd_addr_flds_we[0]),
     .q      (reg2hw.tpm_cmd_addr.addr.q),
     .qs     (tpm_cmd_addr_addr_qs)
   );
+  assign reg2hw.tpm_cmd_addr.addr.qe = tpm_cmd_addr_qe;
 
   //   F[cmd]: 31:24
   prim_subreg_ext #(
@@ -17964,13 +17991,17 @@ module spi_device_reg_top (
     .wd     ('0),
     .d      (hw2reg.tpm_cmd_addr.cmd.d),
     .qre    (reg2hw.tpm_cmd_addr.cmd.re),
-    .qe     (reg2hw.tpm_cmd_addr.cmd.qe),
+    .qe     (tpm_cmd_addr_flds_we[1]),
     .q      (reg2hw.tpm_cmd_addr.cmd.q),
     .qs     (tpm_cmd_addr_cmd_qs)
   );
+  assign reg2hw.tpm_cmd_addr.cmd.qe = tpm_cmd_addr_qe;
 
 
   // R[tpm_read_fifo]: V(True)
+  logic tpm_read_fifo_qe;
+  logic [0:0] tpm_read_fifo_flds_we;
+  assign tpm_read_fifo_qe = &tpm_read_fifo_flds_we;
   prim_subreg_ext #(
     .DW    (8)
   ) u_tpm_read_fifo (
@@ -17979,13 +18010,17 @@ module spi_device_reg_top (
     .wd     (tpm_read_fifo_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.tpm_read_fifo.qe),
+    .qe     (tpm_read_fifo_flds_we[0]),
     .q      (reg2hw.tpm_read_fifo.q),
     .qs     ()
   );
+  assign reg2hw.tpm_read_fifo.qe = tpm_read_fifo_qe;
 
 
   // R[tpm_write_fifo]: V(True)
+  logic tpm_write_fifo_qe;
+  logic [0:0] tpm_write_fifo_flds_we;
+  assign tpm_write_fifo_qe = &tpm_write_fifo_flds_we;
   prim_subreg_ext #(
     .DW    (8)
   ) u_tpm_write_fifo (
@@ -17994,10 +18029,11 @@ module spi_device_reg_top (
     .wd     ('0),
     .d      (hw2reg.tpm_write_fifo.d),
     .qre    (reg2hw.tpm_write_fifo.re),
-    .qe     (reg2hw.tpm_write_fifo.qe),
+    .qe     (tpm_write_fifo_flds_we[0]),
     .q      (reg2hw.tpm_write_fifo.q),
     .qs     (tpm_write_fifo_qs)
   );
+  assign reg2hw.tpm_write_fifo.qe = tpm_write_fifo_qe;
 
 
 

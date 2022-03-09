@@ -283,6 +283,9 @@ module edn_reg_top (
 
 
   // R[intr_test]: V(True)
+  logic intr_test_qe;
+  logic [1:0] intr_test_flds_we;
+  assign intr_test_qe = &intr_test_flds_we;
   //   F[edn_cmd_req_done]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -292,10 +295,11 @@ module edn_reg_top (
     .wd     (intr_test_edn_cmd_req_done_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.edn_cmd_req_done.qe),
+    .qe     (intr_test_flds_we[0]),
     .q      (reg2hw.intr_test.edn_cmd_req_done.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.edn_cmd_req_done.qe = intr_test_qe;
 
   //   F[edn_fatal_err]: 1:1
   prim_subreg_ext #(
@@ -306,13 +310,17 @@ module edn_reg_top (
     .wd     (intr_test_edn_fatal_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.edn_fatal_err.qe),
+    .qe     (intr_test_flds_we[1]),
     .q      (reg2hw.intr_test.edn_fatal_err.q),
     .qs     ()
   );
+  assign reg2hw.intr_test.edn_fatal_err.qe = intr_test_qe;
 
 
   // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [1:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
   //   F[recov_alert]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -322,10 +330,11 @@ module edn_reg_top (
     .wd     (alert_test_recov_alert_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.recov_alert.qe),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.recov_alert.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.recov_alert.qe = alert_test_qe;
 
   //   F[fatal_alert]: 1:1
   prim_subreg_ext #(
@@ -336,10 +345,11 @@ module edn_reg_top (
     .wd     (alert_test_fatal_alert_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.fatal_alert.qe),
+    .qe     (alert_test_flds_we[1]),
     .q      (reg2hw.alert_test.fatal_alert.q),
     .qs     ()
   );
+  assign reg2hw.alert_test.fatal_alert.qe = alert_test_qe;
 
 
   // R[regwen]: V(False)
@@ -523,6 +533,9 @@ module edn_reg_top (
 
 
   // R[sw_cmd_req]: V(True)
+  logic sw_cmd_req_qe;
+  logic [0:0] sw_cmd_req_flds_we;
+  assign sw_cmd_req_qe = &sw_cmd_req_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_sw_cmd_req (
@@ -531,10 +544,11 @@ module edn_reg_top (
     .wd     (sw_cmd_req_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.sw_cmd_req.qe),
+    .qe     (sw_cmd_req_flds_we[0]),
     .q      (reg2hw.sw_cmd_req.q),
     .qs     ()
   );
+  assign reg2hw.sw_cmd_req.qe = sw_cmd_req_qe;
 
 
   // R[sw_cmd_sts]: V(False)
@@ -590,6 +604,9 @@ module edn_reg_top (
 
 
   // R[reseed_cmd]: V(True)
+  logic reseed_cmd_qe;
+  logic [0:0] reseed_cmd_flds_we;
+  assign reseed_cmd_qe = &reseed_cmd_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_reseed_cmd (
@@ -598,13 +615,17 @@ module edn_reg_top (
     .wd     (reseed_cmd_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.reseed_cmd.qe),
+    .qe     (reseed_cmd_flds_we[0]),
     .q      (reg2hw.reseed_cmd.q),
     .qs     ()
   );
+  assign reg2hw.reseed_cmd.qe = reseed_cmd_qe;
 
 
   // R[generate_cmd]: V(True)
+  logic generate_cmd_qe;
+  logic [0:0] generate_cmd_flds_we;
+  assign generate_cmd_qe = &generate_cmd_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_generate_cmd (
@@ -613,13 +634,25 @@ module edn_reg_top (
     .wd     (generate_cmd_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.generate_cmd.qe),
+    .qe     (generate_cmd_flds_we[0]),
     .q      (reg2hw.generate_cmd.q),
     .qs     ()
   );
+  assign reg2hw.generate_cmd.qe = generate_cmd_qe;
 
 
   // R[max_num_reqs_between_reseeds]: V(False)
+  logic max_num_reqs_between_reseeds_qe;
+  logic [0:0] max_num_reqs_between_reseeds_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_max_num_reqs_between_reseeds0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&max_num_reqs_between_reseeds_flds_we),
+    .q_o(max_num_reqs_between_reseeds_qe)
+  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -637,12 +670,13 @@ module edn_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.max_num_reqs_between_reseeds.qe),
+    .qe     (max_num_reqs_between_reseeds_flds_we[0]),
     .q      (reg2hw.max_num_reqs_between_reseeds.q),
 
     // to register interface (read)
     .qs     (max_num_reqs_between_reseeds_qs)
   );
+  assign reg2hw.max_num_reqs_between_reseeds.qe = max_num_reqs_between_reseeds_qe;
 
 
   // R[recov_alert_sts]: V(False)
@@ -975,6 +1009,17 @@ module edn_reg_top (
 
 
   // R[err_code_test]: V(False)
+  logic err_code_test_qe;
+  logic [0:0] err_code_test_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_err_code_test0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&err_code_test_flds_we),
+    .q_o(err_code_test_qe)
+  );
   prim_subreg #(
     .DW      (5),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -992,12 +1037,13 @@ module edn_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (reg2hw.err_code_test.qe),
+    .qe     (err_code_test_flds_we[0]),
     .q      (reg2hw.err_code_test.q),
 
     // to register interface (read)
     .qs     (err_code_test_qs)
   );
+  assign reg2hw.err_code_test.qe = err_code_test_qe;
 
 
   // R[main_sm_state]: V(False)

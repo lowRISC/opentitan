@@ -179,8 +179,8 @@ module prim_subreg_shadow
   assign err_storage = (~shadow_q != committed_q);
 
   // Remaining output assignments
-  assign qe   = comitted_qe;
-  assign q    = committed_q;
-  assign qs   = committed_qs;
+  assign qe = committed_qe;
+  assign q  = committed_q;
+  assign qs = committed_qs;
 
 endmodule
