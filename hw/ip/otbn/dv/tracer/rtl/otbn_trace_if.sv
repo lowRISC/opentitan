@@ -99,7 +99,8 @@ interface otbn_trace_if
   assign insn_valid     = insn_fetch_resp_valid;
   assign insn_addr      = {{(32-ImemAddrWidth){1'b0}}, insn_fetch_resp_addr};
   assign insn_data      = insn_fetch_resp_data;
-  assign insn_stall     = u_otbn_core.u_otbn_controller.state_d == OtbnStateStall;
+  assign insn_stall     = ((u_otbn_core.u_otbn_controller.state_q == OtbnStateRun) &&
+                           u_otbn_core.u_otbn_controller.stall);
 
   logic [31:0] rf_base_rd_data_a;
   logic [31:0] rf_base_rd_data_b;
