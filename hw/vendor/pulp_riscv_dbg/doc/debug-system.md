@@ -54,24 +54,24 @@ Our implementation only provides a single Debug Module on the DMI bus mapped to 
 0x11        | Debug Module Status (dmstatus)               | see table below
 0x12        | Hart Info (hartinfo)
 0x13        | Halt Summary 1 (haltsum1)
-0x14        | Hart Array Window Select (hawindowsel)
-0x15        | Hart Array Window (hawindow)
+0x14        | Hart Array Window Select (hawindowsel)       | Not implemented
+0x15        | Hart Array Window (hawindow)                 | Not implemented
 0x16        | Abstract Control and Status (abstractcs)
 0x17        | Abstract Command (command)
 0x18        | Abstract Command Autoexec (abstractauto)
-0x19        | Configuration String Pointer 0 (confstrptr0)
-0x1a        | Configuration String Pointer 1 (confstrptr1)
-0x1b        | Configuration String Pointer 2 (confstrptr2)
-0x1c        | Configuration String Pointer 3 (confstrptr3)
-0x1d        | Next Debug Module (nextdm)
-0x1f        | Custom Features (custom)
+0x19        | Configuration String Pointer 0 (confstrptr0) | Not implemented
+0x1a        | Configuration String Pointer 1 (confstrptr1) | Not implemented
+0x1b        | Configuration String Pointer 2 (confstrptr2) | Not implemented
+0x1c        | Configuration String Pointer 3 (confstrptr3) | Not implemented
+0x1d        | Next Debug Module (nextdm)                   | Not implemented
+0x1f        | Custom Features (custom)                     | Not implemented
 0x20        | Program Buffer 0 (progbuf0)
 0x2f        | Program Buffer 15 (progbuf15)
-0x30        | Authentication Data (authdata)
-0x32        | Debug Module Control and Status 2 (dmcs2)
+0x30        | Authentication Data (authdata)               | Not implemented
+0x32        | Debug Module Control and Status 2 (dmcs2)    | Not implemented
 0x34        | Halt Summary 2 (haltsum2)
 0x35        | Halt Summary 3 (haltsum3)
-0x37        | System Bus Address 127:96 (sbaddress3)
+0x37        | System Bus Address 127:96 (sbaddress3).      | Not implemented
 0x38        | System Bus Access Control and Status (sbcs)
 0x39        | System Bus Address 31:0 (sbaddress0)
 0x3a        | System Bus Address 63:32 (sbaddress1)
@@ -79,8 +79,10 @@ Our implementation only provides a single Debug Module on the DMI bus mapped to 
 0x3c        | System Bus Data 31:0 (sbdata0)
 0x3d        | System Bus Data 63:32 (sbdata1)
 0x3e        | System Bus Data 95:64 (sbdata2)
-0x3f        | System Bus Data 127:96 (sbdata3)
+0x3f        | System Bus Data 127:96 (sbdata3).            | Not implemented
 0x40        | Halt Summary 0 (haltsum0)
+
+Accessing a non-implemented register will return `0`.
 
 ### dmcontrol (0x10)
 
