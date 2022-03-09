@@ -724,16 +724,25 @@ module otp_ctrl
 
   // Life cycle qualification of TL-UL test interface.
   // SEC_CM: TEST.BUS.LC_GATED
-  assign prim_tl_h2d_gated = (lc_dft_en[0] == lc_ctrl_pkg::On) ?
-                             prim_tl_i : '0;
-  assign prim_tl_o         = (lc_dft_en[1] == lc_ctrl_pkg::On) ?
-                             prim_tl_d2h_gated : '0;
+  tlul_lc_gate #(
+    .NumGatesPerDirection(2)
+  ) u_tlul_lc_gate (
+    .clk_i,
+    .rst_ni,
+    .tl_h2d_i(prim_tl_i),
+    .tl_d2h_o(prim_tl_o),
+    .tl_h2d_o(prim_tl_h2d_gated),
+    .tl_d2h_i(prim_tl_d2h_gated),
+    .lc_en_i (lc_dft_en[0])
+  );
 
   // Test-related GPIOs.
   // SEC_CM: TEST.BUS.LC_GATED
   logic [OtpTestVectWidth-1:0] otp_test_vect;
-  assign cio_test_o = (lc_dft_en[2] == lc_ctrl_pkg::On) ? otp_test_vect : '0;
-  assign cio_test_en_o = (lc_dft_en[2] == lc_ctrl_pkg::On) ? {OtpTestVectWidth{1'b1}} : '0;
+  assign cio_test_o    = (lc_ctrl_pkg::lc_tx_test_true_strict(lc_dft_en[1])) ?
+                         otp_test_vect            : '0;
+  assign cio_test_en_o = (lc_ctrl_pkg::lc_tx_test_true_strict(lc_dft_en[2])) ?
+                         {OtpTestVectWidth{1'b1}} : '0;
 
   // SEC_CM: MACRO.MEM.CM, MACRO.MEM.INTEGRITY
   prim_otp #(
