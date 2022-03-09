@@ -10,6 +10,8 @@ class chip_base_vseq #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_ba
   );
   `uvm_object_utils(chip_base_vseq)
 
+  localparam int EXT_CLK_FREQ_MHZ = 100;
+
   // knobs to enable pre_start routines
   bit do_strap_pins_init = 1'b1; // initialize the strap
 
@@ -88,6 +90,9 @@ class chip_base_vseq #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_ba
       cfg.dft_straps_vif.drive(2'b00);
       cfg.sw_straps_vif.drive({2'b00, cfg.use_spi_load_bootstrap});
     end
+
+    // Set external clock frequency.
+    cfg.clk_rst_vif.set_freq_mhz(EXT_CLK_FREQ_MHZ);
 
     // Now safe to do DUT init.
     if (do_dut_init) dut_init();
