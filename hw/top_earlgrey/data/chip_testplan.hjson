@@ -2277,7 +2277,7 @@
             prog empty, prog level, rd full, rd level and op done interrupts.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_flash_ctrl_ops"]
     }
     {
       name: chip_sw_flash_rma_unlocked
