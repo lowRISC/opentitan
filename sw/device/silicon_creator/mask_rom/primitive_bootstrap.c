@@ -26,39 +26,47 @@
 #define GPIO_BOOTSTRAP_BIT_MASK 0x00020000u
 
 static dif_flash_ctrl_state_t flash_ctrl;
-static dif_spi_device_t spi;
-static dif_spi_device_config_t spi_config;
+static dif_spi_device_handle_t spi;
 
 static rom_error_t spi_device_init(void) {
-  if (dif_spi_device_init(
+  if (dif_spi_device_init_handle(
           mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR), &spi) !=
       kDifOk) {
     return kErrorBootstrapSpiDevice;
   }
 
-  spi_config.clock_polarity = kDifSpiDeviceEdgePositive;
-  spi_config.data_phase = kDifSpiDeviceEdgeNegative;
-  spi_config.tx_order = kDifSpiDeviceBitOrderMsbToLsb;
-  spi_config.rx_order = kDifSpiDeviceBitOrderMsbToLsb;
-  spi_config.rx_fifo_timeout = 63;
-  spi_config.rx_fifo_len = kDifSpiDeviceBufferLen / 2;
-  spi_config.tx_fifo_len = kDifSpiDeviceBufferLen / 2;
+  dif_spi_device_config_t spi_config = {
+      .clock_polarity = kDifSpiDeviceEdgePositive,
+      .data_phase = kDifSpiDeviceEdgeNegative,
+      .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
+      .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
+      .device_mode = kDifSpiDeviceModeGeneric,
+      .mode_cfg =
+          {
+              .generic =
+                  {
+                      .rx_fifo_commit_wait = 63,
+                      .rx_fifo_len = kDifSpiDeviceBufferLen / 2,
+                      .tx_fifo_len = kDifSpiDeviceBufferLen / 2,
+                  },
+          },
+  };
 
-  if (dif_spi_device_configure(&spi, &spi_config) != kDifOk) {
+  if (dif_spi_device_configure(&spi, spi_config) != kDifOk) {
     return kErrorBootstrapSpiDevice;
   }
   return kErrorOk;
 }
 
 static rom_error_t spi_device_rx_pending(size_t *bytes_available) {
-  if (dif_spi_device_rx_pending(&spi, &spi_config, bytes_available) != kDifOk) {
+  if (dif_spi_device_rx_pending(&spi, bytes_available) != kDifOk) {
     return kErrorBootstrapSpiDevice;
   }
   return kErrorOk;
 }
 
 static rom_error_t spi_device_recv(void *buf, size_t buf_len) {
-  if (dif_spi_device_recv(&spi, &spi_config, buf, buf_len,
+  if (dif_spi_device_recv(&spi, buf, buf_len,
                           /*bytes_received=*/NULL) != kDifOk) {
     return kErrorBootstrapSpiDevice;
   }
@@ -66,7 +74,7 @@ static rom_error_t spi_device_recv(void *buf, size_t buf_len) {
 }
 
 static rom_error_t spi_device_send(const void *buf, size_t buf_len) {
-  if (dif_spi_device_send(&spi, &spi_config, buf, buf_len,
+  if (dif_spi_device_send(&spi, buf, buf_len,
                           /*bytes_received=*/NULL) != kDifOk) {
     return kErrorBootstrapSpiDevice;
   }
