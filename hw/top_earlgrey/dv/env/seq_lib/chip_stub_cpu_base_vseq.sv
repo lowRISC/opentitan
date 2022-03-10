@@ -57,15 +57,39 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
   virtual task do_ast_cfg();
     logic [31:0] data;
 
-    foreach (ral.ast.rega[i]) begin
+    // The AST registers are defined differently between the open source and closed source repos.
+    // Hence, we make no references to the AST registers defined in ral.ast. We instead find the
+    // base address of the AST configuration space, and start writing what was dumped in the
+    // corresponding OTP locations. The number of registers to program is provided by
+    // ast_pkg::AstRegsNum, which includes the last AST register which "finalizes" the AST
+    // initialization and asserts the `ast_init_done_o` signal.
+    uvm_reg_addr_t ast_addr = ral.ast.default_map.get_base_addr();
+
+    for (int i = 0; i < ast_pkg::AstRegsNum - 1; i++) begin
       data = cfg.mem_bkdr_util_h[Otp].read32(otp_ctrl_reg_pkg::CreatorSwCfgAstCfgOffset + i * 4);
-      `uvm_info(`gfn, $sformatf("Writing 0x%0h to %0s", data, ral.ast.rega[i].`gfn), UVM_MEDIUM)
-      csr_wr(.ptr(ral.ast.rega[i]), .value(data), .predict(1));
+      `uvm_info(`gfn, $sformatf("Writing 0x%0h to 0x%0h", data, ast_addr), UVM_MEDIUM)
+      tl_access(.addr(ast_addr), .write(1), .data(data));
+      predict_csr_wr(ral.get_default_map(), ast_addr, data);
+      ast_addr += 4;
     end
 
+    // The next ast_addr finalizes the AST initialization.
     data = cfg.mem_bkdr_util_h[Otp].read32(otp_ctrl_reg_pkg::CreatorSwCfgAstInitEnOffset);
-    `uvm_info(`gfn, $sformatf("Writing 0x%0h to %0s", data, ral.ast.regal.`gfn), UVM_MEDIUM)
-    csr_wr(.ptr(ral.ast.regal), .value(data), .predict(1));
+    `uvm_info(`gfn, $sformatf("Writing 0x%0h to 0x%0h to finalize the AST initialization",
+                              data, ast_addr), UVM_MEDIUM)
+    tl_access(.addr(ast_addr), .write(1), .data(data));
+    predict_csr_wr(ral.get_default_map(), ast_addr, data);
   endtask
+
+  // Finds the register associated with the given address in the given map, and updates the
+  // mirrored value with the data written.
+  function void predict_csr_wr(uvm_reg_map map, uvm_reg_addr_t addr, uvm_reg_data_t data);
+    uvm_reg rg = map.get_reg_by_offset(addr);
+    if (rg != null) begin
+      rg.predict(.value(data), .kind(UVM_PREDICT_WRITE));
+    end else begin
+      `uvm_error(`gfn, $sformatf("No register found at address 0x%0h in %0s", addr, map.`gfn))
+    end
+  endfunction
 
 endclass
