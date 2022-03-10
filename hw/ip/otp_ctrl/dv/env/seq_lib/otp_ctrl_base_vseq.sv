@@ -77,6 +77,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     cfg.otp_ctrl_vif.drive_lc_dft_en(Off);
     cfg.otp_ctrl_vif.drive_lc_escalate_en(Off);
     cfg.otp_ctrl_vif.drive_pwr_otp_init(0);
+    cfg.otp_ctrl_vif.drive_ext_voltage_h_io(1'bz);
 
     // Unused signals in open sourced OTP memory
     `DV_CHECK_RANDOMIZE_FATAL(cfg.dut_cfg)

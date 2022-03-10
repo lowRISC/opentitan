@@ -77,8 +77,8 @@ module tb;
   // The correctness of this probed signal is checked in otp_ctrl's scb as well.
   assign otp_ctrl_if.alert_reqs = dut.alerts[0] | dut.alerts[1];
 
-  // leave this unconnected for now.
-  wire otp_ext_voltage_h;
+  // connected to interface
+  wire otp_ext_voltage_h = otp_ctrl_if.ext_voltage_h_io;
 
   // dut
   otp_ctrl dut (
