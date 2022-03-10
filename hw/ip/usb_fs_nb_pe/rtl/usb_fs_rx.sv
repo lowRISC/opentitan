@@ -517,7 +517,6 @@ module usb_fs_rx (
   assign pkt_is_handshake = full_pid_q[2:1] == 2'b10;
 
 
-  // TODO: need to check for data packet babble
   assign valid_packet_o = pid_valid && !bitstuff_error_q &&
     ((pkt_is_handshake) ||
     (pkt_is_data && crc16_valid) ||
