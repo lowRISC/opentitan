@@ -630,6 +630,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     cur_cp: coverpoint cur {
       `DEF_MNEM_BINS_EXCEPT_ECALL
       `DEF_MNEM_BIN(mnem_ecall);
+      `DEF_MNEM_BIN(mnem_dummy);
+      `DEF_MNEM_BIN(mnem_question_mark);
       illegal_bins other = default;
     }
     pair_cross: cross last_cp, cur_cp;
