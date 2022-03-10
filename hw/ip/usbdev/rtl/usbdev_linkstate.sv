@@ -370,7 +370,7 @@ module usbdev_linkstate (
       if (sof_valid_i || !link_active_o || link_reset) begin
         missed_sof_count <= '0;
       end else if (sof_missed_o && !host_lost_o) begin
-        missed_sof_count <= missed_sof_count + '1;
+        missed_sof_count <= missed_sof_count + 1;
       end
     end
   end

@@ -1134,15 +1134,15 @@ module usbdev
     // When don't need to use a differential receiver, RX is always ready
     usb_rcvr_ok_counter_d = '0;
     if (usb_use_diff_rcvr & !usb_rx_enable_o) begin
-      usb_rcvr_ok_counter_d = RcvrWakeTimeUs[0 +: RcvrWakeTimeWidth] + '1;
+      usb_rcvr_ok_counter_d = RcvrWakeTimeUs[0 +: RcvrWakeTimeWidth] + 1;
     end else if (us_tick && (usb_rcvr_ok_counter_q > '0)) begin
-      usb_rcvr_ok_counter_d = usb_rcvr_ok_counter_q - '1;
+      usb_rcvr_ok_counter_d = usb_rcvr_ok_counter_q - 1;
     end
   end
 
   always_ff @(posedge clk_usb_48mhz_i or negedge rst_usb_48mhz_ni) begin
     if (!rst_usb_48mhz_ni) begin
-      usb_rcvr_ok_counter_q <= RcvrWakeTimeUs[0 +: RcvrWakeTimeWidth] + '1;
+      usb_rcvr_ok_counter_q <= RcvrWakeTimeUs[0 +: RcvrWakeTimeWidth] + 1;
     end else begin
       usb_rcvr_ok_counter_q <= usb_rcvr_ok_counter_d;
     end
