@@ -203,8 +203,8 @@ module rstmgr
 
 
   assign alert_test = {
-    reg2hw.alert_test.fatal_fault.q & reg2hw.alert_test.fatal_fault.qe,
-    reg2hw.alert_test.fatal_cnsty_fault.q & reg2hw.alert_test.fatal_cnsty_fault.qe
+    reg2hw.alert_test.fatal_cnsty_fault.q & reg2hw.alert_test.fatal_cnsty_fault.qe,
+    reg2hw.alert_test.fatal_fault.q & reg2hw.alert_test.fatal_fault.qe
   };
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
