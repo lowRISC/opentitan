@@ -298,4 +298,12 @@ module usb_fs_nb_pe #(
     .tx_data_get_o          (tx_data_get),
     .tx_data_i              (tx_data)
   );
+
+  ////////////////
+  // Assertions //
+  ////////////////
+  `ASSERT_INIT(ParamNumEpsOutAndInEqual, NumOutEps == NumInEps)
+  `ASSERT_INIT(ParamNumOutEpsValid, (NumOutEps > 0) && (NumOutEps <= 16))
+  `ASSERT_INIT(ParamNumInEpsValid, (NumInEps > 0) && (NumInEps <= 16))
+  `ASSERT_INIT(ParamMaxPktSizeByteValid, (MaxPktSizeByte >= 8) && (MaxPktSizeByte <= 64))
 endmodule
