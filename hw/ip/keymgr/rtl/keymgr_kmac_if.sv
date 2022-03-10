@@ -175,9 +175,6 @@ module keymgr_kmac_if import keymgr_pkg::*;(
     .state_o ( state_raw_q )
   );
 
-  // kmac done is asserted outside of expected window
-  assign kmac_done_error_o = ~kmac_done_vld & kmac_data_i.done;
-
   always_comb begin
     cnt_clr = 1'b0;
     cnt_set = 1'b0;
@@ -340,20 +337,32 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   assign kmac_data_o.last  = last;
   assign kmac_data_o.strb  = strb;
 
+  // kmac done is asserted outside of expected window
+  // SEC_CM: KMAC_IF_DONE.CTRL.CONSISTENCY
+  logic kmac_done_err_q, kmac_done_err_d;
+  assign kmac_done_err_d = ~kmac_done_vld & kmac_data_i.done |
+                           kmac_done_err_q;
+  assign kmac_done_error_o = kmac_done_err_q;
+
+
   // the enables must be 1 hot
   logic [2:0] enables, enables_sub;
   assign enables = {adv_en_i, id_en_i, gen_en_i};
   assign enables_sub = enables - 1'b1;
 
   // if a one hot error occurs, latch onto it permanently
+  // SEC_CM: KMAC_IF_CMD.CTRL.CONSISTENCY
   logic one_hot_err_q, one_hot_err_d;
-  assign one_hot_err_d = |(enables & enables_sub);
+  assign one_hot_err_d = |(enables & enables_sub) |
+                         one_hot_err_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       one_hot_err_q <= '0;
-    end else if (one_hot_err_d) begin
-      one_hot_err_q <= '1;
+      kmac_done_err_q <= '0;
+    end else begin
+      one_hot_err_q <= one_hot_err_d;
+      kmac_done_err_q <= kmac_done_err_d;
     end
   end
 

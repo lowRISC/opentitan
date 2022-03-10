@@ -315,6 +315,16 @@
         Primary count uses cross count.
       '''
     }
+    { name: "KMAC_IF_CMD.CTRL.CONSISTENCY",
+      desc: '''
+        One hot check for kmac interface commands.
+      '''
+    }
+    { name: "KMAC_IF_DONE.CTRL.CONSISTENCY",
+      desc: '''
+        Spurious kmac done check.
+      '''
+    }
     { name: "RESEED.CTR.REDUN",
       desc: '''
         Primary count is duplicated.

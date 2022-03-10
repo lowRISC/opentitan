@@ -132,6 +132,18 @@
       tests: []
     }
     {
+      name: sec_cm_kmac_if_cmd_ctrl_consistency
+      desc: "Verify the countermeasure(s) KMAC_IF_CMD.CTRL.CONSISTENCY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_kmac_if_done_ctrl_consistency
+      desc: "Verify the countermeasure(s) KMAC_IF_DONE.CTRL.CONSISTENCY."
+      milestone: V2S
+      tests: []
+    }
+    {
       name: sec_cm_reseed_ctr_redun
       desc: "Verify the countermeasure(s) RESEED.CTR.REDUN."
       milestone: V2S
