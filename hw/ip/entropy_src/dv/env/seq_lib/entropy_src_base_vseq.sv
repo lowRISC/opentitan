@@ -252,6 +252,9 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     ral.adaptp_hi_thresholds.fips_thresh.set(fips_thresh);
     ral.adaptp_hi_thresholds.bypass_thresh.set(bypass_thresh);
     csr_update(.csr(ral.adaptp_hi_thresholds));
+    ral.adaptp_lo_thresholds.fips_thresh.set(fips_thresh);
+    ral.adaptp_lo_thresholds.bypass_thresh.set(bypass_thresh);
+    csr_update(.csr(ral.adaptp_lo_thresholds));
     // Turn on module_enable
     csr_wr(.ptr(ral.module_enable), .value(prim_mubi_pkg::MuBi4True));
     // Set rng_val
@@ -281,6 +284,9 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     ral.markov_hi_thresholds.fips_thresh.set(fips_thresh);
     ral.markov_hi_thresholds.bypass_thresh.set(bypass_thresh);
     csr_update(.csr(ral.markov_hi_thresholds));
+    ral.markov_lo_thresholds.fips_thresh.set(fips_thresh);
+    ral.markov_lo_thresholds.bypass_thresh.set(bypass_thresh);
+    csr_update(.csr(ral.markov_lo_thresholds));
     // Turn on module_enable
     csr_wr(.ptr(ral.module_enable), .value(prim_mubi_pkg::MuBi4True));
     // Set rng_val
@@ -312,12 +318,18 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
   task force_fifo_err_exception(string paths [4], bit values [4],
                                 uvm_reg_field reg_field, bit exp_data);
+    string data_path = "tb.dut.u_entropy_src_core.sfifo_esrng_rdata";
     foreach (paths[i]) begin
       if (!uvm_hdl_check_path(paths[i])) begin
         `uvm_fatal(`gfn, $sformatf("\n\t ----| PATH NOT FOUND"))
       end else begin
         `DV_CHECK(uvm_hdl_force(paths[i], values[i]));
       end
+    end
+    if (!uvm_hdl_check_path(data_path)) begin
+      `uvm_fatal(`gfn, $sformatf("\n\t ----| PATH NOT FOUND"))
+    end else begin
+      `DV_CHECK(uvm_hdl_force(data_path, '0));
     end
     cfg.clk_rst_vif.wait_clks(50);
     // Check register value
