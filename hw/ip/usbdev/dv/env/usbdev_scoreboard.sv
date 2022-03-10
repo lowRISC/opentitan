@@ -74,8 +74,11 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     // for read, update predication at address phase and compare at data phase
     case (csr.get_name())
       // add individual case item for each csr
+      "usbctrl": begin
+        // no special handling yet
+      end
       "intr_enable": begin
-        // no speical handling yet
+        // no special handling yet
       end
       "intr_test": begin
         if (write && channel == AddrChannel) begin
