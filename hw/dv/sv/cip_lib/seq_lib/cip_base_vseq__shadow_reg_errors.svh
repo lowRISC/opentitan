@@ -313,6 +313,12 @@ virtual function void predict_shadow_reg_status(bit predict_update_err  = 0,
   end
 endfunction
 
+virtual function void clear_update_err_status();
+  foreach (cfg.shadow_update_err_status_fields[status_field]) begin
+    void'(status_field.predict(~cfg.shadow_update_err_status_fields[status_field]));
+  end
+endfunction
+
 // Verify update and storage error status with RAL mirrored value.
 virtual task read_check_shadow_reg_status(string msg_id);
   foreach (cfg.shadow_update_err_status_fields[status_field]) begin

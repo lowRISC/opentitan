@@ -14,6 +14,14 @@ class kmac_common_vseq extends kmac_base_vseq;
     do_kmac_init = 1'b0;
     entropy_mode_c.constraint_mode(0);
     super.pre_start();
+
+    if (common_seq_type inside {"shadow_reg_errors", "shadow_reg_errors_with_csr_rw"}) begin
+      csr_excl_item csr_excl = ral.get_excl_item();
+      // Shadow storage fatal error might cause req to drop without ack.
+      $assertoff(0,
+      "tb.dut.gen_entropy.u_edn_req.u_prim_sync_reqack_data.u_prim_sync_reqack.SyncReqAckHoldReq");
+      $assertoff(0, "tb.edn_if[0].ReqHighUntilAck_A");
+    end
   endtask
 
   virtual task body();
@@ -30,13 +38,25 @@ class kmac_common_vseq extends kmac_base_vseq;
       // access for its lockable register fields. (If the regwen is `W0C` access policy, the
       // lockable fields will be updated automatically in `do_predict` function)
       ral.cfg_regwen.en.set_lockable_flds_access(.lock(1));
-
-      // TODO(Issue #8460) - shadow storage error will clear update error status bit.
-      foreach (cfg.shadow_update_err_status_fields[status_field]) begin
-        void'(status_field.predict(~cfg.shadow_update_err_status_fields[status_field]));
-      end
     end
   endfunction
+
+  // cfg_shadowed register field err_process will clear shadow reg update error.
+  virtual task shadow_reg_wr(dv_base_reg    csr,
+                             uvm_reg_data_t wdata,
+                             bit            en_shadow_wr = 1,
+                             bit            predict = 1);
+    super.shadow_reg_wr(csr, wdata, en_shadow_wr, predict);
+    if (csr.get_name() == "cfg_shadowed") begin
+      // If `cfg_shadowed` register is written successfully, then check if update error status
+      // will be cleared by `KmacErrProcessed` field.
+      if (csr.is_staged() == 0 &&
+          csr.get_shadow_update_err() == 0 &&
+          csr.get_shadow_storage_err() == 0) begin
+        if (wdata[KmacErrProcessed]) clear_update_err_status();
+      end
+    end
+  endtask
 
   virtual task check_tl_intg_error_response();
     // For tl integrity fatal error, the kmac `cfg_regwen` register will be set to 0 internally to
