@@ -25,4 +25,14 @@
  */
 #define ASSERT_DIF_OK(expr_) ASSERT_EQ(expr_, kDifOk)
 
+/**
+ * Creates a test expectation for `expr_` to evaluate to `kDifBadArg`.
+ */
+#define EXPECT_DIF_BADARG(expr_) EXPECT_EQ(expr_, kDifBadArg)
+
+/**
+ * Creates a test assertion for `expr_` to evaluate to `kDifBadArg`.
+ */
+#define ASSERT_DIF_BADARG(expr_) ASSERT_EQ(expr_, kDifBadArg)
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_TEST_BASE_H_

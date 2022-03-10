@@ -41,18 +41,18 @@ class ConfigTest : public DifEntropySrcTest {
 };
 
 TEST_F(ConfigTest, NullArgs) {
-  EXPECT_EQ(dif_entropy_src_configure(nullptr, {}), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_entropy_src_configure(nullptr, {}));
 }
 
 TEST_F(ConfigTest, InvalidFifoThreshold) {
   config_.fw_override.buffer_threshold = 65;
-  EXPECT_EQ(dif_entropy_src_configure(&entropy_src_, config_), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_entropy_src_configure(&entropy_src_, config_));
 }
 
 TEST_F(ConfigTest, InvalidFwOverrideSettings) {
   config_.fw_override.enable = false;
   config_.fw_override.entropy_insert_enable = true;
-  EXPECT_EQ(dif_entropy_src_configure(&entropy_src_, config_), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_entropy_src_configure(&entropy_src_, config_));
 }
 
 struct ConfigParams {
@@ -163,11 +163,11 @@ class ReadTest : public DifEntropySrcTest {};
 
 TEST_F(ReadTest, EntropyBadArg) {
   uint32_t word;
-  EXPECT_EQ(dif_entropy_src_read(nullptr, &word), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_entropy_src_read(nullptr, &word));
 }
 
 TEST_F(ReadTest, WordBadArg) {
-  EXPECT_EQ(dif_entropy_src_read(&entropy_src_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_entropy_src_read(&entropy_src_, nullptr));
 }
 
 TEST_F(ReadTest, ReadDataUnAvailable) {

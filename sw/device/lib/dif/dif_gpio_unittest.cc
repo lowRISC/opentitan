@@ -36,7 +36,7 @@ class GpioTestInitialized : public GpioTest {
 // Reset tests
 class ResetTest : public GpioTestInitialized {};
 
-TEST_F(ResetTest, NullArgs) { EXPECT_EQ(dif_gpio_reset(nullptr), kDifBadArg); }
+TEST_F(ResetTest, NullArgs) { EXPECT_DIF_BADARG(dif_gpio_reset(nullptr)); }
 
 TEST_F(ResetTest, Reset) {
   EXPECT_WRITE32(GPIO_INTR_ENABLE_REG_OFFSET, 0);
@@ -59,13 +59,13 @@ TEST_F(ReadTest, NullArgs) {
   dif_gpio_state_t out_arg_uint32_t;
   bool out_arg_bool;
 
-  EXPECT_EQ(dif_gpio_read_all(nullptr, &out_arg_uint32_t), kDifBadArg);
-  EXPECT_EQ(dif_gpio_read_all(&gpio_, nullptr), kDifBadArg);
-  EXPECT_EQ(dif_gpio_read_all(nullptr, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_gpio_read_all(nullptr, &out_arg_uint32_t));
+  EXPECT_DIF_BADARG(dif_gpio_read_all(&gpio_, nullptr));
+  EXPECT_DIF_BADARG(dif_gpio_read_all(nullptr, nullptr));
 
-  EXPECT_EQ(dif_gpio_read(nullptr, 0, &out_arg_bool), kDifBadArg);
-  EXPECT_EQ(dif_gpio_read(&gpio_, 0, nullptr), kDifBadArg);
-  EXPECT_EQ(dif_gpio_read(nullptr, 0, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_gpio_read(nullptr, 0, &out_arg_bool));
+  EXPECT_DIF_BADARG(dif_gpio_read(&gpio_, 0, nullptr));
+  EXPECT_DIF_BADARG(dif_gpio_read(nullptr, 0, nullptr));
 }
 
 TEST_F(ReadTest, AllPins) {
@@ -95,9 +95,9 @@ TEST_F(ReadTest, SinglePin) {
 class WriteTest : public GpioTestInitialized {};
 
 TEST_F(WriteTest, NullArgs) {
-  EXPECT_EQ(dif_gpio_write_all(nullptr, kAllOnes), kDifBadArg);
-  EXPECT_EQ(dif_gpio_write(nullptr, 0, true), kDifBadArg);
-  EXPECT_EQ(dif_gpio_write_masked(nullptr, kAllOnes, kAllOnes), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_gpio_write_all(nullptr, kAllOnes));
+  EXPECT_DIF_BADARG(dif_gpio_write(nullptr, 0, true));
+  EXPECT_DIF_BADARG(dif_gpio_write_masked(nullptr, kAllOnes, kAllOnes));
 }
 
 TEST_F(WriteTest, AllPins) {
@@ -157,11 +157,10 @@ TEST_F(WriteTest, Masked) {
 class OutputModeTest : public GpioTestInitialized {};
 
 TEST_F(OutputModeTest, NullArgs) {
-  EXPECT_EQ(dif_gpio_output_set_enabled_all(nullptr, kAllOnes), kDifBadArg);
-  EXPECT_EQ(dif_gpio_output_set_enabled(nullptr, 0, kDifToggleEnabled),
-            kDifBadArg);
-  EXPECT_EQ(dif_gpio_output_set_enabled_masked(nullptr, kAllOnes, kAllOnes),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_gpio_output_set_enabled_all(nullptr, kAllOnes));
+  EXPECT_DIF_BADARG(dif_gpio_output_set_enabled(nullptr, 0, kDifToggleEnabled));
+  EXPECT_DIF_BADARG(
+      dif_gpio_output_set_enabled_masked(nullptr, kAllOnes, kAllOnes));
 }
 
 TEST_F(OutputModeTest, AllPins) {
@@ -204,12 +203,10 @@ TEST_F(OutputModeTest, Masked) {
 class InputFilterTest : public GpioTestInitialized {};
 
 TEST_F(InputFilterTest, NullArgs) {
-  EXPECT_EQ(dif_gpio_input_noise_filter_set_enabled(nullptr, kAllOnes,
-                                                    kDifToggleEnabled),
-            kDifBadArg);
-  EXPECT_EQ(dif_gpio_input_noise_filter_set_enabled(nullptr, kAllOnes,
-                                                    kDifToggleDisabled),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_gpio_input_noise_filter_set_enabled(nullptr, kAllOnes,
+                                                            kDifToggleEnabled));
+  EXPECT_DIF_BADARG(dif_gpio_input_noise_filter_set_enabled(
+      nullptr, kAllOnes, kDifToggleDisabled));
 }
 
 TEST_F(InputFilterTest, MaskedEnable) {

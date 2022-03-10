@@ -27,7 +27,7 @@ class DifCsrngTest : public testing::Test, public mock_mmio::MmioTest {
 class ConfigTest : public DifCsrngTest {};
 
 TEST_F(ConfigTest, NullArgs) {
-  EXPECT_EQ(dif_csrng_configure(nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_csrng_configure(nullptr));
 }
 
 TEST_F(ConfigTest, ConfigOk) {
@@ -39,9 +39,9 @@ class GetCmdInterfaceStatusTest : public DifCsrngTest {};
 
 TEST_F(GetCmdInterfaceStatusTest, NullArgs) {
   dif_csrng_cmd_status_t status;
-  EXPECT_EQ(dif_csrng_get_cmd_interface_status(nullptr, &status), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_csrng_get_cmd_interface_status(nullptr, &status));
 
-  EXPECT_EQ(dif_csrng_get_cmd_interface_status(&csrng_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_csrng_get_cmd_interface_status(&csrng_, nullptr));
 }
 
 struct GetCmdInterfaceStatusParams {
@@ -78,9 +78,9 @@ class GetOutputStatusTest : public DifCsrngTest {};
 
 TEST_F(GetOutputStatusTest, NullArgs) {
   dif_csrng_output_status_t status;
-  EXPECT_EQ(dif_csrng_get_output_status(nullptr, &status), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_csrng_get_output_status(nullptr, &status));
 
-  EXPECT_EQ(dif_csrng_get_output_status(&csrng_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_csrng_get_output_status(&csrng_, nullptr));
 }
 
 TEST_F(GetOutputStatusTest, ValidStatus) {
@@ -128,15 +128,13 @@ TEST_F(CommandTest, InstantiateOk) {
 }
 
 TEST_F(CommandTest, InstantiateBadArgs) {
-  EXPECT_EQ(dif_csrng_instantiate(nullptr, kDifCsrngEntropySrcToggleDisable,
-                                  &seed_material_),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_csrng_instantiate(
+      nullptr, kDifCsrngEntropySrcToggleDisable, &seed_material_));
 
   // Failed overflow check.
   seed_material_.seed_material_len = 16;
-  EXPECT_EQ(dif_csrng_instantiate(&csrng_, kDifCsrngEntropySrcToggleDisable,
-                                  &seed_material_),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_csrng_instantiate(
+      &csrng_, kDifCsrngEntropySrcToggleDisable, &seed_material_));
 }
 
 TEST_F(CommandTest, ReseedOk) {
@@ -151,11 +149,11 @@ TEST_F(CommandTest, ReseedOk) {
 }
 
 TEST_F(CommandTest, ReseedBadArgs) {
-  EXPECT_EQ(dif_csrng_reseed(nullptr, &seed_material_), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_csrng_reseed(nullptr, &seed_material_));
 
   // Failed overflow check.
   seed_material_.seed_material_len = 16;
-  EXPECT_EQ(dif_csrng_reseed(&csrng_, &seed_material_), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_csrng_reseed(&csrng_, &seed_material_));
 }
 
 TEST_F(CommandTest, UpdateOk) {
@@ -170,7 +168,7 @@ TEST_F(CommandTest, UpdateOk) {
 }
 
 TEST_F(CommandTest, UpdateBadArgs) {
-  EXPECT_EQ(dif_csrng_update(nullptr, &seed_material_), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_csrng_update(nullptr, &seed_material_));
 }
 
 TEST_F(CommandTest, GenerateOk) {
@@ -184,8 +182,8 @@ TEST_F(CommandTest, GenerateOk) {
 }
 
 TEST_F(CommandTest, GenerateBadArgs) {
-  EXPECT_EQ(dif_csrng_generate_start(nullptr, /*len=*/1), kDifBadArg);
-  EXPECT_EQ(dif_csrng_generate_start(&csrng_, /*len=*/0), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_csrng_generate_start(nullptr, /*len=*/1));
+  EXPECT_DIF_BADARG(dif_csrng_generate_start(&csrng_, /*len=*/0));
 }
 
 TEST_F(CommandTest, UninstantiateOk) {
@@ -217,10 +215,10 @@ TEST_F(GenerateEndTest, ReadOk) {
 }
 
 TEST_F(GenerateEndTest, ReadBadArgs) {
-  EXPECT_EQ(dif_csrng_generate_end(&csrng_, nullptr, /*len=*/0), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_csrng_generate_end(&csrng_, nullptr, /*len=*/0));
 
   uint32_t data;
-  EXPECT_EQ(dif_csrng_generate_end(nullptr, &data, /*len=*/1), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_csrng_generate_end(nullptr, &data, /*len=*/1));
 }
 
 class GetInternalStateTest : public DifCsrngTest {};
@@ -261,14 +259,12 @@ TEST_F(GetInternalStateTest, GetInternalStateOk) {
 }
 
 TEST_F(GetInternalStateTest, GetInternalStateBadArgs) {
-  EXPECT_EQ(
-      dif_csrng_get_internal_state(&csrng_, kCsrngInternalStateIdSw, nullptr),
-      kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_csrng_get_internal_state(&csrng_, kCsrngInternalStateIdSw, nullptr));
 
   dif_csrng_internal_state unused;
-  EXPECT_EQ(
-      dif_csrng_get_internal_state(nullptr, kCsrngInternalStateIdSw, &unused),
-      kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_csrng_get_internal_state(nullptr, kCsrngInternalStateIdSw, &unused));
 }
 
 }  // namespace
