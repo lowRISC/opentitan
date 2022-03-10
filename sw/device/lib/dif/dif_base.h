@@ -20,6 +20,19 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * Evaluate an expression and return if the result is an error.
+ *
+ * @param expr_ An expression which results in an dif_result_t.
+ */
+#define DIF_RETURN_IF_ERROR(expr_)       \
+  do {                                   \
+    dif_result_t local_error_ = (expr_); \
+    if (local_error_ != kDifOk) {        \
+      return local_error_;               \
+    }                                    \
+  } while (false)
+
+/**
  * The result of a DIF operation.
  *
  * NOTE: additional result values can be defined in the manually-implemented

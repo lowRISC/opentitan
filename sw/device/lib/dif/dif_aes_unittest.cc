@@ -24,6 +24,20 @@ using testing::Test;
 // Base class for the rest fixtures in this file.
 class AesTest : public testing::Test, public mock_mmio::MmioTest {
  public:
+  void ExpectReadMultreg(const uint32_t reg, const uint32_t *data,
+                         size_t size) {
+    for (uint32_t i = 0; i < size; ++i) {
+      ptrdiff_t offset = reg + (i * sizeof(uint32_t));
+      EXPECT_READ32(offset, data[i]);
+    }
+  }
+  void ExpectWriteMultreg(const uint32_t reg, const uint32_t *data,
+                          size_t size) {
+    for (uint32_t i = 0; i < size; ++i) {
+      ptrdiff_t offset = reg + (i * sizeof(uint32_t));
+      EXPECT_WRITE32(offset, data[i]);
+    }
+  }
   void SetExpectedKey(const dif_aes_key_share_t &key, uint32_t key_size) {
     for (uint32_t i = 0; i < key_size; ++i) {
       ptrdiff_t offset = AES_KEY_SHARE0_0_REG_OFFSET + (i * sizeof(uint32_t));
@@ -385,6 +399,71 @@ TEST_F(DataTest, DataOut) {
   EXPECT_THAT(out.data, ElementsAreArray(data_.data));
 }
 
+class DataProcessTest : public AesTestInitialized {
+ protected:
+  static constexpr size_t kBlockCount = 3;
+  static constexpr size_t kBlockSize = 4;
+  static constexpr dif_aes_data_t kDataIn[kBlockCount] = {
+      {.data = {0xA55AA55A, 0xA55AA55A, 0xA55AA55A, 0xA55AA55A}},
+      {.data = {0x5AA5A55A, 0x5AA5A55A, 0x5AA5A55A, 0x5AA5A55A}},
+      {.data = {0xA55AA55A, 0xA55AA55A, 0xA55AA55A, 0xA55AA55A}},
+  };
+
+  static constexpr dif_aes_data_t kDataOut[kBlockCount] = {
+      {.data = {0xB44BB44B, 0xB44BB44B, 0xB44BB44B, 0xB44BB44B}},
+      {.data = {0x4BB4B44B, 0x4BB4B44B, 0x4BB4B44B, 0x4BB4B44B}},
+      {.data = {0xB44BB44B, 0xB44BB44B, 0xB44BB44B, 0xB44BB44B}},
+  };
+};
+constexpr size_t DataProcessTest::kBlockCount;
+constexpr size_t DataProcessTest::kBlockSize;
+constexpr dif_aes_data_t DataProcessTest::kDataIn[kBlockCount];
+constexpr dif_aes_data_t DataProcessTest::kDataOut[kBlockCount];
+
+TEST_F(DataProcessTest, ThreeBlocksSuccess) {
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_INPUT_READY_BIT, true},
+                                        {AES_STATUS_OUTPUT_VALID_BIT, true}});
+
+  ExpectWriteMultreg(AES_DATA_IN_0_REG_OFFSET, kDataIn[0].data, kBlockSize);
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_INPUT_READY_BIT, true}});
+
+  ExpectWriteMultreg(AES_DATA_IN_0_REG_OFFSET, kDataIn[1].data, kBlockSize);
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_OUTPUT_VALID_BIT, true}});
+  ExpectReadMultreg(AES_DATA_OUT_0_REG_OFFSET, kDataOut[0].data, kBlockSize);
+
+  ExpectWriteMultreg(AES_DATA_IN_0_REG_OFFSET, kDataIn[2].data, kBlockSize);
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_OUTPUT_VALID_BIT, true}});
+  ExpectReadMultreg(AES_DATA_OUT_0_REG_OFFSET, kDataOut[1].data, kBlockSize);
+
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_OUTPUT_VALID_BIT, true}});
+  ExpectReadMultreg(AES_DATA_OUT_0_REG_OFFSET, kDataOut[2].data, kBlockSize);
+
+  dif_aes_data_t out[kBlockCount];
+  EXPECT_DIF_OK(dif_aes_process_data(&aes_, kDataIn, out, kBlockCount));
+
+  for (int i = 0; i < kBlockCount; ++i) {
+    EXPECT_THAT(out[i].data, ElementsAreArray(kDataOut[i].data));
+  }
+}
+
+TEST_F(DataProcessTest, OneBlockSuccess) {
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_INPUT_READY_BIT, true}});
+  ExpectWriteMultreg(AES_DATA_IN_0_REG_OFFSET, kDataIn[0].data, kBlockSize);
+
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_OUTPUT_VALID_BIT, true}});
+  ExpectReadMultreg(AES_DATA_OUT_0_REG_OFFSET, kDataOut[0].data, kBlockSize);
+
+  dif_aes_data_t out[kBlockCount];
+  EXPECT_DIF_OK(dif_aes_process_data(&aes_, kDataIn, out, 1));
+  EXPECT_THAT(out[0].data, ElementsAreArray(kDataOut[0].data));
+}
+
+TEST_F(DataProcessTest, OneBlockUnavailable) {
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_INPUT_READY_BIT, false}});
+
+  dif_aes_data_t out[kBlockCount];
+  EXPECT_EQ(dif_aes_process_data(&aes_, kDataIn, out, 1), kDifUnavailable);
+}
 // Read the IV tests.
 class IVTest : public AesTestInitialized {};
 
@@ -729,6 +808,15 @@ TEST_F(DifBadArgError, ReadIV) {
   EXPECT_DIF_BADARG(dif_aes_read_iv(&aes_, NULL));
 }
 
+TEST_F(DifBadArgError, ProcessData) {
+  dif_aes_data_t data[1] = {};
+  dif_aes_data_t out[1] = {};
+  EXPECT_DIF_BADARG(dif_aes_process_data(nullptr, data, out, 1));
+  EXPECT_DIF_BADARG(dif_aes_process_data(&aes_, nullptr, out, 1));
+  EXPECT_DIF_BADARG(dif_aes_process_data(&aes_, data, nullptr, 1));
+  EXPECT_DIF_BADARG(dif_aes_process_data(&aes_, data, out, 0));
+}
+
 class DifUnavailableError : public AesTestInitialized {
  protected:
   DifUnavailableError() {
@@ -752,6 +840,13 @@ TEST_F(DifUnavailableError, LoadData) {
 TEST_F(DifUnavailableError, ReadIV) {
   dif_aes_iv_t iv = {{0}};
   EXPECT_EQ(dif_aes_read_iv(&aes_, &iv), kDifUnavailable);
+}
+
+TEST_F(DifUnavailableError, ProcessData) {
+  dif_aes_data_t data[2] = {};
+  dif_aes_data_t out[2] = {};
+  EXPECT_EQ(dif_aes_process_data(&aes_, data, out, ARRAYSIZE(data)),
+            kDifUnavailable);
 }
 
 class DifError : public AesTestInitialized {
