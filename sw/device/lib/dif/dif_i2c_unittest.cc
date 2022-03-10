@@ -229,7 +229,7 @@ TEST(ComputeTimingTest, FastPlusSpeed) {
 }
 
 TEST(ComputeTimingTest, NullArgs) {
-  EXPECT_EQ(dif_i2c_compute_timing(kBaseConfigFast, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_i2c_compute_timing(kBaseConfigFast, nullptr));
 }
 
 class ConfigTest : public I2cTest {};
@@ -281,7 +281,7 @@ TEST_F(ConfigTest, NormalInit) {
 }
 
 TEST_F(ConfigTest, NullArgs) {
-  EXPECT_EQ(dif_i2c_configure(nullptr, {}), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_i2c_configure(nullptr, {}));
 }
 
 class FifoCtrlTest : public I2cTest {};
@@ -293,7 +293,7 @@ TEST_F(FifoCtrlTest, RxReset) {
 }
 
 TEST_F(FifoCtrlTest, RxNullArgs) {
-  EXPECT_EQ(dif_i2c_reset_rx_fifo(nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_i2c_reset_rx_fifo(nullptr));
 }
 
 TEST_F(FifoCtrlTest, FmtReset) {
@@ -303,7 +303,7 @@ TEST_F(FifoCtrlTest, FmtReset) {
 }
 
 TEST_F(FifoCtrlTest, FmtNullArgs) {
-  EXPECT_EQ(dif_i2c_reset_fmt_fifo(nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_i2c_reset_fmt_fifo(nullptr));
 }
 
 TEST_F(FifoCtrlTest, SetLevels) {
@@ -355,15 +355,13 @@ TEST_F(FifoCtrlTest, SetLevels) {
   EXPECT_DIF_OK(
       dif_i2c_set_watermarks(&i2c_, kDifI2cLevel30Byte, kDifI2cLevel8Byte));
 
-  EXPECT_EQ(
-      dif_i2c_set_watermarks(&i2c_, kDifI2cLevel30Byte, kDifI2cLevel30Byte),
-      kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_i2c_set_watermarks(&i2c_, kDifI2cLevel30Byte, kDifI2cLevel30Byte));
 }
 
 TEST_F(FifoCtrlTest, SetLevelsNullArgs) {
-  EXPECT_EQ(
-      dif_i2c_set_watermarks(nullptr, kDifI2cLevel4Byte, kDifI2cLevel16Byte),
-      kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_i2c_set_watermarks(nullptr, kDifI2cLevel4Byte, kDifI2cLevel16Byte));
 }
 
 class ControlTest : public I2cTest {};
@@ -377,7 +375,7 @@ TEST_F(ControlTest, HostEnable) {
 }
 
 TEST_F(ControlTest, HostEnableNullArgs) {
-  EXPECT_EQ(dif_i2c_host_set_enabled(nullptr, kDifToggleEnabled), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_i2c_host_set_enabled(nullptr, kDifToggleEnabled));
 }
 
 class OverrideTest : public I2cTest {};
@@ -391,8 +389,7 @@ TEST_F(OverrideTest, Enable) {
 }
 
 TEST_F(OverrideTest, EnableNullArgs) {
-  EXPECT_EQ(dif_i2c_override_set_enabled(nullptr, kDifToggleEnabled),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_i2c_override_set_enabled(nullptr, kDifToggleEnabled));
 }
 
 TEST_F(OverrideTest, Drive) {
@@ -416,7 +413,7 @@ TEST_F(OverrideTest, Drive) {
 }
 
 TEST_F(OverrideTest, DriveNullArgs) {
-  EXPECT_EQ(dif_i2c_override_drive_pins(nullptr, false, false), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_i2c_override_drive_pins(nullptr, false, false));
 }
 
 TEST_F(OverrideTest, Sample) {
@@ -441,7 +438,7 @@ TEST_F(OverrideTest, Sample) {
 
 TEST_F(OverrideTest, SampleNullArgs) {
   uint16_t scl, sda;
-  EXPECT_EQ(dif_i2c_override_sample_pins(nullptr, &scl, &sda), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_i2c_override_sample_pins(nullptr, &scl, &sda));
 }
 
 class FifoTest : public I2cTest {};
@@ -468,7 +465,7 @@ TEST_F(FifoTest, GetLevels) {
 
 TEST_F(FifoTest, GetLevelsNullArgs) {
   uint8_t rx, fmt;
-  EXPECT_EQ(dif_i2c_get_fifo_levels(nullptr, &rx, &fmt), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_i2c_get_fifo_levels(nullptr, &rx, &fmt));
 }
 
 TEST_F(FifoTest, Read) {
@@ -488,7 +485,7 @@ TEST_F(FifoTest, Read) {
 
 TEST_F(FifoTest, ReadNullArgs) {
   uint8_t val;
-  EXPECT_EQ(dif_i2c_read_byte(nullptr, &val), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_i2c_read_byte(nullptr, &val));
 }
 
 // NOTE: `false` settings on the below designated initializers are only
@@ -550,23 +547,21 @@ TEST_F(FifoTest, WriteRaw) {
 }
 
 TEST_F(FifoTest, WriteRawBadArgs) {
-  EXPECT_EQ(dif_i2c_write_byte_raw(nullptr, 0xff, {}), kDifBadArg);
-  EXPECT_EQ(dif_i2c_write_byte_raw(&i2c_, 0xff,
-                                   {
-                                       .start = false,
-                                       .stop = true,
-                                       .read = true,
-                                   }),
-            kDifBadArg);
-  EXPECT_EQ(dif_i2c_write_byte_raw(&i2c_, 0xff,
-                                   {
-                                       .start = false,
-                                       .stop = false,
-                                       .read = false,
-                                       .read_cont = true,
-                                       .suppress_nak_irq = true,
-                                   }),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_i2c_write_byte_raw(nullptr, 0xff, {}));
+  EXPECT_DIF_BADARG(dif_i2c_write_byte_raw(&i2c_, 0xff,
+                                           {
+                                               .start = false,
+                                               .stop = true,
+                                               .read = true,
+                                           }));
+  EXPECT_DIF_BADARG(dif_i2c_write_byte_raw(&i2c_, 0xff,
+                                           {
+                                               .start = false,
+                                               .stop = false,
+                                               .read = false,
+                                               .read_cont = true,
+                                               .suppress_nak_irq = true,
+                                           }));
 }
 
 }  // namespace

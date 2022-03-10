@@ -27,7 +27,7 @@ class SramCtrlTest : public Test, public MmioTest {
 class Scramble : public SramCtrlTest {};
 
 TEST_F(Scramble, NullArgs) {
-  EXPECT_EQ(dif_sram_ctrl_scramble(nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_sram_ctrl_scramble(nullptr));
 }
 
 TEST_F(Scramble, Locked) {
@@ -81,7 +81,7 @@ TEST_F(Scramble, Success) {
 class RequestNewKeyTest : public SramCtrlTest {};
 
 TEST_F(RequestNewKeyTest, NullArgs) {
-  EXPECT_EQ(dif_sram_ctrl_request_new_key(nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_sram_ctrl_request_new_key(nullptr));
 }
 
 TEST_F(RequestNewKeyTest, Locked) {
@@ -101,9 +101,9 @@ class GetStatusTest : public SramCtrlTest {};
 
 TEST_F(GetStatusTest, NullArgs) {
   dif_sram_ctrl_status_bitfield_t status;
-  EXPECT_EQ(dif_sram_ctrl_get_status(&sram_ctrl_, nullptr), kDifBadArg);
-  EXPECT_EQ(dif_sram_ctrl_get_status(nullptr, &status), kDifBadArg);
-  EXPECT_EQ(dif_sram_ctrl_get_status(nullptr, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_sram_ctrl_get_status(&sram_ctrl_, nullptr));
+  EXPECT_DIF_BADARG(dif_sram_ctrl_get_status(nullptr, &status));
+  EXPECT_DIF_BADARG(dif_sram_ctrl_get_status(nullptr, nullptr));
 }
 
 TEST_F(GetStatusTest, SuccessSome) {
@@ -135,9 +135,9 @@ class ExecGetEnabledTest : public SramCtrlTest {};
 
 TEST_F(ExecGetEnabledTest, NullArgs) {
   dif_toggle_t state;
-  EXPECT_EQ(dif_sram_ctrl_exec_get_enabled(&sram_ctrl_, nullptr), kDifBadArg);
-  EXPECT_EQ(dif_sram_ctrl_exec_get_enabled(nullptr, &state), kDifBadArg);
-  EXPECT_EQ(dif_sram_ctrl_exec_get_enabled(nullptr, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_sram_ctrl_exec_get_enabled(&sram_ctrl_, nullptr));
+  EXPECT_DIF_BADARG(dif_sram_ctrl_exec_get_enabled(nullptr, &state));
+  EXPECT_DIF_BADARG(dif_sram_ctrl_exec_get_enabled(nullptr, nullptr));
 }
 
 TEST_F(ExecGetEnabledTest, Enabled) {
@@ -168,10 +168,9 @@ TEST_F(ExecGetEnabledTest, Disabled) {
 class ExecSetEnabledTest : public SramCtrlTest {};
 
 TEST_F(ExecSetEnabledTest, NullArgs) {
-  EXPECT_EQ(dif_sram_ctrl_exec_set_enabled(nullptr, kDifToggleEnabled),
-            kDifBadArg);
-  EXPECT_EQ(dif_sram_ctrl_exec_set_enabled(nullptr, kDifToggleDisabled),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_sram_ctrl_exec_set_enabled(nullptr, kDifToggleEnabled));
+  EXPECT_DIF_BADARG(
+      dif_sram_ctrl_exec_set_enabled(nullptr, kDifToggleDisabled));
 }
 
 TEST_F(ExecSetEnabledTest, Locked) {
@@ -198,8 +197,8 @@ TEST_F(ExecSetEnabledTest, Enabled) {
 class LockTest : public SramCtrlTest {};
 
 TEST_F(LockTest, NullArgs) {
-  EXPECT_EQ(dif_sram_ctrl_lock(nullptr, kDifSramCtrlLockCtrl), kDifBadArg);
-  EXPECT_EQ(dif_sram_ctrl_lock(nullptr, kDifSramCtrlLockExec), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_sram_ctrl_lock(nullptr, kDifSramCtrlLockCtrl));
+  EXPECT_DIF_BADARG(dif_sram_ctrl_lock(nullptr, kDifSramCtrlLockExec));
 }
 
 TEST_F(LockTest, Error) {
@@ -226,19 +225,19 @@ class IsLockedTest : public SramCtrlTest {};
 
 TEST_F(IsLockedTest, NullArgs) {
   bool is_locked;
-  EXPECT_EQ(dif_sram_ctrl_is_locked(nullptr, kDifSramCtrlLockCtrl, &is_locked),
-            kDifBadArg);
-  EXPECT_EQ(dif_sram_ctrl_is_locked(nullptr, kDifSramCtrlLockCtrl, nullptr),
-            kDifBadArg);
-  EXPECT_EQ(dif_sram_ctrl_is_locked(&sram_ctrl_, kDifSramCtrlLockCtrl, nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_sram_ctrl_is_locked(nullptr, kDifSramCtrlLockCtrl, &is_locked));
+  EXPECT_DIF_BADARG(
+      dif_sram_ctrl_is_locked(nullptr, kDifSramCtrlLockCtrl, nullptr));
+  EXPECT_DIF_BADARG(
+      dif_sram_ctrl_is_locked(&sram_ctrl_, kDifSramCtrlLockCtrl, nullptr));
 
-  EXPECT_EQ(dif_sram_ctrl_is_locked(nullptr, kDifSramCtrlLockExec, &is_locked),
-            kDifBadArg);
-  EXPECT_EQ(dif_sram_ctrl_is_locked(nullptr, kDifSramCtrlLockExec, nullptr),
-            kDifBadArg);
-  EXPECT_EQ(dif_sram_ctrl_is_locked(&sram_ctrl_, kDifSramCtrlLockExec, nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_sram_ctrl_is_locked(nullptr, kDifSramCtrlLockExec, &is_locked));
+  EXPECT_DIF_BADARG(
+      dif_sram_ctrl_is_locked(nullptr, kDifSramCtrlLockExec, nullptr));
+  EXPECT_DIF_BADARG(
+      dif_sram_ctrl_is_locked(&sram_ctrl_, kDifSramCtrlLockExec, nullptr));
 }
 
 TEST_F(IsLockedTest, Error) {

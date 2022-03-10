@@ -134,20 +134,20 @@ TEST_F(StateTest, GetIdState) {
 
 TEST_F(StateTest, NullArgs) {
   dif_lc_ctrl_state_t state;
-  EXPECT_EQ(dif_lc_ctrl_get_state(nullptr, &state), kDifBadArg);
-  EXPECT_EQ(dif_lc_ctrl_get_state(&lc_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_lc_ctrl_get_state(nullptr, &state));
+  EXPECT_DIF_BADARG(dif_lc_ctrl_get_state(&lc_, nullptr));
 
   uint8_t attempts;
-  EXPECT_EQ(dif_lc_ctrl_get_attempts(nullptr, &attempts), kDifBadArg);
-  EXPECT_EQ(dif_lc_ctrl_get_attempts(&lc_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_lc_ctrl_get_attempts(nullptr, &attempts));
+  EXPECT_DIF_BADARG(dif_lc_ctrl_get_attempts(&lc_, nullptr));
 
   dif_lc_ctrl_status_t status;
-  EXPECT_EQ(dif_lc_ctrl_get_status(nullptr, &status), kDifBadArg);
-  EXPECT_EQ(dif_lc_ctrl_get_status(&lc_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_lc_ctrl_get_status(nullptr, &status));
+  EXPECT_DIF_BADARG(dif_lc_ctrl_get_status(&lc_, nullptr));
 
   dif_lc_ctrl_id_state_t id_state;
-  EXPECT_EQ(dif_lc_ctrl_get_id_state(nullptr, &id_state), kDifBadArg);
-  EXPECT_EQ(dif_lc_ctrl_get_id_state(&lc_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_lc_ctrl_get_id_state(nullptr, &id_state));
+  EXPECT_DIF_BADARG(dif_lc_ctrl_get_id_state(&lc_, nullptr));
 }
 
 class MutexTest : public LcCtrlTest {};
@@ -172,8 +172,8 @@ TEST_F(MutexTest, Release) {
 }
 
 TEST_F(MutexTest, NullArgs) {
-  EXPECT_EQ(dif_lc_ctrl_mutex_try_acquire(nullptr), kDifBadArg);
-  EXPECT_EQ(dif_lc_ctrl_mutex_release(nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_lc_ctrl_mutex_try_acquire(nullptr));
+  EXPECT_DIF_BADARG(dif_lc_ctrl_mutex_release(nullptr));
 }
 
 class TransitionTest : public LcCtrlTest {};
@@ -225,9 +225,8 @@ TEST_F(TransitionTest, Locked) {
 
 TEST_F(TransitionTest, NullArgs) {
   dif_lc_ctrl_token_t token = {"this is a token"};
-  EXPECT_EQ(
-      dif_lc_ctrl_transition(nullptr, kDifLcCtrlStateProd, &token, nullptr),
-      kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_lc_ctrl_transition(nullptr, kDifLcCtrlStateProd, &token, nullptr));
 }
 
 class OtpVendorTestRegTest : public LcCtrlTest {};

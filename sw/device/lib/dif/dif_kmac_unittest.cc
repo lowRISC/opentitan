@@ -46,14 +46,13 @@ TEST(CustomizationStringTest, Encode) {
 }
 
 TEST(CustomizationStringTest, BadArg) {
-  EXPECT_EQ(dif_kmac_customization_string_init("", 0, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_kmac_customization_string_init("", 0, nullptr));
 
   dif_kmac_customization_string_t cs;
-  EXPECT_EQ(dif_kmac_customization_string_init(nullptr, 1, &cs), kDifBadArg);
-  EXPECT_EQ(dif_kmac_customization_string_init(
-                "", kDifKmacMaxCustomizationStringLen + 1, &cs),
-            kDifBadArg);
-  EXPECT_EQ(dif_kmac_customization_string_init("", -1, &cs), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_kmac_customization_string_init(nullptr, 1, &cs));
+  EXPECT_DIF_BADARG(dif_kmac_customization_string_init(
+      "", kDifKmacMaxCustomizationStringLen + 1, &cs));
+  EXPECT_DIF_BADARG(dif_kmac_customization_string_init("", -1, &cs));
 }
 
 TEST(FunctionNameTest, Encode) {
@@ -82,14 +81,13 @@ TEST(FunctionNameTest, Encode) {
 }
 
 TEST(FunctionNameTest, BadArg) {
-  EXPECT_EQ(dif_kmac_function_name_init("", 0, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_kmac_function_name_init("", 0, nullptr));
 
   dif_kmac_function_name_t fn;
-  EXPECT_EQ(dif_kmac_function_name_init(nullptr, 1, &fn), kDifBadArg);
-  EXPECT_EQ(
-      dif_kmac_function_name_init("", kDifKmacMaxFunctionNameLen + 1, &fn),
-      kDifBadArg);
-  EXPECT_EQ(dif_kmac_function_name_init("", -1, &fn), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_kmac_function_name_init(nullptr, 1, &fn));
+  EXPECT_DIF_BADARG(
+      dif_kmac_function_name_init("", kDifKmacMaxFunctionNameLen + 1, &fn));
+  EXPECT_DIF_BADARG(dif_kmac_function_name_init("", -1, &fn));
 }
 
 using mock_mmio::MmioTest;
