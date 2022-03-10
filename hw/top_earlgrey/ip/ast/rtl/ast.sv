@@ -163,6 +163,7 @@ import ast_pkg::* ;
 import ast_reg_pkg::* ;
 import ast_bhv_pkg::* ;
 
+
 logic scan_mode, shift_en, scan_clk, scan_reset_n;
 logic vcc_pok, vcc_pok_h, vcc_pok_str;
 logic vcaon_pok, vcaon_pok_h, vcmain_pok;
@@ -343,7 +344,7 @@ assign ast_pwst_o.vcc_pok = vcc_pok_str;
 
 ///////////////////////////////////////
 ///////////////////////////////////////
-// Clocks Oschilattors
+// Clocks Oscillattors
 ///////////////////////////////////////
 ///////////////////////////////////////
 logic rst_osc_clk_n;
@@ -355,16 +356,15 @@ assign rst_osc_clk_n = vcmain_pok_por && vcc_pok;
 // System Clock (Always ON)
 ///////////////////////////////////////
 logic rst_sys_clk_n, clk_sys_pd_n;
-logic clk_osc_sys, clk_osc_sys_val;
+logic clk_sys_en, clk_osc_sys, clk_osc_sys_val;
+prim_mubi_pkg::mubi4_t clk_src_sys_jen;
 
 assign rst_sys_clk_n = rst_osc_clk_n;  // Scan reset included
 assign clk_sys_pd_n  = !deep_sleep;
 
-prim_mubi_pkg::mubi4_t clk_src_sys_jen;
-
-
-
 logic sys_io_osc_cal;
+
+assign clk_sys_en = clk_src_sys_en_i;
 
 `ifdef AST_BYPASS_CLK
 logic clk_sys_ext;
@@ -373,7 +373,7 @@ assign clk_sys_ext = clk_osc_byp_i.sys;
 
 sys_clk u_sys_clk (
   .clk_src_sys_jen_i ( prim_mubi_pkg::mubi4_test_true_strict(clk_src_sys_jen) ),
-  .clk_src_sys_en_i ( clk_src_sys_en_i ),
+  .clk_src_sys_en_i ( clk_sys_en ),
   .clk_sys_pd_ni ( clk_sys_pd_n ),
   .rst_sys_clk_ni ( rst_sys_clk_n ),
   .vcore_pok_h_i ( vcaon_pok_h ),
@@ -392,7 +392,8 @@ sys_clk u_sys_clk (
 // USB Clock (Always ON)
 ///////////////////////////////////////
 logic rst_usb_clk_n, clk_usb_pd_n;
-logic clk_osc_usb, clk_osc_usb_val;
+logic clk_usb_en, clk_osc_usb, clk_osc_usb_val;
+logic usb_ref_val, usb_ref_pulse;
 
 assign rst_usb_clk_n = rst_osc_clk_n;  // Scan reset included
 assign clk_usb_pd_n  = !deep_sleep;
@@ -404,13 +405,17 @@ logic clk_usb_ext;
 assign clk_usb_ext = clk_osc_byp_i.usb;
 `endif
 
+assign clk_usb_en = clk_src_usb_en_i;
+assign usb_ref_val = usb_ref_val_i;
+assign usb_ref_pulse = usb_ref_pulse_i;
+
 usb_clk u_usb_clk (
   .vcore_pok_h_i ( vcaon_pok_h ),
   .clk_usb_pd_ni ( clk_usb_pd_n ),
   .rst_usb_clk_ni ( rst_usb_clk_n ),
-  .clk_src_usb_en_i ( clk_src_usb_en_i ),
-  .usb_ref_val_i ( usb_ref_val_i ),
-  .usb_ref_pulse_i ( usb_ref_pulse_i ),
+  .clk_src_usb_en_i ( clk_usb_en ),
+  .usb_ref_val_i ( usb_ref_val ),
+  .usb_ref_pulse_i ( usb_ref_pulse ),
   .scan_mode_i ( scan_mode ),
   .scan_reset_ni ( scan_reset_n ),
   .usb_osc_cal_i ( usb_osc_cal ),
@@ -426,20 +431,22 @@ usb_clk u_usb_clk (
 // AON Clock (Always ON)
 ///////////////////////////////////////
 logic rst_aon_clk_n;
-logic  clk_osc_aon, clk_osc_aon_val;
+logic clk_src_aon_en, clk_osc_aon, clk_osc_aon_val;
 logic aon_osc_cal;
+
 `ifdef AST_BYPASS_CLK
 logic clk_aon_ext;
-
-assign clk_aon_ext   = clk_osc_byp_i.aon;
+assign clk_aon_ext = clk_osc_byp_i.aon;
 `endif
+
 assign rst_aon_clk_n = vcc_pok_str;
+assign clk_src_aon_en = 1'b1;  // Always Enabled
 
 aon_clk  u_aon_clk (
   .vcore_pok_h_i ( vcaon_pok_h ),
   .clk_aon_pd_ni ( 1'b1 ),     // Always Enabled
   .rst_aon_clk_ni ( rst_aon_clk_n ),
-  .clk_src_aon_en_i ( 1'b1 ),  // Always Enabled
+  .clk_src_aon_en_i ( clk_src_aon_en ),
   .scan_mode_i ( scan_mode ),
   .scan_reset_ni ( scan_reset_n ),
   .aon_osc_cal_i ( aon_osc_cal ),
@@ -471,7 +478,7 @@ assign rst_vcmpp_aon_n = scan_mode ? scan_reset_n : vcmpp_aon_sync_n;
 // IO Clock (Always ON)
 ///////////////////////////////////////
 logic rst_io_clk_n, clk_io_pd_n;
-logic clk_osc_io, clk_osc_io_val;
+logic clk_src_io_en, clk_osc_io, clk_osc_io_val;
 
 assign rst_io_clk_n = rst_osc_clk_n;  // scan reset included
 assign clk_io_pd_n  = !deep_sleep;
@@ -481,11 +488,13 @@ logic clk_io_ext;
 assign clk_io_ext = clk_osc_byp_i.io;
 `endif
 
+assign clk_src_io_en = clk_src_io_en_i;
+
 io_clk u_io_clk (
   .vcore_pok_h_i ( vcaon_pok_h ),
   .clk_io_pd_ni ( clk_io_pd_n ),
   .rst_io_clk_ni ( rst_io_clk_n ),
-  .clk_src_io_en_i ( clk_src_io_en_i ),
+  .clk_src_io_en_i ( clk_src_io_en ),
   .scan_mode_i ( scan_mode ),
   .scan_reset_ni ( scan_reset_n ),
   .io_osc_cal_i ( sys_io_osc_cal ),
