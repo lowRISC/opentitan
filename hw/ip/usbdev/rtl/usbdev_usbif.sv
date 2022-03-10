@@ -397,5 +397,13 @@ module usbdev_usbif  #(
   ////////////////
   // Assertions //
   ////////////////
+  `ASSERT_INIT(ParamNEndpointsValid, (NEndpoints > 0) && (NEndpoints <= 16))
+  `ASSERT_INIT(ParamAVFifoWidthValid, AVFifoWidth > 0)
+  `ASSERT_INIT(ParamRXFifoWidthValid, RXFifoWidth > 0)
+  `ASSERT_INIT(ParamMaxPktSizeByteValid, MaxPktSizeByte == 64)
+  `ASSERT_INIT(ParamNBufValid, NBuf > 1)
+  // The SRAM should be large enough for all the buffers of max size (4-byte
+  // data width)
+  `ASSERT_INIT(ParamSramAwValid, SramAw >= NBufWidth + PktW - 2)
 
 endmodule
