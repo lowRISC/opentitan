@@ -204,6 +204,15 @@
     { name: "CFG_SHADOWED.CONFIG.REGWEN"
       desc: "CFG_SHADOWED is protected by REGWEN"
     }
+    { name: "FSM.GLOBAL_ESC"
+      desc: "Escalation moves all sparse FSMs into an invalid state."
+    }
+    { name: "FSM.LOCAL_ESC"
+      desc: "Local fatal faults move all sparse FSMs into an invalid state."
+    }
+    { name: "LOGIC.INTEGRITY"
+      desc: "The reset net for the internal state register and critical nets around the output register are buried."
+    }
   ]
   regwidth: "32"
   registers: [
