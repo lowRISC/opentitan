@@ -10,7 +10,7 @@ class chip_base_vseq #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_ba
   );
   `uvm_object_utils(chip_base_vseq)
 
-  localparam int EXT_CLK_FREQ_MHZ = 100;
+  localparam int EXT_CLK_FREQ_MHZ = 96;
 
   // knobs to enable pre_start routines
   bit do_strap_pins_init = 1'b1; // initialize the strap
