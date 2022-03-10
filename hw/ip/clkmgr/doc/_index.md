@@ -205,7 +205,7 @@ Unlike the life cycle controller, a software request for external clocks switche
 Software request for external clocks is not always valid.
 Software is only able to request for external clocks when hardware debug functions are [allowed]({{< relref "hw/ip/lc_ctrl/doc/_index.md#hw_debug_en" >}}).
 
-When software requests the external clock switch, it also provides an indication how fast the external clock is through {{< regref "EXTCLK_CTRL.LOW_SPEED_SEL" >}}.
+When software requests the external clock switch, it also provides an indication how fast the external clock is through {{< regref "EXTCLK_CTRL.HI_SPEED_SEL" >}}.
 There are two supported clock speeds:
 * High speed - external clock is close to nominal speeds (e.g. external clock is 96MHz and nominal frequency is 96MHz-100MHz)
 * Low speed - external clock is half of nominal speeds (e.g. external clock is 48MHz and nominal frequency is 96MHz-100MHz)
@@ -218,20 +218,33 @@ When the divider is stepped down, a divide-by-4 clock becomes divide-by-2 clock 
 
 If software requests a high speed external clock, the dividers are kept as is.
 
+
 Note, software external clock switch support is meant to be a debug / evaluation feature, and should not be used in conjunction with the clock frequency and timeout measurement features.
 This is because if the clock frequency suddenly changes, the thresholds used for timeout / measurement checks will no longer apply.
-There is currently no support in hardware to dynamcially synchronize a threshold change to the expected frequency.
+There is currently no support in hardware to dynamically synchronize a threshold change to the expected frequency.
 
 #### Clock Frequency Summary
 
 The table below summarises the valid modes and the settings required.
 
-| Mode                         | `lc_ctrl_clk_byp_req`  | `extclk_ctrl.sel` | `extclk_ctrl.low_speed_sel` | life cycle state        |
+| Mode                         | `lc_ctrl_clk_byp_req`  | `extclk_ctrl.sel` | `extclk_ctrl.hi_speed_sel`  | life cycle state        |
 | -------------                | ---------------------  | ----------------- | ----------------------------| ----------------------- |
 | Life cycle transition        | `lc_ctrl_pkg::On`      | Don't care        | Don't care                  | Controlled by `lc_ctrl` |
 | Internal Clocks              | `lc_ctrl_pkg::Off`     | `kMultiBit4False` | Don't care                  | All                     |
-| Software external high speed | `lc_ctrl_pkg::Off`     | `kMultiBit4True`  | `kMultiBit4False`           | TEST_UNLOCKED, RMA      |
-| Software external low speed  | `lc_ctrl_pkg::Off`     | `kMultiBit4True`  | `kMultiBit4True`            | TEST_UNLOCKED, RMA      |
+| Software external high speed | `lc_ctrl_pkg::Off`     | `kMultiBit4True`  | `kMultiBit4True`            | TEST_UNLOCKED, RMA      |
+| Software external low speed  | `lc_ctrl_pkg::Off`     | `kMultiBit4True`  | `kMultiBit4False`           | TEST_UNLOCKED, RMA      |
+
+The table below summarizes the frequencies in each mode.
+This table assumes that the internal clock source is 96MHz.
+This table also assumes that high speed external clock is 96MHz, while low speed external clock is 48MHz.
+
+| Mode                         | div_1_clock   | div_2_clock     | div_4_clock  |
+| -------------                | ------------- | --------------- | -------------|
+| Internal Clocks              | 96MHz         | 48MHz           | 24MHz        |
+| Software external high speed | 96MHz         | 48MHz           | 24MHz        |
+| Software external low speed  | 48MHz         | 48MHz           | 24MHz        |
+
+As can be seen from the table, the external clock switch scheme prioritizes the stability of the divided clocks, while allowing the undivided clocks to slow down.
 
 
 ### Clock Frequency / Time-out Measurements
