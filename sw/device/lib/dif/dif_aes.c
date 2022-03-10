@@ -16,6 +16,18 @@
  * aes.CTRL.
  */
 
+/**
+ * Waits for the given AES status flag to be set the the given value.
+ *
+ * @param aes An aes DIF handle.
+ * @param flag Status flag to query.
+ * @param value The status flag value.
+ */
+#define AES_WAIT_FOR_STATUS(aes_, flag_, value_)                      \
+  while (mmio_region_get_bit32(aes->base_addr, AES_STATUS_REG_OFFSET, \
+                               (flag_)) != value_) {                  \
+  }
+
 static bool aes_idle(const dif_aes_t *aes) {
   return mmio_region_get_bit32(aes->base_addr, AES_STATUS_REG_OFFSET,
                                AES_STATUS_IDLE_BIT);
@@ -59,8 +71,7 @@ static void aes_shadowed_write(mmio_region_t base, ptrdiff_t offset,
 
 static void aes_clear_internal_state(const dif_aes_t *aes) {
   // Make sure AES is idle before clearing.
-  while (!aes_idle(aes)) {
-  }
+  AES_WAIT_FOR_STATUS(aes, AES_STATUS_IDLE_BIT, true);
 
   // It should be fine to clobber the Control register. Only
   // `AES_CTRL_SHADOWED_MANUAL_OPERATION` bit must be set.
@@ -78,8 +89,7 @@ static void aes_clear_internal_state(const dif_aes_t *aes) {
   mmio_region_write32(aes->base_addr, AES_TRIGGER_REG_OFFSET, trigger_reg);
 
   // Make sure AES is cleared before proceeding (may take multiple cycles).
-  while (!aes_idle(aes)) {
-  }
+  AES_WAIT_FOR_STATUS(aes, AES_STATUS_IDLE_BIT, true);
 }
 
 /**
@@ -162,6 +172,15 @@ static void aes_set_multireg(const dif_aes_t *aes, const uint32_t *data,
     ptrdiff_t offset = reg0_offset + (i * sizeof(uint32_t));
 
     mmio_region_write32(aes->base_addr, offset, data[i]);
+  }
+}
+
+static void aes_read_multireg(const dif_aes_t *aes, uint32_t *data,
+                              size_t regs_num, ptrdiff_t reg0_offset) {
+  for (int i = 0; i < regs_num; ++i) {
+    ptrdiff_t offset = reg0_offset + (i * sizeof(uint32_t));
+
+    data[i] = mmio_region_read32(aes->base_addr, offset);
   }
 }
 
@@ -267,10 +286,61 @@ dif_result_t dif_aes_read_output(const dif_aes_t *aes, dif_aes_data_t *data) {
     return kDifError;
   }
 
-  for (int i = 0; i < AES_DATA_OUT_MULTIREG_COUNT; ++i) {
-    ptrdiff_t offset = AES_DATA_OUT_0_REG_OFFSET + (i * sizeof(uint32_t));
+  aes_read_multireg(aes, data->data, AES_DATA_OUT_MULTIREG_COUNT,
+                    AES_DATA_OUT_0_REG_OFFSET);
 
-    data->data[i] = mmio_region_read32(aes->base_addr, offset);
+  return kDifOk;
+}
+
+dif_result_t dif_aes_process_data(const dif_aes_t *aes,
+                                  const dif_aes_data_t *plain_text,
+                                  dif_aes_data_t *cipher_text,
+                                  size_t block_count) {
+  if (aes == NULL || plain_text == NULL || cipher_text == NULL ||
+      block_count == 0) {
+    return kDifBadArg;
+  }
+
+  // The algorithm below just makes sense for at least 2 blocks. Otherwise
+  // it is better to use the `load_data` and `read_output` functions.
+  if (block_count < 2) {
+    DIF_RETURN_IF_ERROR(dif_aes_load_data(aes, plain_text[0]));
+    return dif_aes_read_output(aes, cipher_text);
+  }
+
+  // Ensure that the INPUT_READY bit in STATUS is 1.
+  if (!aes_input_ready(aes)) {
+    return kDifUnavailable;
+  }
+
+  // Write Input Data Block 0 to the Input Data registers DATA_IN_0 - DATA_IN_3.
+  aes_set_multireg(aes, plain_text[0].data, AES_DATA_IN_MULTIREG_COUNT,
+                   AES_DATA_IN_0_REG_OFFSET);
+
+  // Wait for the INPUT_READY bit in STATUS to become 1, i.e. wait for the AES
+  // unit to load Input Data Block 0 into the internal state register and start
+  // operation.
+  AES_WAIT_FOR_STATUS(aes, AES_STATUS_INPUT_READY_BIT, true);
+  // Then for every Data Block I=0,..,N-3, software must:
+  for (size_t i = 0; i < block_count; ++i) {
+    // Write Input Data Block I+1 into the Input Data register. There is no need
+    // to explicitly check INPUT_READY as in the same cycle OUTPUT_VALID becomes
+    // 1, the current input is loaded in (meaning INPUT_READY becomes 1 one
+    // cycle later).
+    if (i + 1 < block_count) {
+      aes_set_multireg(aes, plain_text[i + 1].data, AES_DATA_IN_MULTIREG_COUNT,
+                       AES_DATA_IN_0_REG_OFFSET);
+    }
+
+    // Wait for the OUTPUT_VALID bit in STATUS to become 1, i.e., wait for the
+    // AES unit to finish encryption/decryption of Block I. The AES unit then
+    // directly starts processing the previously input block I+1.
+    AES_WAIT_FOR_STATUS(aes, AES_STATUS_OUTPUT_VALID_BIT, true);
+
+    // Read Output Data Block I from the Output Data registers DATA_OUT_0 -
+    // DATA_OUT_3. Each register must be read at least once.
+    aes_read_multireg(aes, cipher_text[i].data, AES_DATA_OUT_MULTIREG_COUNT,
+                      AES_DATA_OUT_0_REG_OFFSET);
   }
 
   return kDifOk;
