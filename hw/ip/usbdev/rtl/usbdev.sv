@@ -14,9 +14,10 @@ module usbdev
   import prim_util_pkg::vbits;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  parameter int RcvrWakeTimeUs = 1 // Max time (in microseconds) from rx_enable_o high to the
-                                   // external differential receiver outputting valid data (when
-                                   // configured to use one).
+  // Max time (in microseconds) from rx_enable_o high to the
+  // external differential receiver outputting valid data (when
+  // configured to use one).
+  parameter int unsigned RcvrWakeTimeUs = 1
 ) (
   input  logic       clk_i,
   input  logic       rst_ni,
