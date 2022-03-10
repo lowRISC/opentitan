@@ -169,6 +169,98 @@ size_t base_fprintf(buffer_sink_t out, const char *format, ...);
 size_t base_vfprintf(buffer_sink_t out, const char *format, va_list args);
 
 /**
+ * Configuration options for `base_hexdump` and friends.
+ */
+typedef struct base_hexdump_fmt {
+  /** How many bytes to print per word of output. */
+  size_t bytes_per_word;
+  /** How many words (as defined above) per line of output. */
+  size_t words_per_line;
+  /**
+   * The alphabet to use for char-ifying a byte.
+   *
+   * These characters will be written as-is to the sink.
+   */
+  const char (*alphabet)[256];
+} base_hexdump_fmt_t;
+
+/**
+ * The default alphabet used by `base_hexdump()` functions.
+ */
+extern const char kBaseHexdumpDefaultFmtAlphabet[256];
+
+/**
+ * Dumps `hex` in an xxd-style hexdump to stdout, using default formatting
+ * options.
+ *
+ * @param buf the buffer to dump.
+ * @param len the number of bytes to dump from hex.
+ */
+size_t base_hexdump(const char *buf, size_t len);
+
+/**
+ * Dumps `hex` in an xxd-style hexdump to the buffer `buf`, capped at the given
+ * length, using default formatting options.
+ *
+ * @param out a buffer to print to.
+ * @param out_len the length of the output buffer.
+ * @param buf the buffer to dump.
+ * @param len the number of bytes to dump from hex.
+ */
+size_t base_snhexdump(char *out, size_t out_len, const char *buf, size_t len);
+
+/**
+ * Dumps `hex` in an xxd-style hexdump to `out`, using default formatting
+ * options.
+ *
+ * If `out.sink` is `NULL`, writes are treated as-if they were written to a
+ * UNIX-like /dev/null: writes succeed, but the actual bytes are not printed
+ * anywhere.
+ *
+ * @param out a sink to print to.
+ * @param buf the buffer to dump.
+ * @param len the number of bytes to dump from hex.
+ */
+size_t base_fhexdump(buffer_sink_t out, const char *buf, size_t len);
+
+/**
+ * Dumps `hex` in an xxd-style hexdump to stdout.
+ *
+ * @param fmt the format for dumping.
+ * @param buf the buffer to dump.
+ * @param len the number of bytes to dump from hex.
+ */
+size_t base_hexdump_with(base_hexdump_fmt_t fmt, const char *buf, size_t len);
+
+/**
+ * Dumps `hex` in an xxd-style hexdump to the buffer `buf`, capped at the given
+ * length.
+ *
+ * @param out a buffer to print to.
+ * @param out_len the length of the output buffer.
+ * @param fmt the format for dumping.
+ * @param buf the buffer to dump.
+ * @param len the number of bytes to dump from hex.
+ */
+size_t base_snhexdump_with(char *out, size_t out_len, base_hexdump_fmt_t fmt,
+                           const char *buf, size_t len);
+
+/**
+ * Dumps `hex` in an xxd-style hexdump to `out`.
+ *
+ * If `out.sink` is `NULL`, writes are treated as-if they were written to a
+ * UNIX-like /dev/null: writes succeed, but the actual bytes are not printed
+ * anywhere.
+ *
+ * @param out a sink to print to.
+ * @param fmt the format for dumping.
+ * @param buf the buffer to dump.
+ * @param len the number of bytes to dump from hex.
+ */
+size_t base_fhexdump_with(buffer_sink_t out, base_hexdump_fmt_t fmt,
+                          const char *buf, size_t len);
+
+/**
  * Sets what the "stdout" sink is, which is used by `base_printf()`.
  *
  * The default sink behaves like /dev/null on a standard UNIX system: writes

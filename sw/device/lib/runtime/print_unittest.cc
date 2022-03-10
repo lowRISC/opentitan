@@ -294,6 +294,29 @@ TEST_F(PrintfTest, ManySpecifiers) {
   EXPECT_THAT(buf_, StartsWith("2 + 8 == 10, also spelled 0xa"));
 }
 
+TEST_F(PrintfTest, HexDump) {
+  constexpr char kStuff[] =
+      "a very long string pot\x12\x02\xAA entially containing garbage";
+  base_hexdump(kStuff, sizeof(kStuff) - 1);
+  EXPECT_THAT(
+      buf_,
+      R"hex(00000000: 6120 7665 7279 206c 6f6e 6720 7374 7269  a very long stri
+00000010: 6e67 2070 6f74 1202 aa20 656e 7469 616c  ng pot... ential
+00000020: 6c79 2063 6f6e 7461 696e 696e 6720 6761  ly containing ga
+00000030: 7262 6167 65                             rbage
+)hex");
+
+  buf_.clear();
+  base_hexdump_with({3, 5, &kBaseHexdumpDefaultFmtAlphabet}, kStuff,
+                    sizeof(kStuff) - 1);
+  EXPECT_THAT(
+      buf_, R"hex(00000000: 612076 657279 206c6f 6e6720 737472  a very long str
+0000000f: 696e67 20706f 741202 aa2065 6e7469  ing pot... enti
+0000001e: 616c6c 792063 6f6e74 61696e 696e67  ally containing
+0000002d: 206761 726261 6765                   garbage
+)hex");
+}
+
 TEST(SnprintfTest, SimpleWrite) {
   std::string buf(128, '\0');
   auto len = base_snprintf(&buf[0], buf.size(), "Hello, World!\n");

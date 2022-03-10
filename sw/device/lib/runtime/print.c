@@ -512,3 +512,107 @@ size_t base_vfprintf(buffer_sink_t out, const char *format, va_list args) {
   va_end(args_copy);
   return bytes_written;
 }
+
+const char kBaseHexdumpDefaultFmtAlphabet[256] =
+    // clang-format off
+  // First 32 characters are not printable.
+  "................................"
+  // Printable ASCII.
+  " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+  // The rest of the range is also not printable (129 characters).
+  "................................................................"
+  "................................................................"
+  ".";
+// clang-format on
+
+static const base_hexdump_fmt_t kBaseHexdumpDefaultFmt = {
+    .bytes_per_word = 2,
+    .words_per_line = 8,
+    .alphabet = &kBaseHexdumpDefaultFmtAlphabet,
+};
+
+size_t base_hexdump(const char *buf, size_t len) {
+  return base_hexdump_with(kBaseHexdumpDefaultFmt, buf, len);
+}
+
+size_t base_snhexdump(char *out, size_t out_len, const char *buf, size_t len) {
+  return base_snhexdump_with(out, out_len, kBaseHexdumpDefaultFmt, buf, len);
+}
+
+size_t base_fhexdump(buffer_sink_t out, const char *buf, size_t len) {
+  return base_fhexdump_with(out, kBaseHexdumpDefaultFmt, buf, len);
+}
+
+size_t base_hexdump_with(base_hexdump_fmt_t fmt, const char *buf, size_t len) {
+  return base_fhexdump_with(base_stdout, fmt, buf, len);
+}
+
+size_t base_snhexdump_with(char *out, size_t out_len, base_hexdump_fmt_t fmt,
+                           const char *buf, size_t len) {
+  snprintf_captures_t data = {
+      .buf = out,
+      .bytes_left = out_len,
+  };
+  buffer_sink_t sink = {
+      .data = &data,
+      .sink = &snprintf_sink,
+  };
+  return base_fhexdump_with(sink, fmt, buf, len);
+}
+
+size_t base_fhexdump_with(buffer_sink_t out, base_hexdump_fmt_t fmt,
+                          const char *buf, size_t len) {
+  size_t bytes_written = 0;
+  size_t bytes_per_line = fmt.bytes_per_word * fmt.words_per_line;
+
+  for (size_t line = 0; line < len; line += bytes_per_line) {
+    bytes_written += base_fprintf(out, "%08x:", line);
+
+    size_t chars_per_line = bytes_per_line * 2 + fmt.words_per_line;
+    size_t line_bytes_written = 0;
+    for (size_t word = 0; word < bytes_per_line; word += fmt.bytes_per_word) {
+      if (len < line + word) {
+        char spaces[16] = "                ";
+        while (line_bytes_written < chars_per_line) {
+          size_t to_print = chars_per_line - line_bytes_written;
+          if (to_print > sizeof(spaces)) {
+            to_print = sizeof(spaces);
+          }
+          line_bytes_written += base_fprintf(out, "%!s", to_print, spaces);
+        }
+        break;
+      }
+
+      size_t bytes_left = len - line - word;
+      if (bytes_left > fmt.bytes_per_word) {
+        bytes_left = fmt.bytes_per_word;
+      }
+      line_bytes_written += base_fprintf(out, " ");
+      line_bytes_written +=
+          hex_dump(out, buf + line + word, bytes_left, bytes_left, '0',
+                   /*big_endian=*/false, kDigitsLow);
+    }
+    bytes_written += line_bytes_written;
+
+    bytes_written += base_fprintf(out, "  ");
+    size_t buffered = 0;
+    char glyph_buffer[16];
+    for (size_t byte = 0; byte < bytes_per_line; ++byte) {
+      if (buffered == sizeof(glyph_buffer)) {
+        bytes_written += base_fprintf(out, "%!s", buffered, glyph_buffer);
+        buffered = 0;
+      }
+      if (line + byte >= len) {
+        break;
+      }
+      glyph_buffer[buffered++] =
+          (*fmt.alphabet)[(size_t)(uint8_t)buf[line + byte]];
+    }
+    if (buffered > 0) {
+      bytes_written += base_fprintf(out, "%!s", buffered, glyph_buffer);
+    }
+    bytes_written += base_fprintf(out, "\n");
+  }
+
+  return bytes_written;
+}
