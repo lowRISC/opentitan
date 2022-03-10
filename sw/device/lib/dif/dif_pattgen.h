@@ -60,6 +60,10 @@ typedef enum dif_pattgen_polarity {
    * output clock (PCL) edge.
    */
   kDifPattgenPolarityHigh = 1,
+  /**
+   * Number of polarity values, used for argument validation.
+   */
+  kDifPattgenPolarityCount = 2,
 } dif_pattgen_polarity_t;
 
 /**
@@ -72,6 +76,11 @@ typedef struct dif_pattgen_channel_config {
   dif_pattgen_polarity_t polarity;
   /**
    * The I/O clock divisor that determines the frequency of channel's clock.
+   *
+   * Specifically, the output clock frequency (f_pcl) is computed from the I/O
+   * clock frequency (f_io_clk):
+   *
+   *            f_pcl = f_io_clk / (2 * (clock_divisor + 1))
    */
   uint32_t clock_divisor;
   /**
@@ -88,15 +97,16 @@ typedef struct dif_pattgen_channel_config {
    */
   uint32_t seed_pattern_upper_word;
   /**
-   * The length of the seed pattern in bits.
+   * The length of the seed pattern.
    *
-   * Valid range: [0, 63]
+   * Units: bits
+   * Valid range: [1, 64]
    */
   uint8_t seed_pattern_length;
   /**
    * The number of times to repeat the pattern.
    *
-   * Valid range: [0, 1023]
+   * Valid range: [1, 1024]
    */
   uint16_t num_pattern_repetitions;
 } dif_pattgen_channel_config_t;

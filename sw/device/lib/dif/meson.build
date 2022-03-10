@@ -1048,6 +1048,7 @@ sw_lib_dif_pattgen = declare_dependency(
     'sw_lib_dif_pattgen',
     sources: [
       hw_ip_pattgen_reg_h,
+      'dif_pattgen.c',
     ],
     dependencies: [
       sw_lib_mmio,
@@ -1059,7 +1060,10 @@ sw_lib_dif_pattgen = declare_dependency(
 test('dif_pattgen_unittest', executable(
     'dif_pattgen_unittest',
     sources: [
+      'dif_pattgen_unittest.cc',
       'autogen/dif_pattgen_autogen_unittest.cc',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_base.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_pattgen.c',
       meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_pattgen_autogen.c',
       hw_ip_pattgen_reg_h,
     ],
