@@ -815,6 +815,10 @@ cc_library(
     srcs = [
         "autogen/dif_pattgen_autogen.c",
         "autogen/dif_pattgen_autogen.h",
+        "dif_pattgen.c",
+    ],
+    hdrs = [
+        "dif_pattgen.h",
     ],
     deps = [
         ":base",
@@ -829,6 +833,9 @@ cc_test(
         "autogen/dif_pattgen_autogen.c",
         "autogen/dif_pattgen_autogen.h",
         "autogen/dif_pattgen_autogen_unittest.cc",
+        "dif_pattgen.c",
+        "dif_pattgen.h",
+        "dif_pattgen_unittest.cc",
     ],
     defines = [
         "MOCK_MMIO=1",

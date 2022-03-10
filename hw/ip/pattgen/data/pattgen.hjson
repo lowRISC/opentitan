@@ -77,7 +77,7 @@
         { bits: "3",
           resval: "0",
           name: "POLARITY_CH1",
-          desc: "Clock (`pcl`) polarity for Channel 1.  If high, `pda` signal changes on falling edge of `pcl` signal, otherwise pda changes on rising edge. Note that writes to a channel's configuration registers have no effect while the channel is enabled."
+          desc: "Clock (`pcl`) polarity for Channel 1.  If low, `pda` signal changes on falling edge of `pcl` signal, otherwise pda changes on rising edge. Note that writes to a channel's configuration registers have no effect while the channel is enabled."
         }
       ]
     }
