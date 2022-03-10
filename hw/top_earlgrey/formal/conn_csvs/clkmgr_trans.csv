@@ -8,11 +8,11 @@
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
 # clkmgr trans clock connectivity
-CONNECTION,CLKMGR_TRANS_AES,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_aes,top_earlgrey.u_aes,clk_i
-CONNECTION,CLKMGR_TRANS_AES_EDN,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_aes,top_earlgrey.u_aes,clk_edn_i
-CONNECTION,CLKMGR_TRANS_HMAC,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_hmac,top_earlgrey.u_hmac,clk_i
-CONNECTION,CLKMGR_TRANS_KMAC,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_kmac,top_earlgrey.u_kmac,clk_i
-CONNECTION,CLKMGR_TRANS_KMAC_EDN,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_kmac,top_earlgrey.u_kmac,clk_edn_i
-CONNECTION,CLKMGR_TRANS_OTBN,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_otbn,top_earlgrey.u_otbn,clk_i
-CONNECTION,CLKMGR_TRANS_OTBN_EDN,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_otbn,top_earlgrey.u_otbn,clk_edn_i
-CONNECTION,CLKMGR_TRANS_OTBN_OTP,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_otbn,top_earlgrey.u_otbn,clk_otp_i
+CONNECTION,CLKMGR_TRANS_AES,      top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_aes,       top_earlgrey.u_aes,clk_i
+CONNECTION,CLKMGR_TRANS_AES_EDN,  top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_aes,       top_earlgrey.u_aes,clk_edn_i
+CONNECTION,CLKMGR_TRANS_HMAC,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_hmac,      top_earlgrey.u_hmac,clk_i
+CONNECTION,CLKMGR_TRANS_KMAC,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_kmac,      top_earlgrey.u_kmac,clk_i
+CONNECTION,CLKMGR_TRANS_KMAC_EDN, top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_kmac,      top_earlgrey.u_kmac,clk_edn_i
+CONNECTION,CLKMGR_TRANS_OTBN,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_otbn,      top_earlgrey.u_otbn,clk_i
+CONNECTION,CLKMGR_TRANS_OTBN_EDN, top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_otbn,      top_earlgrey.u_otbn,clk_edn_i
+CONNECTION,CLKMGR_TRANS_OTBN_OTP, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_earlgrey.u_otbn,clk_otp_i
