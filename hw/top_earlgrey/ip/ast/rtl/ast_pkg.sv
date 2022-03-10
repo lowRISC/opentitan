@@ -31,12 +31,15 @@ parameter int unsigned Ot5Sel     = 12;
 parameter int unsigned Lc2HcTrCyc = 102;  // ((99+1)+(3+1))x5 = 520 us
 parameter int unsigned Hc2LcTrCyc = 38;   // ((35+1)+(3+1))x5 = 200 us
 //
-parameter int unsigned EntropyStreams  = 4;
-parameter int unsigned AdcChannels     = 2;
-parameter int unsigned AdcDataWidth    = 10;
-parameter int unsigned UsbCalibWidth   = 20;
-parameter int unsigned Ast2PadOutWidth = 9;
-parameter int unsigned Pad2AstInWidth  = 9;
+parameter int unsigned EntropyStreams   = 4;
+parameter int unsigned AdcChannels      = 2;
+parameter int unsigned AdcDataWidth     = 10;
+parameter int unsigned UsbCalibWidth    = 20;
+parameter int unsigned Ast2PadOutWidth  = 9;
+parameter int unsigned Pad2AstInWidth   = 9;
+//
+parameter int unsigned AstRegsNum       = 32;
+parameter int unsigned AstLastRegOffset = (AstRegsNum-1)*4;
 
 // These LFSR parameters have been generated with
 // $ ./util/design/gen-lfsr-seed.py --width 64 --seed 691876113 --prefix ""
