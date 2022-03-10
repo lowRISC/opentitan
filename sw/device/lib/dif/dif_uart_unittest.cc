@@ -59,7 +59,7 @@ class UartTest : public Test, public MmioTest {
 class ConfigTest : public UartTest {};
 
 TEST_F(ConfigTest, NullArgs) {
-  EXPECT_EQ(dif_uart_configure(nullptr, config_), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_uart_configure(nullptr, config_));
 }
 
 TEST_F(ConfigTest, Default) {
@@ -118,7 +118,7 @@ class WatermarkRxSetTest : public UartTest {};
 TEST_F(WatermarkRxSetTest, UartNull) {
   dif_result_t result =
       dif_uart_watermark_rx_set(nullptr, kDifUartWatermarkByte1);
-  EXPECT_EQ(result, kDifBadArg);
+  EXPECT_DIF_BADARG(result);
 }
 
 /**
@@ -143,8 +143,7 @@ TEST_F(WatermarkRxSetTest, Success) {
 class WatermarkTxSetTest : public UartTest {};
 
 TEST_F(WatermarkTxSetTest, NullArgs) {
-  EXPECT_EQ(dif_uart_watermark_tx_set(nullptr, kDifUartWatermarkByte1),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_uart_watermark_tx_set(nullptr, kDifUartWatermarkByte1));
 }
 
 TEST_F(WatermarkTxSetTest, InvalidWatermark) {
@@ -190,12 +189,12 @@ class BytesSendTest : public UartTest {
 };
 
 TEST_F(BytesSendTest, NullArgs) {
-  EXPECT_EQ(dif_uart_bytes_send(nullptr, kBytesArray.data(), 1, nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_uart_bytes_send(nullptr, kBytesArray.data(), 1, nullptr));
 
-  EXPECT_EQ(dif_uart_bytes_send(&uart_, nullptr, 1, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_uart_bytes_send(&uart_, nullptr, 1, nullptr));
 
-  EXPECT_EQ(dif_uart_bytes_send(nullptr, nullptr, 1, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_uart_bytes_send(nullptr, nullptr, 1, nullptr));
 }
 
 TEST_F(BytesSendTest, TxFifoEmptyBytesWrittenNull) {
@@ -242,13 +241,13 @@ class BytesReceiveTest : public UartTest {
 TEST_F(BytesReceiveTest, UartNull) {
   std::vector<uint8_t> receive_bytes(1);
 
-  EXPECT_EQ(dif_uart_bytes_receive(nullptr, 1, receive_bytes.data(), nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_uart_bytes_receive(nullptr, 1, receive_bytes.data(), nullptr));
   EXPECT_THAT(receive_bytes, Each(Eq(0)));
 
-  EXPECT_EQ(dif_uart_bytes_receive(&uart_, 1, nullptr, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_uart_bytes_receive(&uart_, 1, nullptr, nullptr));
 
-  EXPECT_EQ(dif_uart_bytes_receive(nullptr, 1, nullptr, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_uart_bytes_receive(nullptr, 1, nullptr, nullptr));
 }
 
 TEST_F(BytesReceiveTest, RxFifoFullBytesWrittenNull) {
@@ -290,7 +289,7 @@ class BytesSendPolledTest : public UartTest {};
 
 TEST_F(BytesSendPolledTest, NullArgs) {
   dif_result_t result = dif_uart_byte_send_polled(nullptr, 'X');
-  EXPECT_EQ(result, kDifBadArg);
+  EXPECT_DIF_BADARG(result);
 }
 
 TEST_F(BytesSendPolledTest, Success) {
@@ -313,11 +312,11 @@ class BytesReceivePolledTest : public UartTest {};
 
 TEST_F(BytesReceivePolledTest, NullArgs) {
   uint8_t byte;
-  EXPECT_EQ(dif_uart_byte_receive_polled(nullptr, &byte), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_uart_byte_receive_polled(nullptr, &byte));
 
-  EXPECT_EQ(dif_uart_byte_receive_polled(&uart_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_uart_byte_receive_polled(&uart_, nullptr));
 
-  EXPECT_EQ(dif_uart_byte_receive_polled(nullptr, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_uart_byte_receive_polled(nullptr, nullptr));
 }
 
 TEST_F(BytesReceivePolledTest, Success) {
@@ -338,11 +337,11 @@ class RxBytesAvailableTest : public UartTest {};
 
 TEST_F(RxBytesAvailableTest, NullArgs) {
   size_t num_bytes;
-  EXPECT_EQ(dif_uart_rx_bytes_available(nullptr, &num_bytes), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_uart_rx_bytes_available(nullptr, &num_bytes));
 
-  EXPECT_EQ(dif_uart_rx_bytes_available(&uart_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_uart_rx_bytes_available(&uart_, nullptr));
 
-  EXPECT_EQ(dif_uart_rx_bytes_available(nullptr, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_uart_rx_bytes_available(nullptr, nullptr));
 }
 
 TEST_F(RxBytesAvailableTest, FifoFull) {
@@ -369,11 +368,11 @@ class TxBytesAvailableTest : public UartTest {};
 
 TEST_F(TxBytesAvailableTest, NullArgs) {
   size_t num_bytes;
-  EXPECT_EQ(dif_uart_tx_bytes_available(nullptr, &num_bytes), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_uart_tx_bytes_available(nullptr, &num_bytes));
 
-  EXPECT_EQ(dif_uart_tx_bytes_available(&uart_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_uart_tx_bytes_available(&uart_, nullptr));
 
-  EXPECT_EQ(dif_uart_tx_bytes_available(nullptr, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_uart_tx_bytes_available(nullptr, nullptr));
 }
 
 TEST_F(TxBytesAvailableTest, FifoFull) {
@@ -400,7 +399,7 @@ class FifoResetTest : public UartTest {};
 
 TEST_F(FifoResetTest, NullArgs) {
   dif_result_t result = dif_uart_fifo_reset(nullptr, kDifUartFifoResetRx);
-  EXPECT_EQ(result, kDifBadArg);
+  EXPECT_DIF_BADARG(result);
 }
 
 TEST_F(FifoResetTest, Success) {
@@ -424,9 +423,8 @@ TEST_F(FifoResetTest, Success) {
 class LoopbackSetTest : public UartTest {};
 
 TEST_F(LoopbackSetTest, NullArgs) {
-  EXPECT_EQ(
-      dif_uart_loopback_set(nullptr, kDifUartLoopbackSystem, kDifToggleEnabled),
-      kDifBadArg);
+  EXPECT_DIF_BADARG(dif_uart_loopback_set(nullptr, kDifUartLoopbackSystem,
+                                          kDifToggleEnabled));
 }
 
 TEST_F(LoopbackSetTest, Success) {
@@ -450,19 +448,19 @@ TEST_F(LoopbackSetTest, Success) {
 class RxTimeoutTest : public UartTest {};
 
 TEST_F(RxTimeoutTest, NullArgs) {
-  EXPECT_EQ(dif_uart_enable_rx_timeout(nullptr, 1), kDifBadArg);
-  EXPECT_EQ(dif_uart_disable_rx_timeout(nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_uart_enable_rx_timeout(nullptr, 1));
+  EXPECT_DIF_BADARG(dif_uart_disable_rx_timeout(nullptr));
 
   uint32_t value;       // optional
   dif_toggle_t status;  // mandatory
-  EXPECT_EQ(dif_uart_get_rx_timeout(nullptr, &status, &value), kDifBadArg);
-  EXPECT_EQ(dif_uart_get_rx_timeout(&uart_, nullptr, &value), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_uart_get_rx_timeout(nullptr, &status, &value));
+  EXPECT_DIF_BADARG(dif_uart_get_rx_timeout(&uart_, nullptr, &value));
 }
 
 TEST_F(RxTimeoutTest, OutOfRange) {
   // RX timeout value must be in the range [0,0xffffff].
-  EXPECT_EQ(dif_uart_enable_rx_timeout(&uart_, 0x01000000), kDifBadArg);
-  EXPECT_EQ(dif_uart_enable_rx_timeout(&uart_, 0xffffffff), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_uart_enable_rx_timeout(&uart_, 0x01000000));
+  EXPECT_DIF_BADARG(dif_uart_enable_rx_timeout(&uart_, 0xffffffff));
 }
 
 TEST_F(RxTimeoutTest, Enable) {

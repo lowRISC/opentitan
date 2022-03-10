@@ -58,7 +58,7 @@ class AesTest : public testing::Test, public mock_mmio::MmioTest {
 class AesInitTest : public AesTest {};
 
 TEST_F(AesInitTest, NullArgs) {
-  EXPECT_EQ(dif_aes_init(dev().region(), nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_aes_init(dev().region(), nullptr));
 }
 
 TEST_F(AesInitTest, Sucess) {

@@ -104,17 +104,17 @@ class SpiHostTest : public Test, public MmioTest {
 class ConfigTest : public SpiHostTest {};
 
 TEST_F(ConfigTest, NullArgs) {
-  EXPECT_EQ(dif_spi_host_configure(nullptr, config_), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_spi_host_configure(nullptr, config_));
 }
 
 TEST_F(ConfigTest, BadDivider) {
   // A spi_clock faster than the peripheral clock is invalid.
   config_.spi_clock = 1000001;
-  EXPECT_EQ(dif_spi_host_configure(&spi_host_, config_), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_spi_host_configure(&spi_host_, config_));
 
   // A spi_clock of zero is invalid.
   config_.spi_clock = 0;
-  EXPECT_EQ(dif_spi_host_configure(&spi_host_, config_), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_spi_host_configure(&spi_host_, config_));
 }
 
 // Checks the default configuration.

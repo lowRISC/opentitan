@@ -30,9 +30,7 @@ class RstmgrTest : public Test, public MmioTest {
 
 class ResetTest : public RstmgrTest {};
 
-TEST_F(ResetTest, NullArgs) {
-  EXPECT_EQ(dif_rstmgr_reset(nullptr), kDifBadArg);
-}
+TEST_F(ResetTest, NullArgs) { EXPECT_DIF_BADARG(dif_rstmgr_reset(nullptr)); }
 
 TEST_F(ResetTest, Success) {
   EXPECT_WRITE32(RSTMGR_RESET_INFO_REG_OFFSET,
@@ -46,12 +44,12 @@ TEST_F(ResetTest, Success) {
 class ResetLockTest : public RstmgrTest {};
 
 TEST_F(ResetLockTest, NullArgs) {
-  EXPECT_EQ(dif_rstmgr_reset_lock(nullptr, 0), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_reset_lock(nullptr, 0));
 }
 
 TEST_F(ResetLockTest, BadPeripheral) {
-  EXPECT_EQ(dif_rstmgr_reset_lock(&rstmgr_, RSTMGR_PARAM_NUM_SW_RESETS),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_rstmgr_reset_lock(&rstmgr_, RSTMGR_PARAM_NUM_SW_RESETS));
 }
 
 TEST_F(ResetLockTest, Success) {
@@ -73,16 +71,15 @@ class ResetIsLockedTest : public RstmgrTest {};
 
 TEST_F(ResetIsLockedTest, NullArgs) {
   bool is_locked;
-  EXPECT_EQ(dif_rstmgr_reset_is_locked(nullptr, 0, nullptr), kDifBadArg);
-  EXPECT_EQ(dif_rstmgr_reset_is_locked(nullptr, 0, &is_locked), kDifBadArg);
-  EXPECT_EQ(dif_rstmgr_reset_is_locked(&rstmgr_, 0, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_reset_is_locked(nullptr, 0, nullptr));
+  EXPECT_DIF_BADARG(dif_rstmgr_reset_is_locked(nullptr, 0, &is_locked));
+  EXPECT_DIF_BADARG(dif_rstmgr_reset_is_locked(&rstmgr_, 0, nullptr));
 }
 
 TEST_F(ResetIsLockedTest, BadPeripheral) {
   bool is_locked;
-  EXPECT_EQ(dif_rstmgr_reset_is_locked(&rstmgr_, RSTMGR_PARAM_NUM_SW_RESETS,
-                                       &is_locked),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_reset_is_locked(
+      &rstmgr_, RSTMGR_PARAM_NUM_SW_RESETS, &is_locked));
 }
 
 TEST_F(ResetIsLockedTest, Success) {
@@ -132,9 +129,9 @@ class ResetCausesGetTest : public RstmgrTest {
 
 TEST_F(ResetCausesGetTest, NullArgs) {
   dif_rstmgr_reset_info_bitfield_t info;
-  EXPECT_EQ(dif_rstmgr_reset_info_get(nullptr, nullptr), kDifBadArg);
-  EXPECT_EQ(dif_rstmgr_reset_info_get(nullptr, &info), kDifBadArg);
-  EXPECT_EQ(dif_rstmgr_reset_info_get(&rstmgr_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_reset_info_get(nullptr, nullptr));
+  EXPECT_DIF_BADARG(dif_rstmgr_reset_info_get(nullptr, &info));
+  EXPECT_DIF_BADARG(dif_rstmgr_reset_info_get(&rstmgr_, nullptr));
 }
 
 TEST_F(ResetCausesGetTest, Success) {
@@ -167,7 +164,7 @@ TEST_F(ResetCausesGetTest, Success) {
 class ResetCausesClearTest : public RstmgrTest {};
 
 TEST_F(ResetCausesClearTest, NullArgs) {
-  EXPECT_EQ(dif_rstmgr_reset_info_clear(nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_reset_info_clear(nullptr));
 }
 
 TEST_F(ResetCausesClearTest, Success) {
@@ -180,8 +177,8 @@ TEST_F(ResetCausesClearTest, Success) {
 class AlertInfoSetTest : public RstmgrTest {};
 
 TEST_F(AlertInfoSetTest, NullArgs) {
-  EXPECT_EQ(dif_rstmgr_alert_info_set_enabled(nullptr, kDifToggleEnabled),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_rstmgr_alert_info_set_enabled(nullptr, kDifToggleEnabled));
 }
 
 TEST_F(AlertInfoSetTest, Success) {
@@ -210,10 +207,10 @@ TEST_F(AlertInfoSetTest, Success) {
 class AlertInfoGetTest : public RstmgrTest {};
 
 TEST_F(AlertInfoGetTest, NullArgs) {
-  EXPECT_EQ(dif_rstmgr_alert_info_get_enabled(nullptr, nullptr), kDifBadArg);
-  EXPECT_EQ(dif_rstmgr_alert_info_get_enabled(&rstmgr_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_alert_info_get_enabled(nullptr, nullptr));
+  EXPECT_DIF_BADARG(dif_rstmgr_alert_info_get_enabled(&rstmgr_, nullptr));
   dif_toggle_t state;
-  EXPECT_EQ(dif_rstmgr_alert_info_get_enabled(nullptr, &state), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_alert_info_get_enabled(nullptr, &state));
 }
 
 TEST_F(AlertInfoGetTest, Success) {
@@ -253,34 +250,25 @@ class AlertInfoDumpReadTest : public RstmgrTest {
 };
 
 TEST_F(AlertInfoDumpReadTest, NullArgs) {
-  EXPECT_EQ(dif_rstmgr_alert_info_dump_read(
-                nullptr, nullptr, DIF_RSTMGR_ALERT_INFO_MAX_SIZE, nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_alert_info_dump_read(
+      nullptr, nullptr, DIF_RSTMGR_ALERT_INFO_MAX_SIZE, nullptr));
 
   size_t segments_read;
-  EXPECT_EQ(
-      dif_rstmgr_alert_info_dump_read(
-          nullptr, nullptr, DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &segments_read),
-      kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_alert_info_dump_read(
+      nullptr, nullptr, DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &segments_read));
 
   dif_rstmgr_alert_info_dump_segment_t dump[DIF_RSTMGR_ALERT_INFO_MAX_SIZE];
-  EXPECT_EQ(dif_rstmgr_alert_info_dump_read(
-                nullptr, &dump[0], DIF_RSTMGR_ALERT_INFO_MAX_SIZE, nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_alert_info_dump_read(
+      nullptr, &dump[0], DIF_RSTMGR_ALERT_INFO_MAX_SIZE, nullptr));
 
-  EXPECT_EQ(
-      dif_rstmgr_alert_info_dump_read(
-          nullptr, &dump[0], DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &segments_read),
-      kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_alert_info_dump_read(
+      nullptr, &dump[0], DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &segments_read));
 
-  EXPECT_EQ(
-      dif_rstmgr_alert_info_dump_read(
-          &rstmgr_, nullptr, DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &segments_read),
-      kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_alert_info_dump_read(
+      &rstmgr_, nullptr, DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &segments_read));
 
-  EXPECT_EQ(dif_rstmgr_alert_info_dump_read(
-                &rstmgr_, &dump[0], DIF_RSTMGR_ALERT_INFO_MAX_SIZE, nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_alert_info_dump_read(
+      &rstmgr_, &dump[0], DIF_RSTMGR_ALERT_INFO_MAX_SIZE, nullptr));
 }
 
 TEST_F(AlertInfoDumpReadTest, BadDumpSize) {
@@ -358,8 +346,8 @@ TEST_F(AlertInfoDumpReadTest, SuccessDumpSmaller) {
 class CpuInfoSetTest : public RstmgrTest {};
 
 TEST_F(CpuInfoSetTest, NullArgs) {
-  EXPECT_EQ(dif_rstmgr_cpu_info_set_enabled(nullptr, kDifToggleEnabled),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_rstmgr_cpu_info_set_enabled(nullptr, kDifToggleEnabled));
 }
 
 TEST_F(CpuInfoSetTest, Success) {
@@ -387,10 +375,10 @@ TEST_F(CpuInfoSetTest, Success) {
 class CpuInfoGetTest : public RstmgrTest {};
 
 TEST_F(CpuInfoGetTest, NullArgs) {
-  EXPECT_EQ(dif_rstmgr_cpu_info_get_enabled(nullptr, nullptr), kDifBadArg);
-  EXPECT_EQ(dif_rstmgr_cpu_info_get_enabled(&rstmgr_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_cpu_info_get_enabled(nullptr, nullptr));
+  EXPECT_DIF_BADARG(dif_rstmgr_cpu_info_get_enabled(&rstmgr_, nullptr));
   dif_toggle_t state;
-  EXPECT_EQ(dif_rstmgr_cpu_info_get_enabled(nullptr, &state), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_cpu_info_get_enabled(nullptr, &state));
 }
 
 TEST_F(CpuInfoGetTest, Success) {
@@ -429,33 +417,25 @@ class CpuInfoDumpReadTest : public RstmgrTest {
 };
 
 TEST_F(CpuInfoDumpReadTest, NullArgs) {
-  EXPECT_EQ(dif_rstmgr_cpu_info_dump_read(
-                nullptr, nullptr, DIF_RSTMGR_CPU_INFO_MAX_SIZE, nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_cpu_info_dump_read(
+      nullptr, nullptr, DIF_RSTMGR_CPU_INFO_MAX_SIZE, nullptr));
 
   size_t segments_read;
-  EXPECT_EQ(dif_rstmgr_cpu_info_dump_read(
-                nullptr, nullptr, DIF_RSTMGR_CPU_INFO_MAX_SIZE, &segments_read),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_cpu_info_dump_read(
+      nullptr, nullptr, DIF_RSTMGR_CPU_INFO_MAX_SIZE, &segments_read));
 
   dif_rstmgr_cpu_info_dump_segment_t dump[DIF_RSTMGR_CPU_INFO_MAX_SIZE];
-  EXPECT_EQ(dif_rstmgr_cpu_info_dump_read(
-                nullptr, &dump[0], DIF_RSTMGR_CPU_INFO_MAX_SIZE, nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_cpu_info_dump_read(
+      nullptr, &dump[0], DIF_RSTMGR_CPU_INFO_MAX_SIZE, nullptr));
 
-  EXPECT_EQ(
-      dif_rstmgr_cpu_info_dump_read(
-          nullptr, &dump[0], DIF_RSTMGR_CPU_INFO_MAX_SIZE, &segments_read),
-      kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_cpu_info_dump_read(
+      nullptr, &dump[0], DIF_RSTMGR_CPU_INFO_MAX_SIZE, &segments_read));
 
-  EXPECT_EQ(
-      dif_rstmgr_cpu_info_dump_read(
-          &rstmgr_, nullptr, DIF_RSTMGR_CPU_INFO_MAX_SIZE, &segments_read),
-      kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_cpu_info_dump_read(
+      &rstmgr_, nullptr, DIF_RSTMGR_CPU_INFO_MAX_SIZE, &segments_read));
 
-  EXPECT_EQ(dif_rstmgr_cpu_info_dump_read(
-                &rstmgr_, &dump[0], DIF_RSTMGR_CPU_INFO_MAX_SIZE, nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_cpu_info_dump_read(
+      &rstmgr_, &dump[0], DIF_RSTMGR_CPU_INFO_MAX_SIZE, nullptr));
 }
 
 TEST_F(CpuInfoDumpReadTest, BadDumpSize) {
@@ -531,14 +511,13 @@ TEST_F(CpuInfoDumpReadTest, SuccessDumpSmaller) {
 class SoftwareResetTest : public RstmgrTest {};
 
 TEST_F(SoftwareResetTest, NullArgs) {
-  EXPECT_EQ(dif_rstmgr_software_reset(nullptr, 0, kDifRstmgrSoftwareReset),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_rstmgr_software_reset(nullptr, 0, kDifRstmgrSoftwareReset));
 }
 
 TEST_F(SoftwareResetTest, BadPeripheral) {
-  EXPECT_EQ(dif_rstmgr_software_reset(&rstmgr_, RSTMGR_PARAM_NUM_SW_RESETS,
-                                      kDifRstmgrSoftwareReset),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_software_reset(
+      &rstmgr_, RSTMGR_PARAM_NUM_SW_RESETS, kDifRstmgrSoftwareReset));
 }
 
 TEST_F(SoftwareResetTest, SoftwareResetIsLocked) {
@@ -627,21 +606,18 @@ TEST_F(SoftwareResetTest, SuccessReset) {
 class SoftwareResetIsHeldTest : public RstmgrTest {};
 
 TEST_F(SoftwareResetIsHeldTest, NullArgs) {
-  EXPECT_EQ(dif_rstmgr_software_reset_is_held(nullptr, 0, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_software_reset_is_held(nullptr, 0, nullptr));
 
   bool asserted;
-  EXPECT_EQ(dif_rstmgr_software_reset_is_held(nullptr, 0, &asserted),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_software_reset_is_held(nullptr, 0, &asserted));
 
-  EXPECT_EQ(dif_rstmgr_software_reset_is_held(&rstmgr_, 0, nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_software_reset_is_held(&rstmgr_, 0, nullptr));
 }
 
 TEST_F(SoftwareResetIsHeldTest, BadPeripheral) {
   bool asserted;
-  EXPECT_EQ(dif_rstmgr_software_reset_is_held(
-                &rstmgr_, RSTMGR_PARAM_NUM_SW_RESETS, &asserted),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_rstmgr_software_reset_is_held(
+      &rstmgr_, RSTMGR_PARAM_NUM_SW_RESETS, &asserted));
 }
 
 TEST_F(SoftwareResetIsHeldTest, Success) {

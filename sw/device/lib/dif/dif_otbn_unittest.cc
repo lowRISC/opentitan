@@ -33,7 +33,7 @@ class OtbnTest : public Test, public MmioTest {
 
 class ResetTest : public OtbnTest {};
 
-TEST_F(ResetTest, NullArgs) { EXPECT_EQ(dif_otbn_reset(nullptr), kDifBadArg); }
+TEST_F(ResetTest, NullArgs) { EXPECT_DIF_BADARG(dif_otbn_reset(nullptr)); }
 
 TEST_F(ResetTest, Default) {
   ExpectDeviceReset();
@@ -44,7 +44,7 @@ TEST_F(ResetTest, Default) {
 class WriteCmdTest : public OtbnTest {};
 
 TEST_F(WriteCmdTest, NullArgs) {
-  EXPECT_EQ(dif_otbn_write_cmd(nullptr, kDifOtbnCmdExecute), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_write_cmd(nullptr, kDifOtbnCmdExecute));
 }
 
 TEST_F(WriteCmdTest, Success) {
@@ -57,12 +57,12 @@ TEST_F(WriteCmdTest, Success) {
 class GetStatusTest : public OtbnTest {};
 
 TEST_F(GetStatusTest, NullArgs) {
-  EXPECT_EQ(dif_otbn_get_status(nullptr, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_get_status(nullptr, nullptr));
 
-  EXPECT_EQ(dif_otbn_get_status(&dif_otbn_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_get_status(&dif_otbn_, nullptr));
 
   dif_otbn_status_t status = kDifOtbnStatusBusySecWipeDmem;
-  EXPECT_EQ(dif_otbn_get_status(nullptr, &status), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_get_status(nullptr, &status));
   EXPECT_EQ(status, kDifOtbnStatusBusySecWipeDmem);
 }
 
@@ -77,12 +77,12 @@ TEST_F(GetStatusTest, Success) {
 class GetErrBitsTest : public OtbnTest {};
 
 TEST_F(GetErrBitsTest, NullArgs) {
-  EXPECT_EQ(dif_otbn_get_err_bits(nullptr, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_get_err_bits(nullptr, nullptr));
 
-  EXPECT_EQ(dif_otbn_get_err_bits(&dif_otbn_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_get_err_bits(&dif_otbn_, nullptr));
 
   dif_otbn_err_bits_t err_bits = kDifOtbnErrBitsBadDataAddr;
-  EXPECT_EQ(dif_otbn_get_err_bits(nullptr, &err_bits), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_get_err_bits(nullptr, &err_bits));
   EXPECT_EQ(err_bits, kDifOtbnErrBitsBadDataAddr);
 }
 
@@ -99,12 +99,12 @@ TEST_F(GetErrBitsTest, Success) {
 class GetInsnCntTest : public OtbnTest {};
 
 TEST_F(GetInsnCntTest, NullArgs) {
-  EXPECT_EQ(dif_otbn_get_insn_cnt(nullptr, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_get_insn_cnt(nullptr, nullptr));
 
-  EXPECT_EQ(dif_otbn_get_insn_cnt(&dif_otbn_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_get_insn_cnt(&dif_otbn_, nullptr));
 
   uint32_t insn_cnt = 55;
-  EXPECT_EQ(dif_otbn_get_insn_cnt(nullptr, &insn_cnt), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_get_insn_cnt(nullptr, &insn_cnt));
   EXPECT_EQ(insn_cnt, 55);
 }
 
@@ -121,43 +121,42 @@ class ImemWriteTest : public OtbnTest {};
 TEST_F(ImemWriteTest, NullArgs) {
   uint32_t test_data[] = {0};
 
-  EXPECT_EQ(dif_otbn_imem_write(nullptr, 0, nullptr, 4), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_imem_write(nullptr, 0, nullptr, 4));
 
-  EXPECT_EQ(dif_otbn_imem_write(nullptr, 0, test_data, 4), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_imem_write(nullptr, 0, test_data, 4));
 
-  EXPECT_EQ(dif_otbn_imem_write(&dif_otbn_, 0, nullptr, 4), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_imem_write(&dif_otbn_, 0, nullptr, 4));
 }
 
 TEST_F(ImemWriteTest, BadLenBytes) {
   uint32_t test_data[] = {0};
 
   // `len_bytes` must be a multiple of 4 bytes.
-  EXPECT_EQ(dif_otbn_imem_write(&dif_otbn_, 0, test_data, 1), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_imem_write(&dif_otbn_, 0, test_data, 1));
 
-  EXPECT_EQ(dif_otbn_imem_write(&dif_otbn_, 0, test_data, 2), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_imem_write(&dif_otbn_, 0, test_data, 2));
 }
 
 TEST_F(ImemWriteTest, BadOffset) {
   uint32_t test_data[] = {0};
 
   // `offset` must be 32b-aligned.
-  EXPECT_EQ(dif_otbn_imem_write(&dif_otbn_, 1, test_data, 4), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_imem_write(&dif_otbn_, 1, test_data, 4));
 
-  EXPECT_EQ(dif_otbn_imem_write(&dif_otbn_, 2, test_data, 4), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_imem_write(&dif_otbn_, 2, test_data, 4));
 }
 
 TEST_F(ImemWriteTest, BadAddressBeyondMemorySize) {
   uint32_t test_data[] = {0};
 
-  EXPECT_EQ(dif_otbn_imem_write(&dif_otbn_, OTBN_IMEM_SIZE_BYTES, test_data, 4),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_otbn_imem_write(&dif_otbn_, OTBN_IMEM_SIZE_BYTES, test_data, 4));
 }
 
 TEST_F(ImemWriteTest, BadAddressIntegerOverflow) {
   uint32_t test_data[4] = {0};
 
-  EXPECT_EQ(dif_otbn_imem_write(&dif_otbn_, 0xFFFFFFFC, test_data, 16),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_imem_write(&dif_otbn_, 0xFFFFFFFC, test_data, 16));
 }
 
 TEST_F(ImemWriteTest, SuccessWithoutOffset) {
@@ -189,14 +188,13 @@ class ImemReadTest : public OtbnTest {};
 TEST_F(ImemReadTest, NullArgs) {
   uint32_t test_data[2] = {0x12345678, 0xabcdef01};
 
-  EXPECT_EQ(dif_otbn_imem_read(nullptr, 0, nullptr, sizeof(test_data)),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_imem_read(nullptr, 0, nullptr, sizeof(test_data)));
 
-  EXPECT_EQ(dif_otbn_imem_read(nullptr, 0, test_data, sizeof(test_data)),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_otbn_imem_read(nullptr, 0, test_data, sizeof(test_data)));
 
-  EXPECT_EQ(dif_otbn_imem_read(&dif_otbn_, 0, nullptr, sizeof(test_data)),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_otbn_imem_read(&dif_otbn_, 0, nullptr, sizeof(test_data)));
 
   // No side effects are expected.
   EXPECT_EQ(test_data[0], 0x12345678);
@@ -207,20 +205,20 @@ TEST_F(ImemReadTest, BadLenBytes) {
   uint32_t test_data[2] = {0};
 
   // `len_bytes` must be a multiple of 4 bytes.
-  EXPECT_EQ(dif_otbn_imem_read(&dif_otbn_, 0, test_data, 1), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_imem_read(&dif_otbn_, 0, test_data, 1));
 
-  EXPECT_EQ(dif_otbn_imem_read(&dif_otbn_, 0, test_data, 2), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_imem_read(&dif_otbn_, 0, test_data, 2));
 }
 
 TEST_F(ImemReadTest, BadOffset) {
   uint32_t test_data[2] = {0};
 
   // `offset` must be 32b-aligned.
-  EXPECT_EQ(dif_otbn_imem_read(&dif_otbn_, 1, test_data, sizeof(test_data)),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_otbn_imem_read(&dif_otbn_, 1, test_data, sizeof(test_data)));
 
-  EXPECT_EQ(dif_otbn_imem_read(&dif_otbn_, 2, test_data, sizeof(test_data)),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_otbn_imem_read(&dif_otbn_, 2, test_data, sizeof(test_data)));
 }
 
 TEST_F(ImemReadTest, SuccessWithoutOffset) {
@@ -256,29 +254,29 @@ class DmemWriteTest : public OtbnTest {};
 TEST_F(DmemWriteTest, NullArgs) {
   uint32_t test_data[1] = {0};
 
-  EXPECT_EQ(dif_otbn_dmem_write(nullptr, 0, nullptr, 4), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_dmem_write(nullptr, 0, nullptr, 4));
 
-  EXPECT_EQ(dif_otbn_dmem_write(nullptr, 0, test_data, 4), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_dmem_write(nullptr, 0, test_data, 4));
 
-  EXPECT_EQ(dif_otbn_dmem_write(&dif_otbn_, 0, nullptr, 4), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_dmem_write(&dif_otbn_, 0, nullptr, 4));
 }
 
 TEST_F(DmemWriteTest, BadLenBytes) {
   uint32_t test_data[1] = {0};
 
   // `len_bytes` must be a multiple of 4 bytes.
-  EXPECT_EQ(dif_otbn_dmem_write(&dif_otbn_, 0, test_data, 1), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_dmem_write(&dif_otbn_, 0, test_data, 1));
 
-  EXPECT_EQ(dif_otbn_dmem_write(&dif_otbn_, 0, test_data, 2), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_dmem_write(&dif_otbn_, 0, test_data, 2));
 }
 
 TEST_F(DmemWriteTest, BadOffset) {
   uint32_t test_data[1] = {0};
 
   // `offset` must be 32b-aligned.
-  EXPECT_EQ(dif_otbn_dmem_write(&dif_otbn_, 1, test_data, 4), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_dmem_write(&dif_otbn_, 1, test_data, 4));
 
-  EXPECT_EQ(dif_otbn_dmem_write(&dif_otbn_, 2, test_data, 4), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_dmem_write(&dif_otbn_, 2, test_data, 4));
 }
 
 TEST_F(DmemWriteTest, SuccessWithoutOffset) {
@@ -310,14 +308,13 @@ class DmemReadTest : public OtbnTest {};
 TEST_F(DmemReadTest, NullArgs) {
   uint32_t test_data[2] = {0x12345678, 0xabcdef01};
 
-  EXPECT_EQ(dif_otbn_dmem_read(nullptr, 0, nullptr, sizeof(test_data)),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_dmem_read(nullptr, 0, nullptr, sizeof(test_data)));
 
-  EXPECT_EQ(dif_otbn_dmem_read(nullptr, 0, test_data, sizeof(test_data)),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_otbn_dmem_read(nullptr, 0, test_data, sizeof(test_data)));
 
-  EXPECT_EQ(dif_otbn_dmem_read(&dif_otbn_, 0, nullptr, sizeof(test_data)),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_otbn_dmem_read(&dif_otbn_, 0, nullptr, sizeof(test_data)));
 
   // No side effects are expected.
   EXPECT_EQ(test_data[0], 0x12345678);
@@ -328,20 +325,20 @@ TEST_F(DmemReadTest, BadLenBytes) {
   uint32_t test_data[2] = {0};
 
   // `len_bytes` must be a multiple of 4 bytes.
-  EXPECT_EQ(dif_otbn_dmem_read(&dif_otbn_, 0, test_data, 1), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_dmem_read(&dif_otbn_, 0, test_data, 1));
 
-  EXPECT_EQ(dif_otbn_dmem_read(&dif_otbn_, 0, test_data, 2), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_dmem_read(&dif_otbn_, 0, test_data, 2));
 }
 
 TEST_F(DmemReadTest, BadOffset) {
   uint32_t test_data[2] = {0};
 
   // `offset` must be 32b-aligned.
-  EXPECT_EQ(dif_otbn_dmem_read(&dif_otbn_, 1, test_data, sizeof(test_data)),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_otbn_dmem_read(&dif_otbn_, 1, test_data, sizeof(test_data)));
 
-  EXPECT_EQ(dif_otbn_dmem_read(&dif_otbn_, 2, test_data, sizeof(test_data)),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_otbn_dmem_read(&dif_otbn_, 2, test_data, sizeof(test_data)));
 }
 
 TEST_F(DmemReadTest, SuccessWithoutOffset) {
@@ -375,7 +372,7 @@ TEST_F(DmemReadTest, SuccessWithOffset) {
 class ControlSoftwareErrorsFatalTest : public OtbnTest {};
 
 TEST_F(ControlSoftwareErrorsFatalTest, NullArgs) {
-  EXPECT_EQ(dif_otbn_set_ctrl_software_errs_fatal(nullptr, false), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_otbn_set_ctrl_software_errs_fatal(nullptr, false));
 }
 
 TEST_F(ControlSoftwareErrorsFatalTest, Success) {

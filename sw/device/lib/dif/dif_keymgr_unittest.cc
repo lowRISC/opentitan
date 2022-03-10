@@ -238,7 +238,7 @@ class DifKeymgrInitialized : public DifKeymgrTest {
 class ConfigureTest : public DifKeymgrInitialized {};
 
 TEST_F(ConfigureTest, BadArgs) {
-  EXPECT_EQ(dif_keymgr_configure(nullptr, {}), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_keymgr_configure(nullptr, {}));
 }
 
 TEST_F(ConfigureTest, Configure) {
@@ -295,8 +295,8 @@ class AdvanceStateTest : public DifKeymgrInitialized {
 };
 
 TEST_F(AdvanceStateTest, BadArgsNoKeymgr) {
-  EXPECT_EQ(dif_keymgr_advance_state(nullptr, &kStateParams), kDifBadArg);
-  EXPECT_EQ(dif_keymgr_advance_state(nullptr, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_keymgr_advance_state(nullptr, &kStateParams));
+  EXPECT_DIF_BADARG(dif_keymgr_advance_state(nullptr, nullptr));
 }
 
 class AdvanceToOperational : public AdvanceStateTest,
@@ -305,7 +305,7 @@ class AdvanceToOperational : public AdvanceStateTest,
 TEST_P(AdvanceToOperational, BadArgsToOperationalWithoutParams) {
   ExpectIdleAtState(GetParam());
 
-  EXPECT_EQ(dif_keymgr_advance_state(&keymgr_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_keymgr_advance_state(&keymgr_, nullptr));
 }
 
 INSTANTIATE_TEST_SUITE_P(AdvanceToOperational, AdvanceToOperational,
@@ -317,7 +317,7 @@ class AdvanceToNonOperational : public AdvanceStateTest,
 TEST_P(AdvanceToNonOperational, BadArgsToNonOperationalWithParams) {
   ExpectIdleAtState(GetParam());
 
-  EXPECT_EQ(dif_keymgr_advance_state(&keymgr_, &kStateParams), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_keymgr_advance_state(&keymgr_, &kStateParams));
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -396,9 +396,7 @@ TEST_P(AdvanceToNonOperational, Success) {
 
 class DisableTest : public DifKeymgrInitialized {};
 
-TEST_F(DisableTest, BadArgs) {
-  EXPECT_EQ(dif_keymgr_disable(nullptr), kDifBadArg);
-}
+TEST_F(DisableTest, BadArgs) { EXPECT_DIF_BADARG(dif_keymgr_disable(nullptr)); }
 
 TEST_F(DisableTest, LockedBusy) {
   ExpectBusy();
@@ -426,7 +424,7 @@ TEST_P(BadArgsTwo, GetStatusCodes) {
   auto status_codes =
       GetGoodBadPtrArg<dif_keymgr_status_codes_t>(std::get<1>(GetParam()));
 
-  EXPECT_EQ(dif_keymgr_get_status_codes(keymgr, status_codes), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_keymgr_get_status_codes(keymgr, status_codes));
 }
 
 struct GetStatusCodesTestCase {
@@ -534,7 +532,7 @@ TEST_P(BadArgsTwo, GetState) {
   auto keymgr = GetGoodBadPtrArg<dif_keymgr_t>(std::get<0>(GetParam()));
   auto state = GetGoodBadPtrArg<dif_keymgr_state_t>(std::get<1>(GetParam()));
 
-  EXPECT_EQ(dif_keymgr_get_state(keymgr, state), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_keymgr_get_state(keymgr, state));
 }
 
 struct GetStateTestCase {
@@ -624,7 +622,7 @@ TEST_F(GetStateTest, UnexpectedState) {
 class GenerateIdentityTest : public DifKeymgrInitialized {};
 
 TEST_F(GenerateIdentityTest, BadArgs) {
-  EXPECT_EQ(dif_keymgr_generate_identity_seed(nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_keymgr_generate_identity_seed(nullptr));
 }
 
 TEST_F(GenerateIdentityTest, LockedBusy) {
@@ -656,8 +654,7 @@ TEST_P(BadArgsTwo, GenerateVersionedKey) {
   auto dest = GetGoodBadEnumArg<dif_keymgr_versioned_key_dest_t>(
       std::get<1>(GetParam()), kDifKeymgrVersionedKeyDestLast);
 
-  EXPECT_EQ(dif_keymgr_generate_versioned_key(keymgr, {.dest = dest}),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_keymgr_generate_versioned_key(keymgr, {.dest = dest}));
 }
 
 TEST_F(GenerateVersionedKeyTest, LockedBusy) {
@@ -740,7 +737,7 @@ TEST_P(BadArgsTwo, GetBadArg) {
   auto keymgr = GetGoodBadPtrArg<dif_keymgr_t>(std::get<0>(GetParam()));
   auto state = GetGoodBadPtrArg<dif_toggle_t>(std::get<1>(GetParam()));
 
-  EXPECT_EQ(dif_keymgr_sideload_clear_get_enabled(keymgr, state), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_keymgr_sideload_clear_get_enabled(keymgr, state));
 }
 
 TEST_P(BadArgsTwo, SetBadArg) {
@@ -748,7 +745,7 @@ TEST_P(BadArgsTwo, SetBadArg) {
   auto state = GetGoodBadEnumArg<dif_toggle_t>(std::get<1>(GetParam()),
                                                kDifToggleEnabled);
 
-  EXPECT_EQ(dif_keymgr_sideload_clear_set_enabled(keymgr, state), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_keymgr_sideload_clear_set_enabled(keymgr, state));
 }
 
 TEST_F(SideloadClearTest, Set) {
@@ -795,7 +792,7 @@ TEST_P(BadArgsTwo, ReadOutput) {
   auto keymgr = GetGoodBadPtrArg<dif_keymgr_t>(std::get<0>(GetParam()));
   auto output = GetGoodBadPtrArg<dif_keymgr_output_t>(std::get<1>(GetParam()));
 
-  EXPECT_EQ(dif_keymgr_read_output(keymgr, output), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_keymgr_read_output(keymgr, output));
 }
 
 TEST_F(ReadOutputTest, Read) {

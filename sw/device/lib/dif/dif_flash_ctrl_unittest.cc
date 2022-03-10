@@ -30,185 +30,164 @@ class FlashCtrlTest : public Test, public MmioTest {
 
 TEST_F(FlashCtrlTest, NullArgs) {
   dif_toggle_t toggle_arg{};
-  EXPECT_EQ(dif_flash_ctrl_set_flash_enablement(nullptr, toggle_arg),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_flash_enablement(nullptr, &toggle_arg),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_flash_enablement(&dif_flash_ctrl_, nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_flash_ctrl_set_flash_enablement(nullptr, toggle_arg));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_get_flash_enablement(nullptr, &toggle_arg));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_get_flash_enablement(&dif_flash_ctrl_, nullptr));
 
-  EXPECT_EQ(dif_flash_ctrl_set_exec_enablement(nullptr, kDifToggleEnabled),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_exec_enablement(nullptr, &toggle_arg),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_exec_enablement(&dif_flash_ctrl_, nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_set_exec_enablement(nullptr, kDifToggleEnabled));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_get_exec_enablement(nullptr, &toggle_arg));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_get_exec_enablement(&dif_flash_ctrl_, nullptr));
 
-  EXPECT_EQ(dif_flash_ctrl_start_controller_init(nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_flash_ctrl_start_controller_init(nullptr));
 
   dif_flash_ctrl_status_t status_arg{};
-  EXPECT_EQ(dif_flash_ctrl_get_status(nullptr, &status_arg), kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_status(&dif_flash_ctrl_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_flash_ctrl_get_status(nullptr, &status_arg));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_get_status(&dif_flash_ctrl_, nullptr));
 
   dif_flash_ctrl_prog_capabilities_t caps_arg{};
-  EXPECT_EQ(dif_flash_ctrl_get_allowed_prog_types(nullptr, &caps_arg),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_allowed_prog_types(&dif_flash_ctrl_, nullptr),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_disallow_prog_types(nullptr, caps_arg), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_flash_ctrl_get_allowed_prog_types(nullptr, &caps_arg));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_get_allowed_prog_types(&dif_flash_ctrl_, nullptr));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_disallow_prog_types(nullptr, caps_arg));
 
-  EXPECT_EQ(dif_flash_ctrl_start(nullptr, {}), kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_start_unsafe(nullptr, {}), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_flash_ctrl_start(nullptr, {}));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_start_unsafe(nullptr, {}));
 
   bool bool_arg = false;
-  EXPECT_EQ(dif_flash_ctrl_suspend_erase(nullptr), kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_erase_suspend_status(&dif_flash_ctrl_, nullptr),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_erase_suspend_status(nullptr, &bool_arg),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_flash_ctrl_suspend_erase(nullptr));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_get_erase_suspend_status(&dif_flash_ctrl_, nullptr));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_get_erase_suspend_status(nullptr, &bool_arg));
 
   uint32_t data_arg = 0;
-  EXPECT_EQ(dif_flash_ctrl_prog_fifo_push_unsafe(nullptr, 1, &data_arg),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_prog_fifo_push_unsafe(&dif_flash_ctrl_, 1, nullptr),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_prog_fifo_push(nullptr, 1, &data_arg), kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_prog_fifo_push(&dif_flash_ctrl_, 1, nullptr),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_read_fifo_pop_unsafe(nullptr, 1, &data_arg),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_read_fifo_pop_unsafe(&dif_flash_ctrl_, 1, nullptr),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_read_fifo_pop(nullptr, 1, &data_arg), kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_read_fifo_pop(&dif_flash_ctrl_, 1, nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_prog_fifo_push_unsafe(nullptr, 1, &data_arg));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_prog_fifo_push_unsafe(&dif_flash_ctrl_, 1, nullptr));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_prog_fifo_push(nullptr, 1, &data_arg));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_prog_fifo_push(&dif_flash_ctrl_, 1, nullptr));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_read_fifo_pop_unsafe(nullptr, 1, &data_arg));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_read_fifo_pop_unsafe(&dif_flash_ctrl_, 1, nullptr));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_read_fifo_pop(nullptr, 1, &data_arg));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_read_fifo_pop(&dif_flash_ctrl_, 1, nullptr));
 
   dif_flash_ctrl_error_t error_arg{};
-  EXPECT_EQ(dif_flash_ctrl_get_error_codes(nullptr, &error_arg), kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_error_codes(&dif_flash_ctrl_, nullptr),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_clear_error_codes(nullptr, {}), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_flash_ctrl_get_error_codes(nullptr, &error_arg));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_get_error_codes(&dif_flash_ctrl_, nullptr));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_clear_error_codes(nullptr, {}));
 
   dif_flash_ctrl_output_t output_arg{};
-  EXPECT_EQ(dif_flash_ctrl_end(nullptr, &output_arg), kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_end(&dif_flash_ctrl_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_flash_ctrl_end(nullptr, &output_arg));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_end(&dif_flash_ctrl_, nullptr));
 
-  EXPECT_EQ(dif_flash_ctrl_set_data_region_enablement(nullptr, /*region=*/0,
-                                                      toggle_arg),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_data_region_enablement(nullptr, /*region=*/0,
-                                                      &toggle_arg),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_data_region_enablement(&dif_flash_ctrl_,
-                                                      /*region=*/0, nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_flash_ctrl_set_data_region_enablement(
+      nullptr, /*region=*/0, toggle_arg));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_get_data_region_enablement(
+      nullptr, /*region=*/0, &toggle_arg));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_get_data_region_enablement(&dif_flash_ctrl_,
+                                                              /*region=*/0,
+                                                              nullptr));
 
-  EXPECT_EQ(dif_flash_ctrl_set_info_region_enablement(nullptr, {}, toggle_arg),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_info_region_enablement(nullptr, {}, &toggle_arg),
-            kDifBadArg);
-  EXPECT_EQ(
-      dif_flash_ctrl_get_info_region_enablement(&dif_flash_ctrl_, {}, nullptr),
-      kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_set_info_region_enablement(nullptr, {}, toggle_arg));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_get_info_region_enablement(nullptr, {}, &toggle_arg));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_get_info_region_enablement(&dif_flash_ctrl_, {}, nullptr));
 
   dif_flash_ctrl_region_properties_t mp_arg{};
-  EXPECT_EQ(dif_flash_ctrl_set_default_region_properties(nullptr, mp_arg),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_default_region_properties(nullptr, &mp_arg),
-            kDifBadArg);
-  EXPECT_EQ(
-      dif_flash_ctrl_get_default_region_properties(&dif_flash_ctrl_, nullptr),
-      kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_set_default_region_properties(nullptr, mp_arg));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_get_default_region_properties(nullptr, &mp_arg));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_get_default_region_properties(&dif_flash_ctrl_, nullptr));
 
   dif_flash_ctrl_data_region_properties_t data_mp_arg;
-  EXPECT_EQ(dif_flash_ctrl_set_data_region_properties(nullptr, 0, data_mp_arg),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_data_region_properties(nullptr, 0, &data_mp_arg),
-            kDifBadArg);
-  EXPECT_EQ(
-      dif_flash_ctrl_get_data_region_properties(&dif_flash_ctrl_, 0, nullptr),
-      kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_set_data_region_properties(nullptr, 0, data_mp_arg));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_get_data_region_properties(nullptr, 0, &data_mp_arg));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_get_data_region_properties(&dif_flash_ctrl_, 0, nullptr));
 
-  EXPECT_EQ(dif_flash_ctrl_set_info_region_properties(nullptr, {}, mp_arg),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_info_region_properties(nullptr, {}, &mp_arg),
-            kDifBadArg);
-  EXPECT_EQ(
-      dif_flash_ctrl_get_info_region_properties(&dif_flash_ctrl_, {}, nullptr),
-      kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_set_info_region_properties(nullptr, {}, mp_arg));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_get_info_region_properties(nullptr, {}, &mp_arg));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_get_info_region_properties(&dif_flash_ctrl_, {}, nullptr));
 
-  EXPECT_EQ(dif_flash_ctrl_lock_data_region_properties(nullptr, 0), kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_lock_info_region_properties(nullptr, {}),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_flash_ctrl_lock_data_region_properties(nullptr, 0));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_lock_info_region_properties(nullptr, {}));
 
-  EXPECT_EQ(dif_flash_ctrl_data_region_is_locked(nullptr, 0, &bool_arg),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_data_region_is_locked(&dif_flash_ctrl_, 0, nullptr),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_info_region_is_locked(nullptr, {}, &bool_arg),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_info_region_is_locked(&dif_flash_ctrl_, {}, nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_data_region_is_locked(nullptr, 0, &bool_arg));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_data_region_is_locked(&dif_flash_ctrl_, 0, nullptr));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_info_region_is_locked(nullptr, {}, &bool_arg));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_info_region_is_locked(&dif_flash_ctrl_, {}, nullptr));
 
-  EXPECT_EQ(dif_flash_ctrl_set_bank_erase_enablement(nullptr, /*region=*/0,
-                                                     toggle_arg),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_bank_erase_enablement(nullptr, /*region=*/0,
-                                                     &toggle_arg),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_bank_erase_enablement(&dif_flash_ctrl_,
-                                                     /*region=*/0, nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_flash_ctrl_set_bank_erase_enablement(
+      nullptr, /*region=*/0, toggle_arg));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_get_bank_erase_enablement(
+      nullptr, /*region=*/0, &toggle_arg));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_get_bank_erase_enablement(&dif_flash_ctrl_,
+                                                             /*region=*/0,
+                                                             nullptr));
 
-  EXPECT_EQ(dif_flash_ctrl_lock_bank_configuration(nullptr), kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_bank_configuration_is_locked(nullptr, &bool_arg),
-            kDifBadArg);
-  EXPECT_EQ(
-      dif_flash_ctrl_bank_configuration_is_locked(&dif_flash_ctrl_, nullptr),
-      kDifBadArg);
+  EXPECT_DIF_BADARG(dif_flash_ctrl_lock_bank_configuration(nullptr));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_bank_configuration_is_locked(nullptr, &bool_arg));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_bank_configuration_is_locked(&dif_flash_ctrl_, nullptr));
 
-  EXPECT_EQ(dif_flash_ctrl_set_prog_fifo_watermark(nullptr, 0), kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_set_read_fifo_watermark(nullptr, 0), kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_fifo_watermarks(nullptr, nullptr, nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_flash_ctrl_set_prog_fifo_watermark(nullptr, 0));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_set_read_fifo_watermark(nullptr, 0));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_get_fifo_watermarks(nullptr, nullptr, nullptr));
 
-  EXPECT_EQ(dif_flash_ctrl_reset_fifos(nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_flash_ctrl_reset_fifos(nullptr));
 
   dif_flash_ctrl_faults_t faults_arg{};
-  EXPECT_EQ(dif_flash_ctrl_get_faults(nullptr, &faults_arg), kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_faults(&dif_flash_ctrl_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_flash_ctrl_get_faults(nullptr, &faults_arg));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_get_faults(&dif_flash_ctrl_, nullptr));
 
   dif_flash_ctrl_ecc_errors_t ecc_errors_arg{};
-  EXPECT_EQ(dif_flash_ctrl_get_ecc_errors(nullptr, 0, &ecc_errors_arg),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_ecc_errors(&dif_flash_ctrl_, 0, nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_flash_ctrl_get_ecc_errors(nullptr, 0, &ecc_errors_arg));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_get_ecc_errors(&dif_flash_ctrl_, 0, nullptr));
 
   dif_flash_ctrl_phy_config_t phy_config_arg{};
-  EXPECT_EQ(dif_flash_ctrl_set_phy_configuration(nullptr, phy_config_arg),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_phy_configuration(nullptr, &phy_config_arg),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_phy_configuration(&dif_flash_ctrl_, nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_set_phy_configuration(nullptr, phy_config_arg));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_get_phy_configuration(nullptr, &phy_config_arg));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_get_phy_configuration(&dif_flash_ctrl_, nullptr));
 
-  EXPECT_EQ(dif_flash_ctrl_lock_phy_configuration(nullptr), kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_phy_configuration_is_locked(nullptr, &bool_arg),
-            kDifBadArg);
-  EXPECT_EQ(
-      dif_flash_ctrl_phy_configuration_is_locked(&dif_flash_ctrl_, nullptr),
-      kDifBadArg);
+  EXPECT_DIF_BADARG(dif_flash_ctrl_lock_phy_configuration(nullptr));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_phy_configuration_is_locked(nullptr, &bool_arg));
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_phy_configuration_is_locked(&dif_flash_ctrl_, nullptr));
 
   dif_flash_ctrl_phy_status_t phy_status_arg{};
-  EXPECT_EQ(dif_flash_ctrl_get_phy_status(nullptr, &phy_status_arg),
-            kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_phy_status(&dif_flash_ctrl_, nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_flash_ctrl_get_phy_status(nullptr, &phy_status_arg));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_get_phy_status(&dif_flash_ctrl_, nullptr));
 
   uint32_t scratch_arg = 0;
-  EXPECT_EQ(dif_flash_ctrl_set_scratch(nullptr, scratch_arg), kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_scratch(nullptr, &scratch_arg), kDifBadArg);
-  EXPECT_EQ(dif_flash_ctrl_get_scratch(&dif_flash_ctrl_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_flash_ctrl_set_scratch(nullptr, scratch_arg));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_get_scratch(nullptr, &scratch_arg));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_get_scratch(&dif_flash_ctrl_, nullptr));
 }
 
 TEST_F(FlashCtrlTest, EnableFlash) {
