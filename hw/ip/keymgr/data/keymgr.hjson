@@ -1030,41 +1030,46 @@
           desc: "The kmac transfer interface is in an error state, asynchronous fault.",
         },
         { bits: "2",
+          name: "KMAC_DONE",
+          resval: "0x0"
+          desc: "The kmac transfer interface encountered unexpected done, asynchronous fault.",
+        },
+        { bits: "3",
           name: "KMAC_OP",
           resval: "0x0"
           desc: "KMAC reported an error during keymgr usage, this should never happen - synchronous fault.",
         },
-        { bits: "3",
+        { bits: "4",
           name: "KMAC_OUT",
           resval: "0x0"
           desc: "KMAC data returned as all 0's or all 1's - synchronous fault",
         },
-        { bits: "4",
+        { bits: "5",
           name: "REGFILE_INTG",
           resval: "0x0"
           desc: "Register file integrity error, asynchronous fault",
         },
-        { bits: "5",
+        { bits: "6",
           name: "SHADOW",
           resval: "0x0"
           desc: "Shadow copy storage error, asynchronous fault",
         },
-        { bits: "6",
+        { bits: "7",
           name: "CTRL_FSM_INTG",
           resval: "0x0"
           desc: "Control FSM integrity error, asynchronous fault",
         },
-        { bits: "7",
+        { bits: "8",
           name: "CTRL_FSM_CNT",
           resval: "0x0"
           desc: "Control FSM counter integrity error, asynchronous fault",
         },
-        { bits: "8",
+        { bits: "9",
           name: "RESEED_CNT",
           resval: "0x0"
           desc: "Reseed counter integrity error, asynchronous fault",
         },
-        { bits: "9",
+        { bits: "10",
           name: "SIDE_CTRL_FSM",
           resval: "0x0"
           desc: "Sideload control FSM integrity error, asynchronous fault",

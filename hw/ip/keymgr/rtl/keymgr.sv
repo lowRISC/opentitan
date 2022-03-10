@@ -261,6 +261,7 @@ module keymgr
   logic kmac_cmd_err;
   logic kmac_fsm_err;
   logic kmac_op_err;
+  logic kmac_done_err;
   logic [Shares-1:0][kmac_pkg::AppDigestW-1:0] kmac_data;
   logic [Shares-1:0][KeyWidth-1:0] kmac_data_truncated;
   logic [ErrLastPos-1:0] err_code;
@@ -314,6 +315,7 @@ module keymgr
     .kmac_input_invalid_i(kmac_input_invalid),
     .kmac_fsm_err_i(kmac_fsm_err),
     .kmac_op_err_i(kmac_op_err),
+    .kmac_done_err_i(kmac_done_err),
     .kmac_cmd_err_i(kmac_cmd_err),
     .kmac_data_i(kmac_data_truncated)
   );
@@ -516,6 +518,7 @@ module keymgr
     .entropy_i(data_rand),
     .fsm_error_o(kmac_fsm_err),
     .kmac_error_o(kmac_op_err),
+    .kmac_done_error_o(kmac_done_err),
     .cmd_error_o(kmac_cmd_err)
   );
 
@@ -615,6 +618,7 @@ module keymgr
   assign hw2reg.fault_status.cmd.de           = fault_code[FaultKmacCmd];
   assign hw2reg.fault_status.kmac_fsm.de      = fault_code[FaultKmacFsm];
   assign hw2reg.fault_status.kmac_op.de       = fault_code[FaultKmacOp];
+  assign hw2reg.fault_status.kmac_done.de     = fault_code[FaultKmacDone];
   assign hw2reg.fault_status.kmac_out.de      = fault_code[FaultKmacOut];
   assign hw2reg.fault_status.regfile_intg.de  = fault_code[FaultRegIntg];
   assign hw2reg.fault_status.shadow.de        = fault_code[FaultShadow];
@@ -624,6 +628,7 @@ module keymgr
   assign hw2reg.fault_status.side_ctrl_fsm.de = fault_code[FaultSideFsm];
   assign hw2reg.fault_status.cmd.d            = 1'b1;
   assign hw2reg.fault_status.kmac_fsm.d       = 1'b1;
+  assign hw2reg.fault_status.kmac_done.d      = 1'b1;
   assign hw2reg.fault_status.kmac_op.d        = 1'b1;
   assign hw2reg.fault_status.kmac_out.d       = 1'b1;
   assign hw2reg.fault_status.regfile_intg.d   = 1'b1;

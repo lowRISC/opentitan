@@ -36,6 +36,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   // error outputs
   output logic fsm_error_o,
   output logic kmac_error_o,
+  output logic kmac_done_error_o,
   output logic cmd_error_o
 );
 
@@ -119,6 +120,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   logic start;
   logic [3:0] inputs_invalid_d, inputs_invalid_q;
   logic clr_err;
+  logic kmac_done_vld;
 
   data_state_e state_q, state_d;
 
@@ -173,6 +175,9 @@ module keymgr_kmac_if import keymgr_pkg::*;(
     .state_o ( state_raw_q )
   );
 
+  // kmac done is asserted outside of expected window
+  assign kmac_done_error_o = ~kmac_done_vld & kmac_data_i.done;
+
   always_comb begin
     cnt_clr = 1'b0;
     cnt_set = 1'b0;
@@ -187,6 +192,8 @@ module keymgr_kmac_if import keymgr_pkg::*;(
     clr_err = '0;
     fsm_error_o = '0;
     kmac_error_o = '0;
+
+    kmac_done_vld = '0;
 
     unique case (state_q)
 
@@ -243,6 +250,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
       end
 
       StOpWait: begin
+        kmac_done_vld = 1'b1;
         if (kmac_data_i.done) begin
           kmac_error_o = kmac_data_i.error;
           done_o = 1'b1;
@@ -271,16 +279,18 @@ module keymgr_kmac_if import keymgr_pkg::*;(
     endcase // unique case (state_q)
 
     // unconditional error transitions
+    // counter errors may disturb the fsm flow and are
+    // treated like fsm errors
     if (cnt_err) begin
       state_d = StError;
     end
   end
 
-  // If an fsm error is detected, there is no guarantee the transaction can completely gracefully.
-  // Allow the transaction to terminate early with random data.
-  assign data_o = start && done_o && !fsm_error_o ? {kmac_data_i.digest_share1,
-                                                     kmac_data_i.digest_share0} :
-                                                    {DecoyOutputCopies{entropy_i[0]}};
+  // when transaction is not complete, populate the data with random
+  assign data_o = start && done_o ?
+                  {kmac_data_i.digest_share1,
+                   kmac_data_i.digest_share0} :
+                  {DecoyOutputCopies{entropy_i[0]}};
 
   // The input invalid check is done whenever transactions are ongoing with kmac
   // once set, it cannot be unset until transactions are fully complete
