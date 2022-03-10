@@ -160,6 +160,7 @@ package keymgr_pkg;
   typedef enum logic [3:0] {
     AsyncFaultKmacCmd,
     AsyncFaultKmacFsm,
+    AsyncFaultKmacDone,
     AsyncFaultRegIntg,
     AsyncFaultShadow,
     AsyncFaultFsmIntg,
@@ -183,6 +184,7 @@ package keymgr_pkg;
   typedef enum logic [3:0] {
     FaultKmacCmd,
     FaultKmacFsm,
+    FaultKmacDone,
     FaultKmacOp,
     FaultKmacOut,
     FaultRegIntg,

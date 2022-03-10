@@ -58,6 +58,7 @@ module keymgr_ctrl
   input kmac_input_invalid_i, // asserted when selected data fails criteria check
   input kmac_fsm_err_i, // asserted when kmac fsm reaches unexpected state
   input kmac_op_err_i,  // asserted when kmac itself reports an error
+  input kmac_done_err_i,// asserted when kmac unexpectedly toggles done
   input kmac_cmd_err_i, // asserted when more than one command given to kmac
   input [Shares-1:0][KeyWidth-1:0] kmac_data_i,
 
@@ -783,14 +784,15 @@ module keymgr_ctrl
     end
   end
   assign async_fault = async_fault_q | async_fault_d;
-  assign async_fault_d[AsyncFaultKmacCmd] = kmac_cmd_err_i;
-  assign async_fault_d[AsyncFaultKmacFsm] = kmac_fsm_err_i;
-  assign async_fault_d[AsyncFaultRegIntg] = regfile_intg_err_i;
-  assign async_fault_d[AsyncFaultShadow ] = shadowed_storage_err_i;
-  assign async_fault_d[AsyncFaultFsmIntg] = state_intg_err_q | data_fsm_err;
-  assign async_fault_d[AsyncFaultCntErr ] = cnt_err;
-  assign async_fault_d[AsyncFaultRCntErr] = reseed_cnt_err_i;
-  assign async_fault_d[AsyncFaultSideErr] = sideload_fsm_err_i;
+  assign async_fault_d[AsyncFaultKmacCmd]  = kmac_cmd_err_i;
+  assign async_fault_d[AsyncFaultKmacFsm]  = kmac_fsm_err_i;
+  assign async_fault_d[AsyncFaultKmacDone] = kmac_done_err_i;
+  assign async_fault_d[AsyncFaultRegIntg]  = regfile_intg_err_i;
+  assign async_fault_d[AsyncFaultShadow ]  = shadowed_storage_err_i;
+  assign async_fault_d[AsyncFaultFsmIntg]  = state_intg_err_q | data_fsm_err;
+  assign async_fault_d[AsyncFaultCntErr ]  = cnt_err;
+  assign async_fault_d[AsyncFaultRCntErr]  = reseed_cnt_err_i;
+  assign async_fault_d[AsyncFaultSideErr]  = sideload_fsm_err_i;
 
   // output to error code register
   assign error_o[ErrInvalidOp]    = op_done_o & sync_err[SyncErrInvalidOp];
@@ -802,6 +804,7 @@ module keymgr_ctrl
   assign fault_o[FaultKmacOut]   = op_done_o & sync_fault[SyncFaultKmacOut];
   assign fault_o[FaultKmacCmd]   = async_fault[AsyncFaultKmacCmd];
   assign fault_o[FaultKmacFsm]   = async_fault[AsyncFaultKmacFsm];
+  assign fault_o[FaultKmacDone]  = async_fault[AsyncFaultKmacDone];
   assign fault_o[FaultRegIntg]   = async_fault[AsyncFaultRegIntg];
   assign fault_o[FaultShadow]    = async_fault[AsyncFaultShadow];
   assign fault_o[FaultCtrlFsm]   = async_fault[AsyncFaultFsmIntg];
