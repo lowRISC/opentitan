@@ -4456,6 +4456,14 @@
           default: 0x3480d1896c7ff9ed5941bd125c6eb18772e220f3
           randwidth: 160
         }
+        {
+          name: SecScrambleEn
+          desc: Compile-time option to enable flash scrambling
+          type: bit
+          default: "1"
+          expose: "true"
+          name_top: SecFlashCtrlScrambleEn
+        }
       ]
       inter_signal_list:
       [

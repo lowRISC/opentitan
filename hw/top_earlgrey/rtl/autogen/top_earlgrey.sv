@@ -48,6 +48,7 @@ module top_earlgrey #(
   // parameters for sram_ctrl_ret_aon
   parameter bit SramCtrlRetAonInstrExec = 0,
   // parameters for flash_ctrl
+  parameter bit SecFlashCtrlScrambleEn = 1,
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = 32'h 0000_0001,
   // parameters for rv_plic
@@ -2029,7 +2030,8 @@ module top_earlgrey #(
     .RndCnstAddrKey(RndCnstFlashCtrlAddrKey),
     .RndCnstDataKey(RndCnstFlashCtrlDataKey),
     .RndCnstLfsrSeed(RndCnstFlashCtrlLfsrSeed),
-    .RndCnstLfsrPerm(RndCnstFlashCtrlLfsrPerm)
+    .RndCnstLfsrPerm(RndCnstFlashCtrlLfsrPerm),
+    .SecScrambleEn(SecFlashCtrlScrambleEn)
   ) u_flash_ctrl (
 
       // Input
