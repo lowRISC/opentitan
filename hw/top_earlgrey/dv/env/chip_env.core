@@ -24,6 +24,8 @@ filesets:
       - lowrisc:dv:uart_agent
       - lowrisc:dv:pwm_monitor
       - lowrisc:ip:otp_ctrl_pkg
+      - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
+      - "fileset_partner ? (partner:systems:ast_pkg)"
     files:
       - chip_env_pkg.sv
       - chip_env_cfg.sv: {is_include_file: true}
