@@ -13,7 +13,9 @@
 module flash_phy
   import flash_ctrl_pkg::*;
   import prim_mubi_pkg::mubi4_t;
-
+#(
+  parameter bit SecScrambleEn = 1'b1
+)
 (
   input clk_i,
   input rst_ni,
@@ -211,7 +213,9 @@ module flash_phy
     assign ctrl_req = flash_ctrl_i.req & (ctrl_bank_sel == bank);
     assign ecc_addr[bank][BusBankAddrW +: BankW] = bank;
 
-    flash_phy_core u_core (
+    flash_phy_core #(
+      .SecScrambleEn(SecScrambleEn)
+    ) u_core (
       .clk_i,
       .rst_ni,
       // integrity error is either from host or from controller

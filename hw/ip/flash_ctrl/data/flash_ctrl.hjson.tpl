@@ -381,6 +381,14 @@
       default:   "${int("0xa26a38f7", 16)}",
       local:     "true"
     },
+
+    { name:      "SecScrambleEn",
+      desc:      "Compile-time option to enable flash scrambling",
+      type:      "bit",
+      default:   "1",
+      local:     "false",
+      expose:    "true",
+    },
   ],
 
   regwidth: "32",

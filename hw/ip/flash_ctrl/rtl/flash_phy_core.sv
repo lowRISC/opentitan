@@ -12,7 +12,8 @@ module flash_phy_core
   import flash_phy_pkg::*;
   import prim_mubi_pkg::mubi4_t;
 #(
-  parameter int unsigned ArbCnt = 4
+  parameter int unsigned ArbCnt = 4,
+  parameter bit SecScrambleEn = 1'b1
 ) (
   input                              clk_i,
   input                              rst_ni,
@@ -376,7 +377,9 @@ module flash_phy_core
                                                rd_calc_addr;
 
   // SEC_CM: MEM.SCRAMBLE
-  flash_phy_scramble u_scramble (
+  flash_phy_scramble #(
+    .SecScrambleEn(SecScrambleEn)
+  ) u_scramble (
     .clk_i,
     .rst_ni,
     // both escalation and and integrity error cause the scramble keys to change
