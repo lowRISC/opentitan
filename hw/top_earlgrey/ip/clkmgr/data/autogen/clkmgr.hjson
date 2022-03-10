@@ -249,11 +249,22 @@
           name: "HI_SPEED_SEL",
           mubi: true,
           desc: '''
-            A value of kMultiBitBool4True selects nominal speed external clocks.
+            A value of kMultiBitBool4True selects nominal speed external clock.
             All other values selects low speed clocks.
 
             Note this field only has an effect when the !!EXTCLK_CTRL.SEL field is set to
             kMultiBitBool4True.
+
+            Nominal speed means the external clock is approximately the same frequency as
+            the internal oscillator source.  When this option is used, all clocks operate
+            at roughly the nominal frequency.
+
+            Low speed means the external clock is approximately half the frequency of the
+            internal oscillator source. When this option is used, the internal dividers are
+            stepped down.  As a result, previously undivided clocks now run at half frequency,
+            while previously divided clocks run at roughly the nominal frequency.
+
+            See external clock switch support in documentation for more details.
           '''
           resval: false
         }
