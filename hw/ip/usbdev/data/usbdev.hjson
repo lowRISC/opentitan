@@ -985,7 +985,7 @@
           name: "wake_ack",
           swaccess: "wo",
           hwaccess: "hro",
-	  hwqe: "true",
+          hwqe: "true",
           desc: '''
                 Wake acknowledgement. Once the usb device resumes from suspend, this acknowledgement is used
                 to transition the module back to normal operation.
