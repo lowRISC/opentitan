@@ -201,7 +201,7 @@ def main():
     # defined inside the Hjson.
     # Skip this check when generating DV code - its not needed.
     if format != 'dv':
-        sv_files = Path(infile.name).parents[1].joinpath('rtl').glob('*.sv')
+        sv_files = Path(infile.name).parent.joinpath('..').joinpath('rtl').glob('*.sv')
         rtl_names = CounterMeasure.search_rtl_files(sv_files)
         obj.check_cm_annotations(rtl_names, infile.name)
 
