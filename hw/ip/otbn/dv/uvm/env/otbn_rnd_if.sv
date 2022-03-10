@@ -125,8 +125,6 @@ interface otbn_rnd_if (
   // No edge from READING to IDLE or PREFETCHING
   `ASSERT_NO_EDGE(READING, IDLE)
   `ASSERT_NO_EDGE(READING, PREFETCHING)
-  // The controller doesn't drop rnd_req_i when we're in the READING state
-  `ASSERT_IN_STATE(RndReqStableInReading_A, READING, rnd_req_i)
   // We don't see a prefetch request when in READING
   `ASSERT_IN_STATE(NoPrefetchWhenReading_A, READING, !rnd_prefetch_req_i)
   // There is an outstanding EDN request when we're reading
