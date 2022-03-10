@@ -322,6 +322,7 @@ module keccak_round
       end
     endcase
 
+    // SEC_CM: FSM.GLOBAL_ESC, FSM.LOCAL_ESC
     // Unconditionally jump into the terminal error state
     // if the life cycle controller triggers an escalation.
     if (lc_escalate_en_i != lc_ctrl_pkg::Off) begin
@@ -337,10 +338,20 @@ module keccak_round
   ////////////////////////////
   // Keccak state registers //
   ////////////////////////////
+
+  // SEC_CM: LOGIC.INTEGRITY
+  logic rst_n;
+  prim_sec_anchor_buf #(
+   .Width(1)
+  ) u_prim_sec_anchor_buf (
+    .in_i(rst_ni),
+    .out_o(rst_n)
+  );
+
   logic [Width-1:0] storage   [Share];
   logic [Width-1:0] storage_d [Share];
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_n) begin
+    if (!rst_n) begin
       storage <= '{default:'0};
     end else if (rst_storage) begin
       storage <= '{default:'0};
