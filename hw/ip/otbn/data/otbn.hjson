@@ -198,8 +198,8 @@
             </table>
           '''
           tags: [
-            // Don't write this field in the automated CSR tests; the commands
-            // are tested in more controlled form.
+            // Don't write this field in the automated CSR tests: it would
+            // start an operation!
             "excl:CsrAllTests:CsrExclWrite"
           ]
         }
@@ -312,8 +312,9 @@
       hwext: "true",
       hwqe:  "true",
       tags: [
-            // Don't write this register in the automated CSR tests;
-            "excl:CsrAllTests:CsrExclWrite"
+        // Don't use this register in the automated CSR tests. Its behaviour is
+        // "write any value to clear", which we don't model in those tests.
+        "excl:CsrAllTests:CsrExclWrite"
       ],
       fields: [
         // Software errors
@@ -477,7 +478,9 @@
             The number of executed instructions.
           '''
           tags: [
-            // Don't write this field in the automated CSR tests;
+            // Don't write this field in the automated CSR tests. Like
+            // ERR_BITS, its behaviour is "write any value to clear", which we
+            // don't model in those tests.
             "excl:CsrAllTests:CsrExclWrite"
           ]
         }
@@ -493,22 +496,18 @@
       hwqe:  "true",
       swaccess: "rw",
       hwaccess: "hrw",
-      tags: [
-            // Don't write this register in the automated CSR tests;
-            "excl:CsrAllTests:CsrExclWrite"
-      ],
       fields: [
         { bits: "31:0",
           name: "checksum",
           resval: 0,
           desc: "Checksum accumulator"
-          tags: [
-            // Don't read this field in any of the automated CSR tests (they
-            // will predict the value wrongly because they don't know that it
-            // updates on memory writes)
-            "excl:CsrAllTests:CsrExclAll"
-          ]
         }
+      ]
+      tags: [
+        // Don't read this field in any of the automated CSR tests (they
+        // will predict the value wrongly because they don't know that it
+        // updates on memory writes).
+        "excl:CsrAllTests:CsrExclAll"
       ]
     }
 
