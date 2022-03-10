@@ -102,7 +102,7 @@ class otbn_common_vseq extends otbn_base_vseq;
                           addr, rdata, rep_flip_bits),
                 UVM_LOW)
 
-      cfg.write_dmem_word(addr / (4 * BaseWordsPerWLEN), rdata, key, nonce, flip_bits);
+      cfg.write_dmem_word(addr / (4 * BaseWordsPerWLEN), rdata, key, nonce, rep_flip_bits);
     end
 
   endfunction
