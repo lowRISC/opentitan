@@ -42,10 +42,10 @@ types-pyyaml
 types-tabulate
 
 # Development version with OT-specific changes
-git+https://github.com/lowRISC/fusesoc.git@ot#egg=fusesoc >= 1.12.0
+git+https://github.com/lowRISC/fusesoc.git@ot-0.1
 
 # Development version with OT-specific changes
-git+https://github.com/lowRISC/edalize.git@ot#egg=edalize >= 0.2.4
+git+https://github.com/lowRISC/edalize.git@ot-0.1
 
 # Development version of ChipWhisperer toolchain
 # Use a development version until support for the CW310 board works in a
