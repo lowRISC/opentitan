@@ -101,9 +101,16 @@
 
 /**
  * A macro representing the OpenTitan execution platform.
+ * 
+ * OT_PLATFORM_TARGET represents any valid target platform (currently rv32i).
+ * OT_PLATFORM_HOST represents the host platform (e.g. unit testing).
+ * OT_PLATFORM_RV32 identifies the target platform as RV32.
  */
 #if __riscv_xlen == 32
+#define OT_PLATFORM_TARGET 1
 #define OT_PLATFORM_RV32 1
+#else
+#define OT_PLATFORM_HOST 1
 #endif
 
 /**

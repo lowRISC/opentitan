@@ -12,6 +12,7 @@ cc_library(
     deps = [
         ":error",
         "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
     ],
@@ -81,7 +82,6 @@ cc_library(
 cc_library(
     name = "epmp",
     srcs = ["epmp.c"],
-    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":epmp_intf",
         ":error",
@@ -93,15 +93,12 @@ cc_test(
     name = "epmp_unittest",
     srcs = [
         "epmp_unittest.cc",
-        # sources included here because we need MOCK_CSR.
-        "epmp.c",
-        "epmp.h",
     ],
     defines = [
         "OT_OFF_TARGET_TEST",
     ],
     deps = [
-        ":epmp_intf",
+        ":epmp",
         ":error",
         "//sw/device/lib/base",
         "//sw/device/silicon_creator/lib/base:mock_csr",
@@ -194,6 +191,7 @@ cc_test(
         "//sw/device/lib/base/testing:global_mock",
         "//sw/device/silicon_creator/lib/drivers:uart",
         "//sw/device/silicon_creator/testing:mask_rom_test",
+        "//sw/device/lib/base/testing:mock_abs_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -243,7 +241,6 @@ cc_test(
     srcs = [
         "manifest_unittest.cc",
     ],
-    defines = ["MOCK_CSR"],
     deps = [
         ":epmp_intf",
         ":error",
@@ -253,7 +250,8 @@ cc_test(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
         "//sw/device/silicon_creator/lib/base:mock_csr",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/lib/base/testing:mock_abs_mmio",
+        "//sw/device/silicon_creator/lib/drivers:mock_lifecycle",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
@@ -409,6 +407,7 @@ cc_test(
         "//sw/device/silicon_creator/lib/drivers:mock_lifecycle",
         "//sw/device/silicon_creator/lib/drivers:mock_otp",
         "//sw/device/silicon_creator/testing:mask_rom_test",
+        "//sw/device/lib/base/testing:mock_abs_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -542,6 +541,7 @@ cc_test(
         ":sigverify_internal",
         ":sigverify_intf",
         ":sigverify_mod_exp_ibex",
+        "//sw/device/lib/base/testing:mock_abs_mmio",
         "@googletest//:gtest_main",
     ],
 )

@@ -31,8 +31,12 @@ cc_library(
 cc_library(
     name = "mock_abs_mmio",
     testonly = True,
+    srcs = [
+        "mock_abs_mmio.cc",
+    ],
     hdrs = [
         "mock_abs_mmio.h",
+        "mock_mmio_test_utils.h",
     ],
     defines = ["MOCK_ABS_MMIO"],
     deps = [

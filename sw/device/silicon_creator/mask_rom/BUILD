@@ -49,6 +49,7 @@ cc_test(
         "//sw/device/silicon_creator/lib:mock_manifest",
         "//sw/device/silicon_creator/lib:mock_shutdown",
         "//sw/device/silicon_creator/testing:mask_rom_test",
+        "//sw/device/lib/base/testing:mock_abs_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -256,6 +257,7 @@ cc_test(
         "//sw/device/silicon_creator/lib/drivers:mock_rnd",
         "//sw/device/silicon_creator/mask_rom/keys:test_public_keys",
         "//sw/device/silicon_creator/testing:mask_rom_test",
+        "//sw/device/lib/base/testing:mock_abs_mmio",
         "@googletest//:gtest_main",
     ],
 )

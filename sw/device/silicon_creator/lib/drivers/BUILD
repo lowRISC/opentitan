@@ -10,7 +10,6 @@ cc_library(
     name = "alert",
     srcs = ["alert.c"],
     hdrs = ["alert.h"],
-    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top_earlgrey:alert_handler_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -47,6 +46,7 @@ cc_test(
         "//sw/device/lib/base",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -72,7 +72,6 @@ cc_library(
     name = "flash_ctrl",
     srcs = ["flash_ctrl.c"],
     hdrs = ["flash_ctrl.h"],
-    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
@@ -105,6 +104,7 @@ cc_test(
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:mock_otp",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -143,6 +143,7 @@ cc_test(
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing:mock_abs_mmio",
         "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -162,7 +163,6 @@ cc_library(
     name = "keymgr",
     srcs = ["keymgr.c"],
     hdrs = ["keymgr.h"],
-    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/keymgr/data:keymgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -190,6 +190,7 @@ cc_test(
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:keymgr_binding",
         "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -268,7 +269,6 @@ cc_library(
     name = "otbn",
     srcs = ["otbn.c"],
     hdrs = ["otbn.h"],
-    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/otbn/data:otbn_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -303,7 +303,6 @@ cc_library(
     name = "otp",
     srcs = ["otp.c"],
     hdrs = ["otp.h"],
-    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -366,6 +365,7 @@ cc_test(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing:mock_abs_mmio",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -391,6 +391,7 @@ cc_test(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing:mock_abs_mmio",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -476,6 +477,7 @@ cc_test(
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing:mock_abs_mmio",
         "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -502,6 +504,7 @@ cc_test(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing:mock_abs_mmio",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -548,6 +551,7 @@ cc_test(
         "//sw/device/lib/base/testing:mock_abs_mmio",
         "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:mock_otp",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
 )

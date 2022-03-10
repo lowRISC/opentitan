@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/base/macros.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,7 +35,7 @@ extern "C" {
  */
 #define ABS_MMIO_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
 
-#ifndef MOCK_ABS_MMIO
+#ifdef OT_PLATFORM_TARGET
 
 /**
  * Reads uint8_t from MMIO `addr`.
@@ -103,7 +103,7 @@ inline void abs_mmio_write32_shadowed(uint32_t addr, uint32_t value) {
   *((volatile uint32_t *)addr) = value;
 }
 
-#else  // MOCK_ABS_MMIO
+#else  // OT_PLATFORM_TARGET
 
 extern uint8_t abs_mmio_read8(uint32_t addr);
 extern void abs_mmio_write8(uint32_t addr, uint8_t value);
@@ -112,7 +112,7 @@ extern uint32_t abs_mmio_read32(uint32_t addr);
 extern void abs_mmio_write32(uint32_t addr, uint32_t value);
 extern void abs_mmio_write32_shadowed(uint32_t addr, uint32_t value);
 
-#endif  // MOCK_ABS_MMIO
+#endif  // OT_PLATFORM_TARGET
 
 #ifdef __cplusplus
 }

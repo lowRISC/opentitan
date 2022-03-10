@@ -31,17 +31,15 @@ cc_library(
 )
 
 cc_library(
+    name = "macros",
+    hdrs = ["macros.h"],
+)
+
+cc_library(
     name = "abs_mmio",
-    srcs = [
-        "abs_mmio.c",
-    ],
-    hdrs = [
-        "abs_mmio.h",
-    ],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":base",
-    ],
+    srcs = ["abs_mmio.c"],
+    hdrs = ["abs_mmio.h"],
+    deps = [":macros"],
 )
 
 cc_library(

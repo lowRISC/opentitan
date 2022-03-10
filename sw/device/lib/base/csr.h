@@ -11,6 +11,7 @@
 
 #include "sw/device/lib/base/csr_registers.h"
 #include "sw/device/lib/base/stdasm.h"
+#include "sw/device/lib/base/macros.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,7 +22,7 @@ extern "C" {
  * @brief Ibex Control and Status Register (CSR) interface.
  *
  * A set of macros that provide both read and modify operations on Ibex CSRs.
- * Compiling translation units that include this header file with `-DMOCK_CSR`
+ * Compiling translation units that include this header file with `-DOT_PLATFORM_HOST`
  * will result in the CSR operations being replaced with a mocked
  * implementation.
  */
@@ -32,7 +33,7 @@ extern "C" {
  * The implementation used depends on whether the CSR library is providing a
  * real or a mocked interface.
  */
-#ifdef MOCK_CSR
+#ifdef OT_PLATFORM_HOST
 
 /**
  * Macro to check that an argument is a constant expression at compile time.
@@ -87,7 +88,10 @@ void mock_csr_clear_bits(uint32_t addr, uint32_t mask);
     mock_csr_clear_bits(csr, mask);                 \
   } while (false)
 
-#else  // MOCK_CSR
+#else  // OT_PLATFORM_HOST
+#ifndef OT_PLATFORM_RV32
+#error "Expected OT_PLATFORM_RV32 to be defined!"
+#endif
 
 #define CSR_READ_IMPL(csr, dest)                           \
   do {                                                     \
@@ -117,7 +121,7 @@ void mock_csr_clear_bits(uint32_t addr, uint32_t mask);
     asm volatile("csrc %0, %1;" ::"i"(csr), "r"(mask)); \
   } while (false)
 
-#endif  // MOCK_CSR
+#endif  // OT_PLATFORM_HOST
 
 /**
  * Read the value of a CSR and place the result into the location pointed to by
