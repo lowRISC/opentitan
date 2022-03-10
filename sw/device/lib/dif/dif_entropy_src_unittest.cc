@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
+#include "sw/device/lib/dif/dif_test_base.h"
 
 #include "entropy_src_regs.h"  // Generated
 
@@ -124,7 +125,7 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
                      {ENTROPY_SRC_MODULE_ENABLE_MODULE_ENABLE_OFFSET, enable},
                  });
 
-  EXPECT_EQ(dif_entropy_src_configure(&entropy_src_, config_), kDifOk);
+  EXPECT_DIF_OK(dif_entropy_src_configure(&entropy_src_, config_));
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -186,7 +187,7 @@ TEST_F(ReadTest, ReadOk) {
                  {{ENTROPY_SRC_INTR_STATE_ES_ENTROPY_VALID_BIT, true}});
 
   uint32_t got_word;
-  EXPECT_EQ(dif_entropy_src_read(&entropy_src_, &got_word), kDifOk);
+  EXPECT_DIF_OK(dif_entropy_src_read(&entropy_src_, &got_word));
   EXPECT_EQ(got_word, expected_word);
 }
 

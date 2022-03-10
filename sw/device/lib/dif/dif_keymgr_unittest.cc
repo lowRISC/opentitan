@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
+#include "sw/device/lib/dif/dif_test_base.h"
 
 #include "keymgr_regs.h"  // Generated
 
@@ -246,7 +247,7 @@ TEST_F(ConfigureTest, Configure) {
   EXPECT_WRITE32_SHADOWED(KEYMGR_RESEED_INTERVAL_SHADOWED_REG_OFFSET,
                           kConfig.entropy_reseed_interval);
 
-  EXPECT_EQ(dif_keymgr_configure(&keymgr_, kConfig), kDifOk);
+  EXPECT_DIF_OK(dif_keymgr_configure(&keymgr_, kConfig));
 }
 
 class AdvanceStateTest : public DifKeymgrInitialized {
@@ -380,7 +381,7 @@ TEST_P(AdvanceToOperational, Success) {
       .operation = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_ADVANCE,
   });
 
-  EXPECT_EQ(dif_keymgr_advance_state(&keymgr_, &kStateParams), kDifOk);
+  EXPECT_DIF_OK(dif_keymgr_advance_state(&keymgr_, &kStateParams));
 }
 
 TEST_P(AdvanceToNonOperational, Success) {
@@ -390,7 +391,7 @@ TEST_P(AdvanceToNonOperational, Success) {
       .operation = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_ADVANCE,
   });
 
-  EXPECT_EQ(dif_keymgr_advance_state(&keymgr_, nullptr), kDifOk);
+  EXPECT_DIF_OK(dif_keymgr_advance_state(&keymgr_, nullptr));
 }
 
 class DisableTest : public DifKeymgrInitialized {};
@@ -417,7 +418,7 @@ TEST_F(DisableTest, Disable) {
       .operation = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_DISABLE,
   });
 
-  EXPECT_EQ(dif_keymgr_disable(&keymgr_), kDifOk);
+  EXPECT_DIF_OK(dif_keymgr_disable(&keymgr_));
 }
 
 TEST_P(BadArgsTwo, GetStatusCodes) {
@@ -448,7 +449,7 @@ TEST_P(GetStatusCodesNoError, Success) {
   EXPECT_WRITE32(KEYMGR_OP_STATUS_REG_OFFSET, GetParam().reg_val);
 
   dif_keymgr_status_codes_t act_val;
-  EXPECT_EQ(dif_keymgr_get_status_codes(&keymgr_, &act_val), kDifOk);
+  EXPECT_DIF_OK(dif_keymgr_get_status_codes(&keymgr_, &act_val));
   EXPECT_EQ(GetParam().exp_val, act_val);
 }
 
@@ -490,7 +491,7 @@ TEST_P(GetStatusCodesWithError, Success) {
   EXPECT_WRITE32(KEYMGR_ERR_CODE_REG_OFFSET, GetParam().reg_val);
 
   dif_keymgr_status_codes_t act_val;
-  EXPECT_EQ(dif_keymgr_get_status_codes(&keymgr_, &act_val), kDifOk);
+  EXPECT_DIF_OK(dif_keymgr_get_status_codes(&keymgr_, &act_val));
   EXPECT_EQ(GetParam().exp_val, act_val);
 }
 
@@ -554,7 +555,7 @@ TEST_P(GetState, Success) {
   EXPECT_READ32(KEYMGR_WORKING_STATE_REG_OFFSET, GetParam().reg_val);
 
   dif_keymgr_state_t state;
-  EXPECT_EQ(dif_keymgr_get_state(&keymgr_, &state), kDifOk);
+  EXPECT_DIF_OK(dif_keymgr_get_state(&keymgr_, &state));
   EXPECT_EQ(state, GetParam().exp_output);
 }
 
@@ -645,7 +646,7 @@ TEST_F(GenerateIdentityTest, Generate) {
       .operation = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_ID,
   });
 
-  EXPECT_EQ(dif_keymgr_generate_identity_seed(&keymgr_), kDifOk);
+  EXPECT_DIF_OK(dif_keymgr_generate_identity_seed(&keymgr_));
 }
 
 class GenerateVersionedKeyTest : public DifKeymgrInitialized {};
@@ -708,7 +709,7 @@ TEST_P(GenerateVersionedKey, Success) {
       .operation = GetParam().exp_operation,
   });
 
-  EXPECT_EQ(dif_keymgr_generate_versioned_key(&keymgr_, params), kDifOk);
+  EXPECT_DIF_OK(dif_keymgr_generate_versioned_key(&keymgr_, params));
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -756,16 +757,16 @@ TEST_F(SideloadClearTest, Set) {
                      .offset = KEYMGR_SIDELOAD_CLEAR_VAL_OFFSET,
                      .value = kDifKeyMgrSideLoadClearAll,
                  }});
-  EXPECT_EQ(dif_keymgr_sideload_clear_set_enabled(&keymgr_, kDifToggleEnabled),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_keymgr_sideload_clear_set_enabled(&keymgr_, kDifToggleEnabled));
 
   EXPECT_WRITE32(KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
                  {{
                      .offset = KEYMGR_SIDELOAD_CLEAR_VAL_OFFSET,
                      .value = kDifKeyMgrSideLoadClearNone,
                  }});
-  EXPECT_EQ(dif_keymgr_sideload_clear_set_enabled(&keymgr_, kDifToggleDisabled),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_keymgr_sideload_clear_set_enabled(&keymgr_, kDifToggleDisabled));
 }
 
 TEST_F(SideloadClearTest, Get) {
@@ -775,7 +776,7 @@ TEST_F(SideloadClearTest, Get) {
                     .value = kDifKeyMgrSideLoadClearAll,
                 }});
   dif_toggle_t state = kDifToggleDisabled;
-  EXPECT_EQ(dif_keymgr_sideload_clear_get_enabled(&keymgr_, &state), kDifOk);
+  EXPECT_DIF_OK(dif_keymgr_sideload_clear_get_enabled(&keymgr_, &state));
   EXPECT_EQ(state, kDifToggleEnabled);
 
   EXPECT_READ32(KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
@@ -784,7 +785,7 @@ TEST_F(SideloadClearTest, Get) {
                     .value = kDifKeyMgrSideLoadClearNone,
                 }});
   state = kDifToggleEnabled;
-  EXPECT_EQ(dif_keymgr_sideload_clear_get_enabled(&keymgr_, &state), kDifOk);
+  EXPECT_DIF_OK(dif_keymgr_sideload_clear_get_enabled(&keymgr_, &state));
   EXPECT_EQ(state, kDifToggleDisabled);
 }
 
@@ -814,7 +815,7 @@ TEST_F(ReadOutputTest, Read) {
   }
 
   dif_keymgr_output_t output;
-  EXPECT_EQ(dif_keymgr_read_output(&keymgr_, &output), kDifOk);
+  EXPECT_DIF_OK(dif_keymgr_read_output(&keymgr_, &output));
   for (size_t i = 0; i < kNumShares; ++i) {
     EXPECT_THAT(kExpected[i], ::testing::ElementsAreArray(output.value[i]));
   }

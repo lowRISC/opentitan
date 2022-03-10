@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
+#include "sw/device/lib/dif/dif_test_base.h"
 
 extern "C" {
 #include "aes_regs.h"  // Generated.
@@ -62,7 +63,7 @@ TEST_F(AesInitTest, NullArgs) {
 
 TEST_F(AesInitTest, Sucess) {
   dif_aes_t aes;
-  EXPECT_EQ(dif_aes_init(dev().region(), &aes), kDifOk);
+  EXPECT_DIF_OK(dif_aes_init(dev().region(), &aes));
 }
 
 // Base class for the rest of the tests in this file, provides a
@@ -85,9 +86,7 @@ class AesTestInitialized : public AesTest {
 
   const dif_aes_iv_t kIv_ = {0x50, 0x64, 0x53, 0x67};
 
-  AesTestInitialized() {
-    EXPECT_EQ(dif_aes_init(dev().region(), &aes_), kDifOk);
-  }
+  AesTestInitialized() { EXPECT_DIF_OK(dif_aes_init(dev().region(), &aes_)); }
 };
 
 // ECB tests.
@@ -105,7 +104,7 @@ TEST_F(EcbTest, start) {
                     /*force_zero_masks=*/false);
   SetExpectedKey(kKey_, 8);
 
-  EXPECT_EQ(dif_aes_start(&aes_, &transaction, kKey_, NULL), kDifOk);
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, kKey_, NULL));
 }
 
 class CbcTest : public AesTestInitialized {
@@ -123,7 +122,7 @@ TEST_F(CbcTest, start) {
   SetExpectedKey(kKey_, 8);
   SetExpectedIv(kIv_);
 
-  EXPECT_EQ(dif_aes_start(&aes_, &transaction, kKey_, &kIv_), kDifOk);
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, kKey_, &kIv_));
 }
 
 // CFB tests.
@@ -142,7 +141,7 @@ TEST_F(CFBTest, start) {
   SetExpectedKey(kKey_, 8);
   SetExpectedIv(kIv_);
 
-  EXPECT_EQ(dif_aes_start(&aes_, &transaction, kKey_, &kIv_), kDifOk);
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, kKey_, &kIv_));
 }
 
 // OFB tests.
@@ -161,7 +160,7 @@ TEST_F(OFBTest, start) {
   SetExpectedKey(kKey_, 8);
   SetExpectedIv(kIv_);
 
-  EXPECT_EQ(dif_aes_start(&aes_, &transaction, kKey_, &kIv_), kDifOk);
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, kKey_, &kIv_));
 }
 
 // CTR tests.
@@ -180,7 +179,7 @@ TEST_F(CTRTest, start) {
   SetExpectedKey(kKey_, 8);
   SetExpectedIv(kIv_);
 
-  EXPECT_EQ(dif_aes_start(&aes_, &transaction, kKey_, &kIv_), kDifOk);
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, kKey_, &kIv_));
 }
 
 // Decrypt tests.
@@ -257,7 +256,7 @@ TEST_F(ManualOperationTest, start) {
                     /*force_zero_masks=*/false);
   SetExpectedKey(kKey_, 8);
 
-  EXPECT_EQ(dif_aes_start(&aes_, &transaction, kKey_, NULL), kDifOk);
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, kKey_, NULL));
 }
 
 // Zero masking

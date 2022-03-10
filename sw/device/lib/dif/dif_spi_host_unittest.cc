@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/testing/global_mock.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
+#include "sw/device/lib/dif/dif_test_base.h"
 
 #include "spi_host_regs.h"  // Generated.
 
@@ -134,7 +135,7 @@ TEST_F(ConfigTest, Default) {
                      {SPI_HOST_CONTROL_SPIEN_BIT, true},
                  });
 
-  EXPECT_EQ(dif_spi_host_configure(&spi_host_, config_), kDifOk);
+  EXPECT_DIF_OK(dif_spi_host_configure(&spi_host_, config_));
 }
 
 // Checks manipulation of the output enable bit.
@@ -167,7 +168,7 @@ TEST_F(ConfigTest, ClockRate) {
                      {SPI_HOST_CONTROL_SPIEN_BIT, true},
                  });
 
-  EXPECT_EQ(dif_spi_host_configure(&spi_host_, config_), kDifOk);
+  EXPECT_DIF_OK(dif_spi_host_configure(&spi_host_, config_));
 }
 
 // Checks that the chip select options get written to the appropriate fields in
@@ -193,7 +194,7 @@ TEST_F(ConfigTest, ChipSelectOptions) {
                      {SPI_HOST_CONTROL_SPIEN_BIT, true},
                  });
 
-  EXPECT_EQ(dif_spi_host_configure(&spi_host_, config_), kDifOk);
+  EXPECT_DIF_OK(dif_spi_host_configure(&spi_host_, config_));
 }
 
 // Checks that the SPI cycle, polarity and phase options get written to the
@@ -219,7 +220,7 @@ TEST_F(ConfigTest, SpiOptions) {
                      {SPI_HOST_CONTROL_SPIEN_BIT, true},
                  });
 
-  EXPECT_EQ(dif_spi_host_configure(&spi_host_, config_), kDifOk);
+  EXPECT_DIF_OK(dif_spi_host_configure(&spi_host_, config_));
 }
 
 class TransactionTest : public SpiHostTest {
@@ -241,7 +242,7 @@ TEST_F(TransactionTest, IssueOpcode) {
   EXPECT_COMMAND_REG(/*length=*/1, /*width=*/kDifSpiHostWidthStandard,
                      /*direction=*/kDifSpiHostDirectionTx, /*last=*/true);
 
-  EXPECT_EQ(dif_spi_host_transaction(&spi_host_, 0, &segment, 1), kDifOk);
+  EXPECT_DIF_OK(dif_spi_host_transaction(&spi_host_, 0, &segment, 1));
 }
 
 // Checks that an address segment is sent correctly in 3-byte mode.
@@ -260,7 +261,7 @@ TEST_F(TransactionTest, IssueAddressMode3b) {
   EXPECT_COMMAND_REG(/*length=*/3, /*width=*/kDifSpiHostWidthStandard,
                      /*direction=*/kDifSpiHostDirectionTx, /*last=*/true);
 
-  EXPECT_EQ(dif_spi_host_transaction(&spi_host_, 0, &segment, 1), kDifOk);
+  EXPECT_DIF_OK(dif_spi_host_transaction(&spi_host_, 0, &segment, 1));
 }
 
 // Checks that an address segment is sent correctly in 4-byte mode.
@@ -279,7 +280,7 @@ TEST_F(TransactionTest, IssueAddressMode4b) {
   EXPECT_COMMAND_REG(/*length=*/4, /*width=*/kDifSpiHostWidthStandard,
                      /*direction=*/kDifSpiHostDirectionTx, /*last=*/true);
 
-  EXPECT_EQ(dif_spi_host_transaction(&spi_host_, 0, &segment, 1), kDifOk);
+  EXPECT_DIF_OK(dif_spi_host_transaction(&spi_host_, 0, &segment, 1));
 }
 
 // Checks that a dummy segment is sent correctly.
@@ -294,7 +295,7 @@ TEST_F(TransactionTest, IssueDummy) {
   EXPECT_COMMAND_REG(/*length=*/8, /*width=*/kDifSpiHostWidthStandard,
                      /*direction=*/kDifSpiHostDirectionDummy, /*last=*/true);
 
-  EXPECT_EQ(dif_spi_host_transaction(&spi_host_, 0, &segment, 1), kDifOk);
+  EXPECT_DIF_OK(dif_spi_host_transaction(&spi_host_, 0, &segment, 1));
 }
 
 // Checks that a transmit segment is sent correctly.
@@ -312,7 +313,7 @@ TEST_F(TransactionTest, TransmitDual) {
   EXPECT_COMMAND_REG(/*length=*/sizeof(buf), /*width=*/kDifSpiHostWidthDual,
                      /*direction=*/kDifSpiHostDirectionTx, /*last=*/true);
 
-  EXPECT_EQ(dif_spi_host_transaction(&spi_host_, 0, &segment, 1), kDifOk);
+  EXPECT_DIF_OK(dif_spi_host_transaction(&spi_host_, 0, &segment, 1));
 }
 
 // Checks that a receive segment is sent correctly.
@@ -330,7 +331,7 @@ TEST_F(TransactionTest, ReceiveQuad) {
                      /*direction=*/kDifSpiHostDirectionRx, /*last=*/true);
   EXPECT_CALL(fifo_, read(&spi_host_, buf, sizeof(buf)));
 
-  EXPECT_EQ(dif_spi_host_transaction(&spi_host_, 0, &segment, 1), kDifOk);
+  EXPECT_DIF_OK(dif_spi_host_transaction(&spi_host_, 0, &segment, 1));
 }
 
 // Checks that a tranceive segment is sent correctly.
@@ -352,7 +353,7 @@ TEST_F(TransactionTest, Transceive) {
       /*direction=*/kDifSpiHostDirectionBidirectional, /*last=*/true);
   EXPECT_CALL(fifo_, read(&spi_host_, rxbuf, sizeof(rxbuf)));
 
-  EXPECT_EQ(dif_spi_host_transaction(&spi_host_, 0, &segment, 1), kDifOk);
+  EXPECT_DIF_OK(dif_spi_host_transaction(&spi_host_, 0, &segment, 1));
 }
 
 // Checks that multiple segments are sent correctly.
@@ -380,9 +381,8 @@ TEST_F(TransactionTest, MultiSegmentTxRx) {
                      /*direction=*/kDifSpiHostDirectionRx, /*last=*/true);
   EXPECT_CALL(fifo_, read(&spi_host_, rxbuf, sizeof(rxbuf)));
 
-  EXPECT_EQ(
-      dif_spi_host_transaction(&spi_host_, 0, segment, ARRAYSIZE(segment)),
-      kDifOk);
+  EXPECT_DIF_OK(
+      dif_spi_host_transaction(&spi_host_, 0, segment, ARRAYSIZE(segment)));
 }
 
 class FifoTest : public SpiHostTest {};
@@ -400,12 +400,18 @@ TEST_F(FifoTest, AlignedWrite) {
   dif_spi_host_fifo_write(&spi_host_, buffer, sizeof(buffer));
 }
 
+template <size_t count, size_t align>
+struct Aligned {
+  alignas(align) uint8_t value[count];
+  uint8_t *get() { return &value[0]; }
+};
+
 // Checks that a misaligned source buffer is written as bytes into the
 // transmit FIFO until alignment is reached and then written as 32-bit words.
 TEST_F(FifoTest, MisalignedWrite) {
   // We'll intentionally mis-align the buffer by 1 when calling
   // dif_spi_host_fifo_write.
-  uint8_t buffer[] alignas(uint32_t) = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+  Aligned<9, 4> buffer = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
   // Because of the misalignment, expect three byte writes.
   EXPECT_TXQD(0);
@@ -423,7 +429,7 @@ TEST_F(FifoTest, MisalignedWrite) {
   EXPECT_TXQD(0);
   EXPECT_WRITE8(SPI_HOST_TXDATA_REG_OFFSET, 8);
 
-  dif_spi_host_fifo_write(&spi_host_, buffer + 1, sizeof(buffer) - 1);
+  dif_spi_host_fifo_write(&spi_host_, buffer.get() + 1, 8);
 }
 
 // Checks that an aligned destination buffer receives the contents of the
@@ -445,15 +451,15 @@ TEST_F(FifoTest, AlignedRead) {
 TEST_F(FifoTest, MisalignedRead) {
   // We'll intentionally mis-align the buffer by 1 when calling
   // dif_spi_host_fifo_read.
-  uint8_t buffer[9] alignas(uint32_t) = {0};
+  Aligned<9, 4> buffer{};
 
   EXPECT_RXQD(2);
   EXPECT_READ32(SPI_HOST_RXDATA_REG_OFFSET, 0x04030201);
   EXPECT_RXQD(1);
   EXPECT_READ32(SPI_HOST_RXDATA_REG_OFFSET, 0x08070605);
 
-  dif_spi_host_fifo_read(&spi_host_, buffer + 1, sizeof(buffer) - 1);
-  EXPECT_THAT(buffer, ElementsAre(0, 1, 2, 3, 4, 5, 6, 7, 8));
+  dif_spi_host_fifo_read(&spi_host_, buffer.get() + 1, 8);
+  EXPECT_THAT(buffer.value, ElementsAre(0, 1, 2, 3, 4, 5, 6, 7, 8));
 }
 
 }  // namespace

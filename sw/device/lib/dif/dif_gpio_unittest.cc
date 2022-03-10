@@ -9,6 +9,7 @@
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
+#include "sw/device/lib/dif/dif_test_base.h"
 
 #include "gpio_regs.h"  // Generated
 
@@ -48,7 +49,7 @@ TEST_F(ResetTest, Reset) {
   EXPECT_WRITE32(GPIO_CTRL_EN_INPUT_FILTER_REG_OFFSET, 0);
   EXPECT_WRITE32(GPIO_INTR_STATE_REG_OFFSET, kAllOnes);
 
-  EXPECT_EQ(dif_gpio_reset(&gpio_), kDifOk);
+  EXPECT_DIF_OK(dif_gpio_reset(&gpio_));
 }
 
 // Read tests
@@ -72,7 +73,7 @@ TEST_F(ReadTest, AllPins) {
   EXPECT_READ32(GPIO_DATA_IN_REG_OFFSET, kVal);
 
   dif_gpio_state_t pin_values = 0;
-  EXPECT_EQ(dif_gpio_read_all(&gpio_, &pin_values), kDifOk);
+  EXPECT_DIF_OK(dif_gpio_read_all(&gpio_, &pin_values));
   EXPECT_EQ(pin_values, kVal);
 }
 
@@ -84,7 +85,7 @@ TEST_F(ReadTest, SinglePin) {
       EXPECT_READ32(GPIO_DATA_IN_REG_OFFSET, reg_val);
 
       bool pin_val = !exp_pin_val;
-      EXPECT_EQ(dif_gpio_read(&gpio_, pin, &pin_val), kDifOk);
+      EXPECT_DIF_OK(dif_gpio_read(&gpio_, pin, &pin_val));
       EXPECT_EQ(pin_val, exp_pin_val);
     }
   }
@@ -103,7 +104,7 @@ TEST_F(WriteTest, AllPins) {
   constexpr uint32_t kVal = 0xA5A5A5A5;
   EXPECT_WRITE32(GPIO_DIRECT_OUT_REG_OFFSET, kVal);
 
-  EXPECT_EQ(dif_gpio_write_all(&gpio_, kVal), kDifOk);
+  EXPECT_DIF_OK(dif_gpio_write_all(&gpio_, kVal));
 }
 
 // The GPIO device provides masked bit-level atomic writes to its DIRECT_OUT
@@ -128,28 +129,28 @@ TEST_F(WriteTest, AllPins) {
 
 TEST_F(WriteTest, SinglePin) {
   EXPECT_WRITE32(GPIO_MASKED_OUT_LOWER_REG_OFFSET, {{16, 1}, {0, 1}});
-  EXPECT_EQ(dif_gpio_write(&gpio_, 0, true), kDifOk);
+  EXPECT_DIF_OK(dif_gpio_write(&gpio_, 0, true));
 
   EXPECT_WRITE32(GPIO_MASKED_OUT_LOWER_REG_OFFSET, {{31, 1}, {15, 0}});
-  EXPECT_EQ(dif_gpio_write(&gpio_, 15, false), kDifOk);
+  EXPECT_DIF_OK(dif_gpio_write(&gpio_, 15, false));
 
   EXPECT_WRITE32(GPIO_MASKED_OUT_UPPER_REG_OFFSET, {{16, 1}, {0, 1}});
-  EXPECT_EQ(dif_gpio_write(&gpio_, 16, true), kDifOk);
+  EXPECT_DIF_OK(dif_gpio_write(&gpio_, 16, true));
 
   EXPECT_WRITE32(GPIO_MASKED_OUT_UPPER_REG_OFFSET, {{31, 1}, {15, 0}});
-  EXPECT_EQ(dif_gpio_write(&gpio_, 31, false), kDifOk);
+  EXPECT_DIF_OK(dif_gpio_write(&gpio_, 31, false));
 }
 
 TEST_F(WriteTest, Masked) {
   EXPECT_WRITE32(GPIO_MASKED_OUT_LOWER_REG_OFFSET, 0xCDCD3322);
   EXPECT_WRITE32(GPIO_MASKED_OUT_UPPER_REG_OFFSET, 0xABAB5544);
-  EXPECT_EQ(dif_gpio_write_masked(&gpio_, 0xABABCDCD, 0x55443322), kDifOk);
+  EXPECT_DIF_OK(dif_gpio_write_masked(&gpio_, 0xABABCDCD, 0x55443322));
 
   EXPECT_WRITE32(GPIO_MASKED_OUT_UPPER_REG_OFFSET, 0xABAB5544);
-  EXPECT_EQ(dif_gpio_write_masked(&gpio_, 0xABAB0000, 0x55443322), kDifOk);
+  EXPECT_DIF_OK(dif_gpio_write_masked(&gpio_, 0xABAB0000, 0x55443322));
 
   EXPECT_WRITE32(GPIO_MASKED_OUT_LOWER_REG_OFFSET, 0xCDCD3322);
-  EXPECT_EQ(dif_gpio_write_masked(&gpio_, 0x0000CDCD, 0x55443322), kDifOk);
+  EXPECT_DIF_OK(dif_gpio_write_masked(&gpio_, 0x0000CDCD, 0x55443322));
 }
 
 // Output mode tests
@@ -167,38 +168,36 @@ TEST_F(OutputModeTest, AllPins) {
   constexpr uint32_t kVal = 0xA5A5A5A5;
   EXPECT_WRITE32(GPIO_DIRECT_OE_REG_OFFSET, kVal);
 
-  EXPECT_EQ(dif_gpio_output_set_enabled_all(&gpio_, kVal), kDifOk);
+  EXPECT_DIF_OK(dif_gpio_output_set_enabled_all(&gpio_, kVal));
 }
 
 TEST_F(OutputModeTest, SinglePin) {
   EXPECT_WRITE32(GPIO_MASKED_OE_LOWER_REG_OFFSET, {{16, 1}, {0, 1}});
-  EXPECT_EQ(dif_gpio_output_set_enabled(&gpio_, 0, kDifToggleEnabled), kDifOk);
+  EXPECT_DIF_OK(dif_gpio_output_set_enabled(&gpio_, 0, kDifToggleEnabled));
 
   EXPECT_WRITE32(GPIO_MASKED_OE_LOWER_REG_OFFSET, {{31, 1}, {15, 0}});
-  EXPECT_EQ(dif_gpio_output_set_enabled(&gpio_, 15, kDifToggleDisabled),
-            kDifOk);
+  EXPECT_DIF_OK(dif_gpio_output_set_enabled(&gpio_, 15, kDifToggleDisabled));
 
   EXPECT_WRITE32(GPIO_MASKED_OE_UPPER_REG_OFFSET, {{16, 1}, {0, 1}});
-  EXPECT_EQ(dif_gpio_output_set_enabled(&gpio_, 16, kDifToggleEnabled), kDifOk);
+  EXPECT_DIF_OK(dif_gpio_output_set_enabled(&gpio_, 16, kDifToggleEnabled));
 
   EXPECT_WRITE32(GPIO_MASKED_OE_UPPER_REG_OFFSET, {{31, 1}, {15, 0}});
-  EXPECT_EQ(dif_gpio_output_set_enabled(&gpio_, 31, kDifToggleDisabled),
-            kDifOk);
+  EXPECT_DIF_OK(dif_gpio_output_set_enabled(&gpio_, 31, kDifToggleDisabled));
 }
 
 TEST_F(OutputModeTest, Masked) {
   EXPECT_WRITE32(GPIO_MASKED_OE_LOWER_REG_OFFSET, 0xCDCD3322);
   EXPECT_WRITE32(GPIO_MASKED_OE_UPPER_REG_OFFSET, 0xABAB5544);
-  EXPECT_EQ(dif_gpio_output_set_enabled_masked(&gpio_, 0xABABCDCD, 0x55443322),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_gpio_output_set_enabled_masked(&gpio_, 0xABABCDCD, 0x55443322));
 
   EXPECT_WRITE32(GPIO_MASKED_OE_LOWER_REG_OFFSET, 0xCDCD3322);
-  EXPECT_EQ(dif_gpio_output_set_enabled_masked(&gpio_, 0x0000CDCD, 0x55443322),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_gpio_output_set_enabled_masked(&gpio_, 0x0000CDCD, 0x55443322));
 
   EXPECT_WRITE32(GPIO_MASKED_OE_UPPER_REG_OFFSET, 0xABAB5544);
-  EXPECT_EQ(dif_gpio_output_set_enabled_masked(&gpio_, 0xABAB0000, 0x55443322),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_gpio_output_set_enabled_masked(&gpio_, 0xABAB0000, 0x55443322));
 }
 
 // Input noise filter tests
@@ -218,9 +217,8 @@ TEST_F(InputFilterTest, MaskedEnable) {
   EXPECT_READ32(GPIO_CTRL_EN_INPUT_FILTER_REG_OFFSET, 0x0);
   EXPECT_WRITE32(GPIO_CTRL_EN_INPUT_FILTER_REG_OFFSET, kVal);
 
-  EXPECT_EQ(
-      dif_gpio_input_noise_filter_set_enabled(&gpio_, kVal, kDifToggleEnabled),
-      kDifOk);
+  EXPECT_DIF_OK(
+      dif_gpio_input_noise_filter_set_enabled(&gpio_, kVal, kDifToggleEnabled));
 }
 
 TEST_F(InputFilterTest, MaskedDisable) {
@@ -228,9 +226,8 @@ TEST_F(InputFilterTest, MaskedDisable) {
   EXPECT_READ32(GPIO_CTRL_EN_INPUT_FILTER_REG_OFFSET, kAllOnes);
   EXPECT_WRITE32(GPIO_CTRL_EN_INPUT_FILTER_REG_OFFSET, ~kVal);
 
-  EXPECT_EQ(
-      dif_gpio_input_noise_filter_set_enabled(&gpio_, kVal, kDifToggleDisabled),
-      kDifOk);
+  EXPECT_DIF_OK(dif_gpio_input_noise_filter_set_enabled(&gpio_, kVal,
+                                                        kDifToggleDisabled));
 }
 
 class IrqTest : public GpioTestInitialized {
@@ -256,9 +253,8 @@ TEST_F(IrqTest, MaskedConfigTriggerEdgeRising) {
   EXPECT_READ32(GPIO_INTR_CTRL_EN_RISING_REG_OFFSET, 0);
   EXPECT_WRITE32(GPIO_INTR_CTRL_EN_RISING_REG_OFFSET, kVal);
 
-  EXPECT_EQ(
-      dif_gpio_irq_set_trigger(&gpio_, kVal, kDifGpioIrqTriggerEdgeRising),
-      kDifOk);
+  EXPECT_DIF_OK(
+      dif_gpio_irq_set_trigger(&gpio_, kVal, kDifGpioIrqTriggerEdgeRising));
 }
 
 TEST_F(IrqTest, MaskedConfigTriggerEdgeFalling) {
@@ -268,9 +264,8 @@ TEST_F(IrqTest, MaskedConfigTriggerEdgeFalling) {
   EXPECT_READ32(GPIO_INTR_CTRL_EN_FALLING_REG_OFFSET, 0);
   EXPECT_WRITE32(GPIO_INTR_CTRL_EN_FALLING_REG_OFFSET, kVal);
 
-  EXPECT_EQ(
-      dif_gpio_irq_set_trigger(&gpio_, kVal, kDifGpioIrqTriggerEdgeFalling),
-      kDifOk);
+  EXPECT_DIF_OK(
+      dif_gpio_irq_set_trigger(&gpio_, kVal, kDifGpioIrqTriggerEdgeFalling));
 }
 
 TEST_F(IrqTest, MaskedConfigTriggerLevelLow) {
@@ -280,8 +275,8 @@ TEST_F(IrqTest, MaskedConfigTriggerLevelLow) {
   EXPECT_READ32(GPIO_INTR_CTRL_EN_LVLLOW_REG_OFFSET, 0);
   EXPECT_WRITE32(GPIO_INTR_CTRL_EN_LVLLOW_REG_OFFSET, kVal);
 
-  EXPECT_EQ(dif_gpio_irq_set_trigger(&gpio_, kVal, kDifGpioIrqTriggerLevelLow),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_gpio_irq_set_trigger(&gpio_, kVal, kDifGpioIrqTriggerLevelLow));
 }
 
 TEST_F(IrqTest, MaskedConfigTriggerLevelHigh) {
@@ -291,8 +286,8 @@ TEST_F(IrqTest, MaskedConfigTriggerLevelHigh) {
   EXPECT_READ32(GPIO_INTR_CTRL_EN_LVLHIGH_REG_OFFSET, 0);
   EXPECT_WRITE32(GPIO_INTR_CTRL_EN_LVLHIGH_REG_OFFSET, kVal);
 
-  EXPECT_EQ(dif_gpio_irq_set_trigger(&gpio_, kVal, kDifGpioIrqTriggerLevelHigh),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_gpio_irq_set_trigger(&gpio_, kVal, kDifGpioIrqTriggerLevelHigh));
 }
 
 TEST_F(IrqTest, MaskedConfigTriggerEdgeRisingFalling) {
@@ -304,9 +299,8 @@ TEST_F(IrqTest, MaskedConfigTriggerEdgeRisingFalling) {
   EXPECT_READ32(GPIO_INTR_CTRL_EN_FALLING_REG_OFFSET, 0);
   EXPECT_WRITE32(GPIO_INTR_CTRL_EN_FALLING_REG_OFFSET, kVal);
 
-  EXPECT_EQ(dif_gpio_irq_set_trigger(&gpio_, kVal,
-                                     kDifGpioIrqTriggerEdgeRisingFalling),
-            kDifOk);
+  EXPECT_DIF_OK(dif_gpio_irq_set_trigger(&gpio_, kVal,
+                                         kDifGpioIrqTriggerEdgeRisingFalling));
 }
 
 TEST_F(IrqTest, MaskedConfigTriggerEdgeRisingLevelLow) {
@@ -318,9 +312,8 @@ TEST_F(IrqTest, MaskedConfigTriggerEdgeRisingLevelLow) {
   EXPECT_READ32(GPIO_INTR_CTRL_EN_LVLLOW_REG_OFFSET, 0);
   EXPECT_WRITE32(GPIO_INTR_CTRL_EN_LVLLOW_REG_OFFSET, kVal);
 
-  EXPECT_EQ(dif_gpio_irq_set_trigger(&gpio_, kVal,
-                                     kDifGpioIrqTriggerEdgeRisingLevelLow),
-            kDifOk);
+  EXPECT_DIF_OK(dif_gpio_irq_set_trigger(&gpio_, kVal,
+                                         kDifGpioIrqTriggerEdgeRisingLevelLow));
 }
 
 TEST_F(IrqTest, MaskedConfigTriggerEdgeFallingLevelHigh) {
@@ -332,9 +325,8 @@ TEST_F(IrqTest, MaskedConfigTriggerEdgeFallingLevelHigh) {
   EXPECT_READ32(GPIO_INTR_CTRL_EN_LVLHIGH_REG_OFFSET, 0);
   EXPECT_WRITE32(GPIO_INTR_CTRL_EN_LVLHIGH_REG_OFFSET, kVal);
 
-  EXPECT_EQ(dif_gpio_irq_set_trigger(&gpio_, kVal,
-                                     kDifGpioIrqTriggerEdgeFallingLevelHigh),
-            kDifOk);
+  EXPECT_DIF_OK(dif_gpio_irq_set_trigger(
+      &gpio_, kVal, kDifGpioIrqTriggerEdgeFallingLevelHigh));
 }
 
 TEST_F(IrqTest, MaskedConfigTriggerGeneralError) {

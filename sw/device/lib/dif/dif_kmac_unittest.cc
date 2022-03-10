@@ -11,6 +11,7 @@
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
+#include "sw/device/lib/dif/dif_test_base.h"
 
 #include "kmac_regs.h"  // Generated
 
@@ -21,23 +22,23 @@ using ::testing::ElementsAre;
 TEST(CustomizationStringTest, Encode) {
   dif_kmac_customization_string_t cs;
 
-  EXPECT_EQ(dif_kmac_customization_string_init(nullptr, 0, &cs), kDifOk);
+  EXPECT_DIF_OK(dif_kmac_customization_string_init(nullptr, 0, &cs));
   EXPECT_THAT(std::string(&cs.buffer[0], 2), ElementsAre(1, 0));
 
-  EXPECT_EQ(dif_kmac_customization_string_init("", 0, &cs), kDifOk);
+  EXPECT_DIF_OK(dif_kmac_customization_string_init("", 0, &cs));
   EXPECT_THAT(std::string(&cs.buffer[0], 2), ElementsAre(1, 0));
 
-  EXPECT_EQ(dif_kmac_customization_string_init("\x00\x00", 2, &cs), kDifOk);
+  EXPECT_DIF_OK(dif_kmac_customization_string_init("\x00\x00", 2, &cs));
   EXPECT_THAT(std::string(&cs.buffer[0], 2), ElementsAre(1, 16));
   EXPECT_THAT(std::string(&cs.buffer[2], 2), ElementsAre(0, 0));
 
-  EXPECT_EQ(dif_kmac_customization_string_init("SHA-3", 5, &cs), kDifOk);
+  EXPECT_DIF_OK(dif_kmac_customization_string_init("SHA-3", 5, &cs));
   EXPECT_THAT(std::string(&cs.buffer[0], 2), ElementsAre(1, 40));
   EXPECT_EQ(std::string(&cs.buffer[2], 5), "SHA-3");
 
   std::string max(kDifKmacMaxCustomizationStringLen, 0x12);
-  EXPECT_EQ(dif_kmac_customization_string_init(max.data(), max.size(), &cs),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_kmac_customization_string_init(max.data(), max.size(), &cs));
   static_assert(kDifKmacMaxCustomizationStringLen == 32,
                 "encoding needs to be updated");
   EXPECT_THAT(std::string(&cs.buffer[0], 3), ElementsAre(2, 1, 0));
@@ -58,22 +59,22 @@ TEST(CustomizationStringTest, BadArg) {
 TEST(FunctionNameTest, Encode) {
   dif_kmac_function_name_t fn;
 
-  EXPECT_EQ(dif_kmac_function_name_init(nullptr, 0, &fn), kDifOk);
+  EXPECT_DIF_OK(dif_kmac_function_name_init(nullptr, 0, &fn));
   EXPECT_THAT(std::string(&fn.buffer[0], 2), ElementsAre(1, 0));
 
-  EXPECT_EQ(dif_kmac_function_name_init("", 0, &fn), kDifOk);
+  EXPECT_DIF_OK(dif_kmac_function_name_init("", 0, &fn));
   EXPECT_THAT(std::string(&fn.buffer[0], 2), ElementsAre(1, 0));
 
-  EXPECT_EQ(dif_kmac_function_name_init("\x00\x00", 2, &fn), kDifOk);
+  EXPECT_DIF_OK(dif_kmac_function_name_init("\x00\x00", 2, &fn));
   EXPECT_THAT(std::string(&fn.buffer[0], 2), ElementsAre(1, 16));
   EXPECT_THAT(std::string(&fn.buffer[2], 2), ElementsAre(0, 0));
 
-  EXPECT_EQ(dif_kmac_function_name_init("KMAC", 4, &fn), kDifOk);
+  EXPECT_DIF_OK(dif_kmac_function_name_init("KMAC", 4, &fn));
   EXPECT_THAT(std::string(&fn.buffer[0], 2), ElementsAre(1, 32));
   EXPECT_EQ(std::string(&fn.buffer[2], 4), "KMAC");
 
   std::string max(kDifKmacMaxFunctionNameLen, 0x34);
-  EXPECT_EQ(dif_kmac_function_name_init(max.data(), max.size(), &fn), kDifOk);
+  EXPECT_DIF_OK(dif_kmac_function_name_init(max.data(), max.size(), &fn));
   static_assert(kDifKmacMaxFunctionNameLen == 4,
                 "encoding needs to be updated");
   EXPECT_THAT(std::string(&fn.buffer[0], 2), ElementsAre(1, 32));
@@ -104,7 +105,7 @@ class KmacTest : public testing::Test, public mock_mmio::MmioTest {
       0xa7, 0x48, 0x47, 0x93, 0x0a, 0x03, 0xab, 0xee, 0xa4,
       0x73, 0xe1, 0xf3, 0xdc, 0x30, 0xb8, 0x88, 0x15};
 
-  KmacTest() { EXPECT_EQ(dif_kmac_init(dev().region(), &kmac_), kDifOk); }
+  KmacTest() { EXPECT_DIF_OK(dif_kmac_init(dev().region(), &kmac_)); }
 
   /**
    * Set mmio write expectation for 8 bits data size.
@@ -166,8 +167,8 @@ TEST_F(AbsorbalignmentMessage, Success) {
     EXPECT_READ32(KMAC_STATUS_REG_OFFSET, 3);
     setExpectedMessageInt32(pMsg, kMsg_.size());
 
-    EXPECT_EQ(dif_kmac_absorb(&kmac_, &op_state_, pMsg, kMsg_.size(), NULL),
-              kDifOk);
+    EXPECT_DIF_OK(
+        dif_kmac_absorb(&kmac_, &op_state_, pMsg, kMsg_.size(), NULL));
   }
 }
 }  // namespace dif_kmac_unittest

@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
+#include "sw/device/lib/dif/dif_test_base.h"
 
 #include "otbn_regs.h"  // Generated.
 
@@ -37,7 +38,7 @@ TEST_F(ResetTest, NullArgs) { EXPECT_EQ(dif_otbn_reset(nullptr), kDifBadArg); }
 TEST_F(ResetTest, Default) {
   ExpectDeviceReset();
 
-  EXPECT_EQ(dif_otbn_reset(&dif_otbn_), kDifOk);
+  EXPECT_DIF_OK(dif_otbn_reset(&dif_otbn_));
 }
 
 class WriteCmdTest : public OtbnTest {};
@@ -50,7 +51,7 @@ TEST_F(WriteCmdTest, Success) {
   // Set EXECUTE command.
   EXPECT_WRITE32(OTBN_CMD_REG_OFFSET, kDifOtbnCmdExecute);
 
-  EXPECT_EQ(dif_otbn_write_cmd(&dif_otbn_, kDifOtbnCmdExecute), kDifOk);
+  EXPECT_DIF_OK(dif_otbn_write_cmd(&dif_otbn_, kDifOtbnCmdExecute));
 }
 
 class GetStatusTest : public OtbnTest {};
@@ -69,7 +70,7 @@ TEST_F(GetStatusTest, Success) {
   EXPECT_READ32(OTBN_STATUS_REG_OFFSET, kDifOtbnStatusBusyExecute);
 
   dif_otbn_status_t status;
-  EXPECT_EQ(dif_otbn_get_status(&dif_otbn_, &status), kDifOk);
+  EXPECT_DIF_OK(dif_otbn_get_status(&dif_otbn_, &status));
   EXPECT_EQ(status, kDifOtbnStatusBusyExecute);
 }
 
@@ -90,7 +91,7 @@ TEST_F(GetErrBitsTest, Success) {
                 kDifOtbnErrBitsIllegalInsn | kDifOtbnErrBitsRegIntgViolation);
 
   dif_otbn_err_bits_t err_bits;
-  EXPECT_EQ(dif_otbn_get_err_bits(&dif_otbn_, &err_bits), kDifOk);
+  EXPECT_DIF_OK(dif_otbn_get_err_bits(&dif_otbn_, &err_bits));
   EXPECT_EQ(err_bits,
             kDifOtbnErrBitsIllegalInsn | kDifOtbnErrBitsRegIntgViolation);
 }
@@ -111,7 +112,7 @@ TEST_F(GetInsnCntTest, Success) {
   EXPECT_READ32(OTBN_INSN_CNT_REG_OFFSET, 55);
 
   uint32_t insn_cnt;
-  EXPECT_EQ(dif_otbn_get_insn_cnt(&dif_otbn_, &insn_cnt), kDifOk);
+  EXPECT_DIF_OK(dif_otbn_get_insn_cnt(&dif_otbn_, &insn_cnt));
   EXPECT_EQ(insn_cnt, 55);
 }
 
@@ -168,7 +169,7 @@ TEST_F(ImemWriteTest, SuccessWithoutOffset) {
   EXPECT_WRITE32(OTBN_IMEM_REG_OFFSET, test_data[0]);
   EXPECT_WRITE32(OTBN_IMEM_REG_OFFSET + 4, test_data[1]);
 
-  EXPECT_EQ(dif_otbn_imem_write(&dif_otbn_, 0, test_data, 8), kDifOk);
+  EXPECT_DIF_OK(dif_otbn_imem_write(&dif_otbn_, 0, test_data, 8));
 }
 
 TEST_F(ImemWriteTest, SuccessWithOffset) {
@@ -180,7 +181,7 @@ TEST_F(ImemWriteTest, SuccessWithOffset) {
   EXPECT_WRITE32(OTBN_IMEM_REG_OFFSET + 4, test_data[0]);
   EXPECT_WRITE32(OTBN_IMEM_REG_OFFSET + 8, test_data[1]);
 
-  EXPECT_EQ(dif_otbn_imem_write(&dif_otbn_, 4, test_data, 8), kDifOk);
+  EXPECT_DIF_OK(dif_otbn_imem_write(&dif_otbn_, 4, test_data, 8));
 }
 
 class ImemReadTest : public OtbnTest {};
@@ -231,7 +232,7 @@ TEST_F(ImemReadTest, SuccessWithoutOffset) {
   EXPECT_READ32(OTBN_IMEM_REG_OFFSET, 0x12345678);
   EXPECT_READ32(OTBN_IMEM_REG_OFFSET + 4, 0xabcdef01);
 
-  EXPECT_EQ(dif_otbn_imem_read(&dif_otbn_, 0, test_data, 8), kDifOk);
+  EXPECT_DIF_OK(dif_otbn_imem_read(&dif_otbn_, 0, test_data, 8));
   EXPECT_EQ(test_data[0], 0x12345678);
   EXPECT_EQ(test_data[1], 0xabcdef01);
 }
@@ -245,7 +246,7 @@ TEST_F(ImemReadTest, SuccessWithOffset) {
   EXPECT_READ32(OTBN_IMEM_REG_OFFSET + 4, 0x12345678);
   EXPECT_READ32(OTBN_IMEM_REG_OFFSET + 8, 0xabcdef01);
 
-  EXPECT_EQ(dif_otbn_imem_read(&dif_otbn_, 4, test_data, 8), kDifOk);
+  EXPECT_DIF_OK(dif_otbn_imem_read(&dif_otbn_, 4, test_data, 8));
   EXPECT_EQ(test_data[0], 0x12345678);
   EXPECT_EQ(test_data[1], 0xabcdef01);
 }
@@ -289,7 +290,7 @@ TEST_F(DmemWriteTest, SuccessWithoutOffset) {
   EXPECT_WRITE32(OTBN_DMEM_REG_OFFSET, test_data[0]);
   EXPECT_WRITE32(OTBN_DMEM_REG_OFFSET + 4, test_data[1]);
 
-  EXPECT_EQ(dif_otbn_dmem_write(&dif_otbn_, 0, test_data, 8), kDifOk);
+  EXPECT_DIF_OK(dif_otbn_dmem_write(&dif_otbn_, 0, test_data, 8));
 }
 
 TEST_F(DmemWriteTest, SuccessWithOffset) {
@@ -301,7 +302,7 @@ TEST_F(DmemWriteTest, SuccessWithOffset) {
   EXPECT_WRITE32(OTBN_DMEM_REG_OFFSET + 4, test_data[0]);
   EXPECT_WRITE32(OTBN_DMEM_REG_OFFSET + 8, test_data[1]);
 
-  EXPECT_EQ(dif_otbn_dmem_write(&dif_otbn_, 4, test_data, 8), kDifOk);
+  EXPECT_DIF_OK(dif_otbn_dmem_write(&dif_otbn_, 4, test_data, 8));
 }
 
 class DmemReadTest : public OtbnTest {};
@@ -352,7 +353,7 @@ TEST_F(DmemReadTest, SuccessWithoutOffset) {
   EXPECT_READ32(OTBN_DMEM_REG_OFFSET, 0x12345678);
   EXPECT_READ32(OTBN_DMEM_REG_OFFSET + 4, 0xabcdef01);
 
-  EXPECT_EQ(dif_otbn_dmem_read(&dif_otbn_, 0, test_data, 8), kDifOk);
+  EXPECT_DIF_OK(dif_otbn_dmem_read(&dif_otbn_, 0, test_data, 8));
   EXPECT_EQ(test_data[0], 0x12345678);
   EXPECT_EQ(test_data[1], 0xabcdef01);
 }
@@ -366,7 +367,7 @@ TEST_F(DmemReadTest, SuccessWithOffset) {
   EXPECT_READ32(OTBN_DMEM_REG_OFFSET + 4, 0x12345678);
   EXPECT_READ32(OTBN_DMEM_REG_OFFSET + 8, 0xabcdef01);
 
-  EXPECT_EQ(dif_otbn_dmem_read(&dif_otbn_, 4, test_data, 8), kDifOk);
+  EXPECT_DIF_OK(dif_otbn_dmem_read(&dif_otbn_, 4, test_data, 8));
   EXPECT_EQ(test_data[0], 0x12345678);
   EXPECT_EQ(test_data[1], 0xabcdef01);
 }
@@ -381,7 +382,7 @@ TEST_F(ControlSoftwareErrorsFatalTest, Success) {
   EXPECT_WRITE32(OTBN_CTRL_REG_OFFSET, 0x1);
   EXPECT_READ32(OTBN_CTRL_REG_OFFSET, 0x1);
 
-  EXPECT_EQ(dif_otbn_set_ctrl_software_errs_fatal(&dif_otbn_, true), kDifOk);
+  EXPECT_DIF_OK(dif_otbn_set_ctrl_software_errs_fatal(&dif_otbn_, true));
 }
 
 TEST_F(ControlSoftwareErrorsFatalTest, Failure) {
