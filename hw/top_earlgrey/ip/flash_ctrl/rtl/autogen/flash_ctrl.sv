@@ -22,7 +22,8 @@ module flash_ctrl
   parameter flash_key_t           RndCnstAddrKey  = RndCnstAddrKeyDefault,
   parameter flash_key_t           RndCnstDataKey  = RndCnstDataKeyDefault,
   parameter lfsr_seed_t           RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
-  parameter lfsr_perm_t           RndCnstLfsrPerm = RndCnstLfsrPermDefault
+  parameter lfsr_perm_t           RndCnstLfsrPerm = RndCnstLfsrPermDefault,
+  parameter bit                   SecScrambleEn   = 1'b1
 ) (
   input        clk_i,
   input        rst_ni,
@@ -1157,7 +1158,9 @@ module flash_ctrl
     .rerror_i    ({flash_host_rderr,1'b0})
   );
 
-  flash_phy u_eflash (
+  flash_phy #(
+    .SecScrambleEn(SecScrambleEn)
+  ) u_eflash (
     .clk_i,
     .rst_ni,
     .host_req_i        (flash_host_req),

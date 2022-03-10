@@ -360,6 +360,9 @@
       clock_group: "infra",
       reset_connections: {rst_ni: "lc", rst_otp_ni: "lc_io_div4"},
       base_addrs: {core: "0x41000000", prim: "0x41008000", mem: "0x20000000"}
+      param_decl: {
+        SecScrambleEn: "0"
+      }
       memory: {
         mem: {
           label:      "eflash",

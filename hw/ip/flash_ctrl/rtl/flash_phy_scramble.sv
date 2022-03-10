@@ -9,7 +9,9 @@
 // in two and separately manipulated by the program and read pipelines.
 //
 
-module flash_phy_scramble import flash_phy_pkg::*; (
+module flash_phy_scramble import flash_phy_pkg::*; #(
+  parameter bit SecScrambleEn = 1'b1
+) (
   input clk_i,
   input rst_ni,
   input intg_err_i,
@@ -51,18 +53,33 @@ module flash_phy_scramble import flash_phy_pkg::*; (
   assign unused_key = muxed_addr_key[KeySize-1 -: UnusedWidth];
 
   // Galois Multiply portion
-  prim_gf_mult # (
-    .Width(DataWidth),
-    .StagesPerCycle(DataWidth / GfMultCycles)
-  ) u_mult (
-    .clk_i,
-    .rst_ni,
-    .req_i(calc_req_i),
-    .operand_a_i({muxed_addr_key[DataWidth +: AddrPadWidth], addr_i}),
-    .operand_b_i(muxed_addr_key[DataWidth-1:0]),
-    .ack_o(calc_ack_o),
-    .prod_o(mask_o)
-  );
+  if (SecScrambleEn) begin : gen_gf_mult
+    prim_gf_mult # (
+      .Width(DataWidth),
+      .StagesPerCycle(DataWidth / GfMultCycles)
+    ) u_mult (
+      .clk_i,
+      .rst_ni,
+      .req_i(calc_req_i),
+      .operand_a_i({muxed_addr_key[DataWidth +: AddrPadWidth], addr_i}),
+      .operand_b_i(muxed_addr_key[DataWidth-1:0]),
+      .ack_o(calc_ack_o),
+      .prod_o(mask_o)
+    );
+  end else begin : gen_no_gf_mult
+    assign mask_o = '0;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        calc_ack_o <= '0;
+      end else if (calc_req_i && calc_ack_o) begin
+        calc_ack_o <= '0;
+      end else if (calc_req_i && !calc_ack_o) begin
+        calc_ack_o <= '1;
+      end
+    end
+  end
+
 
   // Cipher portion
   logic dec;
@@ -100,31 +117,44 @@ module flash_phy_scramble import flash_phy_pkg::*; (
   assign cipher_valid_in_d = op_ack_o ? '0 : op_req_i & !cipher_valid_out;
   assign op_ack_o = cipher_valid_in_q & cipher_valid_out;
 
-  prim_prince # (
-    .DataWidth(DataWidth),
-    .KeyWidth(KeySize),
-    // Use improved key schedule proposed by https://eprint.iacr.org/2014/656.pdf (see appendix).
-    .UseOldKeySched(1'b0),
-    .HalfwayDataReg(1'b1),
-    // No key register is needed half way, since the data_key_i and operation op_type_i inputs
-    // remain constant until one data block has been processed.
-    .HalfwayKeyReg (1'b0)
-  ) u_cipher (
-    .clk_i,
-    .rst_ni,
-    .valid_i(cipher_valid_in_d),
-    .data_i(dec ? scrambled_data_i : plain_data_i),
-    .key_i(data_key_sel ? rand_data_key_i : data_key_i),
-    .dec_i(dec),
-    .data_o(data),
-    .valid_o(cipher_valid_out)
-  );
+  if (SecScrambleEn) begin : gen_prince
+    prim_prince # (
+      .DataWidth(DataWidth),
+      .KeyWidth(KeySize),
+      // Use improved key schedule proposed by https://eprint.iacr.org/2014/656.pdf (see appendix).
+      .UseOldKeySched(1'b0),
+      .HalfwayDataReg(1'b1),
+      // No key register is needed half way, since the data_key_i and operation op_type_i inputs
+      // remain constant until one data block has been processed.
+      .HalfwayKeyReg (1'b0)
+    ) u_cipher (
+      .clk_i,
+      .rst_ni,
+      .valid_i(cipher_valid_in_d),
+      .data_i(dec ? scrambled_data_i : plain_data_i),
+      .key_i(data_key_sel ? rand_data_key_i : data_key_i),
+      .dec_i(dec),
+      .data_o(data),
+      .valid_o(cipher_valid_out)
+    );
+
+  end else begin : gen_no_prince
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        cipher_valid_out <= '0;
+      end else begin
+        cipher_valid_out <= cipher_valid_in_d;
+      end
+    end
+    assign data = dec ? scrambled_data_i : plain_data_i;
+  end
 
   // if decrypt, output the unscrambled data, feed input through otherwise
   assign plain_data_o = dec ? data : scrambled_data_i;
 
   // if encrypt, output the scrambled data, feed input through otherwise
   assign scrambled_data_o = dec ? plain_data_i : data;
+
 
 
 endmodule // flash_phy_scramble
