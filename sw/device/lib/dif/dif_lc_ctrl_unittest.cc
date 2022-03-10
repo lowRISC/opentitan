@@ -13,6 +13,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
+#include "sw/device/lib/dif/dif_test_base.h"
 
 #include "lc_ctrl_regs.h"  // Generated.
 
@@ -73,7 +74,7 @@ TEST_F(StateTest, GetState) {
 
     EXPECT_READ32(LC_CTRL_LC_STATE_REG_OFFSET,
                   {{LC_CTRL_LC_STATE_STATE_OFFSET, pair.first}});
-    EXPECT_EQ(dif_lc_ctrl_get_state(&lc_, &state), kDifOk);
+    EXPECT_DIF_OK(dif_lc_ctrl_get_state(&lc_, &state));
     EXPECT_EQ(state, pair.second);
   }
 }
@@ -83,7 +84,7 @@ TEST_F(StateTest, GetAttempts) {
 
   EXPECT_READ32(LC_CTRL_LC_TRANSITION_CNT_REG_OFFSET,
                 {{LC_CTRL_LC_TRANSITION_CNT_CNT_OFFSET, 13}});
-  EXPECT_EQ(dif_lc_ctrl_get_attempts(&lc_, &attempts), kDifOk);
+  EXPECT_DIF_OK(dif_lc_ctrl_get_attempts(&lc_, &attempts));
   EXPECT_EQ(attempts, 13);
 
   EXPECT_READ32(LC_CTRL_LC_TRANSITION_CNT_REG_OFFSET,
@@ -98,7 +99,7 @@ TEST_F(StateTest, GetStatus) {
   EXPECT_READ32(LC_CTRL_STATUS_REG_OFFSET, {
                                                {LC_CTRL_STATUS_READY_BIT, true},
                                            });
-  EXPECT_EQ(dif_lc_ctrl_get_status(&lc_, &status), kDifOk);
+  EXPECT_DIF_OK(dif_lc_ctrl_get_status(&lc_, &status));
   EXPECT_EQ(status, bitfield_bit32_write(0, kDifLcCtrlStatusCodeReady, true));
 
   EXPECT_READ32(LC_CTRL_STATUS_REG_OFFSET,
@@ -107,7 +108,7 @@ TEST_F(StateTest, GetStatus) {
                     {LC_CTRL_STATUS_TOKEN_ERROR_BIT, true},
                     {LC_CTRL_STATUS_OTP_ERROR_BIT, true},
                 });
-  EXPECT_EQ(dif_lc_ctrl_get_status(&lc_, &status), kDifOk);
+  EXPECT_DIF_OK(dif_lc_ctrl_get_status(&lc_, &status));
   EXPECT_TRUE(
       bitfield_bit32_read(status, kDifLcCtrlStatusCodeInvalidTransition));
   EXPECT_TRUE(bitfield_bit32_read(status, kDifLcCtrlStatusCodeBadToken));
@@ -126,7 +127,7 @@ TEST_F(StateTest, GetIdState) {
     dif_lc_ctrl_id_state_t state;
 
     EXPECT_READ32(LC_CTRL_LC_ID_STATE_REG_OFFSET, pair.first);
-    EXPECT_EQ(dif_lc_ctrl_get_id_state(&lc_, &state), kDifOk);
+    EXPECT_DIF_OK(dif_lc_ctrl_get_id_state(&lc_, &state));
     EXPECT_EQ(state, pair.second);
   }
 }
@@ -154,7 +155,7 @@ class MutexTest : public LcCtrlTest {};
 TEST_F(MutexTest, Acquire) {
   EXPECT_WRITE32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, kMultiBitBool8True);
   EXPECT_READ32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, kMultiBitBool8True);
-  EXPECT_EQ(dif_lc_ctrl_mutex_try_acquire(&lc_), kDifOk);
+  EXPECT_DIF_OK(dif_lc_ctrl_mutex_try_acquire(&lc_));
 
   EXPECT_WRITE32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, kMultiBitBool8True);
   EXPECT_READ32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, kMultiBitBool8False);
@@ -164,7 +165,7 @@ TEST_F(MutexTest, Acquire) {
 TEST_F(MutexTest, Release) {
   EXPECT_READ32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, kMultiBitBool8True);
   EXPECT_WRITE32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, kMultiBitBool8False);
-  EXPECT_EQ(dif_lc_ctrl_mutex_release(&lc_), kDifOk);
+  EXPECT_DIF_OK(dif_lc_ctrl_mutex_release(&lc_));
 
   EXPECT_READ32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, kMultiBitBool8False);
   EXPECT_EQ(dif_lc_ctrl_mutex_release(&lc_), kDifError);
@@ -183,8 +184,8 @@ TEST_F(TransitionTest, NoToken) {
                  LC_CTRL_TRANSITION_TARGET_STATE_VALUE_PROD);
   EXPECT_WRITE32(LC_CTRL_TRANSITION_CTRL_REG_OFFSET, 0x0);
   EXPECT_WRITE32(LC_CTRL_TRANSITION_CMD_REG_OFFSET, true);
-  EXPECT_EQ(dif_lc_ctrl_transition(&lc_, kDifLcCtrlStateProd, nullptr, nullptr),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_lc_ctrl_transition(&lc_, kDifLcCtrlStateProd, nullptr, nullptr));
 }
 
 TEST_F(TransitionTest, WithToken) {
@@ -200,9 +201,8 @@ TEST_F(TransitionTest, WithToken) {
   EXPECT_WRITE32(LC_CTRL_TRANSITION_TOKEN_2_REG_OFFSET, LeInt("a to"));
   EXPECT_WRITE32(LC_CTRL_TRANSITION_TOKEN_3_REG_OFFSET, LeInt("ken\0"));
   EXPECT_WRITE32(LC_CTRL_TRANSITION_CMD_REG_OFFSET, true);
-  EXPECT_EQ(dif_lc_ctrl_transition(&lc_, kDifLcCtrlStateTestUnlocked2, &token,
-                                   &settings),
-            kDifOk);
+  EXPECT_DIF_OK(dif_lc_ctrl_transition(&lc_, kDifLcCtrlStateTestUnlocked2,
+                                       &token, &settings));
 
   EXPECT_READ32(LC_CTRL_TRANSITION_REGWEN_REG_OFFSET, true);
   EXPECT_WRITE32(LC_CTRL_TRANSITION_TARGET_REG_OFFSET,
@@ -213,9 +213,8 @@ TEST_F(TransitionTest, WithToken) {
   EXPECT_WRITE32(LC_CTRL_TRANSITION_TOKEN_2_REG_OFFSET, LeInt("a to"));
   EXPECT_WRITE32(LC_CTRL_TRANSITION_TOKEN_3_REG_OFFSET, LeInt("ken\0"));
   EXPECT_WRITE32(LC_CTRL_TRANSITION_CMD_REG_OFFSET, true);
-  EXPECT_EQ(dif_lc_ctrl_transition(&lc_, kDifLcCtrlStateTestUnlocked6, &token,
-                                   &settings),
-            kDifOk);
+  EXPECT_DIF_OK(dif_lc_ctrl_transition(&lc_, kDifLcCtrlStateTestUnlocked6,
+                                       &token, &settings));
 }
 
 TEST_F(TransitionTest, Locked) {
@@ -236,14 +235,14 @@ class OtpVendorTestRegTest : public LcCtrlTest {};
 TEST_F(OtpVendorTestRegTest, Read) {
   uint32_t settings_read = 0;
   EXPECT_READ32(LC_CTRL_OTP_VENDOR_TEST_CTRL_REG_OFFSET, 0x5A);
-  EXPECT_EQ(dif_lc_ctrl_get_otp_vendor_test_reg(&lc_, &settings_read), kDifOk);
+  EXPECT_DIF_OK(dif_lc_ctrl_get_otp_vendor_test_reg(&lc_, &settings_read));
   EXPECT_EQ(settings_read, 0x5A);
 }
 
 TEST_F(OtpVendorTestRegTest, Write) {
   EXPECT_READ32(LC_CTRL_TRANSITION_REGWEN_REG_OFFSET, true);
   EXPECT_WRITE32(LC_CTRL_OTP_VENDOR_TEST_CTRL_REG_OFFSET, 0xA5);
-  EXPECT_EQ(dif_lc_ctrl_set_otp_vendor_test_reg(&lc_, 0xA5), kDifOk);
+  EXPECT_DIF_OK(dif_lc_ctrl_set_otp_vendor_test_reg(&lc_, 0xA5));
 }
 
 }  // namespace

@@ -12,6 +12,7 @@
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
+#include "sw/device/lib/dif/dif_test_base.h"
 
 #include "rv_timer_regs.h"  // Generated.
 
@@ -50,9 +51,8 @@ TEST(ApproximateParamsTest, Success) {
                                          .prescale = 49,
                                          .tick_step = 1,
                                      };
-  EXPECT_EQ(
-      dif_rv_timer_approximate_tick_params(kClockSpeed, kSlowTimer, &params),
-      kDifOk);
+  EXPECT_DIF_OK(
+      dif_rv_timer_approximate_tick_params(kClockSpeed, kSlowTimer, &params));
   EXPECT_EQ(params, expected);
 }
 
@@ -62,9 +62,8 @@ TEST(ApproximateParamsTest, WithStep) {
                                          .prescale = 4,
                                          .tick_step = 12,
                                      };
-  EXPECT_EQ(
-      dif_rv_timer_approximate_tick_params(kClockSpeed, kFastTimer, &params),
-      kDifOk);
+  EXPECT_DIF_OK(
+      dif_rv_timer_approximate_tick_params(kClockSpeed, kFastTimer, &params));
   EXPECT_EQ(params, expected);
 }
 
@@ -135,7 +134,7 @@ TEST_F(ResetTest, Success) {
   EXPECT_WRITE32(RegForHart(0, RV_TIMER_TIMER_V_LOWER0_REG_OFFSET), 0x0);
   EXPECT_WRITE32(RegForHart(0, RV_TIMER_TIMER_V_UPPER0_REG_OFFSET), 0x0);
 
-  EXPECT_EQ(dif_rv_timer_reset(&rv_timer_), kDifOk);
+  EXPECT_DIF_OK(dif_rv_timer_reset(&rv_timer_));
 }
 
 TEST_F(ResetTest, NullArgs) {
@@ -149,9 +148,8 @@ TEST_F(SetTickParamsTest, Success) {
       RegForHart(0, RV_TIMER_CFG0_REG_OFFSET),
       {{RV_TIMER_CFG0_PRESCALE_OFFSET, 400}, {RV_TIMER_CFG0_STEP_OFFSET, 25}});
 
-  EXPECT_EQ(dif_rv_timer_set_tick_params(&rv_timer_, 0,
-                                         {.prescale = 400, .tick_step = 25}),
-            kDifOk);
+  EXPECT_DIF_OK(dif_rv_timer_set_tick_params(
+      &rv_timer_, 0, {.prescale = 400, .tick_step = 25}));
 }
 
 TEST_F(SetTickParamsTest, NullArgs) {
@@ -171,8 +169,8 @@ class CounterSetEnabledTest : public TimerTest {};
 TEST_F(CounterSetEnabledTest, Success) {
   EXPECT_MASK32(RV_TIMER_CTRL_REG_OFFSET,
                 {{/*offset=*/0, /*mask=*/1, /*value=*/1}});
-  EXPECT_EQ(dif_rv_timer_counter_set_enabled(&rv_timer_, 0, kDifToggleEnabled),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_rv_timer_counter_set_enabled(&rv_timer_, 0, kDifToggleEnabled));
 }
 
 TEST_F(CounterSetEnabledTest, NullArgs) {
@@ -194,7 +192,7 @@ TEST_F(CounterReadTest, Success) {
   EXPECT_READ32(RegForHart(0, RV_TIMER_TIMER_V_UPPER0_REG_OFFSET), 0x0222'0222);
 
   uint64_t value;
-  EXPECT_EQ(dif_rv_timer_counter_read(&rv_timer_, 0, &value), kDifOk);
+  EXPECT_DIF_OK(dif_rv_timer_counter_read(&rv_timer_, 0, &value));
   EXPECT_EQ(value, 0x0222'0222'0333'0333);
 }
 
@@ -208,7 +206,7 @@ TEST_F(CounterReadTest, Overflow) {
   EXPECT_READ32(RegForHart(0, RV_TIMER_TIMER_V_UPPER0_REG_OFFSET), 0x0222'0223);
 
   uint64_t value;
-  EXPECT_EQ(dif_rv_timer_counter_read(&rv_timer_, 0, &value), kDifOk);
+  EXPECT_DIF_OK(dif_rv_timer_counter_read(&rv_timer_, 0, &value));
   EXPECT_EQ(value, 0x0222'0223'0333'0444);
 }
 
@@ -237,7 +235,7 @@ TEST_F(CounterWriteTest, Success) {
   EXPECT_WRITE32(RV_TIMER_CTRL_REG_OFFSET, 0x0000'0001);
 
   uint64_t count = 0xCAFE'FEED'DEAD'BEEF;
-  EXPECT_EQ(dif_rv_timer_counter_write(&rv_timer_, 0, count), kDifOk);
+  EXPECT_DIF_OK(dif_rv_timer_counter_write(&rv_timer_, 0, count));
 }
 
 TEST_F(CounterWriteTest, NullArgs) {
@@ -262,7 +260,7 @@ TEST_F(ArmTest, Success) {
   EXPECT_WRITE32(lower_reg, 0x0444'0555);
   EXPECT_WRITE32(upper_reg, 0x0222'0333);
 
-  EXPECT_EQ(dif_rv_timer_arm(&rv_timer_, 0, 0, 0x0222'0333'0444'0555), kDifOk);
+  EXPECT_DIF_OK(dif_rv_timer_arm(&rv_timer_, 0, 0, 0x0222'0333'0444'0555));
 }
 
 TEST_F(ArmTest, NullArgs) {

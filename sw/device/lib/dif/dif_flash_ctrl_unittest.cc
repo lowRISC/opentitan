@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
+#include "sw/device/lib/dif/dif_test_base.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
 
@@ -21,8 +22,7 @@ using testing::Test;
 class FlashCtrlTest : public Test, public MmioTest {
  protected:
   void SetUp() {
-    ASSERT_EQ(dif_flash_ctrl_init_state(&dif_flash_ctrl_, dev().region()),
-              kDifOk);
+    ASSERT_DIF_OK(dif_flash_ctrl_init_state(&dif_flash_ctrl_, dev().region()));
   }
 
   dif_flash_ctrl_state_t dif_flash_ctrl_;
@@ -214,49 +214,41 @@ TEST_F(FlashCtrlTest, NullArgs) {
 TEST_F(FlashCtrlTest, EnableFlash) {
   dif_toggle_t toggle;
   EXPECT_WRITE32(FLASH_CTRL_DIS_REG_OFFSET, kMultiBitBool4True);
-  EXPECT_EQ(
-      dif_flash_ctrl_set_flash_enablement(&dif_flash_ctrl_, kDifToggleDisabled),
-      kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_set_flash_enablement(&dif_flash_ctrl_,
+                                                    kDifToggleDisabled));
   EXPECT_READ32(FLASH_CTRL_DIS_REG_OFFSET, kMultiBitBool4True);
-  EXPECT_EQ(dif_flash_ctrl_get_flash_enablement(&dif_flash_ctrl_, &toggle),
-            kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_get_flash_enablement(&dif_flash_ctrl_, &toggle));
   EXPECT_EQ(toggle, kDifToggleDisabled);
 
   EXPECT_WRITE32(FLASH_CTRL_DIS_REG_OFFSET, kMultiBitBool4False);
-  EXPECT_EQ(
-      dif_flash_ctrl_set_flash_enablement(&dif_flash_ctrl_, kDifToggleEnabled),
-      kDifOk);
+  EXPECT_DIF_OK(
+      dif_flash_ctrl_set_flash_enablement(&dif_flash_ctrl_, kDifToggleEnabled));
   EXPECT_READ32(FLASH_CTRL_DIS_REG_OFFSET, kMultiBitBool4False);
-  EXPECT_EQ(dif_flash_ctrl_get_flash_enablement(&dif_flash_ctrl_, &toggle),
-            kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_get_flash_enablement(&dif_flash_ctrl_, &toggle));
   EXPECT_EQ(toggle, kDifToggleEnabled);
 }
 
 TEST_F(FlashCtrlTest, EnableFetch) {
   dif_toggle_t toggle;
   EXPECT_WRITE32(FLASH_CTRL_EXEC_REG_OFFSET, 0);
-  EXPECT_EQ(
-      dif_flash_ctrl_set_exec_enablement(&dif_flash_ctrl_, kDifToggleDisabled),
-      kDifOk);
+  EXPECT_DIF_OK(
+      dif_flash_ctrl_set_exec_enablement(&dif_flash_ctrl_, kDifToggleDisabled));
   EXPECT_READ32(FLASH_CTRL_EXEC_REG_OFFSET, 0);
-  EXPECT_EQ(dif_flash_ctrl_get_exec_enablement(&dif_flash_ctrl_, &toggle),
-            kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_get_exec_enablement(&dif_flash_ctrl_, &toggle));
   EXPECT_EQ(toggle, kDifToggleDisabled);
 
   EXPECT_WRITE32(FLASH_CTRL_EXEC_REG_OFFSET, FLASH_CTRL_PARAM_EXEC_EN);
-  EXPECT_EQ(
-      dif_flash_ctrl_set_exec_enablement(&dif_flash_ctrl_, kDifToggleEnabled),
-      kDifOk);
+  EXPECT_DIF_OK(
+      dif_flash_ctrl_set_exec_enablement(&dif_flash_ctrl_, kDifToggleEnabled));
   EXPECT_READ32(FLASH_CTRL_EXEC_REG_OFFSET, FLASH_CTRL_PARAM_EXEC_EN);
-  EXPECT_EQ(dif_flash_ctrl_get_exec_enablement(&dif_flash_ctrl_, &toggle),
-            kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_get_exec_enablement(&dif_flash_ctrl_, &toggle));
   EXPECT_EQ(toggle, kDifToggleEnabled);
 }
 
 TEST_F(FlashCtrlTest, ControllerInit) {
   EXPECT_READ32(FLASH_CTRL_INIT_REG_OFFSET, 0);
   EXPECT_WRITE32(FLASH_CTRL_INIT_REG_OFFSET, {{FLASH_CTRL_INIT_VAL_BIT, 1}});
-  EXPECT_EQ(dif_flash_ctrl_start_controller_init(&dif_flash_ctrl_), kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_start_controller_init(&dif_flash_ctrl_));
 
   EXPECT_READ32(FLASH_CTRL_INIT_REG_OFFSET, {{FLASH_CTRL_INIT_VAL_BIT, 1}});
   EXPECT_EQ(dif_flash_ctrl_start_controller_init(&dif_flash_ctrl_), kDifError);
@@ -266,14 +258,14 @@ TEST_F(FlashCtrlTest, ControllerInit) {
                 {
                     {FLASH_CTRL_STATUS_INIT_WIP_BIT, 1},
                 });
-  EXPECT_EQ(dif_flash_ctrl_get_status(&dif_flash_ctrl_, &status), kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_get_status(&dif_flash_ctrl_, &status));
   EXPECT_EQ(status.controller_init_wip, 1);
 
   EXPECT_READ32(FLASH_CTRL_STATUS_REG_OFFSET,
                 {
                     {FLASH_CTRL_STATUS_INIT_WIP_BIT, 0},
                 });
-  EXPECT_EQ(dif_flash_ctrl_get_status(&dif_flash_ctrl_, &status), kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_get_status(&dif_flash_ctrl_, &status));
   EXPECT_EQ(status.controller_init_wip, 0);
 }
 
@@ -287,15 +279,15 @@ TEST_F(FlashCtrlTest, SetProgPermissions) {
                      {FLASH_CTRL_PROG_TYPE_EN_NORMAL_BIT, 1},
                      {FLASH_CTRL_PROG_TYPE_EN_REPAIR_BIT, 0},
                  });
-  EXPECT_EQ(dif_flash_ctrl_disallow_prog_types(&dif_flash_ctrl_, prog_caps),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_flash_ctrl_disallow_prog_types(&dif_flash_ctrl_, prog_caps));
   EXPECT_READ32(FLASH_CTRL_PROG_TYPE_EN_REG_OFFSET,
                 {
                     {FLASH_CTRL_PROG_TYPE_EN_NORMAL_BIT, 1},
                     {FLASH_CTRL_PROG_TYPE_EN_REPAIR_BIT, 0},
                 });
-  EXPECT_EQ(dif_flash_ctrl_get_allowed_prog_types(&dif_flash_ctrl_, &prog_caps),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_flash_ctrl_get_allowed_prog_types(&dif_flash_ctrl_, &prog_caps));
   EXPECT_EQ(prog_caps.normal_prog_type, 1);
   EXPECT_EQ(prog_caps.repair_prog_type, 0);
 
@@ -306,15 +298,15 @@ TEST_F(FlashCtrlTest, SetProgPermissions) {
                      {FLASH_CTRL_PROG_TYPE_EN_NORMAL_BIT, 0},
                      {FLASH_CTRL_PROG_TYPE_EN_REPAIR_BIT, 1},
                  });
-  EXPECT_EQ(dif_flash_ctrl_disallow_prog_types(&dif_flash_ctrl_, prog_caps),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_flash_ctrl_disallow_prog_types(&dif_flash_ctrl_, prog_caps));
   EXPECT_READ32(FLASH_CTRL_PROG_TYPE_EN_REG_OFFSET,
                 {
                     {FLASH_CTRL_PROG_TYPE_EN_NORMAL_BIT, 0},
                     {FLASH_CTRL_PROG_TYPE_EN_REPAIR_BIT, 1},
                 });
-  EXPECT_EQ(dif_flash_ctrl_get_allowed_prog_types(&dif_flash_ctrl_, &prog_caps),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_flash_ctrl_get_allowed_prog_types(&dif_flash_ctrl_, &prog_caps));
   EXPECT_EQ(prog_caps.normal_prog_type, 0);
   EXPECT_EQ(prog_caps.repair_prog_type, 1);
 }
@@ -376,7 +368,7 @@ TEST_F(FlashCtrlTest, ReadTransaction) {
           {FLASH_CTRL_CONTROL_INFO_SEL_OFFSET, 1},
           {FLASH_CTRL_CONTROL_NUM_OFFSET, 0x20 - 1},
       });
-  EXPECT_EQ(dif_flash_ctrl_start(&dif_flash_ctrl_, transaction), kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_start(&dif_flash_ctrl_, transaction));
   EXPECT_TRUE(dif_flash_ctrl_.transaction_pending);
 
   // Read the data
@@ -393,7 +385,7 @@ TEST_F(FlashCtrlTest, ReadTransaction) {
   for (uint32_t i = 0; i < 0x20; ++i) {
     EXPECT_READ32(FLASH_CTRL_RD_FIFO_REG_OFFSET, i);
   }
-  EXPECT_EQ(dif_flash_ctrl_read_fifo_pop(&dif_flash_ctrl_, 0x20, data), kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_read_fifo_pop(&dif_flash_ctrl_, 0x20, data));
   for (uint32_t i = 0; i < 0x20; i++) {
     EXPECT_EQ(data[i], i);
   }
@@ -422,7 +414,7 @@ TEST_F(FlashCtrlTest, ReadTransaction) {
                     {FLASH_CTRL_ERR_CODE_UPDATE_ERR_BIT, 0},
                 });
   EXPECT_READ32(FLASH_CTRL_ERR_ADDR_REG_OFFSET, 0x12345678u);
-  EXPECT_EQ(dif_flash_ctrl_end(&dif_flash_ctrl_, &output), kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_end(&dif_flash_ctrl_, &output));
   EXPECT_FALSE(dif_flash_ctrl_.transaction_pending);
   EXPECT_EQ(output.operation_done, 1);
   EXPECT_EQ(output.operation_error, 0);
@@ -492,7 +484,7 @@ TEST_F(FlashCtrlTest, ProgramTransaction) {
           {FLASH_CTRL_CONTROL_PROG_SEL_BIT, 1},
           {FLASH_CTRL_CONTROL_NUM_OFFSET, 0x16 - 1},
       });
-  EXPECT_EQ(dif_flash_ctrl_start(&dif_flash_ctrl_, transaction), kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_start(&dif_flash_ctrl_, transaction));
   EXPECT_TRUE(dif_flash_ctrl_.transaction_pending);
 
   // Write out the data
@@ -510,8 +502,7 @@ TEST_F(FlashCtrlTest, ProgramTransaction) {
     data[i] = i;
     EXPECT_WRITE32(FLASH_CTRL_PROG_FIFO_REG_OFFSET, i);
   }
-  EXPECT_EQ(dif_flash_ctrl_prog_fifo_push(&dif_flash_ctrl_, 0x16, data),
-            kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_prog_fifo_push(&dif_flash_ctrl_, 0x16, data));
 
   // Complete the transaction (with meaningless error code return)
   dif_flash_ctrl_output_t output;
@@ -537,7 +528,7 @@ TEST_F(FlashCtrlTest, ProgramTransaction) {
                     {FLASH_CTRL_ERR_CODE_UPDATE_ERR_BIT, 1},
                 });
   EXPECT_READ32(FLASH_CTRL_ERR_ADDR_REG_OFFSET, 0x87654321u);
-  EXPECT_EQ(dif_flash_ctrl_end(&dif_flash_ctrl_, &output), kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_end(&dif_flash_ctrl_, &output));
   EXPECT_FALSE(dif_flash_ctrl_.transaction_pending);
   EXPECT_EQ(output.operation_done, 1);
   EXPECT_EQ(output.operation_error, 0);
@@ -555,25 +546,23 @@ TEST_F(FlashCtrlTest, SuspendErase) {
                  {
                      {FLASH_CTRL_ERASE_SUSPEND_REQ_BIT, 1},
                  });
-  EXPECT_EQ(dif_flash_ctrl_suspend_erase(&dif_flash_ctrl_), kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_suspend_erase(&dif_flash_ctrl_));
 
   bool erase_suspend_status;
   EXPECT_READ32(FLASH_CTRL_ERASE_SUSPEND_REG_OFFSET,
                 {
                     {FLASH_CTRL_ERASE_SUSPEND_REQ_BIT, 1},
                 });
-  EXPECT_EQ(dif_flash_ctrl_get_erase_suspend_status(&dif_flash_ctrl_,
-                                                    &erase_suspend_status),
-            kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_get_erase_suspend_status(&dif_flash_ctrl_,
+                                                        &erase_suspend_status));
   EXPECT_TRUE(erase_suspend_status);
 
   EXPECT_READ32(FLASH_CTRL_ERASE_SUSPEND_REG_OFFSET,
                 {
                     {FLASH_CTRL_ERASE_SUSPEND_REQ_BIT, 0},
                 });
-  EXPECT_EQ(dif_flash_ctrl_get_erase_suspend_status(&dif_flash_ctrl_,
-                                                    &erase_suspend_status),
-            kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_get_erase_suspend_status(&dif_flash_ctrl_,
+                                                        &erase_suspend_status));
   EXPECT_FALSE(erase_suspend_status);
 }
 
@@ -586,17 +575,16 @@ TEST_F(FlashCtrlTest, ConfigureDataRegion) {
                 {
                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_4_EN_4_BIT, 0},
                 });
-  EXPECT_EQ(
-      dif_flash_ctrl_get_data_region_enablement(&dif_flash_ctrl_, 4, &toggle),
-      kDifOk);
+  EXPECT_DIF_OK(
+      dif_flash_ctrl_get_data_region_enablement(&dif_flash_ctrl_, 4, &toggle));
   EXPECT_EQ(toggle, kDifToggleDisabled);
 
   // Check if the region is locked
   bool locked;
   EXPECT_READ32(FLASH_CTRL_REGION_CFG_REGWEN_3_REG_OFFSET,
                 {{FLASH_CTRL_REGION_CFG_REGWEN_3_REGION_3_BIT, 1}});
-  EXPECT_EQ(dif_flash_ctrl_data_region_is_locked(&dif_flash_ctrl_, 3, &locked),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_flash_ctrl_data_region_is_locked(&dif_flash_ctrl_, 3, &locked));
   EXPECT_FALSE(locked);
 
   // Configure the region
@@ -639,9 +627,8 @@ TEST_F(FlashCtrlTest, ConfigureDataRegion) {
                      {FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_BASE_2_OFFSET, 0x48},
                      {FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_SIZE_2_OFFSET, 0x9a},
                  });
-  EXPECT_EQ(
-      dif_flash_ctrl_set_data_region_properties(&dif_flash_ctrl_, 2, data_mp),
-      kDifOk);
+  EXPECT_DIF_OK(
+      dif_flash_ctrl_set_data_region_properties(&dif_flash_ctrl_, 2, data_mp));
 
   // Enable the region
   EXPECT_READ32(FLASH_CTRL_REGION_CFG_REGWEN_3_REG_OFFSET,
@@ -682,9 +669,8 @@ TEST_F(FlashCtrlTest, ConfigureDataRegion) {
                      {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_BASE_3_OFFSET, 0x48},
                      {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_SIZE_3_OFFSET, 0x9a},
                  });
-  EXPECT_EQ(dif_flash_ctrl_set_data_region_enablement(&dif_flash_ctrl_, 3,
-                                                      kDifToggleEnabled),
-            kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_set_data_region_enablement(&dif_flash_ctrl_, 3,
+                                                          kDifToggleEnabled));
 
   // Read out the region's configuration
   EXPECT_READ32(FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_REG_OFFSET,
@@ -698,9 +684,8 @@ TEST_F(FlashCtrlTest, ConfigureDataRegion) {
                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_BASE_3_OFFSET, 0x48},
                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_SIZE_3_OFFSET, 0x9a},
                 });
-  EXPECT_EQ(
-      dif_flash_ctrl_get_data_region_properties(&dif_flash_ctrl_, 3, &data_mp),
-      kDifOk);
+  EXPECT_DIF_OK(
+      dif_flash_ctrl_get_data_region_properties(&dif_flash_ctrl_, 3, &data_mp));
   EXPECT_EQ(data_mp.properties.rd_en, 0);
   EXPECT_EQ(data_mp.properties.prog_en, 1);
   EXPECT_EQ(data_mp.properties.erase_en, 1);
@@ -713,21 +698,21 @@ TEST_F(FlashCtrlTest, ConfigureDataRegion) {
   // Lock the region
   EXPECT_READ32(FLASH_CTRL_REGION_CFG_REGWEN_3_REG_OFFSET,
                 {{FLASH_CTRL_REGION_CFG_REGWEN_3_REGION_3_BIT, 1}});
-  EXPECT_EQ(dif_flash_ctrl_data_region_is_locked(&dif_flash_ctrl_, 3, &locked),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_flash_ctrl_data_region_is_locked(&dif_flash_ctrl_, 3, &locked));
   EXPECT_FALSE(locked);
 
   EXPECT_READ32(FLASH_CTRL_REGION_CFG_REGWEN_3_REG_OFFSET,
                 {{FLASH_CTRL_REGION_CFG_REGWEN_3_REGION_3_BIT, 1}});
   EXPECT_WRITE32(FLASH_CTRL_REGION_CFG_REGWEN_3_REG_OFFSET,
                  {{FLASH_CTRL_REGION_CFG_REGWEN_3_REGION_3_BIT, 0}});
-  EXPECT_EQ(dif_flash_ctrl_lock_data_region_properties(&dif_flash_ctrl_, 3),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_flash_ctrl_lock_data_region_properties(&dif_flash_ctrl_, 3));
 
   EXPECT_READ32(FLASH_CTRL_REGION_CFG_REGWEN_3_REG_OFFSET,
                 {{FLASH_CTRL_REGION_CFG_REGWEN_3_REGION_3_BIT, 0}});
-  EXPECT_EQ(dif_flash_ctrl_data_region_is_locked(&dif_flash_ctrl_, 3, &locked),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_flash_ctrl_data_region_is_locked(&dif_flash_ctrl_, 3, &locked));
   EXPECT_TRUE(locked);
   EXPECT_READ32(FLASH_CTRL_REGION_CFG_REGWEN_3_REG_OFFSET,
                 {{FLASH_CTRL_REGION_CFG_REGWEN_3_REGION_3_BIT, 0}});
@@ -746,7 +731,7 @@ TEST_F(FlashCtrlTest, SimpleQueries) {
                     {FLASH_CTRL_STATUS_PROG_EMPTY_BIT, 0},
                     {FLASH_CTRL_STATUS_INIT_WIP_BIT, 0},
                 });
-  EXPECT_EQ(dif_flash_ctrl_get_status(&dif_flash_ctrl_, &status), kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_get_status(&dif_flash_ctrl_, &status));
   EXPECT_EQ(status.read_fifo_full, 0);
   EXPECT_EQ(status.read_fifo_empty, 1);
   EXPECT_EQ(status.prog_fifo_full, 1);
@@ -764,8 +749,7 @@ TEST_F(FlashCtrlTest, SimpleQueries) {
                     {FLASH_CTRL_ERR_CODE_UPDATE_ERR_BIT, 1},
                 });
   EXPECT_READ32(FLASH_CTRL_ERR_ADDR_REG_OFFSET, 0x1effe0u);
-  EXPECT_EQ(dif_flash_ctrl_get_error_codes(&dif_flash_ctrl_, &error_value),
-            kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_get_error_codes(&dif_flash_ctrl_, &error_value));
   EXPECT_EQ(error_value.codes.memory_properties_error, 1);
   EXPECT_EQ(error_value.codes.read_error, 0);
   EXPECT_EQ(error_value.codes.prog_window_error, 0);
@@ -784,9 +768,8 @@ TEST_F(FlashCtrlTest, SimpleQueries) {
                 {
                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_EN_0_BIT, 1},
                 });
-  EXPECT_EQ(dif_flash_ctrl_get_info_region_enablement(&dif_flash_ctrl_,
-                                                      info_region, &toggle),
-            kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_get_info_region_enablement(
+      &dif_flash_ctrl_, info_region, &toggle));
   EXPECT_EQ(toggle, kDifToggleEnabled);
 
   dif_flash_ctrl_region_properties_t mp;
@@ -799,8 +782,8 @@ TEST_F(FlashCtrlTest, SimpleQueries) {
                     {FLASH_CTRL_DEFAULT_REGION_SHADOWED_ECC_EN_BIT, 1},
                     {FLASH_CTRL_DEFAULT_REGION_SHADOWED_HE_EN_BIT, 0},
                 });
-  EXPECT_EQ(dif_flash_ctrl_get_default_region_properties(&dif_flash_ctrl_, &mp),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_flash_ctrl_get_default_region_properties(&dif_flash_ctrl_, &mp));
   EXPECT_EQ(mp.rd_en, 1);
   EXPECT_EQ(mp.prog_en, 1);
   EXPECT_EQ(mp.erase_en, 0);
@@ -821,9 +804,8 @@ TEST_F(FlashCtrlTest, SimpleQueries) {
           {FLASH_CTRL_BANK0_INFO2_PAGE_CFG_SHADOWED_1_ECC_EN_1_BIT, 1},
           {FLASH_CTRL_BANK0_INFO2_PAGE_CFG_SHADOWED_1_HE_EN_1_BIT, 0},
       });
-  EXPECT_EQ(dif_flash_ctrl_get_info_region_properties(&dif_flash_ctrl_,
-                                                      info_region, &mp),
-            kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_get_info_region_properties(&dif_flash_ctrl_,
+                                                          info_region, &mp));
   EXPECT_EQ(mp.rd_en, 1);
   EXPECT_EQ(mp.prog_en, 0);
   EXPECT_EQ(mp.erase_en, 1);
@@ -837,9 +819,8 @@ TEST_F(FlashCtrlTest, SimpleQueries) {
   info_region.page = 2;
   EXPECT_READ32(FLASH_CTRL_BANK0_INFO0_REGWEN_2_REG_OFFSET,
                 {{FLASH_CTRL_BANK0_INFO0_REGWEN_2_REGION_2_BIT, 1}});
-  EXPECT_EQ(dif_flash_ctrl_info_region_is_locked(&dif_flash_ctrl_, info_region,
-                                                 &locked),
-            kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_info_region_is_locked(&dif_flash_ctrl_,
+                                                     info_region, &locked));
   EXPECT_FALSE(locked);
 
   EXPECT_READ32(FLASH_CTRL_MP_BANK_CFG_SHADOWED_REG_OFFSET,
@@ -847,16 +828,14 @@ TEST_F(FlashCtrlTest, SimpleQueries) {
                     {FLASH_CTRL_MP_BANK_CFG_SHADOWED_ERASE_EN_0_BIT, 0},
                     {FLASH_CTRL_MP_BANK_CFG_SHADOWED_ERASE_EN_1_BIT, 1},
                 });
-  EXPECT_EQ(
-      dif_flash_ctrl_get_bank_erase_enablement(&dif_flash_ctrl_, 1, &toggle),
-      kDifOk);
+  EXPECT_DIF_OK(
+      dif_flash_ctrl_get_bank_erase_enablement(&dif_flash_ctrl_, 1, &toggle));
   EXPECT_EQ(toggle, kDifToggleEnabled);
 
   EXPECT_READ32(FLASH_CTRL_BANK_CFG_REGWEN_REG_OFFSET,
                 {{FLASH_CTRL_BANK_CFG_REGWEN_BANK_BIT, 1}});
-  EXPECT_EQ(
-      dif_flash_ctrl_bank_configuration_is_locked(&dif_flash_ctrl_, &locked),
-      kDifOk);
+  EXPECT_DIF_OK(
+      dif_flash_ctrl_bank_configuration_is_locked(&dif_flash_ctrl_, &locked));
   EXPECT_FALSE(locked);
 
   uint32_t prog_level, read_level;
@@ -865,9 +844,8 @@ TEST_F(FlashCtrlTest, SimpleQueries) {
                     {FLASH_CTRL_FIFO_LVL_PROG_OFFSET, 9},
                     {FLASH_CTRL_FIFO_LVL_RD_OFFSET, 13},
                 });
-  EXPECT_EQ(dif_flash_ctrl_get_fifo_watermarks(&dif_flash_ctrl_, &prog_level,
-                                               &read_level),
-            kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_get_fifo_watermarks(&dif_flash_ctrl_,
+                                                   &prog_level, &read_level));
   EXPECT_EQ(prog_level, 9);
   EXPECT_EQ(read_level, 13);
 
@@ -884,7 +862,7 @@ TEST_F(FlashCtrlTest, SimpleQueries) {
                     {FLASH_CTRL_FAULT_STATUS_LCMGR_ERR_BIT, 0},
                     {FLASH_CTRL_FAULT_STATUS_STORAGE_ERR_BIT, 1},
                 });
-  EXPECT_EQ(dif_flash_ctrl_get_faults(&dif_flash_ctrl_, &faults), kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_get_faults(&dif_flash_ctrl_, &faults));
   EXPECT_EQ(faults.memory_properties_error, 1);
   EXPECT_EQ(faults.read_error, 0);
   EXPECT_EQ(faults.prog_window_error, 1);
@@ -903,8 +881,8 @@ TEST_F(FlashCtrlTest, SimpleQueries) {
           {FLASH_CTRL_ECC_SINGLE_ERR_CNT_ECC_SINGLE_ERR_CNT_1_OFFSET, 11},
       });
   EXPECT_READ32(FLASH_CTRL_ECC_SINGLE_ERR_ADDR_1_REG_OFFSET, 0x16487590u);
-  EXPECT_EQ(dif_flash_ctrl_get_ecc_errors(&dif_flash_ctrl_, 1, &ecc_errors),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_flash_ctrl_get_ecc_errors(&dif_flash_ctrl_, 1, &ecc_errors));
   EXPECT_EQ(ecc_errors.single_bit_error_count, 11);
   EXPECT_EQ(ecc_errors.last_error_address, 0x16487590u);
 
@@ -915,15 +893,14 @@ TEST_F(FlashCtrlTest, SimpleQueries) {
                     {FLASH_CTRL_PHY_STATUS_PROG_NORMAL_AVAIL_BIT, 1},
                     {FLASH_CTRL_PHY_STATUS_PROG_REPAIR_AVAIL_BIT, 0},
                 });
-  EXPECT_EQ(dif_flash_ctrl_get_phy_status(&dif_flash_ctrl_, &phy_status),
-            kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_get_phy_status(&dif_flash_ctrl_, &phy_status));
   EXPECT_EQ(phy_status.phy_init_wip, 0);
   EXPECT_EQ(phy_status.prog_normal_available, 1);
   EXPECT_EQ(phy_status.prog_repair_available, 0);
 
   uint32_t scratch;
   EXPECT_READ32(FLASH_CTRL_SCRATCH_REG_OFFSET, 0x89abcdefu);
-  EXPECT_EQ(dif_flash_ctrl_get_scratch(&dif_flash_ctrl_, &scratch), kDifOk);
+  EXPECT_DIF_OK(dif_flash_ctrl_get_scratch(&dif_flash_ctrl_, &scratch));
   EXPECT_EQ(scratch, 0x89abcdefu);
 }
 
