@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
+#include "sw/device/lib/dif/dif_test_base.h"
 
 #include "csrng_regs.h"  // Generated
 
@@ -31,7 +32,7 @@ TEST_F(ConfigTest, NullArgs) {
 
 TEST_F(ConfigTest, ConfigOk) {
   EXPECT_WRITE32(CSRNG_CTRL_REG_OFFSET, 0xaaa);
-  EXPECT_EQ(dif_csrng_configure(&csrng_), kDifOk);
+  EXPECT_DIF_OK(dif_csrng_configure(&csrng_));
 }
 
 class GetCmdInterfaceStatusTest : public DifCsrngTest {};
@@ -61,7 +62,7 @@ TEST_P(GetCmdInterfaceStatusTestAllParams, ValidConfigurationMode) {
                     {CSRNG_SW_CMD_STS_CMD_RDY_BIT, test_param.cmd_ready},
                     {CSRNG_SW_CMD_STS_CMD_STS_BIT, test_param.cmd_status},
                 });
-  EXPECT_EQ(dif_csrng_get_cmd_interface_status(&csrng_, &status), kDifOk);
+  EXPECT_DIF_OK(dif_csrng_get_cmd_interface_status(&csrng_, &status));
   EXPECT_EQ(status, test_param.expected_status);
 }
 
@@ -92,7 +93,7 @@ TEST_F(GetOutputStatusTest, ValidStatus) {
                     {CSRNG_GENBITS_VLD_GENBITS_FIPS_BIT, false},
                 });
 
-  EXPECT_EQ(dif_csrng_get_output_status(&csrng_, &status), kDifOk);
+  EXPECT_DIF_OK(dif_csrng_get_output_status(&csrng_, &status));
   EXPECT_EQ(status.valid_data, true);
   EXPECT_EQ(status.fips_mode, false);
 }
@@ -111,22 +112,19 @@ class CommandTest : public DifCsrngTest {
 
 TEST_F(CommandTest, InstantiateOk) {
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000101);
-  EXPECT_EQ(dif_csrng_instantiate(&csrng_, kDifCsrngEntropySrcToggleDisable,
-                                  &seed_material_),
-            kDifOk);
+  EXPECT_DIF_OK(dif_csrng_instantiate(&csrng_, kDifCsrngEntropySrcToggleDisable,
+                                      &seed_material_));
 
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000001);
-  EXPECT_EQ(dif_csrng_instantiate(&csrng_, kDifCsrngEntropySrcToggleEnable,
-                                  &seed_material_),
-            kDifOk);
+  EXPECT_DIF_OK(dif_csrng_instantiate(&csrng_, kDifCsrngEntropySrcToggleEnable,
+                                      &seed_material_));
 
   seed_material_.seed_material[0] = 0x5a5a5a5a;
   seed_material_.seed_material_len = 1;
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000011);
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x5a5a5a5a);
-  EXPECT_EQ(dif_csrng_instantiate(&csrng_, kDifCsrngEntropySrcToggleEnable,
-                                  &seed_material_),
-            kDifOk);
+  EXPECT_DIF_OK(dif_csrng_instantiate(&csrng_, kDifCsrngEntropySrcToggleEnable,
+                                      &seed_material_));
 }
 
 TEST_F(CommandTest, InstantiateBadArgs) {
@@ -143,13 +141,13 @@ TEST_F(CommandTest, InstantiateBadArgs) {
 
 TEST_F(CommandTest, ReseedOk) {
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000002);
-  EXPECT_EQ(dif_csrng_reseed(&csrng_, &seed_material_), kDifOk);
+  EXPECT_DIF_OK(dif_csrng_reseed(&csrng_, &seed_material_));
 
   seed_material_.seed_material[0] = 0x5a5a5a5a;
   seed_material_.seed_material_len = 1;
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000012);
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x5a5a5a5a);
-  EXPECT_EQ(dif_csrng_reseed(&csrng_, &seed_material_), kDifOk);
+  EXPECT_DIF_OK(dif_csrng_reseed(&csrng_, &seed_material_));
 }
 
 TEST_F(CommandTest, ReseedBadArgs) {
@@ -162,13 +160,13 @@ TEST_F(CommandTest, ReseedBadArgs) {
 
 TEST_F(CommandTest, UpdateOk) {
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000004);
-  EXPECT_EQ(dif_csrng_update(&csrng_, &seed_material_), kDifOk);
+  EXPECT_DIF_OK(dif_csrng_update(&csrng_, &seed_material_));
 
   seed_material_.seed_material[0] = 0x5a5a5a5a;
   seed_material_.seed_material_len = 1;
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000014);
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x5a5a5a5a);
-  EXPECT_EQ(dif_csrng_update(&csrng_, &seed_material_), kDifOk);
+  EXPECT_DIF_OK(dif_csrng_update(&csrng_, &seed_material_));
 }
 
 TEST_F(CommandTest, UpdateBadArgs) {
@@ -178,11 +176,11 @@ TEST_F(CommandTest, UpdateBadArgs) {
 TEST_F(CommandTest, GenerateOk) {
   // 512bits = 16 x 32bit = 4 x 128bit blocks
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00004003);
-  EXPECT_EQ(dif_csrng_generate_start(&csrng_, /*len=*/16), kDifOk);
+  EXPECT_DIF_OK(dif_csrng_generate_start(&csrng_, /*len=*/16));
 
   // 576bits = 18 x 32bit = 5 x 128bit blocks (rounded up)
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00005003);
-  EXPECT_EQ(dif_csrng_generate_start(&csrng_, /*len=*/18), kDifOk);
+  EXPECT_DIF_OK(dif_csrng_generate_start(&csrng_, /*len=*/18));
 }
 
 TEST_F(CommandTest, GenerateBadArgs) {
@@ -192,7 +190,7 @@ TEST_F(CommandTest, GenerateBadArgs) {
 
 TEST_F(CommandTest, UninstantiateOk) {
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000005);
-  EXPECT_EQ(dif_csrng_uninstantiate(&csrng_), kDifOk);
+  EXPECT_DIF_OK(dif_csrng_uninstantiate(&csrng_));
 }
 
 class GenerateEndTest : public DifCsrngTest {};
@@ -214,7 +212,7 @@ TEST_F(GenerateEndTest, ReadOk) {
   }
 
   std::vector<uint32_t> got(kExpected.size());
-  EXPECT_EQ(dif_csrng_generate_end(&csrng_, got.data(), got.size()), kDifOk);
+  EXPECT_DIF_OK(dif_csrng_generate_end(&csrng_, got.data(), got.size()));
   EXPECT_THAT(got, testing::ElementsAreArray(kExpected));
 }
 
@@ -253,7 +251,7 @@ TEST_F(GetInternalStateTest, GetInternalStateOk) {
   EXPECT_READ32(CSRNG_INT_STATE_VAL_REG_OFFSET, 3);
 
   dif_csrng_internal_state_t got;
-  EXPECT_EQ(dif_csrng_get_internal_state(&csrng_, instance_id, &got), kDifOk);
+  EXPECT_DIF_OK(dif_csrng_get_internal_state(&csrng_, instance_id, &got));
 
   EXPECT_EQ(got.reseed_counter, expected.reseed_counter);
   EXPECT_THAT(got.key, ElementsAreArray(expected.key));
