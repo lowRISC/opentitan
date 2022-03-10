@@ -20,7 +20,7 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
     string        fifo_base_path;
     string        path_exts [4] = {"push", "full", "pop", "not_empty"};
     string        fifo_forced_paths [4];
-    bit           fifo_forced_values [4] = {1'b1, 1'b1, 1'b1, 1'b0};
+    bit           fifo_forced_values [4] = {1'b1, 1'b1, 1'b0, 1'b1};
     string        fifo_err_path [2][string];
     bit           fifo_err_value [2][string];
     string        path_key;
@@ -75,7 +75,6 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
         if (cfg.which_err_code == sfifo_esrng_err && cfg.which_fifo_err == write) begin
           // Turn off assertions
           cfg.entropy_src_assert_if.assert_off_err();
-          `uvm_info(`gfn, $sformatf("path[0]: %s", fifo_forced_paths[0]), UVM_LOW);
           force_fifo_err_exception(fifo_forced_paths, fifo_forced_values, fld, 1'b1);
         end else begin
           force_fifo_err(path1, path2, value1, value2, fld, 1'b1);

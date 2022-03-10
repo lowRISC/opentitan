@@ -105,7 +105,7 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
     string        fifo_base_path;
     string        path_exts [4] = {"push", "full", "pop", "not_empty"};
     string        fifo_forced_paths [4];
-    bit           fifo_forced_values [4] = {1'b1, 1'b1, 1'b1, 1'b0};
+    bit           fifo_forced_values [4] = {1'b1, 1'b1, 1'b0, 1'b1};
     string        fifo_err_path [2][string];
     bit           fifo_err_value [2][string];
 
