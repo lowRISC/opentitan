@@ -524,6 +524,7 @@ module kmac_app
       end
     endcase
 
+    // SEC_CM: FSM.GLOBAL_ESC, FSM.LOCAL_ESC
     // Unconditionally jump into the terminal error state
     // if the life cycle controller triggers an escalation.
     if (lc_escalate_en_i != lc_ctrl_pkg::Off) begin
@@ -613,6 +614,7 @@ module kmac_app
   logic [AppMuxWidth-1:0] mux_sel_buf_output_logic;
   assign mux_sel_buf_output = app_mux_sel_e'(mux_sel_buf_output_logic);
 
+  // SEC_CM: LOGIC.INTEGRITY
   prim_sec_anchor_buf #(
    .Width(AppMuxWidth)
   ) u_prim_buf_state_output_sel (
@@ -623,6 +625,7 @@ module kmac_app
   logic [AppMuxWidth-1:0] mux_sel_buf_err_check_logic;
   assign mux_sel_buf_err_check = app_mux_sel_e'(mux_sel_buf_err_check_logic);
 
+  // SEC_CM: LOGIC.INTEGRITY
   prim_sec_anchor_buf #(
    .Width(AppMuxWidth)
   ) u_prim_buf_state_err_check (
@@ -633,6 +636,7 @@ module kmac_app
   logic [AppMuxWidth-1:0] mux_sel_buf_kmac_logic;
   assign mux_sel_buf_kmac = app_mux_sel_e'(mux_sel_buf_kmac_logic);
 
+  // SEC_CM: LOGIC.INTEGRITY
   prim_sec_anchor_buf #(
    .Width(AppMuxWidth)
   ) u_prim_buf_state_kmac_sel (
@@ -643,6 +647,7 @@ module kmac_app
   logic [AppMuxWidth-1:0] mux_sel_buf_key_logic;
   assign mux_sel_buf_key = app_mux_sel_e'(mux_sel_buf_key_logic);
 
+  // SEC_CM: LOGIC.INTEGRITY
   prim_sec_anchor_buf #(
    .Width(AppMuxWidth)
   ) u_prim_buf_state_key_sel (
@@ -650,6 +655,7 @@ module kmac_app
     .out_o(mux_sel_buf_key_logic)
   );
 
+  // SEC_CM: LOGIC.INTEGRITY
   logic reg_state_valid;
   prim_sec_anchor_buf #(
    .Width(1)

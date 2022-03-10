@@ -766,6 +766,7 @@ module kmac
       end
     endcase
 
+    // SEC_CM: FSM.GLOBAL_ESC, FSM.LOCAL_ESC
     // Unconditionally jump into the terminal error state
     // if the life cycle controller triggers an escalation.
     if (lc_escalate_en[0] != lc_ctrl_pkg::Off) begin
@@ -1399,7 +1400,7 @@ module kmac
   logic unused_alerts_q0;
   assign unused_alerts_q0 = alerts_q[0];
 
-  // SEC_CM: LC_ESCALATE_EN.INTERSIG.MUBI
+  // SEC_CM: LC_ESCALATE_EN.INTERSIG.MUBI, FSM.GLOBAL_ESC, FSM.LOCAL_ESC
   lc_ctrl_pkg::lc_tx_t alert_to_lc_tx;
   assign alert_to_lc_tx = lc_ctrl_pkg::lc_tx_bool_to_lc_tx(alerts_q[1]);
   for (genvar i = 0; i < NumLcSyncCopies; i++) begin : gen_or_alert_lc_sync
