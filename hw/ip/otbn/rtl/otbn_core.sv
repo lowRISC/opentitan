@@ -159,7 +159,7 @@ module otbn_core
   logic [WLEN-1:0]    rf_bignum_wr_data_no_intg;
   logic [WLEN-1:0]    rf_bignum_wr_data_no_intg_ctrl;
   logic [ExtWLEN-1:0] rf_bignum_wr_data_intg;
-  logic               rf_bignum_wr_data_intg_sel;
+  logic               rf_bignum_wr_data_intg_sel, rf_bignum_wr_data_intg_sel_ctrl;
   logic [WdrAw-1:0]   rf_bignum_rd_addr_a;
   logic               rf_bignum_rd_en_a;
   logic [ExtWLEN-1:0] rf_bignum_rd_data_a_intg;
@@ -377,7 +377,7 @@ module otbn_core
     .rf_bignum_wr_en_o           (rf_bignum_wr_en_ctrl),
     .rf_bignum_wr_data_no_intg_o (rf_bignum_wr_data_no_intg_ctrl),
     .rf_bignum_wr_data_intg_o    (rf_bignum_wr_data_intg),
-    .rf_bignum_wr_data_intg_sel_o(rf_bignum_wr_data_intg_sel),
+    .rf_bignum_wr_data_intg_sel_o(rf_bignum_wr_data_intg_sel_ctrl),
     .rf_bignum_rd_addr_a_o       (rf_bignum_rd_addr_a),
     .rf_bignum_rd_en_a_o         (rf_bignum_rd_en_a),
     .rf_bignum_rd_data_a_intg_i  (rf_bignum_rd_data_a_intg),
@@ -579,8 +579,10 @@ module otbn_core
       end else begin
         rf_bignum_wr_data_no_intg = 256'b0;
       end
+      rf_bignum_wr_data_intg_sel = 0;
     end else begin
       rf_bignum_wr_data_no_intg = rf_bignum_wr_data_no_intg_ctrl;
+      rf_bignum_wr_data_intg_sel = rf_bignum_wr_data_intg_sel_ctrl;
     end
   end
 
