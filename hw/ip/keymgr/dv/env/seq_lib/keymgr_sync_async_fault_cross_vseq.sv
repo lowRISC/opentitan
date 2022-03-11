@@ -20,6 +20,10 @@ class keymgr_sync_async_fault_cross_vseq extends keymgr_base_vseq;
     cfg.en_scb = 0;
     cfg.keymgr_vif.en_chk = 0;
 
+    // disable push-pull interface assertion since faults may cause the kmac interface
+    // to be filled with random, constantly changing data
+    $assertoff(0, "tb.keymgr_kmac_intf.req_data_if.H_DataStableWhenValidAndNotReady_A");
+
     fork
       trigger_sync_fault();
       trigger_async_fault();
