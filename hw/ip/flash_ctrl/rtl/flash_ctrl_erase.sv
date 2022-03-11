@@ -24,8 +24,6 @@ module flash_ctrl_erase import flash_ctrl_pkg::*; (
   input                       flash_phy_err_i
 );
 
-  import flash_ctrl_pkg::*;
-
   localparam int WordsBitWidth = $clog2(BusWordsPerPage);
   localparam int PagesBitWidth = $clog2(PagesPerBank);
 
