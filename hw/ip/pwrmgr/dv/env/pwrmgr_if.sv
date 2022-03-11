@@ -11,6 +11,7 @@ interface pwrmgr_if (
   input logic clk_slow,
   input logic rst_slow_n
 );
+  import uvm_pkg::*;
   import pwrmgr_env_pkg::*;
 
   // Ports to the dut side.

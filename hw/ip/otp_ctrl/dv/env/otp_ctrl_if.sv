@@ -24,6 +24,7 @@
 `endif
 
 interface otp_ctrl_if(input clk_i, input rst_ni);
+  import uvm_pkg::*;
   import otp_ctrl_env_pkg::*;
   import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;

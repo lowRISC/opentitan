@@ -8,6 +8,7 @@ interface entropy_src_path_if
 (
   input entropy_src_hw_if_i
 );
+  import uvm_pkg::*;
 
   string core_path = "tb.dut.u_entropy_src_core";
 

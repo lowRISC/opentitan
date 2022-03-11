@@ -19,6 +19,7 @@ interface otbn_model_if
   input logic rst_ni,
   input otbn_key_req_t keymgr_key_i
 );
+  import uvm_pkg::*;
 
   // Inputs to DUT
   logic                     start;        // Start the operation
