@@ -16,8 +16,7 @@
 extern "C" {
 
 // Create an OtbnModel object. Will always succeed.
-OtbnModel *otbn_model_init(const char *mem_scope, const char *design_scope,
-                           int enable_secure_wipe);
+OtbnModel *otbn_model_init(const char *mem_scope, const char *design_scope);
 
 // Delete an OtbnModel
 void otbn_model_destroy(OtbnModel *model);

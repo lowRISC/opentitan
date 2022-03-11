@@ -25,10 +25,7 @@
 module otbn_start_stop_control
   import otbn_pkg::*;
   import prim_mubi_pkg::*;
-#(
-  // Enable internal secure wipe
-  parameter bit                SecWipeEn  = 1'b0
-)(
+(
   input  logic clk_i,
   input  logic rst_ni,
 
@@ -59,6 +56,9 @@ module otbn_start_stop_control
   output logic state_reset_o,
   output logic internal_error_o
 );
+
+  import otbn_pkg::*;
+
   otbn_start_stop_state_e state_q, state_d;
 
   logic addr_cnt_inc;
@@ -129,12 +129,7 @@ module otbn_start_stop_control
       OtbnStartStopStateRunning: begin
         urnd_advance_o = 1'b1;
         if (stop) begin
-          if (SecWipeEn) begin
-            state_d = OtbnStartStopSecureWipeWdrUrnd;
-          end
-          else begin
-            state_d = OtbnStartStopSecureWipeComplete;
-          end
+          state_d = OtbnStartStopSecureWipeWdrUrnd;
         end
       end
       // Writing random numbers to the wide data registers.

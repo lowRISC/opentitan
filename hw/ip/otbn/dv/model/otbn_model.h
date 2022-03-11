@@ -18,8 +18,7 @@ class OtbnModel {
  public:
   enum command_t { Execute, DmemWipe, ImemWipe };
 
-  OtbnModel(const std::string &mem_scope, const std::string &design_scope,
-            bool enable_secure_wipe);
+  OtbnModel(const std::string &mem_scope, const std::string &design_scope);
   ~OtbnModel();
 
   // Replace any current loop warps with those from memutil. Returns 0
@@ -151,7 +150,6 @@ class OtbnModel {
 
   OtbnMemUtil mem_util_;
   std::string design_scope_;
-  bool enable_secure_wipe_;
 };
 
 #endif  // OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_MODEL_H_

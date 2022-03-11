@@ -257,8 +257,7 @@ static bool read_ext_flag(const std::string &reg_name,
   return true;
 }
 
-ISSWrapper::ISSWrapper(bool enable_secure_wipe)
-    : tmpdir(new TmpDir()), enable_secure_wipe(enable_secure_wipe) {
+ISSWrapper::ISSWrapper() : tmpdir(new TmpDir()) {
   std::string model_path(find_otbn_model());
 
   // We want two pipes: one for writing to the child process, and the other for
@@ -375,17 +374,13 @@ void ISSWrapper::dump_d(const std::string &path) const {
 
 void ISSWrapper::start_operation(command_t command) {
   std::ostringstream cmd_stream;
-  std::string extra_command;
 
   cmd_stream << "start_operation ";
 
   switch (command) {
-    case Execute: {
-      std::ostringstream oss;
-      oss << "configure " << (int)enable_secure_wipe << "\n";
-      extra_command = oss.str();
+    case Execute:
       cmd_stream << "Execute\n";
-    } break;
+      break;
 
     case DmemWipe:
       cmd_stream << "DmemWipe\n";
@@ -394,15 +389,11 @@ void ISSWrapper::start_operation(command_t command) {
     case ImemWipe:
       cmd_stream << "ImemWipe\n";
       break;
-
     default:
       assert(0);
   }
 
   run_command(cmd_stream.str(), nullptr);
-  if (!extra_command.empty()) {
-    run_command(extra_command, nullptr);
-  }
 }
 
 void ISSWrapper::otp_key_cdc_done() {

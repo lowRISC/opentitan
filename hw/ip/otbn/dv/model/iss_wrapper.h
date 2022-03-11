@@ -57,7 +57,7 @@ struct ISSWrapper {
 
   enum command_t { Execute, DmemWipe, ImemWipe };
 
-  ISSWrapper(bool enable_secure_wipe);
+  ISSWrapper();
   ~ISSWrapper();
 
   // Load new contents of DMEM / IMEM
@@ -168,8 +168,6 @@ struct ISSWrapper {
 
   // A temporary directory for communicating with the child process
   std::unique_ptr<TmpDir> tmpdir;
-
-  bool enable_secure_wipe;
 
   // Mirrored copies of registers
   MirroredRegs mirrored_;

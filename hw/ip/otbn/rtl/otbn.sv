@@ -17,10 +17,7 @@ module otbn
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
 
   // Default seed for URND PRNG
-  parameter urnd_prng_seed_t       RndCnstUrndPrngSeed      = RndCnstUrndPrngSeedDefault,
-
-  // Enable internal secure wipe
-  parameter bit SecWipeEn  = 1'b0,
+  parameter urnd_prng_seed_t RndCnstUrndPrngSeed = RndCnstUrndPrngSeedDefault,
 
   // Default seed and nonce for scrambling
   parameter otp_ctrl_pkg::otbn_key_t   RndCnstOtbnKey   = RndCnstOtbnKeyDefault,
@@ -1033,7 +1030,6 @@ module otbn
     .RegFile(RegFile),
     .DmemSizeByte(DmemSizeByte),
     .ImemSizeByte(ImemSizeByte),
-    .SecWipeEn(SecWipeEn),
     .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed)
   ) u_otbn_core (
     .clk_i,
