@@ -229,7 +229,7 @@
     { name: "STATUS",
       desc: "Status Register",
       swaccess: "ro",
-      hwaccess: "hwo",
+      hwaccess: "hrw",
       fields: [
         { bits: "7:0",
           name: "status",

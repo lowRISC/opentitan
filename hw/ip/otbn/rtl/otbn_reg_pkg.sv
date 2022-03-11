@@ -51,6 +51,10 @@ package otbn_reg_pkg;
   } otbn_reg2hw_ctrl_reg_t;
 
   typedef struct packed {
+    logic [7:0]  q;
+  } otbn_reg2hw_status_reg_t;
+
+  typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
@@ -223,12 +227,13 @@ package otbn_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    otbn_reg2hw_intr_state_reg_t intr_state; // [112:112]
-    otbn_reg2hw_intr_enable_reg_t intr_enable; // [111:111]
-    otbn_reg2hw_intr_test_reg_t intr_test; // [110:109]
-    otbn_reg2hw_alert_test_reg_t alert_test; // [108:105]
-    otbn_reg2hw_cmd_reg_t cmd; // [104:96]
-    otbn_reg2hw_ctrl_reg_t ctrl; // [95:94]
+    otbn_reg2hw_intr_state_reg_t intr_state; // [120:120]
+    otbn_reg2hw_intr_enable_reg_t intr_enable; // [119:119]
+    otbn_reg2hw_intr_test_reg_t intr_test; // [118:117]
+    otbn_reg2hw_alert_test_reg_t alert_test; // [116:113]
+    otbn_reg2hw_cmd_reg_t cmd; // [112:104]
+    otbn_reg2hw_ctrl_reg_t ctrl; // [103:102]
+    otbn_reg2hw_status_reg_t status; // [101:94]
     otbn_reg2hw_err_bits_reg_t err_bits; // [93:66]
     otbn_reg2hw_insn_cnt_reg_t insn_cnt; // [65:33]
     otbn_reg2hw_load_checksum_reg_t load_checksum; // [32:0]

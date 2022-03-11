@@ -221,9 +221,11 @@ module otbn_scramble_ctrl
     endcase
   end
 
-  assign otbn_dmem_scramble_key_req_busy_o = state_q == ScrambleCtrlDmemReq;
-  assign otbn_imem_scramble_key_req_busy_o = state_q == ScrambleCtrlImemReq;
+  assign otbn_dmem_scramble_key_req_busy_o =
+    (state_q == ScrambleCtrlDmemReq) | dmem_scramble_req_pending_q;
 
+  assign otbn_imem_scramble_key_req_busy_o =
+    (state_q == ScrambleCtrlImemReq) | imem_scramble_req_pending_q;
 
   prim_sync_reqack_data #(
     .Width($bits(otp_ctrl_pkg::otbn_otp_key_rsp_t)-1),
