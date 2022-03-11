@@ -619,5 +619,50 @@ TEST_F(RessedOnKeyChangeTest, LockedError) {
 
   EXPECT_EQ(dif_aes_start(&aes_, &transaction, &kKey_, NULL), kDifError);
 }
+
+// Dif functions.
+class DifFunctionsTest : public AesTestInitialized {
+ protected:
+  DifFunctionsTest() {}
+};
+
+TEST_F(DifFunctionsTest, Reset) {
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, 1);
+  EXPECT_WRITE32_SHADOWED(AES_CTRL_SHADOWED_REG_OFFSET,
+                          {{AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, true}});
+
+  EXPECT_WRITE32(AES_TRIGGER_REG_OFFSET,
+                 {
+                     {AES_TRIGGER_KEY_IV_DATA_IN_CLEAR_BIT, true},
+                     {AES_TRIGGER_DATA_OUT_CLEAR_BIT, true},
+                 });
+
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, 1);
+
+  EXPECT_WRITE32_SHADOWED(
+      AES_CTRL_SHADOWED_REG_OFFSET,
+      {{AES_CTRL_SHADOWED_OPERATION_OFFSET, AES_CTRL_SHADOWED_OPERATION_MASK},
+       {AES_CTRL_SHADOWED_MODE_OFFSET, AES_CTRL_SHADOWED_MODE_VALUE_AES_NONE},
+       {AES_CTRL_SHADOWED_KEY_LEN_OFFSET, AES_CTRL_SHADOWED_KEY_LEN_MASK}});
+
+  EXPECT_DIF_OK(dif_aes_reset(&aes_));
+}
+
+TEST_F(DifFunctionsTest, End) {
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, 1);
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, 1);
+  EXPECT_WRITE32_SHADOWED(AES_CTRL_SHADOWED_REG_OFFSET,
+                          {{AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, true}});
+
+  EXPECT_WRITE32(AES_TRIGGER_REG_OFFSET,
+                 {
+                     {AES_TRIGGER_KEY_IV_DATA_IN_CLEAR_BIT, true},
+                     {AES_TRIGGER_DATA_OUT_CLEAR_BIT, true},
+                 });
+
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, 1);
+
+  EXPECT_DIF_OK(dif_aes_end(&aes_));
+}
 }  // namespace
 }  // namespace dif_aes_test
