@@ -297,13 +297,13 @@ TEST_F(AlertTest, AlertFatalFault) {
 }
 
 // Data in
-class Data : public AesTestInitialized {
+class DataTest : public AesTestInitialized {
  protected:
   const dif_aes_data_t data_ = {
       .data = {0xA55AA55A, 0xA55AA55A, 0xA55AA55A, 0xA55AA55A}};
 };
 
-TEST_F(Data, DataIn) {
+TEST_F(DataTest, DataIn) {
   EXPECT_READ32(AES_STATUS_REG_OFFSET, {
                                            {AES_STATUS_INPUT_READY_BIT, true},
                                        });
@@ -316,7 +316,7 @@ TEST_F(Data, DataIn) {
   EXPECT_DIF_OK(dif_aes_load_data(&aes_, data_));
 }
 
-TEST_F(Data, DataOut) {
+TEST_F(DataTest, DataOut) {
   EXPECT_READ32(AES_STATUS_REG_OFFSET, {
                                            {AES_STATUS_INPUT_READY_BIT, true},
                                            {AES_STATUS_OUTPUT_VALID_BIT, true},
@@ -334,15 +334,15 @@ TEST_F(Data, DataOut) {
 }
 
 // Trigger
-class Trigger : public AesTestInitialized {};
+class TriggerTest : public AesTestInitialized {};
 
-TEST_F(Trigger, Start) {
+TEST_F(TriggerTest, Start) {
   EXPECT_WRITE32(AES_TRIGGER_REG_OFFSET, {{AES_TRIGGER_START_BIT, true}});
 
   EXPECT_DIF_OK(dif_aes_trigger(&aes_, kDifAesTriggerStart));
 }
 
-TEST_F(Trigger, KeyIvDataInClear) {
+TEST_F(TriggerTest, KeyIvDataInClear) {
   EXPECT_WRITE32(AES_TRIGGER_REG_OFFSET,
                  {
                      {AES_TRIGGER_KEY_IV_DATA_IN_CLEAR_BIT, true},
@@ -351,7 +351,7 @@ TEST_F(Trigger, KeyIvDataInClear) {
   EXPECT_DIF_OK(dif_aes_trigger(&aes_, kDifAesTriggerKeyIvDataInClear));
 }
 
-TEST_F(Trigger, DataOutClear) {
+TEST_F(TriggerTest, DataOutClear) {
   EXPECT_WRITE32(AES_TRIGGER_REG_OFFSET,
                  {
                      {AES_TRIGGER_DATA_OUT_CLEAR_BIT, true},
@@ -360,7 +360,7 @@ TEST_F(Trigger, DataOutClear) {
   EXPECT_DIF_OK(dif_aes_trigger(&aes_, kDifAesTriggerDataOutClear));
 }
 
-TEST_F(Trigger, PrngReseed) {
+TEST_F(TriggerTest, PrngReseed) {
   EXPECT_WRITE32(AES_TRIGGER_REG_OFFSET,
                  {
                      {AES_TRIGGER_PRNG_RESEED_BIT, true},
