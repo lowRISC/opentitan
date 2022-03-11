@@ -152,6 +152,7 @@ class LoopStack:
 
         if self._pop_stack_on_commit:
             self.stack.pop()
+            self._pop_stack_on_commit = False
 
         self.trace = []
 
