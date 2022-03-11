@@ -350,7 +350,7 @@ TEST_F(AlertTest, AlertFatalFault) {
   EXPECT_DIF_OK(dif_aes_alert_force(&aes_, kDifAesAlertFatalFault));
 }
 
-// Data in
+// Data tests.
 class DataTest : public AesTestInitialized {
  protected:
   const dif_aes_data_t data_ = {
@@ -383,6 +383,23 @@ TEST_F(DataTest, DataOut) {
   EXPECT_DIF_OK(dif_aes_read_output(&aes_, &out));
 
   EXPECT_THAT(out.data, ElementsAreArray(data_.data));
+}
+
+// Read the IV tests.
+class IVTest : public AesTestInitialized {};
+
+TEST_F(IVTest, Read) {
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_IDLE_BIT, true}});
+
+  for (uint32_t i = 0; i < ARRAYSIZE(kIv_.iv); ++i) {
+    ptrdiff_t offset = AES_IV_0_REG_OFFSET + (i * sizeof(uint32_t));
+    EXPECT_READ32(offset, kIv_.iv[i]);
+  }
+
+  dif_aes_iv_t iv;
+  EXPECT_DIF_OK(dif_aes_read_iv(&aes_, &iv));
+
+  EXPECT_THAT(iv.iv, ElementsAreArray(kIv_.iv));
 }
 
 // Trigger

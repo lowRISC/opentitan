@@ -449,6 +449,16 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_aes_get_status(const dif_aes_t *aes, dif_aes_status_t flag,
                                 bool *set);
 
+/**
+ * Read the current initialization vector from its register.
+ *
+ * @param aes AES handle.
+ * @param iv The pointer to receive the initialization vector.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_aes_read_iv(const dif_aes_t *aes, dif_aes_iv_t *iv);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

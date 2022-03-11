@@ -321,3 +321,20 @@ dif_result_t dif_aes_get_status(const dif_aes_t *aes, dif_aes_status_t flag,
 
   return kDifOk;
 }
+
+dif_result_t dif_aes_read_iv(const dif_aes_t *aes, dif_aes_iv_t *iv) {
+  if (aes == NULL || iv == NULL) {
+    return kDifBadArg;
+  }
+
+  if (!aes_idle(aes)) {
+    return kDifUnavailable;
+  }
+
+  for (int i = 0; i < AES_IV_MULTIREG_COUNT; ++i) {
+    ptrdiff_t offset = AES_IV_0_REG_OFFSET + (i * sizeof(uint32_t));
+
+    iv->iv[i] = mmio_region_read32(aes->base_addr, offset);
+  }
+  return kDifOk;
+}
