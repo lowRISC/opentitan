@@ -5,7 +5,7 @@
 Generate HTML documentation from IpBlock
 """
 
-from typing import Set, TextIO
+from typing import Optional, Set, TextIO
 
 from .ip_block import IpBlock
 from .html_helpers import expand_paras, render_td
@@ -230,6 +230,40 @@ def gen_html_register(outfile: TextIO,
     genout(outfile, "</table>\n<br>\n")
 
 
+def gen_window_row(outfile: TextIO,
+                   base_addr: int,
+                   validbits: int,
+                   regwidth: int,
+                   idx: Optional[int]) -> None:
+    '''Generate a row for a window
+
+    If idx is None, this is a row that shows we're skipping some addresses and
+    has a "...". If idx is not None, this gives an address and we show the bits
+    that are valid.
+    '''
+    assert 0 < validbits
+    assert 0 < regwidth
+    assert regwidth % 8 == 0
+    assert validbits <= regwidth
+
+    if idx is not None:
+        assert idx >= 0
+        addr = base_addr + idx * (regwidth // 8)
+        addr_td = f'<td class="regbits">+{addr:#x}</td>'
+        if validbits < regwidth:
+            pad = regwidth - validbits
+            unused_tds = f'<td class="unused" colspan="{pad}">&nbsp;</td>'
+        else:
+            unused_tds = ''
+        data_tds = f'<td class="fname" colspan="{validbits}">&nbsp;</td>'
+        tds = addr_td + unused_tds + data_tds
+    else:
+        tds = (f'<td>&nbsp;</td>'
+               f'<td align="center" colspan="{regwidth}">...</td>')
+
+    genout(outfile, f'<tr>{tds}</tr>')
+
+
 def gen_html_window(outfile: TextIO,
                     win: Window,
                     comp: str,
@@ -263,28 +297,24 @@ def gen_html_window(outfile: TextIO,
         else:
             genout(outfile, '<td class="bitnum"></td>')
     genout(outfile, '</tr>')
-    tblmax = win.items - 1
-    for x in [0, 1, 2, tblmax - 1, tblmax]:
-        if x == 2:
-            genout(
-                outfile, '<tr><td>&nbsp;</td><td align=center colspan=' +
-                str(regwidth) + '>...</td></tr>')
-        else:
-            genout(
-                outfile, '<tr><td class="regbits">+' +
-                hex(offset + x * (regwidth // 8)) + '</td>')
-            if wid < regwidth:
-                genout(
-                    outfile, '<td class="unused" colspan=' +
-                    str(regwidth - wid) + '>&nbsp;</td>\n')
-                genout(
-                    outfile,
-                    '<td class="fname" colspan=' + str(wid) + '>&nbsp;</td>\n')
-            else:
-                genout(
-                    outfile, '<td class="fname" colspan=' + str(regwidth) +
-                    '>&nbsp;</td>\n')
-            genout(outfile, '</tr>')
+
+    # We want to show the first and last two addresses, with a blank line in
+    # between if we skip anything.
+    assert win.items >= 1
+    if win.items <= 4:
+        indices_0 = list(range(win.items))
+        indices_1 = []
+    else:
+        indices_0 = [0, 1]
+        indices_1 = [win.items - 2, win.items - 1]
+
+    for idx in indices_0:
+        gen_window_row(outfile, offset, win.validbits, regwidth, idx)
+    if indices_1:
+        gen_window_row(outfile, offset, win.validbits, regwidth, None)
+    for idx in indices_1:
+        gen_window_row(outfile, offset, win.validbits, regwidth, idx)
+
     genout(outfile, '</td></tr></table>')
     genout(outfile,
            '<tr>{}</tr>'.format(render_td(win.desc, rnames, 'regde')))
