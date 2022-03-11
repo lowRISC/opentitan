@@ -68,6 +68,10 @@ package otbn_pkg;
     StatusLocked          = 8'hFF
   } status_e;
 
+  function automatic logic is_busy_status(status_e status);
+    return status inside {StatusBusyExecute, StatusBusySecWipeDmem, StatusBusySecWipeImem};
+  endfunction
+
   // Error bits
   //
   // Note: These errors are duplicated in other places. If updating them here, update those too.
