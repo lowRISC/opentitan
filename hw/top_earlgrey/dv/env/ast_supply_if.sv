@@ -14,6 +14,7 @@ interface ast_supply_if (
   input logic clk,
   input logic trigger
 );
+  import uvm_pkg::*;
 
   // The amount of time to hold the glitch. Should be enough to span more than one aon_clk cycles
   // so it is sampled.

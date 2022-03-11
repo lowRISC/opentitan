@@ -11,6 +11,7 @@ interface clkmgr_if (
   input logic rst_main_n,
   input logic rst_usb_n
 );
+  import uvm_pkg::*;
   import clkmgr_env_pkg::*;
 
   // The ports to the dut side.
