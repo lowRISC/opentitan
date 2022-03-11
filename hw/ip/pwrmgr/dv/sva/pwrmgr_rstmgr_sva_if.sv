@@ -47,6 +47,8 @@ interface pwrmgr_rstmgr_sva_if
   bit check_rstreqs_en = 1;
 
 `ifdef UVM
+  import uvm_pkg::*;
+
   initial
     forever begin
       uvm_config_db#(bit)::wait_modified(null, "pwrmgr_rstmgr_sva_if", "check_rstreqs_en");
