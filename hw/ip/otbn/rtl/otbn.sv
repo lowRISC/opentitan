@@ -127,17 +127,28 @@ module otbn
   // The clock can be gated and some registers can be updated as long as OTBN isn't currently
   // running. Other registers can only be updated when OTBN is in the Idle state (which also implies
   // !locked).
-  logic is_not_running;
+  logic is_not_running, is_not_running_r;
   logic otbn_dmem_scramble_key_req_busy, otbn_imem_scramble_key_req_busy;
 
   assign is_not_running =
     ~(busy_execute_q | otbn_dmem_scramble_key_req_busy | otbn_imem_scramble_key_req_busy);
 
+  // Add a register stage so we have an `is_not_running_r` which changes with the same timing as
+  // `status.q`. Without this `idle_o` will be asserted a cycle before `status.q` changes resulting
+  // in bad interrupt timing where the interrupt is seen the cycle after `idle_o`.
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if(!rst_ni) begin
+      is_not_running_r <= 1'b1;
+    end else begin
+      is_not_running_r <= is_not_running;
+    end
+  end
+
   // Inter-module signals ======================================================
 
   // Note: This is not the same thing as STATUS == IDLE. For example, we want to allow clock gating
   // when locked.
-  assign idle_o = prim_mubi_pkg::mubi4_bool_to_mubi(is_not_running);
+  assign idle_o = prim_mubi_pkg::mubi4_bool_to_mubi(is_not_running_r);
 
   // Lifecycle ==================================================================
 
@@ -161,7 +172,8 @@ module otbn
     !is_busy_status(status_e'(hw2reg.status.d));
 
   prim_intr_hw #(
-    .Width(1)
+    .Width(1),
+    .FlopOutput(0)
   ) u_intr_hw_done (
     .clk_i,
     .rst_ni                (rst_n),
