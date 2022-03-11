@@ -157,7 +157,7 @@ class RandWSR(WSR):
         if self.req_high and self._random_value is not None:
             ret = [TraceExtRegChange('RND_REQ', ExtRegChange('=', 0, True, 0))]
             self.req_high = False
-        elif self.pending_request:
+        elif self.pending_request and not self.req_high:
             self.req_high = True
             ret = [TraceExtRegChange('RND_REQ', ExtRegChange('=', 1, True, 1))]
         return ret
