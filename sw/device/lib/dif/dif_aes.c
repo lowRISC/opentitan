@@ -106,6 +106,9 @@ static dif_result_t configure(const dif_aes_t *aes,
   flag = transaction->masking == kDifAesMaskingForceZero;
   reg = bitfield_bit32_write(reg, AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_BIT, flag);
 
+  flag = transaction->key_provider == kDifAesKeySideload;
+  reg = bitfield_bit32_write(reg, AES_CTRL_SHADOWED_SIDELOAD_BIT, flag);
+
   aes_shadowed_write(aes->base_addr, AES_CTRL_SHADOWED_REG_OFFSET, reg);
 
   return kDifOk;
@@ -154,9 +157,12 @@ dif_result_t dif_aes_reset(const dif_aes_t *aes) {
 
 dif_result_t dif_aes_start(const dif_aes_t *aes,
                            const dif_aes_transaction_t *transaction,
-                           dif_aes_key_share_t key, const dif_aes_iv_t *iv) {
+                           const dif_aes_key_share_t *key,
+                           const dif_aes_iv_t *iv) {
   if (aes == NULL || transaction == NULL ||
-      (iv == NULL && transaction->mode != kDifAesModeEcb)) {
+      (iv == NULL && transaction->mode != kDifAesModeEcb) ||
+      (key == NULL &&
+       transaction->key_provider == kDifAesKeySoftwareProvided)) {
     return kDifBadArg;
   }
 
@@ -169,11 +175,13 @@ dif_result_t dif_aes_start(const dif_aes_t *aes,
     return result;
   }
 
-  aes_set_multireg(aes, &key.share0[0], AES_KEY_SHARE0_MULTIREG_COUNT,
-                   AES_KEY_SHARE0_0_REG_OFFSET);
+  if (transaction->key_provider == kDifAesKeySoftwareProvided) {
+    aes_set_multireg(aes, &key->share0[0], AES_KEY_SHARE0_MULTIREG_COUNT,
+                     AES_KEY_SHARE0_0_REG_OFFSET);
 
-  aes_set_multireg(aes, &key.share1[0], AES_KEY_SHARE1_MULTIREG_COUNT,
-                   AES_KEY_SHARE1_0_REG_OFFSET);
+    aes_set_multireg(aes, &key->share1[0], AES_KEY_SHARE1_MULTIREG_COUNT,
+                     AES_KEY_SHARE1_0_REG_OFFSET);
+  }
 
   if (transaction->mode != kDifAesModeEcb) {
     aes_set_multireg(aes, &iv->iv[0], AES_IV_MULTIREG_COUNT,

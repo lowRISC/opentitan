@@ -63,7 +63,7 @@ static void aes_serial_set_key(const uint8_t *key, size_t key_len) {
   dif_aes_key_share_t key_shares;
   memcpy(key_shares.share0, key, sizeof(key_shares.share0));
   memset(key_shares.share1, 0, sizeof(key_shares.share1));
-  SS_CHECK_DIF_OK(dif_aes_start(&aes, &transaction, key_shares, NULL));
+  SS_CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key_shares, NULL));
 }
 
 /**

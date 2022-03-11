@@ -93,7 +93,7 @@ bool test_main(void) {
       .key_len = kDifAesKey256,
       .manual_operation = kDifAesManualOperationAuto,
   };
-  CHECK_DIF_OK(dif_aes_start(&aes, &transaction, key, NULL));
+  CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key, NULL));
 
   // "Convert" plain data byte arrays to `dif_aes_data_t`.
   dif_aes_data_t in_data_plain;
@@ -124,7 +124,7 @@ bool test_main(void) {
 
   // Setup ECB decryption transaction.
   transaction.operation = kDifAesOperationDecrypt;
-  CHECK_DIF_OK(dif_aes_start(&aes, &transaction, key, NULL));
+  CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key, NULL));
 
   // Load the previously produced cipher text to start the decryption operation.
   while (!aes_input_ready(&aes)) {
