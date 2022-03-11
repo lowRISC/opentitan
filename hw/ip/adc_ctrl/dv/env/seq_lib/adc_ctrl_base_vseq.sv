@@ -78,7 +78,7 @@ class adc_ctrl_base_vseq extends cip_base_vseq #(
     csr_wr(ral.adc_sample_ctl, cfg.np_sample_cnt);
     csr_wr(ral.adc_lp_sample_ctl, cfg.lp_sample_cnt);
     // Power control
-    ral.adc_pd_ctl.lp_mode.set(cfg.testmode inside {AdcCtrlLowpower});
+    ral.adc_pd_ctl.lp_mode.set(cfg.testmode inside {AdcCtrlTestmodeLowpower});
     ral.adc_pd_ctl.pwrup_time.set(cfg.pwrup_time);
     ral.adc_pd_ctl.wakeup_time.set(cfg.wakeup_time);
     csr_wr(ral.adc_pd_ctl, ral.adc_pd_ctl.get());
@@ -134,6 +134,31 @@ class adc_ctrl_base_vseq extends cip_base_vseq #(
     // Re-enable assertions
     `DV_ASSERT_CTRL_REQ("ADC_IF_A_CTRL", 1)
   endtask
+
+  // Deposit a value via DPI and issue a fatal error if it failed
+  virtual function void load_backdoor(input string path, input uvm_hdl_data_t value);
+    int retval;
+    retval = uvm_hdl_deposit(path, value);
+    `DV_CHECK_FATAL(retval, {"uvm_hdl_deposit failed for path ", path})
+  endfunction
+
+  // Load counters backdoor using DPI
+  // This is used to reduce the time required for tests
+  virtual function void load_pwrup_timer_cnt_backdoor(input uvm_hdl_data_t value);
+    load_backdoor("tb.dut.u_adc_ctrl_core.u_adc_ctrl_fsm.pwrup_timer_cnt_q", value);
+  endfunction
+
+  virtual function void load_wakeup_timer_cnt_backdoor(input uvm_hdl_data_t value);
+    load_backdoor("tb.dut.u_adc_ctrl_core.u_adc_ctrl_fsm.wakeup_timer_cnt_q", value);
+  endfunction
+
+  virtual function void load_np_sample_cnt_backdoor(input uvm_hdl_data_t value);
+    load_backdoor("tb.dut.u_adc_ctrl_core.u_adc_ctrl_fsm.np_sample_cnt_q", value);
+  endfunction
+
+  virtual function void load_lp_sample_cnt_backdoor(input uvm_hdl_data_t value);
+    load_backdoor("tb.dut.u_adc_ctrl_core.u_adc_ctrl_fsm.lp_sample_cnt_q", value);
+  endfunction
 
 endclass : adc_ctrl_base_vseq
 

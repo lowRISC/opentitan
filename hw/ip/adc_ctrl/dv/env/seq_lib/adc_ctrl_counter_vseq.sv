@@ -26,6 +26,20 @@ class adc_ctrl_counter_vseq extends adc_ctrl_base_vseq;
 
   constraint num_trans_c {num_trans inside {[10 : 20]};}
 
+  virtual task pre_start();
+    super.pre_start();
+    // Disable read of intr_state at the end of the sequence
+    do_clear_all_interrupts = 0;
+    // Disable push/pull assertions
+    `DV_ASSERT_CTRL_REQ("ADC_IF_A_CTRL", 0)
+  endtask
+
+  virtual task post_start();
+    super.post_start();
+    // Reenable assertions
+    `DV_ASSERT_CTRL_REQ("ADC_IF_A_CTRL", 1)
+  endtask
+
   virtual task body();
     // Disable read of intr_state at the end of the sequence
     do_clear_all_interrupts = 0;
@@ -47,15 +61,15 @@ class adc_ctrl_counter_vseq extends adc_ctrl_base_vseq;
 
       // Set up variable register fields
       case (testmode)
-        AdcCtrlOneShot: begin
+        AdcCtrlTestmodeOneShot: begin
           ral.adc_en_ctl.oneshot_mode.set(1);
           ral.adc_pd_ctl.lp_mode.set(0);
         end
-        AdcCtrlNormal: begin
+        AdcCtrlTestmodeNormal: begin
           ral.adc_en_ctl.oneshot_mode.set(0);
           ral.adc_pd_ctl.lp_mode.set(0);
         end
-        AdcCtrlLowpower: begin
+        AdcCtrlTestmodeLowpower: begin
           ral.adc_en_ctl.oneshot_mode.set(0);
           ral.adc_pd_ctl.lp_mode.set(1);
         end
@@ -70,12 +84,14 @@ class adc_ctrl_counter_vseq extends adc_ctrl_base_vseq;
       wait_for_txfers();
 
       // Disable ADC.
-      adc_ctrl_off();
+      csr_wr(ral.adc_en_ctl, 0);
 
       // Re-randomize this sequence
       `DV_CHECK_RANDOMIZE_FATAL(this)
 
     end
+    cfg.clk_aon_rst_vif.wait_clks($urandom_range(5, 10));
+
   endtask : body
 
   virtual task wait_for_txfers();

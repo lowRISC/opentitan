@@ -222,7 +222,7 @@
           - Ensure ADC controller FSM and counters are reset.
         '''
       milestone: V2
-      tests: []
+      tests: ["adc_ctrl_fsm_reset"]
     }
 
     {

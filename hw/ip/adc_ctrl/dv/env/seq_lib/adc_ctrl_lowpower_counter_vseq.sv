@@ -9,7 +9,7 @@ class adc_ctrl_lowpower_counter_vseq extends adc_ctrl_counter_vseq;
   `uvm_object_new
 
   // Valid values
-  constraint testmode_c {testmode inside {AdcCtrlLowpower};}
+  constraint testmode_c {testmode inside {AdcCtrlTestmodeLowpower};}
 
   // Counter values
   constraint counters_c {

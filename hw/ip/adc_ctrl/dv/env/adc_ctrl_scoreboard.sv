@@ -335,7 +335,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
       // Check value against configured range of values
       bit inside_range = val inside {[filter_cfg.min_v : filter_cfg.max_v]};
       // Set match flag for this channel/filter considering inside/outside config
-      m_chn_match[channel][filter_idx] = (filter_cfg.cond == ADC_CTRL_FILTER_IN) ?
+      m_chn_match[channel][filter_idx] = (filter_cfg.cond == ADC_CTRL_FILTER_COND_IN) ?
           inside_range : ~inside_range;
 
       // Combine channel matches for this filter
@@ -422,7 +422,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
 
     // Implement One Shot Mode
     // One hot interrupt is one bit above the last filter's interrupt
-    if (cfg.testmode inside {AdcCtrlOneShot}) begin
+    if (cfg.testmode inside {AdcCtrlTestmodeOneShot}) begin
       m_expected_adc_intr_status[ADC_CTRL_NUM_FILTERS] = cfg.adc_intr_ctl[ADC_CTRL_NUM_FILTERS];
       m_expected_intr_state |= cfg.adc_intr_ctl[ADC_CTRL_NUM_FILTERS];
     end

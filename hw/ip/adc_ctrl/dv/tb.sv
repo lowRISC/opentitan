@@ -57,8 +57,8 @@ module tb;
   bit pwrup_time_en;
   // Auxiliary logic to time power down -> power up
   int wakeup_time, cfg_wakeup_time;
-  bit wakeup_time_en;
-
+  bit   wakeup_time_en;
+  logic pd_prev;
 
   `DV_ALERT_IF_CONNECT
 
@@ -213,27 +213,35 @@ module tb;
   always @(posedge clk_aon or negedge rst_aon_n) begin
     if (!rst_aon_n) begin
       wakeup_time <= 0;
-      wakeup_time_en <= 1;
+      wakeup_time_en <= 0;
+      pd_prev <= 0;
     end else begin
-      if (adc_o.pd == 1) begin
+      if (adc_o.pd & ~pd_prev) begin
+        // Positive edge on adc_o.pd begin counting wakeup time
         wakeup_time <= 0;
         wakeup_time_en <= 1;
-      end else begin
-        if (adc_o.pd == 1) wakeup_time_en <= 0;
-        else if (wakeup_time_en) wakeup_time <= wakeup_time + 1;
+      end else if (~adc_o.pd & pd_prev) begin
+        // Negative edge on adc_o.pd stop counting wakeup time
+        wakeup_time_en <= 0;
+      end else if (wakeup_time_en) begin
+        wakeup_time <= wakeup_time + 1;
       end
+      // Delay PD for edge detect
+      pd_prev <= adc_o.pd;
     end
   end
   // Pulse to check wake up counter
-  wire wakeup_time_chk = adc_o.pd & wakeup_time_en;
+  wire wakeup_time_chk = ~adc_o.pd & pd_prev;
+  // Low power test mode
+  wire testmode_low_power = cfg_testmode inside {AdcCtrlTestmodeLowpower};
 
   // Check the DUT enters low power
   // In low power test mode, after falling edges on power down
   // and the last ADC channel select, power down should be re-asserted within 10 clock cycles
   //verilog_format: off - avoid bad formatting
   property EnterLowPower_P;
-    ((cfg_testmode == AdcCtrlLowpower) && $fell(adc_o.pd))
-        ##[+] $fell(adc_o.channel_sel[ADC_CTRL_CHANNELS - 1]) |=> ##[0:10] adc_o.pd;
+    first_match($fell(adc_o.pd) ##[+] $fell(adc_o.channel_sel[ADC_CTRL_CHANNELS - 1])) |=>
+        ##[0:3] adc_o.pd;
   endproperty
   //verilog_format: on
 
@@ -245,7 +253,7 @@ module tb;
           ~rst_aon_n)
   `ASSERT(WakeupTime_A, $rose(wakeup_time_chk) |-> wakeup_time == cfg_wakeup_time, clk_aon,
           ~rst_aon_n)
-  `ASSERT(EnterLowPower_A, EnterLowPower_P, clk_aon, ~rst_aon_n)
+  `ASSERT(EnterLowPower_A, EnterLowPower_P, clk_aon, ~rst_aon_n | ~testmode_low_power)
 
 
   // Assertion controls
@@ -253,6 +261,7 @@ module tb;
   `ADC_CTRL_DV_ASSERT_CTRL("ADC_IF_A_CTRL", adc_if[1])
   `DV_ASSERT_CTRL("PwrupTime_A_CTRL", PwrupTime_A)
   `DV_ASSERT_CTRL("WakeupTime_A_CTRL", WakeupTime_A)
+  `DV_ASSERT_CTRL("EnterLowPower_A_CTRL", EnterLowPower_A)
 
 endmodule
 
