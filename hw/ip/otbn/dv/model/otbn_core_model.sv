@@ -22,10 +22,7 @@ module otbn_core_model
   // Scope of an RTL OTBN implementation (for DPI). This should be give the scope for the top-level
   // of a real implementation running alongside. We will use it to check DMEM and register file
   // contents on completion of an operation.
-  parameter string DesignScope = "",
-
-  // Enable internal secure wipe
-  parameter bit SecWipeEn  = 1'b0
+  parameter string DesignScope = ""
 )(
   input  logic               clk_i,
   input  logic               clk_edn_i,
@@ -64,7 +61,7 @@ module otbn_core_model
   // Create and destroy an object through which we can talk to the ISS.
   chandle model_handle;
   initial begin
-    model_handle = otbn_model_init(MemScope, DesignScope, SecWipeEn);
+    model_handle = otbn_model_init(MemScope, DesignScope);
     assert(model_handle != null);
   end
   final begin

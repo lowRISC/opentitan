@@ -9,11 +9,7 @@
  * cycle and provides it to the simulation environment via a DPI call. It uses `otbn_trace_if` to
  * get the information it needs. For further information see `hw/ip/otbn/dv/tracer/README.md`.
  */
-module otbn_tracer
-#(
-  // Enable internal secure wipe
-  parameter bit SecWipeEn  = 1'b0
-) (
+module otbn_tracer (
   input  logic  clk_i,
   input  logic  rst_ni,
 
@@ -206,12 +202,11 @@ module otbn_tracer
                                otbn_trace.insn_data));
       end
     end
-    if (SecWipeEn) begin
-      if (otbn_trace.secure_wipe_done) begin
-        output_trace(WipeCompletePrefix, "");
-      end else if (otbn_trace.secure_wipe_running) begin
-        output_trace(WipeInProgressPrefix, "");
-      end
+
+    if (otbn_trace.secure_wipe_done) begin
+      output_trace(WipeCompletePrefix, "");
+    end else if (otbn_trace.secure_wipe_running) begin
+      output_trace(WipeInProgressPrefix, "");
     end
   endfunction
 

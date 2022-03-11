@@ -19,8 +19,6 @@ module otbn_core
   parameter int ImemSizeByte = 4096,
   // Size of the data memory, in bytes
   parameter int DmemSizeByte = 4096,
-  // Enable internal secure wipe
-  parameter bit SecWipeEn = 1'b0,
 
   // Default seed for URND PRNG
   parameter urnd_prng_seed_t RndCnstUrndPrngSeed = RndCnstUrndPrngSeedDefault,
@@ -260,9 +258,7 @@ module otbn_core
 
   // Start stop control start OTBN execution when requested and deals with any pre start or post
   // stop actions.
-  otbn_start_stop_control #(
-    .SecWipeEn(SecWipeEn)
-  ) u_otbn_start_stop_control (
+  otbn_start_stop_control u_otbn_start_stop_control (
     .clk_i,
     .rst_ni,
 

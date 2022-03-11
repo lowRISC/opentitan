@@ -8,8 +8,7 @@
 
 `ifndef SYNTHESIS
 import "DPI-C" context function chandle otbn_model_init(string mem_scope,
-                                                        string design_scope,
-                                                        bit    enable_secure_wipe);
+                                                        string design_scope);
 
 import "DPI-C" function void otbn_model_destroy(chandle model);
 

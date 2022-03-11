@@ -74,9 +74,6 @@ class OTBNSim:
         self.state.set_fsm_state(FsmState.MEM_SEC_WIPE)
         self.state.ext_regs.write('STATUS', new_status, True)
 
-    def configure(self, enable_secure_wipe: bool) -> None:
-        self.state.secure_wipe_enabled = enable_secure_wipe
-
     def _fetch(self, pc: int) -> OTBNInsn:
         word_pc = pc >> 2
         if word_pc >= len(self.program):

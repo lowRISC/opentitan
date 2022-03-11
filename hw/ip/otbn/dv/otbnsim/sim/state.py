@@ -107,11 +107,6 @@ class OTBNState:
         self._time_to_imem_invalidation = None  # type: Optional[int]
         self.invalidated_imem = False
 
-        # This flag controls whether we do the secure wipe sequence after
-        # finishing an operation. Eventually it will be unconditionally enabled
-        # (once everything works together properly).
-        self.secure_wipe_enabled = False
-
         # This is the number of cycles left for wiping. When we're in the
         # WIPING_GOOD or WIPING_BAD state, this should be a non-negative
         # number. Initialise to -1 to catch bugs if we forget to set it.
@@ -351,8 +346,7 @@ class OTBNState:
             # Switch to a 'wiping' state
             self._next_fsm_state = (FsmState.WIPING_BAD if should_lock
                                     else FsmState.WIPING_GOOD)
-            self.wipe_cycles = (_WIPE_CYCLES
-                                if self.secure_wipe_enabled else 2)
+            self.wipe_cycles = _WIPE_CYCLES
         elif self._fsm_state in [FsmState.WIPING_BAD, FsmState.WIPING_GOOD]:
             assert should_lock
             self._next_fsm_state = FsmState.WIPING_BAD
@@ -458,9 +452,6 @@ class OTBNState:
         self.invalidated_imem = False
 
     def wipe(self) -> None:
-        if not self.secure_wipe_enabled:
-            return
-
         self.gprs.empty_call_stack()
         self.gprs.wipe()
         self.wdrs.wipe()

@@ -18,9 +18,6 @@ module otbn_top_sim (
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte);
   localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte);
 
-  // Enable internal secure wipe
-  localparam bit SecWipeEn  = 1'b0;
-
   // Fixed key and nonce for scrambling in verilator environment
   localparam logic [127:0] TestScrambleKey   = 128'h48ecf6c738f0f108a5b08620695ffd4d;
   localparam logic [63:0]  TestScrambleNonce = 64'hf88c2578fa4cd123;
@@ -69,8 +66,7 @@ module otbn_top_sim (
 
   otbn_core #(
     .ImemSizeByte ( ImemSizeByte ),
-    .DmemSizeByte ( DmemSizeByte ),
-    .SecWipeEn    ( SecWipeEn    )
+    .DmemSizeByte ( DmemSizeByte )
   ) u_otbn_core (
     .clk_i                       ( IO_CLK                     ),
     .rst_ni                      ( IO_RST_N                   ),
@@ -168,7 +164,7 @@ module otbn_top_sim (
   assign edn_urnd_data_valid = edn_urnd_req & edn_urnd_ack;
 
   bind otbn_core otbn_trace_if #(.ImemAddrWidth, .DmemAddrWidth) i_otbn_trace_if (.*);
-  bind otbn_core otbn_tracer #(.SecWipeEn) u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
+  bind otbn_core otbn_tracer u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
 
   // Convert from core_err_bits_t to err_bits_t
   assign otbn_err_bits = '{
@@ -327,8 +323,7 @@ module otbn_top_sim (
 
   otbn_core_model #(
     .MemScope        ( ".." ),
-    .DesignScope     ( DesignScope ),
-    .SecWipeEn       ( SecWipeEn    )
+    .DesignScope     ( DesignScope )
   ) u_otbn_core_model (
     .clk_i                 ( IO_CLK ),
     .clk_edn_i             ( IO_CLK ),
@@ -442,7 +437,7 @@ module otbn_top_sim (
     end
   end
   always_ff @(negedge IO_CLK or negedge IO_RST_N) begin
-    if (IO_RST_N && u_otbn_core_model.check_due) begin
+    if (IO_RST_N && u_otbn_core.u_otbn_controller.done_complete) begin
       OtbnTopDumpState();
     end
   end

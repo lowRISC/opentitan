@@ -14,10 +14,6 @@ prefixed with "0x" if they are hexadecimal.
 
     start_operation         Start an execution or DMEM/IMEM secure wipe
 
-    configure               Enable or disable the secure wipe machinery (this
-                            is a temporary feature until everything works
-                            together)
-
     step                    Run one instruction. Print trace information to
                             stdout.
 
@@ -136,15 +132,6 @@ def on_start_operation(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     return None
 
 
-def on_configure(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    check_arg_count('configure', 1, args)
-
-    enable = read_word('secure_wipe_en', args[0], 1) != 0
-    sim.configure(enable)
-
-    return None
-
-
 def on_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     '''Step one instruction'''
     check_arg_count('step', 0, args)
@@ -152,7 +139,7 @@ def on_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     pc = sim.state.pc
     assert 0 == pc & 3
 
-    was_wiping = sim.state.wiping() and sim.state.secure_wipe_enabled
+    was_wiping = sim.state.wiping()
 
     insn, changes = sim.step(verbose=False)
     if insn is not None:
@@ -161,8 +148,7 @@ def on_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
         # The trailing space is a bit naff but matches the behaviour in the RTL
         # tracer, where it's rather difficult to change.
         hdr = 'U ' if sim.state.wiping() else 'V '
-    elif (sim.state.executing() or
-          (changes and not sim.state.secure_wipe_enabled)):
+    elif sim.state.executing():
         hdr = 'STALL'
     else:
         hdr = None
@@ -399,7 +385,6 @@ def on_otp_cdc_done(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 _HANDLERS = {
     'start_operation': on_start_operation,
     'otp_key_cdc_done': on_otp_cdc_done,
-    'configure': on_configure,
     'step': on_step,
     'load_elf': on_load_elf,
     'add_loop_warp': on_add_loop_warp,
