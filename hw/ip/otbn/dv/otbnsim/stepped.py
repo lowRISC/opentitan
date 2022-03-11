@@ -161,9 +161,16 @@ def on_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
         if rt is not None:
             rtl_changes.append(rt)
 
-    if hdr is None:
-        assert not rtl_changes
-    else:
+    # This is a bit of a hack. Very occasionally, we'll see traced changes when
+    # there's not actually an instruction in flight. For example, this happens
+    # if there's a RND request still pending when an operation stops. In this
+    # case, we might see a change where we drop the REQ signal after the secure
+    # wipe has finished. Rather than define a special "do-nothing" trace entry
+    # format for this situation, we cheat and use STALL.
+    if hdr is None and rtl_changes:
+        hdr = 'STALL'
+
+    if hdr is not None:
         print(hdr)
         for rt in rtl_changes:
             print(rt)
