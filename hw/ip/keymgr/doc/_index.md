@@ -270,31 +270,23 @@ The error is reported in {{< regref FAULT_STATUS >}} and the key manager continu
 
 ### Faults and Operational Faults
 
-Since fatal errors (faults) can happen at any time, their impact on the key manager depends on transaction timing.
-
-If the fault happens while a transaction is ongoing, key manager transitions to the `Invalid` [state](#invalid-entry-wiping).
-
-If the fault happens while there is no transaction, an alert is first sent to the alert handler.
-If before the alert handler escalates an operation is run, the key manager again transitions to `Invalid` [state](#invalid-entry-wiping).
-If the alert handler escalates and disables the key manager, then the key manager will also transition to `Invalid` state if it is not already there.
+When a fatal error is encountered, the key manager transitions to the `Invalid` [state](#invalid-entry-wiping).
+The following are a few examples of when the error occurs and how the key manager behaves.
 
 #### Example 1: Fault During Operation
 The key manager is running a generate operation and a non-onehot command was observed by the kmac interface.
-Since the non-onehot condition is a fault, it will be reflected in {{< regref FAULT_STATUS >}}.
-Since an operation was ongoing when this fault was seen, it will also be reflected in {{< regref ERR_CODE.INVALID_OP >}}.
-This is considered an operational fault and begins transition to `Invalid`.
+Since the non-onehot condition is a fault, it is reflected in {{< regref FAULT_STATUS >}} and a fatal alert is generated.
+The key manager transitions to `Invalid` state, wipes internal storage and reports an invalid operation in {{< regref ERR_CODE.INVALID_OP >}}.
 
 #### Example 2: Fault During Idle
 The key manager is NOT running an operation and is idle.
-During this time, a fault was observed on the regfile (shadow storage error) and FSM (control FSM integrity error).
-The faults will be reflected in {{< regref FAULT_STATUS >}}.
-
-This is **not** considered an operational fault and the key manager will remain in its current state until an operation is invoked or the alert handler escalates.
+During this time, a fault is observed on the regfile (shadow storage error) and FSM (control FSM integrity error).
+The faults are reflected in {{< regref FAULT_STATUS >}}.
+The key manager transitions to `Invalid` state, wipes internal storage but does not report an invalid operation.
 
 #### Example 3: Operation after Fault Detection
-Continuing from the example above, assume now the key manager begins an operation.
-Since the key manager has previous encountered a fault, any operation now is considered an operational fault and begins transition to the `Invalid` [state](#invalid-entry-wiping).
-
+Continuing from the example above, the key manager now begins an operation.
+Since the key manager is already in `Invalid` state, it does not wipe internal storage and reports an invalid operation in {{< regref ERR_CODE.INVALID_OP >}}.
 
 #### Additional Details on Invalid Input
 
