@@ -70,13 +70,14 @@ class OtbnTraceUtil : public SimCtrlExtension {
     // some arguments
     optind = 1;
     while (1) {
-      int c = getopt_long(argc, argv, "h", long_options, nullptr);
+      int c = getopt_long(argc, argv, "-h", long_options, nullptr);
       if (c == -1) {
         break;
       }
 
       switch (c) {
         case 0:
+        case 1:
           break;
         case 'l':
           return SetupTraceLog(optarg);
