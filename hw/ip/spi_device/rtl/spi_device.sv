@@ -355,6 +355,19 @@ module spi_device
 
   // TPM ---------------------------------------------------------------
 
+  /////////////////
+  // CSb Buffers //
+  /////////////////
+  // Split the CSB into multiple explicit buffers. One for reset, two for each
+  // clock domains.
+  logic rst_csb_buf, sys_csb, sck_csb;
+  prim_buf #(
+    .Width (3)
+  ) u_csb_buf (
+    .in_i  ({3{cio_csb_i}}),
+    .out_o ({rst_csb_buf, sys_csb, sck_csb})
+  );
+
   //////////////////////////////////////////////////////////////////////
   // Connect phase (between control signals above and register module //
   //////////////////////////////////////////////////////////////////////
@@ -401,7 +414,7 @@ module spi_device
   prim_flop_2sync #(.Width(1)) u_sync_csb (
     .clk_i,
     .rst_ni,
-    .d_i(cio_csb_i),
+    .d_i(sys_csb),
     .q_o(csb_syncd)
   );
 
@@ -816,7 +829,7 @@ module spi_device
   prim_clock_mux2 #(
     .NoFpgaBufG(1'b1)
   ) u_csb_rst_scan_mux (
-    .clk0_i(rst_ni & ~cio_csb_i),
+    .clk0_i(rst_ni & ~rst_csb_buf),
     .clk1_i(scan_rst_ni),
     .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[CsbRstMuxSel])),
     .clk_o(rst_spi_n)
@@ -913,7 +926,7 @@ module spi_device
     .clk_i,
     .rst_ni,
 
-    .d_i      (cio_csb_i),
+    .d_i      (sys_csb),
     .q_sync_o (         ),
 
     // sys_csb_assertion can be detected but no usage
@@ -930,7 +943,7 @@ module spi_device
     .clk_i  (clk_spi_in_buf),
     .rst_ni (rst_spi_n),
 
-    .d_i      (cio_csb_i),
+    .d_i      (sck_csb),
     .q_sync_o (         ),
 
     // posedge(deassertion) cannot be detected as clock could be absent.
@@ -1133,7 +1146,7 @@ module spi_device
     .data_i       (p2s_data),
     .data_sent_o  (p2s_sent),
 
-    .csb_i        (cio_csb_i),
+    .csb_i        (sck_csb),
     .s_en_o       (internal_sd_en),
     .s_o          (internal_sd),
 
@@ -1312,7 +1325,7 @@ module spi_device
     .sys_clk_i  (clk_i),
     .sys_rst_ni (rst_ni),
 
-    .csb_i (cio_csb_i),
+    .csb_i (sys_csb),
 
     .sys_status_we_i (readstatus_qe),
     .sys_status_i    (readstatus_q),
