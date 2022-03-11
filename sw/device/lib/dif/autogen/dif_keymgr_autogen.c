@@ -29,11 +29,11 @@ dif_result_t dif_keymgr_alert_force(const dif_keymgr_t *keymgr,
 
   bitfield_bit32_index_t alert_idx;
   switch (alert) {
-    case kDifKeymgrAlertFatalFaultErr:
-      alert_idx = KEYMGR_ALERT_TEST_FATAL_FAULT_ERR_BIT;
-      break;
     case kDifKeymgrAlertRecovOperationErr:
       alert_idx = KEYMGR_ALERT_TEST_RECOV_OPERATION_ERR_BIT;
+      break;
+    case kDifKeymgrAlertFatalFaultErr:
+      alert_idx = KEYMGR_ALERT_TEST_FATAL_FAULT_ERR_BIT;
       break;
     default:
       return kDifBadArg;

@@ -54,11 +54,6 @@ Invalid states, such as `Reset / Disabled` on the other hand, either do not hono
 The data input is dependent on each state, see below.
 
 ### Reset
-
-The key manager working state is not directly reset to any value.
-This ensures there is no deterministic hamming delta upon reset.
-Instead at reset time, the state value is simply unknown - which is expected to be some biased value the registers settle to based on silicon corner and environment conditions.
-
 To begin operation, the state must first transition to Initialize.
 The advancement from `Reset` to `Initialized` is irreversible during the current power cycle.
 Until the initialize command is invoked, the key manager rejects all other software commands.
@@ -515,6 +510,11 @@ When issuing the `generate-output-hw` command, software must select a destinatio
 At the conclusion of the command, key and valid signals are forwarded by the key manager to the selected destination primitive.
 The key and valid signals remain asserted to the selected destination until software explicitly disables the output via another command, or issues another `generate-output-hw` command with a different destination primitive.
 
+## Caveats
+The keymgr {{< regref WORKING_STATE >}} register allows software to discover the current state of `keymgr`.
+However, since these values are not hardened, they can be attacked.
+As such, software should be careful to not make critical system decisions based on these registers.
+They are meant generally for informational or debug purposes.
 
 ## Register Table
 

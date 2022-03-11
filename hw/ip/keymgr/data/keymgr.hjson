@@ -13,14 +13,15 @@
     { name: "op_done",   desc: "Operation complete" },
   ],
   alert_list: [
-    { name: "fatal_fault_err",
-      desc: "Alert for key manager faults.  These errors cannot be caused by software",
-    },
     { name: "recov_operation_err",
       desc: '''
         Alert for key manager operation errors.  These errors could have been caused by
         software'''
-    }
+    },
+    { name: "fatal_fault_err",
+      desc: "Alert for key manager faults.  These errors cannot be caused by software",
+    },
+
   ],
 
   inter_signal_list: [

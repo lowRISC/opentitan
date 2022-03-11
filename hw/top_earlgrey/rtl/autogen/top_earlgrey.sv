@@ -2297,8 +2297,8 @@ module top_earlgrey #(
 
       // Interrupt
       .intr_op_done_o (intr_keymgr_op_done),
-      // [44]: fatal_fault_err
-      // [45]: recov_operation_err
+      // [44]: recov_operation_err
+      // [45]: fatal_fault_err
       .alert_tx_o  ( alert_tx[45:44] ),
       .alert_rx_i  ( alert_rx[45:44] ),
 

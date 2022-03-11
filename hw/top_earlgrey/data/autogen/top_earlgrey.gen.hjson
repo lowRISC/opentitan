@@ -14004,7 +14004,7 @@
       lpg_idx: 18
     }
     {
-      name: keymgr_fatal_fault_err
+      name: keymgr_recov_operation_err
       width: 1
       type: alert
       async: "1"
@@ -14013,7 +14013,7 @@
       lpg_idx: 17
     }
     {
-      name: keymgr_recov_operation_err
+      name: keymgr_fatal_fault_err
       width: 1
       type: alert
       async: "1"

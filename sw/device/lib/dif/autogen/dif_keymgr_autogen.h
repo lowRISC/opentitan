@@ -53,14 +53,14 @@ dif_result_t dif_keymgr_init(mmio_region_t base_addr, dif_keymgr_t *keymgr);
  */
 typedef enum dif_keymgr_alert {
   /**
-   * Alert for key manager faults.  These errors cannot be caused by software
-   */
-  kDifKeymgrAlertFatalFaultErr = 0,
-  /**
    * Alert for key manager operation errors.  These errors could have been
    * caused by software
    */
-  kDifKeymgrAlertRecovOperationErr = 1,
+  kDifKeymgrAlertRecovOperationErr = 0,
+  /**
+   * Alert for key manager faults.  These errors cannot be caused by software
+   */
+  kDifKeymgrAlertFatalFaultErr = 1,
 } dif_keymgr_alert_t;
 
 /**

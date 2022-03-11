@@ -113,16 +113,7 @@ module keymgr_ctrl
     StCtrlInvalid        = 10'b1011000111
   } keymgr_ctrl_state_e;
 
-  // Enumeration for operation handling
-  typedef enum logic [1:0] {
-    StIdle,
-    StAdv,
-    StAdvAck,
-    StWait
-  } keymgr_op_state_e;
-
   keymgr_ctrl_state_e state_q, state_d;
-  keymgr_op_state_e op_state_q, op_state_d;
 
   // There are two versions of the key state, one for sealing one for attestation
   // Among each version, there are multiple shares
@@ -206,8 +197,7 @@ module keymgr_ctrl
                             (~valid_data_chk(kmac_data_i[0]) |
                             (~valid_data_chk(kmac_data_i[1]) & KmacEnMasking));
 
-  assign op_err = sync_err[SyncErrInvalidOp] |
-                  sync_err[SyncErrInvalidIn];
+  assign op_err = |sync_err;
 
   assign op_fault_err = |{sync_fault, async_fault};
 
@@ -275,7 +265,6 @@ module keymgr_ctrl
   end
 
 
-  // key state is intentionally not reset
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       key_state_q <= '0;
@@ -414,7 +403,7 @@ module keymgr_ctrl
     wipe_req = 1'b0;
 
     // invalid operation issued
-    invalid_op = 1'b0;
+    invalid_op = '0;
 
     // data update and select signals
     stage_sel_o = Disable;
@@ -445,10 +434,13 @@ module keymgr_ctrl
 
         // key state is updated when it is an advance call
         // all other operations are invalid, including disable
-        if (advance_sel) begin
+        invalid_op = op_start_i & ~advance_sel;
+
+        // if there was a structural fault before anything began, wipe immediately
+        if (inv_state) begin
+          state_d = StCtrlWipe;
+        end else if (advance_sel) begin
           state_d = StCtrlEntropyReseed;
-        end else if (op_start_i) begin
-          invalid_op = 1'b1;
         end
       end
 
@@ -476,12 +468,8 @@ module keymgr_ctrl
 
       // load the root key.
       StCtrlRootKey: begin
-        // we cannot directly use inv_state here for 2 reasons
-        // - inv_state is sync'd to the completion of a real kmac operation,
-        //   which is not the case here.
-        // - using inv_state would cause a combo loop between init_o and inv_state.
-        init_o = en_i & ~|async_fault;
-        state_d = !init_o ? StCtrlWipe : StCtrlInit;
+        init_o = 1'b1;
+        state_d = inv_state ? StCtrlWipe : StCtrlInit;
       end
 
       // Beginning from the Init state, operations are accepted.
@@ -663,13 +651,29 @@ module keymgr_ctrl
   // Operateion state, handle advance and generate
   /////////////////////////
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      op_state_q <= StIdle;
-    end else begin
-      op_state_q <= op_state_d;
-    end
-  end
+
+  localparam int OpStateWidth = 8;
+  typedef enum logic [OpStateWidth-1:0] {
+    StIdle   = 8'b10010101,
+    StAdv    = 8'b00101000,
+    StAdvAck = 8'b01000011,
+    StWait   = 8'b11111110
+  } keymgr_op_state_e;
+
+  keymgr_op_state_e op_state_q, op_state_d;
+  logic [OpStateWidth-1:0] op_state_raw_q;
+  logic op_fsm_err;
+  assign op_state_q = keymgr_op_state_e'(op_state_raw_q);
+  prim_sparse_fsm_flop #(
+    .StateEnumT(keymgr_op_state_e),
+    .Width(OpStateWidth),
+    .ResetValue(OpStateWidth'(StIdle))
+  ) u_op_state_regs (
+    .clk_i,
+    .rst_ni,
+    .state_i ( op_state_d     ),
+    .state_o ( op_state_raw_q )
+  );
 
   always_comb begin
     op_state_d = op_state_q;
@@ -681,6 +685,8 @@ module keymgr_ctrl
     adv_en_o = 1'b0;
     id_en_o = 1'b0;
     gen_en_o = 1'b0;
+
+    op_fsm_err = 1'b0;
 
     unique case (op_state_q)
       StIdle: begin
@@ -720,8 +726,12 @@ module keymgr_ctrl
         end
       end
 
-      // What should go here?
-      default:;
+      // error state
+      default: begin
+        // allow completion of transaction
+        op_ack = 1'b1;
+        op_fsm_err = 1'b1;
+      end
 
     endcase // unique case (adv_state_q)
   end
@@ -749,7 +759,7 @@ module keymgr_ctrl
   // sync errors
   // When an operation encounters a fault, the operation is always rejected as the FSM
   // transitions to wipe.  When an operation is ongoing and en drops, it is also rejected.
-  assign sync_err_d[SyncErrInvalidOp] = err_vld & (invalid_op | disabled | invalid | op_fault_err);
+  assign sync_err_d[SyncErrInvalidOp] = err_vld & (invalid_op | disabled | invalid | inv_state);
   assign sync_err_d[SyncErrInvalidIn] = err_vld & kmac_input_invalid_i;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -794,19 +804,21 @@ module keymgr_ctrl
   assign async_fault_d[AsyncFaultKmacDone] = kmac_done_err_i;
   assign async_fault_d[AsyncFaultRegIntg]  = regfile_intg_err_i;
   assign async_fault_d[AsyncFaultShadow ]  = shadowed_storage_err_i;
-  assign async_fault_d[AsyncFaultFsmIntg]  = state_intg_err_q | data_fsm_err;
+  assign async_fault_d[AsyncFaultFsmIntg]  = state_intg_err_q | data_fsm_err | op_fsm_err;
   assign async_fault_d[AsyncFaultCntErr ]  = cnt_err;
   assign async_fault_d[AsyncFaultRCntErr]  = reseed_cnt_err_i;
   assign async_fault_d[AsyncFaultSideErr]  = sideload_fsm_err_i;
 
+  // certain errors/faults can only happen when there's an actual kmac transaction,
+  // others can happen with or without.
   // output to error code register
   assign error_o[ErrInvalidOp]    = op_done_o & sync_err[SyncErrInvalidOp];
-  assign error_o[ErrInvalidIn]    = op_done_o & sync_err[SyncErrInvalidIn];
+  assign error_o[ErrInvalidIn]    = op_ack & sync_err[SyncErrInvalidIn];
   assign error_o[ErrShadowUpdate] = async_err[AsyncErrShadowUpdate];
 
   // output to fault code register
-  assign fault_o[FaultKmacOp]    = op_done_o & sync_fault[SyncFaultKmacOp];
-  assign fault_o[FaultKmacOut]   = op_done_o & sync_fault[SyncFaultKmacOut];
+  assign fault_o[FaultKmacOp]    = op_ack & sync_fault[SyncFaultKmacOp];
+  assign fault_o[FaultKmacOut]   = op_ack & sync_fault[SyncFaultKmacOut];
   assign fault_o[FaultKmacCmd]   = async_fault[AsyncFaultKmacCmd];
   assign fault_o[FaultKmacFsm]   = async_fault[AsyncFaultKmacFsm];
   assign fault_o[FaultKmacDone]  = async_fault[AsyncFaultKmacDone];
