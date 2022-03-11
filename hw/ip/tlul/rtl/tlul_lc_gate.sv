@@ -95,7 +95,7 @@ module tlul_lc_gate
     tl_d2h_o      = '0;
     tl_h2d_error  = '0;
 
-    if (lc_tx_test_true_strict(lc_en_buf[2*NumGatesPerDirection]) || !tl_d2h_error.d_valid) begin
+    if (lc_tx_test_true_strict(lc_en_buf[2*NumGatesPerDirection]) && !tl_d2h_error.d_valid) begin
       tl_h2d_int[0] = tl_h2d_i;
       tl_d2h_o      = tl_d2h_int[0];
     end else begin
