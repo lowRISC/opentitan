@@ -21,9 +21,6 @@
 <%def name="construct_classes(block)">\
 
 `include "prim_assert.sv"
-`ifdef UVM
-  import uvm_pkg::*;
-`endif
 
 `ifndef FPV_ON
   `define REGWEN_PATH tb.dut.${reg_block_path}
@@ -50,6 +47,10 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
   max_reg_addr = rb.flat_regs[-1].offset
   windows = rb.windows
 %>\
+
+`ifdef UVM
+  import uvm_pkg::*;
+`endif
 
 // Currently FPV csr assertion only support HRO registers.
 % if num_hro_regs > 0:
@@ -221,5 +222,7 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
 `endif
 % endif
 endmodule
+
+`undef REGWEN_PATH
 </%def>\
 ${construct_classes(block)}
