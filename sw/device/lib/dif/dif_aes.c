@@ -100,6 +100,9 @@ static dif_result_t configure(const dif_aes_t *aes,
   reg = bitfield_field32_write(reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD,
                                transaction->key_len);
 
+  reg = bitfield_field32_write(reg, AES_CTRL_SHADOWED_PRNG_RESEED_RATE_FIELD,
+                               transaction->mask_reseeding);
+
   bool flag = transaction->manual_operation == kDifAesManualOperationManual;
   reg = bitfield_bit32_write(reg, AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, flag);
 

@@ -240,6 +240,27 @@ typedef enum dif_aes_key_provider {
 } dif_aes_key_provider_t;
 
 /**
+ * AES reseeding rate
+ *
+ * Controls the reseeding rate of the internal pseudo-random number generator
+ * (PRNG) used for masking.
+ */
+typedef enum dif_aes_mask_reseeding {
+  /**
+   * The masking PRNG will be reseed every block.
+   */
+  kDifAesReseedPerBlock = 1 << 0,
+  /**
+   * The masking PRNG will be reseed every 64 blocks.
+   */
+  kDifAesReseedPer64Block = 1 << 1,
+  /**
+   * The masking PRNG will be reseed every 8192 blocks.
+   */
+  kDifAesReseedPer8kBlock = 1 << 2,
+} dif_aes_mask_reseeding_t;
+
+/**
  * Parameters for an AES transaction.
  */
 typedef struct dif_aes_transaction {
@@ -249,6 +270,7 @@ typedef struct dif_aes_transaction {
   dif_aes_manual_operation_t manual_operation;
   dif_aes_masking_t masking;
   dif_aes_key_provider_t key_provider;
+  dif_aes_mask_reseeding_t mask_reseeding;
 } dif_aes_transaction_t;
 
 /**
