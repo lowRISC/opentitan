@@ -25,7 +25,7 @@ class adc_ctrl_smoke_vseq extends adc_ctrl_base_vseq;
 
   virtual task pre_start();
     super.pre_start();
-    cfg.testmode = AdcCtrlOneShot;
+    cfg.testmode = AdcCtrlTestmodeOneShot;
     cfg.adc_intr_ctl = 0;
     cfg.adc_wakeup_ctl = 0;
   endtask
