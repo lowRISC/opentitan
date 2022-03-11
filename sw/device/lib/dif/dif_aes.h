@@ -271,6 +271,16 @@ typedef struct dif_aes_transaction {
   dif_aes_masking_t masking;
   dif_aes_key_provider_t key_provider;
   dif_aes_mask_reseeding_t mask_reseeding;
+  /**
+   * If true the internal psudo-random number used for clearing and masking will
+   * be reseeded every time the key changes.
+   */
+  bool reseed_on_key_change;
+  /**
+   * If true the `reseed_on_key_change` will be locked until the device is
+   * reset.
+   */
+  bool reseed_on_key_change_lock;
 } dif_aes_transaction_t;
 
 /**

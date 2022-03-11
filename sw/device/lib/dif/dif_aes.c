@@ -118,6 +118,37 @@ static dif_result_t configure(const dif_aes_t *aes,
 }
 
 /**
+ * Configures the auxiliary options for AES.
+ *
+ * @param aes AES state data.
+ * @param transaction Configuration data, common across all Cipher modes.
+ * @return `dif_result_t`.
+ */
+static dif_result_t configure_aux(const dif_aes_t *aes,
+                                  const dif_aes_transaction_t *transaction) {
+  // Return an error in case the register is locked with a different value.
+  uint32_t reg_val =
+      mmio_region_read32(aes->base_addr, AES_CTRL_AUX_REGWEN_REG_OFFSET);
+  if (!reg_val) {
+    if (mmio_region_get_bit32(
+            aes->base_addr, AES_CTRL_AUX_SHADOWED_REG_OFFSET,
+            AES_CTRL_AUX_SHADOWED_KEY_TOUCH_FORCES_RESEED_BIT) !=
+        transaction->reseed_on_key_change) {
+      return kDifError;
+    }
+    return kDifOk;
+  }
+
+  reg_val = transaction->reseed_on_key_change == true;
+  aes_shadowed_write(aes->base_addr, AES_CTRL_AUX_SHADOWED_REG_OFFSET, reg_val);
+
+  reg_val = transaction->reseed_on_key_change_lock == false;
+  mmio_region_write32(aes->base_addr, AES_CTRL_AUX_REGWEN_REG_OFFSET, reg_val);
+
+  return kDifOk;
+}
+
+/**
  * Sets all "sub-registers" of `aes.KEY`, `aes.IV` or `aes.DATA_IN` multiregs.
  *
  * @param aes AES state data.
@@ -174,6 +205,11 @@ dif_result_t dif_aes_start(const dif_aes_t *aes,
   }
 
   dif_result_t result = configure(aes, transaction);
+  if (result != kDifOk) {
+    return result;
+  }
+
+  result = configure_aux(aes, transaction);
   if (result != kDifOk) {
     return result;
   }
