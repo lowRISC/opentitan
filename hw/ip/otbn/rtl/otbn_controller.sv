@@ -283,7 +283,7 @@ module otbn_controller
                      (state_q == OtbnStateRun) ||
                      (state_q == OtbnStateStall);
 
-  assign locked_o = state_q == OtbnStateLocked;
+  assign locked_o = (state_q == OtbnStateLocked) & ~secure_wipe_running_i;
   assign start_secure_wipe_o = executing & (done_complete | err) & ~secure_wipe_running_i;
 
   assign jump_or_branch = (insn_valid_i &
