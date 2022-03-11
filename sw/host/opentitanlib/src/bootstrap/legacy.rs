@@ -276,7 +276,10 @@ impl UpdateProtocol for Legacy {
                 continue;
             }
 
-            if response.iter().all(|&x| x == response[0]) {
+            if response[..Frame::HASH_LEN]
+                .iter()
+                .all(|&x| x == response[0])
+            {
                 // A response consisteing of all identical bytes is a status code.
                 match LegacyBootstrapError::from(response[0]) {
                     LegacyBootstrapError::NotReady => {
