@@ -173,16 +173,14 @@ dif_result_t dif_aes_reset(const dif_aes_t *aes) {
   aes_clear_internal_state(aes);
 
   // Any values would do, illegal values chosen here.
-  uint32_t reg =
-      bitfield_field32_write(0, AES_CTRL_SHADOWED_OPERATION_FIELD, 0xffffffff);
+  uint32_t reg = bitfield_field32_write(0, AES_CTRL_SHADOWED_OPERATION_FIELD,
+                                        AES_CTRL_SHADOWED_OPERATION_MASK);
 
   reg = bitfield_field32_write(reg, AES_CTRL_SHADOWED_MODE_FIELD,
                                AES_CTRL_SHADOWED_MODE_VALUE_AES_NONE);
 
-  reg =
-      bitfield_field32_write(reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD, 0xffffffff);
-
-  reg = bitfield_bit32_write(reg, AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, true);
+  reg = bitfield_field32_write(reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD,
+                               AES_CTRL_SHADOWED_KEY_LEN_MASK);
 
   aes_shadowed_write(aes->base_addr, AES_CTRL_SHADOWED_REG_OFFSET, reg);
 
