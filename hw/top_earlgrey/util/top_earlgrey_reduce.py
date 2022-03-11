@@ -9,11 +9,13 @@ all auto-generated files. The flash size is reduced in a way that does not impac
 interface of the flash controller and is thus more or less transparent to software.
 """
 import argparse
+from shutil import RegistryError
 import hjson
 import textwrap
 import logging as log
 import subprocess
 import sys
+import re
 
 hdr = '''// Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -49,17 +51,28 @@ def wrapped_docstring():
 
     return '\n\n'.join(textwrap.fill(p) for p in paras)
 
+def _nexysvideo_set_owner_code(filename):
+   with open (filename,'r+') as file:
+    content = file.read()
+    result = re.sub(r'(MANIFEST_LENGTH_FIELD_OWNER_STAGE_MAX)\s0x[a-fA-F0-9]+', r'\1 0x30000', content)
+    if result:
+        file.seek(0)
+        file.write(result)
+        file.truncate()
 
 def _nexysvideo_reduce(cfg):
     log.info("Updating target to nexysvideo settings")
     log.info("Flash to 128 pages")
     log.info("Memory to 64KB")
 
-    for mem in cfg["memory"]:
-        if mem['name'] == 'eflash':
-            mem['pages_per_bank'] = 128
-        if mem['name'] == 'ram_main':
-            mem['size'] = '0x10000'
+    for mod in cfg["module"]:
+        if mod["name"] == "flash_ctrl":
+            if mod["memory"]["mem"]['label'] == 'eflash':
+                mod["memory"]["mem"]["config"]['pages_per_bank'] = 128
+        if mod["name"] == "sram_ctrl_main":
+            if mod["memory"]["ram"]['label'] == 'ram_main':
+                mod["memory"]["ram"]['size'] = '0x10000'
+
 
 def main():
 
@@ -98,6 +111,8 @@ def main():
     top_hjson = top_path + '/hw/top_earlgrey/data/top_earlgrey.hjson'
     orig_hjson = top_hjson + '.orig'
 
+    mainfast_file = top_path + '/sw/device/silicon_creator/lib/manifest.h'
+
     # Modify hjson to change flash size
     with open(top_hjson, "r") as hjson_file:
         cfg = hjson.load(hjson_file,
@@ -109,10 +124,12 @@ def main():
 
     # update value based on target selection
     globals()["_{}_reduce".format(args.target)](cfg)
+    globals()["_{}_set_owner_code".format(args.target)](mainfast_file)
 
     # write back updated hjson
     with open(top_hjson, "w") as hjson_file:
         hjson_file.write(genhdr + hjson.dumps(cfg, hjson_file))
+
 
     # Regenerate auto-generated files
     print("Regenerating all auto-generated files...")
