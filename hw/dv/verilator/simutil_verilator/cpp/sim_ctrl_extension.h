@@ -13,6 +13,13 @@ class SimCtrlExtension {
    * Parse command line arguments
    *
    * Process all recognized command-line arguments from argc/argv.
+   * Note that other extensions might also be registered with their
+   * own command line arguments.
+   *
+   * To make this work properly, the extension must only parse options
+   * (no positional arguments) and must leave the ordering of argv
+   * unchanged. In particular, if the code uses getopt_long, it should
+   * pass an optstring argument starting with a '-' character.
    *
    * @param argc, argv Standard C command line arguments
    * @param exit_app Indicate that program should terminate

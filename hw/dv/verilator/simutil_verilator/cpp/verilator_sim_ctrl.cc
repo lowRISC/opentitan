@@ -114,7 +114,7 @@ bool VerilatorSimCtrl::ParseCommandArgs(int argc, char **argv, bool &exit_app) {
       {nullptr, no_argument, nullptr, 0}};
 
   while (1) {
-    int c = getopt_long(argc, argv, ":c:th", long_options, nullptr);
+    int c = getopt_long(argc, argv, "-:c:th", long_options, nullptr);
     if (c == -1) {
       break;
     }
@@ -124,6 +124,7 @@ bool VerilatorSimCtrl::ParseCommandArgs(int argc, char **argv, bool &exit_app) {
 
     switch (c) {
       case 0:
+      case 1:
         break;
       case 't':
         if (!tracing_possible_) {
