@@ -302,8 +302,8 @@ module spi_device
   logic spi_csb_asserted_pulse  ;
 
   // Read Status input and broadcast
-  logic status_busy_set; // set by HW (upload)
-  logic status_busy_broadcast; // from spid_status
+  logic sck_status_busy_set;       // set by HW (upload)
+  logic sck_status_busy_broadcast; // from spid_status
 
   // Jedec ID
   jedec_cfg_t jedec_cfg;
@@ -1328,14 +1328,14 @@ module spi_device
 
     .io_mode_o   (sub_iomode[IoModeStatus]),
 
-    .inclk_busy_set_i  (status_busy_set), // SCK domain
+    .inclk_busy_set_i  (sck_status_busy_set), // SCK domain
 
-    .inclk_busy_broadcast_o (status_busy_broadcast) // SCK domain
+    .inclk_busy_broadcast_o (sck_status_busy_broadcast) // SCK domain
   );
 
   // Temporary:
   logic unused_busy;
-  assign unused_busy = status_busy_broadcast;
+  assign unused_busy = sck_status_busy_broadcast;
 
   // Tie unused
   logic unused_sub_sram_status;
@@ -1435,7 +1435,7 @@ module spi_device
 
     .io_mode_o (sub_iomode[IoModeUpload]),
 
-    .set_busy_o (status_busy_set),
+    .set_busy_o (sck_status_busy_set),
 
     .sys_cmdfifo_notempty_o  (cmdfifo_notempty),
     .sys_cmdfifo_full_o      (), // not used
