@@ -52,7 +52,6 @@ filesets:
       - lowrisc:prim:edn_req
       - lowrisc:ip:otbn_pkg
       - lowrisc:ip:otp_ctrl_pkg
-      - lowrisc:dv:otbn_model
     files:
       - rtl/otbn_reg_pkg.sv
       - rtl/otbn_reg_top.sv
