@@ -10,6 +10,7 @@ filesets:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
     files:
+      - adc_ctrl_fsm_sva.sv
       - adc_ctrl_bind.sv
     file_type: systemVerilogSource
 

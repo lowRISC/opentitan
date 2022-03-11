@@ -35,7 +35,10 @@ package adc_ctrl_env_pkg;
   parameter int ADC_CTRL_PWRUP_TIME_WIDTH = 4;
   // Width of wakeup field
   parameter int ADC_CTRL_WAKEUP_TIME_WIDTH = 24;
-
+  // Width of adc_sample_ctl field
+  parameter int ADC_CTRL_SAMPLE_CTL_WIDTH = 16;
+  // Width of adc_lp_sample_ctl field
+  parameter int ADC_CTRL_LP_SAMPLE_CTL_WIDTH = 4;
 
   // types
 
@@ -59,16 +62,22 @@ package adc_ctrl_env_pkg;
   typedef virtual pins_if #(1) wakeup_vif_t;
 
   // Type of test we are executing
-  typedef enum {
-    AdcCtrlOneShot,
-    AdcCtrlNormal,
-    AdcCtrlLowpower
+  typedef enum bit [1:0] {
+    AdcCtrlTestmodeOneShot,
+    AdcCtrlTestmodeNormal,
+    AdcCtrlTestmodeLowpower
   } adc_ctrl_testmode_e;
+
+  // Reset to generate
+  typedef enum bit {
+    AdcCtrlResetModeFsm,
+    AdcCtrlResetModeHw
+  } adc_ctrl_reset_mode_e;
 
   // Filter condition coding
   typedef enum bit {
-    ADC_CTRL_FILTER_IN  = 0,
-    ADC_CTRL_FILTER_OUT = 1
+    ADC_CTRL_FILTER_COND_IN  = 0,
+    ADC_CTRL_FILTER_COND_OUT = 1
   } adc_ctrl_filter_cond_e;
 
   // Filter configurration
@@ -84,17 +93,16 @@ package adc_ctrl_env_pkg;
   const
   adc_ctrl_filter_cfg_t
   FILTER_CFG_DEFAULTS[] = '{
-      '{min_v: 149, max_v: 279, cond: ADC_CTRL_FILTER_IN, en: 1},
-      '{min_v: 391, max_v: 524, cond: ADC_CTRL_FILTER_IN, en: 1},
-      '{min_v: 712, max_v: 931, cond: ADC_CTRL_FILTER_IN, en: 1},
-      '{min_v: 712, max_v: 847, cond: ADC_CTRL_FILTER_IN, en: 1},
-      '{min_v: 349, max_v: 512, cond: ADC_CTRL_FILTER_IN, en: 1},
-      '{min_v: 405, max_v: 503, cond: ADC_CTRL_FILTER_IN, en: 1},
-      '{min_v: 186, max_v: 279, cond: ADC_CTRL_FILTER_IN, en: 1},
-      '{min_v: 116, max_v: 954, cond: ADC_CTRL_FILTER_OUT, en: 1}
+      '{min_v: 149, max_v: 279, cond: ADC_CTRL_FILTER_COND_IN, en: 1},
+      '{min_v: 391, max_v: 524, cond: ADC_CTRL_FILTER_COND_IN, en: 1},
+      '{min_v: 712, max_v: 931, cond: ADC_CTRL_FILTER_COND_IN, en: 1},
+      '{min_v: 712, max_v: 847, cond: ADC_CTRL_FILTER_COND_IN, en: 1},
+      '{min_v: 349, max_v: 512, cond: ADC_CTRL_FILTER_COND_IN, en: 1},
+      '{min_v: 405, max_v: 503, cond: ADC_CTRL_FILTER_COND_IN, en: 1},
+      '{min_v: 186, max_v: 279, cond: ADC_CTRL_FILTER_COND_IN, en: 1},
+      '{min_v: 116, max_v: 954, cond: ADC_CTRL_FILTER_COND_OUT, en: 1}
   };
   // functions and tasks
-
 
   // package sources
   `include "adc_ctrl_env_cfg.sv"
