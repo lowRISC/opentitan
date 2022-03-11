@@ -38,7 +38,7 @@ TEST_F(InitTest, Success) {
 class AlertForceTest : public KeymgrTest {};
 
 TEST_F(AlertForceTest, NullArgs) {
-  EXPECT_EQ(dif_keymgr_alert_force(nullptr, kDifKeymgrAlertFatalFaultErr),
+  EXPECT_EQ(dif_keymgr_alert_force(nullptr, kDifKeymgrAlertRecovOperationErr),
             kDifBadArg);
 }
 
@@ -51,14 +51,14 @@ TEST_F(AlertForceTest, BadAlert) {
 TEST_F(AlertForceTest, Success) {
   // Force first alert.
   EXPECT_WRITE32(KEYMGR_ALERT_TEST_REG_OFFSET,
-                 {{KEYMGR_ALERT_TEST_FATAL_FAULT_ERR_BIT, true}});
-  EXPECT_EQ(dif_keymgr_alert_force(&keymgr_, kDifKeymgrAlertFatalFaultErr),
+                 {{KEYMGR_ALERT_TEST_RECOV_OPERATION_ERR_BIT, true}});
+  EXPECT_EQ(dif_keymgr_alert_force(&keymgr_, kDifKeymgrAlertRecovOperationErr),
             kDifOk);
 
   // Force last alert.
   EXPECT_WRITE32(KEYMGR_ALERT_TEST_REG_OFFSET,
-                 {{KEYMGR_ALERT_TEST_RECOV_OPERATION_ERR_BIT, true}});
-  EXPECT_EQ(dif_keymgr_alert_force(&keymgr_, kDifKeymgrAlertRecovOperationErr),
+                 {{KEYMGR_ALERT_TEST_FATAL_FAULT_ERR_BIT, true}});
+  EXPECT_EQ(dif_keymgr_alert_force(&keymgr_, kDifKeymgrAlertFatalFaultErr),
             kDifOk);
 }
 

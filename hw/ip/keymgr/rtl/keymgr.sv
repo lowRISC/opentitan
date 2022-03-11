@@ -84,7 +84,7 @@ module keymgr
   /////////////////////////////////////
   // Anchor incoming seeds and constants
   /////////////////////////////////////
-  localparam int TotalSeedWidth = KeyWidth * 9;
+  localparam int TotalSeedWidth = KeyWidth * 10;
   seed_t revision_seed;
   seed_t creator_identity_seed;
   seed_t owner_int_identity_seed;
@@ -94,6 +94,7 @@ module keymgr
   seed_t aes_seed;
   seed_t otbn_seed;
   seed_t kmac_seed;
+  seed_t none_seed;
 
   prim_sec_anchor_buf #(
     .Width(TotalSeedWidth)
@@ -106,7 +107,8 @@ module keymgr
            RndCnstHardOutputSeed,
            RndCnstAesSeed,
            RndCnstOtbnSeed,
-           RndCnstKmacSeed}),
+           RndCnstKmacSeed,
+           RndCnstNoneSeed}),
     .out_o({revision_seed,
             creator_identity_seed,
             owner_int_identity_seed,
@@ -115,7 +117,8 @@ module keymgr
             hard_output_seed,
             aes_seed,
             otbn_seed,
-            kmac_seed})
+            kmac_seed,
+            none_seed})
   );
 
   // Register module
@@ -231,6 +234,7 @@ module keymgr
     .entropy_i('0),
     .state_o(lfsr)
   );
+  `ASSERT_INIT(LfsrWidth_A, LfsrWidth == 64)
 
 
   logic [Shares-1:0][RandWidth-1:0] ctrl_rand;
@@ -447,7 +451,7 @@ module keymgr
   assign cipher_sel = keymgr_key_dest_e'(reg2hw.control_shadowed.dest_sel.q);
   assign cipher_seed = cipher_sel == Aes  ? aes_seed  :
                        cipher_sel == Kmac ? kmac_seed :
-                       cipher_sel == Otbn ? otbn_seed : RndCnstNoneSeed;
+                       cipher_sel == Otbn ? otbn_seed : none_seed;
   assign output_key = mubi4_test_true_strict(hw_key_sel) ? hard_output_seed :
                       soft_output_seed;
   assign gen_in = invalid_stage_sel ? {GenLfsrCopies{lfsr[31:0]}} : {reg2hw.key_version,
@@ -669,7 +673,7 @@ module keymgr
   assign fault_alert_test = reg2hw.alert_test.fatal_fault_err.q &
                             reg2hw.alert_test.fatal_fault_err.qe;
   prim_alert_sender #(
-    .AsyncOn(AlertAsyncOn[0]),
+    .AsyncOn(AlertAsyncOn[1]),
     .IsFatal(1)
   ) u_fault_alert (
     .clk_i,
@@ -678,15 +682,15 @@ module keymgr
     .alert_req_i(fault_err_req_q),
     .alert_ack_o(fault_err_ack),
     .alert_state_o(),
-    .alert_rx_i(alert_rx_i[0]),
-    .alert_tx_o(alert_tx_o[0])
+    .alert_rx_i(alert_rx_i[1]),
+    .alert_tx_o(alert_tx_o[1])
   );
 
   logic op_err_alert_test;
   assign op_err_alert_test = reg2hw.alert_test.recov_operation_err.q &
                              reg2hw.alert_test.recov_operation_err.qe;
   prim_alert_sender #(
-    .AsyncOn(AlertAsyncOn[1]),
+    .AsyncOn(AlertAsyncOn[0]),
     .IsFatal(0)
   ) u_op_err_alert (
     .clk_i,
@@ -695,8 +699,8 @@ module keymgr
     .alert_req_i(op_err_req_q),
     .alert_ack_o(op_err_ack),
     .alert_state_o(),
-    .alert_rx_i(alert_rx_i[1]),
-    .alert_tx_o(alert_tx_o[1])
+    .alert_rx_i(alert_rx_i[0]),
+    .alert_tx_o(alert_tx_o[0])
   );
 
   // known asserts
@@ -710,6 +714,7 @@ module keymgr
   `ASSERT_KNOWN(OtbnKeyKnownO_A, otbn_key_o)
   `ASSERT_KNOWN(KmacDataKnownO_A, kmac_data_o)
 
+
   // kmac parameter consistency
   // Both modules must be consistent with regards to masking assumptions
   logic unused_kmac_en_masking;
@@ -720,12 +725,14 @@ module keymgr
   // Ensure all parameters are consistent
   `ASSERT_INIT(FaultCntMatch_A, FaultLastPos == AsyncFaultLastIdx + SyncFaultLastIdx)
   `ASSERT_INIT(ErrCntMatch_A, ErrLastPos == AsyncErrLastIdx + SyncErrLastIdx)
+  `ASSERT_INIT(StageMatch_A, KeyMgrStages == Disable)
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrlCntAlertCheck_A, u_ctrl.u_cnt, alert_tx_o[0])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(KmacIfCntAlertCheck_A, u_kmac_if.u_cnt, alert_tx_o[0])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrlCntAlertCheck_A, u_ctrl.u_cnt, alert_tx_o[1])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(KmacIfCntAlertCheck_A, u_kmac_if.u_cnt, alert_tx_o[1])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ReseedCtrlCntAlertCheck_A, u_reseed_ctrl.u_reseed_cnt,
-                                         alert_tx_o[0])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlMainFsmCheck_A, u_ctrl.u_state_regs, alert_tx_o[0])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlDataFsmCheck_A, u_ctrl.u_data_state_regs, alert_tx_o[0])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacIfFsmCheck_A, u_kmac_if.u_state_regs, alert_tx_o[0])
+                                         alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlMainFsmCheck_A, u_ctrl.u_state_regs, alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlDataFsmCheck_A, u_ctrl.u_data_state_regs, alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlOpFsmCheck_A, u_ctrl.u_op_state_regs, alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacIfFsmCheck_A, u_kmac_if.u_state_regs, alert_tx_o[1])
 endmodule // keymgr

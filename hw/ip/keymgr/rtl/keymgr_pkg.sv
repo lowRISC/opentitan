@@ -13,7 +13,7 @@ package keymgr_pkg;
   parameter int OtbnKeyWidth = 384;
   parameter int DigestWidth = 128;     // uses truncated hash
   parameter int KmacDataIfWidth = 64;  // KMAC interface data width
-  parameter int KeyMgrStages = 3;      // Number of key manager stages (creator, ownerInt, owner)
+  parameter int KeyMgrStages = 3; // Number of key manager stages (creator, ownerInt, owner)
   parameter int SwBindingWidth = 32 * keymgr_reg_pkg::NumSwBindingReg;
   parameter int SaltWidth = 32 * keymgr_reg_pkg::NumSaltReg;
   parameter int Shares = 2; // number of key shares
@@ -77,7 +77,6 @@ package keymgr_pkg;
   // key version + salt + key ID + constant
   parameter int GenDataWidth = 32 + SaltWidth + KeyWidth*2;
   parameter int StageWidth = $clog2(KeyMgrStages);
-
   // Max Payload Width to derivation function
   // see security strength description https://keccak.team/keccak.html
   // The max width here is chosen arbitrarily to ensure we do not get out of hand.
