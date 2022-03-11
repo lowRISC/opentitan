@@ -396,7 +396,10 @@ module keymgr_ctrl
   assign dis_state = op_ack & dis_req;
 
   // SEC_CM: CTRL.FSM.LOCAL_ESC
-  assign inv_state = op_ack & op_fault_err;
+  // begin invalidation when faults are observed.
+  // sync faults only invalidate on transaction boudaries
+  // async faults begin invalidating immediately
+  assign inv_state = |fault_o;
 
   always_comb begin
     // persistent data
@@ -768,6 +771,8 @@ module keymgr_ctrl
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       sync_fault_q <= '0;
+    end else if (op_done_o) begin
+       sync_fault_q <= '0;
     end else if (op_update) begin
       sync_fault_q <= sync_fault_d;
     end
