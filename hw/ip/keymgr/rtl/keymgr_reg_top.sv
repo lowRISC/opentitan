@@ -118,8 +118,8 @@ module keymgr_reg_top (
   logic intr_test_we;
   logic intr_test_wd;
   logic alert_test_we;
-  logic alert_test_fatal_fault_err_wd;
   logic alert_test_recov_operation_err_wd;
+  logic alert_test_fatal_fault_err_wd;
   logic cfg_regwen_re;
   logic cfg_regwen_qs;
   logic start_we;
@@ -390,22 +390,7 @@ module keymgr_reg_top (
   logic alert_test_qe;
   logic [1:0] alert_test_flds_we;
   assign alert_test_qe = &alert_test_flds_we;
-  //   F[fatal_fault_err]: 0:0
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_alert_test_fatal_fault_err (
-    .re     (1'b0),
-    .we     (alert_test_we),
-    .wd     (alert_test_fatal_fault_err_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (alert_test_flds_we[0]),
-    .q      (reg2hw.alert_test.fatal_fault_err.q),
-    .qs     ()
-  );
-  assign reg2hw.alert_test.fatal_fault_err.qe = alert_test_qe;
-
-  //   F[recov_operation_err]: 1:1
+  //   F[recov_operation_err]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test_recov_operation_err (
@@ -414,11 +399,26 @@ module keymgr_reg_top (
     .wd     (alert_test_recov_operation_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (alert_test_flds_we[1]),
+    .qe     (alert_test_flds_we[0]),
     .q      (reg2hw.alert_test.recov_operation_err.q),
     .qs     ()
   );
   assign reg2hw.alert_test.recov_operation_err.qe = alert_test_qe;
+
+  //   F[fatal_fault_err]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_fatal_fault_err (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_fatal_fault_err_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[1]),
+    .q      (reg2hw.alert_test.fatal_fault_err.q),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.fatal_fault_err.qe = alert_test_qe;
 
 
   // R[cfg_regwen]: V(True)
@@ -2515,9 +2515,9 @@ module keymgr_reg_top (
   assign intr_test_wd = reg_wdata[0];
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
-  assign alert_test_fatal_fault_err_wd = reg_wdata[0];
+  assign alert_test_recov_operation_err_wd = reg_wdata[0];
 
-  assign alert_test_recov_operation_err_wd = reg_wdata[1];
+  assign alert_test_fatal_fault_err_wd = reg_wdata[1];
   assign cfg_regwen_re = addr_hit[4] & reg_re & !reg_error;
   assign start_we = addr_hit[5] & reg_we & !reg_error;
 

@@ -37,11 +37,11 @@ package keymgr_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } fatal_fault_err;
+    } recov_operation_err;
     struct packed {
       logic        q;
       logic        qe;
-    } recov_operation_err;
+    } fatal_fault_err;
   } keymgr_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -354,8 +354,8 @@ package keymgr_reg_pkg;
   parameter logic [0:0] KEYMGR_INTR_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_INTR_TEST_OP_DONE_RESVAL = 1'h 0;
   parameter logic [1:0] KEYMGR_ALERT_TEST_RESVAL = 2'h 0;
-  parameter logic [0:0] KEYMGR_ALERT_TEST_FATAL_FAULT_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_ALERT_TEST_RECOV_OPERATION_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] KEYMGR_ALERT_TEST_FATAL_FAULT_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_CFG_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] KEYMGR_CFG_REGWEN_EN_RESVAL = 1'h 1;
   parameter logic [0:0] KEYMGR_SW_BINDING_REGWEN_RESVAL = 1'h 1;
