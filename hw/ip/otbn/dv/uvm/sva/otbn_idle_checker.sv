@@ -23,12 +23,14 @@ module otbn_idle_checker
   assign do_start = start_req && (hw2reg.status.d == otbn_pkg::StatusIdle);
 
   // Our model of whether OTBN is running or not. We start on do_start and stop on done.
-  logic running_q, running_d;
+  logic running_qq, running_q, running_d;
   always @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      running_q <= 1'b0;
+      running_q  <= 1'b0;
+      running_qq <= 1'b0;
     end else begin
-      running_q <= running_d;
+      running_q  <= running_d;
+      running_qq <= running_q;
     end
   end
   assign running_d = (do_start & ~running_q) | (running_q & ~done_i);
@@ -40,7 +42,6 @@ module otbn_idle_checker
   `ASSERT(IdleIfStart_A, do_start |-> !running_q)
 
   // Check that we've modelled the running/not-running logic correctly. The idle_o pin from OTBN
-  // should be true iff running is false
-  `ASSERT(IdleIfNotRunning_A, (idle_o_i == prim_mubi_pkg::MuBi4True) ^ running_q)
-
+  // should be true iff running is false (`running_qq` used as idle_o has a one cycle delay)
+  `ASSERT(IdleIfNotRunning_A, (idle_o_i == prim_mubi_pkg::MuBi4True) ^ running_qq)
 endmodule
