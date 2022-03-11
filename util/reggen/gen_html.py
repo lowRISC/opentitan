@@ -296,15 +296,18 @@ def gen_html_reg_block(outfile: TextIO,
                        comp: str,
                        width: int,
                        rnames: Set[str]) -> None:
-    for x in rb.entries:
-        if isinstance(x, Register):
-            gen_html_register(outfile, x, comp, width, rnames)
-        elif isinstance(x, MultiRegister):
-            for reg in x.regs:
-                gen_html_register(outfile, reg, comp, width, rnames)
-        else:
-            assert isinstance(x, Window)
-            gen_html_window(outfile, x, comp, width, rnames)
+    if len(rb.entries) == 0:
+        genout(outfile, 'This interface does not expose any registers.')
+    else:
+        for x in rb.entries:
+            if isinstance(x, Register):
+                gen_html_register(outfile, x, comp, width, rnames)
+            elif isinstance(x, MultiRegister):
+                for reg in x.regs:
+                    gen_html_register(outfile, reg, comp, width, rnames)
+            else:
+                assert isinstance(x, Window)
+                gen_html_window(outfile, x, comp, width, rnames)
 
 
 def gen_html(block: IpBlock, outfile: TextIO) -> int:
