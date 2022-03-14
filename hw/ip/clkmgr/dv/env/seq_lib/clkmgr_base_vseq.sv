@@ -88,6 +88,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     cfg.clkmgr_vif.update_main_ip_clk_en(1'b0);
     cfg.clkmgr_vif.update_usb_ip_clk_en(1'b0);
     cfg.clkmgr_vif.update_all_clk_byp_ack(MuBi4False);
+    cfg.clkmgr_vif.update_div_step_down_req(MuBi4False);
     cfg.clkmgr_vif.update_io_clk_byp_ack(MuBi4False);
 
     disable_unnecessary_exclusions();
