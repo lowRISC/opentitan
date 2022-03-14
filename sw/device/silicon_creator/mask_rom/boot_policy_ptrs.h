@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_BOOT_POLICY_PTRS_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_BOOT_POLICY_PTRS_H_
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -16,7 +17,7 @@ extern "C" {
 static_assert((TOP_EARLGREY_EFLASH_SIZE_BYTES % 2) == 0,
               "Flash size is not divisible by 2");
 
-#ifndef OT_OFF_TARGET_TEST
+#ifdef OT_PLATFORM_TARGET
 /**
  * Returns a pointer to the manifest of the ROM_EXT image stored in flash
  * slot A.

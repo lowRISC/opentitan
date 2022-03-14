@@ -265,7 +265,7 @@ typedef struct manifest_digest_region {
 #define MANIFEST_LENGTH_FIELD_OWNER_STAGE_MIN MANIFEST_SIZE
 #define MANIFEST_LENGTH_FIELD_OWNER_STAGE_MAX 0x70000
 
-#ifndef OT_OFF_TARGET_TEST
+#if defined(OT_PLATFORM_TARGET) || defined(MANIFEST_IMPL_TEST)
 /**
  * Checks the fields of a manifest.
  *

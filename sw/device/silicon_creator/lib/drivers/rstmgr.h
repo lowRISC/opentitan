@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <stdnoreturn.h>
 
+#include "sw/device/lib/base/macros.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -98,7 +100,7 @@ void rstmgr_alert_info_enable(void);
 /**
  * Requests a system reset.
  */
-#ifndef OT_OFF_TARGET_TEST
+#ifdef OT_PLATFORM_TARGET
 // Omit `noreturn` to be able to test this function in off-target tests.
 noreturn
 #endif

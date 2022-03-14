@@ -61,7 +61,6 @@ cc_test(
         "sec_mmio.h",
         "sec_mmio_unittest.cc",
     ],
-    defines = ["OT_OFF_TARGET_TEST"],
     deps = [
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing:mock_abs_mmio",

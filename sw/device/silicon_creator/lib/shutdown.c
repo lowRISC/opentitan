@@ -39,7 +39,11 @@ static_assert(ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT <=
 
 #define NO_MODIFIERS
 
-#ifdef OT_OFF_TARGET_TEST
+#ifdef OT_PLATFORM_TARGET
+#define SHUTDOWN_FUNC(modifiers_, name_) \
+  OT_ALWAYS_INLINE                       \
+  static modifiers_ void name_
+#else
 // If we're building as a unit test, rename the shutdown functions so they
 // can be mocked and/or tested individually.
 // The unmodified function name will be declared as `extern` so the test
@@ -49,10 +53,6 @@ static_assert(ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT <=
 #define SHUTDOWN_FUNC(modifiers_, name_) \
   extern void name_;                     \
   void unmocked_##name_
-#else
-#define SHUTDOWN_FUNC(modifiers_, name_) \
-  OT_ALWAYS_INLINE                       \
-  static modifiers_ void name_
 #endif
 
 // Convert the alert class to an index.
@@ -467,7 +467,7 @@ SHUTDOWN_FUNC(noreturn, shutdown_hang(void)) {
 #endif
 }
 
-#ifndef OT_OFF_TARGET_TEST
+#ifdef OT_PLATFORM_TARGET
 /**
  * The shutdown_finalize function goes into the .shutdown section which is
  * placed by the linker script after all other executable code.

@@ -91,9 +91,6 @@ cc_test(
         "flash_ctrl.h",
         "flash_ctrl_unittest.cc",
     ],
-    defines = [
-        "OT_OFF_TARGET_TEST",
-    ],
     deps = [
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
@@ -251,9 +248,6 @@ cc_test(
         "lifecycle.h",
         "lifecycle_unittest.cc",
     ],
-    defines = [
-        "OT_OFF_TARGET_TEST",
-    ],
     deps = [
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -284,9 +278,6 @@ cc_test(
         "otbn.c",
         "otbn.h",
         "otbn_unittest.cc",
-    ],
-    defines = [
-        "OT_OFF_TARGET_TEST",
     ],
     deps = [
         "//hw/ip/otbn/data:otbn_regs",
@@ -468,9 +459,6 @@ cc_test(
         "rstmgr.h",
         "rstmgr_unittest.cc",
     ],
-    defines = [
-        "OT_OFF_TARGET_TEST",
-    ],
     deps = [
         "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -539,9 +527,6 @@ cc_library(
 cc_test(
     name = "watchdog_unittest",
     srcs = ["watchdog_unittest.cc"],
-    defines = [
-        "OT_OFF_TARGET_TEST",
-    ],
     deps = [
         ":watchdog",
         "//hw/ip/aon_timer/data:aon_timer_regs",

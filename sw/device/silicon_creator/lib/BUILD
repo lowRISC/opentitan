@@ -94,9 +94,6 @@ cc_test(
     srcs = [
         "epmp_unittest.cc",
     ],
-    defines = [
-        "OT_OFF_TARGET_TEST",
-    ],
     deps = [
         ":epmp",
         ":error",
@@ -241,6 +238,7 @@ cc_test(
     srcs = [
         "manifest_unittest.cc",
     ],
+    defines = ["MANIFEST_IMPL_TEST=1"],
     deps = [
         ":epmp_intf",
         ":error",
@@ -319,9 +317,6 @@ cc_test(
         "shutdown.c",
         "shutdown_unittest.cc",
     ],
-    defines = [
-        "OT_OFF_TARGET_TEST",
-    ],
     deps = [
         ":error",
         ":shutdown_intf",
@@ -393,9 +388,6 @@ cc_test(
     srcs = [
         "sigverify.c",
         "sigverify_unittest.cc",
-    ],
-    defines = [
-        "OT_OFF_TARGET_TEST",
     ],
     deps = [
         ":mock_sigverify",

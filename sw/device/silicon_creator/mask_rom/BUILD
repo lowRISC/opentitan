@@ -41,7 +41,6 @@ cc_test(
         "boot_policy_ptrs.h",
         "boot_policy_unittest.cc",
     ],
-    defines = ["OT_OFF_TARGET_TEST"],
     deps = [
         ":mock_boot_policy_ptrs",
         "//sw/device/lib/base",
@@ -241,7 +240,6 @@ cc_test(
         "sigverify_keys_unittest.cc",
         "//sw/device/silicon_creator/lib:sigverify_src_for_keys_unittest",
     ],
-    defines = ["OT_OFF_TARGET_TEST"],
     deps = [
         ":mock_sigverify_keys_ptrs",
         ":sigverify_keys_ptrs",
