@@ -517,7 +517,8 @@
       fields: [
         { bits: "0"
           name: "busy"
-          desc: "BUSY"
+          desc: '''BUSY signal is cleared when CSb is high. SW should read
+            back the register to confirm the value is cleared.'''
           swaccess: "rw0c"
           hwaccess: "hrw"
           tags: [

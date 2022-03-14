@@ -410,6 +410,13 @@ Except BUSY bit, other bits are controlled by SW.
 BUSY bit is set by HW when it receives any commands that are uploaded to the FIFOs.
 SW may clear BUSY bit when it completes the received commands (e.g Erase/ Program).
 
+If BUSY is set, SPI_DEVICE IP blocks the passhthrough interface in Passthrough mode.
+The blocking of the interface occurs in SPI transaction idle state (CSb == 1).
+However, due to the instrinsic delay of the CDC, CSb transition is delayed by 2 SYS_CLK cycles.
+It may introduce a corner case when the host system starts sending a SPI transaction while SW may clear the BUSY signal.
+In that case, the blocking and unblocking of the passthrough may happen while SPI is active.
+The HW behavior in this scenario is not determined.
+
 If the host sends the Write Status commands, the commands are not processed in this module.
 SW must configure the remaining command information entries to upload the Write Status commands to the FIFOs.
 
