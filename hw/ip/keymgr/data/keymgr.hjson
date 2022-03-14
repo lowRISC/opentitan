@@ -295,6 +295,11 @@
         further legal operations from executing.
       '''
     }
+    { name: "CTRL.FSM.CONSISTENCY",
+      desc: '''
+        Main and operational fsm transitions are consistent with software commands.
+      '''
+    }
     { name: "CTRL.FSM.GLOBAL_ESC",
       desc: '''
         When the system globally escalates, the main control fsm also transitions to invalid state
@@ -329,6 +334,11 @@
     { name: "RESEED.CTR.REDUN",
       desc: '''
         Primary count is duplicated.
+      '''
+    }
+    { name: "SIDE_LOAD_SEL.CTRL.CONSISTENCY",
+      desc: '''
+        Sideload key slot select is checked for consistency against original software command.
       '''
     }
   ]
@@ -1071,19 +1081,29 @@
           desc: "Control FSM integrity error, asynchronous fault",
         },
         { bits: "8",
+          name: "CTRL_FSM_CHK",
+          resval: "0x0"
+          desc: "Control FSM cross check error, asynchronous fault",
+        },
+        { bits: "9",
           name: "CTRL_FSM_CNT",
           resval: "0x0"
           desc: "Control FSM counter integrity error, asynchronous fault",
         },
-        { bits: "9",
+        { bits: "10",
           name: "RESEED_CNT",
           resval: "0x0"
           desc: "Reseed counter integrity error, asynchronous fault",
         },
-        { bits: "10",
+        { bits: "11",
           name: "SIDE_CTRL_FSM",
           resval: "0x0"
           desc: "Sideload control FSM integrity error, asynchronous fault",
+        },
+        { bits: "12",
+          name: "SIDE_CTRL_SEL",
+          resval: "0x0"
+          desc: "Sideload control key select error, synchronous fault",
         },
       ]
     },

@@ -491,6 +491,34 @@ When later a successful `advance` call is made, the key manager then unlocks by 
 An unsuccessful advance call (errors) does not unlock the binding.
 This allows the next stage of software to re-use the binding registers.
 
+### Custom Security Checks
+
+The keymgr has several custom security checks.
+
+#### One-Hot Command Check
+The command received by the kmac interface must always be in one-hot form and unchanging during the life time of a kmac transaction.
+If this check fails, an error is reflected in {{< regref FAULT_STATUS.CMD >}}.
+
+#### Unexpected KMAC Done
+The kmac done signal can only happen during the expected transaction window.
+If this check fails, an error is reflected in {{< regref FAULT_STATUS.KMAC_DONE >}}.
+
+#### Control State Machine Check
+This error checks for two things:
+-  The key manager can advance to one of the key states (e.g. RootKey, OwnerIntermediateKey) only when there is a legal advanced operation.
+-  The key manager can issue an advance or generate operation to the KMAC interface only if the original software request is an advanced or generate command.
+
+If these checks fail, an error is reflected in {{< regref FAULT_STATUS.CTRL_FSM_CHK >}}.
+
+#### Sideload Select Check
+A sideload key slot is selected for update only if the original software request targeted that key slot.
+
+If this check fails, an error is reflected in {{< regref FAULT_STATUS.SIDE_CTRL_SEL >}}.
+
+####
+
+####
+
 ## Hardware Interfaces
 {{< incGenFromIpDesc "../data/keymgr.hjson" "hwcfg" >}}
 

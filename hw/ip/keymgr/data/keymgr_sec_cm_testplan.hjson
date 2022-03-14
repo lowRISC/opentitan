@@ -108,6 +108,12 @@
       tests: []
     }
     {
+      name: sec_cm_ctrl_fsm_consistency
+      desc: "Verify the countermeasure(s) CTRL.FSM.CONSISTENCY."
+      milestone: V2S
+      tests: []
+    }
+    {
       name: sec_cm_ctrl_fsm_global_esc
       desc: "Verify the countermeasure(s) CTRL.FSM.GLOBAL_ESC."
       milestone: V2S
@@ -146,6 +152,12 @@
     {
       name: sec_cm_reseed_ctr_redun
       desc: "Verify the countermeasure(s) RESEED.CTR.REDUN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_side_load_sel_ctrl_consistency
+      desc: "Verify the countermeasure(s) SIDE_LOAD_SEL.CTRL.CONSISTENCY."
       milestone: V2S
       tests: []
     }
