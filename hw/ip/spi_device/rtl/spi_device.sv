@@ -1514,6 +1514,22 @@ module spi_device
   /////////////////////
   // SPI Passthrough //
   /////////////////////
+
+  // Passthrough block
+  // signal: sys_csb_syncd -> sysclock 2FF CSb
+  // signal: sys_busy  -> output of u_status readstatus_d[0]
+  //              set by CSb deassertion pulse & BUSY(SCK)
+  //              clr by CSb = 1 & SW writing 0
+  //
+  // NOTE: there will be a gap between the actual assertion of CSb and the CSb
+  //   syncd event visible in the u_status BUSY logic (2FF @ SYS_CLK). So,
+  //   there's chance that the SW may clear the BUSY right at the CSb
+  //   assertion event. If that happens, passthrough block may set during SPI
+  //   transaction. The behavior of the SPI_DEVICE in this scenario is
+  //   undeterminstic.
+  logic  sys_passthrough_block;
+  assign sys_passthrough_block = readstatus_d[0];
+
   spi_passthrough u_passthrough (
     .clk_i     (clk_spi_in_buf),
     .rst_ni    (rst_spi_n),
@@ -1533,6 +1549,9 @@ module spi_device
     .cmd_info_i (cmd_info),
 
     .spi_mode_i       (spi_mode),
+
+    // Control: BUSY block
+    .passthrough_block_i (sys_passthrough_block),
 
     // Host SPI
     .host_sck_i  (cio_sck_i),
