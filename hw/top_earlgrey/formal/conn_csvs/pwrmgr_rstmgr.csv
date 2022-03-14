@@ -8,7 +8,7 @@
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
 # pwrmgr rstmgr connections
-CONNECTION,CLKMGR_RST_LC_REQ,top_earlgrey.u_pwrmgr_aon,pwr_rst_o.rst_lc_req,top_earlgrey.u_rstmgr_aon,pwr_i.rst_lc_req
-CONNECTION,CLKMGR_RST_SYS_REQ,top_earlgrey.u_pwrmgr_aon,pwr_rst_o.rst_sys_req,top_earlgrey.u_rstmgr_aon,pwr_i.rst_sys_req
-CONNECTION,CLKMGR_RST_LC_SRC_N,top_earlgrey.u_pwrmgr_aon,pwr_rst_i.rst_lc_src_n,top_earlgrey.u_rstmgr_aon,pwr_o.rst_lc_src_n
-CONNECTION,CLKMGR_RST_SYS_SRC_N,top_earlgrey.u_pwrmgr_aon,pwr_rst_i.rst_sys_src_n,top_earlgrey.u_rstmgr_aon,pwr_o.rst_sys_src_n
+CONNECTION, PWRMGR_RST_LC_REQ,    top_earlgrey.u_pwrmgr_aon, pwr_rst_o.rst_lc_req,  top_earlgrey.u_rstmgr_aon, pwr_i.rst_lc_req
+CONNECTION, PWRMGR_RST_SYS_REQ,   top_earlgrey.u_pwrmgr_aon, pwr_rst_o.rst_sys_req, top_earlgrey.u_rstmgr_aon, pwr_i.rst_sys_req
+CONNECTION, RSTMGR_RST_LC_SRC_N,  top_earlgrey.u_rstmgr_aon, pwr_o.rst_lc_src_n,    top_earlgrey.u_pwrmgr_aon, pwr_rst_i.rst_lc_src_n
+CONNECTION, RSTMGR_RST_SYS_SRC_N, top_earlgrey.u_rstmgr_aon, pwr_o.rst_sys_src_n,   top_earlgrey.u_pwrmgr_aon, pwr_rst_i.rst_sys_src_n

@@ -8,22 +8,31 @@
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
 # clkmgr peri clock connectivity
-CONNECTION,CLKMGR_PERI_CLK0_ADC_CTRL_AON,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_peri,top_earlgrey.u_adc_ctrl_aon,clk_i
-CONNECTION,CLKMGR_PERI_CLK0_GPIO,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_peri,top_earlgrey.u_gpio,clk_i
-CONNECTION,CLKMGR_PERI_CLK0_SPI_DEVICE,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_peri,top_earlgrey.u_spi_device,clk_i
-CONNECTION,CLKMGR_PERI_CLK1_SPI_DEVICE,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div2_peri,top_earlgrey.u_spi_device,scan_clk_i
-CONNECTION,CLKMGR_PERI_CLK0_SPI_HOST0,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_peri,top_earlgrey.u_spi_host0,clk_i
-CONNECTION,CLKMGR_PERI_CLK0_SPI_HOST1,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div2_peri,top_earlgrey.u_spi_host1,clk_i
-CONNECTION,CLKMGR_PERI_CLK0_I2C0,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_peri,top_earlgrey.u_i2c0,clk_i
-CONNECTION,CLKMGR_PERI_CLK0_I2C1,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_peri,top_earlgrey.u_i2c1,clk_i
-CONNECTION,CLKMGR_PERI_CLK0_I2C2,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_peri,top_earlgrey.u_i2c2,clk_i
-CONNECTION,CLKMGR_PERI_CLK0_PATTGEN,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_peri,top_earlgrey.u_pattgen,clk_i
-CONNECTION,CLKMGR_PERI_CLK0_UART0,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_peri,top_earlgrey.u_uart0,clk_i
-CONNECTION,CLKMGR_PERI_CLK0_UART1,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_peri,top_earlgrey.u_uart1,clk_i
-CONNECTION,CLKMGR_PERI_CLK0_UART2,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_peri,top_earlgrey.u_uart2,clk_i
-CONNECTION,CLKMGR_PERI_CLK0_UART3,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_peri,top_earlgrey.u_uart3,clk_i
-CONNECTION,CLKMGR_PERI_CLK0_USBDEV,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_peri,top_earlgrey.u_usbdev,clk_i
-CONNECTION,CLKMGR_PERI_CLK1_USBDEV,top_earlgrey.u_clkmgr_aon,clocks_o.clk_usb_peri,top_earlgrey.u_usbdev,clk_usb_48mhz_i
-# This is a questionable classification: an aon clock in the peri group seems wrong.
-CONNECTION,CLKMGR_PERI_CLK1_ADC_CTRL_AON,top_earlgrey.u_clkmgr_aon,clocks_o.clk_aon_peri,top_earlgrey.u_adc_ctrl_aon,clk_aon_i
-CONNECTION,CLKMGR_PERI_CLK2_USBDEV,top_earlgrey.u_clkmgr_aon,clocks_o.clk_aon_peri,top_earlgrey.u_usbdev,clk_aon_i
+CONNECTION, CLKMGR_PERI_CLK_ADC_CTRL_AON_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_peri, top_earlgrey.u_adc_ctrl_aon, clk_i
+
+CONNECTION, CLKMGR_PERI_CLK_GPIO_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_peri, top_earlgrey.u_gpio, clk_i
+
+CONNECTION, CLKMGR_PERI_CLK_SPI_DEVICE_CLK,      top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_peri, top_earlgrey.u_spi_device, clk_i
+CONNECTION, CLKMGR_PERI_CLK_SPI_DEVICE_SCAN_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div2_peri, top_earlgrey.u_spi_device, scan_clk_i
+
+CONNECTION, CLKMGR_PERI_CLK_SPI_HOST0_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_peri,      top_earlgrey.u_spi_host0, clk_i
+CONNECTION, CLKMGR_PERI_CLK_SPI_HOST1_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div2_peri, top_earlgrey.u_spi_host1, clk_i
+
+CONNECTION, CLKMGR_PERI_CLK_I2C0_CLK, top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_peri, top_earlgrey.u_i2c0, clk_i
+CONNECTION, CLKMGR_PERI_CLK_I2C1_CLK, top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_peri, top_earlgrey.u_i2c1, clk_i
+CONNECTION, CLKMGR_PERI_CLK_I2C2_CLK, top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_peri, top_earlgrey.u_i2c2, clk_i
+
+CONNECTION, CLKMGR_PERI_CLK_PATTGEN_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_peri, top_earlgrey.u_pattgen, clk_i
+
+CONNECTION, CLKMGR_PERI_CLK_UART0_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_peri, top_earlgrey.u_uart0, clk_i
+CONNECTION, CLKMGR_PERI_CLK_UART1_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_peri, top_earlgrey.u_uart1, clk_i
+CONNECTION, CLKMGR_PERI_CLK_UART2_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_peri, top_earlgrey.u_uart2, clk_i
+CONNECTION, CLKMGR_PERI_CLK_UART3_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_peri, top_earlgrey.u_uart3, clk_i
+
+CONNECTION, CLKMGR_PERI_CLK_USBDEV_CLK,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_peri, top_earlgrey.u_usbdev, clk_i
+CONNECTION, CLKMGR_PERI_CLK_USBDEV_USB_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_usb_peri,     top_earlgrey.u_usbdev, clk_usb_48mhz_i
+
+# TODO: check with design - this is a questionable classification: an aon clock in the peri group seems wrong.
+CONNECTION, CLKMGR_PERI_CLK_ADC_CTRL_AON_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_aon_peri, top_earlgrey.u_adc_ctrl_aon, clk_aon_i
+
+CONNECTION, CLKMGR_PERI_CLK_USBDEV_AON_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_aon_peri, top_earlgrey.u_usbdev,       clk_aon_i

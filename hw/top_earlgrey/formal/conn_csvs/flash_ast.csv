@@ -7,4 +7,4 @@
 
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
-CONNECTION,FLASH_AST,u_ast,obs_ctrl_o,top_earlgrey.u_flash_ctrl,obs_ctrl_i
+CONNECTION, FLASH_AST_OBS_CTRL, u_ast, obs_ctrl_o, top_earlgrey.u_flash_ctrl, obs_ctrl_i
