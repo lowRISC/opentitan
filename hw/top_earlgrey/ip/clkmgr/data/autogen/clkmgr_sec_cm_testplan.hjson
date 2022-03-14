@@ -27,7 +27,7 @@
       name: sec_cm_bus_integrity
       desc: "Verify the countermeasure(s) BUS.INTEGRITY."
       milestone: V2S
-      tests: []
+      tests: ["clkmgr_tl_intg_err"]
     }
     {
       name: sec_cm_timeout_clk_bkgn_chk
@@ -39,7 +39,7 @@
       name: sec_cm_meas_clk_bkgn_chk
       desc: "Verify the countermeasure(s) MEAS.CLK.BKGN_CHK."
       milestone: V2S
-      tests: []
+      tests: ["clkmgr_frequency"]
     }
     {
       name: sec_cm_idle_intersig_mubi
@@ -81,7 +81,7 @@
       name: sec_cm_idle_ctr_redun
       desc: "Verify the countermeasure(s) IDLE.CTR.REDUN."
       milestone: V2S
-      tests: []
+      tests: ["clkmgr_sec_cm"]
     }
     {
       name: sec_cm_meas_config_regwen
