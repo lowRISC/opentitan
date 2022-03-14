@@ -23,6 +23,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   output hw_key_req_t aes_key_o,
   output hw_key_req_t kmac_key_o,
   output otbn_key_req_t otbn_key_o,
+  output logic sideload_sel_err_o,
   output logic fsm_err_o
 );
 
@@ -136,9 +137,9 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   end
 
   import prim_mubi_pkg::mubi4_test_true_strict;
-  prim_mubi_pkg::mubi4_t [2:0] hw_key_sel;
+  prim_mubi_pkg::mubi4_t [4:0] hw_key_sel;
   prim_mubi4_sync #(
-    .NumCopies(3),
+    .NumCopies(5),
     .AsyncOn(0)
   ) u_mubi_buf (
     .clk_i('0),
@@ -148,9 +149,9 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   );
 
   logic aes_sel, kmac_sel, otbn_sel;
-  assign aes_sel  = dest_sel_i == Aes  & mubi4_test_true_strict(hw_key_sel[0]);
-  assign kmac_sel = dest_sel_i == Kmac & mubi4_test_true_strict(hw_key_sel[1]);
-  assign otbn_sel = dest_sel_i == Otbn & mubi4_test_true_strict(hw_key_sel[2]);
+  assign aes_sel  = (dest_sel_i == Aes) & mubi4_test_true_strict(hw_key_sel[0]);
+  assign kmac_sel = (dest_sel_i == Kmac) & mubi4_test_true_strict(hw_key_sel[1]);
+  assign otbn_sel = (dest_sel_i == Otbn) & mubi4_test_true_strict(hw_key_sel[2]);
 
   keymgr_sideload_key u_aes_key (
     .clk_i,
@@ -193,6 +194,37 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .valid_o(kmac_sideload_key.valid),
     .key_o(kmac_sideload_key.key)
   );
+
+  // a sideload slot can only be selected if the original destination
+  // is also set.
+  // If the two values do not agree, (1/0 and 0/1), trigger an error.
+  logic [2:0] sideload_sel;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      sideload_sel <= '0;
+    end else if ((data_valid_i || data_en_i) && mubi4_test_true_strict(hw_key_sel[3])) begin
+      sideload_sel <= {otbn_sel, kmac_sel, aes_sel};
+    end
+  end
+
+  keymgr_key_dest_e cfg;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      cfg <= None;
+    end else if ((data_valid_i || data_en_i) && mubi4_test_true_strict(hw_key_sel[4])) begin
+      cfg <= dest_sel_i;
+    end
+  end
+
+  // when data valid pulse is seen, capture both the original input and the eventual select.
+  // The two should always match
+  logic [2:0] dest_sel;
+  assign dest_sel[0] = cfg == Aes;
+  assign dest_sel[1] = cfg == Kmac;
+  assign dest_sel[2] = cfg == Otbn;
+
+  // SEC_CM: SIDE_LOAD_SEL.CTRL.CONSISTENCY
+  assign sideload_sel_err_o = |(sideload_sel ^ dest_sel);
 
   // when directed by keymgr_ctrl, switch over to internal key and feed to kmac
   assign kmac_key_o = key_i.valid ? key_i : kmac_sideload_key;
