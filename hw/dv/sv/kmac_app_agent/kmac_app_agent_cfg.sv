@@ -8,11 +8,11 @@ class kmac_app_agent_cfg extends dv_base_agent_cfg;
   virtual kmac_app_intf vif;
 
   int unsigned req_delay_min = 0;
-  int unsigned req_delay_max = 1000;
+  int unsigned req_delay_max = 100;
 
   // delay between last for req data and done for digest data
   int unsigned rsp_delay_min = 0;
-  int unsigned rsp_delay_max = 1000;
+  int unsigned rsp_delay_max = 100;
 
   // Enables/disable all protocol delays.
   rand bit zero_delays;
