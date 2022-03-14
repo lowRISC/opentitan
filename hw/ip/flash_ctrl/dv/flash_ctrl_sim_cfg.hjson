@@ -134,6 +134,12 @@
       run_opts: ["+test_timeout_ns=300000000000"]
       reseed: 8
     }
+    {
+      name: flash_ctrl_fetch_code
+      uvm_test_seq: flash_ctrl_fetch_code_vseq
+      reseed: 5
+    }
+  
   ]
 
   // List of regressions.

@@ -614,4 +614,30 @@ class flash_ctrl_scoreboard #(
     end
   endfunction
 
-endclass
+  // Overriden function from cip_base_scoreboard, to handle TL/UL Error seen on Hardware Interface
+  // when using Code Access Restrictions (EXEC)
+  virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
+    if ((ral_name == cfg.flash_ral_name) && (get_flash_instr_type_err(item, channel))) return (1);
+    return (super.predict_tl_err(item, channel, ral_name));
+  endfunction : predict_tl_err
+
+  // Check if the input tl_seq_item has any tl errors.
+  virtual function bit get_flash_instr_type_err(tl_seq_item item, tl_channels_e channel);
+
+    // Local Variable
+    tlul_pkg::tl_a_user_t a_user = item.a_user;
+
+    // If Data Access, or a Write, or the CODE_EXEC_KEY Matches
+    if (((a_user.instr_type == MuBi4False) || (item.a_opcode != tlul_pkg::Get)) ||
+         (`gmv(ral.exec) == CODE_EXEC_KEY)) return(0);  // No Error Predicted
+
+    // Error is Predicted,  Expect an Error if Channel==DataChannel
+    if (channel == DataChannel) begin
+      `uvm_info(`gfn, "TL Error Expected", UVM_HIGH)
+      `DV_CHECK_EQ(item.d_error, 1)
+    end
+    return (1);  // Error Predicted
+
+  endfunction : get_flash_instr_type_err
+
+endclass : flash_ctrl_scoreboard

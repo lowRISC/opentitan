@@ -18,3 +18,4 @@
 `include "flash_ctrl_hw_rma_vseq.sv"
 `include "flash_ctrl_host_ctrl_arb_vseq.sv"
 `include "flash_ctrl_mp_regions_vseq.sv"
+`include "flash_ctrl_fetch_code_vseq.sv"

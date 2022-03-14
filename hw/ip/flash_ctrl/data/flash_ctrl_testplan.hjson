@@ -149,10 +149,12 @@
     {
       name: fetch_code
       desc: '''
-            Test code fetch feature.
+            Verify the Code Fetch Feature.
+            Reads for instructions via the Hardware Interface are allowed if a specific value
+            is written to the EXEC csr.
             '''
       milestone: V2
-      tests: []
+      tests: ["flash_ctrl_fetch_code"]
     }
     {
       name: all_partitions
