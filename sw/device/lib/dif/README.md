@@ -283,6 +283,9 @@ DIFs, their associated unit tests follow the conventions:
 * Each function has an associated test fixture, usually named
   `<function>Test`, which derives `<ip>Test`. Multiple similar functions may be
   grouped under one fixture.
+* Prefer to use expectation macros, like `EXPECT_DIF_OK`, defined in
+  `dif_test_base.h` whenever possible (e.g. do not write
+  `EXPECT_EQ(<long expression>, kDifOk);`).
 
 ### DIF Style Guidance
 
