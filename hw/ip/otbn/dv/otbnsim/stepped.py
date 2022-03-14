@@ -149,7 +149,7 @@ def on_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
         # The trailing space is a bit naff but matches the behaviour in the RTL
         # tracer, where it's rather difficult to change.
         hdr = 'U ' if sim.state.wiping() else 'V '
-    elif (sim.state.running() or
+    elif (sim.state.executing() or
           (changes and not sim.state.secure_wipe_enabled)):
         hdr = 'STALL'
     else:

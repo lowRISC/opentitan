@@ -27,7 +27,7 @@ class StandaloneSim(OTBNSim):
         # ISS will stall at start until URND data is valid; immediately set it
         # valid when in free running mode as nothing else will.
         self.state.wsrs.URND.set_seed(_TEST_URND_DATA)
-        while self.state.running():
+        while self.state.executing():
             self.step(verbose)
             insn_count += 1
 

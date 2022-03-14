@@ -283,7 +283,7 @@ class OTBNState:
         c += self.wdrs.changes()
         return c
 
-    def running(self) -> bool:
+    def executing(self) -> bool:
         return self._fsm_state not in [FsmState.IDLE, FsmState.LOCKED]
 
     def wiping(self) -> bool:
