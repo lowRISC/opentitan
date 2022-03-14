@@ -19,7 +19,7 @@ interface clkmgr_if (
   localparam int LcTxTWidth = $bits(lc_ctrl_pkg::lc_tx_t);
 
   // Encodes the transactional units that are idle.
-  hintables_t idle_i;
+  mubi_hintables_t idle_i;
 
   // pwrmgr req contains ip_clk_en, set to enable the gated clocks.
   pwrmgr_pkg::pwr_clk_req_t pwr_i;
@@ -81,7 +81,7 @@ interface clkmgr_if (
 
   prim_mubi_pkg::mubi4_t extclk_ctrl_csr_step_down;
   always_comb begin
-     extclk_ctrl_csr_step_down = (`CLKMGR_HIER.hi_speed_sel_o == prim_mubi_pkg::MuBi4False) ?
+    extclk_ctrl_csr_step_down = (`CLKMGR_HIER.hi_speed_sel_o == prim_mubi_pkg::MuBi4False) ?
                                  prim_mubi_pkg::MuBi4True :
                                  prim_mubi_pkg::MuBi4False;
   end
@@ -156,7 +156,7 @@ interface clkmgr_if (
   end
   always_comb usb_timeout_err = `CLKMGR_HIER.usb_timeout_err;
 
-  function automatic void update_idle(hintables_t value);
+  function automatic void update_idle(mubi_hintables_t value);
     idle_i = value;
   endfunction
 
@@ -211,7 +211,7 @@ interface clkmgr_if (
     endcase
   endfunction
 
-  task automatic init(hintables_t idle, prim_mubi_pkg::mubi4_t scanmode,
+  task automatic init(mubi_hintables_t idle, prim_mubi_pkg::mubi4_t scanmode,
                       lc_ctrl_pkg::lc_tx_t lc_debug_en = lc_ctrl_pkg::Off,
                       lc_ctrl_pkg::lc_tx_t lc_clk_byp_req = lc_ctrl_pkg::Off);
     `uvm_info("clkmgr_if", "In clkmgr_if init", UVM_MEDIUM)
@@ -240,7 +240,7 @@ interface clkmgr_if (
       ip_clk_en_div4_ffs <= {ip_clk_en_div4_ffs[PIPELINE_DEPTH-2:0], pwr_i.io_ip_clk_en};
     end else begin
       clk_enable_div4_ffs <= '0;
-      ip_clk_en_div4_ffs <= '0;
+      ip_clk_en_div4_ffs  <= '0;
     end
   end
   clocking peri_div4_cb @(posedge clocks_o.clk_io_div4_powerup or negedge rst_io_n);
