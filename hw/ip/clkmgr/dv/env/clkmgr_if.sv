@@ -44,6 +44,8 @@ interface clkmgr_if (
   prim_mubi_pkg::mubi4_t all_clk_byp_req;
   prim_mubi_pkg::mubi4_t all_clk_byp_ack;
 
+  prim_mubi_pkg::mubi4_t div_step_down_req;
+
   prim_mubi_pkg::mubi4_t jitter_en_o;
   clkmgr_pkg::clkmgr_out_t clocks_o;
 
@@ -81,9 +83,8 @@ interface clkmgr_if (
 
   prim_mubi_pkg::mubi4_t extclk_ctrl_csr_step_down;
   always_comb begin
-    extclk_ctrl_csr_step_down = (`CLKMGR_HIER.hi_speed_sel_o == prim_mubi_pkg::MuBi4False) ?
-                                 prim_mubi_pkg::MuBi4True :
-                                 prim_mubi_pkg::MuBi4False;
+    extclk_ctrl_csr_step_down = prim_mubi_pkg::mubi4_t'(
+        `CLKMGR_HIER.reg2hw.extclk_ctrl.hi_speed_sel.q);
   end
 
   prim_mubi_pkg::mubi4_t jitter_enable_csr;
@@ -188,6 +189,12 @@ interface clkmgr_if (
     `uvm_info("clkmgr_if", $sformatf("In clkmgr_if update_all_clk_byp_ack with %b", value),
               UVM_MEDIUM)
     all_clk_byp_ack = value;
+  endfunction
+
+  function automatic void update_div_step_down_req(prim_mubi_pkg::mubi4_t value);
+    `uvm_info("clkmgr_if", $sformatf("In clkmgr_if update_div_step_down_req with %b", value),
+              UVM_MEDIUM)
+    div_step_down_req = value;
   endfunction
 
   function automatic void update_io_clk_byp_ack(prim_mubi_pkg::mubi4_t value);

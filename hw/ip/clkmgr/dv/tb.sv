@@ -72,7 +72,7 @@ module tb;
 
   // dut
   clkmgr dut (
-    .clk_i (clk),
+    .clk_i(clk),
     .rst_ni(rst_n),
     .rst_shadowed_ni(rst_n),
 
@@ -100,15 +100,14 @@ module tb;
     .scanmode_i(clkmgr_if.scanmode_i),
     .idle_i    (clkmgr_if.idle_i),
 
-    .lc_hw_debug_en_i (clkmgr_if.lc_hw_debug_en_i),
+    .lc_hw_debug_en_i(clkmgr_if.lc_hw_debug_en_i),
     .all_clk_byp_req_o(clkmgr_if.all_clk_byp_req),
     .all_clk_byp_ack_i(clkmgr_if.all_clk_byp_ack),
-    .io_clk_byp_req_o (clkmgr_if.io_clk_byp_req),
-    .io_clk_byp_ack_i (clkmgr_if.io_clk_byp_ack),
-    .lc_clk_byp_req_i (clkmgr_if.lc_clk_byp_req),
-    .lc_clk_byp_ack_o (clkmgr_if.lc_clk_byp_ack),
-    // TODO: The new external step down signal must be verified
-    .div_step_down_req_i (prim_mubi_pkg::MuBi4False),
+    .io_clk_byp_req_o(clkmgr_if.io_clk_byp_req),
+    .io_clk_byp_ack_i(clkmgr_if.io_clk_byp_ack),
+    .lc_clk_byp_req_i(clkmgr_if.lc_clk_byp_req),
+    .lc_clk_byp_ack_o(clkmgr_if.lc_clk_byp_ack),
+    .div_step_down_req_i(clkmgr_if.div_step_down_req),
 
     .cg_en_o(),
 

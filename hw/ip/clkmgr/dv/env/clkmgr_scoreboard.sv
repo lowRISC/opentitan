@@ -54,11 +54,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           prev_all_clk_byp_req = cfg.clkmgr_vif.all_clk_byp_req;
         end
         if (cfg.clk_rst_vif.rst_n) begin
-          if ((cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel == MuBi4True) &&
-              (cfg.clkmgr_vif.clk_cb.lc_hw_debug_en_i == On)) begin
-            `DV_CHECK_EQ(cfg.clkmgr_vif.all_clk_byp_req, MuBi4True,
-                         "Expected all_clk_byp_req to be On")
-          end
           if (cfg.en_cov) begin
             cov.extclk_cg.sample(cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel == MuBi4True,
                                  cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_step_down == MuBi4True,
@@ -81,10 +76,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           prev_lc_clk_byp_req = cfg.clkmgr_vif.lc_clk_byp_req;
         end
         if (cfg.clk_rst_vif.rst_n) begin
-          if (cfg.clkmgr_vif.clk_cb.lc_clk_byp_req == On) begin
-            `DV_CHECK_EQ(cfg.clkmgr_vif.io_clk_byp_req, MuBi4True,
-                         "Expected io_clk_byp_req to be True")
-          end
           if (cfg.en_cov) begin
             cov.extclk_cg.sample(cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel == MuBi4True,
                                  cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_step_down == MuBi4True,
@@ -276,9 +267,13 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
                        })
         end
       end
+      "jitter_regwen": begin
+      end
       "jitter_enable": begin
         if (addr_phase_write) begin
-          `DV_CHECK_EQ(prim_mubi_pkg::mubi4_t'(item.a_data), cfg.clkmgr_vif.jitter_enable_csr)
+          if (`gmv(ral.jitter_regwen)) begin
+            `DV_CHECK_EQ(prim_mubi_pkg::mubi4_t'(item.a_data), cfg.clkmgr_vif.jitter_enable_csr)
+          end
         end
       end
       "clk_enables": begin
