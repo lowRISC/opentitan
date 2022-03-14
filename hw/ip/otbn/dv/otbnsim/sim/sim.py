@@ -141,7 +141,7 @@ class OTBNSim:
         '''Run a single cycle.
 
         Returns the instruction, together with a list of the architectural
-        changes that have happened. If the model isn't currently running,
+        changes that have happened. If the model isn't currently executing,
         returns no instruction and no changes.
 
         '''
