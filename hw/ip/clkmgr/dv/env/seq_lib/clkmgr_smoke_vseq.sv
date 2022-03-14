@@ -8,7 +8,6 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
 
   `uvm_object_new
 
-
   constraint io_ip_clk_en_on_c {io_ip_clk_en == 1'b1;}
   constraint main_ip_clk_en_on_c {main_ip_clk_en == 1'b1;}
   constraint usb_ip_clk_en_on_c {usb_ip_clk_en == 1'b1;}
@@ -61,7 +60,8 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
     trans_e trans;
     logic bit_value;
     logic [TL_DW-1:0] value;
-    hintables_t idle;
+    mubi_hintables_t idle;
+    hintables_t bool_idle;
     typedef struct {
       trans_e unit;
       uvm_reg_field hint_bit;
@@ -71,7 +71,7 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
         '{TransAes, ral.clk_hints.clk_main_aes_hint, ral.clk_hints_status.clk_main_aes_val},
         '{TransHmac, ral.clk_hints.clk_main_hmac_hint, ral.clk_hints_status.clk_main_hmac_val},
         '{TransKmac, ral.clk_hints.clk_main_kmac_hint, ral.clk_hints_status.clk_main_kmac_val},
-        '{TransOtbnMain, ral.clk_hints.clk_main_otbn_hint, ral.clk_hints_status.clk_main_otbn_val}
+        '{TransOtbn, ral.clk_hints.clk_main_otbn_hint, ral.clk_hints_status.clk_main_otbn_val}
     };
     idle = 0;
     cfg.clkmgr_vif.update_idle(idle);
@@ -93,7 +93,7 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
       cfg.clkmgr_vif.update_idle(idle);
       // Some cycles for the logic to settle.
       // TODO: Temporary update to account for idle counts
-      cfg.clk_rst_vif.wait_clks(IO_DIV4_SYNC_CYCLES*2);
+      cfg.clk_rst_vif.wait_clks(IO_DIV4_SYNC_CYCLES * 2);
       csr_rd(.ptr(descriptor.value_bit), .value(bit_value));
       if (!cfg.under_reset) begin
         `DV_CHECK_EQ(bit_value, 1'b0, $sformatf(

@@ -18,19 +18,19 @@ class clkmgr_base_vseq extends cip_base_vseq #(
 
   // This delay in io_clk cycles is needed to allow updates to the hints_status CSR to go through
   // synchronizers.
-  localparam int IO_DIV4_SYNC_CYCLES = 8;
+  localparam int IO_DIV4_SYNC_CYCLES = 16;
 
-  rand bit         io_ip_clk_en;
-  rand bit         main_ip_clk_en;
-  rand bit         usb_ip_clk_en;
+  rand bit              io_ip_clk_en;
+  rand bit              main_ip_clk_en;
+  rand bit              usb_ip_clk_en;
 
-  rand hintables_t idle;
+  rand mubi_hintables_t idle;
 
-  mubi4_t          scanmode;
-  int              scanmode_on_weight         = 8;
+  mubi4_t               scanmode;
+  int                   scanmode_on_weight         = 8;
 
-  lc_tx_t          extclk_ctrl_low_speed_sel;
-  lc_tx_t          extclk_ctrl_sel;
+  lc_tx_t               extclk_ctrl_low_speed_sel;
+  lc_tx_t               extclk_ctrl_sel;
 
   virtual function void set_scanmode_on_low_weight();
     scanmode_on_weight = 2;
@@ -51,14 +51,21 @@ class clkmgr_base_vseq extends cip_base_vseq #(
 
   task initialize_on_start();
     `uvm_info(`gfn, "In clkmgr_if initialize_on_start", UVM_MEDIUM)
-    idle = {NUM_TRANS{prim_mubi_pkg::MuBi4True}};
-    scanmode = prim_mubi_pkg::MuBi4False;
+    idle = {NUM_TRANS{MuBi4True}};
+    scanmode = MuBi4False;
     cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode), .lc_debug_en(Off));
     io_ip_clk_en   = 1'b1;
     main_ip_clk_en = 1'b1;
     usb_ip_clk_en  = 1'b1;
     control_ip_clocks();
   endtask
+
+  // Converts to bool with strict true.
+  protected function hintables_t mubi_hintables_to_hintables(mubi_hintables_t mubi_hints);
+    hintables_t ret;
+    foreach (mubi_hints[i]) ret[i] = prim_mubi_pkg::mubi4_test_true_strict(mubi_hints[i]);
+    return ret;
+  endfunction
 
   local function void disable_unnecessary_exclusions();
     ral.get_excl_item().enable_excl("clkmgr_reg_block.clk_enables", 0);
@@ -73,13 +80,15 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   endfunction
 
   task pre_start();
-    cfg.clkmgr_vif.init(.idle({NUM_TRANS{prim_mubi_pkg::MuBi4True}}),
-      .scanmode(scanmode), .lc_debug_en(Off));
+    // Disable the assertions requiring strict mubi4 and lc_tx_t to test non-strict-true values.
+    $assertoff(0, "prim_mubi4_sync");
+    $assertoff(0, "prim_lc_sync");
+    cfg.clkmgr_vif.init(.idle({NUM_TRANS{MuBi4True}}), .scanmode(scanmode), .lc_debug_en(Off));
     cfg.clkmgr_vif.update_io_ip_clk_en(1'b0);
     cfg.clkmgr_vif.update_main_ip_clk_en(1'b0);
     cfg.clkmgr_vif.update_usb_ip_clk_en(1'b0);
-    cfg.clkmgr_vif.update_all_clk_byp_ack(prim_mubi_pkg::MuBi4False);
-    cfg.clkmgr_vif.update_io_clk_byp_ack(prim_mubi_pkg::MuBi4False);
+    cfg.clkmgr_vif.update_all_clk_byp_ack(MuBi4False);
+    cfg.clkmgr_vif.update_io_clk_byp_ack(MuBi4False);
     // There is something strange with exclusions. Don't disable for now.
     // disable_unnecessary_exclusions();
     clkmgr_init();
