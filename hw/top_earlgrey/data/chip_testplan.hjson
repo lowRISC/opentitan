@@ -10,7 +10,8 @@
                      // "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
                      "hw/ip/tlul/data/tlul_testplan.hjson",
-                     "sw/device/silicon_creator/mask_rom/data/mask_rom_testplan.hjson"]
+                     "sw/device/silicon_creator/mask_rom/data/mask_rom_testplan.hjson",
+                     "hw/top_earlgrey/data/chip_conn_testplan.hjson"]
 
   testpoints: [
     ///////////////////////////////////////////////////////////////////////////
