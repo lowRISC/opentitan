@@ -8,12 +8,15 @@ filesets:
   files_dv:
     depend:
       - lowrisc:prim:assert
+      - lowrisc:prim:mubi
+      - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:dv:clkmgr_pwrmgr_sva_if
     files:
       - clkmgr_div_sva_if.sv
       - clkmgr_gated_clock_sva_if.sv
       - clkmgr_aon_cg_en_sva_if.sv
       - clkmgr_cg_en_sva_if.sv
+      - clkmgr_extclk_sva_if.sv
     file_type: systemVerilogSource
 
 targets:

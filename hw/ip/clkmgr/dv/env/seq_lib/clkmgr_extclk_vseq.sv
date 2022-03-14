@@ -24,24 +24,33 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   rand int cycles_before_lc_clk_byp_req;
   rand int cycles_before_lc_clk_byp_ack;
   rand int cycles_before_all_clk_byp_ack;
+  rand int cycles_before_div_step_down_req;
   rand int cycles_before_io_clk_byp_ack;
   rand int cycles_before_next_trans;
 
   constraint cycles_to_stim_c {
     cycles_before_extclk_ctrl_sel inside {[4 : 20]};
     cycles_before_lc_clk_byp_req inside {[4 : 20]};
-    cycles_before_lc_clk_byp_ack inside {[12 : 20]};
+    cycles_before_lc_clk_byp_ack inside {[16 : 30]};
     cycles_before_all_clk_byp_ack inside {[3 : 11]};
+    cycles_before_div_step_down_req inside {[3 : 11]};
     cycles_before_io_clk_byp_ack inside {[3 : 11]};
-    cycles_before_next_trans inside {[15 : 25]};
+    cycles_before_next_trans inside {[15 : 35]};
   }
 
   lc_tx_t lc_clk_byp_req;
   lc_tx_t lc_debug_en;
+  mubi4_t io_clk_byp_ack_non_true;
+  mubi4_t all_clk_byp_ack_non_true;
+  mubi4_t div_step_down_req_non_true;
 
   function void post_randomize();
     lc_clk_byp_req = get_rand_lc_tx_val(8, 2, 2);
     lc_debug_en = get_rand_lc_tx_val(8, 2, 2);
+    io_clk_byp_ack_non_true = get_rand_mubi4_val(0, 2, 8);
+    all_clk_byp_ack_non_true = get_rand_mubi4_val(0, 2, 8);
+    div_step_down_req_non_true = get_rand_mubi4_val(0, 2, 8);
+
     `uvm_info(`gfn, $sformatf(
               "randomize gives lc_clk_byp_req=0x%x, lc_debug_en=0x%x", lc_clk_byp_req, lc_debug_en),
               UVM_MEDIUM)
@@ -50,17 +59,39 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
 
   // Notice only all_clk_byp_req and io_clk_byp_req Mubi4True and Mubi4False cause transitions.
 
+  local task delayed_update_all_clk_byp_ack(mubi4_t value, int cycles);
+    cfg.clk_rst_vif.wait_clks(cycles);
+    cfg.clkmgr_vif.update_all_clk_byp_ack(value);
+  endtask
+
+  local task delayed_update_div_step_down_req(mubi4_t value, int cycles);
+    cfg.clk_rst_vif.wait_clks(cycles);
+    cfg.clkmgr_vif.update_div_step_down_req(value);
+  endtask
+
+  local task delayed_update_io_clk_byp_ack(mubi4_t value, int cycles);
+    cfg.clk_rst_vif.wait_clks(cycles);
+    cfg.clkmgr_vif.update_io_clk_byp_ack(value);
+  endtask
+
   local task all_clk_byp_handshake();
     forever
       @cfg.clkmgr_vif.all_clk_byp_req begin : all_clk_byp_ack
         if (cfg.clkmgr_vif.all_clk_byp_req == prim_mubi_pkg::MuBi4True) begin
           `uvm_info(`gfn, "Got all_clk_byp_req on", UVM_MEDIUM)
-          cfg.clk_rst_vif.wait_clks(cycles_before_all_clk_byp_ack);
-          cfg.clkmgr_vif.update_all_clk_byp_ack(prim_mubi_pkg::MuBi4True);
-        end else if (cfg.clkmgr_vif.all_clk_byp_req == prim_mubi_pkg::MuBi4False) begin
+          fork
+            delayed_update_all_clk_byp_ack(MuBi4True, cycles_before_all_clk_byp_ack);
+            delayed_update_div_step_down_req(MuBi4True, cycles_before_div_step_down_req);
+          join
+        end else begin
           `uvm_info(`gfn, "Got all_clk_byp_req off", UVM_MEDIUM)
-          cfg.clk_rst_vif.wait_clks(cycles_before_all_clk_byp_ack);
-          cfg.clkmgr_vif.update_all_clk_byp_ack(prim_mubi_pkg::MuBi4False);
+          // Set inputs to mubi4 non-True.
+          fork
+            delayed_update_all_clk_byp_ack(all_clk_byp_ack_non_true,
+                                           cycles_before_all_clk_byp_ack);
+            delayed_update_div_step_down_req(div_step_down_req_non_true,
+                                             cycles_before_div_step_down_req);
+          join
         end
       end
   endtask
@@ -68,14 +99,21 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   local task io_clk_byp_handshake();
     forever
       @cfg.clkmgr_vif.io_clk_byp_req begin : io_clk_byp_ack
-        if (cfg.clkmgr_vif.io_clk_byp_req == prim_mubi_pkg::MuBi4True) begin
-          `uvm_info(`gfn, "Got io_clk_byp_req on", UVM_MEDIUM)
-          cfg.clk_rst_vif.wait_clks(cycles_before_io_clk_byp_ack);
-          cfg.clkmgr_vif.update_io_clk_byp_ack(prim_mubi_pkg::MuBi4True);
+        if (cfg.clkmgr_vif.io_clk_byp_req == MuBi4True) begin
+          `uvm_info(`gfn, "Got io_clk_byp_req True", UVM_MEDIUM)
+          fork
+            delayed_update_io_clk_byp_ack(MuBi4True, cycles_before_io_clk_byp_ack);
+            delayed_update_div_step_down_req(MuBi4True, cycles_before_div_step_down_req);
+          join
         end else begin
-          `uvm_info(`gfn, "Got io_clk_byp_req off", UVM_MEDIUM)
-          cfg.clk_rst_vif.wait_clks(cycles_before_io_clk_byp_ack);
-          cfg.clkmgr_vif.update_io_clk_byp_ack(prim_mubi_pkg::MuBi4False);
+          `uvm_info(`gfn, "Got io_clk_byp_req non True", UVM_MEDIUM)
+          // Set inputs to mubi4 non-True.
+          fork
+            delayed_update_io_clk_byp_ack(io_clk_byp_ack_non_true,
+                                          cycles_before_io_clk_byp_ack);
+            delayed_update_div_step_down_req(div_step_down_req_non_true,
+                                             cycles_before_div_step_down_req);
+          join
         end
       end
   endtask
