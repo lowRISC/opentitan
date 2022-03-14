@@ -1,0 +1,515 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: conn
+  testpoints: [
+
+    /////////////////////////
+    // aon_timer_rst.csv   //
+    /////////////////////////
+    {
+      name: aon_timer_rst
+      desc: '''Verify rstmgr's resets_o is connected to aon_timer's reset port.'''
+      milestone: V2
+      tests: ["aon_timer_rst"]
+      tags: ["conn"]
+    }
+    {
+      name: aon_timer_rst_aon
+      desc: '''Verify rstmgr's resets_o is connected to aon_timer's aon-reset port.'''
+      milestone: V2
+      tests: ["aon_timer_rst_aon"]
+      tags: ["conn"]
+    }
+
+    /////////////////////////
+    // ast_mem_cfg.csv     //
+    /////////////////////////
+    {
+      name: ast_dft_ram_2p_cfg
+      desc: '''Verify ast model's dual port configuration bits are connected to the dual port RAMs
+            in the following blocks:
+            - spi_device
+            - usbdev
+            '''
+      milestone: V2
+      tests: ["ast_dft_spi_device_ram_2p_cfg", "ast_dft_usbdev_ram_2p_cfg"]
+      tags: ["conn"]
+    }
+    {
+      name: ast_dft_ram_1p_cfg
+      desc: '''Verify ast model's single port configuration bits are connected to the single port
+            RAMs in the following blocks:
+            - otbn_imem
+            - otbn_dmem
+            - rv_core_ibex_tag0
+            - rv_core_ibex_tag1
+            - rv_core_ibex_data0
+            - rv_core_ibex_data1
+            - sram_main
+            - sram_retention
+            - rom
+            '''
+      milestone: V2
+      tests: ["ast_dft_otbn_imem_ram_1p_cfg",
+              "ast_dft_otbn_dmem_ram_1p_cfg",
+              "ast_dft_rv_core_ibex_tag0_ram_1p_cfg",
+              "ast_dft_rv_core_ibex_tag1_ram_1p_cfg",
+              "ast_dft_rv_core_ibex_data0_ram_1p_cfg",
+              "ast_dft_rv_core_ibex_data1_ram_1p_cfg",
+              "ast_dft_sram_main_ram_1p_cfg",
+              "ast_dft_sram_ret_ram_1p_cfg",
+              "ast_dft_rom_cfg"]
+      tags: ["conn"]
+    }
+
+    /////////////////////////
+    // clkmgr_ast.csv      //
+    /////////////////////////
+    {
+      name: ast_sys_clk_clkmgr
+      desc: '''Verify ast model's `clk_src_sys_o` is connected to clkmgr's main clock.'''
+      milestone: V2
+      tests: ["ast_sys_clk_clkmgr"]
+      tags: ["conn"]
+    }
+    {
+      name: ast_io_clk_clkmgr
+      desc: '''Verify ast model's `clk_src_io_o` is connected to clkmgr's io clock.'''
+      milestone: V2
+      tests: ["ast_io_clk_clkmgr"]
+      tags: ["conn"]
+    }
+    {
+      name: ast_usb_clk_clkmgr
+      desc: '''Verify ast model's `clk_src_usb_o` is connected to clkmgr's usb clock.'''
+      milestone: V2
+      tests: ["ast_usb_clk_clkmgr"]
+      tags: ["conn"]
+    }
+    {
+      name: ast_aon_clk_clkmgr
+      desc: '''Verify ast model's `clk_src_aon_o` is connected to clkmgr's aon clock.'''
+      milestone: V2
+      tests: ["ast_aon_clk_clkmgr"]
+      tags: ["conn"]
+    }
+    {
+      name: clkmgr_jitter_ast
+      desc: '''Verify clkmgr's jitter enable is connected to ast.'''
+      milestone: V2
+      tests: ["clkmgr_jitter_ast"]
+      tags: ["conn"]
+    }
+
+    /////////////////////////
+    // clkmgr_idle.csv     //
+    /////////////////////////
+    {
+      name: clkmgr_idle
+      desc: '''Verify clkmgr's `idle_i` bits are connected to the following ports:
+              - index 0 to aes's `idle_o`
+              - index 1 to hmac's `idle_o`
+              - index 2 to kmac's `idle_o`
+              - index 3 to otbn's `idle_o`
+              '''
+      milestone: V2
+      tests: ["clkmgr_idle0", "clkmgr_idle1", "clkmgr_idle2", "clkmgr_idle3"]
+      tags: ["conn"]
+    }
+
+    /////////////////////////
+    // clkmgr_infra.csv    //
+    /////////////////////////
+    {
+      name: clkmgr_clk_io_div4_infra
+      desc: '''Verify clkmgr's `clk_io_div4_infra` is connected to the following block's clock
+            input:
+            - flash_ctrl clk_otp_i
+            - xbar_main clk_fixed_i
+            - xbar_peri clk_peri_i
+            - sram_ctrl main clk_otp_i
+            - sram_ctrl retention clk_i
+            - sram_ctrl retention clk_otp_i
+            - sysrst_ctrl clk_i
+            '''
+      milestone: V2
+      tests: ["clkmgr_infra_clk_flash_ctrl_clk",
+              "clkmgr_infra_clk_xbar_main_fixed_clk",
+              "clkmgr_infra_clk_xbar_peri_peri_clk",
+              "clkmgr_infra_clk_sram_ctrl_main_otp_clk",
+              "clkmgr_infra_clk_sram_ctrl_ret_clk",
+              "clkmgr_infra_clk_sram_ctrl_ret_otp_clk",
+              "clkmgr_infra_clk_sysrst_ctrl_clk"]
+      tags: ["conn"]
+    }
+    {
+      name: clkmgr_clk_main_infra
+      desc: '''Verify clkmgr's `clk_main_infra` is connected to the following blocks' clock input:
+            - flash_ctrl clk_i
+            - rv_dm clk_i
+            - rom_ctrl clk_i
+            - rv_core_ibex clk_i
+            - rv_core_ibex clk_edn_i
+            - sram_ctrl main clk_i
+            - xbar_main clk_main_i
+            '''
+      milestone: V2
+      tests: ["clkmgr_infra_clk_flash_ctrl_clk",
+              "clkmgr_infra_clk_rv_dm_clk",
+              "clkmgr_infra_clk_rom_clk",
+              "clkmgr_infra_clk_rv_core_ibex_clk",
+              "clkmgr_infra_clk_rv_core_ibex_edn_clk",
+              "clkmgr_infra_clk_sram_ctrl_main_clk",
+              "clkmgr_infra_clk_xbar_main_main_clk"]
+      tags: ["conn"]
+    }
+    {
+      name: clkmgr_clk_aon_infra
+      desc: '''Verify clkmgr's `clk_aon_infra` is connected to the following block's clock input:
+            - sysrst_ctrl clk_aon_i
+            '''
+      milestone: V2
+      tests: ["infra_clk_sysrst_ctrl_aon_clk"]
+      tags: ["conn"]
+    }
+    {
+      name: clkmgr_clk_io_infra
+      desc: '''Verify clkmgr's `clk_io_infra` is connected to the following block's clock input:
+             - xbar_main's clk_spi_host0_i
+            '''
+      milestone: V2
+      tests: ["clkmgr_infra_clk_xbar_main_spi_host0_clk"]
+      tags: ["conn"]
+    }
+    {
+      name: clkmgr_clk_io_div2_infra
+      desc: '''Verify clkmgr's `clk_io_div2_infra` is connected to the following block's clock
+            input:
+            - xbar_main clk_spi_host1_i
+            '''
+      milestone: V2
+      tests: ["clkmgr_infra_clk_xbar_main_spi_host1_clk"]
+      tags: ["conn"]
+    }
+
+    /////////////////////////
+    // clkmgr_peri.csv     //
+    /////////////////////////
+    {
+      name: clkmgr_clk_io_div4_peri
+      desc: '''Verify clkmgr's `clk_io_div4_peri` is connected to the following blocks' clock
+            input:
+            - adc_ctrl clk_i
+            - gpio clk_i
+            - spi_device clk_i
+            - i2c0 clk_i
+            - i2c1 clk_i
+            - i2c2 clk_i
+            - pattgen clk_i
+            - uart0 clk_i
+            - uart1 clk_i
+            - uart2 clk_i
+            - uart3 clk_i
+            - usbdev clk_i
+            '''
+      milestone: V2
+      tests: ["clkmgr_peri_clk_adc_ctrl_aon_clk",
+              "clkmgr_peri_clk_gpio_clk",
+              "clkmgr_peri_clk_spi_device_clk",
+              "clkmgr_peri_clk_i2c0_clk",
+              "clkmgr_peri_clk_i2c1_clk",
+              "clkmgr_peri_clk_i2c2_clk",
+              "clkmgr_peri_clk_pattgen_clk",
+              "clkmgr_peri_clk_uart0_clk",
+              "clkmgr_peri_clk_uart1_clk",
+              "clkmgr_peri_clk_uart2_clk",
+              "clkmgr_peri_clk_uart3_clk",
+              "clkmgr_peri_clk_usbdev_clk"]
+      tags: ["conn"]
+    }
+    {
+      name: clkmgr_clk_io_div2_peri
+      desc: '''Verify clkmgr's `clk_io_div2_peri` is connected to the following blocks' clock
+            input:
+            - spi_device's clk_scan_i
+            - spi_host1 clk_i
+            '''
+      milestone: V2
+      tests: ["clkmgr_peri_clk_spi_device_scan_clk",
+              "clkmgr_peri_clk_spi_host1_clk"]
+      tags: ["conn"]
+    }
+    {
+      name: clkmgr_clk_io_peri
+      desc: '''Verify clkmgr's `clk_io_peri` is connected to the following block's clock input:
+            - spi_host0's clk_i
+            '''
+      milestone: V2
+      tests: ["clkmgr_peri_clk_spi_host0_clk"]
+      tags: ["conn"]
+    }
+    {
+      name: clkmgr_clk_usb_peri
+      desc: '''Verify clkmgr's `clk_usb_peri` is connected to usbdev's usb clock.'''
+      milestone: V2
+      tests: ["clkmgr_peri_clk_usbdev_usb_clk"]
+      tags: ["conn"]
+    }
+    {
+      name: clkmgr_clk_aon_peri
+      desc: '''Verify clkmgr's `clk_aon_peri` is connected to the following blocks' clock input:
+            - adc_ctrl clk_aon_i
+            - usbdev clk_aon_i
+            '''
+      milestone: V2
+      tests: ["clkmgr_peri_clk_adc_ctrl_aon_clk",
+              "clkmgr_peri_clk_usbdev_aon_clk"]
+      tags: ["conn"]
+    }
+
+    /////////////////////////
+    // clkmgr powerup      //
+    /////////////////////////
+    {
+      name: clkmgr_clk_io_div4_powerup
+      desc: '''Verify clkmgr's `clk_io_div4_powerup` is connected to the following blocks' clock
+            input:
+            - clkmgr clk_i
+            - pinmux clk_i
+            - pwm clk_i
+            - pwrmgr clk_i
+            - rstmgr clk_i
+            - rstmgr clk_io_div4_i
+            '''
+      milestone: V2
+      tests: ["clkmgr_powerup_clk_clkmgr_clk",
+              "clkmgr_powerup_clk_pinmux_clk",
+              "clkmgr_powerup_clk_pwm_clk",
+              "clkmgr_powerup_clk_pwrmgr_clk",
+              "clkmgr_powerup_clk_rstmgr_clk",
+              "clkmgr_powerup_clk_rstmgr_io4_clk"]
+      tags: ["conn"]
+    }
+    {
+      name: clkmgr_clk_aon_powerup
+      desc: '''Verify clkmgr's `clk_aon_powerup` is connected to the following blocks' clock input:
+            - pinmux's clk_aon_i
+            - pwm clk_core_i
+            - pwrmgr clk_slow_i
+            - rstmgr clk_aon_i
+            '''
+      milestone: V2
+      tests: ["clkmgr_powerup_clk_pinmux_aon_clk",
+              "clkmgr_powerup_clk_pwm_core_clk",
+              "clkmgr_powerup_clk_pwrmgr_slow_clk",
+              "clkmgr_powerup_clk_rstmgr_aon_clk"]
+      tags: ["conn"]
+    }
+    {
+      name: clkmgr_clk_main_powerup
+      desc: '''Verify clkmgr's `clk_main_powerup` is connected to the following block's clock
+            input:
+            - rstmgr's clock_main_i
+            '''
+      milestone: V2
+      tests: ["clkmgr_powerup_clk_rstmgr_main_clk"]
+      tags: ["conn"]
+    }
+    {
+      name: clkmgr_clk_io_powerup
+      desc: '''Verify clkmgr's `clk_io_powerup` is connected to rstmgr's io clock.'''
+      milestone: V2
+      tests: ["clkmgr_powerup_clk_rstmgr_io_clk"]
+      tags: ["conn"]
+    }
+    {
+      name: clkmgr_clk_usb_powerup
+      desc: '''Verify clkmgr's `clk_usb_powerup` is connected to rstmgr's usb clock.'''
+      milestone: V2
+      tests: ["clkmgr_powerup_clk_rstmgr_usb_clk"]
+      tags: ["conn"]
+    }
+    {
+      name: clkmgr_clk_io_div2_powerup
+      desc: '''Verify clkmgr's `clk_io_div2_powerup` is connected to rstmgr's io_div2 clock.'''
+      milestone: V2
+      tests: ["clkmgr_powerup_clk_rstmgr_io2_clk"]
+      tags: ["conn"]
+    }
+
+    /////////////////////////
+    // clkmgr_secure.csv   //
+    /////////////////////////
+    {
+      name: clkmgr_clk_io_div4_secure
+      desc: '''Verify clkmgr's `clk_io_div4_secure` is connected to the following blocks' clock
+            input:
+            - alert_handler clk_i
+            - otp_ctrl clk_i
+            - pwrmgr clk_i
+            - rv_core_ibex clk_i
+            - rv_core_ibex clk_otp_i
+            - sensor_ctrl clk_i
+            - ast clk_tlul_i
+            - ast clk_alert_i
+            - lc_ctrl clk_i
+            '''
+      milestone: V2
+      tests: ["clkmgr_secure_clk_alert_handler_clk",
+              "clkmgr_secure_clk_otp_ctrl_clk",
+              "clkmgr_secure_clk_pwrmgr_clk",
+              "clkmgr_secure_clk_rv_core_ibex_clk",
+              "clkmgr_secure_clk_rv_core_ibex_otp_clk",
+              "clkmgr_secure_clk_sensor_ctrl_clk",
+              "clkmgr_secure_clk_ast_tlul_clk",
+              "clkmgr_secure_clk_ast_alert_clk",
+              "clkmgr_secure_clk_lc_ctrl_clk"]
+      tags: ["conn"]
+    }
+    {
+      name: clkmgr_clk_main_secure
+      desc: '''Verify clkmgr's `clk_main_secure` is connected to the following blocks' clock input:
+            - alert_handler's clk_edn_i
+            - ast clk_est_i
+            - ast clk_rng_i
+            - csrgn clk_i
+            - edn0 clk_i
+            - edn1 clk_i
+            - entropy_src clk_i
+            - keymgr clk_i
+            - keymgr clk_edn_i
+            - lc_ctrl clk_kmac_i
+            - otp_ctrl clk_edn_i
+            - rv_plic clk_i
+            '''
+      milestone: V2
+      tests: ["clkmgr_secure_clk_alert_handler_edn_clk",
+              "clkmgr_secure_clk_ast_es_clk",
+              "clkmgr_secure_clk_ast_rng_clk",
+              "clkmgr_secure_clk_csrng_clk",
+              "clkmgr_secure_clk_edn0_clk",
+              "clkmgr_secure_clk_edn1_clk",
+              "clkmgr_secure_clk_entropy_src_clk",
+              "clkmgr_secure_clk_keymgr_clk",
+              "clkmgr_secure_clk_keymgr_edn_clk",
+              "clkmgr_secure_clk_lc_ctrl_kmac_clk",
+              "clkmgr_secure_clk_otp_ctrl_edn_clk",
+              "clkmgr_secure_clk_rv_plic_clk"]
+      tags: ["conn"]
+    }
+    {
+      name: clkmgr_clk_aon_secure
+      desc: '''Verify clkmgr's `clk_aon_secure` is connected to the following blocks' clock input:
+            - ast clk_adc_i
+            - sensor_ctrl clk_aon_i
+            '''
+      milestone: V2
+      tests: ["clkmgr_secure_clk_ast_adc_clk",
+              "clkmgr_secure_clk_sensor_ctrl_aon_clk"]
+      tags: ["conn"]
+    }
+    {
+      name: clkmgr_clk_usb_secure
+      desc: '''Verify clkmgr's `clk_usb_secure` is connected to ast's usb clock.'''
+      milestone: V2
+      tests: ["clkmgr_secure_clk_ast_usb_clk"]
+      tags: ["conn"]
+    }
+
+    /////////////////////////
+    // clkmgr_timers.csv   //
+    /////////////////////////
+    {
+      name: clkmgr_clk_io_div4_timers
+      desc: '''Verify clkmgr's `clk_io_div4_timers` is connected to the following blocks' clock
+            input:
+            - aon_timer clk_i
+            - rv_timer clk_i
+            '''
+      milestone: V2
+      tests: ["clkmgr_timers_clk_aon_timer_clk", "clkmgr_timers_clk_rv_timer_clk"]
+      tags: ["conn"]
+    }
+    {
+      name: clkmgr_clk_aon_timers
+      desc: '''Verify clkmgr's `clk_aon_timers` is connected to aon_timer's aon clock.'''
+      milestone: V2
+      tests: ["clkmgr_timers_clk_aon_timer_aon_clk"]
+      tags: ["conn"]
+    }
+
+    /////////////////////////
+    // flash_ast.csv       //
+    /////////////////////////
+    {
+      name: flash_ast_obs_ctrl
+      desc: '''Verify ast's `obs_ctrl_o` is connected to flash_ctrl's `obs_ctrl_i`.'''
+      milestone: V2
+      tests: ["flash_ast_obs_ctrl"]
+      tags: ["conn"]
+    }
+
+    /////////////////////////
+    // lc_escalate_en.csv  //
+    /////////////////////////
+    {
+      name: lc_escalate_en
+      desc: '''Verify lc_ctrl's `lc_escalate_en_o` is connected to the following blocks'
+            `lc_escalate_en_i`:
+            - otp_ctrl
+            - aon_timer
+            - sram_ctrl main
+            - sram_ctrl retention
+            - flash_ctrl
+            - aes
+            - kmac
+            - otbn
+            '''
+      milestone: V2
+      tests: ["lc_escalate_en_otp",
+              "lc_escalate_en_aon_timer",
+              "lc_escalate_en_sram_main",
+              "lc_escalate_en_sram_ret",
+              "lc_escalate_en_flash",
+              "lc_escalate_en_aes",
+              "lc_escalate_en_kmac",
+              "lc_escalate_en_otbn"]
+      tags: ["conn"]
+    }
+
+    /////////////////////////
+    // pwrmgr_rstmgr.sv    //
+    /////////////////////////
+    {
+      name: pwrmgr_rst_lc_req
+      desc: '''Verify pwrmgr's `rst_lc_req` is connected to rstmgr's `rst_lc_req`.'''
+      milestone: V2
+      tests: ["pwrmgr_rst_lc_req"]
+      tags: ["conn"]
+    }
+    {
+      name: pwrmgr_rst_sys_req
+      desc: '''Verify pwrmgr's `rst_sys_req` is connected to rstmgr's `rst_sys_req`.'''
+      milestone: V2
+      tests: ["pwrmgr_rst_sys_req"]
+      tags: ["conn"]
+    }
+    {
+      name: rstmgr_rst_lc_src_n
+      desc: '''Verify rstmgr's `rst_lc_src_n` is connected to pwrmgr's `rst_lc_src_n`.'''
+      milestone: V2
+      tests: ["rstmgr_rst_lc_src_n"]
+      tags: ["conn"]
+    }
+    {
+      name: rstmgr_rst_sys_src_n
+      desc: '''Verify rstmgr's `rst_sys_src_n` is connected to rstmgr's `rst_sys_src_n`.'''
+      milestone: V2
+      tests: ["rstmgr_rst_sys_src_n"]
+      tags: ["conn"]
+    }
+  ]
+}
+
