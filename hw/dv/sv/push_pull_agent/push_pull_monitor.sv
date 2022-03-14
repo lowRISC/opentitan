@@ -26,6 +26,7 @@ class push_pull_monitor #(parameter int HostDataWidth = 32,
       collect_trans(phase);
       // Collect partial pull reqs for the reactive pull device agent.
       collect_pull_req();
+      collect_cov();
     join_none
   endtask
 
@@ -106,6 +107,22 @@ class push_pull_monitor #(parameter int HostDataWidth = 32,
         end
       end
     end
+  endtask
+
+  virtual protected task collect_cov();
+    if (cfg.en_cov) begin
+      if (cfg.agent_type == PushAgent) begin
+        forever @(cfg.vif.mon_cb.ready or cfg.vif.mon_cb.valid) begin
+          `WAIT_FOR_RESET
+          cov.m_valid_ready_cg.sample(cfg.vif.mon_cb.ready, cfg.vif.mon_cb.valid);
+        end // forever
+      end else begin // PullAgent
+        forever @(cfg.vif.mon_cb.req or cfg.vif.mon_cb.ack) begin
+          `WAIT_FOR_RESET
+          cov.m_req_ack_cg.sample(cfg.vif.mon_cb.req, cfg.vif.mon_cb.ack);
+        end // forever
+      end // PushAgent or PullAgent
+    end // cfg.en_cov
   endtask
 
   `undef WAIT_FOR_RESET
