@@ -11,8 +11,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   `uvm_object_utils(flash_ctrl_base_vseq)
 
-  import lc_ctrl_pkg::*;
-
   // OTP Scramble Keys, Used In OTP MODEL
   logic [KeyWidth-1:0] otp_addr_key;
   logic [KeyWidth-1:0] otp_addr_rand_key;
@@ -114,8 +112,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
                                         flash_mp_region_cfg_t region_cfg = default_region_cfg);
     uvm_reg_data_t data;
     uvm_reg csr;
-    data =
-         get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].en, data, region_cfg.en);
+    data = get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].en, data,
+                                          region_cfg.en);
     data = data | get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].rd_en, data,
                                                  region_cfg.read_en);
     data = data | get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].prog_en, data,
@@ -311,10 +309,10 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       input bit [TL_AW-1:0] addr, input bit [TL_DBW-1:0] mask = get_rand_contiguous_mask(),
       input bit blocking = $urandom_range(0, 1), input bit check_rdata = 0,
       input bit [TL_DW-1:0] exp_rdata = '0, input mubi4_t instr_type = MuBi4False,
-      output logic [TL_DW-1:0] rdata);
+      output logic [TL_DW-1:0] rdata, input bit exp_err_rsp = 1'b0);
     tl_access(.addr(addr), .write(1'b0), .data(rdata), .mask(mask), .blocking(blocking),
               .check_exp_data(check_rdata), .exp_data(exp_rdata), .compare_mask(mask),
-              .instr_type(instr_type),
+              .instr_type(instr_type), .exp_err_rsp(exp_err_rsp),
               .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.flash_ral_name]));
   endtask : do_direct_read
 
@@ -328,7 +326,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
     // Local Signals
     bit               poll_fifo_status;
-    logic [TL_DW-1:0] exp_data [$];
+    logic [TL_DW-1:0] exp_data[$];
     flash_op_t        flash_op;
 
     // Flash Operation Assignments
@@ -550,12 +548,12 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     // Special Partition (used for Isolated) : Bank 0, Information Partition 0, Page 3
 
     // Local Variables
-    bit                    poll_fifo_status;
-    logic      [TL_DW-1:0] exp_data [$];
-    flash_op_t             flash_op;
-    data_q_t               flash_op_rdata;
-    int                    match_cnt;
-    string                 msg;
+    bit               poll_fifo_status;
+    logic [TL_DW-1:0] exp_data[$];
+    flash_op_t        flash_op;
+    data_q_t          flash_op_rdata;
+    int               match_cnt;
+    string            msg;
 
     // Assign
     flash_op.op = op;
@@ -640,12 +638,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
             // Decide Pass/Fail Based on Match Count
             if (match_cnt > 1)
-              `uvm_error(`gfn, {
-                         "Read : Data Matches Seen (Erase), UNEXPECTED",
-                         $sformatf(
-                             "Flash Content Should Be Random (RMA Wipe) (Matches : %0d)", match_cnt
-                         )
-                         })
+              `uvm_error(`gfn, {"Read : Data Matches Seen (Erase), UNEXPECTED",
+                $sformatf("Flash Content Should Be Random (RMA Wipe) (Matches : %0d)", match_cnt)})
 
             `uvm_info(`gfn, "Read : Compare Backdoor with Data Previously Written", UVM_MEDIUM)
             match_cnt = 0;
@@ -660,8 +654,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
             if (match_cnt > 1)
               `uvm_error(`gfn, {
                          "Read : Data Matches Seen, UNEXPECTED, Flash Content Should Be ",
-                         $sformatf("Random (RMA Wipe) (Matches : %0d)", match_cnt)
-                         })
+                         $sformatf("Random (RMA Wipe) (Matches : %0d)", match_cnt)})
           end
         end
       end
@@ -698,7 +691,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     int                      num_part;
     logic [TL_DW-1:0]        fifo_data;
     logic [TL_AW-1:0]        flash_addr;
-    logic [TL_DW-1:0]        exp_data [$];
+    logic [TL_DW-1:0]        exp_data[$];
     flash_op_t               flash_op_copy;
     data_q_t                 data_copy;
 
@@ -783,15 +776,15 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   virtual task flash_ctrl_read_extra(flash_op_t flash_op, ref data_q_t data);
 
     // Local Signals
-    uvm_reg_data_t             reg_data;
-    flash_part_e               partition_sel;
-    bit   [InfoTypesWidth-1:0] info_sel;
-    logic [TL_AW:0]            flash_addr;
-    int                        num;
-    int                        num_full;
-    int                        num_part;
-    int                        num_words;
-    int                        idx;
+    uvm_reg_data_t           reg_data;
+    flash_part_e             partition_sel;
+    bit [InfoTypesWidth-1:0] info_sel;
+    logic [TL_AW:0]          flash_addr;
+    int                      num;
+    int                      num_full;
+    int                      num_part;
+    int                      num_words;
+    int                      idx;
 
     // Calculate Number of Complete Cycles and Partial Cycle Words
     num      = flash_op.num_words;
@@ -874,7 +867,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     lc_ctrl_pkg::lc_tx_t done;
     time timeout = 15s;
     time start_time;
-    bit rma_ack_seen;
+    bit  rma_ack_seen;
 
     `uvm_info(`gfn, $sformatf("RMA Seed : 0x%08x", rma_seed), UVM_LOW)
 
@@ -907,8 +900,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
             #(timeout);
             `uvm_error(`gfn, {
                        "RMA ACK NOT seen within the expected time frame, Timeout - FAIL",
-                       $sformatf(" (%0t)", timeout)
-                       })
+                       $sformatf(" (%0t)", timeout)})
           end
         join_any
         disable fork;

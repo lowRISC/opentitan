@@ -17,6 +17,7 @@ package flash_ctrl_env_pkg;
   import flash_ctrl_eflash_ral_pkg::*;
   import mem_bkdr_util_pkg::*;
   import prim_mubi_pkg::*;
+  import lc_ctrl_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -107,6 +108,10 @@ package flash_ctrl_env_pkg;
   // Read Check Parameters
   parameter bit READ_CHECK_NORM = 0;  // Check Read Data via the Backdoor
   parameter bit READ_CHECK_EXPLICIT = 1;  // Check Read Data Explicitly
+
+  // Code Fetch Key
+  parameter uint CODE_EXEC_KEY_W = 32;
+  parameter uint CODE_EXEC_KEY = 32'ha26a38f7;
 
   // types
   typedef enum int {
