@@ -153,6 +153,7 @@ package keymgr_pkg;
   typedef enum logic [1:0] {
     SyncFaultKmacOp,
     SyncFaultKmacOut,
+    SyncFaultSideSel,
     SyncFaultLastIdx
   } keymgr_sync_fault_e;
 
@@ -163,6 +164,7 @@ package keymgr_pkg;
     AsyncFaultRegIntg,
     AsyncFaultShadow,
     AsyncFaultFsmIntg,
+    AsyncFaultFsmChk,
     AsyncFaultCntErr,
     AsyncFaultRCntErr,
     AsyncFaultSideErr,
@@ -189,9 +191,11 @@ package keymgr_pkg;
     FaultRegIntg,
     FaultShadow,
     FaultCtrlFsm,
+    FaultCtrlFsmChk,
     FaultCtrlCnt,
     FaultReseedCnt,
     FaultSideFsm,
+    FaultSideSel,
     FaultLastPos
   } keymgr_fault_pos_e;
 

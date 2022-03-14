@@ -25,6 +25,7 @@ module keymgr_ctrl
   input shadowed_update_err_i,
   input shadowed_storage_err_i,
   input reseed_cnt_err_i,
+  input sideload_sel_err_i,
   input sideload_fsm_err_i,
 
   // Software interface
@@ -255,6 +256,7 @@ module keymgr_ctrl
   //   state.
   // - when there are no operations, the key state also should be exposed.
   assign key_o.valid = op_req;
+
   assign cdi_sel_o = advance_sel ? cdi_cnt : op_cdi_sel_i;
 
   assign invalid_stage_sel_o = ~(stage_sel_o inside {Creator, OwnerInt, Owner});
@@ -675,6 +677,10 @@ module keymgr_ctrl
     .state_o ( op_state_raw_q )
   );
 
+  logic gen_en;
+  assign id_en_o = gen_en & gen_id_op;
+  assign gen_en_o = gen_en & (gen_sw_op | gen_hw_op);
+
   always_comb begin
     op_state_d = op_state_q;
     op_update = 1'b0;
@@ -683,9 +689,8 @@ module keymgr_ctrl
 
     // output to kmac interface
     adv_en_o = 1'b0;
-    id_en_o = 1'b0;
-    gen_en_o = 1'b0;
 
+    gen_en = 1'b0;
     op_fsm_err = 1'b0;
 
     unique case (op_state_q)
@@ -717,8 +722,7 @@ module keymgr_ctrl
 
       // Not an advanced operation
       StWait: begin
-        id_en_o = gen_id_op;
-        gen_en_o = gen_sw_op | gen_hw_op;
+        gen_en = 1'b1;
 
         if (kmac_done_i) begin
           op_ack = 1'b1;
@@ -745,6 +749,38 @@ module keymgr_ctrl
                          (op_ack | op_update) & op_err       ? KeyUpdateIdle :
                          (op_ack | op_update)                ? KeyUpdateKmac : KeyUpdateIdle;
 
+
+  /////////////////////////
+  // Cross-checks, errors and faults
+  /////////////////////////
+
+  logic vld_state_change_d, vld_state_change_q;
+  assign vld_state_change_d = (state_d != state_q) &
+                              (state_d inside {StCtrlInit,
+                                               StCtrlCreatorRootKey,
+                                               StCtrlOwnerIntKey,
+                                               StCtrlOwnerKey});
+
+  // capture for cross check in following cycle
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      vld_state_change_q <= '0;
+    end else begin
+      vld_state_change_q <= vld_state_change_d;
+    end
+  end
+
+  // state cross check
+  // if the state advanced, ensure that it was due to an advanced operation
+  logic state_change_err;
+  assign state_change_err = vld_state_change_q & !adv_op;
+
+
+  // operational state cross check.  The state value must be consistent with
+  // the input operations.
+  logic op_state_cmd_err;
+  assign op_state_cmd_err = (adv_en_o & ~(advance_sel | disable_sel)) |
+                            (gen_en_o & ~gen_op);
 
   // Advance calls are made up of multiple rounds of kmac operations.
   // Any sync error that occurs is treated as an error of the entire call.
@@ -778,6 +814,7 @@ module keymgr_ctrl
   // sync faults
   assign sync_fault_d[SyncFaultKmacOp] = err_vld & kmac_op_err_i;
   assign sync_fault_d[SyncFaultKmacOut] = err_vld & invalid_kmac_out;
+  assign sync_fault_d[SyncFaultSideSel] = err_vld & sideload_sel_err_i;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       sync_fault_q <= '0;
@@ -805,6 +842,9 @@ module keymgr_ctrl
   assign async_fault_d[AsyncFaultRegIntg]  = regfile_intg_err_i;
   assign async_fault_d[AsyncFaultShadow ]  = shadowed_storage_err_i;
   assign async_fault_d[AsyncFaultFsmIntg]  = state_intg_err_q | data_fsm_err | op_fsm_err;
+
+  // SEC_CM: CTRL.FSM.CONSISTENCY
+  assign async_fault_d[AsyncFaultFsmChk]   = state_change_err | op_state_cmd_err;
   assign async_fault_d[AsyncFaultCntErr ]  = cnt_err;
   assign async_fault_d[AsyncFaultRCntErr]  = reseed_cnt_err_i;
   assign async_fault_d[AsyncFaultSideErr]  = sideload_fsm_err_i;
@@ -817,17 +857,19 @@ module keymgr_ctrl
   assign error_o[ErrShadowUpdate] = async_err[AsyncErrShadowUpdate];
 
   // output to fault code register
-  assign fault_o[FaultKmacOp]    = op_ack & sync_fault[SyncFaultKmacOp];
-  assign fault_o[FaultKmacOut]   = op_ack & sync_fault[SyncFaultKmacOut];
-  assign fault_o[FaultKmacCmd]   = async_fault[AsyncFaultKmacCmd];
-  assign fault_o[FaultKmacFsm]   = async_fault[AsyncFaultKmacFsm];
-  assign fault_o[FaultKmacDone]  = async_fault[AsyncFaultKmacDone];
-  assign fault_o[FaultRegIntg]   = async_fault[AsyncFaultRegIntg];
-  assign fault_o[FaultShadow]    = async_fault[AsyncFaultShadow];
-  assign fault_o[FaultCtrlFsm]   = async_fault[AsyncFaultFsmIntg];
-  assign fault_o[FaultCtrlCnt]   = async_fault[AsyncFaultCntErr];
-  assign fault_o[FaultReseedCnt] = async_fault[AsyncFaultRCntErr];
-  assign fault_o[FaultSideFsm]   = async_fault[AsyncFaultSideErr];
+  assign fault_o[FaultKmacOp]     = op_ack & sync_fault[SyncFaultKmacOp];
+  assign fault_o[FaultKmacOut]    = op_ack & sync_fault[SyncFaultKmacOut];
+  assign fault_o[FaultSideSel]    = op_ack & sync_fault[SyncFaultSideSel];
+  assign fault_o[FaultKmacCmd]    = async_fault[AsyncFaultKmacCmd];
+  assign fault_o[FaultKmacFsm]    = async_fault[AsyncFaultKmacFsm];
+  assign fault_o[FaultKmacDone]   = async_fault[AsyncFaultKmacDone];
+  assign fault_o[FaultRegIntg]    = async_fault[AsyncFaultRegIntg];
+  assign fault_o[FaultShadow]     = async_fault[AsyncFaultShadow];
+  assign fault_o[FaultCtrlFsm]    = async_fault[AsyncFaultFsmIntg];
+  assign fault_o[FaultCtrlFsmChk] = async_fault[AsyncFaultFsmChk];
+  assign fault_o[FaultCtrlCnt]    = async_fault[AsyncFaultCntErr];
+  assign fault_o[FaultReseedCnt]  = async_fault[AsyncFaultRCntErr];
+  assign fault_o[FaultSideFsm]    = async_fault[AsyncFaultSideErr];
 
   always_comb begin
     status_o = OpIdle;
