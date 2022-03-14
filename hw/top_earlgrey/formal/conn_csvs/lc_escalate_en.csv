@@ -10,9 +10,9 @@
 # Verify that lc_ctrl's lc_escalate_en_o signal is correctly connected to IPs.
 CONNECTION, LC_ESCALATE_EN_OTP,       top_earlgrey.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.u_otp_ctrl,          lc_escalate_en_i
 CONNECTION, LC_ESCALATE_EN_AON_TIMER, top_earlgrey.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.u_aon_timer_aon,     lc_escalate_en_i
+CONNECTION, LC_ESCALATE_EN_SRAM_MAIN, top_earlgrey.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.u_sram_ctrl_main,    lc_escalate_en_i
 CONNECTION, LC_ESCALATE_EN_SRAM_RET,  top_earlgrey.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.u_sram_ctrl_ret_aon, lc_escalate_en_i
 CONNECTION, LC_ESCALATE_EN_FLASH,     top_earlgrey.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.u_flash_ctrl,        lc_escalate_en_i
 CONNECTION, LC_ESCALATE_EN_AES,       top_earlgrey.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.u_aes,               lc_escalate_en_i
 CONNECTION, LC_ESCALATE_EN_KMAC,      top_earlgrey.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.u_kmac,              lc_escalate_en_i
 CONNECTION, LC_ESCALATE_EN_OTBN,      top_earlgrey.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.u_otbn,              lc_escalate_en_i
-CONNECTION, LC_ESCALATE_EN_SRAM_MAIN, top_earlgrey.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.u_sram_ctrl_main,    lc_escalate_en_i
