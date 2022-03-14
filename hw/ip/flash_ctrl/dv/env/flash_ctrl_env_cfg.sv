@@ -33,9 +33,6 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // Max delay for alerts in clocks
   uint alert_max_delay;
 
-  // A handle to the scoreboard
-  flash_ctrl_scoreboard scoreboard;
-
   // read data by host if
   data_q_t flash_rd_data;
 
