@@ -100,6 +100,11 @@ module spi_passthrough
 
   input spi_mode_e spi_mode_i,
 
+  // Control: Passthrough block
+  //   If passthrough_block_i is 1, the passthrough is turned off.
+  //   The signal should be changed when CSb is high (SPI inactive).
+  input passthrough_block_i,
+
   // Command Info structure
   input cmd_info_t [NumTotalCmdInfo-1:0] cmd_info_i,
 
@@ -644,7 +649,7 @@ module spi_passthrough
   assign passthrough_o.csb    = host_csb_i | csb_deassert_outclk ;
 
   // passthrough_en
-  assign passthrough_o.passthrough_en = is_active ;
+  assign passthrough_o.passthrough_en = is_active && !passthrough_block_i;
 
   // - END:   Passthrough Mux (!important) ------------------------------------
 
