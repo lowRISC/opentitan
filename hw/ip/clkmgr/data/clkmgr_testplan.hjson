@@ -11,7 +11,8 @@
                      "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
                      // TODO: Top-level specific Hjson imported here. This will likely be resolved
                      // once we move to IPgen flow.
-                     "hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr_sec_cm_testplan.hjson"]
+                     "hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr_sec_cm_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/sec_cm_count_testplan.hjson"]
   testpoints: [
     {
       name: smoke

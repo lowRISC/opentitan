@@ -81,7 +81,7 @@
       name: sec_cm_idle_ctr_redun
       desc: "Verify the countermeasure(s) IDLE.CTR.REDUN."
       milestone: V2S
-      tests: []
+      tests: ["clkmgr_sec_cm"]
     }
     {
       name: sec_cm_meas_config_regwen

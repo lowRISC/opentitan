@@ -5,6 +5,7 @@
 package clkmgr_env_pkg;
   // dep packages
   import uvm_pkg::*;
+  import sec_cm_pkg::*;
   import top_pkg::*;
   import dv_utils_pkg::*;
   import dv_lib_pkg::*;
