@@ -38,6 +38,9 @@ parameter int unsigned UsbCalibWidth    = 20;
 parameter int unsigned Ast2PadOutWidth  = 9;
 parameter int unsigned Pad2AstInWidth   = 9;
 //
+// The number of AST registers programmed during initialization. It includes the register that
+// marks the finalization of init, which asserts the ast_init_done_o. The offset of this register is
+// represented with the AstLastRegOffset parameter.
 parameter int unsigned AstRegsNum       = 32;
 parameter int unsigned AstLastRegOffset = (AstRegsNum-1)*4;
 
