@@ -121,18 +121,54 @@ module spid_status
   logic reg_en; // If 1, register in bus clock domain can be updated by SW
   logic reg_update; // indicator of HW update (when CSb is de-asserted)
 
+  // Design Doc
+  //  https://docs.google.com/document/d/1wUIynMYVfVg9HmCL0q5-6r9BuN-XM0z--wGqU0bXRQ0
+  //
+  // busy_clr_pending is set when the SW tries to clear the BUSY bit but the
+  // SPI is busy handling a host request. The HW sees the busy_clr_pending
+  // when the SPI becomes quiescent and clears the BUSY bit.
+  //
+  // busy_clr_pending set/clear condition:
+  //   - set: !reg_en && sw_req && req_data[0] == 0
+  //   - clr: reg_update
+  //
+  // status[0] behavior change:
+  //   - clr cond.1: reg_en && sw_req && req_data[0] == 0
+  //   - clr cond.2: reg_update && busy_clr_pending
+  //   - set: reg_update && status_sck[0] == 1
+  logic sys_busy_clr_pending;
+
+  logic sys_busy_clr_request;
+  assign sys_busy_clr_request = sys_status_we_i && !sys_status_i[0];
+
   // Register interface update in bus clock domain
   logic [23:0] status;
   //  BUSY
   always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) begin
       status[0] <= 1'b 0;
-    end else if (reg_en && sys_status_we_i && (1'b0 == sys_status_i[0])) begin
+    end else if (reg_en && sys_busy_clr_request) begin
+      status[0] <= 1'b 0;
+    end else if (reg_update && sys_busy_clr_pending) begin
       status[0] <= 1'b 0;
     end else if (reg_update) begin
+      // !sys_busy_clr_pending
       status[0] <= status_sck[0];
     end
   end
+
+  always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) begin
+      sys_busy_clr_pending <= 1'b 0;
+    end else if (!reg_en && sys_busy_clr_request) begin
+      // Store to flag
+      sys_busy_clr_pending <= 1'b 1;
+    end else if (reg_update) begin
+      // the BUSY is cleared
+      sys_busy_clr_pending <= 1'b 0;
+    end
+  end
+
   //  rest of STATUS
   always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) begin
@@ -141,6 +177,18 @@ module spid_status
       status[23:1] <= sys_status_i[23:1];
     end
   end
+
+  // If busy_clr_pending is set, must clear BUSY bit and its value
+  `ASSERT(BusyClrPendingToClear_A,
+    reg_update && sys_busy_clr_pending
+      |=> (status[0] == 1'b 0) && !sys_busy_clr_pending,
+    sys_clk_i, !sys_rst_ni)
+
+  // If HW can't accept the SW request, it should set busy_clr_pending
+  `ASSERT(HwToSetBusyClrPending_A,
+    !reg_en && sys_status_we_i && !sys_status_i[0]
+      |=> sys_busy_clr_pending,
+    sys_clk_i, !sys_rst_ni)
 
   assign sys_status_o = status;
 
