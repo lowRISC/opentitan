@@ -708,6 +708,8 @@ otbn_randomness_test_lib = declare_dependency(
     sources: ['otbn_randomness_test.c'],
     dependencies: [
       sw_lib_testing_entropy_testutils,
+      sw_lib_dif_clkmgr,
+      sw_lib_dif_rv_plic,
       sw_lib_runtime_otbn,
       sw_lib_runtime_log,
       sw_lib_runtime_ibex,

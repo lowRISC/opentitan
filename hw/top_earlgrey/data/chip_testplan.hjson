@@ -1968,17 +1968,17 @@
       name: chip_sw_otbn_idle
       desc: '''Verify the OTBN idle signal to clkmgr.
 
-            - Write the OTBN clk hint to 1 within clkmgr to indicate OTBN clk is ready to be gated.
-              Verify that the OTBN clk hint status within clkmgr reads 0 (OTBN is idle).
-            - Start an OTBN operation.
-              Verify that the OTBN clk hint status within clkmgr now reads 1 (OTBN is not idle),
-              before the operation is complete.
-            - After the OTBN operation is complete, check the output for correctness.
-              Verify that the OTBN clk hint status within clkmgr now reads 0 again (OTBN is idle),
-              after the operation is complete.
+            - Write the OTBN clk hint to 0 within clkmgr to indicate OTBN clk can be gated
+              and verify that the OTBN clk hint status within clkmgr reads 0 (OTBN is idle).
+            - Write the OTBN clk hint to 1 within clkmgr to indicate OTBN clk can be enabled.
+            - Start an OTBN operation, write the OTBN clk hint to 0 within clkmgr and verify that
+              the OTBN clk hint status within clkmgr reads 1 (OTBN is not idle).
+            - After the OTBN operation is complete, verify that the OTBN clk hint status within 
+              clkmgr now reads 0 again (OTBN is idle). 
+            - Write the OTBN clk hint to 1, read and check the OTBN output for correctness.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_otbn_randomness"]
     }
     {
       name: chip_conn_otbn_ast_ram_cfg
