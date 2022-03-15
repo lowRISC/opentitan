@@ -25,6 +25,7 @@ cc_library(
         ":ibex",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:stdasm",
+        "//sw/device/lib/base:math",
         "//sw/device/lib/base/freestanding",
     ],
 )
@@ -37,6 +38,7 @@ cc_library(
     deps = [
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:math",
         "//sw/device/lib/base:stdasm",
     ],
 )

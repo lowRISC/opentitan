@@ -398,6 +398,7 @@ sw_silicon_creator_lib_driver_alert_functest = declare_dependency(
     ],
     dependencies: [
       sw_lib_abs_mmio,
+      sw_lib_bitfield,
       sw_silicon_creator_lib_base_sec_mmio,
       sw_silicon_creator_lib_driver_alert,
       sw_silicon_creator_lib_driver_rstmgr,

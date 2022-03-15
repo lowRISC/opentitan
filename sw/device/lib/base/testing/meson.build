@@ -7,6 +7,7 @@ sw_lib_testing_bitfield = declare_dependency(
     'bitfield',
     sources: [
       meson.project_source_root() / 'sw/device/lib/base/bitfield.c',
+      meson.project_source_root() / 'sw/device/lib/base/math.c',
     ],
     native: true,
   )

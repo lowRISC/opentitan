@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
@@ -90,13 +91,13 @@ static uint64_t tick_count_get(void) {
 static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
                          dif_aon_timer_irq_t expected_irq) {
   // The interrupt time should be `irq_time_us ±5%`.
-  uint64_t variation = irq_time_us * 5 / 100;
+  uint64_t variation = udiv64_slow(irq_time_us * 5, 100, NULL);
   CHECK(variation > 0);
   uint64_t sleep_range_h = irq_time_us + variation;
   uint64_t sleep_range_l = irq_time_us - variation;
 
   // Add 500 cpu cycles of overhead to cover irq handling.
-  sleep_range_h += 500 * 1000000 / kClockFreqCpuHz;
+  sleep_range_h += udiv64_slow(500 * 1000000, kClockFreqCpuHz, NULL);
 
   uint32_t count_cycles =
       aon_timer_testutils_get_aon_cycles_from_us(irq_time_us);
@@ -221,8 +222,10 @@ bool test_main(void) {
     kMinCycles = 30 * 1000,
     kMaxCycles = 45 * 1000,
   };
-  uint64_t low_time_range = (kMinCycles * (uint64_t)1000000) / kClockFreqCpuHz;
-  uint64_t high_time_range = (kMaxCycles * (uint64_t)1000000) / kClockFreqCpuHz;
+  uint64_t low_time_range =
+      udiv64_slow(kMinCycles * (uint64_t)1000000, kClockFreqCpuHz, NULL);
+  uint64_t high_time_range =
+      udiv64_slow(kMaxCycles * (uint64_t)1000000, kClockFreqCpuHz, NULL);
 
   // no error in the reference time measurement.
   uint64_t irq_time =
