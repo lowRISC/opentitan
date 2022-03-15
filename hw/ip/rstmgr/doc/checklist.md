@@ -176,8 +176,8 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 --------------|-----------------------------------------|-------------|------------------
 Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Done        |
 Documentation | [DV_DOC_COMPLETED][]                    | Done        |
-Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Started     | Some work pending per issue https://github.com/lowRISC/opentitan/issues/10687
-Testbench     | [ALL_INTERFACES_EXERCISED][]            | Started     | One input pending per issue https://github.com/lowRISC/opentitan/issues/10689
+Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Done        |
+Testbench     | [ALL_INTERFACES_EXERCISED][]            | Done        |
 Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Done        |
 Testbench     | [SIM_TB_ENV_COMPLETED][]                | Done        |
 Tests         | [SIM_ALL_TESTS_PASSING][]               | Done        |
@@ -189,11 +189,11 @@ Coverage      | [SIM_CODE_COVERAGE_V2][]                | Done        |
 Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Done        |
 Coverage      | [FPV_CODE_COVERAGE_V2][]                | N/A         |
 Coverage      | [FPV_COI_COVERAGE_V2][]                 | N/A         |
-Code Quality  | [TB_LINT_PASS][]                        | Started     | One pending issue https://github.com/lowRISC/opentitan/pull/10683
+Code Quality  | [TB_LINT_PASS][]                        | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Done        |
 Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Done        |
 Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        |
-Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Not Started |
+Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Done        |
 Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 
 [DESIGN_DELTAS_CAPTURED_V2]:          {{<relref "/doc/project/checklist.md#design_deltas_captured_v2" >}}
