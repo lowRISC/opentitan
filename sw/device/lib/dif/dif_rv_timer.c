@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/math.h"
 
 #include "rv_timer_regs.h"  // Generated.
 
@@ -40,11 +41,9 @@ static ptrdiff_t reg_for_hart(uint32_t hart, ptrdiff_t reg_offset) {
  * A naive implementation of the Euclidean algorithm by repeated remainder.
  */
 static uint64_t euclidean_gcd(uint64_t a, uint64_t b) {
-  // TODO: The below 64-bit divide/remaider should be replaced with more
-  // space-efficient polyfills at some point.
   while (b != 0) {
     uint64_t old_b = b;
-    b = a % b;
+    udiv64_slow(a, b, &b);
     a = old_b;
   }
 
@@ -65,8 +64,8 @@ dif_result_t dif_rv_timer_approximate_tick_params(
   //   step = counter_freq / gcd
   uint64_t gcd = euclidean_gcd(clock_freq, counter_freq);
 
-  uint64_t prescale = clock_freq / gcd - 1;
-  uint64_t step = counter_freq / gcd;
+  uint64_t prescale = udiv64_slow(clock_freq, gcd, NULL) - 1;
+  uint64_t step = udiv64_slow(counter_freq, gcd, NULL);
 
   if (prescale > RV_TIMER_CFG0_PRESCALE_MASK ||
       step > RV_TIMER_CFG0_STEP_MASK) {

@@ -25,7 +25,6 @@ _stack_start = _stack_end - _stack_size;
 _dv_log_offset = 0x10000;
 
 OUTPUT_ARCH(riscv)
-GROUP(-lgcc)
 
 /**
  * Indicate that there are no dynamic libraries, whatsoever.

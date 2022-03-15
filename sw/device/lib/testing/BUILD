@@ -65,6 +65,7 @@ cc_library(
     hdrs = ["aon_timer_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//sw/device/lib/base:math",
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/testing/test_framework",
     ],

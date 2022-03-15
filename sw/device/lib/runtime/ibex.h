@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/stdasm.h"
 
 /**
@@ -137,8 +138,10 @@ void ibex_mepc_write(uint32_t mepc);
  * @return The initialized timeout value.
  */
 inline ibex_timeout_t ibex_timeout_init(uint32_t timeout_usec) {
-  return (ibex_timeout_t){.cycles = kClockFreqCpuHz * timeout_usec / 1000000,
-                          .start = ibex_mcycle_read()};
+  return (ibex_timeout_t){
+      .cycles = udiv64_slow(kClockFreqCpuHz * timeout_usec, 1000000, NULL),
+      .start = ibex_mcycle_read(),
+  };
 }
 
 /**
@@ -160,7 +163,8 @@ inline bool ibex_timeout_check(const ibex_timeout_t *timeout) {
  * @return Time elapsed in microseconds.
  */
 inline uint64_t ibex_timeout_elapsed(const ibex_timeout_t *timeout) {
-  return ((ibex_mcycle_read() - timeout->start) * 1000000 / kClockFreqCpuHz);
+  return udiv64_slow((ibex_mcycle_read() - timeout->start) * 1000000,
+                     kClockFreqCpuHz, NULL);
 }
 
 /**

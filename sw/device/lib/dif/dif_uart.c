@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 
 #include "uart_regs.h"  // Generated.
@@ -116,7 +117,8 @@ dif_result_t dif_uart_configure(const dif_uart_t *uart,
   uint64_t nco =
       ((uint64_t)config.baudrate == 1500000 && config.clk_freq_hz == 24000000)
           ? 0xffff
-          : ((uint64_t)config.baudrate << (nco_width + 4)) / config.clk_freq_hz;
+          : udiv64_slow((uint64_t)config.baudrate << (nco_width + 4),
+                        config.clk_freq_hz, NULL);
   uint32_t nco_masked = nco & UART_CTRL_NCO_MASK;
 
   // Requested baudrate is too high for the given clock frequency.
