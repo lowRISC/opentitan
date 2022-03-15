@@ -200,6 +200,10 @@
       desc: '''
             Covers that a good range of combinations of values for A and B have been send.
             Also cover that multiple channels can run concurrently with different settings for A and B.
+            Cover these cases:
+                - A > B
+                - A < B
+                - A == B
             '''
     }
     {
