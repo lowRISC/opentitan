@@ -168,6 +168,7 @@ package keymgr_pkg;
     AsyncFaultCntErr,
     AsyncFaultRCntErr,
     AsyncFaultSideErr,
+    AsyncFaultKeyEcc,
     AsyncFaultLastIdx
   } keymgr_async_fault_e;
 
@@ -196,6 +197,7 @@ package keymgr_pkg;
     FaultReseedCnt,
     FaultSideFsm,
     FaultSideSel,
+    FaultKeyEcc,
     FaultLastPos
   } keymgr_fault_pos_e;
 
