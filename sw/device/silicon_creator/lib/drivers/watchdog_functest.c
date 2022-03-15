@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
@@ -24,7 +25,7 @@
 // Tests that we can pet the watchdog and avoid a reset.
 static rom_error_t watchdog_pet_test(void) {
   // Set watchdog bite threshold to 5ms.
-  uint32_t threshold = 5 * (kClockFreqAonHz / 1000);
+  uint32_t threshold = 5 * udiv64_slow(kClockFreqAonHz, 1000, NULL);
   LOG_INFO("threshold = %d", threshold);
   watchdog_configure(threshold, kHardenedBoolTrue);
 
@@ -41,7 +42,7 @@ static rom_error_t watchdog_pet_test(void) {
 // Tests that we can configure the watchdog in a disabled state.
 static rom_error_t watchdog_configure_disabled_test(void) {
   // Set watchdog bite threshold to 1ms.
-  uint32_t threshold = 1 * (kClockFreqAonHz / 1000);
+  uint32_t threshold = 1 * udiv64_slow(kClockFreqAonHz, 1000, NULL);
   LOG_INFO("threshold = %d", threshold);
   watchdog_configure(threshold, kHardenedBoolFalse);
 
@@ -53,7 +54,7 @@ static rom_error_t watchdog_configure_disabled_test(void) {
 // Tests that if we neglect the dog, it will bite and reset the chip.
 static rom_error_t watchdog_bite_test(void) {
   // Set watchdog bite threshold to 5ms.
-  uint32_t threshold = 5 * (kClockFreqAonHz / 1000);
+  uint32_t threshold = 5 * udiv64_slow(kClockFreqAonHz, 1000, NULL);
   LOG_INFO("threshold = %d", threshold);
   watchdog_configure(threshold, kHardenedBoolTrue);
 

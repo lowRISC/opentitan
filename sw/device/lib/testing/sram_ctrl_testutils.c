@@ -88,7 +88,8 @@ void sram_ctrl_testutils_scramble(const dif_sram_ctrl_t *sram_ctrl) {
   // inaccurate results due to clock period being zero. It should not be a
   // problem with the second version, as clock frequency won't be less than
   // 850. We add 1 microsecond to account for flooring.
-  uint32_t usec = 1000000 / (kClockFreqCpuHz / 850) + 1;
+  uint32_t usec =
+      udiv64_slow(1000000, udiv64_slow(kClockFreqCpuHz, 850, NULL) + 1, NULL);
 
   // Loop until new scrambling key has been obtained.
   LOG_INFO("Waiting for SRAM scrambling to finish");

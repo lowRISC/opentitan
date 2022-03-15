@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
@@ -56,7 +57,8 @@ static void wdog_bite_test(const dif_aon_timer_t *aon_timer,
   // The `intr_state` takes 3 aon clock cycles to rise plus 2 extra cycles as a
   // precaution.
   uint32_t wait_us =
-      bark_time_us + (5 * 1000000 + kClockFreqAonHz - 1) / kClockFreqAonHz;
+      bark_time_us +
+      udiv64_slow(5 * 1000000 + kClockFreqAonHz - 1, kClockFreqAonHz, NULL);
 
   // Wait bark time and check that the bark interrupt requested.
   busy_spin_micros(wait_us);
