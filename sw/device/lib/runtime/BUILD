@@ -24,7 +24,7 @@ cc_library(
     deps = [
         ":ibex",
         "//sw/device/lib/arch:device",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:stdasm",
         "//sw/device/lib/base/freestanding",
     ],
 )
@@ -36,7 +36,8 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/arch:device",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:stdasm",
     ],
 )
 
@@ -47,7 +48,9 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/arch:device",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
         "//sw/device/lib/base/freestanding",
         "//sw/device/lib/runtime:print",
     ],
@@ -70,7 +73,8 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     textual_hdrs = ["pmp_regions.def"],
     deps = [
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:csr",
         "//sw/device/lib/base/freestanding",
     ],
 )
@@ -80,7 +84,8 @@ cc_library(
     srcs = ["print.c"],
     hdrs = ["print.h"],
     deps = [
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:uart",
     ],
 )

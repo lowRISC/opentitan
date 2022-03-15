@@ -40,7 +40,7 @@ cc_library(
     deps = [
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:mmio",
     ],
 )
 
@@ -50,7 +50,7 @@ cc_library(
     hdrs = ["irq.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:csr",
     ],
 )
 
@@ -69,7 +69,6 @@ cc_library(
     deps = [
         "//hw/ip/usbdev/data:usbdev_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
     ],
 )
 
@@ -78,7 +77,5 @@ cc_library(
     srcs = ["usb_simpleserial.c"],
     hdrs = ["usb_simpleserial.h"],
     target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":usb",
-    ],
+    deps = [":usb"],
 )
