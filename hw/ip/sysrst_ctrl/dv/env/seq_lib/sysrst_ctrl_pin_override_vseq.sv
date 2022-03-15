@@ -39,17 +39,16 @@ class sysrst_ctrl_pin_override_vseq extends sysrst_ctrl_base_vseq;
     uvm_reg_data_t rdata;
     bit en_override_pwrb_out, en_override_key0_out, en_override_key1_out,
         en_override_key2_out, en_override_ec_rst_l_out,
-        en_override_bat_disable, en_override_z3_wakeup;
+        en_override_bat_disable, en_override_z3_wakeup, en_override_flash_wp;
     bit override_val_pwrb_out, override_val_key0_out, override_val_key1_out,
         override_val_key2_out, override_val_ec_rst_l_out,
-        override_val_bat_disable, override_val_z3_wakeup;
+        override_val_bat_disable, override_val_z3_wakeup, override_val_flash_wp;
     bit allowed_pwrb_out_0, allowed_key0_out_0, allowed_key1_out_0,
         allowed_key2_out_0, allowed_ec_rst_l_out_0,
-        allowed_bat_disable_0, allowed_z3_wakeup_0;
+        allowed_bat_disable_0, allowed_z3_wakeup_0, allowed_flash_wp_0;
     bit allowed_pwrb_out_1, allowed_key0_out_1, allowed_key1_out_1,
         allowed_key2_out_1, allowed_ec_rst_l_out_1,
-        allowed_bat_disable_1, allowed_z3_wakeup_1;
-    bit bat_disable_val, z3_wakeup_val;
+        allowed_bat_disable_1, allowed_z3_wakeup_1, allowed_flash_wp_1;
 
     `uvm_info(`gfn, "Starting the body from pin_override_vseq", UVM_LOW)
 
@@ -73,36 +72,43 @@ class sysrst_ctrl_pin_override_vseq extends sysrst_ctrl_base_vseq;
       cfg.clk_aon_rst_vif.wait_clks(1);
       cfg.vif.randomize_input();
 
-      en_override_pwrb_out = get_field_val(ral.pin_out_ctl.pwrb_out, en_override);
-      en_override_key0_out = get_field_val(ral.pin_out_ctl.key0_out, en_override);
-      en_override_key1_out = get_field_val(ral.pin_out_ctl.key1_out, en_override);
-      en_override_key2_out = get_field_val(ral.pin_out_ctl.key2_out, en_override);
-      en_override_ec_rst_l_out = get_field_val(ral.pin_out_ctl.ec_rst_l, en_override);
-      en_override_bat_disable = get_field_val(ral.pin_out_ctl.bat_disable, en_override);
-      en_override_z3_wakeup = get_field_val(ral.pin_out_ctl.z3_wakeup, en_override);
+      csr_rd(ral.pin_out_ctl, rdata);
+      en_override_pwrb_out = get_field_val(ral.pin_out_ctl.pwrb_out, rdata);
+      en_override_key0_out = get_field_val(ral.pin_out_ctl.key0_out, rdata);
+      en_override_key1_out = get_field_val(ral.pin_out_ctl.key1_out, rdata);
+      en_override_key2_out = get_field_val(ral.pin_out_ctl.key2_out, rdata);
+      en_override_ec_rst_l_out = get_field_val(ral.pin_out_ctl.ec_rst_l, rdata);
+      en_override_bat_disable = get_field_val(ral.pin_out_ctl.bat_disable, rdata);
+      en_override_z3_wakeup = get_field_val(ral.pin_out_ctl.z3_wakeup, rdata);
+      en_override_flash_wp = get_field_val(ral.pin_out_ctl.flash_wp_l, rdata);
 
-      override_val_pwrb_out = get_field_val(ral.pin_out_value.pwrb_out, set_value);
-      override_val_key0_out = get_field_val(ral.pin_out_value.key0_out, set_value);
-      override_val_key1_out = get_field_val(ral.pin_out_value.key1_out, set_value);
-      override_val_key2_out = get_field_val(ral.pin_out_value.key2_out, set_value);
-      override_val_ec_rst_l_out = get_field_val(ral.pin_out_value.ec_rst_l, set_value);
-      override_val_bat_disable = get_field_val(ral.pin_out_value.bat_disable, set_value);
-      override_val_z3_wakeup = get_field_val(ral.pin_out_value.z3_wakeup, set_value);
+      csr_rd(ral.pin_out_value, rdata);
+      override_val_pwrb_out = get_field_val(ral.pin_out_value.pwrb_out, rdata);
+      override_val_key0_out = get_field_val(ral.pin_out_value.key0_out, rdata);
+      override_val_key1_out = get_field_val(ral.pin_out_value.key1_out, rdata);
+      override_val_key2_out = get_field_val(ral.pin_out_value.key2_out, rdata);
+      override_val_ec_rst_l_out = get_field_val(ral.pin_out_value.ec_rst_l, rdata);
+      override_val_bat_disable = get_field_val(ral.pin_out_value.bat_disable, rdata);
+      override_val_z3_wakeup = get_field_val(ral.pin_out_value.z3_wakeup, rdata);
+      override_val_flash_wp = get_field_val(ral.pin_out_value.flash_wp_l, rdata);
 
-      allowed_pwrb_out_0 = get_field_val(ral.pin_allowed_ctl.pwrb_out_0, set_allowed);
-      allowed_key0_out_0 = get_field_val(ral.pin_allowed_ctl.key0_out_0, set_allowed);
-      allowed_key1_out_0 = get_field_val(ral.pin_allowed_ctl.key1_out_0, set_allowed);
-      allowed_key2_out_0 = get_field_val(ral.pin_allowed_ctl.key2_out_0, set_allowed);
-      allowed_bat_disable_0 = get_field_val(ral.pin_allowed_ctl.bat_disable_0, set_allowed);
-      allowed_z3_wakeup_0 = get_field_val(ral.pin_allowed_ctl.z3_wakeup_0, set_allowed);
-      allowed_ec_rst_l_out_0 = get_field_val(ral.pin_allowed_ctl.ec_rst_l_0, set_allowed);
-      allowed_pwrb_out_1 = get_field_val(ral.pin_allowed_ctl.pwrb_out_1, set_allowed);
-      allowed_key0_out_1 = get_field_val(ral.pin_allowed_ctl.key0_out_1, set_allowed);
-      allowed_key1_out_1 = get_field_val(ral.pin_allowed_ctl.key1_out_1, set_allowed);
-      allowed_key2_out_1 = get_field_val(ral.pin_allowed_ctl.key2_out_1, set_allowed);
-      allowed_ec_rst_l_out_1 = get_field_val(ral.pin_allowed_ctl.ec_rst_l_1, set_allowed);
-      allowed_bat_disable_1 = get_field_val(ral.pin_allowed_ctl.bat_disable_1, set_allowed);
-      allowed_z3_wakeup_1 = get_field_val(ral.pin_allowed_ctl.z3_wakeup_1, set_allowed);
+      csr_rd(ral.pin_allowed_ctl, rdata);
+      allowed_pwrb_out_0 = get_field_val(ral.pin_allowed_ctl.pwrb_out_0, rdata);
+      allowed_key0_out_0 = get_field_val(ral.pin_allowed_ctl.key0_out_0, rdata);
+      allowed_key1_out_0 = get_field_val(ral.pin_allowed_ctl.key1_out_0, rdata);
+      allowed_key2_out_0 = get_field_val(ral.pin_allowed_ctl.key2_out_0, rdata);
+      allowed_bat_disable_0 = get_field_val(ral.pin_allowed_ctl.bat_disable_0, rdata);
+      allowed_z3_wakeup_0 = get_field_val(ral.pin_allowed_ctl.z3_wakeup_0, rdata);
+      allowed_ec_rst_l_out_0 = get_field_val(ral.pin_allowed_ctl.ec_rst_l_0, rdata);
+      allowed_flash_wp_0 = get_field_val(ral.pin_allowed_ctl.flash_wp_l_0, rdata);
+      allowed_pwrb_out_1 = get_field_val(ral.pin_allowed_ctl.pwrb_out_1, rdata);
+      allowed_key0_out_1 = get_field_val(ral.pin_allowed_ctl.key0_out_1, rdata);
+      allowed_key1_out_1 = get_field_val(ral.pin_allowed_ctl.key1_out_1, rdata);
+      allowed_key2_out_1 = get_field_val(ral.pin_allowed_ctl.key2_out_1, rdata);
+      allowed_ec_rst_l_out_1 = get_field_val(ral.pin_allowed_ctl.ec_rst_l_1, rdata);
+      allowed_bat_disable_1 = get_field_val(ral.pin_allowed_ctl.bat_disable_1, rdata);
+      allowed_z3_wakeup_1 = get_field_val(ral.pin_allowed_ctl.z3_wakeup_1, rdata);
+      allowed_flash_wp_1 = get_field_val(ral.pin_allowed_ctl.flash_wp_l_1, rdata);
 
       cfg.clk_aon_rst_vif.wait_clks(1);
       perform_checks(en_override_pwrb_out, override_val_pwrb_out, allowed_pwrb_out_1,
@@ -132,6 +138,29 @@ class sysrst_ctrl_pin_override_vseq extends sysrst_ctrl_base_vseq;
       perform_checks(en_override_z3_wakeup, override_val_z3_wakeup,
           allowed_z3_wakeup_1, allowed_z3_wakeup_0, cfg.vif.z3_wakeup, 0);
 
+      cov.pin_cfg_cg["bat_disable"].pin_cfg_cg.sample (en_override_bat_disable,
+          override_val_bat_disable, allowed_bat_disable_0, allowed_bat_disable_1);
+
+      cov.pin_cfg_cg["ec_rst_l"].pin_cfg_cg.sample (en_override_ec_rst_l_out,
+          override_val_ec_rst_l_out, allowed_ec_rst_l_out_0, allowed_ec_rst_l_out_1);
+
+      cov.pin_cfg_cg["pwrb_out"].pin_cfg_cg.sample (en_override_pwrb_out,
+          override_val_pwrb_out, allowed_pwrb_out_0, allowed_pwrb_out_1);
+
+      cov.pin_cfg_cg["key0_out"].pin_cfg_cg.sample (en_override_key0_out,
+          override_val_key0_out, allowed_key0_out_0, allowed_key0_out_1);
+
+      cov.pin_cfg_cg["key1_out"].pin_cfg_cg.sample (en_override_key1_out,
+          override_val_key1_out, allowed_key1_out_0, allowed_key1_out_1);
+
+      cov.pin_cfg_cg["key2_out"].pin_cfg_cg.sample (en_override_key2_out,
+          override_val_key2_out, allowed_key2_out_0, allowed_key2_out_1);
+
+      cov.pin_cfg_cg["z3_wakeup"].pin_cfg_cg.sample (en_override_z3_wakeup,
+          override_val_z3_wakeup, allowed_z3_wakeup_0, allowed_z3_wakeup_1);
+
+      cov.pin_cfg_cg["flash_wp_l"].pin_cfg_cg.sample (en_override_flash_wp,
+          override_val_flash_wp, allowed_flash_wp_0, allowed_flash_wp_1);
     end
 
   endtask : body

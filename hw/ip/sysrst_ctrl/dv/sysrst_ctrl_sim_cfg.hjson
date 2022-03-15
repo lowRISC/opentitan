@@ -35,7 +35,7 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
 
   // Add additional tops for simulation.
-  sim_tops: ["sysrst_ctrl_bind"]
+  sim_tops: ["sysrst_ctrl_bind", "sysrst_ctrl_cov_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50

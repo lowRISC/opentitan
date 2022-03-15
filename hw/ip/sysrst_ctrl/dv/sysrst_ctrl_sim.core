@@ -13,6 +13,7 @@ filesets:
     depend:
       - lowrisc:dv:sysrst_ctrl_test
       - lowrisc:dv:sysrst_ctrl_sva
+      - lowrisc:dv:sysrst_ctrl_cov
     files:
       - tb.sv
     file_type: systemVerilogSource

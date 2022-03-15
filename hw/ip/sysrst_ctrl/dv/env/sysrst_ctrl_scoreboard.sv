@@ -15,6 +15,8 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
   local bit [NUM_MAX_INTERRUPTS-1:0] intr_exp;
   local bit [NUM_MAX_INTERRUPTS-1:0] intr_exp_at_addr_phase;
 
+  virtual  sysrst_ctrl_cov_if   cov_if;           // handle to sysrst_ctrl coverage interface
+
   // local queues to hold incoming packets pending comparison
 
   `uvm_component_new
@@ -23,6 +25,10 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
     super.build_phase(phase);
     // TODO: remove once support alert checking
     do_alert_check = 0;
+    if (!uvm_config_db#(virtual sysrst_ctrl_cov_if)::get(null, "*.env" ,
+        "sysrst_ctrl_cov_if", cov_if)) begin
+      `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO COVER IF"))
+    end
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -76,36 +82,162 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
       end
       "key_invert_ctl": begin
       end
-      "com_out_ctl_0", "com_sel_ctl_0", "com_det_ctl_0": begin
+      "com_out_ctl_0","com_out_ctl_1","com_out_ctl_2","com_out_ctl_3": begin
+        if (addr_phase_write) begin
+          string csr_name = csr.get_name();
+          string str_idx = csr_name.getc(csr_name.len - 1);
+          int idx = str_idx.atoi();
+          cov_if.cg_combo_detect_actions_sample (idx,
+            get_field_val(ral.com_out_ctl[idx].bat_disable, item.a_data),
+            get_field_val(ral.com_out_ctl[idx].interrupt, item.a_data),
+            get_field_val(ral.com_out_ctl[idx].ec_rst, item.a_data),
+            get_field_val(ral.com_out_ctl[idx].rst_req, item.a_data)
+          );
+        end
       end
-      "com_out_ctl_1", "com_sel_ctl_1", "com_det_ctl_1": begin
+      "com_sel_ctl_0","com_sel_ctl_1","com_sel_ctl_2","com_sel_ctl_3": begin
+         if (addr_phase_write) begin
+           string csr_name = csr.get_name();
+           string str_idx = csr_name.getc(csr_name.len - 1);
+           int idx = str_idx.atoi();
+           cov_if.cg_combo_detect_sel_sample (idx,
+             get_field_val(ral.com_sel_ctl[idx].key0_in_sel, item.a_data),
+             get_field_val(ral.com_sel_ctl[idx].key1_in_sel, item.a_data),
+             get_field_val(ral.com_sel_ctl[idx].key2_in_sel, item.a_data),
+             get_field_val(ral.com_sel_ctl[idx].pwrb_in_sel, item.a_data),
+             get_field_val(ral.com_sel_ctl[idx].ac_present_sel, item.a_data)
+           );
+         end
       end
-      "com_out_ctl_2", "com_sel_ctl_2", "com_det_ctl_2": begin
-      end
-      "com_out_ctl_3", "com_sel_ctl_3", "com_det_ctl_3": begin
+      "com_det_ctl_0","com_det_ctl_1","com_det_ctl_2","com_det_ctl_3": begin
+         if (addr_phase_write) begin
+           string csr_name = csr.get_name();
+           string str_idx = csr_name.getc(csr_name.len - 1);
+           int idx = str_idx.atoi();
+           cov_if.cg_combo_detect_det_sample (idx,
+             get_field_val(ral.com_det_ctl[idx].detection_timer, item.a_data)
+           );
+         end
       end
       "ec_rst_ctl": begin
+        if (addr_phase_write) begin
+          cov.debounce_timer_cg["ec_rst_ctl"].debounce_timer_cg.sample(
+            get_field_val(ral.ec_rst_ctl.ec_rst_pulse, item.a_data)
+          );
+        end
       end
       "combo_intr_status": begin
         do_read_check = 1'b0;  //This check is done in sequence
+        if (data_phase_read) begin
+          cov_if.cg_combo_intr_status_sample (
+            get_field_val(ral.combo_intr_status.combo0_h2l, item.d_data),
+            get_field_val(ral.combo_intr_status.combo1_h2l, item.d_data),
+            get_field_val(ral.combo_intr_status.combo2_h2l, item.d_data),
+            get_field_val(ral.combo_intr_status.combo3_h2l, item.d_data)
+          );
+        end
       end
-      "key_intr_status", "key_intr_ctl", "key_intr_debounce_ctl": begin
+      "key_intr_status", "key_intr_ctl": begin
         do_read_check = 1'b0;
-      end
-      "auto_block_debounce_ctl", "auto_block_out_ctl": begin
-      end
-      "wkup_status": begin
-        do_read_check = 1'b0;
+        if (data_phase_read) begin
+          cov_if.cg_key_intr_status_sample (
+            get_field_val(ral.key_intr_status.pwrb_h2l, item.d_data),
+            get_field_val(ral.key_intr_status.key0_in_h2l, item.d_data),
+            get_field_val(ral.key_intr_status.key1_in_h2l, item.d_data),
+            get_field_val(ral.key_intr_status.key2_in_h2l, item.d_data),
+            get_field_val(ral.key_intr_status.ac_present_h2l, item.d_data),
+            get_field_val(ral.key_intr_status.ec_rst_l_h2l, item.d_data),
+            get_field_val(ral.key_intr_status.flash_wp_l_h2l, item.d_data),
+            get_field_val(ral.key_intr_status.pwrb_l2h, item.d_data),
+            get_field_val(ral.key_intr_status.key0_in_l2h, item.d_data),
+            get_field_val(ral.key_intr_status.key1_in_l2h, item.d_data),
+            get_field_val(ral.key_intr_status.key2_in_l2h, item.d_data),
+            get_field_val(ral.key_intr_status.ac_present_l2h, item.d_data),
+            get_field_val(ral.key_intr_status.ec_rst_l_l2h, item.d_data),
+            get_field_val(ral.key_intr_status.flash_wp_l_l2h, item.d_data)
+          );
+        end
       end
       "pin_in_value": begin
         do_read_check = 1'b0;  //This check is done in sequence
+        if (data_phase_read) begin
+          cov_if.cg_pin_in_value_sample (
+            get_field_val(ral.pin_in_value.pwrb_in, item.d_data),
+            get_field_val(ral.pin_in_value.key0_in, item.d_data),
+            get_field_val(ral.pin_in_value.key1_in, item.d_data),
+            get_field_val(ral.pin_in_value.key2_in, item.d_data),
+            get_field_val(ral.pin_in_value.lid_open, item.d_data),
+            get_field_val(ral.pin_in_value.ac_present, item.d_data),
+            get_field_val(ral.pin_in_value.ec_rst_l, item.d_data),
+            get_field_val(ral.pin_in_value.flash_wp_l, item.d_data)
+          );
+        end
       end
-      "auto_block_debounce_ctl", "auto_block_out_ctl": begin
+      "auto_block_debounce_ctl": begin
+        cov_if.cg_auto_block_sample (
+          get_field_val(ral.auto_block_debounce_ctl.debounce_timer, item.a_data),
+          get_field_val(ral.auto_block_debounce_ctl.auto_block_enable, item.a_data)
+        );
       end
-      "ulp_ctl", "ulp_ac_debounce_ctl", "ulp_lid_debounce_ctl", "ulp_pwrb_debounce_ctl": begin
+      "auto_block_out_ctl": begin
+        if (addr_phase_write) begin
+          cov_if.cg_auto_blk_out_ctl_sample (
+            get_field_val(ral.auto_block_out_ctl.key0_out_sel, item.a_data),
+            get_field_val(ral.auto_block_out_ctl.key1_out_sel, item.a_data),
+            get_field_val(ral.auto_block_out_ctl.key2_out_sel, item.a_data),
+            get_field_val(ral.auto_block_out_ctl.key0_out_value, item.a_data),
+            get_field_val(ral.auto_block_out_ctl.key1_out_value, item.a_data),
+            get_field_val(ral.auto_block_out_ctl.key2_out_value, item.a_data)
+          );
+        end
+      end
+      "wkup_status": begin
+        do_read_check = 1'b0;  //This check is done in sequence
+        if (data_phase_read) begin
+          cov_if.cg_wkup_status_sample (
+            get_field_val(ral.wkup_status.wakeup_sts, item.d_data)
+          );
+        end
+      end
+      "ulp_ctl": begin
+      end
+      "ulp_ac_debounce_ctl": begin
+        if (addr_phase_write) begin
+          cov.debounce_timer_cg["ulp_ac_debounce_ctl"].debounce_timer_cg.sample(
+            get_field_val(ral.ulp_ac_debounce_ctl.ulp_ac_debounce_timer, item.a_data)
+          );
+        end
+      end
+      "ulp_lid_debounce_ctl": begin
+        if (addr_phase_write) begin
+          cov.debounce_timer_cg["ulp_lid_debounce_ctl"].debounce_timer_cg.sample(
+            get_field_val(ral.ulp_lid_debounce_ctl.ulp_lid_debounce_timer, item.a_data)
+          );
+        end
+      end
+      "ulp_pwrb_debounce_ctl": begin
+        if (addr_phase_write) begin
+          cov.debounce_timer_cg["ulp_pwrb_debounce_ctl"].debounce_timer_cg.sample(
+            get_field_val(ral.ulp_pwrb_debounce_ctl.ulp_pwrb_debounce_timer, item.a_data)
+          );
+        end
+      end
+      "key_intr_debounce_ctl": begin
+        if (addr_phase_write) begin
+          cov.debounce_timer_cg["key_intr_debounce_ctl"].debounce_timer_cg.sample(
+            get_field_val(ral.key_intr_debounce_ctl.debounce_timer, item.a_data)
+          );
+        end
       end
       "ulp_status": begin
         do_read_check = 1'b0; // This check is done in sequence
+        if (data_phase_read) begin
+          cov_if.cg_ulp_status_sample (
+            get_field_val(ral.ulp_status.ulp_wakeup, item.d_data)
+          );
+        end
+      end
+      "regwen":begin
       end
       default: begin
        `uvm_error(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
