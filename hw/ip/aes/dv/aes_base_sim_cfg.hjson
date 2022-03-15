@@ -39,6 +39,9 @@
   // Add additional tops for simulation.
   sim_tops: [ "aes_bind", "aes_cov_bind"]
 
+  // TODO remove v2s refine for v2s
+  xcelium_cov_refine_files: ["{proj_root}/hw/ip/aes/dv/cov/refines/aes_remove_for_v2s.vRefine"]
+
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 

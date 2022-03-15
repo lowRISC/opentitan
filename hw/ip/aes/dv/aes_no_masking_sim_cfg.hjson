@@ -12,4 +12,9 @@
 
   // Enable the appropriate build mode for all tests
   en_build_modes: ["aes_no_masking"]
+
+  // common exclusions
+  // TODO uncomment for V2s
+  // xcelium_cov_refine_files: ["{proj_root}/hw/ip/aes/dv/cov/refines/unr_aes_no_masking.vRefine"]
+
 }
