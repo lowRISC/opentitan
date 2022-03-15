@@ -25,7 +25,6 @@ interface csrng_if (input clk, input rst_n);
   push_pull_if #(.HostDataWidth(csrng_pkg::FIPS_GENBITS_BUS_WIDTH))
        genbits_push_if(.clk(clk), .rst_n(rst_n));
 
-  // TODO: ASSERTs
   // Device assigns
   assign cmd_rsp.csrng_req_ready = (if_mode == dv_utils_pkg::Device) ? cmd_push_if.ready : 'z;
   assign cmd_push_if.valid     = (if_mode == dv_utils_pkg::Device) ? cmd_req.csrng_req_valid : 'z;
