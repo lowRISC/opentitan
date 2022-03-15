@@ -42,6 +42,9 @@
     { name: "recov_err",
       desc: "flash recoverable errors",
     },
+    { name: "fatal_std_err",
+      desc: "flash standard fatal errors"
+    },
     { name: "fatal_err",
       desc: "flash fatal errors"
     },
@@ -229,6 +232,9 @@
     { name: "MEM.CTRL.GLOBAL_ESC",
       desc: "Global escalation causes memory to no longer be accessible."
     }
+    { name: "MEM.CTRL.LOCAL_ESC",
+      desc: "A subset of fatal errors cause memory to no longer be accessible."
+    }
     { name: "MEM_DISABLE.CONFIG.MUBI",
       desc: "Software control for flash disable is multibit."
     }
@@ -407,7 +413,7 @@
                This is a shortcut mechanism used by the software to completely
                kill flash in case of emergency.
 
-               To disable, set this field to anything other than false.
+               To disable, set this field to anything other than kMultiBitBool4False.
               '''
             resval: false,
             tags: [// Dont touch disable, it has several side effects on the system
@@ -1093,10 +1099,53 @@
         ]
       },
 
+      { name: "STD_FAULT_STATUS",
+        desc: '''
+          This register tabulates standard fault status of the flash.
+
+          These represent errors that occur in the standard structures of the design.
+          For example fsm integrity, counter integrity and tlul integrity.
+        '''
+        swaccess: "ro",
+        hwaccess: "hrw",
+        fields: [
+          { bits: "0",
+            name: "reg_intg_err",
+            desc: '''
+              The flash controller encountered a register integrity error.
+            '''
+          },
+          { bits: "1",
+            name: "phy_intg_err",
+            desc: '''
+              The flash memory encountered an integrity error on the host access interface.
+            '''
+          },
+          { bits: "2",
+            name: "lcmgr_err",
+            desc: '''
+              The life cycle management interface has encountered a fatal error.
+              The error is either an FSM sparse encoding error or a count error.
+              '''
+          },
+          { bits: "3",
+            name: "arb_fsm_err",
+            desc: '''
+              The arbiter fsm has encountered a sparse encoding error.
+              '''
+          },
+          { bits: "4",
+            name: "storage_err",
+            desc: '''
+              A shadow register encountered a storage error.
+            '''
+          },
+        ]
+      },
+
       { name: "FAULT_STATUS",
         desc: '''
-          Flash fault status register.
-          This register tabulates detailed fault status of the flash.
+          This register tabulates customized fault status of the flash.
 
           These are errors that are impossible to have been caused by software or unrecoverable
           in nature.
@@ -1135,37 +1184,6 @@
             '''
           },
           { bits: "6",
-            name: "reg_intg_err",
-            desc: '''
-              The flash controller encountered a register integrity error.
-            '''
-          },
-          { bits: "7",
-            name: "phy_intg_err",
-            desc: '''
-              The flash memory encountered a register integrity error.
-            '''
-          },
-          { bits: "8",
-            name: "lcmgr_err",
-            desc: '''
-              The life cycle management interface has encountered a fatal error.
-              There is an error with the RMA state machine or counts.
-              '''
-          },
-          { bits: "9",
-            name: "arb_fsm_err",
-            desc: '''
-              The software / hardware interface has encountered a fatal error.
-              '''
-          },
-          { bits: "10",
-            name: "storage_err",
-            desc: '''
-              A shadow register encountered a storage fault.
-            '''
-          },
-          { bits: "11",
             name: "seed_err",
             desc: '''
               The seed reading process encountered an unexpected error.

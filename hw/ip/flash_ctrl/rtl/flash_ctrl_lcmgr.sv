@@ -177,7 +177,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     end
   end
 
-  assign seed_err_o = seed_err_q;
+  assign seed_err_o = seed_err_q | seed_err_d;
 
   // seed cnt tracks which seed round we are handling at the moment
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -414,7 +414,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
           start = 1'b0;
           state_d = StWait;
         end else if (done_i) begin
-          seed_err_d = |err_i | seed_err_q;
+          seed_err_d = |err_i;
           state_d = StReadEval;
         end
       end // case: StReadSeeds

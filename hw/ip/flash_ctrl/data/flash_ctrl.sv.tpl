@@ -699,6 +699,9 @@ module flash_ctrl
   assign flash_part_sel = op_part;
   assign flash_info_sel = op_info_sel;
 
+  // flash disable declaration
+  prim_mubi_pkg::mubi4_t flash_disable;
+
   // tie off hardware clear path
   assign hw2reg.erase_suspend.d = 1'b0;
 
@@ -708,6 +711,9 @@ module flash_ctrl
   flash_mp u_flash_mp (
     .clk_i,
     .rst_ni,
+
+    // disable flash through memory protection
+    .flash_disable_i(flash_disable),
 
     // arbiter interface selection
     .if_sel_i(if_sel),
@@ -842,16 +848,23 @@ module flash_ctrl
   logic fatal_err;
   assign fatal_err = |reg2hw.fault_status;
 
+  logic fatal_std_err;
+  assign fatal_std_err = |reg2hw.std_fault_status;
+
+  lc_ctrl_pkg::lc_tx_t local_esc;
+  assign local_esc = lc_ctrl_pkg::lc_tx_bool_to_lc_tx(fatal_std_err);
 
   assign alert_srcs = { fatal_err,
+                        fatal_std_err,
                         recov_err
                       };
 
   assign alert_tests = { reg2hw.alert_test.fatal_err.q & reg2hw.alert_test.fatal_err.qe,
+                         reg2hw.alert_test.fatal_std_err.q & reg2hw.alert_test.fatal_std_err.qe,
                          reg2hw.alert_test.recov_err.q & reg2hw.alert_test.recov_err.qe
                        };
 
-  localparam logic [NumAlerts-1:0] IsFatal = {1'b1, 1'b0};
+  localparam logic [NumAlerts-1:0] IsFatal = {1'b1, 1'b1, 1'b0};
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_senders
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
@@ -882,10 +895,13 @@ module flash_ctrl
     .lc_en_o(lc_escalate_en)
   );
 
+  lc_ctrl_pkg::lc_tx_t escalate_en;
+  // SEC_CM: MEM.CTRL.LOCAL_ESC
+  assign escalate_en = lc_ctrl_pkg::lc_tx_or_hi(dis_access, local_esc);
+
   // flash functional disable
-  prim_mubi_pkg::mubi4_t flash_disable;
   lc_ctrl_pkg::lc_tx_t lc_disable;
-  assign lc_disable = lc_ctrl_pkg::lc_tx_or(lc_escalate_en, dis_access, lc_ctrl_pkg::On);
+  assign lc_disable = lc_ctrl_pkg::lc_tx_or_hi(lc_escalate_en, escalate_en);
 
   // Normally, faults (those registered in fault_status) should also cause flash access
   // to disable.  However, most errors encountered by hardware during flash access
@@ -937,28 +953,33 @@ module flash_ctrl
                                             sw_ctrl_err.phy_err;
 
   // all hardware interface errors are considered faults
+  // There are two types of faults
+  // standard faults - things like fsm / counter / tlul integrity
+  // custom faults - things like hardware interface not working correctly
   assign hw2reg.fault_status.mp_err.d         = 1'b1;
   assign hw2reg.fault_status.rd_err.d         = 1'b1;
   assign hw2reg.fault_status.prog_win_err.d   = 1'b1;
   assign hw2reg.fault_status.prog_type_err.d  = 1'b1;
   assign hw2reg.fault_status.flash_phy_err.d  = 1'b1;
-  assign hw2reg.fault_status.reg_intg_err.d   = 1'b1;
-  assign hw2reg.fault_status.phy_intg_err.d   = 1'b1;
-  assign hw2reg.fault_status.lcmgr_err.d      = 1'b1;
-  assign hw2reg.fault_status.arb_fsm_err.d    = 1'b1;
-  assign hw2reg.fault_status.storage_err.d    = 1'b1;
   assign hw2reg.fault_status.seed_err.d       = 1'b1;
   assign hw2reg.fault_status.mp_err.de        = hw_err.mp_err;
   assign hw2reg.fault_status.rd_err.de        = hw_err.rd_err;
   assign hw2reg.fault_status.prog_win_err.de  = hw_err.prog_win_err;
   assign hw2reg.fault_status.prog_type_err.de = hw_err.prog_type_err;
   assign hw2reg.fault_status.flash_phy_err.de = hw_err.phy_err;
-  assign hw2reg.fault_status.reg_intg_err.de  = intg_err;
-  assign hw2reg.fault_status.phy_intg_err.de  = flash_phy_rsp.intg_err;
-  assign hw2reg.fault_status.lcmgr_err.de     = lcmgr_err;
-  assign hw2reg.fault_status.arb_fsm_err.de   = arb_fsm_err;
-  assign hw2reg.fault_status.storage_err.de   = storage_err;
   assign hw2reg.fault_status.seed_err.de      = seed_err;
+
+  // standard faults
+  assign hw2reg.std_fault_status.reg_intg_err.d   = 1'b1;
+  assign hw2reg.std_fault_status.phy_intg_err.d   = 1'b1;
+  assign hw2reg.std_fault_status.lcmgr_err.d      = 1'b1;
+  assign hw2reg.std_fault_status.arb_fsm_err.d    = 1'b1;
+  assign hw2reg.std_fault_status.storage_err.d    = 1'b1;
+  assign hw2reg.std_fault_status.reg_intg_err.de  = intg_err;
+  assign hw2reg.std_fault_status.phy_intg_err.de  = flash_phy_rsp.intg_err;
+  assign hw2reg.std_fault_status.lcmgr_err.de     = lcmgr_err;
+  assign hw2reg.std_fault_status.arb_fsm_err.de   = arb_fsm_err;
+  assign hw2reg.std_fault_status.storage_err.de   = storage_err;
 
   // Correctable ECC count / address
   for (genvar i = 0; i < NumBanks; i++) begin : gen_ecc_single_err_reg

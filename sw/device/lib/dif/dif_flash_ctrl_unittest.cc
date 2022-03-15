@@ -836,10 +836,13 @@ TEST_F(FlashCtrlTest, SimpleQueries) {
                     {FLASH_CTRL_FAULT_STATUS_PROG_WIN_ERR_BIT, 1},
                     {FLASH_CTRL_FAULT_STATUS_PROG_TYPE_ERR_BIT, 0},
                     {FLASH_CTRL_FAULT_STATUS_FLASH_PHY_ERR_BIT, 1},
-                    {FLASH_CTRL_FAULT_STATUS_REG_INTG_ERR_BIT, 0},
-                    {FLASH_CTRL_FAULT_STATUS_PHY_INTG_ERR_BIT, 1},
-                    {FLASH_CTRL_FAULT_STATUS_LCMGR_ERR_BIT, 0},
-                    {FLASH_CTRL_FAULT_STATUS_STORAGE_ERR_BIT, 1},
+                });
+  EXPECT_READ32(FLASH_CTRL_STD_FAULT_STATUS_REG_OFFSET,
+                {
+                    {FLASH_CTRL_STD_FAULT_STATUS_REG_INTG_ERR_BIT, 0},
+                    {FLASH_CTRL_STD_FAULT_STATUS_PHY_INTG_ERR_BIT, 1},
+                    {FLASH_CTRL_STD_FAULT_STATUS_LCMGR_ERR_BIT, 0},
+                    {FLASH_CTRL_STD_FAULT_STATUS_STORAGE_ERR_BIT, 1},
                 });
   EXPECT_DIF_OK(dif_flash_ctrl_get_faults(&dif_flash_ctrl_, &faults));
   EXPECT_EQ(faults.memory_properties_error, 1);

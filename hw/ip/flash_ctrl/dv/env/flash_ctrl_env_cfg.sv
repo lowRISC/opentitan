@@ -58,7 +58,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     super.initialize(csr_base_addr);
 
     shadow_update_err_status_fields[ral.err_code.update_err] = 1;
-    shadow_storage_err_status_fields[ral.fault_status.storage_err] = 1;
+    shadow_storage_err_status_fields[ral.std_fault_status.storage_err] = 1;
 
     // create the seq_cfg and call configure
     seq_cfg = flash_ctrl_seq_cfg::type_id::create("seq_cfg");
