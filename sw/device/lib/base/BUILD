@@ -17,10 +17,50 @@ cc_library(
 )
 
 cc_library(
+    name = "math_builtins",
+    srcs = ["math_builtins.c"],
+    deps = [":macros"],
+
+    # This library defines polyfills, so we need to ensure LLVM doesn't make
+    # the polyfills call themselves.
+    copts = ["-fno-builtin"],
+    visibility = ["//visibility:private"],
+)
+
+cc_test(
+    name = "math_builtins_unittest",
+    srcs = ["math_builtins_unittest.cc"],
+    deps = [
+        ":math_builtins",
+        ":bitfield",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "math",
+    srcs = ["math.c"],
+    hdrs = ["math.h"],
+    deps = [":math_builtins"],
+)
+
+cc_test(
+    name = "math_unittest",
+    srcs = ["math_unittest.cc"],
+    deps = [
+        ":math",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "bitfield",
     srcs = ["bitfield.c"],
     hdrs = ["bitfield.h"],
-    deps = [":macros"],
+    deps = [
+        ":macros",
+        ":math",
+    ],
 )
 
 cc_library(
