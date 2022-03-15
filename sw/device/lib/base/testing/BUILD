@@ -20,7 +20,7 @@ cc_library(
         "MOCK_MMIO=1",
     ],
     deps = [
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:mmio",
         "@googletest//:gtest",
     ],
 )

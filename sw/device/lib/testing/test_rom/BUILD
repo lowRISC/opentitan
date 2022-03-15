@@ -46,7 +46,7 @@ cc_library(
         "//sw/device:info_sections",
         "//sw/device/lib:ibex_peri",
         "//sw/device/lib:pinmux",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:mmio",
         "//sw/device/lib/crt",
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:hmac",
@@ -73,7 +73,8 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib:flash_ctrl",
         "//sw/device/lib/arch:device",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/dif:spi_device",
@@ -85,9 +86,5 @@ cc_library(
 
 opentitan_functest(
     name = "test_rom_test",
-    srcs = [
-        "test_rom_test.c",
-    ],
-    deps = [
-    ],
+    srcs = ["test_rom_test.c"],
 )
