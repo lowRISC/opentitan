@@ -84,7 +84,7 @@ The `por_rst_n` signal is released when the reset controller detects the root po
 Please see the [ast]({{< relref "hw/top_earlgrey/ip/ast/doc" >}}) for more details.
 
 The slow FSM requests the AST to power up the main domain and high speed clocks.
-Once those steps are done, it requests the fast FSM to begin operation.
+Once those steps are done, it requests the [fast FSM](#fast-clock-domain-fsm) to begin operation.
 The slow FSM also handles power isolation controls as part of this process.
 
 Once the fast FSM acknowledges the power-up completion, the slow FSM transitions to `Idle` and waits for a power down request.
@@ -92,6 +92,13 @@ When a power down request is received, the slow FSM turns off AST clocks and pow
 This means the clocks and power are not always turned off, but are rather controlled by software configurations in {{< regref "CONTROL" >}} prior to low power entry .
 Once these steps are complete, the slow FSM transitions to a low power state and awaits a wake request, which can come either as an actual wakeup, or a reset event (for example always on watchdog expiration).
 
+#### Sparse FSM
+
+Since the slow FSM is sparsely encoded, it is possible for the FSM to end up in an undefined state if attacked.
+When this occurs, the slow FSM sends an `invalid` indication to the fast FSM and forcibly powers off and clamps everything.
+
+The clocks are kept on however to allow the fast FSM to operate if it is able to receive the `invalid` indication.
+The slow FSM does not recover from this state until the system is reset by POR.
 
 ## Fast Clock Domain FSM
 
@@ -122,6 +129,14 @@ If none of these exception cases are matched for low power entry, the fast FSM t
 
 For reset requests, fall through and aborts are not checked and the system simply resets directly.
 Note in this scenario the slow FSM is not requested to take over.
+
+#### Sparse FSM
+
+Since the fast FSM is sparsely encoded, it is possible for the FSM to end up in an undefined state if attacked.
+When this occurs, the fast FSM forcibly disables all clocks and holds the system in reset.
+
+The fast FSM does not recover from this state until the system is reset by POR.
+
 
 ### ROM Integrity Checks
 
@@ -180,6 +195,7 @@ In additional to external requests, the power manager maintains 2 internal reset
 * Main power domain unstable reset request
 
 #### Escalation Reset Request
+
 Alert escalation resets in general behave similarly to peripehral requested resets.
 However, peripheral resets are always handled gracefully and follow the normal FSM transition.
 
@@ -188,6 +204,18 @@ As a result, upon alert escalation, the power manager makes a best case effort t
 
 This may not always be possible if the escalation happens while the FSM is in an invalid state.
 In this scenario, the pwrmgr keeps everything powered off and silenced and requests escalation handling if the system ever wakes up.
+
+#### Escalation Clock Timeout
+
+Under normal behavior, the power manager can receive escalation requests from the system and handle them [appropriately](#escalation-reset-request).
+However, if the escalation clock or reset are non-functional for any reason, the escalation request would not be serviced.
+
+To mitigate this, the power manager actively checks for escalation interface clock/reset timeout.
+This is done by a continuous request / acknowledge interface between the power manager's local clock/reset and the escalate network's clock/reset.
+
+If the request / acknowledge interface does not respond within 128 power manager clock cycles, the escalate domain is assumed to be off.
+When this happens, the power manager creates a local escalation request that behaves identically to the global escalation request.
+
 
 #### Main Power Unstable Reset Requests
 If the main power ever becomes unstable (the power okay indication is low even though it is powered on), the power manager requests an internal reset.
