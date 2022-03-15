@@ -22,7 +22,6 @@ module sys_osc (
 // Behavioral Model
 ////////////////////////////////////////
 timeunit  1ns / 1ps;
-import ast_bhv_pkg::* ;
 
 real CLK_PERIOD;
 
@@ -31,12 +30,12 @@ initial init_start = 1'b0;
 
 initial begin
   #1; init_start  = 1'b1;
-  $display("\nSystem Power-up Clock Frequency: %0d Hz", $rtoi(10**9/CLK_PERIOD));
+  $display("\n%m: System Clock Power-up Frequency: %0d Hz", $rtoi(10**9/CLK_PERIOD));
 end
 
 // Enable 5us RC Delay on rise
 wire en_osc_re_buf, en_osc_re, sys_jen;
-buf #(SYS_EN_RDLY, 0) b0 (en_osc_re_buf, (vcore_pok_h_i && sys_en_i));
+buf #(ast_bhv_pkg::SYS_EN_RDLY, 0) b0 (en_osc_re_buf, (vcore_pok_h_i && sys_en_i));
 assign en_osc_re = en_osc_re_buf && init_start;
 assign sys_jen = sys_jen_i && en_osc_re_buf && init_start;
 

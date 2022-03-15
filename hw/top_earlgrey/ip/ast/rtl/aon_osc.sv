@@ -21,7 +21,6 @@ module aon_osc (
 // Behavioral Model
 ////////////////////////////////////////
 timeunit 1ns / 10ps;
-import ast_bhv_pkg::* ;
 
 real CLK_PERIOD, ckmul;
 
@@ -29,17 +28,16 @@ reg init_start;
 initial init_start = 1'b0;
 
 initial begin
-  if ( !$value$plusargs("osc200k_freq_multiplier=%f", ckmul) ) begin
-    ckmul = 1.0;
-  end
+  if ( !$value$plusargs("osc200k_freq_multiplier=%f", ckmul) ) ckmul = 1.0;
+
   #1; init_start = 1'b1;
-  $display("\nAON Power-up Base Clock Frequency: %0d Hz", $rtoi(10**9/(CLK_PERIOD*ckmul)));
-  $display("AON Power-up Multiplied Clock Frequency: %0d Hz", $rtoi(10**9/CLK_PERIOD));
+  $display("\n%m: AON Base Clock Power-up Frequency: %0d Hz", $rtoi(10**9/(CLK_PERIOD*ckmul)));
+  $display("%m: AON %0.1fxBase Clock Power-up Frequency: %0d Hz", ckmul, $rtoi(10**9/CLK_PERIOD));
 end
 
 // Enable 5us RC Delay on rise
 wire en_osc_re_buf, en_osc_re;
-buf #(AON_EN_RDLY, 0) b0 (en_osc_re_buf, (vcore_pok_h_i && aon_en_i));
+buf #(ast_bhv_pkg::AON_EN_RDLY, 0) b0 (en_osc_re_buf, (vcore_pok_h_i && aon_en_i));
 assign en_osc_re = en_osc_re_buf && init_start;
 
 // Clock Oscillator

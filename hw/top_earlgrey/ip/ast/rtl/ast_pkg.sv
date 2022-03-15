@@ -38,22 +38,11 @@ parameter int unsigned UsbCalibWidth    = 20;
 parameter int unsigned Ast2PadOutWidth  = 9;
 parameter int unsigned Pad2AstInWidth   = 9;
 //
-// The number of AST registers programmed during initialization. It includes the register that
-// marks the finalization of init, which asserts the ast_init_done_o. The offset of this register is
-// represented with the AstLastRegOffset parameter.
+// AstRegsNum is the number of AST registers programmed during initialization. It includes
+// the register that marks the finalization of init, which asserts the ast_init_done_o.
+// The offset of this register is represented with the AstLastRegOffset parameter.
 parameter int unsigned AstRegsNum       = 32;
 parameter int unsigned AstLastRegOffset = (AstRegsNum-1)*4;
-
-// These LFSR parameters have been generated with
-// $ ./util/design/gen-lfsr-seed.py --width 64 --seed 691876113 --prefix ""
-parameter int LfsrWidth = 64;
-typedef logic [LfsrWidth-1:0] lfsr_seed_t;
-typedef logic [LfsrWidth-1:0][$clog2(LfsrWidth)-1:0] lfsr_perm_t;
-parameter lfsr_seed_t RndCnstLfsrSeedDefault = 64'h22d326255bd24320;
-parameter lfsr_perm_t RndCnstLfsrPermDefault = {
-  128'h16108c9f9008aa37e5118d1ec1df64a7,
-  256'h24f3f1b73537f42d38383ee8f897286df81d49ab54b6bbbb666cbd1a16c41252
-};
 
 // Memories Read-Write Margin Interface
 typedef struct packed {

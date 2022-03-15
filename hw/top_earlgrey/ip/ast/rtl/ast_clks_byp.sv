@@ -39,53 +39,53 @@ module ast_clks_byp (
   output logic clk_src_aon_val_o            // AON Source Clock Valid
 );
 
-logic scan_mode_i, scan_clk_i, scan_reset_ni;
+logic scan_mode_i, scan_reset_ni;
 
 assign scan_mode_i = 1'b0;
-assign scan_clk_i  = 1'b0;
 assign scan_reset_ni = 1'b1;
+
+
+////////////////////////////////////////
+// Local AON clock buffer
+////////////////////////////////////////
+logic clk_aon, rst_aon_n;
+
+prim_clock_buf #(
+  .NoFpgaBuf ( 1'b1 )
+) u_clk_aon_buf (
+  .clk_i ( clk_src_aon_o ),
+  .clk_o ( clk_aon )
+);
+
+logic vcaon_pok;  // For Spyglass waiver!!!
+
+assign vcaon_pok = vcaon_pok_i;
+assign rst_aon_n = scan_mode_i ? scan_reset_ni : vcaon_pok;
 
 
 ////////////////////////////////////////
 // External Clocks Generation
 ////////////////////////////////////////
-logic clk_aon_scn, clk_aon, rst_aon_n;
-
-assign clk_aon_scn = scan_mode_i ? scan_clk_i : clk_src_aon_o;
-
-// Local AON clock buffer
-////////////////////////////////////////
-prim_clock_buf #(
-  .NoFpgaBuf ( 1'b1 )
-) u_clk_aon_buf (
-  .clk_i ( clk_aon_scn ),
-  .clk_o ( clk_aon )
-);
-
-logic vcaon_pok;  // For Spyglass waiver!!!
-assign vcaon_pok = vcaon_pok_i;
-
-assign rst_aon_n = scan_mode_i ? scan_reset_ni : vcaon_pok;
-
-// Enable Exterbal Clocks when needed
-////////////////////////////////////////
-logic clk_ext_scn, clk_ext, clk_ext_en;
-logic sw_clk_byp_en, all_clk_byp, io_clk_byp;
-
 // Enable External Clock for SW Bypass
+logic sw_clk_byp_en, sw_all_clk_byp, sw_io_clk_byp;
+
 always_ff @( posedge clk_aon, negedge rst_aon_n ) begin
   if ( !rst_aon_n ) begin
     sw_clk_byp_en <= 1'b0;
-  end else if ( all_clk_byp || io_clk_byp ) begin
+  end else if ( sw_all_clk_byp || sw_io_clk_byp ) begin
     sw_clk_byp_en <= 1'b1;
   end
 end
 
-assign clk_ext_en = sw_clk_byp_en;
-assign clk_ext_scn = scan_mode_i ? scan_clk_i : clk_ast_ext_i && clk_ext_en;
+logic clk_ext_en, clk_ext_scn;
 
-// Local EXR clock buffer
+assign clk_ext_en = sw_clk_byp_en;
+assign clk_ext_scn = scan_mode_i ? clk_osc_sys_i : clk_ast_ext_i && clk_ext_en;
+
+// Local EXT clock buffer
 ////////////////////////////////////////
+logic clk_ext;
+
 prim_clock_buf #(
   .NoFpgaBuf ( 1'b1 )
 ) u_clk_ext_buf (
@@ -93,38 +93,60 @@ prim_clock_buf #(
   .clk_o ( clk_ext )
 );
 
-// External USB&AON clocks genaration
+logic rst_aon_n_exda, rst_aon_exda_n;
+
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_rst_aon_n_exda_sync (
+  .clk_i ( clk_ext ),
+  .rst_ni ( rst_aon_n ),
+  .d_i ( 1'b1 ),
+  .q_o ( rst_aon_n_exda )
+);
+
+assign rst_aon_exda_n = scan_mode_i ? scan_reset_ni : rst_aon_n_exda;
+
+// External USB & AON clocks genaration
 ////////////////////////////////////////
-logic clk_ext_d1ord2, clk_ext_usb_scn, ext_freq_is_96m;
+logic clk_src_ext_usb, ext_freq_is_96m, ext_freq_is_96m_sync;
+
+prim_flop_2sync #(
+  .Width ( 1 ),
+  // Assume external clock is 96Hhz on reset
+  .ResetValue ( 1'b1 )
+) u_ext_freq_is_96m_sync (
+  .clk_i ( clk_ext ),
+  .rst_ni ( rst_aon_exda_n ),
+  .d_i ( ext_freq_is_96m ),
+  .q_o ( ext_freq_is_96m_sync )
+);
 
 prim_clock_div #(
   .Divisor( 2 )
 ) u_clk_ext_d1ord2 (
   .clk_i ( clk_ext ),
-  .rst_ni ( rst_aon_n ),
-  .step_down_req_i( !ext_freq_is_96m ),
+  .rst_ni ( rst_aon_exda_n ),
+  .step_down_req_i( !ext_freq_is_96m_sync ),
   .step_down_ack_o ( ),
   .test_en_i ( scan_mode_i ),
-  .clk_o ( clk_ext_d1ord2 )
+  .clk_o ( clk_src_ext_usb )
 );
 
-assign clk_ext_usb_scn = clk_ext_d1ord2;
+logic clk_ext_aon, clk_ext_aon_val;
 
-logic clk_ext_usb_d240, clk_ext_aon, clk_ext_aon_val;
+assign clk_ext_aon_val = 1'b1;  // Always ON clock
 
 prim_clock_div #(
   .Divisor( 240 )
 ) u_clk_usb_div240_div (
-  .clk_i ( clk_ext_usb_scn ),
-  .rst_ni ( rst_aon_n ),
+  .clk_i ( clk_src_ext_usb ),
+  .rst_ni ( rst_aon_exda_n ),
   .step_down_req_i( 1'b0 ),
   .step_down_ack_o ( ),
   .test_en_i ( scan_mode_i ),
-  .clk_o ( clk_ext_usb_d240 )
+  .clk_o ( clk_ext_aon )
 );
-
-assign clk_ext_aon = clk_ext_usb_d240;
-assign clk_ext_aon_val = 1'b1;  // Always ON clock
 
 
 ////////////////////////////////////////
@@ -140,7 +162,7 @@ prim_flop_2sync #(
   .ResetValue ( 1'b0 )
 ) u_deep_sleep_sync (
   .clk_i ( clk_ext ),
-  .rst_ni ( rst_aon_n ),
+  .rst_ni ( rst_aon_exda_n ),
   .d_i ( deep_sleep_i ),
   .q_o ( deep_sleep )
 );
@@ -150,8 +172,19 @@ assign deep_sleep_n = !deep_sleep;
 // SYS External Clock Enable
 ////////////////////////////////////////
 logic clk_ext_sys, clk_ext_sys_en, clk_ext_sys_val;
+logic clk_src_sys_en;
 
-assign clk_ext_sys_en  = deep_sleep_n && clk_src_sys_en_i;
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_clk_src_sys_en_sync (
+  .clk_i ( clk_ext ),
+  .rst_ni ( rst_aon_exda_n ),
+  .d_i ( clk_src_sys_en_i ),
+  .q_o ( clk_src_sys_en )
+);
+
+assign clk_ext_sys_en  = deep_sleep_n && clk_src_sys_en;
 assign clk_ext_sys_val = clk_ext_sys_en;
 
 prim_clock_gating #(
@@ -166,8 +199,19 @@ prim_clock_gating #(
 // IO External Clock Enable
 ////////////////////////////////////////
 logic clk_ext_io, clk_ext_io_en, clk_ext_io_val;
+logic clk_src_io_en;
 
-assign clk_ext_io_en  = deep_sleep_n && clk_src_io_en_i;
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_clk_src_io_en_sync (
+  .clk_i ( clk_ext ),
+  .rst_ni ( rst_aon_exda_n ),
+  .d_i ( clk_src_io_en_i ),
+  .q_o ( clk_src_io_en )
+);
+
+assign clk_ext_io_en  = deep_sleep_n && clk_src_io_en;
 assign clk_ext_io_val = clk_ext_io_en;
 
 prim_clock_gating #(
@@ -182,14 +226,25 @@ prim_clock_gating #(
 // USB External Clock Enable
 ////////////////////////////////////////
 logic clk_ext_usb, clk_ext_usb_en, clk_ext_usb_val;
+logic clk_src_usb_en;
 
-assign clk_ext_usb_en  = deep_sleep_n && clk_src_usb_en_i;
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_clk_src_usb_en_sync (
+  .clk_i ( clk_ext ),
+  .rst_ni ( rst_aon_exda_n ),
+  .d_i ( clk_src_usb_en_i ),
+  .q_o ( clk_src_usb_en )
+);
+
+assign clk_ext_usb_en  = deep_sleep_n && clk_src_usb_en;
 assign clk_ext_usb_val = clk_ext_usb_en;
 
 prim_clock_gating #(
   .NoFpgaGate ( 1'b1)
 ) u_clk_ext_usb_ckgt (
-  .clk_i ( clk_ext_usb_scn ),
+  .clk_i ( clk_src_ext_usb ),
   .en_i ( clk_ext_usb_en ),
   .test_en_i ( scan_mode_i ),
   .clk_o ( clk_ext_usb )
@@ -200,8 +255,7 @@ prim_clock_gating #(
 // SW Bypass select logic
 ////////////////////////////////////////
 // Sync to local AON clcok
-prim_mubi_pkg::mubi4_t io_clk_byp_req, all_clk_byp_req;
-prim_mubi_pkg::mubi4_t sw_ext_freq_is_96m;
+prim_mubi_pkg::mubi4_t ot_io_clk_byp_req, ot_all_clk_byp_req, ot_ext_freq_is_96m;
 
 prim_mubi4_sync #(
   .StabilityCheck ( 1 ),
@@ -210,7 +264,7 @@ prim_mubi4_sync #(
   .clk_i ( clk_aon ),
   .rst_ni ( rst_aon_n ),
   .mubi_i ( io_clk_byp_req_i ),
-  .mubi_o ( io_clk_byp_req )
+  .mubi_o ( ot_io_clk_byp_req )
 );
 
 prim_mubi4_sync #(
@@ -220,54 +274,134 @@ prim_mubi4_sync #(
   .clk_i ( clk_aon ),
   .rst_ni ( rst_aon_n ),
   .mubi_i ( all_clk_byp_req_i ),
-  .mubi_o ( all_clk_byp_req )
+  .mubi_o ( ot_all_clk_byp_req )
 );
 
 prim_mubi4_sync #(
   .StabilityCheck ( 1 ),
   .ResetValue ( prim_mubi_pkg::MuBi4False )
-) u_sw_ext_freq_sync (
-  .clk_i ( clk_ext ),
+) u_ext_freq_is_96m (
+  .clk_i ( clk_aon ),
   .rst_ni ( rst_aon_n ),
   .mubi_i ( ext_freq_is_96m_i ),
-  .mubi_o ( sw_ext_freq_is_96m )
+  .mubi_o ( ot_ext_freq_is_96m )
 );
 
 // Decode logic
-logic sys_clk_byp, usb_clk_byp, aon_clk_byp;
+logic ot_all_clk_byp, ot_sys_clk_byp, ot_io_clk_byp, ot_usb_clk_byp, ot_aon_clk_byp;
 
-prim_mubi4_dec u_all_byp_sel ( .mubi_i ( all_clk_byp_req ), .mubi_dec_o ( all_clk_byp ) );
-prim_mubi4_dec u_sys_byp_sel ( .mubi_i ( all_clk_byp_req ), .mubi_dec_o ( sys_clk_byp ) );
-prim_mubi4_dec u_io_byp_sel  ( .mubi_i ( io_clk_byp_req ),  .mubi_dec_o ( io_clk_byp ) );
-prim_mubi4_dec u_usb_byp_sel ( .mubi_i ( all_clk_byp_req ), .mubi_dec_o ( usb_clk_byp ) );
-prim_mubi4_dec u_aon_byp_sel ( .mubi_i ( all_clk_byp_req ), .mubi_dec_o ( aon_clk_byp ) );
+prim_mubi4_dec u_all_byp_sel ( .mubi_i ( ot_all_clk_byp_req ), .mubi_dec_o ( ot_all_clk_byp ) );
+prim_mubi4_dec u_sys_byp_sel ( .mubi_i ( ot_all_clk_byp_req ), .mubi_dec_o ( ot_sys_clk_byp ) );
+prim_mubi4_dec u_io_byp_sel  ( .mubi_i ( ot_io_clk_byp_req ),  .mubi_dec_o ( ot_io_clk_byp ) );
+prim_mubi4_dec u_usb_byp_sel ( .mubi_i ( ot_all_clk_byp_req ), .mubi_dec_o ( ot_usb_clk_byp ) );
+prim_mubi4_dec u_aon_byp_sel ( .mubi_i ( ot_all_clk_byp_req ), .mubi_dec_o ( ot_aon_clk_byp ) );
 
 // De-Glitch selects (decode "noise")
-logic sw_all_clk_byp, sw_sys_clk_byp, sw_io_clk_byp, sw_usb_clk_byp, sw_aon_clk_byp;
+logic sw_sys_clk_byp, sw_usb_clk_byp, sw_aon_clk_byp, sw_exfr_is_96m;
 
-always_ff @ ( posedge clk_src_aon_o, negedge rst_aon_n ) begin
-  if ( !rst_aon_n ) begin
-    sw_all_clk_byp <= 1'b0;
-    sw_sys_clk_byp <= 1'b0;
-    sw_io_clk_byp  <= 1'b0;
-    sw_usb_clk_byp <= 1'b0;
-    sw_aon_clk_byp <= 1'b0;
-  end else begin
-    sw_all_clk_byp <= all_clk_byp;
-    sw_sys_clk_byp <= sys_clk_byp;
-    sw_io_clk_byp  <= io_clk_byp;
-    sw_usb_clk_byp <= usb_clk_byp;
-    sw_aon_clk_byp <= aon_clk_byp;
-  end
-end
+prim_flop #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_sw_all_clk_byp_dgl (
+  .clk_i ( clk_aon ),
+  .rst_ni ( rst_aon_n ),
+  .d_i ( ot_all_clk_byp ),
+  .q_o ( sw_all_clk_byp )
+);
 
+prim_flop #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_no_scan_sw_sys_clk_byp_dgl (
+  .clk_i ( clk_aon ),
+  .rst_ni ( rst_aon_n ),
+  .d_i ( ot_sys_clk_byp ),
+  .q_o ( sw_sys_clk_byp )
+);
+
+prim_flop #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_sw_io_clk_byp_dgl (
+  .clk_i ( clk_aon ),
+  .rst_ni ( rst_aon_n ),
+  .d_i ( ot_io_clk_byp ),
+  .q_o ( sw_io_clk_byp )
+);
+
+prim_flop #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_sw_usb_clk_byp_dgl (
+  .clk_i ( clk_aon ),
+  .rst_ni ( rst_aon_n ),
+  .d_i ( ot_usb_clk_byp ),
+  .q_o ( sw_usb_clk_byp )
+);
+
+prim_flop #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_sw_aon_clk_byp_dgl (
+  .clk_i ( clk_aon ),
+  .rst_ni ( rst_aon_n ),
+  .d_i ( ot_aon_clk_byp ),
+  .q_o ( sw_aon_clk_byp )
+);
+
+prim_flop #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_sw_exfr_is_96m_dgl (
+  .clk_i ( clk_aon ),
+  .rst_ni ( rst_aon_n ),
+  .d_i ( prim_mubi_pkg::mubi4_test_true_strict(ot_ext_freq_is_96m) ),
+  .q_o ( sw_exfr_is_96m )
+);
+
+logic sys_clk_byp;
+
+assign sys_clk_byp = sw_sys_clk_byp;
+
+logic sel_io_clk_byp, io_clk_byp;
+
+assign sel_io_clk_byp = sw_io_clk_byp || sw_all_clk_byp;
+
+// De-Glitch IO Clock Bypass Select
+////////////////////////////////////////
+prim_flop #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_io_clk_byp_dgl (
+  .clk_i ( clk_aon ),
+  .rst_ni ( rst_aon_n ),
+  .d_i ( sel_io_clk_byp ),
+  .q_o ( io_clk_byp )
+);
+
+logic usb_clk_byp;
+
+assign usb_clk_byp = sw_usb_clk_byp;
+
+logic aon_clk_byp;
+
+assign aon_clk_byp = sw_aon_clk_byp;
+
+logic extfreq_is_96m;
+
+assign extfreq_is_96m = sw_exfr_is_96m;
+
+// Block changes during scan mode
+////////////////////////////////////////
 logic sys_clk_byp_sel, io_clk_byp_sel, usb_clk_byp_sel, aon_clk_byp_sel;
 
-assign sys_clk_byp_sel = sw_sys_clk_byp;
-assign io_clk_byp_sel  = sw_io_clk_byp || sw_all_clk_byp;
-assign usb_clk_byp_sel = sw_usb_clk_byp;
-assign aon_clk_byp_sel = sw_aon_clk_byp;
-assign ext_freq_is_96m = prim_mubi_pkg::mubi4_test_true_strict(sw_ext_freq_is_96m);
+always_latch begin
+  if ( !scan_mode_i ) sys_clk_byp_sel <= sys_clk_byp;
+  if ( !scan_mode_i ) io_clk_byp_sel  <= io_clk_byp;
+  if ( !scan_mode_i ) usb_clk_byp_sel <= usb_clk_byp;
+  if ( !scan_mode_i ) aon_clk_byp_sel <= aon_clk_byp;
+  if ( !scan_mode_i ) ext_freq_is_96m <= extfreq_is_96m;
+end
 
 
 ////////////////////////////////////////
@@ -344,60 +478,114 @@ gfr_clk_mux2 u_clk_src_aon_sel (
   .clk_o ( clk_src_aon_o )
 );
 
+// rst_aon_n deasset to io clock
+////////////////////////////////////////
+logic rst_aon_n_ioda, rst_aon_ioda_n;
+
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_rst_aon_n_ioda_sync (
+  .clk_i ( clk_src_io_o ),
+  .rst_ni ( rst_aon_n ),
+  .d_i ( 1'b1 ),
+  .q_o ( rst_aon_n_ioda )
+);
+
+assign rst_aon_ioda_n = scan_mode_i ? scan_reset_ni : rst_aon_n_ioda;
+
 // All Clocks Bypass Acknowledge
 ////////////////////////////////////////
-logic all_clks_byp_en;
+logic all_clks_byp_en_src, all_clks_byp_en;
 
-// TODO: Sync & rst_aon_n deasset to io clock
-assign all_clks_byp_en = sw_all_clk_byp && sys_clk_byp_en && io_clk_byp_en &&
-                         usb_clk_byp_en && aon_clk_byp_en;
+always_ff @( posedge clk_aon, negedge rst_aon_n ) begin
+  if ( !rst_aon_n ) begin
+    all_clks_byp_en_src <= 1'b0;
+  end else begin
+    all_clks_byp_en_src <= sw_all_clk_byp && sys_clk_byp_en && io_clk_byp_en &&
+                             usb_clk_byp_en && aon_clk_byp_en;
+  end
+end
+
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_all_clks_byp_en_sync (
+  .clk_i ( clk_src_io_o ),
+  .rst_ni ( rst_aon_ioda_n ),
+  .d_i ( all_clks_byp_en_src ),
+  .q_o ( all_clks_byp_en )
+);
 
 prim_mubi4_sender #(
   .ResetValue ( prim_mubi_pkg::MuBi4False )
 ) u_all_clk_byp_ack (
-  .clk_i ( clk_aon ),
-  .rst_ni ( rst_aon_n ),
+  .clk_i ( clk_src_io_o ),
+  .rst_ni ( rst_aon_ioda_n ),
   .mubi_i ( prim_mubi_pkg::mubi4_bool_to_mubi(all_clks_byp_en) ),
   .mubi_o ( all_clk_byp_ack_o )
 );
 
 // IO Clock Bypass Acknowledge
 ////////////////////////////////////////
-logic only_io_clk_byp_en;
+logic only_io_clk_byp_en_src, only_io_clk_byp_en;
 
-// TODO: Sync & rst_aon_n deasset to io clock
-assign only_io_clk_byp_en = sw_io_clk_byp && io_clk_byp_en;
+always_ff @( posedge clk_aon, negedge rst_aon_n ) begin
+  if ( !rst_aon_n ) begin
+    only_io_clk_byp_en_src <= 1'b0;
+  end else begin
+    only_io_clk_byp_en_src <= sw_io_clk_byp && io_clk_byp_en;
+  end
+end
+
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_only_io_clk_byp_en_sync (
+  .clk_i ( clk_src_io_o ),
+  .rst_ni ( rst_aon_ioda_n ),
+  .d_i ( only_io_clk_byp_en_src ),
+  .q_o ( only_io_clk_byp_en )
+);
 
 prim_mubi4_sender #(
   .ResetValue ( prim_mubi_pkg::MuBi4False )
 ) u_io_clk_byp_ack (
-  .clk_i ( clk_aon ),
-  .rst_ni ( rst_aon_n ),
+  .clk_i ( clk_src_io_o ),
+  .rst_ni ( rst_aon_ioda_n ),
   .mubi_i ( prim_mubi_pkg::mubi4_bool_to_mubi(only_io_clk_byp_en) ),
   .mubi_o ( io_clk_byp_ack_o )
 );
 
 // IO Clock Source is 48MHz
 ////////////////////////////////////////
-// Oscillator source is always 96MHz.
-// External Bypass source is assume to
-// be 96MHz until it is ebabled as 48MHz
-////////////////////////////////////////
-logic io_clk_byp_is_48m;
+logic io_clk_byp_is_48m_src, io_clk_byp_is_48m;
 
-always_ff @ ( posedge clk_src_io_o, negedge rst_aon_n ) begin
+// Oscillator source is always 96MHz.
+// External Bypass source is assume to be 96MHz until it is ebabled as 48MHz
+always_ff @( posedge clk_aon, negedge rst_aon_n ) begin
   if ( !rst_aon_n ) begin
-    io_clk_byp_is_48m <= 1'b0;  // 96MHz
-  end else begin                // 96MHz or 48MHz
-    io_clk_byp_is_48m <= (io_clk_byp_sel && io_clk_byp_en && !ext_freq_is_96m);
+    io_clk_byp_is_48m_src <= 1'b0;
+  end else begin
+    io_clk_byp_is_48m_src <= io_clk_byp_sel && io_clk_byp_en && !ext_freq_is_96m;
   end
 end
+
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_io_clk_byp_is_48m_sync (
+  .clk_i ( clk_src_io_o ),
+  .rst_ni ( rst_aon_ioda_n ),
+  .d_i ( io_clk_byp_is_48m_src ),
+  .q_o ( io_clk_byp_is_48m )
+);
 
 prim_mubi4_sender #(
   .ResetValue ( prim_mubi_pkg::MuBi4False )
 ) u_clk_src_io_48m_sync (
   .clk_i ( clk_src_io_o ),
-  .rst_ni ( rst_aon_n ),
+  .rst_ni ( rst_aon_ioda_n ),
   .mubi_i ( prim_mubi_pkg::mubi4_bool_to_mubi(io_clk_byp_is_48m) ),
   .mubi_o ( clk_src_io_48m_o )
 );
