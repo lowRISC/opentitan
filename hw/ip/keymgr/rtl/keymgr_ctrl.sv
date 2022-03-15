@@ -74,6 +74,11 @@ module keymgr_ctrl
   localparam int EntropyRounds = KeyWidth / EntropyWidth;
   localparam int EntropyRndWidth = prim_util_pkg::vbits(EntropyRounds);
   localparam int CntWidth = EntropyRounds > CDIs ? EntropyRndWidth : CdiWidth;
+  localparam int EccDataWidth = 64;
+  localparam int EccWidth = 8;
+  localparam int EccWords = KeyWidth / EccDataWidth;
+  localparam int TotalEccWords = EccWords * Shares * CDIs;
+
 
   // Enumeration for working state
   // Encoding generated with:
@@ -119,7 +124,10 @@ module keymgr_ctrl
   // There are two versions of the key state, one for sealing one for attestation
   // Among each version, there are multiple shares
   // Each share is a fixed multiple of the entropy width
-  logic [CDIs-1:0][Shares-1:0][EntropyRounds-1:0][EntropyWidth-1:0] key_state_q, key_state_d;
+  logic [CDIs-1:0][Shares-1:0][EntropyRounds-1:0][EntropyWidth-1:0] key_state_d;
+  logic [CDIs-1:0][Shares-1:0][EccWords-1:0][EccDataWidth-1:0] key_state_ecc_words_d;
+  logic [CDIs-1:0][Shares-1:0][EccWords-1:0][EccDataWidth-1:0] key_state_q;
+  logic [CDIs-1:0][Shares-1:0][EccWords-1:0][EccWidth-1:0] key_state_ecc_q;
   logic [CntWidth-1:0] cnt;
   logic [CdiWidth-1:0] cdi_cnt;
 
@@ -267,11 +275,37 @@ module keymgr_ctrl
   end
 
 
+  //SEC_CM: CTRL.KEY.INTEGRITY
+  assign key_state_ecc_words_d = key_state_d;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       key_state_q <= '0;
+      key_state_ecc_q <= {TotalEccWords{prim_secded_pkg::SecdedInv7264ZeroEcc}};
     end else begin
-      key_state_q <= key_state_d;
+      for (int i = 0; i < CDIs; i++) begin
+        for (int j = 0; j < Shares; j++) begin
+          for (int k = 0; k < EccWords; k++) begin
+            {key_state_ecc_q[i][j][k], key_state_q[i][j][k]} <=
+                prim_secded_pkg::prim_secded_inv_72_64_enc(key_state_ecc_words_d[i][j][k]);
+          end
+        end
+      end
+    end
+  end
+
+  logic [CDIs-1:0][Shares-1:0][EccWords-1:0] ecc_errs;
+  for (genvar i = 0; i < CDIs; i++) begin : gen_ecc_loop_cdi
+    for (genvar j = 0; j < Shares; j++) begin : gen_ecc_loop_shares
+      for (genvar k = 0; k < EccWords; k++) begin : gen_ecc_loop_words
+        logic [1:0] errs;
+        prim_secded_inv_72_64_dec u_dec (
+          .data_i({key_state_ecc_q[i][j][k], key_state_q[i][j][k]}),
+          .data_o(),
+          .syndrome_o(),
+          .err_o(errs)
+        );
+        assign ecc_errs[i][j][k] = |errs;
+      end
     end
   end
 
@@ -842,6 +876,7 @@ module keymgr_ctrl
   assign async_fault_d[AsyncFaultRegIntg]  = regfile_intg_err_i;
   assign async_fault_d[AsyncFaultShadow ]  = shadowed_storage_err_i;
   assign async_fault_d[AsyncFaultFsmIntg]  = state_intg_err_q | data_fsm_err | op_fsm_err;
+  assign async_fault_d[AsyncFaultKeyEcc]   = |ecc_errs;
 
   // SEC_CM: CTRL.FSM.CONSISTENCY
   assign async_fault_d[AsyncFaultFsmChk]   = state_change_err | op_state_cmd_err;
@@ -870,6 +905,7 @@ module keymgr_ctrl
   assign fault_o[FaultCtrlCnt]    = async_fault[AsyncFaultCntErr];
   assign fault_o[FaultReseedCnt]  = async_fault[AsyncFaultRCntErr];
   assign fault_o[FaultSideFsm]    = async_fault[AsyncFaultSideErr];
+  assign fault_o[FaultKeyEcc]     = async_fault[AsyncFaultKeyEcc];
 
   always_comb begin
     status_o = OpIdle;
