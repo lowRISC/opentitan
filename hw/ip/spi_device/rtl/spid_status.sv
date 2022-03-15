@@ -28,7 +28,9 @@ module spid_status
   input sys_clk_i, // Handling STATUS CSR (ext type)
   input sys_rst_ni,
 
-  input csb_i, // CSb as a signal (not as a reset)
+  input sys_csb_sync_i,             // CSb as a signal (not as a reset)
+  input sys_csb_deasserted_pulse_i,
+  input sck_csb_asserted_pulse_i,
 
   // status register from CSR: sys_clk domain
   // bit [   0]: RW0C by SW / W1S by HW
@@ -153,48 +155,15 @@ module spid_status
     .q_o (inclk_busy_broadcast_o)
   );
 
-  // CSb pulse
-  logic csb_sync_d, csb_sync_q, csb_asserted_pulse;
-  prim_flop_2sync #(
-    .Width      (1),
-    .ResetValue (1'b 1)
-  ) u_csb_sync (
-    .clk_i,
-    .rst_ni, //Use CSb as a reset
-    .d_i (1'b 0),
-    .q_o (csb_sync_d)
-  );
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) csb_sync_q <= 1'b 1;
-    else         csb_sync_q <= csb_sync_d;
-  end
-
-  assign csb_asserted_pulse = csb_sync_q && !csb_sync_d;
-
   // CSb de-asserted pulse is used as reg_update.
-  // TODO: merge this to the top then receive the signal through the module
-  // port?
-  logic reg_en_q;
-  prim_flop_2sync #(
-    .Width      (1),
-    .ResetValue (1'b 1)
-  ) u_csb_sync_sysclk (
-    .clk_i  (sys_clk_i),
-    .rst_ni (sys_rst_ni),
-    .d_i    (csb_i),
-    .q_o    (reg_en)
-  );
-  always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
-    if (!sys_rst_ni) reg_en_q <= 1'b 1;
-    else             reg_en_q <= reg_en;
-  end
-  assign reg_update = !reg_en_q && reg_en;
+  assign reg_en = sys_csb_sync_i;
+  assign reg_update = sys_csb_deasserted_pulse_i;
 
   // Status in SCK
   always_ff @(posedge clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) begin
       status_sck <= 24'h 0;
-    end else if (csb_asserted_pulse) begin
+    end else if (sck_csb_asserted_pulse_i) begin
       status_sck <= status;
     end else if (inclk_busy_set_i) begin
       status_sck[0] <= 1'b 1;

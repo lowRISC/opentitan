@@ -188,7 +188,7 @@ module spi_device
                 // Think how FW knows abort is done.
   //logic abort_done; // TODO: Not implemented yet
 
-  logic csb_syncd;
+  logic sys_csb_syncd;
 
   logic rst_txfifo_n, rst_rxfifo_n;
   logic rst_txfifo_reg, rst_rxfifo_reg;
@@ -299,7 +299,7 @@ module spi_device
   // SYS clock assertion can be detected but no usage for the event yet.
   // SPI clock de-assertion cannot be detected as no SCK at the time is given.
   logic sys_csb_deasserted_pulse;
-  logic spi_csb_asserted_pulse  ;
+  logic sck_csb_asserted_pulse  ;
 
   // Read Status input and broadcast
   logic sck_status_busy_set;       // set by HW (upload)
@@ -410,13 +410,7 @@ module spi_device
   assign hw2reg.status.txf_empty.d = txf_empty_syncd;
 
   // CSb : after 2stage synchronizer
-  assign hw2reg.status.csb.d = csb_syncd;
-  prim_flop_2sync #(.Width(1)) u_sync_csb (
-    .clk_i,
-    .rst_ni,
-    .d_i(sys_csb),
-    .q_o(csb_syncd)
-  );
+  assign hw2reg.status.csb.d = sys_csb_syncd;
 
   logic rxf_full_q, txf_empty_q;
   always_ff @(posedge clk_spi_in_buf or negedge rst_ni) begin
@@ -926,8 +920,8 @@ module spi_device
     .clk_i,
     .rst_ni,
 
-    .d_i      (sys_csb),
-    .q_sync_o (         ),
+    .d_i      (sys_csb      ),
+    .q_sync_o (sys_csb_syncd),
 
     // sys_csb_assertion can be detected but no usage
     .q_posedge_pulse_o (sys_csb_deasserted_pulse),
@@ -944,11 +938,11 @@ module spi_device
     .rst_ni (rst_spi_n),
 
     .d_i      (sck_csb),
-    .q_sync_o (         ),
+    .q_sync_o (       ),
 
     // posedge(deassertion) cannot be detected as clock could be absent.
     .q_posedge_pulse_o (                      ),
-    .q_negedge_pulse_o (spi_csb_asserted_pulse)
+    .q_negedge_pulse_o (sck_csb_asserted_pulse)
   );
 
   //////////////////////////////
@@ -1325,7 +1319,9 @@ module spi_device
     .sys_clk_i  (clk_i),
     .sys_rst_ni (rst_ni),
 
-    .csb_i (sys_csb),
+    .sys_csb_sync_i             (sys_csb_syncd),
+    .sys_csb_deasserted_pulse_i (sys_csb_deasserted_pulse),
+    .sck_csb_asserted_pulse_i   (sck_csb_asserted_pulse),
 
     .sys_status_we_i (readstatus_qe),
     .sys_status_i    (readstatus_q),
@@ -1366,7 +1362,7 @@ module spi_device
 
     .clk_out_i (clk_spi_out_buf),
 
-    .inclk_csb_asserted_pulse_i (spi_csb_asserted_pulse),
+    .inclk_csb_asserted_pulse_i (sck_csb_asserted_pulse),
 
     .sys_jedec_i (jedec_cfg),
 
@@ -1497,7 +1493,7 @@ module spi_device
 
     .spi_clk_i  (clk_spi_in_buf),
 
-    .spi_csb_asserted_pulse_i  (spi_csb_asserted_pulse  ),
+    .spi_csb_asserted_pulse_i  (sck_csb_asserted_pulse  ),
     .sys_csb_deasserted_pulse_i(sys_csb_deasserted_pulse),
 
     // Assume CFG.addr_4b_en is not external register.
