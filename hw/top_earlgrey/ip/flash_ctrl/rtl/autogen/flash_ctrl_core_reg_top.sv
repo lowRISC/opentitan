@@ -121,10 +121,10 @@ module flash_ctrl_core_reg_top (
   // Create steering logic
   always_comb begin
     unique case (tl_i.a_address[AW-1:0]) inside
-      [384:387]: begin
+      [388:391]: begin
         reg_steer = 0;
       end
-      [388:391]: begin
+      [392:395]: begin
         reg_steer = 1;
       end
       default: begin
@@ -203,6 +203,7 @@ module flash_ctrl_core_reg_top (
   logic intr_test_corr_err_wd;
   logic alert_test_we;
   logic alert_test_recov_err_wd;
+  logic alert_test_fatal_std_err_wd;
   logic alert_test_fatal_err_wd;
   logic dis_we;
   logic [3:0] dis_qs;
@@ -965,16 +966,16 @@ module flash_ctrl_core_reg_top (
   logic err_code_flash_phy_err_wd;
   logic err_code_update_err_qs;
   logic err_code_update_err_wd;
+  logic std_fault_status_reg_intg_err_qs;
+  logic std_fault_status_phy_intg_err_qs;
+  logic std_fault_status_lcmgr_err_qs;
+  logic std_fault_status_arb_fsm_err_qs;
+  logic std_fault_status_storage_err_qs;
   logic fault_status_mp_err_qs;
   logic fault_status_rd_err_qs;
   logic fault_status_prog_win_err_qs;
   logic fault_status_prog_type_err_qs;
   logic fault_status_flash_phy_err_qs;
-  logic fault_status_reg_intg_err_qs;
-  logic fault_status_phy_intg_err_qs;
-  logic fault_status_lcmgr_err_qs;
-  logic fault_status_arb_fsm_err_qs;
-  logic fault_status_storage_err_qs;
   logic fault_status_seed_err_qs;
   logic [19:0] err_addr_qs;
   logic ecc_single_err_cnt_we;
@@ -1406,7 +1407,7 @@ module flash_ctrl_core_reg_top (
 
   // R[alert_test]: V(True)
   logic alert_test_qe;
-  logic [1:0] alert_test_flds_we;
+  logic [2:0] alert_test_flds_we;
   assign alert_test_qe = &alert_test_flds_we;
   //   F[recov_err]: 0:0
   prim_subreg_ext #(
@@ -1423,7 +1424,22 @@ module flash_ctrl_core_reg_top (
   );
   assign reg2hw.alert_test.recov_err.qe = alert_test_qe;
 
-  //   F[fatal_err]: 1:1
+  //   F[fatal_std_err]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_fatal_std_err (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_fatal_std_err_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[1]),
+    .q      (reg2hw.alert_test.fatal_std_err.q),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.fatal_std_err.qe = alert_test_qe;
+
+  //   F[fatal_err]: 2:2
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test_fatal_err (
@@ -1432,7 +1448,7 @@ module flash_ctrl_core_reg_top (
     .wd     (alert_test_fatal_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (alert_test_flds_we[1]),
+    .qe     (alert_test_flds_we[2]),
     .q      (reg2hw.alert_test.fatal_err.q),
     .qs     ()
   );
@@ -12103,6 +12119,133 @@ module flash_ctrl_core_reg_top (
   );
 
 
+  // R[std_fault_status]: V(False)
+  //   F[reg_intg_err]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_std_fault_status_reg_intg_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.std_fault_status.reg_intg_err.de),
+    .d      (hw2reg.std_fault_status.reg_intg_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.std_fault_status.reg_intg_err.q),
+
+    // to register interface (read)
+    .qs     (std_fault_status_reg_intg_err_qs)
+  );
+
+  //   F[phy_intg_err]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_std_fault_status_phy_intg_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.std_fault_status.phy_intg_err.de),
+    .d      (hw2reg.std_fault_status.phy_intg_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.std_fault_status.phy_intg_err.q),
+
+    // to register interface (read)
+    .qs     (std_fault_status_phy_intg_err_qs)
+  );
+
+  //   F[lcmgr_err]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_std_fault_status_lcmgr_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.std_fault_status.lcmgr_err.de),
+    .d      (hw2reg.std_fault_status.lcmgr_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.std_fault_status.lcmgr_err.q),
+
+    // to register interface (read)
+    .qs     (std_fault_status_lcmgr_err_qs)
+  );
+
+  //   F[arb_fsm_err]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_std_fault_status_arb_fsm_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.std_fault_status.arb_fsm_err.de),
+    .d      (hw2reg.std_fault_status.arb_fsm_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.std_fault_status.arb_fsm_err.q),
+
+    // to register interface (read)
+    .qs     (std_fault_status_arb_fsm_err_qs)
+  );
+
+  //   F[storage_err]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_std_fault_status_storage_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.std_fault_status.storage_err.de),
+    .d      (hw2reg.std_fault_status.storage_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.std_fault_status.storage_err.q),
+
+    // to register interface (read)
+    .qs     (std_fault_status_storage_err_qs)
+  );
+
+
   // R[fault_status]: V(False)
   //   F[mp_err]: 1:1
   prim_subreg #(
@@ -12229,132 +12372,7 @@ module flash_ctrl_core_reg_top (
     .qs     (fault_status_flash_phy_err_qs)
   );
 
-  //   F[reg_intg_err]: 6:6
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
-  ) u_fault_status_reg_intg_err (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.fault_status.reg_intg_err.de),
-    .d      (hw2reg.fault_status.reg_intg_err.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.fault_status.reg_intg_err.q),
-
-    // to register interface (read)
-    .qs     (fault_status_reg_intg_err_qs)
-  );
-
-  //   F[phy_intg_err]: 7:7
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
-  ) u_fault_status_phy_intg_err (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.fault_status.phy_intg_err.de),
-    .d      (hw2reg.fault_status.phy_intg_err.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.fault_status.phy_intg_err.q),
-
-    // to register interface (read)
-    .qs     (fault_status_phy_intg_err_qs)
-  );
-
-  //   F[lcmgr_err]: 8:8
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
-  ) u_fault_status_lcmgr_err (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.fault_status.lcmgr_err.de),
-    .d      (hw2reg.fault_status.lcmgr_err.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.fault_status.lcmgr_err.q),
-
-    // to register interface (read)
-    .qs     (fault_status_lcmgr_err_qs)
-  );
-
-  //   F[arb_fsm_err]: 9:9
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
-  ) u_fault_status_arb_fsm_err (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.fault_status.arb_fsm_err.de),
-    .d      (hw2reg.fault_status.arb_fsm_err.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.fault_status.arb_fsm_err.q),
-
-    // to register interface (read)
-    .qs     (fault_status_arb_fsm_err_qs)
-  );
-
-  //   F[storage_err]: 10:10
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
-  ) u_fault_status_storage_err (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.fault_status.storage_err.de),
-    .d      (hw2reg.fault_status.storage_err.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.fault_status.storage_err.q),
-
-    // to register interface (read)
-    .qs     (fault_status_storage_err_qs)
-  );
-
-  //   F[seed_err]: 11:11
+  //   F[seed_err]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -12747,7 +12765,7 @@ module flash_ctrl_core_reg_top (
 
 
 
-  logic [95:0] addr_hit;
+  logic [96:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == FLASH_CTRL_INTR_STATE_OFFSET);
@@ -12836,16 +12854,17 @@ module flash_ctrl_core_reg_top (
     addr_hit[83] = (reg_addr == FLASH_CTRL_OP_STATUS_OFFSET);
     addr_hit[84] = (reg_addr == FLASH_CTRL_STATUS_OFFSET);
     addr_hit[85] = (reg_addr == FLASH_CTRL_ERR_CODE_OFFSET);
-    addr_hit[86] = (reg_addr == FLASH_CTRL_FAULT_STATUS_OFFSET);
-    addr_hit[87] = (reg_addr == FLASH_CTRL_ERR_ADDR_OFFSET);
-    addr_hit[88] = (reg_addr == FLASH_CTRL_ECC_SINGLE_ERR_CNT_OFFSET);
-    addr_hit[89] = (reg_addr == FLASH_CTRL_ECC_SINGLE_ERR_ADDR_0_OFFSET);
-    addr_hit[90] = (reg_addr == FLASH_CTRL_ECC_SINGLE_ERR_ADDR_1_OFFSET);
-    addr_hit[91] = (reg_addr == FLASH_CTRL_PHY_ALERT_CFG_OFFSET);
-    addr_hit[92] = (reg_addr == FLASH_CTRL_PHY_STATUS_OFFSET);
-    addr_hit[93] = (reg_addr == FLASH_CTRL_SCRATCH_OFFSET);
-    addr_hit[94] = (reg_addr == FLASH_CTRL_FIFO_LVL_OFFSET);
-    addr_hit[95] = (reg_addr == FLASH_CTRL_FIFO_RST_OFFSET);
+    addr_hit[86] = (reg_addr == FLASH_CTRL_STD_FAULT_STATUS_OFFSET);
+    addr_hit[87] = (reg_addr == FLASH_CTRL_FAULT_STATUS_OFFSET);
+    addr_hit[88] = (reg_addr == FLASH_CTRL_ERR_ADDR_OFFSET);
+    addr_hit[89] = (reg_addr == FLASH_CTRL_ECC_SINGLE_ERR_CNT_OFFSET);
+    addr_hit[90] = (reg_addr == FLASH_CTRL_ECC_SINGLE_ERR_ADDR_0_OFFSET);
+    addr_hit[91] = (reg_addr == FLASH_CTRL_ECC_SINGLE_ERR_ADDR_1_OFFSET);
+    addr_hit[92] = (reg_addr == FLASH_CTRL_PHY_ALERT_CFG_OFFSET);
+    addr_hit[93] = (reg_addr == FLASH_CTRL_PHY_STATUS_OFFSET);
+    addr_hit[94] = (reg_addr == FLASH_CTRL_SCRATCH_OFFSET);
+    addr_hit[95] = (reg_addr == FLASH_CTRL_FIFO_LVL_OFFSET);
+    addr_hit[96] = (reg_addr == FLASH_CTRL_FIFO_RST_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -12948,7 +12967,8 @@ module flash_ctrl_core_reg_top (
                (addr_hit[92] & (|(FLASH_CTRL_CORE_PERMIT[92] & ~reg_be))) |
                (addr_hit[93] & (|(FLASH_CTRL_CORE_PERMIT[93] & ~reg_be))) |
                (addr_hit[94] & (|(FLASH_CTRL_CORE_PERMIT[94] & ~reg_be))) |
-               (addr_hit[95] & (|(FLASH_CTRL_CORE_PERMIT[95] & ~reg_be)))));
+               (addr_hit[95] & (|(FLASH_CTRL_CORE_PERMIT[95] & ~reg_be))) |
+               (addr_hit[96] & (|(FLASH_CTRL_CORE_PERMIT[96] & ~reg_be)))));
   end
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -12993,7 +13013,9 @@ module flash_ctrl_core_reg_top (
 
   assign alert_test_recov_err_wd = reg_wdata[0];
 
-  assign alert_test_fatal_err_wd = reg_wdata[1];
+  assign alert_test_fatal_std_err_wd = reg_wdata[1];
+
+  assign alert_test_fatal_err_wd = reg_wdata[2];
   assign dis_we = addr_hit[4] & reg_we & !reg_error;
 
   assign dis_wd = reg_wdata[3:0];
@@ -13749,25 +13771,25 @@ module flash_ctrl_core_reg_top (
   assign err_code_flash_phy_err_wd = reg_wdata[5];
 
   assign err_code_update_err_wd = reg_wdata[6];
-  assign ecc_single_err_cnt_we = addr_hit[88] & reg_we & !reg_error;
+  assign ecc_single_err_cnt_we = addr_hit[89] & reg_we & !reg_error;
 
   assign ecc_single_err_cnt_ecc_single_err_cnt_0_wd = reg_wdata[7:0];
 
   assign ecc_single_err_cnt_ecc_single_err_cnt_1_wd = reg_wdata[15:8];
-  assign phy_alert_cfg_we = addr_hit[91] & reg_we & !reg_error;
+  assign phy_alert_cfg_we = addr_hit[92] & reg_we & !reg_error;
 
   assign phy_alert_cfg_alert_ack_wd = reg_wdata[0];
 
   assign phy_alert_cfg_alert_trig_wd = reg_wdata[1];
-  assign scratch_we = addr_hit[93] & reg_we & !reg_error;
+  assign scratch_we = addr_hit[94] & reg_we & !reg_error;
 
   assign scratch_wd = reg_wdata[31:0];
-  assign fifo_lvl_we = addr_hit[94] & reg_we & !reg_error;
+  assign fifo_lvl_we = addr_hit[95] & reg_we & !reg_error;
 
   assign fifo_lvl_prog_wd = reg_wdata[4:0];
 
   assign fifo_lvl_rd_wd = reg_wdata[12:8];
-  assign fifo_rst_we = addr_hit[95] & reg_we & !reg_error;
+  assign fifo_rst_we = addr_hit[96] & reg_we & !reg_error;
 
   assign fifo_rst_wd = reg_wdata[0];
 
@@ -13805,6 +13827,7 @@ module flash_ctrl_core_reg_top (
       addr_hit[3]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
+        reg_rdata_next[2] = '0;
       end
 
       addr_hit[4]: begin
@@ -14379,57 +14402,60 @@ module flash_ctrl_core_reg_top (
       end
 
       addr_hit[86]: begin
+        reg_rdata_next[0] = std_fault_status_reg_intg_err_qs;
+        reg_rdata_next[1] = std_fault_status_phy_intg_err_qs;
+        reg_rdata_next[2] = std_fault_status_lcmgr_err_qs;
+        reg_rdata_next[3] = std_fault_status_arb_fsm_err_qs;
+        reg_rdata_next[4] = std_fault_status_storage_err_qs;
+      end
+
+      addr_hit[87]: begin
         reg_rdata_next[1] = fault_status_mp_err_qs;
         reg_rdata_next[2] = fault_status_rd_err_qs;
         reg_rdata_next[3] = fault_status_prog_win_err_qs;
         reg_rdata_next[4] = fault_status_prog_type_err_qs;
         reg_rdata_next[5] = fault_status_flash_phy_err_qs;
-        reg_rdata_next[6] = fault_status_reg_intg_err_qs;
-        reg_rdata_next[7] = fault_status_phy_intg_err_qs;
-        reg_rdata_next[8] = fault_status_lcmgr_err_qs;
-        reg_rdata_next[9] = fault_status_arb_fsm_err_qs;
-        reg_rdata_next[10] = fault_status_storage_err_qs;
-        reg_rdata_next[11] = fault_status_seed_err_qs;
-      end
-
-      addr_hit[87]: begin
-        reg_rdata_next[19:0] = err_addr_qs;
+        reg_rdata_next[6] = fault_status_seed_err_qs;
       end
 
       addr_hit[88]: begin
+        reg_rdata_next[19:0] = err_addr_qs;
+      end
+
+      addr_hit[89]: begin
         reg_rdata_next[7:0] = ecc_single_err_cnt_ecc_single_err_cnt_0_qs;
         reg_rdata_next[15:8] = ecc_single_err_cnt_ecc_single_err_cnt_1_qs;
       end
 
-      addr_hit[89]: begin
+      addr_hit[90]: begin
         reg_rdata_next[19:0] = ecc_single_err_addr_0_qs;
       end
 
-      addr_hit[90]: begin
+      addr_hit[91]: begin
         reg_rdata_next[19:0] = ecc_single_err_addr_1_qs;
       end
 
-      addr_hit[91]: begin
+      addr_hit[92]: begin
         reg_rdata_next[0] = phy_alert_cfg_alert_ack_qs;
         reg_rdata_next[1] = phy_alert_cfg_alert_trig_qs;
       end
 
-      addr_hit[92]: begin
+      addr_hit[93]: begin
         reg_rdata_next[0] = phy_status_init_wip_qs;
         reg_rdata_next[1] = phy_status_prog_normal_avail_qs;
         reg_rdata_next[2] = phy_status_prog_repair_avail_qs;
       end
 
-      addr_hit[93]: begin
+      addr_hit[94]: begin
         reg_rdata_next[31:0] = scratch_qs;
       end
 
-      addr_hit[94]: begin
+      addr_hit[95]: begin
         reg_rdata_next[4:0] = fifo_lvl_prog_qs;
         reg_rdata_next[12:8] = fifo_lvl_rd_qs;
       end
 
-      addr_hit[95]: begin
+      addr_hit[96]: begin
         reg_rdata_next[0] = fifo_rst_qs;
       end
 

@@ -23,9 +23,9 @@ package flash_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter string LIST_OF_ALERTS[] = {"recov_err", "fatal_err"};
+  parameter string LIST_OF_ALERTS[] = {"recov_err", "fatal_std_err", "fatal_err"};
 
-  parameter uint NUM_ALERTS = 4;
+  parameter uint NUM_ALERTS = 3;
   parameter uint FlashNumPages = flash_ctrl_pkg::NumBanks * flash_ctrl_pkg::PagesPerBank;
   parameter uint FlashSizeBytes         = FlashNumPages * flash_ctrl_pkg::WordsPerPage *
                                             flash_ctrl_pkg::DataWidth / 8;

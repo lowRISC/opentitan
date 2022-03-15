@@ -13914,6 +13914,15 @@
       lpg_idx: 16
     }
     {
+      name: flash_ctrl_fatal_std_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: flash_ctrl
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
       name: flash_ctrl_fatal_err
       width: 1
       type: alert
