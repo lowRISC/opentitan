@@ -17,7 +17,7 @@ module rglts_pdm_3p3v (
   input [1:0] otp_power_seq_h_i,         // MMR0,24 in @3.3v
   input scan_mode_h_i,                   // Scan Mode
   input scan_reset_h_ni,                 // Scan Reset @3.3v
-  output logic rglssm_vcaon_h_o,         // Regulators state machine at VCAON @3.3v
+  output logic rglssm_vmppr_h_o,         // Regulators SM at VMPPR (vcmaim_pok_por_reset) @3.3v
   output logic rglssm_vcmon_h_o,         // Regulators state machine at VCMON @3.3v
   output logic rglssm_brout_h_o,         // Regulators state machine at BROUT @3.3v
   output logic vcmain_pok_h_o,           // VCMAIN Exist @3.3v
@@ -120,10 +120,10 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
     vcaon_pok_h      <= 1'b0;        // VCAON Rail Disabled
     main_pd_str_h    <= 1'b0;        // Power Down Stratch off
     //
-    rglssm_vcmon_h_o <= 1'b0;        // (rgls_sm == RGLS_VCMON)
-    rglssm_vcaon_h_o <= 1'b0;        // (rgls_sm == RGLS_VCAON)
-    rglssm_brout_h_o <= 1'b0;        // (rgls_sm == RGLS_BROUT)
-    fla_pdm_h        <= 1'b1;        // !((rgls_sm == RGLS_VCMON)||(rgls_sm == RGLS_BROUT))
+    rglssm_vcmon_h_o <= 1'b0;        //
+    rglssm_vmppr_h_o <= 1'b1;        // (rgls_sm == RGLS_CLDPU)
+    rglssm_brout_h_o <= 1'b0;        //
+    fla_pdm_h        <= 1'b1;        // !((rgls_sm == RGLS_VCMON) || (rgls_sm == RGLS_BROUT))
     //
     dly_cnt          <= LC2HCOC[9-1:0];  // VCMAIN Regulator power-up time
     //
@@ -135,16 +135,17 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
         vcaon_pok_h        <= 1'b0;        // VCAON Rail Disabled
         main_pd_str_h      <= 1'b0;        // Power Down Stratch off
         //
-        rglssm_vcmon_h_o   <= 1'b0;        // (rgls_sm == RGLS_VCMON)
-        rglssm_vcaon_h_o   <= 1'b0;        // (rgls_sm == RGLS_VCAON)
-        rglssm_brout_h_o   <= 1'b0;        // (rgls_sm == RGLS_BROUT)
+        rglssm_vcmon_h_o   <= 1'b0;        //
+        rglssm_vmppr_h_o   <= 1'b1;        // (rgls_sm == RGLS_CLDPU)
+        rglssm_brout_h_o   <= 1'b0;        //
         fla_pdm_h          <= 1'b1;        // !((rgls_sm == RGLS_VCMON)||(rgls_sm == RGLS_BROUT))
         //
         dly_cnt            <= dly_cnt - 1'b1;
         //
         if (dly_cnt == '0) begin
           rglssm_vcmon_h_o <= 1'b1;        // (rgls_sm == RGLS_VCMON)
-          fla_pdm_h        <= 1'b0;        // !((rgls_sm == RGLS_VCMON)||(rgls_sm == RGLS_BROUT))
+          rglssm_vmppr_h_o <= 1'b0;        //
+          fla_pdm_h        <= 1'b0;        //
           rgls_sm          <= RGLS_VCMON;  // VCMAIN Regultor is ON!
         end else begin
           rgls_sm          <= RGLS_CLDPU;  // Power VCMAIN!
@@ -157,21 +158,21 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
         main_pd_str_h      <= 1'b0;        // Power Down Stratch
         //
         rglssm_vcmon_h_o   <= 1'b1;        // (rgls_sm == RGLS_VCMON)
-        rglssm_vcaon_h_o   <= 1'b0;        // (rgls_sm == RGLS_VCAON)
-        rglssm_brout_h_o   <= 1'b0;        // (rgls_sm == RGLS_BROUT)
-        fla_pdm_h          <= 1'b0;        // !((rgls_sm == RGLS_VCMON)||(rgls_sm == RGLS_BROUT))
+        rglssm_vmppr_h_o   <= 1'b0;        //
+        rglssm_brout_h_o   <= 1'b0;        //
+        fla_pdm_h          <= 1'b0;        //
         //
         dly_cnt            <= hc2lc_val;   // VCAON Regulator power-up time
         //
         if ( !vcc_pok_s_h ) begin
-          rglssm_vcmon_h_o <= 1'b0;        // (rgls_sm == RGLS_VCMON)
+          rglssm_vcmon_h_o <= 1'b0;        //
           rglssm_brout_h_o <= 1'b1;        // (rgls_sm == RGLS_BROUT)
-          fla_pdm_h        <= 1'b0;        // !((rgls_sm == RGLS_VCMON)||(rgls_sm == RGLS_BROUT))
+          fla_pdm_h        <= 1'b0;        //
           rgls_sm          <= RGLS_BROUT;  // Brownout
         end else if ( !main_pd_h_ni && por_sync_h_ni ) begin
           main_pd_str_h    <= 1'b1;        // Power Down Stratch on
-          rglssm_vcmon_h_o <= 1'b0;        // (rgls_sm == RGLS_VCMON)
-          fla_pdm_h        <= 1'b1;        // !((rgls_sm == RGLS_VCMON)||(rgls_sm == RGLS_BROUT))
+          rglssm_vcmon_h_o <= 1'b0;        //
+          fla_pdm_h        <= 1'b1;        // !((rgls_sm == RGLS_VCMON) || (rgls_sm == RGLS_BROUT))
           rgls_sm          <= RGLS_VCM2A;  // VCMAIN to VCAON Transition
         end else begin
           rgls_sm          <= RGLS_VCMON;  // VCMAIN Regulator is ON!
@@ -183,19 +184,19 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
         vcaon_pok_h        <= 1'b1;        // VCAON Rail Enabled
         main_pd_str_h      <= 1'b1;        // Power Down Stratch
         //
-        rglssm_vcmon_h_o   <= 1'b0;        // (rgls_sm == RGLS_VCMON)
-        rglssm_vcaon_h_o   <= 1'b0;        // (rgls_sm == RGLS_VCAON)
-        rglssm_brout_h_o   <= 1'b0;        // (rgls_sm == RGLS_BROUT)
-        fla_pdm_h          <= 1'b1;        // !((rgls_sm == RGLS_VCMON)||(rgls_sm == RGLS_BROUT))
+        rglssm_vcmon_h_o   <= 1'b0;        //
+        rglssm_vmppr_h_o   <= 1'b0;        //
+        rglssm_brout_h_o   <= 1'b0;        //
+        fla_pdm_h          <= 1'b1;        // !((rgls_sm == RGLS_VCMON) || (rgls_sm == RGLS_BROUT))
         //
         dly_cnt            <= dly_cnt - 1'b1;
         //
         if ( !por_sync_h_ni ) begin
           rglssm_vcmon_h_o <= 1'b1;        // (rgls_sm == RGLS_VCMON)
-          fla_pdm_h        <= 1'b0;        // !((rgls_sm == RGLS_VCMON)||(rgls_sm == RGLS_BROUT))
+          fla_pdm_h        <= 1'b0;        //
           rgls_sm          <= RGLS_VCMON;  // VCMAIN Regultor is ON!
         end else if ( dly_cnt == '0 ) begin
-          rglssm_vcaon_h_o <= 1'b1;        // (rgls_sm == RGLS_VCAON)
+          rglssm_vmppr_h_o <= 1'b1;        // (rgls_sm == RGLS_VCA2M)
           rgls_sm          <= RGLS_VCAON;  // VCAON Regulator is ON!
         end else begin
           rgls_sm          <= RGLS_VCM2A;  // VCMAIN to VCAON Transition
@@ -207,15 +208,15 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
         vcaon_pok_h        <= 1'b1;        // VCAON Rail Enabled
         main_pd_str_h      <= 1'b1;        // Power Down Stratch
         //
-        rglssm_vcmon_h_o   <= 1'b0;        // (rgls_sm == RGLS_VCMON)
-        rglssm_vcaon_h_o   <= 1'b1;        // (rgls_sm == RGLS_VCAON)
-        rglssm_brout_h_o   <= 1'b0;        // (rgls_sm == RGLS_BROUT)
-        fla_pdm_h          <= 1'b1;        // !((rgls_sm == RGLS_VCMON)||(rgls_sm == RGLS_BROUT))
+        rglssm_vcmon_h_o   <= 1'b0;        //
+        rglssm_vmppr_h_o   <= 1'b1;        // (rgls_sm == RGLS_VCAON)
+        rglssm_brout_h_o   <= 1'b0;        //
+        fla_pdm_h          <= 1'b1;        // !((rgls_sm == RGLS_VCMON) || (rgls_sm == RGLS_BROUT))
         //
         dly_cnt            <= lc2hc_val;   // VCMAIN Regulator power-up time
         //
         if ( main_pd_h_ni || !por_sync_h_ni ) begin
-          rglssm_vcaon_h_o <= 1'b0;        // (rgls_sm == RGLS_VCAON)
+          rglssm_vmppr_h_o <= 1'b1;        // (rgls_sm == (RGLS_VCAON || RGLS_CLDPU || RRGLS_VCA2M))
           rgls_sm          <= RGLS_VCA2M;  // VCAON->VCMAIN Transition
         end else begin
           rgls_sm          <= RGLS_VCAON;  // VCAON Regulator is ON!
@@ -227,16 +228,16 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
         vcaon_pok_h        <= 1'b1;        // VCAON Rail Enabled
         main_pd_str_h      <= 1'b0;        // Power Down Stratch off
         //
-        rglssm_vcmon_h_o   <= 1'b0;        // (rgls_sm == RGLS_VCMON)
-        rglssm_vcaon_h_o   <= 1'b0;        // (rgls_sm == RGLS_VCAON)
-        rglssm_brout_h_o   <= 1'b0;        // (rgls_sm == RGLS_BROUT)
-        fla_pdm_h          <= 1'b1;        // !((rgls_sm == RGLS_VCMON)||(rgls_sm == RGLS_BROUT))
+        rglssm_vcmon_h_o   <= 1'b0;        //
+        rglssm_vmppr_h_o   <= 1'b1;        // (rgls_sm == RRGLS_VCA2M)
+        rglssm_brout_h_o   <= 1'b0;        //
+        fla_pdm_h          <= 1'b1;        // !((rgls_sm == RGLS_VCMON) || (rgls_sm == RGLS_BROUT))
         //
         dly_cnt            <= dly_cnt - 1'b1;
         //
         if ( dly_cnt == '0 ) begin
           rglssm_vcmon_h_o <= 1'b1;        // (rgls_sm == RGLS_VCMON)
-          fla_pdm_h        <= 1'b0;        // !((rgls_sm == RGLS_VCMON)||(rgls_sm == RGLS_BROUT))
+          fla_pdm_h        <= 1'b0;        //
           rgls_sm          <= RGLS_VCMON;  // VCMAIN Regulator is ON!
         end else begin
           rgls_sm          <= RGLS_VCA2M;  // VCAON->VCMAIN Transition
@@ -248,10 +249,10 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
         vcaon_pok_h        <= 1'b1;        // VCAON Rail Enabled
         main_pd_str_h      <= 1'b0;        // Powe Down Stratch off
         //
-        rglssm_vcmon_h_o   <= 1'b0;        // (rgls_sm == RGLS_VCMON)
-        rglssm_vcaon_h_o   <= 1'b0;        // (rgls_sm == RGLS_VCAON)
+        rglssm_vcmon_h_o   <= 1'b0;        //
+        rglssm_vmppr_h_o   <= 1'b0;        //
         rglssm_brout_h_o   <= 1'b1;        // (rgls_sm == RGLS_BROUT)
-        fla_pdm_h          <= 1'b0;        // !((rgls_sm == RGLS_VCMON)||(rgls_sm == RGLS_BROUT))
+        fla_pdm_h          <= 1'b0;        //
         //
         dly_cnt            <= lc2hc_val;   // VCMAIN Regulator power-up time
         //
@@ -263,10 +264,10 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
         vcaon_pok_h        <= 1'b0;        // VCAON Rail Disabled
         main_pd_str_h      <= 1'b0;        // Powe Down Stratch off
         //
-        rglssm_vcmon_h_o   <= 1'b0;        // (rgls_sm == RGLS_VCMON)
-        rglssm_vcaon_h_o   <= 1'b0;        // (rgls_sm == RGLS_VCAON)
-        rglssm_brout_h_o   <= 1'b0;        // (rgls_sm == RGLS_BROUT)
-        fla_pdm_h          <= 1'b1;        // !((rgls_sm == RGLS_VCMON)||(rgls_sm == RGLS_BROUT))
+        rglssm_vcmon_h_o   <= 1'b0;        //
+        rglssm_vmppr_h_o   <= 1'b1;        // (rgls_sm == RGLS_CLDPU)
+        rglssm_brout_h_o   <= 1'b0;        //
+        fla_pdm_h          <= 1'b1;        // !((rgls_sm == RGLS_VCMON) || (rgls_sm == RGLS_BROUT))
         //
         dly_cnt            <= lc2hc_val;   // VCMAIN Regulator power-up time
         //
@@ -331,7 +332,13 @@ assign vcc_pok_str_1p1_h_o = vcc_pok_str_h[VccPokStrNum-1];
 ///////////////////////////////////////
 // Deep Sleep Indication
 ///////////////////////////////////////
-assign deep_sleep_h_o = !(main_pd_h_ni && !main_pd_str_h);
+always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
+  if ( !rgls_rst_h_n ) begin
+    deep_sleep_h_o <= 1'b0;
+  end else begin
+    deep_sleep_h_o <= !(main_pd_h_ni && !main_pd_str_h);
+  end
+end
 
 
 ///////////////////////////////////////

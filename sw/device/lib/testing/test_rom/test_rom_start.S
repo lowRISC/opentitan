@@ -154,7 +154,7 @@ _start:
   bne  t0, t1, .L_ast_init_skip
 
   // Copy the AST configuration from OTP.
-  li   a0, (TOP_EARLGREY_AST_BASE_ADDR + AST_REGA_0_REG_OFFSET)
+  li   a0, (TOP_EARLGREY_AST_BASE_ADDR)
   li   a1, (TOP_EARLGREY_AST_BASE_ADDR + AST_REGAL_REG_OFFSET + 4)
   li   a2, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + \

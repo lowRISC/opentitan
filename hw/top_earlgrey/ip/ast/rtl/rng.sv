@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //############################################################################
 // *Name: rng
-// *Module Description:  Random (bit/s) Generator
+// *Module Description:  Random (bit/s) Generator (Pseudo Model)
 //############################################################################
 
 module rng #(
@@ -28,13 +28,24 @@ logic[EntropyStreams-1:0] lfsr_val;
 
 assign rst_n = scan_mode_i ? rst_ni : rst_ni && rng_en_i;
 
+// These LFSR parameters have been generated with
+// $ ./util/design/gen-lfsr-seed.py --width 64 --seed 15513 --prefix "Rng"
+localparam int RngLfsrWidth = 64;
+typedef logic [RngLfsrWidth-1:0] rng_lfsr_seed_t;
+typedef logic [RngLfsrWidth-1:0][$clog2(RngLfsrWidth)-1:0] rng_lfsr_perm_t;
+localparam rng_lfsr_seed_t RndCnstRngLfsrSeedDefault = 64'h1d033d20eed3b14;
+localparam rng_lfsr_perm_t RndCnstRngLfsrPermDefault = {
+  128'h98c2c94ab5e40420ed73f6c7396cd9e1,
+  256'h58c6d7435ddb2ed1f22400c53a5aaa796ef7785e120628fbabc87f0b3928550f
+};
+
 prim_lfsr #(
-  .LfsrDw ( ast_pkg::LfsrWidth ),
+  .LfsrDw ( RngLfsrWidth ),
   .EntropyDw ( 1 ),
   .StateOutDw ( EntropyStreams ),
-  .DefaultSeed ( ast_pkg::RndCnstLfsrSeedDefault ),
+  .DefaultSeed ( RndCnstRngLfsrSeedDefault ),
   .StatePermEn ( 1'b1 ),
-  .StatePerm ( ast_pkg::RndCnstLfsrPermDefault ),
+  .StatePerm ( RndCnstRngLfsrPermDefault ),
   .ExtSeedSVA ( 1'b0 )  // ext seed is unused
 ) u_rng_lfsr (
   .clk_i ( clk_i ),
