@@ -62,7 +62,7 @@ typedef enum dif_adc_ctrl_channel {
  * @filter_ ADC Controller filter of the enumeration constant.
  */
 #define DIF_ADC_CTRL_FILTER_ENUM_INIT_(filter_) \
-  kDifAdcCtrlFilter##filter_ = 1U << filter_,
+  kDifAdcCtrlFilter##filter_ = filter_,
 
 /**
  * An ADC Controller filter.
@@ -163,7 +163,7 @@ typedef struct dif_adc_ctrl_config {
    *
    * Only relevant in Low Power Scan mode.
    */
-  uint8_t wake_up_time_aon_cycles;
+  uint32_t wake_up_time_aon_cycles;
   /**
    * The number of filter-matching samples to count in Low Power Scan mode
    * before switching to Normal Power Scan mode.
@@ -227,11 +227,15 @@ typedef struct dif_adc_ctrl_filter_config {
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_adc_ctrl_configure(const dif_adc_ctrl_t *adc_ctrl,
-                                    dif_adc_ctrl_config_t config,
-                                    dif_toggle_t enabled);
+                                    dif_adc_ctrl_config_t config);
 
 /**
  * Configures a channel filter.
+ *
+ * This should be invoked for each desired filter _before_ the sampling sequence
+ * is enabled via `dif_adc_ctrl_set_enabled()`.
+ *
+ * This only applies in Low / Normal Power Scan sampling modes.
  *
  * @param adc_ctrl An adc_ctrl handle.
  * @param channel The channel of the filter to configure.
@@ -340,9 +344,8 @@ dif_result_t dif_adc_ctrl_get_latest_value(const dif_adc_ctrl_t *adc_ctrl,
                                            uint16_t *value);
 
 /**
- * Reset all ADC Controller FSMs and counters.
- *
- * If in Oneshot mode, this also retriggers a sample capture.
+ * Reset all ADC Controller FSMs and counters, and if enabled, begin sampling
+ * sequence.
  *
  * @param adc_ctrl An adc_ctrl handle.
  * @return The result of the operation.

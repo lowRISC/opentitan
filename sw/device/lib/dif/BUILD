@@ -29,6 +29,10 @@ cc_library(
     srcs = [
         "autogen/dif_adc_ctrl_autogen.c",
         "autogen/dif_adc_ctrl_autogen.h",
+        "dif_adc_ctrl.c",
+    ],
+    hdrs = [
+        "dif_adc_ctrl.h",
     ],
     hdrs = [
         "dif_adc_ctrl.h",
@@ -50,6 +54,9 @@ cc_test(
         "autogen/dif_adc_ctrl_autogen.c",
         "autogen/dif_adc_ctrl_autogen.h",
         "autogen/dif_adc_ctrl_autogen_unittest.cc",
+        "dif_adc_ctrl.c",
+        "dif_adc_ctrl.h",
+        "dif_adc_ctrl_unittest.cc",
     ],
     defines = [
         "MOCK_MMIO=1",
