@@ -15,6 +15,7 @@ filesets:
       - lowrisc:prim:msb_extend
       - lowrisc:prim:mubi
       - lowrisc:prim:sec_anchor
+      - lowrisc:prim:secded
       - lowrisc:prim:sparse_fsm
       - lowrisc:ip:flash_ctrl_pkg
       - lowrisc:ip:keymgr_pkg

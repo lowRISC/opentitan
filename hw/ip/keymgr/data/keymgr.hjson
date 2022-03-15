@@ -341,6 +341,11 @@
         Sideload key slot select is checked for consistency against original software command.
       '''
     }
+    { name: "CTRL.KEY.INTEGRITY",
+      desc: '''
+        Internal secret key is protected with ECC.
+      '''
+    }
   ]
 
   regwidth: "32",
@@ -1104,6 +1109,11 @@
           name: "SIDE_CTRL_SEL",
           resval: "0x0"
           desc: "Sideload control key select error, synchronous fault",
+        },
+        { bits: "13",
+          name: "KEY_ECC",
+          resval: "0x0"
+          desc: "Secret key ecc error, asynchronous fault",
         },
       ]
     },

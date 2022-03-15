@@ -315,6 +315,7 @@ module keymgr_reg_top (
   logic fault_status_reseed_cnt_qs;
   logic fault_status_side_ctrl_fsm_qs;
   logic fault_status_side_ctrl_sel_qs;
+  logic fault_status_key_ecc_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -2419,6 +2420,31 @@ module keymgr_reg_top (
     .qs     (fault_status_side_ctrl_sel_qs)
   );
 
+  //   F[key_ecc]: 13:13
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_fault_status_key_ecc (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fault_status.key_ecc.de),
+    .d      (hw2reg.fault_status.key_ecc.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.fault_status.key_ecc.q),
+
+    // to register interface (read)
+    .qs     (fault_status_key_ecc_qs)
+  );
+
 
 
   logic [61:0] addr_hit;
@@ -3018,6 +3044,7 @@ module keymgr_reg_top (
         reg_rdata_next[10] = fault_status_reseed_cnt_qs;
         reg_rdata_next[11] = fault_status_side_ctrl_fsm_qs;
         reg_rdata_next[12] = fault_status_side_ctrl_sel_qs;
+        reg_rdata_next[13] = fault_status_key_ecc_qs;
       end
 
       default: begin
