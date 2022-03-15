@@ -42,6 +42,8 @@ class csrng_agent extends dv_base_agent #(
     cfg.m_genbits_push_agent_cfg.agent_type = PushAgent;
     if (cfg.if_mode == dv_utils_pkg::Host) begin
       cfg.m_genbits_push_agent_cfg.if_mode = dv_utils_pkg::Device;
+      cfg.m_genbits_push_agent_cfg.device_delay_min = cfg.min_genbits_rdy_dly;
+      cfg.m_genbits_push_agent_cfg.device_delay_max = cfg.max_genbits_rdy_dly;
     end else begin
       cfg.has_req_fifo = 1;
       cfg.m_genbits_push_agent_cfg.if_mode = dv_utils_pkg::Host;
