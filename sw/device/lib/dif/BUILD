@@ -15,19 +15,23 @@ cc_library(
 
 cc_library(
     name = "test_base",
+    testonly = True,
     hdrs = ["dif_test_base.h"],
     deps = [
         ":base",
         "@googletest//:gtest",
     ],
-    testonly = True,
 )
 
 cc_library(
     name = "adc_ctrl",
-    hdrs = [
+    srcs = [
         "autogen/dif_adc_ctrl_autogen.c",
         "autogen/dif_adc_ctrl_autogen.h",
+        "dif_adc_ctrl.c",
+    ],
+    hdrs = [
+        "dif_adc_ctrl.h",
     ],
     deps = [
         ":base",
@@ -42,6 +46,9 @@ cc_test(
         "autogen/dif_adc_ctrl_autogen.c",
         "autogen/dif_adc_ctrl_autogen.h",
         "autogen/dif_adc_ctrl_autogen_unittest.cc",
+        "dif_adc_ctrl.c",
+        "dif_adc_ctrl.h",
+        "dif_adc_ctrl_unittest.cc",
     ],
     defines = [
         "MOCK_MMIO=1",
