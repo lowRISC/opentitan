@@ -258,6 +258,17 @@ Each page can be configured with access privileges.
 As a result, software does not need to define a start and end page for information partitions.
 See {{< regref "BANK0_INFO_PAGE_CFG0" >}} as an example.
 
+#### Bank Erase Protection
+
+Unlike read, program and page erase operations, the bank erase command is the only one that can be issued at a bank level.
+Because of this, bank erase commands are not guarded by the typical [memory protection mechanisms](#memory-protection).
+
+Instead, whether bank erase is allowed is controlled by {{< regref "MP_BANK_CFG_SHADOWED" >}}, where there is a separate configuration bit per bank.
+When the corresponding bit is set, that particular bank is permitted to have bank level operations.
+
+The specific behavior of what is erased when bank erase is issued is flash memory dependent and thus can vary by vendor and technology.
+[This section](#flash-bank-erase) describes the general behavior and how open source modeling is done.
+
 #### Memory Protection for Key Manager and Life Cycle
 
 While memory protection is largely under software control, certain behavior is hardwired to support key manager secret partitions and life cycle functions.
@@ -324,7 +335,7 @@ The vendor wrapper module is also responsible for any BIST, redundancy handling,
 
 The scramble keys are provided by an external static block such as the OTP.
 
-### Host and Protocol Controller Handling
+#### Host and Protocol Controller Handling
 
 Both the protocol controller and the system host converge on the physical controller.
 The protocol controller has read access to all partitions as well as program and erase privileges.
@@ -336,8 +347,16 @@ Every time the protocol controller looses such an arbitration, it increases an a
 Once this lost count reaches 5, the protocol controller is favored.
 This ensures a stream of host activity cannot deny protocol controller access (for example a tight polling loop).
 
+#### Flash Bank Erase Behavior {#flash-bank-erase}
 
-### Flash Scrambling
+This section describes the open source modeling of flash memory.
+The actual flash memory behavior may differ, and should consult the specific vendor or technology specification.
+
+When a bank erase command is issued and allowed, see [bank erase protection](#bank-erase-protection), the erase behavior is dependent on {{< regref "CONTROL.PARTITION_SEL" >}}.
+- If data partition is selected, all data in the data partition is erased.
+- If info partition is selected, all data in the data partition is erased AND all data in the info partitions (including all info types) is also erased.
+
+#### Flash Scrambling
 
 Flash scrambling is built using the [XEX tweakable block cipher](https://en.wikipedia.org/wiki/Disk_encryption_theory#Xor%E2%80%93encrypt%E2%80%93xor_(XEX)).
 
@@ -357,7 +376,7 @@ Scramble enablement is done differently depending on the type of partitions.
 *  For information partitions, the scramble enablement is done on a per page basis.
    *  Software can configure for each page whether scramble is enabled.
 
-### Flash ECC
+#### Flash ECC
 
 There are two types of flash ECC supported.
 
@@ -367,7 +386,7 @@ The second type is a reliabilty ECC used for error detection and correction on t
 The first type of ECC is required on every flash word.
 The second type of ECC is configurable based on the various page and memory property configurations.
 
-#### Overall ECC Application
+##### Overall ECC Application
 
 The following diagram shows how the various ECC tags are applied and used through the life of a transactions.
 ![Flash ECC_LIFE](flash_integrity.svg).
@@ -375,7 +394,7 @@ The following diagram shows how the various ECC tags are applied and used throug
 Note that the integrity ECC is calculated over the descrambled data and is only 4-bits.
 While the reliability ECC is calculated over both the scrambled data and the integrity ECC.
 
-#### Integrity ECC
+##### Integrity ECC
 
 The purpose of the integrity ECC is to emulate end-to-end integrity like the other memories.
 This is why the data is calculated over the descrambled data as it can be stored alongside for continuous checks.
@@ -383,7 +402,7 @@ When descrambled data is returned to the host, the integrity ECC is used to vali
 
 The flash may not always have the capacity to store both the integrity and reliability ECC, the integrity ECC is thus truncated since it is not used for error correction.
 
-#### Reliability ECC
+##### Reliability ECC
 
 Similar to scrambling, the reliability ECC is enabled based on an address decode.
 The ECC for flash is chosen such that a fully erased flash word has valid ECC.
@@ -397,7 +416,7 @@ ECC enablement is done differently depending on the type of partitions.
 *  For information partitions,the ECC enablement is done on a per page basis.
    *  Software can configure for each page whether ECC is enabled.
 
-#### Scrambling Consistency
+##### Scrambling Consistency
 
 The flash physical controller does not keep a history of when a particular memory location has scrambling enabled or disabled.
 This means if a memory locaiton was programmed while scrambled, disabling scrambling and then reading it back will result in garbage.
@@ -406,7 +425,7 @@ Similarly, if a location was programmed while non-scrambled, enabling scrambling
 It it thus the programmer's responsibility to maintain a consistent definition of whether a location is scrambled.
 It is also highly recommended in a normal use case to setup up scramble and non-scramble regions and not change it further.
 
-### Flash Read Pipeline
+#### Flash Read Pipeline
 
 Since the system host reads directly from the flash for instructions, it is critical to not add significant latency during read, especially if de-scrambling is required.
 As such, the flash read is actually a two stage pipeline, where each stage can take multiple cycles.
@@ -430,7 +449,7 @@ The following diagram shows how the flash read pipeline timing works.
 In this example, the first two host requests trigger a full sequence.
 The third host requests immediately hits in the local cache and responds in order after the first two.
 
-### Flash Buffer
+#### Flash Buffer
 
 The flash buffer is a small read-only memory that holds multiple entries of recently read flash words.
 This is needed when the flash word is wider than a bus word.
@@ -455,7 +474,7 @@ When software reads bus word 1, the entire flash word 0 is captured into the fla
 When software comes back to read bus word 0, instead of accessing the flash again, the data is retrieved directly from the buffer.
 
 
-### Accessing Information Partition
+#### Accessing Information Partition
 
 The information partition uses the same address scheme as the data partition - which is directly accessible by software.
 This means the address of page{N}.word{M} is the same no matter which type of partition is accessed.
@@ -468,7 +487,7 @@ Flash scrambling, if enabled, also applies to information partitions.
 It may be required for manufacturers to directly inject data into specific pages flash information partitions via die contacts.
 For these pages, scramble shall be permanently disabled as the manufacturer should not be aware of scrambling functions.
 
-#### JTAG Connection
+##### JTAG Connection
 
 The flash physical controller provides a JTAG connection to the vendor flash module.
 The vendor flash module can use this interface to build a testing setup or to provide backdoor access for debug.
