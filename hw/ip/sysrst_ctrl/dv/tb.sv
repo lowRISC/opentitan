@@ -84,6 +84,8 @@ module tb;
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual sysrst_ctrl_if)::set(null, "*.env", "vif", sysrst_ctrl_if);
+    uvm_config_db#(virtual sysrst_ctrl_cov_if)::set(null, "*.env", "sysrst_ctrl_cov_if",
+           dut.u_sysrst_ctrl_cov_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
