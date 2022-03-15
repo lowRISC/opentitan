@@ -640,7 +640,9 @@ def _format_list(name, list1, datadict, **kwargs):
 
 _OTTF_DEPS = [
     "//sw/device/lib/arch:device",
-    "//sw/device/lib/base",
+    "//sw/device/lib/base:macros",
+    "//sw/device/lib/base:csr",
+    "//sw/device/lib/base:mmio",
     "//sw/device/lib/runtime:hart",
     "//sw/device/lib/runtime:log",
     "//sw/device/lib/runtime:print",
