@@ -53,6 +53,8 @@ class chip_base_vseq #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_ba
     super.apply_reset(kind);
   endtask
 
+  chip_callback_vseq callback_vseq;
+
   virtual task dut_init(string reset_kind = "HARD");
     // Initialize gpio pin default states
     cfg.gpio_vif.set_pulldown_en({chip_env_pkg::NUM_GPIOS{1'b1}});
@@ -62,10 +64,12 @@ class chip_base_vseq #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_ba
     // Backdoor load the OTP image.
     cfg.mem_bkdr_util_h[Otp].load_mem_from_file(cfg.otp_images[cfg.use_otp_image]);
     initialize_otp_creator_sw_cfg_ast_cfg();
+    callback_vseq.pre_dut_init();
     // Randomize the ROM image. Subclasses that have an actual ROM image will load it later.
     cfg.mem_bkdr_util_h[Rom].randomize_mem();
     // Bring the chip out of reset.
     super.dut_init(reset_kind);
+    callback_vseq.post_dut_init();
   endtask
 
   virtual task dut_shutdown();
@@ -79,6 +83,8 @@ class chip_base_vseq #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_ba
     int extclk_frequency_mhz = ExtClkFreq100MHz;
     int extclk_frequency_attempted;
     do_dut_init = 1'b0;
+    `uvm_create_on(callback_vseq, p_sequencer);
+    `DV_CHECK_RANDOMIZE_FATAL(callback_vseq)
     super.pre_start();
     do_dut_init = do_dut_init_save;
 
