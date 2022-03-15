@@ -76,5 +76,37 @@ inline void clkmgr_testutils_enable_clock_count_measurement(
  * @param clkmgr A clkmgr DIF handle.
  */
 void clkmgr_testutils_disable_clock_count_measurements(dif_clkmgr_t *clkmgr);
+/**
+ * Verifies the given clock state.
+ *
+ * @param clkmgr A clkmgr DIF handle.
+ * @param clock_id The transactional clock ID.
+ * @param expected_state Expected clock state.
+ */
+#define CLKMGR_TESTUTILS_CHECK_CLOCK_HINT(clkmgr, clock_id, expected_state) \
+  do {                                                                      \
+    dif_toggle_t clock_state;                                               \
+    CHECK_DIF_OK(dif_clkmgr_hintable_clock_get_enabled(&clkmgr, clock_id,   \
+                                                       &clock_state));      \
+    CHECK(clock_state == expected_state,                                    \
+          "Clock enabled state is (%d) and not as expected (%d).",          \
+          clock_state, expected_state);                                     \
+  } while (0)
+
+/**
+ * Set and verifies the given clock state.
+ *
+ * @param clkmgr A clkmgr DIF handle.
+ * @param clock_id The transactional clock ID.
+ * @param new_state Clock state to be set.
+ * @param expected_state Expected clock state.
+ */
+#define CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(clkmgr, clock_id, new_state, \
+                                                  expected_state)              \
+  do {                                                                         \
+    CHECK_DIF_OK(                                                              \
+        dif_clkmgr_hintable_clock_set_hint(&clkmgr, clock_id, new_state));     \
+    CLKMGR_TESTUTILS_CHECK_CLOCK_HINT(clkmgr, clock_id, expected_state);       \
+  } while (0)
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_CLKMGR_TESTUTILS_H_
