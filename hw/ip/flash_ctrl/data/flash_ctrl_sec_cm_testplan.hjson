@@ -90,6 +90,12 @@
       tests: []
     }
     {
+      name: sec_cm_mem_ctrl_local_esc
+      desc: "Verify the countermeasure(s) MEM.CTRL.LOCAL_ESC."
+      milestone: V2S
+      tests: []
+    }
+    {
       name: sec_cm_mem_disable_config_mubi
       desc: "Verify the countermeasure(s) MEM_DISABLE.CONFIG.MUBI."
       milestone: V2S

@@ -76,7 +76,8 @@ rom_error_t alert_escalate_test(void) {
   sec_mmio_check_counters(/*expected_check_count=*/3);
 
   LOG_INFO("Generate alert via test regs");
-  abs_mmio_write32(kFlashBase + FLASH_CTRL_ALERT_TEST_REG_OFFSET, 2);
+  abs_mmio_write32(kFlashBase + FLASH_CTRL_ALERT_TEST_REG_OFFSET,
+                   1u << FLASH_CTRL_ALERT_TEST_FATAL_ERR_BIT);
   return kErrorUnknown;
 }
 

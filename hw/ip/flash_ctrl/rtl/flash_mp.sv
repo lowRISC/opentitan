@@ -11,6 +11,8 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   input clk_i,
   input rst_ni,
 
+  input prim_mubi_pkg::mubi4_t flash_disable_i,
+
   // interface selection
   input flash_sel_e if_sel_i,
 
@@ -184,7 +186,6 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   assign data_ecc_en      = data_en & (rd_i | prog_i) & data_region_cfg.ecc_en.q;
   assign data_he_en       = data_en &                   data_region_cfg.he_en.q;
 
-
   assign invalid_data_txn = req_i & data_part_sel &
                             ~(data_rd_en |
                               data_prog_en |
@@ -260,7 +261,10 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
 
   logic txn_err;
   logic no_allowed_txn;
-  assign no_allowed_txn = req_i & (addr_invalid | invalid_data_txn | invalid_info_txn);
+  // if flash_disable is true, transaction is always invalid
+  assign no_allowed_txn = req_i &
+                           ((prim_mubi_pkg::mubi4_test_true_loose(flash_disable_i)) |
+                            (addr_invalid | invalid_data_txn | invalid_info_txn));
 
   // return done and error the next cycle
   always_ff @(posedge clk_i or negedge rst_ni) begin

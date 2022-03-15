@@ -1169,8 +1169,8 @@ dif_result_t dif_flash_ctrl_get_faults(const dif_flash_ctrl_state_t *handle,
   if (handle == NULL || faults_out == NULL) {
     return kDifBadArg;
   }
-  const uint32_t reg = mmio_region_read32(handle->dev.base_addr,
-                                          FLASH_CTRL_FAULT_STATUS_REG_OFFSET);
+  uint32_t reg = mmio_region_read32(handle->dev.base_addr,
+                                    FLASH_CTRL_FAULT_STATUS_REG_OFFSET);
   dif_flash_ctrl_faults_t faults;
   faults.memory_properties_error =
       bitfield_bit32_read(reg, FLASH_CTRL_FAULT_STATUS_MP_ERR_BIT);
@@ -1182,14 +1182,17 @@ dif_result_t dif_flash_ctrl_get_faults(const dif_flash_ctrl_state_t *handle,
       bitfield_bit32_read(reg, FLASH_CTRL_FAULT_STATUS_PROG_TYPE_ERR_BIT);
   faults.flash_phy_error =
       bitfield_bit32_read(reg, FLASH_CTRL_FAULT_STATUS_FLASH_PHY_ERR_BIT);
+
+  reg = mmio_region_read32(handle->dev.base_addr,
+                           FLASH_CTRL_STD_FAULT_STATUS_REG_OFFSET);
   faults.register_integrity_error =
-      bitfield_bit32_read(reg, FLASH_CTRL_FAULT_STATUS_REG_INTG_ERR_BIT);
+      bitfield_bit32_read(reg, FLASH_CTRL_STD_FAULT_STATUS_REG_INTG_ERR_BIT);
   faults.phy_integrity_error =
-      bitfield_bit32_read(reg, FLASH_CTRL_FAULT_STATUS_PHY_INTG_ERR_BIT);
+      bitfield_bit32_read(reg, FLASH_CTRL_STD_FAULT_STATUS_PHY_INTG_ERR_BIT);
   faults.lifecycle_manager_error =
-      bitfield_bit32_read(reg, FLASH_CTRL_FAULT_STATUS_LCMGR_ERR_BIT);
+      bitfield_bit32_read(reg, FLASH_CTRL_STD_FAULT_STATUS_LCMGR_ERR_BIT);
   faults.shadow_storage_error =
-      bitfield_bit32_read(reg, FLASH_CTRL_FAULT_STATUS_STORAGE_ERR_BIT);
+      bitfield_bit32_read(reg, FLASH_CTRL_STD_FAULT_STATUS_STORAGE_ERR_BIT);
   *faults_out = faults;
   return kDifOk;
 }
