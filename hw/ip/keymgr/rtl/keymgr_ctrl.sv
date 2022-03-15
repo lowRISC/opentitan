@@ -117,9 +117,9 @@ module keymgr_ctrl
     StCtrlDisabled       = 10'b1010101000,
     StCtrlWipe           = 10'b0000110011,
     StCtrlInvalid        = 10'b1011000111
-  } keymgr_ctrl_state_e;
+  } state_e;
 
-  keymgr_ctrl_state_e state_q, state_d;
+  state_e state_q, state_d;
 
   // There are two versions of the key state, one for sealing one for attestation
   // Among each version, there are multiple shares
@@ -136,7 +136,6 @@ module keymgr_ctrl
   logic invalid_op;
   logic cnt_err;
   // states fall out of sparsely encoded range
-  logic data_fsm_err;
   logic state_intg_err_q, state_intg_err_d;
 
   ///////////////////////////
@@ -189,7 +188,6 @@ module keymgr_ctrl
   ///////////////////////////
   // categories of keymgr errors
   logic [SyncErrLastIdx-1:0] sync_err;
-  logic [AsyncErrLastIdx-1:0] async_err;
   logic [SyncFaultLastIdx-1:0] sync_fault;
   logic [AsyncFaultLastIdx-1:0] async_fault;
 
@@ -206,10 +204,11 @@ module keymgr_ctrl
                             (~valid_data_chk(kmac_data_i[0]) |
                             (~valid_data_chk(kmac_data_i[1]) & KmacEnMasking));
 
+  // async errors have nothing to do with the operation and thus should not
+  // impact operation results.
   assign op_err = |sync_err;
 
   assign op_fault_err = |{sync_fault, async_fault};
-
 
   ///////////////////////////
   //  key update controls
@@ -238,10 +237,10 @@ module keymgr_ctrl
   // Main Control FSM
   //////////////////////////
   logic [StateWidth-1:0] state_raw_q;
-  assign state_q = keymgr_ctrl_state_e'(state_raw_q);
+  assign state_q = state_e'(state_raw_q);
   // SEC_CM: CTRL.FSM.SPARSE
   prim_sparse_fsm_flop #(
-    .StateEnumT(keymgr_ctrl_state_e),
+    .StateEnumT(state_e),
     .Width(StateWidth),
     .ResetValue(StateWidth'(StCtrlReset))
   ) u_state_regs (
@@ -682,97 +681,44 @@ module keymgr_ctrl
     endcase // unique case (state_q)
   end
 
+  always_comb begin
+    status_o = OpIdle;
+    if (op_done_o) begin
+      status_o = |{error_o, fault_o} ? OpDoneFail : OpDoneSuccess;
+    end else if (op_start_i) begin
+      status_o = OpWip;
+    end
+  end
+
 
   /////////////////////////
   // Operateion state, handle advance and generate
   /////////////////////////
 
-
-  localparam int OpStateWidth = 8;
-  typedef enum logic [OpStateWidth-1:0] {
-    StIdle   = 8'b10010101,
-    StAdv    = 8'b00101000,
-    StAdvAck = 8'b01000011,
-    StWait   = 8'b11111110
-  } keymgr_op_state_e;
-
-  keymgr_op_state_e op_state_q, op_state_d;
-  logic [OpStateWidth-1:0] op_state_raw_q;
   logic op_fsm_err;
-  assign op_state_q = keymgr_op_state_e'(op_state_raw_q);
-  prim_sparse_fsm_flop #(
-    .StateEnumT(keymgr_op_state_e),
-    .Width(OpStateWidth),
-    .ResetValue(OpStateWidth'(StIdle))
-  ) u_op_state_regs (
+  keymgr_op_state_ctrl u_op_state (
     .clk_i,
     .rst_ni,
-    .state_i ( op_state_d     ),
-    .state_o ( op_state_raw_q )
+    .adv_req_i(adv_req),
+    .dis_req_i(dis_req),
+    .id_req_i(id_req),
+    .gen_req_i(gen_req),
+    .cnt_i(cdi_cnt),
+    .op_ack_o(op_ack),
+    .op_busy_o(op_busy),
+    .op_update_o(op_update),
+    .kmac_done_i,
+    .adv_en_o,
+    .id_en_o,
+    .gen_en_o,
+    .op_fsm_err_o(op_fsm_err)
   );
 
-  logic gen_en;
-  assign id_en_o = gen_en & gen_id_op;
-  assign gen_en_o = gen_en & (gen_sw_op | gen_hw_op);
-
-  always_comb begin
-    op_state_d = op_state_q;
-    op_update = 1'b0;
-    op_ack = 1'b0;
-    op_busy = 1'b1;
-
-    // output to kmac interface
-    adv_en_o = 1'b0;
-
-    gen_en = 1'b0;
-    op_fsm_err = 1'b0;
-
-    unique case (op_state_q)
-      StIdle: begin
-        op_busy = '0;
-        if (adv_req || dis_req) begin
-          op_state_d = StAdv;
-        end else if (id_req || gen_req) begin
-          op_state_d = StWait;
-        end
-      end
-
-      StAdv: begin
-        adv_en_o = 1'b1;
-
-        if (kmac_done_i && (cdi_cnt == CDIs-1)) begin
-          op_ack = 1'b1;
-          op_state_d = StIdle;
-        end else if (kmac_done_i && (cdi_cnt < CDIs-1)) begin
-          op_update = 1'b1;
-          op_state_d = StAdvAck;
-        end
-      end
-
-      // drop adv_en_o to allow kmac interface handshake
-      StAdvAck: begin
-        op_state_d = StAdv;
-      end
-
-      // Not an advanced operation
-      StWait: begin
-        gen_en = 1'b1;
-
-        if (kmac_done_i) begin
-          op_ack = 1'b1;
-          op_state_d = StIdle;
-        end
-      end
-
-      // error state
-      default: begin
-        // allow completion of transaction
-        op_ack = 1'b1;
-        op_fsm_err = 1'b1;
-      end
-
-    endcase // unique case (adv_state_q)
-  end
+  // operational state cross check.  The state value must be consistent with
+  // the input operations.
+  logic op_state_cmd_err;
+  assign op_state_cmd_err = (adv_en_o & ~(advance_sel | disable_sel)) |
+                            (gen_en_o & ~gen_op);
 
   // operations fsm update precedence
   // when in invalid state, always update.
@@ -783,6 +729,23 @@ module keymgr_ctrl
                          (op_ack | op_update) & op_err       ? KeyUpdateIdle :
                          (op_ack | op_update)                ? KeyUpdateKmac : KeyUpdateIdle;
 
+
+  ///////////////////////////////
+  // Suppress kmac return data
+  ///////////////////////////////
+
+  logic data_fsm_err;
+  keymgr_data_en_state u_data_en (
+    .clk_i,
+    .rst_ni,
+    .adv_en_i(adv_en_o),
+    .id_en_i(id_en_o),
+    .gen_en_i(gen_en_o),
+    .op_done_i(op_done_o),
+    .op_start_i,
+    .data_en_o,
+    .fsm_err_o(data_fsm_err)
+  );
 
   /////////////////////////
   // Cross-checks, errors and faults
@@ -809,213 +772,42 @@ module keymgr_ctrl
   logic state_change_err;
   assign state_change_err = vld_state_change_q & !adv_op;
 
-
-  // operational state cross check.  The state value must be consistent with
-  // the input operations.
-  logic op_state_cmd_err;
-  assign op_state_cmd_err = (adv_en_o & ~(advance_sel | disable_sel)) |
-                            (gen_en_o & ~gen_op);
-
-  // Advance calls are made up of multiple rounds of kmac operations.
-  // Any sync error that occurs is treated as an error of the entire call.
-  // Therefore sync errors that happen before the end of the call must be
-  // latched.
-  logic[SyncErrLastIdx-1:0] sync_err_q, sync_err_d;
-  logic[SyncFaultLastIdx-1:0] sync_fault_q, sync_fault_d;
-
-  logic err_vld;
-  assign err_vld = op_update | op_done_o;
-
-  // sync errors
-  // When an operation encounters a fault, the operation is always rejected as the FSM
-  // transitions to wipe.  When an operation is ongoing and en drops, it is also rejected.
-  assign sync_err_d[SyncErrInvalidOp] = err_vld & (invalid_op | disabled | invalid | inv_state);
-  assign sync_err_d[SyncErrInvalidIn] = err_vld & kmac_input_invalid_i;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      sync_err_q <= '0;
-    end else if (op_done_o) begin
-      sync_err_q <= '0;
-    end else if (op_update) begin
-      sync_err_q <= sync_err_d;
-    end
-  end
-  assign sync_err = sync_err_q | sync_err_d;
-
-  // async errors
-  assign async_err[AsyncErrShadowUpdate] = shadowed_update_err_i;
-
-  // sync faults
-  assign sync_fault_d[SyncFaultKmacOp] = err_vld & kmac_op_err_i;
-  assign sync_fault_d[SyncFaultKmacOut] = err_vld & invalid_kmac_out;
-  assign sync_fault_d[SyncFaultSideSel] = err_vld & sideload_sel_err_i;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      sync_fault_q <= '0;
-    end else if (op_done_o) begin
-       sync_fault_q <= '0;
-    end else if (op_update) begin
-      sync_fault_q <= sync_fault_d;
-    end
-  end
-  assign sync_fault = sync_fault_q | sync_fault_d;
-
-  // async faults
-  logic [AsyncFaultLastIdx-1:0] async_fault_q, async_fault_d;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      async_fault_q <= '0;
-    end else begin
-      async_fault_q <= async_fault;
-    end
-  end
-  assign async_fault = async_fault_q | async_fault_d;
-  assign async_fault_d[AsyncFaultKmacCmd]  = kmac_cmd_err_i;
-  assign async_fault_d[AsyncFaultKmacFsm]  = kmac_fsm_err_i;
-  assign async_fault_d[AsyncFaultKmacDone] = kmac_done_err_i;
-  assign async_fault_d[AsyncFaultRegIntg]  = regfile_intg_err_i;
-  assign async_fault_d[AsyncFaultShadow ]  = shadowed_storage_err_i;
-  assign async_fault_d[AsyncFaultFsmIntg]  = state_intg_err_q | data_fsm_err | op_fsm_err;
-  assign async_fault_d[AsyncFaultKeyEcc]   = |ecc_errs;
-
-  // SEC_CM: CTRL.FSM.CONSISTENCY
-  assign async_fault_d[AsyncFaultFsmChk]   = state_change_err | op_state_cmd_err;
-  assign async_fault_d[AsyncFaultCntErr ]  = cnt_err;
-  assign async_fault_d[AsyncFaultRCntErr]  = reseed_cnt_err_i;
-  assign async_fault_d[AsyncFaultSideErr]  = sideload_fsm_err_i;
-
-  // certain errors/faults can only happen when there's an actual kmac transaction,
-  // others can happen with or without.
-  // output to error code register
-  assign error_o[ErrInvalidOp]    = op_done_o & sync_err[SyncErrInvalidOp];
-  assign error_o[ErrInvalidIn]    = op_ack & sync_err[SyncErrInvalidIn];
-  assign error_o[ErrShadowUpdate] = async_err[AsyncErrShadowUpdate];
-
-  // output to fault code register
-  assign fault_o[FaultKmacOp]     = op_ack & sync_fault[SyncFaultKmacOp];
-  assign fault_o[FaultKmacOut]    = op_ack & sync_fault[SyncFaultKmacOut];
-  assign fault_o[FaultSideSel]    = op_ack & sync_fault[SyncFaultSideSel];
-  assign fault_o[FaultKmacCmd]    = async_fault[AsyncFaultKmacCmd];
-  assign fault_o[FaultKmacFsm]    = async_fault[AsyncFaultKmacFsm];
-  assign fault_o[FaultKmacDone]   = async_fault[AsyncFaultKmacDone];
-  assign fault_o[FaultRegIntg]    = async_fault[AsyncFaultRegIntg];
-  assign fault_o[FaultShadow]     = async_fault[AsyncFaultShadow];
-  assign fault_o[FaultCtrlFsm]    = async_fault[AsyncFaultFsmIntg];
-  assign fault_o[FaultCtrlFsmChk] = async_fault[AsyncFaultFsmChk];
-  assign fault_o[FaultCtrlCnt]    = async_fault[AsyncFaultCntErr];
-  assign fault_o[FaultReseedCnt]  = async_fault[AsyncFaultRCntErr];
-  assign fault_o[FaultSideFsm]    = async_fault[AsyncFaultSideErr];
-  assign fault_o[FaultKeyEcc]     = async_fault[AsyncFaultKeyEcc];
-
-  always_comb begin
-    status_o = OpIdle;
-    if (op_done_o) begin
-      status_o = |{error_o, fault_o} ? OpDoneFail : OpDoneSuccess;
-    end else if (op_start_i) begin
-      status_o = OpWip;
-    end
-  end
-
-
-  ///////////////////////////////
-  // Suppress kmac return data
-  ///////////////////////////////
-  // This is a separate data path from the FSM used to control the data_en_o output
-  // Hamming distance histogram:
-  //
-  //  0: --
-  //  1: --
-  //  2: --
-  //  3: --
-  //  4: --
-  //  5: |||||||||||||||||||| (50.00%)
-  //  6: |||||||||||||||| (40.00%)
-  //  7: |||| (10.00%)
-  //  8: --
-  //  9: --
-  // 10: --
-  //
-  // Minimum Hamming distance: 5
-  // Maximum Hamming distance: 7
-  // Minimum Hamming weight: 5
-  // Maximum Hamming weight: 7
-  //
-  localparam int DataStateWidth = 10;
-  typedef enum logic [DataStateWidth-1:0] {
-    StCtrlDataIdle    = 10'b1001110111,
-    StCtrlDataEn      = 10'b1110001011,
-    StCtrlDataDis     = 10'b0110100110,
-    StCtrlDataWait    = 10'b1010111000,
-    StCtrlDataInvalid = 10'b1111010100
-  } keymgr_ctrl_data_state_e;
-
-  keymgr_ctrl_data_state_e data_st_d, data_st_q;
-
-  // This primitive is used to place a size-only constraint on the
-  // flops in order to prevent FSM state encoding optimizations.
-  logic [DataStateWidth-1:0] data_st_raw_q;
-  assign data_st_q = keymgr_ctrl_data_state_e'(data_st_raw_q);
-  // SEC_CM: DATA.FSM.SPARSE
-  prim_sparse_fsm_flop #(
-    .StateEnumT(keymgr_ctrl_data_state_e),
-    .Width(DataStateWidth),
-    .ResetValue(DataStateWidth'(StCtrlDataIdle))
-  ) u_data_state_regs (
+  keymgr_err u_err (
     .clk_i,
     .rst_ni,
-    .state_i ( data_st_d     ),
-    .state_o ( data_st_raw_q )
+    .invalid_op_i(invalid_op),
+    .disabled_i(disabled),
+    .invalid_i(invalid),
+    .kmac_input_invalid_i,
+    .shadowed_update_err_i,
+    .kmac_op_err_i,
+    .invalid_kmac_out_i(invalid_kmac_out),
+    .sideload_sel_err_i,
+    .kmac_cmd_err_i,
+    .kmac_fsm_err_i,
+    .kmac_done_err_i,
+    .regfile_intg_err_i,
+    .shadowed_storage_err_i,
+    .ctrl_fsm_err_i(state_intg_err_q | state_intg_err_d),
+    .data_fsm_err_i(data_fsm_err),
+    .op_fsm_err_i(op_fsm_err),
+    .ecc_err_i(|ecc_errs),
+    .state_change_err_i(state_change_err),
+    .op_state_cmd_err_i(op_state_cmd_err),
+    .cnt_err_i(cnt_err),
+    .reseed_cnt_err_i,
+    .sideload_fsm_err_i,
+
+    .op_update_i(op_update),
+    .op_done_i(op_done_o),
+
+    .sync_err_o(sync_err),
+    .async_err_o(),
+    .sync_fault_o(sync_fault),
+    .async_fault_o(async_fault),
+    .error_o,
+    .fault_o
   );
-
-  // The below control path is used for modulating the datapath to sideload and sw keys.
-  // This path is separate from the data_valid_o path, thus creating two separate attack points.
-  // The data is only enabled when a non-advance operation is invoked.
-  // When an advance operation is called, the data is disabled. It will stay disabled until an
-  // entire completion sequence is seen (op_done_o assert -> start_i de-assertion).
-  // When a generate operation is called, the data is enabled.  However, any indication of this
-  // supposedly being an advance call will force the path to disable again.
-  always_comb begin
-    data_st_d = data_st_q;
-    data_en_o = 1'b0;
-    data_fsm_err = 1'b0;
-    unique case (data_st_q)
-
-      StCtrlDataIdle: begin
-        if (adv_en_o) begin
-          data_st_d = StCtrlDataDis;
-        end else if (id_en_o || gen_en_o) begin
-          data_st_d = StCtrlDataEn;
-        end
-      end
-
-      StCtrlDataEn: begin
-        data_en_o = 1'b1;
-        if (op_done_o) begin
-          data_st_d = StCtrlDataWait;
-        end else if (adv_en_o) begin
-          data_st_d = StCtrlDataDis;
-        end
-      end
-
-      StCtrlDataDis: begin
-        if (op_done_o) begin
-          data_st_d = StCtrlDataWait;
-        end
-      end
-
-      StCtrlDataWait: begin
-        if (!op_start_i) begin
-          data_st_d = StCtrlDataIdle;
-        end
-      end
-
-      default: begin
-        data_fsm_err = 1'b1;
-      end
-
-
-    endcase // unique case (data_st_q)
-  end
 
   ///////////////////////////////
   // Functions
