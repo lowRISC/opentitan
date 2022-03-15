@@ -234,7 +234,8 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   assign info_rd_en       = info_en & rd_i            & page_cfg.rd_en.q;
   assign info_prog_en     = info_en & prog_i          & page_cfg.prog_en.q;
   assign info_pg_erase_en = info_en & pg_erase_i      & page_cfg.erase_en.q;
-  assign info_bk_erase_en = info_en & bk_erase_i      & |bk_erase_en;
+  // when info is selected for bank erase, the page configuration does not matter
+  assign info_bk_erase_en = info_part_sel & bk_erase_i & |bk_erase_en;
   assign info_scramble_en = info_en & (rd_i | prog_i) & page_cfg.scramble_en.q;
   assign info_ecc_en      = info_en & (rd_i | prog_i) & page_cfg.ecc_en.q;
   assign info_he_en       = info_en &                   page_cfg.he_en.q;
