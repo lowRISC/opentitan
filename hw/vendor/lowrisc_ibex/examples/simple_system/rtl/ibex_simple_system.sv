@@ -80,6 +80,9 @@ module ibex_simple_system (
   logic [31:0]    host_rdata  [NrHosts];
   logic           host_err    [NrHosts];
 
+  logic [6:0]     data_rdata_intg;
+  logic [6:0]     instr_rdata_intg;
+
   // devices (slaves)
   logic           device_req    [NrDevices];
   logic [31:0]    device_addr   [NrDevices];
@@ -162,6 +165,24 @@ module ibex_simple_system (
     .cfg_device_addr_mask
   );
 
+  if (SecureIbex) begin : g_mem_rdata_ecc
+    logic [31:0] unused_data_rdata;
+    logic [31:0] unused_instr_rdata;
+
+    prim_secded_inv_39_32_enc u_data_rdata_intg_gen (
+      .data_i (host_rdata[CoreD]),
+      .data_o ({data_rdata_intg, unused_data_rdata})
+    );
+
+    prim_secded_inv_39_32_enc u_instr_rdata_intg_gen (
+      .data_i (instr_rdata),
+      .data_o ({instr_rdata_intg, unused_instr_rdata})
+    );
+  end else begin : g_no_mem_rdata_ecc
+    assign data_rdata_intg = '0;
+    assign instr_rdata_intg = '0;
+  end
+
   ibex_top_tracing #(
       .SecureIbex      ( SecureIbex      ),
       .ICacheScramble  ( ICacheScramble  ),
@@ -197,7 +218,7 @@ module ibex_simple_system (
       .instr_rvalid_i         (instr_rvalid),
       .instr_addr_o           (instr_addr),
       .instr_rdata_i          (instr_rdata),
-      .instr_rdata_intg_i     ('0),
+      .instr_rdata_intg_i     (instr_rdata_intg),
       .instr_err_i            (instr_err),
 
       .data_req_o             (host_req[CoreD]),
@@ -209,7 +230,7 @@ module ibex_simple_system (
       .data_wdata_o           (host_wdata[CoreD]),
       .data_wdata_intg_o      (),
       .data_rdata_i           (host_rdata[CoreD]),
-      .data_rdata_intg_i      ('0),
+      .data_rdata_intg_i      (data_rdata_intg),
       .data_err_i             (host_err[CoreD]),
 
       .irq_software_i         (1'b0),

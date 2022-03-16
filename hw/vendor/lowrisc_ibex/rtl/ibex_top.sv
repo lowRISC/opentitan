@@ -138,6 +138,8 @@ module ibex_top import ibex_pkg::*; #(
   localparam bit          DummyInstructions = SecureIbex;
   localparam bit          RegFileECC        = SecureIbex;
   localparam int unsigned RegFileDataWidth  = RegFileECC ? 32 + 7 : 32;
+  localparam bit          MemECC            = SecureIbex;
+  localparam int unsigned MemDataWidth      = MemECC ? 32 + 7 : 32;
   // Icache parameters
   localparam int unsigned BusSizeECC        = ICacheECC ? (BUS_SIZE + 7) : BUS_SIZE;
   localparam int unsigned LineSizeECC       = BusSizeECC * IC_LINE_BEATS;
@@ -160,6 +162,12 @@ module ibex_top import ibex_pkg::*; #(
   logic [RegFileDataWidth-1:0] rf_wdata_wb_ecc;
   logic [RegFileDataWidth-1:0] rf_rdata_a_ecc, rf_rdata_a_ecc_buf;
   logic [RegFileDataWidth-1:0] rf_rdata_b_ecc, rf_rdata_b_ecc_buf;
+
+  // Combined data and integrity for data and instruction busses
+  logic [MemDataWidth-1:0]     data_wdata_core;
+  logic [MemDataWidth-1:0]     data_rdata_core;
+  logic [MemDataWidth-1:0]     instr_rdata_core;
+
   // Core <-> RAMs signals
   logic [IC_NUM_WAYS-1:0]      ic_tag_req;
   logic                        ic_tag_write;
@@ -172,7 +180,7 @@ module ibex_top import ibex_pkg::*; #(
   logic [LineSizeECC-1:0]      ic_data_wdata;
   logic [LineSizeECC-1:0]      ic_data_rdata [IC_NUM_WAYS];
   // Alert signals
-  logic                        core_alert_major, core_alert_minor;
+  logic                        core_alert_major_internal, core_alert_major_bus, core_alert_minor;
   logic                        lockstep_alert_major_internal, lockstep_alert_major_bus;
   logic                        lockstep_alert_minor;
   // Scramble signals
@@ -226,6 +234,21 @@ module ibex_top import ibex_pkg::*; #(
     .out_o(rf_rdata_b_ecc_buf)
   );
 
+
+  // ibex_core takes integrity and data bits together. Combine the separate integrity and data
+  // inputs here.
+  assign data_rdata_core[31:0] = data_rdata_i;
+  assign instr_rdata_core[31:0] = instr_rdata_i;
+
+  if (MemECC) begin : gen_mem_rdata_ecc
+    assign data_rdata_core[38:32] = data_rdata_intg_i;
+    assign instr_rdata_core[38:32] = instr_rdata_intg_i;
+  end else begin : gen_non_mem_rdata_ecc
+    logic unused_intg;
+
+    assign unused_intg = ^{instr_rdata_intg_i, data_rdata_intg_i};
+  end
+
   ibex_core #(
     .PMPEnable        (PMPEnable),
     .PMPGranularity   (PMPGranularity),
@@ -252,6 +275,8 @@ module ibex_top import ibex_pkg::*; #(
     .DummyInstructions(DummyInstructions),
     .RegFileECC       (RegFileECC),
     .RegFileDataWidth (RegFileDataWidth),
+    .MemECC           (MemECC),
+    .MemDataWidth     (MemDataWidth),
     .DmHaltAddr       (DmHaltAddr),
     .DmExceptionAddr  (DmExceptionAddr)
   ) u_ibex_core (
@@ -265,7 +290,7 @@ module ibex_top import ibex_pkg::*; #(
     .instr_gnt_i,
     .instr_rvalid_i,
     .instr_addr_o,
-    .instr_rdata_i,
+    .instr_rdata_i(instr_rdata_core),
     .instr_err_i,
 
     .data_req_o,
@@ -274,8 +299,8 @@ module ibex_top import ibex_pkg::*; #(
     .data_we_o,
     .data_be_o,
     .data_addr_o,
-    .data_wdata_o,
-    .data_rdata_i,
+    .data_wdata_o(data_wdata_core),
+    .data_rdata_i(data_rdata_core),
     .data_err_i,
 
     .dummy_instr_id_o (dummy_instr_id),
@@ -340,11 +365,12 @@ module ibex_top import ibex_pkg::*; #(
     .rvfi_ext_mcycle,
 `endif
 
-    .fetch_enable_i(fetch_enable_buf),
-    .alert_minor_o (core_alert_minor),
-    .alert_major_o (core_alert_major),
-    .icache_inval_o(icache_inval),
-    .core_busy_o   (core_busy_d)
+    .fetch_enable_i        (fetch_enable_buf),
+    .alert_minor_o         (core_alert_minor),
+    .alert_major_internal_o(core_alert_major_internal),
+    .alert_major_bus_o     (core_alert_major_bus),
+    .icache_inval_o        (icache_inval),
+    .core_busy_o           (core_busy_d)
   );
 
   /////////////////////////////////
@@ -563,6 +589,17 @@ module ibex_top import ibex_pkg::*; #(
 
   end
 
+  assign data_wdata_o = data_wdata_core[31:0];
+
+  if (MemECC) begin : gen_mem_wdata_ecc
+    prim_buf #(.Width(7)) u_prim_buf_data_wdata_intg (
+      .in_i (data_wdata_core[38:32]),
+      .out_o(data_wdata_intg_o)
+    );
+  end else begin : gen_no_mem_ecc
+    assign data_wdata_intg_o = '0;
+  end
+
   // Redundant lockstep core implementation
   if (Lockstep) begin : gen_lockstep
     // SEC_CM: LOGIC.SHADOW
@@ -579,8 +616,7 @@ module ibex_top import ibex_pkg::*; #(
       instr_gnt_i,
       instr_rvalid_i,
       instr_addr_o,
-      instr_rdata_i,
-      instr_rdata_intg_i,
+      instr_rdata_core,
       instr_err_i,
       data_req_o,
       data_gnt_i,
@@ -588,9 +624,8 @@ module ibex_top import ibex_pkg::*; #(
       data_we_o,
       data_be_o,
       data_addr_o,
-      data_wdata_o,
-      data_rdata_i,
-      data_rdata_intg_i,
+      data_wdata_core,
+      data_rdata_core,
       data_err_i,
       dummy_instr_id,
       rf_raddr_a,
@@ -632,8 +667,7 @@ module ibex_top import ibex_pkg::*; #(
     logic                         instr_gnt_local;
     logic                         instr_rvalid_local;
     logic [31:0]                  instr_addr_local;
-    logic [31:0]                  instr_rdata_local;
-    logic [6:0]                   instr_rdata_intg_local;
+    logic [MemDataWidth-1:0]      instr_rdata_local;
     logic                         instr_err_local;
 
     logic                         data_req_local;
@@ -642,10 +676,8 @@ module ibex_top import ibex_pkg::*; #(
     logic                         data_we_local;
     logic [3:0]                   data_be_local;
     logic [31:0]                  data_addr_local;
-    logic [31:0]                  data_wdata_local;
-    logic [6:0]                   data_wdata_intg_local;
-    logic [31:0]                  data_rdata_local;
-    logic [6:0]                   data_rdata_intg_local;
+    logic [MemDataWidth-1:0]      data_wdata_local;
+    logic [MemDataWidth-1:0]      data_rdata_local;
     logic                         data_err_local;
 
     logic                         dummy_instr_id_local;
@@ -689,8 +721,7 @@ module ibex_top import ibex_pkg::*; #(
       instr_gnt_i,
       instr_rvalid_i,
       instr_addr_o,
-      instr_rdata_i,
-      instr_rdata_intg_i,
+      instr_rdata_core,
       instr_err_i,
       data_req_o,
       data_gnt_i,
@@ -698,9 +729,8 @@ module ibex_top import ibex_pkg::*; #(
       data_we_o,
       data_be_o,
       data_addr_o,
-      data_wdata_o,
-      data_rdata_i,
-      data_rdata_intg_i,
+      data_wdata_core,
+      data_rdata_core,
       data_err_i,
       dummy_instr_id,
       rf_raddr_a,
@@ -741,7 +771,6 @@ module ibex_top import ibex_pkg::*; #(
       instr_rvalid_local,
       instr_addr_local,
       instr_rdata_local,
-      instr_rdata_intg_local,
       instr_err_local,
       data_req_local,
       data_gnt_local,
@@ -751,7 +780,6 @@ module ibex_top import ibex_pkg::*; #(
       data_addr_local,
       data_wdata_local,
       data_rdata_local,
-      data_rdata_intg_local,
       data_err_local,
       dummy_instr_id_local,
       rf_raddr_a_local,
@@ -832,6 +860,7 @@ module ibex_top import ibex_pkg::*; #(
       .DummyInstructions(DummyInstructions),
       .RegFileECC       (RegFileECC),
       .RegFileDataWidth (RegFileDataWidth),
+      .MemECC           (MemECC),
       .DmHaltAddr       (DmHaltAddr),
       .DmExceptionAddr  (DmExceptionAddr)
     ) u_ibex_lockstep (
@@ -846,7 +875,6 @@ module ibex_top import ibex_pkg::*; #(
       .instr_rvalid_i         (instr_rvalid_local),
       .instr_addr_i           (instr_addr_local),
       .instr_rdata_i          (instr_rdata_local),
-      .instr_rdata_intg_i     (instr_rdata_intg_local),
       .instr_err_i            (instr_err_local),
 
       .data_req_i             (data_req_local),
@@ -856,9 +884,7 @@ module ibex_top import ibex_pkg::*; #(
       .data_be_i              (data_be_local),
       .data_addr_i            (data_addr_local),
       .data_wdata_i           (data_wdata_local),
-      .data_wdata_intg_o      (data_wdata_intg_local),
       .data_rdata_i           (data_rdata_local),
-      .data_rdata_intg_i      (data_rdata_intg_local),
       .data_err_i             (data_err_local),
 
       .dummy_instr_id_i       (dummy_instr_id_local),
@@ -903,12 +929,6 @@ module ibex_top import ibex_pkg::*; #(
       .scan_rst_ni            (scan_rst_ni)
     );
 
-    // Manually buffer the output signals.
-    prim_buf #(.Width (7)) u_prim_buf_wdata_intg (
-      .in_i(data_wdata_intg_local),
-      .out_o(data_wdata_intg_o)
-    );
-
     prim_buf u_prim_buf_alert_minor (
       .in_i (lockstep_alert_minor_local),
       .out_o(lockstep_alert_minor)
@@ -928,14 +948,12 @@ module ibex_top import ibex_pkg::*; #(
     assign lockstep_alert_major_internal = 1'b0;
     assign lockstep_alert_major_bus      = 1'b0;
     assign lockstep_alert_minor          = 1'b0;
-    assign data_wdata_intg_o             = 'b0;
-    logic unused_scan, unused_intg;
+    logic unused_scan;
     assign unused_scan = scan_rst_ni;
-    assign unused_intg = |{instr_rdata_intg_i, data_rdata_intg_i};
   end
 
-  assign alert_major_internal_o = core_alert_major | lockstep_alert_major_internal;
-  assign alert_major_bus_o      = lockstep_alert_major_bus;
+  assign alert_major_internal_o = core_alert_major_internal | lockstep_alert_major_internal;
+  assign alert_major_bus_o      = core_alert_major_bus | lockstep_alert_major_bus;
   assign alert_minor_o          = core_alert_minor | lockstep_alert_minor;
 
   // X checks for top-level outputs
