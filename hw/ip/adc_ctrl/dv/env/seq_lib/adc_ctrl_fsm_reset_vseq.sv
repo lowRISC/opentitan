@@ -181,7 +181,6 @@ class adc_ctrl_fsm_reset_vseq extends adc_ctrl_base_vseq;
       // Make sure HW and FSM reset are deasserted
       cfg.clk_aon_rst_vif.drive_rst_pin(1);
       csr_wr(ral.adc_fsm_rst, 0);
-
       // Disable ADC.
       csr_wr(ral.adc_en_ctl, 0);
 

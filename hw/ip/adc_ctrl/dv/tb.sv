@@ -59,6 +59,7 @@ module tb;
   int wakeup_time, cfg_wakeup_time;
   bit   wakeup_time_en;
   logic pd_prev;
+  bit   cfg_lp_mode;
 
   `DV_ALERT_IF_CONNECT
 
@@ -132,7 +133,8 @@ module tb;
       cfg_testmode = cfg.testmode;
       cfg_pwrup_time = cfg.pwrup_time;
       cfg_wakeup_time = cfg.wakeup_time;
-      @(cfg.pwrup_time or cfg.wakeup_time or cfg.testmode);
+      cfg_lp_mode = cfg.lp_mode;
+      @(cfg.pwrup_time or cfg.wakeup_time or cfg.testmode or cfg.lp_mode);
     end
   end
 
@@ -232,8 +234,8 @@ module tb;
   end
   // Pulse to check wake up counter
   wire wakeup_time_chk = ~adc_o.pd & pd_prev;
-  // Low power test mode
-  wire testmode_low_power = cfg_testmode inside {AdcCtrlTestmodeLowpower};
+  // Model expects RTL to be in low power mode.
+  wire testmode_low_power = cfg_testmode inside {AdcCtrlTestmodeLowpower} && cfg_lp_mode;
 
   // Check the DUT enters low power
   // In low power test mode, after falling edges on power down

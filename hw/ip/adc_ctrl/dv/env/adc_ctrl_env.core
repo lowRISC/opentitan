@@ -12,6 +12,7 @@ filesets:
     files:
       - adc_ctrl_env_pkg.sv
       - adc_ctrl_env_cfg.sv: {is_include_file: true}
+      - adc_ctrl_env_var_filter_cfg.sv : {is_include_file: true}
       - adc_ctrl_env_cov.sv: {is_include_file: true}
       - adc_ctrl_virtual_sequencer.sv: {is_include_file: true}
       - adc_ctrl_scoreboard.sv: {is_include_file: true}
@@ -28,6 +29,8 @@ filesets:
       - seq_lib/adc_ctrl_counter_vseq.sv: {is_include_file: true}
       - seq_lib/adc_ctrl_poweron_counter_vseq.sv: {is_include_file: true}
       - seq_lib/adc_ctrl_lowpower_counter_vseq.sv: {is_include_file: true}
+      - seq_lib/adc_ctrl_filters_both_vseq.sv: {is_include_file: true}
+      - seq_lib/adc_ctrl_clock_gating_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

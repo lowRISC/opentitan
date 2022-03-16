@@ -20,6 +20,8 @@ class adc_ctrl_env_cfg extends cip_base_env_cfg #(
 
   // Basic testing mode
   adc_ctrl_testmode_e testmode;
+  // Model in low power mode
+  bit lp_mode;
 
   // Interrupt control bits
   bit [ADC_CTRL_NUM_FILTERS:0] adc_intr_ctl = 0;
