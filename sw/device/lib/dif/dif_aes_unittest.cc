@@ -753,5 +753,16 @@ TEST_F(DifUnavailableError, ReadIV) {
   dif_aes_iv_t iv = {{0}};
   EXPECT_EQ(dif_aes_read_iv(&aes_, &iv), kDifUnavailable);
 }
+
+class DifError : public AesTestInitialized {
+ protected:
+  DifError() {}
+};
+
+TEST_F(DifError, ReadOutput) {
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_OUTPUT_VALID_BIT, false}});
+  dif_aes_data_t data = {{0}};
+  EXPECT_EQ(dif_aes_read_output(&aes_, &data), kDifError);
+}
 }  // namespace
 }  // namespace dif_aes_test
