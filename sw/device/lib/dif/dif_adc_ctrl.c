@@ -204,3 +204,133 @@ dif_result_t dif_adc_ctrl_get_enabled(const dif_adc_ctrl_t *adc_ctrl,
 
   return kDifOk;
 }
+
+static bool get_filter_offset(dif_adc_ctrl_channel_t channel,
+                              dif_adc_ctrl_filter_t filter,
+                              ptrdiff_t *filter_ctrl_reg_offset) {
+#define DIF_ADC_CTRL_CHANNEL0_FILTER_CTRL_REG_CASE_(filter_) \
+  case kDifAdcCtrlFilter##filter_:                           \
+    *filter_ctrl_reg_offset =                                \
+        ADC_CTRL_ADC_CHN0_FILTER_CTL_##filter_##_REG_OFFSET; \
+    break;
+
+#define DIF_ADC_CTRL_CHANNEL1_FILTER_CTRL_REG_CASE_(filter_) \
+  case kDifAdcCtrlFilter##filter_:                           \
+    *filter_ctrl_reg_offset =                                \
+        ADC_CTRL_ADC_CHN1_FILTER_CTL_##filter_##_REG_OFFSET; \
+    break;
+
+  switch (channel) {
+    case kDifAdcCtrlChannel0:
+      switch (filter) {
+        DIF_ADC_CTRL_FILTER_LIST(DIF_ADC_CTRL_CHANNEL0_FILTER_CTRL_REG_CASE_)
+        default:
+          return false;
+      }
+      break;
+    case kDifAdcCtrlChannel1:
+      switch (filter) {
+        DIF_ADC_CTRL_FILTER_LIST(DIF_ADC_CTRL_CHANNEL1_FILTER_CTRL_REG_CASE_)
+        default:
+          return false;
+      }
+      break;
+    default:
+      return false;
+  }
+
+#undef DIF_ADC_CTRL_CHANNEL0_FILTER_CTRL_REG_CASE_
+#undef DIF_ADC_CTRL_CHANNEL1_FILTER_CTRL_REG_CASE_
+
+  return true;
+}
+
+static bool get_filter_enable_bit(dif_adc_ctrl_channel_t channel,
+                                  dif_adc_ctrl_filter_t filter,
+                                  bitfield_bit32_index_t *enable_bit) {
+#define DIF_ADC_CTRL_CHANNEL0_FILTER_ENABLE_CASE_(filter_)                     \
+  case kDifAdcCtrlFilter##filter_:                                             \
+    *enable_bit = ADC_CTRL_ADC_CHN0_FILTER_CTL_##filter_##_EN_##filter_##_BIT; \
+    break;
+
+#define DIF_ADC_CTRL_CHANNEL1_FILTER_ENABLE_CASE_(filter_)                     \
+  case kDifAdcCtrlFilter##filter_:                                             \
+    *enable_bit = ADC_CTRL_ADC_CHN1_FILTER_CTL_##filter_##_EN_##filter_##_BIT; \
+    break;
+
+  switch (channel) {
+    case kDifAdcCtrlChannel0:
+      switch (filter) {
+        DIF_ADC_CTRL_FILTER_LIST(DIF_ADC_CTRL_CHANNEL0_FILTER_ENABLE_CASE_)
+        default:
+          return false;
+      }
+      break;
+    case kDifAdcCtrlChannel1:
+      switch (filter) {
+        DIF_ADC_CTRL_FILTER_LIST(DIF_ADC_CTRL_CHANNEL1_FILTER_ENABLE_CASE_)
+        default:
+          return false;
+      }
+      break;
+    default:
+      return false;
+  }
+
+#undef DIF_ADC_CTRL_CHANNEL0_FILTER_ENABLE_CASE_
+#undef DIF_ADC_CTRL_CHANNEL1_FILTER_ENABLE_CASE_
+
+  return true;
+}
+
+dif_result_t dif_adc_ctrl_filter_set_enabled(const dif_adc_ctrl_t *adc_ctrl,
+                                             dif_adc_ctrl_channel_t channel,
+                                             dif_adc_ctrl_filter_t filter,
+                                             dif_toggle_t enabled) {
+  if (adc_ctrl == NULL || !dif_is_valid_toggle(enabled)) {
+    return kDifBadArg;
+  }
+
+  ptrdiff_t filter_ctrl_reg_offset;
+  bitfield_bit32_index_t enable_bit;
+  if (!get_filter_offset(channel, filter, &filter_ctrl_reg_offset)) {
+    return kDifBadArg;
+  }
+  if (!get_filter_enable_bit(channel, filter, &enable_bit)) {
+    return kDifBadArg;
+  }
+
+  uint32_t filter_ctrl_reg =
+      mmio_region_read32(adc_ctrl->base_addr, filter_ctrl_reg_offset);
+  filter_ctrl_reg = bitfield_bit32_write(filter_ctrl_reg, enable_bit,
+                                         dif_toggle_to_bool(enabled));
+  mmio_region_write32(adc_ctrl->base_addr, filter_ctrl_reg_offset,
+                      filter_ctrl_reg);
+
+  return kDifOk;
+}
+
+dif_result_t dif_adc_ctrl_filter_get_enabled(const dif_adc_ctrl_t *adc_ctrl,
+                                             dif_adc_ctrl_channel_t channel,
+                                             dif_adc_ctrl_filter_t filter,
+                                             dif_toggle_t *is_enabled) {
+  if (adc_ctrl == NULL || is_enabled == NULL) {
+    return kDifBadArg;
+  }
+
+  ptrdiff_t filter_ctrl_reg_offset;
+  bitfield_bit32_index_t enable_bit;
+  if (!get_filter_offset(channel, filter, &filter_ctrl_reg_offset)) {
+    return kDifBadArg;
+  }
+  if (!get_filter_enable_bit(channel, filter, &enable_bit)) {
+    return kDifBadArg;
+  }
+
+  uint32_t filter_ctrl_reg =
+      mmio_region_read32(adc_ctrl->base_addr, filter_ctrl_reg_offset);
+  *is_enabled =
+      dif_bool_to_toggle(bitfield_bit32_read(filter_ctrl_reg, enable_bit));
+
+  return kDifOk;
+}
