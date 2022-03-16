@@ -26,9 +26,12 @@ cc_library(
 
 cc_library(
     name = "adc_ctrl",
-    hdrs = [
+    srcs = [
         "autogen/dif_adc_ctrl_autogen.c",
         "autogen/dif_adc_ctrl_autogen.h",
+    ],
+    hdrs = [
+        "dif_adc_ctrl.h",
     ],
     deps = [
         ":base",
@@ -1404,6 +1407,9 @@ cc_library(
     srcs = [
         "autogen/dif_sysrst_ctrl_autogen.c",
         "autogen/dif_sysrst_ctrl_autogen.h",
+    ],
+    hdrs = [
+        "dif_sysrst_ctrl.h",
     ],
     deps = [
         ":base",
