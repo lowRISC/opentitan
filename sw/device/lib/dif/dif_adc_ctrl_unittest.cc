@@ -169,5 +169,52 @@ TEST_F(FilterConfigTest, Success) {
       &adc_ctrl_, kDifAdcCtrlChannel0, filter_config_, kDifToggleEnabled));
 }
 
+class SetEnabledTest : public AdcCtrlTest {};
+
+TEST_F(SetEnabledTest, NullHandle) {
+  EXPECT_DIF_BADARG(dif_adc_ctrl_set_enabled(nullptr, kDifToggleEnabled));
+}
+
+TEST_F(SetEnabledTest, BadArgs) {
+  EXPECT_DIF_BADARG(
+      dif_adc_ctrl_set_enabled(&adc_ctrl_, static_cast<dif_toggle_t>(2)));
+}
+
+TEST_F(SetEnabledTest, Success) {
+  EXPECT_READ32(ADC_CTRL_ADC_EN_CTL_REG_OFFSET, 0);
+  EXPECT_WRITE32(ADC_CTRL_ADC_EN_CTL_REG_OFFSET,
+                 {{ADC_CTRL_ADC_EN_CTL_ADC_ENABLE_BIT, true}});
+  EXPECT_DIF_OK(dif_adc_ctrl_set_enabled(&adc_ctrl_, kDifToggleEnabled));
+
+  EXPECT_READ32(ADC_CTRL_ADC_EN_CTL_REG_OFFSET,
+                {{ADC_CTRL_ADC_EN_CTL_ONESHOT_MODE_BIT, true},
+                 {ADC_CTRL_ADC_EN_CTL_ADC_ENABLE_BIT, true}});
+  EXPECT_WRITE32(ADC_CTRL_ADC_EN_CTL_REG_OFFSET,
+                 {{ADC_CTRL_ADC_EN_CTL_ONESHOT_MODE_BIT, true},
+                  {ADC_CTRL_ADC_EN_CTL_ADC_ENABLE_BIT, false}});
+  EXPECT_DIF_OK(dif_adc_ctrl_set_enabled(&adc_ctrl_, kDifToggleDisabled));
+}
+
+class GetEnabledTest : public AdcCtrlTest {};
+
+TEST_F(GetEnabledTest, NullArgs) {
+  dif_toggle_t is_enabled;
+  EXPECT_DIF_BADARG(dif_adc_ctrl_get_enabled(nullptr, &is_enabled));
+  EXPECT_DIF_BADARG(dif_adc_ctrl_get_enabled(&adc_ctrl_, nullptr));
+}
+
+TEST_F(GetEnabledTest, Success) {
+  dif_toggle_t is_enabled;
+
+  EXPECT_READ32(ADC_CTRL_ADC_EN_CTL_REG_OFFSET,
+                {{ADC_CTRL_ADC_EN_CTL_ADC_ENABLE_BIT, true}});
+  EXPECT_DIF_OK(dif_adc_ctrl_get_enabled(&adc_ctrl_, &is_enabled));
+  EXPECT_EQ(is_enabled, kDifToggleEnabled);
+
+  EXPECT_READ32(ADC_CTRL_ADC_EN_CTL_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_adc_ctrl_get_enabled(&adc_ctrl_, &is_enabled));
+  EXPECT_EQ(is_enabled, kDifToggleDisabled);
+}
+
 }  // namespace
 }  // namespace dif_adc_ctrl_unittest
