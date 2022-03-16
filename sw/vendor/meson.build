@@ -50,11 +50,19 @@ sw_vendor_gtest = declare_dependency(
     sw_vendor_gtest_googletest_inc_dir,
     sw_vendor_gtest_googlemock_inc_dir,
   ],
-  sources: [
-    sw_vendor_gtest_googletest_libsources,
-    sw_vendor_gtest_googlemock_libsources,
-    sw_vendor_gtest_googlemock_mainsources,
-  ],
+  link_with: static_library(
+    'gtest_cc_main',
+    include_directories: [
+      sw_vendor_gtest_googletest_inc_dir,
+      sw_vendor_gtest_googlemock_inc_dir,
+    ],
+    sources: [
+      sw_vendor_gtest_googletest_libsources,
+      sw_vendor_gtest_googlemock_libsources,
+      sw_vendor_gtest_googlemock_mainsources,
+    ],
+    native: true,
+  ),
   dependencies: thread_dep,
 )
 # End googletest and googlemock build definitions
