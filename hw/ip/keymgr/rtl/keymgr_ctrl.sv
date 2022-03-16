@@ -221,11 +221,12 @@ module keymgr_ctrl
   logic wipe_req;
   logic random_req;
   logic random_ack;
+  logic ld_root_key;
 
   // wipe and initialize take precedence
-  assign update_sel = wipe_req   ? KeyUpdateWipe   :
-                      random_req ? KeyUpdateRandom :
-                      init_o     ? KeyUpdateRoot   : op_update_sel;
+  assign update_sel = wipe_req             ? KeyUpdateWipe   :
+                      random_req           ? KeyUpdateRandom :
+                      init_o | ld_root_key ? KeyUpdateRoot   : op_update_sel;
 
   ///////////////////////////
   //  interaction between main fsm and prng
@@ -455,6 +456,9 @@ module keymgr_ctrl
     // initialization complete
     init_o = 1'b0;
 
+    // during certain states, the otp root key is continuosly loaded
+    ld_root_key = 1'b0;
+
     // if state is ever faulted, hold on to this indication
     // until reset.
     state_intg_err_d = state_intg_err_q;
@@ -517,8 +521,13 @@ module keymgr_ctrl
         stage_sel_o = advance_sel ? Creator : Disable;
         invalid_op = op_start_i & ~(advance_sel | disable_sel);
 
+        // as long as an operation is not requested, continously load root key
+        // if it is valid.
+        // If an invalidate condition hits, also stop loading key
+        ld_root_key = ~op_start_i;
         if (!en_i || inv_state) begin
           state_d = StCtrlWipe;
+          ld_root_key = '0;
         end else if (dis_state) begin
           state_d = StCtrlDisabled;
         end else if (adv_state) begin
@@ -650,10 +659,10 @@ module keymgr_ctrl
     working_state_o = StInvalid;
 
     unique case (state_q)
-      StCtrlReset, StCtrlEntropyReseed, StCtrlRandom, StCtrlRootKey:
+      StCtrlReset, StCtrlEntropyReseed, StCtrlRandom:
         working_state_o = StReset;
 
-      StCtrlInit:
+      StCtrlRootKey, StCtrlInit:
         working_state_o = StInit;
 
       StCtrlCreatorRootKey:
@@ -753,7 +762,7 @@ module keymgr_ctrl
 
   logic vld_state_change_d, vld_state_change_q;
   assign vld_state_change_d = (state_d != state_q) &
-                              (state_d inside {StCtrlInit,
+                              (state_d inside {StCtrlRootKey,
                                                StCtrlCreatorRootKey,
                                                StCtrlOwnerIntKey,
                                                StCtrlOwnerKey});
