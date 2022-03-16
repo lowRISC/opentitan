@@ -12,10 +12,11 @@ class sysrst_ctrl_auto_blk_key_output_vseq extends sysrst_ctrl_base_vseq;
    rand uvm_reg_data_t override_value;
    rand uint16_t set_timer;
    rand int cycles;
+   rand bit en_auto;
 
    constraint cycles_c {cycles dist {
-     [set_timer-10 : set_timer] :/5,
-     [set_timer : set_timer+10] :/95
+     [set_timer-10 : set_timer] :/20,
+     [set_timer : set_timer+10] :/80
      };
    }
 
@@ -43,13 +44,13 @@ class sysrst_ctrl_auto_blk_key_output_vseq extends sysrst_ctrl_base_vseq;
 
     `uvm_info(`gfn, "Starting the body from auto_blk_key_output_vseq", UVM_LOW)
 
-    // Enable the auto block key feature
-    ral.auto_block_debounce_ctl.auto_block_enable.set(1);
-    csr_update(ral.auto_block_debounce_ctl);
-
     repeat (num_trans) begin
 
       `DV_CHECK_RANDOMIZE_FATAL(this)
+
+      // Enable the auto block key feature
+      ral.auto_block_debounce_ctl.auto_block_enable.set(en_auto);
+      csr_update(ral.auto_block_debounce_ctl);
 
       // Set the auto block debounce timer value
       csr_wr(ral.auto_block_debounce_ctl.debounce_timer, set_timer);
@@ -75,23 +76,22 @@ class sysrst_ctrl_auto_blk_key_output_vseq extends sysrst_ctrl_base_vseq;
       override_key1_out_value = `gmv(ral.auto_block_out_ctl.key1_out_value);
       override_key2_out_value = `gmv(ral.auto_block_out_ctl.key2_out_value);
 
-      if (cycles >= set_timer) begin
+      if (en_auto == 1 && cycles >= set_timer) begin
         cfg.clk_aon_rst_vif.wait_clks(1);
         if(enable_key0_out_sel == 1) begin
-         `DV_CHECK_EQ(override_key0_out_value, cfg.vif.key0_out);
+          `DV_CHECK_EQ(override_key0_out_value, cfg.vif.key0_out);
         end
         if(enable_key1_out_sel == 1) begin
-         `DV_CHECK_EQ(override_key1_out_value, cfg.vif.key1_out);
+          `DV_CHECK_EQ(override_key1_out_value, cfg.vif.key1_out);
         end
         if(enable_key2_out_sel == 1) begin
-         `DV_CHECK_EQ(override_key2_out_value, cfg.vif.key2_out);
+          `DV_CHECK_EQ(override_key2_out_value, cfg.vif.key2_out);
         end
       end else begin
         `DV_CHECK_EQ(cfg.vif.key0_out, 0);
         `DV_CHECK_EQ(cfg.vif.key1_out, 0);
         `DV_CHECK_EQ(cfg.vif.key2_out, 0);
       end
-
       cfg.clk_aon_rst_vif.wait_clks(20);
     end
    endtask : body

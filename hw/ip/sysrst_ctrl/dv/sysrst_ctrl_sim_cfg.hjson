@@ -81,6 +81,7 @@
     {
       name: sysrst_ctrl_ultra_low_pwr
       uvm_test_seq: sysrst_ctrl_ultra_low_pwr_vseq
+      run_opts: ["+test_timeout_ns=10_000_000_000"]
     }
     {
       name: sysrst_ctrl_combo_detect
