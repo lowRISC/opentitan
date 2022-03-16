@@ -206,6 +206,18 @@
   // This allows an arbitrary number of SW images to be supplied to the TB.
   tests: [
     {
+      name: chip_sw_example_flash
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/example_test_from_flash:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
+      name: chip_sw_example_rom
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/example_test_from_rom:0"]
+      en_run_modes: ["sw_test_mode_common"]
+    }
+    {
       name: chip_sw_sleep_pwm_pulses
       uvm_test_seq: chip_sw_pwm_pulses_vseq
       sw_images: ["sw/device/tests/sleep_pwm_pulses_test:1"]
@@ -303,7 +315,7 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/flash_ctrl_idle_low_power_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-    }    
+    }
     {
       name: chip_sw_lc_ctrl_otp_hw_cfg
       uvm_test_seq: chip_sw_base_vseq

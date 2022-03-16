@@ -128,11 +128,6 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
       m_pwm_monitor_cfg[i].is_active = 0;
     end
 
-    // By default, assume SW images in PWD with these generic names.
-    sw_images[SwTypeRom] = "./rom";
-    sw_images[SwTypeTest] = "./sw";
-    sw_images[SwTypeOtbn] = "./otbn";
-
     // By default, assume these OTP image paths.
     otp_images[lc_ctrl_state_pkg::LcStRaw] = "otp_ctrl_img_raw.vmem";
     otp_images[lc_ctrl_state_pkg::LcStDev] = "otp_ctrl_img_dev.vmem";

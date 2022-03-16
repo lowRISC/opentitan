@@ -2652,6 +2652,20 @@
     // System level scenarios //
     ////////////////////////////
     {
+      name: chip_sw_example_test_from_rom_or_flash
+      desc: '''Run examples tests developed for each boot stage.
+
+            Our test infrastructure defaults to running tests out flash, at the
+            ROM_EXT stage, but also supports running tests in the ROM stage. We
+            develop example tests to demonstrate these capabilities, and need to
+            run them in DV to ensure the integrity of our infrastructure.
+            '''
+      milestone: V1
+      tests: ["chip_sw_example_flash",
+              "chip_sw_example_rom",
+              ]
+    }
+    {
       name: chip_sw_smoketest
       desc: '''Run smoke tests developed for each IP.
 
