@@ -47,7 +47,8 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
     jtag_dmi_item item;
     forever begin
       jtag_dmi_fifo.get(item);
-      `uvm_info(`gfn, $sformatf("Received jtag DMI item:\n%0s", item.sprint()), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("Received jtag DMI item:\n%0s",
+                                item.sprint(uvm_default_line_printer)), UVM_HIGH)
     end
   endtask
 
@@ -55,7 +56,8 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
     tl_seq_item item;
     forever begin
       tl_sba_a_chan_fifo.get(item);
-      `uvm_info(`gfn, $sformatf("Received SBA TL a_chan item:\n%0s", item.sprint()), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("Received SBA TL a_chan item:\n%0s",
+                                item.sprint(uvm_default_line_printer)), UVM_HIGH)
       process_tl_sba_access(item, AddrChannel);
     end
   endtask
@@ -64,7 +66,8 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
     tl_seq_item item;
     forever begin
       tl_sba_d_chan_fifo.get(item);
-      `uvm_info(`gfn, $sformatf("Received SBA TL d_chan item:\n%0s", item.sprint()), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("Received SBA TL d_chan item:\n%0s",
+                                item.sprint(uvm_default_line_printer)), UVM_HIGH)
       // check tl packet integrity
       // TODO: deal with item not being ok.
       void'(item.is_ok(.throw_error(0)));
