@@ -30,12 +30,6 @@ package jtag_dmi_agent_pkg;
     DmiOpInProgress = 3
   } jtag_dmi_op_rsp_e;
 
-  // Represents the JTAG DMI op field, either driver or monitored, as a union.
-  typedef union packed {
-    jtag_dmi_op_req_e op_req;
-    jtag_dmi_op_rsp_e op_rsp;
-  } jtag_dmi_op_t;
-
   // package sources
   `include "jtag_dmi_reg_block.sv"
   `include "jtag_dmi_reg_frontdoor.sv"
