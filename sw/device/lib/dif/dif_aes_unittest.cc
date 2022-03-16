@@ -681,5 +681,52 @@ TEST_F(DifFunctionsTest, End) {
 
   EXPECT_DIF_OK(dif_aes_end(&aes_));
 }
+
+// Dif errors
+class DifBadArgError : public AesTestInitialized {
+ protected:
+  DifBadArgError() {
+    transaction.key_provider = kDifAesKeySoftwareProvided;
+    transaction.mode = kDifAesModeCbc;
+  }
+};
+
+TEST_F(DifBadArgError, start) {
+  EXPECT_DIF_BADARG(dif_aes_start(NULL, &transaction, &kKey_, &kIv_));
+  EXPECT_DIF_BADARG(dif_aes_start(&aes_, NULL, &kKey_, &kIv_));
+  EXPECT_DIF_BADARG(dif_aes_start(&aes_, &transaction, NULL, &kIv_));
+  EXPECT_DIF_BADARG(dif_aes_start(&aes_, &transaction, &kKey_, NULL));
+}
+
+TEST_F(DifBadArgError, reset) { EXPECT_DIF_BADARG(dif_aes_reset(NULL)); }
+
+TEST_F(DifBadArgError, end) { EXPECT_DIF_BADARG(dif_aes_end(NULL)); }
+
+TEST_F(DifBadArgError, LoadData) {
+  dif_aes_data_t data = {};
+  EXPECT_DIF_BADARG(dif_aes_load_data(NULL, data));
+}
+
+TEST_F(DifBadArgError, ReadOutput) {
+  dif_aes_data_t data = {};
+  EXPECT_DIF_BADARG(dif_aes_read_output(NULL, &data));
+  EXPECT_DIF_BADARG(dif_aes_read_output(&aes_, NULL));
+}
+
+TEST_F(DifBadArgError, Trigger) {
+  EXPECT_DIF_BADARG(dif_aes_trigger(NULL, kDifAesTriggerPrngReseed));
+}
+
+TEST_F(DifBadArgError, GetStatus) {
+  bool set;
+  EXPECT_DIF_BADARG(dif_aes_get_status(NULL, kDifAesStatusIdle, &set));
+  EXPECT_DIF_BADARG(dif_aes_get_status(&aes_, kDifAesStatusIdle, NULL));
+}
+
+TEST_F(DifBadArgError, ReadIV) {
+  dif_aes_iv_t iv = {};
+  EXPECT_DIF_BADARG(dif_aes_read_iv(NULL, &iv));
+  EXPECT_DIF_BADARG(dif_aes_read_iv(&aes_, NULL));
+}
 }  // namespace
 }  // namespace dif_aes_test
