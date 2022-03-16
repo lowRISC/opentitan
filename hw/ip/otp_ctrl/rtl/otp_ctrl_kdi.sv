@@ -560,6 +560,7 @@ module otp_ctrl_kdi
     // SEC_CM: KDI.FSM.LOCAL_ESC, KDI.FSM.GLOBAL_ESC
     if (escalate_en_i != lc_ctrl_pkg::Off || seed_cnt_err || entropy_cnt_err) begin
       state_d = ErrorSt;
+      fsm_err_o = 1'b1;
     end
   end
 
