@@ -452,8 +452,25 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     join
   endtask
 
+  // Disable exclusions for RESET_REQ and SW_RST_CTRL_N: they are meant for full-chip only.
+  function void disable_unnecessary_exclusions();
+    csr_excl_item csr_excl = ral.get_excl_item();
+    `uvm_info(`gfn, "Dealing with exclusions", UVM_MEDIUM)
+    csr_excl.enable_excl(.obj("rstmgr_reg_block.reset_req"), .enable(1'b0));
+    csr_excl.enable_excl(.obj("rstmgr_reg_block.sw_rst_ctrl_n_0"), .enable(1'b0));
+    csr_excl.enable_excl(.obj("rstmgr_reg_block.sw_rst_ctrl_n_1"), .enable(1'b0));
+    csr_excl.enable_excl(.obj("rstmgr_reg_block.sw_rst_ctrl_n_2"), .enable(1'b0));
+    csr_excl.enable_excl(.obj("rstmgr_reg_block.sw_rst_ctrl_n_3"), .enable(1'b0));
+    csr_excl.enable_excl(.obj("rstmgr_reg_block.sw_rst_ctrl_n_4"), .enable(1'b0));
+    csr_excl.enable_excl(.obj("rstmgr_reg_block.sw_rst_ctrl_n_5"), .enable(1'b0));
+    csr_excl.enable_excl(.obj("rstmgr_reg_block.sw_rst_ctrl_n_6"), .enable(1'b0));
+    csr_excl.enable_excl(.obj("rstmgr_reg_block.sw_rst_ctrl_n_7"), .enable(1'b0));
+    csr_excl.print_exclusions(UVM_MEDIUM);
+  endfunction
+
   task pre_start();
     if (do_rstmgr_init) rstmgr_init();
+    disable_unnecessary_exclusions();
     super.pre_start();
     cfg.pwrmgr_rstmgr_sva_vif.check_rstreqs_en = 0;
   endtask
