@@ -229,7 +229,9 @@
             As mentioned in `prim_count_check`, `prim_fsm_check` and `prim_double_lfsr_check`.
 
             Checks:
-            - TODO, add additional checks if applicable.
+            - Check the value of status register according to where the fault is injected.
+            - Check OTP_CTRL is locked after the fatal fault injection by trying to access OTP_CTRL
+              via dai, kdi, and lci interfaces.
             '''
       milestone: V2S
       tests: ["otp_ctrl_sec_cm"]
