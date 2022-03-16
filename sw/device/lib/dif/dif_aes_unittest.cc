@@ -728,5 +728,30 @@ TEST_F(DifBadArgError, ReadIV) {
   EXPECT_DIF_BADARG(dif_aes_read_iv(NULL, &iv));
   EXPECT_DIF_BADARG(dif_aes_read_iv(&aes_, NULL));
 }
+
+class DifUnavailableError : public AesTestInitialized {
+ protected:
+  DifUnavailableError() {
+    EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_IDLE_BIT, false}});
+  }
+};
+
+TEST_F(DifUnavailableError, start) {
+  EXPECT_EQ(dif_aes_start(&aes_, &transaction, &kKey_, NULL), kDifUnavailable);
+}
+
+TEST_F(DifUnavailableError, end) {
+  EXPECT_EQ(dif_aes_end(&aes_), kDifUnavailable);
+}
+
+TEST_F(DifUnavailableError, LoadData) {
+  dif_aes_data_t data = {{0}};
+  EXPECT_EQ(dif_aes_load_data(&aes_, data), kDifUnavailable);
+}
+
+TEST_F(DifUnavailableError, ReadIV) {
+  dif_aes_iv_t iv = {{0}};
+  EXPECT_EQ(dif_aes_read_iv(&aes_, &iv), kDifUnavailable);
+}
 }  // namespace
 }  // namespace dif_aes_test
