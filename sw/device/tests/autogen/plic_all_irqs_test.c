@@ -7,8 +7,8 @@
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 // util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson
 // -o hw/top_earlgrey
+#include <limits.h>
 
-#include "sw/device/lib/base/freestanding/limits.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
