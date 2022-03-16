@@ -2040,23 +2040,6 @@
       milestone: V2
       tests: ["chip_sw_rom_ctrl_integrity_check"]
     }
-    {
-      name: chip_sw_rom_ctrl_reset_glitch
-      desc: '''Verify that a glitch on the ROM ctrl's reset input is triggered as a fatal alert.
-
-            - In normal boot up from POR, the ROM contents are checked for validity using KMAC.
-            - After boot up, read the reset cause register in rstmgr to confirm POR reset phase.
-            - SW goes into idle state (nothing to do).
-            - The testbench randomly glitches the ROM ctrl's reset input, which causes ROM ctrl to
-              re-check the contents for validity.
-            - Verify that the KMAC detects the repeat presentation of data from ROM ctrl as a fatal
-              alert and the chip is rebooted via the alert escalation path.
-            - After boot up, read the reset cause register in rstmgr to confirm reset due to alert
-              phase.
-            '''
-      milestone: V2
-      tests: []
-    }
 
     // SRAM (pre-verified IP) integration tests:
     {
