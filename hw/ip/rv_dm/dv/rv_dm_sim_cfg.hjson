@@ -157,7 +157,7 @@
   regressions: [
     {
       name: smoke
-      tests: [// "rv_dm_smoke",
+      tests: ["rv_dm_smoke",
               "rv_dm_jtag_dtm_csr_hw_reset",
               "rv_dm_jtag_dtm_csr_rw",
               "rv_dm_jtag_dmi_csr_hw_reset",
