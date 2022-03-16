@@ -85,6 +85,12 @@ The key used for all 3 functions is the `CreatorRootKey`.
 
 The advancement from this state to the next is irreversible during the current power cycle.
 
+While in the CreatorRootKey state, the key from OTP is continuously captured and sensed.
+This provides some security benefit as the key is constantly background checked by the OTP.
+When an operation begins, the sampling is stopped.
+If at the conclusion of the operation the key manager stays in the same state, sampling begins again.
+If on the other hand key manager transitions to another state, OTP sampling is stopped until reset.
+
 ### OwnerIntermediateKey
 
 This is the second operational state of the key manager.
