@@ -428,6 +428,7 @@ module otp_ctrl_scrmbl
     // SEC_CM: SCRMBL.FSM.LOCAL_ESC, SCRMBL.FSM.GLOBAL_ESC
     if (escalate_en_i != lc_ctrl_pkg::Off || cnt_err) begin
       state_d = ErrorSt;
+      fsm_err_o = 1'b1;
     end
   end
 

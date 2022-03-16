@@ -353,6 +353,7 @@ module otp_ctrl_lfsr_timer
     // SEC_CM: TIMER.FSM.LOCAL_ESC, TIMER.FSM.GLOBAL_ESC
     if (lfsr_err || integ_cnt_err || cnsty_cnt_err || escalate_en_i != lc_ctrl_pkg::Off) begin
        state_d = ErrorSt;
+       fsm_err_o = 1'b1;
     end
   end
 
