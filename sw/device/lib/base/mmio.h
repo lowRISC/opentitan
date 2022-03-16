@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/macros.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,14 +42,6 @@ extern "C" {
  */
 #define MMIO_DEPRECATED
 
-/**
- * All MMIO functions return their results using return values, rather than out-
- * parameters. Where the return types are non-void, it is prudent to ensure
- * these results are used, or explicitly discarded (in the case of a volatile
- * read that is needed for side effects only).
- */
-#define MMIO_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
-
 #ifndef MOCK_MMIO
 /**
  * An mmio_region_t is an opaque handle to an MMIO region; it should only be
@@ -64,7 +57,7 @@ typedef struct mmio_region {
  * @param address an address to an MMIO region.
  * @return a `mmio_region_t` value representing that region.
  */
-MMIO_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 inline mmio_region_t mmio_region_from_addr(uintptr_t address) {
   return (mmio_region_t){
       .base = (volatile void *)address,
@@ -82,7 +75,7 @@ inline mmio_region_t mmio_region_from_addr(uintptr_t address) {
  * @param offset the offset to read at, in bytes.
  * @return the read value.
  */
-MMIO_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 inline uint8_t mmio_region_read8(mmio_region_t base, ptrdiff_t offset) {
   return ((volatile uint8_t *)base.base)[offset / sizeof(uint8_t)];
 }
@@ -98,7 +91,7 @@ inline uint8_t mmio_region_read8(mmio_region_t base, ptrdiff_t offset) {
  * @param offset the offset to read at, in bytes.
  * @return the read value.
  */
-MMIO_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 inline uint32_t mmio_region_read32(mmio_region_t base, ptrdiff_t offset) {
   return ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)];
 }
@@ -184,11 +177,11 @@ typedef struct mmio_region {
 /**
  * Stubbed-out read/write operations for overriding by a testing library.
  */
-MMIO_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 mmio_region_t mmio_region_from_addr(uintptr_t address);
-MMIO_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 uint8_t mmio_region_read8(mmio_region_t base, ptrdiff_t offset);
-MMIO_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 uint32_t mmio_region_read32(mmio_region_t base, ptrdiff_t offset);
 
 void mmio_region_write8(mmio_region_t base, ptrdiff_t offset, uint8_t value);
@@ -211,7 +204,7 @@ void mmio_region_write32_shadowed(mmio_region_t base, ptrdiff_t offset,
  * @param mask_index mask position within the selected register.
  * @return return the value of the read mask.
  */
-MMIO_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 MMIO_DEPRECATED
 inline uint32_t mmio_region_read_mask32(mmio_region_t base, ptrdiff_t offset,
                                         uint32_t mask, uint32_t mask_index) {
@@ -232,7 +225,7 @@ inline uint32_t mmio_region_read_mask32(mmio_region_t base, ptrdiff_t offset,
  * @param bit_index the bit to check.
  * @return true if the bit is set, false otherwise
  */
-MMIO_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 MMIO_DEPRECATED
 inline bool mmio_region_get_bit32(mmio_region_t base, ptrdiff_t offset,
                                   uint32_t bit_index) {

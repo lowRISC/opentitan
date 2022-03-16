@@ -20,6 +20,7 @@ cc_library(
     name = "bitfield",
     srcs = ["bitfield.c"],
     hdrs = ["bitfield.h"],
+    deps = [":macros"],
 )
 
 cc_library(
@@ -93,6 +94,7 @@ cc_library(
     hdrs = ["mmio.h"],
     deps = [
         ":bitfield",
+        ":macros",
         ":memory",
     ],
 )
@@ -102,5 +104,8 @@ cc_library(
     srcs = ["abs_mmio.c"],
     hdrs = ["abs_mmio.h"],
     target_compatible_with = [OPENTITAN_CPU],
-    deps = [":mmio"],
+    deps = [
+        ":mmio",
+        ":macros",
+    ],
 )
