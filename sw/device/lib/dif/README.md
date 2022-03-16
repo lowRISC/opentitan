@@ -303,8 +303,7 @@ there are some relaxations of these rules for them described at the end.
   a DIF can either error or instead produce a value, it must return a
   `dif_result_t`, and use an out-parameter for returning the produced value.
   * DIFs that return an enum return code must be annotated with
-    `OT_WARN_UNUSED_RESULT`, which expands to 
-    `__attribute__((warn_unused_result))`, to help minimize mistakes from
+    `OT_WARN_UNUSED_RESULT`, to help minimize mistakes from
     failing to check a result. This guidance applies to `static` helper
     functions that return an error of some kind as well.
   * DIFs that cannot error and that do not return a value must return `void`.

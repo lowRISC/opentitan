@@ -27,14 +27,6 @@ extern "C" {
  * MMIO accesses.
  */
 
-/**
- * All MMIO functions return their results using return values, rather than out-
- * parameters. Where the return types are non-void, it is prudent to ensure
- * these results are used, or explicitly discarded (in the case of a volatile
- * read that is needed for side effects only).
- */
-#define ABS_MMIO_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
-
 #ifndef MOCK_ABS_MMIO
 
 /**
@@ -43,7 +35,7 @@ extern "C" {
  * @param addr the address to read from.
  * @return the read value.
  */
-ABS_MMIO_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 inline uint8_t abs_mmio_read8(uint32_t addr) {
   return *((volatile uint8_t *)addr);
 }
@@ -76,7 +68,7 @@ inline void abs_mmio_write8_shadowed(uint32_t addr, uint8_t value) {
  * @param addr the address to read from.
  * @return the read value.
  */
-ABS_MMIO_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 inline uint32_t abs_mmio_read32(uint32_t addr) {
   return *((volatile uint32_t *)addr);
 }
