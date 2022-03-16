@@ -11,32 +11,416 @@
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
                      "rv_dm_sec_cm_testplan.hjson"]
   testpoints: [
+    // Note that the CSR tests in the imported csr_testplan.hjson will cover CSRs attached to both,
+    // the main RV_DM device interface as well as the debug ROM interface.
     {
       name: smoke
       desc: '''
-            Smoke test accessing a major datapath within the rv_dm.
+            A basic smoke test.
 
-            **Stimulus**:
-            - TBD
-
-            **Checks**:
-            - TBD
+            . Read the DTM register `idcode` and verify that it reflects the correct value.
+            - Enable debug by setting lc_hw_debug_en to true.
+            - Write to the DMI register field dmcontrol[dmactive] via JTAG and verify that the
+              `dmactive` output pin reflects the same value.
+            - Write to the DMI register field dmcontrol[haltreq] via JTAG and verify that the
+              `debug_req` output pin reflects the same value.
+            - Write to the DMI register field dmcontrol[ndmreset] via JTAG and verify that the
+              `ndmreset` output pin reflects the same value.
+            - Wiggle the `unavailable` input and read the DTM register field dmstatus[allunavail]
+              to verify that it reflects the same value as the input signal.
             '''
       milestone: V1
       tests: ["rv_dm_smoke"]
+
     }
     {
-      name: feature1
-      desc: '''Add more test entries here like above.'''
+      name: jtag_dtm_csr_hw_reset
+      desc: '''
+            Verify the reset values of JTAG DTM CSRs as indicated in the RAL specification.
+
+            See hw/dv/tools/dvsim/testplans/csr_testplan.hjson for more description, This follows
+            the same approach, but applies to the JTAG DTM regisers.
+
+            In these set of tests, the lc_hw_debug_en is set to true, scanmode & scan_rst_n inputs
+            to false.
+            '''
       milestone: V1
+      tests: ["rv_dm_jtag_dtm_csr_hw_reset"]
+    }
+    {
+      name: jtag_dtm_csr_rw
+      desc: '''
+            Verify accessibility of JTAG DTM CSRs as indicated in the RAL specification.
+
+            See hw/dv/tools/dvsim/testplans/csr_testplan.hjson for more description, This follows
+            the same approach, but applies to the JTAG DTM regisers.
+            '''
+      milestone: V1
+      tests: ["rv_dm_jtag_dtm_csr_rw"]
+    }
+    {
+      name: jtag_dtm_csr_bit_bash
+      desc: '''
+            Verify no aliasing within individual bits of JTAG DTM CSR.
+
+            See hw/dv/tools/dvsim/testplans/csr_testplan.hjson for more description, This follows
+            the same approach, but applies to the JTAG DTM regisers.
+            '''
+      milestone: V1
+      tests: ["rv_dm_jtag_dtm_csr_bit_bash"]
+    }
+    {
+      name: jtag_dtm_csr_aliasing
+      desc: '''
+            Verify no aliasing within the JTAG DTM CSR address space.
+
+            See hw/dv/tools/dvsim/testplans/csr_testplan.hjson for more description, This follows
+            the same approach, but applies to the JTAG DTM regisers.
+            '''
+      milestone: V1
+      tests: ["rv_dm_jtag_dtm_csr_aliasing"]
+    }
+    {
+      name: jtag_dmi_csr_hw_reset
+      desc: '''
+            Verify the reset values of JTAG DMI CSRs as indicated in the RAL specification.
+
+            See hw/dv/tools/dvsim/testplans/csr_testplan.hjson for more description, This follows
+            the same approach, but applies to the JTAG DMI regisers.
+
+            In these set of tests, the lc_hw_debug_en is set to true, scanmode & scan_rst_n inputs
+            to false.
+
+            Also, the dmcontrol[dmactive] field is set to 1 at the start, to ensure CSR accesses to
+            all other registers go through.
+            '''
+      milestone: V1
+      tests: ["rv_dm_jtag_dmi_csr_hw_reset"]
+    }
+    {
+      name: jtag_dmi_csr_rw
+      desc: '''
+            Verify accessibility of JTAG DMI CSRs as indicated in the RAL specification.
+
+            See hw/dv/tools/dvsim/testplans/csr_testplan.hjson for more description, This follows
+            the same approach, but applies to the JTAG DMI regisers.
+            '''
+      milestone: V1
+      tests: ["rv_dm_jtag_dmi_csr_rw"]
+    }
+    {
+      name: jtag_dmi_csr_bit_bash
+      desc: '''
+            Verify no aliasing within individual bits of JTAG DMI CSR.
+
+            See hw/dv/tools/dvsim/testplans/csr_testplan.hjson for more description, This follows
+            the same approach, but applies to the JTAG DMI regisers.
+            '''
+      milestone: V1
+      tests: ["rv_dm_jtag_dmi_csr_bit_bash"]
+    }
+    {
+      name: jtag_dmi_csr_aliasing
+      desc: '''
+            Verify no aliasing within the JTAG DMI CSR address space.
+
+            See hw/dv/tools/dvsim/testplans/csr_testplan.hjson for more description, This follows
+            the same approach, but applies to the JTAG DMI regisers.
+            '''
+      milestone: V1
+      tests: ["rv_dm_jtag_dmi_csr_aliasing"]
+    }
+    {
+      name: idcode
+      desc: '''
+            Verify that the JTAG IDCODE reads the correct value.
+
+            - Set a different JTAG ID code an rv_dm design parameter.
+            - Read the IDCODE register in JTAG DTM register space, via JTAG.
+            - Verify it reads back what was set.
+            '''
+      milestone: V2
+      tests: ["rv_dm_smoke"]
+    }
+    {
+      name: jtag_dtm_hard_reset
+      desc: '''
+            Verify that the debugger can camcel an on-going DMI transaction with a hard reset.
+
+            - Perform a random legal DMI write to a chosen DMI register and immediately write to
+              dtmcs[dmihardreset] bit.
+            - Read the target DMI register to verify the write did not succeed.
+            '''
+      milestone: V2
       tests: []
+    }
+    {
+      name: jtag_dtm_idle_hint
+      desc: '''
+            Verify that the JTAG debugger does not need to stay any longer than the advertized idle
+            time indicated in dtmcs register.
+
+            - Read the dtmcs[idle] value and configure the JTAG DMI register adapter to insert that
+              many delay between transactions.
+            - Issue random legal DMI accesses back to back and ensure that all of them complete
+              successfully, without dmistat reflecting an error.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: jtag_dmi_failed_op
+      desc: '''
+            Verify that the a failed DMI op is reflected properly in dtmcs register.
+
+            - Issue a random legal DMI write to a chosen DMI register.
+            - Before that access completes, issue another random legal DMI access.
+            - Read the dtmcs[dmistat] register to verify busy error.
+            - Clear it by writing to dtmcs[dmireset] register.
+            - Poll the DMI access for completion and verify that the first write completed
+              successfully by doing a read-check.
+            - TBO - unclear how to generate other types of failed DMI transactions.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: jtag_dmi_dm_inactive
+      desc: '''
+            Verify that writes to DMI registers other than dmcontrol[dmactive] and ignored and they
+            all retain the reset values on reads.
+
+            - Perform random writes to DMI registers while dmcontrol[dmactive] is 0 (exclude it).
+            - Read all DMI registers back and verify they reflect POR values.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: sba
+      desc: '''
+            Verify all types of accesses from JTAG to SBA.
+
+            - Enable debug by setting lc_hw_debug_en to true and activate the dm
+            - Write to SBA registers to inject randomized 8/16/32bit writes and reads.
+            - Randomize readonaddr and readondata settings and ensure those have the intended
+              effect.
+            - Inject a new SBA traffic before the previous one completes - verify that the
+              sbbusyerror asserts.
+            - Randomly inject TL intg error and bus access error on the response channel and ensure
+              no deadlocks. The SBA host interface does not support signaling of errors, so this
+              has no effect.
+            - Randomly also enable abautoincrement.
+            - The TL intg error on SBA TL interface is intentionally not wired to an alert - verify
+              no alerts occur.
+            - Hav.
+            '''
+      milestone: V2
+      tests: ["rv_dm_sba_tl_access"]
+    }
+    {
+      name: bad_sba
+      desc: '''
+            Verify attempts to make bad SBA accesses results in sberror sticky bit getting set.
+
+            - Enable debug by setting lc_hw_debug_en to true and activate the dm.
+            - Inject a randomized SBA access that is not aligned to the size of the transfer and
+              verify that the sberror bit is set to 3.
+            - Inject a randomized SBA access that is greater that the supported transfer size and
+              verify that the sberror bit is set to 4.
+
+            Note: The following error scenarios are not supported by the design:
+            - pulp-platform/riscv-dbg#128: response timeout (sberror = 1) is not implemented.
+            - pulp-platform/riscv-dbg#86: bad address (sberror = 2) is not defined or implemented.
+            - 'Other' error cases (sberror = 7) is not defined.
+            '''
+      milestone: V2
+      tests: ["rv_dm_bad_sba_tl_access"]
+    }
+    {
+      name: sba_autoincrement
+      desc: '''
+            Verify the address autoincrement functionality of SBA.
+
+            - Enable debug by setting lc_hw_debug_en to true and activate the dm.
+            - Write to the SBCS register to inject randomized 8/16/32bit writes. Set the
+              autoincrement bit.
+            - Pick a random address and write to sbaddress0 register.
+            - Write a random value to sbdata0, repeating a randomized number of times.
+            - Each write should trigger a new SBA TL write access with the address incremented with
+              the transfer size. Verify that the SBA TL access shows up.
+            - Repeat the same procedure for reads. For reads, set the readondata register and read
+              the sbdata0 a randomized number of times - each read should trigger a new SBA TL read
+              access.
+            '''
+      milestone: V2
+      tests: ["rv_dm_autoincr_sba_tl_access"]
+    }
+    {
+      name: jtag_dmi_debug_disabled
+      desc: '''
+            Verify that the JTAG DMI register space cannot be accessed if lc_hw_debug_en is a non
+            strict true value.
+
+            - Set lc_hw_debug_en to true and activate the dm.
+            - Write a known value to a randomly picked DMI CSR.
+            - Set lc_hw_debug_en to non-true value.
+            - Write a different value to the same DMI CSR.
+            - Attempt to read that DMI CSR - it should read all 0s.
+            - Note that the above steps are rendered moot becuase the JTAG DTM itself will not
+              receive any incoming JTAG transactions.
+            - Set lc_hw_debug_en to true and again, read the DMI CSR - it should reflect the
+              originally written value.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: sba_debug_disabled
+      desc: '''
+            Verify that access to SBA interface is disabled if lc_hw_debug_en is set to not strict
+            true value.
+
+            - Set lc_hw_debug_en to true and activate the dm.
+            - Attempt to inject a legal randomized SBA access - verify that it comes through.
+            - Set lc_hw_debug_en to non-true value and activate the dm.
+            - Attempt to inject a legal randomized SBA access - verify that no SBA TL accesses
+              appear on the TL interface.
+            - Reapeat, a random number of times.
+            - Verify via assertion checks, no transactions were seen on the SBA TL interface.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: debug_mem_debug_disabled
+      desc: '''
+            Verify that access to the debug mem via TL host interface results in error response.
+
+            - Set lc_hw_debug_en to true and activate the dm.
+            - Write a known value to a randomly picked debug mem CSR.
+            - Set lc_hw_debug_en to non-true value.
+            - Attempt to write a different value to the same CSR - verify error response.
+            - Attempt to read that CSR - verify error response.
+            - Attempt a number of legal accesses to any of the CSRs or memories in this space - they
+              all should result in error response.
+            - Set lc_hw_debug_en to true and again, read the debug mem CSR - it should reflect the
+              originally written value.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: debug_req
+      desc: '''
+            Verify that the debugger can issue a debug request to the CPU.
+
+            - Set lc_hw_debug_en to non-true value and activate the dm.
+            - Set unavailable input to 0 to reflect that the hart is available.
+            - Write dmcontrol[haltreq] to 1 via JTAG and poll for dmstatus[allhalted] to be set.
+            - Verify that the debug_req output asserts.
+            - On the debug mem TL interface, after some random delay, write 1 to the `halted`
+              register in the debub memory.
+            - Ensure that the polling in the loop above completes.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: ndmreset_req
+      desc: '''
+            Verify that the debugger can issue a non-debug reset to the rest of the system.
+
+            - Set lc_hw_debug_en to true value and activate the dm.
+            - Pick a random set of write/readable CSRs in all 3 RALs (JTAG DMI, regs RAL and debug
+              mem RAL). Write known values to them.
+            - Write the dmcontrol register to assert ndmreset - verify that the ndmreset output
+              stays asserted.
+            - Mimic the CPU going into reset by asserting unavailable input.
+            - Read the dmstatus register to verify allunavail is asserted.
+            - De-assert the ndmreset by writing 0 to the dmcontrol register field, verify the
+              ndmreset output deasserted as well.
+            - Mimic the CPU coing out of reset reset by de-asserting unavailable input after some
+              delay.
+            - Read the previously written registers back and verify that they reflect the previously
+              written value, proving that ndmreset assertion had no effect on them.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: hart_unavail
+      desc: '''
+            Verify that the debugger can read the status of unavailable hart
+
+            - Set lc_hw_debug_en to true value and activate the dm.
+            - Randomly assert and de-assert the `unavailable` input (indicates the CPU is under
+              reset). This ideally happens when ndmreset is issued by the debugger.
+            - Periodically issue reads to dmstatus register to verify allunavail matches the
+              `unavailable` input value
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: prog_buf
+      desc: '''
+            Verify that a halted hart can execute arbitrary set of instructions via program buffer.
+
+            - TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: abstract_cmd
+      desc: '''
+            Verify the quick-access abstract command feature.
+
+            - TBD
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: abstract_cmd_err
+      desc: '''
+            Verify the abstract command error scenarios.
+
+            - TBD
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: stress_all
+      desc: '''
+            A 'bug hunt' test that stresses the DUT to its limits.
+
+            - Combine above sequences in one test and run as many of them as possible in parallel.
+              Run the rest sequentially.
+            - Randomly inject a full device reset intermittently.
+            '''
+      milestone: V2
+      tests: ["rv_dm_stress_all"]
     }
   ]
 
   covergroups: [
     {
-      name: rv_dm_feature_cg
-      desc: '''Describe the functionality covered by this covergroup.'''
+      name: sba_access_cg
+      desc: '''Cover all possible types of accesses over SBA.
+
+            - cp: reads and write accesses
+            - cp: supported transfer sizes
+            - cp: auto-increment address with back-to-back acesses
+            - cp: for reads, cover readonaddr and readondata settings
+            - cp: sberror cases with unaligned address and unsupported size
+            - cp: sbbusyerror case - attempt new access before the previous one completed
+            - cr: cross all of the above
+            '''
     }
   ]
 }
