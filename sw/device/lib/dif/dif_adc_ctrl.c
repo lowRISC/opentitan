@@ -173,3 +173,34 @@ dif_result_t dif_adc_ctrl_configure_filter(const dif_adc_ctrl_t *adc_ctrl,
 
   return kDifOk;
 }
+
+dif_result_t dif_adc_ctrl_set_enabled(const dif_adc_ctrl_t *adc_ctrl,
+                                      dif_toggle_t enabled) {
+  if (adc_ctrl == NULL || !dif_is_valid_toggle(enabled)) {
+    return kDifBadArg;
+  }
+
+  uint32_t en_ctrl_reg =
+      mmio_region_read32(adc_ctrl->base_addr, ADC_CTRL_ADC_EN_CTL_REG_OFFSET);
+  en_ctrl_reg =
+      bitfield_bit32_write(en_ctrl_reg, ADC_CTRL_ADC_EN_CTL_ADC_ENABLE_BIT,
+                           dif_toggle_to_bool(enabled));
+  mmio_region_write32(adc_ctrl->base_addr, ADC_CTRL_ADC_EN_CTL_REG_OFFSET,
+                      en_ctrl_reg);
+
+  return kDifOk;
+}
+
+dif_result_t dif_adc_ctrl_get_enabled(const dif_adc_ctrl_t *adc_ctrl,
+                                      dif_toggle_t *is_enabled) {
+  if (adc_ctrl == NULL || is_enabled == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t en_ctrl_reg =
+      mmio_region_read32(adc_ctrl->base_addr, ADC_CTRL_ADC_EN_CTL_REG_OFFSET);
+  *is_enabled = dif_bool_to_toggle(
+      bitfield_bit32_read(en_ctrl_reg, ADC_CTRL_ADC_EN_CTL_ADC_ENABLE_BIT));
+
+  return kDifOk;
+}
