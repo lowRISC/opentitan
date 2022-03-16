@@ -216,5 +216,115 @@ TEST_F(GetEnabledTest, Success) {
   EXPECT_EQ(is_enabled, kDifToggleDisabled);
 }
 
+class SetFilterEnabledTest : public AdcCtrlTest {};
+
+TEST_F(SetFilterEnabledTest, NullHandle) {
+  EXPECT_DIF_BADARG(dif_adc_ctrl_filter_set_enabled(
+      nullptr, kDifAdcCtrlChannel0, kDifAdcCtrlFilter3, kDifToggleEnabled));
+}
+
+TEST_F(SetFilterEnabledTest, BadChannel) {
+  EXPECT_DIF_BADARG(dif_adc_ctrl_filter_set_enabled(
+      &adc_ctrl_, static_cast<dif_adc_ctrl_channel_t>(2), kDifAdcCtrlFilter3,
+      kDifToggleEnabled));
+}
+
+TEST_F(SetFilterEnabledTest, BadFilter) {
+  EXPECT_DIF_BADARG(dif_adc_ctrl_filter_set_enabled(
+      &adc_ctrl_, kDifAdcCtrlChannel0,
+      static_cast<dif_adc_ctrl_filter_t>(ADC_CTRL_PARAM_NUM_ADC_FILTER),
+      kDifToggleEnabled));
+  EXPECT_DIF_BADARG(dif_adc_ctrl_filter_set_enabled(
+      &adc_ctrl_, kDifAdcCtrlChannel1,
+      static_cast<dif_adc_ctrl_filter_t>(ADC_CTRL_PARAM_NUM_ADC_FILTER),
+      kDifToggleEnabled));
+}
+
+TEST_F(SetFilterEnabledTest, BadEnabled) {
+  EXPECT_DIF_BADARG(dif_adc_ctrl_filter_set_enabled(
+      &adc_ctrl_, kDifAdcCtrlChannel0, kDifAdcCtrlFilter3,
+      static_cast<dif_toggle_t>(2)));
+}
+
+TEST_F(SetFilterEnabledTest, Success) {
+  EXPECT_READ32(ADC_CTRL_ADC_CHN1_FILTER_CTL_2_REG_OFFSET,
+                {{ADC_CTRL_ADC_CHN1_FILTER_CTL_2_MIN_V_2_OFFSET,
+                  filter_config_.min_voltage},
+                 {ADC_CTRL_ADC_CHN1_FILTER_CTL_2_MAX_V_2_OFFSET,
+                  filter_config_.max_voltage},
+                 {ADC_CTRL_ADC_CHN1_FILTER_CTL_2_COND_2_BIT, true},
+                 {ADC_CTRL_ADC_CHN1_FILTER_CTL_2_EN_2_BIT, false}});
+  EXPECT_WRITE32(ADC_CTRL_ADC_CHN1_FILTER_CTL_2_REG_OFFSET,
+                 {{ADC_CTRL_ADC_CHN1_FILTER_CTL_2_MIN_V_2_OFFSET,
+                   filter_config_.min_voltage},
+                  {ADC_CTRL_ADC_CHN1_FILTER_CTL_2_MAX_V_2_OFFSET,
+                   filter_config_.max_voltage},
+                  {ADC_CTRL_ADC_CHN1_FILTER_CTL_2_COND_2_BIT, true},
+                  {ADC_CTRL_ADC_CHN1_FILTER_CTL_2_EN_2_BIT, true}});
+  EXPECT_DIF_OK(dif_adc_ctrl_filter_set_enabled(
+      &adc_ctrl_, kDifAdcCtrlChannel1, kDifAdcCtrlFilter2, kDifToggleEnabled));
+
+  EXPECT_READ32(ADC_CTRL_ADC_CHN0_FILTER_CTL_7_REG_OFFSET,
+                {{ADC_CTRL_ADC_CHN0_FILTER_CTL_7_MIN_V_7_OFFSET,
+                  filter_config_.min_voltage},
+                 {ADC_CTRL_ADC_CHN0_FILTER_CTL_7_MAX_V_7_OFFSET,
+                  filter_config_.max_voltage},
+                 {ADC_CTRL_ADC_CHN0_FILTER_CTL_7_COND_7_BIT, true},
+                 {ADC_CTRL_ADC_CHN0_FILTER_CTL_7_EN_7_BIT, true}});
+  EXPECT_WRITE32(ADC_CTRL_ADC_CHN0_FILTER_CTL_7_REG_OFFSET,
+                 {{ADC_CTRL_ADC_CHN0_FILTER_CTL_7_MIN_V_7_OFFSET,
+                   filter_config_.min_voltage},
+                  {ADC_CTRL_ADC_CHN0_FILTER_CTL_7_MAX_V_7_OFFSET,
+                   filter_config_.max_voltage},
+                  {ADC_CTRL_ADC_CHN0_FILTER_CTL_7_COND_7_BIT, true},
+                  {ADC_CTRL_ADC_CHN0_FILTER_CTL_7_EN_7_BIT, false}});
+  EXPECT_DIF_OK(dif_adc_ctrl_filter_set_enabled(
+      &adc_ctrl_, kDifAdcCtrlChannel0, kDifAdcCtrlFilter7, kDifToggleDisabled));
+}
+
+class GetFilterEnabledTest : public AdcCtrlTest {};
+
+TEST_F(GetFilterEnabledTest, NullArgs) {
+  dif_toggle_t is_enabled;
+  EXPECT_DIF_BADARG(dif_adc_ctrl_filter_get_enabled(
+      nullptr, kDifAdcCtrlChannel0, kDifAdcCtrlFilter3, &is_enabled));
+  EXPECT_DIF_BADARG(dif_adc_ctrl_filter_get_enabled(
+      &adc_ctrl_, kDifAdcCtrlChannel0, kDifAdcCtrlFilter3, nullptr));
+}
+
+TEST_F(GetFilterEnabledTest, BadChannel) {
+  dif_toggle_t is_enabled;
+  EXPECT_DIF_BADARG(dif_adc_ctrl_filter_get_enabled(
+      &adc_ctrl_, static_cast<dif_adc_ctrl_channel_t>(2), kDifAdcCtrlFilter3,
+      &is_enabled));
+}
+
+TEST_F(GetFilterEnabledTest, BadFilter) {
+  dif_toggle_t is_enabled;
+  EXPECT_DIF_BADARG(dif_adc_ctrl_filter_get_enabled(
+      &adc_ctrl_, kDifAdcCtrlChannel0,
+      static_cast<dif_adc_ctrl_filter_t>(ADC_CTRL_PARAM_NUM_ADC_FILTER),
+      &is_enabled));
+  EXPECT_DIF_BADARG(dif_adc_ctrl_filter_get_enabled(
+      &adc_ctrl_, kDifAdcCtrlChannel1,
+      static_cast<dif_adc_ctrl_filter_t>(ADC_CTRL_PARAM_NUM_ADC_FILTER),
+      &is_enabled));
+}
+
+TEST_F(GetFilterEnabledTest, Success) {
+  dif_toggle_t is_enabled;
+
+  EXPECT_READ32(ADC_CTRL_ADC_CHN0_FILTER_CTL_7_REG_OFFSET,
+                {{ADC_CTRL_ADC_CHN0_FILTER_CTL_7_EN_7_BIT, true}});
+  EXPECT_DIF_OK(dif_adc_ctrl_filter_get_enabled(
+      &adc_ctrl_, kDifAdcCtrlChannel0, kDifAdcCtrlFilter7, &is_enabled));
+  EXPECT_EQ(is_enabled, kDifToggleEnabled);
+
+  EXPECT_READ32(ADC_CTRL_ADC_CHN1_FILTER_CTL_4_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_adc_ctrl_filter_get_enabled(
+      &adc_ctrl_, kDifAdcCtrlChannel1, kDifAdcCtrlFilter4, &is_enabled));
+  EXPECT_EQ(is_enabled, kDifToggleDisabled);
+}
+
 }  // namespace
 }  // namespace dif_adc_ctrl_unittest
