@@ -106,6 +106,7 @@ package adc_ctrl_env_pkg;
 
   // package sources
   `include "adc_ctrl_env_cfg.sv"
+  `include "adc_ctrl_env_var_filter_cfg.sv"
   `include "adc_ctrl_env_cov.sv"
   `include "adc_ctrl_virtual_sequencer.sv"
   `include "adc_ctrl_scoreboard.sv"

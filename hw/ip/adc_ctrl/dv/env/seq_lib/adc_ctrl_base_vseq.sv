@@ -113,14 +113,17 @@ class adc_ctrl_base_vseq extends cip_base_vseq #(
   virtual task adc_ctrl_off();
     // Disable assertions which will trigger because of the abrupt turn off
     `DV_ASSERT_CTRL_REQ("ADC_IF_A_CTRL", 0)
+    // Sync to data
+    wait_all_rx();
+    // Delay to allow handshake to complete
+    cfg.clk_aon_rst_vif.wait_clks(5);
+    // Disable ADC_CTRL
     csr_wr(ral.adc_en_ctl, 'h0);
-    fork
-      begin
-        cfg.clk_aon_rst_vif.wait_clks(10);
-        // Turn back on again
-        `DV_ASSERT_CTRL_REQ("ADC_IF_A_CTRL", 1)
-      end
-    join_none
+    // Need to wait long enough for any current ADC access to complete
+    // This will be determined by the push pull agent configuration
+    cfg.clk_aon_rst_vif.wait_clks(40);
+    // Turn back on again
+    `DV_ASSERT_CTRL_REQ("ADC_IF_A_CTRL", 1)
   endtask
 
   // Perform software reset

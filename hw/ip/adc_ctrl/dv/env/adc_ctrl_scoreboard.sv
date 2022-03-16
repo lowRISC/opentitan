@@ -13,10 +13,10 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
   adc_push_pull_fifo_t m_adc_push_pull_fifo[ADC_CTRL_CHANNELS];
 
   // Latest value for each channel
-  protected adc_value_logic_t m_adc_latest_values[int];
+  protected adc_value_logic_t m_adc_latest_values[int] = '{default: 0};
 
   // Interrupt value for each channel
-  protected adc_value_logic_t m_adc_interrupt_values[int];
+  protected adc_value_logic_t m_adc_interrupt_values[int] = '{default: 0};
 
   // Interrupt line
   protected logic m_interrupt, m_interrupt_prev;
@@ -50,6 +50,10 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
   protected event m_adc_fsm_reset_wr_ev;
   // FSM reset reg value
   protected bit m_adc_fsm_reset;
+  // ADC_CTRL enabled
+  protected bit m_adc_ctrl_en = 0;
+  // In low power mode
+  protected bit m_lp_mode = 0;
 
   `uvm_component_utils(adc_ctrl_scoreboard)
 
@@ -80,6 +84,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     fork
       monitor_intr_proc();
       monitor_wakeup_proc();
+      monitor_aon_reset_proc();
     join_none
 
     for (idx = 0; idx < ADC_CTRL_CHANNELS; idx++) begin
@@ -136,6 +141,22 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
+  // Monitor always on clock reset
+  virtual task monitor_aon_reset_proc();
+    forever begin
+      if (!cfg.clk_aon_rst_vif.rst_n) begin
+        `uvm_info(`gfn, "aon reset occurred", UVM_HIGH)
+        reset("HARD");
+        m_expected_wakeup = 0;
+        @(posedge cfg.clk_aon_rst_vif.rst_n);
+        `uvm_info(`gfn, "out of reset", UVM_HIGH)
+      end else begin
+        // wait for a change to rst_n
+        @(cfg.clk_aon_rst_vif.rst_n);
+      end
+    end
+  endtask
+
   // Process ADC push pull fifos
   protected virtual task adc_push_pull_fifo_proc(adc_push_pull_fifo_t fifo, int channel);
     adc_push_pull_item_t item;
@@ -145,8 +166,8 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
       // Set latest value
       m_adc_latest_values[channel] = item.d_data;
 
-      // Send data to filter model
-      process_filter_data(channel, item.d_data);
+      // Send data to filter model if ADC_CTRL enabled
+      if (m_adc_ctrl_en) process_filter_data(channel, item.d_data);
 
       `uvm_info(
           `gfn, $sformatf(
@@ -233,8 +254,42 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
       "adc_intr_ctl": begin
         // FIXME
       end
+      "adc_wakeup_ctl": begin
+        if (addr_phase_write) begin
+          // Evaluate expected wakeup adc_wakeup_ctl
+          m_expected_wakeup =
+              |(m_expected_filter_status & get_field_val(cfg.ral.adc_wakeup_ctl.en, item.a_data));
+        end
+      end
       "adc_en_ctl": begin
-        // FIXME
+        if (addr_phase_write) begin
+          m_adc_ctrl_en = get_field_val(cfg.ral.adc_en_ctl.adc_enable, item.a_data);
+          if (m_adc_ctrl_en) begin
+            // Enable the ADC_CTRL
+            // Update mode from adc_pd_ctl but only if not oneshot mode
+            if (!get_field_val(cfg.ral.adc_en_ctl.oneshot_mode, item.a_data)) begin
+              m_lp_mode = cfg.ral.adc_pd_ctl.lp_mode.get_mirrored_value();
+            end else begin
+              // Oneshot mode
+              m_lp_mode = 0;
+            end
+
+            // Update filter match using previously captured data
+            foreach (m_adc_latest_values[channel]) begin
+              process_filter_data(.channel(channel), .val(m_adc_latest_values[channel]),
+                                  .call_debounce(0));
+            end
+            m_match_prev = 0;
+          end else begin
+            // Disable the ADC_CTRL
+            m_lp_counter = 0;
+            m_np_counter = 0;
+            m_debounced = 0;
+            m_lp_mode = 0;
+          end
+          // Reflect in config object
+          cfg.lp_mode = m_lp_mode;
+        end
       end
       "filter_status": begin
         do_read_check = 1;
@@ -249,6 +304,8 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
           // Implement W1C
           m_expected_filter_status &= (~item.a_data);
         end
+        // Evaluate expected wakeup for new m_expected_filter_status
+        m_expected_wakeup = |(m_expected_filter_status & cfg.ral.adc_wakeup_ctl.get_mirrored_value());
       end
       "adc_chn0_filter_ctl_0", "adc_chn0_filter_ctl_1", "adc_chn0_filter_ctl_2",
           "adc_chn0_filter_ctl_3", "adc_chn0_filter_ctl_4", "adc_chn0_filter_ctl_5",
@@ -326,7 +383,8 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
   endtask
 
   // Process ADC CTRL filter model data
-  virtual function void process_filter_data(int channel, adc_value_logic_t val);
+  virtual function void process_filter_data(int channel, adc_value_logic_t val,
+                                            bit call_debounce = 1);
     bit filter_match;
     // Perform the basic match against filter config
     for (int filter_idx = 0; filter_idx < ADC_CTRL_NUM_FILTERS; filter_idx++) begin
@@ -348,7 +406,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     end
 
     // If this was data from the last channel process debounce model
-    if (channel == (ADC_CTRL_CHANNELS - 1)) process_debounce();
+    if (call_debounce && channel == (ADC_CTRL_CHANNELS - 1)) process_debounce();
   endfunction
 
   // Process debounce
@@ -391,6 +449,28 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
   // first raised and thus reflect the filter state from that point.
 
   virtual function void process_debounce();
+    // Select debounce mode
+    if (cfg.testmode inside {AdcCtrlTestmodeNormal, AdcCtrlTestmodeLowpower}) begin
+      if (!m_lp_mode) process_np_debounce();  // Normal power
+      else process_lp_debounce();  // Low power
+    end
+
+    // Implement One Shot Mode
+    // One hot interrupt is one bit above the last filter's interrupt
+    if (cfg.testmode inside {AdcCtrlTestmodeOneShot}) begin
+      m_expected_adc_intr_status[ADC_CTRL_NUM_FILTERS] = cfg.adc_intr_ctl[ADC_CTRL_NUM_FILTERS];
+      m_expected_intr_state |= cfg.adc_intr_ctl[ADC_CTRL_NUM_FILTERS];
+    end
+
+    // Delayfor edge detection
+    m_match_prev = m_match;
+
+    // Decode expected wakeup - allow dynamic control
+    m_expected_wakeup = |(m_expected_filter_status & cfg.ral.adc_wakeup_ctl.get_mirrored_value());
+  endfunction
+
+  // Process normal power debounce
+  virtual function void process_np_debounce();
     if (m_match != 0 && !m_adc_fsm_reset) begin
       if ((m_match == m_match_prev) || (m_match_prev == 0)) begin
         // If one or more filters are hit and either none was hit in the previous evaluation
@@ -419,20 +499,36 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
       m_np_counter = 0;
       m_debounced  = 0;
     end
+  endfunction
 
-    // Implement One Shot Mode
-    // One hot interrupt is one bit above the last filter's interrupt
-    if (cfg.testmode inside {AdcCtrlTestmodeOneShot}) begin
-      m_expected_adc_intr_status[ADC_CTRL_NUM_FILTERS] = cfg.adc_intr_ctl[ADC_CTRL_NUM_FILTERS];
-      m_expected_intr_state |= cfg.adc_intr_ctl[ADC_CTRL_NUM_FILTERS];
+  // Process low power debounce
+  virtual function void process_lp_debounce();
+    if (m_match != 0 && !m_adc_fsm_reset) begin
+      if ((m_match == m_match_prev) || (m_match_prev == 0)) begin
+        // If one or more filters are hit and either none was hit in the previous evaluation
+        // or the same set was hit in the previous evaluation and the counter is not
+        // at its limit then the counter will increment.
+        if (m_lp_counter < cfg.lp_sample_cnt) begin
+          // Not at it's limit
+          m_lp_counter++;
+          // Note m_lp_counter has now been incremented below so we can detect the
+          // transition from (cfg.lp_sample_cnt - 1) to cfg.lp_sample_cnt
+          if (m_lp_counter == cfg.lp_sample_cnt) begin
+            // Move to normal power mode
+            m_lp_mode = 0;
+            // Reflect in config object
+            cfg.lp_mode = 0;
+            m_lp_counter = 0;
+          end
+        end
+      end else begin
+        // Previous matched set different to current
+        m_lp_counter = 0;
+      end
+    end else begin
+      // No filters hit
+      m_lp_counter = 0;
     end
-
-    // Delayfor edge detection
-    m_match_prev = m_match;
-
-    // Decode expected wakeup - allow dynamic control
-    m_expected_wakeup = |(m_expected_filter_status & cfg.ral.adc_wakeup_ctl.get_mirrored_value());
-
   endfunction
 
 
@@ -452,6 +548,8 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     m_expected_filter_status = 0;
     m_expected_adc_intr_status = 0;
     m_expected_intr_state = 0;
+    m_adc_ctrl_en = 0;
+    m_lp_mode = 0;
   endfunction
 
   // Software reset
@@ -460,12 +558,10 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     m_adc_fsm_reset = val;
     if (val) begin
       // Clear model state
-      m_match = 0;
-      m_match_prev = 0;
-      m_chn_match = 0;
       m_np_counter = 0;
       m_lp_counter = 0;
       m_debounced = 0;
+      m_lp_mode = 0;
     end
   endfunction
 

@@ -48,6 +48,7 @@ class adc_ctrl_env_cov extends cip_base_env_cov #(
   .CFG_T(adc_ctrl_env_cfg)
 );
   `uvm_component_utils(adc_ctrl_env_cov)
+  `uvm_component_new
 
   // Sample configuration
   event sample_cfg_ev;
@@ -57,14 +58,19 @@ class adc_ctrl_env_cov extends cip_base_env_cov #(
   adc_ctrl_filter_cg_wrapper adc_ctrl_filter_cg_wrapper_insts
       [ADC_CTRL_CHANNELS] [ADC_CTRL_NUM_FILTERS];
 
-  function new(string name, uvm_component parent);
-    super.new(name, parent);
+  virtual function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
     for (int channel = 0; channel < ADC_CTRL_CHANNELS; channel++) begin
       for (int filter = 0; filter < ADC_CTRL_NUM_FILTERS; filter++) begin
         adc_ctrl_filter_cg_wrapper_insts[channel][filter] =
             new(.channel(channel), .filter(filter), .cfg(cfg), .sample_ev(sample_cfg_ev));
       end
     end
-  endfunction : new
+  endfunction : build_phase
+
+  // Sample the coverage
+  virtual function void sample_cfg_cov();
+    ->sample_cfg_ev;
+  endfunction
 
 endclass
