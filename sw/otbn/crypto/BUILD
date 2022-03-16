@@ -7,6 +7,23 @@ load("//rules:otbn.bzl", "otbn_binary", "otbn_library")
 package(default_visibility = ["//visibility:public"])
 
 otbn_library(
+    name = "field25519",
+    srcs = [
+        "field25519.s",
+    ],
+)
+
+otbn_binary(
+    name = "field25519_test",
+    srcs = [
+        "field25519_test.s",
+    ],
+    deps = [
+        ":field25519",
+    ],
+)
+
+otbn_library(
     name = "modexp",
     srcs = [
         "modexp.s",
