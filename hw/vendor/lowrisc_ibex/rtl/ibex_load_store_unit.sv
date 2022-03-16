@@ -14,8 +14,10 @@
 `include "prim_assert.sv"
 `include "dv_fcov_macros.svh"
 
-module ibex_load_store_unit
-(
+module ibex_load_store_unit #(
+  parameter bit          MemECC       = 1'b0,
+  parameter int unsigned MemDataWidth = MemECC ? 32 + 7 : 32
+) (
   input  logic         clk_i,
   input  logic         rst_ni,
 
@@ -23,14 +25,14 @@ module ibex_load_store_unit
   output logic         data_req_o,
   input  logic         data_gnt_i,
   input  logic         data_rvalid_i,
-  input  logic         data_err_i,
+  input  logic         data_bus_err_i,
   input  logic         data_pmp_err_i,
 
-  output logic [31:0]  data_addr_o,
-  output logic         data_we_o,
-  output logic [3:0]   data_be_o,
-  output logic [31:0]  data_wdata_o,
-  input  logic [31:0]  data_rdata_i,
+  output logic [31:0]             data_addr_o,
+  output logic                    data_we_o,
+  output logic [3:0]              data_be_o,
+  output logic [MemDataWidth-1:0] data_wdata_o,
+  input  logic [MemDataWidth-1:0] data_rdata_i,
 
   // signals to/from ID/EX stage
   input  logic         lsu_we_i,             // write enable                     -> from ID/EX
@@ -59,6 +61,7 @@ module ibex_load_store_unit
   // exception signals
   output logic         load_err_o,
   output logic         store_err_o,
+  output logic         load_intg_err_o,
 
   output logic         busy_o,
 
@@ -95,7 +98,7 @@ module ibex_load_store_unit
                                                           // part of a misaligned access
   logic         pmp_err_q, pmp_err_d;
   logic         lsu_err_q, lsu_err_d;
-  logic         data_or_pmp_err;
+  logic         data_err, data_intg_err, data_or_pmp_err;
 
   typedef enum logic [2:0]  {
     IDLE, WAIT_GNT_MIS, WAIT_RVALID_MIS, WAIT_GNT,
@@ -323,6 +326,35 @@ module ibex_load_store_unit
     endcase // case (data_type_q)
   end
 
+  ///////////////////////////////
+  // Read data integrity check //
+  ///////////////////////////////
+
+  // SEC_CM: BUS.INTEGRITY
+  if (MemECC) begin : g_mem_rdata_ecc
+    logic [1:0] ecc_err;
+    logic [MemDataWidth-1:0] data_rdata_buf;
+
+    prim_buf #(.Width(MemDataWidth)) u_prim_buf_instr_rdata (
+      .in_i (data_rdata_i),
+      .out_o(data_rdata_buf)
+    );
+
+    prim_secded_inv_39_32_dec u_data_intg_dec (
+      .data_i     (data_rdata_buf),
+      .data_o     (),
+      .syndrome_o (),
+      .err_o      (ecc_err)
+    );
+
+    // Don't care if error is correctable or not, they're all treated the same
+    assign data_intg_err = |ecc_err;
+  end else begin : g_no_mem_data_ecc
+    assign data_intg_err = 1'b0;
+  end
+
+  assign data_err = data_intg_err | data_bus_err_i;
+
   /////////////
   // LSU FSM //
   /////////////
@@ -396,13 +428,13 @@ module ibex_load_store_unit
           // Update the PMP error for the second part
           pmp_err_d = data_pmp_err_i;
           // Record the error status of the first part
-          lsu_err_d = data_err_i | pmp_err_q;
+          lsu_err_d = data_err | pmp_err_q;
           // Capture the first rdata for loads
           rdata_update = ~data_we_q;
           // If already granted, wait for second rvalid
           ls_fsm_ns = data_gnt_i ? IDLE : WAIT_GNT;
           // Update the address for the second part, if no error
-          addr_update = data_gnt_i & ~(data_err_i | pmp_err_q);
+          addr_update = data_gnt_i & ~(data_err | pmp_err_q);
           // clear handle_misaligned if second request is granted
           handle_misaligned_d = ~data_gnt_i;
         end else begin
@@ -437,9 +469,9 @@ module ibex_load_store_unit
           // Update the pmp error for the second part
           pmp_err_d = data_pmp_err_i;
           // The first part cannot see a PMP error in this state
-          lsu_err_d = data_err_i;
+          lsu_err_d = data_err;
           // Now we can update the address for the second part if no error
-          addr_update = ~data_err_i;
+          addr_update = ~data_err;
           // Capture the first rdata for loads
           rdata_update = ~data_we_q;
           // Wait for second rvalid
@@ -474,7 +506,7 @@ module ibex_load_store_unit
   // Outputs //
   /////////////
 
-  assign data_or_pmp_err    = lsu_err_q | data_err_i | pmp_err_q;
+  assign data_or_pmp_err    = lsu_err_q | data_err | pmp_err_q;
   assign lsu_resp_valid_o   = (data_rvalid_i | pmp_err_q) & (ls_fsm_cs == IDLE);
   assign lsu_rdata_valid_o  = (ls_fsm_cs == IDLE) & data_rvalid_i & ~data_or_pmp_err & ~data_we_q;
 
@@ -486,16 +518,30 @@ module ibex_load_store_unit
 
   // output to data interface
   assign data_addr_o   = data_addr_w_aligned;
-  assign data_wdata_o  = data_wdata;
   assign data_we_o     = lsu_we_i;
   assign data_be_o     = data_be;
+
+  /////////////////////////////////////
+  // Write data integrity generation //
+  /////////////////////////////////////
+
+  // SEC_CM: BUS.INTEGRITY
+  if (MemECC) begin : g_mem_wdata_ecc
+    prim_secded_inv_39_32_enc u_data_gen (
+      .data_i (data_wdata),
+      .data_o (data_wdata_o)
+    );
+  end else begin : g_no_mem_wdata_ecc
+    assign data_wdata_o = data_wdata;
+  end
 
   // output to ID stage: mtval + AGU for misaligned transactions
   assign addr_last_o   = addr_last_q;
 
   // Signal a load or store error depending on the transaction type outstanding
-  assign load_err_o    = data_or_pmp_err & ~data_we_q & lsu_resp_valid_o;
-  assign store_err_o   = data_or_pmp_err &  data_we_q & lsu_resp_valid_o;
+  assign load_err_o      = data_or_pmp_err & ~data_we_q & lsu_resp_valid_o;
+  assign store_err_o     = data_or_pmp_err &  data_we_q & lsu_resp_valid_o;
+  assign load_intg_err_o = data_intg_err & data_rvalid_i;
 
   assign busy_o = (ls_fsm_cs != IDLE);
 
