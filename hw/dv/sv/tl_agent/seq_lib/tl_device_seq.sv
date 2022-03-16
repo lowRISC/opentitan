@@ -43,65 +43,87 @@ class tl_device_seq #(type REQ = tl_seq_item) extends dv_base_seq #(
 
   virtual task body();
     fork
-      begin:isolation_thread
+      begin: isolation_thread
         fork
-          forever begin // collect req thread
-            int req_cnt;
-            tl_seq_item item;
-            REQ req;
-
-            fork
-              begin: isolation_thread
-                fork
-                  p_sequencer.a_chan_req_fifo.get(item);
-                  wait (stop);
-                join_any
-                disable fork;
-              end
-            join
-
-            // If an item was retrieved from the fifo, accept it.
-            if (item != null) begin
-              `downcast(req, item)
-              req_q.push_back(req);
-              `uvm_info(`gfn, $sformatf("Received req[%0d] : %0s",
-                                         req_cnt, req.convert2string()), UVM_HIGH)
-              req_cnt++;
-            end
-
-            // Exit the forever loop if a stop req was seen.
-            if (stop) break;
-          end
-          forever begin // response thread
-            int rsp_cnt;
-            REQ req, rsp;
-
-            wait(req_q.size > 0);
-            if (out_of_order_rsp) req_q.shuffle();
-            req = req_q[0];  // 'peek' pop_front.
-            $cast(rsp, req.clone());
-            randomize_rsp(rsp);
-            post_randomize_rsp(rsp);
-            update_mem(rsp);
-            start_item(rsp);
-            finish_item(rsp);
-            get_response(rsp);
-            // Remove from req_q if response is completed.
-            if (rsp.rsp_completed) begin
-              req_q = req_q[1:$];
-              `uvm_info(`gfn, $sformatf("Sent rsp[%0d] : %0s, req: %0s",
-                                        rsp_cnt, rsp.convert2string(), req.convert2string()),
-                        UVM_HIGH)
-              rsp_cnt++;
-            end
-          end
+          collect_request_thread();
+          send_response_thread();
         join_any
+        // Wait for all requests to be serviced.
         wait (req_q.size() == 0);
         disable fork;
       end
     join
   endtask
 
+  // A blocking task that retrieves a request from the TLM fifo, unless the seq is stopped.
+  //
+  // req: A req item retrieved from the TLM fifo and returned back to the caller.
+  protected virtual task get_a_chan_req(output REQ req);
+    fork
+      begin: isolation_thread
+        fork
+          begin
+            tl_seq_item item;
+            p_sequencer.a_chan_req_fifo.get(item);
+            `downcast(req, item)
+          end
+          wait (stop);
+        join_any
+        // Allow the rest of the statements in the same time-step to finish executing in the "other"
+        // thread, before disabling the fork.
+        #0;
+        disable fork;
+      end
+    join
+  endtask
+
+  // A perpetually running task that collects and enqueues the incoming TL requests.
+  //
+  // The task finishes when the sequence is stopped, which is done be invoking the seq_stop()
+  // method.
+  protected virtual task collect_request_thread();
+    int req_cnt;
+    forever begin
+      REQ req;
+      get_a_chan_req(req);
+      if (req != null) begin
+        req_q.push_back(req);
+        `uvm_info(`gfn, $sformatf("Received req[%0d] : %0s",
+                                  req_cnt, req.convert2string()), UVM_HIGH)
+        req_cnt++;
+      end
+      if (stop) break;
+    end
+  endtask
+
+  // A perpetually running task that pops requests from the collected request queue and sends
+  // randomized responses.
+  protected virtual task send_response_thread();
+    int rsp_cnt;
+    forever begin
+      REQ req, rsp;
+      wait(req_q.size > 0);
+      if (out_of_order_rsp) req_q.shuffle();
+      req = req_q[0];  // 'peek' pop_front.
+      `downcast(rsp, req.clone())
+      randomize_rsp(rsp);
+      post_randomize_rsp(rsp);
+      update_mem(rsp);
+      start_item(rsp);
+      finish_item(rsp);
+      get_response(rsp);
+      // Remove from req_q if response is completed.
+      if (rsp.rsp_completed) begin
+        req_q = req_q[1:$];
+        `uvm_info(`gfn, $sformatf("Sent rsp[%0d] : %0s, req: %0s",
+                                  rsp_cnt, rsp.convert2string(), req.convert2string()), UVM_HIGH)
+        rsp_cnt++;
+      end
+    end
+  endtask
+
+  // User-overridable function to randomize the response. The response is already cloned from the
+  // request, so the request (a_channel) information is already present.
   virtual function void randomize_rsp(REQ rsp);
     rsp.disable_a_chan_randomization();
     if (d_error_pct > 0) rsp.no_d_error_c.constraint_mode(0);
@@ -120,7 +142,7 @@ class tl_device_seq #(type REQ = tl_seq_item) extends dv_base_seq #(
     end
   endfunction
 
-  // callback after randomize seq, extened seq can override it to handle some non-rand variables
+  // callback after randomize seq, extended seq can override it to handle some non-rand variables
   virtual function void post_randomize_rsp(REQ rsp);
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rsp_abort_after_d_valid_len)
     rsp.rsp_abort_after_d_valid_len = rsp_abort_after_d_valid_len;
