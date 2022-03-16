@@ -20,6 +20,7 @@ filesets:
       - jtag_dmi_item.sv: {is_include_file: true}
       - jtag_dmi_monitor.sv: {is_include_file: true}
       - sba_access_utils_pkg.sv
+      - sba_access_item.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:
