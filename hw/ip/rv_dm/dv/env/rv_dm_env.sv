@@ -45,7 +45,7 @@ class rv_dm_env extends cip_base_env #(
     uvm_config_db#(jtag_agent_cfg)::set(this, "m_jtag_agent*", "cfg", cfg.m_jtag_agent_cfg);
     cfg.m_jtag_agent_cfg.en_cov = cfg.en_cov;
 
-    m_jtag_dmi_monitor = jtag_dmi_monitor::type_id::create("m_jtag_dmi_monitor", this);
+    m_jtag_dmi_monitor = jtag_dmi_monitor#()::type_id::create("m_jtag_dmi_monitor", this);
     m_jtag_dmi_monitor.cfg = cfg.m_jtag_agent_cfg;
   endfunction
 

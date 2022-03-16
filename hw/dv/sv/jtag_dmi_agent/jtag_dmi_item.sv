@@ -13,14 +13,19 @@ class jtag_dmi_item extends uvm_sequence_item;
   //
   // These represent both, the driven as well as the monitored transaction. Note that at this time,
   // the jtag_dmi_agent is a monitor-only agent.
-  rand jtag_dmi_op_t op;
-  rand uvm_reg_data_t data;
-  rand uvm_reg_data_t addr;
+  rand jtag_dmi_op_req_e  req_op;
+  rand uvm_reg_addr_t     addr;
+  rand uvm_reg_data_t     wdata;
+
+  rand jtag_dmi_op_rsp_e  rsp_op;
+  rand uvm_reg_data_t     rdata;
 
   `uvm_object_utils_begin(jtag_dmi_item)
-    `uvm_field_int(op, UVM_DEFAULT)
-    `uvm_field_int(data, UVM_DEFAULT)
-    `uvm_field_int(addr, UVM_DEFAULT)
+    `uvm_field_enum(jtag_dmi_op_req_e, req_op, UVM_DEFAULT)
+    `uvm_field_int (addr,                      UVM_DEFAULT)
+    `uvm_field_int (wdata,                     UVM_DEFAULT)
+    `uvm_field_enum(jtag_dmi_op_rsp_e, rsp_op, UVM_DEFAULT)
+    `uvm_field_int (rdata,                     UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new
