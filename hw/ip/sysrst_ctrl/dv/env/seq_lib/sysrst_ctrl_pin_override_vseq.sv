@@ -55,6 +55,8 @@ class sysrst_ctrl_pin_override_vseq extends sysrst_ctrl_base_vseq;
 
     repeat (num_trans) begin
 
+      `DV_CHECK_RANDOMIZE_FATAL(this)
+
       // Enable the override function
       csr_wr(ral.pin_out_ctl, en_override);
 
