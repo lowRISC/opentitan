@@ -11,8 +11,8 @@ def args(p):
     extra_arg = ", kHart" if p.name == "rv_timer" else ""
     return f"&{p.inst_name}{extra_arg}"
 %>\
+#include <limits.h>
 
-#include "sw/device/lib/base/freestanding/limits.h"
 #include "sw/device/lib/base/mmio.h"
 % for n in sorted(irq_peripheral_names + ["rv_plic"]):
 #include "sw/device/lib/dif/dif_${n}.h"

@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <assert.h>
+#include <limits.h>
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/freestanding/limits.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
