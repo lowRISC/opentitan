@@ -22,6 +22,7 @@ interface adc_ctrl_fsm_cov_if
 
   // Fsm state and counters when hardware reset is asserted
   covergroup adc_ctrl_hw_reset_cg @(negedge rst_aon_ni);
+    option.per_instance = 1;
     np_sample_cnt_min_max_cp: coverpoint np_sample_cnt_q {
       bins min = {0}; bins max = {MaxNpSampleCnt};
     }
@@ -45,6 +46,7 @@ interface adc_ctrl_fsm_cov_if
 
   // Fsm state and counters when FSM reset is asserted
   covergroup adc_ctrl_fsm_reset_cg @(posedge clk_aon_i);
+    option.per_instance = 1;
     np_sample_cnt_min_max_cp: coverpoint np_sample_cnt_q iff (cfg_fsm_rst_i == 1) {
       bins min = {0}; bins max = {MaxNpSampleCnt};
     }

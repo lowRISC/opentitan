@@ -13,5 +13,6 @@
 `include "adc_ctrl_poweron_counter_vseq.sv"
 `include "adc_ctrl_lowpower_counter_vseq.sv"
 `include "adc_ctrl_fsm_reset_vseq.sv"
-
+`include "adc_ctrl_filters_both_vseq.sv"
+`include "adc_ctrl_clock_gating_vseq.sv"
 

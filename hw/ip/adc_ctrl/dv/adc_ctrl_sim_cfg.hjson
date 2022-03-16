@@ -85,6 +85,16 @@
     }
 
     {
+      name: adc_ctrl_clock_gating
+      uvm_test_seq: adc_ctrl_clock_gating_vseq
+    }
+
+    {
+      name: adc_ctrl_filters_both
+      uvm_test_seq: adc_ctrl_filters_both_vseq
+    }
+
+    {
       name: adc_ctrl_poweron_counter
       uvm_test_seq: adc_ctrl_poweron_counter_vseq
     }

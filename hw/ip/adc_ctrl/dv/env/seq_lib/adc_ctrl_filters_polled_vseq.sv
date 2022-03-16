@@ -34,6 +34,11 @@ class adc_ctrl_filters_polled_vseq extends adc_ctrl_base_vseq;
       // Make sure ADC is off
       csr_wr(ral.adc_en_ctl, 'h0);
 
+      // Sample coverage
+      if (cfg.en_cov) begin
+        cov.sample_cfg_cov();
+      end
+
       // Set up the adc_ctrl registers
       configure_adc_ctrl();
 

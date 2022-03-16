@@ -139,7 +139,7 @@
           - Check interrupt signal operates as expected.
           '''
       milestone: V2
-      tests: []
+      tests: ["adc_ctrl_filters_both"]
     }
     {
       name: clock_gating
@@ -164,7 +164,7 @@
           - Check interrupt signal operates as expected.
           '''
       milestone: V2
-      tests: []
+      tests: ["adc_ctrl_clock_gating"]
     }
     {
       name: poweron_counter
