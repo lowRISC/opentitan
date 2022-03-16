@@ -71,11 +71,11 @@ cc_library(
     srcs = ["pmp.c"],
     hdrs = ["pmp.h"],
     target_compatible_with = [OPENTITAN_CPU],
-    textual_hdrs = ["pmp_regions.def"],
     deps = [
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/base/freestanding",
     ],
 )
 
