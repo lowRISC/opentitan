@@ -326,5 +326,59 @@ TEST_F(GetFilterEnabledTest, Success) {
   EXPECT_EQ(is_enabled, kDifToggleDisabled);
 }
 
+class GetTriggeredValueTest : public AdcCtrlTest {};
+
+TEST_F(GetTriggeredValueTest, NullArgs) {
+  uint16_t value;
+  EXPECT_DIF_BADARG(
+      dif_adc_ctrl_get_triggered_value(nullptr, kDifAdcCtrlChannel0, &value));
+  EXPECT_DIF_BADARG(dif_adc_ctrl_get_triggered_value(
+      &adc_ctrl_, kDifAdcCtrlChannel0, nullptr));
+}
+
+TEST_F(GetTriggeredValueTest, BadChannel) {
+  uint16_t value;
+  EXPECT_DIF_BADARG(dif_adc_ctrl_get_triggered_value(
+      &adc_ctrl_,
+      static_cast<dif_adc_ctrl_channel_t>(ADC_CTRL_PARAM_NUM_ADC_CHANNEL),
+      &value));
+}
+
+TEST_F(GetTriggeredValueTest, Success) {
+  uint16_t value;
+  EXPECT_READ32(ADC_CTRL_ADC_CHN_VAL_0_REG_OFFSET,
+                {{ADC_CTRL_ADC_CHN_VAL_0_ADC_CHN_VALUE_INTR_0_OFFSET, 1023}});
+  EXPECT_DIF_OK(dif_adc_ctrl_get_triggered_value(&adc_ctrl_,
+                                                 kDifAdcCtrlChannel0, &value));
+  EXPECT_EQ(value, 1023);
+}
+
+class GetLatestValueTest : public AdcCtrlTest {};
+
+TEST_F(GetLatestValueTest, NullArgs) {
+  uint16_t value;
+  EXPECT_DIF_BADARG(
+      dif_adc_ctrl_get_latest_value(nullptr, kDifAdcCtrlChannel0, &value));
+  EXPECT_DIF_BADARG(
+      dif_adc_ctrl_get_latest_value(&adc_ctrl_, kDifAdcCtrlChannel0, nullptr));
+}
+
+TEST_F(GetLatestValueTest, BadChannel) {
+  uint16_t value;
+  EXPECT_DIF_BADARG(dif_adc_ctrl_get_latest_value(
+      &adc_ctrl_,
+      static_cast<dif_adc_ctrl_channel_t>(ADC_CTRL_PARAM_NUM_ADC_CHANNEL),
+      &value));
+}
+
+TEST_F(GetLatestValueTest, Success) {
+  uint16_t value;
+  EXPECT_READ32(ADC_CTRL_ADC_CHN_VAL_0_REG_OFFSET,
+                {{ADC_CTRL_ADC_CHN_VAL_0_ADC_CHN_VALUE_0_OFFSET, 1023}});
+  EXPECT_DIF_OK(
+      dif_adc_ctrl_get_latest_value(&adc_ctrl_, kDifAdcCtrlChannel0, &value));
+  EXPECT_EQ(value, 1023);
+}
+
 }  // namespace
 }  // namespace dif_adc_ctrl_unittest
