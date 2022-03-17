@@ -60,6 +60,9 @@ class chip_base_test extends cip_base_test #(
       cfg.parse_sw_images_string(sw_images_plusarg);
     end
 
+    // Knob to perform the AST configuration.
+    void'($value$plusargs("do_creator_sw_cfg_ast_cfg=%0b", cfg.do_creator_sw_cfg_ast_cfg));
+
     // Override the initial AST configuration data at runtime via plusarg.
     foreach (cfg.creator_sw_cfg_ast_cfg_data[i]) begin
       void'($value$plusargs({$sformatf("creator_sw_cfg_ast_cfg_data[%0d]", i), "=%0h"},
