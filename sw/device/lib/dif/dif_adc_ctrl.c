@@ -428,3 +428,37 @@ dif_result_t dif_adc_ctrl_irq_clear_causes(const dif_adc_ctrl_t *adc_ctrl,
 
   return kDifOk;
 }
+
+dif_result_t dif_adc_ctrl_filter_match_wakeup_set_enabled(
+    const dif_adc_ctrl_t *adc_ctrl, dif_adc_ctrl_filter_t filter,
+    dif_toggle_t enabled) {
+  if (adc_ctrl == NULL || filter >= ADC_CTRL_PARAM_NUM_ADC_FILTER ||
+      !dif_is_valid_toggle(enabled)) {
+    return kDifBadArg;
+  }
+
+  uint32_t wakeup_ctrl_reg = mmio_region_read32(
+      adc_ctrl->base_addr, ADC_CTRL_ADC_WAKEUP_CTL_REG_OFFSET);
+  wakeup_ctrl_reg = bitfield_bit32_write(wakeup_ctrl_reg, filter,
+                                         dif_toggle_to_bool(enabled));
+  mmio_region_write32(adc_ctrl->base_addr, ADC_CTRL_ADC_WAKEUP_CTL_REG_OFFSET,
+                      wakeup_ctrl_reg);
+
+  return kDifOk;
+}
+
+dif_result_t dif_adc_ctrl_filter_match_wakeup_get_enabled(
+    const dif_adc_ctrl_t *adc_ctrl, dif_adc_ctrl_filter_t filter,
+    dif_toggle_t *is_enabled) {
+  if (adc_ctrl == NULL || filter >= ADC_CTRL_PARAM_NUM_ADC_FILTER ||
+      is_enabled == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t wakeup_ctrl_reg = mmio_region_read32(
+      adc_ctrl->base_addr, ADC_CTRL_ADC_WAKEUP_CTL_REG_OFFSET);
+  *is_enabled =
+      dif_bool_to_toggle(bitfield_bit32_read(wakeup_ctrl_reg, filter));
+
+  return kDifOk;
+}
