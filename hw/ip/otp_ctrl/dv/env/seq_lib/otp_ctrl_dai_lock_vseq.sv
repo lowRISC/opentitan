@@ -59,8 +59,10 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
-    if ($urandom_range(0, 1)) cfg.otp_ctrl_vif.drive_lc_creator_seed_sw_rw_en(lc_ctrl_pkg::Off);
-  endtask;
+    if ($urandom_range(0, 1)) begin
+      cfg.otp_ctrl_vif.drive_lc_creator_seed_sw_rw_en(get_rand_lc_tx_val(.t_weight(0)));
+    end
+  endtask
 
 endclass
 
