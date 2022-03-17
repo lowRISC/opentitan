@@ -709,8 +709,15 @@
       swaccess: "rw1c",
       hwaccess: "hwo",
       fields: [
+        { bits: "0",
+          name: "SHADOW_UPDATE_ERR",
+          resval: 0
+          desc: '''
+            One of the shadow registers encountered an update error.
+          '''
+        },
         {
-          bits: "0",
+          bits: "1",
           name: "IO_MEASURE_ERR",
           resval: 0,
           desc: '''
@@ -718,7 +725,7 @@
           '''
         },
         {
-          bits: "1",
+          bits: "2",
           name: "IO_DIV2_MEASURE_ERR",
           resval: 0,
           desc: '''
@@ -726,7 +733,7 @@
           '''
         },
         {
-          bits: "2",
+          bits: "3",
           name: "IO_DIV4_MEASURE_ERR",
           resval: 0,
           desc: '''
@@ -734,7 +741,7 @@
           '''
         },
         {
-          bits: "3",
+          bits: "4",
           name: "MAIN_MEASURE_ERR",
           resval: 0,
           desc: '''
@@ -742,7 +749,7 @@
           '''
         },
         {
-          bits: "4",
+          bits: "5",
           name: "USB_MEASURE_ERR",
           resval: 0,
           desc: '''
@@ -750,7 +757,7 @@
           '''
         },
         {
-          bits: "5",
+          bits: "6",
           name: "IO_TIMEOUT_ERR",
           resval: 0,
           desc: '''
@@ -758,7 +765,7 @@
           '''
         }
         {
-          bits: "6",
+          bits: "7",
           name: "IO_DIV2_TIMEOUT_ERR",
           resval: 0,
           desc: '''
@@ -766,7 +773,7 @@
           '''
         }
         {
-          bits: "7",
+          bits: "8",
           name: "IO_DIV4_TIMEOUT_ERR",
           resval: 0,
           desc: '''
@@ -774,7 +781,7 @@
           '''
         }
         {
-          bits: "8",
+          bits: "9",
           name: "MAIN_TIMEOUT_ERR",
           resval: 0,
           desc: '''
@@ -782,51 +789,11 @@
           '''
         }
         {
-          bits: "9",
+          bits: "10",
           name: "USB_TIMEOUT_ERR",
           resval: 0,
           desc: '''
             usb has timed out.
-          '''
-        }
-        {
-          bits: "10",
-          name: "IO_UPDATE_ERR",
-          resval: 0,
-          desc: '''
-            !!IO_MEASURE_CTRL_SHADOWED has an update error.
-          '''
-        }
-        {
-          bits: "11",
-          name: "IO_DIV2_UPDATE_ERR",
-          resval: 0,
-          desc: '''
-            !!IO_DIV2_MEASURE_CTRL_SHADOWED has an update error.
-          '''
-        }
-        {
-          bits: "12",
-          name: "IO_DIV4_UPDATE_ERR",
-          resval: 0,
-          desc: '''
-            !!IO_DIV4_MEASURE_CTRL_SHADOWED has an update error.
-          '''
-        }
-        {
-          bits: "13",
-          name: "MAIN_UPDATE_ERR",
-          resval: 0,
-          desc: '''
-            !!MAIN_MEASURE_CTRL_SHADOWED has an update error.
-          '''
-        }
-        {
-          bits: "14",
-          name: "USB_UPDATE_ERR",
-          resval: 0,
-          desc: '''
-            !!USB_MEASURE_CTRL_SHADOWED has an update error.
           '''
         }
       ]
@@ -851,44 +818,11 @@
             One of the idle counts encountered a duplicate error.
           '''
         },
-        {
-          bits: "2",
-          name: "IO_STORAGE_ERR",
-          resval: 0,
+        { bits: "2",
+          name: "SHADOW_STORAGE_ERR",
+          resval: 0
           desc: '''
-            !!IO_MEASURE_CTRL_SHADOWED has a storage error.
-          '''
-        },
-        {
-          bits: "3",
-          name: "IO_DIV2_STORAGE_ERR",
-          resval: 0,
-          desc: '''
-            !!IO_DIV2_MEASURE_CTRL_SHADOWED has a storage error.
-          '''
-        },
-        {
-          bits: "4",
-          name: "IO_DIV4_STORAGE_ERR",
-          resval: 0,
-          desc: '''
-            !!IO_DIV4_MEASURE_CTRL_SHADOWED has a storage error.
-          '''
-        },
-        {
-          bits: "5",
-          name: "MAIN_STORAGE_ERR",
-          resval: 0,
-          desc: '''
-            !!MAIN_MEASURE_CTRL_SHADOWED has a storage error.
-          '''
-        },
-        {
-          bits: "6",
-          name: "USB_STORAGE_ERR",
-          resval: 0,
-          desc: '''
-            !!USB_MEASURE_CTRL_SHADOWED has a storage error.
+            One of the shadow registers encountered a storage error.
           '''
         },
       ]
