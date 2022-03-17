@@ -281,7 +281,7 @@ module spi_readcmd
   logic addr_latched;
   logic addr_shift_en;
   logic addr_latch_en;
-  logic addr_inc; // increase address by 1 word
+  logic addr_inc; // increase address by 1 byte. Used to track the current addr
   // Address size is latched when the state machine moves to the MainAddress
   // state based on the cmd_info.addr_mode and addr_4b_en_i
   logic [4:0] addr_cnt_d, addr_cnt_q;
@@ -387,6 +387,8 @@ module spi_readcmd
     end
   end
 
+  // BEGIN: Address Count =====================================================
+  // addr_cnt is to track the current shifted bit position in the address field
   assign addr_ready_in_word     = (addr_cnt_d == 5'd 2);
   assign addr_ready_in_halfword = (addr_cnt_d == 5'd 1);
 
@@ -421,6 +423,7 @@ module spi_readcmd
       addr_cnt_d = addr_cnt_q - 1'b 1;
     end
   end
+  // END:   Address Count -----------------------------------------------------
 
   // Dummy Counter
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -652,6 +655,9 @@ module spi_readcmd
         endcase
 
         if (bitcnt == 3'h 0) begin
+          // Increase addr by 1 byte
+          addr_inc = 1'b 1;
+
           // sent all words
           bitcnt_update = 1'b 1;
           // TODO: FIFO pop here?
