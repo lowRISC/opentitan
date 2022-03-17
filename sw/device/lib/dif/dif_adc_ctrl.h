@@ -99,6 +99,13 @@ typedef enum dif_adc_ctrl_irq_cause {
    * Sample ready cause in Oneshot mode.
    */
   kDifAdcCtrlIrqCauseOneshot = 1U << 8,
+  /**
+   * All IRQ causes ORed together.
+   *
+   * This is useful when clearing all IRQ causes at once, to initialize the ADC
+   * Controller.
+   */
+  kDifAdcCtrlIrqCauseAll = (1U << 9) - 1,
 } dif_adc_ctrl_irq_cause_t;
 
 #undef DIF_ADC_CTRL_IRQ_CAUSE_ENUM_INIT_
