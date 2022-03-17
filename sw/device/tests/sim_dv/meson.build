@@ -80,6 +80,33 @@ sw_tests += {
   }
 }
 
+# Keymgr Tests
+keymgr_key_derivation_test_lib = declare_dependency(
+  link_with: static_library(
+    'keymgr_key_derivation_test_lib',
+    sources: [
+      hw_ip_keymgr_reg_h,
+      hw_ip_kmac_reg_h,
+      'keymgr_key_derivation.c'],
+    dependencies: [
+      sw_lib_dif_keymgr,
+      sw_lib_dif_kmac,
+      sw_lib_dif_rstmgr,
+      sw_lib_dif_otp_ctrl,
+      sw_lib_dif_flash_ctrl,
+      sw_lib_testing_flash_ctrl_testutils,
+      sw_lib_testing_otp_ctrl_testutils,
+      sw_lib_testing_test_status,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'keymgr_key_derivation_test': {
+    'library': keymgr_key_derivation_test_lib,
+  }
+}
+
 lc_ctrl_transition_test_lib = declare_dependency(
   link_with: static_library(
     'lc_ctrl_transition_test_lib',
