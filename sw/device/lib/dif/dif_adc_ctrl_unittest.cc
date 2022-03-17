@@ -425,5 +425,68 @@ TEST_F(IrqClearCausesTest, Success) {
       &adc_ctrl_, kDifAdcCtrlIrqCauseFilter0 | kDifAdcCtrlIrqCauseFilter3));
 }
 
+class FilterMatchWakeupSetEnabledTest : public AdcCtrlTest {};
+
+TEST_F(FilterMatchWakeupSetEnabledTest, NullHandle) {
+  EXPECT_DIF_BADARG(dif_adc_ctrl_filter_match_wakeup_set_enabled(
+      nullptr, kDifAdcCtrlFilter3, kDifToggleEnabled));
+}
+
+TEST_F(FilterMatchWakeupSetEnabledTest, BadFilter) {
+  EXPECT_DIF_BADARG(dif_adc_ctrl_filter_match_wakeup_set_enabled(
+      &adc_ctrl_,
+      static_cast<dif_adc_ctrl_filter_t>(ADC_CTRL_PARAM_NUM_ADC_FILTER),
+      kDifToggleEnabled));
+}
+
+TEST_F(FilterMatchWakeupSetEnabledTest, BadEnabled) {
+  EXPECT_DIF_BADARG(dif_adc_ctrl_filter_match_wakeup_set_enabled(
+      &adc_ctrl_, kDifAdcCtrlFilter7, static_cast<dif_toggle_t>(2)));
+}
+
+TEST_F(FilterMatchWakeupSetEnabledTest, Success) {
+  EXPECT_READ32(ADC_CTRL_ADC_WAKEUP_CTL_REG_OFFSET, 0xF);
+  EXPECT_WRITE32(ADC_CTRL_ADC_WAKEUP_CTL_REG_OFFSET, 0x8F);
+  EXPECT_DIF_OK(dif_adc_ctrl_filter_match_wakeup_set_enabled(
+      &adc_ctrl_, kDifAdcCtrlFilter7, kDifToggleEnabled));
+
+  EXPECT_READ32(ADC_CTRL_ADC_WAKEUP_CTL_REG_OFFSET, 0x8F);
+  EXPECT_WRITE32(ADC_CTRL_ADC_WAKEUP_CTL_REG_OFFSET, 0xF);
+  EXPECT_DIF_OK(dif_adc_ctrl_filter_match_wakeup_set_enabled(
+      &adc_ctrl_, kDifAdcCtrlFilter7, kDifToggleDisabled));
+}
+
+class FilterMatchWakeupGetEnabledTest : public AdcCtrlTest {};
+
+TEST_F(FilterMatchWakeupGetEnabledTest, NullArgs) {
+  dif_toggle_t is_enabled;
+  EXPECT_DIF_BADARG(dif_adc_ctrl_filter_match_wakeup_get_enabled(
+      nullptr, kDifAdcCtrlFilter3, &is_enabled));
+  EXPECT_DIF_BADARG(dif_adc_ctrl_filter_match_wakeup_get_enabled(
+      &adc_ctrl_, kDifAdcCtrlFilter3, nullptr));
+}
+
+TEST_F(FilterMatchWakeupGetEnabledTest, BadFilter) {
+  dif_toggle_t is_enabled;
+  EXPECT_DIF_BADARG(dif_adc_ctrl_filter_match_wakeup_get_enabled(
+      &adc_ctrl_,
+      static_cast<dif_adc_ctrl_filter_t>(ADC_CTRL_PARAM_NUM_ADC_FILTER),
+      &is_enabled));
+}
+
+TEST_F(FilterMatchWakeupGetEnabledTest, Success) {
+  dif_toggle_t is_enabled;
+
+  EXPECT_READ32(ADC_CTRL_ADC_WAKEUP_CTL_REG_OFFSET, 0x88);
+  EXPECT_DIF_OK(dif_adc_ctrl_filter_match_wakeup_get_enabled(
+      &adc_ctrl_, kDifAdcCtrlFilter3, &is_enabled));
+  EXPECT_EQ(is_enabled, kDifToggleEnabled);
+
+  EXPECT_READ32(ADC_CTRL_ADC_WAKEUP_CTL_REG_OFFSET, 0x88);
+  EXPECT_DIF_OK(dif_adc_ctrl_filter_match_wakeup_get_enabled(
+      &adc_ctrl_, kDifAdcCtrlFilter2, &is_enabled));
+  EXPECT_EQ(is_enabled, kDifToggleDisabled);
+}
+
 }  // namespace
 }  // namespace dif_adc_ctrl_unittest
