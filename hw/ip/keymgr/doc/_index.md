@@ -11,7 +11,7 @@ This document specifies the functionality of the OpenTitan key manager.
 - One-way key and identity (working) state hidden from software.
 - Version controlled identity and key generation.
 - Key generation for both software consumption and hardware sideload.
-- Support for DICE open profile
+- Support for DICE open profile.
 
 
 ## Description
@@ -29,7 +29,7 @@ Key manager behavior can be summarized by the functional model below.
 In the diagram, the red boxes represent the working state and the associated internal key, the black ovals represent derivation functions, the green squares represent software inputs, and the remaining green / purple shapes represent outputs to both software and hardware.
 
 In OpenTitan, the derivation method selected is [KMAC]({{< relref "hw/ip/kmac/doc" >}}).
-Each valid operation involves a KMAC invocation using the key manager working state as the "key" and other HW / SW supplied inputs as data.
+Each valid operation involves a KMAC invocation using the key manager internal key and other HW / SW supplied inputs as data.
 While KMAC can generate outputs of arbitrary length, this design fixes the size to 256b.
 
 Effectively, the key manager behavior is divided into 3 classes of functions
@@ -45,9 +45,12 @@ Effectively, the key manager behavior is divided into 3 classes of functions
 In general, the key generation and seed generation functions are identical.
 They differ only in how software chooses to deploy the outputs.
 
+For clarity, all commands issued to the key manager by software are referred to as operations.
+Transactions refer to the interaction between key manager and KMAC if a valid operation is issued.
+
 ## Key Manager State
 
-The key manager working state (red boxes in the functional model) represents both the current state of the key manager as well as its related secret material.
+The key manager working state (red boxes in the functional model) represents both the current state of the key manager as well as its related internal key.
 Each valid state (`Initialized` / `CreatorRootKey` / `OwnerIntermediateKey` / `OwnerRootKey`), supplies its secret material as the "key" input to a KMAC operation.
 Invalid states, such as `Reset / Disabled` on the other hand, either do not honor operation requests, or supplies random data when invoked.
 
@@ -60,16 +63,18 @@ Until the initialize command is invoked, the key manager rejects all other softw
 
 ### Initialized
 
-When transitioning from `Reset` to `Initialized`, random values obtained from the entropy source are used to populate the working state.
-This ensures that the hamming delta from both the previous value and the next value are both non-deterministic.
+When transitioning from `Reset` to `Initialized`, random values obtained from the entropy source are used to populate the internal key first.
+Then the root key stored in OTP, if valid, is loaded into the internal key.
+This ensures that the hamming delta from the previous value to the next value is non-deterministic.
 The advancement from `Initialized` to `CreatorRootKey` is irreversible during the current power cycle.
 
 ### CreatorRootKey
 
 `CreatorRootKey` is the first operational state of the key manager.
 When transitioning from `Initialized` to this state, a KMAC operation is invoked using the `RootKey` as the key (from OTP), and the remaining inputs as data.
+The output of the KMAC operation replaces the previous value of the internal key, and the new value becomes the `CreatorRootKey`.
 
-See below:
+Inputs to the derivation function are:
 *  `DiversificationKey`: Secret seed from flash
 *  `HealthMeasurement`: Current life cycle state
    *  To avoid a state value corresponding to each life cycle state, the raw life cycle value is not used.
@@ -78,12 +83,12 @@ See below:
 *  `DeviceIdentifier`: Unique device identification.
 *  `HardwareRevisionSecret`: A global design time constant.
 
-Other than the `DiversificationKey`, none of the values above are considered secret.
+Other than the `DiversificationKey` and `HardwareRevisionSecret`, none of the values above are considered secret.
 
 Once the `CreatorRootKey` is reached, software can request key manager to advance state, generate output key or generate output identity.
 The key used for all 3 functions is the `CreatorRootKey`.
 
-The advancement from this state to the next is irreversible during the current power cycle.
+The advancement from `CreatorRootKey` to the `OwnerIntermediateKey` is irreversible during the current power cycle.
 
 While in the CreatorRootKey state, the key from OTP is continuously captured and sensed.
 This provides some security benefit as the key is constantly background checked by the OTP.
@@ -94,8 +99,8 @@ If on the other hand key manager transitions to another state, OTP sampling is s
 ### OwnerIntermediateKey
 
 This is the second operational state of the key manager.
-This state is reached through another invocation of the KMAC operation using the previous working state as the key, and other inputs as data.
-The output of the KMAC operation replaces the previous value of the working state, and the new value becomes the `OwnerIntermediateKey`.
+This state is reached through another invocation of the KMAC operation using the previous internal key, and other inputs as data.
+The output of the KMAC operation replaces the previous value of the internal key, and the new value becomes the `OwnerIntermediateKey`.
 
 The relevant data inputs are:
 *  `OwnerRootSecret`: Secret seed from flash.
@@ -104,13 +109,13 @@ The relevant data inputs are:
 Once the `OwnerIntermediateKey` is created, software can request key manager to advance state, generate output key or generate output identity.
 The key used for all 3 functions is the `OwnerIntermediateKey`.
 
-The advancement from this state to the next is irreversible during the current power cycle.
+The advancement from `OwnerIntermediateKey` to the `OwnerRootKey` is irreversible during the current power cycle.
 
 ### OwnerRootKey
 
 This is the last operational state of the key manager.
-This state is reached through another invocation of the KMAC operation using the previous working state as the key, and other inputs as data.
-The output of the KMAC operation replaces the previous value of the working state, and the new value becomes the `OwnerRootKey`.
+This state is reached through another invocation of the KMAC operation using the previous internal key, and other inputs as data.
+The output of the KMAC operation replaces the previous value of the internal key, and the new value becomes the `OwnerRootKey`.
 
 The relevant inputs are:
 *   `SoftwareBinding` - A software programmed value representing the owner kernel code.
@@ -119,12 +124,12 @@ Once the `OwnerRootKey` is created, software can request key manager to advance 
 An advance command invoked from `OwnerRootKey` state simply moves the state to `Disabled`.
 
 The generate output and generate identity functions use `OwnerRootKey` as the KMAC key.
-The advancement from this state to the next is irreversible during the current power cycle.
+The advancement from `OwnerRootKey` to the `Disabled` is irreversible during the current power cycle.
 
 ### Disabled
 `Disabled` is a state where the key manager is no longer operational.
-Upon `Disabled` entry, the working state is updated with KMAC computed random values; however, sideload keys are preserved.
-This allows the software to keep the last valid sideload keys while preventing the system from further advancing the valid key.
+Upon `Disabled` entry, the internal key is updated with KMAC computed random values; however, previously generated sideload key slots and software key slots are preserved.
+This allows the software to keep the last valid keys while preventing the system from further advancing the valid key.
 
 When advance and generate calls are invoked from this state, the outputs and keys are indiscriminately updated with randomly computed values.
 Key manager enters disabled state based on direct invocation by software:
@@ -132,40 +137,36 @@ Key manager enters disabled state based on direct invocation by software:
 * Disable operation
 
 ### Invalid
-`Invalid` state is entered whenever key manager is disabled through the [life cycle connection](#life-cycle-connection) or when an operation encounters a [fault](#faults-and-operational-faults) .
-Upon `Invalid` entry, both the working state and the sideload keys are wiped with entropy directly.
-Note, this is different from `Disabled` state entry, which updates internal key with KMAC outputs but leaves sideload and software keys intact.
+`Invalid` state is entered whenever key manager is deactivated through the [life cycle connection](#life-cycle-connection) or when an operation encounters a [fault](#faults-and-operational-faults) .
+Upon `Invalid` entry, the internal key, the sideload key slots and the software keys are all wiped with entropy directly.
 
 #### Invalid Entry Wiping
-Since the life cycle controller can disable the key manager at any time, the key manager attempts to gracefully handle the wiping process.
-When the disable is seen, the key manager immediately begins wiping all keys (internal key, hardware sideload key, software key) with entropy.
-However, if an operation was already ongoing, the key manager waits for the transaction to complete gracefully before transitioning to invalid state.
+Since the life cycle controller can deactivate the key manager at any time, the key manager attempts to gracefully handle the wiping process.
+When the deactivated, the key manager immediately begins wiping all keys (internal key, hardware sideload key, software key) with entropy.
+However, if an operation was already ongoing, the key manager waits for the operation to complete gracefully before transitioning to invalid state.
 
-While waiting for the transaction to complete, the key manager continuously wipes all keys with entropy.
+While waiting for the operation to complete, the key manager continuously wipes all keys with entropy.
 
 ### Invalid and Disabled State
 
-Note that `Invalid` and `Disabled` states are functionally equivalent.
-The main difference between the two is "how" the state was reached.
+`Invalid` and `Disabled` states are functionally very similar.
+The main difference between the two is "how" the states were reached and the entry behavior.
 
-`Disabled` state is reached through intentional software commands.
-While `Invalid` state is reached through life cycle disable or operational faults.
+`Disabled` state is reached through intentional software commands where the internal key, sideload key slots and software key are not wiped.
+While `Invalid` state is reached through life cycle deactivation or operational faults where the internal key, sideload key slots and software key are wiped.
 
 This also means that only `Invalid` is a terminal state.
-If after entering `Disabled` life cycle is disabled or a fault is encountered, the same [invalid entry procedure](#Invalid) is followed to bring the system to a terminal `Invalid` state.
+If after entering `Disabled` life cycle is deactivated or a fault is encountered, the same [invalid entry procedure](#Invalid) is followed to bring the system to a terminal `Invalid` state.
 
 If ever multiple conditions collide (a fault is detected at the same time software issues disable command), the `Invalid` entry path always takes precedence.
 
 ## Life Cycle Connection
-The function of the key manager is directly tied to the life cycle controller.
-During specific life cycle states, the key manager is explicitly invalidated.
+The function of the key manager is directly managed by the [life cycle controller]({{< relref "hw/ip/lc_ctrl/doc/#key-manager-en" >}}).
 
-When invalidated, the following key manager behavior applies:
--  If the key manager has not been initialized, it cannot be initialized until life cycle enables key manager.
--  If the key manager has been initialized and is currently in a valid state (including `Disabled`), it immediately wipes its key contents with entropy (working state, sideload keys and software keys) and transitions to `Invalid`.
-   -  Note, unlike a normal software requested disable, this path does not gracefully interact with KMAC, instead the secret contents are forcibly wiped.
-   -  If there is an ongoing transaction with KMAC, the handshake with KMAC is still completed as usual, however the results are discarded and the value sent to KMAC are also not real.
--  Once the system settles to `Invalid` state, the behavior is consistent with `Disabled` state.
+Until the life cycle controller activates the key manager, the key manager does not accept any software commands.
+Once the key manager is activated by the life cycle controller, it is then allowed to transition to the various states previously [described](#key-manager-states).
+
+When the life cycle controller de-activates the key manager, the key manager transitions to the `Invalid` state.
 
 ## Commands in Each State
 During each state, there are 3 valid commands software can issue:
@@ -178,12 +179,12 @@ If a command is valid during the current working state, it is processed and ackn
 
 If a command is invalid, the behavior depends on the current state.
 If the current state is `Reset`, the invalid command is immediately rejected as the key manager FSM has not yet been initialized.
-If the current state is any other state, the key manager FSM processes with random, dummy data, but does not update working state or relevant output registers.
+If the current state is any other state, the key manager sequences random, dummy data to the KMAC module, but does not update internal key, sideload key slots or software keys.
 For each valid command, a set of inputs are selected and sequenced to the KMAC module.
 
-During `Disable` and `Invalid` states, working state and output registers are updated based on the input commands as with normal states.
+During `Disable` and `Invalid` states, the internal key, sideload key slots and software key are updated based on the input commands as with normal states.
 There are however a few differences:
--  Working state and output registers are updated regardless of any error status to ensure their values are further scrambled.
+-  The updates are made regardless of any error status to ensure their values are further scrambled.
 -  Instead of normal input data, random data is selected for KMAC processing.
 -  All operations return an invalid operations error, in addition to any other error that might naturally occur.
 
@@ -193,14 +194,13 @@ The generate output command is composed of 2 options
 *  Generate output key for hardware, referred to as `generate-output-hw`
 
 The hardware option is meant specifically for symmetric side load use cases.
-When this option is issued, the output of the KMAC invocation is not stored in software visible registers, but instead in hardware registers that directly output to symmetric primitives such as AES, HMAC and KMAC.
+When this option is issued, the output of the KMAC invocation is not stored in software visible registers, but instead in hardware registers that directly output to symmetric primitives such as AES, KMAC and OTBN.
 
 ## KMAC Operations
 All invoked KMAC operations expect the key in two shares.
-This means the working states, even though functionally 256b, are maintained as 512b.
-
-For advance-state and `generate-output` commands, the KMAC emitted output are also in 2-shares.
-Software is responsible for determining if the key should be preserved in shares or combined, depending on the use case.
+This means the internal key, even though functionally 256b, is maintained as 512b.
+The KMAC processed outputs are also in 2-shares.
+For `generate-output-sw` commands, software is responsible for determining whether the key manager output should be preserved in shares or combined.
 
 ## Errors, Faults and Alerts
 
@@ -215,7 +215,7 @@ Each category of error can be further divided into two:
 * Synchronous errors
 * Asynchronous errors
 
-Synchronous errors happen only during a key manager transaction.
+Synchronous errors happen only during a key manager operation.
 Asynchronous errors can happen at any time.
 
 Given the above, we have 4 total categories of errors:
@@ -234,8 +234,8 @@ Below, the behavior of each category and its constituent errors are described in
 
 ### Synchronous Recoverable Errors
 
-These errors can only happen when a key manager transaction is invoked and are typically associated with incorrect software programming.
-At the end of the transaction, key manager reports whether there was an error in {{< regref ERR_CODE >}} and sends a recoverable alert.
+These errors can only happen when a key manager operation is invoked and are typically associated with incorrect software programming.
+At the end of the operation, key manager reports whether there was an error in {{< regref ERR_CODE >}} and sends a recoverable alert.
 
 * {{< regref ERR_CODE.INVALID_OP >}} Software issued an invalid operation given the current key manager state.
 * {{< regref ERR_CODE.INVALID_KMAC_INPUT >}} Software supplied invalid input (for example a key greater than the max version) for a key manager operation.
@@ -249,11 +249,8 @@ The error is reported in {{< regref ERR_CODE >}} and the key manager sends a rec
 
 ### Synchronous Fatal Errors
 
-These errors can only happen when a key manager transaction is invoked and receives malformed transaction results that are not logically possible.
-At the end of the transaction, key manager reports whether there was an error in {{< regref FAULT_STATUS >}} and continuously sends fatal alerts .
-
-* {{< regref ERR_CODE.KMAC_OP >}} KMAC reports a transaction error, this is not possible given current definitions.
-* {{< regref ERR_CODE.KMAC_OUT >}} KMAC returns all 0's or all 1's as a result, this is not possible given current definitions.
+These errors can only happen when a key manager operation is invoked and receives malformed operation results that are not logically possible.
+At the end of the operation, key manager reports whether there was an error in {{< regref FAULT_STATUS >}} and continuously sends fatal alerts .
 
 Note, these errors are synchronous from the perspective of the key manager, but they may be asynchronous from the perspective of another module.
 
@@ -262,12 +259,6 @@ Note, these errors are synchronous from the perspective of the key manager, but 
 These errors can happen at any time regardless of whether there is a key manager operation.
 The error is reported in {{< regref FAULT_STATUS >}} and the key manager continuously sends fatal alerts.
 
-* {{< regref ERR_CODE.CMD >}} KMAC control's command lines are displaying non-one hot values.
-* {{< regref ERR_CODE.KMAC_FSM >}} KMAC control's FSM is in an invalid state.
-* {{< regref ERR_CODE.REGFILE_INTG >}} The key manager's regfile reports an integrity error.
-* {{< regref ERR_CODE.SHADOW >}} The key manager's regfile reports a shadow storage error.
-* {{< regref ERR_CODE.CTRL_FSM_INTG >}} The key manager's main control FSM is in an invalid state.
-* {{< regref ERR_CODE.CTRL_FSM_CNT >}} The key manager's main control count exhibits an incorrect value.
 
 ### Faults and Operational Faults
 
@@ -294,17 +285,17 @@ Since the key manager is already in `Invalid` state, it does not wipe internal s
 What is considered invalid input changes based on current state and operation.
 
 When an advance operation is invoked:
-- The working state key is checked for all 0's and all 1's.
+- The internal key is checked for all 0's and all 1's.
 - During `Initialized` state, creator seed, device ID and health state data is checked for all 0's and all 1's.
 - During `CreatorRootKey` state, the owner seed is checked for all 0's and all 1's.
 - During all other states, nothing is explicitly checked.
 
 When a generate output key operation is invoked:
-- The working state key is checked for all 0's and all 1's.
+- The internal key is checked for all 0's and all 1's.
 - The key version is less than or equal to the max key version.
 
 When a generate output identity is invoked:
-- The working state key is checked for all 0's and all 1's.
+- The internal key is checked for all 0's and all 1's.
 
 #### Invalid Operation
 
@@ -323,7 +314,7 @@ When an illegal operation is supplied, the error code is updated and the operati
 *  All operations invoked during `Invalid` and `Disabled` states lead to invalid operation error.
 
 ### Error Response
-In addition to alerts and interrupts, key manager may also update the working state key and relevant outputs based on current state.
+In addition to alerts and interrupts, key manager may also update the internal key and relevant outputs based on current state.
 See the tables below for an enumeration.
 
 | Current State    | Invalid States  | Invalid Output | Invalid Input | Invalid Operation   |
@@ -339,7 +330,7 @@ See the tables below for an enumeration.
 *  During `Initialized`, `CreatorRootKey`, `OwnerIntermediateKey` and `OwnerRootKey` states, a fault error causes the relevant key / outputs to be updated; however an operational error does not.
 *  During `Invalid` and `Disabled` states, the relevant key / outputs are updated regardless of the error.
 *  Only the relevant collateral is updated -> ie, advance / disable command leads to working key update, and generate command leads to software or sideload key update.
-*  During `Disabled` state, if life cycle is disabled or an operational fault is encountered, the key manager transitions to `Invalid` state, see [here](#invalid-and-disabled-state)
+*  During `Disabled` state, if life cycle deactivation or an operational fault is encountered, the key manager transitions to `Invalid` state, see [here](#invalid-and-disabled-state)
 
 ## DICE Support
 
@@ -349,7 +340,7 @@ Specifically, the open profile has two compound device identifiers.
 * Sealing CDI
 
 The attestation CDI is used to attest hardware and software configuration and is thus expected to change between updates.
-The sealing CDI on the other hand, is used to attest the authority of the hardware and softawre configuration.
+The sealing CDI on the other hand, is used to attest the authority of the hardware and software configuration.
 The sealing version is thus expected to remain stable across software updates.
 
 To support these features, the key manager maintains two versions of the working state and associated internal key.
@@ -366,7 +357,7 @@ The second transaction uses the Attestation CDI internal key, {{< regref "ATTEST
 
 When invoking a generate operation, the software must specify which CDI to use as the source key.
 This is done through {{< regref "CONTROL.CDI_SEL" >}}.
-Unlike the advance operation, there is only 1 transaction since we pick a specific CDI to operate.
+Unlike the advance operation, there is only 1 KMAC transaction since we pick a specific CDI to operate.
 
 When disabling, both versions are disabled together.
 
@@ -385,7 +376,7 @@ Key manager is primarily composed of two components:
 ### Key Manager Control
 
 The key manager control block manages the working state, sideload key updates, as well as what commands are valid in each state.
-It also handles the life cycle `keymgr_en` input, which helps disable the entire key manager function in the event of an escalation.
+It also handles the life cycle `keymgr_en` input, which deactivates the entire key manager function in the event of an escalation.
 
 ![Key Manager Control Block Diagram](keymgr_control_diagram.svg)
 
@@ -397,11 +388,11 @@ Based on input from key manager control, this module selects the inputs for each
 
 ![Key Manager KMAC Interface Block Diagram](keymgr_kmac_if_diagram.svg)
 
-The KMAC interafce works on a simple `valid / ready` protocol.
+The KMAC interface works on a simple `valid / ready` protocol.
 When there is data to send, the KMAC interface sends out a `valid` and keeps it active.
 When the destination accepts the transaction, the `ready` is asserted.
 Note just like with any bus interface, the `ready` may already be asserted when `valid` asserts, or it may assert some time later, there are no restrictions.
-Since the data to be sent is always pre-buffered in key manager, the valid once asserts, never de-asserts until the entire transaction is complete.
+Since the data to be sent is always pre-buffered in key manager, the valid, once asserted, does not de-assert until the entire transaction is complete.
 
 The data interface itself is 64b wide.
 However, there may not always be 64b multiple aligned data to be sent.
@@ -432,7 +423,7 @@ See diagram below for an example transfer:
 ### Side Load Keys
 
 There are three sideload keys.
-One for AES, one for HMAC, and one for KMAC.
+One for AES, one for KMAC and one for OTBN.
 When a sideload key is generated successfully through the `generate-output-hw` command, the derived data is loaded into key storage registers.
 There is a set of storage registers for each destination.
 
@@ -502,7 +493,7 @@ This allows the next stage of software to re-use the binding registers.
 The keymgr has several custom security checks.
 
 #### One-Hot Command Check
-The command received by the kmac interface must always be in one-hot form and unchanging during the life time of a kmac transaction.
+The command received by the kmac interface must always be in one-hot form and unchanging during the life time of a KMAC transaction.
 If this check fails, an error is reflected in {{< regref FAULT_STATUS.CMD >}}.
 
 #### Unexpected KMAC Done
@@ -540,7 +531,7 @@ Regardless of the validity of the command, the hardware sequences are triggered 
 
 The software is able to read the current state of key manager, however it never has access to the associated internal key.
 
-When issuing the `generate-output-hw` command, software must select a destination primitive (aes, hmac or kmac).
+When issuing the `generate-output-hw` command, software must select a destination primitive (AES, KMAC or OTBN).
 At the conclusion of the command, key and valid signals are forwarded by the key manager to the selected destination primitive.
 The key and valid signals remain asserted to the selected destination until software explicitly disables the output via another command, or issues another `generate-output-hw` command with a different destination primitive.
 

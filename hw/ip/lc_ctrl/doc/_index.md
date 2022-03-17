@@ -203,7 +203,7 @@ This ensures that during specific states (RAW, TEST_LOCKED, SCRAP, INVALID) it i
 
 In conjunction with DFT_EN / HW_DEBUG_EN, this acts as the final layer in life cycle defense in depth.
 
-#### KEY_MANAGER_EN
+#### KEY_MANAGER_EN {#key-manager-en}
 
 The KEY_MANAGER_EN signal allows the key manager to function normally.
 When this signal is logically disabled, any existing key manager collateral is uninstantiated and wiped; further instantiation and generation calls for the key manager are also made unavailable.
@@ -665,7 +665,7 @@ They are ignored in the PROD* and DEV states.
 
 7. Write 1 to the {{< regref "TRANSITION_CMD.START" >}} register to initiate the life cycle transition.
 
-8. Poll the {{< regref "STATUS" >}} register and wait until either {{< regref "STATUS.TRANSITION_SUCCESSFUL" >}} or any of the error bits is asserted. 
+8. Poll the {{< regref "STATUS" >}} register and wait until either {{< regref "STATUS.TRANSITION_SUCCESSFUL" >}} or any of the error bits is asserted.
 The {{< regref "TRANSITION_REGWEN" >}} register will be set to 0 while a transition is in progress in order to prevent any accidental modifications of the transition interface registers during this phase.
 
 Note that any life cycle state transition - no matter whether successful or not - increments the LC_TRANSITION_CNT and moves the life cycle state into the temporary POST_TRANSITION state.
