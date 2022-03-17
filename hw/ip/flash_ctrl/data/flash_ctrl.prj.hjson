@@ -27,7 +27,6 @@
             design_stage:       "D2",
             verification_stage: "V1",
             dif_stage:          "S0",
-            notes:              "DV resource allocation pending.",
         },
     ]
 }
