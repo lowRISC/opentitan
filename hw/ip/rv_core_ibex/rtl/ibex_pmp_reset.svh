@@ -21,7 +21,7 @@ localparam pmp_cfg_t pmp_cfg_rst[16] = '{
   '{lock: 1'b0, mode: PMP_MODE_OFF,   exec: 1'b0, write: 1'b0, read: 1'b0}, // region 8
   '{lock: 1'b0, mode: PMP_MODE_OFF,   exec: 1'b0, write: 1'b0, read: 1'b0}, // region 9
   '{lock: 1'b0, mode: PMP_MODE_OFF,   exec: 1'b0, write: 1'b0, read: 1'b0}, // region 10
-  '{lock: 1'b0, mode: PMP_MODE_TOR,   exec: 1'b0, write: 1'b1, read: 1'b1}, // region 11 [MMIO: LRW]
+  '{lock: 1'b1, mode: PMP_MODE_TOR,   exec: 1'b0, write: 1'b1, read: 1'b1}, // region 11 [MMIO: LRW]
   '{lock: 1'b0, mode: PMP_MODE_OFF,   exec: 1'b0, write: 1'b0, read: 1'b0}, // region 12
   '{lock: 1'b0, mode: PMP_MODE_OFF,   exec: 1'b0, write: 1'b0, read: 1'b0}, // region 13
   '{lock: 1'b0, mode: PMP_MODE_OFF,   exec: 1'b0, write: 1'b0, read: 1'b0}, // region 14
@@ -34,7 +34,7 @@ localparam pmp_cfg_t pmp_cfg_rst[16] = '{
 localparam [33:0] pmp_addr_rst[16] = '{
   34'h00000000, // region 0
   34'h00000000, // region 1
-  34'h00008ffc, // region 2  [ROM: base=0x0000_8000 size=0x8000 (32KiB)]
+  34'h0000bffc, // region 2  [ROM: base=0x0000_8000 size=0x8000 (32KiB)]
   34'h00000000, // region 3
   34'h00000000, // region 4
   34'h00000000, // region 5
