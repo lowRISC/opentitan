@@ -21,3 +21,4 @@
 `include "chip_sw_rom_ctrl_integrity_check_vseq.sv"
 `include "chip_sw_sram_ctrl_execution_main_vseq.sv"
 `include "chip_sw_pwm_pulses_vseq.sv"
+`include "chip_sw_keymgr_key_derivation_vseq.sv"

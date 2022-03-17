@@ -29,3 +29,10 @@ static bool dai_finished(const dif_otp_ctrl_t *otp_ctrl) {
 void otp_ctrl_testutils_wait_for_dai(const dif_otp_ctrl_t *otp_ctrl) {
   IBEX_SPIN_FOR(dai_finished(otp_ctrl), kOtpDaiTimeoutUs);
 }
+
+void otp_ctrl_testutils_lock_partition(const dif_otp_ctrl_t *otp,
+                                       dif_otp_ctrl_partition_t partition,
+                                       uint64_t digest) {
+  CHECK_DIF_OK(dif_otp_ctrl_dai_digest(otp, partition, digest));
+  otp_ctrl_testutils_wait_for_dai(otp);
+}

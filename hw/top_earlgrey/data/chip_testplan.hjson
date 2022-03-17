@@ -1840,17 +1840,16 @@
       name: chip_sw_keymgr_key_derivation
       desc: '''Verify the keymgr advances to all states and generate identity / SW output.
 
-            - Backdoor load random value to OTP key, OTP device ID, creator and owner seeds in
-              flash, and the ROM digest
-            - For HardwareRevisionSecret and LC diversification, use the constant values in design.
-            - Configure the keymgr and advance to `CreatorRootKey`.
+            - In the SW test, write fixed value to OTP for root_key and write creator and owner
+              seeds in flash. And then roboot the chip.
+            - In the SV sequence, backdoor read Device ID and ROM digest through CSRs.
+            - For HardwareRevisionSecret, use the constant values in design.
+            - Configure the keymgr and advance to `CreatorRootKey` and `OwnerIntermediateKey`.
+            - Check keymgr internal keys after advance operations.
             - Generate identity / SW output for both Attestation CDI and Sealing CDI.
             - KMAC should finish hashing successfully (not visible to SW) and return digest to
               keymgr.
-            - Verify that the keymgr has received valid output from the KMAC.
-            - Advance to `OwnerIntermediateKey` and `OwnerRootKey` to repeat the above sequences.
-            - Generating identity / SW output in `OwnerRootKey` is optional as there is not
-              additional interaction between keymgr and other blocks.
+            - Read keymgr CSRs `SW_SHARE*` and verify the return values.
             - Advance to `Disabled` and verify keymgr enters the state successfully.
             - Generate identity / SW output and ensure these are neither all 1s/0s nor any valid
               key value, which proves secrets are wiped by entropy value from EDN.
@@ -1860,15 +1859,15 @@
 
             - Note: there are 3 ways of calculating the expected digest for comparison. Any of them
               is acceptable.
-              - Use SW to calculate that, and it will also exercise the Ibex
-              - SW sends all the keys through CSRs to KMAC to generate the degist data
+              - Use SW to calculate that, and it will also exercise the Ibex.
+              - SW sends all the keys through CSRs to KMAC to generate the degist data.
               - DV calls C functions to generate and backdoor load to a specific memory location
-                for SW
+                for SW. (Adpot this approach.)
 
             X-ref'ed with kmac test.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_keymgr_key_derivation"]
     }
     {
       name: chip_sw_keymgr_lc_disable
