@@ -773,6 +773,7 @@ module rv_core_ibex
     .ack_o(edn_ack),
     .data_o(edn_data),
     .fips_o(edn_fips),
+    .err_o(),
     .clk_edn_i,
     .rst_edn_ni,
     .edn_o,

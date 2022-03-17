@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:prim:all
       - lowrisc:prim:count
+      - lowrisc:prim:edn_req
       - lowrisc:prim:lc_sync
       - lowrisc:prim:lfsr
       - lowrisc:prim:msb_extend

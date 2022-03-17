@@ -863,7 +863,8 @@ module otbn
   // internal entropy width of 256 bit.
 
   prim_edn_req #(
-    .OutWidth(EdnDataWidth)
+    .OutWidth(EdnDataWidth),
+    .RepCheck(1'b1)
   ) u_prim_edn_rnd_req (
     .clk_i,
     .rst_ni     ( rst_n        ),
@@ -872,6 +873,7 @@ module otbn
     .ack_o      ( edn_rnd_ack  ),
     .data_o     ( edn_rnd_data ),
     .fips_o     (              ), // unused
+    .err_o      (              ),
     .clk_edn_i,
     .rst_edn_ni,
     .edn_o      ( edn_rnd_o ),
@@ -888,6 +890,7 @@ module otbn
     .ack_o      ( edn_urnd_ack  ),
     .data_o     ( edn_urnd_data ),
     .fips_o     (               ), // unused
+    .err_o      (               ), // unused
     .clk_edn_i,
     .rst_edn_ni,
     .edn_o      ( edn_urnd_o    ),
