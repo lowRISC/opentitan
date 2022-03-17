@@ -187,10 +187,10 @@ from topgen.lib import Name
   logic recov_alert;
   assign recov_alert =
 % for src in typed_clocks.rg_srcs:
-    hw2reg.recov_err_code.${src}_update_err.de |
     hw2reg.recov_err_code.${src}_measure_err.de |
-    hw2reg.recov_err_code.${src}_timeout_err.de${";" if loop.last else " |"}
+    hw2reg.recov_err_code.${src}_timeout_err.de |
 % endfor
+    hw2reg.recov_err_code.shadow_update_err.de;
 
   assign alerts = {
     |reg2hw.fatal_err_code,
@@ -307,6 +307,13 @@ from topgen.lib import Name
   // SEC_CM: TIMEOUT.CLK.BKGN_CHK, MEAS.CLK.BKGN_CHK
   ////////////////////////////////////////////////////
 
+  logic [${len(typed_clocks.rg_srcs)-1}:0] shadow_update_errs;
+  logic [${len(typed_clocks.rg_srcs)-1}:0] shadow_storage_errs;
+  assign hw2reg.recov_err_code.shadow_update_err.d = 1'b1;
+  assign hw2reg.recov_err_code.shadow_update_err.de = |shadow_update_errs;
+  assign hw2reg.fatal_err_code.shadow_storage_err.d = 1'b1;
+  assign hw2reg.fatal_err_code.shadow_storage_err.de = |shadow_storage_errs;
+
 <% aon_freq = clocks.all_srcs['aon'].freq %>\
 % for src in typed_clocks.rg_srcs:
   logic ${src}_fast_err;
@@ -364,13 +371,11 @@ from topgen.lib import Name
   assign hw2reg.recov_err_code.${src}_measure_err.de = synced_${src}_err;
   assign hw2reg.recov_err_code.${src}_timeout_err.d = 1'b1;
   assign hw2reg.recov_err_code.${src}_timeout_err.de = synced_${src}_timeout_err;
-  assign hw2reg.recov_err_code.${src}_update_err.d = 1'b1;
-  assign hw2reg.recov_err_code.${src}_update_err.de =
+  assign shadow_update_errs[${loop.index}] =
     reg2hw.${src}_meas_ctrl_shadowed.en.err_update |
     reg2hw.${src}_meas_ctrl_shadowed.hi.err_update |
     reg2hw.${src}_meas_ctrl_shadowed.lo.err_update;
-  assign hw2reg.fatal_err_code.${src}_storage_err.d = 1'b1;
-  assign hw2reg.fatal_err_code.${src}_storage_err.de =
+  assign shadow_storage_errs[${loop.index}] =
     reg2hw.${src}_meas_ctrl_shadowed.en.err_storage |
     reg2hw.${src}_meas_ctrl_shadowed.hi.err_storage |
     reg2hw.${src}_meas_ctrl_shadowed.lo.err_storage;
