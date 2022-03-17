@@ -109,6 +109,7 @@ module alert_handler
     .ack_o       ( edn_ack  ),
     .data_o      ( edn_data ),
     .fips_o      (          ),
+    .err_o       (          ),
     // EDN side
     .clk_edn_i,
     .rst_edn_ni,

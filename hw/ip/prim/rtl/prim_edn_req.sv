@@ -17,6 +17,8 @@ module prim_edn_req
   import prim_alert_pkg::*;
 #(
   parameter int OutWidth = 32,
+  // Repetition check for incoming edn data
+  parameter bit RepCheck = 0,
 
   // EDN Request latency checker
   //
@@ -37,6 +39,7 @@ module prim_edn_req
   output logic                ack_o,
   output logic [OutWidth-1:0] data_o,
   output logic                fips_o,
+  output logic                err_o,  // incoming data failed repetition check
   // EDN side
   input                       clk_edn_i,
   input                       rst_edn_ni,
@@ -68,6 +71,31 @@ module prim_edn_req
     .data_i     ( {edn_i.edn_fips, edn_i.edn_bus} ),
     .data_o     ( {word_fips,      word_data}     )
   );
+
+  if (RepCheck) begin : gen_rep_chk
+    logic [edn_pkg::ENDPOINT_BUS_WIDTH-1:0] word_data_q;
+    always_ff @(posedge clk_i) begin
+      if (word_ack) begin
+        word_data_q <= word_data;
+      end
+    end
+
+    // do not check until we have received at least the first entry
+    logic chk_rep;
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        chk_rep <= '0;
+      end else if (word_ack) begin
+        chk_rep <= 1'b1;
+      end
+    end
+
+    // whenever a new word is received, check if it is identical to the last
+    // word
+    assign err_o = chk_rep & word_ack & (word_data == word_data_q);
+  end else begin : gen_no_rep_chk // block: gen_rep_chk
+    assign err_o = '0;
+  end
 
   prim_packer_fifo #(
     .InW(edn_pkg::ENDPOINT_BUS_WIDTH),

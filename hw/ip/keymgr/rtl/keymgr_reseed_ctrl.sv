@@ -32,43 +32,62 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
   output logic cnt_err_o
 );
 
-  localparam int unsigned EdnRounds = LfsrWidth / EdnWidth;
-  localparam int unsigned EdnCntWidth = prim_util_pkg::vbits(EdnRounds);
-  localparam int unsigned LastEdnRound = EdnRounds - 1;
-
-  // counter to track number of edn rounds
-  logic [EdnCntWidth-1:0] edn_cnt;
-  logic edn_txn_done;
+  logic local_req;
+  logic edn_req;
+  logic edn_ack;
+  logic [15:0] reseed_cnt;
   logic edn_done;
-  logic edn_req, edn_req_d, edn_req_q, edn_ack;
-  logic [EdnWidth-1:0] edn_data;
 
-  // This tracks how many edn rounds are required to fill up
-  // one required entry.
-  assign edn_txn_done = edn_req & edn_ack;
-  assign edn_done = (edn_cnt == LastEdnRound[EdnCntWidth-1:0]) & edn_txn_done;
+  assign edn_done = edn_req & edn_ack;
+
+  // An edn request can either come from counter or from external
+  assign local_req = reseed_cnt >= reseed_interval_i;
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      edn_cnt <= '0;
+      edn_req <= '0;
     end else if (edn_done) begin
-      edn_cnt <= '0;
-    end else if (edn_txn_done) begin
-      edn_cnt <= edn_cnt - 1'b1;
+      edn_req <= '0;
+    end else if (!edn_req && (reseed_req_i || local_req)) begin
+      // if edn request is not going, make a new request
+      edn_req <= 1'b1;
     end
   end
 
-  // first activation of edn counter
-  logic first_use;
+  assign seed_en_o = edn_ack;
+  assign reseed_ack_o = reseed_req_i & edn_ack;
+
+  prim_edn_req #(
+    .OutWidth(LfsrWidth)
+  ) u_edn_req (
+    .clk_i,
+    .rst_ni,
+    .req_chk_i(1'b1),
+    .req_i(edn_req),
+    .ack_o(edn_ack),
+    .data_o(seed_o),
+    .fips_o(),
+    .err_o(),
+    .clk_edn_i,
+    .rst_edn_ni,
+    .edn_o,
+    .edn_i
+  );
+
+
+  // suppress first reseed count until the first transaction has gone through.
+  // This ensures the first entropy fetch is controlled by software timing and
+  // there is no chance to accidentally pick-up boot time entropy unless intended by software.
+  logic cnt_en;
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      first_use <= 1'b1;
-    end else if (edn_done) begin
-      first_use <= 1'b0;
-    end
+     if (!rst_ni) begin
+       cnt_en <= '0;
+     end else if (edn_done) begin
+       cnt_en <= 1'b1;
+     end
   end
 
   // whenever reseed count reaches reseed_interval, issue a request and wait for ack
-  logic [15:0] reseed_cnt;
   // SEC_CM: RESEED.CTR.REDUN
   prim_count #(
     .Width(16),
@@ -80,78 +99,10 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
     .clr_i(edn_done),
     .set_i('0),
     .set_cnt_i('0),
-    .en_i(~edn_req & ~first_use),
+    .en_i(cnt_en),
     .step_i(16'h1),
     .cnt_o(reseed_cnt),
     .err_o(cnt_err_o)
   );
-
-  // latch edn request to ensure even if interval is changed in the middle
-  // the req/ack protocol is respected
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      edn_req_q <= '0;
-    end else if (edn_done) begin
-      edn_req_q <= '0;
-    end else begin
-      edn_req_q <= edn_req_q | edn_req_d;
-    end
-  end
-
-  // An edn request can either come from counter or from external
-  assign edn_req_d = reseed_req_i | (~first_use & (reseed_cnt == reseed_interval_i));
-  assign edn_req = edn_req_q | edn_req_d;
-
-  assign reseed_ack_o = reseed_req_i & edn_done;
-  assign seed_en_o = edn_done;
-
-  if (EdnRounds == 1) begin : gen_same_width
-    assign seed_o = edn_data;
-  end else begin : gen_mult_width
-    // hold one less transaction in storage
-    localparam int DeltaWidth = LfsrWidth-EdnWidth;
-    logic [DeltaWidth-1:0] seed_q;
-
-    if (DeltaWidth > EdnWidth) begin : gen_greater_width
-      always_ff @(posedge clk_i) begin
-        if (edn_txn_done) begin
-          seed_q <= {seed_q[0 +: DeltaWidth-EdnWidth], edn_data};
-        end
-      end
-    end else begin : gen_double_width
-      always_ff @(posedge clk_i) begin
-        if (edn_txn_done) begin
-          seed_q <= edn_data;
-        end
-      end
-    end
-
-    assign seed_o = {seed_q, edn_data};
-  end
-
-  //req/ack interface to edn
-  prim_sync_reqack u_reqack (
-    .clk_src_i(clk_i),
-    .rst_src_ni(rst_ni),
-    .clk_dst_i(clk_edn_i),
-    .rst_dst_ni(rst_edn_ni),
-    .req_chk_i(1'b1),
-    .src_req_i(edn_req),
-    .src_ack_o(edn_ack),
-    .dst_req_o(edn_o.edn_req),
-    .dst_ack_i(edn_i.edn_ack)
-  );
-
-  // capture the data on edn domain since the ack interface
-  // finishes before the source domain is able to see it
-  always_ff @(posedge clk_edn_i) begin
-    if (edn_o.edn_req && edn_i.edn_ack) begin
-      edn_data <= edn_i.edn_bus;
-    end
-  end
-
-
-  logic unused_fips;
-  assign unused_fips = edn_i.edn_fips;
 
 endmodule // keymgr_reseed_ctrl

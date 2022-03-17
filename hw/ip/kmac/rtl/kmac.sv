@@ -1134,6 +1134,7 @@ module kmac
       .ack_o     (entropy_ack),
       .data_o    (entropy_data),
       .fips_o    (entropy_fips),
+      .err_o     (),
       // EDN side
       .clk_edn_i,
       .rst_edn_ni,
