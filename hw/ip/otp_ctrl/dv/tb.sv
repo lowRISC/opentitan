@@ -193,27 +193,27 @@ module tb;
   initial begin
     // These SVA checks the lc_escalate_en is either Off or On, we will use more than these
     // 2 values.
-    // If it's not Off, it should be On.
+    // If the value is not lc_ctrl_pkg::Off, design will treat it as lc_ctrl_pkg::On.
     $assertoff(0, tb.dut.u_prim_lc_sync_escalate_en.PrimLcSyncCheckTransients_A);
     $assertoff(0, tb.dut.u_prim_lc_sync_escalate_en.PrimLcSyncCheckTransients0_A);
     $assertoff(0, tb.dut.u_prim_lc_sync_escalate_en.PrimLcSyncCheckTransients1_A);
 
     // These SVA checks the lc_sync_seed_hw_rd_en is either Off or On, we will use more than these
     // 2 values.
-    // If it's not On, it should be Off.
+    // If the value is not lc_ctrl_pkg::On, design will treat it as lc_ctrl_pkg::Off.
     $assertoff(0, tb.dut.u_prim_lc_sync_seed_hw_rd_en.PrimLcSyncCheckTransients_A);
     $assertoff(0, tb.dut.u_prim_lc_sync_seed_hw_rd_en.PrimLcSyncCheckTransients0_A);
     $assertoff(0, tb.dut.u_prim_lc_sync_seed_hw_rd_en.PrimLcSyncCheckTransients1_A);
 
     // These SVA checks the lc_check_byp_en is either Off or On, we will use more than these
     // 2 values.
-    // If it's not On, it should be Off.
+    // If the value is not lc_ctrl_pkg::On, design will treat it as lc_ctrl_pkg::Off.
     $assertoff(0, tb.dut.u_prim_lc_sync_check_byp_en.PrimLcSyncCheckTransients_A);
     $assertoff(0, tb.dut.u_prim_lc_sync_check_byp_en.PrimLcSyncCheckTransients0_A);
     $assertoff(0, tb.dut.u_prim_lc_sync_check_byp_en.PrimLcSyncCheckTransients1_A);
 
     // These SVA checks the lc_dft_en is either Off or On, we will use more than these 2 values.
-    // If it's not On, it should be Off.
+    // If the value is not lc_ctrl_pkg::On, design will treat it as lc_ctrl_pkg::Off.
     $assertoff(0, tb.dut.u_prim_lc_sync_dft_en.PrimLcSyncCheckTransients_A);
     $assertoff(0, tb.dut.u_prim_lc_sync_dft_en.PrimLcSyncCheckTransients0_A);
     $assertoff(0, tb.dut.u_prim_lc_sync_dft_en.PrimLcSyncCheckTransients1_A);
@@ -223,7 +223,7 @@ module tb;
 
     // These SVA checks the lc_sync_creator_seed_sw_rw_en is either Off or On, we will use more
     // than these 2 values.
-    // If it's not On, it should be Off.
+    // If the value is not lc_ctrl_pkg::On, design will treat it as lc_ctrl_pkg::Off.
     $assertoff(0, tb.dut.u_prim_lc_sync_creator_seed_sw_rw_en.PrimLcSyncCheckTransients_A);
     $assertoff(0, tb.dut.u_prim_lc_sync_creator_seed_sw_rw_en.PrimLcSyncCheckTransients0_A);
     $assertoff(0, tb.dut.u_prim_lc_sync_creator_seed_sw_rw_en.PrimLcSyncCheckTransients1_A);
