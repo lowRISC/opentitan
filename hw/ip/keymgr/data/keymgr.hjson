@@ -707,7 +707,7 @@
             { bits: "31:0",
               name: "VAL",
               desc: '''
-                Salt value
+                Key version
               ''',
               resval: "0"
             },
@@ -734,7 +734,6 @@
           resval: "1"
           desc: '''
             MAX_CREATOR_KEY_VERSION configure enable.
-            All values except for 2 are interpreted as configuration disable.
           '''
         },
       ]
@@ -771,7 +770,6 @@
           resval: "1"
           desc: '''
             MAX_OWNER_INTERMEDIATE_KEY configure enable.
-            All values except for 2 are interpreted as configuration disable.
           '''
         },
       ]
@@ -808,7 +806,6 @@
           resval: "1"
           desc: '''
             MAX_OWNER_KEY configure enable.
-            All values except for 2 are interpreted as configuration disable.
           '''
         },
       ]
@@ -1053,12 +1050,12 @@
         { bits: "1",
           name: "KMAC_FSM",
           resval: "0x0"
-          desc: "The kmac transfer interface is in an error state, asynchronous fault.",
+          desc: "The kmac transfer interface FSM is in an invalid state, asynchronous fault.",
         },
         { bits: "2",
           name: "KMAC_DONE",
           resval: "0x0"
-          desc: "The kmac transfer interface encountered unexpected done, asynchronous fault.",
+          desc: "The kmac transfer interface encountered an unexpected done, asynchronous fault.",
         },
         { bits: "3",
           name: "KMAC_OP",
