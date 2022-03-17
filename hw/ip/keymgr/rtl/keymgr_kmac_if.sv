@@ -92,8 +92,8 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   // calculated parameters for number of roudns and interface width
   localparam int CntWidth = $clog2(MaxRounds);
   localparam int IfBytes = KmacDataIfWidth / 8;
-  localparam int DecoyCopies = KmacDataIfWidth / 32;
-  localparam int DecoyOutputCopies = (kmac_pkg::AppDigestW / 32) * Shares;
+  localparam int DecoyCopies = KmacDataIfWidth / RandWidth;
+  localparam int DecoyOutputCopies = (kmac_pkg::AppDigestW / RandWidth) * Shares;
 
   localparam int unsigned LastAdvRoundInt = AdvRounds - 1;
   localparam int unsigned LastIdRoundInt = IdRounds - 1;

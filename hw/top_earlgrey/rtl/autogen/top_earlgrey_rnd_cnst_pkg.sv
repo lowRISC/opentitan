@@ -324,9 +324,14 @@ package top_earlgrey_rnd_cnst_pkg;
     256'hCB97F3EF8F47801882CBA98F3A427E0F36596BF17DE242162D03F3230BBDE157
   };
 
+  // Compile-time random bits for generation seed when no CDI is selected
+  parameter keymgr_pkg::seed_t RndCnstKeymgrCdi = {
+    256'h736A8FFB5960517D1D3F81758E675FF95FB76F97C3873BEE73D85F14C63305F0
+  };
+
   // Compile-time random bits for generation seed when no destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrNoneSeed = {
-    256'h736A8FFB5960517D1D3F81758E675FF95FB76F97C3873BEE73D85F14C63305F0
+    256'hC51478DFB6FD8B9716F318A25E86D016A3CE59685EEBCEC5A236504519CD208C
   };
 
   ////////////////////////////////////////////
@@ -334,14 +339,14 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random bits for csrng state group diversification value
   parameter csrng_pkg::cs_keymgr_div_t RndCnstCsrngCsKeymgrDivNonProduction = {
-    128'h08003A5164A595E7215DCC86DAF85431,
-    256'hC51478DFB6FD8B9716F318A25E86D016A3CE59685EEBCEC5A236504519CD208C
+    128'h6016D36BE73F17BD56D2AC51FB640552,
+    256'hFE65C0443EFB554C972639F56AD18D2608003A5164A595E7215DCC86DAF85431
   };
 
   // Compile-time random bits for csrng state group diversification value
   parameter csrng_pkg::cs_keymgr_div_t RndCnstCsrngCsKeymgrDivProduction = {
-    128'h5418C9C50A7DC6774276BB36DBE9D5F1,
-    256'h6016D36BE73F17BD56D2AC51FB640552FE65C0443EFB554C972639F56AD18D26
+    128'hF7A0D62394CFA969020470FD96E8908B,
+    256'h987D63F44D9B0998AAD73CBD0A318B805418C9C50A7DC6774276BB36DBE9D5F1
   };
 
   ////////////////////////////////////////////
@@ -349,22 +354,22 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random reset value for SRAM scrambling key.
   parameter otp_ctrl_pkg::sram_key_t RndCnstSramCtrlMainSramKey = {
-    128'h987D63F44D9B0998AAD73CBD0A318B80
+    128'h248156EBF3D0639916FDFDC642A82C0A
   };
 
   // Compile-time random reset value for SRAM scrambling nonce.
   parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramCtrlMainSramNonce = {
-    128'hF7A0D62394CFA969020470FD96E8908B
+    128'hE688B49AEFFD3142D310258B82E59AAA
   };
 
   // Compile-time random bits for initial LFSR seed
   parameter sram_ctrl_pkg::lfsr_seed_t RndCnstSramCtrlMainLfsrSeed = {
-    32'h42A82C0A
+    32'h4C395AA6
   };
 
   // Compile-time random permutation for LFSR output
   parameter sram_ctrl_pkg::lfsr_perm_t RndCnstSramCtrlMainLfsrPerm = {
-    160'h0AEC3AC667A1B8DC4B6A783FD75D994093A813C5
+    160'hD873E1B537A9F583539282D51783F6991DD60905
   };
 
   ////////////////////////////////////////////
@@ -372,12 +377,12 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Fixed nonce used for address / data scrambling
   parameter bit [63:0] RndCnstRomCtrlScrNonce = {
-    64'h488639840C191959
+    64'hD515EA8B53E1DA6C
   };
 
   // Randomised constant used as a scrambling key for ROM data
   parameter bit [127:0] RndCnstRomCtrlScrKey = {
-    128'hC5E4E3A6F7A5C571D515EA8B53E1DA6C
+    128'h66D3063931233617C5E4E3A6F7A5C571
   };
 
   ////////////////////////////////////////////
@@ -385,22 +390,22 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Default seed of the PRNG used for random instructions.
   parameter ibex_pkg::lfsr_seed_t RndCnstRvCoreIbexLfsrSeed = {
-    32'h31233617
+    32'h7D9A6EFE
   };
 
   // Permutation applied to the LFSR of the PRNG used for random instructions.
   parameter ibex_pkg::lfsr_perm_t RndCnstRvCoreIbexLfsrPerm = {
-    160'h91FC063936BF31459A7B4284DF948387741AC5F9
+    160'h3CF15E79C0365E962F74B0648509BD292FF84743
   };
 
   // Default icache scrambling key
   parameter logic [ibex_pkg::SCRAMBLE_KEY_W-1:0] RndCnstRvCoreIbexIbexKeyDefault = {
-    128'hAD2C6FE996DF13C6C70A43FE9364B0B8
+    128'hBE479500C41E5EC03677C0DBC4B91659
   };
 
   // Default icache scrambling nonce
   parameter logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0] RndCnstRvCoreIbexIbexNonceDefault = {
-    64'hF85DBDFF5FB5520D
+    64'hBACCD60112218F18
   };
 
 endpackage : top_earlgrey_rnd_cnst_pkg
