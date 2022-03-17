@@ -233,6 +233,9 @@ interface keymgr_if(input clk, input rst_n);
     otp_key = local_otp_key;
     flash   = local_flash;
     rom_digest = local_rom_digest;
+
+    // a few cycles design to sync up these inputs, before we start operations
+    repeat ($urandom_range(3, 100)) @(posedge clk);
   endtask
 
   // update kmac key for comparison during KDF
