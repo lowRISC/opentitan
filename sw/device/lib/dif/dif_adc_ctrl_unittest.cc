@@ -380,5 +380,17 @@ TEST_F(GetLatestValueTest, Success) {
   EXPECT_EQ(value, 1023);
 }
 
+class ResetFsmTest : public AdcCtrlTest {};
+
+TEST_F(ResetFsmTest, NullHandle) {
+  EXPECT_DIF_BADARG(dif_adc_ctrl_reset(nullptr));
+}
+
+TEST_F(ResetFsmTest, Success) {
+  EXPECT_WRITE32(ADC_CTRL_ADC_FSM_RST_REG_OFFSET, 1);
+  EXPECT_WRITE32(ADC_CTRL_ADC_FSM_RST_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_adc_ctrl_reset(&adc_ctrl_));
+}
+
 }  // namespace
 }  // namespace dif_adc_ctrl_unittest

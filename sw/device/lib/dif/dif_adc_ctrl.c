@@ -392,3 +392,14 @@ dif_result_t dif_adc_ctrl_get_latest_value(const dif_adc_ctrl_t *adc_ctrl,
 
   return kDifOk;
 }
+
+dif_result_t dif_adc_ctrl_reset(const dif_adc_ctrl_t *adc_ctrl) {
+  if (adc_ctrl == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(adc_ctrl->base_addr, ADC_CTRL_ADC_FSM_RST_REG_OFFSET, 1);
+  mmio_region_write32(adc_ctrl->base_addr, ADC_CTRL_ADC_FSM_RST_REG_OFFSET, 0);
+
+  return kDifOk;
+}
