@@ -680,7 +680,7 @@
             - Stop the escalation process and fail the test in the interrupt handler in case the
               bark interrupt is fired.
             - Program the alert handler to escalate on alerts upto phase 2 (i.e. reset) but the
-              phase 1 (i.e. wipe secrets) should occur and last during the time the wdog is 
+              phase 1 (i.e. wipe secrets) should occur and last during the time the wdog is
               programed to bark and bite.
             - Trigger an alert to cause an escalation condition before the bark signal asserts.
             - After the reset ensure that the reset cause was due to the escalation to prove that
@@ -1652,7 +1652,7 @@
             the NIST vectors). SW validates the reception of kmac done and fifo empty interrupts.
             '''
       milestone: V2
-      tests: ["chip_sw_kmac_mode_cshake_test", "chip_sw_kmac_mode_kmac_test"]
+      tests: ["chip_sw_kmac_mode_cshake", "chip_sw_kmac_mode_kmac"]
     }
     {
       name: chip_sw_kmac_app_keymgr
@@ -1696,7 +1696,7 @@
             X-ref'ed with ROM_CTRL test/env.
             '''
       milestone: V2
-      tests: ["chip_sw_kmac_app_rom_test"]
+      tests: ["chip_sw_kmac_app_rom"]
     }
     {
       name: chip_sw_kmac_entropy
@@ -1733,7 +1733,7 @@
               Verify that the KMAC clk enabled status reads as disabled (KMAC is idle).
             '''
       milestone: V2
-      tests: ["chip_sw_kmac_idle_test"]
+      tests: ["chip_sw_kmac_idle"]
     }
 
     // ENTROPY_SRC (pre-verified IP) integration tests:
@@ -2016,7 +2016,7 @@
             - Verify that the CPU can fetch instructions from the ROM.
             '''
       milestone: V2
-      tests: ["chip_sw_rom_ctrl_integrity_check_test"]
+      tests: ["chip_sw_rom_ctrl_integrity_check"]
     }
     {
       name: chip_conn_rom_ctrl_ast_rom_cfg
@@ -2038,7 +2038,7 @@
               digest does not match the top 8 words of the ROM.
             '''
       milestone: V2
-      tests: ["chip_sw_rom_ctrl_integrity_check_test"]
+      tests: ["chip_sw_rom_ctrl_integrity_check"]
     }
     {
       name: chip_sw_rom_ctrl_reset_glitch
@@ -2677,10 +2677,8 @@
       tests: ["chip_sw_aes_smoketest",
               "chip_sw_aon_timer_smoketest",
               "chip_sw_clkmgr_smoketest",
-              // TODO(lowrisc/opentitan#7505): Debug CSRNG generate bits mismatch.
-              // "chip_sw_csrng_smoketest",
-              // TODO(lowrisc/opentitan#10092): Remove dependency on uncontrolled environment.
-              // "chip_sw_entropy_src_smoketest",
+              "chip_sw_csrng_smoketest",
+              "chip_sw_entropy_src_smoketest",
               "chip_sw_gpio_smoketest",
               "chip_sw_hmac_smoketest",
               "chip_sw_kmac_smoketest",
