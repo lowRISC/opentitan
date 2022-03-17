@@ -62,7 +62,6 @@ package flash_ctrl_pkg;
   parameter int BusBankAddrW    = PageW + BusWordW;
   parameter int PhyAddrStart    = BusWordW - WordW;
 
-
   // fifo parameters
   parameter int FifoDepthW      = prim_util_pkg::vbits(FifoDepth+1);
 
@@ -78,6 +77,14 @@ package flash_ctrl_pkg;
     PageW'(InfoTypeSize[${type}] - 1)${"," if not loop.last else ""}
   % endfor
   };
+
+  // Flash Disable usage
+  typedef enum logic [1:0] {
+    PhyDisableIdx,
+    MpDisableIdx,
+    HostDisableIdx,
+    FlashDisableLast
+  } flash_disable_pos_e;
 
   ////////////////////////////
   // All memory protection, seed related parameters

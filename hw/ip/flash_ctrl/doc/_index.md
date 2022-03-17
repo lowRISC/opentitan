@@ -326,6 +326,28 @@ If software programs {{< regref "EXEC" >}} to any other value, code fetch from f
 
 The flash protocol controller distinguishes code / data transactions through the [instruction type attribute]({{< relref "hw/ip/lc_ctrl/doc/_index.md#usage-of-user-bits" >}}) of the TL-UL interface.
 
+#### Flash Escalation
+
+Flash has two sources of escalation - global and local.
+
+Global escalation is triggered by the life cycle controller through `lc_escalate_en`.
+Local escalation is triggered by a standard faults of flash, seen in {{< regref "STD_FAULT_STATUS" >}}.
+Local escalation is not configurable and automatically triggers when this subset of faults are seen.
+
+For the escalation behavior, see [flash access disable]({{< relref "#flash-access-disable" >}})
+
+#### Flash Access Disable
+
+Flash access can be disabled through global escalation trigger, local escalation trigger or software command.
+The escalation triggers are described [here]({{< relref "#flash-escalation" >}}).
+The software command to disable flash can be found in {{< regref "DIS" >}}.
+
+When disabled, the flash has a two layered response:
+- The flash protocol controller memory protection ({{< relref "#memory-protection" >}}) errors back all controller initiated operations.
+- The host-facing tlul adapter errors back all host initiated operations.
+- The flash physical controller completes any existing stateful operations (program or erase) and drops all future flash transactions.
+
+
 ### Flash Physical Controller
 
 The Flash Physical Controller is the wrapper module that contains the actual flash memory instantiation.
