@@ -124,9 +124,15 @@ class chip_base_vseq #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_ba
 
   // Initialize the OTP creator SW cfg region with AST configuration data.
   virtual function void initialize_otp_creator_sw_cfg_ast_cfg();
-    // Ensure that the allocated size of the AST cfg region in OTP is greater than the number of AST
+    // The knob controls whether the AST is actually programmed.
+    if (cfg.do_creator_sw_cfg_ast_cfg) begin
+      cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgAstInitEnOffset,
+                                       prim_mubi_pkg::MuBi4True);
+    end
+
+    // Ensure that the allocated size of the AST cfg region in OTP is equal to the number of AST
     // registers to be programmed.
-    `DV_CHECK_GE_FATAL(otp_ctrl_reg_pkg::CreatorSwCfgAstCfgSize, ast_pkg::AstLastRegOffset)
+    `DV_CHECK_EQ_FATAL(otp_ctrl_reg_pkg::CreatorSwCfgAstCfgSize, ast_pkg::AstRegsNum * 4)
     foreach (cfg.creator_sw_cfg_ast_cfg_data[i]) begin
       `uvm_info(`gfn, $sformatf({"OTP: Preloading creator_sw_cfg_ast_cfg_data[%0d] with 0x%0h ",
                                  "via backdoor"}, i, cfg.creator_sw_cfg_ast_cfg_data[i]),
@@ -134,8 +140,6 @@ class chip_base_vseq #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_ba
       cfg.mem_bkdr_util_h[Otp].write32(
           otp_ctrl_reg_pkg::CreatorSwCfgAstCfgOffset + i * 4, cfg.creator_sw_cfg_ast_cfg_data[i]);
     end
-    cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgAstInitEnOffset,
-                                     prim_mubi_pkg::MuBi4True);
   endfunction
 
 endclass : chip_base_vseq

@@ -40,7 +40,11 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   //
   // In closed source, tests can modify this data directly in the extended sequence's dut_init(),
   // before invoking super.dut_init(), or any other suitable place.
-  rand uint creator_sw_cfg_ast_cfg_data[ast_pkg::AstRegsNum - 1];
+  rand uint creator_sw_cfg_ast_cfg_data[ast_pkg::AstRegsNum];
+
+  // A knob that controls whether the AST initialization is done, enabled by default.
+  // Can be updated with plusarg.
+  bit do_creator_sw_cfg_ast_cfg = 1;
 
   // sw related
   // Directory from where to pick up the SW test images -default to PWD {run_dir}.
