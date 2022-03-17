@@ -62,10 +62,11 @@ set ri_max_total_range_bits 100000
 ## Analyze & Elaborate ##
 #########################
 
+# TODO(#11492): Fix the issue of CDC delay
 if {$DEFINE != ""} {
-  analyze -sverilog +define+${DEFINE} -f ${SV_FLIST}
+  analyze -sverilog +define+${DEFINE} +define+AST_BYPASS_CLK -f ${SV_FLIST}
 } else {
-  analyze -sverilog -f ${SV_FLIST}
+  analyze -sverilog  +define+AST_BYPASS_CLK -f ${SV_FLIST}
 }
 
 if {$PARAMS != ""} {
