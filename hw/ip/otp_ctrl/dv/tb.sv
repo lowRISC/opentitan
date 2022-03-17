@@ -212,6 +212,22 @@ module tb;
     $assertoff(0, tb.dut.u_prim_lc_sync_check_byp_en.PrimLcSyncCheckTransients0_A);
     $assertoff(0, tb.dut.u_prim_lc_sync_check_byp_en.PrimLcSyncCheckTransients1_A);
 
+    // These SVA checks the lc_dft_en is either Off or On, we will use more than these 2 values.
+    // If it's not On, it should be Off.
+    $assertoff(0, tb.dut.u_prim_lc_sync_dft_en.PrimLcSyncCheckTransients_A);
+    $assertoff(0, tb.dut.u_prim_lc_sync_dft_en.PrimLcSyncCheckTransients0_A);
+    $assertoff(0, tb.dut.u_prim_lc_sync_dft_en.PrimLcSyncCheckTransients1_A);
+    $assertoff(0, tb.dut.u_tlul_lc_gate.u_prim_lc_sync.PrimLcSyncCheckTransients_A);
+    $assertoff(0, tb.dut.u_tlul_lc_gate.u_prim_lc_sync.PrimLcSyncCheckTransients0_A);
+    $assertoff(0, tb.dut.u_tlul_lc_gate.u_prim_lc_sync.PrimLcSyncCheckTransients1_A);
+
+    // These SVA checks the lc_sync_creator_seed_sw_rw_en is either Off or On, we will use more
+    // than these 2 values.
+    // If it's not On, it should be Off.
+    $assertoff(0, tb.dut.u_prim_lc_sync_creator_seed_sw_rw_en.PrimLcSyncCheckTransients_A);
+    $assertoff(0, tb.dut.u_prim_lc_sync_creator_seed_sw_rw_en.PrimLcSyncCheckTransients0_A);
+    $assertoff(0, tb.dut.u_prim_lc_sync_creator_seed_sw_rw_en.PrimLcSyncCheckTransients1_A);
+
     // DV forced otp_cmd_i to reach invalid state, thus violate the assertions
     $assertoff(0, tb.dut.gen_partitions[3].gen_buffered.u_part_buf.OtpErrorState_A);
     $assertoff(0, tb.dut.gen_partitions[4].gen_buffered.u_part_buf.OtpErrorState_A);
