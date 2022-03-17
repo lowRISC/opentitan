@@ -172,19 +172,7 @@ package clkmgr_reg_pkg;
     } idle_cnt;
     struct packed {
       logic        q;
-    } io_storage_err;
-    struct packed {
-      logic        q;
-    } io_div2_storage_err;
-    struct packed {
-      logic        q;
-    } io_div4_storage_err;
-    struct packed {
-      logic        q;
-    } main_storage_err;
-    struct packed {
-      logic        q;
-    } usb_storage_err;
+    } shadow_storage_err;
   } clkmgr_reg2hw_fatal_err_code_reg_t;
 
   typedef struct packed {
@@ -207,6 +195,10 @@ package clkmgr_reg_pkg;
   } clkmgr_hw2reg_clk_hints_status_reg_t;
 
   typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } shadow_update_err;
     struct packed {
       logic        d;
       logic        de;
@@ -247,26 +239,6 @@ package clkmgr_reg_pkg;
       logic        d;
       logic        de;
     } usb_timeout_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } io_update_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } io_div2_update_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } io_div4_update_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } main_update_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } usb_update_err;
   } clkmgr_hw2reg_recov_err_code_reg_t;
 
   typedef struct packed {
@@ -281,45 +253,29 @@ package clkmgr_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } io_storage_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } io_div2_storage_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } io_div4_storage_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } main_storage_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } usb_storage_err;
+    } shadow_storage_err;
   } clkmgr_hw2reg_fatal_err_code_reg_t;
 
   // Register -> HW type
   typedef struct packed {
-    clkmgr_reg2hw_alert_test_reg_t alert_test; // [127:124]
-    clkmgr_reg2hw_extclk_ctrl_reg_t extclk_ctrl; // [123:116]
-    clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [115:112]
-    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [111:108]
-    clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [107:104]
-    clkmgr_reg2hw_io_meas_ctrl_shadowed_reg_t io_meas_ctrl_shadowed; // [103:83]
-    clkmgr_reg2hw_io_div2_meas_ctrl_shadowed_reg_t io_div2_meas_ctrl_shadowed; // [82:64]
-    clkmgr_reg2hw_io_div4_meas_ctrl_shadowed_reg_t io_div4_meas_ctrl_shadowed; // [63:47]
-    clkmgr_reg2hw_main_meas_ctrl_shadowed_reg_t main_meas_ctrl_shadowed; // [46:26]
-    clkmgr_reg2hw_usb_meas_ctrl_shadowed_reg_t usb_meas_ctrl_shadowed; // [25:7]
-    clkmgr_reg2hw_fatal_err_code_reg_t fatal_err_code; // [6:0]
+    clkmgr_reg2hw_alert_test_reg_t alert_test; // [123:120]
+    clkmgr_reg2hw_extclk_ctrl_reg_t extclk_ctrl; // [119:112]
+    clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [111:108]
+    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [107:104]
+    clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [103:100]
+    clkmgr_reg2hw_io_meas_ctrl_shadowed_reg_t io_meas_ctrl_shadowed; // [99:79]
+    clkmgr_reg2hw_io_div2_meas_ctrl_shadowed_reg_t io_div2_meas_ctrl_shadowed; // [78:60]
+    clkmgr_reg2hw_io_div4_meas_ctrl_shadowed_reg_t io_div4_meas_ctrl_shadowed; // [59:43]
+    clkmgr_reg2hw_main_meas_ctrl_shadowed_reg_t main_meas_ctrl_shadowed; // [42:22]
+    clkmgr_reg2hw_usb_meas_ctrl_shadowed_reg_t usb_meas_ctrl_shadowed; // [21:3]
+    clkmgr_reg2hw_fatal_err_code_reg_t fatal_err_code; // [2:0]
   } clkmgr_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status; // [51:44]
-    clkmgr_hw2reg_recov_err_code_reg_t recov_err_code; // [43:14]
-    clkmgr_hw2reg_fatal_err_code_reg_t fatal_err_code; // [13:0]
+    clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status; // [35:28]
+    clkmgr_hw2reg_recov_err_code_reg_t recov_err_code; // [27:6]
+    clkmgr_hw2reg_fatal_err_code_reg_t fatal_err_code; // [5:0]
   } clkmgr_hw2reg_t;
 
   // Register offsets

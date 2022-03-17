@@ -474,9 +474,16 @@
       swaccess: "rw1c",
       hwaccess: "hwo",
       fields: [
+        { bits: "0",
+          name: "SHADOW_UPDATE_ERR",
+          resval: 0
+          desc: '''
+            One of the shadow registers encountered an update error.
+          '''
+        },
 % for src in typed_clocks.rg_srcs:
         {
-          bits: "${loop.index}",
+          bits: "${loop.index+1}",
           name: "${src.upper()}_MEASURE_ERR",
           resval: 0,
           desc: '''
@@ -486,21 +493,11 @@
 % endfor
 % for src in typed_clocks.rg_srcs:
         {
-          bits: "${loop.index + len(typed_clocks.rg_srcs)}",
+          bits: "${loop.index + len(typed_clocks.rg_srcs)+1}",
           name: "${src.upper()}_TIMEOUT_ERR",
           resval: 0,
           desc: '''
             ${src} has timed out.
-          '''
-        }
-% endfor
-% for src in typed_clocks.rg_srcs:
-        {
-          bits: "${loop.index + 2*len(typed_clocks.rg_srcs)}",
-          name: "${src.upper()}_UPDATE_ERR",
-          resval: 0,
-          desc: '''
-            !!${src.upper()}_MEASURE_CTRL_SHADOWED has an update error.
           '''
         }
 % endfor
@@ -526,16 +523,13 @@
             One of the idle counts encountered a duplicate error.
           '''
         },
-% for src in typed_clocks.rg_srcs:
-        {
-          bits: "${loop.index + 2}",
-          name: "${src.upper()}_STORAGE_ERR",
-          resval: 0,
+        { bits: "2",
+          name: "SHADOW_STORAGE_ERR",
+          resval: 0
           desc: '''
-            !!${src.upper()}_MEASURE_CTRL_SHADOWED has a storage error.
+            One of the shadow registers encountered a storage error.
           '''
         },
-% endfor
       ]
     },
   ]
