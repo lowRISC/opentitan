@@ -473,8 +473,7 @@ dif_result_t dif_adc_ctrl_irq_cause_set_enabled(const dif_adc_ctrl_t *adc_ctrl,
   uint32_t enabled_causes =
       mmio_region_read32(adc_ctrl->base_addr, ADC_CTRL_ADC_INTR_CTL_REG_OFFSET);
   if (enabled == kDifToggleDisabled) {
-    causes = ~causes;
-    enabled_causes &= causes;
+    enabled_causes &= ~causes;
   } else {
     enabled_causes |= causes;
   }
