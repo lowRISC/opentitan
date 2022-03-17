@@ -488,5 +488,53 @@ TEST_F(FilterMatchWakeupGetEnabledTest, Success) {
   EXPECT_EQ(is_enabled, kDifToggleDisabled);
 }
 
+class IrqCauseSetEnabledTest : public AdcCtrlTest {};
+
+TEST_F(IrqCauseSetEnabledTest, NullHandle) {
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_cause_set_enabled(
+      nullptr, kDifAdcCtrlIrqCauseFilter2, kDifToggleEnabled));
+}
+
+TEST_F(IrqCauseSetEnabledTest, BadCauses) {
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_cause_set_enabled(
+      &adc_ctrl_, kDifAdcCtrlIrqCauseAll + 1, kDifToggleEnabled));
+}
+
+TEST_F(IrqCauseSetEnabledTest, BadEnabled) {
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_cause_set_enabled(
+      &adc_ctrl_, kDifAdcCtrlIrqCauseAll, static_cast<dif_toggle_t>(2)));
+}
+
+TEST_F(IrqCauseSetEnabledTest, Success) {
+  EXPECT_READ32(ADC_CTRL_ADC_INTR_CTL_REG_OFFSET, 0x33);
+  EXPECT_WRITE32(ADC_CTRL_ADC_INTR_CTL_REG_OFFSET, 0x3F);
+  EXPECT_DIF_OK(dif_adc_ctrl_irq_cause_set_enabled(
+      &adc_ctrl_, kDifAdcCtrlIrqCauseFilter2 | kDifAdcCtrlIrqCauseFilter3,
+      kDifToggleEnabled));
+
+  EXPECT_READ32(ADC_CTRL_ADC_INTR_CTL_REG_OFFSET, 0x3F);
+  EXPECT_WRITE32(ADC_CTRL_ADC_INTR_CTL_REG_OFFSET, 0x33);
+  EXPECT_DIF_OK(dif_adc_ctrl_irq_cause_set_enabled(
+      &adc_ctrl_, kDifAdcCtrlIrqCauseFilter2 | kDifAdcCtrlIrqCauseFilter3,
+      kDifToggleDisabled));
+}
+
+class IrqCauseGetEnabledTest : public AdcCtrlTest {};
+
+TEST_F(IrqCauseGetEnabledTest, NullArgs) {
+  uint32_t enabled_causes;
+  EXPECT_DIF_BADARG(
+      dif_adc_ctrl_irq_cause_get_enabled(nullptr, &enabled_causes));
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_cause_get_enabled(&adc_ctrl_, nullptr));
+}
+
+TEST_F(IrqCauseGetEnabledTest, Success) {
+  uint32_t enabled_causes;
+  EXPECT_READ32(ADC_CTRL_ADC_INTR_CTL_REG_OFFSET, 0x1AA);
+  EXPECT_DIF_OK(
+      dif_adc_ctrl_irq_cause_get_enabled(&adc_ctrl_, &enabled_causes));
+  EXPECT_EQ(enabled_causes, 0x1AA);
+}
+
 }  // namespace
 }  // namespace dif_adc_ctrl_unittest
