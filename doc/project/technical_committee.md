@@ -27,3 +27,4 @@ The OpenTitan Technical Committee membership is:
 * Alphan Ulusoy
 * Michael Munday
 * Rupert Swarbrick
+* Michael Tempelmeier
