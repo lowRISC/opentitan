@@ -21,7 +21,7 @@ module keymgr_sideload_key import keymgr_pkg::*; #(
   output logic [Shares-1:0][Width-1:0] key_o
 );
 
-  localparam int EntropyCopies = Width / 32;
+  localparam int EntropyCopies = Width / RandWidth;
 
   logic valid_q;
   logic [Shares-1:0][Width-1:0] key_q;

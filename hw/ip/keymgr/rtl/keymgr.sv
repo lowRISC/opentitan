@@ -25,7 +25,8 @@ module keymgr
   parameter seed_t RndCnstNoneSeed             = RndCnstNoneSeedDefault,
   parameter seed_t RndCnstAesSeed              = RndCnstAesSeedDefault,
   parameter seed_t RndCnstOtbnSeed             = RndCnstOtbnSeedDefault,
-  parameter seed_t RndCnstKmacSeed             = RndCnstKmacSeedDefault
+  parameter seed_t RndCnstKmacSeed             = RndCnstKmacSeedDefault,
+  parameter seed_t RndCnstCdi                  = RndCnstCdiDefault
 ) (
   input clk_i,
   input rst_ni,
@@ -401,7 +402,7 @@ module keymgr
   // software binding
   logic [SwBindingWidth-1:0] sw_binding;
   assign sw_binding = (cdi_sel == 0) ? reg2hw.sealing_sw_binding :
-                      (cdi_sel == 1) ? reg2hw.attest_sw_binding  : '0;
+                      (cdi_sel == 1) ? reg2hw.attest_sw_binding  : RndCnstCdi;
 
   // Advance state operation input construction
   for (genvar i = KeyMgrStages; i < 2**StageWidth; i++) begin : gen_adv_matrix_fill

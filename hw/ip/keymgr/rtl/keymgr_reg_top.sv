@@ -131,8 +131,8 @@ module keymgr_reg_top (
   logic [2:0] control_shadowed_operation_wd;
   logic control_shadowed_cdi_sel_qs;
   logic control_shadowed_cdi_sel_wd;
-  logic [2:0] control_shadowed_dest_sel_qs;
-  logic [2:0] control_shadowed_dest_sel_wd;
+  logic [1:0] control_shadowed_dest_sel_qs;
+  logic [1:0] control_shadowed_dest_sel_wd;
   logic sideload_clear_we;
   logic [2:0] sideload_clear_qs;
   logic [2:0] sideload_clear_wd;
@@ -534,11 +534,11 @@ module keymgr_reg_top (
     .err_storage (reg2hw.control_shadowed.cdi_sel.err_storage)
   );
 
-  //   F[dest_sel]: 14:12
+  //   F[dest_sel]: 13:12
   prim_subreg_shadow #(
-    .DW      (3),
+    .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h0)
+    .RESVAL  (2'h0)
   ) u_control_shadowed_dest_sel (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2607,7 +2607,7 @@ module keymgr_reg_top (
 
   assign control_shadowed_cdi_sel_wd = reg_wdata[7];
 
-  assign control_shadowed_dest_sel_wd = reg_wdata[14:12];
+  assign control_shadowed_dest_sel_wd = reg_wdata[13:12];
   assign sideload_clear_we = addr_hit[7] & reg_we & !reg_error;
 
   assign sideload_clear_wd = reg_wdata[2:0];
@@ -2809,7 +2809,7 @@ module keymgr_reg_top (
       addr_hit[6]: begin
         reg_rdata_next[6:4] = control_shadowed_operation_qs;
         reg_rdata_next[7] = control_shadowed_cdi_sel_qs;
-        reg_rdata_next[14:12] = control_shadowed_dest_sel_qs;
+        reg_rdata_next[13:12] = control_shadowed_dest_sel_qs;
       end
 
       addr_hit[7]: begin

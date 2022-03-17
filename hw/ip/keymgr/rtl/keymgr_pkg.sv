@@ -50,6 +50,8 @@ package keymgr_pkg;
     256'h0A5CCCD9627BF6169B3A765D3D6D0CD89DBDCB7B6DF8D3C03746D60A0145D3ED;
   parameter seed_t RndCnstOtbnSeedDefault =
     256'h17B0AF865F8ACDDFC7580C2B7BC3FB33FC9BB5A4B292216C123ACF99A7861F96;
+  parameter seed_t RndCnstCdiDefault =
+    256'hC69C544D153A692AEEC4A0887BD5255F5C588C63A8BD94479BCFF7432DC55E3B;
 
   // Default Lfsr configurations
   // These LFSR parameters have been generated with
@@ -92,7 +94,7 @@ package keymgr_pkg;
   } keymgr_stage_e;
 
   // Enumeration for sideload sel
-  typedef enum logic [2:0] {
+  typedef enum logic [1:0] {
     None,
     Aes,
     Kmac,

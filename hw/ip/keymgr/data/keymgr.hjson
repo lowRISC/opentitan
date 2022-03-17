@@ -189,6 +189,13 @@
       randtype:  "data",
     },
 
+    { name:      "RndCnstCdi",
+      desc:      "Compile-time random bits for generation seed when no CDI is selected",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
     { name:      "RndCnstNoneSeed",
       desc:      "Compile-time random bits for generation seed when no destination selected",
       type:      "keymgr_pkg::seed_t"
@@ -471,7 +478,7 @@
           ],
         },
 
-        { bits: "14:12",
+        { bits: "13:12",
           name: "DEST_SEL",
           desc: '''
             When the OPERATION field is programmed to generate output, this field selects

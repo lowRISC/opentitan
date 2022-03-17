@@ -2298,6 +2298,7 @@ module top_earlgrey #(
     .RndCnstAesSeed(RndCnstKeymgrAesSeed),
     .RndCnstKmacSeed(RndCnstKeymgrKmacSeed),
     .RndCnstOtbnSeed(RndCnstKeymgrOtbnSeed),
+    .RndCnstCdi(RndCnstKeymgrCdi),
     .RndCnstNoneSeed(RndCnstKeymgrNoneSeed)
   ) u_keymgr (
 
