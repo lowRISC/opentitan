@@ -701,7 +701,7 @@ module flash_ctrl
   assign flash_info_sel = op_info_sel;
 
   // flash disable declaration
-  prim_mubi_pkg::mubi4_t flash_disable;
+  prim_mubi_pkg::mubi4_t [FlashDisableLast-1:0] flash_disable;
 
   // tie off hardware clear path
   assign hw2reg.erase_suspend.d = 1'b0;
@@ -714,7 +714,7 @@ module flash_ctrl
     .rst_ni,
 
     // disable flash through memory protection
-    .flash_disable_i(flash_disable),
+    .flash_disable_i(flash_disable[MpDisableIdx]),
 
     // arbiter interface selection
     .if_sel_i(if_sel),
@@ -912,11 +912,22 @@ module flash_ctrl
   // In other words...cowardice.
   // SEC_CM: MEM.CTRL.GLOBAL_ESC
   // SEC_CM: MEM_DISABLE.CONFIG.MUBI
-  assign flash_disable = lc_ctrl_pkg::lc_tx_test_true_loose(lc_disable) ?
-                         prim_mubi_pkg::MuBi4True :
-                         prim_mubi_pkg::mubi4_t'(reg2hw.dis.q);
+  prim_mubi_pkg::mubi4_t flash_disable_pre_buf;
+  assign flash_disable_pre_buf = lc_ctrl_pkg::lc_tx_test_true_loose(lc_disable) ?
+                                 prim_mubi_pkg::MuBi4True :
+                                 prim_mubi_pkg::mubi4_t'(reg2hw.dis.q);
 
-  assign flash_phy_req.flash_disable = flash_disable;
+  prim_mubi4_sync #(
+    .NumCopies(int'(FlashDisableLast)),
+    .AsyncOn(0)
+  ) u_disable_buf (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(flash_disable_pre_buf),
+    .mubi_o(flash_disable)
+  );
+
+  assign flash_phy_req.flash_disable = flash_disable[PhyDisableIdx];
 
   prim_mubi_pkg::mubi4_t sw_flash_exec_en;
   prim_mubi_pkg::mubi4_t flash_exec_en;
@@ -1145,6 +1156,23 @@ module flash_ctrl
   logic [flash_ctrl_pkg::BusAddrW-1:0] flash_host_addr;
   logic flash_host_intg_err;
 
+  import prim_mubi_pkg::mubi4_test_true_loose;
+  logic host_disable;
+  logic disabled_rvalid;
+  logic [1:0] disabled_err;
+
+  // if flash disable is activated, error back from the adapter interface immediately
+  assign host_disable = mubi4_test_true_loose(flash_disable[HostDisableIdx]);
+  assign disabled_err = {2{disabled_rvalid}};
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      disabled_rvalid <= '0;
+    end else begin
+      disabled_rvalid <= host_disable & flash_host_req;
+    end
+  end
+
   tlul_adapter_sram #(
     .SramAw(BusAddrW),
     .SramDw(BusWidth),
@@ -1162,15 +1190,15 @@ module flash_ctrl
     .en_ifetch_i (flash_exec_en),
     .req_o       (flash_host_req),
     .req_type_o  (),
-    .gnt_i       (flash_host_req_rdy),
+    .gnt_i       (flash_host_req_rdy | host_disable),
     .we_o        (),
     .addr_o      (flash_host_addr),
     .wdata_o     (),
     .wmask_o     (),
     .intg_error_o(flash_host_intg_err),
     .rdata_i     (flash_host_rdata),
-    .rvalid_i    (flash_host_req_done),
-    .rerror_i    ({flash_host_rderr,1'b0})
+    .rvalid_i    (flash_host_req_done | disabled_rvalid),
+    .rerror_i    ({flash_host_rderr,1'b0} | disabled_err)
   );
 
   flash_phy #(
