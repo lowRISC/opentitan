@@ -43,7 +43,8 @@
   ]
 
   // Add additional tops for simulation.
-  sim_tops: ["pwrmgr_bind"]
+  sim_tops: ["pwrmgr_bind",
+             "pwrmgr_rstmgr_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50

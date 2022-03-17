@@ -53,26 +53,4 @@ module pwrmgr_bind;
     .usb_status(pwr_clk_i.usb_status)
   );
 
-  bind pwrmgr pwrmgr_rstmgr_sva_if pwrmgr_rstmgr_sva_if (
-    .clk_i,
-    .rst_ni,
-    .clk_slow_i,
-    .rst_slow_ni,
-    // Input resets.
-    .rstreqs_i(rstreqs_i),
-    .reset_en(reg2hw.reset_en),
-    .sw_rst_req_i(prim_mubi_pkg::mubi4_test_true_strict(sw_rst_req_i)),
-    .main_rst_req_i(rst_main_ni),
-    .esc_rst_req_i(esc_rst_req),
-    // The outputs from pwrmgr.
-    .rst_lc_req(pwr_rst_o.rst_lc_req),
-    .rst_sys_req(pwr_rst_o.rst_sys_req),
-    .rstreqs(pwr_rst_o.rstreqs),
-    .ndm_sys_req(1'b0),
-    .reset_cause(pwr_rst_o.reset_cause),
-    // The inputs from rstmgr.
-    .rst_lc_src_n(pwr_rst_i.rst_lc_src_n),
-    .rst_sys_src_n(pwr_rst_i.rst_sys_src_n)
-  );
-
 endmodule

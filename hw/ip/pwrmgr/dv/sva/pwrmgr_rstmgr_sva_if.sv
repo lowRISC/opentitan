@@ -22,6 +22,7 @@ interface pwrmgr_rstmgr_sva_if
   input logic         [PowerDomains-1:0] rst_lc_req,
   input logic         [PowerDomains-1:0] rst_sys_req,
   input logic         [HwResetWidth-1:0] rstreqs,
+  input logic                            main_pd_n,
   input logic                            ndm_sys_req,
   input reset_cause_e                    reset_cause,
   // The inputs from rstmgr.
@@ -95,9 +96,22 @@ interface pwrmgr_rstmgr_sva_if
             ) |-> `RST_CYCLES !rstreqs[rst], clk_slow_i, reset_or_disable || !check_rstreqs_en)
   end
 
+  // This is used to ignore main_rst_req_i (wired to rst_main_n) if it happens during low power,
+  // since as part of deep sleep rst_main_n will trigger and not because of a power glitch.
+  logic rst_main_n_ignored_for_main_pwr_rst;
+  always_ff @(posedge clk_slow_i or negedge rst_slow_ni) begin
+    if (!rst_slow_ni) begin
+      rst_main_n_ignored_for_main_pwr_rst <= 0;
+    end else if (!main_pd_n && reset_cause == LowPwrEntry) begin
+      rst_main_n_ignored_for_main_pwr_rst <= 1;
+    end else if (reset_cause != LowPwrEntry) begin
+      rst_main_n_ignored_for_main_pwr_rst <= 0;
+    end
+  end
+
   `ASSERT(MainPwrRstOn_A,
           $rose(
-              main_rst_req_i
+              main_rst_req_i && !rst_main_n_ignored_for_main_pwr_rst
           ) |-> `RST_CYCLES rstreqs[ResetMainPwrIdx], clk_slow_i,
           reset_or_disable || !check_rstreqs_en)
   `ASSERT(MainPwrRstOff_A,

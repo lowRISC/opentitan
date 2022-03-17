@@ -28,6 +28,7 @@ module rstmgr_bind;
     // These are actually used for checks.
     .rst_lc_req(pwr_i.rst_lc_req),
     .rst_sys_req(pwr_i.rst_sys_req),
+    .main_pd_n('1),
     .ndm_sys_req(ndmreset_req_i),
     .reset_cause(pwr_i.reset_cause),
     // The inputs from rstmgr.
