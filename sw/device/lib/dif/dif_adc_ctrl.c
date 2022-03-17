@@ -418,8 +418,7 @@ dif_result_t dif_adc_ctrl_irq_get_causes(const dif_adc_ctrl_t *adc_ctrl,
 
 dif_result_t dif_adc_ctrl_irq_clear_causes(const dif_adc_ctrl_t *adc_ctrl,
                                            uint32_t causes) {
-  if (adc_ctrl == NULL ||
-      causes >= (1U << (ADC_CTRL_PARAM_NUM_ADC_FILTER + 1))) {
+  if (adc_ctrl == NULL || causes > kDifAdcCtrlIrqCauseAll) {
     return kDifBadArg;
   }
 
@@ -459,6 +458,40 @@ dif_result_t dif_adc_ctrl_filter_match_wakeup_get_enabled(
       adc_ctrl->base_addr, ADC_CTRL_ADC_WAKEUP_CTL_REG_OFFSET);
   *is_enabled =
       dif_bool_to_toggle(bitfield_bit32_read(wakeup_ctrl_reg, filter));
+
+  return kDifOk;
+}
+
+dif_result_t dif_adc_ctrl_irq_cause_set_enabled(const dif_adc_ctrl_t *adc_ctrl,
+                                                uint32_t causes,
+                                                dif_toggle_t enabled) {
+  if (adc_ctrl == NULL || causes > kDifAdcCtrlIrqCauseAll ||
+      !dif_is_valid_toggle(enabled)) {
+    return kDifBadArg;
+  }
+
+  uint32_t enabled_causes =
+      mmio_region_read32(adc_ctrl->base_addr, ADC_CTRL_ADC_INTR_CTL_REG_OFFSET);
+  if (enabled == kDifToggleDisabled) {
+    causes = ~causes;
+    enabled_causes &= causes;
+  } else {
+    enabled_causes |= causes;
+  }
+  mmio_region_write32(adc_ctrl->base_addr, ADC_CTRL_ADC_INTR_CTL_REG_OFFSET,
+                      enabled_causes);
+
+  return kDifOk;
+}
+
+dif_result_t dif_adc_ctrl_irq_cause_get_enabled(const dif_adc_ctrl_t *adc_ctrl,
+                                                uint32_t *enabled_causes) {
+  if (adc_ctrl == NULL || enabled_causes == NULL) {
+    return kDifBadArg;
+  }
+
+  *enabled_causes =
+      mmio_region_read32(adc_ctrl->base_addr, ADC_CTRL_ADC_INTR_CTL_REG_OFFSET);
 
   return kDifOk;
 }

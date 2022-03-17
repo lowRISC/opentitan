@@ -380,8 +380,8 @@ dif_result_t dif_adc_ctrl_irq_get_causes(const dif_adc_ctrl_t *adc_ctrl,
  * Clears the cause(s) of a `debug_cable` IRQ.
  *
  * @param adc_ctrl An adc_ctrl handle.
- * @param[out] causes The causes of the IRQ (one or more
- *                    `dif_adc_ctrl_irq_cause_t`s ORed together).
+ * @param causes The causes of the IRQ (one or more `dif_adc_ctrl_irq_cause_t`s
+ *               ORed together).
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
@@ -416,31 +416,32 @@ dif_result_t dif_adc_ctrl_filter_match_wakeup_get_enabled(
     dif_toggle_t *is_enabled);
 
 /**
- * Sets the enablement of generating a `debug_cable` IRQ for a given cause.
+ * Sets the enablement of generating a `debug_cable` IRQ for given cause(s).
  *
  * Causes can be filter matches (in Normal Power Scan mode), or when a sample is
  * complete (in Oneshot mode).
  *
  * @param adc_ctrl An adc_ctrl handle.
- * @param irq_cause A cause to generate the `debug_cable` IRQ for.
+ * @param causes Causes (one or more `dif_adc_ctrl_irq_cause_t`s ORed together)
+ *               to generate the `debug_cable` IRQ for.
  * @param enabled The enablement state to set.
  * @return The result of the operation.
  */
-dif_result_t dif_adc_ctrl_irq_cause_set_enabled(
-    const dif_adc_ctrl_t *adc_ctrl, dif_adc_ctrl_irq_cause_t irq_cause,
-    dif_toggle_t enabled);
+dif_result_t dif_adc_ctrl_irq_cause_set_enabled(const dif_adc_ctrl_t *adc_ctrl,
+                                                uint32_t causes,
+                                                dif_toggle_t enabled);
 
 /**
- * Gets the enablement of generating a `debug_cable` IRQ for a given cause.
+ * Gets the causes that will generate a `debug_cable` IRQ.
  *
  * @param adc_ctrl An adc_ctrl handle.
- * @param irq_cause A cause to generate the `debug_cable` IRQ for.
- * @param[out] *is_enabled The enablement state retrieved.
+ * @param[out] enabled_causes Causes (one or more `dif_adc_ctrl_irq_cause_t`s
+ *                            ORed together) that will generate the
+ *                            `debug_cable` IRQ.
  * @return The result of the operation.
  */
-dif_result_t dif_adc_ctrl_irq_cause_get_enabled(
-    const dif_adc_ctrl_t *adc_ctrl, dif_adc_ctrl_irq_cause_t irq_cause,
-    dif_toggle_t *is_enabled);
+dif_result_t dif_adc_ctrl_irq_cause_get_enabled(const dif_adc_ctrl_t *adc_ctrl,
+                                                uint32_t *enabled_causes);
 
 #ifdef __cplusplus
 }  // extern "C"
