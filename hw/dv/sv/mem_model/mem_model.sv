@@ -32,7 +32,7 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
       `uvm_info(`gfn, $sformatf("Read Mem  : Addr[0x%0h], Data[0x%0h]", addr, data), UVM_HIGH)
     end else begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(data)
-      `uvm_error(`gfn, $sformatf("read to uninitialzed addr 0x%0h", addr))
+      `uvm_error(`gfn, $sformatf("read from uninitialized addr 0x%0h", addr))
     end
     return data;
   endfunction
