@@ -51,7 +51,7 @@ class otp_ctrl_parallel_lc_esc_vseq extends otp_ctrl_dai_lock_vseq;
     endcase
     cfg.clk_rst_vif.wait_clks($urandom_range(0, 50));
 
-    cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::On);
+    cfg.otp_ctrl_vif.drive_lc_escalate_en(get_rand_lc_tx_val(.f_weight(0)));
 
     // TODO: in alert_esc_monitor, makes it auto-response like push-pull agent
     if (en_auto_alerts_response && cfg.list_of_alerts.size()) run_alert_rsp_seq_nonblocking();

@@ -29,6 +29,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;
   import otp_ctrl_part_pkg::*;
+  import cip_base_pkg::*;
 
   // Output from DUT
   otp_hw_cfg_t       otp_hw_cfg_o;
@@ -87,7 +88,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
       lc_prog_err_dly1  <= 0;
       lc_esc_dly1       <= lc_ctrl_pkg::Off;
       lc_esc_dly2       <= lc_ctrl_pkg::Off;
-      lc_check_byp_en_i <= randomize_lc_tx_t_val();
+      lc_check_byp_en_i <= get_rand_lc_tx_val();
       lc_esc_on         <= 0;
     end else begin
       lc_prog_err_dly1 <= lc_prog_err;
@@ -96,7 +97,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
       if (lc_prog_req) begin
         lc_check_byp_en_i <= lc_check_byp_en ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
       end
-      if (lc_esc_dly2 == lc_ctrl_pkg::On && !lc_esc_on) begin
+      if (lc_esc_dly2 != lc_ctrl_pkg::Off && !lc_esc_on) begin
         lc_esc_on <= 1;
       end
     end

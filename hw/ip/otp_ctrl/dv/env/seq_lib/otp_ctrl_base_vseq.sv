@@ -72,10 +72,10 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task otp_ctrl_vif_init();
-    cfg.otp_ctrl_vif.drive_lc_creator_seed_sw_rw_en(On);
-    cfg.otp_ctrl_vif.drive_lc_seed_hw_rd_en(randomize_lc_tx_t_val());
-    cfg.otp_ctrl_vif.drive_lc_dft_en(Off);
-    cfg.otp_ctrl_vif.drive_lc_escalate_en(Off);
+    cfg.otp_ctrl_vif.drive_lc_creator_seed_sw_rw_en(lc_ctrl_pkg::On);
+    cfg.otp_ctrl_vif.drive_lc_seed_hw_rd_en(get_rand_lc_tx_val());
+    cfg.otp_ctrl_vif.drive_lc_dft_en(get_rand_lc_tx_val(.t_weight(0)));
+    cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
     cfg.otp_ctrl_vif.drive_pwr_otp_init(0);
     cfg.otp_ctrl_vif.drive_ext_voltage_h_io(1'bz);
 
@@ -147,7 +147,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     // - zero delays in TLUL interface, otherwise dai operation might be finished before reading
     //   these two CSRs
     if (cfg.zero_delays && is_valid_dai_op &&
-        cfg.otp_ctrl_vif.lc_escalate_en_i != lc_ctrl_pkg::On) begin
+        cfg.otp_ctrl_vif.lc_escalate_en_i == lc_ctrl_pkg::Off) begin
       csr_rd_check(ral.status.dai_idle, .compare_value(0), .backdoor(1));
       if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(val));
     end
@@ -166,7 +166,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     csr_wr(ral.direct_access_cmd, int'(otp_ctrl_pkg::DaiRead));
 
     if (cfg.zero_delays && is_valid_dai_op &&
-        cfg.otp_ctrl_vif.lc_escalate_en_i != lc_ctrl_pkg::On) begin
+        cfg.otp_ctrl_vif.lc_escalate_en_i == lc_ctrl_pkg::Off) begin
       csr_rd_check(ral.status.dai_idle, .compare_value(0), .backdoor(1));
       if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(val));
     end
@@ -195,7 +195,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     csr_wr(ral.direct_access_cmd, otp_ctrl_pkg::DaiDigest);
 
     if (cfg.zero_delays && is_valid_dai_op &&
-        cfg.otp_ctrl_vif.lc_escalate_en_i != lc_ctrl_pkg::On) begin
+        cfg.otp_ctrl_vif.lc_escalate_en_i == lc_ctrl_pkg::Off) begin
       csr_rd_check(ral.status.dai_idle, .compare_value(0), .backdoor(1));
       if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(val));
     end

@@ -241,16 +241,6 @@ package otp_ctrl_env_pkg;
     return dai_addr + SW_WINDOW_BASE_ADDR;
   endfunction
 
-  // This function randomizes lc_tx_t with 25% lc_ctrl_pkg::On, 25% lc_ctrl_pkg::Off,
-  // and 50% random values
-  function automatic lc_ctrl_pkg::lc_tx_t randomize_lc_tx_t_val();
-    randomize_lc_tx_t_val = $urandom();
-    if ($urandom_range(0, 1)) begin
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(randomize_lc_tx_t_val,
-          randomize_lc_tx_t_val inside {lc_ctrl_pkg::On, lc_ctrl_pkg::Off};, , "otp_ctrl_env_pkg")
-    end
-  endfunction
-
   function automatic bit [TL_DW-1:0] normalize_dai_addr(bit [TL_DW-1:0] dai_addr);
     normalize_dai_addr = (is_secret(dai_addr) || is_digest(dai_addr)) ? dai_addr >> 3 << 3 :
                                                                         dai_addr >> 2 << 2;
