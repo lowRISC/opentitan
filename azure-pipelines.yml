@@ -761,3 +761,14 @@ jobs:
     - bash: ci/scripts/quick-bazel.sh
       displayName: quick-bazel
       continueOnError: true
+
+- job: mask_rom_test
+  displayName: Mask ROM Build and Test
+  dependsOn: lint
+  pool:
+    vmImage: ubuntu-18.04
+  steps:
+    - template: ci/install-package-dependencies.yml
+      # The default timeout is too short to build verilator so let's skip it for the first pass
+    - bash: ci/scripts/mask-rom-tests.sh
+      displayName: mask-rom-test
