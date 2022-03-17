@@ -392,5 +392,38 @@ TEST_F(ResetFsmTest, Success) {
   EXPECT_DIF_OK(dif_adc_ctrl_reset(&adc_ctrl_));
 }
 
+class IrqGetCausesTest : public AdcCtrlTest {};
+
+TEST_F(IrqGetCausesTest, NullArgs) {
+  uint32_t causes;
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_get_causes(nullptr, &causes));
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_get_causes(&adc_ctrl_, nullptr));
+}
+
+TEST_F(IrqGetCausesTest, Success) {
+  uint32_t causes;
+  EXPECT_READ32(ADC_CTRL_ADC_INTR_STATUS_REG_OFFSET, 0x1FF);
+  EXPECT_DIF_OK(dif_adc_ctrl_irq_get_causes(&adc_ctrl_, &causes));
+  EXPECT_EQ(causes, 0x1FF);
+}
+
+class IrqClearCausesTest : public AdcCtrlTest {};
+
+TEST_F(IrqClearCausesTest, NullHandle) {
+  EXPECT_DIF_BADARG(
+      dif_adc_ctrl_irq_clear_causes(nullptr, kDifAdcCtrlIrqCauseOneshot));
+}
+
+TEST_F(IrqClearCausesTest, BadCauses) {
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_clear_causes(
+      &adc_ctrl_, 1U << (ADC_CTRL_PARAM_NUM_ADC_FILTER + 1)));
+}
+
+TEST_F(IrqClearCausesTest, Success) {
+  EXPECT_WRITE32(ADC_CTRL_ADC_INTR_STATUS_REG_OFFSET, 0x9);
+  EXPECT_DIF_OK(dif_adc_ctrl_irq_clear_causes(
+      &adc_ctrl_, kDifAdcCtrlIrqCauseFilter0 | kDifAdcCtrlIrqCauseFilter3));
+}
+
 }  // namespace
 }  // namespace dif_adc_ctrl_unittest

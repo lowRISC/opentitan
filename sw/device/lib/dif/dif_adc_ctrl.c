@@ -403,3 +403,28 @@ dif_result_t dif_adc_ctrl_reset(const dif_adc_ctrl_t *adc_ctrl) {
 
   return kDifOk;
 }
+
+dif_result_t dif_adc_ctrl_irq_get_causes(const dif_adc_ctrl_t *adc_ctrl,
+                                         uint32_t *causes) {
+  if (adc_ctrl == NULL || causes == NULL) {
+    return kDifBadArg;
+  }
+
+  *causes = mmio_region_read32(adc_ctrl->base_addr,
+                               ADC_CTRL_ADC_INTR_STATUS_REG_OFFSET);
+
+  return kDifOk;
+}
+
+dif_result_t dif_adc_ctrl_irq_clear_causes(const dif_adc_ctrl_t *adc_ctrl,
+                                           uint32_t causes) {
+  if (adc_ctrl == NULL ||
+      causes >= (1U << (ADC_CTRL_PARAM_NUM_ADC_FILTER + 1))) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(adc_ctrl->base_addr, ADC_CTRL_ADC_INTR_STATUS_REG_OFFSET,
+                      causes);
+
+  return kDifOk;
+}
