@@ -78,6 +78,12 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
       end
       "com_out_ctl_0", "com_sel_ctl_0", "com_det_ctl_0": begin
       end
+      "com_out_ctl_1", "com_sel_ctl_1", "com_det_ctl_1": begin
+      end
+      "com_out_ctl_2", "com_sel_ctl_2", "com_det_ctl_2": begin
+      end
+      "com_out_ctl_3", "com_sel_ctl_3", "com_det_ctl_3": begin
+      end
       "ec_rst_ctl": begin
       end
       "combo_intr_status": begin
