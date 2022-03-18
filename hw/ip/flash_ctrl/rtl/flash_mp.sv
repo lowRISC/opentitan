@@ -320,12 +320,12 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
     info_bk_erase_en})
 
   // If a bank erase request only selects data, then info should be erased
-  `ASSERT(BankEraseData_a, req_i & bk_erase_i & data_part_sel |-> data_bk_erase_en &
+  `ASSERT(BankEraseData_a, req_i & bk_erase_i & |bk_erase_en & data_part_sel |-> data_bk_erase_en &
           ~info_bk_erase_en)
 
   // If a bank erase request also selects the info partition, then both data
   // and info must be erased
-  `ASSERT(BankEraseInfo_a, req_i & bk_erase_i & info_part_sel |-> &{data_bk_erase_en,
+  `ASSERT(BankEraseInfo_a, req_i & bk_erase_i & |bk_erase_en & info_part_sel |-> &{data_bk_erase_en,
                                                                     info_bk_erase_en})
 
 endmodule // flash_erase_ctrl
