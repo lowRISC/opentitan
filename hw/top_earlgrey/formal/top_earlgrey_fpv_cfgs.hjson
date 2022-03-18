@@ -452,6 +452,12 @@
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/flash_ctrl/{sub_flow}/{tool}"
                cov: false
+               overrides: [
+                 {
+                   name:  design_level
+                   value: "top"
+                 }
+               ]
                task: "FpvSecCm"
                stopats: "*u_state_regs.state_o"
              }
