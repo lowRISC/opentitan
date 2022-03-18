@@ -292,29 +292,6 @@ module rstmgr
 
 
   ////////////////////////////////////////////////////
-  // Software reset controls external reg           //
-  ////////////////////////////////////////////////////
-  logic [NumSwResets-1:0] sw_rst_ctrl_n;
-
-  for (genvar i=0; i < NumSwResets; i++) begin : gen_sw_rst_ext_regs
-    prim_subreg #(
-      .DW(1),
-      .SwAccess(prim_subreg_pkg::SwAccessRW),
-      .RESVAL(1)
-    ) u_rst_sw_ctrl_reg (
-      .clk_i,
-      .rst_ni,
-      .we(reg2hw.sw_rst_ctrl_n[i].qe & reg2hw.sw_rst_regwen[i]),
-      .wd(reg2hw.sw_rst_ctrl_n[i].q),
-      .de('0),
-      .d('0),
-      .qe(),
-      .q(sw_rst_ctrl_n[i]),
-      .qs(hw2reg.sw_rst_ctrl_n[i].d)
-    );
-  end
-
-  ////////////////////////////////////////////////////
   // leaf reset in the system                       //
   // These should all be generated                  //
   ////////////////////////////////////////////////////
@@ -914,7 +891,7 @@ module rstmgr
     .rst_ni,
     .leaf_clk_i(clk_io_div4_i),
     .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
-    .sw_rst_req_ni(sw_rst_ctrl_n[SPI_DEVICE]),
+    .sw_rst_req_ni(reg2hw.sw_rst_ctrl_n[SPI_DEVICE].q),
     .scan_rst_ni,
     .scanmode_i,
     .rst_en_o(rst_en_o.spi_device[Domain0Sel]),
@@ -949,7 +926,7 @@ module rstmgr
     .rst_ni,
     .leaf_clk_i(clk_io_i),
     .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
-    .sw_rst_req_ni(sw_rst_ctrl_n[SPI_HOST0]),
+    .sw_rst_req_ni(reg2hw.sw_rst_ctrl_n[SPI_HOST0].q),
     .scan_rst_ni,
     .scanmode_i,
     .rst_en_o(rst_en_o.spi_host0[Domain0Sel]),
@@ -984,7 +961,7 @@ module rstmgr
     .rst_ni,
     .leaf_clk_i(clk_io_div2_i),
     .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
-    .sw_rst_req_ni(sw_rst_ctrl_n[SPI_HOST1]),
+    .sw_rst_req_ni(reg2hw.sw_rst_ctrl_n[SPI_HOST1].q),
     .scan_rst_ni,
     .scanmode_i,
     .rst_en_o(rst_en_o.spi_host1[Domain0Sel]),
@@ -1019,7 +996,7 @@ module rstmgr
     .rst_ni,
     .leaf_clk_i(clk_io_div4_i),
     .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
-    .sw_rst_req_ni(sw_rst_ctrl_n[USB]),
+    .sw_rst_req_ni(reg2hw.sw_rst_ctrl_n[USB].q),
     .scan_rst_ni,
     .scanmode_i,
     .rst_en_o(rst_en_o.usb[Domain0Sel]),
@@ -1054,7 +1031,7 @@ module rstmgr
     .rst_ni,
     .leaf_clk_i(clk_usb_i),
     .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
-    .sw_rst_req_ni(sw_rst_ctrl_n[USBIF]),
+    .sw_rst_req_ni(reg2hw.sw_rst_ctrl_n[USBIF].q),
     .scan_rst_ni,
     .scanmode_i,
     .rst_en_o(rst_en_o.usbif[Domain0Sel]),
@@ -1089,7 +1066,7 @@ module rstmgr
     .rst_ni,
     .leaf_clk_i(clk_io_div4_i),
     .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
-    .sw_rst_req_ni(sw_rst_ctrl_n[I2C0]),
+    .sw_rst_req_ni(reg2hw.sw_rst_ctrl_n[I2C0].q),
     .scan_rst_ni,
     .scanmode_i,
     .rst_en_o(rst_en_o.i2c0[Domain0Sel]),
@@ -1124,7 +1101,7 @@ module rstmgr
     .rst_ni,
     .leaf_clk_i(clk_io_div4_i),
     .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
-    .sw_rst_req_ni(sw_rst_ctrl_n[I2C1]),
+    .sw_rst_req_ni(reg2hw.sw_rst_ctrl_n[I2C1].q),
     .scan_rst_ni,
     .scanmode_i,
     .rst_en_o(rst_en_o.i2c1[Domain0Sel]),
@@ -1159,7 +1136,7 @@ module rstmgr
     .rst_ni,
     .leaf_clk_i(clk_io_div4_i),
     .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
-    .sw_rst_req_ni(sw_rst_ctrl_n[I2C2]),
+    .sw_rst_req_ni(reg2hw.sw_rst_ctrl_n[I2C2].q),
     .scan_rst_ni,
     .scanmode_i,
     .rst_en_o(rst_en_o.i2c2[Domain0Sel]),
