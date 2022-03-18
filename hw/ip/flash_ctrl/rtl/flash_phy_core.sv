@@ -61,7 +61,6 @@ module flash_phy_core
 
   typedef enum logic [2:0] {
     StIdle,
-    StHostRead,
     StCtrlRead,
     StCtrlProg,
     StCtrl,
@@ -112,27 +111,25 @@ module flash_phy_core
   // arbitration counter
   // If controller side has lost arbitration ArbCnt times, favor it once
   logic [CntWidth-1:0] arb_cnt;
-  logic inc_arb_cnt, clr_arb_cnt;
-  logic host_req_masked;
+  logic inc_arb_cnt;
 
   // scramble / de-scramble connections
   logic calc_ack;
   logic op_ack;
   logic [DataWidth-1:0] scramble_mask;
 
-  assign host_req_masked = host_req_i & (arb_cnt < ArbCnt[CntWidth-1:0]);
+  logic host_gnt;
+  logic ctrl_gnt;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       arb_cnt <= '0;
-    end else if (clr_arb_cnt) begin
+    end else if (ctrl_rsp_vld) begin
       arb_cnt <= '0;
     end else if (inc_arb_cnt) begin
       arb_cnt <= arb_cnt + 1'b1;
     end
   end
-
-  assign host_req_done_o = host_rsp & rd_stage_data_valid;
 
   import prim_mubi_pkg::mubi4_test_false_strict;
   import prim_mubi_pkg::mubi4_test_true_loose;
@@ -145,72 +142,43 @@ module flash_phy_core
     end
   end
 
-  // The following FSM should be re-coded to use prim_arb
-  // There are a few special conditions that require fsm handling, but the state
-  // space should be reduced.
+  logic host_req;
+  assign host_req = host_req_i & (arb_cnt < ArbCnt[CntWidth-1:0]) & ~ctrl_gnt;
+  assign host_sel = host_req;
+  assign host_gnt = host_req & host_req_rdy_o;
+
+  assign host_req_rdy_o = rd_stage_rdy & (arb_cnt < ArbCnt[CntWidth-1:0]) & ~ctrl_gnt;
+  assign host_req_done_o = ~ctrl_gnt & rd_stage_data_valid;
+
+  // controller request can only win after the entire read pipeline
+  // clears
+  logic ctrl_req;
+  assign ctrl_req = req_i & rd_stage_idle & ~host_req;
+
+  // if request happens at the same time as a host grant, increment count
+  assign inc_arb_cnt = req_i & host_gnt;
+
   always_comb begin
     state_d = state_q;
-
     reqs = '0;
-    host_sel = 1'b0;
-    host_rsp = 1'b0;
-    ctrl_rsp_vld = 1'b0;
-    host_req_rdy_o = 1'b0;
-    inc_arb_cnt = 1'b0;
-    clr_arb_cnt = 1'b0;
+    ctrl_rsp_vld = '0;
+    ctrl_gnt = '0;
 
     unique case (state_q)
       StIdle: begin
-        // escalation handling is always done gracefully after an
-        // existing transaction terminates, otherwise we may risk damaging flash
-        if (prim_mubi_pkg::mubi4_test_true_loose(flash_disable_i)) begin
-          state_d = StDisable;
-        end else if (host_req_masked) begin
+        if (ctrl_req && rd_i) begin
           reqs[PhyRead] = 1'b1;
-          host_sel = 1'b1;
-          host_req_rdy_o = rd_stage_rdy;
-          inc_arb_cnt = req_i & host_req_rdy_o;
-          state_d = host_req_rdy_o ? StHostRead : state_q;
-        end else if (req_i && rd_i) begin
-          reqs[PhyRead] = 1'b1;
-          clr_arb_cnt = rd_stage_rdy;
           state_d = rd_stage_rdy ? StCtrlRead : state_q;
-        end else if (req_i && prog_i) begin
-          reqs[PhyProg] = 1'b1;
-
-          // it is possible for a program to immediate complete when the
-          // program packing is not at the end of the flash word
-          clr_arb_cnt = prog_ack;
-          state_d = prog_ack ? StIdle : StCtrlProg;
-          ctrl_rsp_vld = prog_ack;
-
-        end else if (req_i) begin
+        end else if (ctrl_req && prog_i) begin
+          state_d = StCtrlProg;
+        end else if (ctrl_req) begin
           state_d = StCtrl;
         end
       end
 
-      // The host has priority up to ArbCnt times when going head to head
-      // with controller
-      StHostRead: begin
-        host_rsp = 1'b1;
-        // if escalation occurs, do not accept more read transactions
-        if (host_req_masked && (mubi4_test_false_strict(flash_disable_i))) begin
-          reqs[PhyRead] = 1'b1;
-          host_sel = 1'b1;
-          host_req_rdy_o = rd_stage_rdy;
-          inc_arb_cnt = req_i & host_req_rdy_o;
-        end else if (rd_stage_idle) begin
-          // once in pipelined reads, need to wait for the entire pipeline
-          // to drain before returning to perform other operations
-          state_d = StIdle;
-        end
-      end
-
       // Controller reads are very slow.
-      // Need to update controller end to take advantage of read pipeline.
-      // Once that is done, the two read states can merge.
       StCtrlRead: begin
-        clr_arb_cnt = 1'b1;
+        ctrl_gnt = 1'b1;
         if (rd_stage_data_valid) begin
           ctrl_rsp_vld = 1'b1;
           state_d = StIdle;
@@ -220,7 +188,7 @@ module flash_phy_core
       // Controller program data may be packed based on
       // address alignment
       StCtrlProg: begin
-        clr_arb_cnt = 1'b1;
+        ctrl_gnt = 1'b1;
         reqs[PhyProg] = 1'b1;
         if (prog_ack) begin
           ctrl_rsp_vld = 1'b1;
@@ -230,7 +198,7 @@ module flash_phy_core
 
       // other controller operations directly interface with flash
       StCtrl: begin
-        clr_arb_cnt = 1'b1;
+        ctrl_gnt = 1'b1;
         reqs[PhyPgErase] = pg_erase_i;
         reqs[PhyBkErase] = bk_erase_i;
         if (erase_ack) begin
@@ -239,10 +207,8 @@ module flash_phy_core
         end
       end
 
-      // state is terminal, no flash transactions are ever accepted again
-      // until reboot
-      // This also handles Disabled state
       default:;
+
     endcase // unique case (state_q)
   end // always_comb
 
@@ -271,7 +237,7 @@ module flash_phy_core
     .clk_i,
     .rst_ni,
     .buf_en_i(rd_buf_en_i),
-    .req_i(reqs[PhyRead]),
+    .req_i(reqs[PhyRead] | host_req),
     .descramble_i(muxed_scramble_en),
     .ecc_i(muxed_ecc_en),
     .prog_i(reqs[PhyProg]),
@@ -441,6 +407,10 @@ module flash_phy_core
   `ASSERT(ArbCntMax_A, arb_cnt == ArbCnt |-> !inc_arb_cnt)
 
   // once arb count maxes, the host request needs to be masked until the arb count is cleared
-  `ASSERT(CtrlPrio_A, arb_cnt == ArbCnt |-> (!host_req_masked throughout (clr_arb_cnt[->1])))
+  `ASSERT(CtrlPrio_A, arb_cnt == ArbCnt |-> (!host_req throughout (ctrl_rsp_vld[->1])))
+
+  // are we testing back to back host transactions?
+  // after a host transaction is granted, do we ever request another?
+  //`ASSERT(HostB2B_A, host_req_i & host_req_rdy_o |=> ~host_req_i)
 
 endmodule // flash_phy_core
