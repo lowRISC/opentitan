@@ -189,14 +189,21 @@ class i2c_scoreboard extends cip_base_scoreboard #(
           // these fields are WO
           bit fmtrst_val = bit'(get_field_val(ral.fifo_ctrl.fmtrst, item.a_data));
           bit rxrst_val = bit'(get_field_val(ral.fifo_ctrl.rxrst, item.a_data));
+          if (rxrst_val) begin
+            rd_item_fifo.flush();
+            exp_rd_q.delete();
+            rd_pending_q.delete();
+            rd_pending_item.clear_all();
+            exp_rd_item.clear_all();
+          end
           if (cfg.en_cov) begin
             cov.fmt_fifo_level_cg.sample(.irq(cfg.intr_vif.pins[FmtWatermark]),
-                                         .lvl(ral.fifo_status.fmtlvl.get_mirrored_value()),
+                                         .lvl(`gmv(ral.fifo_status.fmtlvl)),
                                          .rst(fmtrst_val));
           end
           if (cfg.en_cov) begin
             cov.rx_fifo_level_cg.sample(.irq(cfg.intr_vif.pins[RxWatermark]),
-                                        .lvl(ral.fifo_status.rxlvl.get_mirrored_value()),
+                                        .lvl(`gmv(ral.fifo_status.rxlvl)),
                                         .rst(rxrst_val));
           end
         end

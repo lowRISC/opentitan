@@ -10,7 +10,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
   local uint total_rd_bytes;
 
   virtual task body();
-    bit do_interrupt = 1'b0;
+    bit do_interrupt = 1'b1;
     initialization(.mode(Host));
     `uvm_info(`gfn, "\n--> start of sequence", UVM_DEBUG)
     fork
@@ -25,7 +25,8 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
     `uvm_info(`gfn, "\n--> end of sequence", UVM_DEBUG)
   endtask : body
 
-  virtual task host_send_trans(int max_trans = num_trans, tran_type_e trans_type = ReadWrite);
+  virtual task host_send_trans(int max_trans = num_trans, tran_type_e trans_type = ReadWrite,
+                               bit read = 1'b1);
     bit last_tran, chained_read;
 
     fmt_item = new("fmt_item");
@@ -89,7 +90,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
         end
         complete_program_fmt_fifo = 1'b1;
       end
-      begin
+      if (read) begin
         read_data_from_target();
         `uvm_info(`gfn, "\n  read_data_from_target task ended", UVM_DEBUG)
       end

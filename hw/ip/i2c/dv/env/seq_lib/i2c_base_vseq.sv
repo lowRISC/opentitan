@@ -390,6 +390,9 @@ class i2c_base_vseq extends cip_base_vseq #(
     if (bit'(get_field_val(ral.intr_state.rx_watermark, intr_clear))) begin
       `uvm_info(`gfn, "\n  clearing rx_watermark", UVM_DEBUG)
     end
+    if (bit'(get_field_val(ral.intr_state.stretch_timeout, intr_clear))) begin
+      `uvm_info(`gfn, "\n  clearing stretch_timeout", UVM_DEBUG)
+    end
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(clear_intr_dly)
     cfg.clk_rst_vif.wait_clks(clear_intr_dly);
