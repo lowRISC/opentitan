@@ -514,6 +514,8 @@ module flash_ctrl
                                          reg2hw.prog_type_en.normal.q;
   assign prog_type_en[FlashProgRepair] = flash_phy_rsp.prog_type_avail[FlashProgRepair] &
                                          reg2hw.prog_type_en.repair.q;
+
+  logic prog_cnt_err;
   flash_ctrl_prog u_flash_ctrl_prog (
     .clk_i,
     .rst_ni,
@@ -528,6 +530,7 @@ module flash_ctrl
     .op_type_i      (op_prog_type),
     .type_avail_i   (prog_type_en),
     .op_err_addr_o  (prog_err_addr),
+    .cnt_err_o      (prog_cnt_err),
 
     // FIFO Interface
     .data_i         (prog_fifo_rdata),
@@ -609,6 +612,7 @@ module flash_ctrl
     .rdata_o (rd_fifo_rdata)
   );
 
+  logic rd_cnt_err;
   // Read handler is consumer of rd_fifo
   assign rd_op_valid = op_start & rd_op;
   flash_ctrl_rd  u_flash_ctrl_rd (
@@ -623,6 +627,7 @@ module flash_ctrl
     .op_err_addr_o  (rd_err_addr),
     .op_addr_i      (op_addr),
     .op_addr_oob_i  ('0),
+    .cnt_err_o      (rd_cnt_err),
 
     // FIFO Interface
     .data_rdy_i     (rd_fifo_wready),
@@ -987,12 +992,14 @@ module flash_ctrl
   assign hw2reg.std_fault_status.arb_fsm_err.d    = 1'b1;
   assign hw2reg.std_fault_status.storage_err.d    = 1'b1;
   assign hw2reg.std_fault_status.phy_fsm_err.d    = 1'b1;
+  assign hw2reg.std_fault_status.ctrl_cnt_err.d   = 1'b1;
   assign hw2reg.std_fault_status.reg_intg_err.de  = intg_err;
   assign hw2reg.std_fault_status.phy_intg_err.de  = flash_phy_rsp.intg_err;
   assign hw2reg.std_fault_status.lcmgr_err.de     = lcmgr_err;
   assign hw2reg.std_fault_status.arb_fsm_err.de   = arb_fsm_err;
   assign hw2reg.std_fault_status.storage_err.de   = storage_err;
   assign hw2reg.std_fault_status.phy_fsm_err.de   = flash_phy_rsp.fsm_err;
+  assign hw2reg.std_fault_status.ctrl_cnt_err.de  = rd_cnt_err | prog_cnt_err;
 
   // Correctable ECC count / address
   for (genvar i = 0; i < NumBanks; i++) begin : gen_ecc_single_err_reg
@@ -1269,6 +1276,10 @@ module flash_ctrl
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(WordCntAlertCheck_A, u_flash_hw_if.u_word_cnt,
                                          alert_tx_o[0])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(WipeIdx_A, u_flash_hw_if.u_wipe_idx_cnt,
+                                         alert_tx_o[0])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ProgCnt_A, u_flash_ctrl_prog.u_cnt,
+                                         alert_tx_o[0])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RdCnt_A, u_flash_ctrl_rd.u_cnt,
                                          alert_tx_o[0])
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(LcCtrlFsmCheck_A,

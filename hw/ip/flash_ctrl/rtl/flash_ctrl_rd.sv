@@ -17,6 +17,7 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
   input [BusAddrW-1:0]     op_addr_i,
   input                    op_addr_oob_i,
   output logic [BusAddrW-1:0] op_err_addr_o,
+  output logic             cnt_err_o,
 
   // FIFO Interface
   input                    data_rdy_i,
@@ -66,15 +67,31 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
     end
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      cnt <= '0;
-    end else if (op_start_i && op_done_o) begin
-      cnt <= '0;
-    end else if (data_wr_o) begin
-      cnt <= cnt + 1'b1;
-    end
-  end
+  prim_count #(
+    .Width(12),
+    .OutSelDnCnt(0),
+    .CntStyle(prim_count_pkg::DupCnt)
+  ) u_cnt (
+    .clk_i,
+    .rst_ni,
+    .clr_i(op_start_i && op_done_o),
+    .set_i('0),
+    .set_cnt_i('0),
+    .en_i(data_wr_o),
+    .step_i(12'h1),
+    .cnt_o(cnt),
+    .err_o(cnt_err_o)
+  );
+
+  //always_ff @(posedge clk_i or negedge rst_ni) begin
+  //  if (!rst_ni) begin
+  //    cnt <= '0;
+  //  end else if (op_start_i && op_done_o) begin
+  //    cnt <= '0;
+  //  end else if (data_wr_o) begin
+  //    cnt <= cnt + 1'b1;
+  //  end
+  //end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -85,7 +102,7 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
   end
 
   assign txn_done = flash_req_o & flash_done_i;
-  assign cnt_hit = (cnt == op_num_words_i);
+  assign cnt_hit = (cnt >= op_num_words_i);
 
 
   // when error'd, continue to complete existing read transaction but fill in with all 1's
@@ -101,7 +118,10 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
 
     unique case (st_q)
       StIdle: begin
-        if (op_start_i) begin
+        if (cnt_err_o) begin
+          // if counter error is encountered, just go to error state
+          st_d = StErr;
+        end else if (op_start_i) begin
           op_err_d.oob_err = op_addr_oob_i;
           st_d = |op_err_d ? StErr : StNorm;
         end

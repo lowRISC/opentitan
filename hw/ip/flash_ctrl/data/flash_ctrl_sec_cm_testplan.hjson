@@ -137,5 +137,11 @@
       milestone: V2S
       tests: []
     }
+    {
+      name: sec_cm_phy_fsm_sparse
+      desc: "Verify the countermeasure(s) PHY.FSM.SPARSE."
+      milestone: V2S
+      tests: []
+    }
   ]
 }

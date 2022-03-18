@@ -90,10 +90,10 @@ module flash_phy
   // common interface
   logic [BusWidth-1:0] rd_data [NumBanks];
   logic [NumBanks-1:0] rd_err;
-   
+
   // fsm error per block
   logic [NumBanks-1:0] fsm_err;
-       
+
   // select which bank each is operating on
   assign host_bank_sel = host_req_i ? host_addr_i[BusAddrW-1 -: BankW] : '0;
   assign ctrl_bank_sel = flash_ctrl_i.addr[BusAddrW-1 -: BankW];
@@ -117,7 +117,7 @@ module flash_phy
   // feed through host integrity error directly
   assign flash_ctrl_o.intg_err = host_intg_err_i;
   assign flash_ctrl_o.fsm_err = |fsm_err;
-   
+
 
   // This fifo holds the expected return order
   prim_fifo_sync #(
