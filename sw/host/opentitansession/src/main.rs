@@ -135,7 +135,6 @@ fn start_session(run_file_fn: impl FnOnce(u16) -> PathBuf) -> Result<Box<dyn Ser
         .stdin(Stdio::null()) // Not used by child, disconnect from terminal
         .stdout(Stdio::piped()) // Used for signalling completion of daemon startup
         .stderr(Stdio::inherit()) // May be used for error messages during daemon startup
-        .current_dir("/")
         .spawn()?;
 
     match serde_json::from_reader::<&mut ChildStdout, Result<SessionStartResult, String>>(
@@ -162,6 +161,11 @@ fn session_child(listen_port: Option<u16>, backend_opts: &backend::BackendOpts) 
     // Instantiation of Transport backend, and binding to a socket was successful, now go
     // through the process of making this process a daemon, disconnected from the
     // terminal that was used to start it.
+
+    // All configuration files have been processed (relative to current direction), we can now
+    // drop the reference to the file system, (in case the admin wants to unmount while this
+    // daemon is still running.)
+    env::set_current_dir("/")?;
 
     // Close stderr, which remained open in order to allow any errors from the above code to
     // surface, but needs to be severed in order for the daemon to avoid being killed by SIGHUP
