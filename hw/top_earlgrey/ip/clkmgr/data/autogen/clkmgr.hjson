@@ -283,7 +283,7 @@
           name: "EN",
           resval: "1"
           desc: '''
-            When 1, the value of !!JITTER_ENALBE can be changed.  When 0, writes have no
+            When 1, the value of !!JITTER_ENABLE can be changed.  When 0, writes have no
             effect.
           '''
         },
