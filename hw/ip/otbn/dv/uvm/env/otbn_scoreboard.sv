@@ -517,9 +517,9 @@ class otbn_scoreboard extends cip_base_scoreboard #(
 
     if (!seen) begin
       `uvm_fatal(`gfn,
-                 $sformatf({"A %0s alert arrived %0d cycles ago and ",
-                            "we still don't think it should have done."},
-                           alert_name, max_wait))
+                 $sformatf({"We saw a STATUS change %0d cycles ago that implied we'd ",
+                            "get a %0s alert but it still hasn't arrived."},
+                           max_wait, alert_name))
     end
 
     if (alert_name == "fatal") begin
