@@ -360,7 +360,8 @@
         ''',
         count: "NumSwResets",
         swaccess: "rw0c",
-        hwaccess: "hro",
+        hwaccess: "none",
+        compact: false,
         fields: [
           {
             bits: "0",
@@ -382,9 +383,9 @@
         ''',
         count: "NumSwResets",
         swaccess: "rw",
-        hwaccess: "hrw",
-        hwext: "true",
-        hwqe: "true",
+        hwaccess: "hro",
+        regwen: "SW_RST_REGWEN",
+        regwen_multi: true,
         fields: [
           {
             bits: "0",
