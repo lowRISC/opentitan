@@ -111,6 +111,8 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   endfunction
 
   task pre_start();
+    cfg.pwrmgr_vif.lc_hw_debug_en = lc_ctrl_pkg::Off;
+    cfg.pwrmgr_vif.lc_dft_en = lc_ctrl_pkg::Off;
     if (do_pwrmgr_init) pwrmgr_init();
     disable_unnecessary_exclusions();
     cfg.slow_clk_rst_vif.wait_for_reset(.wait_negedge(0));

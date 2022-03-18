@@ -30,6 +30,9 @@ class pwrmgr_env_cfg extends cip_base_env_cfg #(
     num_interrupts = ral.intr_state.get_n_used_bits();
     `ASSERT_I(NumInstrMatch_A, num_interrupts == NUM_INTERRUPTS)
     `uvm_info(`gfn, $sformatf("num_interrupts = %0d", num_interrupts), UVM_MEDIUM)
+
+    // pwrmgr_tl_intg_err test uses default alert name "fata_fault"
+    // and it requires following field to be '1'
     tl_intg_alert_fields[ral.fault_status.reg_intg_err] = 1;
     m_tl_agent_cfg.max_outstanding_req = 1;
     m_esc_agent_cfg = alert_esc_agent_cfg::type_id::create("m_esc_agent_cfg");

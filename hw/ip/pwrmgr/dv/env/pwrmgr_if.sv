@@ -38,6 +38,8 @@ interface pwrmgr_if (
   pwrmgr_pkg::pwr_cpu_t                                        pwr_cpu;
 
   lc_ctrl_pkg::lc_tx_t                                         fetch_en;
+  lc_ctrl_pkg::lc_tx_t                                         lc_hw_debug_en;
+  lc_ctrl_pkg::lc_tx_t                                         lc_dft_en;
 
   logic                       [  pwrmgr_reg_pkg::NumWkups-1:0] wakeups_i;
 

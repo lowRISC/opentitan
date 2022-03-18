@@ -11,3 +11,6 @@
 `include "pwrmgr_wakeup_reset_vseq.sv"
 `include "pwrmgr_wakeup_vseq.sv"
 `include "pwrmgr_common_vseq.sv"
+`include "pwrmgr_repeat_wakeup_reset_vseq.sv"
+`include "pwrmgr_sw_reset_vseq.sv"
+`include "pwrmgr_esc_clk_rst_malfunc_vseq.sv"

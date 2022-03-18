@@ -18,7 +18,7 @@ package pwrmgr_env_pkg;
   import prim_mubi_pkg::mubi4_t;
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4True;
-
+  import sec_cm_pkg::*;
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
@@ -39,6 +39,12 @@ package pwrmgr_env_pkg;
     WakeupAonTimer,
     WakeupSensorCtrl
   } wakeup_e;
+
+  typedef enum int {
+    PwrmgrMubiNone = 0,
+    PwrmgrMubiLcCtrl = 1,
+    PwrmgrMubiRomCtrl = 2
+  } pwrmgr_mubi_e;
 
   typedef struct packed {
     logic main_pd_n;

@@ -87,8 +87,8 @@ module tb;
     .wakeups_i (pwrmgr_if.wakeups_i),
     .rstreqs_i (pwrmgr_if.rstreqs_i),
 
-    .lc_dft_en_i     (lc_ctrl_pkg::Off),
-    .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
+    .lc_dft_en_i     (pwrmgr_if.lc_dft_en),
+    .lc_hw_debug_en_i(pwrmgr_if.lc_hw_debug_en),
 
     .strap_o    (pwrmgr_if.strap),
     .low_power_o(pwrmgr_if.low_power),
@@ -126,4 +126,22 @@ module tb;
     run_test();
   end
 
+  initial begin
+    pwrmgr_mubi_e mubi_mode;
+    if (!$value$plusargs("pwrmgr_mubi_mode=%0d", mubi_mode)) begin
+      mubi_mode = PwrmgrMubiNone;
+    end
+
+    if (mubi_mode == PwrmgrMubiRomCtrl) begin
+      $assertoff(0, tb.dut.u_cdc.u_sync_rom_ctrl);
+    end
+  end
+
+  // sandbox
+//  initial begin
+//    #15us;
+//    $display("JDONDBG: force rst_esc to x");
+//    wait(pwrmgr_if.fast_state == pwrmgr_pkg::FastPwrStateActive);
+//    force tb.dut.rst_esc_ni = 0;
+//  end
 endmodule

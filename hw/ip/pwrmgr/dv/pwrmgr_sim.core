@@ -8,13 +8,13 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:pwrmgr
-
   files_dv:
     depend:
       - lowrisc:dv:pwrmgr_test
       - lowrisc:dv:pwrmgr_sva
     files:
       - tb.sv
+      - cov/pwrmgr_cov_bind.sv
     file_type: systemVerilogSource
 
 targets:
