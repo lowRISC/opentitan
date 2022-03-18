@@ -4,12 +4,12 @@
 #
 # waiver file for Flash Controller
 
-# All leaf resets have a reset multiplex
+# Sparsely encoded states all have terminal behavior
 waive -rules TERMINAL_STATE -location {flash_ctrl_lcmgr.sv} -regexp {.*StInvalid.*} \
       -comment "StInvalid is intended to be a terminal state"
 
-waive -rules MISSING_STATE -location {flash_ctrl_lcmgr.sv} -regexp {.*StInvalid.*} \
-      -comment "Behavior is part of default state"
+waive -rules TERMINAL_STATE -location {flash_phy_core.sv} -regexp {.*(StInvalid|StDisable).*} \
+      -comment "Behavior is part of terminal invalid and disable states"
 
 # the rst done signals were an intentional choice to address resets
 # that could potentially release at different times

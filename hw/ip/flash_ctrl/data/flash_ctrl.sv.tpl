@@ -986,11 +986,13 @@ module flash_ctrl
   assign hw2reg.std_fault_status.lcmgr_err.d      = 1'b1;
   assign hw2reg.std_fault_status.arb_fsm_err.d    = 1'b1;
   assign hw2reg.std_fault_status.storage_err.d    = 1'b1;
+  assign hw2reg.std_fault_status.phy_fsm_err.d    = 1'b1;
   assign hw2reg.std_fault_status.reg_intg_err.de  = intg_err;
   assign hw2reg.std_fault_status.phy_intg_err.de  = flash_phy_rsp.intg_err;
   assign hw2reg.std_fault_status.lcmgr_err.de     = lcmgr_err;
   assign hw2reg.std_fault_status.arb_fsm_err.de   = arb_fsm_err;
   assign hw2reg.std_fault_status.storage_err.de   = storage_err;
+  assign hw2reg.std_fault_status.phy_fsm_err.de   = flash_phy_rsp.fsm_err;
 
   // Correctable ECC count / address
   for (genvar i = 0; i < NumBanks; i++) begin : gen_ecc_single_err_reg
@@ -1275,4 +1277,13 @@ module flash_ctrl
     u_flash_hw_if.u_rma_state_regs, alert_tx_o[0])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(ArbFsmCheck_A,
     u_ctrl_arb.u_state_regs, alert_tx_o[0])
+
+   for (genvar i=0; i<NumBanks; i++) begin : gen_phy_assertions
+     `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PhyFsmCheck_A,
+       u_eflash.gen_flash_cores[i].u_core.u_state_regs, alert_tx_o[0])
+
+     `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PhyProgFsmCheck_A,
+       u_eflash.gen_flash_cores[i].u_core.gen_prog_data.u_prog.u_state_regs, alert_tx_o[0])
+   end
+
 endmodule

@@ -256,6 +256,9 @@
     { name: "CTR.SPARSE",
       desc: "RMA handling counters are sparsely encoded."
     }
+    { name: "PHY.FSM.SPARSE",
+      desc: "PHY FSMs are sparsely encoded."
+    }
 
 
   ]
@@ -1138,6 +1141,12 @@
             name: "storage_err",
             desc: '''
               A shadow register encountered a storage error.
+            '''
+          },
+          { bits: "5",
+            name: "phy_fsm_err",
+            desc: '''
+              A flash phy fsm has encountered a sparse encoding error.
             '''
           },
         ]

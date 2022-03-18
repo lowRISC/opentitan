@@ -43,28 +43,56 @@ module flash_phy_prog import flash_phy_pkg::*; (
   output logic ack_o,
   // block data does not contain ecc / metadata portion
   output logic [DataWidth-1:0] block_data_o,
-  output logic [FullDataWidth-1:0] data_o
+  output logic [FullDataWidth-1:0] data_o,
+  output logic fsm_err_o
 );
 
-  typedef enum logic [3:0] {
-    StIdle,
-    StPrePack,
-    StPackData,
-    StPostPack,
-    StCalcPlainEcc,
-    StReqFlash,
-    StWaitFlash,
-    StCalcMask,
-    StScrambleData,
-    StCalcEcc
-  } prog_state_e;
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 11 -n 11 \
+  //      -s 2968771430 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: --
+  //  4: --
+  //  5: |||||||||||||||||||| (40.00%)
+  //  6: ||||||||||||||||| (34.55%)
+  //  7: |||||| (12.73%)
+  //  8: ||||| (10.91%)
+  //  9:  (1.82%)
+  // 10: --
+  // 11: --
+  //
+  // Minimum Hamming distance: 5
+  // Maximum Hamming distance: 9
+  // Minimum Hamming weight: 2
+  // Maximum Hamming weight: 8
+  //
+  localparam int StateWidth = 11;
+  typedef enum logic [StateWidth-1:0] {
+    StIdle          = 11'b00101010010,
+    StPrePack       = 11'b00110101001,
+    StPackData      = 11'b00000011101,
+    StPostPack      = 11'b11111101100,
+    StCalcPlainEcc  = 11'b10110011110,
+    StReqFlash      = 11'b01111000111,
+    StWaitFlash     = 11'b11001110101,
+    StCalcMask      = 11'b01000100000,
+    StScrambleData  = 11'b11001001010,
+    StCalcEcc       = 11'b11110110011,
+    StInvalid       = 11'b10011000001
+  } state_e;
+  state_e state_d, state_q;
 
   typedef enum logic [1:0] {
     Filler,
     Actual
   } data_sel_e;
 
-  prog_state_e state_d, state_q;
+
 
   // The currently observed data beat
   logic [WordSelW-1:0] idx;
@@ -98,13 +126,21 @@ module flash_phy_prog import flash_phy_pkg::*; (
     end
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      state_q <= StIdle;
-    end else begin
-      state_q <= state_d;
-    end
-  end
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  // SEC_CM: PHY.FSM.SPARSE
+  logic [StateWidth-1:0] state_raw_q;
+  assign state_q = state_e'(state_raw_q);
+  prim_sparse_fsm_flop #(
+    .StateEnumT(state_e),
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(StIdle))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .state_i ( state_d     ),
+    .state_o ( state_raw_q )
+  );
 
   // If the first beat of an incoming transaction is not aligned to word boundary (for example
   // if each flash word is 4 bus words wide, and the first word to program starts at index 1),
@@ -124,6 +160,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
     last_o = 1'b0;
     calc_req_o = 1'b0;
     scramble_req_o = 1'b0;
+    fsm_err_o = 1'b0;
 
     unique case (state_q)
       StIdle: begin
@@ -218,7 +255,14 @@ module flash_phy_prog import flash_phy_pkg::*; (
         end
       end
 
-      default:;
+      StInvalid: begin
+        fsm_err_o = 1'b1;
+      end
+
+      default: begin
+        state_d = StInvalid;
+      end
+
     endcase // unique case (state_q)
   end
 
