@@ -1279,29 +1279,29 @@ module flash_ctrl
 
   // add more assertions
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PageCntAlertCheck_A, u_flash_hw_if.u_page_cnt,
-                                         alert_tx_o[0])
+                                         alert_tx_o[1])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(WordCntAlertCheck_A, u_flash_hw_if.u_word_cnt,
-                                         alert_tx_o[0])
+                                         alert_tx_o[1])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(WipeIdx_A, u_flash_hw_if.u_wipe_idx_cnt,
-                                         alert_tx_o[0])
+                                         alert_tx_o[1])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ProgCnt_A, u_flash_ctrl_prog.u_cnt,
-                                         alert_tx_o[0])
+                                         alert_tx_o[1])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RdCnt_A, u_flash_ctrl_rd.u_cnt,
-                                         alert_tx_o[0])
+                                         alert_tx_o[1])
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(LcCtrlFsmCheck_A,
-    u_flash_hw_if.u_state_regs, alert_tx_o[0])
+    u_flash_hw_if.u_state_regs, alert_tx_o[1])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(LcCtrlRmaFsmCheck_A,
-    u_flash_hw_if.u_rma_state_regs, alert_tx_o[0])
+    u_flash_hw_if.u_rma_state_regs, alert_tx_o[1])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(ArbFsmCheck_A,
-    u_ctrl_arb.u_state_regs, alert_tx_o[0])
+    u_ctrl_arb.u_state_regs, alert_tx_o[1])
 
    for (genvar i=0; i<NumBanks; i++) begin : gen_phy_assertions
      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PhyFsmCheck_A,
-       u_eflash.gen_flash_cores[i].u_core.u_state_regs, alert_tx_o[0])
+       u_eflash.gen_flash_cores[i].u_core.u_state_regs, alert_tx_o[1])
 
      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PhyProgFsmCheck_A,
-       u_eflash.gen_flash_cores[i].u_core.gen_prog_data.u_prog.u_state_regs, alert_tx_o[0])
+       u_eflash.gen_flash_cores[i].u_core.gen_prog_data.u_prog.u_state_regs, alert_tx_o[1])
    end
 
 endmodule
