@@ -971,6 +971,8 @@ module flash_ctrl_core_reg_top (
   logic std_fault_status_lcmgr_err_qs;
   logic std_fault_status_arb_fsm_err_qs;
   logic std_fault_status_storage_err_qs;
+  logic std_fault_status_phy_fsm_err_qs;
+  logic std_fault_status_ctrl_cnt_err_qs;
   logic fault_status_mp_err_qs;
   logic fault_status_rd_err_qs;
   logic fault_status_prog_win_err_qs;
@@ -12245,6 +12247,56 @@ module flash_ctrl_core_reg_top (
     .qs     (std_fault_status_storage_err_qs)
   );
 
+  //   F[phy_fsm_err]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_std_fault_status_phy_fsm_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.std_fault_status.phy_fsm_err.de),
+    .d      (hw2reg.std_fault_status.phy_fsm_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.std_fault_status.phy_fsm_err.q),
+
+    // to register interface (read)
+    .qs     (std_fault_status_phy_fsm_err_qs)
+  );
+
+  //   F[ctrl_cnt_err]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_std_fault_status_ctrl_cnt_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.std_fault_status.ctrl_cnt_err.de),
+    .d      (hw2reg.std_fault_status.ctrl_cnt_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.std_fault_status.ctrl_cnt_err.q),
+
+    // to register interface (read)
+    .qs     (std_fault_status_ctrl_cnt_err_qs)
+  );
+
 
   // R[fault_status]: V(False)
   //   F[mp_err]: 1:1
@@ -14407,6 +14459,8 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[2] = std_fault_status_lcmgr_err_qs;
         reg_rdata_next[3] = std_fault_status_arb_fsm_err_qs;
         reg_rdata_next[4] = std_fault_status_storage_err_qs;
+        reg_rdata_next[5] = std_fault_status_phy_fsm_err_qs;
+        reg_rdata_next[6] = std_fault_status_ctrl_cnt_err_qs;
       end
 
       addr_hit[87]: begin

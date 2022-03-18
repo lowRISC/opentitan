@@ -19,6 +19,7 @@ module flash_ctrl_prog import flash_ctrl_pkg::*; (
   input flash_prog_e       op_type_i,
   input [ProgTypes-1:0]    type_avail_i,
   output logic [BusAddrW-1:0] op_err_addr_o,
+  output logic             cnt_err_o,
 
   // FIFO Interface
   input                    data_rdy_i,
@@ -58,15 +59,31 @@ module flash_ctrl_prog import flash_ctrl_pkg::*; (
     end
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      cnt <= '0;
-    end else if (op_start_i && op_done_o) begin
-      cnt <= '0;
-    end else if (data_rd_o) begin
-      cnt <= cnt + 1'b1;
-    end
-  end
+  //always_ff @(posedge clk_i or negedge rst_ni) begin
+  //  if (!rst_ni) begin
+  //    cnt <= '0;
+  //  end else if (op_start_i && op_done_o) begin
+  //    cnt <= '0;
+  //  end else if (data_rd_o) begin
+  //    cnt <= cnt + 1'b1;
+  //  end
+  //end
+
+  prim_count #(
+    .Width(12),
+    .OutSelDnCnt(0),
+    .CntStyle(prim_count_pkg::DupCnt)
+  ) u_cnt (
+    .clk_i,
+    .rst_ni,
+    .clr_i(op_start_i && op_done_o),
+    .set_i('0),
+    .set_cnt_i('0),
+    .en_i(data_rd_o),
+    .step_i(12'h1),
+    .cnt_o(cnt),
+    .err_o(cnt_err_o)
+  );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -77,7 +94,7 @@ module flash_ctrl_prog import flash_ctrl_pkg::*; (
   end
 
   assign txn_done = flash_req_o && flash_done_i;
-  assign cnt_hit = (cnt == op_num_words_i);
+  assign cnt_hit = (cnt >= op_num_words_i);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -122,8 +139,13 @@ module flash_ctrl_prog import flash_ctrl_pkg::*; (
       // Note the address counter is incremented on tx_done
       // and cleared when the entire operation is complete.
       StNorm: begin
-        // if the select operation type is not available, error
-        if (op_start_i && prog_type_avail && !win_err) begin
+
+        if (cnt_err_o) begin
+          // if count error'd don't bother doing anything else, just try to finish
+          st_d = StErr;
+
+        end else if (op_start_i && prog_type_avail && !win_err) begin
+          // if the select operation type is not available, error
           flash_req_o = data_rdy_i;
 
           if (txn_done) begin

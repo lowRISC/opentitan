@@ -92,8 +92,6 @@ module flash_phy_prog import flash_phy_pkg::*; (
     Actual
   } data_sel_e;
 
-
-
   // The currently observed data beat
   logic [WordSelW-1:0] idx;
   logic [WordSelW-1:0] idx_sub_one;

@@ -1149,6 +1149,12 @@
               A flash phy fsm has encountered a sparse encoding error.
             '''
           },
+          { bits: "6",
+            name: "ctrl_cnt_err",
+            desc: '''
+              Flash ctrl read/prog has encountered a count error.
+            '''
+          },
         ]
       },
 
