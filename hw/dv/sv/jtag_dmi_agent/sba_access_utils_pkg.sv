@@ -9,6 +9,7 @@ package sba_access_utils_pkg;
   import bus_params_pkg::*;
   import dv_base_reg_pkg::*;
   import csr_utils_pkg::*;
+  import dv_lib_pkg::*;
   import jtag_agent_pkg::*;
   import jtag_dmi_agent_pkg::*;
   `include "uvm_macros.svh"
@@ -38,6 +39,7 @@ package sba_access_utils_pkg;
   //
   // It writes DMI SBA registers to create a read or write access on the system bus, poll for its
   // completion and return the response (on reads).
+  //
   // jtag_dmi_ral: A handle to the DMI RAL block that has the SBA registers.
   // cfg: A handle to the jtag_agent_cfg.
   // req: The SBA access request item. It will be updated with the responses.
@@ -53,20 +55,24 @@ package sba_access_utils_pkg;
     // Update sbcs for the new transaction.
     wdata = jtag_dmi_ral.sbcs.get_mirrored_value();
     wdata = get_csr_val_with_updated_field(jtag_dmi_ral.sbcs.sbaccess, wdata, req.size);
-    wdata = get_csr_val_with_updated_field(jtag_dmi_ral.sbcs.sbreadonaddr, wdata, req.readonaddr);
-    wdata = get_csr_val_with_updated_field(jtag_dmi_ral.sbcs.sbreadondata, wdata, req.readondata);
+    if (req.bus_op == BusOpRead) begin
+      wdata = get_csr_val_with_updated_field(jtag_dmi_ral.sbcs.sbreadonaddr, wdata, req.readonaddr);
+      wdata = get_csr_val_with_updated_field(jtag_dmi_ral.sbcs.sbreadondata, wdata, req.readondata);
+    end else begin
+      // If we set these bits on writes, it complicates things.
+      wdata = get_csr_val_with_updated_field(jtag_dmi_ral.sbcs.sbreadonaddr, wdata, 0);
+      wdata = get_csr_val_with_updated_field(jtag_dmi_ral.sbcs.sbreadondata, wdata, 0);
+    end
     wdata = get_csr_val_with_updated_field(jtag_dmi_ral.sbcs.sbautoincrement, wdata,
                                            req.autoincrement);
     if (wdata != jtag_dmi_ral.sbcs.sbaccess.get_mirrored_value()) begin
-      csr_wr(.ptr(jtag_dmi_ral.sbcs), .value(wdata));
+      csr_wr(.ptr(jtag_dmi_ral.sbcs), .value(wdata), .predict(1));
     end
 
-    // Initiate the request.
-    // Writing to addr with readonaddr set will trigger an SBA read.
-    csr_wr(.ptr(jtag_dmi_ral.sbaddress0), .value(req.addr));
+    csr_wr(.ptr(jtag_dmi_ral.sbaddress0), .value(req.addr), .predict(1));
     if (req.bus_op == BusOpRead) begin
-      if (!req.readonaddr && req.readondata) begin
-        // Read the data to trigger the read accesss, only if readonaddr was not set.
+      // Writing to addr with readonaddr would have already trigger an SBA read.
+      if (req.readondata && !req.readonaddr) begin
         csr_rd(.ptr(jtag_dmi_ral.sbdata0), .value(rdata));
       end
       if (!req.readonaddr && !req.readondata) begin
@@ -75,7 +81,7 @@ package sba_access_utils_pkg;
         return;
       end
     end else begin
-      csr_wr(.ptr(jtag_dmi_ral.sbdata0), .value(req.wdata));
+      csr_wr(.ptr(jtag_dmi_ral.sbdata0), .value(req.wdata), .predict(1));
     end
 
     // Wait for the access to complete.
@@ -94,6 +100,9 @@ package sba_access_utils_pkg;
     if (req.bus_op == BusOpRead && !cfg.in_reset && !is_busy) begin
       csr_rd(.ptr(jtag_dmi_ral.sbdata0), .value(req.rdata));
     end
+
+    // If readondata is set, the read above will trigger another SBA read, which needs to be handled
+    // by the caller.
   endtask
 
   // Read the SBA access status.
@@ -147,9 +156,10 @@ package sba_access_utils_pkg;
     if (req.is_err != SbaErrNone) begin
       data = get_csr_val_with_updated_field(jtag_dmi_ral.sbcs.sberror, data, 1);
     end
-    csr_wr(.ptr(jtag_dmi_ral.sbcs), .value(data));
+    csr_wr(.ptr(jtag_dmi_ral.sbcs), .value(data), .predict(1));
   endtask
 
   `include "sba_access_item.sv"
+  `include "sba_access_monitor.sv"
 
 endpackage
