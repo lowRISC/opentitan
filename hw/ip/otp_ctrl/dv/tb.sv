@@ -25,7 +25,7 @@ module tb;
   // since partner base tests inherit from otp_ctrl_base_test#(CFG_T, ENV_T) and
   // specify directly (CFG_T, ENV_T) via the class extension and use a different
   // UVM_TESTNAME
-  if (`PRIM_DEFAULT_IMPL==prim_pkg::ImplGeneric) begin : gen_spec_base_test_params
+  if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_spec_base_test_params
     typedef otp_ctrl_base_test #(.CFG_T(otp_ctrl_env_cfg),
                                  .ENV_T(otp_ctrl_env)) otp_ctrl_base_test_t;
   end

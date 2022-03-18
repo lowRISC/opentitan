@@ -217,14 +217,17 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     endcase
   endtask
 
+  // In open source environment, `otp_alert_o` to is tied to 2'b01 (alert_p is 0 and alert_n is 1).
+  if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) `ASSERT(OtpAstAlertO_A, otp_alert_o == 2'b01)
+
   // Connectivity assertions for test related I/Os.
   `ASSERT(LcOtpTestStatusO_A, otp_vendor_test_status_o == `PRIM_GENERIC_OTP_PATH.test_status_o)
   `ASSERT(LcOtpTestCtrlI_A, otp_vendor_test_ctrl_i == `PRIM_GENERIC_OTP_PATH.test_ctrl_i)
 
-  `ASSERT(CioTestOWithDftOn_A,    lc_dft_en_i == lc_ctrl_pkg::On |->
-                                  ##2 cio_test_o == `PRIM_GENERIC_OTP_PATH.test_vect_o)
-  `ASSERT(CioTestOWithDftOff_A,   lc_dft_en_i != lc_ctrl_pkg::On |-> ##2 cio_test_o == 0)
-  `ASSERT(CioTestEnOWithDftOn_A,  lc_dft_en_i == lc_ctrl_pkg::On |-> ##2 cio_test_en_o == '1)
+  `ASSERT(CioTestOWithDftOn_A, lc_dft_en_i == lc_ctrl_pkg::On |->
+                               ##2 cio_test_o == `PRIM_GENERIC_OTP_PATH.test_vect_o)
+  `ASSERT(CioTestOWithDftOff_A, lc_dft_en_i != lc_ctrl_pkg::On |-> ##2 cio_test_o == 0)
+  `ASSERT(CioTestEnOWithDftOn_A, lc_dft_en_i == lc_ctrl_pkg::On |-> ##2 cio_test_en_o == '1)
   `ASSERT(CioTestEnOWithDftOff_A, lc_dft_en_i != lc_ctrl_pkg::On |-> ##2 cio_test_en_o == 0)
 
 
