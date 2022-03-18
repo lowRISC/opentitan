@@ -402,13 +402,6 @@ class OTBNState:
 
         should_lock = (self._err_bits >> 16) != 0
 
-        if not self.secure_wipe_enabled:
-            # STATUS is a status register. If there are any pending error bits
-            # greater than 16, this was a fatal error so we should lock
-            # ourselves. Otherwise, go back to IDLE.
-            new_status = Status.LOCKED if should_lock else Status.IDLE
-            self.ext_regs.write('STATUS', new_status, True)
-
         # Make any error bits visible
         self.ext_regs.write('ERR_BITS', self._err_bits, True)
 
@@ -427,7 +420,7 @@ class OTBNState:
         # Switch to a 'wiping' state
         self._next_fsm_state = (FsmState.WIPING_BAD if should_lock
                                 else FsmState.WIPING_GOOD)
-        self.wipe_cycles = (_WIPE_CYCLES if self.secure_wipe_enabled else 1)
+        self.wipe_cycles = (_WIPE_CYCLES if self.secure_wipe_enabled else 2)
 
         # Clear the "we should stop soon" flag
         self.pending_halt = False
