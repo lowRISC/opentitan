@@ -90,7 +90,18 @@ class rv_dm_sba_tl_access_vseq extends rv_dm_base_vseq;
         `uvm_info(`gfn, $sformatf("Starting transaction %0d/%0d: %0s",
                                   j, num_trans, req.sprint(uvm_default_line_printer)), UVM_MEDIUM)
         sba_access(.jtag_dmi_ral(jtag_dmi_ral), .cfg(cfg.m_jtag_agent_cfg), .req(req));
-        `DV_CHECK(!req.is_err)
+
+        // If readondata is set, then the read on sbdata0 performed by sba_access invocation
+        // above will trigger another SBA read. So we set readondata to 0 and do a busywait.
+        if (req.bus_op == BusOpRead && req.readondata) begin
+          bit is_busy;
+          uvm_reg_data_t rwdata = jtag_dmi_ral.sbcs.get_mirrored_value();
+          rwdata = get_csr_val_with_updated_field(jtag_dmi_ral.sbcs.sbreadondata, rwdata, 0);
+          csr_wr(.ptr(jtag_dmi_ral.sbcs), .value(rwdata), .predict(1));
+          sba_access_busy_wait(jtag_dmi_ral, cfg.m_jtag_agent_cfg, req, is_busy);
+          csr_rd(.ptr(jtag_dmi_ral.sbdata0), .value(rwdata));
+        end
+
         `DV_CHECK(!req.is_busy_err)
         `DV_CHECK(!req.timed_out)
       end
@@ -102,10 +113,11 @@ class rv_dm_sba_tl_access_vseq extends rv_dm_base_vseq;
   virtual function void randomize_req(sba_access_item req);
     req.disable_rsp_randomization();
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
-        // TODO: remove this later.
+        // Handled in a different vseq.
         autoincrement == 0;
-        // TODO: remove this constraint.
-        size == 2;
+        // Only send legal traffic.
+        size <= SbaAccessSize32b;
+        (addr % (1 << size)) == 0;
     )
     override_req_to_read_addr_after_write(req);
   endfunction
