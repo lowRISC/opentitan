@@ -101,7 +101,7 @@ module otbn
   logic req_sec_wipe_urnd_keys;
   logic [127:0] dmem_sec_wipe_urnd_key, imem_sec_wipe_urnd_key;
 
-  logic recoverable_err;
+  logic core_recoverable_err, recoverable_err_d, recoverable_err_q;
   logic reg_intg_violation;
   err_bits_t err_bits, err_bits_d, err_bits_q;
   logic err_bits_en;
@@ -790,6 +790,18 @@ module otbn
     end
   end
 
+  // Latch the recoverable error signal from the core. This will be generated as a pulse some time
+  // during the run (and before secure wipe finishes). Collect up this bit, clearing on the start or
+  // end of an operation (start_q / done_core, respectively)
+  assign recoverable_err_d = (recoverable_err_q | core_recoverable_err) & ~(start_q | done_core);
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      recoverable_err_q <= '0;
+    end else begin
+      recoverable_err_q <= recoverable_err_d;
+    end
+  end
+
   // FATAL_ALERT_CAUSE register. The .de and .d values are equal for each bit, so that it can only
   // be set, not cleared.
   assign hw2reg.fatal_alert_cause.imem_intg_violation.de = insn_fetch_err;
@@ -833,7 +845,7 @@ module otbn
                               lifecycle_escalation |
                               err_bits.fatal_software;
 
-  assign alerts[AlertRecov] = recoverable_err & done_core;
+  assign alerts[AlertRecov] = recoverable_err_q & done_core;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
@@ -924,7 +936,7 @@ module otbn
     .locked_o                    (locked),
 
     .err_bits_o                  (err_bits),
-    .recoverable_err_o           (recoverable_err),
+    .recoverable_err_o           (core_recoverable_err),
     .reg_intg_violation_o        (reg_intg_violation),
 
     .imem_req_o                  (imem_req_core),
