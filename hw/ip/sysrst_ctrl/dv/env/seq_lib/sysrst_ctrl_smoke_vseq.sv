@@ -19,11 +19,13 @@ class sysrst_ctrl_smoke_vseq extends sysrst_ctrl_base_vseq;
       cfg.vif.randomize_input();
 
       // In normal mode sysrst_ctrl should pass the input pins data to output pins as it is
-      @(posedge cfg.vif.clk_i)
+      cfg.clk_aon_rst_vif.wait_clks(1);
       `DV_CHECK_EQ(cfg.vif.key0_in, cfg.vif.key0_out)
       `DV_CHECK_EQ(cfg.vif.key1_in, cfg.vif.key1_out)
       `DV_CHECK_EQ(cfg.vif.key2_in, cfg.vif.key2_out)
       `DV_CHECK_EQ(cfg.vif.pwrb_in, cfg.vif.pwrb_out)
+      // Input pin flash_wp_l_in should not affect flash_wp_l_o output pin
+      `DV_CHECK_EQ(cfg.vif.flash_wp_l, 0)
     end
   endtask : body
 
