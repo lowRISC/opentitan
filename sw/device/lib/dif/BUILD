@@ -34,9 +34,6 @@ cc_library(
     hdrs = [
         "dif_adc_ctrl.h",
     ],
-    hdrs = [
-        "dif_adc_ctrl.h",
-    ],
     deps = [
         ":base",
         "//hw/ip/adc_ctrl/data:adc_ctrl_regs",
