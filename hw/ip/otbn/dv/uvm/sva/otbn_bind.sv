@@ -26,7 +26,12 @@ module otbn_bind;
     .reg2hw   (reg2hw),
     .hw2reg   (hw2reg),
     .done_i   (done_core),
-    .idle_o_i (idle_o)
+    .idle_o_i (idle_o),
+
+    .otbn_dmem_scramble_key_req_busy_i(otbn_dmem_scramble_key_req_busy),
+    .otbn_imem_scramble_key_req_busy_i(otbn_imem_scramble_key_req_busy),
+
+    .status_q_i(reg2hw.status.q)
   );
 
 endmodule
