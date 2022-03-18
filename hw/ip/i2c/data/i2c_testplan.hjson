@@ -193,7 +193,7 @@
               - Ensure the remaining entries are not show up after fmt_fifo is reset
             '''
       milestone: V2
-      tests: []
+      tests: ["i2c_fifo_reset_fmt", "i2c_fifo_reset_rx"]
     }
     {
       name: host_fifo_full
@@ -228,7 +228,7 @@
 
             '''
       milestone: V2
-      tests: []
+      tests: ["i2c_timeout"]
     }
     {
       name: host_rx_oversample
