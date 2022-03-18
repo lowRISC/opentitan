@@ -25,13 +25,13 @@ as a buffer flip event.
 
 The watermark event happens when the host system accesses the address greater
 than the watermark CSR for the first time in a buffer. Let's assume the
-threshold (watermark) CSR value is 0x400 (512B). If the host system issues
-a SPI read command at the address 0x3FC and read 16B data, the IP keeps
-checking the sent address (from 0x3FC then 0x3FD, 0x3FE, 0x3FF) and when it
-sends the 0x400 data, it raises a watermark event.
+threshold (watermark) CSR value is 0x200 (512B). If the host system issues
+a SPI read command at the address 0x1FC and read 16B data, the IP keeps
+checking the sent address (from 0x1FC then 0x1FD, 0x1FE, 0x1FF) and when it
+sends the 0x200 data, it raises a watermark event.
 
 The watermark event is sticky event. It is reported to the SW once and cleared
-by the flip event. So even the host system keeps reading 0x3FC and 0x400
+by the flip event. So even the host system keeps reading 0x1FC and 0x200
 multiple times, the event won't be notified to the SW after the first report.
 */
 
