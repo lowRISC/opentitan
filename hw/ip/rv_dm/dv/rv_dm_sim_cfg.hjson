@@ -136,7 +136,11 @@
       uvm_test_seq: rv_dm_sba_tl_access_vseq
       reseed: 20
     }
-
+    {
+      name: rv_dm_bad_sba_tl_access
+      uvm_test_seq: rv_dm_bad_sba_tl_access_vseq
+      reseed: 20
+    }
   ]
 
   // List of regressions.
