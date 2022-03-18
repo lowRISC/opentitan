@@ -63,6 +63,9 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
       flash_ctrl_pkg::FlashErasePage :/ (100 - cfg.seq_cfg.op_erase_type_bank_pc),
       flash_ctrl_pkg::FlashEraseBank :/ cfg.seq_cfg.op_erase_type_bank_pc
     };
+    flash_op.num_words inside {[10 : FlashNumBusWords - flash_op.addr[TL_AW-1:TL_SZW]]};
+    flash_op.num_words <= cfg.seq_cfg.op_max_words;
+    flash_op.num_words < FlashPgmRes - flash_op.addr[TL_SZW+:FlashPgmResWidth];
   }
 
   // Bit vector representing which of the mp region cfg CSRs to enable.
@@ -190,7 +193,8 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
   endtask : body
 
   virtual task do_erase();
-
+    cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = lc_ctrl_pkg::On;
+    cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en   = lc_ctrl_pkg::On;
     // Default region settings
     default_region_read_en = 1;
     default_region_program_en = 1;
