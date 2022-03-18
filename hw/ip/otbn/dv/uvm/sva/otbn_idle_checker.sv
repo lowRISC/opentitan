@@ -14,7 +14,12 @@ module otbn_idle_checker
   input otbn_hw2reg_t hw2reg,
   input logic         done_i,
 
-  input prim_mubi_pkg::mubi4_t idle_o_i
+  input prim_mubi_pkg::mubi4_t idle_o_i,
+
+  input logic otbn_dmem_scramble_key_req_busy_i,
+  input logic otbn_imem_scramble_key_req_busy_i,
+
+  input logic [7:0] status_q_i
 );
 
   // Detect writes of CmdExecute to CMD. They only take effect if we are in state IDLE
@@ -41,7 +46,65 @@ module otbn_idle_checker
   `ASSERT(RunningIfDone_A, done_i |-> running_q)
   `ASSERT(IdleIfStart_A, do_start |-> !running_q)
 
-  // Check that we've modelled the running/not-running logic correctly. The idle_o pin from OTBN
-  // should be true iff running is false (`running_qq` used as idle_o has a one cycle delay)
-  `ASSERT(IdleIfNotRunning_A, (idle_o_i == prim_mubi_pkg::MuBi4True) ^ running_qq)
+  // Key rotation (used in the logic below) can delay the idle signal. This signal is flopped an
+  // extra time to stay "busy" for an extra cycle, so we mirror that here.
+  logic rotating_keys, rotating_keys_q, keys_busy;
+  assign rotating_keys = otbn_dmem_scramble_key_req_busy_i | otbn_imem_scramble_key_req_busy_i;
+  always @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rotating_keys_q <= 0;
+    end else begin
+      rotating_keys_q <= rotating_keys;
+    end
+  end
+  assign keys_busy = rotating_keys | rotating_keys_q;
+
+  // Check that we've modelled the running/not-running logic correctly. Most of the time, the idle_o
+  // pin should be false when we're running an operation of some sort and true otherwise. The only
+  // slight complication comes comes about with fatal errors, where we go into LOCKED state (and
+  // aren't "running an operation"), but still do a pair of OTP key requests to wipe IMEM and DMEM
+  // in the background.
+  //
+  // So our assertions should be:
+  //
+  //  - If tracking the start/done registers suggests we should be running, idle should be false
+  //    (NotIdleIfRunning_A)
+  //
+  //  - If it suggests we should not be running and the STATUS register has a value other than
+  //    LOCKED, idle should be true. (IdleIfNotRunningOrLocked_A)
+  //
+  //  - If the STATUS register has value LOCKED then idle should be true iff neither of the key
+  //    requests are busy. (NotIdleIfLockedAndRotatingKeys_A; IdleIfLockedAndNotRotatingKeys_A)
+  //
+  //  - We should never start a new key request once STATUS has value LOCKED
+  //    (NoStartKeyRotationWhenLocked_A)
+  //
+  //  - We should only have a key request in flight if we are either running (as tracked by
+  //    start/done) or LOCKED (OnlyKeyRotationWhenRunningOrLocked_A)
+  //
+  //  - We should never think we're running when STATUS has value LOCKED (NotRunningWhenLocked_A)
+
+  `ASSERT(NotIdleIfRunning_A,
+          running_qq |-> (idle_o_i == prim_mubi_pkg::MuBi4False))
+
+  `ASSERT(IdleIfNotRunningOrLocked_A,
+          !(running_qq || status_q_i == otbn_pkg::StatusLocked) |->
+          (idle_o_i == prim_mubi_pkg::MuBi4True))
+
+  `ASSERT(NotIdleIfLockedAndRotatingKeys_A,
+          ((status_q_i == otbn_pkg::StatusLocked) && keys_busy) |->
+          (idle_o_i == prim_mubi_pkg::MuBi4False))
+  `ASSERT(IdleIfLockedAndNotRotatingKeys_A,
+          ((status_q_i == otbn_pkg::StatusLocked) && !keys_busy) |->
+          (idle_o_i == prim_mubi_pkg::MuBi4True))
+
+  `ASSERT(NoStartKeyRotationWhenLocked_A,
+          (status_q_i == otbn_pkg::StatusLocked) |-> !$rose(keys_busy))
+
+  `ASSERT(OnlyKeyRotationWhenRunningOrLocked_A,
+          keys_busy |-> (running_qq || (status_q_i == otbn_pkg::StatusLocked)))
+
+  `ASSERT(NotRunningWhenLocked_A,
+          !((status_q_i == otbn_pkg::StatusLocked) && (running_q || running_qq)))
+
 endmodule
