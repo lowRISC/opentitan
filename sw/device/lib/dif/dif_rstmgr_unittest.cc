@@ -35,8 +35,11 @@ TEST_F(ResetTest, NullArgs) { EXPECT_DIF_BADARG(dif_rstmgr_reset(nullptr)); }
 TEST_F(ResetTest, Success) {
   EXPECT_WRITE32(RSTMGR_RESET_INFO_REG_OFFSET,
                  std::numeric_limits<uint32_t>::max());
-  EXPECT_WRITE32(RSTMGR_SW_RST_CTRL_N_REG_OFFSET,
-                 std::numeric_limits<uint32_t>::max());
+
+  for (uint32_t i = 0; i < RSTMGR_PARAM_NUM_SW_RESETS; i++) {
+    EXPECT_WRITE32(RSTMGR_SW_RST_CTRL_N_0_REG_OFFSET + 4 * i,
+                   std::numeric_limits<uint32_t>::max());
+  }
 
   EXPECT_DIF_OK(dif_rstmgr_reset(&rstmgr_));
 }
@@ -53,17 +56,13 @@ TEST_F(ResetLockTest, BadPeripheral) {
 }
 
 TEST_F(ResetLockTest, Success) {
-  for (uint32_t bit_index = 0; bit_index < RSTMGR_PARAM_NUM_SW_RESETS;
-       ++bit_index) {
-    // When bit is set to `0`, it means that the software reset for the
-    // peripheral is locked. One by one lock every peripheral software reset,
-    // by setting all bits high apart from the peripheral under test that is
-    // indexed by `bit_index`.
-    uint32_t bitfield = bitfield_bit32_write(
-        std::numeric_limits<uint32_t>::max(), bit_index, false);
-    EXPECT_WRITE32(RSTMGR_SW_RST_REGWEN_REG_OFFSET, bitfield);
+  for (uint32_t reg_index = 0; reg_index < RSTMGR_PARAM_NUM_SW_RESETS;
+       ++reg_index) {
+    // When reg is set to `0`, it means that the software reset for the
+    // peripheral is locked.
+    EXPECT_WRITE32(RSTMGR_SW_RST_REGWEN_0_REG_OFFSET + reg_index * 4, 0);
 
-    EXPECT_DIF_OK(dif_rstmgr_reset_lock(&rstmgr_, bit_index));
+    EXPECT_DIF_OK(dif_rstmgr_reset_lock(&rstmgr_, reg_index));
   }
 }
 
@@ -83,23 +82,19 @@ TEST_F(ResetIsLockedTest, BadPeripheral) {
 }
 
 TEST_F(ResetIsLockedTest, Success) {
-  for (uint32_t bit_index = 0; bit_index < RSTMGR_PARAM_NUM_SW_RESETS;
-       ++bit_index) {
+  for (uint32_t reg_index = 0; reg_index < RSTMGR_PARAM_NUM_SW_RESETS;
+       ++reg_index) {
     // When bit is set to `0`, it means that the software reset for the
-    // peripheral is locked. One by one we check every peripheral, by setting
-    // all bits high apart from the peripheral under test that is indexed
-    // by `bit_index`.
-    uint32_t bit_locked = bitfield_bit32_write(
-        std::numeric_limits<uint32_t>::max(), bit_index, false);
-    EXPECT_READ32(RSTMGR_SW_RST_REGWEN_REG_OFFSET, bit_locked);
+    // peripheral is locked.
+    EXPECT_READ32(RSTMGR_SW_RST_REGWEN_0_REG_OFFSET + reg_index * 4, 0);
 
     bool is_locked = false;
-    EXPECT_DIF_OK(dif_rstmgr_reset_is_locked(&rstmgr_, bit_index, &is_locked));
+    EXPECT_DIF_OK(dif_rstmgr_reset_is_locked(&rstmgr_, reg_index, &is_locked));
     EXPECT_TRUE(is_locked);
 
     is_locked = true;
-    EXPECT_READ32(RSTMGR_SW_RST_REGWEN_REG_OFFSET, {{bit_index, true}});
-    EXPECT_DIF_OK(dif_rstmgr_reset_is_locked(&rstmgr_, bit_index, &is_locked));
+    EXPECT_READ32(RSTMGR_SW_RST_REGWEN_0_REG_OFFSET + reg_index * 4, 1);
+    EXPECT_DIF_OK(dif_rstmgr_reset_is_locked(&rstmgr_, reg_index, &is_locked));
     EXPECT_FALSE(is_locked);
   }
 }
@@ -521,84 +516,59 @@ TEST_F(SoftwareResetTest, BadPeripheral) {
 }
 
 TEST_F(SoftwareResetTest, SoftwareResetIsLocked) {
-  for (uint32_t bit_index = 0; bit_index < RSTMGR_PARAM_NUM_SW_RESETS;
-       ++bit_index) {
-    // When bit is set to `0`, it means that the software reset for the
-    // peripheral is locked. One by one we check every peripheral, by setting
-    // all bits high apart from the peripheral under test that is indexed
-    // by `bit_index`.
-    uint32_t locked = bitfield_bit32_write(std::numeric_limits<uint32_t>::max(),
-                                           bit_index, false);
-    EXPECT_READ32(RSTMGR_SW_RST_REGWEN_REG_OFFSET, locked);
+  for (uint32_t reg_index = 0; reg_index < RSTMGR_PARAM_NUM_SW_RESETS;
+       ++reg_index) {
+    // When  set to `0`, it means that the software reset for the
+    // peripheral is locked.
+    EXPECT_READ32(RSTMGR_SW_RST_REGWEN_0_REG_OFFSET + reg_index * 4, 0);
 
-    EXPECT_EQ(dif_rstmgr_software_reset(&rstmgr_, bit_index,
+    EXPECT_EQ(dif_rstmgr_software_reset(&rstmgr_, reg_index,
                                         kDifRstmgrSoftwareResetHold),
               kDifLocked);
   }
 }
 
 TEST_F(SoftwareResetTest, SuccessHold) {
-  for (uint32_t bit_index = 0; bit_index < RSTMGR_PARAM_NUM_SW_RESETS;
-       ++bit_index) {
+  for (uint32_t reg_index = 0; reg_index < RSTMGR_PARAM_NUM_SW_RESETS;
+       ++reg_index) {
     // Software reset is not locked for any of the supported peripherals.
-    EXPECT_READ32(RSTMGR_SW_RST_REGWEN_REG_OFFSET,
-                  std::numeric_limits<uint32_t>::max());
+    EXPECT_READ32(RSTMGR_SW_RST_REGWEN_0_REG_OFFSET + reg_index * 4, 1);
 
-    // Check that reset can be asserted for every supported peripheral.
-    EXPECT_READ32(RSTMGR_SW_RST_CTRL_N_REG_OFFSET,
-                  std::numeric_limits<uint32_t>::max());
+    // When reg is set to `0`, it means that the peripheral is held in reset.
+    EXPECT_WRITE32(RSTMGR_SW_RST_CTRL_N_0_REG_OFFSET + reg_index * 4, 0);
 
-    // When bit is set to `0`, it means that the peripheral is held in reset.
-    // One by one hold every peripheral in reset, by setting all bits high apart
-    // from the peripheral under test that is indexed by `bit_index`.
-    uint32_t reset_hold = bitfield_bit32_write(
-        std::numeric_limits<uint32_t>::max(), bit_index, false);
-    EXPECT_WRITE32(RSTMGR_SW_RST_CTRL_N_REG_OFFSET, reset_hold);
-
-    EXPECT_DIF_OK(dif_rstmgr_software_reset(&rstmgr_, bit_index,
+    EXPECT_DIF_OK(dif_rstmgr_software_reset(&rstmgr_, reg_index,
                                             kDifRstmgrSoftwareResetHold));
   }
 }
 
 TEST_F(SoftwareResetTest, SuccessRelease) {
-  for (uint32_t bit_index = 0; bit_index < RSTMGR_PARAM_NUM_SW_RESETS;
-       ++bit_index) {
+  for (uint32_t reg_index = 0; reg_index < RSTMGR_PARAM_NUM_SW_RESETS;
+       ++reg_index) {
     // Software reset is not locked for any of the supported peripherals.
-    EXPECT_READ32(RSTMGR_SW_RST_REGWEN_REG_OFFSET,
-                  std::numeric_limits<uint32_t>::max());
+    EXPECT_READ32(RSTMGR_SW_RST_REGWEN_0_REG_OFFSET + reg_index * 4, 1);
 
     // Check that reset can be de-asserted for every supported peripheral.
-    EXPECT_READ32(RSTMGR_SW_RST_CTRL_N_REG_OFFSET, 0);
-    EXPECT_WRITE32(RSTMGR_SW_RST_CTRL_N_REG_OFFSET, {{bit_index, true}});
+    EXPECT_WRITE32(RSTMGR_SW_RST_CTRL_N_0_REG_OFFSET + reg_index * 4, 1);
 
-    EXPECT_DIF_OK(dif_rstmgr_software_reset(&rstmgr_, bit_index,
+    EXPECT_DIF_OK(dif_rstmgr_software_reset(&rstmgr_, reg_index,
                                             kDifRstmgrSoftwareResetRelease));
   }
 }
 
 TEST_F(SoftwareResetTest, SuccessReset) {
-  for (uint32_t bit_index = 0; bit_index < RSTMGR_PARAM_NUM_SW_RESETS;
-       ++bit_index) {
+  for (uint32_t reg_index = 0; reg_index < RSTMGR_PARAM_NUM_SW_RESETS;
+       ++reg_index) {
     // Software reset is not locked for any of the supported peripherals.
-    EXPECT_READ32(RSTMGR_SW_RST_REGWEN_REG_OFFSET,
-                  std::numeric_limits<uint32_t>::max());
-
-    // Check that reset can be asserted for every supported peripheral.
-    EXPECT_READ32(RSTMGR_SW_RST_CTRL_N_REG_OFFSET,
-                  std::numeric_limits<uint32_t>::max());
+    EXPECT_READ32(RSTMGR_SW_RST_REGWEN_0_REG_OFFSET + reg_index * 4, 1);
 
     // When bit is set to `0`, it means that the peripheral is held in reset.
-    // One by one hold every peripheral in reset, by setting all bits high apart
-    // from the peripheral under test that is indexed by `bit_index`.
-    uint32_t reset_hold = bitfield_bit32_write(
-        std::numeric_limits<uint32_t>::max(), bit_index, false);
-    EXPECT_WRITE32(RSTMGR_SW_RST_CTRL_N_REG_OFFSET, reset_hold);
+    EXPECT_WRITE32(RSTMGR_SW_RST_CTRL_N_0_REG_OFFSET + reg_index * 4, 0);
 
     // Check that reset can be de-asserted for every supported peripheral.
-    EXPECT_READ32(RSTMGR_SW_RST_CTRL_N_REG_OFFSET, 0);
-    EXPECT_WRITE32(RSTMGR_SW_RST_CTRL_N_REG_OFFSET, {{bit_index, true}});
+    EXPECT_WRITE32(RSTMGR_SW_RST_CTRL_N_0_REG_OFFSET + reg_index * 4, 1);
 
-    EXPECT_DIF_OK(dif_rstmgr_software_reset(&rstmgr_, bit_index,
+    EXPECT_DIF_OK(dif_rstmgr_software_reset(&rstmgr_, reg_index,
                                             kDifRstmgrSoftwareReset));
   }
 }
@@ -621,25 +591,22 @@ TEST_F(SoftwareResetIsHeldTest, BadPeripheral) {
 }
 
 TEST_F(SoftwareResetIsHeldTest, Success) {
-  for (uint32_t bit_index = 0; bit_index < RSTMGR_PARAM_NUM_SW_RESETS;
-       ++bit_index) {
-    uint32_t reset_is_held = bitfield_bit32_write(
-        std::numeric_limits<uint32_t>::max(), bit_index, false);
-
+  for (uint32_t reg_index = 0; reg_index < RSTMGR_PARAM_NUM_SW_RESETS;
+       ++reg_index) {
     // Check in turn that every peripheral is held in software reset.
-    EXPECT_READ32(RSTMGR_SW_RST_CTRL_N_REG_OFFSET, reset_is_held);
+    EXPECT_READ32(RSTMGR_SW_RST_CTRL_N_0_REG_OFFSET + reg_index * 4, 0);
 
     bool asserted = false;
     EXPECT_DIF_OK(
-        dif_rstmgr_software_reset_is_held(&rstmgr_, bit_index, &asserted));
+        dif_rstmgr_software_reset_is_held(&rstmgr_, reg_index, &asserted));
     EXPECT_TRUE(asserted);
 
     // Check in turn that every peripheral is not held in software reset.
-    EXPECT_READ32(RSTMGR_SW_RST_CTRL_N_REG_OFFSET, {{bit_index, true}});
+    EXPECT_READ32(RSTMGR_SW_RST_CTRL_N_0_REG_OFFSET + reg_index * 4, 1);
 
     asserted = true;
     EXPECT_DIF_OK(
-        dif_rstmgr_software_reset_is_held(&rstmgr_, bit_index, &asserted));
+        dif_rstmgr_software_reset_is_held(&rstmgr_, reg_index, &asserted));
     EXPECT_FALSE(asserted);
   }
 }
