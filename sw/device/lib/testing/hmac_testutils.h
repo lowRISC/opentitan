@@ -31,7 +31,8 @@
  *
  * single HMAC block compression takes 80 cycles.
  */
-#define HMAC_TESTUTILS_FIFO_EMPTY_USEC (80 + 10) * 1000000 / kClockFreqCpuHz + 1
+#define HMAC_TESTUTILS_FIFO_EMPTY_USEC \
+  (udiv64_slow((80 + 10) * 1000000, kClockFreqCpuHz, NULL) + 1)
 
 /**
  * HMAC done timeout.
@@ -40,7 +41,7 @@
  * compression and extra HMAC computation.
  */
 #define HMAC_TESTUTILS_FINISH_TIMEOUT_USEC \
-  (360 + 10) * 1000000 / kClockFreqCpuHz + 1
+  (udiv64_slow((360 + 10) * 1000000, kClockFreqCpuHz, NULL) + 1)
 
 /**
  * Reads and compares the actual sent message length against expected.
