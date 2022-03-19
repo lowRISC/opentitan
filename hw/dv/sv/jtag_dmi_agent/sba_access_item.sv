@@ -14,14 +14,6 @@ class sba_access_item extends uvm_sequence_item;
   rand logic readondata;
   rand logic autoincrement;
 
-  constraint read_on_addr_or_data_c {
-    soft (readonaddr || readondata);
-  }
-
-  constraint no_autoincrement_c {
-    soft autoincrement == 0;
-  }
-
   // Response side signals.
   rand logic [BUS_DW-1:0] rdata;
   rand  sba_access_err_e  is_err;

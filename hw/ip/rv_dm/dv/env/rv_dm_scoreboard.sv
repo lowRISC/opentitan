@@ -101,7 +101,6 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
   virtual function void compare_sba_access(sba_access_item sba_item, tl_seq_item sba_tl_item);
     logic [BUS_AW-1:0] word_aligned_addr;
     logic [BUS_DW-1:0] data, shift;
-    logic [BUS_DBW-1:0] be;
     string msg;
 
     msg = $sformatf("\nSBA item:\n%0sSBA TL item:\n%0s",
@@ -124,6 +123,8 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
       `DV_CHECK_EQ(sba_tl_item.a_mask, '1, msg)
     end else begin
       logic [BUS_DW-1:0] word_mask;
+      logic [BUS_DBW-1:0] byte_mask;
+
       // Anything less than word access should be PutPartialData.
       if (sba_item.size < SbaAccessSize32b) begin
         `DV_CHECK_EQ(sba_tl_item.a_opcode, tlul_pkg::PutPartialData, msg)
@@ -132,11 +133,14 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
       end
       // SBA system shifts the write data based on transfer size. TLUL adapter further masks the
       // don't care higher order bits for correct ECC computation.
-      word_mask = BUS_DW'({(1 << sba_item.size){8'hff}});
+      for (int i = 0; i < (1 << sba_item.size); i++) begin
+        word_mask[i*8 +: 8] = 8'hff;
+        byte_mask[i] = 1'b1;
+      end
       data = (sba_item.wdata & word_mask) << shift;
       `DV_CHECK_EQ(data, sba_tl_item.a_data, msg)
-      be =  BUS_DW'({(1 << sba_item.size){1'b1}} << sba_item.addr[BUS_SZW-1:0]);
-      `DV_CHECK_EQ(be, sba_tl_item.a_mask, msg)
+      byte_mask <<= sba_item.addr[BUS_SZW-1:0];
+      `DV_CHECK_EQ(byte_mask, sba_tl_item.a_mask, msg)
     end
     // The d_chan may have intg errors and response error (d_error = 1). None of those reflect back
     // in the SBA interface.
