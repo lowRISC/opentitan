@@ -87,7 +87,7 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
                                 dmi_item.sprint(uvm_default_line_printer)), UVM_HIGH)
 
       // Pass through DMI accesses that do not touch the SBA registers.
-      if (!dmi_item.addr inside sba_addrs) begin
+      if (!dmi_item.addr inside {sba_addrs}) begin
         non_sba_jtag_dmi_analysis_port.write(dmi_item);
         continue;
       end
@@ -122,20 +122,15 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
         `DV_CHECK_EQ(sberror, jtag_dmi_ral.sbcs.sberror.get_mirrored_value())
 
         if (sba_req_q.size() > 0) begin
-          // Mark the write access as complete if sbbusy deasserted.
-          if (sba_req_q[0].bus_op == BusOpWrite && !sbbusy) begin
-            ITEM_T tr = sba_req_q.pop_front();
-            tr.is_err = SbaErrNone;
-            tr.is_busy_err = 0;
-            analysis_port.write(tr);
-          end
-
-          // If autoincrement is set, the automatically advance the address.
-          if (jtag_dmi_ral.sbcs.sbautoincrement.get_mirrored_value() && !sbbusy) begin
-            sba_access_size_e size = jtag_dmi_ral.sbcs.sbaccess.get_mirrored_value();
-            uvm_reg_data_t addr = jtag_dmi_ral.sbaddress0.get_mirrored_value();
-            void'(jtag_dmi_ral.sbaddress0.predict(.value(addr + (1 << size)),
-                                                  .kind(UVM_PREDICT_DIRECT)));
+          if (!sbbusy) begin
+            predict_autoincr_sba_addr();
+            if (sba_req_q[0].bus_op == BusOpWrite) begin
+              // Mark the write access as complete if sbbusy deasserted.
+              ITEM_T tr = sba_req_q.pop_front();
+              tr.is_err = SbaErrNone;
+              tr.is_busy_err = 0;
+              analysis_port.write(tr);
+            end
           end
         end
       end
@@ -261,6 +256,17 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
     req_analysis_port.write(item);
     void'(jtag_dmi_ral.sbcs.sbbusy.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
     return 1;
+  endfunction
+
+  // If autoincr is set then predict the new address. Invoked after the successful completion of
+  // previous transfer.
+  virtual function void predict_autoincr_sba_addr();
+    if (jtag_dmi_ral.sbcs.sbautoincrement.get_mirrored_value()) begin
+      sba_access_size_e size = jtag_dmi_ral.sbcs.sbaccess.get_mirrored_value();
+      uvm_reg_data_t addr = jtag_dmi_ral.sbaddress0.get_mirrored_value();
+      void'(jtag_dmi_ral.sbaddress0.predict(.value(addr + (1 << size)),
+                                            .kind(UVM_PREDICT_DIRECT)));
+    end
   endfunction
 
 endclass

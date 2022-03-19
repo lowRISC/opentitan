@@ -19,7 +19,7 @@ class rv_dm_base_test extends cip_base_test #(
 
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    test_timeout_ns = 20_000_000;  // 20ms.
+    test_timeout_ns = 50_000_000;  // 50ms.
   endfunction : build_phase
 
 endclass : rv_dm_base_test
