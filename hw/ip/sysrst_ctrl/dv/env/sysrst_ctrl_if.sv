@@ -46,14 +46,7 @@ interface sysrst_ctrl_if (
     bit pwrb, key0, key1, key2, ec_rst_l, ac_prst, ld_op, flash_wp;
     `DV_CHECK_FATAL(std::randomize(pwrb, key0, key1, key2, ec_rst_l, ac_prst, ld_op, flash_wp), ,
        "sysrst_ctrl_if")
-    pwrb_in = pwrb;
-    key0_in = key0;
-    key1_in = key1;
-    key2_in = key2;
-    ac_present = ac_prst;
-    lid_open = ld_op;
-    ec_rst_l_in = ec_rst_l;
-    flash_wp_l_in = flash_wp;
+    key0_in = ~key0_in;
   endtask
 
   /*task automatic randomize_input();
@@ -65,6 +58,7 @@ interface sysrst_ctrl_if (
     pwrb_in = pwrb;
   endtask*/
 
-  assign sysrst_ctrl_inputs = {pwrb_in, key0_in, key1_in, key2_in, ac_present, ec_rst_l_in, flash_wp_l_in};
+  assign sysrst_ctrl_inputs = {flash_wp_l_in, ec_rst_l_in, ac_present, key2_in, key1_in, key0_in,
+                               pwrb_in};
 
 endinterface : sysrst_ctrl_if

@@ -17,12 +17,14 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
    constraint set_timer_c {
     set_timer dist {
       [10:100] :/ 95,
-      [101:$]   :/ 5
+      [101:1000] :/ 5
     };
    }
 
    constraint num_trans_c {
-     num_trans == 2;
+     // due to to #11565
+     num_trans == 1;
+     // num_trans == 2;
    }
 
    edge_detect_t edge_detect[NumInputs];
@@ -33,77 +35,64 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
      bit l2h_detected;
 
      fork
-       begin
-         fork begin // isolation fork
-         forever begin
-           cfg.clk_aon_rst_vif.wait_clks(1);
-           fork
-             if (edge_detect.en_l2h && !edge_detect.l2h_triggered) begin
-               @(posedge cfg.vif.sysrst_ctrl_inputs[index]);
-               `DV_CHECK_EQ(l2h_detected, 0)
-               l2h_detected = 1;
-             end
-             if (edge_detect.en_h2l && !edge_detect.h2l_triggered) begin
-               @(negedge cfg.vif.sysrst_ctrl_inputs[index]);
-               `DV_CHECK_EQ(h2l_detected, 0)
-               h2l_detected = 1;
-             end
-           join_any
-         disable fork;
+       if (edge_detect.en_l2h) forever begin
+         @(posedge cfg.vif.sysrst_ctrl_inputs[index]);
+         if (!edge_detect.l2h_triggered) begin
+           `DV_CHECK_EQ(l2h_detected, 0)
+           l2h_detected = 1;
+          // $display($time, " wcy l2h_detected %0d", l2h_detected);
          end
-         end join
+       end
+       if (edge_detect.en_h2l) forever begin
+         @(negedge cfg.vif.sysrst_ctrl_inputs[index]);
+         if (!edge_detect.h2l_triggered) begin
+           `DV_CHECK_EQ(h2l_detected, 0)
+           h2l_detected = 1;
+           $display($time, " wcy h2l_detected %0d", h2l_detected);
+         end
        end
 
        // after h2l_detected is set, check the input stay low for enought time
-       begin
-         bit h2l_timer_reached;
-         fork begin // isolation fork
-         forever begin
-          cfg.clk_aon_rst_vif.wait_clks(1);
-          if (edge_detect.en_h2l && !edge_detect.h2l_triggered) begin
-            wait (h2l_detected);
-             fork
-               begin
-                 cfg.clk_aon_rst_vif.wait_clks(set_timer);
-                 h2l_timer_reached = 1;
-               end
-               begin
-                 // if edge change occurs again before the timer reaches the defined value, the interrupt
-                 // won't happen
-                 @(posedge cfg.vif.sysrst_ctrl_inputs[index]);
-               end
-             join_any
-            disable fork;
-          end
-         end
-         end join
-         if (h2l_timer_reached) edge_detect.h2l_triggered = 1;
+       forever begin
+         bit timer_reached;
+         wait (h2l_detected && !edge_detect.h2l_triggered);
+         fork
+           begin
+             cfg.clk_aon_rst_vif.wait_clks(set_timer);
+             timer_reached = 1;
+             $display($time, " wcy3 timer_reached %0d", timer_reached);
+           end
+           begin
+             // if edge change occurs again before the timer reaches the defined value, the interrupt
+             // won't happen
+             @(cfg.vif.sysrst_ctrl_inputs[index]);
+           end
+         join_any
+         disable fork;
+         if (timer_reached) edge_detect.h2l_triggered = 1;
+         $display($time, " wcy4 edge_detect.h2l_triggered %0d", edge_detect.h2l_triggered);
          h2l_detected = 0;
        end
 
-       begin
-         bit l2h_timer_reached;
-         fork begin // isolation fork
-         forever begin
-          cfg.clk_aon_rst_vif.wait_clks(1);
-          if (edge_detect.en_l2h && !edge_detect.l2h_triggered) begin
-            wait (l2h_detected);
-            fork
-              begin
-               cfg.clk_aon_rst_vif.wait_clks(set_timer);
-               l2h_timer_reached = 1;
-              end
-              begin
-                // if edge change occurs again before the timer reaches the defined value, the interrupt
-                // won't happen
-                @(negedge cfg.vif.sysrst_ctrl_inputs[index]);
-              end
-           join_any
-           disable fork;
-          end
-         end
-         end join
-         if (l2h_timer_reached) edge_detect.l2h_triggered = 1;
+       forever begin
+         bit timer_reached;
+         wait (l2h_detected && !edge_detect.l2h_triggered);
+         fork
+           begin
+             cfg.clk_aon_rst_vif.wait_clks(set_timer);
+             timer_reached = 1;
+             $display($time, " wcy3 l2h timer_reached %0d", timer_reached);
+           end
+           begin
+             // if edge change occurs again before the timer reaches the defined value, the interrupt
+             // won't happen
+             @(cfg.vif.sysrst_ctrl_inputs[index]);
+             $display($time, " wcy3 l2h timer exp %0d", timer_reached);
+           end
+         join_any
+         disable fork;
+         if (timer_reached) edge_detect.l2h_triggered = 1;
+         $display($time, " wcy4 edge_detect.l2h_triggered %0d", edge_detect.l2h_triggered);
          l2h_detected = 0;
        end
      join
@@ -123,6 +112,10 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
      bit exp_intr_state;
      `uvm_info(`gfn, "Starting the body from edge_detect_vseq", UVM_LOW)
 
+     // TODO, test key0 only
+     set_input = 0;
+     set_input[1] = 1;
+     set_input[NumInputs+2] = 1;
      // Select the inputs and their transition
      csr_wr(ral.key_intr_ctl, set_input);
 
@@ -133,25 +126,31 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
      cfg.clk_aon_rst_vif.wait_clks(3);
 
      // start monitor edge
-     fork
-      for (int i = 0; i < NumInputs; i++) begin
+     for (int i = 0; i < NumInputs; i++) begin
        automatic int local_i = i;
        edge_detect[i].en_h2l = set_input[i];
-       edge_detect[i].en_l2h = set_input[NumInputs + i];
-       monitor_input_edge(sysrst_input_idx_e'(local_i), edge_detect[local_i], rdata);
-      end
-     join_none
+       edge_detect[i].en_l2h = set_input[NumInputs + i + 1];
+       fork
+         monitor_input_edge(sysrst_input_idx_e'(local_i), edge_detect[local_i], rdata);
+       join_none
+     end
 
      for (int j = 0; j < num_trans; j++) begin
-       repeat ($urandom_range(1, 2)) begin
-         cfg.clk_aon_rst_vif.wait_clks(1);
-         cfg.vif.randomize_input();
-         cfg.clk_aon_rst_vif.wait_clks($urandom_range(1, set_timer * 2));
-         cfg.vif.randomize_input();
-       end
+       int wait_cycles;
+       cfg.clk_aon_rst_vif.wait_clks(1);
+       cfg.vif.randomize_input();
+       cfg.clk_aon_rst_vif.wait_clks(1);
+       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wait_cycles,
+                                          wait_cycles inside {[1:set_timer-2],
+                                                              [set_timer+5:set_timer*2]};)
+       cfg.clk_aon_rst_vif.wait_clks(wait_cycles);
+       cfg.vif.randomize_input();
 
        // make sure the previous transition lasts long enough, so that everything is settled and we can check them
-       cfg.clk_aon_rst_vif.wait_clks(set_timer);
+       cfg.clk_aon_rst_vif.wait_clks(set_timer + 5);
+
+       // to sync the interrupt
+       cfg.clk_aon_rst_vif.wait_clks(5);
 
        csr_rd(ral.key_intr_status, rdata);
        foreach (edge_detect[i]) begin
@@ -167,7 +166,7 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
        // Write to clear the register
        csr_wr(ral.key_intr_status, rdata);
 
-       cfg.clk_aon_rst_vif.wait_clks(20);
+       cfg.clk_aon_rst_vif.wait_clks(5);
        // Check if the register is cleared
        csr_rd_check(ral.key_intr_status, .compare_value(0));
 
