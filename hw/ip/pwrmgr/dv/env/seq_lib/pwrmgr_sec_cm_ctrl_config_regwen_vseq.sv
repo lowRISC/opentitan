@@ -1,0 +1,136 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Create low power transition and wakeup a few times.
+// When PWRMGR.CONTROL.LOW_POWER_HINT is set,
+// issue random write to PWRMGR.CONTROL and check
+// PWRMGR.CONTROL value is not changed.
+class pwrmgr_sec_cm_ctrl_config_regwen_vseq extends pwrmgr_base_vseq;
+  `uvm_object_utils(pwrmgr_sec_cm_ctrl_config_regwen_vseq)
+
+  `uvm_object_new
+
+  constraint wakeups_c {wakeups != 0;}
+
+  rand bit keep_prior_wake_info;
+
+  constraint wakeup_en_c {
+    solve wakeups before wakeups_en;
+    |(wakeups_en & wakeups) == 1'b1;
+  }
+
+  task body();
+    logic [TL_DW-1:0] value;
+    wakeups_t enabled_wakeups;
+    wakeups_t prior_reasons = '0;
+    bit prior_fall_through = '0;
+    bit prior_abort = '0;
+    cfg.disable_csr_rd_chk = 1;
+
+    wait_for_fast_fsm_active();
+    check_wake_status('0);
+    for (int i = 0; i < num_trans; ++i) begin
+      `uvm_info(`gfn, "Starting new round", UVM_MEDIUM)
+      `DV_CHECK_RANDOMIZE_FATAL(this)
+
+      // Instrument interrupts.
+      setup_interrupt(en_intr);
+
+      // Enable wakeups.
+      enabled_wakeups = wakeups_en & wakeups;
+      `DV_CHECK(enabled_wakeups,
+                $sformatf("Some wakeup must be enabled: wkups=%b, wkup_en=%b",
+                wakeups, wakeups_en))
+      `uvm_info(`gfn, $sformatf("Enabled wakeups=0x%x", enabled_wakeups), UVM_MEDIUM)
+      csr_wr(.ptr(ral.wakeup_en[0]), .value(wakeups_en));
+
+      if (keep_prior_wake_info) begin
+        csr_rd(.ptr(ral.wake_info.reasons), .value(prior_reasons));
+        csr_rd(.ptr(ral.wake_info.fall_through), .value(prior_fall_through));
+        csr_rd(.ptr(ral.wake_info.abort), .value(prior_abort));
+      end else begin
+        clear_wake_info();
+        prior_reasons = '0;
+        prior_fall_through = '0;
+        prior_abort = '0;
+      end
+      `uvm_info(`gfn, $sformatf("Prior wake_info: reasons=0x%x, fall_through=%b, abort=%b",
+                                prior_reasons,
+                                prior_fall_through,
+                                prior_abort), UVM_MEDIUM)
+
+      `uvm_info(`gfn, $sformatf("%0sabling wakeup capture", disable_wakeup_capture ? "Dis" : "En"),
+                UVM_MEDIUM)
+      csr_wr(.ptr(ral.wake_info_capture_dis), .value(disable_wakeup_capture));
+      low_power_hint = 1'b1;
+      update_control_csr();
+
+      // Try to update ctrl register while ctrl_cfg_regwen = 0
+      proc_illegal_ctrl_access();
+
+      // Back to low power transition process
+      wait_for_csr_to_propagate_to_slow_domain();
+
+      // Initiate low power transition.
+      cfg.pwrmgr_vif.update_cpu_sleeping(1'b1);
+      set_nvms_idle();
+
+      if (ral.control.main_pd_n.get_mirrored_value() == 1'b0) begin
+        wait_for_reset_cause(pwrmgr_pkg::LowPwrEntry);
+      end
+
+      // Now bring it back.
+      cfg.clk_rst_vif.wait_clks(cycles_before_wakeup);
+      cfg.pwrmgr_vif.update_wakeups(wakeups);
+      // Check wake_status prior to wakeup, or the unit requesting wakeup will have been reset.
+      // This read will not work in the chip, since the processor will be asleep.
+      cfg.slow_clk_rst_vif.wait_clks(4);
+      check_wake_status(enabled_wakeups);
+      `uvm_info(`gfn, $sformatf("Got wake_status=0x%x", enabled_wakeups), UVM_MEDIUM)
+      wait(cfg.pwrmgr_vif.pwr_clk_req.main_ip_clk_en == 1'b1);
+
+      wait_for_fast_fsm_active();
+      `uvm_info(`gfn, "Back from wakeup", UVM_MEDIUM)
+
+      check_reset_status('0);
+      check_wake_info(.reasons(enabled_wakeups), .prior_reasons(prior_reasons), .fall_through(1'b0),
+                      .prior_fall_through(prior_fall_through), .abort(1'b0),
+                      .prior_abort(prior_abort));
+
+      // This is the expected side-effect of the low power entry reset, since the source of the
+      // non-aon wakeup sources will deassert it as a consequence of their reset.
+      // Some aon wakeups may remain active until software clears them. If they didn't, such wakeups
+      // will remain active, preventing the device from going to sleep.
+      cfg.pwrmgr_vif.update_wakeups('0);
+      cfg.slow_clk_rst_vif.wait_clks(10);
+      check_wake_status('0);
+
+      // And make the cpu active.
+      cfg.pwrmgr_vif.update_cpu_sleeping(1'b0);
+
+      // Wait for interrupt to be generated whether or not it is enabled.
+      cfg.slow_clk_rst_vif.wait_clks(10);
+      check_and_clear_interrupt(.expected(1'b1));
+    end
+    clear_wake_info();
+
+  endtask // body
+
+  task proc_illegal_ctrl_access();
+    uvm_reg_data_t wdata, expdata;
+    int try = $urandom_range(1,5);
+    cfg.clk_rst_vif.wait_clks(1);
+    wait(cfg.pwrmgr_vif.lowpwr_cfg_wen == 0);
+
+    repeat(try) begin
+      `DV_CHECK_STD_RANDOMIZE_FATAL(wdata)
+      wdata = get_csr_wdata_with_write_excl(ral.control, wdata, CsrRwTest);
+      expdata = ral.control.get();
+      `uvm_info(`gfn, $sformatf("csr start %x",ral.control.get()), UVM_HIGH)
+      csr_wr(.ptr(ral.control), .value(wdata));
+      csr_rd_check(.ptr(ral.control), .compare_value(expdata));
+      `uvm_info(`gfn, "csr done", UVM_HIGH)
+    end
+  endtask // proc_illegal_ctrl_access
+endclass : pwrmgr_sec_cm_ctrl_config_regwen_vseq

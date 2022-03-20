@@ -53,4 +53,11 @@ module pwrmgr_bind;
     .usb_status(pwr_clk_i.usb_status)
   );
 
+  bind pwrmgr pwrmgr_sec_cm_checker_assert pwrmgr_sec_cm_checker_assert (
+    .clk_i,
+    .rst_ni,
+    .rom_intg_chk_dis(u_fsm.rom_intg_chk_dis),
+    .lc_dft_en_i,
+    .lc_hw_debug_en_i
+  );
 endmodule

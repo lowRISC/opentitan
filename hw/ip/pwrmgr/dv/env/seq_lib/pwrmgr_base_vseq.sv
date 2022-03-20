@@ -111,6 +111,8 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   endfunction
 
   task pre_start();
+    cfg.pwrmgr_vif.lc_hw_debug_en = lc_ctrl_pkg::Off;
+    cfg.pwrmgr_vif.lc_dft_en = lc_ctrl_pkg::Off;
     if (do_pwrmgr_init) pwrmgr_init();
     disable_unnecessary_exclusions();
     cfg.slow_clk_rst_vif.wait_for_reset(.wait_negedge(0));
@@ -170,12 +172,17 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
         // A short slow clock reset should suffice.
         cfg.slow_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0), .reset_width_clks(5));
       end
+      begin
+        cfg.esc_clk_rst_vif.apply_reset();
+      end
     join
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
     cfg.slow_clk_rst_vif.drive_rst_pin(0);
+    cfg.esc_clk_rst_vif.drive_rst_pin(0);
     super.apply_resets_concurrently(cfg.slow_clk_rst_vif.clk_period_ps);
+    cfg.esc_clk_rst_vif.drive_rst_pin(1);
     cfg.slow_clk_rst_vif.drive_rst_pin(1);
   endtask
 
@@ -190,6 +197,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
               cfg.slow_clk_rst_vif.clk_freq_mhz,
               cfg.slow_clk_rst_vif.clk_period_ps
               ), UVM_MEDIUM)
+    cfg.esc_clk_rst_vif.set_freq_mhz(cfg.clk_rst_vif.clk_freq_mhz);
     control_assertions(0);
   endtask
 

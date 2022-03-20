@@ -18,7 +18,8 @@ package pwrmgr_env_pkg;
   import prim_mubi_pkg::mubi4_t;
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4True;
-
+  import prim_mubi_pkg::MuBi4Width;
+  import sec_cm_pkg::*;
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
@@ -40,6 +41,12 @@ package pwrmgr_env_pkg;
     WakeupSensorCtrl
   } wakeup_e;
 
+  typedef enum int {
+    PwrmgrMubiNone = 0,
+    PwrmgrMubiLcCtrl = 1,
+    PwrmgrMubiRomCtrl = 2
+  } pwrmgr_mubi_e;
+
   typedef struct packed {
     logic main_pd_n;
     logic usb_clk_en_active;
@@ -53,6 +60,9 @@ package pwrmgr_env_pkg;
 
   // This is used to send all resets to rstmgr.
   typedef bit [pwrmgr_pkg::HwResetWidth-1:0] resets_out_t;
+
+  // need a short name to avoid 100 line cut off
+  parameter int MUBI4W = prim_mubi_pkg::MuBi4Width;
 
   // functions
 

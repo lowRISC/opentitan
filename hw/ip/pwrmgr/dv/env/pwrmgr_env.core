@@ -27,6 +27,12 @@ filesets:
       - seq_lib/pwrmgr_stress_all_vseq.sv: {is_include_file: true}
       - seq_lib/pwrmgr_wakeup_reset_vseq.sv: {is_include_file: true}
       - seq_lib/pwrmgr_wakeup_vseq.sv: {is_include_file: true}
+      - seq_lib/pwrmgr_repeat_wakeup_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/pwrmgr_sw_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/pwrmgr_esc_clk_rst_malfunc_vseq.sv: {is_include_file: true}
+      - seq_lib/pwrmgr_sec_cm_ctrl_config_regwen_vseq.sv: {is_include_file: true}
+      - seq_lib/pwrmgr_global_esc_vseq.sv: {is_include_file: true}
+      - seq_lib/pwrmgr_glitch_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

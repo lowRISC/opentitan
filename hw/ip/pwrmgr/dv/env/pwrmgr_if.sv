@@ -38,6 +38,8 @@ interface pwrmgr_if (
   pwrmgr_pkg::pwr_cpu_t                                        pwr_cpu;
 
   lc_ctrl_pkg::lc_tx_t                                         fetch_en;
+  lc_ctrl_pkg::lc_tx_t                                         lc_hw_debug_en;
+  lc_ctrl_pkg::lc_tx_t                                         lc_dft_en;
 
   logic                       [  pwrmgr_reg_pkg::NumWkups-1:0] wakeups_i;
 
@@ -60,6 +62,9 @@ interface pwrmgr_if (
   logic                       [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_en;
   logic                       [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_status;
 
+  logic                                                        lowpwr_cfg_wen;
+  logic                                                        unknown_fast_st;
+  logic                                                        unknown_slow_st;
   // Internal DUT signals.
 `ifndef PATH_TO_DUT
   `define PATH_TO_DUT tb.dut
@@ -68,10 +73,15 @@ interface pwrmgr_if (
   // Slow fsm state.
   pwrmgr_pkg::slow_pwr_state_e slow_state;
   always_comb slow_state = `PATH_TO_DUT.u_slow_fsm.state_q;
+  always_comb unknown_slow_st = `PATH_TO_DUT.u_slow_fsm.u_state_regs.unused_err_o;
 
   // Fast fsm state.
   pwrmgr_pkg::fast_pwr_state_e fast_state;
   always_comb fast_state = `PATH_TO_DUT.u_fsm.state_q;
+  always_comb unknown_fast_st = `PATH_TO_DUT.u_fsm.u_state_regs.unused_err_o;
+
+  // cfg regwen
+  always_comb lowpwr_cfg_wen = `PATH_TO_DUT.lowpwr_cfg_wen;
 
   always_comb
     wakeup_en = {
