@@ -576,3 +576,35 @@ test('sw_silicon_creator_lib_driver_flash_ctrl_unittest', executable(
   ),
   suite: 'mask_rom',
 )
+
+# Mask ROM spi_device driver
+sw_silicon_creator_lib_driver_spi_device = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_spi_device',
+    sources: [
+      hw_ip_spi_device_reg_h,
+      'spi_device.c',
+    ],
+    dependencies: [
+      sw_lib_abs_mmio,
+    ],
+  ),
+)
+
+test('sw_silicon_creator_lib_driver_spi_device_unittest', executable(
+    'sw_silicon_creator_lib_driver_spi_device_unittest',
+    sources: [
+      'spi_device_unittest.cc',
+      hw_ip_spi_device_reg_h,
+      'spi_device.c',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_testing_mock_abs_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_ABS_MMIO'],
+    cpp_args: ['-DMOCK_ABS_MMIO'],
+    ),
+  suite: 'mask_rom',
+)
