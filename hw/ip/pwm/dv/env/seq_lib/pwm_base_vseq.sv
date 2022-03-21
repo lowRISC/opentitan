@@ -11,6 +11,8 @@ class pwm_base_vseq extends cip_base_vseq #(
   `uvm_object_utils(pwm_base_vseq)
   `uvm_object_new
 
+  // enable regs
+  // wr1c
   virtual task set_reg_en(pwm_status_e state);
     if (ral.regwen.regwen.get_mirrored_value() != state) begin
       ral.regwen.regwen.set(1'b1);
@@ -25,19 +27,6 @@ class pwm_base_vseq extends cip_base_vseq #(
     csr_update(ral.cfg);
   endtask
 
-  virtual task automatic rand_pwm_cfg_reg();
-    cfg.pwm_cfg.ClkDiv = 2 ** $urandom_range(0, 26);
-    cfg.pwm_cfg.DcResn = $urandom_range(4'h1, 4'hE);
-    cfg.pwm_cfg.CntrEn = 1;
-    set_cfg_reg(cfg.pwm_cfg);
-  endtask
-
-  virtual task set_ch_invert(bit [PWM_NUM_CHANNELS-1:0] enables);
-    bit [31:0] reg_val = 32'h0;
-    reg_val = enables;
-    csr_wr(.ptr(ral.invert[0]), .value(reg_val));
-  endtask
-
   virtual task set_ch_enables(bit [PWM_NUM_CHANNELS-1:0] enables);
     bit [31:0] reg_val = 32'h0;
     reg_val = enables;
@@ -48,15 +37,10 @@ class pwm_base_vseq extends cip_base_vseq #(
     end
   endtask
 
+
   virtual task set_duty_cycle(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel, dc_blink_t value);
     ral.duty_cycle[channel].set({value.B,value.A});
     csr_update(ral.duty_cycle[channel]);
-  endtask
-
-  virtual task automatic rand_pwm_duty_cycle(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel);
-    cfg.duty_cycle[channel].A = $urandom_range(16'h1, 16'h7FFF);
-    cfg.duty_cycle[channel].B = $urandom_range(16'h1, 16'h7FFF);
-    set_duty_cycle(channel, cfg.duty_cycle[channel]);
   endtask
 
   virtual task set_blink(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel, dc_blink_t value);
@@ -64,16 +48,11 @@ class pwm_base_vseq extends cip_base_vseq #(
     csr_update(ral.blink_param[channel]);
   endtask // set_blink
 
-  virtual task automatic rand_pwm_blink(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel);
-    cfg.blink[channel].A = $urandom_range(16'h1, 16'h7FFF);
-    cfg.blink[channel].B = $urandom_range(16'h1, 16'h7FFF);
-    set_blink(channel, cfg.blink[channel]);
-  endtask
-
   virtual task set_param(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel, param_reg_t value);
     ral.pwm_param[channel].set(value);
     csr_update(ral.pwm_param[channel]);
   endtask // set_param
+
 
   // override apply_reset to handle reset for bus and core domain
   virtual task apply_reset(string kind = "HARD");

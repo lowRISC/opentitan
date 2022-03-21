@@ -18,7 +18,7 @@
             Stimulus:
               - configure the envionment for one PWM channel
               - program the duty cycle a and b values
-              - configure the ClkDiv and Resn
+              - configure  the ClkDiv and Resn
 
             Checking:
               - ensure pulses are generated correctly in pulse or blink mode
@@ -34,7 +34,7 @@
 
             '''
       milestone: V2
-      tests: ["pwm_rand_output"]
+      tests: ["pwm_smoke"]
     }
     {
       name: pulse
@@ -43,7 +43,7 @@
             by de-asserting blink_en field in the PWM_PARAM register
             '''
       milestone: V2
-      tests: ["pwm_rand_output"]
+      tests: ["pwm_smoke"]
     }
     {
       name: Blink
@@ -52,7 +52,7 @@
             by asserting the blink_en field in the PWM_PARAM register
             '''
       milestone: V2
-      tests: ["pwm_rand_output"]
+      tests: ["pwm_moke"]
     }
     {
       name: heartbeat
@@ -61,15 +61,15 @@
             by asserting the blink_en and HTBT field in the PWM_PARAM register
             '''
         milestone: V2
-        tests: ["pwm_rand_output"]
+        tests: []
     }
-    {
+   {
       name: resolution
       desc: '''
             Verify the PWM generates correct duty cycle for different resolution settings
             '''
         milestone: V2
-        tests: ["pwm_rand_output"]
+        tests: ["pwm_smoke"]
     }
     {
       name: multi_channel
@@ -77,7 +77,7 @@
             Verifies that PWM correctly generates pulses on multiple channels concurrently
             '''
         milestone: V2
-        tests: ["pwm_rand_output"]
+        tests: []
     }
     {
       name: polarity
@@ -85,7 +85,7 @@
             Verify that the polarity of the pulse can be inverted by setting the invert channel bit in the invert register
             '''
         milestone: V2
-        tests: ["pwm_rand_output"]
+        tests: []
     }
     {
       name: phase
@@ -93,7 +93,7 @@
             Check that the relative phase between pulses matches the setting in the phase_delay field in the PWM_PARAM register.
             '''
         milestone: V2
-        tests: ["pwm_rand_output"]
+        tests: []
     }
     {
       name: lowpower
@@ -122,12 +122,26 @@
             Checks:
                 - Ensure the output pulses are correctly modulated for all channels
             '''
-        milestone: V2
-        tests: []
+      milestone: V2
+      tests: []
     }
     {
-      name: stress_all
-      desc: '''
+          name: clock_domain
+          desc: '''
+            TBD -Verify the function of clock-crossing domain for pwm
+
+            Stimulus:
+                - TBD
+
+            Checking:
+                - TBD
+            '''
+          milestone: V2
+          tests: []
+      }
+      {
+          name: stress_all
+          desc: '''
             Combine above sequences in one test then randomly select for running
 
             Stimulus:
@@ -136,9 +150,9 @@
             Checking:
                 - All sequences should be finished and checked by the scoreboard
             '''
-        milestone: V2
-        tests: []
-    }
+          milestone: V2
+          tests: []
+      }
   ]
 
  covergroups: [

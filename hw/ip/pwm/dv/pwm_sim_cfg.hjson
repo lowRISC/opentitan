@@ -65,17 +65,13 @@
       name: pwm_smoke
       uvm_test_seq: pwm_smoke_vseq
     }
-    {
-      name: pwm_rand_output
-      uvm_test_seq: pwm_rand_output_vseq
-    }
   ]
 
-  //List of regressions.
-  regressions: [
-    {
-      name: smoke
-      tests: ["pwm_smoke"]
-    }
-  ]
+  // List of regressions.
+//  regressions: [
+//    {
+//      name: smoke
+//      tests: ["pwm_smoke"]
+//    }
+//  ]
 }
