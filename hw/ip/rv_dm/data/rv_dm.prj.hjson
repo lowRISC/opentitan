@@ -5,9 +5,10 @@
 {
     name:               "rv_dm",
     design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
     hw_checklist:       "../doc/checklist"
     version:            "1.0",
     life_stage:         "L1",
     design_stage:       "D2S",
-    verification_stage: "V0",
+    verification_stage: "V1",
 }
