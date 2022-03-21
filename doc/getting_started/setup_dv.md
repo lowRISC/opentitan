@@ -6,7 +6,7 @@ _Before following this guide, make sure you've followed the [dependency installa
 
 This document aims to enable a contributor to get started with a design verification (DV) effort within the OpenTitan project.
 While most of the focus is on development of a testbench from scratch, it should also be useful to understand how to contribute to an existing effort.
-Please refer to the [DV methodology]({{< relref "dv_methodology/index.md" >}}) document for information on how design verification is done in OpenTitan.
+Please refer to the [DV methodology]({{< relref "doc/ug/dv_methodology" >}}) document for information on how design verification is done in OpenTitan.
 
 ## Stages of DV
 
@@ -19,7 +19,7 @@ The design specification, once available, is used as a starting point.
 
 ## Getting Started
 
-The very first thing to do in any DV effort is to [document the plan]({{< relref "dv_methodology/index.md#documentation" >}}) detailing the overall effort.
+The very first thing to do in any DV effort is to [document the plan]({{< relref "doc/ug/dv_methodology#documentation" >}}) detailing the overall effort.
 This is done in conjunction with developing the initial testbench.
 It is recommended to use the [uvmdvgen]({{< relref "util/uvmdvgen/README.md" >}}) tool, which serves both needs.
 
@@ -33,7 +33,7 @@ One of these for example, is to create appropriate interfaces for the DUT-specif
 
 ## Documentation and Initial Review
 
-The skeleton [DV document]({{< relref "dv_methodology/index.md#dv-document" >}}) and the [Hjson testplan]({{< relref "dv_methodology/index.md#testplan" >}}) should be addressed first.
+The skeleton [DV document]({{< relref "doc/ug/dv_methodology#dv-document" >}}) and the [Hjson testplan]({{< relref "doc/ug/dv_methodology#testplan" >}}) should be addressed first.
 The DV documentation is not expected to be completed in full detail at this point.
 However, it is expected to list all the verification components needed and depict the planned testbench as a block diagram.
 Under the 'design verification' directory in the OpenTitan team drive, some sample testbench block diagrams are available in the `.svg` format, which can be used as a template.
@@ -43,7 +43,7 @@ Once done, these documents are to be reviewed with the designer(s) and other pro
 
 ## UVM RAL Model
 
-Before running any test, the [UVM RAL model]({{< relref "dv_methodology/index.md#uvm-register-abstraction-layer-ral-model" >}}) needs to exist (if the design contains CSRs).
+Before running any test, the [UVM RAL model]({{< relref "doc/ug/dv_methodology#uvm-register-abstraction-layer-ral-model" >}}) needs to exist (if the design contains CSRs).
 The [DV simulation flow]({{< relref "hw/dv/tools/README.md" >}}) has been updated to generate the RAL model automatically at the start of the simulation.
 As such, nothing extra needs to be done.
 It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):

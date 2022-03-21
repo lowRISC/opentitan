@@ -118,7 +118,7 @@ The lightweight process is:
    To simplify and speed up code review, we expect larger contributions like new features and major changes to be broken into multiple, smaller PRs wherever possible.
    For more information refer to [Working with PRs](#working-with-pull-requests).
 
-Further information can be found in [Getting Started with a Design]({{< relref "doc/ug/getting_started" >}}) and in [Request for Comments (RFC) Process]({{< relref "doc/project/rfc_process" >}}).
+Further information can be found in [Getting Started with a Design]({{< relref "doc/ug/hw_design" >}}) and in [Request for Comments (RFC) Process]({{< relref "doc/project/rfc_process" >}}).
 
 # Writing Code
 

@@ -194,14 +194,7 @@ Alternatively add the following to `$HOME/.bazelrc`:
 build --disk_cache=~/bazel_cache
 ```
 
-## Debugging device software
-
-### Attaching a debugger
-
-GDB can be used to debug device software running on an FPGA or in a Verilator simulation.
-Refer to the [Getting started on FPGAs]({{<relref getting_started_fpga >}}) and [Verilator]({{<relref getting_started_verilator >}}) guides for more details.
-
-### Disassembling device code
+## Disassembling device code
 
 A disassembly of all executable sections is produced by the build system by default.
 It can be found by looking for files with the `.dis` extension next to the corresponding ELF file.

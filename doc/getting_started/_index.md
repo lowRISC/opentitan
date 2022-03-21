@@ -128,12 +128,10 @@ Unless you know you need the FPGA or DV guides, you can skip this step.*
 In order to run the software we built in the last step, we need to have some way to mimic an OpenTitan chip.
 There are a few different options depending on your equipment and use-case.
 Follow the guide that applies to you:
-* **Option 1 (default, recommended for new users):** [Verilator guide]({{< relref "getting_started_verilator.md" >}}), or
-* Option 2 (FPGA setup): [FPGA guide]({{< relref "getting_started_fpga.md" >}}), or
-* Option 3 (design verification setup): [DV guide]({{< relref "getting_started_dv.md" >}})
-* Option 4 (formal verification setup): [Formal Verification guide]({{< relref "getting_started_formal.md" >}})
-
-(TODO: FPGA guide says to install vivado, need to fix the link and say you need a license and should use bitstream from CI)
+* **Option 1 (default, recommended for new users):** [Verilator guide]({{< relref "setup_verilator.md" >}}), or
+* Option 2 (FPGA setup): [FPGA guide]({{< relref "setup_fpga.md" >}}), or
+* Option 3 (design verification setup): [DV guide]({{< relref "setup_dv.md" >}})
+* Option 4 (formal verification setup): [Formal Verification guide]({{< relref "setup_formal.md" >}})
 
 ## Step 6: Optional Additional Steps
 
@@ -184,13 +182,13 @@ If you are interested in these, check out the additional resources below.
 
 ### General
 * [Documentation Index]({{< relref "doc/_index.md" >}})
-* [Directory Structure]({{< relref "directory_structure.md" >}})
-* [GitHub Notes]({{< relref "github_notes.md" >}})
-* [Building Documentation]({{< relref "documentation.md" >}})
-* [Design Methodology within OpenTitan]({{< relref "design.md" >}})
+* [Directory Structure]({{< relref "doc/ug/directory_structure.md" >}})
+* [GitHub Notes]({{< relref "doc/ug/github_notes.md" >}})
+* [Building Documentation]({{< relref "doc/ug/documentation.md" >}})
+* [Design Methodology within OpenTitan]({{< relref "doc/ug/design.md" >}})
 
 ### Hardware
-* [Getting Started Designing Hardware]({{< relref "getting_started_hw_design.md" >}})
+* [Designing Hardware]({{< relref "doc/ug/hw_design.md" >}})
 * [OpenTitan Hardware]({{< relref "/hw" >}})
 
 ### Software

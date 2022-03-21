@@ -21,8 +21,6 @@ Refer to the design documentation for information what exactly is needed.
 
 * [Obtain an FPGA board]({{< relref "fpga_boards.md" >}})
 
-Follow the install instructions to [prepare the system]({{< relref "install_instructions#system-preparation" >}}) and to install the [software development tools]({{< relref "install_instructions#software-development" >}}) and [Xilinx Vivado]({{< relref "install_instructions#xilinx-vivado" >}}).
-
 ## Create an FPGA bitstream
 
 Synthesizing a design for an FPGA board is done with the following commands.
@@ -84,7 +82,7 @@ To this end:
 
 You can now use `dmesg` to determine which serial ports have been assigned.
 They should be named `'/dev/ttyACM*'`, e.g. `/dev/ttyACM1`.
-To ensure that you have sufficient access permissions, set up the udev rules as explained in the [Vivado installation instructions]({{< relref "install_instructions#xilinx-vivado" >}}).
+To ensure that you have sufficient access permissions, set up the udev rules as explained in the [Vivado installation instructions]({{< relref "install_vivado" >}}).
 
 ## Connecting the Nexys Video board
 
@@ -92,7 +90,7 @@ To ensure that you have sufficient access permissions, set up the udev rules as 
 * Use a second Micro USB cable to connect the PC with the *UART*-labled connector on the board.
 * After connecting the UART, use `dmesg` to determine which serial port was assigned.
   It should be named `/dev/ttyUSB*`, e.g. `/dev/ttyUSB0`.
-* To ensure that you have sufficient access permissions, set up the udev rules as explained in the [Vivado installation instructions]({{< relref "install_instructions#xilinx-vivado" >}}).
+* To ensure that you have sufficient access permissions, set up the udev rules as explained in the [Vivado installation instructions]({{< relref "install_vivado" >}}).
 
 ## Flash the bitstream onto the FPGA
 
@@ -320,7 +318,7 @@ $ cd $REPO_TOP
 $ openocd -s util/openocd -f board/lowrisc-earlgrey-nexysvideo.cfg
 ```
 
-See the [install instructions]({{< relref "install_instructions#openocd" >}}) for guidance on installing OpenOCD.
+See the [install instructions]({{< relref "install_openocd" >}}) for guidance on installing OpenOCD.
 
 To actually debug through OpenOCD, it must either be connected through telnet or GDB.
 

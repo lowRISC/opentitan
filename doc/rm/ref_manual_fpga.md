@@ -4,15 +4,7 @@ title: "FPGA Reference Manual"
 
 This manual provides additional usage details about the FPGA.
 Specifically, it provides instructions on SW development flows and testing procedures.
-
-
-## Usage Options
-
-There are two ways to use OpenTitan on the FPGA.
-- The first is to build the design from scratch using Vivado.
-  Refer to the [Getting Started FPGA]({{< relref "doc/ug/getting_started_fpga" >}}) guide for more information.
-- The second is to program the FPGA with a released bitfile using storage devices.
-  Refer to the [Quickstart Guide]({{< relref "doc/ug/quickstart" >}}) guide for instructions on this approach.
+Refer to the [FPGA Setup]({{< relref "doc/getting_started/setup_fpga" >}}) guide for more information on initial setup.
 
 ## FPGA SW Development Flow
 
@@ -42,7 +34,7 @@ $ ./util/fpga/splice_rom.sh
 $ ./util/fpga/cw310_loader.py --bitstream build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit
 ```
 
-The script assumes that there is an existing bitfile `build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit` (this is created after following the steps in [getting_started_fpga]({{< relref "doc/ug/getting_started_fpga" >}})).
+The script assumes that there is an existing bitfile `build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit` (this is created after following the steps in [FPGA Setup]({{< relref "doc/getting_started/setup_fpga" >}})).
 
 The script assumes that there is an existing boot ROM image under `build-bin/sw/device/lib/testing/test_rom` and then creates a new bitfile of the same name at the same location.
 The original input bitfile is moved to `build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig`.
