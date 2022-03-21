@@ -324,15 +324,17 @@ module sysrst_ctrl
   ///////////////////////////
 
   // OT wakeup signal to pwrmgr, CSRs and signals on AON domain (see #6323)
-  assign wkup_req_o = reg2hw.wkup_status.q;
-  assign hw2reg.wkup_status.de = aon_ulp_wakeup_pulse_int ||
-                                 aon_sysrst_ctrl_combo_intr ||
-                                 aon_sysrst_ctrl_key_intr;
+  logic aon_intr_event_pulse;
+  assign aon_intr_event_pulse = aon_ulp_wakeup_pulse_int ||
+                                aon_sysrst_ctrl_combo_intr ||
+                                aon_sysrst_ctrl_key_intr;
+  assign hw2reg.wkup_status.de = aon_intr_event_pulse;
   assign hw2reg.wkup_status.d = 1'b1;
+  assign wkup_req_o = reg2hw.wkup_status.q;
 
   // Detect a rising edge so that the interrupt can be cleared
   // independently of the wakeup request.
-  logic wkup_req_pulse;
+  logic intr_event_pulse;
   prim_edge_detector #(
     .Width(1),
     .ResetValue('0),
@@ -340,10 +342,10 @@ module sysrst_ctrl
   ) u_prim_edge_detector (
     .clk_i,
     .rst_ni,
-    .d_i              (wkup_req_o    ),
-    .q_sync_o         (              ),
-    .q_posedge_pulse_o(wkup_req_pulse),
-    .q_negedge_pulse_o(              )
+    .d_i              (aon_intr_event_pulse),
+    .q_sync_o         ( ),
+    .q_posedge_pulse_o(intr_event_pulse),
+    .q_negedge_pulse_o( )
   );
 
   // Instantiate the interrupt module
@@ -352,7 +354,7 @@ module sysrst_ctrl
   ) u_prim_intr_hw (
     .clk_i,
     .rst_ni,
-    .event_intr_i          (wkup_req_pulse),
+    .event_intr_i          (intr_event_pulse),
     .reg2hw_intr_enable_q_i(reg2hw.intr_enable.q),
     .reg2hw_intr_test_q_i  (reg2hw.intr_test.q),
     .reg2hw_intr_test_qe_i (reg2hw.intr_test.qe),
