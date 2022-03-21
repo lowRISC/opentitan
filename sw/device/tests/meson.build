@@ -278,6 +278,7 @@ aes_smoketest_lib = declare_dependency(
       sw_lib_mmio,
       sw_lib_runtime_log,
       sw_lib_testing_entropy_testutils,
+      sw_lib_testing_aes_testutils,
       sw_lib_testing_test_status,
     ],
   ),

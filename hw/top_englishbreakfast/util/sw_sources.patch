@@ -232,19 +232,11 @@ index 26110265f..7354aa9cb 100644
  }
 
 diff --git a/sw/device/tests/aes_smoketest.c b/sw/device/tests/aes_smoketest.c
-index 1286e47c0..308aab5a4 100644
+index 0ceef3630..700e91f23 100644
 --- a/sw/device/tests/aes_smoketest.c
 +++ b/sw/device/tests/aes_smoketest.c
-@@ -7,7 +7,6 @@
- #include "sw/device/lib/dif/dif_aes.h"
- #include "sw/device/lib/runtime/log.h"
- #include "sw/device/lib/testing/check.h"
--#include "sw/device/lib/testing/entropy_testutils.h"
- #include "sw/device/lib/testing/test_framework/ottf.h"
-
- #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-@@ -66,9 +65,6 @@ bool test_main(void) {
-
+@@ -58,9 +58,6 @@ bool test_main(void) {
+ 
    LOG_INFO("Running AES test");
 
 -  // First of all, we need to get the entropy complex up and running.
@@ -254,7 +246,7 @@ index 1286e47c0..308aab5a4 100644
    CHECK_DIF_OK(
        dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
 diff --git a/sw/device/tests/meson.build b/sw/device/tests/meson.build
-index 0cb0e09c3..32274f359 100644
+index 084f531e5..58defaffc 100644
 --- a/sw/device/tests/meson.build
 +++ b/sw/device/tests/meson.build
 @@ -277,7 +277,6 @@ aes_smoketest_lib = declare_dependency(
@@ -262,6 +254,6 @@ index 0cb0e09c3..32274f359 100644
        sw_lib_mmio,
        sw_lib_runtime_log,
 -      sw_lib_testing_entropy_testutils,
+       sw_lib_testing_aes_testutils,
        sw_lib_testing_test_status,
      ],
-   ),

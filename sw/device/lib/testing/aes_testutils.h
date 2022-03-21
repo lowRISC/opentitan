@@ -29,9 +29,8 @@ inline bool aes_testutils_get_status(dif_aes_t *aes, dif_aes_status_t flag) {
  * @param value The status flag value.
  * @param timeout_usec Timeout in microseconds.
  */
-inline void aes_testutils_wait_for_status(dif_aes_t *aes, dif_aes_status_t flag,
-                                          bool value, uint32_t timeout_usec) {
-  IBEX_SPIN_FOR(aes_testutils_get_status(aes, flag) == value, timeout_usec);
-}
+#define AES_TESTUTILS_WAIT_FOR_STATUS(aes_, flag_, value_, timeout_usec_) \
+  IBEX_SPIN_FOR(aes_testutils_get_status((aes_), (flag_)) == (value_),    \
+                (timeout_usec_))
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_AES_TESTUTILS_H_
