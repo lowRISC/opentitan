@@ -69,6 +69,7 @@
     {
       name: flash_ctrl_rand_ops
       uvm_test_seq: flash_ctrl_rand_ops_vseq
+      reseed: 5
     }
     {
       name: flash_ctrl_sw_op
@@ -95,8 +96,9 @@
     {
       name: flash_ctrl_hw_sec_otp
       uvm_test_seq: flash_ctrl_hw_sec_otp_vseq
+      reseed: 5
     }
-	{
+    {
       name: flash_ctrl_erase_suspend
       uvm_test_seq: flash_ctrl_erase_suspend_vseq
       run_opts: ["+zero_delays=1"]
@@ -112,7 +114,7 @@
       name: flash_ctrl_host_ctrl_arb
       uvm_test_seq: flash_ctrl_host_ctrl_arb_vseq
       run_opts: ["+zero_delays=1", "+test_timeout_ns=10000000000"]
-      reseed: 3
+      reseed: 5
     }
 
   ]

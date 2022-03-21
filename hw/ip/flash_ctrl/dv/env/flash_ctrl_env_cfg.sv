@@ -244,8 +244,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     // program fully via backdoor
     mem_bkdr_util_h[partition][bank].write64(aligned_addr, {intg_data[3:0], data});
 
-  endfunction
-
+  endfunction : _flash_full_write
 
   // Helper function that randomizes the half-word at the given address if unknown.
   //
@@ -261,7 +260,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
       `uvm_info(`gfn, $sformatf("Data at 0x%0h is Xs, writing random 0x%0h", addr, data), UVM_HIGH)
       _flash_full_write(partition, bank, addr, data);
     end
-  endfunction
+  endfunction : _randomize_uninitialized_half_word
 
   // Checks flash mem contents via backdoor.
   //
@@ -269,11 +268,21 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // The exp data queue is sized for the bus word.
   // TODO: support for partition.
   virtual function void flash_mem_bkdr_read_check(flash_op_t flash_op, const ref data_q_t exp_data);
+
     data_q_t data;
     flash_mem_bkdr_read(flash_op, data);
-    foreach (data[i]) begin
-      `DV_CHECK_CASE_EQ(data[i], exp_data[i])
+
+    if (flash_op.op == FlashOpRead) begin        
+        `uvm_info("DEBUG", "--> Read OP", UVM_LOW)
+        foreach (data[i]) begin      
+          if (data[i] == exp_data[i])         
+            `uvm_info("DEBUG", $sformatf("--> Matching : Backdoor : data[%0d] : %0x, with exp_data[%0d] : %0x - PASS", i, data[i], i, exp_data[i]), UVM_LOW)
+          else
+            `uvm_info("DEBUG", $sformatf("--> Matching : data[%0d] : %0x, with exp_data[%0d] : %0x - FAIL", i, data[i], i, exp_data[i]), UVM_LOW)
+        end 
+       //`DV_CHECK_CASE_EQ(data[i], exp_data[i])
     end
+  
   endfunction : flash_mem_bkdr_read_check
 
   // Verifies that the flash page / bank has indeed been erased.
@@ -363,4 +372,4 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     return exp_data;
   endfunction : calculate_expected_data
 
-endclass
+endclass : flash_ctrl_env_cfg
