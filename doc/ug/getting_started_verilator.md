@@ -13,6 +13,42 @@ It translates synthesizable Verilog code into a simulation program in C++, which
 
 _Make sure you followed the install instructions to [prepare the system]({{< relref "install_instructions#system-preparation" >}}) and to install the [software development tools]({{< relref "doc/ug/install_instructions#software-development" >}}) and [Verilator]({{< relref "install_instructions#verilator" >}})._
 
+### Install Verilator
+
+Even though Verilator is packaged for most Linux distributions these versions tend to be too old to be usable.
+We recommend compiling Verilator from source, as outlined here.
+
+Fetch, build and install Verilator itself (this should be done outside the `$REPO_TOP` directory).
+
+```console
+$ export VERILATOR_VERSION={{< tool_version "verilator" >}}
+
+$ git clone https://github.com/verilator/verilator.git
+$ cd verilator
+$ git checkout v$VERILATOR_VERSION
+
+$ autoconf
+$ ./configure --prefix=/tools/verilator/$VERILATOR_VERSION
+$ make
+$ make install
+```
+
+After installation you need to add `/tools/verilator/$VERILATOR_VERSION/bin` to your `PATH` environment variable.
+Also add it to your `~/.bashrc` or equivalent so that it's on the `PATH` in the future, like this:
+```console
+export PATH=$PATH:/tools/verilator/4.210/bin
+```
+
+Check your installation by running:
+```console
+$ verilator --version
+Verilator 4.210 2021-07-07 rev v4.210 (mod)
+```
+
+#### Troubleshooting
+
+If you need to install to a different location than `/tools/verilator/...`, you can pass a different directory to `./configure --prefix` above and add `your/install/location/bin` to `PATH` instead.
+
 ## Simulating a design with Verilator
 
 First the simulation needs to built itself.
@@ -21,8 +57,6 @@ First the simulation needs to built itself.
 $ cd $REPO_TOP
 $ fusesoc --cores-root . run --flag=fileset_top --target=sim --setup --build lowrisc:dv:chip_verilator_sim
 ```
-The fsel_top flag used above is specific to the OpenTitan project to select the correct fileset.
-
 
 Then we need to build software to run on the simulated system.
 There are 3 memory types: ROM, RAM and Flash.
@@ -54,11 +88,16 @@ $ build/lowrisc_dv_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb \
 
 To stop the simulation press CTRL-c.
 
+If you want to run a program other than `hello_world`, you'll change the second `--meminit` argument to point to a different `.scr.vmem` file under `build-bin`.
+For the most part, the structure under `build-bin` follows the structure in the repository.
+Executables intended for Verilator are suffixed with `sim_verilator`.
+
+All executed instructions in the loaded software are logged to the file `trace_core_00000000.log`.
+The columns in this file are tab separated; change the tab width in your editor if the columns don't appear clearly, or open the file in a spreadsheet application.
+
 ## Interact with the simulated UART
 
-The simulation contains code to create a virtual UART port.
-When starting the simulation you should see a message like
-
+When starting the simulation you should see a message like:
 ```console
 UART: Created /dev/pts/11 for uart0. Connect to it with any terminal program, e.g.
 $ screen /dev/pts/11
@@ -110,7 +149,10 @@ $ build/lowrisc_dv_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb \
   +UARTDPI_LOG_uart0=-
 ```
 
-## Interact with GPIO
+For most use cases, interacting with the UART is all you will need.
+However, if you want to interact with the simulation in additional ways, there are more options listed below.
+
+## Interact with GPIO (optional)
 
 The simulation includes a DPI module to map general-purpose I/O (GPIO) pins to two POSIX FIFO files: one for input, and one for output.
 Observe the `gpio0-read` file for outputs:
@@ -128,12 +170,12 @@ $ echo 'h09 l31' > gpio0-write  # Pull the pin 9 high, and pin 31 low.
 ```
 
 
-## Connect with OpenOCD to the JTAG port and use GDB
+## Connect with OpenOCD to the JTAG port and use GDB (optional)
 
 The simulation includes a "virtual JTAG" port to which OpenOCD can connect using its `remote_bitbang` driver.
 All necessary configuration files are included in this repository.
 
-See the [install instructions]({{< relref "install_instructions#openocd" >}}) for guidance on installing OpenOCD.
+See the [OpenOCD install instructions]({{< relref "install_openocd.md" >}}) for guidance on installing OpenOCD.
 
 Run the simulation, then connect with OpenOCD using the following command.
 
@@ -149,7 +191,7 @@ $ riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" \
   build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.elf
 ```
 
-## SPI device test interface
+## SPI device test interface (optional)
 
 The simulation contains code to monitor the SPI bus and provide a host interface to allow interaction with the `spi_device`.
 When starting the simulation you should see a message like
@@ -183,12 +225,7 @@ The SPI monitor output is written to a file.
 It may be monitored with `tail -f` which conveniently notices when the file is truncated on a new run, so does not need restarting between simulations.
 The output consists of a textual "waveform" representing the SPI signals.
 
-## Software execution traces
-
-All executed instructions in the loaded software are logged to the file `trace_core_00000000.log`.
-The columns in this file are tab separated; change the tab width in your editor if the columns don't appear clearly, or open the file in a spreadsheet application.
-
-## Generating waveforms
+## Generating waveforms (optional)
 
 With the `--trace` argument the simulation generates a FST signal trace which can be viewed with Gtkwave (only).
 Tracing slows down the simulation by roughly factor of 1000.
