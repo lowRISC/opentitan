@@ -374,8 +374,8 @@ class KnownMem:
                 gap_list.append((gap_vma, low - 1))
             gap_vma = high + 1
 
-        if gap_vma <= self.top_addr:
-            gap_list.append((gap_vma, self.top_addr))
+        if gap_vma < self.top_addr:
+            gap_list.append((gap_vma, self.top_addr - 1))
 
         if not gap_list:
             return None
