@@ -569,3 +569,31 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )
+
+cc_library(
+    name = "spi_device",
+    srcs = ["spi_device.c"],
+    hdrs = ["spi_device.h"],
+    deps = [
+        "//hw/ip/spi_device/data:spi_device_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/silicon_creator/lib:error",
+    ],
+)
+
+cc_test(
+    name = "spi_device_unittest",
+    srcs = [
+        "spi_device_unittest.cc",
+    ],
+    deps = [
+        ":spi_device",
+        "//hw/ip/spi_device/data:spi_device_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base/testing:mock_abs_mmio",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
