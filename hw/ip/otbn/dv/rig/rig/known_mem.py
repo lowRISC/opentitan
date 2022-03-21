@@ -55,36 +55,36 @@ def _intersect_ranges(a: List[Tuple[int, int]],
 
 class KnownMem:
     '''A representation of what memory/CSRs have architectural values'''
-    def __init__(self, top_addr: int):
-        assert top_addr > 0
+    def __init__(self, size_bytes: int):
+        assert size_bytes > 0
 
-        self.top_addr = top_addr
+        self.size_bytes = size_bytes
         # A list of pairs of addresses. If the pair (lo, hi) is in the list
         # then each byte in the address range {lo..hi - 1} has a known value.
         self.known_ranges = []  # type: List[Tuple[int, int]]
 
     def copy(self) -> 'KnownMem':
         '''Return a shallow copy of the object'''
-        ret = KnownMem(self.top_addr)
+        ret = KnownMem(self.size_bytes)
         ret.known_ranges = self.known_ranges.copy()
         return ret
 
     def merge(self, other: 'KnownMem') -> None:
         '''Merge in values from another KnownMem object'''
-        assert self.top_addr == other.top_addr
+        assert self.size_bytes == other.size_bytes
         self.known_ranges = _intersect_ranges(self.known_ranges,
                                               other.known_ranges)
 
     def touch_range(self, base: int, width: int) -> None:
         '''Mark {base .. base + width - 1} as known'''
         assert 0 <= width
-        assert 0 <= base <= self.top_addr - width
+        assert 0 <= base <= self.size_bytes - width
         for off in range(width):
             self.touch_addr(base + off)
 
     def touch_addr(self, addr: int) -> None:
         '''Mark word starting at addr as known'''
-        assert 0 <= addr < self.top_addr
+        assert 0 <= addr < self.size_bytes
 
         # Find the index of the last range that starts below us, if there is
         # one, and the index of the first range that starts above us, if there
@@ -305,7 +305,7 @@ class KnownMem:
         k_ranges = []
         k_weights = []
         byte_ranges = (self.known_ranges
-                       if loads_value else [(0, self.top_addr - 1)])
+                       if loads_value else [(0, self.size_bytes - 1)])
 
         for byte_lo, byte_top in byte_ranges:
             # Since we're doing an access of width bytes, we round byte_top
@@ -374,8 +374,8 @@ class KnownMem:
                 gap_list.append((gap_vma, low - 1))
             gap_vma = high + 1
 
-        if gap_vma < self.top_addr:
-            gap_list.append((gap_vma, self.top_addr - 1))
+        if gap_vma < self.size_bytes:
+            gap_list.append((gap_vma, self.size_bytes - 1))
 
         if not gap_list:
             return None
