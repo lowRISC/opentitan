@@ -1,6 +1,8 @@
 ---
-title: Getting Started with Verilator
+title: Verilator Setup
 ---
+
+_Before following this guide, make sure you've followed the [dependency installation and software build instructions]({{< relref "getting_started" >}})._
 
 ## About Verilator
 
@@ -64,7 +66,6 @@ By default, the system will first execute out of ROM and then jump to flash.
 A program needs to be built for each until ROM functionality for code download is ready.
 
 For that purpose compile the demo program with "simulation" settings, which adjusts the frequencies to better match the simulation speed.
-For more information on building software targets refer to the [Getting Started Building Software guide]({{< relref "getting_started_build_sw.md" >}}).
 
 ```console
 $ cd $REPO_TOP
