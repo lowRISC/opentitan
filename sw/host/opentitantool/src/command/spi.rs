@@ -101,7 +101,7 @@ pub struct SpiReadId {
     #[structopt(
         short = "n",
         long,
-        default_value = "3",
+        default_value = "15",
         help = "Number of JEDEC ID bytes to read."
     )]
     length: usize,
