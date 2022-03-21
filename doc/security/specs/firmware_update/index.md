@@ -30,21 +30,21 @@ regular and encrypted updates to follow when possible.
            which the update can be performed.
 2. The system unlocks the flash protection for the bounds of the B-slot.
 3. For each block of the pending firmware update:
-    2. The system erases the flash page at the destination address for the
+    1. The system erases the flash page at the destination address for the
        block.
-    3. The system receives the block and writes it immediately to its
+    2. The system receives the block and writes it immediately to its
        destination address in flash. Blocks will need to be buffered given the
        speed of a flash write.
-    4. Once written, the block is hashed and compared against the hash of the
+    3. Once written, the block is hashed and compared against the hash of the
        buffered block. This ensures that every flash write is complete and
        successful.
-        6. If the hash doesn't match the hash of the buffered block, repeat the
+        1. If the hash doesn't match the hash of the buffered block, repeat the
            flash erase and write cycle.
-        7. If the erase/flash cycle fails three times declare complete failure.
+        2. If the erase/flash cycle fails three times declare complete failure.
 4. Issue a warning to the running applications that the system will be
    resetting.
 5. Write a Boot Services request block into persistent RAM:
-    5. Indicate the new firmware version slot to be booted.
-    6. Indicate the retry policy to use when booting it.
+    1. Indicate the new firmware version slot to be booted.
+    2. Indicate the retry policy to use when booting it.
 6. Restart the system with a Boot Services cause set.
 7. System follows the normal Secure Boot path into the new firmware image.
