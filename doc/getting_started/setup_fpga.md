@@ -1,6 +1,8 @@
 ---
-title: "Getting Started on FPGAs"
+title: "FPGA Setup"
 ---
+
+_Before following this guide, make sure you've followed the [dependency installation and software build instructions]({{< relref "getting_started" >}})._
 
 Do you want to try out OpenTitan, but don't have a couple thousand or million dollars ready for an ASIC tapeout?
 Running OpenTitan on an FPGA board can be the answer!

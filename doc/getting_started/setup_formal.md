@@ -1,6 +1,8 @@
 ---
-title: "Getting Started with Formal Verification"
+title: "Formal Verification Setup"
 ---
+
+_Before following this guide, make sure you've followed the [dependency installation and software build instructions]({{< relref "getting_started" >}})._
 
 This document aims to enable a contributor to get started with a formal verification effort within the OpenTitan project.
 While most of the focus is on development of a testbench from scratch, it should also be useful to understand how to contribute to an existing effort.
