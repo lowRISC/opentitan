@@ -64,7 +64,7 @@ module sysrst_ctrl_keyintr
       // This detects a positive edge
       .EventType(EdgeToHigh),
       .Sticky(0)
-    ) u_sysrst_ctrl_detect_lid_open_l2h (
+    ) u_sysrst_ctrl_detect_l2h (
       .clk_i,
       .rst_ni,
       .trigger_i             (triggers[k]),
@@ -83,7 +83,7 @@ module sysrst_ctrl_keyintr
       // This detects a positive edge
       .EventType(EdgeToLow),
       .Sticky(0)
-    ) u_sysrst_ctrl_detect_lid_open_h2l (
+    ) u_sysrst_ctrl_detect_h2l (
       .clk_i,
       .rst_ni,
       .trigger_i             (triggers[k]),
