@@ -2,17 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-//  name: host_controller_arb
-//  desc: '''
-//        Perform operations via the Flash Software Interface, and at the same time invoke a
-//        Hardware RMA operation. This verifies the arbitration within the Flash Protocol
-//        Controller. The arbiter should allow any outstanding Software operations to complete
-//        before the RMA starts. When the RMA completes the RMA FSM remains in its final state
-//        until Reset and software access is blocked.
-//        '''
-//  milestone: V2
-//  tests: ["flash_ctrl_host_ctrl_arb"]
-
 // flash_ctrl_host_ctrl_arb Test
 
 // Pseudo Code
@@ -33,21 +22,17 @@
 //   Repeat
 // }
 
-import lc_ctrl_pkg::*;
-
 class flash_ctrl_host_ctrl_arb_vseq extends flash_ctrl_base_vseq;
   `uvm_object_utils(flash_ctrl_host_ctrl_arb_vseq)
 
   `uvm_object_new
 
   // Class Members
-  bit           poll_fifo_status = 0;  // Turn off to make access more atomic
+  bit           poll_fifo_status = 0;
   rand data_q_t flash_op_data;
 
   rand flash_op_t flash_op;
   rand uint       bank;
-
-  // Class Constraints
 
   // Constraint for Bank.
   constraint bank_c {
@@ -85,8 +70,9 @@ class flash_ctrl_host_ctrl_arb_vseq extends flash_ctrl_base_vseq;
         flash_op.op == flash_ctrl_pkg::FlashOpRead;
     }
 
-    flash_op.op inside {[flash_ctrl_pkg::FlashOpRead : flash_ctrl_pkg::FlashOpErase]};
-    (flash_op.op == flash_ctrl_pkg::FlashOpErase) ->
+    flash_op.op inside {flash_ctrl_pkg::FlashOpRead, flash_ctrl_pkg::FlashOpProgram,
+                        flash_ctrl_pkg::FlashOpErase};
+
     flash_op.erase_type dist {
       flash_ctrl_pkg::FlashErasePage :/ (100 - cfg.seq_cfg.op_erase_type_bank_pc),
       flash_ctrl_pkg::FlashEraseBank :/ cfg.seq_cfg.op_erase_type_bank_pc
@@ -172,16 +158,12 @@ class flash_ctrl_host_ctrl_arb_vseq extends flash_ctrl_base_vseq;
     }
   }
 
-  rand bit default_region_read_en;
-  rand bit default_region_program_en;
-  rand bit default_region_erase_en;
-  bit      default_region_scramble_en;
+  bit default_region_read_en;
+  bit default_region_program_en;
+  bit default_region_erase_en;
+  bit default_region_scramble_en;
   rand bit default_region_he_en;
   rand bit default_region_ecc_en;
-
-  constraint default_region_read_en_c    {default_region_read_en    == 1;}
-  constraint default_region_program_en_c {default_region_program_en == 1;}
-  constraint default_region_erase_en_c   {default_region_erase_en   == 1;}
 
   // Bank Erasability.
   rand bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en;
@@ -384,7 +366,10 @@ class flash_ctrl_host_ctrl_arb_vseq extends flash_ctrl_base_vseq;
   // Task to initialize the Flash Access (Enable All Regions)
   virtual task init_flash_regions();
 
-    // Scramble Disable
+    // Default Region Settings
+    default_region_read_en     = 1;
+    default_region_program_en  = 1;
+    default_region_erase_en    = 1;
     default_region_scramble_en = 0;
 
     // Enable Bank Erase
