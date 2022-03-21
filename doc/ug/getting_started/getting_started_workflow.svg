@@ -1,175 +1,743 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns:xl="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="63 184 468 472" width="468" height="472">
-  <defs>
-    <font-face font-family="Helvetica Neue" font-size="16" panose-1="2 0 5 3 0 0 0 2 0 4" units-per-em="1000" underline-position="-100" underline-thickness="50" slope="0" x-height="517" cap-height="714" ascent="951.9958" descent="-212.99744" font-weight="400">
+<svg
+   version="1.1"
+   viewBox="63 184 468 472"
+   width="468"
+   height="472"
+   id="svg195"
+   sodipodi:docname="getting_started_workflow.svg"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview197"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="1.6970339"
+     inkscape:cx="238.35705"
+     inkscape:cy="183.26092"
+     inkscape:window-width="1920"
+     inkscape:window-height="979"
+     inkscape:window-x="0"
+     inkscape:window-y="32"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="Graphic_16" />
+  <defs
+     id="defs13">
+    <font-face
+       font-family="Helvetica Neue"
+       font-size="16"
+       panose-1="2 0 5 3 0 0 0 2 0 4"
+       units-per-em="1000"
+       underline-position="-100"
+       underline-thickness="50"
+       slope="0"
+       x-height="517"
+       cap-height="714"
+       ascent="951.9958"
+       descent="-212.99744"
+       font-weight="400"
+       id="font-face2">
       <font-face-src>
-        <font-face-name name="HelveticaNeue"/>
+        <font-face-name
+           name="HelveticaNeue" />
       </font-face-src>
     </font-face>
-    <font-face font-family="Helvetica Neue" font-size="12" panose-1="2 0 5 3 0 0 0 2 0 4" units-per-em="1000" underline-position="-100" underline-thickness="50" slope="0" x-height="517" cap-height="714" ascent="951.9958" descent="-212.99744" font-weight="400">
+    <font-face
+       font-family="Helvetica Neue"
+       font-size="12"
+       panose-1="2 0 5 3 0 0 0 2 0 4"
+       units-per-em="1000"
+       underline-position="-100"
+       underline-thickness="50"
+       slope="0"
+       x-height="517"
+       cap-height="714"
+       ascent="951.9958"
+       descent="-212.99744"
+       font-weight="400"
+       id="font-face4">
       <font-face-src>
-        <font-face-name name="HelveticaNeue"/>
+        <font-face-name
+           name="HelveticaNeue" />
       </font-face-src>
     </font-face>
-    <marker orient="auto" overflow="visible" markerUnits="strokeWidth" id="FilledArrow_Marker" stroke-linejoin="miter" stroke-miterlimit="10" viewBox="-1 -3 7 6" markerWidth="7" markerHeight="6" color="black">
-      <g>
-        <path d="M 4.8 0 L 0 -1.8 L 0 1.8 Z" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+    <marker
+       orient="auto"
+       overflow="visible"
+       markerUnits="strokeWidth"
+       id="FilledArrow_Marker"
+       stroke-linejoin="miter"
+       stroke-miterlimit="10"
+       viewBox="-1 -3 7 6"
+       markerWidth="7"
+       markerHeight="6"
+       color="black">
+      <g
+         id="g8">
+        <path
+           d="M 4.8 0 L 0 -1.8 L 0 1.8 Z"
+           fill="currentColor"
+           stroke="currentColor"
+           stroke-width="1"
+           id="path6" />
       </g>
     </marker>
-    <font-face font-family="Helvetica Neue" font-size="18" panose-1="2 0 5 3 0 0 0 2 0 4" units-per-em="1000" underline-position="-100" underline-thickness="50" slope="0" x-height="517" cap-height="714" ascent="951.9958" descent="-212.99744" font-weight="400">
+    <font-face
+       font-family="Helvetica Neue"
+       font-size="18"
+       panose-1="2 0 5 3 0 0 0 2 0 4"
+       units-per-em="1000"
+       underline-position="-100"
+       underline-thickness="50"
+       slope="0"
+       x-height="517"
+       cap-height="714"
+       ascent="951.9958"
+       descent="-212.99744"
+       font-weight="400"
+       id="font-face11">
       <font-face-src>
-        <font-face-name name="HelveticaNeue"/>
+        <font-face-name
+           name="HelveticaNeue" />
       </font-face-src>
     </font-face>
   </defs>
-  <metadata> Produced by OmniGraffle 7.18.5\n2021-07-14 00:17:50 +0000</metadata>
-  <g id="Canvas_1" stroke="none" stroke-opacity="1" stroke-dasharray="none" fill="none" fill-opacity="1">
-    <title>Canvas 1</title>
-    <rect fill="white" x="63" y="184" width="468" height="472"/>
-    <g id="Canvas_1_Layer_1">
-      <title>Layer 1</title>
-      <g id="Graphic_44">
-        <rect x="64.2" y="184.8" width="465.8" height="469.8" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+  <metadata
+     id="metadata15"> Produced by OmniGraffle 7.18.5\n2021-07-14 00:17:50 +0000</metadata>
+  <g
+     id="Canvas_1"
+     stroke="none"
+     stroke-opacity="1"
+     stroke-dasharray="none"
+     fill="none"
+     fill-opacity="1">
+    <title
+       id="title17">Canvas 1</title>
+    <rect
+       fill="white"
+       x="63"
+       y="184"
+       width="468"
+       height="472"
+       id="rect19" />
+    <g
+       id="Canvas_1_Layer_1">
+      <title
+         id="title21">Layer 1</title>
+      <g
+         id="Graphic_44">
+        <rect
+           x="64.2"
+           y="184.8"
+           width="465.8"
+           height="469.8"
+           stroke="black"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           stroke-width="1"
+           id="rect23" />
       </g>
-      <g id="Graphic_43">
-        <path d="M 229.56 285 L 367.56 285 L 367.56 605.9512 L 229.56 605.9512 Z" stroke="#310067" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2.0,2.0" stroke-width=".5"/>
+      <g
+         id="Graphic_43"
+         transform="matrix(1,0,0,0.7732852,0,137.3781)">
+        <path
+           d="m 229.56,285 h 138 v 320.9512 h -138 z"
+           stroke="#310067"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           stroke-dasharray="2, 2"
+           stroke-width="0.5"
+           id="path26" />
       </g>
-      <g id="Line_39">
-        <line x1="298.5" y1="269" x2="298.5" y2="294.5" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      <g
+         id="Line_39">
+        <line
+           x1="298.5"
+           y1="269"
+           x2="298.5"
+           y2="294.5"
+           stroke="black"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           stroke-width="2"
+           id="line29" />
       </g>
-      <g id="Line_38">
-        <line x1="247.25826" y1="271.252" x2="199.55174" y2="294.5" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      <g
+         id="Graphic_22">
+        <path
+           d="m 79.25,356.91469 h 138 V 605.9512 h -138 z"
+           stroke="#310067"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           stroke-dasharray="2, 2"
+           stroke-width="0.440435"
+           id="path35" />
       </g>
-      <g id="Graphic_22">
-        <path d="M 79.25 285 L 217.25 285 L 217.25 605.9512 L 79.25 605.9512 Z" stroke="#310067" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2.0,2.0" stroke-width=".5"/>
+      <g
+         id="Graphic_23"
+         transform="matrix(1,0,0,0.77302454,0,137.44798)">
+        <path
+           d="m 379.87,285.388 h 138 v 320.1752 h -138 z"
+           stroke="#310067"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           stroke-dasharray="2, 2"
+           stroke-width="0.5"
+           id="path38" />
       </g>
-      <g id="Graphic_23">
-        <path d="M 379.87 285.388 L 517.87 285.388 L 517.87 605.5632 L 379.87 605.5632 Z" stroke="#310067" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2.0,2.0" stroke-width=".5"/>
+      <g
+         id="Graphic_3">
+        <rect
+           x="184.144"
+           y="221.252"
+           width="228.832"
+           height="50"
+           fill="#cbbcff"
+           id="rect41" />
+        <rect
+           x="184.144"
+           y="221.252"
+           width="228.832"
+           height="50"
+           stroke="black"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           stroke-width="1"
+           id="rect43" />
+        <text
+           transform="translate(189.144 229.86)"
+           fill="black"
+           id="text49"><tspan
+             font-family="Helvetica Neue"
+             font-size="16"
+             font-weight="400"
+             fill="black"
+             x="71.032"
+             y="15"
+             id="tspan45">Setup Env. </tspan><tspan
+             font-family="Helvetica Neue"
+             font-size="12"
+             font-weight="400"
+             fill="black"
+             x="86.634"
+             y="29.447998"
+             id="tspan47">(Manual)</tspan></text>
       </g>
-      <g id="Graphic_3">
-        <rect x="184.144" y="221.252" width="228.832" height="50" fill="#cbbcff"/>
-        <rect x="184.144" y="221.252" width="228.832" height="50" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
-        <text transform="translate(189.144 229.86)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="71.032" y="15">Setup Env. </tspan>
-          <tspan font-family="Helvetica Neue" font-size="12" font-weight="400" fill="black" x="86.634" y="29.447998">(Manual)</tspan>
-        </text>
+      <g
+         id="Graphic_6">
+        <rect
+           x="89"
+           y="521"
+           width="118.5"
+           height="50"
+           fill="#cbbbff"
+           id="rect63" />
+        <rect
+           x="89"
+           y="521"
+           width="118.5"
+           height="50"
+           stroke="black"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           stroke-width="1"
+           id="rect65" />
+        <text
+           transform="translate(94 529.608)"
+           fill="black"
+           id="text71"><tspan
+             font-family="Helvetica Neue"
+             font-size="16"
+             font-weight="400"
+             fill="black"
+             x="23.13"
+             y="15"
+             id="tspan67">Simulate</tspan><tspan
+             font-family="Helvetica Neue"
+             font-size="12"
+             font-weight="400"
+             fill="black"
+             x="29.368"
+             y="29.447998"
+             id="tspan69">(Verilator)</tspan></text>
       </g>
-      <g id="Graphic_4">
-        <rect x="389.5" y="294.5" width="118.5" height="50" fill="white"/>
-        <rect x="389.5" y="294.5" width="118.5" height="50" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
-        <text transform="translate(394.5 303.108)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="20.618" y="15">Build HW </tspan>
-          <tspan font-family="Helvetica Neue" font-size="12" font-weight="400" fill="black" x="43.252" y="29.447998">(DV)</tspan>
-        </text>
+      <g
+         id="Graphic_7">
+        <rect
+           x="389"
+           y="521"
+           width="118.5"
+           height="50"
+           fill="white"
+           id="rect74" />
+        <rect
+           x="389"
+           y="521"
+           width="118.5"
+           height="50"
+           stroke="black"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           stroke-width="1"
+           id="rect76" />
+        <text
+           transform="translate(394 529.608)"
+           fill="black"
+           id="text82"><tspan
+             font-family="Helvetica Neue"
+             font-size="16"
+             font-weight="400"
+             fill="black"
+             x="23.13"
+             y="15"
+             id="tspan78">Simulate</tspan><tspan
+             font-family="Helvetica Neue"
+             font-size="12"
+             font-weight="400"
+             fill="black"
+             x="11.362"
+             y="29.447998"
+             id="tspan80">(Synopsys VCS)</tspan></text>
       </g>
-      <g id="Graphic_6">
-        <rect x="89" y="521" width="118.5" height="50" fill="#cbbbff"/>
-        <rect x="89" y="521" width="118.5" height="50" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
-        <text transform="translate(94 529.608)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="23.13" y="15">Simulate</tspan>
-          <tspan font-family="Helvetica Neue" font-size="12" font-weight="400" fill="black" x="29.368" y="29.447998">(Verilator)</tspan>
-        </text>
+      <g
+         id="Graphic_11">
+        <rect
+           x="89"
+           y="221.252"
+           width="88.24199"
+           height="50"
+           fill="#feffff"
+           id="rect107" />
+        <rect
+           x="89"
+           y="221.252"
+           width="88.24199"
+           height="50"
+           stroke="black"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           stroke-width="1"
+           id="rect109" />
+        <text
+           transform="translate(94 229.86)"
+           fill="black"
+           id="text115"><tspan
+             font-family="Helvetica Neue"
+             font-size="16"
+             font-weight="400"
+             fill="black"
+             x=".7369984"
+             y="15"
+             id="tspan111">Setup Env. </tspan><tspan
+             font-family="Helvetica Neue"
+             font-size="12"
+             font-weight="400"
+             fill="black"
+             x="9.900998"
+             y="29.447998"
+             id="tspan113">(Container)</tspan></text>
       </g>
-      <g id="Graphic_7">
-        <rect x="389" y="521" width="118.5" height="50" fill="white"/>
-        <rect x="389" y="521" width="118.5" height="50" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
-        <text transform="translate(394 529.608)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="23.13" y="15">Simulate</tspan>
-          <tspan font-family="Helvetica Neue" font-size="12" font-weight="400" fill="black" x="11.362" y="29.447998">(Synopsys VCS)</tspan>
-        </text>
+      <g
+         id="Graphic_13">
+        <rect
+           x="239.25"
+           y="445.5"
+           width="118.5"
+           height="50"
+           fill="white"
+           id="rect118" />
+        <rect
+           x="239.25"
+           y="445.5"
+           width="118.5"
+           height="50"
+           stroke="black"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           stroke-width="1"
+           id="rect120" />
+        <text
+           fill="#000000"
+           id="text124"
+           x="304.31348"
+           y="449.276"
+           style="text-align:center;text-anchor:middle"><tspan
+             sodipodi:role="line"
+             id="tspan22151"
+             x="297.604"
+             y="470.11975"><tspan
+               font-family="'Helvetica Neue'"
+               font-size="16px"
+               font-weight="400"
+               fill="#000000"
+               x="297.604"
+               y="464.276"
+               id="tspan122"
+               style="text-align:center;text-anchor:middle">Flash</tspan></tspan><tspan
+             sodipodi:role="line"
+             id="tspan22153"
+             x="297.604"
+             y="488.65881"
+             style="font-size:16px">Bitstream</tspan></text>
       </g>
-      <g id="Graphic_9">
-        <rect x="239.25" y="294.5" width="118.5" height="50" fill="white"/>
-        <rect x="239.25" y="294.5" width="118.5" height="50" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
-        <text transform="translate(244.25 303.108)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="20.618" y="15">Build HW </tspan>
-          <tspan font-family="Helvetica Neue" font-size="12" font-weight="400" fill="black" x="35.368" y="29.447998">(FPGA)</tspan>
-        </text>
+      <g
+         id="Graphic_16">
+        <rect
+           x="238.75"
+           y="521"
+           width="118.5"
+           height="50"
+           fill="white"
+           id="rect127" />
+        <rect
+           x="238.75"
+           y="521"
+           width="118.5"
+           height="50"
+           stroke="black"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           stroke-width="1"
+           id="rect129" />
+        <text
+           fill="#000000"
+           id="text133"
+           x="376.16394"
+           y="524.03253"><tspan
+             sodipodi:role="line"
+             id="tspan40179"
+             x="296.87585"
+             y="544.87628"
+             style="text-align:center;text-anchor:middle"><tspan
+               font-family="'Helvetica Neue'"
+               font-size="16px"
+               font-weight="400"
+               fill="#000000"
+               x="296.87585"
+               y="539.03253"
+               id="tspan131"
+               style="text-align:center;text-anchor:middle">Reset and</tspan></tspan><tspan
+             sodipodi:role="line"
+             x="296.87585"
+             y="563.41534"
+             id="tspan43113"
+             style="font-size:16px;text-align:center;text-anchor:middle">Bootstrap SW</tspan></text>
       </g>
-      <g id="Graphic_10">
-        <rect x="89" y="294.5" width="118.5" height="50" fill="#cbbbff"/>
-        <rect x="89" y="294.5" width="118.5" height="50" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
-        <text transform="translate(94 303.108)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="20.618" y="15">Build HW</tspan>
-          <tspan font-family="Helvetica Neue" font-size="12" font-weight="400" fill="black" x="29.368" y="29.447998">(Verilator)</tspan>
-        </text>
+      <g
+         id="Graphic_18">
+        <text
+           transform="translate(468.218 586.6152)"
+           fill="black"
+           id="text138"><tspan
+             font-family="Helvetica Neue"
+             font-size="12"
+             font-weight="400"
+             fill="black"
+             x="0"
+             y="11"
+             id="tspan136">DV Flow</tspan></text>
       </g>
-      <g id="Graphic_11">
-        <rect x="89" y="221.252" width="88.24199" height="50" fill="#feffff"/>
-        <rect x="89" y="221.252" width="88.24199" height="50" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
-        <text transform="translate(94 229.86)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x=".7369984" y="15">Setup Env. </tspan>
-          <tspan font-family="Helvetica Neue" font-size="12" font-weight="400" fill="black" x="9.900998" y="29.447998">(Container)</tspan>
-        </text>
+      <g
+         id="Graphic_19">
+        <text
+           transform="translate(139.83 586.2272)"
+           fill="black"
+           id="text143"><tspan
+             font-family="Helvetica Neue"
+             font-size="12"
+             font-weight="400"
+             fill="black"
+             x="0"
+             y="11"
+             id="tspan141">Verilator Flow</tspan></text>
       </g>
-      <g id="Graphic_13">
-        <rect x="239.25" y="445.5" width="118.5" height="50" fill="white"/>
-        <rect x="239.25" y="445.5" width="118.5" height="50" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
-        <text transform="translate(244.25 461.276)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="21.354" y="15">Load SW</tspan>
-        </text>
+      <g
+         id="Graphic_20">
+        <text
+           transform="translate(302.08 586.2272)"
+           fill="black"
+           id="text148"><tspan
+             font-family="Helvetica Neue"
+             font-size="12"
+             font-weight="400"
+             fill="black"
+             x="0"
+             y="11"
+             id="tspan146">FPGA Flow</tspan></text>
       </g>
-      <g id="Graphic_16">
-        <rect x="238.75" y="521" width="118.5" height="50" fill="white"/>
-        <rect x="238.75" y="521" width="118.5" height="50" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
-        <text transform="translate(243.75 536.776)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="39.874" y="15">Run</tspan>
-        </text>
+      <g
+         id="Graphic_24">
+        <text
+           transform="translate(206.689 620.7903)"
+           fill="black"
+           id="text153"><tspan
+             font-family="Helvetica Neue"
+             font-size="16"
+             font-weight="400"
+             fill="black"
+             x="0"
+             y="15"
+             id="tspan151">= recommended for new users</tspan></text>
       </g>
-      <g id="Graphic_18">
-        <text transform="translate(468.218 586.6152)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="12" font-weight="400" fill="black" x="0" y="11">DV Flow</tspan>
-        </text>
+      <g
+         id="Graphic_25">
+        <rect
+           x="165.479"
+           y="615.7903"
+           width="28"
+           height="28.447998"
+           fill="#cbf"
+           id="rect156" />
+        <rect
+           x="165.479"
+           y="615.7903"
+           width="28"
+           height="28.447998"
+           stroke="black"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           stroke-width="1"
+           id="rect158" />
       </g>
-      <g id="Graphic_19">
-        <text transform="translate(139.83 586.2272)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="12" font-weight="400" fill="black" x="0" y="11">Verilator Flow</tspan>
-        </text>
+      <g
+         id="Line_32">
+        <line
+           x1="148.25"
+           y1="344.5"
+           x2="148.25"
+           y2="508.1"
+           marker-end="url(#FilledArrow_Marker)"
+           stroke="black"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           stroke-width="2"
+           id="line161" />
       </g>
-      <g id="Graphic_20">
-        <text transform="translate(302.08 586.2272)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="12" font-weight="400" fill="black" x="0" y="11">FPGA Flow</tspan>
-        </text>
+      <g
+         id="Line_33">
+        <line
+           x1="298.5"
+           y1="344.5"
+           x2="298.5"
+           y2="445.5"
+           stroke="black"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           stroke-width="2"
+           id="line164" />
       </g>
-      <g id="Graphic_24">
-        <text transform="translate(206.689 620.7903)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="0" y="15">= recommended for new users</tspan>
-        </text>
+      <g
+         id="Line_34">
+        <line
+           x1="298.33444"
+           y1="495.5"
+           x2="298.251"
+           y2="508.1003"
+           marker-end="url(#FilledArrow_Marker)"
+           stroke="black"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           stroke-width="2"
+           id="line167" />
       </g>
-      <g id="Graphic_25">
-        <rect x="165.479" y="615.7903" width="28" height="28.447998" fill="#cbf"/>
-        <rect x="165.479" y="615.7903" width="28" height="28.447998" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      <g
+         id="Line_35">
+        <line
+           x1="448.6948"
+           y1="344.5"
+           x2="448.33366"
+           y2="508.10003"
+           marker-end="url(#FilledArrow_Marker)"
+           stroke="black"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           stroke-width="2"
+           id="line170" />
       </g>
-      <g id="Line_32">
-        <line x1="148.25" y1="344.5" x2="148.25" y2="508.1" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      <g
+         id="Line_37">
+        <line
+           x1="138.28462"
+           y1="271.252"
+           x2="143.08638"
+           y2="294.5"
+           stroke="black"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           stroke-dasharray="4.0,4.0"
+           stroke-width="2"
+           id="line173" />
       </g>
-      <g id="Line_33">
-        <line x1="298.5" y1="344.5" x2="298.5" y2="445.5" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      <g
+         id="Graphic_42">
+        <text
+           transform="translate(170.479 189.8)"
+           fill="black"
+           id="text181"><tspan
+             font-family="Helvetica Neue"
+             font-size="18"
+             font-weight="400"
+             fill="black"
+             x="2.502"
+             y="17"
+             id="tspan179">Getting Started with OpenTitan </tspan></text>
       </g>
-      <g id="Line_34">
-        <line x1="298.33444" y1="495.5" x2="298.251" y2="508.1003" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      <g
+         id="Graphic_5"
+         transform="translate(0,-74)">
+        <rect
+           x="89"
+           y="370"
+           width="419"
+           height="50"
+           fill="#ccbbff"
+           id="rect184" />
+        <rect
+           x="89"
+           y="370"
+           width="419"
+           height="50"
+           stroke="#000000"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           stroke-width="1"
+           id="rect186" />
+        <text
+           transform="translate(94,385.776)"
+           fill="#000000"
+           id="text190"><tspan
+             font-family="'Helvetica Neue'"
+             font-size="16px"
+             font-weight="400"
+             fill="#000000"
+             x="171.46001"
+             y="15"
+             id="tspan188">Build SW</tspan></text>
       </g>
-      <g id="Line_35">
-        <line x1="448.6948" y1="344.5" x2="448.33366" y2="508.10003" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      <g
+         id="Graphic_9"
+         transform="translate(0,76)">
+        <rect
+           x="239.25"
+           y="294.5"
+           width="118.5"
+           height="50"
+           fill="#ffffff"
+           id="rect85" />
+        <rect
+           x="239.25"
+           y="294.5"
+           width="118.5"
+           height="50"
+           stroke="#000000"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           stroke-width="1"
+           id="rect87" />
+        <text
+           transform="translate(244.25,303.108)"
+           fill="#000000"
+           id="text93"><tspan
+             font-family="'Helvetica Neue'"
+             font-size="16px"
+             font-weight="400"
+             fill="#000000"
+             x="20.618"
+             y="15"
+             id="tspan89">Build HW</tspan><tspan
+             font-family="'Helvetica Neue'"
+             font-size="12px"
+             font-weight="400"
+             fill="#000000"
+             x="35.368"
+             y="29.447998"
+             id="tspan91">(FPGA)</tspan></text>
       </g>
-      <g id="Line_37">
-        <line x1="138.28462" y1="271.252" x2="143.08638" y2="294.5" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4.0,4.0" stroke-width="2"/>
+      <g
+         id="Graphic_10"
+         transform="translate(0,76)">
+        <rect
+           x="89"
+           y="294.5"
+           width="118.5"
+           height="50"
+           fill="#cbbbff"
+           id="rect96" />
+        <rect
+           x="89"
+           y="294.5"
+           width="118.5"
+           height="50"
+           stroke="#000000"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           stroke-width="1"
+           id="rect98" />
+        <text
+           transform="translate(94,303.108)"
+           fill="#000000"
+           id="text104"><tspan
+             font-family="'Helvetica Neue'"
+             font-size="16px"
+             font-weight="400"
+             fill="#000000"
+             x="20.618"
+             y="15"
+             id="tspan100">Build HW</tspan><tspan
+             font-family="'Helvetica Neue'"
+             font-size="12px"
+             font-weight="400"
+             fill="#000000"
+             x="29.368"
+             y="29.447998"
+             id="tspan102">(Verilator)</tspan></text>
       </g>
-      <g id="Line_41">
-        <line x1="349.8208" y1="271.252" x2="397.4892" y2="294.5" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-      </g>
-      <g id="Graphic_42">
-        <text transform="translate(170.479 189.8)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="18" font-weight="400" fill="black" x="2.502" y="17">Getting Started with OpenTitan </tspan>
-        </text>
-      </g>
-      <g id="Graphic_5">
-        <rect x="89" y="370" width="419" height="50" fill="#cbf"/>
-        <rect x="89" y="370" width="419" height="50" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
-        <text transform="translate(94 385.776)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="171.46" y="15">Build SW</tspan>
-        </text>
+      <g
+         id="Graphic_4"
+         transform="translate(0,76)">
+        <rect
+           x="389.5"
+           y="294.5"
+           width="118.5"
+           height="50"
+           fill="#ffffff"
+           id="rect52" />
+        <rect
+           x="389.5"
+           y="294.5"
+           width="118.5"
+           height="50"
+           stroke="#000000"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           stroke-width="1"
+           id="rect54" />
+        <text
+           transform="translate(394.5,303.108)"
+           fill="#000000"
+           id="text60"><tspan
+             font-family="'Helvetica Neue'"
+             font-size="16px"
+             font-weight="400"
+             fill="#000000"
+             x="20.618"
+             y="15"
+             id="tspan56">Build HW</tspan><tspan
+             font-family="'Helvetica Neue'"
+             font-size="12px"
+             font-weight="400"
+             fill="#000000"
+             x="43.251999"
+             y="29.447998"
+             id="tspan58">(DV)</tspan></text>
       </g>
     </g>
   </g>
