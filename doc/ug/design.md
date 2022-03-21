@@ -72,7 +72,7 @@ Running lint is faster than running a simulation.
 
 ### Semantic Linting using Verilator (Open Source)
 
-The Verilator tool is open source, thus enabling all project contributors to conveniently download, install and run the tool locally as described [in the installation instructions]({{< relref "doc/ug/install_instructions/index.md#verilator" >}}), without the need for buying a lint tool license.
+The Verilator tool is open source, thus enabling all project contributors to conveniently download, install and run the tool locally as described [in the installation instructions]({{< relref "doc/getting_started/setup_verilator" >}}), without the need for buying a lint tool license.
 
 For developers of design IP, the recommendation is thus to set up the Verilator lint flow for their IP as described in the [Lint Flow README]({{< relref "hw/lint/doc/README.md" >}}).
 Developers should run their code through the Verilator lint tool before creating a design pull request.
@@ -86,7 +86,7 @@ Note that a pull request cannot be merged if it is not lint-clean, since the con
 To complement the Verilator lint explained above, we also leverage the Verible style linter, which captures different aspects of the code and detects style elements that are in violation of our [Verilog Style Guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md).
 
 The tool is open source and freely available on the [Verible GitHub page](https://github.com/google/verible/).
-Hence, we recommend IP designers install the tool as described [here]({{< relref "doc/ug/install_instructions/index.md#verible" >}}) and in the [Lint Flow README]({{< relref "hw/lint/doc/README.md" >}}), and use the flow locally to close the errors and warnings.
+Hence, we recommend IP designers install the tool as described [here]({{< relref "doc/getting_started#step-6a-install-verible-optional" >}}) and in the [Lint Flow README]({{< relref "hw/lint/doc/README.md" >}}), and use the flow locally to close the errors and warnings.
 
 Developers should run their code through the Verible style lint tool before creating a design pull request.
 Linting errors and warnings can be closed by fixing the code in question (preferred), or waiving the error.
@@ -205,7 +205,7 @@ Note that this formatter is still under development and not entirely production 
 However, the tool is mature enough for manual use on individual files (i.e., certain edits may have to be manually amended after using it).
 
 The tool is open source and freely available on the [Verible GitHub page](https://github.com/google/verible/).
-Hence, we encourage IP designers to install the tool as described [here]({{< relref "doc/ug/install_instructions/index.md#verible" >}}), and run their code through the formatter tool before creating a design pull request.
+Hence, we encourage IP designers to install the tool as described [here]({{< relref "doc/getting_started#step-6a-install-verible-optional" >}}), and run their code through the formatter tool before creating a design pull request.
 
 The tool can be invoked on specific SystemVerilog files with the following command:
 ```shell
@@ -220,7 +220,7 @@ The tool performs an equivalency check before emitting the reformatted code to e
 ## Getting Started Designing Hardware
 
 The process for getting started with a design involves many steps, including getting clarity on its purpose, its feature set, authorship, documentation, etc.
-These are discussed in the [Getting Started Designing Hardware]({{< relref "getting_started_hw_design.md" >}}) document.
+These are discussed in the [Getting Started Designing Hardware]({{< relref "hw_design.md" >}}) document.
 
 ## FPGA vs Silicon
 

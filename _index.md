@@ -9,7 +9,7 @@ This repository exists to enable collaboration across partners participating in 
 
 ## Getting Started
 
-To get started with OpenTitan, see the [Getting Started]({{< relref "doc/ug/getting_started" >}}) page.
+To get started with OpenTitan, see the [Getting Started]({{< relref "doc/getting_started" >}}) page.
 For additional resources when working with OpenTitan, see the [list of user guides]({{< relref "doc/ug" >}}).
 For details on coding styles or how to use our project-specific tooling, see the [reference manuals]({{< relref "doc/rm" >}}).
 Lastly, the [Hardware Dashboard page]({{< relref "hw" >}}) contains technical documentation on the SoC, the Ibex processor core, and the individual IP blocks.

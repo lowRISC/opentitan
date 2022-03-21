@@ -11,10 +11,6 @@ It translates synthesizable Verilog code into a simulation program in C++, which
 
 <!-- TODO: Switch all calls to fusesoc and the Verilated system to refer to Meson, once it supports fusesoc. -->
 
-## Prerequisites
-
-_Make sure you followed the install instructions to [prepare the system]({{< relref "install_instructions#system-preparation" >}}) and to install the [software development tools]({{< relref "doc/ug/install_instructions#software-development" >}}) and [Verilator]({{< relref "install_instructions#verilator" >}})._
-
 ### Install Verilator
 
 Even though Verilator is packaged for most Linux distributions these versions tend to be too old to be usable.
@@ -150,7 +146,7 @@ $ build/lowrisc_dv_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb \
   +UARTDPI_LOG_uart0=-
 ```
 
-For most use cases, interacting with the UART is all you will need.
+**For most use cases, interacting with the UART is all you will need and you can stop here.**
 However, if you want to interact with the simulation in additional ways, there are more options listed below.
 
 ## Interact with GPIO (optional)

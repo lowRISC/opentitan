@@ -12,10 +12,6 @@ Before Hugo is executed a few project specific processing steps are necessary.
 These steps require the installation of the dependencies outlined in the following section.
 All processing steps as well as the invocation to Hugo are combined in the script `util/build_docs.py`.
 
-### Prerequisites
-
-The documentation build requirements are covered in the [install instructions 'System preperation' section]({{< relref "install_instructions#system-preparation" >}}). You don't need to install the compiler or fpga tools for building documentation. 
-
 ### Running the server
 
 In order to run a local instance of the documentation server run the following command from the root of the project repository.

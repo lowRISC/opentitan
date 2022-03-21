@@ -12,7 +12,7 @@ $ ./meson_init.sh
 $ ninja -C build-out sw/device/examples/hello_world/hello_world_export_fpga_nexysvideo
 ```
 
-The resulting binaries will be located at `build-bin/sw/device/examples/hello_world`. For more information, check out [the relevant User Guide]({{< relref "../doc/ug/getting_started_build_sw.md" >}}).
+The resulting binaries will be located at `build-bin/sw/device/examples/hello_world`. For more information, check out [the Building Software guide]({{< relref "doc/getting_started/build_sw" >}}).
 
 The location of the RISC-V toolchain is /tools/riscv by default.
 If your toolchain is located elsewhere set the `TOOLCHAIN_PATH` to that path before running `meson_init.sh`
