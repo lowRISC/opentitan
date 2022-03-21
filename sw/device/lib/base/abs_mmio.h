@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/base/macros.h"
 
 #ifdef __cplusplus
 extern "C" {

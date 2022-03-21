@@ -30,6 +30,7 @@ cc_library(
     testonly = True,
     hdrs = [
         "mock_abs_mmio.h",
+        "mock_mmio_test_utils.h",
     ],
     defines = ["MOCK_ABS_MMIO"],
     deps = [

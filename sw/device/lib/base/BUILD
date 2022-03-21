@@ -144,7 +144,6 @@ cc_library(
     srcs = ["abs_mmio.c"],
     hdrs = ["abs_mmio.h"],
     deps = [
-        ":mmio",
         ":macros",
     ],
 )
