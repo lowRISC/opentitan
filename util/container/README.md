@@ -8,6 +8,7 @@ software development tools for OpenTitan, as listed in the
 
 Skip this step if planning to use the pre-built container. To build in local
 mode:
+<!-- TODO: Where can one find the pre-built container mentioned above? --->
 
 ```shell
 $ cd $REPO_TOP
