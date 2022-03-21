@@ -23,13 +23,13 @@ def args(p):
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf.h"
 #include "sw/device/lib/testing/test_framework/test_status.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_${top["name"]}/sw/autogen/top_${top["name"]}.h"
 
 % for p in helper.irq_peripherals:
 static dif_${p.name}_t ${p.inst_name};
 % endfor
 static dif_rv_plic_t plic;
-static const top_earlgrey_plic_target_t kHart = kTopEarlgreyPlicTargetIbex0;
+static const top_${top["name"]}_plic_target_t kHart = kTop${top["name"].capitalize()}PlicTargetIbex0;
 
 /**
  * Flag indicating which peripheral is under test.
@@ -37,7 +37,7 @@ static const top_earlgrey_plic_target_t kHart = kTopEarlgreyPlicTargetIbex0;
  * Declared volatile because it is referenced in the main program flow as well
  * as the ISR.
  */
-static volatile top_earlgrey_plic_peripheral_t peripheral_expected;
+static volatile top_${top["name"]}_plic_peripheral_t peripheral_expected;
 
 /**
  * Flags indicating the IRQ expected to have triggered and serviced within the
@@ -68,8 +68,8 @@ void ottf_external_isr(void) {
   dif_rv_plic_irq_id_t plic_irq_id;
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kHart, &plic_irq_id));
 
-  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
+  top_${top["name"]}_plic_peripheral_t peripheral = (top_${top["name"]}_plic_peripheral_t)
+      top_${top["name"]}_plic_interrupt_for_peripheral[plic_irq_id];
   CHECK(peripheral == peripheral_expected,
         "Interrupt from incorrect peripheral: exp = %d, obs = %d",
         peripheral_expected, peripheral);
@@ -117,7 +117,7 @@ static void peripherals_init(void) {
   CHECK_DIF_OK(dif_${p.name}_init(base_addr, &${p.inst_name}));
 
   % endfor
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_${top["name"].upper()}_RV_PLIC_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_plic_init(base_addr, &plic));
 }
 
@@ -213,7 +213,7 @@ bool test_main(void) {
   irq_external_ctrl(true);
   peripherals_init();
   rv_plic_testutils_irq_range_enable(
-      &plic, kHart, kTopEarlgreyPlicIrqIdNone + 1, kTopEarlgreyPlicIrqIdLast);
+      &plic, kHart, kTop${top["name"].capitalize()}PlicIrqIdNone + 1, kTop${top["name"].capitalize()}PlicIrqIdLast);
   peripheral_irqs_clear();
   peripheral_irqs_enable();
   peripheral_irqs_trigger();

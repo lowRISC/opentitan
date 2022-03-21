@@ -33,27 +33,27 @@ def escape_if_name(qual_if_name):
     return qual_if_name.replace('.', '__')
 
 %>\
-<%text>
-`define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name) \
-     force ``tl_name``_tl_if.d2h = dut.top_earlgrey.u_``inst_name``.``sig_name``_i; \
-     force dut.top_earlgrey.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.h2d; \
-     force dut.top_earlgrey.u_``inst_name``.clk_i = 0; \
-     uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", \
+
+## Need to use a variable assignment for "\" to bypass the newline filter.
+`define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name) ${"\\"}
+     force ``tl_name``_tl_if.d2h = dut.top_${top["name"]}.u_``inst_name``.``sig_name``_i; ${"\\"}
+     force dut.top_${top["name"]}.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.h2d; ${"\\"}
+     force dut.top_${top["name"]}.u_``inst_name``.clk_i = 0; ${"\\"}
+     uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", ${"\\"}
                                         ``tl_name``_tl_if);
 
-`define DRIVE_CHIP_TL_DEVICE_IF(tl_name, inst_name, sig_name) \
-     force ``tl_name``_tl_if.h2d = dut.top_earlgrey.u_``inst_name``.``sig_name``_i; \
-     force dut.top_earlgrey.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.d2h; \
-     force dut.top_earlgrey.u_``inst_name``.clk_i = 0; \
-     uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", \
+`define DRIVE_CHIP_TL_DEVICE_IF(tl_name, inst_name, sig_name) ${"\\"}
+     force ``tl_name``_tl_if.h2d = dut.top_${top["name"]}.u_``inst_name``.``sig_name``_i; ${"\\"}
+     force dut.top_${top["name"]}.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.d2h; ${"\\"}
+     force dut.top_${top["name"]}.u_``inst_name``.clk_i = 0; ${"\\"}
+     uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", ${"\\"}
                                         ``tl_name``_tl_if);
 
-`define DRIVE_CHIP_TL_EXT_DEVICE_IF(tl_name, port_name) \
-     force ``tl_name``_tl_if.h2d = dut.top_earlgrey.``port_name``_req_o; \
-     force dut.top_earlgrey.``port_name``_rsp_i = ``tl_name``_tl_if.d2h; \
-     uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", \
+`define DRIVE_CHIP_TL_EXT_DEVICE_IF(tl_name, port_name) ${"\\"}
+     force ``tl_name``_tl_if.h2d = dut.top_${top["name"]}.``port_name``_req_o; ${"\\"}
+     force dut.top_${top["name"]}.``port_name``_rsp_i = ``tl_name``_tl_if.d2h; ${"\\"}
+     uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", ${"\\"}
                                         ``tl_name``_tl_if);
-</%text>\
 
 % for c in clk_freq.keys():
 wire clk_${c};
