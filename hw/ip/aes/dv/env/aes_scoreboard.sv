@@ -264,8 +264,6 @@ class aes_scoreboard extends cip_base_scoreboard #(
           // DO nothing- trying to write to a read only register
         end
       endcase // case (1)
-    end // if (cfg.idle_vif)
-
 
 
       ///////////////////////////////////////
@@ -410,7 +408,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
         // is written
         input_item.split_item = 0;
       end
-
+    end
 
     //////////////////////////////////////////////////////////////////////////////
     // get an item from the rcv queue and wait for all output data to be received
