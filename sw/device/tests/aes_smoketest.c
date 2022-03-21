@@ -6,6 +6,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/aes_testutils.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf.h"
@@ -16,13 +17,16 @@
 // the Advanced Encryption Standard (AES) FIPS Publication 197 available at
 // https://www.nist.gov/publications/advanced-encryption-standard-aes
 
+#define TIMEOUT (1000 * 1000)
 #define KEY_LENGTH_IN_BYTES 32
 #define TEXT_LENGTH_IN_BYTES 16
 #define TEXT_LENGTH_IN_WORDS (TEXT_LENGTH_IN_BYTES / 4)
 
-static const uint8_t kPlainText[TEXT_LENGTH_IN_BYTES] = {
-    0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
-    0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff,
+static const uint32_t kPlainText[TEXT_LENGTH_IN_WORDS] = {
+    0x33221100,
+    0x77665544,
+    0xbbaa9988,
+    0xffeeddcc,
 };
 
 static const uint8_t kKey[KEY_LENGTH_IN_BYTES] = {
@@ -31,9 +35,11 @@ static const uint8_t kKey[KEY_LENGTH_IN_BYTES] = {
     0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
 };
 
-static const uint8_t kCipherTextGold[TEXT_LENGTH_IN_BYTES] = {
-    0x8e, 0xa2, 0xb7, 0xca, 0x51, 0x67, 0x45, 0xbf,
-    0xea, 0xfc, 0x49, 0x90, 0x4b, 0x49, 0x60, 0x89,
+static const uint32_t kCipherTextGold[TEXT_LENGTH_IN_WORDS] = {
+    0xcab7a28e,
+    0xbf456751,
+    0x9049fcea,
+    0x8960494b,
 };
 
 // The mask share, used to mask kKey. Note that the masking should not be done
@@ -46,20 +52,6 @@ static const uint8_t kKeyShare1[KEY_LENGTH_IN_BYTES] = {
 };
 
 const test_config_t kTestConfig;
-
-static bool aes_input_ready(const dif_aes_t *aes) {
-  bool status;
-  CHECK_DIF_OK(dif_aes_get_status(aes, kDifAesStatusInputReady, &status));
-
-  return status;
-}
-
-static bool aes_output_valid(const dif_aes_t *aes) {
-  bool status;
-  CHECK_DIF_OK(dif_aes_get_status(aes, kDifAesStatusOutputValid, &status));
-
-  return status;
-}
 
 bool test_main(void) {
   dif_aes_t aes;
@@ -100,55 +92,38 @@ bool test_main(void) {
   memcpy(&in_data_plain.data[0], &kPlainText[0], TEXT_LENGTH_IN_BYTES);
 
   // Load the plain text to trigger the encryption operation.
-  while (!aes_input_ready(&aes)) {
-  }
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusInputReady, true, TIMEOUT);
   CHECK_DIF_OK(dif_aes_load_data(&aes, in_data_plain));
 
   // Read out the produced cipher text.
   dif_aes_data_t out_data_cipher;
-  while (!aes_output_valid(&aes)) {
-  }
+
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusOutputValid, true, TIMEOUT);
+
   CHECK_DIF_OK(dif_aes_read_output(&aes, &out_data_cipher));
 
   // Finish the ECB encryption transaction.
   CHECK_DIF_OK(dif_aes_end(&aes));
 
-  // Check the produced cipher text against the reference.
-  uint32_t cipher_text_gold_words[TEXT_LENGTH_IN_WORDS];
-  memcpy(&cipher_text_gold_words[0], &kCipherTextGold[0], TEXT_LENGTH_IN_BYTES);
-  for (int i = 0; i < TEXT_LENGTH_IN_WORDS; ++i) {
-    CHECK(cipher_text_gold_words[i] == out_data_cipher.data[i],
-          "Encrypted cipher text mismatched: exp = %x, actual = %x",
-          cipher_text_gold_words[i], out_data_cipher.data[i]);
-  }
+  CHECK_BUFFER(out_data_cipher.data, kCipherTextGold, TEXT_LENGTH_IN_WORDS);
 
   // Setup ECB decryption transaction.
   transaction.operation = kDifAesOperationDecrypt;
   CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key, NULL));
 
   // Load the previously produced cipher text to start the decryption operation.
-  while (!aes_input_ready(&aes)) {
-  }
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusInputReady, true, TIMEOUT);
   CHECK_DIF_OK(dif_aes_load_data(&aes, out_data_cipher));
 
   // Read out the produced plain text.
-
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusOutputValid, true, TIMEOUT);
   dif_aes_data_t out_data_plain;
-  while (!aes_output_valid(&aes)) {
-  }
   CHECK_DIF_OK(dif_aes_read_output(&aes, &out_data_plain));
 
   // Finish the ECB encryption transaction.
   CHECK_DIF_OK(dif_aes_end(&aes));
 
-  // Check the produced plain text against the reference.
-  uint32_t plain_text_gold_words[TEXT_LENGTH_IN_WORDS];
-  memcpy(&plain_text_gold_words[0], &kPlainText[0], TEXT_LENGTH_IN_BYTES);
-  for (int i = 0; i < TEXT_LENGTH_IN_WORDS; ++i) {
-    CHECK(plain_text_gold_words[i] == out_data_plain.data[i],
-          "Decrypted text mismatched: exp = %x, actual = %x",
-          plain_text_gold_words[i], out_data_plain.data[i]);
-  }
+  CHECK_BUFFER(out_data_plain.data, kPlainText, TEXT_LENGTH_IN_WORDS);
 
   return true;
 }

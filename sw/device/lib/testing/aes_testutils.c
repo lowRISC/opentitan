@@ -9,5 +9,3 @@
 
 extern bool aes_testutils_get_status(dif_aes_t *aes, dif_aes_status_t flag);
 
-extern void aes_testutils_wait_for_status(dif_aes_t *aes, dif_aes_status_t flag,
-                                          bool value, uint32_t timeout_usec);
