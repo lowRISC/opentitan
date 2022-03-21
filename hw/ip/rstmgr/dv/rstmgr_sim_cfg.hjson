@@ -31,6 +31,7 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
                 // Disable until the stress_all sequence is created.
                 "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"
                 ]
@@ -51,7 +52,8 @@
   ]
 
   // Add additional tops for simulation.
-  sim_tops: ["rstmgr_bind"]
+  sim_tops: ["rstmgr_bind",
+             "sec_cm_prim_sparse_fsm_flop_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
@@ -81,6 +83,10 @@
     {
       name: rstmgr_sw_rst
       uvm_test_seq: rstmgr_sw_rst_vseq
+    }
+    {
+      name: rstmgr_sec_cm_scan_intersig_mubi
+      uvm_test_seq: rstmgr_sec_cm_scan_intersig_mubi_vseq
     }
     // TODO: add more tests here
   ]

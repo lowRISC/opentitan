@@ -24,6 +24,7 @@ package rstmgr_env_pkg;
   import alert_pkg::alert_crashdump_t;
   import rv_core_ibex_pkg::cpu_crash_dump_t;
 
+  import sec_cm_pkg::*;
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
