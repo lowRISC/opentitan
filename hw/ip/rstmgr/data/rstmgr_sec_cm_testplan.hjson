@@ -27,13 +27,13 @@
       name: sec_cm_bus_integrity
       desc: "Verify the countermeasure(s) BUS.INTEGRITY."
       milestone: V2S
-      tests: []
+      tests: ["rstmgr_tl_intg_err"]
     }
     {
       name: sec_cm_scan_intersig_mubi
       desc: "Verify the countermeasure(s) SCAN.INTERSIG.MUBI."
       milestone: V2S
-      tests: []
+      tests: ["rstmgr_sec_cm_scan_intersig_mubi"]
     }
     {
       name: sec_cm_leaf_rst_bkgn_chk
@@ -49,21 +49,33 @@
     }
     {
       name: sec_cm_leaf_fsm_sparse
-      desc: "Verify the countermeasure(s) LEAF.FSM.SPARSE."
+      desc: '''Verify the countermeasure(s) LEAF.FSM.SPARSE.
+
+            Force leaf rst check state to illegal value.
+            This is triggered by common cm primitives
+            '''
       milestone: V2S
-      tests: []
+      tests: ["rstmgr_sec_cm"]
     }
     {
       name: sec_cm_sw_rst_config_regwen
-      desc: "Verify the countermeasure(s) SW_RST.CONFIG.REGWEN."
+      desc: '''Verify the countermeasure(s) SW_RST.CONFIG.REGWEN.
+
+            RSTMGR.SW_RST_CTRL_N.
+            This is covered by auto csr test.
+            '''
       milestone: V2S
-      tests: []
+      tests: ["rstmgr_csr_rw"]
     }
     {
       name: sec_cm_dump_ctrl_config_regwen
-      desc: "Verify the countermeasure(s) DUMP_CTRL.CONFIG.REGWEN."
+      desc: '''Verify the countermeasure(s) DUMP_CTRL.CONFIG.REGWEN.
+
+            RSTMGR.ALERT_INFO_CTRL and RSTMGR.CPU_INFO_CTRL
+            This is covered by auto csr test.
+            '''
       milestone: V2S
-      tests: []
+      tests: ["rstmgr_csr_rw"]
     }
   ]
 }
