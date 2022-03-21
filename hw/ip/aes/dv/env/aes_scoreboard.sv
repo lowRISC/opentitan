@@ -75,10 +75,169 @@ class aes_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
+  function void on_ctrl_shadowed_write(logic [31:0] wdata);
+    input_item.manual_op   = get_field_val(ral.ctrl_shadowed.manual_operation, wdata);
+    input_item.key_len     = get_field_val(ral.ctrl_shadowed.key_len, wdata);
+    input_item.sideload_en = get_field_val(ral.ctrl_shadowed.sideload, wdata);
+    `downcast(input_item.operation, get_field_val(ral.ctrl_shadowed.operation, wdata));
+    input_item.valid = 1'b1;
+    case (get_field_val(ral.ctrl_shadowed.mode, wdata))
+      6'b00_0001:  input_item.mode = AES_ECB;
+      6'b00_0010:  input_item.mode = AES_CBC;
+      6'b00_0100:  input_item.mode = AES_CFB;
+      6'b00_1000:  input_item.mode = AES_OFB;
+      6'b01_0000:  input_item.mode = AES_CTR;
+      6'b10_0000:  input_item.mode = AES_NONE;
+      default:     input_item.mode = AES_NONE;
+    endcase
+    // sample coverage on ctrl register
+    cov_if.cg_ctrl_sample(get_field_val(ral.ctrl_shadowed.operation, wdata),
+                          get_field_val(ral.ctrl_shadowed.mode, wdata),
+                          get_field_val(ral.ctrl_shadowed.key_len, wdata),
+                          get_field_val(ral.ctrl_shadowed.manual_operation, wdata),
+                          get_field_val(ral.ctrl_shadowed.sideload, wdata),
+                          get_field_val(ral.ctrl_shadowed.prng_reseed_rate, wdata));
+
+    input_item.clean();
+    input_item.start_item = 1;
+    if (input_item.sideload_en) begin
+      exp_clear = 1;
+    end
+  endfunction
+
+  function void on_key_share_write(string csr_name, logic [31:0] wdata);
+    for (int share = 0; share < 2; share++) begin
+      for (int i = 0; i < 8; i++) begin
+        string keyname = $sformatf("key_share%0d_%0d", share, i);
+        if (keyname == csr_name) begin
+          input_item.key[share][i]     = wdata;
+          input_item.key_vld[share][i] = 1'b1;
+          cov_if.cg_key_sample(i + 8 * share);
+        end
+      end
+    end
+  endfunction
+
+  function void on_data_in_write(string csr_name, logic [31:0] wdata);
+    for (int i = 0; i < 4; i++) begin
+      string keyname = $sformatf("data_in_%0d", i);
+      // you can update datain until all have been
+      // updated then DUT will auto start
+      if (keyname == csr_name && (|datain_rdy || input_item.manual_op)) begin
+        input_item.data_in[i]     = wdata;
+        input_item.data_in_vld[i] = 1'b1;
+        cov_if.cg_wr_data_sample(i);
+        datain_rdy[i] = 0;
+      end
+    end
+  endfunction
+
+  function void on_iv_in_write(string csr_name, logic [31:0] wdata);
+    for (int i = 0; i < 4; i++) begin
+      string keyname = $sformatf("iv_%0d", i);
+      if (keyname == csr_name) begin
+        input_item.iv[i]      = wdata;
+        input_item.iv_vld[i]  = 1'b1;
+        cov_if.cg_iv_sample(i);
+      end
+    end
+  endfunction
+
+  function void on_trigger_write(logic [31:0] wdata);
+    //start triggered
+    cov_if.cg_trigger_sample(get_field_val(ral.trigger.start, wdata),
+                             get_field_val(ral.trigger.key_iv_data_in_clear, wdata),
+                             get_field_val(ral.trigger.data_out_clear, wdata),
+                             get_field_val(ral.trigger.prng_reseed, wdata));
+    `uvm_info(`gfn, $sformatf("\n CLEAR REGISTER SEEN 0x%h", wdata), UVM_MEDIUM)
+    if (get_field_val(ral.trigger.start, wdata)) begin
+      ok_to_fwd = 1;
+    end
+    // clear key, IV, data_in
+    if (get_field_val(ral.trigger.key_iv_data_in_clear, wdata)) begin
+      void'(input_item.key_clean(0, 1));
+      void'(input_item.iv_clean(0, 1));
+      void'(key_item.key_clean(0, 1));
+      input_item.clean_data_in();
+      datain_rdy = 4'b0;
+      // if in the middle of a message
+      // this is seen as the beginning of a new message
+      if (!input_item.start_item) begin
+        input_item.start_item = 1;
+        if (!exp_clear) input_item.split_item = 1;
+        exp_clear = 0;
+        `uvm_info(`gfn, $sformatf("splitting message"), UVM_MEDIUM)
+      end
+      `uvm_info(`gfn, $sformatf("\n\t ----| clearing KEY"), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("\n\t ----| clearing IV"), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("\n\t ----| clearing DATA_IN"), UVM_MEDIUM)
+    end
+    // clear data out
+    if (get_field_val(ral.trigger.data_out_clear, wdata)) begin
+      `uvm_info(`gfn, $sformatf("\n\t ----| clearing DATA_OUT"), UVM_MEDIUM)
+      if (cfg.clear_reg_w_rand) begin
+        input_item.data_out = {4{$urandom()}};
+      end else begin
+        input_item.data_out = '0;
+      end
+      // marking the output item as potentially bad
+      output_item.data_was_cleared = 1;
+      // set to make sure any input item
+      // waiting for output data is forwarded without the data.
+    end
+    // reseed
+    if (wdata[5]) begin
+      // nothing to do for DV
+    end
+  endfunction
+
+  // Handle a write to a named CSR on the A channel
+  function void on_addr_channel_write(string csr_name, logic [31:0] wdata);
+    // add individual case item for each csr
+    case (1)
+      (!uvm_re_match("alert_test", csr_name)): begin
+        cov_if.cg_alert_test_sample(wdata);
+      end
+
+      (!uvm_re_match("ctrl_shadowed", csr_name)): begin
+        // ignore reg write if busy
+        if (cfg.idle_vif) on_ctrl_shadowed_write(wdata);
+      end
+
+      (!uvm_re_match("key_share*", csr_name)): begin
+        // ignore reg write if busy
+        if (cfg.idle_vif) on_key_share_write(csr_name, wdata);
+      end
+
+      (!uvm_re_match("data_in_*", csr_name)): begin
+        on_data_in_write(csr_name, wdata);
+      end
+
+      (!uvm_re_match("iv_*", csr_name)): begin
+        // ignore reg write if busy
+        if (cfg.idle_vif) on_iv_in_write(csr_name, wdata);
+      end
+
+      (!uvm_re_match("trigger", csr_name)): begin
+        on_trigger_write(wdata);
+      end
+
+      (!uvm_re_match("ctrl_aux_regwen", csr_name)): begin
+        cov_if.cg_aux_regwen_sample(wdata[0]);
+      end
+
+      // (!uvm_re_match("status", csr_name)): begin
+      //   // not used in scoreboard
+      //  end
+
+      default: begin
+        // DO nothing- trying to write to a read only register
+      end
+    endcase
+  endfunction
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg        csr;
-    string         csr_name;
     aes_seq_item   input_clone;
     aes_seq_item   complete_clone;
     bit            do_read_check = 1'b0;
@@ -94,177 +253,14 @@ class aes_scoreboard extends cip_base_scoreboard #(
     end
 
     if (channel == AddrChannel) begin
+      string csr_name = csr.get_name();
+      `uvm_info(`gfn, $sformatf("\n\t ----| ITEM received reg name : %s",csr.get_name()), UVM_FULL)
+
       // if incoming access is a write to a valid csr, then make updates right away
       if (write) begin
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+        on_addr_channel_write(csr_name, item.a_data);
       end
-      `uvm_info(`gfn, $sformatf("\n\t ----| ITEM received reg name : %s",csr.get_name() ), UVM_FULL)
-      csr_name = csr.get_name();
-
-      case (1)
-        // add individual case item for each csr
-        (!uvm_re_match("alert_test", csr_name)): begin
-          cov_if.cg_alert_test_sample(item.a_data);
-        end
-
-        (!uvm_re_match("ctrl_shadowed", csr_name)): begin
-          // ignore reg write if busy
-          if (cfg.idle_vif) begin
-            if (write) begin
-              input_item.manual_op   =
-                                      get_field_val(ral.ctrl_shadowed.manual_operation, item.a_data);
-              input_item.key_len     = get_field_val(ral.ctrl_shadowed.key_len, item.a_data);
-              input_item.sideload_en = get_field_val(ral.ctrl_shadowed.sideload, item.a_data);
-              `downcast(input_item.operation,
-                        get_field_val(ral.ctrl_shadowed.operation ,item.a_data));
-              input_item.valid = 1'b1;
-              case (get_field_val(ral.ctrl_shadowed.mode, item.a_data))
-                6'b00_0001:  input_item.mode = AES_ECB;
-                6'b00_0010:  input_item.mode = AES_CBC;
-                6'b00_0100:  input_item.mode = AES_CFB;
-                6'b00_1000:  input_item.mode = AES_OFB;
-                6'b01_0000:  input_item.mode = AES_CTR;
-                6'b10_0000:  input_item.mode = AES_NONE;
-                default:     input_item.mode = AES_NONE;
-              endcase
-              // sample coverage on ctrl register
-              cov_if.cg_ctrl_sample(
-                                    get_field_val(ral.ctrl_shadowed.operation, item.a_data),
-                                    get_field_val(ral.ctrl_shadowed.mode, item.a_data),
-                                    get_field_val(ral.ctrl_shadowed.key_len, item.a_data),
-                                    get_field_val(ral.ctrl_shadowed.manual_operation, item.a_data),
-                                    get_field_val(ral.ctrl_shadowed.sideload, item.a_data),
-                                    get_field_val(ral.ctrl_shadowed.prng_reseed_rate, item.a_data)
-                                    );
-
-              input_item.clean();
-              input_item.start_item = 1;
-              if (input_item.sideload_en) begin
-                exp_clear = 1;
-              end
-            end
-          end
-        end
-
-
-        (!uvm_re_match("key_share0*", csr_name)): begin
-          // ignore reg write if busy
-          if (cfg.idle_vif) begin
-            for (int i = 0; i < 8; i++) begin
-              string keyname = $sformatf("key_share0_%0d", i);
-              if (keyname == csr_name) begin
-                input_item.key[0][i]     = item.a_data;
-                input_item.key_vld[0][i] = 1'b1;
-                cov_if.cg_key_sample(i);
-              end
-            end
-          end
-        end
-
-        (!uvm_re_match("key_share1*", csr_name)): begin
-          // ignore reg write if busy
-          if (cfg.idle_vif) begin
-            for (int i = 0; i < 8; i++) begin
-              string keyname = $sformatf("key_share1_%0d", i);
-              if (keyname == csr_name) begin
-                input_item.key[1][i]     = item.a_data;
-                input_item.key_vld[1][i] = 1'b1;
-                cov_if.cg_key_sample(i+8);
-              end
-            end
-          end
-        end
-
-        (!uvm_re_match("data_in_*", csr_name)): begin
-          for (int i = 0; i < 4; i++) begin
-            string keyname = $sformatf("data_in_%0d", i);
-            // you can update datain until all have been
-            // updated then DUT will auto start
-            if (keyname == csr_name && (|datain_rdy || input_item.manual_op)) begin
-              input_item.data_in[i]      = item.a_data;
-              input_item.data_in_vld[i]  = 1'b1;
-              cov_if.cg_wr_data_sample(i);
-              datain_rdy[i] = 0;
-            end
-          end
-        end
-
-        (!uvm_re_match("iv_*", csr_name)): begin
-          // ignore reg write if busy
-          if (cfg.idle_vif) begin
-            for (int i = 0; i < 4; i++) begin
-              string keyname = $sformatf("iv_%0d", i);
-              if (keyname == csr_name) begin
-                input_item.iv[i]      = item.a_data;
-                input_item.iv_vld[i]  = 1'b1;
-                cov_if.cg_iv_sample(i);
-              end
-            end
-          end
-        end
-
-        (!uvm_re_match("trigger", csr_name)): begin
-          //start triggered
-          cov_if.cg_trigger_sample(get_field_val(ral.trigger.start, item.a_data),
-                                   get_field_val(ral.trigger.key_iv_data_in_clear, item.a_data),
-                                   get_field_val(ral.trigger.data_out_clear, item.a_data),
-                                   get_field_val(ral.trigger.prng_reseed, item.a_data)
-                                   );
-          `uvm_info(`gfn, $sformatf("\n CLEAR REGISTER SEEN 0x%h", item.a_data), UVM_MEDIUM)
-          if (get_field_val(ral.trigger.start, item.a_data)) begin
-            ok_to_fwd                = 1;
-          end
-          // clear key, IV, data_in
-          if (get_field_val(ral.trigger.key_iv_data_in_clear, item.a_data)) begin
-            void'(input_item.key_clean(0, 1));
-            void'(input_item.iv_clean(0, 1));
-            void'(key_item.key_clean(0, 1));
-            input_item.clean_data_in();
-            datain_rdy = 4'b0;
-            // if in the middle of a message
-            // this is seen as the beginning of a new message
-            if (!input_item.start_item) begin
-              input_item.start_item = 1;
-              if (!exp_clear) input_item.split_item = 1;
-              exp_clear = 0;
-              `uvm_info(`gfn, $sformatf("splitting message"), UVM_MEDIUM)
-            end
-            `uvm_info(`gfn, $sformatf("\n\t ----| clearing KEY"), UVM_MEDIUM)
-            `uvm_info(`gfn, $sformatf("\n\t ----| clearing IV"), UVM_MEDIUM)
-            `uvm_info(`gfn, $sformatf("\n\t ----| clearing DATA_IN"), UVM_MEDIUM)
-          end
-          // clear data out
-          if (get_field_val(ral.trigger.data_out_clear, item.a_data)) begin
-            `uvm_info(`gfn, $sformatf("\n\t ----| clearing DATA_OUT"), UVM_MEDIUM)
-            if (cfg.clear_reg_w_rand) begin
-              input_item.data_out = {4{$urandom()}};
-            end else begin
-              input_item.data_out = '0;
-            end
-            // marking the output item as potentially bad
-            output_item.data_was_cleared = 1;
-            // set to make sure any input item
-            // waiting for output data is forwarded without the data.
-          end
-          // reseed
-          if (item.a_data[5]) begin
-            // nothing to do for DV
-          end
-        end // case: (!uvm_re_match("trigger", csr_name))
-
-        (!uvm_re_match("ctrl_aux_regwen", csr_name)): begin
-          cov_if.cg_aux_regwen_sample(item.a_data[0]);
-        end
-
-        // (!uvm_re_match("status", csr_name)): begin
-        //   // not used in scoreboard
-        //  end
-
-        default: begin
-          // DO nothing- trying to write to a read only register
-        end
-      endcase // case (1)
-
 
       ///////////////////////////////////////
       //             Valid checks          //
