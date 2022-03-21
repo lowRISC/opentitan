@@ -263,7 +263,7 @@ module top_${top["name"]} #(
 
   // See #7978 This below is a hack.
   // This is because ast is a comportable-like module that sits outside
-  // of top_earlgrey's boundary.
+  // of top_${top["name"]}'s boundary.
   assign clks_ast_o = ${top['clocks'].hier_paths['top'][:-1]};
   assign rsts_ast_o = ${top['resets'].hier_paths['top'][:-1]};
 
