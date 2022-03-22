@@ -216,13 +216,17 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   // SW digest data are calculated in sw and won't be checked in OTP.
   // Here to simplify testbench, write random data to sw digest.
-  virtual task write_sw_digests(bit [1:0] wr_digest = $urandom());
+  virtual task write_sw_digests(bit [NUM_UNBUFF_PARTS-1:0] wr_digest = $urandom());
     bit [TL_DW*2-1:0] wdata;
-    if (wr_digest[0]) begin
+    if (wr_digest[VendorTestIdx]) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
       dai_wr(CreatorSwCfgDigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
     end
-    if (wr_digest[1]) begin
+    if (wr_digest[CreatorSwCfgIdx]) begin
+      `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
+      dai_wr(CreatorSwCfgDigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
+    end
+    if (wr_digest[OwnerSwCfgIdx]) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
       dai_wr(OwnerSwCfgDigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
     end

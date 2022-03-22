@@ -326,6 +326,15 @@
       desc: '''This is an array of covergroups to cover all applicable error codes in five
             buffered partitions.'''
     }
+    { // TODO: this is an array of covergroups, confirm if this is the correct format
+      name: unbuf_access_lock_cg_wrap_cg
+      desc: '''This is an array of covergroups to cover lock conditions below in three
+            unbuffered partitions:
+            - the partition is write-locked
+            - the partition is read-locked
+            - the current operation type
+            Then cross the three coverpoints.'''
+    }
     {
       name: dai_access_secret2_cg
       desc: '''Covers whether `lc_creator_seed_sw_rw_en` is On during any DAI accesses.'''

@@ -514,6 +514,11 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         bit [TL_DW-1:0] read_out;
         int ecc_err = read_a_word_with_ecc(dai_addr, read_out);
 
+        if (cfg.en_cov) begin
+          cov.unbuf_access_lock_cg_wrap[part_idx].sample(.read_lock(0),
+              .write_lock(get_digest_reg_val(part_idx) != 0), .is_write(0));
+        end
+
         // Any alert that indicates the OTP block is in the final error state should not enter the
         // logic here, but gated at `is_tl_mem_access_allowed` function.
         `DV_CHECK_EQ(cfg.otp_ctrl_vif.alert_reqs, 0)
@@ -603,35 +608,47 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           // here only normalize to 2 lsb, if is secret, will be reduced further
           bit [TL_AW-1:0] dai_addr = normalize_dai_addr(`gmv(ral.direct_access_address));
           int part_idx = get_part_index(dai_addr);
+          bit sw_read_lock = 0;
           void'(ral.direct_access_regwen.predict(0));
           under_dai_access = 1;
+
+          // Check if it is sw partition read lock - this can be used in `DaiRead` branch and also
+          // coverage collection.
+          if (part_idx == VendorTestIdx) begin
+            sw_read_lock = `gmv(ral.vendor_test_read_lock) == 0;
+          end else if (part_idx == CreatorSwCfgIdx) begin
+            sw_read_lock = `gmv(ral.creator_sw_cfg_read_lock) == 0;
+          end else if (part_idx == OwnerSwCfgIdx) begin
+            sw_read_lock = `gmv(ral.owner_sw_cfg_read_lock) == 0;
+          end
 
           // LC partition cannot be access via DAI
           if (part_idx == LifeCycleIdx) begin
             predict_err(OtpDaiErrIdx, OtpAccessError);
             if (item.a_data == DaiRead) predict_rdata(is_secret(dai_addr), 0, 0);
           end else begin
-            if (cfg.en_cov && part_idx == Secret2Idx) begin
-              cov.dai_access_secret2_cg.sample(
-                  !(cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On),
-                  item.a_data);
+            // Collect coverage.
+            if (cfg.en_cov) begin
+              if (part_idx == Secret2Idx) begin
+                cov.dai_access_secret2_cg.sample(
+                    !(cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On),
+                    item.a_data);
+              end else if (is_sw_part_idx(part_idx) &&
+                           item.a_data inside {DaiRead, DaiWrite}) begin
+                cov.unbuf_access_lock_cg_wrap[part_idx].sample(.read_lock(sw_read_lock),
+                    .write_lock(get_digest_reg_val(part_idx) != 0),
+                    .is_write(item.a_data == DaiWrite));
+
+              end
             end
 
             case (item.a_data)
               DaiDigest: cal_digest_val(part_idx);
               DaiRead: begin
                 // Check if it is sw partition read lock
-                bit sw_read_lock = 0;
                 check_dai_rd_data = 1;
-                if (part_idx == VendorTestIdx) begin
-                  sw_read_lock = `gmv(ral.vendor_test_read_lock) == 0;
-                end else if (part_idx == CreatorSwCfgIdx) begin
-                  sw_read_lock = `gmv(ral.creator_sw_cfg_read_lock) == 0;
-                end else if (part_idx == OwnerSwCfgIdx) begin
-                  sw_read_lock = `gmv(ral.owner_sw_cfg_read_lock) == 0;
-                end
 
-                    // SW partitions write read_lock_csr can lock read access.
+                // SW partitions write read_lock_csr can lock read access.
                 if (sw_read_lock ||
                     // Secret partitions cal digest can also lock read access.
                     // However, digest is always readable except SW partitions (Issue #5752).
@@ -1220,6 +1237,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                           VendorTestSize - 1]}) begin
           predict_err(OtpVendorTestErrIdx, OtpAccessError);
           custom_err = 1;
+          if (cfg.en_cov) begin
+            cov.unbuf_access_lock_cg_wrap[VendorTestIdx].sample(.read_lock(1),
+                .write_lock(get_digest_reg_val(VendorTestIdx) != 0), .is_write(0));
+          end
           return 0;
         end
       end
@@ -1229,6 +1250,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                           CreatorSwCfgSize - 1]}) begin
           predict_err(OtpCreatorSwCfgErrIdx, OtpAccessError);
           custom_err = 1;
+          if (cfg.en_cov) begin
+            cov.unbuf_access_lock_cg_wrap[CreatorSwCfgIdx].sample(.read_lock(1),
+                .write_lock(get_digest_reg_val(CreatorSwCfgIdx) != 0), .is_write(0));
+          end
           return 0;
         end
       end
@@ -1238,6 +1263,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                           OwnerSwCfgSize - 1]}) begin
           predict_err(OtpOwnerSwCfgErrIdx, OtpAccessError);
           custom_err = 1;
+          if (cfg.en_cov) begin
+            cov.unbuf_access_lock_cg_wrap[OwnerSwCfgIdx].sample(.read_lock(1),
+                .write_lock(get_digest_reg_val(OwnerSwCfgIdx) != 0), .is_write(0));
+          end
           return 0;
         end
       end
