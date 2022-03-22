@@ -1570,7 +1570,9 @@
           { bits: "2",
             name: "rd_err",
             desc: '''
-              Flash read has an uncorrectable data error.
+              Flash read has an error.
+              This could be a reliability ECC error or an storage integrity error
+              encountered during a software issued controller read.
               Please see !!ERR_ADDR for exact address.
               This is a synchronous error.
             '''
@@ -1624,9 +1626,9 @@
             '''
           },
           { bits: "1",
-            name: "phy_intg_err",
+            name: "phy_prog_intg_err",
             desc: '''
-              The flash memory encountered an integrity error on the host access interface.
+              The flash controller encountered a program data transmission integrity error.
             '''
           },
           { bits: "2",
@@ -1637,24 +1639,32 @@
               '''
           },
           { bits: "3",
+            name: "lcmgr_intg_err",
+            desc: '''
+              The life cycle management interface has encountered a transmission
+              integerity error.  This is an integrity error on the generated integrity
+              during a life cycle management interface read.
+            '''
+          },
+          { bits: "4",
             name: "arb_fsm_err",
             desc: '''
               The arbiter fsm has encountered a sparse encoding error.
               '''
           },
-          { bits: "4",
+          { bits: "5",
             name: "storage_err",
             desc: '''
               A shadow register encountered a storage error.
             '''
           },
-          { bits: "5",
+          { bits: "6",
             name: "phy_fsm_err",
             desc: '''
               A flash phy fsm has encountered a sparse encoding error.
             '''
           },
-          { bits: "6",
+          { bits: "7",
             name: "ctrl_cnt_err",
             desc: '''
               Flash ctrl read/prog has encountered a count error.
@@ -1676,37 +1686,52 @@
           { bits: "1",
             name: "mp_err",
             desc: '''
-              The flash hardware interface encountered a memory permission error.
+              The flash life cycle management interface encountered a memory permission error.
             '''
           },
           { bits: "2",
             name: "rd_err",
             desc: '''
-              The flash hardware interface encountered a read data error.
+              The flash life cycle management interface encountered a read data error.
+              This could be a reliability ECC error or an integrity ECC error
+              encountered during a read.
             '''
           },
           { bits: "3",
             name: "prog_win_err",
             desc: '''
-              The flash hardware interface encountered a program resolution error.
+              The flash life cycle management interface encountered a program resolution error.
             '''
           },
           { bits: "4",
             name: "prog_type_err",
             desc: '''
-              The flash hardware interface encountered a program type error.
+              The flash life cycle management interface encountered a program type error.
+              A program type not supported by the flash macro was issued.
             '''
           },
           { bits: "5",
             name: "flash_phy_err",
             desc: '''
-              The flash hardware interface encountered a native flash error.
+              The flash life cycle management interface encountered a native flash macro error.
             '''
           },
           { bits: "6",
             name: "seed_err",
             desc: '''
               The seed reading process encountered an unexpected error.
+            '''
+          },
+          { bits: "7",
+            name: "phy_relbl_err",
+            desc: '''
+              The flash macro encountered a storage reliability ECC error.
+            '''
+          },
+          { bits: "8",
+            name: "phy_storage_err",
+            desc: '''
+              The flash macro encountered a storage integrity ECC error.
             '''
           },
         ]

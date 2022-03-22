@@ -21,14 +21,14 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
 
   // FIFO Interface
   input                    data_rdy_i,
-  output logic [BusWidth-1:0] data_o,
+  output logic [BusFullWidth-1:0] data_o,
   output logic             data_wr_o,
 
   // Flash Macro Interface
   output logic             flash_req_o,
   output logic [BusAddrW-1:0] flash_addr_o,
   output logic             flash_ovfl_o,
-  input [BusWidth-1:0]     flash_data_i,
+  input [BusFullWidth-1:0] flash_data_i,
   input                    flash_done_i,
   input                    flash_phy_err_i,
   input                    flash_rd_err_i,
@@ -166,7 +166,7 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
   assign flash_ovfl_o = int_addr[BusAddrW];
   // if error, return "empty" data
   assign err_sel = data_wr_o & |op_err_o;
-  assign data_o = err_sel ? {BusWidth{1'b1}} : flash_data_i;
+  assign data_o = err_sel ? {BusFullWidth{1'b1}} : flash_data_i;
   assign op_err_o = op_err_q | op_err_d;
 
 

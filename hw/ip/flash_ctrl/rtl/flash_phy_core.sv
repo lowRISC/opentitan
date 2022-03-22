@@ -49,12 +49,14 @@ module flash_phy_core
   output logic                       rd_done_o,
   output logic                       prog_done_o,
   output logic                       erase_done_o,
-  output logic [BusWidth-1:0]        rd_data_o,
+  output logic [BusFullWidth-1:0]    rd_data_o,
   output logic                       rd_err_o,
   output logic                       ecc_single_err_o,
   output logic [BusBankAddrW-1:0]    ecc_addr_o,
   output logic                       fsm_err_o,
-  output logic                       intg_err_o
+  output logic                       prog_intg_err_o,
+  output logic                       relbl_ecc_err_o,
+  output logic                       intg_ecc_err_o
 );
 
 
@@ -333,7 +335,9 @@ module flash_phy_core
     .mask_i(scramble_mask),
     .descrambled_data_i(rd_descrambled_data),
     .ecc_single_err_o,
-    .ecc_addr_o
+    .ecc_addr_o,
+    .relbl_ecc_err_o,
+    .intg_ecc_err_o
     );
 
   ////////////////////////
@@ -379,7 +383,7 @@ module flash_phy_core
       .block_data_o(prog_data),
       .data_o(prog_full_data),
       .fsm_err_o(prog_fsm_err),
-      .intg_err_o
+      .intg_err_o(prog_intg_err_o)
     );
   end
 
