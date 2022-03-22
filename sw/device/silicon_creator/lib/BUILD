@@ -94,8 +94,6 @@ cc_test(
     srcs = [
         "epmp_unittest.cc",
         # sources included here because we need MOCK_CSR.
-        "epmp.c",
-        "epmp.h",
     ],
     defines = [
         "OT_OFF_TARGET_TEST",
