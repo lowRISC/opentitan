@@ -64,10 +64,11 @@
   do {                                                                         \
     /* `sizeof(actual_[0])` is used to determine the size of each item in the  \
      * buffer. */                                                              \
-    if (memcmp(actual_, expected_, num_items_ * sizeof(actual_[0])) != 0) {    \
+    if (memcmp((actual_), (expected_), num_items_ * sizeof((actual_)[0])) !=   \
+        0) {                                                                   \
       for (size_t i = 0; i < num_items_; ++i) {                                \
-        LOG_INFO("[%d] actual = 0x%x; expected = 0x%x", i, actual_[i],         \
-                 expected_[i]);                                                \
+        LOG_INFO("[%d] actual = 0x%x; expected = 0x%x", i, (actual_)[i],       \
+                 (expected_)[i]);                                              \
       }                                                                        \
       if (OT_VA_ARGS_COUNT(_, ##__VA_ARGS__) == 0) {                           \
         LOG_ERROR("CHECK-BUFFER-fail: " #actual_ "does not match" #expected_); \
