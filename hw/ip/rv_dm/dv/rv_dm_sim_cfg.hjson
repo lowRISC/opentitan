@@ -78,6 +78,7 @@
     {
       name: rv_dm_smoke
       uvm_test_seq: rv_dm_smoke_vseq
+      reseed: 2
     }
     {
       name: rv_dm_jtag_dtm_csr_hw_reset
