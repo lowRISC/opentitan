@@ -10,8 +10,6 @@ class chip_base_vseq #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_ba
   );
   `uvm_object_utils(chip_base_vseq)
 
-  typedef enum int {ExtClkFreq48MHz = 48, ExtClkFreq100MHz = 100} ext_clk_freq_e;
-
   // knobs to enable pre_start routines
   bit do_strap_pins_init = 1'b1; // initialize the strap
 
@@ -80,8 +78,6 @@ class chip_base_vseq #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_ba
   virtual task pre_start();
     // Do DUT init after some additional settings.
     bit do_dut_init_save = do_dut_init;
-    int extclk_frequency_mhz = ExtClkFreq100MHz;
-    int extclk_frequency_attempted;
     do_dut_init = 1'b0;
     `uvm_create_on(callback_vseq, p_sequencer);
     `DV_CHECK_RANDOMIZE_FATAL(callback_vseq)
@@ -94,19 +90,6 @@ class chip_base_vseq #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_ba
       cfg.dft_straps_vif.drive(2'b00);
       cfg.sw_straps_vif.drive({2'b00, cfg.use_spi_load_bootstrap});
     end
-
-    // Set external clock frequency.
-    if ($value$plusargs("extclk_freq_mhz=%d", extclk_frequency_attempted)) begin
-      if (extclk_frequency_attempted == ExtClkFreq100MHz ||
-          extclk_frequency_attempted == ExtClkFreq48MHz) begin
-        extclk_frequency_mhz = extclk_frequency_attempted;
-      end else begin
-        `uvm_error(`gfn, $sformatf(
-                   "Unexpected extclk frequency %0d: valid numbers are 100 and 48",
-                   extclk_frequency_attempted))
-      end
-    end
-    cfg.clk_rst_vif.set_freq_mhz(extclk_frequency_mhz);
 
     // Now safe to do DUT init.
     if (do_dut_init) dut_init();
