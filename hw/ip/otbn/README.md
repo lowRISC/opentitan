@@ -47,6 +47,14 @@ users include:
   - `dv/rig/otbn-rig`: A random instruction generator for OTBN. See
     dv/rig/README.md for further information.
 
+### Run the Python simulator
+The quickest way to run an OTBN-only program is to use the Python simulator.
+First, generate a `.elf.` file either using the usual build process or by
+manually running `otbn-as` and `otbn-ld` as shown above. Then, from `$REPO_TOP`:
+```console
+$ hw/ip/otbn/dv/otbnsim/standalone.py -t path/to/prog.elf
+```
+
 ### Run the standalone RTL simulation
 A standalone environment to run OTBN alone in Verilator is included. Build it
 with `fusesoc` as follows:
