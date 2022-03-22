@@ -25,12 +25,10 @@ module spid_status
 
   input clk_out_i, // Output clock (inverted SCK)
 
+  input clk_csb_i, // CSb clock source
+
   input sys_clk_i, // Handling STATUS CSR (ext type)
   input sys_rst_ni,
-
-  input sys_csb_sync_i,             // CSb as a signal (not as a reset)
-  input sys_csb_deasserted_pulse_i,
-  input sck_csb_asserted_pulse_i,
 
   // status register from CSR: sys_clk domain
   // bit [   0]: RW0C by SW / W1S by HW
@@ -54,7 +52,7 @@ module spid_status
   input inclk_busy_set_i, // SCK domain
 
   // indicator of busy for other HW. Mainly to block passthrough
-  output logic inclk_busy_broadcast_o // SCK domain
+  output logic csb_busy_broadcast_o // SCK domain
 );
 
   ///////////////
@@ -78,10 +76,13 @@ module spid_status
   ////////////
   // Signal //
   ////////////
-  logic [23:0] status_sck;
+  logic [23:0] sys_status;
+  logic [23:0] sys_status_q;
+  logic        sys_status_busy;
 
-  logic unused_status_sck;
-  assign unused_status_sck = ^status_sck;
+  logic [23:0] sck_status;
+  logic [23:0] sck_status_sync;
+  logic        sck_status_busy;
 
   logic      p2s_valid_inclk;
   spi_byte_t p2s_byte_inclk;
@@ -118,105 +119,90 @@ module spid_status
   // the signal is broadcasted to Passthrough to filter-out the following
   // commands until the BUSY signal is released.
 
-  logic reg_en; // If 1, register in bus clock domain can be updated by SW
-  logic reg_update; // indicator of HW update (when CSb is de-asserted)
-
   // Design Doc
   //  https://docs.google.com/document/d/1wUIynMYVfVg9HmCL0q5-6r9BuN-XM0z--wGqU0bXRQ0
-  //
-  // busy_clr_pending is set when the SW tries to clear the BUSY bit but the
-  // SPI is busy handling a host request. The HW sees the busy_clr_pending
-  // when the SPI becomes quiescent and clears the BUSY bit.
-  //
-  // busy_clr_pending set/clear condition:
-  //   - set: !reg_en && sw_req && req_data[0] == 0
-  //   - clr: reg_update
-  //
-  // status[0] behavior change:
-  //   - clr cond.1: reg_en && sw_req && req_data[0] == 0
-  //   - clr cond.2: reg_update && busy_clr_pending
-  //   - set: reg_update && status_sck[0] == 1
-  logic sys_busy_clr_pending;
+  logic sys_busy_clr_request, sck_busy_clr_request;
+  assign sys_busy_clr_request =  sys_status_we_i
+                              && !sys_status_i[0]
+                              && sys_status[0];
 
-  logic sys_busy_clr_request;
-  assign sys_busy_clr_request = sys_status_we_i && !sys_status_i[0];
+  // Pulse Synchronizer for BUSY clear
+  prim_pulse_sync u_busy_clr_sync (
+    .clk_src_i   (sys_clk_i),
+    .rst_src_ni  (sys_rst_ni),
+    .src_pulse_i (sys_busy_clr_request), // no need of registered
 
-  // Register interface update in bus clock domain
-  logic [23:0] status;
+    .clk_dst_i   (clk_i               ),
+    .rst_dst_ni  (sys_rst_ni          ),
+    .dst_pulse_o (sck_busy_clr_request)
+  );
+
   //  BUSY
-  always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
-    if (!sys_rst_ni) begin
-      status[0] <= 1'b 0;
-    end else if (reg_en && sys_busy_clr_request) begin
-      status[0] <= 1'b 0;
-    end else if (reg_update && sys_busy_clr_pending) begin
-      status[0] <= 1'b 0;
-    end else if (reg_update) begin
-      // !sys_busy_clr_pending
-      status[0] <= status_sck[0];
-    end
-  end
+  // busy_broadcast
+  // Latch by CSb clock
+  prim_flop #(
+    .Width      (1),
+    .ResetValue (0)
+  ) u_busy_flop (
+    .clk_i  (clk_csb_i),
+    .rst_ni (sys_rst_ni),
+    .d_i    (sck_status[0]),
+    .q_o    (csb_busy_broadcast_o)
+  );
 
-  always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
-    if (!sys_rst_ni) begin
-      sys_busy_clr_pending <= 1'b 0;
-    end else if (!reg_en && sys_busy_clr_request) begin
-      // Store to flag
-      sys_busy_clr_pending <= 1'b 1;
-    end else if (reg_update) begin
-      // the BUSY is cleared
-      sys_busy_clr_pending <= 1'b 0;
-    end
-  end
+
+  //  always 2FF of busy_broadcasting
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue(1'b 0)
+  ) u_busy_sync (
+    .clk_i  (sys_clk_i),
+    .rst_ni (sys_rst_ni),
+    .d_i    (sck_status_busy),
+    .q_o    (sys_status_busy)
+  );
 
   //  rest of STATUS
   always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) begin
-      status[23:1] <= '0;
-    end else if (reg_en && sys_status_we_i) begin
-      status[23:1] <= sys_status_i[23:1];
+      sys_status_q[23:0] <= '0;
+    end else if (sys_status_we_i) begin
+      sys_status_q[23:0] <= sys_status_i[23:0];
     end
   end
 
-  // If busy_clr_pending is set, must clear BUSY bit and its value
-  `ASSERT(BusyClrPendingToClear_A,
-    reg_update && sys_busy_clr_pending
-      |=> (status[0] == 1'b 0) && !sys_busy_clr_pending,
-    sys_clk_i, !sys_rst_ni)
+  assign sys_status   = {sys_status_q[23:1], sys_status_busy};
+  assign sys_status_o = sys_status;
 
-  // If HW can't accept the SW request, it should set busy_clr_pending
-  `ASSERT(HwToSetBusyClrPending_A,
-    !reg_en && sys_status_we_i && !sys_status_i[0]
-      |=> sys_busy_clr_pending,
-    sys_clk_i, !sys_rst_ni)
-
-  assign sys_status_o = status;
-
-  // busy_broadcast
-  prim_flop_2sync #(
-    .Width      (1),
-    .ResetValue (1'b 0)
-  ) u_busy_sync (
-    .clk_i,
-    .rst_ni,
-    .d_i (status[0]),
-    .q_o (inclk_busy_broadcast_o)
-  );
-
-  // CSb de-asserted pulse is used as reg_update.
-  assign reg_en = sys_csb_sync_i;
-  assign reg_update = sys_csb_deasserted_pulse_i;
-
-  // Status in SCK
+  // BUSY status in SCK
   always_ff @(posedge clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) begin
-      status_sck <= 24'h 0;
-    end else if (sck_csb_asserted_pulse_i) begin
-      status_sck <= status;
+      sck_status_busy <= 1'b 0;
+    end else if (sck_busy_clr_request) begin
+      sck_status_busy <= 1'b 0;
     end else if (inclk_busy_set_i) begin
-      status_sck[0] <= 1'b 1;
+      sck_status_busy <= 1'b 1;
     end
   end
+
+  // Status in SCK
+  // TODO: Put CDC Waiver
+  // No need of reconvergence. Just 2FF
+  prim_flop_2sync #(
+    .Width      (24    ),
+    .ResetValue (24'h 0)
+  ) u_status_23_to_1_sync (
+    .clk_i,
+    .rst_ni (sys_rst_ni      ),
+    .d_i    (sys_status[23:0]),
+    .q_o    (sck_status_sync[23:0])
+  );
+
+  assign sck_status = {sck_status_sync[23:1], sck_status_busy};
+
+  // Create [23:0] for the readability. 0 is unused
+  logic  unused_status;
+  assign unused_status = ^{ sys_status_q[0], sck_status_sync[0]};
 
   /////////////////
   // Data Return //
@@ -267,8 +253,8 @@ module spid_status
     end
   end : byte_sel_input
 
-  assign p2s_byte_inclk = (st_q == StIdle) ? status_sck[8*byte_sel_d+:8]
-                                           : status_sck[8*byte_sel_q+:8];
+  assign p2s_byte_inclk = (st_q == StIdle) ? sck_status[8*byte_sel_d+:8]
+                                           : sck_status[8*byte_sel_q+:8];
 
   // State Machine
 
