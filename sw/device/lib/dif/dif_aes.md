@@ -24,7 +24,7 @@ Tests          | [DIF_TEST_SMOKE][]   | Done        |
 Type           | Item                        | Resolution  | Note/Collaterals
 ---------------|-----------------------------|-------------|------------------
 Coordination   | [DIF_HW_FEATURE_COMPLETE][] | Done        | [HW Dashboard]({{< relref "hw" >}})
-Implementation | [DIF_FEATURES][]            | In Progress | Outstanding issues with implementation
+Implementation | [DIF_FEATURES][]            | Done        | 
 Coordination   | [DIF_DV_TESTS][]            | Done        |
 
 [DIF_HW_FEATURE_COMPLETE]: {{< relref "/doc/project/checklist.md#dif_hw_feature_complete" >}}
