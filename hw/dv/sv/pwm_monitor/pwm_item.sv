@@ -38,16 +38,4 @@ class pwm_item extends uvm_sequence_item;
       return txt;
     endfunction // convert2string
 
-  function int get_duty_cycle();
-    int dc;
-    dc = (active_cnt/period) * 100;
-
-    if (invert) begin
-      duty_cycle = (100-dc);
-      return (100-dc);
-    end else begin
-      duty_cycle = dc;
-      return dc;
-    end
-  endfunction // get_duty_cycle
 endclass

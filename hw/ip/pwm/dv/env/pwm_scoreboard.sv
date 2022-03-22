@@ -219,6 +219,7 @@ class pwm_scoreboard extends cip_base_scoreboard #(
     int period;
     int high_cycles;
     int low_cycles;
+    int duty;
 
     if (channel_param[channel].BlinkEn) begin
       if (blink_cnt[channel] == 0) begin
@@ -245,6 +246,7 @@ class pwm_scoreboard extends cip_base_scoreboard #(
     period      = beats_cycle * (channel_cfg.ClkDiv + 1);
     high_cycles = (int_dc>>(16-(channel_cfg.DcResn+1)))*(channel_cfg.ClkDiv +1);
     low_cycles  = period - high_cycles;
+    duty = (high_cycles / period) * 100;
 
     // ID
     item.monitor_id      = channel;
@@ -257,7 +259,7 @@ class pwm_scoreboard extends cip_base_scoreboard #(
     // inactive cycles
     item.inactive_cnt    = invert[channel] ? high_cycles : low_cycles;
     // duty_cycle
-    item.duty_cycle      = item.get_duty_cycle();
+    item.duty_cycle      = invert[channel] ? (100 - duty) : duty;
     // phase
     //TODO
   endtask // generate_exp_item
