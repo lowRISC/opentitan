@@ -82,6 +82,7 @@ module spi_device
 
   logic clk_spi_in, clk_spi_in_muxed, clk_spi_in_buf;   // clock for latch SDI
   logic clk_spi_out, clk_spi_out_muxed, clk_spi_out_buf; // clock for driving SDO
+  logic clk_csb, clk_csb_muxed; // CSb as a clock source to latch BUSY
 
   spi_device_reg_pkg::spi_device_reg2hw_t reg2hw;
   spi_device_reg_pkg::spi_device_hw2reg_t hw2reg;
@@ -360,12 +361,12 @@ module spi_device
   /////////////////
   // Split the CSB into multiple explicit buffers. One for reset, two for each
   // clock domains.
-  logic rst_csb_buf, sys_csb, sck_csb;
+  logic clk_csb_buf, rst_csb_buf, sys_csb, sck_csb;
   prim_buf #(
-    .Width (3)
+    .Width (4)
   ) u_csb_buf (
-    .in_i  ({3{cio_csb_i}}),
-    .out_o ({rst_csb_buf, sys_csb, sck_csb})
+    .in_i  ({4{cio_csb_i}}),
+    .out_o ({clk_csb_buf, rst_csb_buf, sys_csb, sck_csb})
   );
 
   //////////////////////////////////////////////////////////////////////
@@ -818,6 +819,23 @@ module spi_device
   prim_clock_buf u_clk_spi_out_buf(
     .clk_i (clk_spi_out_muxed),
     .clk_o (clk_spi_out_buf)
+  );
+
+  // CSb muxed to scan clock
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b 1)
+  ) u_clk_csb_mux (
+    .clk0_i (clk_csb_buf),
+    .clk1_i (scan_clk_i ),
+    .sel_i  (prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkMuxSel])),
+    .clk_o  (clk_csb_muxed)
+  );
+
+  prim_clock_buf #(
+    .NoFpgaBuf (1'b 1)
+  ) u_clk_csb_buf (
+    .clk_i (clk_csb_muxed),
+    .clk_o (clk_csb      )
   );
 
   prim_clock_mux2 #(
