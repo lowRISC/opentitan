@@ -31,6 +31,7 @@ filesets:
       - seq_lib/adc_ctrl_lowpower_counter_vseq.sv: {is_include_file: true}
       - seq_lib/adc_ctrl_filters_both_vseq.sv: {is_include_file: true}
       - seq_lib/adc_ctrl_clock_gating_vseq.sv: {is_include_file: true}
+      - seq_lib/adc_ctrl_stress_all_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

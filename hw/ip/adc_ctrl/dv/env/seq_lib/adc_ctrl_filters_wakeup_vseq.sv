@@ -9,6 +9,12 @@ class adc_ctrl_filters_wakeup_vseq extends adc_ctrl_filters_polled_vseq;
 
   `uvm_object_new
 
+  virtual task post_start();
+    // Kill background processes
+    disable check_adc_ctrl_status;
+    super.post_start();
+  endtask
+
   virtual task configure_adc_ctrl();
     bit [ADC_CTRL_NUM_FILTERS-1:0] adc_wakeup_ctl;
     super.configure_adc_ctrl();
