@@ -555,7 +555,8 @@ module flash_ctrl
     .flash_last_o   (flash_prog_last),
     .flash_type_o   (flash_prog_type),
     .flash_done_i   (flash_prog_done),
-    .flash_phy_err_i(flash_phy_rsp.flash_err),
+    .flash_prog_intg_err_i (flash_phy_rsp.prog_intg_err),
+    .flash_macro_err_i(flash_phy_rsp.macro_err),
     .flash_mp_err_i (flash_mp_err)
   );
 
@@ -653,7 +654,7 @@ module flash_ctrl
     .flash_done_i   (flash_rd_done),
     .flash_mp_err_i (flash_mp_err),
     .flash_rd_err_i (flash_rd_err),
-    .flash_phy_err_i(flash_phy_rsp.flash_err)
+    .flash_macro_err_i(flash_phy_rsp.macro_err)
   );
 
   // Erase handler does not consume fifo
@@ -674,7 +675,7 @@ module flash_ctrl
     .flash_op_o     (erase_flash_type),
     .flash_done_i   (flash_erase_done),
     .flash_mp_err_i (flash_mp_err),
-    .flash_phy_err_i(flash_phy_rsp.flash_err)
+    .flash_macro_err_i(flash_phy_rsp.macro_err)
   );
 
   // Final muxing to flash macro module
@@ -961,22 +962,25 @@ module flash_ctrl
   //////////////////////////////////////
 
   // all software interface errors are treated as synchronous errors
-  assign hw2reg.err_code.mp_err.d         = 1'b1;
-  assign hw2reg.err_code.rd_err.d         = 1'b1;
-  assign hw2reg.err_code.prog_win_err.d   = 1'b1;
-  assign hw2reg.err_code.prog_type_err.d  = 1'b1;
-  assign hw2reg.err_code.flash_phy_err.d  = 1'b1;
-  assign hw2reg.err_code.update_err.d     = 1'b1;
-  assign hw2reg.err_code.mp_err.de        = sw_ctrl_err.mp_err;
-  assign hw2reg.err_code.rd_err.de        = sw_ctrl_err.rd_err;
-  assign hw2reg.err_code.prog_win_err.de  = sw_ctrl_err.prog_win_err;
-  assign hw2reg.err_code.prog_type_err.de = sw_ctrl_err.prog_type_err;
-  assign hw2reg.err_code.flash_phy_err.de = sw_ctrl_err.phy_err;
-  assign hw2reg.err_code.update_err.de    = update_err;
-  assign hw2reg.err_addr.d                = {ctrl_err_addr, {BusByteWidth{1'h0}}};
-  assign hw2reg.err_addr.de               = sw_ctrl_err.mp_err |
-                                            sw_ctrl_err.rd_err |
-                                            sw_ctrl_err.phy_err;
+  assign hw2reg.err_code.mp_err.d           = 1'b1;
+  assign hw2reg.err_code.rd_err.d           = 1'b1;
+  assign hw2reg.err_code.prog_err.d         = 1'b1;
+  assign hw2reg.err_code.prog_win_err.d     = 1'b1;
+  assign hw2reg.err_code.prog_type_err.d    = 1'b1;
+  assign hw2reg.err_code.flash_macro_err.d  = 1'b1;
+  assign hw2reg.err_code.update_err.d       = 1'b1;
+  assign hw2reg.err_code.mp_err.de          = sw_ctrl_err.mp_err;
+  assign hw2reg.err_code.rd_err.de          = sw_ctrl_err.rd_err;
+  assign hw2reg.err_code.prog_err.de        = sw_ctrl_err.prog_err;
+  assign hw2reg.err_code.prog_win_err.de    = sw_ctrl_err.prog_win_err;
+  assign hw2reg.err_code.prog_type_err.de   = sw_ctrl_err.prog_type_err;
+  assign hw2reg.err_code.flash_macro_err.de = sw_ctrl_err.macro_err;
+  assign hw2reg.err_code.update_err.de      = update_err;
+  assign hw2reg.err_addr.d                  = {ctrl_err_addr, {BusByteWidth{1'h0}}};
+  assign hw2reg.err_addr.de                 = sw_ctrl_err.mp_err |
+                                              sw_ctrl_err.rd_err |
+                                              sw_ctrl_err.prog_err |
+                                              sw_ctrl_err.macro_err;
 
   // all hardware interface errors are considered faults
   // There are two types of faults
@@ -984,38 +988,40 @@ module flash_ctrl
   // custom faults - things like hardware interface not working correctly
   assign hw2reg.fault_status.mp_err.d           = 1'b1;
   assign hw2reg.fault_status.rd_err.d           = 1'b1;
+  assign hw2reg.fault_status.prog_err.d         = 1'b1;
   assign hw2reg.fault_status.prog_win_err.d     = 1'b1;
   assign hw2reg.fault_status.prog_type_err.d    = 1'b1;
-  assign hw2reg.fault_status.flash_phy_err.d    = 1'b1;
+  assign hw2reg.fault_status.flash_macro_err.d  = 1'b1;
   assign hw2reg.fault_status.seed_err.d         = 1'b1;
   assign hw2reg.fault_status.phy_relbl_err.d    = 1'b1;
   assign hw2reg.fault_status.phy_storage_err.d  = 1'b1;
   assign hw2reg.fault_status.mp_err.de          = hw_err.mp_err;
   assign hw2reg.fault_status.rd_err.de          = hw_err.rd_err;
+  assign hw2reg.fault_status.prog_err.de        = hw_err.prog_err;
   assign hw2reg.fault_status.prog_win_err.de    = hw_err.prog_win_err;
   assign hw2reg.fault_status.prog_type_err.de   = hw_err.prog_type_err;
-  assign hw2reg.fault_status.flash_phy_err.de   = hw_err.phy_err;
+  assign hw2reg.fault_status.flash_macro_err.de = hw_err.macro_err;
   assign hw2reg.fault_status.seed_err.de        = seed_err;
   assign hw2reg.fault_status.phy_relbl_err.de   = flash_phy_rsp.storage_relbl_err;
   assign hw2reg.fault_status.phy_storage_err.de = flash_phy_rsp.storage_intg_err;
 
   // standard faults
-  assign hw2reg.std_fault_status.reg_intg_err.d       = 1'b1;
-  assign hw2reg.std_fault_status.phy_prog_intg_err.d  = 1'b1;
-  assign hw2reg.std_fault_status.lcmgr_err.d          = 1'b1;
-  assign hw2reg.std_fault_status.lcmgr_intg_err.d     = 1'b1;
-  assign hw2reg.std_fault_status.arb_fsm_err.d        = 1'b1;
-  assign hw2reg.std_fault_status.storage_err.d        = 1'b1;
-  assign hw2reg.std_fault_status.phy_fsm_err.d        = 1'b1;
-  assign hw2reg.std_fault_status.ctrl_cnt_err.d       = 1'b1;
-  assign hw2reg.std_fault_status.reg_intg_err.de      = intg_err;
-  assign hw2reg.std_fault_status.phy_prog_intg_err.de = flash_phy_rsp.prog_intg_err;
-  assign hw2reg.std_fault_status.lcmgr_err.de         = lcmgr_err;
-  assign hw2reg.std_fault_status.lcmgr_intg_err.de    = lcmgr_intg_err;
-  assign hw2reg.std_fault_status.arb_fsm_err.de       = arb_fsm_err;
-  assign hw2reg.std_fault_status.storage_err.de       = storage_err;
-  assign hw2reg.std_fault_status.phy_fsm_err.de       = flash_phy_rsp.fsm_err;
-  assign hw2reg.std_fault_status.ctrl_cnt_err.de      = rd_cnt_err | prog_cnt_err;
+  assign hw2reg.std_fault_status.reg_intg_err.d    = 1'b1;
+  assign hw2reg.std_fault_status.prog_intg_err.d   = 1'b1;
+  assign hw2reg.std_fault_status.lcmgr_err.d       = 1'b1;
+  assign hw2reg.std_fault_status.lcmgr_intg_err.d  = 1'b1;
+  assign hw2reg.std_fault_status.arb_fsm_err.d     = 1'b1;
+  assign hw2reg.std_fault_status.storage_err.d     = 1'b1;
+  assign hw2reg.std_fault_status.phy_fsm_err.d     = 1'b1;
+  assign hw2reg.std_fault_status.ctrl_cnt_err.d    = 1'b1;
+  assign hw2reg.std_fault_status.reg_intg_err.de   = intg_err;
+  assign hw2reg.std_fault_status.prog_intg_err.de  = flash_phy_rsp.prog_intg_err;
+  assign hw2reg.std_fault_status.lcmgr_err.de      = lcmgr_err;
+  assign hw2reg.std_fault_status.lcmgr_intg_err.de = lcmgr_intg_err;
+  assign hw2reg.std_fault_status.arb_fsm_err.de    = arb_fsm_err;
+  assign hw2reg.std_fault_status.storage_err.de    = storage_err;
+  assign hw2reg.std_fault_status.phy_fsm_err.de    = flash_phy_rsp.fsm_err;
+  assign hw2reg.std_fault_status.ctrl_cnt_err.de   = rd_cnt_err | prog_cnt_err;
 
   // Correctable ECC count / address
   for (genvar i = 0; i < NumBanks; i++) begin : gen_ecc_single_err_reg

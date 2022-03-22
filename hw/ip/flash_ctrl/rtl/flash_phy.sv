@@ -327,7 +327,7 @@ module flash_phy
     .flash_power_down_h_i,
     .flash_test_mode_a_io,
     .flash_test_voltage_h_io,
-    .flash_err_o(flash_ctrl_o.flash_err),
+    .flash_err_o(flash_ctrl_o.macro_err),
     // There alert signals are forwarded to both flash controller and ast
     .fl_alert_src_o(flash_alert_o)
   );

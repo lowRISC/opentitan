@@ -435,7 +435,7 @@ package flash_ctrl_pkg;
     logic                    rd_err;
     logic [BusFullWidth-1:0] rd_data;
     logic                    init_busy;
-    logic                    flash_err;
+    logic                    macro_err;
     logic [NumBanks-1:0]     ecc_single_err;
     logic [NumBanks-1:0][BusAddrW-1:0] ecc_addr;
     jtag_pkg::jtag_rsp_t     jtag_rsp;
@@ -454,7 +454,7 @@ package flash_ctrl_pkg;
     rd_err:             '0,
     rd_data:            '0,
     init_busy:          1'b0,
-    flash_err:          1'b0,
+    macro_err:          1'b0,
     ecc_single_err:     '0,
     ecc_addr:           '0,
     jtag_rsp:           '0,
@@ -545,9 +545,10 @@ package flash_ctrl_pkg;
     logic oob_err;
     logic mp_err;
     logic rd_err;
+    logic prog_err;
     logic prog_win_err;
     logic prog_type_err;
-    logic phy_err;
+    logic macro_err;
   } flash_ctrl_err_t;
 
   // interrupt bit positioning

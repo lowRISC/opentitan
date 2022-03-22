@@ -389,7 +389,7 @@ TEST_F(FlashCtrlTest, ReadTransaction) {
                     {FLASH_CTRL_ERR_CODE_RD_ERR_BIT, 0},
                     {FLASH_CTRL_ERR_CODE_PROG_WIN_ERR_BIT, 1},
                     {FLASH_CTRL_ERR_CODE_PROG_TYPE_ERR_BIT, 0},
-                    {FLASH_CTRL_ERR_CODE_FLASH_PHY_ERR_BIT, 1},
+                    {FLASH_CTRL_ERR_CODE_FLASH_MACRO_ERR_BIT, 1},
                     {FLASH_CTRL_ERR_CODE_UPDATE_ERR_BIT, 0},
                 });
   EXPECT_READ32(FLASH_CTRL_ERR_ADDR_REG_OFFSET, 0x12345678u);
@@ -503,7 +503,7 @@ TEST_F(FlashCtrlTest, ProgramTransaction) {
                     {FLASH_CTRL_ERR_CODE_RD_ERR_BIT, 0},
                     {FLASH_CTRL_ERR_CODE_PROG_WIN_ERR_BIT, 1},
                     {FLASH_CTRL_ERR_CODE_PROG_TYPE_ERR_BIT, 1},
-                    {FLASH_CTRL_ERR_CODE_FLASH_PHY_ERR_BIT, 0},
+                    {FLASH_CTRL_ERR_CODE_FLASH_MACRO_ERR_BIT, 0},
                     {FLASH_CTRL_ERR_CODE_UPDATE_ERR_BIT, 1},
                 });
   EXPECT_READ32(FLASH_CTRL_ERR_ADDR_REG_OFFSET, 0x87654321u);
@@ -724,7 +724,7 @@ TEST_F(FlashCtrlTest, SimpleQueries) {
                     {FLASH_CTRL_ERR_CODE_RD_ERR_BIT, 0},
                     {FLASH_CTRL_ERR_CODE_PROG_WIN_ERR_BIT, 0},
                     {FLASH_CTRL_ERR_CODE_PROG_TYPE_ERR_BIT, 1},
-                    {FLASH_CTRL_ERR_CODE_FLASH_PHY_ERR_BIT, 1},
+                    {FLASH_CTRL_ERR_CODE_FLASH_MACRO_ERR_BIT, 1},
                     {FLASH_CTRL_ERR_CODE_UPDATE_ERR_BIT, 1},
                 });
   EXPECT_READ32(FLASH_CTRL_ERR_ADDR_REG_OFFSET, 0x1effe0u);
@@ -835,12 +835,12 @@ TEST_F(FlashCtrlTest, SimpleQueries) {
                     {FLASH_CTRL_FAULT_STATUS_RD_ERR_BIT, 0},
                     {FLASH_CTRL_FAULT_STATUS_PROG_WIN_ERR_BIT, 1},
                     {FLASH_CTRL_FAULT_STATUS_PROG_TYPE_ERR_BIT, 0},
-                    {FLASH_CTRL_FAULT_STATUS_FLASH_PHY_ERR_BIT, 1},
+                    {FLASH_CTRL_FAULT_STATUS_FLASH_MACRO_ERR_BIT, 1},
                 });
   EXPECT_READ32(FLASH_CTRL_STD_FAULT_STATUS_REG_OFFSET,
                 {
                     {FLASH_CTRL_STD_FAULT_STATUS_REG_INTG_ERR_BIT, 0},
-                    {FLASH_CTRL_STD_FAULT_STATUS_PHY_PROG_INTG_ERR_BIT, 1},
+                    {FLASH_CTRL_STD_FAULT_STATUS_PROG_INTG_ERR_BIT, 1},
                     {FLASH_CTRL_STD_FAULT_STATUS_LCMGR_ERR_BIT, 0},
                     {FLASH_CTRL_STD_FAULT_STATUS_STORAGE_ERR_BIT, 1},
                 });
