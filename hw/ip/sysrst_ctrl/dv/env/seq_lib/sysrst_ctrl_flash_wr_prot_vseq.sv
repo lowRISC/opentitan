@@ -38,6 +38,10 @@ class sysrst_ctrl_flash_wr_prot_vseq extends sysrst_ctrl_base_vseq;
       // It takes 2-3 clock cycles to sync register values
       cfg.clk_aon_rst_vif.wait_clks(3);
 
+      // Randomize the input pins
+      cfg.clk_aon_rst_vif.wait_clks(1);
+      cfg.vif.randomize_input();
+
       en_override_flash_wp_value = get_field_val(ral.pin_out_ctl.flash_wp_l, en_override_value);
 
       override_val_flash_wp = get_field_val(ral.pin_out_value.flash_wp_l, set_value);
