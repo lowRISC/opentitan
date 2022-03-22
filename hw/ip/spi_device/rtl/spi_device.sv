@@ -304,7 +304,7 @@ module spi_device
 
   // Read Status input and broadcast
   logic sck_status_busy_set;       // set by HW (upload)
-  logic sck_status_busy_broadcast; // from spid_status
+  logic csb_status_busy_broadcast; // from spid_status
 
   // Jedec ID
   jedec_cfg_t jedec_cfg;
@@ -1334,12 +1334,10 @@ module spi_device
 
     .clk_out_i (clk_spi_out_buf),
 
+    .clk_csb_i (clk_csb),
+
     .sys_clk_i  (clk_i),
     .sys_rst_ni (rst_ni),
-
-    .sys_csb_sync_i             (sys_csb_syncd),
-    .sys_csb_deasserted_pulse_i (sys_csb_deasserted_pulse),
-    .sck_csb_asserted_pulse_i   (sck_csb_asserted_pulse),
 
     .sys_status_we_i (readstatus_qe),
     .sys_status_i    (readstatus_q),
@@ -1357,12 +1355,8 @@ module spi_device
 
     .inclk_busy_set_i  (sck_status_busy_set), // SCK domain
 
-    .inclk_busy_broadcast_o (sck_status_busy_broadcast) // SCK domain
+    .csb_busy_broadcast_o (csb_status_busy_broadcast) // SCK domain
   );
-
-  // Temporary:
-  logic unused_busy;
-  assign unused_busy = sck_status_busy_broadcast;
 
   // Tie unused
   logic unused_sub_sram_status;
@@ -1545,8 +1539,8 @@ module spi_device
   //   assertion event. If that happens, passthrough block may set during SPI
   //   transaction. The behavior of the SPI_DEVICE in this scenario is
   //   undeterminstic.
-  logic  sys_passthrough_block;
-  assign sys_passthrough_block = readstatus_d[0];
+  logic  passthrough_block;
+  assign passthrough_block = csb_status_busy_broadcast;
 
   spi_passthrough u_passthrough (
     .clk_i     (clk_spi_in_buf),
@@ -1569,7 +1563,7 @@ module spi_device
     .spi_mode_i       (spi_mode),
 
     // Control: BUSY block
-    .passthrough_block_i (sys_passthrough_block),
+    .passthrough_block_i (passthrough_block),
 
     // Host SPI
     .host_sck_i  (cio_sck_i),
