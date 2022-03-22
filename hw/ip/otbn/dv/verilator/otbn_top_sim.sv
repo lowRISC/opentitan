@@ -424,7 +424,7 @@ module otbn_top_sim (
     end
   end
   always_ff @(negedge IO_CLK or negedge IO_RST_N) begin
-    if (IO_RST_N && u_otbn_core_model.check_due && u_otbn_core_model.running) begin
+    if (IO_RST_N && u_otbn_core_model.check_due) begin
       OtbnTopDumpState();
     end
   end
