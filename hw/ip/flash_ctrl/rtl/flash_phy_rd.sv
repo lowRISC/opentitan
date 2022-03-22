@@ -49,7 +49,9 @@ module flash_phy_rd
   output logic rdy_o,
   output logic data_valid_o,
   output logic data_err_o,
-  output logic [BusWidth-1:0] data_o,
+  output logic relbl_ecc_err_o,
+  output logic intg_ecc_err_o,
+  output logic [BusFullWidth-1:0] data_o,
   output logic idle_o, // the entire read pipeline is idle
 
   // interface with scramble unit
@@ -368,6 +370,9 @@ module flash_phy_rd
   // send out error indication when ecc is enabled
   assign data_err = valid_ecc & ecc_multi_err;
 
+  // reliability ECC errors cause both in-band and out-of-band errors
+  assign relbl_ecc_err_o = data_err;
+
   // If there is a detected multi-bit error or a single bit error, always return the
   // ECC corrected result (even though it is possibly wrong).
   // There is no data error of any kind (specifically when multi_err is disabled), just
@@ -568,19 +573,25 @@ module flash_phy_rd
   logic [PlainDataWidth-1:0] data_out_muxed;
   assign data_out_muxed = |buf_rsp_match ? buf_rsp_data : muxed_data;
 
+  logic [BusWidth-1:0] data_out_pre;
   if (WidthMultiple == 1) begin : gen_width_one_rd
     // When multiple is 1, just pass the read through directly
     logic unused_word_sel;
-    assign data_o = data_err_o ? {BusWidth{1'b1}} : data_out_muxed[DataWidth-1:0];
+    assign data_out_pre = data_err_o ? {BusWidth{1'b1}} : data_out_muxed[DataWidth-1:0];
     assign unused_word_sel = rsp_fifo_rdata.word_sel;
 
   end else begin : gen_rd
     // Re-arrange data into packed array to pick the correct one
     logic [WidthMultiple-1:0][BusWidth-1:0] bus_words_packed;
     assign bus_words_packed = data_out_muxed[DataWidth-1:0];
-    assign data_o = data_err_o ? {BusWidth{1'b1}} : bus_words_packed[rsp_fifo_rdata.word_sel];
-
+    assign data_out_pre = data_err_o ? {BusWidth{1'b1}} : bus_words_packed[rsp_fifo_rdata.word_sel];
   end
+
+  // TODO: Replace with a wrapper from tlul, that way the module does not need to know what this is
+  prim_secded_inv_39_32_enc u_bus_intg (
+    .data_i(data_out_pre),
+    .data_o(data_o)
+  );
 
   // add plaintext decoding here
   // plaintext error
@@ -606,7 +617,12 @@ module flash_phy_rd
 
   // whenever the response is coming from the buffer, the error is never set
   assign data_valid_o = flash_rsp_match | |buf_rsp_match;
+
+  // integrity and reliability ECC errors always cause in band errors
   assign data_err_o   = muxed_err | intg_err;
+
+  // integrity ECC error can also cause out of band alert
+  assign intg_ecc_err_o = data_valid_o & intg_err;
 
   // the entire read pipeline is idle when there are no responses to return and no
   assign idle_o = ~rsp_fifo_vld;

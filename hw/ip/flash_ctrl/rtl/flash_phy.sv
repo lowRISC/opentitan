@@ -23,7 +23,7 @@ module flash_phy
   input [BusAddrW-1:0] host_addr_i,
   output logic host_req_rdy_o,
   output logic host_req_done_o,
-  output logic [BusWidth-1:0] host_rdata_o,
+  output logic [BusFullWidth-1:0] host_rdata_o,
   output logic host_rderr_o,
   input flash_req_t flash_ctrl_i,
   output flash_rsp_t flash_ctrl_o,
@@ -66,17 +66,17 @@ module flash_phy
   // transactions will be issued to that bank until the response is consumed by the host.
 
   // host to flash_phy interface
-  logic [BankW-1:0]     host_bank_sel;
-  logic [BankW-1:0]     rsp_bank_sel;
-  logic [NumBanks-1:0]  host_req_rdy;
-  logic [NumBanks-1:0]  host_req_done;
-  logic [NumBanks-1:0]  host_rsp_avail;
-  logic [NumBanks-1:0]  host_rsp_vld;
-  logic [NumBanks-1:0]  host_rsp_ack;
-  logic [BusWidth-1:0]  host_rsp_data [NumBanks];
-  logic [NumBanks-1:0]  host_rsp_err;
-  logic                 seq_fifo_rdy;
-  logic                 seq_fifo_pending;
+  logic [BankW-1:0]        host_bank_sel;
+  logic [BankW-1:0]        rsp_bank_sel;
+  logic [NumBanks-1:0]     host_req_rdy;
+  logic [NumBanks-1:0]     host_req_done;
+  logic [NumBanks-1:0]     host_rsp_avail;
+  logic [NumBanks-1:0]     host_rsp_vld;
+  logic [NumBanks-1:0]     host_rsp_ack;
+  logic [BusFullWidth-1:0] host_rsp_data [NumBanks];
+  logic [NumBanks-1:0]     host_rsp_err;
+  logic                    seq_fifo_rdy;
+  logic                    seq_fifo_pending;
 
   // flash_ctrl to flash_phy interface
   logic [BankW-1:0]     ctrl_bank_sel;
@@ -87,14 +87,16 @@ module flash_phy
   logic [ProgTypes-1:0] prog_type_avail;
 
   // common interface
-  logic [BusWidth-1:0] rd_data [NumBanks];
+  logic [BusFullWidth-1:0] rd_data [NumBanks];
   logic [NumBanks-1:0] rd_err;
 
   // fsm error per bank
   logic [NumBanks-1:0] fsm_err;
 
   // integrity error per bank
-  logic [NumBanks-1:0] intg_err;
+  logic [NumBanks-1:0] prog_intg_err;
+  logic [NumBanks-1:0] relbl_ecc_err;
+  logic [NumBanks-1:0] intg_ecc_err;
 
   // select which bank each is operating on
   assign host_bank_sel = host_req_i ? host_addr_i[BusAddrW-1 -: BankW] : '0;
@@ -116,9 +118,10 @@ module flash_phy
   assign flash_ctrl_o.rd_data = rd_data[ctrl_bank_sel];
   assign flash_ctrl_o.rd_err = rd_err[ctrl_bank_sel];
   assign flash_ctrl_o.init_busy = init_busy;
-  assign flash_ctrl_o.intg_err = |intg_err;
+  assign flash_ctrl_o.prog_intg_err = |prog_intg_err;
+  assign flash_ctrl_o.storage_relbl_err = |relbl_ecc_err;
+  assign flash_ctrl_o.storage_intg_err = |intg_ecc_err;
   assign flash_ctrl_o.fsm_err = |fsm_err;
-
 
   // This fifo holds the expected return order
   prim_fifo_sync #(
@@ -196,7 +199,7 @@ module flash_phy
     assign host_rsp_ack[bank] = host_req_done_o & (rsp_bank_sel == bank);
 
     prim_fifo_sync #(
-      .Width   (BusWidth + 1),
+      .Width   (BusFullWidth + 1),
       .Pass    (1'b1),
       .Depth   (FlashMacroOustanding)
     ) u_host_rsp_fifo (
@@ -264,7 +267,9 @@ module flash_phy
       .ecc_single_err_o(ecc_single_err[bank]),
       .ecc_addr_o(ecc_addr[bank][BusBankAddrW-1:0]),
       .fsm_err_o(fsm_err[bank]),
-      .intg_err_o(intg_err[bank])
+      .prog_intg_err_o(prog_intg_err[bank]),
+      .relbl_ecc_err_o(relbl_ecc_err[bank]),
+      .intg_ecc_err_o(intg_ecc_err[bank])
     );
   end // block: gen_flash_banks
 

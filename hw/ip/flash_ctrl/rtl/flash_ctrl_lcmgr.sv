@@ -34,10 +34,10 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   input wready_i,
 
   // direct form rd_fifo
-  input [BusWidth-1:0] rdata_i,
+  input [BusFullWidth-1:0] rdata_i,
 
   // direct to wr_fifo
-  output logic [BusWidth-1:0] wdata_o,
+  output logic [BusFullWidth-1:0] wdata_o,
 
   // external rma request
   // This should be simplified to just multi-bit request and multi-bit response
@@ -52,6 +52,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
 
   // fatal errors
   output logic fatal_err_o,
+  output logic intg_err_o,
 
   // error status to registers
   output logic seed_err_o,
@@ -201,6 +202,32 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     end
   end
 
+  // read data integrity check
+  // TODO: for clarity purposes, tlul should have an integrity wrapper module that is
+  // instantiated here.  That way the module does not need to know exactly what is used.
+  logic [1:0] data_err;
+  logic data_intg_ok;
+  prim_secded_inv_39_32_dec u_data_intg_chk (
+    .data_i(rdata_i),
+    .data_o(),
+    .syndrome_o(),
+    .err_o(data_err)
+  );
+  assign data_intg_ok = (data_err == '0);
+
+  // hold on to failed integrity until reset
+  logic data_invalid_d, data_invalid_q;
+  assign data_invalid_d = data_invalid_q |
+                          (rvalid_i & ~data_intg_ok);
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      data_invalid_q <= '0;
+    end else begin
+      data_invalid_q <= data_invalid_d;
+    end
+  end
+
   // capture the seed values
   logic [SeedRdsWidth-1:0] rd_idx;
   logic [NumSeedWidth-1:0] seed_idx;
@@ -210,9 +237,9 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     // validate current value
     if (seed_phase && validate_q && rvalid_i) begin
       seeds_q[seed_idx][rd_idx] <= seeds_q[seed_idx][rd_idx] &
-                                   rdata_i;
+                                   rdata_i[BusWidth-1:0];
     end else if (seed_phase && rvalid_i) begin
-      seeds_q[seed_idx][rd_idx] <= rdata_i;
+      seeds_q[seed_idx][rd_idx] <= rdata_i[BusWidth-1:0];
     end
   end
 
@@ -771,7 +798,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
         end
 
         if (rvalid_i && rready_o) begin
-          err_sts_set = prog_data[beat_cnt] != rdata_i;
+          err_sts_set = prog_data[beat_cnt] != rdata_i[BusWidth-1:0];
         end
       end
 
@@ -787,7 +814,12 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     endcase // unique case (rma_state_q)
   end // always_comb
 
-  assign wdata_o = rand_i;
+  // TODO: Replace with a wrapper from tlul, that way the module does not need to know what this is
+  prim_secded_inv_39_32_enc u_bus_intg (
+    .data_i(rand_i),
+    .data_o(wdata_o)
+  );
+
   assign wvalid_o = prog_cnt_en;
   assign ctrl_o.start.q = seed_phase ? start : rma_start;
   assign ctrl_o.op.q = seed_phase ? op : rma_op;
@@ -809,6 +841,9 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
 
   // all of these are considered fatal errors
   assign fatal_err_o = page_err_q | word_err_q | fsm_err | state_err | rma_idx_err_q;
+
+  // integrity error is its own category
+  assign intg_err_o = data_invalid_q;
 
   logic unused_seed_valid;
   assign unused_seed_valid = otp_key_rsp_i.seed_valid;

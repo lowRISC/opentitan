@@ -165,8 +165,8 @@ module flash_ctrl
   logic                    rd_fifo_rready;
   logic                    rd_fifo_wen;
   logic                    rd_fifo_ren;
-  logic [BusWidth-1:0]     rd_fifo_wdata;
-  logic [BusWidth-1:0]     rd_fifo_rdata;
+  logic [BusFullWidth-1:0] rd_fifo_wdata;
+  logic [BusFullWidth-1:0] rd_fifo_rdata;
   logic [FifoDepthW-1:0]   rd_fifo_depth;
   logic                    rd_fifo_full;
 
@@ -201,7 +201,7 @@ module flash_ctrl
   logic [BusFullWidth-1:0] flash_prog_data;
   logic flash_prog_last;
   flash_prog_e flash_prog_type;
-  logic [BusWidth-1:0] flash_rd_data;
+  logic [BusFullWidth-1:0] flash_rd_data;
   logic flash_rd_err;
   logic flash_phy_busy;
   logic rd_op;
@@ -222,12 +222,13 @@ module flash_ctrl
   logic hw_rvalid;
   logic hw_rready;
   logic hw_wvalid;
-  logic [BusWidth-1:0] hw_wdata;
+  logic [BusFullWidth-1:0] hw_wdata;
   logic hw_wready;
   flash_sel_e if_sel;
   logic sw_sel;
   flash_lcmgr_phase_e hw_phase;
   logic lcmgr_err;
+  logic lcmgr_intg_err;
   logic arb_fsm_err;
   logic seed_err;
 
@@ -339,7 +340,7 @@ module flash_ctrl
     .hw_rvalid_o(hw_rvalid),
     .hw_rready_i(hw_rready),
     .hw_wvalid_i(hw_wvalid),
-    .hw_wdata_i(BusFullWidth'(hw_wdata)), // TODO: enhance for hw side later
+    .hw_wdata_i(hw_wdata),
     .hw_wready_o(hw_wready),
 
     // hardware interface does not talk to prog_fifo
@@ -453,6 +454,7 @@ module flash_ctrl
 
     // error indication
     .fatal_err_o(lcmgr_err),
+    .intg_err_o(lcmgr_intg_err),
 
     // disable access to flash storage after rma process
     .dis_access_o(dis_access),
@@ -571,10 +573,11 @@ module flash_ctrl
 
   // tlul adapter represents software's access interface to flash
   tlul_adapter_sram #(
-    .SramAw(1),         //address unused
+    .SramAw(1),           //address unused
     .SramDw(BusWidth),
-    .ByteAccess(0),     //flash may not support byte access
-    .ErrOnWrite(1)      //writes not supported
+    .ByteAccess(0),       //flash may not support byte access
+    .ErrOnWrite(1),       //writes not supported
+    .EnableDataIntgPt(1)
   ) u_to_rd_fifo (
     .clk_i,
     .rst_ni,
@@ -597,7 +600,7 @@ module flash_ctrl
   );
 
   prim_fifo_sync #(
-    .Width(BusWidth),
+    .Width(BusFullWidth),
     .Depth(FifoDepth)
   ) u_rd_fifo (
     .clk_i,
@@ -972,34 +975,40 @@ module flash_ctrl
   // There are two types of faults
   // standard faults - things like fsm / counter / tlul integrity
   // custom faults - things like hardware interface not working correctly
-  assign hw2reg.fault_status.mp_err.d         = 1'b1;
-  assign hw2reg.fault_status.rd_err.d         = 1'b1;
-  assign hw2reg.fault_status.prog_win_err.d   = 1'b1;
-  assign hw2reg.fault_status.prog_type_err.d  = 1'b1;
-  assign hw2reg.fault_status.flash_phy_err.d  = 1'b1;
-  assign hw2reg.fault_status.seed_err.d       = 1'b1;
-  assign hw2reg.fault_status.mp_err.de        = hw_err.mp_err;
-  assign hw2reg.fault_status.rd_err.de        = hw_err.rd_err;
-  assign hw2reg.fault_status.prog_win_err.de  = hw_err.prog_win_err;
-  assign hw2reg.fault_status.prog_type_err.de = hw_err.prog_type_err;
-  assign hw2reg.fault_status.flash_phy_err.de = hw_err.phy_err;
-  assign hw2reg.fault_status.seed_err.de      = seed_err;
+  assign hw2reg.fault_status.mp_err.d           = 1'b1;
+  assign hw2reg.fault_status.rd_err.d           = 1'b1;
+  assign hw2reg.fault_status.prog_win_err.d     = 1'b1;
+  assign hw2reg.fault_status.prog_type_err.d    = 1'b1;
+  assign hw2reg.fault_status.flash_phy_err.d    = 1'b1;
+  assign hw2reg.fault_status.seed_err.d         = 1'b1;
+  assign hw2reg.fault_status.phy_relbl_err.d    = 1'b1;
+  assign hw2reg.fault_status.phy_storage_err.d  = 1'b1;
+  assign hw2reg.fault_status.mp_err.de          = hw_err.mp_err;
+  assign hw2reg.fault_status.rd_err.de          = hw_err.rd_err;
+  assign hw2reg.fault_status.prog_win_err.de    = hw_err.prog_win_err;
+  assign hw2reg.fault_status.prog_type_err.de   = hw_err.prog_type_err;
+  assign hw2reg.fault_status.flash_phy_err.de   = hw_err.phy_err;
+  assign hw2reg.fault_status.seed_err.de        = seed_err;
+  assign hw2reg.fault_status.phy_relbl_err.de   = flash_phy_rsp.storage_relbl_err;
+  assign hw2reg.fault_status.phy_storage_err.de = flash_phy_rsp.storage_intg_err;
 
   // standard faults
-  assign hw2reg.std_fault_status.reg_intg_err.d   = 1'b1;
-  assign hw2reg.std_fault_status.phy_intg_err.d   = 1'b1;
-  assign hw2reg.std_fault_status.lcmgr_err.d      = 1'b1;
-  assign hw2reg.std_fault_status.arb_fsm_err.d    = 1'b1;
-  assign hw2reg.std_fault_status.storage_err.d    = 1'b1;
-  assign hw2reg.std_fault_status.phy_fsm_err.d    = 1'b1;
-  assign hw2reg.std_fault_status.ctrl_cnt_err.d   = 1'b1;
-  assign hw2reg.std_fault_status.reg_intg_err.de  = intg_err;
-  assign hw2reg.std_fault_status.phy_intg_err.de  = flash_phy_rsp.intg_err;
-  assign hw2reg.std_fault_status.lcmgr_err.de     = lcmgr_err;
-  assign hw2reg.std_fault_status.arb_fsm_err.de   = arb_fsm_err;
-  assign hw2reg.std_fault_status.storage_err.de   = storage_err;
-  assign hw2reg.std_fault_status.phy_fsm_err.de   = flash_phy_rsp.fsm_err;
-  assign hw2reg.std_fault_status.ctrl_cnt_err.de  = rd_cnt_err | prog_cnt_err;
+  assign hw2reg.std_fault_status.reg_intg_err.d       = 1'b1;
+  assign hw2reg.std_fault_status.phy_prog_intg_err.d  = 1'b1;
+  assign hw2reg.std_fault_status.lcmgr_err.d          = 1'b1;
+  assign hw2reg.std_fault_status.lcmgr_intg_err.d     = 1'b1;
+  assign hw2reg.std_fault_status.arb_fsm_err.d        = 1'b1;
+  assign hw2reg.std_fault_status.storage_err.d        = 1'b1;
+  assign hw2reg.std_fault_status.phy_fsm_err.d        = 1'b1;
+  assign hw2reg.std_fault_status.ctrl_cnt_err.d       = 1'b1;
+  assign hw2reg.std_fault_status.reg_intg_err.de      = intg_err;
+  assign hw2reg.std_fault_status.phy_prog_intg_err.de = flash_phy_rsp.prog_intg_err;
+  assign hw2reg.std_fault_status.lcmgr_err.de         = lcmgr_err;
+  assign hw2reg.std_fault_status.lcmgr_intg_err.de    = lcmgr_intg_err;
+  assign hw2reg.std_fault_status.arb_fsm_err.de       = arb_fsm_err;
+  assign hw2reg.std_fault_status.storage_err.de       = storage_err;
+  assign hw2reg.std_fault_status.phy_fsm_err.de       = flash_phy_rsp.fsm_err;
+  assign hw2reg.std_fault_status.ctrl_cnt_err.de      = rd_cnt_err | prog_cnt_err;
 
   // Correctable ECC count / address
   for (genvar i = 0; i < NumBanks; i++) begin : gen_ecc_single_err_reg
@@ -1160,7 +1169,7 @@ module flash_ctrl
   logic flash_host_req_rdy;
   logic flash_host_req_done;
   logic flash_host_rderr;
-  logic [flash_ctrl_pkg::BusWidth-1:0] flash_host_rdata;
+  logic [flash_ctrl_pkg::BusFullWidth-1:0] flash_host_rdata;
   logic [flash_ctrl_pkg::BusAddrW-1:0] flash_host_addr;
 
   import prim_mubi_pkg::mubi4_test_true_loose;
@@ -1187,8 +1196,9 @@ module flash_ctrl
     .ByteAccess(0),
     .ErrOnWrite(1),
     .CmdIntgCheck(1),
-    .EnableRspIntgGen(1), // keep until read path generate
-    .EnableDataIntgGen(1)
+    .EnableRspIntgGen(1),
+    .EnableDataIntgGen(0),
+    .EnableDataIntgPt(1)
   ) u_tl_adapter_eflash (
     .clk_i,
     .rst_ni,

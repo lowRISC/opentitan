@@ -33,6 +33,8 @@ package flash_ctrl_pkg;
   });
   parameter int WordsPerPage    = 256; // Number of flash words per page
   parameter int BusWidth        = top_pkg::TL_DW;
+  parameter int BusIntgWidth    = tlul_pkg::DataIntgWidth;
+  parameter int BusFullWidth    = BusWidth + BusIntgWidth;
   parameter int MpRegions       = 8;  // flash controller protection regions
   parameter int FifoDepth       = 16; // rd / prog fifos
   parameter int InfoTypesWidth  = prim_util_pkg::vbits(InfoTypes);
@@ -381,7 +383,7 @@ package flash_ctrl_pkg;
     flash_part_e          part;
     logic [InfoTypesWidth-1:0] info_sel;
     logic [BusAddrW-1:0]  addr;
-    logic [BusWidth-1:0]  prog_data;
+    logic [BusFullWidth-1:0] prog_data;
     logic                 prog_last;
     flash_prog_e          prog_type;
     mp_region_cfg_t [MpRegions:0] region_cfgs;
@@ -392,7 +394,6 @@ package flash_ctrl_pkg;
     logic                 alert_trig;
     logic                 alert_ack;
     jtag_pkg::jtag_req_t  jtag_req;
-    logic                 intg_err;
     prim_mubi_pkg::mubi4_t flash_disable;
   } flash_req_t;
 
@@ -422,25 +423,26 @@ package flash_ctrl_pkg;
     alert_trig:    1'b0,
     alert_ack:     1'b0,
     jtag_req:      '0,
-    intg_err:      '0,
     flash_disable: prim_mubi_pkg::MuBi4False
   };
 
   // memory to flash controller
   typedef struct packed {
-    logic [ProgTypes-1:0] prog_type_avail;
-    logic                rd_done;
-    logic                prog_done;
-    logic                erase_done;
-    logic                rd_err;
-    logic [BusWidth-1:0] rd_data;
-    logic                init_busy;
-    logic                flash_err;
-    logic [NumBanks-1:0] ecc_single_err;
+    logic [ProgTypes-1:0]    prog_type_avail;
+    logic                    rd_done;
+    logic                    prog_done;
+    logic                    erase_done;
+    logic                    rd_err;
+    logic [BusFullWidth-1:0] rd_data;
+    logic                    init_busy;
+    logic                    flash_err;
+    logic [NumBanks-1:0]     ecc_single_err;
     logic [NumBanks-1:0][BusAddrW-1:0] ecc_addr;
-    jtag_pkg::jtag_rsp_t jtag_rsp;
-    logic                intg_err;
-    logic                fsm_err;
+    jtag_pkg::jtag_rsp_t     jtag_rsp;
+    logic                    prog_intg_err;
+    logic                    storage_relbl_err;
+    logic                    storage_intg_err;
+    logic                    fsm_err;
   } flash_rsp_t;
 
   // default value of flash_rsp_t (for dangling ports)
@@ -456,7 +458,9 @@ package flash_ctrl_pkg;
     ecc_single_err:     '0,
     ecc_addr:           '0,
     jtag_rsp:           '0,
-    intg_err:           '0,
+    prog_intg_err:      '0,
+    storage_relbl_err:  '0,
+    storage_intg_err:   '0,
     fsm_err:            '0
   };
 
