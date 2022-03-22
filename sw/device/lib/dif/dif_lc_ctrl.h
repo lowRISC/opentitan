@@ -293,6 +293,14 @@ typedef struct dif_lc_ctrl_settings {
 } dif_lc_ctrl_settings_t;
 
 /**
+ * A 32-bit hardware revision number.
+ */
+typedef struct {
+  uint16_t chip_gen;
+  uint16_t chip_rev;
+} dif_lc_ctrl_hw_rev_t;
+
+/**
  * A 256-bit device id stored in OTP's hw_cfg partition.
  */
 typedef struct dif_lc_ctrl_device_id {
@@ -342,6 +350,18 @@ dif_result_t dif_lc_ctrl_get_status(const dif_lc_ctrl_t *lc,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_lc_ctrl_get_id_state(const dif_lc_ctrl_t *lc,
                                       dif_lc_ctrl_id_state_t *state);
+
+/**
+ * Returns the hardware revision number reading from lifecycle controller's
+ * hardware revision register.
+ *
+ * @param lc A lifecycle handle.
+ * @param[out] hw_rev Out-param for the hardware revision.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_lc_ctrl_get_hw_rev(const dif_lc_ctrl_t *lc,
+                                    dif_lc_ctrl_hw_rev_t *hw_rev);
 
 /**
  * Returns the current device id reading from lifecycle controller's device id
