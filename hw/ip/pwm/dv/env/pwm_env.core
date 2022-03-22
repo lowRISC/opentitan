@@ -23,6 +23,7 @@ filesets:
       - seq_lib/pwm_base_vseq.sv: {is_include_file: true}
       - seq_lib/pwm_common_vseq.sv: {is_include_file: true}
       - seq_lib/pwm_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/pwm_rand_output_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

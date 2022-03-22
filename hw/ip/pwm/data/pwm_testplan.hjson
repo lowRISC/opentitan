@@ -4,8 +4,8 @@
 {
     name: "pwm"
     import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                       "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                        "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
-                       "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
                        "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
                        "pwm_sec_cm_testplan.hjson"],
     testpoints: [
@@ -33,7 +33,7 @@
 
             '''
       milestone: V2
-      tests: ["pwm_smoke"]
+      tests: ["pwm_rand_output"]
     }
     {
       name: pulse
@@ -42,16 +42,16 @@
             by de-asserting blink_en field in the PWM_PARAM register
             '''
       milestone: V2
-      tests: ["pwm_smoke"]
+      tests: ["pwm_rand_output"]
     }
     {
-      name: Blink
+      name: blink
       desc: '''
             Verify the blink mode of the PWM
             by asserting the blink_en field in the PWM_PARAM register
             '''
       milestone: V2
-      tests: ["pwm_moke"]
+      tests: ["pwm_rand_output"]
     }
     {
       name: heartbeat
@@ -60,7 +60,7 @@
             by asserting the blink_en and HTBT field in the PWM_PARAM register
             '''
         milestone: V2
-        tests: []
+        tests: ["pwm_rand_output"]
     }
    {
       name: resolution
@@ -68,7 +68,7 @@
             Verify the PWM generates correct duty cycle for different resolution settings
             '''
         milestone: V2
-        tests: ["pwm_smoke"]
+        tests: ["pwm_rand_output"]
     }
     {
       name: multi_channel
@@ -76,7 +76,7 @@
             Verifies that PWM correctly generates pulses on multiple channels concurrently
             '''
         milestone: V2
-        tests: []
+        tests: ["pwm_rand_output"]
     }
     {
       name: polarity
@@ -84,7 +84,7 @@
             Verify that the polarity of the pulse can be inverted by setting the invert channel bit in the invert register
             '''
         milestone: V2
-        tests: []
+        tests: ["pwm_rand_output"]
     }
     {
       name: phase
@@ -92,7 +92,7 @@
             Check that the relative phase between pulses matches the setting in the phase_delay field in the PWM_PARAM register.
             '''
         milestone: V2
-        tests: []
+        tests: ["pwm_rand_output"]
     }
     {
       name: lowpower
@@ -106,7 +106,7 @@
                 - Ensure pulses are still generated when in LP mode
             '''
         milestone: V2
-        tests: []
+        tests: ["pwm_rand_output"]
     }
     {
       name: perf
@@ -122,25 +122,11 @@
                 - Ensure the output pulses are correctly modulated for all channels
             '''
       milestone: V2
-      tests: []
+      tests: ["pwm_stress_perf"]
     }
     {
-          name: clock_domain
-          desc: '''
-            TBD -Verify the function of clock-crossing domain for pwm
-
-            Stimulus:
-                - TBD
-
-            Checking:
-                - TBD
-            '''
-          milestone: V2
-          tests: []
-      }
-      {
-          name: stress_all
-          desc: '''
+      name: stress_all
+      desc: '''
             Combine above sequences in one test then randomly select for running
 
             Stimulus:
@@ -149,9 +135,9 @@
             Checking:
                 - All sequences should be finished and checked by the scoreboard
             '''
-          milestone: V2
-          tests: []
-      }
+      milestone: V2
+      tests: ["pwm_stress_perf"]
+    }
   ]
 
  covergroups: [
