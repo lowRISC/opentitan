@@ -205,9 +205,21 @@ dif_result_t dif_lc_ctrl_get_id_state(const dif_lc_ctrl_t *lc,
   return kDifOk;
 }
 
+dif_result_t dif_lc_ctrl_get_hw_rev(const dif_lc_ctrl_t *lc,
+                                    dif_lc_ctrl_hw_rev_t *hw_rev) {
+  if (lc == NULL || hw_rev == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg = mmio_region_read32(lc->base_addr, LC_CTRL_HW_REV_REG_OFFSET);
+  hw_rev->chip_gen = bitfield_field32_read(reg, LC_CTRL_HW_REV_CHIP_GEN_FIELD);
+  hw_rev->chip_rev = bitfield_field32_read(reg, LC_CTRL_HW_REV_CHIP_REV_FIELD);
+  return kDifOk;
+}
+
 dif_result_t dif_lc_ctrl_get_device_id(const dif_lc_ctrl_t *lc,
                                        dif_lc_ctrl_device_id_t *device_id) {
-  if (lc == NULL) {
+  if (lc == NULL || device_id == NULL) {
     return kDifBadArg;
   }
 
