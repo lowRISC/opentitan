@@ -14,8 +14,11 @@ module lc_ctrl
 #(
   // Enable asynchronous transitions on alerts.
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Hardware revision number.
+  parameter logic [15:0] ChipGen = 16'hFFFF,
+  parameter logic [15:0] ChipRev = 16'hFFFF,
   // Idcode value for the JTAG.
-  parameter logic [31:0]          IdcodeValue  = 32'h00000001,
+  parameter logic [31:0] IdcodeValue = 32'h00000001,
   // Random netlist constants
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid    = LcKeymgrDivWidth'(0),
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestDevRma = LcKeymgrDivWidth'(1),
@@ -96,7 +99,9 @@ module lc_ctrl
   // Hardware config input, needed for the DEVICE_ID field.
   input  otp_ctrl_pkg::otp_device_id_t               otp_device_id_i,
   // Hardware config input, needed for the MANUF_STATE field.
-  input  otp_ctrl_pkg::otp_device_id_t               otp_manuf_state_i
+  input  otp_ctrl_pkg::otp_device_id_t               otp_manuf_state_i,
+  // Hardware revision output (static)
+  output lc_hw_rev_t                                 hw_rev_o
 );
 
   import prim_mubi_pkg::mubi8_t;
@@ -114,6 +119,7 @@ module lc_ctrl
   `ASSERT_INIT(DecLcIdStateWidthCheck_A, CsrLcIdStateWidth == ExtDecLcIdStateWidth)
   `ASSERT_INIT(NumTokenWordsCheck_A, NumTokenWords == LcTokenWidth/32)
   `ASSERT_INIT(OtpTestCtrlWidth_A, otp_ctrl_pkg::OtpTestCtrlWidth == CsrOtpTestCtrlWidth)
+  `ASSERT_INIT(HwRevFieldWidth_A, HwRevFieldWidth <= 16)
 
   /////////////
   // Regfile //
@@ -284,6 +290,9 @@ module lc_ctrl
 
   logic lc_idle_d;
 
+  // Assign hardware revision output
+  assign hw_rev_o = '{chip_gen: ChipGen, chip_rev: ChipRev};
+
   // OTP Vendor control bits
   logic use_ext_clock_d, use_ext_clock_q;
   logic [CsrOtpTestCtrlWidth-1:0] otp_vendor_test_ctrl_d, otp_vendor_test_ctrl_q;
@@ -306,7 +315,8 @@ module lc_ctrl
     hw2reg.lc_id_state                   = {DecLcIdStateNumRep{dec_lc_id_state}};
     hw2reg.device_id                     = otp_device_id_i;
     hw2reg.manuf_state                   = otp_manuf_state_i;
-
+    hw2reg.hw_rev.chip_gen               = hw_rev_o.chip_gen;
+    hw2reg.hw_rev.chip_rev               = hw_rev_o.chip_rev;
 
     // The assignments above are identical for the TAP.
     tap_hw2reg = hw2reg;

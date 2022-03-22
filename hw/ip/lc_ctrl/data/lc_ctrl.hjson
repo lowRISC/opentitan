@@ -60,6 +60,27 @@
       randcount: "1024",
       randtype:  "data",
     }
+    // Hardware revision, meant to be overridden at the top-level
+    { name:    "HwRevFieldWidth",
+      desc:    "Width of hardware revision fields.",
+      type:    "int",
+      default: "16",
+      local:   "true",
+    }
+    { name:    "ChipGen",
+      desc:    "Chip generation number.",
+      type:    "logic [15:0]",
+      default: "16'h FFFF",
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "ChipRev",
+      desc:    "Chip revision number.",
+      type:    "logic [15:0]",
+      default: "16'h FFFF",
+      local:   "false",
+      expose:  "true"
+    }
     // Regular parameters
     { name:    "NumTokenWords",
       desc:    "Number of 32bit words in a token.",
@@ -329,6 +350,14 @@
       name:    "otp_manuf_state",
       act:     "rcv",
       package: "otp_ctrl_pkg",
+      default: "'0"
+    },
+    // HW config input for MANUF_STATE
+    { struct:  "lc_hw_rev",
+      type:    "uni",
+      name:    "hw_rev",
+      act:     "req",
+      package: "lc_ctrl_pkg",
       default: "'0"
     },
   ] // inter_signal_list
@@ -997,6 +1026,32 @@
           ]
         }
       ],
+    }
+
+    ///////////////////////
+    // Hardware Revision //
+    ///////////////////////
+    { name:     "HW_REV",
+      desc:     '''
+                This register holds the 32bit hardware revision,
+                which is split into two 16bit fields holding the
+                CHIP_GEN and CHIP_REV numbers.
+                '''
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext:    "true",
+      tags: [ // The value of this register is fixed and determined by HW.
+              "excl:CsrAllTests:CsrExclCheck"],
+      fields: [
+        { bits: "16+HwRevFieldWidth-1:16",
+          name: "CHIP_GEN"
+          desc: "Chip generation number."
+        }
+        { bits: "HwRevFieldWidth-1:0",
+          name: "CHIP_REV"
+          desc: "Chip revision number."
+        }
+      ]
     }
 
     ///////////////
