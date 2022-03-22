@@ -11,7 +11,7 @@
 // Wrapper class to allow for multiple instances
 class adc_ctrl_filter_cg_wrapper #(
   // Data width of the ADC CTRL filters
-  int FILTER_WIDTH  = 12,
+  int FILTER_WIDTH  = ADC_CTRL_DATA_WIDTH,
   // Number of values bins to create
   int NUMBER_VALUES = 10
 );

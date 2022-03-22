@@ -8,6 +8,12 @@ class adc_ctrl_filters_both_vseq extends adc_ctrl_filters_polled_vseq;
 
   `uvm_object_new
 
+  virtual task post_start();
+    // Kill background processes
+    disable check_adc_ctrl_status;
+    super.post_start();
+  endtask
+
   virtual task configure_adc_ctrl();
     adc_ctrl_testmode_e testmode;
     bit [ADC_CTRL_NUM_FILTERS:0] adc_intr_ctl;
@@ -45,6 +51,10 @@ class adc_ctrl_filters_both_vseq extends adc_ctrl_filters_polled_vseq;
         csr_wr(ral.adc_intr_status, $urandom());
         csr_wr(ral.filter_status, $urandom());
         csr_wr(ral.intr_state, $urandom());
+      end else begin
+        // Otherwise check the adc_chn_val registers
+        csr_rd(ral.adc_chn_val[0], rdata);
+        csr_rd(ral.adc_chn_val[1], rdata);
       end
     end
   endtask

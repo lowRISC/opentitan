@@ -76,17 +76,19 @@
     {
       name: adc_ctrl_filters_wakeup
       uvm_test_seq: adc_ctrl_filters_wakeup_vseq
+      run_opts: ["+test_timeout_ns=2000000000"]
     }
 
     {
       name: adc_ctrl_filters_wakeup_fixed
       uvm_test_seq: adc_ctrl_filters_wakeup_vseq
-      run_opts: ["+filters_fixed=1"]
+      run_opts: ["+filters_fixed=1", "+test_timeout_ns=2000000000"]
     }
 
     {
       name: adc_ctrl_clock_gating
       uvm_test_seq: adc_ctrl_clock_gating_vseq
+      run_opts: ["+test_timeout_ns=2000000000"]
     }
 
     {

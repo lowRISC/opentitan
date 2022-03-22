@@ -38,6 +38,9 @@ class adc_ctrl_counter_vseq extends adc_ctrl_base_vseq;
     super.post_start();
     // Reenable assertions
     `DV_ASSERT_CTRL_REQ("ADC_IF_A_CTRL", 1)
+    // Randomize cfg to get reasonable values for pwrup_time and wakeup_time for
+    // a subsequent sequence if this sequence is used in a stress test
+    `DV_CHECK_RANDOMIZE_FATAL(cfg)
   endtask
 
   virtual task body();

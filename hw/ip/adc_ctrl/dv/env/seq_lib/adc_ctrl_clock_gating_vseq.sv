@@ -21,8 +21,9 @@ class adc_ctrl_clock_gating_vseq extends adc_ctrl_filters_polled_vseq;
   endtask
 
   virtual task post_start();
-    // Make sure clock is ungated and kill monitor_wakeup process
+    // Make sure clock is ungated and kill background processes
     disable monitor_wakeup;
+    disable check_adc_ctrl_status;
     cfg.clk_rst_vif.start_clk(0);
     super.post_start();
   endtask
@@ -39,6 +40,11 @@ class adc_ctrl_clock_gating_vseq extends adc_ctrl_filters_polled_vseq;
     // Enable interrupts and wakeup
     `DV_CHECK_STD_RANDOMIZE_FATAL(adc_intr_ctl)
     `DV_CHECK_STD_RANDOMIZE_FATAL(adc_wakeup_ctl)
+
+    // Disable interrupts for now
+    // TODO: properly model Interrupt Clock domain crossing
+    adc_intr_ctl = 0;
+
     cfg.testmode = testmode;
     cfg.adc_intr_ctl = adc_intr_ctl;
     cfg.adc_wakeup_ctl = adc_wakeup_ctl;

@@ -54,6 +54,8 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
   protected bit m_adc_ctrl_en = 0;
   // In low power mode
   protected bit m_lp_mode = 0;
+  // Debug cable index in interupt registers
+  protected int unsigned m_debug_cable_index;
 
   `uvm_component_utils(adc_ctrl_scoreboard)
 
@@ -76,6 +78,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
+    m_debug_cable_index = cfg.ral.intr_state.debug_cable.get_lsb_pos();
   endfunction
 
   task run_phase(uvm_phase phase);
@@ -99,30 +102,20 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // Monitor interrupt line
   protected virtual task monitor_intr_proc();
+    bit intr_en;
     forever begin
-      cfg.clk_aon_rst_vif.wait_clks(1);
-      m_interrupt_prev = m_interrupt;
+      @(cfg.intr_vif.pins);
       m_interrupt = cfg.intr_vif.sample_pin(ADC_CTRL_INTERRUPT_INDEX);
-
-      // If we see a positive edge on the interrupt line capture the latest values
-      if (m_interrupt & ~m_interrupt_prev) begin
-        foreach (m_adc_latest_values[channel]) begin
-          m_adc_interrupt_values[channel] = m_adc_latest_values[channel];
-        end
-      end
-
       // Compare against expected every change of interrupt line
-      if (cfg.en_scb & (m_interrupt ^ m_interrupt_prev)) begin
-        fork
-          begin
-            `uvm_info(`gfn, $sformatf(
-                      "monitor_intr_proc: interrupt pin change m_interrupt=%b", m_interrupt),
-                      UVM_MEDIUM)
-            `DV_CHECK_EQ(m_interrupt, m_expected_intr_state)
-          end
-        join_none
+      if (cfg.en_scb) begin
+        intr_en = ral.intr_enable.debug_cable.get_mirrored_value();
+        `uvm_info(`gfn, $sformatf(
+                  "monitor_intr_proc: interrupt pin change m_interrupt=%b", m_interrupt),
+                  UVM_MEDIUM)
+        `DV_CHECK_EQ(m_interrupt, (m_expected_intr_state & intr_en))
+        // Sample interrupt pin coverage for interrupt pins
+        if (cfg.en_cov) cov.intr_pins_cg.sample(ADC_CTRL_INTERRUPT_INDEX, m_interrupt);
       end
-
     end
   endtask
 
@@ -223,21 +216,35 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
+        bit intr_en = ral.intr_enable.debug_cable.get_mirrored_value();
         do_read_check = 1;
         if (addr_phase_write) begin
           ->m_intr_state_wr_ev;
           // Implement W1C
-          m_expected_intr_state &= (~item.a_data);
+          m_expected_intr_state &= !get_field_val(cfg.ral.intr_state.debug_cable, item.a_data);
         end
         if (addr_phase_read) begin
           `DV_CHECK(csr.predict(.value(m_expected_intr_state), .kind(UVM_PREDICT_READ)))
+        end
+        if (cfg.en_cov && data_phase_read) begin
+          cov.intr_cg.sample(m_debug_cable_index, intr_en, get_field_val(
+                             cfg.ral.intr_state.debug_cable, item.a_data));
         end
       end
       "intr_enable": begin
         // FIXME
       end
       "intr_test": begin
-        // FIXME
+        // Model intr_test functionality
+        bit intr_test_val = get_field_val(cfg.ral.intr_test.debug_cable, item.a_data);
+        bit intr_en = ral.intr_enable.debug_cable.get_mirrored_value();
+        if (addr_phase_write) begin
+          m_expected_intr_state |= intr_test_val;
+          if (cfg.en_cov) begin
+            cov.intr_test_cg.sample(m_debug_cable_index, intr_test_val, intr_en,
+                                    m_expected_intr_state);
+          end
+        end
       end
       "adc_intr_status": begin
         // TODO: update modeling for One Shot mode
@@ -335,7 +342,10 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
                 .value(get_adc_latest_value(0)), .kind(UVM_PREDICT_READ)
             ));
           end else begin
-            `uvm_info(`gfn, "FIXME: Predict adc_chn_val_0.adc_chn_value_intr", UVM_NONE)
+            // Interrupt value
+            void'(ral.adc_chn_val[0].adc_chn_value_intr.predict(
+                .value(get_adc_interrupt_value(0)), .kind(UVM_PREDICT_READ)
+            ));
           end
         end
       end
@@ -354,7 +364,10 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
                 .value(get_adc_latest_value(1)), .kind(UVM_PREDICT_READ)
             ));
           end else begin
-            `uvm_info(`gfn, "FIXME: Predict adc_chn_val_1.adc_chn_value_intr", UVM_NONE)
+            // Interrupt value
+            void'(ral.adc_chn_val[1].adc_chn_value_intr.predict(
+                .value(get_adc_interrupt_value(1)), .kind(UVM_PREDICT_READ)
+            ));
           end
         end
       end
@@ -487,6 +500,12 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
             m_expected_filter_status |= m_match;
             m_expected_adc_intr_status |= m_match & cfg.adc_intr_ctl;
             m_expected_intr_state |= (|(m_match & cfg.adc_intr_ctl));
+
+            // Update interrupt ADC values
+            foreach (m_adc_latest_values[channel]) begin
+              m_adc_interrupt_values[channel] = m_adc_latest_values[channel];
+            end
+
           end
         end
       end else begin
