@@ -289,6 +289,27 @@ sw_tests += {
   }
 }
 
+aes_idle_test_lib = declare_dependency(
+  link_with: static_library(
+    'aes_idle_test_lib',
+    sources: ['aes_idle_test.c'],
+    dependencies: [
+      sw_lib_dif_aes,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+      sw_lib_testing_entropy_testutils,
+      sw_lib_testing_aes_testutils,
+      sw_lib_testing_clkmgr_testutils,
+      sw_lib_testing_test_status,
+    ],
+  ),
+)
+sw_tests += {
+  'aes_idle_test': {
+    'library': aes_idle_test_lib,
+  }
+}
+
 clkmgr_smoketest_lib = declare_dependency(
   link_with: static_library(
     'clkmgr_smoketest_lib',
