@@ -97,15 +97,14 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     `uvm_field_object(m_spi_agent_cfg,        UVM_DEFAULT)
   `uvm_object_utils_end
 
-  // TODO: Fixing core clk freq to 50MHz for now.
-  // Need to find a way to pass this to the SW test.
   constraint clk_freq_mhz_c {
-    clk_freq_mhz == 50;
+    clk_freq_mhz == 100;
   }
 
   `uvm_object_new
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
+    int extclk_freq_mhz;
     has_devmode = 0;
     list_of_alerts = chip_env_pkg::LIST_OF_ALERTS;
 
@@ -139,6 +138,14 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
     `DV_CHECK_LE_FATAL(num_ram_main_tiles, 16)
     `DV_CHECK_LE_FATAL(num_ram_ret_tiles, 16)
+
+    // Set external clock frequency.
+    if ($value$plusargs("extclk_freq_mhz=%d", extclk_freq_mhz)) begin
+      `DV_CHECK(extclk_freq_mhz inside {48, 100},
+                $sformatf("Unexpected extclk frequency %0d: valid numbers are 100 and 48",
+                          extclk_freq_mhz))
+        clk_freq_mhz = extclk_freq_mhz;
+    end
   endfunction
 
   // Apply RAL fixes before it is locked.
