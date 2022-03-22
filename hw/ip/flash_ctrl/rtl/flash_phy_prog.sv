@@ -28,7 +28,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
   input scramble_i,
   input ecc_i,
   input [WordSelW-1:0] sel_i,
-  input [BusWidth-1:0] data_i,
+  input [BusFullWidth-1:0] data_i,
   input last_i,
   input ack_i,  // ack means request has been accepted by flash
   input done_i, // done means requested transaction has completed
@@ -44,7 +44,8 @@ module flash_phy_prog import flash_phy_pkg::*; (
   // block data does not contain ecc / metadata portion
   output logic [DataWidth-1:0] block_data_o,
   output logic [FullDataWidth-1:0] data_o,
-  output logic fsm_err_o
+  output logic fsm_err_o,
+  output logic intg_err_o
 );
 
   // Encoding generated with:
@@ -106,7 +107,42 @@ module flash_phy_prog import flash_phy_pkg::*; (
   logic plain_ecc_en;
 
   // selects empty data or real data
-  assign pack_data  = (data_sel == Actual) ? data_i : {BusWidth{1'b1}};
+  assign pack_data  = (data_sel == Actual) ? data_i[BusWidth-1:0] : {BusWidth{1'b1}};
+
+  logic data_intg_ok;
+  logic [1:0] data_err;
+
+  // TODO: for clarity purposes, tlul should have an integrity wrapper module that is
+  // instantiated here.  That way the module does not need to know exactly what is used.
+  prim_secded_inv_39_32_dec u_data_intg_chk (
+    .data_i(data_i),
+    .data_o(),
+    .syndrome_o(),
+    .err_o(data_err)
+  );
+  assign data_intg_ok = (data_err == '0);
+
+  logic data_invalid_q, data_invalid_d;
+  // hold on integrity failure indication until reset
+  assign data_invalid_d = data_invalid_q |
+                          (pack_valid & ~data_intg_ok);
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      data_invalid_q <= '0;
+    end else begin
+      data_invalid_q <= data_invalid_d;
+    end
+  end
+
+  // indication to upper layer prescence of error
+  assign intg_err_o = data_invalid_q;
+
+  // if integrity failure is seen, fake communication with flash
+  // and simply terminate
+  logic ack, done;
+  assign ack = ack_i | data_invalid_q;
+  assign done = done_i | data_invalid_q;
 
   // next idx will be aligned
   assign idx_sub_one = idx - 1'b1;
@@ -230,7 +266,8 @@ module flash_phy_prog import flash_phy_pkg::*; (
       end
 
       StReqFlash: begin
-        req_o = 1'b1;
+        // only request flash if data integrity was valid
+        req_o = ~data_invalid_q;
         last_o = last_i;
 
         // if this is the last beat of the program burst
@@ -238,16 +275,15 @@ module flash_phy_prog import flash_phy_pkg::*; (
         // if this is NOT the last beat
         //   - ack the upstream request and accept more beats
         if (last_i) begin
-          state_d = ack_i ? StWaitFlash : StReqFlash;
+          state_d = ack ? StWaitFlash : StReqFlash;
         end else begin
-          ack_o = ack_i;
-          state_d = ack_i ? StIdle : StReqFlash;
+          ack_o = ack;
+          state_d = ack ? StIdle : StReqFlash;
         end
       end
 
       StWaitFlash: begin
-
-        if (done_i) begin
+        if (done) begin
           ack_o = 1'b1;
           state_d = StIdle;
         end
@@ -270,7 +306,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
     if (!rst_ni) begin
       packed_data <= '0;
       mask_q <= '0;
-    end else if (req_o && ack_i) begin
+    end else if (req_o && ack) begin
       packed_data <= '0;
     end else if (calc_req_o && calc_ack_i) begin
       packed_data <= packed_data ^ mask_i;
@@ -335,7 +371,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
       done_cnt <= '0;
     end else if (txn_done) begin
       done_cnt <= '0;
-    end else if (done_i) begin
+    end else if (done) begin
       done_cnt <= done_cnt + 1'b1;
     end
   end

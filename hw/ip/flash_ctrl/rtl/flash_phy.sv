@@ -20,7 +20,6 @@ module flash_phy
   input clk_i,
   input rst_ni,
   input host_req_i,
-  input host_intg_err_i,
   input [BusAddrW-1:0] host_addr_i,
   output logic host_req_rdy_o,
   output logic host_req_done_o,
@@ -91,8 +90,11 @@ module flash_phy
   logic [BusWidth-1:0] rd_data [NumBanks];
   logic [NumBanks-1:0] rd_err;
 
-  // fsm error per block
+  // fsm error per bank
   logic [NumBanks-1:0] fsm_err;
+
+  // integrity error per bank
+  logic [NumBanks-1:0] intg_err;
 
   // select which bank each is operating on
   assign host_bank_sel = host_req_i ? host_addr_i[BusAddrW-1 -: BankW] : '0;
@@ -114,8 +116,7 @@ module flash_phy
   assign flash_ctrl_o.rd_data = rd_data[ctrl_bank_sel];
   assign flash_ctrl_o.rd_err = rd_err[ctrl_bank_sel];
   assign flash_ctrl_o.init_busy = init_busy;
-  // feed through host integrity error directly
-  assign flash_ctrl_o.intg_err = host_intg_err_i;
+  assign flash_ctrl_o.intg_err = |intg_err;
   assign flash_ctrl_o.fsm_err = |fsm_err;
 
 
@@ -224,7 +225,6 @@ module flash_phy
       .clk_i,
       .rst_ni,
       // integrity error is either from host or from controller
-      .intg_err_i(host_intg_err_i | flash_ctrl_i.intg_err),
       .req_i(ctrl_req),
       .scramble_en_i(flash_ctrl_i.scramble_en),
       .ecc_en_i(flash_ctrl_i.ecc_en),
@@ -263,7 +263,8 @@ module flash_phy
       .prim_flash_rsp_i(prim_flash_rsp[bank]),
       .ecc_single_err_o(ecc_single_err[bank]),
       .ecc_addr_o(ecc_addr[bank][BusBankAddrW-1:0]),
-      .fsm_err_o(fsm_err[bank])
+      .fsm_err_o(fsm_err[bank]),
+      .intg_err_o(intg_err[bank])
     );
   end // block: gen_flash_banks
 

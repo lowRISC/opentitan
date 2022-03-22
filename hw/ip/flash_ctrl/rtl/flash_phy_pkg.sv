@@ -32,6 +32,7 @@ package flash_phy_pkg;
 
   // flash ctrl / bus parameters
   parameter int unsigned BusWidth       = flash_ctrl_pkg::BusWidth;
+  parameter int unsigned BusFullWidth   = flash_ctrl_pkg::BusFullWidth;      
   parameter int unsigned BusBankAddrW   = flash_ctrl_pkg::BusBankAddrW;
   parameter int unsigned BusWordW       = flash_ctrl_pkg::BusWordW;
   parameter int unsigned ProgTypes      = flash_ctrl_pkg::ProgTypes;

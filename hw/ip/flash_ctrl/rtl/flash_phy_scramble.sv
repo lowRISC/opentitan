@@ -14,7 +14,7 @@ module flash_phy_scramble import flash_phy_pkg::*; #(
 ) (
   input clk_i,
   input rst_ni,
-  input intg_err_i,
+  input disable_i,
   input calc_req_i, // calculate galois multiplier mask
   input op_req_i,   // request primitive operation
   input cipher_ops_e op_type_i,  // sramble or de-scramble
@@ -43,7 +43,7 @@ module flash_phy_scramble import flash_phy_pkg::*; #(
     if (!rst_ni) begin
       addr_key_sel <= '0;
     end else if (!calc_req_i || calc_req_i && calc_ack_o) begin
-      addr_key_sel <= intg_err_i;
+      addr_key_sel <= disable_i;
     end
   end
 
@@ -94,7 +94,7 @@ module flash_phy_scramble import flash_phy_pkg::*; #(
     if (!rst_ni) begin
       data_key_sel <= '0;
     end else if (!op_req_i || op_req_i && op_ack_o) begin
-      data_key_sel <= intg_err_i;
+      data_key_sel <= disable_i;
     end
   end
 
