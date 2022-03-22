@@ -311,6 +311,10 @@
       clock_group: "secure",
       reset_connections: {rst_ni: "lc_io_div4", rst_kmac_ni: "sys"},
       base_addr: "0x40140000",
+      param_decl: {
+        ChipGen: "16'h 00001",
+        ChipRev: "16'h 00001"
+      },
     },
     { name: "alert_handler",
       type: "alert_handler",

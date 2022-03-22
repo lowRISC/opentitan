@@ -1791,6 +1791,11 @@
           domain: "0"
         }
       }
+      param_decl:
+      {
+        ChipGen: 16'h 00001
+        ChipRev: 16'h 00001
+      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
@@ -1800,7 +1805,6 @@
       [
         "0"
       ]
-      param_decl: {}
       memory: {}
       param_list:
       [
@@ -1843,6 +1847,22 @@
           name_top: RndCnstLcCtrlInvalidTokens
           default: 0x699679edd5369f11b49bac9198bd1ff344c5da2242d290bede094ca8f1435f85e0f7489a309cbe57b77f07ff3d7297200d5ab25561af49c696466a983e5346826a43628219e5a91389b9fe0d3b818e46ce7d846469a3b8e35a6bd38295bd2fb366b3d62126c75eeaeb93d32f5cbc77463c91917516d51a2fa4400adc2669e253
           randwidth: 1024
+        }
+        {
+          name: ChipGen
+          desc: Chip generation number.
+          type: logic [15:0]
+          default: 16'h 00001
+          expose: "true"
+          name_top: LcCtrlChipGen
+        }
+        {
+          name: ChipRev
+          desc: Chip revision number.
+          type: logic [15:0]
+          default: 16'h 00001
+          expose: "true"
+          name_top: LcCtrlChipRev
         }
       ]
       inter_signal_list:
@@ -2237,6 +2257,17 @@
           default: "'0"
           inst_name: lc_ctrl
           top_signame: lc_ctrl_otp_manuf_state
+          index: -1
+        }
+        {
+          name: hw_rev
+          struct: lc_hw_rev
+          package: lc_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
+          default: "'0"
+          inst_name: lc_ctrl
           index: -1
         }
         {
@@ -15497,6 +15528,17 @@
         default: "'0"
         inst_name: lc_ctrl
         top_signame: lc_ctrl_otp_manuf_state
+        index: -1
+      }
+      {
+        name: hw_rev
+        struct: lc_hw_rev
+        package: lc_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        default: "'0"
+        inst_name: lc_ctrl
         index: -1
       }
       {

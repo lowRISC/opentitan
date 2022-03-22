@@ -49,6 +49,11 @@ package lc_ctrl_pkg;
   parameter int LcKeymgrDivWidth = 128;
   typedef logic [LcKeymgrDivWidth-1:0] lc_keymgr_div_t;
 
+  typedef struct packed {
+    logic [lc_ctrl_reg_pkg::HwRevFieldWidth-1:0] chip_gen;
+    logic [lc_ctrl_reg_pkg::HwRevFieldWidth-1:0] chip_rev;
+  } lc_hw_rev_t;
+
   /////////////////////////////////////////////
   // Helper Functions for Life Cycle Signals //
   /////////////////////////////////////////////

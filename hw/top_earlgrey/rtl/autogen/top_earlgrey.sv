@@ -30,6 +30,8 @@ module top_earlgrey #(
   // parameters for otp_ctrl
   parameter OtpCtrlMemInitFile = "",
   // parameters for lc_ctrl
+  parameter logic [15:0] LcCtrlChipGen = 16'h 00001,
+  parameter logic [15:0] LcCtrlChipRev = 16'h 00001,
   // parameters for alert_handler
   // parameters for spi_host0
   // parameters for spi_host1
@@ -1506,7 +1508,9 @@ module top_earlgrey #(
     .RndCnstLcKeymgrDivInvalid(RndCnstLcCtrlLcKeymgrDivInvalid),
     .RndCnstLcKeymgrDivTestDevRma(RndCnstLcCtrlLcKeymgrDivTestDevRma),
     .RndCnstLcKeymgrDivProduction(RndCnstLcCtrlLcKeymgrDivProduction),
-    .RndCnstInvalidTokens(RndCnstLcCtrlInvalidTokens)
+    .RndCnstInvalidTokens(RndCnstLcCtrlInvalidTokens),
+    .ChipGen(LcCtrlChipGen),
+    .ChipRev(LcCtrlChipRev)
   ) u_lc_ctrl (
       // [15]: fatal_prog_error
       // [16]: fatal_state_error
@@ -1550,6 +1554,7 @@ module top_earlgrey #(
       .lc_keymgr_div_o(lc_ctrl_lc_keymgr_div),
       .otp_device_id_i(lc_ctrl_otp_device_id),
       .otp_manuf_state_i(lc_ctrl_otp_manuf_state),
+      .hw_rev_o(),
       .tl_i(lc_ctrl_tl_req),
       .tl_o(lc_ctrl_tl_rsp),
       .scanmode_i,

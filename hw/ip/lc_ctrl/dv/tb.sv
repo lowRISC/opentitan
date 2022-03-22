@@ -157,7 +157,8 @@ module tb;
 
     .otp_device_id_i(lc_ctrl_if.otp_device_id_i),
 
-    .otp_manuf_state_i(lc_ctrl_if.otp_manuf_state_i)
+    .otp_manuf_state_i(lc_ctrl_if.otp_manuf_state_i),
+    .hw_rev_o()
   );
 
   //
