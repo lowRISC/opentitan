@@ -95,6 +95,16 @@ package clkmgr_env_pkg;
     ClkMesrUsb
   } clk_mesr_e;
 
+  // Mubi test mode
+  typedef enum int {
+    ClkmgrMubiNone = 0,
+    ClkmgrMubiIdle = 1,
+    ClkmgrMubiLcCtrl = 2,
+    ClkmgrMubiLcHand = 3,
+    ClkmgrMubiHand = 4,
+    ClkmgrMubiDiv = 5
+  } clkmgr_mubi_e;
+
   // This is to examine separately the measurement and timeout recoverable error bits.
   typedef logic [ClkMesrUsb:0] recov_bits_t;
 

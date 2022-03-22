@@ -31,6 +31,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
 
   lc_tx_t               extclk_ctrl_low_speed_sel;
   lc_tx_t               extclk_ctrl_sel;
+  clkmgr_mubi_e         mubi_mode;
 
   virtual function void set_scanmode_on_low_weight();
     scanmode_on_weight = 2;
@@ -80,6 +81,8 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   endfunction
 
   task pre_start();
+    mubi_mode = ClkmgrMubiNone;
+    void'($value$plusargs("clkmgr_mubi_mode=%0d", mubi_mode));
     // Disable the assertions requiring strict mubi4 and lc_tx_t to test non-strict-true values.
     $assertoff(0, "prim_mubi4_sync");
     $assertoff(0, "prim_lc_sync");
@@ -335,5 +338,4 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     // Increasing its frequency improves DV efficiency without compromising quality.
     cfg.aon_clk_rst_vif.set_freq_mhz((1.0 * FakeAonClkHz) / 1_000_000);
   endtask
-
 endclass : clkmgr_base_vseq

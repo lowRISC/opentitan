@@ -45,11 +45,22 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   mubi4_t div_step_down_req_non_true;
 
   function void post_randomize();
-    lc_clk_byp_req = get_rand_lc_tx_val(8, 2, 2);
-    lc_debug_en = get_rand_lc_tx_val(8, 2, 2);
-    io_clk_byp_ack_non_true = get_rand_mubi4_val(0, 2, 8);
-    all_clk_byp_ack_non_true = get_rand_mubi4_val(0, 2, 8);
-    div_step_down_req_non_true = get_rand_mubi4_val(0, 2, 8);
+    if (mubi_mode == ClkmgrMubiLcHand) begin
+      // increase weight of illgal value only in ClkmgrMubiLcHand
+      lc_clk_byp_req = get_rand_lc_tx_val(.t_weight(1), .f_weight(1), .other_weight(14));
+    end else begin
+      lc_clk_byp_req = get_rand_lc_tx_val(.t_weight(8), .f_weight(2), .other_weight(2));
+    end
+    if (mubi_mode == ClkmgrMubiLcCtrl) begin
+      // increase weight of illgal value only in ClkmgrMubiLcHand
+      lc_debug_en = get_rand_lc_tx_val(.t_weight(1), .f_weight(1), .other_weight(14));
+    end else begin
+      lc_debug_en = get_rand_lc_tx_val(.t_weight(8), .f_weight(2), .other_weight(2));
+    end
+
+    io_clk_byp_ack_non_true = get_rand_mubi4_val(.t_weight(0), .f_weight(2), .other_weight(8));
+    all_clk_byp_ack_non_true = get_rand_mubi4_val(.t_weight(0), .f_weight(2), .other_weight(8));
+    div_step_down_req_non_true = get_rand_mubi4_val(.t_weight(0), .f_weight(2), .other_weight(8));
 
     `uvm_info(`gfn, $sformatf(
               "randomize gives lc_clk_byp_req=0x%x, lc_debug_en=0x%x", lc_clk_byp_req, lc_debug_en),
@@ -60,16 +71,34 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   // Notice only all_clk_byp_req and io_clk_byp_req Mubi4True and Mubi4False cause transitions.
 
   local task delayed_update_all_clk_byp_ack(mubi4_t value, int cycles);
+    if (mubi_mode == ClkmgrMubiHand && value == MuBi4True) begin
+      cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
+      cfg.clkmgr_vif.update_all_clk_byp_ack(get_rand_mubi4_val(.t_weight(0),
+                                                               .f_weight(1),
+                                                               .other_weight(1)));
+    end
     cfg.clk_rst_vif.wait_clks(cycles);
     cfg.clkmgr_vif.update_all_clk_byp_ack(value);
   endtask
 
   local task delayed_update_div_step_down_req(mubi4_t value, int cycles);
+    if (mubi_mode ==  ClkmgrMubiDiv && value == MuBi4True) begin
+      cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
+      cfg.clkmgr_vif.update_div_step_down_req(get_rand_mubi4_val(.t_weight(0),
+                                                                 .f_weight(1),
+                                                                 .other_weight(1)));
+    end
     cfg.clk_rst_vif.wait_clks(cycles);
     cfg.clkmgr_vif.update_div_step_down_req(value);
   endtask
 
   local task delayed_update_io_clk_byp_ack(mubi4_t value, int cycles);
+    if (mubi_mode == ClkmgrMubiHand && value == MuBi4True) begin
+      cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
+      cfg.clkmgr_vif.update_io_clk_byp_ack(get_rand_mubi4_val(.t_weight(0),
+                                                              .f_weight(1),
+                                                              .other_weight(1)));
+    end
     cfg.clk_rst_vif.wait_clks(cycles);
     cfg.clkmgr_vif.update_io_clk_byp_ack(value);
   endtask
