@@ -17,7 +17,6 @@ module flash_phy_core
 ) (
   input                              clk_i,
   input                              rst_ni,
-  input                              intg_err_i,
   input                              host_req_i,   // host request - read only
   input                              host_scramble_en_i,
   input                              host_ecc_en_i,
@@ -34,7 +33,7 @@ module flash_phy_core
   input flash_ctrl_pkg::flash_part_e part_i,
   input [InfoTypesWidth-1:0]         info_sel_i,
   input [BusBankAddrW-1:0]           addr_i,
-  input [BusWidth-1:0]               prog_data_i,
+  input [BusFullWidth-1:0]           prog_data_i,
   input                              prog_last_i,
   input flash_ctrl_pkg::flash_prog_e prog_type_i,
   input [KeySize-1:0]                addr_key_i,
@@ -54,7 +53,8 @@ module flash_phy_core
   output logic                       rd_err_o,
   output logic                       ecc_single_err_o,
   output logic [BusBankAddrW-1:0]    ecc_addr_o,
-  output logic                       fsm_err_o
+  output logic                       fsm_err_o,
+  output logic                       intg_err_o
 );
 
 
@@ -351,7 +351,7 @@ module flash_phy_core
 
   if (WidthMultiple == 1) begin : gen_single_prog_data
     assign flash_prog_req = reqs[PhyProg];
-    assign prog_data = prog_data_i;
+    assign prog_data = prog_data_i[BusWidth-1:0];
     assign prog_fsm_err = '0;
   end else begin : gen_prog_data
 
@@ -378,7 +378,8 @@ module flash_phy_core
       .ack_o(prog_ack),
       .block_data_o(prog_data),
       .data_o(prog_full_data),
-      .fsm_err_o(prog_fsm_err)
+      .fsm_err_o(prog_fsm_err),
+      .intg_err_o
     );
   end
 
@@ -418,7 +419,7 @@ module flash_phy_core
     .clk_i,
     .rst_ni,
     // both escalation and and integrity error cause the scramble keys to change
-    .intg_err_i(intg_err_i | mubi4_test_true_loose(flash_disable[ScrDisableIdx])),
+    .disable_i(mubi4_test_true_loose(flash_disable[ScrDisableIdx])),
     .calc_req_i(prog_calc_req | rd_calc_req),
     .op_req_i(prog_op_req | rd_op_req),
     .op_type_i(prog_op_req ? ScrambleOp : DeScrambleOp),

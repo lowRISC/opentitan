@@ -32,7 +32,7 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
   // software interface to prog_fifo
   input sw_wvalid_i,
   output logic sw_wready_o,
-  input [BusWidth-1:0] sw_wdata_i,
+  input [BusFullWidth-1:0] sw_wdata_i,
 
   // hardware interface to rd_ctrl / erase_ctrl
   input hw_req_i,
@@ -48,7 +48,7 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
 
   // hardware interface to prog_fifo
   input hw_wvalid_i,
-  input [BusWidth-1:0] hw_wdata_i,
+  input [BusFullWidth-1:0] hw_wdata_i,
   output logic hw_wready_o,
 
   // muxed interface to rd_ctrl / erase_ctrl
@@ -70,7 +70,7 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
 
   // muxed interface to prog_fifo
   output logic prog_fifo_wvalid_o,
-  output logic [BusWidth-1:0] prog_fifo_wdata_o,
+  output logic [BusFullWidth-1:0] prog_fifo_wdata_o,
   input logic prog_fifo_wready_i,
 
   // flash phy initialization ongoing

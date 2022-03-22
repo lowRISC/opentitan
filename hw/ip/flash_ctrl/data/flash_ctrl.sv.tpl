@@ -153,22 +153,22 @@ module flash_ctrl
   );
 
   // FIFO Connections
-  logic                 prog_fifo_wvalid;
-  logic                 prog_fifo_wready;
-  logic                 prog_fifo_rvalid;
-  logic                 prog_fifo_ren;
-  logic [BusWidth-1:0]  prog_fifo_wdata;
-  logic [BusWidth-1:0]  prog_fifo_rdata;
-  logic [FifoDepthW-1:0] prog_fifo_depth;
-  logic                 rd_fifo_wready;
-  logic                 rd_fifo_rvalid;
-  logic                 rd_fifo_rready;
-  logic                 rd_fifo_wen;
-  logic                 rd_fifo_ren;
-  logic [BusWidth-1:0]  rd_fifo_wdata;
-  logic [BusWidth-1:0]  rd_fifo_rdata;
-  logic [FifoDepthW-1:0] rd_fifo_depth;
-  logic                 rd_fifo_full;
+  logic                    prog_fifo_wvalid;
+  logic                    prog_fifo_wready;
+  logic                    prog_fifo_rvalid;
+  logic                    prog_fifo_ren;
+  logic [BusFullWidth-1:0] prog_fifo_wdata;
+  logic [BusFullWidth-1:0] prog_fifo_rdata;
+  logic [FifoDepthW-1:0]   prog_fifo_depth;
+  logic                    rd_fifo_wready;
+  logic                    rd_fifo_rvalid;
+  logic                    rd_fifo_rready;
+  logic                    rd_fifo_wen;
+  logic                    rd_fifo_ren;
+  logic [BusWidth-1:0]     rd_fifo_wdata;
+  logic [BusWidth-1:0]     rd_fifo_rdata;
+  logic [FifoDepthW-1:0]   rd_fifo_depth;
+  logic                    rd_fifo_full;
 
   // Program Control Connections
   logic prog_flash_req;
@@ -198,7 +198,7 @@ module flash_ctrl
   logic flash_req;
   logic flash_rd_done, flash_prog_done, flash_erase_done;
   logic flash_mp_err;
-  logic [BusWidth-1:0] flash_prog_data;
+  logic [BusFullWidth-1:0] flash_prog_data;
   logic flash_prog_last;
   flash_prog_e flash_prog_type;
   logic [BusWidth-1:0] flash_rd_data;
@@ -255,7 +255,7 @@ module flash_ctrl
   logic sw_rvalid;
   logic adapter_rvalid;
   logic sw_wvalid;
-  logic [BusWidth-1:0] sw_wdata;
+  logic [BusFullWidth-1:0] sw_wdata;
   logic sw_wready;
 
   // lfsr for local entropy usage
@@ -339,7 +339,7 @@ module flash_ctrl
     .hw_rvalid_o(hw_rvalid),
     .hw_rready_i(hw_rready),
     .hw_wvalid_i(hw_wvalid),
-    .hw_wdata_i(hw_wdata),
+    .hw_wdata_i(BusFullWidth'(hw_wdata)), // TODO: enhance for hw side later
     .hw_wready_o(hw_wready),
 
     // hardware interface does not talk to prog_fifo
@@ -468,10 +468,11 @@ module flash_ctrl
   assign prog_op_valid = op_start & prog_op;
 
   tlul_adapter_sram #(
-    .SramAw(1),         //address unused
+    .SramAw(1),          //address unused
     .SramDw(BusWidth),
-    .ByteAccess(0),     //flash may not support byte access
-    .ErrOnRead(1)       //reads not supported
+    .ByteAccess(0),      //flash may not support byte access
+    .ErrOnRead(1),       //reads not supported
+    .EnableDataIntgPt(1) //passthrough data integrity
   ) u_to_prog_fifo (
     .clk_i,
     .rst_ni,
@@ -486,13 +487,13 @@ module flash_ctrl
     .wmask_o     (),
     .intg_error_o(),
     .wdata_o     (sw_wdata),
-    .rdata_i     (BusWidth'(0)),
+    .rdata_i     ('0),
     .rvalid_i    (1'b0),
     .rerror_i    (2'b0)
   );
 
   prim_fifo_sync #(
-    .Width(BusWidth),
+    .Width(BusFullWidth),
     .Depth(FifoDepth)
   ) u_prog_fifo (
     .clk_i,
@@ -813,7 +814,6 @@ module flash_ctrl
   assign flash_phy_req.jtag_req.tms = cio_tms_i;
   assign flash_phy_req.jtag_req.tdi = cio_tdi_i;
   assign flash_phy_req.jtag_req.trst_n = '0;
-  assign flash_phy_req.intg_err = intg_err;
   assign cio_tdo_o = flash_phy_rsp.jtag_rsp.tdo;
   assign cio_tdo_en_o = flash_phy_rsp.jtag_rsp.tdo_oe;
   assign flash_rd_err = flash_phy_rsp.rd_err;
@@ -1162,7 +1162,6 @@ module flash_ctrl
   logic flash_host_rderr;
   logic [flash_ctrl_pkg::BusWidth-1:0] flash_host_rdata;
   logic [flash_ctrl_pkg::BusAddrW-1:0] flash_host_addr;
-  logic flash_host_intg_err;
 
   import prim_mubi_pkg::mubi4_test_true_loose;
   logic host_disable;
@@ -1188,7 +1187,7 @@ module flash_ctrl
     .ByteAccess(0),
     .ErrOnWrite(1),
     .CmdIntgCheck(1),
-    .EnableRspIntgGen(1),
+    .EnableRspIntgGen(1), // keep until read path generate
     .EnableDataIntgGen(1)
   ) u_tl_adapter_eflash (
     .clk_i,
@@ -1203,7 +1202,7 @@ module flash_ctrl
     .addr_o      (flash_host_addr),
     .wdata_o     (),
     .wmask_o     (),
-    .intg_error_o(flash_host_intg_err),
+    .intg_error_o(),
     .rdata_i     (flash_host_rdata),
     .rvalid_i    (flash_host_req_done | disabled_rvalid),
     .rerror_i    ({flash_host_rderr,1'b0} | disabled_err)
@@ -1215,7 +1214,6 @@ module flash_ctrl
     .clk_i,
     .rst_ni,
     .host_req_i        (flash_host_req),
-    .host_intg_err_i   (flash_host_intg_err),
     .host_addr_i       (flash_host_addr),
     .host_req_rdy_o    (flash_host_req_rdy),
     .host_req_done_o   (flash_host_req_done),
