@@ -16,6 +16,7 @@ class rstmgr_sw_rst_vseq extends rstmgr_base_vseq;
   task body();
     bit [NumSwResets-1:0] exp_ctrl_n;
     bit [NumSwResets-1:0] sw_rst_regwen = '1;
+    bit [NumSwResets-1:0] all_ones = '1;
     alert_crashdump_t bogus_alert_dump = '1;
     cpu_crash_dump_t bogus_cpu_dump = '1;
     set_alert_and_cpu_info_for_capture(bogus_alert_dump, bogus_cpu_dump);
@@ -28,17 +29,17 @@ class rstmgr_sw_rst_vseq extends rstmgr_base_vseq;
     // messes things up since setting the sw_rst_regwen CSR is irreversible.
     if (is_running_sequence("rstmgr_sw_rst_vseq")) begin
       // In preparation for the per-bit enable test, set sw_rst_ctrl_n to all 1.
-      csr_wr(.ptr(ral.sw_rst_ctrl_n[0]), .value('1));
+      rstmgr_csr_wr_unpack(.ptr(ral.sw_rst_ctrl_n), .value({NumSwResets{1'b1}}));
       for (int i = 0; i < NumSwResets; ++i) begin
         bit [NumSwResets-1:0] val_regwen;
         bit [NumSwResets-1:0] exp_regwen;
         val_regwen = ~(1 << i);
-        `uvm_info(`gfn, $sformatf("updating sw_rst_regwen with %b", val_regwen), UVM_LOW)
-        csr_wr(.ptr(ral.sw_rst_regwen[0]), .value(val_regwen));
+        `uvm_info(`gfn, $sformatf("updating sw_rst_regwen with %b", val_regwen[i]), UVM_LOW)
+        csr_wr(.ptr(ral.sw_rst_regwen[i]), .value(val_regwen[i]));
         exp_regwen = (~0) << (i + 1);
-        `uvm_info(`gfn, $sformatf("compare sw_rst_regwen against %b", exp_regwen), UVM_LOW)
-        csr_rd_check(.ptr(ral.sw_rst_regwen[0]), .compare_value(exp_regwen),
-                     .err_msg($sformatf("The expected value is %b", exp_regwen)));
+        `uvm_info(`gfn, $sformatf("compare sw_rst_regwen against %b", exp_regwen[i]), UVM_LOW)
+        csr_rd_check(.ptr(ral.sw_rst_regwen[i]), .compare_value(exp_regwen[i]),
+                     .err_msg($sformatf("The expected value is %b", exp_regwen[i])));
         check_sw_rst_ctrl_n(.sw_rst_ctrl_n('0), .sw_rst_regen(exp_regwen), .erase_ctrl_n(1'b1));
       end
       check_alert_and_cpu_info_after_reset(.alert_dump('0), .cpu_dump('0), .enable(1'b1));
