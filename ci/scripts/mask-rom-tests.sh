@@ -67,8 +67,7 @@ else
   # fairly hard to review so let's leave that alone for now. We wouldn't act on
   # it anyway.
   echo "Test is failing but I can't compare it to a merge base because we're on upstream/$DEFAULT"
-  cat bazel-results/newresults.txt
-  git switch "$ORIGINAL_BRANCH_NAME" || git checkout "$ORIGINAL_SHA"
+  cat bazel-results/newresult.txt
   exit 0
 fi
 
