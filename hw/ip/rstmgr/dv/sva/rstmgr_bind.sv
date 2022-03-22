@@ -75,7 +75,7 @@ module rstmgr_bind;
     }),
     .rst_ni,
     .parent_rst_n(rst_sys_src_n[1]),
-    .ctrl_ns(hw2reg.sw_rst_ctrl_n),
+    .ctrl_ns(reg2hw.sw_rst_ctrl_n),
     .rst_ens({
       rst_en_o.i2c2[1] == prim_mubi_pkg::MuBi4True,
       rst_en_o.i2c1[1] == prim_mubi_pkg::MuBi4True,
