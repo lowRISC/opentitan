@@ -1187,8 +1187,8 @@ dif_result_t dif_flash_ctrl_get_faults(const dif_flash_ctrl_state_t *handle,
                            FLASH_CTRL_STD_FAULT_STATUS_REG_OFFSET);
   faults.register_integrity_error =
       bitfield_bit32_read(reg, FLASH_CTRL_STD_FAULT_STATUS_REG_INTG_ERR_BIT);
-  faults.phy_integrity_error =
-      bitfield_bit32_read(reg, FLASH_CTRL_STD_FAULT_STATUS_PHY_INTG_ERR_BIT);
+  faults.phy_integrity_error = bitfield_bit32_read(
+      reg, FLASH_CTRL_STD_FAULT_STATUS_PHY_PROG_INTG_ERR_BIT);
   faults.lifecycle_manager_error =
       bitfield_bit32_read(reg, FLASH_CTRL_STD_FAULT_STATUS_LCMGR_ERR_BIT);
   faults.shadow_storage_error =
