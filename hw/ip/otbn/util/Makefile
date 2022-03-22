@@ -33,8 +33,6 @@ otbn-code-snippets-obj-dir := $(cs-build-dir)
 otbn-code-snippets-bin-dir := $(cs-build-dir)
 otbn-code-snippets-util-dir  := .
 
-include $(repo-top)/sw/otbn/code-snippets/rules.mk
-
 .PHONY: asm-check
 asm-check: $(otbn-code-snippets-elfs)
 
