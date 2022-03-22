@@ -214,6 +214,10 @@ create_generated_clock -name SPI_DEV_IN_CLK -source SPI_DEV_CLK -divide_by 1 \
 create_generated_clock -name SPI_DEV_OUT_CLK -source SPI_DEV_CLK -divide_by 1 \
     -invert [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/clk_o]
 
+# CSb clock
+create_clock -name SPI_CSB_CLK -period ${SPI_DEV_TCK} \
+  [get_pins top_earlgrey/u_spi_device/u_clk_csb_buf/clk_o]
+
 ## TODO: these are dummy constraints and likely incorrect, need to properly constrain min/max
 # FRACTION is reduced to 0.2 as internal datapath for SPI is half clk period
 set SPI_DEV_IN_DEL_FRACTION 0.2
@@ -324,6 +328,10 @@ create_generated_clock -name SPI_DEV_PASSTHRU_IN_CLK -source SPI_DEV_CLK -divide
 create_generated_clock -name SPI_DEV_PASSTHRU_OUT_CLK -source SPI_DEV_CLK -divide_by 1 \
     [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/clk_o] -add -master_clock SPI_DEV_PASSTHRU_CLK
 
+# CSb clock (added to SPI_CSB_CLK)
+create_clock -name SPI_DEV_PASSTHRU_CSB_CLK -period ${SPI_DEV_PASSTHRU_CK} \
+  [get_pins top_earlgrey/u_spi_device/u_clk_csb_buf/clk_o] -add
+
 # clocks accounting for propagation delay to the other side
 create_generated_clock -name SPI_HOST_PASSTHRU_CLK -source SPI_DEV_CLK \
     -master_clock SPI_DEV_PASSTHRU_CLK -divide_by 1 \
@@ -409,8 +417,8 @@ set_output_delay ${SPI_DEV_PASSTHRU_STORAGE_OUT_DEL} [get_ports SPI_HOST_CS_L] -
 set_clock_groups -name group1 -async                                  \
     -group [get_clocks MAIN_CLK                                     ] \
     -group [get_clocks USB_CLK                                      ] \
-    -group [get_clocks {SPI_DEV_CLK SPI_DEV_IN_CLK SPI_DEV_OUT_CLK} ] \
-    -group [get_clocks {SPI_DEV_PASSTHRU_CLK SPI_HOST_PASSTHRU_CLK SPI_DEV_PASSTHRU_IN_CLK SPI_DEV_PASSTHRU_OUT_CLK} ] \
+    -group [get_clocks {SPI_DEV_CLK SPI_DEV_IN_CLK SPI_DEV_OUT_CLK SPI_CSB_CLK} ] \
+    -group [get_clocks {SPI_DEV_PASSTHRU_CLK SPI_HOST_PASSTHRU_CLK SPI_DEV_PASSTHRU_IN_CLK SPI_DEV_PASSTHRU_OUT_CLK SPI_DEV_PASSTHRU_CSB_CLK} ] \
     -group [get_clocks {IO_CLK SPI_HOST_INT_CLK SPI_HOST_CLK}       ] \
     -group [get_clocks IO_DIV2_CLK                                  ] \
     -group [get_clocks IO_DIV4_CLK                                  ] \
