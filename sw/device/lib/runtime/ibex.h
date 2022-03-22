@@ -145,11 +145,10 @@ inline ibex_timeout_t ibex_timeout_init(uint32_t timeout_usec) {
 }
 
 /**
- * Returns boolean indicating the timeout expired waiting for an expression to
- * be true.
+ * Check whether the timeout has expired.
  *
  * @param timeout Holds the counter start value.
- * @return Boolean indicating the timeout expired.
+ * @return True if the timeout has expired and false otherwise.
  */
 inline bool ibex_timeout_check(const ibex_timeout_t *timeout) {
   return ibex_mcycle_read() - timeout->start > timeout->cycles;
@@ -177,7 +176,7 @@ inline uint64_t ibex_timeout_elapsed(const ibex_timeout_t *timeout) {
   do {                                                                    \
     const ibex_timeout_t timeout_ = ibex_timeout_init(timeout_usec);      \
     while (!(expr)) {                                                     \
-      CHECK(ibex_timeout_check(&timeout_),                                \
+      CHECK(!ibex_timeout_check(&timeout_),                               \
             "Timed out after %d usec (%d CPU cycles) waiting for " #expr, \
             timeout_usec, (uint32_t)timeout_.cycles);                     \
     }                                                                     \
