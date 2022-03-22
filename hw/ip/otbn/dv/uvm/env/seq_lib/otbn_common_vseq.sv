@@ -107,4 +107,21 @@ class otbn_common_vseq extends otbn_base_vseq;
 
   endfunction
 
+  virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
+    super.check_sec_cm_fi_resp(if_proxy);
+    csr_utils_pkg::csr_rd_check(.ptr(ral.fatal_alert_cause.bad_internal_state), .compare_value(1));
+    csr_utils_pkg::csr_rd_check(.ptr(ral.status), .compare_value('hFF));
+  endtask : check_sec_cm_fi_resp
+
+  virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
+    if (enable) begin
+      $asserton(0, "tb.dut.u_otbn_core.u_otbn_controller.ControllerStateValid");
+      $asserton(0, "tb.MatchingStatus_A");
+    end else begin
+      $assertoff(0, "tb.dut.u_otbn_core.u_otbn_controller.ControllerStateValid");
+      $assertoff(0, "tb.MatchingStatus_A");
+    end
+  endfunction: sec_cm_fi_ctrl_svas
+
+
 endclass
