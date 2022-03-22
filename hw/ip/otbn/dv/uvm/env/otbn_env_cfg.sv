@@ -84,8 +84,9 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     // Tell the CIP base code how many interrupts we have (defaults to zero)
     num_interrupts = 1;
 
-    // Tell the CIP base code what alert we generate if we see a TL fault.
+    // Tell the CIP base code what alert we generate if we see a TL or sec cm fault.
     tl_intg_alert_name = "fatal";
+    sec_cm_alert_name = "fatal";
 
     model_agent_cfg  = otbn_model_agent_cfg  ::type_id::create("model_agent_cfg");
     keymgr_sideload_agent_cfg = otbn_sideload_agent_cfg::type_id::create(
