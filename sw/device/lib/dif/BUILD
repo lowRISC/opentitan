@@ -15,12 +15,12 @@ cc_library(
 
 cc_library(
     name = "test_base",
+    testonly = True,
     hdrs = ["dif_test_base.h"],
     deps = [
         ":base",
         "@googletest//:gtest",
     ],
-    testonly = True,
 )
 
 cc_library(

@@ -9,8 +9,8 @@ package(default_visibility = ["//visibility:public"])
 otbn_binary(
     name = "p256_ecdsa",
     srcs = [
-        "p256_ecdsa.s",
         "p256.s",
+        "p256_ecdsa.s",
     ],
 )
 
@@ -41,9 +41,9 @@ otbn_binary(
         "run_rsa_verify_3072.s",
     ],
     deps = [
-        ":rsa_verify_3072_rr",
+        ":rsa_verify_3072",
         ":rsa_verify_3072_m0inv",
-        ":rsa_verify_3072"
+        ":rsa_verify_3072_rr",
     ],
 )
 
@@ -53,7 +53,7 @@ otbn_binary(
         "run_rsa_verify_3072_rr_modexp.s",
     ],
     deps = [
+        ":rsa_verify_3072",
         ":rsa_verify_3072_rr",
-        ":rsa_verify_3072"
     ],
 )
