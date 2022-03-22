@@ -166,7 +166,7 @@ Throughout the OpenTitan repo, `BUILD` files describe targets and dependencies i
 The Linter for Bazel files is called "buildifier" and can be built and run with Bazel by running:
 
 ```console
-bazel run //buildifier_fix
+bazel run //:buildifier_fix
 ```
 
 Which will run the linter on all of the WORKSPACE, BUILD and .bzl files in the workspace.
