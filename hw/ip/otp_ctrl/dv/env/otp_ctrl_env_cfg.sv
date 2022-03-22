@@ -40,8 +40,9 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
 
   // TODO: reggen tool optimization. Temp mannual setup for prim_tl_agent.
   rand tl_agent_cfg prim_tl_agent_cfg;
+
   // Introduce this flag to avoid close source conflict.
-  bit               create_prim_tl_agent = 1;
+  bit create_prim_tl_agent = 1;
 
   `uvm_object_utils_begin(otp_ctrl_env_cfg)
   `uvm_object_utils_end

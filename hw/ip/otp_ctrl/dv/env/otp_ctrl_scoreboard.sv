@@ -120,9 +120,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         @(posedge cfg.otp_ctrl_vif.pwr_otp_done_o || cfg.under_reset ||
                   cfg.otp_ctrl_vif.alert_reqs) begin
           if (!cfg.under_reset && !cfg.otp_ctrl_vif.alert_reqs) begin
-            otp_ctrl_part_pkg::otp_hw_cfg_data_t exp_hwcfg_data;
-            otp_ctrl_pkg::otp_keymgr_key_t       exp_keymgr_data;
-            otp_ctrl_pkg::otp_lc_data_t          exp_lc_data;
+            otp_ctrl_part_pkg::otp_hw_cfg_data_t   exp_hwcfg_data;
+            otp_ctrl_pkg::otp_keymgr_key_t         exp_keymgr_data;
+            otp_ctrl_pkg::otp_lc_data_t            exp_lc_data;
             bit [otp_ctrl_pkg::KeyMgrKeyWidth-1:0] exp_keymgr_key0, exp_keymgr_key1;
 
             if (dai_digest_ip != LifeCycleIdx) begin

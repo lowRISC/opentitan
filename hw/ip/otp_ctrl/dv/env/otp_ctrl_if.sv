@@ -217,6 +217,36 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     endcase
   endtask
 
+  // This task forces otp_ctrl's internal mubi signals to values that are not mubi::true or mubi::
+  // false. Then scb will check if design treats these values as locking the partition access.
+  task automatic force_part_access_mubi(otp_part_access_lock_t forced_part_access_sel[NumPart-1]);
+    static part_access_t [NumPart-1:0] part_access_val, part_access_dai_val;
+    @(posedge clk_i);
+
+    part_access_val = tb.dut.part_access;
+    part_access_dai_val = tb.dut.part_access_dai;
+
+    foreach (forced_part_access_sel[i]) begin
+      if (forced_part_access_sel[i].read_lock) begin
+        part_access_val[i].read_lock = get_rand_mubi8_val(.t_weight(0), .f_weight(0));
+        part_access_dai_val[i].read_lock = get_rand_mubi8_val(.t_weight(0), .f_weight(0));
+      end
+      if (forced_part_access_sel[i].write_lock) begin
+        part_access_val[i].write_lock = get_rand_mubi8_val(.t_weight(0), .f_weight(0));
+        part_access_dai_val[i].write_lock = get_rand_mubi8_val(.t_weight(0), .f_weight(0));
+      end
+   end
+
+   force tb.dut.part_access = part_access_val;
+   force tb.dut.part_access_dai = part_access_dai_val;
+  endtask
+
+  task automatic release_part_access_mubi();
+    @(posedge clk_i);
+    release tb.dut.part_access;
+    release tb.dut.part_access_dai;
+  endtask
+
   // In open source environment, `otp_alert_o` to is tied to 2'b01 (alert_p is 0 and alert_n is 1).
   if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) `ASSERT(OtpAstAlertO_A, otp_alert_o == 2'b01)
 

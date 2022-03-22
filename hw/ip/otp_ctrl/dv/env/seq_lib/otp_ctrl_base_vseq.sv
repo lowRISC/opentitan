@@ -64,6 +64,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   // Cfg errors are cleared after reset
   virtual task apply_reset(string kind = "HARD");
     super.apply_reset(kind);
+    cfg.otp_ctrl_vif.release_part_access_mubi();
   endtask
 
   virtual task dut_shutdown();
@@ -255,6 +256,61 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     csr_rd(.ptr(ral.secret1_digest[1]),        .value(val));
     csr_rd(.ptr(ral.secret2_digest[0]),        .value(val));
     csr_rd(.ptr(ral.secret2_digest[1]),        .value(val));
+  endtask
+
+  // If the partition is read/write locked, there is 20% chance we will force the internal mubi
+  // access signal to the values other than mubi::true or mubi::false.
+  virtual task force_mubi_part_access();
+    otp_part_access_lock_t forced_mubi_part_access[NumPart-1];
+
+    if (`gmv(ral.vendor_test_digest[0]) || `gmv(ral.vendor_test_digest[1])) begin
+      if (!$urandom_range(0, 4)) forced_mubi_part_access[VendorTestIdx].write_lock = 1;
+    end
+    if (`gmv(ral.vendor_test_read_lock) == 0) begin
+      if (!$urandom_range(0, 4)) forced_mubi_part_access[VendorTestIdx].read_lock = 1;
+    end
+
+    if (`gmv(ral.creator_sw_cfg_digest[0]) || `gmv(ral.creator_sw_cfg_digest[1])) begin
+      if (!$urandom_range(0, 4)) forced_mubi_part_access[CreatorSwCfgIdx].write_lock = 1;
+    end
+    if (`gmv(ral.creator_sw_cfg_read_lock) == 0) begin
+      if (!$urandom_range(0, 4)) forced_mubi_part_access[CreatorSwCfgIdx].read_lock = 1;
+    end
+
+    if (`gmv(ral.owner_sw_cfg_digest[0]) || `gmv(ral.owner_sw_cfg_digest[1])) begin
+      if ($urandom_range(0, 4) == 0) forced_mubi_part_access[OwnerSwCfgIdx].write_lock = 1;
+    end
+    if (`gmv(ral.owner_sw_cfg_read_lock) == 0) begin
+      if (!$urandom_range(0, 4)) forced_mubi_part_access[OwnerSwCfgIdx].read_lock = 1;
+    end
+
+    if (`gmv(ral.hw_cfg_digest[0]) || `gmv(ral.hw_cfg_digest[1])) begin
+      // TODO: hw_cfg part cannot be read locked.
+      // if (!$urandom_range(0, 4)) cfg.forced_mubi_part_access[HwCfgIdx].read_lock = 1;
+      if (!$urandom_range(0, 4)) forced_mubi_part_access[HwCfgIdx].write_lock = 1;
+    end
+
+    if (`gmv(ral.secret0_digest[0]) || `gmv(ral.secret0_digest[1])) begin
+      if (!$urandom_range(0, 4)) forced_mubi_part_access[Secret0Idx].read_lock = 1;
+      if (!$urandom_range(0, 4)) forced_mubi_part_access[Secret0Idx].write_lock = 1;
+    end
+
+    if (`gmv(ral.secret1_digest[0]) || `gmv(ral.secret1_digest[1])) begin
+      if (!$urandom_range(0, 4)) forced_mubi_part_access[Secret1Idx].read_lock = 1;
+      if (!$urandom_range(0, 4)) forced_mubi_part_access[Secret1Idx].write_lock = 1;
+    end
+
+    if (`gmv(ral.secret2_digest[0]) || `gmv(ral.secret2_digest[1])) begin
+      if (!$urandom_range(0, 4)) forced_mubi_part_access[Secret2Idx].read_lock = 1;
+      if (!$urandom_range(0, 4)) forced_mubi_part_access[Secret2Idx].write_lock = 1;
+    end
+
+    foreach (forced_mubi_part_access[i]) begin
+      `uvm_info(`gfn, $sformatf("partition %0d inject mubi value: read=%0b, write=%0b", i,
+          forced_mubi_part_access[i].read_lock, forced_mubi_part_access[i].write_lock), UVM_HIGH)
+    end
+
+    cfg.otp_ctrl_vif.force_part_access_mubi(forced_mubi_part_access);
   endtask
 
   // This function backdoor inject error according to ecc_err.
