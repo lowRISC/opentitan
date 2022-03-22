@@ -5,7 +5,7 @@
 // trans test vseq
 // This is a more randomized version of the corresponding test in the smoke sequence.
 // Starts with random units busy, set the hints at random. The idle units whose hint bit is off
-// will be disabled, but the others will remain enabled. Then all units are made idle to check 
+// will be disabled, but the others will remain enabled. Then all units are made idle to check
 // that status matches hints. Prior to the next round this raises all hints to avoid units whose
 // clock is off but are not idle.
 //
@@ -44,12 +44,17 @@ class clkmgr_trans_vseq extends clkmgr_base_vseq;
       bool_idle = mubi_hintables_to_hintables(idle);
       `DV_CHECK_EQ(value, initial_hints | ~bool_idle, $sformatf(
                    "Busy units have status high: hints=0x%x, idle=0x%x", initial_hints, bool_idle))
+      // Add random idle
+      if (mubi_mode == ClkmgrMubiIdle) drive_idle();
 
       // Setting all idle should make hint_status match hints.
       cfg.clkmgr_vif.update_idle({NUM_TRANS{MuBi4True}});
       cfg.io_clk_rst_vif.wait_clks(IO_DIV4_SYNC_CYCLES);
       csr_rd(.ptr(ral.clk_hints_status), .value(value));
       `DV_CHECK_EQ(value, initial_hints, "All idle: units status matches hints")
+
+
+      if (mubi_mode == ClkmgrMubiIdle) drive_idle();
 
       // Now set all hints, and the status should also be all ones.
       csr_wr(.ptr(ral.clk_hints), .value('1));
@@ -62,4 +67,16 @@ class clkmgr_trans_vseq extends clkmgr_base_vseq;
     end
   endtask : body
 
+  task drive_idle();
+    int period;
+
+    repeat (30) begin
+      period = $urandom_range(1, 10);
+      @cfg.clkmgr_vif.trans_cb;
+      cfg.clkmgr_vif.idle_i = get_rand_mubi4_val(.t_weight(0),
+                                                 .f_weight(0),
+                                                 .other_weight(1));
+      repeat(period) @cfg.clkmgr_vif.trans_cb;
+    end
+  endtask // drive_idle
 endclass : clkmgr_trans_vseq
