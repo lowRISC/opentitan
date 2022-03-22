@@ -840,7 +840,7 @@ TEST_F(FlashCtrlTest, SimpleQueries) {
   EXPECT_READ32(FLASH_CTRL_STD_FAULT_STATUS_REG_OFFSET,
                 {
                     {FLASH_CTRL_STD_FAULT_STATUS_REG_INTG_ERR_BIT, 0},
-                    {FLASH_CTRL_STD_FAULT_STATUS_PHY_INTG_ERR_BIT, 1},
+                    {FLASH_CTRL_STD_FAULT_STATUS_PHY_PROG_INTG_ERR_BIT, 1},
                     {FLASH_CTRL_STD_FAULT_STATUS_LCMGR_ERR_BIT, 0},
                     {FLASH_CTRL_STD_FAULT_STATUS_STORAGE_ERR_BIT, 1},
                 });
