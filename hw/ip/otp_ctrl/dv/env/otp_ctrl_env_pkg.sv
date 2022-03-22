@@ -225,6 +225,10 @@ package otp_ctrl_env_pkg;
 
   function automatic bit is_sw_part(bit [TL_DW-1:0] addr);
     int part_idx = get_part_index(addr);
+    return is_sw_part_idx(part_idx);
+  endfunction
+
+  function automatic bit is_sw_part_idx(int part_idx);
     if (part_idx inside {VendorTestIdx, CreatorSwCfgIdx, OwnerSwCfgIdx}) return 1;
     else return 0;
   endfunction
