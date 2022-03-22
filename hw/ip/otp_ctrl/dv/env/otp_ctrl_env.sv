@@ -79,6 +79,9 @@ class otp_ctrl_env #(
       `uvm_fatal(`gfn, "failed to get otp_ctrl_vif from uvm_config_db")
     end
 
+    // Check if `NumPart` constant is assigned to the correct value.
+    `DV_CHECK(NumPart == (LifeCycleIdx + 1))
+
   endfunction
 
   function void connect_phase(uvm_phase phase);
