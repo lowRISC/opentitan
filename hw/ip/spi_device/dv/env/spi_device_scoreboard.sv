@@ -69,8 +69,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     spi_item item;
     forever begin
       pass_spi_data_fifo.get(item);
-      //TODO Implement checking of passthrough data
       `uvm_info(`gfn, $sformatf("received pass spi item:\n%0s", item.sprint()), UVM_HIGH)
+      if (`gmv(ral.control.mode) == PassthroughMode) begin
+        compare_pass_opcode_addr({item.data[3], item.data[2], item.data[1], item.data[0]});
+      end
     end
   endtask
 
@@ -203,6 +205,45 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     else begin
       `uvm_info(`gfn, $sformatf("RX overflow data: 0x%0h ptr: 0x%0h", data, rx_wptr_exp),
                 UVM_MEDIUM)
+    end
+  endfunction
+
+  // Check if opcode is enabled and returns index of enabled opcode
+  // Checks if there are duplicate enabled opcodes - not proper config
+  // HW parses commands this way
+  virtual function check_opcode_enable(bit [7:0] q_opcode, ref bit enable, ref bit [4:0] en_idx);
+    enable = 0;
+    en_idx = 24; // Larger than num of cmd_info if not enabled
+    for (int i = 0; i<24; i++)  begin
+      if (q_opcode == `gmv(ral.cmd_info[i].opcode) && `gmv(ral.cmd_info[i].valid) == 1) begin
+        `DV_CHECK_EQ(enable, 0, "Each CMD_INFO slot should have unique opcode")
+        enable = 1;
+        en_idx = i;
+      end
+    end
+  endfunction
+
+  // Task that compares passthrough opcode and first 3B of address
+  // TODO modify to check opcode, address and payload
+  virtual function void compare_pass_opcode_addr(bit [31:0] data_act);
+    bit enabled;
+    bit [4:0] en_idx;
+    bit [7:0] opcode = data_act[7:0];
+    bit [4:0] cmd_position = opcode / 32;
+    bit [4:0] cmd_offset = opcode % 32;
+    bit [31:0] mask_swap = `gmv(ral.addr_swap_mask.mask);
+    bit [31:0] data_swap = `gmv(ral.addr_swap_data.data);
+    check_opcode_enable(opcode, enabled, en_idx);
+    if (enabled && (`gmv(ral.cmd_filter[cmd_position].filter[cmd_offset]) == 0)) begin
+      bit [31:0] data_exp     = rx_word_q.pop_front();
+      if (`gmv(ral.cmd_info[en_idx].addr_swap_en) == 1) begin // Addr Swap enable
+        for (int i = 0; i < 24; i++) begin // TODO add 4B Address Support
+          if (mask_swap[i] == 1) begin
+            data_exp[i+8] = data_swap[i];
+          end
+        end
+      end
+      `DV_CHECK_EQ(data_act, data_exp, "Compare PASSTHROUGH Data")
     end
   endfunction
 
