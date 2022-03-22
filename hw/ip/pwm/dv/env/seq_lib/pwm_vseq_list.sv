@@ -5,4 +5,4 @@
 `include "pwm_base_vseq.sv"
 `include "pwm_smoke_vseq.sv"
 `include "pwm_common_vseq.sv"
-//`include "pwm_rx_tx_vseq.sv"
+`include "pwm_rand_output_vseq.sv"
