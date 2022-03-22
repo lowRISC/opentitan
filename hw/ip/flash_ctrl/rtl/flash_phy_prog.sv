@@ -110,17 +110,14 @@ module flash_phy_prog import flash_phy_pkg::*; (
   assign pack_data  = (data_sel == Actual) ? data_i[BusWidth-1:0] : {BusWidth{1'b1}};
 
   logic data_intg_ok;
-  logic [1:0] data_err;
+  logic data_err;
 
-  // TODO: for clarity purposes, tlul should have an integrity wrapper module that is
-  // instantiated here.  That way the module does not need to know exactly what is used.
-  prim_secded_inv_39_32_dec u_data_intg_chk (
-    .data_i(data_i),
-    .data_o(),
-    .syndrome_o(),
-    .err_o(data_err)
+  // use the tlul integrity module directly for bus integrity
+  tlul_data_integ_dec u_data_intg_chk (
+    .data_intg_i(data_i),
+    .data_err_o(data_err)
   );
-  assign data_intg_ok = (data_err == '0);
+  assign data_intg_ok = ~data_err;
 
   logic data_invalid_q, data_invalid_d;
   // hold on integrity failure indication until reset

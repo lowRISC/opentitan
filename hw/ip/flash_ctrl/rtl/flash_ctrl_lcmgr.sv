@@ -34,6 +34,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   input wready_i,
 
   // direct form rd_fifo
+  // rdata_i is {data_integrity, data}, the upper bits store integrity
   input [BusFullWidth-1:0] rdata_i,
 
   // direct to wr_fifo
@@ -203,17 +204,13 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   end
 
   // read data integrity check
-  // TODO: for clarity purposes, tlul should have an integrity wrapper module that is
-  // instantiated here.  That way the module does not need to know exactly what is used.
-  logic [1:0] data_err;
+  logic data_err;
   logic data_intg_ok;
-  prim_secded_inv_39_32_dec u_data_intg_chk (
-    .data_i(rdata_i),
-    .data_o(),
-    .syndrome_o(),
-    .err_o(data_err)
+  tlul_data_integ_dec u_data_intg_chk (
+    .data_intg_i(rdata_i),
+    .data_err_o(data_err)
   );
-  assign data_intg_ok = (data_err == '0);
+  assign data_intg_ok = ~data_err;
 
   // hold on to failed integrity until reset
   logic data_invalid_d, data_invalid_q;

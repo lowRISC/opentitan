@@ -587,10 +587,10 @@ module flash_phy_rd
     assign data_out_pre = data_err_o ? {BusWidth{1'b1}} : bus_words_packed[rsp_fifo_rdata.word_sel];
   end
 
-  // TODO: Replace with a wrapper from tlul, that way the module does not need to know what this is
-  prim_secded_inv_39_32_enc u_bus_intg (
+  // use the tlul integrity module directly for bus integrity
+  tlul_data_integ_enc u_bus_intg (
     .data_i(data_out_pre),
-    .data_o(data_o)
+    .data_intg_o(data_o)
   );
 
   // add plaintext decoding here

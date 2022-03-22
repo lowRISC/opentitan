@@ -331,7 +331,7 @@ The flash protocol controller distinguishes code / data transactions through the
 #### Flash Errors and Faults
 
 The flash protocol controller maintains 3 different categories of observed errors and faults.
-In general, errors are considered recoverable and primarily geared towards problems that could have been caused by software.
+In general, errors are considered recoverable and primarily geared towards problems that could have been caused by software or that occurred during a software initiated operation.
 Errors can be found in {{< regref "ERR_CODE" >}}.
 
 Faults, on the other hand, represent error events that are unlikely to have been caused by software and represent a major malfunction of the system.
@@ -350,18 +350,54 @@ See ({{< relref "#flash-escalation" >}}) for further differentiation between sta
 
 Since the flash controller has multiple interfaces for access, transmission integrity failures can manifest in different ways.
 
-- Transmission integrity on direct host read access to flash or host initiated controller reads
-  - No detection in the flash as the data and its associated integrity are transmitted to the host for handling as part of end-to-end transmission integrity.
+There are 4 interfaces:
+- host direct access to flash controller [register files](#host-direct-reg).
+- host direct access to [flash macro](#host-direct-macro)
+- host / software initiated flash controller access to [flash macro (read / program / erase)](#host-controller-op)
+- life cycle management interface / hardware initiated flash controller access to [flash macro (read / program / erase)](#hw-controller-op)
 
-- Transmission integrity failure on reg file accesses
-  - A fault is registered in {{< regref "STD_FAULT_STATUS.REG_INTG_ERR" >}} and the issuing host receives an in-band error response.
+The impact of transmission integrity of each interface is described below.
 
-- Transmission integrity failure on software and life cycle manager interface initiated controller program
-  - A fault is registered in {{< regref "STD_FAULT_STATUS.PHY_PROG_INTG_ERR" >}} and the program operation is dropped.
+##### Host Direct Access to Flash Controller Register Files {#host-direct-reg}
+This category of transmission integrity behaves identically to other modules.
+A bus transaction, when received, is checked for command and data payload integrity.
+If an integrity error is seen, the issuing bus host receives an in-band error response and a fault is registered in {{< regref "STD_FAULT_STATUS.REG_INTG_ERR" >}}.
 
-- Transmission integrity failure on life cycle manager interface initiated controller read
-  - A fault is registered in {{< regref "STD_FAULT_STATUS.LCMGR_INTG_ERR" >}}.
+##### Host Direct Access to Flash Macro {#host-direct-macro}
+Flash can only be read by the host.
+The transmission integrity scheme used is end-to-end, so integrity generated inside the flash is fed directly to the host.
+It is the host's responsibility to check for integrity correctness and react accordingly.
 
+##### Host / Software Initiated Access to Flash Macro {#host-controller-op}
+Since controller operations are initiated through writes to the register file, the command check is identical to host direct access to [regfiles](#host-direct-reg).
+Controller reads behave similarly to [host direct access to macro](#host-direct-macro), the read data and its associated integrity are returned through the controller read fifo for the initiating host to handle.
+
+For program operations, the write data and its associated integrity are stored and propagated through the flash protocol and physical controllers.
+Prior to packing the data for final flash program, the data is then checked for integrity correctness.
+If the data integrity is incorrect, an in-band error response is returned to the initiating host and an error is registered in {{< regref "ERR_CODE.PROG_INTG_ERR" >}}.
+An error is also registered in {{< regref "STD_FAULT_STATUS.PROG_INTG_ERR" >}} to indicate that a fatal fault has occurred.
+
+The reasons a program error is registered in two locations are two-fold:
+- It is registered in {{< regref "ERR_CODE" >}} so software can discover during operation status that a program has failed.
+- It is registered in {{< regref "STD_FAULT_STATUS" >}} because transmission integrity failures represent a fatal failure in the standard structure of the design, something that should never happen.
+
+##### Life Cycle Management Interface / Hardware Initiated Access to Flash Macro {#hw-controller-op}
+The life cycle management interface issues transactions directly to the flash controller and does not perform a command payload integrity check.
+
+For read operations, the read data and its associated integrity are directly checked by the life cycle management interface.
+If an integrity error is seen, it is registered in {{< regref "FAULT_STATUS.LCMGR_INTG_ERR" >}}.
+
+For program operations, the program data and its associated integrity are propagated into the flash controller.
+If an integrity error is seen, an error is registered in {{< regref "FAULT_STATUS.PROG_INTG_ERR" >}}.
+
+#### ECC Related Read Errors
+
+In addition to transmission integrity errors described above, the flash can also emit read errors based on [ECC checks](#flash-ecc).
+
+Flash reliability ECC errors (multi-bit errors) and integrity ECC errors (storage errors) are both reflected as in-band errors to the entity that issued the transaction.
+That means if a host direct read, controller initiated read or hardware initiated read encounters one of these errors, the error is directly reflected in the operation status.
+
+Further, reliability / integrity ECC errors are also captured in {{< regref "FAULT_STATUS" >}} and can be used to generate fatal alerts.
 
 #### Flash Escalation
 
@@ -719,6 +755,29 @@ However, instead of setting the {{< regref "CONTROL" >}} register for read opera
 Software will then fill the program FIFO and wait for the controller to consume this data.
 Similar to the read case, the controller will automatically stall when there is insufficient data in the FIFO.
 When all desired words have been programmed, the controller will post OP_DONE in the {{< regref "OP_STATUS" >}} register.
+
+## Debugging a Read Error
+Since flash has multiple access modes, debugging read errors can be complicated.
+The following lays out the expected cases.
+
+### Error Encountered by Software Direct Read
+If software reads the flash directly, it may encounter a variety of errors (read data integrity / ECC failures, both reliability and integrity).
+ECC failures create in-band error responses and should be recognized as a bus exception.
+Read data integrity failures also create exceptions directly inside the processor as part of end-to-end transmission integrity.
+
+From these exceptions, software should be able to determine the error address through processor specific means.
+Once the address is discovered, further steps can be taken to triage the issue.
+
+### Error Encountered by Software Initiated Controller Operations
+A controller operation can encounter a much greater variety of errors, see {{< regref "ERR_CODE" >}}.
+When such an error is encountered, as reflected by {{< regref "OP_STATUS" >}} when the operation is complete, software can examine the {{< regref "ERR_ADDR" >}} to determine the error location.
+Once the address is discovered, further steps can be taken to triage the issue.
+
+### Correctable ECC Errors
+Correctable ECC errors are by nature not fatal errors and do not stop operation.
+Instead, if the error is correctable, the flash controller fixes the issue and registers the last address where a single bit error was seen.
+See {{< regref "ECC_SINGLE_ERR_CNT" >}} and {{< regref "ECC_SINGLE_ERR_ADDR" >}}
+
 
 ## Register Table
 

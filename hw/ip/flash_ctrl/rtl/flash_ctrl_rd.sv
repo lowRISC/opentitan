@@ -30,7 +30,7 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
   output logic             flash_ovfl_o,
   input [BusFullWidth-1:0] flash_data_i,
   input                    flash_done_i,
-  input                    flash_phy_err_i,
+  input                    flash_macro_err_i,
   input                    flash_rd_err_i,
   input                    flash_mp_err_i
 );
@@ -135,7 +135,7 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
         if (txn_done) begin
           op_err_d.mp_err = flash_mp_err_i;
           op_err_d.rd_err = flash_rd_err_i;
-          op_err_d.phy_err = flash_phy_err_i;
+          op_err_d.macro_err = flash_macro_err_i;
 
           data_wr_o = 1'b1;
 

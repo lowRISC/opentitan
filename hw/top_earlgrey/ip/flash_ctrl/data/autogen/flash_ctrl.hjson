@@ -1572,38 +1572,47 @@
             desc: '''
               Flash read has an error.
               This could be a reliability ECC error or an storage integrity error
-              encountered during a software issued controller read.
-              Please see !!ERR_ADDR for exact address.
+              encountered during a software issued controller read, see !!STD_FAULT_STATUS.
+              See !!ERR_ADDR for exact address.
               This is a synchronous error.
             '''
           },
           { bits: "3",
-            name: "prog_win_err",
+            name: "prog_err",
             desc: '''
-              Flash program has a window resolution error.  Ie, the start of program
-              and end of program are in different windows.  Please check !!ADDR.
+              Flash program has an error.
+              This could be a program integrity error, see !!STD_FAULT_STATUS.
               This is a synchronous error.
             '''
           },
           { bits: "4",
+            name: "prog_win_err",
+            desc: '''
+              Flash program has a window resolution error.  Ie, the start of program
+              and end of program are in different windows.  Please check !!ERR_ADDR.
+              This is a synchronous error.
+            '''
+          },
+          { bits: "5",
             name: "prog_type_err",
             desc: '''
               Flash program selected unavailable type, see !!PROG_TYPE_EN.
               This is a synchronous error.
             '''
           },
-          { bits: "5",
-            name: "flash_phy_err",
+          { bits: "6",
+            name: "flash_macro_err",
             desc: '''
-              The flash access encountered a native flash error.
+              The flash access encountered a native flash macro error.
               Please check the vendor specs for details of the error.
               This is a synchronous error.
             '''
           },
-          { bits: "6",
+          { bits: "7",
             name: "update_err",
             desc: '''
               A shadow register encountered an update error.
+              This is an asynchronous error.
             '''
           },
         ]
@@ -1626,7 +1635,7 @@
             '''
           },
           { bits: "1",
-            name: "phy_prog_intg_err",
+            name: "prog_intg_err",
             desc: '''
               The flash controller encountered a program data transmission integrity error.
             '''
@@ -1642,7 +1651,7 @@
             name: "lcmgr_intg_err",
             desc: '''
               The life cycle management interface has encountered a transmission
-              integerity error.  This is an integrity error on the generated integrity
+              integrity error.  This is an integrity error on the generated integrity
               during a life cycle management interface read.
             '''
           },
@@ -1692,43 +1701,50 @@
           { bits: "2",
             name: "rd_err",
             desc: '''
-              The flash life cycle management interface encountered a read data error.
+              The flash life cycle management interface encountered a read error.
               This could be a reliability ECC error or an integrity ECC error
-              encountered during a read.
+              encountered during a read, see !!STD_FAULT_STATUS for more details.
             '''
           },
           { bits: "3",
+            name: "prog_err",
+            desc: '''
+              The flash life cycle management interface encountered a program error.
+              This could be a program integirty eror, see !!STD_FAULT_STATUS for more details.
+            '''
+          },
+          { bits: "4",
             name: "prog_win_err",
             desc: '''
               The flash life cycle management interface encountered a program resolution error.
             '''
           },
-          { bits: "4",
+          { bits: "5",
             name: "prog_type_err",
             desc: '''
               The flash life cycle management interface encountered a program type error.
               A program type not supported by the flash macro was issued.
             '''
           },
-          { bits: "5",
-            name: "flash_phy_err",
+          { bits: "6",
+            name: "flash_macro_err",
             desc: '''
               The flash life cycle management interface encountered a native flash macro error.
             '''
           },
-          { bits: "6",
+          { bits: "7",
             name: "seed_err",
             desc: '''
               The seed reading process encountered an unexpected error.
             '''
           },
-          { bits: "7",
+          { bits: "8",
             name: "phy_relbl_err",
             desc: '''
               The flash macro encountered a storage reliability ECC error.
             '''
           },
-          { bits: "8",
+          { bits: "9",
             name: "phy_storage_err",
             desc: '''
               The flash macro encountered a storage integrity ECC error.
