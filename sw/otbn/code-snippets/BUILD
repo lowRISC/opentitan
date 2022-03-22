@@ -19,3 +19,45 @@ otbn_binary(
         "err_test.s",
     ],
 )
+
+otbn_binary(
+    name = "loop",
+    srcs = [
+        "loop.s",
+    ],
+)
+
+otbn_binary(
+    name = "mul256",
+    srcs = [
+        "mul256.s",
+    ],
+)
+
+otbn_binary(
+    name = "mul384",
+    srcs = [
+        "mul384.s",
+    ],
+)
+
+otbn_binary(
+    name = "pseudo-ops",
+    srcs = [
+        "pseudo-ops.s",
+    ],
+)
+
+otbn_binary(
+    name = "solinas384",
+    srcs = [
+        "solinas384.s",
+    ],
+)
+
+otbn_binary(
+    name = "randomness",
+    srcs = [
+        "randomness.s",
+    ],
+)
