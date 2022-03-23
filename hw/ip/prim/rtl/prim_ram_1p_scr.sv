@@ -119,16 +119,16 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
 
   // Macro requests and write strobe
   // The macro operation is silenced if an integrity error is seen
-  logic macro_req;
-  logic intg_err_macro_req;
-  prim_buf u_intg_err_macro_req (
+  logic intg_error_buf, intg_error_w_q;
+  prim_buf u_intg_error (
     .in_i(intg_error_i),
-    .out_o(intg_err_macro_req)
+    .out_o(intg_error_buf)
   );
-  assign macro_req   = ~intg_err_macro_req & (read_en | write_en_q | write_pending_q);
-  // We are allowed to write a pending write transaction to the memory if there is no incoming read
+  logic macro_req;
+  assign macro_req   = ~intg_error_w_q & ~intg_error_buf & (read_en | write_en_q | write_pending_q);
+  // We are allowed to write a pending write transaction to the memory if there is no incoming read.
   logic macro_write;
-  assign macro_write = (write_en_q | write_pending_q) & ~read_en;
+  assign macro_write = (write_en_q | write_pending_q) & ~read_en & ~intg_error_w_q;
   // New read write collision
   logic rw_collision;
   assign rw_collision = write_en_q & read_en;
@@ -178,7 +178,6 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   logic [NumParScr*64-1:0] keystream;
   logic [NumParScr-1:0][DataNonceWidth-1:0] data_scr_nonce;
   for (genvar k = 0; k < NumParScr; k++) begin : gen_par_scr
-
     assign data_scr_nonce[k] = nonce_i[k * DataNonceWidth +: DataNonceWidth];
 
     prim_prince #(
@@ -306,26 +305,27 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   logic [Width-1:0] wdata_scr;
   assign wdata_scr = (write_pending_q) ? wdata_scr_q : wdata_scr_d;
 
-  // Output read valid strobe
   logic rvalid_q;
-  assign rvalid_o = rvalid_q;
-
-  logic intg_error_q;
+  logic intg_error_r_q;
   logic [Width-1:0] wmask_q;
   always_comb begin : p_forward_mux
     rdata_o = '0;
-    // regular reads. note that we just return zero in case
-    // an integrity error was signalled.
-    if (rvalid_q && !intg_error_q) begin
-      rdata_o = rdata;
-    end
-    // In case of a collision, we forward the valid bytes of the write data from the unscrambled
-    // holding register.
-    if (addr_collision_q && !intg_error_q) begin
-      for (int k = 0; k < Width; k++) begin
-        if (wmask_q[k]) begin
-          rdata_o[k] = wdata_q[k];
+    rvalid_o = 1'b0;
+    // Kill the read response in case an integrity error was seen.
+    if (!intg_error_r_q && rvalid_q) begin
+      rvalid_o = 1'b1;
+      // In case of a collision, we forward the valid bytes of the write data from the unscrambled
+      // holding register.
+      if (addr_collision_q) begin
+        for (int k = 0; k < Width; k++) begin
+          if (wmask_q[k]) begin
+            rdata_o[k] = wdata_q[k];
+          end
         end
+      // regular reads. note that we just return zero in case
+      // an integrity error was signalled.
+      end else begin
+        rdata_o = rdata;
       end
     end
   end
@@ -340,7 +340,8 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
       addr_collision_q    <= 1'b0;
       rvalid_q            <= 1'b0;
       write_en_q          <= 1'b0;
-      intg_error_q        <= 1'b0;
+      intg_error_r_q      <= 1'b0;
+      intg_error_w_q      <= 1'b0;
       raddr_q             <= '0;
       waddr_scr_q         <= '0;
       wmask_q             <= '0;
@@ -351,15 +352,16 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
       addr_collision_q    <= addr_collision_d;
       rvalid_q            <= read_en;
       write_en_q          <= write_en_d;
-      intg_error_q        <= intg_error_i;
+      intg_error_r_q      <= intg_error_buf;
 
       if (read_en) begin
         raddr_q <= addr_i;
       end
       if (write_en_d) begin
-        waddr_scr_q <= addr_scr;
-        wmask_q     <= wmask_i;
-        wdata_q     <= wdata_i;
+        waddr_scr_q    <= addr_scr;
+        wmask_q        <= wmask_i;
+        wdata_q        <= wdata_i;
+        intg_error_w_q <= intg_error_buf;
       end
       if (rw_collision) begin
         wdata_scr_q <= wdata_scr_d;
