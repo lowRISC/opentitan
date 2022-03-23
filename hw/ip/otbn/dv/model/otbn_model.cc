@@ -514,15 +514,15 @@ void OtbnModel::reset() {
     iss->reset(has_rtl());
 }
 
-int OtbnModel::send_lc_escalation() {
+int OtbnModel::send_err_escalation(svBitVecVal *err_val /* bit [31:0] */) {
   ISSWrapper *iss = ensure_wrapper();
   if (!iss)
     return -1;
 
   try {
-    iss->send_lc_escalation();
+    iss->send_err_escalation(err_val[0]);
   } catch (const std::exception &err) {
-    std::cerr << "Error when sending LC escalation signal to ISS: "
+    std::cerr << "Error when sending error escalation signal to ISS: "
               << err.what() << "\n";
     return -1;
   }
@@ -884,7 +884,8 @@ int otbn_model_set_keymgr_value(OtbnModel *model, svLogicVecVal *key0,
   return model->set_keymgr_value(key0, key1, valid);
 }
 
-int otbn_model_send_lc_escalation(OtbnModel *model) {
+int otbn_model_send_err_escalation(OtbnModel *model,
+                                   svBitVecVal *err_val /* bit [31:0] */) {
   assert(model);
-  return model->send_lc_escalation();
+  return model->send_err_escalation(err_val);
 }

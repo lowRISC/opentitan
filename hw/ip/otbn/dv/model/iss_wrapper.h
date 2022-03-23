@@ -137,8 +137,8 @@ struct ISSWrapper {
   // mirrored registers to their initial states.
   void reset(bool gen_trace);
 
-  // Send a lifecycle controller escalation signal
-  void send_lc_escalation();
+  // Send an error escalation
+  void send_err_escalation(uint32_t err_val);
 
   const MirroredRegs &get_mirrored() const { return mirrored_; }
 

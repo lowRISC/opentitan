@@ -101,9 +101,8 @@ class OtbnModel {
   // Flush any information in the model
   void reset();
 
-  // React to a lifecycle controller escalation signal. Returns 0 on
-  // success; -1 on failure.
-  int send_lc_escalation();
+  // Escalate errors. Returns 0 on success; -1 on failure.
+  int send_err_escalation(svBitVecVal *err_val /* bit [31:0] */);
 
   // Returns true if we have an ISS wrapper and it has the START_WIPE flag
   // asserted

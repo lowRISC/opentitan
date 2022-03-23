@@ -123,5 +123,17 @@ class otbn_common_vseq extends otbn_base_vseq;
     end
   endfunction: sec_cm_fi_ctrl_svas
 
+  virtual task sec_cm_inject_fault(sec_cm_base_if_proxy if_proxy);
+    fork
+      begin
+        if_proxy.inject_fault();
+      end
+      begin
+        bit [31:0] err_val = 32'd1 << 20;
+        `uvm_info(`gfn, "injecting fsm error into ISS", UVM_HIGH)
+        cfg.model_agent_cfg.vif.send_err_escalation(err_val);
+      end
+    join
+  endtask : sec_cm_inject_fault
 
 endclass

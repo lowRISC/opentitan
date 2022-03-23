@@ -182,9 +182,15 @@ module otbn_core_model
   // model the timing too precisely on the SV side.
   logic [3:0] busy_counter_q, busy_counter_d;
   logic       reset_busy_counter, step_iss;
+  // This bit can be set by a hierrachical component when ISS model should step for extra time.
+  bit         wakeup_iss;
 
-  assign reset_busy_counter = cmd_en_i | running | check_due | new_escalation | edn_rnd_cdc_done_i;
+  initial begin
+    wakeup_iss = 0;
+  end
 
+  assign reset_busy_counter = |{running, cmd_en_i, check_due, new_escalation, edn_rnd_cdc_done_i,
+                                wakeup_iss};
   assign step_iss = reset_busy_counter || (busy_counter_q != 0);
 
   always_comb begin
@@ -218,7 +224,9 @@ module otbn_core_model
       stop_pc_q <= 0;
     end else begin
       if (new_escalation) begin
-        failed_lc_escalate <= (otbn_model_send_lc_escalation(model_handle) != 0);
+        // Setting LIFECYCLE_ESCALATION bit
+        bit[31:0] err_val = 32'd1 << 22;
+        failed_lc_escalate <= (otbn_model_send_err_escalation(model_handle, err_val) != 0);
       end
       if (!$stable(keymgr_key_i) || $rose(rst_ni)) begin
         failed_keymgr_value <= (otbn_model_set_keymgr_value(model_handle,

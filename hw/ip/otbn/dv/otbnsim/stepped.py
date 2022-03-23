@@ -70,7 +70,7 @@ prefixed with "0x" if they are hexadecimal.
                          change of state (this is pure, but handled in Python
                          to simplify verification).
 
-    send_lc_escalation   React to lc_escalate_en_i going high
+    send_err_escalation  React to an injected error
 
 '''
 
@@ -405,9 +405,10 @@ def on_step_crc(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     return None
 
 
-def on_send_lc_escalation(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    check_arg_count('send_lc_escalation', 0, args)
-    sim.on_lc_escalation()
+def on_send_err_escalation(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
+    check_arg_count('send_err_escalation', 1, args)
+    err_val = read_word('err_val', args[0], 32)
+    sim.send_err_escalation(err_val)
     return None
 
 
@@ -443,7 +444,7 @@ _HANDLERS = {
     'invalidate_dmem': on_invalidate_dmem,
     'set_keymgr_value': on_set_keymgr_value,
     'step_crc': on_step_crc,
-    'send_lc_escalation': on_send_lc_escalation
+    'send_err_escalation': on_send_err_escalation
 }
 
 
