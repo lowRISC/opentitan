@@ -116,8 +116,9 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
 
   logic write_pending_q;
   logic addr_collision_d, addr_collision_q;
-  logic [AddrWidth-1:0] waddr_q;
-  assign addr_collision_d = read_en & (write_en_q | write_pending_q) & (addr_i == waddr_q);
+  logic [AddrWidth-1:0] addr_scr;
+  logic [AddrWidth-1:0] waddr_scr_q;
+  assign addr_collision_d = read_en & (write_en_q | write_pending_q) & (addr_scr == waddr_scr_q);
 
   // Macro requests and write strobe
   // The macro operation is silenced if an integrity error is seen
@@ -141,10 +142,9 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
 
   // We only select the pending write address in case there is no incoming read transaction.
   logic [AddrWidth-1:0] addr_mux;
-  assign addr_mux = (read_en) ? addr_i : waddr_q;
+  assign addr_mux = (read_en) ? addr_scr : waddr_scr_q;
 
   // This creates a bijective address mapping using a substitution / permutation network.
-  logic [AddrWidth-1:0] addr_scr;
   if (NumAddrScrRounds > 0) begin : gen_addr_scr
 
     logic intg_err_addr_scr;
@@ -166,7 +166,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
       .NumRounds ( NumAddrScrRounds ),
       .Decrypt   ( 0                )
     ) u_prim_subst_perm (
-      .data_i ( addr_mux       ),
+      .data_i ( addr_i         ),
       // Since the counter mode concatenates {nonce_i[NonceWidth-1-AddrWidth:0], addr} to form
       // the IV, the upper AddrWidth bits of the nonce are not used and can be used for address
       // scrambling. In cases where N parallel PRINCE blocks are used due to a data
@@ -369,7 +369,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
       write_en_q          <= 1'b0;
       intg_error_q        <= 1'b0;
       raddr_q             <= '0;
-      waddr_q             <= '0;
+      waddr_scr_q         <= '0;
       wmask_q             <= '0;
       wdata_q             <= '0;
       wdata_scr_q         <= '0;
@@ -384,9 +384,9 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
         raddr_q <= addr_i;
       end
       if (write_en_d) begin
-        waddr_q <= addr_i;
-        wmask_q <= wmask_i;
-        wdata_q <= wdata_i;
+        waddr_scr_q <= addr_scr;
+        wmask_q     <= wmask_i;
+        wdata_q     <= wdata_i;
       end
       if (rw_collision) begin
         wdata_scr_q <= wdata_scr_d;
@@ -411,7 +411,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     .rst_ni,
     .req_i    ( macro_req   ),
     .write_i  ( macro_write ),
-    .addr_i   ( addr_scr    ),
+    .addr_i   ( addr_mux    ),
     .wdata_i  ( wdata_scr   ),
     .wmask_i  ( wmask_q     ),
     .rdata_o  ( rdata_scr   ),
