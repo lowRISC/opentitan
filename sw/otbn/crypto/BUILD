@@ -282,9 +282,9 @@ otbn_binary(
         "run_rsa_verify_3072.s",
     ],
     deps = [
-        ":rsa_verify_3072_rr",
+        ":rsa_verify_3072",
         ":rsa_verify_3072_m0inv",
-        ":rsa_verify_3072"
+        ":rsa_verify_3072_rr",
     ],
 )
 
@@ -294,7 +294,7 @@ otbn_binary(
         "run_rsa_verify_3072_rr_modexp.s",
     ],
     deps = [
+        ":rsa_verify_3072",
         ":rsa_verify_3072_rr",
-        ":rsa_verify_3072"
     ],
 )
