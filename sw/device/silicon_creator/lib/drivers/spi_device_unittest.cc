@@ -4,6 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/drivers/spi_device.h"
 
+#include <cstring>
 #include <limits>
 
 #include "gtest/gtest.h"
@@ -59,6 +60,29 @@ TEST_F(InitTest, Init) {
           {SPI_DEVICE_CMD_INFO_3_OPCODE_3_OFFSET, kSpiDeviceCmdReadJedecId},
           {SPI_DEVICE_CMD_INFO_3_VALID_3_BIT, 1},
       });
+
+  EXPECT_ABS_WRITE32(
+      base_ + SPI_DEVICE_CMD_INFO_4_REG_OFFSET,
+      {
+          {SPI_DEVICE_CMD_INFO_4_OPCODE_4_OFFSET, kSpiDeviceCmdReadSfdp},
+          {SPI_DEVICE_CMD_INFO_4_ADDR_MODE_4_OFFSET,
+           SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDR3B},
+          {SPI_DEVICE_CMD_INFO_4_DUMMY_SIZE_4_OFFSET, 7},
+          {SPI_DEVICE_CMD_INFO_4_DUMMY_EN_4_BIT, 1},
+          {SPI_DEVICE_CMD_INFO_4_VALID_4_BIT, 1},
+      });
+
+  std::array<uint32_t, kSpiDeviceSfdpAreaNumBytes / sizeof(uint32_t)>
+      sfdp_buffer;
+  sfdp_buffer.fill(std::numeric_limits<uint32_t>::max());
+  std::memcpy(sfdp_buffer.data(), &kSpiDeviceSfdpTable,
+              sizeof(kSpiDeviceSfdpTable));
+  uint32_t offset =
+      base_ + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDeviceSfdpAreaOffset;
+  for (size_t i = 0; i < sfdp_buffer.size(); ++i) {
+    EXPECT_ABS_WRITE32(offset, sfdp_buffer[i]);
+    offset += sizeof(uint32_t);
+  }
 
   EXPECT_ABS_WRITE32(base_ + SPI_DEVICE_FLASH_STATUS_REG_OFFSET, 0);
 
