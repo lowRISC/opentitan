@@ -168,12 +168,15 @@ dif_result_t dif_spi_host_configure(const dif_spi_host_t *spi_host,
                                     dif_spi_host_config_t config);
 
 /**
- * Enable or disable SPI host output buffers.
+ * Sets the enablement of the SPI host output buffers.
  *
  * @param spi_host A SPI Host handle.
- * @param enable Enable or disable the output buffers.
+ * @param enabled Enable or disable the output buffers.
+ * @return The result of the operation.
  */
-void dif_spi_host_output(const dif_spi_host_t *spi_host, bool enable);
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_host_output_set_enabled(const dif_spi_host_t *spi_host,
+                                             bool enabled);
 
 /**
  * Write to the SPI Host transmit FIFO.
