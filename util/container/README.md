@@ -2,16 +2,16 @@
 
 Docker container based on Ubuntu 18.04 LTS containing various hardware and
 software development tools for OpenTitan, as listed in the
-[OpenTitan documentation](https://docs.opentitan.org/doc/ug/install_instructions/).
+[OpenTitan documentation]({{< relref "doc/getting_started" >}}).
 
 ## Local Build Instructions
 
-Skip this step if planning to use the pre-built container. To build in local
-mode:
-<!-- TODO: Where can one find the pre-built container mentioned above? --->
+For now, no pre-built containers are available; you'll need to build the Docker container locally.
+First, you'll need to install Docker either through your package manager or their [download page](https://www.docker.com/get-started/).
+You'll also need to clone the [OpenTitan repository](https://github.com/lowRISC/opentitan) if you haven't done that yet.
+Then, from `$REPO_TOP` (the top-level directory in the repository, called `opentitan` by default), you can build the container with:
 
 ```shell
-$ cd $REPO_TOP
 $ sudo docker build -t opentitan -f util/container/Dockerfile .
 ```
 

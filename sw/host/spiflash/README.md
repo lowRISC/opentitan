@@ -26,7 +26,7 @@ $ ninja -C build-out sw/host/spiflash/spiflash_export
 ```
 
 ## Setup instructions for Verilator and FPGA
-Please refer to [verilator]({{< relref "doc/getting_started/setup_verilator" >}}) and [fpga]({{< relref "doc/getting_started/setup_fpga" >}}) docs for more information.
+Please refer to [Verilator]({{< relref "doc/getting_started/setup_verilator" >}}) and [FPGA]({{< relref "doc/getting_started/setup_fpga" >}}) docs for more information.
 
 ## Build target program
 
@@ -42,7 +42,7 @@ Where ${DEVICE} is one of 'sim_verilator' or 'fpga_nexysvideo'
 
 ## Run the tool with the Verilator Simulation
 
-Run Verilator with test_rom as described in the [verilator]({{< relref "doc/getting_started/setup_verilator" >}}) getting started guide.
+Run Verilator with test ROM as described in the [verilator]({{< relref "doc/getting_started/setup_verilator" >}}) getting started guide.
 
 Run spiflash.
 In this example we use SPI device `/dev/pts/3` as an example.
