@@ -307,6 +307,50 @@ scramble_flash_vmem = rule(
     },
 )
 
+def _bin_to_spiflash_frames_impl(ctx):
+    outputs = []
+    frames_bin = ctx.actions.declare_file("{}.frames.bin".format(
+        # Remove ".bin" from file basename.
+        ctx.file.bin.basename.replace("." + ctx.file.bin.extension, ""),
+    ))
+    outputs.append(frames_bin)
+    ctx.actions.run(
+        outputs = [frames_bin],
+        inputs = [
+            ctx.file.bin,
+            ctx.file._tool,
+        ],
+        arguments = [
+            "--input",
+            ctx.file.bin.path,
+            "--dump-frames",
+            frames_bin.path,
+        ],
+        executable = ctx.file._tool.path,
+    )
+    return [DefaultInfo(
+        files = depset(outputs),
+        data_runfiles = ctx.runfiles(files = outputs),
+    )]
+
+bin_to_spiflash_frames = rule(
+    implementation = _bin_to_spiflash_frames_impl,
+    cfg = opentitan_transition,
+    attrs = {
+        "bin": attr.label(allow_single_file = True),
+        # TODO(lowRISC/opentitan:#11199): explore other options to side-step the
+        # need for this transition, in order to build the spiflash tool.
+        "platform": attr.string(default = "@local_config_platform//:host"),
+        "_tool": attr.label(
+            default = "//sw/host/spiflash",
+            allow_single_file = True,
+        ),
+        "_allowlist_function_transition": attr.label(
+            default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
+        ),
+    },
+)
+
 def opentitan_binary(
         name,
         platform = OPENTITAN_PLATFORM,
@@ -504,6 +548,24 @@ def opentitan_flash_binary(
         elf_name = "{}_{}".format(devname, "elf")
         bin_name = "{}_{}".format(devname, "bin")
 
+        # Generate SPI flash frames binary for bootstrap in DV sim.
+        if device == "sim_dv":
+            frames_bin_name = "{}_frames_bin".format(devname)
+            targets.append(":" + frames_bin_name)
+            bin_to_spiflash_frames(
+                name = frames_bin_name,
+                bin = bin_name,
+            )
+            frames_vmem_name = "{}_frames_vmem".format(devname)
+            targets.append(":" + frames_vmem_name)
+            bin_to_flash_vmem(
+                name = frames_vmem_name,
+                bin = frames_bin_name,
+                platform = platform,
+                word_size = 32,  # Bootstrap VMEM image uses 32-bit words
+            )
+
+        # Sign BIN (if required) and generate scrambled VMEM images.
         if output_signed:
             for (key_name, key) in signing_keys.items():
                 # Sign the Binary.
@@ -527,7 +589,7 @@ def opentitan_flash_binary(
                     name = signed_vmem_name,
                     bin = signed_bin_name,
                     platform = platform,
-                    word_size = 64,
+                    word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
                 )
 
                 # Scramble signed VMEM64.
@@ -541,6 +603,25 @@ def opentitan_flash_binary(
                     vmem = signed_vmem_name,
                     platform = platform,
                 )
+        else:
+            # Generate a VMEM64 from the binary.
+            vmem_name = "{}_vmem64".format(devname)
+            targets.append(":" + vmem_name)
+            bin_to_flash_vmem(
+                name = vmem_name,
+                bin = bin_name,
+                platform = platform,
+                word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
+            )
+
+            # Scramble VMEM64.
+            scr_vmem_name = "{}_scr_vmem64".format(devname)
+            targets.append(":" + scr_vmem_name)
+            scramble_flash_vmem(
+                name = scr_vmem_name,
+                vmem = vmem_name,
+                platform = platform,
+            )
 
     native.filegroup(
         name = name,
@@ -553,7 +634,7 @@ def verilator_params(
         tags = [
             "cpu:4",
         ],
-        timeout = "moderate",
+        timeout = "moderate",  # 5 minutes
         local = True,
         args = [
             "console",
@@ -563,14 +644,14 @@ def verilator_params(
         ],
         data = [],
         **kwargs):
-    """A macro to create verilator parameters for OpenTitan functional tests.
+    """A macro to create Verilator sim parameters for OpenTitan functional tests.
 
     This macro emits a dictionary of parameters which are pasted into the
-    verilator specific test rule.
+    Verilator specific test rule.
 
     Args:
-        @param rom: The ROM to use when booting verilator.
-        @param otp: The OTP image to use when booting verilator.
+        @param rom: The ROM to use when running a Verilator simulation.
+        @param otp: The OTP image to use when running a Verilator simulation.
         @param tags: The test tags to apply to the test rule.
         @param timeout: The timeout to apply to the test rule.
         @param local: Whether the test should be run locally and without sandboxing.
@@ -590,7 +671,7 @@ def verilator_params(
 
 def cw310_params(
         tags = [],
-        timeout = "moderate",
+        timeout = "moderate",  # 5 minutes
         local = True,
         args = [
             "--exec=\"console -q -t0\"",
@@ -717,22 +798,25 @@ def opentitan_functest(
     all_tests = []
 
     if "verilator" in targets:
+        # Set default Verilator sim parameters if none are provided.
+        if verilator == None:
+            verilator = verilator_params()
+
         test_name = "verilator_{}".format(name)
 
-        # If the test is unsigned, the Verilator sim can use the ELF.
+        # If the test is unsigned, the Verilator sim can backdoor load flash
+        # with the ELF.
         test_bin = "{}_prog_sim_verilator_elf".format(name)
 
-        # If the test is signed, the Verilator sim must use the scrambled VMEM,
-        # since only the BIN can be signed by the ROM_EXT signer tool, and this
-        # is converted to a scrambled (64-bit) VMEM.
+        # If the test is signed, the Verilator sim must backdoor load flash with
+        # the scrambled VMEM, since only the BIN can be signed by the ROM_EXT
+        # signer tool, and this is converted to a scrambled (64-bit) VMEM.
         if signed:
             test_bin = "{}_prog_sim_verilator_scr_vmem64_signed_{}".format(
                 name,
                 key,
             )
 
-        if verilator == None:
-            verilator = verilator_params()
         rom = verilator.pop("rom")
         if test_in_rom:
             rom = name + "_rom_prog_sim_verilator_scr_vmem"
@@ -767,15 +851,19 @@ def opentitan_functest(
         )
 
     if "cw310" in targets:
+        # Set default CW310 FPGA parameters if none are provided.
+        if cw310 == None:
+            cw310 = cw310_params()
+
         if test_in_rom:
-            fail("test_in_rom only valid on Verilator target.")
+            fail("test_in_rom only valid on simulation targets.")
+
         test_name = "cw310_{}".format(name)
+
         test_bin = "{}_prog_fpga_cw310_bin".format(name)
         if signed:
             test_bin = "{}_prog_fpga_cw310_bin_signed_{}".format(name, key)
 
-        if cw310 == None:
-            cw310 = cw310_params()
         cargs = _format_list("args", args, cw310, test_bin = test_bin)
         cdata = _format_list("data", data, cw310, test_bin = test_bin)
 
