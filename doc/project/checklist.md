@@ -173,7 +173,7 @@ Note:
 
 - For duplicated counters [`prim_count`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_count.sv) must be used.
 - For duplicated LFSRs [`prim_double_lfsr`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_double_lfsr.sv) must be used.
-- For redundantly encoded FSMs, [the sparse-fsm-encode.py script](https://github.com/lowRISC/opentitan/blob/master/util/design/sparse-fsm-encode.py) must be used to generate the encoding (in conjunction with the [`prim_sparse_fsm_flop`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_sparse_fsm_flop.sv)) primitive.
+- For redundantly encoded FSMs, [the sparse-fsm-encode.py script](https://github.com/lowRISC/opentitan/blob/master/util/design/sparse-fsm-encode.py) must be used to generate the encoding (in conjunction with the [`PRIM_FLOP_SPARSE_FSM`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_flop_macros.sv)) macro.
 - For multibit signals, the `mubi` types in [`prim_mubi_pkg`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_mubi_pkg.sv) should be used if possible.
 
 ### SEC_CM_RTL_REVIEWED
