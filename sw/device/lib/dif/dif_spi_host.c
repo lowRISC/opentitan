@@ -24,8 +24,8 @@ void spi_host_fifo_write_alias(const dif_spi_host_t *spi_host, const void *src,
 
 OT_WEAK
 OT_ALIAS("dif_spi_host_fifo_read")
-void spi_host_fifo_read_alias(const dif_spi_host_t *spi_host, void *dst,
-                              uint16_t len);
+dif_result_t spi_host_fifo_read_alias(const dif_spi_host_t *spi_host, void *dst,
+                                      uint16_t len);
 
 static void spi_host_reset(const dif_spi_host_t *spi_host) {
   // Set the software reset request bit.
@@ -206,8 +206,12 @@ static uint32_t dequeue_word(queue_t *queue) {
   return val;
 }
 
-void dif_spi_host_fifo_read(const dif_spi_host_t *spi_host, void *dst,
-                            uint16_t len) {
+dif_result_t dif_spi_host_fifo_read(const dif_spi_host_t *spi_host, void *dst,
+                                    uint16_t len) {
+  if (spi_host == NULL || (dst == NULL && len > 0)) {
+    return kDifBadArg;
+  }
+
   uintptr_t ptr = (uintptr_t)dst;
   // We always have to read from the RXFIFO as a 32-bit word.  We use a
   // two-word queue to handle destination and length mis-alignments.
@@ -251,6 +255,8 @@ void dif_spi_host_fifo_read(const dif_spi_host_t *spi_host, void *dst,
     ptr += 1;
     len -= 1;
   }
+
+  return kDifOk;
 }
 
 static void write_command_reg(const dif_spi_host_t *spi_host, uint16_t length,
