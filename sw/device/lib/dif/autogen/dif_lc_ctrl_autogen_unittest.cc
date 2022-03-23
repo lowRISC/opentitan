@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
+#include "sw/device/lib/dif/dif_test_base.h"
 
 #include "lc_ctrl_regs.h"  // Generated.
 
@@ -28,39 +29,37 @@ class LcCtrlTest : public Test, public MmioTest {
 class InitTest : public LcCtrlTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_lc_ctrl_init(dev().region(), nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_lc_ctrl_init(dev().region(), nullptr));
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_lc_ctrl_init(dev().region(), &lc_ctrl_), kDifOk);
+  EXPECT_DIF_OK(dif_lc_ctrl_init(dev().region(), &lc_ctrl_));
 }
 
 class AlertForceTest : public LcCtrlTest {};
 
 TEST_F(AlertForceTest, NullArgs) {
-  EXPECT_EQ(dif_lc_ctrl_alert_force(nullptr, kDifLcCtrlAlertFatalProgError),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_lc_ctrl_alert_force(nullptr, kDifLcCtrlAlertFatalProgError));
 }
 
 TEST_F(AlertForceTest, BadAlert) {
-  EXPECT_EQ(
-      dif_lc_ctrl_alert_force(nullptr, static_cast<dif_lc_ctrl_alert_t>(32)),
-      kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_lc_ctrl_alert_force(nullptr, static_cast<dif_lc_ctrl_alert_t>(32)));
 }
 
 TEST_F(AlertForceTest, Success) {
   // Force first alert.
   EXPECT_WRITE32(LC_CTRL_ALERT_TEST_REG_OFFSET,
                  {{LC_CTRL_ALERT_TEST_FATAL_PROG_ERROR_BIT, true}});
-  EXPECT_EQ(dif_lc_ctrl_alert_force(&lc_ctrl_, kDifLcCtrlAlertFatalProgError),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_lc_ctrl_alert_force(&lc_ctrl_, kDifLcCtrlAlertFatalProgError));
 
   // Force last alert.
   EXPECT_WRITE32(LC_CTRL_ALERT_TEST_REG_OFFSET,
                  {{LC_CTRL_ALERT_TEST_FATAL_BUS_INTEG_ERROR_BIT, true}});
-  EXPECT_EQ(
-      dif_lc_ctrl_alert_force(&lc_ctrl_, kDifLcCtrlAlertFatalBusIntegError),
-      kDifOk);
+  EXPECT_DIF_OK(
+      dif_lc_ctrl_alert_force(&lc_ctrl_, kDifLcCtrlAlertFatalBusIntegError));
 }
 
 }  // namespace
