@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef _TOP_${top["name"].upper()}_H_
-#define _TOP_${top["name"].upper()}_H_
+#ifndef ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_H_
+#define ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_H_
 
 /**
  * @file
@@ -198,4 +198,4 @@ ${helper.clkmgr_hintable_clocks.render()}
 }  // extern "C"
 #endif
 
-#endif  // _TOP_${top["name"].upper()}_H_
+#endif  // ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_H_

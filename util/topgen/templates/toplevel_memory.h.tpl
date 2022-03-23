@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef _TOP_${top["name"].upper()}_MEMORY_H_
-#define _TOP_${top["name"].upper()}_MEMORY_H_
+#ifndef ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_MEMORY_H_
+#define ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_MEMORY_H_
 
 /**
  * @file
@@ -67,4 +67,4 @@
 % endfor
 #endif  // __ASSEMBLER__
 
-#endif  // _TOP_${top["name"].upper()}_MEMORY_H_
+#endif  // ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_MEMORY_H_
