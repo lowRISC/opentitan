@@ -51,9 +51,10 @@ if [ $? -ne 0 ]; then
   fail "Simulator run failed"
 fi
 
-grep -A 74 "Call Stack:" $RUN_LOG | diff $SMOKE_SRC_DIR/smoke_expected.txt -
+had_diff=0
+grep -A 74 "Call Stack:" $RUN_LOG | diff -U3 $SMOKE_SRC_DIR/smoke_expected.txt - || had_diff=1
 
-if [ $? -eq 0 ]; then
+if [ $had_diff == 0 ]; then
   echo "OTBN SMOKE PASS"
 else
   fail "Simulator output does not match expected output"
