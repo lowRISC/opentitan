@@ -583,8 +583,10 @@ cc_library(
     hdrs = ["spi_device.h"],
     deps = [
         "//hw/ip/spi_device/data:spi_device_regs",
+        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:error",
     ],
 )

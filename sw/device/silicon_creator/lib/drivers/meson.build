@@ -583,10 +583,12 @@ sw_silicon_creator_lib_driver_spi_device = declare_dependency(
     'sw_silicon_creator_lib_driver_spi_device',
     sources: [
       hw_ip_spi_device_reg_h,
+      hw_ip_flash_ctrl_reg_h,
       'spi_device.c',
     ],
     dependencies: [
       sw_lib_abs_mmio,
+      sw_lib_mem,
     ],
   ),
 )
@@ -596,10 +598,12 @@ test('sw_silicon_creator_lib_driver_spi_device_unittest', executable(
     sources: [
       'spi_device_unittest.cc',
       hw_ip_spi_device_reg_h,
+      hw_ip_flash_ctrl_reg_h,
       'spi_device.c',
     ],
     dependencies: [
       sw_vendor_gtest,
+      sw_lib_testing_memory,
       sw_lib_testing_mock_abs_mmio,
     ],
     native: true,
