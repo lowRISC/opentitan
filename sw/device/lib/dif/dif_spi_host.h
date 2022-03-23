@@ -181,9 +181,11 @@ void dif_spi_host_output(const dif_spi_host_t *spi_host, bool enable);
  * @param spi_host A SPI Host handle.
  * @param src A pointer to the buffer to transmit.
  * @param len The length of the transmit buffer.
+ * @return The result of the operation.
  */
-void dif_spi_host_fifo_write(const dif_spi_host_t *spi_host, const void *src,
-                             uint16_t len);
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_host_fifo_write(const dif_spi_host_t *spi_host,
+                                     const void *src, uint16_t len);
 
 /**
  * Read from the SPI Host receive FIFO.

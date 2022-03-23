@@ -26,9 +26,10 @@ class MockFifo : public ::global_mock::GlobalMock<MockFifo> {
 }  // namespace internal
 using MockFifo = testing::StrictMock<internal::MockFifo>;
 extern "C" {
-void spi_host_fifo_write_alias(const dif_spi_host_t *spi_host, const void *src,
-                               uint16_t len) {
+dif_result_t spi_host_fifo_write_alias(const dif_spi_host_t *spi_host,
+                                       const void *src, uint16_t len) {
   MockFifo::Instance().write(spi_host, src, len);
+  return kDifOk;
 }
 dif_result_t spi_host_fifo_read_alias(const dif_spi_host_t *spi_host, void *dst,
                                       uint16_t len) {
@@ -390,7 +391,12 @@ class FifoTest : public SpiHostTest {};
 
 // Checks that arguments are validated.
 TEST_F(FifoTest, NullArgs) {
-  uint32_t buffer[2];
+  uint32_t buffer[2] = {1, 2};
+
+  EXPECT_DIF_BADARG(dif_spi_host_fifo_write(nullptr, buffer, sizeof(buffer)));
+  EXPECT_DIF_BADARG(
+      dif_spi_host_fifo_write(&spi_host_, nullptr, sizeof(buffer)));
+
   EXPECT_DIF_BADARG(dif_spi_host_fifo_read(nullptr, buffer, sizeof(buffer)));
   EXPECT_DIF_BADARG(
       dif_spi_host_fifo_read(&spi_host_, nullptr, sizeof(buffer)));
@@ -406,7 +412,7 @@ TEST_F(FifoTest, AlignedWrite) {
   EXPECT_TXQD(0);
   EXPECT_WRITE32(SPI_HOST_TXDATA_REG_OFFSET, 2);
 
-  dif_spi_host_fifo_write(&spi_host_, buffer, sizeof(buffer));
+  EXPECT_DIF_OK(dif_spi_host_fifo_write(&spi_host_, buffer, sizeof(buffer)));
 }
 
 template <size_t count, size_t align>
@@ -438,7 +444,7 @@ TEST_F(FifoTest, MisalignedWrite) {
   EXPECT_TXQD(0);
   EXPECT_WRITE8(SPI_HOST_TXDATA_REG_OFFSET, 8);
 
-  dif_spi_host_fifo_write(&spi_host_, buffer.get() + 1, 8);
+  EXPECT_DIF_OK(dif_spi_host_fifo_write(&spi_host_, buffer.get() + 1, 8));
 }
 
 // Checks that an aligned destination buffer receives the contents of the
