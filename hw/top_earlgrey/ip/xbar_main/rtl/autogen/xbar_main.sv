@@ -871,8 +871,7 @@ end
   tlul_socket_m1 #(
     .HReqDepth (12'h0),
     .HRspDepth (12'h0),
-    .DReqDepth (4'h0),
-    .DRspDepth (4'h0),
+    .DRspPass  (1'b0),
     .M         (3)
   ) u_sm1_27 (
     .clk_i        (clk_main_i),
