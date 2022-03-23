@@ -5,21 +5,29 @@
 `include "prim_assert.sv"
 
 module prim_sparse_fsm_flop #(
-  parameter type              StateEnumT = logic,
   parameter int               Width      = 1,
-  parameter logic [Width-1:0] ResetValue = 0,
+  parameter type              StateEnumT = logic [Width-1:0],
+  parameter logic [Width-1:0] ResetValue = '0,
   // This should only be disabled in special circumstances, for example
   // in non-comportable IPs where an error does not trigger an alert.
   parameter bit               EnableAlertTriggerSVA = 1
+`ifdef SIMULATION
+  ,
+  // In case this parameter is set to a non-empty string, the
+  // prim_sparse_fsm_flop_if will also force the signal with this name
+  // in the parent module that instantiates prim_sparse_fsm_flop.
+  parameter string            CustomForceName = ""
+`endif
 ) (
-  input                    clk_i,
-  input                    rst_ni,
-  input        [Width-1:0] state_i,
-  output logic [Width-1:0] state_o
+  input             clk_i,
+  input             rst_ni,
+  input  StateEnumT state_i,
+  output StateEnumT state_o
 );
 
   logic unused_err_o;
 
+  logic [Width-1:0] state_raw;
   prim_flop #(
     .Width(Width),
     .ResetValue(ResetValue)
@@ -27,15 +35,16 @@ module prim_sparse_fsm_flop #(
     .clk_i,
     .rst_ni,
     .d_i(state_i),
-    .q_o(state_o)
+    .q_o(state_raw)
   );
+  assign state_o = StateEnumT'(state_raw);
 
   `ifdef INC_ASSERT
   assign unused_err_o = is_undefined_state(state_o);
 
-  function automatic logic is_undefined_state(logic [Width-1:0] sig);
+  function automatic logic is_undefined_state(StateEnumT sig);
     for (int i = 0, StateEnumT t = t.first(); i < t.num(); i += 1, t = t.next()) begin
-      if (StateEnumT'(sig) === t) return 0;
+      if (sig === t) return 0;
     end
     return 1;
   endfunction

@@ -4,5 +4,5 @@
 
 module sec_cm_prim_sparse_fsm_flop_bind();
   bind prim_sparse_fsm_flop prim_sparse_fsm_flop_if #(
-         .Width(Width)) u_prim_sparse_fsm_flop_if (.*);
+         .Width(Width), .CustomForceName(CustomForceName)) u_prim_sparse_fsm_flop_if (.*);
 endmodule
