@@ -19,8 +19,8 @@
 // the FIFO functions and the overall transaction management functions.
 OT_WEAK
 OT_ALIAS("dif_spi_host_fifo_write")
-void spi_host_fifo_write_alias(const dif_spi_host_t *spi_host, const void *src,
-                               uint16_t len);
+dif_result_t spi_host_fifo_write_alias(const dif_spi_host_t *spi_host,
+                                       const void *src, uint16_t len);
 
 OT_WEAK
 OT_ALIAS("dif_spi_host_fifo_read")
@@ -144,9 +144,12 @@ static inline void tx_fifo_write32(const dif_spi_host_t *spi_host,
   mmio_region_write32(spi_host->base_addr, SPI_HOST_TXDATA_REG_OFFSET, val);
 }
 
-void dif_spi_host_fifo_write(const dif_spi_host_t *spi_host, const void *src,
-                             uint16_t len) {
+dif_result_t dif_spi_host_fifo_write(const dif_spi_host_t *spi_host,
+                                     const void *src, uint16_t len) {
   uintptr_t ptr = (uintptr_t)src;
+  if (spi_host == NULL || (src == NULL && len > 0)) {
+    return kDifBadArg;
+  }
 
   // If the pointer starts mis-aligned, write until we are aligned.
   while (misalignment32_of(ptr) && len > 0) {
@@ -168,6 +171,8 @@ void dif_spi_host_fifo_write(const dif_spi_host_t *spi_host, const void *src,
     ptr += 1;
     len -= 1;
   }
+
+  return kDifOk;
 }
 
 typedef struct queue {
