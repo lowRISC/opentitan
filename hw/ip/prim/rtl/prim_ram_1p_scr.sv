@@ -72,10 +72,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   input        [AddrWidth-1:0]      addr_i,
   input        [Width-1:0]          wdata_i,
   input        [Width-1:0]          wmask_i,  // Needs to be byte-aligned for parity
-  // The incoming transaction contains an integrity error and the module should alter
-  // its behavior appropriately.
-  // On integrity errors, the primitive reverses the bit-order of the nonce and surpresses
-  // any real transaction to the memory.
+  // On integrity errors, the primitive surpresses any real transaction to the memory.
   input                             intg_error_i,
   output logic [Width-1:0]          rdata_o,
   output logic                      rvalid_o, // Read response (rdata_o) is valid
@@ -146,20 +143,8 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
 
   // This creates a bijective address mapping using a substitution / permutation network.
   if (NumAddrScrRounds > 0) begin : gen_addr_scr
-
-    logic intg_err_addr_scr;
-    prim_buf u_intg_err_addr_scr (
-      .in_i(intg_error_i),
-      .out_o(intg_err_addr_scr)
-    );
-
-    // If there is an intergirty error, the nonce used is reversed
     logic [AddrWidth-1:0] addr_scr_nonce;
-    for (genvar j = 0; j < AddrWidth; j++) begin : gen_addr_scr_nonce
-      assign addr_scr_nonce[j] = intg_err_addr_scr ?
-                                 nonce_i[NonceWidth - 1 - j] :
-                                 nonce_i[NonceWidth - AddrWidth + j];
-    end
+    assign addr_scr_nonce = nonce_i[NonceWidth - AddrWidth +: AddrWidth];
 
     prim_subst_perm #(
       .DataWidth ( AddrWidth        ),
@@ -192,21 +177,9 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   localparam int DataNonceWidth = 64 - AddrWidth;
   logic [NumParScr*64-1:0] keystream;
   logic [NumParScr-1:0][DataNonceWidth-1:0] data_scr_nonce;
-
-  logic intg_err_data_scr;
-  prim_buf u_intg_err_data_scr (
-    .in_i(intg_error_i),
-    .out_o(intg_err_data_scr)
-  );
-
   for (genvar k = 0; k < NumParScr; k++) begin : gen_par_scr
 
-    for (genvar j = 0; j < DataNonceWidth; j++) begin : gen_data_nonce
-      assign data_scr_nonce[k][j] = intg_err_data_scr ?
-                                    nonce_i[(k + 1) * DataNonceWidth - j] :
-                                    nonce_i[k * DataNonceWidth + j];
-    end
-
+    assign data_scr_nonce[k] = nonce_i[k * DataNonceWidth +: DataNonceWidth];
 
     prim_prince #(
       .DataWidth      (64),

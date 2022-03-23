@@ -163,8 +163,8 @@ module sram_ctrl
   assign hw2reg.status.escalated.de = escalate;
 
   // SEC_CM: KEY.LOCAL_ESC
-  // Aggregate external and internal escalation sources. This is used on countermeasures further
-  // below (key reset, transaction blocking and scrambling nonce reversal).
+  // Aggregate external and internal escalation sources.
+  // This is used on countermeasures further below (key reset and transaction blocking).
   logic local_esc;
   assign local_esc = escalate                   ||
                      init_error                 ||
