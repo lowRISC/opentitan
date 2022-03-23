@@ -37,3 +37,4 @@ class ErrBits(IntEnum):
     ILLEGAL_BUS_ACCESS = 1 << 21
     LIFECYCLE_ESCALATION = 1 << 22
     FATAL_SOFTWARE = 1 << 23
+    MASK = (1 << 24) - 1

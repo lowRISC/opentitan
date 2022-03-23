@@ -11,7 +11,6 @@ from .state import OTBNState, FsmState
 from .stats import ExecutionStats
 from .trace import Trace
 
-
 # A dictionary that defines a function of the form "address -> from -> to". If
 # PC is the current PC and cnt is the count for the innermost loop then
 # warps[PC][cnt] = new_cnt means that we should warp the current count to
@@ -302,7 +301,6 @@ class OTBNSim:
             # Also, set wipe_cycles to an invalid value to make really sure
             # we've left the wiping code.
             self.wipe_cycles = -1
-
         return (None, self._on_stall(verbose, fetch_next=False))
 
     def dump_data(self) -> bytes:
@@ -312,10 +310,6 @@ class OTBNSim:
         '''Print a trace of the current instruction'''
         changes_str = ', '.join([t.trace() for t in changes])
         print('{:08x} | {:45} | [{}]'.format(pc, disasm, changes_str))
-
-    def on_lc_escalation(self) -> None:
-        '''React to a lifecycle controller escalation signal'''
-        self.state.injected_err_bits |= ErrBits.LIFECYCLE_ESCALATION
 
     def on_otp_cdc_done(self) -> None:
         '''Signifies when the scrambling key request gets processed'''
@@ -335,3 +329,8 @@ class OTBNSim:
         if old_state in [FsmState.IDLE]:
             self.state.set_fsm_state(FsmState.MEM_SEC_WIPE)
             self.state.dmem_req_pending = True
+
+    def send_err_escalation(self, err_val: int) -> None:
+        '''React to an error escalation'''
+        assert err_val & ~ErrBits.MASK == 0
+        self.state.injected_err_bits |= err_val

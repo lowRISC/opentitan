@@ -504,8 +504,10 @@ void ISSWrapper::reset(bool gen_trace) {
   mirrored_.status = 0;
 }
 
-void ISSWrapper::send_lc_escalation() {
-  run_command("send_lc_escalation\n", nullptr);
+void ISSWrapper::send_err_escalation(uint32_t err_val) {
+  std::ostringstream oss;
+  oss << "send_err_escalation " << std::hex << "0x" << err_val << "\n";
+  run_command(oss.str(), nullptr);
 }
 
 void ISSWrapper::get_regs(std::array<uint32_t, 32> *gprs,

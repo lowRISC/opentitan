@@ -83,8 +83,19 @@ interface otbn_model_if
     u_model.otbn_take_loop_warps(handle, memutil);
   endfunction
 
+  task automatic send_err_escalation(bit [31:0] err_val);
+    `uvm_info("otbn_model_if", "Escalating errors", UVM_HIGH)
+    force u_model.wakeup_iss = 1;
+    `DV_CHECK_FATAL(u_model.otbn_model_send_err_escalation(handle, err_val) == 0,
+                    "Failed to escalate errors", "otbn_model_if")
+    @(posedge clk_i or negedge rst_ni);
+    release u_model.wakeup_iss;
+  endtask: send_err_escalation
+
   // The err signal is asserted by the model if it fails to find the DUT or if it finds a mismatch
   // in results. It should never go high.
   `ASSERT(NoModelErrs, !err)
+
+
 
 endinterface
