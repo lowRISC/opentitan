@@ -65,14 +65,14 @@ hmac_error_t hmac_sha256_final(hmac_digest_t *digest) {
   if (digest == NULL) {
     return kHmacErrorBadArg;
   }
-  mmio_region_t hmac_base = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
 
   uint32_t reg = 0;
   reg = bitfield_bit32_write(reg, HMAC_CMD_HASH_PROCESS_BIT, true);
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET, reg);
 
   do {
-    reg = mmio_region_read32(hmac_base, HMAC_INTR_STATE_REG_OFFSET);
+    reg = abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR +
+                          HMAC_INTR_STATE_REG_OFFSET);
   } while (!bitfield_bit32_read(reg, HMAC_INTR_STATE_HMAC_DONE_BIT));
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_INTR_STATE_REG_OFFSET,
                    reg);
@@ -80,8 +80,9 @@ hmac_error_t hmac_sha256_final(hmac_digest_t *digest) {
   // Read the digest in reverse to preserve the numerical value.
   // The least significant word is at HMAC_DIGEST_7_REG_OFFSET.
   for (size_t i = 0; i < ARRAYSIZE(digest->digest); ++i) {
-    digest->digest[i] = mmio_region_read32(
-        hmac_base, HMAC_DIGEST_7_REG_OFFSET - (i * sizeof(uint32_t)));
+    digest->digest[i] =
+        abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_DIGEST_7_REG_OFFSET -
+                        (i * sizeof(uint32_t)));
   }
   return kHmacOk;
 }
