@@ -176,6 +176,7 @@
   clkmgr_reg_pkg::clkmgr_hw2reg_t hw2reg;
 
   // SEC_CM: MEAS.CONFIG.REGWEN
+  // SEC_CM: MEAS.CONFIG.SHADOW
   // SEC_CM: CLK_CTRL.CONFIG.REGWEN
   clkmgr_reg_top u_reg (
     .clk_i,

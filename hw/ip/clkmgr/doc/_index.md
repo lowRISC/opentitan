@@ -154,6 +154,10 @@ The following is a high level block diagram of the clock manager.
 
 ![Clock Manager Block Diagram](clkmgr_block_diagram.svg)
 
+## Hardware Interfaces
+
+{{< incGenFromIpDesc "/hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson" "hwcfg" >}}
+
 ## Design Details
 
 ### Root Clock Gating and Interface with Power Manager
