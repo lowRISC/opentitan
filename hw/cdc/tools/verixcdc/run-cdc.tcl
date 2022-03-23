@@ -149,3 +149,7 @@ report_policy -verbose -skip_empty_summary_status -compat -output ../REPORT/vcdc
 report_policy -verbose -skip_empty_summary_status -compat -output ../REPORT/vcdc.waived.rpt {WAIVED}
 
 # report_messages -output verix_cdc.rpt
+
+# Clock report
+report_clock_domains -flops -output ../REPORT/clocks.flops.rpt
+report_clock_matrix -output ../REPORT/clocks.matrix.rpt
