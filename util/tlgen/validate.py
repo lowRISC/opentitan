@@ -68,10 +68,10 @@ Crossbar node description. It can be host, device, or internal nodes.
         'clock': ['s', 'main clock of the port'],
         'reset': ['s', 'main reset of the port'],
         'pipeline': ['pb', 'If true, pipeline is added in front of the port'],
-        'pipeline_byp': [
-            'pb', 'Pipeline bypass. If true, '
-            'request/response are not latched'
-        ],
+        'req_fifo_pass': ['pb',
+                          'If true, pipeline fifo has passthrough behavior on req'],
+        'rsp_fifo_pass': ['pb',
+                          'If true, pipeline fifo has passthrough behavior on rsp'],
         'inst_type': ['s', 'Instance type'],
         'xbar': ['pb', 'If true, the node is connected to another Xbar'],
         'addr_range': ['lg', addr]
@@ -305,18 +305,19 @@ def validate(obj: OrderedDict) -> Xbar:  # OrderedDict -> Xbar
 
         if node.node_type in [NodeType.DEVICE, NodeType.HOST
                               ] and "pipeline" in nodeobj:
-            node.pipeline = True if nodeobj["pipeline"].lower() in [
-                "true", "1"
-            ] else False
+            node.pipeline = True if nodeobj["pipeline"] else False
         else:
             node.pipeline = False
-        if node.node_type in [NodeType.DEVICE, NodeType.HOST
-                              ] and "pipeline_byp" in nodeobj:
-            node.pipeline_byp = True if nodeobj["pipeline_byp"].lower() in [
-                "true", "1"
-            ] else False
+        if node.node_type in [NodeType.DEVICE, NodeType.HOST]:
+            node.req_fifo_pass = nodeobj["req_fifo_pass"] \
+                if "req_fifo_pass" in nodeobj else False
+
+            node.rsp_fifo_pass = nodeobj["rsp_fifo_pass"] \
+                if "rsp_fifo_pass" in nodeobj else False
+
         else:
-            node.pipeline_byp = True
+            node.req_fifo_pass = False
+            node.rsp_fifo_pass = False
         xbar.nodes.append(node)
 
     # Edge
