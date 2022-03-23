@@ -42,6 +42,12 @@
       tests: ["clkmgr_frequency"]
     }
     {
+      name: sec_cm_meas_config_shadow
+      desc: "Verify the countermeasure(s) MEAS.CONFIG.SHADOW."
+      milestone: V2S
+      tests: [""]
+    }
+    {
       name: sec_cm_idle_intersig_mubi
       desc: "Verify the countermeasure(s) IDLE.INTERSIG.MUBI."
       milestone: V2S

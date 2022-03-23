@@ -171,6 +171,9 @@
     { name: "MEAS.CLK.BKGN_CHK",
       desc: "Background check for clock frequency."
     },
+    { name: "MEAS.CONFIG.SHADOW",
+      desc: "Measurement configurations are shadowed."
+    }
     { name: "IDLE.INTERSIG.MUBI",
       desc: "Idle inputs are multibit encoded."
     }
