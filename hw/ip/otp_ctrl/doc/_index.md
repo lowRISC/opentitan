@@ -218,7 +218,7 @@ This check applies to LIFE_CYCLE, HW_CFG and SECRET* partitions.
 If a failure is encountered, the OTP controller will send out a `fatal_check_error` alert and reset all of its hardware outputs to their defaults.
 
 Note that checks applied to life cycle could cause a failure if life cycle is updated, because life cycle is the only partition that may contain live updates.
-The controller hence detects this condition and makes sure that the buffer registers are kept up to date in order to prevent false positives.
+The controller hence detects this condition based on the `lc_check_byp_en_i` signal coming from the life cycle controller, and pauses background checks on this partition in order to prevent false positives.
 
 ### Secret Partition Integrity Checks
 
