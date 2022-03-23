@@ -67,7 +67,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -113,7 +113,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -161,7 +161,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -208,7 +208,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -256,7 +256,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -304,7 +304,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -352,7 +352,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -400,7 +400,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -448,7 +448,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "//sw/device/lib/base/testing:global_mock",
         "@googletest//:gtest_main",
     ],
@@ -499,7 +499,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -547,7 +547,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -594,7 +594,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -641,7 +641,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -689,7 +689,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -737,7 +737,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -785,7 +785,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -833,7 +833,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -881,7 +881,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -929,7 +929,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -977,7 +977,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -1025,7 +1025,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -1073,7 +1073,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -1121,7 +1121,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -1169,7 +1169,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -1215,7 +1215,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -1263,7 +1263,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -1310,7 +1310,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -1357,7 +1357,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -1405,7 +1405,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -1449,7 +1449,7 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )

@@ -97,7 +97,7 @@ cc_test(
     srcs = ["print_unittest.cc"],
     deps = [
         ":print",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

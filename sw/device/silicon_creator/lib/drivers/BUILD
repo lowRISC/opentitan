@@ -100,7 +100,7 @@ cc_test(
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "//sw/device/lib/base/testing:mock_abs_mmio",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
@@ -142,6 +142,7 @@ cc_test(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing:mock_abs_mmio",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
         "//sw/device/silicon_creator/lib:error",
         "@googletest//:gtest_main",
     ],
@@ -190,6 +191,7 @@ cc_test(
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:keymgr_binding",
         "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -366,6 +368,7 @@ cc_test(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing:mock_abs_mmio",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -391,6 +394,7 @@ cc_test(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing:mock_abs_mmio",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -476,6 +480,7 @@ cc_test(
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing:mock_abs_mmio",
         "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -502,6 +507,7 @@ cc_test(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing:mock_abs_mmio",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -548,6 +554,7 @@ cc_test(
         "//sw/device/lib/base/testing:mock_abs_mmio",
         "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:mock_otp",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
 )
