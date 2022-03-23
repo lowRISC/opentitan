@@ -86,6 +86,20 @@ cc_library(
 )
 
 cc_library(
+    name = "hmac_testutils",
+    srcs = ["hmac_testutils.c"],
+    hdrs = ["hmac_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/ip/hmac/data:hmac_regs",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:hmac",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing/test_framework",
+    ],
+)
+
+cc_library(
     name = "otp_ctrl_testutils",
     srcs = ["otp_ctrl_testutils.c"],
     hdrs = ["otp_ctrl_testutils.h"],

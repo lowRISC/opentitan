@@ -82,6 +82,7 @@ opentitan_functest(
     deps = [
         "//sw/device/lib:flash_ctrl",
         "//sw/device/lib/dif:hmac",
+        "//sw/device/lib/testing:hmac_testutils",
     ],
 )
 
