@@ -235,20 +235,8 @@ always_comb begin : p_fsm
   endcase
 end
 
-// This primitive is used to place a size-only constraint on the
-// flops in order to prevent FSM state encoding optimizations.
-logic [StateWidth-1:0] state_raw_q;
-assign state_q = state_e'(state_raw_q);
-prim_sparse_fsm_flop #(
-  .StateEnumT(state_e),
-  .Width(StateWidth),
-  .ResetValue(StateWidth'(State0))
-) u_state_regs (
-  .clk_i,
-  .rst_ni,
-  .state_i ( state_d     ),
-  .state_o ( state_raw_q )
-);
+`PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, State0)
+
 '''.format(state_str))
 
     elif args.language == "c":
