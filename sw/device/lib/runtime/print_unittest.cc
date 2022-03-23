@@ -70,6 +70,11 @@ TEST_F(PrintfTest, Character) {
   EXPECT_EQ(buf_, "Hello, X!\n");
 }
 
+TEST_F(PrintfTest, Bool) {
+  EXPECT_EQ(base_printf("Hello, %!b, %!b!\n", true, false), 20);
+  EXPECT_EQ(buf_, "Hello, true, false!\n");
+}
+
 TEST_F(PrintfTest, StringWithNul) {
   EXPECT_EQ(base_printf("Hello, %s!\n", "abcxyz"), 15);
   EXPECT_EQ(buf_, "Hello, abcxyz!\n");
