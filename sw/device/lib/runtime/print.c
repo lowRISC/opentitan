@@ -463,7 +463,14 @@ static void process_specifier(buffer_sink_t out, format_specifier_t spec,
     }
     case kSvBinary: {
       if (spec.is_nonstd) {
-        goto bad_spec;
+        // Bools passed into a ... function will be automatically promoted
+        // to int; va_arg(..., bool) is actually UB!
+        if (va_arg(*args, int) != 0) {
+          *bytes_written += out.sink(out.data, "true", 4);
+        } else {
+          *bytes_written += out.sink(out.data, "false", 5);
+        }
+        break;
       }
       uint32_t value = va_arg(*args, uint32_t);
       *bytes_written +=

@@ -72,6 +72,7 @@ typedef struct buffer_sink {
  *   (i.e., last byte printed first) while %!y will print in little-endian
  *   order (i.e., first byte printed first). This makes sure %!x is consistent
  *   with %x.
+ * - %!b, which takes a bool and prints either true or false.
  *
  * When compiled for a DV testbench, this function will not read any pointers,
  * and as such the specifiers %s, %!s, %!x, %!X, %!y, and %!Y will behave as if

@@ -64,12 +64,14 @@ def cleanup_format(_format):
     The %!{x, X, y, Y} specifiers have the same property, but can print garbage,
     so they're converted to pointers instead.
     - Change %![N]?s        --> %[N]?s[%d].
-    - Change %![N]?[xXyY]   --> %[N]?h.'''
+    - Change %![N]?[xXyY]   --> %[N]?h.
+    - Change %![N]?b        --> %[N]?d.'''
     _format = re.sub(r"%(-?\d*)[iu]", r"%\1d", _format)
     _format = re.sub(r"%(-?\d*)[xp]", r"%\1h", _format)
     _format = re.sub(r"%(-?\d*)X", r"%\1H", _format)
     _format = re.sub(r"%!(-?\d*)s", r"%\1s[%d]", _format)
     _format = re.sub(r"%!(-?\d*)[xXyY]", r"%\1h[%d]", _format)
+    _format = re.sub(r"%!(-?\d*)b", r"%\1d[%d]", _format)
     _format = re.sub(r"%([bcodhHs])", r"%0\1", _format)
     return cleanup_newlines(_format)
 
