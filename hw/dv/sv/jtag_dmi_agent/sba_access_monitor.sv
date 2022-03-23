@@ -81,21 +81,25 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
 
     forever begin
       bit busy;
-      dv_base_reg csr;
+      uvm_reg csr;
       jtag_dmi_fifo.get(dmi_item);
       `uvm_info(`gfn, $sformatf("Received jtag DMI item:\n%0s",
                                 dmi_item.sprint(uvm_default_line_printer)), UVM_HIGH)
 
       // Pass through DMI accesses that do not touch the SBA registers.
-      if (!dmi_item.addr inside {sba_addrs}) begin
+      if (!(dmi_item.addr inside {sba_addrs})) begin
         non_sba_jtag_dmi_analysis_port.write(dmi_item);
         continue;
       end
 
-      // Ignore unsuccessful accesses.
-      if (dmi_item.rsp_op != DmiOpOk) continue;
+      // Pass through unsuccessful accesses.
+      if (dmi_item.rsp_op != DmiOpOk) begin
+        non_sba_jtag_dmi_analysis_port.write(dmi_item);
+        continue;
+      end
 
-      `downcast(csr, jtag_dmi_ral.default_map.get_reg_by_offset(dmi_item.addr))
+      csr = jtag_dmi_ral.default_map.get_reg_by_offset(dmi_item.addr);
+
       if (dmi_item.req_op == DmiOpRead) begin
         process_sba_csr_read(csr, dmi_item);
         void'(csr.predict(.value(dmi_item.rdata), .kind(UVM_PREDICT_READ)));
@@ -107,7 +111,7 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
     end
   endtask
 
-  virtual protected function void process_sba_csr_read(dv_base_reg csr, jtag_dmi_item dmi_item);
+  virtual protected function void process_sba_csr_read(uvm_reg csr, jtag_dmi_item dmi_item);
     case (csr.get_name())
       "sbcs": begin
         uvm_reg_data_t sbbusy       = get_field_val(jtag_dmi_ral.sbcs.sbbusy, dmi_item.rdata);
@@ -163,7 +167,7 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
     endcase
   endfunction
 
-  virtual protected function void process_sba_csr_write(dv_base_reg csr);
+  virtual protected function void process_sba_csr_write(uvm_reg csr);
     case (csr.get_name())
       "sbcs": begin
         // Nothing to do.
