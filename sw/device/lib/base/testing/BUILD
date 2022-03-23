@@ -34,8 +34,8 @@ cc_library(
     ],
     defines = ["MOCK_ABS_MMIO"],
     deps = [
-        ":mock_mmio",
         ":global_mock",
+        ":mock_mmio",
         "//sw/device/lib/base:abs_mmio",
         "@googletest//:gtest",
     ],
