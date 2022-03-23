@@ -429,6 +429,7 @@ class OTBNState:
         # next cycle.
         if self._fsm_state in [FsmState.FETCH_WAIT, FsmState.EXEC]:
             self.ext_regs.write('WIPE_START', 1, True)
+            self.ext_regs.regs['WIPE_START'].commit()
 
         # Switch to a 'wiping' state
         self._next_fsm_state = (FsmState.WIPING_BAD if should_lock
