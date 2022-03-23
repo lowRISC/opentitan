@@ -721,6 +721,10 @@ module lc_ctrl
   // Alert assertions for sparse FSMs.
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLcFsmCheck_A,
       u_lc_ctrl_fsm.u_fsm_state_regs, alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLcStateCheck_A,
+      u_lc_ctrl_fsm.u_state_regs, alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLcCntCheck_A,
+      u_lc_ctrl_fsm.u_cnt_regs, alert_tx_o[1])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlKmacIfFsmCheck_A,
       u_lc_ctrl_kmac_if.u_state_regs, alert_tx_o[1])
 
