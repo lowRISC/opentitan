@@ -407,15 +407,21 @@ SW can configure whether a submodule should process the command while in the pas
 If the received command is one of the three read status commands, STATUS control module takes over the SPI interface after the opcode.
 The 3 bytes status register is not reset by CSb.
 Except BUSY bit, other bits are controlled by SW.
-BUSY bit is set by HW when it receives any commands that are uploaded to the FIFOs.
+HW synchronizes the STATUS bits into the SPI clock domain and returns the STATUS bits to the host system.
+BUSY bit is set by HW when it receives any commands that are uploaded to the FIFOs and their `busy` fields are 1 in the command information entry.
 SW may clear BUSY bit when it completes the received commands (e.g Erase/ Program).
 
 If BUSY is set, SPI_DEVICE IP blocks the passhthrough interface in Passthrough mode.
 The blocking of the interface occurs in SPI transaction idle state (CSb == 1).
-However, due to the instrinsic delay of the CDC, CSb transition is delayed by 2 SYS_CLK cycles.
-It may introduce a corner case when the host system starts sending a SPI transaction while SW may clear the BUSY signal.
-In that case, the blocking and unblocking of the passthrough may happen while SPI is active.
-The HW behavior in this scenario is not determined.
+When SW clears the BUSY bit, it is applied to the STATUS register in the SPI clock domain when SPI clock toggles.
+It means the update happens when the next SPI transaction is received.
+The BUSY bit in the CSR is the synchronized value of the STATUS BUSY bit in the SPI clock domain.
+Due to the CDC latency, SW may see the updated value (BUSY clear) with long delay.
+
+As the HW does not limit the SW update of the STATUS register in the middle of SPI transactions, it may create a case that the old STATUS values are sent along with the new STATUS values.
+If the SW updates the STATUS while the HW is processing the Read Status commands, the SW request may arrive to the SPI clock domain while STATUS registers are being transferred.
+The register is sent from MSB to LSB.
+So, the host may see the bit 7 down to n of the old STATUS, then bit n-1 to 0 of the new STATUS.
 
 If the host sends the Write Status commands, the commands are not processed in this module.
 SW must configure the remaining command information entries to upload the Write Status commands to the FIFOs.
