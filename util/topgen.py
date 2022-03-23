@@ -8,7 +8,6 @@ import argparse
 import logging as log
 import random
 import shutil
-import subprocess
 import sys
 import tempfile
 from collections import OrderedDict
@@ -1194,9 +1193,12 @@ def main():
         # twice:
         # - Once under out_path/sw/autogen
         # - Once under hw/top_{topname}/sw/autogen
-        for path in [out_path.resolve(),
-                     (SRCTREE_TOP / "hw/top_{}/".format(topname)).resolve()]:
-
+        root_paths = [out_path.resolve(), SRCTREE_TOP]
+        out_paths = [
+            out_path.resolve(),
+            (SRCTREE_TOP / "hw/top_{}/".format(topname)).resolve()
+        ]
+        for idx, path in enumerate(out_paths):
             # "clang-format" -> "sw/autogen/.clang-format"
             cformat_tplpath = TOPGEN_TEMPLATE_PATH / "clang-format"
             cformat_dir = path / "sw/autogen"
@@ -1204,14 +1206,19 @@ def main():
             cformat_path = cformat_dir / ".clang-format"
             cformat_path.write_text(cformat_tplpath.read_text())
 
+            # Save the header macro prefix into `c_helper`
+            rel_header_dir = cformat_dir.relative_to(root_paths[idx])
+            c_helper.header_macro_prefix = (
+                "OPENTITAN_" + str(rel_header_dir).replace("/", "_").upper())
+
             # "top_{topname}.h.tpl" -> "sw/autogen/top_{topname}.h"
             cheader_path = cformat_dir / f"top_{topname}.h"
             render_template(TOPGEN_TEMPLATE_PATH / "toplevel.h.tpl",
                             cheader_path,
                             helper=c_helper)
 
-            # Save the relative header path into `c_gen_info`
-            rel_header_path = cheader_path.relative_to(path.parents[1])
+            # Save the relative header path into `c_helper`
+            rel_header_path = cheader_path.relative_to(root_paths[idx])
             c_helper.header_path = str(rel_header_path)
 
             # "toplevel.c.tpl" -> "sw/autogen/top_{topname}.c"
@@ -1228,24 +1235,6 @@ def main():
             render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.h.tpl",
                             memory_cheader_path,
                             helper=c_helper)
-
-            try:
-                cheader_path.relative_to(SRCTREE_TOP)
-            except ValueError:
-                log.error("cheader_path %s is not within SRCTREE_TOP %s",
-                          cheader_path, SRCTREE_TOP)
-                log.error("Thus skipping util/fix_include_guard.py")
-                continue
-
-            # Fix the C header guards, which will have the wrong name
-            subprocess.run(["util/fix_include_guard.py",
-                            str(cheader_path),
-                            str(memory_cheader_path)],
-                           universal_newlines=True,
-                           stdout=subprocess.DEVNULL,
-                           stderr=subprocess.DEVNULL,
-                           check=True,
-                           cwd=str(SRCTREE_TOP))  # yapf: disable
 
         # generate chip level xbar and alert_handler TB
         tb_files = [
