@@ -285,7 +285,7 @@
       name: sec_cm_macro_mem_integrity
       desc: "Verify the countermeasure(s) MACRO.MEM.INTEGRITY."
       milestone: V2S
-      tests: ["otp_ctrl_macro_err"]
+      tests: ["otp_ctrl_macro_errs"]
     }
     {
       name: sec_cm_macro_mem_cm
