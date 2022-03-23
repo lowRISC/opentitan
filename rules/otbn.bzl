@@ -8,10 +8,10 @@ load("//rules:bugfix.bzl", "find_cc_toolchain")
 def _get_assembler(cc_toolchain):
     """Find the path to riscv-unknown-elf-as."""
 
-     # Note: the toolchain config doesn"t appear to have a good way to get
-     # access to the assembler.  We should be able to access it via the
-     # the compiler, but I had trouble with //hw/ip/otbn/util/otbn-as invoking
-     # the compiler as assembler.
+    # Note: the toolchain config doesn"t appear to have a good way to get
+    # access to the assembler.  We should be able to access it via the
+    # the compiler, but I had trouble with //hw/ip/otbn/util/otbn-as invoking
+    # the compiler as assembler.
     return [f for f in cc_toolchain.all_files.to_list() if f.basename.endswith("as")][0]
 
 def _otbn_assemble_sources(ctx):
