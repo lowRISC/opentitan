@@ -27,12 +27,21 @@ PER_DEVICE_DEPS = {
 }
 
 def _opentitan_transition_impl(settings, attr):
-    return {"//command_line_option:platforms": attr.platform}
+    return {
+        # Unconditionally optimize for size across the transition boundary.
+        # Even when -c dbg, things will fail to link if code is not optimized
+        # enough.
+        "//command_line_option:copt": ["-Os"],
+        "//command_line_option:platforms": attr.platform,
+    }
 
 opentitan_transition = transition(
     implementation = _opentitan_transition_impl,
     inputs = [],
-    outputs = ["//command_line_option:platforms"],
+    outputs = [
+        "//command_line_option:copt",
+        "//command_line_option:platforms",
+    ],
 )
 
 def _obj_transform_impl(ctx):
