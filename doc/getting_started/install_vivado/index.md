@@ -4,7 +4,7 @@ title: Install Vivado
 
 ## About Xilinx Vivado
 
-To generate a bitstream for Xilinx devices a software called Vivado is required.
+Generating a bitstream for Xilinx devices requires a Vivado installation.
 Vivado is provided by Xilinx, it is freeware for certain (smaller) FPGA devices but requires a commercial license for larger FPGAs.
 The free version is called "WebPACK", the commercial version "Design Edition".
 The installation instructions below are valid for both installation methods.
@@ -100,7 +100,7 @@ To get started faster we use the web installer in the following.
 
 ## Device permissions: udev rules
 
-To program FPGAs user using Vivado typically needs to have permission to USB devices connected to the PC.
+To program an FPGAs the user using Vivado typically needs to have permissions to access USB devices connected to the PC.
 Depending on your security policy you can take different steps to enable this access.
 One way of doing so is given in the udev rule outlined below.
 

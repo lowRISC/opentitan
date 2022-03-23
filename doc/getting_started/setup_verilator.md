@@ -34,7 +34,7 @@ $ make install
 After installation you need to add `/tools/verilator/$VERILATOR_VERSION/bin` to your `PATH` environment variable.
 Also add it to your `~/.bashrc` or equivalent so that it's on the `PATH` in the future, like this:
 ```console
-export PATH=$PATH:/tools/verilator/4.210/bin
+export PATH=/tools/verilator/$VERILATOR_VERSION/bin:$PATH
 ```
 
 Check your installation by running:
@@ -57,11 +57,7 @@ $ fusesoc --cores-root . run --flag=fileset_top --target=sim --setup --build low
 ```
 
 Then we need to build software to run on the simulated system.
-There are 3 memory types: ROM, RAM and Flash.
-By default, the system will first execute out of ROM and then jump to flash.
-A program needs to be built for each until ROM functionality for code download is ready.
-
-For that purpose compile the demo program with "simulation" settings, which adjusts the frequencies to better match the simulation speed.
+If you followed the [building software guide]({{< relref "build_sw" >}}), you've done this step already.
 
 ```console
 $ cd $REPO_TOP
@@ -73,7 +69,6 @@ The above command also builds the OTP image that contains the root secrets and l
 By default, the life cycle state will be moved into DEV, which enables debugging features such as the JTAG interface for the main processor.
 
 Now the simulation can be run.
-The programs listed after `--meminit` are loaded into the system's specified memory and execution is started immediately.
 
 ```console
 $ cd $REPO_TOP
@@ -85,9 +80,14 @@ $ build/lowrisc_dv_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb \
 
 To stop the simulation press CTRL-c.
 
-If you want to run a program other than `hello_world`, you'll change the second `--meminit` argument to point to a different `.scr.vmem` file under `build-bin`.
-For the most part, the structure under `build-bin` follows the structure in the repository.
-Executables intended for Verilator are suffixed with `sim_verilator`.
+The programs listed after `--meminit` are loaded into the system's specified memory and execution is started immediately.
+There are 4 memory types: ROM, Flash, OTP, and SRAM.
+By default, the system will first execute out of ROM and then jump to Flash.
+Memory images need to be provided for ROM, Flash, and OTP (SRAM is populated at runtime).
+
+If you want to run a program other than `hello_world`, you'll change the second (flash) `--meminit` argument to point to a different `64.scr.vmem` file under `build-bin`.
+For the most part, the structure under `build-bin` follows the structure in the repository, and executables intended for Verilator are suffixed with `sim_verilator`.
+For example, the `build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.64.scr.vmem` file used above corresponds to the `sw/device/examples/hello_world/hello_world.c` source file.
 
 All executed instructions in the loaded software are logged to the file `trace_core_00000000.log`.
 The columns in this file are tab separated; change the tab width in your editor if the columns don't appear clearly, or open the file in a spreadsheet application.
