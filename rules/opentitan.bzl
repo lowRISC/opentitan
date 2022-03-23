@@ -802,3 +802,46 @@ def opentitan_functest(
         name = name,
         tests = all_tests,
     )
+
+def _get_or_empty(dict, key):
+    if key in dict:
+        return dict[key]
+    else:
+        return []
+
+def opentitan_dual_cc_library(
+        name,
+        hdrs = {},
+        srcs = {},
+        deps = {},
+        **kwargs):
+    """A helper macro for generating a cc_library whose implementation depends on the target.
+
+    This macro is intended to be an easy way to generate code that `select()`s on
+    `//rules:opentitan_platform` with minimal boilerplate. It is identical to `cc_library`,
+    except `hdrs`, `srcs`, and `deps` are dictionaries that separate out the input lists
+    into "shared", "device", and "host".
+    Args:
+      @param name: The name of this rule.
+      @param hdrs: A dict-of-lists-of-labels of header inputs, with keys described above.
+      @param srcs: A dict-of-lists-of-labels of source inputs, with keys described above.
+      @param deps: A dict-of-lists-of-labels of dependencies, with keys described above.
+      @param **kwargs: Arguments to forward to `cc_library`.
+    """
+
+    native.cc_library(
+        name = name,
+        hdrs = _get_or_empty(hdrs, "shared") + select({
+            "//rules:opentitan_platform": _get_or_empty(hdrs, "device"),
+            "//conditions:default": _get_or_empty(hdrs, "host"),
+        }),
+        srcs = _get_or_empty(srcs, "shared") + select({
+            "//rules:opentitan_platform": _get_or_empty(srcs, "device"),
+            "//conditions:default": _get_or_empty(srcs, "host"),
+        }),
+        deps = _get_or_empty(deps, "shared") + select({
+            "//rules:opentitan_platform": _get_or_empty(deps, "device"),
+            "//conditions:default": _get_or_empty(deps, "host"),
+        }),
+        **kwargs
+    )

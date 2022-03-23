@@ -2,45 +2,34 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_functest", "verilator_params")
+load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_dual_cc_library", "opentitan_functest", "verilator_params")
 
 package(default_visibility = ["//visibility:public"])
 
-cc_library(
-    name = "boot_data_intf",
-    hdrs = ["boot_data.h"],
-    deps = [
-        ":error",
-        "//sw/device/lib/base",
-        "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-    ],
-)
-
-cc_library(
+opentitan_dual_cc_library(
     name = "boot_data",
-    srcs = ["boot_data.c"],
-    deps = [
-        ":boot_data_intf",
-        ":error",
-        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-        "//sw/device/silicon_creator/lib/drivers:hmac",
-    ],
-)
-
-cc_library(
-    name = "mock_boot_data",
-    testonly = True,
-    hdrs = ["mock_boot_data.h"],
-    deps = [
-        ":boot_data_intf",
-        "//sw/device/lib/base/testing:global_mock",
-        "//sw/device/silicon_creator/testing:mask_rom_test",
-        "@googletest//:gtest",
-    ],
+    srcs = {"device": ["boot_data.c"]},
+    hdrs = {
+        "shared": ["boot_data.h"],
+        "host": ["mock_boot_data.h"],
+    },
+    deps = {
+        "shared": [
+            ":error",
+            "//sw/device/lib/base",
+            "//sw/device/silicon_creator/lib/drivers:hmac",
+            "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        ],
+        "device": [
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        ],
+        "host": [
+            "//sw/device/lib/base/testing:global_mock",
+            "//sw/device/silicon_creator/testing:mask_rom_test",
+            "@googletest//:gtest",
+        ],
+    },
 )
 
 opentitan_functest(
