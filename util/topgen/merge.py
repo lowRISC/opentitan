@@ -260,8 +260,9 @@ def xbar_addhost(top, xbar, host):
             ("stub", False),
             # The default matches RTL default
             # pipeline_byp is don't care if pipeline is false
-            ("pipeline", "true"),
-            ("pipeline_byp", "true")
+            ("pipeline", True),
+            ("req_fifo_pass", True),
+            ("rsp_fifo_pass", True)
         ])
         xbar["nodes"].append(obj)
         return
@@ -281,9 +282,11 @@ def xbar_addhost(top, xbar, host):
     obj[0]["stub"] = False
     obj[0]["inst_type"] = predefined_modules[
         host] if host in predefined_modules else ""
-    obj[0]["pipeline"] = obj[0]["pipeline"] if "pipeline" in obj[0] else "true"
-    obj[0]["pipeline_byp"] = obj[0]["pipeline_byp"] if obj[0][
-        "pipeline"] == "true" and "pipeline_byp" in obj[0] else "true"
+    obj[0]["pipeline"] = obj[0]["pipeline"] if "pipeline" in obj[0] else True
+    obj[0]["req_fifo_pass"] = obj[0]["req_fifo_pass"] if obj[0][
+        "pipeline"] and "req_fifo_pass" in obj[0] else True
+    obj[0]["rsp_fifo_pass"] = obj[0]["rsp_fifo_pass"] if obj[0][
+        "pipeline"] and "rsp_fifo_pass" in obj[0] else True
 
 
 def process_pipeline_var(node):
@@ -291,9 +294,11 @@ def process_pipeline_var(node):
 
     - Supply a default of true / true if not defined by xbar
     """
-    node["pipeline"] = node["pipeline"] if "pipeline" in node else "true"
-    node["pipeline_byp"] = node[
-        "pipeline_byp"] if "pipeline_byp" in node else "true"
+    node["pipeline"] = node["pipeline"] if "pipeline" in node else True
+    node["req_fifo_pass"] = node[
+        "req_fifo_pass"] if "req_fifo_pass" in node else True
+    node["req_fifo_pass"] = node[
+        "req_fifo_pass"] if "req_fifo_pass" in node else True
 
 
 def xbar_adddevice(top: Dict[str, object],

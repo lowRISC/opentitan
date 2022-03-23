@@ -14,86 +14,86 @@
       clock: "clk_peri_i",
       reset: "rst_peri_ni",
       xbar:  "true",
-      pipeline: "false"
+      pipeline: false
 
     },
     { name:      "uart0",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
-      pipeline:  "false"
+      pipeline:  false
     },
     { name:      "gpio",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
-      pipeline:  "false"
+      pipeline:  false
     },
     { name:      "spi_device",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
-      pipeline:  "false"
+      pipeline:  false
     },
     { name:      "spi_host0",
       type:      "device",
       clock:     "clk_spi_host0_i",
       reset:     "rst_spi_host0_ni",
-      pipeline:  "false"
+      pipeline:  false
     },
     { name:      "rv_timer",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
-      pipeline:  "false"
+      pipeline:  false
     },
     { name:      "usbdev",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
-      pipeline:  "false"
+      pipeline:  false
     },
     { name:      "pwrmgr_aon",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
-      pipeline:  "false"
+      pipeline:  false
     },
     { name:      "rstmgr_aon",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
-      pipeline:  "false"
+      pipeline:  false
     },
     { name:      "clkmgr_aon",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
-      pipeline:  "false"
+      pipeline:  false
     },
     { name:      "pinmux_aon",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
-      pipeline:  "false"
+      pipeline:  false
     },
     { name:      "sram_ctrl_ret_aon.regs",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
-      pipeline:  "false"
+      pipeline:  false
     },
     { name:      "sram_ctrl_ret_aon.ram",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
-      pipeline:  "false"
+      pipeline:  false
     },
     { name:      "ast",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
-      pipeline:  "false",
+      pipeline:  false,
     },
   ],
   connections: {

@@ -221,17 +221,21 @@ ${"end" if loop.last else ""}
   );
   % elif block.node_type.name == "SOCKET_1N":
   tlul_socket_1n #(
-    % if block.hpass != 1:
-    .HReqPass  (1'b${block.hpass}),
-    .HRspPass  (1'b${block.hpass}),
+    % if block.hreq_pass != 1:
+    .HReqPass  (1'b${block.hreq_pass}),
+    % endif
+    % if block.hrsp_pass != 1:
+    .HRspPass  (1'b${block.hrsp_pass}),
     % endif
     % if block.hdepth != 2:
     .HReqDepth (4'h${block.hdepth}),
     .HRspDepth (4'h${block.hdepth}),
     % endif
-    % if block.dpass != 2**(len(block.ds)) -1:
-    .DReqPass  (${len(block.ds)}'h${"%x" % block.dpass}),
-    .DRspPass  (${len(block.ds)}'h${"%x" % block.dpass}),
+    % if block.dreq_pass != 2**(len(block.ds)) -1:
+    .DReqPass  (${len(block.ds)}'h${"%x" % block.dreq_pass}),
+    % endif
+    % if block.drsp_pass != 2**(len(block.ds)) -1:
+    .DRspPass  (${len(block.ds)}'h${"%x" % block.drsp_pass}),
     % endif
     % if block.ddepth != 2:
     .DReqDepth (${len(block.ds)*4}'h${"%x" % block.ddepth}),
@@ -249,17 +253,21 @@ ${"end" if loop.last else ""}
   );
   % elif block.node_type.name == "SOCKET_M1":
   tlul_socket_m1 #(
-    % if block.hpass != 2**(len(block.us)) - 1:
-    .HReqPass  (${len(block.us)}'h${"%x" % block.hpass}),
-    .HRspPass  (${len(block.us)}'h${"%x" % block.hpass}),
+    % if block.hreq_pass != 2**(len(block.us)) - 1:
+    .HReqPass  (${len(block.us)}'h${"%x" % block.hreq_pass}),
+    % endif
+    % if block.hrsp_pass != 2**(len(block.us)) - 1:
+    .HRspPass  (${len(block.us)}'h${"%x" % block.hrsp_pass}),
     % endif
     % if block.hdepth != 2:
     .HReqDepth (${len(block.us)*4}'h${"%x" % block.hdepth}),
     .HRspDepth (${len(block.us)*4}'h${"%x" % block.hdepth}),
     % endif
-    % if block.dpass != 1:
-    .DReqPass  (1'b${block.dpass}),
-    .DRspPass  (1'b${block.dpass}),
+    % if block.dreq_pass != 1:
+    .DReqPass  (1'b${block.dreq_pass}),
+    % endif
+    % if block.drsp_pass != 1:
+    .DRspPass  (1'b${block.drsp_pass}),
     % endif
     % if block.ddepth != 2:
     .DReqDepth (4'h${block.ddepth}),

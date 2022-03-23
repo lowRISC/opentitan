@@ -87,9 +87,11 @@ def process_node(node, xbar):  # node: Node -> xbar: Xbar -> Xbar
         # By default, assume connecting to SOCKET_1N upstream and bypass all FIFOs
         # If upstream requires pipelining, it will be added through process pipeline
         new_node.hdepth = 0
-        new_node.hpass = 2**len(node.us) - 1
+        new_node.hreq_pass = 2**len(node.us) - 1
+        new_node.hrsp_pass = 2**len(node.us) - 1
         new_node.ddepth = 0
-        new_node.dpass = 1
+        new_node.dreq_pass = 1
+        new_node.drsp_pass = 1
         xbar.insert_node(new_node, node)
         process_node(new_node, xbar)
 
@@ -104,9 +106,11 @@ def process_node(node, xbar):  # node: Node -> xbar: Xbar -> Xbar
         # By default, assume connecting to SOCKET_M1 downstream and bypass all FIFOs
         # If upstream requires pipelining, it will be added through process pipeline
         new_node.hdepth = 0
-        new_node.hpass = 1
+        new_node.hreq_pass = 1
+        new_node.hrsp_pass = 1
         new_node.ddepth = 0
-        new_node.dpass = 2**len(node.ds) - 1
+        new_node.dreq_pass = 2**len(node.ds) - 1
+        new_node.drsp_pass = 2**len(node.ds) - 1
         xbar.insert_node(new_node, node)
 
         # (for loop) Repeat the algorithm with SOCKET_1N's other side node
@@ -130,16 +134,18 @@ def process_pipeline(xbar):
 
         log.info("Processing pipeline for host {}".format(host.name))
 
+        fifo_pass = host.req_fifo_pass or host.rsp_fifo_pass
+
         # FIFO present with no passthrough option
         # FIFO present with passthrough option
         # FIFO not present and full passthrough
         full_fifo = False
         fifo_passthru = False
         full_passthru = True
-        if host.pipeline is True and host.pipeline_byp is False:
+        if host.pipeline is True and fifo_pass is False:
             full_fifo = True
 
-        elif host.pipeline is True and host.pipeline_byp is True:
+        elif host.pipeline is True and fifo_pass is True:
             fifo_passthru = True
 
         elif host.pipeline is False:
@@ -150,39 +156,49 @@ def process_pipeline(xbar):
         if dnode.node_type == NodeType.ASYNC_FIFO:
             continue
 
+        req_pass = 1 if host.req_fifo_pass else 0
+        rsp_pass = 1 if host.rsp_fifo_pass else 0
         if dnode.node_type == NodeType.SOCKET_1N:
             if full_fifo:
-                dnode.hpass = 0
+                dnode.hreq_pass = 0
+                dnode.hrsp_pass = 0
                 dnode.hdepth = 2
             elif fifo_passthru:
-                dnode.hpass = 0
+                dnode.hreq_pass = req_pass
+                dnode.hrsp_pass = rsp_pass
                 dnode.hdepth = 2
             elif full_passthru:
-                dnode.hpass = 1
+                dnode.hreq_pass = 1
+                dnode.hrsp_pass = 1
                 dnode.hdepth = 0
 
             log.info(
-                "Finished processing socket1n {}, pass={}, depth={}".format(
-                    dnode.name, dnode.hpass, dnode.hdepth))
+                "Finished processing socket1n {}, req pass={}, rsp pass={}, depth={}".format(
+                    dnode.name, dnode.hreq_pass, dnode.hrsp_pass, dnode.hdepth))
 
         elif dnode.node_type == NodeType.SOCKET_M1:
             idx = dnode.us.index(host.ds[0])
+
+            # first clear out entry
+            dnode.hreq_pass = dnode.hreq_pass & ~(1 << idx)
+            dnode.hreq_pass = dnode.hreq_pass & ~(1 << idx)
             if full_fifo:
                 log.info("fifo present no bypass")
-                dnode.hpass = dnode.hpass & ~(1 << idx)
                 dnode.hdepth = dnode.hdepth | (2 << idx * 4)
             elif fifo_passthru:
                 log.info("fifo present with bypass")
-                dnode.hpass = dnode.hpass | (1 << idx)
+                dnode.hreq_pass = dnode.hreq_pass | (req_pass << idx)
+                dnode.hreq_pass = dnode.hrsp_pass | (rsp_pass << idx)
                 dnode.hdepth = dnode.hdepth | (2 << idx * 4)
             elif full_passthru:
                 log.info("fifo not present")
-                dnode.hpass = dnode.hpass | (1 << idx)
+                dnode.hreq_pass = dnode.hreq_pass | (1 << idx)
+                dnode.hreq_pass = dnode.hrsp_pass | (1 << idx)
                 dnode.hdepth = dnode.hdepth & ~(0xF << idx * 4)
 
             log.info(
-                "Finished processing socketm1 {}, pass={}, depth={}".format(
-                    dnode.name, dnode.hpass, dnode.hdepth))
+                "Finished processing socketm1 {}, req pass={}, rsp pass={}, depth={}".format(
+                    dnode.name, dnode.hreq_pass, dnode.hrsp_pass, dnode.hdepth))
 
     for device in xbar.devices:
         # go upstream and set DReq/RspPass at the first instance.
@@ -198,14 +214,14 @@ def process_pipeline(xbar):
         # FIFO present with no passthrough option
         # FIFO present with passthrough option
         # FIFO not present and full passthrough
-
+        fifo_pass = device.req_fifo_pass or device.rsp_fifo_pass
         full_fifo = False
         fifo_passthru = False
         full_passthru = True
-        if device.pipeline is True and device.pipeline_byp is False:
+        if device.pipeline is True and fifo_pass is False:
             full_fifo = True
 
-        elif device.pipeline is True and device.pipeline_byp is True:
+        elif device.pipeline is True and fifo_pass is True:
             fifo_passthru = True
 
         elif device.pipeline is False:
@@ -216,37 +232,46 @@ def process_pipeline(xbar):
         if unode.node_type == NodeType.ASYNC_FIFO:
             continue
 
+        req_pass = 1 if device.req_fifo_pass else 0
+        rsp_pass = 1 if device.rsp_fifo_pass else 0
         if unode.node_type == NodeType.SOCKET_1N:
             idx = unode.ds.index(device.us[0])
 
+            # first clear out entry
+            unode.dreq_pass = unode.dreq_pass & ~(1 << idx)
+            unode.drsp_pass = unode.drsp_pass & ~(1 << idx)
             if full_fifo:
-                unode.dpass = unode.dpass & ~(1 << idx)
                 unode.ddepth = unode.ddepth | (2 << idx * 4)
             elif fifo_passthru:
-                unode.dpass = unode.dpass | (1 << idx)
+                unode.dreq_pass = unode.dreq_pass | (req_pass << idx)
+                unode.drsp_pass = unode.drsp_pass | (rsp_pass << idx)
                 unode.ddepth = unode.ddepth | (2 << idx * 4)
             elif full_passthru:
-                unode.dpass = unode.dpass | (1 << idx)
+                unode.dreq_pass = unode.dreq_pass | (1 << idx)
+                unode.drsp_pass = unode.drsp_pass | (1 << idx)
                 unode.ddepth = unode.ddepth & ~(0xF << idx * 4)
 
-            log.info("Finished processing socket1n {}, pass={:x}, depth={:x}".
-                     format(unode.name, unode.dpass, unode.ddepth))
+            log.info("Finished processing socket1n {}, req pass={:x}, req pass={:x} depth={:x}".
+                     format(unode.name, unode.dreq_pass, unode.drsp_pass, unode.ddepth))
 
         elif unode.node_type == NodeType.SOCKET_M1:
             if full_fifo:
                 log.info("Fifo present with no passthrough")
-                unode.dpass = 0
+                unode.dreq_pass = 0
+                unode.drsp_pass = 0
                 unode.ddepth = 2
             elif fifo_passthru:
                 log.info("Fifo present with passthrough")
-                unode.dpass = 0
+                unode.dreq_pass = req_pass
+                unode.drsp_pass = rsp_pass
                 unode.ddepth = 2
             elif full_passthru:
                 log.info("No Fifo")
-                unode.dpass = 1
+                unode.dreq_pass = 1
+                unode.drsp_pass = 1
                 unode.ddepth = 0
 
-            log.info("Finished processing socketm1 {}, pass={:x}, depth={:x}".
-                     format(unode.name, unode.dpass, unode.ddepth))
+            log.info("Finished processing socketm1 {}, req pass={:x}, rsp pass={:x}, depth={:x}".
+                     format(unode.name, unode.dreq_pass, unode.drsp_pass, unode.ddepth))
 
     return xbar
