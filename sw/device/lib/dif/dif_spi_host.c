@@ -95,12 +95,19 @@ dif_result_t dif_spi_host_configure(const dif_spi_host_t *spi_host,
   return kDifOk;
 }
 
-void dif_spi_host_output(const dif_spi_host_t *spi_host, bool enable) {
+dif_result_t dif_spi_host_output_set_enabled(const dif_spi_host_t *spi_host,
+                                             bool enabled) {
+  if (spi_host == NULL) {
+    return kDifBadArg;
+  }
+
   uint32_t reg =
       mmio_region_read32(spi_host->base_addr, SPI_HOST_CONTROL_REG_OFFSET);
   mmio_region_write32(
       spi_host->base_addr, SPI_HOST_CONTROL_REG_OFFSET,
-      bitfield_bit32_write(reg, SPI_HOST_CONTROL_OUTPUT_EN_BIT, enable));
+      bitfield_bit32_write(reg, SPI_HOST_CONTROL_OUTPUT_EN_BIT, enabled));
+
+  return kDifOk;
 }
 
 static void wait_ready(const dif_spi_host_t *spi_host) {

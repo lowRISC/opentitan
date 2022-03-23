@@ -76,7 +76,7 @@ bool test_main(void) {
                        .peripheral_clock_freq_hz = kClockFreqPeripheralHz,
                    }),
                "SPI_HOST config failed!");
-  dif_spi_host_output(&spi_host, true);
+  CHECK_DIF_OK(dif_spi_host_output_set_enabled(&spi_host, true));
 
   read_sfdp(&spi_host);
   return true;

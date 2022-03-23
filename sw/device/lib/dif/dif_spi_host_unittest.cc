@@ -140,6 +140,11 @@ TEST_F(ConfigTest, Default) {
   EXPECT_DIF_OK(dif_spi_host_configure(&spi_host_, config_));
 }
 
+// Checks the arguments to the output-enablement DIF are validated.
+TEST_F(ConfigTest, OutputSetEnabledNullHandle) {
+  EXPECT_DIF_BADARG(dif_spi_host_output_set_enabled(nullptr, true));
+}
+
 // Checks manipulation of the output enable bit.
 TEST_F(ConfigTest, OutputEnable) {
   EXPECT_READ32(SPI_HOST_CONTROL_REG_OFFSET, 0);
@@ -147,7 +152,7 @@ TEST_F(ConfigTest, OutputEnable) {
                  {
                      {SPI_HOST_CONTROL_OUTPUT_EN_BIT, true},
                  });
-  dif_spi_host_output(&spi_host_, true);
+  EXPECT_DIF_OK(dif_spi_host_output_set_enabled(&spi_host_, true));
 }
 
 // Checks that the clock divider gets calculated correctly.
