@@ -275,20 +275,7 @@ module sha3pad
   // State Register ===========================================================
   pad_st_e st, st_d;
 
-  // This primitive is used to place a size-only constraint on the
-  // flops in order to prevent FSM state encoding optimizations.
-  logic [StateWidthPad-1:0] state_raw_q;
-  assign st = pad_st_e'(state_raw_q);
-  prim_sparse_fsm_flop #(
-    .StateEnumT(pad_st_e),
-    .Width(StateWidthPad),
-    .ResetValue(StateWidthPad'(StPadIdle))
-  ) u_state_regs (
-    .clk_i,
-    .rst_ni,
-    .state_i ( st_d     ),
-    .state_o ( state_raw_q )
-  );
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, st_d, st, pad_st_e, StPadIdle)
 
   // `end_of_block` indicates current beat is end of the block
   // It shall set when the address reaches to the end of the block. End address

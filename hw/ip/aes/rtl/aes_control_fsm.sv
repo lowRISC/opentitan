@@ -651,20 +651,7 @@ module aes_control_fsm
   end
 
   // SEC_CM: MAIN.FSM.SPARSE
-  // This primitive is used to place a size-only constraint on the
-  // flops in order to prevent FSM state encoding optimizations.
-  logic [StateWidth-1:0] aes_ctrl_cs_raw;
-  assign aes_ctrl_cs = aes_ctrl_e'(aes_ctrl_cs_raw);
-  prim_sparse_fsm_flop #(
-    .StateEnumT(aes_ctrl_e),
-    .Width(StateWidth),
-    .ResetValue(StateWidth'(IDLE))
-  ) u_state_regs (
-    .clk_i,
-    .rst_ni,
-    .state_i ( aes_ctrl_ns     ),
-    .state_o ( aes_ctrl_cs_raw )
-  );
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, aes_ctrl_ns, aes_ctrl_cs, aes_ctrl_e, IDLE)
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_fsm
     if (!rst_ni) begin

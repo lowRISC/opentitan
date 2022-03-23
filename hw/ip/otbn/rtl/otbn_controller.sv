@@ -533,20 +533,7 @@ module otbn_controller
   `ASSERT(NoStallOnBranch,
       insn_valid_i & insn_dec_shared_i.branch_insn |-> state_q != OtbnStateStall)
 
-  // This primitive is used to place a size-only constraint on the
-  // flops in order to prevent FSM state encoding optimizations.
-  logic [StateControllerWidth-1:0] state_raw_q;
-  assign state_q = otbn_state_e'(state_raw_q);
-  prim_sparse_fsm_flop #(
-    .StateEnumT(otbn_state_e),
-    .Width(StateControllerWidth),
-    .ResetValue(StateControllerWidth'(OtbnStateHalt))
-  ) u_state_regs (
-    .clk_i,
-    .rst_ni,
-    .state_i ( state_d     ),
-    .state_o ( state_raw_q )
-  );
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, otbn_state_e, OtbnStateHalt)
 
   assign insn_cnt_clear = state_reset_i | (state_q == OtbnStateLocked) | insn_cnt_clear_i;
 

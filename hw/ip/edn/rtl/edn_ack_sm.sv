@@ -47,24 +47,7 @@ module edn_ack_sm (
 
   state_e state_d, state_q;
 
-  logic [StateWidth-1:0] state_raw_q;
-
-  // This primitive is used to place a size-only constraint on the
-  // flops in order to prevent FSM state encoding optimizations.
-
-
-  prim_sparse_fsm_flop #(
-    .StateEnumT(state_e),
-    .Width(StateWidth),
-    .ResetValue(StateWidth'(Idle))
-  ) u_state_regs (
-    .clk_i,
-    .rst_ni,
-    .state_i ( state_d ),
-    .state_o ( state_raw_q )
-  );
-
-  assign state_q = state_e'(state_raw_q);
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, Idle)
 
   always_comb begin
     state_d = state_q;

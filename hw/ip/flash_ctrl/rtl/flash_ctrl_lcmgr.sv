@@ -132,21 +132,8 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   lcmgr_state_e state_q, state_d;
   logic state_err;
 
-  // This primitive is used to place a size-only constraint on the
-  // flops in order to prevent FSM state encoding optimizations.
-  logic [StateWidth-1:0] state_raw_q;
-  assign state_q = lcmgr_state_e'(state_raw_q);
   //SEC_CM: FSM.SPARSE
-  prim_sparse_fsm_flop #(
-    .StateEnumT(lcmgr_state_e),
-    .Width(StateWidth),
-    .ResetValue(StateWidth'(StIdle))
-  ) u_state_regs (
-    .clk_i,
-    .rst_ni,
-    .state_i ( state_d ),
-    .state_o ( state_raw_q )
-  );
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, lcmgr_state_e, StIdle)
 
   lc_ctrl_pkg::lc_tx_t err_sts_d, err_sts_q;
   logic err_sts_set;
@@ -546,21 +533,8 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
                     RmaWipeEntries[rma_wipe_idx].num_pages;
 
   rma_state_e rma_state_d, rma_state_q;
-  // This primitive is used to place a size-only constraint on the
-  // flops in order to prevent FSM state encoding optimizations.
-  logic [RmaStateWidth-1:0] rma_state_raw_q;
-  assign rma_state_q = rma_state_e'(rma_state_raw_q);
   // SEC_CM: FSM.SPARSE
-  prim_sparse_fsm_flop #(
-    .StateEnumT(rma_state_e),
-    .Width(RmaStateWidth),
-    .ResetValue(RmaStateWidth'(StRmaIdle))
-  ) u_rma_state_regs (
-    .clk_i,
-    .rst_ni,
-    .state_i ( rma_state_d ),
-    .state_o ( rma_state_raw_q )
-  );
+  `PRIM_FLOP_SPARSE_FSM(u_rma_state_regs, rma_state_d, rma_state_q, rma_state_e, StRmaIdle)
 
   // SEC_CM: CTR.SPARSE
   logic page_err_q, page_err_d;

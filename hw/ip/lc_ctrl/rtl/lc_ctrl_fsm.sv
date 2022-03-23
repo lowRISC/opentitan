@@ -4,6 +4,8 @@
 //
 // Main Life Cycle Controller FSM.
 
+`include "prim_assert.sv"
+
 module lc_ctrl_fsm
   import lc_ctrl_pkg::*;
   import lc_ctrl_state_pkg::*;
@@ -440,46 +442,9 @@ module lc_ctrl_fsm
   // State Flops //
   /////////////////
 
-  // This primitive is used to place a size-only constraint on the
-  // flops in order to prevent FSM state encoding optimizations.
-  logic [FsmStateWidth-1:0] fsm_state_raw_q;
-  assign fsm_state_q = fsm_state_e'(fsm_state_raw_q);
-  prim_sparse_fsm_flop #(
-    .StateEnumT(fsm_state_e),
-    .Width(FsmStateWidth),
-    .ResetValue(FsmStateWidth'(ResetSt))
-  ) u_fsm_state_regs (
-    .clk_i,
-    .rst_ni,
-    .state_i ( fsm_state_d     ),
-    .state_o ( fsm_state_raw_q )
-  );
-
-  logic [LcStateWidth-1:0] lc_state_raw_q;
-  assign lc_state_q = lc_state_e'(lc_state_raw_q);
-  prim_sparse_fsm_flop #(
-    .StateEnumT(lc_state_e),
-    .Width(LcStateWidth),
-    .ResetValue(LcStateWidth'(LcStScrap))
-  ) u_state_regs (
-    .clk_i,
-    .rst_ni,
-    .state_i ( lc_state_d     ),
-    .state_o ( lc_state_raw_q )
-  );
-
-  logic [LcCountWidth-1:0] lc_cnt_raw_q;
-  assign lc_cnt_q = lc_cnt_e'(lc_cnt_raw_q);
-  prim_sparse_fsm_flop #(
-    .StateEnumT(lc_cnt_e),
-    .Width(LcCountWidth),
-    .ResetValue(LcCountWidth'(LcCnt24))
-  ) u_cnt_regs (
-    .clk_i,
-    .rst_ni,
-    .state_i ( lc_cnt_d     ),
-    .state_o ( lc_cnt_raw_q )
-  );
+  `PRIM_FLOP_SPARSE_FSM(u_fsm_state_regs, fsm_state_d, fsm_state_q, fsm_state_e, ResetSt)
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, lc_state_d, lc_state_q, lc_state_e, LcStScrap)
+  `PRIM_FLOP_SPARSE_FSM(u_cnt_regs, lc_cnt_d, lc_cnt_q, lc_cnt_e, LcCnt24)
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
