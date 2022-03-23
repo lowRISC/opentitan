@@ -59,6 +59,8 @@ class rv_dm_env extends cip_base_env #(
     if (cfg.en_scb) begin
       m_jtag_agent.monitor.analysis_port.connect(m_jtag_dmi_monitor.jtag_item_fifo.analysis_export);
       m_jtag_dmi_monitor.analysis_port.connect(m_sba_access_monitor.jtag_dmi_fifo.analysis_export);
+      m_jtag_dmi_monitor.non_dmi_jtag_dtm_analysis_port.connect(
+          scoreboard.jtag_non_dmi_dtm_fifo.analysis_export);
       m_sba_access_monitor.non_sba_jtag_dmi_analysis_port.connect(
           scoreboard.jtag_non_sba_dmi_fifo.analysis_export);
       m_sba_access_monitor.analysis_port.connect(scoreboard.sba_access_fifo.analysis_export);
