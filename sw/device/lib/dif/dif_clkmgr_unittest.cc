@@ -257,11 +257,11 @@ class MeasureCtrlTest : public ClkMgrTest {};
 
 TEST_F(MeasureCtrlTest, Disable) {
   EXPECT_WRITE32(CLKMGR_MEASURE_CTRL_REGWEN_REG_OFFSET, 0);
-  EXPECT_EQ(dif_clkmgr_measure_ctrl_disable(&clkmgr_), kDifOk);
+  EXPECT_DIF_OK(dif_clkmgr_measure_ctrl_disable(&clkmgr_));
 }
 
 TEST_F(MeasureCtrlTest, DisableError) {
-  EXPECT_EQ(dif_clkmgr_measure_ctrl_disable(nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_clkmgr_measure_ctrl_disable(nullptr));
 }
 
 TEST_F(MeasureCtrlTest, GetEnable) {
@@ -269,20 +269,20 @@ TEST_F(MeasureCtrlTest, GetEnable) {
     dif_toggle_t state = kDifToggleDisabled;
     EXPECT_READ32(CLKMGR_MEASURE_CTRL_REGWEN_REG_OFFSET,
                   {{CLKMGR_MEASURE_CTRL_REGWEN_EN_BIT, true}});
-    EXPECT_EQ(dif_clkmgr_measure_ctrl_get_enable(&clkmgr_, &state), kDifOk);
+    EXPECT_DIF_OK(dif_clkmgr_measure_ctrl_get_enable(&clkmgr_, &state));
     EXPECT_EQ(state, kDifToggleEnabled);
   }
   {  // disabled
     dif_toggle_t state = kDifToggleDisabled;
     EXPECT_READ32(CLKMGR_MEASURE_CTRL_REGWEN_REG_OFFSET,
                   {{CLKMGR_MEASURE_CTRL_REGWEN_EN_BIT, false}});
-    EXPECT_EQ(dif_clkmgr_measure_ctrl_get_enable(&clkmgr_, &state), kDifOk);
+    EXPECT_DIF_OK(dif_clkmgr_measure_ctrl_get_enable(&clkmgr_, &state));
     EXPECT_EQ(state, kDifToggleDisabled);
   }
 }
 
 TEST_F(MeasureCtrlTest, GetEnableError) {
-  EXPECT_EQ(dif_clkmgr_measure_ctrl_disable(nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_clkmgr_measure_ctrl_disable(nullptr));
 }
 
 }  // namespace

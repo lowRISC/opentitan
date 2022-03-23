@@ -200,7 +200,7 @@ TEST_F(DecryptTest, start) {
                     /*force_zero_masks=*/false);
   SetExpectedKey(kKey_, 8);
 
-  EXPECT_EQ(dif_aes_start(&aes_, &transaction, kKey_, NULL), kDifOk);
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, kKey_, NULL));
 }
 
 // Key size test.
@@ -218,7 +218,7 @@ TEST_F(Key192Test, start) {
                     /*force_zero_masks=*/false);
   SetExpectedKey(kKey_, 8);
 
-  EXPECT_EQ(dif_aes_start(&aes_, &transaction, kKey_, NULL), kDifOk);
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, kKey_, NULL));
 }
 
 // Key size test.
@@ -236,7 +236,7 @@ TEST_F(Key256Test, start) {
                     /*force_zero_masks=*/false);
   SetExpectedKey(kKey_, 8);
 
-  EXPECT_EQ(dif_aes_start(&aes_, &transaction, kKey_, NULL), kDifOk);
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, kKey_, NULL));
 }
 
 // Manual operation
@@ -274,7 +274,7 @@ TEST_F(ZeroMaskingTest, start) {
                     /*force_zero_masks=*/true);
   SetExpectedKey(kKey_, 8);
 
-  EXPECT_EQ(dif_aes_start(&aes_, &transaction, kKey_, NULL), kDifOk);
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, kKey_, NULL));
 }
 
 // Alert test.
@@ -285,7 +285,7 @@ TEST_F(AlertTest, RecovCtrlUpdateErr) {
                  {{AES_ALERT_TEST_RECOV_CTRL_UPDATE_ERR_BIT, true},
                   {AES_ALERT_TEST_FATAL_FAULT_BIT, false}});
 
-  EXPECT_EQ(dif_aes_alert_force(&aes_, kDifAesAlertRecovCtrlUpdateErr), kDifOk);
+  EXPECT_DIF_OK(dif_aes_alert_force(&aes_, kDifAesAlertRecovCtrlUpdateErr));
 }
 
 TEST_F(AlertTest, AlertFatalFault) {
@@ -293,7 +293,7 @@ TEST_F(AlertTest, AlertFatalFault) {
                  {{AES_ALERT_TEST_RECOV_CTRL_UPDATE_ERR_BIT, false},
                   {AES_ALERT_TEST_FATAL_FAULT_BIT, true}});
 
-  EXPECT_EQ(dif_aes_alert_force(&aes_, kDifAesAlertFatalFault), kDifOk);
+  EXPECT_DIF_OK(dif_aes_alert_force(&aes_, kDifAesAlertFatalFault));
 }
 
 // Data in
@@ -313,7 +313,7 @@ TEST_F(Data, DataIn) {
     EXPECT_WRITE32(offset, data_.data[i]);
   }
 
-  EXPECT_EQ(dif_aes_load_data(&aes_, data_), kDifOk);
+  EXPECT_DIF_OK(dif_aes_load_data(&aes_, data_));
 }
 
 TEST_F(Data, DataOut) {
@@ -328,7 +328,7 @@ TEST_F(Data, DataOut) {
   }
 
   dif_aes_data_t out;
-  EXPECT_EQ(dif_aes_read_output(&aes_, &out), kDifOk);
+  EXPECT_DIF_OK(dif_aes_read_output(&aes_, &out));
 
   EXPECT_THAT(out.data, ElementsAreArray(data_.data));
 }
@@ -339,7 +339,7 @@ class Trigger : public AesTestInitialized {};
 TEST_F(Trigger, Start) {
   EXPECT_WRITE32(AES_TRIGGER_REG_OFFSET, {{AES_TRIGGER_START_BIT, true}});
 
-  EXPECT_EQ(dif_aes_trigger(&aes_, kDifAesTriggerStart), kDifOk);
+  EXPECT_DIF_OK(dif_aes_trigger(&aes_, kDifAesTriggerStart));
 }
 
 TEST_F(Trigger, KeyIvDataInClear) {
@@ -348,7 +348,7 @@ TEST_F(Trigger, KeyIvDataInClear) {
                      {AES_TRIGGER_KEY_IV_DATA_IN_CLEAR_BIT, true},
                  });
 
-  EXPECT_EQ(dif_aes_trigger(&aes_, kDifAesTriggerKeyIvDataInClear), kDifOk);
+  EXPECT_DIF_OK(dif_aes_trigger(&aes_, kDifAesTriggerKeyIvDataInClear));
 }
 
 TEST_F(Trigger, DataOutClear) {
@@ -357,7 +357,7 @@ TEST_F(Trigger, DataOutClear) {
                      {AES_TRIGGER_DATA_OUT_CLEAR_BIT, true},
                  });
 
-  EXPECT_EQ(dif_aes_trigger(&aes_, kDifAesTriggerDataOutClear), kDifOk);
+  EXPECT_DIF_OK(dif_aes_trigger(&aes_, kDifAesTriggerDataOutClear));
 }
 
 TEST_F(Trigger, PrngReseed) {
@@ -366,7 +366,7 @@ TEST_F(Trigger, PrngReseed) {
                      {AES_TRIGGER_PRNG_RESEED_BIT, true},
                  });
 
-  EXPECT_EQ(dif_aes_trigger(&aes_, kDifAesTriggerPrngReseed), kDifOk);
+  EXPECT_DIF_OK(dif_aes_trigger(&aes_, kDifAesTriggerPrngReseed));
 }
 
 // Status
@@ -384,28 +384,26 @@ TEST_F(Status, True) {
                 {{AES_STATUS_ALERT_RECOV_CTRL_UPDATE_ERR_BIT, true}});
 
   bool set;
-  EXPECT_EQ(dif_aes_get_status(&aes_, kDifAesStatusIdle, &set), kDifOk);
+  EXPECT_DIF_OK(dif_aes_get_status(&aes_, kDifAesStatusIdle, &set));
   EXPECT_TRUE(set);
 
-  EXPECT_EQ(dif_aes_get_status(&aes_, kDifAesStatusStall, &set), kDifOk);
+  EXPECT_DIF_OK(dif_aes_get_status(&aes_, kDifAesStatusStall, &set));
   EXPECT_TRUE(set);
 
-  EXPECT_EQ(dif_aes_get_status(&aes_, kDifAesStatusOutputLost, &set), kDifOk);
+  EXPECT_DIF_OK(dif_aes_get_status(&aes_, kDifAesStatusOutputLost, &set));
   EXPECT_TRUE(set);
 
-  EXPECT_EQ(dif_aes_get_status(&aes_, kDifAesStatusOutputValid, &set), kDifOk);
+  EXPECT_DIF_OK(dif_aes_get_status(&aes_, kDifAesStatusOutputValid, &set));
   EXPECT_TRUE(set);
 
-  EXPECT_EQ(dif_aes_get_status(&aes_, kDifAesStatusInputReady, &set), kDifOk);
+  EXPECT_DIF_OK(dif_aes_get_status(&aes_, kDifAesStatusInputReady, &set));
   EXPECT_TRUE(set);
 
-  EXPECT_EQ(dif_aes_get_status(&aes_, kDifAesStatusAlertFatalFault, &set),
-            kDifOk);
+  EXPECT_DIF_OK(dif_aes_get_status(&aes_, kDifAesStatusAlertFatalFault, &set));
   EXPECT_TRUE(set);
 
-  EXPECT_EQ(
-      dif_aes_get_status(&aes_, kDifAesStatusAlertRecovCtrlUpdateErr, &set),
-      kDifOk);
+  EXPECT_DIF_OK(
+      dif_aes_get_status(&aes_, kDifAesStatusAlertRecovCtrlUpdateErr, &set));
   EXPECT_TRUE(set);
 }
 
@@ -421,28 +419,26 @@ TEST_F(Status, False) {
                 {{AES_STATUS_ALERT_RECOV_CTRL_UPDATE_ERR_BIT, false}});
 
   bool set;
-  EXPECT_EQ(dif_aes_get_status(&aes_, kDifAesStatusIdle, &set), kDifOk);
+  EXPECT_DIF_OK(dif_aes_get_status(&aes_, kDifAesStatusIdle, &set));
   EXPECT_FALSE(set);
 
-  EXPECT_EQ(dif_aes_get_status(&aes_, kDifAesStatusStall, &set), kDifOk);
+  EXPECT_DIF_OK(dif_aes_get_status(&aes_, kDifAesStatusStall, &set));
   EXPECT_FALSE(set);
 
-  EXPECT_EQ(dif_aes_get_status(&aes_, kDifAesStatusOutputLost, &set), kDifOk);
+  EXPECT_DIF_OK(dif_aes_get_status(&aes_, kDifAesStatusOutputLost, &set));
   EXPECT_FALSE(set);
 
-  EXPECT_EQ(dif_aes_get_status(&aes_, kDifAesStatusOutputValid, &set), kDifOk);
+  EXPECT_DIF_OK(dif_aes_get_status(&aes_, kDifAesStatusOutputValid, &set));
   EXPECT_FALSE(set);
 
-  EXPECT_EQ(dif_aes_get_status(&aes_, kDifAesStatusInputReady, &set), kDifOk);
+  EXPECT_DIF_OK(dif_aes_get_status(&aes_, kDifAesStatusInputReady, &set));
   EXPECT_FALSE(set);
 
-  EXPECT_EQ(dif_aes_get_status(&aes_, kDifAesStatusAlertFatalFault, &set),
-            kDifOk);
+  EXPECT_DIF_OK(dif_aes_get_status(&aes_, kDifAesStatusAlertFatalFault, &set));
   EXPECT_FALSE(set);
 
-  EXPECT_EQ(
-      dif_aes_get_status(&aes_, kDifAesStatusAlertRecovCtrlUpdateErr, &set),
-      kDifOk);
+  EXPECT_DIF_OK(
+      dif_aes_get_status(&aes_, kDifAesStatusAlertRecovCtrlUpdateErr, &set));
   EXPECT_FALSE(set);
 }
 }  // namespace
