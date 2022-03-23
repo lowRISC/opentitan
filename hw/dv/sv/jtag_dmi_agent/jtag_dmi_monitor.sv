@@ -18,11 +18,15 @@ class jtag_dmi_monitor #(type ITEM_T = jtag_dmi_item) extends dv_base_monitor#(
   // Incoming raw JTAG transactions.
   uvm_tlm_analysis_fifo #(jtag_item) jtag_item_fifo;
 
+  // Outgoing filtered JTAG DTM transactions that do not touch the DMI register.
+  uvm_analysis_port #(jtag_item) non_dmi_jtag_dtm_analysis_port;
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     jtag_item_fifo = new("jtag_item_fifo", this);
+    non_dmi_jtag_dtm_analysis_port = new("non_dmi_jtag_dtm_analysis_port", this);
   endfunction
 
   task run_phase(uvm_phase phase);
@@ -47,9 +51,13 @@ class jtag_dmi_monitor #(type ITEM_T = jtag_dmi_item) extends dv_base_monitor#(
       end
       if (jtag_item.ir_len) begin
         dmi_selected = is_dmi_selected(jtag_item);
+        if (!dmi_selected) non_dmi_jtag_dtm_analysis_port.write(jtag_item);
         continue;
       end
-      if (!dmi_selected) continue;
+      if (!dmi_selected) begin
+        non_dmi_jtag_dtm_analysis_port.write(jtag_item);
+        continue;
+      end
 
       // Item has both, the new DMI request, as well as the response for the previous request.
       // Capture the response first, then the request.
