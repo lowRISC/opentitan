@@ -88,20 +88,11 @@ module rom_ctrl_compare
     Done     = 5'b11001
   } state_e;
 
-  logic [4:0]  state_q, state_d;
-  logic        matches_q, matches_d;
-  logic        fsm_alert;
+  state_e state_q, state_d;
+  logic   matches_q, matches_d;
+  logic   fsm_alert;
 
-  prim_sparse_fsm_flop #(
-    .StateEnumT(state_e),
-    .Width(5),
-    .ResetValue({Waiting})
-  ) u_state_regs (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .state_i (state_d),
-    .state_o (state_q)
-  );
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, Waiting)
 
   always_comb begin
     state_d = state_q;

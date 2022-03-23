@@ -189,21 +189,7 @@ module keccak_round
       StTerminalError = 6'b110110
   } keccak_st_e;
   keccak_st_e keccak_st, keccak_st_d;
-
-  // This primitive is used to place a size-only constraint on the
-  // flops in order to prevent FSM state encoding optimizations.
-  logic [StateWidth-1:0] state_raw_q;
-  assign keccak_st = keccak_st_e'(state_raw_q);
-  prim_sparse_fsm_flop #(
-    .StateEnumT(keccak_st_e),
-    .Width(StateWidth),
-    .ResetValue(StateWidth'(StIdle))
-  ) u_state_regs (
-    .clk_i,
-    .rst_ni,
-    .state_i ( keccak_st_d ),
-    .state_o ( state_raw_q )
-  );
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, keccak_st_d, keccak_st, keccak_st_e, StIdle)
 
   // Next state logic and output logic
   // SEC_CM: FSM.SPARSE

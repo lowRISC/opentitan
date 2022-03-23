@@ -129,8 +129,7 @@ module kmac
 
   } kmac_st_e;
 
-  logic [StateWidth-1:0] kmac_st_raw;
-  kmac_st_e              kmac_st, kmac_st_d;
+  kmac_st_e kmac_st, kmac_st_d;
 
   /////////////
   // Signals //
@@ -677,19 +676,7 @@ module kmac
   ///////////////////
 
   // State FF
-  // This primitive is used to place a size-only constraint on the
-  // flops in order to prevent FSM state encoding optimizations.
-  prim_sparse_fsm_flop #(
-    .StateEnumT(kmac_st_e),
-    .Width(StateWidth),
-    .ResetValue(StateWidth'(KmacIdle))
-  ) u_state_regs (
-    .clk_i,
-    .rst_ni,
-    .state_i (kmac_st_d),
-    .state_o (kmac_st_raw)
-  );
-  assign kmac_st = kmac_st_e'(kmac_st_raw);
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, kmac_st_d, kmac_st, kmac_st_e, KmacIdle)
 
   always_comb begin
     // Default value

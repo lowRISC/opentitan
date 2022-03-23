@@ -129,21 +129,8 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
   logic sw_req;
   assign sw_req = sw_ctrl_i.start.q;
 
-  // This primitive is used to place a size-only constraint on the
-  // flops in order to prevent FSM state encoding optimizations.
-  logic [StateWidth-1:0] state_raw_q;
-  assign state_q = arb_state_e'(state_raw_q);
   // SEC_CM: FSM.SPARSE
-  prim_sparse_fsm_flop #(
-    .StateEnumT(arb_state_e),
-    .Width(StateWidth),
-    .ResetValue(StateWidth'(StReset))
-  ) u_state_regs (
-    .clk_i,
-    .rst_ni,
-    .state_i ( state_d     ),
-    .state_o ( state_raw_q )
-  );
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, arb_state_e, StReset)
 
   always_comb begin
 

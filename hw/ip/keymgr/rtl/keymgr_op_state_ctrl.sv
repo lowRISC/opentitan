@@ -41,19 +41,7 @@ module keymgr_op_state_ctrl
   } state_e;
 
   state_e state_q, state_d;
-  logic [OpStateWidth-1:0] state_raw_q;
-
-  assign state_q = state_e'(state_raw_q);
-  prim_sparse_fsm_flop #(
-    .StateEnumT(state_e),
-    .Width(OpStateWidth),
-    .ResetValue(OpStateWidth'(StIdle))
-  ) u_state_regs (
-    .clk_i,
-    .rst_ni,
-    .state_i ( state_d     ),
-    .state_o ( state_raw_q )
-  );
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, StIdle)
 
   logic gen_en;
   assign id_en_o = gen_en & id_req_i;

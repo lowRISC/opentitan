@@ -132,20 +132,7 @@ module otbn_scramble_ctrl
     end
   end
 
-  // This primitive is used to place a size-only constraint on the
-  // flops in order to prevent FSM state encoding optimizations.
-  logic [StateScrambleCtrlWidth-1:0] state_raw_q;
-  assign state_q = scramble_ctrl_state_e'(state_raw_q);
-  prim_sparse_fsm_flop #(
-    .StateEnumT(scramble_ctrl_state_e),
-    .Width(StateScrambleCtrlWidth),
-    .ResetValue(StateScrambleCtrlWidth'(ScrambleCtrlIdle))
-  ) u_state_regs (
-    .clk_i,
-    .rst_ni,
-    .state_i ( state_d     ),
-    .state_o ( state_raw_q )
-  );
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, scramble_ctrl_state_e, ScrambleCtrlIdle)
 
   always_comb begin
     dmem_key_valid_d            = dmem_key_valid_q;

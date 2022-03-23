@@ -131,20 +131,7 @@ module aes_ctr_fsm import aes_pkg::*;
   end
 
   // SEC_CM: CTR.FSM.SPARSE
-  // This primitive is used to place a size-only constraint on the
-  // flops in order to prevent FSM state encoding optimizations.
-  logic [StateWidth-1:0] aes_ctr_cs_raw;
-  assign aes_ctr_cs = aes_ctr_e'(aes_ctr_cs_raw);
-  prim_sparse_fsm_flop #(
-    .StateEnumT(aes_ctr_e),
-    .Width(StateWidth),
-    .ResetValue(StateWidth'(IDLE))
-  ) u_state_regs (
-    .clk_i,
-    .rst_ni,
-    .state_i ( aes_ctr_ns     ),
-    .state_o ( aes_ctr_cs_raw )
-  );
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, aes_ctr_ns, aes_ctr_cs, aes_ctr_e, IDLE)
 
   // Forward slice index.
   assign ctr_slice_idx_o = ctr_slice_idx_q;

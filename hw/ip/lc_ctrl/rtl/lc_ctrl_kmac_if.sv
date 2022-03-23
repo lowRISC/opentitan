@@ -202,19 +202,6 @@ module lc_ctrl_kmac_if
     endcase // state_q
   end
 
-  // This primitive is used to place a size-only constraint on the
-  // flops in order to prevent FSM state encoding optimizations.
-  logic [StateWidth-1:0] state_raw_q;
-  assign state_q = state_e'(state_raw_q);
-  prim_sparse_fsm_flop #(
-    .StateEnumT(state_e),
-    .Width(StateWidth),
-    .ResetValue(StateWidth'(FirstSt))
-  ) u_state_regs (
-    .clk_i   ( clk_kmac_i  ),
-    .rst_ni  ( rst_kmac_ni ),
-    .state_i ( state_d     ),
-    .state_o ( state_raw_q )
-  );
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, FirstSt, clk_kmac_i, rst_kmac_ni)
 
 endmodule : lc_ctrl_kmac_if

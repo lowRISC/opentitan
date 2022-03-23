@@ -379,19 +379,19 @@ interface keymgr_if(input clk, input rst_n);
       end
       1: begin
         `uvm_info(msg_id, "Force KMC_IF FSM", UVM_LOW)
-        prev_state = tb.dut.u_kmac_if.state_raw_q;
+        prev_state = tb.dut.u_kmac_if.u_state_regs.state_raw;
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_state,
             !(invalid_state inside {KmacIfValidStates});,
             , msg_id)
 
-        force tb.dut.u_kmac_if.state_raw_q = invalid_state;
+        force tb.dut.u_kmac_if.u_state_regs.state_raw = invalid_state;
         @(posedge clk);
 
         if ($urandom_range(0, 1)) begin
-          force tb.dut.u_kmac_if.state_raw_q = prev_state;
+          force tb.dut.u_kmac_if.u_state_regs.state_raw = prev_state;
           @(posedge clk);
         end
-        release tb.dut.u_kmac_if.state_raw_q;
+        release tb.dut.u_kmac_if.u_state_regs.state_raw;
         is_kmac_if_fsm_err = 1;
       end
       1: begin
@@ -426,19 +426,19 @@ interface keymgr_if(input clk, input rst_n);
       end
       1: begin
         `uvm_info(msg_id, "Force ctrl FSM", UVM_LOW)
-        prev_state = tb.dut.u_ctrl.state_raw_q;
+        prev_state = tb.dut.u_ctrl.u_state_regs.state_raw;
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_state,
             !(invalid_state inside {CtrlValidStates});,
             , msg_id)
 
-        force tb.dut.u_ctrl.state_raw_q = invalid_state;
+        force tb.dut.u_ctrl.u_state_regs.state_raw = invalid_state;
         @(posedge clk);
 
         if ($urandom_range(0, 1)) begin
-          force tb.dut.u_ctrl.state_raw_q = prev_state;
+          force tb.dut.u_ctrl.u_state_regs.state_raw = prev_state;
           @(posedge clk);
         end
-        release tb.dut.u_ctrl.state_raw_q;
+        release tb.dut.u_ctrl.u_state_regs.state_raw;
         is_ctrl_fsm_err = 1;
       end
       1: begin

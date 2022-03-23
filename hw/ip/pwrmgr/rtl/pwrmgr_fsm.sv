@@ -155,19 +155,8 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
     end
   end
 
-  logic [FastPwrStateWidth-1:0] state_raw_q;
-  assign state_q = fast_pwr_state_e'(state_raw_q);
   // SEC_CM: FSM.SPARSE
-  prim_sparse_fsm_flop #(
-    .StateEnumT(fast_pwr_state_e),
-    .Width(FastPwrStateWidth),
-    .ResetValue(FastPwrStateWidth'(FastPwrStateLowPower))
-  ) u_state_regs (
-    .clk_i,
-    .rst_ni,
-    .state_i ( state_d     ),
-    .state_o ( state_raw_q )
-  );
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, fast_pwr_state_e, FastPwrStateLowPower)
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin

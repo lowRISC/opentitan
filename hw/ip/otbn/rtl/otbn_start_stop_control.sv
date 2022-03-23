@@ -62,20 +62,8 @@ module otbn_start_stop_control
   logic addr_cnt_inc;
   logic [4:0] addr_cnt_q, addr_cnt_d;
 
-  // This primitive is used to place a size-only constraint on the
-  // flops in order to prevent FSM state encoding optimizations.
-  logic [StateStartStopWidth-1:0] state_raw_q;
-  assign state_q = otbn_start_stop_state_e'(state_raw_q);
-  prim_sparse_fsm_flop #(
-    .StateEnumT(otbn_start_stop_state_e),
-    .Width(StateStartStopWidth),
-    .ResetValue(StateStartStopWidth'(OtbnStartStopStateHalt))
-  ) u_state_regs (
-    .clk_i,
-    .rst_ni,
-    .state_i ( state_d     ),
-    .state_o ( state_raw_q )
-  );
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q,
+      otbn_start_stop_state_e, OtbnStartStopStateHalt)
 
   always_comb begin
     urnd_reseed_req_o      = 1'b0;

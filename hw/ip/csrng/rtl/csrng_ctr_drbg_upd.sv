@@ -183,24 +183,9 @@ module csrng_ctr_drbg_upd #(
 
   blk_enc_state_e blk_enc_state_d, blk_enc_state_q;
 
-  logic [BlkEncStateWidth-1:0] blk_enc_state_raw_q;
-
-  // This primitive is used to place a size-only constraint on the
-  // flops in order to prevent FSM state encoding optimizations.
-
   // SEC_CM: BLK_ENC.FSM.SPARSE
-  prim_sparse_fsm_flop #(
-    .StateEnumT(blk_enc_state_e),
-    .Width(BlkEncStateWidth),
-    .ResetValue(BlkEncStateWidth'(ReqIdle))
-  ) u_blk_enc_state_regs (
-    .clk_i,
-    .rst_ni,
-    .state_i ( blk_enc_state_d ),
-    .state_o ( blk_enc_state_raw_q )
-  );
-
-  assign blk_enc_state_q = blk_enc_state_e'(blk_enc_state_raw_q);
+  `PRIM_FLOP_SPARSE_FSM(u_blk_enc_state_regs, blk_enc_state_d,
+      blk_enc_state_q, blk_enc_state_e, ReqIdle)
 
 // Encoding generated with:
 // $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 6 \
@@ -232,24 +217,9 @@ module csrng_ctr_drbg_upd #(
 
   outblk_state_e outblk_state_d, outblk_state_q;
 
-  logic [OutBlkStateWidth-1:0] outblk_state_raw_q;
-
-  // This primitive is used to place a size-only constraint on the
-  // flops in order to prevent FSM state encoding optimizations.
-
   // SEC_CM: OUTBLK.FSM.SPARSE
-  prim_sparse_fsm_flop #(
-    .StateEnumT(outblk_state_e),
-    .Width(OutBlkStateWidth),
-    .ResetValue(OutBlkStateWidth'(AckIdle))
-  ) u_outblk_state_regs (
-    .clk_i,
-    .rst_ni,
-    .state_i ( outblk_state_d ),
-    .state_o ( outblk_state_raw_q )
-  );
-
-  assign outblk_state_q = outblk_state_e'(outblk_state_raw_q);
+  `PRIM_FLOP_SPARSE_FSM(u_outblk_state_regs, outblk_state_d,
+      outblk_state_q, outblk_state_e, AckIdle)
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin

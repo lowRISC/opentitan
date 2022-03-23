@@ -353,20 +353,7 @@ module kmac_app
   /////////
 
   // State register
-  // This primitive is used to place a size-only constraint on the
-  // flops in order to prevent FSM state encoding optimizations.
-  logic [StateWidth-1:0] st_raw;
-  assign st = st_e'(st_raw);
-  prim_sparse_fsm_flop #(
-    .StateEnumT(st_e),
-    .Width      (StateWidth),
-    .ResetValue (StateWidth'(StIdle))
-  ) u_state_regs (
-    .clk_i,
-    .rst_ni,
-    .state_i ( st_d   ),
-    .state_o ( st_raw )
-  );
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, st_d, st, st_e, StIdle)
 
   // Create a lint error to reduce the risk of accidentally enabling this feature.
   `ASSERT_STATIC_LINT_ERROR(KmacSecIdleAcceptSwMsgNonDefault, SecIdleAcceptSwMsg == 0)

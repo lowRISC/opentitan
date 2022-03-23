@@ -237,19 +237,8 @@ module keymgr_ctrl
   //////////////////////////
   // Main Control FSM
   //////////////////////////
-  logic [StateWidth-1:0] state_raw_q;
-  assign state_q = state_e'(state_raw_q);
   // SEC_CM: CTRL.FSM.SPARSE
-  prim_sparse_fsm_flop #(
-    .StateEnumT(state_e),
-    .Width(StateWidth),
-    .ResetValue(StateWidth'(StCtrlReset))
-  ) u_state_regs (
-    .clk_i,
-    .rst_ni,
-    .state_i ( state_d     ),
-    .state_o ( state_raw_q )
-  );
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, StCtrlReset)
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin

@@ -156,20 +156,7 @@ module kmac_core
   kmac_st_e st, st_d;
 
   // State register
-  // This primitive is used to place a size-only constraint on the
-  // flops in order to prevent FSM state encoding optimizations.
-  logic [StateWidth-1:0] state_raw_q;
-  assign st = kmac_st_e'(state_raw_q);
-  prim_sparse_fsm_flop #(
-    .StateEnumT(kmac_st_e),
-    .Width(StateWidth),
-    .ResetValue(StateWidth'(StKmacIdle))
-  ) u_state_regs (
-    .clk_i,
-    .rst_ni,
-    .state_i ( st_d     ),
-    .state_o ( state_raw_q )
-  );
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, st_d, st, kmac_st_e, StKmacIdle)
 
   // Next state and output logic
   // SEC_CM: FSM.SPARSE
