@@ -24,3 +24,5 @@ foreach mod $modules {
     source $CDC_WAIVER_DIR/cdc_waivers.$mod.tcl
   }
 }
+
+# Common Waivers
