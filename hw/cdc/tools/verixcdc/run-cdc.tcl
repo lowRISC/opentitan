@@ -75,6 +75,33 @@ if {$PARAMS != ""} {
   elaborate $DUT
 }
 
+#################################
+## Define Common Synchronizers ##
+#################################
+
+# Glitch Free Mux
+# WARNING!!! prim_clock_mux2 is not a glitch free mux
+#set_user_glitch_free_muxes -name opentitan_clock_mux prim_generic_clock_mux2
+#set_user_glitch_free_muxes -name opentitan_glitchfree_mux prim_generic_clock_glitchfree_mux2
+
+# 2FF synchronizer.
+# TODO: Process dependent module name later
+set prim_2ff_modules {}
+
+# Find every derivated modules from 2FF synchronizer
+foreach mod [get_all_modules prim_flop_2sync] {
+  lappend prim_2ff_modules $mod
+  puts "Adding to list prim_2ff_modules: $mod"
+}
+
+set_user_cntl_synchronizer -name opentitan_2ff $prim_2ff_modules
+
+# Pulse synchronizer
+
+# Req/Ack synchronizer
+
+
+
 #########################
 ## Apply Constraints   ##
 #########################
@@ -97,6 +124,7 @@ if {$ENV_FILE != ""} {
 #########################
 
 analyze_intent
+
 verify_cdc
 
 #########################
