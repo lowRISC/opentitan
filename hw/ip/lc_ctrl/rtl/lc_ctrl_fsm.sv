@@ -457,33 +457,35 @@ module lc_ctrl_fsm
 
   logic [LcStateWidth-1:0] lc_state_raw_q;
   assign lc_state_q = lc_state_e'(lc_state_raw_q);
-  prim_flop #(
+  prim_sparse_fsm_flop #(
+    .StateEnumT(lc_state_e),
     .Width(LcStateWidth),
     .ResetValue(LcStateWidth'(LcStScrap))
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( lc_state_d     ),
-    .q_o ( lc_state_raw_q )
+    .state_i ( lc_state_d     ),
+    .state_o ( lc_state_raw_q )
   );
 
   logic [LcCountWidth-1:0] lc_cnt_raw_q;
   assign lc_cnt_q = lc_cnt_e'(lc_cnt_raw_q);
-  prim_flop #(
+  prim_sparse_fsm_flop #(
+    .StateEnumT(lc_cnt_e),
     .Width(LcCountWidth),
     .ResetValue(LcCountWidth'(LcCnt24))
   ) u_cnt_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( lc_cnt_d     ),
-    .q_o ( lc_cnt_raw_q )
+    .state_i ( lc_cnt_d     ),
+    .state_o ( lc_cnt_raw_q )
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      lc_state_valid_q     <= 1'b0;
+      lc_state_valid_q <= 1'b0;
     end else begin
-      lc_state_valid_q     <= lc_state_valid_d;
+      lc_state_valid_q <= lc_state_valid_d;
     end
   end
 
