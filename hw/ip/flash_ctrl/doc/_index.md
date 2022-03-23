@@ -242,6 +242,8 @@ During RMA entry, the flash controller "wipes" the contents of the following:
 - All data partitions
 
 This process ensures that after RMA there is no sensitive information left that can be made use on the tester.
+As stated previously, once RMA entry completes, the flash memory can no longer be accessed, either directly or indirectly.
+The flash controller registers however, remain accessible for status reads and so forth, although new operations cannot be issued.
 
 #### Memory Protection
 
