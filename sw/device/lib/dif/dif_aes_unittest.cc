@@ -100,7 +100,7 @@ class AesTestInitialized : public AesTest {
  protected:
   dif_aes_t aes_;
 
-  dif_aes_transaction_t transaction = {
+  dif_aes_transaction_t transaction_ = {
       .operation = kDifAesOperationEncrypt,
       .mode = kDifAesModeEcb,
       .key_len = kDifAesKey128,
@@ -112,11 +112,11 @@ class AesTestInitialized : public AesTest {
       .reseed_on_key_change_lock = false,
   };
 
-  const dif_aes_key_share_t kKey_ = {
+  const dif_aes_key_share_t kKey = {
       .share0 = {0x59, 0x70, 0x33, 0x73, 0x36, 0x76, 0x39, 0x79},
       .share1 = {0x4B, 0x61, 0x50, 0x64, 0x53, 0x67, 0x56, 0x6B}};
 
-  const dif_aes_iv_t kIv_ = {0x50, 0x64, 0x53, 0x67};
+  const dif_aes_iv_t kIv = {0x50, 0x64, 0x53, 0x67};
 
   AesTestInitialized() { EXPECT_DIF_OK(dif_aes_init(dev().region(), &aes_)); }
 };
@@ -124,7 +124,7 @@ class AesTestInitialized : public AesTest {
 // ECB tests.
 class EcbTest : public AesTestInitialized {
  protected:
-  EcbTest() { transaction.mode = kDifAesModeEcb; }
+  EcbTest() { transaction_.mode = kDifAesModeEcb; }
 };
 
 TEST_F(EcbTest, start) {
@@ -136,14 +136,14 @@ TEST_F(EcbTest, start) {
       .mask_reseed = AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_1,
   });
   SetExpectedAuxConfig({});
-  SetExpectedKey(kKey_, 8);
+  SetExpectedKey(kKey, 8);
 
-  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, &kKey_, NULL));
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, &kKey, NULL));
 }
 
 class CbcTest : public AesTestInitialized {
  protected:
-  CbcTest() { transaction.mode = kDifAesModeCbc; }
+  CbcTest() { transaction_.mode = kDifAesModeCbc; }
 };
 
 TEST_F(CbcTest, start) {
@@ -155,16 +155,16 @@ TEST_F(CbcTest, start) {
       .mask_reseed = AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_1,
   });
   SetExpectedAuxConfig({});
-  SetExpectedKey(kKey_, 8);
-  SetExpectedIv(kIv_);
+  SetExpectedKey(kKey, 8);
+  SetExpectedIv(kIv);
 
-  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, &kKey_, &kIv_));
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, &kKey, &kIv));
 }
 
 // CFB tests.
 class CFBTest : public AesTestInitialized {
  protected:
-  CFBTest() { transaction.mode = kDifAesModeCfb; }
+  CFBTest() { transaction_.mode = kDifAesModeCfb; }
 };
 
 TEST_F(CFBTest, start) {
@@ -176,16 +176,16 @@ TEST_F(CFBTest, start) {
       .mask_reseed = AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_1,
   });
   SetExpectedAuxConfig({});
-  SetExpectedKey(kKey_, 8);
-  SetExpectedIv(kIv_);
+  SetExpectedKey(kKey, 8);
+  SetExpectedIv(kIv);
 
-  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, &kKey_, &kIv_));
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, &kKey, &kIv));
 }
 
 // OFB tests.
 class OFBTest : public AesTestInitialized {
  protected:
-  OFBTest() { transaction.mode = kDifAesModeOfb; }
+  OFBTest() { transaction_.mode = kDifAesModeOfb; }
 };
 
 TEST_F(OFBTest, start) {
@@ -197,16 +197,16 @@ TEST_F(OFBTest, start) {
       .mask_reseed = AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_1,
   });
   SetExpectedAuxConfig({});
-  SetExpectedKey(kKey_, 8);
-  SetExpectedIv(kIv_);
+  SetExpectedKey(kKey, 8);
+  SetExpectedIv(kIv);
 
-  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, &kKey_, &kIv_));
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, &kKey, &kIv));
 }
 
 // CTR tests.
 class CTRTest : public AesTestInitialized {
  protected:
-  CTRTest() { transaction.mode = kDifAesModeCtr; }
+  CTRTest() { transaction_.mode = kDifAesModeCtr; }
 };
 
 TEST_F(CTRTest, start) {
@@ -218,18 +218,18 @@ TEST_F(CTRTest, start) {
       .mask_reseed = AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_1,
   });
   SetExpectedAuxConfig({});
-  SetExpectedKey(kKey_, 8);
-  SetExpectedIv(kIv_);
+  SetExpectedKey(kKey, 8);
+  SetExpectedIv(kIv);
 
-  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, &kKey_, &kIv_));
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, &kKey, &kIv));
 }
 
 // Decrypt tests.
 class DecryptTest : public AesTestInitialized {
  protected:
   DecryptTest() {
-    transaction.mode = kDifAesModeEcb;
-    transaction.operation = kDifAesOperationDecrypt;
+    transaction_.mode = kDifAesModeEcb;
+    transaction_.operation = kDifAesOperationDecrypt;
   }
 };
 
@@ -242,15 +242,15 @@ TEST_F(DecryptTest, start) {
       .mask_reseed = AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_1,
   });
   SetExpectedAuxConfig({});
-  SetExpectedKey(kKey_, 8);
+  SetExpectedKey(kKey, 8);
 
-  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, &kKey_, NULL));
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, &kKey, NULL));
 }
 
 // Key size test.
 class Key192Test : public AesTestInitialized {
  protected:
-  Key192Test() { transaction.key_len = kDifAesKey192; }
+  Key192Test() { transaction_.key_len = kDifAesKey192; }
 };
 
 TEST_F(Key192Test, start) {
@@ -262,15 +262,15 @@ TEST_F(Key192Test, start) {
       .mask_reseed = AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_1,
   });
   SetExpectedAuxConfig({});
-  SetExpectedKey(kKey_, 8);
+  SetExpectedKey(kKey, 8);
 
-  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, &kKey_, NULL));
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, &kKey, NULL));
 }
 
 // Key size test.
 class Key256Test : public AesTestInitialized {
  protected:
-  Key256Test() { transaction.key_len = kDifAesKey256; }
+  Key256Test() { transaction_.key_len = kDifAesKey256; }
 };
 
 TEST_F(Key256Test, start) {
@@ -282,16 +282,16 @@ TEST_F(Key256Test, start) {
       .mask_reseed = AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_1,
   });
   SetExpectedAuxConfig({});
-  SetExpectedKey(kKey_, 8);
+  SetExpectedKey(kKey, 8);
 
-  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, &kKey_, NULL));
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, &kKey, NULL));
 }
 
 // Manual operation
 class ManualOperationTest : public AesTestInitialized {
  protected:
   ManualOperationTest() {
-    transaction.manual_operation = kDifAesManualOperationManual;
+    transaction_.manual_operation = kDifAesManualOperationManual;
   }
 };
 
@@ -305,15 +305,15 @@ TEST_F(ManualOperationTest, start) {
       .manual_op = true,
   });
   SetExpectedAuxConfig({});
-  SetExpectedKey(kKey_, 8);
+  SetExpectedKey(kKey, 8);
 
-  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, &kKey_, NULL));
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, &kKey, NULL));
 }
 
 // Zero masking
 class ZeroMaskingTest : public AesTestInitialized {
  protected:
-  ZeroMaskingTest() { transaction.masking = kDifAesMaskingForceZero; }
+  ZeroMaskingTest() { transaction_.masking = kDifAesMaskingForceZero; }
 };
 
 TEST_F(ZeroMaskingTest, start) {
@@ -326,9 +326,9 @@ TEST_F(ZeroMaskingTest, start) {
       .force_zero_masks = true,
   });
   SetExpectedAuxConfig({});
-  SetExpectedKey(kKey_, 8);
+  SetExpectedKey(kKey, 8);
 
-  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, &kKey_, NULL));
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, &kKey, NULL));
 }
 
 // Alert test.
@@ -391,15 +391,15 @@ class IVTest : public AesTestInitialized {};
 TEST_F(IVTest, Read) {
   EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_IDLE_BIT, true}});
 
-  for (uint32_t i = 0; i < ARRAYSIZE(kIv_.iv); ++i) {
+  for (uint32_t i = 0; i < ARRAYSIZE(kIv.iv); ++i) {
     ptrdiff_t offset = AES_IV_0_REG_OFFSET + (i * sizeof(uint32_t));
-    EXPECT_READ32(offset, kIv_.iv[i]);
+    EXPECT_READ32(offset, kIv.iv[i]);
   }
 
   dif_aes_iv_t iv;
   EXPECT_DIF_OK(dif_aes_read_iv(&aes_, &iv));
 
-  EXPECT_THAT(iv.iv, ElementsAreArray(kIv_.iv));
+  EXPECT_THAT(iv.iv, ElementsAreArray(kIv.iv));
 }
 
 // Trigger
@@ -514,7 +514,7 @@ TEST_F(Status, False) {
 // Sideloaded key.
 class SideloadedKeyTest : public AesTestInitialized {
  protected:
-  SideloadedKeyTest() { transaction.key_provider = kDifAesKeySideload; }
+  SideloadedKeyTest() { transaction_.key_provider = kDifAesKeySideload; }
 };
 
 TEST_F(SideloadedKeyTest, start) {
@@ -527,7 +527,7 @@ TEST_F(SideloadedKeyTest, start) {
        .key_sideloaded = true});
 
   SetExpectedAuxConfig({});
-  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, NULL, NULL));
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, NULL, NULL));
 }
 // Mask reseeding.
 class MaskReseedingTest : public AesTestInitialized {};
@@ -541,9 +541,9 @@ TEST_F(MaskReseedingTest, ReseedPer64Block) {
       .mask_reseed = AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_64,
   });
   SetExpectedAuxConfig({});
-  SetExpectedKey(kKey_, 8);
-  transaction.mask_reseeding = kDifAesReseedPer64Block;
-  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, &kKey_, NULL));
+  SetExpectedKey(kKey, 8);
+  transaction_.mask_reseeding = kDifAesReseedPer64Block;
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, &kKey, NULL));
 }
 
 TEST_F(MaskReseedingTest, ReseedPer8kBlock) {
@@ -555,9 +555,9 @@ TEST_F(MaskReseedingTest, ReseedPer8kBlock) {
       .mask_reseed = AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_8K,
   });
   SetExpectedAuxConfig({});
-  SetExpectedKey(kKey_, 8);
-  transaction.mask_reseeding = kDifAesReseedPer8kBlock;
-  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, &kKey_, NULL));
+  SetExpectedKey(kKey, 8);
+  transaction_.mask_reseeding = kDifAesReseedPer8kBlock;
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, &kKey, NULL));
 }
 
 // Reseed on key change.
@@ -572,13 +572,13 @@ TEST_F(RessedOnKeyChangeTest, Unlock) {
       .mask_reseed = AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_1,
   });
 
-  transaction.reseed_on_key_change = true;
-  transaction.reseed_on_key_change_lock = false;
+  transaction_.reseed_on_key_change = true;
+  transaction_.reseed_on_key_change_lock = false;
   SetExpectedAuxConfig({
       .reseed_on_key_change = true,
   });
-  SetExpectedKey(kKey_, 8);
-  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, &kKey_, NULL));
+  SetExpectedKey(kKey, 8);
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, &kKey, NULL));
 }
 
 TEST_F(RessedOnKeyChangeTest, Lock) {
@@ -590,11 +590,11 @@ TEST_F(RessedOnKeyChangeTest, Lock) {
       .mask_reseed = AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_1,
   });
 
-  transaction.reseed_on_key_change = true;
-  transaction.reseed_on_key_change_lock = true;
+  transaction_.reseed_on_key_change = true;
+  transaction_.reseed_on_key_change_lock = true;
   SetExpectedAuxConfig({.reseed_on_key_change = true, .lock = true});
-  SetExpectedKey(kKey_, 8);
-  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, &kKey_, NULL));
+  SetExpectedKey(kKey, 8);
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, &kKey, NULL));
 }
 
 TEST_F(RessedOnKeyChangeTest, LockedSuccess) {
@@ -606,15 +606,15 @@ TEST_F(RessedOnKeyChangeTest, LockedSuccess) {
       .mask_reseed = AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_1,
   });
 
-  transaction.reseed_on_key_change = true;
-  transaction.reseed_on_key_change_lock = true;
+  transaction_.reseed_on_key_change = true;
+  transaction_.reseed_on_key_change_lock = true;
 
   EXPECT_READ32(AES_CTRL_AUX_REGWEN_REG_OFFSET,
                 {{AES_CTRL_AUX_REGWEN_CTRL_AUX_REGWEN_BIT, 0}});
   EXPECT_READ32(AES_CTRL_AUX_SHADOWED_REG_OFFSET,
                 {{AES_CTRL_AUX_SHADOWED_KEY_TOUCH_FORCES_RESEED_BIT, true}});
-  SetExpectedKey(kKey_, 8);
-  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction, &kKey_, NULL));
+  SetExpectedKey(kKey, 8);
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, &kKey, NULL));
 }
 
 TEST_F(RessedOnKeyChangeTest, LockedError) {
@@ -626,15 +626,15 @@ TEST_F(RessedOnKeyChangeTest, LockedError) {
       .mask_reseed = AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_1,
   });
 
-  transaction.reseed_on_key_change = true;
-  transaction.reseed_on_key_change_lock = true;
+  transaction_.reseed_on_key_change = true;
+  transaction_.reseed_on_key_change_lock = true;
 
   EXPECT_READ32(AES_CTRL_AUX_REGWEN_REG_OFFSET,
                 {{AES_CTRL_AUX_REGWEN_CTRL_AUX_REGWEN_BIT, 0}});
   EXPECT_READ32(AES_CTRL_AUX_SHADOWED_REG_OFFSET,
                 {{AES_CTRL_AUX_SHADOWED_KEY_TOUCH_FORCES_RESEED_BIT, false}});
 
-  EXPECT_EQ(dif_aes_start(&aes_, &transaction, &kKey_, NULL), kDifError);
+  EXPECT_EQ(dif_aes_start(&aes_, &transaction_, &kKey, NULL), kDifError);
 }
 
 // Dif functions.
@@ -686,16 +686,16 @@ TEST_F(DifFunctionsTest, End) {
 class DifBadArgError : public AesTestInitialized {
  protected:
   DifBadArgError() {
-    transaction.key_provider = kDifAesKeySoftwareProvided;
-    transaction.mode = kDifAesModeCbc;
+    transaction_.key_provider = kDifAesKeySoftwareProvided;
+    transaction_.mode = kDifAesModeCbc;
   }
 };
 
 TEST_F(DifBadArgError, start) {
-  EXPECT_DIF_BADARG(dif_aes_start(NULL, &transaction, &kKey_, &kIv_));
-  EXPECT_DIF_BADARG(dif_aes_start(&aes_, NULL, &kKey_, &kIv_));
-  EXPECT_DIF_BADARG(dif_aes_start(&aes_, &transaction, NULL, &kIv_));
-  EXPECT_DIF_BADARG(dif_aes_start(&aes_, &transaction, &kKey_, NULL));
+  EXPECT_DIF_BADARG(dif_aes_start(NULL, &transaction_, &kKey, &kIv));
+  EXPECT_DIF_BADARG(dif_aes_start(&aes_, NULL, &kKey, &kIv));
+  EXPECT_DIF_BADARG(dif_aes_start(&aes_, &transaction_, NULL, &kIv));
+  EXPECT_DIF_BADARG(dif_aes_start(&aes_, &transaction_, &kKey, NULL));
 }
 
 TEST_F(DifBadArgError, reset) { EXPECT_DIF_BADARG(dif_aes_reset(NULL)); }
@@ -737,7 +737,7 @@ class DifUnavailableError : public AesTestInitialized {
 };
 
 TEST_F(DifUnavailableError, start) {
-  EXPECT_EQ(dif_aes_start(&aes_, &transaction, &kKey_, NULL), kDifUnavailable);
+  EXPECT_EQ(dif_aes_start(&aes_, &transaction_, &kKey, NULL), kDifUnavailable);
 }
 
 TEST_F(DifUnavailableError, end) {
