@@ -377,9 +377,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
 
       case (item.item_type)
         OtbnModelStatus: begin
-          bit was_running = model_status inside {otbn_pkg::StatusBusyExecute,
-                                                 otbn_pkg::StatusBusySecWipeDmem,
-                                                 otbn_pkg::StatusBusySecWipeImem};
+          bit was_executing = model_status inside {otbn_pkg::StatusBusyExecute};
           bit is_running = item.status inside {otbn_pkg::StatusBusyExecute,
                                                otbn_pkg::StatusBusySecWipeDmem,
                                                otbn_pkg::StatusBusySecWipeImem};
@@ -397,9 +395,10 @@ class otbn_scoreboard extends cip_base_scoreboard #(
           if (item.status == otbn_pkg::StatusLocked) begin
             expect_alert("fatal");
           end
-          // Has the status changed from busy to idle with a nonzero err_bits? If so, we should see
-          // a recoverable alert.
-          if (was_running && item.status == otbn_pkg::StatusIdle && item.err_bits != 0) begin
+          // Has the status changed from executing to idle with a nonzero err_bits?
+          // If so, we should see a recoverable alert. Note that we are not expecting to catch
+          // recoverable alert when we do SecWipe of any kind.
+          if (was_executing && item.status == otbn_pkg::StatusIdle && item.err_bits != 0) begin
             expect_alert("recov");
           end
 
