@@ -8,7 +8,6 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/testing/global_mock.h"
 #include "sw/device/lib/base/testing/mock_mmio_test_utils.h"
-#include "sw/device/silicon_creator/testing/mask_rom_test.h"
 
 namespace mask_rom_test {
 namespace internal {
