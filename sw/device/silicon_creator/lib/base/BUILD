@@ -49,7 +49,7 @@ cc_library(
         "sec_mmio.h",
     ],
     deps = [
-        "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:mock_mmio",
         "//sw/device/lib/base/testing:global_mock",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest",
@@ -67,6 +67,7 @@ cc_test(
     deps = [
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing:mock_abs_mmio",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
         "//sw/device/silicon_creator/lib:error",
         "@googletest//:gtest_main",
     ],
