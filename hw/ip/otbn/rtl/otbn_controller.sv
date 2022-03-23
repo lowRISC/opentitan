@@ -26,7 +26,7 @@ module otbn_controller
   input  logic start_i,  // start the processing at address zero
   output logic locked_o, // OTBN in locked state and must be reset to perform any further actions
 
-  output err_bits_t err_bits_o,           // valid when done_o is asserted
+  output err_bits_t err_bits_o,           // valid when start_secure_wipe_o is asserted
   output logic      recoverable_err_o,
   output logic      reg_intg_violation_o,
 
