@@ -33,7 +33,19 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
       wakeup_intr_coverage_collector();
       low_power_coverage_collector();
       reset_coverage_collector();
+      proc_exp_alert_q();
     join_none
+  endtask
+
+  task proc_exp_alert_q();
+    bit exp_alert;
+    forever begin
+      @(cfg.clk_rst_vif.cb);
+      wait(cfg.exp_alert_q.size() > 0);
+      // timeout occur about 5us
+      set_exp_alert("fatal_fault", 1, 500);
+      exp_alert = cfg.exp_alert_q.pop_front();
+    end
   endtask
 
   task wakeup_ctrl_coverage_collector();
@@ -114,7 +126,7 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg        csr;
-    bit            do_read_check = 1'b1;
+    bit            do_read_check = ~(cfg.disable_csr_rd_chk);
     bit            write = item.is_write();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
 

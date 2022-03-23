@@ -23,7 +23,7 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
   // with "ROM Integrity Checks" at
   // https://docs.opentitan.org/hw/ip/pwrmgr/doc/#fast-clock-domain-fsm
   // TODO(maturana) https://github.com/lowRISC/opentitan/issues/10241
-  local task twirl_rom_response();
+  virtual task twirl_rom_response();
     cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4False;
     cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4False;
     @(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateAckPwrUp);
@@ -131,6 +131,10 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
 
       check_wake_info(.reasons(enabled_wakeups), .prior_reasons(1'b0), .fall_through(1'b0),
                       .prior_fall_through(1'b0), .abort(1'b0), .prior_abort(1'b0));
+
+      if (mubi_mode == PwrmgrMubiRomCtrl) begin
+        add_rom_rsp_noise();
+      end
 
       // This is the expected side-effect of the low power entry reset, since the source of the
       // non-aon wakeup sources will deassert it as a consequence of their reset.
