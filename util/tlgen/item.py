@@ -56,12 +56,12 @@ class Node:
     ds = []  # Edges
 
     # Req/Rsp FIFO. default False
-    # when False, FIFO fully passthrough, no storage element
-    # when True, FIFO present with default depth, "pipeline_byp"
+    # when False, there is no storage element
+    # when True, there is a FIFO present with default depth, "pipeline_byp"
     # controls passthrough option
-    pipeline = False
+    pipeline = True
 
-    # FIFO passtru option. default True
+    # FIFO passthru option. default True
     pipeline_byp = True
 
     def __init__(self, name, node_type, clock, reset):

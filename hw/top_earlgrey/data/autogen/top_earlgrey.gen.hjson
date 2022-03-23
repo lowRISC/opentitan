@@ -8354,7 +8354,7 @@
           type: device
           clock: clk_main_i
           reset: rst_main_ni
-          pipeline: "false"
+          pipeline_byp: "false"
           inst_type: rom_ctrl
           addr_range:
           [
@@ -8365,7 +8365,7 @@
           ]
           xbar: false
           stub: false
-          pipeline_byp: "true"
+          pipeline: "true"
         }
         {
           name: rom_ctrl.regs

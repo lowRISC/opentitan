@@ -44,7 +44,7 @@
       type:      "device",
       clock:     "clk_main_i",
       reset:     "rst_main_ni",
-      pipeline:  "false",
+      pipeline_byp: "false",
     },
     { name:      "rom_ctrl.regs",
       type:      "device",
