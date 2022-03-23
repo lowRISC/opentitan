@@ -140,20 +140,6 @@ typedef struct dif_spi_host_segment {
 } dif_spi_host_segment_t;
 
 /**
- * Creates a new handle for SPI Host.
- *
- * This function does not actuate the hardware.
- *
- * @param base_addr The MMIO base address of the IP.
- * @param params Hardware instantiation parameters. (optional, may remove)
- * @param[out] spi_host Out param for the initialized handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_spi_host_init(mmio_region_t base_addr,
-                               dif_spi_host_t *spi_host);
-
-/**
  * Configures SPI Host with runtime information.
  *
  * This function should only need to be called once for the lifetime of
