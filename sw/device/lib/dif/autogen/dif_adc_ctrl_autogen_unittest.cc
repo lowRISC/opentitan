@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
+#include "sw/device/lib/dif/dif_test_base.h"
 
 #include "adc_ctrl_regs.h"  // Generated.
 
@@ -28,32 +29,31 @@ class AdcCtrlTest : public Test, public MmioTest {
 class InitTest : public AdcCtrlTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_adc_ctrl_init(dev().region(), nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_adc_ctrl_init(dev().region(), nullptr));
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_adc_ctrl_init(dev().region(), &adc_ctrl_), kDifOk);
+  EXPECT_DIF_OK(dif_adc_ctrl_init(dev().region(), &adc_ctrl_));
 }
 
 class AlertForceTest : public AdcCtrlTest {};
 
 TEST_F(AlertForceTest, NullArgs) {
-  EXPECT_EQ(dif_adc_ctrl_alert_force(nullptr, kDifAdcCtrlAlertFatalFault),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_adc_ctrl_alert_force(nullptr, kDifAdcCtrlAlertFatalFault));
 }
 
 TEST_F(AlertForceTest, BadAlert) {
-  EXPECT_EQ(
-      dif_adc_ctrl_alert_force(nullptr, static_cast<dif_adc_ctrl_alert_t>(32)),
-      kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_adc_ctrl_alert_force(nullptr, static_cast<dif_adc_ctrl_alert_t>(32)));
 }
 
 TEST_F(AlertForceTest, Success) {
   // Force first alert.
   EXPECT_WRITE32(ADC_CTRL_ALERT_TEST_REG_OFFSET,
                  {{ADC_CTRL_ALERT_TEST_FATAL_FAULT_BIT, true}});
-  EXPECT_EQ(dif_adc_ctrl_alert_force(&adc_ctrl_, kDifAdcCtrlAlertFatalFault),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_adc_ctrl_alert_force(&adc_ctrl_, kDifAdcCtrlAlertFatalFault));
 }
 
 class IrqGetStateTest : public AdcCtrlTest {};
@@ -61,11 +61,11 @@ class IrqGetStateTest : public AdcCtrlTest {};
 TEST_F(IrqGetStateTest, NullArgs) {
   dif_adc_ctrl_irq_state_snapshot_t irq_snapshot = 0;
 
-  EXPECT_EQ(dif_adc_ctrl_irq_get_state(nullptr, &irq_snapshot), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_get_state(nullptr, &irq_snapshot));
 
-  EXPECT_EQ(dif_adc_ctrl_irq_get_state(&adc_ctrl_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_get_state(&adc_ctrl_, nullptr));
 
-  EXPECT_EQ(dif_adc_ctrl_irq_get_state(nullptr, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_get_state(nullptr, nullptr));
 }
 
 TEST_F(IrqGetStateTest, SuccessAllRaised) {
@@ -73,7 +73,7 @@ TEST_F(IrqGetStateTest, SuccessAllRaised) {
 
   EXPECT_READ32(ADC_CTRL_INTR_STATE_REG_OFFSET,
                 std::numeric_limits<uint32_t>::max());
-  EXPECT_EQ(dif_adc_ctrl_irq_get_state(&adc_ctrl_, &irq_snapshot), kDifOk);
+  EXPECT_DIF_OK(dif_adc_ctrl_irq_get_state(&adc_ctrl_, &irq_snapshot));
   EXPECT_EQ(irq_snapshot, std::numeric_limits<uint32_t>::max());
 }
 
@@ -81,7 +81,7 @@ TEST_F(IrqGetStateTest, SuccessNoneRaised) {
   dif_adc_ctrl_irq_state_snapshot_t irq_snapshot = 0;
 
   EXPECT_READ32(ADC_CTRL_INTR_STATE_REG_OFFSET, 0);
-  EXPECT_EQ(dif_adc_ctrl_irq_get_state(&adc_ctrl_, &irq_snapshot), kDifOk);
+  EXPECT_DIF_OK(dif_adc_ctrl_irq_get_state(&adc_ctrl_, &irq_snapshot));
   EXPECT_EQ(irq_snapshot, 0);
 }
 
@@ -90,25 +90,21 @@ class IrqIsPendingTest : public AdcCtrlTest {};
 TEST_F(IrqIsPendingTest, NullArgs) {
   bool is_pending;
 
-  EXPECT_EQ(dif_adc_ctrl_irq_is_pending(nullptr, kDifAdcCtrlIrqDebugCable,
-                                        &is_pending),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_is_pending(
+      nullptr, kDifAdcCtrlIrqDebugCable, &is_pending));
 
-  EXPECT_EQ(dif_adc_ctrl_irq_is_pending(&adc_ctrl_, kDifAdcCtrlIrqDebugCable,
-                                        nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_is_pending(
+      &adc_ctrl_, kDifAdcCtrlIrqDebugCable, nullptr));
 
-  EXPECT_EQ(
-      dif_adc_ctrl_irq_is_pending(nullptr, kDifAdcCtrlIrqDebugCable, nullptr),
-      kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_adc_ctrl_irq_is_pending(nullptr, kDifAdcCtrlIrqDebugCable, nullptr));
 }
 
 TEST_F(IrqIsPendingTest, BadIrq) {
   bool is_pending;
   // All interrupt CSRs are 32 bit so interrupt 32 will be invalid.
-  EXPECT_EQ(dif_adc_ctrl_irq_is_pending(
-                &adc_ctrl_, static_cast<dif_adc_ctrl_irq_t>(32), &is_pending),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_is_pending(
+      &adc_ctrl_, static_cast<dif_adc_ctrl_irq_t>(32), &is_pending));
 }
 
 TEST_F(IrqIsPendingTest, Success) {
@@ -118,65 +114,60 @@ TEST_F(IrqIsPendingTest, Success) {
   irq_state = false;
   EXPECT_READ32(ADC_CTRL_INTR_STATE_REG_OFFSET,
                 {{ADC_CTRL_INTR_STATE_DEBUG_CABLE_BIT, true}});
-  EXPECT_EQ(dif_adc_ctrl_irq_is_pending(&adc_ctrl_, kDifAdcCtrlIrqDebugCable,
-                                        &irq_state),
-            kDifOk);
+  EXPECT_DIF_OK(dif_adc_ctrl_irq_is_pending(
+      &adc_ctrl_, kDifAdcCtrlIrqDebugCable, &irq_state));
   EXPECT_TRUE(irq_state);
 }
 
 class AcknowledgeAllTest : public AdcCtrlTest {};
 
 TEST_F(AcknowledgeAllTest, NullArgs) {
-  EXPECT_EQ(dif_adc_ctrl_irq_acknowledge_all(nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_acknowledge_all(nullptr));
 }
 
 TEST_F(AcknowledgeAllTest, Success) {
   EXPECT_WRITE32(ADC_CTRL_INTR_STATE_REG_OFFSET,
                  std::numeric_limits<uint32_t>::max());
 
-  EXPECT_EQ(dif_adc_ctrl_irq_acknowledge_all(&adc_ctrl_), kDifOk);
+  EXPECT_DIF_OK(dif_adc_ctrl_irq_acknowledge_all(&adc_ctrl_));
 }
 
 class IrqAcknowledgeTest : public AdcCtrlTest {};
 
 TEST_F(IrqAcknowledgeTest, NullArgs) {
-  EXPECT_EQ(dif_adc_ctrl_irq_acknowledge(nullptr, kDifAdcCtrlIrqDebugCable),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_adc_ctrl_irq_acknowledge(nullptr, kDifAdcCtrlIrqDebugCable));
 }
 
 TEST_F(IrqAcknowledgeTest, BadIrq) {
-  EXPECT_EQ(dif_adc_ctrl_irq_acknowledge(nullptr,
-                                         static_cast<dif_adc_ctrl_irq_t>(32)),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_acknowledge(
+      nullptr, static_cast<dif_adc_ctrl_irq_t>(32)));
 }
 
 TEST_F(IrqAcknowledgeTest, Success) {
   // Clear the first IRQ state.
   EXPECT_WRITE32(ADC_CTRL_INTR_STATE_REG_OFFSET,
                  {{ADC_CTRL_INTR_STATE_DEBUG_CABLE_BIT, true}});
-  EXPECT_EQ(dif_adc_ctrl_irq_acknowledge(&adc_ctrl_, kDifAdcCtrlIrqDebugCable),
-            kDifOk);
+  EXPECT_DIF_OK(
+      dif_adc_ctrl_irq_acknowledge(&adc_ctrl_, kDifAdcCtrlIrqDebugCable));
 }
 
 class IrqForceTest : public AdcCtrlTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_EQ(dif_adc_ctrl_irq_force(nullptr, kDifAdcCtrlIrqDebugCable),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_force(nullptr, kDifAdcCtrlIrqDebugCable));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
-  EXPECT_EQ(
-      dif_adc_ctrl_irq_force(nullptr, static_cast<dif_adc_ctrl_irq_t>(32)),
-      kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_adc_ctrl_irq_force(nullptr, static_cast<dif_adc_ctrl_irq_t>(32)));
 }
 
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
   EXPECT_WRITE32(ADC_CTRL_INTR_TEST_REG_OFFSET,
                  {{ADC_CTRL_INTR_TEST_DEBUG_CABLE_BIT, true}});
-  EXPECT_EQ(dif_adc_ctrl_irq_force(&adc_ctrl_, kDifAdcCtrlIrqDebugCable),
-            kDifOk);
+  EXPECT_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl_, kDifAdcCtrlIrqDebugCable));
 }
 
 class IrqGetEnabledTest : public AdcCtrlTest {};
@@ -184,25 +175,21 @@ class IrqGetEnabledTest : public AdcCtrlTest {};
 TEST_F(IrqGetEnabledTest, NullArgs) {
   dif_toggle_t irq_state;
 
-  EXPECT_EQ(dif_adc_ctrl_irq_get_enabled(nullptr, kDifAdcCtrlIrqDebugCable,
-                                         &irq_state),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_get_enabled(
+      nullptr, kDifAdcCtrlIrqDebugCable, &irq_state));
 
-  EXPECT_EQ(dif_adc_ctrl_irq_get_enabled(&adc_ctrl_, kDifAdcCtrlIrqDebugCable,
-                                         nullptr),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_get_enabled(
+      &adc_ctrl_, kDifAdcCtrlIrqDebugCable, nullptr));
 
-  EXPECT_EQ(
-      dif_adc_ctrl_irq_get_enabled(nullptr, kDifAdcCtrlIrqDebugCable, nullptr),
-      kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_adc_ctrl_irq_get_enabled(nullptr, kDifAdcCtrlIrqDebugCable, nullptr));
 }
 
 TEST_F(IrqGetEnabledTest, BadIrq) {
   dif_toggle_t irq_state;
 
-  EXPECT_EQ(dif_adc_ctrl_irq_get_enabled(
-                &adc_ctrl_, static_cast<dif_adc_ctrl_irq_t>(32), &irq_state),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_get_enabled(
+      &adc_ctrl_, static_cast<dif_adc_ctrl_irq_t>(32), &irq_state));
 }
 
 TEST_F(IrqGetEnabledTest, Success) {
@@ -212,9 +199,8 @@ TEST_F(IrqGetEnabledTest, Success) {
   irq_state = kDifToggleDisabled;
   EXPECT_READ32(ADC_CTRL_INTR_ENABLE_REG_OFFSET,
                 {{ADC_CTRL_INTR_ENABLE_DEBUG_CABLE_BIT, true}});
-  EXPECT_EQ(dif_adc_ctrl_irq_get_enabled(&adc_ctrl_, kDifAdcCtrlIrqDebugCable,
-                                         &irq_state),
-            kDifOk);
+  EXPECT_DIF_OK(dif_adc_ctrl_irq_get_enabled(
+      &adc_ctrl_, kDifAdcCtrlIrqDebugCable, &irq_state));
   EXPECT_EQ(irq_state, kDifToggleEnabled);
 }
 
@@ -223,17 +209,15 @@ class IrqSetEnabledTest : public AdcCtrlTest {};
 TEST_F(IrqSetEnabledTest, NullArgs) {
   dif_toggle_t irq_state = kDifToggleEnabled;
 
-  EXPECT_EQ(dif_adc_ctrl_irq_set_enabled(nullptr, kDifAdcCtrlIrqDebugCable,
-                                         irq_state),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_set_enabled(
+      nullptr, kDifAdcCtrlIrqDebugCable, irq_state));
 }
 
 TEST_F(IrqSetEnabledTest, BadIrq) {
   dif_toggle_t irq_state = kDifToggleEnabled;
 
-  EXPECT_EQ(dif_adc_ctrl_irq_set_enabled(
-                &adc_ctrl_, static_cast<dif_adc_ctrl_irq_t>(32), irq_state),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_set_enabled(
+      &adc_ctrl_, static_cast<dif_adc_ctrl_irq_t>(32), irq_state));
 }
 
 TEST_F(IrqSetEnabledTest, Success) {
@@ -243,9 +227,8 @@ TEST_F(IrqSetEnabledTest, Success) {
   irq_state = kDifToggleEnabled;
   EXPECT_MASK32(ADC_CTRL_INTR_ENABLE_REG_OFFSET,
                 {{ADC_CTRL_INTR_ENABLE_DEBUG_CABLE_BIT, 0x1, true}});
-  EXPECT_EQ(dif_adc_ctrl_irq_set_enabled(&adc_ctrl_, kDifAdcCtrlIrqDebugCable,
-                                         irq_state),
-            kDifOk);
+  EXPECT_DIF_OK(dif_adc_ctrl_irq_set_enabled(
+      &adc_ctrl_, kDifAdcCtrlIrqDebugCable, irq_state));
 }
 
 class IrqDisableAllTest : public AdcCtrlTest {};
@@ -253,14 +236,14 @@ class IrqDisableAllTest : public AdcCtrlTest {};
 TEST_F(IrqDisableAllTest, NullArgs) {
   dif_adc_ctrl_irq_enable_snapshot_t irq_snapshot = 0;
 
-  EXPECT_EQ(dif_adc_ctrl_irq_disable_all(nullptr, &irq_snapshot), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_disable_all(nullptr, &irq_snapshot));
 
-  EXPECT_EQ(dif_adc_ctrl_irq_disable_all(nullptr, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_disable_all(nullptr, nullptr));
 }
 
 TEST_F(IrqDisableAllTest, SuccessNoSnapshot) {
   EXPECT_WRITE32(ADC_CTRL_INTR_ENABLE_REG_OFFSET, 0);
-  EXPECT_EQ(dif_adc_ctrl_irq_disable_all(&adc_ctrl_, nullptr), kDifOk);
+  EXPECT_DIF_OK(dif_adc_ctrl_irq_disable_all(&adc_ctrl_, nullptr));
 }
 
 TEST_F(IrqDisableAllTest, SuccessSnapshotAllDisabled) {
@@ -268,7 +251,7 @@ TEST_F(IrqDisableAllTest, SuccessSnapshotAllDisabled) {
 
   EXPECT_READ32(ADC_CTRL_INTR_ENABLE_REG_OFFSET, 0);
   EXPECT_WRITE32(ADC_CTRL_INTR_ENABLE_REG_OFFSET, 0);
-  EXPECT_EQ(dif_adc_ctrl_irq_disable_all(&adc_ctrl_, &irq_snapshot), kDifOk);
+  EXPECT_DIF_OK(dif_adc_ctrl_irq_disable_all(&adc_ctrl_, &irq_snapshot));
   EXPECT_EQ(irq_snapshot, 0);
 }
 
@@ -278,7 +261,7 @@ TEST_F(IrqDisableAllTest, SuccessSnapshotAllEnabled) {
   EXPECT_READ32(ADC_CTRL_INTR_ENABLE_REG_OFFSET,
                 std::numeric_limits<uint32_t>::max());
   EXPECT_WRITE32(ADC_CTRL_INTR_ENABLE_REG_OFFSET, 0);
-  EXPECT_EQ(dif_adc_ctrl_irq_disable_all(&adc_ctrl_, &irq_snapshot), kDifOk);
+  EXPECT_DIF_OK(dif_adc_ctrl_irq_disable_all(&adc_ctrl_, &irq_snapshot));
   EXPECT_EQ(irq_snapshot, std::numeric_limits<uint32_t>::max());
 }
 
@@ -287,11 +270,11 @@ class IrqRestoreAllTest : public AdcCtrlTest {};
 TEST_F(IrqRestoreAllTest, NullArgs) {
   dif_adc_ctrl_irq_enable_snapshot_t irq_snapshot = 0;
 
-  EXPECT_EQ(dif_adc_ctrl_irq_restore_all(nullptr, &irq_snapshot), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_restore_all(nullptr, &irq_snapshot));
 
-  EXPECT_EQ(dif_adc_ctrl_irq_restore_all(&adc_ctrl_, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_restore_all(&adc_ctrl_, nullptr));
 
-  EXPECT_EQ(dif_adc_ctrl_irq_restore_all(nullptr, nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_restore_all(nullptr, nullptr));
 }
 
 TEST_F(IrqRestoreAllTest, SuccessAllEnabled) {
@@ -300,14 +283,14 @@ TEST_F(IrqRestoreAllTest, SuccessAllEnabled) {
 
   EXPECT_WRITE32(ADC_CTRL_INTR_ENABLE_REG_OFFSET,
                  std::numeric_limits<uint32_t>::max());
-  EXPECT_EQ(dif_adc_ctrl_irq_restore_all(&adc_ctrl_, &irq_snapshot), kDifOk);
+  EXPECT_DIF_OK(dif_adc_ctrl_irq_restore_all(&adc_ctrl_, &irq_snapshot));
 }
 
 TEST_F(IrqRestoreAllTest, SuccessAllDisabled) {
   dif_adc_ctrl_irq_enable_snapshot_t irq_snapshot = 0;
 
   EXPECT_WRITE32(ADC_CTRL_INTR_ENABLE_REG_OFFSET, 0);
-  EXPECT_EQ(dif_adc_ctrl_irq_restore_all(&adc_ctrl_, &irq_snapshot), kDifOk);
+  EXPECT_DIF_OK(dif_adc_ctrl_irq_restore_all(&adc_ctrl_, &irq_snapshot));
 }
 
 }  // namespace

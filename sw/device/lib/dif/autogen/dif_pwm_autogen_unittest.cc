@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
+#include "sw/device/lib/dif/dif_test_base.h"
 
 #include "pwm_regs.h"  // Generated.
 
@@ -28,29 +29,29 @@ class PwmTest : public Test, public MmioTest {
 class InitTest : public PwmTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_pwm_init(dev().region(), nullptr), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_pwm_init(dev().region(), nullptr));
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_pwm_init(dev().region(), &pwm_), kDifOk);
+  EXPECT_DIF_OK(dif_pwm_init(dev().region(), &pwm_));
 }
 
 class AlertForceTest : public PwmTest {};
 
 TEST_F(AlertForceTest, NullArgs) {
-  EXPECT_EQ(dif_pwm_alert_force(nullptr, kDifPwmAlertFatalFault), kDifBadArg);
+  EXPECT_DIF_BADARG(dif_pwm_alert_force(nullptr, kDifPwmAlertFatalFault));
 }
 
 TEST_F(AlertForceTest, BadAlert) {
-  EXPECT_EQ(dif_pwm_alert_force(nullptr, static_cast<dif_pwm_alert_t>(32)),
-            kDifBadArg);
+  EXPECT_DIF_BADARG(
+      dif_pwm_alert_force(nullptr, static_cast<dif_pwm_alert_t>(32)));
 }
 
 TEST_F(AlertForceTest, Success) {
   // Force first alert.
   EXPECT_WRITE32(PWM_ALERT_TEST_REG_OFFSET,
                  {{PWM_ALERT_TEST_FATAL_FAULT_BIT, true}});
-  EXPECT_EQ(dif_pwm_alert_force(&pwm_, kDifPwmAlertFatalFault), kDifOk);
+  EXPECT_DIF_OK(dif_pwm_alert_force(&pwm_, kDifPwmAlertFatalFault));
 }
 
 }  // namespace
