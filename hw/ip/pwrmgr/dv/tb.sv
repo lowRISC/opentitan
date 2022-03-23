@@ -14,6 +14,7 @@ module tb;
   `include "dv_macros.svh"
 
   wire clk, rst_n;
+  wire clk_esc, rst_esc_n;
   wire clk_slow, rst_slow_n;
   wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
@@ -22,6 +23,10 @@ module tb;
   clk_rst_if clk_rst_if (
     .clk  (clk),
     .rst_n(rst_n)
+  );
+  clk_rst_if esc_clk_rst_if (
+    .clk  (clk_esc),
+    .rst_n(rst_esc_n)
   );
   clk_rst_if slow_clk_rst_if (
     .clk  (clk_slow),
@@ -56,8 +61,8 @@ module tb;
     .clk_slow_i (clk_slow),
     .rst_slow_ni(rst_slow_n),
     .rst_main_ni(pwrmgr_if.rst_main_n),
-    .clk_esc_i  (clk),
-    .rst_esc_ni (rst_n),
+    .clk_esc_i  (clk_esc),
+    .rst_esc_ni (rst_esc_n),
 
     .tl_i(tl_if.h2d),
     .tl_o(tl_if.d2h),
@@ -87,8 +92,8 @@ module tb;
     .wakeups_i (pwrmgr_if.wakeups_i),
     .rstreqs_i (pwrmgr_if.rstreqs_i),
 
-    .lc_dft_en_i     (lc_ctrl_pkg::Off),
-    .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
+    .lc_dft_en_i     (pwrmgr_if.lc_dft_en),
+    .lc_hw_debug_en_i(pwrmgr_if.lc_hw_debug_en),
 
     .strap_o    (pwrmgr_if.strap),
     .low_power_o(pwrmgr_if.low_power),
@@ -106,9 +111,11 @@ module tb;
   initial begin
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
+    esc_clk_rst_if.set_active();
     slow_clk_rst_if.set_active();
 
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "esc_clk_rst_vif", esc_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "slow_clk_rst_vif", slow_clk_rst_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
@@ -125,5 +132,4 @@ module tb;
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
-
 endmodule
