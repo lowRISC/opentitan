@@ -193,7 +193,8 @@
       type: device
       clock: clk_main_i
       reset: rst_main_ni
-      pipeline: false
+      req_fifo_pass: true
+      rsp_fifo_pass: false
       inst_type: rom_ctrl
       addr_range:
       [
@@ -204,7 +205,7 @@
       ]
       xbar: false
       stub: false
-      req_fifo_pass: true
+      pipeline: true
     }
     {
       name: rom_ctrl.regs
