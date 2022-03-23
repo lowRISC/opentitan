@@ -229,6 +229,8 @@ module otbn_core
 
   logic req_sec_wipe_urnd_keys_q;
 
+  err_bits_t err_bits_q, controller_err_bits;
+
   // Start stop control start OTBN execution when requested and deals with any pre start or post
   // stop actions.
   otbn_start_stop_control #(
@@ -334,7 +336,7 @@ module otbn_core
     .start_i(controller_start),
     .locked_o,
 
-    .err_bits_o,
+    .err_bits_o(controller_err_bits),
     .recoverable_err_o,
     .reg_intg_violation_o,
 
@@ -678,6 +680,18 @@ module otbn_core
 
   assign dmem_sec_wipe_urnd_key_o = urnd_data[127:0];
   assign imem_sec_wipe_urnd_key_o = urnd_data[255:128];
+
+  // Cache err_bits, taking the value from u_otbn_controller when its start_secure_wipe_o signal is
+  // asserted.
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      err_bits_q <= '0;
+    end else begin
+      if (start_secure_wipe) err_bits_q <= controller_err_bits;
+    end
+  end
+  assign err_bits_o = err_bits_q;
+
 
   // Asserts =======================================================================================
 
