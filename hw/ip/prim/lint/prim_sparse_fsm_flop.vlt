@@ -6,3 +6,4 @@
 
 // This parameter is only used in DV/FPV.
 lint_off -rule UNUSED -file "*/rtl/prim_sparse_fsm_flop.sv" -match "*EnableAlertTriggerSVA*"
+lint_off -rule UNUSED -file "*/rtl/prim_sparse_fsm_flop.sv" -match "*CustomForceName*"
