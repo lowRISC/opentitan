@@ -47,6 +47,8 @@ The following attributes are used to define each testpoint, at minimum:
     To cater to these needs, we provide the ability to set a list of written tests for each testpoint.
     It is used to not only indicate the current progress so far into each milestone, but also map the simulation results to the testpoints to generate the final report table.
     This list is initially empty - it is gradually updated as tests are written.
+    Setting this list to `["N/A"]` will prevent this testpoint entry from being mapped to the simulation results.
+    The testpoint will however, still show up in the generated testplan table.
 
 * **tags: list of tags relevant for this testpoint**
 
