@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "OPENTITAN_PLATFORM", "opentitan_transition")
+load("//rules:rv.bzl", "rv_rule")
 load("//rules:bugfix.bzl", "find_cc_toolchain")
 
 def _get_assembler(cc_toolchain):
@@ -148,38 +148,29 @@ def _otbn_binary(ctx):
         ),
     ]
 
-otbn_library = rule(
+otbn_library = rv_rule(
     implementation = _otbn_library,
-    cfg = opentitan_transition,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
-        "platform": attr.string(default = OPENTITAN_PLATFORM),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
         "_otbn_as": attr.label(default = "//hw/ip/otbn/util:otbn-as", allow_single_file = True),
-        "_allowlist_function_transition": attr.label(
-            default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
-        ),
+
     },
     fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
     incompatible_use_toolchain_transition = True,
 )
 
-otbn_binary = rule(
+otbn_binary = rv_rule(
     implementation = _otbn_binary,
-    cfg = opentitan_transition,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "deps": attr.label_list(providers = [DefaultInfo]),
-        "platform": attr.string(default = OPENTITAN_PLATFORM),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
         "_otbn_as": attr.label(default = "//hw/ip/otbn/util:otbn-as", allow_single_file = True),
         "_otbn_ld": attr.label(default = "//hw/ip/otbn/util:otbn-ld", allow_single_file = True),
         "_otbn_data": attr.label(default = "//hw/ip/otbn/data:all_files", allow_files = True),
         "_wrapper": attr.label(default = "//util:otbn_build.py", allow_single_file = True),
-        "_allowlist_function_transition": attr.label(
-            default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
-        ),
     },
     fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
