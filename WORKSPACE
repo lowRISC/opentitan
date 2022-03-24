@@ -54,6 +54,32 @@ go_rules_dependencies()
 go_register_toolchains()
 
 ################################################################################
+# Python Rules
+################################################################################
+http_archive(
+    name = "rules_python",
+    sha256 = "9fcf91dbcc31fde6d1edb15f117246d912c33c36f44cf681976bd886538deba6",
+    strip_prefix = "rules_python-0.8.0",
+    url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.8.0.tar.gz",
+)
+
+load("@rules_python//python:repositories.bzl", "python_register_toolchains")
+load("@rules_python//python:pip.bzl", "pip_install")
+
+python_register_toolchains(
+    name = "python3_9",
+    python_version = "3.9",
+)
+
+load("@python3_9//:defs.bzl", "interpreter")
+
+pip_install(
+    name = "ot_python_deps",
+    python_interpreter_target = interpreter,
+    requirements = "//:python-requirements.txt",
+)
+
+################################################################################
 # Rust Rules
 ################################################################################
 http_archive(
