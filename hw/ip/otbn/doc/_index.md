@@ -550,9 +550,11 @@ In the big number instruction subset, there are {{< otbnInsnRef "BN.LID" >}} (lo
 These access 256b-aligned 256b words.
 
 Both memories can be accessed through OTBN's register interface ({{< regref "DMEM" >}} and {{< regref "IMEM" >}}).
-These accesses are ignored if OTBN is busy.
-A host processor can check whether OTBN is busy by reading the {{< regref "STATUS">}} register.
 All memory accesses through the register interface must be word-aligned 32b word accesses.
+
+When OTBN is in any state other than [idle](#design-details-operational-states), reads return zero and writes have no effect.
+Furthermore, a memory access when OTBN is neither idle nor locked will cause OTBN to generate a fatal alert with code `ILLEGAL_BUS_ACCESS`.
+A host processor can check whether OTBN is busy by reading the {{< regref "STATUS">}} register.
 
 While DMEM is 4kiB, only the first 2kiB (at addresses `0x0` to `0x7ff`) is visible through the register interface.
 This is to allow OTBN applications to store sensitive information in the other half, making it harder for that information to leak back to Ibex.
