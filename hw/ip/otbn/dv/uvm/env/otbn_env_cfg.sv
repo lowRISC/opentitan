@@ -97,6 +97,9 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
 
     super.initialize(csr_base_addr);
 
+    // We can only have one outstanding TL item
+    m_tl_agent_cfg.max_outstanding_req = 1;
+
     // Tell the CIP base code the fields that it should expect to see, together with their expected
     // values, in case of a TL fault.
     tl_intg_alert_fields[ral.fatal_alert_cause.bus_intg_violation] = 1;
