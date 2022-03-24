@@ -16,6 +16,8 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
   input clk_i,
   input rst_ni,
 
+  input prim_mubi_pkg::mubi4_t disable_i,
+
   // error address shared between interfaces
   output logic [BusAddrW-1:0] ctrl_err_addr_o,
 
@@ -129,7 +131,7 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
   logic sw_req;
   assign sw_req = sw_ctrl_i.start.q;
 
-  // SEC_CM: FSM.SPARSE
+  // SEC_CM: CTRL.FSM.SPARSE
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, arb_state_e, StReset)
 
   always_comb begin
@@ -162,9 +164,13 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
         // software is still selected to enable access to Fifos
         func_sel = SwSel;
 
-        // if hardware request comes in the middle, wipe fifos and enable
-        // switch to hardware interface
-        if (hw_req_i) begin
+        if (prim_mubi_pkg::mubi4_test_true_loose(disable_i)) begin
+          // Do not randomly switch unless idle as it may cause stateful operations to be
+          // disturbed
+          state_d = StInvalid;
+        end else if (hw_req_i) begin
+          // if hardware request comes in the middle, wipe fifos and enable
+          // switch to hardware interface
           fifo_clr_o = 1'b1;
           state_d = StHw;
         end else if (sw_req) begin
@@ -189,9 +195,8 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
       default: begin
         state_d = StInvalid;
       end
-
-
     endcase // unique case (state_q)
+
   end // always_comb
 
   logic ctrl_ack;

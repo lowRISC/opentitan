@@ -199,7 +199,13 @@
   ],
   countermeasures: [
     { name: "BUS.INTEGRITY",
-      desc: "End-to-end bus integrity scheme."
+      desc: '''
+        End-to-end bus integrity scheme.
+        Since there are multiple access points for flash, please see
+        Transmission Integrity Faults in the documentation for more details.
+
+        The bus integrity scheme for flash is different from other comportable modules.
+      '''
     }
     { name: "SCRAMBLE.KEY.SIDELOAD",
       desc: "The scrambling key is sideloaded from OTP and thus unreadable by SW."
@@ -232,34 +238,58 @@
       desc: "Global escalation causes memory to no longer be accessible."
     }
     { name: "MEM.CTRL.LOCAL_ESC",
-      desc: "A subset of fatal errors cause memory to no longer be accessible."
+      desc: '''
+        A subset of fatal errors cause memory to no longer be accessible.
+        This subset is defined in !!STD_FAULT_STATUS.
+      '''
     }
     { name: "MEM_DISABLE.CONFIG.MUBI",
-      desc: "Software control for flash disable is multibit."
+      desc: '''
+        Software control for flash disable is multibit.
+        The register is !!DIS.
+      '''
     }
     { name: "MEM_EN.CONFIG.REDUN",
-      desc: "Software control for flash enable is 32-bit constant."
+      desc: '''
+        Software control for flash enable is 32-bit constant.
+        The register is !!EXEC.
+      '''
     }
     { name: "MEM.SCRAMBLE",
-      desc: "Memory is XEX scrambled."
+      desc: '''
+        Memory is XEX scrambled.
+        The cipher used is PRINCE.
+        Please see Flash Scrambling in documentation for more details.
+      '''
     }
     { name: "MEM.INTEGRITY",
-      desc: "Memory is protected with two layers of ECC integrity."
+      desc: '''
+        Memory is protected with two layers of ECC integrity.
+        Please see Flash ECC in the documentation for more details.
+      '''
     }
     { name: "RMA_ENTRY.MEM.SEC_WIPE",
       desc: "RMA entry entry wipes flash memory with random data."
     }
-    { name: "FSM.SPARSE",
-      desc: "RMA handling FSMs are sparsely encoded."
-    }
-    { name: "CTR.SPARSE",
-      desc: "RMA handling counters are sparsely encoded."
+    { name: "CTRL.FSM.SPARSE",
+      desc: '''
+        RMA handling FSMs in flash_ctrl_lcmgr are sparsely encoded.
+        FSM in flash_ctrl_arb is sparsely encoded.
+      '''
     }
     { name: "PHY.FSM.SPARSE",
       desc: "PHY FSMs are sparsely encoded."
     }
-
-
+    { name: "PHY_PROG.FSM.SPARSE",
+      desc: "PHY program FSMs are sparsely encoded."
+    }
+    { name: "CTR.REDUN",
+      desc: '''
+        flash_ctrl_lcmgr handling counters are redundantly encoded.
+        This includes seed count and address count used during seed reading phase,
+        as well as word count, page count and wipe index in RMA entry phase.
+      '''
+    }
   ]
 
   scan: "true",       // Enable `scanmode_i` port

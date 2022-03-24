@@ -180,18 +180,17 @@ module flash_phy
   assign flash_ctrl_o.ecc_single_err = ecc_single_err;
   assign flash_ctrl_o.ecc_addr = ecc_addr;
 
-  logic [NumBanks-1:0][prim_mubi_pkg::MuBi4Width-1:0] flash_disable_raw;
   prim_mubi_pkg::mubi4_t [NumBanks-1:0] flash_disable;
+  prim_mubi4_sync #(
+    .NumCopies(NumBanks),
+    .AsyncOn(0)
+  ) u_disable_buf (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(flash_ctrl_i.flash_disable),
+    .mubi_o(flash_disable)
+  );
 
-  for (genvar i=0; i < NumBanks; i++) begin : gen_flash_disable_buf
-    prim_buf #(
-      .Width(prim_mubi_pkg::MuBi4Width)
-    ) u_flash_disable_buf (
-      .in_i(flash_ctrl_i.flash_disable),
-      .out_o(flash_disable_raw[i])
-    );
-    assign flash_disable[i] = prim_mubi_pkg::mubi4_t'(flash_disable_raw[i]);
-  end
 
   for (genvar bank = 0; bank < NumBanks; bank++) begin : gen_flash_cores
 
@@ -288,10 +287,11 @@ module flash_phy
     .lc_en_o(lc_nvm_debug_en)
   );
 
+  import lc_ctrl_pkg::lc_tx_test_true_strict;
   // if nvm debug is enabled, flash_bist_enable controls entry to flash test mode.
   // if nvm debug is disabled, flash_bist_enable is always turned off.
   prim_mubi_pkg::mubi4_t bist_enable_qual;
-  assign bist_enable_qual = (lc_nvm_debug_en[FlashBistSel] == lc_ctrl_pkg::On) ?
+  assign bist_enable_qual = (lc_tx_test_true_strict(lc_nvm_debug_en[FlashBistSel])) ?
                             flash_bist_enable_i :
                             prim_mubi_pkg::MuBi4False;
 
@@ -313,9 +313,9 @@ module flash_phy
     .flash_rsp_o(prim_flash_rsp),
     .prog_type_avail_o(prog_type_avail),
     .init_busy_o(init_busy),
-    .tck_i(flash_ctrl_i.jtag_req.tck & (lc_nvm_debug_en[FlashLcTckSel] == lc_ctrl_pkg::On)),
-    .tdi_i(flash_ctrl_i.jtag_req.tdi & (lc_nvm_debug_en[FlashLcTdiSel] == lc_ctrl_pkg::On)),
-    .tms_i(flash_ctrl_i.jtag_req.tms & (lc_nvm_debug_en[FlashLcTmsSel] == lc_ctrl_pkg::On)),
+    .tck_i(flash_ctrl_i.jtag_req.tck & lc_tx_test_true_strict(lc_nvm_debug_en[FlashLcTckSel])),
+    .tdi_i(flash_ctrl_i.jtag_req.tdi & lc_tx_test_true_strict(lc_nvm_debug_en[FlashLcTdiSel])),
+    .tms_i(flash_ctrl_i.jtag_req.tms & lc_tx_test_true_strict(lc_nvm_debug_en[FlashLcTmsSel])),
     .tdo_o(tdo),
     .bist_enable_i(bist_enable_qual),
     .obs_ctrl_i,

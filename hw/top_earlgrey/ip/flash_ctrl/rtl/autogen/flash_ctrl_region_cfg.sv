@@ -153,6 +153,8 @@ module flash_ctrl_region_cfg
     end
   end
 
+  import lc_ctrl_pkg::lc_tx_test_true_strict;
+
   // qualify software settings with creator / owner privileges
   for(genvar i = 0; i < NumBanks; i++) begin : gen_info_priv_bank
     for (genvar j = 0; j < InfoTypes; j++) begin : gen_info_priv_type
@@ -161,10 +163,10 @@ module flash_ctrl_region_cfg
         .InfoSel(j)
       ) u_info_cfg (
         .cfgs_i(info_cfgs[i][j]),
-        .creator_seed_priv_i(lc_creator_seed_sw_rw_en == lc_ctrl_pkg::On),
-        .owner_seed_priv_i(lc_owner_seed_sw_rw_en == lc_ctrl_pkg::On),
-        .iso_flash_wr_en_i(lc_iso_part_sw_wr_en == lc_ctrl_pkg::On),
-        .iso_flash_rd_en_i(lc_iso_part_sw_rd_en == lc_ctrl_pkg::On),
+        .creator_seed_priv_i(lc_tx_test_true_strict(lc_creator_seed_sw_rw_en)),
+        .owner_seed_priv_i(lc_tx_test_true_strict(lc_owner_seed_sw_rw_en)),
+        .iso_flash_wr_en_i(lc_tx_test_true_strict(lc_iso_part_sw_wr_en)),
+        .iso_flash_rd_en_i(lc_tx_test_true_strict(lc_iso_part_sw_rd_en)),
         .cfgs_o(info_page_cfgs_o[i][j])
       );
     end

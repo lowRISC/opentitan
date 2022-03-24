@@ -24,6 +24,7 @@
 module flash_phy_prog import flash_phy_pkg::*; (
   input clk_i,
   input rst_ni,
+  input prim_mubi_pkg::mubi4_t disable_i,
   input req_i,
   input scramble_i,
   input ecc_i,
@@ -157,6 +158,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
     end
   end
 
+
   // SEC_CM: PHY.FSM.SPARSE
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, StIdle)
 
@@ -183,7 +185,12 @@ module flash_phy_prog import flash_phy_pkg::*; (
     unique case (state_q)
       StIdle: begin
         // if first beat of a transaction is not aligned, prepack with empty bits
-        if (req_i && |sel_i) begin
+        if (prim_mubi_pkg::mubi4_test_true_loose(disable_i)) begin
+          // only disable during idle state to ensure program is able to gracefully complete
+          // this is important as we do not want to accidentally disturb any electrical procedure
+          // internal to the flash macro
+          state_d = StInvalid;
+        end else if (req_i && |sel_i) begin
           state_d = StPrePack;
         end else if (req_i) begin
           state_d = StPackData;
@@ -282,6 +289,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
       end
 
     endcase // unique case (state_q)
+
   end
 
   logic [DataWidth-1:0] mask_q;
@@ -330,6 +338,10 @@ module flash_phy_prog import flash_phy_pkg::*; (
   // integrity ECC calculation
   // This instance can technically be merged with the instance above, but is
   // kept separate for the sake of convenience
+  // The plain data ecc is calculated continously from packed data (which changes
+  // from packed data to masked/scrambled data based on software configuration).
+  // The actual plain data ECC is explicitly captured during this process when
+  // it is required.
   prim_secded_hamming_72_64_enc u_plain_enc (
     .data_i(packed_data),
     .data_o(plain_data_w_ecc)
