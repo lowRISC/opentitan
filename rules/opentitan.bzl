@@ -5,6 +5,7 @@
 # TODO(drewmacrae) this should be in rules_cc
 # pending resolution of https://github.com/bazelbuild/rules_cc/issues/75
 load("//rules:bugfix.bzl", "find_cc_toolchain")
+load("//rules:cc_side_outputs.bzl", "rv_asm", "rv_llvm_ir", "rv_relink_with_linkmap")
 load(
     "//rules:rv.bzl",
     "rv_rule",
@@ -122,7 +123,7 @@ def _elf_to_disassembly_impl(ctx):
     cc_toolchain = find_cc_toolchain(ctx)
     outputs = []
     for src in ctx.files.srcs:
-        disassembly = ctx.actions.declare_file("{}.dis".format(src.basename))
+        disassembly = ctx.actions.declare_file("{}.elf.s".format(src.basename))
         outputs.append(disassembly)
         ctx.actions.run_shell(
             outputs = [disassembly],
@@ -437,6 +438,28 @@ def opentitan_binary(
         linkopts = linkopts,
         **kwargs
     )
+
+    asm_name = "{}_{}".format(name, "asm")
+    targets.append(asm_name)
+    rv_asm(
+        name = asm_name,
+        target = name,
+    )
+
+    ll_name = "{}_{}".format(name, "ll")
+    targets.append(ll_name)
+    rv_llvm_ir(
+        name = ll_name,
+        target = name,
+    )
+
+    map_name = "{}_{}".format(name, "map")
+    targets.append(map_name)
+    rv_relink_with_linkmap(
+        name = map_name,
+        target = name,
+    )
+
     elf_name = "{}_{}".format(name, "elf")
     targets.append(":" + elf_name)
     obj_transform(
