@@ -7,12 +7,12 @@
 #include "flash_ctrl_regs.h"
 #include "rstmgr_regs.h"
 
-  // This code is in the .crt section since it is designed to be safe
-  // to run before the C runtime has been initialized.
+  // Place this code into the .shutdown section together with the other
+  // code that resets the chip.
   //
   // NOTE: The "ax" flag below is necessary to ensure that this section
   // is allocated executable space in ROM by the linker.
-  .section .crt, "ax"
+  .section .shutdown, "ax"
 
 /**
  * Exception handler that is safe to call before the C runtime has been
