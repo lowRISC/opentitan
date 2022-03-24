@@ -365,11 +365,25 @@ class dv_base_reg_block extends uvm_reg_block;
                                 .map(map));
   endfunction
 
-  // Set default map for this block and all its sub-blocks.
-  function void set_default_map_w_subblks(uvm_reg_map map);
+  // Set default map for this block and all its sub-blocks by name.
+  // This function only works if user is setting default map for all blocks under the hierarchy
+  // with the same map name.
+  function void set_default_map_w_subblks_by_name(string map_name);
     dv_base_reg_block subblks[$];
-    set_default_map(map);
+    uvm_reg_map map = this.get_map_by_name(map_name);
+    `DV_CHECK(map != null)
+    this.set_default_map(map);
+
     get_dv_base_reg_blocks(subblks);
-    foreach (subblks[i]) subblks[i].set_default_map_w_subblks(map);
+    foreach (subblks[i]) subblks[i].set_default_map_w_subblks_by_name(map_name);
+  endfunction
+
+  function uvm_reg_map get_map_by_name(string map_name);
+    uvm_reg_map maps[$];
+    this.get_maps(maps);
+    foreach (maps[i]) begin
+      if (maps[i].get_name() == map_name) return maps[i];
+    end
+    return null;
   endfunction
 endclass

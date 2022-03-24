@@ -153,7 +153,7 @@ class chip_env extends cip_base_env #(
 
       `uvm_info(`gfn, "Setting jtag_riscv_map as default map", UVM_MEDIUM)
       foreach (cfg.ral_models[i]) begin
-        cfg.ral_models[i].set_default_map_w_subblks(cfg.jtag_riscv_map);
+        cfg.ral_models[i].set_default_map_w_subblks_by_name("jtag_riscv_map");
         `uvm_info(`gfn, cfg.ral_models[i].sprint(), UVM_HIGH)
       end
     end
