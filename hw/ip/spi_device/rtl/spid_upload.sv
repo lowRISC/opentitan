@@ -279,23 +279,15 @@ module spid_upload
   end
 
   // payloadptr_clr --> sys domain
-  // latch payloadptr_clr @ SCK -> 2FF -> Edge detect
-  logic payloadptr_clr_q;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) payloadptr_clr_q <= 1'b 0;
-    else         payloadptr_clr_q <= payloadptr_clr;
-  end
-  prim_edge_detector #(
-    .Width      (1),
-    .EnSync     (1'b 1),
-    .ResetValue (1'b 1)
-  ) u_payloadptr_clr_edge_sys (
-    .clk_i (sys_clk_i),
-    .rst_ni (sys_rst_ni),
-    .d_i    (payloadptr_clr_q),
-    .q_sync_o (),
-    .q_posedge_pulse_o (sys_payloadptr_clr_posedge),
-    .q_negedge_pulse_o ()
+  prim_pulse_sync u_payloadptr_clr_psync (
+    // source clock domain
+    .clk_src_i   (clk_i),
+    .rst_src_ni  (sys_rst_ni),
+    .src_pulse_i (payloadptr_clr),
+    // destination clock domain
+    .clk_dst_i   (sys_clk_i),
+    .rst_dst_ni  (sys_rst_ni),
+    .dst_pulse_o (sys_payloadptr_clr_posedge)
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
