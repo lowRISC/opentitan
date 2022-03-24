@@ -39,9 +39,6 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
-  // TODO: Set JTAG ID code value to a build-time random value.
-  build_opts: ["+define+RV_DM_JTAG_IDCODE=12345678"]
-
   overrides: [
     {
       // This sets the width of UVM data (UVM_REG_DATA_WIDTH) to sufficiently large value. RV_DM DV

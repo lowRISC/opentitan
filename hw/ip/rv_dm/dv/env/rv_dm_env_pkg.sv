@@ -27,14 +27,7 @@ package rv_dm_env_pkg;
 
   // parameters
   parameter uint NUM_HARTS = rv_dm_reg_pkg::NrHarts;
-
-`ifndef RV_DM_JTAG_IDCODE
-`define RV_DM_JTAG_IDCODE 32'h0000_0001 // Match the RTL default.
-`endif
-
-  parameter uint RV_DM_JTAG_IDCODE = `RV_DM_JTAG_IDCODE;
-
-`undef RV_DM_JTAG_IDCODE
+  parameter uint RV_DM_JTAG_IDCODE = `BUILD_SEED;
 
   // Design uses 5 bits for IR.
   parameter uint JTAG_IR_LEN = 5;

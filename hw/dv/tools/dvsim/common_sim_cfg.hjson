@@ -67,7 +67,13 @@
                "+define+UVM_REG_DATA_WIDTH={tl_dw}",
                "+define+UVM_REG_BYTENABLE_WIDTH={tl_dbw}",
                "+define+SIMULATION",
-               "+define+DUT_HIER={dut_instance}"]
+               "+define+DUT_HIER={dut_instance}",
+               // Introduce compile-time randomization. Use `BUILD_SEED in Verilog sources to set
+               // constants that have no side-effects, such as addition or deletion of logic. Useful
+               // to mutate fixed device values such as secret keys, identification constants, etc.
+               // across successive simulation runs. Note that this will always be a 32-bit unsigned
+               // value.
+               "+define+BUILD_SEED={seed}"]
 
   run_opts: ["+UVM_NO_RELNOTES",
              "+UVM_VERBOSITY={expand_uvm_verbosity_{verbosity}}"]
