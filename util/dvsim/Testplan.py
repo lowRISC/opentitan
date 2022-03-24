@@ -17,6 +17,7 @@ from tabulate import tabulate
 
 class Result:
     '''The results for a single test'''
+
     def __init__(self, name, passing=0, total=0):
         self.name = name
         self.passing = passing
@@ -138,6 +139,12 @@ class Testpoint(Element):
         # testpoint.
         self.test_results = []
 
+        # If tests key is set to ["N/A"], then don't map this testpoint to the
+        # simulation results.
+        self.not_mapped = False
+        if self.tests == ["N/A"]:
+            self.not_mapped = True
+
     def __str__(self):
         return super().__str__() + (f"  Milestone: {self.milestone}\n"
                                     f"  Tests: {self.tests}\n")
@@ -192,6 +199,17 @@ class Testpoint(Element):
         self.tests is an empty list, indicate 0/1 passing so that it is
         factored into the final total.
         """
+        # If no written tests were indicated for this testpoint, then reuse
+        # the testpoint name to count towards "not run".
+        if not self.tests:
+            self.test_results = [Result(name=self.name, passing=0, total=0)]
+            return
+
+        # Skip if this testpoint is not meant to be mapped to the simulation
+        # results.
+        if self.not_mapped:
+            return
+
         for tr in test_results:
             assert isinstance(tr, Result)
             if tr.name in self.tests:
@@ -204,11 +222,6 @@ class Testpoint(Element):
         for test in self.tests:
             if test not in tests_mapped:
                 self.test_results.append(Result(name=test, passing=0, total=0))
-
-        # If no written tests were indicated for this testpoint, then reuse
-        # the testpoint name to count towards "not run".
-        if not self.tests:
-            self.test_results = [Result(name=self.name, passing=0, total=0)]
 
 
 class Testplan:
@@ -450,6 +463,8 @@ class Testplan:
     def get_milestone_regressions(self):
         regressions = defaultdict(set)
         for tp in self.testpoints:
+            if tp.not_mapped:
+                continue
             if tp.milestone in tp.milestones[1:]:
                 regressions[tp.milestone].update({t for t in tp.tests if t})
 
@@ -542,6 +557,9 @@ class Testplan:
             """
             ms = testpoint.milestone
             for tr in testpoint.test_results:
+                if not tr:
+                    continue
+
                 if tr.name in tests_seen:
                     continue
 
