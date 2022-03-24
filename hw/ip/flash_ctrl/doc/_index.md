@@ -398,6 +398,8 @@ Flash reliability ECC errors (multi-bit errors) and integrity ECC errors (storag
 That means if a host direct read, controller initiated read or hardware initiated read encounters one of these errors, the error is directly reflected in the operation status.
 
 Further, reliability / integrity ECC errors are also captured in {{< regref "FAULT_STATUS" >}} and can be used to generate fatal alerts.
+The reason ECC errors are captured not captured in {{< regref "STD_FAULT_STATUS" >}} is because it is assumed 2-bit errors can occur in real usage.
+If we assume 2-bit errors can occur, then software must have a mechanism to recover from the error instead of [escalation](#flash-escalation).
 
 #### Flash Escalation
 

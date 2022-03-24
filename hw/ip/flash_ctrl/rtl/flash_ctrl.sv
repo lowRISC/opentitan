@@ -269,6 +269,10 @@ module flash_ctrl
   flash_rsp_t flash_phy_rsp;
   flash_req_t flash_phy_req;
 
+  // import commonly used routines
+  import lc_ctrl_pkg::lc_tx_test_true_strict;
+  import lc_ctrl_pkg::lc_tx_test_true_loose;
+
   // life cycle connections
   lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en;
 
@@ -300,10 +304,16 @@ module flash_ctrl
     .state_o(rand_val)
   );
 
+  // flash disable declaration
+  prim_mubi_pkg::mubi4_t [FlashDisableLast-1:0] flash_disable;
+
   // flash control arbitration between softawre / harware interfaces
   flash_ctrl_arb u_ctrl_arb (
     .clk_i,
     .rst_ni,
+
+    // combined disable
+    .disable_i(flash_disable[ArbFsmDisableIdx]),
 
     // error output shared by both interfaces
     .ctrl_err_addr_o(ctrl_err_addr),
@@ -406,7 +416,10 @@ module flash_ctrl
     .rst_otp_ni,
 
     .init_i(reg2hw.init),
-    .provision_en_i(lc_seed_hw_rd_en == lc_ctrl_pkg::On),
+    .provision_en_i(lc_tx_test_true_strict(lc_seed_hw_rd_en)),
+
+    // combined disable
+    .disable_i(flash_disable[LcMgrDisableIdx]),
 
     // interface to ctrl arb control ports
     .ctrl_o(hw_ctrl),
@@ -710,9 +723,6 @@ module flash_ctrl
   assign flash_part_sel = op_part;
   assign flash_info_sel = op_info_sel;
 
-  // flash disable declaration
-  prim_mubi_pkg::mubi4_t [FlashDisableLast-1:0] flash_disable;
-
   // tie off hardware clear path
   assign hw2reg.erase_suspend.d = 1'b0;
 
@@ -922,7 +932,7 @@ module flash_ctrl
   // SEC_CM: MEM.CTRL.GLOBAL_ESC
   // SEC_CM: MEM_DISABLE.CONFIG.MUBI
   prim_mubi_pkg::mubi4_t flash_disable_pre_buf;
-  assign flash_disable_pre_buf = lc_ctrl_pkg::lc_tx_test_true_loose(lc_disable) ?
+  assign flash_disable_pre_buf = lc_tx_test_true_loose(lc_disable) ?
                                  prim_mubi_pkg::MuBi4True :
                                  prim_mubi_pkg::mubi4_t'(reg2hw.dis.q);
 
@@ -946,7 +956,7 @@ module flash_ctrl
                             prim_mubi_pkg::MuBi4True :
                             prim_mubi_pkg::MuBi4False;
 
-  assign flash_exec_en = lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en) ?
+  assign flash_exec_en = lc_tx_test_true_loose(lc_escalate_en) ?
                          prim_mubi_pkg::MuBi4False :
                          sw_flash_exec_en;
 
@@ -1180,21 +1190,26 @@ module flash_ctrl
   logic [flash_ctrl_pkg::BusAddrW-1:0] flash_host_addr;
 
   import prim_mubi_pkg::mubi4_test_true_loose;
-  logic host_disable;
-  logic disabled_rvalid;
-  logic [1:0] disabled_err;
+  lc_ctrl_pkg::lc_tx_t host_enable;
+
 
   // if flash disable is activated, error back from the adapter interface immediately
-  assign host_disable = mubi4_test_true_loose(flash_disable[HostDisableIdx]);
-  assign disabled_err = {2{disabled_rvalid}};
+  assign host_enable = mubi4_test_true_loose(flash_disable[HostDisableIdx]) ?
+                       lc_ctrl_pkg::Off :
+                       lc_ctrl_pkg::On;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      disabled_rvalid <= '0;
-    end else begin
-      disabled_rvalid <= host_disable & flash_host_req;
-    end
-  end
+  tlul_pkg::tl_h2d_t gate_tl_h2d;
+  tlul_pkg::tl_d2h_t gate_tl_d2h;
+
+  tlul_lc_gate u_tl_gate (
+    .clk_i,
+    .rst_ni,
+    .tl_h2d_i(mem_tl_i),
+    .tl_d2h_o(mem_tl_o),
+    .tl_h2d_o(gate_tl_h2d),
+    .tl_d2h_i(gate_tl_d2h),
+    .lc_en_i(host_enable)
+  );
 
   tlul_adapter_sram #(
     .SramAw(BusAddrW),
@@ -1209,20 +1224,20 @@ module flash_ctrl
   ) u_tl_adapter_eflash (
     .clk_i,
     .rst_ni,
-    .tl_i        (mem_tl_i),
-    .tl_o        (mem_tl_o),
+    .tl_i        (gate_tl_h2d),
+    .tl_o        (gate_tl_d2h),
     .en_ifetch_i (flash_exec_en),
     .req_o       (flash_host_req),
     .req_type_o  (),
-    .gnt_i       (flash_host_req_rdy | host_disable),
+    .gnt_i       (flash_host_req_rdy),
     .we_o        (),
     .addr_o      (flash_host_addr),
     .wdata_o     (),
     .wmask_o     (),
     .intg_error_o(),
     .rdata_i     (flash_host_rdata),
-    .rvalid_i    (flash_host_req_done | disabled_rvalid),
-    .rerror_i    ({flash_host_rderr,1'b0} | disabled_err)
+    .rvalid_i    (flash_host_req_done),
+    .rerror_i    ({flash_host_rderr,1'b0})
   );
 
   flash_phy #(
@@ -1286,6 +1301,10 @@ module flash_ctrl
   assign unused_op_valid = prog_op_valid | rd_op_valid | erase_op_valid;
 
   // add more assertions
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SeedCntAlertCheck_A, u_flash_hw_if.u_seed_cnt,
+                                         alert_tx_o[1])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(AddrCntAlertCheck_A, u_flash_hw_if.u_addr_cnt,
+                                         alert_tx_o[1])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PageCntAlertCheck_A, u_flash_hw_if.u_page_cnt,
                                          alert_tx_o[1])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(WordCntAlertCheck_A, u_flash_hw_if.u_word_cnt,

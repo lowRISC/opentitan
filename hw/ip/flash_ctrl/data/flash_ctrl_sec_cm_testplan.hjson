@@ -126,20 +126,26 @@
       tests: []
     }
     {
-      name: sec_cm_fsm_sparse
-      desc: "Verify the countermeasure(s) FSM.SPARSE."
-      milestone: V2S
-      tests: []
-    }
-    {
-      name: sec_cm_ctr_sparse
-      desc: "Verify the countermeasure(s) CTR.SPARSE."
+      name: sec_cm_ctrl_fsm_sparse
+      desc: "Verify the countermeasure(s) CTRL.FSM.SPARSE."
       milestone: V2S
       tests: []
     }
     {
       name: sec_cm_phy_fsm_sparse
       desc: "Verify the countermeasure(s) PHY.FSM.SPARSE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_phy_prog_fsm_sparse
+      desc: "Verify the countermeasure(s) PHY_PROG.FSM.SPARSE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_ctr_redun
+      desc: "Verify the countermeasure(s) CTR.REDUN."
       milestone: V2S
       tests: []
     }

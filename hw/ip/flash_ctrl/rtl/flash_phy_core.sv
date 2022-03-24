@@ -167,6 +167,7 @@ module flash_phy_core
     CtrlDisableIdx,
     FsmDisableIdx,
     ScrDisableIdx,
+    ProgFsmDisableIdx,
     LastDisableIdx
   } phy_core_disable_e;
 
@@ -351,6 +352,7 @@ module flash_phy_core
       .clk_i,
       .rst_ni,
       .req_i(reqs[PhyProg]),
+      .disable_i(flash_disable[ProgFsmDisableIdx]),
       .scramble_i(muxed_scramble_en),
       .ecc_i(muxed_ecc_en),
       .sel_i(addr_i[0 +: WordSelW]),
