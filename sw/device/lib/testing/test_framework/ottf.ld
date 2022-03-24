@@ -86,6 +86,12 @@ SECTIONS {
     *(.text)
     *(.text.*)
 
+    /**
+     * Some tests place functions into the .shutdown section.
+     */
+    *(.shutdown)
+    *(.shutdown.*)
+
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
   } > eflash
