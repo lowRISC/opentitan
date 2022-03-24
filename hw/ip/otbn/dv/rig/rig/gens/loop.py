@@ -40,24 +40,6 @@ class Loop(SnippetGen):
         self.loop = self._get_named_insn(insns_file, 'loop')
         self.loopi = self._get_named_insn(insns_file, 'loopi')
 
-        # loop expects operands: grs, bodysize
-        if not (len(self.loop.operands) == 2 and
-                isinstance(self.loop.operands[0].op_type, RegOperandType) and
-                self.loop.operands[0].op_type.reg_type == 'gpr' and
-                isinstance(self.loop.operands[1].op_type, ImmOperandType) and
-                not self.loop.operands[1].op_type.signed):
-            raise RuntimeError('LOOP instruction from instructions file is '
-                               'not the shape expected by the Loop generator.')
-
-        # loopi expects operands: iterations, bodysize
-        if not (len(self.loopi.operands) == 2 and
-                isinstance(self.loopi.operands[0].op_type, ImmOperandType) and
-                not self.loopi.operands[0].op_type.signed and
-                isinstance(self.loopi.operands[1].op_type, ImmOperandType) and
-                not self.loopi.operands[1].op_type.signed):
-            raise RuntimeError('LOOPI instruction from instructions file is '
-                               'not the shape expected by the Loop generator.')
-
         self.loopi_prob = 0.5
 
         loop_weight = cfg.insn_weights.get('loop')

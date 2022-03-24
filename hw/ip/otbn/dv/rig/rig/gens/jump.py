@@ -25,36 +25,8 @@ class Jump(SnippetGen):
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
         super().__init__()
 
-        jal = self._get_named_insn(insns_file, 'jal')
-        jalr = self._get_named_insn(insns_file, 'jalr')
-
-        # jal expects the operands: grd, offset.
-        exp_shape = (len(jal.operands) == 2 and
-                     isinstance(jal.operands[0].op_type, RegOperandType) and
-                     jal.operands[0].op_type.reg_type == 'gpr' and
-                     jal.operands[0].op_type.is_dest() and
-                     isinstance(jal.operands[1].op_type, ImmOperandType) and
-                     jal.operands[1].op_type.signed)
-        if not exp_shape:
-            raise RuntimeError('JAL instruction from instructions file is not '
-                               'the shape expected by the Jump generator.')
-
-        # jalr expects the operands: grd, grs1, offset
-        exp_shape = (len(jalr.operands) == 3 and
-                     isinstance(jalr.operands[0].op_type, RegOperandType) and
-                     jalr.operands[0].op_type.reg_type == 'gpr' and
-                     jalr.operands[0].op_type.is_dest() and
-                     isinstance(jalr.operands[1].op_type, RegOperandType) and
-                     jalr.operands[1].op_type.reg_type == 'gpr' and
-                     not jalr.operands[1].op_type.is_dest() and
-                     isinstance(jalr.operands[2].op_type, ImmOperandType) and
-                     jalr.operands[2].op_type.signed)
-        if not exp_shape:
-            raise RuntimeError('JALR instruction from instructions file is '
-                               'not the shape expected by the Jump generator.')
-
-        self.jal = jal
-        self.jalr = jalr
+        self.jal = self._get_named_insn(insns_file, 'jal')
+        self.jalr = self._get_named_insn(insns_file, 'jalr')
 
         self.jalr_prob = 0.5
 
