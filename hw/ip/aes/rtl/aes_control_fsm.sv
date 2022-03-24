@@ -617,6 +617,11 @@ module aes_control_fsm
             key_iv_data_in_clear_we = 1'b1;
           end
 
+          // Stop clearing input data registers. Otherwise, the data_in_qe_i signals will be high
+          // in the following cycle, causing the AES unit to erroneously start immediately when
+          // running automatic operation.
+          data_in_we_o = 1'b0;
+
           // To clear the output data registers, we re-use the muxing resources of the cipher core.
           // data_out_clear_i is acknowledged by the cipher core with cipher_data_out_clear_i.
           if (cipher_data_out_clear_i) begin
@@ -743,8 +748,8 @@ module aes_control_fsm
   // - data is loaded into cipher core,
   // - clearing data input registers with random data,
   // - clearing the status tracking.
-  assign data_in_new_d = data_in_load || data_in_we_o || clear_in_out_status ? '0 :
-      data_in_new_q | data_in_qe_i;
+  assign data_in_new_d = data_in_load || data_in_we_o || key_iv_data_in_clear_we ||
+      clear_in_out_status ? '0 : data_in_new_q | data_in_qe_i;
   assign data_in_new   = &data_in_new_d;
 
   // Collect reads of data output registers. data_out_read is high for one clock cycle only and
