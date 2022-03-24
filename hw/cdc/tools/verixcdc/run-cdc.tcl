@@ -152,6 +152,7 @@ set modules {
   entropy_src
   aes
   rom_ctrl
+  edn
 }
 
 #########################
@@ -169,7 +170,27 @@ report_policy -verbose -skip_empty_summary_status -compat -output vcdc.rpt ALL
 file mkdir ../REPORT/
 
 foreach mod $modules {
-  report_policy -verbose -skip_empty_summary_status -compat -output ../REPORT/vcdc.$mod.rpt -module $mod {NEW TO_BE_FIXED DEFERRED}
+  # Find unique modules
+  set umods [get_all_modules $mod]
+  set umods_length [llength $umods]
+
+  puts "Generating Policy Reports for $mod ( $umods ) ..."
+
+  if {$umods_length == 1} {
+    # Just report as original module
+    report_policy -verbose -skip_empty_summary_status -compat   \
+      -output ../REPORT/vcdc.$mod.rpt -module [lindex $umods 0] \
+      {NEW TO_BE_FIXED DEFERRED}
+  } else {
+    # Report file name is increamental index not uniquified module name
+    set idx 0
+    foreach umod $umods {
+      report_policy -verbose -skip_empty_summary_status -compat \
+        -output ../REPORT/vcdc.$mod_$idx.rpt -module $umod      \
+        {NEW TO_BE_FIXED DEFERRED}
+      incr idx 1
+    }
+  }
 }
 
 # Report waived in a separate file
