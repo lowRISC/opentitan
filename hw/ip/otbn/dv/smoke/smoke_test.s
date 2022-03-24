@@ -95,8 +95,7 @@ add x21, x21, 0x123
 
 test_label_3:
 
-# until LID/SID implemented use mod WSR to load bignum registers with base li
-# psuedo-instruction
+# use mod WSR to load bignum registers with base li psuedo-instruction
 # mod = 0x78fccc06_2228e9d6_89c9b54f_887cf14e_c79af825_69be586e_9866bb3b_53769ada
 li x23, 0x78fccc06
 csrrw x0, 0x7d7, x23
@@ -126,7 +125,8 @@ csrrs x23, 0x7d5, x0
 # w1 = mod = 0x78fccc06_2228e9d6_89c9b54f_887cf14e_c79af825_69be586e_9866bb3b_53769ada
 bn.wsrr w1, 0x0 /* MOD */
 
-# rnd WSR gives fixed value for now
+# sim environment provides a fixed value for RND (in other environment RND isn't
+# fixed so this test will have a different final state)
 # w2 = rnd = 0x99999999_99999999_99999999_99999999_99999999_99999999_99999999_99999999
 bn.wsrr w2, 0x1 /* RND */
 
