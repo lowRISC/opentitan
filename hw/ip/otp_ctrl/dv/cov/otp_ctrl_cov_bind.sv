@@ -35,29 +35,29 @@ module otp_ctrl_cov_bind;
     .otbn_otp_key_i   (otbn_otp_key_i)
   );
 
-  bind otp_ctrl cip_mubi_cov_if #(.Width(4)) u_lc_creator_seed_sw_rw_en_mubi_cov_if (
+  bind otp_ctrl cip_lc_tx_cov_if u_lc_creator_seed_sw_rw_en_cov_if (
     .rst_ni (rst_ni),
-    .mubi   (lc_creator_seed_sw_rw_en_i)
+    .val    (lc_creator_seed_sw_rw_en_i)
   );
 
-  bind otp_ctrl cip_mubi_cov_if #(.Width(4)) u_lc_seed_hw_rd_en_mubi_cov_if (
+  bind otp_ctrl cip_lc_tx_cov_if u_lc_seed_hw_rd_en_cov_if (
     .rst_ni (rst_ni),
-    .mubi   (lc_seed_hw_rd_en_i)
+    .val    (lc_seed_hw_rd_en_i)
   );
 
-  bind otp_ctrl cip_mubi_cov_if #(.Width(4)) u_lc_dft_en_mubi_cov_if (
+  bind otp_ctrl cip_lc_tx_cov_if u_lc_dft_en_cov_if (
     .rst_ni (rst_ni),
-    .mubi   (lc_dft_en_i)
+    .val    (lc_dft_en_i)
   );
 
-  bind otp_ctrl cip_mubi_cov_if #(.Width(4)) u_lc_escalate_en_mubi_cov_if (
+  bind otp_ctrl cip_lc_tx_cov_if u_lc_escalate_en_cov_if (
     .rst_ni (rst_ni),
-    .mubi   (lc_escalate_en_i)
+    .val    (lc_escalate_en_i)
   );
 
-  bind otp_ctrl cip_mubi_cov_if #(.Width(4)) u_lc_check_byp_en_mubi_cov_if (
+  bind otp_ctrl cip_lc_tx_cov_if u_lc_check_byp_en_cov_if (
     .rst_ni (rst_ni),
-    .mubi   (lc_check_byp_en_i)
+    .val    (lc_check_byp_en_i)
   );
 
   // Mubi internal coverage for buffered and unbuffered partitions.
