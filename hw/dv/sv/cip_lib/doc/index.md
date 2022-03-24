@@ -469,12 +469,13 @@ This covergroup won't be sampled in CSR tests, since CSR tests only test the cor
 Users should randomize the values of all the MUBI CSRs in non-CSR tests and check the design behaves correctly.
 The helper functions `cip_base_pkg::get_rand_mubi4|8|12|16_val(t_weight, f_weight, other_weight)` can be used to get the random values.
 
-### Security Verification for MUBI type ports
+### Security Verification for MUBI/LC_TX type ports
 In OpenTitan [Design Verification Methodology]({{< relref "doc/ug/dv_methodology" >}}), it's mandatory to have 100% toggle coverage on all the ports.
 However, the MUBI defined values (`True` and `False`) are complement numbers.
 If users only test with `True` and `False` without using other values, toggle coverage can be 100%.
 Hence, user should add a functional covergroup for each MUBI type input port, via binding the interface `cip_mubi_cov_if` which contains a covergroup for MUBI.
-The type `lc_ctrl_pkg::lc_tx_t` should be treated as a Mubi4 type, which also needs to be bound with the interface `cip_mubi_cov_if`.
+The type `lc_ctrl_pkg::lc_tx_t` is different than the Mubi4 type, as its defined values are different.
+So, it needs to be bound with the interface `cip_lc_tx_cov_if`.
 The helper functions `cip_base_pkg::get_rand_mubi4|8|12|16_val(t_weight, f_weight, other_weight)` and `cip_base_pkg::get_rand_lc_tx_val` can be used to get the random values.
 
 The following is an example from `sram_ctrl`, in which it binds the coverage interface to 2 MUBI input ports.
@@ -486,9 +487,9 @@ module sram_ctrl_cov_bind;
     .mubi   (lc_hw_debug_en_i)
   );
 
-  bind sram_ctrl cip_mubi_cov_if #(.Width(8)) u_otp_en_sram_ifetch_mubi_cov_if (
+  bind sram_ctrl cip_lc_tx_cov_if u_lc_escalate_en_cov_if (
     .rst_ni (rst_ni),
-    .mubi   (otp_en_sram_ifetch_i)
+    .val    (lc_escalate_en_i)
   );
 endmodule
 ```
