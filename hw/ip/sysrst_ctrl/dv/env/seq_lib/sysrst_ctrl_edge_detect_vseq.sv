@@ -25,8 +25,8 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
      num_trans == 2;
    }
 
-   edge_detect_h2l_t edge_detect_h2l[NumInputs];
-   edge_detect_l2h_t edge_detect_l2h[NumInputs];
+   edge_detect_h2l_t edge_detect_h2l[NumInputs], edge_detect_h2l_array[NumInputs];
+   edge_detect_l2h_t edge_detect_l2h[NumInputs], edge_detect_l2h_array[NumInputs];
 
    task monitor_input_edge(sysrst_input_idx_e index, ref edge_detect_h2l_t edge_detect_h2l,
                            ref edge_detect_l2h_t edge_detect_l2h);
@@ -123,58 +123,59 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
      cfg.clk_aon_rst_vif.wait_clks(3);
 
      // start monitor edge
-     for (int i = 0; i < NumInputs; i++) begin
-       automatic int local_i = i;
-       edge_detect_h2l[i].en_h2l = set_input[i];
-       edge_detect_l2h[i].en_l2h = set_input[NumInputs + i + 1];
-       fork
-         monitor_input_edge(sysrst_input_idx_e'(local_i), edge_detect_h2l[local_i],
+     fork begin  // isolation fork
+       for (int i = 0; i < NumInputs; i++) begin
+         automatic int local_i = i;
+         edge_detect_h2l[i].en_h2l = set_input[i];
+         edge_detect_l2h[i].en_l2h = set_input[NumInputs + i + 1];
+         fork
+           monitor_input_edge(sysrst_input_idx_e'(local_i), edge_detect_h2l[local_i],
                   edge_detect_l2h[local_i]);
-       join_none
-     end
+         join_none
+       end
 
-     for (int j = 0; j < num_trans; j++) begin
-       int wait_cycles;
-       repeat ($urandom_range(1, 2)) begin
+       for (int j = 0; j < num_trans; j++) begin
+         int wait_cycles;
          cfg.clk_aon_rst_vif.wait_clks(1);
          cfg.vif.randomize_input();
          cfg.clk_aon_rst_vif.wait_clks(1);
          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wait_cycles,
-                                            wait_cycles inside {[1:set_timer-2],
-                                            [set_timer+5:set_timer*2]};)
+                                          wait_cycles inside {[1:set_timer-2],
+                                          [set_timer+5:set_timer*2]};)
          cfg.clk_aon_rst_vif.wait_clks(wait_cycles);
          cfg.vif.randomize_input();
+
+         // make sure the previous transition lasts long enough, so that everything is settled and we can check them
+         cfg.clk_aon_rst_vif.wait_clks(set_timer+5);
+
+         cfg.clk_aon_rst_vif.wait_clks(5);
+
+         csr_rd(ral.key_intr_status, rdata);
+         foreach (edge_detect_h2l_array[i]) begin
+           check_h2l_edge_intr(sysrst_input_idx_e'(i), edge_detect_h2l[i], rdata);
+         end
+
+         foreach (edge_detect_l2h_array[i]) begin
+           check_l2h_edge_intr(sysrst_input_idx_e'(i), edge_detect_l2h[i], rdata);
+         end
+
+         // check intr_status
+         if (rdata >= 1) exp_intr_state = 1;
+         else            exp_intr_state = 0;
+         check_interrupts(.interrupts(1), .check_set(exp_intr_state));
+
+         // clear interrupt
+         // Write to clear the register
+         csr_wr(ral.key_intr_status, rdata);
+
+         cfg.clk_aon_rst_vif.wait_clks(5);
+         // Check if the register is cleared
+         csr_rd_check(ral.key_intr_status, .compare_value(0));
+
+         cfg.clk_aon_rst_vif.wait_clks(20);
        end
-
-       // make sure the previous transition lasts long enough, so that everything is settled and we can check them
-       cfg.clk_aon_rst_vif.wait_clks(set_timer+5);
-
-       cfg.clk_aon_rst_vif.wait_clks(5);
-
-       csr_rd(ral.key_intr_status, rdata);
-       foreach (edge_detect_h2l[i]) begin
-         check_h2l_edge_intr(sysrst_input_idx_e'(i), edge_detect_h2l[i], rdata);
-       end
-
-       foreach (edge_detect_l2h[i]) begin
-         check_l2h_edge_intr(sysrst_input_idx_e'(i), edge_detect_l2h[i], rdata);
-       end
-
-       // check intr_status
-       if (rdata >= 1) exp_intr_state = 1;
-       else            exp_intr_state = 0;
-       check_interrupts(.interrupts(1), .check_set(exp_intr_state));
-
-       // clear interrupt
-       // Write to clear the register
-       csr_wr(ral.key_intr_status, rdata);
-
-       cfg.clk_aon_rst_vif.wait_clks(5);
-       // Check if the register is cleared
-       csr_rd_check(ral.key_intr_status, .compare_value(0));
-
-       cfg.clk_aon_rst_vif.wait_clks(20);
-     end
+       disable fork;
+      end join
    endtask : body
 
 endclass : sysrst_ctrl_edge_detect_vseq

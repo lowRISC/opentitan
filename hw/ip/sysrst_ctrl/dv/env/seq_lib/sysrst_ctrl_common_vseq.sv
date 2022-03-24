@@ -12,8 +12,11 @@ class sysrst_ctrl_common_vseq extends sysrst_ctrl_base_vseq;
     super.dut_init(reset_kind);
   endtask : dut_init
 
-  virtual task body();
+  virtual task sysrst_ctrl_init();
     do_sysrst_ctrl_init = 1'b0;
+  endtask : sysrst_ctrl_init
+
+  virtual task body();
     run_common_vseq_wrapper(num_trans);
   endtask : body
 

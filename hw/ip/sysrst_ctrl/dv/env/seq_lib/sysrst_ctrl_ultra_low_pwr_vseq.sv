@@ -37,14 +37,14 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
    }
 
    constraint pwrb_cycles_c { pwrb_cycles dist {
-     [set_pwrb_timer - 10 : set_pwrb_timer] :/20,
-     [set_pwrb_timer : set_pwrb_timer + 2] :/80 };}
+     [1 : set_pwrb_timer - 2] :/20,
+     [set_pwrb_timer + 5 : set_pwrb_timer * 2] :/80 };}
    constraint lid_cycles_c { lid_cycles dist {
-     [set_lid_timer - 10 : set_lid_timer] :/20,
-     [set_lid_timer : set_lid_timer + 2] :/80 };}
+     [1 : set_lid_timer - 2] :/20,
+     [set_lid_timer + 5 : set_lid_timer * 2] :/80 };}
    constraint ac_cycles_c { ac_cycles dist {
-     [set_ac_timer - 10: set_ac_timer]  :/20,
-     [set_ac_timer : set_ac_timer + 2] :/80 };}
+     [1 : set_ac_timer - 2]  :/20,
+     [set_ac_timer + 5 : set_ac_timer * 2] :/80 };}
 
    constraint num_trans_c {num_trans == 3;}
 

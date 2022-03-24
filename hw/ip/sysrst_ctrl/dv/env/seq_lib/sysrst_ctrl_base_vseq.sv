@@ -90,7 +90,6 @@ class sysrst_ctrl_base_vseq extends cip_base_vseq #(
     cfg.clk_aon_rst_vif.drive_rst_pin(0);
     super.apply_resets_concurrently(cfg.clk_aon_rst_vif.clk_period_ps);
     cfg.clk_aon_rst_vif.drive_rst_pin(1);
-     `uvm_info(`gfn, "Driving from apply_resets_concurrently", UVM_NONE)
   endtask
 
 endclass : sysrst_ctrl_base_vseq
