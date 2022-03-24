@@ -33,7 +33,7 @@ import Launcher
 import LauncherFactory
 import LocalLauncher
 from CfgFactory import make_cfg
-from Deploy import RunTest
+from Deploy import CompileOneShot, CompileSim, RunTest
 from Timer import Timer
 from utils import (TS_FORMAT, TS_FORMAT_LONG, VERBOSE, rm_path,
                    run_cmd_with_timeout)
@@ -259,8 +259,7 @@ def parse_reseed_multiplier(as_str: str) -> float:
         ret = float(as_str)
     except ValueError:
         raise argparse.ArgumentTypeError('Invalid reseed multiplier: {!r}. '
-                                         'Must be a float.'
-                                         .format(as_str))
+                                         'Must be a float.'.format(as_str))
     if ret <= 0:
         raise argparse.ArgumentTypeError('Reseed multiplier must be positive.')
     return ret
@@ -472,7 +471,12 @@ def parse_args():
                             '(l), medium (m), high (h), full (f) or debug (d).'
                             ' The default value is set in config files.'))
 
-    seedg = parser.add_argument_group('Test seeds')
+    seedg = parser.add_argument_group('Build / test seeds')
+
+    seedg.add_argument("--build-seed",
+                       type=int,
+                       metavar="S",
+                       help=('Seed used for compile-time randomization.'))
 
     seedg.add_argument("--seeds",
                        "-s",
@@ -652,8 +656,12 @@ def main():
     setattr(args, "timestamp_long", curr_ts.strftime(TS_FORMAT_LONG))
     setattr(args, "timestamp", curr_ts.strftime(TS_FORMAT))
 
-    # Register the seeds from command line with RunTest class.
+    # Register the seeds from command line with Compile* / RunTest classes.
+    if args.build_seed:
+        CompileSim.seed = args.build_seed
+        CompileOneShot.seed = args.build_seed
     RunTest.seeds = args.seeds
+
     # If we are fixing a seed value, no point in tests having multiple reseeds.
     if args.fixed_seed:
         args.reseed = 1

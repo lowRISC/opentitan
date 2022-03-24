@@ -618,6 +618,10 @@ class SimCfg(FlowCfg):
 
         results_str += f"### Simulator: {self.tool.upper()}\n"
 
+        # Print the build seed used for clarity.
+        if not self.run_only:
+            results_str += f"### Build seed: {CompileSim.seed}\n"
+
         if not results.table:
             results_str += "No results to display.\n"
 
