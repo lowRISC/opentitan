@@ -10,14 +10,14 @@ module clkmgr_cov_bind;
     .mubi   (idle_i)
   );
 
-  bind clkmgr cip_mubi_cov_if #(.Width(lc_ctrl_pkg::TxWidth)) u_lc_hw_debug_en_mubi_cov_if (
+  bind clkmgr cip_lc_tx_cov_if u_lc_hw_debug_en_mubi_cov_if (
     .rst_ni (rst_ni),
-    .mubi   (lc_hw_debug_en_i)
+    .val    (lc_hw_debug_en_i)
   );
 
-  bind clkmgr cip_mubi_cov_if #(.Width(lc_ctrl_pkg::TxWidth)) u_lc_clk_byp_req_mubi_cov_if (
+  bind clkmgr cip_lc_tx_cov_if u_lc_clk_byp_req_mubi_cov_if (
     .rst_ni (rst_ni),
-    .mubi   (lc_clk_byp_req_i)
+    .val    (lc_clk_byp_req_i)
   );
 
   bind clkmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_io_clk_byp_ack_mubi_cov_if (
