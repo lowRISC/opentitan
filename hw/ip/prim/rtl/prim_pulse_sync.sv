@@ -32,6 +32,8 @@ module prim_pulse_sync (
     end
   end
 
+  `ASSUME(SrcPulseCheck_M, src_pulse_i |=> !src_pulse_i, clk_src_i, !rst_src_ni)
+
   //////////////////////////////////////////////////////////
   // synchronize level signal to destination clock domain //
   //////////////////////////////////////////////////////////
@@ -62,5 +64,7 @@ module prim_pulse_sync (
 
   // edge detection
   assign dst_pulse_o = dst_level_q ^ dst_level;
+
+  `ASSERT(DstPulseCheck_A, dst_pulse_o |=> !dst_pulse_o, clk_dst_i, !rst_dst_ni)
 
 endmodule
