@@ -5,7 +5,6 @@
 import random
 from typing import Optional
 
-from shared.operand import ImmOperandType, RegOperandType, OptionOperandType
 from shared.insn_yaml import Insn, InsnsFile
 
 from ..config import Config
@@ -33,79 +32,13 @@ class MisalignedLoadStore(SnippetGen):
         self.weights = []
 
         self.sw = self._get_named_insn(insns_file, 'sw')
-        # SW Instruction Checks
-        # SW has three operands: grs1, offset, grs2
-        if not (len(self.sw.operands) == 3 and
-                isinstance(self.sw.operands[0].op_type, RegOperandType) and
-                self.sw.operands[0].op_type.reg_type == 'gpr' and
-                not self.sw.operands[0].op_type.is_dest() and
-                isinstance(self.sw.operands[1].op_type, ImmOperandType) and
-                isinstance(self.sw.operands[2].op_type, RegOperandType) and
-                self.sw.operands[2].op_type.reg_type == 'gpr' and
-                not self.sw.operands[2].op_type.is_dest()):
-            raise RuntimeError('SW instruction from instructions file is '
-                               'not the shape expected by the BadLoadStore'
-                               'generator.')
-
         self.lw = self._get_named_insn(insns_file, 'lw')
-
-        # LW has three operands: grd, offset, grs
-        if not (len(self.lw.operands) == 3 and
-                isinstance(self.lw.operands[0].op_type, RegOperandType) and
-                self.lw.operands[0].op_type.reg_type == 'gpr' and
-                self.lw.operands[0].op_type.is_dest() and
-                isinstance(self.lw.operands[1].op_type, ImmOperandType) and
-                isinstance(self.lw.operands[2].op_type, RegOperandType) and
-                self.lw.operands[2].op_type.reg_type == 'gpr' and
-                not self.lw.operands[2].op_type.is_dest()):
-            raise RuntimeError('LW instruction from instructions file is '
-                               'not the shape expected by the BadLoadStore'
-                               'generator.')
 
         # BN.LID Instruction Checks
         self.bnlid = self._get_named_insn(insns_file, 'bn.lid')
 
-        # bn.lid expects the operands: grd, grs1, offset, grs1_inc, grd_inc
-        if len(self.bnlid.operands) != 5:
-            raise RuntimeError('Unexpected number of operands for bn.lid')
-
-        ops = self.bnlid.operands
-        if not (isinstance(ops[0].op_type, RegOperandType) and
-                (ops[0].op_type.reg_type == 'gpr' and
-                not ops[0].op_type.is_dest() and
-                isinstance(ops[1].op_type, RegOperandType) and
-                ops[1].op_type.reg_type == 'gpr' and
-                not ops[1].op_type.is_dest() and
-                isinstance(ops[2].op_type, ImmOperandType) and
-                ops[2].op_type.signed and
-                isinstance(ops[3].op_type, OptionOperandType) and
-                isinstance(ops[4].op_type, OptionOperandType))):
-            raise RuntimeError('BN.LID instruction from instructions file is '
-                               'not the shape expected by the BadLoadStore'
-                               'generator.')
-
         # BN.SID Instruction Checks
         self.bnsid = self._get_named_insn(insns_file, 'bn.sid')
-
-        # bn.sid expects the operands: grs1, grs2, offset, grs1_inc,
-        # grs2_inc
-        if len(self.bnsid.operands) != 5:
-            raise RuntimeError('Unexpected number of operands for bn.sid')
-
-        ops = self.bnsid.operands
-        if not (isinstance(ops[0].op_type, RegOperandType) and
-                ops[0].op_type.reg_type == 'gpr' and
-                not ops[0].op_type.is_dest() and
-                isinstance(ops[1].op_type, RegOperandType) and
-                ops[1].op_type.reg_type == 'gpr' and
-                not ops[1].op_type.is_dest() and
-                isinstance(ops[2].op_type, ImmOperandType) and
-                ops[2].op_type.signed and
-                isinstance(ops[3].op_type, OptionOperandType) and
-                isinstance(ops[4].op_type, OptionOperandType)):
-            raise RuntimeError('BN.SID instruction from instructions file is '
-                               'not the shape expected by the BadLoadStore'
-                               'generator.')
 
         for insn in [self.sw, self.bnsid, self.lw, self.bnlid]:
             weight = cfg.insn_weights.get(insn.mnemonic)

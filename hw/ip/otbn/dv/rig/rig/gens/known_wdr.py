@@ -4,7 +4,6 @@
 
 from typing import Optional
 
-from shared.operand import EnumOperandType, ImmOperandType, RegOperandType
 from shared.insn_yaml import InsnsFile
 
 from ..config import Config
@@ -26,42 +25,7 @@ class KnownWDR(SnippetGen):
 
         self.bn_xor = self._get_named_insn(insns_file, 'bn.xor')
         self.bn_not = self._get_named_insn(insns_file, 'bn.not')
-
-        # BN.XOR has six operands: wrd, wrs1, wrs2, shift_type, shift_value
-        # and flag_group
-        ops = self.bn_xor.operands
-        if not (len(ops) == 6 and
-                isinstance(ops[0].op_type, RegOperandType) and
-                ops[0].op_type.reg_type == 'wdr' and
-                ops[0].op_type.is_dest() and
-                isinstance(ops[1].op_type, RegOperandType) and
-                ops[1].op_type.reg_type == 'wdr' and
-                not ops[1].op_type.is_dest() and
-                isinstance(ops[2].op_type, RegOperandType) and
-                ops[2].op_type.reg_type == 'wdr' and
-                not ops[2].op_type.is_dest() and
-                isinstance(ops[4].op_type, ImmOperandType)):
-            raise RuntimeError('BN.XOR instruction from instructions file is '
-                               'not the shape expected by the KnownWDR '
-                               'generator.')
-
-        self.wrd_op_type = ops[0].op_type
-        self.wrs_op_type = ops[1].op_type
-        self.imm_op_type = ops[4].op_type
-        assert self.imm_op_type.shift == 3
-
-        ops = self.bn_not.operands
-        if not (isinstance(ops[0].op_type, RegOperandType) and
-                ops[0].op_type.reg_type == 'wdr' and
-                ops[0].op_type.is_dest() and
-                isinstance(ops[1].op_type, RegOperandType) and
-                ops[1].op_type.reg_type == 'wdr' and
-                not ops[1].op_type.is_dest() and
-                isinstance(ops[2].op_type, EnumOperandType) and
-                isinstance(ops[3].op_type, ImmOperandType)):
-            raise RuntimeError('BN.NOT instruction from instructions file is '
-                               'not the shape expected by the KnownWDR '
-                               'generator.')
+        self.imm_op_type = self.bn_xor.operands[4].op_type
 
     def gen(self,
             cont: GenCont,
@@ -81,14 +45,14 @@ class KnownWDR(SnippetGen):
             return None
 
         # Picks a random operand value for wrd.
-        wrd_val_xor = model.pick_operand_value(self.wrd_op_type)
+        wrd_val_xor = model.pick_operand_value(self.bn_xor.operands[0].op_type)
         if wrd_val_xor is None:
             return None
 
         # Picks a random operand value. It shouldn't matter because
         # in the end, we will feed the same value as wrs2 and XORing
         # would result with wrd becoming 0.
-        wrs_val_xor = model.pick_operand_value(self.wrs_op_type)
+        wrs_val_xor = model.pick_operand_value(self.bn_xor.operands[1].op_type)
         if wrs_val_xor is None:
             return None
 
@@ -106,14 +70,14 @@ class KnownWDR(SnippetGen):
         assert flg_group is not None
 
         # Result of this insn can be written to any register.
-        wrd_val_not = model.pick_operand_value(self.wrd_op_type)
+        wrd_val_not = model.pick_operand_value(self.bn_not.operands[0].op_type)
         if wrd_val_not is None:
             return None
 
         op_vals_xor = [wrd_val_xor, wrs_val_xor, wrs_val_xor, shift_type,
                        shift_bits, flg_group]
 
-        op_vals_not = [wrd_val_not, wrd_val_xor,
+        op_vals_not = [wrd_val_not, wrs_val_xor,
                        shift_type, shift_bits, flg_group]
 
         prog_bn_xor = ProgInsn(self.bn_xor, op_vals_xor, None)

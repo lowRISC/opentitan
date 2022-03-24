@@ -5,7 +5,6 @@
 import random
 from typing import Optional
 
-from shared.operand import RegOperandType, OptionOperandType
 from shared.insn_yaml import InsnsFile
 
 from ..config import Config
@@ -29,29 +28,6 @@ class BadBNMovr(SnippetGen):
         super().__init__()
 
         self.insn = self._get_named_insn(insns_file, 'bn.movr')
-
-        # bn.movr expects the operands: grd, grs, grd_inc, grs_inc
-        if len(self.insn.operands) != 4:
-            raise RuntimeError('Unexpected number of operands for bn.movr')
-
-        grd, grs, grd_inc, grs_inc = self.insn.operands
-        exp_shape = (
-            # grd
-            isinstance(grd.op_type, RegOperandType) and
-            grd.op_type.reg_type == 'gpr' and
-            not grd.op_type.is_dest() and
-            # grs
-            isinstance(grs.op_type, RegOperandType) and
-            grs.op_type.reg_type == 'gpr' and
-            not grs.op_type.is_dest() and
-            # grd_inc
-            isinstance(grd_inc.op_type, OptionOperandType) and
-            # grs_inc
-            isinstance(grs_inc.op_type, OptionOperandType)
-        )
-        if not exp_shape:
-            raise RuntimeError('Unexpected shape for bn.movr')
-
         self.weight = cfg.insn_weights.get(self.insn.mnemonic)
 
         # Check that the instruction has a positive weight
