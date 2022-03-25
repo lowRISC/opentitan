@@ -154,7 +154,6 @@ otbn_library = rv_rule(
         "srcs": attr.label_list(allow_files = True),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
         "_otbn_as": attr.label(default = "//hw/ip/otbn/util:otbn-as", allow_single_file = True),
-
     },
     fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],

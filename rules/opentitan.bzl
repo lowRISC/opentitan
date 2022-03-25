@@ -126,25 +126,28 @@ def _elf_to_disassembly_impl(ctx):
         disassembly = ctx.actions.declare_file("{}.elf.s".format(src.basename))
         outputs.append(disassembly)
         ctx.actions.run_shell(
+            tools = [ctx.file._cleanup_script],
             outputs = [disassembly],
             inputs = [src] + cc_toolchain.all_files.to_list(),
             arguments = [
                 cc_toolchain.objdump_executable,
                 src.path,
+                ctx.file._cleanup_script.path,
                 disassembly.path,
             ],
-            command = "$1 --disassemble --headers --line-numbers --source $2 > $3",
+            command = "$1 --disassemble --headers --line-numbers --source $2 | $3 > $4",
         )
-        return [DefaultInfo(
-            files = depset(outputs),
-            data_runfiles = ctx.runfiles(files = outputs),
-        )]
+        return [DefaultInfo(files = depset(outputs), data_runfiles = ctx.runfiles(files = outputs))]
 
 elf_to_disassembly = rv_rule(
     implementation = _elf_to_disassembly_impl,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "platform": attr.string(default = OPENTITAN_PLATFORM),
+        "_cleanup_script": attr.label(
+            allow_single_file = True,
+            default = Label("//rules/scripts:expand_tabs.sh"),
+        ),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
     },
     toolchains = ["@rules_cc//cc:toolchain_type"],
