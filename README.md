@@ -27,11 +27,11 @@ access it [online at docs.opentitan.org](https://docs.opentitan.org/).
 
 ## How to contribute
 
-Have a look at [CONTRIBUTING](./CONTRIBUTING.md) and our [documentation on
+Have a look at [CONTRIBUTING]({{< relref "CONTRIBUTING.md" >}}) and our [documentation on
 project organization and processes](https://docs.opentitan.org/doc/project/)
 for guidelines on how to contribute code to this repository.
 
 ## Licensing
 
 Unless otherwise noted, everything in this repository is covered by the Apache
-License, Version 2.0 (see [LICENSE](./LICENSE) for full text).
+License, Version 2.0 (see [LICENSE](https://github.com/lowRISC/opentitan/blob/master/LICENSE) for full text).
