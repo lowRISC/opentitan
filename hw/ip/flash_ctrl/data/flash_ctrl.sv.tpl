@@ -9,8 +9,7 @@
 `include "prim_assert.sv"
 
 module flash_ctrl
-  import flash_ctrl_pkg::*;
-  import flash_ctrl_reg_pkg::*;
+  import flash_ctrl_pkg::*;  import flash_ctrl_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn    = {NumAlerts{1'b1}},
   parameter flash_key_t           RndCnstAddrKey  = RndCnstAddrKeyDefault,
@@ -930,10 +929,12 @@ module flash_ctrl
   // In other words...cowardice.
   // SEC_CM: MEM.CTRL.GLOBAL_ESC
   // SEC_CM: MEM_DISABLE.CONFIG.MUBI
+  prim_mubi_pkg::mubi4_t lc_conv_disable;
   prim_mubi_pkg::mubi4_t flash_disable_pre_buf;
-  assign flash_disable_pre_buf = lc_tx_test_true_loose(lc_disable) ?
-                                 prim_mubi_pkg::MuBi4True :
-                                 prim_mubi_pkg::mubi4_t'(reg2hw.dis.q);
+  assign lc_conv_disable = lc_ctrl_pkg::lc_to_mubi4(lc_disable);
+  assign flash_disable_pre_buf = prim_mubi_pkg::mubi4_or_hi(
+      lc_conv_disable,
+      prim_mubi_pkg::mubi4_t'(reg2hw.dis.q));
 
   prim_mubi4_sync #(
     .NumCopies(int'(FlashDisableLast)),
@@ -1193,9 +1194,7 @@ module flash_ctrl
 
 
   // if flash disable is activated, error back from the adapter interface immediately
-  assign host_enable = mubi4_test_true_loose(flash_disable[HostDisableIdx]) ?
-                       lc_ctrl_pkg::Off :
-                       lc_ctrl_pkg::On;
+  assign host_enable = lc_ctrl_pkg::mubi4_to_lc_inv(flash_disable[HostDisableIdx]);
 
   tlul_pkg::tl_h2d_t gate_tl_h2d;
   tlul_pkg::tl_d2h_t gate_tl_d2h;
