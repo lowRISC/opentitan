@@ -15,7 +15,7 @@ cc_library(
     deps = [
         "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:mmio",
     ],
 )
 
@@ -28,7 +28,7 @@ cc_library(
     deps = [
         "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:mmio",
     ],
 )
 

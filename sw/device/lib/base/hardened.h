@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/stdasm.h"
 
 /**
@@ -522,7 +523,7 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
 }
 
 // Implementation details shared across shutdown macros.
-#ifndef OT_OFF_TARGET_TEST
+#ifdef OT_PLATFORM_RV32
 // This string can be tuned to be longer or shorter as desired, for
 // fault-hardening purposes.
 #define HARDENED_UNIMP_SEQUENCE_() "unimp; unimp; unimp; unimp;"
@@ -548,7 +549,7 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
     asm volatile(HARDENED_UNIMP_SEQUENCE_()); \
     __builtin_unreachable();                  \
   } while (false)
-#else  // OT_OFF_TARGET_TEST
+#else  // OT_PLATFORM_RV32
 #include <assert.h>
 
 #define HARDENED_CHECK_OP_EQ_ ==
@@ -561,7 +562,7 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
 #define HARDENED_CHECK_(op_, a_, b_) assert((uint64_t)(a_)op_(uint64_t)(b_))
 
 #define HARDENED_UNREACHABLE_() assert(false)
-#endif  // OT_OFF_TARGET_TEST
+#endif  // OT_PLATFORM_RV32
 
 /**
  * Indicates that the following code is unreachable; it should never be

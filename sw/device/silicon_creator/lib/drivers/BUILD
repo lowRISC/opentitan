@@ -14,7 +14,7 @@ cc_library(
     deps = [
         "//hw/top_earlgrey:alert_handler_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
@@ -44,7 +44,9 @@ cc_test(
     deps = [
         "//hw/top_earlgrey:alert_handler_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
         "@googletest//:gtest_main",
@@ -72,13 +74,15 @@ cc_library(
     name = "flash_ctrl",
     srcs = ["flash_ctrl.c"],
     hdrs = ["flash_ctrl.h"],
-    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
         "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:multibits",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:otp",
@@ -99,7 +103,11 @@ cc_test(
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:multibits",
         "//sw/device/lib/base/testing:mock_abs_mmio",
         "//sw/device/lib/base/testing:mock_mmio",
         "//sw/device/silicon_creator/lib:error",
@@ -116,8 +124,10 @@ cc_library(
     deps = [
         "//hw/ip/hmac/data:hmac_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
         "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:error",
     ],
 )
@@ -140,7 +150,7 @@ cc_test(
     deps = [
         ":hmac",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:mmio",
         "//sw/device/lib/base/testing:mock_abs_mmio",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/testing:mask_rom_test",
@@ -167,9 +177,8 @@ cc_library(
     deps = [
         "//hw/ip/keymgr/data:keymgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
         "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base/freestanding",
+        "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:keymgr_binding",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
@@ -186,7 +195,6 @@ cc_test(
     deps = [
         "//hw/ip/keymgr/data:keymgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base/freestanding",
         "//sw/device/lib/base/testing:mock_abs_mmio",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:keymgr_binding",
@@ -226,7 +234,9 @@ cc_library(
     deps = [
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )
@@ -258,7 +268,9 @@ cc_test(
     deps = [
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
         "//sw/device/silicon_creator/testing:mask_rom_test",
@@ -274,8 +286,8 @@ cc_library(
     deps = [
         "//hw/ip/otbn/data:otbn_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
         "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
         "//sw/device/silicon_creator/lib:error",
     ],
 )
@@ -293,7 +305,7 @@ cc_test(
     deps = [
         "//hw/ip/otbn/data:otbn_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base/testing:mock_abs_mmio",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/testing:mask_rom_test",
@@ -305,11 +317,11 @@ cc_library(
     name = "otp",
     srcs = ["otp.c"],
     hdrs = ["otp.h"],
-    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
@@ -339,7 +351,8 @@ cc_test(
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
         "//sw/device/lib/base/testing:global_mock",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
@@ -355,8 +368,8 @@ cc_library(
     deps = [
         "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
         "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:macros",
     ],
 )
 
@@ -366,7 +379,7 @@ cc_test(
     deps = [
         ":pinmux",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:macros",
         "//sw/device/lib/base/testing:mock_abs_mmio",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
@@ -380,8 +393,8 @@ cc_library(
     deps = [
         "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
         "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
     ],
 )
@@ -392,7 +405,6 @@ cc_test(
     deps = [
         ":retention_sram",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
         "//sw/device/lib/base/testing:mock_abs_mmio",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
@@ -405,6 +417,8 @@ opentitan_functest(
     deps = [
         ":retention_sram",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:test_main",
     ],
@@ -420,8 +434,10 @@ cc_library(
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
         "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
     ],
 )
 
@@ -457,7 +473,9 @@ cc_library(
     deps = [
         "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:multibits",
         "//sw/device/lib/runtime:hart",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
@@ -477,7 +495,9 @@ cc_test(
     deps = [
         "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:multibits",
         "//sw/device/lib/base/testing:mock_abs_mmio",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/testing:mask_rom_test",
@@ -493,8 +513,8 @@ cc_library(
         "//hw/ip/uart/data:uart_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
-        "//sw/device/lib/base",
         "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
         "//sw/device/silicon_creator/lib:error",
     ],
 )
@@ -505,7 +525,7 @@ cc_test(
     deps = [
         ":uart",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:mmio",
         "//sw/device/lib/base/testing:mock_abs_mmio",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
@@ -550,7 +570,6 @@ cc_test(
         "//hw/ip/aon_timer/data:aon_timer_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
         "//sw/device/lib/base/testing:mock_abs_mmio",
         "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:mock_otp",
