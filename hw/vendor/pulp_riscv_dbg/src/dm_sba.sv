@@ -30,6 +30,8 @@ module dm_sba #(
   output logic [BusWidth/8-1:0]  master_be_o,
   input  logic                   master_gnt_i,
   input  logic                   master_r_valid_i,
+  input  logic                   master_r_err_i,
+  input  logic                   master_r_other_err_i, // *other_err_i has priority over *err_i
   input  logic [BusWidth-1:0]    master_r_rdata_i,
 
   input  logic [BusWidth-1:0]    sbaddress_i,
@@ -53,6 +55,7 @@ module dm_sba #(
   output logic [2:0]             sberror_o // bus error occurred
 );
 
+  localparam int BeIdxWidth = $clog2(BusWidth/8);
   dm::sba_state_e state_d, state_q;
 
   logic [BusWidth-1:0]           address;
@@ -61,7 +64,7 @@ module dm_sba #(
   logic                          we;
   logic [BusWidth/8-1:0]         be;
   logic [BusWidth/8-1:0]         be_mask;
-  logic [$clog2(BusWidth/8)-1:0] be_idx;
+  logic [BeIdxWidth-1:0] be_idx;
 
   assign sbbusy_o = logic'(state_q != dm::Idle);
 
@@ -85,16 +88,26 @@ module dm_sba #(
     endcase
   end
 
+  logic [BusWidth-1:0] sbaccess_mask;
+  assign sbaccess_mask = {BusWidth{1'b1}} << sbaccess_i;
+
+  logic addr_incr_en;
+  logic [BusWidth-1:0] addr_incr;
+  assign addr_incr = (addr_incr_en) ? (BusWidth'(1'b1) << sbaccess_i) : '0;
+  assign sbaddress_o = sbaddress_i + addr_incr;
+
+
   always_comb begin : p_fsm
     req     = 1'b0;
     address = sbaddress_i;
     we      = 1'b0;
     be      = '0;
-    be_idx  = sbaddress_i[$clog2(BusWidth/8)-1:0];
+    be_idx  = sbaddress_i[BeIdxWidth-1:0];
 
     sberror_o       = '0;
     sberror_valid_o = 1'b0;
-    sbaddress_o     = sbaddress_i;
+
+    addr_incr_en    = 1'b0;
 
     state_d = state_q;
 
@@ -125,7 +138,16 @@ module dm_sba #(
         if (sbdata_valid_o) begin
           state_d = dm::Idle;
           // auto-increment address
-          if (sbautoincrement_i) sbaddress_o = sbaddress_i + (32'h1 << sbaccess_i);
+          addr_incr_en = sbautoincrement_i;
+          // check whether an "other" error has been encountered.
+          if (master_r_other_err_i) begin
+            sberror_valid_o = 1'b1;
+            sberror_o = 3'd7;
+          // check whether there was a bus error (== bad address).
+          end else if (master_r_err_i) begin
+            sberror_valid_o = 1'b1;
+            sberror_o = 3'd2;
+          end
         end
       end
 
@@ -133,7 +155,16 @@ module dm_sba #(
         if (sbdata_valid_o) begin
           state_d = dm::Idle;
           // auto-increment address
-          if (sbautoincrement_i) sbaddress_o = sbaddress_i + (32'h1 << sbaccess_i);
+          addr_incr_en = sbautoincrement_i;
+          // check whether an "other" error has been encountered.
+          if (master_r_other_err_i) begin
+            sberror_valid_o = 1'b1;
+            sberror_o = 3'd7;
+          // check whether there was a bus error (== bad address).
+          end else if (master_r_err_i) begin
+            sberror_valid_o = 1'b1;
+            sberror_o = 3'd2;
+          end
         end
       end
 
@@ -141,7 +172,7 @@ module dm_sba #(
     endcase
 
     // handle error case
-    if (sbaccess_i > $clog2(BusWidth/8) && state_q != dm::Idle) begin
+    if (32'(sbaccess_i) > BeIdxWidth && state_q != dm::Idle) begin
       req             = 1'b0;
       state_d         = dm::Idle;
       sberror_valid_o = 1'b1;
@@ -149,7 +180,7 @@ module dm_sba #(
     end
 
     //if sbaccess_i lsbs of address are not 0 - report misalignment error
-    if (|(sbaddress_i & ~('1<<sbaccess_i)) && state_q != dm::Idle) begin
+    if (|(sbaddress_i & ~sbaccess_mask) && state_q != dm::Idle) begin
       req             = 1'b0;
       state_d         = dm::Idle;
       sberror_valid_o = 1'b1;
@@ -166,13 +197,15 @@ module dm_sba #(
     end
   end
 
+  logic [BeIdxWidth-1:0] be_idx_masked;
+  assign be_idx_masked   = be_idx & BeIdxWidth'(sbaccess_mask);
   assign master_req_o    = req;
   assign master_add_o    = address[BusWidth-1:0];
   assign master_we_o     = we;
-  assign master_wdata_o  = sbdata_i[BusWidth-1:0] << (8*(be_idx & ('1<<sbaccess_i)));
+  assign master_wdata_o  = sbdata_i[BusWidth-1:0] << (8 * be_idx_masked);
   assign master_be_o     = be[BusWidth/8-1:0];
   assign gnt             = master_gnt_i;
   assign sbdata_valid_o  = master_r_valid_i;
-  assign sbdata_o        = master_r_rdata_i[BusWidth-1:0] >> (8*(be_idx & '1<<sbaccess_i));
+  assign sbdata_o        = master_r_rdata_i[BusWidth-1:0] >> (8 * be_idx_masked);
 
 endmodule : dm_sba

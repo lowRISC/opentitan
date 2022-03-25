@@ -6,8 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 ### Added
+- Add sbaccess8 and sbaccess16 support (#106) [@noytzach](https://github.com/noytzach)
+- Implement SBA bad address error (#12) [@msfchaffner](https://github.com/msfschaffner)
 ### Changed
 ### Fixed
+- Fixed documentation (csr)
+- Fixed reset value of sbcs register (#127) [@msfchaffner](https://github.com/msfschaffner)
+- Fixed various ascent lint warnings [@msfchaffner](https://github.com/msfschaffner)
 
 ## [0.4.1] - 2021-05-04
 ### Added

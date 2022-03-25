@@ -432,7 +432,7 @@ module dm_csrs #(
             sbcs_d = sbcs;
             // R/W1C
             sbcs_d.sbbusyerror = sbcs_q.sbbusyerror & (~sbcs.sbbusyerror);
-            sbcs_d.sberror     = sbcs_q.sberror     & (~sbcs.sberror);
+            sbcs_d.sberror     = sbcs_q.sberror     & {3{~(sbcs.sberror == 3'd1)}};
           end
         end
         dm::SBAddress0: begin

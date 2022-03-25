@@ -9,6 +9,6 @@
   upstream:
   {
     url: https://github.com/pulp-platform/riscv-dbg
-    rev: b11480c4f354118ff4c7da674a2461da12d8ed1e
+    rev: 39ff2cb216cab73522f5d74f8747c9a2b90b97b6
   }
 }
