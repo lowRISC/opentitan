@@ -15,6 +15,7 @@ filesets:
       - lowrisc:dv:clkmgr_sva
     files:
       - tb.sv
+      - cov/clkmgr_cov_bind.sv
     file_type: systemVerilogSource
 
 targets:

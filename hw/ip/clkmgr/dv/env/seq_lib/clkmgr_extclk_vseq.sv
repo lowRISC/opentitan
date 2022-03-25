@@ -72,10 +72,12 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
 
   local task delayed_update_all_clk_byp_ack(mubi4_t value, int cycles);
     if (mubi_mode == ClkmgrMubiHand && value == MuBi4True) begin
-      cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
-      cfg.clkmgr_vif.update_all_clk_byp_ack(get_rand_mubi4_val(.t_weight(0),
-                                                               .f_weight(1),
-                                                               .other_weight(1)));
+      repeat ($urandom_range(1, 10)) begin
+        cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
+        cfg.clkmgr_vif.update_all_clk_byp_ack(get_rand_mubi4_val(.t_weight(0),
+                                                                 .f_weight(1),
+                                                                 .other_weight(1)));
+      end
     end
     cfg.clk_rst_vif.wait_clks(cycles);
     cfg.clkmgr_vif.update_all_clk_byp_ack(value);
@@ -83,10 +85,12 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
 
   local task delayed_update_div_step_down_req(mubi4_t value, int cycles);
     if (mubi_mode ==  ClkmgrMubiDiv && value == MuBi4True) begin
-      cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
-      cfg.clkmgr_vif.update_div_step_down_req(get_rand_mubi4_val(.t_weight(0),
-                                                                 .f_weight(1),
-                                                                 .other_weight(1)));
+      repeat ($urandom_range(1, 10)) begin
+        cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
+        cfg.clkmgr_vif.update_div_step_down_req(get_rand_mubi4_val(.t_weight(0),
+                                                                   .f_weight(1),
+                                                                   .other_weight(1)));
+      end
     end
     cfg.clk_rst_vif.wait_clks(cycles);
     cfg.clkmgr_vif.update_div_step_down_req(value);
@@ -94,10 +98,12 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
 
   local task delayed_update_io_clk_byp_ack(mubi4_t value, int cycles);
     if (mubi_mode == ClkmgrMubiHand && value == MuBi4True) begin
-      cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
-      cfg.clkmgr_vif.update_io_clk_byp_ack(get_rand_mubi4_val(.t_weight(0),
-                                                              .f_weight(1),
-                                                              .other_weight(1)));
+      repeat ($urandom_range(1, 10)) begin
+        cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
+        cfg.clkmgr_vif.update_io_clk_byp_ack(get_rand_mubi4_val(.t_weight(0),
+                                                                .f_weight(1),
+                                                                .other_weight(1)));
+      end
     end
     cfg.clk_rst_vif.wait_clks(cycles);
     cfg.clkmgr_vif.update_io_clk_byp_ack(value);

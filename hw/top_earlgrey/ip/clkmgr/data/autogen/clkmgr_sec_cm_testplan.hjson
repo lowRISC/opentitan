@@ -25,19 +25,25 @@
   testpoints: [
     {
       name: sec_cm_bus_integrity
-      desc: "Verify the countermeasure(s) BUS.INTEGRITY."
+      desc: '''Verify the countermeasure(s) BUS.INTEGRITY.
+            This entry is covered by tl_access_test.
+            '''
       milestone: V2S
       tests: ["clkmgr_tl_intg_err"]
     }
     {
       name: sec_cm_timeout_clk_bkgn_chk
-      desc: "Verify the countermeasure(s) TIMEOUT.CLK.BKGN_CHK."
+      desc: '''Verify the countermeasure(s) TIMEOUT.CLK.BKGN_CHK.
+            covered in testplan.frequency_timeout.
+            '''
       milestone: V2S
-      tests: []
+      tests: ["clkmgr_frequency_timeout"]
     }
     {
       name: sec_cm_meas_clk_bkgn_chk
-      desc: "Verify the countermeasure(s) MEAS.CLK.BKGN_CHK."
+      desc: '''Verify the countermeasure(s) MEAS.CLK.BKGN_CHK.
+            covered in test.frequency.
+            '''
       milestone: V2S
       tests: ["clkmgr_frequency"]
     }
@@ -49,39 +55,86 @@
     }
     {
       name: sec_cm_idle_intersig_mubi
-      desc: "Verify the countermeasure(s) IDLE.INTERSIG.MUBI."
+      desc: '''Verify the countermeasure(s) IDLE.INTERSIG.MUBI.
+            It uses true_strict and false_loose.
+            **Stimulus**:
+            Use same sequence as trans_enables test. At the beginning,
+            randomize idle ports with illegal vlaues.
+            **Check**:
+            When clk_hints update from '1' to '0',
+            clk_hints_status has to wait idle becomes 'true'. So check
+            clk_hints_status with random idle value, then check again
+            after set all idle values to 'true'.
+            '''
       milestone: V2S
-      tests: []
+      tests: ["clkmgr_idle_intersig_mubi"]
     }
     {
       name: sec_cm_lc_ctrl_intersig_mubi
-      desc: "Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI."
+      desc: '''Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI.
+            It compares to lc_ctrl_pkg::On only.
+            Use clkmgr_extclk test as in testplan.extclk but randomize
+            lc_debug_en s.t. all 16 values can be generated with equal priority.
+            lc_debug_en initialize dut.lc_hw_debug_en_i in the test.
+
+            **Checks**:
+            When dut sees invalid values of lc_hw_debug_en_i,
+            all_clk_byp_req should not be asserted.
+            '''
       milestone: V2S
-      tests: []
+      tests: ["clkmgr_lc_ctrl_intersig_mubi"]
     }
     {
       name: sec_cm_lc_ctrl_clk_handshake_intersig_mubi
-      desc: "Verify the countermeasure(s) LC_CTRL_CLK_HANDSHAKE.INTERSIG.MUBI."
+      desc: '''Verify the countermeasure(s) LC_CTRL_CLK_HANDSHAKE.INTERSIG.MUBI.
+            It compared to lc_ctrl_pkg::On only.
+            Use clkmgr_extclk test but randomize lc_clk_byp_req s.t.
+            all 16 values can be generated with equal priority.
+            lc_clk_byp_req drives dut.lc_clk_byp_req_i in the test.
+            **Checks**:
+            When dut sees invalue values of lc_clk_byp_req_i,
+            io_clk_byp_req_o should not be asserted.
+            '''
       milestone: V2S
-      tests: []
+      tests: ["clkmgr_lc_clk_byp_req_intersig_mubi"]
     }
     {
       name: sec_cm_clk_handshake_intersig_mubi
-      desc: "Verify the countermeasure(s) CLK_HANDSHAKE.INTERSIG.MUBI."
+      desc: '''Verify the countermeasure(s) CLK_HANDSHAKE.INTERSIG.MUBI.
+            It use true_strict.
+            !!! dut.all_clk_byp_ack_i goes nowhere. Need sync with RTL.
+            Use clkmgr_extclk test. Upon receiving [io|all]_clk_byp_req_o,
+            Assert invalid [io|all]_alk_byp_ack values to dut.
+            The test sends invalid 'ack' values during the idle, by
+            default.
+            **Check**:
+            dut should ignore invalid ack values.
+            '''
       milestone: V2S
-      tests: []
+      tests: ["clkmgr_clk_handshake_intersig_mubi"]
     }
     {
       name: sec_cm_div_intersig_mubi
-      desc: "Verify the countermeasure(s) DIV.INTERSIG.MUBI."
+      desc: '''Verify the countermeasure(s) DIV.INTERSIG.MUBI.
+            use true_strict.
+            Use clkmgr_extclk test. Before, test drive dut.div_step_down_req_i
+            with 'true', sends invalid values.
+            **Check**:
+            dut should ignore invalid req values.
+            '''
       milestone: V2S
-      tests: []
+      tests: ["clkmgr_div_intersig_mubi"]
     }
     {
       name: sec_cm_jitter_config_mubi
-      desc: "Verify the countermeasure(s) JITTER.CONFIG.MUBI."
+      desc: '''Verify the countermeasure(s) JITTER.CONFIG.MUBI.
+            use false_strict.
+            This doesn't do any function in the dut but indicating
+            jittery clock is enabled. So it can be covered by default
+            csr test.
+            '''
       milestone: V2S
-      tests: []
+      tests: ["clkmgr_csr_rw"]
     }
     {
       name: sec_cm_idle_ctr_redun
@@ -91,15 +144,21 @@
     }
     {
       name: sec_cm_meas_config_regwen
-      desc: "Verify the countermeasure(s) MEAS.CONFIG.REGWEN."
+      desc: '''Verify the countermeasure(s) MEAS.CONFIG.REGWEN.
+
+            This is covered by auto csr test.
+            '''
       milestone: V2S
-      tests: []
+      tests: ["clkmgr_csr_rw"]
     }
     {
       name: sec_cm_clk_ctrl_config_regwen
-      desc: "Verify the countermeasure(s) CLK_CTRL.CONFIG.REGWEN."
+      desc: '''Verify the countermeasure(s) CLK_CTRL.CONFIG.REGWEN.
+
+            This is covered by auto csr test.
+            '''
       milestone: V2S
-      tests: []
+      tests: ["clkmgr_csr_rw"]
     }
   ]
 }

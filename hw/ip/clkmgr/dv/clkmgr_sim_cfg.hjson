@@ -38,6 +38,7 @@
 
   // Add additional tops for simulation.
   sim_tops: ["clkmgr_bind",
+             "clkmgr_cov_bind",
              "sec_cm_prim_count_bind"]
 
   // Default iterations for all tests - each test entry can override this.
@@ -79,6 +80,31 @@
     {
       name: clkmgr_clk_status
       uvm_test_seq: clkmgr_clk_status_vseq
+    }
+    {
+      name: clkmgr_idle_intersig_mubi
+      uvm_test_seq: clkmgr_trans_vseq
+      run_opts: ["+clkmgr_mubi_mode=ClkmgrMubiIdle"]
+    }
+    {
+      name: clkmgr_lc_ctrl_intersig_mubi
+      uvm_test_seq: clkmgr_extclk_vseq
+      run_opts: ["+clkmgr_mubi_mode=ClkmgrMubiLcCtrl"]
+    }
+    {
+      name: clkmgr_lc_clk_byp_req_intersig_mubi
+      uvm_test_seq: clkmgr_extclk_vseq
+      run_opts: ["+clkmgr_mubi_mode=ClkmgrMubiLcHand"]
+    }
+    {
+      name: clkmgr_clk_handshake_intersig_mubi
+      uvm_test_seq: clkmgr_extclk_vseq
+      run_opts: ["+clkmgr_mubi_mode=ClkmgrMubiHand"]
+    }
+    {
+      name: clkmgr_div_intersig_mubi
+      uvm_test_seq: clkmgr_extclk_vseq
+      run_opts: ["+clkmgr_mubi_mode=ClkmgrMubiDiv"]
     }
     // TODO: add more tests here
   ]
