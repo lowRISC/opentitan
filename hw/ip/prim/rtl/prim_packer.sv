@@ -32,15 +32,17 @@ module prim_packer #(
   localparam int ConcatW = Width + InW; // Input concatenated width
   localparam int PtrW = $clog2(ConcatW+1);
   localparam int IdxW = prim_util_pkg::vbits(InW);
+  localparam int OnesCntW = $clog2(InW+1);
 
   logic valid_next, ready_next;
   logic [Width-1:0]   stored_data, stored_mask;
   logic [ConcatW-1:0] concat_data, concat_mask;
   logic [ConcatW-1:0] shiftl_data, shiftl_mask;
+  logic [InW-1:0]     shiftr_data, shiftr_mask;
 
-  logic [PtrW-1:0]          pos, pos_next; // Current write position
-  logic [IdxW-1:0]          lod_idx;       // result of Leading One Detector
-  logic [$clog2(InW+1)-1:0] inmask_ones;   // Counting Ones for mask_i
+  logic [PtrW-1:0]     pos, pos_next; // Current write position
+  logic [IdxW-1:0]     lod_idx;       // result of Leading One Detector
+  logic [OnesCntW-1:0] inmask_ones;   // Counting Ones for mask_i
 
   logic ack_in, ack_out;
 
@@ -52,7 +54,7 @@ module prim_packer #(
     // counting mask_i ones
     inmask_ones = '0;
     for (int i = 0 ; i < InW ; i++) begin
-      inmask_ones = inmask_ones + mask_i[i];
+      inmask_ones = inmask_ones + OnesCntW'(mask_i[i]);
     end
   end
 
@@ -64,9 +66,9 @@ module prim_packer #(
 
     unique case ({ack_in, ack_out})
       2'b00: pos_next = pos;
-      2'b01: pos_next = (pos <= OutW) ? '0 : pos - OutW;
+      2'b01: pos_next = (int'(pos) <= OutW) ? '0 : pos - OutW[PtrW-1:0];
       2'b10: pos_next = pos_with_input;
-      2'b11: pos_next = (pos_with_input <= OutW) ? '0 : pos_with_input - OutW;
+      2'b11: pos_next = (int'(pos_with_input) <= OutW) ? '0 : pos_with_input - OutW[PtrW-1:0];
       default: pos_next = pos;
     endcase
   end
@@ -87,7 +89,7 @@ module prim_packer #(
     lod_idx = 0;
     for (int i = InW-1; i >= 0 ; i--) begin
       if (mask_i[i] == 1'b1) begin
-        lod_idx = $unsigned(i);
+        lod_idx = IdxW'(unsigned'(i));
       end
     end
   end
@@ -96,9 +98,13 @@ module prim_packer #(
   assign ack_out = valid_o & ready_i;
 
   // Data process =============================================================
+  //  shiftr : Input data shifted right to put the leading one at bit zero
+  assign shiftr_data = (valid_i) ? data_i >> lod_idx : '0;
+  assign shiftr_mask = (valid_i) ? mask_i >> lod_idx : '0;
+
   //  shiftl : Input data shifted into the current stored position
-  assign shiftl_data = (valid_i) ? Width'(data_i >> lod_idx) << pos : '0;
-  assign shiftl_mask = (valid_i) ? Width'(mask_i >> lod_idx) << pos : '0;
+  assign shiftl_data = ConcatW'(shiftr_data) << pos;
+  assign shiftl_mask = ConcatW'(shiftr_mask) << pos;
 
   // concat : Merging stored and shiftl
   assign concat_data = {{(InW){1'b0}}, stored_data & stored_mask} |
@@ -206,7 +212,7 @@ module prim_packer #(
 
 
   // Output signals ===========================================================
-  assign valid_next = (pos >= OutW) ? 1'b 1 : flush_valid;
+  assign valid_next = (int'(pos) >= OutW) ? 1'b 1 : flush_valid;
 
   // storage space is InW + OutW. So technically, ready_o can be asserted even
   // if `pos` is greater than OutW. But in order to do that, the logic should
@@ -214,7 +220,7 @@ module prim_packer #(
   // with `valid_i`. It creates a path from `valid_i` --> `ready_o`.
   // It may create a timing loop in some modules that use `ready_o` to
   // `valid_i` (which is not a good practice though)
-  assign ready_next = pos <= OutW;
+  assign ready_next = int'(pos) <= OutW;
 
   // Output request
   assign valid_o = valid_next;
