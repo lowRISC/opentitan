@@ -75,9 +75,9 @@ module spi_host_fsm
   logic             last_bit, last_byte;
 
   logic             state_changing;
-  logic             byte_starting, byte_starting_cpha0, byte_starting_cpha1;
-  logic             bit_shifting, bit_shifting_cpha0, bit_shifting_cpha1;
-  logic             byte_ending, byte_ending_cpha0, byte_ending_cpha1;
+  logic             byte_starting, byte_starting_cpha0, byte_starting_cpha0_q, byte_starting_cpha1;
+  logic             bit_shifting, bit_shifting_cpha0, bit_shifting_cpha0_q, bit_shifting_cpha1;
+  logic             byte_ending, byte_ending_cpha0, byte_ending_cpha0_q, byte_ending_cpha1;
 
   logic             sample_en_d, sample_en_q, sample_en_q2;
 
@@ -335,15 +335,22 @@ module spi_host_fsm
   // when they would be loaded if CPHA=0
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      byte_starting_cpha1 <= 1'b0;
-      byte_ending_cpha1   <= 1'b0;
-      bit_shifting_cpha1  <= 1'b0;
-    end else begin
-      byte_ending_cpha1   <= (state_changing && !stall) ? byte_ending_cpha0 : 1'b0;
-      byte_starting_cpha1 <= (state_changing && !stall) ? byte_starting_cpha0 : 1'b0;
-      bit_shifting_cpha1  <= (state_changing && !stall) ? bit_shifting_cpha0 : 1'b0;
+      byte_starting_cpha0_q <= 1'b0;
+      byte_ending_cpha0_q   <= 1'b0;
+      bit_shifting_cpha0_q  <= 1'b0;
+    end else if (state_changing && !stall) begin
+      byte_ending_cpha0_q   <= byte_ending_cpha0;
+      byte_starting_cpha0_q <= byte_starting_cpha0;
+      bit_shifting_cpha0_q  <= bit_shifting_cpha0;
     end
   end
+
+  // The <XYZ>_cpha0_q registers queue up a delayed <XYZ> pulse for use
+  // in CPHA=1 mode. Here we also have to ensure that the resulting
+  // pulse is only one cycle long.
+  assign byte_starting_cpha1 = byte_starting_cpha0_q & state_changing;
+  assign byte_ending_cpha1   = byte_ending_cpha0_q   & state_changing;
+  assign bit_shifting_cpha1  = bit_shifting_cpha0_q  & state_changing;
 
   assign byte_starting = (cpha == 1'b0) ? byte_starting_cpha0 :
                                           byte_starting_cpha1;
@@ -456,7 +463,16 @@ module spi_host_fsm
   assign sample_en_d       = byte_starting | shift_en_o;
   assign full_cyc_o        = full_cyc;
   assign last_read_o       = (byte_cntr_q == 'h0) & rd_en_o & sr_rd_ready_i;
-  assign last_write_o      = (byte_cntr_d == 'h0) & wr_en_o & sr_wr_ready_i;
+
+  // Timing the last_write pulse for back-to-back transactions is somewhat subtle
+  // for CPHA=0 we look at the _early_ byte_cntr_d, to ensure that we properly
+  // handle even 1 byte transactions (which perform a write to the SR at the very
+  // beginning of the segment.  However for CPHA=1, the write pulses
+  // are all later, and so we need to look at the later signal byte_cntr_q.
+  logic  [8:0] last_wrt_cntr;
+  assign last_wrt_cntr     = cpha ? byte_cntr_q : byte_cntr_d;
+
+  assign last_write_o      = (last_wrt_cntr == 'h0) & wr_en_o & sr_wr_ready_i;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
