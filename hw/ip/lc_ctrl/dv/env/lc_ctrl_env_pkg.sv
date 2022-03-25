@@ -22,6 +22,7 @@ package lc_ctrl_env_pkg;
   import kmac_app_agent_pkg::*;
   import lc_ctrl_dv_utils_pkg::*;
   import prim_mubi_pkg::MuBi8True;
+  import sec_cm_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
