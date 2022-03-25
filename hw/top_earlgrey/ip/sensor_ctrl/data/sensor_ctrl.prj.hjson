@@ -9,7 +9,7 @@
     hw_checklist:       "../doc/checklist",
     revisions: [
       {
-        version:            "0.1",
+        version:            "1.0",
         life_stage:         "L1",
         design_stage:       "D2",
         verification_stage: "V0", // block level verification not planned
