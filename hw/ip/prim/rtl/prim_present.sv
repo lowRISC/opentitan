@@ -136,7 +136,7 @@ module prim_present #(
   // Note that for a full-round implementation the output index
   // will be 0 for enc/dec for the last round (either due to wraparound or subtraction).
   localparam int LastRoundIdx = (Decrypt != 0 || NumRounds == 31) ? 0 : NumRounds+1;
-  assign data_o = (idx_o == LastRoundIdx) ?
+  assign data_o = (int'(idx_o) == LastRoundIdx) ?
       data_state[NumPhysRounds] ^
       round_key[NumPhysRounds][KeyWidth-1 : KeyWidth-DataWidth] :
       data_state[NumPhysRounds];
