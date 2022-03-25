@@ -405,7 +405,11 @@ module adc_ctrl_fsm
 
    `ASSUME(LpSampleCntCfg_M, cfg_lp_sample_cnt_i > '0, clk_aon_i, !rst_aon_ni)
    `ASSUME(NpSampleCntCfg_M, cfg_np_sample_cnt_i > '0, clk_aon_i, !rst_aon_ni)
-   `ASSERT(NpCntCheckClr_A, ld_match & $rose(stay_match) |->
-     (np_sample_cnt_q == '0), clk_aon_i, !rst_aon_ni)
+   `ASSERT(NpCntClrPwrDn_A, fsm_state_q == PWRDN |-> (np_sample_cnt_q == '0),
+           clk_aon_i, !rst_aon_ni)
+
+   // This statement should hold true even during low power scanning
+   `ASSERT(NpCntClrMisMatch_A, ld_match & !stay_match |=>
+           (np_sample_cnt_q == '0), clk_aon_i, !rst_aon_ni)
 
 endmodule
