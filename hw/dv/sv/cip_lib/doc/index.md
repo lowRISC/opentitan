@@ -496,8 +496,9 @@ endmodule
 Note: The `sim_tops` in sim_cfg.hjson should be updated to include this bind file.
 
 ### Security Verification for common countermeasure primitives
-A [security countermeasure verification framework]({{< relref "doc/ug/sec_cm_dv_framework" >}}) is implemented in cip_lib to verify common countermeasure primitives in a semi-uutomated way.
+A [security countermeasure verification framework]({{< relref "doc/ug/sec_cm_dv_framework" >}}) is implemented in cip_lib to verify common countermeasure primitives in a semi-automated way.
 
+#### Design Verification
 cip_lib imports [sec_cm_pkg](https://github.com/lowRISC/opentitan/tree/master/hw/dv/sv/sec_cm), which automatically locates all the common countermeasure primitives and binds an interface to each of them.
 In the cib_base_vseq, it injects a fault to each of these primitives and verifies that the fault will lead to a fatal alert.
 The details of the sequences can be found in testplans - [sec_cm_count_testplan](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/testplans/sec_cm_count_testplan.hjson), [sec_cm_fsm_testplan](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/testplans/sec_cm_fsm_testplan.hjson) and [sec_cm_double_lfsr_testplan](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/testplans/sec_cm_double_lfsr_testplan.hjson).
@@ -599,3 +600,6 @@ class keymgr_common_vseq extends keymgr_base_vseq;
     endcase
   endfunction: sec_cm_fi_ctrl_svas
 ```
+
+#### Formal Verification
+Please refer to [formal document]({{< relref "hw/formal/README" >}}) on how to create a FPV environment for common countermeasures.

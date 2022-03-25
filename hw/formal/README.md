@@ -269,6 +269,49 @@ You can trigger top_earlgrey's connectivity test using `dvsim`:
 ```
 Adding a `--gui` option will open the JaperGold GUI.
 
+## Running FPV on security blocks for common countermeasure primitives
+A [security countermeasure verification framework]({{< relref "doc/ug/sec_cm_dv_framework" >}}) is implemented in design and fpv tcl script to verify common countermeasure primitives in a semi-automated way.
+
+### Common security assertion macros
+OpenTitan's security IP blocks have implemented assertions to check against common fault injections.
+These assertions ensure if the security prim module returns an error, a corresponding alert should fire immediately without any gating conditions.
+There are three pre-defined assertion macros under file `hw/ip/prim/rtl/prim_assert_sec_cm.svh`:
+* ASSERT_PRIM_FSM_TRIGGER_ALERT: if design module `prim_sparse_fsm_flop` returns `state_o` value that is not one of the defined FSM states, which means the FSM state might be attacked, a fatal alert is expected to fire.
+* ASSERT_PRIM_COUNT_TRIGGER_ALERT: if design module `prim_count` sets `err_o` to 1, which means the two counters do not match, a fatal alert is expected to fire.
+* ASSERT_PRIM_DOUBLE_LFSR_TRIGGER_ALERT: if design module `prim_double_lfsr` sets `err_o` to 1, which means two LFSR states do not match, a fatal alert is expected to fire.
+Note that assertions defined with these macros will have a common prefix name `FpvSecCm`, which will help the FPV tcl file to group them in a specific task.
+
+### FPV fault injection
+The above security assertions are expected to be unreachable in normal design environment, and are only reachable if a fault is injected.
+To create a FPV environment that has fault injections, the `stopat` command and black box methods are used.
+* FSM fault injection: a `stopat` is placed at `state_o` output.
+* Counter fault injection: black-box the prim_count module.
+* Double LFSR fault injection: black-box the prim_double_lfsr module.
+Then we will let formal environment to randomly drive these outputs and run security assertions to ensure these error cases will trigger alerts under any circumstance.
+
+### Set up FPV security check environment
+To set up the FPV security check environment, please follow the steps below:
+1. Add an item under `hw/top_earlgrey/formal/top_earlgrey_fpv_cfgs.hjson` with the naming convention "{ip_name}_sec_cm".
+2. Under the item add an entry "task" with value "FpvSecCm".
+This entry tells the tcl file to black-box security prim modules in the FPV environment, and define required macros.
+This "task" entry also tells the tcl file to disable regular assertions and only analyze macro defined security assertions with prefix `FpvSecCm`.
+3. Under the item add an entry "stopats" if design has sparse FSMs.
+This is an optional step. If design contains more than one stopat path, user can input them with bracket `stopat: "{path1}, {path2}"`.
+
+Here is an example on csrng module:
+```
+{
+  name: csrng_sec_cm
+  dut: csrng
+  fusesoc_core: lowrisc:dv:csrng_sva
+  import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+  rel_path: "hw/ip/csrng/{sub_flow}/{tool}"
+  cov: false
+  task: "FpvSecCm"
+  stopats: "*u_state_regs.state_o"
+}
+```
+
 ## Naming Conventions
 For assertions, it is preferred to use postfix `_A` for assertions, `_M` for assumptions, `_P` for properties, and `_S` for sequences.
 For example:
