@@ -43,4 +43,20 @@ class chip_common_vseq extends chip_stub_cpu_base_vseq;
     run_common_vseq_wrapper(num_trans);
   endtask : body
 
+  virtual task pre_start();
+    super.pre_start();
+    // Disable assertions failed due to CSR random write value.
+    $assertoff(0,
+        "tb.dut.top_earlgrey.u_adc_ctrl_aon.u_adc_ctrl_core.u_adc_ctrl_fsm.LpSampleCntCfg_M");
+    $assertoff(0,
+        "tb.dut.top_earlgrey.u_adc_ctrl_aon.u_adc_ctrl_core.u_adc_ctrl_fsm.NpSampleCntCfg_M");
+  endtask
+
+  virtual task post_start();
+    super.post_start();
+    $asserton(0,
+        "tb.dut.top_earlgrey.u_adc_ctrl_aon.u_adc_ctrl_core.u_adc_ctrl_fsm.LpSampleCntCfg_M");
+    $asserton(0,
+        "tb.dut.top_earlgrey.u_adc_ctrl_aon.u_adc_ctrl_core.u_adc_ctrl_fsm.NpSampleCntCfg_M");
+  endtask
 endclass
