@@ -44,8 +44,8 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
   // OTP
   rand otp_device_id_t otp_device_id;
   rand otp_device_id_t otp_manuf_state;
-  rand logic [OtpTestCtrlWidth-1:0]  otp_vendor_test_ctrl;
-  rand logic [OtpTestStatusWidth-1:0]  otp_vendor_test_status;
+  rand logic [OtpTestCtrlWidth-1:0] otp_vendor_test_ctrl;
+  rand logic [OtpTestStatusWidth-1:0] otp_vendor_test_status;
 
 
 
@@ -57,6 +57,7 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = lc_ctrl_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_bus_integ_error";
+    sec_cm_alert_name = "fatal_state_error";
     super.initialize(csr_base_addr);
 
     // Find parameters on config db
