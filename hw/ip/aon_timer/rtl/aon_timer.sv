@@ -176,19 +176,29 @@ module aon_timer import aon_timer_reg_pkg::*;
   ////////////////////////
 
   logic [1:0] aon_intr_set, intr_set;
-  assign aon_intr_set[AON_WDOG] = aon_wdog_intr_set;
-  assign aon_intr_set[AON_WKUP] = aon_wkup_intr_set;
 
-  for (genvar i = 0; i < 2; i++) begin : gen_intr_sync
-    prim_pulse_sync u_intr_sync (
-      .clk_src_i   (clk_aon_i),
-      .rst_src_ni  (rst_aon_ni),
-      .src_pulse_i (aon_intr_set[i]),
-      .clk_dst_i   (clk_i),
-      .rst_dst_ni  (rst_ni),
-      .dst_pulse_o (intr_set[i])
-    );
-  end
+  prim_flop #(
+    .Width      (2),
+    .ResetValue (2'b 00)
+  ) u_aon_intr_flop (
+    .clk_i  (clk_aon_i),
+    .rst_ni (rst_aon_ni),
+    .d_i    ({aon_wdog_intr_set, aon_wkup_intr_set}),
+    .q_o    (aon_intr_set)
+  );
+
+  prim_edge_detector #(
+    .Width      (2),
+    .ResetValue (2'b 00),
+    .EnSync     (1'b 1)
+  ) u_intr_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i               (aon_intr_set),
+    .q_sync_o          (),
+    .q_posedge_pulse_o (intr_set),
+    .q_negedge_pulse_o ()
+  );
 
   // Registers to interrupt
   assign intr_test_qe           = reg2hw.intr_test.wkup_timer_expired.qe |
