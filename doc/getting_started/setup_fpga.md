@@ -21,13 +21,37 @@ Refer to the design documentation for information what exactly is needed.
 
 * [Obtain an FPGA board]({{< relref "fpga_boards.md" >}})
 
-## Create an FPGA bitstream
+## Obtain an FPGA bitstream
+
+To run OpenTitan on an FPGA, you will need an FPGA bitstream.
+You can either download the latest bitstream for the ChipWhisperer CW310 board or build it yourself.
+
+### Download a Pre-built Bitstream
+
+If you are using the ChipWhisperer CW310 board with the Xilinx Kintex 7 XC7K410T FPGA, you can download the latest passing [pre-built bitstream](http://storage.googleapis.com/opentitan-bitstreams/master/latest/latest-bitstreams.tar.gz). 
+
+For example, to download the bitstream, run the following:
+
+```console
+$ cd $REPO_TOP
+$ mkdir -p build-bin/hw/top_earlgrey
+$ cd build-bin/hw/top_earlgrey
+$ curl https://storage.googleapis.com/opentitan-bitstreams/master/latest/latest-bitstreams.tar.gz -o latest-bitstreams.tar.gz
+$ tar -xvf latest-bitstreams.tar.gz
+```
+
+By default, the bitstream contains a version of the boot ROM used for testing (pulled from `sw/device/lib/testing/test_rom`).
+The included `rom.mmi` file is a version of the production mask ROM that can be spliced into the bitstream.
+The [FPGA Reference Manual]({{< relref "ref_manual_fpga.md#boot-rom-development" >}}) contains more details and a description of the splicing process.
+The metadata for the bitstream (the approximate creation time and the associated commit hash) is also available as a text file and can be [downloaded separately](https://storage.googleapis.com/opentitan-bitstreams/master/latest/latest.txt).
+
+### Create an FPGA bitstream
 
 Synthesizing a design for an FPGA board is done with the following commands.
 
 The FPGA build will pull in a program to act as the boot ROM.
 This must be built before running the FPGA build.
-This is pulled in from the `sw/device/lib/testing/test_rom/test_rom` directory (see the `parameters:` section of the `hw/top_earlgrey/chip_earlgrey_cw310.core` file).
+This is pulled in from the `sw/device/lib/testing/test_rom` directory (see the `parameters:` section of the `hw/top_earlgrey/chip_earlgrey_cw310.core` file).
 
 To build it:
 ```console
@@ -61,7 +85,7 @@ The `fileset_top` flag used above is specific to the OpenTitan project to select
 The resulting bitstream is located at `build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit`.
 See the [reference manual]({{< relref "ref_manual_fpga.md" >}}) for more information.
 
-### Dealing with FPGA Congestion Issues
+#### Dealing with FPGA Congestion Issues
 
 The default Vivado tool placement may sometimes result in congested FPGA floorplans.
 When this happens, the implemenation time and results become unpredictable.
@@ -111,6 +135,10 @@ Use the following command to program the FPGA with the `cw310_loader` tool.
 
 ```console
 $ cd $REPO_TOP
+
+# If you downloaded the bitstream:
+$ ./util/fpga/cw310_loader.py --bitstream build-bin/hw/top_earlgrey/lowrisc_systems_chip_earlgrey_cw310_0.1.bit
+# If you built the bitstream yourself:
 $ ./util/fpga/cw310_loader.py --bitstream build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit
 ```
 
