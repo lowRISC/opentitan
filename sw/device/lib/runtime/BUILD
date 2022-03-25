@@ -11,9 +11,6 @@ cc_library(
     srcs = ["epmp.c"],
     hdrs = ["epmp.h"],
     target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        "//sw/device/lib/base/freestanding",
-    ],
 )
 
 cc_library(
@@ -26,7 +23,6 @@ cc_library(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:stdasm",
-        "//sw/device/lib/base/freestanding",
     ],
 )
 
@@ -53,7 +49,6 @@ cc_library(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/base/freestanding",
         "//sw/device/lib/runtime:print",
     ],
 )
@@ -77,7 +72,6 @@ cc_library(
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
-        "//sw/device/lib/base/freestanding",
     ],
 )
 
