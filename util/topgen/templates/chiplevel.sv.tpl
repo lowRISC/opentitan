@@ -124,7 +124,7 @@ module chip_${top["name"]}_${target["name"]} (
 <% param_name = (lib.Name.from_snake_case(entry["name"]) +
                  lib.Name(["pad", "idx"])).as_camel_case()
 %>\
-  parameter int ${param_name} = ${entry["idx"]};
+  localparam int ${param_name} = ${entry["idx"]};
   % endfor
 % endif
 

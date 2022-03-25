@@ -83,15 +83,15 @@ module chip_earlgrey_cw310 #(
   // Special Signal Indices //
   ////////////////////////////
 
-  parameter int Tap0PadIdx = 22;
-  parameter int Tap1PadIdx = 16;
-  parameter int Dft0PadIdx = 23;
-  parameter int Dft1PadIdx = 34;
-  parameter int TckPadIdx = 59;
-  parameter int TmsPadIdx = 60;
-  parameter int TrstNPadIdx = 18;
-  parameter int TdiPadIdx = 53;
-  parameter int TdoPadIdx = 54;
+  localparam int Tap0PadIdx = 22;
+  localparam int Tap1PadIdx = 16;
+  localparam int Dft0PadIdx = 23;
+  localparam int Dft1PadIdx = 34;
+  localparam int TckPadIdx = 59;
+  localparam int TmsPadIdx = 60;
+  localparam int TrstNPadIdx = 18;
+  localparam int TdiPadIdx = 53;
+  localparam int TdoPadIdx = 54;
 
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
