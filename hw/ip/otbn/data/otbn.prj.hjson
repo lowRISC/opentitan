@@ -19,7 +19,7 @@
             notes:              ""
         },
         {
-            version:            "0.2",
+            version:            "1.0",
             life_stage:         "L1",
             design_stage:       "D2",
             verification_stage: "V2",
