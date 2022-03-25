@@ -243,7 +243,7 @@
               - Read rx data oversampled value and ensure it is same as driven value
             '''
       milestone: V2
-      tests: []
+      tests: ["i2c_rx_oversample"]
     }
     {
       name: host_rw_loopback
