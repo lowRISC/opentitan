@@ -20,3 +20,26 @@ split_var -module "prim_arbiter_tree" -var "sel_tree"
 split_var -module "prim_arbiter_tree" -var "mask_tree"
 split_var -module "prim_arbiter_tree" -var "idx_tree"
 split_var -module "prim_arbiter_tree" -var "data_tree"
+
+// Waive ALWCOMBORDER warnings about the tree variables. We've got
+// lines like "req_tree[Pa] = req_tree[C0] | req_tree[C1];" and it
+// seems that the ALWCOMBORDER warning isn't affected by the split_var
+// rules above.
+lint_off -rule ALWCOMBORDER -file "*/rtl/prim_arbiter_fixed.sv" -match "*data_tree*"
+lint_off -rule ALWCOMBORDER -file "*/rtl/prim_arbiter_fixed.sv" -match "*gnt_tree*"
+lint_off -rule ALWCOMBORDER -file "*/rtl/prim_arbiter_fixed.sv" -match "*idx_tree*"
+lint_off -rule ALWCOMBORDER -file "*/rtl/prim_arbiter_fixed.sv" -match "*req_tree*"
+
+lint_off -rule ALWCOMBORDER -file "*/rtl/prim_arbiter_tree.sv" -match "*req_tree*"
+lint_off -rule ALWCOMBORDER -file "*/rtl/prim_arbiter_tree.sv" -match "*prio_tree*"
+lint_off -rule ALWCOMBORDER -file "*/rtl/prim_arbiter_tree.sv" -match "*sel_tree*"
+lint_off -rule ALWCOMBORDER -file "*/rtl/prim_arbiter_tree.sv" -match "*mask_tree*"
+lint_off -rule ALWCOMBORDER -file "*/rtl/prim_arbiter_tree.sv" -match "*idx_tree*"
+lint_off -rule ALWCOMBORDER -file "*/rtl/prim_arbiter_tree.sv" -match "*data_tree*"
+
+lint_off -rule ALWCOMBORDER -file "*/rtl/prim_arbiter_ppc.sv" -match "*ppc_out*"
+
+// Waive unused clk and reset signals: they're just used for
+// assertions (which Verilator doesn't see)
+lint_off -rule UNUSED -file "*/rtl/prim_arbiter_fixed.sv" -match "*clk_i*"
+lint_off -rule UNUSED -file "*/rtl/prim_arbiter_fixed.sv" -match "*rst_ni*"
