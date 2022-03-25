@@ -1578,17 +1578,6 @@
       tests: []
     }
     {
-      name: chip_sw_aes_lc_escalate_en
-      desc: '''Verify the effect of LC escalate en signal on AES.
-
-            - Trigger an LC escalatation signal by writing to alert_test CSR (in some other IP).
-            - Trigger an AES operation to run.
-            - When the escalation kicks in, verify that the AES is in the error state.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
       name: chip_sw_aes_idle
       desc: '''Verify AES idle signaling to clkmgr.
 
