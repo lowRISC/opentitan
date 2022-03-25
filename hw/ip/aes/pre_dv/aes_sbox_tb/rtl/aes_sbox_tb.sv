@@ -73,9 +73,9 @@ module aes_sbox_tb #(
   assign masked_stimulus = stimulus ^ in_mask;
 
   // PRD Generation
-  parameter int unsigned WidthPRDSBoxCanrightMasked        = 8;
-  parameter int unsigned WidthPRDSBoxCanrightMaskedNoreuse = 18;
-  parameter int unsigned WidthPRDSBoxDOM                   = 28;
+  localparam int unsigned WidthPRDSBoxCanrightMasked        = 8;
+  localparam int unsigned WidthPRDSBoxCanrightMaskedNoreuse = 18;
+  localparam int unsigned WidthPRDSBoxDOM                   = 28;
 
   logic                                   [31:0] prd;
   logic [31-WidthPRDSBoxCanrightMaskedNoreuse:0] unused_prd;

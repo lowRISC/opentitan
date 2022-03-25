@@ -93,15 +93,15 @@ module chip_earlgrey_asic (
   // Special Signal Indices //
   ////////////////////////////
 
-  parameter int Tap0PadIdx = 30;
-  parameter int Tap1PadIdx = 27;
-  parameter int Dft0PadIdx = 25;
-  parameter int Dft1PadIdx = 26;
-  parameter int TckPadIdx = 38;
-  parameter int TmsPadIdx = 35;
-  parameter int TrstNPadIdx = 39;
-  parameter int TdiPadIdx = 37;
-  parameter int TdoPadIdx = 36;
+  localparam int Tap0PadIdx = 30;
+  localparam int Tap1PadIdx = 27;
+  localparam int Dft0PadIdx = 25;
+  localparam int Dft1PadIdx = 26;
+  localparam int TckPadIdx = 38;
+  localparam int TmsPadIdx = 35;
+  localparam int TrstNPadIdx = 39;
+  localparam int TdiPadIdx = 37;
+  localparam int TdoPadIdx = 36;
 
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
