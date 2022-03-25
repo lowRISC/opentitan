@@ -65,7 +65,7 @@ module prim_clock_meas #(
     end else if (!ref_en && |ref_cnt) begin
       ref_cnt <= '0;
       ref_valid <= '0;
-    end else if (ref_en && (ref_cnt == RefCnt - 1)) begin
+    end else if (ref_en && (int'(ref_cnt) == RefCnt - 1)) begin
       // restart count and measure
       ref_cnt <= '0;
       ref_valid <= 1'b1;

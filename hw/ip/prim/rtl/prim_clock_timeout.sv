@@ -27,7 +27,7 @@ module prim_clock_timeout #(
   logic [CntWidth-1:0] cnt;
   logic ack;
   logic timeout;
-  assign timeout = cnt >= TimeOutCnt;
+  assign timeout = int'(cnt) >= TimeOutCnt;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       cnt <= '0;
