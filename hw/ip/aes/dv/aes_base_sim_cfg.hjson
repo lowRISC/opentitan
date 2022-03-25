@@ -58,7 +58,7 @@
     {
       name: aes_no_masking
       build_opts: ["+define+EN_MASKING=0",
-                   "+define+SBOX_IMPL=aes_pkg::SBoxImplLut" ]
+                   "+define+SBOX_IMPL=aes_pkg::SBoxImplCanright" ]
     }
     {
       name: aes_masking
