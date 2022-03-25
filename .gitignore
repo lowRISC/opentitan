@@ -73,3 +73,6 @@ sw/host/**/target
 
 # Bazel-related cache and output directories
 bazel-*
+
+# Local binaries that should not be committed to the codebase
+.bin/
