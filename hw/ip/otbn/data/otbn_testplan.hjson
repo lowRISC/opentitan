@@ -132,5 +132,14 @@
       milestone: V2
       tests: ["otbn_zero_state_err_urnd"]
     }
+    {
+      name: illegal_bus_access
+      desc: '''
+            Trigger reads and writes to both DMEM and IMEM and expect a fatal alert for
+            ILLEGAL_BUS_ACCESS. Check that *mem_rdata_bus pins are at 0 when reads are done
+            '''
+      milestone: V2S
+      tests: ["otbn_illegal_mem_acc"]
+    }
   ]
 }
