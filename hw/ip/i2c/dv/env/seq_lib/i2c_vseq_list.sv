@@ -13,6 +13,7 @@
 `include "i2c_fifo_reset_fmt_vseq.sv"
 `include "i2c_fifo_reset_rx_vseq.sv"
 `include "i2c_timeout_vseq.sv"
+`include "i2c_rx_oversample_vseq.sv"
 `include "i2c_fifo_full_vseq.sv"
 `include "i2c_perf_vseq.sv"
 `include "i2c_stretch_timeout_vseq.sv"

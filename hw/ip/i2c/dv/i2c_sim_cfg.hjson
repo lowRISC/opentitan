@@ -57,6 +57,12 @@
     }
 
     {
+      name: i2c_rx_oversample
+      uvm_test_seq: i2c_rx_oversample_vseq
+      run_opts: ["+test_timeout_ns=10_000_000"]
+    }
+
+    {
       name: i2c_fifo_watermark
       uvm_test_seq: i2c_fifo_watermark_vseq
     }
