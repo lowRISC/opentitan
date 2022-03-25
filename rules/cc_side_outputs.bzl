@@ -29,7 +29,12 @@ def _cc_compile_different_output(target, ctx, extension, flags):
         if src.files.to_list()[0].extension in [
             # We only use .cc, but to avoid nasty surprises we support all five
             # C++ file extensions.
-            "c", "cc", "cpp", "cxx", "c++", "C",
+            "c",
+            "cc",
+            "cpp",
+            "cxx",
+            "c++",
+            "C",
         ]
     ]
 
@@ -73,18 +78,20 @@ def _cc_compile_different_output(target, ctx, extension, flags):
         output_file = ctx.actions.declare_file(
             # Some source files in the repo are currently pulled in by multiple
             # rules, and this is allowed in general, although not a good idea.
-            # 
+            #
             # Adding the rule name in front of the file name helps mitigate this
             # issue.
             "{}.{}.{}".format(target.label.name, source_file.basename, extension),
         )
         outputs.append(output_file)
 
+        #output_file_tmp = ctx.actions.declare_file(output_file.basename + ".tmp")
+
         # C files are treated specially, and have different flags applied
         # (e.g. --std=c11).
         opts = ctx.fragments.cpp.copts + ctx.rule.attr.copts
         if source_file.extension == "c":
-            opts += ctx.fragments.cpp.conlyopts + ctx.rule.attr.conlyopts
+            opts += ctx.fragments.cpp.conlyopts
         else:
             opts += ctx.fragments.cpp.cxxopts + ctx.rule.attr.cxxopts
 
@@ -92,7 +99,6 @@ def _cc_compile_different_output(target, ctx, extension, flags):
             feature_configuration = feature_configuration,
             cc_toolchain = cc_toolchain,
             source_file = source_file.path,
-            output_file = output_file.path,
             user_compile_flags = opts + flags,
             include_directories = depset(
                 direct = [src.dirname for src in cc_compile_ctx.headers.to_list()],
@@ -118,9 +124,15 @@ def _cc_compile_different_output(target, ctx, extension, flags):
             variables = c_compile_variables,
         )
 
-        ctx.actions.run(
-            executable = c_compiler_path,
-            arguments = command_line,
+        ctx.actions.run_shell(
+            tools = [
+                ctx.file._cleanup_script,
+            ],
+            arguments = [
+                c_compiler_path,
+                ctx.file._cleanup_script.path,
+                output_file.path,
+            ] + command_line,
             env = env,
             inputs = depset(
                 [source_file],
@@ -130,6 +142,12 @@ def _cc_compile_different_output(target, ctx, extension, flags):
                 ],
             ),
             outputs = [output_file],
+            command = """
+                CC=$1; shift
+                UNTAB=$1; shift
+                OUT=$1; shift
+                $CC -o - $@ | $UNTAB > $OUT
+            """,
         )
 
     return [CcSideProductInfo(files = depset(
@@ -148,6 +166,10 @@ cc_asm_aspect = aspect(
         all of its dependencies.
     """,
     attrs = {
+        "_cleanup_script": attr.label(
+            allow_single_file = True,
+            default = Label("//rules/scripts:expand_tabs.sh"),
+        ),
         "_cc_toolchain": attr.label(
             default = Label("@bazel_tools//tools/cpp:current_cc_toolchain"),
         ),
@@ -176,6 +198,10 @@ cc_llvm_aspect = aspect(
         If the current compiler does not appear to be clang, it outputs nothing instead.
     """,
     attrs = {
+        "_cleanup_script": attr.label(
+            allow_single_file = True,
+            default = Label("//rules/scripts:expand_tabs.sh"),
+        ),
         "_cc_toolchain": attr.label(
             default = Label("@bazel_tools//tools/cpp:current_cc_toolchain"),
         ),
