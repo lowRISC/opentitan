@@ -6,6 +6,7 @@
 
 module otbn_idle_checker
   import otbn_reg_pkg::*;
+  import otbn_pkg::*;
 (
   input logic         clk_i,
   input logic         rst_ni,
@@ -19,7 +20,9 @@ module otbn_idle_checker
   input logic otbn_dmem_scramble_key_req_busy_i,
   input logic otbn_imem_scramble_key_req_busy_i,
 
-  input logic [7:0] status_q_i
+  input logic [7:0] status_q_i,
+  input logic [38:0] imem_rdata_bus,
+  input logic [ExtWLEN-1:0] dmem_rdata_bus
 );
 
   // Detect writes to CMD. They only take effect if we are in state IDLE
@@ -112,5 +115,7 @@ module otbn_idle_checker
 
   `ASSERT(NotRunningWhenLocked_A,
           !((status_q_i == otbn_pkg::StatusLocked) && running_q))
+
+   `ASSERT(NoMemRdataWhenBusy_A, running_q |-> imem_rdata_bus == 'b0 && dmem_rdata_bus == 'b0)
 
 endmodule

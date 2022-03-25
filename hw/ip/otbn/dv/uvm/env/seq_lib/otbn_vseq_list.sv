@@ -14,3 +14,4 @@
 `include "otbn_stress_all_vseq.sv"
 `include "otbn_escalate_vseq.sv"
 `include "otbn_zero_state_err_urnd_vseq.sv"
+`include "otbn_illegal_mem_acc_vseq.sv"

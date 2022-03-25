@@ -31,7 +31,10 @@ module otbn_bind;
     .otbn_dmem_scramble_key_req_busy_i(otbn_dmem_scramble_key_req_busy),
     .otbn_imem_scramble_key_req_busy_i(otbn_imem_scramble_key_req_busy),
 
-    .status_q_i(reg2hw.status.q)
+    .status_q_i(reg2hw.status.q),
+
+    .imem_rdata_bus(imem_rdata_bus),
+    .dmem_rdata_bus(dmem_rdata_bus)
   );
 
 endmodule
