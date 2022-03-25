@@ -158,11 +158,11 @@ class csrng_base_vseq extends cip_base_vseq #(
         force_fifo_err(path_pop, path_not_empty, 1'b1, 1'b0, reg_field, exp_data);
       end
       fifo_state: begin // fifo state err
-        index1         = path_exts.find_index(x) with (x == "pop");
+        index1         = path_exts.find_index(x) with (x == "full");
         index2         = path_exts.find_index(x) with (x == "not_empty");
-        path_pop       = paths[index1[0]];
+        path_full      = paths[index1[0]];
         path_not_empty = paths[index2[0]];
-        val_pop        = values[index1[0]];
+        val_full       = values[index1[0]];
         val_not_empty  = values[index2[0]];
         force_fifo_err(path_full, path_not_empty, 1'b1, 1'b0, reg_field, exp_data);
       end
