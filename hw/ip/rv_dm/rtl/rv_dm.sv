@@ -269,6 +269,7 @@ module rv_dm
   logic                   host_r_valid;
   logic   [BusWidth-1:0]  host_r_rdata;
   logic                   host_r_err;
+  logic                   host_r_other_err;
 
   dm_sba #(
     .BusWidth(BusWidth)
@@ -282,6 +283,8 @@ module rv_dm
     .master_be_o             ( host_be               ),
     .master_gnt_i            ( host_gnt              ),
     .master_r_valid_i        ( host_r_valid          ),
+    .master_r_err_i          ( host_r_err            ),
+    .master_r_other_err_i    ( host_r_other_err      ),
     .master_r_rdata_i        ( host_r_rdata          ),
     .dmactive_i              ( dmactive_o            ),
     .sbaddress_i             ( sbaddress_csrs_sba    ),
@@ -336,18 +339,15 @@ module rv_dm
     .err_o        (host_r_err),
     // Note: This bus integrity error is not connected to the alert due to a few reasons:
     // 1) the SBA module is not active in production life cycle states.
-    // 2) there may be value in being able to accept incoming transactions with integrity
+    // 2) there is value in being able to accept incoming transactions with integrity
     //    errors during test / debug life cycle states so that the system can be debugged
     //    without triggering alerts.
-    .intg_err_o   (),
+    // 3) the error condition is hooked up to an error CSR that can be read out by the debugger
+    //    via JTAG so that bus integrity errors can be told appart from regular bus errors.
+    .intg_err_o   (host_r_other_err),
     .tl_o         (sba_tl_h_o_int),
     .tl_i         (sba_tl_h_i_int)
   );
-
-  // DBG doesn't handle error responses - we silently drop it.
-
-  logic unused_host_r_err;
-  assign unused_host_r_err = host_r_err;
 
   localparam int unsigned AddressWidthWords = BusWidth - $clog2(BusWidth/8);
 
