@@ -10,4 +10,4 @@ waive -rules {HIER_NET_NOT_READ HIER_BRANCH_NOT_READ} -regexp {unused_.*}
 waive -rules {HIER_NET_NOT_READ HIER_BRANCH_NOT_READ} -regexp {gen_.*\.unused_.*}
 waive -rules {ONE_BRANCH} -regexp {unique case statement has only one branch}
 
-waive -rules {IFDEF_CODE} -regexp {unused_err_o} -location {prim_sparse_fsm_flop.sv}
+
