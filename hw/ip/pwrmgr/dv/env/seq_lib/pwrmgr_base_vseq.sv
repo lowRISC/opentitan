@@ -115,7 +115,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     cfg.pwrmgr_vif.lc_hw_debug_en = lc_ctrl_pkg::Off;
     cfg.pwrmgr_vif.lc_dft_en = lc_ctrl_pkg::Off;
     mubi_mode = PwrmgrMubiNone;
-    void'($value$plusargs("pwrmgr_mubi_mode=%0d", mubi_mode));
+    `DV_GET_ENUM_PLUSARG(pwrmgr_mubi_e, mubi_mode, pwrmgr_mubi_mode)
     `uvm_info(`gfn, $sformatf("pwrmgr mubi mode : %s", mubi_mode.name()), UVM_MEDIUM)
 
     if (do_pwrmgr_init) pwrmgr_init();

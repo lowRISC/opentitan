@@ -32,6 +32,7 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"]
 
   // Overrides
@@ -44,7 +45,10 @@
 
   // Add additional tops for simulation.
   sim_tops: ["pwrmgr_bind",
-             "pwrmgr_rstmgr_bind"]
+             "pwrmgr_rstmgr_bind",
+             "pwrmgr_cov_bind",
+             "sec_cm_prim_count_bind",
+             "sec_cm_prim_sparse_fsm_flop_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
@@ -84,7 +88,41 @@
       name: pwrmgr_aborted_low_power
       uvm_test_seq: pwrmgr_aborted_low_power_vseq
     }
-
+    {
+      name: pwrmgr_sec_cm_lc_ctrl_intersig_mubi
+      uvm_test_seq: pwrmgr_repeat_wakeup_reset_vseq
+      run_opts: ["+test_timeout_ns=2000000", "+pwrmgr_mubi_mode=PwrmgrMubiLcCtrl"]
+    }
+    {
+      name: pwrmgr_sec_cm_rom_ctrl_intersig_mubi
+      uvm_test_seq: pwrmgr_repeat_wakeup_reset_vseq
+      run_opts: ["+test_timeout_ns=2000000", "+pwrmgr_mubi_mode=PwrmgrMubiRomCtrl"]
+    }
+    {
+      name: pwrmgr_sec_cm_rstmgr_intersig_mubi
+      uvm_test_seq: pwrmgr_sw_reset_vseq
+      run_opts: ["+test_timeout_ns=1000000"]
+    }
+    {
+      name: pwrmgr_esc_clk_rst_malfunc
+      uvm_test_seq: pwrmgr_esc_clk_rst_malfunc_vseq
+      run_opts: ["+test_timeout_ns=1000000"]
+    }
+    {
+      name: pwrmgr_sec_cm_ctrl_config_regwen
+      uvm_test_seq: pwrmgr_sec_cm_ctrl_config_regwen_vseq
+      run_opts: ["+test_timeout_ns=50000000"]
+    }
+    {
+      name: pwrmgr_global_esc
+      uvm_test_seq: pwrmgr_global_esc_vseq
+      run_opts: ["+test_timeout_ns=1000000000"]
+    }
+    {
+      name: pwrmgr_glitch
+      uvm_test_seq: pwrmgr_glitch_vseq
+      run_opts: ["+test_timeout_ns=1000000"]
+    }
     // TODO: add more tests here
   ]
 

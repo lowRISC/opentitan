@@ -17,6 +17,7 @@ filesets:
       - pwrmgr_rstmgr_bind.sv
       - pwrmgr_ast_sva_if.sv
       - pwrmgr_clock_enables_sva_if.sv
+      - pwrmgr_sec_cm_checker_assert.sv
     file_type: systemVerilogSource
 
   files_formal:
