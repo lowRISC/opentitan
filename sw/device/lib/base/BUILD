@@ -78,6 +78,7 @@ cc_library(
     srcs = ["hardened.c"],
     hdrs = ["hardened.h"],
     deps = [
+        ":macros",
         ":memory",
         ":stdasm",
     ],
@@ -109,22 +110,6 @@ cc_library(
     hdrs = [
         "multibits.h",
         "multibits_asm.h",
-    ],
-)
-
-cc_library(
-    name = "base",
-    srcs = [],
-    hdrs = ["mmio.h"],
-    deprecation = "Please use smaller lib/base targets instead of this one.",
-    deps = [
-        ":bitfield",
-        ":csr",
-        ":hardened",
-        ":macros",
-        ":memory",
-        ":multibits",
-        ":stdasm",
     ],
 )
 

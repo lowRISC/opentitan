@@ -11,7 +11,8 @@ cc_library(
     hdrs = ["boot_data.h"],
     deps = [
         ":error",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
     ],
@@ -25,7 +26,8 @@ cc_library(
         ":error",
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
     ],
@@ -63,7 +65,7 @@ cc_library(
         "cfi.h",
     ],
     deps = [
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:hardened",
     ],
 )
 
@@ -85,7 +87,8 @@ cc_library(
     deps = [
         ":epmp_intf",
         ":error",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:hardened",
     ],
 )
 
@@ -103,7 +106,7 @@ cc_test(
     deps = [
         ":epmp_intf",
         ":error",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:bitfield",
         "//sw/device/silicon_creator/lib/base:mock_csr",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
@@ -118,7 +121,7 @@ cc_library(
     deps = [
         ":epmp_intf",
         "//sw/device/lib/arch:device",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:csr",
     ],
 )
 
@@ -127,7 +130,8 @@ cc_library(
     srcs = ["absl_status.h"],
     hdrs = ["error.h"],
     deps = [
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
     ],
 )
 
@@ -136,7 +140,6 @@ cc_test(
     srcs = ["error_unittest.cc"],
     deps = [
         ":error",
-        "//sw/device/lib/base",
         "@googletest//:gtest_main",
     ],
 )
@@ -151,7 +154,7 @@ cc_library(
         "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
         "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:multibits",
     ],
 )
 
@@ -212,7 +215,7 @@ cc_library(
         ":keymgr_binding",
         ":manifest_size",
         ":sigverify_internal",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
     ],
 )
@@ -251,7 +254,6 @@ cc_test(
         ":manifest_intf",
         ":sigverify_internal",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
         "//sw/device/silicon_creator/lib/base:mock_csr",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/testing:mask_rom_test",
@@ -265,7 +267,6 @@ cc_library(
     hdrs = ["otbn_util.h"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
         "//sw/device/silicon_creator/lib/drivers:otbn",
     ],
 )
@@ -275,7 +276,9 @@ cc_library(
     hdrs = ["shutdown.h"],
     deps = [
         ":error",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
     ],
 )
 
@@ -307,8 +310,14 @@ cc_library(
         "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
-        "//sw/device/lib/base",
         "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:multibits",
+        "//sw/device/lib/base:stdasm",
         "//sw/device/silicon_creator/lib/drivers:alert",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
@@ -338,7 +347,13 @@ cc_test(
         "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:multibits",
+        "//sw/device/lib/base:stdasm",
         "//sw/device/lib/base/testing:mock_abs_mmio",
         "//sw/device/silicon_creator/lib/drivers:mock_alert",
         "//sw/device/silicon_creator/lib/drivers:mock_lifecycle",
@@ -380,7 +395,10 @@ cc_library(
         ":sigverify_intf",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib/drivers:otp",
     ],
 )
@@ -405,7 +423,10 @@ cc_test(
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib/drivers:mock_lifecycle",
         "//sw/device/silicon_creator/lib/drivers:mock_otp",
         "//sw/device/silicon_creator/testing:mask_rom_test",
@@ -458,7 +479,8 @@ cc_library(
     srcs = ["sigverify_mod_exp_ibex.c"],
     deps = [
         ":sigverify_internal",
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
     ],
 )
 

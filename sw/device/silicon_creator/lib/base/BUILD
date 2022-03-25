@@ -14,7 +14,7 @@ cc_library(
     hdrs = ["mock_csr.h"],
     defines = ["MOCK_CSR"],
     deps = [
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:csr",
         "//sw/device/lib/base/testing:global_mock",
         "@googletest//:gtest",
     ],
@@ -33,10 +33,10 @@ cc_library(
     name = "sec_mmio",
     srcs = ["sec_mmio.c"],
     hdrs = ["sec_mmio.h"],
-    target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//sw/device/lib/base",
         "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
     ],
 )
@@ -65,7 +65,8 @@ cc_test(
     ],
     defines = ["OT_OFF_TARGET_TEST"],
     deps = [
-        "//sw/device/lib/base",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
         "//sw/device/lib/base/testing:mock_abs_mmio",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/testing:mask_rom_test",
