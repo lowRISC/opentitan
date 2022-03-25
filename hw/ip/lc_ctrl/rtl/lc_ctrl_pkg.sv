@@ -58,6 +58,31 @@ package lc_ctrl_pkg;
   // Helper Functions for Life Cycle Signals //
   /////////////////////////////////////////////
 
+  // Convert a life cycle signal to mubi4
+  // If in the future other versions are desired, this should really be
+  // moved to prim_mubi_pkg
+  //
+  // The On ^ MuBi4True determines the bit differences between
+  // an lc_ctrl_pkg::On and prim_mubi_pkg::MuBi4True.
+  // Once the required inversions are determined, it is then applied
+  // to the incoming value.  If the incoming value is true, it will
+  // appropriately flip to the correct MuBiValue.
+  // Since the false value is always complement of the true value,
+  // this mechanism will also work for the other polarity.
+  function automatic prim_mubi_pkg::mubi4_t lc_to_mubi4(lc_tx_t val);
+    return prim_mubi_pkg::mubi4_t'(val ^ (On ^ prim_mubi_pkg::MuBi4True));
+  endfunction // lc_to_mubi4
+
+  function automatic lc_tx_t mubi4_to_lc(prim_mubi_pkg::mubi4_t val);
+    return lc_tx_t'(val ^ (prim_mubi_pkg::MuBi4True ^ On));
+  endfunction // mubi4_to_lc
+
+  // same function as above, but for an input that is MuBi4True, return Off
+  // for an input that is MuBi4False, return On
+  function automatic lc_tx_t mubi4_to_lc_inv(prim_mubi_pkg::mubi4_t val);
+    return lc_tx_t'(val ^ (prim_mubi_pkg::MuBi4True ^ Off));
+  endfunction // mubi4_to_lc_inv
+
   // Test whether the value is supplied is one of the valid enumerations
   function automatic logic lc_tx_test_invalid(lc_tx_t val);
     return ~(val inside {On, Off});
