@@ -18,4 +18,7 @@ cc_library(
         "stdint.h",
         "stdnoreturn.h",
     ],
+    deprecation =
+        "Do not depend on this target; instead, include its headers via " +
+        "system header includes like #include <stdint.h>",
 )
