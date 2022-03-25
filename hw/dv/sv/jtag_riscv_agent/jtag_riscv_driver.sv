@@ -75,8 +75,9 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
       activate_rv_dm();
     end else begin
       if (cfg.is_rv_dm) begin
-        bit [DMI_DATAW-1:0] sbcs_val = drive_req.op == DmiRead ?
-                                       ('b1<<SbBusy | 'b1 << SbReadOnAddr) : 'b1<<SbBusy;
+        bit [DMI_DATAW-1:0] sbcs_val = (2'b10 << SbAccess) | ('b1 << SbBusy);
+        if (drive_req.op == DmiRead) sbcs_val |= 'b1 << SbReadOnAddr;
+
         `DV_CHECK_FATAL(rv_dm_activated, "Please activate rv_dm before accessing CSRs!")
 
         // If using rv_dm to access csr, need to send the following seq:
