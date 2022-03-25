@@ -82,7 +82,8 @@ class clkmgr_base_vseq extends cip_base_vseq #(
 
   task pre_start();
     mubi_mode = ClkmgrMubiNone;
-    void'($value$plusargs("clkmgr_mubi_mode=%0d", mubi_mode));
+    `DV_GET_ENUM_PLUSARG(clkmgr_mubi_e, mubi_mode, clkmgr_mubi_mode)
+    `uvm_info(`gfn, $sformatf("mubi_mode = %s", mubi_mode.name), UVM_MEDIUM)
     // Disable the assertions requiring strict mubi4 and lc_tx_t to test non-strict-true values.
     $assertoff(0, "prim_mubi4_sync");
     $assertoff(0, "prim_lc_sync");
