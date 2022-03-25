@@ -269,13 +269,13 @@ module tlul_assert #(
           !clk_i, !rst_ni || disable_sva)
     // d2h error cases
     `ASSERT(legalAOpcodeErr_A, d_error_pre_S and legalAOpcodeErr_S |=>
-            s_eventually (d2h.d_valid && d2h.d_error))
+            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_sva)
     `ASSERT(sizeGTEMaskErr_A, d_error_pre_S and sizeGTEMaskErr_S |=>
-            s_eventually (d2h.d_valid && d2h.d_error))
+            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_sva)
     `ASSERT(sizeMatchesMaskErr_A, d_error_pre_S and sizeMatchesMaskErr_S |=>
-            s_eventually (d2h.d_valid && d2h.d_error))
+            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_sva)
     `ASSERT(addrSizeAlignedErr_A, d_error_pre_S and addrSizeAlignedErr_S |=>
-            s_eventually (d2h.d_valid && d2h.d_error))
+            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_sva)
   end else begin : gen_unknown
     initial begin : p_unknonw
       `ASSERT_I(unknownConfig_A, 0 == 1)
