@@ -45,17 +45,11 @@ module tlul_sram_byte import tlul_pkg::*; #(
       StWriteCmd
     } state_e;
 
-    // signal select enumeration
-    typedef enum logic [1:0] {
-      SelPassThru = 2'b01,
-      SelInt = 2'b10
-    } sel_sig_e;
-
     // state and selection
-    sel_sig_e sel_int;
     logic stall_host;
-    logic wr_phase;
+    logic rd_phase;
     logic rd_wait;
+    logic wr_phase;
     state_e state_d, state_q;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -82,22 +76,24 @@ module tlul_sram_byte import tlul_pkg::*; #(
     assign sram_d_ack = tl_sram_i.d_valid & tl_sram_o.d_ready;
     assign wr_txn = (tl_i.a_opcode == PutFullData) | (tl_i.a_opcode == PutPartialData);
 
-
-    assign byte_req_ack = byte_wr_txn & a_ack;
-    assign byte_wr_txn = tl_i.a_valid & ~&tl_i.a_mask & wr_txn & ~error_i;
-    assign sel_int = (byte_wr_txn || stall_host) ? SelInt : SelPassThru;
+    assign byte_req_ack = byte_wr_txn & a_ack & ~error_i;
+    assign byte_wr_txn = tl_i.a_valid & ~&tl_i.a_mask & wr_txn;
 
     // state machine handling
     always_comb begin
       rd_wait = 1'b0;
       stall_host = 1'b0;
       wr_phase = 1'b0;
+      rd_phase = 1'b0;
       state_d = state_q;
 
       unique case (state_q)
         StPassThru: begin
-          if (byte_req_ack) begin
-            state_d = StWaitRd;
+          if (byte_wr_txn) begin
+            rd_phase = 1'b1;
+            if (byte_req_ack) begin
+              state_d = StWaitRd;
+            end
           end
         end
 
@@ -105,9 +101,10 @@ module tlul_sram_byte import tlul_pkg::*; #(
         // belongs to the partial read unless it flushes all prior transactions. Hence, we wait
         // here until exactly one outstanding transaction remains (that one is the partial read).
         StWaitRd: begin
+          rd_phase = 1'b1;
           stall_host = 1'b1;
           if (pending_txn_cnt == $bits(pending_txn_cnt)'(1)) begin
-            rd_wait    = 1'b1;
+            rd_wait = 1'b1;
             if (sram_d_ack) begin
               state_d = StWriteCmd;
             end
@@ -182,14 +179,11 @@ module tlul_sram_byte import tlul_pkg::*; #(
       end
     end
 
-    // internally generated transactions
-    tl_h2d_t tl_h2d_int, tl_h2d_intg;
-
     // while we could simply not assert a_ready to ensure the host keeps
     // the request lines stable, there is no guarantee the hosts (if there are multiple)
     // do not re-arbitrate on every cycle if its transactions are not accepted.
     // As a result, it is better to capture the transaction attributes.
-    logic [top_pkg::TL_DW-1:0] combined_data;
+    logic [top_pkg::TL_DW-1:0] combined_data, unused_data;
     always_comb begin
       for (int i = 0; i < top_pkg::TL_DBW; i++) begin
         combined_data[i*8 +: 8] = held_data.a_mask[i] ?
@@ -198,41 +192,74 @@ module tlul_sram_byte import tlul_pkg::*; #(
       end
     end
 
-    // Since we are performing a read-modify-write operation,
-    // we always access the entire word.
-    localparam int AccessSize = $clog2(top_pkg::TL_DBW);
-    assign tl_h2d_int = '{
-      // use incoming valid as long as we are not stalling the host
-      // otherwise look at whether there is a pending write.
-      a_valid:   (tl_i.a_valid & ~stall_host) | wr_phase,
-      a_opcode:  wr_phase ? PutFullData         : Get,
-      a_param:   wr_phase ? held_data.a_param   : tl_i.a_param,  // registered param
-      a_size:    top_pkg::TL_SZW'(AccessSize),                   // we always access all bytes
-      a_source:  wr_phase ? held_data.a_source  : tl_i.a_source, // registered source
-      // registered address, need to use word aligned addresses here.
-      a_address: wr_phase ? {held_data.a_address[top_pkg::TL_AW-1:AccessSize], {AccessSize{1'b0}}} :
-                            {tl_i.a_address[top_pkg::TL_AW-1:AccessSize], {AccessSize{1'b0}}},
-      a_mask:    '{default: '1},
-      a_data:    wr_phase ? combined_data       : tl_i.a_data,   // registered data
-      a_user:    wr_phase ? held_data.a_user    : tl_i.a_user,   // registered user
-      // if we're waiting for an internal read, we force this to 1.
-      d_ready:   tl_i.d_ready | rd_wait
-    };
+    // Compute updated integrity bits for the data.
+    // Note that the CMD integrity does not have to be correct, since it is not consumed nor
+    // checked further downstream.
+    logic [tlul_pkg::DataIntgWidth-1:0] data_intg;
+
+    tlul_data_integ_enc u_tlul_data_integ_enc (
+      .data_i(combined_data),
+      .data_intg_o({data_intg, unused_data})
+    );
+
+    tl_a_user_t combined_user;
+    always_comb begin
+      combined_user           = held_data.a_user;
+      combined_user.data_intg = data_intg;
+    end
+
+    localparam logic [top_pkg::TL_SZW-1:0] AccessSize = $clog2(top_pkg::TL_DBW);
+    always_comb begin
+      // Pass-through by default
+      tl_sram_o = tl_i;
+      // if we're waiting for an internal read for RMW, we force this to 1.
+      tl_sram_o.d_ready = tl_i.d_ready | rd_wait;
+
+      // We take over the TL-UL bus if there is a pending read or write for the RMW transaction.
+      // TL-UL signals are selectively muxed below to reduce complexity and remove long timing
+      // paths through the error_i signal. In particular, we avoid creating paths from error_i
+      // to the address and data output since these may feed into RAM scrambling logic further
+      // downstream.
+
+      // Write transactions for RMW.
+      if (wr_phase) begin
+        tl_sram_o.a_valid   = 1'b1;
+        tl_sram_o.a_opcode  = PutFullData;
+        // Since we are performing a read-modify-write operation,
+        // we always access the entire word.
+        tl_sram_o.a_size    = AccessSize;
+        tl_sram_o.a_mask    = '{default: '1};
+        // override with held / combined data.
+        // need to use word aligned addresses here.
+        tl_sram_o.a_address = held_data.a_address;
+        tl_sram_o.a_address[AccessSize-1:0] = '0;
+        tl_sram_o.a_source  = held_data.a_source;
+        tl_sram_o.a_param   = held_data.a_param;
+        tl_sram_o.a_data    = combined_data;
+        tl_sram_o.a_user    = combined_user;
+      // Read transactions for RMW.
+      end else if (rd_phase) begin
+        // need to use word aligned addresses here.
+        tl_sram_o.a_address[AccessSize-1:0] = '0;
+        // Only override the control signals if there is no error at the input.
+        if (!error_i || stall_host) begin
+          // Since we are performing a read-modify-write operation,
+          // we always access the entire word.
+          tl_sram_o.a_size    = AccessSize;
+          tl_sram_o.a_mask    = '{default: '1};
+          // use incoming valid as long as we are not stalling the host
+          tl_sram_o.a_valid   = tl_i.a_valid & ~stall_host;
+          tl_sram_o.a_opcode  = Get;
+        end
+      end
+    end
 
     logic unused_held_data;
     assign unused_held_data = ^{held_data.a_address[AccessSize-1:0],
+                                held_data.a_user.data_intg,
                                 held_data.a_size};
 
-    // outgoing tlul transactions
-    tlul_cmd_intg_gen #(
-      .EnableDataIntgGen(EnableIntg)
-    ) u_intg_gen (
-      .tl_i(tl_h2d_int),
-      .tl_o(tl_h2d_intg)
-    );
-
-    assign tl_sram_o = (sel_int == SelInt) ? tl_h2d_intg : tl_i;
-    assign error_o = (sel_int == SelInt) ? '0 : error_i;
+    assign error_o = error_i & ~stall_host;
 
     logic size_fifo_rdy;
     logic [top_pkg::TL_SZW-1:0] a_size;
