@@ -8,7 +8,7 @@
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
 # clkmgr peri clock connectivity
-CONNECTION, CLKMGR_PERI_CLK_ADC_CTRL_AON_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_peri, top_earlgrey.u_adc_ctrl_aon, clk_i
+CONNECTION, CLKMGR_PERI_CLK_ADC_CTRL_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_peri, top_earlgrey.u_adc_ctrl_aon, clk_i
 
 CONNECTION, CLKMGR_PERI_CLK_GPIO_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_peri, top_earlgrey.u_gpio, clk_i
 
