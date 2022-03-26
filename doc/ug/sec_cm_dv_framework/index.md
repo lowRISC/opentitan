@@ -69,6 +69,34 @@ endmodule
 
 ```
 
+### Special Handling of Sparse FSM Primitive
+
+Sparse FSMs in OpenTitan security IPs are implemented with the `prim_sparse_fsm_flop` countermeasure primitive to ensure that the state encoding cannot be altered by synthesis tools.
+This primititive also implements the embedded common checks mentioned above.
+
+However, simulation tools like Xcelium and VCS are at this time not able to correctly infer FSMs and report FSM coverage when the state registers reside in a different hierarchy (such as `prim_sparse_fsm_flop`) than the next-state logic of the FSMs.
+
+In order to work around this issue, the wrapper macro `PRIM_FLOP_SPARSE_FSM` should be used instead of directly instantiating the `prim_sparse_fsm_flop` primitive.
+The `PRIM_FLOP_SPARSE_FSM` macro instantiates a behavioral state register in addition to the `prim_sparse_fsm_flop` primitive when the design is built with `SIMULATION` defined.
+This enables simulation tools to correctly infer FSMs and report coverage accordingly.
+For other build targets that do not define `SIMULATION` this macro only instantiates the `prim_sparse_fsm_flop` primitive.
+
+An example of how the macro should be used is shown below:
+
+```systemverilog
+// u_state_flops: instance name of the prim_sparse_fsm_flop primitive
+// state_d: FSM next state
+// state_q: FSM current state
+// state_e: FSM state enum type
+// ResetSt: FSM reset state
+// clk_i: Clock of the design (defaults to clk_i)
+// rst_ni: Reset of the design (defaults to rst_ni)
+// SvaEn: A value of 1 enables the embedded assertion (defaults to 1)
+`PRIM_FLOP_SPARSE_FSM(u_state_flops, state_d, state__q, state_e, ResetSt, clk_i, rst_ni, SvaEn)
+```
+
+In order to generate a complete template for sparsely encoded FSMs, please refer to the [the sparse-fsm-encode.py script](https://github.com/lowRISC/opentitan/blob/master/util/design/sparse-fsm-encode.py).
+
 ## Verification Framework For The Standardized Design Countermeasures
 
 This verification framework involves three different steps, which are all needed in order to acheive the completed verification for countermeasures.
