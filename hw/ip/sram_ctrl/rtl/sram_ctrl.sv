@@ -405,7 +405,8 @@ module sram_ctrl
   );
 
   // Interposing mux logic for initialization with pseudo random data.
-  assign sram_req        = tlul_req | init_req;
+  // TODO: use tlul_lc_gate for local_esc gating instead.
+  assign sram_req        = tlul_req & ~local_esc | init_req;
   assign tlul_gnt        = sram_gnt & ~init_req & ~local_esc;
   assign sram_we         = tlul_we | init_req;
   assign sram_intg_error = local_esc & ~init_req;
