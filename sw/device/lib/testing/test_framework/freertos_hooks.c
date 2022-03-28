@@ -5,8 +5,14 @@
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
+
+#ifdef FREERTOS_IS_BAZEL
+#include "external/freertos/include/FreeRTOS.h"
+#include "external/freertos/include/task.h"
+#else
 #include "sw/vendor/freertos_freertos_kernel/include/FreeRTOS.h"
 #include "sw/vendor/freertos_freertos_kernel/include/task.h"
+#endif
 
 // NOTE: the function names below do NOT, and cannot, conform to the style
 // guide, since they are specific implementations of FreeRTOS defined functions.
