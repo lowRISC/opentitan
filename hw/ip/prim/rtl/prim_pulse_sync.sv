@@ -32,7 +32,27 @@ module prim_pulse_sync (
     end
   end
 
-  `ASSUME(SrcPulseCheck_M, src_pulse_i |=> !src_pulse_i, clk_src_i, !rst_src_ni)
+
+  // source active must come far enough such that the destination domain has time
+  // to create a valid pulse.
+`ifdef INC_ASSERT
+  logic src_active_flag;
+
+  // source active flag tracks whether there is an ongoing "toggle" event.
+  // Until this toggle event is accepted by the destination domain (negative edge of
+  // of the pulse output), the source side cannot toggle again.
+  always_ff @(posedge clk_src_i or negedge dst_pulse_o or negedge rst_src_ni) begin
+    if (!rst_src_ni) begin
+      src_active_flag <= '0;
+    end else if (!dst_pulse_o && src_active_flag) begin
+      src_active_flag <= '0;
+    end else if (src_pulse_i) begin
+      src_active_flag <= 1'b1;
+    end
+  end
+
+ `ASSERT(SrcPulseCheck_M, src_pulse_i |-> !src_active_flag, clk_src_i, !rst_src_ni)
+`endif
 
   //////////////////////////////////////////////////////////
   // synchronize level signal to destination clock domain //
