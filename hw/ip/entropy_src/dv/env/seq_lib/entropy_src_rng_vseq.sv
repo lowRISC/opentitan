@@ -145,18 +145,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
   endtask
 
-  task fips_mode_reenable();
-    ral.module_enable.module_enable.set(MuBi4False);
-    csr_update(.csr(ral.module_enable));
-
-    ral.conf.fips_enable.set(MuBi4True);
-    csr_update(.csr(ral.conf));
-
-    ral.module_enable.module_enable.set(MuBi4True);
-    csr_update(.csr(ral.module_enable));
-
-  endtask
-
   //
   // The csr_access seq task executes all csr accesses for enabling/disabling the DUT as needed,
   // clearing assertions
@@ -164,10 +152,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   task csr_access_seq();
     // Explicitly enable the DUT
     enable_dut();
-    if(cfg.route_software == MuBi4False && cfg.fips_enable == MuBi4False) begin
-      wait(do_reenable);
-      fips_mode_reenable();
-    end
     #(cfg.sim_duration);
   endtask
 
@@ -203,12 +187,18 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   // any interrupts that may have become stale as a result of the disable
   // operation.
   // TODO (documentation): Make sure this get an issue to be sure it goes into SW
-  task reinit_dut();
+  task reinit_dut(bit switch_to_fips_mode = 0);
+
     csr_wr(.ptr(ral.module_enable.module_enable), .value(prim_mubi_pkg::MuBi4False));
     // Disabling the module will clear the error state,
     // as well as the observe and entropy_data FIFOs
     // Clear all three related interupts here
     csr_wr(.ptr(ral.intr_state), .value(32'h7));
+
+    // Optionally switch the device into FIPS mode for the remainder of the test
+    if (switch_to_fips_mode) begin
+      csr_wr(.ptr(ral.conf.fips_enable), .value(MuBi4True));
+    end
 
     csr_wr(.ptr(ral.recov_alert_sts.es_main_sm_alert), .value(1'b1));
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(do_check_ht_diag)
@@ -220,7 +210,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       check_ht_diagnostics();
       `uvm_info(`gfn, "HT value check complete", UVM_HIGH)
     end
-    csr_wr(.ptr(ral.module_enable.module_enable), .value(prim_mubi_pkg::MuBi4True));
+
+    enable_dut();
+
   endtask
 
   task clear_ht_alert();
@@ -311,7 +303,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     fork
       m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
       begin
-        if(cfg.fips_enable == MuBi4False) begin
+        if (cfg.route_software == MuBi4False && cfg.fips_enable == MuBi4False) begin
           // Notify the CSR access thread after the single boot mode seed has been received
           m_csrng_pull_seq_single.start(p_sequencer.csrng_sequencer_h);
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_reenable_dut);
@@ -323,7 +315,19 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       end
       begin
         `uvm_info(`gfn, "Starting interrupt loop", UVM_HIGH)
-        while (do_background_procs) process_interrupts();
+        while (do_background_procs) begin
+          process_interrupts();
+          // If a NON-FIPS-to-FIPS re-enable is needed, coordinate the
+          // re-enable process with the interrupt handler to avoid
+          // I/O conflicts (e.g. reading I/O queues while the DUT is being
+          // disabled.) Such activities lead to alerts which are very hard
+          // to predict generally, and should be validated in the alert
+          // tests.
+          if (do_reenable) begin
+            do_reenable = 0;
+            reinit_dut(1);
+          end
+        end
         `uvm_info(`gfn, "Exiting interrupt loop", UVM_HIGH)
       end
       // Inject entropy if

@@ -27,6 +27,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   bit dut_pipeline_enabled = 0;
   bit fw_ov_sha_enabled    = 0;
 
+  // This scoreboard is not capable of anticipating with single-cycle accuracy whether the observe
+  // and entropy data FIFOs are empty.  However, we can note when they have been explicitly cleared
+  // and use that to anticipate any alerts that may come about background diable events
+  bit fifos_cleared = 1;
+
   // Queue of seeds for predicting reads to entropy_data CSR
   bit [CSRNG_BUS_WIDTH - 1:0]      entropy_data_q[$];
 
@@ -68,10 +73,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       rng_fifo;
 
   // Enabling, disabling and reset all have some effect in clearing the state of the DUT
+  // Due to subleties in timing, the DUT resets the Observe FIFO with a unique delay
   typedef enum int {
     HardReset,
     Disable,
-    Enable
+    Enable,
+    FIFOClr
   } reset_event_e;
 
   `uvm_component_new
@@ -661,21 +668,25 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   endfunction
 
   // Clear all relevant prediction variables for
-  // Reset,  disable and enable events.
+  // Reset, disable, enable and (delayed) FIFOClr reset events.
   function void handle_disable_reset(reset_event_e rst_type);
     if (rst_type == Enable) begin
       clear_ht_stat_predictions();
     end
+    // Internal entropy stores are cleared on Disable and HardReset events
+    if( rst_type == Disable || rst_type == HardReset ) begin
+      fips_csrng_q.delete();
+      process_fifo_q.delete();
+    end
+    if (rst_type == FIFOClr) begin
+      observe_fifo_q.delete();
+      entropy_data_q.delete();
+    end
+
+    // reset all other statistics
     threshold_alert_active = 0;
     seed_idx = 0;
     seed_tl_read_cnt = 0;
-    // Internal entropy stores are cleared on Disable and HardReset events
-    if( rst_type != Enable ) begin
-      entropy_data_q.delete();
-      fips_csrng_q.delete();
-      process_fifo_q.delete();
-      observe_fifo_q.delete();
-    end
     for (int i = 0; i < RNG_BUS_WIDTH; i++) begin
       repcnt[i]       = 0;
     end
@@ -723,6 +734,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               fork
                 begin
                   handle_disable_reset(Enable);
+                  fifos_cleared = 0;
                   collect_entropy();
                   handle_disable_reset(Disable);
                 end
@@ -735,8 +747,13 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                   // We wait a few cycles to let any last couple RNG
                   // samples come into the dut (so we know to delete them
                   // from our model of the DUT);
-                  cfg.clk_rst_vif.wait_clks(cfg.tlul2rng_disable_delay);
+                  cfg.clk_rst_vif.wait_clks(cfg.tlul_to_rng_disable_delay);
                   dut_pipeline_enabled = 0;
+                end
+                begin
+                  cfg.clk_rst_vif.wait_clks(cfg.tlul_to_fifo_clr_delay);
+                  handle_disable_reset(FIFOClr);
+                  fifos_cleared = 1;
                 end
               join_none : background_process
             end
@@ -916,10 +933,22 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       if (do_read_check) begin
         case (csr.get_name())
           "entropy_data": begin
-            process_entropy_data_csr_access(item, csr);
+            // TODO(Enhancement): Ideally the scoreboard would have monitor access to the
+            // internal state of the entropy_data and observe FIFOs.  At this point however
+            // the environment can run satisfactorily by checking whether the FIFOs have
+            // been cleared in a disable event.
+            if (fifos_cleared) begin
+              `DV_CHECK_FATAL(csr.predict(.value('0), .kind(UVM_PREDICT_READ)))
+            end else begin
+              process_entropy_data_csr_access(item, csr);
+            end
           end
           "fw_ov_rd_data": begin
-            process_observe_fifo_csr_access(item, csr);
+            if (fifos_cleared) begin
+              `DV_CHECK_FATAL(csr.predict(.value('0), .kind(UVM_PREDICT_READ)))
+            end else begin
+              process_observe_fifo_csr_access(item, csr);
+            end
           end
         endcase
 
