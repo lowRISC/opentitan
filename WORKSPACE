@@ -174,3 +174,7 @@ git_repository(
     patches = ["//sw/vendor/patches/mundane:build_with_bazel.patch"],
     remote = "https://fuchsia.googlesource.com/mundane",
 )
+
+load("//third_party/verititan:deps.bzl", "verititan_deps")
+
+verititan_deps()

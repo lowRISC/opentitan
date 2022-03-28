@@ -4,8 +4,6 @@
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files(glob(["veri-titan/gen/*.s"]))
-
 cc_library(
     name = "cryptoc_sha256",
     srcs = ["cryptoc/sha256.c"],

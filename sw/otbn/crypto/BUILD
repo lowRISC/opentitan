@@ -236,7 +236,7 @@ otbn_binary(
 otbn_library(
     name = "rsa_verify_3072",
     srcs = [
-        "//sw/vendor:veri-titan/gen/rsa_verify_3072.s",
+        "@verititan//:rsa_verify_3072",
     ],
 )
 
