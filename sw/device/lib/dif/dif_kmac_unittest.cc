@@ -338,6 +338,42 @@ TEST_F(Sha3_224Test, StartError) {
   }
 }
 
+class Shake128Test : public KmacTest {
+ protected:
+  dif_kmac_mode_shake_t mode_ = kDifKmacModeShakeLen128;
+
+  Shake128Test() {
+    config_reg_.mode = KMAC_CFG_SHADOWED_MODE_VALUE_SHAKE;
+    config_reg_.key_strength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L128;
+  }
+};
+
+TEST_F(Shake128Test, StartSuccess) {
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_IDLE_BIT, true}});
+  EXPECT_READ32(KMAC_CFG_SHADOWED_REG_OFFSET,
+                {{KMAC_CFG_SHADOWED_KMAC_EN_BIT, false}});
+  ExpectConfig();
+  EXPECT_WRITE32(KMAC_CMD_REG_OFFSET,
+                 {{KMAC_CMD_CMD_OFFSET, KMAC_CMD_CMD_VALUE_START}});
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_ABSORB_BIT, true}});
+
+  EXPECT_DIF_OK(dif_kmac_mode_shake_start(&kmac_, &op_state_, mode_));
+}
+
+TEST_F(Shake128Test, StartBadArg) {
+  EXPECT_DIF_BADARG(dif_kmac_mode_shake_start(NULL, &op_state_, mode_));
+
+  EXPECT_DIF_BADARG(dif_kmac_mode_shake_start(&kmac_, NULL, mode_));
+
+  EXPECT_DIF_BADARG(dif_kmac_mode_shake_start(&kmac_, &op_state_,
+                                              (dif_kmac_mode_shake_t)0xff));
+}
+
+TEST_F(Shake128Test, StartError) {
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_IDLE_BIT, false}});
+  EXPECT_EQ(dif_kmac_mode_shake_start(&kmac_, &op_state_, mode_), kDifError);
+}
+
 constexpr std::array<uint8_t, 17> KmacTest::kMsg_;
 
 class AbsorbalignmentMessage : public KmacTest {};
