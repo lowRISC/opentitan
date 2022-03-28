@@ -60,14 +60,16 @@ class otbn_escalate_vseq extends otbn_base_vseq;
   // Wait between zero and max_cycles clock cycles and then set the escalation signal to enabled.
   // Return immediately if we go into reset.
   task send_escalation_signal(int unsigned max_cycles);
-    cfg.escalate_vif.set_after_n_clocks($urandom_range(max_cycles));
+    cfg.escalate_vif.randomize_after_n_clocks($urandom_range(max_cycles), .f_weight(0));
   endtask
 
   // Wait for a fatal alert to come out and retrigger at least once. Then reset the DUT. This is
   // needed at the end of the sequence because otherwise the monitor that sees the re-triggering
   // fatal alert will stop the test from ever finishing.
   task wait_alert_and_reset();
-    repeat (2) wait_alert_trigger("fatal", .wait_complete(1));
+    if(cfg.escalate_vif.enable != lc_ctrl_pkg::Off) begin
+      repeat (2) wait_alert_trigger("fatal", .wait_complete(1));
+    end
 
     do_apply_reset = 1'b1;
     dut_init("HARD");
