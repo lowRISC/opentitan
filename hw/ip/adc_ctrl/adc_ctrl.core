@@ -12,9 +12,9 @@ filesets:
       - lowrisc:ip:tlul
       - "fileset_partner  ? (partner:systems:ast_pkg)"
       - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
-      
-      
+
     files:
+      - rtl/adc_ctrl_pkg.sv
       - rtl/adc_ctrl_reg_pkg.sv
       - rtl/adc_ctrl_reg_top.sv
       - rtl/adc_ctrl_fsm.sv
@@ -72,4 +72,3 @@ targets:
         mode: lint-only
         verilator_options:
           - "-Wall"
-
