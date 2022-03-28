@@ -72,8 +72,21 @@ OT_DEP_SOURCES=(
     "$LR_SYNTH_SRC_DIR"/../prim_xilinx/rtl/prim_xilinx_flop_en.sv
     "$LR_SYNTH_SRC_DIR"/../prim_xilinx/rtl/prim_xilinx_buf.sv
     "$LR_SYNTH_SRC_DIR"/../prim_xilinx/rtl/prim_xilinx_xor2.sv
+    "$LR_SYNTH_SRC_DIR"/../tlul/rtl/tlul_adapter_sram.sv
+    "$LR_SYNTH_SRC_DIR"/../tlul/rtl/tlul_sram_byte.sv
+    "$LR_SYNTH_SRC_DIR"/../tlul/rtl/tlul_socket_1n.sv
+    "$LR_SYNTH_SRC_DIR"/../tlul/rtl/tlul_err_resp.sv
+    "$LR_SYNTH_SRC_DIR"/../tlul/rtl/tlul_fifo_sync.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_dom_and_2share.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_keccak.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_slicer.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_intr_hw.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_edn_req.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_fifo_sync.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_arbiter_fixed.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_packer.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_count.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_double_lfsr.sv
 )
 
 # Get OpenTitan dependency packages.
@@ -126,11 +139,6 @@ for file in "$LR_SYNTH_SRC_DIR"/rtl/*.sv; do
         continue
     fi
 
-    # Skipe certain problematic module files that we don't need for the keccak_2share module.
-    if [ "$module" = "kmac_app" ]; then
-        continue
-    fi
-
     sv2v \
         --define=SYNTHESIS \
         "${OT_DEP_PACKAGES[@]}" \
@@ -155,7 +163,7 @@ for file in "$LR_SYNTH_SRC_DIR"/rtl/*.sv; do
     # Remove the StateEnumT parameter from prim_sparse_fsm_flop instances. Yosys doesn't seem to
     # support this.
     sed -i '/\.StateEnumT(logic \[.*/d' $LR_SYNTH_OUT_DIR/generated/${module}.v
-    sed -i '/\.StateEnumT_StateWidth(.*/d' $LR_SYNTH_OUT_DIR/generated/${module}.v
+    sed -i '/\.StateEnumT.*StateWidth.*(.*/d' $LR_SYNTH_OUT_DIR/generated/${module}.v
 done
 
 #-------------------------------------------------------------------------
