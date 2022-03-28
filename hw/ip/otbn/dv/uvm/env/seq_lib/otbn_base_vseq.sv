@@ -274,6 +274,22 @@ class otbn_base_vseq extends cip_base_vseq #(
     cfg.m_alert_agent_cfg["recov"].vif.wait_ack_complete();
 
     running_ = 1'b0;
+
+    if (cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked) begin
+      logic [7:0] wdata;
+      bit cmd_wr = $urandom_range(9,0) == 0;
+      if (cmd_wr) begin
+        `uvm_info(`gfn, "entered locked status. Writing to cmd register", UVM_LOW)
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wdata, wdata dist {otbn_pkg::CmdExecute :/2,
+                                                              otbn_pkg::CmdSecWipeDmem :/ 2,
+                                                              otbn_pkg::CmdSecWipeImem :/ 2,
+                                                              'b0 :/ 1};);
+        if (wdata == 'b0) begin
+          `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
+        end
+        csr_utils_pkg::csr_wr(ral.cmd, wdata);
+      end
+    end
   endtask
 
   // The guts of the run_otbn task. Writes to the CMD register to start OTBN and polls the status
