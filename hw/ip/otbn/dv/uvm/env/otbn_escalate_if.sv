@@ -15,15 +15,21 @@ interface otbn_escalate_if (
     enable = lc_ctrl_pkg::Off;
   endfunction
 
-  task automatic set_after_n_clocks(int unsigned n);
+  task automatic randomize_after_n_clocks(int unsigned n,
+                                          int t_weight = 2,
+                                          int f_weight = 2,
+                                          int other_weight = 1);
     `DV_SPINWAIT_EXIT(
       begin
         repeat (n) @(posedge clk_i);
-        enable = lc_ctrl_pkg::On;
+          enable = cip_base_pkg::get_rand_lc_tx_val(.t_weight(t_weight),
+                                                    .f_weight(f_weight),
+                                                    .other_weight(other_weight));
       end,
       @(negedge rst_ni);,
       "Not setting enable signal because we've gone into reset",
       "otbn_escalate_if")
   endtask
+
 
 endinterface
