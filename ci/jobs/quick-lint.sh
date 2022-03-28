@@ -56,6 +56,9 @@ ci/scripts/clang-format.sh $tgt_branch
 echo -e "\n### Check formatting on header guards"
 ci/scripts/include-guard.sh $tgt_branch
 
+echo -e "\n### Use rustfmt to check Rust coding style"
+ci/scripts/rust-format.sh $tgt_branch
+
 echo -e "\n### Style-Lint RTL Verilog source files with Verible"
 ci/scripts/verible-lint.sh rtl
 
