@@ -226,11 +226,6 @@ dif_result_t dif_kmac_mode_sha3_start(
     return kDifBadArg;
   }
 
-  // Hardware must be idle to start an operation.
-  if (!is_state_idle(kmac)) {
-    return kDifError;
-  }
-
   // Set key strength and calculate rate (r) and digest length (d) in 32-bit
   // words.
   uint32_t kstrength;
@@ -262,6 +257,12 @@ dif_result_t dif_kmac_mode_sha3_start(
     default:
       return kDifBadArg;
   }
+
+  // Hardware must be idle to start an operation.
+  if (!is_state_idle(kmac)) {
+    return kDifError;
+  }
+
   operation_state->squeezing = false;
   operation_state->append_d = false;
 
