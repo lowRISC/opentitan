@@ -100,6 +100,20 @@ cc_library(
 )
 
 cc_library(
+    name = "keymgr_testutils",
+    srcs = ["keymgr_testutils.c"],
+    hdrs = ["keymgr_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/ip/keymgr/data:keymgr_regs",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing/test_framework",
+    ],
+)
+
+cc_library(
     name = "otp_ctrl_testutils",
     srcs = ["otp_ctrl_testutils.c"],
     hdrs = ["otp_ctrl_testutils.h"],
