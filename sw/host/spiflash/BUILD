@@ -21,6 +21,6 @@ cc_binary(
     ],
     deps = [
         "//sw/host/vendor:mpsse",
-        "//sw/vendor:cryptoc_sha256",
+        "@cryptoc//:sha256",
     ],
 )

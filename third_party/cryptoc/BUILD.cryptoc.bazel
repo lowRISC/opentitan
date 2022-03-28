@@ -5,11 +5,11 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "cryptoc_sha256",
-    srcs = ["cryptoc/sha256.c"],
+    name = "sha256",
+    srcs = ["sha256.c"],
     hdrs = [
-        "cryptoc/include/cryptoc/hash-internal.h",
-        "cryptoc/include/cryptoc/sha256.h",
+        "include/cryptoc/hash-internal.h",
+        "include/cryptoc/sha256.h",
     ],
-    strip_include_prefix = "cryptoc/include",
+    strip_include_prefix = "include",
 )

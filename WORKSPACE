@@ -178,3 +178,7 @@ git_repository(
 load("//third_party/verititan:deps.bzl", "verititan_deps")
 
 verititan_deps()
+
+load("//third_party/cryptoc:deps.bzl", "cryptoc_deps")
+
+cryptoc_deps()
