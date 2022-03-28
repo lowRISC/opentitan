@@ -604,29 +604,41 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     bit [TL_DW - 1:0] ed_pred_data;
     bit               match_found;
+    bit entropy_data_reg_enable;
+    bit module_enabled;
+    entropy_data_reg_enable = (cfg.otp_en_es_fw_read == MuBi8True) &&
+                              (ral.conf.entropy_data_reg_enable.get_mirrored_value() == MuBi4True);
+
+    module_enabled = (ral.module_enable.module_enable.get_mirrored_value() == MuBi4True);
 
     match_found = 0;
 
-    while (entropy_data_q.size() > 0) begin : seed_trial_loop
-      bit [TL_DW - 1:0] prediction;
-      `uvm_info(`gfn, $sformatf("seed_tl_read_cnt: %01d", seed_tl_read_cnt), UVM_FULL)
-      match_found = try_seed_tl(entropy_data_q[0], item.d_data, prediction);
-      if (match_found) begin
-        `DV_CHECK_FATAL(csr.predict(.value(prediction), .kind(UVM_PREDICT_READ)))
-        seed_tl_read_cnt++;
-        if (seed_tl_read_cnt == CSRNG_BUS_WIDTH / TL_DW) begin
-          seed_tl_read_cnt = 0;
+    if(!entropy_data_reg_enable || !module_enabled) begin
+      // ignore the contents of the entropy_data fifo.
+      `DV_CHECK_FATAL(csr.predict(.value({TL_DW{1'b0}}), .kind(UVM_PREDICT_READ)))
+      match_found = 1;
+    end else begin
+      while (entropy_data_q.size() > 0) begin : seed_trial_loop
+        bit [TL_DW - 1:0] prediction;
+        `uvm_info(`gfn, $sformatf("seed_tl_read_cnt: %01d", seed_tl_read_cnt), UVM_FULL)
+        match_found = try_seed_tl(entropy_data_q[0], item.d_data, prediction);
+        if (match_found) begin
+          `DV_CHECK_FATAL(csr.predict(.value(prediction), .kind(UVM_PREDICT_READ)))
+          seed_tl_read_cnt++;
+          if (seed_tl_read_cnt == CSRNG_BUS_WIDTH / TL_DW) begin
+            seed_tl_read_cnt = 0;
+            entropy_data_q.pop_front();
+            entropy_data_seeds++;
+          end else if (seed_tl_read_cnt > CSRNG_BUS_WIDTH / TL_DW) begin
+            `uvm_error(`gfn, "testbench error: too many segments read from candidate seed")
+          end
+          break;
+        end else begin
           entropy_data_q.pop_front();
-          entropy_data_seeds++;
-        end else if (seed_tl_read_cnt > CSRNG_BUS_WIDTH / TL_DW) begin
-          `uvm_error(`gfn, "testbench error: too many segments read from candidate seed")
+          entropy_data_drops++;
         end
-        break;
-      end else begin
-        entropy_data_q.pop_front();
-        entropy_data_drops++;
-      end
-    end : seed_trial_loop
+      end : seed_trial_loop
+    end
 
     `DV_CHECK_EQ_FATAL(match_found, 1,
                        "All candidate seeds have been checked.  ENTROPY_DATA does not match")
@@ -657,9 +669,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     threshold_alert_active = 0;
     seed_idx = 0;
     seed_tl_read_cnt = 0;
-    if( rst_type == HardReset ) begin
+    // Internal entropy stores are cleared on Disable and HardReset events
+    if( rst_type != Enable ) begin
       entropy_data_q.delete();
       fips_csrng_q.delete();
+      process_fifo_q.delete();
       observe_fifo_q.delete();
     end
     for (int i = 0; i < RNG_BUS_WIDTH; i++) begin
@@ -731,13 +745,17 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
             // The fw_ov_sha3_start field triggers the internal processing of SHA data
             mubi4_t start_mubi  = csr.get_field_by_name("fw_ov_insert_start").get_mirrored_value();
             bit fips_enabled    = ral.conf.fips_enable.get_mirrored_value() == MuBi4True;
-            bit fw_ov_mode      = ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True;
+            bit es_route        = ral.entropy_control.es_route.get_mirrored_value() == MuBi4True;
+            bit es_type         = ral.entropy_control.es_type.get_mirrored_value() == MuBi4True;
+            bit is_fips_mode    = fips_enabled && !(es_route && es_type);
+            bit fw_ov_mode      = (cfg.otp_en_es_fw_read == MuBi8True) &&
+                                  (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True);
             mubi4_t insert_mubi = ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value();
             bit fw_ov_insert    = fw_ov_mode && (insert_mubi == MuBi4True);
             bit do_disable_sha  = fw_ov_sha_enabled && (start_mubi == MuBi4False);
             // Disabling the fw_ov_sha3_start field triggers the conditioner, but only
             // if the DUT is configured properly.
-            if (dut_pipeline_enabled && fips_enabled && fw_ov_insert && do_disable_sha) begin
+            if (dut_pipeline_enabled && is_fips_mode && fw_ov_insert && do_disable_sha) begin
               `uvm_info(`gfn, "SHA3 disabled for FW_OV", UVM_HIGH)
               package_and_release_entropy();
             end
@@ -747,8 +765,13 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
             end
           end
           "fw_ov_wr_data": begin
-            bit bypass_mode = (ral.conf.fips_enable.get_mirrored_value() == MuBi4False);
+            bit fips_enabled    = ral.conf.fips_enable.get_mirrored_value() == MuBi4True;
+            bit es_route        = ral.entropy_control.es_route.get_mirrored_value() == MuBi4True;
+            bit es_type         = ral.entropy_control.es_type.get_mirrored_value() == MuBi4True;
+            bit is_fips_mode    = fips_enabled && !(es_route && es_type);
+
             bit fw_ov_entropy_insert =
+                (cfg.otp_en_es_fw_over == MuBi8True) &&
                 (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True) &&
                 (ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value() == MuBi4True);
             msg = $sformatf("fw_ov_wr_data captured: 0x%08x", item.a_data);
@@ -759,7 +782,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               `uvm_info(`gfn, msg, UVM_MEDIUM)
               process_fifo_q.push_back(item.a_data);
               // In bypass mode, data is automatically released when a full seed is acquired
-              if (bypass_mode && process_fifo_q.size() == (CSRNG_BUS_WIDTH / TL_DW)) begin
+              if (!is_fips_mode && process_fifo_q.size() == (CSRNG_BUS_WIDTH / TL_DW)) begin
                 package_and_release_entropy();
               end
             end
@@ -931,17 +954,23 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     bit                              route_sw;
     bit                              sw_bypass;
+    bit                              fips_enable;
+    bit                              is_fips_mode;
 
-    route_sw  = (ral.entropy_control.es_route.get_mirrored_value() == MuBi4True);
-    sw_bypass = (ral.entropy_control.es_type.get_mirrored_value()  == MuBi4True);
+    route_sw    = (ral.entropy_control.es_route.get_mirrored_value() == MuBi4True);
+    sw_bypass   = (ral.entropy_control.es_type.get_mirrored_value()  == MuBi4True);
+    fips_enable = (ral.conf.fips_enable.get_mirrored_value()         == MuBi4True);
 
-    fw_ov_insert = (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True) &&
+    is_fips_mode = fips_enable && !(route_sw && sw_bypass);
+
+    fw_ov_insert = (cfg.otp_en_es_fw_over == MuBi8True) &&
+                   (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True) &&
                    (ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value() == MuBi4True);
 
     rng_single_bit = ral.conf.rng_bit_enable.get_mirrored_value();
 
     dut_phase = convert_seed_idx_to_phase(seed_idx,
-                                          cfg.fips_enable == prim_mubi_pkg::MuBi4True,
+                                          is_fips_mode,
                                           fw_ov_insert);
 
     sample_frames = process_fifo_q.size();
@@ -1065,9 +1094,18 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     bit                       ht_fips_mode;
     bit                       disable_detected;
     bit                       fw_ov_insert;
+    bit                       is_fips_mode;
     localparam int RngPerTlDw = TL_DW / RNG_BUS_WIDTH;
+    bit                       fips_enable, es_route, es_type;
 
-    fw_ov_insert = (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True) &&
+    fips_enable = (ral.conf.fips_enable.get_mirrored_value()         == MuBi4True);
+    es_route    = (ral.entropy_control.es_route.get_mirrored_value() == MuBi4True);
+    es_type     = (ral.entropy_control.es_type.get_mirrored_value()  == MuBi4True);
+
+    is_fips_mode  = fips_enable && !(es_route && es_type);
+
+    fw_ov_insert = (cfg.otp_en_es_fw_over == MuBi8True) &&
+                   (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True) &&
                    (ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value() == MuBi4True);
 
     pass_cnt = 0;
@@ -1078,9 +1116,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
       `uvm_info(`gfn, $sformatf("SEED_IDX: %01d", seed_idx), UVM_FULL)
 
-      dut_fsm_phase = convert_seed_idx_to_phase(seed_idx,
-                                                cfg.fips_enable == prim_mubi_pkg::MuBi4True,
-                                                fw_ov_insert);
+      dut_fsm_phase = convert_seed_idx_to_phase(seed_idx, is_fips_mode, fw_ov_insert);
 
       case (dut_fsm_phase)
         BOOT: begin
@@ -1109,7 +1145,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
       `uvm_info(`gfn, $sformatf("phase: %s\n", dut_fsm_phase.name), UVM_HIGH)
 
-      window_size = rng_window_size(seed_idx, cfg.fips_enable == prim_mubi_pkg::MuBi4True,
+      window_size = rng_window_size(seed_idx, is_fips_mode,
                                     fw_ov_insert, cfg.fips_window_size);
 
       `uvm_info(`gfn, $sformatf("window_size: %08d\n", window_size), UVM_HIGH)
@@ -1192,13 +1228,22 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   function void package_and_release_entropy();
     bit [FIPS_CSRNG_BUS_WIDTH - 1:0] fips_csrng;
     bit [CSRNG_BUS_WIDTH - 1:0] csrng_seed;
+    bit entropy_data_reg_enable;
+
+    entropy_data_reg_enable = (cfg.otp_en_es_fw_read == MuBi8True) &&
+                              (ral.conf.entropy_data_reg_enable.get_mirrored_value() == MuBi4True);
 
     `uvm_info(`gfn, $sformatf("process_fifo_q.size(): %01d", process_fifo_q.size()), UVM_FULL)
     fips_csrng = predict_fips_csrng();
 
     // package data for routing to SW and to CSRNG:
     csrng_seed = get_csrng_seed(fips_csrng);
-    entropy_data_q.push_back(csrng_seed);
+
+    // Only inject entropy data if entropy data is enabled
+    if (entropy_data_reg_enable) begin
+      entropy_data_q.push_back(csrng_seed);
+    end
+
     fips_csrng_q.push_back(fips_csrng);
 
     // Check to see whether a recov_alert should be expected
@@ -1247,12 +1292,14 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   virtual function void process_observe_fifo_csr_access(tl_seq_item item, uvm_reg csr);
     bit [TL_DW - 1:0] csr_val;
     bit match_found = 0;
-    string msg;
-    bit fw_ov_enabled = (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True);
+    string msg, fmt;
+    bit fw_ov_enabled = (cfg.otp_en_es_fw_over == MuBi8True) &&
+                        (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True);
 
     csr_val = item.d_data;
 
-    msg = "Predicting observe FIFO access";
+    fmt = "Predicting observe FIFO access, Looking for: %08x";
+    msg = $sformatf(fmt, csr_val);
     `uvm_info(`gfn, msg, UVM_FULL)
     if (!fw_ov_enabled) begin
       // if fw_ov mode has never been enabled (and the programming model has been correctly

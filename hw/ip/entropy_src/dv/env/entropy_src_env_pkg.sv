@@ -165,7 +165,7 @@ package entropy_src_env_pkg;
 
     phase = convert_seed_idx_to_phase(seed_idx, fips_enable, fw_ov_insert);
 
-    return (phase == BOOT) ? entropy_src_pkg::CSRNG_BUS_WIDTH : fips_window_size;
+    return (phase == BOOT || phase == HALTED) ? entropy_src_pkg::CSRNG_BUS_WIDTH : fips_window_size;
 
   endfunction
 

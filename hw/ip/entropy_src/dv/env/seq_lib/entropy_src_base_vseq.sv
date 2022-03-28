@@ -80,12 +80,6 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     bit bundles_found;
     // check for pending entropy_src operations and wait for them to complete
     `uvm_info(`gfn, "Shutting down", UVM_LOW)
-    do begin
-      #( 1us);
-      `uvm_info(`gfn, "Polling for remaining data (clear entropy_data interrupt)", UVM_LOW)
-      do_entropy_data_read(.max_bundles(-1), .bundles_found(bundles_found));
-      `uvm_info(`gfn, $sformatf("Found %01d seeds", bundles_found), UVM_HIGH)
-    end while (bundles_found > 0);
 
     `uvm_info(`gfn, "Disabling DUT", UVM_MEDIUM)
     ral.module_enable.module_enable.set(prim_mubi_pkg::MuBi4False);
@@ -96,6 +90,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "Clearing Alerts", UVM_MEDIUM)
     ral.recov_alert_sts.es_main_sm_alert.set(1'b0);
     csr_update(.csr(ral.recov_alert_sts));
+
     super.dut_shutdown();
     apply_reset(.kind("CSRNG_ONLY"));
   endtask
@@ -184,16 +179,20 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   // a. max_bundles bundles have been read
   // b. The intr_state register indicates no more data in entropy_data
   //
-  // If max_tries < 0, simply reads all available bundles.
+  // If max_bundles < 0, simply reads all available bundles.
   task do_entropy_data_read(tl_data_source_e source = TlSrcEntropyDataReg,
                             int max_bundles = -1,
                             output int bundles_found);
     bit intr_status;
     bit done;
     int cnt_per_interrupt;
-
+    bit entropy_data_reg_enable;
     uvm_reg_field intr_field;
     uvm_reg       data_reg;
+
+
+    entropy_data_reg_enable = (cfg.otp_en_es_fw_read == MuBi8True) &&
+                              (ral.conf.entropy_data_reg_enable.get_mirrored_value() == MuBi4True);
 
     bundles_found = 0;
 
