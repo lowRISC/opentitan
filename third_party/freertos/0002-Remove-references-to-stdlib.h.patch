@@ -1,0 +1,711 @@
+From b7cde8ea8e5b144ad815a65b565fcc31f9b923cf Mon Sep 17 00:00:00 2001
+From: Miguel Young de la Sota <mcyoung@google.com>
+Date: Mon, 28 Mar 2022 10:26:55 -0400
+Subject: [PATCH 2/3] Remove references to stdlib.h
+
+---
+ event_groups.c                               | 2 +-
+ list.c                                       | 2 +-
+ portable/ARMv8M/secure/heap/secure_heap.h    | 2 +-
+ portable/BCC/16BitDOS/Flsh186/port.c         | 2 +-
+ portable/BCC/16BitDOS/PC/port.c              | 2 +-
+ portable/BCC/16BitDOS/common/portcomn.c      | 2 +-
+ portable/GCC/ARM7_AT91FR40008/port.c         | 2 +-
+ portable/GCC/ARM7_AT91SAM7S/port.c           | 2 +-
+ portable/GCC/ARM7_LPC2000/port.c             | 2 +-
+ portable/GCC/ARM7_LPC23xx/port.c             | 2 +-
+ portable/GCC/ARM_CA53_64_BIT/port.c          | 2 +-
+ portable/GCC/ARM_CA9/port.c                  | 2 +-
+ portable/GCC/ARM_CM23/secure/secure_heap.h   | 2 +-
+ portable/GCC/ARM_CM33/secure/secure_heap.h   | 2 +-
+ portable/GCC/ARM_CR5/port.c                  | 2 +-
+ portable/GCC/ARM_CRx_No_GIC/port.c           | 2 +-
+ portable/GCC/ATMega323/port.c                | 2 +-
+ portable/GCC/CORTUS_APS3/port.c              | 2 +-
+ portable/GCC/MSP430F449/port.c               | 2 +-
+ portable/GCC/TriCore_1782/port.c             | 2 +-
+ portable/IAR/78K0R/port.c                    | 2 +-
+ portable/IAR/ARM_CA9/port.c                  | 2 +-
+ portable/IAR/ARM_CM23/secure/secure_heap.h   | 2 +-
+ portable/IAR/ARM_CM33/secure/secure_heap.h   | 2 +-
+ portable/IAR/ARM_CRx_No_GIC/port.c           | 2 +-
+ portable/IAR/ATMega323/port.c                | 2 +-
+ portable/IAR/AtmelSAM7S64/port.c             | 2 +-
+ portable/IAR/AtmelSAM9XE/port.c              | 2 +-
+ portable/IAR/LPC2000/port.c                  | 2 +-
+ portable/IAR/STR71x/port.c                   | 2 +-
+ portable/IAR/STR91x/port.c                   | 2 +-
+ portable/IAR/V850ES/port.c                   | 2 +-
+ portable/MemMang/heap_1.c                    | 2 +-
+ portable/MemMang/heap_2.c                    | 2 +-
+ portable/MemMang/heap_3.c                    | 2 +-
+ portable/MemMang/heap_4.c                    | 2 +-
+ portable/MemMang/heap_5.c                    | 2 +-
+ portable/RVDS/ARM7_LPC21xx/port.c            | 2 +-
+ portable/RVDS/ARM_CA9/port.c                 | 2 +-
+ portable/Softune/MB91460/__STD_LIB_sbrk.c    | 2 +-
+ portable/Softune/MB96340/__STD_LIB_sbrk.c    | 2 +-
+ portable/ThirdParty/XCC/Xtensa/port.c        | 2 +-
+ portable/ThirdParty/XCC/Xtensa/portclib.c    | 2 +-
+ portable/ThirdParty/XCC/Xtensa/xtensa_intr.c | 2 +-
+ portable/oWatcom/16BitDOS/Flsh186/port.c     | 2 +-
+ portable/oWatcom/16BitDOS/PC/port.c          | 2 +-
+ portable/oWatcom/16BitDOS/common/portcomn.c  | 2 +-
+ queue.c                                      | 2 +-
+ tasks.c                                      | 2 +-
+ timers.c                                     | 2 +-
+ 50 files changed, 50 insertions(+), 50 deletions(-)
+
+diff --git a/event_groups.c b/event_groups.c
+index 9abfada53..025f3d7d3 100644
+--- a/event_groups.c
++++ b/event_groups.c
+@@ -27,7 +27,7 @@
+  */
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+  * all the API functions to use the MPU wrappers.  That should only be done when
+diff --git a/list.c b/list.c
+index 2dc598ce3..30e833a74 100644
+--- a/list.c
++++ b/list.c
+@@ -27,7 +27,7 @@
+  */
+ 
+ 
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+  * all the API functions to use the MPU wrappers.  That should only be done when
+diff --git a/portable/ARMv8M/secure/heap/secure_heap.h b/portable/ARMv8M/secure/heap/secure_heap.h
+index f08c092f2..f5890d5bb 100644
+--- a/portable/ARMv8M/secure/heap/secure_heap.h
++++ b/portable/ARMv8M/secure/heap/secure_heap.h
+@@ -30,7 +30,7 @@
+ #define __SECURE_HEAP_H__
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /**
+  * @brief Allocates memory from heap.
+diff --git a/portable/BCC/16BitDOS/Flsh186/port.c b/portable/BCC/16BitDOS/Flsh186/port.c
+index 07a424c2c..a5b189556 100644
+--- a/portable/BCC/16BitDOS/Flsh186/port.c
++++ b/portable/BCC/16BitDOS/Flsh186/port.c
+@@ -45,7 +45,7 @@ Changes from V2.6.1
+  *----------------------------------------------------------*/
+ 
+ #include <dos.h>
+-#include <stdlib.h>
++// #include <stdlib.h>
+ #include <setjmp.h>
+ 
+ #include "FreeRTOS.h"
+diff --git a/portable/BCC/16BitDOS/PC/port.c b/portable/BCC/16BitDOS/PC/port.c
+index 302d38911..5340c4230 100644
+--- a/portable/BCC/16BitDOS/PC/port.c
++++ b/portable/BCC/16BitDOS/PC/port.c
+@@ -38,7 +38,7 @@ Changes from V4.0.1
+ 	  its proper value when the scheduler exits. 
+ */
+ 
+-#include <stdlib.h>
++// #include <stdlib.h>
+ #include <dos.h>
+ #include <setjmp.h>
+ 
+diff --git a/portable/BCC/16BitDOS/common/portcomn.c b/portable/BCC/16BitDOS/common/portcomn.c
+index 68f81bd47..d417070c5 100644
+--- a/portable/BCC/16BitDOS/common/portcomn.c
++++ b/portable/BCC/16BitDOS/common/portcomn.c
+@@ -40,7 +40,7 @@ Changes from V2.6.1
+ 
+ 
+ #include <dos.h>
+-#include <stdlib.h>
++// #include <stdlib.h>
+ #include "FreeRTOS.h"
+ 
+ /*-----------------------------------------------------------*/
+diff --git a/portable/GCC/ARM7_AT91FR40008/port.c b/portable/GCC/ARM7_AT91FR40008/port.c
+index 69376d5c2..a6fc7e20c 100644
+--- a/portable/GCC/ARM7_AT91FR40008/port.c
++++ b/portable/GCC/ARM7_AT91FR40008/port.c
+@@ -37,7 +37,7 @@
+  *----------------------------------------------------------*/
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Scheduler includes. */
+ #include "FreeRTOS.h"
+diff --git a/portable/GCC/ARM7_AT91SAM7S/port.c b/portable/GCC/ARM7_AT91SAM7S/port.c
+index d744d5ee4..702f74dfb 100644
+--- a/portable/GCC/ARM7_AT91SAM7S/port.c
++++ b/portable/GCC/ARM7_AT91SAM7S/port.c
+@@ -36,7 +36,7 @@
+  *----------------------------------------------------------*/
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Scheduler includes. */
+ #include "FreeRTOS.h"
+diff --git a/portable/GCC/ARM7_LPC2000/port.c b/portable/GCC/ARM7_LPC2000/port.c
+index d5dc4b1de..c890689bf 100644
+--- a/portable/GCC/ARM7_LPC2000/port.c
++++ b/portable/GCC/ARM7_LPC2000/port.c
+@@ -37,7 +37,7 @@
+ 
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Scheduler includes. */
+ #include "FreeRTOS.h"
+diff --git a/portable/GCC/ARM7_LPC23xx/port.c b/portable/GCC/ARM7_LPC23xx/port.c
+index 15d1a2199..c208f7f4a 100644
+--- a/portable/GCC/ARM7_LPC23xx/port.c
++++ b/portable/GCC/ARM7_LPC23xx/port.c
+@@ -37,7 +37,7 @@
+ 
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Scheduler includes. */
+ #include "FreeRTOS.h"
+diff --git a/portable/GCC/ARM_CA53_64_BIT/port.c b/portable/GCC/ARM_CA53_64_BIT/port.c
+index b8722e332..0de03c777 100644
+--- a/portable/GCC/ARM_CA53_64_BIT/port.c
++++ b/portable/GCC/ARM_CA53_64_BIT/port.c
+@@ -27,7 +27,7 @@
+  */
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Scheduler includes. */
+ #include "FreeRTOS.h"
+diff --git a/portable/GCC/ARM_CA9/port.c b/portable/GCC/ARM_CA9/port.c
+index a7bafb355..35601951b 100644
+--- a/portable/GCC/ARM_CA9/port.c
++++ b/portable/GCC/ARM_CA9/port.c
+@@ -27,7 +27,7 @@
+  */
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Scheduler includes. */
+ #include "FreeRTOS.h"
+diff --git a/portable/GCC/ARM_CM23/secure/secure_heap.h b/portable/GCC/ARM_CM23/secure/secure_heap.h
+index f08c092f2..f5890d5bb 100644
+--- a/portable/GCC/ARM_CM23/secure/secure_heap.h
++++ b/portable/GCC/ARM_CM23/secure/secure_heap.h
+@@ -30,7 +30,7 @@
+ #define __SECURE_HEAP_H__
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /**
+  * @brief Allocates memory from heap.
+diff --git a/portable/GCC/ARM_CM33/secure/secure_heap.h b/portable/GCC/ARM_CM33/secure/secure_heap.h
+index f08c092f2..f5890d5bb 100644
+--- a/portable/GCC/ARM_CM33/secure/secure_heap.h
++++ b/portable/GCC/ARM_CM33/secure/secure_heap.h
+@@ -30,7 +30,7 @@
+ #define __SECURE_HEAP_H__
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /**
+  * @brief Allocates memory from heap.
+diff --git a/portable/GCC/ARM_CR5/port.c b/portable/GCC/ARM_CR5/port.c
+index b56e30a70..49f382367 100644
+--- a/portable/GCC/ARM_CR5/port.c
++++ b/portable/GCC/ARM_CR5/port.c
+@@ -27,7 +27,7 @@
+  */
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Scheduler includes. */
+ #include "FreeRTOS.h"
+diff --git a/portable/GCC/ARM_CRx_No_GIC/port.c b/portable/GCC/ARM_CRx_No_GIC/port.c
+index 6037a10b4..b60925fe0 100644
+--- a/portable/GCC/ARM_CRx_No_GIC/port.c
++++ b/portable/GCC/ARM_CRx_No_GIC/port.c
+@@ -27,7 +27,7 @@
+  */
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Scheduler includes. */
+ #include "FreeRTOS.h"
+diff --git a/portable/GCC/ATMega323/port.c b/portable/GCC/ATMega323/port.c
+index ab0a9ea10..48e0eec86 100644
+--- a/portable/GCC/ATMega323/port.c
++++ b/portable/GCC/ATMega323/port.c
+@@ -35,7 +35,7 @@ Changes from V2.6.0
+ 	  WinAVR.
+ */
+ 
+-#include <stdlib.h>
++// #include <stdlib.h>
+ #include <avr/interrupt.h>
+ 
+ #include "FreeRTOS.h"
+diff --git a/portable/GCC/CORTUS_APS3/port.c b/portable/GCC/CORTUS_APS3/port.c
+index 0d7110b1e..13e993e7e 100644
+--- a/portable/GCC/CORTUS_APS3/port.c
++++ b/portable/GCC/CORTUS_APS3/port.c
+@@ -27,7 +27,7 @@
+  */
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Kernel includes. */
+ #include "FreeRTOS.h"
+diff --git a/portable/GCC/MSP430F449/port.c b/portable/GCC/MSP430F449/port.c
+index c8dd45af2..743c94f51 100644
+--- a/portable/GCC/MSP430F449/port.c
++++ b/portable/GCC/MSP430F449/port.c
+@@ -33,7 +33,7 @@
+ */
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ #include <signal.h>
+ 
+ /* Scheduler includes. */
+diff --git a/portable/GCC/TriCore_1782/port.c b/portable/GCC/TriCore_1782/port.c
+index 0dedda2e2..329624251 100644
+--- a/portable/GCC/TriCore_1782/port.c
++++ b/portable/GCC/TriCore_1782/port.c
+@@ -27,7 +27,7 @@
+  */
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ #include <string.h>
+ 
+ /* TriCore specific includes. */
+diff --git a/portable/IAR/78K0R/port.c b/portable/IAR/78K0R/port.c
+index 3a5aff07e..560461e16 100644
+--- a/portable/IAR/78K0R/port.c
++++ b/portable/IAR/78K0R/port.c
+@@ -27,7 +27,7 @@
+  */
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Scheduler includes. */
+ #include "FreeRTOS.h"
+diff --git a/portable/IAR/ARM_CA9/port.c b/portable/IAR/ARM_CA9/port.c
+index 1c6ffe87f..6784cd84c 100644
+--- a/portable/IAR/ARM_CA9/port.c
++++ b/portable/IAR/ARM_CA9/port.c
+@@ -27,7 +27,7 @@
+  */
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* IAR includes. */
+ #include <intrinsics.h>
+diff --git a/portable/IAR/ARM_CM23/secure/secure_heap.h b/portable/IAR/ARM_CM23/secure/secure_heap.h
+index f08c092f2..f5890d5bb 100644
+--- a/portable/IAR/ARM_CM23/secure/secure_heap.h
++++ b/portable/IAR/ARM_CM23/secure/secure_heap.h
+@@ -30,7 +30,7 @@
+ #define __SECURE_HEAP_H__
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /**
+  * @brief Allocates memory from heap.
+diff --git a/portable/IAR/ARM_CM33/secure/secure_heap.h b/portable/IAR/ARM_CM33/secure/secure_heap.h
+index f08c092f2..f5890d5bb 100644
+--- a/portable/IAR/ARM_CM33/secure/secure_heap.h
++++ b/portable/IAR/ARM_CM33/secure/secure_heap.h
+@@ -30,7 +30,7 @@
+ #define __SECURE_HEAP_H__
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /**
+  * @brief Allocates memory from heap.
+diff --git a/portable/IAR/ARM_CRx_No_GIC/port.c b/portable/IAR/ARM_CRx_No_GIC/port.c
+index 07623cf4c..382e9a972 100644
+--- a/portable/IAR/ARM_CRx_No_GIC/port.c
++++ b/portable/IAR/ARM_CRx_No_GIC/port.c
+@@ -27,7 +27,7 @@
+  */
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Scheduler includes. */
+ #include "FreeRTOS.h"
+diff --git a/portable/IAR/ATMega323/port.c b/portable/IAR/ATMega323/port.c
+index 7b7504b32..ad9bfeef7 100644
+--- a/portable/IAR/ATMega323/port.c
++++ b/portable/IAR/ATMega323/port.c
+@@ -26,7 +26,7 @@
+  *
+  */
+ 
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ #include "FreeRTOS.h"
+ #include "task.h"
+diff --git a/portable/IAR/AtmelSAM7S64/port.c b/portable/IAR/AtmelSAM7S64/port.c
+index 15d00fe4e..3b9fd8395 100644
+--- a/portable/IAR/AtmelSAM7S64/port.c
++++ b/portable/IAR/AtmelSAM7S64/port.c
+@@ -32,7 +32,7 @@
+ 
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Scheduler includes. */
+ #include "FreeRTOS.h"
+diff --git a/portable/IAR/AtmelSAM9XE/port.c b/portable/IAR/AtmelSAM9XE/port.c
+index fd53a387f..c02392e35 100644
+--- a/portable/IAR/AtmelSAM9XE/port.c
++++ b/portable/IAR/AtmelSAM9XE/port.c
+@@ -32,7 +32,7 @@
+ 
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Scheduler includes. */
+ #include "FreeRTOS.h"
+diff --git a/portable/IAR/LPC2000/port.c b/portable/IAR/LPC2000/port.c
+index 8552f5b7c..c00f007bb 100644
+--- a/portable/IAR/LPC2000/port.c
++++ b/portable/IAR/LPC2000/port.c
+@@ -39,7 +39,7 @@
+ */
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ #include <intrinsics.h>
+ 
+ /* Scheduler includes. */
+diff --git a/portable/IAR/STR71x/port.c b/portable/IAR/STR71x/port.c
+index 273735334..d6a4bb29f 100644
+--- a/portable/IAR/STR71x/port.c
++++ b/portable/IAR/STR71x/port.c
+@@ -36,7 +36,7 @@
+ #include "eic.h"
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Scheduler includes. */
+ #include "FreeRTOS.h"
+diff --git a/portable/IAR/STR91x/port.c b/portable/IAR/STR91x/port.c
+index bc7d6c852..ad637b1c8 100644
+--- a/portable/IAR/STR91x/port.c
++++ b/portable/IAR/STR91x/port.c
+@@ -35,7 +35,7 @@
+ #include "91x_lib.h"
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ #include <assert.h>
+ 
+ /* Scheduler includes. */
+diff --git a/portable/IAR/V850ES/port.c b/portable/IAR/V850ES/port.c
+index 871061ae9..ddd3bdce0 100644
+--- a/portable/IAR/V850ES/port.c
++++ b/portable/IAR/V850ES/port.c
+@@ -27,7 +27,7 @@
+  */
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Scheduler includes. */
+ #include "FreeRTOS.h"
+diff --git a/portable/MemMang/heap_1.c b/portable/MemMang/heap_1.c
+index 68c4c5f77..01036da92 100644
+--- a/portable/MemMang/heap_1.c
++++ b/portable/MemMang/heap_1.c
+@@ -34,7 +34,7 @@
+  * See heap_2.c, heap_3.c and heap_4.c for alternative implementations, and the
+  * memory management pages of https://www.FreeRTOS.org for more information.
+  */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+  * all the API functions to use the MPU wrappers.  That should only be done when
+diff --git a/portable/MemMang/heap_2.c b/portable/MemMang/heap_2.c
+index b16b24564..54c800729 100644
+--- a/portable/MemMang/heap_2.c
++++ b/portable/MemMang/heap_2.c
+@@ -35,7 +35,7 @@
+  * See heap_1.c, heap_3.c and heap_4.c for alternative implementations, and the
+  * memory management pages of https://www.FreeRTOS.org for more information.
+  */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+  * all the API functions to use the MPU wrappers.  That should only be done when
+diff --git a/portable/MemMang/heap_3.c b/portable/MemMang/heap_3.c
+index f8ce855f3..e5e901946 100644
+--- a/portable/MemMang/heap_3.c
++++ b/portable/MemMang/heap_3.c
+@@ -38,7 +38,7 @@
+  * memory management pages of https://www.FreeRTOS.org for more information.
+  */
+ 
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+  * all the API functions to use the MPU wrappers.  That should only be done when
+diff --git a/portable/MemMang/heap_4.c b/portable/MemMang/heap_4.c
+index 2cd9065b8..e398a20ba 100644
+--- a/portable/MemMang/heap_4.c
++++ b/portable/MemMang/heap_4.c
+@@ -34,7 +34,7 @@
+  * See heap_1.c, heap_2.c and heap_3.c for alternative implementations, and the
+  * memory management pages of https://www.FreeRTOS.org for more information.
+  */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+  * all the API functions to use the MPU wrappers.  That should only be done when
+diff --git a/portable/MemMang/heap_5.c b/portable/MemMang/heap_5.c
+index 62c3641f5..da6d4494a 100644
+--- a/portable/MemMang/heap_5.c
++++ b/portable/MemMang/heap_5.c
+@@ -68,7 +68,7 @@
+  * Note 0x80000000 is the lower address so appears in the array first.
+  *
+  */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+  * all the API functions to use the MPU wrappers.  That should only be done when
+diff --git a/portable/RVDS/ARM7_LPC21xx/port.c b/portable/RVDS/ARM7_LPC21xx/port.c
+index 803f94682..aff6c50ca 100644
+--- a/portable/RVDS/ARM7_LPC21xx/port.c
++++ b/portable/RVDS/ARM7_LPC21xx/port.c
+@@ -28,7 +28,7 @@
+ 
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Scheduler includes. */
+ #include "FreeRTOS.h"
+diff --git a/portable/RVDS/ARM_CA9/port.c b/portable/RVDS/ARM_CA9/port.c
+index 9f88b58a8..d04fd91d5 100644
+--- a/portable/RVDS/ARM_CA9/port.c
++++ b/portable/RVDS/ARM_CA9/port.c
+@@ -27,7 +27,7 @@
+  */
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Scheduler includes. */
+ #include "FreeRTOS.h"
+diff --git a/portable/Softune/MB91460/__STD_LIB_sbrk.c b/portable/Softune/MB91460/__STD_LIB_sbrk.c
+index fe85cea01..ef35b1866 100644
+--- a/portable/Softune/MB91460/__STD_LIB_sbrk.c
++++ b/portable/Softune/MB91460/__STD_LIB_sbrk.c
+@@ -37,7 +37,7 @@
+ /*---------------------------------------------------------------------------*/
+ 
+ #include "FreeRTOSConfig.h"
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ 	static  long         brk_siz  =  0;
+ 	typedef int          _heep_t;
+diff --git a/portable/Softune/MB96340/__STD_LIB_sbrk.c b/portable/Softune/MB96340/__STD_LIB_sbrk.c
+index fe85cea01..ef35b1866 100644
+--- a/portable/Softune/MB96340/__STD_LIB_sbrk.c
++++ b/portable/Softune/MB96340/__STD_LIB_sbrk.c
+@@ -37,7 +37,7 @@
+ /*---------------------------------------------------------------------------*/
+ 
+ #include "FreeRTOSConfig.h"
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ 	static  long         brk_siz  =  0;
+ 	typedef int          _heep_t;
+diff --git a/portable/ThirdParty/XCC/Xtensa/port.c b/portable/ThirdParty/XCC/Xtensa/port.c
+index 5a6addecb..b805ed255 100644
+--- a/portable/ThirdParty/XCC/Xtensa/port.c
++++ b/portable/ThirdParty/XCC/Xtensa/port.c
+@@ -27,7 +27,7 @@
+  *
+  */
+ 
+-#include <stdlib.h>
++// #include <stdlib.h>
+ #include <xtensa/config/core.h>
+ 
+ #include "xtensa_rtos.h"
+diff --git a/portable/ThirdParty/XCC/Xtensa/portclib.c b/portable/ThirdParty/XCC/Xtensa/portclib.c
+index d64b0cad3..b0616657c 100644
+--- a/portable/ThirdParty/XCC/Xtensa/portclib.c
++++ b/portable/ThirdParty/XCC/Xtensa/portclib.c
+@@ -136,7 +136,7 @@ _reclaim_reent(void * ptr)
+ #include <errno.h>
+ #include <malloc.h>
+ #include <stdio.h>
+-#include <stdlib.h>
++// #include <stdlib.h>
+ #include <string.h>
+ 
+ #include "semphr.h"
+diff --git a/portable/ThirdParty/XCC/Xtensa/xtensa_intr.c b/portable/ThirdParty/XCC/Xtensa/xtensa_intr.c
+index f9ff4cbfa..ef1e3efff 100644
+--- a/portable/ThirdParty/XCC/Xtensa/xtensa_intr.c
++++ b/portable/ThirdParty/XCC/Xtensa/xtensa_intr.c
+@@ -32,7 +32,7 @@
+  * Also see xtensa_intr_asm.S.
+  */
+ 
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ #include <xtensa/config/core.h>
+ 
+diff --git a/portable/oWatcom/16BitDOS/Flsh186/port.c b/portable/oWatcom/16BitDOS/Flsh186/port.c
+index 772db7fa1..e79d8672e 100644
+--- a/portable/oWatcom/16BitDOS/Flsh186/port.c
++++ b/portable/oWatcom/16BitDOS/Flsh186/port.c
+@@ -49,7 +49,7 @@ Changes from V2.6.1
+  * port.
+  *----------------------------------------------------------*/
+ 
+-#include <stdlib.h>
++// #include <stdlib.h>
+ #include <i86.h>
+ #include <dos.h>
+ #include <setjmp.h>
+diff --git a/portable/oWatcom/16BitDOS/PC/port.c b/portable/oWatcom/16BitDOS/PC/port.c
+index 711bc703f..626e7b4f2 100644
+--- a/portable/oWatcom/16BitDOS/PC/port.c
++++ b/portable/oWatcom/16BitDOS/PC/port.c
+@@ -49,7 +49,7 @@ Changes from V4.0.1
+ 	  its proper value when the scheduler exits. 
+ */
+ 
+-#include <stdlib.h>
++// #include <stdlib.h>
+ #include <stdio.h>
+ #include <i86.h>
+ #include <dos.h>
+diff --git a/portable/oWatcom/16BitDOS/common/portcomn.c b/portable/oWatcom/16BitDOS/common/portcomn.c
+index 38e6c0e0f..b548445ac 100644
+--- a/portable/oWatcom/16BitDOS/common/portcomn.c
++++ b/portable/oWatcom/16BitDOS/common/portcomn.c
+@@ -45,7 +45,7 @@ Changes from V2.6.1:
+ 
+ 	
+ 
+-#include <stdlib.h>
++// #include <stdlib.h>
+ #include "FreeRTOS.h"
+ 
+ /*-----------------------------------------------------------*/
+diff --git a/queue.c b/queue.c
+index 08d3799da..12f81d394 100644
+--- a/queue.c
++++ b/queue.c
+@@ -26,7 +26,7 @@
+  *
+  */
+ 
+-#include <stdlib.h>
++// #include <stdlib.h>
+ #include <string.h>
+ 
+ /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+diff --git a/tasks.c b/tasks.c
+index 91af83382..405425c60 100644
+--- a/tasks.c
++++ b/tasks.c
+@@ -27,7 +27,7 @@
+  */
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ #include <string.h>
+ 
+ /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+diff --git a/timers.c b/timers.c
+index 46e6d4851..57653dad3 100644
+--- a/timers.c
++++ b/timers.c
+@@ -27,7 +27,7 @@
+  */
+ 
+ /* Standard includes. */
+-#include <stdlib.h>
++// #include <stdlib.h>
+ 
+ /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+  * all the API functions to use the MPU wrappers.  That should only be done when
+-- 
+2.35.1.1021.g381101b075-goog
+

@@ -1,0 +1,57 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "portmacro",
+    hdrs = ["portable/GCC/RISC-V/portmacro.h"],
+    includes = ["portable/GCC/RISC-V"],
+    target_compatible_with = ["@bazel_embedded//constraints/cpu:riscv32"],
+)
+
+cc_library(
+    name = "hdrs",
+    srcs = [
+        "include/FreeRTOS.h",
+        "include/StackMacros.h",
+        "include/atomic.h",
+        "include/croutine.h",
+        "include/event_groups.h",
+        "include/list.h",
+        "include/message_buffer.h",
+        "include/mpu_prototypes.h",
+        "include/mpu_wrappers.h",
+        "include/ot_memory.h",
+        "include/portable.h",
+        "include/projdefs.h",
+        "include/queue.h",
+        "include/semphr.h",
+        "include/stack_macros.h",
+        "include/stream_buffer.h",
+        "include/task.h",
+        "include/timers.h",
+    ],
+    includes = ["include"],
+    deps = [
+        ":portmacro",
+    ],
+)
+
+# This needs to be a filegroup, because the actual kernel library depends on
+# FreeRTOSConfig.h, which we can't make available in this repository without
+# including it in the patches, which is fairly brittle.
+#
+# Instead, the actual kernel library is defined in the //third_party/freertos
+# package.
+filegroup(
+    name = "srcs",
+    srcs = [
+        "include/deprecated_definitions.h",
+        "list.c",
+        "portable/MemMang/heap_1.c",
+        "queue.c",
+        "tasks.c",
+    ],
+)

@@ -1,0 +1,46 @@
+From 3d0a295ce55a3d5180e947d1b552ed91a1e63967 Mon Sep 17 00:00:00 2001
+From: Miguel Young de la Sota <mcyoung@google.com>
+Date: Mon, 28 Mar 2022 10:22:07 -0400
+Subject: [PATCH 1/3] Remove mtime address macros
+
+---
+ portable/GCC/RISC-V/portmacro.h | 23 -----------------------
+ 1 file changed, 23 deletions(-)
+
+diff --git a/portable/GCC/RISC-V/portmacro.h b/portable/GCC/RISC-V/portmacro.h
+index fe93dc28c..5522e0bb8 100644
+--- a/portable/GCC/RISC-V/portmacro.h
++++ b/portable/GCC/RISC-V/portmacro.h
+@@ -156,29 +156,6 @@ not necessary for to use this port.  They are defined so the common demo files
+ #define portMEMORY_BARRIER() __asm volatile( "" ::: "memory" )
+ /*-----------------------------------------------------------*/
+ 
+-
+-/* configCLINT_BASE_ADDRESS is a legacy definition that was replaced by the
+-configMTIME_BASE_ADDRESS and configMTIMECMP_BASE_ADDRESS definitions.  For
+-backward compatibility derive the newer definitions from the old if the old
+-definition is found. */
+-#if defined( configCLINT_BASE_ADDRESS ) && !defined( configMTIME_BASE_ADDRESS ) && ( configCLINT_BASE_ADDRESS == 0 )
+-	/* Legacy case where configCLINT_BASE_ADDRESS was defined as 0 to indicate
+-	there was no CLINT.  Equivalent now is to set the MTIME and MTIMECMP
+-	addresses to 0. */
+-	#define configMTIME_BASE_ADDRESS 	( 0 )
+-	#define configMTIMECMP_BASE_ADDRESS ( 0 )
+-#elif defined( configCLINT_BASE_ADDRESS ) && !defined( configMTIME_BASE_ADDRESS )
+-	/* Legacy case where configCLINT_BASE_ADDRESS was set to the base address of
+-	the CLINT.  Equivalent now is to derive the MTIME and MTIMECMP addresses
+-	from the CLINT address. */
+-	#define configMTIME_BASE_ADDRESS 	( ( configCLINT_BASE_ADDRESS ) + 0xBFF8UL )
+-	#define configMTIMECMP_BASE_ADDRESS ( ( configCLINT_BASE_ADDRESS ) + 0x4000UL )
+-#elif !defined( configMTIME_BASE_ADDRESS ) || !defined( configMTIMECMP_BASE_ADDRESS )
+-	#error configMTIME_BASE_ADDRESS and configMTIMECMP_BASE_ADDRESS must be defined in FreeRTOSConfig.h.  Set them to zero if there is no MTIME (machine time) clock.  See https://www.FreeRTOS.org/Using-FreeRTOS-on-RISC-V.html
+-#endif
+-
+-
+-
+ #ifdef __cplusplus
+ }
+ #endif
+-- 
+2.35.1.1021.g381101b075-goog
+

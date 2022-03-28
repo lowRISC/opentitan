@@ -44,15 +44,10 @@ cc_library(
 
 cc_library(
     name = "freertos_config",
-    hdrs = [
-        "FreeRTOSConfig.h",
-    ],
+    hdrs = ["FreeRTOSConfig.h"],
     # FreeRTOS sources don't follow our project's include-path standard,
     # and just include via the bare filename.
     includes = ["."],
-    deps = [
-        "//sw/device/lib/arch:device",
-    ],
 )
 
 cc_library(
@@ -62,18 +57,21 @@ cc_library(
         "freertos_port.S",
         "freertos_port.c",
     ],
-    hdrs = [
-        "ottf_macros.h",
-    ],
+    hdrs = ["ottf_macros.h"],
+    # FIXME: Temporary hack to allow us to #include the version in //third_party.
+    # To be removed once Meson is removed.
+    # https://github.com/lowRISC/opentitan/issues/11743
+    local_defines = ["FREERTOS_IS_BAZEL"],
     deps = [
         ":check",
+        ":freertos_config",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib:irq",
         "//sw/device/lib/dif:rv_timer",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
-        "//sw/vendor/freertos_freertos_kernel:kernel",
+        "//third_party/freertos",
     ],
 )
 
@@ -124,9 +122,13 @@ cc_library(
         "-Wl,--start-group",
         "$(location :freertos_port)",
         "$(location //sw/device/lib:irq)",
-        "$(location //sw/vendor/freertos_freertos_kernel:kernel)",
+        "$(location //third_party/freertos)",
         "-Wl,--end-group",
     ],
+    # FIXME: Temporary hack to allow us to #include the version in //third_party.
+    # To be removed once Meson is removed.
+    # https://github.com/lowRISC/opentitan/issues/11743
+    local_defines = ["FREERTOS_IS_BAZEL"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":freertos_port",
@@ -136,6 +138,6 @@ cc_library(
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
-        "//sw/vendor/freertos_freertos_kernel:kernel",
+        "//third_party/freertos",
     ],
 )

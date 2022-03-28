@@ -5,8 +5,6 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_FREERTOSCONFIG_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_FREERTOSCONFIG_H_
 
-#include "sw/device/lib/arch/device.h"
-
 // These macros configure FreeRTOS. A description of each macro can be found
 // here: https://www.freertos.org/a00110.html
 

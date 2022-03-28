@@ -1,0 +1,458 @@
+From 821187d8c24e1675dd2f00d482afff9ac4aad017 Mon Sep 17 00:00:00 2001
+From: Miguel Young de la Sota <mcyoung@google.com>
+Date: Mon, 28 Mar 2022 10:38:31 -0400
+Subject: [PATCH 3/3] Replace string.h with references to OT memory.h
+
+---
+ include/ot_memory.h                           | 19 +++++++++++++++++++
+ portable/GCC/MicroBlaze/port.c                |  2 +-
+ portable/GCC/MicroBlazeV8/port.c              |  2 +-
+ portable/GCC/MicroBlazeV9/port.c              |  2 +-
+ portable/GCC/NiosII/port.c                    |  2 +-
+ portable/GCC/RISC-V/port.c                    |  2 +-
+ portable/GCC/RX100/port.c                     |  2 +-
+ portable/GCC/RX200/port.c                     |  2 +-
+ portable/GCC/RX600/port.c                     |  2 +-
+ portable/GCC/RX600v2/port.c                   |  2 +-
+ portable/GCC/RX700v3_DPFPU/port.c             |  2 +-
+ portable/GCC/TriCore_1782/port.c              |  2 +-
+ portable/IAR/RISC-V/port.c                    |  2 +-
+ portable/IAR/RX100/port.c                     |  2 +-
+ portable/IAR/RX600/port.c                     |  2 +-
+ portable/IAR/RX700v3_DPFPU/port.c             |  2 +-
+ portable/IAR/RXv2/port.c                      |  2 +-
+ portable/MPLAB/PIC32MZ/port.c                 |  2 +-
+ portable/Renesas/RX100/port.c                 |  2 +-
+ portable/Renesas/RX200/port.c                 |  2 +-
+ portable/Renesas/RX600/port.c                 |  2 +-
+ portable/Renesas/RX600v2/port.c               |  2 +-
+ portable/Renesas/RX700v3_DPFPU/port.c         |  2 +-
+ portable/Renesas/SH2A_FPU/port.c              |  2 +-
+ portable/SDCC/Cygnal/port.c                   |  2 +-
+ .../ThirdParty/GCC/ARC_EM_HS/freertos_tls.c   |  2 +-
+ portable/ThirdParty/GCC/Posix/port.c          |  2 +-
+ portable/ThirdParty/XCC/Xtensa/portclib.c     |  2 +-
+ queue.c                                       |  2 +-
+ stream_buffer.c                               |  2 +-
+ tasks.c                                       |  2 +-
+ 31 files changed, 49 insertions(+), 30 deletions(-)
+ create mode 100644 include/ot_memory.h
+
+diff --git a/include/ot_memory.h b/include/ot_memory.h
+new file mode 100644
+index 000000000..799c713e5
+--- /dev/null
++++ b/include/ot_memory.h
+@@ -0,0 +1,19 @@
++// Copyright lowRISC contributors.
++// Licensed under the Apache License, Version 2.0, see LICENSE for details.
++// SPDX-License-Identifier: Apache-2.0
++
++#include <stddef.h>
++
++// Redeclarations of the three special memory functions from memory.h
++
++#ifdef __cplusplus
++extern "C" {
++#endif // __cplusplus
++
++void *memcpy(void *dest, const void *src, size_t len);
++void *memset(void *dest, int value, size_t len);
++int memcmp(const void *lhs, const void *rhs, size_t len);
++
++#ifdef __cplusplus
++}  // extern "C"
++#endif  // __cplusplus
+diff --git a/portable/GCC/MicroBlaze/port.c b/portable/GCC/MicroBlaze/port.c
+index 48d661b8d..9b06ad48d 100644
+--- a/portable/GCC/MicroBlaze/port.c
++++ b/portable/GCC/MicroBlaze/port.c
+@@ -36,7 +36,7 @@
+ #include "task.h"
+ 
+ /* Standard includes. */
+-#include <string.h>
++#include "ot_memory.h"
+ 
+ /* Hardware includes. */
+ #include <xintc.h>
+diff --git a/portable/GCC/MicroBlazeV8/port.c b/portable/GCC/MicroBlazeV8/port.c
+index 381702fb0..ae2fc8ea7 100644
+--- a/portable/GCC/MicroBlazeV8/port.c
++++ b/portable/GCC/MicroBlazeV8/port.c
+@@ -36,7 +36,7 @@
+ #include "task.h"
+ 
+ /* Standard includes. */
+-#include <string.h>
++#include "ot_memory.h"
+ 
+ /* Hardware includes. */
+ #include <xintc_i.h>
+diff --git a/portable/GCC/MicroBlazeV9/port.c b/portable/GCC/MicroBlazeV9/port.c
+index 8e70db9a2..6e202c064 100644
+--- a/portable/GCC/MicroBlazeV9/port.c
++++ b/portable/GCC/MicroBlazeV9/port.c
+@@ -36,7 +36,7 @@
+ #include "task.h"
+ 
+ /* Standard includes. */
+-#include <string.h>
++#include "ot_memory.h"
+ 
+ /* Hardware includes. */
+ #include <xintc_i.h>
+diff --git a/portable/GCC/NiosII/port.c b/portable/GCC/NiosII/port.c
+index 7dc6f81f1..999e72bc6 100644
+--- a/portable/GCC/NiosII/port.c
++++ b/portable/GCC/NiosII/port.c
+@@ -31,7 +31,7 @@
+  *----------------------------------------------------------*/
+ 
+ /* Standard Includes. */
+-#include <string.h>
++#include "ot_memory.h"
+ #include <errno.h>
+ 
+ /* Altera includes. */
+diff --git a/portable/GCC/RISC-V/port.c b/portable/GCC/RISC-V/port.c
+index cde63fdb1..a9e5a9704 100644
+--- a/portable/GCC/RISC-V/port.c
++++ b/portable/GCC/RISC-V/port.c
+@@ -36,7 +36,7 @@
+ #include "portmacro.h"
+ 
+ /* Standard includes. */
+-#include "string.h"
++#include "ot_memory.h"
+ 
+ #ifdef configCLINT_BASE_ADDRESS
+ 	#warning The configCLINT_BASE_ADDRESS constant has been deprecated.  configMTIME_BASE_ADDRESS and configMTIMECMP_BASE_ADDRESS are currently being derived from the (possibly 0) configCLINT_BASE_ADDRESS setting.  Please update to define configMTIME_BASE_ADDRESS and configMTIMECMP_BASE_ADDRESS dirctly in place of configCLINT_BASE_ADDRESS.  See https://www.FreeRTOS.org/Using-FreeRTOS-on-RISC-V.html
+diff --git a/portable/GCC/RX100/port.c b/portable/GCC/RX100/port.c
+index a45b64661..66de1f1fc 100644
+--- a/portable/GCC/RX100/port.c
++++ b/portable/GCC/RX100/port.c
+@@ -38,7 +38,7 @@
+ #include "task.h"
+ 
+ /* Library includes. */
+-#include "string.h"
++#include "ot_memory.h"
+ 
+ /* Hardware specifics. */
+ #if ( configINCLUDE_PLATFORM_H_INSTEAD_OF_IODEFINE_H == 1 )
+diff --git a/portable/GCC/RX200/port.c b/portable/GCC/RX200/port.c
+index 97077743e..77cf4db7d 100644
+--- a/portable/GCC/RX200/port.c
++++ b/portable/GCC/RX200/port.c
+@@ -35,7 +35,7 @@
+ #include "task.h"
+ 
+ /* Library includes. */
+-#include "string.h"
++#include "ot_memory.h"
+ 
+ /* Hardware specifics. */
+ #if ( configINCLUDE_PLATFORM_H_INSTEAD_OF_IODEFINE_H == 1 )
+diff --git a/portable/GCC/RX600/port.c b/portable/GCC/RX600/port.c
+index afe1a7142..4a6c0e2f2 100644
+--- a/portable/GCC/RX600/port.c
++++ b/portable/GCC/RX600/port.c
+@@ -35,7 +35,7 @@
+ #include "task.h"
+ 
+ /* Library includes. */
+-#include "string.h"
++#include "ot_memory.h"
+ 
+ /* Hardware specifics. */
+ #if ( configINCLUDE_PLATFORM_H_INSTEAD_OF_IODEFINE_H == 1 )
+diff --git a/portable/GCC/RX600v2/port.c b/portable/GCC/RX600v2/port.c
+index 5527cf9a8..70a3055bb 100644
+--- a/portable/GCC/RX600v2/port.c
++++ b/portable/GCC/RX600v2/port.c
+@@ -35,7 +35,7 @@
+ #include "task.h"
+ 
+ /* Library includes. */
+-#include "string.h"
++#include "ot_memory.h"
+ 
+ /* Hardware specifics. */
+ #if ( configINCLUDE_PLATFORM_H_INSTEAD_OF_IODEFINE_H == 1 )
+diff --git a/portable/GCC/RX700v3_DPFPU/port.c b/portable/GCC/RX700v3_DPFPU/port.c
+index 4575c455c..fc359c9f8 100644
+--- a/portable/GCC/RX700v3_DPFPU/port.c
++++ b/portable/GCC/RX700v3_DPFPU/port.c
+@@ -37,7 +37,7 @@
+ #include "task.h"
+ 
+ /* Library includes. */
+-#include "string.h"
++#include "ot_memory.h"
+ 
+ /* Hardware specifics. */
+ #if ( configINCLUDE_PLATFORM_H_INSTEAD_OF_IODEFINE_H == 1 )
+diff --git a/portable/GCC/TriCore_1782/port.c b/portable/GCC/TriCore_1782/port.c
+index 329624251..c9bec08d2 100644
+--- a/portable/GCC/TriCore_1782/port.c
++++ b/portable/GCC/TriCore_1782/port.c
+@@ -28,7 +28,7 @@
+ 
+ /* Standard includes. */
+ // #include <stdlib.h>
+-#include <string.h>
++#include "ot_memory.h"
+ 
+ /* TriCore specific includes. */
+ #include <tc1782.h>
+diff --git a/portable/IAR/RISC-V/port.c b/portable/IAR/RISC-V/port.c
+index f8a49ace9..37c427e4a 100644
+--- a/portable/IAR/RISC-V/port.c
++++ b/portable/IAR/RISC-V/port.c
+@@ -36,7 +36,7 @@
+ #include "portmacro.h"
+ 
+ /* Standard includes. */
+-#include "string.h"
++#include "ot_memory.h"
+ 
+ #ifdef configCLINT_BASE_ADDRESS
+ 	#warning The configCLINT_BASE_ADDRESS constant has been deprecated.  configMTIME_BASE_ADDRESS and configMTIMECMP_BASE_ADDRESS are currently being derived from the (possibly 0) configCLINT_BASE_ADDRESS setting.  Please update to define configMTIME_BASE_ADDRESS and configMTIMECMP_BASE_ADDRESS dirctly in place of configCLINT_BASE_ADDRESS.  See https://www.FreeRTOS.org/Using-FreeRTOS-on-RISC-V.html
+diff --git a/portable/IAR/RX100/port.c b/portable/IAR/RX100/port.c
+index 1a5fb3749..6727140cd 100644
+--- a/portable/IAR/RX100/port.c
++++ b/portable/IAR/RX100/port.c
+@@ -38,7 +38,7 @@
+ #include "task.h"
+ 
+ /* Library includes. */
+-#include "string.h"
++#include "ot_memory.h"
+ 
+ /* Hardware specifics. */
+ #include "machine.h"
+diff --git a/portable/IAR/RX600/port.c b/portable/IAR/RX600/port.c
+index 8f524dd85..694c38376 100644
+--- a/portable/IAR/RX600/port.c
++++ b/portable/IAR/RX600/port.c
+@@ -35,7 +35,7 @@
+ #include "task.h"
+ 
+ /* Library includes. */
+-#include "string.h"
++#include "ot_memory.h"
+ 
+ /* Hardware specifics. */
+ #include <iorx62n.h>
+diff --git a/portable/IAR/RX700v3_DPFPU/port.c b/portable/IAR/RX700v3_DPFPU/port.c
+index 961147cec..c4dd5bec5 100644
+--- a/portable/IAR/RX700v3_DPFPU/port.c
++++ b/portable/IAR/RX700v3_DPFPU/port.c
+@@ -37,7 +37,7 @@
+ #include "task.h"
+ 
+ /* Library includes. */
+-#include "string.h"
++#include "ot_memory.h"
+ 
+ /* Hardware specifics. */
+ #if ( configINCLUDE_PLATFORM_H_INSTEAD_OF_IODEFINE_H == 1 )
+diff --git a/portable/IAR/RXv2/port.c b/portable/IAR/RXv2/port.c
+index aa9e79774..fc32dfef7 100644
+--- a/portable/IAR/RXv2/port.c
++++ b/portable/IAR/RXv2/port.c
+@@ -35,7 +35,7 @@
+ #include "task.h"
+ 
+ /* Library includes. */
+-#include "string.h"
++#include "ot_memory.h"
+ 
+ /* Hardware specifics. */
+ #include <machine.h>
+diff --git a/portable/MPLAB/PIC32MZ/port.c b/portable/MPLAB/PIC32MZ/port.c
+index e533f9020..893dbf964 100644
+--- a/portable/MPLAB/PIC32MZ/port.c
++++ b/portable/MPLAB/PIC32MZ/port.c
+@@ -34,7 +34,7 @@
+ #include <xc.h>
+ 
+ /* Standard headers. */
+-#include <string.h>
++#include "ot_memory.h"
+ 
+ /* Scheduler include files. */
+ #include "FreeRTOS.h"
+diff --git a/portable/Renesas/RX100/port.c b/portable/Renesas/RX100/port.c
+index 12db4c011..5f40b0969 100644
+--- a/portable/Renesas/RX100/port.c
++++ b/portable/Renesas/RX100/port.c
+@@ -38,7 +38,7 @@
+ #include "task.h"
+ 
+ /* Library includes. */
+-#include "string.h"
++#include "ot_memory.h"
+ 
+ /* Hardware specifics. */
+ #include "iodefine.h"
+diff --git a/portable/Renesas/RX200/port.c b/portable/Renesas/RX200/port.c
+index 2ee9d5943..1582032d7 100644
+--- a/portable/Renesas/RX200/port.c
++++ b/portable/Renesas/RX200/port.c
+@@ -35,7 +35,7 @@
+ #include "task.h"
+ 
+ /* Library includes. */
+-#include "string.h"
++#include "ot_memory.h"
+ 
+ /* Hardware specifics. */
+ #include "iodefine.h"
+diff --git a/portable/Renesas/RX600/port.c b/portable/Renesas/RX600/port.c
+index d3315c569..1de736888 100644
+--- a/portable/Renesas/RX600/port.c
++++ b/portable/Renesas/RX600/port.c
+@@ -35,7 +35,7 @@
+ #include "task.h"
+ 
+ /* Library includes. */
+-#include "string.h"
++#include "ot_memory.h"
+ 
+ /* Hardware specifics. */
+ #include "iodefine.h"
+diff --git a/portable/Renesas/RX600v2/port.c b/portable/Renesas/RX600v2/port.c
+index 7ee91bfa8..b207c5fe1 100644
+--- a/portable/Renesas/RX600v2/port.c
++++ b/portable/Renesas/RX600v2/port.c
+@@ -35,7 +35,7 @@
+ #include "task.h"
+ 
+ /* Library includes. */
+-#include "string.h"
++#include "ot_memory.h"
+ 
+ /* Hardware specifics. */
+ #if defined( configINCLUDE_PLATFORM_H_INSTEAD_OF_IODEFINE_H ) && ( configINCLUDE_PLATFORM_H_INSTEAD_OF_IODEFINE_H == 1 )
+diff --git a/portable/Renesas/RX700v3_DPFPU/port.c b/portable/Renesas/RX700v3_DPFPU/port.c
+index 26cb9f020..b91942352 100644
+--- a/portable/Renesas/RX700v3_DPFPU/port.c
++++ b/portable/Renesas/RX700v3_DPFPU/port.c
+@@ -37,7 +37,7 @@
+ #include "task.h"
+ 
+ /* Library includes. */
+-#include "string.h"
++#include "ot_memory.h"
+ 
+ /* Hardware specifics. */
+ #if ( configINCLUDE_PLATFORM_H_INSTEAD_OF_IODEFINE_H == 1 )
+diff --git a/portable/Renesas/SH2A_FPU/port.c b/portable/Renesas/SH2A_FPU/port.c
+index ca7c56b3d..0e9d4c655 100644
+--- a/portable/Renesas/SH2A_FPU/port.c
++++ b/portable/Renesas/SH2A_FPU/port.c
+@@ -35,7 +35,7 @@
+ #include "task.h"
+ 
+ /* Library includes. */
+-#include "string.h"
++#include "ot_memory.h"
+ 
+ /*-----------------------------------------------------------*/
+ 
+diff --git a/portable/SDCC/Cygnal/port.c b/portable/SDCC/Cygnal/port.c
+index e0a9d9488..2811b6b9a 100644
+--- a/portable/SDCC/Cygnal/port.c
++++ b/portable/SDCC/Cygnal/port.c
+@@ -31,7 +31,7 @@
+  *----------------------------------------------------------*/
+ 
+ /* Standard includes. */
+-#include <string.h>
++#include "ot_memory.h"
+ 
+ /* Scheduler includes. */
+ #include "FreeRTOS.h"
+diff --git a/portable/ThirdParty/GCC/ARC_EM_HS/freertos_tls.c b/portable/ThirdParty/GCC/ARC_EM_HS/freertos_tls.c
+index 7d74f319e..1b4f60295 100644
+--- a/portable/ThirdParty/GCC/ARC_EM_HS/freertos_tls.c
++++ b/portable/ThirdParty/GCC/ARC_EM_HS/freertos_tls.c
+@@ -30,7 +30,7 @@
+ 
+     #include <stdint.h>
+     #include <stdlib.h>
+-    #include <string.h>
++    #include "ot_memory.h"
+ 
+     #include "FreeRTOS.h"
+ 
+diff --git a/portable/ThirdParty/GCC/Posix/port.c b/portable/ThirdParty/GCC/Posix/port.c
+index e80f7518f..b3834ff4b 100644
+--- a/portable/ThirdParty/GCC/Posix/port.c
++++ b/portable/ThirdParty/GCC/Posix/port.c
+@@ -55,7 +55,7 @@
+ #include <signal.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+-#include <string.h>
++#include "ot_memory.h"
+ #include <sys/time.h>
+ #include <sys/times.h>
+ #include <time.h>
+diff --git a/portable/ThirdParty/XCC/Xtensa/portclib.c b/portable/ThirdParty/XCC/Xtensa/portclib.c
+index b0616657c..720a9ecbe 100644
+--- a/portable/ThirdParty/XCC/Xtensa/portclib.c
++++ b/portable/ThirdParty/XCC/Xtensa/portclib.c
+@@ -137,7 +137,7 @@ _reclaim_reent(void * ptr)
+ #include <malloc.h>
+ #include <stdio.h>
+ // #include <stdlib.h>
+-#include <string.h>
++#include "ot_memory.h"
+ 
+ #include "semphr.h"
+ 
+diff --git a/queue.c b/queue.c
+index 12f81d394..30e905ac8 100644
+--- a/queue.c
++++ b/queue.c
+@@ -27,7 +27,7 @@
+  */
+ 
+ // #include <stdlib.h>
+-#include <string.h>
++#include "ot_memory.h"
+ 
+ /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+  * all the API functions to use the MPU wrappers.  That should only be done when
+diff --git a/stream_buffer.c b/stream_buffer.c
+index 8a7a2e0d0..813e60a99 100644
+--- a/stream_buffer.c
++++ b/stream_buffer.c
+@@ -28,7 +28,7 @@
+ 
+ /* Standard includes. */
+ #include <stdint.h>
+-#include <string.h>
++#include "ot_memory.h"
+ 
+ /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+  * all the API functions to use the MPU wrappers.  That should only be done when
+diff --git a/tasks.c b/tasks.c
+index 405425c60..48e9dc37e 100644
+--- a/tasks.c
++++ b/tasks.c
+@@ -28,7 +28,7 @@
+ 
+ /* Standard includes. */
+ // #include <stdlib.h>
+-#include <string.h>
++#include "ot_memory.h"
+ 
+ /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+  * all the API functions to use the MPU wrappers.  That should only be done when
+-- 
+2.35.1.1021.g381101b075-goog
+
