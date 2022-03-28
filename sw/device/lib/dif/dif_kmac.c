@@ -299,11 +299,6 @@ dif_result_t dif_kmac_mode_shake_start(
     return kDifBadArg;
   }
 
-  // Hardware must be idle to start an operation.
-  if (!is_state_idle(kmac)) {
-    return kDifError;
-  }
-
   // Set key strength and calculate rate (r).
   uint32_t kstrength;
   switch (mode) {
@@ -317,6 +312,11 @@ dif_result_t dif_kmac_mode_shake_start(
       break;
     default:
       return kDifBadArg;
+  }
+
+  // Hardware must be idle to start an operation.
+  if (!is_state_idle(kmac)) {
+    return kDifError;
   }
   operation_state->squeezing = false;
   operation_state->append_d = false;
