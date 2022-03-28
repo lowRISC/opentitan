@@ -30,6 +30,8 @@
 //    - en_i increments/decrements the up_count/down_count by step_i, if neither of the above is
 //      set.
 
+`include "prim_assert.sv"
+
 module prim_count import prim_count_pkg::*; #(
   parameter int Width = 2,
   parameter bit OutSelDnCnt = 1, // 0 selects up count
