@@ -18,7 +18,11 @@
 
 // Include MPSSE SPI library
 extern "C" {
+#ifdef SPIFLASH_IS_BAZEL
+#include "external/chromiumos_platform2/trunks/ftdi/mpsse.h"
+#else
 #include "sw/host/vendor/mpsse/mpsse.h"
+#endif
 }
 
 namespace opentitan {

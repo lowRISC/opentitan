@@ -7,13 +7,11 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "mpsse",
     srcs = [
-        "mpsse/mpsse.c",
-        "mpsse/support.c",
-        "mpsse/support.h",
+        "trunks/ftdi/mpsse.c",
+        "trunks/ftdi/support.c",
+        "trunks/ftdi/support.h",
     ],
-    hdrs = [
-        "mpsse/mpsse.h",
-    ],
+    hdrs = ["trunks/ftdi/mpsse.h"],
     copts = [
         # TODO: Remove this once https://github.com/lowRISC/opentitan/issues/3182
         # is resolved.

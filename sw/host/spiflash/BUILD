@@ -19,8 +19,12 @@ cc_binary(
     linkopts = [
         "-lftdi1",
     ],
+    # FIXME: Temporary workaround for Meson and Bazel including mpsse through
+    # different paths.
+    # https://github.com/lowRISC/opentitan/issues/11743
+    local_defines = ["SPIFLASH_IS_BAZEL"],
     deps = [
-        "//sw/host/vendor:mpsse",
+        "@chromiumos_platform2//:mpsse",
         "@cryptoc//:sha256",
     ],
 )

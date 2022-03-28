@@ -182,3 +182,7 @@ verititan_deps()
 load("//third_party/cryptoc:deps.bzl", "cryptoc_deps")
 
 cryptoc_deps()
+
+load("//third_party/platform2:deps.bzl", "platform2_deps")
+
+platform2_deps()
