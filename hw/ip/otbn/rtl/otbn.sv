@@ -114,6 +114,7 @@ module otbn
 
   otbn_reg2hw_t reg2hw;
   otbn_hw2reg_t hw2reg;
+  logic [7:0]   hw2reg_status_d;
 
   // Bus device windows, as specified in otbn.hjson
   typedef enum logic {
@@ -169,7 +170,7 @@ module otbn
   // Interrupts ================================================================
 
   assign done = is_busy_status(status_e'(reg2hw.status.q)) &
-    !is_busy_status(status_e'(hw2reg.status.d));
+    !is_busy_status(status_e'(hw2reg_status_d));
 
   prim_intr_hw #(
     .Width(1),
@@ -693,13 +694,14 @@ module otbn
   // STATUS register
   // imem/dmem scramble req can be busy when locked, so use a priority selection so locked status
   // always takes priority.
-  assign hw2reg.status.d = locked                          ? StatusLocked          :
+  assign hw2reg_status_d = locked                          ? StatusLocked          :
                            busy_execute_q                  ? StatusBusyExecute     :
                            otbn_dmem_scramble_key_req_busy ? StatusBusySecWipeDmem :
                            otbn_imem_scramble_key_req_busy ? StatusBusySecWipeImem :
                            idle                            ? StatusIdle            :
                                                              StatusLocked;
 
+  assign hw2reg.status.d = hw2reg_status_d;
   assign hw2reg.status.de = 1'b1;
 
   `ASSERT(OtbnStateDefined, |{locked,
