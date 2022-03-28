@@ -271,11 +271,11 @@ TEST_F(Kmac256Test, StartSuccess) {
 }
 
 TEST_F(Kmac256Test, StartBadArg) {
-  EXPECT_DIF_BADARG(dif_kmac_mode_kmac_start(NULL, &op_state_, mode_, 0, &key_,
-                                             &custom_string_));
+  EXPECT_DIF_BADARG(dif_kmac_mode_kmac_start(nullptr, &op_state_, mode_, 0,
+                                             &key_, &custom_string_));
 
-  EXPECT_DIF_BADARG(
-      dif_kmac_mode_kmac_start(&kmac_, NULL, mode_, 0, &key_, &custom_string_));
+  EXPECT_DIF_BADARG(dif_kmac_mode_kmac_start(&kmac_, nullptr, mode_, 0, &key_,
+                                             &custom_string_));
 
   EXPECT_DIF_BADARG(dif_kmac_mode_kmac_start(&kmac_, &op_state_, mode_,
                                              kDifKmacMaxOutputLenWords + 1,
@@ -285,8 +285,8 @@ TEST_F(Kmac256Test, StartBadArg) {
                                              (dif_kmac_mode_kmac_t)0xff, 0,
                                              &key_, &custom_string_));
 
-  EXPECT_DIF_BADARG(dif_kmac_mode_kmac_start(&kmac_, &op_state_, mode_, 0, NULL,
-                                             &custom_string_));
+  EXPECT_DIF_BADARG(dif_kmac_mode_kmac_start(&kmac_, &op_state_, mode_, 0,
+                                             nullptr, &custom_string_));
 
   key_.length = static_cast<dif_kmac_key_length_t>(0xFF);
   EXPECT_DIF_BADARG(dif_kmac_mode_kmac_start(&kmac_, &op_state_, mode_, 0,
@@ -323,9 +323,9 @@ TEST_F(Sha3_224Test, StartSuccess) {
 }
 
 TEST_F(Sha3_224Test, StartBadArg) {
-  EXPECT_DIF_BADARG(dif_kmac_mode_sha3_start(NULL, &op_state_, mode_));
+  EXPECT_DIF_BADARG(dif_kmac_mode_sha3_start(nullptr, &op_state_, mode_));
 
-  EXPECT_DIF_BADARG(dif_kmac_mode_sha3_start(&kmac_, NULL, mode_));
+  EXPECT_DIF_BADARG(dif_kmac_mode_sha3_start(&kmac_, nullptr, mode_));
 
   EXPECT_DIF_BADARG(
       dif_kmac_mode_sha3_start(&kmac_, &op_state_, (dif_kmac_mode_sha3_t)0xff));
@@ -361,9 +361,9 @@ TEST_F(Shake128Test, StartSuccess) {
 }
 
 TEST_F(Shake128Test, StartBadArg) {
-  EXPECT_DIF_BADARG(dif_kmac_mode_shake_start(NULL, &op_state_, mode_));
+  EXPECT_DIF_BADARG(dif_kmac_mode_shake_start(nullptr, &op_state_, mode_));
 
-  EXPECT_DIF_BADARG(dif_kmac_mode_shake_start(&kmac_, NULL, mode_));
+  EXPECT_DIF_BADARG(dif_kmac_mode_shake_start(&kmac_, nullptr, mode_));
 
   EXPECT_DIF_BADARG(dif_kmac_mode_shake_start(&kmac_, &op_state_,
                                               (dif_kmac_mode_shake_t)0xff));
@@ -372,6 +372,151 @@ TEST_F(Shake128Test, StartBadArg) {
 TEST_F(Shake128Test, StartError) {
   EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_IDLE_BIT, false}});
   EXPECT_EQ(dif_kmac_mode_shake_start(&kmac_, &op_state_, mode_), kDifError);
+}
+
+class Cshake256Test : public KmacTest {
+ protected:
+  dif_kmac_mode_cshake_t mode_ = kDifKmacModeCshakeLen256;
+  dif_kmac_customization_string_t custom_str_;
+  dif_kmac_function_name_t func_name_;
+
+  Cshake256Test() {
+    const std::string string = "My Application";
+    EXPECT_DIF_OK(dif_kmac_customization_string_init(
+        string.c_str(), string.size(), &custom_str_));
+
+    const std::string kFunctionName = "Foo";
+    EXPECT_DIF_OK(dif_kmac_function_name_init(
+        kFunctionName.c_str(), kFunctionName.size(), &func_name_));
+
+    config_reg_.mode = KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE;
+    config_reg_.key_strength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L256;
+  }
+
+  void ExpectPrefix(const dif_kmac_customization_string_t &s) {
+    // Calculate PREFIX register values.
+    std::vector<uint8_t> prefixData;
+    if (func_name_.length == 0) {
+      // Append left encoded empty string.
+      prefixData.push_back(1);
+      prefixData.push_back(0);
+    } else {
+      prefixData.insert(prefixData.end(), func_name_.buffer,
+                        func_name_.buffer + func_name_.length);
+    }
+
+    if (s.length == 0) {
+      // Append left encoded empty string.
+      prefixData.push_back(1);
+      prefixData.push_back(0);
+    } else {
+      prefixData.insert(prefixData.end(), s.buffer, s.buffer + s.length);
+    }
+
+    std::vector<uint32_t> prefixRegs(11, 0);
+    memcpy(prefixRegs.data(), prefixData.data(), prefixData.size());
+    KmacTest::ExpectPrefix(prefixRegs.data(), prefixRegs.size());
+  }
+
+  void CheckOperationState(dif_kmac_operation_state_t &operation_state) {
+    EXPECT_EQ(op_state_.squeezing, false);
+    EXPECT_EQ(op_state_.append_d, false);
+    EXPECT_EQ(op_state_.offset, 0);
+    EXPECT_EQ(op_state_.d, 0);
+    // Formula for the rate in bits is:
+    //   r = 1600 - c
+    // Where c is the capacity (the security level in bits multiplied by two).
+    EXPECT_EQ(op_state_.r, (1600 - 2 * 256) / 32);
+  }
+};
+
+TEST_F(Cshake256Test, StartAllArgsSuccess) {
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_IDLE_BIT, true}});
+  EXPECT_READ32(KMAC_CFG_SHADOWED_REG_OFFSET,
+                {{KMAC_CFG_SHADOWED_KMAC_EN_BIT, false}});
+  ExpectConfig();
+  ExpectPrefix(custom_str_);
+  EXPECT_WRITE32(KMAC_CMD_REG_OFFSET,
+                 {{KMAC_CMD_CMD_OFFSET, KMAC_CMD_CMD_VALUE_START}});
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_ABSORB_BIT, true}});
+
+  EXPECT_DIF_OK(dif_kmac_mode_cshake_start(&kmac_, &op_state_, mode_,
+                                           &func_name_, &custom_str_));
+  CheckOperationState(op_state_);
+}
+
+TEST_F(Cshake256Test, StartNoFuncNameSuccess) {
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_IDLE_BIT, true}});
+  EXPECT_READ32(KMAC_CFG_SHADOWED_REG_OFFSET,
+                {{KMAC_CFG_SHADOWED_KMAC_EN_BIT, false}});
+  ExpectConfig();
+  func_name_.length = 0;
+  ExpectPrefix(custom_str_);
+  EXPECT_WRITE32(KMAC_CMD_REG_OFFSET,
+                 {{KMAC_CMD_CMD_OFFSET, KMAC_CMD_CMD_VALUE_START}});
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_ABSORB_BIT, true}});
+
+  EXPECT_DIF_OK(dif_kmac_mode_cshake_start(&kmac_, &op_state_, mode_, nullptr,
+                                           &custom_str_));
+  CheckOperationState(op_state_);
+}
+
+TEST_F(Cshake256Test, StartNoCustomStrSuccess) {
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_IDLE_BIT, true}});
+  EXPECT_READ32(KMAC_CFG_SHADOWED_REG_OFFSET,
+                {{KMAC_CFG_SHADOWED_KMAC_EN_BIT, false}});
+  ExpectConfig();
+  custom_str_.length = 0;
+  ExpectPrefix(custom_str_);
+  EXPECT_WRITE32(KMAC_CMD_REG_OFFSET,
+                 {{KMAC_CMD_CMD_OFFSET, KMAC_CMD_CMD_VALUE_START}});
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_ABSORB_BIT, true}});
+
+  EXPECT_DIF_OK(dif_kmac_mode_cshake_start(&kmac_, &op_state_, mode_,
+                                           &func_name_, nullptr));
+  CheckOperationState(op_state_);
+}
+
+/**
+ * In case the Function name and the Custom string are both empty the
+ * `dif_kmac_mode_cshake_start` will fallback to `dif_kmac_mode_shake_start`.
+ */
+TEST_F(Cshake256Test, StartFallbackToShakeSuccess) {
+  config_reg_.mode = KMAC_CFG_SHADOWED_MODE_VALUE_SHAKE;
+
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_IDLE_BIT, true}});
+  EXPECT_READ32(KMAC_CFG_SHADOWED_REG_OFFSET,
+                {{KMAC_CFG_SHADOWED_KMAC_EN_BIT, false}});
+  ExpectConfig();
+  EXPECT_WRITE32(KMAC_CMD_REG_OFFSET,
+                 {{KMAC_CMD_CMD_OFFSET, KMAC_CMD_CMD_VALUE_START}});
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_ABSORB_BIT, true}});
+  EXPECT_DIF_OK(
+      dif_kmac_mode_cshake_start(&kmac_, &op_state_, mode_, nullptr, nullptr));
+}
+
+TEST_F(Cshake256Test, StartBadArg) {
+  EXPECT_DIF_BADARG(dif_kmac_mode_cshake_start(nullptr, &op_state_, mode_,
+                                               &func_name_, &custom_str_));
+
+  EXPECT_DIF_BADARG(dif_kmac_mode_cshake_start(&kmac_, nullptr, mode_,
+                                               &func_name_, &custom_str_));
+
+  EXPECT_DIF_BADARG(dif_kmac_mode_cshake_start(&kmac_, &op_state_,
+                                               (dif_kmac_mode_cshake_t)0xff,
+                                               &func_name_, &custom_str_));
+
+  EXPECT_DIF_BADARG(dif_kmac_mode_cshake_start(
+      &kmac_, &op_state_, (dif_kmac_mode_cshake_t)0xff, nullptr, nullptr));
+}
+
+TEST_F(Cshake256Test, StartError) {
+  {
+    EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_IDLE_BIT, false}});
+    EXPECT_EQ(dif_kmac_mode_cshake_start(&kmac_, &op_state_, mode_, &func_name_,
+                                         &custom_str_),
+              kDifError);
+  }
 }
 
 constexpr std::array<uint8_t, 17> KmacTest::kMsg_;
@@ -389,7 +534,7 @@ TEST_F(AbsorbalignmentMessage, Success) {
     ExpectMessageInt32(pMsg, kMsg_.size());
 
     EXPECT_DIF_OK(
-        dif_kmac_absorb(&kmac_, &op_state_, pMsg, kMsg_.size(), NULL));
+        dif_kmac_absorb(&kmac_, &op_state_, pMsg, kMsg_.size(), nullptr));
   }
 }
 
@@ -409,5 +554,35 @@ TEST_F(ConfigLock, Unlocked) {
   bool lock = true;
   EXPECT_EQ(dif_kmac_config_is_locked(&kmac_, &lock), kDifOk);
   EXPECT_FALSE(lock);
+}
+
+class KmacEndTest : public KmacTest {
+ protected:
+  KmacEndTest() { op_state_.squeezing = true; }
+};
+
+TEST_F(KmacEndTest, Success) {
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_SQUEEZE_BIT, true}});
+  EXPECT_WRITE32(KMAC_CMD_REG_OFFSET,
+                 {{KMAC_CMD_CMD_OFFSET, KMAC_CMD_CMD_VALUE_DONE}});
+
+  EXPECT_DIF_OK(dif_kmac_end(&kmac_, &op_state_));
+
+  EXPECT_EQ(op_state_.squeezing, false);
+  EXPECT_EQ(op_state_.append_d, false);
+  EXPECT_EQ(op_state_.offset, 0);
+  EXPECT_EQ(op_state_.r, 0);
+  EXPECT_EQ(op_state_.d, 0);
+}
+
+TEST_F(KmacEndTest, BadArg) {
+  EXPECT_DIF_BADARG(dif_kmac_end(nullptr, &op_state_));
+
+  EXPECT_DIF_BADARG(dif_kmac_end(&kmac_, nullptr));
+}
+
+TEST_F(KmacEndTest, Error) {
+  op_state_.squeezing = false;
+  EXPECT_EQ(dif_kmac_end(&kmac_, &op_state_), kDifError);
 }
 }  // namespace dif_kmac_unittest

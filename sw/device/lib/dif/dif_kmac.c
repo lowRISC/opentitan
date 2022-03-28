@@ -373,11 +373,6 @@ dif_result_t dif_kmac_mode_cshake_start(
     }
   }
 
-  // Hardware must be idle to start an operation.
-  if (!is_state_idle(kmac)) {
-    return kDifError;
-  }
-
   // Set key strength and calculate rate (r).
   uint32_t kstrength;
   switch (mode) {
@@ -391,6 +386,11 @@ dif_result_t dif_kmac_mode_cshake_start(
       break;
     default:
       return kDifBadArg;
+  }
+
+  // Hardware must be idle to start an operation.
+  if (!is_state_idle(kmac)) {
+    return kDifError;
   }
   operation_state->squeezing = false;
   operation_state->append_d = false;
@@ -409,8 +409,8 @@ dif_result_t dif_kmac_mode_cshake_start(
 
   // Calculate PREFIX register values.
   uint32_t prefix_regs[11] = {0};
-  uint8_t *prefix_data = (void *)prefix_regs;
-  if (n == NULL) {
+  uint8_t *prefix_data = (uint8_t *)prefix_regs;
+  if (n == NULL || n->length < 3) {
     // Append left encoded empty string.
     prefix_data[0] = 1;
     prefix_data[1] = 0;
@@ -419,7 +419,7 @@ dif_result_t dif_kmac_mode_cshake_start(
     memcpy(prefix_data, n->buffer, n->length);
     prefix_data += n->length;
   }
-  if (s == NULL) {
+  if (s == NULL || s->length == 0) {
     // Append left encoded empty string.
     prefix_data[0] = 1;
     prefix_data[1] = 0;
