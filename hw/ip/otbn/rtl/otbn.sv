@@ -311,7 +311,7 @@ module otbn
     .addr_i      (imem_index),
     .wdata_i     (imem_wdata),
     .wmask_i     (imem_wmask),
-    .intg_error_i(1'b0),
+    .intg_error_i(locked),
 
     .rdata_o (imem_rdata),
     .rvalid_o(imem_rvalid),
@@ -473,7 +473,7 @@ module otbn
     .addr_i      (dmem_index),
     .wdata_i     (dmem_wdata),
     .wmask_i     (dmem_wmask),
-    .intg_error_i(1'b0),
+    .intg_error_i(locked),
 
     .rdata_o (dmem_rdata),
     .rvalid_o(dmem_rvalid),
