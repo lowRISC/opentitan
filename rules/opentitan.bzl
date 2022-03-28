@@ -162,6 +162,8 @@ elf_to_disassembly = rule(
 def _elf_to_scrambled_rom_impl(ctx):
     outputs = []
     for src in ctx.files.srcs:
+        if src.extension != "elf":
+            fail("only ROM images in the ELF format may be converted to the VMEM format and scrambled.")
         scrambled = ctx.actions.declare_file(
             "{}.scr.39.vmem".format(
                 # Remove ".elf" from file basename.
@@ -183,7 +185,10 @@ def _elf_to_scrambled_rom_impl(ctx):
             ],
             executable = ctx.files._tool[0].path,
         )
-        return [DefaultInfo(files = depset(outputs), data_runfiles = ctx.runfiles(files = outputs))]
+    return [DefaultInfo(
+        files = depset(outputs),
+        data_runfiles = ctx.runfiles(files = outputs),
+    )]
 
 elf_to_scrambled_rom_vmem = rule(
     implementation = _elf_to_scrambled_rom_impl,
@@ -343,6 +348,60 @@ bin_to_spiflash_frames = rule(
         "platform": attr.string(default = "@local_config_platform//:host"),
         "_tool": attr.label(
             default = "//sw/host/spiflash",
+            allow_single_file = True,
+        ),
+        "_allowlist_function_transition": attr.label(
+            default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
+        ),
+    },
+)
+
+def _gen_sim_dv_logs_db_impl(ctx):
+    outputs = []
+    for src in ctx.files.srcs:
+        if src.extension != "elf":
+            fail("can only generate DV logs database files from ELF files.")
+        logs_db = ctx.actions.declare_file("{}.logs.txt".format(
+            src.basename.replace("." + src.extension, ""),
+        ))
+        rodata = ctx.actions.declare_file("{}.rodata.txt".format(
+            src.basename.replace("." + src.extension, ""),
+        ))
+        outputs.append(logs_db)
+        outputs.append(rodata)
+        ctx.actions.run(
+            outputs = outputs,
+            inputs = [
+                src,
+                ctx.attr._tool,
+            ],
+            arguments = [
+                "--elf-file",
+                src.path,
+                "--rodata-sections",
+                ".rodata",
+                "--logs-fields-section",
+                ".logs.fields",
+                "--name",
+                src.basename.replace("." + src.extension, ""),
+                "--outdir",
+                ".",
+            ],
+            executable = ctx.file._tool.path,
+        )
+    return [DefaultInfo(
+        files = depset(outputs),
+        data_runfiles = ctx.runfiles(files = outputs),
+    )]
+
+gen_sim_dv_logs_db = rule(
+    implementation = _gen_sim_dv_logs_db_impl,
+    cfg = opentitan_transition,
+    attrs = {
+        "srcs": attr.label_list(allow_files = True),
+        "platform": attr.string(default = OPENTITAN_PLATFORM),
+        "_tool": attr.label(
+            default = "//util/device_sw_utils:extract_sw_logs",
             allow_single_file = True,
         ),
         "_allowlist_function_transition": attr.label(
