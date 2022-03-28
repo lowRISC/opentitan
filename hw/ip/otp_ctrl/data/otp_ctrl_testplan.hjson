@@ -60,6 +60,15 @@
       tests: ["otp_ctrl_smoke"]
     }
     {
+      name: smoke_regr
+      desc: ''' Same as the smoke test, but instead of re-generate `otp_ctrl_part_pkg` on-the-fly,
+            this test will use the existing `otp_ctrl_part_pkg` from the repository. This will make
+            it easier for user to reproduce failure in private CI.
+            '''
+      milestone: V1
+      tests: ["otp_ctrl_smoke_regr"]
+    }
+    {
       name: dai_access_partition_walk
       desc: '''
             Similar to UVM's memory walk test, this test ensures every address in each partition

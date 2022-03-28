@@ -39,6 +39,20 @@
 
   en_build_modes: ["{tool}_crypto_dpi_prince_build_opts"]
 
+  build_modes: [
+    {
+      name: default
+      // Re-generate otp_ctrl_part_pkg with random seed.
+      pre_build_cmds: ["cd /${proj_root} && ./util/design/gen-otp-mmap.py --seed ${seed}"]
+    }
+
+    {
+      name: smoke
+      // Override default to skip re-generating otp_ctrl_part_pkg with random seed.
+      pre_build_cmds: []
+    }
+  ]
+
   // Add additional tops for simulation.
   sim_tops: ["otp_ctrl_bind", "otp_ctrl_cov_bind",
              "sec_cm_prim_sparse_fsm_flop_bind",
@@ -67,6 +81,12 @@
     {
       name: otp_ctrl_smoke
       uvm_test_seq: otp_ctrl_smoke_vseq
+    }
+
+    {
+      name: otp_ctrl_smoke_regr
+      uvm_test_seq: otp_ctrl_smoke_vseq
+      build_mode: "smoke"
     }
 
     {
@@ -146,7 +166,7 @@
   regressions: [
     {
       name: smoke
-      tests: ["otp_ctrl_smoke"]
+      tests: ["otp_ctrl_smoke_regr"]
     }
   ]
 }
