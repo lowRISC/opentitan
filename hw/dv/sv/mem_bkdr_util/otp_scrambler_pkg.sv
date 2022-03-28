@@ -27,12 +27,11 @@ package otp_scrambler_pkg;
   );
 
     int secret_idx = part_idx - Secret0Idx;
-    bit [NUM_ROUND-1:0][SCRAMBLE_DATA_SIZE-1:0] output_data;
     crypto_dpi_present_pkg::sv_dpi_present_encrypt(input_data,
                                                    RndCnstKey[secret_idx],
-                                                   SCRAMBLE_KEY_SIZE == 80,
-                                                   output_data);
-    scramble_data = output_data[NUM_ROUND-1];
+                                                   SCRAMBLE_KEY_SIZE,
+                                                   NUM_ROUND,
+                                                   scramble_data);
   endfunction
 
   // When secret data read out of otp_array, it will be descrambled.
@@ -42,25 +41,20 @@ package otp_scrambler_pkg;
   );
 
     int secret_idx = part_idx - Secret0Idx;
-    bit [NUM_ROUND-1:0][SCRAMBLE_DATA_SIZE-1:0] output_data;
-    bit [NUM_ROUND-1:0][SCRAMBLE_DATA_SIZE-1:0] padded_input;
 
-    padded_input[NUM_ROUND-1] = input_data;
-    crypto_dpi_present_pkg::sv_dpi_present_decrypt(padded_input,
+    crypto_dpi_present_pkg::sv_dpi_present_decrypt(input_data,
                                                    RndCnstKey[secret_idx],
-                                                   SCRAMBLE_KEY_SIZE == 80,
-                                                   output_data);
-    descramble_data = output_data[NUM_ROUND-1];
-    if (input_data != 0) begin
-    end
+                                                   SCRAMBLE_KEY_SIZE,
+                                                   NUM_ROUND,
+                                                   descramble_data);
   endfunction
 
   function automatic bit [SCRAMBLE_DATA_SIZE-1:0] cal_digest(int part_idx,
                                                              ref bit [BUS_DW-1:0] mem_q[$]);
     int array_size = mem_q.size();
     real key_factor  = SCRAMBLE_KEY_SIZE / BUS_DW;
-    bit [NUM_ROUND-1:0] [SCRAMBLE_DATA_SIZE-1:0] enc_array;
     bit [SCRAMBLE_DATA_SIZE-1:0] init_vec = RndCnstDigestIV[0];
+    bit [SCRAMBLE_DATA_SIZE-1:0] enc_data;
     bit [SCRAMBLE_DATA_SIZE-1:0] digest;
 
     for (int i = 0; i < $ceil(array_size / key_factor); i++) begin
@@ -76,19 +70,19 @@ package otp_scrambler_pkg;
       end
 
       // Trigger 32 round of PRESENT encrypt.
-      crypto_dpi_present_pkg::sv_dpi_present_encrypt(input_data, key, SCRAMBLE_KEY_SIZE == 80,
-                                                     enc_array);
+      crypto_dpi_present_pkg::sv_dpi_present_encrypt(input_data, key, SCRAMBLE_KEY_SIZE,
+                                                     NUM_ROUND, enc_data);
       // XOR the previous state into the digest result according to the Davies-Meyer scheme.
-      digest = enc_array[NUM_ROUND-1] ^ input_data;
+      digest = enc_data ^ input_data;
     end
 
     // Last 32 round of digest is calculated with a digest constant.
     crypto_dpi_present_pkg::sv_dpi_present_encrypt(digest,
                                                    RndCnstDigestConst[0],
-                                                   SCRAMBLE_KEY_SIZE == 80,
-                                                   enc_array);
+                                                   SCRAMBLE_KEY_SIZE, NUM_ROUND,
+                                                   enc_data);
     // XOR the previous state into the digest result according to the Davies-Meyer scheme.
-    digest ^= enc_array[NUM_ROUND-1];
+    digest ^= enc_data;
     return digest;
   endfunction
 

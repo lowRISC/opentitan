@@ -1100,24 +1100,25 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                                                 bit [SCRAMBLE_KEY_SIZE-1:0]  final_const,
                                                 bit [SCRAMBLE_KEY_SIZE-1:0]  second_key = '0,
                                                 int                          num_round = 1);
-    bit [NUM_ROUND-1:0] [SCRAMBLE_DATA_SIZE-1:0] enc_array;
+    bit [SCRAMBLE_DATA_SIZE-1:0] enc_data;
     bit [SCRAMBLE_DATA_SIZE-1:0] intermediate_state;
-    crypto_dpi_present_pkg::sv_dpi_present_encrypt(data, key, SCRAMBLE_KEY_SIZE == 80, enc_array);
+    crypto_dpi_present_pkg::sv_dpi_present_encrypt(data, key,
+                                                   SCRAMBLE_KEY_SIZE, NUM_ROUND, enc_data);
     // XOR the previous state into the digest result according to the Davies-Meyer scheme.
-    intermediate_state = data ^ enc_array[NUM_ROUND-1];
+    intermediate_state = data ^ enc_data;
 
     if (num_round == 2) begin
       crypto_dpi_present_pkg::sv_dpi_present_encrypt(intermediate_state, second_key,
-                                                     SCRAMBLE_KEY_SIZE == 80, enc_array);
-      intermediate_state = intermediate_state ^ enc_array[NUM_ROUND-1];
+                                                     SCRAMBLE_KEY_SIZE, NUM_ROUND, enc_data);
+      intermediate_state = intermediate_state ^ enc_data;
     end else if (num_round > 2) begin
       `uvm_fatal(`gfn, $sformatf("does not support num_round: %0d > 2", num_round))
     end
 
     crypto_dpi_present_pkg::sv_dpi_present_encrypt(intermediate_state, final_const,
-                                                   SCRAMBLE_KEY_SIZE == 80, enc_array);
+                                                   SCRAMBLE_KEY_SIZE, NUM_ROUND, enc_data);
     // XOR the previous state into the digest result according to the Davies-Meyer scheme.
-    present_encode_with_final_const = enc_array[NUM_ROUND-1] ^ intermediate_state;
+    present_encode_with_final_const = intermediate_state ^ enc_data;
   endfunction
 
   // Get address for scoreboard's otp_a array from the `direct_access_address` CSR

@@ -13,19 +13,15 @@
 module prim_present_tb;
   `include "dv_macros.svh"
 
+  import crypto_dpi_present_pkg::MaxRounds;
+  import crypto_dpi_present_pkg::MaxKeyWidth;
+  import crypto_dpi_present_pkg::DataWidth;
+
 //////////////////////////////////////////////////////
 // config
 //////////////////////////////////////////////////////
 
-// Default to {data_width:64, key_width:128} configuration.
-// Data width and key width can be overriden from command-line if desired.
-
-`ifdef DATA_WIDTH
-  localparam int unsigned DataWidth = `DATA_WIDTH;
-`else
-  localparam int unsigned DataWidth = 64;
-`endif
-
+  // Key width can be set with a define, but must be 80 or 128
 `ifdef KEY_WIDTH
   localparam int unsigned KeyWidth = `KEY_WIDTH;
 `else
@@ -34,16 +30,9 @@ module prim_present_tb;
 
   localparam string MSG_ID = $sformatf("%m");
 
-  // Max number of rounds according to spec.
-  // We redefine this parameter here to avoid clutter from the long package identifier.
-  localparam int unsigned NumRounds = crypto_dpi_present_pkg::NumRounds;
-
   // used to index the data arrays
   localparam bit Encrypt = 1'b0;
   localparam bit Decrypt = 1'b1;
-
-  // this parameter is required for the DPI model.
-  localparam bit KeySize80 = (KeyWidth == 80);
 
   // This bit can be set from the command line to indicate that we are running a smoke regression,
   // and to run just a single iteration of the test.
@@ -56,15 +45,15 @@ module prim_present_tb;
 
   // data_in[0]: encryption, data_in[1]: decryption.
   // Same scheme used for key_in, data_out, key_out.
-  logic [1:0][NumRounds-1:0][DataWidth-1:0] data_in;
-  logic [1:0][NumRounds-1:0][KeyWidth-1 :0] key_in;
-  logic [1:0][NumRounds-1:0][4:0]           idx_in;
-  logic [1:0][NumRounds-1:0][DataWidth-1:0] data_out;
-  logic [1:0][NumRounds-1:0][KeyWidth-1 :0] key_out;
-  logic [1:0][NumRounds-1:0][4:0]           idx_out;
+  logic [1:0][MaxRounds-1:0][DataWidth-1:0] data_in;
+  logic [1:0][MaxRounds-1:0][KeyWidth-1 :0] key_in;
+  logic [1:0][MaxRounds-1:0][4:0]           idx_in;
+  logic [1:0][MaxRounds-1:0][DataWidth-1:0] data_out;
+  logic [1:0][MaxRounds-1:0][KeyWidth-1 :0] key_out;
+  logic [1:0][MaxRounds-1:0][4:0]           idx_out;
 
   for (genvar j = 0; j < 2; j++) begin : gen_encrypt_decrypt
-    for (genvar k = 0; k < NumRounds; k++) begin : gen_duts
+    for (genvar k = 0; k < MaxRounds; k++) begin : gen_duts
       if (j == 0) begin : gen_encrypt
         assign idx_in[j][k] = 5'd1;
       end else begin : gen_decrypt
@@ -96,15 +85,10 @@ module prim_present_tb;
   task automatic test_present(bit [DataWidth-1:0] plaintext,
                               bit [KeyWidth-1:0]  key);
 
-    bit [NumRounds:0][63:0] key_schedule;
-    bit [NumRounds-1:0][DataWidth-1:0] encrypted_text;
+    bit [MaxRounds-1:0][DataWidth-1:0] encrypted_text;
 
-    crypto_dpi_present_pkg::sv_dpi_present_get_key_schedule(key, KeySize80, key_schedule);
-
-    check_encryption(plaintext, key, key_schedule, encrypted_text);
-
+    check_encryption(plaintext, key, encrypted_text);
     check_decryption(encrypted_text, key, key_out[Encrypt]);
-
   endtask
 
 
@@ -112,11 +96,10 @@ module prim_present_tb;
   // Calls a subroutine to perform checks on the outputs (once they are available).
   task automatic check_encryption(input bit [DataWidth-1:0]                 plaintext,
                                   input bit [KeyWidth-1:0]                  key,
-                                  input bit [NumRounds:0][63:0]             key_schedule,
-                                  output bit [NumRounds-1:0][DataWidth-1:0] expected_ciphertext);
+                                  output bit [MaxRounds-1:0][DataWidth-1:0] expected_ciphertext);
 
     // Drive input into encryption instances.
-    for (int unsigned i = 0; i < NumRounds; i++) begin
+    for (int unsigned i = 0; i < MaxRounds; i++) begin
       data_in[Encrypt][i] = plaintext;
       key_in[Encrypt][i]  = key;
     end
@@ -124,30 +107,22 @@ module prim_present_tb;
     // Wait a bit for the DUTs to finish calculations.
     #100ns;
 
-    // query DPI model for expected encrypted output.
-    crypto_dpi_present_pkg::sv_dpi_present_encrypt(plaintext, key,
-                                                   KeySize80, expected_ciphertext);
+    for (int unsigned i = 0; i < MaxRounds; i++) begin
+      crypto_dpi_present_pkg::sv_dpi_present_encrypt(plaintext, MaxKeyWidth'(key),
+                                                     KeyWidth, i + 1, expected_ciphertext[i]);
 
-    check_output(key_schedule[NumRounds:1], expected_ciphertext,
-                 key_out[Encrypt], data_out[Encrypt], "Encryption");
+      check_output(data_out[Encrypt][i],
+                   expected_ciphertext[i],
+                   $sformatf("Encryption; %0d rounds, key width %0d", i + 1, KeyWidth));
+    end
   endtask
 
 
   // Helper task to drive ciphertext and key into each decryption instance.
   // Calls a subroutine to perform checks on the outputs (once they are available).
-  task automatic check_decryption(input bit [NumRounds-1:0][DataWidth-1:0]  ciphertext,
+  task automatic check_decryption(input bit [MaxRounds-1:0][DataWidth-1:0]  ciphertext,
                                   input bit [KeyWidth-1:0]                  key,
-                                  input bit [NumRounds-1:0][KeyWidth-1:0]   decryption_keys);
-
-    // the expected plaintext after decryption will be provided by the C model.
-    bit [NumRounds-1:0][DataWidth-1:0] expected_plaintext;
-
-    // the expected key after decryption will simply be the original key.
-    // the C model only provides a key schedule, which is not useful here.
-    bit [NumRounds-1:0][63:0] expected_key;
-    for (int i = 0; i < NumRounds; i++) begin
-      expected_key[i] = key[KeyWidth-1:KeyWidth-64];
-    end
+                                  input bit [MaxRounds-1:0][KeyWidth-1:0]   decryption_keys);
 
     // Drive input into decryption instances.
     data_in[Decrypt] = ciphertext;
@@ -157,49 +132,29 @@ module prim_present_tb;
     #100ns;
 
     // query DPI model for expected decrypted output.
-    crypto_dpi_present_pkg::sv_dpi_present_decrypt(ciphertext, key, KeySize80, expected_plaintext);
-
-    check_output(expected_key, expected_plaintext,
-                 key_out[Decrypt], data_out[Decrypt], "Decryption");
+    for (int unsigned i = 0; i < MaxRounds; i++) begin
+      bit [DataWidth-1:0] expected_plaintext;
+      crypto_dpi_present_pkg::sv_dpi_present_decrypt(ciphertext[i],
+                                                     key, KeyWidth,
+                                                     i + 1,
+                                                     expected_plaintext);
+      check_output(data_out[Decrypt][i],
+                   expected_plaintext,
+                   $sformatf("Decryption; %0d rounds, key width %0d", i + 1, KeyWidth));
+    end
   endtask
 
 
   // Helper subroutine to compare key and data output values from
   // the C-reference model and the DUTs.
-  //
-  // For each instance of PRESENT (whether encryption or decryption),
-  // we need to perform two checks:
-  //    1) Check that the output key matches the corresponding key in the schedule.
-  //    2) Check that the output data matches the output of the reference model.
-  //
-  // If any comparison error is seen, this task short-circuits immediately,
-  // printing out some debug information and the correct failure signature.
-  task automatic check_output(input bit [NumRounds-1:0][63:0]           expected_key,
-                              input bit [NumRounds-1:0][DataWidth-1:0]  expected_text,
-                              input bit [NumRounds-1:0][KeyWidth-1:0]   actual_key,
-                              input bit [NumRounds-1:0][DataWidth-1:0]  actual_data,
-                              input string msg);
-
-    bit error = 1'b0;
-
-    for (int unsigned i = 0; i < NumRounds; i++) begin
-      // compare the output key to the corresponding key in the schedule.
-      if (expected_key[i] != actual_key[i][KeyWidth-1:KeyWidth-64]) begin
-        error = 1'b1;
-        $error("%s output key mismatch at round %0d! Expected[0x%0x] - Actual[0x%0x]",
-               msg, i, expected_key[i], actual_key[i][KeyWidth-1:KeyWidth-64]);
-        break;
-      end
-      // compare encrypted output text to reference model
-      if (expected_text[i] != actual_data[i]) begin
-        error = 1'b1;
-        $error("%s output text mismatch at round %0d! Expected[0x%0x] - Actual[0x%0x]",
-               msg, i, expected_text[i], actual_data[i]);
-        break;
-      end
+  function automatic void check_output(bit [DataWidth-1:0] dut_value,
+                                       bit [DataWidth-1:0] exp_value,
+                                       string              desc);
+    if (dut_value != exp_value) begin
+      $error("%s: MISMATCH. Expected[0x%0x] - Actual[0x%0x]", desc, exp_value, dut_value);
+      dv_test_status_pkg::dv_test_status(.passed(1'b0));
     end
-    if (error) dv_test_status_pkg::dv_test_status(.passed(1'b0));
-  endtask
+  endfunction
 
 
 //////////////////////////////////////////////////////
