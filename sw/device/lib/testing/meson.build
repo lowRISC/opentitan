@@ -203,6 +203,21 @@ sw_lib_testing_hmac_testutils = declare_dependency(
   ),
 )
 
+# keymgr test utilities
+sw_lib_testing_keymgr_testutils = declare_dependency(
+  link_with: static_library(
+    'sw_lib_testing_keymgr_testutils',
+    sources: [
+      hw_ip_keymgr_reg_h,
+      'keymgr_testutils.c',
+    ],
+    dependencies: [
+      sw_lib_dif_keymgr,
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+
 subdir('autogen')
 subdir('test_framework')
 subdir('test_rom')

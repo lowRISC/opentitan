@@ -17,6 +17,7 @@
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf.h"
 
@@ -127,35 +128,6 @@ static void init_kmac_for_keymgr(void) {
   }
 }
 
-void keymgr_advance_state(const dif_keymgr_t *keymgr,
-                          const dif_keymgr_state_params_t *params) {
-  CHECK_DIF_OK(dif_keymgr_advance_state(keymgr, params));
-
-  while (true) {
-    dif_keymgr_status_codes_t status;
-
-    CHECK_DIF_OK(dif_keymgr_get_status_codes(keymgr, &status));
-    if (status == 0) {
-      LOG_INFO("Advancing to next state");
-    } else if (status == kDifKeymgrStatusCodeIdle) {
-      break;
-    } else {
-      LOG_ERROR("Unexpected status: %0x", status);
-      break;
-    }
-  }
-}
-
-void keymgr_check_state(const dif_keymgr_t *keymgr,
-                        const dif_keymgr_state_t exp_state) {
-  dif_keymgr_state_t act_state;
-  CHECK_DIF_OK(dif_keymgr_get_state(keymgr, &act_state));
-  if (act_state != exp_state) {
-    LOG_INFO("Keymgr in unexpected state: %0x, expected to be %0x", act_state,
-             exp_state);
-  }
-}
-
 bool test_main(void) {
   dif_rstmgr_t rstmgr;
   dif_rstmgr_reset_info_bitfield_t info;
@@ -194,18 +166,18 @@ bool test_main(void) {
     CHECK_DIF_OK(dif_keymgr_init(
         mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
 
-    keymgr_check_state(&keymgr, kDifKeymgrStateReset);
+    keymgr_testutils_check_state(&keymgr, kDifKeymgrStateReset);
 
-    keymgr_advance_state(&keymgr, NULL);
-    keymgr_check_state(&keymgr, kDifKeymgrStateInitialized);
+    keymgr_testutils_advance_state(&keymgr, NULL);
+    keymgr_testutils_check_state(&keymgr, kDifKeymgrStateInitialized);
     LOG_INFO("Keymgr entered Init State");
 
-    keymgr_advance_state(&keymgr, &kCreatorParams);
-    keymgr_check_state(&keymgr, kDifKeymgrStateCreatorRootKey);
+    keymgr_testutils_advance_state(&keymgr, &kCreatorParams);
+    keymgr_testutils_check_state(&keymgr, kDifKeymgrStateCreatorRootKey);
     LOG_INFO("Keymgr entered CreatorRootKey State");
 
-    keymgr_advance_state(&keymgr, &kOwnerIntParams);
-    keymgr_check_state(&keymgr, kDifKeymgrStateOwnerIntermediateKey);
+    keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams);
+    keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerIntermediateKey);
     LOG_INFO("Keymgr entered OwnerIntKey State");
 
     CHECK_DIF_OK(dif_keymgr_generate_identity_seed(&keymgr));

@@ -95,6 +95,7 @@ keymgr_key_derivation_test_lib = declare_dependency(
       sw_lib_dif_otp_ctrl,
       sw_lib_dif_flash_ctrl,
       sw_lib_testing_flash_ctrl_testutils,
+      sw_lib_testing_keymgr_testutils,
       sw_lib_testing_otp_ctrl_testutils,
       sw_lib_testing_test_status,
       top_earlgrey,
