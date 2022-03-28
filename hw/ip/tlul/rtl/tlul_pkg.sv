@@ -183,7 +183,10 @@ package tlul_pkg;
   function automatic logic [DataIntgWidth-1:0] get_data_intg(logic [top_pkg::TL_DW-1:0] data);
     logic [DataIntgWidth-1:0] data_intg;
     logic [top_pkg::TL_DW-1:0] unused_data;
-    {data_intg, unused_data} = prim_secded_pkg::prim_secded_inv_39_32_enc(data);
+    logic [DataIntgWidth + top_pkg::TL_DW - 1 : 0] enc_data;
+    enc_data = prim_secded_pkg::prim_secded_inv_39_32_enc(data);
+    data_intg = enc_data[DataIntgWidth + top_pkg::TL_DW - 1 : top_pkg::TL_DW];
+    unused_data = enc_data[top_pkg::TL_DW - 1 : 0];
     return data_intg;
   endfunction  // get_data_intg
 
