@@ -7,7 +7,7 @@ Execution-aware Masking Verification](https://github.com/IAIK/coco-alma).
 ## Prerequisites
 
 Note that this flow is experimental. It has been developed using Yosys 0.9+4306
-(git sha1 3931b3a03) and sv2v v0.0.7-17-g499bd58. Other tool versions might not
+(git sha1 3931b3a03) and sv2v v0.0.9-24-gf868f06. Other tool versions might not
 be compatible.
 
 1. Download the Alma tool
