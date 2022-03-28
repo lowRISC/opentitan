@@ -29,6 +29,8 @@ interface csrng_assert_if
 
   task automatic assert_off ();
     $assertoff(0, `PATH1.MaxUpCntStable_A);
+    $assertoff(0, `PATH1.SimulClrSet_A);
+    $assertoff(0, `PATH1.OutSet_A);
     $assertoff(0, `PATH1.gen_cross_cnt_hardening.CrossCntErrBackward_A);
     $assertoff(0, `PATH2.`PATH2_1.AesCipherControlStateValid);
     $assertoff(0, `PATH2.`PATH2_2.AesCipherControlStateValid);
@@ -37,6 +39,8 @@ interface csrng_assert_if
 
   task automatic assert_on ();
     $asserton(0, `PATH1.MaxUpCntStable_A);
+    $asserton(0, `PATH1.SimulClrSet_A);
+    $asserton(0, `PATH1.OutSet_A);
     $asserton(0, `PATH1.gen_cross_cnt_hardening.CrossCntErrBackward_A);
     $asserton(0, `PATH2.`PATH2_1.AesCipherControlStateValid);
     $asserton(0, `PATH2.`PATH2_2.AesCipherControlStateValid);
