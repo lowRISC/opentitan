@@ -7,12 +7,14 @@
 # Setup IP name and top module.
 # When changing the top module, some parameters might not exist and
 # tcl/yosys_run_synth.tcl might need to be adjusted accordingly.
+# Known working top modules are: keccak_2share, keccak_round, sha3, kmac
 export LR_SYNTH_IP_NAME=kmac
 export LR_SYNTH_TOP_MODULE=keccak_2share
 
 # Setup module parameters. The Width is actually 1600 but it can have any value
 # in [25, 50, 100, 200, 400, 800, 1600]. We choose 25 instead to get smaller
-# netlist thereby speeding up the formal masking verification.
+# netlist thereby speeding up the formal masking verification. Ignored for sha3
+# and kmac top modules.
 export LR_SYNTH_WIDTH=25
 export LR_SYNTH_EN_MASKING=1
 

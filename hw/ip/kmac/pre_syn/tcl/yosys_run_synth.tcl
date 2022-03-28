@@ -18,7 +18,9 @@ yosys "read_verilog -sv $lr_synth_out_dir/generated/*.v"
 
 # Set top-module parameters.
 yosys "chparam -set EnMasking $lr_synth_en_masking $lr_synth_top_module"
-yosys "chparam -set Width $lr_synth_width $lr_synth_top_module"
+if { $lr_synth_top_module == "keccak_2share" || $lr_synth_top_module == "keccak_round"} {
+  yosys "chparam -set Width $lr_synth_width $lr_synth_top_module"
+}
 
 # Remap Xilinx Vivado "dont_touch" attributes to Yosys "keep" attributes.
 yosys "attrmap -tocase keep -imap dont_touch=\"yes\" keep=1 -imap dont_touch=\"no\" keep=0 -remove keep=0"
