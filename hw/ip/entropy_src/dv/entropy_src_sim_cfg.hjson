@@ -120,7 +120,7 @@
     }
     {
       name: short_run
-      run_opts: ["+test_timeout_ns=1000000"]
+      run_opts: ["+test_timeout_ns=5000000"]
     }
   ]
 }

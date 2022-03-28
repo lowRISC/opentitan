@@ -10,16 +10,22 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   `uvm_object_utils(entropy_src_rng_vseq)
 
   push_pull_indefinite_host_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH) m_csrng_pull_seq;
+  // For use in non-FIPS mode
+  push_pull_host_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)            m_csrng_pull_seq_single;
   entropy_src_base_rng_seq                                              m_rng_push_seq;
 
   rand uint dly_to_access_intr;
   rand uint dly_to_access_alert_sts;
   rand uint dly_to_insert_entropy;
+  rand uint dly_to_reenable_dut;
   rand int  fw_ov_insert_per_seed;
   rand bit  do_check_ht_diag;
   rand bit  do_clear_ht_alert;
 
   int do_background_procs;
+
+  // Signal to start and stop the RNG when it becomes halted in boot/bypass modes
+  int do_reenable = 0;
 
   constraint dly_to_access_intr_c {
     dly_to_access_intr dist {
@@ -40,6 +46,14 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   constraint dly_to_insert_entropy_c {
     dly_to_insert_entropy dist {
       0                   :/ 1,
+      [1      :100]       :/ 3,
+      [101    :1000]      :/ 2,
+      [1001   :10_000]    :/ 1
+    };
+  }
+
+  constraint dly_to_reenable_dut_c {
+    dly_to_reenable_dut dist {
       [1      :100]       :/ 3,
       [101    :1000]      :/ 2,
       [1001   :10_000]    :/ 1
@@ -131,6 +145,18 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
   endtask
 
+  task fips_mode_reenable();
+    ral.module_enable.module_enable.set(MuBi4False);
+    csr_update(.csr(ral.module_enable));
+
+    ral.conf.fips_enable.set(MuBi4True);
+    csr_update(.csr(ral.conf));
+
+    ral.module_enable.module_enable.set(MuBi4True);
+    csr_update(.csr(ral.module_enable));
+
+  endtask
+
   //
   // The csr_access seq task executes all csr accesses for enabling/disabling the DUT as needed,
   // clearing assertions
@@ -138,6 +164,10 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   task csr_access_seq();
     // Explicitly enable the DUT
     enable_dut();
+    if(cfg.route_software == MuBi4False && cfg.fips_enable == MuBi4False) begin
+      wait(do_reenable);
+      fips_mode_reenable();
+    end
     #(cfg.sim_duration);
   endtask
 
@@ -157,12 +187,40 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     m_csrng_pull_seq = push_pull_indefinite_host_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)::
         type_id::create("m_csrng_pull_seq");
 
+    m_csrng_pull_seq_single = push_pull_host_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)::
+        type_id::create("m_csrng_pull_seq_single");
+    m_csrng_pull_seq_single.num_trans = 1;
+
     m_rng_push_seq.hard_mtbf = cfg.hard_mtbf;
     m_rng_push_seq.soft_mtbf = cfg.soft_mtbf;
 
     do_background_procs = 1'b1;
 
     super.pre_start();
+  endtask
+
+  // Clears the module_enable signal and at the same time clears the
+  // any interrupts that may have become stale as a result of the disable
+  // operation.
+  // TODO (documentation): Make sure this get an issue to be sure it goes into SW
+  task reinit_dut();
+    csr_wr(.ptr(ral.module_enable.module_enable), .value(prim_mubi_pkg::MuBi4False));
+    // Disabling the module will clear the error state,
+    // as well as the observe and entropy_data FIFOs
+    // Clear all three related interupts here
+    csr_wr(.ptr(ral.intr_state), .value(32'h7));
+
+    csr_wr(.ptr(ral.recov_alert_sts.es_main_sm_alert), .value(1'b1));
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(do_check_ht_diag)
+    if (do_check_ht_diag) begin
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_alert_sts)
+      cfg.clk_rst_vif.wait_clks(dly_to_access_alert_sts);
+      // read all health check values
+      `uvm_info(`gfn, "Checking_ht_values", UVM_HIGH)
+      check_ht_diagnostics();
+      `uvm_info(`gfn, "HT value check complete", UVM_HIGH)
+    end
+    csr_wr(.ptr(ral.module_enable.module_enable), .value(prim_mubi_pkg::MuBi4True));
   endtask
 
   task clear_ht_alert();
@@ -176,23 +234,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       `uvm_info(`gfn, "Identified main_sm alert", UVM_HIGH)
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_alert_sts)
       cfg.clk_rst_vif.wait_clks(dly_to_access_alert_sts);
-      csr_wr(.ptr(ral.module_enable.module_enable), .value(prim_mubi_pkg::MuBi4False));
-      // Disabling the module will clear the error state,
-      // as well as the observe and entropy_data FIFOs
-      // Clear all three related interupts here
-      csr_wr(.ptr(ral.intr_state), .value(32'h7));
-
-      csr_wr(.ptr(ral.recov_alert_sts.es_main_sm_alert), .value(1'b1));
-      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(do_check_ht_diag)
-      if (do_check_ht_diag) begin
-        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_alert_sts)
-        cfg.clk_rst_vif.wait_clks(dly_to_access_alert_sts);
-        // read all health check values
-        `uvm_info(`gfn, "Checking_ht_values", UVM_HIGH)
-        check_ht_diagnostics();
-        `uvm_info(`gfn, "HT value check complete", UVM_HIGH)
-      end
-      csr_wr(.ptr(ral.module_enable.module_enable), .value(prim_mubi_pkg::MuBi4True));
+      reinit_dut();
     end
   endtask
 
@@ -206,6 +248,13 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_intr)
     cfg.clk_rst_vif.wait_clks(dly_to_access_intr);
     csr_rd(.ptr(ral.intr_state), .value(intr_status));
+
+    if (intr_status != 0) begin
+      `uvm_info(`gfn, $sformatf("Handling Interrupts: %02h", intr_status), UVM_FULL)
+    end else begin
+      return;
+    end
+
     if (intr_status[HealthTestFailed]) begin
       // TODO: I think there is a distinction between health test failure and alert.
       //       We may be able to economize (or diversify) this test by only doing this on alerts.
@@ -216,13 +265,44 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       //       again
       csr_rd(.ptr(ral.intr_state), .value(intr_status));
     end
+
     if (intr_status[ObserveFifoReady]) begin
       int bundles_found;
       // Read all currently available data
       do_entropy_data_read(.source(TlSrcObserveFIFO),
                            .bundles_found(bundles_found));
     end
+
+    if (intr_status[EntropyValid]) begin
+      int bundles_found;
+      do_entropy_data_read(.source(TlSrcEntropyDataReg),
+                           .bundles_found(bundles_found));
+      `uvm_info(`gfn, $sformatf("Found %d entropy_data bundles", bundles_found), UVM_HIGH)
+      if(cfg.type_bypass == MuBi4True) begin
+        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_reenable_dut);
+        cfg.clk_rst_vif.wait_clks(dly_to_reenable_dut);
+        reinit_dut();
+      end
+    end
+
+    `uvm_info(`gfn, "Interrupt handler complete", UVM_FULL)
+
   endtask
+
+  task shutdown_indefinite_seqs();
+    // Once the CSR access is done, we can shut down everything else
+    // Note: the CSRNG agent needs to be completely shut down before
+    // shutting down the the AST/RNG.  Otherwise the CSRNG pull agent
+    // will stall waiting for entropy.
+    `uvm_info(`gfn, "Stopping CSRNG seq", UVM_LOW)
+    m_csrng_pull_seq.stop(.hard(1));
+    m_csrng_pull_seq.wait_for_sequence_state(UVM_FINISHED);
+    `uvm_info(`gfn, "Stopping RNG seq", UVM_LOW)
+    m_rng_push_seq.stop(.hard(0));
+    m_rng_push_seq.wait_for_sequence_state(UVM_FINISHED);
+    `uvm_info(`gfn, "Exiting test body.", UVM_LOW)
+  endtask
+
 
   task body();
     bit [TL_DW - 1:0] fw_ov_value;
@@ -230,7 +310,17 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     // Start sequences
     fork
       m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
-      m_csrng_pull_seq.start(p_sequencer.csrng_sequencer_h);
+      begin
+        if(cfg.fips_enable == MuBi4False) begin
+          // Notify the CSR access thread after the single boot mode seed has been received
+          m_csrng_pull_seq_single.start(p_sequencer.csrng_sequencer_h);
+          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_reenable_dut);
+          cfg.clk_rst_vif.wait_clks(dly_to_reenable_dut);
+          do_reenable = 1;
+        end
+        // Collect all post boot mode seeds in indefinite mode
+        m_csrng_pull_seq.start(p_sequencer.csrng_sequencer_h);
+      end
       begin
         `uvm_info(`gfn, "Starting interrupt loop", UVM_HIGH)
         while (do_background_procs) process_interrupts();
@@ -261,20 +351,13 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       end
       begin
         csr_access_seq();
-        // Once the CSR access is done, we can shut down everything else
-        // Note: the CSRNG agent needs to be completely shut down before
-        // shutting down the the AST/RNG.  Otherwise the CSRNG pull agent
-        // will stall waiting for entropy.
-        `uvm_info(`gfn, "Stopping CSRNG seq", UVM_LOW)
-        m_csrng_pull_seq.stop(.hard(1));
-        m_csrng_pull_seq.wait_for_sequence_state(UVM_FINISHED);
-        `uvm_info(`gfn, "Stopping RNG seq", UVM_LOW)
-        m_rng_push_seq.stop(.hard(0));
-        m_rng_push_seq.wait_for_sequence_state(UVM_FINISHED);
-        `uvm_info(`gfn, "Exiting test body.", UVM_LOW)
+        `uvm_info(`gfn, "Shutting down push_pull seqs", UVM_LOW)
+        shutdown_indefinite_seqs();
+        `uvm_info(`gfn, "Stopping background procs", UVM_LOW)
         do_background_procs = 1'b0;
       end
     join
+    `uvm_info(`gfn, "Body complete", UVM_LOW)
   endtask : body
 
 endclass : entropy_src_rng_vseq
