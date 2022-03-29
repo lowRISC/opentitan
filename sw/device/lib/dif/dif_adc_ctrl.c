@@ -422,6 +422,12 @@ dif_result_t dif_adc_ctrl_irq_clear_causes(const dif_adc_ctrl_t *adc_ctrl,
     return kDifBadArg;
   }
 
+  uint32_t filter_causes = (~kDifAdcCtrlIrqCauseOneshot) & causes;
+  if (filter_causes) {
+    mmio_region_write32(adc_ctrl->base_addr, ADC_CTRL_FILTER_STATUS_REG_OFFSET,
+                        filter_causes);
+  }
+
   mmio_region_write32(adc_ctrl->base_addr, ADC_CTRL_ADC_INTR_STATUS_REG_OFFSET,
                       causes);
 
