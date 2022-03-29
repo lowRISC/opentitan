@@ -25,6 +25,7 @@ filesets:
       - seq_lib/spi_base_seq.sv: {is_include_file: true}
       - seq_lib/spi_host_seq.sv: {is_include_file: true}
       - seq_lib/spi_host_dummy_seq.sv: {is_include_file: true}
+      - seq_lib/spi_host_flash_seq.sv: {is_include_file: true}
       - seq_lib/spi_device_seq.sv: {is_include_file: true}
       - seq_lib/spi_device_cmd_rsp_seq.sv: {is_include_file: true}
     file_type: systemVerilogSource

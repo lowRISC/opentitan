@@ -16,7 +16,7 @@ class spi_device_pass_data_translation_vseq extends spi_device_pass_base_vseq;
     bit [31:0] payload_data;
     bit [31:0] payload;
     bit [4:0]  cmd_info_idx;
-    spi_device_passthrough_init();
+    spi_device_flash_pass_init(PassthroughMode);
 
     cfg.clk_rst_vif.wait_clks(100);
 

@@ -74,25 +74,15 @@ class spi_host_driver extends spi_driver;
         SpiTransNormal:   drive_normal_item();
         SpiTransSckNoCsb: drive_sck_no_csb_item();
         SpiTransCsbNoSck: drive_csb_no_sck_item();
+        SpiFlashTrans:    drive_flash_item();
       endcase
       `uvm_info(`gfn, "spi_host_driver: item sent", UVM_HIGH)
       seq_item_port.item_done(rsp);
     end
   endtask
 
-  task drive_normal_item();
-    cfg.vif.csb[cfg.csb_sel] <= 1'b0;
-    if ((req.data.size() == 1) && (cfg.partial_byte == 1)) begin
-      sck_pulses = cfg.bits_to_transfer;
-    end else begin
-      sck_pulses = req.data.size() * 8;
-    end
-
-    // for mode 1 and 3, get the leading edges out of the way
-    cfg.wait_sck_edge(LeadingEdge);
-
-    // drive data
-    for (int i = 0; i < req.data.size(); i++) begin
+  task issue_data(bit [7:0] transfer_data[$]);
+    for (int i = 0; i < transfer_data.size(); i++) begin
       bit [7:0] host_byte;
       bit [7:0] device_byte;
       int       which_bit;
@@ -116,6 +106,46 @@ class spi_host_driver extends spi_driver;
       end
       rsp.data[i] = device_byte;
     end
+  endtask
+
+  task drive_normal_item();
+    cfg.vif.csb[cfg.csb_sel] <= 1'b0;
+    if ((req.data.size() == 1) && (cfg.partial_byte == 1)) begin
+      sck_pulses = cfg.bits_to_transfer;
+    end else begin
+      sck_pulses = req.data.size() * 8;
+    end
+
+    // for mode 1 and 3, get the leading edges out of the way
+    cfg.wait_sck_edge(LeadingEdge);
+
+    // drive data
+    issue_data(req.data);
+
+    wait(sck_pulses == 0);
+    if (cfg.csb_consecutive == 0) begin
+      cfg.vif.csb[cfg.csb_sel] <= 1'b1;
+      cfg.vif.sio[0] <= 1'bx;
+    end
+  endtask
+
+  task drive_flash_item();
+    bit [7:0] drive_data[$];
+    cfg.vif.csb[cfg.csb_sel] <= 1'b0;
+    if (!req.write_command) begin
+      `DV_CHECK_EQ(req.payload_q.size, 0)
+    end
+    drive_data = {req.opcode, req.address_q, req.payload_q};
+    sck_pulses = drive_data.size() * 8;
+    if (!req.write_command) begin
+      sck_pulses = sck_pulses + req.read_bsize * (8 / req.num_lanes);
+    end
+
+    // for mode 1 and 3, get the leading edges out of the way
+    cfg.wait_sck_edge(LeadingEdge);
+
+    // drive data
+    issue_data(drive_data);
 
     wait(sck_pulses == 0);
     if (cfg.csb_consecutive == 0) begin
