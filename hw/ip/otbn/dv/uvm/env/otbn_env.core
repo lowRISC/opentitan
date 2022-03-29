@@ -45,6 +45,7 @@ filesets:
       - seq_lib/otbn_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/otbn_stress_all_vseq.sv: {is_include_file: true}
       - seq_lib/otbn_escalate_vseq.sv: {is_include_file: true}
+      - seq_lib/otbn_zero_state_err_urnd_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

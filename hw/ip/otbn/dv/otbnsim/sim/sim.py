@@ -57,6 +57,8 @@ class OTBNSim:
         Use run() or step() to actually execute the program.
 
         '''
+        if self.state.get_fsm_state() != FsmState.IDLE:
+            return
         self.stats = ExecutionStats(self.program) if collect_stats else None
         self._execute_generator = None
         self._next_insn = None
@@ -162,7 +164,6 @@ class OTBNSim:
         }
 
         stepper, handles_injected_err = steppers[fsm_state]
-
         if not handles_injected_err:
             self.state.take_injected_err_bits()
 
