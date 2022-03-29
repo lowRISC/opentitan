@@ -54,6 +54,14 @@ ${autogen_banner}
           irq, snapshot);
       }
 
+    % if ip.name_snake == "adc_ctrl":
+      // TODO(lowRISC/opentitan:#11354): future releases of the ADC Controller HW should hide
+      // the need to also clear the cause CSRs. At which point, this can be removed.
+      CHECK_DIF_OK(dif_${ip.name_snake}_irq_clear_causes(
+          ${ip.name_snake}_ctx.${ip.name_snake},
+          kDifAdcCtrlIrqCauseAll));
+    % endif
+
       // Acknowledge the IRQ at the peripheral.
       CHECK_DIF_OK(dif_${ip.name_snake}_irq_acknowledge(
           ${ip.name_snake}_ctx.${ip.name_snake},

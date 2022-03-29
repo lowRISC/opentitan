@@ -61,6 +61,12 @@ void isr_testutils_adc_ctrl_isr(
           snapshot);
   }
 
+  // TODO(lowRISC/opentitan:#11354): future releases of the ADC Controller HW
+  // should hide the need to also clear the cause CSRs. At which point, this can
+  // be removed.
+  CHECK_DIF_OK(dif_adc_ctrl_irq_clear_causes(adc_ctrl_ctx.adc_ctrl,
+                                             kDifAdcCtrlIrqCauseAll));
+
   // Acknowledge the IRQ at the peripheral.
   CHECK_DIF_OK(dif_adc_ctrl_irq_acknowledge(adc_ctrl_ctx.adc_ctrl, irq));
 
