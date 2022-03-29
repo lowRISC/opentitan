@@ -97,6 +97,7 @@ using MockAbsMmio = testing::StrictMock<internal::MockAbsMmio>;
   EXPECT_CALL(::mask_rom_test::MockAbsMmio::Instance(), \
               Write32Shadowed(addr, mock_mmio::ToInt<uint32_t>(__VA_ARGS__)));
 
+#ifdef IS_MESON_FOR_MIGRATIONS_ONLY
 extern "C" {
 
 uint8_t abs_mmio_read8(uint32_t addr) {
@@ -124,6 +125,7 @@ void abs_mmio_write32_shadowed(uint32_t addr, uint32_t value) {
 }
 
 }  // extern "C"
+#endif
 }  // namespace mask_rom_test
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_TESTING_MOCK_ABS_MMIO_H_

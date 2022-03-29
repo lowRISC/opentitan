@@ -4,30 +4,12 @@
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 
 package(default_visibility = ["//visibility:public"])
-
-exports_files(["static_critical.ld"])
-
-cc_library(
-    name = "mock_csr",
-    testonly = True,
-    srcs = ["mock_csr.cc"],
-    hdrs = ["mock_csr.h"],
-    defines = ["MOCK_CSR"],
-    deps = [
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base/testing:global_mock",
-        "@googletest//:gtest",
-    ],
-)
-
-cc_test(
-    name = "mock_csr_test",
-    srcs = ["mock_csr_test.cc"],
-    deps = [
-        ":mock_csr",
-        "@googletest//:gtest_main",
-    ],
-)
+exports_files([
+    "static_critical.ld",
+    "mock_csr.h",
+    "mock_csr.cc",
+    "mock_csr_test.cc",
+])
 
 cc_library(
     name = "sec_mmio",
@@ -49,8 +31,8 @@ cc_library(
         "sec_mmio.h",
     ],
     deps = [
+        "//sw/device/lib/base:mmio",
         "//sw/device/lib/base/testing:global_mock",
-        "//sw/device/lib/base/testing:mock_mmio",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest",
     ],
@@ -67,7 +49,7 @@ cc_test(
     deps = [
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
-        "//sw/device/lib/base/testing:mock_abs_mmio",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",

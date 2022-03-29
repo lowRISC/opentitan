@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/csr_registers.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/stdasm.h"
 
 #ifdef __cplusplus
@@ -32,7 +33,7 @@ extern "C" {
  * The implementation used depends on whether the CSR library is providing a
  * real or a mocked interface.
  */
-#ifdef MOCK_CSR
+#ifndef OT_PLATFORM_RV32
 
 /**
  * Macro to check that an argument is a constant expression at compile time.
@@ -87,7 +88,7 @@ void mock_csr_clear_bits(uint32_t addr, uint32_t mask);
     mock_csr_clear_bits(csr, mask);                 \
   } while (false)
 
-#else  // MOCK_CSR
+#else  // OT_PLATFORM_RV32
 
 #define CSR_READ_IMPL(csr, dest)                           \
   do {                                                     \
@@ -117,7 +118,7 @@ void mock_csr_clear_bits(uint32_t addr, uint32_t mask);
     asm volatile("csrc %0, %1;" ::"i"(csr), "r"(mask)); \
   } while (false)
 
-#endif  // MOCK_CSR
+#endif  // OT_PLATFORM_RV32
 
 /**
  * Read the value of a CSR and place the result into the location pointed to by

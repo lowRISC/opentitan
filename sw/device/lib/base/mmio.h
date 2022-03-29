@@ -42,7 +42,7 @@ extern "C" {
  */
 #define MMIO_DEPRECATED
 
-#ifndef MOCK_MMIO
+#ifdef OT_PLATFORM_RV32
 /**
  * An mmio_region_t is an opaque handle to an MMIO region; it should only be
  * modified using the functions provided in this header.
@@ -161,7 +161,7 @@ inline void mmio_region_write32_shadowed(mmio_region_t base, ptrdiff_t offset,
   ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)] = value;
   ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)] = value;
 }
-#else   // MOCK_MMIO
+#else   // OT_PLATFORM_RV32
 /**
  * "Instrumented" mmio_region_t.
  *
@@ -190,7 +190,7 @@ void mmio_region_write8_shadowed(mmio_region_t base, ptrdiff_t offset,
                                  uint8_t value);
 void mmio_region_write32_shadowed(mmio_region_t base, ptrdiff_t offset,
                                   uint32_t value);
-#endif  // MOCK_MMIO
+#endif  // OT_PLATFORM_RV32
 
 /**
  * Reads the bits in `mask` from the MMIO region `base` at the given offset.
