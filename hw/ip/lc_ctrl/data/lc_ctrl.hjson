@@ -81,6 +81,13 @@
       local:   "false",
       expose:  "true"
     }
+    { name:    "IdcodeValue",
+      desc:    "JTAG ID code.",
+      type:    "logic [31:0]",
+      default: "32'h00000001",
+      local:   "false",
+      expose:  "true"
+    }
     // Regular parameters
     { name:    "NumTokenWords",
       desc:    "Number of 32bit words in a token.",

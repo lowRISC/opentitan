@@ -1795,6 +1795,7 @@
       {
         ChipGen: 16'h 00001
         ChipRev: 16'h 00001
+        IdcodeValue: jtag_id_pkg::JTAG_IDCODE
       }
       clock_connections:
       {
@@ -1863,6 +1864,14 @@
           default: 16'h 00001
           expose: "true"
           name_top: LcCtrlChipRev
+        }
+        {
+          name: IdcodeValue
+          desc: JTAG ID code.
+          type: logic [31:0]
+          default: jtag_id_pkg::JTAG_IDCODE
+          expose: "true"
+          name_top: LcCtrlIdcodeValue
         }
       ]
       inter_signal_list:
@@ -4830,6 +4839,10 @@
           domain: "0"
         }
       }
+      param_decl:
+      {
+        IdcodeValue: jtag_id_pkg::JTAG_IDCODE
+      }
       base_addrs:
       {
         rom: 0x00010000
@@ -4843,7 +4856,6 @@
       [
         "0"
       ]
-      param_decl: {}
       memory: {}
       param_list:
       [
@@ -4851,7 +4863,7 @@
           name: IdcodeValue
           desc: RISC-V debug module JTAG ID code.
           type: logic [31:0]
-          default: 32'h 0000_0001
+          default: jtag_id_pkg::JTAG_IDCODE
           expose: "true"
           name_top: RvDmIdcodeValue
         }

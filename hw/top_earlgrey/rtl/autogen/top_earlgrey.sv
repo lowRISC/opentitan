@@ -32,6 +32,7 @@ module top_earlgrey #(
   // parameters for lc_ctrl
   parameter logic [15:0] LcCtrlChipGen = 16'h 00001,
   parameter logic [15:0] LcCtrlChipRev = 16'h 00001,
+  parameter logic [31:0] LcCtrlIdcodeValue = jtag_id_pkg::JTAG_IDCODE,
   // parameters for alert_handler
   // parameters for spi_host0
   // parameters for spi_host1
@@ -52,7 +53,7 @@ module top_earlgrey #(
   // parameters for flash_ctrl
   parameter bit SecFlashCtrlScrambleEn = 1,
   // parameters for rv_dm
-  parameter logic [31:0] RvDmIdcodeValue = 32'h 0000_0001,
+  parameter logic [31:0] RvDmIdcodeValue = jtag_id_pkg::JTAG_IDCODE,
   // parameters for rv_plic
   // parameters for aes
   parameter bit SecAesMasking = 1,
@@ -191,18 +192,6 @@ module top_earlgrey #(
   input                      scan_en_i,
   input prim_mubi_pkg::mubi4_t scanmode_i   // lc_ctrl_pkg::On for Scan
 );
-
-  // JTAG IDCODE for development versions of this code.
-  // Manufacturers of OpenTitan chips must replace this code with one of their
-  // own IDs.
-  // Field structure as defined in the IEEE 1149.1 (JTAG) specification,
-  // section 12.1.1.
-  localparam logic [31:0] JTAG_IDCODE = {
-    4'h0,     // Version
-    16'h4F54, // Part Number: "OT"
-    11'h426,  // Manufacturer Identity: Google
-    1'b1      // (fixed)
-  };
 
   import tlul_pkg::*;
   import top_pkg::*;
@@ -1510,7 +1499,8 @@ module top_earlgrey #(
     .RndCnstLcKeymgrDivProduction(RndCnstLcCtrlLcKeymgrDivProduction),
     .RndCnstInvalidTokens(RndCnstLcCtrlInvalidTokens),
     .ChipGen(LcCtrlChipGen),
-    .ChipRev(LcCtrlChipRev)
+    .ChipRev(LcCtrlChipRev),
+    .IdcodeValue(LcCtrlIdcodeValue)
   ) u_lc_ctrl (
       // [15]: fatal_prog_error
       // [16]: fatal_state_error

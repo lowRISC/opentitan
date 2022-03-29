@@ -34,6 +34,7 @@ filesets:
       - lowrisc:ip:sram_ctrl
       - lowrisc:ip:keymgr
       - lowrisc:constants:top_pkg
+      - lowrisc:constants:jtag_id_pkg
       - lowrisc:ip:otp_ctrl
       - lowrisc:ip:lc_ctrl
       - lowrisc:ip:usbdev
@@ -47,13 +48,13 @@ filesets:
       - lowrisc:ip:rom_ctrl
       - lowrisc:systems:clkmgr
       - lowrisc:systems:sensor_ctrl
-      - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
-      - "fileset_partner ? (partner:systems:ast_pkg)"
       - lowrisc:tlul:headers
       - lowrisc:prim:all
       - lowrisc:prim:usb_diff_rx
       - lowrisc:prim:mubi
       - lowrisc:systems:top_earlgrey_pkg
+      - "fileset_partner  ? (partner:systems:ast_pkg)"
+      - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
     files:
       - rtl/autogen/top_earlgrey_rnd_cnst_pkg.sv
       - rtl/autogen/top_earlgrey.sv

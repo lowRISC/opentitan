@@ -313,7 +313,8 @@
       base_addr: "0x40140000",
       param_decl: {
         ChipGen: "16'h 00001",
-        ChipRev: "16'h 00001"
+        ChipRev: "16'h 00001",
+        IdcodeValue: "jtag_id_pkg::JTAG_IDCODE",
       },
     },
     { name: "alert_handler",
@@ -558,6 +559,9 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "infra",
       reset_connections: {rst_ni: "lc"},
+      param_decl: {
+        IdcodeValue: "jtag_id_pkg::JTAG_IDCODE",
+      }
       // Note that this module also contains a bus host.
       base_addrs: {rom: "0x00010000", regs: "0x41200000"}
     },
@@ -602,11 +606,11 @@
       type: "otbn",
       clock_srcs: {
         clk_i: {
-	  clock: "main", 
+	  clock: "main",
 	  group: "trans"
 	},
 	clk_edn_i: {
-          clock: "main", 
+          clock: "main",
           group: "secure"
         },
         clk_otp_i: {

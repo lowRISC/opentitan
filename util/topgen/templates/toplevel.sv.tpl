@@ -109,18 +109,6 @@ module top_${top["name"]} #(
   input prim_mubi_pkg::mubi4_t scanmode_i   // lc_ctrl_pkg::On for Scan
 );
 
-  // JTAG IDCODE for development versions of this code.
-  // Manufacturers of OpenTitan chips must replace this code with one of their
-  // own IDs.
-  // Field structure as defined in the IEEE 1149.1 (JTAG) specification,
-  // section 12.1.1.
-  localparam logic [31:0] JTAG_IDCODE = {
-    4'h0,     // Version
-    16'h4F54, // Part Number: "OT"
-    11'h426,  // Manufacturer Identity: Google
-    1'b1      // (fixed)
-  };
-
   import tlul_pkg::*;
   import top_pkg::*;
   import tl_main_pkg::*;
