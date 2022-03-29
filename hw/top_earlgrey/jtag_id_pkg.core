@@ -1,0 +1,19 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:constants:jtag_id_pkg"
+description: "jtag id for top_earlgrey"
+filesets:
+  files_rtl:
+    depend:
+      - "fileset_partner  ? (partner:constants:jtag_id_pkg)"
+    files:
+      - "!fileset_partner ? (rtl/jtag_id_pkg.sv)"
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
