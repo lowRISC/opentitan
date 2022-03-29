@@ -13,6 +13,16 @@
 `define LC_PART_OTP_CMD_PATH \
     tb.dut.gen_partitions[LifeCycleIdx].gen_lifecycle.u_part_buf.otp_cmd_o
 
+`define FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(i) \
+  if (forced_part_access_sel[``i``].read_lock) begin \
+    force tb.dut.part_access[``i``].read_lock = get_rand_mubi8_val(.t_weight(0), .f_weight(0)); \
+    force tb.dut.part_access_dai[``i``].read_lock = get_rand_mubi8_val(.t_weight(0), .f_weight(0)); \
+  end \
+  if (forced_part_access_sel[``i``].write_lock) begin \
+    force tb.dut.part_access[``i``].write_lock = get_rand_mubi8_val(.t_weight(0), .f_weight(0)); \
+    force tb.dut.part_access_dai[``i``].write_lock = get_rand_mubi8_val(.t_weight(0), .f_weight(0)); \
+  end
+
 `ifndef PRIM_GENERIC_OTP_PATH
   `define PRIM_GENERIC_OTP_PATH\
       tb.dut.u_otp
@@ -220,25 +230,14 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   // This task forces otp_ctrl's internal mubi signals to values that are not mubi::true or mubi::
   // false. Then scb will check if design treats these values as locking the partition access.
   task automatic force_part_access_mubi(otp_part_access_lock_t forced_part_access_sel[NumPart-1]);
-    static part_access_t [NumPart-1:0] part_access_val, part_access_dai_val;
     @(posedge clk_i);
-
-    part_access_val = tb.dut.part_access;
-    part_access_dai_val = tb.dut.part_access_dai;
-
-    foreach (forced_part_access_sel[i]) begin
-      if (forced_part_access_sel[i].read_lock) begin
-        part_access_val[i].read_lock = get_rand_mubi8_val(.t_weight(0), .f_weight(0));
-        part_access_dai_val[i].read_lock = get_rand_mubi8_val(.t_weight(0), .f_weight(0));
-      end
-      if (forced_part_access_sel[i].write_lock) begin
-        part_access_val[i].write_lock = get_rand_mubi8_val(.t_weight(0), .f_weight(0));
-        part_access_dai_val[i].write_lock = get_rand_mubi8_val(.t_weight(0), .f_weight(0));
-      end
-   end
-
-   force tb.dut.part_access = part_access_val;
-   force tb.dut.part_access_dai = part_access_dai_val;
+    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(VendorTestIdx)
+    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(CreatorSwCfgIdx)
+    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(OwnerSwCfgIdx)
+    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(HwCfgIdx)
+    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(Secret0Idx)
+    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(Secret1Idx)
+    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(Secret2Idx)
   endtask
 
   task automatic release_part_access_mubi();

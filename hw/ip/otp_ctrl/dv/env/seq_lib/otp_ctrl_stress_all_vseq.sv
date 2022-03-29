@@ -80,11 +80,5 @@ class otp_ctrl_stress_all_vseq extends otp_ctrl_base_vseq;
     end
   endtask : body
 
-  virtual task read_and_check_all_csrs_after_reset();
-    cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
-    otp_pwr_init();
-    super.read_and_check_all_csrs_after_reset();
-  endtask
-
 endclass
 
