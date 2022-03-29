@@ -236,6 +236,26 @@
       milestone: V2
       tests: ["pwrmgr_stress_all"]
     }
+    {
+      name: disable_rom_integrity_check
+      desc: '''
+            Test rom inegrity check is disabled under life cycle test states.
+
+            While running a series of reset event, at FastPwrStateRomCheck
+            state,
+            - Set fsm state check s.t. state should not be FastPwrStateActive
+            - Drive lc_hw_debug_en_i and lc_dft_en_i to random value
+              excluding {lc_ctrl_pkg::On, lc_ctrl_pkg::On} for both ports.
+            - Try a couple of rounds with different values.
+
+            Then,
+            - Set fsm state check to be waiting for FastPwrStateActive
+            - Drive lc_hw_debug_en_i and lc_dft_en_i to {lc_ctrl_pkg::On, lc_ctrl_pkg::On}
+            - Check test finish gracefully.
+            '''
+      milestone: V2
+      tests: []
+    }
   ]
 
   covergroups: [
