@@ -115,7 +115,7 @@ module aes_control_fsm
 );
 
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 7 -n 6 \
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 8 -n 6 \
   //      -s 31468618 --language=sv
   //
   // Hamming distance histogram:
@@ -135,13 +135,14 @@ module aes_control_fsm
   //
   localparam int StateWidth = 6;
   typedef enum logic [StateWidth-1:0] {
-    IDLE        = 6'b111100,
-    LOAD        = 6'b101001,
-    PRNG_UPDATE = 6'b010000,
-    PRNG_RESEED = 6'b100010,
-    FINISH      = 6'b011011,
-    CLEAR       = 6'b110111,
-    ERROR       = 6'b001110
+    IDLE        = 6'b001001,
+    LOAD        = 6'b100011,
+    PRNG_UPDATE = 6'b111101,
+    PRNG_RESEED = 6'b010000,
+    FINISH      = 6'b100100,
+    CLEAR_I     = 6'b111010,
+    CLEAR_CO    = 6'b001110,
+    ERROR       = 6'b010111
   } aes_ctrl_e;
 
   // Signals
@@ -463,7 +464,7 @@ module aes_control_fsm
       PRNG_UPDATE: begin
         // Fresh pseudo-random data is used to:
         // - clear the state in the final cipher round,
-        // - clear any other registers in the CLEAR state.
+        // - clear any other registers in the CLEAR_I/CO states.
 
         // IV control in case of ongoing encryption/decryption
         // - CTR: IV registers are updated by counter during cipher operation
@@ -489,7 +490,7 @@ module aes_control_fsm
             // We have work for the cipher core, perform handshake.
             cipher_in_valid_o = 1'b1;
             if (cipher_in_ready_i) begin
-              aes_ctrl_ns = CLEAR;
+              aes_ctrl_ns = CLEAR_I;
             end
           end else begin
             // Another write to the trigger register must have overwritten the trigger bits that
@@ -587,8 +588,8 @@ module aes_control_fsm
         end
       end
 
-      CLEAR: begin
-        // Initial Key, IV and input data registers can be cleared right away.
+      CLEAR_I: begin
+        // Clear input registers such as Initial Key, IV and input data registers.
         if (key_iv_data_in_clear_i) begin
           // Initial Key
           key_init_sel_o = KEY_INIT_CLEAR;
@@ -605,6 +606,12 @@ module aes_control_fsm
           data_in_prev_sel_o = DIP_CLEAR;
           data_in_prev_we_o  = 1'b1;
         end
+        aes_ctrl_ns = CLEAR_CO;
+      end
+
+      CLEAR_CO: begin
+        // Wait for cipher core to clear internal Full Key and Decryption Key registers and/or
+        // the state register and clear output data registers afterwards.
 
         // Perform handshake with cipher core.
         cipher_out_ready_o = 1'b1;
@@ -728,9 +735,9 @@ module aes_control_fsm
 
   // Collect writes to data input registers. Cleared if:
   // - data is loaded into cipher core,
-  // - clearing data input registers with random data,
+  // - clearing data input registers with random data (all data_in_qe_i bits high in next cycle),
   // - clearing the status tracking.
-  assign data_in_new_d = data_in_load || data_in_we_o || clear_in_out_status ? '0 :
+  assign data_in_new_d = data_in_load || &data_in_qe_i || clear_in_out_status ? '0 :
       data_in_new_q | data_in_qe_i;
   assign data_in_new   = &data_in_new_d;
 
@@ -888,7 +895,8 @@ module aes_control_fsm
       PRNG_UPDATE,
       PRNG_RESEED,
       FINISH,
-      CLEAR
+      CLEAR_I,
+      CLEAR_CO
       })
 
   // Check parameters
