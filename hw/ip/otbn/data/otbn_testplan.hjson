@@ -123,5 +123,14 @@
       milestone: V2
       tests: ["otbn_escalate"]
     }
+    {
+      name: zero_state_err_urnd
+      desc: '''
+              Trigger the "state is zero" error in URND,
+              Check that fatal error is asserted.
+            '''
+      milestone: V2
+      tests: ["otbn_zero_state_err_urnd"]
+    }
   ]
 }
