@@ -401,7 +401,7 @@ gen_sim_dv_logs_db = rule(
         "srcs": attr.label_list(allow_files = True),
         "platform": attr.string(default = OPENTITAN_PLATFORM),
         "_tool": attr.label(
-            default = "//util/device_sw_utils:extract_sw_logs",
+            default = "//util/device_sw_utils:extract_sw_logs_db",
             allow_single_file = True,
         ),
         "_allowlist_function_transition": attr.label(
@@ -415,7 +415,7 @@ def opentitan_binary(
         platform = OPENTITAN_PLATFORM,
         output_bin = True,
         output_disassembly = True,
-        extract_sw_logs = False,
+        extract_sw_logs_db = False,
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts.
 
@@ -430,7 +430,7 @@ def opentitan_binary(
       @param platform: The target platform for the artifacts.
       @param output_bin: Whether to emit a BIN file.
       @param output_disassembly: Whether to emit a disassembly file.
-      @param extract_sw_logs: Whether to emit a log database for DV testbench.
+      @param extract_sw_logs_db: Whether to emit a log database for DV testbench.
       @param **kwargs: Arguments to forward to `cc_binary`.
     Emits rules:
       cc_binary             named: <name>
@@ -493,7 +493,7 @@ def opentitan_binary(
         )
 
     # Generate log message database for DV sim testbench
-    if extract_sw_logs:
+    if extract_sw_logs_db:
         logs_db_name = "{}_{}".format(name, "sim_dv_logs")
         targets.append(":" + logs_db_name)
         gen_sim_dv_logs_db(
@@ -546,12 +546,10 @@ def opentitan_rom_binary(
         devname = "{}_{}".format(name, device)
 
         # Generate ELF, Binary, Disassembly, and (maybe) sim_dv logs database
-        kwargs["extract_sw_logs"] = False
-        if device == "sim_dv":
-            kwargs["extract_sw_logs"] = True
         targets.extend(opentitan_binary(
             name = devname,
             deps = deps + dev_deps,
+            extract_sw_logs_db = device == "sim_dv",
             **kwargs
         ))
         elf_name = "{}_{}".format(devname, "elf")
@@ -620,12 +618,10 @@ def opentitan_flash_binary(
         devname = "{}_{}".format(name, device)
 
         # Generate ELF, Binary, Disassembly, and (maybe) sim_dv logs database
-        kwargs["extract_sw_logs"] = False
-        if device == "sim_dv":
-            kwargs["extract_sw_logs"] = True
         targets.extend(opentitan_binary(
             name = devname,
             deps = deps + dev_deps,
+            extract_sw_logs_db = device == "sim_dv",
             **kwargs
         ))
         elf_name = "{}_{}".format(devname, "elf")
