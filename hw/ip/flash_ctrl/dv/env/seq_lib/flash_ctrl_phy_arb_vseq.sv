@@ -85,7 +85,7 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
         flash_op.op == flash_ctrl_pkg::FlashOpRead;
     }
 
-    if (flash_op.partition == FlashPartRedundancy) {
+    if (flash_op.partition == FlashPartInfo2) {
         flash_op.op == flash_ctrl_pkg::FlashOpRead;
     }
 

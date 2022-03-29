@@ -30,18 +30,14 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // Knob for scoreboard set expected alert
   bit scb_set_exp_alert = 0;
 
-  // Knob for scoreboard delete memory
-  bit scb_empty_mem = 0;
-
   // Knob for Bank Erase
   bit bank_erase_enable = 1;
 
-  // Parameters for set backdoor scb memory
-  bit                         scb_set_mem = 0;
-  int                         bkd_num_words;
-  flash_dv_part_e             bkd_partition;
-  bit             [TL_AW-1:0] write_bkd_addr;
-  bit             [TL_DW-1:0] set_bkd_val;
+  // mem for scoreboard
+  data_t                     scb_flash_data  [addr_t]  = '{default: 1};
+  data_t                     scb_flash_info  [addr_t]  = '{default: 1};
+  data_t                     scb_flash_info1 [addr_t]  = '{default: 1};
+  data_t                     scb_flash_info2 [addr_t]  = '{default: 1};
 
   // Max delay for alerts in clocks
   uint alert_max_delay;
@@ -375,5 +371,19 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
                                                     const ref data_q_t exp_data);
     return exp_data;
   endfunction : calculate_expected_data
+
+  virtual function void write_data_all_part(flash_dv_part_e part, bit [TL_AW-1:0] addr,
+                                            ref bit [TL_DW-1:0] data);
+  `uvm_info(`gfn, $sformatf("WRITE SCB MEM part: %0s addr:%0h data:0x%0h",
+                            part.name, addr, data), UVM_HIGH)
+    case (part)
+      FlashPartData:  scb_flash_data[addr]   = data;
+      FlashPartInfo:  scb_flash_info[addr]   = data;
+      FlashPartInfo1: scb_flash_info1[addr]  = data;
+      FlashPartInfo2: scb_flash_info2[addr]  = data;
+      default :
+        `uvm_fatal(`gfn,"flash_ctrl_scoreboard: Partition type not supported!")
+    endcase
+  endfunction
 
 endclass
