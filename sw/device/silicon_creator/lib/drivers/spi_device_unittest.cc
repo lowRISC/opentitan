@@ -55,21 +55,68 @@ TEST_F(InitTest, Init) {
       });
 
   EXPECT_ABS_WRITE32(
+      base_ + SPI_DEVICE_CMD_INFO_0_REG_OFFSET,
+      {
+          {SPI_DEVICE_CMD_INFO_0_OPCODE_0_OFFSET, kSpiDeviceOpcodeReadStatus},
+          {SPI_DEVICE_CMD_INFO_0_VALID_0_BIT, 1},
+      });
+
+  EXPECT_ABS_WRITE32(
       base_ + SPI_DEVICE_CMD_INFO_3_REG_OFFSET,
       {
-          {SPI_DEVICE_CMD_INFO_3_OPCODE_3_OFFSET, kSpiDeviceCmdReadJedecId},
+          {SPI_DEVICE_CMD_INFO_3_OPCODE_3_OFFSET, kSpiDeviceOpcodeReadJedecId},
           {SPI_DEVICE_CMD_INFO_3_VALID_3_BIT, 1},
       });
 
   EXPECT_ABS_WRITE32(
       base_ + SPI_DEVICE_CMD_INFO_4_REG_OFFSET,
       {
-          {SPI_DEVICE_CMD_INFO_4_OPCODE_4_OFFSET, kSpiDeviceCmdReadSfdp},
+          {SPI_DEVICE_CMD_INFO_4_OPCODE_4_OFFSET, kSpiDeviceOpcodeReadSfdp},
           {SPI_DEVICE_CMD_INFO_4_ADDR_MODE_4_OFFSET,
            SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDR3B},
           {SPI_DEVICE_CMD_INFO_4_DUMMY_SIZE_4_OFFSET, 7},
           {SPI_DEVICE_CMD_INFO_4_DUMMY_EN_4_BIT, 1},
           {SPI_DEVICE_CMD_INFO_4_VALID_4_BIT, 1},
+      });
+
+  EXPECT_ABS_WRITE32(
+      base_ + SPI_DEVICE_CMD_INFO_11_REG_OFFSET,
+      {
+          {SPI_DEVICE_CMD_INFO_11_OPCODE_11_OFFSET, kSpiDeviceOpcodeChipErase},
+          {SPI_DEVICE_CMD_INFO_11_UPLOAD_11_BIT, 1},
+          {SPI_DEVICE_CMD_INFO_11_BUSY_11_BIT, 1},
+          {SPI_DEVICE_CMD_INFO_11_VALID_11_BIT, 1},
+      });
+
+  EXPECT_ABS_WRITE32(base_ + SPI_DEVICE_CMD_INFO_12_REG_OFFSET,
+                     {
+                         {SPI_DEVICE_CMD_INFO_12_OPCODE_12_OFFSET,
+                          kSpiDeviceOpcodeSectorErase},
+                         {SPI_DEVICE_CMD_INFO_12_ADDR_MODE_12_OFFSET,
+                          SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDR3B},
+                         {SPI_DEVICE_CMD_INFO_12_UPLOAD_12_BIT, 1},
+                         {SPI_DEVICE_CMD_INFO_12_BUSY_12_BIT, 1},
+                         {SPI_DEVICE_CMD_INFO_12_VALID_12_BIT, 1},
+                     });
+
+  EXPECT_ABS_WRITE32(base_ + SPI_DEVICE_CMD_INFO_13_REG_OFFSET,
+                     {
+                         {SPI_DEVICE_CMD_INFO_13_OPCODE_13_OFFSET,
+                          kSpiDeviceOpcodePageProgram},
+                         {SPI_DEVICE_CMD_INFO_13_ADDR_MODE_13_OFFSET,
+                          SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDR3B},
+                         {SPI_DEVICE_CMD_INFO_13_UPLOAD_13_BIT, 1},
+                         {SPI_DEVICE_CMD_INFO_13_BUSY_13_BIT, 1},
+                         {SPI_DEVICE_CMD_INFO_13_VALID_13_BIT, 1},
+                     });
+
+  EXPECT_ABS_WRITE32(
+      base_ + SPI_DEVICE_CMD_INFO_14_REG_OFFSET,
+      {
+          {SPI_DEVICE_CMD_INFO_14_OPCODE_14_OFFSET, kSpiDeviceOpcodeReset},
+          {SPI_DEVICE_CMD_INFO_14_UPLOAD_14_BIT, 1},
+          {SPI_DEVICE_CMD_INFO_14_BUSY_14_BIT, 1},
+          {SPI_DEVICE_CMD_INFO_14_VALID_14_BIT, 1},
       });
 
   std::array<uint32_t, kSpiDeviceSfdpAreaNumBytes / sizeof(uint32_t)>
@@ -81,6 +128,12 @@ TEST_F(InitTest, Init) {
       base_ + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDeviceSfdpAreaOffset;
   for (size_t i = 0; i < sfdp_buffer.size(); ++i) {
     EXPECT_ABS_WRITE32(offset, sfdp_buffer[i]);
+    offset += sizeof(uint32_t);
+  }
+
+  offset = base_ + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDevicePayloadAreaOffset;
+  for (size_t i = 0; i < kSpiDevicePayloadAreaNumWords; ++i) {
+    EXPECT_ABS_WRITE32(offset, 0);
     offset += sizeof(uint32_t);
   }
 
@@ -105,6 +158,101 @@ TEST_F(InitTest, Init) {
 
   spi_device_init();
 }
+
+TEST_F(SpiDeviceTest, FlashStatusClear) {
+  EXPECT_ABS_WRITE32(base_ + SPI_DEVICE_FLASH_STATUS_REG_OFFSET, 0);
+
+  spi_device_flash_status_clear();
+}
+
+struct CmdGetTestCase {
+  spi_device_opcode_t opcode;
+  uint32_t address;
+  std::vector<uint8_t> payload;
+};
+
+class CmdGetTest : public SpiDeviceTest,
+                   public testing::WithParamInterface<CmdGetTestCase> {};
+
+TEST_P(CmdGetTest, CmdGet) {
+  bool has_address = GetParam().address != kSpiDeviceNoAddress;
+
+  EXPECT_ABS_READ32(base_ + SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET, 0);
+  EXPECT_ABS_READ32(
+      base_ + SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET,
+      {
+          {SPI_DEVICE_UPLOAD_STATUS_CMDFIFO_NOTEMPTY_BIT, 1},
+          {SPI_DEVICE_UPLOAD_STATUS_ADDRFIFO_NOTEMPTY_BIT, has_address},
+          {SPI_DEVICE_UPLOAD_STATUS_PAYLOAD_DEPTH_OFFSET,
+           GetParam().payload.size()},
+      });
+  EXPECT_ABS_READ32(base_ + SPI_DEVICE_UPLOAD_CMDFIFO_REG_OFFSET,
+                    GetParam().opcode);
+
+  if (has_address) {
+    EXPECT_ABS_READ32(base_ + SPI_DEVICE_UPLOAD_ADDRFIFO_REG_OFFSET,
+                      GetParam().address);
+  }
+
+  std::vector<uint32_t> payload_area(kSpiDevicePayloadAreaNumWords,
+                                     std::numeric_limits<uint32_t>::max());
+  std::memcpy(payload_area.data(), GetParam().payload.data(),
+              GetParam().payload.size());
+  uint32_t offset =
+      base_ + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDevicePayloadAreaOffset;
+  for (size_t i = 0; i < GetParam().payload.size(); i += sizeof(uint32_t)) {
+    EXPECT_ABS_READ32(offset + i, payload_area[i / sizeof(uint32_t)]);
+  }
+
+  spi_device_cmd_t cmd;
+  spi_device_cmd_get(&cmd);
+
+  EXPECT_EQ(cmd.opcode, GetParam().opcode);
+  EXPECT_EQ(cmd.address, GetParam().address);
+  EXPECT_EQ(cmd.payload_byte_count, GetParam().payload.size());
+  std::vector<uint8_t> payload(cmd.payload, std::end(cmd.payload));
+  payload.resize(cmd.payload_byte_count);
+  EXPECT_THAT(payload, GetParam().payload);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    CmdGetTestCases, CmdGetTest,
+    testing::Values(
+        CmdGetTestCase{
+            .opcode = kSpiDeviceOpcodeChipErase,
+            .address = kSpiDeviceNoAddress,
+            .payload = {},
+        },
+        CmdGetTestCase{
+            .opcode = kSpiDeviceOpcodeSectorErase,
+            .address = 0x00,
+            .payload = {},
+        },
+        CmdGetTestCase{
+            .opcode = kSpiDeviceOpcodePageProgram,
+            .address = 0x0a0b0c,
+            .payload = {0x01, 0x02, 0x03, 0x04},
+        },
+        CmdGetTestCase{
+            .opcode = kSpiDeviceOpcodePageProgram,
+            .address = 0x0a0b0c,
+            .payload = {0x01, 0x02, 0x03, 0x04, 0x05},
+        },
+        CmdGetTestCase{
+            .opcode = kSpiDeviceOpcodePageProgram,
+            .address = 0x0a0b0c,
+            .payload = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06},
+        },
+        CmdGetTestCase{
+            .opcode = kSpiDeviceOpcodePageProgram,
+            .address = 0x0a0b0c,
+            .payload = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07},
+        },
+        CmdGetTestCase{
+            .opcode = kSpiDeviceOpcodePageProgram,
+            .address = 0x0a0b0c,
+            .payload = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08},
+        }));
 
 }  // namespace
 }  // namespace spi_device_unittest

@@ -4,6 +4,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_SPI_DEVICE_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_SPI_DEVICE_H_
 
+#include <stdalign.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -49,6 +50,18 @@ enum {
    */
   kSpiDeviceSfdpAreaOffset = 0xc00,
   /**
+   * Offset of the payload area in spi_device buffer.
+   */
+  kSpiDevicePayloadAreaOffset = 0xd00,
+  /**
+   * Size of the payload area in spi_device buffer in bytes.
+   */
+  kSpiDevicePayloadAreaNumBytes = 256,
+  /**
+   * Size of the payload area in spi_device buffer in words.
+   */
+  kSpiDevicePayloadAreaNumWords = 64,
+  /**
    * Size of the JEDEC Basic Flash Parameter Table (BFPT) in words.
    *
    * Note: JESD261F 6.4.1 states that this
@@ -59,27 +72,83 @@ enum {
    */
   kSpiDeviceSfdpTableNumWords = 27,
   /**
+   * Address value used when a command does not have an address.
+   *
+   * Since the spi_device is configured to support only the 3-byte addressing
+   * mode this value is not a valid address.
+   */
+  kSpiDeviceNoAddress = UINT32_MAX,
+};
+
+/**
+ * Supported SPI flash command opcodes.
+ *
+ * SPI flash commands consist of a single byte of opcode followed by optional
+ * address (transmitted MSB-first by the host) and payload fields (transmitted
+ * LSB-first by the host).
+ *
+ * spi_device is configured to support only the 3-byte addressing mode and the
+ * maximum payload size is 256 bytes. If a command with a larger payload is
+ * received, spi_device overwrites the contents of the payload buffer.
+ */
+typedef enum spi_device_opcode {
+  /**
+   * READ_STATUS command.
+   *
+   * This command is handled by the spi_device. Upon receiving this command,
+   * spi_device sends the bits of the status register.
+   */
+  kSpiDeviceOpcodeReadStatus = 0x05,
+  /**
    * READ_JEDEC_ID command.
    *
-   * This command is handled by the spi_device. Upon receiving this instruction,
+   * This command is handled by the spi_device. Upon receiving this command,
    * spi_device sends `kSpiDeviceJedecContCodeCount` repetitions of
    * `kSpiDeviceJedecContCode`, followed by `kSpiDeviceJedecManufId` and 2 bytes
    * of device id.
    */
-  kSpiDeviceCmdReadJedecId = 0x9f,
+  kSpiDeviceOpcodeReadJedecId = 0x9f,
   /**
    * READ_SFDP command.
    *
-   * This commond is handled by the spi_device. Upon receiving this instruction,
-   * 3 bytes of address (all zeroes), and 8 dummy cycles; spi_device sends
-   * `kSpiDeviceSfdpTable` from its buffer.
+   * This commond is handled by the spi_device. Upon receiving this
+   * opcode, 3 bytes of address (all zeroes), and 8 dummy cycles;
+   * spi_device sends `kSpiDeviceSfdpTable` from its buffer.
    */
-  kSpiDeviceCmdReadSfdp = 0x5a,
+  kSpiDeviceOpcodeReadSfdp = 0x5a,
+  /**
+   * CHIP_ERASE command.
+   *
+   * This command should be handled in software. Upon receiving this command,
+   * all data partitions of the embedded flash should be erased.
+   */
+  kSpiDeviceOpcodeChipErase = 0xc7,
   /**
    * SECTOR_ERASE command.
+   *
+   * This command has a 3 byte address field and should be handled in software.
+   * Upon receiving this command, the corresponding 4 KiB in the embedded flash
+   * should be erased.
    */
-  kSpiDeviceCmdSectorErase = 0x20,
-};
+  kSpiDeviceOpcodeSectorErase = 0x20,
+  /**
+   * PAGE_PROGRAM command.
+   *
+   * This command has a 3 byte address field followed by a variable length
+   * payload (max 256 bytes) and should be handled in software. Upon receiving
+   * this command, the corresponding area in the embedded flash should be
+   * programmed with the payload.
+   */
+  kSpiDeviceOpcodePageProgram = 0x02,
+  /**
+   * RESET command.
+   *
+   * This command should be handled in software. Upon receiving this command,
+   * the chip should be reset.
+   */
+  kSpiDeviceOpcodeReset = 0xf0,
+
+} spi_device_opcode_t;
 
 /**
  * SFDP header (JESD216F 6.2).
@@ -211,6 +280,52 @@ extern const spi_device_sfdp_table_t kSpiDeviceSfdpTable;
  *   - READ_SFDP
  */
 void spi_device_init(void);
+
+/**
+ * A SPI flash command.
+ */
+typedef struct spi_device_cmd {
+  /**
+   * Command opcode.
+   *
+   * See `spi_device_opcode_t` for a list of command opcodes.
+   */
+  spi_device_opcode_t opcode;
+  /**
+   * Address.
+   *
+   * This field is set to `kSpiDeviceNoAddress` if the command does not have an
+   * address field.
+   */
+  uint32_t address;
+  /**
+   * Payload size in bytes.
+   */
+  size_t payload_byte_count;
+  /**
+   * Payload.
+   */
+  alignas(uint32_t) uint8_t payload[kSpiDevicePayloadAreaNumBytes];
+} spi_device_cmd_t;
+
+/**
+ * Gets the SPI flash command received from the host.
+ *
+ * This function returns only the commands that are handled by software and
+ * blocks until the next command. The size of the payload is rounded up to the
+ * next word boundary.
+ *
+ * @param[out] cmd SPI flash command.
+ */
+void spi_device_cmd_get(spi_device_cmd_t *cmd);
+
+/**
+ * Clears the SPI flash status register.
+ *
+ * This function should be called after handling a SPI flash command in software
+ * to clear the WIP (busy) and WEL (write enable latch) bits.
+ */
+void spi_device_flash_status_clear(void);
 
 #ifdef __cplusplus
 }

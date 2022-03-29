@@ -146,7 +146,7 @@ static_assert(kBfptTablePointer % sizeof(uint32_t) == 0,
   X(22, 19, kBfptNotSupported) & \
   X(18, 17, 0x0) & \
   X(16, 16, kBfptNotSupported) & \
-  X(15,  8, kSpiDeviceCmdSectorErase) & \
+  X(15,  8, kSpiDeviceOpcodeSectorErase) & \
   X( 4,  4, 0x1) & \
   X( 3,  3, 0x1) & \
   X( 2,  2, 0x1) & \
@@ -217,7 +217,7 @@ static_assert(kBfptTablePointer % sizeof(uint32_t) == 0,
  */
 #define BFPT_WORD_8(X) \
   X(31, 16, kBfptNotSupported) & \
-  X(15,  8, kSpiDeviceCmdSectorErase) & \
+  X(15,  8, kSpiDeviceOpcodeSectorErase) & \
   X( 7,  0, 0x0c)
 
 /**
@@ -443,6 +443,15 @@ typedef struct cmd_info {
    * Number of dummy cycles.
    */
   uint8_t dummy_cycles;
+  /**
+   * Whether the command is handled in software.
+   *
+   * If this field is true, BUSY and UPLOAD bits of the CMD_INFO register will
+   * be set. spi_device treats the bytes following the address as the payload.
+   * Maximum payload size is 256 bytes and spi_device will overwrite the payload
+   * area if a larger payload is received.
+   */
+  bool handled_in_sw;
 } cmd_info_t;
 
 /**
@@ -465,6 +474,10 @@ static void cmd_info_set(cmd_info_t cmd_info) {
                                  cmd_info.dummy_cycles - 1);
     reg = bitfield_bit32_write(reg, SPI_DEVICE_CMD_INFO_0_DUMMY_EN_0_BIT, true);
   }
+  reg = bitfield_bit32_write(reg, SPI_DEVICE_CMD_INFO_0_UPLOAD_0_BIT,
+                             cmd_info.handled_in_sw);
+  reg = bitfield_bit32_write(reg, SPI_DEVICE_CMD_INFO_0_BUSY_0_BIT,
+                             cmd_info.handled_in_sw);
   reg = bitfield_bit32_write(reg, SPI_DEVICE_CMD_INFO_0_VALID_0_BIT, true);
   abs_mmio_write32(kBase + cmd_info.reg_offset, reg);
 }
@@ -498,19 +511,61 @@ void spi_device_init(void) {
                                kSpiDeviceJedecManufId);
   abs_mmio_write32(kBase + SPI_DEVICE_JEDEC_ID_REG_OFFSET, reg);
 
-  // Configure READ_JEDEC_ID command (CMD_INFO_3).
+  // Configure the READ_STATUS command (CMD_INFO_0).
   cmd_info_set((cmd_info_t){
-      .reg_offset = SPI_DEVICE_CMD_INFO_3_REG_OFFSET,
-      .op_code = kSpiDeviceCmdReadJedecId,
+      .reg_offset = SPI_DEVICE_CMD_INFO_0_REG_OFFSET,
+      .op_code = kSpiDeviceOpcodeReadStatus,
       .address = false,
       .dummy_cycles = 0,
+      .handled_in_sw = false,
   });
-  // Configure READ_SFDP command (CMD_INFO_4).
+  // Configure the READ_JEDEC_ID command (CMD_INFO_3).
+  cmd_info_set((cmd_info_t){
+      .reg_offset = SPI_DEVICE_CMD_INFO_3_REG_OFFSET,
+      .op_code = kSpiDeviceOpcodeReadJedecId,
+      .address = false,
+      .dummy_cycles = 0,
+      .handled_in_sw = false,
+  });
+  // Configure the READ_SFDP command (CMD_INFO_4).
   cmd_info_set((cmd_info_t){
       .reg_offset = SPI_DEVICE_CMD_INFO_4_REG_OFFSET,
-      .op_code = kSpiDeviceCmdReadSfdp,
+      .op_code = kSpiDeviceOpcodeReadSfdp,
       .address = true,
       .dummy_cycles = 8,
+      .handled_in_sw = false,
+  });
+  // Configure the CHIP_ERASE command (CMD_INFO_11).
+  cmd_info_set((cmd_info_t){
+      .reg_offset = SPI_DEVICE_CMD_INFO_11_REG_OFFSET,
+      .op_code = kSpiDeviceOpcodeChipErase,
+      .address = false,
+      .dummy_cycles = 0,
+      .handled_in_sw = true,
+  });
+  // Configure the SECTOR_ERASE command (CMD_INFO_12).
+  cmd_info_set((cmd_info_t){
+      .reg_offset = SPI_DEVICE_CMD_INFO_12_REG_OFFSET,
+      .op_code = kSpiDeviceOpcodeSectorErase,
+      .address = true,
+      .dummy_cycles = 0,
+      .handled_in_sw = true,
+  });
+  // Configure the PAGE_PROGRAM command (CMD_INFO_13).
+  cmd_info_set((cmd_info_t){
+      .reg_offset = SPI_DEVICE_CMD_INFO_13_REG_OFFSET,
+      .op_code = kSpiDeviceOpcodePageProgram,
+      .address = true,
+      .dummy_cycles = 0,
+      .handled_in_sw = true,
+  });
+  // Configure the RESET command (CMD_INFO_14).
+  cmd_info_set((cmd_info_t){
+      .reg_offset = SPI_DEVICE_CMD_INFO_14_REG_OFFSET,
+      .op_code = kSpiDeviceOpcodeReset,
+      .address = false,
+      .dummy_cycles = 0,
+      .handled_in_sw = true,
   });
 
   // Write SFDP table to the reserved region in spi_device buffer.
@@ -526,6 +581,14 @@ void spi_device_init(void) {
     abs_mmio_write32(dest, UINT32_MAX);
   }
 
+  // Reset the payload buffer to prevent access faults when reading beyond
+  // current payload depth (see #11782).
+  for (size_t i = 0; i < kSpiDevicePayloadAreaNumBytes; i += sizeof(uint32_t)) {
+    abs_mmio_write32(
+        kBase + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDevicePayloadAreaOffset + i,
+        0);
+  }
+
   // Reset status register
   abs_mmio_write32(kBase + SPI_DEVICE_FLASH_STATUS_REG_OFFSET, 0);
 
@@ -539,4 +602,36 @@ void spi_device_init(void) {
   abs_mmio_write32(kBase + SPI_DEVICE_CONTROL_REG_OFFSET, reg);
   reg = bitfield_bit32_write(reg, SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, true);
   abs_mmio_write32(kBase + SPI_DEVICE_CONTROL_REG_OFFSET, reg);
+}
+
+void spi_device_cmd_get(spi_device_cmd_t *cmd) {
+  uint32_t reg = 0;
+  bool cmd_pending = false;
+  // TODO(#11871): When should sw read cmd, addr, and payload?
+  while (!cmd_pending) {
+    reg = abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET);
+    cmd_pending =
+        bitfield_bit32_read(reg, SPI_DEVICE_UPLOAD_STATUS_CMDFIFO_NOTEMPTY_BIT);
+  }
+  cmd->opcode = abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_CMDFIFO_REG_OFFSET);
+
+  cmd->address = kSpiDeviceNoAddress;
+  if (bitfield_bit32_read(reg,
+                          SPI_DEVICE_UPLOAD_STATUS_ADDRFIFO_NOTEMPTY_BIT)) {
+    cmd->address =
+        abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_ADDRFIFO_REG_OFFSET);
+  }
+
+  cmd->payload_byte_count =
+      bitfield_field32_read(reg, SPI_DEVICE_UPLOAD_STATUS_PAYLOAD_DEPTH_FIELD);
+  uint32_t src =
+      kBase + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDevicePayloadAreaOffset;
+  char *dest = (char *)&cmd->payload;
+  for (size_t i = 0; i < cmd->payload_byte_count; i += sizeof(uint32_t)) {
+    write_32(abs_mmio_read32(src + i), dest + i);
+  }
+}
+
+void spi_device_flash_status_clear(void) {
+  abs_mmio_write32(kBase + SPI_DEVICE_FLASH_STATUS_REG_OFFSET, 0);
 }
