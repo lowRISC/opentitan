@@ -151,7 +151,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
                              get_field_val(ral.trigger.prng_reseed, wdata));
     `uvm_info(`gfn, $sformatf("\n CLEAR REGISTER SEEN 0x%h", wdata), UVM_MEDIUM)
     if (get_field_val(ral.trigger.start, wdata)) begin
-      ok_to_fwd = 1;
+      ok_to_fwd = input_item.mode != AES_NONE;
     end
     // clear key, IV, data_in
     if (get_field_val(ral.trigger.key_iv_data_in_clear, wdata)) begin
