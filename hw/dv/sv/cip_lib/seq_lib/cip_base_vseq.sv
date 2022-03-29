@@ -693,8 +693,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
               ongoing_reset = 1'b1;
               `uvm_info(`gfn, $sformatf("\nReset is issued for run %0d/%0d", i, num_times), UVM_LOW)
               apply_resets_concurrently();
-              ongoing_reset = 1'b0;
               do_read_and_check_all_csrs = 1'b1;
+              ongoing_reset = 1'b0;
             end
           join_any
           disable fork;

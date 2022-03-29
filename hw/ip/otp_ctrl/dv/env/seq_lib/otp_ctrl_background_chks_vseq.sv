@@ -64,9 +64,10 @@ class otp_ctrl_background_chks_vseq extends otp_ctrl_dai_lock_vseq;
     end
   endtask
 
+  // Enable scoreboard is done in stress_all sequence and `apply_resets_concurrently` task to
+  // avoid otp_ctrl_scoreboard reporting failures when reset has not been issued.
   virtual task post_start();
     expect_fatal_alerts = 1;
     super.post_start();
-    cfg.en_scb = 1;
   endtask
 endclass
