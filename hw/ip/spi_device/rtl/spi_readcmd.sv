@@ -413,7 +413,7 @@ module spi_readcmd
       // FSM moves from Reset to Address. At that time of the transition, the
       // datapath should latch the Address[31] or Address[23] too. So, it
       // already counts one beat.
-      addr_cnt_d = (cmdinfo_addr_mode == Addr4B) ? 5'd 30 : 5'd 22;
+      addr_cnt_d = (cmdinfo_addr_mode == Addr4B) ? 5'd 31 : 5'd 23;
 
       // TODO: Dual IO/ Quad IO case
     end else if (addr_cnt_q == '0) begin
