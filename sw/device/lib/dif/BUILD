@@ -55,9 +55,6 @@ cc_test(
         "dif_adc_ctrl.h",
         "dif_adc_ctrl_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -67,7 +64,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -101,9 +97,6 @@ cc_test(
         "dif_clkmgr.h",
         "dif_clkmgr_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -113,7 +106,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -149,9 +141,6 @@ cc_test(
         "dif_csrng.h",
         "dif_csrng_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -161,7 +150,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -196,9 +184,6 @@ cc_test(
         "dif_edn.c",
         "dif_edn.h",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -208,7 +193,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -243,9 +227,6 @@ cc_test(
         "dif_uart.h",
         "dif_uart_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -256,7 +237,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -292,9 +272,6 @@ cc_test(
         "dif_rv_plic.h",
         "dif_rv_plic_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -304,7 +281,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -340,9 +316,6 @@ cc_test(
         "dif_gpio.h",
         "dif_gpio_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -352,7 +325,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -388,9 +360,6 @@ cc_test(
         "dif_spi_device.h",
         "dif_spi_device_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -400,7 +369,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -436,9 +404,6 @@ cc_test(
         "dif_spi_host.h",
         "dif_spi_host_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -449,7 +414,6 @@ cc_test(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
         "//sw/device/lib/base/testing:global_mock",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -486,9 +450,6 @@ cc_test(
         "dif_rv_timer.h",
         "dif_rv_timer_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -499,7 +460,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -535,9 +495,6 @@ cc_test(
         "dif_i2c.h",
         "dif_i2c_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -547,7 +504,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -582,9 +538,6 @@ cc_test(
         "dif_usbdev.c",
         "dif_usbdev.h",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -594,7 +547,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -629,9 +581,6 @@ cc_test(
         "dif_hmac.c",
         "dif_hmac.h",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -641,7 +590,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -677,9 +625,6 @@ cc_test(
         "dif_kmac.h",
         "dif_kmac_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -689,7 +634,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -725,9 +669,6 @@ cc_test(
         "dif_otbn.h",
         "dif_otbn_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -737,7 +678,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -773,9 +713,6 @@ cc_test(
         "dif_rstmgr.h",
         "dif_rstmgr_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -785,7 +722,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -821,9 +757,6 @@ cc_test(
         "dif_alert_handler.h",
         "dif_alert_handler_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -833,7 +766,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -869,9 +801,6 @@ cc_test(
         "dif_pwrmgr.h",
         "dif_pwrmgr_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -881,7 +810,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -917,9 +845,6 @@ cc_test(
         "dif_keymgr.h",
         "dif_keymgr_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -929,7 +854,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -965,9 +889,6 @@ cc_test(
         "dif_otp_ctrl.h",
         "dif_otp_ctrl_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -977,7 +898,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -1013,9 +933,6 @@ cc_test(
         "dif_pattgen.h",
         "dif_pattgen_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -1025,7 +942,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -1061,9 +977,6 @@ cc_test(
         "dif_lc_ctrl.h",
         "dif_lc_ctrl_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -1073,7 +986,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -1109,9 +1021,6 @@ cc_test(
         "dif_aon_timer.h",
         "dif_aon_timer_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -1121,7 +1030,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -1157,9 +1065,6 @@ cc_test(
         "dif_entropy_src.h",
         "dif_entropy_src_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -1169,7 +1074,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -1203,9 +1107,6 @@ cc_test(
         "dif_flash_ctrl.h",
         "dif_flash_ctrl_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -1215,7 +1116,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -1251,9 +1151,6 @@ cc_test(
         "dif_aes.h",
         "dif_aes_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -1263,7 +1160,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -1298,9 +1194,6 @@ cc_test(
         "dif_pinmux.c",
         "dif_pinmux.h",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -1310,7 +1203,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -1345,9 +1237,6 @@ cc_test(
         "dif_pwm.c",
         "dif_pwm.h",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -1357,7 +1246,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -1393,9 +1281,6 @@ cc_test(
         "dif_sram_ctrl.h",
         "dif_sram_ctrl_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -1405,7 +1290,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -1437,9 +1321,6 @@ cc_test(
         "autogen/dif_sysrst_ctrl_autogen.h",
         "autogen/dif_sysrst_ctrl_autogen_unittest.cc",
     ],
-    defines = [
-        "MOCK_MMIO=1",
-    ],
     deps = [
         ":base",
         ":test_base",
@@ -1449,7 +1330,6 @@ cc_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/testing:mock_mmio",
         "@googletest//:gtest_main",
     ],
 )

@@ -4,6 +4,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
+load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 
 cc_library(
@@ -96,13 +97,42 @@ cc_test(
     ],
 )
 
-cc_library(
+# TODO: Until Meson is removed, these files need to stay in a different
+# directory, but eventually they will be hoisted to live alongside the
+# targets they mock.
+dual_cc_library(
     name = "csr",
-    hdrs = [
-        "csr.h",
-        "csr_registers.h",
+    srcs = dual_inputs(
+        host = ["//sw/device/silicon_creator/lib/base:mock_csr.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = [
+            "//sw/device/silicon_creator/lib/base:mock_csr.h",
+        ],
+        shared = [
+            "csr.h",
+            "csr_registers.h",
+        ],
+    ),
+    deps = dual_inputs(
+        host = [
+            "//sw/device/lib/base/testing:global_mock",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            ":macros",
+            ":stdasm",
+        ],
+    ),
+)
+
+cc_test(
+    name = "mock_csr_unittest",
+    srcs = ["//sw/device/silicon_creator/lib/base:mock_csr_test.cc"],
+    deps = [
+        ":csr",
+        "@googletest//:gtest_main",
     ],
-    deps = [":stdasm"],
 )
 
 cc_library(
@@ -113,23 +143,67 @@ cc_library(
     ],
 )
 
-cc_library(
+# TODO: Until Meson is removed, these files need to stay in a different
+# directory, but eventually they will be hoisted to live alongside the
+# targets they mock.
+dual_cc_library(
     name = "mmio",
-    srcs = ["mmio.c"],
-    hdrs = ["mmio.h"],
+    srcs = dual_inputs(
+        host = ["//sw/device/lib/base/testing:mock_mmio.cc"],
+        # NOTE: mmio.c is shared because it provides mmio_memcpy and friends.
+        shared = ["mmio.c"],
+    ),
+    hdrs = dual_inputs(
+        host = [
+            "//sw/device/lib/base/testing:mock_mmio.h",
+            "//sw/device/lib/base/testing:mock_mmio_test_utils.h",
+        ],
+        shared = ["mmio.h"],
+    ),
+    deps = dual_inputs(
+        host = [
+            "@googletest//:gtest",
+        ],
+        shared = [
+            ":bitfield",
+            ":macros",
+            ":memory",
+        ],
+    ),
+)
+
+cc_test(
+    name = "mmio_unittest",
+    srcs = ["//sw/device/lib/base/testing:mock_mmio_test.cc"],
     deps = [
-        ":bitfield",
-        ":macros",
-        ":memory",
+        ":mmio",
+        "@googletest//:gtest_main",
     ],
 )
 
-cc_library(
+# TODO: Until Meson is removed, these files need to stay in a different
+# directory, but eventually they will be hoisted to live alongside the
+# targets they mock.
+dual_cc_library(
     name = "abs_mmio",
-    srcs = ["abs_mmio.c"],
-    hdrs = ["abs_mmio.h"],
-    deps = [
-        ":macros",
-        ":mmio",
-    ],
+    srcs = dual_inputs(
+        device = ["abs_mmio.c"],
+        host = ["//sw/device/lib/base/testing:mock_abs_mmio.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = [
+            "//sw/device/lib/base/testing:mock_abs_mmio.h",
+        ],
+        shared = ["abs_mmio.h"],
+    ),
+    deps = dual_inputs(
+        host = [
+            "//sw/device/lib/base/testing:global_mock",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            ":mmio",
+            ":macros",
+        ],
+    ),
 )
