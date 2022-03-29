@@ -420,9 +420,15 @@ TEST_F(IrqClearCausesTest, BadCauses) {
 }
 
 TEST_F(IrqClearCausesTest, Success) {
+  EXPECT_WRITE32(ADC_CTRL_FILTER_STATUS_REG_OFFSET, 0x9);
   EXPECT_WRITE32(ADC_CTRL_ADC_INTR_STATUS_REG_OFFSET, 0x9);
   EXPECT_DIF_OK(dif_adc_ctrl_irq_clear_causes(
       &adc_ctrl_, kDifAdcCtrlIrqCauseFilter0 | kDifAdcCtrlIrqCauseFilter3));
+
+  EXPECT_WRITE32(ADC_CTRL_FILTER_STATUS_REG_OFFSET, 0x1);
+  EXPECT_WRITE32(ADC_CTRL_ADC_INTR_STATUS_REG_OFFSET, 0x101);
+  EXPECT_DIF_OK(dif_adc_ctrl_irq_clear_causes(
+      &adc_ctrl_, kDifAdcCtrlIrqCauseFilter0 | kDifAdcCtrlIrqCauseOneshot));
 }
 
 class FilterMatchWakeupSetEnabledTest : public AdcCtrlTest {};
