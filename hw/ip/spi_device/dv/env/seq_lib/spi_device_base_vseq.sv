@@ -237,6 +237,37 @@ class spi_device_base_vseq extends cip_base_vseq #(
     device_data = {<<8{m_spi_host_seq.rsp.data}};
   endtask
 
+  // transfer in command including opcode, address and payload
+  virtual task spi_host_xfer_cmd_in(bit [7:0] op, bit [7:0] addr[$],
+                                      bit [7:0] pld[$], ref bit [31:0] device_data);
+    spi_host_flash_seq m_spi_host_seq;
+    `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
+                                   write_command == 1;
+                                   opcode == op;
+                                   address_q.size() == addr.size();
+                                   foreach (address_q[i]) {address_q[i] == addr[i];}
+                                   payload_q.size() == pld.size();
+                                   foreach (payload_q[i]) {payload_q[i] == pld[i];})
+    `uvm_send(m_spi_host_seq)
+    device_data = {<<8{m_spi_host_seq.rsp.data}};
+  endtask
+
+  // transfer out command including opcode, address and payload
+  virtual task spi_host_xfer_cmd_out(bit [7:0] op, bit [7:0] addr[$],
+                                       bit [7:0] rd_siz, bit [2:0] lanes);
+    spi_host_flash_seq m_spi_host_seq;
+    `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
+                                   write_command == 0;
+                                   opcode == op;
+                                   address_q.size() == addr.size();
+                                   foreach (address_q[i]) {address_q[i] == addr[i];}
+                                   read_bsize == rd_siz;
+                                   num_lanes == lanes;)
+    `uvm_send(m_spi_host_seq)
+  endtask
+
   // set a random chunk of bytes of data via host agent and receive same number of data from device
   virtual task spi_host_xfer_bytes(int num_bytes = $urandom_range(1, 512),
                                    ref bit [7:0] device_data[$]);
