@@ -154,8 +154,6 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
     cfg.scb_check              = 1;
     cfg.scb_set_exp_alert      = 1;
     cfg.alert_max_delay        = 100_000_000;
-    cfg.scb_empty_mem          = 0;
-    cfg.scb_set_mem            = 0;
     repeat (num_trans) begin
       `DV_CHECK_RANDOMIZE_FATAL(this)
       do_mp_reg();
@@ -163,7 +161,7 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
 
     if (cfg.bank_erase_enable) begin
       //clean scb mem
-      reset_scb_mem();
+      scb_del_mem();
       `DV_CHECK_RANDOMIZE_WITH_FATAL(this,
                                     flash_op.partition inside {FlashPartData,FlashPartInfo};)
       `uvm_info(`gfn, $sformatf("BANK ERASE PART %0p", flash_op), UVM_LOW)
@@ -202,9 +200,7 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
     if (flash_op.op != flash_ctrl_pkg::FlashOpErase) begin
       //prepare for program op
       cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));
-      cfg.scb_set_mem    = 1;
       set_scb_mem(flash_op.num_words,flash_op.partition,flash_op.addr,ALL_ONES);
-      cfg.scb_set_mem    = 0;
       // FLASH Program Operation
       flash_op.op = flash_ctrl_pkg::FlashOpProgram;
       flash_ctrl_start_op(flash_op);
@@ -227,13 +223,11 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
       flash_op_pg_erase.addr       = {flash_op.addr[19:11], {11{1'b0}}};
       // FLASH Erase Page Operation of previous programmed data
       `uvm_info(`gfn, $sformatf("PROGRAM OP %p", flash_op_pg_erase), UVM_HIGH)
-      cfg.scb_set_mem    = 1;
       for (int i = 0; i < 32; i++) begin
         set_scb_mem(flash_op_pg_erase.num_words,flash_op_pg_erase.partition,
                     flash_op_pg_erase.addr,ALL_ONES);
         flash_op_pg_erase.addr = flash_op_pg_erase.addr + 64; //64B was written, 16 words
       end
-      cfg.scb_set_mem    = 0;
       flash_op_pg_erase.addr       = {flash_op.addr[19:11], {11{1'b0}}};
       controller_program_page(flash_op_pg_erase);
       flash_op_pg_erase.op = flash_ctrl_pkg::FlashOpErase;
@@ -305,7 +299,7 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
     flash_op_bk_erase.addr       = {flash_op.addr[19], {19{1'b0}}};
 
     `uvm_info(`gfn, $sformatf("PROGRAM OP %p", flash_op_bk_erase), UVM_LOW)
-    for (int i=0; i < 512; i++ ) begin
+    for (int i=0; i < NUM_PAGE_PART_DATA; i++ ) begin
       controller_program_page(flash_op_bk_erase);
       flash_op_bk_erase.addr = flash_op_bk_erase.addr + BytesPerPage;
     end
@@ -314,7 +308,7 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
       flash_op_bk_erase.partition = FlashPartInfo;
       flash_op_bk_erase.addr = {flash_op.addr[19], {19{1'b0}}};
       `uvm_info(`gfn, $sformatf("PROGRAM OP %p", flash_op_bk_erase), UVM_LOW)
-      for (int i=0; i < 10; i++ ) begin
+      for (int i=0; i < NUM_PAGE_PART_INFO0; i++ ) begin
         controller_program_page(flash_op_bk_erase);
         flash_op_bk_erase.addr = flash_op_bk_erase.addr + BytesPerPage;
       end
@@ -329,7 +323,7 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
     flash_op_bk_erase.partition = FlashPartData;
     flash_op_bk_erase.addr = {flash_op.addr[19], {19{1'b0}}};
     `uvm_info(`gfn, $sformatf("READ OP %p", flash_op_bk_erase), UVM_LOW)
-    for (int i=0; i < 512; i++ ) begin
+    for (int i=0; i < NUM_PAGE_PART_DATA; i++ ) begin
        controller_read_page(flash_op_bk_erase);
       flash_op_bk_erase.addr = flash_op_bk_erase.addr + BytesPerPage;
     end
@@ -338,7 +332,7 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
       flash_op_bk_erase.partition = FlashPartInfo;
       flash_op_bk_erase.addr = {flash_op.addr[19], {19{1'b0}}};
       `uvm_info(`gfn, $sformatf("READ OP %p", flash_op_bk_erase), UVM_LOW)
-      for (int i=0; i < 10; i++ ) begin
+      for (int i=0; i < NUM_PAGE_PART_INFO0; i++ ) begin
         controller_read_page(flash_op_bk_erase);
         flash_op_bk_erase.addr = flash_op_bk_erase.addr + BytesPerPage;
       end

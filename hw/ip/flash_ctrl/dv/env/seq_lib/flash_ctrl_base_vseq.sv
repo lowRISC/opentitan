@@ -265,7 +265,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     //  FlashPartData        = 0 | FlashPartData=0 |         0           |
     //  FlashPartInfo        = 1 | FlashPartInfo=1 |         0           |
     //  FlashPartInfo1       = 2 | FlashPartInfo=1 |         1           |
-    //  FlashPartRedundancy  = 4 | FlashPartInfo=1 |         2           |
+    //  FlashPartInfo2       = 4 | FlashPartInfo=1 |         2           |
 
     partition_sel = |flash_op.partition;
     info_sel = flash_op.partition >> 1;
@@ -969,21 +969,28 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     end
   endtask : controller_program_page
 
-  virtual task reset_scb_mem();
-    cfg.scb_empty_mem = 1;
-    cfg.clk_rst_vif.wait_clks(1);
-    cfg.scb_empty_mem = 0;
-  endtask : reset_scb_mem
-
+  // Task for set scb memory
   virtual task set_scb_mem(int bkd_num_words,flash_dv_part_e bkd_partition,
                          bit [TL_AW-1:0] write_bkd_addr,bit [TL_DW-1:0] set_bkd_val);
-    cfg.bkd_num_words  = bkd_num_words;
-    cfg.bkd_partition  = bkd_partition;
-    cfg.write_bkd_addr = write_bkd_addr;
-    cfg.set_bkd_val    = set_bkd_val;
+    bit [TL_AW-1:0] wr_bkd_addr;
     `uvm_info(`gfn, $sformatf("SET SCB MEM TEST part: %0s addr:%0h data:0x%0h num: %0d",
                              bkd_partition.name,write_bkd_addr,set_bkd_val,bkd_num_words),UVM_HIGH)
-    cfg.clk_rst_vif.wait_clks(1);
+    wr_bkd_addr = {write_bkd_addr[TL_AW-1:2], 2'b00};
+    `uvm_info(`gfn, $sformatf("SET SCB MEM ADDR:%0h", wr_bkd_addr), UVM_HIGH)
+    for (int i=0; i < bkd_num_words; i++) begin
+      `uvm_info(`gfn, $sformatf("SET SCB MEM part: %0s addr:%0h data:0x%0h num: %0d",
+                bkd_partition.name,wr_bkd_addr,set_bkd_val,bkd_num_words),UVM_HIGH)
+      cfg.write_data_all_part(bkd_partition, wr_bkd_addr, set_bkd_val);
+      wr_bkd_addr = wr_bkd_addr + 4;
+    end
   endtask : set_scb_mem
+
+  // Task for clean scb memory
+  virtual task scb_del_mem();
+        cfg.scb_flash_data.delete();
+        cfg.scb_flash_info.delete();
+        cfg.scb_flash_info1.delete();
+        cfg.scb_flash_info2.delete();
+  endtask : scb_del_mem
 
 endclass : flash_ctrl_base_vseq

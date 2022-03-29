@@ -70,6 +70,15 @@ package flash_ctrl_env_pkg;
   // Need to create a design parameter for this
   parameter uint FlashFullDataWidth = flash_ctrl_pkg::DataWidth + 4;
 
+  // params for words
+  parameter uint NUM_PAGE_WORDS            = 512;
+  parameter uint NUM_BK_DATA_WORDS         = 131072; // 256 pages
+  parameter uint NUM_BK_INFO_WORDS         = 5120;   // 10 pages
+
+  // params for num of pages
+  parameter uint NUM_PAGE_PART_DATA        = 512;
+  parameter uint NUM_PAGE_PART_INFO0       = 10;
+
   parameter otp_ctrl_pkg::flash_otp_key_rsp_t FLASH_OTP_RSP_DEFAULT = '{
       data_ack: 1'b0,
       addr_ack: 1'b0,
@@ -123,7 +132,7 @@ package flash_ctrl_env_pkg;
     FlashPartData       = 0,
     FlashPartInfo       = 1,
     FlashPartInfo1      = 2,
-    FlashPartRedundancy = 4
+    FlashPartInfo2      = 4
   } flash_dv_part_e;
 
   // Special Partitions
