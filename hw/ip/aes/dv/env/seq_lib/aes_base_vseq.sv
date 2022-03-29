@@ -274,7 +274,7 @@ class aes_base_vseq extends cip_base_vseq #(
     string   txt              ="";
     bit      is_blocking      = ~item.do_b2b;
     int      wait_on_reseed   = 16;
-    string interleave_queue[] = '{ "key_share0_0", "key_share0_1", "key_share0_2", "key_share0_3",
+    string interleave_queue[$] = '{ "key_share0_0", "key_share0_1", "key_share0_2", "key_share0_3",
                                    "key_share0_4", "key_share0_5", "key_share0_6", "key_share0_7",
                                    "key_share1_0", "key_share1_1", "key_share1_2", "key_share1_3",
                                    "key_share1_4", "key_share1_5", "key_share1_6", "key_share1_7",
@@ -299,7 +299,7 @@ class aes_base_vseq extends cip_base_vseq #(
 
     txt = {txt, $sformatf("\n\t IS blocking %b", is_blocking) };
 
-    foreach (interleave_queue[i]) begin
+    for (int i = 0;  i < interleave_queue.size(); i++) begin
       string csr_name = interleave_queue[i];
       txt = {txt, $sformatf("\n\t ----| \t %s",csr_name )};
 
@@ -325,6 +325,13 @@ class aes_base_vseq extends cip_base_vseq #(
         (csr_name == "clear_reg"): begin
           clear_regs(item.clear_reg);
           csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
+          // manual mode requries all to be written again
+          if (manual_operation) begin
+            //remove clear from queue
+            interleave_queue.delete(i);
+            i = -1;
+            wait_on_reseed = 16;
+          end
         end
       endcase // case interleave_queue[i]
 
