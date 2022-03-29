@@ -106,6 +106,8 @@ c_cpp_args = [
   # We use absolute include paths as much as possible.
   '-I' + meson.project_source_root(),
   '-I' + meson.project_build_root(),
+  # Allow detection of Meson for migration purposes.
+  '-DIS_MESON_FOR_MIGRATIONS_ONLY',
 ]
 add_project_arguments(c_cpp_args, language: ['c', 'cpp'], native: false)
 add_project_arguments(c_cpp_args, language: ['c', 'cpp'], native: true)
