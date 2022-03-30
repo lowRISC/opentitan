@@ -113,6 +113,18 @@
       name: en_ibex_tracer
       build_opts: ["+define+RVFI=1"]
     }
+    // Sim mode that enables build randomization. See the `build_seed` mode
+    // defined in `hw/dv/tools/dvsim/common_modes.hjson` for more details.
+    {
+      name: build_seed
+      pre_build_cmds: [
+        '''cd {proj_root} && ./util/topgen.py -t {ral_spec} \
+               -o hw/top_earlgrey --rnd_cnst_seed {seed}
+        ''',
+        "cd /${proj_root} && ./util/design/gen-otp-mmap.py --seed ${seed}"
+      ]
+      is_sim_mode: 1
+    }
   ]
 
   // Add options needed to compile against otbn_memutil, otbn_tracer, and
@@ -405,7 +417,7 @@
       sw_images: ["sw/device/tests/otbn_ecdsa_op_irq_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=28000000"]
-    }  
+    }
     {
       name: chip_sw_otbn_mem_scramble
       uvm_test_seq: chip_sw_base_vseq
