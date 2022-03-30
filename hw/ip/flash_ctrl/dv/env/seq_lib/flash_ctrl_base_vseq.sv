@@ -872,7 +872,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
     // Local Variables
     lc_ctrl_pkg::lc_tx_t done;
-    time timeout_ns = 1000_000_000;
+    time timeout = 15s;
     time start_time;
     bit rma_ack_seen;
 
@@ -904,10 +904,10 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
           end
           begin  // Timeout - Unexpected
             `uvm_info(`gfn, "Starting RMA Timeout Check ...", UVM_LOW)
-            #(timeout_ns);
+            #(timeout);
             `uvm_error(`gfn, {
                        "RMA ACK NOT seen within the expected time frame, Timeout - FAIL",
-                       $sformatf("FAIL (%0t)", timeout_ns)
+                       $sformatf(" (%0t)", timeout)
                        })
           end
         join_any
