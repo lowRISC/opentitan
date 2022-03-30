@@ -34,7 +34,9 @@
     {
       name: alerts
       desc: '''
-            Verify recov_alert_sts asserts/clears as predicted.
+            Verify recov_alert asserts as predicted.
+            Verify all recov_alert_sts bits assert/clear as predicted.
+            Verify fatal_alert asserts as predicted.
             '''
       milestone: V2
       tests: ["csrng_alert"]
@@ -42,7 +44,7 @@
     {
       name: err
       desc: '''
-            Verify err_code register asserts/clears as predicted.
+            Verify err_code register bits assert/clear as predicted.
             '''
       milestone: V2
       tests: ["csrng_err"]
@@ -59,6 +61,8 @@
             Verify genbits generated as predicted.
             Verify fips bit is passed through properly.
             Verify ability to access registers based on otp, enables.
+            Verify AES_HALT.
+            Verify commands with continuous/non-continuous valid.
             '''
       milestone: V2
       tests: ["csrng_cmds"]
@@ -66,10 +70,10 @@
     {
       name: life cycle
       desc: '''
-            Verify lifecycle hardware debug mode enables AES bypass, reading CSRNG internal state.
+            Verify lifecycle hardware debug mode.
             '''
       milestone: V2
-      tests: []
+      tests: ["csrng_cmds"]
     }
     {
       name: stress_all
@@ -83,6 +87,27 @@
   ]
 
   covergroups: [
+    {
+      name: csrng_cfg_cg
+      desc: '''
+            Covers that all csrng configuration options have been tested.
+            Individual config settings that will be covered include:
+            - otp_en_cs_sw_app_read
+            - sw_app_enable
+            - read_int_state
+            '''
+    }
+    {
+      name: csrng_cmds_cg
+      desc: '''
+            Covers that all csrng commands and variations have been tested for all apps.
+            Individual commands and command options that will be covered include:
+            - app
+            - acmd, clen, flags, glen
+            Crosses of app/acmd and acmd/clen, acmd/flags, acmd/glen
+            - continuous/non-continuous valid
+            '''
+    }
     {
       name: err_test_cg
       desc: '''

@@ -30,14 +30,14 @@ interface csrng_cov_if (
     option.name         = "csrng_cfg_cg";
     option.per_instance = 1;
 
-    cp_otp_en_cs_sw_app_read: coverpoint otp_en_cs_sw_app_read;
-
-    cp_sw_app_enable: coverpoint sw_app_enable;
-
+    cp_sw_app_read:    coverpoint otp_en_cs_sw_app_read;
+    cp_sw_app_enable:  coverpoint sw_app_enable;
     cp_read_int_state: coverpoint read_int_state;
+
+    cr_sw_app_read_sw_app_enable: cross cp_sw_app_read, cp_sw_app_enable;
   endgroup : csrng_cfg_cg
 
-  covergroup csrng_cmds_cg with function sample(bit[NUM_HW_APPS-1:0]   hwapp,
+  covergroup csrng_cmds_cg with function sample(bit[NUM_HW_APPS-1:0]   app,
                                                 acmd_e                 acmd,
                                                 bit[3:0]               clen,
                                                 bit[3:0]               flags,
@@ -46,31 +46,53 @@ interface csrng_cov_if (
     option.name         = "csrng_cmds_cg";
     option.per_instance = 1;
 
-    cp_hwapp: coverpoint hwapp;
+    cp_app: coverpoint app {
+      bins        hw_app0 = { 0 };
+      bins        hw_app1 = { 1 };
+      bins        sw_app  = { 2 };
+      ignore_bins other   = { 3 };
+    }
 
     cp_acmd: coverpoint acmd {
-      illegal_bins illegal = { csrng_pkg::INV, csrng_pkg::GENB, csrng_pkg::GENU };
+      illegal_bins illegal = { INV, GENB, GENU };
     }
 
     cp_clen: coverpoint clen {
-      bins no_additional_data = { 0 };
-      bins additional_data    = { [1:12] };
-      bins invalid            = { [13:15] };
+      bins zero         = { 0 };
+      bins one          = { 1 };
+      bins two          = { 2 };
+      bins three        = { 3 };
+      bins four         = { 4 };
+      bins five         = { 5 };
+      bins six          = { 6 };
+      bins seven        = { 7 };
+      bins eight        = { 8 };
+      bins nine         = { 9 };
+      bins ten          = { 10 };
+      bins eleven       = { 11 };
+      bins twelve       = { 12 };
+      ignore_bins other = { [13:15] };
     }
 
     cp_flags: coverpoint flags {
-      bins zero    = { 0 };
-      bins one     = { 1 };
-      bins invalid = { [2:15] };
+      bins zero         = { 0 };
+      bins one          = { 1 };
+      ignore_bins other = { [2:15] };
     }
 
     cp_glen: coverpoint glen {
-      bins zero      = { 0 };
-      bins non_zero  = { [1:$] };
+      bins one         = { 1 };
+      bins multiple    = { [2:$] };
+      ignore_bins zero = { 0 };
     }
 
-    cr_hwapp_acmd: cross cp_hwapp, cp_acmd;
-    cr_acmd_clen:  cross cp_acmd, cp_clen;
+    cr_app_acmd:   cross cp_app, cp_acmd;
+
+    cr_acmd_clen:  cross cp_acmd, cp_clen {
+      ignore_bins invalid = binsof(cp_acmd) intersect { UNI } &&
+                            binsof(cp_clen) intersect { [1:$] };
+    }
+
     cr_acmd_flags: cross cp_acmd, cp_flags;
     cr_acmd_glen:  cross cp_acmd, cp_glen;
   endgroup : csrng_cmds_cg

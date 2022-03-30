@@ -32,11 +32,7 @@ class csrng_item extends uvm_sequence_item;
 
   // TODO: Try glen > 32, glen = 0 on GEN cmd
   constraint c_glen {
-    solve acmd before glen;
-    if (acmd != GEN)
-      glen == 0;
-    else
-      glen inside {[1:32]};
+    glen inside {[1:32]};
   }
 
    //--------------------------------------------------------------------
