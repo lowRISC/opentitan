@@ -25,20 +25,18 @@ static_assert(KEYMGR_SEALING_SW_BINDING_2_REG_OFFSET ==
 static_assert(KEYMGR_SEALING_SW_BINDING_3_REG_OFFSET ==
                   KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET + 12,
               "SEALING_SW_BINDING_N registers must be contiguous.");
-// TODO: Uncomment when lowRISC/opentitan#5194 is completed.
-// TODO: Consider defining a macro once all assertions are enabled.
-// static_assert(KEYMGR_SEALING_SW_BINDING_4_REG_OFFSET ==
-//                   KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET + 16,
-//               "SEALING_SW_BINDING_N registers must be contiguous.");
-// static_assert(KEYMGR_SEALING_SW_BINDING_5_REG_OFFSET ==
-//                   KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET + 20,
-//               "SEALING_SW_BINDING_N registers must be contiguous.");
-// static_assert(KEYMGR_SEALING_SW_BINDING_6_REG_OFFSET ==
-//                   KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET + 24,
-//               "SEALING_SW_BINDING_N registers must be contiguous.");
-// static_assert(KEYMGR_SEALING_SW_BINDING_7_REG_OFFSET ==
-//                   KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET + 28,
-//               "SEALING_SW_BINDING_N registers must be contiguous.");
+static_assert(KEYMGR_SEALING_SW_BINDING_4_REG_OFFSET ==
+                  KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET + 16,
+              "SEALING_SW_BINDING_N registers must be contiguous.");
+static_assert(KEYMGR_SEALING_SW_BINDING_5_REG_OFFSET ==
+                  KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET + 20,
+              "SEALING_SW_BINDING_N registers must be contiguous.");
+static_assert(KEYMGR_SEALING_SW_BINDING_6_REG_OFFSET ==
+                  KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET + 24,
+              "SEALING_SW_BINDING_N registers must be contiguous.");
+static_assert(KEYMGR_SEALING_SW_BINDING_7_REG_OFFSET ==
+                  KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET + 28,
+              "SEALING_SW_BINDING_N registers must be contiguous.");
 
 static_assert(KEYMGR_SALT_1_REG_OFFSET == KEYMGR_SALT_0_REG_OFFSET + 4,
               "SALT_N registers must be contiguous.");
@@ -46,19 +44,14 @@ static_assert(KEYMGR_SALT_2_REG_OFFSET == KEYMGR_SALT_0_REG_OFFSET + 8,
               "SALT_N registers must be contiguous.");
 static_assert(KEYMGR_SALT_3_REG_OFFSET == KEYMGR_SALT_0_REG_OFFSET + 12,
               "SALT_N registers must be contiguous.");
-// TODO: Uncomment when lowRISC/opentitan#5194 is completed.
-// static_assert(KEYMGR_SALT_4_REG_OFFSET ==
-//                   KEYMGR_SALT_0_REG_OFFSET + 16,
-//               "SALT_N registers must be contiguous.");
-// static_assert(KEYMGR_SALT_5_REG_OFFSET ==
-//                   KEYMGR_SALT_0_REG_OFFSET + 20,
-//               "SALT_N registers must be contiguous.");
-// static_assert(KEYMGR_SALT_6_REG_OFFSET ==
-//                   KEYMGR_SALT_0_REG_OFFSET + 24,
-//               "SALT_N registers must be contiguous.");
-// static_assert(KEYMGR_SALT_7_REG_OFFSET ==
-//                   KEYMGR_SALT_0_REG_OFFSET + 28,
-//               "SALT_N registers must be contiguous.");
+static_assert(KEYMGR_SALT_4_REG_OFFSET == KEYMGR_SALT_0_REG_OFFSET + 16,
+              "SALT_N registers must be contiguous.");
+static_assert(KEYMGR_SALT_5_REG_OFFSET == KEYMGR_SALT_0_REG_OFFSET + 20,
+              "SALT_N registers must be contiguous.");
+static_assert(KEYMGR_SALT_6_REG_OFFSET == KEYMGR_SALT_0_REG_OFFSET + 24,
+              "SALT_N registers must be contiguous.");
+static_assert(KEYMGR_SALT_7_REG_OFFSET == KEYMGR_SALT_0_REG_OFFSET + 28,
+              "SALT_N registers must be contiguous.");
 
 static_assert(KEYMGR_SW_SHARE0_OUTPUT_1_REG_OFFSET ==
                   KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET + 4,
@@ -472,6 +465,12 @@ dif_result_t dif_keymgr_generate_versioned_key(
     case kDifKeymgrVersionedKeyDestKmac:
       hw_op_params = (start_operation_params_t){
           .dest = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_KMAC,
+          .op = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT,
+      };
+      break;
+    case kDifKeymgrVersionedKeyDestOtbn:
+      hw_op_params = (start_operation_params_t){
+          .dest = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_OTBN,
           .op = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT,
       };
       break;
