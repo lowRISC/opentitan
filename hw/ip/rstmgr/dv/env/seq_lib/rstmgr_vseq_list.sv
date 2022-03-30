@@ -11,3 +11,5 @@
 `include "rstmgr_sw_rst_vseq.sv"
 `include "rstmgr_common_vseq.sv"
 `include "rstmgr_sec_cm_scan_intersig_mubi_vseq.sv"
+`include "rstmgr_leaf_rst_cnsty_vseq.sv"
+`include "rstmgr_leaf_rst_shadow_attack_vseq.sv"

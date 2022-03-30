@@ -31,6 +31,8 @@ filesets:
       - seq_lib/rstmgr_sw_rst_reset_race_vseq.sv: {is_include_file: true}
       - seq_lib/rstmgr_sw_rst_vseq.sv: {is_include_file: true}
       - seq_lib/rstmgr_sec_cm_scan_intersig_mubi_vseq.sv: {is_include_file: true}
+      - seq_lib/rstmgr_leaf_rst_cnsty_vseq.sv: {is_include_file: true}
+      - seq_lib/rstmgr_leaf_rst_shadow_attack_vseq.sv: {is_include_file: true}
       - rstmgr_if.sv
     file_type: systemVerilogSource
 
