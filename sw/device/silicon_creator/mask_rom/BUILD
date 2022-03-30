@@ -60,6 +60,9 @@ opentitan_rom_binary(
         "mask_rom.h",
         "mask_rom_start.S",
     ],
+    # Mask ROM does not permit the DV simulation backdoor logging mechanism that
+    # test ROM does, for obvious security reasons.
+    extract_sw_logs_db = False,
     linkopts = [
         "-T $(location mask_rom.ld)",
     ],
@@ -283,6 +286,10 @@ opentitan_functest(
         "mask_rom_test.c",
     ],
     signed = True,
+    targets = [
+        "verilator",
+        "cw310",
+    ],
     verilator = verilator_params(
         rom = ":mask_rom_sim_verilator_scr_vmem",
         tags = [

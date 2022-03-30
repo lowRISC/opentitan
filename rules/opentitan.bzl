@@ -517,6 +517,7 @@ def opentitan_rom_binary(
         name,
         platform = OPENTITAN_PLATFORM,
         per_device_deps = PER_DEVICE_DEPS,
+        extract_sw_logs_db = True,
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts for ROM.
 
@@ -530,6 +531,7 @@ def opentitan_rom_binary(
       @param name: The name of this rule.
       @param platform: The target platform for the artifacts.
       @param per_device_deps: The deps for each of the hardware target.
+      @param extract_sw_logs_db: Whether to extract SW logs database for DV sim.
       @param **kwargs: Arguments to forward to `opentitan_binary`.
     Emits rules:
       For each device in per_device_deps entry:
@@ -553,7 +555,7 @@ def opentitan_rom_binary(
         targets.extend(opentitan_binary(
             name = devname,
             deps = deps + dev_deps,
-            extract_sw_logs_db = device == "sim_dv",
+            extract_sw_logs_db = extract_sw_logs_db and device == "sim_dv",
             **kwargs
         ))
         elf_name = "{}_{}".format(devname, "elf")
@@ -579,6 +581,7 @@ def opentitan_flash_binary(
             "test_key_0": "//sw/device/silicon_creator/mask_rom/keys:test_private_key_0",
         },
         per_device_deps = PER_DEVICE_DEPS,
+        extract_sw_logs_db = True,
         output_signed = False,
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts for flash.
@@ -596,6 +599,7 @@ def opentitan_flash_binary(
       @param platform: The target platform for the artifacts.
       @param signing_keys: The signing keys for to sign each BIN file with.
       @param per_device_deps: The deps for each of the hardware target.
+      @param extract_sw_logs_db: Whether to extract SW logs database for DV sim.
       @param output_signed: Whether or not to emit signed binary/VMEM files.
       @param **kwargs: Arguments to forward to `opentitan_binary`.
     Emits rules:
@@ -625,7 +629,7 @@ def opentitan_flash_binary(
         targets.extend(opentitan_binary(
             name = devname,
             deps = deps + dev_deps,
-            extract_sw_logs_db = device == "sim_dv",
+            extract_sw_logs_db = extract_sw_logs_db and device == "sim_dv",
             **kwargs
         ))
         elf_name = "{}_{}".format(devname, "elf")
@@ -955,10 +959,6 @@ def opentitan_functest(
         dargs = _format_list("args", args, dv, chip_sim_config = chip_sim_config)
         ddata = _format_list("data", data, dv)
 
-        # SW logs database files for backdoor message logging in sim.
-        rom_sw_logs_db = rom.replace("_scr_vmem", "_logs_db")
-        flash_sw_logs_db = "{}_prog_sim_dv_logs_db".format(name)
-
         native.sh_test(
             name = test_name,
             srcs = ["//util:dvsim_test_runner.sh"],
@@ -971,8 +971,6 @@ def opentitan_functest(
                 rom,
                 otp,
                 chip_sim_config,
-                rom_sw_logs_db,
-                flash_sw_logs_db,
                 "//util/dvsim",
                 "//hw:all_files",
             ] + ddata,
