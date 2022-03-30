@@ -360,9 +360,11 @@ module spid_upload_tb;
 
     .sys_cmdfifo_sram_o (arb_l2m[0]),
     .sys_cmdfifo_sram_i (arb_m2l[0]),
+    .sys_cmdfifo_gnt_i  (arb_gnt[0]),
 
     .sys_addrfifo_sram_o (arb_l2m[1]),
     .sys_addrfifo_sram_i (arb_m2l[1]),
+    .sys_addrfifo_gnt_i  (arb_gnt[1]),
 
     // SYS clock FIFO interface
     .sys_cmdfifo_rvalid_o (cmdfifo_rvalid),
