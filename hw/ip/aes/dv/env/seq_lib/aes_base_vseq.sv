@@ -149,6 +149,19 @@ class aes_base_vseq extends cip_base_vseq #(
 
   virtual task write_iv(bit  [3:0][31:0] iv, bit do_b2b);
     foreach (iv[i]) csr_wr(.ptr(ral.iv[i]), .value(iv[i]), .blocking(~do_b2b));
+  endtask // write_iv
+
+
+  virtual task read_iv(ref bit [3:0] [31:0] iv, bit do_b2b);
+    int read_order[4] = {0,1,2,3};
+    // randomize read order
+    read_order.shuffle();
+
+    foreach (read_order[i]) begin
+      int idx = read_order[i];
+      csr_rd(.ptr(ral.iv[idx]), .value(iv[idx]), .blocking(~do_b2b));
+      `uvm_info(`gfn, $sformatf("\n\t ----| IV_%0d: %h ",idx,  iv[idx]), UVM_HIGH)
+    end
   endtask
 
 
