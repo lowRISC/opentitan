@@ -18,7 +18,6 @@ from .reg import RegFile
 from .trace import Trace, TracePC
 from .wsr import WSRFile
 
-
 # The number of cycles spent in the 'WIPE' state. This takes constant time in
 # the RTL, mirrored here.
 _WIPE_CYCLES = 98
@@ -431,10 +430,15 @@ class OTBNState:
             self.ext_regs.write('WIPE_START', 1, True)
             self.ext_regs.regs['WIPE_START'].commit()
 
-        # Switch to a 'wiping' state
-        self._next_fsm_state = (FsmState.WIPING_BAD if should_lock
+            # Switch to a 'wiping' state
+            self._next_fsm_state = (FsmState.WIPING_BAD if should_lock
                                 else FsmState.WIPING_GOOD)
-        self.wipe_cycles = (_WIPE_CYCLES if self.secure_wipe_enabled else 2)
+            self.wipe_cycles = (_WIPE_CYCLES if self.secure_wipe_enabled else 2)
+        else:
+            assert should_lock
+            self._next_fsm_state = FsmState.LOCKED
+            next_status = Status.LOCKED
+            self.ext_regs.write('STATUS', next_status, True)
 
         # Clear the "we should stop soon" flag
         self.pending_halt = False
