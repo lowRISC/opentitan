@@ -18,3 +18,7 @@ targets:
   default:
     filesets:
       - files_cpp
+    tools:
+      vcs:
+        vcs_options:
+          - '-CFLAGS -I../../src/lowrisc_dv_scramble_model_0'

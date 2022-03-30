@@ -16,3 +16,7 @@ targets:
   default:
     filesets:
       - files_dv
+    tools:
+      vcs:
+        vcs_options:
+          - '-CFLAGS -I../../src/lowrisc_dv_secded_enc_0'

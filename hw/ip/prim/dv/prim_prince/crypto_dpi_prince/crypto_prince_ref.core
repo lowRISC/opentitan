@@ -13,3 +13,7 @@ targets:
   default:
     filesets:
       - files_dv
+    tools:
+      vcs:
+        vcs_options:
+          - '-CFLAGS -I../../src/lowrisc_dv_crypto_prince_ref_0.1'
