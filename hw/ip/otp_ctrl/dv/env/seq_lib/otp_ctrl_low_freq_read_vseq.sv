@@ -44,9 +44,11 @@ class otp_ctrl_low_freq_read_vseq extends otp_ctrl_base_vseq;
           bit [TL_DW-1:0] tlul_val;
           uvm_reg_addr_t tlul_addr = cfg.ral.get_addr_from_offset(get_sw_window_offset(dai_addr));
           tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1));
-          `DV_CHECK_EQ(tlul_val, dai_addr,
-                       $sformatf("sw parts read out mismatch at tlul_addr %0h, dai_addr %0h",
-                                  tlul_addr, dai_addr))
+          if (!cfg.under_reset) begin
+            `DV_CHECK_EQ(tlul_val, dai_addr,
+                         $sformatf("sw parts read out mismatch at tlul_addr %0h, dai_addr %0h",
+                                    tlul_addr, dai_addr))
+          end
         end
       end else begin
         dai_rd_check(dai_addr, normalize_dai_addr(dai_addr), normalize_dai_addr(dai_addr) + 4);
