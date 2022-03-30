@@ -48,6 +48,7 @@ sw_silicon_creator_lib_base_mock_sec_mmio = declare_dependency(
     'mock_sec_mmio',
     sources: [
       'mock_sec_mmio.h',
+      'mock_sec_mmio.cc',
     ],
     dependencies: [
       sw_vendor_gtest,

@@ -18,12 +18,16 @@
 // unit tests can provide mocks.  The mocks provide for separate testing of
 // the FIFO functions and the overall transaction management functions.
 OT_WEAK
+#ifdef OT_PLATFORM_RV32
 OT_ALIAS("dif_spi_host_fifo_write")
+#endif
 dif_result_t spi_host_fifo_write_alias(const dif_spi_host_t *spi_host,
                                        const void *src, uint16_t len);
 
 OT_WEAK
+#ifdef OT_PLATFORM_RV32
 OT_ALIAS("dif_spi_host_fifo_read")
+#endif
 dif_result_t spi_host_fifo_read_alias(const dif_spi_host_t *spi_host, void *dst,
                                       uint16_t len);
 

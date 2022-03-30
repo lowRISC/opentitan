@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#ifndef IS_MESON_FOR_MIGRATIONS_ONLY
+
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 
 namespace mask_rom_test {
@@ -31,3 +33,5 @@ void sec_mmio_check_counters(uint32_t expected_check_count) {
 }
 }  // extern "C"
 }  // namespace mask_rom_test
+
+#endif

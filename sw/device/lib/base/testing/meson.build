@@ -29,6 +29,7 @@ sw_lib_testing_mock_abs_mmio = declare_dependency(
     'mock_abs_mmio',
     sources: [
       'mock_abs_mmio.h',
+      'mock_abs_mmio.cc',
     ],
     dependencies: [
       sw_vendor_gtest,

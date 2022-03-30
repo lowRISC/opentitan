@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#ifndef IS_MESON_FOR_MIGRATIONS_ONLY
+
 #include "sw/device/lib/base/testing/mock_abs_mmio.h"
 
 namespace mask_rom_test {
@@ -31,3 +33,5 @@ void abs_mmio_write32_shadowed(uint32_t addr, uint32_t value) {
 }
 }  // extern "C"
 }  // namespace mask_rom_test
+
+#endif

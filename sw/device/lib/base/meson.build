@@ -13,13 +13,41 @@ sw_lib_math_builtins = declare_dependency(
   )
 )
 
+#test('base_math_builtins_unittest', executable(
+#    'base_math_builtins_unittest',
+#    sources: [
+#      'math_builtins_unittest.cc',
+#      'math_builtins.c',
+#    ],
+#    dependencies: [
+#      sw_vendor_gtest,
+#    ],
+#    native: true,
+#  ),
+#  suite: 'base',
+#)
+
 sw_lib_math = declare_dependency(
   link_with: static_library(
     'math_ot',
-    sources: ['math.c', 'math_builtins.c'],
+    sources: ['math.c'],
   ),
   dependencies: [sw_lib_math_builtins],
 )
+
+#test('base_math_unittest', executable(
+#    'base_math_unittest',
+#    sources: [
+#      'math_unittest.cc',
+#      'math.c',
+#    ],
+#    dependencies: [
+#      sw_vendor_gtest,
+#    ],
+#    native: true,
+#  ),
+#  suite: 'base',
+#)
 
 # Non volatile bit manipulation helper library (sw_lib_bitfield).
 sw_lib_bitfield = declare_dependency(
@@ -72,19 +100,19 @@ sw_lib_hardened = declare_dependency(
   )
 )
 
-test('base_hardened_unittest', executable(
-    'base_hardened_unittest',
-    sources: [
-      'hardened.c',
-      'hardened_unittest.cc',
-    ],
-    dependencies: [
-      sw_vendor_gtest,
-    ],
-    native: true,
-  ),
-  suite: 'base',
-)
+#test('base_hardened_unittest', executable(
+#    'base_hardened_unittest',
+#    sources: [
+#      'hardened.c',
+#      'hardened_unittest.cc',
+#    ],
+#    dependencies: [
+#      sw_vendor_gtest,
+#    ],
+#    native: true,
+#  ),
+#  suite: 'base',
+#)
 
 sw_lib_random_order = declare_dependency(
   link_with: static_library(
