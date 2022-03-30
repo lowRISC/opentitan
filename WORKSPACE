@@ -196,3 +196,7 @@ lowrisc_misc_linters_dependencies()
 load("@lowrisc_lint//rules:pip.bzl", "lowrisc_misc_linters_pip_dependencies")
 
 lowrisc_misc_linters_pip_dependencies()
+
+load("//third_party/riscv-compliance:deps.bzl", "riscv_compliance_deps")
+
+riscv_compliance_deps()

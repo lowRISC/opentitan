@@ -1,0 +1,91 @@
+From e8b82ff045fca264917a7c5539bfcbe8ed22b7a0 Mon Sep 17 00:00:00 2001
+From: Greg Chadwick <gac@lowrisc.org>
+Date: Wed, 15 Apr 2020 15:45:31 +0100
+Subject: [PATCH 1/5] Add configurable trap alignment and entry point to p
+ test-env
+
+
+diff --git a/riscv-test-env/p/riscv_test.h b/riscv-test-env/p/riscv_test.h
+index eaa6758..9423523 100644
+--- a/riscv-test-env/p/riscv_test.h
++++ b/riscv-test-env/p/riscv_test.h
+@@ -60,14 +60,14 @@
+   csrw pmpaddr0, t0;                                                    \
+   li t0, PMP_NAPOT | PMP_R | PMP_W | PMP_X;                             \
+   csrw pmpcfg0, t0;                                                     \
+-  .align 2;                                                             \
++  .align TRAPALIGN;                                                     \
+ 1:
+ 
+ #define INIT_SPTBR                                                      \
+   la t0, 1f;                                                            \
+   csrw mtvec, t0;                                                       \
+   csrwi sptbr, 0;                                                       \
+-  .align 2;                                                             \
++  .align TRAPALIGN;                                                     \
+ 1:
+ 
+ #define DELEGATE_NO_TRAPS                                               \
+@@ -76,7 +76,7 @@
+   csrwi medeleg, 0;                                                     \
+   csrwi mideleg, 0;                                                     \
+   csrwi mie, 0;                                                         \
+-  .align 2;                                                             \
++  .align TRAPALIGN;                                                     \
+ 1:
+ 
+ #define RVTEST_ENABLE_SUPERVISOR                                        \
+@@ -125,6 +125,14 @@
+ #if defined(TRAPHANDLER)
+ #include TRAPHANDLER
+ #endif
++#if !defined(TRAPALIGN)
++#define TRAPALIGN 2
++#endif
++
++#if !defined(RVTEST_ENTRY)
++#define RVTEST_ENTRY _start
++#endif
++
+ 
+ #define INTERRUPT_HANDLER j other_exception /* No interrupts should occur */
+ 
+@@ -133,11 +141,11 @@
+         .align  6;                                                      \
+         .weak stvec_handler;                                            \
+         .weak mtvec_handler;                                            \
+-        .globl _start;                                                  \
+-_start:                                                                 \
++        .globl RVTEST_ENTRY;                                            \
++RVTEST_ENTRY:                                                           \
+         /* reset vector */                                              \
+         j reset_vector;                                                 \
+-        .align 2;                                                       \
++        .align TRAPALIGN;                                               \
+ trap_vector:                                                            \
+         /* test whether the test came from pass/fail */                 \
+         csrr t5, mcause;                                                \
+diff --git a/riscv-test-suite/rv32i/src/I-EBREAK-01.S b/riscv-test-suite/rv32i/src/I-EBREAK-01.S
+index 958eebc..32c074c 100644
+--- a/riscv-test-suite/rv32i/src/I-EBREAK-01.S
++++ b/riscv-test-suite/rv32i/src/I-EBREAK-01.S
+@@ -71,6 +71,7 @@ RV_COMPLIANCE_CODE_BEGIN
+ 
+     # ---------------------------------------------------------------------------------------------
+     # Exception handler
++.align TRAPALIGN
+ _trap_handler:
+     # increment return address
+     csrr    x30, mepc
+diff --git a/riscv-test-suite/rv32i/src/I-ECALL-01.S b/riscv-test-suite/rv32i/src/I-ECALL-01.S
+index 5278207..0bdee2a 100644
+--- a/riscv-test-suite/rv32i/src/I-ECALL-01.S
++++ b/riscv-test-suite/rv32i/src/I-ECALL-01.S
+@@ -73,6 +73,7 @@ RV_COMPLIANCE_CODE_BEGIN
+ 
+     # ---------------------------------------------------------------------------------------------
+     # Exception handler
++.align TRAPALIGN
+ _trap_handler:
+     # increment return address
+     csrr    x30, mepc

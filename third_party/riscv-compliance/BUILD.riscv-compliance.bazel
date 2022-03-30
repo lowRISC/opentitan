@@ -1,0 +1,98 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(glob(["**/*"]))
+
+# NOTE: The files below are included as genrules rather than as patches so that
+# they can be easilly edited without having to rebuild the patchset.
+genrule(
+    name = "compliance_test_hdr",
+    outs = ["compliance_test.h"],
+    cmd = """echo '\
+// RISC-V Compliance Test Header File
+
+#ifndef _COMPLIANCE_TEST_H
+#define _COMPLIANCE_TEST_H
+
+#include "riscv_test.h"
+
+//-----------------------------------------------------------------------
+// RV Compliance Macros
+//-----------------------------------------------------------------------
+#define RV_COMPLIANCE_HALT                                                    \
+        j end_rvc_test;                                                       \
+
+#define RV_COMPLIANCE_RV32M                                                   \
+        RVTEST_RV32M                                                          \
+
+
+#define RV_COMPLIANCE_CODE_BEGIN                                              \
+        RVTEST_CODE_BEGIN                                                     \
+
+#define RV_COMPLIANCE_CODE_END                                                \
+        RVTEST_CODE_END                                                       \
+
+#define RV_COMPLIANCE_DATA_BEGIN                                              \
+        .section .data;                                                       \
+        RVTEST_DATA_BEGIN                                                     \
+
+#define RV_COMPLIANCE_DATA_END                                                \
+        RVTEST_DATA_END                                                       \
+
+#endif // _COMPLIANCE_TEST_H
+' > $@
+    """,
+    visibility = ["//visibility:private"],
+)
+
+genrule(
+    name = "compliance_io_hdr",
+    outs = ["compliance_io.h"],
+    cmd = """echo '\
+// RISC-V Compliance IO Test Header File
+
+#ifndef _COMPLIANCE_IO_H
+#define _COMPLIANCE_IO_H
+
+//-----------------------------------------------------------------------
+// RV IO Macros (Non functional)
+//-----------------------------------------------------------------------
+
+#define RVTEST_IO_INIT
+#define RVTEST_IO_WRITE_STR(_SP, _STR)
+#define RVTEST_IO_CHECK()
+#define RVTEST_IO_ASSERT_GPR_EQ(_SP, _R, _I)
+#define RVTEST_IO_ASSERT_SFPR_EQ(_F, _R, _I)
+#define RVTEST_IO_ASSERT_DFPR_EQ(_D, _R, _I)
+
+#endif // _COMPLIANCE_IO_H
+' > $@
+    """,
+    visibility = ["//visibility:private"],
+)
+
+cc_library(
+    name = "riscv-test-env",
+    hdrs = [
+        "compliance_io.h",
+        "compliance_test.h",
+        "riscv-test-env/aw_test_macros.h",
+        "riscv-test-env/encoding.h",
+        "riscv-test-env/p/riscv_test.h",
+        "riscv-test-env/riscv_test_macros.h",
+        "riscv-test-env/test_macros.h",
+    ],
+    defines = [
+        "PRIV_MISA_S=0",
+        "PRIV_MISA_U=0",
+        "RVTEST_ENTRY=_rvc_start",
+        "TRAPALIGN=8",
+    ],
+    includes = [
+        "riscv-test-env",
+        "riscv-test-env/p",
+    ],
+)
