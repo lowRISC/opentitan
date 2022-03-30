@@ -88,6 +88,14 @@
       name: rstmgr_sec_cm_scan_intersig_mubi
       uvm_test_seq: rstmgr_sec_cm_scan_intersig_mubi_vseq
     }
+    {
+      name: rstmgr_leaf_rst_cnsty
+      uvm_test_seq: rstmgr_leaf_rst_cnsty_vseq
+    }
+    {
+      name: rstmgr_leaf_rst_shadow_attack
+      uvm_test_seq: rstmgr_leaf_rst_shadow_attack_vseq
+    }
     // TODO: add more tests here
   ]
 
