@@ -124,6 +124,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
             more_cmd_data -= 1;
             cs_item[SW_APP].cmd_data_q.push_back(item.a_data);
           end
+          cov_vif.cg_cmds_sample(SW_APP, cs_item[SW_APP]);
           if (!more_cmd_data) begin
             for (int i = 0; i < cs_item[SW_APP].cmd_data_q.size(); i++) begin
               cs_data[SW_APP] = (cs_item[SW_APP].cmd_data_q[i] << i * CSRNG_CMD_WIDTH) +

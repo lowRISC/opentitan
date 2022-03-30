@@ -20,7 +20,7 @@ class csrng_cmds_vseq extends csrng_base_vseq;
   endfunction
 
   function void create_cmds(uint app);
-    bit          uni;
+    bit   uni;
 
     cs_item = new();
     // Start with instantiate command
