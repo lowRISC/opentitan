@@ -2,6 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# NOTE: These files are not used by the Bazel port of the compliance suite,
+# and SHOULD NOT be ported to Bazel.
+# See https://github.com/lowRISC/opentitan/issues/11802
+
 foreach device_name, device_lib : sw_lib_arch_core_devices
   # We want to produce a single .a containing the libraries needed to run
   # the riscv-compliance test suite. Giving these libraries as dependcies
