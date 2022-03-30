@@ -142,7 +142,10 @@ def _elf_to_disassembly_impl(ctx):
             ],
             command = "$1 --disassemble --headers --line-numbers --source $2 > $3",
         )
-        return [DefaultInfo(files = depset(outputs), data_runfiles = ctx.runfiles(files = outputs))]
+        return [DefaultInfo(
+            files = depset(outputs),
+            data_runfiles = ctx.runfiles(files = outputs),
+        )]
 
 elf_to_disassembly = rule(
     implementation = _elf_to_disassembly_impl,
@@ -150,7 +153,9 @@ elf_to_disassembly = rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "platform": attr.string(default = OPENTITAN_PLATFORM),
-        "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
+        "_cc_toolchain": attr.label(
+            default = Label("@bazel_tools//tools/cpp:current_cc_toolchain"),
+        ),
         "_allowlist_function_transition": attr.label(
             default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
         ),
@@ -369,12 +374,10 @@ def _gen_sim_dv_logs_db_impl(ctx):
         ))
         outputs.append(logs_db)
         outputs.append(rodata)
+
         ctx.actions.run(
             outputs = outputs,
-            inputs = [
-                src,
-                ctx.attr._tool,
-            ],
+            inputs = [src],
             arguments = [
                 "--elf-file",
                 src.path,
@@ -385,9 +388,9 @@ def _gen_sim_dv_logs_db_impl(ctx):
                 "--name",
                 src.basename.replace("." + src.extension, ""),
                 "--outdir",
-                ".",
+                logs_db.dirname,
             ],
-            executable = ctx.file._tool.path,
+            executable = ctx.executable._tool,
         )
     return [DefaultInfo(
         files = depset(outputs),
@@ -402,7 +405,8 @@ gen_sim_dv_logs_db = rule(
         "platform": attr.string(default = OPENTITAN_PLATFORM),
         "_tool": attr.label(
             default = "//util/device_sw_utils:extract_sw_logs_db",
-            allow_single_file = True,
+            cfg = "host",
+            executable = True,
         ),
         "_allowlist_function_transition": attr.label(
             default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
@@ -494,7 +498,7 @@ def opentitan_binary(
 
     # Generate log message database for DV sim testbench
     if extract_sw_logs_db:
-        logs_db_name = "{}_{}".format(name, "sim_dv_logs")
+        logs_db_name = "{}_{}".format(name, "logs_db")
         targets.append(":" + logs_db_name)
         gen_sim_dv_logs_db(
             name = logs_db_name,
@@ -821,7 +825,7 @@ def _unique_deps(*deplists):
 
 def opentitan_functest(
         name,
-        targets = ["verilator", "cw310"],
+        targets = ["dv", "verilator", "cw310"],
         args = [],
         data = [],
         ottf = _OTTF_DEPS,
@@ -840,11 +844,11 @@ def opentitan_functest(
     Args:
       @param name: The name of this rule.
       @param targets: A list of hardware targets on which to dispatch tests.
-      @param args: Extra arguments to pass to `opentitantool`.
+      @param args: Extra arguments to pass to the test runner (`opentitantool`).
       @param data: Extra data dependencies needed while executing the test.
       @param ottf: Default dependencies for OTTF tests. Set to empty list if
                    your test doesn't use the OTTF.
-      @param test_in_rom: Whether to run the test from ROM, Runs from flash by
+      @param test_in_rom: Whether to run the test from ROM, runs from flash by
                           default.
       @param signed: Whether to sign the test image. Unsigned by default.
       @param key: Which signed test image (by key) to use.

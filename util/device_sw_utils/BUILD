@@ -6,7 +6,8 @@ package(default_visibility = ["//visibility:public"])
 py_binary(
     name = "extract_sw_logs_db",
     srcs = ["extract_sw_logs.py"],
+    main = "extract_sw_logs.py",
     deps = [
-        requirement("elftools"),
+        requirement("pyelftools"),
     ],
 )
