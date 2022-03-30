@@ -23,6 +23,7 @@ import argparse
 import datetime
 import logging as log
 import os
+import random
 import shlex
 import subprocess
 import sys
@@ -33,7 +34,7 @@ import Launcher
 import LauncherFactory
 import LocalLauncher
 from CfgFactory import make_cfg
-from Deploy import CompileOneShot, CompileSim, RunTest
+from Deploy import RunTest
 from Timer import Timer
 from utils import (TS_FORMAT, TS_FORMAT_LONG, VERBOSE, rm_path,
                    run_cmd_with_timeout)
@@ -474,9 +475,13 @@ def parse_args():
     seedg = parser.add_argument_group('Build / test seeds')
 
     seedg.add_argument("--build-seed",
+                       nargs="?",
                        type=int,
+                       const=random.getrandbits(32),
                        metavar="S",
-                       help=('Seed used for compile-time randomization.'))
+                       help=('Randomize the build. Uses the seed value passed '
+                             'an additional argument, else it randomly picks '
+                             'a 32-bit unsigned integer.'))
 
     seedg.add_argument("--seeds",
                        "-s",
@@ -656,10 +661,7 @@ def main():
     setattr(args, "timestamp_long", curr_ts.strftime(TS_FORMAT_LONG))
     setattr(args, "timestamp", curr_ts.strftime(TS_FORMAT))
 
-    # Register the seeds from command line with Compile* / RunTest classes.
-    if args.build_seed:
-        CompileSim.seed = args.build_seed
-        CompileOneShot.seed = args.build_seed
+    # Register the seeds from command line with the RunTest class.
     RunTest.seeds = args.seeds
 
     # If we are fixing a seed value, no point in tests having multiple reseeds.

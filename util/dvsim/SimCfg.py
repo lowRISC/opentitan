@@ -74,6 +74,7 @@ class SimCfg(FlowCfg):
         self.en_run_modes = []
         self.en_run_modes.extend(args.run_modes)
         self.build_unique = args.build_unique
+        self.build_seed = args.build_seed
         self.build_only = args.build_only
         self.run_only = args.run_only
         self.reseed_ovrd = args.reseed
@@ -105,6 +106,8 @@ class SimCfg(FlowCfg):
             self.en_build_modes.append("profile")
         if self.xprop_off is not True:
             self.en_build_modes.append("xprop")
+        if self.build_seed:
+            self.en_build_modes.append("build_seed")
 
         # Options built from cfg_file files
         self.project = ""
@@ -619,8 +622,9 @@ class SimCfg(FlowCfg):
         results_str += f"### Simulator: {self.tool.upper()}\n"
 
         # Print the build seed used for clarity.
-        if not self.run_only:
-            results_str += f"### Build seed: {CompileSim.seed}\n"
+        if self.build_seed and not self.run_only:
+            results_str += ("### Build randomization enabled with "
+                            f"--build-seed {self.build_seed}\n")
 
         if not results.table:
             results_str += "No results to display.\n"
