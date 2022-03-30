@@ -39,17 +39,13 @@ The following utilities provide generic helper tasks and functions to perform ac
 * [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
 * [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
 
-<!--### Compile-time configurations
-[list compile time configurations, if any and what are they used for]
-TODO-->
-
 ### Global types & methods
 All common types and methods defined at the package level can be found in
 `edn_env_pkg`. Some of them in use are:
 ```systemverilog
+parameter uint MIN_NUM_ENDPOINTS = 1;
+parameter uint MAX_NUM_ENDPOINTS = 7;
 ```
-<!--TODO [list a few parameters, types & methods; no need to mention all]-->
-```systemverilog
 
 ### TL_agent
 EDN testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}})

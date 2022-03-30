@@ -67,11 +67,7 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
     {MuBi4False, MuBi4True}  :/ auto_req_mode_pct,
     {MuBi4False, MuBi4False} :/ (100 - boot_req_mode_pct - auto_req_mode_pct) };
 
-    if (boot_req_mode == MuBi4True) {
-      num_boot_reqs inside { [min_num_boot_reqs:max_num_boot_reqs] };
-    }
-    else {
-      num_boot_reqs == 0;}}
+    num_boot_reqs inside { [min_num_boot_reqs:max_num_boot_reqs] };}
 
   // Functions
   function void post_randomize();
