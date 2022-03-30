@@ -344,9 +344,13 @@ typedef enum dif_keymgr_versioned_key_dest {
    */
   kDifKeymgrVersionedKeyDestKmac,
   /**
+   * Sideload the generated versioned key to Otbn device.
+   */
+  kDifKeymgrVersionedKeyDestOtbn,
+  /**
    * \internal Last key destination.
    */
-  kDifKeymgrVersionedKeyDestLast = kDifKeymgrVersionedKeyDestKmac,
+  kDifKeymgrVersionedKeyDestLast = kDifKeymgrVersionedKeyDestOtbn,
 } dif_keymgr_versioned_key_dest_t;
 
 /**
