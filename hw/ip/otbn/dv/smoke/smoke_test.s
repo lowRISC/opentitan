@@ -125,6 +125,9 @@ csrrs x23, 0x7d5, x0
 # w1 = mod = 0x78fccc06_2228e9d6_89c9b54f_887cf14e_c79af825_69be586e_9866bb3b_53769ada
 bn.wsrr w1, 0x0 /* MOD */
 
+# Request an RND value with a write to CSR RND_PREFETCH
+csrrw x0, 0x7d8, x0
+
 # sim environment provides a fixed value for RND (in other environment RND isn't
 # fixed so this test will have a different final state)
 # w2 = rnd = 0x99999999_99999999_99999999_99999999_99999999_99999999_99999999_99999999
