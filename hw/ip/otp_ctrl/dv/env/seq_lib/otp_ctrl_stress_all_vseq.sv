@@ -8,28 +8,11 @@
 //            - macro_errs_vseq and check_fail_vseq: require to write back to OTP once fatal
 //              error is triggered, thus does not handle random reset
 //            - partition_walk_vseq: assume OTP initial value is 0
-//            - dai_errs_vseq: write_blank_err will cause otp_init to fail, and requires to wipe
-//              out otp memory.
+//            - init_fail: requires resets in the middle of the sequence
 class otp_ctrl_stress_all_vseq extends otp_ctrl_base_vseq;
   `uvm_object_utils(otp_ctrl_stress_all_vseq)
 
   `uvm_object_new
-
-  virtual task dut_init(string reset_kind = "HARD");
-    if ($urandom_range(0, 1)) cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
-    super.dut_init(reset_kind);
-
-    // Drive dft_en pins to access the test_access memory, this is used for tl_error sequence in
-    // stress_all_with_rand_reset test
-    cfg.otp_ctrl_vif.drive_lc_dft_en(lc_ctrl_pkg::On);
-
-    // Some sequence will disable scb, here we re-enable scb after reset.
-    cfg.en_scb = 1;
-
-    // Once turn on lc_dft_en regiser, will need some time to update the state register
-    // Two clock cycles for lc_async mode, one clock cycle for driving dft_en
-    cfg.clk_rst_vif.wait_clks(3);
-  endtask
 
   task body();
     string seq_names[] = {"otp_ctrl_common_vseq",
@@ -38,7 +21,10 @@ class otp_ctrl_stress_all_vseq extends otp_ctrl_base_vseq;
                           "otp_ctrl_test_access_vseq",
                           "otp_ctrl_background_chks_vseq",
                           "otp_ctrl_parallel_lc_esc_vseq",
-                          "otp_ctrl_parallel_key_req_vseq"};
+                          "otp_ctrl_parallel_lc_req_vseq",
+                          "otp_ctrl_parallel_key_req_vseq",
+                          "otp_ctrl_dai_errs_vseq",
+                          "otp_ctrl_low_freq_read_vseq"};
 
     for (int i = 1; i <= num_trans; i++) begin
       uvm_sequence       seq;
@@ -77,6 +63,11 @@ class otp_ctrl_stress_all_vseq extends otp_ctrl_base_vseq;
       // issued in upper seq. So, wait forever until reset is issued and this vseq is killed by
       // upper seq.
       if (!do_apply_reset) wait(0);
+
+      // This is only valid for stress_all sequence.
+      // For stress_all_with_rand_reset sequence, the logic will be gated at previous line and will
+      // enable scb again at `apply_resets_concurrently` task.
+      cfg.en_scb = 1;
     end
   endtask : body
 
