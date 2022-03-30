@@ -143,10 +143,10 @@ load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 gazelle_dependencies()
 
 # Protobuf
-http_archive(
+git_repository(
     name = "com_google_protobuf",
-    strip_prefix = "protobuf-master",
-    urls = ["https://github.com/protocolbuffers/protobuf/archive/master.zip"],
+    commit = "520c601c99012101c816b6ccc89e8d6fc28fdbb8",
+    remote = "https://github.com/protocolbuffers/protobuf",
 )
 
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
