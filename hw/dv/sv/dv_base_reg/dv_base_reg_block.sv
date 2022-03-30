@@ -378,12 +378,4 @@ class dv_base_reg_block extends uvm_reg_block;
     foreach (subblks[i]) subblks[i].set_default_map_w_subblks_by_name(map_name);
   endfunction
 
-  function uvm_reg_map get_map_by_name(string name);
-    uvm_reg_map maps[$];
-    this.get_maps(maps);
-    foreach (maps[i]) begin
-      if (maps[i].get_name() == name) return maps[i];
-    end
-    return null;
-  endfunction
 endclass
