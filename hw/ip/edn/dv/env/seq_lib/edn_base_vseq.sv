@@ -15,20 +15,21 @@ class edn_base_vseq extends cip_base_vseq #(
   bit [csrng_pkg::GENBITS_BUS_WIDTH - 1:0]      genbits;
   bit [entropy_src_pkg::FIPS_BUS_WIDTH - 1:0]   fips;
   bit [3:0]                                     clen, additional_data, flags;
+  bit [18:0]                                    glen;
   bit [csrng_pkg::CSRNG_CMD_WIDTH - 1:0]        cmd_data;
 
   virtual edn_cov_if                            cov_vif;
 
   virtual task body();
-    if (!uvm_config_db#(virtual edn_cov_if)::get(null, "*.env" , "edn_cov_if", cov_vif)) begin
-      `uvm_fatal(`gfn, $sformatf("Failed to get edn_cov_if from uvm_config_db"))
-    end
-
     cov_vif.cg_cfg_sample(.cfg(cfg));
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
+
+    if (!uvm_config_db#(virtual edn_cov_if)::get(null, "*.env" , "edn_cov_if", cov_vif)) begin
+      `uvm_fatal(`gfn, $sformatf("Failed to get edn_cov_if from uvm_config_db"))
+    end
 
     if (do_edn_init) begin
       // Initialize DUT and start device sequence
@@ -49,7 +50,8 @@ class edn_base_vseq extends cip_base_vseq #(
   virtual task edn_init(string reset_kind = "HARD");
     if (cfg.boot_req_mode == MuBi4True) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
-      wr_cmd(.cmd_type("boot_ins"), .acmd(csrng_pkg::INS), .clen(0), .flags(flags), .glen(0));
+      `DV_CHECK_STD_RANDOMIZE_FATAL(glen)
+      wr_cmd(.cmd_type("boot_ins"), .acmd(csrng_pkg::INS), .clen(0), .flags(flags), .glen(glen));
       `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
       wr_cmd(.cmd_type("boot_gen"), .acmd(csrng_pkg::GEN), .clen(0), .flags(flags),
              .glen(cfg.num_boot_reqs));
@@ -63,7 +65,7 @@ class edn_base_vseq extends cip_base_vseq #(
 
     if (cfg.auto_req_mode == MuBi4True) begin
       // Verify CMD_FIFO_RST bit
-      for (int i = 0; i < 12; i++) begin
+      for (int i = 0; i < 13; i++) begin
         `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
         csr_wr(.ptr(ral.generate_cmd), .value(cmd_data));
       end
@@ -73,16 +75,20 @@ class edn_base_vseq extends cip_base_vseq #(
       ral.ctrl.cmd_fifo_rst.set(MuBi4False);
       csr_update(.csr(ral.ctrl));
 
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen inside { [0:12] };)
-      `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
-      wr_cmd(.cmd_type("reseed"), .acmd(csrng_pkg::RES), .clen(clen), .flags(flags), .glen(0));
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(flags, flags dist { [0:1] :/ 50, [2:$] :/ 50 };)
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(glen, glen dist { 0 :/ 20, [1:$] :/ 80 };)
+      cov_vif.cg_cs_cmds_sample(.clen(clen), .flags(flags), .glen(glen));
+      wr_cmd(.cmd_type("reseed"), .acmd(csrng_pkg::RES), .clen(clen), .flags(flags), .glen(glen));
       for (int i = 0; i < clen; i++) begin
         `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
         wr_cmd(.cmd_type("reseed"), .cmd_data(cmd_data));
       end
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen inside { [0:12] };)
-      `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
-      wr_cmd(.cmd_type("generate"), .acmd(csrng_pkg::GEN), .clen(clen), .flags(flags), .glen(1));
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(flags, flags dist { [0:1] :/ 50, [2:$] :/ 50 };)
+      glen = 1;
+      cov_vif.cg_cs_cmds_sample(.clen(clen), .flags(flags), .glen(glen));
+      wr_cmd(.cmd_type("generate"), .acmd(csrng_pkg::GEN), .clen(clen), .flags(flags), .glen(glen));
       for (int i = 0; i < clen; i++) begin
         `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
         wr_cmd(.cmd_type("generate"), .cmd_data(cmd_data));

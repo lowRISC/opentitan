@@ -75,8 +75,11 @@ class edn_genbits_vseq extends edn_base_vseq;
 
     if (cfg.boot_req_mode != MuBi4True) begin
       // Send instantiate cmd
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen inside { [0:12] };)
-      wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::INS), .clen(clen), .flags(4'hF), .glen(0));
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(flags, flags dist { [0:1] :/ 50, [2:$] :/ 50 };)
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(glen, glen dist { 0 :/ 20, [1:$] :/ 80 };)
+      cov_vif.cg_cs_cmds_sample(.clen(clen), .flags(flags), .glen(glen));
+      wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::INS), .clen(clen), .flags(flags), .glen(glen));
       for (int i = 0; i < clen; i++) begin
         `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
         wr_cmd(.cmd_type("sw"), .cmd_data(cmd_data));
@@ -85,7 +88,15 @@ class edn_genbits_vseq extends edn_base_vseq;
 
     if (cfg.auto_req_mode != MuBi4True) begin
       // Send generate cmd
-      wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::GEN), .clen(0), .flags(1), .glen(num_cs_reqs));
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(flags, flags dist { [0:1] :/ 50, [2:$] :/ 50 };)
+      glen = num_cs_reqs;
+      cov_vif.cg_cs_cmds_sample(.clen(clen), .flags(flags), .glen(glen));
+      wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::GEN), .clen(clen), .flags(flags), .glen(glen));
+      for (int i = 0; i < clen; i++) begin
+        `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
+        wr_cmd(.cmd_type("sw"), .cmd_data(cmd_data));
+      end
     end
 
     // Disable auto_req_mode after 2 reseeds
@@ -99,8 +110,16 @@ class edn_genbits_vseq extends edn_base_vseq;
       // End test gracefully
       if (num_cs_reqs > cfg.m_csrng_agent_cfg.generate_cnt) begin
         // Send generate cmd
-        wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::GEN), .clen(0), .flags(1),
-               .glen(num_cs_reqs - cfg.m_csrng_agent_cfg.generate_cnt));
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(flags, flags dist { [0:1] :/ 50, [2:$] :/ 50 };)
+        glen = num_cs_reqs - cfg.m_csrng_agent_cfg.generate_cnt;
+        cov_vif.cg_cs_cmds_sample(.clen(clen), .flags(flags), .glen(glen));
+        wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::GEN), .clen(clen), .flags(flags),
+               .glen(glen));
+        for (int i = 0; i < clen; i++) begin
+          `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
+          wr_cmd(.cmd_type("sw"), .cmd_data(cmd_data));
+        end
       end
       else if (num_cs_reqs < cfg.m_csrng_agent_cfg.generate_cnt) begin
         m_endpoint_pull_seq[endpoint_q[extra_requester]].num_trans = 4 *
