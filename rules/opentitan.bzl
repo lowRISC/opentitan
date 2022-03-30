@@ -553,7 +553,6 @@ def opentitan_rom_binary(
         targets.extend(opentitan_binary(
             name = devname,
             deps = deps + dev_deps,
-            extract_sw_logs_db = device == "sim_dv",
             **kwargs
         ))
         elf_name = "{}_{}".format(devname, "elf")
@@ -867,7 +866,7 @@ def _unique_deps(*deplists):
 
 def opentitan_functest(
         name,
-        targets = ["dv", "verilator", "cw310"],
+        targets = ["verilator", "cw310"],
         args = [],
         data = [],
         ottf = _OTTF_DEPS,
@@ -956,7 +955,6 @@ def opentitan_functest(
         ddata = _format_list("data", data, dv)
 
         # SW logs database files for backdoor message logging in sim.
-        rom_sw_logs_db = rom.replace("_scr_vmem", "_logs_db")
         flash_sw_logs_db = "{}_prog_sim_dv_logs_db".format(name)
 
         native.sh_test(
@@ -971,7 +969,6 @@ def opentitan_functest(
                 rom,
                 otp,
                 chip_sim_config,
-                rom_sw_logs_db,
                 flash_sw_logs_db,
                 "//util/dvsim",
                 "//hw:all_files",
