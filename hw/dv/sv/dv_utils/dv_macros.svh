@@ -534,3 +534,10 @@
     100     :/ 1  \
   };
 `endif
+
+// Enables build-time randomization of fixed design constants.
+//
+// This is meant to be overridden externally by passing `+define+BUILD_SEED=<value>`.
+`ifndef BUILD_SEED
+  `define BUILD_SEED 1
+`endif

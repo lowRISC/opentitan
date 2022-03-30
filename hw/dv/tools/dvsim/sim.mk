@@ -2,10 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-export SHELL	:= /bin/bash
+export SHELL  := /bin/bash
 .DEFAULT_GOAL := all
 
-LOCK_SW_BUILD_DIR  ?= flock --timeout 3600 ${sw_build_dir} --command
+LOCK_ROOT_DIR     ?= flock --timeout 3600 ${proj_root} --command
+LOCK_SW_BUILD_DIR ?= flock --timeout 3600 ${sw_build_dir} --command
 
 all: build run
 
@@ -18,7 +19,11 @@ pre_build:
 	@echo "[make]: pre_build"
 	mkdir -p ${build_dir}
 ifneq (${pre_build_cmds},)
-	cd ${build_dir} && ${pre_build_cmds}
+	# pre_build_cmds are likely changing the in-tree sources. We hence use FLOCK
+        # utility to prevent multiple builds that may be running in parallel from
+        # stepping on each other. TODO: Enforce the list of pre_build_cmds is
+        # identical across all build modes.
+	${LOCK_ROOT_DIR} "cd ${build_dir} && ${pre_build_cmds}"
 endif
 
 gen_sv_flist: pre_build
