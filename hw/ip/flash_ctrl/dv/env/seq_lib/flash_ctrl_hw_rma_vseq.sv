@@ -89,8 +89,10 @@ class flash_ctrl_hw_rma_vseq extends flash_ctrl_base_vseq;
     // Delay
     cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
 
-    // Iterate
-    num_trans = 2;  // Fixed Number of Iterations as Test time is VERY LONG
+    // Iterate fixed Number of iterations as test time is VERY LONG.
+    // Since this test is getting unbearably long in the closed-source, when running in the
+    //  closed-source, this test will do only one iteration.
+    num_trans = `PRIM_DEFAULT_IMPL==prim_pkg::ImplGeneric ? 2 : 1;
     for (int i=0; i<num_trans; i++) begin
 
       `uvm_info(`gfn, $sformatf("Iteration : %0d", i+1), UVM_LOW)
