@@ -20,6 +20,7 @@ filesets:
       - pulp_riscv_dbg/src/dmi_cdc.sv
       - pulp_riscv_dbg/src/dmi_jtag.sv
       - pulp_riscv_dbg/src/dmi_jtag_tap.sv
+      - pulp_riscv_dbg/src/dm_top.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
