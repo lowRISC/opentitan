@@ -41,4 +41,11 @@ class clkmgr_common_vseq extends clkmgr_base_vseq;
     end
   endfunction
 
+  task initialize_on_start();
+    super.initialize_on_start();
+    // update default idle to false for
+    // csr test.
+    cfg.clkmgr_vif.idle_i = {NUM_TRANS{MuBi4False}};
+  endtask // initialize_on_start
+
 endclass
