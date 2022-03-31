@@ -19,4 +19,15 @@ void keymgr_testutils_advance_state(const dif_keymgr_t *keymgr,
 void keymgr_testutils_check_state(const dif_keymgr_t *keymgr,
                                   const dif_keymgr_state_t exp_state);
 
+/**
+ * Issues a keymgr identity generation and wait for it to complete
+ */
+void keymgr_testutils_generate_identity(const dif_keymgr_t *keymgr);
+
+/**
+ * Issues a keymgr HW/SW versioned key generation and wait for it to complete
+ */
+void keymgr_testutils_generate_versioned_key(
+    const dif_keymgr_t *keymgr, const dif_keymgr_versioned_key_params_t params);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_KEYMGR_TESTUTILS_H_

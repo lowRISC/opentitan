@@ -45,32 +45,50 @@ enum {
 /**
  * Software binding value for advancing to creator state
  */
-const struct dif_keymgr_state_params kCreatorParams = {
+static const dif_keymgr_state_params_t kCreatorParams = {
     .binding_value = {0xdc96c23d, 0xaf36e268, 0xcb68ff71, 0xe92f76e2,
                       0xb8a8379d, 0x426dc745, 0x19f5cff7, 0x4ec9c6d6},
+    .max_key_version = 0x11,
 };
 
 /**
  * Software binding value for advancing to owner int state
  */
-const struct dif_keymgr_state_params kOwnerIntParams = {
+static const dif_keymgr_state_params_t kOwnerIntParams = {
     .binding_value = {0xe4987b39, 0x3f83d390, 0xc2f3bbaf, 0x3195dbfa,
                       0x23fb480c, 0xb012ae5e, 0xf1394d28, 0x1940ceeb},
+    .max_key_version = 0xaa,
 };
 
 /**
  * Key manager Creator Secret stored in info flash page.
  */
-const uint32_t kCreatorSecret[kSecretWordSize] = {
+static const uint32_t kCreatorSecret[kSecretWordSize] = {
     0x4e919d54, 0x322288d8, 0x4bd127c7, 0x9f89bc56,
     0xb4fb0fdf, 0x1ca1567b, 0x13a0e876, 0xa6521d8f};
 
 /**
  * Key manager Owner Secret stored in info flash page.
  */
-const uint32_t kOwnerSecret[kSecretWordSize] = {
+static const uint32_t kOwnerSecret[kSecretWordSize] = {
     0xa6521d8f, 0x13a0e876, 0x1ca1567b, 0xb4fb0fdf,
     0x9f89bc56, 0x4bd127c7, 0x322288d8, 0x4e919d54,
+};
+
+static const dif_keymgr_versioned_key_params_t kKeyVersionedParams = {
+    .dest = kDifKeymgrVersionedKeyDestSw,
+    .salt =
+        {
+            0xb6521d8f,
+            0x13a0e876,
+            0x1ca1567b,
+            0xb4fb0fdf,
+            0x9f89bc56,
+            0x4bd127c7,
+            0x322288d8,
+            0xde919d54,
+        },
+    .version = 0xaa,
 };
 
 /**
@@ -176,12 +194,32 @@ bool test_main(void) {
     keymgr_testutils_check_state(&keymgr, kDifKeymgrStateCreatorRootKey);
     LOG_INFO("Keymgr entered CreatorRootKey State");
 
+    keymgr_testutils_generate_identity(&keymgr);
+    LOG_INFO("Keymgr generated identity at CreatorRootKey State");
+
     keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams);
     keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerIntermediateKey);
     LOG_INFO("Keymgr entered OwnerIntKey State");
 
-    CHECK_DIF_OK(dif_keymgr_generate_identity_seed(&keymgr));
-    LOG_INFO("Keymgr generated identity");
+    keymgr_testutils_generate_identity(&keymgr);
+    LOG_INFO("Keymgr generated identity at OwnerIntKey State");
+
+    keymgr_testutils_generate_versioned_key(&keymgr, kKeyVersionedParams);
+    LOG_INFO("Keymgr generated SW output at OwnerIntKey State");
+
+    // Generate sideload keys for 3 HW interfaces - Kmac, Aes, Otbn.
+    dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
+    sideload_params.dest = kDifKeymgrVersionedKeyDestKmac;
+    keymgr_testutils_generate_versioned_key(&keymgr, sideload_params);
+    LOG_INFO("Keymgr generated HW output for Kmac at OwnerIntKey State");
+
+    sideload_params.dest = kDifKeymgrVersionedKeyDestAes;
+    keymgr_testutils_generate_versioned_key(&keymgr, sideload_params);
+    LOG_INFO("Keymgr generated HW output for Aes at OwnerIntKey State");
+
+    sideload_params.dest = kDifKeymgrVersionedKeyDestOtbn;
+    keymgr_testutils_generate_versioned_key(&keymgr, sideload_params);
+    LOG_INFO("Keymgr generated HW output for Otbn at OwnerIntKey State");
 
     return true;
   } else {
