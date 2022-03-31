@@ -1330,7 +1330,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.recov_alert_sts.threshold_scope_field_alert.de = threshold_scope_pfa;
   assign hw2reg.recov_alert_sts.threshold_scope_field_alert.d  = threshold_scope_pfa;
 
-  assign es_route_to_sw = es_route_pfe;
+  assign es_route_to_sw = es_route_pfe && es_data_reg_rd_en;
   assign es_bypass_to_sw = es_type_pfe;
   assign threshold_scope = threshold_scope_pfe;
 
