@@ -4,11 +4,11 @@
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
+load("//rules:linker.bzl", "ld_library")
 
 package(default_visibility = ["//visibility:public"])
 
 exports_files([
-    "static_critical.ld",
     "mock_csr.h",
     "mock_csr.cc",
     "mock_csr_test.cc",
@@ -48,4 +48,9 @@ cc_test(
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
+)
+
+ld_library(
+    name = "static_critical_sections",
+    fragments = ["static_critical.ld"],
 )

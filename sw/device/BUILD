@@ -2,9 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:linker.bzl", "ld_library")
+
 package(default_visibility = ["//visibility:public"])
 
-cc_library(
+ld_library(
     name = "info_sections",
-    deps = ["info_sections.ld"],
+    fragments = ["info_sections.ld"],
 )
