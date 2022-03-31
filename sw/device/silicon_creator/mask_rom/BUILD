@@ -2,7 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU", "cw310_params", "opentitan_functest", "opentitan_rom_binary", "verilator_params")
+load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_rom_binary")
+load(
+    "//rules:opentitan_test.bzl",
+    "cw310_params",
+    "opentitan_functest",
+    "verilator_params",
+)
 
 package(default_visibility = ["//visibility:public"])
 
