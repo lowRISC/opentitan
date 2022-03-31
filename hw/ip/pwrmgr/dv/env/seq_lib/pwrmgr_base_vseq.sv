@@ -180,13 +180,18 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
       begin
         cfg.esc_clk_rst_vif.apply_reset();
       end
+      begin
+        cfg.aon_clk_rst_vif.apply_reset();
+      end
     join
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
     cfg.slow_clk_rst_vif.drive_rst_pin(0);
     cfg.esc_clk_rst_vif.drive_rst_pin(0);
+    cfg.aon_clk_rst_vif.drive_rst_pin(0);
     super.apply_resets_concurrently(cfg.slow_clk_rst_vif.clk_period_ps);
+    cfg.aon_clk_rst_vif.drive_rst_pin(1);
     cfg.esc_clk_rst_vif.drive_rst_pin(1);
     cfg.slow_clk_rst_vif.drive_rst_pin(1);
   endtask
@@ -203,6 +208,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
               cfg.slow_clk_rst_vif.clk_period_ps
               ), UVM_MEDIUM)
     cfg.esc_clk_rst_vif.set_freq_mhz(cfg.clk_rst_vif.clk_freq_mhz);
+    cfg.aon_clk_rst_vif.set_freq_mhz(cfg.clk_rst_vif.clk_freq_mhz);
     control_assertions(0);
   endtask
 

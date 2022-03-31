@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
+      - lowrisc:dv:pwrmgr_clk_ctrl_agent
     files:
       - pwrmgr_env_pkg.sv
       - pwrmgr_env_cfg.sv: {is_include_file: true}
