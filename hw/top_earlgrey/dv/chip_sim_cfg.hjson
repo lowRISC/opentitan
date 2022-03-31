@@ -346,6 +346,13 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_flash_rma_unlocked
+      uvm_test_seq: chip_sw_flash_rma_unlocked_vseq
+      sw_images: ["sw/device/tests/flash_rma_unlocked_test:0"]
+      en_run_modes: ["sw_test_mode_common"]
+      run_opts: ["+sw_test_timeout_ns=200000000"]
+    }
+    {
       name: chip_sw_lc_ctrl_otp_hw_cfg
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/lc_ctrl_otp_hw_cfg_test:1"]

@@ -192,6 +192,34 @@ sw_tests += {
   }
 }
 
+flash_rma_unlocked_test_lib = declare_dependency(
+  link_with: static_library(
+    'flash_rma_unlocked_test_lib',
+    sources: [
+      'flash_rma_unlocked_test.c',
+    ],
+    dependencies: [
+      sw_lib_dif_flash_ctrl,
+      sw_lib_dif_lc_ctrl,
+      sw_lib_dif_otp_ctrl,
+      sw_lib_dif_uart,
+      sw_lib_mmio,
+      sw_lib_pinmux,
+      sw_lib_runtime_hart,
+      sw_lib_runtime_print,
+      sw_lib_runtime_log,
+      sw_lib_testing_flash_ctrl_testutils,
+      sw_lib_testing_test_status,
+    ],
+  ),
+)
+sw_tests += {
+  'flash_rma_unlocked_test': {
+    'library': flash_rma_unlocked_test_lib,
+    'run_at_rom_stage': true,
+  }
+}
+
 rom_ctrl_integrity_check_test_lib = declare_dependency(
   link_with: static_library(
     'rom_ctrl_integrity_check_test_lib',
