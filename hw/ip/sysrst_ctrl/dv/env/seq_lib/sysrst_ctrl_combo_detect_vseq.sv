@@ -112,6 +112,9 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
     bit [3:0] rst_act_set;
     bit triggered[4];
     uint16_t [3:0] set_duration;
+    uint16_t [3:0] get_duration;
+    uvm_reg_data_t get_action;
+    bit[4:0] get_trigger_combo[4];
 
     // Enable interrupt
     ral.intr_enable.set(1);
@@ -151,8 +154,12 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
       cfg.vif.ac_present = 1;
 
       `uvm_info(`gfn, $sformatf("Value of cycles:%0h", cycles), UVM_LOW)
+      foreach (ral.com_det_ctl[i]) csr_rd(ral.com_det_ctl[i], get_duration[i]);
+      foreach (ral.com_out_ctl[i]) csr_rd(ral.com_out_ctl[i], get_action[i]);
+      foreach (ral.com_sel_ctl[i]) csr_rd(ral.com_sel_ctl[i], get_trigger_combo[i]);
+
       for (int i = 0; i <= 3; i++) begin
-        if (cycles < (set_duration[i] + set_key_timer) || !triggered[i]) begin
+        if (cycles < (get_duration[i] + set_key_timer) || !triggered[i]) begin
           // Check there is no interrupt if we wait for
           // cycles < debounce time + detect time
           cfg.clk_aon_rst_vif.wait_clks(1);
@@ -165,10 +172,10 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
           // Check if the interrupt has raised
           // NOTE: The interrupt will only raise if the interrupt
           // combo action is set
-          int_act_set[i] = get_field_val(ral.com_out_ctl[i].interrupt, set_action[i]);
-          bat_act_set[i] = get_field_val(ral.com_out_ctl[i].bat_disable, set_action[i]);
-          ec_act_set[i] = get_field_val(ral.com_out_ctl[i].ec_rst, set_action[i]);
-          rst_act_set[i] = get_field_val(ral.com_out_ctl[i].rst_req, set_action[i]);
+          int_act_set[i] = get_field_val(ral.com_out_ctl[i].interrupt, get_action[i]);
+          bat_act_set[i] = get_field_val(ral.com_out_ctl[i].bat_disable, get_action[i]);
+          ec_act_set[i] = get_field_val(ral.com_out_ctl[i].ec_rst, get_action[i]);
+          rst_act_set[i] = get_field_val(ral.com_out_ctl[i].rst_req, get_action[i]);
 
           cfg.clk_aon_rst_vif.wait_clks(1);
           if (int_act_set[i]) begin

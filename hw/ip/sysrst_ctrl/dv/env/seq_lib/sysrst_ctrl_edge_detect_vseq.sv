@@ -111,6 +111,9 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
 
    task body();
      bit exp_intr_state;
+     uint16_t get_timer_val;
+     uvm_reg_data_t get_input;
+
      `uvm_info(`gfn, "Starting the body from edge_detect_vseq", UVM_LOW)
 
      // Select the inputs and their transition
@@ -122,31 +125,33 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
      // It takes 2-3 clock cycles to sync register values
      cfg.clk_aon_rst_vif.wait_clks(3);
 
+     csr_rd(ral.key_intr_ctl, get_input);
      // start monitor edge
      fork begin  // isolation fork
        for (int i = 0; i < NumInputs; i++) begin
          automatic int local_i = i;
-         edge_detect_h2l[i].en_h2l = set_input[i];
-         edge_detect_l2h[i].en_l2h = set_input[NumInputs + i + 1];
+         edge_detect_h2l[i].en_h2l = get_input[i];
+         edge_detect_l2h[i].en_l2h = get_input[NumInputs + i + 1];
          fork
            monitor_input_edge(sysrst_input_idx_e'(local_i), edge_detect_h2l[local_i],
                   edge_detect_l2h[local_i]);
          join_none
        end
 
+       csr_rd(ral.key_intr_debounce_ctl, get_timer_val);
        for (int j = 0; j < num_trans; j++) begin
          int wait_cycles;
          cfg.clk_aon_rst_vif.wait_clks(1);
          cfg.vif.randomize_input();
          cfg.clk_aon_rst_vif.wait_clks(1);
          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wait_cycles,
-                                          wait_cycles inside {[1:set_timer-2],
-                                          [set_timer+5:set_timer*2]};)
+                                          wait_cycles inside {[1:get_timer_val-2],
+                                          [get_timer_val+5:get_timer_val*2]};)
          cfg.clk_aon_rst_vif.wait_clks(wait_cycles);
          cfg.vif.randomize_input();
 
          // make sure the previous transition lasts long enough, so that everything is settled and we can check them
-         cfg.clk_aon_rst_vif.wait_clks(set_timer+5);
+         cfg.clk_aon_rst_vif.wait_clks(get_timer_val+5);
 
          cfg.clk_aon_rst_vif.wait_clks(5);
 
