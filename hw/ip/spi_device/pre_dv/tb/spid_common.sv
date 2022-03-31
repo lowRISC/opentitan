@@ -613,9 +613,9 @@ package spid_common;
 
     sif.sd_in[3:0] = 4'h z;
 
-    loop = (mode == IoSingle) ? 7 :
-           (mode == IoDual)   ? 3 :
-           (mode == IoQuad)   ? 1 : 7;
+    loop = (mode == IoSingle) ? 8 :
+           (mode == IoDual)   ? 4 :
+           (mode == IoQuad)   ? 2 : 8;
     repeat(loop) @(negedge sif.clk);
   endtask : spi_highz
 
@@ -815,5 +815,96 @@ package spid_common;
     end
 
   endtask : spiflash_program
+
+  task automatic spiflash_readsfdp(
+    virtual spi_if.tb  sif,
+    input spi_data_t   opcode,
+    input logic [23:0] addr,
+    input int          size, // #bytes
+    input spi_data_t   payload [$]
+  );
+    automatic spi_fifo_t send_data [$];
+    automatic spi_data_t rcv_data [$];
+
+    // opcode
+    send_data.push_back('{data: opcode, dir: DirIn, mode: IoSingle});
+    // address
+    for (int i = 2 ; i >= 0 ; i--) begin
+      send_data.push_back('{data: addr[8*i+:8], dir: DirNone, mode: IoNone});
+    end
+
+    // dummy
+    send_data.push_back('{data: 'z, dir: DirZ, mode: IoNone});
+
+    // Receive data
+    repeat(size) begin
+      send_data.push_back('{data: '0, dir: DirOut, mode: IoSingle});
+    end
+
+    spi_transaction(sif, send_data, rcv_data);
+
+    assert(rcv_data.size() == size);
+
+    repeat (size) begin
+      payload.push_back(rcv_data.pop_front());
+    end
+
+    $display("Read SFDP [%x + %d]", addr, size);
+
+    for (int i = 0 ; i < size ; i++) begin
+      $display("[%x]: %x", addr+24'(i), payload[i]);
+    end
+
+  endtask : spiflash_readsfdp
+
+
+  // SRAM interface
+  task automatic sram_readword(
+    const ref logic clk,
+
+    ref sram_l2m_t       l2m,
+    const ref logic      gnt,
+    const ref sram_m2l_t m2l,
+
+    input  logic [SramAw-1:0] addr,
+    output logic [SramDw-1:0] rdata
+  );
+    l2m.req   = 1'b 1;
+    l2m.addr  = addr;
+    l2m.we    = 1'b 0;
+    l2m.wdata = '0;
+    l2m.wstrb = '0;
+
+    @(posedge clk iff gnt == 1'b 1);
+    l2m.req   = 1'b 0;
+    // Check if rvalid?
+    while (m2l.rvalid == 1'b 0) begin
+      @(posedge clk);
+    end
+    rdata = m2l.rdata;
+    assert(m2l.rerror == '0);
+
+  endtask : sram_readword
+
+  task automatic sram_writeword(
+    const ref logic clk,
+
+    ref sram_l2m_t       l2m,
+    const ref logic      gnt,
+    const ref sram_m2l_t m2l,
+
+    input logic [SramAw-1:0] addr,
+    input logic [SramDw-1:0] wdata
+  );
+    l2m.req   = 1'b 1;
+    l2m.addr  = addr;
+    l2m.we    = 1'b 1;
+    l2m.wdata = wdata;
+    l2m.wstrb = '1;
+
+    @(posedge clk iff gnt == 1'b 1);
+    l2m.req   = 1'b 0;
+
+  endtask : sram_writeword
 
 endpackage : spid_common
