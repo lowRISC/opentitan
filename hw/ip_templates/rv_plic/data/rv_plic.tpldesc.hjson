@@ -21,5 +21,11 @@
       "type": "int"
       "default": 7
     },
+    {
+      "name": "module_instance_name",
+      "desc": instance name in case there are multiple rv_plic instances",
+      "type": "string",
+      "default": "rv_plic"
+    },
   ],
 }

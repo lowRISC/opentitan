@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 {
-    name:               "rv_plic",
+    name:               "${module_instance_name}",
     design_spec:        "../doc",
     dv_doc:             "../doc/dv",
     hw_checklist:       "../doc/checklist",

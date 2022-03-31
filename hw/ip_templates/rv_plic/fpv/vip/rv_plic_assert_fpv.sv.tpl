@@ -1,11 +1,11 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-// Testbench module for rv_plic. Intended to use with a formal tool.
+// Testbench module for ${module_instance_name}. Intended to use with a formal tool.
 
 `include "prim_assert.sv"
 
-module rv_plic_assert_fpv #(parameter int NumSrc = 1,
+module ${module_instance_name}_assert_fpv #(parameter int NumSrc = 1,
                             parameter int NumTarget = 1,
                             parameter int NumAlerts = 1,
                             parameter int PRIOW = $clog2(7+1)
@@ -101,4 +101,4 @@ module rv_plic_assert_fpv #(parameter int NumSrc = 1,
   // but smaller than the threshold
   `ASSERT(IdChangeWithIrq_A, !$stable(irq_id_o[tgt_sel]) && irq_id_o[tgt_sel] != 0 |->
           irq_o[tgt_sel] || ((irq_id_o[tgt_sel]) == $past(i_high_prio) && !$past(irq)))
-endmodule : rv_plic_assert_fpv
+endmodule : ${module_instance_name}_assert_fpv

@@ -123,7 +123,12 @@ class IpTemplateRendererBase:
         # For example, a core name `rv_plic_component` will result in an
         # instance name 'my_instance_component' (instead of
         # 'my_instance_rv_plic_component').
-        if template_core_name.startswith(self.ip_template.name):
+        if "module_instance_name" in self.ip_config.param_values:
+            assert template_core_name.startswith(
+                self.ip_config.param_values["module_instance_name"])
+            idx = len(self.ip_config.param_values["module_instance_name"])
+            template_core_name = template_core_name[idx:]
+        elif template_core_name.startswith(self.ip_template.name):
             template_core_name = template_core_name[len(self.ip_template.name):]
 
         instance_core_name = self.ip_config.instance_name + template_core_name
@@ -180,7 +185,11 @@ class IpTemplateRendererBase:
     def _filename_without_tpl_suffix(self, filepath: Path) -> str:
         """ Get the name of the file without a '.tpl' suffix. """
         assert filepath.suffix == '.tpl'
-        return filepath.stem
+        filename = filepath.stem
+        if "module_instance_name" in self.ip_config.param_values:
+            filename = self.ip_config.param_values[
+                "module_instance_name"] + filename[len(self.ip_template.name):]
+        return filename
 
 
 class IpDescriptionOnlyRenderer(IpTemplateRendererBase):
@@ -263,6 +272,11 @@ class IpBlockRenderer(IpTemplateRendererBase):
             # Generate register interface through reggen.
             hjson_path = (output_dir_staging / 'data' /
                           (self.ip_template.name + '.hjson'))
+            if "module_instance_name" in self.ip_config.param_values:
+                hjson_path = (
+                    output_dir_staging / 'data' /
+                    (self.ip_config.param_values["module_instance_name"] +
+                     '.hjson'))
             if not hjson_path.exists():
                 raise TemplateRenderError(
                     "Invalid template: The IP description file "

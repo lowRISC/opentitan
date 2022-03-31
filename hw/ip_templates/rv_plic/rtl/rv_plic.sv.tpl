@@ -14,7 +14,7 @@
 // Verilog parameter
 //   MAX_PRIO: Maximum value of interrupt priority
 
-module rv_plic import rv_plic_reg_pkg::*; #(
+module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn  = {NumAlerts{1'b1}},
   // OpenTitan IP standardizes on level triggered interrupts,
   // hence LevelEdgeTrig is set to all-zeroes by default.
@@ -46,8 +46,8 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   output logic [NumTarget-1:0] msip_o
 );
 
-  rv_plic_reg2hw_t reg2hw;
-  rv_plic_hw2reg_t hw2reg;
+  ${module_instance_name}_reg2hw_t reg2hw;
+  ${module_instance_name}_hw2reg_t hw2reg;
 
   localparam int MAX_PRIO    = ${prio};
   localparam int PRIOW = $clog2(MAX_PRIO+1);
@@ -70,7 +70,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
 
   logic [PRIOW-1:0] threshold [NumTarget];
 
-  // Glue logic between rv_plic_reg_top and others
+  // Glue logic between ${module_instance_name}_reg_top and others
   assign cc_id = irq_id_o;
 
   always_comb begin
@@ -157,7 +157,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
     .q_o(intr_src_synced)
   );
 
-  rv_plic_gateway #(
+  ${module_instance_name}_gateway #(
     .N_SOURCE   (NumSrc)
   ) u_gateway (
     .clk_i,
@@ -176,7 +176,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   // Target interrupt notification //
   ///////////////////////////////////
   for (genvar i = 0 ; i < NumTarget ; i++) begin : gen_target
-    rv_plic_target #(
+    ${module_instance_name}_target #(
       .N_SOURCE    (NumSrc),
       .MAX_PRIO    (MAX_PRIO)
     ) u_target (
@@ -227,7 +227,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   ////////////////////////
   //  Limitation of register tool prevents the module from having flexibility to parameters
   //  So, signals are manually tied at the top.
-  rv_plic_reg_top u_reg (
+  ${module_instance_name}_reg_top u_reg (
     .clk_i,
     .rst_ni,
 

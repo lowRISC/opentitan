@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:rv_plic_component:0.1"
+name: "lowrisc:ip:${module_instance_name}_component:0.1"
 description: "RISC-V Platform Interrupt Controller (PLIC)"
 
 filesets:
@@ -13,8 +13,8 @@ filesets:
       - lowrisc:prim:max_tree
       - lowrisc:prim:flop_2sync
     files:
-      - rtl/rv_plic_gateway.sv
-      - rtl/rv_plic_target.sv
+      - rtl/${module_instance_name}_gateway.sv
+      - rtl/${module_instance_name}_target.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
@@ -23,7 +23,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      - lint/rv_plic.vlt
+      - lint/${module_instance_name}.vlt
     file_type: vlt
 
   files_ascentlint_waiver:
@@ -32,7 +32,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      - lint/rv_plic.waiver
+      - lint/${module_instance_name}.waiver
     file_type: waiver
 
   files_veriblelint_waiver:
