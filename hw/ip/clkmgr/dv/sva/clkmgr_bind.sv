@@ -100,8 +100,8 @@ module clkmgr_bind;
   bind clkmgr clkmgr_extclk_sva_if clkmgr_extclk_sva_if (
     .clk_i,
     .rst_ni,
-    .extclk_ctrl_sel(mubi4_t'(reg2hw.extclk_ctrl.sel.q)),
-    .extclk_ctrl_hi_speed_sel(mubi4_t'(reg2hw.extclk_ctrl.hi_speed_sel.q)),
+    .extclk_ctrl_sel,
+    .extclk_ctrl_hi_speed_sel,
     .lc_hw_debug_en_i,
     .lc_clk_byp_req_i,
     .io_clk_byp_req_o,

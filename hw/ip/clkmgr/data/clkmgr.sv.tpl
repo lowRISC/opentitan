@@ -220,6 +220,12 @@ from topgen.lib import Name
   // Clock bypass request
   ////////////////////////////////////////////////////
 
+  mubi4_t extclk_ctrl_sel;
+  mubi4_t extclk_ctrl_hi_speed_sel;
+
+  assign extclk_ctrl_sel = mubi4_t'(reg2hw.extclk_ctrl.sel.q);
+  assign extclk_ctrl_hi_speed_sel = mubi4_t'(reg2hw.extclk_ctrl.hi_speed_sel.q);
+
   clkmgr_byp #(
     .NumDivClks(${len(clocks.derived_srcs)})
   ) u_clkmgr_byp (
@@ -228,8 +234,8 @@ from topgen.lib import Name
     .en_i(lc_hw_debug_en_i),
     .lc_clk_byp_req_i,
     .lc_clk_byp_ack_o,
-    .byp_req_i(mubi4_t'(reg2hw.extclk_ctrl.sel.q)),
-    .hi_speed_sel_i(mubi4_t'(reg2hw.extclk_ctrl.hi_speed_sel.q)),
+    .byp_req_i(extclk_ctrl_sel),
+    .hi_speed_sel_i(extclk_ctrl_hi_speed_sel),
     .all_clk_byp_req_o,
     .all_clk_byp_ack_i,
     .io_clk_byp_req_o,
