@@ -41,6 +41,8 @@ class sysrst_ctrl_auto_blk_key_output_vseq extends sysrst_ctrl_base_vseq;
 
     bit enable_key0_out_sel, enable_key1_out_sel, enable_key2_out_sel;
     bit override_key0_out_value, override_key1_out_value, override_key2_out_value;
+    uvm_reg_data_t rdata;
+    uint16_t get_timer_value;
 
     `uvm_info(`gfn, "Starting the body from auto_blk_key_output_vseq", UVM_LOW)
 
@@ -68,15 +70,18 @@ class sysrst_ctrl_auto_blk_key_output_vseq extends sysrst_ctrl_base_vseq;
 
       `uvm_info(`gfn, $sformatf("Value of cycles:%0d", cycles), UVM_LOW)
 
-      enable_key0_out_sel = `gmv(ral.auto_block_out_ctl.key0_out_sel);
-      enable_key1_out_sel = `gmv(ral.auto_block_out_ctl.key1_out_sel);
-      enable_key2_out_sel = `gmv(ral.auto_block_out_ctl.key2_out_sel);
+      csr_rd(ral.auto_block_out_ctl, rdata);
+      enable_key0_out_sel = get_field_val(ral.auto_block_out_ctl.key0_out_sel, rdata);
+      enable_key1_out_sel = get_field_val(ral.auto_block_out_ctl.key1_out_sel, rdata);
+      enable_key2_out_sel = get_field_val(ral.auto_block_out_ctl.key2_out_sel, rdata);
 
-      override_key0_out_value = `gmv(ral.auto_block_out_ctl.key0_out_value);
-      override_key1_out_value = `gmv(ral.auto_block_out_ctl.key1_out_value);
-      override_key2_out_value = `gmv(ral.auto_block_out_ctl.key2_out_value);
+      override_key0_out_value = get_field_val(ral.auto_block_out_ctl.key0_out_value, rdata);
+      override_key1_out_value = get_field_val(ral.auto_block_out_ctl.key1_out_value, rdata);
+      override_key2_out_value = get_field_val(ral.auto_block_out_ctl.key2_out_value, rdata);
 
-      if (en_auto == 1 && cycles >= set_timer) begin
+      csr_rd(ral.auto_block_debounce_ctl, rdata);
+      get_timer_value = get_field_val(ral.auto_block_debounce_ctl.debounce_timer, rdata);
+      if (en_auto == 1 && cycles >= get_timer_value) begin
         cfg.clk_aon_rst_vif.wait_clks(1);
         if(enable_key0_out_sel == 1) begin
           `DV_CHECK_EQ(override_key0_out_value, cfg.vif.key0_out);

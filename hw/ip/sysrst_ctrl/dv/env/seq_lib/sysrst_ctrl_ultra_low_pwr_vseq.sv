@@ -73,6 +73,8 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
    task body();
 
     uvm_reg_data_t rdata;
+    uint16_t get_ac_timer, get_pwrb_timer, get_lid_timer;
+    bit enable_ulp;
 
     `uvm_info(`gfn, "Starting the body from ultra_low_pwr_vseq", UVM_LOW)
 
@@ -115,8 +117,13 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
      // Enable the bus clock to read the status register
      cfg.clk_rst_vif.start_clk();
 
-     if (en_ulp == 1 && (pwrb_cycles >= set_pwrb_timer || ac_cycles >= set_ac_timer ||
-            lid_cycles >= set_lid_timer)) begin
+     csr_rd(ral.ulp_ac_debounce_ctl, get_ac_timer);
+     csr_rd(ral.ulp_pwrb_debounce_ctl, get_pwrb_timer);
+     csr_rd(ral.ulp_lid_debounce_ctl, get_lid_timer);
+     csr_rd(ral.ulp_ctl, rdata);
+     enable_ulp = get_field_val(ral.ulp_ctl.ulp_enable, rdata);
+     if (enable_ulp == 1 && (pwrb_cycles >= get_pwrb_timer || ac_cycles >= get_ac_timer ||
+            lid_cycles >= get_lid_timer)) begin
        cfg.clk_aon_rst_vif.wait_clks(1);
        `DV_CHECK_EQ(cfg.vif.z3_wakeup, 1);
        csr_rd_check(ral.wkup_status, .compare_value(1));

@@ -21,6 +21,7 @@ class sysrst_ctrl_ec_pwr_on_rst_vseq extends sysrst_ctrl_base_vseq;
     }
 
    task body();
+    uint16_t get_ec_rst_timer;
 
     `uvm_info(`gfn, "Starting the body from ec_pwr_on_rst_vseq", UVM_LOW)
 
@@ -32,8 +33,11 @@ class sysrst_ctrl_ec_pwr_on_rst_vseq extends sysrst_ctrl_base_vseq;
     // Configure the EC_RST_CTL register to stretch the EC rst
     csr_wr(ral.ec_rst_ctl, set_ec_rst_timer);
 
+    // Get the ec_rst timer value
+    csr_rd(ral.ec_rst_ctl, get_ec_rst_timer);
+
     // check ec_rst_l asserts for ec_rst_timer cycles after reset
-    monitor_ec_rst_low(set_ec_rst_timer);
+    monitor_ec_rst_low(get_ec_rst_timer);
 
     repeat ($urandom_range(2, 4)) begin
       cfg.clk_aon_rst_vif.wait_clks(10);
@@ -43,10 +47,10 @@ class sysrst_ctrl_ec_pwr_on_rst_vseq extends sysrst_ctrl_base_vseq;
 
       fork
         begin
-          driver_ec_rst_l_in($urandom_range(1, set_ec_rst_timer * 2));
+          driver_ec_rst_l_in($urandom_range(1, get_ec_rst_timer * 2));
         end
         begin
-          monitor_ec_rst_low(set_ec_rst_timer);
+          monitor_ec_rst_low(get_ec_rst_timer);
         end
       join
     end
