@@ -85,6 +85,44 @@
   } while (false)
 
 /**
+ * Compare `num_items_` of `actual_` against `not_expected_` buffer.
+ *
+ * Prints matches between `actual_` and `not_expected_` before logging an error.
+ * Note, the matches between the actual and not_expected buffer values are
+ * logged via LOG_INFO _before_ the error is logged with LOG_ERROR, since by
+ * default DV simulations are configured to terminate upon the first error.
+ *
+ * @param actual_ Buffer containing actual values.
+ * @param not_expected_ Buffer containing not expected values.
+ * @param num_items_ Number of items to compare.
+ * @param ... Arguments to a LOG_* macro, which are evaluated if the check.
+ */
+#define CHECK_BUFFER_NOT_EQ(actual_, not_expected_, num_items_, ...)          \
+  do {                                                                        \
+    /* `sizeof(actual_[0])` is used to determine the size of each item in the \
+     * buffer. */                                                             \
+    if (memcmp((actual_), (not_expected_),                                    \
+               num_items_ * sizeof((actual_)[0])) == 0) {                     \
+      for (size_t i = 0; i < num_items_; ++i) {                               \
+        LOG_INFO("[%d] actual = 0x%x; not expected = 0x%x", i, (actual_)[i],  \
+                 (not_expected_)[i]);                                         \
+      }                                                                       \
+      if (OT_VA_ARGS_COUNT(_, ##__VA_ARGS__) == 0) {                          \
+        LOG_ERROR("CHECK-BUFFER_NOT_EQ-fail: " #actual_                       \
+                  " matches " #not_expected_);                                \
+      } else {                                                                \
+        LOG_ERROR("CHECK-BUFFER_NOT_EQ-fail: " __VA_ARGS__);                  \
+      }                                                                       \
+      /* Currently, this macro will call into                                 \
+          the test failure code, which logs                                   \
+          "FAIL" and aborts. In the future,                                   \
+          we will try to condition on whether                                 \
+          or not this is a test.*/                                            \
+      test_status_set(kTestStatusFailed);                                     \
+    }                                                                         \
+  } while (false)
+
+/**
  * Checks that the given DIF call returns kDifOk. If the DIF call returns a
  * different dif_result_t value (defined in sw/device/lib/dif/dif_base.h), this
  * function logs and then aborts.

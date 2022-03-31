@@ -1961,8 +1961,8 @@
             - Write the OTBN clk hint to 1 within clkmgr to indicate OTBN clk can be enabled.
             - Start an OTBN operation, write the OTBN clk hint to 0 within clkmgr and verify that
               the OTBN clk hint status within clkmgr reads 1 (OTBN is not idle).
-            - After the OTBN operation is complete, verify that the OTBN clk hint status within 
-              clkmgr now reads 0 again (OTBN is idle). 
+            - After the OTBN operation is complete, verify that the OTBN clk hint status within
+              clkmgr now reads 0 again (OTBN is idle).
             - Write the OTBN clk hint to 1, read and check the OTBN output for correctness.
             '''
       milestone: V2
@@ -2291,7 +2291,7 @@
               interface to flash ctrl is actually for the closed src.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_flash_rma_unlocked"]
     }
     {
       name: chip_conn_flash_jtag
@@ -2359,8 +2359,7 @@
       desc: '''Verify that the creator seed is wiped by the flash ctrl on RMA entry.
             '''
       milestone: V2
-      tests: []
-
+      tests: ["chip_sw_flash_rma_unlocked"]
     }
     {
       name: chip_sw_flash_lc_owner_seed_sw_rw_en

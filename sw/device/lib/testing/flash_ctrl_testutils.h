@@ -25,8 +25,22 @@ bool flash_ctrl_testutils_wait_transaction_end(
     dif_flash_ctrl_state_t *flash_state);
 
 /**
- * Setup and enable for a data region.
- * Returns the address offset of the region.
+ * Setup and enable for a data region taking region properties as a parameter.
+ *
+ * @param flash_state A flash_ctrl state handle.
+ * @param base_page_index The region base page index.
+ * @param data_region The region index.
+ * @param region_size The region size (in number of pages).
+ * @param region_properties The properties for the data region.
+ * @return The byte address offset of the region.
+ */
+uint32_t flash_ctrl_testutils_data_region_setup_properties(
+    dif_flash_ctrl_state_t *flash_state, uint32_t base_page_index,
+    uint32_t data_region, uint32_t region_size,
+    dif_flash_ctrl_region_properties_t region_properties);
+
+/**
+ * Setup and enable for a data region with scrambling disabled.
  *
  * @param flash_state A flash_ctrl state handle.
  * @param base_page_index The region base page index.
@@ -39,8 +53,35 @@ uint32_t flash_ctrl_testutils_data_region_setup(
     uint32_t data_region, uint32_t region_size);
 
 /**
- * Setup and enable for an info region.
- * Returns the address offset of the region.
+ * Setup and enable for a data region with scrambling enabled.
+ *
+ * @param flash_state A flash_ctrl state handle.
+ * @param base_page_index The region base page index.
+ * @param data_region The region index.
+ * @param region_size The region size (in number of pages).
+ * @return The byte address offset of the region.
+ */
+uint32_t flash_ctrl_testutils_data_region_scrambled_setup(
+    dif_flash_ctrl_state_t *flash_state, uint32_t base_page_index,
+    uint32_t data_region, uint32_t region_size);
+
+/**
+ * Setup and enable for an info region taking region properties as a parameter.
+ *
+ * @param flash_state A flash_ctrl state handle.
+ * @param page_id Region page index.
+ * @param bank The required bank.
+ * @param paritiion_id The partition index.
+ * @param region_properties The properties for the info region.
+ * @return The byte address offset of the region.
+ */
+uint32_t flash_ctrl_testutils_info_region_setup_properties(
+    dif_flash_ctrl_state_t *flash_state, uint32_t page_id, uint32_t bank,
+    uint32_t partition_id,
+    dif_flash_ctrl_region_properties_t region_properties);
+
+/**
+ * Setup and enable for an info region with scrambling disabled.
  *
  * @param flash_state A flash_ctrl state handle.
  * @param page_id Region page index.
@@ -49,6 +90,19 @@ uint32_t flash_ctrl_testutils_data_region_setup(
  * @return The byte address offset of the region.
  */
 uint32_t flash_ctrl_testutils_info_region_setup(
+    dif_flash_ctrl_state_t *flash_state, uint32_t page_id, uint32_t bank,
+    uint32_t partition_id);
+
+/**
+ * Setup and enable for an info region with scrambling enabled.
+ *
+ * @param flash_state A flash_ctrl state handle.
+ * @param page_id Region page index.
+ * @param bank The required bank.
+ * @param paritiion_id The partition index.
+ * @return The byte address offset of the region.
+ */
+uint32_t flash_ctrl_testutils_info_region_scrambled_setup(
     dif_flash_ctrl_state_t *flash_state, uint32_t page_id, uint32_t bank,
     uint32_t partition_id);
 
