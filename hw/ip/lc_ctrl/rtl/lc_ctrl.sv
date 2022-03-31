@@ -122,7 +122,7 @@ module lc_ctrl
   `ASSERT_INIT(HwRevFieldWidth_A, HwRevFieldWidth <= 16)
 
   // Check for bit-width matching between lc_tx_t and mubi4_t
-  `ASSERT_INIT(LcMuBiWidthCheck_A, (TxWidth % prim_mubi_pkg::MuBi4Width) == '0)
+  `ASSERT_INIT(LcMuBiWidthCheck_A, $bits(TxWidth) == $bits(prim_mubi_pkg::MuBi4Width))
   `ASSERT_INIT(LcTxComplCheck_A, On == ~Off)
   `ASSERT_INIT(MuBi4ComplCheck_A, prim_mubi_pkg::MuBi4True == ~prim_mubi_pkg::MuBi4False)
 
