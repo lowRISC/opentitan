@@ -79,7 +79,10 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
   }
 
   // Flash ctrl operation data queue - used for programing or reading the flash.
-  rand data_q_t flash_op_data;
+  rand data_q_t    flash_op_data;
+  data_q_t         flash_op_data_rand;
+  bit  [TL_DW-1:0] set_random_val;
+  localparam bit [TL_DW-1:0] ALL_ONES = {TL_DW{1'b1}};
 
   constraint flash_op_data_c {
     solve flash_op before flash_op_data;
@@ -282,7 +285,13 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
   `uvm_object_new
 
   task body();
-
+    cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = lc_ctrl_pkg::On;
+    cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en   = lc_ctrl_pkg::On;
+    cfg.flash_ctrl_vif.lc_iso_part_sw_rd_en     = lc_ctrl_pkg::On;
+    cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en     = lc_ctrl_pkg::On;
+    cfg.scb_check              = 1;
+    cfg.scb_empty_mem          = 0;
+    cfg.scb_set_mem            = 0;
     for (int i = 1; i <= num_trans; i++) begin
       `uvm_info(`gfn, $sformatf("Configuring flash_ctrl %0d/%0d", i, num_trans),
                 UVM_MEDIUM)
@@ -364,7 +373,7 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
   endtask : body
 
   // Prep the flash mem via bkdr before an op for enhanced checks.
-  virtual function void flash_ctrl_prep_mem(flash_op_t flash_op);
+  virtual task flash_ctrl_prep_mem(flash_op_t flash_op);
     // Invalidate the flash mem contents. We do this because we operate on and check a specific
     // chunk of space. The rest of the flash mem is essentially dont-care. If the flash ctrl
     // does not work correctly, the check will result in an access from the invalidated mem
@@ -373,14 +382,27 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
     case (flash_op.op)
       flash_ctrl_pkg::FlashOpRead: begin
         // Initialize the targeted mem region with random data.
-        cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitRandomize));
+        flash_op_data_rand = {};
+        set_random_val = $urandom();
+        for (int i=0; i < flash_op.num_words; i++) begin
+          flash_op_data_rand[i] = set_random_val;
+        end
+        cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitCustom),
+                                 .data(flash_op_data_rand));
+        cfg.scb_set_mem    = 1;
+        set_scb_mem(flash_op.num_words,flash_op.partition,flash_op.addr,set_random_val);
+        cfg.clk_rst_vif.wait_clks(1);
+        cfg.scb_set_mem    = 0;
       end
       flash_ctrl_pkg::FlashOpProgram: begin
         // Initialize the targeted mem region with all 1s. This is required because the flash
         // needs to be erased to all 1s between each successive programming.
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));
+        cfg.scb_set_mem    = 1;
+        set_scb_mem(flash_op.num_words,flash_op.partition,flash_op.addr,ALL_ONES);
+        cfg.scb_set_mem    = 0;
       end
     endcase
-  endfunction
+  endtask
 
 endclass : flash_ctrl_rand_ops_base_vseq
