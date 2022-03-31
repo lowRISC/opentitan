@@ -10,19 +10,19 @@ use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
 pub struct Ti50EmulatorOpts {
-    #[structopt(long, default_value)]
-    executable_directory: String,
+    #[structopt(long, default_value = "ti50")]
+    instance_prefix: String,
+
+    #[structopt(long, parse(from_os_str), default_value = "/tools/host_emulation")]
+    executable_directory: PathBuf,
 
     #[structopt(long, default_value = "host_emulation")]
     executable: String,
-
-    #[structopt(long, default_value = "ti50")]
-    instance_prefix: String,
 }
 
 pub fn create(args: &Ti50EmulatorOpts) -> Result<Box<dyn Transport>> {
     Ok(Box::new(Ti50Emulator::open(
-        PathBuf::from(&args.executable_directory),
+        &args.executable_directory,
         &args.executable,
         &args.instance_prefix,
     )?))

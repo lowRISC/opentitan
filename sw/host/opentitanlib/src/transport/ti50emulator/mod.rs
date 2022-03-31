@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process;
 use std::rc::Rc;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -26,7 +26,7 @@ mod i2c;
 mod spi;
 mod uart;
 
-use crate::transport::ti50emulator::emu::Ti50SubProcess;
+use crate::transport::ti50emulator::emu::{EmulatorProcess, Ti50SubProcess};
 
 pub struct Ti50Emulator {
     inner: Rc<RefCell<Inner>>,
@@ -35,9 +35,9 @@ pub struct Ti50Emulator {
 impl Ti50Emulator {
     /// Create new instance of [`Ti50Emulator`] based on provided parameters.
     pub fn open(
-        _executable_directory: PathBuf,
-        _executable: &String,
-        instance_prefix: &String,
+        executable_directory: &Path,
+        executable: &str,
+        instance_prefix: &str,
     ) -> anyhow::Result<Self> {
         let tstamp = SystemTime::now().duration_since(UNIX_EPOCH)?;
         let instance_name = format!(
@@ -50,15 +50,18 @@ impl Ti50Emulator {
 
         let mut instance_directory = PathBuf::from("/tmp");
         instance_directory.push(&instance_name);
-        let runtime_directory = instance_directory.join("runtime");
 
         log::info!("Initializing Ti50Emulator instance: {}", instance_name);
-        fs::create_dir(&instance_directory)?;
-        fs::create_dir(&runtime_directory)?;
+        fs::create_dir(&instance_directory).context("Falied to create instance directory")?;
 
         Ok(Self {
             inner: Rc::new(RefCell::new(Inner {
                 instance_directory: instance_directory.clone(),
+                process: EmulatorProcess::init(
+                    &instance_directory,
+                    &executable_directory,
+                    executable,
+                )?,
                 emulator: None,
                 spi_map: HashMap::new(),
                 gpio_map: HashMap::new(),
@@ -83,8 +86,10 @@ impl Drop for Ti50Emulator {
 
 /// Structure representing internal state of emulator
 struct Inner {
-    /// Path of parent directory representing Ti50Emulator instance.
+    /// Path of parent directory representing `Ti50Emulator` instance.
     instance_directory: PathBuf,
+    /// SubProcess instance
+    process: EmulatorProcess,
     /// `Emualtor` instance
     emulator: Option<Rc<dyn Emulator>>,
     /// Mapping of SPI handles to their symbolic names.
@@ -96,6 +101,8 @@ struct Inner {
     /// Mapping of UART handles to their symbolic names.
     uart_map: HashMap<String, Rc<dyn Uart>>,
 }
+
+impl Inner {}
 
 /// Implementation of the Transport trait backed based on TockOS HostEmulation port.
 impl Transport for Ti50Emulator {
