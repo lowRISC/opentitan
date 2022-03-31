@@ -12,6 +12,18 @@
 
 const uint16_t kDifSpiDeviceBufferLen = SPI_DEVICE_BUFFER_SIZE_BYTES;
 
+enum { kDifSpiDeviceEFlashLen = 2048 };
+enum { kDifSpiDeviceMailboxLen = 1024 };
+enum { kDifSpiDeviceSfdpLen = 256 };
+enum { kDifSpiDevicePayloadLen = 256 };
+
+enum {
+  kDifSpiDeviceEFlashOffset = 0,
+  kDifSpiDeviceMailboxOffset = 2048,
+  kDifSpiDeviceSfdpOffset = 3072,
+  kDifSpiDevicePayloadOffset = 3328,
+};
+
 /**
  * Computes the required value of the control register from a given
  * configuration.
@@ -55,6 +67,12 @@ dif_result_t dif_spi_device_configure(dif_spi_device_handle_t *spi,
   switch (config.device_mode) {
     case kDifSpiDeviceModeGeneric:
       device_mode = SPI_DEVICE_CONTROL_MODE_VALUE_FWMODE;
+      break;
+    case kDifSpiDeviceModeFlashEmulation:
+      device_mode = SPI_DEVICE_CONTROL_MODE_VALUE_FLASHMODE;
+      break;
+    case kDifSpiDeviceModePassthrough:
+      device_mode = SPI_DEVICE_CONTROL_MODE_VALUE_PASSTHROUGH;
       break;
     default:
       return kDifBadArg;
@@ -474,5 +492,541 @@ dif_result_t dif_spi_device_send(dif_spi_device_handle_t *spi, const void *buf,
     // Commit the new TX FIFO pointers.
     compress_ptrs(spi, kTxFifoParams, fifo);
   }
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_enable_mailbox(dif_spi_device_handle_t *spi,
+                                           uint32_t address) {
+  if (spi == NULL) {
+    return kDifBadArg;
+  }
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_MAILBOX_ADDR_REG_OFFSET,
+                      address);
+  uint32_t cfg_reg =
+      mmio_region_read32(spi->dev.base_addr, SPI_DEVICE_CFG_REG_OFFSET);
+  cfg_reg = bitfield_bit32_write(cfg_reg, SPI_DEVICE_CFG_MAILBOX_EN_BIT, 1);
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_CFG_REG_OFFSET, cfg_reg);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_disable_mailbox(dif_spi_device_handle_t *spi) {
+  if (spi == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t cfg_reg =
+      mmio_region_read32(spi->dev.base_addr, SPI_DEVICE_CFG_REG_OFFSET);
+  cfg_reg = bitfield_bit32_write(cfg_reg, SPI_DEVICE_CFG_MAILBOX_EN_BIT, 0);
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_CFG_REG_OFFSET, cfg_reg);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_get_mailbox_configuration(
+    dif_spi_device_handle_t *spi, dif_toggle_t *is_enabled, uint32_t *address) {
+  if (spi == NULL || is_enabled == NULL || address == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t cfg_reg =
+      mmio_region_read32(spi->dev.base_addr, SPI_DEVICE_CFG_REG_OFFSET);
+  bool mailbox_enabled =
+      bitfield_bit32_read(cfg_reg, SPI_DEVICE_CFG_MAILBOX_EN_BIT);
+  *is_enabled = dif_bool_to_toggle(mailbox_enabled);
+  *address = mmio_region_read32(spi->dev.base_addr,
+                                SPI_DEVICE_MAILBOX_ADDR_REG_OFFSET);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_set_4b_address_mode(dif_spi_device_handle_t *spi,
+                                                dif_toggle_t addr_4b) {
+  if (spi == NULL || !dif_is_valid_toggle(addr_4b)) {
+    return kDifBadArg;
+  }
+  uint32_t cfg_reg =
+      mmio_region_read32(spi->dev.base_addr, SPI_DEVICE_CFG_REG_OFFSET);
+  if (addr_4b == kDifToggleEnabled) {
+    cfg_reg =
+        bitfield_bit32_write(cfg_reg, SPI_DEVICE_CFG_ADDR_4B_EN_BIT, true);
+  } else {
+    cfg_reg =
+        bitfield_bit32_write(cfg_reg, SPI_DEVICE_CFG_ADDR_4B_EN_BIT, false);
+  }
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_CFG_REG_OFFSET, cfg_reg);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_get_4b_address_mode(dif_spi_device_handle_t *spi,
+                                                dif_toggle_t *addr_4b) {
+  if (spi == NULL || addr_4b == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t cfg_reg =
+      mmio_region_read32(spi->dev.base_addr, SPI_DEVICE_CFG_REG_OFFSET);
+  if (bitfield_bit32_read(cfg_reg, SPI_DEVICE_CFG_ADDR_4B_EN_BIT)) {
+    *addr_4b = kDifToggleEnabled;
+  } else {
+    *addr_4b = kDifToggleDisabled;
+  }
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_get_flash_id(dif_spi_device_handle_t *spi,
+                                         dif_spi_device_flash_id_t *id) {
+  if (spi == NULL || id == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t cc_reg =
+      mmio_region_read32(spi->dev.base_addr, SPI_DEVICE_JEDEC_CC_REG_OFFSET);
+  uint32_t id_reg =
+      mmio_region_read32(spi->dev.base_addr, SPI_DEVICE_JEDEC_ID_REG_OFFSET);
+  id->num_continuation_code =
+      bitfield_field32_read(cc_reg, SPI_DEVICE_JEDEC_CC_NUM_CC_FIELD);
+  id->continuation_code =
+      bitfield_field32_read(cc_reg, SPI_DEVICE_JEDEC_CC_CC_FIELD);
+  id->manufacturer_id =
+      bitfield_field32_read(id_reg, SPI_DEVICE_JEDEC_ID_MF_FIELD);
+  id->device_id = bitfield_field32_read(id_reg, SPI_DEVICE_JEDEC_ID_ID_FIELD);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_set_flash_id(dif_spi_device_handle_t *spi,
+                                         dif_spi_device_flash_id_t id) {
+  if (spi == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t cc_reg = bitfield_field32_write(0, SPI_DEVICE_JEDEC_CC_NUM_CC_FIELD,
+                                           id.num_continuation_code);
+  cc_reg = bitfield_field32_write(cc_reg, SPI_DEVICE_JEDEC_CC_CC_FIELD,
+                                  id.continuation_code);
+  uint32_t id_reg = bitfield_field32_write(0, SPI_DEVICE_JEDEC_ID_MF_FIELD,
+                                           id.manufacturer_id);
+  id_reg = bitfield_field32_write(id_reg, SPI_DEVICE_JEDEC_ID_ID_FIELD,
+                                  id.device_id);
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_JEDEC_CC_REG_OFFSET,
+                      cc_reg);
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_JEDEC_ID_REG_OFFSET,
+                      id_reg);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_set_flash_command_slot(
+    dif_spi_device_handle_t *spi, uint8_t slot, dif_toggle_t enable,
+    dif_spi_device_flash_command_t command_info) {
+  if (spi == NULL || slot >= SPI_DEVICE_PARAM_NUM_CMD_INFO ||
+      !dif_is_valid_toggle(enable)) {
+    return kDifBadArg;
+  }
+  ptrdiff_t reg_offset =
+      SPI_DEVICE_CMD_INFO_0_REG_OFFSET + slot * sizeof(uint32_t);
+  uint32_t reg_val = 0;
+  if (enable == kDifToggleDisabled) {
+    reg_val =
+        bitfield_bit32_write(reg_val, SPI_DEVICE_CMD_INFO_0_VALID_0_BIT, false);
+  } else {
+    // Validate command info parameters.
+    uint32_t address_mode;
+    switch (command_info.address_type) {
+      case kDifSpiDeviceFlashAddrDisabled:
+        address_mode = SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDRDISABLED;
+        break;
+      case kDifSpiDeviceFlashAddrCfg:
+        address_mode = SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDRCFG;
+        break;
+      case kDifSpiDeviceFlashAddr3Byte:
+        address_mode = SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDR3B;
+        break;
+      case kDifSpiDeviceFlashAddr4Byte:
+        address_mode = SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDR4B;
+        break;
+      default:
+        return kDifBadArg;
+    }
+    if (command_info.dummy_cycles >
+        (1u + SPI_DEVICE_CMD_INFO_0_DUMMY_SIZE_0_MASK)) {
+      return kDifBadArg;
+    }
+
+    uint32_t payload_en;
+    switch (command_info.payload_io_type) {
+      case kDifSpiDevicePayloadIoNone:
+        payload_en = 0x0;
+        break;
+      case kDifSpiDevicePayloadIoSingle:
+        if (command_info.payload_dir_to_host) {
+          payload_en = 0x2;
+        } else {
+          payload_en = 0x1;
+        }
+        break;
+      case kDifSpiDevicePayloadIoDual:
+        payload_en = 0x3;
+        break;
+      case kDifSpiDevicePayloadIoQuad:
+        payload_en = 0xf;
+        break;
+      default:
+        return kDifBadArg;
+    }
+
+    // Check for invalid argument combinations.
+    if (command_info.payload_swap_enable &&
+        (command_info.payload_dir_to_host ||
+         command_info.payload_io_type != kDifSpiDevicePayloadIoSingle)) {
+      return kDifBadArg;
+    }
+    if (command_info.passthrough_swap_address &&
+        command_info.address_type == kDifSpiDeviceFlashAddrDisabled) {
+      return kDifBadArg;
+    }
+
+    // Write the command info values.
+    reg_val = bitfield_field32_write(
+        reg_val, SPI_DEVICE_CMD_INFO_0_OPCODE_0_FIELD, command_info.opcode);
+    reg_val = bitfield_field32_write(
+        reg_val, SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_FIELD, address_mode);
+    reg_val =
+        bitfield_bit32_write(reg_val, SPI_DEVICE_CMD_INFO_0_ADDR_SWAP_EN_0_BIT,
+                             command_info.passthrough_swap_address);
+    if (command_info.dummy_cycles > 0) {
+      reg_val = bitfield_field32_write(reg_val,
+                                       SPI_DEVICE_CMD_INFO_0_DUMMY_SIZE_0_FIELD,
+                                       command_info.dummy_cycles - 1);
+      reg_val = bitfield_bit32_write(
+          reg_val, SPI_DEVICE_CMD_INFO_0_DUMMY_EN_0_BIT, true);
+    }
+    reg_val = bitfield_field32_write(
+        reg_val, SPI_DEVICE_CMD_INFO_0_PAYLOAD_EN_0_FIELD, payload_en);
+    reg_val =
+        bitfield_bit32_write(reg_val, SPI_DEVICE_CMD_INFO_0_PAYLOAD_DIR_0_BIT,
+                             command_info.payload_dir_to_host);
+    reg_val = bitfield_bit32_write(reg_val,
+                                   SPI_DEVICE_CMD_INFO_0_PAYLOAD_SWAP_EN_0_BIT,
+                                   command_info.payload_swap_enable);
+    reg_val = bitfield_bit32_write(reg_val, SPI_DEVICE_CMD_INFO_0_UPLOAD_0_BIT,
+                                   command_info.upload);
+    reg_val = bitfield_bit32_write(reg_val, SPI_DEVICE_CMD_INFO_0_BUSY_0_BIT,
+                                   command_info.set_busy_status);
+    reg_val =
+        bitfield_bit32_write(reg_val, SPI_DEVICE_CMD_INFO_0_VALID_0_BIT, true);
+  }
+  mmio_region_write32(spi->dev.base_addr, reg_offset, reg_val);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_get_flash_command_slot(
+    dif_spi_device_handle_t *spi, uint8_t slot, dif_toggle_t *enabled,
+    dif_spi_device_flash_command_t *command_info) {
+  if (spi == NULL || enabled == NULL || command_info == NULL ||
+      slot >= SPI_DEVICE_PARAM_NUM_CMD_INFO) {
+    return kDifBadArg;
+  }
+  ptrdiff_t reg_offset =
+      SPI_DEVICE_CMD_INFO_0_REG_OFFSET + slot * sizeof(uint32_t);
+  uint32_t reg_val = mmio_region_read32(spi->dev.base_addr, reg_offset);
+
+  dif_spi_device_flash_address_type_t address_type;
+  uint32_t reg_val_address_mode =
+      bitfield_field32_read(reg_val, SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_FIELD);
+  switch (reg_val_address_mode) {
+    case SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDRDISABLED:
+      address_type = kDifSpiDeviceFlashAddrDisabled;
+      break;
+    case SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDRCFG:
+      address_type = kDifSpiDeviceFlashAddrCfg;
+      break;
+    case SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDR3B:
+      address_type = kDifSpiDeviceFlashAddr3Byte;
+      break;
+    case SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDR4B:
+      address_type = kDifSpiDeviceFlashAddr4Byte;
+      break;
+    default:
+      address_type = kDifSpiDeviceFlashAddrCount;
+      break;
+  }
+
+  uint32_t dummy_cycles;
+  if (bitfield_bit32_read(reg_val, SPI_DEVICE_CMD_INFO_0_DUMMY_EN_0_BIT)) {
+    dummy_cycles = 1 + bitfield_field32_read(
+                           reg_val, SPI_DEVICE_CMD_INFO_0_DUMMY_SIZE_0_FIELD);
+  } else {
+    dummy_cycles = 0;
+  }
+
+  uint32_t payload_en =
+      bitfield_field32_read(reg_val, SPI_DEVICE_CMD_INFO_0_PAYLOAD_EN_0_FIELD);
+  bool payload_dir_to_host =
+      bitfield_bit32_read(reg_val, SPI_DEVICE_CMD_INFO_0_PAYLOAD_DIR_0_BIT);
+  dif_spi_device_payload_io_t payload_io_type;
+  switch (payload_en) {
+    case 0x0:
+      payload_io_type = kDifSpiDevicePayloadIoNone;
+      break;
+    case 0x1:
+      if (payload_dir_to_host) {
+        payload_io_type = kDifSpiDevicePayloadIoInvalid;
+      } else {
+        payload_io_type = kDifSpiDevicePayloadIoSingle;
+      }
+      break;
+    case 0x2:
+      if (!payload_dir_to_host) {
+        payload_io_type = kDifSpiDevicePayloadIoInvalid;
+      } else {
+        payload_io_type = kDifSpiDevicePayloadIoSingle;
+      }
+      break;
+    case 0x3:
+      payload_io_type = kDifSpiDevicePayloadIoDual;
+      break;
+    case 0xf:
+      payload_io_type = kDifSpiDevicePayloadIoQuad;
+      break;
+    default:
+      payload_io_type = kDifSpiDevicePayloadIoInvalid;
+      break;
+  }
+
+  dif_spi_device_flash_command_t cmd = {
+      .opcode =
+          bitfield_field32_read(reg_val, SPI_DEVICE_CMD_INFO_0_OPCODE_0_FIELD),
+      .address_type = address_type,
+      .dummy_cycles = dummy_cycles,
+      .payload_io_type = payload_io_type,
+      .passthrough_swap_address = bitfield_bit32_read(
+          reg_val, SPI_DEVICE_CMD_INFO_0_PAYLOAD_SWAP_EN_0_BIT),
+      .payload_dir_to_host = payload_dir_to_host,
+      .payload_swap_enable = bitfield_bit32_read(
+          reg_val, SPI_DEVICE_CMD_INFO_0_PAYLOAD_SWAP_EN_0_BIT),
+      .upload =
+          bitfield_bit32_read(reg_val, SPI_DEVICE_CMD_INFO_0_UPLOAD_0_BIT),
+      .set_busy_status =
+          bitfield_bit32_read(reg_val, SPI_DEVICE_CMD_INFO_0_BUSY_0_BIT),
+  };
+  *command_info = cmd;
+
+  if (bitfield_bit32_read(reg_val, SPI_DEVICE_CMD_INFO_0_VALID_0_BIT)) {
+    *enabled = kDifToggleEnabled;
+  } else {
+    *enabled = kDifToggleDisabled;
+  }
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_set_flash_address_swap(dif_spi_device_handle_t *spi,
+                                                   uint32_t mask,
+                                                   uint32_t replacement) {
+  if (spi == NULL) {
+    return kDifBadArg;
+  }
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_ADDR_SWAP_MASK_REG_OFFSET,
+                      mask);
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_ADDR_SWAP_DATA_REG_OFFSET,
+                      replacement);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_set_flash_payload_swap(dif_spi_device_handle_t *spi,
+                                                   uint32_t mask,
+                                                   uint32_t replacement) {
+  if (spi == NULL) {
+    return kDifBadArg;
+  }
+  mmio_region_write32(spi->dev.base_addr,
+                      SPI_DEVICE_PAYLOAD_SWAP_MASK_REG_OFFSET, mask);
+  mmio_region_write32(spi->dev.base_addr,
+                      SPI_DEVICE_PAYLOAD_SWAP_DATA_REG_OFFSET, replacement);
+  return kDifOk;
+}
+
+// TODO: Does the IP handle overrun / underrun correctly?
+dif_result_t dif_spi_device_pop_flash_command_fifo(dif_spi_device_handle_t *spi,
+                                                   uint8_t *command) {
+  if (spi == NULL || command == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t upload_status = mmio_region_read32(
+      spi->dev.base_addr, SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET);
+  if (!bitfield_bit32_read(upload_status,
+                           SPI_DEVICE_UPLOAD_STATUS_CMDFIFO_NOTEMPTY_BIT)) {
+    return kDifUnavailable;
+  }
+  uint32_t cmd_item = mmio_region_read32(spi->dev.base_addr,
+                                         SPI_DEVICE_UPLOAD_CMDFIFO_REG_OFFSET);
+  *command =
+      bitfield_field32_read(cmd_item, SPI_DEVICE_UPLOAD_CMDFIFO_DATA_FIELD);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_pop_flash_address_fifo(dif_spi_device_handle_t *spi,
+                                                   uint32_t *address) {
+  if (spi == NULL || address == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t upload_status = mmio_region_read32(
+      spi->dev.base_addr, SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET);
+  if (!bitfield_bit32_read(upload_status,
+                           SPI_DEVICE_UPLOAD_STATUS_ADDRFIFO_NOTEMPTY_BIT)) {
+    return kDifUnavailable;
+  }
+  *address = mmio_region_read32(spi->dev.base_addr,
+                                SPI_DEVICE_UPLOAD_ADDRFIFO_REG_OFFSET);
+  return kDifOk;
+}
+
+typedef struct dif_spi_device_flash_buffer_info {
+  size_t buffer_len;
+  ptrdiff_t buffer_offset;
+} dif_spi_device_flash_buffer_info_t;
+
+static dif_result_t dif_spi_device_get_flash_buffer_info(
+    dif_spi_device_flash_buffer_type_t buffer_type,
+    dif_spi_device_flash_buffer_info_t *info) {
+  switch (buffer_type) {
+    case kDifSpiDeviceFlashBufferTypeEFlash:
+      info->buffer_len = kDifSpiDeviceEFlashLen;
+      info->buffer_offset = kDifSpiDeviceEFlashOffset;
+      break;
+    case kDifSpiDeviceFlashBufferTypeMailbox:
+      info->buffer_len = kDifSpiDeviceMailboxLen;
+      info->buffer_offset = kDifSpiDeviceMailboxOffset;
+      break;
+    case kDifSpiDeviceFlashBufferTypeSfdp:
+      info->buffer_len = kDifSpiDeviceSfdpLen;
+      info->buffer_offset = kDifSpiDeviceSfdpOffset;
+      break;
+    case kDifSpiDeviceFlashBufferTypePayload:
+      info->buffer_len = kDifSpiDevicePayloadLen;
+      info->buffer_offset = kDifSpiDevicePayloadOffset;
+      break;
+    default:
+      return kDifBadArg;
+  }
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_read_flash_buffer(
+    dif_spi_device_handle_t *spi,
+    dif_spi_device_flash_buffer_type_t buffer_type, uint32_t offset,
+    size_t length, uint8_t *buf) {
+  if (spi == NULL || buf == NULL) {
+    return kDifBadArg;
+  }
+  dif_spi_device_flash_buffer_info_t info;
+  dif_result_t status =
+      dif_spi_device_get_flash_buffer_info(buffer_type, &info);
+  if (status != kDifOk) {
+    return status;
+  }
+  if (offset >= (info.buffer_offset + info.buffer_len) ||
+      length > (info.buffer_offset + info.buffer_len - offset)) {
+    return kDifBadArg;
+  }
+  ptrdiff_t offset_from_base =
+      SPI_DEVICE_BUFFER_REG_OFFSET + info.buffer_offset + offset;
+  mmio_region_memcpy_from_mmio32(spi->dev.base_addr, offset_from_base, buf,
+                                 length);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_write_flash_buffer(
+    dif_spi_device_handle_t *spi,
+    dif_spi_device_flash_buffer_type_t buffer_type, uint32_t offset,
+    size_t length, const uint8_t *buf) {
+  if (spi == NULL || buf == NULL) {
+    return kDifBadArg;
+  }
+  dif_spi_device_flash_buffer_info_t info;
+  dif_result_t status =
+      dif_spi_device_get_flash_buffer_info(buffer_type, &info);
+  if (status != kDifOk) {
+    return status;
+  }
+  if (offset >= (info.buffer_offset + info.buffer_len) ||
+      length > (info.buffer_offset + info.buffer_len - offset)) {
+    return kDifBadArg;
+  }
+  ptrdiff_t offset_from_base =
+      SPI_DEVICE_BUFFER_REG_OFFSET + info.buffer_offset + offset;
+  mmio_region_memcpy_to_mmio32(spi->dev.base_addr, offset_from_base, buf,
+                               length);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_get_passthrough_command_filter(
+    dif_spi_device_handle_t *spi, uint8_t command, dif_toggle_t *enabled) {
+  if (spi == NULL || enabled == NULL) {
+    return kDifBadArg;
+  }
+  ptrdiff_t reg_offset =
+      SPI_DEVICE_CMD_FILTER_0_REG_OFFSET + (command >> 5) * sizeof(uint32_t);
+  uint32_t command_index = command & 0x1fu;
+  uint32_t reg_value = mmio_region_read32(spi->dev.base_addr, reg_offset);
+  bool filtered = bitfield_bit32_read(reg_value, command_index);
+  if (filtered) {
+    *enabled = kDifToggleEnabled;
+  } else {
+    *enabled = kDifToggleDisabled;
+  }
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_set_passthrough_command_filter(
+    dif_spi_device_handle_t *spi, uint8_t command, dif_toggle_t enabled) {
+  if (spi == NULL || !dif_is_valid_toggle(enabled)) {
+    return kDifBadArg;
+  }
+  bool enable_filter = dif_toggle_to_bool(enabled);
+  ptrdiff_t reg_offset =
+      SPI_DEVICE_CMD_FILTER_0_REG_OFFSET + (command >> 5) * sizeof(uint32_t);
+  uint32_t command_index = command & 0x1fu;
+  uint32_t reg_value = mmio_region_read32(spi->dev.base_addr, reg_offset);
+  reg_value = bitfield_bit32_write(reg_value, command_index, enable_filter);
+  mmio_region_write32(spi->dev.base_addr, reg_offset, reg_value);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_set_all_passthrough_command_filters(
+    dif_spi_device_handle_t *spi, dif_toggle_t enable) {
+  if (spi == NULL || !dif_is_valid_toggle(enable)) {
+    return kDifBadArg;
+  }
+  uint32_t reg_value = dif_toggle_to_bool(enable) ? UINT32_MAX : 0;
+  for (int i = 0; i < SPI_DEVICE_CMD_FILTER_MULTIREG_COUNT; i++) {
+    uint32_t reg_offset =
+        SPI_DEVICE_CMD_FILTER_0_REG_OFFSET + i * sizeof(uint32_t);
+    mmio_region_write32(spi->dev.base_addr, reg_offset, reg_value);
+  }
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_clear_flash_busy_bit(dif_spi_device_handle_t *spi) {
+  if (spi == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t reg_val = mmio_region_read32(spi->dev.base_addr,
+                                        SPI_DEVICE_FLASH_STATUS_REG_OFFSET);
+  reg_val =
+      bitfield_bit32_write(reg_val, SPI_DEVICE_FLASH_STATUS_BUSY_BIT, false);
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_FLASH_STATUS_REG_OFFSET,
+                      reg_val);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_set_flash_status_registers(
+    dif_spi_device_handle_t *spi, uint32_t value) {
+  if (spi == NULL) {
+    return kDifBadArg;
+  }
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_FLASH_STATUS_REG_OFFSET,
+                      value);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_get_flash_status_registers(
+    dif_spi_device_handle_t *spi, uint32_t *value) {
+  if (spi == NULL || value == NULL) {
+    return kDifBadArg;
+  }
+  *value = mmio_region_read32(spi->dev.base_addr,
+                              SPI_DEVICE_FLASH_STATUS_REG_OFFSET);
   return kDifOk;
 }
