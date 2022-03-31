@@ -33,6 +33,8 @@ package spid_common;
 
   typedef logic [7:0] spi_data_t;
 
+  typedef spi_data_t spi_queue_t [$];
+
   typedef struct packed {
     spi_data_t data;
     mode_e     mode;
@@ -326,15 +328,47 @@ package spid_common;
       busy:             1'b 0
     },
 
-    // 8: ReadCmd 4 TODO
+    // 8: ReadCmd 4 Fast Read Quad
     '{
-      valid:            1'b 0,
-      opcode:           8'h F7,
-      addr_mode:        AddrDisabled,
-      addr_swap_en:     1'b 0,
+      valid:            1'b 1,
+      opcode:           8'h 6B,
+      addr_mode:        AddrCfg,
+      addr_swap_en:     1'b 1,
       mbyte_en:         1'b 0,
-      dummy_en:         1'b 0,
-      dummy_size:          '0,
+      dummy_en:         1'b 1,
+      dummy_size:        'h 1,
+      payload_en:       4'b 1111, // MISO
+      payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 7: ReadCmd 3 Fast Read Dual
+    '{
+      valid:            1'b 1,
+      opcode:           8'h 3B,
+      addr_mode:        AddrCfg,
+      addr_swap_en:     1'b 1,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 1,
+      dummy_size:        'h 3,
+      payload_en:       4'b 0011, // MISO
+      payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 6: ReadCmd 2 Fast Read
+    '{
+      valid:            1'b 1,
+      opcode:           8'h 0B,
+      addr_mode:        AddrCfg,
+      addr_swap_en:     1'b 1,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 1,
+      dummy_size:        'h 7,
       payload_en:       4'b 0010, // MISO
       payload_dir:      PayloadOut,
       payload_swap_en:  1'b 0,
@@ -342,44 +376,12 @@ package spid_common;
       busy:             1'b 0
     },
 
-    // 7: ReadCmd 3 TODO
+    // 5: ReadCmd 1 Normal Read
     '{
-      valid:            1'b 0,
-      opcode:           8'h F8,
-      addr_mode:        AddrDisabled,
-      addr_swap_en:     1'b 0,
-      mbyte_en:         1'b 0,
-      dummy_en:         1'b 0,
-      dummy_size:          '0,
-      payload_en:       4'b 0010, // MISO
-      payload_dir:      PayloadOut,
-      payload_swap_en:  1'b 0,
-      upload:           1'b 0,
-      busy:             1'b 0
-    },
-
-    // 6: ReadCmd 2 TODO
-    '{
-      valid:            1'b 0,
-      opcode:           8'h F9,
-      addr_mode:        AddrDisabled,
-      addr_swap_en:     1'b 0,
-      mbyte_en:         1'b 0,
-      dummy_en:         1'b 0,
-      dummy_size:          '0,
-      payload_en:       4'b 0010, // MISO
-      payload_dir:      PayloadOut,
-      payload_swap_en:  1'b 0,
-      upload:           1'b 0,
-      busy:             1'b 0
-    },
-
-    // 5: ReadCmd 1 TODO
-    '{
-      valid:            1'b 0,
-      opcode:           8'h FA,
-      addr_mode:        AddrDisabled,
-      addr_swap_en:     1'b 0,
+      valid:            1'b 1,
+      opcode:           8'h 03,
+      addr_mode:        AddrCfg,
+      addr_swap_en:     1'b 1,
       mbyte_en:         1'b 0,
       dummy_en:         1'b 0,
       dummy_size:          '0,
@@ -495,8 +497,8 @@ package spid_common;
   // spi_transaction: Send/ Receive data using data fifo.
   task automatic spi_transaction(
     virtual spi_if.tb sif,
-    ref spi_fifo_t d_in  [$],
-    ref spi_data_t d_out [$]
+    ref spi_fifo_t  d_in [$],
+    ref spi_queue_t d_out
   );
     automatic spi_data_t char;
     automatic mode_e     mode;
@@ -678,7 +680,7 @@ package spid_common;
   ////////////////////////
   task automatic spiflash_readstatus(
     virtual spi_if.tb sif,
-    input spi_data_t  opcode,
+    input  spi_data_t opcode,
     output spi_data_t status
   );
     automatic spi_fifo_t send_data [$];
@@ -821,10 +823,11 @@ package spid_common;
     input spi_data_t   opcode,
     input logic [23:0] addr,
     input int          size, // #bytes
-    input spi_data_t   payload [$]
+    ref   spi_queue_t  payload
   );
-    automatic spi_fifo_t send_data [$];
-    automatic spi_data_t rcv_data [$];
+    automatic spi_fifo_t  send_data [$];
+    automatic spi_queue_t rcv_data;
+    automatic spi_data_t  rcv_byte;
 
     // opcode
     send_data.push_back('{data: opcode, dir: DirIn, mode: IoSingle});
@@ -845,19 +848,28 @@ package spid_common;
 
     assert(rcv_data.size() == size);
 
+    $display("Read SFDP [0x%8x + 0x%4x]", addr, size);
+
     repeat (size) begin
-      payload.push_back(rcv_data.pop_front());
-    end
-
-    $display("Read SFDP [%x + %d]", addr, size);
-
-    for (int i = 0 ; i < size ; i++) begin
-      $display("[%x]: %x", addr+24'(i), payload[i]);
+      rcv_byte = rcv_data.pop_front();
+      payload.push_back(rcv_byte);
     end
 
   endtask : spiflash_readsfdp
 
+  task automatic spiflash_fastreadcmd(
+    virtual spi_if sif,
+    input spi_data_t   opcode,
+    input logic [31:0] addr,
+    input int          size,       // #bytes
+    input logic        addr_mode,  // 0: addr_3b, 1: addr_4b
+    input mode_e       io_mode,    // IoSingle, IoDual, IoQuad
+    ref   spi_queue_t  payload     // return data
+  );
+  endtask : spiflash_fastreadcmd
 
+  //===========================================================================
+  // SW-side functions/ tasks
   // SRAM interface
   task automatic sram_readword(
     const ref logic clk,
