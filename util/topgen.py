@@ -67,7 +67,8 @@ def ipgen_render(template_name: str, topname: str, params: Dict,
 
     Aborts the program execution in case of an error.
     """
-    instance_name = f"top_{topname}_{template_name}"
+    module_name = params.get("module_instance_name", template_name)
+    instance_name = f"top_{topname}_{module_name}"
     ip_template = IpTemplate.from_template_path(
         SRCTREE_TOP / "hw/ip_templates" / template_name)
 
@@ -79,7 +80,7 @@ def ipgen_render(template_name: str, topname: str, params: Dict,
 
     try:
         renderer = IpBlockRenderer(ip_template, ip_config)
-        renderer.render(out_path / "ip_autogen" / template_name,
+        renderer.render(out_path / "ip_autogen" / module_name,
                         overwrite_output_dir=True)
     except TemplateRenderError as e:
         log.error(e.verbose_str())

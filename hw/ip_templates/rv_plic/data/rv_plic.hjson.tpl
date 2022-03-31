@@ -3,14 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 <% import math %>\
-# RV_PLIC register template
+# ${(module_instance_name).upper()} register template
 #
 # Parameter (given by Python tool)
 #  - src:    Number of Interrupt Sources
 #  - target: Number of Targets that handle interrupt requests
 #  - prio:   Max value of interrupt priorities
+#  - module_instance_name: Module instance name.
 {
-  name: "RV_PLIC",
+  name: "${(module_instance_name).upper()}",
   clocking: [{clock: "clk_i", reset: "rst_ni"}],
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
@@ -96,7 +97,7 @@
         name: "IP",
         desc: "Interrupt Pending",
         count: "NumSrc",
-        cname: "RV_PLIC",
+        cname: "${(module_instance_name).upper()}",
         swaccess: "ro",
         hwaccess: "hwo",
         fields: [
@@ -112,7 +113,7 @@
         name: "IE${i}",
         desc: "Interrupt Enable for Target ${i}",
         count: "NumSrc",
-        cname: "RV_PLIC",
+        cname: "${(module_instance_name).upper()}",
         swaccess: "rw",
         hwaccess: "hro",
         fields: [

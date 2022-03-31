@@ -8,6 +8,7 @@
 #  - src:    Number of Interrupt Sources
 #  - target: Number of Targets that handle interrupt requests
 #  - prio:   Max value of interrupt priorities
+#  - module_instance_name: Module instance name.
 {
   name: "RV_PLIC",
   clocking: [{clock: "clk_i", reset: "rst_ni"}],

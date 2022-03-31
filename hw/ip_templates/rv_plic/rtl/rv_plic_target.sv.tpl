@@ -14,7 +14,7 @@
 
 `include "prim_assert.sv"
 
-module rv_plic_target #(
+module ${module_instance_name}_target #(
   parameter int N_SOURCE = 32,
   parameter int MAX_PRIO = 7,
 
@@ -72,4 +72,3 @@ module rv_plic_target #(
   assign irq_id_o = irq_id_q;
 
 endmodule
-

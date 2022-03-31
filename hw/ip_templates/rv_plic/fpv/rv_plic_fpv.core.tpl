@@ -2,7 +2,11 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: ${instance_vlnv("lowrisc:ip:rv_plic_fpv:0.1")}
+<%
+module_name = instance_vlnv("lowrisc:ip:" + module_instance_name + "_fpv:0.1")
+depends_name = instance_vlnv("lowrisc:ip:" + module_instance_name)
+%>\
+name: ${module_name}
 description: "FPV for RISC-V PLIC"
 
 filesets:
@@ -10,12 +14,12 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
-      - ${instance_vlnv("lowrisc:ip:rv_plic")}
+      - ${depends_name}
       - lowrisc:fpv:csr_assert_gen
     files:
-      - tb/rv_plic_bind_fpv.sv
-      - tb/rv_plic_tb.sv
-      - vip/rv_plic_assert_fpv.sv
+      - tb/${module_instance_name}_bind_fpv.sv
+      - tb/${module_instance_name}_tb.sv
+      - vip/${module_instance_name}_assert_fpv.sv
     file_type: systemVerilogSource
 
 
@@ -23,8 +27,8 @@ generate:
   csr_assert_gen:
     generator: csr_assert_gen
     parameters:
-      spec: ../data/rv_plic.hjson
-      depend: ${instance_vlnv("lowrisc:ip:rv_plic")}
+      spec: ../data/${module_instance_name}.hjson
+      depend: ${depends_name}
 
 targets:
   default: &default_target
@@ -35,7 +39,7 @@ targets:
       - files_formal
     generate:
       - csr_assert_gen
-    toplevel: rv_plic_tb
+    toplevel: ${module_instance_name}_tb
 
   formal:
     <<: *default_target

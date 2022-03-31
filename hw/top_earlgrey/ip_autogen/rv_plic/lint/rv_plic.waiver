@@ -20,4 +20,3 @@ waive -rules INTEGER -location {rv_plic_target.sv} -regexp {'i' of type int used
 
 waive -rules TWOS_COMP -location {rv_plic_target.sv} -regexp {Explicit two's complement with terms} \
       -comment "This is permissible in this context"
-

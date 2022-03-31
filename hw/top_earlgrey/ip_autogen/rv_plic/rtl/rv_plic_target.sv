@@ -72,4 +72,3 @@ module rv_plic_target #(
   assign irq_id_o = irq_id_q;
 
 endmodule
-
