@@ -22,7 +22,7 @@
             version:            "0.2",
             life_stage:         "L1",
             design_stage:       "D2",
-            verification_stage: "V1",
+            verification_stage: "V2",
             dif_stage:          "S2",
         },
     ]
