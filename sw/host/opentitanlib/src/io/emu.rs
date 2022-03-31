@@ -11,17 +11,17 @@ use thiserror::Error;
 /// Error related to the `Emulator` trait.
 #[derive(Error, Debug, Serialize, Deserialize)]
 pub enum EmuError {
-    #[error("Invalid argument name {0}")]
+    #[error("Invalid argument name: {0}")]
     InvalidArgumetName(String),
-    #[error("Argument {0} has invalid value {1}")]
+    #[error("Argument nmae: {0} has invalid value: {1}")]
     InvalidArgumentValue(String, String),
-    #[error("Start failed with cause {0}")]
+    #[error("Start failed with cause: {0}")]
     StartFailureCause(String),
-    #[error("Stop failed with cause {0}")]
+    #[error("Stop failed with cause: {0}")]
     StopFailureCause(String),
     #[error("Can't restore resource to initial state: {0}")]
     ResetError(String),
-    #[error("Runtime error {0}")]
+    #[error("Runtime error: {0}")]
     RuntimeError(String),
 }
 impl_serializable_error!(EmuError);
