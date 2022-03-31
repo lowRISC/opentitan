@@ -148,7 +148,9 @@
 
             * Make sure flash_wp_out_l signal is asserted low by reading PIN_OUT_CTL.flash_wp_l.
             * Enable the override function by setting PIN_OUT_CTL.FLASH_WP_L to value 1.
-            * Check if flash_wp_out_l is released.
+            * Randomize the corresponding flash_wp_l_i input pin.
+            * Check flash_wp_l_i does not have a bypass path to flash_wp_l_o.
+            * Check if flash_wp_l_o is released only by the override function.
             '''
       milestone: V2
       tests: ["sysrst_ctrl_flash_wr_prot_out"]
@@ -171,44 +173,131 @@
       milestone: V2
       tests: ["sysrst_ctrl_ultra_low_pwr"]
     }
+
+    {
+      name: stress_all
+      desc: '''
+            Test all the sequences randomly in one sequence.
+
+            * Combine above sequences in one test then randomly select for running.
+            * All sequences should be finished and checked by the scoreboard.
+      '''
+      milestone: V2
+      tests: ["sysrst_ctrl_stress_all"]
+    }
   ]
 
   covergroups: [
     {
-      name: sysrst_ctrl_ec_rst_pulse_width_cg
-      desc: '''
-            Cover the ec_rst_out_l pulse width range from 10-200ms.
-            '''
-    }
-    {
-      name: sysrst_ctrl_key_intr_cg
-      desc: '''
-            Cover the FSM for input key pressed and released.
-            '''
-    }
-    {
-      name: sysrst_ctrl_timerfsm_cg
-      desc: '''
-            Cover the timer based FSM model for different debounce time.
-            '''
-    }
-    {
-      name: sysrst_ctrl_ulpfsm_cg
-      desc: '''
-            Cover the ultra low power fsm model.
-            '''
-    }
-    {
       name: sysrst_ctrl_combo_detect_action_cg
       desc: '''
             Cover all the combo detect actions.
+            Create 4 instance to cover the combo detect register [0-3].
+            Sample the covergroup when the event occurs.
+            Cross the covergroup with combo_detect_sel_cg to cover all the input combination with
+            all the possible combo_detect actions.
             '''
     }
     {
-      name: sysrst_ctrl_override_values_cg
+      name: sysrst_ctrl_combo_detect_sel_cg
       desc: '''
-            Cover the pin override value transition from 0 -> 1 and 1 -> 0.
-            Reference: PIN_OUT_VALUE register.
+            Cover all the combo detect input select.
+            Cross all the inputs to cover all the combos.
+            Create 4 instance to cover the combo detect register [0-3].
+            Sample the covergroup when the event occurs.
+            Cross the covergroup with combo_detect_action_cg to cover all the input combination with
+            all the possible combo_detect actions.
+            '''
+    }
+    {
+      name: sysrst_ctrl_combo_detect_det_cg
+      desc: '''
+            Cover the combo detect debounce timer.
+            Create 4 instance to cover the combo detect register [0-3].
+            '''
+    }
+    {
+      name: sysrst_ctrl_auto_block_debounce_ctl_cg
+      desc: '''
+            Cover the auto block enable/disable feature.
+            Cover the auto block debounce timer.
+            '''
+    }
+    {
+      name: sysrst_ctrl_combo_intr_status_cg
+      desc: '''
+            Cover the combo detect status of all 4 set of combo registers.
+            Cover all the input combinations has generated selected outcome actions and cross
+            with the status generated.
+            '''
+    }
+    {
+      name: sysrst_ctrl_key_intr_status_cg
+      desc: '''
+            Cover the H2L/L2H edge detect event of all the inputs.
+            '''
+    }
+    {
+      name: sysrst_ctrl_ulp_status_cg
+      desc: '''
+            Cover the ultra low power event triggered.
+            Cover the following condition triggers the ultra low power event:
+            * High to low transition on pwrb_in input pin
+            * Low to High transition on lid_open pin.
+            * A level high on ac_present pin.
+            Cross the above three condition with the ulp_status.
+            '''
+    }
+    {
+      name: sysrst_ctrl_wkup_event_cg
+      desc: '''
+            Cover the ultra low power wakeup event and status.
+            Cover the wkup event could occur due to following condition:
+            * High to low transition on pwrb_in input pin when ulp feature is enable.
+            * Low to High transition on lid_open pin when ulp feature is enable.
+            * A level high on ac_present pin when ulp feature is enable.
+            * When an interrupt is generated.
+            Cross the above condition with the wkup_status register.
+            '''
+    }
+    {
+      name: sysrst_ctrl_key_invert_ctl_cg
+      desc: '''
+            Cover the invert values of all input and output values.
+            '''
+    }
+    {
+      name: sysrst_ctrl_pin_in_value_cg
+      desc: '''
+            Cover the raw input values before inversion for all inputs.
+            '''
+    }
+    {
+      name: sysrst_ctrl_auto_blk_out_ctl_cg
+      desc: '''
+            Cover the auto blk input select and their values.
+            Cross the key outputs selected to override with their override values.
+            Sample the covergroup when the event occurs.
+            '''
+    }
+    {
+      name: pin_cfg_cg
+      desc: '''
+            Cover the override enable/disable of all the inputs.
+            Cover the override values of all the input values.
+            Cover the allowed value 0 and 1 of all the inputs.
+            Cross all the above coverpoints.
+            '''
+    }
+    {
+      name: debounce_timer_cg
+      desc: '''
+            Cover the debounce timer of the following registers
+            * ec_rst_ctl register.
+            * key_intr_debounce_ctl register.
+            * ulp_ac_debounce_ctl register.
+            * ulp_pwrb_debounce_ctl register.
+            * ulp_lid_debounce_ctl register.
             '''
     }
   ]
