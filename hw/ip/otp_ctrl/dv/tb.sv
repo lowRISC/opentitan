@@ -71,6 +71,11 @@ module tb;
 
   assign otp_ctrl_if.lc_prog_req = lc_prog_if.req;
   assign otp_ctrl_if.lc_prog_err = lc_prog_if.d_data;
+
+  // Assign to otp_ctrl_if for assertion checks.
+  assign otp_ctrl_if.flash_acks = flash_data_if.ack;
+  assign otp_ctrl_if.otbn_ack  = otbn_if.ack;
+
   // This signal probes design's alert request to avoid additional logic for triggering alert and
   // disable assertions.
   // Alert checkings are done independently in otp_ctrl's scb.
@@ -144,9 +149,10 @@ module tb;
   );
 
   for (genvar i = 0; i < NumSramKeyReqSlots; i++) begin : gen_sram_pull_if
-    assign sram_req[i]       = sram_if[i].req;
-    assign sram_if[i].ack    = sram_rsp[i].ack;
-    assign sram_if[i].d_data = {sram_rsp[i].key, sram_rsp[i].nonce, sram_rsp[i].seed_valid};
+    assign sram_req[i]              = sram_if[i].req;
+    assign sram_if[i].ack           = sram_rsp[i].ack;
+    assign sram_if[i].d_data        = {sram_rsp[i].key, sram_rsp[i].nonce, sram_rsp[i].seed_valid};
+    assign otp_ctrl_if.sram_acks[i] = sram_rsp[i].ack;
     initial begin
       uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(SRAM_DATA_SIZE)))::set(null,
                      $sformatf("*env.m_sram_pull_agent[%0d]*", i), "vif", sram_if[i]);

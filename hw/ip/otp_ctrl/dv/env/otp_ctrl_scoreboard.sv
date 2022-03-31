@@ -145,6 +145,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             exp_hwcfg_data = cfg.otp_ctrl_vif.under_error_states() ?
                              otp_ctrl_part_pkg::PartInvDefault[HwCfgOffset*8 +: HwCfgSize*8] :
                              otp_hw_cfg_data_t'({<<32 {otp_a[HwCfgOffset/4 +: HwCfgSize/4]}});
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_hw_cfg_o.valid, lc_ctrl_pkg::On)
             `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_hw_cfg_o.data, exp_hwcfg_data)
 
             if (!cfg.otp_ctrl_vif.under_error_states() && cfg.en_scb) begin

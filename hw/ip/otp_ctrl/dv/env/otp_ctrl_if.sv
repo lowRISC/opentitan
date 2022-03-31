@@ -65,6 +65,11 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   logic lc_prog_req, lc_prog_err;
   logic lc_prog_err_dly1, lc_prog_no_sta_check;
 
+  // Connect push_pull interfaces ack signals for assertion checks.
+  logic otbn_ack;
+  logic [1:0] flash_acks;
+  logic [NumSramKeyReqSlots-1:0] sram_acks;
+
   // Variables for internal interface logic.
   // `lc_escalate_en` is async, take two clock cycles to synchronize.
   lc_ctrl_pkg::lc_tx_t lc_esc_dly1, lc_esc_dly2;
@@ -283,11 +288,43 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   `OTP_ASSERT_WO_LC_ESC(LcProgReq_A, $rose(lc_prog_req) |=>
                        (pwr_otp_idle_o == 0 || $rose(lc_prog_err)) within lc_prog_req[*1:$])
 
-  // TODO: add assertions when esc_en is On
+  // During fatal alert, check if otp outputs revert back to default value.
+  // Wait two clock cycles until error propogates to each FSM states and regs.
+  `define OTP_FATAL_ERR_ASSERT(NAME, SEQ) \
+    `ASSERT(FatalErr``NAME``, alert_reqs |-> ##2 SEQ)
+
+  `OTP_FATAL_ERR_ASSERT(LcDataValid_A, lc_data_o.valid == 0 && lc_data_o.error == 1)
+  `OTP_FATAL_ERR_ASSERT(LcDataState_A, lc_data_o.state ==
+                        PartInvDefault[LcStateOffset*8+:LcStateSize*8])
+  `OTP_FATAL_ERR_ASSERT(LcDataCount_A, lc_data_o.count ==
+                        PartInvDefault[LcTransitionCntOffset*8+:LcTransitionCntSize*8])
+  `OTP_FATAL_ERR_ASSERT(LcDataTestUnlockToken_A, lc_data_o.test_unlock_token ==
+                        PartInvDefault[TestUnlockTokenOffset*8+:TestUnlockTokenSize*8])
+  `OTP_FATAL_ERR_ASSERT(LcDataTestExitToken_A, lc_data_o.test_exit_token ==
+                        PartInvDefault[TestExitTokenOffset*8+:TestExitTokenSize*8])
+  `OTP_FATAL_ERR_ASSERT(LcDataRmaToken_A, lc_data_o.rma_token ==
+                        PartInvDefault[RmaTokenOffset*8+:RmaTokenSize*8])
+
+  `OTP_FATAL_ERR_ASSERT(KeymgrKeyData_A, keymgr_key_o.key_share0 ==
+                        PartInvDefault[CreatorRootKeyShare0Offset*8+:CreatorRootKeyShare0Size*8] &&
+                        keymgr_key_o.key_share1 ==
+                        PartInvDefault[CreatorRootKeyShare1Offset*8+:CreatorRootKeyShare1Size*8])
+
+  `OTP_FATAL_ERR_ASSERT(HwCfgOValid_A, otp_hw_cfg_o.valid == lc_ctrl_pkg::Off)
+  `OTP_FATAL_ERR_ASSERT(HwCfgOData_A, otp_hw_cfg_o.data ==
+                        PartInvDefault[HwCfgOffset*8+:HwCfgSize*8])
+
+  `OTP_FATAL_ERR_ASSERT(LcProgReq_A, lc_prog_req == 0)
+  `OTP_FATAL_ERR_ASSERT(FlashAcks_A, flash_acks == 0)
+  `OTP_FATAL_ERR_ASSERT(SramAcks_A, sram_acks == 0)
+  `OTP_FATAL_ERR_ASSERT(OtbnAck_A, otbn_ack == 0)
+
   `undef OTP_ASSERT_WO_LC_ESC
+  `undef OTP_FATAL_ERR_ASSERT
   `undef ECC_REG_PATH
   `undef BUF_PART_OTP_CMD_PATH
   `undef LC_PART_OTP_CMD_PATH
   `undef PRIM_GENERIC_OTP_PATH
   `undef PRIM_GENERIC_OTP_CMD_I_PATH
+  `undef FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL
 endinterface
