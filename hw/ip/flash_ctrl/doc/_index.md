@@ -217,11 +217,14 @@ It is recommended that instead of blindly issuing transactions to the flash cont
 Once the seed phase is complete, the flash controller switches to the software interface.
 Software can then read / program / erase the flash as needed.
 
+#### RMA Entry Handling
+
 When an RMA entry request is received from the life cycle manager, the flash controller waits for any pending flash transaction to complete, then switches priority to the hardware interface.
 The flash controller then initiates RMA entry process and notifies the life cycle controller when it is complete.
 The RMA entry process wipes out all data, creator, owner and isolated partitions.
 
-After RMA completes, if the host system is still available, the flash protocol controller registers can still be accessed.
+After RMA completes, the flash controller is [disabled]({{< relref "#flash-access-disable" >}}).
+When disabled the flash protocol controller registers can still be accessed.
 However, flash memory access are not allowed, either directly by the host or indirectly through flash protocol controller initiated transactions.
 It is expected that after an RMA transition, the entire system will be rebooted.
 
@@ -413,14 +416,16 @@ For the escalation behavior, see [flash access disable]({{< relref "#flash-acces
 
 #### Flash Access Disable
 
-Flash access can be disabled through global escalation trigger, local escalation trigger or software command.
+Flash access can be disabled through global escalation trigger, local escalation trigger, rma process completion or software command.
 The escalation triggers are described [here]({{< relref "#flash-escalation" >}}).
 The software command to disable flash can be found in {{< regref "DIS" >}}.
+The description for rma entry can be found [here]({{< relref "#rma-entry-handling" >}}).
 
 When disabled, the flash has a two layered response:
-- The flash protocol controller memory protection ({{< relref "#memory-protection" >}}) errors back all controller initiated operations.
+- The flash protocol controller [memory protection]({{< relref "#memory-protection" >}}) errors back all controller initiated operations.
 - The host-facing tlul adapter errors back all host initiated operations.
 - The flash physical controller completes any existing stateful operations (program or erase) and drops all future flash transactions.
+- The flash protocol controller arbiter completes any existing software issued commands and enters an invalid state where no new transactions can be issued.
 
 
 ### Flash Physical Controller
