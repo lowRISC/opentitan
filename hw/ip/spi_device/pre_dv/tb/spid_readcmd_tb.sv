@@ -7,6 +7,8 @@
 //  - Read commands
 //  - Mailbox
 
+`define DPSRAM_DATA(x) tb.u_memory_2p.u_mem.gen_generic.u_impl_generic.mem[(x)]
+
 module tb;
   import spi_device_pkg::*;
 
@@ -162,6 +164,7 @@ module tb;
       begin
         #20us
         $display("TEST TIMED OUT!!");
+        $finish();
       end
       host();
       sw();
@@ -171,9 +174,13 @@ module tb;
   end
 
   static task host();
-    automatic spi_data_t sfdp_data [$];
+    spi_queue_t sfdp_data;
+    spi_queue_t expected_data;
     bit test_passed;
+    bit match;
+
     test_passed = 1'b 1;
+
 
     wait(init_done.triggered);
     // SW initializatio completed. Issues sequences
@@ -181,14 +188,103 @@ module tb;
     // Issue SFDP: 4 byte read @ 0x80
     $display("Sending a SFDP command");
     spiflash_readsfdp(tb_sif, 8'h 5A, 24'h 00_0080, 4, sfdp_data);
+    expected_data = get_sfdp_data(SramAw'('h80), 4);
+
+    // Check the returned data
+    match = check_data(sfdp_data, expected_data);
+
+    if (match == 1'b 0) test_passed = 1'b 0;
+    sfdp_data.delete();
+    expected_data.delete();
+
+    //=========================================================================
+    // Issue SFDP: Mis-aligned data over 4 words
+    $display("Sending a mis-aligned SFDP command");
+    spiflash_readsfdp(tb_sif, 8'h 5A, 24'h 000007, 16, sfdp_data);
+    // Push expected data
+    expected_data = get_sfdp_data(SramAw'(7), 16);
+
+    match = check_data(sfdp_data, expected_data);
+    if (match == 1'b 0) test_passed = 1'b 0;
+    sfdp_data.delete();
+    expected_data.delete();
+
+    //=========================================================================
+    // Issue SFDP: Mis-aligned and crossed the boundary (256B)
+    $display("Sending a mis-aligned wrapped SFDP command");
+    spiflash_readsfdp(tb_sif, 8'h 5A, 24'h 00_00FD, 25, sfdp_data);
+    // Push expected data
+    expected_data = get_sfdp_data(SramAw'(253), 25);
+
+    match = check_data(sfdp_data, expected_data);
+    if (match == 1'b 0) test_passed = 1'b 0;
+    sfdp_data.delete();
+    expected_data.delete();
+
+    //=========================================================================
+    // Issue Read Cmd: Normal Read Cmd
+    //=========================================================================
+    // Issue Read Cmd: Fast Read Cmd
+    //=========================================================================
+    // Issue Read Cmd: Fast Read Dual Output
+    //=========================================================================
+    // Issue Read Cmd: Fast Read Quad Output
+    //=========================================================================
+    // Issue Read Cmd: Fast Read Dual Mis-aligned
+    //=========================================================================
+    // Issue Read Cmd: Fast Read to Mailbox
+    //=========================================================================
+    // Issue Read Cmd: Fast Read Mailbox Boundary Crossing
+    //=========================================================================
+    // Issue Read Cmd: Fast Read Buffer Threshold
+    //=========================================================================
+    // Issue Read Cmd: Fast Read Buffer Flip
 
     // Complete the simulation
     if (test_passed) begin
       $display("TEST PASSED CHECKS");
     end else begin
       // Add error log
+      $display("TEST FAILED");
     end
   endtask : host
+
+  function automatic spi_queue_t get_sfdp_data(
+    logic [SramAw-1:0] base, // base addr
+    int                size  // #bytes
+  );
+    automatic spi_queue_t data;
+
+    for (int i = base ; i < base + size ; i++) begin
+      automatic logic [SramAw-1:0] addr;
+      automatic int                remainder;
+      automatic logic [SramDw-1+(SramDw/8):0] mem_data; // Parity
+      addr = SramSfdpIdx + (i/4)%SramSfdpDepth;
+      remainder = i%4;
+      mem_data = `DPSRAM_DATA(addr);
+      $display("DPSRAM [0x%3X]: 0x%2x", addr, mem_data);
+      data.push_back(mem_data[9*remainder+:8]);
+    end
+
+    return data;
+  endfunction : get_sfdp_data
+
+  function automatic bit check_data(
+    const ref spi_queue_t rcv,
+    const ref spi_queue_t exp
+  );
+    automatic int size = exp.size();
+    automatic bit match = 1'b 1;
+
+    foreach (rcv[i]) begin
+      if (rcv[i] != exp[i]) begin
+        match = 1'b 0;
+        $display("Data mismatch @ 0x%4x: RCV[%x], EXP[%x]", i, rcv[i], exp[i]);
+      end
+    end
+
+    return match;
+  endfunction : check_data
 
   static task sw();
     automatic logic sw_gnt; // sram grant signal. always 1 in this test
@@ -197,7 +293,10 @@ module tb;
     // Initialize the DPSRAM
     sw_gnt = 1'b 1;
     for (int i = 0 ; i < SramDepth ; i++) begin
-      sram_writeword(sw_clk, sw_l2m, sw_gnt, sw_m2l, SramAw'(i), $urandom());
+      //sram_writeword(sw_clk, sw_l2m, sw_gnt, sw_m2l, SramAw'(i), $urandom());
+      sram_writeword(sw_clk, sw_l2m, sw_gnt, sw_m2l, SramAw'(i), {
+        8'(i*4+3), 8'(i*4+2), 8'(i*4+1), 8'(i*4)
+      });
     end
 
     // Configure
