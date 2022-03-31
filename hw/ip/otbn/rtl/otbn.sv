@@ -1023,6 +1023,10 @@ module otbn
   `ASSERT(NonIdleDmemReadsZero_A,
           (hw2reg.status.d != StatusIdle) & dmem_rvalid_bus |-> dmem_rdata_bus == 'd0)
 
+  // Error handling: if we pass an error signal down to the core then we should also be setting an
+  // error flag.
+  `ASSERT(ErrBitIfEscalate_A, core_escalate_en |=> |err_bits_q)
+
   // Constraint from package, check here as we cannot have `ASSERT_INIT in package
   `ASSERT_INIT(WsrESizeMatchesParameter_A, $bits(wsr_e) == WsrNumWidth)
 
