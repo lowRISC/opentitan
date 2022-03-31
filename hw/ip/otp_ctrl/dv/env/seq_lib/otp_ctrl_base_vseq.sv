@@ -68,14 +68,19 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
 
-  // For stress_all_with_rand_reset test only.
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
-    cfg.otp_ctrl_vif.release_part_access_mubi();
-    cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
-    otp_ctrl_init();
-    otp_pwr_init();
-    super.apply_resets_concurrently(reset_duration_ps);
-    cfg.en_scb = 1;
+    // For stress_all_with_rand_reset test only - backdoor clear OTP memory,
+    // and re-initialize OTP_ctrl after reset.
+    if (common_seq_type == "stress_all_with_rand_reset") begin
+      cfg.otp_ctrl_vif.release_part_access_mubi();
+      cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
+      otp_ctrl_init();
+      otp_pwr_init();
+      super.apply_resets_concurrently(reset_duration_ps);
+      cfg.en_scb = 1;
+    end else begin
+      super.apply_resets_concurrently(reset_duration_ps);
+    end
   endtask
 
   virtual task dut_shutdown();
