@@ -20,6 +20,7 @@ package pwrmgr_env_pkg;
   import prim_mubi_pkg::MuBi4True;
   import prim_mubi_pkg::MuBi4Width;
   import sec_cm_pkg::*;
+  import pwrmgr_clk_ctrl_agent_pkg::*;
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
