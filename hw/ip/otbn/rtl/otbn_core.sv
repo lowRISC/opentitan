@@ -469,8 +469,8 @@ module otbn_core
   assign err_bits_o = err_bits_q | err_bits_d;
 
   // Pass an "escalation" signal down to the controller by ORing in error signals from the other
-  // modules in otbn_core. Note that each error that appears here also appears somewhere in
-  // err_bits_o above.
+  // modules in otbn_core. Note that each error signal except escalate_en_i that appears here also
+  // appears somewhere in err_bits_o above (checked in ErrBitsIfControllerEscalate_A)
   assign controller_escalate_en = |{escalate_en_i,
                                     start_stop_state_error,
                                     urnd_all_zero,
@@ -724,4 +724,10 @@ module otbn_core
           rf_bignum_wr_en_ctrl & insn_dec_bignum.rf_wdata_sel == RfWdSelLsu |-> dmem_rvalid_i)
   `ASSERT(OnlyWriteLoadDataBignumWhenDMemValid_A,
           rf_base_wr_en_ctrl & insn_dec_base.rf_wdata_sel == RfWdSelLsu |-> dmem_rvalid_i)
+
+  // Error handling: if we pass an error signal down to the controller then we should also be
+  // setting an error flag, unless the signal came from above.
+  `ASSERT(ErrBitsIfControllerEscalate_A,
+          controller_escalate_en && !escalate_en_i |=> err_bits_q)
+
 endmodule
