@@ -392,7 +392,23 @@ module spi_readcmd
   assign addr_ready_in_word     = (addr_cnt_d == 5'd 2);
   assign addr_ready_in_halfword = (addr_cnt_d == 5'd 1);
 
-  assign addr_latched = (addr_cnt_d == 5'd 0);
+  // addr_latched should be a pulse to be used in spid_readsram
+  logic  addr_latched_d;
+  assign addr_latched_d = (addr_cnt_d == 5'd 0);
+
+  prim_edge_detector #(
+    .Width      (1),
+    .ResetValue (1'b 0),
+    .EnSync     (1'b 0)
+  ) u_addr_latch_pulse (
+    .clk_i,
+    .rst_ni,
+
+    .d_i               (addr_latched_d),
+    .q_sync_o          (              ),
+    .q_posedge_pulse_o (addr_latched  ),
+    .q_negedge_pulse_o (              )
+  );
 
   assign cmdinfo_addr_mode = get_addr_mode(cmd_info_i, addr_4b_en_i);
 

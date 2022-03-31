@@ -351,4 +351,7 @@ module spid_readsram
   // strb_set is asserted together with sram_req or follows the req
   `ASSUME(ReqStrbRelation_M, sram_read_req_i |-> ##[0:2] addr_latched_i)
 
+  // Address latched signal is a pulse signal
+  `ASSUME(AddrLatchedPulse_M, addr_latched_i |=> !addr_latched_i)
+
 endmodule : spid_readsram
