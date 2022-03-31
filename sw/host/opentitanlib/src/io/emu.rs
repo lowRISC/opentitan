@@ -2,13 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::impl_serializable_error;
-use anyhow::Result;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt;
 use std::path::PathBuf;
+
+use anyhow::Result;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
+
+use crate::impl_serializable_error;
 
 /// Error related to the `Emulator` trait.
 #[derive(Error, Debug, Serialize, Deserialize)]
@@ -58,6 +60,23 @@ impl From<PathBuf> for EmuValue {
 impl From<Vec<PathBuf>> for EmuValue {
     fn from(path_array: Vec<PathBuf>) -> Self {
         EmuValue::FilePathList(path_array)
+    }
+}
+
+impl fmt::Display for EmuValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            EmuValue::Empty => write!(f, " "),
+            EmuValue::String(value) => write!(f, "{}", value),
+            EmuValue::FilePath(value) => write!(f, "{}", value.display()),
+            EmuValue::StringList(value_list) => write!(f, "{}", value_list.join(",")),
+            EmuValue::FilePathList(value_list) => {
+                for item in value_list.iter() {
+                    write!(f, "{} ", item.display())?;
+                }
+                Ok(())
+            }
+        }
     }
 }
 

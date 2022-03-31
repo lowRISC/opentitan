@@ -97,7 +97,7 @@ impl CommandDispatch for EmuStart {
         let emulator = transport.emulator()?;
         let mut args: HashMap<String, EmuValue> = HashMap::new();
         pack_args(&mut args, "exec", &self.emulator_exec);
-        pack_args(&mut args, "app", &self.apps_list);
+        pack_args(&mut args, "apps", &self.apps_list);
         pack_args(&mut args, "flash", &self.flash_list);
         pack_args(&mut args, "version_init_state", &self.version_init_state);
         pack_args(&mut args, "pmu_init_state", &self.pmu_init_state);
