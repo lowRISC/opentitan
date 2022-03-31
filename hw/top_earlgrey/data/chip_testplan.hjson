@@ -2279,7 +2279,7 @@
               interface to flash ctrl is actually for the closed src.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_flash_rma_unlocked"]
     }
     {
       name: chip_conn_flash_jtag
@@ -2347,8 +2347,7 @@
       desc: '''Verify that the creator seed is wiped by the flash ctrl on RMA entry.
             '''
       milestone: V2
-      tests: []
-
+      tests: ["chip_sw_flash_rma_unlocked"]
     }
     {
       name: chip_sw_flash_lc_owner_seed_sw_rw_en
