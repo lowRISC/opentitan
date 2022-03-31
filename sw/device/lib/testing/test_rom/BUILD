@@ -5,6 +5,7 @@
 load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_rom_binary")
 load("//rules:opentitan_test.bzl", "opentitan_functest")
 load("//rules:autogen.bzl", "autogen_chip_info")
+load("//rules:linker.bzl", "ld_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -12,13 +13,19 @@ autogen_chip_info(
     name = "chip_info",
 )
 
+ld_library(
+    name = "linker_script",
+    script = "test_rom.ld",
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//sw/device:info_sections",
+    ],
+)
+
 opentitan_rom_binary(
     name = "test_rom",
-    linkopts = [
-        "-T $(location test_rom.ld)",
-    ],
     deps = [
-        "test_rom.ld",
+        ":linker_script",
         ":test_rom_lib",
         "//sw/device/lib/base:mmio",
     ],
@@ -42,9 +49,7 @@ cc_library(
         "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
         "//hw/top_earlgrey/ip/ast/data:ast_regs",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:linker_script",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device:info_sections",
         "//sw/device/lib:ibex_peri",
         "//sw/device/lib:pinmux",
         "//sw/device/lib/base:mmio",

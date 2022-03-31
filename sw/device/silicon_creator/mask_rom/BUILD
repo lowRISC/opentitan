@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_rom_binary")
+load("//rules:linker.bzl", "ld_library")
 load(
     "//rules:opentitan_test.bzl",
     "cw310_params",
@@ -59,6 +60,16 @@ cc_test(
     ],
 )
 
+ld_library(
+    name = "linker_script",
+    script = "mask_rom.ld",
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//sw/device:info_sections",
+        "//sw/device/silicon_creator/lib/base:static_critical_sections",
+    ],
+)
+
 opentitan_rom_binary(
     name = "mask_rom",
     srcs = [
@@ -69,12 +80,9 @@ opentitan_rom_binary(
     # Mask ROM does not permit the DV simulation backdoor logging mechanism that
     # test ROM does, for obvious security reasons.
     extract_sw_logs_db = False,
-    linkopts = [
-        "-T $(location mask_rom.ld)",
-    ],
     deps = [
-        "mask_rom.ld",
         ":boot_policy",
+        ":linker_script",
         ":mask_rom_epmp",
         ":primitive_bootstrap",
         ":sigverify_keys",
@@ -87,9 +95,7 @@ opentitan_rom_binary(
         "//hw/top_earlgrey/ip/ast/data:ast_regs",
         "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:linker_script",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device:info_sections",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
@@ -105,7 +111,6 @@ opentitan_rom_binary(
         "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib:shutdown",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/lib/base:static_critical.ld",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
@@ -142,9 +147,6 @@ opentitan_functest(
         "mask_rom_epmp_test.c",
         "mask_rom_start.S",
     ],
-    linkopts = [
-        "-T $(location mask_rom.ld)",
-    ],
     # This test doesn't use the OTTF.
     ottf = [],
     targets = ["verilator"],  # Can only run in verilator right now.
@@ -155,7 +157,7 @@ opentitan_functest(
     # Verilator or CW310 params).
     test_in_rom = True,
     deps = [
-        "mask_rom.ld",
+        ":linker_script",
         ":mask_rom_epmp",
         "//hw/ip/aon_timer/data:aon_timer_regs",
         "//hw/ip/csrng/data:csrng_regs",
@@ -167,9 +169,7 @@ opentitan_functest(
         "//hw/top_earlgrey/ip/ast/data:ast_regs",
         "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:linker_script",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device:info_sections",
         "//sw/device/lib:pinmux",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
@@ -186,7 +186,6 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib:epmp_test_unlock",
         "//sw/device/silicon_creator/lib:irq_asm",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/lib/base:static_critical.ld",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:uart",
     ],

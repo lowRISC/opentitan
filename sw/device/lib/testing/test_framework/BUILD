@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+load("//rules:linker.bzl", "ld_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -75,6 +76,15 @@ cc_library(
     ],
 )
 
+ld_library(
+    name = "linker_script",
+    script = "ottf.ld",
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//sw/device:info_sections",
+    ],
+)
+
 cc_library(
     name = "ottf_start",
     srcs = [
@@ -90,14 +100,9 @@ cc_library(
         "-nostdlib",
         "-ffreestanding",
     ],
-    linkopts = [
-        "-T $(location ottf.ld)",
-    ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "ottf.ld",
-        "//hw/top_earlgrey/sw/autogen:linker_script",
-        "//sw/device:info_sections",
+        ":linker_script",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crt",

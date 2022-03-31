@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:linker.bzl", "ld_library")
+
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
@@ -15,9 +17,9 @@ cc_library(
     ],
 )
 
-cc_library(
-    name = "linker_script",
-    deps = ["top_earlgrey_memory.ld"],
+ld_library(
+    name = "top_earlgrey_memory",
+    fragments = ["top_earlgrey_memory.ld"],
 )
 
 filegroup(
