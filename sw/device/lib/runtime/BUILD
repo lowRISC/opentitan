@@ -22,13 +22,13 @@ dual_cc_library(
     ),
     hdrs = ["hart.h"],
     deps = dual_inputs(
-        shared = [
-            "//sw/device/lib/base:math",
-            "//sw/device/lib/base:stdasm",
-        ],
         device = [
             ":ibex",
             "//sw/device/lib/arch:device",
+        ],
+        shared = [
+            "//sw/device/lib/base:math",
+            "//sw/device/lib/base:stdasm",
         ],
     ),
 )
