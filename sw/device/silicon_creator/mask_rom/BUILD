@@ -51,7 +51,7 @@ cc_test(
     deps = [
         ":mock_boot_policy_ptrs",
         "//sw/device/lib/base:hardened",
-        "//sw/device/silicon_creator/lib:mock_boot_data",
+        "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:mock_manifest",
         "//sw/device/silicon_creator/lib:mock_shutdown",
         "//sw/device/silicon_creator/testing:mask_rom_test",
