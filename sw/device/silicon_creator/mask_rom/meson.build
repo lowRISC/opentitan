@@ -323,6 +323,7 @@ test('sw_silicon_creator_mask_rom_sigverify_keys_unittest', executable(
     sources: [
       'sigverify_keys.c',
       'sigverify_keys_unittest.cc',
+      '../lib/sigverify/sigverify_mod_exp_otbn_mock.cc',
       hw_ip_otp_ctrl_reg_h,
     ] + sw_silicon_creator_lib_sigverify_sources_for_boot_stage_tests,
     dependencies: [

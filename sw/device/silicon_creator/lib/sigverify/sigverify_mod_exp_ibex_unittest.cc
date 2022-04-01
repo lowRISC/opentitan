@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/silicon_creator/lib/sigverify/sigverify_mod_exp_ibex.h"
+
 #include <unordered_set>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "sw/device/silicon_creator/lib/sigverify.h"
-#include "sw/device/silicon_creator/lib/sigverify_mod_exp.h"
+#include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 
 namespace sigverify_mod_exp_ibex_unittest {
 namespace {

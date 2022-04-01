@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 
-#include "sw/device/silicon_creator/lib/sigverify_rsa_key.h"
+#include "sw/device/silicon_creator/lib/sigverify/sigverify_rsa_key.h"
 
 #ifdef __cplusplus
 extern "C" {
