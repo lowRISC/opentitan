@@ -216,13 +216,6 @@ def _format_list(param_name, list1, datadict, **kwargs):
     """
     return [x.format(**kwargs) for x in list1 + datadict.pop(param_name, [])]
 
-def _unique_deps(*deplists):
-    uniq = {}
-    for deplist in deplists:
-        for dep in deplist:
-            uniq[dep] = True
-    return uniq.keys()
-
 def opentitan_functest(
         name,
         targets = ["dv", "verilator", "cw310"],
@@ -271,7 +264,7 @@ def opentitan_functest(
     """
 
     # Generate flash artifacts for test.
-    deps = _unique_deps(kwargs.pop("deps", []), ottf)
+    deps = depset(direct = kwargs.pop("deps", []) + ottf).to_list()
     if test_in_rom:
         opentitan_rom_binary(
             name = name + "_rom_prog",
