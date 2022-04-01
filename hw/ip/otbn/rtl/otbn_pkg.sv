@@ -448,8 +448,9 @@ package otbn_pkg;
 
   // States for start_stop_controller
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 7 -n 6 \
-  //      -s 5799399943 --language=sv
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 8 -n 6 \
+  //      -s 2798844836 --language=sv
   //
   // Hamming distance histogram:
   //
@@ -468,18 +469,19 @@ package otbn_pkg;
   //
   localparam int StateStartStopWidth = 6;
   typedef enum logic [StateStartStopWidth-1:0] {
-    OtbnStartStopStateHalt                = 6'b011100,
-    OtbnStartStopStateUrndRefresh         = 6'b101111,
-    OtbnStartStopStateRunning             = 6'b010111,
-    OtbnStartStopSecureWipeWdrUrnd        = 6'b000010,
-    OtbnStartStopSecureWipeAccModBaseUrnd = 6'b110001,
-    OtbnStartStopSecureWipeAllZero        = 6'b001001,
-    OtbnStartStopSecureWipeComplete       = 6'b100100
+    OtbnStartStopStateHalt                = 6'b101000,
+    OtbnStartStopStateUrndRefresh         = 6'b010000,
+    OtbnStartStopStateRunning             = 6'b110011,
+    OtbnStartStopSecureWipeWdrUrnd        = 6'b011101,
+    OtbnStartStopSecureWipeAccModBaseUrnd = 6'b100101,
+    OtbnStartStopSecureWipeAllZero        = 6'b111110,
+    OtbnStartStopSecureWipeComplete       = 6'b001011,
+    OtbnStartStopStateError               = 6'b000110
   } otbn_start_stop_state_e;
 
 // Encoding generated with:
-// $ ./util/design/sparse-fsm-encode.py -d 3 -m 3 -n 5 \
-//      -s 5799399983 --language=sv
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 5 \
+//      -s 2298830978 --language=sv
 //
 // Hamming distance histogram:
 //
@@ -493,13 +495,14 @@ package otbn_pkg;
 // Minimum Hamming distance: 3
 // Maximum Hamming distance: 4
 // Minimum Hamming weight: 1
-// Maximum Hamming weight: 3
+// Maximum Hamming weight: 4
 //
 localparam int StateScrambleCtrlWidth = 5;
 typedef enum logic [StateScrambleCtrlWidth-1:0] {
-  ScrambleCtrlIdle = 5'b01101,
-  ScrambleCtrlDmemReq = 5'b10000,
-  ScrambleCtrlImemReq = 5'b00110
+  ScrambleCtrlIdle    = 5'b10011,
+  ScrambleCtrlDmemReq = 5'b11110,
+  ScrambleCtrlImemReq = 5'b01000,
+  ScrambleCtrlError   = 5'b00101
 } scramble_ctrl_state_e;
 
   // URNG PRNG default seed.

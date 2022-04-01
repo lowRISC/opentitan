@@ -376,6 +376,8 @@ module otbn_controller
         state_d                  = OtbnStateLocked;
       end
       default: begin
+        // We should never get here. If we do (e.g. via a malicious glitch), error out immediately.
+        state_d = OtbnStateLocked;
         state_error = 1'b1;
       end
     endcase
