@@ -2,9 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-package(default_visibility = ["//visibility:public"])
-
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
+
+package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "epmp",
@@ -13,17 +14,23 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
 )
 
-cc_library(
+dual_cc_library(
     name = "hart",
-    srcs = ["hart.c"],
+    srcs = dual_inputs(
+        device = ["hart.c"],
+        host = ["hart_polyfills.c"],
+    ),
     hdrs = ["hart.h"],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":ibex",
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:math",
-        "//sw/device/lib/base:stdasm",
-    ],
+    deps = dual_inputs(
+        shared = [
+            "//sw/device/lib/base:math",
+            "//sw/device/lib/base:stdasm",
+        ],
+        device = [
+            ":ibex",
+            "//sw/device/lib/arch:device",
+        ],
+    ),
 )
 
 cc_library(
