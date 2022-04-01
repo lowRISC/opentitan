@@ -1,7 +1,9 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -12,46 +14,37 @@ exports_files([
     "mock_csr_test.cc",
 ])
 
-cc_library(
+dual_cc_library(
     name = "sec_mmio",
-    srcs = ["sec_mmio.c"],
-    hdrs = ["sec_mmio.h"],
-    deps = [
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:error",
-    ],
-)
-
-cc_library(
-    name = "mock_sec_mmio",
-    testonly = True,
-    hdrs = [
-        "mock_sec_mmio.h",
-        "sec_mmio.h",
-    ],
-    deps = [
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/base/testing:global_mock",
-        "//sw/device/silicon_creator/testing:mask_rom_test",
-        "@googletest//:gtest",
-    ],
+    srcs = dual_inputs(
+        device = ["sec_mmio.c"],
+        host = ["mock_sec_mmio.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = ["mock_sec_mmio.h"],
+        shared = ["sec_mmio.h"],
+    ),
+    deps = dual_inputs(
+        host = [
+            "//sw/device/lib/base/testing:global_mock",
+            "//sw/device/silicon_creator/testing:mask_rom_test",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            "//sw/device/lib/base:mmio",
+            "//sw/device/lib/base:abs_mmio",
+            "//sw/device/lib/base:hardened",
+            "//sw/device/lib/base:macros",
+            "//sw/device/silicon_creator/lib:error",
+        ],
+    ),
 )
 
 cc_test(
     name = "sec_mmio_unittest",
-    srcs = [
-        "sec_mmio.c",
-        "sec_mmio.h",
-        "sec_mmio_unittest.cc",
-    ],
-    defines = ["OT_OFF_TARGET_TEST"],
+    srcs = ["sec_mmio_unittest.cc"],
     deps = [
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:error",
+        dual_cc_device_library_of(":sec_mmio"),
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
