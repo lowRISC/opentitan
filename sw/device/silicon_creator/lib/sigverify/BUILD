@@ -164,7 +164,6 @@ cc_library(
 
 cc_library(
     name = "sigverify_without_mod_exp_ibex_mock",
-    testonly = True,
     visibility = ["//sw/device/silicon_creator/mask_rom:__pkg__"],
     deps = [
         dual_cc_device_library_of(":mod_exp_ibex"),

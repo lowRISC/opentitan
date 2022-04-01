@@ -10,17 +10,38 @@ load(
     "opentitan_functest",
     "verilator_params",
 )
+load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 
 package(default_visibility = ["//visibility:public"])
+
+dual_cc_library(
+    name = "boot_policy_ptrs",
+    srcs = dual_inputs(
+        host = ["mock_boot_policy_ptrs.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = ["mock_boot_policy_ptrs.h"],
+        shared = ["boot_policy_ptrs.h"],
+    ),
+    deps = dual_inputs(
+        host = [
+            "//sw/device/lib/base/testing:global_mock",
+            "//sw/device/silicon_creator/testing:mask_rom_test",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            "//sw/device/silicon_creator/lib:manifest",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        ],
+    ),
+)
 
 cc_library(
     name = "boot_policy",
     srcs = ["boot_policy.c"],
-    hdrs = [
-        "boot_policy.h",
-        "boot_policy_ptrs.h",
-    ],
+    hdrs = ["boot_policy.h"],
     deps = [
+        ":boot_policy_ptrs",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:error",
@@ -29,32 +50,11 @@ cc_library(
     ],
 )
 
-cc_library(
-    name = "mock_boot_policy_ptrs",
-    testonly = True,
-    hdrs = ["mock_boot_policy_ptrs.h"],
-    deps = [
-        "//sw/device/lib/base/testing:global_mock",
-        "//sw/device/silicon_creator/testing:mask_rom_test",
-        "@googletest//:gtest",
-    ],
-)
-
 cc_test(
     name = "boot_policy_unittest",
-    srcs = [
-        "boot_policy.c",
-        "boot_policy.h",
-        "boot_policy_ptrs.h",
-        "boot_policy_unittest.cc",
-    ],
-    defines = ["OT_OFF_TARGET_TEST"],
+    srcs = ["boot_policy_unittest.cc"],
     deps = [
-        ":mock_boot_policy_ptrs",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/silicon_creator/lib:boot_data",
-        "//sw/device/silicon_creator/lib:manifest",
-        "//sw/device/silicon_creator/lib:shutdown",
+        ":boot_policy",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
@@ -213,20 +213,26 @@ cc_library(
     ],
 )
 
-cc_library(
+dual_cc_library(
     name = "sigverify_keys_ptrs",
-    hdrs = ["sigverify_keys_ptrs.h"],
-)
-
-cc_library(
-    name = "mock_sigverify_keys_ptrs",
-    testonly = True,
-    hdrs = ["mock_sigverify_keys_ptrs.h"],
-    deps = [
-        ":sigverify_keys_ptrs",
-        "//sw/device/silicon_creator/testing:mask_rom_test",
-        "@googletest//:gtest",
-    ],
+    srcs = dual_inputs(
+        host = ["mock_sigverify_keys_ptrs.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = ["mock_sigverify_keys_ptrs.h"],
+        shared = ["sigverify_keys_ptrs.h"],
+    ),
+    deps = dual_inputs(
+        host = [
+            "//sw/device/lib/base/testing:global_mock",
+            "//sw/device/silicon_creator/testing:mask_rom_test",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            "//sw/device/lib/base:macros",
+            "//sw/device/silicon_creator/lib/sigverify:rsa_key",
+        ],
+    ),
 )
 
 cc_library(
@@ -238,35 +244,23 @@ cc_library(
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:rnd",
-        "//sw/device/silicon_creator/lib/sigverify",
+        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
+        "//sw/device/silicon_creator/lib/sigverify:sigverify_without_mod_exp_ibex_mock",
         "//sw/device/silicon_creator/mask_rom/keys:test_public_keys",
     ],
 )
 
 cc_test(
     name = "sigverify_keys_unittest",
-    srcs = [
-        "sigverify_keys.c",
-        "sigverify_keys.h",
-        "sigverify_keys_unittest.cc",
-    ],
-    defines = ["OT_OFF_TARGET_TEST"],
+    srcs = ["sigverify_keys_unittest.cc"],
     deps = [
-        ":mock_sigverify_keys_ptrs",
-        ":sigverify_keys_ptrs",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        ":sigverify_keys",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/silicon_creator/lib/drivers:rnd",
-        "//sw/device/silicon_creator/lib/sigverify:sigverify_without_mod_exp_ibex_mock",
         "//sw/device/silicon_creator/mask_rom/keys:test_public_keys",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",

@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
 
 #ifdef __cplusplus
@@ -85,7 +86,7 @@ typedef struct sigverify_mask_rom_key {
  */
 extern const sigverify_mask_rom_key_t kSigVerifyRsaKeys[kSigVerifyNumRsaKeys];
 
-#ifndef OT_OFF_TARGET_TEST
+#ifdef OT_PLATFORM_RV32
 
 /**
  * Returns a pointer to the RSA public keys stored in the Mask ROM.

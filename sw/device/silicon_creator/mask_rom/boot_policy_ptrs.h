@@ -16,7 +16,7 @@ extern "C" {
 static_assert((TOP_EARLGREY_EFLASH_SIZE_BYTES % 2) == 0,
               "Flash size is not divisible by 2");
 
-#ifndef OT_OFF_TARGET_TEST
+#ifdef OT_PLATFORM_RV32
 /**
  * Returns a pointer to the manifest of the ROM_EXT image stored in flash
  * slot A.
