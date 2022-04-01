@@ -30,6 +30,7 @@ class MockAlert : public global_mock::GlobalMock<MockAlert> {
 
 using MockAlert = testing::StrictMock<internal::MockAlert>;
 
+#ifdef IS_MESON_FOR_MIGRATIONS_ONLY
 extern "C" {
 
 rom_error_t alert_configure(size_t index, alert_class_t cls,
@@ -52,6 +53,7 @@ rom_error_t alert_ping_enable(void) {
 }
 
 }  // extern "C"
+#endif
 }  // namespace mask_rom_test
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_MOCK_ALERT_H_
