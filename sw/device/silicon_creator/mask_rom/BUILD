@@ -288,9 +288,7 @@ BOOT_FAILURE_MSG = "BFV_[0-9a-z]{{8}}\nLCV_[0-9a-z]{{8}}\n"
 
 opentitan_functest(
     name = "e2e_bootup_success",
-    srcs = [
-        "mask_rom_test.c",
-    ],
+    srcs = ["mask_rom_test.c"],
     signed = True,
     targets = [
         "verilator",
@@ -308,13 +306,11 @@ opentitan_functest(
 # TODO: Add verilator test
 opentitan_functest(
     name = "e2e_bootup_no_rom_ext_signature",
-    srcs = [
-        "mask_rom_test.c",
-    ],
+    srcs = ["mask_rom_test.c"],
     cw310 = cw310_params(
         args = [
             "--exec=\"console -q -t0\"",
-            "--exec=\"bootstrap $(location {test_bin})\"",
+            "--exec=\"bootstrap $(location {flash})\"",
             "console",
             "--timeout=3600",
             "--exit-success='{}'".format(BOOT_FAILURE_MSG),

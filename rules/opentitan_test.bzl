@@ -8,10 +8,11 @@ _BASE_PARAMS = {
     "args": [],
     "data": [],
     "local": True,
-    # TODO: the name of this target should be target generic
+    # TODO: the name of this target should be HW target generic
     "otp": "//hw/ip/otp_ctrl/data:rma_image_verilator",
     "rom": "//sw/device/lib/testing/test_rom:test_rom_{}_scr_vmem",
     "tags": [],
+    "test_runner": "//util:opentitantool_test_runner.sh",
     "timeout": "moderate",  # 5 minutes
 }
 
@@ -36,8 +37,8 @@ def dv_params(
         ],
         data = _BASE_PARAMS["data"],
         local = _BASE_PARAMS["local"],
-        rom = _BASE_PARAMS["rom"].format("sim_dv"),
         otp = _BASE_PARAMS["otp"],
+        rom = _BASE_PARAMS["rom"].format("sim_dv"),
         tags = _BASE_PARAMS["tags"],
         timeout = _BASE_PARAMS["timeout"],
         # DV-specific Parameters
@@ -53,20 +54,31 @@ def dv_params(
         @param args: Extra arguments to pass to the test runner (`dvsim.py`).
         @param data: Data dependencies of the test.
         @param local: Whether the test should be run locally without sandboxing.
-        @param otp: The OTP image to use when running a DV simulation.
-        @param rom: The ROM to use when running a DV simulation.
+        @param otp: The OTP image to use.
+        @param rom: The ROM image to use.
         @param tags: The test tags to apply to the test rule.
         @param timeout: The timeout to apply to the test rule.
         @param bootstrap_sw: Whether to load flash via bootstrap.
         @param dvsim_config: The dvsim.py Hjson config file for the toplevel.
     """
+    required_args = [
+        "-i",
+        "chip_sw_{name}",
+    ]
+    required_data = [
+        dvsim_config,
+        "//util/dvsim",
+        "//hw:all_files",
+    ]
+    required_tags = ["dv"]
     kwargs.update(
-        args = args,
-        data = data,
+        args = required_args + args,
+        data = required_data + data,
         local = local,
         otp = otp,
         rom = rom,
-        tags = tags + ["dv"],
+        tags = required_tags + tags,
+        test_runner = "//util:dvsim_test_runner.sh",
         timeout = timeout,
         bootstrap_sw = bootstrap_sw,
         dvsim_config = dvsim_config,
@@ -83,8 +95,8 @@ def verilator_params(
         ],
         data = _BASE_PARAMS["data"],
         local = _BASE_PARAMS["local"],
-        rom = _BASE_PARAMS["rom"].format("sim_verilator"),
         otp = _BASE_PARAMS["otp"],
+        rom = _BASE_PARAMS["rom"].format("sim_verilator"),
         tags = _BASE_PARAMS["tags"] + ["cpu:4"],
         timeout = _BASE_PARAMS["timeout"],
         # Verilator-specific Parameters
@@ -99,18 +111,34 @@ def verilator_params(
         @param args: Extra arguments to pass to the test runner (`opentitantool`).
         @param data: Data dependencies of the test.
         @param local: Whether the test should be run locally without sandboxing.
-        @param otp: The OTP image to use when running a Verilator simulation.
-        @param rom: The ROM to use when running a Verilator simulation.
+        @param otp: The OTP image to use.
+        @param rom: The ROM image to use.
         @param tags: The test tags to apply to the test rule.
         @param timeout: The timeout to apply to the test rule.
     """
+    required_args = [
+        "--rcfile=",
+        "--logging=info",
+        "--interface=verilator",
+        "--conf=sw/host/opentitantool/config/opentitan_verilator.json",
+        "--verilator-bin=$(location //hw:verilator)/sim-verilator/Vchip_sim_tb",
+        "--verilator-rom=$(location {rom})",
+        "--verilator-flash=$(location {flash})",
+        "--verilator-otp=$(location {otp})",
+    ]
+    required_data = [
+        "//sw/host/opentitantool:test_resources",
+        "//hw:verilator",
+    ]
+    required_tags = ["verilator"]
     kwargs.update(
-        args = args,
-        data = data,
+        args = required_args + args,
+        data = required_data + data,
         local = local,
         otp = otp,
         rom = rom,
-        tags = tags + ["verilator"],
+        tags = required_tags + tags,
+        test_runner = _BASE_PARAMS["test_runner"],
         timeout = timeout,
     )
     return kwargs
@@ -119,7 +147,7 @@ def cw310_params(
         # Base Parameters
         args = _BASE_PARAMS["args"] + [
             "--exec=\"console -q -t0\"",
-            "--exec=\"bootstrap $(location {test_bin})\"",
+            "--exec=\"bootstrap $(location {flash})\"",
             "console",
             "--exit-failure=FAIL",
             "--exit-success=PASS",
@@ -127,8 +155,8 @@ def cw310_params(
         ],
         data = _BASE_PARAMS["data"],
         local = _BASE_PARAMS["local"],
-        # ROM and OTP images are baked into the FPGA bitstream, thus are not
-        # loaded by the test runner, and do not need to be specified.
+        otp = _BASE_PARAMS["otp"],
+        rom = _BASE_PARAMS["rom"].format("fpga_cw310"),
         tags = _BASE_PARAMS["tags"] + ["cpu:4"],
         timeout = _BASE_PARAMS["timeout"],
         # CW310-specific Parameters
@@ -143,32 +171,50 @@ def cw310_params(
         @param args: Extra arguments to pass the test runner `opentitantool`.
         @param data: Data dependencies of the test.
         @param local: Whether the test should be run locally without sandboxing.
+        @param otp: The OTP image to use.
+        @param rom: The ROM image to use.
         @param tags: The test tags to apply to the test rule.
         @param timeout: The timeout to apply to the test rule.
     """
+    required_args = [
+        "--rcfile=",
+        "--logging=info",
+        "--interface=cw310",
+        "--conf=sw/host/opentitantool/config/opentitan_cw310.json",
+    ]
+    required_data = [
+        "//sw/host/opentitantool:test_resources",
+    ]
+    required_tags = [
+        "cw310",
+        "exclusive",
+    ]
     kwargs.update(
-        args = args,
-        data = data,
+        args = required_args + args,
+        data = required_data + data,
         local = local,
-        tags = tags + ["cw310", "exclusive"],
+        otp = otp,
+        rom = rom,
+        tags = required_tags + tags,
+        test_runner = _BASE_PARAMS["test_runner"],
         timeout = timeout,
     )
     return kwargs
 
-def _format_list(name, list1, datadict, **kwargs):
+def _format_list(param_name, list1, datadict, **kwargs):
     """Concatenate and format list items.
 
     This is used to prepare substitutions in user-supplied args to the
-    various test invocations (ie: the location of test_bin).
+    various test invocations (ie: the location of flash).
     Args:
-        @param name: The name of the item in `datadict`.
+        @param param_name: The name of the item in `datadict`.
         @param list1: A list of items to prepend to the list item from datadict.
         @param datadict: A dictionary of per-test parameters.
         @param **kwargs: Values to pass to the format function.
     Returns:
         list[str]
     """
-    return [x.format(**kwargs) for x in list1 + datadict.pop(name, [])]
+    return [x.format(**kwargs) for x in list1 + datadict.pop(param_name, [])]
 
 def _unique_deps(*deplists):
     uniq = {}
@@ -199,9 +245,12 @@ def opentitan_functest(
     Args:
       @param name: The name of this rule.
       @param targets: A list of hardware targets on which to dispatch tests.
-      @param args: Extra arguments to pass to the test runner (`opentitantool`
-                   or `dvsim.py`).
-      @param data: Extra data dependencies needed while executing the test.
+      @param args: Extra arguments (in addition to those defined in the target-
+                   specific parameter dictionary) to pass to the test runner
+                   (`opentitantool` or `dvsim.py`).
+      @param data: Extra data dependencies (in addition to those defined in the
+                   target-specific parameter dictionary) needed while executing
+                   the test.
       @param ottf: Default dependencies for OTTF tests. Set to empty list if
                    your test doesn't use the OTTF.
       @param test_in_rom: Whether to run the test from ROM, runs from flash by
@@ -238,140 +287,87 @@ def opentitan_functest(
 
     all_tests = []
 
-    if "dv" in targets:
-        # Set default DV sim parameters if none are provided.
-        if dv == None:
-            dv = dv_params()
+    target_params = {
+        "sim_dv": dv_params() if not dv else dv,
+        "sim_verilator": verilator_params() if not verilator else verilator,
+        "fpga_cw310": cw310_params() if not cw310 else cw310,
+    }
 
-        test_name = "dv_{}".format(name)
+    for target, params in target_params.items():
+        if target.split("_")[-1] not in targets:
+            continue
 
-        # Regardless if the test is signed or not, DV sims backdoor load flash
-        # with the scrambled VMEM (unless the bootstrap path is used below).
-        test_bin = "{}_prog_sim_dv_scr_vmem64".format(name)
+        # Set test name.
+        test_name = "{}_{}".format(target, name)
+        if "manual" not in params.get("tags"):
+            all_tests.append(test_name)
 
-        # If the (flash) test image is to be loaded via bootstrap, then we need
-        # to use the VMEM image that has been split into SPI flash frames.
-        if dv.pop("bootstrap_sw"):
+        # Set flash image.
+        if target in ["sim_dv", "sim_verilator"]:
+            flash = "{}_prog_{}_scr_vmem64".format(name, target)
+        else:
+            flash = "{}_prog_{}_bin".format(name, target)
+        if signed:
+            flash += "_signed_{}".format(key)
+
+        # If the (flash) test image is to be loaded via bootstrap in the DV
+        # simulation environment, then we need to use a special VMEM image
+        # that has been split into SPI flash frames. Currently, signed
+        # images loaded via bootstrap in DV sim are not supported.
+        # TODO: support signed bootstap images in DV sim.
+        if target == "sim_dv" and params.pop("bootstrap_sw"):
             if test_in_rom:
-                fail("A test runs in ROM cannot be bootstrapped.")
-            test_bin = "{}_prog_sim_dv_frames_vmem".format(name)
+                fail("Tests that run in ROM cannot be bootstrapped.")
+            if signed:
+                fail("A signed test cannot be bootstrapped in DV sim.")
+            flash = "{}_prog_{target}_frames_vmem".format(name, target)
 
-        if "manual" not in dv.get("tags", []):
-            all_tests.append(test_name)
-
-        rom = dv.pop("rom")
+        # Set ROM image.
+        rom = params.pop("rom")
         if test_in_rom:
-            rom = name + "_rom_prog_sim_dv_scr_vmem"
-        otp = dv.pop("otp")
-        dvsim_config = dv.pop("dvsim_config")
-        dargs = _format_list("args", args, dv, dvsim_config = dvsim_config)
-        ddata = _format_list("data", data, dv)
+            rom = "{}_rom_prog_{}_scr_vmem".format(name, target)
 
-        native.sh_test(
-            name = test_name,
-            srcs = ["//util:dvsim_test_runner.sh"],
-            args = [
-                "-i",
-                "chip_sw_{}".format(name),
-            ] + dargs,
-            data = [
-                test_bin,
-                rom,
-                otp,
-                dvsim_config,
-                "//util/dvsim",
-                "//hw:all_files",
-            ] + ddata,
-            **dv
+        # Set OTP image.
+        otp = params.pop("otp")
+
+        # Retrieve remaining device-agnostic params.
+        test_runner = params.pop("test_runner")
+
+        # Retrieve device-specific params.
+        dvsim_config = None
+        if target == "sim_dv":
+            dvsim_config = params.pop("dvsim_config")
+
+        # Concatenate args / data passed into the opentitan_functest macro
+        # with args / data from device-specific params.
+        # TODO(lowRISC/opentitan:#11779): remove this concatenation action
+        concat_args = _format_list(
+            "args",
+            args,
+            params,
+            dvsim_config = dvsim_config,
+            flash = flash,
+            name = name,
+            otp = otp,
+            rom = rom,
+        )
+        concat_data = _format_list(
+            "data",
+            data,
+            params,
+            flash = flash,
         )
 
-    if "verilator" in targets:
-        # Set default Verilator sim parameters if none are provided.
-        if verilator == None:
-            verilator = verilator_params()
-
-        test_name = "verilator_{}".format(name)
-
-        # If the test is unsigned, the Verilator sim can backdoor load flash
-        # with the ELF.
-        test_bin = "{}_prog_sim_verilator_elf".format(name)
-
-        # If the test is signed, the Verilator sim must backdoor load flash with
-        # the scrambled VMEM, since only the BIN can be signed by the ROM_EXT
-        # signer tool, and this is converted to a scrambled (64-bit) VMEM.
-        if signed:
-            test_bin = "{}_prog_sim_verilator_scr_vmem64_signed_{}".format(
-                name,
-                key,
-            )
-
-        rom = verilator.pop("rom")
-        if test_in_rom:
-            rom = name + "_rom_prog_sim_verilator_scr_vmem"
-        otp = verilator.pop("otp")
-        vargs = _format_list("args", args, verilator, test_bin = test_bin)
-        vdata = _format_list("data", data, verilator, test_bin = test_bin)
-
-        if "manual" not in verilator.get("tags", []):
-            all_tests.append(test_name)
-
         native.sh_test(
             name = test_name,
-            srcs = ["//util:opentitantool_test_runner.sh"],
-            args = [
-                "--rcfile=",
-                "--logging=info",
-                "--interface=verilator",
-                "--conf=sw/host/opentitantool/config/opentitan_verilator.json",
-                "--verilator-bin=$(location //hw:verilator)/sim-verilator/Vchip_sim_tb",
-                "--verilator-rom=$(location {})".format(rom),
-                "--verilator-flash=$(location {})".format(test_bin),
-                "--verilator-otp=$(location {})".format(otp),
-            ] + vargs,
+            srcs = [test_runner],
+            args = concat_args,
             data = [
-                test_bin,
+                flash,
                 rom,
                 otp,
-                "//sw/host/opentitantool:test_resources",
-                "//hw:verilator",
-            ] + vdata,
-            **verilator
-        )
-
-    if "cw310" in targets:
-        # Set default CW310 FPGA parameters if none are provided.
-        if cw310 == None:
-            cw310 = cw310_params()
-
-        if test_in_rom:
-            fail("test_in_rom only valid on simulation targets.")
-
-        test_name = "cw310_{}".format(name)
-
-        test_bin = "{}_prog_fpga_cw310_bin".format(name)
-        if signed:
-            test_bin = "{}_prog_fpga_cw310_bin_signed_{}".format(name, key)
-
-        cargs = _format_list("args", args, cw310, test_bin = test_bin)
-        cdata = _format_list("data", data, cw310, test_bin = test_bin)
-
-        if "manual" not in cw310.get("tags", []):
-            all_tests.append(test_name)
-
-        native.sh_test(
-            name = test_name,
-            srcs = ["//util:opentitantool_test_runner.sh"],
-            args = [
-                "--rcfile=",
-                "--logging=info",
-                "--interface=cw310",
-                "--conf=sw/host/opentitantool/config/opentitan_cw310.json",
-            ] + cargs,
-            data = [
-                test_bin,
-                "//sw/host/opentitantool:test_resources",
-            ] + cdata,
-            **cw310
+            ] + concat_data,
+            **params
         )
 
     native.test_suite(
