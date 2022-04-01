@@ -18,7 +18,7 @@ puts "Output directory for merged coverage:"
 set cov_merge_db_dir [string trim $::env(cov_merge_db_dir) " \"'"]
 
 # Run the merge command.
-merge $cov_db_dirs -out $cov_merge_db_dir -overwrite
+merge $cov_db_dirs -out $cov_merge_db_dir -overwrite -initial_model union_all
 
 # Create a file with the path to the cover dirs
 set filepointer [open "$cov_merge_db_dir/runs.txt" w]
