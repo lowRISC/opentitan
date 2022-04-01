@@ -16,12 +16,17 @@ def dual_cc_device_library_of(label):
     """
     return "{}_on_device_do_not_use_directly".format(label)
 
+def _merge_and_split_inputs(inputs):
+    inputs = inputs if type(inputs) != "list" else dual_inputs(shared = inputs)
+    return inputs.shared + inputs.device, inputs.shared + inputs.host
+
 def dual_cc_library(
         name,
         on_device_config_setting = "//rules:opentitan_platform",
         srcs = [],
         hdrs = [],
         deps = [],
+        target_compatible_with = [],
         **kwargs):
     """
     Defines a cc_library whose contents are dependent on whether it is
@@ -54,15 +59,17 @@ def dual_cc_library(
       alias         named: <name>
     """
 
-    hdrs = hdrs if type(hdrs) != "list" else dual_inputs(shared = hdrs)
-    srcs = srcs if type(srcs) != "list" else dual_inputs(shared = srcs)
-    deps = deps if type(deps) != "list" else dual_inputs(shared = deps)
+    hdrs_d, hdrs_h = _merge_and_split_inputs(hdrs)
+    srcs_d, srcs_h = _merge_and_split_inputs(srcs)
+    deps_d, deps_h = _merge_and_split_inputs(deps)
+    tgts_d, tgts_h = _merge_and_split_inputs(target_compatible_with)
 
     native.cc_library(
         name = dual_cc_device_library_of(name),
-        hdrs = hdrs.shared + hdrs.device,
-        srcs = srcs.shared + srcs.device,
-        deps = deps.shared + deps.device,
+        hdrs = hdrs_d,
+        srcs = srcs_d,
+        deps = deps_d,
+        target_compatible_with = tgts_d,
         visibility = ["//visibility:private"],
         **kwargs
     )
@@ -70,9 +77,10 @@ def dual_cc_library(
     off_device_name = "{}_on_host_do_not_use_directly".format(name)
     native.cc_library(
         name = off_device_name,
-        hdrs = hdrs.shared + hdrs.host,
-        srcs = srcs.shared + srcs.host,
-        deps = deps.shared + deps.host,
+        hdrs = hdrs_h,
+        srcs = srcs_h,
+        deps = deps_h,
+        target_compatible_with = tgts_h,
         visibility = ["//visibility:private"],
         **kwargs
     )
