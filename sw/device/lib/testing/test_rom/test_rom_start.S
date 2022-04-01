@@ -78,6 +78,7 @@ _test_rom_interrupt_vector:
 
   .extern crt_section_clear
   .extern crt_section_copy
+  .extern kDeviceType
 
 /**
  * Entry point after reset. This symbol is jumped to from the handler
@@ -187,6 +188,17 @@ _start:
   li   t0, 0x55aa
   sw   t0, EDN_CTRL_REG_OFFSET(a0)
 
+  // Scramble and initialize main memory (main SRAM).
+  // Memory accesses will stall until initialization is complete.
+  // Skip SRAM initialization for DV sim device type, as the testbench handles
+  // this to optimize test run times.
+  lw    t0, kDeviceType
+  beqz  t0, .L_sram_init_skip
+  li    a0, TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR
+  li    t0, (1 << SRAM_CTRL_CTRL_INIT_BIT)
+  sw    t0, SRAM_CTRL_CTRL_REG_OFFSET(a0)
+
+.L_sram_init_skip:
   // Remove address space protections by configuring entry 15 as
   // read-write-execute for the entire address space and then clearing
   // all other entries.

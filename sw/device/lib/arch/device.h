@@ -28,23 +28,27 @@
 typedef enum device_type {
   /**
    * Represents "DV", i.e. running th test in a DV simulation testbench.
+   *
+   * DISCLAIMER: it is important this value remains assigned to 0, as it is
+   * implicitly checked in the `test_rom_start.S` assembly code to determine
+   * whether or not to initialize SRAM.
    */
-  kDeviceSimDV,
+  kDeviceSimDV = 0,
   /**
    * Represents the "Verilator" device, i.e., a synthesis of the OpenTitan
    * design by Verilator into C++.
    */
-  kDeviceSimVerilator,
+  kDeviceSimVerilator = 1,
   /**
    * Represents the "ChipWhisperer CW310 FPGA" device, i.e., the particular
    * FPGA board blessed for OpenTitan development, containing a Xilinx FPGA.
    */
-  kDeviceFpgaCw310,
+  kDeviceFpgaCw310 = 2,
   /**
    * Represents the "Nexys Video FPGA" device, i.e., the previous main FPGA
    * development board for OpenTitan, containing a Xilinx FPGA.
    */
-  kDeviceFpgaNexysVideo,
+  kDeviceFpgaNexysVideo = 3,
 } device_type_t;
 
 /**
