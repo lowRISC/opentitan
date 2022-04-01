@@ -154,19 +154,16 @@ module otbn
 
   // Lifecycle ==================================================================
 
-  lc_ctrl_pkg::lc_tx_t lc_escalate_en;
+  localparam int unsigned LcEscalateCopies = 2;
+  lc_ctrl_pkg::lc_tx_t [LcEscalateCopies-1:0] lc_escalate_en;
   prim_lc_sync #(
-    .NumCopies(1)
+    .NumCopies(LcEscalateCopies)
   ) u_lc_escalate_en_sync (
     .clk_i,
     .rst_ni,
     .lc_en_i(lc_escalate_en_i),
-    .lc_en_o({lc_escalate_en})
+    .lc_en_o(lc_escalate_en)
   );
-
-  // Reduce the life cycle escalation signal to a single bit to be used within this cycle.
-  logic lifecycle_escalation;
-  assign lifecycle_escalation = lc_escalate_en != lc_ctrl_pkg::Off;
 
   // Interrupts ================================================================
 
@@ -958,6 +955,7 @@ module otbn
     .imem_sec_wipe_urnd_key_o    (imem_sec_wipe_urnd_key),
     .req_sec_wipe_urnd_keys_i    (req_sec_wipe_urnd_keys),
 
+    .lc_escalate_en_i            (lc_escalate_en[1]),
     .escalate_en_i               (core_escalate_en),
 
     .software_errs_fatal_i       (software_errs_fatal_q),
@@ -969,7 +967,7 @@ module otbn
   // Construct a full set of error bits from the core output
   assign err_bits = '{
     fatal_software:       core_err_bits.fatal_software,
-    lifecycle_escalation: lifecycle_escalation,
+    lifecycle_escalation: lc_escalate_en[0] != lc_ctrl_pkg::Off,
     illegal_bus_access:   illegal_bus_access_q,
     bad_internal_state:   |{core_err_bits.bad_internal_state,
                             otbn_scramble_state_error},
@@ -986,8 +984,7 @@ module otbn
   };
 
   // An error signal going down into the core to show that it should locally escalate
-  assign core_escalate_en = |{lifecycle_escalation,
-                              illegal_bus_access_q,
+  assign core_escalate_en = |{illegal_bus_access_q,
                               otbn_scramble_state_error,
                               bus_intg_violation};
 
