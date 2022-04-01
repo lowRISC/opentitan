@@ -8,7 +8,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
+#include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
 
 namespace sigverify_mod_exp_ibex_unittest {
 namespace {
