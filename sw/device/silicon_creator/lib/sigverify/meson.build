@@ -4,7 +4,7 @@
 
 # Defined separately for sigverify_keys unit tests.
 sw_silicon_creator_lib_sigverify_sources_for_boot_stage_tests = files([
-  'sigverify_mod_exp_ibex.c',
+  'mod_exp_ibex.c',
   'sigverify.c',
 ])
 
@@ -13,8 +13,8 @@ sw_silicon_creator_lib_sigverify = declare_dependency(
   link_with: static_library(
     'sw_silicon_creator_lib_sigverify',
     sources: [
-      'sigverify_mod_exp_ibex.c',
-      'sigverify_mod_exp_otbn.c',
+      'mod_exp_ibex.c',
+      'mod_exp_otbn.c',
       'sigverify.c',
       hw_ip_otp_ctrl_reg_h,
     ],
@@ -29,11 +29,11 @@ sw_silicon_creator_lib_sigverify = declare_dependency(
   ),
 )
 
-test('sw_silicon_creator_mask_rom_sigverify_mod_exp_ibex_unittest', executable(
-    'sw_silicon_creator_mask_rom_sigverify_mod_exp_ibex_unittest',
+test('sw_silicon_creator_mask_rom_mod_exp_ibex_unittest', executable(
+    'sw_silicon_creator_mask_rom_mod_exp_ibex_unittest',
     sources: [
-      'sigverify_mod_exp_ibex.c',
-      'sigverify_mod_exp_ibex_unittest.cc',
+      'mod_exp_ibex.c',
+      'mod_exp_ibex_unittest.cc',
     ],
     dependencies: [
       sw_vendor_gtest,
@@ -49,8 +49,8 @@ test('sw_silicon_creator_lib_sigverify_unittest', executable(
     sources: [
       'sigverify_unittest.cc',
       'sigverify.c',
-      'sigverify_mod_exp_ibex_mock.cc',
-      'sigverify_mod_exp_otbn_mock.cc',
+      'mod_exp_ibex_mock.cc',
+      'mod_exp_otbn_mock.cc',
       hw_ip_otp_ctrl_reg_h,
       hw_ip_flash_ctrl_reg_h,
     ],
@@ -101,11 +101,11 @@ mask_rom_tests += {
   }
 }
 
-sw_silicon_creator_lib_sigverify_mod_exp_ibex_functest = declare_dependency(
+sw_silicon_creator_lib_mod_exp_ibex_functest = declare_dependency(
   link_with: static_library(
-    'sw_silicon_creator_lib_sigverify_mod_exp_ibex_functest',
+    'sw_silicon_creator_lib_mod_exp_ibex_functest',
     sources: [
-      'sigverify_mod_exp_ibex_functest.c'
+      'mod_exp_ibex_functest.c'
     ],
     dependencies: [
       sw_silicon_creator_lib_sigverify,
@@ -113,16 +113,16 @@ sw_silicon_creator_lib_sigverify_mod_exp_ibex_functest = declare_dependency(
   ),
 )
 mask_rom_tests += {
-  'sw_silicon_creator_lib_sigverify_mod_exp_ibex_functest': {
-    'library': sw_silicon_creator_lib_sigverify_mod_exp_ibex_functest,
+  'sw_silicon_creator_lib_mod_exp_ibex_functest': {
+    'library': sw_silicon_creator_lib_mod_exp_ibex_functest,
   }
 }
 
-sw_silicon_creator_lib_sigverify_mod_exp_otbn_functest = declare_dependency(
+sw_silicon_creator_lib_mod_exp_otbn_functest = declare_dependency(
   link_with: static_library(
-    'sw_silicon_creator_lib_sigverify_mod_exp_otbn_functest',
+    'sw_silicon_creator_lib_mod_exp_otbn_functest',
     sources: [
-      'sigverify_mod_exp_otbn_functest.c'
+      'mod_exp_otbn_functest.c'
     ],
     dependencies: [
       sw_silicon_creator_lib_sigverify,
@@ -130,7 +130,7 @@ sw_silicon_creator_lib_sigverify_mod_exp_otbn_functest = declare_dependency(
   ),
 )
 mask_rom_tests += {
-  'sw_silicon_creator_lib_sigverify_mod_exp_otbn_functest': {
-    'library': sw_silicon_creator_lib_sigverify_mod_exp_otbn_functest,
+  'sw_silicon_creator_lib_mod_exp_otbn_functest': {
+    'library': sw_silicon_creator_lib_mod_exp_otbn_functest,
   }
 }

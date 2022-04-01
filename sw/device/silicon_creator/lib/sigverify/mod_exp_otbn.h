@@ -2,21 +2,21 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_SIGVERIFY_MOD_EXP_IBEX_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_SIGVERIFY_MOD_EXP_IBEX_H_
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_MOD_EXP_OTBN_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_MOD_EXP_OTBN_H_
 
 #include <stdbool.h>
 #include <stdint.h>
 
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/sigverify/sigverify_rsa_key.h"
+#include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
 
 /**
- * Computes the modular exponentiation of an RSA signature on Ibex.
+ * Computes the modular exponentiation of an RSA signature on OTBN.
  *
  * Given an RSA public key and sig, this function computes sig^e mod n using
  * Montgomery multiplication, where
@@ -30,7 +30,7 @@ extern "C" {
  * @param result Buffer to write the result to, little-endian.
  * @return The result of the operation.
  */
-rom_error_t sigverify_mod_exp_ibex(const sigverify_rsa_key_t *key,
+rom_error_t sigverify_mod_exp_otbn(const sigverify_rsa_key_t *key,
                                    const sigverify_rsa_buffer_t *sig,
                                    sigverify_rsa_buffer_t *result);
 
@@ -38,4 +38,4 @@ rom_error_t sigverify_mod_exp_ibex(const sigverify_rsa_key_t *key,
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_SIGVERIFY_MOD_EXP_IBEX_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_MOD_EXP_OTBN_H_
