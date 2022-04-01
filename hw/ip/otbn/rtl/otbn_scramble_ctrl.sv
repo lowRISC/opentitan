@@ -202,8 +202,14 @@ module otbn_scramble_ctrl
           imem_key_sel_otp            = 1'b1;
         end
       end
-      default: begin
+      ScrambleCtrlError: begin
+        // Terminal error state
         state_error_o = 1'b1;
+      end
+      default: begin
+        // We should never get here. If we do (e.g. via a malicious glitch), error out immediately.
+        state_error_o = 1'b1;
+        state_d = ScrambleCtrlError;
       end
     endcase
   end

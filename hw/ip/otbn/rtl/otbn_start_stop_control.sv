@@ -152,8 +152,14 @@ module otbn_start_stop_control
         secure_wipe_running_o = 1'b1;
         state_d = OtbnStartStopStateHalt;
       end
-      default: begin
+      OtbnStartStopStateError: begin
+        // Terminal error state
         state_error_o = 1'b1;
+      end
+      default: begin
+        // We should never get here. If we do (e.g. via a malicious glitch), error out immediately.
+        state_error_o = 1'b1;
+        state_d = OtbnStartStopStateError;
       end
     endcase
   end
