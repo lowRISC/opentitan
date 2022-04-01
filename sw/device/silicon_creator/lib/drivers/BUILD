@@ -227,52 +227,42 @@ opentitan_functest(
     ],
 )
 
-cc_library(
+dual_cc_library(
     name = "lifecycle",
-    srcs = ["lifecycle.c"],
-    hdrs = ["lifecycle.h"],
-    deps = [
-        "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-    ],
-)
-
-cc_library(
-    name = "mock_lifecycle",
-    testonly = True,
-    hdrs = [
-        "lifecycle.h",
-        "mock_lifecycle.h",
-    ],
-    deps = [
-        "//sw/device/lib/base/testing:global_mock",
-        "//sw/device/silicon_creator/testing:mask_rom_test",
-        "@googletest//:gtest",
-    ],
+    srcs = dual_inputs(
+        device = ["lifecycle.c"],
+        host = ["mock_lifecycle.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = ["mock_lifecycle.h"],
+        shared = ["lifecycle.h"],
+    ),
+    deps = dual_inputs(
+        device = [
+            "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        ],
+        host = [
+            "//sw/device/lib/base/testing:global_mock",
+            "//sw/device/silicon_creator/testing:mask_rom_test",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            "//sw/device/lib/base:bitfield",
+            "//sw/device/lib/base:hardened",
+            "//sw/device/lib/base:macros",
+            "//sw/device/silicon_creator/lib/base:sec_mmio",
+        ],
+    ),
 )
 
 cc_test(
     name = "lifecycle_unittest",
-    srcs = [
-        "lifecycle.c",
-        "lifecycle.h",
-        "lifecycle_unittest.cc",
-    ],
-    defines = [
-        "OT_OFF_TARGET_TEST",
-    ],
+    srcs = ["lifecycle_unittest.cc"],
     deps = [
+        dual_cc_device_library_of(":lifecycle"),
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
