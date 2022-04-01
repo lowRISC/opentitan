@@ -108,7 +108,7 @@ cc_test(
         "//sw/device/lib/base:multibits",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/lib/drivers:mock_otp",
+        "//sw/device/silicon_creator/lib/drivers:otp",
         "@googletest//:gtest_main",
     ],
 )
@@ -303,49 +303,39 @@ cc_test(
     ],
 )
 
-cc_library(
+dual_cc_library(
     name = "otp",
-    srcs = ["otp.c"],
-    hdrs = ["otp.h"],
-    deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:memory",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-    ],
-)
-
-cc_library(
-    name = "mock_otp",
-    testonly = True,
-    hdrs = [
-        "mock_otp.h",
-        "otp.h",
-    ],
-    deps = [
-        "//sw/device/lib/base/testing:global_mock",
-        "//sw/device/silicon_creator/testing:mask_rom_test",
-        "@googletest//:gtest",
-    ],
+    srcs = dual_inputs(
+        device = ["otp.c"],
+        host = ["mock_otp.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = ["mock_otp.h"],
+        shared = ["otp.h"],
+    ),
+    deps = dual_inputs(
+        device = [
+            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        ],
+        host = [
+            "//sw/device/lib/base/testing:global_mock",
+            "//sw/device/silicon_creator/testing:mask_rom_test",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            "//sw/device/lib/base:hardened",
+            "//sw/device/lib/base:macros",
+            "//sw/device/silicon_creator/lib/base:sec_mmio",
+        ],
+    ),
 )
 
 cc_test(
     name = "otp_unittest",
-    srcs = [
-        "otp.c",
-        "otp.h",
-        "otp_unittest.cc",
-    ],
+    srcs = ["otp_unittest.cc"],
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/base/testing:global_mock",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
+        dual_cc_device_library_of(":otp"),
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
@@ -562,7 +552,7 @@ cc_test(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/lib/drivers:mock_otp",
+        "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],

@@ -30,6 +30,7 @@ using NiceMockOtp = testing::NiceMock<internal::MockOtp>;
 // Strict mock for other unit tests.
 using MockOtp = testing::StrictMock<internal::MockOtp>;
 
+#ifdef IS_MESON_FOR_MIGRATIONS_ONLY
 extern "C" {
 
 // Note: In the functions below, we use `MockOtp` only for conciseness. The
@@ -54,6 +55,7 @@ void otp_creator_sw_cfg_lockdown(void) {
 }
 
 }  // extern "C"
+#endif
 }  // namespace mask_rom_test
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_MOCK_OTP_H_
