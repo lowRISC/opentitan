@@ -62,6 +62,7 @@ module otbn_start_stop_control
   logic addr_cnt_inc;
   logic [4:0] addr_cnt_q, addr_cnt_d;
 
+  // SEC_CM: START_STOP_CTRL.FSM.SPARSE
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q,
       otbn_start_stop_state_e, OtbnStartStopStateHalt)
 
@@ -153,6 +154,7 @@ module otbn_start_stop_control
         state_d = OtbnStartStopStateHalt;
       end
       OtbnStartStopStateError: begin
+        // SEC_CM: START_STOP_CTRL.FSM.LOCAL_ESC
         // Terminal error state
         state_error_o = 1'b1;
       end

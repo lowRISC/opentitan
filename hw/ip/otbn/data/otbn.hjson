@@ -127,8 +127,38 @@
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
+    { name: "CONTROLLER.FSM.GLOBAL_ESC",
+      desc: "The controller FSM moves to a terminal error state upon global escalation."
+    }
+    { name: "CONTROLLER.FSM.LOCAL_ESC",
+      desc: '''
+        The controller FSM moves to a terminal error state upon local escalation.
+        Can be triggered by CONTROLLER.FSM.SPARSE, SCRAMBLE_CTRL.FSM.SPARSE, and START_STOP_CTRL.FSM.SPARSE.
+      '''
+    }
+    { name: "CONTROLLER.FSM.SPARSE",
+      desc: "The controller FSM uses a sparse state encoding."
+    }
     { name: "SCRAMBLE.KEY.SIDELOAD",
       desc: "The scrambling key is sideloaded from OTP and thus unreadable by SW."
+    }
+    { name: "SCRAMBLE_CTRL.FSM.LOCAL_ESC",
+      desc: '''
+        The scramble control FSM moves to a terminal error state upon local escalation.
+        Can be triggered by SCRAMBLE_CTRL.FSM.SPARSE.
+      '''
+    }
+    { name: "SCRAMBLE_CTRL.FSM.SPARSE",
+      desc: "The scramble control FSM uses a sparse state encoding."
+    }
+    { name: "START_STOP_CTRL.FSM.LOCAL_ESC",
+      desc: '''
+        The start-stop control FSM moves to a terminal error state upon local escalation.
+        Can be triggered by START_STOP_CTRL.FSM.SPARSE.
+      '''
+    }
+    { name: "START_STOP_CTRL.FSM.SPARSE",
+      desc: "The start-stop control FSM uses a sparse state encoding."
     }
   ]
 

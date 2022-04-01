@@ -377,6 +377,7 @@ module otbn_controller
       end
       default: begin
         // We should never get here. If we do (e.g. via a malicious glitch), error out immediately.
+        // SEC_CM: CONTROLLER.FSM.LOCAL_ESC
         state_d = OtbnStateLocked;
         state_error = 1'b1;
       end
@@ -389,6 +390,7 @@ module otbn_controller
       insn_fetch_resp_clear_o = 1'b1;
 
       if (fatal_err) begin
+        // SEC_CM: CONTROLLER.FSM.GLOBAL_ESC
         state_d = OtbnStateLocked;
       end else begin
         state_d = OtbnStateHalt;
@@ -500,6 +502,7 @@ module otbn_controller
   `ASSERT(NoStallOnBranch,
       insn_valid_i & insn_dec_shared_i.branch_insn |-> state_q != OtbnStateStall)
 
+  // SEC_CM: CONTROLLER.FSM.SPARSE
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, otbn_state_e, OtbnStateHalt)
 
   assign insn_cnt_clear = state_reset_i | (state_q == OtbnStateLocked) | insn_cnt_clear_i;
