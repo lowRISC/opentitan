@@ -142,7 +142,7 @@ Upon `Invalid` entry, the internal key, the sideload key slots and the software 
 
 #### Invalid Entry Wiping
 Since the life cycle controller can deactivate the key manager at any time, the key manager attempts to gracefully handle the wiping process.
-When the deactivated, the key manager immediately begins wiping all keys (internal key, hardware sideload key, software key) with entropy.
+When deactivated, the key manager immediately begins wiping all keys (internal key, hardware sideload key, software key) with entropy.
 However, if an operation was already ongoing, the key manager waits for the operation to complete gracefully before transitioning to invalid state.
 
 While waiting for the operation to complete, the key manager continuously wipes all keys with entropy.
@@ -152,8 +152,7 @@ While waiting for the operation to complete, the key manager continuously wipes 
 `Invalid` and `Disabled` states are functionally very similar.
 The main difference between the two is "how" the states were reached and the entry behavior.
 
-`Disabled` state is reached through intentional software commands where the internal key, sideload key slots and software key are not wiped.
-While `Invalid` state is reached through life cycle deactivation or operational faults where the internal key, sideload key slots and software key are wiped.
+`Disabled` state is reached through intentional software commands where the sideload key slots and software key are not wiped, while `Invalid` state is reached through life cycle deactivation or operational faults where the internal key, sideload key slots and software key are wiped.
 
 This also means that only `Invalid` is a terminal state.
 If after entering `Disabled` life cycle is deactivated or a fault is encountered, the same [invalid entry procedure](#Invalid) is followed to bring the system to a terminal `Invalid` state.
@@ -166,7 +165,7 @@ The function of the key manager is directly managed by the [life cycle controlle
 Until the life cycle controller activates the key manager, the key manager does not accept any software commands.
 Once the key manager is activated by the life cycle controller, it is then allowed to transition to the various states previously [described](#key-manager-states).
 
-When the life cycle controller de-activates the key manager, the key manager transitions to the `Invalid` state.
+When the life cycle controller deactivates the key manager, the key manager transitions to the `Invalid` state.
 
 ## Commands in Each State
 During each state, there are 3 valid commands software can issue:
@@ -266,7 +265,7 @@ When a fatal error is encountered, the key manager transitions to the `Invalid` 
 The following are a few examples of when the error occurs and how the key manager behaves.
 
 #### Example 1: Fault During Operation
-The key manager is running a generate operation and a non-onehot command was observed by the kmac interface.
+The key manager is running a generate operation and a non-onehot command was observed by the KMAC interface.
 Since the non-onehot condition is a fault, it is reflected in {{< regref FAULT_STATUS >}} and a fatal alert is generated.
 The key manager transitions to `Invalid` state, wipes internal storage and reports an invalid operation in {{< regref ERR_CODE.INVALID_OP >}}.
 
@@ -351,7 +350,7 @@ For the Sealing CDI, the {{< regref "SEALING_SW_BINDING" >}} is used, all other 
 For the Attestation CDI, the {{< regref "ATTEST_SW_BINDING" >}} is used, all other inputs are the same.
 
 When invoking an advance operation, both versions are advanced, one after the other.
-There are thus two kmac transactions.
+There are thus two KMAC transactions.
 The first trasnaction uses the Sealing CDI internal key, {{< regref "SEALING_SW_BINDING" >}} and other common inputs.
 The second transaction uses the Attestation CDI internal key, {{< regref "ATTEST_SW_BINDING" >}} and other common inputs.
 
@@ -493,11 +492,11 @@ This allows the next stage of software to re-use the binding registers.
 The keymgr has several custom security checks.
 
 #### One-Hot Command Check
-The command received by the kmac interface must always be in one-hot form and unchanging during the life time of a KMAC transaction.
+The command received by the KMAC interface must always be in one-hot form and unchanging during the life time of a KMAC transaction.
 If this check fails, an error is reflected in {{< regref FAULT_STATUS.CMD >}}.
 
 #### Unexpected KMAC Done
-The kmac done signal can only happen during the expected transaction window.
+The `kmac_done` signal can only happen during the expected transaction window.
 If this check fails, an error is reflected in {{< regref FAULT_STATUS.KMAC_DONE >}}.
 
 #### Control State Machine Check
