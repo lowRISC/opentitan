@@ -181,55 +181,44 @@ cc_library(
     hdrs = ["manifest_size.h"],
 )
 
-cc_library(
-    name = "manifest_intf",
-    hdrs = ["manifest.h"],
-    deps = [
-        ":epmp",
-        ":error",
-        ":keymgr_binding",
-        ":manifest_size",
-        ":sigverify_internal",
-        "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-    ],
-)
-
-cc_library(
+dual_cc_library(
     name = "manifest",
-    srcs = ["manifest.c"],
-    deps = [
-        ":manifest_intf",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-    ],
-)
-
-cc_library(
-    name = "mock_manifest",
-    testonly = True,
-    hdrs = ["mock_manifest.h"],
-    deps = [
-        ":manifest_intf",
-        "//sw/device/lib/base/testing:global_mock",
-        "//sw/device/silicon_creator/testing:mask_rom_test",
-        "@googletest//:gtest",
-    ],
+    srcs = dual_inputs(
+        device = ["manifest.c"],
+        host = ["mock_manifest.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = ["mock_manifest.h"],
+        shared = ["manifest.h"],
+    ),
+    deps = dual_inputs(
+        device = [
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        ],
+        host = [
+            "//sw/device/lib/base/testing:global_mock",
+            "//sw/device/silicon_creator/testing:mask_rom_test",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            ":epmp",
+            ":error",
+            ":keymgr_binding",
+            ":manifest_size",
+            ":sigverify_internal",
+            "//sw/device/lib/base:macros",
+            "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        ],
+    ),
 )
 
 cc_test(
     name = "manifest_unittest",
-    srcs = [
-        "manifest_unittest.cc",
-    ],
+    srcs = ["manifest_unittest.cc"],
+    local_defines = ["MANIFEST_UNIT_TEST_"],
     deps = [
-        ":epmp",
-        ":error",
-        ":keymgr_binding",
-        ":manifest_intf",
-        ":sigverify_internal",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        dual_cc_device_library_of(":manifest"),
         "//sw/device/lib/base:csr",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
@@ -354,7 +343,7 @@ cc_library(
     hdrs = ["sigverify.h"],
     deps = [
         ":error",
-        ":manifest_intf",
+        ":manifest",
         ":sigverify_internal",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",

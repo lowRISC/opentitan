@@ -265,7 +265,7 @@ typedef struct manifest_digest_region {
 #define MANIFEST_LENGTH_FIELD_OWNER_STAGE_MIN MANIFEST_SIZE
 #define MANIFEST_LENGTH_FIELD_OWNER_STAGE_MAX 0x70000
 
-#ifndef OT_OFF_TARGET_TEST
+#if defined(OT_PLATFORM_RV32) || defined(MANIFEST_UNIT_TEST_)
 /**
  * Checks the fields of a manifest.
  *
@@ -347,7 +347,7 @@ inline epmp_region_t manifest_code_region_get(const manifest_t *manifest) {
 inline uintptr_t manifest_entry_point_get(const manifest_t *manifest) {
   return (uintptr_t)manifest + manifest->entry_point;
 }
-#else
+#else   // defined(OT_PLATFORM_RV32) || defined(MANIFEST_UNIT_TEST_)
 /**
  * Declarations for the functions above that should be defined in tests.
  */
@@ -355,7 +355,7 @@ rom_error_t manifest_check(const manifest_t *manifest);
 manifest_digest_region_t manifest_digest_region_get(const manifest_t *manifest);
 epmp_region_t manifest_code_region_get(const manifest_t *manifest);
 uintptr_t manifest_entry_point_get(const manifest_t *manifest);
-#endif
+#endif  // defined(OT_PLATFORM_RV32) || defined(MANIFEST_UNIT_TEST_)
 
 #ifdef __cplusplus
 }  // extern "C"

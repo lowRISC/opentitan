@@ -23,7 +23,7 @@ cc_library(
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:manifest_intf",
+        "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib:shutdown",
     ],
 )
@@ -52,7 +52,7 @@ cc_test(
         ":mock_boot_policy_ptrs",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:boot_data",
-        "//sw/device/silicon_creator/lib:mock_manifest",
+        "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib:mock_shutdown",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",

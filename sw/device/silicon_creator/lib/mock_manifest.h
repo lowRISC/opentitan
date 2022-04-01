@@ -27,6 +27,7 @@ class MockManifest : public global_mock::GlobalMock<MockManifest> {
 
 using MockManifest = testing::StrictMock<internal::MockManifest>;
 
+#ifdef IS_MESON_FOR_MIGRATIONS_ONLY
 extern "C" {
 
 rom_error_t manifest_check(const manifest_t *manifest) {
@@ -47,6 +48,7 @@ uintptr_t manifest_entry_point_get(const manifest_t *manifest) {
 }
 
 }  // extern "C"
+#endif
 }  // namespace mask_rom_test
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MOCK_MANIFEST_H_
