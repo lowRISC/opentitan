@@ -134,7 +134,7 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
-        "//sw/device/silicon_creator/lib:epmp_intf",
+        "//sw/device/silicon_creator/lib:epmp",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
     ],
 )

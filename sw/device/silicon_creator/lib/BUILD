@@ -10,22 +10,15 @@ package(default_visibility = ["//visibility:public"])
 
 dual_cc_library(
     name = "boot_data",
-    hdrs = dual_inputs(
-        shared = ["boot_data.h"],
-        host = ["mock_boot_data.h"],
-    ),
     srcs = dual_inputs(
         device = ["boot_data.c"],
         host = ["mock_boot_data.cc"],
     ),
+    hdrs = dual_inputs(
+        host = ["mock_boot_data.h"],
+        shared = ["boot_data.h"],
+    ),
     deps = dual_inputs(
-        shared = [
-            ":error",
-            "//sw/device/lib/base:macros",
-            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-            "//sw/device/silicon_creator/lib/drivers:hmac",
-            "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        ],
         device = [
             "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -36,6 +29,13 @@ dual_cc_library(
             "//sw/device/lib/base/testing:global_mock",
             "//sw/device/silicon_creator/testing:mask_rom_test",
             "@googletest//:gtest",
+        ],
+        shared = [
+            ":error",
+            "//sw/device/lib/base:macros",
+            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+            "//sw/device/silicon_creator/lib/drivers:hmac",
+            "//sw/device/silicon_creator/lib/drivers:lifecycle",
         ],
     ),
 )
@@ -65,22 +65,13 @@ cc_library(
 )
 
 cc_library(
-    name = "epmp_intf",
+    name = "epmp",
+    srcs = ["epmp.c"],
     hdrs = [
         "epmp.h",
         "epmp_defs.h",
     ],
     deps = [
-        ":error",
-    ],
-)
-
-cc_library(
-    name = "epmp",
-    srcs = ["epmp.c"],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":epmp_intf",
         ":error",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:hardened",
@@ -89,20 +80,9 @@ cc_library(
 
 cc_test(
     name = "epmp_unittest",
-    srcs = [
-        "epmp_unittest.cc",
-        # sources included here because we need MOCK_CSR.
-        "epmp.c",
-        "epmp.h",
-    ],
-    defines = [
-        "OT_OFF_TARGET_TEST",
-    ],
+    srcs = ["epmp_unittest.cc"],
     deps = [
-        ":epmp_intf",
-        ":error",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:csr",
+        ":epmp",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
@@ -114,7 +94,7 @@ cc_library(
     hdrs = ["epmp_test_unlock.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        ":epmp_intf",
+        ":epmp",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:csr",
     ],
@@ -205,7 +185,7 @@ cc_library(
     name = "manifest_intf",
     hdrs = ["manifest.h"],
     deps = [
-        ":epmp_intf",
+        ":epmp",
         ":error",
         ":keymgr_binding",
         ":manifest_size",
@@ -242,7 +222,7 @@ cc_test(
         "manifest_unittest.cc",
     ],
     deps = [
-        ":epmp_intf",
+        ":epmp",
         ":error",
         ":keymgr_binding",
         ":manifest_intf",
