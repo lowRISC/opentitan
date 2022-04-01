@@ -26,6 +26,7 @@ nix = "0.17.0"
 indicatif = "0.16.2"
 directories = "4.0.1"
 shellwords = "1.1.0"
+humantime = "2.1.0"
 
 serde = {version="1", features=["serde_derive"]}
 serde_json = "1"

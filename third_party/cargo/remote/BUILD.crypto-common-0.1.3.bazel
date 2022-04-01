@@ -48,9 +48,10 @@ rust_library(
         "crate-name=crypto-common",
         "manual",
     ],
-    version = "0.1.2",
+    version = "0.1.3",
     # buildifier: leave-alone
     deps = [
         "@raze__generic_array__0_14_5//:generic_array",
+        "@raze__typenum__1_15_0//:typenum",
     ],
 )
