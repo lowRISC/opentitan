@@ -57,7 +57,7 @@ cc_library(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing/test_framework",
-        "//sw/device/silicon_creator/lib:manifest_intf",
+        "//sw/device/silicon_creator/lib:manifest",
     ],
 )
 
