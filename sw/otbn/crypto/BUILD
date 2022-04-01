@@ -333,3 +333,21 @@ otbn_binary(
         ":rsa_verify_3072_rr",
     ],
 )
+
+otbn_library(
+    name = "x25519",
+    srcs = [
+        "x25519.s",
+    ],
+)
+
+otbn_sim_test(
+    name = "x25519_test",
+    srcs = [
+        "x25519_test.s",
+    ],
+    deps = [
+        ":field25519",
+        ":x25519",
+    ],
+)
