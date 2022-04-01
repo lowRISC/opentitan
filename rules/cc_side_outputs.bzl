@@ -10,7 +10,19 @@ load("//rules:rv.bzl", "rv_rule")
 
 CcSideProductInfo = provider(fields = ["files"])
 
-def _cc_compile_different_output(target, ctx, extension, flags):
+def _is_c_or_cc(file):
+    return file.extension in [
+        "c",
+        # We only use .cc, but to avoid nasty surprises we support all five
+        # C++ file extensions.
+        "cc",
+        "cpp",
+        "cxx",
+        "c++",
+        "C",
+    ]
+
+def _cc_compile_different_output(name, target, ctx, extension, flags, process_all_files = False):
     """
     Helper macro for implementing the .s and .ll outputting libraries.
 
@@ -26,16 +38,7 @@ def _cc_compile_different_output(target, ctx, extension, flags):
     translation_units = [
         src.files.to_list()[0]
         for src in ctx.rule.attr.srcs
-        if src.files.to_list()[0].extension in [
-            # We only use .cc, but to avoid nasty surprises we support all five
-            # C++ file extensions.
-            "c",
-            "cc",
-            "cpp",
-            "cxx",
-            "c++",
-            "C",
-        ]
+        if process_all_files or _is_c_or_cc(src.files.to_list()[0])
     ]
 
     transitive = []
@@ -85,14 +88,14 @@ def _cc_compile_different_output(target, ctx, extension, flags):
         )
         outputs.append(output_file)
 
-        #output_file_tmp = ctx.actions.declare_file(output_file.basename + ".tmp")
-
         # C files are treated specially, and have different flags applied
         # (e.g. --std=c11).
+        # 
+        # Things that are neither C or C++ TU files don't get any flags.
         opts = ctx.fragments.cpp.copts + ctx.rule.attr.copts
         if source_file.extension == "c":
             opts += ctx.fragments.cpp.conlyopts
-        else:
+        elif _is_c_or_cc(source_file):
             opts += ctx.fragments.cpp.cxxopts + ctx.rule.attr.cxxopts
 
         c_compile_variables = cc_common.create_compile_variables(
@@ -124,7 +127,14 @@ def _cc_compile_different_output(target, ctx, extension, flags):
             variables = c_compile_variables,
         )
 
+        if hasattr(ctx.file, "_clang_format") and source_file.extension != "S":
+            oldenv = env
+            env = {"CLANG_FORMAT": ctx.file._clang_format.path}
+            for k, v in oldenv.items():
+                env[k] = v
+
         ctx.actions.run_shell(
+            mnemonic = name,
             tools = [
                 ctx.file._cleanup_script,
             ],
@@ -144,9 +154,9 @@ def _cc_compile_different_output(target, ctx, extension, flags):
             outputs = [output_file],
             command = """
                 CC=$1; shift
-                UNTAB=$1; shift
+                CLEANUP=$1; shift
                 OUT=$1; shift
-                $CC -o - $@ | $UNTAB > $OUT
+                $CC -o - $@ 2> /dev/null | $CLEANUP > $OUT
             """,
         )
 
@@ -155,8 +165,41 @@ def _cc_compile_different_output(target, ctx, extension, flags):
         transitive = transitive,
     ))]
 
+def _cc_preprocess_aspect_impl(target, ctx):
+    return _cc_compile_different_output("Preprocess", target, ctx, "i", ["-E"], process_all_files = True)
+
+cc_preprocess_aspect = aspect(
+    implementation = _cc_preprocess_aspect_impl,
+    doc = """
+        An aspect that provides a CcSideProductInfo containing the preprocessed outputs
+        of every C/C++ translation unit in the sources of the rule it is applied to and
+        all of its dependencies.
+    """,
+    attrs = {
+        "_cleanup_script": attr.label(
+            allow_single_file = True,
+            default = Label("//rules/scripts:clean_up_cpp_output.sh"),
+        ),
+        "_clang_format": attr.label(
+            default = "@com_lowrisc_toolchain_rv32imc_compiler//:bin/clang-format",
+            allow_single_file = True,
+            cfg = "host",
+            executable = True,
+        ),
+        "_cc_toolchain": attr.label(
+            default = Label("@bazel_tools//tools/cpp:current_cc_toolchain"),
+        ),
+    },
+    attr_aspects = ["deps"],
+    provides = [CcSideProductInfo],
+    toolchains = ["@rules_cc//cc:toolchain_type"],
+    incompatible_use_toolchain_transition = True,
+    fragments = ["cpp"],
+    host_fragments = ["cpp"],
+)
+
 def _cc_assembly_aspect_impl(target, ctx):
-    return _cc_compile_different_output(target, ctx, "s", ["-S"])
+    return _cc_compile_different_output("AsmOutput", target, ctx, "s", ["-S"])
 
 cc_asm_aspect = aspect(
     implementation = _cc_assembly_aspect_impl,
@@ -186,7 +229,7 @@ def _cc_llvm_aspect_impl(target, ctx):
     cc_toolchain = find_cc_toolchain(ctx)
     if cc_toolchain.compiler.find("clang") == -1:
         return CcSideProductInfo(files = depset())
-    return _cc_compile_different_output(target, ctx, "ll", ["-S", "-emit-llvm"])
+    return _cc_compile_different_output("LLVMOutput", target, ctx, "ll", ["-S", "-emit-llvm"])
 
 cc_llvm_aspect = aspect(
     implementation = _cc_llvm_aspect_impl,
@@ -243,6 +286,7 @@ def _cc_relink_with_linkmap_aspect_impl(target, ctx):
     )
 
     ctx.actions.run(
+        mnemonic = "LinkMapFile",
         executable = linker_path,
         arguments = link_action.argv[1:] + ["-Wl,-Map=" + output_file.path],
         env = link_action.env,
@@ -271,6 +315,17 @@ cc_relink_with_linkmap_aspect = aspect(
     incompatible_use_toolchain_transition = True,
     fragments = ["cpp"],
     host_fragments = ["cpp"],
+)
+
+def _rv_preprocess_impl(ctx):
+    return [DefaultInfo(
+        files = ctx.attr.target[CcSideProductInfo].files,
+        data_runfiles = ctx.runfiles(transitive_files = ctx.attr.target[CcSideProductInfo].files),
+    )]
+
+rv_preprocess = rv_rule(
+    implementation = _rv_preprocess_impl,
+    attrs = {"target": attr.label(aspects = [cc_preprocess_aspect])},
 )
 
 def _rv_asm_impl(ctx):

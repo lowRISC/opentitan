@@ -5,7 +5,13 @@
 # TODO(drewmacrae) this should be in rules_cc
 # pending resolution of https://github.com/bazelbuild/rules_cc/issues/75
 load("//rules:bugfix.bzl", "find_cc_toolchain")
-load("//rules:cc_side_outputs.bzl", "rv_asm", "rv_llvm_ir", "rv_relink_with_linkmap")
+load(
+    "//rules:cc_side_outputs.bzl",
+    "rv_asm",
+    "rv_llvm_ir",
+    "rv_preprocess",
+    "rv_relink_with_linkmap",
+)
 load(
     "//rules:rv.bzl",
     "rv_rule",
@@ -440,6 +446,13 @@ def opentitan_binary(
         copts = copts,
         linkopts = linkopts,
         **kwargs
+    )
+
+    preproc_name = "{}_{}".format(name, "preproc")
+    targets.append(preproc_name)
+    rv_preprocess(
+        name = preproc_name,
+        target = name,
     )
 
     asm_name = "{}_{}".format(name, "asm")
