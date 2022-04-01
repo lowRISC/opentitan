@@ -4,46 +4,40 @@
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
+load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 
 package(default_visibility = ["//visibility:public"])
 
-cc_library(
-    name = "boot_data_intf",
-    hdrs = ["boot_data.h"],
-    deps = [
-        ":error",
-        "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-        "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-    ],
-)
-
-cc_library(
+dual_cc_library(
     name = "boot_data",
-    srcs = ["boot_data.c"],
-    deps = [
-        ":boot_data_intf",
-        ":error",
-        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:memory",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-        "//sw/device/silicon_creator/lib/drivers:hmac",
-    ],
-)
-
-cc_library(
-    name = "mock_boot_data",
-    testonly = True,
-    hdrs = ["mock_boot_data.h"],
-    deps = [
-        ":boot_data_intf",
-        "//sw/device/lib/base/testing:global_mock",
-        "//sw/device/silicon_creator/testing:mask_rom_test",
-        "@googletest//:gtest",
-    ],
+    hdrs = dual_inputs(
+        shared = ["boot_data.h"],
+        host = ["mock_boot_data.h"],
+    ),
+    srcs = dual_inputs(
+        device = ["boot_data.c"],
+        host = ["mock_boot_data.cc"],
+    ),
+    deps = dual_inputs(
+        shared = [
+            ":error",
+            "//sw/device/lib/base:macros",
+            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+            "//sw/device/silicon_creator/lib/drivers:hmac",
+            "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        ],
+        device = [
+            "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:hardened",
+            "//sw/device/lib/base:memory",
+        ],
+        host = [
+            "//sw/device/lib/base/testing:global_mock",
+            "//sw/device/silicon_creator/testing:mask_rom_test",
+            "@googletest//:gtest",
+        ],
+    ),
 )
 
 opentitan_functest(
