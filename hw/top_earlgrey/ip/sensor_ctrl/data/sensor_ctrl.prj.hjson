@@ -12,8 +12,8 @@
         version:            "1.0",
         life_stage:         "L1",
         design_stage:       "D2",
-        verification_stage: "V0", // block level verification not planned
-        //notes:              ""
+        verification_stage: "N/A", // block level verification not planned
+        //notes:            ""
       }
     ]
 }
