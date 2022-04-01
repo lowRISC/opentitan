@@ -88,27 +88,9 @@ cc_library(
 
 cc_test(
     name = "flash_ctrl_unittest",
-    srcs = [
-        "flash_ctrl.c",
-        "flash_ctrl.h",
-        "flash_ctrl_unittest.cc",
-    ],
-    defines = [
-        "OT_OFF_TARGET_TEST",
-    ],
+    srcs = ["flash_ctrl_unittest.cc"],
     deps = [
-        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/base:multibits",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/lib/drivers:otp",
+        ":flash_ctrl",
         "@googletest//:gtest_main",
     ],
 )
@@ -173,7 +155,6 @@ cc_library(
     name = "keymgr",
     srcs = ["keymgr.c"],
     hdrs = ["keymgr.h"],
-    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/keymgr/data:keymgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -187,18 +168,9 @@ cc_library(
 
 cc_test(
     name = "keymgr_unittest",
-    srcs = [
-        "keymgr.c",
-        "keymgr.h",
-        "keymgr_unittest.cc",
-    ],
+    srcs = ["keymgr_unittest.cc"],
     deps = [
-        "//hw/ip/keymgr/data:keymgr_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:keymgr_binding",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
+        ":keymgr",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
@@ -272,7 +244,6 @@ cc_library(
     name = "otbn",
     srcs = ["otbn.c"],
     hdrs = ["otbn.h"],
-    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/otbn/data:otbn_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -284,20 +255,9 @@ cc_library(
 
 cc_test(
     name = "otbn_unittest",
-    srcs = [
-        "otbn.c",
-        "otbn.h",
-        "otbn_unittest.cc",
-    ],
-    defines = [
-        "OT_OFF_TARGET_TEST",
-    ],
+    srcs = ["otbn_unittest.cc"],
     deps = [
-        "//hw/ip/otbn/data:otbn_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/silicon_creator/lib:error",
+        ":otbn",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
@@ -465,22 +425,9 @@ cc_library(
 
 cc_test(
     name = "rstmgr_unittest",
-    srcs = [
-        "rstmgr.c",
-        "rstmgr.h",
-        "rstmgr_unittest.cc",
-    ],
-    defines = [
-        "OT_OFF_TARGET_TEST",
-    ],
+    srcs = ["rstmgr_unittest.cc"],
     deps = [
-        "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:multibits",
-        "//sw/device/silicon_creator/lib:error",
+        ":rstmgr",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
@@ -543,9 +490,6 @@ cc_library(
 cc_test(
     name = "watchdog_unittest",
     srcs = ["watchdog_unittest.cc"],
-    defines = [
-        "OT_OFF_TARGET_TEST",
-    ],
     deps = [
         ":watchdog",
         "//hw/ip/aon_timer/data:aon_timer_regs",
