@@ -112,7 +112,7 @@ uint32_t shutdown_redact(rom_error_t reason, shutdown_error_redact_t severity);
  *
  * @param reason A reason for entering the shutdown state.
  */
-#ifndef OT_OFF_TARGET_TEST
+#ifdef OT_PLATFORM_RV32
 // If this is a test, we'll omit `noreturn` so we can call this function
 // from within a test program.
 noreturn

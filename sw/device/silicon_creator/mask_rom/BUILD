@@ -53,7 +53,7 @@ cc_test(
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:manifest",
-        "//sw/device/silicon_creator/lib:mock_shutdown",
+        "//sw/device/silicon_creator/lib:shutdown",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
