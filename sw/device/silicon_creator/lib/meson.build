@@ -213,11 +213,13 @@ test('sw_silicon_creator_lib_manifest_unittest', executable(
     'sw_silicon_creator_lib_manifest_unittest',
     sources: [
       'manifest_unittest.cc',
+      'manifest.c',
     ],
     dependencies: [
       sw_vendor_gtest,
     ],
     native: true,
+    c_args: ['-DMANIFEST_UNIT_TEST_'],
   ),
   suite: 'mask_rom',
 )
