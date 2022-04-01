@@ -45,14 +45,20 @@
                "-I{build_dir}/src/lowrisc_dv_secded_enc_0",
                ]
 
+  // We want to allow the possibility of passing no test or no test sequence. Unfortunately,
+  // Xcelium generates an error (*E,OPTP2ND) if you pass an empty plusarg. To avoid doing so, these
+  // two variables expand to e.g. "+UVM_TESTNAME=foo" if we have a test and the empty string if
+  // not.
+  uvm_testname_plusarg: "{eval_cmd} echo {uvm_test} | sed 's/\\(.+\\)/+UVM_TESTNAME=\\1/'"
+  uvm_testseq_plusarg: "{eval_cmd} echo {uvm_test_seq} | sed 's/\\(.+\\)/+UVM_TEST_SEQ=\\1/'"
+
   run_opts:   ["-input {run_script}",
                "-licqueue",
                "-64bit -xmlibdirname {build_db_dir}",
                // Use the same snapshot name set during the build step.
                "-r {tb}",
                "+SVSEED={seed}",
-               "+UVM_TESTNAME={uvm_test}",
-               "+UVM_TEST_SEQ={uvm_test_seq}",
+               "{uvm_testname_plusarg} {uvm_testseq_plusarg}",
                // Ignore "IEEE 1800-2009 SystemVerilog simulation semantics" warning
                "-nowarn DSEM2009",
                ]
