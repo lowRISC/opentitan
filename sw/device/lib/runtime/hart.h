@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stdnoreturn.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/stdasm.h"
 
 /**
@@ -23,7 +24,11 @@
  *
  * This function may behave as if it is a no-op.
  */
-inline void wait_for_interrupt(void) { asm volatile("wfi"); }
+inline void wait_for_interrupt(void) {
+#ifdef OT_PLATFORM_RV32
+  asm volatile("wfi");
+#endif
+}
 
 /**
  * Spin for at least the given number of microseconds.
