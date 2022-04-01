@@ -4,19 +4,19 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
-#include "sw/device/silicon_creator/lib/sigverify_mod_exp.h"
-#include "sw/device/silicon_creator/lib/sigverify_tests/sigverify_testvectors.h"
+#include "sw/device/silicon_creator/lib/sigverify/sigverify_mod_exp_otbn.h"
+#include "sw/device/silicon_creator/lib/sigverify/sigverify_tests/sigverify_testvectors.h"
 #include "sw/device/silicon_creator/lib/test_main.h"
 
 // Index of the test vector currently under test
 static uint32_t test_index;
 
-rom_error_t sigverify_mod_exp_ibex_test(void) {
+rom_error_t sigverify_mod_exp_otbn_test(void) {
   sigverify_test_vector_t testvec = sigverify_tests[test_index];
 
   sigverify_rsa_buffer_t recovered_message;
   rom_error_t err =
-      sigverify_mod_exp_ibex(&testvec.key, &testvec.sig, &recovered_message);
+      sigverify_mod_exp_otbn(&testvec.key, &testvec.sig, &recovered_message);
   if (err != kErrorOk) {
     if (testvec.valid) {
       LOG_ERROR("Error on a valid signature.");
@@ -53,7 +53,7 @@ bool test_main(void) {
   for (uint32_t i = 0; i < SIGVERIFY_NUM_TESTS; i++) {
     LOG_INFO("Starting test vector %d of %d...", i + 1, SIGVERIFY_NUM_TESTS);
     test_index = i;
-    EXECUTE_TEST(result, sigverify_mod_exp_ibex_test);
+    EXECUTE_TEST(result, sigverify_mod_exp_otbn_test);
   }
   return result == kErrorOk;
 }

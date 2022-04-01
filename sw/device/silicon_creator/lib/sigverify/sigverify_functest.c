@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
-#include "sw/device/silicon_creator/lib/sigverify.h"
+#include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/lib/test_main.h"
 
 static const char kMessage[] = "test message";

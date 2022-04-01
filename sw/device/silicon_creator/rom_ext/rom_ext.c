@@ -19,7 +19,7 @@
 #include "sw/device/silicon_creator/lib/log.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
-#include "sw/device/silicon_creator/lib/sigverify.h"
+#include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_epmp.h"

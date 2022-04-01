@@ -26,7 +26,7 @@
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
-#include "sw/device/silicon_creator/lib/sigverify.h"
+#include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/mask_rom/boot_policy.h"
 #include "sw/device/silicon_creator/mask_rom/mask_rom_epmp.h"
 #include "sw/device/silicon_creator/mask_rom/primitive_bootstrap.h"

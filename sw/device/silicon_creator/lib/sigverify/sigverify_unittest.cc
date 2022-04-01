@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/lib/sigverify.h"
+#include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 
 #include <array>
 #include <cstring>
@@ -13,8 +13,8 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
-#include "sw/device/silicon_creator/lib/mock_sigverify_mod_exp_ibex.h"
-#include "sw/device/silicon_creator/lib/mock_sigverify_mod_exp_otbn.h"
+#include "sw/device/silicon_creator/lib/sigverify/sigverify_mod_exp_ibex_mock.h"
+#include "sw/device/silicon_creator/lib/sigverify/sigverify_mod_exp_otbn_mock.h"
 #include "sw/device/silicon_creator/testing/mask_rom_test.h"
 
 #include "flash_ctrl_regs.h"
