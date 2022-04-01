@@ -121,7 +121,7 @@
         '''cd {proj_root} && ./util/topgen.py -t {ral_spec} \
                -o hw/top_earlgrey --rnd_cnst_seed {seed}
         ''',
-        "cd /${proj_root} && ./util/design/gen-otp-mmap.py --seed ${seed}"
+        "cd {proj_root} && ./util/design/gen-otp-mmap.py --seed {seed}"
       ]
       is_sim_mode: 1
     }
