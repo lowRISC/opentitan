@@ -113,38 +113,42 @@ cc_test(
     ],
 )
 
-cc_library(
+dual_cc_library(
     name = "hmac",
-    srcs = ["hmac.c"],
-    hdrs = ["hmac.h"],
-    deps = [
-        "//hw/ip/hmac/data:hmac_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:memory",
-        "//sw/device/silicon_creator/lib:error",
-    ],
-)
-
-cc_library(
-    name = "mock_hmac",
-    testonly = True,
-    hdrs = ["mock_hmac.h"],
-    deps = [
-        ":hmac",
-        "//sw/device/lib/base/testing:global_mock",
-        "//sw/device/silicon_creator/testing:mask_rom_test",
-        "@googletest//:gtest",
-    ],
+    srcs = dual_inputs(
+        device = ["hmac.c"],
+        host = ["mock_hmac.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = ["mock_hmac.h"],
+        shared = ["hmac.h"],
+    ),
+    deps = dual_inputs(
+        device = [
+            "//hw/ip/hmac/data:hmac_regs",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        ],
+        host = [
+            "//sw/device/lib/base/testing:global_mock",
+            "//sw/device/silicon_creator/testing:mask_rom_test",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            "//sw/device/lib/base:abs_mmio",
+            "//sw/device/lib/base:bitfield",
+            "//sw/device/lib/base:hardened",
+            "//sw/device/lib/base:memory",
+            "//sw/device/silicon_creator/lib:error",
+        ],
+    ),
 )
 
 cc_test(
     name = "hmac_unittest",
     srcs = ["hmac_unittest.cc"],
     deps = [
-        ":hmac",
+        dual_cc_device_library_of(":hmac"),
+        "//hw/ip/hmac/data:hmac_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
