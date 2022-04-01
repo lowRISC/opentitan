@@ -1,0 +1,9 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  licence:
+    @@LICENCE@@,
+  match_regex: "@@MATCH_REGEX@@",
+  exclude_paths: [@@EXCLUDE_PATHS@@],
+}

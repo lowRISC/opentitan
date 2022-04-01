@@ -119,7 +119,7 @@ COMMENT_CHARS = [
     (["Makefile", ".mk"], HASH),  # Makefiles
     ([".ys"], HASH),  # Yosys script
     ([".waiver"], HASH),  # AscentLint waiver files
-    ([".vlt"], SLASH_SLASH),  # Verilator configuration (waiver) files
+    ([".vlt, vlt.tpl"], SLASH_SLASH),  # Verilator configuration (waiver) files
     ([".vbl"], HASH),  # Verible configuration files
     ([".el", ".el.tpl"], SLASH_SLASH),  # Exclusion list
     ([".cfg", ".cfg.tpl"], [SLASH_SLASH,
@@ -140,9 +140,12 @@ COMMENT_CHARS = [
     ([".s"], SLASH_STAR),  # Assembly (Without Preprocessing)
     ([".ld", ".ld.tpl"], SLASH_STAR),  # Linker Scripts
     ([".rs", ".rs.tpl"], SLASH_SLASH),  # Rust
+    ([".go"], SLASH_SLASH),  # Golang
+    ([".proto"], SLASH_SLASH),  # Protobuf
 
     # Software Build Systems
     (["meson.build", "toolchain.txt", "meson_options.txt"], HASH),  # Meson
+    (["WORKSPACE", "BUILD", "BUILD.bazel", ".bzl"], HASH),  # Bazel
 
     # General Tooling
     ([".py"], HASH),  # Python
