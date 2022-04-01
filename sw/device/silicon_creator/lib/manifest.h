@@ -13,7 +13,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
 #include "sw/device/silicon_creator/lib/manifest_size.h"
-#include "sw/device/silicon_creator/lib/sigverify/sigverify_rsa_key.h"
+#include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -9,8 +9,8 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
-#include "sw/device/silicon_creator/lib/sigverify/sigverify_mod_exp_ibex.h"
-#include "sw/device/silicon_creator/lib/sigverify/sigverify_mod_exp_otbn.h"
+#include "sw/device/silicon_creator/lib/sigverify/mod_exp_ibex.h"
+#include "sw/device/silicon_creator/lib/sigverify/mod_exp_otbn.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"

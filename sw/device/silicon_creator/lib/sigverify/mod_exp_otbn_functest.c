@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
-#include "sw/device/silicon_creator/lib/sigverify/sigverify_mod_exp_otbn.h"
+#include "sw/device/silicon_creator/lib/sigverify/mod_exp_otbn.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify_tests/sigverify_testvectors.h"
 #include "sw/device/silicon_creator/lib/test_main.h"
 
