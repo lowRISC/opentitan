@@ -404,35 +404,36 @@ opentitan_functest(
     ],
 )
 
-cc_library(
+dual_cc_library(
     name = "rnd",
-    srcs = ["rnd.c"],
-    hdrs = ["rnd.h"],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":otp",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:macros",
-    ],
-)
-
-cc_library(
-    name = "mock_rnd",
-    testonly = True,
-    hdrs = [
-        "mock_rnd.h",
-        "rnd.h",
-    ],
-    deps = [
-        "//sw/device/lib/base/testing:global_mock",
-        "//sw/device/silicon_creator/testing:mask_rom_test",
-        "@googletest//:gtest",
-    ],
+    srcs = dual_inputs(
+        device = ["rnd.c"],
+        host = ["mock_rnd.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = ["mock_rnd.h"],
+        shared = ["rnd.h"],
+    ),
+    deps = dual_inputs(
+        device = [
+            ":otp",
+            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+            "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:abs_mmio",
+            "//sw/device/lib/base:csr",
+            "//sw/device/lib/base:hardened",
+        ],
+        host = [
+            "//sw/device/lib/base/testing:global_mock",
+            "//sw/device/silicon_creator/testing:mask_rom_test",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            "//sw/device/lib/base:macros",
+            "//sw/device/silicon_creator/lib:error",
+        ],
+    ),
 )
 
 opentitan_functest(
