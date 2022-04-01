@@ -11,7 +11,7 @@ use std::any::Any;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::os::unix::io::AsRawFd;
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime};
 use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
@@ -33,6 +33,9 @@ pub struct Console {
 
     #[structopt(short, long, help = "Exit after a timeout in seconds.")]
     timeout: Option<u64>,
+
+    #[structopt(long, help = "Print a timestamp on each line of console output.")]
+    timestamp: bool,
 
     #[structopt(long, help = "Exit with success if the specified regex is matched.")]
     exit_success: Option<String>,
@@ -66,6 +69,8 @@ impl CommandDispatch for Console {
                 .as_ref()
                 .map(|s| Regex::new(s.as_str()))
                 .transpose()?,
+            timestamp: self.timestamp,
+            newline: true,
             ..Default::default()
         };
 
@@ -107,6 +112,8 @@ struct InnerConsole {
     exit_success: Option<Regex>,
     exit_failure: Option<Regex>,
     buffer: String,
+    timestamp: bool,
+    newline: bool,
 }
 
 enum ExitStatus {
@@ -193,7 +200,15 @@ impl InnerConsole {
         let mut buf = [0u8; 256];
         let len = uart.read_timeout(&mut buf, timeout)?;
         if len > 0 {
-            stdout.write_all(&buf[..len])?;
+            for i in 0..len {
+                if self.timestamp && self.newline {
+                    let t = humantime::format_rfc3339_millis(SystemTime::now());
+                    stdout.write_fmt(format_args!("[{}]", t))?;
+                    self.newline = false;
+                }
+                stdout.write_all(&buf[i..i + 1])?;
+                self.newline = buf[i] == b'\n';
+            }
             stdout.flush()?;
 
             // If we're logging, save it to the logfile.
