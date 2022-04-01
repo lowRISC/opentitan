@@ -132,6 +132,7 @@ module otbn_scramble_ctrl
     end
   end
 
+  // SEC_CM: SCRAMBLE_CTRL.FSM.SPARSE
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, scramble_ctrl_state_e, ScrambleCtrlIdle)
 
   always_comb begin
@@ -203,6 +204,7 @@ module otbn_scramble_ctrl
         end
       end
       ScrambleCtrlError: begin
+        // SEC_CM: SCRAMBLE_CTRL.FSM.LOCAL_ESC
         // Terminal error state
         state_error_o = 1'b1;
       end

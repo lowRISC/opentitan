@@ -30,8 +30,50 @@
       tests: []
     }
     {
+      name: sec_cm_controller_fsm_global_esc
+      desc: "Verify the countermeasure(s) CONTROLLER.FSM.GLOBAL_ESC."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_controller_fsm_local_esc
+      desc: "Verify the countermeasure(s) CONTROLLER.FSM.LOCAL_ESC."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_controller_fsm_sparse
+      desc: "Verify the countermeasure(s) CONTROLLER.FSM.SPARSE."
+      milestone: V2S
+      tests: []
+    }
+    {
       name: sec_cm_scramble_key_sideload
       desc: "Verify the countermeasure(s) SCRAMBLE.KEY.SIDELOAD."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_scramble_ctrl_fsm_local_esc
+      desc: "Verify the countermeasure(s) SCRAMBLE_CTRL.FSM.LOCAL_ESC."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_scramble_ctrl_fsm_sparse
+      desc: "Verify the countermeasure(s) SCRAMBLE_CTRL.FSM.SPARSE."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_start_stop_ctrl_fsm_local_esc
+      desc: "Verify the countermeasure(s) START_STOP_CTRL.FSM.LOCAL_ESC."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_start_stop_ctrl_fsm_sparse
+      desc: "Verify the countermeasure(s) START_STOP_CTRL.FSM.SPARSE."
       milestone: V2S
       tests: []
     }
