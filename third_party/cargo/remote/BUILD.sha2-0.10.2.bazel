@@ -26,35 +26,47 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "MIT"
+    "notice",  # MIT from expression "MIT OR Apache-2.0"
 ])
 
 # Generated Targets
 
-# Unsupported target "main" with type "example" omitted
+# Unsupported target "mod" with type "bench" omitted
 
-rust_proc_macro(
-    name = "scroll_derive",
+rust_library(
+    name = "sha2",
     srcs = glob(["**/*.rs"]),
+    aliases = {
+    },
     crate_features = [
+        "default",
+        "std",
     ],
     crate_root = "src/lib.rs",
     data = [],
-    edition = "2015",
+    edition = "2018",
     rustc_flags = [
         "--cap-lints=allow",
     ],
     tags = [
         "cargo-raze",
+        "crate-name=sha2",
         "manual",
     ],
-    version = "0.9.5",
+    version = "0.10.2",
     # buildifier: leave-alone
     deps = [
-        "@raze__proc_macro2__0_4_30//:proc_macro2",
-        "@raze__quote__0_6_13//:quote",
-        "@raze__syn__0_15_44//:syn",
-    ],
+        "@raze__cfg_if__1_0_0//:cfg_if",
+        "@raze__digest__0_10_3//:digest",
+    ] + selects.with_or({
+        # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+        (
+            "@rules_rust//rust/platform:x86_64-unknown-linux-gnu",
+        ): [
+            "@raze__cpufeatures__0_2_2//:cpufeatures",
+        ],
+        "//conditions:default": [],
+    }),
 )
 
-# Unsupported target "tests" with type "test" omitted
+# Unsupported target "mod" with type "test" omitted

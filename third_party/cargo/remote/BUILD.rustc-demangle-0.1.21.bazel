@@ -32,30 +32,23 @@ licenses([
 # Generated Targets
 
 rust_library(
-    name = "digest",
+    name = "rustc_demangle",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "alloc",
-        "block-buffer",
-        "core-api",
-        "default",
-        "std",
     ],
     crate_root = "src/lib.rs",
     data = [],
-    edition = "2018",
+    edition = "2015",
     rustc_flags = [
         "--cap-lints=allow",
     ],
     tags = [
         "cargo-raze",
-        "crate-name=digest",
+        "crate-name=rustc-demangle",
         "manual",
     ],
-    version = "0.10.2",
+    version = "0.1.21",
     # buildifier: leave-alone
     deps = [
-        "@raze__block_buffer__0_10_2//:block_buffer",
-        "@raze__crypto_common__0_1_2//:crypto_common",
     ],
 )
