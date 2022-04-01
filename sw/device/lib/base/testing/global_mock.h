@@ -5,6 +5,10 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_BASE_TESTING_GLOBAL_MOCK_H_
 #define OPENTITAN_SW_DEVICE_LIB_BASE_TESTING_GLOBAL_MOCK_H_
 
+#include <sstream>
+#include <typeinfo>
+#include <utility>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -45,7 +49,10 @@ class GlobalMock {
  public:
   GlobalMock() {
     if (instance_ != nullptr) {
-      throw std::runtime_error("Mock is already instantiated.");
+      std::stringstream ss;
+      ss << "Mock `" << typeid(GlobalMock).name()
+         << "` is already instantiated.";
+      throw std::runtime_error(std::move(ss).str());
     }
     instance_ = static_cast<Mock *>(this);
   }
@@ -56,7 +63,9 @@ class GlobalMock {
 
   static Mock &Instance() {
     if (instance_ == nullptr) {
-      throw std::runtime_error("Mock is not instantiated yet.");
+      std::stringstream ss;
+      ss << "Mock `" << typeid(GlobalMock).name() << "` not instantiated yet.";
+      throw std::runtime_error(std::move(ss).str());
     }
     return *instance_;
   }
