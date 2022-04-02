@@ -45,6 +45,9 @@ STAGE_STRINGS = {
     'S1': 'Functional',
     'S2': 'Complete',
     'S3': 'Stable',
+    # In case certain development stages do not apply
+    # (e.g. verification handled at the top-level).
+    'N/A': 'Not Applicable'
 }
 
 
@@ -102,8 +105,8 @@ def get_linked_checklist(obj, rev, stage, is_latest_rev=True):
 
     url = ""
     in_page_ref = ""
-    if rev[stage] not in ["D0", "V0"]:
-        # if in D0 or V0 stage, there is no in-page reference.
+    # if N/A or in D0/V0 stage, there is no in-page reference.
+    if rev[stage] not in ["D0", "V0", "N/A"]:
         in_page_ref = "#{}".format(html.escape(rev[stage]).lower())
 
     # If the checklist is available, the commit id is available, and it is not
