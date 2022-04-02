@@ -260,16 +260,21 @@ def print_fn(n, k, m, codes, suffix, codetype, inv=False):
 def print_enc(n, k, m, codes, codetype):
     invert = 1 if codetype in ["inv_hsiao", "inv_hamming"] else 0
     outstr = "    data_o = {}'(data_i);\n".format(n)
-    format_str = "    data_o[{}] = 1'b{} ^ ^(data_o & " + str(n) + "'h{:0" +\
-                 str((n + 3) // 4) + "X});\n"
+    hex_format = str(n) + "'h{:0" + str((n + 3) // 4) + "X}"
+    format_str = "    data_o[{}] = ^(data_o & " + hex_format + ");\n"
     # Print parity computation If inverted encoding is turned on, we only
     # invert every odd bit so that both all-one and all-zero encodings are not
     # possible. This works for most encodings generated if the fanin is
     # balanced (such as inverted Hsiao codes). However, since there is no
     # guarantee, an FPV assertion is added to prove that all-zero and all-one
     # encodings do not exist if an inverted code is used.
+    inv_mask = 0
     for j, mask in enumerate(calc_bitmasks(k, m, codes, False)):
-        outstr += format_str.format(j + k, invert & (j % 2), mask)
+        inv_mask += (j % 2) << j
+        outstr += format_str.format(j + k, mask)
+    # Selectively invert parity bits as determined above.
+    if invert:
+        outstr += ("    data_o ^= " + hex_format + ";\n").format(inv_mask << k)
     return outstr
 
 
