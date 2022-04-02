@@ -54,6 +54,13 @@ module sram_ctrl
   input  prim_ram_1p_pkg::ram_1p_cfg_t               cfg_i
 );
 
+  import lc_ctrl_pkg::lc_tx_t;
+  import lc_ctrl_pkg::lc_tx_test_true_loose;
+  import lc_ctrl_pkg::lc_tx_bool_to_lc_tx;
+  import lc_ctrl_pkg::lc_tx_or_hi;
+  import lc_ctrl_pkg::lc_tx_inv;
+  import lc_ctrl_pkg::lc_to_mubi4;
+
   // This is later on pruned to the correct width at the SRAM wrapper interface.
   parameter int unsigned Depth = MemSizeRam >> 2;
   parameter int unsigned AddrWidth = prim_util_pkg::vbits(Depth);
@@ -84,8 +91,9 @@ module sram_ctrl
   // CSR Node and Mapping //
   //////////////////////////
 
-  // We've got two bus interfaces in this module, hence two integ failure sources.
-  logic [1:0] bus_integ_error;
+  // We've got two bus interfaces + an lc_gate in this module,
+  // hence three integ failure sources.
+  logic [2:0] bus_integ_error;
 
   sram_ctrl_regs_reg2hw_t reg2hw;
   sram_ctrl_regs_hw2reg_t hw2reg;
@@ -146,33 +154,44 @@ module sram_ctrl
   // Escalation Triggers //
   /////////////////////////
 
-  lc_ctrl_pkg::lc_tx_t escalate_en;
+  lc_tx_t [1:0] escalate_en;
   prim_lc_sync #(
-    .NumCopies (1)
+    .NumCopies (2)
   ) u_prim_lc_sync (
     .clk_i,
     .rst_ni,
     .lc_en_i (lc_escalate_en_i),
-    .lc_en_o ({escalate_en})
+    .lc_en_o (escalate_en)
   );
 
   // SEC_CM: KEY.GLOBAL_ESC
   logic escalate;
-  assign escalate = (escalate_en != lc_ctrl_pkg::Off);
+  assign escalate = lc_tx_test_true_loose(escalate_en[0]);
   assign hw2reg.status.escalated.d  = 1'b1;
   assign hw2reg.status.escalated.de = escalate;
 
   // SEC_CM: KEY.LOCAL_ESC
   // Aggregate external and internal escalation sources.
-  // This is used on countermeasures further below (key reset and transaction blocking).
-  logic local_esc;
-  assign local_esc = escalate                   ||
-                     init_error                 ||
-                     |bus_integ_error           ||
-                     reg2hw.status.escalated.q  ||
-                     reg2hw.status.init_error.q ||
-                     reg2hw.status.bus_integ_error.q;
+  // This is used in countermeasures further below (key reset and transaction blocking).
+  logic local_esc, local_esc_reg;
+  // This signal only aggregates registered escalation signals and is used for transaction
+  // blocking further below, which is on a timing-critical path.
+  assign local_esc_reg = reg2hw.status.escalated.q  ||
+                         reg2hw.status.init_error.q ||
+                         reg2hw.status.bus_integ_error.q;
+  // This signal aggregates all escalation trigger signals, including the ones that are generated in
+  // the same cycle such as init_error and bus_integ_error. It is used for countermeasures that are
+  // not on the critical path (such as clearing the scrambling keys).
+  assign local_esc = escalate         ||
+                     init_error       ||
+                     |bus_integ_error ||
+                     local_esc_reg;
 
+  // Convert registered, local escalation sources to a multibit signal and combine this with
+  // the incoming escalation enable signal before feeding into the TL-UL gate further below.
+  lc_tx_t lc_tlul_gate_en;
+  assign lc_tlul_gate_en = lc_tx_inv(lc_tx_or_hi(escalate_en[1],
+                                                 lc_tx_bool_to_lc_tx(local_esc_reg)));
   ///////////////////////
   // HW Initialization //
   ///////////////////////
@@ -317,8 +336,7 @@ module sram_ctrl
     mubi4_t lc_ifetch_en;
     mubi4_t reg_ifetch_en;
     // SEC_CM: INSTR.BUS.LC_GATED
-    assign lc_ifetch_en = (lc_hw_debug_en_i == lc_ctrl_pkg::On) ? MuBi4True :
-                                                                  MuBi4False;
+    assign lc_ifetch_en = lc_to_mubi4(lc_hw_debug_en_i);
     // SEC_CM: EXEC.CONFIG.MUBI
     assign reg_ifetch_en = mubi4_t'(reg2hw.exec.q);
     // SEC_CM: EXEC.INTERSIG.MUBI
@@ -363,6 +381,26 @@ module sram_ctrl
     .data_intg_o(lfsr_out_integ)
   );
 
+  ////////////////////////////
+  // SRAM TL-UL Access Gate //
+  ////////////////////////////
+
+  tlul_pkg::tl_h2d_t ram_tl_in_gated;
+  tlul_pkg::tl_d2h_t ram_tl_out_gated;
+
+  tlul_lc_gate #(
+    .NumGatesPerDirection(2)
+  ) u_tlul_lc_gate (
+    .clk_i,
+    .rst_ni,
+    .tl_h2d_i(ram_tl_i),
+    .tl_d2h_o(ram_tl_o),
+    .tl_h2d_o(ram_tl_in_gated),
+    .tl_d2h_i(ram_tl_out_gated),
+    .lc_en_i (lc_tlul_gate_en),
+    .err_o   (bus_integ_error[2])
+  );
+
   /////////////////////////////////
   // SRAM with scrambling device //
   /////////////////////////////////
@@ -387,8 +425,8 @@ module sram_ctrl
   ) u_tlul_adapter_sram (
     .clk_i,
     .rst_ni,
-    .tl_i        (ram_tl_i),
-    .tl_o        (ram_tl_o),
+    .tl_i        (ram_tl_in_gated),
+    .tl_o        (ram_tl_out_gated),
     .en_ifetch_i (en_ifetch),
     .req_o       (tlul_req),
     .req_type_o  (),
@@ -405,11 +443,10 @@ module sram_ctrl
   );
 
   // Interposing mux logic for initialization with pseudo random data.
-  // TODO: use tlul_lc_gate for local_esc gating instead.
-  assign sram_req        = tlul_req & ~local_esc | init_req;
-  assign tlul_gnt        = sram_gnt & ~init_req & ~local_esc;
+  assign sram_req        = tlul_req | init_req;
+  assign tlul_gnt        = sram_gnt & ~init_req;
   assign sram_we         = tlul_we | init_req;
-  assign sram_intg_error = local_esc & ~init_req;
+  assign sram_intg_error = |bus_integ_error[2:1] & ~init_req;
   assign sram_addr       = (init_req) ? init_cnt          : tlul_addr;
   assign sram_wdata      = (init_req) ? lfsr_out_integ    : tlul_wdata;
   assign sram_wmask      = (init_req) ? {DataWidth{1'b1}} : tlul_wmask;
@@ -456,5 +493,7 @@ module sram_ctrl
   // Alert assertions for redundant counters.
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntCheck_A,
       u_prim_count, alert_tx_o[0])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(LcGateFsmCheck_A,
+      u_tlul_lc_gate.u_state_regs, alert_tx_o[0])
 
 endmodule : sram_ctrl
