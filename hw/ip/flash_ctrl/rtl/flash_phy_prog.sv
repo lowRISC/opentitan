@@ -159,7 +159,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
   end
 
 
-  // SEC_CM: PHY.FSM.SPARSE
+  // SEC_CM: PHY_PROG.FSM.SPARSE
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, StIdle)
 
   // If the first beat of an incoming transaction is not aligned to word boundary (for example
