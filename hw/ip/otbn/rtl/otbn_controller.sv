@@ -25,7 +25,7 @@ module otbn_controller
   output logic locked_o, // OTBN in locked state and must be reset to perform any further actions
 
   input lc_ctrl_pkg::lc_tx_t   lc_escalate_en_i,
-  input logic                  escalate_en_i,
+  input prim_mubi_pkg::mubi4_t escalate_en_i,
   output controller_err_bits_t err_bits_o,
   output logic                 recoverable_err_o,
 
@@ -142,6 +142,8 @@ module otbn_controller
   output logic [ImemAddrWidth:0]   prefetch_loop_end_addr_o,
   output logic [ImemAddrWidth-1:0] prefetch_loop_jump_addr_o
 );
+  import prim_mubi_pkg::*;
+
   otbn_state_e state_q, state_d;
 
 
@@ -476,7 +478,7 @@ module otbn_controller
                        bad_internal_state_err,
                        reg_intg_violation_err,
                        lc_escalate_en_i != lc_ctrl_pkg::Off,
-                       escalate_en_i};
+                       mubi4_test_true_loose(escalate_en_i)};
 
   assign recoverable_err_o = software_err & ~software_errs_fatal_i;
   assign mems_sec_wipe_o   = (state_d == OtbnStateLocked) & (state_q != OtbnStateLocked);
@@ -487,7 +489,7 @@ module otbn_controller
   assign insn_executing = insn_valid_i & ~err;
 
   `ASSERT(ErrBitSetOnErr,
-      err & ~(escalate_en_i | (lc_escalate_en_i != lc_ctrl_pkg::Off)) |=> err_bits_o)
+      err & ~(mubi4_test_true_loose(escalate_en_i) | (lc_escalate_en_i != lc_ctrl_pkg::Off)) |=> err_bits_o)
   `ASSERT(ErrSetOnFatalErr, fatal_err |-> err)
   `ASSERT(SoftwareErrIfNonInsnAddrSoftwareErr, non_insn_addr_software_err |-> software_err)
 

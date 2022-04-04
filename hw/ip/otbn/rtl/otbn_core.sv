@@ -78,7 +78,7 @@ module otbn_core
   input lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
 
   // Indicates an incoming escalation from some fatal error at the level above.
-  input logic escalate_en_i,
+  input prim_mubi_pkg::mubi4_t escalate_en_i,
 
   // When set software errors become fatal errors.
   input logic software_errs_fatal_i,
@@ -86,6 +86,8 @@ module otbn_core
   input logic [1:0]                       sideload_key_shares_valid_i,
   input logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares_i
 );
+  import prim_mubi_pkg::*;
+
   // Fetch request (the next instruction)
   logic [ImemAddrWidth-1:0] insn_fetch_req_addr;
   logic                     insn_fetch_req_valid;
@@ -215,7 +217,7 @@ module otbn_core
   logic [ImemAddrWidth:0]   prefetch_loop_end_addr;
   logic [ImemAddrWidth-1:0] prefetch_loop_jump_addr;
 
-  logic                 controller_escalate_en;
+  mubi4_t               controller_escalate_en;
   controller_err_bits_t controller_err_bits;
 
   core_err_bits_t err_bits_q, err_bits_d;
@@ -474,12 +476,12 @@ module otbn_core
   // Pass an "escalation" signal down to the controller by ORing in error signals from the other
   // modules in otbn_core. Note that each error signal except escalate_en_i that appears here also
   // appears somewhere in err_bits_o above (checked in ErrBitsIfControllerEscalate_A)
-  assign controller_escalate_en = |{escalate_en_i,
-                                    start_stop_state_error,
-                                    urnd_all_zero,
-                                    rf_base_rd_data_err,
-                                    lsu_rdata_err,
-                                    insn_fetch_err};
+  assign controller_escalate_en = mubi4_or_hi(
+      escalate_en_i, mubi4_bool_to_mubi(
+          |{start_stop_state_error, urnd_all_zero, rf_base_rd_data_err, lsu_rdata_err,
+            insn_fetch_err}
+      )
+  );
 
   assign insn_cnt_o = insn_cnt;
 
@@ -731,6 +733,7 @@ module otbn_core
   // Error handling: if we pass an error signal down to the controller then we should also be
   // setting an error flag, unless the signal came from above.
   `ASSERT(ErrBitsIfControllerEscalate_A,
-          controller_escalate_en && !escalate_en_i |=> err_bits_q)
+          mubi4_test_true_loose(controller_escalate_en) && mubi4_test_false_strict(escalate_en_i)
+          |=> err_bits_q)
 
 endmodule

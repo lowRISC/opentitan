@@ -72,53 +72,53 @@ module otbn_top_sim (
     .DmemSizeByte ( DmemSizeByte ),
     .SecWipeEn    ( SecWipeEn    )
   ) u_otbn_core (
-    .clk_i                       ( IO_CLK              ),
-    .rst_ni                      ( IO_RST_N            ),
+    .clk_i                       ( IO_CLK                     ),
+    .rst_ni                      ( IO_RST_N                   ),
 
-    .start_i                     ( otbn_start          ),
-    .done_o                      ( otbn_done           ),
-    .locked_o                    (                     ),
+    .start_i                     ( otbn_start                 ),
+    .done_o                      ( otbn_done                  ),
+    .locked_o                    (                            ),
 
-    .err_bits_o                  ( core_err_bits       ),
-    .recoverable_err_o           (                     ),
+    .err_bits_o                  ( core_err_bits              ),
+    .recoverable_err_o           (                            ),
 
-    .imem_req_o                  ( imem_req            ),
-    .imem_addr_o                 ( imem_addr           ),
-    .imem_rdata_i                ( imem_rdata          ),
-    .imem_rvalid_i               ( imem_rvalid         ),
+    .imem_req_o                  ( imem_req                   ),
+    .imem_addr_o                 ( imem_addr                  ),
+    .imem_rdata_i                ( imem_rdata                 ),
+    .imem_rvalid_i               ( imem_rvalid                ),
 
-    .dmem_req_o                  ( dmem_req            ),
-    .dmem_write_o                ( dmem_write          ),
-    .dmem_addr_o                 ( dmem_addr           ),
-    .dmem_wdata_o                ( dmem_wdata          ),
-    .dmem_wmask_o                ( dmem_wmask          ),
+    .dmem_req_o                  ( dmem_req                   ),
+    .dmem_write_o                ( dmem_write                 ),
+    .dmem_addr_o                 ( dmem_addr                  ),
+    .dmem_wdata_o                ( dmem_wdata                 ),
+    .dmem_wmask_o                ( dmem_wmask                 ),
     .dmem_rmask_o                ( ),
-    .dmem_rdata_i                ( dmem_rdata          ),
-    .dmem_rvalid_i               ( dmem_rvalid         ),
-    .dmem_rerror_i               ( dmem_rerror         ),
+    .dmem_rdata_i                ( dmem_rdata                 ),
+    .dmem_rvalid_i               ( dmem_rvalid                ),
+    .dmem_rerror_i               ( dmem_rerror                ),
 
-    .edn_rnd_req_o               ( edn_rnd_req         ),
-    .edn_rnd_ack_i               ( edn_rnd_ack         ),
-    .edn_rnd_data_i              ( edn_rnd_data        ),
+    .edn_rnd_req_o               ( edn_rnd_req                ),
+    .edn_rnd_ack_i               ( edn_rnd_ack                ),
+    .edn_rnd_data_i              ( edn_rnd_data               ),
 
-    .edn_urnd_req_o              ( edn_urnd_req        ),
-    .edn_urnd_ack_i              ( edn_urnd_ack        ),
-    .edn_urnd_data_i             ( edn_urnd_data       ),
+    .edn_urnd_req_o              ( edn_urnd_req               ),
+    .edn_urnd_ack_i              ( edn_urnd_ack               ),
+    .edn_urnd_data_i             ( edn_urnd_data              ),
 
-    .insn_cnt_o                  ( insn_cnt            ),
-    .insn_cnt_clear_i            ( 1'b0                ),
+    .insn_cnt_o                  ( insn_cnt                   ),
+    .insn_cnt_clear_i            ( 1'b0                       ),
 
-    .mems_sec_wipe_o             (                     ),
-    .dmem_sec_wipe_urnd_key_o    (                     ),
-    .imem_sec_wipe_urnd_key_o    (                     ),
-    .req_sec_wipe_urnd_keys_i    ( 1'b0                ),
+    .mems_sec_wipe_o             (                            ),
+    .dmem_sec_wipe_urnd_key_o    (                            ),
+    .imem_sec_wipe_urnd_key_o    (                            ),
+    .req_sec_wipe_urnd_keys_i    ( 1'b0                       ),
 
-    .escalate_en_i               ( 1'b0                ),
+    .escalate_en_i               ( prim_mubi_pkg::MuBi4False  ),
 
-    .software_errs_fatal_i       ( 1'b0                ),
+    .software_errs_fatal_i       ( 1'b0                       ),
 
-    .sideload_key_shares_i       ( sideload_key_shares ),
-    .sideload_key_shares_valid_i ( 2'b11               )
+    .sideload_key_shares_i       ( sideload_key_shares        ),
+    .sideload_key_shares_valid_i ( 2'b11                      )
   );
 
   localparam logic [WLEN-1:0] FixedEdnVal = {{(WLEN / 4){4'h9}}};
