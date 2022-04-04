@@ -149,7 +149,7 @@ class spi_monitor extends dv_base_monitor#(
               // sending transactions when collect a word data
               if (host_item.data.size == cfg.num_bytes_per_trans_in_mon &&
                   device_item.data.size == cfg.num_bytes_per_trans_in_mon) begin
-              if (host_item.first_byte == 1 )  begin
+              if (host_item.first_byte == 1 && cfg.decode_commands == 1)  begin
                  cmdtmp = host_byte;
                 `uvm_info(`gfn, $sformatf("spi_monitor: cmdtmp \n%0h", cmdtmp), UVM_DEBUG)
                  end
