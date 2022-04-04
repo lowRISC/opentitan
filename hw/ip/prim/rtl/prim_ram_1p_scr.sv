@@ -160,7 +160,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
       .data_o ( addr_scr       )
     );
   end else begin : gen_no_addr_scr
-    assign addr_scr = addr_mux;
+    assign addr_scr = addr_i;
   end
 
   // We latch the non-scrambled address for error reporting.
