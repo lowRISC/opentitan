@@ -122,7 +122,7 @@ void otbn_zero_dmem(void) {
   for (; launder32(i) < kOtbnDMemSizeBytes; i += sizeof(uint32_t)) {
     abs_mmio_write32(kBase + OTBN_DMEM_REG_OFFSET + i, 0u);
   }
-  HARDENED_CHECK_EQ(i, kOtbnDMemSizeBytes / sizeof(uint32_t));
+  HARDENED_CHECK_EQ(i, kOtbnDMemSizeBytes);
 }
 
 rom_error_t otbn_set_ctrl_software_errs_fatal(bool enable) {
