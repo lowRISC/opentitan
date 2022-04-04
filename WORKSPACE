@@ -182,3 +182,17 @@ git_repository(
 load("//third_party/freertos:deps.bzl", "freertos_deps")
 
 freertos_deps()
+
+git_repository(
+    name = "lowrisc_lint",
+    commit = "8bca6cff6f5def9ba866a11b7eeb3f4a12f9f516",
+    remote = "https://github.com/lowrisc/misc-linters",
+)
+
+load("@lowrisc_lint//rules:deps.bzl", "lowrisc_misc_linters_dependencies")
+
+lowrisc_misc_linters_dependencies()
+
+load("@lowrisc_lint//rules:pip.bzl", "lowrisc_misc_linters_pip_dependencies")
+
+lowrisc_misc_linters_pip_dependencies()

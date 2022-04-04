@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
-load("//rules:quality.bzl", "clang_format_check", "html_coverage_report", "license_check")
+load("//rules:quality.bzl", "clang_format_check", "html_coverage_report")
+load("@lowrisc_lint//rules:rules.bzl", "licence_check")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -24,8 +25,14 @@ buildifier(
     mode = "diff",
 )
 
-license_check(
+licence_check(
     name = "license_check",
+    exclude_patterns = [".style.yapf"],
+    licence = """
+    Copyright lowRISC contributors.
+    Licensed under the Apache License, Version 2.0, see LICENSE for details.
+    SPDX-License-Identifier: Apache-2.0
+    """,
 )
 
 clang_format_check(
