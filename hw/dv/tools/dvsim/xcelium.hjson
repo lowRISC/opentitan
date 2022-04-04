@@ -58,7 +58,8 @@
                // Use the same snapshot name set during the build step.
                "-r {tb}",
                "+SVSEED={seed}",
-               "{uvm_testname_plusarg} {uvm_testseq_plusarg}",
+               "{uvm_testname_plusarg}",
+               "{uvm_testseq_plusarg}",
                // Ignore "IEEE 1800-2009 SystemVerilog simulation semantics" warning
                "-nowarn DSEM2009",
                ]
