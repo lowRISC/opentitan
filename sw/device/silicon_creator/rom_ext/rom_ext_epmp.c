@@ -25,8 +25,8 @@ void rom_ext_epmp_unlock_owner_stage_rx(epmp_state_t *state,
   //             +-----------+-----------+-----------+-----------+
   // `pmpcfg0` = | `pmp3cfg` | `pmp2cfg` | `pmp1cfg` | `pmp0cfg` |
   //             +-----------+-----------+-----------+-----------+
-  CSR_WRITE(CSR_REG_PMPADDR0, image.start >> 2);
-  CSR_WRITE(CSR_REG_PMPADDR1, image.end >> 2);
+  CSR_WRITE(CSR_REG_PMPADDR0, ((uint32_t)image.start) >> 2);
+  CSR_WRITE(CSR_REG_PMPADDR1, ((uint32_t)image.end) >> 2);
   CSR_CLEAR_BITS(CSR_REG_PMPCFG0, 0xff00);
   CSR_SET_BITS(CSR_REG_PMPCFG0, (kEpmpModeTor | kEpmpPermLockedReadExecute)
                                     << 8);
