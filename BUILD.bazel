@@ -7,15 +7,20 @@ load("//rules:quality.bzl", "clang_format_check", "html_coverage_report", "licen
 
 package(default_visibility = ["//visibility:public"])
 
+unbuildify = [
+    "./**/vendor/**",
+    "./util/lowrisc_misc-linters/**",
+]
+
 buildifier(
     name = "buildifier_fix",
-    exclude_patterns = ["./**/vendor/**"],
+    exclude_patterns = unbuildify,
 )
 
 buildifier(
     name = "buildifier_check",
     diff_command = "diff -u",
-    exclude_patterns = ["./**/vendor/**"],
+    exclude_patterns = unbuildify,
     mode = "diff",
 )
 
