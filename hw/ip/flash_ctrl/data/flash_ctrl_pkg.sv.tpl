@@ -87,6 +87,7 @@ package flash_ctrl_pkg;
     LcMgrDisableIdx,
     MpDisableIdx,
     HostDisableIdx,
+    IFetchDisableIdx,
     FlashDisableLast
   } flash_disable_pos_e;
 

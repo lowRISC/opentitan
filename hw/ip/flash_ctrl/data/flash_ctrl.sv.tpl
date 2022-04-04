@@ -269,7 +269,6 @@ module flash_ctrl
 
   // import commonly used routines
   import lc_ctrl_pkg::lc_tx_test_true_strict;
-  import lc_ctrl_pkg::lc_tx_test_true_loose;
 
   // life cycle connections
   lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en;
@@ -303,7 +302,7 @@ module flash_ctrl
   );
 
   // flash disable declaration
-  prim_mubi_pkg::mubi4_t [FlashDisableLast-1:0] flash_disable;
+  mubi4_t [FlashDisableLast-1:0] flash_disable;
 
   // flash control arbitration between softawre / harware interfaces
   flash_ctrl_arb u_ctrl_arb (
@@ -929,12 +928,12 @@ module flash_ctrl
   // In other words...cowardice.
   // SEC_CM: MEM.CTRL.GLOBAL_ESC
   // SEC_CM: MEM_DISABLE.CONFIG.MUBI
-  prim_mubi_pkg::mubi4_t lc_conv_disable;
-  prim_mubi_pkg::mubi4_t flash_disable_pre_buf;
+  mubi4_t lc_conv_disable;
+  mubi4_t flash_disable_pre_buf;
   assign lc_conv_disable = lc_ctrl_pkg::lc_to_mubi4(lc_disable);
   assign flash_disable_pre_buf = prim_mubi_pkg::mubi4_or_hi(
       lc_conv_disable,
-      prim_mubi_pkg::mubi4_t'(reg2hw.dis.q));
+      mubi4_t'(reg2hw.dis.q));
 
   prim_mubi4_sync #(
     .NumCopies(int'(FlashDisableLast)),
@@ -948,18 +947,26 @@ module flash_ctrl
 
   assign flash_phy_req.flash_disable = flash_disable[PhyDisableIdx];
 
-  prim_mubi_pkg::mubi4_t sw_flash_exec_en;
-  prim_mubi_pkg::mubi4_t flash_exec_en;
+  logic [prim_mubi_pkg::MuBi4Width-1:0] sw_flash_exec_en;
+  mubi4_t flash_exec_en;
 
   // SEC_CM: MEM_EN.CONFIG.REDUN
-  assign sw_flash_exec_en = (reg2hw.exec.q == unsigned'(ExecEn)) ?
-                            prim_mubi_pkg::MuBi4True :
-                            prim_mubi_pkg::MuBi4False;
+  prim_sec_anchor_buf #(
+    .Width(prim_mubi_pkg::MuBi4Width)
+  ) u_exec_en_buf (
+    .in_i(prim_mubi_pkg::mubi4_bool_to_mubi(reg2hw.exec.q == unsigned'(ExecEn))),
+    .out_o(sw_flash_exec_en)
+  );
 
-  assign flash_exec_en = lc_tx_test_true_loose(lc_escalate_en) ?
-                         prim_mubi_pkg::MuBi4False :
-                         sw_flash_exec_en;
+  mubi4_t disable_exec;
+  assign disable_exec = mubi4_t'(~flash_disable[IFetchDisableIdx]);
+  assign flash_exec_en = prim_mubi_pkg::mubi4_and_hi(
+                           disable_exec,
+                           mubi4_t'(sw_flash_exec_en)
+                         );
 
+  // the above statement only works if mubi true/false are fully complement
+  `ASSERT_INIT(MuBiComplCheck_A, prim_mubi_pkg::MuBi4True == ~prim_mubi_pkg::MuBi4False)
 
   //////////////////////////////////////
   // Errors and Interrupts
@@ -1189,9 +1196,7 @@ module flash_ctrl
   logic [flash_ctrl_pkg::BusFullWidth-1:0] flash_host_rdata;
   logic [flash_ctrl_pkg::BusAddrW-1:0] flash_host_addr;
 
-  import prim_mubi_pkg::mubi4_test_true_loose;
   lc_ctrl_pkg::lc_tx_t host_enable;
-
 
   // if flash disable is activated, error back from the adapter interface immediately
   assign host_enable = lc_ctrl_pkg::mubi4_to_lc_inv(flash_disable[HostDisableIdx]);

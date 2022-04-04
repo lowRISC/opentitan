@@ -106,8 +106,10 @@ module tlul_adapter_sram
                            : 1'b0;
 
   // An instruction type transaction is only valid if en_ifetch is enabled
-  assign instr_error = prim_mubi_pkg::mubi4_test_true_strict(tl_i.a_user.instr_type) &
-                       prim_mubi_pkg::mubi4_test_false_loose(en_ifetch_i);
+  // If the instruction type is completely invalid, also considered an instruction error
+  assign instr_error = prim_mubi_pkg::mubi4_test_invalid(tl_i.a_user.instr_type) |
+                       (prim_mubi_pkg::mubi4_test_true_strict(tl_i.a_user.instr_type) &
+                        prim_mubi_pkg::mubi4_test_false_loose(en_ifetch_i));
 
   if (ErrOnWrite == 1) begin : gen_no_writes
     assign wr_vld_error = tl_i.a_opcode != Get;
