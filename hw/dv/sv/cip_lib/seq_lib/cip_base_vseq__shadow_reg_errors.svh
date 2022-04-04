@@ -156,7 +156,11 @@ virtual task poke_and_check_storage_error(dv_base_reg shadowed_csr);
             shadowed_csr.`gfn, kind.name, err_val), UVM_HIGH);
 
   // This non-blocking task checks if the alert is continuously firing until reset is issued.
-  if (cfg.m_alert_agent_cfg.exists(alert_name)) check_fatal_alert_nonblocking(alert_name);
+  if (cfg.m_alert_agent_cfg.exists(alert_name)) begin
+    // add clock cycle delay in case of alert coming out 1 cycle later.
+    cfg.clk_rst_vif.wait_clks(2);
+    check_fatal_alert_nonblocking(alert_name);
+  end
 
   // Wait random clock cycles and ensure the fatal alert is continuously firing.
   cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
