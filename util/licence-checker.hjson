@@ -10,6 +10,7 @@
     ''',
   exclude_paths: [
     # Exclude anything in vendored directories
+    'third_party/**',
     '*/vendor/*/*',
     'util/lowrisc_misc-linters/*',
 
