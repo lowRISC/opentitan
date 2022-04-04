@@ -5,14 +5,14 @@
 // Implements functional coverage for ADC_CTRL FSM
 
 interface adc_ctrl_fsm_cov_if
-// import adc_ctrl_pkg::*;
-(
+  import adc_ctrl_pkg::*;
+  (
   input logic clk_aon_i,
   input logic rst_aon_ni,
   input logic cfg_fsm_rst_i,
   input logic [15:0] np_sample_cnt_q,
   input logic [7:0] lp_sample_cnt_q,
-  input logic [4:0] fsm_state_q
+  input fsm_state_e fsm_state_q
 );
   `include "dv_fcov_macros.svh"
   localparam int NpSampleCntWidth = $bits(np_sample_cnt_q);

@@ -3,12 +3,13 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:dv:adc_ctrl_sva:0.1"
-description: "DCD assertion modules and bind file."
+description: "ADC_CTRL assertion modules and bind file."
 filesets:
   files_dv:
     depend:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
+      - lowrisc:ip:adc_ctrl
     files:
       - adc_ctrl_fsm_sva.sv
       - adc_ctrl_bind.sv

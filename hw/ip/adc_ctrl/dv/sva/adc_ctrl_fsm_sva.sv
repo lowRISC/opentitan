@@ -2,20 +2,22 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 // System verilog assertions for the adc_ctrl_fsm module
-module adc_ctrl_fsm_sva (
+module adc_ctrl_fsm_sva
+  import adc_ctrl_pkg::*;
+  (
   // adc_ctrl_fsm ports
   input logic clk_aon_i,
   input logic rst_aon_ni,
   input logic cfg_fsm_rst_i,
   // adc_ctrl_fsm signals
-  input logic [4:0] fsm_state_q,
+  input fsm_state_e fsm_state_q,
   input logic [3:0] pwrup_timer_cnt_q,
   input logic [23:0] wakeup_timer_cnt_q,
   input logic [15:0] np_sample_cnt_q,
   input logic [7:0] lp_sample_cnt_q
 );
 
-  localparam logic [4:0] FsmResetState = 0;
+  localparam fsm_state_e FsmResetState = PWRDN;
 
   // FSM software reset
   `ASSERT(FsmStateSwReset_A, cfg_fsm_rst_i |=> fsm_state_q == FsmResetState, clk_aon_i, !rst_aon_ni)

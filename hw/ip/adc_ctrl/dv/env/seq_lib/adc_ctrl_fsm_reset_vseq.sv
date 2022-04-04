@@ -77,6 +77,8 @@ class adc_ctrl_fsm_reset_vseq extends adc_ctrl_base_vseq;
     `DV_ASSERT_CTRL_REQ("PwrupTime_A_CTRL", 0)
     // Disable enter low power assertion
     `DV_ASSERT_CTRL_REQ("EnterLowPower_A_CTRL", 0)
+    // Disable FSM assertions - need this due to counter preloads
+    `DV_ASSERT_CTRL_REQ("ADC_CTRL_FSM_A_CTRL", 0)
   endtask
 
   virtual task post_start();
@@ -84,7 +86,8 @@ class adc_ctrl_fsm_reset_vseq extends adc_ctrl_base_vseq;
     // Reenable assertions
     `DV_ASSERT_CTRL_REQ("ADC_IF_A_CTRL", 1)
     `DV_ASSERT_CTRL_REQ("PwrupTime_A_CTRL", 1)
-    `DV_ASSERT_CTRL_REQ("EnterLowPower_A_CTRL", 0)
+    `DV_ASSERT_CTRL_REQ("EnterLowPower_A_CTRL", 1)
+    `DV_ASSERT_CTRL_REQ("ADC_CTRL_FSM_A_CTRL", 1)
   endtask
 
 

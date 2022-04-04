@@ -19,9 +19,9 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
   protected adc_value_logic_t m_adc_interrupt_values[int] = '{default: 0};
 
   // Interrupt line
-  protected logic m_interrupt, m_interrupt_prev;
+  protected logic m_interrupt;
   // Wakeup line
-  protected logic m_wakeup, m_wakeup_prev;
+  protected logic m_wakeup;
 
   // ADC Model variables
   // Filter match for each filter of each channel
@@ -113,8 +113,13 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
                   "monitor_intr_proc: interrupt pin change m_interrupt=%b", m_interrupt),
                   UVM_MEDIUM)
         `DV_CHECK_EQ(m_interrupt, (m_expected_intr_state & intr_en))
-        // Sample interrupt pin coverage for interrupt pins
-        if (cfg.en_cov) cov.intr_pins_cg.sample(ADC_CTRL_INTERRUPT_INDEX, m_interrupt);
+        if (cfg.en_cov) begin
+          // Sample interrupt pin coverage for interrupt pins
+          cov.intr_pins_cg.sample(ADC_CTRL_INTERRUPT_INDEX, m_interrupt);
+          // Sample filter interrupt clk_gate
+          if (m_interrupt)
+            sample_filter_cov(.is_interrupt(1), .is_wakeup(0), .clk_gate(cfg.clk_rst_vif.clk_gate));
+        end
       end
     end
   endtask
@@ -122,14 +127,18 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
   // Monitor wakeup line
   protected virtual task monitor_wakeup_proc();
     forever begin
-      cfg.clk_aon_rst_vif.wait_clks(1);
-      m_wakeup_prev = m_wakeup;
+      @(cfg.wakeup_vif.pins);
       m_wakeup = cfg.wakeup_vif.sample_pin(0);
-      // Compare against expected every change of wakeup line
-      if (cfg.en_scb & (m_wakeup ^ m_wakeup_prev)) begin
+      if (cfg.en_scb) begin
         `uvm_info(`gfn, $sformatf("monitor_wakeup_proc: wakeup pin change m_wakeup=%b", m_wakeup),
                   UVM_MEDIUM)
         `DV_CHECK_EQ(m_wakeup, m_expected_wakeup)
+
+        if (cfg.en_cov) begin
+          // Sample filter wakeup clk_gate
+          if (m_wakeup)
+            sample_filter_cov(.is_interrupt(0), .is_wakeup(1), .clk_gate(cfg.clk_rst_vif.clk_gate));
+        end
       end
     end
   endtask
@@ -287,6 +296,13 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
                                   .call_debounce(0));
             end
             m_match_prev = 0;
+
+            // Sample configuration_coverage
+            if (cfg.en_cov) begin
+              sample_filter_cov(.is_interrupt(0), .is_wakeup(0));
+              sample_testmode_cov();
+            end
+
           end else begin
             // Disable the ADC_CTRL
             m_lp_counter = 0;
@@ -312,7 +328,8 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
           m_expected_filter_status &= (~item.a_data);
         end
         // Evaluate expected wakeup for new m_expected_filter_status
-        m_expected_wakeup = |(m_expected_filter_status & cfg.ral.adc_wakeup_ctl.get_mirrored_value());
+        m_expected_wakeup = |(m_expected_filter_status &
+            cfg.ral.adc_wakeup_ctl.get_mirrored_value());
       end
       "adc_chn0_filter_ctl_0", "adc_chn0_filter_ctl_1", "adc_chn0_filter_ctl_2",
           "adc_chn0_filter_ctl_3", "adc_chn0_filter_ctl_4", "adc_chn0_filter_ctl_5",
@@ -394,6 +411,43 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
   endtask
+
+  // Sample the filter coverage using values from the register model
+  // Set is_interrupt to notify an interrupt and is_wakeup a wakeup event
+  virtual function void sample_filter_cov(bit is_interrupt = 0, bit is_wakeup = 0,
+                                          bit clk_gate = 0);
+    for (int channel = 0; channel < ADC_CTRL_CHANNELS; channel++) begin
+      for (int filter = 0; filter < ADC_CTRL_NUM_FILTERS; filter++) begin
+        string reg_name = $sformatf("adc_chn%0d_filter_ctl_%0d", channel, filter);
+        adc_ctrl_filter_cfg_t cfg;
+        cfg.en = get_reg_fld_mirror_value(ral, reg_name, "en");
+        cfg.cond = adc_ctrl_filter_cond_e'(get_reg_fld_mirror_value(ral, reg_name, "cond"));
+        cfg.min_v = get_reg_fld_mirror_value(ral, reg_name, "min_v");
+        cfg.max_v = get_reg_fld_mirror_value(ral, reg_name, "max_v");
+        cov.sample_filter_cov(.channel(channel), .filter(filter), .cfg(cfg),
+                              .is_interrupt(is_interrupt), .is_wakeup(is_wakeup),
+                              .clk_gate(clk_gate));
+      end
+    end
+  endfunction
+
+  // Decode and sample testmode from the register model
+  virtual function void sample_testmode_cov();
+    bit oneshot_mode = get_reg_fld_mirror_value(ral, "adc_en_ctl", "oneshot_mode");
+    bit lp_mode = get_reg_fld_mirror_value(ral, "adc_pd_ctl", "lp_mode");
+    adc_ctrl_testmode_e testmode;
+
+    // Decode test modes
+    unique case ({
+      oneshot_mode, lp_mode
+    })
+      2'b00: testmode = AdcCtrlTestmodeNormal;
+      2'b01: testmode = AdcCtrlTestmodeLowpower;
+      2'b10, 2'b11: testmode = AdcCtrlTestmodeOneShot;
+      default: `uvm_fatal(`gfn, "Should never happen")
+    endcase
+    cov.adc_ctrl_testmode_cg.sample(testmode);
+  endfunction
 
   // Process ADC CTRL filter model data
   virtual function void process_filter_data(int channel, adc_value_logic_t val,
