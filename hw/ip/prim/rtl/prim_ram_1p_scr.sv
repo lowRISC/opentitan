@@ -320,6 +320,8 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
         for (int k = 0; k < Width; k++) begin
           if (wmask_q[k]) begin
             rdata_o[k] = wdata_q[k];
+          end else begin
+            rdata_o[k] = rdata[k];
           end
         end
       // regular reads. note that we just return zero in case
