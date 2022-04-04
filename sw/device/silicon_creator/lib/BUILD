@@ -181,6 +181,19 @@ cc_library(
     hdrs = ["manifest_size.h"],
 )
 
+cc_library(
+    name = "manifest_section",
+    srcs = ["manifest_section.S"],
+    deps = [
+        ":manifest_size",
+    ],
+    # The sole purpose of this target is to add an empty section to binaries
+    # for signing purposes, which are not referenced by any of the .text
+    # portions. Therefore, it must be alwayslink so that manifest_section.S.o
+    # is a root linker input.
+    alwayslink = True,
+)
+
 dual_cc_library(
     name = "manifest",
     srcs = dual_inputs(

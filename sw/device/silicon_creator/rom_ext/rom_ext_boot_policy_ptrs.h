@@ -7,6 +7,7 @@
 
 #include "sw/device/silicon_creator/lib/manifest.h"
 
+#include "sw/device/lib/base/macros.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #ifdef __cplusplus
@@ -16,7 +17,7 @@ extern "C" {
 static_assert((TOP_EARLGREY_EFLASH_SIZE_BYTES % 2) == 0,
               "Flash size is not divisible by 2");
 
-#ifndef OT_OFF_TARGET_TEST
+#ifdef OT_PLATFORM_RV32
 /**
  * Returns a pointer to the manifest of the first owner boot stage image stored
  * in flash slot A.

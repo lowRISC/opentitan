@@ -23,6 +23,9 @@ __DYNAMIC = 0;
  */
 ENTRY(_rom_ext_start_boot)
 
+/* DV Log offset (has to be different to other boot stages). */
+_dv_log_offset = 0x10000;
+
 /**
  * NOTE: We have to align each section to word boundaries as our current
  * s19->slm conversion scripts are not able to handle non-word aligned sections.
@@ -164,51 +167,5 @@ SECTIONS {
     _bss_end = .;
   } > ram_main
 
-  /* ELF-internal Sections. */
-  .symtab 0x0 : { *(.symtab) }
-  .strtab 0x0 : { *(.strtab) }
-  .shstrtab 0x0 : { *(.shstrtab) }
-
-  /* Preserve RISC-V Attributes */
-  .riscv.attributes 0x0 : { *(.riscv.attributes) }
-
-  /* Preserve Debug Info in ELF Files */
-  .debug_info 0x0 : { *(.debug_info) }
-  .debug_abbrev 0x0 : { *(.debug_abbrev) }
-  .debug_aranges 0x0 : { *(.debug_aranges) }
-  .debug_line 0x0 : { *(.debug_line) }
-  .debug_loc 0x0 : { *(.debug_loc) }
-  .debug_ranges 0x0 : { *(.debug_ranges) }
-  .debug_str 0x0 : { *(.debug_str) }
-  .debug_frame 0x0 : { *(.debug_frame) }
-  .debug_line_str 0x0 : { *(.debug_line_str) }
-  .debug_loclists 0x0 : { *(.debug_loclists) }
-  .debug_rnglists 0x0 : { *(.debug_rnglists) }
-
-  /* Discarded Sections (Not needed in device images). */
-  /DISCARD/ : {
-    /* We don't keep unwind information */
-    *(.eh_frame)
-    *(.eh_frame_hdr)
-
-    /* Compiler Information */
-    *(.comment)
-    *(.comment.*)
-
-    /* Other Notes */
-    *(.note)
-    *(.note.*)
-
-    /* Relocations */
-    *(.rela.*)
-    *(.rela.dyn)
-
-    /* STAB Debugging Info - We Use DWARF */
-    *(.stab)
-    *(.stab.*)
-    *(.stabstr)
-
-    /* COMMON Sections */
-    *(COMMON)
-  }
+  INCLUDE sw/device/info_sections.ld
 }
