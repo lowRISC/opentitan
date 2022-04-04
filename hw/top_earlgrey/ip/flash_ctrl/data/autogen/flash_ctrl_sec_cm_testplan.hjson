@@ -102,8 +102,8 @@
       tests: []
     }
     {
-      name: sec_cm_mem_en_config_redun
-      desc: "Verify the countermeasure(s) MEM_EN.CONFIG.REDUN."
+      name: sec_cm_exec_config_redun
+      desc: "Verify the countermeasure(s) EXEC.CONFIG.REDUN."
       milestone: V2S
       tests: []
     }

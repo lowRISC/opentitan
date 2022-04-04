@@ -951,7 +951,7 @@ module flash_ctrl
   logic [prim_mubi_pkg::MuBi4Width-1:0] sw_flash_exec_en;
   mubi4_t flash_exec_en;
 
-  // SEC_CM: MEM_EN.CONFIG.REDUN
+  // SEC_CM: EXEC.CONFIG.REDUN
   prim_sec_anchor_buf #(
     .Width(prim_mubi_pkg::MuBi4Width)
   ) u_exec_en_buf (
