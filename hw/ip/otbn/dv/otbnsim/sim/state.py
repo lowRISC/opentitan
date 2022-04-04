@@ -344,19 +344,15 @@ class OTBNState:
             return
 
         self.gprs.commit()
-
-        # If we're stalled, there's nothing more to do: we only commit the rest
-        # of the architectural state when we finish our stall cycles.
-        if sim_stalled:
-            return
-
         self.dmem.commit()
-        self.pc = self.get_next_pc()
-        self._pc_next_override = None
         self.loop_stack.commit()
         self.wsrs.commit()
         self.csrs.flags.commit()
         self.wdrs.commit()
+
+        if not sim_stalled:
+            self.pc = self.get_next_pc()
+            self._pc_next_override = None
 
     def _abort(self) -> None:
         '''Abort any pending state changes'''
@@ -432,7 +428,7 @@ class OTBNState:
 
             # Switch to a 'wiping' state
             self._next_fsm_state = (FsmState.WIPING_BAD if should_lock
-                                else FsmState.WIPING_GOOD)
+                                    else FsmState.WIPING_GOOD)
             self.wipe_cycles = (_WIPE_CYCLES if self.secure_wipe_enabled else 2)
         else:
             assert should_lock
