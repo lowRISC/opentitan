@@ -21,6 +21,9 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   static bit used_dai_addrs[bit [OTP_ADDR_WIDTH - 1 : 0]];
 
   rand bit [NumOtpCtrlIntr-1:0] en_intr;
+
+  rand int apply_reset_during_pwr_init_cycles;
+
   bit is_valid_dai_op = 1;
 
   // According to spec, the period between digest calculation and reset should not issue any write.
@@ -39,6 +42,10 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   lc_ctrl_state_pkg::lc_cnt_e   lc_cnt;
 
   otp_ctrl_callback_vseq callback_vseq;
+
+  constraint apply_reset_during_pwr_init_cycles_c {
+    apply_reset_during_pwr_init_cycles == 0;
+  }
 
   virtual task pre_start();
     `uvm_create_on(callback_vseq, p_sequencer);
@@ -67,27 +74,6 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     cfg.otp_ctrl_vif.release_part_access_mubi();
   endtask
 
-
-  virtual task apply_resets_concurrently(int reset_duration_ps = 0);
-    // For stress_all_with_rand_reset test only - backdoor clear OTP memory,
-    // and re-initialize OTP_ctrl after reset.
-    if (common_seq_type == "stress_all_with_rand_reset") begin
-      cfg.otp_ctrl_vif.release_part_access_mubi();
-      cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
-      otp_ctrl_init();
-      otp_pwr_init();
-      super.apply_resets_concurrently(reset_duration_ps);
-      cfg.en_scb = 1;
-    end else begin
-      super.apply_resets_concurrently(reset_duration_ps);
-    end
-  endtask
-
-  virtual task dut_shutdown();
-    // check for pending otp_ctrl operations and wait for them to complete
-    // TODO
-  endtask
-
   virtual task otp_ctrl_vif_init();
     cfg.otp_ctrl_vif.drive_lc_creator_seed_sw_rw_en(lc_ctrl_pkg::On);
     cfg.otp_ctrl_vif.drive_lc_seed_hw_rd_en(get_rand_lc_tx_val());
@@ -108,7 +94,17 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   // drive otp_pwr req pin to initialize OTP, and wait until init is done
   virtual task otp_pwr_init();
     cfg.otp_ctrl_vif.drive_pwr_otp_init(1);
-    wait(cfg.otp_ctrl_vif.pwr_otp_done_o == 1);
+    if (apply_reset_during_pwr_init_cycles > 0) begin
+      `DV_SPINWAIT_EXIT(
+          cfg.clk_rst_vif.wait_clks(apply_reset_during_pwr_init_cycles);,
+          wait (cfg.otp_ctrl_vif.pwr_otp_done_o == 1);)
+      if (cfg.otp_ctrl_vif.pwr_otp_done_o == 0) begin
+        cfg.otp_ctrl_vif.drive_pwr_otp_init(0);
+        apply_reset();
+        cfg.otp_ctrl_vif.drive_pwr_otp_init(1);
+      end
+    end
+    wait (cfg.otp_ctrl_vif.pwr_otp_done_o == 1);
     cfg.otp_ctrl_vif.drive_pwr_otp_init(0);
     digest_calculated = 0;
   endtask

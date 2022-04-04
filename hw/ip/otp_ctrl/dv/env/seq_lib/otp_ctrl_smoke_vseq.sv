@@ -68,6 +68,13 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
   constraint ecc_chk_err_c {ecc_chk_err == OtpNoEccErr;}
 
+  constraint apply_reset_during_pwr_init_cycles_c {
+    apply_reset_during_pwr_init_cycles dist {
+        [1:5]       :/ 4,
+        [6:2000]    :/ 4,
+        [2001:4000] :/ 2};
+  }
+
   virtual task dut_init(string reset_kind = "HARD");
     if (do_apply_reset) begin
       lc_prog_blocking = 1;
@@ -113,9 +120,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       // set consistency and integrity checks
       csr_wr(ral.check_regwen, check_regwen_val);
       csr_wr(ral.check_trigger_regwen, check_trigger_regwen_val);
-      if (check_trigger_val && `gmv(ral.check_trigger_regwen)) begin
-        csr_wr(ral.check_timeout, check_timeout_val);
-      end
+      csr_wr(ral.check_timeout, check_timeout_val);
       trigger_checks(.val(check_trigger_val), .wait_done(1), .ecc_err(ecc_chk_err));
 
       if ($urandom_range(0, 1) && access_locked_parts) write_sw_rd_locks();
