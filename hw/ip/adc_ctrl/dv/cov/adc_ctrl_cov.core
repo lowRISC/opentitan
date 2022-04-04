@@ -3,11 +3,11 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:dv:adc_ctrl_cov"
-description: "LC_CTRL functional coverage and bind files"
+description: "ADC_CTRL functional coverage and bind files"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:lc_ctrl
+      - lowrisc:ip:adc_ctrl
 
   files_dv:
     depend:
