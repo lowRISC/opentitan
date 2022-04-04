@@ -25,7 +25,7 @@ module tb;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   // Configure internal secure wipe
-  localparam bit SecWipeEn  = 1'b0;
+  localparam bit SecWipeEn  = 1'b1;
 
   // interfaces
   clk_rst_if                    clk_rst_if  (.clk(clk), .rst_n(rst_n));
