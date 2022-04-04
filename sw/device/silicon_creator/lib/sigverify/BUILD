@@ -64,8 +64,8 @@ opentitan_functest(
     verilator = verilator_params(
         timeout = "long",
         tags = [
+            "cpu:4",
             "manual",
-            "verilator",
         ],
     ),
     deps = [
@@ -117,8 +117,8 @@ opentitan_functest(
     verilator = verilator_params(
         timeout = "long",
         tags = [
+            "cpu:4",
             "manual",
-            "verilator",
         ],
     ),
     deps = [
@@ -190,8 +190,8 @@ opentitan_functest(
     verilator = verilator_params(
         timeout = "long",
         tags = [
+            "cpu:4",
             "manual",
-            "verilator",
         ],
     ),
     deps = [
@@ -207,8 +207,8 @@ opentitan_functest(
     verilator = verilator_params(
         timeout = "long",
         tags = [
+            "cpu:4",
             "manual",
-            "verilator",
         ],
     ),
     deps = [
