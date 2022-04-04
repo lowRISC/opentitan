@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:opentitan.bzl", "opentitan_flash_binary", "opentitan_rom_binary")
+load("@bazel_skylib//lib:shell.bzl", "shell")
+
+_EXIT_SUCCESS = r"PASS.*\n"
+_EXIT_FAILURE = r"(FAIL|FAULT).*\n"
 
 _BASE_PARAMS = {
     "args": [],
@@ -89,8 +93,8 @@ def verilator_params(
         # Base Parameters
         args = _BASE_PARAMS["args"] + [
             "console",
-            "--exit-failure=FAIL",
-            "--exit-success=PASS",
+            "--exit-failure=" + shell.quote(_EXIT_FAILURE),
+            "--exit-success=" + shell.quote(_EXIT_SUCCESS),
             "--timeout=3600",
         ],
         data = _BASE_PARAMS["data"],
@@ -149,8 +153,8 @@ def cw310_params(
             "--exec=\"console -q -t0\"",
             "--exec=\"bootstrap $(location {flash})\"",
             "console",
-            "--exit-failure=FAIL",
-            "--exit-success=PASS",
+            "--exit-failure=" + shell.quote(_EXIT_FAILURE),
+            "--exit-success=" + shell.quote(_EXIT_SUCCESS),
             "--timeout=3600",
         ],
         data = _BASE_PARAMS["data"],
