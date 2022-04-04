@@ -517,7 +517,8 @@ module kmac_entropy
           storage_idx_clear = 1'b 1;
 
           rand_valid_clear = 1'b 1;
-        end else if (entropy_refresh_req_i || threshold_hit_q) begin
+        end else if ((mode_i == EntropyModeEdn) &&
+            (entropy_refresh_req_i || threshold_hit_q)) begin
           st_d = StRandEdn;
 
           // Timer reset
