@@ -205,10 +205,14 @@
       desc: "The scrambling key is sideloaded from OTP and thus unreadable by SW."
     }
     { name: "LC_CTRL.INTERSIG.MUBI",
-      desc: "End-to-end bus integrity scheme."
+      desc: '''
+        Life cycle control signals are used control information partition access
+        and flash debug access. See secret information partition, isolated information partitions
+        and jtag connection in documentation for more details.
+      '''
     }
     { name: "CTRL.CONFIG.REGWEN",
-      desc: "Main control flow protected operation regwen."
+      desc: "Configurations cannot be changed when an operation is ongoing."
     }
     { name: "DATA_REGIONS.CONFIG.REGWEN",
       desc: "Each data region has a configurable regwen."
@@ -220,7 +224,7 @@
       desc: "Each info page of each type in each bank has separate regwen."
     }
     { name: "INFO_REGIONS.CONFIG.SHADOW",
-      desc: "Each info page of each type in each bank has separate regwen."
+      desc: "Each info page is shadowed."
     }
     { name: "BANK.CONFIG.REGWEN",
       desc: "Each bank has separate regwen for bank erase."
@@ -243,7 +247,7 @@
         The register is !!DIS.
       '''
     }
-    { name: "MEM_EN.CONFIG.REDUN",
+    { name: "EXEC.CONFIG.REDUN",
       desc: '''
         Software control for flash enable is 32-bit constant.
         The register is !!EXEC.
@@ -251,14 +255,16 @@
     }
     { name: "MEM.SCRAMBLE",
       desc: '''
-        Memory is XEX scrambled.
+        The flash supports XEX scrambling.
         The cipher used is PRINCE.
-        Please see Flash Scrambling in documentation for more details.
+        The scrambling scheme is enabled by software, please see flash scrambling in documentation for more details.
       '''
     }
     { name: "MEM.INTEGRITY",
       desc: '''
-        Memory is protected with two layers of ECC integrity.
+        The flash supports two layers of ECC integrity: one layer is for integrity,
+        and the other layer is for reliability.
+        These ECCs are enabled and disabled together by software.
         Please see Flash ECC in the documentation for more details.
       '''
     }

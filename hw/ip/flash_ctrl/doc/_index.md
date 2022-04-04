@@ -70,7 +70,7 @@ The physical controller supports the following features
 *  Flash program stage
    *  Flash data word packing when flash word size is an integer multiple of bus word size.
 *  Flash scrambling
-   * Flash supports XEX scrambling using the prince cipher.
+   * Flash supports XEX scrambling using the PRINCE cipher.
    * Scrambling is optional based on page boundaries and is configurable by software.
 *  Two types of Flash ECC support.
    * A pre-scramble ECC used for integrity verification, this is required on every word.
@@ -140,7 +140,7 @@ All partitions share the same addressing scheme.
 For example, the page 0 address of any kind of partition is always the same.
 
 To distinguish which partition is accessed, use the configuration in {{< regref "CONTROL.PARTITION_SEL" >}} and {{< regref "CONTROL.INFO_SEL" >}}
-Note however, the system host is only able to access the [data partitions]({{< relref "#host-and-protocol-controller-handling" >}})
+Note however, the system host is only able to access the [data partitions]({{< relref "#host-and-protocol-controller-handling" >}}).
 
 ##### Default Address Map
 Based on the [default configuration]({{< relref "#flash-default-configuration" >}}), the following would be the default address map for each partition / page.
@@ -164,7 +164,7 @@ Note when accessing from host, the system memory address for flash should be add
 #### Secret Information Partitions
 
 Two information partition pages (one for creator and one for owner) in the design hold secret seeds for the key manager.
-These pages, when enabled by life cycle and otp, are read upon flash controller initialization (no software configuration is required).
+These pages, when enabled by life cycle and OTP, are read upon flash controller initialization (no software configuration is required).
 The read values are then fed to the key manager for later processing.
 There is a page for creator and a page for the owner.
 
@@ -180,7 +180,7 @@ See [life cycle]({{< relref "hw/ip/lc_ctrl/doc/_index.md#creator_seed_sw_rw_en-a
 #### Isolated Information Partitions
 
 One information partition page in the design is used for manufacturing time authentication.
-The accessibility of this page is controlled by life cycle and otp.
+The accessibility of this page is controlled by life cycle and OTP.
 
 During TEST states, the isolated page is only programmable.
 * `lc_iso_part_sw_wr_en` is set, but `lc_iso_part_sw_rd_en` is not.
@@ -208,7 +208,7 @@ The flash protocol controller is not responsible for the detailed timing and wav
 Instead, it maintains FIFOs / interrupts for the software to process data, as well as high level abstraction of region protection controls and error handling.
 
 The flash controller selects requests between the software and hardware interfaces.
-By default, the hardware interfaces have precendence and are used to read out seed materials from flash.
+By default, the hardware interfaces have precedence and are used to read out seed materials from flash.
 The seed material is read twice to confirm the values are consistent.
 They are then forwarded to the key manager for processing.
 During this seed phase, software initiated activities are back-pressured until the seed reading is complete.
@@ -252,7 +252,7 @@ The flash controller registers however, remain accessible for status reads and s
 
 Flash memory protection is handled differently depending on what type of partition is accessed.
 
-For data partitions, software can configure a number of memory protection regions such as {{< regref "MP_REGION_CFG0" >}}.
+For data partitions, software can configure a number of memory protection regions such as {{< regref "MP_REGION_CFG_SHADOWED_0" >}}.
 For each region, software specifies both the beginning page and the number of pages that belong to that region.
 Software then configures the access privileges for that region.
 Subsequent accesses are then allowed or denied based on the defined rule set.
@@ -261,7 +261,7 @@ Similar to RISCV pmp, if two region overlaps, the lower region index has higher 
 For information partitions, the protection is done per indvidual page.
 Each page can be configured with access privileges.
 As a result, software does not need to define a start and end page for information partitions.
-See {{< regref "BANK0_INFO_PAGE_CFG0" >}} as an example.
+See {{< regref "BANK0_INFO0_PAGE_CFG_SHADOWED_0" >}} as an example.
 
 #### Bank Erase Protection
 
@@ -280,7 +280,7 @@ While memory protection is largely under software control, certain behavior is h
 
 Software can only control the accessibility of the creator secret seed page under the following condition(s):
 *  life cycle sets provision enable.
-*  otp indicates the seeds are not locked.
+*  OTP indicates the seeds are not locked.
 
 Software can only control the accessibility of the owner secret seed page under the following condition(s):
 *  life cycle sets provision enable.
@@ -412,7 +412,7 @@ Global escalation is triggered by the life cycle controller through `lc_escalate
 Local escalation is triggered by a standard faults of flash, seen in {{< regref "STD_FAULT_STATUS" >}}.
 Local escalation is not configurable and automatically triggers when this subset of faults are seen.
 
-For the escalation behavior, see [flash access disable]({{< relref "#flash-access-disable" >}})
+For the escalation behavior, see [flash access disable]({{< relref "#flash-access-disable" >}}) .
 
 #### Flash Access Disable
 
@@ -445,7 +445,7 @@ The host on the other hand, can only read the data partitions.
 
 Even though the host has less access to flash, it is prioritized when competing against the protocol controller for access.
 When a host request and a protocol controller request arrive at the same time, the host is favored and granted.
-Every time the protocol controller looses such an arbitration, it increases an arbitration lost count.
+Every time the protocol controller loses such an arbitration, it increases an arbitration lost count.
 Once this lost count reaches 5, the protocol controller is favored.
 This ensures a stream of host activity cannot deny protocol controller access (for example a tight polling loop).
 
@@ -465,12 +465,12 @@ Flash scrambling is built using the [XEX tweakable block cipher](https://en.wiki
 When a read transaction is sent to flash, the following steps are taken:
 *  The tweak is calculated using the transaction address and a secret address key through a galois multiplier.
 *  The data content is read out of flash.
-*  If the data content is scrambled, the tweak is XOR'd with the scrambled text and then decrypted through the prince block cipher using a secret data key.
-*  The output of the prince cipher is XOR'd again with the tweak and the final results are presented.
-*  If the data content is not scrambled, the prince and XOR steps are skipped and data provided directly back to the requestor.
+*  If the data content is scrambled, the tweak is XOR'd with the scrambled text and then decrypted through the PRINCE block cipher using a secret data key.
+*  The output of the PRINCE cipher is XOR'd again with the tweak and the final results are presented.
+*  If the data content is not scrambled, the PRINCE cipher and XOR steps are skipped and data provided directly back to the requestor.
 
 When a program transaction is sent to flash, the same steps are taken if the address in question has scrambling enabled.
-During a program, the text is scrambled through the prince block cipher.
+During a program, the text is scrambled through the PRINCE block cipher.
 
 Scramble enablement is done differently depending on the type of partitions.
 *  For data partitions, the scramble enablement is done on contiguous page boundaries.
@@ -575,6 +575,11 @@ Assume also the following address to word mapping:
 When software reads bus word 1, the entire flash word 0 is captured into the flash buffer.
 When software comes back to read bus word 0, instead of accessing the flash again, the data is retrieved directly from the buffer.
 
+The recently read entries store both the de-scrambled data and the [integrity ECC](#integrity-ecc).
+The [reliability ECC](#reliability-ecc) is not stored because the small buffer is purely flip-flop based and does not have storage reliability concerns like the main flash macro.
+
+When a read hits in the flash buffer, the integrity ECC is checked against the de-scrambled data and an error is returned to the initiating entity, whether it is a the controller itself or a host.
+
 
 #### Accessing Information Partition
 
@@ -634,7 +639,7 @@ Signal                     | Direction      | Description
 `core_tl`                  | `input/output` | TL-UL interface used to access `flash_ctrl` registers for activating program / erase and reads to information partitions/
 `prim_tl`                  | `input/output` | TL-UL interface used to access the vendor flash memory proprietary registers.
 `mem_tl`                   | `input/output` | TL-UL interface used by host to access the vendor flash memory directly.
-`otp`                      | `input/output` | Interface used to request scrambling keys from `otp_ctrl`.
+`OTP`                      | `input/output` | Interface used to request scrambling keys from `otp_ctrl`.
 `rma_req`                  | `input`        | rma entry request from `lc_ctrl`.
 `rma_ack`                  | `output`       | rma entry acknowlegement to `lc_ctrl`.
 `rma_seed`                 | `input`        | rma entry seed.
