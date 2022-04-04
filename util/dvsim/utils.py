@@ -36,7 +36,7 @@ TS_FORMAT_LONG = "%A %B %d %Y %H:%M:%S UTC"
 def run_cmd(cmd):
     (status, output) = subprocess.getstatusoutput(cmd)
     if status:
-        sys.stderr.write("cmd " + cmd + " returned with status " + str(status))
+        print(f'cmd {cmd} returned with status {status}', file=sys.stderr)
         sys.exit(status)
     return output
 
