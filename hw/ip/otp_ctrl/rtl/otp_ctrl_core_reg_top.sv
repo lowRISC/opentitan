@@ -1863,17 +1863,7 @@ module otp_ctrl_core_reg_top (
   assign shadow_busy = 1'b0;
 
   // register busy
-  logic reg_busy_sel;
-  assign reg_busy = reg_busy_sel | shadow_busy;
-  always_comb begin
-    reg_busy_sel = '0;
-    unique case (1'b1)
-      default: begin
-        reg_busy_sel  = '0;
-      end
-    endcase
-  end
-
+  assign reg_busy = shadow_busy;
 
   // Unused signal tieoff
 
