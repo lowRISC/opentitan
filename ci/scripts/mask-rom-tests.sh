@@ -14,9 +14,7 @@ TESTS=(
   "//sw/device/silicon_creator/lib:error_unittest"
   "//sw/device/silicon_creator/lib:epmp_unittest"
   "//sw/device/silicon_creator/lib:manifest_unittest"
-  "//sw/device/silicon_creator/lib:sigverify_mod_exp_ibex_unittest"
   "//sw/device/silicon_creator/lib:log_unittest"
-  "//sw/device/silicon_creator/lib:sigverify_unittest"
   "//sw/device/silicon_creator/lib:shutdown_unittest"
   "//sw/device/silicon_creator/lib/base:sec_mmio_unittest"
   "//sw/device/silicon_creator/lib/drivers:uart_unittest"
@@ -31,6 +29,8 @@ TESTS=(
   "//sw/device/silicon_creator/lib/drivers:pinmux_unittest"
   "//sw/device/silicon_creator/lib/drivers:hmac_unittest"
   "//sw/device/silicon_creator/lib/drivers:alert_unittest"
+  "//sw/device/silicon_creator/lib/sigverify:mod_exp_ibex_unittest"
+  "//sw/device/silicon_creator/lib/sigverify:sigverify_unittest"
   "//sw/device/silicon_creator/mask_rom:boot_policy_unittest"
   "//sw/device/silicon_creator/mask_rom:sigverify_keys_unittest"
 )
