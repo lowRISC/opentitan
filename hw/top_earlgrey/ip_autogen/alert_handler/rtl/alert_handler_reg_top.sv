@@ -16556,17 +16556,7 @@ module alert_handler_reg_top (
   assign shadow_busy = ~(rst_done & shadow_rst_done);
 
   // register busy
-  logic reg_busy_sel;
-  assign reg_busy = reg_busy_sel | shadow_busy;
-  always_comb begin
-    reg_busy_sel = '0;
-    unique case (1'b1)
-      default: begin
-        reg_busy_sel  = '0;
-      end
-    endcase
-  end
-
+  assign reg_busy = shadow_busy;
 
   // Unused signal tieoff
 

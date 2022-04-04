@@ -617,7 +617,13 @@ ${rdata_gen(f, r.name.lower() + "_" + f.name.lower())}\
   % endif
 
   // register busy
-  % if rb.async_if:
+<%
+  async_busy_signals = {}
+  for i, r in enumerate(regs_flat):
+    if r.async_clk:
+      async_busy_signals[i] = r.name.lower() + "_busy"
+%>\
+  % if rb.async_if or not async_busy_signals:
   assign reg_busy = shadow_busy;
   % else:
   logic reg_busy_sel;
@@ -625,12 +631,10 @@ ${rdata_gen(f, r.name.lower() + "_" + f.name.lower())}\
   always_comb begin
     reg_busy_sel = '0;
     unique case (1'b1)
-    % for i, r in enumerate(regs_flat):
-      % if r.async_clk:
+    % for i, busy_signal in async_busy_signals.items():
       addr_hit[${i}]: begin
-        reg_busy_sel = ${r.name.lower() + "_busy"};
+        reg_busy_sel = ${busy_signal};
       end
-      % endif
     % endfor
       default: begin
         reg_busy_sel  = '0;
