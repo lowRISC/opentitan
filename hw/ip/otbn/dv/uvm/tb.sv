@@ -232,7 +232,7 @@ module tb;
     .cmd_i        (model_if.cmd_q),
     .cmd_en_i     (model_if.cmd_qe),
 
-    .lc_escalate_en_i (escalate_if.enable == lc_ctrl_pkg::On),
+    .lc_escalate_en_i (escalate_if.enable != lc_ctrl_pkg::Off),
 
     .err_bits_o   (model_if.err_bits),
 
