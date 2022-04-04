@@ -277,4 +277,13 @@
   do {                                                                       \
   } while (false)
 
+/**
+ * Evaluates and discards `expr_`.
+ *
+ * This is needed because ‘(void)expr;` does not work for gcc.
+ */
+#define OT_DISCARD(expr_) \
+  if (expr_) {            \
+  }
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_
