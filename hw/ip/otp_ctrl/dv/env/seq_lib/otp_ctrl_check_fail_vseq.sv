@@ -20,9 +20,8 @@ class otp_ctrl_check_fail_vseq extends otp_ctrl_dai_lock_vseq;
 
   // 50% chance of having a check timeout
   constraint check_timeout_val_c {
-    ecc_chk_err == OtpNoEccErr   -> check_timeout_val dist {[1 : CHK_TIMEOUT_CYC] :/ 1,
-                                                            [100_000 :'1]         :/ 1};
-    ecc_chk_err == OtpEccCorrErr -> check_timeout_val inside {[100_000 :'1]};
+    check_timeout_val dist {[1 : CHK_TIMEOUT_CYC] :/ 1,
+                            [100_000 :'1]         :/ 1};
   }
 
 endclass

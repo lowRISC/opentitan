@@ -35,6 +35,21 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     run_common_vseq_wrapper(num_trans);
   endtask : body
 
+  virtual task apply_resets_concurrently(int reset_duration_ps = 0);
+    // For stress_all_with_rand_reset test only - backdoor clear OTP memory,
+    // and re-initialize OTP_ctrl after reset.
+    if (common_seq_type == "stress_all_with_rand_reset") begin
+      cfg.otp_ctrl_vif.release_part_access_mubi();
+      cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
+      otp_ctrl_init();
+      otp_pwr_init();
+      super.apply_resets_concurrently(reset_duration_ps);
+      cfg.en_scb = 1;
+    end else begin
+      super.apply_resets_concurrently(reset_duration_ps);
+    end
+  endtask
+
   virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
     bit[TL_DW-1:0] exp_status_val, rdata0, rdata1;
     super.check_sec_cm_fi_resp(if_proxy);
