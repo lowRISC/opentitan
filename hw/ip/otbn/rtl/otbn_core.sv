@@ -74,9 +74,6 @@ module otbn_core
   output logic [127:0] dmem_sec_wipe_urnd_key_o, // URND bits to give temporary dmem scramble key
   output logic [127:0] imem_sec_wipe_urnd_key_o, // URND bits to give temporary imem scramble key
 
-  // Lifecycle interface
-  input lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
-
   // Indicates an incoming escalation from some fatal error at the level above.
   input prim_mubi_pkg::mubi4_t escalate_en_i,
 
@@ -328,7 +325,6 @@ module otbn_core
     .start_i      (controller_start),
     .locked_o,
 
-    .lc_escalate_en_i,
     .escalate_en_i(controller_escalate_en),
     .err_bits_o   (controller_err_bits),
     .recoverable_err_o,

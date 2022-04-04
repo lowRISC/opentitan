@@ -955,7 +955,6 @@ module otbn
     .imem_sec_wipe_urnd_key_o    (imem_sec_wipe_urnd_key),
     .req_sec_wipe_urnd_keys_i    (req_sec_wipe_urnd_keys),
 
-    .lc_escalate_en_i            (lc_escalate_en[1]),
     .escalate_en_i               (core_escalate_en),
 
     .software_errs_fatal_i       (software_errs_fatal_q),
@@ -984,8 +983,9 @@ module otbn
   };
 
   // An error signal going down into the core to show that it should locally escalate
-  assign core_escalate_en = mubi4_bool_to_mubi(
-      |{illegal_bus_access_q, otbn_scramble_state_error, bus_intg_violation}
+  assign core_escalate_en = mubi4_or_hi(
+      mubi4_bool_to_mubi(|{illegal_bus_access_q, otbn_scramble_state_error, bus_intg_violation}),
+      lc_ctrl_pkg::lc_to_mubi4(lc_escalate_en[1])
   );
 
   // We're idle if we're neither busy executing something nor locked
