@@ -13,7 +13,7 @@ module tb;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  wire clk, rst_n;
+  wire clk, rst_n, rst_shadowed_n;
   wire clk_main, rst_main_n;
   wire clk_io, rst_io_n;
   wire clk_usb, rst_usb_n;
@@ -58,6 +58,7 @@ module tb;
     .rst_usb_n(rst_usb_n)
   );
 
+  rst_shadowed_if rst_shadowed_if(.rst_n(rst_n), .rst_shadowed_n(rst_shadowed_n));
   initial begin
     // Clocks must be set to active at time 0. The rest of the clock configuration happens
     // in clkmgr_base_vseq.sv.
@@ -74,7 +75,7 @@ module tb;
   clkmgr dut (
     .clk_i(clk),
     .rst_ni(rst_n),
-    .rst_shadowed_ni(rst_n),
+    .rst_shadowed_ni(rst_shadowed_n),
 
     .clk_main_i (clk_main),
     .rst_main_ni(rst_main_n),
@@ -133,6 +134,8 @@ module tb;
 
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
+    uvm_config_db#(virtual rst_shadowed_if)::set(null, "*.env", "rst_shadowed_vif",
+                                                 rst_shadowed_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

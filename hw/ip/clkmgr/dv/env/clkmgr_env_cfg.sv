@@ -25,11 +25,15 @@ class clkmgr_env_cfg extends cip_base_env_cfg #(
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = clkmgr_env_pkg::LIST_OF_ALERTS;
+    has_shadowed_regs = 1;
     super.initialize(csr_base_addr);
-    // clkmgr has no interrupts, alerts, or devmode yet.
 
     // This is for the integrity error test.
     tl_intg_alert_fields[ral.fatal_err_code.reg_intg] = 1;
+
+    // shadow registers
+    shadow_update_err_status_fields[ral.recov_err_code.shadow_update_err] = 1;
+    shadow_storage_err_status_fields[ral.fatal_err_code.shadow_storage_err] = 1;
   endfunction
 
 endclass

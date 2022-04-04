@@ -9,6 +9,7 @@
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson",
                      // TODO: Top-level specific Hjson imported here. This will likely be resolved
                      // once we move to IPgen flow.
                      "hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr_sec_cm_testplan.hjson",

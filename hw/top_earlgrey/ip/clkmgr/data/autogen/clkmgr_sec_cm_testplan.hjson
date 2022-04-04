@@ -49,9 +49,15 @@
     }
     {
       name: sec_cm_meas_config_shadow
-      desc: "Verify the countermeasure(s) MEAS.CONFIG.SHADOW."
+      desc: '''
+            Verify the countermeasure(s) MEAS.CONFIG.SHADOW.
+
+            This is covered by shadow_reg_errors_tests
+            (https://github.com/lowRISC/opentitan/blob/master/
+            hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson)
+            '''
       milestone: V2S
-      tests: [""]
+      tests: ["clkmgr_shadow_reg_errors"]
     }
     {
       name: sec_cm_idle_intersig_mubi
