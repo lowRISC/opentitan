@@ -26,6 +26,7 @@ resources:
     type: github
     endpoint: lowRISC
     name: lowrisc/opentitan-private-ci
+    ref: refs/heads/to-xcelium
 
 extends:
   template: jobs.yml@opentitan-private-ci
