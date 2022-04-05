@@ -18,6 +18,7 @@ from tabulate import tabulate
 
 class LicenceHeader(object):
     """Represents the licence header we want to insert"""
+
     def __init__(self, text):
         self._lines = text.strip().splitlines()
 
@@ -43,6 +44,7 @@ class LicenceHeader(object):
 
 class CommentStyle:
     '''Base class for comment style objects'''
+
     def __init__(self, first_line_prefix, comment_prefix):
         self.first_line_prefix = first_line_prefix
         self.comment_prefix = comment_prefix
@@ -61,18 +63,21 @@ class CommentStyle:
 
 class LineCommentStyle(CommentStyle):
     """Helpers for line-style comments."""
+
     def __init__(self, prefix):
         super().__init__(prefix, prefix)
 
 
 class DifferentFirstLineCommentStyle(CommentStyle):
     """Some files have a different allowable prefix for their first line."""
+
     def __init__(self, first_line_prefix, prefix):
         super().__init__(first_line_prefix, prefix)
 
 
 class BlockCommentStyle(CommentStyle):
     """Helpers for block-style comments."""
+
     def __init__(self, prefix, suffix):
         super().__init__(prefix, prefix)
         self.comment_suffix = str(suffix)
@@ -119,7 +124,7 @@ COMMENT_CHARS = [
     (["Makefile", ".mk"], HASH),  # Makefiles
     ([".ys"], HASH),  # Yosys script
     ([".waiver"], HASH),  # AscentLint waiver files
-    ([".vlt, vlt.tpl"], SLASH_SLASH),  # Verilator configuration (waiver) files
+    ([".vlt", ".vlt.tpl"], SLASH_SLASH),  # Verilator cfg (waiver) files
     ([".vbl"], HASH),  # Verible configuration files
     ([".el", ".el.tpl"], SLASH_SLASH),  # Exclusion list
     ([".cfg", ".cfg.tpl"], [SLASH_SLASH,
@@ -171,6 +176,7 @@ COMMENT_CHARS = [
 
 class LicenceMatcher:
     '''An object to match a given licence at the start of a file'''
+
     def __init__(self, comment_style, licence, match_regex):
         self.style = comment_style
         self.expected_lines = list()
@@ -281,6 +287,7 @@ def git_find_all_file_paths(top_level, search_paths):
 
 class ResultsTracker(object):
     """Helper for tracking results"""
+
     def __init__(self, base_dir):
         self.base_dir = base_dir
 
@@ -403,6 +410,7 @@ def check_file_with_matcher(matcher, filepath):
     associated success or error message.
 
     '''
+
     def next_line(file, line_no):
         return (next(file).rstrip(), line_no + 1)
 
