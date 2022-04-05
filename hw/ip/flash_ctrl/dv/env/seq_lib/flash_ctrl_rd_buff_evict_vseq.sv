@@ -73,19 +73,19 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
     solve en_mp_regions before mp_regions;
 
     foreach (mp_regions[i]) {
-      mp_regions[i].en == en_mp_regions[i];
+      mp_regions[i].en == mubi4_bool_to_mubi(en_mp_regions[i]);
 
-      mp_regions[i].read_en == 1;
+      mp_regions[i].read_en == MuBi4True;
 
-      mp_regions[i].program_en == 1;
+      mp_regions[i].program_en == MuBi4True;
 
-      mp_regions[i].erase_en == 1;
+      mp_regions[i].erase_en == MuBi4True;
 
       mp_regions[i].he_en dist {
-        0 :/ (100 - cfg.seq_cfg.mp_region_he_en_pc),
-        1 :/ cfg.seq_cfg.mp_region_he_en_pc
+        MuBi4False :/ (100 - cfg.seq_cfg.mp_region_he_en_pc),
+        MuBi4True  :/ cfg.seq_cfg.mp_region_he_en_pc
       };
-      mp_regions[i].ecc_en == 0;
+      mp_regions[i].ecc_en == MuBi4False;
 
       mp_regions[i].start_page inside {[0 : FlashNumPages - 1]};
       mp_regions[i].num_pages inside {[1 : FlashNumPages - mp_regions[i].start_page]};
@@ -116,17 +116,17 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
   }
 
   // Default flash ctrl region settings.
-  bit default_region_read_en;
-  bit default_region_program_en;
-  bit default_region_erase_en;
-  bit default_region_scramble_en;
-  bit default_region_ecc_en;
-  rand bit default_region_he_en;
+  mubi4_t default_region_read_en;
+  mubi4_t default_region_program_en;
+  mubi4_t default_region_erase_en;
+  mubi4_t default_region_scramble_en;
+  mubi4_t default_region_ecc_en;
+  rand mubi4_t default_region_he_en;
 
   constraint default_region_he_en_c {
     default_region_he_en dist {
-      1 :/ cfg.seq_cfg.default_region_he_en_pc,
-      0 :/ (100 - cfg.seq_cfg.default_region_he_en_pc)
+      MuBi4False :/ cfg.seq_cfg.default_region_he_en_pc,
+      MuBi4True  :/ (100 - cfg.seq_cfg.default_region_he_en_pc)
     };
   }
 
@@ -140,18 +140,18 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
     poll_fifo_status = 1;
 
     // Default region settings
-    default_region_read_en = 1;
-    default_region_program_en = 1;
-    default_region_erase_en = 1;
-    default_region_ecc_en = 0;
-    default_region_scramble_en = 0;
+    default_region_read_en     = MuBi4True;
+    default_region_program_en  = MuBi4True;
+    default_region_erase_en    = MuBi4True;
+    default_region_ecc_en      = MuBi4False;
+    default_region_scramble_en = MuBi4False;
 
     // Scoreboard knob
     cfg.block_host_rd = 1;
 
     // Configure the flash with scramble disable.
     foreach (mp_regions[k]) begin
-      mp_regions[k].scramble_en = 0;
+      mp_regions[k].scramble_en = MuBi4False;
       flash_ctrl_mp_region_cfg(k, mp_regions[k]);
       `uvm_info(`gfn, $sformatf("MP regions values %p", mp_regions[k]), UVM_HIGH)
     end

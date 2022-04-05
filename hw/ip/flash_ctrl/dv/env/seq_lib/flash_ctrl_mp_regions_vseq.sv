@@ -66,13 +66,13 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
 
     foreach (mp_regions[i]) {
 
-      mp_regions[i].scramble_en == 0;
+      mp_regions[i].scramble_en == MuBi4False;
 
-      mp_regions[i].ecc_en == 0;
+      mp_regions[i].ecc_en == MuBi4False;
 
       mp_regions[i].he_en dist {
-        0 :/ (100 - cfg.seq_cfg.mp_region_he_en_pc),
-        1 :/ cfg.seq_cfg.mp_region_he_en_pc
+        MuBi4False :/ (100 - cfg.seq_cfg.mp_region_he_en_pc),
+        MuBi4True  :/ cfg.seq_cfg.mp_region_he_en_pc
       };
 
       mp_regions[i].start_page dist {
@@ -94,14 +94,14 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
     foreach (mp_info_pages[i]) {
       if (cfg.seq_cfg.op_readonly_on_info_partition) {
         foreach (mp_info_pages[i][0][k]) {
-          mp_info_pages[i][0][k].program_en == 0;
-          mp_info_pages[i][0][k].erase_en == 0;
+          mp_info_pages[i][0][k].program_en == MuBi4False;
+          mp_info_pages[i][0][k].erase_en == MuBi4False;
         }
       }
       if (cfg.seq_cfg.op_readonly_on_info1_partition) {
         foreach (mp_info_pages[i][1][k]) {
-          mp_info_pages[i][1][k].program_en == 0;
-          mp_info_pages[i][1][k].erase_en == 0;
+          mp_info_pages[i][1][k].program_en == MuBi4False;
+          mp_info_pages[i][1][k].erase_en == MuBi4False;
         }
       }
     }
@@ -111,33 +111,33 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
 
       foreach (mp_info_pages[i][j][k]) {
 
-        mp_info_pages[i][j][k].scramble_en == 0;
+        mp_info_pages[i][j][k].scramble_en == MuBi4False;
 
-        mp_info_pages[i][j][k].ecc_en == 0;
+        mp_info_pages[i][j][k].ecc_en == MuBi4False;
 
         mp_info_pages[i][j][k].he_en dist {
-          0 :/ (100 - cfg.seq_cfg.mp_info_page_he_en_pc[i][j]),
-          1 :/ cfg.seq_cfg.mp_info_page_he_en_pc[i][j]
+          MuBi4False :/ (100 - cfg.seq_cfg.mp_info_page_he_en_pc[i][j]),
+          MuBi4True  :/ cfg.seq_cfg.mp_info_page_he_en_pc[i][j]
         };
       }
     }
   }
 
   // Default flash ctrl region settings.
-  rand bit default_region_read_en;
-  rand bit default_region_program_en;
-  rand bit default_region_erase_en;
-  rand bit default_region_he_en;
-  bit default_region_scramble_en;
-  bit default_region_ecc_en;
+  rand mubi4_t default_region_read_en;
+  rand mubi4_t default_region_program_en;
+  rand mubi4_t default_region_erase_en;
+  rand mubi4_t default_region_he_en;
+  mubi4_t default_region_scramble_en;
+  mubi4_t default_region_ecc_en;
 
   // Bank erasability.
   rand bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en;
 
   constraint default_region_he_en_c {
     default_region_he_en dist {
-      1 :/ cfg.seq_cfg.default_region_he_en_pc,
-      0 :/ (100 - cfg.seq_cfg.default_region_he_en_pc)
+      MuBi4True  :/ cfg.seq_cfg.default_region_he_en_pc,
+      MuBi4False :/ (100 - cfg.seq_cfg.default_region_he_en_pc)
     };
   }
 
@@ -172,12 +172,12 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
   virtual task do_mp_reg();
     poll_fifo_status           = 1;
     // Default region settings
-    default_region_ecc_en      = 0;
-    default_region_scramble_en = 0;
+    default_region_ecc_en      = MuBi4False;
+    default_region_scramble_en = MuBi4False;
 
     // Configure the flash with scramble disable.
     foreach (mp_regions[k]) begin
-      mp_regions[k].scramble_en = 0;
+      mp_regions[k].scramble_en = MuBi4False;
       flash_ctrl_mp_region_cfg(k, mp_regions[k]);
       `uvm_info(`gfn, $sformatf("MP regions values %p", mp_regions[k]), UVM_HIGH)
     end
@@ -232,10 +232,10 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
       controller_program_page(flash_op_pg_erase);
       flash_op_pg_erase.op = flash_ctrl_pkg::FlashOpErase;
       flash_op_pg_erase.addr       = {flash_op.addr[19:11], {11{1'b0}}};
-      `uvm_info(`gfn, $sformatf("ERASE OP %p", flash_op_pg_erase), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("ERASE OP %p", flash_op_pg_erase), UVM_LOW)
       flash_ctrl_start_op(flash_op_pg_erase);
       wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
-      `uvm_info(`gfn, $sformatf("READ OP %p", flash_op_pg_erase), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("READ OP %p", flash_op_pg_erase), UVM_LOW)
       flash_op_pg_erase.addr       = {flash_op.addr[19:11], {11{1'b0}}};
       controller_read_page(flash_op_pg_erase);
     end
@@ -245,36 +245,36 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
   virtual task do_bank_erase();
     poll_fifo_status           = 1;
     // Default region settings
-    default_region_read_en     = 1;
-    default_region_program_en  = 1;
-    default_region_ecc_en      = 0;
-    default_region_scramble_en = 0;
+    default_region_read_en     = MuBi4True;
+    default_region_program_en  = MuBi4True;
+    default_region_ecc_en      = MuBi4False;
+    default_region_scramble_en = MuBi4False;
 
     // No Protection due to sw wr/rd
     foreach (mp_regions[i]) begin
-      mp_regions[i].en = 1;
-      mp_regions[i].read_en = 1;
-      mp_regions[i].program_en = 1;
-      mp_regions[i].scramble_en = 0;
-      mp_regions[i].ecc_en = 0;
+      mp_regions[i].en = MuBi4True;
+      mp_regions[i].read_en = MuBi4True;
+      mp_regions[i].program_en = MuBi4True;
+      mp_regions[i].scramble_en = MuBi4False;
+      mp_regions[i].ecc_en = MuBi4False;
     end
 
     foreach (mp_info_pages[0][0][k]) begin
-      mp_info_pages[0][0][k].en          = 1;
-      mp_info_pages[0][0][k].read_en     = 1;
-      mp_info_pages[0][0][k].program_en  = 1;
-      mp_info_pages[0][0][k].scramble_en = 0;
-      mp_info_pages[0][0][k].ecc_en      = 0;
-      mp_info_pages[1][0][k].en          = 1;
-      mp_info_pages[1][0][k].read_en     = 1;
-      mp_info_pages[1][0][k].program_en  = 1;
-      mp_info_pages[1][0][k].scramble_en = 0;
-      mp_info_pages[1][0][k].ecc_en      = 0;
+      mp_info_pages[0][0][k].en          = MuBi4True;
+      mp_info_pages[0][0][k].read_en     = MuBi4True;
+      mp_info_pages[0][0][k].program_en  = MuBi4True;
+      mp_info_pages[0][0][k].scramble_en = MuBi4False;
+      mp_info_pages[0][0][k].ecc_en      = MuBi4False;
+      mp_info_pages[1][0][k].en          = MuBi4True;
+      mp_info_pages[1][0][k].read_en     = MuBi4True;
+      mp_info_pages[1][0][k].program_en  = MuBi4True;
+      mp_info_pages[1][0][k].scramble_en = MuBi4False;
+      mp_info_pages[1][0][k].ecc_en      = MuBi4False;
     end
 
     // Configure the flash with scramble disable.
     foreach (mp_regions[k]) begin
-      mp_regions[k].scramble_en = 0;
+      mp_regions[k].scramble_en = MuBi4False;
       flash_ctrl_mp_region_cfg(k, mp_regions[k]);
       `uvm_info(`gfn, $sformatf("MP regions values %p", mp_regions[k]), UVM_HIGH)
     end
