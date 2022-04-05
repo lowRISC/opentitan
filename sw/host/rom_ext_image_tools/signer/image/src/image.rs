@@ -89,6 +89,7 @@ impl DerefMut for ManifestBuffer {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use memoffset::offset_of;
 
     #[test]
     fn test_set_manifest_field() -> Result<(), ImageError> {
@@ -98,7 +99,10 @@ mod tests {
         let identifier: u32 = 0x01020304;
         image.manifest.identifier = identifier;
         for i in 0..4 {
-            assert_eq!(manifest_buffer[i], identifier.to_le_bytes()[i]);
+            assert_eq!(
+                manifest_buffer[offset_of!(Manifest, identifier) + i],
+                identifier.to_le_bytes()[i]
+            );
         }
         Ok(())
     }
