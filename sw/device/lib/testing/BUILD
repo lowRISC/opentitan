@@ -45,6 +45,11 @@ cc_library(
     srcs = ["aes_testutils.c"],
     hdrs = ["aes_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/dif:aes",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing/test_framework",
+    ],
 )
 
 cc_library(
