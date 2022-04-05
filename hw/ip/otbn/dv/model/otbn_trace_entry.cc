@@ -54,26 +54,61 @@ bool OtbnTraceEntry::from_rtl_trace(const std::string &trace) {
     if (!parsed_line.fill_from_string("RTL", line)) {
       return false;
     }
-    writes_[parsed_line.get_loc()] = parsed_line;
+    writes_[parsed_line.get_loc()].push_back(parsed_line);
   }
   return true;
 }
 
-bool OtbnTraceEntry::operator==(const OtbnTraceEntry &other) const {
-  return hdr_ == other.hdr_ && writes_ == other.writes_;
+bool OtbnTraceEntry::compare_rtl_iss_entries(
+    const OtbnTraceEntry &other) const {
+  if (hdr_ != other.hdr_)
+    return false;
+
+  for (const auto &rtlptr : writes_) {
+    auto isskey = other.writes_.find(rtlptr.first);
+    if (isskey == other.writes_.end())
+      return false;
+    // compare rtlptr.second and isskey.second
+    if (!check_entries_compatible(trace_type_, rtlptr.first, rtlptr.second,
+                                  isskey->second))
+      return false;
+  }
+
+  if (writes_.size() != other.writes_.size())
+    return false;
+  return true;
+}
+
+bool OtbnTraceEntry::check_entries_compatible(
+    trace_type_t type, const std::string &key,
+    const std::vector<OtbnTraceBodyLine> &rtl_lines,
+    const std::vector<OtbnTraceBodyLine> &iss_lines) {
+  assert(rtl_lines.size() && iss_lines.size());
+  assert(type == WipeComplete || type == Exec);
+
+  if (type == WipeComplete && key != "FLAGS0" && key != "FLAGS1") {
+    if (rtl_lines.size() != 2)
+      return false;
+    if (rtl_lines.front() == rtl_lines.back())
+      return false;
+  }
+
+  return rtl_lines.back() == iss_lines.back();
 }
 
 void OtbnTraceEntry::print(const std::string &indent, std::ostream &os) const {
   os << indent << hdr_ << "\n";
   for (const auto &pr : writes_) {
-    os << indent << pr.second.get_string() << "\n";
+    for (const auto &line : pr.second) {
+      os << indent << line.get_string() << "\n";
+    }
   }
 }
 
 void OtbnTraceEntry::take_writes(const OtbnTraceEntry &other) {
-  if (!other.writes_.empty()) {
-    for (const auto &pr : other.writes_) {
-      writes_[pr.first] = pr.second;
+  for (const auto &pr : other.writes_) {
+    for (const auto &line : pr.second) {
+      writes_[pr.first].push_back(line);
     }
   }
 }
@@ -211,7 +246,7 @@ bool OtbnIssTraceEntry::from_iss_trace(const std::vector<std::string> &lines) {
           if (!parsed_line.fill_from_string("ISS", line)) {
             return false;
           }
-          writes_[parsed_line.get_loc()] = parsed_line;
+          writes_[parsed_line.get_loc()].push_back(parsed_line);
         }
         break;
       }
