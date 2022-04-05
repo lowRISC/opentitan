@@ -71,7 +71,7 @@ class pwm_monitor extends dv_base_monitor #(
             dut_item.active_cnt  = cnt;
           end else begin
             dut_item.inactive_cnt  = cnt;
-            dut_item.phase         = clk_cnt;
+            dut_item.phase         = 2**clk_cnt;
             dut_item.invert        = cfg.invert;
             dut_item.period        = cnt + dut_item.active_cnt;
             dut_item.monitor_id    = cfg.monitor_id;

@@ -41,7 +41,7 @@ class pwm_rand_output_vseq extends pwm_base_vseq;
     for (uint i = 0; i < PWM_NUM_CHANNELS; i++) begin
       rand_pwm_duty_cycle(i);
       rand_pwm_blink(i);
-      cfg.pwm_param[rand_chan].HtbtEn = rand_reg_param.HtbtEn;
+      cfg.pwm_param[i].HtbtEn = rand_reg_param.HtbtEn;
       cfg.pwm_param[i].BlinkEn = rand_reg_param.BlinkEn;
       set_param(i, cfg.pwm_param[i]);
     end
