@@ -104,9 +104,11 @@ module otbn
 
   logic core_recoverable_err, recoverable_err_d, recoverable_err_q;
   mubi4_t core_escalate_en;
-  core_err_bits_t core_err_bits;
-  err_bits_t err_bits, err_bits_d, err_bits_q;
-  logic err_bits_en;
+
+  core_err_bits_t     core_err_bits;
+  non_core_err_bits_t non_core_err_bits, non_core_err_bits_d, non_core_err_bits_q;
+  err_bits_t          err_bits, err_bits_d, err_bits_q;
+  logic               err_bits_en;
 
   // ERR_BITS register should be cleared due to a write request from the host processor
   // when OTBN is not running.
@@ -963,14 +965,32 @@ module otbn
     .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}})
   );
 
+  // Collect up the error bits that don't come from the core itself and latch them so that they'll
+  // be available when an operation finishes.
+  assign non_core_err_bits = '{
+    lifecycle_escalation: lc_escalate_en[0] != lc_ctrl_pkg::Off,
+    illegal_bus_access:   illegal_bus_access_q,
+    bad_internal_state:   otbn_scramble_state_error,
+    bus_intg_violation:   bus_intg_violation
+  };
+
+  assign non_core_err_bits_d = non_core_err_bits_q | non_core_err_bits;
+  always @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      non_core_err_bits_q <= '0;
+    end else begin
+      non_core_err_bits_q <= non_core_err_bits_d;
+    end
+  end
+
   // Construct a full set of error bits from the core output
   assign err_bits = '{
     fatal_software:       core_err_bits.fatal_software,
-    lifecycle_escalation: lc_escalate_en[0] != lc_ctrl_pkg::Off,
-    illegal_bus_access:   illegal_bus_access_q,
+    lifecycle_escalation: non_core_err_bits_d.lifecycle_escalation,
+    illegal_bus_access:   non_core_err_bits_d.illegal_bus_access,
     bad_internal_state:   |{core_err_bits.bad_internal_state,
-                            otbn_scramble_state_error},
-    bus_intg_violation:   bus_intg_violation,
+                            non_core_err_bits_d.bad_internal_state},
+    bus_intg_violation:   non_core_err_bits_d.bus_intg_violation,
     reg_intg_violation:   core_err_bits.reg_intg_violation,
     dmem_intg_violation:  core_err_bits.dmem_intg_violation,
     imem_intg_violation:  core_err_bits.imem_intg_violation,
@@ -984,7 +1004,9 @@ module otbn
 
   // An error signal going down into the core to show that it should locally escalate
   assign core_escalate_en = mubi4_or_hi(
-      mubi4_bool_to_mubi(|{illegal_bus_access_q, otbn_scramble_state_error, bus_intg_violation}),
+      mubi4_bool_to_mubi(|{non_core_err_bits.illegal_bus_access,
+                           non_core_err_bits.bad_internal_state,
+                           non_core_err_bits.bus_intg_violation}),
       lc_ctrl_pkg::lc_to_mubi4(lc_escalate_en[1])
   );
 
@@ -1021,8 +1043,9 @@ module otbn
           (hw2reg.status.d != StatusIdle) & dmem_rvalid_bus |-> dmem_rdata_bus == 'd0)
 
   // Error handling: if we pass an error signal down to the core then we should also be setting an
-  // error flag.
-  `ASSERT(ErrBitIfEscalate_A, mubi4_test_true_loose(core_escalate_en) |=> |err_bits_q)
+  // error flag. Note that this uses err_bits, not err_bits_q, because the latter signal only gets
+  // asserted when an operation finishes.
+  `ASSERT(ErrBitIfEscalate_A, mubi4_test_true_loose(core_escalate_en) |=> |err_bits)
 
   // Constraint from package, check here as we cannot have `ASSERT_INIT in package
   `ASSERT_INIT(WsrESizeMatchesParameter_A, $bits(wsr_e) == WsrNumWidth)
