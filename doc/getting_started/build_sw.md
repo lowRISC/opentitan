@@ -1,5 +1,7 @@
 ---
 title: Building Software
+aliases:
+    - /doc/ug/getting_started_build_sw
 ---
 
 _Before following this guide, make sure you've followed the [dependency installation instructions]({{< relref "getting_started" >}})._

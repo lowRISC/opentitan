@@ -1,5 +1,7 @@
 ---
 title: "FPGA Setup"
+aliases:
+    - /doc/ug/getting_started_fpga
 ---
 
 _Before following this guide, make sure you've followed the [dependency installation and software build instructions]({{< relref "getting_started" >}})._

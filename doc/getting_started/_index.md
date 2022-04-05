@@ -1,5 +1,8 @@
 ---
 title: "Getting Started"
+aliases:
+    - /doc/ug/getting_started
+    - /doc/ug/install_instructions
 ---
 
 Welcome!
