@@ -106,7 +106,7 @@ You can alternatively download the tarball starting with `lowrisc-toolchain-rv32
 Assuming one of the above worked and you have installed to a non-standard location, you will need to set the `TOOLCHAIN_PATH` environment variable to match whatever path you used.
 For example, if I wanted to install to `~/ot_tools/riscv`, then I would use:
 ```console
-$ ./util/get-toolchain.py --install_dir=~/ot_tools/riscv
+$ ./util/get-toolchain.py --install-dir=~/ot_tools/riscv
 $ export TOOLCHAIN_PATH=~/ot_tools/riscv
 ```
 Add the `export` command to your `~/.bashrc` or equivalent to ensure that the `TOOLCHAIN_PATH` variable is set for future sessions.
