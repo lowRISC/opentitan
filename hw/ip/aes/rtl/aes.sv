@@ -86,6 +86,7 @@ module aes
   // Inputs //
   ////////////
 
+  // SEC_CM: BUS.INTEGRITY
   // SEC_CM: AUX.CONFIG.SHADOW
   // SEC_CM: AUX.CONFIG.REGWEN
   // SEC_CM: KEY.SW_UNREADABLE

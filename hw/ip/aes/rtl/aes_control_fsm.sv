@@ -638,6 +638,7 @@ module aes_control_fsm
       end
 
       ERROR: begin
+        // SEC_CM: MAIN.FSM.GLOBAL_ESC
         // SEC_CM: MAIN.FSM.LOCAL_ESC
         // Terminal error state
         alert_o = 1'b1;
