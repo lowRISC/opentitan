@@ -185,9 +185,6 @@ class edn_scoreboard extends cip_base_scoreboard #(
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
 
-    if (endpoint_data_q.size()) begin
-      `uvm_fatal(`gfn, $sformatf("endpoint_data_q.size = %0d at EOT", endpoint_data_q.size()))
-    end
     // TODO: post test checks - ensure that all local fifos and queues are empty
   endfunction
 

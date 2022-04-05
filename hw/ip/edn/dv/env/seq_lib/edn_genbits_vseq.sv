@@ -33,10 +33,11 @@ class edn_genbits_vseq extends edn_base_vseq;
     for (int i = 0; i < num_requesters; i++) begin
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(num_ep_reqs,
                                          num_ep_reqs inside
-                                             { [cfg.min_num_ep_reqs:cfg.max_num_ep_reqs] };
-                                         // TODO: Make num_ep_reqs not 4*num_cs_reqs
-                                         num_ep_reqs % 4 == 0;)
+                                             { [cfg.min_num_ep_reqs:cfg.max_num_ep_reqs] };)
       num_cs_reqs += num_ep_reqs/(csrng_pkg::GENBITS_BUS_WIDTH/ENDPOINT_BUS_WIDTH);
+      if (num_ep_reqs % (csrng_pkg::GENBITS_BUS_WIDTH/ENDPOINT_BUS_WIDTH)) begin
+        num_cs_reqs += 1;
+      end
 
       if (i == extra_requester) begin
         if (cfg.boot_req_mode == MuBi4True) begin
