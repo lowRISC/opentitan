@@ -1,5 +1,7 @@
 ---
 title: "Design Verification Setup"
+aliases:
+    - /doc/ug/getting_started_dv
 ---
 
 _Before following this guide, make sure you've followed the [dependency installation and software build instructions]({{< relref "getting_started" >}})._
