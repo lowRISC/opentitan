@@ -99,20 +99,20 @@ module uart
   assign cio_tx_en_o = 1'b1;
 
   // Assert Known for outputs
-  `ASSERT_KNOWN(txenKnown, cio_tx_en_o)
-  `ASSERT_KNOWN(txKnown, cio_tx_o, clk_i, !rst_ni || !cio_tx_en_o)
+  `ASSERT(TxEnIsOne_A, cio_tx_en_o === 1'b1)
+  `ASSERT_KNOWN(TxKnown_A, cio_tx_o, clk_i, !rst_ni || !cio_tx_en_o)
 
   // Assert Known for alerts
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
 
   // Assert Known for interrupts
-  `ASSERT_KNOWN(txWatermarkKnown, intr_tx_watermark_o)
-  `ASSERT_KNOWN(rxWatermarkKnown, intr_rx_watermark_o)
-  `ASSERT_KNOWN(txEmptyKnown, intr_tx_empty_o)
-  `ASSERT_KNOWN(rxOverflowKnown, intr_rx_overflow_o)
-  `ASSERT_KNOWN(rxFrameErrKnown, intr_rx_frame_err_o)
-  `ASSERT_KNOWN(rxBreakErrKnown, intr_rx_break_err_o)
-  `ASSERT_KNOWN(rxTimeoutKnown, intr_rx_timeout_o)
-  `ASSERT_KNOWN(rxParityErrKnown, intr_rx_parity_err_o)
+  `ASSERT_KNOWN(TxWatermarkKnown_A, intr_tx_watermark_o)
+  `ASSERT_KNOWN(RxWatermarkKnown_A, intr_rx_watermark_o)
+  `ASSERT_KNOWN(TxEmptyKnown_A, intr_tx_empty_o)
+  `ASSERT_KNOWN(RxOverflowKnown_A, intr_rx_overflow_o)
+  `ASSERT_KNOWN(RxFrameErrKnown_A, intr_rx_frame_err_o)
+  `ASSERT_KNOWN(RxBreakErrKnown_A, intr_rx_break_err_o)
+  `ASSERT_KNOWN(RxTimeoutKnown_A, intr_rx_timeout_o)
+  `ASSERT_KNOWN(RxParityErrKnown_A, intr_rx_parity_err_o)
 
 endmodule
