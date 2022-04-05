@@ -72,8 +72,4 @@ class pwm_perf_vseq extends pwm_rand_output_vseq;
 
   endtask : body
 
-<<<<<<< HEAD
 endclass : pwm_perf_vseq
-=======
-endclass : pwm_perf_vseq
->>>>>>> aa5f24ee0 ([pwm/pwm_perf_vseq] Created a sequence to test performance)
