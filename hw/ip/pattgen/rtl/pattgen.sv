@@ -95,11 +95,12 @@ module pattgen
   `ASSERT_KNOWN(Pda0TxKnownO_A, cio_pda0_tx_o)
   `ASSERT_KNOWN(Pcl1TxKnownO_A, cio_pcl1_tx_o)
   `ASSERT_KNOWN(Pda1TxKnownO_A, cio_pda1_tx_o)
-  `ASSERT_KNOWN(Pcl0TxEnKnownO_A, cio_pcl0_tx_en_o)
-  `ASSERT_KNOWN(Pda0TxEnKnownO_A, cio_pda0_tx_en_o)
-  `ASSERT_KNOWN(Pcl1TxEnKnownO_A, cio_pcl1_tx_en_o)
-  `ASSERT_KNOWN(Pda1TxEnKnownO_A, cio_pda1_tx_en_o)
   `ASSERT_KNOWN(IntrCh0DoneKnownO_A, intr_done_ch0_o)
   `ASSERT_KNOWN(IntrCh1DoneKnownO_A, intr_done_ch1_o)
+
+  `ASSERT(Pcl0TxEnIsOne_A, cio_pcl0_tx_en_o === 1'b1)
+  `ASSERT(Pda0TxEnIsOne_A, cio_pda0_tx_en_o === 1'b1)
+  `ASSERT(Pcl1TxEnIsOne_A, cio_pcl1_tx_en_o === 1'b1)
+  `ASSERT(Pda1TxEnIsOne_A, cio_pda1_tx_en_o === 1'b1)
 
 endmodule : pattgen
