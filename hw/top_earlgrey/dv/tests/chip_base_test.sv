@@ -43,7 +43,7 @@ class chip_base_test extends cip_base_test #(
     cfg.m_uart_agent_cfgs[0].en_logger = cfg.en_uart_logger;
     cfg.m_uart_agent_cfgs[0].write_logs_to_file = cfg.write_sw_logs_to_file;
 
-    // Knob to set the sw_test_timeout_ns (set to 5ms by default).
+    // Knob to set the sw_test_timeout_ns (set to 12ms by default).
     void'($value$plusargs("sw_test_timeout_ns=%0d", cfg.sw_test_timeout_ns));
 
     // Knob to use SPI to load image via ROM bootstrap.
@@ -74,6 +74,10 @@ class chip_base_test extends cip_base_test #(
     `DV_CHECK_FATAL(cfg.otp_images.exists(cfg.use_otp_image),
                     $sformatf({"Unsupported plusarg value: +use_otp_image=%0s. An image associated",
                                "with this LC state needs to be created first."}, cfg.use_otp_image))
+
+    // Set the test timeout value to be sufficiently large.
+    test_timeout_ns = 50_000_000;
+    test_timeout_ns = `DV_MAX2(test_timeout_ns, 5 * cfg.sw_test_timeout_ns);
   endfunction : build_phase
 
 endclass : chip_base_test

@@ -219,6 +219,12 @@
   // This allows an arbitrary number of SW images to be supplied to the TB.
   tests: [
     {
+      // Reused from hw/dv/tools/dvsim/tests/csr_tests.hjson.
+      name: "chip_csr_bit_bash"
+      // Don't test over 512 randomly picked CSRs at a time.
+      run_opts: ["+test_timeout_ns=120000000", "+num_test_csrs=512"]
+    }
+    {
       name: chip_sw_example_flash
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/example_test_from_flash:1"]
@@ -235,7 +241,6 @@
       uvm_test_seq: chip_sw_pwm_pulses_vseq
       sw_images: ["sw/device/tests/sleep_pwm_pulses_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=11000000"]
     }
     {
       name: chip_sw_uart_tx_rx
@@ -361,21 +366,18 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/pwrmgr_usbdev_smoketest:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=4000000"]
     }
     {
       name: chip_sw_pwrmgr_full_aon_reset
       uvm_test_seq: chip_sw_full_aon_reset_vseq
       sw_images: ["sw/device/tests/rstmgr_smoketest:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=4000000"]
     }
     {
       name: chip_sw_pwrmgr_main_power_glitch_reset
       uvm_test_seq: chip_sw_main_power_glitch_vseq
       sw_images: ["sw/device/tests/pwrmgr_main_power_glitch_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=4000000"]
     }
     {
       name: chip_sw_rv_timer_irq
@@ -453,7 +455,7 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
-      name: chip_sw_hmac_enc_test
+      name: chip_sw_hmac_enc
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/hmac_enc_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
@@ -506,7 +508,6 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/sram_ctrl_sleep_sram_ret_contents_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=7000000"]
     }
     {
       name: chip_sw_coremark
@@ -539,7 +540,6 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/clkmgr_off_peri_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=7000000"]
     }
     {
       name: chip_sw_clkmgr_external_clk_src_for_sw

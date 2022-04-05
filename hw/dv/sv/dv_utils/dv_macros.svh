@@ -541,3 +541,11 @@
 `ifndef BUILD_SEED
   `define BUILD_SEED 1
 `endif
+
+// Max value out of 2 given expressions.
+//
+// Duplicate of dv_utils_pkg::max2() function, but this is better because
+// it can consume different data types directly without the need for casting.
+`ifndef DV_MAX2
+  `define DV_MAX2(a, b) ((a) > (b) ? (a) : (b))
+`endif

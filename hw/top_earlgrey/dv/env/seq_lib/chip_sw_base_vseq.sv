@@ -12,6 +12,12 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
   `uvm_object_new
 
+  virtual task pre_start();
+    super.pre_start();
+    // Disable mem checks in scoreboard - it does not factor in memory scrambling.
+    cfg.en_scb_mem_chk = 1'b0;
+  endtask
+
   virtual task dut_init(string reset_kind = "HARD");
     // Reset the sw_test_status.
     cfg.sw_test_status_vif.sw_test_status = SwTestStatusUnderReset;
@@ -204,6 +210,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     while (sw_byte_q.size > byte_cnt) begin
       `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
+      for (int i = byte_cnt; i < SPI_FRAME_BYTE_SIZE; i++) begin
+        `uvm_info(`gfn, $sformatf("SPI flash data[%0d] = 0x%0x", i, sw_byte_q[i]), UVM_LOW)
+      end
       `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
                                      data.size() == SPI_FRAME_BYTE_SIZE;
                                      foreach (data[i]) {data[i] == sw_byte_q[byte_cnt+i];})

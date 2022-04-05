@@ -95,13 +95,13 @@ class chip_sw_gpio_vseq extends chip_sw_base_vseq;
 
     // Drive T1 pattern.
     for (int i = 0; i < NUM_GPIOS; i++) begin
-      cfg.clk_rst_vif.wait_clks($urandom_range(400, 600));
+      cfg.cpu_clk_rst_vif.wait_clks($urandom_range(1000, 2000));
       cfg.gpio_vif.drive_pin(i, 1'b1);
     end
 
     // Drive T0 pattern.
     for (int i = 0; i < NUM_GPIOS; i++) begin
-      cfg.clk_rst_vif.wait_clks($urandom_range(400, 600));
+      cfg.cpu_clk_rst_vif.wait_clks($urandom_range(1000, 2000));
       cfg.gpio_vif.drive_pin(i, 1'b0);
     end
 
