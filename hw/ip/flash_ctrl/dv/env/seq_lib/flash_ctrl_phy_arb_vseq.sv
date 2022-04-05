@@ -132,21 +132,21 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
     solve en_mp_regions before mp_regions;
 
     foreach (mp_regions[i]) {
-      mp_regions[i].en == en_mp_regions[i];
+      mp_regions[i].en == mubi4_bool_to_mubi(en_mp_regions[i]);
 
-      mp_regions[i].read_en == 1;
+      mp_regions[i].read_en == MuBi4True;
 
-      mp_regions[i].program_en == 1;
+      mp_regions[i].program_en == MuBi4True;
 
-      mp_regions[i].erase_en == 1;
+      mp_regions[i].erase_en == MuBi4True;
 
-      mp_regions[i].scramble_en == 0;
+      mp_regions[i].scramble_en == MuBi4False;
 
-      mp_regions[i].ecc_en == 0;
+      mp_regions[i].ecc_en == MuBi4False;
 
       mp_regions[i].he_en dist {
-        0 :/ (100 - cfg.seq_cfg.mp_region_he_en_pc),
-        1 :/ cfg.seq_cfg.mp_region_he_en_pc
+        MuBi4False :/ (100 - cfg.seq_cfg.mp_region_he_en_pc),
+        MuBi4True  :/ cfg.seq_cfg.mp_region_he_en_pc
       };
 
       mp_regions[i].start_page inside {[0 : FlashNumPages - 1]};
@@ -180,21 +180,21 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
 
       foreach (mp_info_pages[i][j][k]) {
 
-        mp_info_pages[i][j][k].en == 1;
+        mp_info_pages[i][j][k].en == MuBi4True;
 
-        mp_info_pages[i][j][k].read_en == 1;
+        mp_info_pages[i][j][k].read_en == MuBi4True;
 
-        mp_info_pages[i][j][k].program_en == 1;
+        mp_info_pages[i][j][k].program_en == MuBi4True;
 
-        mp_info_pages[i][j][k].erase_en == 1;
+        mp_info_pages[i][j][k].erase_en == MuBi4True;
 
-        mp_info_pages[i][j][k].scramble_en == 0;
+        mp_info_pages[i][j][k].scramble_en == MuBi4False;
 
-        mp_info_pages[i][j][k].ecc_en == 0;
+        mp_info_pages[i][j][k].ecc_en == MuBi4False;
 
         mp_info_pages[i][j][k].he_en dist {
-          0 :/ (100 - cfg.seq_cfg.mp_info_page_he_en_pc[i][j]),
-          1 :/ cfg.seq_cfg.mp_info_page_he_en_pc[i][j]
+          MuBi4False :/ (100 - cfg.seq_cfg.mp_info_page_he_en_pc[i][j]),
+          MuBi4True :/ cfg.seq_cfg.mp_info_page_he_en_pc[i][j]
         };
 
       }
@@ -202,18 +202,18 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
   }
 
   // Default flash ctrl region settings.
-  rand bit default_region_read_en;
-  rand bit default_region_program_en;
-  rand bit default_region_erase_en;
-  bit default_region_scramble_en;
-  rand bit default_region_he_en;
-  rand bit default_region_ecc_en;
+  rand mubi4_t default_region_read_en;
+  rand mubi4_t default_region_program_en;
+  rand mubi4_t default_region_erase_en;
+  mubi4_t default_region_scramble_en;
+  rand mubi4_t default_region_he_en;
+  rand mubi4_t default_region_ecc_en;
 
-  constraint default_region_read_en_c {default_region_read_en == 1;}
+  constraint default_region_read_en_c {default_region_read_en == MuBi4True;}
 
-  constraint default_region_program_en_c {default_region_program_en == 1;}
+  constraint default_region_program_en_c {default_region_program_en == MuBi4True;}
 
-  constraint default_region_erase_en_c {default_region_erase_en == 1;}
+  constraint default_region_erase_en_c {default_region_erase_en == MuBi4True;}
 
   // Bank erasability.
   rand bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en;
@@ -226,12 +226,12 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
 
   constraint default_region_he_en_c {
     default_region_he_en dist {
-      1 :/ cfg.seq_cfg.default_region_he_en_pc,
-      0 :/ (100 - cfg.seq_cfg.default_region_he_en_pc)
+      MuBi4True :/ cfg.seq_cfg.default_region_he_en_pc,
+      MuBi4False :/ (100 - cfg.seq_cfg.default_region_he_en_pc)
     };
   }
 
-  constraint default_region_ecc_en_c {default_region_ecc_en == 0;}
+  constraint default_region_ecc_en_c {default_region_ecc_en == MuBi4False;}
 
   bit [TL_AW-1:0] read_addr;
 
@@ -253,7 +253,7 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
     cfg.block_host_rd = 1;
 
     // Scramble disable
-    default_region_scramble_en = 0;
+    default_region_scramble_en = MuBi4False;
 
     //Enable Bank erase
     flash_ctrl_bank_erase_cfg(.bank_erase_en(bank_erase_en));

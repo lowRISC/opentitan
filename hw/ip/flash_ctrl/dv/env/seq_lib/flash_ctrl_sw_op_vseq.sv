@@ -57,9 +57,9 @@ class flash_ctrl_sw_op_vseq extends flash_ctrl_base_vseq;
 
     logic                 [TL_DW-1:0] rdata;
     logic                 [TL_DW-1:0] exp_data [$];
-    bit                               default_region_read_en;
-    bit                               default_region_program_en;
-    bit                               default_region_erase_en;
+    mubi4_t                           default_region_read_en;
+    mubi4_t                           default_region_program_en;
+    mubi4_t                           default_region_erase_en;
 
     // Configure the FLASH Controller
 
@@ -67,17 +67,17 @@ class flash_ctrl_sw_op_vseq extends flash_ctrl_base_vseq;
     flash_mp_region_cfg_t             mp_regions                [flash_ctrl_pkg::MpRegions];
 
     foreach (mp_regions[i]) begin
-      mp_regions[i].en         = en_mp_regions[i];
-      mp_regions[i].read_en    = 1;
-      mp_regions[i].program_en = 1;
-      mp_regions[i].erase_en   = 1;
-      mp_regions[i].start_page = 0;
-      mp_regions[i].num_pages  = 1;
+      mp_regions[i].en         = mubi4_bool_to_mubi(en_mp_regions[i]);
+      mp_regions[i].read_en    = MuBi4True;
+      mp_regions[i].program_en = MuBi4True;
+      mp_regions[i].erase_en   = MuBi4True;
+      mp_regions[i].start_page = MuBi4False;
+      mp_regions[i].num_pages  = MuBi4True;
     end
 
-    default_region_read_en    = 1'b1;
-    default_region_program_en = 1'b1;
-    default_region_erase_en   = 1'b1;
+    default_region_read_en    = MuBi4True;
+    default_region_program_en = MuBi4True;
+    default_region_erase_en   = MuBi4True;
 
     // Configure the flash based on the given settings
     foreach (mp_regions[i]) begin

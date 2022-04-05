@@ -168,13 +168,13 @@ class flash_ctrl_hw_rma_vseq extends flash_ctrl_base_vseq;
 
     flash_mp_region_cfg_t mp_regions [flash_ctrl_pkg::MpRegions];
     bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en;
-    bit default_region_read_en;
-    bit default_region_program_en;
-    bit default_region_erase_en;
+    mubi4_t default_region_read_en;
+    mubi4_t default_region_program_en;
+    mubi4_t default_region_erase_en;
 
     // No Protection Regions
     foreach (mp_regions[i]) begin
-      mp_regions[i].en = 0;
+      mp_regions[i].en = MuBi4False;
     end
 
     // Configure MP Regions
