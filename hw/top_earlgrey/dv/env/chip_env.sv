@@ -46,6 +46,11 @@ class chip_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get rst_n_mon_vif from uvm_config_db")
     end
 
+    if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "cpu_clk_rst_vif",
+                                                 cfg.cpu_clk_rst_vif)) begin
+      `uvm_fatal(`gfn, "failed to get cpu_clk_rst_vif from uvm_config_db")
+    end
+
     for (chip_mem_e mem = mem.first(), int i = 0; i < mem.num(); mem = mem.next(), i++) begin
       string inst = $sformatf("mem_bkdr_util[%0s]", mem.name());
       bit is_invalid;

@@ -69,6 +69,7 @@ class csr_base_seq extends uvm_reg_sequence #(uvm_sequence #(uvm_reg_item));
       models[i].get_registers(all_csrs);
     end
 
+    void'($value$plusargs("num_test_csrs=%0d", num_test_csrs));
     if (num_test_csrs != 0) begin
       num_csr_chunks = all_csrs.size / num_test_csrs + 1;
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(test_csr_chunk,
