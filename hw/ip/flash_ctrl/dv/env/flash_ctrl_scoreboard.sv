@@ -490,8 +490,8 @@ class flash_ctrl_scoreboard #(
               csr_rd(.ptr(ral.mp_region_cfg_shadowed[i]), .value(data), .backdoor(1'b1));
               en = get_field_val(ral.mp_region_cfg_shadowed[i].en, data);
               erase_en = get_field_val(ral.mp_region_cfg_shadowed[i].erase_en, data);
-              base = get_field_val(ral.mp_region_cfg_shadowed[i].base, data);
-              size = get_field_val(ral.mp_region_cfg_shadowed[i].size, data);
+              base = get_field_val(ral.mp_region_shadowed[i].base, data);
+              size = get_field_val(ral.mp_region_shadowed[i].size, data);
               if (in_erase_addr
                   inside {[base*BytesPerPage:base*BytesPerPage+size*BytesPerPage]}) begin
                 if (en) begin

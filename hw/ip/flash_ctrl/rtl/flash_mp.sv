@@ -54,6 +54,8 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   input erase_done_i
 );
 
+  import prim_mubi_pkg::mubi4_test_true_strict;
+
   // Total number of regions including default region
   localparam int TotalRegions = MpRegions+1;
 
@@ -177,14 +179,28 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   end
 
   logic data_en;
-  assign data_en          = data_part_sel             & data_region_cfg.en.q;
-  assign data_rd_en       = data_en & rd_i            & data_region_cfg.rd_en.q;
-  assign data_prog_en     = data_en & prog_i          & data_region_cfg.prog_en.q;
-  assign data_pg_erase_en = data_en & pg_erase_i      & data_region_cfg.erase_en.q;
+  assign data_en          = data_part_sel &
+                            mubi4_test_true_strict(data_region_cfg.en);
+
+  assign data_rd_en       = data_en & rd_i &
+                            mubi4_test_true_strict(data_region_cfg.rd_en);
+
+  assign data_prog_en     = data_en & prog_i &
+                            mubi4_test_true_strict(data_region_cfg.prog_en);
+
+  assign data_pg_erase_en = data_en & pg_erase_i &
+                            mubi4_test_true_strict(data_region_cfg.erase_en);
+
   assign data_bk_erase_en = bk_erase_i                & |bk_erase_en;
-  assign data_scramble_en = data_en & (rd_i | prog_i) & data_region_cfg.scramble_en.q;
-  assign data_ecc_en      = data_en & (rd_i | prog_i) & data_region_cfg.ecc_en.q;
-  assign data_he_en       = data_en &                   data_region_cfg.he_en.q;
+
+  assign data_scramble_en = data_en & (rd_i | prog_i) &
+                            mubi4_test_true_strict(data_region_cfg.scramble_en);
+
+  assign data_ecc_en      = data_en & (rd_i | prog_i) &
+                            mubi4_test_true_strict(data_region_cfg.ecc_en);
+
+  assign data_he_en       = data_en &
+                            mubi4_test_true_strict(data_region_cfg.he_en);
 
   assign invalid_data_txn = req_i & data_part_sel &
                             ~(data_rd_en |
@@ -231,15 +247,17 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   assign page_cfg = hw_sel ? hw_page_cfg : info_page_cfgs_i[bank_addr][info_sel_i][info_page_addr];
 
   // final operation
-  assign info_en          = info_part_sel             & page_cfg.en.q;
-  assign info_rd_en       = info_en & rd_i            & page_cfg.rd_en.q;
-  assign info_prog_en     = info_en & prog_i          & page_cfg.prog_en.q;
-  assign info_pg_erase_en = info_en & pg_erase_i      & page_cfg.erase_en.q;
+  assign info_en          = info_part_sel             & mubi4_test_true_strict(page_cfg.en);
+  assign info_rd_en       = info_en & rd_i            & mubi4_test_true_strict(page_cfg.rd_en);
+  assign info_prog_en     = info_en & prog_i          & mubi4_test_true_strict(page_cfg.prog_en);
+  assign info_pg_erase_en = info_en & pg_erase_i      & mubi4_test_true_strict(page_cfg.erase_en);
   // when info is selected for bank erase, the page configuration does not matter
   assign info_bk_erase_en = info_part_sel & bk_erase_i & |bk_erase_en;
-  assign info_scramble_en = info_en & (rd_i | prog_i) & page_cfg.scramble_en.q;
-  assign info_ecc_en      = info_en & (rd_i | prog_i) & page_cfg.ecc_en.q;
-  assign info_he_en       = info_en &                   page_cfg.he_en.q;
+  assign info_scramble_en = info_en & (rd_i | prog_i) &
+                            mubi4_test_true_strict(page_cfg.scramble_en);
+
+  assign info_ecc_en      = info_en & (rd_i | prog_i) & mubi4_test_true_strict(page_cfg.ecc_en);
+  assign info_he_en       = info_en &                   mubi4_test_true_strict(page_cfg.he_en);
 
   // check for invalid transactions
   assign invalid_info_txn = req_i & info_part_sel &

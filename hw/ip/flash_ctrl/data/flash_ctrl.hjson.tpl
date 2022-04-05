@@ -6,6 +6,8 @@
   page_width = (cfg.pages_per_bank-1).bit_length()
   bank_width = (cfg.banks-1).bit_length()
   total_pages = cfg.banks * cfg.pages_per_bank
+  page_idx_width = (total_pages-1).bit_length()
+  page_num_width = total_pages.bit_length()
   bytes_per_page = cfg.words_per_page * cfg.word_bytes
   total_byte_width = int(total_pages*bytes_per_page-1).bit_length()
   info_type_width = (cfg.info_types-1).bit_length()
@@ -786,135 +788,163 @@
 
       { multireg: {
           cname: "FLASH_CTRL",
-          name: "MP_REGION_CFG_SHADOWED",
+          name: "MP_REGION_CFG",
           desc: "Memory property configuration for data partition",
           count: "NumRegions",
           swaccess: "rw",
           hwaccess: "hro",
           regwen: "REGION_CFG_REGWEN",
           regwen_multi: true,
-          shadowed: "true",
           update_err_alert: "recov_err",
           storage_err_alert: "fatal_err",
           fields: [
-              { bits: "0",
+              { bits: "3:0",
                 name: "EN",
+                mubi: true,
                 desc: '''
                   Region enabled, following fields apply
                 ''',
-                resval: "0"
+                resval: false
               },
-              { bits: "1",
+              { bits: "7:4",
                 name: "RD_EN",
+                mubi: true,
                 desc: '''
                   Region can be read
                 ''',
-                resval: "0"
+                resval: false
               },
-              { bits: "2",
+              { bits: "11:8",
                 name: "PROG_EN",
+                mubi: true,
                 desc: '''
                   Region can be programmed
                 ''',
-                resval: "0"
+                resval: false
               }
-              { bits: "3",
+              { bits: "15:12",
                 name: "ERASE_EN",
+                mubi: true,
                 desc: '''
                   Region can be erased
                 ''',
-                resval: "0"
+                resval: false
               }
-              { bits: "4",
+              { bits: "19:16",
                 name: "SCRAMBLE_EN",
+                mubi: true,
                 desc: '''
                   Region is scramble enabled.
                 ''',
-                resval: "0"
+                resval: false
               }
-              { bits: "5",
+              { bits: "23:20",
                 name: "ECC_EN",
+                mubi: true,
                 desc: '''
                   Region is ECC enabled (both integrity and reliability ECC).
                 ''',
-                resval: "0"
+                resval: false
               }
-              { bits: "6",
+              { bits: "27:24",
                 name: "HE_EN",
+                mubi: true,
                 desc: '''
                   Region is high endurance enabled.
                 ''',
-                resval: "0"
+                resval: false
               }
-              { bits: "${8 + bank_width + page_width - 1}:8",
-                name: "BASE",
-                desc: '''
-                  Region base page. Note the granularity is page, not byte or word
-                ''',
-                resval: "0"
-              },
-              { bits: "${8 + 2*bank_width + 2*page_width}:${8 + bank_width + page_width}",
-                name: "SIZE",
-                desc: '''
-                  Region size in number of pages
-                ''',
-                resval: "0"
-              },
+          ],
+        },
+      },
+
+      { multireg: {
+          cname: "FLASH_CTRL",
+          name: "MP_REGION",
+          desc: "Memory base and size configuration for data partition",
+          count: "NumRegions",
+          swaccess: "rw",
+          hwaccess: "hro",
+          regwen: "REGION_CFG_REGWEN",
+          regwen_multi: true,
+          update_err_alert: "recov_err",
+          storage_err_alert: "fatal_err",
+          fields: [
+            { bits: "${page_idx_width-1}:0",
+              name: "BASE",
+              desc: '''
+                Region base page. Note the granularity is page, not byte or word
+              ''',
+              resval: "0"
+            },
+            { bits: "${page_num_width + page_idx_width - 1}:${page_idx_width}",
+              name: "SIZE",
+              desc: '''
+                Region size in number of pages.
+                For example, if base is 0 and size is 1, then the region is defined by page 0.
+                If base is 0 and size is 2, then the region is defined by pages 0 and 1.
+              ''',
+              resval: "0"
+            },
           ],
         },
       },
 
       // Default region properties for data partition
-      { name: "DEFAULT_REGION_SHADOWED",
+      { name: "DEFAULT_REGION",
         desc: "Default region properties",
         swaccess: "rw",
         hwaccess: "hro",
-        shadowed: "true",
         update_err_alert: "recov_err",
         storage_err_alert: "fatal_err",
-        resval: "0",
         fields: [
-          { bits: "0",
+          { bits: "3:0",
             name: "RD_EN",
+            mubi: true,
             desc: '''
               Region can be read
             ''',
-            resval: "0"
+            resval: false
           },
-          { bits: "1",
+          { bits: "7:4",
             name: "PROG_EN",
+            mubi: true,
             desc: '''
               Region can be programmed
             ''',
-            resval: "0"
+            resval: false
           }
-          { bits: "2",
+          { bits: "11:8",
             name: "ERASE_EN",
+            mubi: true,
             desc: '''
               Region can be erased
             ''',
-            resval: "0"
-          },
-          { bits: "3",
+            resval: false
+          }
+          { bits: "15:12",
             name: "SCRAMBLE_EN",
+            mubi: true,
             desc: '''
-              Region is scrambleenabled
+              Region is scramble enabled.
             ''',
-            resval: "0"
+            resval: false
           }
-          { bits: "4",
+          { bits: "19:16",
             name: "ECC_EN",
+            mubi: true,
             desc: '''
-              Region is ECC enabled (both integrity and reliability ECC)
+              Region is ECC enabled (both integrity and reliability ECC).
             ''',
-            resval: "0"
+            resval: false
           }
-          { bits: "5",
+          { bits: "23:20",
             name: "HE_EN",
+            mubi: true,
             desc: '''
-              Region is high endurance enabled
+              Region is high endurance enabled.
             ''',
-            resval: "0"
+            resval: false
           }
         ]
       },
@@ -956,7 +986,7 @@
 
       { multireg: {
           cname: "FLASH_CTRL",
-          name: "BANK${bank}_INFO${idx}_PAGE_CFG_SHADOWED",
+          name: "BANK${bank}_INFO${idx}_PAGE_CFG",
           desc: '''
                   Memory property configuration for info partition in bank${bank},
                   Unlike data partition, each page is individually configured.
@@ -966,59 +996,65 @@
           hwaccess: "hro",
           regwen: "BANK${bank}_INFO${idx}_REGWEN",
           regwen_multi: true,
-          shadowed: "true",
           update_err_alert: "recov_err",
           storage_err_alert: "fatal_err",
           fields: [
-              { bits: "0",
-                name: "EN",
-                desc: '''
-                  Region enabled, following fields apply
-                ''',
-                resval: "0"
-              },
-              { bits: "1",
-                name: "RD_EN",
-                desc: '''
-                  Region can be read
-                ''',
-                resval: "0"
-              },
-              { bits: "2",
-                name: "PROG_EN",
-                desc: '''
-                  Region can be programmed
-                ''',
-                resval: "0"
-              }
-              { bits: "3",
-                name: "ERASE_EN",
-                desc: '''
-                  Region can be erased
-                ''',
-                resval: "0"
-              }
-              { bits: "4",
-                name: "SCRAMBLE_EN",
-                desc: '''
-                  Region is scramble enabled.
-                ''',
-                resval: "0"
-              }
-              { bits: "5",
-                name: "ECC_EN",
-                desc: '''
-                  Region is ECC enabled (both integrity and reliability ECC).
-                ''',
-                resval: "0"
-              }
-              { bits: "6",
-                name: "HE_EN",
-                desc: '''
-                  Region is high endurance enabled.
-                ''',
-                resval: "0"
-              }
+            { bits: "3:0",
+              name: "EN",
+              mubi: true,
+              desc: '''
+                Region enabled, following fields apply
+              ''',
+              resval: false
+            },
+            { bits: "7:4",
+              name: "RD_EN",
+              mubi: true,
+              desc: '''
+                Region can be read
+              ''',
+              resval: false
+            },
+            { bits: "11:8",
+              name: "PROG_EN",
+              mubi: true,
+              desc: '''
+                Region can be programmed
+              ''',
+              resval: false
+            }
+            { bits: "15:12",
+              name: "ERASE_EN",
+              mubi: true,
+              desc: '''
+                Region can be erased
+              ''',
+              resval: false
+            }
+            { bits: "19:16",
+              name: "SCRAMBLE_EN",
+              mubi: true,
+              desc: '''
+                Region is scramble enabled.
+              ''',
+              resval: false
+            }
+            { bits: "23:20",
+              name: "ECC_EN",
+              mubi: true,
+              desc: '''
+                Region is ECC enabled (both integrity and reliability ECC).
+              ''',
+              resval: false
+            }
+            { bits: "27:24",
+              name: "HE_EN",
+              mubi: true,
+              desc: '''
+                Region is high endurance enabled.
+              ''',
+              resval: false
+            }
           ],
         },
       },
@@ -1344,6 +1380,7 @@
           count: "RegNumBanks",
           swaccess: "ro",
           hwaccess: "hwo",
+          compact: false,
           fields: [
             { bits: "${total_byte_width-1}:0",
               desc: "Latest single error address for this bank",
