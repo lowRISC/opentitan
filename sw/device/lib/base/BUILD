@@ -98,6 +98,7 @@ cc_test(
         ":hardened",
         "@googletest//:gtest_main",
     ],
+    tags = ["broken"],
 )
 
 cc_library(
