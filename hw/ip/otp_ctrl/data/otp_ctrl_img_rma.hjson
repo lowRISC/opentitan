@@ -52,6 +52,12 @@
                     value: "0x0",
                 },
                 {
+                    name: "ROM_BOOTSTRAP_EN",
+                    // Enable bootstrap. See `hardened_bool_t` in
+                    // sw/device/lib/base/hardened.h.
+                    value: "0x739",
+                },
+                {
                     name: "ROM_ALERT_CLASS_EN"
                     // Set the enables to kAlertEnableNone.
                     // See `alert_enable_t`
