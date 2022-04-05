@@ -29,75 +29,67 @@
   // link-time, which we also really don't want.
   .option norelax
 
-/**
- * Initial RISC-V vectored exception/interrupt handlers.
- *
- * After reset all interrupts are disabled. Only exceptions (interrupt 0) and
- * non-maskable interrupts (interrupt 31) are possible. For simplicity however
- * we just set all interrupt handlers to the same exception handler.
- *
- * Since the C runtime is not initialized immediately after reset the initial
- * interrupt vector must only call functions written in assembly. Once the C
- * runtime is intialized the interrupt vector should be replaced.
- *
- * If the hardware is operating correctly the assembly interrupt handlers
- * should never be called.
- *
- * Note that the Ibex reset handler (entry point) immediately follows this
- * interrupt vector and can be thought of as an extra entry.
- *
- * More information about Ibex's interrupts can be found here:
- *   https://ibex-core.readthedocs.io/en/latest/03_reference/exception_interrupts.html
- *
- * TODO(lowRISC/ibex#1419): if direct mode support is added to Ibex it probably
- * makes sense to use it instead of vectored mode in the mask ROM.
- */
+  /**
+   * Initial RISC-V vectored exception/interrupt handlers.
+   *
+   * After reset all interrupts are disabled. Only exceptions (interrupt 0) and
+   * non-maskable interrupts (interrupt 31) are possible. For simplicity however
+   * we just set all interrupt handlers to the same exception handler.
+   *
+   * Since the C runtime is not initialized immediately after reset the initial
+   * interrupt vector must only call functions written in assembly. Once the C
+   * runtime is intialized the interrupt vector should be replaced.
+   *
+   * If the hardware is operating correctly the assembly interrupt handlers
+   * should never be called.
+   *
+   * Note that the Ibex reset handler (entry point) immediately follows this
+   * interrupt vector and can be thought of as an extra entry.
+   *
+   * More information about Ibex's interrupts can be found here:
+   *   https://ibex-core.readthedocs.io/en/latest/03_reference/exception_interrupts.html
+   *
+   * TODO(lowRISC/ibex#1419): if direct mode support is added to Ibex it probably
+   * makes sense to use it instead of vectored mode in the mask ROM.
+   */
   .section .vectors, "ax"
   .balign 256
-  .globl _mask_rom_interrupt_vector_asm
+  .global _mask_rom_interrupt_vector_asm
   .type _mask_rom_interrupt_vector_asm, @function
 _mask_rom_interrupt_vector_asm:
-
   // Each jump instruction must be exactly 4 bytes in order to ensure that the
   // entries are properly located.
-  .extern _asm_exception_handler
   .rept 32
   j _asm_exception_handler
   .endr
 
   // Ibex Reset Handler:
   j _mask_rom_start_boot
-
-  // Set size so this vector can be disassembled.
   .size _mask_rom_interrupt_vector_asm, .-_mask_rom_interrupt_vector_asm
 
-/**
- * Post C runtime initialization RISC-V vectored exception/interrupt handlers.
- *
- * This vector is placed into the .crt section so that .vectors doesn't need to
- * be padded to a 256 byte boundary.
- */
+// -----------------------------------------------------------------------------
+
+  /**
+   * Post C runtime initialization RISC-V vectored exception/interrupt handlers.
+   *
+   * This vector is placed into the .crt section so that .vectors doesn't need to
+   * be padded to a 256 byte boundary.
+   */
   .section .crt, "ax"
   .balign 256
-  .globl _mask_rom_interrupt_vector_c
+  .global _mask_rom_interrupt_vector_c
   .type _mask_rom_interrupt_vector_c, @function
 _mask_rom_interrupt_vector_c:
-
   // Entry 0: exception handler.
-  .extern mask_rom_exception_handler
   j mask_rom_exception_handler
 
   // Entries 1-30: interrupt handlers.
-  .extern mask_rom_interrupt_handler
   .rept 30
   j mask_rom_interrupt_handler
   .endr
 
   // Entry 31: non-maskable interrupt handler.
-  .extern mask_rom_nmi_handler
   j mask_rom_nmi_handler
-
-  // Set size so this vector can be disassembled.
   .size _mask_rom_interrupt_vector_c, .-_mask_rom_interrupt_vector_c
 
   // Pop Mask ROM interrupt vector options.
@@ -105,16 +97,18 @@ _mask_rom_interrupt_vector_c:
   // Re-enable compressed instructions, linker relaxation.
   .option pop
 
-/**
- * Mask ROM shadow stack.
- */
-
-  .bss
-  .globl _mask_rom_shadow_stack
-  .align 4
+  /**
+   * Mask ROM shadow stack.
+   */
+  .section .bss
+  .balign 4
+  .global _mask_rom_shadow_stack
+  .type _mask_rom_shadow_stack, @object
 _mask_rom_shadow_stack:
-  .space 256*4
+  .zero 256 * 4
   .size _mask_rom_shadow_stack, .-_mask_rom_shadow_stack
+
+// -----------------------------------------------------------------------------
 
 /**
  * Mask ROM runtime initialization code.
@@ -130,10 +124,11 @@ _mask_rom_shadow_stack:
   .option push
   .option norelax
 
-/**
- * Entry point after reset.
- */
-  .globl _mask_rom_start_boot
+  /**
+   * Entry point after reset.
+   */
+  .balign 4
+  .global _mask_rom_start_boot
   .type _mask_rom_start_boot, @function
 _mask_rom_start_boot:
 
@@ -267,7 +262,6 @@ _mask_rom_start_boot:
   li x31, 0x0
 
   // Must be called prior to any Main RAM access.
-  .extern mask_rom_epmp_init
   call mask_rom_epmp_init
 
   /**
@@ -278,13 +272,11 @@ _mask_rom_start_boot:
   la   a0, _data_start
   la   a1, _data_end
   la   a2, _data_init_start
-  .extern crt_section_copy
   call crt_section_copy
 
   // Initialize the `.bss` section.
   la   a0, _bss_start
   la   a1, _bss_end
-  .extern crt_section_clear
   call crt_section_clear
 
   // Set up stack pointer.
@@ -322,10 +314,7 @@ _mask_rom_start_boot:
   /**
    * Jump to C Code
    */
-  .extern mask_rom_main
   tail mask_rom_main
-
-  // Set size so this function can be disassembled.
   .size _mask_rom_start_boot, .-_mask_rom_start_boot
 
   // Re-enable linker relaxation.

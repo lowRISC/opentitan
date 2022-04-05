@@ -46,7 +46,7 @@
   // is allocated executable space in ROM by the linker.
   .section .vectors, "ax"
   .balign 256
-  .globl _test_rom_interrupt_vector
+  .global _test_rom_interrupt_vector
   .type _test_rom_interrupt_vector, @function
 _test_rom_interrupt_vector:
 
@@ -68,6 +68,8 @@ _test_rom_interrupt_vector:
   // Re-enable compressed instructions, linker relaxation.
   .option pop
 
+// -----------------------------------------------------------------------------
+
 /**
  * Test ROM runtime initialization code.
  */
@@ -76,16 +78,14 @@ _test_rom_interrupt_vector:
   // is allocated executable space in ROM by the linker.
   .section .crt, "ax"
 
-  .extern crt_section_clear
-  .extern crt_section_copy
-  .extern kDeviceType
-
-/**
- * Entry point after reset. This symbol is jumped to from the handler
- * for IRQ 0x80.
- */
+  /**
+   * Entry point after reset. This symbol is jumped to from the handler
+   * for IRQ 0x80.
+   */
+  .balign 4
+  .global _reset_start
+  .type _reset_start, @function
 _reset_start:
-  .globl _reset_start
   // Clobber all writeable registers.
   li  x1, 0x0
   li  x2, 0x0
@@ -130,16 +130,20 @@ _reset_start:
   .option pop
 
   // Explicit fall-through to `_start`.
+  .size _reset_start, .-_reset_start
 
-/**
- * Callable entry point for the boot rom.
- *
- * Currently, this zeroes the `.bss` section, copies initial data to
- * `.data`, and then jumps to the program entry point.
- */
+// -----------------------------------------------------------------------------
+
+  /**
+   * Callable entry point for the boot rom.
+   *
+   * Currently, this zeroes the `.bss` section, copies initial data to
+   * `.data`, and then jumps to the program entry point.
+   */
+  .balign 4
+  .global _start
+  .type _start, @function
 _start:
-  .globl _start
-
   // Re-enable all SW gateable clocks in case the clkmgr was not reset.
   li   a0, TOP_EARLGREY_CLKMGR_AON_BASE_ADDR
   li   t0, CLKMGR_CLK_ENABLES_REG_RESVAL
@@ -247,14 +251,18 @@ _start:
 .L_wfi_loop:
   wfi
   j   .L_wfi_loop
+  .size _start, .-_start
 
-/**
- * Test ROM IRQ/exception handler; loops forever.
- */
+// -----------------------------------------------------------------------------
 
-  // Put this handler in the code section.
- .section .text
-
+  /**
+   * Test ROM IRQ/exception handler; loops forever.
+   */
+  .balign 4
+  .section .text
+  .global _test_rom_irq_handler
+  .type _test_rom_irq_handler, @function
 _test_rom_irq_handler:
   wfi
   j _test_rom_irq_handler
+  .size _test_rom_irq_handler, .-_test_rom_irq_handler

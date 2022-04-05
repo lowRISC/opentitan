@@ -18,27 +18,27 @@
   // link-time, which we also really don't want.
   .option norelax
 
-/**
- * `_interrupt_vector` is an ibex-compatible interrupt vector.
- *
- * Interrupt vectors in Ibex have 32 4-byte entries for 32 possible interrupts. The
- * vector must be 256-byte aligned, as Ibex's vectoring mechanism requires that.
- *
- * Only the following will be used by Ibex:
- * - Exception Handler (Entry 0)
- * - Machine Software Interrupt Handler (Entry 3)
- * - Machine Timer Interrupt Handler (Entry 7)
- * - Machine External Interrupt Handler (Entry 11)
- * - Vendor Interrupt Handlers (Entries 16-31)
- *
- * More information about Ibex's interrupts can be found here:
- *   https://ibex-core.readthedocs.io/en/latest/03_reference/exception_interrupts.html
- */
+  /**
+   * `_interrupt_vector` is an ibex-compatible interrupt vector.
+   *
+   * Interrupt vectors in Ibex have 32 4-byte entries for 32 possible interrupts.
+   * The vector must be 256-byte aligned, as Ibex's vectoring mechanism requires
+   * that.
+   *
+   * Only the following will be used by Ibex:
+   * - Exception Handler (Entry 0)
+   * - Machine Software Interrupt Handler (Entry 3)
+   * - Machine Timer Interrupt Handler (Entry 7)
+   * - Machine External Interrupt Handler (Entry 11)
+   * - Vendor Interrupt Handlers (Entries 16-31)
+   *
+   * More information about Ibex's interrupts can be found here:
+   *   https://ibex-core.readthedocs.io/en/latest/03_reference/exception_interrupts.html
+   */
   .balign 256
-  .globl _interrupt_vector
+  .global _interrupt_vector
   .type _interrupt_vector, @function
 _interrupt_vector:
-
   // RISC-V Standard (Vectored) Interrupt Handlers:
 
   // Exception and User Software Interrupt Handler.
@@ -83,13 +83,12 @@ _interrupt_vector:
 
   // On Ibex interrupt id 31 is for non-maskable interrupts.
   unimp
-
-  // Set size so this vector can be disassembled.
   .size _interrupt_vector, .-_interrupt_vector
 
   // Re-enable compressed instructions, linker relaxation.
   .option pop
 
+// -----------------------------------------------------------------------------
 
 /**
  * Runtime initialization code.
@@ -109,13 +108,13 @@ _interrupt_vector:
   .option push
   .option norelax
 
-/**
- * Entry point.
- */
-  .globl _start_boot
+  /**
+   * Entry point.
+   */
+  .balign 4
+  .global _start_boot
   .type _start_boot, @function
 _start_boot:
-
   /**
    * Disable Interrupts.
    *
@@ -164,7 +163,6 @@ _start_boot:
   la   a0, _data_start
   la   a1, _data_end
   la   a2, _data_init_start
-  .extern crt_section_copy
   call crt_section_copy
 
   /**
@@ -175,7 +173,6 @@ _start_boot:
    */
   la   a0, _bss_start
   la   a1, _bss_end
-  .extern crt_section_clear
   call crt_section_clear
 
   // Re-clobber all of the temporary registers.
@@ -211,8 +208,5 @@ _start_boot:
   /**
    * Jump to C Code
    */
-  .extern bare_metal_main
   tail bare_metal_main
-
-  // Set size so this function can be disassembled.
   .size _start_boot, .-_start_boot

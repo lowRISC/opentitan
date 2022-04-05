@@ -4,18 +4,15 @@
 
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"
 
-.extern pxCurrentTCB
-
 // -----------------------------------------------------------------------------
 
-/**
- * FreeRTOS, expects this function to exist and uses it to start the first task. 
- */
-.balign 4
-.global xPortStartFirstTask
-.type xPortStartFirstTask, @function
+  /**
+   * FreeRTOS, expects this function to exist and uses it to start the first task. 
+   */
+  .balign 4
+  .global xPortStartFirstTask
+  .type xPortStartFirstTask, @function
 xPortStartFirstTask:
-
   // Load the stack pointer for the current TCB (just going to clobber sp here
   // since we are setting it here anyway).
   lw  sp, pxCurrentTCB
@@ -66,75 +63,72 @@ xPortStartFirstTask:
   addi sp, sp, OTTF_CONTEXT_SIZE
 
   ret
-
-  // Set size so this function can be disassembled.
   .size xPortStartFirstTask, .-xPortStartFirstTask
 
 // -----------------------------------------------------------------------------
 
-/** 
- * The prototype for this function depends on configurations defined in
- * FreeRTOSConfig.h, and is defined in:
- * sw/vendor/freertos_freertos_kernel/include/portable.h
- * 
- * The implementation of this assembly function assumes the prototype for this
- * function looks like:
- * 
- * StackType_t *pxPortInitialiseStack(StackType_t *pxTopOfStack,
- *                                    TaskFunction_t pxCode,
- *                                    void *pvParameters);
- * 
- * TODO: add some checks to verify this is the configured prototype.
- * TODO: configure to allow use of checking for stack overflows.
- * TODO: configure return address for first (main) task.
- * 
- * As per the standard RISC-V ABI pxTopcOfStack is passed in in a0, pxCode in
- * a1, and pvParameters in a2. The new top of stack is passed out in a0.
- * 
- * The RISC-V context is saved to FreeRTOS tasks in the following stack frame,
- * where the global and thread pointers are currently assumed to be constant,
- * and therefore are not saved:
- * 
- * ---Stack Bottom---
- * ---............---
- * Offset - Reg/Value
- *     29 - mstatus
- *     28 - t6 (x31)
- *     27 - t5 (x30)
- *     26 - t4 (x29)
- *     25 - t3 (x28)
- *     24 - s11 (x27)
- *     23 - s10 (x26)
- *     22 - s9 (x25)
- *     21 - s8 (x24)
- *     20 - s7 (x23)
- *     19 - s6 (x22)
- *     18 - s5 (x21)
- *     17 - s4 (x20)
- *     16 - s3 (x19)
- *     15 - s2 (x18)
- *     14 - a7 (x17)
- *     13 - a6 (x16)
- *     12 - a5 (x15)
- *     11 - a4 (x14)
- *     10 - a3 (x13)
- *      9 - a2 (x12)
- *      8 - a1 (x11)
- *      7 - (pvParameters)
- *      6 - s1 (x9)
- *      5 - s0 (x8)
- *      4 - t2 (x7)
- *      3 - t1 (x6)
- *      2 - t0 (x5)
- *      1 - (return address for main task, 0 for now)
- *      0 - (pxCode)
- * -----Stack Top----
- */
-.balign 4
-.global pxPortInitialiseStack
-.type pxPortInitialiseStack, @function
+  /** 
+   * The prototype for this function depends on configurations defined in
+   * FreeRTOSConfig.h, and is defined in:
+   * sw/vendor/freertos_freertos_kernel/include/portable.h
+   * 
+   * The implementation of this assembly function assumes the prototype for this
+   * function looks like:
+   * 
+   * StackType_t *pxPortInitialiseStack(StackType_t *pxTopOfStack,
+   *                                    TaskFunction_t pxCode,
+   *                                    void *pvParameters);
+   * 
+   * TODO: add some checks to verify this is the configured prototype.
+   * TODO: configure to allow use of checking for stack overflows.
+   * TODO: configure return address for first (main) task.
+   * 
+   * As per the standard RISC-V ABI pxTopcOfStack is passed in in a0, pxCode in
+   * a1, and pvParameters in a2. The new top of stack is passed out in a0.
+   * 
+   * The RISC-V context is saved to FreeRTOS tasks in the following stack frame,
+   * where the global and thread pointers are currently assumed to be constant,
+   * and therefore are not saved:
+   * 
+   * ---Stack Bottom---
+   * ---............---
+   * Offset - Reg/Value
+   *     29 - mstatus
+   *     28 - t6 (x31)
+   *     27 - t5 (x30)
+   *     26 - t4 (x29)
+   *     25 - t3 (x28)
+   *     24 - s11 (x27)
+   *     23 - s10 (x26)
+   *     22 - s9 (x25)
+   *     21 - s8 (x24)
+   *     20 - s7 (x23)
+   *     19 - s6 (x22)
+   *     18 - s5 (x21)
+   *     17 - s4 (x20)
+   *     16 - s3 (x19)
+   *     15 - s2 (x18)
+   *     14 - a7 (x17)
+   *     13 - a6 (x16)
+   *     12 - a5 (x15)
+   *     11 - a4 (x14)
+   *     10 - a3 (x13)
+   *      9 - a2 (x12)
+   *      8 - a1 (x11)
+   *      7 - (pvParameters)
+   *      6 - s1 (x9)
+   *      5 - s0 (x8)
+   *      4 - t2 (x7)
+   *      3 - t1 (x6)
+   *      2 - t0 (x5)
+   *      1 - (return address for main task, 0 for now)
+   *      0 - (pxCode)
+   * -----Stack Top----
+   */
+  .balign 4
+  .global pxPortInitialiseStack
+  .type pxPortInitialiseStack, @function
 pxPortInitialiseStack:
-
   // Setup the MSTATUS register.
   csrr t0, mstatus
   // Ensure interrupts are disabled when the stack is restored within an ISR.
@@ -161,6 +155,4 @@ pxPortInitialiseStack:
   sw a1, 0(a0)
 
   ret
-
-  // Set size so this function can be disassembled.
   .size pxPortInitialiseStack, .-pxPortInitialiseStack

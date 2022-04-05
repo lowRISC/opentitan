@@ -14,13 +14,14 @@
   // is allocated executable space in ROM by the linker.
   .section .shutdown, "ax"
 
-/**
- * Exception handler that is safe to call before the C runtime has been
- * initialized. It must not use the stack or global pointer.
- *
- * The exception handler will use the reset manager to trigger a reset.
- */
-  .globl _asm_exception_handler
+  /**
+   * Exception handler that is safe to call before the C runtime has been
+   * initialized. It must not use the stack or global pointer.
+   *
+   * The exception handler will use the reset manager to trigger a reset.
+   */
+  .balign 4
+  .global _asm_exception_handler
   .type _asm_exception_handler, @function
 _asm_exception_handler:
 .L_exception_loop:
@@ -38,6 +39,4 @@ _asm_exception_handler:
 
   wfi
   j   .L_exception_loop
-
-  // Set size so this function can be disassembled.
   .size _asm_exception_handler, .-_asm_exception_handler

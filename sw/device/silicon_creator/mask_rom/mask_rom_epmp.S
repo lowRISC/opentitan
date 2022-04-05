@@ -28,24 +28,26 @@
  */
 #define NAPOT(addr, len) (((addr) >> 2) | (((len) - 1) >> 3))
 
-/**
- * The "ax" flag below is necessary to ensure that this section
- * is allocated space in ROM by the linker.
- */
-.section .crt, "ax", @progbits
+// -----------------------------------------------------------------------------
 
-/**
- * Configure the CPU's Enhanced Physical Memory Protection (ePMP) feature.
- *
- * This function follows the standard ILP32 calling convention but does not
- * require a valid stack pointer, thread pointer or global pointer.
- *
- * May clobber temporary registers (t0-t6).
- */
-mask_rom_epmp_init:
-  .globl mask_rom_epmp_init
+  /**
+   * The "ax" flag below is necessary to ensure that this section
+   * is allocated space in ROM by the linker.
+   */
+  .section .crt, "ax", @progbits
+
+  /**
+   * Configure the CPU's Enhanced Physical Memory Protection (ePMP) feature.
+   *
+   * This function follows the standard ILP32 calling convention but does not
+   * require a valid stack pointer, thread pointer or global pointer.
+   *
+   * May clobber temporary registers (t0-t6).
+   */
+  .balign 4
+  .global mask_rom_epmp_init
   .type mask_rom_epmp_init, @function
-
+mask_rom_epmp_init:
   // Pre-encoded addresses defined in linker script.
   .extern _epmp_text_tor_lo
   .extern _epmp_text_tor_hi
@@ -104,6 +106,4 @@ mask_rom_epmp_init:
   csrw pmpcfg3, t3
 
   ret
-
-  // Set function size to allow disassembly.
   .size mask_rom_epmp_init, .-mask_rom_epmp_init
