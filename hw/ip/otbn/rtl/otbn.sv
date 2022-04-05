@@ -755,6 +755,8 @@ module otbn
   assign hw2reg.err_bits.illegal_insn.d = err_bits_q.illegal_insn;
   assign hw2reg.err_bits.loop.d = err_bits_q.loop;
   assign hw2reg.err_bits.key_invalid.d = err_bits_q.key_invalid;
+  assign hw2reg.err_bits.rnd_rep_chk_fail.d = err_bits_q.rnd_rep_chk_fail;
+  assign hw2reg.err_bits.rnd_fips_chk_fail.d = err_bits_q.rnd_fips_chk_fail;
   assign hw2reg.err_bits.imem_intg_violation.d = err_bits_q.imem_intg_violation;
   assign hw2reg.err_bits.dmem_intg_violation.d = err_bits_q.dmem_intg_violation;
   assign hw2reg.err_bits.reg_intg_violation.d = err_bits_q.reg_intg_violation;
@@ -778,6 +780,8 @@ module otbn
                                     reg2hw.err_bits.illegal_insn,
                                     reg2hw.err_bits.loop,
                                     reg2hw.err_bits.key_invalid,
+                                    reg2hw.err_bits.rnd_rep_chk_fail,
+                                    reg2hw.err_bits.rnd_fips_chk_fail,
                                     reg2hw.err_bits.imem_intg_violation,
                                     reg2hw.err_bits.dmem_intg_violation,
                                     reg2hw.err_bits.reg_intg_violation,
@@ -871,6 +875,7 @@ module otbn
   // EDN Connections ============================================================
   logic edn_rnd_req, edn_rnd_ack;
   logic [EdnDataWidth-1:0] edn_rnd_data;
+  logic edn_rnd_fips, edn_rnd_err;
 
   logic edn_urnd_req, edn_urnd_ack;
   logic [EdnDataWidth-1:0] edn_urnd_data;
@@ -888,8 +893,8 @@ module otbn
     .req_i      ( edn_rnd_req  ),
     .ack_o      ( edn_rnd_ack  ),
     .data_o     ( edn_rnd_data ),
-    .fips_o     (              ), // unused
-    .err_o      (              ),
+    .fips_o     ( edn_rnd_fips ),
+    .err_o      ( edn_rnd_err  ),
     .clk_edn_i,
     .rst_edn_ni,
     .edn_o      ( edn_rnd_o ),
@@ -960,6 +965,8 @@ module otbn
     .edn_rnd_req_o               (edn_rnd_req),
     .edn_rnd_ack_i               (edn_rnd_ack),
     .edn_rnd_data_i              (edn_rnd_data),
+    .edn_rnd_fips_i              (edn_rnd_fips),
+    .edn_rnd_err_i               (edn_rnd_err),
 
     .edn_urnd_req_o              (edn_urnd_req),
     .edn_urnd_ack_i              (edn_urnd_ack),
@@ -1010,6 +1017,8 @@ module otbn
     reg_intg_violation:   core_err_bits.reg_intg_violation,
     dmem_intg_violation:  core_err_bits.dmem_intg_violation,
     imem_intg_violation:  core_err_bits.imem_intg_violation,
+    rnd_fips_chk_fail:    core_err_bits.rnd_fips_chk_fail,
+    rnd_rep_chk_fail:     core_err_bits.rnd_rep_chk_fail,
     key_invalid:          core_err_bits.key_invalid,
     loop:                 core_err_bits.loop,
     illegal_insn:         core_err_bits.illegal_insn,

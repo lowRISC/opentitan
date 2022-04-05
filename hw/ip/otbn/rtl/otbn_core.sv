@@ -60,6 +60,8 @@ module otbn_core
   output logic                    edn_rnd_req_o,
   input  logic                    edn_rnd_ack_i,
   input  logic [EdnDataWidth-1:0] edn_rnd_data_i,
+  input  logic                    edn_rnd_fips_i,
+  input  logic                    edn_rnd_err_i,
 
   output logic                    edn_urnd_req_o,
   input  logic                    edn_urnd_ack_i,
@@ -74,7 +76,8 @@ module otbn_core
   output logic [127:0] dmem_sec_wipe_urnd_key_o, // URND bits to give temporary dmem scramble key
   output logic [127:0] imem_sec_wipe_urnd_key_o, // URND bits to give temporary imem scramble key
 
-  // Indicates an incoming escalation from some fatal error at the level above.
+  // Indicates an incoming escalation from some fatal error at the level above. The core needs to
+  // halt and then enter a locked state.
   input prim_mubi_pkg::mubi4_t escalate_en_i,
 
   // When set software errors become fatal errors.
@@ -199,6 +202,8 @@ module otbn_core
   logic            rnd_prefetch_req;
   logic            rnd_valid;
   logic [WLEN-1:0] rnd_data;
+  logic            rnd_rep_err;
+  logic            rnd_fips_err;
 
   logic            urnd_reseed_req;
   logic            urnd_reseed_busy;
@@ -471,9 +476,12 @@ module otbn_core
     .ispr_rdata_i       (ispr_rdata),
     .ispr_rd_en_o       (ispr_rd_en),
 
+    // RND interface
     .rnd_req_o         (rnd_req),
     .rnd_prefetch_req_o(rnd_prefetch_req),
     .rnd_valid_i       (rnd_valid),
+    .rnd_rep_err_i     (rnd_rep_err),
+    .rnd_fips_err_i    (rnd_fips_err),
 
     // Secure wipe
     .secure_wipe_running_i(secure_wipe_running),
@@ -518,6 +526,8 @@ module otbn_core
                            rf_base_rd_data_err},
     dmem_intg_violation: lsu_rdata_err,
     imem_intg_violation: insn_fetch_err,
+    rnd_fips_chk_fail:   controller_err_bits.rnd_fips_chk_fail,
+    rnd_rep_chk_fail:    controller_err_bits.rnd_rep_chk_fail,
     key_invalid:         controller_err_bits.key_invalid,
     loop:                controller_err_bits.loop,
     illegal_insn:        controller_err_bits.illegal_insn,
@@ -781,6 +791,8 @@ module otbn_core
     .rnd_prefetch_req_i(rnd_prefetch_req),
     .rnd_valid_o       (rnd_valid),
     .rnd_data_o        (rnd_data),
+    .rnd_rep_err_o     (rnd_rep_err),
+    .rnd_fips_err_o    (rnd_fips_err),
 
     .urnd_reseed_req_i (urnd_reseed_req),
     .urnd_reseed_busy_o(urnd_reseed_busy),
@@ -791,6 +803,8 @@ module otbn_core
     .edn_rnd_req_o,
     .edn_rnd_ack_i,
     .edn_rnd_data_i,
+    .edn_rnd_fips_i,
+    .edn_rnd_err_i,
 
     .edn_urnd_req_o,
     .edn_urnd_ack_i,

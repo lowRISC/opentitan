@@ -100,6 +100,8 @@ module otbn_top_sim (
     .edn_rnd_req_o               ( edn_rnd_req                ),
     .edn_rnd_ack_i               ( edn_rnd_ack                ),
     .edn_rnd_data_i              ( edn_rnd_data               ),
+    .edn_rnd_fips_i              ( 1'b1                       ),
+    .edn_rnd_err_i               ( 1'b0                       ),
 
     .edn_urnd_req_o              ( edn_urnd_req               ),
     .edn_urnd_ack_i              ( edn_urnd_ack               ),
@@ -178,6 +180,8 @@ module otbn_top_sim (
     reg_intg_violation:   core_err_bits.reg_intg_violation,
     dmem_intg_violation:  core_err_bits.dmem_intg_violation,
     imem_intg_violation:  core_err_bits.imem_intg_violation,
+    rnd_fips_chk_fail:    core_err_bits.rnd_fips_chk_fail,
+    rnd_rep_chk_fail:     core_err_bits.rnd_rep_chk_fail,
     key_invalid:          core_err_bits.key_invalid,
     loop:                 core_err_bits.loop,
     illegal_insn:         core_err_bits.illegal_insn,

@@ -127,9 +127,12 @@ module otbn_controller
   input  logic [WLEN-1:0]             ispr_rdata_i,
   output logic                        ispr_rd_en_o,
 
+  // RND interface
   output logic rnd_req_o,
   output logic rnd_prefetch_req_o,
   input  logic rnd_valid_i,
+  input  logic rnd_rep_err_i,
+  input  logic rnd_fips_err_i,
 
   // Secure Wipe
   input  logic secure_wipe_running_i,
@@ -166,6 +169,7 @@ module otbn_controller
   logic illegal_insn_err, bad_data_addr_err, call_stack_err, bad_insn_addr_err;
 
   logic err;
+  logic recoverable_err;
   logic software_err;
   logic non_insn_addr_software_err;
   logic fatal_err;
@@ -481,6 +485,8 @@ module otbn_controller
     fatal_software:     fatal_software_err,
     bad_internal_state: bad_internal_state_err,
     reg_intg_violation: reg_intg_violation_err,
+    rnd_fips_chk_fail:  rnd_fips_err_i,
+    rnd_rep_chk_fail:   rnd_rep_err_i,
     key_invalid:        key_invalid_err,
     loop:               loop_err,
     illegal_insn:       illegal_insn_err,
@@ -504,15 +510,17 @@ module otbn_controller
 
   assign software_err = non_insn_addr_software_err | bad_insn_addr_err;
 
+  assign recoverable_err = rnd_rep_err_i | rnd_fips_err_i;
+
   assign fatal_err = |{fatal_software_err,
                        bad_internal_state_err,
                        reg_intg_violation_err,
                        mubi4_test_true_loose(escalate_en_i)};
 
-  assign recoverable_err_o = software_err & ~software_errs_fatal_i;
+  assign recoverable_err_o = recoverable_err | (software_err & ~software_errs_fatal_i);
   assign mems_sec_wipe_o   = (state_d == OtbnStateLocked) & (state_q != OtbnStateLocked);
 
-  assign err = software_err | fatal_err;
+  assign err = software_err | recoverable_err | fatal_err;
 
   // Instructions must not execute if there is an error
   assign insn_executing = insn_valid_i & ~err;
@@ -1189,7 +1197,8 @@ module otbn_controller
                                             dmem_addr_unaligned_base);
 
   assign rnd_req_raw = insn_valid_i & ispr_rd_insn & (ispr_addr_o == IsprRnd);
-  assign rnd_req_o = rnd_req_raw & insn_executing;
+  // Don't factor rnd_rep/fips_err_i into rnd_req_o. This would lead to a combo loop.
+  assign rnd_req_o = rnd_req_raw & insn_valid_i & ~(software_err | fatal_err);
 
   assign rnd_prefetch_req_o = insn_executing & ispr_wr_insn &
       (insn_dec_shared_i.subset == InsnSubsetBase) & (csr_addr == CsrRndPrefetch);

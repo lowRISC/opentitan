@@ -166,6 +166,12 @@
     { name: "CTRL.REDUN",
       desc: "Check pre-decoded control used for blanking matches seperately decoded control from main decoder."
     }
+    { name: "RND.BUS.CONSISTENCY",
+      desc: "Comparison on successive bus values received over the EDN RND interface."
+    }
+    { name: "RND.RNG.DIGEST",
+      desc: "Checking that the random numbers received over the EDN RND interface have not been generated from entropy that failed the FIPS health checks in the entropy source."
+    }
   ]
 
   regwidth: "32"
@@ -383,6 +389,18 @@
           name: "key_invalid"
           resval: 0,
           desc: "A `KEY_INVALID` error was observed."
+        }
+
+        // Recoverable errors
+        { bits: "6",
+          name: "rnd_rep_chk_fail"
+          resval: 0,
+          desc: "An `RND_REP_CHK_FAIL` error was observed."
+        }
+        { bits: "7",
+          name: "rnd_fips_chk_fail"
+          resval: 0,
+          desc: "An `RND_FIPS_CHK_FAIL` error was observed."
         }
 
         // Fatal errors. Keep in sync with list in FATAL_ALERT_CAUSE.

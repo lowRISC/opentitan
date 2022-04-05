@@ -33,6 +33,8 @@ module otbn_rnd import otbn_pkg::*;
   input  logic            rnd_prefetch_req_i,
   output logic            rnd_valid_o,
   output logic [WLEN-1:0] rnd_data_o,
+  output logic            rnd_rep_err_o,
+  output logic            rnd_fips_err_o,
 
   // Request URND PRNG reseed from the EDN
   input  logic            urnd_reseed_req_i,
@@ -50,6 +52,8 @@ module otbn_rnd import otbn_pkg::*;
   output logic                    edn_rnd_req_o,
   input  logic                    edn_rnd_ack_i,
   input  logic [EdnDataWidth-1:0] edn_rnd_data_i,
+  input  logic                    edn_rnd_fips_i,
+  input  logic                    edn_rnd_err_i,
 
   output logic                    edn_urnd_req_o,
   input  logic                    edn_urnd_ack_i,
@@ -58,6 +62,8 @@ module otbn_rnd import otbn_pkg::*;
 
   logic rnd_valid_q, rnd_valid_d;
   logic [WLEN-1:0] rnd_data_q, rnd_data_d;
+  logic rnd_fips_d, rnd_fips_q;
+  logic rnd_err_d, rnd_err_q;
   logic rnd_data_en;
   logic rnd_req_complete;
   logic edn_rnd_req_complete;
@@ -84,6 +90,8 @@ module otbn_rnd import otbn_pkg::*;
       rnd_wipe_i || rnd_req_complete                 ? 1'b0 :
       edn_rnd_req_complete && !edn_rnd_data_ignore_q ? 1'b1 : rnd_valid_q;
   assign rnd_data_d = edn_rnd_data_i;
+  assign rnd_fips_d = edn_rnd_fips_i;
+  assign rnd_err_d = edn_rnd_err_i;
 
   // Start an EDN request when there is a prefetch or an attempt at reading RND when RND data is
   // not available. Signalling `edn_rnd_req_start` whilst there is an outstanding request is
@@ -119,6 +127,8 @@ module otbn_rnd import otbn_pkg::*;
   always_ff @(posedge clk_i) begin
     if (rnd_data_en) begin
       rnd_data_q <= rnd_data_d;
+      rnd_fips_q <= rnd_fips_d;
+      rnd_err_q  <= rnd_err_d;
     end
   end
 
@@ -140,6 +150,12 @@ module otbn_rnd import otbn_pkg::*;
 
   assign rnd_valid_o = rnd_valid_q;
   assign rnd_data_o  = rnd_data_q;
+
+  // SEC_CM: RND.BUS.CONSISTENCY
+  // SEC_CM: RND.RNG.DIGEST
+  // Detect and forward RND error conditions.
+  assign rnd_rep_err_o = rnd_req_complete & rnd_err_q;
+  assign rnd_fips_err_o = rnd_req_complete & ~rnd_fips_q;
 
   /////////////////////////
   // PRNG Implementation //
