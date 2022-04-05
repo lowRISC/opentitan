@@ -8,7 +8,33 @@
 # This doesn't install dependencies, but should otherwise behave the
 # same as what CI would do on a pull request
 
-bazel query "rdeps(//..., //hw:verilator)" | \
-            sed -e 's/^/-/' | \
-            xargs bazel test --nobuild_tests_only --test_tag_filters=-cw310,-verilator -- //...
+set -e -x
+
+mkdir -p bazel-results
+
+# This queries for things that depend on //hw:verilator to exclude them
+bazel query \
+    'rdeps(//..., //hw:verilator)' \
+    | sed -e 's/^/-/' \
+    > bazel-results/slow_tests.txt
+
+run_tests() {
+    cat bazel-results/slow_tests.txt \
+        | xargs \
+            bazel test \
+            --keep_going \
+            --nobuild_tests_only \
+            --test_tag_filters=-broken,-cw310,-verilator \
+            -- //...
+}
+
+build_cw310_targets() {
+    bazel build \
+        --keep_going \
+        --build_tag_filters=cw310 \
+        //...
+}
+
+run_tests
+build_cw310_targets
 
