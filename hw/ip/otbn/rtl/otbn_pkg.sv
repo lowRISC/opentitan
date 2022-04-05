@@ -122,6 +122,14 @@ package otbn_pkg;
     logic bad_data_addr;
   } core_err_bits_t;
 
+  // The error signals that are generated outside of otbn_core
+  typedef struct packed {
+    logic lifecycle_escalation;
+    logic illegal_bus_access;
+    logic bad_internal_state;
+    logic bus_intg_violation;
+  } non_core_err_bits_t;
+
   // Constants =====================================================================================
 
   typedef enum logic {
