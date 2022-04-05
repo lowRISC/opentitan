@@ -51,8 +51,6 @@
       desc: '''
             Verify genbits input is transferred to endpoint(s) as predicted.
             Verify fips bit(s) are properly transferred to endpoint.
-            // TODO: Implement below in vseq
-            Endpoints request non-multiple of ENDPOINT_BUS_SIZE/GENBITS_BUS_SIZE.
             '''
       milestone: V2
       tests: ["edn_genbits"]
