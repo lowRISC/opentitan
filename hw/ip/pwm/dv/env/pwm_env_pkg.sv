@@ -28,8 +28,9 @@ package pwm_env_pkg;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
   parameter bit [31:0] MAX_32 = 32'hFFFF_FFFF;
   parameter bit [15:0] MAX_16 = 16'hFFFF;
-  parameter uint MIN_NUM_CYCLES = 10000;
-  parameter uint MAX_NUM_CYCLES = 50000;
+  parameter bit [26:0] MAX_27 = 27'h7FF_FFFF;
+  parameter uint MIN_NUM_CYCLES = 100000;
+  parameter uint MAX_NUM_CYCLES = 500000;
 
   // datatype
   typedef enum bit [1:0] {
