@@ -73,6 +73,7 @@ module tb;
   assign otp_ctrl_if.lc_prog_err = lc_prog_if.d_data;
 
   // Assign to otp_ctrl_if for assertion checks.
+  assign otp_ctrl_if.lc_prog_ack = lc_prog_if.ack;
   assign otp_ctrl_if.flash_acks = flash_data_if.ack;
   assign otp_ctrl_if.otbn_ack  = otbn_if.ack;
 
