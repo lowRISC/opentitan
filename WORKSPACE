@@ -13,7 +13,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 ################################################################################
 git_repository(
     name = "bazel_embedded",
-    commit = "b4faaec60b07b11fe3d1fc6b40f22baf31a54690",
+    commit = "fe65a8aca35ae0bae563efd6a29cc14fcb15140d",
     remote = "https://github.com/lowRISC/bazel-embedded.git",
     shallow_since = "1639417565 -0800",
 )

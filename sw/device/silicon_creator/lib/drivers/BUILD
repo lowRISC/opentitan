@@ -182,6 +182,9 @@ opentitan_functest(
     # FIXME: currently, the FPGA doesn't wake up from low-power mode.
     # For now, run the test only in verilator.
     targets = ["verilator"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         ":keymgr",
         ":lifecycle",
@@ -354,6 +357,9 @@ cc_test(
 opentitan_functest(
     name = "retention_sram_functest",
     srcs = ["retention_sram_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         ":retention_sram",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
