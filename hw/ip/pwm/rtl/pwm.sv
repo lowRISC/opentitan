@@ -83,6 +83,6 @@ module pwm
   `ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
 
   `ASSERT_KNOWN(CioPWMKnownO_A, cio_pwm_o)
-  `ASSERT_KNOWN(CioPWMEnKnownO_A, cio_pwm_en_o)
+  `ASSERT(CioPWMEnIsOneO_A, (&cio_pwm_en_o) === 1'b1)
 
 endmodule : pwm
