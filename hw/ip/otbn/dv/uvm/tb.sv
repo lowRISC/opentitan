@@ -140,7 +140,9 @@ module tb;
     .clk_edn_i (edn_clk),
     .rst_edn_ni(edn_rst_n),
     .edn_rnd_o (edn_if[0].req),
-    .edn_rnd_i ({edn_if[0].ack, edn_if[0].d_data}),
+    // For now, we force the FIPS bit to 1 as the model cannot yet deal with RND FIPS check
+    // failures. For details, see https://github.com/lowRISC/opentitan/issues/11915
+    .edn_rnd_i ({edn_if[0].ack, 1'b1, edn_if[0].d_data[31:0]}),
 
     .edn_urnd_o(edn_if[1].req),
     .edn_urnd_i({edn_if[1].ack, edn_if[1].d_data}),
@@ -236,7 +238,7 @@ module tb;
 
     .err_bits_o   (model_if.err_bits),
 
-    .edn_rnd_i           ({edn_if[0].ack, edn_if[0].d_data}),
+    .edn_rnd_i           ({edn_if[0].ack, 1'b1, edn_if[0].d_data[31:0]}),
     .edn_rnd_o           (edn_rnd_req_model),
     .edn_rnd_cdc_done_i  (edn_rnd_cdc_done),
 

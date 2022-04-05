@@ -89,5 +89,17 @@
       milestone: V2S
       tests: []
     }
+    {
+      name: sec_cm_rnd_bus_consistency
+      desc: "Verify the countermeasure(s) RND.BUS.CONSISTENCY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_rnd_rng_digest
+      desc: "Verify the countermeasure(s) RND.RNG.DIGEST."
+      milestone: V2S
+      tests: []
+    }
   ]
 }
