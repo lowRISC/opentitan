@@ -67,6 +67,11 @@
       name: pattgen_error
       uvm_test_seq: pattgen_error_vseq
     }
+
+    {
+      name: cnt_rollover
+      uvm_test_seq: pattgen_cnt_rollover_vseq
+    }
   ]
 
   // List of regressions.
