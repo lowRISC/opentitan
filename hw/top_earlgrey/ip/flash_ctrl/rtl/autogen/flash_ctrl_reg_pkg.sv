@@ -173,198 +173,201 @@ package flash_ctrl_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } rd_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } prog_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } erase_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } scramble_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } ecc_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } he_en;
+  } flash_ctrl_reg2hw_mp_region_cfg_mreg_t;
+
+  typedef struct packed {
     struct packed {
       logic [8:0]  q;
     } base;
     struct packed {
       logic [9:0] q;
     } size;
-  } flash_ctrl_reg2hw_mp_region_cfg_shadowed_mreg_t;
+  } flash_ctrl_reg2hw_mp_region_mreg_t;
 
   typedef struct packed {
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } rd_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } prog_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } erase_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } scramble_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } ecc_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } he_en;
-  } flash_ctrl_reg2hw_default_region_shadowed_reg_t;
+  } flash_ctrl_reg2hw_default_region_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } rd_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } prog_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } erase_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } scramble_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } ecc_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } he_en;
-  } flash_ctrl_reg2hw_bank0_info0_page_cfg_shadowed_mreg_t;
+  } flash_ctrl_reg2hw_bank0_info0_page_cfg_mreg_t;
 
   typedef struct packed {
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } rd_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } prog_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } erase_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } scramble_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } ecc_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } he_en;
-  } flash_ctrl_reg2hw_bank0_info1_page_cfg_shadowed_mreg_t;
+  } flash_ctrl_reg2hw_bank0_info1_page_cfg_mreg_t;
 
   typedef struct packed {
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } rd_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } prog_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } erase_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } scramble_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } ecc_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } he_en;
-  } flash_ctrl_reg2hw_bank0_info2_page_cfg_shadowed_mreg_t;
+  } flash_ctrl_reg2hw_bank0_info2_page_cfg_mreg_t;
 
   typedef struct packed {
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } rd_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } prog_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } erase_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } scramble_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } ecc_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } he_en;
-  } flash_ctrl_reg2hw_bank1_info0_page_cfg_shadowed_mreg_t;
+  } flash_ctrl_reg2hw_bank1_info0_page_cfg_mreg_t;
 
   typedef struct packed {
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } rd_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } prog_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } erase_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } scramble_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } ecc_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } he_en;
-  } flash_ctrl_reg2hw_bank1_info1_page_cfg_shadowed_mreg_t;
+  } flash_ctrl_reg2hw_bank1_info1_page_cfg_mreg_t;
 
   typedef struct packed {
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } rd_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } prog_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } erase_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } scramble_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } ecc_en;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } he_en;
-  } flash_ctrl_reg2hw_bank1_info2_page_cfg_shadowed_mreg_t;
+  } flash_ctrl_reg2hw_bank1_info2_page_cfg_mreg_t;
 
   typedef struct packed {
     logic        q;
@@ -680,31 +683,26 @@ package flash_ctrl_reg_pkg;
 
   // Register -> HW type for core interface
   typedef struct packed {
-    flash_ctrl_reg2hw_intr_state_reg_t intr_state; // [585:580]
-    flash_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [579:574]
-    flash_ctrl_reg2hw_intr_test_reg_t intr_test; // [573:562]
-    flash_ctrl_reg2hw_alert_test_reg_t alert_test; // [561:556]
-    flash_ctrl_reg2hw_dis_reg_t dis; // [555:552]
-    flash_ctrl_reg2hw_exec_reg_t exec; // [551:520]
-    flash_ctrl_reg2hw_init_reg_t init; // [519:519]
-    flash_ctrl_reg2hw_control_reg_t control; // [518:499]
-    flash_ctrl_reg2hw_addr_reg_t addr; // [498:479]
-    flash_ctrl_reg2hw_prog_type_en_reg_t prog_type_en; // [478:477]
-    flash_ctrl_reg2hw_erase_suspend_reg_t erase_suspend; // [476:476]
-    flash_ctrl_reg2hw_mp_region_cfg_shadowed_mreg_t [7:0] mp_region_cfg_shadowed; // [475:268]
-    flash_ctrl_reg2hw_default_region_shadowed_reg_t default_region_shadowed; // [267:262]
-    flash_ctrl_reg2hw_bank0_info0_page_cfg_shadowed_mreg_t [9:0]
-        bank0_info0_page_cfg_shadowed; // [261:192]
-    flash_ctrl_reg2hw_bank0_info1_page_cfg_shadowed_mreg_t [0:0]
-        bank0_info1_page_cfg_shadowed; // [191:185]
-    flash_ctrl_reg2hw_bank0_info2_page_cfg_shadowed_mreg_t [1:0]
-        bank0_info2_page_cfg_shadowed; // [184:171]
-    flash_ctrl_reg2hw_bank1_info0_page_cfg_shadowed_mreg_t [9:0]
-        bank1_info0_page_cfg_shadowed; // [170:101]
-    flash_ctrl_reg2hw_bank1_info1_page_cfg_shadowed_mreg_t [0:0]
-        bank1_info1_page_cfg_shadowed; // [100:94]
-    flash_ctrl_reg2hw_bank1_info2_page_cfg_shadowed_mreg_t [1:0]
-        bank1_info2_page_cfg_shadowed; // [93:80]
+    flash_ctrl_reg2hw_intr_state_reg_t intr_state; // [1317:1312]
+    flash_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [1311:1306]
+    flash_ctrl_reg2hw_intr_test_reg_t intr_test; // [1305:1294]
+    flash_ctrl_reg2hw_alert_test_reg_t alert_test; // [1293:1288]
+    flash_ctrl_reg2hw_dis_reg_t dis; // [1287:1284]
+    flash_ctrl_reg2hw_exec_reg_t exec; // [1283:1252]
+    flash_ctrl_reg2hw_init_reg_t init; // [1251:1251]
+    flash_ctrl_reg2hw_control_reg_t control; // [1250:1231]
+    flash_ctrl_reg2hw_addr_reg_t addr; // [1230:1211]
+    flash_ctrl_reg2hw_prog_type_en_reg_t prog_type_en; // [1210:1209]
+    flash_ctrl_reg2hw_erase_suspend_reg_t erase_suspend; // [1208:1208]
+    flash_ctrl_reg2hw_mp_region_cfg_mreg_t [7:0] mp_region_cfg; // [1207:984]
+    flash_ctrl_reg2hw_mp_region_mreg_t [7:0] mp_region; // [983:832]
+    flash_ctrl_reg2hw_default_region_reg_t default_region; // [831:808]
+    flash_ctrl_reg2hw_bank0_info0_page_cfg_mreg_t [9:0] bank0_info0_page_cfg; // [807:528]
+    flash_ctrl_reg2hw_bank0_info1_page_cfg_mreg_t [0:0] bank0_info1_page_cfg; // [527:500]
+    flash_ctrl_reg2hw_bank0_info2_page_cfg_mreg_t [1:0] bank0_info2_page_cfg; // [499:444]
+    flash_ctrl_reg2hw_bank1_info0_page_cfg_mreg_t [9:0] bank1_info0_page_cfg; // [443:164]
+    flash_ctrl_reg2hw_bank1_info1_page_cfg_mreg_t [0:0] bank1_info1_page_cfg; // [163:136]
+    flash_ctrl_reg2hw_bank1_info2_page_cfg_mreg_t [1:0] bank1_info2_page_cfg; // [135:80]
     flash_ctrl_reg2hw_mp_bank_cfg_shadowed_mreg_t [1:0] mp_bank_cfg_shadowed; // [79:78]
     flash_ctrl_reg2hw_std_fault_status_reg_t std_fault_status; // [77:70]
     flash_ctrl_reg2hw_fault_status_reg_t fault_status; // [69:61]
@@ -754,84 +752,92 @@ package flash_ctrl_reg_pkg;
   parameter logic [CoreAw-1:0] FLASH_CTRL_REGION_CFG_REGWEN_5_OFFSET = 9'h 44;
   parameter logic [CoreAw-1:0] FLASH_CTRL_REGION_CFG_REGWEN_6_OFFSET = 9'h 48;
   parameter logic [CoreAw-1:0] FLASH_CTRL_REGION_CFG_REGWEN_7_OFFSET = 9'h 4c;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_OFFSET = 9'h 50;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_CFG_SHADOWED_1_OFFSET = 9'h 54;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_OFFSET = 9'h 58;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_OFFSET = 9'h 5c;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_CFG_SHADOWED_4_OFFSET = 9'h 60;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_CFG_SHADOWED_5_OFFSET = 9'h 64;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_CFG_SHADOWED_6_OFFSET = 9'h 68;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_CFG_SHADOWED_7_OFFSET = 9'h 6c;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_DEFAULT_REGION_SHADOWED_OFFSET = 9'h 70;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_REGWEN_0_OFFSET = 9'h 74;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_REGWEN_1_OFFSET = 9'h 78;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_REGWEN_2_OFFSET = 9'h 7c;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_REGWEN_3_OFFSET = 9'h 80;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_REGWEN_4_OFFSET = 9'h 84;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_REGWEN_5_OFFSET = 9'h 88;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_REGWEN_6_OFFSET = 9'h 8c;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_REGWEN_7_OFFSET = 9'h 90;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_REGWEN_8_OFFSET = 9'h 94;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_REGWEN_9_OFFSET = 9'h 98;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_OFFSET = 9'h 9c;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_1_OFFSET = 9'h a0;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_2_OFFSET = 9'h a4;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_3_OFFSET = 9'h a8;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_4_OFFSET = 9'h ac;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_5_OFFSET = 9'h b0;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_6_OFFSET = 9'h b4;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_7_OFFSET = 9'h b8;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_8_OFFSET = 9'h bc;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_9_OFFSET = 9'h c0;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO1_REGWEN_OFFSET = 9'h c4;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO1_PAGE_CFG_SHADOWED_OFFSET = 9'h c8;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO2_REGWEN_0_OFFSET = 9'h cc;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO2_REGWEN_1_OFFSET = 9'h d0;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO2_PAGE_CFG_SHADOWED_0_OFFSET = 9'h d4;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO2_PAGE_CFG_SHADOWED_1_OFFSET = 9'h d8;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_REGWEN_0_OFFSET = 9'h dc;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_REGWEN_1_OFFSET = 9'h e0;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_REGWEN_2_OFFSET = 9'h e4;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_REGWEN_3_OFFSET = 9'h e8;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_REGWEN_4_OFFSET = 9'h ec;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_REGWEN_5_OFFSET = 9'h f0;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_REGWEN_6_OFFSET = 9'h f4;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_REGWEN_7_OFFSET = 9'h f8;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_REGWEN_8_OFFSET = 9'h fc;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_REGWEN_9_OFFSET = 9'h 100;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_0_OFFSET = 9'h 104;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_1_OFFSET = 9'h 108;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_2_OFFSET = 9'h 10c;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_3_OFFSET = 9'h 110;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_4_OFFSET = 9'h 114;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_5_OFFSET = 9'h 118;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_6_OFFSET = 9'h 11c;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_7_OFFSET = 9'h 120;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_8_OFFSET = 9'h 124;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_9_OFFSET = 9'h 128;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO1_REGWEN_OFFSET = 9'h 12c;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO1_PAGE_CFG_SHADOWED_OFFSET = 9'h 130;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO2_REGWEN_0_OFFSET = 9'h 134;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO2_REGWEN_1_OFFSET = 9'h 138;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO2_PAGE_CFG_SHADOWED_0_OFFSET = 9'h 13c;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO2_PAGE_CFG_SHADOWED_1_OFFSET = 9'h 140;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK_CFG_REGWEN_OFFSET = 9'h 144;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_BANK_CFG_SHADOWED_OFFSET = 9'h 148;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_OP_STATUS_OFFSET = 9'h 14c;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_STATUS_OFFSET = 9'h 150;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_ERR_CODE_OFFSET = 9'h 154;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_STD_FAULT_STATUS_OFFSET = 9'h 158;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_FAULT_STATUS_OFFSET = 9'h 15c;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_ERR_ADDR_OFFSET = 9'h 160;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_ECC_SINGLE_ERR_CNT_OFFSET = 9'h 164;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_ECC_SINGLE_ERR_ADDR_0_OFFSET = 9'h 168;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_ECC_SINGLE_ERR_ADDR_1_OFFSET = 9'h 16c;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_PHY_ALERT_CFG_OFFSET = 9'h 170;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_PHY_STATUS_OFFSET = 9'h 174;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_SCRATCH_OFFSET = 9'h 178;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_FIFO_LVL_OFFSET = 9'h 17c;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_FIFO_RST_OFFSET = 9'h 180;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_CURR_FIFO_LVL_OFFSET = 9'h 184;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_CFG_0_OFFSET = 9'h 50;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_CFG_1_OFFSET = 9'h 54;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_CFG_2_OFFSET = 9'h 58;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_CFG_3_OFFSET = 9'h 5c;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_CFG_4_OFFSET = 9'h 60;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_CFG_5_OFFSET = 9'h 64;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_CFG_6_OFFSET = 9'h 68;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_CFG_7_OFFSET = 9'h 6c;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_0_OFFSET = 9'h 70;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_1_OFFSET = 9'h 74;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_2_OFFSET = 9'h 78;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_3_OFFSET = 9'h 7c;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_4_OFFSET = 9'h 80;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_5_OFFSET = 9'h 84;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_6_OFFSET = 9'h 88;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_REGION_7_OFFSET = 9'h 8c;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_DEFAULT_REGION_OFFSET = 9'h 90;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_REGWEN_0_OFFSET = 9'h 94;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_REGWEN_1_OFFSET = 9'h 98;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_REGWEN_2_OFFSET = 9'h 9c;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_REGWEN_3_OFFSET = 9'h a0;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_REGWEN_4_OFFSET = 9'h a4;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_REGWEN_5_OFFSET = 9'h a8;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_REGWEN_6_OFFSET = 9'h ac;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_REGWEN_7_OFFSET = 9'h b0;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_REGWEN_8_OFFSET = 9'h b4;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_REGWEN_9_OFFSET = 9'h b8;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_OFFSET = 9'h bc;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_1_OFFSET = 9'h c0;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_2_OFFSET = 9'h c4;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_3_OFFSET = 9'h c8;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_4_OFFSET = 9'h cc;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_5_OFFSET = 9'h d0;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_6_OFFSET = 9'h d4;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_7_OFFSET = 9'h d8;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_8_OFFSET = 9'h dc;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_9_OFFSET = 9'h e0;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO1_REGWEN_OFFSET = 9'h e4;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO1_PAGE_CFG_OFFSET = 9'h e8;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO2_REGWEN_0_OFFSET = 9'h ec;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO2_REGWEN_1_OFFSET = 9'h f0;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO2_PAGE_CFG_0_OFFSET = 9'h f4;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK0_INFO2_PAGE_CFG_1_OFFSET = 9'h f8;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_REGWEN_0_OFFSET = 9'h fc;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_REGWEN_1_OFFSET = 9'h 100;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_REGWEN_2_OFFSET = 9'h 104;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_REGWEN_3_OFFSET = 9'h 108;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_REGWEN_4_OFFSET = 9'h 10c;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_REGWEN_5_OFFSET = 9'h 110;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_REGWEN_6_OFFSET = 9'h 114;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_REGWEN_7_OFFSET = 9'h 118;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_REGWEN_8_OFFSET = 9'h 11c;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_REGWEN_9_OFFSET = 9'h 120;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_0_OFFSET = 9'h 124;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_1_OFFSET = 9'h 128;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_2_OFFSET = 9'h 12c;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_3_OFFSET = 9'h 130;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_4_OFFSET = 9'h 134;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_5_OFFSET = 9'h 138;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_6_OFFSET = 9'h 13c;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_7_OFFSET = 9'h 140;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_8_OFFSET = 9'h 144;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_9_OFFSET = 9'h 148;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO1_REGWEN_OFFSET = 9'h 14c;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO1_PAGE_CFG_OFFSET = 9'h 150;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO2_REGWEN_0_OFFSET = 9'h 154;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO2_REGWEN_1_OFFSET = 9'h 158;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO2_PAGE_CFG_0_OFFSET = 9'h 15c;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO2_PAGE_CFG_1_OFFSET = 9'h 160;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK_CFG_REGWEN_OFFSET = 9'h 164;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_BANK_CFG_SHADOWED_OFFSET = 9'h 168;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_OP_STATUS_OFFSET = 9'h 16c;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_STATUS_OFFSET = 9'h 170;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_ERR_CODE_OFFSET = 9'h 174;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_STD_FAULT_STATUS_OFFSET = 9'h 178;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_FAULT_STATUS_OFFSET = 9'h 17c;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_ERR_ADDR_OFFSET = 9'h 180;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_ECC_SINGLE_ERR_CNT_OFFSET = 9'h 184;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_ECC_SINGLE_ERR_ADDR_0_OFFSET = 9'h 188;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_ECC_SINGLE_ERR_ADDR_1_OFFSET = 9'h 18c;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_PHY_ALERT_CFG_OFFSET = 9'h 190;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_PHY_STATUS_OFFSET = 9'h 194;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_SCRATCH_OFFSET = 9'h 198;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_FIFO_LVL_OFFSET = 9'h 19c;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_FIFO_RST_OFFSET = 9'h 1a0;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_CURR_FIFO_LVL_OFFSET = 9'h 1a4;
 
   // Reset values for hwext registers and their fields for core interface
   parameter logic [5:0] FLASH_CTRL_INTR_TEST_RESVAL = 6'h 0;
@@ -852,9 +858,9 @@ package flash_ctrl_reg_pkg;
   parameter logic [4:0] FLASH_CTRL_CURR_FIFO_LVL_RD_RESVAL = 5'h 0;
 
   // Window parameters for core interface
-  parameter logic [CoreAw-1:0] FLASH_CTRL_PROG_FIFO_OFFSET = 9'h 188;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_PROG_FIFO_OFFSET = 9'h 1a8;
   parameter int unsigned       FLASH_CTRL_PROG_FIFO_SIZE   = 'h 4;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_RD_FIFO_OFFSET = 9'h 18c;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_RD_FIFO_OFFSET = 9'h 1ac;
   parameter int unsigned       FLASH_CTRL_RD_FIFO_SIZE   = 'h 4;
 
   // Register index for core interface
@@ -879,15 +885,23 @@ package flash_ctrl_reg_pkg;
     FLASH_CTRL_REGION_CFG_REGWEN_5,
     FLASH_CTRL_REGION_CFG_REGWEN_6,
     FLASH_CTRL_REGION_CFG_REGWEN_7,
-    FLASH_CTRL_MP_REGION_CFG_SHADOWED_0,
-    FLASH_CTRL_MP_REGION_CFG_SHADOWED_1,
-    FLASH_CTRL_MP_REGION_CFG_SHADOWED_2,
-    FLASH_CTRL_MP_REGION_CFG_SHADOWED_3,
-    FLASH_CTRL_MP_REGION_CFG_SHADOWED_4,
-    FLASH_CTRL_MP_REGION_CFG_SHADOWED_5,
-    FLASH_CTRL_MP_REGION_CFG_SHADOWED_6,
-    FLASH_CTRL_MP_REGION_CFG_SHADOWED_7,
-    FLASH_CTRL_DEFAULT_REGION_SHADOWED,
+    FLASH_CTRL_MP_REGION_CFG_0,
+    FLASH_CTRL_MP_REGION_CFG_1,
+    FLASH_CTRL_MP_REGION_CFG_2,
+    FLASH_CTRL_MP_REGION_CFG_3,
+    FLASH_CTRL_MP_REGION_CFG_4,
+    FLASH_CTRL_MP_REGION_CFG_5,
+    FLASH_CTRL_MP_REGION_CFG_6,
+    FLASH_CTRL_MP_REGION_CFG_7,
+    FLASH_CTRL_MP_REGION_0,
+    FLASH_CTRL_MP_REGION_1,
+    FLASH_CTRL_MP_REGION_2,
+    FLASH_CTRL_MP_REGION_3,
+    FLASH_CTRL_MP_REGION_4,
+    FLASH_CTRL_MP_REGION_5,
+    FLASH_CTRL_MP_REGION_6,
+    FLASH_CTRL_MP_REGION_7,
+    FLASH_CTRL_DEFAULT_REGION,
     FLASH_CTRL_BANK0_INFO0_REGWEN_0,
     FLASH_CTRL_BANK0_INFO0_REGWEN_1,
     FLASH_CTRL_BANK0_INFO0_REGWEN_2,
@@ -898,22 +912,22 @@ package flash_ctrl_reg_pkg;
     FLASH_CTRL_BANK0_INFO0_REGWEN_7,
     FLASH_CTRL_BANK0_INFO0_REGWEN_8,
     FLASH_CTRL_BANK0_INFO0_REGWEN_9,
-    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0,
-    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_1,
-    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_2,
-    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_3,
-    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_4,
-    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_5,
-    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_6,
-    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_7,
-    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_8,
-    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_9,
+    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0,
+    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_1,
+    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_2,
+    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_3,
+    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_4,
+    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_5,
+    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_6,
+    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_7,
+    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_8,
+    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_9,
     FLASH_CTRL_BANK0_INFO1_REGWEN,
-    FLASH_CTRL_BANK0_INFO1_PAGE_CFG_SHADOWED,
+    FLASH_CTRL_BANK0_INFO1_PAGE_CFG,
     FLASH_CTRL_BANK0_INFO2_REGWEN_0,
     FLASH_CTRL_BANK0_INFO2_REGWEN_1,
-    FLASH_CTRL_BANK0_INFO2_PAGE_CFG_SHADOWED_0,
-    FLASH_CTRL_BANK0_INFO2_PAGE_CFG_SHADOWED_1,
+    FLASH_CTRL_BANK0_INFO2_PAGE_CFG_0,
+    FLASH_CTRL_BANK0_INFO2_PAGE_CFG_1,
     FLASH_CTRL_BANK1_INFO0_REGWEN_0,
     FLASH_CTRL_BANK1_INFO0_REGWEN_1,
     FLASH_CTRL_BANK1_INFO0_REGWEN_2,
@@ -924,22 +938,22 @@ package flash_ctrl_reg_pkg;
     FLASH_CTRL_BANK1_INFO0_REGWEN_7,
     FLASH_CTRL_BANK1_INFO0_REGWEN_8,
     FLASH_CTRL_BANK1_INFO0_REGWEN_9,
-    FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_0,
-    FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_1,
-    FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_2,
-    FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_3,
-    FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_4,
-    FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_5,
-    FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_6,
-    FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_7,
-    FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_8,
-    FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_9,
+    FLASH_CTRL_BANK1_INFO0_PAGE_CFG_0,
+    FLASH_CTRL_BANK1_INFO0_PAGE_CFG_1,
+    FLASH_CTRL_BANK1_INFO0_PAGE_CFG_2,
+    FLASH_CTRL_BANK1_INFO0_PAGE_CFG_3,
+    FLASH_CTRL_BANK1_INFO0_PAGE_CFG_4,
+    FLASH_CTRL_BANK1_INFO0_PAGE_CFG_5,
+    FLASH_CTRL_BANK1_INFO0_PAGE_CFG_6,
+    FLASH_CTRL_BANK1_INFO0_PAGE_CFG_7,
+    FLASH_CTRL_BANK1_INFO0_PAGE_CFG_8,
+    FLASH_CTRL_BANK1_INFO0_PAGE_CFG_9,
     FLASH_CTRL_BANK1_INFO1_REGWEN,
-    FLASH_CTRL_BANK1_INFO1_PAGE_CFG_SHADOWED,
+    FLASH_CTRL_BANK1_INFO1_PAGE_CFG,
     FLASH_CTRL_BANK1_INFO2_REGWEN_0,
     FLASH_CTRL_BANK1_INFO2_REGWEN_1,
-    FLASH_CTRL_BANK1_INFO2_PAGE_CFG_SHADOWED_0,
-    FLASH_CTRL_BANK1_INFO2_PAGE_CFG_SHADOWED_1,
+    FLASH_CTRL_BANK1_INFO2_PAGE_CFG_0,
+    FLASH_CTRL_BANK1_INFO2_PAGE_CFG_1,
     FLASH_CTRL_BANK_CFG_REGWEN,
     FLASH_CTRL_MP_BANK_CFG_SHADOWED,
     FLASH_CTRL_OP_STATUS,
@@ -960,105 +974,113 @@ package flash_ctrl_reg_pkg;
   } flash_ctrl_core_id_e;
 
   // Register width information to check illegal writes for core interface
-  parameter logic [3:0] FLASH_CTRL_CORE_PERMIT [98] = '{
-    4'b 0001, // index[ 0] FLASH_CTRL_INTR_STATE
-    4'b 0001, // index[ 1] FLASH_CTRL_INTR_ENABLE
-    4'b 0001, // index[ 2] FLASH_CTRL_INTR_TEST
-    4'b 0001, // index[ 3] FLASH_CTRL_ALERT_TEST
-    4'b 0001, // index[ 4] FLASH_CTRL_DIS
-    4'b 1111, // index[ 5] FLASH_CTRL_EXEC
-    4'b 0001, // index[ 6] FLASH_CTRL_INIT
-    4'b 0001, // index[ 7] FLASH_CTRL_CTRL_REGWEN
-    4'b 1111, // index[ 8] FLASH_CTRL_CONTROL
-    4'b 0111, // index[ 9] FLASH_CTRL_ADDR
-    4'b 0001, // index[10] FLASH_CTRL_PROG_TYPE_EN
-    4'b 0001, // index[11] FLASH_CTRL_ERASE_SUSPEND
-    4'b 0001, // index[12] FLASH_CTRL_REGION_CFG_REGWEN_0
-    4'b 0001, // index[13] FLASH_CTRL_REGION_CFG_REGWEN_1
-    4'b 0001, // index[14] FLASH_CTRL_REGION_CFG_REGWEN_2
-    4'b 0001, // index[15] FLASH_CTRL_REGION_CFG_REGWEN_3
-    4'b 0001, // index[16] FLASH_CTRL_REGION_CFG_REGWEN_4
-    4'b 0001, // index[17] FLASH_CTRL_REGION_CFG_REGWEN_5
-    4'b 0001, // index[18] FLASH_CTRL_REGION_CFG_REGWEN_6
-    4'b 0001, // index[19] FLASH_CTRL_REGION_CFG_REGWEN_7
-    4'b 1111, // index[20] FLASH_CTRL_MP_REGION_CFG_SHADOWED_0
-    4'b 1111, // index[21] FLASH_CTRL_MP_REGION_CFG_SHADOWED_1
-    4'b 1111, // index[22] FLASH_CTRL_MP_REGION_CFG_SHADOWED_2
-    4'b 1111, // index[23] FLASH_CTRL_MP_REGION_CFG_SHADOWED_3
-    4'b 1111, // index[24] FLASH_CTRL_MP_REGION_CFG_SHADOWED_4
-    4'b 1111, // index[25] FLASH_CTRL_MP_REGION_CFG_SHADOWED_5
-    4'b 1111, // index[26] FLASH_CTRL_MP_REGION_CFG_SHADOWED_6
-    4'b 1111, // index[27] FLASH_CTRL_MP_REGION_CFG_SHADOWED_7
-    4'b 0001, // index[28] FLASH_CTRL_DEFAULT_REGION_SHADOWED
-    4'b 0001, // index[29] FLASH_CTRL_BANK0_INFO0_REGWEN_0
-    4'b 0001, // index[30] FLASH_CTRL_BANK0_INFO0_REGWEN_1
-    4'b 0001, // index[31] FLASH_CTRL_BANK0_INFO0_REGWEN_2
-    4'b 0001, // index[32] FLASH_CTRL_BANK0_INFO0_REGWEN_3
-    4'b 0001, // index[33] FLASH_CTRL_BANK0_INFO0_REGWEN_4
-    4'b 0001, // index[34] FLASH_CTRL_BANK0_INFO0_REGWEN_5
-    4'b 0001, // index[35] FLASH_CTRL_BANK0_INFO0_REGWEN_6
-    4'b 0001, // index[36] FLASH_CTRL_BANK0_INFO0_REGWEN_7
-    4'b 0001, // index[37] FLASH_CTRL_BANK0_INFO0_REGWEN_8
-    4'b 0001, // index[38] FLASH_CTRL_BANK0_INFO0_REGWEN_9
-    4'b 0001, // index[39] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0
-    4'b 0001, // index[40] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_1
-    4'b 0001, // index[41] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_2
-    4'b 0001, // index[42] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_3
-    4'b 0001, // index[43] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_4
-    4'b 0001, // index[44] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_5
-    4'b 0001, // index[45] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_6
-    4'b 0001, // index[46] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_7
-    4'b 0001, // index[47] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_8
-    4'b 0001, // index[48] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_9
-    4'b 0001, // index[49] FLASH_CTRL_BANK0_INFO1_REGWEN
-    4'b 0001, // index[50] FLASH_CTRL_BANK0_INFO1_PAGE_CFG_SHADOWED
-    4'b 0001, // index[51] FLASH_CTRL_BANK0_INFO2_REGWEN_0
-    4'b 0001, // index[52] FLASH_CTRL_BANK0_INFO2_REGWEN_1
-    4'b 0001, // index[53] FLASH_CTRL_BANK0_INFO2_PAGE_CFG_SHADOWED_0
-    4'b 0001, // index[54] FLASH_CTRL_BANK0_INFO2_PAGE_CFG_SHADOWED_1
-    4'b 0001, // index[55] FLASH_CTRL_BANK1_INFO0_REGWEN_0
-    4'b 0001, // index[56] FLASH_CTRL_BANK1_INFO0_REGWEN_1
-    4'b 0001, // index[57] FLASH_CTRL_BANK1_INFO0_REGWEN_2
-    4'b 0001, // index[58] FLASH_CTRL_BANK1_INFO0_REGWEN_3
-    4'b 0001, // index[59] FLASH_CTRL_BANK1_INFO0_REGWEN_4
-    4'b 0001, // index[60] FLASH_CTRL_BANK1_INFO0_REGWEN_5
-    4'b 0001, // index[61] FLASH_CTRL_BANK1_INFO0_REGWEN_6
-    4'b 0001, // index[62] FLASH_CTRL_BANK1_INFO0_REGWEN_7
-    4'b 0001, // index[63] FLASH_CTRL_BANK1_INFO0_REGWEN_8
-    4'b 0001, // index[64] FLASH_CTRL_BANK1_INFO0_REGWEN_9
-    4'b 0001, // index[65] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_0
-    4'b 0001, // index[66] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_1
-    4'b 0001, // index[67] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_2
-    4'b 0001, // index[68] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_3
-    4'b 0001, // index[69] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_4
-    4'b 0001, // index[70] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_5
-    4'b 0001, // index[71] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_6
-    4'b 0001, // index[72] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_7
-    4'b 0001, // index[73] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_8
-    4'b 0001, // index[74] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_9
-    4'b 0001, // index[75] FLASH_CTRL_BANK1_INFO1_REGWEN
-    4'b 0001, // index[76] FLASH_CTRL_BANK1_INFO1_PAGE_CFG_SHADOWED
-    4'b 0001, // index[77] FLASH_CTRL_BANK1_INFO2_REGWEN_0
-    4'b 0001, // index[78] FLASH_CTRL_BANK1_INFO2_REGWEN_1
-    4'b 0001, // index[79] FLASH_CTRL_BANK1_INFO2_PAGE_CFG_SHADOWED_0
-    4'b 0001, // index[80] FLASH_CTRL_BANK1_INFO2_PAGE_CFG_SHADOWED_1
-    4'b 0001, // index[81] FLASH_CTRL_BANK_CFG_REGWEN
-    4'b 0001, // index[82] FLASH_CTRL_MP_BANK_CFG_SHADOWED
-    4'b 0001, // index[83] FLASH_CTRL_OP_STATUS
-    4'b 0001, // index[84] FLASH_CTRL_STATUS
-    4'b 0001, // index[85] FLASH_CTRL_ERR_CODE
-    4'b 0001, // index[86] FLASH_CTRL_STD_FAULT_STATUS
-    4'b 0011, // index[87] FLASH_CTRL_FAULT_STATUS
-    4'b 0111, // index[88] FLASH_CTRL_ERR_ADDR
-    4'b 0011, // index[89] FLASH_CTRL_ECC_SINGLE_ERR_CNT
-    4'b 0111, // index[90] FLASH_CTRL_ECC_SINGLE_ERR_ADDR_0
-    4'b 0111, // index[91] FLASH_CTRL_ECC_SINGLE_ERR_ADDR_1
-    4'b 0001, // index[92] FLASH_CTRL_PHY_ALERT_CFG
-    4'b 0001, // index[93] FLASH_CTRL_PHY_STATUS
-    4'b 1111, // index[94] FLASH_CTRL_SCRATCH
-    4'b 0011, // index[95] FLASH_CTRL_FIFO_LVL
-    4'b 0001, // index[96] FLASH_CTRL_FIFO_RST
-    4'b 0011  // index[97] FLASH_CTRL_CURR_FIFO_LVL
+  parameter logic [3:0] FLASH_CTRL_CORE_PERMIT [106] = '{
+    4'b 0001, // index[  0] FLASH_CTRL_INTR_STATE
+    4'b 0001, // index[  1] FLASH_CTRL_INTR_ENABLE
+    4'b 0001, // index[  2] FLASH_CTRL_INTR_TEST
+    4'b 0001, // index[  3] FLASH_CTRL_ALERT_TEST
+    4'b 0001, // index[  4] FLASH_CTRL_DIS
+    4'b 1111, // index[  5] FLASH_CTRL_EXEC
+    4'b 0001, // index[  6] FLASH_CTRL_INIT
+    4'b 0001, // index[  7] FLASH_CTRL_CTRL_REGWEN
+    4'b 1111, // index[  8] FLASH_CTRL_CONTROL
+    4'b 0111, // index[  9] FLASH_CTRL_ADDR
+    4'b 0001, // index[ 10] FLASH_CTRL_PROG_TYPE_EN
+    4'b 0001, // index[ 11] FLASH_CTRL_ERASE_SUSPEND
+    4'b 0001, // index[ 12] FLASH_CTRL_REGION_CFG_REGWEN_0
+    4'b 0001, // index[ 13] FLASH_CTRL_REGION_CFG_REGWEN_1
+    4'b 0001, // index[ 14] FLASH_CTRL_REGION_CFG_REGWEN_2
+    4'b 0001, // index[ 15] FLASH_CTRL_REGION_CFG_REGWEN_3
+    4'b 0001, // index[ 16] FLASH_CTRL_REGION_CFG_REGWEN_4
+    4'b 0001, // index[ 17] FLASH_CTRL_REGION_CFG_REGWEN_5
+    4'b 0001, // index[ 18] FLASH_CTRL_REGION_CFG_REGWEN_6
+    4'b 0001, // index[ 19] FLASH_CTRL_REGION_CFG_REGWEN_7
+    4'b 1111, // index[ 20] FLASH_CTRL_MP_REGION_CFG_0
+    4'b 1111, // index[ 21] FLASH_CTRL_MP_REGION_CFG_1
+    4'b 1111, // index[ 22] FLASH_CTRL_MP_REGION_CFG_2
+    4'b 1111, // index[ 23] FLASH_CTRL_MP_REGION_CFG_3
+    4'b 1111, // index[ 24] FLASH_CTRL_MP_REGION_CFG_4
+    4'b 1111, // index[ 25] FLASH_CTRL_MP_REGION_CFG_5
+    4'b 1111, // index[ 26] FLASH_CTRL_MP_REGION_CFG_6
+    4'b 1111, // index[ 27] FLASH_CTRL_MP_REGION_CFG_7
+    4'b 0111, // index[ 28] FLASH_CTRL_MP_REGION_0
+    4'b 0111, // index[ 29] FLASH_CTRL_MP_REGION_1
+    4'b 0111, // index[ 30] FLASH_CTRL_MP_REGION_2
+    4'b 0111, // index[ 31] FLASH_CTRL_MP_REGION_3
+    4'b 0111, // index[ 32] FLASH_CTRL_MP_REGION_4
+    4'b 0111, // index[ 33] FLASH_CTRL_MP_REGION_5
+    4'b 0111, // index[ 34] FLASH_CTRL_MP_REGION_6
+    4'b 0111, // index[ 35] FLASH_CTRL_MP_REGION_7
+    4'b 0111, // index[ 36] FLASH_CTRL_DEFAULT_REGION
+    4'b 0001, // index[ 37] FLASH_CTRL_BANK0_INFO0_REGWEN_0
+    4'b 0001, // index[ 38] FLASH_CTRL_BANK0_INFO0_REGWEN_1
+    4'b 0001, // index[ 39] FLASH_CTRL_BANK0_INFO0_REGWEN_2
+    4'b 0001, // index[ 40] FLASH_CTRL_BANK0_INFO0_REGWEN_3
+    4'b 0001, // index[ 41] FLASH_CTRL_BANK0_INFO0_REGWEN_4
+    4'b 0001, // index[ 42] FLASH_CTRL_BANK0_INFO0_REGWEN_5
+    4'b 0001, // index[ 43] FLASH_CTRL_BANK0_INFO0_REGWEN_6
+    4'b 0001, // index[ 44] FLASH_CTRL_BANK0_INFO0_REGWEN_7
+    4'b 0001, // index[ 45] FLASH_CTRL_BANK0_INFO0_REGWEN_8
+    4'b 0001, // index[ 46] FLASH_CTRL_BANK0_INFO0_REGWEN_9
+    4'b 1111, // index[ 47] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0
+    4'b 1111, // index[ 48] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_1
+    4'b 1111, // index[ 49] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_2
+    4'b 1111, // index[ 50] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_3
+    4'b 1111, // index[ 51] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_4
+    4'b 1111, // index[ 52] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_5
+    4'b 1111, // index[ 53] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_6
+    4'b 1111, // index[ 54] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_7
+    4'b 1111, // index[ 55] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_8
+    4'b 1111, // index[ 56] FLASH_CTRL_BANK0_INFO0_PAGE_CFG_9
+    4'b 0001, // index[ 57] FLASH_CTRL_BANK0_INFO1_REGWEN
+    4'b 1111, // index[ 58] FLASH_CTRL_BANK0_INFO1_PAGE_CFG
+    4'b 0001, // index[ 59] FLASH_CTRL_BANK0_INFO2_REGWEN_0
+    4'b 0001, // index[ 60] FLASH_CTRL_BANK0_INFO2_REGWEN_1
+    4'b 1111, // index[ 61] FLASH_CTRL_BANK0_INFO2_PAGE_CFG_0
+    4'b 1111, // index[ 62] FLASH_CTRL_BANK0_INFO2_PAGE_CFG_1
+    4'b 0001, // index[ 63] FLASH_CTRL_BANK1_INFO0_REGWEN_0
+    4'b 0001, // index[ 64] FLASH_CTRL_BANK1_INFO0_REGWEN_1
+    4'b 0001, // index[ 65] FLASH_CTRL_BANK1_INFO0_REGWEN_2
+    4'b 0001, // index[ 66] FLASH_CTRL_BANK1_INFO0_REGWEN_3
+    4'b 0001, // index[ 67] FLASH_CTRL_BANK1_INFO0_REGWEN_4
+    4'b 0001, // index[ 68] FLASH_CTRL_BANK1_INFO0_REGWEN_5
+    4'b 0001, // index[ 69] FLASH_CTRL_BANK1_INFO0_REGWEN_6
+    4'b 0001, // index[ 70] FLASH_CTRL_BANK1_INFO0_REGWEN_7
+    4'b 0001, // index[ 71] FLASH_CTRL_BANK1_INFO0_REGWEN_8
+    4'b 0001, // index[ 72] FLASH_CTRL_BANK1_INFO0_REGWEN_9
+    4'b 1111, // index[ 73] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_0
+    4'b 1111, // index[ 74] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_1
+    4'b 1111, // index[ 75] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_2
+    4'b 1111, // index[ 76] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_3
+    4'b 1111, // index[ 77] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_4
+    4'b 1111, // index[ 78] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_5
+    4'b 1111, // index[ 79] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_6
+    4'b 1111, // index[ 80] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_7
+    4'b 1111, // index[ 81] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_8
+    4'b 1111, // index[ 82] FLASH_CTRL_BANK1_INFO0_PAGE_CFG_9
+    4'b 0001, // index[ 83] FLASH_CTRL_BANK1_INFO1_REGWEN
+    4'b 1111, // index[ 84] FLASH_CTRL_BANK1_INFO1_PAGE_CFG
+    4'b 0001, // index[ 85] FLASH_CTRL_BANK1_INFO2_REGWEN_0
+    4'b 0001, // index[ 86] FLASH_CTRL_BANK1_INFO2_REGWEN_1
+    4'b 1111, // index[ 87] FLASH_CTRL_BANK1_INFO2_PAGE_CFG_0
+    4'b 1111, // index[ 88] FLASH_CTRL_BANK1_INFO2_PAGE_CFG_1
+    4'b 0001, // index[ 89] FLASH_CTRL_BANK_CFG_REGWEN
+    4'b 0001, // index[ 90] FLASH_CTRL_MP_BANK_CFG_SHADOWED
+    4'b 0001, // index[ 91] FLASH_CTRL_OP_STATUS
+    4'b 0001, // index[ 92] FLASH_CTRL_STATUS
+    4'b 0001, // index[ 93] FLASH_CTRL_ERR_CODE
+    4'b 0001, // index[ 94] FLASH_CTRL_STD_FAULT_STATUS
+    4'b 0011, // index[ 95] FLASH_CTRL_FAULT_STATUS
+    4'b 0111, // index[ 96] FLASH_CTRL_ERR_ADDR
+    4'b 0011, // index[ 97] FLASH_CTRL_ECC_SINGLE_ERR_CNT
+    4'b 0111, // index[ 98] FLASH_CTRL_ECC_SINGLE_ERR_ADDR_0
+    4'b 0111, // index[ 99] FLASH_CTRL_ECC_SINGLE_ERR_ADDR_1
+    4'b 0001, // index[100] FLASH_CTRL_PHY_ALERT_CFG
+    4'b 0001, // index[101] FLASH_CTRL_PHY_STATUS
+    4'b 1111, // index[102] FLASH_CTRL_SCRATCH
+    4'b 0011, // index[103] FLASH_CTRL_FIFO_LVL
+    4'b 0001, // index[104] FLASH_CTRL_FIFO_RST
+    4'b 0011  // index[105] FLASH_CTRL_CURR_FIFO_LVL
   };
 
 endpackage
