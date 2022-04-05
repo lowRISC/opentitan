@@ -217,6 +217,7 @@ dual_cc_library(
     name = "sigverify_keys_ptrs",
     srcs = dual_inputs(
         host = ["mock_sigverify_keys_ptrs.cc"],
+        device = ["sigverify_keys_ptrs.c"],
     ),
     hdrs = dual_inputs(
         host = ["mock_sigverify_keys_ptrs.h"],
