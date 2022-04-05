@@ -29,19 +29,21 @@ module flash_phy
   output flash_rsp_t flash_ctrl_o,
   input tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
-  input prim_mubi_pkg::mubi4_t scanmode_i,
+  input mubi4_t scanmode_i,
   input scan_en_i,
   input scan_rst_ni,
   input flash_power_ready_h_i,
   input flash_power_down_h_i,
   inout [1:0] flash_test_mode_a_io,
   inout flash_test_voltage_h_io,
-  input prim_mubi_pkg::mubi4_t flash_bist_enable_i,
+  input mubi4_t flash_bist_enable_i,
   input lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i,
   input ast_pkg::ast_obs_ctrl_t obs_ctrl_i,
   output logic [7:0] fla_obs_o,
   output ast_pkg::ast_dif_t flash_alert_o
 );
+
+  import prim_mubi_pkg::MuBi4False;
 
   // Flash macro outstanding refers to how many reads we allow a macro to move ahead of an
   // in order blocking read. Since the data cannot be returned out of order, this simply
@@ -168,8 +170,8 @@ module flash_phy
   assign unused_cfg = region_cfg;
 
   // only scramble/ecc attributes are looked at
-  assign host_scramble_en = region_cfg.scramble_en.q;
-  assign host_ecc_en = region_cfg.ecc_en.q;
+  assign host_scramble_en = prim_mubi_pkg::mubi4_test_true_loose(region_cfg.scramble_en);
+  assign host_ecc_en = prim_mubi_pkg::mubi4_test_true_loose(region_cfg.ecc_en);
 
   // Prim flash to flash_phy_core connections
   flash_phy_pkg::flash_phy_prim_flash_req_t [NumBanks-1:0] prim_flash_req;
@@ -180,7 +182,7 @@ module flash_phy
   assign flash_ctrl_o.ecc_single_err = ecc_single_err;
   assign flash_ctrl_o.ecc_addr = ecc_addr;
 
-  prim_mubi_pkg::mubi4_t [NumBanks-1:0] flash_disable;
+  mubi4_t [NumBanks-1:0] flash_disable;
   prim_mubi4_sync #(
     .NumCopies(NumBanks),
     .AsyncOn(0)
@@ -290,10 +292,10 @@ module flash_phy
   import lc_ctrl_pkg::lc_tx_test_true_strict;
   // if nvm debug is enabled, flash_bist_enable controls entry to flash test mode.
   // if nvm debug is disabled, flash_bist_enable is always turned off.
-  prim_mubi_pkg::mubi4_t bist_enable_qual;
+  mubi4_t bist_enable_qual;
   assign bist_enable_qual = (lc_tx_test_true_strict(lc_nvm_debug_en[FlashBistSel])) ?
                             flash_bist_enable_i :
-                            prim_mubi_pkg::MuBi4False;
+                            MuBi4False;
 
   prim_flash #(
     .NumBanks(NumBanks),

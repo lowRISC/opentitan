@@ -149,11 +149,12 @@ module flash_ctrl
     .lc_iso_part_sw_wr_en_i,
     .lc_iso_part_sw_rd_en_i,
     .bank_cfg_i(reg2hw.mp_bank_cfg_shadowed),
-    .region_cfg_i(reg2hw.mp_region_cfg_shadowed),
-    .default_cfg_i(reg2hw.default_region_shadowed),
+    .region_i(reg2hw.mp_region),
+    .region_cfg_i(reg2hw.mp_region_cfg),
+    .default_cfg_i(reg2hw.default_region),
 % for bank in range(cfg.banks):
   % for idx in range(cfg.info_types):
-    .bank${bank}_info${idx}_cfg_i(reg2hw.bank${bank}_info${idx}_page_cfg_shadowed),
+    .bank${bank}_info${idx}_cfg_i(reg2hw.bank${bank}_info${idx}_page_cfg),
   % endfor
 % endfor
     .bank_cfg_o(bank_cfgs),
