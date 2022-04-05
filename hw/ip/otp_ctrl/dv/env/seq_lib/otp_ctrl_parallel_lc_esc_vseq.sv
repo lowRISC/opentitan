@@ -10,9 +10,10 @@ class otp_ctrl_parallel_lc_esc_vseq extends otp_ctrl_dai_lock_vseq;
   `uvm_object_utils(otp_ctrl_parallel_lc_esc_vseq)
 
   `uvm_object_new
-  bit [lc_ctrl_pkg::TxWidth-1:0] lc_esc_on_val;
 
-  constraint lc_esc_on_c {lc_esc_on_val != lc_ctrl_pkg::Off;}
+  rand port_drive_condition_e lc_esc_drive_cond;
+
+  parameter int LC_ESC_MAX_CYCLE = 10_000;
 
   // This sequence will kill super.body sequence once lc_escalate_en is On. Disable these interface
   // requests to avoid sequencer error.
@@ -35,8 +36,40 @@ class otp_ctrl_parallel_lc_esc_vseq extends otp_ctrl_dai_lock_vseq;
   endtask
 
   virtual task rand_wait_csr_no_outstanding();
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(lc_esc_drive_cond)
     wait(cfg.under_reset == 0);
-    cfg.clk_rst_vif.wait_clks($urandom_range(0, 10_000));
+
+    case (lc_esc_drive_cond)
+      DriveRandomly: begin
+        cfg.clk_rst_vif.wait_clks($urandom_range(0, LC_ESC_MAX_CYCLE));
+      end
+      DuringOTPInit: begin
+        `DV_SPINWAIT_EXIT(
+            wait (cfg.otp_ctrl_vif.pwr_otp_init_i == 1);
+            cfg.clk_rst_vif.wait_clks($urandom_range(1, 20));,
+            cfg.clk_rst_vif.wait_clks(LC_ESC_MAX_CYCLE);)
+      end
+      DuringOTPDaiBusy: begin
+        `DV_SPINWAIT_EXIT(
+            wait (do_otp_wr);
+            cfg.clk_rst_vif.wait_clks($urandom_range(1, 70));,
+            cfg.clk_rst_vif.wait_clks(LC_ESC_MAX_CYCLE);)
+      end
+      DuringOTPDaiDigest: begin
+        `DV_SPINWAIT_EXIT(
+            wait (do_digest_cal);
+            cfg.clk_rst_vif.wait_clks($urandom_range(1, 500));,
+            cfg.clk_rst_vif.wait_clks(LC_ESC_MAX_CYCLE);)
+      end
+      DuringOTPRead: begin
+        `DV_SPINWAIT_EXIT(
+            wait (do_otp_rd);
+            cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));,
+            cfg.clk_rst_vif.wait_clks(LC_ESC_MAX_CYCLE);)
+      end
+      default: `uvm_fatal(`gfn, $sformatf("Unsupported lc_esc_drive_cond %0d", lc_esc_drive_cond))
+    endcase
+
     wait_no_outstanding_access();
   endtask
 
@@ -49,9 +82,10 @@ class otp_ctrl_parallel_lc_esc_vseq extends otp_ctrl_dai_lock_vseq;
       1: req_all_sram_keys(0);
       1: req_lc_transition(0, 0);
     endcase
-    cfg.clk_rst_vif.wait_clks($urandom_range(0, 50));
 
-    cfg.otp_ctrl_vif.drive_lc_escalate_en(get_rand_lc_tx_val(.f_weight(0)));
+    if (lc_esc_drive_cond == DriveRandomly) cfg.clk_rst_vif.wait_clks($urandom_range(0, 50));
+
+    if (!cfg.under_reset) cfg.otp_ctrl_vif.drive_lc_escalate_en(get_rand_lc_tx_val(.f_weight(0)));
 
     // TODO: in alert_esc_monitor, makes it auto-response like push-pull agent
     if (en_auto_alerts_response && cfg.list_of_alerts.size()) run_alert_rsp_seq_nonblocking();

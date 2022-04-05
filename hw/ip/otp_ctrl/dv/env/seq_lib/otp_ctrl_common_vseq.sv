@@ -6,11 +6,21 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
   `uvm_object_utils(otp_ctrl_common_vseq)
 
   rand bit [TL_DW-1:0] dai_addr, wdata0, wdata1;
+  rand port_drive_condition_e reset_drive_cond;
 
   constraint dai_addr_c {
     dai_addr dist {
         [0 : (PartInfo[LifeCycleIdx].offset - 1)]    :/ 1,
         [PartInfo[LifeCycleIdx].offset : {11{1'b1}}] :/ 1};
+  }
+
+  constraint reset_drive_cond_c {
+    reset_drive_cond dist {
+        DriveRandomly      :/ 7,
+        DuringOTPDaiBusy   :/ 1,
+        DuringOTPRead      :/ 1,
+        DuringOTPDaiDigest :/ 1
+    };
   }
 
   constraint num_trans_c {
@@ -48,7 +58,39 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     end else begin
       super.apply_resets_concurrently(reset_duration_ps);
     end
+    clear_seq_flags();
   endtask
+
+  virtual task wait_to_issue_reset(uint reset_delay_bound = 10_000_000);
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(reset_drive_cond)
+    case (reset_drive_cond)
+      DriveRandomly: begin
+        super.wait_to_issue_reset(reset_delay_bound);
+      end
+      DuringOTPDaiBusy: begin
+        `DV_SPINWAIT_EXIT(
+            wait (do_otp_wr);
+            cfg.clk_rst_vif.wait_clks($urandom_range(1, 70));,
+            cfg.clk_rst_vif.wait_clks(reset_delay_bound);)
+        #($urandom_range(0, cfg.clk_rst_vif.clk_period_ps) * 1ps);
+      end
+      DuringOTPDaiDigest: begin
+        `DV_SPINWAIT_EXIT(
+            wait (do_digest_cal);
+            cfg.clk_rst_vif.wait_clks($urandom_range(1, 350));,
+            cfg.clk_rst_vif.wait_clks(reset_delay_bound);)
+        #($urandom_range(0, cfg.clk_rst_vif.clk_period_ps) * 1ps);
+      end
+      DuringOTPRead: begin
+        `DV_SPINWAIT_EXIT(
+            wait (do_otp_rd);
+            cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));,
+            cfg.clk_rst_vif.wait_clks(reset_delay_bound);)
+        #($urandom_range(0, cfg.clk_rst_vif.clk_period_ps) * 1ps);
+      end
+      default: `uvm_fatal(`gfn, $sformatf("Unsupported reset_drive_cond %0d", reset_drive_cond))
+    endcase
+  endtask : wait_to_issue_reset
 
   virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
     bit[TL_DW-1:0] exp_status_val, rdata0, rdata1;

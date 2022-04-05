@@ -182,6 +182,15 @@ package otp_ctrl_env_pkg;
     bit write_lock;
   } otp_part_access_lock_t;
 
+  // OTP conditions when driving specific port.
+  typedef enum bit [2:0] {
+    DuringOTPInit,
+    DuringOTPDaiBusy,
+    DuringOTPDaiDigest,
+    DuringOTPRead,
+    DriveRandomly
+  } port_drive_condition_e;
+
   typedef virtual otp_ctrl_if otp_ctrl_vif;
 
   parameter otp_err_code_e OTP_TERMINAL_ERRS[4] = {OtpMacroEccUncorrError,

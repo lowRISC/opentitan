@@ -544,6 +544,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           `DV_CHECK_EQ(item.d_data, otp_a[otp_addr],
                       $sformatf("mem read mismatch at TLUL addr %0h, csr_addr %0h",
                       csr_addr, dai_addr))
+          predict_no_err(part_idx);
         end
       end
       return;
@@ -1228,9 +1229,14 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     bit [TL_AW-1:0] addr_mask = ral.get_addr_mask();
     bit [TL_AW-1:0] dai_addr = (csr_addr & addr_mask - SW_WINDOW_BASE_ADDR);
 
+    bit mem_access_allowed = super.is_tl_mem_access_allowed(item, ral_name, mem_byte_access_err,
+                                                            mem_wo_err, mem_ro_err, custom_err);
+
     // Ensure the address is within the memory window range.
+    // Also will skip checking if memory access is not allowed due to TLUL bus error.
     if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr :
-                      cfg.ral_models[ral_name].mem_ranges[0].end_addr]}) begin
+                      cfg.ral_models[ral_name].mem_ranges[0].end_addr]} &&
+        mem_access_allowed) begin
 
       // If sw partition is read locked, then access policy changes from RO to no access
       if (`gmv(ral.vendor_test_read_lock) == 0 || cfg.otp_ctrl_vif.under_error_states()) begin
@@ -1287,8 +1293,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       end
     end
 
-    return super.is_tl_mem_access_allowed(item, ral_name, mem_byte_access_err, mem_wo_err,
-                                          mem_ro_err, custom_err);
+    return mem_access_allowed;
   endfunction
 
   virtual function void set_exp_alert(string alert_name, bit is_fatal = 0, int max_delay = 0);
