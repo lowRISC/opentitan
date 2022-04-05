@@ -39,17 +39,15 @@ class pwrmgr_repeat_wakeup_reset_vseq extends pwrmgr_wakeup_reset_vseq;
     num_trans_c.constraint_mode(0);
     num_trans = 50;
 
-    disable_assert(mubi_mode);
+    disable_assert();
     fork
       super.body();
       drv_stim(mubi_mode);
     join
   endtask // body
 
-  function void disable_assert(pwrmgr_mubi_e mubi_mode);
-    if (mubi_mode == PwrmgrMubiRomCtrl) begin
-      $assertoff(0, "tb.dut.u_cdc.u_sync_rom_ctrl");
-    end
+  function void disable_assert();
+    $assertoff(0, "tb.dut.u_cdc.u_sync_rom_ctrl");
   endfunction // disable_assert
 
   task drv_stim(pwrmgr_mubi_e mubi_mode);
