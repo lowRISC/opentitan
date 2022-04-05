@@ -69,6 +69,10 @@
       name: pwm_rand_output
       uvm_test_seq: pwm_rand_output_vseq
     }
+    {
+      name: pwm_perf
+      uvm_test_seq: pwm_perf_vseq
+    }
   ]
 
   // List of regressions.

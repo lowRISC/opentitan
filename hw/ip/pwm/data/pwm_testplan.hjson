@@ -122,7 +122,7 @@
                 - Ensure the output pulses are correctly modulated for all channels
             '''
       milestone: V2
-      tests: ["pwm_stress_perf"]
+      tests: ["pwm_perf"]
     }
     {
       name: stress_all
