@@ -24,22 +24,63 @@ module adc_ctrl_intr import adc_ctrl_reg_pkg::*; (
   output intr_debug_cable_o
 );
 
-  // synchronize status into appropriate interrupts
-  logic [NumAdcFilter-1:0] filter_match_event;
-  for (genvar i = 0; i < NumAdcFilter; i++) begin : gen_filter_status_sync
-    prim_pulse_sync u_sync (
-      .clk_src_i(clk_aon_i),
-      .rst_src_ni(rst_aon_ni),
-      .src_pulse_i(aon_filter_match_i[i]),
-      .clk_dst_i(clk_i),
-      .rst_dst_ni(rst_ni),
-      .dst_pulse_o(filter_match_event[i])
-    );
+
+  // aon_filter_match is split into staging and request portions.
+  // The staging portion always absorbs the incoming event pulse.
+  // The request portion on the other hand does not change until
+  // a request/ack handshake cycle has completed.
+
+  logic [NumAdcFilter-1:0] staging_filter_match;
+  logic aon_ld_req;
+
+  // staging portion takes on the value of the incoming event match
+  // and clears when it is snapshot into request hold.
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
+     if (!rst_aon_ni) begin
+        staging_filter_match <= '0;
+     end else if (aon_ld_req && |aon_filter_match_i) begin
+        staging_filter_match <= aon_filter_match_i;
+     end else if (aon_ld_req) begin
+        staging_filter_match <= '0;
+     end else if (|aon_filter_match_i) begin
+        staging_filter_match <= staging_filter_match | aon_filter_match_i;
+     end
   end
+
+  logic [NumAdcFilter-1:0] aon_req_hold;
+  logic aon_ack;
+
+  // staging has pending requsts
+  assign aon_ld_req = (aon_req_hold == '0) & |staging_filter_match;
+
+  // request hold self clears when the handshake cycle is complete
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
+    if (!rst_aon_ni) begin
+       aon_req_hold <= '0;
+    end else if (aon_ld_req) begin
+       aon_req_hold <= staging_filter_match;
+    end else if (aon_ack) begin
+       aon_req_hold <= '0;
+    end
+  end
+
+  logic filter_match_event;
+  prim_sync_reqack u_match_sync (
+    .clk_src_i(clk_aon_i),
+    .rst_src_ni(rst_aon_ni),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .req_chk_i(1'b1),
+    .src_req_i(|aon_req_hold),
+    .src_ack_o(aon_ack),
+    .dst_req_o(filter_match_event),
+    .dst_ack_i(filter_match_event)
+  );
 
   //To write into interrupt status register
   logic [1+NumAdcFilter-1:0] intr_events;
-  assign intr_events = {cfg_oneshot_done_i, filter_match_event} & cfg_intr_en_i;
+  assign intr_events = {cfg_oneshot_done_i,
+                        {NumAdcFilter{filter_match_event}} & aon_req_hold} & cfg_intr_en_i;
 
   assign adc_intr_status_o.cc_sink_det.de = intr_events[0];
   assign adc_intr_status_o.cc_1a5_sink_det.de = intr_events[1];
