@@ -4,32 +4,24 @@
 
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"
 
-.extern pxCurrentTCB
-.extern kTestConfig
-.extern ottf_exception_handler
-.extern ottf_software_isr
-.extern ottf_timer_isr
-.extern ottf_external_isr
-
 // -----------------------------------------------------------------------------
 
-/**
- * Compute the MEPC to that will be saved to the stack by the associated ISR
- * handler sub-routine below.
- *
- * This subroutine is only invoked for IRQs that are synchronous. Specifically,
- * this subroutine updates the ISR return address to point to the instruction
- * after the trapped instruction to prevent an endless interrupt cycle.
- *
- * Since we support the RISC-V compressed instructions extension, we need to
- * check if the two least significant bits of the instruction are
- * b11 (0x3), which means that the trapped instruction is not compressed,
- * i.e., the trapped instruction is 32bits = 4bytes. Otherwise, the trapped
- * instruction is 16bits = 2bytes.
- */
-
-.balign 4
-.type compute_mepc_on_synchronous_irq, @function
+  /**
+   * Compute the MEPC to that will be saved to the stack by the associated ISR
+   * handler sub-routine below.
+   *
+   * This subroutine is only invoked for IRQs that are synchronous. Specifically,
+   * this subroutine updates the ISR return address to point to the instruction
+   * after the trapped instruction to prevent an endless interrupt cycle.
+   *
+   * Since we support the RISC-V compressed instructions extension, we need to
+   * check if the two least significant bits of the instruction are
+   * b11 (0x3), which means that the trapped instruction is not compressed,
+   * i.e., the trapped instruction is 32bits = 4bytes. Otherwise, the trapped
+   * instruction is 16bits = 2bytes.
+   */
+  .balign 4
+  .type compute_mepc_on_synchronous_irq, @function
 compute_mepc_on_synchronous_irq:
   csrr t0, mepc
   li t1, 0x3
@@ -40,21 +32,19 @@ compute_mepc_on_synchronous_irq:
 .L_32bit_trap_instr:
   addi t0, t0, OTTF_WORD_SIZE
   ret
-
-  // Set size so this function can be disassembled.
   .size compute_mepc_on_synchronous_irq, .-compute_mepc_on_synchronous_irq
 
 // -----------------------------------------------------------------------------
 
-/**
- * Store stack pointer to current Task Control Block (TCB) ONLY if concurrency
- * is enabled for a given test, i.e., the test that triggers an IRQ is running
- * as a FreeRTOS task. This is because for bare-metal tests, the current
- * FreeRTOS TCB pointer (pxCurrentTCB) will be NULL, which will result in an
- * exception, if we attempt to perform a store to said address.
- */
-.balign 4
-.type save_current_sp_to_tcb, @function
+  /**
+   * Store stack pointer to current Task Control Block (TCB) ONLY if concurrency
+   * is enabled for a given test, i.e., the test that triggers an IRQ is running
+   * as a FreeRTOS task. This is because for bare-metal tests, the current
+   * FreeRTOS TCB pointer (pxCurrentTCB) will be NULL, which will result in an
+   * exception, if we attempt to perform a store to said address.
+   */
+  .balign 4
+  .type save_current_sp_to_tcb, @function
 save_current_sp_to_tcb:
   la t0, kTestConfig       // Load the pointer to the test configuration struct.
   beqz t0, .L_skip_sp_save // If the kTestConfig pointer is NULL, we are using
@@ -68,18 +58,16 @@ save_current_sp_to_tcb:
   sw sp, 0(t2)
 .L_skip_sp_save:
   ret
-
-  // Set size so this function can be disassembled.
   .size save_current_sp_to_tcb, .-save_current_sp_to_tcb
 
 // -----------------------------------------------------------------------------
 
-/**
- * Exception handler.
- */
-.balign 4
-.global handler_exception
-.type handler_exception, @function
+  /**
+   * Exception handler.
+   */
+  .balign 4
+  .global handler_exception
+  .type handler_exception, @function
 handler_exception:
   // Save all registers to the stack.
   addi sp, sp, -OTTF_CONTEXT_SIZE
@@ -130,18 +118,16 @@ handler_exception:
 
   // Return from ISR.
   j ottf_isr_exit
-
-  // Set size so this function can be disassembled.
   .size handler_exception, .-handler_exception
 
 // -----------------------------------------------------------------------------
 
-/**
- * Software IRQ handler.
- */
-.balign 4
-.global handler_irq_software
-.type handler_irq_software, @function
+  /**
+   * Software IRQ handler.
+   */
+  .balign 4
+  .global handler_irq_software
+  .type handler_irq_software, @function
 handler_irq_software:
   // Save all registers to the stack.
   addi sp, sp, -OTTF_CONTEXT_SIZE
@@ -192,18 +178,16 @@ handler_irq_software:
 
   // Return from ISR.
   j ottf_isr_exit
-
-  // Set size so this function can be disassembled.
   .size handler_irq_software, .-handler_irq_software
 
 // -----------------------------------------------------------------------------
 
-/**
- * Timer IRQ handler.
- */
-.balign 4
-.global handler_irq_timer
-.type handler_irq_timer, @function
+  /**
+   * Timer IRQ handler.
+   */
+  .balign 4
+  .global handler_irq_timer
+  .type handler_irq_timer, @function
 handler_irq_timer:
   // Save all registers to the stack.
   addi sp, sp, -OTTF_CONTEXT_SIZE
@@ -254,18 +238,16 @@ handler_irq_timer:
 
   // Return from ISR.
   j ottf_isr_exit
-
-  // Set size so this function can be disassembled.
   .size handler_irq_timer, .-handler_irq_timer
 
 // -----------------------------------------------------------------------------
 
-/**
- * External IRQ handler.
- */
-.balign 4
-.global handler_irq_external
-.type handler_irq_external, @function
+  /**
+   * External IRQ handler.
+   */
+  .balign 4
+  .global handler_irq_external
+  .type handler_irq_external, @function
 handler_irq_external:
   // Save all registers to the stack.
   addi sp, sp, -OTTF_CONTEXT_SIZE
@@ -316,18 +298,16 @@ handler_irq_external:
 
   // Return from ISR.
   j ottf_isr_exit
-
-  // Set size so this function can be disassembled.
   .size handler_irq_external, .-handler_irq_external
 
 // -----------------------------------------------------------------------------
 
-/**
- * ISR exit sub-routine restores registers from the stack.
- */
-.balign 4
-.global ottf_isr_exit
-.type ottf_isr_exit, @function
+  /**
+   * ISR exit sub-routine restores registers from the stack.
+   */
+  .balign 4
+  .global ottf_isr_exit
+  .type ottf_isr_exit, @function
 ottf_isr_exit:
   // Load the stack pointer for the current task control block (TCB), only if
   // the `enable_concurrency` flag is set in the test configuration struct,
@@ -388,6 +368,4 @@ ottf_isr_exit:
   // This exits the ISR completely, and does not return control flow to the ISR
   // that called this sub-routine.
   mret
-
-  // Set size so this function can be disassembled.
   .size ottf_isr_exit, .-ottf_isr_exit

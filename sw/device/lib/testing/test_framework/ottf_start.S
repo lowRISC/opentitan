@@ -2,25 +2,27 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-/**
- * Manifest for boot stages stored in flash.
- *
- * Note, we set the default entry point field (which is the last field in the
- * manifest struct) to `_ottf_start`. We do this to enable running unsigned test
- * images with the test ROM, since these images will not be processed by our
- * signing tool which would otherwise populate this entry point field.
- */
+#include "sw/device/silicon_creator/lib/manifest_size.h"
 
-  #include "sw/device/silicon_creator/lib/manifest_size.h"
-
+  /**
+   * Manifest for boot stages stored in flash.
+   *
+   * Note, we set the default entry point field (which is the last field in the
+   * manifest struct) to `_ottf_start`. We do this to enable running unsigned test
+   * images with the test ROM, since these images will not be processed by our
+   * signing tool which would otherwise populate this entry point field.
+   */
   .section .manifest, "a"
   .global kManifest
-
+  .type kManifest, @object
 kManifest:
   .rept MANIFEST_SIZE - 4
   .byte 0x0
   .endr
   .4byte _ottf_start
+  .size kManifest, .-kManifest
+
+// -----------------------------------------------------------------------------
 
 /**
  * OTTF Interrupt Vector.
@@ -37,33 +39,27 @@ kManifest:
   // link-time, which we also really don't want.
   .option norelax
 
-  // These symbols are declared in `ottf_isrs.S`.
-  .extern handler_exception
-  .extern handler_irq_software
-  .extern handler_irq_timer
-  .extern handler_irq_external
-
-/**
- * `_ottf_interrupt_vector` is an ibex-compatible interrupt vector.
- *
- * Interrupt vectors in Ibex have 32 4-byte entries for 32 possible interrupts. The
- * vector must be 256-byte aligned, as Ibex's vectoring mechanism requires that.
- *
- * Only the following will be used by Ibex:
- * - Exception Handler (Entry 0)
- * - Machine Software Interrupt Handler (Entry 3)
- * - Machine Timer Interrupt Handler (Entry 7)
- * - Machine External Interrupt Handler (Entry 11)
- * - Vendor Interrupt Handlers (Entries 16-31)
- *
- * More information about Ibex's interrupts can be found here:
- *   https://ibex-core.readthedocs.io/en/latest/03_reference/exception_interrupts.html
- */
+  /**
+   * `_ottf_interrupt_vector` is an ibex-compatible interrupt vector.
+   *
+   * Interrupt vectors in Ibex have 32 4-byte entries for 32 possible interrupts.
+   * The vector must be 256-byte aligned, as Ibex's vectoring mechanism requires
+   * that.
+   *
+   * Only the following will be used by Ibex:
+   * - Exception Handler (Entry 0)
+   * - Machine Software Interrupt Handler (Entry 3)
+   * - Machine Timer Interrupt Handler (Entry 7)
+   * - Machine External Interrupt Handler (Entry 11)
+   * - Vendor Interrupt Handlers (Entries 16-31)
+   *
+   * More information about Ibex's interrupts can be found here:
+   *   https://ibex-core.readthedocs.io/en/latest/03_reference/exception_interrupts.html
+   */
   .balign 256
   .global _ottf_interrupt_vector
   .type _ottf_interrupt_vector, @function
 _ottf_interrupt_vector:
-
   // RISC-V Standard (Vectored) Interrupt Handlers:
 
   // Exception and User Software Interrupt Handler.
@@ -114,6 +110,8 @@ _ottf_interrupt_vector:
 
   .option pop
 
+// -----------------------------------------------------------------------------
+
 /**
  * OTTF runtime initialization code.
  */
@@ -124,16 +122,16 @@ _ottf_interrupt_vector:
    */
   .section .crt, "ax"
 
-/**
- * Entry point.
- *
- * This symbol is jumped to from the test ROM or mask ROM using the
- * `entry_point` field of the manifest.
- */
-  .globl _ottf_start
+  /**
+   * Entry point.
+   *
+   * This symbol is jumped to from the test ROM or mask ROM using the
+   * `entry_point` field of the manifest.
+   */
+  .balign 4
+  .global _ottf_start
   .type _ottf_start, @function
 _ottf_start:
-
   /**
    * Set up the stack pointer.
    *
@@ -165,7 +163,6 @@ _ottf_start:
   la   a0, _data_start
   la   a1, _data_end
   la   a2, _data_init_start
-  .extern crt_section_copy
   call crt_section_copy
 
   /**
@@ -176,7 +173,6 @@ _ottf_start:
    */
   la   a0, _bss_start
   la   a1, _bss_end
-  .extern crt_section_clear
   call crt_section_clear
 
   /**
@@ -218,8 +214,5 @@ init_array_loop_end:
   */
   li   a0, 0x0  // argc = 0
   li   a1, 0x0  // argv = NULL
-  .extern main
   tail main
-
-  // Set size so this function can be disassembled.
   .size _ottf_start, .-_ottf_start

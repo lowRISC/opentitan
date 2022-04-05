@@ -18,27 +18,27 @@
   // link-time, which we also really don't want.
   .option norelax
 
-/**
- * `_rom_ext_interrupt_vector` is an ibex-compatible interrupt vector.
- *
- * Interrupt vectors in Ibex have 32 4-byte entries for 32 possible interrupts. The
- * vector must be 256-byte aligned, as Ibex's vectoring mechanism requires that.
- *
- * Only the following will be used by Ibex:
- * - Exception Handler (Entry 0)
- * - Machine Software Interrupt Handler (Entry 3)
- * - Machine Timer Interrupt Handler (Entry 7)
- * - Machine External Interrupt Handler (Entry 11)
- * - Vendor Interrupt Handlers (Entries 16-31)
- *
- * More information about Ibex's interrupts can be found here:
- *   https://ibex-core.readthedocs.io/en/latest/03_reference/exception_interrupts.html
- */
+  /**
+   * `_rom_ext_interrupt_vector` is an ibex-compatible interrupt vector.
+   *
+   * Interrupt vectors in Ibex have 32 4-byte entries for 32 possible interrupts.
+   * The vector must be 256-byte aligned, as Ibex's vectoring mechanism
+   * requires that.
+   *
+   * Only the following will be used by Ibex:
+   * - Exception Handler (Entry 0)
+   * - Machine Software Interrupt Handler (Entry 3)
+   * - Machine Timer Interrupt Handler (Entry 7)
+   * - Machine External Interrupt Handler (Entry 11)
+   * - Vendor Interrupt Handlers (Entries 16-31)
+   *
+   * More information about Ibex's interrupts can be found here:
+   *   https://ibex-core.readthedocs.io/en/latest/03_reference/exception_interrupts.html
+   */
   .balign 256
-  .globl _rom_ext_interrupt_vector
+  .global _rom_ext_interrupt_vector
   .type _rom_ext_interrupt_vector, @function
 _rom_ext_interrupt_vector:
-
   // RISC-V Standard (Vectored) Interrupt Handlers:
 
   // Exception and User Software Interrupt Handler.
@@ -83,13 +83,12 @@ _rom_ext_interrupt_vector:
 
   // On Ibex interrupt id 31 is for non-maskable interrupts.
   unimp
-
-  // Set size so this vector can be disassembled.
   .size _rom_ext_interrupt_vector, .-_rom_ext_interrupt_vector
 
   // Re-enable compressed instructions, linker relaxation.
   .option pop
 
+// -----------------------------------------------------------------------------
 
 /**
  * ROM_EXT runtime initialization code.
@@ -109,16 +108,16 @@ _rom_ext_interrupt_vector:
   .option push
   .option norelax
 
-/**
- * Entry point.
- *
- * This symbol is jumped to from `mask_rom_boot` using the `entry_point` field
- * of the manifest.
- */
-  .globl _rom_ext_start_boot
+  /**
+   * Entry point.
+   *
+   * This symbol is jumped to from `mask_rom_boot` using the `entry_point` field
+   * of the manifest.
+   */
+  .balign 4
+  .global _rom_ext_start_boot
   .type _rom_ext_start_boot, @function
 _rom_ext_start_boot:
-
   /**
    * Disable Interrupts.
    *
@@ -167,7 +166,6 @@ _rom_ext_start_boot:
   la   a0, _data_start
   la   a1, _data_end
   la   a2, _data_init_start
-  .extern crt_section_copy
   call crt_section_copy
 
   /**
@@ -178,7 +176,6 @@ _rom_ext_start_boot:
    */
   la   a0, _bss_start
   la   a1, _bss_end
-  .extern crt_section_clear
   call crt_section_clear
 
   // Re-clobber all of the temporary registers.
@@ -214,8 +211,5 @@ _rom_ext_start_boot:
   /**
    * Jump to C Code
    */
-  .extern rom_ext_main
   tail rom_ext_main
-
-  // Set size so this function can be disassembled.
   .size _rom_ext_start_boot, .-_rom_ext_start_boot
