@@ -8,3 +8,5 @@
 `include "pattgen_perf_vseq.sv"
 `include "pattgen_error_vseq.sv"
 `include "pattgen_stress_all_vseq.sv"
+`include "pattgen_cnt_rollover_vseq.sv"
+
