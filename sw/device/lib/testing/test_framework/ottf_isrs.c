@@ -15,7 +15,7 @@
 static const char *exception_reason[] = {
     "Instruction Misaligned",
     "Instruction Access",
-    "Illegial Instruction",
+    "Illegal Instruction",
     "Breakpoint",
     "Load Address Misaligned",
     "Load Access Fault",
