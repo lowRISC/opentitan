@@ -54,7 +54,7 @@ class OtbnTraceEntry {
   // message to stderr and return false.
   bool from_rtl_trace(const std::string &trace);
 
-  bool operator==(const OtbnTraceEntry &other) const;
+  bool compare_rtl_iss_entries(const OtbnTraceEntry &other) const;
   void print(const std::string &indent, std::ostream &os) const;
 
   void take_writes(const OtbnTraceEntry &other);
@@ -71,13 +71,18 @@ class OtbnTraceEntry {
   // True if this entry is "final" (Exec or WipeComplete)
   bool is_final() const;
 
+  static bool check_entries_compatible(
+      trace_type_t type, const std::string &key,
+      const std::vector<OtbnTraceBodyLine> &rtl_lines,
+      const std::vector<OtbnTraceBodyLine> &iss_lines);
+
  protected:
   static trace_type_t hdr_to_trace_type(const std::string &hdr);
 
   trace_type_t trace_type_;
   std::string hdr_;
   // The register writes for this trace entry, keyed by destination
-  std::map<std::string, OtbnTraceBodyLine> writes_;
+  std::map<std::string, std::vector<OtbnTraceBodyLine>> writes_;
 };
 
 class OtbnIssTraceEntry : public OtbnTraceEntry {

@@ -235,7 +235,7 @@ bool OtbnTraceChecker::MatchPair() {
   rtl_pending_ = false;
   iss_pending_ = false;
   iss_started_ = false;
-  if (!(rtl_entry_ == iss_entry_)) {
+  if (!(rtl_entry_.compare_rtl_iss_entries(iss_entry_))) {
     std::cerr
         << ("ERROR: Mismatch between RTL and ISS trace entries.\n"
             "  RTL entry is:\n");
