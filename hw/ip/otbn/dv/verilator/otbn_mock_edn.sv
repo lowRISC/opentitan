@@ -26,7 +26,7 @@ module otbn_mock_edn
 );
 
   assign edn_rsp_o.edn_ack  = edn_req_active && !edn_req_counter[0];
-  assign edn_rsp_o.edn_fips = 1'b0;
+  assign edn_rsp_o.edn_fips = 1'b1;
   assign edn_rsp_o.edn_bus  = 32'h9999_9999;
 
   parameter int MaxDelay = Delay - 1;
