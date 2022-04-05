@@ -80,24 +80,24 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
     solve en_mp_regions before mp_regions;
 
     foreach (mp_regions[i]) {
-      mp_regions[i].en == en_mp_regions[i];
+      mp_regions[i].en == mubi4_bool_to_mubi(en_mp_regions[i]);
 
-      mp_regions[i].read_en == 1;
+      mp_regions[i].read_en == MuBi4True;
 
-      mp_regions[i].program_en == 1;
+      mp_regions[i].program_en == MuBi4True;
 
-      mp_regions[i].erase_en == 1;
+      mp_regions[i].erase_en == MuBi4True;
 
       mp_regions[i].scramble_en dist {
-        0 :/ (100 - cfg.seq_cfg.mp_region_scramble_en_pc),
-        1 :/ cfg.seq_cfg.mp_region_scramble_en_pc
+        MuBi4False :/ (100 - cfg.seq_cfg.mp_region_scramble_en_pc),
+        MuBi4True  :/ cfg.seq_cfg.mp_region_scramble_en_pc
       };
 
-      mp_regions[i].ecc_en == 0;
+      mp_regions[i].ecc_en == MuBi4False;
 
       mp_regions[i].he_en dist {
-        0 :/ (100 - cfg.seq_cfg.mp_region_he_en_pc),
-        1 :/ cfg.seq_cfg.mp_region_he_en_pc
+        MuBi4False :/ (100 - cfg.seq_cfg.mp_region_he_en_pc),
+        MuBi4True  :/ cfg.seq_cfg.mp_region_he_en_pc
       };
 
       mp_regions[i].start_page inside {[0 : FlashNumPages - 1]};
@@ -131,43 +131,43 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
 
       foreach (mp_info_pages[i][j][k]) {
 
-        mp_info_pages[i][j][k].en == 1;
+        mp_info_pages[i][j][k].en == MuBi4True;
 
-        mp_info_pages[i][j][k].read_en == 1;
+        mp_info_pages[i][j][k].read_en == MuBi4True;
 
-        mp_info_pages[i][j][k].program_en == 1;
+        mp_info_pages[i][j][k].program_en == MuBi4True;
 
-        mp_info_pages[i][j][k].erase_en == 1;
+        mp_info_pages[i][j][k].erase_en == MuBi4True;
 
-        mp_info_pages[i][j][k].ecc_en == 0;
+        mp_info_pages[i][j][k].ecc_en == MuBi4False;
 
         mp_info_pages[i][j][k].he_en dist {
-          0 :/ (100 - cfg.seq_cfg.mp_info_page_he_en_pc[i][j]),
-          1 :/ cfg.seq_cfg.mp_info_page_he_en_pc[i][j]
+          MuBi4False :/ (100 - cfg.seq_cfg.mp_info_page_he_en_pc[i][j]),
+          MuBi4True  :/ cfg.seq_cfg.mp_info_page_he_en_pc[i][j]
         };
       }
     }
   }
 
   // Default flash ctrl region settings.
-  bit default_region_read_en;
-  bit default_region_program_en;
-  bit default_region_erase_en;
-  rand bit default_region_scramble_en;
-  rand bit default_region_he_en;
-  bit default_region_ecc_en;
+  mubi4_t default_region_read_en;
+  mubi4_t default_region_program_en;
+  mubi4_t default_region_erase_en;
+  rand mubi4_t default_region_scramble_en;
+  rand mubi4_t default_region_he_en;
+  mubi4_t default_region_ecc_en;
 
   constraint default_scramble_he_en_c {
     default_region_scramble_en dist {
-      1 :/ cfg.seq_cfg.default_region_scramble_en_pc,
-      0 :/ (100 - cfg.seq_cfg.default_region_scramble_en_pc)
+      MuBi4True  :/ cfg.seq_cfg.default_region_scramble_en_pc,
+      MuBi4False :/ (100 - cfg.seq_cfg.default_region_scramble_en_pc)
     };
   }
 
   constraint default_region_he_en_c {
     default_region_he_en dist {
-      1 :/ cfg.seq_cfg.default_region_he_en_pc,
-      0 :/ (100 - cfg.seq_cfg.default_region_he_en_pc)
+      MuBi4True  :/ cfg.seq_cfg.default_region_he_en_pc,
+      MuBi4False :/ (100 - cfg.seq_cfg.default_region_he_en_pc)
     };
   }
 
@@ -196,10 +196,10 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
     cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = lc_ctrl_pkg::On;
     cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en   = lc_ctrl_pkg::On;
     // Default region settings
-    default_region_read_en = 1;
-    default_region_program_en = 1;
-    default_region_erase_en = 1;
-    default_region_ecc_en = 0;
+    default_region_read_en    = MuBi4True;
+    default_region_program_en = MuBi4True;
+    default_region_erase_en   = MuBi4True;
+    default_region_ecc_en     = MuBi4False;
 
     // Configure the flash with scramble disable.
     foreach (mp_regions[k]) begin

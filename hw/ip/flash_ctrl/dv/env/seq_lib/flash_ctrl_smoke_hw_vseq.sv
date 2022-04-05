@@ -25,9 +25,9 @@ class flash_ctrl_smoke_hw_vseq extends flash_ctrl_base_vseq;
 
     int flash_depth = flash_ctrl_reg_pkg::BytesPerBank / 4;
 
-    bit default_region_read_en;
-    bit default_region_program_en;
-    bit default_region_erase_en;
+    mubi4_t default_region_read_en;
+    mubi4_t default_region_program_en;
+    mubi4_t default_region_erase_en;
 
     // Bank 0 is used
     uint bank;
@@ -41,9 +41,9 @@ class flash_ctrl_smoke_hw_vseq extends flash_ctrl_base_vseq;
     // Memory protection regions settings. One MP region, Single Page
     flash_mp_region_cfg_t mp_region;
 
-    default_region_read_en    = 1'b1;
-    default_region_program_en = 1'b1;
-    default_region_erase_en   = 1'b1;
+    default_region_read_en    = MuBi4True;
+    default_region_program_en = MuBi4True;
+    default_region_erase_en   = MuBi4True;
 
     bank = 0;
 
@@ -54,10 +54,10 @@ class flash_ctrl_smoke_hw_vseq extends flash_ctrl_base_vseq;
 
     en_mp_regions = cfg.seq_cfg.num_en_mp_regions;
 
-    mp_region.en = en_mp_regions;
-    mp_region.read_en = 1;
-    mp_region.program_en = 1;
-    mp_region.erase_en = 1;
+    mp_region.en = mubi4_bool_to_mubi(en_mp_regions);
+    mp_region.read_en = MuBi4True;
+    mp_region.program_en = MuBi4True;
+    mp_region.erase_en = MuBi4True;
     mp_region.start_page = 0;
     mp_region.num_pages = 1;
 

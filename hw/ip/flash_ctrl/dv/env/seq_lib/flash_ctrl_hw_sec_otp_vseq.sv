@@ -207,15 +207,15 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
     // DATA PARTITION
 
     flash_mp_region_cfg_t mp_regions[flash_ctrl_pkg::MpRegions];
-    bit default_region_read_en;
-    bit default_region_program_en;
-    bit default_region_erase_en;
+    mubi4_t default_region_read_en;
+    mubi4_t default_region_program_en;
+    mubi4_t default_region_erase_en;
 
     // MEMORY PROTECTION REGIONS
 
     // No Protection Regions
     foreach (mp_regions[i]) begin
-      mp_regions[i].en = 0;
+      mp_regions[i].en = MuBi4False;
     end
 
     // Configure the flash based on the given settings
@@ -225,9 +225,9 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
 
     // DEFAULT REGIONS
 
-    default_region_read_en    = 1'b1;
-    default_region_program_en = 1'b1;
-    default_region_erase_en   = 1'b1;
+    default_region_read_en    = MuBi4True;
+    default_region_program_en = MuBi4True;
+    default_region_erase_en   = MuBi4True;
 
     // Memory Default Regions
     flash_ctrl_default_region_cfg(.read_en(default_region_read_en),
@@ -243,10 +243,10 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
     flash_bank_mp_info_page_cfg_t info_regions[flash_ctrl_reg_pkg::NumInfos0];
 
     foreach (info_regions[i]) begin
-      info_regions[i].en         = 1;
-      info_regions[i].read_en    = 1;
-      info_regions[i].program_en = 1;
-      info_regions[i].erase_en   = 1;
+      info_regions[i].en         = MuBi4True;
+      info_regions[i].read_en    = MuBi4True;
+      info_regions[i].program_en = MuBi4True;
+      info_regions[i].erase_en   = MuBi4True;
     end
 
     foreach (info_regions[i]) begin
@@ -280,7 +280,7 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
           $sformatf("tb.dut.u_eflash.gen_flash_cores[%0d].u_core.u_scramble.rand_data_key_i", i));
     end
 
-    // Compare OTP Keys - Probed vs Expected (For This Test Scenario)                                                                                                                        
+    // Compare OTP Keys - Probed vs Expected (For This Test Scenario)
     for (int i = 0; i < flash_ctrl_pkg::NumBanks; i++) begin
       compare_key_probe(i, "otp_addr_key", prb_otp_addr_key[i], otp_addr_key);
       compare_key_probe(i, "otp_addr_rand_key", prb_otp_addr_rand_key[i], otp_addr_rand_key);

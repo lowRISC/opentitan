@@ -369,11 +369,14 @@ class flash_ctrl_scoreboard #(
       FlashPartData: begin
         for (int i = 0; i < cfg.seq_cfg.num_en_mp_regions; i++) begin
           if (!wr_access_found) begin
-            csr_rd(.ptr(ral.mp_region_cfg_shadowed[i]), .value(data), .backdoor(1'b1));
-            en = get_field_val(ral.mp_region_cfg_shadowed[i].en, data);
-            prog_en = get_field_val(ral.mp_region_cfg_shadowed[i].prog_en, data);
-            base = get_field_val(ral.mp_region_cfg_shadowed[i].base, data);
-            size = get_field_val(ral.mp_region_cfg_shadowed[i].size, data);
+            csr_rd(.ptr(ral.mp_region_cfg[i]), .value(data), .backdoor(1'b1));
+            en = mubi4_test_true_strict(
+                     get_field_val(ral.mp_region_cfg[i].en, data));
+            prog_en = mubi4_test_true_strict(
+                          get_field_val(ral.mp_region_cfg[i].prog_en, data));
+            csr_rd(.ptr(ral.mp_region[i]), .value(data), .backdoor(1'b1));
+            base = get_field_val(ral.mp_region[i].base, data);
+            size = get_field_val(ral.mp_region[i].size, data);
             if (in_addr inside {[base*BytesPerPage:base*BytesPerPage+size*BytesPerPage]}) begin
               if (en) begin
                 wr_access = prog_en;
@@ -383,8 +386,9 @@ class flash_ctrl_scoreboard #(
           end
         end
         if (!wr_access_found) begin
-          csr_rd(.ptr(ral.default_region_shadowed), .value(data), .backdoor(1'b1));
-          prog_en_def = get_field_val(ral.default_region_shadowed.prog_en, data);
+          csr_rd(.ptr(ral.default_region), .value(data), .backdoor(1'b1));
+          prog_en_def = mubi4_test_true_strict(
+                            get_field_val(ral.default_region.prog_en, data));
           wr_access = prog_en_def;
           wr_access_found = 1'b1;
         end
@@ -392,18 +396,18 @@ class flash_ctrl_scoreboard #(
       FlashPartInfo: begin
         bk_idx = in_addr[19];
         pg_idx = in_addr[18:11];
-        csr_name = $sformatf("bank%0d_info0_page_cfg_shadowed_%0d", bk_idx, pg_idx);
+        csr_name = $sformatf("bank%0d_info0_page_cfg_%0d", bk_idx, pg_idx);
         write_access_info();
       end
       FlashPartInfo1: begin
         bk_idx = in_addr[19];
-        csr_name = $sformatf("bank%0d_info1_page_cfg_shadowed", bk_idx);
+        csr_name = $sformatf("bank%0d_info1_page_cfg", bk_idx);
         write_access_info();
       end
       FlashPartInfo2: begin
         bk_idx = in_addr[19];
         pg_idx = in_addr[18:11];
-        csr_name = $sformatf("bank%0d_info2_page_cfg_shadowed_%0d", bk_idx, pg_idx);
+        csr_name = $sformatf("bank%0d_info2_page_cfg_%0d", bk_idx, pg_idx);
         write_access_info();
       end
       default :
@@ -427,22 +431,25 @@ class flash_ctrl_scoreboard #(
       FlashPartData: begin
         for (int i = 0; i < cfg.seq_cfg.num_en_mp_regions; i++) begin
           if (!rd_access_found) begin
-            csr_rd(.ptr(ral.mp_region_cfg_shadowed[i]), .value(data), .backdoor(1'b1));
-            en = get_field_val(ral.mp_region_cfg_shadowed[i].en, data);
-            read_en = get_field_val(ral.mp_region_cfg_shadowed[i].rd_en, data);
-            base = get_field_val(ral.mp_region_cfg_shadowed[i].base, data);
-            size = get_field_val(ral.mp_region_cfg_shadowed[i].size, data);
+            csr_rd(.ptr(ral.mp_region_cfg[i]), .value(data), .backdoor(1'b1));
+            en = mubi4_test_true_strict(
+                     get_field_val(ral.mp_region_cfg[i].en, data));
+            read_en = mubi4_test_true_strict(
+                          get_field_val(ral.mp_region_cfg[i].rd_en, data));
+            csr_rd(.ptr(ral.mp_region[i]), .value(data), .backdoor(1'b1));
+            base = get_field_val(ral.mp_region[i].base, data);
+            size = get_field_val(ral.mp_region[i].size, data);
             if (in_rd_addr inside {[base*BytesPerPage:base*BytesPerPage+size*BytesPerPage]}) begin
               if (en) begin
-                rd_access = read_en;
                 rd_access_found = 1'b1;
               end
             end
           end
         end
         if (!rd_access_found) begin
-          csr_rd(.ptr(ral.default_region_shadowed), .value(data), .backdoor(1'b1));
-          read_en_def = get_field_val(ral.default_region_shadowed.rd_en, data);
+          csr_rd(.ptr(ral.default_region), .value(data), .backdoor(1'b1));
+          read_en_def = mubi4_test_true_strict(
+                            get_field_val(ral.default_region.rd_en, data));
           rd_access = read_en_def;
           rd_access_found = 1'b1;
         end
@@ -450,18 +457,18 @@ class flash_ctrl_scoreboard #(
       FlashPartInfo: begin
         bk_idx = in_rd_addr[19];
         pg_idx = in_rd_addr[18:11];
-        csr_name = $sformatf("bank%0d_info0_page_cfg_shadowed_%0d", bk_idx, pg_idx);
+        csr_name = $sformatf("bank%0d_info0_page_cfg_%0d", bk_idx, pg_idx);
         read_access_info();
       end
       FlashPartInfo1: begin
         bk_idx = in_rd_addr[19];
-        csr_name = $sformatf("bank%0d_info1_page_cfg_shadowed", bk_idx);
+        csr_name = $sformatf("bank%0d_info1_page_cfg", bk_idx);
         read_access_info();
       end
       FlashPartInfo2: begin
         bk_idx = in_rd_addr[19];
         pg_idx = in_rd_addr[18:11];
-        csr_name = $sformatf("bank%0d_info2_page_cfg_shadowed_%0d", bk_idx, pg_idx);
+        csr_name = $sformatf("bank%0d_info2_page_cfg_%0d", bk_idx, pg_idx);
         read_access_info();
       end
       default :
@@ -487,11 +494,11 @@ class flash_ctrl_scoreboard #(
         FlashPartData: begin
           for (int i = 0; i < cfg.seq_cfg.num_en_mp_regions; i++) begin
             if (!erase_access_found) begin
-              csr_rd(.ptr(ral.mp_region_cfg_shadowed[i]), .value(data), .backdoor(1'b1));
-              en = get_field_val(ral.mp_region_cfg_shadowed[i].en, data);
-              erase_en = get_field_val(ral.mp_region_cfg_shadowed[i].erase_en, data);
-              base = get_field_val(ral.mp_region_shadowed[i].base, data);
-              size = get_field_val(ral.mp_region_shadowed[i].size, data);
+              csr_rd(.ptr(ral.mp_region_cfg[i]), .value(data), .backdoor(1'b1));
+              en = get_field_val(ral.mp_region_cfg[i].en, data);
+              erase_en = get_field_val(ral.mp_region_cfg[i].erase_en, data);
+              base = get_field_val(ral.mp_region[i].base, data);
+              size = get_field_val(ral.mp_region[i].size, data);
               if (in_erase_addr
                   inside {[base*BytesPerPage:base*BytesPerPage+size*BytesPerPage]}) begin
                 if (en) begin
@@ -502,8 +509,8 @@ class flash_ctrl_scoreboard #(
             end
           end
           if (!erase_access_found) begin
-            csr_rd(.ptr(ral.default_region_shadowed), .value(data), .backdoor(1'b1));
-            erase_en_def = get_field_val(ral.default_region_shadowed.erase_en, data);
+            csr_rd(.ptr(ral.default_region), .value(data), .backdoor(1'b1));
+            erase_en_def = get_field_val(ral.default_region.erase_en, data);
             erase_access       = erase_en_def;
             erase_access_found = 1'b1;
           end
@@ -511,18 +518,18 @@ class flash_ctrl_scoreboard #(
         FlashPartInfo: begin
           bk_idx = in_erase_addr[19];
           pg_idx = in_erase_addr[18:11];
-          csr_name = $sformatf("bank%0d_info0_page_cfg_shadowed_%0d", bk_idx, pg_idx);
+          csr_name = $sformatf("bank%0d_info0_page_cfg_%0d", bk_idx, pg_idx);
           erase_access_info();
         end
         FlashPartInfo1: begin
           bk_idx = in_erase_addr[19];
-          csr_name = $sformatf("bank%0d_info1_page_cfg_shadowed", bk_idx);
+          csr_name = $sformatf("bank%0d_info1_page_cfg", bk_idx);
           erase_access_info();
         end
         FlashPartInfo2: begin
           bk_idx = in_erase_addr[19];
           pg_idx = in_erase_addr[18:11];
-          csr_name = $sformatf("bank%0d_info2_page_cfg_shadowed_%0d", bk_idx, pg_idx);
+          csr_name = $sformatf("bank%0d_info2_page_cfg_%0d", bk_idx, pg_idx);
           erase_access_info();
         end
         default:
@@ -550,8 +557,10 @@ class flash_ctrl_scoreboard #(
 
     csr = ral.get_reg_by_name(csr_name);
     csr_rd(.ptr(csr), .value(data), .backdoor(1'b1));
-    en = get_field_val(csr.get_field_by_name("en"), data);
-    prog_en = get_field_val(csr.get_field_by_name("prog_en"), data);
+    en = mubi4_test_true_strict(
+             get_field_val(csr.get_field_by_name("en"), data));
+    prog_en = mubi4_test_true_strict(
+                  get_field_val(csr.get_field_by_name("prog_en"), data));
     if (en) begin
       wr_access = prog_en;
     end else begin
@@ -565,8 +574,10 @@ class flash_ctrl_scoreboard #(
 
     csr = ral.get_reg_by_name(csr_name);
     csr_rd(.ptr(csr), .value(data), .backdoor(1'b1));
-    en = get_field_val(csr.get_field_by_name("en"), data);
-    read_en = get_field_val(csr.get_field_by_name("rd_en"), data);
+    en = mubi4_test_true_strict(
+             get_field_val(csr.get_field_by_name("en"), data));
+    read_en = mubi4_test_true_strict(
+                  get_field_val(csr.get_field_by_name("rd_en"), data));
     if (en) begin
       rd_access = read_en;
     end else begin

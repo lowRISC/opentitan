@@ -153,25 +153,25 @@ package flash_ctrl_env_pkg;
   } flash_sec_part_e;
 
   typedef struct packed {
-    bit  en;           // enable this region
-    bit  read_en;      // enable reads
-    bit  program_en;   // enable write
-    bit  erase_en;     // enable erase
-    bit  scramble_en;  // enable scramble
-    bit  ecc_en;       // enable ecc
-    bit  he_en;        // enable high endurance
-    uint num_pages;    // 0:NumPages % start_page
-    uint start_page;   // 0:NumPages-1
+    mubi4_t  en;           // enable this region
+    mubi4_t  read_en;      // enable reads
+    mubi4_t  program_en;   // enable write
+    mubi4_t  erase_en;     // enable erase
+    mubi4_t  scramble_en;  // enable scramble
+    mubi4_t  ecc_en;       // enable ecc
+    mubi4_t  he_en;        // enable high endurance
+    uint num_pages;        // 0:NumPages % start_page
+    uint start_page;       // 0:NumPages-1
   } flash_mp_region_cfg_t;
 
   typedef struct packed {
-    bit en;           // enable this page
-    bit read_en;      // enable reads
-    bit program_en;   // enable write
-    bit erase_en;     // enable erase
-    bit scramble_en;  // enable scramble
-    bit ecc_en;       // enable ecc
-    bit he_en;        // enable high endurance
+    mubi4_t en;           // enable this page
+    mubi4_t read_en;      // enable reads
+    mubi4_t program_en;   // enable write
+    mubi4_t erase_en;     // enable erase
+    mubi4_t scramble_en;  // enable scramble
+    mubi4_t ecc_en;       // enable ecc
+    mubi4_t he_en;        // enable high endurance
   } flash_bank_mp_info_page_cfg_t;
 
   typedef struct packed {

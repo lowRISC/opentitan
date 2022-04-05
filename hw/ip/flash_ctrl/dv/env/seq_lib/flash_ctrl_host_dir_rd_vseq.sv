@@ -71,22 +71,23 @@ class flash_ctrl_host_dir_rd_vseq extends flash_ctrl_base_vseq;
     solve en_mp_regions before mp_regions;
 
     foreach (mp_regions[i]) {
-      mp_regions[i].en == en_mp_regions[i];
+      mp_regions[i].en == mubi4_bool_to_mubi(en_mp_regions[i]);
 
-      mp_regions[i].read_en == 1;
+      mp_regions[i].read_en == MuBi4True;
 
-      mp_regions[i].program_en == 1;
+      mp_regions[i].program_en == MuBi4True;
 
       mp_regions[i].erase_en dist {
-        0 :/ (100 - cfg.seq_cfg.mp_region_erase_en_pc),
-        1 :/ cfg.seq_cfg.mp_region_erase_en_pc
+        MuBi4False :/ (100 - cfg.seq_cfg.mp_region_erase_en_pc),
+        MuBi4True  :/ cfg.seq_cfg.mp_region_erase_en_pc
       };
 
       mp_regions[i].he_en dist {
-        0 :/ (100 - cfg.seq_cfg.mp_region_he_en_pc),
-        1 :/ cfg.seq_cfg.mp_region_he_en_pc
+        MuBi4False :/ (100 - cfg.seq_cfg.mp_region_he_en_pc),
+        MuBi4True  :/ cfg.seq_cfg.mp_region_he_en_pc
       };
-      mp_regions[i].ecc_en == 0;
+      mp_regions[i].ecc_en == MuBi4False;
+      mp_regions[i].scramble_en == MuBi4False;
 
       mp_regions[i].start_page inside {[0 : FlashNumPages - 1]};
       mp_regions[i].num_pages inside {[1 : FlashNumPages - mp_regions[i].start_page]};
@@ -108,32 +109,33 @@ class flash_ctrl_host_dir_rd_vseq extends flash_ctrl_base_vseq;
   }
 
   // Default flash ctrl region settings.
-  rand bit default_region_read_en;
-  rand bit default_region_program_en;
-  rand bit default_region_erase_en;
-  bit default_region_scramble_en;
-  rand bit default_region_he_en;
-  rand bit default_region_ecc_en;
+  rand mubi4_t default_region_read_en;
+  rand mubi4_t default_region_program_en;
+  rand mubi4_t default_region_erase_en;
+  rand mubi4_t default_region_scramble_en;
+  rand mubi4_t default_region_he_en;
+  rand mubi4_t default_region_ecc_en;
 
-  constraint default_region_read_en_c {default_region_read_en == 1;}
+  constraint default_region_read_en_c {default_region_read_en == MuBi4True;}
 
-  constraint default_region_program_en_c {default_region_program_en == 1;}
+  constraint default_region_program_en_c {default_region_program_en == MuBi4True;}
 
   constraint default_region_erase_en_c {
     default_region_erase_en dist {
-      1 :/ cfg.seq_cfg.default_region_erase_en_pc,
-      0 :/ (100 - cfg.seq_cfg.default_region_erase_en_pc)
+      MuBi4True  :/ cfg.seq_cfg.default_region_erase_en_pc,
+      MuBi4False :/ (100 - cfg.seq_cfg.default_region_erase_en_pc)
     };
   }
 
   constraint default_region_he_en_c {
     default_region_he_en dist {
-      1 :/ cfg.seq_cfg.default_region_he_en_pc,
-      0 :/ (100 - cfg.seq_cfg.default_region_he_en_pc)
+      MuBi4True  :/ cfg.seq_cfg.default_region_he_en_pc,
+      MuBi4False :/ (100 - cfg.seq_cfg.default_region_he_en_pc)
     };
   }
 
-  constraint default_region_ecc_en_c {default_region_ecc_en == 0;}
+  constraint default_region_scramble_en_c {default_region_scramble_en == MuBi4False;}
+  constraint default_region_ecc_en_c {default_region_ecc_en == MuBi4False;}
 
   bit   [TL_AW-1:0] read_addr;
   logic [TL_DW-1:0] rdata;
@@ -156,12 +158,10 @@ class flash_ctrl_host_dir_rd_vseq extends flash_ctrl_base_vseq;
     // 1. Scramble disabled, read data has been checked in scoreboard by backdoor read
     // Configure the flash with scramble disable.
     foreach (mp_regions[k]) begin
-      mp_regions[k].scramble_en = 0;
       flash_ctrl_mp_region_cfg(k, mp_regions[k]);
       `uvm_info(`gfn, $sformatf("MP regions values %p", mp_regions[k]), UVM_HIGH)
     end
 
-    default_region_scramble_en = 0;
     flash_ctrl_default_region_cfg(
         .read_en(default_region_read_en), .program_en(default_region_program_en),
         .erase_en(default_region_erase_en), .scramble_en(default_region_scramble_en),

@@ -31,20 +31,20 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // default region cfg
   flash_mp_region_cfg_t default_region_cfg = '{
-      default: 1,
-      scramble_en: 0,
-      ecc_en: 0,
-      he_en: 0,
+      default: MuBi4True,
+      scramble_en: MuBi4False,
+      ecc_en: MuBi4False,
+      he_en: MuBi4False,
       num_pages: 1,
       start_page: 0
   };
 
   // default info cfg
   flash_bank_mp_info_page_cfg_t default_info_page_cfg = '{
-      default: 1,
-      scramble_en: 0,
-      ecc_en: 0,
-      he_en: 0
+      default: MuBi4True,
+      scramble_en: MuBi4False,
+      ecc_en: MuBi4False,
+      he_en: MuBi4False
   };
 
   // By default, in 30% of the times initialize flash as in initial state (all 1s),
@@ -112,42 +112,50 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
                                         flash_mp_region_cfg_t region_cfg = default_region_cfg);
     uvm_reg_data_t data;
     uvm_reg csr;
-    data = get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].en, data,
+    data = get_csr_val_with_updated_field(ral.mp_region_cfg[index].en, data,
                                           region_cfg.en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].rd_en, data,
+    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].rd_en, data,
                                                  region_cfg.read_en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].prog_en, data,
+    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].prog_en, data,
                                                  region_cfg.program_en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].erase_en, data,
+    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].erase_en, data,
                                                  region_cfg.erase_en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].scramble_en,
+    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].scramble_en,
                                                  data, region_cfg.scramble_en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].ecc_en, data,
+    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].ecc_en, data,
                                                  region_cfg.ecc_en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].he_en, data,
+    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].he_en, data,
                                                  region_cfg.he_en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].base, data,
-                                                 region_cfg.start_page);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].size, data,
+    csr_wr(.ptr(ral.mp_region_cfg[index]), .value(data));
+
+    // reset for base/size register
+    data = 0;
+    data = get_csr_val_with_updated_field(ral.mp_region[index].base, data,
+                                          region_cfg.start_page);
+    data = data | get_csr_val_with_updated_field(ral.mp_region[index].size, data,
                                                  region_cfg.num_pages);
-    csr_wr(.ptr(ral.mp_region_cfg_shadowed[index]), .value(data));
+    csr_wr(.ptr(ral.mp_region[index]), .value(data));
   endtask : flash_ctrl_mp_region_cfg
 
   // Configure the protection for the "default" region (all pages that do not fall into one
   // of the memory protection regions).
-  virtual task flash_ctrl_default_region_cfg(bit read_en = 1, bit program_en = 1, bit erase_en = 1,
-                                             bit scramble_en = 0, bit ecc_en = 0, bit he_en = 0);
+  virtual task flash_ctrl_default_region_cfg(mubi4_t read_en     = MuBi4True,
+                                             mubi4_t program_en  = MuBi4True,
+                                             mubi4_t erase_en    = MuBi4True,
+                                             mubi4_t scramble_en = MuBi4False,
+                                             mubi4_t ecc_en      = MuBi4False,
+                                             mubi4_t he_en       = MuBi4False);
     uvm_reg_data_t data;
-    data = get_csr_val_with_updated_field(ral.default_region_shadowed.rd_en, data, read_en);
-    data = data | get_csr_val_with_updated_field(ral.default_region_shadowed.prog_en, data,
+    data = get_csr_val_with_updated_field(ral.default_region.rd_en, data, read_en);
+    data = data | get_csr_val_with_updated_field(ral.default_region.prog_en, data,
                                                  program_en);
-    data = data | get_csr_val_with_updated_field(ral.default_region_shadowed.erase_en, data,
+    data = data | get_csr_val_with_updated_field(ral.default_region.erase_en, data,
                                                  erase_en);
-    data = data | get_csr_val_with_updated_field(ral.default_region_shadowed.scramble_en, data,
+    data = data | get_csr_val_with_updated_field(ral.default_region.scramble_en, data,
                                                  scramble_en);
-    data = data | get_csr_val_with_updated_field(ral.default_region_shadowed.ecc_en, data, ecc_en);
-    data = data | get_csr_val_with_updated_field(ral.default_region_shadowed.he_en, data, he_en);
-    csr_wr(.ptr(ral.default_region_shadowed), .value(data));
+    data = data | get_csr_val_with_updated_field(ral.default_region.ecc_en, data, ecc_en);
+    data = data | get_csr_val_with_updated_field(ral.default_region.he_en, data, he_en);
+    csr_wr(.ptr(ral.default_region), .value(data));
   endtask : flash_ctrl_default_region_cfg
 
   // Configure the memory protection of some selected page in one of the information partitions in
@@ -159,7 +167,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     uvm_reg_data_t data;
     uvm_reg csr;
 
-    string csr_name = $sformatf("bank%0d_info%0d_page_cfg_shadowed", bank, info_part);
+    string csr_name = $sformatf("bank%0d_info%0d_page_cfg", bank, info_part);
     // If the selected information partition has only 1 page, no suffix needed to the register
     //  name, if there is more than one page, the page index should be added to the register name.
     if (flash_ctrl_pkg::InfoTypeSize[info_part] > 1) begin
