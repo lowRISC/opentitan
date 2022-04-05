@@ -149,11 +149,24 @@ Of course, this advice should be ignored when it is necessary to prove that a ce
 
 The current point label does not look like a label, and can be easily missed during review.
 
+### Label Names
+
+***Local labels (for control flow) should start with `.L_`.***
+
+This is the convention for private symbols in ELF files.
+After the prefix, labels should be `snake_case` like other symbols.
+
+```S
+.L_my_label:
+  beqz a0, .L_my_label
+```
+
 ## `.S` Files
 
 This advice applies specifically to `.S` files, as well as globally-scoped assembly in `.c` and `.cc` files.
 
-While this is is already implicit, we only use the `.S` extension for assembly files; not `.s` or `.asm`.
+While this is is already implicit, we only use the `.S` extension for assembly files; not `.s` or `.asm`. Note that `.s` actually means something else; `.S`
+files have the preprocessor run on them; `.s` files do not.
 
 ### Indentation
 
@@ -165,7 +178,6 @@ There is no mandated requirement on aligning instruction operands.
 Example:
 ```S
 _trap_start:
-  .globl _trap_start
   csrr a0, mcause
   sw x1, 0(sp)
   sw x2, 4(sp)
@@ -176,11 +188,46 @@ _trap_start:
 
 ***Comments must use either the `//` or `/* */` syntaxes.***
 
-Every function-like label which is meant to be called like a function (*especially* `.globl`s) should be given a Doxygen-style comment.
+Every function-like label which is meant to be called like a function (*especially* `.global`s) should be given a Doxygen-style comment.
 While Doxygen is not suited for assembly, that style should be used for consistency.
 See the [C/C++ style guide]({{< relref "c_cpp_coding_style" >}}) for more information.
 
+Comments should be indented to match the line immediately after. For example:
+```S
+  // This comment is correctly indented.
+  call foo
+
+// This one is not.
+  call foo
+```
+
 All other advice for writing comments, as in the C/C++ style guide, also applies.
+
+
+### Declaring a Symbol
+
+***All "top-level" symbols must have the correct preamble and footer of directives.***
+
+To aid the disassembler, every function must follow the following template:
+
+```S
+  /**
+   * Comment describing what my function does
+   */
+  .section .some_section  // Optional if the previous symbol is in this setion.
+  .balign 4
+  .global my_function  // Only for exported symbols.
+  .type my_function, @function
+my_function:
+  // Instructions and stuff.
+  .size my_function, .-my_function
+```
+
+Note that `.global` is not spelled with the legacy `.globl` spelling.
+If the symbol represents a global variable that does not consist of encoded RISC-V instructions, `@function` should be replaced with `@object`, so that the disassembler does not disassemble it as code.
+Thus, interrupt vectors, although not actually functions, are marked with  `@function`.
+
+The first instruction in the function should immediately follow the opening label.
 
 ### Register useage
 
@@ -194,15 +241,17 @@ Within a function, whether or not it conforms to RISC-V's calling convention, co
 
 Example:
 ```S
-/**
- * Compute some stuff, outputing a 96-bit integer.
- *
- * @param[out] a0 bits [31:0] of the result.
- * @param[out] a1 bits [63:32] of the result.
- * @param[out] a2 bits [95:64] of the result.
- */
+  /**
+   * Compute some stuff, outputing a 96-bit integer.
+   *
+   * @param[out] a0 bits [31:0] of the result.
+   * @param[out] a1 bits [63:32] of the result.
+   * @param[out] a2 bits [95:64] of the result.
+   */
+  .balign 4
+  .global compute_stuff
+  .type compute_stuff, @function
 compute_stuff:
-  .globl compute_stuff
   // a0 is to be used as an accumulator, which will be returned as-is.
   li a0, 0xdeadbeef
   // t0 is a loop variable.
@@ -214,6 +263,7 @@ compute_stuff:
   li   a1, 0xbeefcafe
   li   a2, 0xcafedead
   ret
+  .size compute_stuff, .-compute_stuff
 ```
 
 ### Ending an Instruction Sequence
@@ -229,6 +279,9 @@ loop_forever:
   wfi
   j loop_forever
 ```
+
+Functions may end without a terminator instruction if they are intended to fall
+through to the next one, so long as this is explicitly noted in a comment.
 
 ### Alignment Directives
 
@@ -252,6 +305,15 @@ Example:
 ***Always use `.byte`/`.2byte`/`.4byte`/`.8byte` for inline binary data.***
 
 `.word`, `.long`, and friends are confusing, for the same reason `.align` is.
+
+If a sequence of zeroes is required, use `.zero count`, instead.
+
+### The `.extern` Directive
+
+***All symbols are implicitly external unless defined in the current file; there is no need to use the `.extern` directive.***
+
+`.extern` was previously allowed to "bring" symbols into scope, but GNU-flavored assemblers ignore it.
+Because it is not checked, it can bit-rot, and thus provides diminishing value.
 
 ## Inline Assembly
 
