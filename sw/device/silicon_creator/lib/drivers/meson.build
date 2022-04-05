@@ -417,10 +417,13 @@ sw_silicon_creator_lib_driver_pinmux = declare_dependency(
     'sw_silicon_creator_lib_driver_pinmux',
     sources: [
       hw_top_earlgrey_pinmux_reg_h,
+      hw_ip_otp_ctrl_reg_h,
       'pinmux.c',
     ],
     dependencies: [
       sw_lib_abs_mmio,
+      sw_lib_hardened,
+      sw_silicon_creator_lib_driver_otp,
     ],
   ),
 )
@@ -430,11 +433,13 @@ test('sw_silicon_creator_lib_driver_pinmux_unittest', executable(
     sources: [
       'pinmux_unittest.cc',
       hw_top_earlgrey_pinmux_reg_h,
+      hw_ip_otp_ctrl_reg_h,
       'pinmux.c',
     ],
     dependencies: [
       sw_vendor_gtest,
       sw_lib_testing_mock_abs_mmio,
+      sw_lib_testing_hardened,
     ],
     native: true,
     c_args: ['-DMOCK_ABS_MMIO'],
