@@ -1297,6 +1297,8 @@ module flash_ctrl
   `ASSERT_KNOWN(IntrRdLvlKnownO_A,      intr_rd_lvl_o    )
   `ASSERT_KNOWN(IntrOpDoneKnownO_A,     intr_op_done_o   )
   `ASSERT_KNOWN(IntrErrO_A,             intr_corr_err_o  )
+  `ASSERT_KNOWN(TdoKnown_A,             cio_tdo_o        )
+  `ASSERT(TdoEnIsOne_A,                 cio_tdo_en_o === 1'b1)
 
   // combined indication that an operation has started
   // This is used only for assertions
