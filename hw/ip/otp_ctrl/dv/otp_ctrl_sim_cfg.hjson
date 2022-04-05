@@ -151,6 +151,11 @@
       name: otp_ctrl_test_access
       uvm_test_seq: otp_ctrl_test_access_vseq
     }
+
+    {
+      name: otp_ctrl_stress_all_with_rand_reset
+      reseed: 100
+    }
   ]
 
   // List of regressions.

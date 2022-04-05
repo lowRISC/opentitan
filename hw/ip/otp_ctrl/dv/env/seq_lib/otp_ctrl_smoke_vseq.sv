@@ -123,7 +123,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       csr_wr(ral.check_timeout, check_timeout_val);
       trigger_checks(.val(check_trigger_val), .wait_done(1), .ecc_err(ecc_chk_err));
 
-      if ($urandom_range(0, 1) && access_locked_parts) write_sw_rd_locks();
+      if (!$urandom_range(0, 9) && access_locked_parts) write_sw_rd_locks();
 
       // Backdoor write mubi to values that are not true or false.
       force_mubi_part_access();
@@ -169,6 +169,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
         if (is_sw_part(dai_addr) && rd_sw_tlul_rd) begin
           uvm_reg_addr_t tlul_addr = cfg.ral.get_addr_from_offset(get_sw_window_offset(dai_addr));
           // tlul error rsp is checked in scoreboard
+          do_otp_rd = 1;
           tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1), .check_rsp(0));
         end
 
@@ -177,6 +178,9 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
           cfg.mem_bkdr_util_h.write32({dai_addr[TL_DW-3:2], 2'b00}, backdoor_rd_val);
         end
 
+        // Random lock sw partitions
+        if (!$urandom_range(0, 9) && access_locked_parts) write_sw_rd_locks();
+        if (!$urandom_range(0, 9) && access_locked_parts) write_sw_digests();
         if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(tlul_val));
         if ($urandom_range(0, 1)) csr_rd(.ptr(ral.status), .value(tlul_val));
         if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code[0]), .value(tlul_val));
@@ -188,8 +192,6 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       // lock digests
       `uvm_info(`gfn, "Trigger HW digest calculation", UVM_HIGH)
       cal_hw_digests();
-      if ($urandom_range(0, 1)) csr_rd(.ptr(ral.status), .value(tlul_val));
-      write_sw_digests();
       if ($urandom_range(0, 1)) csr_rd(.ptr(ral.status), .value(tlul_val));
 
       if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code[0]), .value(tlul_val));

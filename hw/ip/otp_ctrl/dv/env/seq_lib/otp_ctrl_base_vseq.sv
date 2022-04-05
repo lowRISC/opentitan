@@ -29,6 +29,9 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   // According to spec, the period between digest calculation and reset should not issue any write.
   bit [NumPart-2:0] digest_calculated;
 
+  // For stress_all_with_rand reset sequence to issue reset during OTP operations.
+  bit do_digest_cal, do_otp_rd, do_otp_wr;
+
   // LC program request will use a separate variable to automatically set to non-blocking setting
   // when LC error bit is set.
   bit default_req_blocking = 1;
@@ -72,7 +75,14 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   virtual task apply_reset(string kind = "HARD");
     super.apply_reset(kind);
     cfg.otp_ctrl_vif.release_part_access_mubi();
+    clear_seq_flags();
   endtask
+
+  virtual function void clear_seq_flags();
+    do_digest_cal = 0;
+    do_otp_rd = 0;
+    do_otp_wr = 0;
+  endfunction
 
   virtual task otp_ctrl_vif_init();
     cfg.otp_ctrl_vif.drive_lc_creator_seed_sw_rw_en(lc_ctrl_pkg::On);
@@ -150,6 +160,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     csr_wr(ral.direct_access_wdata[0], wdata0);
     if (is_secret(addr) || is_sw_digest(addr)) csr_wr(ral.direct_access_wdata[1], wdata1);
 
+    do_otp_wr = 1;
     csr_wr(ral.direct_access_cmd, int'(otp_ctrl_pkg::DaiWrite));
     `uvm_info(`gfn, $sformatf("DAI write, address %0h, data0 %0h data1 %0h, is_secret = %0b",
               addr, wdata0, wdata1, is_secret(addr)), UVM_DEBUG)
@@ -176,6 +187,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     addr = randomize_dai_addr(addr);
 
     csr_wr(ral.direct_access_address, addr);
+    do_otp_rd = 1;
     csr_wr(ral.direct_access_cmd, int'(otp_ctrl_pkg::DaiRead));
 
     if (cfg.zero_delays && is_valid_dai_op &&
@@ -214,7 +226,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
       csr_rd_check(ral.status.dai_idle, .compare_value(0), .backdoor(1));
       if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(val));
     end
-
+    do_digest_cal = 1;
     wait_dai_op_done();
     digest_calculated[part_idx] = 1;
     rd_and_clear_intrs();

@@ -11,6 +11,10 @@ class otp_ctrl_check_fail_vseq extends otp_ctrl_dai_lock_vseq;
 
   `uvm_object_new
 
+  constraint ecc_otp_err_c {
+    ecc_otp_err inside {OtpEccCorrErr, OtpNoEccErr};
+  }
+
   constraint ecc_chk_err_c {
     // TODO: currently only max to 1 error bits, once implemetned ECC in mem_bkdr_util, we can
     // fully randomize num of error bits
