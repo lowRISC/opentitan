@@ -40,11 +40,6 @@ class adc_ctrl_clock_gating_vseq extends adc_ctrl_filters_polled_vseq;
     // Enable interrupts and wakeup
     `DV_CHECK_STD_RANDOMIZE_FATAL(adc_intr_ctl)
     `DV_CHECK_STD_RANDOMIZE_FATAL(adc_wakeup_ctl)
-
-    // Disable interrupts for now
-    // TODO: properly model Interrupt Clock domain crossing
-    adc_intr_ctl = 0;
-
     cfg.testmode = testmode;
     cfg.adc_intr_ctl = adc_intr_ctl;
     cfg.adc_wakeup_ctl = adc_wakeup_ctl;
