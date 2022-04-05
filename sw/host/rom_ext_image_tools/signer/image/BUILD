@@ -20,4 +20,5 @@ rust_library(
 rust_test(
     name = "rom_ext_image_test",
     crate = ":rom_ext_image",
+    tags = ["broken"],
 )
