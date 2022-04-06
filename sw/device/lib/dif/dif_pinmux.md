@@ -12,7 +12,7 @@ All checklist items refer to the content in the [Checklist]({{< relref "/doc/pro
 Type           | Item                 | Resolution  | Note/Collaterals
 ---------------|----------------------|-------------|------------------
 Implementation | [DIF_EXISTS][]       | Done        |
-Implementation | [DIF_USED_IN_TREE][] | Not Started |
+Implementation | [DIF_USED_IN_TREE][] | In Progress |
 Tests          | [DIF_TEST_SMOKE][]   | Not Started |
 
 [DIF_EXISTS]:       {{< relref "/doc/project/checklist.md#dif_exists" >}}
@@ -24,7 +24,7 @@ Tests          | [DIF_TEST_SMOKE][]   | Not Started |
 Type           | Item                        | Resolution  | Note/Collaterals
 ---------------|-----------------------------|-------------|------------------
 Coordination   | [DIF_HW_FEATURE_COMPLETE][] | Done        | [HW Dashboard]({{< relref "hw" >}})
-Implementation | [DIF_FEATURES][]            | In Progress |
+Implementation | [DIF_FEATURES][]            | Done        |
 Coordination   | [DIF_DV_TESTS][]            | Not Started |
 
 [DIF_HW_FEATURE_COMPLETE]: {{< relref "/doc/project/checklist.md#dif_hw_feature_complete" >}}
