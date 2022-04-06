@@ -117,9 +117,11 @@ class otbn_common_vseq extends otbn_base_vseq;
     if (enable) begin
       $asserton(0, "tb.dut.u_otbn_core.u_otbn_controller.ControllerStateValid");
       $asserton(0, "tb.MatchingStatus_A");
+      $asserton(0, "tb.dut.u_otbn_core.u_otbn_start_stop_control.StartStopStateValid");
     end else begin
       $assertoff(0, "tb.dut.u_otbn_core.u_otbn_controller.ControllerStateValid");
       $assertoff(0, "tb.MatchingStatus_A");
+      $assertoff(0, "tb.dut.u_otbn_core.u_otbn_start_stop_control.StartStopStateValid");
     end
   endfunction: sec_cm_fi_ctrl_svas
 
