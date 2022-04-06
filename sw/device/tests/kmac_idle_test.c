@@ -82,8 +82,8 @@ static void do_sha3_test(void) {
   check_clock_state(kDifToggleDisabled);
 
   // Check the result to be sure the SHA3 operation completed correctly.
-  CHECK_BUFFER(out, sha3_256_test.digest, sha3_256_test.digest_len,
-               "Digest mismatch for test SHA3 256.");
+  CHECK_BUFFER_EQ(out, sha3_256_test.digest, sha3_256_test.digest_len,
+                  "Digest mismatch for test SHA3 256.");
 
   // Set hint to enabled again to check that clock can be re-enabled.
   CHECK_DIF_OK(dif_clkmgr_hintable_clock_set_hint(&clkmgr, kmac_clock,

@@ -48,30 +48,35 @@
   } while (false)
 
 /**
- * Compare `num_items_` of `actual_` against `expected_` buffer.
+ * Compare `num_items_` of `actual_` against `reference_` buffer.
  *
- * Prints differences between `actual_` and `expected_` before logging an error.
- * Note, the differences between the actual and expected buffer values are
- * logged via LOG_INFO _before_ the error is logged with LOG_ERROR, since by
+ * Prints differences between `actual_` and `reference_` before logging an
+ * error. Note, the differences between the actual and expected buffer values
+ * are logged via LOG_INFO _before_ the error is logged with LOG_ERROR, since by
  * default DV simulations are configured to terminate upon the first error.
  *
  * @param actual_ Buffer containing actual values.
- * @param expected_ Buffer containing expected values.
+ * @param reference_ Buffer containing expected values.
  * @param num_items_ Number of items to compare.
  * @param ... Arguments to a LOG_* macro, which are evaluated if the check.
  */
-#define CHECK_BUFFER(actual_, expected_, num_items_, ...)                      \
+#define CHECK_BUFFER_IMPL_(eq_, actual_, reference_, num_items_, ...)          \
   do {                                                                         \
     /* `sizeof(actual_[0])` is used to determine the size of each item in the  \
      * buffer. */                                                              \
-    if (memcmp((actual_), (expected_), num_items_ * sizeof((actual_)[0])) !=   \
-        0) {                                                                   \
+    if ((memcmp((actual_), (reference_), num_items_ * sizeof((actual_)[0])) == \
+         0) != eq_) {                                                          \
       for (size_t i = 0; i < num_items_; ++i) {                                \
-        LOG_INFO("[%d] actual = 0x%x; expected = 0x%x", i, (actual_)[i],       \
-                 (expected_)[i]);                                              \
+        LOG_INFO("[%d] actual = 0x%x; reference = 0x%x", i, (actual_)[i],      \
+                 (reference_)[i]);                                             \
       }                                                                        \
       if (OT_VA_ARGS_COUNT(_, ##__VA_ARGS__) == 0) {                           \
-        LOG_ERROR("CHECK-BUFFER-fail: " #actual_ "does not match" #expected_); \
+        if (eq_) {                                                             \
+          LOG_ERROR("CHECK-BUFFER-fail: " #actual_                             \
+                    "does not match" #reference_);                             \
+        } else {                                                               \
+          LOG_ERROR("CHECK-BUFFER-fail: " #actual_ "match" #reference_);       \
+        }                                                                      \
       } else {                                                                 \
         LOG_ERROR("CHECK-BUFFER-fail: " __VA_ARGS__);                          \
       }                                                                        \
@@ -85,42 +90,36 @@
   } while (false)
 
 /**
- * Compare `num_items_` of `actual_` against `not_expected_` buffer.
+ * Compare `num_items_` of `actual_` against `expected_` buffer.
  *
- * Prints matches between `actual_` and `not_expected_` before logging an error.
+ * Prints differences between `actual_` and `expected_` before logging an error.
+ * Note, the differences between the actual and expected buffer values are
+ * logged via LOG_INFO _before_ the error is logged with LOG_ERROR, since by
+ * default DV simulations are configured to terminate upon the first error.
+ *
+ * @param actual_ Buffer containing actual values.
+ * @param expected_ Buffer containing expected values.
+ * @param num_items_ Number of items to compare.
+ * @param ... Arguments to a LOG_* macro, which are evaluated if the check.
+ */
+#define CHECK_BUFFER_EQ(actual_, expected_, num_items_, ...) \
+  CHECK_BUFFER_IMPL_(true, actual_, expected_, num_items_, __VA_ARGS__)
+
+/**
+ * Compare `num_items_` of `actual_` against `unexpected_` buffer.
+ *
+ * Prints matches between `actual_` and `unexpected_` before logging an error.
  * Note, the matches between the actual and not_expected buffer values are
  * logged via LOG_INFO _before_ the error is logged with LOG_ERROR, since by
  * default DV simulations are configured to terminate upon the first error.
  *
  * @param actual_ Buffer containing actual values.
- * @param not_expected_ Buffer containing not expected values.
+ * @param unexpected_ Buffer containing not expected values.
  * @param num_items_ Number of items to compare.
  * @param ... Arguments to a LOG_* macro, which are evaluated if the check.
  */
-#define CHECK_BUFFER_NOT_EQ(actual_, not_expected_, num_items_, ...)          \
-  do {                                                                        \
-    /* `sizeof(actual_[0])` is used to determine the size of each item in the \
-     * buffer. */                                                             \
-    if (memcmp((actual_), (not_expected_),                                    \
-               num_items_ * sizeof((actual_)[0])) == 0) {                     \
-      for (size_t i = 0; i < num_items_; ++i) {                               \
-        LOG_INFO("[%d] actual = 0x%x; not expected = 0x%x", i, (actual_)[i],  \
-                 (not_expected_)[i]);                                         \
-      }                                                                       \
-      if (OT_VA_ARGS_COUNT(_, ##__VA_ARGS__) == 0) {                          \
-        LOG_ERROR("CHECK-BUFFER_NOT_EQ-fail: " #actual_                       \
-                  " matches " #not_expected_);                                \
-      } else {                                                                \
-        LOG_ERROR("CHECK-BUFFER_NOT_EQ-fail: " __VA_ARGS__);                  \
-      }                                                                       \
-      /* Currently, this macro will call into                                 \
-          the test failure code, which logs                                   \
-          "FAIL" and aborts. In the future,                                   \
-          we will try to condition on whether                                 \
-          or not this is a test.*/                                            \
-      test_status_set(kTestStatusFailed);                                     \
-    }                                                                         \
-  } while (false)
+#define CHECK_BUFFER_NEQ(actual_, unexpected_, num_items_, ...) \
+  CHECK_BUFFER_IMPL_(false, actual_, unexpected_, num_items_, __VA_ARGS__)
 
 /**
  * Checks that the given DIF call returns kDifOk. If the DIF call returns a
