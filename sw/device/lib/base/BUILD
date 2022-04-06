@@ -72,7 +72,9 @@ cc_library(
     # This library defines memcpy(), so we can't have LLVM rewriting memcpy
     # into a call to itself.
     copts = ["-fno-builtin"],
-    deps = [":macros"],
+    deps = [
+        ":macros",
+    ],
 )
 
 cc_library(
