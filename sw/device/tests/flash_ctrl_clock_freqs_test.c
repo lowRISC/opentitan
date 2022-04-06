@@ -47,7 +47,7 @@ static void read_and_check_host_if(uint32_t addr, const uint32_t *check_data) {
   for (int i = 0; i < kDataSize; ++i) {
     host_data[i] = mmio_region_read32(flash_addr, i * sizeof(uint32_t));
   }
-  CHECK_BUFFER(host_data, check_data, kDataSize);
+  CHECK_BUFFER_EQ(host_data, check_data, kDataSize);
 }
 
 /**
@@ -74,7 +74,7 @@ static void do_info_partition_test(uint32_t partition_number) {
       &flash_state, address, kPartitionId, readback_data,
       kDifFlashCtrlPartitionTypeInfo, kDataSize, 0));
 
-  CHECK_BUFFER(readback_data, test_data, kDataSize);
+  CHECK_BUFFER_EQ(readback_data, test_data, kDataSize);
 }
 
 /**
@@ -116,7 +116,7 @@ static void do_data_partition_test(uint32_t bank_number) {
           &flash_state, address, kPartitionId, readback_data,
           kDifFlashCtrlPartitionTypeData, kDataSize, 1));
       read_and_check_host_if(kPageSize * page_index, test_data);
-      CHECK_BUFFER(readback_data, test_data, kDataSize);
+      CHECK_BUFFER_EQ(readback_data, test_data, kDataSize);
     }
   } else {
     LOG_ERROR("Unexpected bank number, only 0 and 1 are valid.");

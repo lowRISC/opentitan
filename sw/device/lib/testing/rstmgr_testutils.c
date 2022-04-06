@@ -40,7 +40,7 @@ void rstmgr_testutils_compare_alert_info(
   CHECK_DIF_OK(dif_rstmgr_alert_info_dump_read(
       rstmgr, actual_alert_dump, DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &size_read));
   CHECK(dump_size <= size_read);
-  CHECK_BUFFER(actual_alert_dump, expected_alert_dump, dump_size);
+  CHECK_BUFFER_EQ(actual_alert_dump, expected_alert_dump, dump_size);
 }
 
 void rstmgr_testutils_compare_cpu_info(
@@ -57,7 +57,7 @@ void rstmgr_testutils_compare_cpu_info(
   CHECK_DIF_OK(dif_rstmgr_cpu_info_dump_read(
       rstmgr, actual_cpu_dump, DIF_RSTMGR_CPU_INFO_MAX_SIZE, &size_read));
   CHECK(dump_size <= size_read);
-  CHECK_BUFFER(actual_cpu_dump, expected_cpu_dump, dump_size);
+  CHECK_BUFFER_EQ(actual_cpu_dump, expected_cpu_dump, dump_size);
 }
 
 void rstmgr_testutils_pre_reset(const dif_rstmgr_t *rstmgr) {
