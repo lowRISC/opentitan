@@ -45,7 +45,8 @@ class chip_sw_spi_tx_rx_vseq extends chip_sw_base_vseq;
     end
 
     // Wait for the CPU to read out the RX_FIFO
-    cfg.clk_rst_vif.wait_clks(5_000);
+    `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "SPI_DEVICE read out RX FIFO.");,
+                 "Timeout waiting for CPU to read out the RX_FIFO")
 
     // Send data to fill RX_SRAM to test RX SRAM FIFO full interrupt
     send_spi_host_rx_data(spi_device_tx_data, SPI_DEVICE_RX_SRAM_SIZE);
