@@ -58,6 +58,9 @@ package lc_ctrl_pkg;
   // Helper Functions for Life Cycle Signals //
   /////////////////////////////////////////////
 
+  // This is a prerequisite for the multibit functions below to work.
+  `ASSERT_STATIC_IN_PACKAGE(CheckLcTxValsComplementary_A, On == ~Off)
+
   // Convert a life cycle signal to mubi4
   // If in the future other versions are desired, this should really be
   // moved to prim_mubi_pkg
