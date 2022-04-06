@@ -200,6 +200,7 @@ mask_rom_lib = declare_dependency(
     hw_ip_sensor_ctrl_reg_h,
     hw_ip_sram_ctrl_reg_h,
     'mask_rom_start.S',
+    meson.project_source_root() / 'sw/device/silicon_creator/lib/base/static_critical_sec_mmio.c',
   ],
     link_args: rom_link_args,
     dependencies: [

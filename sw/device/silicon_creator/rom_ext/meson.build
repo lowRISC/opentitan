@@ -85,6 +85,7 @@ foreach slot, slot_link_args : rom_ext_link_info
     slot: declare_dependency(
       sources: [
         'rom_ext_start.S',
+        meson.project_source_root() / 'sw/device/silicon_creator/lib/base/static_critical_sec_mmio.c',
       ],
       link_args: slot_link_args[0],
       dependencies: [
