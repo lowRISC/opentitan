@@ -4,7 +4,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "new_git_repository")
 
-def freertos_deps():
+def freertos_repos():
     new_git_repository(
         name = "freertos",
         build_file = Label("//third_party/freertos:BUILD.freertos.bazel"),

@@ -4,7 +4,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "new_git_repository")
 
-def riscv_compliance_deps():
+def riscv_compliance_repos():
     #new_git_repository(
     #    name = "riscv-compliance",
     #    build_file = Label("//third_party/riscv-compliance:BUILD.riscv-compliance.bazel"),

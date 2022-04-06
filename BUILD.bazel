@@ -9,6 +9,7 @@ load("@lowrisc_lint//rules:rules.bzl", "licence_check")
 package(default_visibility = ["//visibility:public"])
 
 unbuildify = [
+    "./WORKSPACE",  # Prevent Buildifier from inserting unnecessary newlines.
     "./**/vendor/**",
     "./util/lowrisc_misc-linters/**",
 ]
