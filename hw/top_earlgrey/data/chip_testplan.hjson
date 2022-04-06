@@ -994,7 +994,7 @@
 
     // RSTMGR tests:
     {
-      name: chip_sw_rstrmgr_non_sys_reset_info
+      name: chip_sw_rstmgr_non_sys_reset_info
       desc: '''Verify the `reset_info` CSR register for lc or higher resets.
 
             Generate the 5 types of reset at `lc` level or higher, and check the `reset_info` CSR
@@ -1013,7 +1013,7 @@
       tests: ["chip_sw_pwrmgr_smoketest"]
     }
     {
-      name: chip_sw_rstrmgr_sys_reset_info
+      name: chip_sw_rstmgr_sys_reset_info
       desc: '''Verify the `reset_info` CSR register for sys reset.
 
             Generate reset triggered by `rv_dm`, which results in a sys level reset, and check the
@@ -1030,19 +1030,19 @@
       tests: []
     }
     {
-      name: chip_sw_rstrmgr_cpu_info
+      name: chip_sw_rstmgr_cpu_info
       desc: '''Verify the expected values from the `cpu_info` CSR on reset.
 
             For some software induced resets we can predict the expected contents of `cpu_info`;
             reads of writes to unmapped addresses for example. Generate these resets and verify
             the `cpu_info` register contents when reset is handled.
-            Refer to `chip_*sys_rstrmgr_reset_info`.
+            Refer to `chip_*sys_rstmgr_reset_info`.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: chip_sw_rstrmgr_sw_req_reset
+      name: chip_sw_rstmgr_sw_req_reset
       desc: '''Verify software requested device reset.
 
             Generate a reset request by directly writing the `reset_req` CSR.
@@ -1054,33 +1054,34 @@
       tests: ["chip_sw_rstmgr_sw_req"]
     }
     {
-      name: chip_sw_rstrmgr_alert_info
+      name: chip_sw_rstmgr_alert_info
       desc: '''Verify the expected values from the `alert_info` CSR on reset.
 
             Various alerts can be created, for example, timeouts, and integrity errors, and at
             least part of the `alert_info` CSR can be predicted. To cause some of these to
             cause a reset, mask the relevant processor interrupts. Trigger these resets and
             verify the `alert_info` register contents when reset is handled.
-            Refer to `chip_*sys_rstrmgr_reset_info`.
+            Refer to `chip_*sys_rstmgr_reset_info`.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: chip_sw_rstrmgr_sw_rst
+      name: chip_sw_rstmgr_sw_rst
       desc: '''Verify `sw_rst_ctrl_n` CSR resets individual peripherals.
 
-            Check the peripheral is reset via timeout accessing their CSRs while the corresponding
-            reset is active. The per peripheral reset controls in increasing order by
-            `sw_rst_ctrl_n` bit, are as follows: `spi_device`, `spi_host0`, `spi_host0_core`,
-            `spi_host1`, `spi_host1_core`, `usb`, `usbif`, `i2c0`, `i2c1`, `i2c2`.
+            - Pick a rw type CSR in each peripheral and program arbitrary value
+              that does not cause any adverse side-effects.
+            - Pulse the reset to the peripheral via software.
+            - Read the resister after reset and verify it returns the reset value.
+            - Repeat these steps for each of these software resettable peripherals:
+              `spi_device`, `spi_host0`, `spi_host1`, `usb`, `usbif`, `i2c0`, `i2c1`, `i2c2`.
 
             Notice the two `spi_host` and `usbdev` IPs receive two different resets each,
-            `spi_host*` and `spi_host*_core`, and `usb` and `usbif` respectively. This means
-            the CSRs to be used for checking may not be obvious.
+            `spi_host*` and `usb` and `usbif` respectively.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_rstmgr_sw_rst"]
     }
 
     // ALERT_HANDLER (pre-verified IP) integration tests:
@@ -1585,9 +1586,9 @@
               verify that the AES clk hint status within clkmgr reads 0 (AES is idle).
             - Write the AES clk hint to 1 within clkmgr to indicate AES clk can be enabled.
             - Initiate an AES operation with a known key, plain text and digest, write AES clk
-              hint to 0 and verify that the AES clk hint status within clkmgr now reads 1 (AES 
+              hint to 0 and verify that the AES clk hint status within clkmgr now reads 1 (AES
               is not idle), before the AES operation is complete.
-            - After the AES operation is complete verify that the AES clk hint status within 
+            - After the AES operation is complete verify that the AES clk hint status within
               clkmgr now reads 0 again (AES is idle).
             - Write the AES clk hint to 1, read and check the AES output for correctness.
             '''
