@@ -10,22 +10,22 @@ def _ld_library_impl(ctx):
     if ctx.file.script:
         files += ctx.files.script
         user_link_flags += [
-          "-Wl,-T,{}".format(ctx.file.script.path),
+            "-Wl,-T,{}".format(ctx.file.script.path),
         ]
 
     return [
-      cc_common.merge_cc_infos(
-        direct_cc_infos = [CcInfo(
-            linking_context = cc_common.create_linking_context(
-                linker_inputs = depset([cc_common.create_linker_input(
-                    owner = ctx.label,
-                    additional_inputs = depset(files),
-                    user_link_flags = depset(user_link_flags),
-                )]),
-            ),
-        )],
-        cc_infos = [dep[CcInfo] for dep in ctx.attr.deps],
-      ),
+        cc_common.merge_cc_infos(
+            direct_cc_infos = [CcInfo(
+                linking_context = cc_common.create_linking_context(
+                    linker_inputs = depset([cc_common.create_linker_input(
+                        owner = ctx.label,
+                        additional_inputs = depset(files),
+                        user_link_flags = depset(user_link_flags),
+                    )]),
+                ),
+            )],
+            cc_infos = [dep[CcInfo] for dep in ctx.attr.deps],
+        ),
     ]
 
 ld_library = rule(

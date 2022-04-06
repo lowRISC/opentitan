@@ -90,7 +90,7 @@ def _cc_compile_different_output(name, target, ctx, extension, flags, process_al
 
         # C files are treated specially, and have different flags applied
         # (e.g. --std=c11).
-        # 
+        #
         # Things that are neither C or C++ TU files don't get any flags.
         opts = ctx.fragments.cpp.copts + ctx.rule.attr.copts
         if source_file.extension == "c":
