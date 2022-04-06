@@ -35,7 +35,7 @@ Build intermediates will show up in `$REPO_TOP/build-out`, including unlinked ob
 As a rule, you should only ever need to refer to artifacts inside of `build-bin`; the exact structure of `build-out` is subject to change.
 Complete details of these semantics are documented in `util/build_consts.sh`.
 
-The locations of `build-{out,bin}` can be controled by setting the `$BUILD_ROOT` enviromnent variable, which defaults to `$REPO_TOP`.
+The locations of `build-{out,bin}` can be controlled by setting the `$BUILD_ROOT` enviromnent variable, which defaults to `$REPO_TOP`.
 
 `./meson_init.sh` itself is idempotent, but this behavior can be changed with additional flags; see `./meson_init.sh` for more information.
 For this reason, most examples involving Meson will include a call to `./meson_init.sh`, but you will rarely need to run it more than once per checkout.
