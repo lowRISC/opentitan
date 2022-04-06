@@ -51,6 +51,7 @@ typedef enum dif_pinmux_pad_kind {
    * or output, bypassing the multiplexer matrix.
    */
   kDifPinmuxPadKindDio,
+  kDifPinmuxPadKindCount,
 } dif_pinmux_pad_kind_t;
 
 /**
@@ -102,7 +103,25 @@ typedef enum dif_pinmux_lock_target {
 typedef uint32_t dif_pinmux_index_t;
 
 /**
- * Pin multiplexer Padring pad attributes.
+ * Pad slew rate value.
+ *
+ * This selects between available slew rate values, where the largest number
+ * produces the fastest slew rate. See the device's data sheet for the
+ * particular mapping.
+ */
+typedef uint8_t dif_pinmux_pad_slew_rate_t;
+
+/**
+ * Pad drive strength value.
+ *
+ * This selects between available drive strength values, where the largest
+ * number produces the highest drive strength. See the device's data sheet for
+ * the particular mapping.
+ */
+typedef uint8_t dif_pinmux_pad_drive_strength_t;
+
+/**
+ * Pad attribute flag values
  *
  * This `enum` is a bitfield, meaning that it is allowed to pass combined value
  * of multiple individual attributes.
@@ -117,31 +136,34 @@ typedef uint32_t dif_pinmux_index_t;
  * IMPORTANT:
  * - Functions are used to toggle these attributes, must signal an error if at
  *   least one of the attributes in the bitfield could not be toggled.
- *
- * - Related attribute invariants are mutually exclusive, and calling functions
- *   that are used to toggle these attributes must signal a respective `BadArg`
- *   error if more than one is specified. These include: `Pull*`, `Drive*` and
- *   `SlewRate*` family of attributes.
- *
- * - Compulsory attributes must be specified, and calling functions that are
- *   used to toggle these attributes must signal a respective `BadArg` error
- *   if such attribute is not specified. These include: `Drive*` and `SlewRate*`
- *   family of attributes.
  */
-typedef enum dif_pinmux_pad_attr {
-  kDifPinmuxPadAttrNone = 0,
-  kDifPinmuxPadAttrIOInvert = 1 << 0,
-  kDifPinmuxPadAttrVirtOpenDrain = 1 << 1,
-  kDifPinmuxPadAttrPullDown = 1 << 2,
-  kDifPinmuxPadAttrPullUp = 1 << 3,
+typedef enum dif_pinmux_pad_attr_flags {
+  kDifPinmuxPadAttrInvertLevel = 1 << 0,
+  kDifPinmuxPadAttrVirtualOpenDrain = 1 << 1,
+  kDifPinmuxPadAttrPullResistorEnable = 1 << 2,
+  kDifPinmuxPadAttrPullResistorUp = 1 << 3,
   kDifPinmuxPadAttrKeeper = 1 << 4,
-  kDifPinmuxPadAttrDriveWeakest = 1 << 5,
-  kDifPinmuxPadAttrDriveWeak = 1 << 6,
-  kDifPinmuxPadAttrDriveStrong = 1 << 7,
-  kDifPinmuxPadAttrDriveStrongest = 1 << 8,
-  kDifPinmuxPadAttrSchmittTrigger = 1 << 9,
-  kDifPinmuxPadAttrSlewRateSlow = 1 << 10,
-  kDifPinmuxPadAttrSlewRateFast = 1 << 11,
+  kDifPinmuxPadAttrSchmittTrigger = 1 << 5,
+  kDifPinmuxPadAttrOpenDrain = 1 << 6,
+} dif_pinmux_pad_attr_flags_t;
+
+/**
+ * Pin multiplexer padring pad attributes.
+ */
+typedef struct dif_pinmux_pad_attr {
+  /**
+   * Slew rate attribute. A greater number produces a faster slew rate.
+   */
+  dif_pinmux_pad_slew_rate_t slew_rate;
+  /**
+   * Drive strength pad attribute. A greater number produces a stronger drive.
+   */
+  dif_pinmux_pad_drive_strength_t drive_strength;
+  /**
+   * A bit map of single-bit attribute flags. @sa dif_pinmux_pad_attr_flags_t
+   * for the mapping and definitions.
+   */
+  dif_pinmux_pad_attr_flags_t flags;
 } dif_pinmux_pad_attr_t;
 
 /**
@@ -173,7 +195,39 @@ typedef enum dif_pinmux_sleep_mode {
    * Keep last driven value (including high-Z).
    */
   kDifPinmuxSleepModeKeep,
+  kDifPinmuxSleepModeCount,
 } dif_pinmux_sleep_mode_t;
+
+/**
+ * A Pin Multiplexer wake-up detection mode (edge triggered).
+ */
+typedef enum dif_pinmux_wakeup_mode {
+  /**
+   * Trigger a wakeup request when observing a positive edge.
+   */
+  kDifPinmuxWakeupModePositiveEdge = 0,
+  /**
+   * Trigger a wakeup request when observing a negative edge.
+   */
+  kDifPinmuxWakeupModeNegativeEdge,
+  /**
+   * Trigger a wakeup request when observing an edge in any direction.
+   */
+  kDifPinmuxWakeupModeAnyEdge,
+  /**
+   * Trigger a wakeup request when pin is driven HIGH for a certain amount of
+   * always-on clock cycles as configured in
+   * `dif_pinmux_wakeup_timed_config_t`, `counter_threshold` field.
+   */
+  kDifPinmuxWakeupModeTimedHigh,
+  /**
+   * Trigger a wakeup request when pin is driven LOW for a certain amount of
+   * always-on clock cycles as configured in
+   * `dif_pinmux_wakeup_timed_config_t`, `counter_threshold` field.
+   */
+  kDifPinmuxWakeupModeTimedLow,
+  kDifPinmuxWakeupModeCount,
+} dif_pinmux_wakeup_mode_t;
 
 /**
  * A Pin Multiplexer common wake-up configuration between different modes.
@@ -181,7 +235,7 @@ typedef enum dif_pinmux_sleep_mode {
 typedef struct dif_pinmux_wakeup_config {
   /**
    * Signal filter - signal must be stable for 4 always-on clock cycles
-   * before the value is being forwarded. can be used for debouncing.
+   * before the value is being forwarded. Can be used for debouncing.
    */
   dif_toggle_t signal_filter;
   /**
@@ -196,77 +250,17 @@ typedef struct dif_pinmux_wakeup_config {
    * selected.
    */
   dif_pinmux_index_t pad_select;
-} dif_pinmux_wakeup_config_t;
-
-/**
- * A Pin Multiplexer wake-up detection mode (edge triggered).
- */
-typedef enum dif_pinmux_wakeup_mode_edge {
-  /**
-   * Trigger a wakeup request when observing a positive edge.
-   */
-  kDifPinmuxWakeupModeEdgePositive = 0,
-  /**
-   * Trigger a wakeup request when observing a negative edge.
-   */
-  kDifPinmuxWakeupModeEdgeNegative,
-  /**
-   * Trigger a wakeup request when observing an edge in any direction.
-   */
-  kDifPinmuxWakeupModeEdge,
-} dif_pinmux_wakeup_mode_edge_t;
-
-/**
- * A Pin Multiplexer edge triggered wake-up mode configuration.
- */
-typedef struct dif_pinmux_wakeup_edge_config {
   /**
    * Wake-up detection mode.
    */
-  dif_pinmux_wakeup_mode_edge_t mode;
-  /**
-   * Common configuration between different wake-up modes.
-   */
-  dif_pinmux_wakeup_config_t common;
-} dif_pinmux_wakeup_edge_config_t;
-
-/**
- * Pin Multiplexer wake-up detection mode (timed).
- */
-typedef enum dif_pinmux_wakeup_mode_timed {
-  /**
-   * Trigger a wakeup request when pin is driven HIGH for a certain amount of
-   * always-on clock cycles as configured in
-   * `dif_pinmux_wakeup_timed_config_t`, `counter_threshold` field.
-   */
-  kDifPinmuxWakeupModeTimedHigh = 0,
-  /**
-   * Trigger a wakeup request when pin is driven LOW for a certain amount of
-   * always-on clock cycles as configured in
-   * `dif_pinmux_wakeup_timed_config_t`, `counter_threshold` field.
-   */
-  kDifPinmuxWakeupModeTimedLow,
-} dif_pinmux_wakeup_mode_timed_t;
-
-/**
- * A Pin Multiplexer timed wake-up mode configuration.
- */
-typedef struct dif_pinmux_wakeup_timed_config {
-  /**
-   * Wake-up detection mode.
-   */
-  dif_pinmux_wakeup_mode_timed_t mode;
+  dif_pinmux_wakeup_mode_t mode;
   /**
    * Counter threshold for `kDifPinmuxWakeupModeTimedLow` and
    * `kDifPinmuxWakeupModeTimedHigh` wake-up detector modes. The threshold is in
    * terms of always-on clock cycles.
    */
   uint8_t counter_threshold;
-  /**
-   * Common configuration between different wake-up modes.
-   */
-  dif_pinmux_wakeup_config_t common;
-} dif_pinmux_wakeup_timed_config_t;
+} dif_pinmux_wakeup_config_t;
 
 /**
  * Locks out Pin Multiplexer functionality based on the `target` and `index`.
@@ -277,7 +271,7 @@ typedef struct dif_pinmux_wakeup_timed_config {
  * input for which the MIO input select functionality should be locked.
  *
  * NOTE:
- * Locking an already locked register will succeed with the `kDifPinmuxOk`
+ * Locking an already locked register will succeed with the `kDifOk`
  * return code.
  *
  * @param pinmux A Pin Multiplexer handle.
@@ -348,8 +342,8 @@ dif_result_t dif_pinmux_output_select(const dif_pinmux_t *pinmux,
  * has both enable and disable semantics.
  *
  * Not all pads implement all attributes and some combinations cannot be
- * enabled together. This function returns a
- * `kDifPinmuxPadWriteAttrsConflict` error in case of invalid `attrs_in`.
+ * enabled together. This function returns a `kDifBadArg` error in case of
+ * invalid `attrs_in`.
  * Conflicting attributes will be discarded by the hardware, and can be
  * identified by comparing `attrs_in` to `attrs_out`.
  *
@@ -360,8 +354,7 @@ dif_result_t dif_pinmux_output_select(const dif_pinmux_t *pinmux,
  * @param pinmux A Pin Multiplexer handle.
  * @param pad Pad index to write the attributes for.
  * @param type Pad type (MIO or DIO).
- * @param attrs_in Attributes to write. A set bit writes an attribute, a
- *                 clear bit leaves it in its existing state.
+ * @param attrs_in Attribute values to write.
  * @param attrs_out[out] The actual attributes written and accepted by the
  *                       hardware.
  * @return The result of the operation.
@@ -463,7 +456,7 @@ dif_result_t dif_pinmux_pad_sleep_clear_state(const dif_pinmux_t *pinmux,
                                               dif_pinmux_pad_kind_t type);
 
 /**
- * Enables edge triggered wake-up mode detection for a particular detector.
+ * Enables wake-up mode detection for a particular detector.
  *
  * @param pinmux A Pin Multiplexer handle.
  * @param detector A detector index.
@@ -471,22 +464,9 @@ dif_result_t dif_pinmux_pad_sleep_clear_state(const dif_pinmux_t *pinmux,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_pinmux_wakeup_detector_enable_edge(
+dif_result_t dif_pinmux_wakeup_detector_enable(
     const dif_pinmux_t *pinmux, dif_pinmux_index_t detector,
-    dif_pinmux_wakeup_edge_config_t config);
-
-/**
- * Enables edge timed wake-up mode detection for a particular detector.
- *
- * @param pinmux A Pin Multiplexer handle.
- * @param detector A detector index.
- * @param config A wake-up detector configuration.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_pinmux_wakeup_detector_enable_timed(
-    const dif_pinmux_t *pinmux, dif_pinmux_index_t detector,
-    dif_pinmux_wakeup_timed_config_t config);
+    dif_pinmux_wakeup_config_t config);
 
 /**
  * Disables wake-up detection for a particular detector.
@@ -496,8 +476,8 @@ dif_result_t dif_pinmux_wakeup_detector_enable_timed(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_pinmux_wakeup_detect_disable(const dif_pinmux_t *pinmux,
-                                              dif_pinmux_index_t detector);
+dif_result_t dif_pinmux_wakeup_detector_disable(const dif_pinmux_t *pinmux,
+                                                dif_pinmux_index_t detector);
 
 /**
  * Clears the wake-up cause information.
@@ -509,15 +489,16 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_pinmux_wakeup_cause_clear(const dif_pinmux_t *pinmux);
 
 /**
- * Retrieves the index of a detector that has triggered a wake-up event.
+ * Retrieves the detectors that have detected wake-up patterns.
  *
  * @param pinmux A Pin Multiplexer handle.
- * @param detector[out] A detector index.
+ * @param detector_map[out] A bit map representing detectors that have detected
+ * wake-up patterns.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pinmux_wakeup_cause_get(const dif_pinmux_t *pinmux,
-                                         dif_pinmux_index_t *detector);
+                                         uint32_t *detector_map);
 
 #ifdef __cplusplus
 }  // extern "C"

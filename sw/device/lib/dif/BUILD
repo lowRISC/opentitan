@@ -927,6 +927,7 @@ cc_test(
     name = "pinmux_unittest",
     srcs = [
         "autogen/dif_pinmux_autogen_unittest.cc",
+        "dif_pinmux_unittest.cc",
     ],
     deps = [
         ":pinmux",
