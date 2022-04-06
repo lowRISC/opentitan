@@ -22,9 +22,6 @@ parameters:
   - name: includeFiles
     type: object
     default: []
-  - name: archiveName
-    type: string
-    default: ""
   - name: gcpKeyFile
     type: string
     default: ""
@@ -53,13 +50,16 @@ steps:
 
       . util/build_consts.sh
       printf "$(date -u +%Y-%m-%dT%H:%M:%S)\n$(Build.SourceVersion)" > latest.txt
-      printf  "${{ join('\n', parameters.includeFiles) }}" > include_files.txt
-      tar -C ${{ parameters.parentDir }} -zcvf ${{ parameters.archiveName }} -T include_files.txt
+      printf "${{ join('\n', parameters.includeFiles) }}" > include_files.txt
+      tar -C ${{ parameters.parentDir }} -zcvf bitstream-latest.tar.gz -T include_files.txt
 
       gsutil -o Credentials:gs_service_key_file=$(gcpkey.secureFilePath) \
         cp latest.txt ${{ parameters.bucketURI }}/latest.txt
       gsutil -o Credentials:gs_service_key_file=$(gcpkey.secureFilePath) \
-        cp -r ${{ parameters.archiveName }} ${{ parameters.bucketURI }}/${{ parameters.archiveName }}
+        cp -r bitstream-latest.tar.gz ${{ parameters.bucketURI }}/bitstream-latest.tar.gz
+      gsutil -o Credentials:gs_service_key_file=$(gcpkey.secureFilePath) \
+        cp -r ${{ parameters.bucketURI }}/bitstream-latest.tar.gz ${{ parameters.bucketURI }}/bitstream-$(Build.SourceVersion).tar.gz
     condition: succeeded()
-    displayName: Upload artifacts to GCP bucket
+    continueOnError: true
+    displayName: Upload bitstreams to GCP bucket
 
