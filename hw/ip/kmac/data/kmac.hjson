@@ -722,6 +722,7 @@
         hwqe : "true"
         swaccess: "wo"
         hwaccess: "hro"
+        regwen:   "CFG_REGWEN"
         fields: [
           { bits: "31:0"
             name: "key"
@@ -751,6 +752,7 @@
         hwqe : "true"
         swaccess: "wo"
         hwaccess: "hro"
+        regwen:   "CFG_REGWEN"
         fields: [
           { bits: "31:0"
             name: "key"
@@ -826,6 +828,7 @@
         hwext: "false"
         swaccess: "rw"
         hwaccess: "hro"
+        regwen:   "CFG_REGWEN"
         fields: [
           { bits: "31:0"
             name: "prefix"

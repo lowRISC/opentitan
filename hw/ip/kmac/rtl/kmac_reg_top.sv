@@ -1397,7 +1397,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share0_0 (
     .re     (1'b0),
-    .we     (key_share0_0_we),
+    .we     (key_share0_0_we & cfg_regwen_qs),
     .wd     (key_share0_0_wd),
     .d      ('0),
     .qre    (),
@@ -1417,7 +1417,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share0_1 (
     .re     (1'b0),
-    .we     (key_share0_1_we),
+    .we     (key_share0_1_we & cfg_regwen_qs),
     .wd     (key_share0_1_wd),
     .d      ('0),
     .qre    (),
@@ -1437,7 +1437,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share0_2 (
     .re     (1'b0),
-    .we     (key_share0_2_we),
+    .we     (key_share0_2_we & cfg_regwen_qs),
     .wd     (key_share0_2_wd),
     .d      ('0),
     .qre    (),
@@ -1457,7 +1457,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share0_3 (
     .re     (1'b0),
-    .we     (key_share0_3_we),
+    .we     (key_share0_3_we & cfg_regwen_qs),
     .wd     (key_share0_3_wd),
     .d      ('0),
     .qre    (),
@@ -1477,7 +1477,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share0_4 (
     .re     (1'b0),
-    .we     (key_share0_4_we),
+    .we     (key_share0_4_we & cfg_regwen_qs),
     .wd     (key_share0_4_wd),
     .d      ('0),
     .qre    (),
@@ -1497,7 +1497,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share0_5 (
     .re     (1'b0),
-    .we     (key_share0_5_we),
+    .we     (key_share0_5_we & cfg_regwen_qs),
     .wd     (key_share0_5_wd),
     .d      ('0),
     .qre    (),
@@ -1517,7 +1517,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share0_6 (
     .re     (1'b0),
-    .we     (key_share0_6_we),
+    .we     (key_share0_6_we & cfg_regwen_qs),
     .wd     (key_share0_6_wd),
     .d      ('0),
     .qre    (),
@@ -1537,7 +1537,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share0_7 (
     .re     (1'b0),
-    .we     (key_share0_7_we),
+    .we     (key_share0_7_we & cfg_regwen_qs),
     .wd     (key_share0_7_wd),
     .d      ('0),
     .qre    (),
@@ -1557,7 +1557,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share0_8 (
     .re     (1'b0),
-    .we     (key_share0_8_we),
+    .we     (key_share0_8_we & cfg_regwen_qs),
     .wd     (key_share0_8_wd),
     .d      ('0),
     .qre    (),
@@ -1577,7 +1577,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share0_9 (
     .re     (1'b0),
-    .we     (key_share0_9_we),
+    .we     (key_share0_9_we & cfg_regwen_qs),
     .wd     (key_share0_9_wd),
     .d      ('0),
     .qre    (),
@@ -1597,7 +1597,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share0_10 (
     .re     (1'b0),
-    .we     (key_share0_10_we),
+    .we     (key_share0_10_we & cfg_regwen_qs),
     .wd     (key_share0_10_wd),
     .d      ('0),
     .qre    (),
@@ -1617,7 +1617,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share0_11 (
     .re     (1'b0),
-    .we     (key_share0_11_we),
+    .we     (key_share0_11_we & cfg_regwen_qs),
     .wd     (key_share0_11_wd),
     .d      ('0),
     .qre    (),
@@ -1637,7 +1637,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share0_12 (
     .re     (1'b0),
-    .we     (key_share0_12_we),
+    .we     (key_share0_12_we & cfg_regwen_qs),
     .wd     (key_share0_12_wd),
     .d      ('0),
     .qre    (),
@@ -1657,7 +1657,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share0_13 (
     .re     (1'b0),
-    .we     (key_share0_13_we),
+    .we     (key_share0_13_we & cfg_regwen_qs),
     .wd     (key_share0_13_wd),
     .d      ('0),
     .qre    (),
@@ -1677,7 +1677,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share0_14 (
     .re     (1'b0),
-    .we     (key_share0_14_we),
+    .we     (key_share0_14_we & cfg_regwen_qs),
     .wd     (key_share0_14_wd),
     .d      ('0),
     .qre    (),
@@ -1697,7 +1697,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share0_15 (
     .re     (1'b0),
-    .we     (key_share0_15_we),
+    .we     (key_share0_15_we & cfg_regwen_qs),
     .wd     (key_share0_15_wd),
     .d      ('0),
     .qre    (),
@@ -1717,7 +1717,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share1_0 (
     .re     (1'b0),
-    .we     (key_share1_0_we),
+    .we     (key_share1_0_we & cfg_regwen_qs),
     .wd     (key_share1_0_wd),
     .d      ('0),
     .qre    (),
@@ -1737,7 +1737,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share1_1 (
     .re     (1'b0),
-    .we     (key_share1_1_we),
+    .we     (key_share1_1_we & cfg_regwen_qs),
     .wd     (key_share1_1_wd),
     .d      ('0),
     .qre    (),
@@ -1757,7 +1757,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share1_2 (
     .re     (1'b0),
-    .we     (key_share1_2_we),
+    .we     (key_share1_2_we & cfg_regwen_qs),
     .wd     (key_share1_2_wd),
     .d      ('0),
     .qre    (),
@@ -1777,7 +1777,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share1_3 (
     .re     (1'b0),
-    .we     (key_share1_3_we),
+    .we     (key_share1_3_we & cfg_regwen_qs),
     .wd     (key_share1_3_wd),
     .d      ('0),
     .qre    (),
@@ -1797,7 +1797,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share1_4 (
     .re     (1'b0),
-    .we     (key_share1_4_we),
+    .we     (key_share1_4_we & cfg_regwen_qs),
     .wd     (key_share1_4_wd),
     .d      ('0),
     .qre    (),
@@ -1817,7 +1817,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share1_5 (
     .re     (1'b0),
-    .we     (key_share1_5_we),
+    .we     (key_share1_5_we & cfg_regwen_qs),
     .wd     (key_share1_5_wd),
     .d      ('0),
     .qre    (),
@@ -1837,7 +1837,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share1_6 (
     .re     (1'b0),
-    .we     (key_share1_6_we),
+    .we     (key_share1_6_we & cfg_regwen_qs),
     .wd     (key_share1_6_wd),
     .d      ('0),
     .qre    (),
@@ -1857,7 +1857,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share1_7 (
     .re     (1'b0),
-    .we     (key_share1_7_we),
+    .we     (key_share1_7_we & cfg_regwen_qs),
     .wd     (key_share1_7_wd),
     .d      ('0),
     .qre    (),
@@ -1877,7 +1877,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share1_8 (
     .re     (1'b0),
-    .we     (key_share1_8_we),
+    .we     (key_share1_8_we & cfg_regwen_qs),
     .wd     (key_share1_8_wd),
     .d      ('0),
     .qre    (),
@@ -1897,7 +1897,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share1_9 (
     .re     (1'b0),
-    .we     (key_share1_9_we),
+    .we     (key_share1_9_we & cfg_regwen_qs),
     .wd     (key_share1_9_wd),
     .d      ('0),
     .qre    (),
@@ -1917,7 +1917,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share1_10 (
     .re     (1'b0),
-    .we     (key_share1_10_we),
+    .we     (key_share1_10_we & cfg_regwen_qs),
     .wd     (key_share1_10_wd),
     .d      ('0),
     .qre    (),
@@ -1937,7 +1937,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share1_11 (
     .re     (1'b0),
-    .we     (key_share1_11_we),
+    .we     (key_share1_11_we & cfg_regwen_qs),
     .wd     (key_share1_11_wd),
     .d      ('0),
     .qre    (),
@@ -1957,7 +1957,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share1_12 (
     .re     (1'b0),
-    .we     (key_share1_12_we),
+    .we     (key_share1_12_we & cfg_regwen_qs),
     .wd     (key_share1_12_wd),
     .d      ('0),
     .qre    (),
@@ -1977,7 +1977,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share1_13 (
     .re     (1'b0),
-    .we     (key_share1_13_we),
+    .we     (key_share1_13_we & cfg_regwen_qs),
     .wd     (key_share1_13_wd),
     .d      ('0),
     .qre    (),
@@ -1997,7 +1997,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share1_14 (
     .re     (1'b0),
-    .we     (key_share1_14_we),
+    .we     (key_share1_14_we & cfg_regwen_qs),
     .wd     (key_share1_14_wd),
     .d      ('0),
     .qre    (),
@@ -2017,7 +2017,7 @@ module kmac_reg_top (
     .DW    (32)
   ) u_key_share1_15 (
     .re     (1'b0),
-    .we     (key_share1_15_we),
+    .we     (key_share1_15_we & cfg_regwen_qs),
     .wd     (key_share1_15_wd),
     .d      ('0),
     .qre    (),
@@ -2065,7 +2065,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prefix_0_we),
+    .we     (prefix_0_we & cfg_regwen_qs),
     .wd     (prefix_0_wd),
 
     // from internal hardware
@@ -2092,7 +2092,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prefix_1_we),
+    .we     (prefix_1_we & cfg_regwen_qs),
     .wd     (prefix_1_wd),
 
     // from internal hardware
@@ -2119,7 +2119,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prefix_2_we),
+    .we     (prefix_2_we & cfg_regwen_qs),
     .wd     (prefix_2_wd),
 
     // from internal hardware
@@ -2146,7 +2146,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prefix_3_we),
+    .we     (prefix_3_we & cfg_regwen_qs),
     .wd     (prefix_3_wd),
 
     // from internal hardware
@@ -2173,7 +2173,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prefix_4_we),
+    .we     (prefix_4_we & cfg_regwen_qs),
     .wd     (prefix_4_wd),
 
     // from internal hardware
@@ -2200,7 +2200,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prefix_5_we),
+    .we     (prefix_5_we & cfg_regwen_qs),
     .wd     (prefix_5_wd),
 
     // from internal hardware
@@ -2227,7 +2227,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prefix_6_we),
+    .we     (prefix_6_we & cfg_regwen_qs),
     .wd     (prefix_6_wd),
 
     // from internal hardware
@@ -2254,7 +2254,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prefix_7_we),
+    .we     (prefix_7_we & cfg_regwen_qs),
     .wd     (prefix_7_wd),
 
     // from internal hardware
@@ -2281,7 +2281,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prefix_8_we),
+    .we     (prefix_8_we & cfg_regwen_qs),
     .wd     (prefix_8_wd),
 
     // from internal hardware
@@ -2308,7 +2308,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prefix_9_we),
+    .we     (prefix_9_we & cfg_regwen_qs),
     .wd     (prefix_9_wd),
 
     // from internal hardware
@@ -2335,7 +2335,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prefix_10_we),
+    .we     (prefix_10_we & cfg_regwen_qs),
     .wd     (prefix_10_wd),
 
     // from internal hardware
