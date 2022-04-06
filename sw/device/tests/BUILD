@@ -6,6 +6,27 @@ load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
 
 opentitan_functest(
+    name = "aes_entropy_test",
+    srcs = ["aes_entropy_test.c"],
+    verilator = verilator_params(
+        tags = [
+            "cpu:4",
+            "failing_verilator",
+        ],
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:aes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aes_testutils",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "aes_idle_test",
     srcs = ["aes_idle_test.c"],
     verilator = verilator_params(
