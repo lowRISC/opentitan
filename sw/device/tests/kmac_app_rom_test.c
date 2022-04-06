@@ -26,9 +26,9 @@ bool test_main(void) {
   // get computed and expected digests and check that they match
   CHECK_DIF_OK(dif_rom_ctrl_get_digest(&rom_ctrl, &computed_digest));
   CHECK_DIF_OK(dif_rom_ctrl_get_expected_digest(&rom_ctrl, &expected_digest));
-  CHECK_BUFFER(computed_digest.digest, expected_digest.digest,
-               ROM_CTRL_DIGEST_MULTIREG_COUNT,
-               "Mismatch between computed and expected digest.");
+  CHECK_BUFFER_EQ(computed_digest.digest, expected_digest.digest,
+                  ROM_CTRL_DIGEST_MULTIREG_COUNT,
+                  "Mismatch between computed and expected digest.");
 
   return true;
 }

@@ -51,7 +51,7 @@ void hmac_testutils_finish_and_check_polled(const dif_hmac_t *hmac,
                                             const dif_hmac_digest_t *expected) {
   dif_hmac_digest_t digest;
   hmac_testutils_finish_polled(hmac, &digest);
-  CHECK_BUFFER(digest.digest, expected, ARRAYSIZE(digest.digest));
+  CHECK_BUFFER_EQ(digest.digest, expected, ARRAYSIZE(digest.digest));
 }
 
 void hmac_testutils_push_message(const dif_hmac_t *hmac, const char *data,
