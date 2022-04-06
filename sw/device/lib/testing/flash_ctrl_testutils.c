@@ -196,3 +196,19 @@ bool flash_ctrl_testutils_read_page(
   CHECK_DIF_OK(dif_flash_ctrl_read_fifo_pop(flash_state, word_count, data_out));
   return flash_ctrl_testutils_wait_transaction_end(flash_state);
 }
+
+void flash_ctrl_testutils_default_region_access(
+    dif_flash_ctrl_state_t *flash_state, bool rd_en, bool prog_en,
+    bool erase_en, bool scramble_en, bool ecc_en, bool high_endurance_en) {
+  dif_flash_ctrl_region_properties_t default_properties = {
+      .rd_en = rd_en ? kMultiBitBool4True : kMultiBitBool4False,
+      .prog_en = prog_en ? kMultiBitBool4True : kMultiBitBool4False,
+      .erase_en = erase_en ? kMultiBitBool4True : kMultiBitBool4False,
+      .scramble_en = scramble_en ? kMultiBitBool4True : kMultiBitBool4False,
+      .ecc_en = ecc_en ? kMultiBitBool4True : kMultiBitBool4False,
+      .high_endurance_en =
+          high_endurance_en ? kMultiBitBool4True : kMultiBitBool4False};
+
+  CHECK_DIF_OK(dif_flash_ctrl_set_default_region_properties(
+      flash_state, default_properties));
+}

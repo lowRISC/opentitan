@@ -16,6 +16,7 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_rom/spiflash_frame.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -116,7 +117,8 @@ static bool check_frame_hash(const dif_hmac_t *hmac,
  */
 static int bootstrap_flash(const dif_spi_device_t *spi,
                            const dif_spi_device_config_t *spi_config,
-                           const dif_hmac_t *hmac) {
+                           const dif_hmac_t *hmac,
+                           dif_flash_ctrl_state_t *flash) {
   dif_hmac_digest_t ack = {0};
   uint32_t expected_frame_num = 0;
   while (true) {
@@ -147,8 +149,15 @@ static int bootstrap_flash(const dif_spi_device_t *spi,
             /*bytes_received=*/NULL));
 
         if (expected_frame_num == 0) {
-          flash_default_region_access(/*rd_en=*/true, /*prog_en=*/true,
-                                      /*erase_en=*/true);
+          // setup default access for data partition
+          flash_ctrl_testutils_default_region_access(
+              flash, /*rd_en=*/true,
+              /*prog_en=*/true,
+              /*erase_en=*/true,
+              /*scramble_en=*/false,
+              /*ecc_en=*/false,
+              /*high_endurance_en=*/false);
+
           int flash_error = erase_flash();
           if (flash_error != 0) {
             return flash_error;
@@ -182,6 +191,10 @@ int bootstrap(void) {
     return 0;
   }
 
+  dif_flash_ctrl_state_t flash;
+  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+
   // SPI device is only initialized in bootstrap mode.
   LOG_INFO("Bootstrap requested, initialising HW...");
   flash_init_block();
@@ -205,7 +218,7 @@ int bootstrap(void) {
       dif_hmac_init(mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR), &hmac));
 
   LOG_INFO("HW initialisation completed, waiting for SPI input...");
-  int error = bootstrap_flash(&spi, &spi_config, &hmac);
+  int error = bootstrap_flash(&spi, &spi_config, &hmac, &flash);
   if (error != 0) {
     error |= erase_flash();
     LOG_ERROR("Bootstrap error: 0x%x", error);
@@ -214,8 +227,12 @@ int bootstrap(void) {
   // Always make sure to revert flash_ctrl access
   // to default settings. bootstrap_flash enables
   // access to flash to perform update.
-  flash_default_region_access(/*rd_en=*/false,
-                              /*prog_en=*/false,
-                              /*erase_en=*/false);
+  flash_ctrl_testutils_default_region_access(&flash, /*rd_en=*/false,
+                                             /*prog_en=*/false,
+                                             /*erase_en=*/false,
+                                             /*scramble_en=*/false,
+                                             /*ecc_en=*/false,
+                                             /*high_endurance_en=*/false);
+
   return error;
 }

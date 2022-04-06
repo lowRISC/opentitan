@@ -7,6 +7,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "sw/device/lib/base/multibits.h"
 
 // Flash memory base defines, _SZ are presented in bytes
 #define FLASH_MEM_BASE_ADDR 0x20000000

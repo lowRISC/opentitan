@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/lib/flash_ctrl.h"
 
+#include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
@@ -199,66 +200,25 @@ void flash_default_region_access(bool rd_en, bool prog_en, bool erase_en) {
   mmio_region_t flash_ctrl_base =
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR);
 
-  mmio_region_write32_shadowed(
-      flash_ctrl_base, FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET,
-      rd_en << FLASH_CTRL_DEFAULT_REGION_SHADOWED_RD_EN_BIT |
-          prog_en << FLASH_CTRL_DEFAULT_REGION_SHADOWED_PROG_EN_BIT |
-          erase_en << FLASH_CTRL_DEFAULT_REGION_SHADOWED_ERASE_EN_BIT);
-}
+  uint32_t reg = 0;
+  reg =
+      bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_RD_EN_FIELD,
+                             rd_en ? kMultiBitBool4True : kMultiBitBool4False);
+  reg = bitfield_field32_write(
+      reg, FLASH_CTRL_DEFAULT_REGION_PROG_EN_FIELD,
+      prog_en ? kMultiBitBool4True : kMultiBitBool4False);
+  reg = bitfield_field32_write(
+      reg, FLASH_CTRL_DEFAULT_REGION_ERASE_EN_FIELD,
+      erase_en ? kMultiBitBool4True : kMultiBitBool4False);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_SCRAMBLE_EN_FIELD,
+                               kMultiBitBool4False);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_ECC_EN_FIELD,
+                               kMultiBitBool4False);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_HE_EN_FIELD,
+                               kMultiBitBool4False);
 
-void flash_cfg_region(const mp_region_t *region_cfg) {
-  uint32_t reg_value;
-  bank_index_t bank_sel;
-  mmio_region_t flash_ctrl_base =
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR);
-
-  if (region_cfg->part == kDataPartition) {
-    mmio_region_write32_shadowed(
-        flash_ctrl_base,
-        FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_REG_OFFSET + region_cfg->num * 4,
-        region_cfg->base << FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_BASE_0_OFFSET |
-            region_cfg->size
-                << FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_SIZE_0_OFFSET |
-            region_cfg->rd_en
-                << FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_RD_EN_0_BIT |
-            region_cfg->prog_en
-                << FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_PROG_EN_0_BIT |
-            region_cfg->erase_en
-                << FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_ERASE_EN_0_BIT |
-            region_cfg->scramble_en
-                << FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_SCRAMBLE_EN_0_BIT |
-            region_cfg->ecc_en
-                << FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_ECC_EN_0_BIT |
-            0x1 << FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_EN_0_BIT);
-  } else if (region_cfg->part == kInfoPartition) {
-    reg_value =
-        region_cfg->rd_en
-            << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_RD_EN_0_BIT |
-        region_cfg->prog_en
-            << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_PROG_EN_0_BIT |
-        region_cfg->erase_en
-            << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_ERASE_EN_0_BIT |
-        region_cfg->scramble_en
-            << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_SCRAMBLE_EN_0_BIT |
-        region_cfg->ecc_en
-            << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_ECC_EN_0_BIT |
-        0x1 << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_EN_0_BIT;
-
-    bank_sel = region_cfg->base / flash_get_pages_per_bank();
-    if (bank_sel == FLASH_BANK_0) {
-      mmio_region_write32_shadowed(
-          flash_ctrl_base,
-          FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_REG_OFFSET +
-              region_cfg->num * 4,
-          reg_value);
-    } else {
-      mmio_region_write32_shadowed(
-          flash_ctrl_base,
-          FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_0_REG_OFFSET +
-              region_cfg->num * 4,
-          reg_value);
-    }
-  }
+  mmio_region_write32(flash_ctrl_base, FLASH_CTRL_DEFAULT_REGION_REG_OFFSET,
+                      reg);
 }
 
 uint32_t flash_get_banks(void) { return FLASH_CTRL_PARAM_REG_NUM_BANKS; }

@@ -469,8 +469,8 @@ void flash_ctrl_data_default_perms_set(flash_ctrl_perms_t perms) {
   // Read first to preserve ECC, scrambling, and high endurance bits.
   uint32_t reg =
       sec_mmio_read32(kBase + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET);
-  reg = bitfield_bit32_write(reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_RD_EN_BIT,
-                             perms.read == kHardenedBoolTrue);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_RD_EN_FIELD,
+                               perms.read);
   reg =
       bitfield_bit32_write(reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_PROG_EN_BIT,
                            perms.write == kHardenedBoolTrue);

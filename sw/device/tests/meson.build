@@ -580,6 +580,7 @@ flash_ctrl_test_lib = declare_dependency(
     dependencies: [
       sw_lib_mem,
       sw_lib_mmio,
+      sw_lib_dif_flash_ctrl,
       sw_lib_flash_ctrl,
       sw_lib_runtime_log,
     ],
