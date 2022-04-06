@@ -43,7 +43,7 @@
 .logs.fields _dv_log_offset (INFO): {
   /* Force this section to always be emitted. The logs extraction script expects
    * this section to be present in the ELF file, but the linker will not emit it
-   * if there are no outputs (ie.e, the *(.logs.fields) statement) with contents.
+   * if there are no outputs (i.e, the *(.logs.fields) statement) with contents.
    *
    * However, almost any assignment will implicitly create even an empty section,
    * including the very silly . = . (set the program counter to itself).
