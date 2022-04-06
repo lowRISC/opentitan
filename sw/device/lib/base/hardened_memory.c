@@ -34,6 +34,8 @@ void hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
   uint32_t decoys[8];
   uintptr_t decoy_addr = (uintptr_t)&decoys;
 
+  size_t byte_len = word_len * sizeof(uint32_t);
+
   // We need to launder `count`, so that the SW.LOOP-COMPLETION check is not
   // deleted by the compiler.
   for (; launderw(count) < expected_count; count = launderw(count) + 1) {
@@ -66,9 +68,9 @@ void hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
     // that the compiler cannot delete the resulting loads and stores. This is
     // similar to having used `volatile uint32_t *`.
     void *src = (void *)launderw(
-        ct_cmovw(ct_sltuw(launderw(idx), word_len), srcp, decoy1));
+        ct_cmovw(ct_sltuw(launderw(idx), byte_len), srcp, decoy1));
     void *dest = (void *)launderw(
-        ct_cmovw(ct_sltuw(launderw(idx), word_len), destp, decoy2));
+        ct_cmovw(ct_sltuw(launderw(idx), byte_len), destp, decoy2));
 
     // Perform the copy, without performing a typed dereference operation.
     write_32(read_32(src), dest);
@@ -93,6 +95,8 @@ void hardened_memshred(uint32_t *dest, size_t word_len) {
   uint32_t decoys[8];
   uintptr_t decoy_addr = (uintptr_t)&decoys;
 
+  size_t byte_len = word_len * sizeof(uint32_t);
+
   for (; count < expected_count; count = launderw(count) + 1) {
     size_t idx = launderw(random_order_advance(&order)) * sizeof(uint32_t);
     barrierw(idx);
@@ -101,7 +105,7 @@ void hardened_memshred(uint32_t *dest, size_t word_len) {
     uintptr_t decoy = decoy_addr + (idx % sizeof(decoys));
 
     void *data = (void *)launderw(
-        ct_cmovw(ct_sltuw(launderw(idx), word_len), datap, decoy));
+        ct_cmovw(ct_sltuw(launderw(idx), byte_len), datap, decoy));
 
     // Write a freshly-generated random word to `*data`.
     write_32(hardened_memshred_random_word(), data);
@@ -133,6 +137,8 @@ hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
   uint32_t zeros = 0;
   uint32_t ones = UINT32_MAX;
 
+  size_t byte_len = word_len * sizeof(uint32_t);
+
   // The loop is almost token-for-token the one above, but the copy is
   // replaced with something else.
   for (; count < expected_count; count = launderw(count) + 1) {
@@ -146,9 +152,9 @@ hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
         decoy_addr + ((idx + sizeof(decoys) / 2) % sizeof(decoys));
 
     void *av = (void *)launderw(
-        ct_cmovw(ct_sltuw(launderw(idx), word_len), ap, decoy1));
+        ct_cmovw(ct_sltuw(launderw(idx), byte_len), ap, decoy1));
     void *bv = (void *)launderw(
-        ct_cmovw(ct_sltuw(launderw(idx), word_len), bp, decoy2));
+        ct_cmovw(ct_sltuw(launderw(idx), byte_len), bp, decoy2));
 
     uint32_t a = read_32(av);
     uint32_t b = read_32(bv);
