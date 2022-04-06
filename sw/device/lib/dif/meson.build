@@ -885,6 +885,7 @@ sw_lib_dif_pinmux = declare_dependency(
       sw_lib_mmio,
       sw_lib_bitfield,
       sw_lib_dif_autogen_pinmux,
+      sw_lib_dif_base,
     ],
   )
 )
@@ -893,6 +894,7 @@ test('dif_pinmux_unittest', executable(
     'dif_pinmux_unittest',
     sources: [
       'autogen/dif_pinmux_autogen_unittest.cc',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_base.c',
       meson.project_source_root() / 'sw/device/lib/dif/dif_pinmux.c',
       meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_pinmux_autogen.c',
       hw_top_earlgrey_pinmux_reg_h,
