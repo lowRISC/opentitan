@@ -212,6 +212,32 @@ sw_tests += {
   }
 }
 
+rstmgr_sw_rst_ctrl_test_lib = declare_dependency(
+  link_with: static_library(
+    'rstmgr_sw_rst_ctrl_test_lib',
+    sources: [
+      hw_ip_spi_host_reg_h,
+      hw_ip_spi_device_reg_h,
+      hw_ip_usbdev_reg_h,
+      hw_ip_i2c_reg_h,
+      'rstmgr_sw_rst_ctrl_test.c'],
+    dependencies: [
+      sw_lib_dif_rstmgr,
+      sw_lib_dif_spi_device,
+      sw_lib_dif_spi_host,
+      sw_lib_dif_usbdev,
+      sw_lib_dif_i2c,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+    ],
+  ),
+)
+sw_tests += {
+  'rstmgr_sw_rst_ctrl_test': {
+    'library': rstmgr_sw_rst_ctrl_test_lib,
+  }
+}
+
 otbn_smoketest_lib = declare_dependency(
   link_with: static_library(
     'otbn_smoketest_lib',
