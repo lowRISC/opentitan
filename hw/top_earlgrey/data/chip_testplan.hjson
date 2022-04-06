@@ -1579,14 +1579,11 @@
             - Write the KEY_IV_DATA_IN_CLEAR and DATA_OUT_CLEAR trigger bits to 1 and wait for it to
               complete by polling the status idle bit.
             - Read back the data out CSRs - they should all read garbage values.
-            - Assertion check verifies that the internal states (data_in, key share and IV are also
-              garbage, i.e. different from the originally written values.
-            - Assertion checks proves that all interfaces are connected across AST RNG, ES, CSRNG,
-              EDN and AES.
-            - Predict the generated entropy bits and check against the observed for correctness.
+            - Assertion check verifies that the IV are also garbage, i.e. different from the originally
+              written values.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_aes_entropy"]
     }
     {
       name: chip_sw_aes_idle
