@@ -43,6 +43,15 @@
     unused_assert_static_lint_error = __name'(1'b1); \
   end
 
+// Static assertions for checks inside SV packages. If the conditions is not true, this will
+// trigger an error during elaboration.
+`define ASSERT_STATIC_IN_PACKAGE(__name, __prop)              \
+  function automatic bit assert_static_in_package_``__name(); \
+    bit unused_bit [((__prop) ? 1 : -1)];                     \
+    unused_bit = '{default: 1'b0};                            \
+    return unused_bit[0];                                     \
+  endfunction
+
 // The basic helper macros are actually defined in "implementation headers". The macros should do
 // the same thing in each case (except for the dummy flavour), but in a way that the respective
 // tools support.
