@@ -285,6 +285,7 @@ static bool execute_test(const dif_spi_device_t *spi_device,
             "SPI_DEVICE RX_FIFO recvd bytes mismatched: {act: %0d, exp: %0d}",
             bytes_recved, SPI_DEVICE_DATASET_SIZE);
       }
+      LOG_INFO("SPI_DEVICE read out RX FIFO.");
       // expect SPI_HOST to send another 1024 bytes to fill RX SRAM FIFO
       expected_irqs[kDifSpiDeviceIrqGenericTxUnderflow] = true;
       fired_irqs[kDifSpiDeviceIrqGenericRxWatermark] = false;
