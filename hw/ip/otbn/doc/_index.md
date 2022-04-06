@@ -503,6 +503,27 @@ Software can access the first share of the key through the [`KEY_S0_L`](#key-s0-
 It is up to host software to configure the Key Manager so that it provides the right key to OTBN at the start of the operation, and to remove the key again once the operation on OTBN has completed.
 A `KEY_INVALID` software error is raised if OTBN software accesses any of the `KEY_*` WSRs when the Key Manager has not presented a key.
 
+## Blanking {#blanking}
+
+To reduce side channel leakage OTBN employs a blanking technique on certain control and data paths.
+When a path is blanked it is forced to 0 (by ANDing the path with a blanking signal) preventing sensitive data bits producing a power signature via that path where that path isn't needed for the current instruction.  
+
+Blanking controls all come directly from flops to prevent glitches in decode logic reducing the effectiveness of the blanking.
+These control signals are determined in the [prefetch stage]({{<relref "#instruction-prefetch">}}) via pre-decode logic.
+Full decoding is still performed in the execution stage with the full decode results checked against the pre-decode blanking control.
+If the full decode disagrees with the pre-decode OTBN raises a `BAD_INTERNAL_STATE` fatal error.
+
+Blanking is applied in the following locations:
+
+* Read path from the bignum, CSR and WDR register files.
+  This is achieved with a one-hot mux with a two-level AND-OR structure.
+* Write data into the bignum, CSR and WDR register files.
+  Blanking is done separately for each register (as opposed to once on incoming write data that fans out to each register).
+* All relevant data paths within the bignum ALU and MAC.
+  Data paths not required for the instruction being executed are blanked.
+
+Note there is no blanking on the base side (save for the CSRs as these provide access to WDRs such as ACC).
+
 # Theory of Operations
 
 ## Block Diagram
@@ -562,10 +583,9 @@ This is to allow OTBN applications to store sensitive information in the other h
 Each memory write through the register interface updates a checksum.
 See the [Memory Load Integrity]({{< relref "#mem-load-integrity" >}}) section for more details.
 
-### Instruction Prefetch
+### Instruction Prefetch {#instruction-prefetch}
 
-OTBN employs an instruction prefetch stage which allows register file inputs to be taken directly from registers by pre-decoding instructions in the prefetch stage.
-This is required to enable the blanking SCA hardening measure (TODO: Not yet implemented or documented).
+OTBN employs an instruction prefetch stage to enable pre-decoding of instructions to enable the [blanking SCA hardening measure]({{<relref "#blanking">}}).
 Its operation is entirely transparent to software.
 It does not speculate and will only prefetch where the next instruction address can be known.
 This results in a stall cycle for all conditional branches and jumps as the result is neither predicted nor known ahead of time.
