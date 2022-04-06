@@ -824,14 +824,14 @@ module otbn
   assign alert_test[AlertRecov] = reg2hw.alert_test.recov.q & reg2hw.alert_test.recov.qe;
 
   logic [NumAlerts-1:0] alerts;
-  assign alerts[AlertFatal] = |{err_bits_q.fatal_software,
-                                err_bits_q.lifecycle_escalation,
-                                err_bits_q.illegal_bus_access,
-                                err_bits_q.bad_internal_state,
-                                err_bits_q.bus_intg_violation,
-                                err_bits_q.reg_intg_violation,
-                                err_bits_q.dmem_intg_violation,
-                                err_bits_q.imem_intg_violation};
+  assign alerts[AlertFatal] = |{err_bits.fatal_software,
+                                err_bits.lifecycle_escalation,
+                                err_bits.illegal_bus_access,
+                                err_bits.bad_internal_state,
+                                err_bits.bus_intg_violation,
+                                err_bits.reg_intg_violation,
+                                err_bits.dmem_intg_violation,
+                                err_bits.imem_intg_violation};
 
   assign alerts[AlertRecov] = (core_recoverable_err | recoverable_err_q) & done_core;
 
