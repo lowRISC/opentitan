@@ -550,10 +550,11 @@ TEST_F(FlashCtrlTest, ConfigureDataRegion) {
 
   // Check whether the region is enabled
   dif_toggle_t toggle;
-  EXPECT_READ32(FLASH_CTRL_MP_REGION_CFG_SHADOWED_4_REG_OFFSET,
-                {
-                    {FLASH_CTRL_MP_REGION_CFG_SHADOWED_4_EN_4_BIT, 0},
-                });
+  EXPECT_READ32(
+      FLASH_CTRL_MP_REGION_CFG_4_REG_OFFSET,
+      {
+          {FLASH_CTRL_MP_REGION_CFG_4_EN_4_OFFSET, kMultiBitBool4False},
+      });
   EXPECT_DIF_OK(
       dif_flash_ctrl_get_data_region_enablement(&dif_flash_ctrl_, 4, &toggle));
   EXPECT_EQ(toggle, kDifToggleDisabled);
@@ -572,105 +573,102 @@ TEST_F(FlashCtrlTest, ConfigureDataRegion) {
       .size = 0x9a,
       .properties =
           {
-              .rd_en = 0,
-              .prog_en = 1,
-              .erase_en = 1,
-              .scramble_en = 0,
-              .ecc_en = 0,
-              .high_endurance_en = 0,
+              .rd_en = kMultiBitBool4False,
+              .prog_en = kMultiBitBool4True,
+              .erase_en = kMultiBitBool4True,
+              .scramble_en = kMultiBitBool4False,
+              .ecc_en = kMultiBitBool4False,
+              .high_endurance_en = kMultiBitBool4False,
           },
   };
   EXPECT_READ32(FLASH_CTRL_REGION_CFG_REGWEN_2_REG_OFFSET,
                 {{FLASH_CTRL_REGION_CFG_REGWEN_2_REGION_2_BIT, 1}});
-  EXPECT_READ32(FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_REG_OFFSET,
-                {{FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_EN_2_BIT, 0}});
-  EXPECT_WRITE32(FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_REG_OFFSET,
+
+  EXPECT_READ32(
+      FLASH_CTRL_MP_REGION_CFG_2_REG_OFFSET,
+      {{FLASH_CTRL_MP_REGION_CFG_2_EN_2_OFFSET, kMultiBitBool4False}});
+
+  EXPECT_WRITE32(
+      FLASH_CTRL_MP_REGION_CFG_2_REG_OFFSET,
+      {
+          {FLASH_CTRL_MP_REGION_CFG_2_EN_2_OFFSET, kMultiBitBool4False},
+          {FLASH_CTRL_MP_REGION_CFG_2_RD_EN_2_OFFSET, kMultiBitBool4False},
+          {FLASH_CTRL_MP_REGION_CFG_2_PROG_EN_2_OFFSET, kMultiBitBool4True},
+          {FLASH_CTRL_MP_REGION_CFG_2_ERASE_EN_2_OFFSET, kMultiBitBool4True},
+          {FLASH_CTRL_MP_REGION_CFG_2_SCRAMBLE_EN_2_OFFSET,
+           kMultiBitBool4False},
+          {FLASH_CTRL_MP_REGION_CFG_2_ECC_EN_2_OFFSET, kMultiBitBool4False},
+          {FLASH_CTRL_MP_REGION_CFG_2_HE_EN_2_OFFSET, kMultiBitBool4False},
+      });
+
+  EXPECT_WRITE32(FLASH_CTRL_MP_REGION_2_REG_OFFSET,
                  {
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_RD_EN_2_BIT, 0},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_PROG_EN_2_BIT, 1},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_ERASE_EN_2_BIT, 1},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_SCRAMBLE_EN_2_BIT, 0},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_ECC_EN_2_BIT, 0},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_HE_EN_2_BIT, 0},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_BASE_2_OFFSET, 0x48},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_SIZE_2_OFFSET, 0x9a},
+                     {FLASH_CTRL_MP_REGION_2_BASE_2_OFFSET, 0x48},
+                     {FLASH_CTRL_MP_REGION_2_SIZE_2_OFFSET, 0x9a},
                  });
-  EXPECT_WRITE32(FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_REG_OFFSET,
-                 {
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_RD_EN_2_BIT, 0},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_PROG_EN_2_BIT, 1},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_ERASE_EN_2_BIT, 1},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_SCRAMBLE_EN_2_BIT, 0},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_ECC_EN_2_BIT, 0},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_HE_EN_2_BIT, 0},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_BASE_2_OFFSET, 0x48},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_SIZE_2_OFFSET, 0x9a},
-                 });
+
   EXPECT_DIF_OK(
       dif_flash_ctrl_set_data_region_properties(&dif_flash_ctrl_, 2, data_mp));
 
   // Enable the region
   EXPECT_READ32(FLASH_CTRL_REGION_CFG_REGWEN_3_REG_OFFSET,
                 {{FLASH_CTRL_REGION_CFG_REGWEN_3_REGION_3_BIT, 1}});
-  EXPECT_READ32(FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_REG_OFFSET,
-                {
-                    {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_EN_3_BIT, 0},
-                    {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_RD_EN_3_BIT, 0},
-                    {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_PROG_EN_3_BIT, 1},
-                    {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_ERASE_EN_3_BIT, 1},
-                    {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_SCRAMBLE_EN_3_BIT, 0},
-                    {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_ECC_EN_3_BIT, 0},
-                    {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_HE_EN_3_BIT, 0},
-                    {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_BASE_3_OFFSET, 0x48},
-                    {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_SIZE_3_OFFSET, 0x9a},
-                });
-  EXPECT_WRITE32(FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_REG_OFFSET,
-                 {
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_EN_3_BIT, 1},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_RD_EN_3_BIT, 0},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_PROG_EN_3_BIT, 1},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_ERASE_EN_3_BIT, 1},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_SCRAMBLE_EN_3_BIT, 0},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_ECC_EN_3_BIT, 0},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_HE_EN_3_BIT, 0},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_BASE_3_OFFSET, 0x48},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_SIZE_3_OFFSET, 0x9a},
-                 });
-  EXPECT_WRITE32(FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_REG_OFFSET,
-                 {
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_EN_3_BIT, 1},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_RD_EN_3_BIT, 0},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_PROG_EN_3_BIT, 1},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_ERASE_EN_3_BIT, 1},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_SCRAMBLE_EN_3_BIT, 0},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_ECC_EN_3_BIT, 0},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_HE_EN_3_BIT, 0},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_BASE_3_OFFSET, 0x48},
-                     {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_SIZE_3_OFFSET, 0x9a},
-                 });
+  EXPECT_READ32(
+      FLASH_CTRL_MP_REGION_CFG_3_REG_OFFSET,
+      {
+          {FLASH_CTRL_MP_REGION_CFG_3_EN_3_OFFSET, kMultiBitBool4False},
+          {FLASH_CTRL_MP_REGION_CFG_3_RD_EN_3_OFFSET, kMultiBitBool4False},
+          {FLASH_CTRL_MP_REGION_CFG_3_PROG_EN_3_OFFSET, kMultiBitBool4True},
+          {FLASH_CTRL_MP_REGION_CFG_3_ERASE_EN_3_OFFSET, kMultiBitBool4True},
+          {FLASH_CTRL_MP_REGION_CFG_3_SCRAMBLE_EN_3_OFFSET,
+           kMultiBitBool4False},
+          {FLASH_CTRL_MP_REGION_CFG_3_ECC_EN_3_OFFSET, kMultiBitBool4False},
+          {FLASH_CTRL_MP_REGION_CFG_3_HE_EN_3_OFFSET, kMultiBitBool4False},
+      });
+
+  EXPECT_WRITE32(
+      FLASH_CTRL_MP_REGION_CFG_3_REG_OFFSET,
+      {
+          {FLASH_CTRL_MP_REGION_CFG_3_EN_3_OFFSET, kMultiBitBool4True},
+          {FLASH_CTRL_MP_REGION_CFG_3_RD_EN_3_OFFSET, kMultiBitBool4False},
+          {FLASH_CTRL_MP_REGION_CFG_3_PROG_EN_3_OFFSET, kMultiBitBool4True},
+          {FLASH_CTRL_MP_REGION_CFG_3_ERASE_EN_3_OFFSET, kMultiBitBool4True},
+          {FLASH_CTRL_MP_REGION_CFG_3_SCRAMBLE_EN_3_OFFSET,
+           kMultiBitBool4False},
+          {FLASH_CTRL_MP_REGION_CFG_3_ECC_EN_3_OFFSET, kMultiBitBool4False},
+          {FLASH_CTRL_MP_REGION_CFG_3_HE_EN_3_OFFSET, kMultiBitBool4False},
+      });
+
   EXPECT_DIF_OK(dif_flash_ctrl_set_data_region_enablement(&dif_flash_ctrl_, 3,
                                                           kDifToggleEnabled));
 
   // Read out the region's configuration
-  EXPECT_READ32(FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_REG_OFFSET,
+  EXPECT_READ32(
+      FLASH_CTRL_MP_REGION_CFG_3_REG_OFFSET,
+      {
+          {FLASH_CTRL_MP_REGION_CFG_3_RD_EN_3_OFFSET, kMultiBitBool4False},
+          {FLASH_CTRL_MP_REGION_CFG_3_PROG_EN_3_OFFSET, kMultiBitBool4True},
+          {FLASH_CTRL_MP_REGION_CFG_3_ERASE_EN_3_OFFSET, kMultiBitBool4True},
+          {FLASH_CTRL_MP_REGION_CFG_3_SCRAMBLE_EN_3_OFFSET,
+           kMultiBitBool4False},
+          {FLASH_CTRL_MP_REGION_CFG_3_ECC_EN_3_OFFSET, kMultiBitBool4False},
+          {FLASH_CTRL_MP_REGION_CFG_3_HE_EN_3_OFFSET, kMultiBitBool4False},
+      });
+
+  EXPECT_READ32(FLASH_CTRL_MP_REGION_3_REG_OFFSET,
                 {
-                    {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_RD_EN_3_BIT, 0},
-                    {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_PROG_EN_3_BIT, 1},
-                    {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_ERASE_EN_3_BIT, 1},
-                    {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_SCRAMBLE_EN_3_BIT, 0},
-                    {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_ECC_EN_3_BIT, 0},
-                    {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_HE_EN_3_BIT, 0},
-                    {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_BASE_3_OFFSET, 0x48},
-                    {FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_SIZE_3_OFFSET, 0x9a},
+                    {FLASH_CTRL_MP_REGION_3_BASE_3_OFFSET, 0x48},
+                    {FLASH_CTRL_MP_REGION_3_SIZE_3_OFFSET, 0x9a},
                 });
+
   EXPECT_DIF_OK(
       dif_flash_ctrl_get_data_region_properties(&dif_flash_ctrl_, 3, &data_mp));
-  EXPECT_EQ(data_mp.properties.rd_en, 0);
-  EXPECT_EQ(data_mp.properties.prog_en, 1);
-  EXPECT_EQ(data_mp.properties.erase_en, 1);
-  EXPECT_EQ(data_mp.properties.scramble_en, 0);
-  EXPECT_EQ(data_mp.properties.ecc_en, 0);
-  EXPECT_EQ(data_mp.properties.high_endurance_en, 0);
+  EXPECT_EQ(data_mp.properties.rd_en, kMultiBitBool4False);
+  EXPECT_EQ(data_mp.properties.prog_en, kMultiBitBool4True);
+  EXPECT_EQ(data_mp.properties.erase_en, kMultiBitBool4True);
+  EXPECT_EQ(data_mp.properties.scramble_en, kMultiBitBool4False);
+  EXPECT_EQ(data_mp.properties.ecc_en, kMultiBitBool4False);
+  EXPECT_EQ(data_mp.properties.high_endurance_en, kMultiBitBool4False);
   EXPECT_EQ(data_mp.base, 0x48);
   EXPECT_EQ(data_mp.size, 0x9a);
 
@@ -743,54 +741,61 @@ TEST_F(FlashCtrlTest, SimpleQueries) {
       .partition_id = 0,
       .page = 3,
   };
-  EXPECT_READ32(FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_3_REG_OFFSET,
-                {
-                    {FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_EN_0_BIT, 1},
-                });
+  EXPECT_READ32(
+      FLASH_CTRL_BANK1_INFO0_PAGE_CFG_3_REG_OFFSET,
+      {
+          {FLASH_CTRL_MP_REGION_CFG_0_EN_0_OFFSET, kMultiBitBool4True},
+      });
   EXPECT_DIF_OK(dif_flash_ctrl_get_info_region_enablement(
       &dif_flash_ctrl_, info_region, &toggle));
   EXPECT_EQ(toggle, kDifToggleEnabled);
 
   dif_flash_ctrl_region_properties_t mp;
-  EXPECT_READ32(FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET,
-                {
-                    {FLASH_CTRL_DEFAULT_REGION_SHADOWED_RD_EN_BIT, 1},
-                    {FLASH_CTRL_DEFAULT_REGION_SHADOWED_PROG_EN_BIT, 1},
-                    {FLASH_CTRL_DEFAULT_REGION_SHADOWED_ERASE_EN_BIT, 0},
-                    {FLASH_CTRL_DEFAULT_REGION_SHADOWED_SCRAMBLE_EN_BIT, 0},
-                    {FLASH_CTRL_DEFAULT_REGION_SHADOWED_ECC_EN_BIT, 1},
-                    {FLASH_CTRL_DEFAULT_REGION_SHADOWED_HE_EN_BIT, 0},
-                });
+  EXPECT_READ32(
+      FLASH_CTRL_DEFAULT_REGION_REG_OFFSET,
+      {
+          {FLASH_CTRL_DEFAULT_REGION_RD_EN_OFFSET, kMultiBitBool4True},
+          {FLASH_CTRL_DEFAULT_REGION_PROG_EN_OFFSET, kMultiBitBool4True},
+          {FLASH_CTRL_DEFAULT_REGION_ERASE_EN_OFFSET, kMultiBitBool4False},
+          {FLASH_CTRL_DEFAULT_REGION_SCRAMBLE_EN_OFFSET, kMultiBitBool4False},
+          {FLASH_CTRL_DEFAULT_REGION_ECC_EN_OFFSET, kMultiBitBool4True},
+          {FLASH_CTRL_DEFAULT_REGION_HE_EN_OFFSET, kMultiBitBool4False},
+      });
   EXPECT_DIF_OK(
       dif_flash_ctrl_get_default_region_properties(&dif_flash_ctrl_, &mp));
-  EXPECT_EQ(mp.rd_en, 1);
-  EXPECT_EQ(mp.prog_en, 1);
-  EXPECT_EQ(mp.erase_en, 0);
-  EXPECT_EQ(mp.scramble_en, 0);
-  EXPECT_EQ(mp.ecc_en, 1);
-  EXPECT_EQ(mp.high_endurance_en, 0);
+  EXPECT_EQ(mp.rd_en, kMultiBitBool4True);
+  EXPECT_EQ(mp.prog_en, kMultiBitBool4True);
+  EXPECT_EQ(mp.erase_en, kMultiBitBool4False);
+  EXPECT_EQ(mp.scramble_en, kMultiBitBool4False);
+  EXPECT_EQ(mp.ecc_en, kMultiBitBool4True);
+  EXPECT_EQ(mp.high_endurance_en, kMultiBitBool4False);
 
   info_region.bank = 0;
   info_region.partition_id = 2;
   info_region.page = 1;
-  EXPECT_READ32(
-      FLASH_CTRL_BANK0_INFO2_PAGE_CFG_SHADOWED_1_REG_OFFSET,
-      {
-          {FLASH_CTRL_BANK0_INFO2_PAGE_CFG_SHADOWED_1_RD_EN_1_BIT, 1},
-          {FLASH_CTRL_BANK0_INFO2_PAGE_CFG_SHADOWED_1_PROG_EN_1_BIT, 0},
-          {FLASH_CTRL_BANK0_INFO2_PAGE_CFG_SHADOWED_1_ERASE_EN_1_BIT, 1},
-          {FLASH_CTRL_BANK0_INFO2_PAGE_CFG_SHADOWED_1_SCRAMBLE_EN_1_BIT, 0},
-          {FLASH_CTRL_BANK0_INFO2_PAGE_CFG_SHADOWED_1_ECC_EN_1_BIT, 1},
-          {FLASH_CTRL_BANK0_INFO2_PAGE_CFG_SHADOWED_1_HE_EN_1_BIT, 0},
-      });
+  EXPECT_READ32(FLASH_CTRL_BANK0_INFO2_PAGE_CFG_1_REG_OFFSET,
+                {
+                    {FLASH_CTRL_BANK0_INFO2_PAGE_CFG_1_RD_EN_1_OFFSET,
+                     kMultiBitBool4True},
+                    {FLASH_CTRL_BANK0_INFO2_PAGE_CFG_1_PROG_EN_1_OFFSET,
+                     kMultiBitBool4False},
+                    {FLASH_CTRL_BANK0_INFO2_PAGE_CFG_1_ERASE_EN_1_OFFSET,
+                     kMultiBitBool4True},
+                    {FLASH_CTRL_BANK0_INFO2_PAGE_CFG_1_SCRAMBLE_EN_1_OFFSET,
+                     kMultiBitBool4False},
+                    {FLASH_CTRL_BANK0_INFO2_PAGE_CFG_1_ECC_EN_1_OFFSET,
+                     kMultiBitBool4True},
+                    {FLASH_CTRL_BANK0_INFO2_PAGE_CFG_1_HE_EN_1_OFFSET,
+                     kMultiBitBool4False},
+                });
   EXPECT_DIF_OK(dif_flash_ctrl_get_info_region_properties(&dif_flash_ctrl_,
                                                           info_region, &mp));
-  EXPECT_EQ(mp.rd_en, 1);
-  EXPECT_EQ(mp.prog_en, 0);
-  EXPECT_EQ(mp.erase_en, 1);
-  EXPECT_EQ(mp.scramble_en, 0);
-  EXPECT_EQ(mp.ecc_en, 1);
-  EXPECT_EQ(mp.high_endurance_en, 0);
+  EXPECT_EQ(mp.rd_en, kMultiBitBool4True);
+  EXPECT_EQ(mp.prog_en, kMultiBitBool4False);
+  EXPECT_EQ(mp.erase_en, kMultiBitBool4True);
+  EXPECT_EQ(mp.scramble_en, kMultiBitBool4False);
+  EXPECT_EQ(mp.ecc_en, kMultiBitBool4True);
+  EXPECT_EQ(mp.high_endurance_en, kMultiBitBool4False);
 
   bool locked;
   info_region.bank = 0;

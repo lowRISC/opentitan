@@ -7,9 +7,12 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/test_framework/ottf.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #define CHECK_ARRAYS_EQ(xs, ys, len) \
   do {                               \
@@ -35,33 +38,39 @@
  * Tests pages from both the data and info partitions
  */
 static void test_basic_io(void) {
-  // setup default access for data partition
-  flash_default_region_access(/*rd_en=*/true, /*prog_en=*/true,
-                              /*erase_en=*/true);
+  dif_flash_ctrl_state_t flash;
+  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
   // info partition has no default access, specifically setup a region
-  mp_region_t info_region = {.num = 0x0,
-                             .base = FLASH_PAGES_PER_BANK,
-                             .size = 0x1,
-                             .part = kInfoPartition,
-                             .rd_en = true,
-                             .prog_en = true,
-                             .erase_en = true,
-                             .ecc_en = true,
-                             .scramble_en = true};
-  flash_cfg_region(&info_region);
+  dif_flash_ctrl_info_region_t info_region = {
+      .bank = 1, .partition_id = 0, .page = 0};
+  dif_flash_ctrl_region_properties_t region_properties = {
+      .rd_en = kMultiBitBool4True,
+      .prog_en = kMultiBitBool4True,
+      .erase_en = kMultiBitBool4True,
+      .scramble_en = kMultiBitBool4True,
+      .ecc_en = kMultiBitBool4True,
+      .high_endurance_en = kMultiBitBool4False};
+  CHECK_DIF_OK(dif_flash_ctrl_set_info_region_properties(&flash, info_region,
+                                                         region_properties));
+  CHECK_DIF_OK(dif_flash_ctrl_set_info_region_enablement(&flash, info_region,
+                                                         kDifToggleEnabled));
 
   // also setup data region to enable scrambling
-  mp_region_t data_region = {.num = 0x0,
-                             .base = FLASH_PAGES_PER_BANK,
-                             .size = 0x1,
-                             .part = kDataPartition,
-                             .rd_en = true,
-                             .prog_en = true,
-                             .erase_en = true,
-                             .ecc_en = true,
-                             .scramble_en = true};
-  flash_cfg_region(&data_region);
+  region_properties.rd_en = kMultiBitBool4True;
+  region_properties.prog_en = kMultiBitBool4True;
+  region_properties.erase_en = kMultiBitBool4True;
+
+  dif_flash_ctrl_data_region_properties_t data_region = {
+      .base = FLASH_PAGES_PER_BANK,
+      .size = 0x1,
+      .properties = region_properties};
+
+  CHECK_DIF_OK(
+      dif_flash_ctrl_set_data_region_properties(&flash, 0, data_region));
+  CHECK_DIF_OK(
+      dif_flash_ctrl_set_data_region_enablement(&flash, 0, kDifToggleEnabled));
 
   uintptr_t flash_bank_1_addr = FLASH_MEM_BASE_ADDR + FLASH_BANK_SZ;
   mmio_region_t flash_bank_1 = mmio_region_from_addr(flash_bank_1_addr);
@@ -108,6 +117,11 @@ static void test_basic_io(void) {
                        output_page));
   CHECK_ARRAYS_EQ(output_page, input_page, FLASH_WORDS_PER_PAGE);
 
+  // setup default access for data partition
+  flash_default_region_access(/*rd_en=*/true, /*prog_en=*/true,
+                              /*erase_en=*/true);
+
+  // perform similar test on lage page of first bank
   uintptr_t flash_bank_0_last_page_addr = flash_bank_1_addr - FLASH_PAGE_SZ;
   mmio_region_t flash_bank_0_last_page =
       mmio_region_from_addr(flash_bank_0_last_page_addr);
@@ -126,24 +140,32 @@ static void test_basic_io(void) {
 }
 
 static void test_memory_protection(void) {
+  dif_flash_ctrl_state_t flash;
+  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+
+  // setup default access for data partition
   flash_default_region_access(/*rd_en=*/true, /*prog_en=*/true,
                               /*erase_en=*/true);
 
   // A memory protection region representing the first page of the second bank.
-  mp_region_t protection_region = {.num = 0x0,
-                                   .base = FLASH_PAGES_PER_BANK,
-                                   .size = 0x1,
-                                   .part = kDataPartition,
-                                   .rd_en = true,
-                                   .prog_en = true,
-                                   .erase_en = true,
-                                   .ecc_en = true,
-                                   .scramble_en = false};
+  dif_flash_ctrl_region_properties_t protected_properties = {
+      .rd_en = kMultiBitBool4True,
+      .prog_en = kMultiBitBool4True,
+      .erase_en = kMultiBitBool4True,
+      .scramble_en = kMultiBitBool4False,
+      .ecc_en = kMultiBitBool4True,
+      .high_endurance_en = kMultiBitBool4False};
+
+  dif_flash_ctrl_data_region_properties_t protected_region = {
+      .base = FLASH_PAGES_PER_BANK,
+      .size = 0x1,
+      .properties = protected_properties};
 
   uintptr_t ok_region_start =
-      FLASH_MEM_BASE_ADDR + (protection_region.base * FLASH_PAGE_SZ);
+      FLASH_MEM_BASE_ADDR + (protected_region.base * FLASH_PAGE_SZ);
   uintptr_t ok_region_end =
-      ok_region_start + (protection_region.size * FLASH_PAGE_SZ);
+      ok_region_start + (protected_region.size * FLASH_PAGE_SZ);
   mmio_region_t ok_region = mmio_region_from_addr(ok_region_start);
 
   uintptr_t bad_region_start = ok_region_end;
@@ -155,7 +177,10 @@ static void test_memory_protection(void) {
   // Turn off flash access by default.
   flash_default_region_access(/*rd_en=*/false, /*prog_en=*/false,
                               /*erase_en=*/false);
-  flash_cfg_region(&protection_region);
+
+  // enable protected region for access
+  CHECK_DIF_OK(
+      dif_flash_ctrl_set_data_region_properties(&flash, 0, protected_region));
 
   // Attempt to perform a write.
   uintptr_t region_boundary_start = bad_region_start - (FLASH_WORD_SZ * 2);

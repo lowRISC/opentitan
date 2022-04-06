@@ -16,6 +16,8 @@
 /**
  * Helper function to get the offset of a data region's configuration register.
  * Does not check that the region actually exists, which is deferred to callers.
+ * Since data region registers are split into two (one containing properties the
+ * other containing address info), there are two helper functions below.
  *
  * @param region The data region's index.
  * @return The offset from the flash controller's base address where the region
@@ -23,8 +25,12 @@
  */
 OT_WARN_UNUSED_RESULT
 static ptrdiff_t get_data_region_mp_reg_offset(uint32_t region) {
-  return FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_REG_OFFSET +
-         region * sizeof(uint32_t);
+  return FLASH_CTRL_MP_REGION_CFG_0_REG_OFFSET + region * sizeof(uint32_t);
+}
+
+OT_WARN_UNUSED_RESULT
+static ptrdiff_t get_data_region_reg_offset(uint32_t region) {
+  return FLASH_CTRL_MP_REGION_0_REG_OFFSET + region * sizeof(uint32_t);
 }
 
 OT_WARN_UNUSED_RESULT
@@ -46,20 +52,21 @@ static_assert(FLASH_CTRL_PARAM_REG_NUM_BANKS == 2,
 
 // A more convenient mapping between the info regions and their configuration
 // register offset.
-static const ptrdiff_t kInfoConfigOffsets
-    [FLASH_CTRL_NUM_INFO_TYPES][FLASH_CTRL_PARAM_REG_NUM_BANKS] = {
-        {
-            FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_REG_OFFSET,
-            FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_0_REG_OFFSET,
-        },
-        {
-            FLASH_CTRL_BANK0_INFO1_PAGE_CFG_SHADOWED_REG_OFFSET,
-            FLASH_CTRL_BANK1_INFO1_PAGE_CFG_SHADOWED_REG_OFFSET,
-        },
-        {
-            FLASH_CTRL_BANK0_INFO2_PAGE_CFG_SHADOWED_0_REG_OFFSET,
-            FLASH_CTRL_BANK1_INFO2_PAGE_CFG_SHADOWED_0_REG_OFFSET,
-        },
+static const ptrdiff_t
+    kInfoConfigOffsets[FLASH_CTRL_NUM_INFO_TYPES]
+                      [FLASH_CTRL_PARAM_REG_NUM_BANKS] = {
+                          {
+                              FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_REG_OFFSET,
+                              FLASH_CTRL_BANK1_INFO0_PAGE_CFG_0_REG_OFFSET,
+                          },
+                          {
+                              FLASH_CTRL_BANK0_INFO1_PAGE_CFG_REG_OFFSET,
+                              FLASH_CTRL_BANK1_INFO1_PAGE_CFG_REG_OFFSET,
+                          },
+                          {
+                              FLASH_CTRL_BANK0_INFO2_PAGE_CFG_0_REG_OFFSET,
+                              FLASH_CTRL_BANK1_INFO2_PAGE_CFG_0_REG_OFFSET,
+                          },
 };
 
 static const ptrdiff_t
@@ -630,17 +637,17 @@ dif_result_t dif_flash_ctrl_set_data_region_enablement(
   uint32_t mp_reg = mmio_region_read32(handle->dev.base_addr, mp_reg_offset);
   switch (enable) {
     case kDifToggleEnabled:
-      mp_reg = bitfield_bit32_write(
-          mp_reg, FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_EN_0_BIT, true);
+      mp_reg = bitfield_field32_write(
+          mp_reg, FLASH_CTRL_MP_REGION_CFG_0_EN_0_FIELD, kMultiBitBool4True);
       break;
     case kDifToggleDisabled:
-      mp_reg = bitfield_bit32_write(
-          mp_reg, FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_EN_0_BIT, false);
+      mp_reg = bitfield_field32_write(
+          mp_reg, FLASH_CTRL_MP_REGION_CFG_0_EN_0_FIELD, kMultiBitBool4False);
       break;
     default:
       return kDifBadArg;
   }
-  mmio_region_write32_shadowed(handle->dev.base_addr, mp_reg_offset, mp_reg);
+  mmio_region_write32(handle->dev.base_addr, mp_reg_offset, mp_reg);
   return kDifOk;
 }
 
@@ -654,8 +661,8 @@ dif_result_t dif_flash_ctrl_get_data_region_enablement(
   }
   ptrdiff_t mp_reg_offset = get_data_region_mp_reg_offset(region);
   uint32_t mp_reg = mmio_region_read32(handle->dev.base_addr, mp_reg_offset);
-  if (bitfield_bit32_read(mp_reg,
-                          FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_EN_0_BIT)) {
+  if (bitfield_field32_read(mp_reg, FLASH_CTRL_MP_REGION_CFG_0_EN_0_FIELD) ==
+      kMultiBitBool4True) {
     *enabled_out = kDifToggleEnabled;
   } else {
     *enabled_out = kDifToggleDisabled;
@@ -686,17 +693,19 @@ dif_result_t dif_flash_ctrl_set_info_region_enablement(
   uint32_t mp_reg = mmio_region_read32(handle->dev.base_addr, mp_reg_offset);
   switch (enable) {
     case kDifToggleEnabled:
-      mp_reg = bitfield_bit32_write(
-          mp_reg, FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_EN_0_BIT, true);
+      mp_reg = bitfield_field32_write(
+          mp_reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_EN_0_FIELD,
+          kMultiBitBool4True);
       break;
     case kDifToggleDisabled:
-      mp_reg = bitfield_bit32_write(
-          mp_reg, FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_EN_0_BIT, false);
+      mp_reg = bitfield_field32_write(
+          mp_reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_EN_0_FIELD,
+          kMultiBitBool4False);
       break;
     default:
       return kDifBadArg;
   }
-  mmio_region_write32_shadowed(handle->dev.base_addr, mp_reg_offset, mp_reg);
+  mmio_region_write32(handle->dev.base_addr, mp_reg_offset, mp_reg);
   return kDifOk;
 }
 
@@ -712,8 +721,8 @@ dif_result_t dif_flash_ctrl_get_info_region_enablement(
   }
   ptrdiff_t mp_reg_offset = get_info_region_mp_reg_offset(region);
   uint32_t mp_reg = mmio_region_read32(handle->dev.base_addr, mp_reg_offset);
-  if (bitfield_bit32_read(mp_reg,
-                          FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_EN_0_BIT)) {
+  if (bitfield_field32_read(mp_reg, FLASH_CTRL_MP_REGION_CFG_0_EN_0_FIELD) ==
+      kMultiBitBool4True) {
     *enabled_out = kDifToggleEnabled;
   } else {
     *enabled_out = kDifToggleDisabled;
@@ -729,23 +738,20 @@ dif_result_t dif_flash_ctrl_set_default_region_properties(
     return kDifBadArg;
   }
   uint32_t reg = 0;
-  reg = bitfield_bit32_write(reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_RD_EN_BIT,
-                             properties.rd_en);
-  reg = bitfield_bit32_write(
-      reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_PROG_EN_BIT, properties.prog_en);
-  reg =
-      bitfield_bit32_write(reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_ERASE_EN_BIT,
-                           properties.erase_en);
-  reg = bitfield_bit32_write(reg,
-                             FLASH_CTRL_DEFAULT_REGION_SHADOWED_SCRAMBLE_EN_BIT,
-                             properties.scramble_en);
-  reg = bitfield_bit32_write(reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_ECC_EN_BIT,
-                             properties.ecc_en);
-  reg = bitfield_bit32_write(reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_HE_EN_BIT,
-                             properties.high_endurance_en);
-  mmio_region_write32_shadowed(handle->dev.base_addr,
-                               FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET,
-                               reg);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_RD_EN_FIELD,
+                               properties.rd_en);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_PROG_EN_FIELD,
+                               properties.prog_en);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_ERASE_EN_FIELD,
+                               properties.erase_en);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_SCRAMBLE_EN_FIELD,
+                               properties.scramble_en);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_ECC_EN_FIELD,
+                               properties.ecc_en);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_HE_EN_FIELD,
+                               properties.high_endurance_en);
+  mmio_region_write32(handle->dev.base_addr,
+                      FLASH_CTRL_DEFAULT_REGION_REG_OFFSET, reg);
   return kDifOk;
 }
 
@@ -756,21 +762,21 @@ dif_result_t dif_flash_ctrl_get_default_region_properties(
   if (handle == NULL || properties_out == NULL) {
     return kDifBadArg;
   }
-  const uint32_t reg = mmio_region_read32(
-      handle->dev.base_addr, FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET);
+  const uint32_t reg = mmio_region_read32(handle->dev.base_addr,
+                                          FLASH_CTRL_DEFAULT_REGION_REG_OFFSET);
   dif_flash_ctrl_region_properties_t properties = {
-      .rd_en = bitfield_bit32_read(
-          reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_RD_EN_BIT),
-      .prog_en = bitfield_bit32_read(
-          reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_PROG_EN_BIT),
-      .erase_en = bitfield_bit32_read(
-          reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_ERASE_EN_BIT),
-      .scramble_en = bitfield_bit32_read(
-          reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_SCRAMBLE_EN_BIT),
-      .ecc_en = bitfield_bit32_read(
-          reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_ECC_EN_BIT),
-      .high_endurance_en = bitfield_bit32_read(
-          reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_HE_EN_BIT),
+      .rd_en =
+          bitfield_field32_read(reg, FLASH_CTRL_DEFAULT_REGION_RD_EN_FIELD),
+      .prog_en =
+          bitfield_field32_read(reg, FLASH_CTRL_DEFAULT_REGION_PROG_EN_FIELD),
+      .erase_en =
+          bitfield_field32_read(reg, FLASH_CTRL_DEFAULT_REGION_ERASE_EN_FIELD),
+      .scramble_en = bitfield_field32_read(
+          reg, FLASH_CTRL_DEFAULT_REGION_SCRAMBLE_EN_FIELD),
+      .ecc_en =
+          bitfield_field32_read(reg, FLASH_CTRL_DEFAULT_REGION_ECC_EN_FIELD),
+      .high_endurance_en =
+          bitfield_field32_read(reg, FLASH_CTRL_DEFAULT_REGION_HE_EN_FIELD),
   };
   *properties_out = properties;
   return kDifOk;
@@ -799,29 +805,30 @@ dif_result_t dif_flash_ctrl_set_data_region_properties(
 
   ptrdiff_t mp_reg_offset = get_data_region_mp_reg_offset(region);
   uint32_t reg = mmio_region_read32(handle->dev.base_addr, mp_reg_offset);
-  reg =
-      bitfield_bit32_write(reg, FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_RD_EN_0_BIT,
-                           config.properties.rd_en);
-  reg = bitfield_bit32_write(reg,
-                             FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_PROG_EN_0_BIT,
-                             config.properties.prog_en);
-  reg = bitfield_bit32_write(reg,
-                             FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_ERASE_EN_0_BIT,
-                             config.properties.erase_en);
-  reg = bitfield_bit32_write(
-      reg, FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_SCRAMBLE_EN_0_BIT,
-      config.properties.scramble_en);
-  reg = bitfield_bit32_write(reg,
-                             FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_ECC_EN_0_BIT,
-                             config.properties.ecc_en);
-  reg =
-      bitfield_bit32_write(reg, FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_HE_EN_0_BIT,
-                           config.properties.high_endurance_en);
-  reg = bitfield_field32_write(
-      reg, FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_BASE_0_FIELD, config.base);
-  reg = bitfield_field32_write(
-      reg, FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_SIZE_0_FIELD, config.size);
-  mmio_region_write32_shadowed(handle->dev.base_addr, mp_reg_offset, reg);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_MP_REGION_CFG_0_RD_EN_0_FIELD,
+                               config.properties.rd_en);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_MP_REGION_CFG_0_PROG_EN_0_FIELD,
+                               config.properties.prog_en);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_MP_REGION_CFG_0_ERASE_EN_0_FIELD,
+                               config.properties.erase_en);
+  reg = bitfield_field32_write(reg,
+                               FLASH_CTRL_MP_REGION_CFG_0_SCRAMBLE_EN_0_FIELD,
+                               config.properties.scramble_en);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_MP_REGION_CFG_0_ECC_EN_0_FIELD,
+                               config.properties.ecc_en);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_MP_REGION_CFG_0_HE_EN_0_FIELD,
+                               config.properties.high_endurance_en);
+
+  mmio_region_write32(handle->dev.base_addr, mp_reg_offset, reg);
+
+  // size and base are stored in different registers
+  mp_reg_offset = get_data_region_reg_offset(region);
+
+  reg = bitfield_field32_write(0, FLASH_CTRL_MP_REGION_0_BASE_0_FIELD,
+                               config.base);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_MP_REGION_0_SIZE_0_FIELD,
+                               config.size);
+  mmio_region_write32(handle->dev.base_addr, mp_reg_offset, reg);
   return kDifOk;
 }
 
@@ -835,24 +842,25 @@ dif_result_t dif_flash_ctrl_get_data_region_properties(
   }
 
   ptrdiff_t mp_reg_offset = get_data_region_mp_reg_offset(region);
-  const uint32_t reg = mmio_region_read32(handle->dev.base_addr, mp_reg_offset);
+  uint32_t reg = mmio_region_read32(handle->dev.base_addr, mp_reg_offset);
   dif_flash_ctrl_data_region_properties_t config;
   config.properties.rd_en =
-      bitfield_bit32_read(reg, FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_RD_EN_0_BIT);
-  config.properties.prog_en = bitfield_bit32_read(
-      reg, FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_PROG_EN_0_BIT);
-  config.properties.erase_en = bitfield_bit32_read(
-      reg, FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_ERASE_EN_0_BIT);
-  config.properties.scramble_en = bitfield_bit32_read(
-      reg, FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_SCRAMBLE_EN_0_BIT);
-  config.properties.ecc_en = bitfield_bit32_read(
-      reg, FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_ECC_EN_0_BIT);
+      bitfield_field32_read(reg, FLASH_CTRL_MP_REGION_CFG_0_RD_EN_0_FIELD);
+  config.properties.prog_en =
+      bitfield_field32_read(reg, FLASH_CTRL_MP_REGION_CFG_0_PROG_EN_0_FIELD);
+  config.properties.erase_en =
+      bitfield_field32_read(reg, FLASH_CTRL_MP_REGION_CFG_0_ERASE_EN_0_FIELD);
+  config.properties.scramble_en = bitfield_field32_read(
+      reg, FLASH_CTRL_MP_REGION_CFG_0_SCRAMBLE_EN_0_FIELD);
+  config.properties.ecc_en =
+      bitfield_field32_read(reg, FLASH_CTRL_MP_REGION_CFG_0_ECC_EN_0_FIELD);
   config.properties.high_endurance_en =
-      bitfield_bit32_read(reg, FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_HE_EN_0_BIT);
-  config.base = bitfield_field32_read(
-      reg, FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_BASE_0_FIELD);
-  config.size = bitfield_field32_read(
-      reg, FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_SIZE_0_FIELD);
+      bitfield_field32_read(reg, FLASH_CTRL_MP_REGION_CFG_0_HE_EN_0_FIELD);
+
+  mp_reg_offset = get_data_region_reg_offset(region);
+  reg = mmio_region_read32(handle->dev.base_addr, mp_reg_offset);
+  config.base = bitfield_field32_read(reg, FLASH_CTRL_MP_REGION_0_BASE_0_FIELD);
+  config.size = bitfield_field32_read(reg, FLASH_CTRL_MP_REGION_0_SIZE_0_FIELD);
   *config_out = config;
   return kDifOk;
 }
@@ -879,23 +887,20 @@ dif_result_t dif_flash_ctrl_set_info_region_properties(
 
   ptrdiff_t mp_reg_offset = get_info_region_mp_reg_offset(region);
   uint32_t reg = mmio_region_read32(handle->dev.base_addr, mp_reg_offset);
-  reg = bitfield_bit32_write(
-      reg, FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_RD_EN_0_BIT, properties.rd_en);
-  reg = bitfield_bit32_write(reg,
-                             FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_PROG_EN_0_BIT,
-                             properties.prog_en);
-  reg = bitfield_bit32_write(reg,
-                             FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_ERASE_EN_0_BIT,
-                             properties.erase_en);
-  reg = bitfield_bit32_write(
-      reg, FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_SCRAMBLE_EN_0_BIT,
-      properties.scramble_en);
-  reg = bitfield_bit32_write(
-      reg, FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_ECC_EN_0_BIT, properties.ecc_en);
-  reg =
-      bitfield_bit32_write(reg, FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_HE_EN_0_BIT,
-                           properties.high_endurance_en);
-  mmio_region_write32_shadowed(handle->dev.base_addr, mp_reg_offset, reg);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_MP_REGION_CFG_0_RD_EN_0_FIELD,
+                               properties.rd_en);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_MP_REGION_CFG_0_PROG_EN_0_FIELD,
+                               properties.prog_en);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_MP_REGION_CFG_0_ERASE_EN_0_FIELD,
+                               properties.erase_en);
+  reg = bitfield_field32_write(reg,
+                               FLASH_CTRL_MP_REGION_CFG_0_SCRAMBLE_EN_0_FIELD,
+                               properties.scramble_en);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_MP_REGION_CFG_0_ECC_EN_0_FIELD,
+                               properties.ecc_en);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_MP_REGION_CFG_0_HE_EN_0_FIELD,
+                               properties.high_endurance_en);
+  mmio_region_write32(handle->dev.base_addr, mp_reg_offset, reg);
   return kDifOk;
 }
 
@@ -913,18 +918,18 @@ dif_result_t dif_flash_ctrl_get_info_region_properties(
   ptrdiff_t mp_reg_offset = get_info_region_mp_reg_offset(region);
   const uint32_t reg = mmio_region_read32(handle->dev.base_addr, mp_reg_offset);
   dif_flash_ctrl_region_properties_t properties;
-  properties.rd_en = bitfield_bit32_read(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_RD_EN_0_BIT);
-  properties.prog_en = bitfield_bit32_read(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_PROG_EN_0_BIT);
-  properties.erase_en = bitfield_bit32_read(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_ERASE_EN_0_BIT);
-  properties.scramble_en = bitfield_bit32_read(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_SCRAMBLE_EN_0_BIT);
-  properties.ecc_en = bitfield_bit32_read(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_ECC_EN_0_BIT);
-  properties.high_endurance_en = bitfield_bit32_read(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_HE_EN_0_BIT);
+  properties.rd_en = bitfield_field32_read(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_RD_EN_0_FIELD);
+  properties.prog_en = bitfield_field32_read(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_PROG_EN_0_FIELD);
+  properties.erase_en = bitfield_field32_read(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ERASE_EN_0_FIELD);
+  properties.scramble_en = bitfield_field32_read(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_SCRAMBLE_EN_0_FIELD);
+  properties.ecc_en = bitfield_field32_read(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ECC_EN_0_FIELD);
+  properties.high_endurance_en = bitfield_field32_read(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_HE_EN_0_FIELD);
   *properties_out = properties;
   return kDifOk;
 }

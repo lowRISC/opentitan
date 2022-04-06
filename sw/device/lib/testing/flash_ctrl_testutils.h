@@ -175,4 +175,19 @@ bool flash_ctrl_testutils_read_page(
     dif_flash_ctrl_partition_type_t partition_type, uint32_t word_count,
     uint32_t delay);
 
+/**
+ * Sets the flash default configuration.
+ *
+ * @param flash_state A flash_ctrl state handle.
+ * @param rd_en Default read enable.
+ * @param prog_en Default program enable.
+ * @param erase_en Default page erase enable.
+ * @param scramble_en Default scramble enable.
+ * @param ecc_en Default ECC enable.
+ * @param high_endurance_en Default high endurance enable
+ */
+void flash_ctrl_testutils_default_region_access(
+    dif_flash_ctrl_state_t *flash_state, bool rd_en, bool prog_en,
+    bool erase_en, bool scramble_en, bool ecc_en, bool high_endurance_en);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_FLASH_CTRL_TESTUTILS_H_
