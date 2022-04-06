@@ -55,13 +55,6 @@
 // Define counters and constant values required by the CFI counter macros.
 CFI_DEFINE_COUNTERS(rom_counters, ROM_CFI_FUNC_COUNTERS_TABLE);
 
-// Secure MMIO context.
-//
-// This is placed at a fixed location in memory within the .static_critical
-// section. The location of this data is known to ROM_EXT.
-__attribute__((section(".static_critical.sec_mmio_ctx")))
-volatile sec_mmio_ctx_t sec_mmio_ctx;
-
 // In-memory copy of the ePMP register configuration.
 epmp_state_t epmp;
 // Life cycle state of the chip.
@@ -297,8 +290,8 @@ void mask_rom_interrupt_handler(void) {
 // We only need a single handler for all mask ROM interrupts, but we want to
 // keep distinct symbols to make writing tests easier.  In the mask ROM,
 // alias all interrupt handler symbols to the single handler.
-void mask_rom_exception_handler(void)
-    __attribute__((alias("mask_rom_interrupt_handler")));
+OT_ALIAS("mask_rom_interrupt_handler")
+void mask_rom_exception_handler(void);
 
-void mask_rom_nmi_handler(void)
-    __attribute__((alias("mask_rom_interrupt_handler")));
+OT_ALIAS("mask_rom_interrupt_handler")
+void mask_rom_nmi_handler(void);

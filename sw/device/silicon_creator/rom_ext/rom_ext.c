@@ -26,19 +26,12 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
-// Secure MMIO context.
-//
-// This is placed at a fixed location in memory within the .static_critical
-// section. It will be populated by the ROM_EXT before the jump to ROM_EXT.
-__attribute__((section(".static_critical.sec_mmio_ctx")))  //
-volatile sec_mmio_ctx_t sec_mmio_ctx;
-
 // In-memory copy of the ePMP register configuration.
 epmp_state_t epmp;
 // Life cycle state of the chip.
 lifecycle_state_t lc_state = kLcStateProd;
 
-static inline rom_error_t rom_ext_irq_error(void) {
+static rom_error_t rom_ext_irq_error(void) {
   uint32_t mcause;
   CSR_READ(CSR_REG_MCAUSE, &mcause);
   // Shuffle the mcause bits into the uppermost byte of the word and report
@@ -139,8 +132,8 @@ void rom_ext_interrupt_handler(void) { shutdown_finalize(rom_ext_irq_error()); }
 // We only need a single handler for all ROM_EXT interrupts, but we want to
 // keep distinct symbols to make writing tests easier.  In the ROM_EXT,
 // alias all interrupt handler symbols to the single handler.
-void rom_ext_exception_handler(void)
-    __attribute__((alias("rom_ext_interrupt_handler")));
+OT_ALIAS("rom_ext_interrupt_handler")
+void rom_ext_exception_handler(void);
 
-void rom_ext_nmi_handler(void)
-    __attribute__((alias("rom_ext_interrupt_handler")));
+OT_ALIAS("rom_ext_interrupt_handler")
+void rom_ext_nmi_handler(void);

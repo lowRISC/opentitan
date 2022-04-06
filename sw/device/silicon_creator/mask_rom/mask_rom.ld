@@ -130,16 +130,8 @@ SECTIONS {
   /**
    * Critical static data that is accessible by both the mask ROM and the ROM
    * extension.
-   *
-   * Each variable added to .static_critical must be in its own subsection
-   * named after the variable.
-   *
-   * This data is not initialized during CRT (hence NOLOAD). The mask ROM must
-   * initialize this data explicitly.
    */
-  .static_critical ORIGIN(ram_main) (NOLOAD) : ALIGN(4) {
-    INCLUDE sw/device/silicon_creator/lib/base/static_critical.ld
-  } > ram_main
+  INCLUDE sw/device/silicon_creator/lib/base/static_critical.ld
 
   /**
    * Mutable data section. This will be initialized from rom at runtime by the
