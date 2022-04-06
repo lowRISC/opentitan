@@ -6,6 +6,7 @@ import datetime
 import logging as log
 import os
 import pprint
+import re
 import subprocess
 import sys
 from shutil import which
@@ -558,7 +559,9 @@ class FlowCfg():
         for rdir in results_dirs:
             dirname = rdir.replace(self.results_server_path, '')
             dirname = dirname.replace('/', '')
-            if dirname == "latest":
+            # Only track history directories with format
+            # "year.month.date_hour.min.sec".
+            if not bool(re.match('[\d*.]*_[\d*.]*', dirname)):
                 continue
             rdirs.append(dirname)
         rdirs.sort(reverse=True)
