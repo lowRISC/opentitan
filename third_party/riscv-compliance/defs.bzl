@@ -4,7 +4,7 @@
 
 """Helper macros for generating RISC-V compliance test targets."""
 
-load("//rules:opentitan.bzl", "opentitan_functest", "verilator_params")
+load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
 
 def rv_compliance_test(name, arch):
     test_file = "@riscv-compliance//:riscv-test-suite/{}/src/{}.S".format(arch, name)
