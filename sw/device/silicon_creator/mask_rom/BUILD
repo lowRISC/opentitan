@@ -206,7 +206,7 @@ cc_library(
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/testing/test_rom:bootstrap",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:log",
+        "//sw/device/silicon_creator/lib:rom_print",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",

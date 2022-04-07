@@ -16,8 +16,8 @@
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
-#include "sw/device/silicon_creator/lib/log.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
+#include "sw/device/silicon_creator/lib/rom_print.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
@@ -97,7 +97,7 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
 
   // Jump to BL0 entry point.
   uintptr_t entry_point = manifest_entry_point_get(manifest);
-  log_printf("entry: 0x%x\r\n", entry_point);
+  rom_printf("entry: 0x%x\r\n", (unsigned int)entry_point);
   ((owner_stage_entry_point *)entry_point)();
 
   return kErrorMaskRomBootFailed;
@@ -123,7 +123,7 @@ static rom_error_t rom_ext_try_boot(void) {
 
 void rom_ext_main(void) {
   rom_ext_init();
-  log_printf("starting rom_ext\r\n");
+  rom_printf("starting rom_ext\r\n");
   shutdown_finalize(rom_ext_try_boot());
 }
 

@@ -154,9 +154,9 @@ cc_library(
 )
 
 cc_library(
-    name = "log",
-    srcs = ["log.c"],
-    hdrs = ["log.h"],
+    name = "rom_print",
+    srcs = ["rom_print.c"],
+    hdrs = ["rom_print.h"],
     deps = [
         ":error",
         "//sw/device/silicon_creator/lib/drivers:uart",
@@ -164,14 +164,12 @@ cc_library(
 )
 
 cc_test(
-    name = "log_unittest",
-    srcs = ["log_unittest.cc"],
+    name = "rom_print_unittest",
+    srcs = ["rom_print_unittest.cc"],
     deps = [
         ":error",
-        ":log",
-        "//sw/device/lib/base/testing:global_mock",
+        ":rom_print",
         "//sw/device/silicon_creator/lib/drivers:uart",
-        "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
 )

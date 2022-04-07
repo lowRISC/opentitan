@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_LOG_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_LOG_H_
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_ROM_PRINT_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_ROM_PRINT_H_
 
 #include "sw/device/silicon_creator/lib/error.h"
 
@@ -12,8 +12,8 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Prints a status message to UART0, formatted according to the format
- * string `format`.
+ * An intentionally pared-down implementation of `printf()` that writes
+ * to UART0.
  *
  * This function only supports the format specifiers required by the
  * mask ROM:
@@ -33,11 +33,11 @@ extern "C" {
  * @param ... The values to interpolate in the format.
  * @return The result of the operation.
  */
-rom_error_t log_printf(const char *format, ...)
+rom_error_t rom_printf(const char *format, ...)
     __attribute__((format(printf, 1, 2)));
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_LOG_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_ROM_PRINT_H_

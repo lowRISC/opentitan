@@ -17,7 +17,7 @@
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/log.h"
+#include "sw/device/silicon_creator/lib/rom_print.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -149,7 +149,7 @@ static rom_error_t bootstrap_flash(void) {
 
       if (frame_num == expected_frame_num) {
         if (!check_frame_hash(&frame)) {
-          log_printf("Detected hash mismatch on frame 0x%x\n\r",
+          rom_printf("Detected hash mismatch on frame 0x%x\n\r",
                      (unsigned int)frame_num);
           RETURN_IF_ERROR(
               spi_device_send((uint8_t *)&ack.digest, sizeof(ack.digest)));
@@ -173,7 +173,7 @@ static rom_error_t bootstrap_flash(void) {
 
         ++expected_frame_num;
         if (SPIFLASH_FRAME_IS_EOF(frame.header.frame_num)) {
-          log_printf("Bootstrap: DONE!\n\r");
+          rom_printf("Bootstrap: DONE!\n\r");
           return kErrorOk;
         }
       } else {
@@ -187,7 +187,7 @@ static rom_error_t bootstrap_flash(void) {
 }
 
 static rom_error_t primitive_bootstrap_impl(void) {
-  log_printf("Bootstrap: BEGIN\n\r");
+  rom_printf("Bootstrap: BEGIN\n\r");
 
   flash_init_block();
   RETURN_IF_ERROR(spi_device_init());
