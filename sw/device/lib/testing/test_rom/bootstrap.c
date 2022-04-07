@@ -161,6 +161,7 @@ static int bootstrap_flash(const dif_spi_device_t *spi,
           return E_BS_WRITE;
         }
 
+        LOG_INFO("Frame #%d processed done", expected_frame_num);
         ++expected_frame_num;
         if (SPIFLASH_FRAME_IS_EOF(frame.header.frame_num)) {
           LOG_INFO("Bootstrap: DONE!");
