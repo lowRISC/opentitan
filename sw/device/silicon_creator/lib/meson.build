@@ -9,7 +9,7 @@ sw_silicon_creator_lib_log = declare_dependency(
   link_with: static_library(
     'sw_silicon_creator_lib_log',
     sources: [
-      'log.c',
+      'rom_print.c',
     ],
     dependencies: [
       sw_silicon_creator_lib_driver_uart,
@@ -219,8 +219,8 @@ test('sw_silicon_creator_lib_epmp_unittest', executable(
 test('sw_silicon_creator_lib_log_unittest', executable(
     'sw_silicon_creator_lib_log_unittest',
     sources: [
-      'log.c',
-      'log_unittest.cc',
+      'rom_print.c',
+      'rom_print_unittest.cc',
     ],
     dependencies: [
       sw_vendor_gtest,

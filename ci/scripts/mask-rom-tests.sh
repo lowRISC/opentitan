@@ -14,7 +14,7 @@ TESTS=(
   "//sw/device/silicon_creator/lib:error_unittest"
   "//sw/device/silicon_creator/lib:epmp_unittest"
   "//sw/device/silicon_creator/lib:manifest_unittest"
-  "//sw/device/silicon_creator/lib:log_unittest"
+  "//sw/device/silicon_creator/lib:rom_print_unittest"
   "//sw/device/silicon_creator/lib:shutdown_unittest"
   "//sw/device/silicon_creator/lib/base:sec_mmio_unittest"
   "//sw/device/silicon_creator/lib/drivers:uart_unittest"

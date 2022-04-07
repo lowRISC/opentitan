@@ -104,7 +104,7 @@ cc_library(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:stdasm",
         "//sw/device/lib/runtime:hart",
-        "//sw/device/silicon_creator/lib:log",
+        "//sw/device/silicon_creator/lib:rom_print",
         "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib:shutdown",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
