@@ -1,0 +1,12 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+
+`verilator_config
+
+// These two signals are arrays that (combinatorially) feed between the
+// indices. Tell Verilator to schedule the entries separately to avoid an
+// UNOPTFLAT warning.
+split_var -module "tlul_lc_gate" -var "tl_h2d_int"
+split_var -module "tlul_lc_gate" -var "tl_d2h_int"
