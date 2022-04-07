@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/multibits_asm.h"
 #include "ast_regs.h"
 #include "clkmgr_regs.h"
@@ -151,6 +152,7 @@ _start:
   li   t0, CLKMGR_CLK_HINTS_REG_RESVAL
   sw   t0, CLKMGR_CLK_HINTS_REG_OFFSET(a0)
 
+#if !OT_IS_ENGLISH_BREAKFAST
   // Check if AST initialization should be skipped.
   li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
@@ -191,6 +193,7 @@ _start:
   li   a0, TOP_EARLGREY_EDN0_BASE_ADDR
   li   t0, 0x55aa
   sw   t0, EDN_CTRL_REG_OFFSET(a0)
+#endif
 
   // Scramble and initialize main memory (main SRAM).
   // Memory accesses will stall until initialization is complete.

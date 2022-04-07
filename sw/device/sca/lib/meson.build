@@ -13,10 +13,10 @@ sw_sca_lib_sca  = declare_dependency(
     ],
     dependencies: [
       sw_lib_dif_clkmgr,
-      sw_lib_dif_entropy_src,
       sw_lib_dif_gpio,
       sw_lib_dif_rv_timer,
       sw_lib_dif_uart,
+      sw_lib_dif_entropy_src,
       sw_lib_dif_csrng,
       sw_lib_dif_edn,
       sw_lib_irq,

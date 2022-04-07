@@ -269,6 +269,14 @@ sw_tests += {
   }
 }
 
+if TOPNAME == 'top_earlgrey'
+  aes_smoketest_lib_earlgrey_deps = [
+    sw_lib_testing_entropy_testutils,
+  ]
+else
+  aes_smoketest_lib_earlgrey_deps = []
+endif
+
 aes_smoketest_lib = declare_dependency(
   link_with: static_library(
     'aes_smoketest_lib',
@@ -277,10 +285,9 @@ aes_smoketest_lib = declare_dependency(
       sw_lib_dif_aes,
       sw_lib_mmio,
       sw_lib_runtime_log,
-      sw_lib_testing_entropy_testutils,
       sw_lib_testing_aes_testutils,
       sw_lib_testing_test_status,
-    ],
+    ] + aes_smoketest_lib_earlgrey_deps,
   ),
 )
 sw_tests += {

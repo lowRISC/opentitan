@@ -5,9 +5,13 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_
 #define OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_
 
+// This file may be used in .S files, in which case standard library includes
+// should be elided.
+#ifndef __ASSEMBLER__
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
+#endif
 
 /**
  * @file
@@ -112,6 +116,14 @@
  */
 #if __riscv_xlen == 32
 #define OT_PLATFORM_RV32 1
+#endif
+
+/**
+ * A macro indicating whether software should assume reduced hardware
+ * support (for the `top_englishbreakafst` toplevel).
+ */
+#ifdef OT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_
+#define OT_IS_ENGLISH_BREAKFAST 1
 #endif
 
 /**

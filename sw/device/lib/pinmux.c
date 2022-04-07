@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/pinmux.h"
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -61,6 +62,7 @@ void pinmux_init(void) {
   mask = PINMUX_MIO_OUTSEL_0_OUT_0_MASK;
   mmio_region_write32(reg32, reg_offset, reg_value & mask);
 
+#if !OT_IS_ENGLISH_BREAKFAST
   // Configure UART1 RX input to connect to MIO pad IOC8
   reg32 = mmio_region_from_addr(PINMUX0_BASE_ADDR +
                                 PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET);
@@ -80,6 +82,7 @@ void pinmux_init(void) {
   reg_offset = kTopEarlgreyPinmuxMioOutIoc9 << 2;
   mask = PINMUX_MIO_OUTSEL_0_OUT_0_MASK;
   mmio_region_write32(reg32, reg_offset, reg_value & mask);
+#endif
 
   // Configure USBDEV SENSE outputs to be high-Z (IOR0, IOR1)
   reg32 =

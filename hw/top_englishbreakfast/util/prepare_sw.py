@@ -77,8 +77,6 @@ def main():
     #    need to change some file and variable names in auto-generated files.
     # 3. The build system still uses some sources from the original top level.
     #    We thus need to replace those with the new sources patched in 2.
-    # 4. References to IP cores not available on English Breakfast need to be
-    #    removed from the source code of the boot ROM and some applications.
 
     # 1.
     cmd = ['sed', '-i', "s/TOPNAME='top_{}'/TOPNAME='top_{}'/g".format(name_old, name),
@@ -123,21 +121,6 @@ def main():
         # SW build.
         with open(path_out + file_name_new, "w") as file_out:
             file_out.write(text)
-
-    # 4.
-    print("Patching SW sources...")
-    cmd = ['git', 'apply', '-p1', path_root + '/hw/' + topname + '/util/sw_sources.patch',
-           '--verbose']
-    try:
-        subprocess.run(cmd,
-                       check=True,
-                       stdout=subprocess.PIPE,
-                       stderr=subprocess.STDOUT,
-                       universal_newlines=True)
-
-    except subprocess.CalledProcessError as e:
-        print("Failed to patch SW sources: " + str(e))
-        sys.exit(1)
 
     if (args.build):
         # Build the software including test_rom to enable the FPGA build.
