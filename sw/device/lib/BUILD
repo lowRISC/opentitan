@@ -24,12 +24,11 @@ cc_library(
     name = "pinmux",
     srcs = ["pinmux.c"],
     hdrs = ["pinmux.h"],
-    deprecation = "Deprecated pre-DIF code. We prefer you use the DIFs.",
-    target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:base",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/runtime:hart",
     ],
 )
 

@@ -5,96 +5,99 @@
 #include "sw/device/lib/pinmux.h"
 
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_base.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
+#include "sw/device/lib/runtime/hart.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "pinmux_regs.h"  // Generated.
 
 #define PINMUX0_BASE_ADDR TOP_EARLGREY_PINMUX_AON_BASE_ADDR
 
 #define NUM_GPIO 32
 
-static void init_gpio_regs(uint32_t reg, uint32_t mask, uint32_t start_v) {
-  mmio_region_t reg32 = mmio_region_from_addr(reg);
-  uint32_t reg_value = start_v;
-  uint32_t reg_offset = kTopEarlgreyPinmuxPeripheralInGpioGpio0 << 2;
-
-  // We've got 32 GPIOs
-  for (uint32_t i = 0; i < NUM_GPIO; ++i) {
-    mmio_region_write32(reg32, reg_offset, reg_value & mask);
-    reg_value++;
-    reg_offset += 4;
-  }
-}
+/**
+ * Checks that the given DIF call returns kDifOk. If the DIF call returns a
+ * different dif_result_t value (defined in sw/device/lib/dif/dif_base.h), this
+ * function aborts.
+ *
+ * A similar macro performs logging, but this is often not available during
+ * pinmux initialization, so this one does not.
+ *
+ * @param dif_call DIF call to invoke and check its return value.
+ * fails.
+ */
+#define CHECK_PINMUX_DIF_OK(dif_call)   \
+  do {                                  \
+    dif_result_t dif_result = dif_call; \
+    if (dif_result != kDifOk) {         \
+      abort();                          \
+    }                                   \
+  } while (false)
 
 void pinmux_init(void) {
+  dif_pinmux_t pinmux;
+  mmio_region_t pinmux_base_addr = mmio_region_from_addr(PINMUX0_BASE_ADDR);
+  CHECK_PINMUX_DIF_OK(dif_pinmux_init(pinmux_base_addr, &pinmux));
   // TODO: This hardcoded configuration is temporary and needs to be
-  // replaced by proper initialization code once 1) the pinmux DIF is
-  // available, 2) the pinmux and padring design is finalized.
+  // replaced by proper initialization code
 
-  // input: assign MIO0..MIO31 to GPIO0..GPIO31
-  init_gpio_regs(PINMUX0_BASE_ADDR + PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET,
-                 PINMUX_MIO_PERIPH_INSEL_0_IN_0_MASK,
-                 PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET);
+  // input: assign MIO0..MIO31 to GPIO0..GPIO31 (except UARTs)
+  for (uint32_t index = 0; index < NUM_GPIO; index++) {
+    dif_pinmux_index_t mio = kTopEarlgreyPinmuxInselIoa0 + index;
+    if (mio == kTopEarlgreyPinmuxInselIoc3 ||
+        mio == kTopEarlgreyPinmuxInselIoc8) {
+      // Avoid causing glitches: Don't assign the UART pins to a GPIO.
+      continue;
+    } else {
+      dif_pinmux_index_t gpio = kTopEarlgreyPinmuxPeripheralInGpioGpio0 + index;
+      CHECK_PINMUX_DIF_OK(dif_pinmux_input_select(&pinmux, gpio, mio));
+    }
+  }
 
-  // output: assign GPIO0..GPIO31 to MIO0..MIO31
-  init_gpio_regs(PINMUX0_BASE_ADDR + PINMUX_MIO_OUTSEL_0_REG_OFFSET,
-                 PINMUX_MIO_OUTSEL_0_OUT_0_MASK,
-                 PINMUX_PERIPH_OUTSEL_IDX_OFFSET);
+  // output: assign GPIO0..GPIO31 to MIO0..MIO31 (except UARTs)
+  for (uint32_t index = 0; index < NUM_GPIO; index++) {
+    dif_pinmux_index_t mio = kTopEarlgreyPinmuxMioOutIoa0 + index;
+    if (mio == kTopEarlgreyPinmuxMioOutIoc3 ||
+        mio == kTopEarlgreyPinmuxMioOutIoc4 ||
+        mio == kTopEarlgreyPinmuxMioOutIoc8 ||
+        mio == kTopEarlgreyPinmuxMioOutIoc9) {
+      // Avoid causing glitches: Don't assign the UART pins to a GPIO.
+      continue;
+    } else {
+      dif_pinmux_index_t gpio = kTopEarlgreyPinmuxOutselGpioGpio0 + index;
+      CHECK_PINMUX_DIF_OK(dif_pinmux_output_select(&pinmux, mio, gpio));
+    }
+  }
 
   // Configure UART0 RX input to connect to MIO pad IOC3
-  mmio_region_t reg32 = mmio_region_from_addr(
-      PINMUX0_BASE_ADDR + PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET);
-  uint32_t reg_value = kTopEarlgreyPinmuxInselIoc3;
-  // We've got one insel configuration field per register. Hence, we have to
-  // convert the enumeration index into a byte address using << 2.
-  uint32_t reg_offset = kTopEarlgreyPinmuxPeripheralInUart0Rx << 2;
-  uint32_t mask = PINMUX_MIO_PERIPH_INSEL_0_IN_0_MASK;
-  mmio_region_write32(reg32, reg_offset, reg_value & mask);
-
+  CHECK_PINMUX_DIF_OK(
+      dif_pinmux_input_select(&pinmux, kTopEarlgreyPinmuxPeripheralInUart0Rx,
+                              kTopEarlgreyPinmuxInselIoc3));
+  CHECK_PINMUX_DIF_OK(
+      dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc3,
+                               kTopEarlgreyPinmuxOutselConstantHighZ));
   // Configure UART0 TX output to connect to MIO pad IOC4
-  reg32 =
-      mmio_region_from_addr(PINMUX0_BASE_ADDR + PINMUX_MIO_OUTSEL_0_REG_OFFSET);
-  reg_value = kTopEarlgreyPinmuxOutselUart0Tx;
-  // We've got one insel configuration field per register. Hence, we have to
-  // convert the enumeration index into a byte address using << 2.
-  reg_offset = kTopEarlgreyPinmuxMioOutIoc4 << 2;
-  mask = PINMUX_MIO_OUTSEL_0_OUT_0_MASK;
-  mmio_region_write32(reg32, reg_offset, reg_value & mask);
+  CHECK_PINMUX_DIF_OK(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoc4, kTopEarlgreyPinmuxOutselUart0Tx));
 
 #if !OT_IS_ENGLISH_BREAKFAST
   // Configure UART1 RX input to connect to MIO pad IOC8
-  reg32 = mmio_region_from_addr(PINMUX0_BASE_ADDR +
-                                PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET);
-  reg_value = kTopEarlgreyPinmuxInselIoc8;
-  // We've got one insel configuration field per register. Hence, we have to
-  // convert the enumeration index into a byte address using << 2.
-  reg_offset = kTopEarlgreyPinmuxPeripheralInUart1Rx << 2;
-  mask = PINMUX_MIO_PERIPH_INSEL_0_IN_0_MASK;
-  mmio_region_write32(reg32, reg_offset, reg_value & mask);
-
+  CHECK_PINMUX_DIF_OK(
+      dif_pinmux_input_select(&pinmux, kTopEarlgreyPinmuxPeripheralInUart1Rx,
+                              kTopEarlgreyPinmuxInselIoc8));
+  CHECK_PINMUX_DIF_OK(
+      dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc8,
+                               kTopEarlgreyPinmuxOutselConstantHighZ));
   // Configure UART1 TX output to connect to MIO pad IOC9
-  reg32 =
-      mmio_region_from_addr(PINMUX0_BASE_ADDR + PINMUX_MIO_OUTSEL_0_REG_OFFSET);
-  reg_value = kTopEarlgreyPinmuxOutselUart1Tx;
-  // We've got one insel configuration field per register. Hence, we have to
-  // convert the enumeration index into a byte address using << 2.
-  reg_offset = kTopEarlgreyPinmuxMioOutIoc9 << 2;
-  mask = PINMUX_MIO_OUTSEL_0_OUT_0_MASK;
-  mmio_region_write32(reg32, reg_offset, reg_value & mask);
+  CHECK_PINMUX_DIF_OK(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoc9, kTopEarlgreyPinmuxOutselUart1Tx));
 #endif
 
   // Configure USBDEV SENSE outputs to be high-Z (IOR0, IOR1)
-  reg32 =
-      mmio_region_from_addr(PINMUX0_BASE_ADDR + PINMUX_MIO_OUTSEL_0_REG_OFFSET);
-  reg_value = kTopEarlgreyPinmuxOutselConstantHighZ;
-  mask = PINMUX_MIO_OUTSEL_0_OUT_0_MASK;
-  // We've got one insel configuration field per register. Hence, we have to
-  // convert the enumeration index into a byte address using << 2.
-  reg_offset = kTopEarlgreyPinmuxMioOutIor0 << 2;
-  mmio_region_write32(reg32, reg_offset, reg_value & mask);
-  // We've got one insel configuration field per register. Hence, we have to
-  // convert the enumeration index into a byte address using << 2.
-  reg_offset = kTopEarlgreyPinmuxMioOutIor1 << 2;
-  mmio_region_write32(reg32, reg_offset, reg_value & mask);
+  CHECK_PINMUX_DIF_OK(
+      dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor0,
+                               kTopEarlgreyPinmuxOutselConstantHighZ));
+  CHECK_PINMUX_DIF_OK(
+      dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor1,
+                               kTopEarlgreyPinmuxOutselConstantHighZ));
 }
