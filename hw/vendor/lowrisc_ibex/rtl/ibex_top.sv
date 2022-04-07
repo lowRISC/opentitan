@@ -377,6 +377,7 @@ module ibex_top import ibex_pkg::*; #(
   // Register file Instantiation //
   /////////////////////////////////
 
+  logic rf_alert_major_internal;
   if (RegFile == RegFileFF) begin : gen_regfile_ff
     ibex_register_file_ff #(
       .RV32E            (RV32E),
@@ -396,7 +397,8 @@ module ibex_top import ibex_pkg::*; #(
       .rdata_b_o(rf_rdata_b_ecc),
       .waddr_a_i(rf_waddr_wb),
       .wdata_a_i(rf_wdata_wb_ecc),
-      .we_a_i   (rf_we_wb)
+      .we_a_i   (rf_we_wb),
+      .err_o    (rf_alert_major_internal)
     );
   end else if (RegFile == RegFileFPGA) begin : gen_regfile_fpga
     ibex_register_file_fpga #(
@@ -417,7 +419,8 @@ module ibex_top import ibex_pkg::*; #(
       .rdata_b_o(rf_rdata_b_ecc),
       .waddr_a_i(rf_waddr_wb),
       .wdata_a_i(rf_wdata_wb_ecc),
-      .we_a_i   (rf_we_wb)
+      .we_a_i   (rf_we_wb),
+      .err_o    (rf_alert_major_internal)
     );
   end else if (RegFile == RegFileLatch) begin : gen_regfile_latch
     ibex_register_file_latch #(
@@ -438,7 +441,8 @@ module ibex_top import ibex_pkg::*; #(
       .rdata_b_o(rf_rdata_b_ecc),
       .waddr_a_i(rf_waddr_wb),
       .wdata_a_i(rf_wdata_wb_ecc),
-      .we_a_i   (rf_we_wb)
+      .we_a_i   (rf_we_wb),
+      .err_o    (rf_alert_major_internal)
     );
   end
 
@@ -952,7 +956,9 @@ module ibex_top import ibex_pkg::*; #(
     assign unused_scan = scan_rst_ni;
   end
 
-  assign alert_major_internal_o = core_alert_major_internal | lockstep_alert_major_internal;
+  assign alert_major_internal_o = core_alert_major_internal |
+                                  lockstep_alert_major_internal |
+                                  rf_alert_major_internal;
   assign alert_major_bus_o      = core_alert_major_bus | lockstep_alert_major_bus;
   assign alert_minor_o          = core_alert_minor | lockstep_alert_minor;
 

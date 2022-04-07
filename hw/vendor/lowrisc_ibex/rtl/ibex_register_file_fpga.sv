@@ -33,7 +33,10 @@ module ibex_register_file_fpga #(
   // Write port W1
   input  logic [          4:0] waddr_a_i,
   input  logic [DataWidth-1:0] wdata_a_i,
-  input  logic                 we_a_i
+  input  logic                 we_a_i,
+
+  // This indicates whether spurious WE are detected.
+  output logic                 err_o
 );
 
   localparam int ADDR_WIDTH = RV32E ? 4 : 5;
@@ -50,6 +53,17 @@ module ibex_register_file_fpga #(
 
   // we select
   assign we = (waddr_a_i == '0) ? 1'b0 : we_a_i;
+
+  // This checks for spurious WE strobes on the regfile.
+  prim_onehot_check #(
+    .OneHotWidth(NUM_WORDS)
+  ) u_prim_onehot_check (
+    .clk_i,
+    .rst_ni,
+    .oh_i(we),
+    .en_i(we_a_i),
+    .err_o
+  );
 
   // Note that the SystemVerilog LRM requires variables on the LHS of assignments within
   // "always_ff" to not be written to by any other process. However, to enable the initialization

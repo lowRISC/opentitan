@@ -392,6 +392,20 @@
                rel_path: "hw/ip/prim/prim_max_tree/{sub_flow}/{tool}"
                cov: true
              }
+             { name: prim_sum_tree
+               dut: prim_sum_tree
+               fusesoc_core: lowrisc:prim:sum_tree
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_sum_tree/{sub_flow}/{tool}"
+               cov: true
+             }
+             { name: prim_onehot_check
+               dut: prim_onehot_check
+               fusesoc_core: lowrisc:prim:onehot_check
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_onehot_check/{sub_flow}/{tool}"
+               cov: true
+             }
              // Below are IPs that already has a DV testbench,
              // FPV only verifies the security countermeasure assertions,
              // so will not collect FPV coverage.

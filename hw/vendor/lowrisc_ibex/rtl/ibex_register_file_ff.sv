@@ -35,8 +35,10 @@ module ibex_register_file_ff #(
   // Write port W1
   input  logic [4:0]           waddr_a_i,
   input  logic [DataWidth-1:0] wdata_a_i,
-  input  logic                 we_a_i
+  input  logic                 we_a_i,
 
+  // This indicates whether spurious WE are detected.
+  output logic                 err_o
 );
 
   localparam int unsigned ADDR_WIDTH = RV32E ? 4 : 5;
@@ -51,6 +53,17 @@ module ibex_register_file_ff #(
       we_a_dec[i] = (waddr_a_i == 5'(i)) ? we_a_i : 1'b0;
     end
   end
+
+  // This checks for spurious WE strobes on the regfile.
+  prim_onehot_check #(
+    .OneHotWidth(NUM_WORDS-1)
+  ) u_prim_onehot_check (
+    .clk_i,
+    .rst_ni,
+    .oh_i(we_a_dec),
+    .en_i(we_a_i),
+    .err_o
+  );
 
   // No flops for R0 as it's hard-wired to 0
   for (genvar i = 1; i < NUM_WORDS; i++) begin : g_rf_flops

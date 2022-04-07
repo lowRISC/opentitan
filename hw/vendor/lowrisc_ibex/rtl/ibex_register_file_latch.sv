@@ -35,8 +35,10 @@ module ibex_register_file_latch #(
   // Write port W1
   input  logic [4:0]           waddr_a_i,
   input  logic [DataWidth-1:0] wdata_a_i,
-  input  logic                 we_a_i
+  input  logic                 we_a_i,
 
+  // This indicates whether spurious WE are detected.
+  output logic                 err_o
 );
 
   localparam int unsigned ADDR_WIDTH = RV32E ? 4 : 5;
@@ -97,6 +99,17 @@ module ibex_register_file_latch #(
       end
     end
   end
+
+  // This checks for spurious WE strobes on the regfile.
+  prim_onehot_check #(
+    .OneHotWidth(NUM_WORDS)
+  ) u_prim_onehot_check (
+    .clk_i,
+    .rst_ni,
+    .oh_i(waddr_onehot_a),
+    .en_i(we_a_i),
+    .err_o
+  );
 
   // Individual clock gating (if integrated clock-gating cells are available)
   for (genvar x = 1; x < NUM_WORDS; x++) begin : gen_cg_word_iter
