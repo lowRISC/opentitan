@@ -19,6 +19,9 @@ project(
   ],
 )
 
+# NOTE: There are tools in hw/top_englishbreakfast that modify this line via regexes.
+TOPNAME='top_earlgrey'
+
 # We allow both GCC and Clang, but these minimum versions.
 required_gcc_version = '>=5'
 required_clang_version = '>=3.5'
@@ -109,6 +112,11 @@ c_cpp_args = [
   # Allow detection of Meson for migration purposes.
   '-DIS_MESON_FOR_MIGRATIONS_ONLY',
 ]
+
+if TOPNAME == 'top_englishbreakfast'
+  c_cpp_args += ['-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_']
+endif
+
 add_project_arguments(c_cpp_args, language: ['c', 'cpp'], native: false)
 add_project_arguments(c_cpp_args, language: ['c', 'cpp'], native: true)
 
@@ -216,7 +224,6 @@ gen_hw_hdr = generator(
 )
 
 # TODO: Considering moving these into hw/ip directories.
-TOPNAME='top_earlgrey'
 hw_ip_adc_ctrl_reg_h = gen_hw_hdr.process('hw/ip/adc_ctrl/data/adc_ctrl.hjson')
 hw_ip_aes_reg_h = gen_hw_hdr.process('hw/ip/aes/data/aes.hjson')
 hw_ip_alert_handler_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip_autogen/alert_handler/data/alert_handler.hjson')

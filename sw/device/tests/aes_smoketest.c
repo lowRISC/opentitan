@@ -8,10 +8,13 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aes_testutils.h"
 #include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+#if !OT_IS_ENGLISH_BREAKFAST
+#include "sw/device/lib/testing/entropy_testutils.h"
+#endif
 
 // The following plaintext, key and ciphertext are extracted from Appendix C of
 // the Advanced Encryption Standard (AES) FIPS Publication 197 available at
@@ -58,8 +61,10 @@ bool test_main(void) {
 
   LOG_INFO("Running AES test");
 
+#if !OT_IS_ENGLISH_BREAKFAST
   // First of all, we need to get the entropy complex up and running.
   entropy_testutils_boot_mode_init();
+#endif
 
   // Initialise AES.
   CHECK_DIF_OK(
