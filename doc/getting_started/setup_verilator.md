@@ -51,11 +51,13 @@ If you need to install to a different location than `/tools/verilator/...`, you 
 
 ## Simulating a design with Verilator
 
-First the simulation needs to built itself.
+First the RTL must be built into a simulator binary.
+This is done by running fusesoc, which collects up RTL code and passes it to Verilator to generate and then compile a C++ model.
+The fusesoc command line arguments are reasonably complicated so we have a wrapper script:
 
 ```console
 $ cd $REPO_TOP
-$ fusesoc --cores-root . run --flag=fileset_top --target=sim --setup --build lowrisc:dv:chip_verilator_sim
+$ ci/scripts/build-chip-verilator earlgrey
 ```
 
 Then we need to build software to run on the simulated system.
