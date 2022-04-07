@@ -133,11 +133,9 @@ module rom_ctrl_fsm
   // SEC_CM: INTERSIG.MUBI
 
   fsm_state_e state_d, state_q;
-  logic [9:0] logic_state_q;
   logic       fsm_alert;
 
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, fsm_state_e, ReadingLow)
-  assign logic_state_q = {state_q};
 
   always_comb begin
     state_d = state_q;
@@ -210,8 +208,13 @@ module rom_ctrl_fsm
   // The in_state_done signal is supposed to be true iff we're in FSM state Done. Grabbing just the
   // bottom 4 bits of state_q is equivalent to "mubi4_bool_to_mubi(state_q == Done)" except that it
   // doesn't have a 1-bit signal on the way.
+  logic [9:0] state_q_bits;
+  logic       unused_state_q_top_bits;
+  assign state_q_bits = {state_q};
+  assign unused_state_q_top_bits = ^state_q_bits[9:4];
+
   mubi4_t in_state_done;
-  assign in_state_done = mubi4_t'(logic_state_q[3:0]);
+  assign in_state_done = mubi4_t'(state_q_bits[3:0]);
 
   // Route digest signals coming back from KMAC straight to the CSRs
   assign digest_o     = kmac_digest_i;
