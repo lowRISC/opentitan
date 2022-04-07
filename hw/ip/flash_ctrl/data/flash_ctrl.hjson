@@ -437,6 +437,30 @@
       local:     "false",
       expose:    "true",
     },
+
+    // Program FIFO depth
+    { name:      "ProgFifoDepth",
+      desc:      "Depth of program fifo",
+      type:      "int"
+      default:   "16",
+      local:     "false",
+      expose:    "true"
+    },
+
+    { name:      "RdFifoDepth",
+      desc:      "Depth of read fifo",
+      type:      "int"
+      default:   "16",
+      local:     "false",
+      expose:    "true"
+    },
+
+    // Maximum FIFO depth allowed
+    { name:      "MaxFifoDepth",
+      desc:      "Maximum depth for read / program fifos",
+      type:      "int"
+      default:   "16",
+    },
   ],
 
   regwidth: "32",
@@ -1917,6 +1941,29 @@
           },
         ]
       },
+
+      { name: "CURR_FIFO_LVL",
+        desc: "Current program and read fifo depth",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext: "true",
+        fields: [
+          { bits: "4:0",
+            name: "PROG",
+            desc: '''
+              Current program fifo depth
+              '''
+            resval: "0x0"
+          },
+          { bits: "12:8",
+            name: "RD",
+            desc: '''
+              Current read fifo depth
+              '''
+            resval: "0x0"
+          },
+        ]
+      }
 
       { window: {
           name: "prog_fifo",

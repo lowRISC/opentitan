@@ -244,30 +244,30 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
 
   constraint program_fifo_intr_level_c {
     program_fifo_intr_level dist {
-      0                                 :/ 1,
-      [1:4]                             :/ 1,
-      [5:10]                            :/ 1,
-      [11:flash_ctrl_pkg::FifoDepth-2]  :/ 1,
-      flash_ctrl_pkg::FifoDepth-1       :/ 1
+      0                     :/ 1,
+      [1:4]                 :/ 1,
+      [5:10]                :/ 1,
+      [11:ProgFifoDepth-2]  :/ 1,
+      ProgFifoDepth-1       :/ 1
     };
   }
 
   constraint program_fifo_intr_level_max_c {
-    program_fifo_intr_level < flash_ctrl_pkg::FifoDepth;
+    program_fifo_intr_level < ProgFifoDepth;
   }
 
   constraint read_fifo_intr_level_c {
     read_fifo_intr_level dist {
-      0                                 :/ 1,
-      [1:4]                             :/ 1,
-      [5:10]                            :/ 1,
-      [11:flash_ctrl_pkg::FifoDepth-2]  :/ 1,
-      flash_ctrl_pkg::FifoDepth-1       :/ 1
+      0                     :/ 1,
+      [1:4]                 :/ 1,
+      [5:10]                :/ 1,
+      [11:ReadFifoDepth-2]  :/ 1,
+      ReadFifoDepth-1       :/ 1
     };
   }
 
   constraint read_fifo_intr_level_max_c {
-    read_fifo_intr_level < flash_ctrl_pkg::FifoDepth;
+    read_fifo_intr_level < ReadFifoDepth;
   }
 
   // Indicates whether to poll before writing to prog_fifo or reading from rd_fifo. If interupts are

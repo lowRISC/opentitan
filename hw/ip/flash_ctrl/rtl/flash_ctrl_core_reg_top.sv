@@ -124,10 +124,10 @@ module flash_ctrl_core_reg_top (
   // Create steering logic
   always_comb begin
     unique case (tl_i.a_address[AW-1:0]) inside
-      [388:391]: begin
+      [392:395]: begin
         reg_steer = 0;
       end
-      [392:395]: begin
+      [396:399]: begin
         reg_steer = 1;
       end
       default: begin
@@ -1539,6 +1539,9 @@ module flash_ctrl_core_reg_top (
   logic fifo_rst_we;
   logic fifo_rst_qs;
   logic fifo_rst_wd;
+  logic curr_fifo_lvl_re;
+  logic [4:0] curr_fifo_lvl_prog_qs;
+  logic [4:0] curr_fifo_lvl_rd_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -13474,8 +13477,38 @@ module flash_ctrl_core_reg_top (
   );
 
 
+  // R[curr_fifo_lvl]: V(True)
+  //   F[prog]: 4:0
+  prim_subreg_ext #(
+    .DW    (5)
+  ) u_curr_fifo_lvl_prog (
+    .re     (curr_fifo_lvl_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.curr_fifo_lvl.prog.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (curr_fifo_lvl_prog_qs)
+  );
 
-  logic [96:0] addr_hit;
+  //   F[rd]: 12:8
+  prim_subreg_ext #(
+    .DW    (5)
+  ) u_curr_fifo_lvl_rd (
+    .re     (curr_fifo_lvl_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.curr_fifo_lvl.rd.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (curr_fifo_lvl_rd_qs)
+  );
+
+
+
+  logic [97:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == FLASH_CTRL_INTR_STATE_OFFSET);
@@ -13575,6 +13608,7 @@ module flash_ctrl_core_reg_top (
     addr_hit[94] = (reg_addr == FLASH_CTRL_SCRATCH_OFFSET);
     addr_hit[95] = (reg_addr == FLASH_CTRL_FIFO_LVL_OFFSET);
     addr_hit[96] = (reg_addr == FLASH_CTRL_FIFO_RST_OFFSET);
+    addr_hit[97] = (reg_addr == FLASH_CTRL_CURR_FIFO_LVL_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -13678,7 +13712,8 @@ module flash_ctrl_core_reg_top (
                (addr_hit[93] & (|(FLASH_CTRL_CORE_PERMIT[93] & ~reg_be))) |
                (addr_hit[94] & (|(FLASH_CTRL_CORE_PERMIT[94] & ~reg_be))) |
                (addr_hit[95] & (|(FLASH_CTRL_CORE_PERMIT[95] & ~reg_be))) |
-               (addr_hit[96] & (|(FLASH_CTRL_CORE_PERMIT[96] & ~reg_be)))));
+               (addr_hit[96] & (|(FLASH_CTRL_CORE_PERMIT[96] & ~reg_be))) |
+               (addr_hit[97] & (|(FLASH_CTRL_CORE_PERMIT[97] & ~reg_be)))));
   end
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -14504,6 +14539,7 @@ module flash_ctrl_core_reg_top (
   assign fifo_rst_we = addr_hit[96] & reg_we & !reg_error;
 
   assign fifo_rst_wd = reg_wdata[0];
+  assign curr_fifo_lvl_re = addr_hit[97] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin
@@ -15176,6 +15212,11 @@ module flash_ctrl_core_reg_top (
 
       addr_hit[96]: begin
         reg_rdata_next[0] = fifo_rst_qs;
+      end
+
+      addr_hit[97]: begin
+        reg_rdata_next[4:0] = curr_fifo_lvl_prog_qs;
+        reg_rdata_next[12:8] = curr_fifo_lvl_rd_qs;
       end
 
       default: begin

@@ -9,6 +9,8 @@
   bytes_per_page = cfg.words_per_page * cfg.word_bytes
   total_byte_width = int(total_pages*bytes_per_page-1).bit_length()
   info_type_width = (cfg.info_types-1).bit_length()
+  max_fifo_depth = 16
+  max_fifo_width = max_fifo_depth.bit_length()
 %>
 
 { name: "FLASH_CTRL",
@@ -433,6 +435,30 @@
       default:   "1",
       local:     "false",
       expose:    "true",
+    },
+
+    // Program FIFO depth
+    { name:      "ProgFifoDepth",
+      desc:      "Depth of program fifo",
+      type:      "int"
+      default:   "${max_fifo_depth}",
+      local:     "false",
+      expose:    "true"
+    },
+
+    { name:      "RdFifoDepth",
+      desc:      "Depth of read fifo",
+      type:      "int"
+      default:   "${max_fifo_depth}",
+      local:     "false",
+      expose:    "true"
+    },
+
+    // Maximum FIFO depth allowed
+    { name:      "MaxFifoDepth",
+      desc:      "Maximum depth for read / program fifos",
+      type:      "int"
+      default:   "${max_fifo_depth}",
     },
   ],
 
@@ -1382,7 +1408,7 @@
         swaccess: "rw",
         hwaccess: "hro",
         fields: [
-          { bits: "4:0",
+          { bits: "${max_fifo_width-1}:0",
             name: "PROG",
             desc: '''
               When the program FIFO drains to this level, trigger an interrupt.
@@ -1390,7 +1416,7 @@
               '''
             resval: "0xF"
           },
-          { bits: "12:8",
+          { bits: "${8 + max_fifo_width - 1}:8",
             name: "RD",
             desc: '''
               When the read FIFO fills to this level, trigger an interrupt.
@@ -1418,6 +1444,29 @@
           },
         ]
       },
+
+      { name: "CURR_FIFO_LVL",
+        desc: "Current program and read fifo depth",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext: "true",
+        fields: [
+          { bits: "${max_fifo_width-1}:0",
+            name: "PROG",
+            desc: '''
+              Current program fifo depth
+              '''
+            resval: "0x0"
+          },
+          { bits: "${8 + max_fifo_width - 1}:8",
+            name: "RD",
+            desc: '''
+              Current read fifo depth
+              '''
+            resval: "0x0"
+          },
+        ]
+      }
 
       { window: {
           name: "prog_fifo",

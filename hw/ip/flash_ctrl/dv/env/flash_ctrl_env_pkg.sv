@@ -31,6 +31,9 @@ package flash_ctrl_env_pkg;
   parameter uint FlashSizeBytes         = FlashNumPages * flash_ctrl_pkg::WordsPerPage *
                                             flash_ctrl_pkg::DataWidth / 8;
 
+  parameter uint ProgFifoDepth = 4;
+  parameter uint ReadFifoDepth = 16;
+
   // Number of bytes in each of the flash pages.
   parameter uint BytesPerPage = FlashSizeBytes / FlashNumPages;
 

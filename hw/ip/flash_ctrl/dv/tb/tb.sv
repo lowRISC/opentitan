@@ -84,7 +84,10 @@ module tb;
   assign (pull1, pull0) flash_test_mode_a = 2'h3;
 
   // dut
-  flash_ctrl dut (
+  flash_ctrl #(
+    .ProgFifoDepth(ProgFifoDepth),
+    .RdFifoDepth(ReadFifoDepth)
+  ) dut (
     .clk_i          (clk),
     .rst_ni         (rst_n),
     .rst_shadowed_ni(rst_shadowed_n),

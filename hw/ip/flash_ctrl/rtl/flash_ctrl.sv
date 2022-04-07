@@ -16,6 +16,8 @@ module flash_ctrl
   parameter flash_key_t           RndCnstDataKey  = RndCnstDataKeyDefault,
   parameter lfsr_seed_t           RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t           RndCnstLfsrPerm = RndCnstLfsrPermDefault,
+  parameter int                   ProgFifoDepth   = MaxFifoDepth,
+  parameter int                   RdFifoDepth     = MaxFifoDepth,
   parameter bit                   SecScrambleEn   = 1'b1
 ) (
   input        clk_i,
@@ -88,6 +90,13 @@ module flash_ctrl
   output ast_pkg::ast_dif_t flash_alert_o
 );
 
+  //////////////////////////////////////////////////////////
+  // Double check supplied param is not bigger than allowed
+  //////////////////////////////////////////////////////////
+  `ASSERT_INIT(FifoDepthCheck_A, (ProgFifoDepth <= MaxFifoDepth) &
+                                 (RdFifoDepth <= MaxFifoDepth))
+
+
   import flash_ctrl_reg_pkg::*;
   import prim_mubi_pkg::mubi4_t;
 
@@ -154,13 +163,16 @@ module flash_ctrl
   );
 
   // FIFO Connections
+  localparam int ProgDepthW = prim_util_pkg::vbits(ProgFifoDepth+1);
+  localparam int RdDepthW   = prim_util_pkg::vbits(RdFifoDepth+1);
+
   logic                    prog_fifo_wvalid;
   logic                    prog_fifo_wready;
   logic                    prog_fifo_rvalid;
   logic                    prog_fifo_ren;
   logic [BusFullWidth-1:0] prog_fifo_wdata;
   logic [BusFullWidth-1:0] prog_fifo_rdata;
-  logic [FifoDepthW-1:0]   prog_fifo_depth;
+  logic [ProgDepthW-1:0]   prog_fifo_depth;
   logic                    rd_fifo_wready;
   logic                    rd_fifo_rvalid;
   logic                    rd_fifo_rready;
@@ -168,7 +180,7 @@ module flash_ctrl
   logic                    rd_fifo_ren;
   logic [BusFullWidth-1:0] rd_fifo_wdata;
   logic [BusFullWidth-1:0] rd_fifo_rdata;
-  logic [FifoDepthW-1:0]   rd_fifo_depth;
+  logic [RdDepthW-1:0]     rd_fifo_depth;
   logic                    rd_fifo_full;
 
   // Program Control Connections
@@ -509,7 +521,7 @@ module flash_ctrl
 
   prim_fifo_sync #(
     .Width(BusFullWidth),
-    .Depth(FifoDepth)
+    .Depth(ProgFifoDepth)
   ) u_prog_fifo (
     .clk_i,
     .rst_ni,
@@ -523,6 +535,7 @@ module flash_ctrl
     .rready_i(prog_fifo_ren),
     .rdata_o (prog_fifo_rdata)
   );
+  assign hw2reg.curr_fifo_lvl.prog.d = prog_fifo_depth;
 
   // Program handler is consumer of prog_fifo
   logic [1:0] prog_type_en;
@@ -615,7 +628,7 @@ module flash_ctrl
 
   prim_fifo_sync #(
     .Width(BusFullWidth),
-    .Depth(FifoDepth)
+    .Depth(RdFifoDepth)
   ) u_rd_fifo (
     .clk_i,
     .rst_ni,
@@ -629,6 +642,7 @@ module flash_ctrl
     .rready_i(rd_fifo_rready),
     .rdata_o (rd_fifo_rdata)
   );
+  assign hw2reg.curr_fifo_lvl.rd.d = rd_fifo_depth;
 
   logic rd_cnt_err;
   // Read handler is consumer of rd_fifo
