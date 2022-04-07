@@ -20,7 +20,7 @@ filesets:
       # common waivers
       - lowrisc:lint:common
     files:
-      #- lint/tlul_lc_gate.vlt
+      - lint/tlul_lc_gate.vlt
     file_type: vlt
 
   files_ascentlint_waiver:
