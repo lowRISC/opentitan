@@ -36,7 +36,7 @@ package flash_ctrl_pkg;
   parameter int BusIntgWidth    = tlul_pkg::DataIntgWidth;
   parameter int BusFullWidth    = BusWidth + BusIntgWidth;
   parameter int MpRegions       = 8;  // flash controller protection regions
-  parameter int FifoDepth       = 16; // rd / prog fifos
+  //parameter int FifoDepth       = 16; // rd / prog fifos
   parameter int InfoTypesWidth  = prim_util_pkg::vbits(InfoTypes);
 
   // flash phy parameters
@@ -65,7 +65,7 @@ package flash_ctrl_pkg;
   parameter int PhyAddrStart    = BusWordW - WordW;
 
   // fifo parameters
-  parameter int FifoDepthW      = prim_util_pkg::vbits(FifoDepth+1);
+  //parameter int FifoDepthW      = prim_util_pkg::vbits(FifoDepth+1);
 
   // The end address in bus words for each kind of partition in each bank
   parameter logic [PageW-1:0] DataPartitionEndAddr = PageW'(PagesPerBank - 1);

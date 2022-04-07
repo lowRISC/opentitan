@@ -4422,6 +4422,10 @@
         prim: 0x41008000
         mem: 0x20000000
       }
+      param_decl:
+      {
+        ProgFifoDepth: "4"
+      }
       memory:
       {
         mem:
@@ -4453,7 +4457,6 @@
       [
         "0"
       ]
-      param_decl: {}
       param_list:
       [
         {
@@ -4503,6 +4506,22 @@
           default: "1"
           expose: "true"
           name_top: SecFlashCtrlScrambleEn
+        }
+        {
+          name: ProgFifoDepth
+          desc: Depth of program fifo
+          type: int
+          default: "4"
+          expose: "true"
+          name_top: FlashCtrlProgFifoDepth
+        }
+        {
+          name: RdFifoDepth
+          desc: Depth of read fifo
+          type: int
+          default: "16"
+          expose: "true"
+          name_top: FlashCtrlRdFifoDepth
         }
       ]
       inter_signal_list:
