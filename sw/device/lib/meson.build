@@ -47,6 +47,7 @@ sw_lib_pinmux = declare_dependency(
     ],
     dependencies: [
       top_earlgrey,
+      sw_lib_dif_pinmux,
     ]
   )
 )
