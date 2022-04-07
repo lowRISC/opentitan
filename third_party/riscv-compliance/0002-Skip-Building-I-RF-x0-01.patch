@@ -1,0 +1,14 @@
+diff --git a/third_party/riscv-compliance/defs.bzl b/third_party/riscv-compliance/defs.bzl
+index 2f18aafab..b72d0d179 100644
+--- a/third_party/riscv-compliance/defs.bzl
++++ b/third_party/riscv-compliance/defs.bzl
+@@ -81,7 +81,8 @@ TESTS = {
+         "I-ORI-01",
+         "I-RF_size-01",
+         "I-RF_width-01",
+-        "I-RF_x0-01",
++        # TODO(lowrisc/opentitan#11968): appears to have a sign extension issue
++        #"I-RF_x0-01",
+         "I-SB-01",
+         "I-SH-01",
+         "I-SLL-01",
