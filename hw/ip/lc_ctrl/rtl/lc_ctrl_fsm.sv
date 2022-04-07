@@ -146,7 +146,6 @@ module lc_ctrl_fsm
   // Hashed token to compare against.
   logic [1:0] hashed_token_valid_mux;
   lc_token_t hashed_token_mux;
-  logic token_mux_indices_inconsistent;
 
   // Multibit state error from state decoder
   logic [5:0] state_invalid_error;
@@ -295,7 +294,7 @@ module lc_ctrl_fsm
       // First transition valid check. This will be repeated several
       // times below.
       TransCheckSt: begin
-        if (trans_invalid_error_o || token_mux_indices_inconsistent) begin
+        if (trans_invalid_error_o) begin
           fsm_state_d = PostTransSt;
         end else begin
           fsm_state_d = TokenHashSt;
@@ -346,7 +345,7 @@ module lc_ctrl_fsm
       // SEC_CM: TOKEN.DIGEST
       TokenCheck0St,
       TokenCheck1St: begin
-        if (trans_invalid_error_o || token_mux_indices_inconsistent) begin
+        if (trans_invalid_error_o) begin
           fsm_state_d = PostTransSt;
         end else begin
           // If any of these RMA are conditions are true,
@@ -556,16 +555,24 @@ module lc_ctrl_fsm
   // SEC_CM: STATE.CONFIG.SPARSE
   // The trans_target_i signal comes from the CSR and uses a replication encoding,
   // hence we can use different indices of the array.
-  assign token_idx0       = TransTokenIdxMatrix[dec_lc_state_o[0]][trans_target_i[0]];
-  assign token_idx1       = TransTokenIdxMatrix[dec_lc_state_o[1]][trans_target_i[1]];
+  assign token_idx0 = (int'(dec_lc_state_o[0]) < NumLcStates &&
+                       int'(trans_target_i[0]) < NumLcStates) ?
+                      TransTokenIdxMatrix[dec_lc_state_o[0]][trans_target_i[0]] :
+                      InvalidTokenIdx;
+  assign token_idx1 = (int'(dec_lc_state_o[1]) < NumLcStates &&
+                       int'(trans_target_i[1]) < NumLcStates) ?
+                      TransTokenIdxMatrix[dec_lc_state_o[1]][trans_target_i[1]] :
+                      InvalidTokenIdx;
   assign hashed_token_mux = {hashed_tokens_lower[token_idx0],
                              hashed_tokens_upper[token_idx1]};
   assign hashed_token_valid_mux = {hashed_tokens_valid0[token_idx0],
                                    hashed_tokens_valid1[token_idx1]};
 
-  // This signal with the trans_invalid_error_o in the FSM below. We do not trigger an alert right
-  // away if this happens, since it could be due to an invalid value programmed to the CSRs.
-  assign token_mux_indices_inconsistent = (token_idx0 != token_idx1);
+  // If the indices are inconsistent, we also trigger a transition error.
+  // We do not trigger an alert right away if this happens, since it could
+  // be due to an invalid value programmed to the CSRs.
+  logic trans_invalid_error;
+  assign trans_invalid_error_o = trans_invalid_error || (token_idx0 != token_idx1);
 
   ////////////////////////////////////////////////////////////////////
   // Decoding and transition logic for redundantly encoded LC state //
@@ -596,7 +603,7 @@ module lc_ctrl_fsm
     .next_lc_state_o       ( next_lc_state  ),
     .next_lc_cnt_o         ( next_lc_cnt    ),
     .trans_cnt_oflw_error_o,
-    .trans_invalid_error_o
+    .trans_invalid_error_o ( trans_invalid_error )
   );
 
   // LC signal decoder and broadcasting logic.
