@@ -718,4 +718,9 @@ module pinmux_assert_fpv
   `ASSERT(UsbStateDebugO_A, ##1 usb_state_debug_o <->
           u_usbdev_aon_wake.bus_debug_o, clk_aon_i, !rst_aon_ni)
 
+  // Fatal alert related assertions
+  `ASSUME(TriggerAfterAlertInit_S, $stable(rst_ni) == 0 |->
+          pinmux.u_reg.u_chk.intg_err_o == 0 [*10])
+  `ASSERT(TlIntgFatalAlert_A, pinmux.u_reg.intg_err_o |-> (##[0:7] (alert_tx_o[0].alert_p)) [*2])
+
 endmodule : pinmux_assert_fpv

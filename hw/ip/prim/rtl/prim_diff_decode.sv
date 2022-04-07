@@ -233,6 +233,7 @@ module prim_diff_decode #(
       end
     end
 
+  `ifndef FPV_ALERT_NO_SIGINT_ERR
     // correctly detect sigint issue (only one transition cycle of permissible due to skew)
     `ASSERT(SigintCheck0_A, hlp_diff_pq == hlp_diff_nq [*2] |-> ##[0:1] sigint_o)
     // the synchronizer adds 2 cycles of latency with respect to input signals.
@@ -256,6 +257,8 @@ module prim_diff_decode #(
         $fell(hlp_diff_nq) && $stable(hlp_diff_pq) ##1 $stable(hlp_diff_nq) && $rose(hlp_diff_pq)
         |->
         ##1 rise_o)
+  `endif
+
     // correctly detect edges
     `ASSERT(RiseCheck_A,  ##1 $rose(hlp_diff_pq)     && (hlp_diff_pq ^ hlp_diff_nq) |->
         ##[1:2] rise_o,  clk_i, !rst_ni || sigint_o)
@@ -270,8 +273,12 @@ module prim_diff_decode #(
 `endif
   end else begin : gen_sync_assert
     // assertions for synchronous case
+
+  `ifndef FPV_ALERT_NO_SIGINT_ERR
     // correctly detect sigint issue
     `ASSERT(SigintCheck_A, diff_pi == diff_ni |-> sigint_o)
+  `endif
+
     // correctly detect edges
     `ASSERT(RiseCheck_A,  ##1 $rose(diff_pi)    && (diff_pi ^ diff_ni) |->  rise_o)
     `ASSERT(FallCheck_A,  ##1 $fell(diff_pi)    && (diff_pi ^ diff_ni) |->  fall_o)
