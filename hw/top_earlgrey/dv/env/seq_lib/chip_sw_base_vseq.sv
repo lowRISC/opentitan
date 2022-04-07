@@ -194,6 +194,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     spi_host_seq m_spi_host_seq;
     byte sw_byte_q[$];
     uint byte_cnt;
+    uint num_frame;
 
     // wait until spi init is done
     // TODO, in some cases though, we might use UART logger instead of SW logger - need to keep that
@@ -217,14 +218,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
                                      data.size() == SPI_FRAME_BYTE_SIZE;
                                      foreach (data[i]) {data[i] == sw_byte_q[byte_cnt+i];})
       `uvm_send(m_spi_host_seq)
-      if (byte_cnt == 0) begin
-        // SW erase flash after receiving 1st frame
-        wait(cfg.sw_logger_vif.printed_log == "Flash erase successful");
-        // sdo for next frame shouldn't be unknown
-        cfg.m_spi_agent_cfg.en_monitor_checks = 1;
-      end
+      wait (cfg.sw_logger_vif.printed_log == $sformatf("Frame #%0d processed done", num_frame));
+      num_frame++;
 
-      cfg.clk_rst_vif.wait_clks(30_000);
       byte_cnt += SPI_FRAME_BYTE_SIZE;
     end
   endtask
