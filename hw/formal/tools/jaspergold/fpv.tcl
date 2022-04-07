@@ -25,16 +25,17 @@ if {$env(COV) == 1} {
 # read design
 #-------------------------------------------------------------------------
 
+# TODO: better way to handle macro define. Consider use it as an input for sim_cfg.
 if {$env(TASK) == "FpvSecCm"} {
   analyze -sv09 \
     +define+FPV_ON \
-    +define+FPV_SEC_CM_ON \
+    +define+FPV_SEC_CM_ON+FPV_ALERT_NO_SIGINT_ERR \
     -bbox_m prim_count \
     -bbox_m prim_double_lfsr \
     -f [glob *.scr]
 } elseif {$env(DUT_TOP) == "pinmux_tb"} {
   analyze -sv09 \
-    +define+FPV_ON \
+    +define+FPV_ON+FPV_ALERT_NO_SIGINT_ERR \
     -bbox_m usbdev_aon_wake \
     -f [glob *.scr]
 } else {
