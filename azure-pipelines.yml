@@ -359,28 +359,8 @@ jobs:
         - cw310_sw_build
   - bash: |
       set -e
-      . util/build_consts.sh
-
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-
-      mkdir -p "$OBJ_DIR/hw"
-      mkdir -p "$BIN_DIR/hw/top_earlgrey"
-
-      BOOTROM_VMEM="$BIN_DIR/sw/device/lib/testing/test_rom/test_rom_fpga_cw310.scr.39.vmem"
-      test -f "$BOOTROM_VMEM"
-      OTP_VMEM="$BIN_DIR/sw/device/otp_img/otp_img_fpga_cw310.vmem"
-      test -f "$OTP_VMEM"
-
-      fusesoc --verbose --cores-root=. \
-        run --flag=fileset_top --target=synth --setup --build \
-        --build-root="$OBJ_DIR/hw" \
-        lowrisc:systems:chip_earlgrey_cw310 \
-        --BootRomInitFile="$BOOTROM_VMEM" \
-        --OtpCtrlMemInitFile="$OTP_VMEM"
-
-      cp "$OBJ_DIR/hw/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit" \
-        "$BIN_DIR/hw/top_earlgrey"
-      cp "$OBJ_DIR/hw/synth-vivado/rom.mmi" "$BIN_DIR/hw/top_earlgrey"
+      ci/scripts/build-bitstream-vivado.sh top_earlgrey cw310
     displayName: Build bitstream with Vivado
   - bash: |
       . util/build_consts.sh
@@ -458,25 +438,8 @@ jobs:
         - sw_build_englishbreakfast
   - bash: |
       set -e
-      . util/build_consts.sh
-
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-
-      mkdir -p "$OBJ_DIR/hw"
-      mkdir -p "$BIN_DIR/hw/top_englishbreakfast"
-
-      BOOTROM_VMEM="$BIN_DIR/sw/device/lib/testing/test_rom/test_rom_fpga_nexysvideo.32.vmem"
-      test -f "$BOOTROM_VMEM"
-
-      util/topgen-fusesoc.py --files-root=. --topname=top_englishbreakfast
-      fusesoc --verbose --cores-root=. \
-        run --flag=fileset_topgen --target=synth --setup --build \
-        --build-root="$OBJ_DIR/hw" \
-        lowrisc:systems:chip_englishbreakfast_cw305 \
-        --BootRomInitFile="$BOOTROM_VMEM"
-
-      cp "$OBJ_DIR/hw/synth-vivado/lowrisc_systems_chip_englishbreakfast_cw305_0.1.bit" \
-        "$BIN_DIR/hw/top_englishbreakfast"
+      ci/scripts/build-bitstream-vivado.sh top_englishbreakfast cw305
     displayName: Build bitstream with Vivado
   - template: ci/upload-artifacts-template.yml
     parameters:
