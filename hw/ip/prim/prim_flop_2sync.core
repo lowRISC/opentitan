@@ -12,6 +12,7 @@ filesets:
       # Needed because the generic prim_flop_2sync has a
       # dependency on prim:flop.
       - lowrisc:prim:flop
+      - lowrisc:prim:cdc_rand_delay
     files:
       - rtl/prim_flop_2sync.sv
     file_type: systemVerilogSource

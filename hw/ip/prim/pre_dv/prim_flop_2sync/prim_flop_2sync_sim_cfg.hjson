@@ -1,0 +1,41 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Name of the sim cfg - typically same as the name of the DUT.
+  name: prim_flop_2sync
+
+  // Top level dut name (sv module).
+  dut: prim_flop_2sync
+
+  // Top level testbench name (sv module).
+  tb: tb
+
+  // Simulator used to sign off this block
+  tool: vcs
+
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: lowrisc:dv:prim_flop_2sync_sim:0.1
+
+  // Import additional common sim cfg files.
+  import_cfgs: [// Project wide common sim cfg file
+                "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson"]
+
+  // Default iterations for all tests - each test entry can override this.
+  reseed: 5
+
+  // List of test specifications.
+  tests: [
+    {
+      name: unit_test
+    }
+  ]
+
+  // List of regressions.
+  regressions: [
+    {
+      name: smoke
+      tests: ["unit_test"]
+    }
+  ]
+}

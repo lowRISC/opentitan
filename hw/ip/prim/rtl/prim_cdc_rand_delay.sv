@@ -17,26 +17,22 @@
 // This is meant to model skew between synchronizer bits and wire delay between the src and dst
 // flops.
 //
-// Five (5) different random delay modes are available:
+// Four different random delay modes are available:
 //
-// - PrimCdcRandDelayDisable: If this delay mode is picked, this module acts as a simple
-//                            passthrough.
+// - RandDelayDisable: If this delay mode is picked, this module acts as a passthrough.
 //
-// - PrimCdcRandDelaySlow: If this delay mode is picked, the output to the dst domain is
-//                         continuously driven to `src_data_delayed`.
+// - RandDelaySlow: If this delay mode is picked, the output to the dst domain is
+//                  continuously driven to `src_data_delayed`.
 //
-// - PrimCdcRandDelayOnce: If this delay mode is picked, the mask `out_data_mask` used to combine
-//                         `src_data_with_latency` and `src_data_delayed` is fully randomized
-//                         once at the beginning of the simulation.
+// - RandDelayOnce: If this delay mode is picked, the mask `out_data_mask` used to combine
+//                  `src_data_with_latency` and `src_data_delayed` is randomized once at the
+//                  start of the simulation.
 //
-// - PrimCdcRandDelayInterval: If this delay mode is picked, the mask `out_data_mask` used to
-//                            combine `src_data_with_latency` and `src_data_delayed` is fully
-//                            randomized every `prim_cdc_num_src_data_changes` times that
-//                            `src_data_with_latency` changes.
-//
-// - PrimCdcRandDelayFull: If this delay mode is picked, the mask `out_data_mask` used to combine
-//                         `src_data_with_latency` and `src_data_delayed` is fully randomized
-//                         any time `src_data_with_latency` changes.
+// - RandDelayInterval: If this delay mode is picked, the mask `out_data_mask` used to
+//                      combine `src_data_with_latency` and `src_data_delayed` is fully
+//                      randomized every `prim_cdc_rand_delay_interval` times the src_data
+//                      value changes. If the `prim_cdc_rand_delay_interval` is set to 0,
+//                      then out_data_mask is randomized on every src_data change.
 //
 // DV has control of the weights corresponding to each random delay mode when the delay mode is
 // randomized, but can also directly override the delay mode as desired.
@@ -47,8 +43,8 @@
 module prim_cdc_rand_delay #(
     parameter int DataWidth = 1,
     parameter bit UseSourceClock = 1,
-    parameter int LatencyPs = 500,
-    parameter int JitterPs = 500
+    parameter int LatencyPs = 1000,
+    parameter int JitterPs = 1000
 ) (
     input logic                 src_clk,
     input logic [DataWidth-1:0] src_data,
@@ -57,147 +53,180 @@ module prim_cdc_rand_delay #(
     output logic [DataWidth-1:0]  dst_data
 );
 
-  `ASSERT_INIT(LegalWidth_A, DataWidth > 0)
+  `ASSERT_INIT(LegalDataWidth_A, DataWidth > 0)
+  `ASSERT_INIT(LegalLatencyPs_A, LatencyPs >= 0)
+  `ASSERT_INIT(LegalJitterPs_A,  JitterPs >= 0)
 
-  int prim_cdc_latency_ps = LatencyPs;
-  int prim_cdc_jitter_ps  = JitterPs;
+`ifdef SIMULATION
+`ifndef DISABLE_PRIM_CDC_RAND_DELAY
 
-  // Only applies with using CdcRandDelayInterval randomization mode.
-  //
-  // This is the number of times that `src_data_with_latency` is allowed to change before
-  // we re-randomize `out_data_mask`.
-  int prim_cdc_num_src_data_changes = 10;
-  int counter = 0;
+  typedef enum bit [1:0] {
+    RandDelayModeDisable,
+    RandDelayModeSlow,
+    RandDelayModeOnce,
+    RandDelayModeInterval
+  } rand_delay_mode_e;
 
-  task automatic set_prim_cdc_latency_ps(int val);
-    prim_cdc_latency_ps = val;
-    `ASSERT_I(LegalLatency_A, prim_cdc_latency_ps > 0)
-  endtask
+  rand_delay_mode_e prim_cdc_rand_delay_mode;
+  int unsigned prim_cdc_rand_delay_interval = 10;
+  int unsigned prim_cdc_rand_delay_disable_weight  = 1;
+  int unsigned prim_cdc_rand_delay_slow_weight     = 2;
+  int unsigned prim_cdc_rand_delay_once_weight     = 4;
+  int unsigned prim_cdc_rand_delay_interval_weight = 3;
+  bit [3:0] mode;  // onehot encoded version of prim_cdc_rand_delay_mode.
 
-  task automatic set_prim_cdc_jitter_ps(int val);
-    prim_cdc_jitter_ps = val;
-    `ASSERT_I(LegalJitter_A, prim_cdc_jitter_ps > 0)
-  endtask
-
-  task automatic set_prim_cdc_num_src_data_changes(int val);
-    prim_cdc_num_src_data_changes = val;
-  endtask
-
-  typedef enum bit [2:0] {
-    PrimCdcRandDelayDisable,
-    PrimCdcRandDelaySlow,
-    PrimCdcRandDelayOnce,
-    PrimCdcRandDelayInterval,
-    PrimCdcRandDelayFull
-  } prim_cdc_rand_delay_mode_e;
-
-  prim_cdc_rand_delay_mode_e prim_cdc_rand_mode;
+  int unsigned prim_cdc_jitter_ps = JitterPs;
+  int unsigned prim_cdc_latency_ps = LatencyPs;
 
   logic [DataWidth-1:0] out_data_mask;
-
-  bit en_passthru = 1'b0;
-
-  bit out_randomize_en = 1'b0;
-
-  bit en_rand_interval_mask = 1'b0;
-
   logic [DataWidth-1:0] src_data_with_latency;
   logic [DataWidth-1:0] src_data_delayed;
 
-  int unsigned prim_cdc_rand_disable_weight  = 0;
-  int unsigned prim_cdc_rand_slow_weight     = 20;
-  int unsigned prim_cdc_rand_once_weight     = 50;
-  int unsigned prim_cdc_rand_interval_weight = 20;
-  int unsigned prim_cdc_rand_full_weight     = 10;
+  function automatic void set_prim_cdc_rand_delay_mode(int val);
+    prim_cdc_rand_delay_mode = rand_delay_mode_e'(val);
+    update_settings();
+  endfunction
+
+  function automatic void set_prim_cdc_rand_delay_interval(int unsigned val);
+    prim_cdc_rand_delay_interval = val;
+  endfunction
+
+  function automatic void set_prim_cdc_jitter_ps(int val);
+    `ASSERT_I(LegalJitter_A, prim_cdc_jitter_ps >= 0)
+    prim_cdc_jitter_ps = val;
+  endfunction
+
+  function automatic void set_prim_cdc_latency_ps(int val);
+    `ASSERT_I(LegalLatencyPs_A, val >= 0)
+    prim_cdc_latency_ps = val;
+  endfunction
+
+  // Internal method called after prim_cdc_rand_delay_mode is set.
+  function automatic void update_settings();
+    mode = '0;
+    mode[prim_cdc_rand_delay_mode] = 1'b1;
+    if (prim_cdc_rand_delay_mode == RandDelayModeSlow) out_data_mask = '1;
+    if (prim_cdc_rand_delay_mode == RandDelayModeOnce) fast_randomize(out_data_mask);
+  endfunction
+
+  // A slightly more performant version of std::randomize(), using $urandom.
+  //
+  // Empirically, using std::randomize() has been found to be slower than $urandom, since the latter
+  // operates on a fixed data width of 32-bits. There may be an incredibly large number of instances
+  // of this module in the DUT, causing this preformance hit to be noticeable. This method randomizes
+  // the data piece-wise, 32-bits at a time using $urandom instead.
+  function automatic void fast_randomize(output logic [DataWidth-1:0] data);
+    for (int i = 0; i < DataWidth; i += 32) data = (data << 32) | $urandom();
+  endfunction
+
+  // Retrieves settings via plusargs.
+  //
+  // prefix is a string prefix to retrieve the plusarg.
+  // Returns 1 if prim_cdc_rand_delay_mode was set, else 0.
+  function automatic bit get_plusargs(string prefix = "");
+    string mode = "";
+    int unsigned val;
+    if (prefix != "") prefix = {prefix, "."};
+    void'($value$plusargs({prefix, "prim_cdc_rand_delay_mode=%0s"}, mode));
+    `ASSERT_I(ValidMode_A, mode inside {"", "disable", "slow", "once", "interval"})
+    void'($value$plusargs({prefix, "prim_cdc_rand_delay_interval=%0d"},
+                          prim_cdc_rand_delay_interval));
+    void'($value$plusargs({prefix, "prim_cdc_rand_delay_disable_weight=%0d"},
+                          prim_cdc_rand_delay_disable_weight));
+    void'($value$plusargs({prefix, "prim_cdc_rand_delay_slow_weight=%0d"},
+                          prim_cdc_rand_delay_slow_weight));
+    void'($value$plusargs({prefix, "prim_cdc_rand_delay_once_weight=%0d"},
+                          prim_cdc_rand_delay_once_weight));
+    void'($value$plusargs({prefix, "prim_cdc_rand_delay_interval_weight=%0d"},
+                          prim_cdc_rand_delay_interval_weight));
+    void'($value$plusargs({prefix, "prim_cdc_jitter_ps=%0d"}, prim_cdc_jitter_ps));
+    void'($value$plusargs({prefix, "prim_cdc_latency_ps=%0d"}, prim_cdc_latency_ps));
+
+    case (mode)
+      "disable":  prim_cdc_rand_delay_mode = RandDelayModeDisable;
+      "slow":     prim_cdc_rand_delay_mode = RandDelayModeSlow;
+      "once":     prim_cdc_rand_delay_mode = RandDelayModeOnce;
+      "interval": prim_cdc_rand_delay_mode = RandDelayModeInterval;
+      default:    return 0;
+    endcase
+    return 1;
+  endfunction
 
   initial begin
-    // DV can override these from command line as desired.
-    void'($value$plusargs("prim_cdc_latency_ps=%0d",            prim_cdc_latency_ps));
-    void'($value$plusargs("prim_cdc_jitter_ps=%0d",             prim_cdc_jitter_ps));
-    void'($value$plusargs("prim_cdc_num_src_data_changes=%0d",  prim_cdc_num_src_data_changes));
-    void'($value$plusargs("prim_cdc_rand_disable_weight=%0d",   prim_cdc_rand_disable_weight));
-    void'($value$plusargs("prim_cdc_rand_slow_weight=%0d",      prim_cdc_rand_slow_weight));
-    void'($value$plusargs("prim_cdc_rand_once_weight=%0d",      prim_cdc_rand_once_weight));
-    void'($value$plusargs("prim_cdc_rand_interval_weight=%0d",  prim_cdc_rand_interval_weight));
-    void'($value$plusargs("prim_cdc_rand_full_weight=%0d",      prim_cdc_rand_full_weight));
+    bit res;
 
-    if (!$value$plusargs("prim_cdc_rand_mode=%0d", prim_cdc_rand_mode)) begin
-      // By default pick the most performant(*) random delay mode for normal test
-      // development/simulation.
-      //
-      // (*): Need to do some performance experiments to check that the chosen mode is actually the
-      //      most performant.
-      prim_cdc_rand_mode = PrimCdcRandDelaySlow;
+    // Command-line override via plusargs (global, applies to ALL instances).
+    // Example: +prim_cdc_rand_delay_mode=once
+    res = get_plusargs();
+
+    // Command-line override via plusargs (instance-specific).
+    // Example: +tb.dut.u_foo.u_bar.u_flop_2sync.u_prim_cdc_rand_delay.prim_cdc_latency_ps=200
+    res |= get_plusargs($sformatf("%m"));
+
+    if (!res) begin
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(prim_cdc_rand_delay_mode,
+        prim_cdc_rand_delay_mode dist {
+          RandDelayModeDisable   :/ prim_cdc_rand_delay_disable_weight,
+          RandDelayModeSlow      :/ prim_cdc_rand_delay_slow_weight,
+          RandDelayModeOnce      :/ prim_cdc_rand_delay_once_weight,
+          RandDelayModeInterval  :/ prim_cdc_rand_delay_interval_weight
+        };,
+      , $sformatf("%m"))
     end
-
-    unique case (prim_cdc_rand_mode)
-      PrimCdcRandDelayDisable: begin
-        // If CDC randomization disabled, behave like a passthrough
-        en_passthru = 1'b1;
-      end
-      PrimCdcRandDelaySlow: begin
-        out_data_mask = '1;
-      end
-      PrimCdcRandDelayOnce: begin
-        void'(std::randomize(out_data_mask));
-      end
-      PrimCdcRandDelayInterval: begin
-        out_randomize_en = 1'b1;
-        en_rand_interval_mask = 1'b1;
-      end
-      PrimCdcRandDelayFull: begin
-        out_randomize_en = 1'b1;
-      end
-      default: begin
-        $fatal("%0d is an invalid randomization mode", prim_cdc_rand_mode);
-      end
-    endcase
+    update_settings();
   end
 
   // TODO: Run some performance experiments using this implementation versus an implementation that
-  //       primarily uses `forever` blocks rather than RTL constructs.
-  //       Need to also check if this alternate implementation is still valid when
-  //       compiling/simulating the design.
+  // primarily uses `forever` blocks rather than RTL constructs. Need to also check if this
+  // alternate implementation is still valid when compiling/simulating the design.
   if (UseSourceClock) begin : gen_use_source_clock
-    // If relying on src_clk, insert a delay on the fastest clock
+
+    // If relying on src_clk, insert a delay on the faster clock.
     always_ff @(posedge src_clk or posedge dst_clk) begin
       src_data_delayed <= src_data;
     end
     assign src_data_with_latency = src_data;
+
   end else begin : gen_no_use_source_clock
-    // If not relying on src_clk, delay by a fixed number of ps determined by the module parameters
-    always_comb begin
+
+    // If not relying on src_clk, delay by a fixed number of ps determined by the module parameters.
+    always @(src_data) begin
       src_data_with_latency <= #(prim_cdc_latency_ps * 1ps) src_data;
     end
-
-    always_comb begin
+    always @(src_data_with_latency) begin
       src_data_delayed <= #(prim_cdc_jitter_ps * 1ps) src_data_with_latency;
     end
+
   end : gen_no_use_source_clock
 
-  // Randomize delayed random data selection only when input data changes
+  // Randomize delayed random data selection when input data changes, every
+  // prim_cdc_rand_delay_interval number of changes.
+  int counter = 0;
   always @(src_data_with_latency) begin
-    if ((out_randomize_en && !en_rand_interval_mask) ||
-        (en_rand_interval_mask && counter == prim_cdc_num_src_data_changes) begin
-      for (int i = 0; i < DataWidth; i += 32) begin
-        // As of VCS 2017.12-SP2-6, it is slower to randomize for a DataWidth <= 32 with
-        // std::randomize() than using $urandom(), which may be more noticeable here as this module
-        // can potentially have a large number of instances.
-        //
-        // Whenever time permits, it will be interesting to run some perf tests with the current VCS
-        // version and see what updated performance looks like.
-        out_data_mask = (out_data_mask << 32) | $urandom();
-      end
-    end
-
-    if (en_rand_interval_mask) begin
-      counter <= (counter == prim_cdc_num_src_data_changes) ? 0 : counter + 1;
+    if (mode[RandDelayModeInterval]) begin
+      counter <= (counter >= prim_cdc_rand_delay_interval) ? '0 : counter + 1;
+      if (counter == prim_cdc_rand_delay_interval) fast_randomize(out_data_mask);
+    end else begin
+      counter <= 0;
     end
   end
 
-  assign dst_data = (en_passthru) ?
-                    (src_data) :
+  assign dst_data = mode[RandDelayModeDisable] ? src_data :
                     ((src_data_delayed & out_data_mask) | (src_data_with_latency & ~out_data_mask));
+
+`else
+
+  // Direct pass through.
+  assign dst_data = src_data;
+
+`endif  // DISABLE_PRIM_CDC_RAND_DELAY
+
+`else
+
+  // Direct pass through.
+  assign dst_data = src_data;
+
+`endif  // SIMULATION
 
   //TODO: coverage
 
