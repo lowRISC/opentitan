@@ -11,6 +11,8 @@ filesets:
   files_rtl:
     files:
       - rtl/clkgen_xil7series.sv
+      # piggy-back here for now
+      - rtl/usr_access_xil7series.sv
     file_type: systemVerilogSource
 
 targets:

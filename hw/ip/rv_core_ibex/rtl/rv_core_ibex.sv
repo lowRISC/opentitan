@@ -106,6 +106,9 @@ module rv_core_ibex
   output otp_ctrl_pkg::sram_otp_key_req_t icache_otp_key_o,
   input  otp_ctrl_pkg::sram_otp_key_rsp_t icache_otp_key_i,
 
+  // fpga build info
+  input [31:0] fpga_info_i,
+
   // interrupts and alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o
@@ -787,5 +790,8 @@ module rv_core_ibex
   logic unused_reg2hw;
   assign unused_reg2hw = |reg2hw.rnd_data.q;
 
+
+  // fpga build info hook-up
+  assign hw2reg.fpga_info.d = fpga_info_i;
 
 endmodule

@@ -1051,6 +1051,7 @@
         'otp_ctrl.otp_alert'              : 'otp_alert',
         'otp_ctrl.otp_obs'                : 'otp_obs',
         'rstmgr_aon.por_n'                : 'por_n'
+        'rv_core_ibex.fpga_info'          : 'fpga_info'
         'sensor_ctrl.ast_alert'           : 'sensor_ctrl_ast_alert',
         'sensor_ctrl.ast_status'          : 'sensor_ctrl_ast_status',
         'sensor_ctrl.ast2pinmux'          : 'ast2pinmux',
