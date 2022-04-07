@@ -158,6 +158,14 @@
       package: "otp_ctrl_pkg",
     },
 
+    { struct:  "logic",
+      type:    "uni",
+      name:    "fpga_info",
+      act:     "rcv",
+      width:   "32",
+      package: "",
+    },
+
   ],
   param_list: [
     # Random netlist constants
@@ -802,6 +810,25 @@
               !!RND_DATA is fips quality.
 
               When !!RND_STATUS.RND_DATA_VALID is 0, this bit has no meaning.
+            '''
+          },
+        ]
+      },
+
+      { name: "FPGA_INFO",
+        desc: '''
+          FPGA build timestamp info.
+          This register only contains valid data for fpga, for all other variants it is simply 0.
+        ''',
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext: "true"
+        fields: [
+          { bits: "31:0",
+            name: "VAL",
+            resval: "0x0"
+            desc: '''
+              FPGA build timestamp information.
             '''
           },
         ]

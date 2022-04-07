@@ -784,6 +784,11 @@ module chip_earlgrey_cw310 #(
     .rst_no(rst_n)
   );
 
+  logic [31:0] fpga_info;
+  usr_access_xil7series u_info (
+    .info_o(fpga_info)
+  );
+
   ast_pkg::clks_osc_byp_t clks_osc_byp;
   assign clks_osc_byp = '{
     usb: clk_usb_48mhz,
@@ -1009,6 +1014,7 @@ module chip_earlgrey_cw310 #(
     .all_clk_byp_ack_i            ( all_clk_byp_ack       ),
     .hi_speed_sel_o               ( hi_speed_sel          ),
     .div_step_down_req_i          ( div_step_down_req     ),
+    .fpga_info_i                  ( fpga_info             ),
     .ast_tl_req_o                 ( base_ast_bus               ),
     .ast_tl_rsp_i                 ( ast_base_bus               ),
     .adc_req_o                    ( adc_req                    ),

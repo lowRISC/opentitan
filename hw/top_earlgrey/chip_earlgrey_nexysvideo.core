@@ -14,6 +14,7 @@ filesets:
       - lowrisc:tool:chip_earlgrey_nexysvideo_size_check
     files:
       - rtl/clkgen_xil7series.sv
+      - rtl/usr_access_xil7series.sv
       - rtl/autogen/chip_earlgrey_nexysvideo.sv
     file_type: systemVerilogSource
 

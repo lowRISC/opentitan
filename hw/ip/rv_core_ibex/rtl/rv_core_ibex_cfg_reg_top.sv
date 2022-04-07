@@ -191,6 +191,8 @@ module rv_core_ibex_cfg_reg_top (
   logic rnd_status_re;
   logic rnd_status_rnd_data_valid_qs;
   logic rnd_status_rnd_data_fips_qs;
+  logic fpga_info_re;
+  logic [31:0] fpga_info_qs;
 
   // Register instances
   // R[alert_test]: V(True)
@@ -993,8 +995,23 @@ module rv_core_ibex_cfg_reg_top (
   );
 
 
+  // R[fpga_info]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_fpga_info (
+    .re     (fpga_info_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.fpga_info.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (fpga_info_qs)
+  );
 
-  logic [23:0] addr_hit;
+
+
+  logic [24:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == RV_CORE_IBEX_ALERT_TEST_OFFSET);
@@ -1021,6 +1038,7 @@ module rv_core_ibex_cfg_reg_top (
     addr_hit[21] = (reg_addr == RV_CORE_IBEX_ERR_STATUS_OFFSET);
     addr_hit[22] = (reg_addr == RV_CORE_IBEX_RND_DATA_OFFSET);
     addr_hit[23] = (reg_addr == RV_CORE_IBEX_RND_STATUS_OFFSET);
+    addr_hit[24] = (reg_addr == RV_CORE_IBEX_FPGA_INFO_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1051,7 +1069,8 @@ module rv_core_ibex_cfg_reg_top (
                (addr_hit[20] & (|(RV_CORE_IBEX_CFG_PERMIT[20] & ~reg_be))) |
                (addr_hit[21] & (|(RV_CORE_IBEX_CFG_PERMIT[21] & ~reg_be))) |
                (addr_hit[22] & (|(RV_CORE_IBEX_CFG_PERMIT[22] & ~reg_be))) |
-               (addr_hit[23] & (|(RV_CORE_IBEX_CFG_PERMIT[23] & ~reg_be)))));
+               (addr_hit[23] & (|(RV_CORE_IBEX_CFG_PERMIT[23] & ~reg_be))) |
+               (addr_hit[24] & (|(RV_CORE_IBEX_CFG_PERMIT[24] & ~reg_be)))));
   end
   assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -1137,6 +1156,7 @@ module rv_core_ibex_cfg_reg_top (
   assign err_status_recov_core_err_wd = reg_wdata[10];
   assign rnd_data_re = addr_hit[22] & reg_re & !reg_error;
   assign rnd_status_re = addr_hit[23] & reg_re & !reg_error;
+  assign fpga_info_re = addr_hit[24] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin
@@ -1245,6 +1265,10 @@ module rv_core_ibex_cfg_reg_top (
       addr_hit[23]: begin
         reg_rdata_next[0] = rnd_status_rnd_data_valid_qs;
         reg_rdata_next[1] = rnd_status_rnd_data_fips_qs;
+      end
+
+      addr_hit[24]: begin
+        reg_rdata_next[31:0] = fpga_info_qs;
       end
 
       default: begin

@@ -675,6 +675,7 @@
         # 'otp_ctrl.otp_ast_pwr_seq_h'   : '',
         # 'otp_ctrl.otp_alert'           : 'otp_alert',
         'rstmgr_aon.por_n'               : 'por_n'
+        'rv_core_ibex.fpga_info'         : 'fpga_info'
         'usbdev.usb_rx_d'                : '',
         'usbdev.usb_tx_d'                : '',
         'usbdev.usb_tx_se0'              : '',

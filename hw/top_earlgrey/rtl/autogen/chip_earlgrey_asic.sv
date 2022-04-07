@@ -1158,7 +1158,10 @@ module chip_earlgrey_asic (
     .dft_hold_tap_sel_i           ( '0                         ),
     .scan_rst_ni                  ( scan_rst_n                 ),
     .scan_en_i                    ( scan_en                    ),
-    .scanmode_i                   ( scanmode                   )
+    .scanmode_i                   ( scanmode                   ),
+
+    // FPGA build info
+    .fpga_info_i                  ( '0                         )
   );
 
 

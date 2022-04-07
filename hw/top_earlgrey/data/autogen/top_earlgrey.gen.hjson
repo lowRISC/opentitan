@@ -7435,6 +7435,20 @@
           index: 2
         }
         {
+          name: fpga_info
+          struct: logic
+          type: uni
+          act: rcv
+          width: 32
+          inst_name: rv_core_ibex
+          default: ""
+          package: ""
+          external: true
+          top_signame: fpga_info
+          conn_type: false
+          index: -1
+        }
+        {
           name: corei_tl_h
           struct: tl
           package: tlul_pkg
@@ -8208,6 +8222,7 @@
       otp_ctrl.otp_alert: otp_alert
       otp_ctrl.otp_obs: otp_obs
       rstmgr_aon.por_n: por_n
+      rv_core_ibex.fpga_info: fpga_info
       sensor_ctrl.ast_alert: sensor_ctrl_ast_alert
       sensor_ctrl.ast_status: sensor_ctrl_ast_status
       sensor_ctrl.ast2pinmux: ast2pinmux
@@ -18449,6 +18464,20 @@
         index: 2
       }
       {
+        name: fpga_info
+        struct: logic
+        type: uni
+        act: rcv
+        width: 32
+        inst_name: rv_core_ibex
+        default: ""
+        package: ""
+        external: true
+        top_signame: fpga_info
+        conn_type: false
+        index: -1
+      }
+      {
         name: corei_tl_h
         struct: tl
         package: tlul_pkg
@@ -19725,6 +19754,18 @@
         conn_type: false
         index: -1
         netname: por_n
+      }
+      {
+        package: ""
+        struct: logic
+        signame: fpga_info_i
+        width: 32
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: fpga_info
       }
       {
         package: ast_pkg
