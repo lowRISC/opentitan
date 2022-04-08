@@ -232,11 +232,11 @@ void sca_init(sca_trigger_source_t trigger, sca_peripherals_t enable) {
   sca_disable_peripherals(~enable);
 }
 
-void sca_get_uart(const dif_uart_t **uart_out) {
+const dif_uart_t *sca_get_uart(void) {
 #if !OT_IS_ENGLISH_BREAKFAST
-  *uart_out = &uart1;
+  return &uart1;
 #else
-  *uart_out = &uart0;
+  return &uart0;
 #endif
 }
 

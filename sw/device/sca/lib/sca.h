@@ -112,9 +112,9 @@ void sca_init(sca_trigger_source_t trigger, sca_peripherals_t enable);
 /**
  * Returns a handle to the intialized UART device.
  *
- * @param[out] uart_out Handle to the initialized UART device.
+ * @return Handle to the initialized UART device.
  */
-void sca_get_uart(const dif_uart_t **uart_out);
+const dif_uart_t *sca_get_uart(void);
 
 /**
  * Sets capture trigger high.

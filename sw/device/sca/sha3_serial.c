@@ -476,15 +476,12 @@ static void sha3_serial_single_absorb(const uint8_t *msg, size_t msg_len) {
  * UART.
  */
 int main(void) {
-  const dif_uart_t *uart1;
-
   sca_init(kScaTriggerSourceKmac, kScaPeripheralKmac);
 
   LOG_INFO("Running sha3_serial");
 
   LOG_INFO("Initializing simple serial interface to capture board.");
-  sca_get_uart(&uart1);
-  simple_serial_init(uart1);
+  simple_serial_init(sca_get_uart());
   simple_serial_register_handler('k', sha3_serial_set_key);
   simple_serial_register_handler('p', sha3_serial_single_absorb);
 

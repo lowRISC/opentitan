@@ -194,15 +194,12 @@ static void init_aes(void) {
  * UART.
  */
 int main(void) {
-  const dif_uart_t *uart1;
-
   sca_init(kScaTriggerSourceAes, kScaPeripheralAes);
-  sca_get_uart(&uart1);
 
   LOG_INFO("Running AES serial");
 
   LOG_INFO("Initializing simple serial interface to capture board.");
-  simple_serial_init(uart1);
+  simple_serial_init(sca_get_uart());
   simple_serial_register_handler('k', aes_serial_set_key);
   simple_serial_register_handler('p', aes_serial_single_encrypt);
   simple_serial_register_handler('b', aes_serial_batch_encrypt);
