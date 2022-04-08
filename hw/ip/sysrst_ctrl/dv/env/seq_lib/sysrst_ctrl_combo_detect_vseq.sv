@@ -106,15 +106,12 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
 
   task body();
     uvm_reg_data_t rdata;
-    bit [3:0] int_act_set;
-    bit [3:0] bat_act_set;
-    bit [3:0] ec_act_set;
-    bit [3:0] rst_act_set;
     bit triggered[4];
     uint16_t [3:0] set_duration;
     uint16_t [3:0] get_duration;
     uvm_reg_data_t get_action;
     bit[4:0] get_trigger_combo[4];
+    bit int_act_triggered,  bat_act_triggered, ec_act_triggered, rst_act_triggered;
 
     // Enable interrupt
     ral.intr_enable.set(1);
@@ -172,13 +169,16 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
           // Check if the interrupt has raised
           // NOTE: The interrupt will only raise if the interrupt
           // combo action is set
-          int_act_set[i] = get_field_val(ral.com_out_ctl[i].interrupt, get_action[i]);
-          bat_act_set[i] = get_field_val(ral.com_out_ctl[i].bat_disable, get_action[i]);
-          ec_act_set[i] = get_field_val(ral.com_out_ctl[i].ec_rst, get_action[i]);
-          rst_act_set[i] = get_field_val(ral.com_out_ctl[i].rst_req, get_action[i]);
-
+          for (int i = 0; i <= 3; i++) begin
+            if (cycles > (get_duration[i] + set_key_timer) && triggered[i]) begin
+              int_act_triggered |= get_field_val(ral.com_out_ctl[i].interrupt, get_action[i]);
+              bat_act_triggered |= get_field_val(ral.com_out_ctl[i].bat_disable, get_action[i]);
+              ec_act_triggered |= get_field_val(ral.com_out_ctl[i].ec_rst, get_action[i]);
+              rst_act_triggered |= get_field_val(ral.com_out_ctl[i].rst_req, get_action[i]);
+            end
+          end
           cfg.clk_aon_rst_vif.wait_clks(1);
-          if (int_act_set[i]) begin
+          if (int_act_triggered) begin
             check_interrupts(.interrupts(1 << IntrSysrstCtrl), .check_set(1));
 
             // Read the status register
@@ -197,7 +197,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
 
           // If bat_disable trigger action is set then check if there is a transition
           // on cio_bat_disable_o signal
-          if (bat_act_set[i]) begin
+          if (bat_act_triggered) begin
             `DV_CHECK_EQ(cfg.vif.bat_disable, 1);
           end else begin
             `DV_CHECK_EQ(cfg.vif.bat_disable, 0);
@@ -205,24 +205,24 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
 
           // If reset req trigger action is set then check if there is a event
           // on aon_sysrst_ctrl_rst_req_o pin
-          if (rst_act_set[i]) begin
+          if (rst_act_triggered) begin
            `DV_CHECK_EQ(cfg.vif.sysrst_ctrl_rst_req, 1);
           end else begin
             `DV_CHECK_EQ(cfg.vif.sysrst_ctrl_rst_req, 0);
           end
 
-          if (ec_act_set[i]) begin
+          if (ec_act_triggered) begin
             monitor_ec_rst_low(set_pulse_width);
           end else begin
             check_ec_rst_inactive(set_pulse_width);
             `DV_CHECK_EQ(cfg.vif.ec_rst_l_out, 1);
           end
 
-          if (bat_act_set[i] == 1 || rst_act_set[i] == 1) begin
-           cfg.clk_aon_rst_vif.apply_reset();
-           // apply_reset will set the registers to their default values
-           // wait for sometime and reconfigure the registers for next iteration
-           config_register();
+          if (bat_act_triggered || rst_act_triggered) begin
+            cfg.clk_aon_rst_vif.apply_reset();
+            // apply_reset will set the registers to their default values
+            // wait for sometime and reconfigure the registers for next iteration
+            config_register();
           end
           cfg.clk_aon_rst_vif.wait_clks(10);
         end
@@ -231,4 +231,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
   endtask : body
 
 endclass : sysrst_ctrl_combo_detect_vseq
+
+
+
 
