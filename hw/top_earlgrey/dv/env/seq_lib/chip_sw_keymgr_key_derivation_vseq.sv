@@ -167,6 +167,9 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
 
       `DV_CHECK_EQ(unmask_act_key, unmask_exp_key)
     end
+
+    // The next operation is disable, and key will be wiped and changed every cycle.
+    $assertoff(0, "tb.dut.top_earlgrey.u_kmac.u_kmac_core.KeyDataStable_M");
   endtask
 
   virtual function bit [keymgr_pkg::KeyWidth-1:0] get_unmasked_key(key_shares_t two_share_key);

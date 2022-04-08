@@ -221,6 +221,10 @@ bool test_main(void) {
     keymgr_testutils_generate_versioned_key(&keymgr, sideload_params);
     LOG_INFO("Keymgr generated HW output for Otbn at OwnerIntKey State");
 
+    keymgr_testutils_disable(&keymgr);
+    keymgr_testutils_check_state(&keymgr, kDifKeymgrStateDisabled);
+    LOG_INFO("Keymgr entered Disabled state");
+
     return true;
   } else {
     LOG_FATAL("Unexpected reset reason unexpected: %0x", info);
