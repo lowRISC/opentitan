@@ -141,7 +141,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     @local_config_cc_toolchains//... \
     @local_config_platform//... \
     @local_config_sh//... \
-    @python3_9_toolchains//... \
+    @python3_toolchains//... \
     @riscv-compliance//... \
     @rust_darwin_aarch64_toolchains//... \
     @rust_darwin_x86_64_toolchains//... \
