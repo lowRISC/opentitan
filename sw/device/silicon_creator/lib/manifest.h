@@ -149,9 +149,9 @@ typedef struct manifest {
    */
   sigverify_rsa_buffer_t modulus;
   /**
-   * Exponent of the signer's RSA public key.
+   * Address translation (hardened boolean).
    */
-  uint32_t exponent;
+  uint32_t address_translation;
   /**
    * Manifest identifier.
    */
@@ -214,7 +214,7 @@ typedef struct manifest {
 OT_ASSERT_MEMBER_OFFSET(manifest_t, signature, 0);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, usage_constraints, 384);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, modulus, 432);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, exponent, 816);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, address_translation, 816);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, identifier, 820);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, length, 824);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, version_major, 828);

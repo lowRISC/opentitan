@@ -43,7 +43,7 @@ pub struct Manifest {
     pub signature: SigverifyRsaBuffer,
     pub usage_constraints: ManifestUsageConstraints,
     pub modulus: SigverifyRsaBuffer,
-    pub exponent: u32,
+    pub address_translation: u32,
     pub identifier: u32,
     pub length: u32,
     pub version_major: u32,
@@ -117,7 +117,7 @@ pub fn check_manifest_layout() {
     assert_eq!(offset_of!(Manifest, signature), 0);
     assert_eq!(offset_of!(Manifest, usage_constraints), 384);
     assert_eq!(offset_of!(Manifest, modulus), 432);
-    assert_eq!(offset_of!(Manifest, exponent), 816);
+    assert_eq!(offset_of!(Manifest, address_translation), 816);
     assert_eq!(offset_of!(Manifest, identifier), 820);
     assert_eq!(offset_of!(Manifest, length), 824);
     assert_eq!(offset_of!(Manifest, version_major), 828);

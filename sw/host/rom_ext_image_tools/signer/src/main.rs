@@ -133,6 +133,7 @@ fn update_image_manifest(
     *image.manifest = Manifest {
         identifier,
         length: u32::try_from(image.bytes().len())?,
+        address_translation: 0x739u32, // kHardenedBoolTrue
         code_start: {
             let addr = u32::try_from(
                 elf.section_by_name(".vectors")
@@ -163,14 +164,6 @@ fn update_image_manifest(
         },
         ..Default::default()
     };
-
-    let exponent_be = key.public_exponent_be();
-    let dest = image.manifest.exponent.as_bytes_mut().iter_mut();
-    let src = exponent_be.iter().rev().copied();
-    ensure!(dest.len() >= src.len(), "Unexpected exponent length.");
-    for (d, s) in Iterator::zip(dest, src) {
-        *d = s;
-    }
 
     let modulus_be = key.public_modulus_be();
     let dest = image.manifest.modulus.as_bytes_mut().iter_mut();

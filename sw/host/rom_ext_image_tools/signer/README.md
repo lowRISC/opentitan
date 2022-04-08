@@ -59,7 +59,7 @@ format. Instead the file paths to these are specified.
 
 Please note that some field values are known upfront, however other must be
 obtained at runtime. Fields like (but not limited to) signature public modulus
-and signature key public exponent are extracted separately.
+are extracted separately.
 
 Complex fields such as "Peripheral Lockdown Info" have a separate data
 structure.

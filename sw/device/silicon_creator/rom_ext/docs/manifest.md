@@ -34,7 +34,7 @@ the manifest is 896 bytes.
 | `manuf_state_owner`   | 4            | 4                 | 424            | `uint32_t`     |
 | `life_cycle_state`    | 4            | 4                 | 428            | `uint32_t`     |
 | `modulus`             | 384          | 4                 | 432            | `uint32_t[96]` |
-| `exponent`            | 4            | 4                 | 816            | `uint32_t`     |
+| `address_translation` | 4            | 4                 | 816            | `uint32_t`     |
 | `identifier`          | 4            | 4                 | 820            | `uint32_t`     |
 | `length`              | 4            | 4                 | 824            | `uint32_t`     |
 | `version_major`       | 4            | 4                 | 828            | `uint32_t`     |
@@ -83,8 +83,10 @@ the manifest is 896 bytes.
 
 *   `modulus`:  Modulus of the signer's 3072-bit RSA public key.
 
-*   `exponent`: Exponent of the signer's RSA public key. The only values
-    supported by OpenTitan are 3 and 65537.
+*   `address_translation`: A hardened boolean representing whether address
+    translation should be used for the `ROM_EXT` (see the [Ibex wrapper
+    documentation](https://docs.opentitan.org/hw/ip/rv_core_ibex/doc/)).
+    This value should be either `0x739` (true) or `0x1d4` (false).
 
 *   `identifier`: Image identifier used to identify boot stage images. The
     value of this field must be `0x4552544f` (ASCII: "OTRE") for a `ROM_EXT`
