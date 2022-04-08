@@ -59,6 +59,57 @@
     for clock in rb.clocks.values():
       reg_clk_expr = clock.clock
       reg_rst_expr = clock.reset
+
+  # A map from "register" (which might be a multiregister) to a pair (r0, srs)
+  # where r0 is the prototype register and srs is a list of single registers
+  # corresponding to the original register.
+  r0_srs = {}
+
+  # A big map from field to "finst names". These names are a pair (fld_pfx,
+  # name), where fld_pfx is the name used to index into hw2reg / reg2hw
+  # structures (something like "my_reg.my_field") and name is the name that
+  # gets prefixed onto local signals (something like "my_reg_my_field").
+  finst_names = {}
+
+  for r in rb.all_regs:
+    if isinstance(r, MultiRegister):
+      r0 = r.reg
+      srs = r.regs
+    else:
+      r0 = r
+      srs = [r]
+
+    r0_srs[r] = (r0, srs)
+
+    reg_name = r0.name.lower()
+    fld_count = 0
+    for sr_idx, sr in enumerate(srs):
+      sr_name = sr.name.lower()
+      for fidx, field in enumerate(sr.fields):
+        if isinstance(r, MultiRegister):
+          sig_idx = fld_count if r.is_homogeneous() else sr_idx
+          fsig_pfx = '{}[{}]'.format(reg_name, sig_idx)
+        else:
+          fsig_pfx = reg_name
+
+        fld_count += 1
+
+        fld_name = field.name.lower()
+        if len(sr.fields) == 1:
+          finst_name = sr_name
+          fsig_name = fsig_pfx
+        else:
+          finst_name = sr_name + '_' + fld_name
+          if isinstance(r, MultiRegister):
+            if r.is_homogeneous():
+              fsig_name = fsig_pfx
+            else:
+              fsig_name = '{}.{}'.format(fsig_pfx, get_basename(fld_name))
+          else:
+            fsig_name = '{}.{}'.format(fsig_pfx, fld_name)
+
+        finst_names[field] = (fsig_name, finst_name)
+
 %>
 `include "prim_assert.sv"
 
@@ -445,15 +496,8 @@ ${field_sig_decl(f, sig_name, r.hwext, r.shadowed, r.async_clk)}\
   // Register instances
   % for r in rb.all_regs:
 <%
-      if isinstance(r, MultiRegister):
-        r0 = r.reg
-        srs = r.regs
-      else:
-        r0 = r
-        srs = [r]
-
+      r0, srs = r0_srs[r]
       reg_name = r0.name.lower()
-      fld_count = 0
 %>\
     % for sr_idx, sr in enumerate(srs):
 <%
@@ -487,27 +531,8 @@ ${reg_hdr}
       % endif
       % for fidx, field in enumerate(sr.fields):
 <%
-          if isinstance(r, MultiRegister):
-            sig_idx = fld_count if r.is_homogeneous() else sr_idx
-            fsig_pfx = '{}[{}]'.format(reg_name, sig_idx)
-          else:
-            fsig_pfx = reg_name
-
-          fld_count += 1
-
           fld_name = field.name.lower()
-          if len(sr.fields) == 1:
-            finst_name = sr_name
-            fsig_name = fsig_pfx
-          else:
-            finst_name = sr_name + '_' + fld_name
-            if isinstance(r, MultiRegister):
-              if r.is_homogeneous():
-                fsig_name = fsig_pfx
-              else:
-                fsig_name = '{}.{}'.format(fsig_pfx, get_basename(fld_name))
-            else:
-              fsig_name = '{}.{}'.format(fsig_pfx, fld_name)
+          fsig_name, finst_name = finst_names[field]
 %>\
         % if len(sr.fields) > 1:
   //   F[${fld_name}]: ${field.bits.msb}:${field.bits.lsb}
