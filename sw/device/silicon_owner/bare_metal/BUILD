@@ -52,8 +52,8 @@ opentitan_flash_binary(
     name = "bare_metal_example_slot_a",
     srcs = ["bare_metal_start.S"],
     deps = [
-        ":ld_slot_a",
         ":bare_metal_example",
+        ":ld_slot_a",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_section",
     ],
@@ -63,8 +63,8 @@ opentitan_flash_binary(
     name = "bare_metal_example_slot_b",
     srcs = ["bare_metal_start.S"],
     deps = [
-        ":ld_slot_b",
         ":bare_metal_example",
+        ":ld_slot_b",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_section",
     ],
