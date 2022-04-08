@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 // Description:
-// The reset test randomly introduces external resets, power glitches, and escalation resets.
+// The reset test randomly introduces external resets.
 class pwrmgr_sw_reset_vseq extends pwrmgr_base_vseq;
 
   `uvm_object_utils(pwrmgr_sw_reset_vseq)
@@ -12,6 +12,7 @@ class pwrmgr_sw_reset_vseq extends pwrmgr_base_vseq;
   constraint wakeups_en_c {wakeups_en == 0;}
 
   task body();
+    int exp_rst;
     wait_for_fast_fsm_active();
 
     check_reset_status('0);
@@ -23,8 +24,14 @@ class pwrmgr_sw_reset_vseq extends pwrmgr_base_vseq;
       setup_interrupt(.enable(en_intr));
 
       cfg.pwrmgr_vif.sw_rst_req_i = $urandom_range(0,15);
-
+      exp_rst = (cfg.pwrmgr_vif.sw_rst_req_i == prim_mubi_pkg::MuBi4True);
       cfg.slow_clk_rst_vif.wait_clks(4);
+
+      // sw reset causes fast state machine transition to lowpower state
+      if (exp_rst == 1) begin
+        `DV_SPINWAIT(wait(cfg.pwrmgr_vif.fast_state != pwrmgr_pkg::FastPwrStateActive);,
+                     "timeout waiting for non fast-active state",1000)
+      end
 
       // This read is not always possible since the CPU may be off.
 

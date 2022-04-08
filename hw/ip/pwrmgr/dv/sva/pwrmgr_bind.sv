@@ -57,7 +57,10 @@ module pwrmgr_bind;
     .clk_i,
     .rst_ni,
     .rom_intg_chk_dis(u_fsm.rom_intg_chk_dis),
+    .rom_intg_chk_ok(u_fsm.rom_intg_chk_ok),
     .lc_dft_en_i,
-    .lc_hw_debug_en_i
+    .lc_hw_debug_en_i,
+    .rom_ctrl_done_i(u_fsm.rom_ctrl_done_i),
+    .rom_ctrl_good_i(u_fsm.rom_ctrl_good_i)
   );
 endmodule

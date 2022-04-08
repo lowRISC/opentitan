@@ -7,6 +7,7 @@
 // these assertions will also be useful at full chip level.
 interface pwrmgr_rstmgr_sva_if
   import pwrmgr_pkg::*, pwrmgr_reg_pkg::NumRstReqs;
+  import pwrmgr_clk_ctrl_agent_pkg::*;
 (
   input logic                            clk_i,
   input logic                            rst_ni,
@@ -39,6 +40,15 @@ interface pwrmgr_rstmgr_sva_if
   localparam int MIN_RST_CYCLES = 0;
   localparam int MAX_RST_CYCLES = 4;
   `define RST_CYCLES ##[MIN_RST_CYCLES:MAX_RST_CYCLES]
+
+  // output reset cycle with a clk enalbe disable
+  localparam int MIN_MAIN_RST_CYCLES = 0;
+  localparam int MAX_MAIN_RST_CYCLES = pwrmgr_clk_ctrl_agent_pkg::MAIN_CLK_DELAY_MAX;
+  `define MAIN_RST_CYCLES ##[MIN_MAIN_RST_CYCLES:MAX_MAIN_RST_CYCLES]
+
+  localparam int MIN_ESC_RST_CYCLES = 0;
+  localparam int MAX_ESC_RST_CYCLES = pwrmgr_clk_ctrl_agent_pkg::ESC_CLK_DELAY_MAX;
+  `define ESC_RST_CYCLES ##[MIN_ESC_RST_CYCLES:MAX_ESC_RST_CYCLES]
 
   bit disable_sva;
   bit reset_or_disable;
@@ -89,11 +99,11 @@ interface pwrmgr_rstmgr_sva_if
     `ASSERT(HwResetOn_A,
             $rose(
                 rstreqs_i[rst] && reset_en[rst]
-            ) |-> `RST_CYCLES rstreqs[rst], clk_slow_i, reset_or_disable || !check_rstreqs_en)
+            ) |-> `MAIN_RST_CYCLES rstreqs[rst], clk_slow_i, reset_or_disable || !check_rstreqs_en)
     `ASSERT(HwResetOff_A,
             $fell(
                 rstreqs_i[rst] && reset_en[rst]
-            ) |-> `RST_CYCLES !rstreqs[rst], clk_slow_i, reset_or_disable || !check_rstreqs_en)
+            ) |-> `MAIN_RST_CYCLES !rstreqs[rst], clk_slow_i, reset_or_disable || !check_rstreqs_en)
   end
 
   // This is used to ignore main_rst_req_i (wired to rst_main_n) if it happens during low power,
@@ -112,23 +122,26 @@ interface pwrmgr_rstmgr_sva_if
   `ASSERT(MainPwrRstOn_A,
           $rose(
               main_rst_req_i && !rst_main_n_ignored_for_main_pwr_rst
-          ) |-> `RST_CYCLES rstreqs[ResetMainPwrIdx], clk_slow_i,
+          ) |-> `MAIN_RST_CYCLES rstreqs[ResetMainPwrIdx], clk_slow_i,
           reset_or_disable || !check_rstreqs_en)
   `ASSERT(MainPwrRstOff_A,
           $fell(
               main_rst_req_i
-          ) |-> `RST_CYCLES !rstreqs[ResetMainPwrIdx], clk_slow_i,
+          ) |-> `MAIN_RST_CYCLES !rstreqs[ResetMainPwrIdx], clk_slow_i,
           reset_or_disable || !check_rstreqs_en)
 
   `ASSERT(EscRstOn_A,
           $rose(
               esc_rst_req_i
-          ) |-> `RST_CYCLES rstreqs[ResetEscIdx], clk_slow_i, reset_or_disable || !check_rstreqs_en)
+          ) |-> `ESC_RST_CYCLES rstreqs[ResetEscIdx], clk_slow_i,
+          reset_or_disable || !check_rstreqs_en)
   `ASSERT(EscRstOff_A,
           $fell(
               esc_rst_req_i
-          ) |-> `RST_CYCLES !rstreqs[ResetEscIdx], clk_slow_i,
+          ) |-> `ESC_RST_CYCLES !rstreqs[ResetEscIdx], clk_slow_i,
           reset_or_disable || !check_rstreqs_en)
   // Software initiated resets are not sent to rstmgr since they originated there.
   `undef RST_CYCLES
+  `undef MAIN_RST_CYCLES
+  `undef ESC_RST_CYCLES
 endinterface

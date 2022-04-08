@@ -44,7 +44,7 @@ class pwrmgr_clk_ctrl_monitor extends dv_base_monitor #(
       if (cfg.vif.pwr_ast_req.io_clk_en == 0) begin
         cfg.clk_rst_vif.stop_clk();
         @(posedge cfg.vif.pwr_ast_req.io_clk_en);
-        #($urandom_range(300_000, 5_152_286) * 1ps);
+        repeat ($urandom_range(MAIN_CLK_DELAY_MIN, MAIN_CLK_DELAY_MAX)) @cfg.vif.cb;
         cfg.clk_rst_vif.start_clk();
       end
     end
@@ -56,12 +56,12 @@ class pwrmgr_clk_ctrl_monitor extends dv_base_monitor #(
       @cfg.vif.cb;
       if (ival) begin
         @(negedge cfg.vif.pwr_clk_req.io_ip_clk_en);
-        repeat($urandom_range(1, 10)) @cfg.vif.cb;
+        repeat($urandom_range(ESC_CLK_DELAY_MIN, ESC_CLK_DELAY_MAX)) @cfg.vif.cb;
         cfg.esc_clk_rst_vif.stop_clk();
         ival = 0;
       end else begin
         @(posedge cfg.vif.pwr_clk_req.io_ip_clk_en);
-        repeat($urandom_range(1, 10)) @cfg.vif.cb;
+        repeat($urandom_range(ESC_CLK_DELAY_MIN, ESC_CLK_DELAY_MAX)) @cfg.vif.cb;
         cfg.esc_clk_rst_vif.start_clk();
         ival = 1;
       end
