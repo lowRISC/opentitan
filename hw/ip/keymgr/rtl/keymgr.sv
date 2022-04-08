@@ -141,25 +141,12 @@ module keymgr
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o (regfile_intg_err),
-    .devmode_i  (1'b1) // connect to real devmode signal in the future
+    .shadowed_storage_err_o (shadowed_storage_err),
+    .shadowed_update_err_o  (shadowed_update_err),
+    .intg_err_o             (regfile_intg_err),
+
+    .devmode_i (1'b1) // connect to real devmode signal in the future
   );
-
-  assign shadowed_storage_err = reg2hw.control_shadowed.cdi_sel.err_storage |
-                                reg2hw.control_shadowed.dest_sel.err_storage |
-                                reg2hw.control_shadowed.operation.err_storage |
-                                reg2hw.reseed_interval_shadowed.err_storage |
-                                reg2hw.max_creator_key_ver_shadowed.err_storage |
-                                reg2hw.max_owner_int_key_ver_shadowed.err_storage |
-                                reg2hw.max_owner_key_ver_shadowed.err_storage;
-
-  assign shadowed_update_err  = reg2hw.control_shadowed.cdi_sel.err_update |
-                                reg2hw.control_shadowed.dest_sel.err_update |
-                                reg2hw.control_shadowed.operation.err_update |
-                                reg2hw.reseed_interval_shadowed.err_update |
-                                reg2hw.max_creator_key_ver_shadowed.err_update |
-                                reg2hw.max_owner_int_key_ver_shadowed.err_update |
-                                reg2hw.max_owner_key_ver_shadowed.err_update;
 
   /////////////////////////////////////
   //  Synchronize lc_ctrl control inputs

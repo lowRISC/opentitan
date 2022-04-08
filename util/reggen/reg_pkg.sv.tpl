@@ -61,10 +61,6 @@ ${hdr}
       % if r0.hwre or (r0.shadowed and r0.hwext):
     logic        re;
       % endif
-      % if r0.shadowed and not r0.hwext:
-    logic        err_update;
-    logic        err_storage;
-      % endif
     % else:
       ## We are inhomogeneous, which means there is more than one different
       ## field. Generate a reg2hw typedef that packs together all the fields of
@@ -85,10 +81,6 @@ ${hdr}
           % endif
           % if r0.hwre or (r0.shadowed and r0.hwext):
       logic        re;
-          % endif
-          % if r0.shadowed and not r0.hwext:
-      logic        err_update;
-      logic        err_storage;
           % endif
     } ${struct_name};
         %endif

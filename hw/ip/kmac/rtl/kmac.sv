@@ -1242,43 +1242,14 @@ module kmac
     .reg2hw,
     .hw2reg,
 
+    // SEC_CM: CFG_SHADOWED.CONFIG.SHADOW
+    .shadowed_storage_err_o (shadowed_storage_err),
+    .shadowed_update_err_o  (shadowed_update_err),
     // SEC_CM: BUS.INTEGRITY
-    .intg_err_o(alert_intg_err),
+    .intg_err_o             (alert_intg_err),
+
     .devmode_i (devmode)
   );
-
-  // SEC_CM: CFG_SHADOWED.CONFIG.SHADOW
-  assign shadowed_storage_err = |{
-      reg2hw.cfg_shadowed.kmac_en.err_storage                     ,
-      reg2hw.cfg_shadowed.kstrength.err_storage                   ,
-      reg2hw.cfg_shadowed.mode.err_storage                        ,
-      reg2hw.cfg_shadowed.msg_endianness.err_storage              ,
-      reg2hw.cfg_shadowed.state_endianness.err_storage            ,
-      reg2hw.cfg_shadowed.sideload.err_storage                    ,
-      reg2hw.cfg_shadowed.entropy_mode.err_storage                ,
-      reg2hw.cfg_shadowed.entropy_fast_process.err_storage        ,
-      reg2hw.cfg_shadowed.msg_mask.err_storage                    ,
-      reg2hw.cfg_shadowed.entropy_ready.err_storage               ,
-      reg2hw.cfg_shadowed.err_processed.err_storage               ,
-      reg2hw.cfg_shadowed.en_unsupported_modestrength.err_storage ,
-      reg2hw.entropy_refresh_threshold_shadowed.err_storage
-    };
-
-  assign shadowed_update_err  = |{
-      reg2hw.cfg_shadowed.kmac_en.err_update                     ,
-      reg2hw.cfg_shadowed.kstrength.err_update                   ,
-      reg2hw.cfg_shadowed.mode.err_update                        ,
-      reg2hw.cfg_shadowed.msg_endianness.err_update              ,
-      reg2hw.cfg_shadowed.state_endianness.err_update            ,
-      reg2hw.cfg_shadowed.sideload.err_update                    ,
-      reg2hw.cfg_shadowed.entropy_mode.err_update                ,
-      reg2hw.cfg_shadowed.entropy_fast_process.err_update        ,
-      reg2hw.cfg_shadowed.msg_mask.err_update                    ,
-      reg2hw.cfg_shadowed.entropy_ready.err_update               ,
-      reg2hw.cfg_shadowed.err_processed.err_update               ,
-      reg2hw.cfg_shadowed.en_unsupported_modestrength.err_update ,
-      reg2hw.entropy_refresh_threshold_shadowed.err_update
-    };
 
   logic unused_cfg_shadowed_qe;
   assign unused_cfg_shadowed_qe = ^{

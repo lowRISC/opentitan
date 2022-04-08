@@ -95,8 +95,6 @@ package aes_reg_pkg;
 
   typedef struct packed {
     logic        q;
-    logic        err_update;
-    logic        err_storage;
   } aes_reg2hw_ctrl_aux_shadowed_reg_t;
 
   typedef struct packed {

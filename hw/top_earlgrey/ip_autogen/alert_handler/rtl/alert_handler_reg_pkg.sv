@@ -212,14 +212,10 @@ package alert_handler_reg_pkg;
 
   typedef struct packed {
     logic [15:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_ping_timeout_cyc_shadowed_reg_t;
 
   typedef struct packed {
     logic        q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_ping_timer_en_shadowed_reg_t;
 
   typedef struct packed {
@@ -228,14 +224,10 @@ package alert_handler_reg_pkg;
 
   typedef struct packed {
     logic        q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_alert_en_shadowed_mreg_t;
 
   typedef struct packed {
     logic [1:0]  q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_alert_class_shadowed_mreg_t;
 
   typedef struct packed {
@@ -244,14 +236,10 @@ package alert_handler_reg_pkg;
 
   typedef struct packed {
     logic        q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_loc_alert_en_shadowed_mreg_t;
 
   typedef struct packed {
     logic [1:0]  q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_loc_alert_class_shadowed_mreg_t;
 
   typedef struct packed {
@@ -261,409 +249,265 @@ package alert_handler_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } lock;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en_e0;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en_e1;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en_e2;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en_e3;
     struct packed {
       logic [1:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } map_e0;
     struct packed {
       logic [1:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } map_e1;
     struct packed {
       logic [1:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } map_e2;
     struct packed {
       logic [1:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } map_e3;
   } alert_handler_reg2hw_classa_ctrl_shadowed_reg_t;
 
   typedef struct packed {
     logic        q;
     logic        qe;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classa_clr_shadowed_reg_t;
 
   typedef struct packed {
     logic [15:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classa_accum_thresh_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classa_timeout_cyc_shadowed_reg_t;
 
   typedef struct packed {
     logic [1:0]  q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classa_crashdump_trigger_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classa_phase0_cyc_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classa_phase1_cyc_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classa_phase2_cyc_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classa_phase3_cyc_shadowed_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } lock;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en_e0;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en_e1;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en_e2;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en_e3;
     struct packed {
       logic [1:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } map_e0;
     struct packed {
       logic [1:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } map_e1;
     struct packed {
       logic [1:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } map_e2;
     struct packed {
       logic [1:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } map_e3;
   } alert_handler_reg2hw_classb_ctrl_shadowed_reg_t;
 
   typedef struct packed {
     logic        q;
     logic        qe;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classb_clr_shadowed_reg_t;
 
   typedef struct packed {
     logic [15:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classb_accum_thresh_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classb_timeout_cyc_shadowed_reg_t;
 
   typedef struct packed {
     logic [1:0]  q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classb_crashdump_trigger_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classb_phase0_cyc_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classb_phase1_cyc_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classb_phase2_cyc_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classb_phase3_cyc_shadowed_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } lock;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en_e0;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en_e1;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en_e2;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en_e3;
     struct packed {
       logic [1:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } map_e0;
     struct packed {
       logic [1:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } map_e1;
     struct packed {
       logic [1:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } map_e2;
     struct packed {
       logic [1:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } map_e3;
   } alert_handler_reg2hw_classc_ctrl_shadowed_reg_t;
 
   typedef struct packed {
     logic        q;
     logic        qe;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classc_clr_shadowed_reg_t;
 
   typedef struct packed {
     logic [15:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classc_accum_thresh_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classc_timeout_cyc_shadowed_reg_t;
 
   typedef struct packed {
     logic [1:0]  q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classc_crashdump_trigger_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classc_phase0_cyc_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classc_phase1_cyc_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classc_phase2_cyc_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classc_phase3_cyc_shadowed_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } lock;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en_e0;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en_e1;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en_e2;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en_e3;
     struct packed {
       logic [1:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } map_e0;
     struct packed {
       logic [1:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } map_e1;
     struct packed {
       logic [1:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } map_e2;
     struct packed {
       logic [1:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } map_e3;
   } alert_handler_reg2hw_classd_ctrl_shadowed_reg_t;
 
   typedef struct packed {
     logic        q;
     logic        qe;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classd_clr_shadowed_reg_t;
 
   typedef struct packed {
     logic [15:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classd_accum_thresh_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classd_timeout_cyc_shadowed_reg_t;
 
   typedef struct packed {
     logic [1:0]  q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classd_crashdump_trigger_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classd_phase0_cyc_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classd_phase1_cyc_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classd_phase2_cyc_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } alert_handler_reg2hw_classd_phase3_cyc_shadowed_reg_t;
 
   typedef struct packed {

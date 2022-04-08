@@ -21,6 +21,9 @@ module kmac_reg_top (
   output kmac_reg_pkg::kmac_reg2hw_t reg2hw, // Write
   input  kmac_reg_pkg::kmac_hw2reg_t hw2reg, // Read
 
+  output logic shadowed_storage_err_o,
+  output logic shadowed_update_err_o,
+
   // Integrity check errors
   output logic intg_err_o,
 
@@ -195,28 +198,52 @@ module kmac_reg_top (
   logic cfg_shadowed_we;
   logic cfg_shadowed_kmac_en_qs;
   logic cfg_shadowed_kmac_en_wd;
+  logic cfg_shadowed_kmac_en_storage_err;
+  logic cfg_shadowed_kmac_en_update_err;
   logic [2:0] cfg_shadowed_kstrength_qs;
   logic [2:0] cfg_shadowed_kstrength_wd;
+  logic cfg_shadowed_kstrength_storage_err;
+  logic cfg_shadowed_kstrength_update_err;
   logic [1:0] cfg_shadowed_mode_qs;
   logic [1:0] cfg_shadowed_mode_wd;
+  logic cfg_shadowed_mode_storage_err;
+  logic cfg_shadowed_mode_update_err;
   logic cfg_shadowed_msg_endianness_qs;
   logic cfg_shadowed_msg_endianness_wd;
+  logic cfg_shadowed_msg_endianness_storage_err;
+  logic cfg_shadowed_msg_endianness_update_err;
   logic cfg_shadowed_state_endianness_qs;
   logic cfg_shadowed_state_endianness_wd;
+  logic cfg_shadowed_state_endianness_storage_err;
+  logic cfg_shadowed_state_endianness_update_err;
   logic cfg_shadowed_sideload_qs;
   logic cfg_shadowed_sideload_wd;
+  logic cfg_shadowed_sideload_storage_err;
+  logic cfg_shadowed_sideload_update_err;
   logic [1:0] cfg_shadowed_entropy_mode_qs;
   logic [1:0] cfg_shadowed_entropy_mode_wd;
+  logic cfg_shadowed_entropy_mode_storage_err;
+  logic cfg_shadowed_entropy_mode_update_err;
   logic cfg_shadowed_entropy_fast_process_qs;
   logic cfg_shadowed_entropy_fast_process_wd;
+  logic cfg_shadowed_entropy_fast_process_storage_err;
+  logic cfg_shadowed_entropy_fast_process_update_err;
   logic cfg_shadowed_msg_mask_qs;
   logic cfg_shadowed_msg_mask_wd;
+  logic cfg_shadowed_msg_mask_storage_err;
+  logic cfg_shadowed_msg_mask_update_err;
   logic cfg_shadowed_entropy_ready_qs;
   logic cfg_shadowed_entropy_ready_wd;
+  logic cfg_shadowed_entropy_ready_storage_err;
+  logic cfg_shadowed_entropy_ready_update_err;
   logic cfg_shadowed_err_processed_qs;
   logic cfg_shadowed_err_processed_wd;
+  logic cfg_shadowed_err_processed_storage_err;
+  logic cfg_shadowed_err_processed_update_err;
   logic cfg_shadowed_en_unsupported_modestrength_qs;
   logic cfg_shadowed_en_unsupported_modestrength_wd;
+  logic cfg_shadowed_en_unsupported_modestrength_storage_err;
+  logic cfg_shadowed_en_unsupported_modestrength_update_err;
   logic cmd_we;
   logic [3:0] cmd_cmd_wd;
   logic cmd_entropy_req_wd;
@@ -240,6 +267,8 @@ module kmac_reg_top (
   logic entropy_refresh_threshold_shadowed_we;
   logic [9:0] entropy_refresh_threshold_shadowed_qs;
   logic [9:0] entropy_refresh_threshold_shadowed_wd;
+  logic entropy_refresh_threshold_shadowed_storage_err;
+  logic entropy_refresh_threshold_shadowed_update_err;
   logic entropy_seed_lower_we;
   logic [31:0] entropy_seed_lower_qs;
   logic [31:0] entropy_seed_lower_wd;
@@ -644,8 +673,8 @@ module kmac_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.cfg_shadowed.kmac_en.err_update),
-    .err_storage (reg2hw.cfg_shadowed.kmac_en.err_storage)
+    .err_update  (cfg_shadowed_kmac_en_update_err),
+    .err_storage (cfg_shadowed_kmac_en_storage_err)
   );
   assign reg2hw.cfg_shadowed.kmac_en.qe = cfg_shadowed_qe;
 
@@ -679,8 +708,8 @@ module kmac_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.cfg_shadowed.kstrength.err_update),
-    .err_storage (reg2hw.cfg_shadowed.kstrength.err_storage)
+    .err_update  (cfg_shadowed_kstrength_update_err),
+    .err_storage (cfg_shadowed_kstrength_storage_err)
   );
   assign reg2hw.cfg_shadowed.kstrength.qe = cfg_shadowed_qe;
 
@@ -714,8 +743,8 @@ module kmac_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.cfg_shadowed.mode.err_update),
-    .err_storage (reg2hw.cfg_shadowed.mode.err_storage)
+    .err_update  (cfg_shadowed_mode_update_err),
+    .err_storage (cfg_shadowed_mode_storage_err)
   );
   assign reg2hw.cfg_shadowed.mode.qe = cfg_shadowed_qe;
 
@@ -749,8 +778,8 @@ module kmac_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.cfg_shadowed.msg_endianness.err_update),
-    .err_storage (reg2hw.cfg_shadowed.msg_endianness.err_storage)
+    .err_update  (cfg_shadowed_msg_endianness_update_err),
+    .err_storage (cfg_shadowed_msg_endianness_storage_err)
   );
   assign reg2hw.cfg_shadowed.msg_endianness.qe = cfg_shadowed_qe;
 
@@ -784,8 +813,8 @@ module kmac_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.cfg_shadowed.state_endianness.err_update),
-    .err_storage (reg2hw.cfg_shadowed.state_endianness.err_storage)
+    .err_update  (cfg_shadowed_state_endianness_update_err),
+    .err_storage (cfg_shadowed_state_endianness_storage_err)
   );
   assign reg2hw.cfg_shadowed.state_endianness.qe = cfg_shadowed_qe;
 
@@ -819,8 +848,8 @@ module kmac_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.cfg_shadowed.sideload.err_update),
-    .err_storage (reg2hw.cfg_shadowed.sideload.err_storage)
+    .err_update  (cfg_shadowed_sideload_update_err),
+    .err_storage (cfg_shadowed_sideload_storage_err)
   );
   assign reg2hw.cfg_shadowed.sideload.qe = cfg_shadowed_qe;
 
@@ -854,8 +883,8 @@ module kmac_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.cfg_shadowed.entropy_mode.err_update),
-    .err_storage (reg2hw.cfg_shadowed.entropy_mode.err_storage)
+    .err_update  (cfg_shadowed_entropy_mode_update_err),
+    .err_storage (cfg_shadowed_entropy_mode_storage_err)
   );
   assign reg2hw.cfg_shadowed.entropy_mode.qe = cfg_shadowed_qe;
 
@@ -889,8 +918,8 @@ module kmac_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.cfg_shadowed.entropy_fast_process.err_update),
-    .err_storage (reg2hw.cfg_shadowed.entropy_fast_process.err_storage)
+    .err_update  (cfg_shadowed_entropy_fast_process_update_err),
+    .err_storage (cfg_shadowed_entropy_fast_process_storage_err)
   );
   assign reg2hw.cfg_shadowed.entropy_fast_process.qe = cfg_shadowed_qe;
 
@@ -924,8 +953,8 @@ module kmac_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.cfg_shadowed.msg_mask.err_update),
-    .err_storage (reg2hw.cfg_shadowed.msg_mask.err_storage)
+    .err_update  (cfg_shadowed_msg_mask_update_err),
+    .err_storage (cfg_shadowed_msg_mask_storage_err)
   );
   assign reg2hw.cfg_shadowed.msg_mask.qe = cfg_shadowed_qe;
 
@@ -959,8 +988,8 @@ module kmac_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.cfg_shadowed.entropy_ready.err_update),
-    .err_storage (reg2hw.cfg_shadowed.entropy_ready.err_storage)
+    .err_update  (cfg_shadowed_entropy_ready_update_err),
+    .err_storage (cfg_shadowed_entropy_ready_storage_err)
   );
   assign reg2hw.cfg_shadowed.entropy_ready.qe = cfg_shadowed_qe;
 
@@ -994,8 +1023,8 @@ module kmac_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.cfg_shadowed.err_processed.err_update),
-    .err_storage (reg2hw.cfg_shadowed.err_processed.err_storage)
+    .err_update  (cfg_shadowed_err_processed_update_err),
+    .err_storage (cfg_shadowed_err_processed_storage_err)
   );
   assign reg2hw.cfg_shadowed.err_processed.qe = cfg_shadowed_qe;
 
@@ -1029,8 +1058,8 @@ module kmac_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.cfg_shadowed.en_unsupported_modestrength.err_update),
-    .err_storage (reg2hw.cfg_shadowed.en_unsupported_modestrength.err_storage)
+    .err_update  (cfg_shadowed_en_unsupported_modestrength_update_err),
+    .err_storage (cfg_shadowed_en_unsupported_modestrength_storage_err)
   );
   assign reg2hw.cfg_shadowed.en_unsupported_modestrength.qe = cfg_shadowed_qe;
 
@@ -1307,8 +1336,8 @@ module kmac_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.entropy_refresh_threshold_shadowed.err_update),
-    .err_storage (reg2hw.entropy_refresh_threshold_shadowed.err_storage)
+    .err_update  (entropy_refresh_threshold_shadowed_update_err),
+    .err_storage (entropy_refresh_threshold_shadowed_storage_err)
   );
 
 
@@ -3006,6 +3035,38 @@ module kmac_reg_top (
 
   // both shadow and normal resets have been released
   assign shadow_busy = ~(rst_done & shadow_rst_done);
+
+  // Collect up storage and update errors
+  assign shadowed_storage_err_o = |{
+    cfg_shadowed_kmac_en_storage_err,
+    cfg_shadowed_kstrength_storage_err,
+    cfg_shadowed_mode_storage_err,
+    cfg_shadowed_msg_endianness_storage_err,
+    cfg_shadowed_state_endianness_storage_err,
+    cfg_shadowed_sideload_storage_err,
+    cfg_shadowed_entropy_mode_storage_err,
+    cfg_shadowed_entropy_fast_process_storage_err,
+    cfg_shadowed_msg_mask_storage_err,
+    cfg_shadowed_entropy_ready_storage_err,
+    cfg_shadowed_err_processed_storage_err,
+    cfg_shadowed_en_unsupported_modestrength_storage_err,
+    entropy_refresh_threshold_shadowed_storage_err
+  };
+  assign shadowed_update_err_o = |{
+    cfg_shadowed_kmac_en_update_err,
+    cfg_shadowed_kstrength_update_err,
+    cfg_shadowed_mode_update_err,
+    cfg_shadowed_msg_endianness_update_err,
+    cfg_shadowed_state_endianness_update_err,
+    cfg_shadowed_sideload_update_err,
+    cfg_shadowed_entropy_mode_update_err,
+    cfg_shadowed_entropy_fast_process_update_err,
+    cfg_shadowed_msg_mask_update_err,
+    cfg_shadowed_entropy_ready_update_err,
+    cfg_shadowed_err_processed_update_err,
+    cfg_shadowed_en_unsupported_modestrength_update_err,
+    entropy_refresh_threshold_shadowed_update_err
+  };
 
   // register busy
   assign reg_busy = shadow_busy;

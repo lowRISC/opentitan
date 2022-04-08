@@ -173,316 +173,200 @@ package flash_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } rd_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } prog_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } erase_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } scramble_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } ecc_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } he_en;
     struct packed {
       logic [8:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } base;
     struct packed {
       logic [9:0] q;
-      logic        err_update;
-      logic        err_storage;
     } size;
   } flash_ctrl_reg2hw_mp_region_cfg_shadowed_mreg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } rd_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } prog_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } erase_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } scramble_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } ecc_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } he_en;
   } flash_ctrl_reg2hw_default_region_shadowed_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } rd_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } prog_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } erase_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } scramble_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } ecc_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } he_en;
   } flash_ctrl_reg2hw_bank0_info0_page_cfg_shadowed_mreg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } rd_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } prog_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } erase_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } scramble_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } ecc_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } he_en;
   } flash_ctrl_reg2hw_bank0_info1_page_cfg_shadowed_mreg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } rd_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } prog_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } erase_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } scramble_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } ecc_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } he_en;
   } flash_ctrl_reg2hw_bank0_info2_page_cfg_shadowed_mreg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } rd_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } prog_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } erase_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } scramble_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } ecc_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } he_en;
   } flash_ctrl_reg2hw_bank1_info0_page_cfg_shadowed_mreg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } rd_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } prog_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } erase_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } scramble_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } ecc_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } he_en;
   } flash_ctrl_reg2hw_bank1_info1_page_cfg_shadowed_mreg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } rd_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } prog_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } erase_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } scramble_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } ecc_en;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } he_en;
   } flash_ctrl_reg2hw_bank1_info2_page_cfg_shadowed_mreg_t;
 
   typedef struct packed {
     logic        q;
-    logic        err_update;
-    logic        err_storage;
   } flash_ctrl_reg2hw_mp_bank_cfg_shadowed_mreg_t;
 
   typedef struct packed {

@@ -98,9 +98,9 @@ module flash_ctrl
   tlul_pkg::tl_d2h_t tl_win_d2h [2];
 
   // Register module
-  logic intg_err;
-  logic update_err;
   logic storage_err;
+  logic update_err;
+  logic intg_err;
 
   // SEC_CM: BUS.INTEGRITY
   // SEC_CM: CTRL.CONFIG.REGWEN
@@ -121,8 +121,11 @@ module flash_ctrl
     .reg2hw,
     .hw2reg,
 
-    .intg_err_o (intg_err),
-    .devmode_i  (1'b1)
+    .shadowed_storage_err_o (storage_err),
+    .shadowed_update_err_o  (update_err),
+    .intg_err_o             (intg_err),
+
+    .devmode_i (1'b1)
   );
 
   bank_cfg_t [NumBanks-1:0] bank_cfgs;
@@ -146,9 +149,7 @@ module flash_ctrl
 % endfor
     .bank_cfg_o(bank_cfgs),
     .region_cfgs_o(region_cfgs),
-    .info_page_cfgs_o(info_page_cfgs),
-    .update_err_o(update_err),
-    .storage_err_o(storage_err)
+    .info_page_cfgs_o(info_page_cfgs)
   );
 
   // FIFO Connections
