@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 def lint_repos():
     # We have a 'vendored' copy of the google_verible_verilog_syntax_py repo
@@ -18,8 +17,9 @@ def lint_repos():
         url = "https://github.com/bazelbuild/buildtools/archive/main.zip",
     )
 
-    git_repository(
+    http_archive(
         name = "lowrisc_lint",
-        commit = "8bca6cff6f5def9ba866a11b7eeb3f4a12f9f516",
-        remote = "https://github.com/lowrisc/misc-linters",
+        sha256 = "2cf2badc52b212445d7ed6eb4d99a925d9736b06daacf9ad3b783953fb3ccaee",
+        strip_prefix = "misc-linters-8bca6cff6f5def9ba866a11b7eeb3f4a12f9f516",
+        url = "https://github.com/lowrisc/misc-linters/archive/8bca6cff6f5def9ba866a11b7eeb3f4a12f9f516.tar.gz",
     )
