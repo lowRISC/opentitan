@@ -16,6 +16,7 @@
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/cfi.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
@@ -25,6 +26,7 @@
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/rom_print.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/mask_rom/boot_policy.h"
@@ -121,6 +123,15 @@ static rom_error_t mask_rom_init(void) {
   uint32_t reset_reasons = rstmgr_reason_get();
   if (bitfield_bit32_read(reset_reasons, kRstmgrReasonPowerOn)) {
     retention_sram_clear();
+  }
+
+  // If running on an FPGA, print the FPGA version-id.
+  // This value is guaranteed to be zero on all non-FPGA implementations.
+  uint32_t fpga = ibex_fpga_version();
+  if (fpga != 0) {
+    // The cast to unsigned int stops GCC from complaining about uint32_t
+    // being a `long unsigned int` while the %x specifier takes `unsigned int`.
+    rom_printf("MaskROM:%x\r\n", (unsigned int)fpga);
   }
 
   // Read boot data from flash

@@ -208,6 +208,7 @@ mask_rom_lib = declare_dependency(
       primitive_bootstrap_lib,
       sw_silicon_creator_lib_driver_hmac,
       sw_silicon_creator_lib_driver_flash_ctrl,
+      sw_silicon_creator_lib_driver_ibex,
       sw_silicon_creator_lib_driver_keymgr,
       sw_silicon_creator_lib_driver_lifecycle,
       sw_silicon_creator_lib_driver_pinmux,

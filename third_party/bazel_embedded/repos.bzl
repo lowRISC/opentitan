@@ -4,7 +4,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-def bazel_embedded_repos(local=None):
+def bazel_embedded_repos(local = None):
     # Contains rules that support building SW for embedded targets. Specifically, we
     # maintain a fork to build for RISCV32I.
     if local:
