@@ -1330,7 +1330,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.recov_alert_sts.threshold_scope_field_alert.de = threshold_scope_pfa;
   assign hw2reg.recov_alert_sts.threshold_scope_field_alert.d  = threshold_scope_pfa;
 
-  assign es_route_to_sw = es_route_pfe && es_data_reg_rd_en;
+  assign es_route_to_sw = es_route_pfe;
   assign es_bypass_to_sw = es_type_pfe;
   assign threshold_scope = threshold_scope_pfe;
 
@@ -2489,7 +2489,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign pfifo_swread_push = es_route_to_sw && pfifo_swread_not_full && sfifo_esfinal_not_empty;
   assign pfifo_swread_wdata = esfinal_data;
 
-  assign pfifo_swread_clr = !es_enable_q_fo[31];
+  assign pfifo_swread_clr = !(es_enable_q_fo[31] && es_data_reg_rd_en);
   assign pfifo_swread_pop =  es_enable_q_fo[32] && sw_es_rd_pulse;
 
   // set the es entropy to the read reg
