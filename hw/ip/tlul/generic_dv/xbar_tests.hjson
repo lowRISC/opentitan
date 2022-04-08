@@ -2,25 +2,39 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  // for chip level xbar to add run options used for all tests
-  run_modes: [
+  // Run with a named build mode, and enable a named run mode. This allows an external testbench to
+  // override this build / run mode to apply additional common settings for all of these tests.
+  build_modes: [
     {
-      name: xbar_mode
+      name: xbar_build_mode
     }
   ]
+  run_modes: [
+    {
+      name: xbar_run_mode
+    }
+  ]
+
+  // We rename the "default" build mode to "xbar_build_mode" so that it can be use to apply
+  // additional settings externally. We hence, map other settings that assume the build mode to be
+  // called as "default" to "xbar_build_mode".
+  xbar_build_mode_vcs_cov_cfg_file: "{default_vcs_cov_cfg_file}"
+  xbar_build_mode_xcelium_cov_cfg_file: "{default_xcelium_cov_cfg_file}"
 
   // List of test specifications.
   tests: [
     {
       name: "xbar_{name}_smoke"
-      en_run_modes: ["xbar_mode"]
+      build_mode: "xbar_build_mode"
+      en_run_modes: ["xbar_run_mode"]
       uvm_test: xbar_base_test
       uvm_test_seq: xbar_smoke_vseq
     }
 
     {
       name: "xbar_{name}_smoke_zero_delays"
-      en_run_modes: ["xbar_mode"]
+      build_mode: "xbar_build_mode"
+      en_run_modes: ["xbar_run_mode"]
       uvm_test: xbar_base_test
       uvm_test_seq: xbar_smoke_vseq
       run_opts: ["+zero_delays=1"]
@@ -28,7 +42,8 @@
 
     {
       name: "xbar_{name}_smoke_large_delays"
-      en_run_modes: ["xbar_mode"]
+      build_mode: "xbar_build_mode"
+      en_run_modes: ["xbar_run_mode"]
       uvm_test: xbar_base_test
       uvm_test_seq: xbar_smoke_vseq
       run_opts: ["+max_host_req_delay=1000",
@@ -41,7 +56,8 @@
 
     {
       name: "xbar_{name}_smoke_slow_rsp"
-      en_run_modes: ["xbar_mode"]
+      build_mode: "xbar_build_mode"
+      en_run_modes: ["xbar_run_mode"]
       uvm_test: xbar_base_test
       uvm_test_seq: xbar_smoke_vseq
       run_opts: ["+max_host_req_delay=10",
@@ -54,14 +70,16 @@
 
     {
       name: "xbar_{name}_random"
-      en_run_modes: ["xbar_mode"]
+      build_mode: "xbar_build_mode"
+      en_run_modes: ["xbar_run_mode"]
       uvm_test: xbar_base_test
       uvm_test_seq: xbar_random_vseq
     }
 
     {
       name: "xbar_{name}_random_zero_delays"
-      en_run_modes: ["xbar_mode"]
+      build_mode: "xbar_build_mode"
+      en_run_modes: ["xbar_run_mode"]
       uvm_test: xbar_base_test
       uvm_test_seq: xbar_random_vseq
       run_opts: ["+zero_delays=1"]
@@ -69,7 +87,8 @@
 
     {
       name: "xbar_{name}_random_large_delays"
-      en_run_modes: ["xbar_mode"]
+      build_mode: "xbar_build_mode"
+      en_run_modes: ["xbar_run_mode"]
       uvm_test: xbar_base_test
       uvm_test_seq: xbar_random_vseq
       run_opts: ["+max_host_req_delay=1000",
@@ -82,7 +101,8 @@
 
     {
       name: "xbar_{name}_random_slow_rsp"
-      en_run_modes: ["xbar_mode"]
+      build_mode: "xbar_build_mode"
+      en_run_modes: ["xbar_run_mode"]
       uvm_test: xbar_base_test
       uvm_test_seq: xbar_random_vseq
       run_opts: ["+max_host_req_delay=10",
@@ -95,14 +115,16 @@
 
     {
       name: "xbar_{name}_access_same_device"
-      en_run_modes: ["xbar_mode"]
+      build_mode: "xbar_build_mode"
+      en_run_modes: ["xbar_run_mode"]
       uvm_test: xbar_base_test
       uvm_test_seq: xbar_access_same_device_vseq
     }
 
     {
       name: "xbar_{name}_access_same_device_slow_rsp"
-      en_run_modes: ["xbar_mode"]
+      build_mode: "xbar_build_mode"
+      en_run_modes: ["xbar_run_mode"]
       uvm_test: xbar_base_test
       uvm_test_seq: xbar_access_same_device_vseq
       run_opts: ["+max_host_req_delay=10",
@@ -115,56 +137,64 @@
 
     {
       name: "xbar_{name}_same_source"
-      en_run_modes: ["xbar_mode"]
+      build_mode: "xbar_build_mode"
+      en_run_modes: ["xbar_run_mode"]
       uvm_test: xbar_base_test
       uvm_test_seq: xbar_same_source_vseq
     }
 
     {
       name: "xbar_{name}_error_random"
-      en_run_modes: ["xbar_mode"]
+      build_mode: "xbar_build_mode"
+      en_run_modes: ["xbar_run_mode"]
       uvm_test: xbar_error_test
       uvm_test_seq: xbar_random_vseq
     }
 
     {
       name: "xbar_{name}_unmapped_addr"
-      en_run_modes: ["xbar_mode"]
+      build_mode: "xbar_build_mode"
+      en_run_modes: ["xbar_run_mode"]
       uvm_test: xbar_base_test
       uvm_test_seq: xbar_unmapped_addr_vseq
     }
 
     {
       name: "xbar_{name}_error_and_unmapped_addr"
-      en_run_modes: ["xbar_mode"]
+      build_mode: "xbar_build_mode"
+      en_run_modes: ["xbar_run_mode"]
       uvm_test: xbar_error_test
       uvm_test_seq: xbar_unmapped_addr_vseq
     }
 
     {
       name: "xbar_{name}_stress_all"
-      en_run_modes: ["xbar_mode"]
+      build_mode: "xbar_build_mode"
+      en_run_modes: ["xbar_run_mode"]
       uvm_test: xbar_base_test
       uvm_test_seq: xbar_stress_all_vseq
     }
 
     {
       name: "xbar_{name}_stress_all_with_rand_reset"
-      en_run_modes: ["xbar_mode"]
+      build_mode: "xbar_build_mode"
+      en_run_modes: ["xbar_run_mode"]
       uvm_test: xbar_base_test
       uvm_test_seq: xbar_stress_all_with_rand_reset_vseq
     }
 
     {
       name: "xbar_{name}_stress_all_with_error"
-      en_run_modes: ["xbar_mode"]
+      build_mode: "xbar_build_mode"
+      en_run_modes: ["xbar_run_mode"]
       uvm_test: xbar_error_test
       uvm_test_seq: xbar_stress_all_vseq
     }
 
     {
       name: "xbar_{name}_stress_all_with_reset_error"
-      en_run_modes: ["xbar_mode"]
+      build_mode: "xbar_build_mode"
+      en_run_modes: ["xbar_run_mode"]
       uvm_test: xbar_error_test
       uvm_test_seq: xbar_stress_all_with_rand_reset_vseq
     }

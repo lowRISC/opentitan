@@ -71,6 +71,10 @@
       name: cover_reg_top_vcs_cov_cfg_file
       value: "-cm_hier {proj_root}/hw/top_earlgrey/dv/cov/chip_cover_reg_top.cfg"
     }
+    {
+      name: xbar_build_mode_vcs_cov_cfg_file
+      value: "-cm_hier {proj_root}/hw/top_earlgrey/dv/cov/chip_cover_reg_top.cfg"
+    }
     // Used by the UNR flow.
     {
       name: vcs_unr_cfg_file
@@ -194,7 +198,7 @@
       reseed: 20
     }
     {
-      name: xbar_mode
+      name: xbar_run_mode
       en_run_modes: ["gen_otp_images_mode"]
       run_opts: ["+xbar_mode=1"]
       reseed: 100
