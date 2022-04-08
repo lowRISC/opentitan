@@ -12,20 +12,7 @@
 void keymgr_testutils_advance_state(const dif_keymgr_t *keymgr,
                                     const dif_keymgr_state_params_t *params) {
   CHECK_DIF_OK(dif_keymgr_advance_state(keymgr, params));
-
-  while (true) {
-    dif_keymgr_status_codes_t status;
-
-    CHECK_DIF_OK(dif_keymgr_get_status_codes(keymgr, &status));
-    if (status == 0) {
-      LOG_INFO("Advancing to next state");
-    } else if (status == kDifKeymgrStatusCodeIdle) {
-      break;
-    } else {
-      LOG_ERROR("Unexpected status: %0x", status);
-      break;
-    }
-  }
+  keymgr_testutils_wait_for_operation_done(keymgr);
 }
 
 void keymgr_testutils_check_state(const dif_keymgr_t *keymgr,
@@ -40,32 +27,27 @@ void keymgr_testutils_check_state(const dif_keymgr_t *keymgr,
 
 void keymgr_testutils_generate_identity(const dif_keymgr_t *keymgr) {
   CHECK_DIF_OK(dif_keymgr_generate_identity_seed(keymgr));
-
-  dif_keymgr_status_codes_t status;
-  do {
-    CHECK_DIF_OK(dif_keymgr_get_status_codes(keymgr, &status));
-    if (status == 0) {
-      LOG_INFO("Generating identity seed");
-    } else if (status > kDifKeymgrStatusCodeIdle) {
-      LOG_ERROR("Unexpected status: %0x", status);
-      break;
-    }
-  } while (status != kDifKeymgrStatusCodeIdle);
+  keymgr_testutils_wait_for_operation_done(keymgr);
 }
 
 void keymgr_testutils_generate_versioned_key(
     const dif_keymgr_t *keymgr,
     const dif_keymgr_versioned_key_params_t params) {
   CHECK_DIF_OK(dif_keymgr_generate_versioned_key(keymgr, params));
+  keymgr_testutils_wait_for_operation_done(keymgr);
+}
 
+void keymgr_testutils_disable(const dif_keymgr_t *keymgr) {
+  CHECK_DIF_OK(dif_keymgr_disable(keymgr));
+  keymgr_testutils_wait_for_operation_done(keymgr);
+}
+
+void keymgr_testutils_wait_for_operation_done(const dif_keymgr_t *keymgr) {
   dif_keymgr_status_codes_t status;
   do {
     CHECK_DIF_OK(dif_keymgr_get_status_codes(keymgr, &status));
-    if (status == 0) {
-      LOG_INFO("Generating versioned key for dest: 0x%0x", params.dest);
-    } else if (status > kDifKeymgrStatusCodeIdle) {
-      LOG_ERROR("Unexpected status: %0x", status);
-      break;
-    }
-  } while (status != kDifKeymgrStatusCodeIdle);
+  } while (status == 0);
+  if (status != kDifKeymgrStatusCodeIdle) {
+    LOG_ERROR("Unexpected status: %0x", status);
+  }
 }

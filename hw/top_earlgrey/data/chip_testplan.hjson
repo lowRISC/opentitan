@@ -1852,8 +1852,6 @@
               keymgr.
             - Read keymgr CSRs `SW_SHARE*` and verify the return values.
             - Advance to `Disabled` and verify keymgr enters the state successfully.
-            - Generate identity / SW output and ensure these are neither all 1s/0s nor any valid
-              key value, which proves secrets are wiped by entropy value from EDN.
 
             - For each operation, wait for the interrupt `op_done` to be triggered and check CSR
               `op_status` is `DONE_SUCCESS`.
@@ -1869,19 +1867,6 @@
             '''
       milestone: V2
       tests: ["chip_sw_keymgr_key_derivation"]
-    }
-    {
-      name: chip_sw_keymgr_lc_disable
-      desc: '''Verify that the keymgr is disabled on LC escalation.
-
-            - Configure the keymgr and advance to `CreatorRootKey`.
-            - Transition life cycle to `ESCALATION` state, which should disable keymgr.
-            - Verify keymgr enters the `Disabled` state successfully.
-
-            X-ref'ed with life cycle test.
-            '''
-      milestone: V2
-      tests: []
     }
     {
       name: chip_sw_keymgr_sideload_kmac
