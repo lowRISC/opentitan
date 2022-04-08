@@ -599,6 +599,20 @@ sw_silicon_creator_lib_driver_spi_device = declare_dependency(
   ),
 )
 
+# Mask ROM ibex driver
+sw_silicon_creator_lib_driver_ibex = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_ibex',
+    sources: [
+      hw_ip_ibex_reg_h,
+      'ibex.c',
+    ],
+    dependencies: [
+      sw_lib_abs_mmio,
+    ],
+  ),
+)
+
 test('sw_silicon_creator_lib_driver_spi_device_unittest', executable(
     'sw_silicon_creator_lib_driver_spi_device_unittest',
     sources: [

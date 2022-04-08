@@ -151,6 +151,17 @@ opentitan_functest(
 )
 
 cc_library(
+    name = "ibex",
+    srcs = ["ibex.c"],
+    hdrs = ["ibex.h"],
+    deps = [
+        "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+    ],
+)
+
+cc_library(
     name = "keymgr",
     srcs = ["keymgr.c"],
     hdrs = ["keymgr.h"],
