@@ -66,10 +66,9 @@ new file mode 100644
 index 0000000..4b7301c
 --- /dev/null
 +++ b/WORKSPACE.bazel
-@@ -0,0 +1,28 @@
+@@ -0,0 +1,25 @@
 +workspace(name = "mundane")
 +
-+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 +load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 +
 +http_archive(
@@ -89,11 +88,9 @@ index 0000000..4b7301c
 +    version = "1.53.0",
 +)
 +
-+# boringssl `main-with-bazel` branch as of 2021-11-09.
-+git_repository(
++http_archive(
 +    name = "boringssl",
-+    commit = "4fb158925f7753d80fb858cb0239dff893ef9f15",
-+    remote = "https://boringssl.googlesource.com/boringssl",
++    url = "https://boringssl.googlesource.com/boringssl/+archive/4fb158925f7753d80fb858cb0239dff893ef9f15.tar.gz",
 +)
 diff --git a/boringssl/BUILD.bazel b/boringssl/BUILD.bazel
 new file mode 100644
