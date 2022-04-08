@@ -29,14 +29,10 @@ MEMORY
 
 SECTIONS
 {
-    .start ORIGIN(imem) : ALIGN(4)
+    .text ORIGIN(imem) : ALIGN(4)
     {
         _imem_start = .;
         KEEP(*(.text.start*))
-    } >imem AT>imem_load
-
-    .text : ALIGN(4)
-    {
         *(.text*)
 
         /* Align section end. Shouldn't really matter, but might make binary
