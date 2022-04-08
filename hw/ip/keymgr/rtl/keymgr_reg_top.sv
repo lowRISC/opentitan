@@ -16,6 +16,9 @@ module keymgr_reg_top (
   output keymgr_reg_pkg::keymgr_reg2hw_t reg2hw, // Write
   input  keymgr_reg_pkg::keymgr_hw2reg_t hw2reg, // Read
 
+  output logic shadowed_storage_err_o,
+  output logic shadowed_update_err_o,
+
   // Integrity check errors
   output logic intg_err_o,
 
@@ -129,10 +132,16 @@ module keymgr_reg_top (
   logic control_shadowed_we;
   logic [2:0] control_shadowed_operation_qs;
   logic [2:0] control_shadowed_operation_wd;
+  logic control_shadowed_operation_storage_err;
+  logic control_shadowed_operation_update_err;
   logic control_shadowed_cdi_sel_qs;
   logic control_shadowed_cdi_sel_wd;
+  logic control_shadowed_cdi_sel_storage_err;
+  logic control_shadowed_cdi_sel_update_err;
   logic [1:0] control_shadowed_dest_sel_qs;
   logic [1:0] control_shadowed_dest_sel_wd;
+  logic control_shadowed_dest_sel_storage_err;
+  logic control_shadowed_dest_sel_update_err;
   logic sideload_clear_we;
   logic [2:0] sideload_clear_qs;
   logic [2:0] sideload_clear_wd;
@@ -143,6 +152,8 @@ module keymgr_reg_top (
   logic reseed_interval_shadowed_we;
   logic [15:0] reseed_interval_shadowed_qs;
   logic [15:0] reseed_interval_shadowed_wd;
+  logic reseed_interval_shadowed_storage_err;
+  logic reseed_interval_shadowed_update_err;
   logic sw_binding_regwen_re;
   logic sw_binding_regwen_we;
   logic sw_binding_regwen_qs;
@@ -229,6 +240,8 @@ module keymgr_reg_top (
   logic max_creator_key_ver_shadowed_we;
   logic [31:0] max_creator_key_ver_shadowed_qs;
   logic [31:0] max_creator_key_ver_shadowed_wd;
+  logic max_creator_key_ver_shadowed_storage_err;
+  logic max_creator_key_ver_shadowed_update_err;
   logic max_owner_int_key_ver_regwen_we;
   logic max_owner_int_key_ver_regwen_qs;
   logic max_owner_int_key_ver_regwen_wd;
@@ -236,6 +249,8 @@ module keymgr_reg_top (
   logic max_owner_int_key_ver_shadowed_we;
   logic [31:0] max_owner_int_key_ver_shadowed_qs;
   logic [31:0] max_owner_int_key_ver_shadowed_wd;
+  logic max_owner_int_key_ver_shadowed_storage_err;
+  logic max_owner_int_key_ver_shadowed_update_err;
   logic max_owner_key_ver_regwen_we;
   logic max_owner_key_ver_regwen_qs;
   logic max_owner_key_ver_regwen_wd;
@@ -243,6 +258,8 @@ module keymgr_reg_top (
   logic max_owner_key_ver_shadowed_we;
   logic [31:0] max_owner_key_ver_shadowed_qs;
   logic [31:0] max_owner_key_ver_shadowed_wd;
+  logic max_owner_key_ver_shadowed_storage_err;
+  logic max_owner_key_ver_shadowed_update_err;
   logic sw_share0_output_0_re;
   logic [31:0] sw_share0_output_0_qs;
   logic [31:0] sw_share0_output_0_wd;
@@ -496,8 +513,8 @@ module keymgr_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.control_shadowed.operation.err_update),
-    .err_storage (reg2hw.control_shadowed.operation.err_storage)
+    .err_update  (control_shadowed_operation_update_err),
+    .err_storage (control_shadowed_operation_storage_err)
   );
 
   //   F[cdi_sel]: 7:7
@@ -530,8 +547,8 @@ module keymgr_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.control_shadowed.cdi_sel.err_update),
-    .err_storage (reg2hw.control_shadowed.cdi_sel.err_storage)
+    .err_update  (control_shadowed_cdi_sel_update_err),
+    .err_storage (control_shadowed_cdi_sel_storage_err)
   );
 
   //   F[dest_sel]: 13:12
@@ -564,8 +581,8 @@ module keymgr_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.control_shadowed.dest_sel.err_update),
-    .err_storage (reg2hw.control_shadowed.dest_sel.err_storage)
+    .err_update  (control_shadowed_dest_sel_update_err),
+    .err_storage (control_shadowed_dest_sel_storage_err)
   );
 
 
@@ -651,8 +668,8 @@ module keymgr_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.reseed_interval_shadowed.err_update),
-    .err_storage (reg2hw.reseed_interval_shadowed.err_storage)
+    .err_update  (reseed_interval_shadowed_update_err),
+    .err_storage (reseed_interval_shadowed_storage_err)
   );
 
 
@@ -1406,8 +1423,8 @@ module keymgr_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.max_creator_key_ver_shadowed.err_update),
-    .err_storage (reg2hw.max_creator_key_ver_shadowed.err_storage)
+    .err_update  (max_creator_key_ver_shadowed_update_err),
+    .err_storage (max_creator_key_ver_shadowed_storage_err)
   );
 
 
@@ -1467,8 +1484,8 @@ module keymgr_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.max_owner_int_key_ver_shadowed.err_update),
-    .err_storage (reg2hw.max_owner_int_key_ver_shadowed.err_storage)
+    .err_update  (max_owner_int_key_ver_shadowed_update_err),
+    .err_storage (max_owner_int_key_ver_shadowed_storage_err)
   );
 
 
@@ -1528,8 +1545,8 @@ module keymgr_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.max_owner_key_ver_shadowed.err_update),
-    .err_storage (reg2hw.max_owner_key_ver_shadowed.err_storage)
+    .err_update  (max_owner_key_ver_shadowed_update_err),
+    .err_storage (max_owner_key_ver_shadowed_storage_err)
   );
 
 
@@ -3075,6 +3092,26 @@ module keymgr_reg_top (
 
   // both shadow and normal resets have been released
   assign shadow_busy = ~(rst_done & shadow_rst_done);
+
+  // Collect up storage and update errors
+  assign shadowed_storage_err_o = |{
+    control_shadowed_operation_storage_err,
+    control_shadowed_cdi_sel_storage_err,
+    control_shadowed_dest_sel_storage_err,
+    reseed_interval_shadowed_storage_err,
+    max_creator_key_ver_shadowed_storage_err,
+    max_owner_int_key_ver_shadowed_storage_err,
+    max_owner_key_ver_shadowed_storage_err
+  };
+  assign shadowed_update_err_o = |{
+    control_shadowed_operation_update_err,
+    control_shadowed_cdi_sel_update_err,
+    control_shadowed_dest_sel_update_err,
+    reseed_interval_shadowed_update_err,
+    max_creator_key_ver_shadowed_update_err,
+    max_owner_int_key_ver_shadowed_update_err,
+    max_owner_key_ver_shadowed_update_err
+  };
 
   // register busy
   assign reg_busy = shadow_busy;

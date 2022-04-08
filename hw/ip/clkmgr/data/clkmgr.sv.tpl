@@ -151,6 +151,7 @@ from topgen.lib import Name
   ////////////////////////////////////////////////////
 
   logic [NumAlerts-1:0] alert_test, alerts;
+  logic shadowed_storage_err, shadowed_update_err;
   clkmgr_reg_pkg::clkmgr_reg2hw_t reg2hw;
   clkmgr_reg_pkg::clkmgr_hw2reg_t hw2reg;
 
@@ -169,6 +170,8 @@ from topgen.lib import Name
     .tl_o,
     .reg2hw,
     .hw2reg,
+    .shadowed_storage_err_o(shadowed_storage_err),
+    .shadowed_update_err_o(shadowed_update_err),
     // SEC_CM: BUS.INTEGRITY
     .intg_err_o(hw2reg.fatal_err_code.reg_intg.de),
     .devmode_i(1'b1)
@@ -314,12 +317,10 @@ from topgen.lib import Name
   // SEC_CM: TIMEOUT.CLK.BKGN_CHK, MEAS.CLK.BKGN_CHK
   ////////////////////////////////////////////////////
 
-  logic [${len(typed_clocks.rg_srcs)-1}:0] shadow_update_errs;
-  logic [${len(typed_clocks.rg_srcs)-1}:0] shadow_storage_errs;
   assign hw2reg.recov_err_code.shadow_update_err.d = 1'b1;
-  assign hw2reg.recov_err_code.shadow_update_err.de = |shadow_update_errs;
+  assign hw2reg.recov_err_code.shadow_update_err.de = shadowed_update_err;
   assign hw2reg.fatal_err_code.shadow_storage_err.d = 1'b1;
-  assign hw2reg.fatal_err_code.shadow_storage_err.de = |shadow_storage_errs;
+  assign hw2reg.fatal_err_code.shadow_storage_err.de = shadowed_storage_err;
 
 <% aon_freq = clocks.all_srcs['aon'].freq %>\
 % for src in typed_clocks.rg_srcs:
@@ -378,14 +379,6 @@ from topgen.lib import Name
   assign hw2reg.recov_err_code.${src}_measure_err.de = synced_${src}_err;
   assign hw2reg.recov_err_code.${src}_timeout_err.d = 1'b1;
   assign hw2reg.recov_err_code.${src}_timeout_err.de = synced_${src}_timeout_err;
-  assign shadow_update_errs[${loop.index}] =
-    reg2hw.${src}_meas_ctrl_shadowed.en.err_update |
-    reg2hw.${src}_meas_ctrl_shadowed.hi.err_update |
-    reg2hw.${src}_meas_ctrl_shadowed.lo.err_update;
-  assign shadow_storage_errs[${loop.index}] =
-    reg2hw.${src}_meas_ctrl_shadowed.en.err_storage |
-    reg2hw.${src}_meas_ctrl_shadowed.hi.err_storage |
-    reg2hw.${src}_meas_ctrl_shadowed.lo.err_storage;
 
 % endfor
 

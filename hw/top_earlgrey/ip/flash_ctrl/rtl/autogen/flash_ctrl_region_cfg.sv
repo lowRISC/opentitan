@@ -36,10 +36,7 @@ module flash_ctrl_region_cfg
 
   output bank_cfg_t [NumBanks-1:0] bank_cfg_o,
   output mp_region_cfg_t [MpRegions:0] region_cfgs_o,
-  output info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] info_page_cfgs_o,
-
-  output logic update_err_o,
-  output logic storage_err_o
+  output info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] info_page_cfgs_o
 );
 
   //////////////////////////////////////
@@ -171,92 +168,5 @@ module flash_ctrl_region_cfg
       );
     end
   end
-
-  //////////////////////////////////////
-  // Update / storage error generation
-  //////////////////////////////////////
-
-  // shadow errors and faults
-  logic [NumBanks-1:0] bank_update_err, bank_store_err;
-  logic [MpRegions-1:0] data_update_err, data_store_err;
-  logic default_update_err, default_store_err;
-  logic [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] info_update_err, info_store_err;
-
-  assign update_err_o = |data_update_err |
-                        |default_update_err |
-                        |info_update_err |
-                        |bank_update_err;
-
-  assign storage_err_o = |data_store_err |
-                         |default_store_err |
-                         |info_store_err |
-                         |bank_store_err;
-
-  for (genvar i = 0; i < NumBanks; i++) begin : gen_bank_err
-    assign bank_update_err[i] = bank_cfg_i[i].err_update;
-    assign bank_store_err[i] = bank_cfg_i[i].err_storage;
-  end
-
-  for (genvar i = 0; i < MpRegions; i++) begin : gen_data_err
-    assign data_update_err[i] = region_cfg_i[i].base.err_update |
-                                region_cfg_i[i].size.err_update |
-                                region_cfg_i[i].en.err_update |
-                                region_cfg_i[i].rd_en.err_update |
-                                region_cfg_i[i].prog_en.err_update |
-                                region_cfg_i[i].erase_en.err_update |
-                                region_cfg_i[i].scramble_en.err_update |
-                                region_cfg_i[i].ecc_en.err_update |
-                                region_cfg_i[i].he_en.err_update;
-
-    assign data_store_err[i] = region_cfg_i[i].base.err_storage |
-                               region_cfg_i[i].size.err_storage |
-                               region_cfg_i[i].en.err_storage |
-                               region_cfg_i[i].rd_en.err_storage |
-                               region_cfg_i[i].prog_en.err_storage |
-                               region_cfg_i[i].erase_en.err_storage |
-                               region_cfg_i[i].scramble_en.err_storage |
-                               region_cfg_i[i].ecc_en.err_storage |
-                               region_cfg_i[i].he_en.err_storage;
-  end
-
-  assign default_update_err =  default_cfg_i.rd_en.err_update |
-                               default_cfg_i.prog_en.err_update |
-                               default_cfg_i.erase_en.err_update |
-                               default_cfg_i.scramble_en.err_update |
-                               default_cfg_i.ecc_en.err_update |
-                               default_cfg_i.he_en.err_update;
-
-  assign default_store_err =  default_cfg_i.rd_en.err_storage |
-                              default_cfg_i.prog_en.err_storage |
-                              default_cfg_i.erase_en.err_storage |
-                              default_cfg_i.scramble_en.err_storage |
-                              default_cfg_i.ecc_en.err_storage |
-                              default_cfg_i.he_en.err_storage;
-
-  for (genvar i = 0; i < NumBanks; i++) begin : gen_info_err_bank
-    for (genvar j = 0; j < InfoTypes; j++) begin : gen_info_err_type
-      for (genvar k = 0; k < InfosPerBank; k++) begin : gen_info_err_page
-        assign info_update_err[i][j][k] = sw_info_cfgs[i][j][k].en.err_update |
-                                          sw_info_cfgs[i][j][k].rd_en.err_update |
-                                          sw_info_cfgs[i][j][k].prog_en.err_update |
-                                          sw_info_cfgs[i][j][k].erase_en.err_update |
-                                          sw_info_cfgs[i][j][k].scramble_en.err_update |
-                                          sw_info_cfgs[i][j][k].ecc_en.err_update |
-                                          sw_info_cfgs[i][j][k].he_en.err_update;
-
-        assign info_store_err[i][j][k] = sw_info_cfgs[i][j][k].en.err_storage |
-                                         sw_info_cfgs[i][j][k].rd_en.err_storage |
-                                         sw_info_cfgs[i][j][k].prog_en.err_storage |
-                                         sw_info_cfgs[i][j][k].erase_en.err_storage |
-                                         sw_info_cfgs[i][j][k].scramble_en.err_storage |
-                                         sw_info_cfgs[i][j][k].ecc_en.err_storage |
-                                         sw_info_cfgs[i][j][k].he_en.err_storage;
-      end
-    end
-  end
-
-  //////////////////////////////////////
-  // unused
-  //////////////////////////////////////
 
 endmodule // flash_ctrl_reg_wrap

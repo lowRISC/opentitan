@@ -73,74 +73,50 @@ package kmac_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-      logic        err_update;
-      logic        err_storage;
     } kmac_en;
     struct packed {
       logic [2:0]  q;
       logic        qe;
-      logic        err_update;
-      logic        err_storage;
     } kstrength;
     struct packed {
       logic [1:0]  q;
       logic        qe;
-      logic        err_update;
-      logic        err_storage;
     } mode;
     struct packed {
       logic        q;
       logic        qe;
-      logic        err_update;
-      logic        err_storage;
     } msg_endianness;
     struct packed {
       logic        q;
       logic        qe;
-      logic        err_update;
-      logic        err_storage;
     } state_endianness;
     struct packed {
       logic        q;
       logic        qe;
-      logic        err_update;
-      logic        err_storage;
     } sideload;
     struct packed {
       logic [1:0]  q;
       logic        qe;
-      logic        err_update;
-      logic        err_storage;
     } entropy_mode;
     struct packed {
       logic        q;
       logic        qe;
-      logic        err_update;
-      logic        err_storage;
     } entropy_fast_process;
     struct packed {
       logic        q;
       logic        qe;
-      logic        err_update;
-      logic        err_storage;
     } msg_mask;
     struct packed {
       logic        q;
       logic        qe;
-      logic        err_update;
-      logic        err_storage;
     } entropy_ready;
     struct packed {
       logic        q;
       logic        qe;
-      logic        err_update;
-      logic        err_storage;
     } err_processed;
     struct packed {
       logic        q;
       logic        qe;
-      logic        err_update;
-      logic        err_storage;
     } en_unsupported_modestrength;
   } kmac_reg2hw_cfg_shadowed_reg_t;
 
@@ -170,8 +146,6 @@ package kmac_reg_pkg;
 
   typedef struct packed {
     logic [9:0] q;
-    logic        err_update;
-    logic        err_storage;
   } kmac_reg2hw_entropy_refresh_threshold_shadowed_reg_t;
 
   typedef struct packed {

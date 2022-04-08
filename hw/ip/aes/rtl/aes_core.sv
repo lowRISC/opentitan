@@ -45,6 +45,8 @@ module aes_core
   input  lc_ctrl_pkg::lc_tx_t         lc_escalate_en_i,
 
   // Alerts
+  input  logic                        shadowed_storage_err_i,
+  input  logic                        shadowed_update_err_i,
   input  logic                        intg_err_alert_i,
   output logic                        alert_recov_o,
   output logic                        alert_fatal_o,
@@ -893,7 +895,7 @@ module aes_core
   assign clear_on_fatal = ClearStatusOnFatalAlert ? alert_fatal_o : 1'b0;
 
   // Recoverable alert conditions are signaled as a single alert event.
-  assign ctrl_err_update = ctrl_reg_err_update | reg2hw.ctrl_aux_shadowed.err_update;
+  assign ctrl_err_update = ctrl_reg_err_update | shadowed_update_err_i;
   assign alert_recov_o = ctrl_err_update;
 
   // The recoverable alert is observable via status register until the AES operation is restarted
@@ -902,7 +904,7 @@ module aes_core
   assign hw2reg.status.alert_recov_ctrl_update_err.de = ctrl_err_update | ctrl_we | clear_on_fatal;
 
   // Fatal alert conditions need to remain asserted until reset.
-  assign ctrl_err_storage_d = ctrl_reg_err_storage | reg2hw.ctrl_aux_shadowed.err_storage;
+  assign ctrl_err_storage_d = ctrl_reg_err_storage | shadowed_storage_err_i;
   always_ff @(posedge clk_i or negedge rst_ni) begin : ctrl_err_storage_reg
     if (!rst_ni) begin
       ctrl_err_storage_q <= 1'b0;

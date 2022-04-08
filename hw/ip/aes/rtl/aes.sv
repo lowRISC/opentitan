@@ -93,6 +93,7 @@ module aes
   // SEC_CM: DATA_REG.SW_UNREADABLE
   // Register interface
   logic intg_err_alert;
+  logic shadowed_storage_err, shadowed_update_err;
   aes_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -101,6 +102,8 @@ module aes
     .tl_o,
     .reg2hw,
     .hw2reg,
+    .shadowed_storage_err_o(shadowed_storage_err),
+    .shadowed_update_err_o(shadowed_update_err),
     .intg_err_o(intg_err_alert),
     .devmode_i(1'b1)
   );
@@ -198,6 +201,8 @@ module aes
 
     .lc_escalate_en_i       ( lc_escalate_en       ),
 
+    .shadowed_storage_err_i ( shadowed_storage_err ),
+    .shadowed_update_err_i  ( shadowed_update_err  ),
     .intg_err_alert_i       ( intg_err_alert       ),
     .alert_recov_o          ( alert[0]             ),
     .alert_fatal_o          ( alert[1]             ),

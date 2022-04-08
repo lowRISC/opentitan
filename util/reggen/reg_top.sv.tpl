@@ -140,6 +140,11 @@ module ${mod_name} (
   input  ${lblock}_reg_pkg::${hw2reg_t} hw2reg, // Read
 % endif
 
+% if rb.has_internal_shadowed_reg():
+  output logic shadowed_storage_err_o,
+  output logic shadowed_update_err_o,
+
+%endif
   // Integrity check errors
   output logic intg_err_o,
 
@@ -641,6 +646,33 @@ ${rdata_gen(f, r.name.lower() + "_" + f.name.lower())}\
   assign shadow_busy = 1'b0;
   % endif
 
+  % if rb.has_internal_shadowed_reg():
+  // Collect up storage and update errors
+<%
+    shadowed_field_pfxs = []
+    for r in rb.all_regs:
+      r0, srs = r0_srs[r]
+
+      if not (r0.shadowed and not r0.hwext):
+        continue
+
+      for sr in srs:
+        for field in sr.fields:
+          _, pfx = finst_names[field]
+          shadowed_field_pfxs.append(pfx)
+%>\
+  assign shadowed_storage_err_o = |{
+  % for pfx in shadowed_field_pfxs:
+    ${pfx}_storage_err${"" if loop.last else ","}
+  % endfor
+  };
+  assign shadowed_update_err_o = |{
+  % for pfx in shadowed_field_pfxs:
+    ${pfx}_update_err${"" if loop.last else ","}
+  % endfor
+  };
+
+  % endif
   // register busy
 <%
   async_busy_signals = {}
@@ -730,6 +762,10 @@ ${bits.msb}\
   % endif
   % if not async_clk and field.swaccess.allows_write():
   logic ${str_arr_sv(field.bits)}${sig_name}_wd;
+  % endif
+  % if shadowed and not hwext:
+  logic ${sig_name}_storage_err;
+  logic ${sig_name}_update_err;
   % endif
 </%def>\
 <%def name="finst_gen(reg, field, finst_name, fsig_name, fidx)">\
@@ -838,7 +874,7 @@ ${bits.msb}\
     .rst_ni,
     .en_i(sync_${clk_base_name}update),
     .d_i(async_${finst_name}_err_storage),
-    .q_o(reg2hw.${fsig_name}.err_storage)
+    .q_o(${finst_name}_storage_err)
   );
 
   // update error is transient and must be immediately captured
@@ -848,7 +884,7 @@ ${bits.msb}\
     .src_pulse_i(async_${finst_name}_err_update),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(reg2hw.${fsig_name}.err_update)
+    .dst_pulse_o(${finst_name}_update_err)
   );
       % endif
   ${subreg_block} #(
@@ -891,8 +927,8 @@ ${bits.msb}\
     .err_update  (async_${finst_name}_err_update),
     .err_storage (async_${finst_name}_err_storage)
         % else:
-    .err_update  (reg2hw.${fsig_name}.err_update),
-    .err_storage (reg2hw.${fsig_name}.err_storage)
+    .err_update  (${finst_name}_update_err),
+    .err_storage (${finst_name}_storage_err)
         % endif
       % endif
   );

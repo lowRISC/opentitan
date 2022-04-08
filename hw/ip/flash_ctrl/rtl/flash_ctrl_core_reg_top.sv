@@ -21,6 +21,9 @@ module flash_ctrl_core_reg_top (
   output flash_ctrl_reg_pkg::flash_ctrl_core_reg2hw_t reg2hw, // Write
   input  flash_ctrl_reg_pkg::flash_ctrl_core_hw2reg_t hw2reg, // Read
 
+  output logic shadowed_storage_err_o,
+  output logic shadowed_update_err_o,
+
   // Integrity check errors
   output logic intg_err_o,
 
@@ -270,176 +273,332 @@ module flash_ctrl_core_reg_top (
   logic mp_region_cfg_shadowed_0_we;
   logic mp_region_cfg_shadowed_0_en_0_qs;
   logic mp_region_cfg_shadowed_0_en_0_wd;
+  logic mp_region_cfg_shadowed_0_en_0_storage_err;
+  logic mp_region_cfg_shadowed_0_en_0_update_err;
   logic mp_region_cfg_shadowed_0_rd_en_0_qs;
   logic mp_region_cfg_shadowed_0_rd_en_0_wd;
+  logic mp_region_cfg_shadowed_0_rd_en_0_storage_err;
+  logic mp_region_cfg_shadowed_0_rd_en_0_update_err;
   logic mp_region_cfg_shadowed_0_prog_en_0_qs;
   logic mp_region_cfg_shadowed_0_prog_en_0_wd;
+  logic mp_region_cfg_shadowed_0_prog_en_0_storage_err;
+  logic mp_region_cfg_shadowed_0_prog_en_0_update_err;
   logic mp_region_cfg_shadowed_0_erase_en_0_qs;
   logic mp_region_cfg_shadowed_0_erase_en_0_wd;
+  logic mp_region_cfg_shadowed_0_erase_en_0_storage_err;
+  logic mp_region_cfg_shadowed_0_erase_en_0_update_err;
   logic mp_region_cfg_shadowed_0_scramble_en_0_qs;
   logic mp_region_cfg_shadowed_0_scramble_en_0_wd;
+  logic mp_region_cfg_shadowed_0_scramble_en_0_storage_err;
+  logic mp_region_cfg_shadowed_0_scramble_en_0_update_err;
   logic mp_region_cfg_shadowed_0_ecc_en_0_qs;
   logic mp_region_cfg_shadowed_0_ecc_en_0_wd;
+  logic mp_region_cfg_shadowed_0_ecc_en_0_storage_err;
+  logic mp_region_cfg_shadowed_0_ecc_en_0_update_err;
   logic mp_region_cfg_shadowed_0_he_en_0_qs;
   logic mp_region_cfg_shadowed_0_he_en_0_wd;
+  logic mp_region_cfg_shadowed_0_he_en_0_storage_err;
+  logic mp_region_cfg_shadowed_0_he_en_0_update_err;
   logic [8:0] mp_region_cfg_shadowed_0_base_0_qs;
   logic [8:0] mp_region_cfg_shadowed_0_base_0_wd;
+  logic mp_region_cfg_shadowed_0_base_0_storage_err;
+  logic mp_region_cfg_shadowed_0_base_0_update_err;
   logic [9:0] mp_region_cfg_shadowed_0_size_0_qs;
   logic [9:0] mp_region_cfg_shadowed_0_size_0_wd;
+  logic mp_region_cfg_shadowed_0_size_0_storage_err;
+  logic mp_region_cfg_shadowed_0_size_0_update_err;
   logic mp_region_cfg_shadowed_1_re;
   logic mp_region_cfg_shadowed_1_we;
   logic mp_region_cfg_shadowed_1_en_1_qs;
   logic mp_region_cfg_shadowed_1_en_1_wd;
+  logic mp_region_cfg_shadowed_1_en_1_storage_err;
+  logic mp_region_cfg_shadowed_1_en_1_update_err;
   logic mp_region_cfg_shadowed_1_rd_en_1_qs;
   logic mp_region_cfg_shadowed_1_rd_en_1_wd;
+  logic mp_region_cfg_shadowed_1_rd_en_1_storage_err;
+  logic mp_region_cfg_shadowed_1_rd_en_1_update_err;
   logic mp_region_cfg_shadowed_1_prog_en_1_qs;
   logic mp_region_cfg_shadowed_1_prog_en_1_wd;
+  logic mp_region_cfg_shadowed_1_prog_en_1_storage_err;
+  logic mp_region_cfg_shadowed_1_prog_en_1_update_err;
   logic mp_region_cfg_shadowed_1_erase_en_1_qs;
   logic mp_region_cfg_shadowed_1_erase_en_1_wd;
+  logic mp_region_cfg_shadowed_1_erase_en_1_storage_err;
+  logic mp_region_cfg_shadowed_1_erase_en_1_update_err;
   logic mp_region_cfg_shadowed_1_scramble_en_1_qs;
   logic mp_region_cfg_shadowed_1_scramble_en_1_wd;
+  logic mp_region_cfg_shadowed_1_scramble_en_1_storage_err;
+  logic mp_region_cfg_shadowed_1_scramble_en_1_update_err;
   logic mp_region_cfg_shadowed_1_ecc_en_1_qs;
   logic mp_region_cfg_shadowed_1_ecc_en_1_wd;
+  logic mp_region_cfg_shadowed_1_ecc_en_1_storage_err;
+  logic mp_region_cfg_shadowed_1_ecc_en_1_update_err;
   logic mp_region_cfg_shadowed_1_he_en_1_qs;
   logic mp_region_cfg_shadowed_1_he_en_1_wd;
+  logic mp_region_cfg_shadowed_1_he_en_1_storage_err;
+  logic mp_region_cfg_shadowed_1_he_en_1_update_err;
   logic [8:0] mp_region_cfg_shadowed_1_base_1_qs;
   logic [8:0] mp_region_cfg_shadowed_1_base_1_wd;
+  logic mp_region_cfg_shadowed_1_base_1_storage_err;
+  logic mp_region_cfg_shadowed_1_base_1_update_err;
   logic [9:0] mp_region_cfg_shadowed_1_size_1_qs;
   logic [9:0] mp_region_cfg_shadowed_1_size_1_wd;
+  logic mp_region_cfg_shadowed_1_size_1_storage_err;
+  logic mp_region_cfg_shadowed_1_size_1_update_err;
   logic mp_region_cfg_shadowed_2_re;
   logic mp_region_cfg_shadowed_2_we;
   logic mp_region_cfg_shadowed_2_en_2_qs;
   logic mp_region_cfg_shadowed_2_en_2_wd;
+  logic mp_region_cfg_shadowed_2_en_2_storage_err;
+  logic mp_region_cfg_shadowed_2_en_2_update_err;
   logic mp_region_cfg_shadowed_2_rd_en_2_qs;
   logic mp_region_cfg_shadowed_2_rd_en_2_wd;
+  logic mp_region_cfg_shadowed_2_rd_en_2_storage_err;
+  logic mp_region_cfg_shadowed_2_rd_en_2_update_err;
   logic mp_region_cfg_shadowed_2_prog_en_2_qs;
   logic mp_region_cfg_shadowed_2_prog_en_2_wd;
+  logic mp_region_cfg_shadowed_2_prog_en_2_storage_err;
+  logic mp_region_cfg_shadowed_2_prog_en_2_update_err;
   logic mp_region_cfg_shadowed_2_erase_en_2_qs;
   logic mp_region_cfg_shadowed_2_erase_en_2_wd;
+  logic mp_region_cfg_shadowed_2_erase_en_2_storage_err;
+  logic mp_region_cfg_shadowed_2_erase_en_2_update_err;
   logic mp_region_cfg_shadowed_2_scramble_en_2_qs;
   logic mp_region_cfg_shadowed_2_scramble_en_2_wd;
+  logic mp_region_cfg_shadowed_2_scramble_en_2_storage_err;
+  logic mp_region_cfg_shadowed_2_scramble_en_2_update_err;
   logic mp_region_cfg_shadowed_2_ecc_en_2_qs;
   logic mp_region_cfg_shadowed_2_ecc_en_2_wd;
+  logic mp_region_cfg_shadowed_2_ecc_en_2_storage_err;
+  logic mp_region_cfg_shadowed_2_ecc_en_2_update_err;
   logic mp_region_cfg_shadowed_2_he_en_2_qs;
   logic mp_region_cfg_shadowed_2_he_en_2_wd;
+  logic mp_region_cfg_shadowed_2_he_en_2_storage_err;
+  logic mp_region_cfg_shadowed_2_he_en_2_update_err;
   logic [8:0] mp_region_cfg_shadowed_2_base_2_qs;
   logic [8:0] mp_region_cfg_shadowed_2_base_2_wd;
+  logic mp_region_cfg_shadowed_2_base_2_storage_err;
+  logic mp_region_cfg_shadowed_2_base_2_update_err;
   logic [9:0] mp_region_cfg_shadowed_2_size_2_qs;
   logic [9:0] mp_region_cfg_shadowed_2_size_2_wd;
+  logic mp_region_cfg_shadowed_2_size_2_storage_err;
+  logic mp_region_cfg_shadowed_2_size_2_update_err;
   logic mp_region_cfg_shadowed_3_re;
   logic mp_region_cfg_shadowed_3_we;
   logic mp_region_cfg_shadowed_3_en_3_qs;
   logic mp_region_cfg_shadowed_3_en_3_wd;
+  logic mp_region_cfg_shadowed_3_en_3_storage_err;
+  logic mp_region_cfg_shadowed_3_en_3_update_err;
   logic mp_region_cfg_shadowed_3_rd_en_3_qs;
   logic mp_region_cfg_shadowed_3_rd_en_3_wd;
+  logic mp_region_cfg_shadowed_3_rd_en_3_storage_err;
+  logic mp_region_cfg_shadowed_3_rd_en_3_update_err;
   logic mp_region_cfg_shadowed_3_prog_en_3_qs;
   logic mp_region_cfg_shadowed_3_prog_en_3_wd;
+  logic mp_region_cfg_shadowed_3_prog_en_3_storage_err;
+  logic mp_region_cfg_shadowed_3_prog_en_3_update_err;
   logic mp_region_cfg_shadowed_3_erase_en_3_qs;
   logic mp_region_cfg_shadowed_3_erase_en_3_wd;
+  logic mp_region_cfg_shadowed_3_erase_en_3_storage_err;
+  logic mp_region_cfg_shadowed_3_erase_en_3_update_err;
   logic mp_region_cfg_shadowed_3_scramble_en_3_qs;
   logic mp_region_cfg_shadowed_3_scramble_en_3_wd;
+  logic mp_region_cfg_shadowed_3_scramble_en_3_storage_err;
+  logic mp_region_cfg_shadowed_3_scramble_en_3_update_err;
   logic mp_region_cfg_shadowed_3_ecc_en_3_qs;
   logic mp_region_cfg_shadowed_3_ecc_en_3_wd;
+  logic mp_region_cfg_shadowed_3_ecc_en_3_storage_err;
+  logic mp_region_cfg_shadowed_3_ecc_en_3_update_err;
   logic mp_region_cfg_shadowed_3_he_en_3_qs;
   logic mp_region_cfg_shadowed_3_he_en_3_wd;
+  logic mp_region_cfg_shadowed_3_he_en_3_storage_err;
+  logic mp_region_cfg_shadowed_3_he_en_3_update_err;
   logic [8:0] mp_region_cfg_shadowed_3_base_3_qs;
   logic [8:0] mp_region_cfg_shadowed_3_base_3_wd;
+  logic mp_region_cfg_shadowed_3_base_3_storage_err;
+  logic mp_region_cfg_shadowed_3_base_3_update_err;
   logic [9:0] mp_region_cfg_shadowed_3_size_3_qs;
   logic [9:0] mp_region_cfg_shadowed_3_size_3_wd;
+  logic mp_region_cfg_shadowed_3_size_3_storage_err;
+  logic mp_region_cfg_shadowed_3_size_3_update_err;
   logic mp_region_cfg_shadowed_4_re;
   logic mp_region_cfg_shadowed_4_we;
   logic mp_region_cfg_shadowed_4_en_4_qs;
   logic mp_region_cfg_shadowed_4_en_4_wd;
+  logic mp_region_cfg_shadowed_4_en_4_storage_err;
+  logic mp_region_cfg_shadowed_4_en_4_update_err;
   logic mp_region_cfg_shadowed_4_rd_en_4_qs;
   logic mp_region_cfg_shadowed_4_rd_en_4_wd;
+  logic mp_region_cfg_shadowed_4_rd_en_4_storage_err;
+  logic mp_region_cfg_shadowed_4_rd_en_4_update_err;
   logic mp_region_cfg_shadowed_4_prog_en_4_qs;
   logic mp_region_cfg_shadowed_4_prog_en_4_wd;
+  logic mp_region_cfg_shadowed_4_prog_en_4_storage_err;
+  logic mp_region_cfg_shadowed_4_prog_en_4_update_err;
   logic mp_region_cfg_shadowed_4_erase_en_4_qs;
   logic mp_region_cfg_shadowed_4_erase_en_4_wd;
+  logic mp_region_cfg_shadowed_4_erase_en_4_storage_err;
+  logic mp_region_cfg_shadowed_4_erase_en_4_update_err;
   logic mp_region_cfg_shadowed_4_scramble_en_4_qs;
   logic mp_region_cfg_shadowed_4_scramble_en_4_wd;
+  logic mp_region_cfg_shadowed_4_scramble_en_4_storage_err;
+  logic mp_region_cfg_shadowed_4_scramble_en_4_update_err;
   logic mp_region_cfg_shadowed_4_ecc_en_4_qs;
   logic mp_region_cfg_shadowed_4_ecc_en_4_wd;
+  logic mp_region_cfg_shadowed_4_ecc_en_4_storage_err;
+  logic mp_region_cfg_shadowed_4_ecc_en_4_update_err;
   logic mp_region_cfg_shadowed_4_he_en_4_qs;
   logic mp_region_cfg_shadowed_4_he_en_4_wd;
+  logic mp_region_cfg_shadowed_4_he_en_4_storage_err;
+  logic mp_region_cfg_shadowed_4_he_en_4_update_err;
   logic [8:0] mp_region_cfg_shadowed_4_base_4_qs;
   logic [8:0] mp_region_cfg_shadowed_4_base_4_wd;
+  logic mp_region_cfg_shadowed_4_base_4_storage_err;
+  logic mp_region_cfg_shadowed_4_base_4_update_err;
   logic [9:0] mp_region_cfg_shadowed_4_size_4_qs;
   logic [9:0] mp_region_cfg_shadowed_4_size_4_wd;
+  logic mp_region_cfg_shadowed_4_size_4_storage_err;
+  logic mp_region_cfg_shadowed_4_size_4_update_err;
   logic mp_region_cfg_shadowed_5_re;
   logic mp_region_cfg_shadowed_5_we;
   logic mp_region_cfg_shadowed_5_en_5_qs;
   logic mp_region_cfg_shadowed_5_en_5_wd;
+  logic mp_region_cfg_shadowed_5_en_5_storage_err;
+  logic mp_region_cfg_shadowed_5_en_5_update_err;
   logic mp_region_cfg_shadowed_5_rd_en_5_qs;
   logic mp_region_cfg_shadowed_5_rd_en_5_wd;
+  logic mp_region_cfg_shadowed_5_rd_en_5_storage_err;
+  logic mp_region_cfg_shadowed_5_rd_en_5_update_err;
   logic mp_region_cfg_shadowed_5_prog_en_5_qs;
   logic mp_region_cfg_shadowed_5_prog_en_5_wd;
+  logic mp_region_cfg_shadowed_5_prog_en_5_storage_err;
+  logic mp_region_cfg_shadowed_5_prog_en_5_update_err;
   logic mp_region_cfg_shadowed_5_erase_en_5_qs;
   logic mp_region_cfg_shadowed_5_erase_en_5_wd;
+  logic mp_region_cfg_shadowed_5_erase_en_5_storage_err;
+  logic mp_region_cfg_shadowed_5_erase_en_5_update_err;
   logic mp_region_cfg_shadowed_5_scramble_en_5_qs;
   logic mp_region_cfg_shadowed_5_scramble_en_5_wd;
+  logic mp_region_cfg_shadowed_5_scramble_en_5_storage_err;
+  logic mp_region_cfg_shadowed_5_scramble_en_5_update_err;
   logic mp_region_cfg_shadowed_5_ecc_en_5_qs;
   logic mp_region_cfg_shadowed_5_ecc_en_5_wd;
+  logic mp_region_cfg_shadowed_5_ecc_en_5_storage_err;
+  logic mp_region_cfg_shadowed_5_ecc_en_5_update_err;
   logic mp_region_cfg_shadowed_5_he_en_5_qs;
   logic mp_region_cfg_shadowed_5_he_en_5_wd;
+  logic mp_region_cfg_shadowed_5_he_en_5_storage_err;
+  logic mp_region_cfg_shadowed_5_he_en_5_update_err;
   logic [8:0] mp_region_cfg_shadowed_5_base_5_qs;
   logic [8:0] mp_region_cfg_shadowed_5_base_5_wd;
+  logic mp_region_cfg_shadowed_5_base_5_storage_err;
+  logic mp_region_cfg_shadowed_5_base_5_update_err;
   logic [9:0] mp_region_cfg_shadowed_5_size_5_qs;
   logic [9:0] mp_region_cfg_shadowed_5_size_5_wd;
+  logic mp_region_cfg_shadowed_5_size_5_storage_err;
+  logic mp_region_cfg_shadowed_5_size_5_update_err;
   logic mp_region_cfg_shadowed_6_re;
   logic mp_region_cfg_shadowed_6_we;
   logic mp_region_cfg_shadowed_6_en_6_qs;
   logic mp_region_cfg_shadowed_6_en_6_wd;
+  logic mp_region_cfg_shadowed_6_en_6_storage_err;
+  logic mp_region_cfg_shadowed_6_en_6_update_err;
   logic mp_region_cfg_shadowed_6_rd_en_6_qs;
   logic mp_region_cfg_shadowed_6_rd_en_6_wd;
+  logic mp_region_cfg_shadowed_6_rd_en_6_storage_err;
+  logic mp_region_cfg_shadowed_6_rd_en_6_update_err;
   logic mp_region_cfg_shadowed_6_prog_en_6_qs;
   logic mp_region_cfg_shadowed_6_prog_en_6_wd;
+  logic mp_region_cfg_shadowed_6_prog_en_6_storage_err;
+  logic mp_region_cfg_shadowed_6_prog_en_6_update_err;
   logic mp_region_cfg_shadowed_6_erase_en_6_qs;
   logic mp_region_cfg_shadowed_6_erase_en_6_wd;
+  logic mp_region_cfg_shadowed_6_erase_en_6_storage_err;
+  logic mp_region_cfg_shadowed_6_erase_en_6_update_err;
   logic mp_region_cfg_shadowed_6_scramble_en_6_qs;
   logic mp_region_cfg_shadowed_6_scramble_en_6_wd;
+  logic mp_region_cfg_shadowed_6_scramble_en_6_storage_err;
+  logic mp_region_cfg_shadowed_6_scramble_en_6_update_err;
   logic mp_region_cfg_shadowed_6_ecc_en_6_qs;
   logic mp_region_cfg_shadowed_6_ecc_en_6_wd;
+  logic mp_region_cfg_shadowed_6_ecc_en_6_storage_err;
+  logic mp_region_cfg_shadowed_6_ecc_en_6_update_err;
   logic mp_region_cfg_shadowed_6_he_en_6_qs;
   logic mp_region_cfg_shadowed_6_he_en_6_wd;
+  logic mp_region_cfg_shadowed_6_he_en_6_storage_err;
+  logic mp_region_cfg_shadowed_6_he_en_6_update_err;
   logic [8:0] mp_region_cfg_shadowed_6_base_6_qs;
   logic [8:0] mp_region_cfg_shadowed_6_base_6_wd;
+  logic mp_region_cfg_shadowed_6_base_6_storage_err;
+  logic mp_region_cfg_shadowed_6_base_6_update_err;
   logic [9:0] mp_region_cfg_shadowed_6_size_6_qs;
   logic [9:0] mp_region_cfg_shadowed_6_size_6_wd;
+  logic mp_region_cfg_shadowed_6_size_6_storage_err;
+  logic mp_region_cfg_shadowed_6_size_6_update_err;
   logic mp_region_cfg_shadowed_7_re;
   logic mp_region_cfg_shadowed_7_we;
   logic mp_region_cfg_shadowed_7_en_7_qs;
   logic mp_region_cfg_shadowed_7_en_7_wd;
+  logic mp_region_cfg_shadowed_7_en_7_storage_err;
+  logic mp_region_cfg_shadowed_7_en_7_update_err;
   logic mp_region_cfg_shadowed_7_rd_en_7_qs;
   logic mp_region_cfg_shadowed_7_rd_en_7_wd;
+  logic mp_region_cfg_shadowed_7_rd_en_7_storage_err;
+  logic mp_region_cfg_shadowed_7_rd_en_7_update_err;
   logic mp_region_cfg_shadowed_7_prog_en_7_qs;
   logic mp_region_cfg_shadowed_7_prog_en_7_wd;
+  logic mp_region_cfg_shadowed_7_prog_en_7_storage_err;
+  logic mp_region_cfg_shadowed_7_prog_en_7_update_err;
   logic mp_region_cfg_shadowed_7_erase_en_7_qs;
   logic mp_region_cfg_shadowed_7_erase_en_7_wd;
+  logic mp_region_cfg_shadowed_7_erase_en_7_storage_err;
+  logic mp_region_cfg_shadowed_7_erase_en_7_update_err;
   logic mp_region_cfg_shadowed_7_scramble_en_7_qs;
   logic mp_region_cfg_shadowed_7_scramble_en_7_wd;
+  logic mp_region_cfg_shadowed_7_scramble_en_7_storage_err;
+  logic mp_region_cfg_shadowed_7_scramble_en_7_update_err;
   logic mp_region_cfg_shadowed_7_ecc_en_7_qs;
   logic mp_region_cfg_shadowed_7_ecc_en_7_wd;
+  logic mp_region_cfg_shadowed_7_ecc_en_7_storage_err;
+  logic mp_region_cfg_shadowed_7_ecc_en_7_update_err;
   logic mp_region_cfg_shadowed_7_he_en_7_qs;
   logic mp_region_cfg_shadowed_7_he_en_7_wd;
+  logic mp_region_cfg_shadowed_7_he_en_7_storage_err;
+  logic mp_region_cfg_shadowed_7_he_en_7_update_err;
   logic [8:0] mp_region_cfg_shadowed_7_base_7_qs;
   logic [8:0] mp_region_cfg_shadowed_7_base_7_wd;
+  logic mp_region_cfg_shadowed_7_base_7_storage_err;
+  logic mp_region_cfg_shadowed_7_base_7_update_err;
   logic [9:0] mp_region_cfg_shadowed_7_size_7_qs;
   logic [9:0] mp_region_cfg_shadowed_7_size_7_wd;
+  logic mp_region_cfg_shadowed_7_size_7_storage_err;
+  logic mp_region_cfg_shadowed_7_size_7_update_err;
   logic default_region_shadowed_re;
   logic default_region_shadowed_we;
   logic default_region_shadowed_rd_en_qs;
   logic default_region_shadowed_rd_en_wd;
+  logic default_region_shadowed_rd_en_storage_err;
+  logic default_region_shadowed_rd_en_update_err;
   logic default_region_shadowed_prog_en_qs;
   logic default_region_shadowed_prog_en_wd;
+  logic default_region_shadowed_prog_en_storage_err;
+  logic default_region_shadowed_prog_en_update_err;
   logic default_region_shadowed_erase_en_qs;
   logic default_region_shadowed_erase_en_wd;
+  logic default_region_shadowed_erase_en_storage_err;
+  logic default_region_shadowed_erase_en_update_err;
   logic default_region_shadowed_scramble_en_qs;
   logic default_region_shadowed_scramble_en_wd;
+  logic default_region_shadowed_scramble_en_storage_err;
+  logic default_region_shadowed_scramble_en_update_err;
   logic default_region_shadowed_ecc_en_qs;
   logic default_region_shadowed_ecc_en_wd;
+  logic default_region_shadowed_ecc_en_storage_err;
+  logic default_region_shadowed_ecc_en_update_err;
   logic default_region_shadowed_he_en_qs;
   logic default_region_shadowed_he_en_wd;
+  logic default_region_shadowed_he_en_storage_err;
+  logic default_region_shadowed_he_en_update_err;
   logic bank0_info0_regwen_0_we;
   logic bank0_info0_regwen_0_qs;
   logic bank0_info0_regwen_0_wd;
@@ -474,162 +633,302 @@ module flash_ctrl_core_reg_top (
   logic bank0_info0_page_cfg_shadowed_0_we;
   logic bank0_info0_page_cfg_shadowed_0_en_0_qs;
   logic bank0_info0_page_cfg_shadowed_0_en_0_wd;
+  logic bank0_info0_page_cfg_shadowed_0_en_0_storage_err;
+  logic bank0_info0_page_cfg_shadowed_0_en_0_update_err;
   logic bank0_info0_page_cfg_shadowed_0_rd_en_0_qs;
   logic bank0_info0_page_cfg_shadowed_0_rd_en_0_wd;
+  logic bank0_info0_page_cfg_shadowed_0_rd_en_0_storage_err;
+  logic bank0_info0_page_cfg_shadowed_0_rd_en_0_update_err;
   logic bank0_info0_page_cfg_shadowed_0_prog_en_0_qs;
   logic bank0_info0_page_cfg_shadowed_0_prog_en_0_wd;
+  logic bank0_info0_page_cfg_shadowed_0_prog_en_0_storage_err;
+  logic bank0_info0_page_cfg_shadowed_0_prog_en_0_update_err;
   logic bank0_info0_page_cfg_shadowed_0_erase_en_0_qs;
   logic bank0_info0_page_cfg_shadowed_0_erase_en_0_wd;
+  logic bank0_info0_page_cfg_shadowed_0_erase_en_0_storage_err;
+  logic bank0_info0_page_cfg_shadowed_0_erase_en_0_update_err;
   logic bank0_info0_page_cfg_shadowed_0_scramble_en_0_qs;
   logic bank0_info0_page_cfg_shadowed_0_scramble_en_0_wd;
+  logic bank0_info0_page_cfg_shadowed_0_scramble_en_0_storage_err;
+  logic bank0_info0_page_cfg_shadowed_0_scramble_en_0_update_err;
   logic bank0_info0_page_cfg_shadowed_0_ecc_en_0_qs;
   logic bank0_info0_page_cfg_shadowed_0_ecc_en_0_wd;
+  logic bank0_info0_page_cfg_shadowed_0_ecc_en_0_storage_err;
+  logic bank0_info0_page_cfg_shadowed_0_ecc_en_0_update_err;
   logic bank0_info0_page_cfg_shadowed_0_he_en_0_qs;
   logic bank0_info0_page_cfg_shadowed_0_he_en_0_wd;
+  logic bank0_info0_page_cfg_shadowed_0_he_en_0_storage_err;
+  logic bank0_info0_page_cfg_shadowed_0_he_en_0_update_err;
   logic bank0_info0_page_cfg_shadowed_1_re;
   logic bank0_info0_page_cfg_shadowed_1_we;
   logic bank0_info0_page_cfg_shadowed_1_en_1_qs;
   logic bank0_info0_page_cfg_shadowed_1_en_1_wd;
+  logic bank0_info0_page_cfg_shadowed_1_en_1_storage_err;
+  logic bank0_info0_page_cfg_shadowed_1_en_1_update_err;
   logic bank0_info0_page_cfg_shadowed_1_rd_en_1_qs;
   logic bank0_info0_page_cfg_shadowed_1_rd_en_1_wd;
+  logic bank0_info0_page_cfg_shadowed_1_rd_en_1_storage_err;
+  logic bank0_info0_page_cfg_shadowed_1_rd_en_1_update_err;
   logic bank0_info0_page_cfg_shadowed_1_prog_en_1_qs;
   logic bank0_info0_page_cfg_shadowed_1_prog_en_1_wd;
+  logic bank0_info0_page_cfg_shadowed_1_prog_en_1_storage_err;
+  logic bank0_info0_page_cfg_shadowed_1_prog_en_1_update_err;
   logic bank0_info0_page_cfg_shadowed_1_erase_en_1_qs;
   logic bank0_info0_page_cfg_shadowed_1_erase_en_1_wd;
+  logic bank0_info0_page_cfg_shadowed_1_erase_en_1_storage_err;
+  logic bank0_info0_page_cfg_shadowed_1_erase_en_1_update_err;
   logic bank0_info0_page_cfg_shadowed_1_scramble_en_1_qs;
   logic bank0_info0_page_cfg_shadowed_1_scramble_en_1_wd;
+  logic bank0_info0_page_cfg_shadowed_1_scramble_en_1_storage_err;
+  logic bank0_info0_page_cfg_shadowed_1_scramble_en_1_update_err;
   logic bank0_info0_page_cfg_shadowed_1_ecc_en_1_qs;
   logic bank0_info0_page_cfg_shadowed_1_ecc_en_1_wd;
+  logic bank0_info0_page_cfg_shadowed_1_ecc_en_1_storage_err;
+  logic bank0_info0_page_cfg_shadowed_1_ecc_en_1_update_err;
   logic bank0_info0_page_cfg_shadowed_1_he_en_1_qs;
   logic bank0_info0_page_cfg_shadowed_1_he_en_1_wd;
+  logic bank0_info0_page_cfg_shadowed_1_he_en_1_storage_err;
+  logic bank0_info0_page_cfg_shadowed_1_he_en_1_update_err;
   logic bank0_info0_page_cfg_shadowed_2_re;
   logic bank0_info0_page_cfg_shadowed_2_we;
   logic bank0_info0_page_cfg_shadowed_2_en_2_qs;
   logic bank0_info0_page_cfg_shadowed_2_en_2_wd;
+  logic bank0_info0_page_cfg_shadowed_2_en_2_storage_err;
+  logic bank0_info0_page_cfg_shadowed_2_en_2_update_err;
   logic bank0_info0_page_cfg_shadowed_2_rd_en_2_qs;
   logic bank0_info0_page_cfg_shadowed_2_rd_en_2_wd;
+  logic bank0_info0_page_cfg_shadowed_2_rd_en_2_storage_err;
+  logic bank0_info0_page_cfg_shadowed_2_rd_en_2_update_err;
   logic bank0_info0_page_cfg_shadowed_2_prog_en_2_qs;
   logic bank0_info0_page_cfg_shadowed_2_prog_en_2_wd;
+  logic bank0_info0_page_cfg_shadowed_2_prog_en_2_storage_err;
+  logic bank0_info0_page_cfg_shadowed_2_prog_en_2_update_err;
   logic bank0_info0_page_cfg_shadowed_2_erase_en_2_qs;
   logic bank0_info0_page_cfg_shadowed_2_erase_en_2_wd;
+  logic bank0_info0_page_cfg_shadowed_2_erase_en_2_storage_err;
+  logic bank0_info0_page_cfg_shadowed_2_erase_en_2_update_err;
   logic bank0_info0_page_cfg_shadowed_2_scramble_en_2_qs;
   logic bank0_info0_page_cfg_shadowed_2_scramble_en_2_wd;
+  logic bank0_info0_page_cfg_shadowed_2_scramble_en_2_storage_err;
+  logic bank0_info0_page_cfg_shadowed_2_scramble_en_2_update_err;
   logic bank0_info0_page_cfg_shadowed_2_ecc_en_2_qs;
   logic bank0_info0_page_cfg_shadowed_2_ecc_en_2_wd;
+  logic bank0_info0_page_cfg_shadowed_2_ecc_en_2_storage_err;
+  logic bank0_info0_page_cfg_shadowed_2_ecc_en_2_update_err;
   logic bank0_info0_page_cfg_shadowed_2_he_en_2_qs;
   logic bank0_info0_page_cfg_shadowed_2_he_en_2_wd;
+  logic bank0_info0_page_cfg_shadowed_2_he_en_2_storage_err;
+  logic bank0_info0_page_cfg_shadowed_2_he_en_2_update_err;
   logic bank0_info0_page_cfg_shadowed_3_re;
   logic bank0_info0_page_cfg_shadowed_3_we;
   logic bank0_info0_page_cfg_shadowed_3_en_3_qs;
   logic bank0_info0_page_cfg_shadowed_3_en_3_wd;
+  logic bank0_info0_page_cfg_shadowed_3_en_3_storage_err;
+  logic bank0_info0_page_cfg_shadowed_3_en_3_update_err;
   logic bank0_info0_page_cfg_shadowed_3_rd_en_3_qs;
   logic bank0_info0_page_cfg_shadowed_3_rd_en_3_wd;
+  logic bank0_info0_page_cfg_shadowed_3_rd_en_3_storage_err;
+  logic bank0_info0_page_cfg_shadowed_3_rd_en_3_update_err;
   logic bank0_info0_page_cfg_shadowed_3_prog_en_3_qs;
   logic bank0_info0_page_cfg_shadowed_3_prog_en_3_wd;
+  logic bank0_info0_page_cfg_shadowed_3_prog_en_3_storage_err;
+  logic bank0_info0_page_cfg_shadowed_3_prog_en_3_update_err;
   logic bank0_info0_page_cfg_shadowed_3_erase_en_3_qs;
   logic bank0_info0_page_cfg_shadowed_3_erase_en_3_wd;
+  logic bank0_info0_page_cfg_shadowed_3_erase_en_3_storage_err;
+  logic bank0_info0_page_cfg_shadowed_3_erase_en_3_update_err;
   logic bank0_info0_page_cfg_shadowed_3_scramble_en_3_qs;
   logic bank0_info0_page_cfg_shadowed_3_scramble_en_3_wd;
+  logic bank0_info0_page_cfg_shadowed_3_scramble_en_3_storage_err;
+  logic bank0_info0_page_cfg_shadowed_3_scramble_en_3_update_err;
   logic bank0_info0_page_cfg_shadowed_3_ecc_en_3_qs;
   logic bank0_info0_page_cfg_shadowed_3_ecc_en_3_wd;
+  logic bank0_info0_page_cfg_shadowed_3_ecc_en_3_storage_err;
+  logic bank0_info0_page_cfg_shadowed_3_ecc_en_3_update_err;
   logic bank0_info0_page_cfg_shadowed_3_he_en_3_qs;
   logic bank0_info0_page_cfg_shadowed_3_he_en_3_wd;
+  logic bank0_info0_page_cfg_shadowed_3_he_en_3_storage_err;
+  logic bank0_info0_page_cfg_shadowed_3_he_en_3_update_err;
   logic bank0_info0_page_cfg_shadowed_4_re;
   logic bank0_info0_page_cfg_shadowed_4_we;
   logic bank0_info0_page_cfg_shadowed_4_en_4_qs;
   logic bank0_info0_page_cfg_shadowed_4_en_4_wd;
+  logic bank0_info0_page_cfg_shadowed_4_en_4_storage_err;
+  logic bank0_info0_page_cfg_shadowed_4_en_4_update_err;
   logic bank0_info0_page_cfg_shadowed_4_rd_en_4_qs;
   logic bank0_info0_page_cfg_shadowed_4_rd_en_4_wd;
+  logic bank0_info0_page_cfg_shadowed_4_rd_en_4_storage_err;
+  logic bank0_info0_page_cfg_shadowed_4_rd_en_4_update_err;
   logic bank0_info0_page_cfg_shadowed_4_prog_en_4_qs;
   logic bank0_info0_page_cfg_shadowed_4_prog_en_4_wd;
+  logic bank0_info0_page_cfg_shadowed_4_prog_en_4_storage_err;
+  logic bank0_info0_page_cfg_shadowed_4_prog_en_4_update_err;
   logic bank0_info0_page_cfg_shadowed_4_erase_en_4_qs;
   logic bank0_info0_page_cfg_shadowed_4_erase_en_4_wd;
+  logic bank0_info0_page_cfg_shadowed_4_erase_en_4_storage_err;
+  logic bank0_info0_page_cfg_shadowed_4_erase_en_4_update_err;
   logic bank0_info0_page_cfg_shadowed_4_scramble_en_4_qs;
   logic bank0_info0_page_cfg_shadowed_4_scramble_en_4_wd;
+  logic bank0_info0_page_cfg_shadowed_4_scramble_en_4_storage_err;
+  logic bank0_info0_page_cfg_shadowed_4_scramble_en_4_update_err;
   logic bank0_info0_page_cfg_shadowed_4_ecc_en_4_qs;
   logic bank0_info0_page_cfg_shadowed_4_ecc_en_4_wd;
+  logic bank0_info0_page_cfg_shadowed_4_ecc_en_4_storage_err;
+  logic bank0_info0_page_cfg_shadowed_4_ecc_en_4_update_err;
   logic bank0_info0_page_cfg_shadowed_4_he_en_4_qs;
   logic bank0_info0_page_cfg_shadowed_4_he_en_4_wd;
+  logic bank0_info0_page_cfg_shadowed_4_he_en_4_storage_err;
+  logic bank0_info0_page_cfg_shadowed_4_he_en_4_update_err;
   logic bank0_info0_page_cfg_shadowed_5_re;
   logic bank0_info0_page_cfg_shadowed_5_we;
   logic bank0_info0_page_cfg_shadowed_5_en_5_qs;
   logic bank0_info0_page_cfg_shadowed_5_en_5_wd;
+  logic bank0_info0_page_cfg_shadowed_5_en_5_storage_err;
+  logic bank0_info0_page_cfg_shadowed_5_en_5_update_err;
   logic bank0_info0_page_cfg_shadowed_5_rd_en_5_qs;
   logic bank0_info0_page_cfg_shadowed_5_rd_en_5_wd;
+  logic bank0_info0_page_cfg_shadowed_5_rd_en_5_storage_err;
+  logic bank0_info0_page_cfg_shadowed_5_rd_en_5_update_err;
   logic bank0_info0_page_cfg_shadowed_5_prog_en_5_qs;
   logic bank0_info0_page_cfg_shadowed_5_prog_en_5_wd;
+  logic bank0_info0_page_cfg_shadowed_5_prog_en_5_storage_err;
+  logic bank0_info0_page_cfg_shadowed_5_prog_en_5_update_err;
   logic bank0_info0_page_cfg_shadowed_5_erase_en_5_qs;
   logic bank0_info0_page_cfg_shadowed_5_erase_en_5_wd;
+  logic bank0_info0_page_cfg_shadowed_5_erase_en_5_storage_err;
+  logic bank0_info0_page_cfg_shadowed_5_erase_en_5_update_err;
   logic bank0_info0_page_cfg_shadowed_5_scramble_en_5_qs;
   logic bank0_info0_page_cfg_shadowed_5_scramble_en_5_wd;
+  logic bank0_info0_page_cfg_shadowed_5_scramble_en_5_storage_err;
+  logic bank0_info0_page_cfg_shadowed_5_scramble_en_5_update_err;
   logic bank0_info0_page_cfg_shadowed_5_ecc_en_5_qs;
   logic bank0_info0_page_cfg_shadowed_5_ecc_en_5_wd;
+  logic bank0_info0_page_cfg_shadowed_5_ecc_en_5_storage_err;
+  logic bank0_info0_page_cfg_shadowed_5_ecc_en_5_update_err;
   logic bank0_info0_page_cfg_shadowed_5_he_en_5_qs;
   logic bank0_info0_page_cfg_shadowed_5_he_en_5_wd;
+  logic bank0_info0_page_cfg_shadowed_5_he_en_5_storage_err;
+  logic bank0_info0_page_cfg_shadowed_5_he_en_5_update_err;
   logic bank0_info0_page_cfg_shadowed_6_re;
   logic bank0_info0_page_cfg_shadowed_6_we;
   logic bank0_info0_page_cfg_shadowed_6_en_6_qs;
   logic bank0_info0_page_cfg_shadowed_6_en_6_wd;
+  logic bank0_info0_page_cfg_shadowed_6_en_6_storage_err;
+  logic bank0_info0_page_cfg_shadowed_6_en_6_update_err;
   logic bank0_info0_page_cfg_shadowed_6_rd_en_6_qs;
   logic bank0_info0_page_cfg_shadowed_6_rd_en_6_wd;
+  logic bank0_info0_page_cfg_shadowed_6_rd_en_6_storage_err;
+  logic bank0_info0_page_cfg_shadowed_6_rd_en_6_update_err;
   logic bank0_info0_page_cfg_shadowed_6_prog_en_6_qs;
   logic bank0_info0_page_cfg_shadowed_6_prog_en_6_wd;
+  logic bank0_info0_page_cfg_shadowed_6_prog_en_6_storage_err;
+  logic bank0_info0_page_cfg_shadowed_6_prog_en_6_update_err;
   logic bank0_info0_page_cfg_shadowed_6_erase_en_6_qs;
   logic bank0_info0_page_cfg_shadowed_6_erase_en_6_wd;
+  logic bank0_info0_page_cfg_shadowed_6_erase_en_6_storage_err;
+  logic bank0_info0_page_cfg_shadowed_6_erase_en_6_update_err;
   logic bank0_info0_page_cfg_shadowed_6_scramble_en_6_qs;
   logic bank0_info0_page_cfg_shadowed_6_scramble_en_6_wd;
+  logic bank0_info0_page_cfg_shadowed_6_scramble_en_6_storage_err;
+  logic bank0_info0_page_cfg_shadowed_6_scramble_en_6_update_err;
   logic bank0_info0_page_cfg_shadowed_6_ecc_en_6_qs;
   logic bank0_info0_page_cfg_shadowed_6_ecc_en_6_wd;
+  logic bank0_info0_page_cfg_shadowed_6_ecc_en_6_storage_err;
+  logic bank0_info0_page_cfg_shadowed_6_ecc_en_6_update_err;
   logic bank0_info0_page_cfg_shadowed_6_he_en_6_qs;
   logic bank0_info0_page_cfg_shadowed_6_he_en_6_wd;
+  logic bank0_info0_page_cfg_shadowed_6_he_en_6_storage_err;
+  logic bank0_info0_page_cfg_shadowed_6_he_en_6_update_err;
   logic bank0_info0_page_cfg_shadowed_7_re;
   logic bank0_info0_page_cfg_shadowed_7_we;
   logic bank0_info0_page_cfg_shadowed_7_en_7_qs;
   logic bank0_info0_page_cfg_shadowed_7_en_7_wd;
+  logic bank0_info0_page_cfg_shadowed_7_en_7_storage_err;
+  logic bank0_info0_page_cfg_shadowed_7_en_7_update_err;
   logic bank0_info0_page_cfg_shadowed_7_rd_en_7_qs;
   logic bank0_info0_page_cfg_shadowed_7_rd_en_7_wd;
+  logic bank0_info0_page_cfg_shadowed_7_rd_en_7_storage_err;
+  logic bank0_info0_page_cfg_shadowed_7_rd_en_7_update_err;
   logic bank0_info0_page_cfg_shadowed_7_prog_en_7_qs;
   logic bank0_info0_page_cfg_shadowed_7_prog_en_7_wd;
+  logic bank0_info0_page_cfg_shadowed_7_prog_en_7_storage_err;
+  logic bank0_info0_page_cfg_shadowed_7_prog_en_7_update_err;
   logic bank0_info0_page_cfg_shadowed_7_erase_en_7_qs;
   logic bank0_info0_page_cfg_shadowed_7_erase_en_7_wd;
+  logic bank0_info0_page_cfg_shadowed_7_erase_en_7_storage_err;
+  logic bank0_info0_page_cfg_shadowed_7_erase_en_7_update_err;
   logic bank0_info0_page_cfg_shadowed_7_scramble_en_7_qs;
   logic bank0_info0_page_cfg_shadowed_7_scramble_en_7_wd;
+  logic bank0_info0_page_cfg_shadowed_7_scramble_en_7_storage_err;
+  logic bank0_info0_page_cfg_shadowed_7_scramble_en_7_update_err;
   logic bank0_info0_page_cfg_shadowed_7_ecc_en_7_qs;
   logic bank0_info0_page_cfg_shadowed_7_ecc_en_7_wd;
+  logic bank0_info0_page_cfg_shadowed_7_ecc_en_7_storage_err;
+  logic bank0_info0_page_cfg_shadowed_7_ecc_en_7_update_err;
   logic bank0_info0_page_cfg_shadowed_7_he_en_7_qs;
   logic bank0_info0_page_cfg_shadowed_7_he_en_7_wd;
+  logic bank0_info0_page_cfg_shadowed_7_he_en_7_storage_err;
+  logic bank0_info0_page_cfg_shadowed_7_he_en_7_update_err;
   logic bank0_info0_page_cfg_shadowed_8_re;
   logic bank0_info0_page_cfg_shadowed_8_we;
   logic bank0_info0_page_cfg_shadowed_8_en_8_qs;
   logic bank0_info0_page_cfg_shadowed_8_en_8_wd;
+  logic bank0_info0_page_cfg_shadowed_8_en_8_storage_err;
+  logic bank0_info0_page_cfg_shadowed_8_en_8_update_err;
   logic bank0_info0_page_cfg_shadowed_8_rd_en_8_qs;
   logic bank0_info0_page_cfg_shadowed_8_rd_en_8_wd;
+  logic bank0_info0_page_cfg_shadowed_8_rd_en_8_storage_err;
+  logic bank0_info0_page_cfg_shadowed_8_rd_en_8_update_err;
   logic bank0_info0_page_cfg_shadowed_8_prog_en_8_qs;
   logic bank0_info0_page_cfg_shadowed_8_prog_en_8_wd;
+  logic bank0_info0_page_cfg_shadowed_8_prog_en_8_storage_err;
+  logic bank0_info0_page_cfg_shadowed_8_prog_en_8_update_err;
   logic bank0_info0_page_cfg_shadowed_8_erase_en_8_qs;
   logic bank0_info0_page_cfg_shadowed_8_erase_en_8_wd;
+  logic bank0_info0_page_cfg_shadowed_8_erase_en_8_storage_err;
+  logic bank0_info0_page_cfg_shadowed_8_erase_en_8_update_err;
   logic bank0_info0_page_cfg_shadowed_8_scramble_en_8_qs;
   logic bank0_info0_page_cfg_shadowed_8_scramble_en_8_wd;
+  logic bank0_info0_page_cfg_shadowed_8_scramble_en_8_storage_err;
+  logic bank0_info0_page_cfg_shadowed_8_scramble_en_8_update_err;
   logic bank0_info0_page_cfg_shadowed_8_ecc_en_8_qs;
   logic bank0_info0_page_cfg_shadowed_8_ecc_en_8_wd;
+  logic bank0_info0_page_cfg_shadowed_8_ecc_en_8_storage_err;
+  logic bank0_info0_page_cfg_shadowed_8_ecc_en_8_update_err;
   logic bank0_info0_page_cfg_shadowed_8_he_en_8_qs;
   logic bank0_info0_page_cfg_shadowed_8_he_en_8_wd;
+  logic bank0_info0_page_cfg_shadowed_8_he_en_8_storage_err;
+  logic bank0_info0_page_cfg_shadowed_8_he_en_8_update_err;
   logic bank0_info0_page_cfg_shadowed_9_re;
   logic bank0_info0_page_cfg_shadowed_9_we;
   logic bank0_info0_page_cfg_shadowed_9_en_9_qs;
   logic bank0_info0_page_cfg_shadowed_9_en_9_wd;
+  logic bank0_info0_page_cfg_shadowed_9_en_9_storage_err;
+  logic bank0_info0_page_cfg_shadowed_9_en_9_update_err;
   logic bank0_info0_page_cfg_shadowed_9_rd_en_9_qs;
   logic bank0_info0_page_cfg_shadowed_9_rd_en_9_wd;
+  logic bank0_info0_page_cfg_shadowed_9_rd_en_9_storage_err;
+  logic bank0_info0_page_cfg_shadowed_9_rd_en_9_update_err;
   logic bank0_info0_page_cfg_shadowed_9_prog_en_9_qs;
   logic bank0_info0_page_cfg_shadowed_9_prog_en_9_wd;
+  logic bank0_info0_page_cfg_shadowed_9_prog_en_9_storage_err;
+  logic bank0_info0_page_cfg_shadowed_9_prog_en_9_update_err;
   logic bank0_info0_page_cfg_shadowed_9_erase_en_9_qs;
   logic bank0_info0_page_cfg_shadowed_9_erase_en_9_wd;
+  logic bank0_info0_page_cfg_shadowed_9_erase_en_9_storage_err;
+  logic bank0_info0_page_cfg_shadowed_9_erase_en_9_update_err;
   logic bank0_info0_page_cfg_shadowed_9_scramble_en_9_qs;
   logic bank0_info0_page_cfg_shadowed_9_scramble_en_9_wd;
+  logic bank0_info0_page_cfg_shadowed_9_scramble_en_9_storage_err;
+  logic bank0_info0_page_cfg_shadowed_9_scramble_en_9_update_err;
   logic bank0_info0_page_cfg_shadowed_9_ecc_en_9_qs;
   logic bank0_info0_page_cfg_shadowed_9_ecc_en_9_wd;
+  logic bank0_info0_page_cfg_shadowed_9_ecc_en_9_storage_err;
+  logic bank0_info0_page_cfg_shadowed_9_ecc_en_9_update_err;
   logic bank0_info0_page_cfg_shadowed_9_he_en_9_qs;
   logic bank0_info0_page_cfg_shadowed_9_he_en_9_wd;
+  logic bank0_info0_page_cfg_shadowed_9_he_en_9_storage_err;
+  logic bank0_info0_page_cfg_shadowed_9_he_en_9_update_err;
   logic bank0_info1_regwen_we;
   logic bank0_info1_regwen_qs;
   logic bank0_info1_regwen_wd;
@@ -637,18 +936,32 @@ module flash_ctrl_core_reg_top (
   logic bank0_info1_page_cfg_shadowed_we;
   logic bank0_info1_page_cfg_shadowed_en_0_qs;
   logic bank0_info1_page_cfg_shadowed_en_0_wd;
+  logic bank0_info1_page_cfg_shadowed_en_0_storage_err;
+  logic bank0_info1_page_cfg_shadowed_en_0_update_err;
   logic bank0_info1_page_cfg_shadowed_rd_en_0_qs;
   logic bank0_info1_page_cfg_shadowed_rd_en_0_wd;
+  logic bank0_info1_page_cfg_shadowed_rd_en_0_storage_err;
+  logic bank0_info1_page_cfg_shadowed_rd_en_0_update_err;
   logic bank0_info1_page_cfg_shadowed_prog_en_0_qs;
   logic bank0_info1_page_cfg_shadowed_prog_en_0_wd;
+  logic bank0_info1_page_cfg_shadowed_prog_en_0_storage_err;
+  logic bank0_info1_page_cfg_shadowed_prog_en_0_update_err;
   logic bank0_info1_page_cfg_shadowed_erase_en_0_qs;
   logic bank0_info1_page_cfg_shadowed_erase_en_0_wd;
+  logic bank0_info1_page_cfg_shadowed_erase_en_0_storage_err;
+  logic bank0_info1_page_cfg_shadowed_erase_en_0_update_err;
   logic bank0_info1_page_cfg_shadowed_scramble_en_0_qs;
   logic bank0_info1_page_cfg_shadowed_scramble_en_0_wd;
+  logic bank0_info1_page_cfg_shadowed_scramble_en_0_storage_err;
+  logic bank0_info1_page_cfg_shadowed_scramble_en_0_update_err;
   logic bank0_info1_page_cfg_shadowed_ecc_en_0_qs;
   logic bank0_info1_page_cfg_shadowed_ecc_en_0_wd;
+  logic bank0_info1_page_cfg_shadowed_ecc_en_0_storage_err;
+  logic bank0_info1_page_cfg_shadowed_ecc_en_0_update_err;
   logic bank0_info1_page_cfg_shadowed_he_en_0_qs;
   logic bank0_info1_page_cfg_shadowed_he_en_0_wd;
+  logic bank0_info1_page_cfg_shadowed_he_en_0_storage_err;
+  logic bank0_info1_page_cfg_shadowed_he_en_0_update_err;
   logic bank0_info2_regwen_0_we;
   logic bank0_info2_regwen_0_qs;
   logic bank0_info2_regwen_0_wd;
@@ -659,34 +972,62 @@ module flash_ctrl_core_reg_top (
   logic bank0_info2_page_cfg_shadowed_0_we;
   logic bank0_info2_page_cfg_shadowed_0_en_0_qs;
   logic bank0_info2_page_cfg_shadowed_0_en_0_wd;
+  logic bank0_info2_page_cfg_shadowed_0_en_0_storage_err;
+  logic bank0_info2_page_cfg_shadowed_0_en_0_update_err;
   logic bank0_info2_page_cfg_shadowed_0_rd_en_0_qs;
   logic bank0_info2_page_cfg_shadowed_0_rd_en_0_wd;
+  logic bank0_info2_page_cfg_shadowed_0_rd_en_0_storage_err;
+  logic bank0_info2_page_cfg_shadowed_0_rd_en_0_update_err;
   logic bank0_info2_page_cfg_shadowed_0_prog_en_0_qs;
   logic bank0_info2_page_cfg_shadowed_0_prog_en_0_wd;
+  logic bank0_info2_page_cfg_shadowed_0_prog_en_0_storage_err;
+  logic bank0_info2_page_cfg_shadowed_0_prog_en_0_update_err;
   logic bank0_info2_page_cfg_shadowed_0_erase_en_0_qs;
   logic bank0_info2_page_cfg_shadowed_0_erase_en_0_wd;
+  logic bank0_info2_page_cfg_shadowed_0_erase_en_0_storage_err;
+  logic bank0_info2_page_cfg_shadowed_0_erase_en_0_update_err;
   logic bank0_info2_page_cfg_shadowed_0_scramble_en_0_qs;
   logic bank0_info2_page_cfg_shadowed_0_scramble_en_0_wd;
+  logic bank0_info2_page_cfg_shadowed_0_scramble_en_0_storage_err;
+  logic bank0_info2_page_cfg_shadowed_0_scramble_en_0_update_err;
   logic bank0_info2_page_cfg_shadowed_0_ecc_en_0_qs;
   logic bank0_info2_page_cfg_shadowed_0_ecc_en_0_wd;
+  logic bank0_info2_page_cfg_shadowed_0_ecc_en_0_storage_err;
+  logic bank0_info2_page_cfg_shadowed_0_ecc_en_0_update_err;
   logic bank0_info2_page_cfg_shadowed_0_he_en_0_qs;
   logic bank0_info2_page_cfg_shadowed_0_he_en_0_wd;
+  logic bank0_info2_page_cfg_shadowed_0_he_en_0_storage_err;
+  logic bank0_info2_page_cfg_shadowed_0_he_en_0_update_err;
   logic bank0_info2_page_cfg_shadowed_1_re;
   logic bank0_info2_page_cfg_shadowed_1_we;
   logic bank0_info2_page_cfg_shadowed_1_en_1_qs;
   logic bank0_info2_page_cfg_shadowed_1_en_1_wd;
+  logic bank0_info2_page_cfg_shadowed_1_en_1_storage_err;
+  logic bank0_info2_page_cfg_shadowed_1_en_1_update_err;
   logic bank0_info2_page_cfg_shadowed_1_rd_en_1_qs;
   logic bank0_info2_page_cfg_shadowed_1_rd_en_1_wd;
+  logic bank0_info2_page_cfg_shadowed_1_rd_en_1_storage_err;
+  logic bank0_info2_page_cfg_shadowed_1_rd_en_1_update_err;
   logic bank0_info2_page_cfg_shadowed_1_prog_en_1_qs;
   logic bank0_info2_page_cfg_shadowed_1_prog_en_1_wd;
+  logic bank0_info2_page_cfg_shadowed_1_prog_en_1_storage_err;
+  logic bank0_info2_page_cfg_shadowed_1_prog_en_1_update_err;
   logic bank0_info2_page_cfg_shadowed_1_erase_en_1_qs;
   logic bank0_info2_page_cfg_shadowed_1_erase_en_1_wd;
+  logic bank0_info2_page_cfg_shadowed_1_erase_en_1_storage_err;
+  logic bank0_info2_page_cfg_shadowed_1_erase_en_1_update_err;
   logic bank0_info2_page_cfg_shadowed_1_scramble_en_1_qs;
   logic bank0_info2_page_cfg_shadowed_1_scramble_en_1_wd;
+  logic bank0_info2_page_cfg_shadowed_1_scramble_en_1_storage_err;
+  logic bank0_info2_page_cfg_shadowed_1_scramble_en_1_update_err;
   logic bank0_info2_page_cfg_shadowed_1_ecc_en_1_qs;
   logic bank0_info2_page_cfg_shadowed_1_ecc_en_1_wd;
+  logic bank0_info2_page_cfg_shadowed_1_ecc_en_1_storage_err;
+  logic bank0_info2_page_cfg_shadowed_1_ecc_en_1_update_err;
   logic bank0_info2_page_cfg_shadowed_1_he_en_1_qs;
   logic bank0_info2_page_cfg_shadowed_1_he_en_1_wd;
+  logic bank0_info2_page_cfg_shadowed_1_he_en_1_storage_err;
+  logic bank0_info2_page_cfg_shadowed_1_he_en_1_update_err;
   logic bank1_info0_regwen_0_we;
   logic bank1_info0_regwen_0_qs;
   logic bank1_info0_regwen_0_wd;
@@ -721,162 +1062,302 @@ module flash_ctrl_core_reg_top (
   logic bank1_info0_page_cfg_shadowed_0_we;
   logic bank1_info0_page_cfg_shadowed_0_en_0_qs;
   logic bank1_info0_page_cfg_shadowed_0_en_0_wd;
+  logic bank1_info0_page_cfg_shadowed_0_en_0_storage_err;
+  logic bank1_info0_page_cfg_shadowed_0_en_0_update_err;
   logic bank1_info0_page_cfg_shadowed_0_rd_en_0_qs;
   logic bank1_info0_page_cfg_shadowed_0_rd_en_0_wd;
+  logic bank1_info0_page_cfg_shadowed_0_rd_en_0_storage_err;
+  logic bank1_info0_page_cfg_shadowed_0_rd_en_0_update_err;
   logic bank1_info0_page_cfg_shadowed_0_prog_en_0_qs;
   logic bank1_info0_page_cfg_shadowed_0_prog_en_0_wd;
+  logic bank1_info0_page_cfg_shadowed_0_prog_en_0_storage_err;
+  logic bank1_info0_page_cfg_shadowed_0_prog_en_0_update_err;
   logic bank1_info0_page_cfg_shadowed_0_erase_en_0_qs;
   logic bank1_info0_page_cfg_shadowed_0_erase_en_0_wd;
+  logic bank1_info0_page_cfg_shadowed_0_erase_en_0_storage_err;
+  logic bank1_info0_page_cfg_shadowed_0_erase_en_0_update_err;
   logic bank1_info0_page_cfg_shadowed_0_scramble_en_0_qs;
   logic bank1_info0_page_cfg_shadowed_0_scramble_en_0_wd;
+  logic bank1_info0_page_cfg_shadowed_0_scramble_en_0_storage_err;
+  logic bank1_info0_page_cfg_shadowed_0_scramble_en_0_update_err;
   logic bank1_info0_page_cfg_shadowed_0_ecc_en_0_qs;
   logic bank1_info0_page_cfg_shadowed_0_ecc_en_0_wd;
+  logic bank1_info0_page_cfg_shadowed_0_ecc_en_0_storage_err;
+  logic bank1_info0_page_cfg_shadowed_0_ecc_en_0_update_err;
   logic bank1_info0_page_cfg_shadowed_0_he_en_0_qs;
   logic bank1_info0_page_cfg_shadowed_0_he_en_0_wd;
+  logic bank1_info0_page_cfg_shadowed_0_he_en_0_storage_err;
+  logic bank1_info0_page_cfg_shadowed_0_he_en_0_update_err;
   logic bank1_info0_page_cfg_shadowed_1_re;
   logic bank1_info0_page_cfg_shadowed_1_we;
   logic bank1_info0_page_cfg_shadowed_1_en_1_qs;
   logic bank1_info0_page_cfg_shadowed_1_en_1_wd;
+  logic bank1_info0_page_cfg_shadowed_1_en_1_storage_err;
+  logic bank1_info0_page_cfg_shadowed_1_en_1_update_err;
   logic bank1_info0_page_cfg_shadowed_1_rd_en_1_qs;
   logic bank1_info0_page_cfg_shadowed_1_rd_en_1_wd;
+  logic bank1_info0_page_cfg_shadowed_1_rd_en_1_storage_err;
+  logic bank1_info0_page_cfg_shadowed_1_rd_en_1_update_err;
   logic bank1_info0_page_cfg_shadowed_1_prog_en_1_qs;
   logic bank1_info0_page_cfg_shadowed_1_prog_en_1_wd;
+  logic bank1_info0_page_cfg_shadowed_1_prog_en_1_storage_err;
+  logic bank1_info0_page_cfg_shadowed_1_prog_en_1_update_err;
   logic bank1_info0_page_cfg_shadowed_1_erase_en_1_qs;
   logic bank1_info0_page_cfg_shadowed_1_erase_en_1_wd;
+  logic bank1_info0_page_cfg_shadowed_1_erase_en_1_storage_err;
+  logic bank1_info0_page_cfg_shadowed_1_erase_en_1_update_err;
   logic bank1_info0_page_cfg_shadowed_1_scramble_en_1_qs;
   logic bank1_info0_page_cfg_shadowed_1_scramble_en_1_wd;
+  logic bank1_info0_page_cfg_shadowed_1_scramble_en_1_storage_err;
+  logic bank1_info0_page_cfg_shadowed_1_scramble_en_1_update_err;
   logic bank1_info0_page_cfg_shadowed_1_ecc_en_1_qs;
   logic bank1_info0_page_cfg_shadowed_1_ecc_en_1_wd;
+  logic bank1_info0_page_cfg_shadowed_1_ecc_en_1_storage_err;
+  logic bank1_info0_page_cfg_shadowed_1_ecc_en_1_update_err;
   logic bank1_info0_page_cfg_shadowed_1_he_en_1_qs;
   logic bank1_info0_page_cfg_shadowed_1_he_en_1_wd;
+  logic bank1_info0_page_cfg_shadowed_1_he_en_1_storage_err;
+  logic bank1_info0_page_cfg_shadowed_1_he_en_1_update_err;
   logic bank1_info0_page_cfg_shadowed_2_re;
   logic bank1_info0_page_cfg_shadowed_2_we;
   logic bank1_info0_page_cfg_shadowed_2_en_2_qs;
   logic bank1_info0_page_cfg_shadowed_2_en_2_wd;
+  logic bank1_info0_page_cfg_shadowed_2_en_2_storage_err;
+  logic bank1_info0_page_cfg_shadowed_2_en_2_update_err;
   logic bank1_info0_page_cfg_shadowed_2_rd_en_2_qs;
   logic bank1_info0_page_cfg_shadowed_2_rd_en_2_wd;
+  logic bank1_info0_page_cfg_shadowed_2_rd_en_2_storage_err;
+  logic bank1_info0_page_cfg_shadowed_2_rd_en_2_update_err;
   logic bank1_info0_page_cfg_shadowed_2_prog_en_2_qs;
   logic bank1_info0_page_cfg_shadowed_2_prog_en_2_wd;
+  logic bank1_info0_page_cfg_shadowed_2_prog_en_2_storage_err;
+  logic bank1_info0_page_cfg_shadowed_2_prog_en_2_update_err;
   logic bank1_info0_page_cfg_shadowed_2_erase_en_2_qs;
   logic bank1_info0_page_cfg_shadowed_2_erase_en_2_wd;
+  logic bank1_info0_page_cfg_shadowed_2_erase_en_2_storage_err;
+  logic bank1_info0_page_cfg_shadowed_2_erase_en_2_update_err;
   logic bank1_info0_page_cfg_shadowed_2_scramble_en_2_qs;
   logic bank1_info0_page_cfg_shadowed_2_scramble_en_2_wd;
+  logic bank1_info0_page_cfg_shadowed_2_scramble_en_2_storage_err;
+  logic bank1_info0_page_cfg_shadowed_2_scramble_en_2_update_err;
   logic bank1_info0_page_cfg_shadowed_2_ecc_en_2_qs;
   logic bank1_info0_page_cfg_shadowed_2_ecc_en_2_wd;
+  logic bank1_info0_page_cfg_shadowed_2_ecc_en_2_storage_err;
+  logic bank1_info0_page_cfg_shadowed_2_ecc_en_2_update_err;
   logic bank1_info0_page_cfg_shadowed_2_he_en_2_qs;
   logic bank1_info0_page_cfg_shadowed_2_he_en_2_wd;
+  logic bank1_info0_page_cfg_shadowed_2_he_en_2_storage_err;
+  logic bank1_info0_page_cfg_shadowed_2_he_en_2_update_err;
   logic bank1_info0_page_cfg_shadowed_3_re;
   logic bank1_info0_page_cfg_shadowed_3_we;
   logic bank1_info0_page_cfg_shadowed_3_en_3_qs;
   logic bank1_info0_page_cfg_shadowed_3_en_3_wd;
+  logic bank1_info0_page_cfg_shadowed_3_en_3_storage_err;
+  logic bank1_info0_page_cfg_shadowed_3_en_3_update_err;
   logic bank1_info0_page_cfg_shadowed_3_rd_en_3_qs;
   logic bank1_info0_page_cfg_shadowed_3_rd_en_3_wd;
+  logic bank1_info0_page_cfg_shadowed_3_rd_en_3_storage_err;
+  logic bank1_info0_page_cfg_shadowed_3_rd_en_3_update_err;
   logic bank1_info0_page_cfg_shadowed_3_prog_en_3_qs;
   logic bank1_info0_page_cfg_shadowed_3_prog_en_3_wd;
+  logic bank1_info0_page_cfg_shadowed_3_prog_en_3_storage_err;
+  logic bank1_info0_page_cfg_shadowed_3_prog_en_3_update_err;
   logic bank1_info0_page_cfg_shadowed_3_erase_en_3_qs;
   logic bank1_info0_page_cfg_shadowed_3_erase_en_3_wd;
+  logic bank1_info0_page_cfg_shadowed_3_erase_en_3_storage_err;
+  logic bank1_info0_page_cfg_shadowed_3_erase_en_3_update_err;
   logic bank1_info0_page_cfg_shadowed_3_scramble_en_3_qs;
   logic bank1_info0_page_cfg_shadowed_3_scramble_en_3_wd;
+  logic bank1_info0_page_cfg_shadowed_3_scramble_en_3_storage_err;
+  logic bank1_info0_page_cfg_shadowed_3_scramble_en_3_update_err;
   logic bank1_info0_page_cfg_shadowed_3_ecc_en_3_qs;
   logic bank1_info0_page_cfg_shadowed_3_ecc_en_3_wd;
+  logic bank1_info0_page_cfg_shadowed_3_ecc_en_3_storage_err;
+  logic bank1_info0_page_cfg_shadowed_3_ecc_en_3_update_err;
   logic bank1_info0_page_cfg_shadowed_3_he_en_3_qs;
   logic bank1_info0_page_cfg_shadowed_3_he_en_3_wd;
+  logic bank1_info0_page_cfg_shadowed_3_he_en_3_storage_err;
+  logic bank1_info0_page_cfg_shadowed_3_he_en_3_update_err;
   logic bank1_info0_page_cfg_shadowed_4_re;
   logic bank1_info0_page_cfg_shadowed_4_we;
   logic bank1_info0_page_cfg_shadowed_4_en_4_qs;
   logic bank1_info0_page_cfg_shadowed_4_en_4_wd;
+  logic bank1_info0_page_cfg_shadowed_4_en_4_storage_err;
+  logic bank1_info0_page_cfg_shadowed_4_en_4_update_err;
   logic bank1_info0_page_cfg_shadowed_4_rd_en_4_qs;
   logic bank1_info0_page_cfg_shadowed_4_rd_en_4_wd;
+  logic bank1_info0_page_cfg_shadowed_4_rd_en_4_storage_err;
+  logic bank1_info0_page_cfg_shadowed_4_rd_en_4_update_err;
   logic bank1_info0_page_cfg_shadowed_4_prog_en_4_qs;
   logic bank1_info0_page_cfg_shadowed_4_prog_en_4_wd;
+  logic bank1_info0_page_cfg_shadowed_4_prog_en_4_storage_err;
+  logic bank1_info0_page_cfg_shadowed_4_prog_en_4_update_err;
   logic bank1_info0_page_cfg_shadowed_4_erase_en_4_qs;
   logic bank1_info0_page_cfg_shadowed_4_erase_en_4_wd;
+  logic bank1_info0_page_cfg_shadowed_4_erase_en_4_storage_err;
+  logic bank1_info0_page_cfg_shadowed_4_erase_en_4_update_err;
   logic bank1_info0_page_cfg_shadowed_4_scramble_en_4_qs;
   logic bank1_info0_page_cfg_shadowed_4_scramble_en_4_wd;
+  logic bank1_info0_page_cfg_shadowed_4_scramble_en_4_storage_err;
+  logic bank1_info0_page_cfg_shadowed_4_scramble_en_4_update_err;
   logic bank1_info0_page_cfg_shadowed_4_ecc_en_4_qs;
   logic bank1_info0_page_cfg_shadowed_4_ecc_en_4_wd;
+  logic bank1_info0_page_cfg_shadowed_4_ecc_en_4_storage_err;
+  logic bank1_info0_page_cfg_shadowed_4_ecc_en_4_update_err;
   logic bank1_info0_page_cfg_shadowed_4_he_en_4_qs;
   logic bank1_info0_page_cfg_shadowed_4_he_en_4_wd;
+  logic bank1_info0_page_cfg_shadowed_4_he_en_4_storage_err;
+  logic bank1_info0_page_cfg_shadowed_4_he_en_4_update_err;
   logic bank1_info0_page_cfg_shadowed_5_re;
   logic bank1_info0_page_cfg_shadowed_5_we;
   logic bank1_info0_page_cfg_shadowed_5_en_5_qs;
   logic bank1_info0_page_cfg_shadowed_5_en_5_wd;
+  logic bank1_info0_page_cfg_shadowed_5_en_5_storage_err;
+  logic bank1_info0_page_cfg_shadowed_5_en_5_update_err;
   logic bank1_info0_page_cfg_shadowed_5_rd_en_5_qs;
   logic bank1_info0_page_cfg_shadowed_5_rd_en_5_wd;
+  logic bank1_info0_page_cfg_shadowed_5_rd_en_5_storage_err;
+  logic bank1_info0_page_cfg_shadowed_5_rd_en_5_update_err;
   logic bank1_info0_page_cfg_shadowed_5_prog_en_5_qs;
   logic bank1_info0_page_cfg_shadowed_5_prog_en_5_wd;
+  logic bank1_info0_page_cfg_shadowed_5_prog_en_5_storage_err;
+  logic bank1_info0_page_cfg_shadowed_5_prog_en_5_update_err;
   logic bank1_info0_page_cfg_shadowed_5_erase_en_5_qs;
   logic bank1_info0_page_cfg_shadowed_5_erase_en_5_wd;
+  logic bank1_info0_page_cfg_shadowed_5_erase_en_5_storage_err;
+  logic bank1_info0_page_cfg_shadowed_5_erase_en_5_update_err;
   logic bank1_info0_page_cfg_shadowed_5_scramble_en_5_qs;
   logic bank1_info0_page_cfg_shadowed_5_scramble_en_5_wd;
+  logic bank1_info0_page_cfg_shadowed_5_scramble_en_5_storage_err;
+  logic bank1_info0_page_cfg_shadowed_5_scramble_en_5_update_err;
   logic bank1_info0_page_cfg_shadowed_5_ecc_en_5_qs;
   logic bank1_info0_page_cfg_shadowed_5_ecc_en_5_wd;
+  logic bank1_info0_page_cfg_shadowed_5_ecc_en_5_storage_err;
+  logic bank1_info0_page_cfg_shadowed_5_ecc_en_5_update_err;
   logic bank1_info0_page_cfg_shadowed_5_he_en_5_qs;
   logic bank1_info0_page_cfg_shadowed_5_he_en_5_wd;
+  logic bank1_info0_page_cfg_shadowed_5_he_en_5_storage_err;
+  logic bank1_info0_page_cfg_shadowed_5_he_en_5_update_err;
   logic bank1_info0_page_cfg_shadowed_6_re;
   logic bank1_info0_page_cfg_shadowed_6_we;
   logic bank1_info0_page_cfg_shadowed_6_en_6_qs;
   logic bank1_info0_page_cfg_shadowed_6_en_6_wd;
+  logic bank1_info0_page_cfg_shadowed_6_en_6_storage_err;
+  logic bank1_info0_page_cfg_shadowed_6_en_6_update_err;
   logic bank1_info0_page_cfg_shadowed_6_rd_en_6_qs;
   logic bank1_info0_page_cfg_shadowed_6_rd_en_6_wd;
+  logic bank1_info0_page_cfg_shadowed_6_rd_en_6_storage_err;
+  logic bank1_info0_page_cfg_shadowed_6_rd_en_6_update_err;
   logic bank1_info0_page_cfg_shadowed_6_prog_en_6_qs;
   logic bank1_info0_page_cfg_shadowed_6_prog_en_6_wd;
+  logic bank1_info0_page_cfg_shadowed_6_prog_en_6_storage_err;
+  logic bank1_info0_page_cfg_shadowed_6_prog_en_6_update_err;
   logic bank1_info0_page_cfg_shadowed_6_erase_en_6_qs;
   logic bank1_info0_page_cfg_shadowed_6_erase_en_6_wd;
+  logic bank1_info0_page_cfg_shadowed_6_erase_en_6_storage_err;
+  logic bank1_info0_page_cfg_shadowed_6_erase_en_6_update_err;
   logic bank1_info0_page_cfg_shadowed_6_scramble_en_6_qs;
   logic bank1_info0_page_cfg_shadowed_6_scramble_en_6_wd;
+  logic bank1_info0_page_cfg_shadowed_6_scramble_en_6_storage_err;
+  logic bank1_info0_page_cfg_shadowed_6_scramble_en_6_update_err;
   logic bank1_info0_page_cfg_shadowed_6_ecc_en_6_qs;
   logic bank1_info0_page_cfg_shadowed_6_ecc_en_6_wd;
+  logic bank1_info0_page_cfg_shadowed_6_ecc_en_6_storage_err;
+  logic bank1_info0_page_cfg_shadowed_6_ecc_en_6_update_err;
   logic bank1_info0_page_cfg_shadowed_6_he_en_6_qs;
   logic bank1_info0_page_cfg_shadowed_6_he_en_6_wd;
+  logic bank1_info0_page_cfg_shadowed_6_he_en_6_storage_err;
+  logic bank1_info0_page_cfg_shadowed_6_he_en_6_update_err;
   logic bank1_info0_page_cfg_shadowed_7_re;
   logic bank1_info0_page_cfg_shadowed_7_we;
   logic bank1_info0_page_cfg_shadowed_7_en_7_qs;
   logic bank1_info0_page_cfg_shadowed_7_en_7_wd;
+  logic bank1_info0_page_cfg_shadowed_7_en_7_storage_err;
+  logic bank1_info0_page_cfg_shadowed_7_en_7_update_err;
   logic bank1_info0_page_cfg_shadowed_7_rd_en_7_qs;
   logic bank1_info0_page_cfg_shadowed_7_rd_en_7_wd;
+  logic bank1_info0_page_cfg_shadowed_7_rd_en_7_storage_err;
+  logic bank1_info0_page_cfg_shadowed_7_rd_en_7_update_err;
   logic bank1_info0_page_cfg_shadowed_7_prog_en_7_qs;
   logic bank1_info0_page_cfg_shadowed_7_prog_en_7_wd;
+  logic bank1_info0_page_cfg_shadowed_7_prog_en_7_storage_err;
+  logic bank1_info0_page_cfg_shadowed_7_prog_en_7_update_err;
   logic bank1_info0_page_cfg_shadowed_7_erase_en_7_qs;
   logic bank1_info0_page_cfg_shadowed_7_erase_en_7_wd;
+  logic bank1_info0_page_cfg_shadowed_7_erase_en_7_storage_err;
+  logic bank1_info0_page_cfg_shadowed_7_erase_en_7_update_err;
   logic bank1_info0_page_cfg_shadowed_7_scramble_en_7_qs;
   logic bank1_info0_page_cfg_shadowed_7_scramble_en_7_wd;
+  logic bank1_info0_page_cfg_shadowed_7_scramble_en_7_storage_err;
+  logic bank1_info0_page_cfg_shadowed_7_scramble_en_7_update_err;
   logic bank1_info0_page_cfg_shadowed_7_ecc_en_7_qs;
   logic bank1_info0_page_cfg_shadowed_7_ecc_en_7_wd;
+  logic bank1_info0_page_cfg_shadowed_7_ecc_en_7_storage_err;
+  logic bank1_info0_page_cfg_shadowed_7_ecc_en_7_update_err;
   logic bank1_info0_page_cfg_shadowed_7_he_en_7_qs;
   logic bank1_info0_page_cfg_shadowed_7_he_en_7_wd;
+  logic bank1_info0_page_cfg_shadowed_7_he_en_7_storage_err;
+  logic bank1_info0_page_cfg_shadowed_7_he_en_7_update_err;
   logic bank1_info0_page_cfg_shadowed_8_re;
   logic bank1_info0_page_cfg_shadowed_8_we;
   logic bank1_info0_page_cfg_shadowed_8_en_8_qs;
   logic bank1_info0_page_cfg_shadowed_8_en_8_wd;
+  logic bank1_info0_page_cfg_shadowed_8_en_8_storage_err;
+  logic bank1_info0_page_cfg_shadowed_8_en_8_update_err;
   logic bank1_info0_page_cfg_shadowed_8_rd_en_8_qs;
   logic bank1_info0_page_cfg_shadowed_8_rd_en_8_wd;
+  logic bank1_info0_page_cfg_shadowed_8_rd_en_8_storage_err;
+  logic bank1_info0_page_cfg_shadowed_8_rd_en_8_update_err;
   logic bank1_info0_page_cfg_shadowed_8_prog_en_8_qs;
   logic bank1_info0_page_cfg_shadowed_8_prog_en_8_wd;
+  logic bank1_info0_page_cfg_shadowed_8_prog_en_8_storage_err;
+  logic bank1_info0_page_cfg_shadowed_8_prog_en_8_update_err;
   logic bank1_info0_page_cfg_shadowed_8_erase_en_8_qs;
   logic bank1_info0_page_cfg_shadowed_8_erase_en_8_wd;
+  logic bank1_info0_page_cfg_shadowed_8_erase_en_8_storage_err;
+  logic bank1_info0_page_cfg_shadowed_8_erase_en_8_update_err;
   logic bank1_info0_page_cfg_shadowed_8_scramble_en_8_qs;
   logic bank1_info0_page_cfg_shadowed_8_scramble_en_8_wd;
+  logic bank1_info0_page_cfg_shadowed_8_scramble_en_8_storage_err;
+  logic bank1_info0_page_cfg_shadowed_8_scramble_en_8_update_err;
   logic bank1_info0_page_cfg_shadowed_8_ecc_en_8_qs;
   logic bank1_info0_page_cfg_shadowed_8_ecc_en_8_wd;
+  logic bank1_info0_page_cfg_shadowed_8_ecc_en_8_storage_err;
+  logic bank1_info0_page_cfg_shadowed_8_ecc_en_8_update_err;
   logic bank1_info0_page_cfg_shadowed_8_he_en_8_qs;
   logic bank1_info0_page_cfg_shadowed_8_he_en_8_wd;
+  logic bank1_info0_page_cfg_shadowed_8_he_en_8_storage_err;
+  logic bank1_info0_page_cfg_shadowed_8_he_en_8_update_err;
   logic bank1_info0_page_cfg_shadowed_9_re;
   logic bank1_info0_page_cfg_shadowed_9_we;
   logic bank1_info0_page_cfg_shadowed_9_en_9_qs;
   logic bank1_info0_page_cfg_shadowed_9_en_9_wd;
+  logic bank1_info0_page_cfg_shadowed_9_en_9_storage_err;
+  logic bank1_info0_page_cfg_shadowed_9_en_9_update_err;
   logic bank1_info0_page_cfg_shadowed_9_rd_en_9_qs;
   logic bank1_info0_page_cfg_shadowed_9_rd_en_9_wd;
+  logic bank1_info0_page_cfg_shadowed_9_rd_en_9_storage_err;
+  logic bank1_info0_page_cfg_shadowed_9_rd_en_9_update_err;
   logic bank1_info0_page_cfg_shadowed_9_prog_en_9_qs;
   logic bank1_info0_page_cfg_shadowed_9_prog_en_9_wd;
+  logic bank1_info0_page_cfg_shadowed_9_prog_en_9_storage_err;
+  logic bank1_info0_page_cfg_shadowed_9_prog_en_9_update_err;
   logic bank1_info0_page_cfg_shadowed_9_erase_en_9_qs;
   logic bank1_info0_page_cfg_shadowed_9_erase_en_9_wd;
+  logic bank1_info0_page_cfg_shadowed_9_erase_en_9_storage_err;
+  logic bank1_info0_page_cfg_shadowed_9_erase_en_9_update_err;
   logic bank1_info0_page_cfg_shadowed_9_scramble_en_9_qs;
   logic bank1_info0_page_cfg_shadowed_9_scramble_en_9_wd;
+  logic bank1_info0_page_cfg_shadowed_9_scramble_en_9_storage_err;
+  logic bank1_info0_page_cfg_shadowed_9_scramble_en_9_update_err;
   logic bank1_info0_page_cfg_shadowed_9_ecc_en_9_qs;
   logic bank1_info0_page_cfg_shadowed_9_ecc_en_9_wd;
+  logic bank1_info0_page_cfg_shadowed_9_ecc_en_9_storage_err;
+  logic bank1_info0_page_cfg_shadowed_9_ecc_en_9_update_err;
   logic bank1_info0_page_cfg_shadowed_9_he_en_9_qs;
   logic bank1_info0_page_cfg_shadowed_9_he_en_9_wd;
+  logic bank1_info0_page_cfg_shadowed_9_he_en_9_storage_err;
+  logic bank1_info0_page_cfg_shadowed_9_he_en_9_update_err;
   logic bank1_info1_regwen_we;
   logic bank1_info1_regwen_qs;
   logic bank1_info1_regwen_wd;
@@ -884,18 +1365,32 @@ module flash_ctrl_core_reg_top (
   logic bank1_info1_page_cfg_shadowed_we;
   logic bank1_info1_page_cfg_shadowed_en_0_qs;
   logic bank1_info1_page_cfg_shadowed_en_0_wd;
+  logic bank1_info1_page_cfg_shadowed_en_0_storage_err;
+  logic bank1_info1_page_cfg_shadowed_en_0_update_err;
   logic bank1_info1_page_cfg_shadowed_rd_en_0_qs;
   logic bank1_info1_page_cfg_shadowed_rd_en_0_wd;
+  logic bank1_info1_page_cfg_shadowed_rd_en_0_storage_err;
+  logic bank1_info1_page_cfg_shadowed_rd_en_0_update_err;
   logic bank1_info1_page_cfg_shadowed_prog_en_0_qs;
   logic bank1_info1_page_cfg_shadowed_prog_en_0_wd;
+  logic bank1_info1_page_cfg_shadowed_prog_en_0_storage_err;
+  logic bank1_info1_page_cfg_shadowed_prog_en_0_update_err;
   logic bank1_info1_page_cfg_shadowed_erase_en_0_qs;
   logic bank1_info1_page_cfg_shadowed_erase_en_0_wd;
+  logic bank1_info1_page_cfg_shadowed_erase_en_0_storage_err;
+  logic bank1_info1_page_cfg_shadowed_erase_en_0_update_err;
   logic bank1_info1_page_cfg_shadowed_scramble_en_0_qs;
   logic bank1_info1_page_cfg_shadowed_scramble_en_0_wd;
+  logic bank1_info1_page_cfg_shadowed_scramble_en_0_storage_err;
+  logic bank1_info1_page_cfg_shadowed_scramble_en_0_update_err;
   logic bank1_info1_page_cfg_shadowed_ecc_en_0_qs;
   logic bank1_info1_page_cfg_shadowed_ecc_en_0_wd;
+  logic bank1_info1_page_cfg_shadowed_ecc_en_0_storage_err;
+  logic bank1_info1_page_cfg_shadowed_ecc_en_0_update_err;
   logic bank1_info1_page_cfg_shadowed_he_en_0_qs;
   logic bank1_info1_page_cfg_shadowed_he_en_0_wd;
+  logic bank1_info1_page_cfg_shadowed_he_en_0_storage_err;
+  logic bank1_info1_page_cfg_shadowed_he_en_0_update_err;
   logic bank1_info2_regwen_0_we;
   logic bank1_info2_regwen_0_qs;
   logic bank1_info2_regwen_0_wd;
@@ -906,34 +1401,62 @@ module flash_ctrl_core_reg_top (
   logic bank1_info2_page_cfg_shadowed_0_we;
   logic bank1_info2_page_cfg_shadowed_0_en_0_qs;
   logic bank1_info2_page_cfg_shadowed_0_en_0_wd;
+  logic bank1_info2_page_cfg_shadowed_0_en_0_storage_err;
+  logic bank1_info2_page_cfg_shadowed_0_en_0_update_err;
   logic bank1_info2_page_cfg_shadowed_0_rd_en_0_qs;
   logic bank1_info2_page_cfg_shadowed_0_rd_en_0_wd;
+  logic bank1_info2_page_cfg_shadowed_0_rd_en_0_storage_err;
+  logic bank1_info2_page_cfg_shadowed_0_rd_en_0_update_err;
   logic bank1_info2_page_cfg_shadowed_0_prog_en_0_qs;
   logic bank1_info2_page_cfg_shadowed_0_prog_en_0_wd;
+  logic bank1_info2_page_cfg_shadowed_0_prog_en_0_storage_err;
+  logic bank1_info2_page_cfg_shadowed_0_prog_en_0_update_err;
   logic bank1_info2_page_cfg_shadowed_0_erase_en_0_qs;
   logic bank1_info2_page_cfg_shadowed_0_erase_en_0_wd;
+  logic bank1_info2_page_cfg_shadowed_0_erase_en_0_storage_err;
+  logic bank1_info2_page_cfg_shadowed_0_erase_en_0_update_err;
   logic bank1_info2_page_cfg_shadowed_0_scramble_en_0_qs;
   logic bank1_info2_page_cfg_shadowed_0_scramble_en_0_wd;
+  logic bank1_info2_page_cfg_shadowed_0_scramble_en_0_storage_err;
+  logic bank1_info2_page_cfg_shadowed_0_scramble_en_0_update_err;
   logic bank1_info2_page_cfg_shadowed_0_ecc_en_0_qs;
   logic bank1_info2_page_cfg_shadowed_0_ecc_en_0_wd;
+  logic bank1_info2_page_cfg_shadowed_0_ecc_en_0_storage_err;
+  logic bank1_info2_page_cfg_shadowed_0_ecc_en_0_update_err;
   logic bank1_info2_page_cfg_shadowed_0_he_en_0_qs;
   logic bank1_info2_page_cfg_shadowed_0_he_en_0_wd;
+  logic bank1_info2_page_cfg_shadowed_0_he_en_0_storage_err;
+  logic bank1_info2_page_cfg_shadowed_0_he_en_0_update_err;
   logic bank1_info2_page_cfg_shadowed_1_re;
   logic bank1_info2_page_cfg_shadowed_1_we;
   logic bank1_info2_page_cfg_shadowed_1_en_1_qs;
   logic bank1_info2_page_cfg_shadowed_1_en_1_wd;
+  logic bank1_info2_page_cfg_shadowed_1_en_1_storage_err;
+  logic bank1_info2_page_cfg_shadowed_1_en_1_update_err;
   logic bank1_info2_page_cfg_shadowed_1_rd_en_1_qs;
   logic bank1_info2_page_cfg_shadowed_1_rd_en_1_wd;
+  logic bank1_info2_page_cfg_shadowed_1_rd_en_1_storage_err;
+  logic bank1_info2_page_cfg_shadowed_1_rd_en_1_update_err;
   logic bank1_info2_page_cfg_shadowed_1_prog_en_1_qs;
   logic bank1_info2_page_cfg_shadowed_1_prog_en_1_wd;
+  logic bank1_info2_page_cfg_shadowed_1_prog_en_1_storage_err;
+  logic bank1_info2_page_cfg_shadowed_1_prog_en_1_update_err;
   logic bank1_info2_page_cfg_shadowed_1_erase_en_1_qs;
   logic bank1_info2_page_cfg_shadowed_1_erase_en_1_wd;
+  logic bank1_info2_page_cfg_shadowed_1_erase_en_1_storage_err;
+  logic bank1_info2_page_cfg_shadowed_1_erase_en_1_update_err;
   logic bank1_info2_page_cfg_shadowed_1_scramble_en_1_qs;
   logic bank1_info2_page_cfg_shadowed_1_scramble_en_1_wd;
+  logic bank1_info2_page_cfg_shadowed_1_scramble_en_1_storage_err;
+  logic bank1_info2_page_cfg_shadowed_1_scramble_en_1_update_err;
   logic bank1_info2_page_cfg_shadowed_1_ecc_en_1_qs;
   logic bank1_info2_page_cfg_shadowed_1_ecc_en_1_wd;
+  logic bank1_info2_page_cfg_shadowed_1_ecc_en_1_storage_err;
+  logic bank1_info2_page_cfg_shadowed_1_ecc_en_1_update_err;
   logic bank1_info2_page_cfg_shadowed_1_he_en_1_qs;
   logic bank1_info2_page_cfg_shadowed_1_he_en_1_wd;
+  logic bank1_info2_page_cfg_shadowed_1_he_en_1_storage_err;
+  logic bank1_info2_page_cfg_shadowed_1_he_en_1_update_err;
   logic bank_cfg_regwen_we;
   logic bank_cfg_regwen_qs;
   logic bank_cfg_regwen_wd;
@@ -941,8 +1464,12 @@ module flash_ctrl_core_reg_top (
   logic mp_bank_cfg_shadowed_we;
   logic mp_bank_cfg_shadowed_erase_en_0_qs;
   logic mp_bank_cfg_shadowed_erase_en_0_wd;
+  logic mp_bank_cfg_shadowed_erase_en_0_storage_err;
+  logic mp_bank_cfg_shadowed_erase_en_0_update_err;
   logic mp_bank_cfg_shadowed_erase_en_1_qs;
   logic mp_bank_cfg_shadowed_erase_en_1_wd;
+  logic mp_bank_cfg_shadowed_erase_en_1_storage_err;
+  logic mp_bank_cfg_shadowed_erase_en_1_update_err;
   logic op_status_we;
   logic op_status_done_qs;
   logic op_status_done_wd;
@@ -2085,8 +2612,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[0].en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[0].en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_0_en_0_update_err),
+    .err_storage (mp_region_cfg_shadowed_0_en_0_storage_err)
   );
 
   //   F[rd_en_0]: 1:1
@@ -2119,8 +2646,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[0].rd_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[0].rd_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_0_rd_en_0_update_err),
+    .err_storage (mp_region_cfg_shadowed_0_rd_en_0_storage_err)
   );
 
   //   F[prog_en_0]: 2:2
@@ -2153,8 +2680,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[0].prog_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[0].prog_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_0_prog_en_0_update_err),
+    .err_storage (mp_region_cfg_shadowed_0_prog_en_0_storage_err)
   );
 
   //   F[erase_en_0]: 3:3
@@ -2187,8 +2714,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[0].erase_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[0].erase_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_0_erase_en_0_update_err),
+    .err_storage (mp_region_cfg_shadowed_0_erase_en_0_storage_err)
   );
 
   //   F[scramble_en_0]: 4:4
@@ -2221,8 +2748,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[0].scramble_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[0].scramble_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_0_scramble_en_0_update_err),
+    .err_storage (mp_region_cfg_shadowed_0_scramble_en_0_storage_err)
   );
 
   //   F[ecc_en_0]: 5:5
@@ -2255,8 +2782,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[0].ecc_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[0].ecc_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_0_ecc_en_0_update_err),
+    .err_storage (mp_region_cfg_shadowed_0_ecc_en_0_storage_err)
   );
 
   //   F[he_en_0]: 6:6
@@ -2289,8 +2816,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[0].he_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[0].he_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_0_he_en_0_update_err),
+    .err_storage (mp_region_cfg_shadowed_0_he_en_0_storage_err)
   );
 
   //   F[base_0]: 16:8
@@ -2323,8 +2850,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[0].base.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[0].base.err_storage)
+    .err_update  (mp_region_cfg_shadowed_0_base_0_update_err),
+    .err_storage (mp_region_cfg_shadowed_0_base_0_storage_err)
   );
 
   //   F[size_0]: 26:17
@@ -2357,8 +2884,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[0].size.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[0].size.err_storage)
+    .err_update  (mp_region_cfg_shadowed_0_size_0_update_err),
+    .err_storage (mp_region_cfg_shadowed_0_size_0_storage_err)
   );
 
 
@@ -2394,8 +2921,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[1].en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[1].en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_1_en_1_update_err),
+    .err_storage (mp_region_cfg_shadowed_1_en_1_storage_err)
   );
 
   //   F[rd_en_1]: 1:1
@@ -2428,8 +2955,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[1].rd_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[1].rd_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_1_rd_en_1_update_err),
+    .err_storage (mp_region_cfg_shadowed_1_rd_en_1_storage_err)
   );
 
   //   F[prog_en_1]: 2:2
@@ -2462,8 +2989,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[1].prog_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[1].prog_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_1_prog_en_1_update_err),
+    .err_storage (mp_region_cfg_shadowed_1_prog_en_1_storage_err)
   );
 
   //   F[erase_en_1]: 3:3
@@ -2496,8 +3023,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[1].erase_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[1].erase_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_1_erase_en_1_update_err),
+    .err_storage (mp_region_cfg_shadowed_1_erase_en_1_storage_err)
   );
 
   //   F[scramble_en_1]: 4:4
@@ -2530,8 +3057,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[1].scramble_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[1].scramble_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_1_scramble_en_1_update_err),
+    .err_storage (mp_region_cfg_shadowed_1_scramble_en_1_storage_err)
   );
 
   //   F[ecc_en_1]: 5:5
@@ -2564,8 +3091,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[1].ecc_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[1].ecc_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_1_ecc_en_1_update_err),
+    .err_storage (mp_region_cfg_shadowed_1_ecc_en_1_storage_err)
   );
 
   //   F[he_en_1]: 6:6
@@ -2598,8 +3125,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[1].he_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[1].he_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_1_he_en_1_update_err),
+    .err_storage (mp_region_cfg_shadowed_1_he_en_1_storage_err)
   );
 
   //   F[base_1]: 16:8
@@ -2632,8 +3159,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[1].base.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[1].base.err_storage)
+    .err_update  (mp_region_cfg_shadowed_1_base_1_update_err),
+    .err_storage (mp_region_cfg_shadowed_1_base_1_storage_err)
   );
 
   //   F[size_1]: 26:17
@@ -2666,8 +3193,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[1].size.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[1].size.err_storage)
+    .err_update  (mp_region_cfg_shadowed_1_size_1_update_err),
+    .err_storage (mp_region_cfg_shadowed_1_size_1_storage_err)
   );
 
 
@@ -2703,8 +3230,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[2].en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[2].en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_2_en_2_update_err),
+    .err_storage (mp_region_cfg_shadowed_2_en_2_storage_err)
   );
 
   //   F[rd_en_2]: 1:1
@@ -2737,8 +3264,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[2].rd_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[2].rd_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_2_rd_en_2_update_err),
+    .err_storage (mp_region_cfg_shadowed_2_rd_en_2_storage_err)
   );
 
   //   F[prog_en_2]: 2:2
@@ -2771,8 +3298,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[2].prog_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[2].prog_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_2_prog_en_2_update_err),
+    .err_storage (mp_region_cfg_shadowed_2_prog_en_2_storage_err)
   );
 
   //   F[erase_en_2]: 3:3
@@ -2805,8 +3332,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[2].erase_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[2].erase_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_2_erase_en_2_update_err),
+    .err_storage (mp_region_cfg_shadowed_2_erase_en_2_storage_err)
   );
 
   //   F[scramble_en_2]: 4:4
@@ -2839,8 +3366,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[2].scramble_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[2].scramble_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_2_scramble_en_2_update_err),
+    .err_storage (mp_region_cfg_shadowed_2_scramble_en_2_storage_err)
   );
 
   //   F[ecc_en_2]: 5:5
@@ -2873,8 +3400,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[2].ecc_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[2].ecc_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_2_ecc_en_2_update_err),
+    .err_storage (mp_region_cfg_shadowed_2_ecc_en_2_storage_err)
   );
 
   //   F[he_en_2]: 6:6
@@ -2907,8 +3434,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[2].he_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[2].he_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_2_he_en_2_update_err),
+    .err_storage (mp_region_cfg_shadowed_2_he_en_2_storage_err)
   );
 
   //   F[base_2]: 16:8
@@ -2941,8 +3468,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[2].base.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[2].base.err_storage)
+    .err_update  (mp_region_cfg_shadowed_2_base_2_update_err),
+    .err_storage (mp_region_cfg_shadowed_2_base_2_storage_err)
   );
 
   //   F[size_2]: 26:17
@@ -2975,8 +3502,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[2].size.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[2].size.err_storage)
+    .err_update  (mp_region_cfg_shadowed_2_size_2_update_err),
+    .err_storage (mp_region_cfg_shadowed_2_size_2_storage_err)
   );
 
 
@@ -3012,8 +3539,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[3].en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[3].en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_3_en_3_update_err),
+    .err_storage (mp_region_cfg_shadowed_3_en_3_storage_err)
   );
 
   //   F[rd_en_3]: 1:1
@@ -3046,8 +3573,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[3].rd_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[3].rd_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_3_rd_en_3_update_err),
+    .err_storage (mp_region_cfg_shadowed_3_rd_en_3_storage_err)
   );
 
   //   F[prog_en_3]: 2:2
@@ -3080,8 +3607,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[3].prog_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[3].prog_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_3_prog_en_3_update_err),
+    .err_storage (mp_region_cfg_shadowed_3_prog_en_3_storage_err)
   );
 
   //   F[erase_en_3]: 3:3
@@ -3114,8 +3641,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[3].erase_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[3].erase_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_3_erase_en_3_update_err),
+    .err_storage (mp_region_cfg_shadowed_3_erase_en_3_storage_err)
   );
 
   //   F[scramble_en_3]: 4:4
@@ -3148,8 +3675,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[3].scramble_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[3].scramble_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_3_scramble_en_3_update_err),
+    .err_storage (mp_region_cfg_shadowed_3_scramble_en_3_storage_err)
   );
 
   //   F[ecc_en_3]: 5:5
@@ -3182,8 +3709,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[3].ecc_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[3].ecc_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_3_ecc_en_3_update_err),
+    .err_storage (mp_region_cfg_shadowed_3_ecc_en_3_storage_err)
   );
 
   //   F[he_en_3]: 6:6
@@ -3216,8 +3743,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[3].he_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[3].he_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_3_he_en_3_update_err),
+    .err_storage (mp_region_cfg_shadowed_3_he_en_3_storage_err)
   );
 
   //   F[base_3]: 16:8
@@ -3250,8 +3777,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[3].base.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[3].base.err_storage)
+    .err_update  (mp_region_cfg_shadowed_3_base_3_update_err),
+    .err_storage (mp_region_cfg_shadowed_3_base_3_storage_err)
   );
 
   //   F[size_3]: 26:17
@@ -3284,8 +3811,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[3].size.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[3].size.err_storage)
+    .err_update  (mp_region_cfg_shadowed_3_size_3_update_err),
+    .err_storage (mp_region_cfg_shadowed_3_size_3_storage_err)
   );
 
 
@@ -3321,8 +3848,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[4].en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[4].en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_4_en_4_update_err),
+    .err_storage (mp_region_cfg_shadowed_4_en_4_storage_err)
   );
 
   //   F[rd_en_4]: 1:1
@@ -3355,8 +3882,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[4].rd_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[4].rd_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_4_rd_en_4_update_err),
+    .err_storage (mp_region_cfg_shadowed_4_rd_en_4_storage_err)
   );
 
   //   F[prog_en_4]: 2:2
@@ -3389,8 +3916,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[4].prog_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[4].prog_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_4_prog_en_4_update_err),
+    .err_storage (mp_region_cfg_shadowed_4_prog_en_4_storage_err)
   );
 
   //   F[erase_en_4]: 3:3
@@ -3423,8 +3950,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[4].erase_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[4].erase_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_4_erase_en_4_update_err),
+    .err_storage (mp_region_cfg_shadowed_4_erase_en_4_storage_err)
   );
 
   //   F[scramble_en_4]: 4:4
@@ -3457,8 +3984,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[4].scramble_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[4].scramble_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_4_scramble_en_4_update_err),
+    .err_storage (mp_region_cfg_shadowed_4_scramble_en_4_storage_err)
   );
 
   //   F[ecc_en_4]: 5:5
@@ -3491,8 +4018,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[4].ecc_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[4].ecc_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_4_ecc_en_4_update_err),
+    .err_storage (mp_region_cfg_shadowed_4_ecc_en_4_storage_err)
   );
 
   //   F[he_en_4]: 6:6
@@ -3525,8 +4052,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[4].he_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[4].he_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_4_he_en_4_update_err),
+    .err_storage (mp_region_cfg_shadowed_4_he_en_4_storage_err)
   );
 
   //   F[base_4]: 16:8
@@ -3559,8 +4086,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[4].base.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[4].base.err_storage)
+    .err_update  (mp_region_cfg_shadowed_4_base_4_update_err),
+    .err_storage (mp_region_cfg_shadowed_4_base_4_storage_err)
   );
 
   //   F[size_4]: 26:17
@@ -3593,8 +4120,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[4].size.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[4].size.err_storage)
+    .err_update  (mp_region_cfg_shadowed_4_size_4_update_err),
+    .err_storage (mp_region_cfg_shadowed_4_size_4_storage_err)
   );
 
 
@@ -3630,8 +4157,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[5].en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[5].en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_5_en_5_update_err),
+    .err_storage (mp_region_cfg_shadowed_5_en_5_storage_err)
   );
 
   //   F[rd_en_5]: 1:1
@@ -3664,8 +4191,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[5].rd_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[5].rd_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_5_rd_en_5_update_err),
+    .err_storage (mp_region_cfg_shadowed_5_rd_en_5_storage_err)
   );
 
   //   F[prog_en_5]: 2:2
@@ -3698,8 +4225,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[5].prog_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[5].prog_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_5_prog_en_5_update_err),
+    .err_storage (mp_region_cfg_shadowed_5_prog_en_5_storage_err)
   );
 
   //   F[erase_en_5]: 3:3
@@ -3732,8 +4259,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[5].erase_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[5].erase_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_5_erase_en_5_update_err),
+    .err_storage (mp_region_cfg_shadowed_5_erase_en_5_storage_err)
   );
 
   //   F[scramble_en_5]: 4:4
@@ -3766,8 +4293,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[5].scramble_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[5].scramble_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_5_scramble_en_5_update_err),
+    .err_storage (mp_region_cfg_shadowed_5_scramble_en_5_storage_err)
   );
 
   //   F[ecc_en_5]: 5:5
@@ -3800,8 +4327,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[5].ecc_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[5].ecc_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_5_ecc_en_5_update_err),
+    .err_storage (mp_region_cfg_shadowed_5_ecc_en_5_storage_err)
   );
 
   //   F[he_en_5]: 6:6
@@ -3834,8 +4361,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[5].he_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[5].he_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_5_he_en_5_update_err),
+    .err_storage (mp_region_cfg_shadowed_5_he_en_5_storage_err)
   );
 
   //   F[base_5]: 16:8
@@ -3868,8 +4395,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[5].base.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[5].base.err_storage)
+    .err_update  (mp_region_cfg_shadowed_5_base_5_update_err),
+    .err_storage (mp_region_cfg_shadowed_5_base_5_storage_err)
   );
 
   //   F[size_5]: 26:17
@@ -3902,8 +4429,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[5].size.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[5].size.err_storage)
+    .err_update  (mp_region_cfg_shadowed_5_size_5_update_err),
+    .err_storage (mp_region_cfg_shadowed_5_size_5_storage_err)
   );
 
 
@@ -3939,8 +4466,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[6].en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[6].en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_6_en_6_update_err),
+    .err_storage (mp_region_cfg_shadowed_6_en_6_storage_err)
   );
 
   //   F[rd_en_6]: 1:1
@@ -3973,8 +4500,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[6].rd_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[6].rd_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_6_rd_en_6_update_err),
+    .err_storage (mp_region_cfg_shadowed_6_rd_en_6_storage_err)
   );
 
   //   F[prog_en_6]: 2:2
@@ -4007,8 +4534,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[6].prog_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[6].prog_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_6_prog_en_6_update_err),
+    .err_storage (mp_region_cfg_shadowed_6_prog_en_6_storage_err)
   );
 
   //   F[erase_en_6]: 3:3
@@ -4041,8 +4568,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[6].erase_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[6].erase_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_6_erase_en_6_update_err),
+    .err_storage (mp_region_cfg_shadowed_6_erase_en_6_storage_err)
   );
 
   //   F[scramble_en_6]: 4:4
@@ -4075,8 +4602,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[6].scramble_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[6].scramble_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_6_scramble_en_6_update_err),
+    .err_storage (mp_region_cfg_shadowed_6_scramble_en_6_storage_err)
   );
 
   //   F[ecc_en_6]: 5:5
@@ -4109,8 +4636,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[6].ecc_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[6].ecc_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_6_ecc_en_6_update_err),
+    .err_storage (mp_region_cfg_shadowed_6_ecc_en_6_storage_err)
   );
 
   //   F[he_en_6]: 6:6
@@ -4143,8 +4670,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[6].he_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[6].he_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_6_he_en_6_update_err),
+    .err_storage (mp_region_cfg_shadowed_6_he_en_6_storage_err)
   );
 
   //   F[base_6]: 16:8
@@ -4177,8 +4704,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[6].base.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[6].base.err_storage)
+    .err_update  (mp_region_cfg_shadowed_6_base_6_update_err),
+    .err_storage (mp_region_cfg_shadowed_6_base_6_storage_err)
   );
 
   //   F[size_6]: 26:17
@@ -4211,8 +4738,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[6].size.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[6].size.err_storage)
+    .err_update  (mp_region_cfg_shadowed_6_size_6_update_err),
+    .err_storage (mp_region_cfg_shadowed_6_size_6_storage_err)
   );
 
 
@@ -4248,8 +4775,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[7].en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[7].en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_7_en_7_update_err),
+    .err_storage (mp_region_cfg_shadowed_7_en_7_storage_err)
   );
 
   //   F[rd_en_7]: 1:1
@@ -4282,8 +4809,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[7].rd_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[7].rd_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_7_rd_en_7_update_err),
+    .err_storage (mp_region_cfg_shadowed_7_rd_en_7_storage_err)
   );
 
   //   F[prog_en_7]: 2:2
@@ -4316,8 +4843,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[7].prog_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[7].prog_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_7_prog_en_7_update_err),
+    .err_storage (mp_region_cfg_shadowed_7_prog_en_7_storage_err)
   );
 
   //   F[erase_en_7]: 3:3
@@ -4350,8 +4877,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[7].erase_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[7].erase_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_7_erase_en_7_update_err),
+    .err_storage (mp_region_cfg_shadowed_7_erase_en_7_storage_err)
   );
 
   //   F[scramble_en_7]: 4:4
@@ -4384,8 +4911,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[7].scramble_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[7].scramble_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_7_scramble_en_7_update_err),
+    .err_storage (mp_region_cfg_shadowed_7_scramble_en_7_storage_err)
   );
 
   //   F[ecc_en_7]: 5:5
@@ -4418,8 +4945,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[7].ecc_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[7].ecc_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_7_ecc_en_7_update_err),
+    .err_storage (mp_region_cfg_shadowed_7_ecc_en_7_storage_err)
   );
 
   //   F[he_en_7]: 6:6
@@ -4452,8 +4979,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[7].he_en.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[7].he_en.err_storage)
+    .err_update  (mp_region_cfg_shadowed_7_he_en_7_update_err),
+    .err_storage (mp_region_cfg_shadowed_7_he_en_7_storage_err)
   );
 
   //   F[base_7]: 16:8
@@ -4486,8 +5013,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[7].base.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[7].base.err_storage)
+    .err_update  (mp_region_cfg_shadowed_7_base_7_update_err),
+    .err_storage (mp_region_cfg_shadowed_7_base_7_storage_err)
   );
 
   //   F[size_7]: 26:17
@@ -4520,8 +5047,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_region_cfg_shadowed[7].size.err_update),
-    .err_storage (reg2hw.mp_region_cfg_shadowed[7].size.err_storage)
+    .err_update  (mp_region_cfg_shadowed_7_size_7_update_err),
+    .err_storage (mp_region_cfg_shadowed_7_size_7_storage_err)
   );
 
 
@@ -4556,8 +5083,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.default_region_shadowed.rd_en.err_update),
-    .err_storage (reg2hw.default_region_shadowed.rd_en.err_storage)
+    .err_update  (default_region_shadowed_rd_en_update_err),
+    .err_storage (default_region_shadowed_rd_en_storage_err)
   );
 
   //   F[prog_en]: 1:1
@@ -4590,8 +5117,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.default_region_shadowed.prog_en.err_update),
-    .err_storage (reg2hw.default_region_shadowed.prog_en.err_storage)
+    .err_update  (default_region_shadowed_prog_en_update_err),
+    .err_storage (default_region_shadowed_prog_en_storage_err)
   );
 
   //   F[erase_en]: 2:2
@@ -4624,8 +5151,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.default_region_shadowed.erase_en.err_update),
-    .err_storage (reg2hw.default_region_shadowed.erase_en.err_storage)
+    .err_update  (default_region_shadowed_erase_en_update_err),
+    .err_storage (default_region_shadowed_erase_en_storage_err)
   );
 
   //   F[scramble_en]: 3:3
@@ -4658,8 +5185,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.default_region_shadowed.scramble_en.err_update),
-    .err_storage (reg2hw.default_region_shadowed.scramble_en.err_storage)
+    .err_update  (default_region_shadowed_scramble_en_update_err),
+    .err_storage (default_region_shadowed_scramble_en_storage_err)
   );
 
   //   F[ecc_en]: 4:4
@@ -4692,8 +5219,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.default_region_shadowed.ecc_en.err_update),
-    .err_storage (reg2hw.default_region_shadowed.ecc_en.err_storage)
+    .err_update  (default_region_shadowed_ecc_en_update_err),
+    .err_storage (default_region_shadowed_ecc_en_storage_err)
   );
 
   //   F[he_en]: 5:5
@@ -4726,8 +5253,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.default_region_shadowed.he_en.err_update),
-    .err_storage (reg2hw.default_region_shadowed.he_en.err_storage)
+    .err_update  (default_region_shadowed_he_en_update_err),
+    .err_storage (default_region_shadowed_he_en_storage_err)
   );
 
 
@@ -5033,8 +5560,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[0].en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[0].en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_0_en_0_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_0_en_0_storage_err)
   );
 
   //   F[rd_en_0]: 1:1
@@ -5067,8 +5594,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[0].rd_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[0].rd_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_0_rd_en_0_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_0_rd_en_0_storage_err)
   );
 
   //   F[prog_en_0]: 2:2
@@ -5101,8 +5628,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[0].prog_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[0].prog_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_0_prog_en_0_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_0_prog_en_0_storage_err)
   );
 
   //   F[erase_en_0]: 3:3
@@ -5135,8 +5662,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[0].erase_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[0].erase_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_0_erase_en_0_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_0_erase_en_0_storage_err)
   );
 
   //   F[scramble_en_0]: 4:4
@@ -5169,8 +5696,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[0].scramble_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[0].scramble_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_0_scramble_en_0_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_0_scramble_en_0_storage_err)
   );
 
   //   F[ecc_en_0]: 5:5
@@ -5203,8 +5730,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[0].ecc_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[0].ecc_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_0_ecc_en_0_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_0_ecc_en_0_storage_err)
   );
 
   //   F[he_en_0]: 6:6
@@ -5237,8 +5764,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[0].he_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[0].he_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_0_he_en_0_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_0_he_en_0_storage_err)
   );
 
 
@@ -5274,8 +5801,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[1].en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[1].en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_1_en_1_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_1_en_1_storage_err)
   );
 
   //   F[rd_en_1]: 1:1
@@ -5308,8 +5835,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[1].rd_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[1].rd_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_1_rd_en_1_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_1_rd_en_1_storage_err)
   );
 
   //   F[prog_en_1]: 2:2
@@ -5342,8 +5869,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[1].prog_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[1].prog_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_1_prog_en_1_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_1_prog_en_1_storage_err)
   );
 
   //   F[erase_en_1]: 3:3
@@ -5376,8 +5903,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[1].erase_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[1].erase_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_1_erase_en_1_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_1_erase_en_1_storage_err)
   );
 
   //   F[scramble_en_1]: 4:4
@@ -5410,8 +5937,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[1].scramble_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[1].scramble_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_1_scramble_en_1_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_1_scramble_en_1_storage_err)
   );
 
   //   F[ecc_en_1]: 5:5
@@ -5444,8 +5971,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[1].ecc_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[1].ecc_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_1_ecc_en_1_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_1_ecc_en_1_storage_err)
   );
 
   //   F[he_en_1]: 6:6
@@ -5478,8 +6005,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[1].he_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[1].he_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_1_he_en_1_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_1_he_en_1_storage_err)
   );
 
 
@@ -5515,8 +6042,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[2].en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[2].en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_2_en_2_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_2_en_2_storage_err)
   );
 
   //   F[rd_en_2]: 1:1
@@ -5549,8 +6076,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[2].rd_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[2].rd_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_2_rd_en_2_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_2_rd_en_2_storage_err)
   );
 
   //   F[prog_en_2]: 2:2
@@ -5583,8 +6110,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[2].prog_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[2].prog_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_2_prog_en_2_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_2_prog_en_2_storage_err)
   );
 
   //   F[erase_en_2]: 3:3
@@ -5617,8 +6144,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[2].erase_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[2].erase_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_2_erase_en_2_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_2_erase_en_2_storage_err)
   );
 
   //   F[scramble_en_2]: 4:4
@@ -5651,8 +6178,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[2].scramble_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[2].scramble_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_2_scramble_en_2_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_2_scramble_en_2_storage_err)
   );
 
   //   F[ecc_en_2]: 5:5
@@ -5685,8 +6212,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[2].ecc_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[2].ecc_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_2_ecc_en_2_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_2_ecc_en_2_storage_err)
   );
 
   //   F[he_en_2]: 6:6
@@ -5719,8 +6246,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[2].he_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[2].he_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_2_he_en_2_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_2_he_en_2_storage_err)
   );
 
 
@@ -5756,8 +6283,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[3].en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[3].en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_3_en_3_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_3_en_3_storage_err)
   );
 
   //   F[rd_en_3]: 1:1
@@ -5790,8 +6317,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[3].rd_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[3].rd_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_3_rd_en_3_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_3_rd_en_3_storage_err)
   );
 
   //   F[prog_en_3]: 2:2
@@ -5824,8 +6351,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[3].prog_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[3].prog_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_3_prog_en_3_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_3_prog_en_3_storage_err)
   );
 
   //   F[erase_en_3]: 3:3
@@ -5858,8 +6385,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[3].erase_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[3].erase_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_3_erase_en_3_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_3_erase_en_3_storage_err)
   );
 
   //   F[scramble_en_3]: 4:4
@@ -5892,8 +6419,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[3].scramble_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[3].scramble_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_3_scramble_en_3_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_3_scramble_en_3_storage_err)
   );
 
   //   F[ecc_en_3]: 5:5
@@ -5926,8 +6453,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[3].ecc_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[3].ecc_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_3_ecc_en_3_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_3_ecc_en_3_storage_err)
   );
 
   //   F[he_en_3]: 6:6
@@ -5960,8 +6487,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[3].he_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[3].he_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_3_he_en_3_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_3_he_en_3_storage_err)
   );
 
 
@@ -5997,8 +6524,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[4].en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[4].en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_4_en_4_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_4_en_4_storage_err)
   );
 
   //   F[rd_en_4]: 1:1
@@ -6031,8 +6558,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[4].rd_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[4].rd_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_4_rd_en_4_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_4_rd_en_4_storage_err)
   );
 
   //   F[prog_en_4]: 2:2
@@ -6065,8 +6592,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[4].prog_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[4].prog_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_4_prog_en_4_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_4_prog_en_4_storage_err)
   );
 
   //   F[erase_en_4]: 3:3
@@ -6099,8 +6626,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[4].erase_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[4].erase_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_4_erase_en_4_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_4_erase_en_4_storage_err)
   );
 
   //   F[scramble_en_4]: 4:4
@@ -6133,8 +6660,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[4].scramble_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[4].scramble_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_4_scramble_en_4_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_4_scramble_en_4_storage_err)
   );
 
   //   F[ecc_en_4]: 5:5
@@ -6167,8 +6694,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[4].ecc_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[4].ecc_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_4_ecc_en_4_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_4_ecc_en_4_storage_err)
   );
 
   //   F[he_en_4]: 6:6
@@ -6201,8 +6728,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[4].he_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[4].he_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_4_he_en_4_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_4_he_en_4_storage_err)
   );
 
 
@@ -6238,8 +6765,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[5].en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[5].en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_5_en_5_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_5_en_5_storage_err)
   );
 
   //   F[rd_en_5]: 1:1
@@ -6272,8 +6799,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[5].rd_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[5].rd_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_5_rd_en_5_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_5_rd_en_5_storage_err)
   );
 
   //   F[prog_en_5]: 2:2
@@ -6306,8 +6833,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[5].prog_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[5].prog_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_5_prog_en_5_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_5_prog_en_5_storage_err)
   );
 
   //   F[erase_en_5]: 3:3
@@ -6340,8 +6867,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[5].erase_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[5].erase_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_5_erase_en_5_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_5_erase_en_5_storage_err)
   );
 
   //   F[scramble_en_5]: 4:4
@@ -6374,8 +6901,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[5].scramble_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[5].scramble_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_5_scramble_en_5_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_5_scramble_en_5_storage_err)
   );
 
   //   F[ecc_en_5]: 5:5
@@ -6408,8 +6935,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[5].ecc_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[5].ecc_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_5_ecc_en_5_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_5_ecc_en_5_storage_err)
   );
 
   //   F[he_en_5]: 6:6
@@ -6442,8 +6969,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[5].he_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[5].he_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_5_he_en_5_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_5_he_en_5_storage_err)
   );
 
 
@@ -6479,8 +7006,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[6].en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[6].en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_6_en_6_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_6_en_6_storage_err)
   );
 
   //   F[rd_en_6]: 1:1
@@ -6513,8 +7040,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[6].rd_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[6].rd_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_6_rd_en_6_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_6_rd_en_6_storage_err)
   );
 
   //   F[prog_en_6]: 2:2
@@ -6547,8 +7074,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[6].prog_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[6].prog_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_6_prog_en_6_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_6_prog_en_6_storage_err)
   );
 
   //   F[erase_en_6]: 3:3
@@ -6581,8 +7108,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[6].erase_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[6].erase_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_6_erase_en_6_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_6_erase_en_6_storage_err)
   );
 
   //   F[scramble_en_6]: 4:4
@@ -6615,8 +7142,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[6].scramble_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[6].scramble_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_6_scramble_en_6_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_6_scramble_en_6_storage_err)
   );
 
   //   F[ecc_en_6]: 5:5
@@ -6649,8 +7176,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[6].ecc_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[6].ecc_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_6_ecc_en_6_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_6_ecc_en_6_storage_err)
   );
 
   //   F[he_en_6]: 6:6
@@ -6683,8 +7210,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[6].he_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[6].he_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_6_he_en_6_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_6_he_en_6_storage_err)
   );
 
 
@@ -6720,8 +7247,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[7].en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[7].en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_7_en_7_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_7_en_7_storage_err)
   );
 
   //   F[rd_en_7]: 1:1
@@ -6754,8 +7281,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[7].rd_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[7].rd_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_7_rd_en_7_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_7_rd_en_7_storage_err)
   );
 
   //   F[prog_en_7]: 2:2
@@ -6788,8 +7315,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[7].prog_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[7].prog_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_7_prog_en_7_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_7_prog_en_7_storage_err)
   );
 
   //   F[erase_en_7]: 3:3
@@ -6822,8 +7349,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[7].erase_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[7].erase_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_7_erase_en_7_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_7_erase_en_7_storage_err)
   );
 
   //   F[scramble_en_7]: 4:4
@@ -6856,8 +7383,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[7].scramble_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[7].scramble_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_7_scramble_en_7_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_7_scramble_en_7_storage_err)
   );
 
   //   F[ecc_en_7]: 5:5
@@ -6890,8 +7417,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[7].ecc_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[7].ecc_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_7_ecc_en_7_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_7_ecc_en_7_storage_err)
   );
 
   //   F[he_en_7]: 6:6
@@ -6924,8 +7451,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[7].he_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[7].he_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_7_he_en_7_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_7_he_en_7_storage_err)
   );
 
 
@@ -6961,8 +7488,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[8].en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[8].en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_8_en_8_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_8_en_8_storage_err)
   );
 
   //   F[rd_en_8]: 1:1
@@ -6995,8 +7522,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[8].rd_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[8].rd_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_8_rd_en_8_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_8_rd_en_8_storage_err)
   );
 
   //   F[prog_en_8]: 2:2
@@ -7029,8 +7556,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[8].prog_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[8].prog_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_8_prog_en_8_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_8_prog_en_8_storage_err)
   );
 
   //   F[erase_en_8]: 3:3
@@ -7063,8 +7590,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[8].erase_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[8].erase_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_8_erase_en_8_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_8_erase_en_8_storage_err)
   );
 
   //   F[scramble_en_8]: 4:4
@@ -7097,8 +7624,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[8].scramble_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[8].scramble_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_8_scramble_en_8_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_8_scramble_en_8_storage_err)
   );
 
   //   F[ecc_en_8]: 5:5
@@ -7131,8 +7658,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[8].ecc_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[8].ecc_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_8_ecc_en_8_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_8_ecc_en_8_storage_err)
   );
 
   //   F[he_en_8]: 6:6
@@ -7165,8 +7692,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[8].he_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[8].he_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_8_he_en_8_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_8_he_en_8_storage_err)
   );
 
 
@@ -7202,8 +7729,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[9].en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[9].en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_9_en_9_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_9_en_9_storage_err)
   );
 
   //   F[rd_en_9]: 1:1
@@ -7236,8 +7763,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[9].rd_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[9].rd_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_9_rd_en_9_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_9_rd_en_9_storage_err)
   );
 
   //   F[prog_en_9]: 2:2
@@ -7270,8 +7797,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[9].prog_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[9].prog_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_9_prog_en_9_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_9_prog_en_9_storage_err)
   );
 
   //   F[erase_en_9]: 3:3
@@ -7304,8 +7831,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[9].erase_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[9].erase_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_9_erase_en_9_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_9_erase_en_9_storage_err)
   );
 
   //   F[scramble_en_9]: 4:4
@@ -7338,8 +7865,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[9].scramble_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[9].scramble_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_9_scramble_en_9_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_9_scramble_en_9_storage_err)
   );
 
   //   F[ecc_en_9]: 5:5
@@ -7372,8 +7899,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[9].ecc_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[9].ecc_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_9_ecc_en_9_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_9_ecc_en_9_storage_err)
   );
 
   //   F[he_en_9]: 6:6
@@ -7406,8 +7933,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[9].he_en.err_update),
-    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[9].he_en.err_storage)
+    .err_update  (bank0_info0_page_cfg_shadowed_9_he_en_9_update_err),
+    .err_storage (bank0_info0_page_cfg_shadowed_9_he_en_9_storage_err)
   );
 
 
@@ -7470,8 +7997,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info1_page_cfg_shadowed[0].en.err_update),
-    .err_storage (reg2hw.bank0_info1_page_cfg_shadowed[0].en.err_storage)
+    .err_update  (bank0_info1_page_cfg_shadowed_en_0_update_err),
+    .err_storage (bank0_info1_page_cfg_shadowed_en_0_storage_err)
   );
 
   //   F[rd_en_0]: 1:1
@@ -7504,8 +8031,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info1_page_cfg_shadowed[0].rd_en.err_update),
-    .err_storage (reg2hw.bank0_info1_page_cfg_shadowed[0].rd_en.err_storage)
+    .err_update  (bank0_info1_page_cfg_shadowed_rd_en_0_update_err),
+    .err_storage (bank0_info1_page_cfg_shadowed_rd_en_0_storage_err)
   );
 
   //   F[prog_en_0]: 2:2
@@ -7538,8 +8065,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info1_page_cfg_shadowed[0].prog_en.err_update),
-    .err_storage (reg2hw.bank0_info1_page_cfg_shadowed[0].prog_en.err_storage)
+    .err_update  (bank0_info1_page_cfg_shadowed_prog_en_0_update_err),
+    .err_storage (bank0_info1_page_cfg_shadowed_prog_en_0_storage_err)
   );
 
   //   F[erase_en_0]: 3:3
@@ -7572,8 +8099,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info1_page_cfg_shadowed[0].erase_en.err_update),
-    .err_storage (reg2hw.bank0_info1_page_cfg_shadowed[0].erase_en.err_storage)
+    .err_update  (bank0_info1_page_cfg_shadowed_erase_en_0_update_err),
+    .err_storage (bank0_info1_page_cfg_shadowed_erase_en_0_storage_err)
   );
 
   //   F[scramble_en_0]: 4:4
@@ -7606,8 +8133,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info1_page_cfg_shadowed[0].scramble_en.err_update),
-    .err_storage (reg2hw.bank0_info1_page_cfg_shadowed[0].scramble_en.err_storage)
+    .err_update  (bank0_info1_page_cfg_shadowed_scramble_en_0_update_err),
+    .err_storage (bank0_info1_page_cfg_shadowed_scramble_en_0_storage_err)
   );
 
   //   F[ecc_en_0]: 5:5
@@ -7640,8 +8167,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info1_page_cfg_shadowed[0].ecc_en.err_update),
-    .err_storage (reg2hw.bank0_info1_page_cfg_shadowed[0].ecc_en.err_storage)
+    .err_update  (bank0_info1_page_cfg_shadowed_ecc_en_0_update_err),
+    .err_storage (bank0_info1_page_cfg_shadowed_ecc_en_0_storage_err)
   );
 
   //   F[he_en_0]: 6:6
@@ -7674,8 +8201,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info1_page_cfg_shadowed[0].he_en.err_update),
-    .err_storage (reg2hw.bank0_info1_page_cfg_shadowed[0].he_en.err_storage)
+    .err_update  (bank0_info1_page_cfg_shadowed_he_en_0_update_err),
+    .err_storage (bank0_info1_page_cfg_shadowed_he_en_0_storage_err)
   );
 
 
@@ -7765,8 +8292,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[0].en.err_update),
-    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[0].en.err_storage)
+    .err_update  (bank0_info2_page_cfg_shadowed_0_en_0_update_err),
+    .err_storage (bank0_info2_page_cfg_shadowed_0_en_0_storage_err)
   );
 
   //   F[rd_en_0]: 1:1
@@ -7799,8 +8326,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[0].rd_en.err_update),
-    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[0].rd_en.err_storage)
+    .err_update  (bank0_info2_page_cfg_shadowed_0_rd_en_0_update_err),
+    .err_storage (bank0_info2_page_cfg_shadowed_0_rd_en_0_storage_err)
   );
 
   //   F[prog_en_0]: 2:2
@@ -7833,8 +8360,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[0].prog_en.err_update),
-    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[0].prog_en.err_storage)
+    .err_update  (bank0_info2_page_cfg_shadowed_0_prog_en_0_update_err),
+    .err_storage (bank0_info2_page_cfg_shadowed_0_prog_en_0_storage_err)
   );
 
   //   F[erase_en_0]: 3:3
@@ -7867,8 +8394,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[0].erase_en.err_update),
-    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[0].erase_en.err_storage)
+    .err_update  (bank0_info2_page_cfg_shadowed_0_erase_en_0_update_err),
+    .err_storage (bank0_info2_page_cfg_shadowed_0_erase_en_0_storage_err)
   );
 
   //   F[scramble_en_0]: 4:4
@@ -7901,8 +8428,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[0].scramble_en.err_update),
-    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[0].scramble_en.err_storage)
+    .err_update  (bank0_info2_page_cfg_shadowed_0_scramble_en_0_update_err),
+    .err_storage (bank0_info2_page_cfg_shadowed_0_scramble_en_0_storage_err)
   );
 
   //   F[ecc_en_0]: 5:5
@@ -7935,8 +8462,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[0].ecc_en.err_update),
-    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[0].ecc_en.err_storage)
+    .err_update  (bank0_info2_page_cfg_shadowed_0_ecc_en_0_update_err),
+    .err_storage (bank0_info2_page_cfg_shadowed_0_ecc_en_0_storage_err)
   );
 
   //   F[he_en_0]: 6:6
@@ -7969,8 +8496,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[0].he_en.err_update),
-    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[0].he_en.err_storage)
+    .err_update  (bank0_info2_page_cfg_shadowed_0_he_en_0_update_err),
+    .err_storage (bank0_info2_page_cfg_shadowed_0_he_en_0_storage_err)
   );
 
 
@@ -8006,8 +8533,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[1].en.err_update),
-    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[1].en.err_storage)
+    .err_update  (bank0_info2_page_cfg_shadowed_1_en_1_update_err),
+    .err_storage (bank0_info2_page_cfg_shadowed_1_en_1_storage_err)
   );
 
   //   F[rd_en_1]: 1:1
@@ -8040,8 +8567,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[1].rd_en.err_update),
-    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[1].rd_en.err_storage)
+    .err_update  (bank0_info2_page_cfg_shadowed_1_rd_en_1_update_err),
+    .err_storage (bank0_info2_page_cfg_shadowed_1_rd_en_1_storage_err)
   );
 
   //   F[prog_en_1]: 2:2
@@ -8074,8 +8601,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[1].prog_en.err_update),
-    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[1].prog_en.err_storage)
+    .err_update  (bank0_info2_page_cfg_shadowed_1_prog_en_1_update_err),
+    .err_storage (bank0_info2_page_cfg_shadowed_1_prog_en_1_storage_err)
   );
 
   //   F[erase_en_1]: 3:3
@@ -8108,8 +8635,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[1].erase_en.err_update),
-    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[1].erase_en.err_storage)
+    .err_update  (bank0_info2_page_cfg_shadowed_1_erase_en_1_update_err),
+    .err_storage (bank0_info2_page_cfg_shadowed_1_erase_en_1_storage_err)
   );
 
   //   F[scramble_en_1]: 4:4
@@ -8142,8 +8669,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[1].scramble_en.err_update),
-    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[1].scramble_en.err_storage)
+    .err_update  (bank0_info2_page_cfg_shadowed_1_scramble_en_1_update_err),
+    .err_storage (bank0_info2_page_cfg_shadowed_1_scramble_en_1_storage_err)
   );
 
   //   F[ecc_en_1]: 5:5
@@ -8176,8 +8703,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[1].ecc_en.err_update),
-    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[1].ecc_en.err_storage)
+    .err_update  (bank0_info2_page_cfg_shadowed_1_ecc_en_1_update_err),
+    .err_storage (bank0_info2_page_cfg_shadowed_1_ecc_en_1_storage_err)
   );
 
   //   F[he_en_1]: 6:6
@@ -8210,8 +8737,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[1].he_en.err_update),
-    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[1].he_en.err_storage)
+    .err_update  (bank0_info2_page_cfg_shadowed_1_he_en_1_update_err),
+    .err_storage (bank0_info2_page_cfg_shadowed_1_he_en_1_storage_err)
   );
 
 
@@ -8517,8 +9044,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[0].en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[0].en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_0_en_0_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_0_en_0_storage_err)
   );
 
   //   F[rd_en_0]: 1:1
@@ -8551,8 +9078,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[0].rd_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[0].rd_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_0_rd_en_0_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_0_rd_en_0_storage_err)
   );
 
   //   F[prog_en_0]: 2:2
@@ -8585,8 +9112,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[0].prog_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[0].prog_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_0_prog_en_0_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_0_prog_en_0_storage_err)
   );
 
   //   F[erase_en_0]: 3:3
@@ -8619,8 +9146,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[0].erase_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[0].erase_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_0_erase_en_0_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_0_erase_en_0_storage_err)
   );
 
   //   F[scramble_en_0]: 4:4
@@ -8653,8 +9180,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[0].scramble_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[0].scramble_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_0_scramble_en_0_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_0_scramble_en_0_storage_err)
   );
 
   //   F[ecc_en_0]: 5:5
@@ -8687,8 +9214,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[0].ecc_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[0].ecc_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_0_ecc_en_0_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_0_ecc_en_0_storage_err)
   );
 
   //   F[he_en_0]: 6:6
@@ -8721,8 +9248,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[0].he_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[0].he_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_0_he_en_0_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_0_he_en_0_storage_err)
   );
 
 
@@ -8758,8 +9285,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[1].en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[1].en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_1_en_1_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_1_en_1_storage_err)
   );
 
   //   F[rd_en_1]: 1:1
@@ -8792,8 +9319,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[1].rd_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[1].rd_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_1_rd_en_1_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_1_rd_en_1_storage_err)
   );
 
   //   F[prog_en_1]: 2:2
@@ -8826,8 +9353,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[1].prog_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[1].prog_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_1_prog_en_1_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_1_prog_en_1_storage_err)
   );
 
   //   F[erase_en_1]: 3:3
@@ -8860,8 +9387,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[1].erase_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[1].erase_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_1_erase_en_1_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_1_erase_en_1_storage_err)
   );
 
   //   F[scramble_en_1]: 4:4
@@ -8894,8 +9421,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[1].scramble_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[1].scramble_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_1_scramble_en_1_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_1_scramble_en_1_storage_err)
   );
 
   //   F[ecc_en_1]: 5:5
@@ -8928,8 +9455,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[1].ecc_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[1].ecc_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_1_ecc_en_1_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_1_ecc_en_1_storage_err)
   );
 
   //   F[he_en_1]: 6:6
@@ -8962,8 +9489,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[1].he_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[1].he_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_1_he_en_1_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_1_he_en_1_storage_err)
   );
 
 
@@ -8999,8 +9526,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[2].en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[2].en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_2_en_2_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_2_en_2_storage_err)
   );
 
   //   F[rd_en_2]: 1:1
@@ -9033,8 +9560,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[2].rd_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[2].rd_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_2_rd_en_2_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_2_rd_en_2_storage_err)
   );
 
   //   F[prog_en_2]: 2:2
@@ -9067,8 +9594,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[2].prog_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[2].prog_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_2_prog_en_2_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_2_prog_en_2_storage_err)
   );
 
   //   F[erase_en_2]: 3:3
@@ -9101,8 +9628,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[2].erase_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[2].erase_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_2_erase_en_2_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_2_erase_en_2_storage_err)
   );
 
   //   F[scramble_en_2]: 4:4
@@ -9135,8 +9662,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[2].scramble_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[2].scramble_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_2_scramble_en_2_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_2_scramble_en_2_storage_err)
   );
 
   //   F[ecc_en_2]: 5:5
@@ -9169,8 +9696,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[2].ecc_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[2].ecc_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_2_ecc_en_2_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_2_ecc_en_2_storage_err)
   );
 
   //   F[he_en_2]: 6:6
@@ -9203,8 +9730,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[2].he_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[2].he_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_2_he_en_2_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_2_he_en_2_storage_err)
   );
 
 
@@ -9240,8 +9767,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[3].en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[3].en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_3_en_3_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_3_en_3_storage_err)
   );
 
   //   F[rd_en_3]: 1:1
@@ -9274,8 +9801,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[3].rd_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[3].rd_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_3_rd_en_3_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_3_rd_en_3_storage_err)
   );
 
   //   F[prog_en_3]: 2:2
@@ -9308,8 +9835,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[3].prog_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[3].prog_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_3_prog_en_3_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_3_prog_en_3_storage_err)
   );
 
   //   F[erase_en_3]: 3:3
@@ -9342,8 +9869,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[3].erase_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[3].erase_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_3_erase_en_3_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_3_erase_en_3_storage_err)
   );
 
   //   F[scramble_en_3]: 4:4
@@ -9376,8 +9903,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[3].scramble_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[3].scramble_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_3_scramble_en_3_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_3_scramble_en_3_storage_err)
   );
 
   //   F[ecc_en_3]: 5:5
@@ -9410,8 +9937,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[3].ecc_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[3].ecc_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_3_ecc_en_3_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_3_ecc_en_3_storage_err)
   );
 
   //   F[he_en_3]: 6:6
@@ -9444,8 +9971,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[3].he_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[3].he_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_3_he_en_3_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_3_he_en_3_storage_err)
   );
 
 
@@ -9481,8 +10008,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[4].en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[4].en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_4_en_4_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_4_en_4_storage_err)
   );
 
   //   F[rd_en_4]: 1:1
@@ -9515,8 +10042,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[4].rd_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[4].rd_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_4_rd_en_4_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_4_rd_en_4_storage_err)
   );
 
   //   F[prog_en_4]: 2:2
@@ -9549,8 +10076,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[4].prog_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[4].prog_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_4_prog_en_4_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_4_prog_en_4_storage_err)
   );
 
   //   F[erase_en_4]: 3:3
@@ -9583,8 +10110,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[4].erase_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[4].erase_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_4_erase_en_4_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_4_erase_en_4_storage_err)
   );
 
   //   F[scramble_en_4]: 4:4
@@ -9617,8 +10144,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[4].scramble_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[4].scramble_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_4_scramble_en_4_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_4_scramble_en_4_storage_err)
   );
 
   //   F[ecc_en_4]: 5:5
@@ -9651,8 +10178,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[4].ecc_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[4].ecc_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_4_ecc_en_4_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_4_ecc_en_4_storage_err)
   );
 
   //   F[he_en_4]: 6:6
@@ -9685,8 +10212,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[4].he_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[4].he_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_4_he_en_4_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_4_he_en_4_storage_err)
   );
 
 
@@ -9722,8 +10249,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[5].en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[5].en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_5_en_5_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_5_en_5_storage_err)
   );
 
   //   F[rd_en_5]: 1:1
@@ -9756,8 +10283,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[5].rd_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[5].rd_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_5_rd_en_5_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_5_rd_en_5_storage_err)
   );
 
   //   F[prog_en_5]: 2:2
@@ -9790,8 +10317,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[5].prog_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[5].prog_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_5_prog_en_5_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_5_prog_en_5_storage_err)
   );
 
   //   F[erase_en_5]: 3:3
@@ -9824,8 +10351,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[5].erase_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[5].erase_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_5_erase_en_5_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_5_erase_en_5_storage_err)
   );
 
   //   F[scramble_en_5]: 4:4
@@ -9858,8 +10385,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[5].scramble_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[5].scramble_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_5_scramble_en_5_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_5_scramble_en_5_storage_err)
   );
 
   //   F[ecc_en_5]: 5:5
@@ -9892,8 +10419,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[5].ecc_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[5].ecc_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_5_ecc_en_5_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_5_ecc_en_5_storage_err)
   );
 
   //   F[he_en_5]: 6:6
@@ -9926,8 +10453,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[5].he_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[5].he_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_5_he_en_5_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_5_he_en_5_storage_err)
   );
 
 
@@ -9963,8 +10490,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[6].en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[6].en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_6_en_6_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_6_en_6_storage_err)
   );
 
   //   F[rd_en_6]: 1:1
@@ -9997,8 +10524,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[6].rd_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[6].rd_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_6_rd_en_6_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_6_rd_en_6_storage_err)
   );
 
   //   F[prog_en_6]: 2:2
@@ -10031,8 +10558,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[6].prog_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[6].prog_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_6_prog_en_6_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_6_prog_en_6_storage_err)
   );
 
   //   F[erase_en_6]: 3:3
@@ -10065,8 +10592,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[6].erase_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[6].erase_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_6_erase_en_6_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_6_erase_en_6_storage_err)
   );
 
   //   F[scramble_en_6]: 4:4
@@ -10099,8 +10626,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[6].scramble_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[6].scramble_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_6_scramble_en_6_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_6_scramble_en_6_storage_err)
   );
 
   //   F[ecc_en_6]: 5:5
@@ -10133,8 +10660,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[6].ecc_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[6].ecc_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_6_ecc_en_6_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_6_ecc_en_6_storage_err)
   );
 
   //   F[he_en_6]: 6:6
@@ -10167,8 +10694,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[6].he_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[6].he_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_6_he_en_6_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_6_he_en_6_storage_err)
   );
 
 
@@ -10204,8 +10731,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[7].en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[7].en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_7_en_7_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_7_en_7_storage_err)
   );
 
   //   F[rd_en_7]: 1:1
@@ -10238,8 +10765,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[7].rd_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[7].rd_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_7_rd_en_7_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_7_rd_en_7_storage_err)
   );
 
   //   F[prog_en_7]: 2:2
@@ -10272,8 +10799,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[7].prog_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[7].prog_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_7_prog_en_7_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_7_prog_en_7_storage_err)
   );
 
   //   F[erase_en_7]: 3:3
@@ -10306,8 +10833,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[7].erase_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[7].erase_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_7_erase_en_7_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_7_erase_en_7_storage_err)
   );
 
   //   F[scramble_en_7]: 4:4
@@ -10340,8 +10867,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[7].scramble_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[7].scramble_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_7_scramble_en_7_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_7_scramble_en_7_storage_err)
   );
 
   //   F[ecc_en_7]: 5:5
@@ -10374,8 +10901,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[7].ecc_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[7].ecc_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_7_ecc_en_7_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_7_ecc_en_7_storage_err)
   );
 
   //   F[he_en_7]: 6:6
@@ -10408,8 +10935,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[7].he_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[7].he_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_7_he_en_7_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_7_he_en_7_storage_err)
   );
 
 
@@ -10445,8 +10972,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[8].en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[8].en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_8_en_8_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_8_en_8_storage_err)
   );
 
   //   F[rd_en_8]: 1:1
@@ -10479,8 +11006,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[8].rd_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[8].rd_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_8_rd_en_8_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_8_rd_en_8_storage_err)
   );
 
   //   F[prog_en_8]: 2:2
@@ -10513,8 +11040,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[8].prog_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[8].prog_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_8_prog_en_8_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_8_prog_en_8_storage_err)
   );
 
   //   F[erase_en_8]: 3:3
@@ -10547,8 +11074,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[8].erase_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[8].erase_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_8_erase_en_8_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_8_erase_en_8_storage_err)
   );
 
   //   F[scramble_en_8]: 4:4
@@ -10581,8 +11108,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[8].scramble_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[8].scramble_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_8_scramble_en_8_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_8_scramble_en_8_storage_err)
   );
 
   //   F[ecc_en_8]: 5:5
@@ -10615,8 +11142,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[8].ecc_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[8].ecc_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_8_ecc_en_8_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_8_ecc_en_8_storage_err)
   );
 
   //   F[he_en_8]: 6:6
@@ -10649,8 +11176,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[8].he_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[8].he_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_8_he_en_8_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_8_he_en_8_storage_err)
   );
 
 
@@ -10686,8 +11213,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[9].en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[9].en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_9_en_9_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_9_en_9_storage_err)
   );
 
   //   F[rd_en_9]: 1:1
@@ -10720,8 +11247,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[9].rd_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[9].rd_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_9_rd_en_9_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_9_rd_en_9_storage_err)
   );
 
   //   F[prog_en_9]: 2:2
@@ -10754,8 +11281,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[9].prog_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[9].prog_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_9_prog_en_9_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_9_prog_en_9_storage_err)
   );
 
   //   F[erase_en_9]: 3:3
@@ -10788,8 +11315,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[9].erase_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[9].erase_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_9_erase_en_9_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_9_erase_en_9_storage_err)
   );
 
   //   F[scramble_en_9]: 4:4
@@ -10822,8 +11349,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[9].scramble_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[9].scramble_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_9_scramble_en_9_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_9_scramble_en_9_storage_err)
   );
 
   //   F[ecc_en_9]: 5:5
@@ -10856,8 +11383,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[9].ecc_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[9].ecc_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_9_ecc_en_9_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_9_ecc_en_9_storage_err)
   );
 
   //   F[he_en_9]: 6:6
@@ -10890,8 +11417,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[9].he_en.err_update),
-    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[9].he_en.err_storage)
+    .err_update  (bank1_info0_page_cfg_shadowed_9_he_en_9_update_err),
+    .err_storage (bank1_info0_page_cfg_shadowed_9_he_en_9_storage_err)
   );
 
 
@@ -10954,8 +11481,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info1_page_cfg_shadowed[0].en.err_update),
-    .err_storage (reg2hw.bank1_info1_page_cfg_shadowed[0].en.err_storage)
+    .err_update  (bank1_info1_page_cfg_shadowed_en_0_update_err),
+    .err_storage (bank1_info1_page_cfg_shadowed_en_0_storage_err)
   );
 
   //   F[rd_en_0]: 1:1
@@ -10988,8 +11515,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info1_page_cfg_shadowed[0].rd_en.err_update),
-    .err_storage (reg2hw.bank1_info1_page_cfg_shadowed[0].rd_en.err_storage)
+    .err_update  (bank1_info1_page_cfg_shadowed_rd_en_0_update_err),
+    .err_storage (bank1_info1_page_cfg_shadowed_rd_en_0_storage_err)
   );
 
   //   F[prog_en_0]: 2:2
@@ -11022,8 +11549,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info1_page_cfg_shadowed[0].prog_en.err_update),
-    .err_storage (reg2hw.bank1_info1_page_cfg_shadowed[0].prog_en.err_storage)
+    .err_update  (bank1_info1_page_cfg_shadowed_prog_en_0_update_err),
+    .err_storage (bank1_info1_page_cfg_shadowed_prog_en_0_storage_err)
   );
 
   //   F[erase_en_0]: 3:3
@@ -11056,8 +11583,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info1_page_cfg_shadowed[0].erase_en.err_update),
-    .err_storage (reg2hw.bank1_info1_page_cfg_shadowed[0].erase_en.err_storage)
+    .err_update  (bank1_info1_page_cfg_shadowed_erase_en_0_update_err),
+    .err_storage (bank1_info1_page_cfg_shadowed_erase_en_0_storage_err)
   );
 
   //   F[scramble_en_0]: 4:4
@@ -11090,8 +11617,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info1_page_cfg_shadowed[0].scramble_en.err_update),
-    .err_storage (reg2hw.bank1_info1_page_cfg_shadowed[0].scramble_en.err_storage)
+    .err_update  (bank1_info1_page_cfg_shadowed_scramble_en_0_update_err),
+    .err_storage (bank1_info1_page_cfg_shadowed_scramble_en_0_storage_err)
   );
 
   //   F[ecc_en_0]: 5:5
@@ -11124,8 +11651,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info1_page_cfg_shadowed[0].ecc_en.err_update),
-    .err_storage (reg2hw.bank1_info1_page_cfg_shadowed[0].ecc_en.err_storage)
+    .err_update  (bank1_info1_page_cfg_shadowed_ecc_en_0_update_err),
+    .err_storage (bank1_info1_page_cfg_shadowed_ecc_en_0_storage_err)
   );
 
   //   F[he_en_0]: 6:6
@@ -11158,8 +11685,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info1_page_cfg_shadowed[0].he_en.err_update),
-    .err_storage (reg2hw.bank1_info1_page_cfg_shadowed[0].he_en.err_storage)
+    .err_update  (bank1_info1_page_cfg_shadowed_he_en_0_update_err),
+    .err_storage (bank1_info1_page_cfg_shadowed_he_en_0_storage_err)
   );
 
 
@@ -11249,8 +11776,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[0].en.err_update),
-    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[0].en.err_storage)
+    .err_update  (bank1_info2_page_cfg_shadowed_0_en_0_update_err),
+    .err_storage (bank1_info2_page_cfg_shadowed_0_en_0_storage_err)
   );
 
   //   F[rd_en_0]: 1:1
@@ -11283,8 +11810,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[0].rd_en.err_update),
-    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[0].rd_en.err_storage)
+    .err_update  (bank1_info2_page_cfg_shadowed_0_rd_en_0_update_err),
+    .err_storage (bank1_info2_page_cfg_shadowed_0_rd_en_0_storage_err)
   );
 
   //   F[prog_en_0]: 2:2
@@ -11317,8 +11844,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[0].prog_en.err_update),
-    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[0].prog_en.err_storage)
+    .err_update  (bank1_info2_page_cfg_shadowed_0_prog_en_0_update_err),
+    .err_storage (bank1_info2_page_cfg_shadowed_0_prog_en_0_storage_err)
   );
 
   //   F[erase_en_0]: 3:3
@@ -11351,8 +11878,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[0].erase_en.err_update),
-    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[0].erase_en.err_storage)
+    .err_update  (bank1_info2_page_cfg_shadowed_0_erase_en_0_update_err),
+    .err_storage (bank1_info2_page_cfg_shadowed_0_erase_en_0_storage_err)
   );
 
   //   F[scramble_en_0]: 4:4
@@ -11385,8 +11912,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[0].scramble_en.err_update),
-    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[0].scramble_en.err_storage)
+    .err_update  (bank1_info2_page_cfg_shadowed_0_scramble_en_0_update_err),
+    .err_storage (bank1_info2_page_cfg_shadowed_0_scramble_en_0_storage_err)
   );
 
   //   F[ecc_en_0]: 5:5
@@ -11419,8 +11946,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[0].ecc_en.err_update),
-    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[0].ecc_en.err_storage)
+    .err_update  (bank1_info2_page_cfg_shadowed_0_ecc_en_0_update_err),
+    .err_storage (bank1_info2_page_cfg_shadowed_0_ecc_en_0_storage_err)
   );
 
   //   F[he_en_0]: 6:6
@@ -11453,8 +11980,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[0].he_en.err_update),
-    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[0].he_en.err_storage)
+    .err_update  (bank1_info2_page_cfg_shadowed_0_he_en_0_update_err),
+    .err_storage (bank1_info2_page_cfg_shadowed_0_he_en_0_storage_err)
   );
 
 
@@ -11490,8 +12017,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[1].en.err_update),
-    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[1].en.err_storage)
+    .err_update  (bank1_info2_page_cfg_shadowed_1_en_1_update_err),
+    .err_storage (bank1_info2_page_cfg_shadowed_1_en_1_storage_err)
   );
 
   //   F[rd_en_1]: 1:1
@@ -11524,8 +12051,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[1].rd_en.err_update),
-    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[1].rd_en.err_storage)
+    .err_update  (bank1_info2_page_cfg_shadowed_1_rd_en_1_update_err),
+    .err_storage (bank1_info2_page_cfg_shadowed_1_rd_en_1_storage_err)
   );
 
   //   F[prog_en_1]: 2:2
@@ -11558,8 +12085,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[1].prog_en.err_update),
-    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[1].prog_en.err_storage)
+    .err_update  (bank1_info2_page_cfg_shadowed_1_prog_en_1_update_err),
+    .err_storage (bank1_info2_page_cfg_shadowed_1_prog_en_1_storage_err)
   );
 
   //   F[erase_en_1]: 3:3
@@ -11592,8 +12119,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[1].erase_en.err_update),
-    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[1].erase_en.err_storage)
+    .err_update  (bank1_info2_page_cfg_shadowed_1_erase_en_1_update_err),
+    .err_storage (bank1_info2_page_cfg_shadowed_1_erase_en_1_storage_err)
   );
 
   //   F[scramble_en_1]: 4:4
@@ -11626,8 +12153,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[1].scramble_en.err_update),
-    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[1].scramble_en.err_storage)
+    .err_update  (bank1_info2_page_cfg_shadowed_1_scramble_en_1_update_err),
+    .err_storage (bank1_info2_page_cfg_shadowed_1_scramble_en_1_storage_err)
   );
 
   //   F[ecc_en_1]: 5:5
@@ -11660,8 +12187,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[1].ecc_en.err_update),
-    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[1].ecc_en.err_storage)
+    .err_update  (bank1_info2_page_cfg_shadowed_1_ecc_en_1_update_err),
+    .err_storage (bank1_info2_page_cfg_shadowed_1_ecc_en_1_storage_err)
   );
 
   //   F[he_en_1]: 6:6
@@ -11694,8 +12221,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[1].he_en.err_update),
-    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[1].he_en.err_storage)
+    .err_update  (bank1_info2_page_cfg_shadowed_1_he_en_1_update_err),
+    .err_storage (bank1_info2_page_cfg_shadowed_1_he_en_1_storage_err)
   );
 
 
@@ -11757,8 +12284,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_bank_cfg_shadowed[0].err_update),
-    .err_storage (reg2hw.mp_bank_cfg_shadowed[0].err_storage)
+    .err_update  (mp_bank_cfg_shadowed_erase_en_0_update_err),
+    .err_storage (mp_bank_cfg_shadowed_erase_en_0_storage_err)
   );
 
   //   F[erase_en_1]: 1:1
@@ -11791,8 +12318,8 @@ module flash_ctrl_core_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.mp_bank_cfg_shadowed[1].err_update),
-    .err_storage (reg2hw.mp_bank_cfg_shadowed[1].err_storage)
+    .err_update  (mp_bank_cfg_shadowed_erase_en_1_update_err),
+    .err_storage (mp_bank_cfg_shadowed_erase_en_1_storage_err)
   );
 
 
@@ -14679,6 +15206,536 @@ module flash_ctrl_core_reg_top (
 
   // both shadow and normal resets have been released
   assign shadow_busy = ~(rst_done & shadow_rst_done);
+
+  // Collect up storage and update errors
+  assign shadowed_storage_err_o = |{
+    mp_region_cfg_shadowed_0_en_0_storage_err,
+    mp_region_cfg_shadowed_0_rd_en_0_storage_err,
+    mp_region_cfg_shadowed_0_prog_en_0_storage_err,
+    mp_region_cfg_shadowed_0_erase_en_0_storage_err,
+    mp_region_cfg_shadowed_0_scramble_en_0_storage_err,
+    mp_region_cfg_shadowed_0_ecc_en_0_storage_err,
+    mp_region_cfg_shadowed_0_he_en_0_storage_err,
+    mp_region_cfg_shadowed_0_base_0_storage_err,
+    mp_region_cfg_shadowed_0_size_0_storage_err,
+    mp_region_cfg_shadowed_1_en_1_storage_err,
+    mp_region_cfg_shadowed_1_rd_en_1_storage_err,
+    mp_region_cfg_shadowed_1_prog_en_1_storage_err,
+    mp_region_cfg_shadowed_1_erase_en_1_storage_err,
+    mp_region_cfg_shadowed_1_scramble_en_1_storage_err,
+    mp_region_cfg_shadowed_1_ecc_en_1_storage_err,
+    mp_region_cfg_shadowed_1_he_en_1_storage_err,
+    mp_region_cfg_shadowed_1_base_1_storage_err,
+    mp_region_cfg_shadowed_1_size_1_storage_err,
+    mp_region_cfg_shadowed_2_en_2_storage_err,
+    mp_region_cfg_shadowed_2_rd_en_2_storage_err,
+    mp_region_cfg_shadowed_2_prog_en_2_storage_err,
+    mp_region_cfg_shadowed_2_erase_en_2_storage_err,
+    mp_region_cfg_shadowed_2_scramble_en_2_storage_err,
+    mp_region_cfg_shadowed_2_ecc_en_2_storage_err,
+    mp_region_cfg_shadowed_2_he_en_2_storage_err,
+    mp_region_cfg_shadowed_2_base_2_storage_err,
+    mp_region_cfg_shadowed_2_size_2_storage_err,
+    mp_region_cfg_shadowed_3_en_3_storage_err,
+    mp_region_cfg_shadowed_3_rd_en_3_storage_err,
+    mp_region_cfg_shadowed_3_prog_en_3_storage_err,
+    mp_region_cfg_shadowed_3_erase_en_3_storage_err,
+    mp_region_cfg_shadowed_3_scramble_en_3_storage_err,
+    mp_region_cfg_shadowed_3_ecc_en_3_storage_err,
+    mp_region_cfg_shadowed_3_he_en_3_storage_err,
+    mp_region_cfg_shadowed_3_base_3_storage_err,
+    mp_region_cfg_shadowed_3_size_3_storage_err,
+    mp_region_cfg_shadowed_4_en_4_storage_err,
+    mp_region_cfg_shadowed_4_rd_en_4_storage_err,
+    mp_region_cfg_shadowed_4_prog_en_4_storage_err,
+    mp_region_cfg_shadowed_4_erase_en_4_storage_err,
+    mp_region_cfg_shadowed_4_scramble_en_4_storage_err,
+    mp_region_cfg_shadowed_4_ecc_en_4_storage_err,
+    mp_region_cfg_shadowed_4_he_en_4_storage_err,
+    mp_region_cfg_shadowed_4_base_4_storage_err,
+    mp_region_cfg_shadowed_4_size_4_storage_err,
+    mp_region_cfg_shadowed_5_en_5_storage_err,
+    mp_region_cfg_shadowed_5_rd_en_5_storage_err,
+    mp_region_cfg_shadowed_5_prog_en_5_storage_err,
+    mp_region_cfg_shadowed_5_erase_en_5_storage_err,
+    mp_region_cfg_shadowed_5_scramble_en_5_storage_err,
+    mp_region_cfg_shadowed_5_ecc_en_5_storage_err,
+    mp_region_cfg_shadowed_5_he_en_5_storage_err,
+    mp_region_cfg_shadowed_5_base_5_storage_err,
+    mp_region_cfg_shadowed_5_size_5_storage_err,
+    mp_region_cfg_shadowed_6_en_6_storage_err,
+    mp_region_cfg_shadowed_6_rd_en_6_storage_err,
+    mp_region_cfg_shadowed_6_prog_en_6_storage_err,
+    mp_region_cfg_shadowed_6_erase_en_6_storage_err,
+    mp_region_cfg_shadowed_6_scramble_en_6_storage_err,
+    mp_region_cfg_shadowed_6_ecc_en_6_storage_err,
+    mp_region_cfg_shadowed_6_he_en_6_storage_err,
+    mp_region_cfg_shadowed_6_base_6_storage_err,
+    mp_region_cfg_shadowed_6_size_6_storage_err,
+    mp_region_cfg_shadowed_7_en_7_storage_err,
+    mp_region_cfg_shadowed_7_rd_en_7_storage_err,
+    mp_region_cfg_shadowed_7_prog_en_7_storage_err,
+    mp_region_cfg_shadowed_7_erase_en_7_storage_err,
+    mp_region_cfg_shadowed_7_scramble_en_7_storage_err,
+    mp_region_cfg_shadowed_7_ecc_en_7_storage_err,
+    mp_region_cfg_shadowed_7_he_en_7_storage_err,
+    mp_region_cfg_shadowed_7_base_7_storage_err,
+    mp_region_cfg_shadowed_7_size_7_storage_err,
+    default_region_shadowed_rd_en_storage_err,
+    default_region_shadowed_prog_en_storage_err,
+    default_region_shadowed_erase_en_storage_err,
+    default_region_shadowed_scramble_en_storage_err,
+    default_region_shadowed_ecc_en_storage_err,
+    default_region_shadowed_he_en_storage_err,
+    bank0_info0_page_cfg_shadowed_0_en_0_storage_err,
+    bank0_info0_page_cfg_shadowed_0_rd_en_0_storage_err,
+    bank0_info0_page_cfg_shadowed_0_prog_en_0_storage_err,
+    bank0_info0_page_cfg_shadowed_0_erase_en_0_storage_err,
+    bank0_info0_page_cfg_shadowed_0_scramble_en_0_storage_err,
+    bank0_info0_page_cfg_shadowed_0_ecc_en_0_storage_err,
+    bank0_info0_page_cfg_shadowed_0_he_en_0_storage_err,
+    bank0_info0_page_cfg_shadowed_1_en_1_storage_err,
+    bank0_info0_page_cfg_shadowed_1_rd_en_1_storage_err,
+    bank0_info0_page_cfg_shadowed_1_prog_en_1_storage_err,
+    bank0_info0_page_cfg_shadowed_1_erase_en_1_storage_err,
+    bank0_info0_page_cfg_shadowed_1_scramble_en_1_storage_err,
+    bank0_info0_page_cfg_shadowed_1_ecc_en_1_storage_err,
+    bank0_info0_page_cfg_shadowed_1_he_en_1_storage_err,
+    bank0_info0_page_cfg_shadowed_2_en_2_storage_err,
+    bank0_info0_page_cfg_shadowed_2_rd_en_2_storage_err,
+    bank0_info0_page_cfg_shadowed_2_prog_en_2_storage_err,
+    bank0_info0_page_cfg_shadowed_2_erase_en_2_storage_err,
+    bank0_info0_page_cfg_shadowed_2_scramble_en_2_storage_err,
+    bank0_info0_page_cfg_shadowed_2_ecc_en_2_storage_err,
+    bank0_info0_page_cfg_shadowed_2_he_en_2_storage_err,
+    bank0_info0_page_cfg_shadowed_3_en_3_storage_err,
+    bank0_info0_page_cfg_shadowed_3_rd_en_3_storage_err,
+    bank0_info0_page_cfg_shadowed_3_prog_en_3_storage_err,
+    bank0_info0_page_cfg_shadowed_3_erase_en_3_storage_err,
+    bank0_info0_page_cfg_shadowed_3_scramble_en_3_storage_err,
+    bank0_info0_page_cfg_shadowed_3_ecc_en_3_storage_err,
+    bank0_info0_page_cfg_shadowed_3_he_en_3_storage_err,
+    bank0_info0_page_cfg_shadowed_4_en_4_storage_err,
+    bank0_info0_page_cfg_shadowed_4_rd_en_4_storage_err,
+    bank0_info0_page_cfg_shadowed_4_prog_en_4_storage_err,
+    bank0_info0_page_cfg_shadowed_4_erase_en_4_storage_err,
+    bank0_info0_page_cfg_shadowed_4_scramble_en_4_storage_err,
+    bank0_info0_page_cfg_shadowed_4_ecc_en_4_storage_err,
+    bank0_info0_page_cfg_shadowed_4_he_en_4_storage_err,
+    bank0_info0_page_cfg_shadowed_5_en_5_storage_err,
+    bank0_info0_page_cfg_shadowed_5_rd_en_5_storage_err,
+    bank0_info0_page_cfg_shadowed_5_prog_en_5_storage_err,
+    bank0_info0_page_cfg_shadowed_5_erase_en_5_storage_err,
+    bank0_info0_page_cfg_shadowed_5_scramble_en_5_storage_err,
+    bank0_info0_page_cfg_shadowed_5_ecc_en_5_storage_err,
+    bank0_info0_page_cfg_shadowed_5_he_en_5_storage_err,
+    bank0_info0_page_cfg_shadowed_6_en_6_storage_err,
+    bank0_info0_page_cfg_shadowed_6_rd_en_6_storage_err,
+    bank0_info0_page_cfg_shadowed_6_prog_en_6_storage_err,
+    bank0_info0_page_cfg_shadowed_6_erase_en_6_storage_err,
+    bank0_info0_page_cfg_shadowed_6_scramble_en_6_storage_err,
+    bank0_info0_page_cfg_shadowed_6_ecc_en_6_storage_err,
+    bank0_info0_page_cfg_shadowed_6_he_en_6_storage_err,
+    bank0_info0_page_cfg_shadowed_7_en_7_storage_err,
+    bank0_info0_page_cfg_shadowed_7_rd_en_7_storage_err,
+    bank0_info0_page_cfg_shadowed_7_prog_en_7_storage_err,
+    bank0_info0_page_cfg_shadowed_7_erase_en_7_storage_err,
+    bank0_info0_page_cfg_shadowed_7_scramble_en_7_storage_err,
+    bank0_info0_page_cfg_shadowed_7_ecc_en_7_storage_err,
+    bank0_info0_page_cfg_shadowed_7_he_en_7_storage_err,
+    bank0_info0_page_cfg_shadowed_8_en_8_storage_err,
+    bank0_info0_page_cfg_shadowed_8_rd_en_8_storage_err,
+    bank0_info0_page_cfg_shadowed_8_prog_en_8_storage_err,
+    bank0_info0_page_cfg_shadowed_8_erase_en_8_storage_err,
+    bank0_info0_page_cfg_shadowed_8_scramble_en_8_storage_err,
+    bank0_info0_page_cfg_shadowed_8_ecc_en_8_storage_err,
+    bank0_info0_page_cfg_shadowed_8_he_en_8_storage_err,
+    bank0_info0_page_cfg_shadowed_9_en_9_storage_err,
+    bank0_info0_page_cfg_shadowed_9_rd_en_9_storage_err,
+    bank0_info0_page_cfg_shadowed_9_prog_en_9_storage_err,
+    bank0_info0_page_cfg_shadowed_9_erase_en_9_storage_err,
+    bank0_info0_page_cfg_shadowed_9_scramble_en_9_storage_err,
+    bank0_info0_page_cfg_shadowed_9_ecc_en_9_storage_err,
+    bank0_info0_page_cfg_shadowed_9_he_en_9_storage_err,
+    bank0_info1_page_cfg_shadowed_en_0_storage_err,
+    bank0_info1_page_cfg_shadowed_rd_en_0_storage_err,
+    bank0_info1_page_cfg_shadowed_prog_en_0_storage_err,
+    bank0_info1_page_cfg_shadowed_erase_en_0_storage_err,
+    bank0_info1_page_cfg_shadowed_scramble_en_0_storage_err,
+    bank0_info1_page_cfg_shadowed_ecc_en_0_storage_err,
+    bank0_info1_page_cfg_shadowed_he_en_0_storage_err,
+    bank0_info2_page_cfg_shadowed_0_en_0_storage_err,
+    bank0_info2_page_cfg_shadowed_0_rd_en_0_storage_err,
+    bank0_info2_page_cfg_shadowed_0_prog_en_0_storage_err,
+    bank0_info2_page_cfg_shadowed_0_erase_en_0_storage_err,
+    bank0_info2_page_cfg_shadowed_0_scramble_en_0_storage_err,
+    bank0_info2_page_cfg_shadowed_0_ecc_en_0_storage_err,
+    bank0_info2_page_cfg_shadowed_0_he_en_0_storage_err,
+    bank0_info2_page_cfg_shadowed_1_en_1_storage_err,
+    bank0_info2_page_cfg_shadowed_1_rd_en_1_storage_err,
+    bank0_info2_page_cfg_shadowed_1_prog_en_1_storage_err,
+    bank0_info2_page_cfg_shadowed_1_erase_en_1_storage_err,
+    bank0_info2_page_cfg_shadowed_1_scramble_en_1_storage_err,
+    bank0_info2_page_cfg_shadowed_1_ecc_en_1_storage_err,
+    bank0_info2_page_cfg_shadowed_1_he_en_1_storage_err,
+    bank1_info0_page_cfg_shadowed_0_en_0_storage_err,
+    bank1_info0_page_cfg_shadowed_0_rd_en_0_storage_err,
+    bank1_info0_page_cfg_shadowed_0_prog_en_0_storage_err,
+    bank1_info0_page_cfg_shadowed_0_erase_en_0_storage_err,
+    bank1_info0_page_cfg_shadowed_0_scramble_en_0_storage_err,
+    bank1_info0_page_cfg_shadowed_0_ecc_en_0_storage_err,
+    bank1_info0_page_cfg_shadowed_0_he_en_0_storage_err,
+    bank1_info0_page_cfg_shadowed_1_en_1_storage_err,
+    bank1_info0_page_cfg_shadowed_1_rd_en_1_storage_err,
+    bank1_info0_page_cfg_shadowed_1_prog_en_1_storage_err,
+    bank1_info0_page_cfg_shadowed_1_erase_en_1_storage_err,
+    bank1_info0_page_cfg_shadowed_1_scramble_en_1_storage_err,
+    bank1_info0_page_cfg_shadowed_1_ecc_en_1_storage_err,
+    bank1_info0_page_cfg_shadowed_1_he_en_1_storage_err,
+    bank1_info0_page_cfg_shadowed_2_en_2_storage_err,
+    bank1_info0_page_cfg_shadowed_2_rd_en_2_storage_err,
+    bank1_info0_page_cfg_shadowed_2_prog_en_2_storage_err,
+    bank1_info0_page_cfg_shadowed_2_erase_en_2_storage_err,
+    bank1_info0_page_cfg_shadowed_2_scramble_en_2_storage_err,
+    bank1_info0_page_cfg_shadowed_2_ecc_en_2_storage_err,
+    bank1_info0_page_cfg_shadowed_2_he_en_2_storage_err,
+    bank1_info0_page_cfg_shadowed_3_en_3_storage_err,
+    bank1_info0_page_cfg_shadowed_3_rd_en_3_storage_err,
+    bank1_info0_page_cfg_shadowed_3_prog_en_3_storage_err,
+    bank1_info0_page_cfg_shadowed_3_erase_en_3_storage_err,
+    bank1_info0_page_cfg_shadowed_3_scramble_en_3_storage_err,
+    bank1_info0_page_cfg_shadowed_3_ecc_en_3_storage_err,
+    bank1_info0_page_cfg_shadowed_3_he_en_3_storage_err,
+    bank1_info0_page_cfg_shadowed_4_en_4_storage_err,
+    bank1_info0_page_cfg_shadowed_4_rd_en_4_storage_err,
+    bank1_info0_page_cfg_shadowed_4_prog_en_4_storage_err,
+    bank1_info0_page_cfg_shadowed_4_erase_en_4_storage_err,
+    bank1_info0_page_cfg_shadowed_4_scramble_en_4_storage_err,
+    bank1_info0_page_cfg_shadowed_4_ecc_en_4_storage_err,
+    bank1_info0_page_cfg_shadowed_4_he_en_4_storage_err,
+    bank1_info0_page_cfg_shadowed_5_en_5_storage_err,
+    bank1_info0_page_cfg_shadowed_5_rd_en_5_storage_err,
+    bank1_info0_page_cfg_shadowed_5_prog_en_5_storage_err,
+    bank1_info0_page_cfg_shadowed_5_erase_en_5_storage_err,
+    bank1_info0_page_cfg_shadowed_5_scramble_en_5_storage_err,
+    bank1_info0_page_cfg_shadowed_5_ecc_en_5_storage_err,
+    bank1_info0_page_cfg_shadowed_5_he_en_5_storage_err,
+    bank1_info0_page_cfg_shadowed_6_en_6_storage_err,
+    bank1_info0_page_cfg_shadowed_6_rd_en_6_storage_err,
+    bank1_info0_page_cfg_shadowed_6_prog_en_6_storage_err,
+    bank1_info0_page_cfg_shadowed_6_erase_en_6_storage_err,
+    bank1_info0_page_cfg_shadowed_6_scramble_en_6_storage_err,
+    bank1_info0_page_cfg_shadowed_6_ecc_en_6_storage_err,
+    bank1_info0_page_cfg_shadowed_6_he_en_6_storage_err,
+    bank1_info0_page_cfg_shadowed_7_en_7_storage_err,
+    bank1_info0_page_cfg_shadowed_7_rd_en_7_storage_err,
+    bank1_info0_page_cfg_shadowed_7_prog_en_7_storage_err,
+    bank1_info0_page_cfg_shadowed_7_erase_en_7_storage_err,
+    bank1_info0_page_cfg_shadowed_7_scramble_en_7_storage_err,
+    bank1_info0_page_cfg_shadowed_7_ecc_en_7_storage_err,
+    bank1_info0_page_cfg_shadowed_7_he_en_7_storage_err,
+    bank1_info0_page_cfg_shadowed_8_en_8_storage_err,
+    bank1_info0_page_cfg_shadowed_8_rd_en_8_storage_err,
+    bank1_info0_page_cfg_shadowed_8_prog_en_8_storage_err,
+    bank1_info0_page_cfg_shadowed_8_erase_en_8_storage_err,
+    bank1_info0_page_cfg_shadowed_8_scramble_en_8_storage_err,
+    bank1_info0_page_cfg_shadowed_8_ecc_en_8_storage_err,
+    bank1_info0_page_cfg_shadowed_8_he_en_8_storage_err,
+    bank1_info0_page_cfg_shadowed_9_en_9_storage_err,
+    bank1_info0_page_cfg_shadowed_9_rd_en_9_storage_err,
+    bank1_info0_page_cfg_shadowed_9_prog_en_9_storage_err,
+    bank1_info0_page_cfg_shadowed_9_erase_en_9_storage_err,
+    bank1_info0_page_cfg_shadowed_9_scramble_en_9_storage_err,
+    bank1_info0_page_cfg_shadowed_9_ecc_en_9_storage_err,
+    bank1_info0_page_cfg_shadowed_9_he_en_9_storage_err,
+    bank1_info1_page_cfg_shadowed_en_0_storage_err,
+    bank1_info1_page_cfg_shadowed_rd_en_0_storage_err,
+    bank1_info1_page_cfg_shadowed_prog_en_0_storage_err,
+    bank1_info1_page_cfg_shadowed_erase_en_0_storage_err,
+    bank1_info1_page_cfg_shadowed_scramble_en_0_storage_err,
+    bank1_info1_page_cfg_shadowed_ecc_en_0_storage_err,
+    bank1_info1_page_cfg_shadowed_he_en_0_storage_err,
+    bank1_info2_page_cfg_shadowed_0_en_0_storage_err,
+    bank1_info2_page_cfg_shadowed_0_rd_en_0_storage_err,
+    bank1_info2_page_cfg_shadowed_0_prog_en_0_storage_err,
+    bank1_info2_page_cfg_shadowed_0_erase_en_0_storage_err,
+    bank1_info2_page_cfg_shadowed_0_scramble_en_0_storage_err,
+    bank1_info2_page_cfg_shadowed_0_ecc_en_0_storage_err,
+    bank1_info2_page_cfg_shadowed_0_he_en_0_storage_err,
+    bank1_info2_page_cfg_shadowed_1_en_1_storage_err,
+    bank1_info2_page_cfg_shadowed_1_rd_en_1_storage_err,
+    bank1_info2_page_cfg_shadowed_1_prog_en_1_storage_err,
+    bank1_info2_page_cfg_shadowed_1_erase_en_1_storage_err,
+    bank1_info2_page_cfg_shadowed_1_scramble_en_1_storage_err,
+    bank1_info2_page_cfg_shadowed_1_ecc_en_1_storage_err,
+    bank1_info2_page_cfg_shadowed_1_he_en_1_storage_err,
+    mp_bank_cfg_shadowed_erase_en_0_storage_err,
+    mp_bank_cfg_shadowed_erase_en_1_storage_err
+  };
+  assign shadowed_update_err_o = |{
+    mp_region_cfg_shadowed_0_en_0_update_err,
+    mp_region_cfg_shadowed_0_rd_en_0_update_err,
+    mp_region_cfg_shadowed_0_prog_en_0_update_err,
+    mp_region_cfg_shadowed_0_erase_en_0_update_err,
+    mp_region_cfg_shadowed_0_scramble_en_0_update_err,
+    mp_region_cfg_shadowed_0_ecc_en_0_update_err,
+    mp_region_cfg_shadowed_0_he_en_0_update_err,
+    mp_region_cfg_shadowed_0_base_0_update_err,
+    mp_region_cfg_shadowed_0_size_0_update_err,
+    mp_region_cfg_shadowed_1_en_1_update_err,
+    mp_region_cfg_shadowed_1_rd_en_1_update_err,
+    mp_region_cfg_shadowed_1_prog_en_1_update_err,
+    mp_region_cfg_shadowed_1_erase_en_1_update_err,
+    mp_region_cfg_shadowed_1_scramble_en_1_update_err,
+    mp_region_cfg_shadowed_1_ecc_en_1_update_err,
+    mp_region_cfg_shadowed_1_he_en_1_update_err,
+    mp_region_cfg_shadowed_1_base_1_update_err,
+    mp_region_cfg_shadowed_1_size_1_update_err,
+    mp_region_cfg_shadowed_2_en_2_update_err,
+    mp_region_cfg_shadowed_2_rd_en_2_update_err,
+    mp_region_cfg_shadowed_2_prog_en_2_update_err,
+    mp_region_cfg_shadowed_2_erase_en_2_update_err,
+    mp_region_cfg_shadowed_2_scramble_en_2_update_err,
+    mp_region_cfg_shadowed_2_ecc_en_2_update_err,
+    mp_region_cfg_shadowed_2_he_en_2_update_err,
+    mp_region_cfg_shadowed_2_base_2_update_err,
+    mp_region_cfg_shadowed_2_size_2_update_err,
+    mp_region_cfg_shadowed_3_en_3_update_err,
+    mp_region_cfg_shadowed_3_rd_en_3_update_err,
+    mp_region_cfg_shadowed_3_prog_en_3_update_err,
+    mp_region_cfg_shadowed_3_erase_en_3_update_err,
+    mp_region_cfg_shadowed_3_scramble_en_3_update_err,
+    mp_region_cfg_shadowed_3_ecc_en_3_update_err,
+    mp_region_cfg_shadowed_3_he_en_3_update_err,
+    mp_region_cfg_shadowed_3_base_3_update_err,
+    mp_region_cfg_shadowed_3_size_3_update_err,
+    mp_region_cfg_shadowed_4_en_4_update_err,
+    mp_region_cfg_shadowed_4_rd_en_4_update_err,
+    mp_region_cfg_shadowed_4_prog_en_4_update_err,
+    mp_region_cfg_shadowed_4_erase_en_4_update_err,
+    mp_region_cfg_shadowed_4_scramble_en_4_update_err,
+    mp_region_cfg_shadowed_4_ecc_en_4_update_err,
+    mp_region_cfg_shadowed_4_he_en_4_update_err,
+    mp_region_cfg_shadowed_4_base_4_update_err,
+    mp_region_cfg_shadowed_4_size_4_update_err,
+    mp_region_cfg_shadowed_5_en_5_update_err,
+    mp_region_cfg_shadowed_5_rd_en_5_update_err,
+    mp_region_cfg_shadowed_5_prog_en_5_update_err,
+    mp_region_cfg_shadowed_5_erase_en_5_update_err,
+    mp_region_cfg_shadowed_5_scramble_en_5_update_err,
+    mp_region_cfg_shadowed_5_ecc_en_5_update_err,
+    mp_region_cfg_shadowed_5_he_en_5_update_err,
+    mp_region_cfg_shadowed_5_base_5_update_err,
+    mp_region_cfg_shadowed_5_size_5_update_err,
+    mp_region_cfg_shadowed_6_en_6_update_err,
+    mp_region_cfg_shadowed_6_rd_en_6_update_err,
+    mp_region_cfg_shadowed_6_prog_en_6_update_err,
+    mp_region_cfg_shadowed_6_erase_en_6_update_err,
+    mp_region_cfg_shadowed_6_scramble_en_6_update_err,
+    mp_region_cfg_shadowed_6_ecc_en_6_update_err,
+    mp_region_cfg_shadowed_6_he_en_6_update_err,
+    mp_region_cfg_shadowed_6_base_6_update_err,
+    mp_region_cfg_shadowed_6_size_6_update_err,
+    mp_region_cfg_shadowed_7_en_7_update_err,
+    mp_region_cfg_shadowed_7_rd_en_7_update_err,
+    mp_region_cfg_shadowed_7_prog_en_7_update_err,
+    mp_region_cfg_shadowed_7_erase_en_7_update_err,
+    mp_region_cfg_shadowed_7_scramble_en_7_update_err,
+    mp_region_cfg_shadowed_7_ecc_en_7_update_err,
+    mp_region_cfg_shadowed_7_he_en_7_update_err,
+    mp_region_cfg_shadowed_7_base_7_update_err,
+    mp_region_cfg_shadowed_7_size_7_update_err,
+    default_region_shadowed_rd_en_update_err,
+    default_region_shadowed_prog_en_update_err,
+    default_region_shadowed_erase_en_update_err,
+    default_region_shadowed_scramble_en_update_err,
+    default_region_shadowed_ecc_en_update_err,
+    default_region_shadowed_he_en_update_err,
+    bank0_info0_page_cfg_shadowed_0_en_0_update_err,
+    bank0_info0_page_cfg_shadowed_0_rd_en_0_update_err,
+    bank0_info0_page_cfg_shadowed_0_prog_en_0_update_err,
+    bank0_info0_page_cfg_shadowed_0_erase_en_0_update_err,
+    bank0_info0_page_cfg_shadowed_0_scramble_en_0_update_err,
+    bank0_info0_page_cfg_shadowed_0_ecc_en_0_update_err,
+    bank0_info0_page_cfg_shadowed_0_he_en_0_update_err,
+    bank0_info0_page_cfg_shadowed_1_en_1_update_err,
+    bank0_info0_page_cfg_shadowed_1_rd_en_1_update_err,
+    bank0_info0_page_cfg_shadowed_1_prog_en_1_update_err,
+    bank0_info0_page_cfg_shadowed_1_erase_en_1_update_err,
+    bank0_info0_page_cfg_shadowed_1_scramble_en_1_update_err,
+    bank0_info0_page_cfg_shadowed_1_ecc_en_1_update_err,
+    bank0_info0_page_cfg_shadowed_1_he_en_1_update_err,
+    bank0_info0_page_cfg_shadowed_2_en_2_update_err,
+    bank0_info0_page_cfg_shadowed_2_rd_en_2_update_err,
+    bank0_info0_page_cfg_shadowed_2_prog_en_2_update_err,
+    bank0_info0_page_cfg_shadowed_2_erase_en_2_update_err,
+    bank0_info0_page_cfg_shadowed_2_scramble_en_2_update_err,
+    bank0_info0_page_cfg_shadowed_2_ecc_en_2_update_err,
+    bank0_info0_page_cfg_shadowed_2_he_en_2_update_err,
+    bank0_info0_page_cfg_shadowed_3_en_3_update_err,
+    bank0_info0_page_cfg_shadowed_3_rd_en_3_update_err,
+    bank0_info0_page_cfg_shadowed_3_prog_en_3_update_err,
+    bank0_info0_page_cfg_shadowed_3_erase_en_3_update_err,
+    bank0_info0_page_cfg_shadowed_3_scramble_en_3_update_err,
+    bank0_info0_page_cfg_shadowed_3_ecc_en_3_update_err,
+    bank0_info0_page_cfg_shadowed_3_he_en_3_update_err,
+    bank0_info0_page_cfg_shadowed_4_en_4_update_err,
+    bank0_info0_page_cfg_shadowed_4_rd_en_4_update_err,
+    bank0_info0_page_cfg_shadowed_4_prog_en_4_update_err,
+    bank0_info0_page_cfg_shadowed_4_erase_en_4_update_err,
+    bank0_info0_page_cfg_shadowed_4_scramble_en_4_update_err,
+    bank0_info0_page_cfg_shadowed_4_ecc_en_4_update_err,
+    bank0_info0_page_cfg_shadowed_4_he_en_4_update_err,
+    bank0_info0_page_cfg_shadowed_5_en_5_update_err,
+    bank0_info0_page_cfg_shadowed_5_rd_en_5_update_err,
+    bank0_info0_page_cfg_shadowed_5_prog_en_5_update_err,
+    bank0_info0_page_cfg_shadowed_5_erase_en_5_update_err,
+    bank0_info0_page_cfg_shadowed_5_scramble_en_5_update_err,
+    bank0_info0_page_cfg_shadowed_5_ecc_en_5_update_err,
+    bank0_info0_page_cfg_shadowed_5_he_en_5_update_err,
+    bank0_info0_page_cfg_shadowed_6_en_6_update_err,
+    bank0_info0_page_cfg_shadowed_6_rd_en_6_update_err,
+    bank0_info0_page_cfg_shadowed_6_prog_en_6_update_err,
+    bank0_info0_page_cfg_shadowed_6_erase_en_6_update_err,
+    bank0_info0_page_cfg_shadowed_6_scramble_en_6_update_err,
+    bank0_info0_page_cfg_shadowed_6_ecc_en_6_update_err,
+    bank0_info0_page_cfg_shadowed_6_he_en_6_update_err,
+    bank0_info0_page_cfg_shadowed_7_en_7_update_err,
+    bank0_info0_page_cfg_shadowed_7_rd_en_7_update_err,
+    bank0_info0_page_cfg_shadowed_7_prog_en_7_update_err,
+    bank0_info0_page_cfg_shadowed_7_erase_en_7_update_err,
+    bank0_info0_page_cfg_shadowed_7_scramble_en_7_update_err,
+    bank0_info0_page_cfg_shadowed_7_ecc_en_7_update_err,
+    bank0_info0_page_cfg_shadowed_7_he_en_7_update_err,
+    bank0_info0_page_cfg_shadowed_8_en_8_update_err,
+    bank0_info0_page_cfg_shadowed_8_rd_en_8_update_err,
+    bank0_info0_page_cfg_shadowed_8_prog_en_8_update_err,
+    bank0_info0_page_cfg_shadowed_8_erase_en_8_update_err,
+    bank0_info0_page_cfg_shadowed_8_scramble_en_8_update_err,
+    bank0_info0_page_cfg_shadowed_8_ecc_en_8_update_err,
+    bank0_info0_page_cfg_shadowed_8_he_en_8_update_err,
+    bank0_info0_page_cfg_shadowed_9_en_9_update_err,
+    bank0_info0_page_cfg_shadowed_9_rd_en_9_update_err,
+    bank0_info0_page_cfg_shadowed_9_prog_en_9_update_err,
+    bank0_info0_page_cfg_shadowed_9_erase_en_9_update_err,
+    bank0_info0_page_cfg_shadowed_9_scramble_en_9_update_err,
+    bank0_info0_page_cfg_shadowed_9_ecc_en_9_update_err,
+    bank0_info0_page_cfg_shadowed_9_he_en_9_update_err,
+    bank0_info1_page_cfg_shadowed_en_0_update_err,
+    bank0_info1_page_cfg_shadowed_rd_en_0_update_err,
+    bank0_info1_page_cfg_shadowed_prog_en_0_update_err,
+    bank0_info1_page_cfg_shadowed_erase_en_0_update_err,
+    bank0_info1_page_cfg_shadowed_scramble_en_0_update_err,
+    bank0_info1_page_cfg_shadowed_ecc_en_0_update_err,
+    bank0_info1_page_cfg_shadowed_he_en_0_update_err,
+    bank0_info2_page_cfg_shadowed_0_en_0_update_err,
+    bank0_info2_page_cfg_shadowed_0_rd_en_0_update_err,
+    bank0_info2_page_cfg_shadowed_0_prog_en_0_update_err,
+    bank0_info2_page_cfg_shadowed_0_erase_en_0_update_err,
+    bank0_info2_page_cfg_shadowed_0_scramble_en_0_update_err,
+    bank0_info2_page_cfg_shadowed_0_ecc_en_0_update_err,
+    bank0_info2_page_cfg_shadowed_0_he_en_0_update_err,
+    bank0_info2_page_cfg_shadowed_1_en_1_update_err,
+    bank0_info2_page_cfg_shadowed_1_rd_en_1_update_err,
+    bank0_info2_page_cfg_shadowed_1_prog_en_1_update_err,
+    bank0_info2_page_cfg_shadowed_1_erase_en_1_update_err,
+    bank0_info2_page_cfg_shadowed_1_scramble_en_1_update_err,
+    bank0_info2_page_cfg_shadowed_1_ecc_en_1_update_err,
+    bank0_info2_page_cfg_shadowed_1_he_en_1_update_err,
+    bank1_info0_page_cfg_shadowed_0_en_0_update_err,
+    bank1_info0_page_cfg_shadowed_0_rd_en_0_update_err,
+    bank1_info0_page_cfg_shadowed_0_prog_en_0_update_err,
+    bank1_info0_page_cfg_shadowed_0_erase_en_0_update_err,
+    bank1_info0_page_cfg_shadowed_0_scramble_en_0_update_err,
+    bank1_info0_page_cfg_shadowed_0_ecc_en_0_update_err,
+    bank1_info0_page_cfg_shadowed_0_he_en_0_update_err,
+    bank1_info0_page_cfg_shadowed_1_en_1_update_err,
+    bank1_info0_page_cfg_shadowed_1_rd_en_1_update_err,
+    bank1_info0_page_cfg_shadowed_1_prog_en_1_update_err,
+    bank1_info0_page_cfg_shadowed_1_erase_en_1_update_err,
+    bank1_info0_page_cfg_shadowed_1_scramble_en_1_update_err,
+    bank1_info0_page_cfg_shadowed_1_ecc_en_1_update_err,
+    bank1_info0_page_cfg_shadowed_1_he_en_1_update_err,
+    bank1_info0_page_cfg_shadowed_2_en_2_update_err,
+    bank1_info0_page_cfg_shadowed_2_rd_en_2_update_err,
+    bank1_info0_page_cfg_shadowed_2_prog_en_2_update_err,
+    bank1_info0_page_cfg_shadowed_2_erase_en_2_update_err,
+    bank1_info0_page_cfg_shadowed_2_scramble_en_2_update_err,
+    bank1_info0_page_cfg_shadowed_2_ecc_en_2_update_err,
+    bank1_info0_page_cfg_shadowed_2_he_en_2_update_err,
+    bank1_info0_page_cfg_shadowed_3_en_3_update_err,
+    bank1_info0_page_cfg_shadowed_3_rd_en_3_update_err,
+    bank1_info0_page_cfg_shadowed_3_prog_en_3_update_err,
+    bank1_info0_page_cfg_shadowed_3_erase_en_3_update_err,
+    bank1_info0_page_cfg_shadowed_3_scramble_en_3_update_err,
+    bank1_info0_page_cfg_shadowed_3_ecc_en_3_update_err,
+    bank1_info0_page_cfg_shadowed_3_he_en_3_update_err,
+    bank1_info0_page_cfg_shadowed_4_en_4_update_err,
+    bank1_info0_page_cfg_shadowed_4_rd_en_4_update_err,
+    bank1_info0_page_cfg_shadowed_4_prog_en_4_update_err,
+    bank1_info0_page_cfg_shadowed_4_erase_en_4_update_err,
+    bank1_info0_page_cfg_shadowed_4_scramble_en_4_update_err,
+    bank1_info0_page_cfg_shadowed_4_ecc_en_4_update_err,
+    bank1_info0_page_cfg_shadowed_4_he_en_4_update_err,
+    bank1_info0_page_cfg_shadowed_5_en_5_update_err,
+    bank1_info0_page_cfg_shadowed_5_rd_en_5_update_err,
+    bank1_info0_page_cfg_shadowed_5_prog_en_5_update_err,
+    bank1_info0_page_cfg_shadowed_5_erase_en_5_update_err,
+    bank1_info0_page_cfg_shadowed_5_scramble_en_5_update_err,
+    bank1_info0_page_cfg_shadowed_5_ecc_en_5_update_err,
+    bank1_info0_page_cfg_shadowed_5_he_en_5_update_err,
+    bank1_info0_page_cfg_shadowed_6_en_6_update_err,
+    bank1_info0_page_cfg_shadowed_6_rd_en_6_update_err,
+    bank1_info0_page_cfg_shadowed_6_prog_en_6_update_err,
+    bank1_info0_page_cfg_shadowed_6_erase_en_6_update_err,
+    bank1_info0_page_cfg_shadowed_6_scramble_en_6_update_err,
+    bank1_info0_page_cfg_shadowed_6_ecc_en_6_update_err,
+    bank1_info0_page_cfg_shadowed_6_he_en_6_update_err,
+    bank1_info0_page_cfg_shadowed_7_en_7_update_err,
+    bank1_info0_page_cfg_shadowed_7_rd_en_7_update_err,
+    bank1_info0_page_cfg_shadowed_7_prog_en_7_update_err,
+    bank1_info0_page_cfg_shadowed_7_erase_en_7_update_err,
+    bank1_info0_page_cfg_shadowed_7_scramble_en_7_update_err,
+    bank1_info0_page_cfg_shadowed_7_ecc_en_7_update_err,
+    bank1_info0_page_cfg_shadowed_7_he_en_7_update_err,
+    bank1_info0_page_cfg_shadowed_8_en_8_update_err,
+    bank1_info0_page_cfg_shadowed_8_rd_en_8_update_err,
+    bank1_info0_page_cfg_shadowed_8_prog_en_8_update_err,
+    bank1_info0_page_cfg_shadowed_8_erase_en_8_update_err,
+    bank1_info0_page_cfg_shadowed_8_scramble_en_8_update_err,
+    bank1_info0_page_cfg_shadowed_8_ecc_en_8_update_err,
+    bank1_info0_page_cfg_shadowed_8_he_en_8_update_err,
+    bank1_info0_page_cfg_shadowed_9_en_9_update_err,
+    bank1_info0_page_cfg_shadowed_9_rd_en_9_update_err,
+    bank1_info0_page_cfg_shadowed_9_prog_en_9_update_err,
+    bank1_info0_page_cfg_shadowed_9_erase_en_9_update_err,
+    bank1_info0_page_cfg_shadowed_9_scramble_en_9_update_err,
+    bank1_info0_page_cfg_shadowed_9_ecc_en_9_update_err,
+    bank1_info0_page_cfg_shadowed_9_he_en_9_update_err,
+    bank1_info1_page_cfg_shadowed_en_0_update_err,
+    bank1_info1_page_cfg_shadowed_rd_en_0_update_err,
+    bank1_info1_page_cfg_shadowed_prog_en_0_update_err,
+    bank1_info1_page_cfg_shadowed_erase_en_0_update_err,
+    bank1_info1_page_cfg_shadowed_scramble_en_0_update_err,
+    bank1_info1_page_cfg_shadowed_ecc_en_0_update_err,
+    bank1_info1_page_cfg_shadowed_he_en_0_update_err,
+    bank1_info2_page_cfg_shadowed_0_en_0_update_err,
+    bank1_info2_page_cfg_shadowed_0_rd_en_0_update_err,
+    bank1_info2_page_cfg_shadowed_0_prog_en_0_update_err,
+    bank1_info2_page_cfg_shadowed_0_erase_en_0_update_err,
+    bank1_info2_page_cfg_shadowed_0_scramble_en_0_update_err,
+    bank1_info2_page_cfg_shadowed_0_ecc_en_0_update_err,
+    bank1_info2_page_cfg_shadowed_0_he_en_0_update_err,
+    bank1_info2_page_cfg_shadowed_1_en_1_update_err,
+    bank1_info2_page_cfg_shadowed_1_rd_en_1_update_err,
+    bank1_info2_page_cfg_shadowed_1_prog_en_1_update_err,
+    bank1_info2_page_cfg_shadowed_1_erase_en_1_update_err,
+    bank1_info2_page_cfg_shadowed_1_scramble_en_1_update_err,
+    bank1_info2_page_cfg_shadowed_1_ecc_en_1_update_err,
+    bank1_info2_page_cfg_shadowed_1_he_en_1_update_err,
+    mp_bank_cfg_shadowed_erase_en_0_update_err,
+    mp_bank_cfg_shadowed_erase_en_1_update_err
+  };
 
   // register busy
   assign reg_busy = shadow_busy;

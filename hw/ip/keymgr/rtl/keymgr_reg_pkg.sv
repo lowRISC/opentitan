@@ -51,18 +51,12 @@ package keymgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [2:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } operation;
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } cdi_sel;
     struct packed {
       logic [1:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } dest_sel;
   } keymgr_reg2hw_control_shadowed_reg_t;
 
@@ -72,8 +66,6 @@ package keymgr_reg_pkg;
 
   typedef struct packed {
     logic [15:0] q;
-    logic        err_update;
-    logic        err_storage;
   } keymgr_reg2hw_reseed_interval_shadowed_reg_t;
 
   typedef struct packed {
@@ -99,20 +91,14 @@ package keymgr_reg_pkg;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } keymgr_reg2hw_max_creator_key_ver_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } keymgr_reg2hw_max_owner_int_key_ver_shadowed_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        err_update;
-    logic        err_storage;
   } keymgr_reg2hw_max_owner_key_ver_shadowed_reg_t;
 
   typedef struct packed {

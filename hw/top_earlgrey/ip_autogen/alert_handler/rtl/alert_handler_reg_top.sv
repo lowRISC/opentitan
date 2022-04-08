@@ -16,6 +16,9 @@ module alert_handler_reg_top (
   output alert_handler_reg_pkg::alert_handler_reg2hw_t reg2hw, // Write
   input  alert_handler_reg_pkg::alert_handler_hw2reg_t hw2reg, // Read
 
+  output logic shadowed_storage_err_o,
+  output logic shadowed_update_err_o,
+
   // Integrity check errors
   output logic intg_err_o,
 
@@ -139,10 +142,14 @@ module alert_handler_reg_top (
   logic ping_timeout_cyc_shadowed_we;
   logic [15:0] ping_timeout_cyc_shadowed_qs;
   logic [15:0] ping_timeout_cyc_shadowed_wd;
+  logic ping_timeout_cyc_shadowed_storage_err;
+  logic ping_timeout_cyc_shadowed_update_err;
   logic ping_timer_en_shadowed_re;
   logic ping_timer_en_shadowed_we;
   logic ping_timer_en_shadowed_qs;
   logic ping_timer_en_shadowed_wd;
+  logic ping_timer_en_shadowed_storage_err;
+  logic ping_timer_en_shadowed_update_err;
   logic alert_regwen_0_we;
   logic alert_regwen_0_qs;
   logic alert_regwen_0_wd;
@@ -330,490 +337,734 @@ module alert_handler_reg_top (
   logic alert_en_shadowed_0_we;
   logic alert_en_shadowed_0_qs;
   logic alert_en_shadowed_0_wd;
+  logic alert_en_shadowed_0_storage_err;
+  logic alert_en_shadowed_0_update_err;
   logic alert_en_shadowed_1_re;
   logic alert_en_shadowed_1_we;
   logic alert_en_shadowed_1_qs;
   logic alert_en_shadowed_1_wd;
+  logic alert_en_shadowed_1_storage_err;
+  logic alert_en_shadowed_1_update_err;
   logic alert_en_shadowed_2_re;
   logic alert_en_shadowed_2_we;
   logic alert_en_shadowed_2_qs;
   logic alert_en_shadowed_2_wd;
+  logic alert_en_shadowed_2_storage_err;
+  logic alert_en_shadowed_2_update_err;
   logic alert_en_shadowed_3_re;
   logic alert_en_shadowed_3_we;
   logic alert_en_shadowed_3_qs;
   logic alert_en_shadowed_3_wd;
+  logic alert_en_shadowed_3_storage_err;
+  logic alert_en_shadowed_3_update_err;
   logic alert_en_shadowed_4_re;
   logic alert_en_shadowed_4_we;
   logic alert_en_shadowed_4_qs;
   logic alert_en_shadowed_4_wd;
+  logic alert_en_shadowed_4_storage_err;
+  logic alert_en_shadowed_4_update_err;
   logic alert_en_shadowed_5_re;
   logic alert_en_shadowed_5_we;
   logic alert_en_shadowed_5_qs;
   logic alert_en_shadowed_5_wd;
+  logic alert_en_shadowed_5_storage_err;
+  logic alert_en_shadowed_5_update_err;
   logic alert_en_shadowed_6_re;
   logic alert_en_shadowed_6_we;
   logic alert_en_shadowed_6_qs;
   logic alert_en_shadowed_6_wd;
+  logic alert_en_shadowed_6_storage_err;
+  logic alert_en_shadowed_6_update_err;
   logic alert_en_shadowed_7_re;
   logic alert_en_shadowed_7_we;
   logic alert_en_shadowed_7_qs;
   logic alert_en_shadowed_7_wd;
+  logic alert_en_shadowed_7_storage_err;
+  logic alert_en_shadowed_7_update_err;
   logic alert_en_shadowed_8_re;
   logic alert_en_shadowed_8_we;
   logic alert_en_shadowed_8_qs;
   logic alert_en_shadowed_8_wd;
+  logic alert_en_shadowed_8_storage_err;
+  logic alert_en_shadowed_8_update_err;
   logic alert_en_shadowed_9_re;
   logic alert_en_shadowed_9_we;
   logic alert_en_shadowed_9_qs;
   logic alert_en_shadowed_9_wd;
+  logic alert_en_shadowed_9_storage_err;
+  logic alert_en_shadowed_9_update_err;
   logic alert_en_shadowed_10_re;
   logic alert_en_shadowed_10_we;
   logic alert_en_shadowed_10_qs;
   logic alert_en_shadowed_10_wd;
+  logic alert_en_shadowed_10_storage_err;
+  logic alert_en_shadowed_10_update_err;
   logic alert_en_shadowed_11_re;
   logic alert_en_shadowed_11_we;
   logic alert_en_shadowed_11_qs;
   logic alert_en_shadowed_11_wd;
+  logic alert_en_shadowed_11_storage_err;
+  logic alert_en_shadowed_11_update_err;
   logic alert_en_shadowed_12_re;
   logic alert_en_shadowed_12_we;
   logic alert_en_shadowed_12_qs;
   logic alert_en_shadowed_12_wd;
+  logic alert_en_shadowed_12_storage_err;
+  logic alert_en_shadowed_12_update_err;
   logic alert_en_shadowed_13_re;
   logic alert_en_shadowed_13_we;
   logic alert_en_shadowed_13_qs;
   logic alert_en_shadowed_13_wd;
+  logic alert_en_shadowed_13_storage_err;
+  logic alert_en_shadowed_13_update_err;
   logic alert_en_shadowed_14_re;
   logic alert_en_shadowed_14_we;
   logic alert_en_shadowed_14_qs;
   logic alert_en_shadowed_14_wd;
+  logic alert_en_shadowed_14_storage_err;
+  logic alert_en_shadowed_14_update_err;
   logic alert_en_shadowed_15_re;
   logic alert_en_shadowed_15_we;
   logic alert_en_shadowed_15_qs;
   logic alert_en_shadowed_15_wd;
+  logic alert_en_shadowed_15_storage_err;
+  logic alert_en_shadowed_15_update_err;
   logic alert_en_shadowed_16_re;
   logic alert_en_shadowed_16_we;
   logic alert_en_shadowed_16_qs;
   logic alert_en_shadowed_16_wd;
+  logic alert_en_shadowed_16_storage_err;
+  logic alert_en_shadowed_16_update_err;
   logic alert_en_shadowed_17_re;
   logic alert_en_shadowed_17_we;
   logic alert_en_shadowed_17_qs;
   logic alert_en_shadowed_17_wd;
+  logic alert_en_shadowed_17_storage_err;
+  logic alert_en_shadowed_17_update_err;
   logic alert_en_shadowed_18_re;
   logic alert_en_shadowed_18_we;
   logic alert_en_shadowed_18_qs;
   logic alert_en_shadowed_18_wd;
+  logic alert_en_shadowed_18_storage_err;
+  logic alert_en_shadowed_18_update_err;
   logic alert_en_shadowed_19_re;
   logic alert_en_shadowed_19_we;
   logic alert_en_shadowed_19_qs;
   logic alert_en_shadowed_19_wd;
+  logic alert_en_shadowed_19_storage_err;
+  logic alert_en_shadowed_19_update_err;
   logic alert_en_shadowed_20_re;
   logic alert_en_shadowed_20_we;
   logic alert_en_shadowed_20_qs;
   logic alert_en_shadowed_20_wd;
+  logic alert_en_shadowed_20_storage_err;
+  logic alert_en_shadowed_20_update_err;
   logic alert_en_shadowed_21_re;
   logic alert_en_shadowed_21_we;
   logic alert_en_shadowed_21_qs;
   logic alert_en_shadowed_21_wd;
+  logic alert_en_shadowed_21_storage_err;
+  logic alert_en_shadowed_21_update_err;
   logic alert_en_shadowed_22_re;
   logic alert_en_shadowed_22_we;
   logic alert_en_shadowed_22_qs;
   logic alert_en_shadowed_22_wd;
+  logic alert_en_shadowed_22_storage_err;
+  logic alert_en_shadowed_22_update_err;
   logic alert_en_shadowed_23_re;
   logic alert_en_shadowed_23_we;
   logic alert_en_shadowed_23_qs;
   logic alert_en_shadowed_23_wd;
+  logic alert_en_shadowed_23_storage_err;
+  logic alert_en_shadowed_23_update_err;
   logic alert_en_shadowed_24_re;
   logic alert_en_shadowed_24_we;
   logic alert_en_shadowed_24_qs;
   logic alert_en_shadowed_24_wd;
+  logic alert_en_shadowed_24_storage_err;
+  logic alert_en_shadowed_24_update_err;
   logic alert_en_shadowed_25_re;
   logic alert_en_shadowed_25_we;
   logic alert_en_shadowed_25_qs;
   logic alert_en_shadowed_25_wd;
+  logic alert_en_shadowed_25_storage_err;
+  logic alert_en_shadowed_25_update_err;
   logic alert_en_shadowed_26_re;
   logic alert_en_shadowed_26_we;
   logic alert_en_shadowed_26_qs;
   logic alert_en_shadowed_26_wd;
+  logic alert_en_shadowed_26_storage_err;
+  logic alert_en_shadowed_26_update_err;
   logic alert_en_shadowed_27_re;
   logic alert_en_shadowed_27_we;
   logic alert_en_shadowed_27_qs;
   logic alert_en_shadowed_27_wd;
+  logic alert_en_shadowed_27_storage_err;
+  logic alert_en_shadowed_27_update_err;
   logic alert_en_shadowed_28_re;
   logic alert_en_shadowed_28_we;
   logic alert_en_shadowed_28_qs;
   logic alert_en_shadowed_28_wd;
+  logic alert_en_shadowed_28_storage_err;
+  logic alert_en_shadowed_28_update_err;
   logic alert_en_shadowed_29_re;
   logic alert_en_shadowed_29_we;
   logic alert_en_shadowed_29_qs;
   logic alert_en_shadowed_29_wd;
+  logic alert_en_shadowed_29_storage_err;
+  logic alert_en_shadowed_29_update_err;
   logic alert_en_shadowed_30_re;
   logic alert_en_shadowed_30_we;
   logic alert_en_shadowed_30_qs;
   logic alert_en_shadowed_30_wd;
+  logic alert_en_shadowed_30_storage_err;
+  logic alert_en_shadowed_30_update_err;
   logic alert_en_shadowed_31_re;
   logic alert_en_shadowed_31_we;
   logic alert_en_shadowed_31_qs;
   logic alert_en_shadowed_31_wd;
+  logic alert_en_shadowed_31_storage_err;
+  logic alert_en_shadowed_31_update_err;
   logic alert_en_shadowed_32_re;
   logic alert_en_shadowed_32_we;
   logic alert_en_shadowed_32_qs;
   logic alert_en_shadowed_32_wd;
+  logic alert_en_shadowed_32_storage_err;
+  logic alert_en_shadowed_32_update_err;
   logic alert_en_shadowed_33_re;
   logic alert_en_shadowed_33_we;
   logic alert_en_shadowed_33_qs;
   logic alert_en_shadowed_33_wd;
+  logic alert_en_shadowed_33_storage_err;
+  logic alert_en_shadowed_33_update_err;
   logic alert_en_shadowed_34_re;
   logic alert_en_shadowed_34_we;
   logic alert_en_shadowed_34_qs;
   logic alert_en_shadowed_34_wd;
+  logic alert_en_shadowed_34_storage_err;
+  logic alert_en_shadowed_34_update_err;
   logic alert_en_shadowed_35_re;
   logic alert_en_shadowed_35_we;
   logic alert_en_shadowed_35_qs;
   logic alert_en_shadowed_35_wd;
+  logic alert_en_shadowed_35_storage_err;
+  logic alert_en_shadowed_35_update_err;
   logic alert_en_shadowed_36_re;
   logic alert_en_shadowed_36_we;
   logic alert_en_shadowed_36_qs;
   logic alert_en_shadowed_36_wd;
+  logic alert_en_shadowed_36_storage_err;
+  logic alert_en_shadowed_36_update_err;
   logic alert_en_shadowed_37_re;
   logic alert_en_shadowed_37_we;
   logic alert_en_shadowed_37_qs;
   logic alert_en_shadowed_37_wd;
+  logic alert_en_shadowed_37_storage_err;
+  logic alert_en_shadowed_37_update_err;
   logic alert_en_shadowed_38_re;
   logic alert_en_shadowed_38_we;
   logic alert_en_shadowed_38_qs;
   logic alert_en_shadowed_38_wd;
+  logic alert_en_shadowed_38_storage_err;
+  logic alert_en_shadowed_38_update_err;
   logic alert_en_shadowed_39_re;
   logic alert_en_shadowed_39_we;
   logic alert_en_shadowed_39_qs;
   logic alert_en_shadowed_39_wd;
+  logic alert_en_shadowed_39_storage_err;
+  logic alert_en_shadowed_39_update_err;
   logic alert_en_shadowed_40_re;
   logic alert_en_shadowed_40_we;
   logic alert_en_shadowed_40_qs;
   logic alert_en_shadowed_40_wd;
+  logic alert_en_shadowed_40_storage_err;
+  logic alert_en_shadowed_40_update_err;
   logic alert_en_shadowed_41_re;
   logic alert_en_shadowed_41_we;
   logic alert_en_shadowed_41_qs;
   logic alert_en_shadowed_41_wd;
+  logic alert_en_shadowed_41_storage_err;
+  logic alert_en_shadowed_41_update_err;
   logic alert_en_shadowed_42_re;
   logic alert_en_shadowed_42_we;
   logic alert_en_shadowed_42_qs;
   logic alert_en_shadowed_42_wd;
+  logic alert_en_shadowed_42_storage_err;
+  logic alert_en_shadowed_42_update_err;
   logic alert_en_shadowed_43_re;
   logic alert_en_shadowed_43_we;
   logic alert_en_shadowed_43_qs;
   logic alert_en_shadowed_43_wd;
+  logic alert_en_shadowed_43_storage_err;
+  logic alert_en_shadowed_43_update_err;
   logic alert_en_shadowed_44_re;
   logic alert_en_shadowed_44_we;
   logic alert_en_shadowed_44_qs;
   logic alert_en_shadowed_44_wd;
+  logic alert_en_shadowed_44_storage_err;
+  logic alert_en_shadowed_44_update_err;
   logic alert_en_shadowed_45_re;
   logic alert_en_shadowed_45_we;
   logic alert_en_shadowed_45_qs;
   logic alert_en_shadowed_45_wd;
+  logic alert_en_shadowed_45_storage_err;
+  logic alert_en_shadowed_45_update_err;
   logic alert_en_shadowed_46_re;
   logic alert_en_shadowed_46_we;
   logic alert_en_shadowed_46_qs;
   logic alert_en_shadowed_46_wd;
+  logic alert_en_shadowed_46_storage_err;
+  logic alert_en_shadowed_46_update_err;
   logic alert_en_shadowed_47_re;
   logic alert_en_shadowed_47_we;
   logic alert_en_shadowed_47_qs;
   logic alert_en_shadowed_47_wd;
+  logic alert_en_shadowed_47_storage_err;
+  logic alert_en_shadowed_47_update_err;
   logic alert_en_shadowed_48_re;
   logic alert_en_shadowed_48_we;
   logic alert_en_shadowed_48_qs;
   logic alert_en_shadowed_48_wd;
+  logic alert_en_shadowed_48_storage_err;
+  logic alert_en_shadowed_48_update_err;
   logic alert_en_shadowed_49_re;
   logic alert_en_shadowed_49_we;
   logic alert_en_shadowed_49_qs;
   logic alert_en_shadowed_49_wd;
+  logic alert_en_shadowed_49_storage_err;
+  logic alert_en_shadowed_49_update_err;
   logic alert_en_shadowed_50_re;
   logic alert_en_shadowed_50_we;
   logic alert_en_shadowed_50_qs;
   logic alert_en_shadowed_50_wd;
+  logic alert_en_shadowed_50_storage_err;
+  logic alert_en_shadowed_50_update_err;
   logic alert_en_shadowed_51_re;
   logic alert_en_shadowed_51_we;
   logic alert_en_shadowed_51_qs;
   logic alert_en_shadowed_51_wd;
+  logic alert_en_shadowed_51_storage_err;
+  logic alert_en_shadowed_51_update_err;
   logic alert_en_shadowed_52_re;
   logic alert_en_shadowed_52_we;
   logic alert_en_shadowed_52_qs;
   logic alert_en_shadowed_52_wd;
+  logic alert_en_shadowed_52_storage_err;
+  logic alert_en_shadowed_52_update_err;
   logic alert_en_shadowed_53_re;
   logic alert_en_shadowed_53_we;
   logic alert_en_shadowed_53_qs;
   logic alert_en_shadowed_53_wd;
+  logic alert_en_shadowed_53_storage_err;
+  logic alert_en_shadowed_53_update_err;
   logic alert_en_shadowed_54_re;
   logic alert_en_shadowed_54_we;
   logic alert_en_shadowed_54_qs;
   logic alert_en_shadowed_54_wd;
+  logic alert_en_shadowed_54_storage_err;
+  logic alert_en_shadowed_54_update_err;
   logic alert_en_shadowed_55_re;
   logic alert_en_shadowed_55_we;
   logic alert_en_shadowed_55_qs;
   logic alert_en_shadowed_55_wd;
+  logic alert_en_shadowed_55_storage_err;
+  logic alert_en_shadowed_55_update_err;
   logic alert_en_shadowed_56_re;
   logic alert_en_shadowed_56_we;
   logic alert_en_shadowed_56_qs;
   logic alert_en_shadowed_56_wd;
+  logic alert_en_shadowed_56_storage_err;
+  logic alert_en_shadowed_56_update_err;
   logic alert_en_shadowed_57_re;
   logic alert_en_shadowed_57_we;
   logic alert_en_shadowed_57_qs;
   logic alert_en_shadowed_57_wd;
+  logic alert_en_shadowed_57_storage_err;
+  logic alert_en_shadowed_57_update_err;
   logic alert_en_shadowed_58_re;
   logic alert_en_shadowed_58_we;
   logic alert_en_shadowed_58_qs;
   logic alert_en_shadowed_58_wd;
+  logic alert_en_shadowed_58_storage_err;
+  logic alert_en_shadowed_58_update_err;
   logic alert_en_shadowed_59_re;
   logic alert_en_shadowed_59_we;
   logic alert_en_shadowed_59_qs;
   logic alert_en_shadowed_59_wd;
+  logic alert_en_shadowed_59_storage_err;
+  logic alert_en_shadowed_59_update_err;
   logic alert_en_shadowed_60_re;
   logic alert_en_shadowed_60_we;
   logic alert_en_shadowed_60_qs;
   logic alert_en_shadowed_60_wd;
+  logic alert_en_shadowed_60_storage_err;
+  logic alert_en_shadowed_60_update_err;
   logic alert_class_shadowed_0_re;
   logic alert_class_shadowed_0_we;
   logic [1:0] alert_class_shadowed_0_qs;
   logic [1:0] alert_class_shadowed_0_wd;
+  logic alert_class_shadowed_0_storage_err;
+  logic alert_class_shadowed_0_update_err;
   logic alert_class_shadowed_1_re;
   logic alert_class_shadowed_1_we;
   logic [1:0] alert_class_shadowed_1_qs;
   logic [1:0] alert_class_shadowed_1_wd;
+  logic alert_class_shadowed_1_storage_err;
+  logic alert_class_shadowed_1_update_err;
   logic alert_class_shadowed_2_re;
   logic alert_class_shadowed_2_we;
   logic [1:0] alert_class_shadowed_2_qs;
   logic [1:0] alert_class_shadowed_2_wd;
+  logic alert_class_shadowed_2_storage_err;
+  logic alert_class_shadowed_2_update_err;
   logic alert_class_shadowed_3_re;
   logic alert_class_shadowed_3_we;
   logic [1:0] alert_class_shadowed_3_qs;
   logic [1:0] alert_class_shadowed_3_wd;
+  logic alert_class_shadowed_3_storage_err;
+  logic alert_class_shadowed_3_update_err;
   logic alert_class_shadowed_4_re;
   logic alert_class_shadowed_4_we;
   logic [1:0] alert_class_shadowed_4_qs;
   logic [1:0] alert_class_shadowed_4_wd;
+  logic alert_class_shadowed_4_storage_err;
+  logic alert_class_shadowed_4_update_err;
   logic alert_class_shadowed_5_re;
   logic alert_class_shadowed_5_we;
   logic [1:0] alert_class_shadowed_5_qs;
   logic [1:0] alert_class_shadowed_5_wd;
+  logic alert_class_shadowed_5_storage_err;
+  logic alert_class_shadowed_5_update_err;
   logic alert_class_shadowed_6_re;
   logic alert_class_shadowed_6_we;
   logic [1:0] alert_class_shadowed_6_qs;
   logic [1:0] alert_class_shadowed_6_wd;
+  logic alert_class_shadowed_6_storage_err;
+  logic alert_class_shadowed_6_update_err;
   logic alert_class_shadowed_7_re;
   logic alert_class_shadowed_7_we;
   logic [1:0] alert_class_shadowed_7_qs;
   logic [1:0] alert_class_shadowed_7_wd;
+  logic alert_class_shadowed_7_storage_err;
+  logic alert_class_shadowed_7_update_err;
   logic alert_class_shadowed_8_re;
   logic alert_class_shadowed_8_we;
   logic [1:0] alert_class_shadowed_8_qs;
   logic [1:0] alert_class_shadowed_8_wd;
+  logic alert_class_shadowed_8_storage_err;
+  logic alert_class_shadowed_8_update_err;
   logic alert_class_shadowed_9_re;
   logic alert_class_shadowed_9_we;
   logic [1:0] alert_class_shadowed_9_qs;
   logic [1:0] alert_class_shadowed_9_wd;
+  logic alert_class_shadowed_9_storage_err;
+  logic alert_class_shadowed_9_update_err;
   logic alert_class_shadowed_10_re;
   logic alert_class_shadowed_10_we;
   logic [1:0] alert_class_shadowed_10_qs;
   logic [1:0] alert_class_shadowed_10_wd;
+  logic alert_class_shadowed_10_storage_err;
+  logic alert_class_shadowed_10_update_err;
   logic alert_class_shadowed_11_re;
   logic alert_class_shadowed_11_we;
   logic [1:0] alert_class_shadowed_11_qs;
   logic [1:0] alert_class_shadowed_11_wd;
+  logic alert_class_shadowed_11_storage_err;
+  logic alert_class_shadowed_11_update_err;
   logic alert_class_shadowed_12_re;
   logic alert_class_shadowed_12_we;
   logic [1:0] alert_class_shadowed_12_qs;
   logic [1:0] alert_class_shadowed_12_wd;
+  logic alert_class_shadowed_12_storage_err;
+  logic alert_class_shadowed_12_update_err;
   logic alert_class_shadowed_13_re;
   logic alert_class_shadowed_13_we;
   logic [1:0] alert_class_shadowed_13_qs;
   logic [1:0] alert_class_shadowed_13_wd;
+  logic alert_class_shadowed_13_storage_err;
+  logic alert_class_shadowed_13_update_err;
   logic alert_class_shadowed_14_re;
   logic alert_class_shadowed_14_we;
   logic [1:0] alert_class_shadowed_14_qs;
   logic [1:0] alert_class_shadowed_14_wd;
+  logic alert_class_shadowed_14_storage_err;
+  logic alert_class_shadowed_14_update_err;
   logic alert_class_shadowed_15_re;
   logic alert_class_shadowed_15_we;
   logic [1:0] alert_class_shadowed_15_qs;
   logic [1:0] alert_class_shadowed_15_wd;
+  logic alert_class_shadowed_15_storage_err;
+  logic alert_class_shadowed_15_update_err;
   logic alert_class_shadowed_16_re;
   logic alert_class_shadowed_16_we;
   logic [1:0] alert_class_shadowed_16_qs;
   logic [1:0] alert_class_shadowed_16_wd;
+  logic alert_class_shadowed_16_storage_err;
+  logic alert_class_shadowed_16_update_err;
   logic alert_class_shadowed_17_re;
   logic alert_class_shadowed_17_we;
   logic [1:0] alert_class_shadowed_17_qs;
   logic [1:0] alert_class_shadowed_17_wd;
+  logic alert_class_shadowed_17_storage_err;
+  logic alert_class_shadowed_17_update_err;
   logic alert_class_shadowed_18_re;
   logic alert_class_shadowed_18_we;
   logic [1:0] alert_class_shadowed_18_qs;
   logic [1:0] alert_class_shadowed_18_wd;
+  logic alert_class_shadowed_18_storage_err;
+  logic alert_class_shadowed_18_update_err;
   logic alert_class_shadowed_19_re;
   logic alert_class_shadowed_19_we;
   logic [1:0] alert_class_shadowed_19_qs;
   logic [1:0] alert_class_shadowed_19_wd;
+  logic alert_class_shadowed_19_storage_err;
+  logic alert_class_shadowed_19_update_err;
   logic alert_class_shadowed_20_re;
   logic alert_class_shadowed_20_we;
   logic [1:0] alert_class_shadowed_20_qs;
   logic [1:0] alert_class_shadowed_20_wd;
+  logic alert_class_shadowed_20_storage_err;
+  logic alert_class_shadowed_20_update_err;
   logic alert_class_shadowed_21_re;
   logic alert_class_shadowed_21_we;
   logic [1:0] alert_class_shadowed_21_qs;
   logic [1:0] alert_class_shadowed_21_wd;
+  logic alert_class_shadowed_21_storage_err;
+  logic alert_class_shadowed_21_update_err;
   logic alert_class_shadowed_22_re;
   logic alert_class_shadowed_22_we;
   logic [1:0] alert_class_shadowed_22_qs;
   logic [1:0] alert_class_shadowed_22_wd;
+  logic alert_class_shadowed_22_storage_err;
+  logic alert_class_shadowed_22_update_err;
   logic alert_class_shadowed_23_re;
   logic alert_class_shadowed_23_we;
   logic [1:0] alert_class_shadowed_23_qs;
   logic [1:0] alert_class_shadowed_23_wd;
+  logic alert_class_shadowed_23_storage_err;
+  logic alert_class_shadowed_23_update_err;
   logic alert_class_shadowed_24_re;
   logic alert_class_shadowed_24_we;
   logic [1:0] alert_class_shadowed_24_qs;
   logic [1:0] alert_class_shadowed_24_wd;
+  logic alert_class_shadowed_24_storage_err;
+  logic alert_class_shadowed_24_update_err;
   logic alert_class_shadowed_25_re;
   logic alert_class_shadowed_25_we;
   logic [1:0] alert_class_shadowed_25_qs;
   logic [1:0] alert_class_shadowed_25_wd;
+  logic alert_class_shadowed_25_storage_err;
+  logic alert_class_shadowed_25_update_err;
   logic alert_class_shadowed_26_re;
   logic alert_class_shadowed_26_we;
   logic [1:0] alert_class_shadowed_26_qs;
   logic [1:0] alert_class_shadowed_26_wd;
+  logic alert_class_shadowed_26_storage_err;
+  logic alert_class_shadowed_26_update_err;
   logic alert_class_shadowed_27_re;
   logic alert_class_shadowed_27_we;
   logic [1:0] alert_class_shadowed_27_qs;
   logic [1:0] alert_class_shadowed_27_wd;
+  logic alert_class_shadowed_27_storage_err;
+  logic alert_class_shadowed_27_update_err;
   logic alert_class_shadowed_28_re;
   logic alert_class_shadowed_28_we;
   logic [1:0] alert_class_shadowed_28_qs;
   logic [1:0] alert_class_shadowed_28_wd;
+  logic alert_class_shadowed_28_storage_err;
+  logic alert_class_shadowed_28_update_err;
   logic alert_class_shadowed_29_re;
   logic alert_class_shadowed_29_we;
   logic [1:0] alert_class_shadowed_29_qs;
   logic [1:0] alert_class_shadowed_29_wd;
+  logic alert_class_shadowed_29_storage_err;
+  logic alert_class_shadowed_29_update_err;
   logic alert_class_shadowed_30_re;
   logic alert_class_shadowed_30_we;
   logic [1:0] alert_class_shadowed_30_qs;
   logic [1:0] alert_class_shadowed_30_wd;
+  logic alert_class_shadowed_30_storage_err;
+  logic alert_class_shadowed_30_update_err;
   logic alert_class_shadowed_31_re;
   logic alert_class_shadowed_31_we;
   logic [1:0] alert_class_shadowed_31_qs;
   logic [1:0] alert_class_shadowed_31_wd;
+  logic alert_class_shadowed_31_storage_err;
+  logic alert_class_shadowed_31_update_err;
   logic alert_class_shadowed_32_re;
   logic alert_class_shadowed_32_we;
   logic [1:0] alert_class_shadowed_32_qs;
   logic [1:0] alert_class_shadowed_32_wd;
+  logic alert_class_shadowed_32_storage_err;
+  logic alert_class_shadowed_32_update_err;
   logic alert_class_shadowed_33_re;
   logic alert_class_shadowed_33_we;
   logic [1:0] alert_class_shadowed_33_qs;
   logic [1:0] alert_class_shadowed_33_wd;
+  logic alert_class_shadowed_33_storage_err;
+  logic alert_class_shadowed_33_update_err;
   logic alert_class_shadowed_34_re;
   logic alert_class_shadowed_34_we;
   logic [1:0] alert_class_shadowed_34_qs;
   logic [1:0] alert_class_shadowed_34_wd;
+  logic alert_class_shadowed_34_storage_err;
+  logic alert_class_shadowed_34_update_err;
   logic alert_class_shadowed_35_re;
   logic alert_class_shadowed_35_we;
   logic [1:0] alert_class_shadowed_35_qs;
   logic [1:0] alert_class_shadowed_35_wd;
+  logic alert_class_shadowed_35_storage_err;
+  logic alert_class_shadowed_35_update_err;
   logic alert_class_shadowed_36_re;
   logic alert_class_shadowed_36_we;
   logic [1:0] alert_class_shadowed_36_qs;
   logic [1:0] alert_class_shadowed_36_wd;
+  logic alert_class_shadowed_36_storage_err;
+  logic alert_class_shadowed_36_update_err;
   logic alert_class_shadowed_37_re;
   logic alert_class_shadowed_37_we;
   logic [1:0] alert_class_shadowed_37_qs;
   logic [1:0] alert_class_shadowed_37_wd;
+  logic alert_class_shadowed_37_storage_err;
+  logic alert_class_shadowed_37_update_err;
   logic alert_class_shadowed_38_re;
   logic alert_class_shadowed_38_we;
   logic [1:0] alert_class_shadowed_38_qs;
   logic [1:0] alert_class_shadowed_38_wd;
+  logic alert_class_shadowed_38_storage_err;
+  logic alert_class_shadowed_38_update_err;
   logic alert_class_shadowed_39_re;
   logic alert_class_shadowed_39_we;
   logic [1:0] alert_class_shadowed_39_qs;
   logic [1:0] alert_class_shadowed_39_wd;
+  logic alert_class_shadowed_39_storage_err;
+  logic alert_class_shadowed_39_update_err;
   logic alert_class_shadowed_40_re;
   logic alert_class_shadowed_40_we;
   logic [1:0] alert_class_shadowed_40_qs;
   logic [1:0] alert_class_shadowed_40_wd;
+  logic alert_class_shadowed_40_storage_err;
+  logic alert_class_shadowed_40_update_err;
   logic alert_class_shadowed_41_re;
   logic alert_class_shadowed_41_we;
   logic [1:0] alert_class_shadowed_41_qs;
   logic [1:0] alert_class_shadowed_41_wd;
+  logic alert_class_shadowed_41_storage_err;
+  logic alert_class_shadowed_41_update_err;
   logic alert_class_shadowed_42_re;
   logic alert_class_shadowed_42_we;
   logic [1:0] alert_class_shadowed_42_qs;
   logic [1:0] alert_class_shadowed_42_wd;
+  logic alert_class_shadowed_42_storage_err;
+  logic alert_class_shadowed_42_update_err;
   logic alert_class_shadowed_43_re;
   logic alert_class_shadowed_43_we;
   logic [1:0] alert_class_shadowed_43_qs;
   logic [1:0] alert_class_shadowed_43_wd;
+  logic alert_class_shadowed_43_storage_err;
+  logic alert_class_shadowed_43_update_err;
   logic alert_class_shadowed_44_re;
   logic alert_class_shadowed_44_we;
   logic [1:0] alert_class_shadowed_44_qs;
   logic [1:0] alert_class_shadowed_44_wd;
+  logic alert_class_shadowed_44_storage_err;
+  logic alert_class_shadowed_44_update_err;
   logic alert_class_shadowed_45_re;
   logic alert_class_shadowed_45_we;
   logic [1:0] alert_class_shadowed_45_qs;
   logic [1:0] alert_class_shadowed_45_wd;
+  logic alert_class_shadowed_45_storage_err;
+  logic alert_class_shadowed_45_update_err;
   logic alert_class_shadowed_46_re;
   logic alert_class_shadowed_46_we;
   logic [1:0] alert_class_shadowed_46_qs;
   logic [1:0] alert_class_shadowed_46_wd;
+  logic alert_class_shadowed_46_storage_err;
+  logic alert_class_shadowed_46_update_err;
   logic alert_class_shadowed_47_re;
   logic alert_class_shadowed_47_we;
   logic [1:0] alert_class_shadowed_47_qs;
   logic [1:0] alert_class_shadowed_47_wd;
+  logic alert_class_shadowed_47_storage_err;
+  logic alert_class_shadowed_47_update_err;
   logic alert_class_shadowed_48_re;
   logic alert_class_shadowed_48_we;
   logic [1:0] alert_class_shadowed_48_qs;
   logic [1:0] alert_class_shadowed_48_wd;
+  logic alert_class_shadowed_48_storage_err;
+  logic alert_class_shadowed_48_update_err;
   logic alert_class_shadowed_49_re;
   logic alert_class_shadowed_49_we;
   logic [1:0] alert_class_shadowed_49_qs;
   logic [1:0] alert_class_shadowed_49_wd;
+  logic alert_class_shadowed_49_storage_err;
+  logic alert_class_shadowed_49_update_err;
   logic alert_class_shadowed_50_re;
   logic alert_class_shadowed_50_we;
   logic [1:0] alert_class_shadowed_50_qs;
   logic [1:0] alert_class_shadowed_50_wd;
+  logic alert_class_shadowed_50_storage_err;
+  logic alert_class_shadowed_50_update_err;
   logic alert_class_shadowed_51_re;
   logic alert_class_shadowed_51_we;
   logic [1:0] alert_class_shadowed_51_qs;
   logic [1:0] alert_class_shadowed_51_wd;
+  logic alert_class_shadowed_51_storage_err;
+  logic alert_class_shadowed_51_update_err;
   logic alert_class_shadowed_52_re;
   logic alert_class_shadowed_52_we;
   logic [1:0] alert_class_shadowed_52_qs;
   logic [1:0] alert_class_shadowed_52_wd;
+  logic alert_class_shadowed_52_storage_err;
+  logic alert_class_shadowed_52_update_err;
   logic alert_class_shadowed_53_re;
   logic alert_class_shadowed_53_we;
   logic [1:0] alert_class_shadowed_53_qs;
   logic [1:0] alert_class_shadowed_53_wd;
+  logic alert_class_shadowed_53_storage_err;
+  logic alert_class_shadowed_53_update_err;
   logic alert_class_shadowed_54_re;
   logic alert_class_shadowed_54_we;
   logic [1:0] alert_class_shadowed_54_qs;
   logic [1:0] alert_class_shadowed_54_wd;
+  logic alert_class_shadowed_54_storage_err;
+  logic alert_class_shadowed_54_update_err;
   logic alert_class_shadowed_55_re;
   logic alert_class_shadowed_55_we;
   logic [1:0] alert_class_shadowed_55_qs;
   logic [1:0] alert_class_shadowed_55_wd;
+  logic alert_class_shadowed_55_storage_err;
+  logic alert_class_shadowed_55_update_err;
   logic alert_class_shadowed_56_re;
   logic alert_class_shadowed_56_we;
   logic [1:0] alert_class_shadowed_56_qs;
   logic [1:0] alert_class_shadowed_56_wd;
+  logic alert_class_shadowed_56_storage_err;
+  logic alert_class_shadowed_56_update_err;
   logic alert_class_shadowed_57_re;
   logic alert_class_shadowed_57_we;
   logic [1:0] alert_class_shadowed_57_qs;
   logic [1:0] alert_class_shadowed_57_wd;
+  logic alert_class_shadowed_57_storage_err;
+  logic alert_class_shadowed_57_update_err;
   logic alert_class_shadowed_58_re;
   logic alert_class_shadowed_58_we;
   logic [1:0] alert_class_shadowed_58_qs;
   logic [1:0] alert_class_shadowed_58_wd;
+  logic alert_class_shadowed_58_storage_err;
+  logic alert_class_shadowed_58_update_err;
   logic alert_class_shadowed_59_re;
   logic alert_class_shadowed_59_we;
   logic [1:0] alert_class_shadowed_59_qs;
   logic [1:0] alert_class_shadowed_59_wd;
+  logic alert_class_shadowed_59_storage_err;
+  logic alert_class_shadowed_59_update_err;
   logic alert_class_shadowed_60_re;
   logic alert_class_shadowed_60_we;
   logic [1:0] alert_class_shadowed_60_qs;
   logic [1:0] alert_class_shadowed_60_wd;
+  logic alert_class_shadowed_60_storage_err;
+  logic alert_class_shadowed_60_update_err;
   logic alert_cause_0_we;
   logic alert_cause_0_qs;
   logic alert_cause_0_wd;
@@ -1022,58 +1273,86 @@ module alert_handler_reg_top (
   logic loc_alert_en_shadowed_0_we;
   logic loc_alert_en_shadowed_0_qs;
   logic loc_alert_en_shadowed_0_wd;
+  logic loc_alert_en_shadowed_0_storage_err;
+  logic loc_alert_en_shadowed_0_update_err;
   logic loc_alert_en_shadowed_1_re;
   logic loc_alert_en_shadowed_1_we;
   logic loc_alert_en_shadowed_1_qs;
   logic loc_alert_en_shadowed_1_wd;
+  logic loc_alert_en_shadowed_1_storage_err;
+  logic loc_alert_en_shadowed_1_update_err;
   logic loc_alert_en_shadowed_2_re;
   logic loc_alert_en_shadowed_2_we;
   logic loc_alert_en_shadowed_2_qs;
   logic loc_alert_en_shadowed_2_wd;
+  logic loc_alert_en_shadowed_2_storage_err;
+  logic loc_alert_en_shadowed_2_update_err;
   logic loc_alert_en_shadowed_3_re;
   logic loc_alert_en_shadowed_3_we;
   logic loc_alert_en_shadowed_3_qs;
   logic loc_alert_en_shadowed_3_wd;
+  logic loc_alert_en_shadowed_3_storage_err;
+  logic loc_alert_en_shadowed_3_update_err;
   logic loc_alert_en_shadowed_4_re;
   logic loc_alert_en_shadowed_4_we;
   logic loc_alert_en_shadowed_4_qs;
   logic loc_alert_en_shadowed_4_wd;
+  logic loc_alert_en_shadowed_4_storage_err;
+  logic loc_alert_en_shadowed_4_update_err;
   logic loc_alert_en_shadowed_5_re;
   logic loc_alert_en_shadowed_5_we;
   logic loc_alert_en_shadowed_5_qs;
   logic loc_alert_en_shadowed_5_wd;
+  logic loc_alert_en_shadowed_5_storage_err;
+  logic loc_alert_en_shadowed_5_update_err;
   logic loc_alert_en_shadowed_6_re;
   logic loc_alert_en_shadowed_6_we;
   logic loc_alert_en_shadowed_6_qs;
   logic loc_alert_en_shadowed_6_wd;
+  logic loc_alert_en_shadowed_6_storage_err;
+  logic loc_alert_en_shadowed_6_update_err;
   logic loc_alert_class_shadowed_0_re;
   logic loc_alert_class_shadowed_0_we;
   logic [1:0] loc_alert_class_shadowed_0_qs;
   logic [1:0] loc_alert_class_shadowed_0_wd;
+  logic loc_alert_class_shadowed_0_storage_err;
+  logic loc_alert_class_shadowed_0_update_err;
   logic loc_alert_class_shadowed_1_re;
   logic loc_alert_class_shadowed_1_we;
   logic [1:0] loc_alert_class_shadowed_1_qs;
   logic [1:0] loc_alert_class_shadowed_1_wd;
+  logic loc_alert_class_shadowed_1_storage_err;
+  logic loc_alert_class_shadowed_1_update_err;
   logic loc_alert_class_shadowed_2_re;
   logic loc_alert_class_shadowed_2_we;
   logic [1:0] loc_alert_class_shadowed_2_qs;
   logic [1:0] loc_alert_class_shadowed_2_wd;
+  logic loc_alert_class_shadowed_2_storage_err;
+  logic loc_alert_class_shadowed_2_update_err;
   logic loc_alert_class_shadowed_3_re;
   logic loc_alert_class_shadowed_3_we;
   logic [1:0] loc_alert_class_shadowed_3_qs;
   logic [1:0] loc_alert_class_shadowed_3_wd;
+  logic loc_alert_class_shadowed_3_storage_err;
+  logic loc_alert_class_shadowed_3_update_err;
   logic loc_alert_class_shadowed_4_re;
   logic loc_alert_class_shadowed_4_we;
   logic [1:0] loc_alert_class_shadowed_4_qs;
   logic [1:0] loc_alert_class_shadowed_4_wd;
+  logic loc_alert_class_shadowed_4_storage_err;
+  logic loc_alert_class_shadowed_4_update_err;
   logic loc_alert_class_shadowed_5_re;
   logic loc_alert_class_shadowed_5_we;
   logic [1:0] loc_alert_class_shadowed_5_qs;
   logic [1:0] loc_alert_class_shadowed_5_wd;
+  logic loc_alert_class_shadowed_5_storage_err;
+  logic loc_alert_class_shadowed_5_update_err;
   logic loc_alert_class_shadowed_6_re;
   logic loc_alert_class_shadowed_6_we;
   logic [1:0] loc_alert_class_shadowed_6_qs;
   logic [1:0] loc_alert_class_shadowed_6_wd;
+  logic loc_alert_class_shadowed_6_storage_err;
+  logic loc_alert_class_shadowed_6_update_err;
   logic loc_alert_cause_0_we;
   logic loc_alert_cause_0_qs;
   logic loc_alert_cause_0_wd;
@@ -1102,24 +1381,44 @@ module alert_handler_reg_top (
   logic classa_ctrl_shadowed_we;
   logic classa_ctrl_shadowed_en_qs;
   logic classa_ctrl_shadowed_en_wd;
+  logic classa_ctrl_shadowed_en_storage_err;
+  logic classa_ctrl_shadowed_en_update_err;
   logic classa_ctrl_shadowed_lock_qs;
   logic classa_ctrl_shadowed_lock_wd;
+  logic classa_ctrl_shadowed_lock_storage_err;
+  logic classa_ctrl_shadowed_lock_update_err;
   logic classa_ctrl_shadowed_en_e0_qs;
   logic classa_ctrl_shadowed_en_e0_wd;
+  logic classa_ctrl_shadowed_en_e0_storage_err;
+  logic classa_ctrl_shadowed_en_e0_update_err;
   logic classa_ctrl_shadowed_en_e1_qs;
   logic classa_ctrl_shadowed_en_e1_wd;
+  logic classa_ctrl_shadowed_en_e1_storage_err;
+  logic classa_ctrl_shadowed_en_e1_update_err;
   logic classa_ctrl_shadowed_en_e2_qs;
   logic classa_ctrl_shadowed_en_e2_wd;
+  logic classa_ctrl_shadowed_en_e2_storage_err;
+  logic classa_ctrl_shadowed_en_e2_update_err;
   logic classa_ctrl_shadowed_en_e3_qs;
   logic classa_ctrl_shadowed_en_e3_wd;
+  logic classa_ctrl_shadowed_en_e3_storage_err;
+  logic classa_ctrl_shadowed_en_e3_update_err;
   logic [1:0] classa_ctrl_shadowed_map_e0_qs;
   logic [1:0] classa_ctrl_shadowed_map_e0_wd;
+  logic classa_ctrl_shadowed_map_e0_storage_err;
+  logic classa_ctrl_shadowed_map_e0_update_err;
   logic [1:0] classa_ctrl_shadowed_map_e1_qs;
   logic [1:0] classa_ctrl_shadowed_map_e1_wd;
+  logic classa_ctrl_shadowed_map_e1_storage_err;
+  logic classa_ctrl_shadowed_map_e1_update_err;
   logic [1:0] classa_ctrl_shadowed_map_e2_qs;
   logic [1:0] classa_ctrl_shadowed_map_e2_wd;
+  logic classa_ctrl_shadowed_map_e2_storage_err;
+  logic classa_ctrl_shadowed_map_e2_update_err;
   logic [1:0] classa_ctrl_shadowed_map_e3_qs;
   logic [1:0] classa_ctrl_shadowed_map_e3_wd;
+  logic classa_ctrl_shadowed_map_e3_storage_err;
+  logic classa_ctrl_shadowed_map_e3_update_err;
   logic classa_clr_regwen_we;
   logic classa_clr_regwen_qs;
   logic classa_clr_regwen_wd;
@@ -1127,36 +1426,52 @@ module alert_handler_reg_top (
   logic classa_clr_shadowed_we;
   logic classa_clr_shadowed_qs;
   logic classa_clr_shadowed_wd;
+  logic classa_clr_shadowed_storage_err;
+  logic classa_clr_shadowed_update_err;
   logic classa_accum_cnt_re;
   logic [15:0] classa_accum_cnt_qs;
   logic classa_accum_thresh_shadowed_re;
   logic classa_accum_thresh_shadowed_we;
   logic [15:0] classa_accum_thresh_shadowed_qs;
   logic [15:0] classa_accum_thresh_shadowed_wd;
+  logic classa_accum_thresh_shadowed_storage_err;
+  logic classa_accum_thresh_shadowed_update_err;
   logic classa_timeout_cyc_shadowed_re;
   logic classa_timeout_cyc_shadowed_we;
   logic [31:0] classa_timeout_cyc_shadowed_qs;
   logic [31:0] classa_timeout_cyc_shadowed_wd;
+  logic classa_timeout_cyc_shadowed_storage_err;
+  logic classa_timeout_cyc_shadowed_update_err;
   logic classa_crashdump_trigger_shadowed_re;
   logic classa_crashdump_trigger_shadowed_we;
   logic [1:0] classa_crashdump_trigger_shadowed_qs;
   logic [1:0] classa_crashdump_trigger_shadowed_wd;
+  logic classa_crashdump_trigger_shadowed_storage_err;
+  logic classa_crashdump_trigger_shadowed_update_err;
   logic classa_phase0_cyc_shadowed_re;
   logic classa_phase0_cyc_shadowed_we;
   logic [31:0] classa_phase0_cyc_shadowed_qs;
   logic [31:0] classa_phase0_cyc_shadowed_wd;
+  logic classa_phase0_cyc_shadowed_storage_err;
+  logic classa_phase0_cyc_shadowed_update_err;
   logic classa_phase1_cyc_shadowed_re;
   logic classa_phase1_cyc_shadowed_we;
   logic [31:0] classa_phase1_cyc_shadowed_qs;
   logic [31:0] classa_phase1_cyc_shadowed_wd;
+  logic classa_phase1_cyc_shadowed_storage_err;
+  logic classa_phase1_cyc_shadowed_update_err;
   logic classa_phase2_cyc_shadowed_re;
   logic classa_phase2_cyc_shadowed_we;
   logic [31:0] classa_phase2_cyc_shadowed_qs;
   logic [31:0] classa_phase2_cyc_shadowed_wd;
+  logic classa_phase2_cyc_shadowed_storage_err;
+  logic classa_phase2_cyc_shadowed_update_err;
   logic classa_phase3_cyc_shadowed_re;
   logic classa_phase3_cyc_shadowed_we;
   logic [31:0] classa_phase3_cyc_shadowed_qs;
   logic [31:0] classa_phase3_cyc_shadowed_wd;
+  logic classa_phase3_cyc_shadowed_storage_err;
+  logic classa_phase3_cyc_shadowed_update_err;
   logic classa_esc_cnt_re;
   logic [31:0] classa_esc_cnt_qs;
   logic classa_state_re;
@@ -1168,24 +1483,44 @@ module alert_handler_reg_top (
   logic classb_ctrl_shadowed_we;
   logic classb_ctrl_shadowed_en_qs;
   logic classb_ctrl_shadowed_en_wd;
+  logic classb_ctrl_shadowed_en_storage_err;
+  logic classb_ctrl_shadowed_en_update_err;
   logic classb_ctrl_shadowed_lock_qs;
   logic classb_ctrl_shadowed_lock_wd;
+  logic classb_ctrl_shadowed_lock_storage_err;
+  logic classb_ctrl_shadowed_lock_update_err;
   logic classb_ctrl_shadowed_en_e0_qs;
   logic classb_ctrl_shadowed_en_e0_wd;
+  logic classb_ctrl_shadowed_en_e0_storage_err;
+  logic classb_ctrl_shadowed_en_e0_update_err;
   logic classb_ctrl_shadowed_en_e1_qs;
   logic classb_ctrl_shadowed_en_e1_wd;
+  logic classb_ctrl_shadowed_en_e1_storage_err;
+  logic classb_ctrl_shadowed_en_e1_update_err;
   logic classb_ctrl_shadowed_en_e2_qs;
   logic classb_ctrl_shadowed_en_e2_wd;
+  logic classb_ctrl_shadowed_en_e2_storage_err;
+  logic classb_ctrl_shadowed_en_e2_update_err;
   logic classb_ctrl_shadowed_en_e3_qs;
   logic classb_ctrl_shadowed_en_e3_wd;
+  logic classb_ctrl_shadowed_en_e3_storage_err;
+  logic classb_ctrl_shadowed_en_e3_update_err;
   logic [1:0] classb_ctrl_shadowed_map_e0_qs;
   logic [1:0] classb_ctrl_shadowed_map_e0_wd;
+  logic classb_ctrl_shadowed_map_e0_storage_err;
+  logic classb_ctrl_shadowed_map_e0_update_err;
   logic [1:0] classb_ctrl_shadowed_map_e1_qs;
   logic [1:0] classb_ctrl_shadowed_map_e1_wd;
+  logic classb_ctrl_shadowed_map_e1_storage_err;
+  logic classb_ctrl_shadowed_map_e1_update_err;
   logic [1:0] classb_ctrl_shadowed_map_e2_qs;
   logic [1:0] classb_ctrl_shadowed_map_e2_wd;
+  logic classb_ctrl_shadowed_map_e2_storage_err;
+  logic classb_ctrl_shadowed_map_e2_update_err;
   logic [1:0] classb_ctrl_shadowed_map_e3_qs;
   logic [1:0] classb_ctrl_shadowed_map_e3_wd;
+  logic classb_ctrl_shadowed_map_e3_storage_err;
+  logic classb_ctrl_shadowed_map_e3_update_err;
   logic classb_clr_regwen_we;
   logic classb_clr_regwen_qs;
   logic classb_clr_regwen_wd;
@@ -1193,36 +1528,52 @@ module alert_handler_reg_top (
   logic classb_clr_shadowed_we;
   logic classb_clr_shadowed_qs;
   logic classb_clr_shadowed_wd;
+  logic classb_clr_shadowed_storage_err;
+  logic classb_clr_shadowed_update_err;
   logic classb_accum_cnt_re;
   logic [15:0] classb_accum_cnt_qs;
   logic classb_accum_thresh_shadowed_re;
   logic classb_accum_thresh_shadowed_we;
   logic [15:0] classb_accum_thresh_shadowed_qs;
   logic [15:0] classb_accum_thresh_shadowed_wd;
+  logic classb_accum_thresh_shadowed_storage_err;
+  logic classb_accum_thresh_shadowed_update_err;
   logic classb_timeout_cyc_shadowed_re;
   logic classb_timeout_cyc_shadowed_we;
   logic [31:0] classb_timeout_cyc_shadowed_qs;
   logic [31:0] classb_timeout_cyc_shadowed_wd;
+  logic classb_timeout_cyc_shadowed_storage_err;
+  logic classb_timeout_cyc_shadowed_update_err;
   logic classb_crashdump_trigger_shadowed_re;
   logic classb_crashdump_trigger_shadowed_we;
   logic [1:0] classb_crashdump_trigger_shadowed_qs;
   logic [1:0] classb_crashdump_trigger_shadowed_wd;
+  logic classb_crashdump_trigger_shadowed_storage_err;
+  logic classb_crashdump_trigger_shadowed_update_err;
   logic classb_phase0_cyc_shadowed_re;
   logic classb_phase0_cyc_shadowed_we;
   logic [31:0] classb_phase0_cyc_shadowed_qs;
   logic [31:0] classb_phase0_cyc_shadowed_wd;
+  logic classb_phase0_cyc_shadowed_storage_err;
+  logic classb_phase0_cyc_shadowed_update_err;
   logic classb_phase1_cyc_shadowed_re;
   logic classb_phase1_cyc_shadowed_we;
   logic [31:0] classb_phase1_cyc_shadowed_qs;
   logic [31:0] classb_phase1_cyc_shadowed_wd;
+  logic classb_phase1_cyc_shadowed_storage_err;
+  logic classb_phase1_cyc_shadowed_update_err;
   logic classb_phase2_cyc_shadowed_re;
   logic classb_phase2_cyc_shadowed_we;
   logic [31:0] classb_phase2_cyc_shadowed_qs;
   logic [31:0] classb_phase2_cyc_shadowed_wd;
+  logic classb_phase2_cyc_shadowed_storage_err;
+  logic classb_phase2_cyc_shadowed_update_err;
   logic classb_phase3_cyc_shadowed_re;
   logic classb_phase3_cyc_shadowed_we;
   logic [31:0] classb_phase3_cyc_shadowed_qs;
   logic [31:0] classb_phase3_cyc_shadowed_wd;
+  logic classb_phase3_cyc_shadowed_storage_err;
+  logic classb_phase3_cyc_shadowed_update_err;
   logic classb_esc_cnt_re;
   logic [31:0] classb_esc_cnt_qs;
   logic classb_state_re;
@@ -1234,24 +1585,44 @@ module alert_handler_reg_top (
   logic classc_ctrl_shadowed_we;
   logic classc_ctrl_shadowed_en_qs;
   logic classc_ctrl_shadowed_en_wd;
+  logic classc_ctrl_shadowed_en_storage_err;
+  logic classc_ctrl_shadowed_en_update_err;
   logic classc_ctrl_shadowed_lock_qs;
   logic classc_ctrl_shadowed_lock_wd;
+  logic classc_ctrl_shadowed_lock_storage_err;
+  logic classc_ctrl_shadowed_lock_update_err;
   logic classc_ctrl_shadowed_en_e0_qs;
   logic classc_ctrl_shadowed_en_e0_wd;
+  logic classc_ctrl_shadowed_en_e0_storage_err;
+  logic classc_ctrl_shadowed_en_e0_update_err;
   logic classc_ctrl_shadowed_en_e1_qs;
   logic classc_ctrl_shadowed_en_e1_wd;
+  logic classc_ctrl_shadowed_en_e1_storage_err;
+  logic classc_ctrl_shadowed_en_e1_update_err;
   logic classc_ctrl_shadowed_en_e2_qs;
   logic classc_ctrl_shadowed_en_e2_wd;
+  logic classc_ctrl_shadowed_en_e2_storage_err;
+  logic classc_ctrl_shadowed_en_e2_update_err;
   logic classc_ctrl_shadowed_en_e3_qs;
   logic classc_ctrl_shadowed_en_e3_wd;
+  logic classc_ctrl_shadowed_en_e3_storage_err;
+  logic classc_ctrl_shadowed_en_e3_update_err;
   logic [1:0] classc_ctrl_shadowed_map_e0_qs;
   logic [1:0] classc_ctrl_shadowed_map_e0_wd;
+  logic classc_ctrl_shadowed_map_e0_storage_err;
+  logic classc_ctrl_shadowed_map_e0_update_err;
   logic [1:0] classc_ctrl_shadowed_map_e1_qs;
   logic [1:0] classc_ctrl_shadowed_map_e1_wd;
+  logic classc_ctrl_shadowed_map_e1_storage_err;
+  logic classc_ctrl_shadowed_map_e1_update_err;
   logic [1:0] classc_ctrl_shadowed_map_e2_qs;
   logic [1:0] classc_ctrl_shadowed_map_e2_wd;
+  logic classc_ctrl_shadowed_map_e2_storage_err;
+  logic classc_ctrl_shadowed_map_e2_update_err;
   logic [1:0] classc_ctrl_shadowed_map_e3_qs;
   logic [1:0] classc_ctrl_shadowed_map_e3_wd;
+  logic classc_ctrl_shadowed_map_e3_storage_err;
+  logic classc_ctrl_shadowed_map_e3_update_err;
   logic classc_clr_regwen_we;
   logic classc_clr_regwen_qs;
   logic classc_clr_regwen_wd;
@@ -1259,36 +1630,52 @@ module alert_handler_reg_top (
   logic classc_clr_shadowed_we;
   logic classc_clr_shadowed_qs;
   logic classc_clr_shadowed_wd;
+  logic classc_clr_shadowed_storage_err;
+  logic classc_clr_shadowed_update_err;
   logic classc_accum_cnt_re;
   logic [15:0] classc_accum_cnt_qs;
   logic classc_accum_thresh_shadowed_re;
   logic classc_accum_thresh_shadowed_we;
   logic [15:0] classc_accum_thresh_shadowed_qs;
   logic [15:0] classc_accum_thresh_shadowed_wd;
+  logic classc_accum_thresh_shadowed_storage_err;
+  logic classc_accum_thresh_shadowed_update_err;
   logic classc_timeout_cyc_shadowed_re;
   logic classc_timeout_cyc_shadowed_we;
   logic [31:0] classc_timeout_cyc_shadowed_qs;
   logic [31:0] classc_timeout_cyc_shadowed_wd;
+  logic classc_timeout_cyc_shadowed_storage_err;
+  logic classc_timeout_cyc_shadowed_update_err;
   logic classc_crashdump_trigger_shadowed_re;
   logic classc_crashdump_trigger_shadowed_we;
   logic [1:0] classc_crashdump_trigger_shadowed_qs;
   logic [1:0] classc_crashdump_trigger_shadowed_wd;
+  logic classc_crashdump_trigger_shadowed_storage_err;
+  logic classc_crashdump_trigger_shadowed_update_err;
   logic classc_phase0_cyc_shadowed_re;
   logic classc_phase0_cyc_shadowed_we;
   logic [31:0] classc_phase0_cyc_shadowed_qs;
   logic [31:0] classc_phase0_cyc_shadowed_wd;
+  logic classc_phase0_cyc_shadowed_storage_err;
+  logic classc_phase0_cyc_shadowed_update_err;
   logic classc_phase1_cyc_shadowed_re;
   logic classc_phase1_cyc_shadowed_we;
   logic [31:0] classc_phase1_cyc_shadowed_qs;
   logic [31:0] classc_phase1_cyc_shadowed_wd;
+  logic classc_phase1_cyc_shadowed_storage_err;
+  logic classc_phase1_cyc_shadowed_update_err;
   logic classc_phase2_cyc_shadowed_re;
   logic classc_phase2_cyc_shadowed_we;
   logic [31:0] classc_phase2_cyc_shadowed_qs;
   logic [31:0] classc_phase2_cyc_shadowed_wd;
+  logic classc_phase2_cyc_shadowed_storage_err;
+  logic classc_phase2_cyc_shadowed_update_err;
   logic classc_phase3_cyc_shadowed_re;
   logic classc_phase3_cyc_shadowed_we;
   logic [31:0] classc_phase3_cyc_shadowed_qs;
   logic [31:0] classc_phase3_cyc_shadowed_wd;
+  logic classc_phase3_cyc_shadowed_storage_err;
+  logic classc_phase3_cyc_shadowed_update_err;
   logic classc_esc_cnt_re;
   logic [31:0] classc_esc_cnt_qs;
   logic classc_state_re;
@@ -1300,24 +1687,44 @@ module alert_handler_reg_top (
   logic classd_ctrl_shadowed_we;
   logic classd_ctrl_shadowed_en_qs;
   logic classd_ctrl_shadowed_en_wd;
+  logic classd_ctrl_shadowed_en_storage_err;
+  logic classd_ctrl_shadowed_en_update_err;
   logic classd_ctrl_shadowed_lock_qs;
   logic classd_ctrl_shadowed_lock_wd;
+  logic classd_ctrl_shadowed_lock_storage_err;
+  logic classd_ctrl_shadowed_lock_update_err;
   logic classd_ctrl_shadowed_en_e0_qs;
   logic classd_ctrl_shadowed_en_e0_wd;
+  logic classd_ctrl_shadowed_en_e0_storage_err;
+  logic classd_ctrl_shadowed_en_e0_update_err;
   logic classd_ctrl_shadowed_en_e1_qs;
   logic classd_ctrl_shadowed_en_e1_wd;
+  logic classd_ctrl_shadowed_en_e1_storage_err;
+  logic classd_ctrl_shadowed_en_e1_update_err;
   logic classd_ctrl_shadowed_en_e2_qs;
   logic classd_ctrl_shadowed_en_e2_wd;
+  logic classd_ctrl_shadowed_en_e2_storage_err;
+  logic classd_ctrl_shadowed_en_e2_update_err;
   logic classd_ctrl_shadowed_en_e3_qs;
   logic classd_ctrl_shadowed_en_e3_wd;
+  logic classd_ctrl_shadowed_en_e3_storage_err;
+  logic classd_ctrl_shadowed_en_e3_update_err;
   logic [1:0] classd_ctrl_shadowed_map_e0_qs;
   logic [1:0] classd_ctrl_shadowed_map_e0_wd;
+  logic classd_ctrl_shadowed_map_e0_storage_err;
+  logic classd_ctrl_shadowed_map_e0_update_err;
   logic [1:0] classd_ctrl_shadowed_map_e1_qs;
   logic [1:0] classd_ctrl_shadowed_map_e1_wd;
+  logic classd_ctrl_shadowed_map_e1_storage_err;
+  logic classd_ctrl_shadowed_map_e1_update_err;
   logic [1:0] classd_ctrl_shadowed_map_e2_qs;
   logic [1:0] classd_ctrl_shadowed_map_e2_wd;
+  logic classd_ctrl_shadowed_map_e2_storage_err;
+  logic classd_ctrl_shadowed_map_e2_update_err;
   logic [1:0] classd_ctrl_shadowed_map_e3_qs;
   logic [1:0] classd_ctrl_shadowed_map_e3_wd;
+  logic classd_ctrl_shadowed_map_e3_storage_err;
+  logic classd_ctrl_shadowed_map_e3_update_err;
   logic classd_clr_regwen_we;
   logic classd_clr_regwen_qs;
   logic classd_clr_regwen_wd;
@@ -1325,36 +1732,52 @@ module alert_handler_reg_top (
   logic classd_clr_shadowed_we;
   logic classd_clr_shadowed_qs;
   logic classd_clr_shadowed_wd;
+  logic classd_clr_shadowed_storage_err;
+  logic classd_clr_shadowed_update_err;
   logic classd_accum_cnt_re;
   logic [15:0] classd_accum_cnt_qs;
   logic classd_accum_thresh_shadowed_re;
   logic classd_accum_thresh_shadowed_we;
   logic [15:0] classd_accum_thresh_shadowed_qs;
   logic [15:0] classd_accum_thresh_shadowed_wd;
+  logic classd_accum_thresh_shadowed_storage_err;
+  logic classd_accum_thresh_shadowed_update_err;
   logic classd_timeout_cyc_shadowed_re;
   logic classd_timeout_cyc_shadowed_we;
   logic [31:0] classd_timeout_cyc_shadowed_qs;
   logic [31:0] classd_timeout_cyc_shadowed_wd;
+  logic classd_timeout_cyc_shadowed_storage_err;
+  logic classd_timeout_cyc_shadowed_update_err;
   logic classd_crashdump_trigger_shadowed_re;
   logic classd_crashdump_trigger_shadowed_we;
   logic [1:0] classd_crashdump_trigger_shadowed_qs;
   logic [1:0] classd_crashdump_trigger_shadowed_wd;
+  logic classd_crashdump_trigger_shadowed_storage_err;
+  logic classd_crashdump_trigger_shadowed_update_err;
   logic classd_phase0_cyc_shadowed_re;
   logic classd_phase0_cyc_shadowed_we;
   logic [31:0] classd_phase0_cyc_shadowed_qs;
   logic [31:0] classd_phase0_cyc_shadowed_wd;
+  logic classd_phase0_cyc_shadowed_storage_err;
+  logic classd_phase0_cyc_shadowed_update_err;
   logic classd_phase1_cyc_shadowed_re;
   logic classd_phase1_cyc_shadowed_we;
   logic [31:0] classd_phase1_cyc_shadowed_qs;
   logic [31:0] classd_phase1_cyc_shadowed_wd;
+  logic classd_phase1_cyc_shadowed_storage_err;
+  logic classd_phase1_cyc_shadowed_update_err;
   logic classd_phase2_cyc_shadowed_re;
   logic classd_phase2_cyc_shadowed_we;
   logic [31:0] classd_phase2_cyc_shadowed_qs;
   logic [31:0] classd_phase2_cyc_shadowed_wd;
+  logic classd_phase2_cyc_shadowed_storage_err;
+  logic classd_phase2_cyc_shadowed_update_err;
   logic classd_phase3_cyc_shadowed_re;
   logic classd_phase3_cyc_shadowed_we;
   logic [31:0] classd_phase3_cyc_shadowed_qs;
   logic [31:0] classd_phase3_cyc_shadowed_wd;
+  logic classd_phase3_cyc_shadowed_storage_err;
+  logic classd_phase3_cyc_shadowed_update_err;
   logic classd_esc_cnt_re;
   logic [31:0] classd_esc_cnt_qs;
   logic classd_state_re;
@@ -1686,8 +2109,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.ping_timeout_cyc_shadowed.err_update),
-    .err_storage (reg2hw.ping_timeout_cyc_shadowed.err_storage)
+    .err_update  (ping_timeout_cyc_shadowed_update_err),
+    .err_storage (ping_timeout_cyc_shadowed_storage_err)
   );
 
 
@@ -1721,8 +2144,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.ping_timer_en_shadowed.err_update),
-    .err_storage (reg2hw.ping_timer_en_shadowed.err_storage)
+    .err_update  (ping_timer_en_shadowed_update_err),
+    .err_storage (ping_timer_en_shadowed_storage_err)
   );
 
 
@@ -3404,8 +3827,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[0].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[0].err_storage)
+    .err_update  (alert_en_shadowed_0_update_err),
+    .err_storage (alert_en_shadowed_0_storage_err)
   );
 
 
@@ -3440,8 +3863,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[1].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[1].err_storage)
+    .err_update  (alert_en_shadowed_1_update_err),
+    .err_storage (alert_en_shadowed_1_storage_err)
   );
 
 
@@ -3476,8 +3899,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[2].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[2].err_storage)
+    .err_update  (alert_en_shadowed_2_update_err),
+    .err_storage (alert_en_shadowed_2_storage_err)
   );
 
 
@@ -3512,8 +3935,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[3].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[3].err_storage)
+    .err_update  (alert_en_shadowed_3_update_err),
+    .err_storage (alert_en_shadowed_3_storage_err)
   );
 
 
@@ -3548,8 +3971,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[4].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[4].err_storage)
+    .err_update  (alert_en_shadowed_4_update_err),
+    .err_storage (alert_en_shadowed_4_storage_err)
   );
 
 
@@ -3584,8 +4007,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[5].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[5].err_storage)
+    .err_update  (alert_en_shadowed_5_update_err),
+    .err_storage (alert_en_shadowed_5_storage_err)
   );
 
 
@@ -3620,8 +4043,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[6].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[6].err_storage)
+    .err_update  (alert_en_shadowed_6_update_err),
+    .err_storage (alert_en_shadowed_6_storage_err)
   );
 
 
@@ -3656,8 +4079,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[7].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[7].err_storage)
+    .err_update  (alert_en_shadowed_7_update_err),
+    .err_storage (alert_en_shadowed_7_storage_err)
   );
 
 
@@ -3692,8 +4115,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[8].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[8].err_storage)
+    .err_update  (alert_en_shadowed_8_update_err),
+    .err_storage (alert_en_shadowed_8_storage_err)
   );
 
 
@@ -3728,8 +4151,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[9].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[9].err_storage)
+    .err_update  (alert_en_shadowed_9_update_err),
+    .err_storage (alert_en_shadowed_9_storage_err)
   );
 
 
@@ -3764,8 +4187,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[10].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[10].err_storage)
+    .err_update  (alert_en_shadowed_10_update_err),
+    .err_storage (alert_en_shadowed_10_storage_err)
   );
 
 
@@ -3800,8 +4223,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[11].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[11].err_storage)
+    .err_update  (alert_en_shadowed_11_update_err),
+    .err_storage (alert_en_shadowed_11_storage_err)
   );
 
 
@@ -3836,8 +4259,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[12].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[12].err_storage)
+    .err_update  (alert_en_shadowed_12_update_err),
+    .err_storage (alert_en_shadowed_12_storage_err)
   );
 
 
@@ -3872,8 +4295,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[13].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[13].err_storage)
+    .err_update  (alert_en_shadowed_13_update_err),
+    .err_storage (alert_en_shadowed_13_storage_err)
   );
 
 
@@ -3908,8 +4331,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[14].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[14].err_storage)
+    .err_update  (alert_en_shadowed_14_update_err),
+    .err_storage (alert_en_shadowed_14_storage_err)
   );
 
 
@@ -3944,8 +4367,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[15].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[15].err_storage)
+    .err_update  (alert_en_shadowed_15_update_err),
+    .err_storage (alert_en_shadowed_15_storage_err)
   );
 
 
@@ -3980,8 +4403,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[16].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[16].err_storage)
+    .err_update  (alert_en_shadowed_16_update_err),
+    .err_storage (alert_en_shadowed_16_storage_err)
   );
 
 
@@ -4016,8 +4439,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[17].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[17].err_storage)
+    .err_update  (alert_en_shadowed_17_update_err),
+    .err_storage (alert_en_shadowed_17_storage_err)
   );
 
 
@@ -4052,8 +4475,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[18].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[18].err_storage)
+    .err_update  (alert_en_shadowed_18_update_err),
+    .err_storage (alert_en_shadowed_18_storage_err)
   );
 
 
@@ -4088,8 +4511,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[19].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[19].err_storage)
+    .err_update  (alert_en_shadowed_19_update_err),
+    .err_storage (alert_en_shadowed_19_storage_err)
   );
 
 
@@ -4124,8 +4547,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[20].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[20].err_storage)
+    .err_update  (alert_en_shadowed_20_update_err),
+    .err_storage (alert_en_shadowed_20_storage_err)
   );
 
 
@@ -4160,8 +4583,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[21].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[21].err_storage)
+    .err_update  (alert_en_shadowed_21_update_err),
+    .err_storage (alert_en_shadowed_21_storage_err)
   );
 
 
@@ -4196,8 +4619,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[22].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[22].err_storage)
+    .err_update  (alert_en_shadowed_22_update_err),
+    .err_storage (alert_en_shadowed_22_storage_err)
   );
 
 
@@ -4232,8 +4655,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[23].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[23].err_storage)
+    .err_update  (alert_en_shadowed_23_update_err),
+    .err_storage (alert_en_shadowed_23_storage_err)
   );
 
 
@@ -4268,8 +4691,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[24].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[24].err_storage)
+    .err_update  (alert_en_shadowed_24_update_err),
+    .err_storage (alert_en_shadowed_24_storage_err)
   );
 
 
@@ -4304,8 +4727,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[25].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[25].err_storage)
+    .err_update  (alert_en_shadowed_25_update_err),
+    .err_storage (alert_en_shadowed_25_storage_err)
   );
 
 
@@ -4340,8 +4763,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[26].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[26].err_storage)
+    .err_update  (alert_en_shadowed_26_update_err),
+    .err_storage (alert_en_shadowed_26_storage_err)
   );
 
 
@@ -4376,8 +4799,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[27].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[27].err_storage)
+    .err_update  (alert_en_shadowed_27_update_err),
+    .err_storage (alert_en_shadowed_27_storage_err)
   );
 
 
@@ -4412,8 +4835,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[28].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[28].err_storage)
+    .err_update  (alert_en_shadowed_28_update_err),
+    .err_storage (alert_en_shadowed_28_storage_err)
   );
 
 
@@ -4448,8 +4871,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[29].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[29].err_storage)
+    .err_update  (alert_en_shadowed_29_update_err),
+    .err_storage (alert_en_shadowed_29_storage_err)
   );
 
 
@@ -4484,8 +4907,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[30].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[30].err_storage)
+    .err_update  (alert_en_shadowed_30_update_err),
+    .err_storage (alert_en_shadowed_30_storage_err)
   );
 
 
@@ -4520,8 +4943,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[31].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[31].err_storage)
+    .err_update  (alert_en_shadowed_31_update_err),
+    .err_storage (alert_en_shadowed_31_storage_err)
   );
 
 
@@ -4556,8 +4979,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[32].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[32].err_storage)
+    .err_update  (alert_en_shadowed_32_update_err),
+    .err_storage (alert_en_shadowed_32_storage_err)
   );
 
 
@@ -4592,8 +5015,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[33].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[33].err_storage)
+    .err_update  (alert_en_shadowed_33_update_err),
+    .err_storage (alert_en_shadowed_33_storage_err)
   );
 
 
@@ -4628,8 +5051,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[34].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[34].err_storage)
+    .err_update  (alert_en_shadowed_34_update_err),
+    .err_storage (alert_en_shadowed_34_storage_err)
   );
 
 
@@ -4664,8 +5087,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[35].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[35].err_storage)
+    .err_update  (alert_en_shadowed_35_update_err),
+    .err_storage (alert_en_shadowed_35_storage_err)
   );
 
 
@@ -4700,8 +5123,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[36].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[36].err_storage)
+    .err_update  (alert_en_shadowed_36_update_err),
+    .err_storage (alert_en_shadowed_36_storage_err)
   );
 
 
@@ -4736,8 +5159,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[37].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[37].err_storage)
+    .err_update  (alert_en_shadowed_37_update_err),
+    .err_storage (alert_en_shadowed_37_storage_err)
   );
 
 
@@ -4772,8 +5195,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[38].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[38].err_storage)
+    .err_update  (alert_en_shadowed_38_update_err),
+    .err_storage (alert_en_shadowed_38_storage_err)
   );
 
 
@@ -4808,8 +5231,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[39].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[39].err_storage)
+    .err_update  (alert_en_shadowed_39_update_err),
+    .err_storage (alert_en_shadowed_39_storage_err)
   );
 
 
@@ -4844,8 +5267,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[40].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[40].err_storage)
+    .err_update  (alert_en_shadowed_40_update_err),
+    .err_storage (alert_en_shadowed_40_storage_err)
   );
 
 
@@ -4880,8 +5303,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[41].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[41].err_storage)
+    .err_update  (alert_en_shadowed_41_update_err),
+    .err_storage (alert_en_shadowed_41_storage_err)
   );
 
 
@@ -4916,8 +5339,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[42].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[42].err_storage)
+    .err_update  (alert_en_shadowed_42_update_err),
+    .err_storage (alert_en_shadowed_42_storage_err)
   );
 
 
@@ -4952,8 +5375,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[43].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[43].err_storage)
+    .err_update  (alert_en_shadowed_43_update_err),
+    .err_storage (alert_en_shadowed_43_storage_err)
   );
 
 
@@ -4988,8 +5411,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[44].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[44].err_storage)
+    .err_update  (alert_en_shadowed_44_update_err),
+    .err_storage (alert_en_shadowed_44_storage_err)
   );
 
 
@@ -5024,8 +5447,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[45].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[45].err_storage)
+    .err_update  (alert_en_shadowed_45_update_err),
+    .err_storage (alert_en_shadowed_45_storage_err)
   );
 
 
@@ -5060,8 +5483,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[46].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[46].err_storage)
+    .err_update  (alert_en_shadowed_46_update_err),
+    .err_storage (alert_en_shadowed_46_storage_err)
   );
 
 
@@ -5096,8 +5519,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[47].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[47].err_storage)
+    .err_update  (alert_en_shadowed_47_update_err),
+    .err_storage (alert_en_shadowed_47_storage_err)
   );
 
 
@@ -5132,8 +5555,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[48].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[48].err_storage)
+    .err_update  (alert_en_shadowed_48_update_err),
+    .err_storage (alert_en_shadowed_48_storage_err)
   );
 
 
@@ -5168,8 +5591,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[49].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[49].err_storage)
+    .err_update  (alert_en_shadowed_49_update_err),
+    .err_storage (alert_en_shadowed_49_storage_err)
   );
 
 
@@ -5204,8 +5627,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[50].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[50].err_storage)
+    .err_update  (alert_en_shadowed_50_update_err),
+    .err_storage (alert_en_shadowed_50_storage_err)
   );
 
 
@@ -5240,8 +5663,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[51].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[51].err_storage)
+    .err_update  (alert_en_shadowed_51_update_err),
+    .err_storage (alert_en_shadowed_51_storage_err)
   );
 
 
@@ -5276,8 +5699,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[52].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[52].err_storage)
+    .err_update  (alert_en_shadowed_52_update_err),
+    .err_storage (alert_en_shadowed_52_storage_err)
   );
 
 
@@ -5312,8 +5735,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[53].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[53].err_storage)
+    .err_update  (alert_en_shadowed_53_update_err),
+    .err_storage (alert_en_shadowed_53_storage_err)
   );
 
 
@@ -5348,8 +5771,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[54].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[54].err_storage)
+    .err_update  (alert_en_shadowed_54_update_err),
+    .err_storage (alert_en_shadowed_54_storage_err)
   );
 
 
@@ -5384,8 +5807,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[55].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[55].err_storage)
+    .err_update  (alert_en_shadowed_55_update_err),
+    .err_storage (alert_en_shadowed_55_storage_err)
   );
 
 
@@ -5420,8 +5843,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[56].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[56].err_storage)
+    .err_update  (alert_en_shadowed_56_update_err),
+    .err_storage (alert_en_shadowed_56_storage_err)
   );
 
 
@@ -5456,8 +5879,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[57].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[57].err_storage)
+    .err_update  (alert_en_shadowed_57_update_err),
+    .err_storage (alert_en_shadowed_57_storage_err)
   );
 
 
@@ -5492,8 +5915,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[58].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[58].err_storage)
+    .err_update  (alert_en_shadowed_58_update_err),
+    .err_storage (alert_en_shadowed_58_storage_err)
   );
 
 
@@ -5528,8 +5951,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[59].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[59].err_storage)
+    .err_update  (alert_en_shadowed_59_update_err),
+    .err_storage (alert_en_shadowed_59_storage_err)
   );
 
 
@@ -5564,8 +5987,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_en_shadowed[60].err_update),
-    .err_storage (reg2hw.alert_en_shadowed[60].err_storage)
+    .err_update  (alert_en_shadowed_60_update_err),
+    .err_storage (alert_en_shadowed_60_storage_err)
   );
 
 
@@ -5600,8 +6023,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[0].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[0].err_storage)
+    .err_update  (alert_class_shadowed_0_update_err),
+    .err_storage (alert_class_shadowed_0_storage_err)
   );
 
 
@@ -5636,8 +6059,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[1].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[1].err_storage)
+    .err_update  (alert_class_shadowed_1_update_err),
+    .err_storage (alert_class_shadowed_1_storage_err)
   );
 
 
@@ -5672,8 +6095,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[2].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[2].err_storage)
+    .err_update  (alert_class_shadowed_2_update_err),
+    .err_storage (alert_class_shadowed_2_storage_err)
   );
 
 
@@ -5708,8 +6131,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[3].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[3].err_storage)
+    .err_update  (alert_class_shadowed_3_update_err),
+    .err_storage (alert_class_shadowed_3_storage_err)
   );
 
 
@@ -5744,8 +6167,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[4].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[4].err_storage)
+    .err_update  (alert_class_shadowed_4_update_err),
+    .err_storage (alert_class_shadowed_4_storage_err)
   );
 
 
@@ -5780,8 +6203,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[5].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[5].err_storage)
+    .err_update  (alert_class_shadowed_5_update_err),
+    .err_storage (alert_class_shadowed_5_storage_err)
   );
 
 
@@ -5816,8 +6239,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[6].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[6].err_storage)
+    .err_update  (alert_class_shadowed_6_update_err),
+    .err_storage (alert_class_shadowed_6_storage_err)
   );
 
 
@@ -5852,8 +6275,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[7].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[7].err_storage)
+    .err_update  (alert_class_shadowed_7_update_err),
+    .err_storage (alert_class_shadowed_7_storage_err)
   );
 
 
@@ -5888,8 +6311,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[8].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[8].err_storage)
+    .err_update  (alert_class_shadowed_8_update_err),
+    .err_storage (alert_class_shadowed_8_storage_err)
   );
 
 
@@ -5924,8 +6347,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[9].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[9].err_storage)
+    .err_update  (alert_class_shadowed_9_update_err),
+    .err_storage (alert_class_shadowed_9_storage_err)
   );
 
 
@@ -5960,8 +6383,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[10].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[10].err_storage)
+    .err_update  (alert_class_shadowed_10_update_err),
+    .err_storage (alert_class_shadowed_10_storage_err)
   );
 
 
@@ -5996,8 +6419,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[11].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[11].err_storage)
+    .err_update  (alert_class_shadowed_11_update_err),
+    .err_storage (alert_class_shadowed_11_storage_err)
   );
 
 
@@ -6032,8 +6455,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[12].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[12].err_storage)
+    .err_update  (alert_class_shadowed_12_update_err),
+    .err_storage (alert_class_shadowed_12_storage_err)
   );
 
 
@@ -6068,8 +6491,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[13].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[13].err_storage)
+    .err_update  (alert_class_shadowed_13_update_err),
+    .err_storage (alert_class_shadowed_13_storage_err)
   );
 
 
@@ -6104,8 +6527,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[14].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[14].err_storage)
+    .err_update  (alert_class_shadowed_14_update_err),
+    .err_storage (alert_class_shadowed_14_storage_err)
   );
 
 
@@ -6140,8 +6563,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[15].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[15].err_storage)
+    .err_update  (alert_class_shadowed_15_update_err),
+    .err_storage (alert_class_shadowed_15_storage_err)
   );
 
 
@@ -6176,8 +6599,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[16].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[16].err_storage)
+    .err_update  (alert_class_shadowed_16_update_err),
+    .err_storage (alert_class_shadowed_16_storage_err)
   );
 
 
@@ -6212,8 +6635,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[17].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[17].err_storage)
+    .err_update  (alert_class_shadowed_17_update_err),
+    .err_storage (alert_class_shadowed_17_storage_err)
   );
 
 
@@ -6248,8 +6671,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[18].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[18].err_storage)
+    .err_update  (alert_class_shadowed_18_update_err),
+    .err_storage (alert_class_shadowed_18_storage_err)
   );
 
 
@@ -6284,8 +6707,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[19].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[19].err_storage)
+    .err_update  (alert_class_shadowed_19_update_err),
+    .err_storage (alert_class_shadowed_19_storage_err)
   );
 
 
@@ -6320,8 +6743,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[20].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[20].err_storage)
+    .err_update  (alert_class_shadowed_20_update_err),
+    .err_storage (alert_class_shadowed_20_storage_err)
   );
 
 
@@ -6356,8 +6779,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[21].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[21].err_storage)
+    .err_update  (alert_class_shadowed_21_update_err),
+    .err_storage (alert_class_shadowed_21_storage_err)
   );
 
 
@@ -6392,8 +6815,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[22].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[22].err_storage)
+    .err_update  (alert_class_shadowed_22_update_err),
+    .err_storage (alert_class_shadowed_22_storage_err)
   );
 
 
@@ -6428,8 +6851,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[23].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[23].err_storage)
+    .err_update  (alert_class_shadowed_23_update_err),
+    .err_storage (alert_class_shadowed_23_storage_err)
   );
 
 
@@ -6464,8 +6887,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[24].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[24].err_storage)
+    .err_update  (alert_class_shadowed_24_update_err),
+    .err_storage (alert_class_shadowed_24_storage_err)
   );
 
 
@@ -6500,8 +6923,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[25].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[25].err_storage)
+    .err_update  (alert_class_shadowed_25_update_err),
+    .err_storage (alert_class_shadowed_25_storage_err)
   );
 
 
@@ -6536,8 +6959,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[26].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[26].err_storage)
+    .err_update  (alert_class_shadowed_26_update_err),
+    .err_storage (alert_class_shadowed_26_storage_err)
   );
 
 
@@ -6572,8 +6995,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[27].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[27].err_storage)
+    .err_update  (alert_class_shadowed_27_update_err),
+    .err_storage (alert_class_shadowed_27_storage_err)
   );
 
 
@@ -6608,8 +7031,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[28].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[28].err_storage)
+    .err_update  (alert_class_shadowed_28_update_err),
+    .err_storage (alert_class_shadowed_28_storage_err)
   );
 
 
@@ -6644,8 +7067,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[29].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[29].err_storage)
+    .err_update  (alert_class_shadowed_29_update_err),
+    .err_storage (alert_class_shadowed_29_storage_err)
   );
 
 
@@ -6680,8 +7103,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[30].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[30].err_storage)
+    .err_update  (alert_class_shadowed_30_update_err),
+    .err_storage (alert_class_shadowed_30_storage_err)
   );
 
 
@@ -6716,8 +7139,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[31].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[31].err_storage)
+    .err_update  (alert_class_shadowed_31_update_err),
+    .err_storage (alert_class_shadowed_31_storage_err)
   );
 
 
@@ -6752,8 +7175,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[32].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[32].err_storage)
+    .err_update  (alert_class_shadowed_32_update_err),
+    .err_storage (alert_class_shadowed_32_storage_err)
   );
 
 
@@ -6788,8 +7211,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[33].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[33].err_storage)
+    .err_update  (alert_class_shadowed_33_update_err),
+    .err_storage (alert_class_shadowed_33_storage_err)
   );
 
 
@@ -6824,8 +7247,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[34].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[34].err_storage)
+    .err_update  (alert_class_shadowed_34_update_err),
+    .err_storage (alert_class_shadowed_34_storage_err)
   );
 
 
@@ -6860,8 +7283,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[35].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[35].err_storage)
+    .err_update  (alert_class_shadowed_35_update_err),
+    .err_storage (alert_class_shadowed_35_storage_err)
   );
 
 
@@ -6896,8 +7319,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[36].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[36].err_storage)
+    .err_update  (alert_class_shadowed_36_update_err),
+    .err_storage (alert_class_shadowed_36_storage_err)
   );
 
 
@@ -6932,8 +7355,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[37].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[37].err_storage)
+    .err_update  (alert_class_shadowed_37_update_err),
+    .err_storage (alert_class_shadowed_37_storage_err)
   );
 
 
@@ -6968,8 +7391,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[38].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[38].err_storage)
+    .err_update  (alert_class_shadowed_38_update_err),
+    .err_storage (alert_class_shadowed_38_storage_err)
   );
 
 
@@ -7004,8 +7427,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[39].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[39].err_storage)
+    .err_update  (alert_class_shadowed_39_update_err),
+    .err_storage (alert_class_shadowed_39_storage_err)
   );
 
 
@@ -7040,8 +7463,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[40].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[40].err_storage)
+    .err_update  (alert_class_shadowed_40_update_err),
+    .err_storage (alert_class_shadowed_40_storage_err)
   );
 
 
@@ -7076,8 +7499,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[41].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[41].err_storage)
+    .err_update  (alert_class_shadowed_41_update_err),
+    .err_storage (alert_class_shadowed_41_storage_err)
   );
 
 
@@ -7112,8 +7535,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[42].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[42].err_storage)
+    .err_update  (alert_class_shadowed_42_update_err),
+    .err_storage (alert_class_shadowed_42_storage_err)
   );
 
 
@@ -7148,8 +7571,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[43].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[43].err_storage)
+    .err_update  (alert_class_shadowed_43_update_err),
+    .err_storage (alert_class_shadowed_43_storage_err)
   );
 
 
@@ -7184,8 +7607,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[44].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[44].err_storage)
+    .err_update  (alert_class_shadowed_44_update_err),
+    .err_storage (alert_class_shadowed_44_storage_err)
   );
 
 
@@ -7220,8 +7643,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[45].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[45].err_storage)
+    .err_update  (alert_class_shadowed_45_update_err),
+    .err_storage (alert_class_shadowed_45_storage_err)
   );
 
 
@@ -7256,8 +7679,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[46].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[46].err_storage)
+    .err_update  (alert_class_shadowed_46_update_err),
+    .err_storage (alert_class_shadowed_46_storage_err)
   );
 
 
@@ -7292,8 +7715,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[47].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[47].err_storage)
+    .err_update  (alert_class_shadowed_47_update_err),
+    .err_storage (alert_class_shadowed_47_storage_err)
   );
 
 
@@ -7328,8 +7751,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[48].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[48].err_storage)
+    .err_update  (alert_class_shadowed_48_update_err),
+    .err_storage (alert_class_shadowed_48_storage_err)
   );
 
 
@@ -7364,8 +7787,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[49].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[49].err_storage)
+    .err_update  (alert_class_shadowed_49_update_err),
+    .err_storage (alert_class_shadowed_49_storage_err)
   );
 
 
@@ -7400,8 +7823,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[50].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[50].err_storage)
+    .err_update  (alert_class_shadowed_50_update_err),
+    .err_storage (alert_class_shadowed_50_storage_err)
   );
 
 
@@ -7436,8 +7859,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[51].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[51].err_storage)
+    .err_update  (alert_class_shadowed_51_update_err),
+    .err_storage (alert_class_shadowed_51_storage_err)
   );
 
 
@@ -7472,8 +7895,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[52].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[52].err_storage)
+    .err_update  (alert_class_shadowed_52_update_err),
+    .err_storage (alert_class_shadowed_52_storage_err)
   );
 
 
@@ -7508,8 +7931,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[53].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[53].err_storage)
+    .err_update  (alert_class_shadowed_53_update_err),
+    .err_storage (alert_class_shadowed_53_storage_err)
   );
 
 
@@ -7544,8 +7967,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[54].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[54].err_storage)
+    .err_update  (alert_class_shadowed_54_update_err),
+    .err_storage (alert_class_shadowed_54_storage_err)
   );
 
 
@@ -7580,8 +8003,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[55].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[55].err_storage)
+    .err_update  (alert_class_shadowed_55_update_err),
+    .err_storage (alert_class_shadowed_55_storage_err)
   );
 
 
@@ -7616,8 +8039,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[56].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[56].err_storage)
+    .err_update  (alert_class_shadowed_56_update_err),
+    .err_storage (alert_class_shadowed_56_storage_err)
   );
 
 
@@ -7652,8 +8075,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[57].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[57].err_storage)
+    .err_update  (alert_class_shadowed_57_update_err),
+    .err_storage (alert_class_shadowed_57_storage_err)
   );
 
 
@@ -7688,8 +8111,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[58].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[58].err_storage)
+    .err_update  (alert_class_shadowed_58_update_err),
+    .err_storage (alert_class_shadowed_58_storage_err)
   );
 
 
@@ -7724,8 +8147,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[59].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[59].err_storage)
+    .err_update  (alert_class_shadowed_59_update_err),
+    .err_storage (alert_class_shadowed_59_storage_err)
   );
 
 
@@ -7760,8 +8183,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.alert_class_shadowed[60].err_update),
-    .err_storage (reg2hw.alert_class_shadowed[60].err_storage)
+    .err_update  (alert_class_shadowed_60_update_err),
+    .err_storage (alert_class_shadowed_60_storage_err)
   );
 
 
@@ -9632,8 +10055,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.loc_alert_en_shadowed[0].err_update),
-    .err_storage (reg2hw.loc_alert_en_shadowed[0].err_storage)
+    .err_update  (loc_alert_en_shadowed_0_update_err),
+    .err_storage (loc_alert_en_shadowed_0_storage_err)
   );
 
 
@@ -9668,8 +10091,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.loc_alert_en_shadowed[1].err_update),
-    .err_storage (reg2hw.loc_alert_en_shadowed[1].err_storage)
+    .err_update  (loc_alert_en_shadowed_1_update_err),
+    .err_storage (loc_alert_en_shadowed_1_storage_err)
   );
 
 
@@ -9704,8 +10127,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.loc_alert_en_shadowed[2].err_update),
-    .err_storage (reg2hw.loc_alert_en_shadowed[2].err_storage)
+    .err_update  (loc_alert_en_shadowed_2_update_err),
+    .err_storage (loc_alert_en_shadowed_2_storage_err)
   );
 
 
@@ -9740,8 +10163,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.loc_alert_en_shadowed[3].err_update),
-    .err_storage (reg2hw.loc_alert_en_shadowed[3].err_storage)
+    .err_update  (loc_alert_en_shadowed_3_update_err),
+    .err_storage (loc_alert_en_shadowed_3_storage_err)
   );
 
 
@@ -9776,8 +10199,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.loc_alert_en_shadowed[4].err_update),
-    .err_storage (reg2hw.loc_alert_en_shadowed[4].err_storage)
+    .err_update  (loc_alert_en_shadowed_4_update_err),
+    .err_storage (loc_alert_en_shadowed_4_storage_err)
   );
 
 
@@ -9812,8 +10235,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.loc_alert_en_shadowed[5].err_update),
-    .err_storage (reg2hw.loc_alert_en_shadowed[5].err_storage)
+    .err_update  (loc_alert_en_shadowed_5_update_err),
+    .err_storage (loc_alert_en_shadowed_5_storage_err)
   );
 
 
@@ -9848,8 +10271,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.loc_alert_en_shadowed[6].err_update),
-    .err_storage (reg2hw.loc_alert_en_shadowed[6].err_storage)
+    .err_update  (loc_alert_en_shadowed_6_update_err),
+    .err_storage (loc_alert_en_shadowed_6_storage_err)
   );
 
 
@@ -9884,8 +10307,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.loc_alert_class_shadowed[0].err_update),
-    .err_storage (reg2hw.loc_alert_class_shadowed[0].err_storage)
+    .err_update  (loc_alert_class_shadowed_0_update_err),
+    .err_storage (loc_alert_class_shadowed_0_storage_err)
   );
 
 
@@ -9920,8 +10343,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.loc_alert_class_shadowed[1].err_update),
-    .err_storage (reg2hw.loc_alert_class_shadowed[1].err_storage)
+    .err_update  (loc_alert_class_shadowed_1_update_err),
+    .err_storage (loc_alert_class_shadowed_1_storage_err)
   );
 
 
@@ -9956,8 +10379,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.loc_alert_class_shadowed[2].err_update),
-    .err_storage (reg2hw.loc_alert_class_shadowed[2].err_storage)
+    .err_update  (loc_alert_class_shadowed_2_update_err),
+    .err_storage (loc_alert_class_shadowed_2_storage_err)
   );
 
 
@@ -9992,8 +10415,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.loc_alert_class_shadowed[3].err_update),
-    .err_storage (reg2hw.loc_alert_class_shadowed[3].err_storage)
+    .err_update  (loc_alert_class_shadowed_3_update_err),
+    .err_storage (loc_alert_class_shadowed_3_storage_err)
   );
 
 
@@ -10028,8 +10451,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.loc_alert_class_shadowed[4].err_update),
-    .err_storage (reg2hw.loc_alert_class_shadowed[4].err_storage)
+    .err_update  (loc_alert_class_shadowed_4_update_err),
+    .err_storage (loc_alert_class_shadowed_4_storage_err)
   );
 
 
@@ -10064,8 +10487,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.loc_alert_class_shadowed[5].err_update),
-    .err_storage (reg2hw.loc_alert_class_shadowed[5].err_storage)
+    .err_update  (loc_alert_class_shadowed_5_update_err),
+    .err_storage (loc_alert_class_shadowed_5_storage_err)
   );
 
 
@@ -10100,8 +10523,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.loc_alert_class_shadowed[6].err_update),
-    .err_storage (reg2hw.loc_alert_class_shadowed[6].err_storage)
+    .err_update  (loc_alert_class_shadowed_6_update_err),
+    .err_storage (loc_alert_class_shadowed_6_storage_err)
   );
 
 
@@ -10351,8 +10774,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classa_ctrl_shadowed.en.err_update),
-    .err_storage (reg2hw.classa_ctrl_shadowed.en.err_storage)
+    .err_update  (classa_ctrl_shadowed_en_update_err),
+    .err_storage (classa_ctrl_shadowed_en_storage_err)
   );
 
   //   F[lock]: 1:1
@@ -10385,8 +10808,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classa_ctrl_shadowed.lock.err_update),
-    .err_storage (reg2hw.classa_ctrl_shadowed.lock.err_storage)
+    .err_update  (classa_ctrl_shadowed_lock_update_err),
+    .err_storage (classa_ctrl_shadowed_lock_storage_err)
   );
 
   //   F[en_e0]: 2:2
@@ -10419,8 +10842,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classa_ctrl_shadowed.en_e0.err_update),
-    .err_storage (reg2hw.classa_ctrl_shadowed.en_e0.err_storage)
+    .err_update  (classa_ctrl_shadowed_en_e0_update_err),
+    .err_storage (classa_ctrl_shadowed_en_e0_storage_err)
   );
 
   //   F[en_e1]: 3:3
@@ -10453,8 +10876,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classa_ctrl_shadowed.en_e1.err_update),
-    .err_storage (reg2hw.classa_ctrl_shadowed.en_e1.err_storage)
+    .err_update  (classa_ctrl_shadowed_en_e1_update_err),
+    .err_storage (classa_ctrl_shadowed_en_e1_storage_err)
   );
 
   //   F[en_e2]: 4:4
@@ -10487,8 +10910,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classa_ctrl_shadowed.en_e2.err_update),
-    .err_storage (reg2hw.classa_ctrl_shadowed.en_e2.err_storage)
+    .err_update  (classa_ctrl_shadowed_en_e2_update_err),
+    .err_storage (classa_ctrl_shadowed_en_e2_storage_err)
   );
 
   //   F[en_e3]: 5:5
@@ -10521,8 +10944,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classa_ctrl_shadowed.en_e3.err_update),
-    .err_storage (reg2hw.classa_ctrl_shadowed.en_e3.err_storage)
+    .err_update  (classa_ctrl_shadowed_en_e3_update_err),
+    .err_storage (classa_ctrl_shadowed_en_e3_storage_err)
   );
 
   //   F[map_e0]: 7:6
@@ -10555,8 +10978,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classa_ctrl_shadowed.map_e0.err_update),
-    .err_storage (reg2hw.classa_ctrl_shadowed.map_e0.err_storage)
+    .err_update  (classa_ctrl_shadowed_map_e0_update_err),
+    .err_storage (classa_ctrl_shadowed_map_e0_storage_err)
   );
 
   //   F[map_e1]: 9:8
@@ -10589,8 +11012,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classa_ctrl_shadowed.map_e1.err_update),
-    .err_storage (reg2hw.classa_ctrl_shadowed.map_e1.err_storage)
+    .err_update  (classa_ctrl_shadowed_map_e1_update_err),
+    .err_storage (classa_ctrl_shadowed_map_e1_storage_err)
   );
 
   //   F[map_e2]: 11:10
@@ -10623,8 +11046,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classa_ctrl_shadowed.map_e2.err_update),
-    .err_storage (reg2hw.classa_ctrl_shadowed.map_e2.err_storage)
+    .err_update  (classa_ctrl_shadowed_map_e2_update_err),
+    .err_storage (classa_ctrl_shadowed_map_e2_storage_err)
   );
 
   //   F[map_e3]: 13:12
@@ -10657,8 +11080,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classa_ctrl_shadowed.map_e3.err_update),
-    .err_storage (reg2hw.classa_ctrl_shadowed.map_e3.err_storage)
+    .err_update  (classa_ctrl_shadowed_map_e3_update_err),
+    .err_storage (classa_ctrl_shadowed_map_e3_storage_err)
   );
 
 
@@ -10729,8 +11152,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classa_clr_shadowed.err_update),
-    .err_storage (reg2hw.classa_clr_shadowed.err_storage)
+    .err_update  (classa_clr_shadowed_update_err),
+    .err_storage (classa_clr_shadowed_storage_err)
   );
   assign reg2hw.classa_clr_shadowed.qe = classa_clr_shadowed_qe;
 
@@ -10780,8 +11203,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classa_accum_thresh_shadowed.err_update),
-    .err_storage (reg2hw.classa_accum_thresh_shadowed.err_storage)
+    .err_update  (classa_accum_thresh_shadowed_update_err),
+    .err_storage (classa_accum_thresh_shadowed_storage_err)
   );
 
 
@@ -10815,8 +11238,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classa_timeout_cyc_shadowed.err_update),
-    .err_storage (reg2hw.classa_timeout_cyc_shadowed.err_storage)
+    .err_update  (classa_timeout_cyc_shadowed_update_err),
+    .err_storage (classa_timeout_cyc_shadowed_storage_err)
   );
 
 
@@ -10850,8 +11273,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classa_crashdump_trigger_shadowed.err_update),
-    .err_storage (reg2hw.classa_crashdump_trigger_shadowed.err_storage)
+    .err_update  (classa_crashdump_trigger_shadowed_update_err),
+    .err_storage (classa_crashdump_trigger_shadowed_storage_err)
   );
 
 
@@ -10885,8 +11308,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classa_phase0_cyc_shadowed.err_update),
-    .err_storage (reg2hw.classa_phase0_cyc_shadowed.err_storage)
+    .err_update  (classa_phase0_cyc_shadowed_update_err),
+    .err_storage (classa_phase0_cyc_shadowed_storage_err)
   );
 
 
@@ -10920,8 +11343,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classa_phase1_cyc_shadowed.err_update),
-    .err_storage (reg2hw.classa_phase1_cyc_shadowed.err_storage)
+    .err_update  (classa_phase1_cyc_shadowed_update_err),
+    .err_storage (classa_phase1_cyc_shadowed_storage_err)
   );
 
 
@@ -10955,8 +11378,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classa_phase2_cyc_shadowed.err_update),
-    .err_storage (reg2hw.classa_phase2_cyc_shadowed.err_storage)
+    .err_update  (classa_phase2_cyc_shadowed_update_err),
+    .err_storage (classa_phase2_cyc_shadowed_storage_err)
   );
 
 
@@ -10990,8 +11413,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classa_phase3_cyc_shadowed.err_update),
-    .err_storage (reg2hw.classa_phase3_cyc_shadowed.err_storage)
+    .err_update  (classa_phase3_cyc_shadowed_update_err),
+    .err_storage (classa_phase3_cyc_shadowed_storage_err)
   );
 
 
@@ -11082,8 +11505,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classb_ctrl_shadowed.en.err_update),
-    .err_storage (reg2hw.classb_ctrl_shadowed.en.err_storage)
+    .err_update  (classb_ctrl_shadowed_en_update_err),
+    .err_storage (classb_ctrl_shadowed_en_storage_err)
   );
 
   //   F[lock]: 1:1
@@ -11116,8 +11539,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classb_ctrl_shadowed.lock.err_update),
-    .err_storage (reg2hw.classb_ctrl_shadowed.lock.err_storage)
+    .err_update  (classb_ctrl_shadowed_lock_update_err),
+    .err_storage (classb_ctrl_shadowed_lock_storage_err)
   );
 
   //   F[en_e0]: 2:2
@@ -11150,8 +11573,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classb_ctrl_shadowed.en_e0.err_update),
-    .err_storage (reg2hw.classb_ctrl_shadowed.en_e0.err_storage)
+    .err_update  (classb_ctrl_shadowed_en_e0_update_err),
+    .err_storage (classb_ctrl_shadowed_en_e0_storage_err)
   );
 
   //   F[en_e1]: 3:3
@@ -11184,8 +11607,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classb_ctrl_shadowed.en_e1.err_update),
-    .err_storage (reg2hw.classb_ctrl_shadowed.en_e1.err_storage)
+    .err_update  (classb_ctrl_shadowed_en_e1_update_err),
+    .err_storage (classb_ctrl_shadowed_en_e1_storage_err)
   );
 
   //   F[en_e2]: 4:4
@@ -11218,8 +11641,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classb_ctrl_shadowed.en_e2.err_update),
-    .err_storage (reg2hw.classb_ctrl_shadowed.en_e2.err_storage)
+    .err_update  (classb_ctrl_shadowed_en_e2_update_err),
+    .err_storage (classb_ctrl_shadowed_en_e2_storage_err)
   );
 
   //   F[en_e3]: 5:5
@@ -11252,8 +11675,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classb_ctrl_shadowed.en_e3.err_update),
-    .err_storage (reg2hw.classb_ctrl_shadowed.en_e3.err_storage)
+    .err_update  (classb_ctrl_shadowed_en_e3_update_err),
+    .err_storage (classb_ctrl_shadowed_en_e3_storage_err)
   );
 
   //   F[map_e0]: 7:6
@@ -11286,8 +11709,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classb_ctrl_shadowed.map_e0.err_update),
-    .err_storage (reg2hw.classb_ctrl_shadowed.map_e0.err_storage)
+    .err_update  (classb_ctrl_shadowed_map_e0_update_err),
+    .err_storage (classb_ctrl_shadowed_map_e0_storage_err)
   );
 
   //   F[map_e1]: 9:8
@@ -11320,8 +11743,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classb_ctrl_shadowed.map_e1.err_update),
-    .err_storage (reg2hw.classb_ctrl_shadowed.map_e1.err_storage)
+    .err_update  (classb_ctrl_shadowed_map_e1_update_err),
+    .err_storage (classb_ctrl_shadowed_map_e1_storage_err)
   );
 
   //   F[map_e2]: 11:10
@@ -11354,8 +11777,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classb_ctrl_shadowed.map_e2.err_update),
-    .err_storage (reg2hw.classb_ctrl_shadowed.map_e2.err_storage)
+    .err_update  (classb_ctrl_shadowed_map_e2_update_err),
+    .err_storage (classb_ctrl_shadowed_map_e2_storage_err)
   );
 
   //   F[map_e3]: 13:12
@@ -11388,8 +11811,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classb_ctrl_shadowed.map_e3.err_update),
-    .err_storage (reg2hw.classb_ctrl_shadowed.map_e3.err_storage)
+    .err_update  (classb_ctrl_shadowed_map_e3_update_err),
+    .err_storage (classb_ctrl_shadowed_map_e3_storage_err)
   );
 
 
@@ -11460,8 +11883,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classb_clr_shadowed.err_update),
-    .err_storage (reg2hw.classb_clr_shadowed.err_storage)
+    .err_update  (classb_clr_shadowed_update_err),
+    .err_storage (classb_clr_shadowed_storage_err)
   );
   assign reg2hw.classb_clr_shadowed.qe = classb_clr_shadowed_qe;
 
@@ -11511,8 +11934,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classb_accum_thresh_shadowed.err_update),
-    .err_storage (reg2hw.classb_accum_thresh_shadowed.err_storage)
+    .err_update  (classb_accum_thresh_shadowed_update_err),
+    .err_storage (classb_accum_thresh_shadowed_storage_err)
   );
 
 
@@ -11546,8 +11969,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classb_timeout_cyc_shadowed.err_update),
-    .err_storage (reg2hw.classb_timeout_cyc_shadowed.err_storage)
+    .err_update  (classb_timeout_cyc_shadowed_update_err),
+    .err_storage (classb_timeout_cyc_shadowed_storage_err)
   );
 
 
@@ -11581,8 +12004,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classb_crashdump_trigger_shadowed.err_update),
-    .err_storage (reg2hw.classb_crashdump_trigger_shadowed.err_storage)
+    .err_update  (classb_crashdump_trigger_shadowed_update_err),
+    .err_storage (classb_crashdump_trigger_shadowed_storage_err)
   );
 
 
@@ -11616,8 +12039,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classb_phase0_cyc_shadowed.err_update),
-    .err_storage (reg2hw.classb_phase0_cyc_shadowed.err_storage)
+    .err_update  (classb_phase0_cyc_shadowed_update_err),
+    .err_storage (classb_phase0_cyc_shadowed_storage_err)
   );
 
 
@@ -11651,8 +12074,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classb_phase1_cyc_shadowed.err_update),
-    .err_storage (reg2hw.classb_phase1_cyc_shadowed.err_storage)
+    .err_update  (classb_phase1_cyc_shadowed_update_err),
+    .err_storage (classb_phase1_cyc_shadowed_storage_err)
   );
 
 
@@ -11686,8 +12109,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classb_phase2_cyc_shadowed.err_update),
-    .err_storage (reg2hw.classb_phase2_cyc_shadowed.err_storage)
+    .err_update  (classb_phase2_cyc_shadowed_update_err),
+    .err_storage (classb_phase2_cyc_shadowed_storage_err)
   );
 
 
@@ -11721,8 +12144,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classb_phase3_cyc_shadowed.err_update),
-    .err_storage (reg2hw.classb_phase3_cyc_shadowed.err_storage)
+    .err_update  (classb_phase3_cyc_shadowed_update_err),
+    .err_storage (classb_phase3_cyc_shadowed_storage_err)
   );
 
 
@@ -11813,8 +12236,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classc_ctrl_shadowed.en.err_update),
-    .err_storage (reg2hw.classc_ctrl_shadowed.en.err_storage)
+    .err_update  (classc_ctrl_shadowed_en_update_err),
+    .err_storage (classc_ctrl_shadowed_en_storage_err)
   );
 
   //   F[lock]: 1:1
@@ -11847,8 +12270,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classc_ctrl_shadowed.lock.err_update),
-    .err_storage (reg2hw.classc_ctrl_shadowed.lock.err_storage)
+    .err_update  (classc_ctrl_shadowed_lock_update_err),
+    .err_storage (classc_ctrl_shadowed_lock_storage_err)
   );
 
   //   F[en_e0]: 2:2
@@ -11881,8 +12304,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classc_ctrl_shadowed.en_e0.err_update),
-    .err_storage (reg2hw.classc_ctrl_shadowed.en_e0.err_storage)
+    .err_update  (classc_ctrl_shadowed_en_e0_update_err),
+    .err_storage (classc_ctrl_shadowed_en_e0_storage_err)
   );
 
   //   F[en_e1]: 3:3
@@ -11915,8 +12338,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classc_ctrl_shadowed.en_e1.err_update),
-    .err_storage (reg2hw.classc_ctrl_shadowed.en_e1.err_storage)
+    .err_update  (classc_ctrl_shadowed_en_e1_update_err),
+    .err_storage (classc_ctrl_shadowed_en_e1_storage_err)
   );
 
   //   F[en_e2]: 4:4
@@ -11949,8 +12372,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classc_ctrl_shadowed.en_e2.err_update),
-    .err_storage (reg2hw.classc_ctrl_shadowed.en_e2.err_storage)
+    .err_update  (classc_ctrl_shadowed_en_e2_update_err),
+    .err_storage (classc_ctrl_shadowed_en_e2_storage_err)
   );
 
   //   F[en_e3]: 5:5
@@ -11983,8 +12406,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classc_ctrl_shadowed.en_e3.err_update),
-    .err_storage (reg2hw.classc_ctrl_shadowed.en_e3.err_storage)
+    .err_update  (classc_ctrl_shadowed_en_e3_update_err),
+    .err_storage (classc_ctrl_shadowed_en_e3_storage_err)
   );
 
   //   F[map_e0]: 7:6
@@ -12017,8 +12440,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classc_ctrl_shadowed.map_e0.err_update),
-    .err_storage (reg2hw.classc_ctrl_shadowed.map_e0.err_storage)
+    .err_update  (classc_ctrl_shadowed_map_e0_update_err),
+    .err_storage (classc_ctrl_shadowed_map_e0_storage_err)
   );
 
   //   F[map_e1]: 9:8
@@ -12051,8 +12474,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classc_ctrl_shadowed.map_e1.err_update),
-    .err_storage (reg2hw.classc_ctrl_shadowed.map_e1.err_storage)
+    .err_update  (classc_ctrl_shadowed_map_e1_update_err),
+    .err_storage (classc_ctrl_shadowed_map_e1_storage_err)
   );
 
   //   F[map_e2]: 11:10
@@ -12085,8 +12508,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classc_ctrl_shadowed.map_e2.err_update),
-    .err_storage (reg2hw.classc_ctrl_shadowed.map_e2.err_storage)
+    .err_update  (classc_ctrl_shadowed_map_e2_update_err),
+    .err_storage (classc_ctrl_shadowed_map_e2_storage_err)
   );
 
   //   F[map_e3]: 13:12
@@ -12119,8 +12542,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classc_ctrl_shadowed.map_e3.err_update),
-    .err_storage (reg2hw.classc_ctrl_shadowed.map_e3.err_storage)
+    .err_update  (classc_ctrl_shadowed_map_e3_update_err),
+    .err_storage (classc_ctrl_shadowed_map_e3_storage_err)
   );
 
 
@@ -12191,8 +12614,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classc_clr_shadowed.err_update),
-    .err_storage (reg2hw.classc_clr_shadowed.err_storage)
+    .err_update  (classc_clr_shadowed_update_err),
+    .err_storage (classc_clr_shadowed_storage_err)
   );
   assign reg2hw.classc_clr_shadowed.qe = classc_clr_shadowed_qe;
 
@@ -12242,8 +12665,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classc_accum_thresh_shadowed.err_update),
-    .err_storage (reg2hw.classc_accum_thresh_shadowed.err_storage)
+    .err_update  (classc_accum_thresh_shadowed_update_err),
+    .err_storage (classc_accum_thresh_shadowed_storage_err)
   );
 
 
@@ -12277,8 +12700,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classc_timeout_cyc_shadowed.err_update),
-    .err_storage (reg2hw.classc_timeout_cyc_shadowed.err_storage)
+    .err_update  (classc_timeout_cyc_shadowed_update_err),
+    .err_storage (classc_timeout_cyc_shadowed_storage_err)
   );
 
 
@@ -12312,8 +12735,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classc_crashdump_trigger_shadowed.err_update),
-    .err_storage (reg2hw.classc_crashdump_trigger_shadowed.err_storage)
+    .err_update  (classc_crashdump_trigger_shadowed_update_err),
+    .err_storage (classc_crashdump_trigger_shadowed_storage_err)
   );
 
 
@@ -12347,8 +12770,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classc_phase0_cyc_shadowed.err_update),
-    .err_storage (reg2hw.classc_phase0_cyc_shadowed.err_storage)
+    .err_update  (classc_phase0_cyc_shadowed_update_err),
+    .err_storage (classc_phase0_cyc_shadowed_storage_err)
   );
 
 
@@ -12382,8 +12805,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classc_phase1_cyc_shadowed.err_update),
-    .err_storage (reg2hw.classc_phase1_cyc_shadowed.err_storage)
+    .err_update  (classc_phase1_cyc_shadowed_update_err),
+    .err_storage (classc_phase1_cyc_shadowed_storage_err)
   );
 
 
@@ -12417,8 +12840,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classc_phase2_cyc_shadowed.err_update),
-    .err_storage (reg2hw.classc_phase2_cyc_shadowed.err_storage)
+    .err_update  (classc_phase2_cyc_shadowed_update_err),
+    .err_storage (classc_phase2_cyc_shadowed_storage_err)
   );
 
 
@@ -12452,8 +12875,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classc_phase3_cyc_shadowed.err_update),
-    .err_storage (reg2hw.classc_phase3_cyc_shadowed.err_storage)
+    .err_update  (classc_phase3_cyc_shadowed_update_err),
+    .err_storage (classc_phase3_cyc_shadowed_storage_err)
   );
 
 
@@ -12544,8 +12967,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classd_ctrl_shadowed.en.err_update),
-    .err_storage (reg2hw.classd_ctrl_shadowed.en.err_storage)
+    .err_update  (classd_ctrl_shadowed_en_update_err),
+    .err_storage (classd_ctrl_shadowed_en_storage_err)
   );
 
   //   F[lock]: 1:1
@@ -12578,8 +13001,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classd_ctrl_shadowed.lock.err_update),
-    .err_storage (reg2hw.classd_ctrl_shadowed.lock.err_storage)
+    .err_update  (classd_ctrl_shadowed_lock_update_err),
+    .err_storage (classd_ctrl_shadowed_lock_storage_err)
   );
 
   //   F[en_e0]: 2:2
@@ -12612,8 +13035,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classd_ctrl_shadowed.en_e0.err_update),
-    .err_storage (reg2hw.classd_ctrl_shadowed.en_e0.err_storage)
+    .err_update  (classd_ctrl_shadowed_en_e0_update_err),
+    .err_storage (classd_ctrl_shadowed_en_e0_storage_err)
   );
 
   //   F[en_e1]: 3:3
@@ -12646,8 +13069,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classd_ctrl_shadowed.en_e1.err_update),
-    .err_storage (reg2hw.classd_ctrl_shadowed.en_e1.err_storage)
+    .err_update  (classd_ctrl_shadowed_en_e1_update_err),
+    .err_storage (classd_ctrl_shadowed_en_e1_storage_err)
   );
 
   //   F[en_e2]: 4:4
@@ -12680,8 +13103,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classd_ctrl_shadowed.en_e2.err_update),
-    .err_storage (reg2hw.classd_ctrl_shadowed.en_e2.err_storage)
+    .err_update  (classd_ctrl_shadowed_en_e2_update_err),
+    .err_storage (classd_ctrl_shadowed_en_e2_storage_err)
   );
 
   //   F[en_e3]: 5:5
@@ -12714,8 +13137,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classd_ctrl_shadowed.en_e3.err_update),
-    .err_storage (reg2hw.classd_ctrl_shadowed.en_e3.err_storage)
+    .err_update  (classd_ctrl_shadowed_en_e3_update_err),
+    .err_storage (classd_ctrl_shadowed_en_e3_storage_err)
   );
 
   //   F[map_e0]: 7:6
@@ -12748,8 +13171,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classd_ctrl_shadowed.map_e0.err_update),
-    .err_storage (reg2hw.classd_ctrl_shadowed.map_e0.err_storage)
+    .err_update  (classd_ctrl_shadowed_map_e0_update_err),
+    .err_storage (classd_ctrl_shadowed_map_e0_storage_err)
   );
 
   //   F[map_e1]: 9:8
@@ -12782,8 +13205,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classd_ctrl_shadowed.map_e1.err_update),
-    .err_storage (reg2hw.classd_ctrl_shadowed.map_e1.err_storage)
+    .err_update  (classd_ctrl_shadowed_map_e1_update_err),
+    .err_storage (classd_ctrl_shadowed_map_e1_storage_err)
   );
 
   //   F[map_e2]: 11:10
@@ -12816,8 +13239,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classd_ctrl_shadowed.map_e2.err_update),
-    .err_storage (reg2hw.classd_ctrl_shadowed.map_e2.err_storage)
+    .err_update  (classd_ctrl_shadowed_map_e2_update_err),
+    .err_storage (classd_ctrl_shadowed_map_e2_storage_err)
   );
 
   //   F[map_e3]: 13:12
@@ -12850,8 +13273,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classd_ctrl_shadowed.map_e3.err_update),
-    .err_storage (reg2hw.classd_ctrl_shadowed.map_e3.err_storage)
+    .err_update  (classd_ctrl_shadowed_map_e3_update_err),
+    .err_storage (classd_ctrl_shadowed_map_e3_storage_err)
   );
 
 
@@ -12922,8 +13345,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classd_clr_shadowed.err_update),
-    .err_storage (reg2hw.classd_clr_shadowed.err_storage)
+    .err_update  (classd_clr_shadowed_update_err),
+    .err_storage (classd_clr_shadowed_storage_err)
   );
   assign reg2hw.classd_clr_shadowed.qe = classd_clr_shadowed_qe;
 
@@ -12973,8 +13396,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classd_accum_thresh_shadowed.err_update),
-    .err_storage (reg2hw.classd_accum_thresh_shadowed.err_storage)
+    .err_update  (classd_accum_thresh_shadowed_update_err),
+    .err_storage (classd_accum_thresh_shadowed_storage_err)
   );
 
 
@@ -13008,8 +13431,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classd_timeout_cyc_shadowed.err_update),
-    .err_storage (reg2hw.classd_timeout_cyc_shadowed.err_storage)
+    .err_update  (classd_timeout_cyc_shadowed_update_err),
+    .err_storage (classd_timeout_cyc_shadowed_storage_err)
   );
 
 
@@ -13043,8 +13466,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classd_crashdump_trigger_shadowed.err_update),
-    .err_storage (reg2hw.classd_crashdump_trigger_shadowed.err_storage)
+    .err_update  (classd_crashdump_trigger_shadowed_update_err),
+    .err_storage (classd_crashdump_trigger_shadowed_storage_err)
   );
 
 
@@ -13078,8 +13501,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classd_phase0_cyc_shadowed.err_update),
-    .err_storage (reg2hw.classd_phase0_cyc_shadowed.err_storage)
+    .err_update  (classd_phase0_cyc_shadowed_update_err),
+    .err_storage (classd_phase0_cyc_shadowed_storage_err)
   );
 
 
@@ -13113,8 +13536,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classd_phase1_cyc_shadowed.err_update),
-    .err_storage (reg2hw.classd_phase1_cyc_shadowed.err_storage)
+    .err_update  (classd_phase1_cyc_shadowed_update_err),
+    .err_storage (classd_phase1_cyc_shadowed_storage_err)
   );
 
 
@@ -13148,8 +13571,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classd_phase2_cyc_shadowed.err_update),
-    .err_storage (reg2hw.classd_phase2_cyc_shadowed.err_storage)
+    .err_update  (classd_phase2_cyc_shadowed_update_err),
+    .err_storage (classd_phase2_cyc_shadowed_storage_err)
   );
 
 
@@ -13183,8 +13606,8 @@ module alert_handler_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.classd_phase3_cyc_shadowed.err_update),
-    .err_storage (reg2hw.classd_phase3_cyc_shadowed.err_storage)
+    .err_update  (classd_phase3_cyc_shadowed_update_err),
+    .err_storage (classd_phase3_cyc_shadowed_storage_err)
   );
 
 
@@ -16554,6 +16977,432 @@ module alert_handler_reg_top (
 
   // both shadow and normal resets have been released
   assign shadow_busy = ~(rst_done & shadow_rst_done);
+
+  // Collect up storage and update errors
+  assign shadowed_storage_err_o = |{
+    ping_timeout_cyc_shadowed_storage_err,
+    ping_timer_en_shadowed_storage_err,
+    alert_en_shadowed_0_storage_err,
+    alert_en_shadowed_1_storage_err,
+    alert_en_shadowed_2_storage_err,
+    alert_en_shadowed_3_storage_err,
+    alert_en_shadowed_4_storage_err,
+    alert_en_shadowed_5_storage_err,
+    alert_en_shadowed_6_storage_err,
+    alert_en_shadowed_7_storage_err,
+    alert_en_shadowed_8_storage_err,
+    alert_en_shadowed_9_storage_err,
+    alert_en_shadowed_10_storage_err,
+    alert_en_shadowed_11_storage_err,
+    alert_en_shadowed_12_storage_err,
+    alert_en_shadowed_13_storage_err,
+    alert_en_shadowed_14_storage_err,
+    alert_en_shadowed_15_storage_err,
+    alert_en_shadowed_16_storage_err,
+    alert_en_shadowed_17_storage_err,
+    alert_en_shadowed_18_storage_err,
+    alert_en_shadowed_19_storage_err,
+    alert_en_shadowed_20_storage_err,
+    alert_en_shadowed_21_storage_err,
+    alert_en_shadowed_22_storage_err,
+    alert_en_shadowed_23_storage_err,
+    alert_en_shadowed_24_storage_err,
+    alert_en_shadowed_25_storage_err,
+    alert_en_shadowed_26_storage_err,
+    alert_en_shadowed_27_storage_err,
+    alert_en_shadowed_28_storage_err,
+    alert_en_shadowed_29_storage_err,
+    alert_en_shadowed_30_storage_err,
+    alert_en_shadowed_31_storage_err,
+    alert_en_shadowed_32_storage_err,
+    alert_en_shadowed_33_storage_err,
+    alert_en_shadowed_34_storage_err,
+    alert_en_shadowed_35_storage_err,
+    alert_en_shadowed_36_storage_err,
+    alert_en_shadowed_37_storage_err,
+    alert_en_shadowed_38_storage_err,
+    alert_en_shadowed_39_storage_err,
+    alert_en_shadowed_40_storage_err,
+    alert_en_shadowed_41_storage_err,
+    alert_en_shadowed_42_storage_err,
+    alert_en_shadowed_43_storage_err,
+    alert_en_shadowed_44_storage_err,
+    alert_en_shadowed_45_storage_err,
+    alert_en_shadowed_46_storage_err,
+    alert_en_shadowed_47_storage_err,
+    alert_en_shadowed_48_storage_err,
+    alert_en_shadowed_49_storage_err,
+    alert_en_shadowed_50_storage_err,
+    alert_en_shadowed_51_storage_err,
+    alert_en_shadowed_52_storage_err,
+    alert_en_shadowed_53_storage_err,
+    alert_en_shadowed_54_storage_err,
+    alert_en_shadowed_55_storage_err,
+    alert_en_shadowed_56_storage_err,
+    alert_en_shadowed_57_storage_err,
+    alert_en_shadowed_58_storage_err,
+    alert_en_shadowed_59_storage_err,
+    alert_en_shadowed_60_storage_err,
+    alert_class_shadowed_0_storage_err,
+    alert_class_shadowed_1_storage_err,
+    alert_class_shadowed_2_storage_err,
+    alert_class_shadowed_3_storage_err,
+    alert_class_shadowed_4_storage_err,
+    alert_class_shadowed_5_storage_err,
+    alert_class_shadowed_6_storage_err,
+    alert_class_shadowed_7_storage_err,
+    alert_class_shadowed_8_storage_err,
+    alert_class_shadowed_9_storage_err,
+    alert_class_shadowed_10_storage_err,
+    alert_class_shadowed_11_storage_err,
+    alert_class_shadowed_12_storage_err,
+    alert_class_shadowed_13_storage_err,
+    alert_class_shadowed_14_storage_err,
+    alert_class_shadowed_15_storage_err,
+    alert_class_shadowed_16_storage_err,
+    alert_class_shadowed_17_storage_err,
+    alert_class_shadowed_18_storage_err,
+    alert_class_shadowed_19_storage_err,
+    alert_class_shadowed_20_storage_err,
+    alert_class_shadowed_21_storage_err,
+    alert_class_shadowed_22_storage_err,
+    alert_class_shadowed_23_storage_err,
+    alert_class_shadowed_24_storage_err,
+    alert_class_shadowed_25_storage_err,
+    alert_class_shadowed_26_storage_err,
+    alert_class_shadowed_27_storage_err,
+    alert_class_shadowed_28_storage_err,
+    alert_class_shadowed_29_storage_err,
+    alert_class_shadowed_30_storage_err,
+    alert_class_shadowed_31_storage_err,
+    alert_class_shadowed_32_storage_err,
+    alert_class_shadowed_33_storage_err,
+    alert_class_shadowed_34_storage_err,
+    alert_class_shadowed_35_storage_err,
+    alert_class_shadowed_36_storage_err,
+    alert_class_shadowed_37_storage_err,
+    alert_class_shadowed_38_storage_err,
+    alert_class_shadowed_39_storage_err,
+    alert_class_shadowed_40_storage_err,
+    alert_class_shadowed_41_storage_err,
+    alert_class_shadowed_42_storage_err,
+    alert_class_shadowed_43_storage_err,
+    alert_class_shadowed_44_storage_err,
+    alert_class_shadowed_45_storage_err,
+    alert_class_shadowed_46_storage_err,
+    alert_class_shadowed_47_storage_err,
+    alert_class_shadowed_48_storage_err,
+    alert_class_shadowed_49_storage_err,
+    alert_class_shadowed_50_storage_err,
+    alert_class_shadowed_51_storage_err,
+    alert_class_shadowed_52_storage_err,
+    alert_class_shadowed_53_storage_err,
+    alert_class_shadowed_54_storage_err,
+    alert_class_shadowed_55_storage_err,
+    alert_class_shadowed_56_storage_err,
+    alert_class_shadowed_57_storage_err,
+    alert_class_shadowed_58_storage_err,
+    alert_class_shadowed_59_storage_err,
+    alert_class_shadowed_60_storage_err,
+    loc_alert_en_shadowed_0_storage_err,
+    loc_alert_en_shadowed_1_storage_err,
+    loc_alert_en_shadowed_2_storage_err,
+    loc_alert_en_shadowed_3_storage_err,
+    loc_alert_en_shadowed_4_storage_err,
+    loc_alert_en_shadowed_5_storage_err,
+    loc_alert_en_shadowed_6_storage_err,
+    loc_alert_class_shadowed_0_storage_err,
+    loc_alert_class_shadowed_1_storage_err,
+    loc_alert_class_shadowed_2_storage_err,
+    loc_alert_class_shadowed_3_storage_err,
+    loc_alert_class_shadowed_4_storage_err,
+    loc_alert_class_shadowed_5_storage_err,
+    loc_alert_class_shadowed_6_storage_err,
+    classa_ctrl_shadowed_en_storage_err,
+    classa_ctrl_shadowed_lock_storage_err,
+    classa_ctrl_shadowed_en_e0_storage_err,
+    classa_ctrl_shadowed_en_e1_storage_err,
+    classa_ctrl_shadowed_en_e2_storage_err,
+    classa_ctrl_shadowed_en_e3_storage_err,
+    classa_ctrl_shadowed_map_e0_storage_err,
+    classa_ctrl_shadowed_map_e1_storage_err,
+    classa_ctrl_shadowed_map_e2_storage_err,
+    classa_ctrl_shadowed_map_e3_storage_err,
+    classa_clr_shadowed_storage_err,
+    classa_accum_thresh_shadowed_storage_err,
+    classa_timeout_cyc_shadowed_storage_err,
+    classa_crashdump_trigger_shadowed_storage_err,
+    classa_phase0_cyc_shadowed_storage_err,
+    classa_phase1_cyc_shadowed_storage_err,
+    classa_phase2_cyc_shadowed_storage_err,
+    classa_phase3_cyc_shadowed_storage_err,
+    classb_ctrl_shadowed_en_storage_err,
+    classb_ctrl_shadowed_lock_storage_err,
+    classb_ctrl_shadowed_en_e0_storage_err,
+    classb_ctrl_shadowed_en_e1_storage_err,
+    classb_ctrl_shadowed_en_e2_storage_err,
+    classb_ctrl_shadowed_en_e3_storage_err,
+    classb_ctrl_shadowed_map_e0_storage_err,
+    classb_ctrl_shadowed_map_e1_storage_err,
+    classb_ctrl_shadowed_map_e2_storage_err,
+    classb_ctrl_shadowed_map_e3_storage_err,
+    classb_clr_shadowed_storage_err,
+    classb_accum_thresh_shadowed_storage_err,
+    classb_timeout_cyc_shadowed_storage_err,
+    classb_crashdump_trigger_shadowed_storage_err,
+    classb_phase0_cyc_shadowed_storage_err,
+    classb_phase1_cyc_shadowed_storage_err,
+    classb_phase2_cyc_shadowed_storage_err,
+    classb_phase3_cyc_shadowed_storage_err,
+    classc_ctrl_shadowed_en_storage_err,
+    classc_ctrl_shadowed_lock_storage_err,
+    classc_ctrl_shadowed_en_e0_storage_err,
+    classc_ctrl_shadowed_en_e1_storage_err,
+    classc_ctrl_shadowed_en_e2_storage_err,
+    classc_ctrl_shadowed_en_e3_storage_err,
+    classc_ctrl_shadowed_map_e0_storage_err,
+    classc_ctrl_shadowed_map_e1_storage_err,
+    classc_ctrl_shadowed_map_e2_storage_err,
+    classc_ctrl_shadowed_map_e3_storage_err,
+    classc_clr_shadowed_storage_err,
+    classc_accum_thresh_shadowed_storage_err,
+    classc_timeout_cyc_shadowed_storage_err,
+    classc_crashdump_trigger_shadowed_storage_err,
+    classc_phase0_cyc_shadowed_storage_err,
+    classc_phase1_cyc_shadowed_storage_err,
+    classc_phase2_cyc_shadowed_storage_err,
+    classc_phase3_cyc_shadowed_storage_err,
+    classd_ctrl_shadowed_en_storage_err,
+    classd_ctrl_shadowed_lock_storage_err,
+    classd_ctrl_shadowed_en_e0_storage_err,
+    classd_ctrl_shadowed_en_e1_storage_err,
+    classd_ctrl_shadowed_en_e2_storage_err,
+    classd_ctrl_shadowed_en_e3_storage_err,
+    classd_ctrl_shadowed_map_e0_storage_err,
+    classd_ctrl_shadowed_map_e1_storage_err,
+    classd_ctrl_shadowed_map_e2_storage_err,
+    classd_ctrl_shadowed_map_e3_storage_err,
+    classd_clr_shadowed_storage_err,
+    classd_accum_thresh_shadowed_storage_err,
+    classd_timeout_cyc_shadowed_storage_err,
+    classd_crashdump_trigger_shadowed_storage_err,
+    classd_phase0_cyc_shadowed_storage_err,
+    classd_phase1_cyc_shadowed_storage_err,
+    classd_phase2_cyc_shadowed_storage_err,
+    classd_phase3_cyc_shadowed_storage_err
+  };
+  assign shadowed_update_err_o = |{
+    ping_timeout_cyc_shadowed_update_err,
+    ping_timer_en_shadowed_update_err,
+    alert_en_shadowed_0_update_err,
+    alert_en_shadowed_1_update_err,
+    alert_en_shadowed_2_update_err,
+    alert_en_shadowed_3_update_err,
+    alert_en_shadowed_4_update_err,
+    alert_en_shadowed_5_update_err,
+    alert_en_shadowed_6_update_err,
+    alert_en_shadowed_7_update_err,
+    alert_en_shadowed_8_update_err,
+    alert_en_shadowed_9_update_err,
+    alert_en_shadowed_10_update_err,
+    alert_en_shadowed_11_update_err,
+    alert_en_shadowed_12_update_err,
+    alert_en_shadowed_13_update_err,
+    alert_en_shadowed_14_update_err,
+    alert_en_shadowed_15_update_err,
+    alert_en_shadowed_16_update_err,
+    alert_en_shadowed_17_update_err,
+    alert_en_shadowed_18_update_err,
+    alert_en_shadowed_19_update_err,
+    alert_en_shadowed_20_update_err,
+    alert_en_shadowed_21_update_err,
+    alert_en_shadowed_22_update_err,
+    alert_en_shadowed_23_update_err,
+    alert_en_shadowed_24_update_err,
+    alert_en_shadowed_25_update_err,
+    alert_en_shadowed_26_update_err,
+    alert_en_shadowed_27_update_err,
+    alert_en_shadowed_28_update_err,
+    alert_en_shadowed_29_update_err,
+    alert_en_shadowed_30_update_err,
+    alert_en_shadowed_31_update_err,
+    alert_en_shadowed_32_update_err,
+    alert_en_shadowed_33_update_err,
+    alert_en_shadowed_34_update_err,
+    alert_en_shadowed_35_update_err,
+    alert_en_shadowed_36_update_err,
+    alert_en_shadowed_37_update_err,
+    alert_en_shadowed_38_update_err,
+    alert_en_shadowed_39_update_err,
+    alert_en_shadowed_40_update_err,
+    alert_en_shadowed_41_update_err,
+    alert_en_shadowed_42_update_err,
+    alert_en_shadowed_43_update_err,
+    alert_en_shadowed_44_update_err,
+    alert_en_shadowed_45_update_err,
+    alert_en_shadowed_46_update_err,
+    alert_en_shadowed_47_update_err,
+    alert_en_shadowed_48_update_err,
+    alert_en_shadowed_49_update_err,
+    alert_en_shadowed_50_update_err,
+    alert_en_shadowed_51_update_err,
+    alert_en_shadowed_52_update_err,
+    alert_en_shadowed_53_update_err,
+    alert_en_shadowed_54_update_err,
+    alert_en_shadowed_55_update_err,
+    alert_en_shadowed_56_update_err,
+    alert_en_shadowed_57_update_err,
+    alert_en_shadowed_58_update_err,
+    alert_en_shadowed_59_update_err,
+    alert_en_shadowed_60_update_err,
+    alert_class_shadowed_0_update_err,
+    alert_class_shadowed_1_update_err,
+    alert_class_shadowed_2_update_err,
+    alert_class_shadowed_3_update_err,
+    alert_class_shadowed_4_update_err,
+    alert_class_shadowed_5_update_err,
+    alert_class_shadowed_6_update_err,
+    alert_class_shadowed_7_update_err,
+    alert_class_shadowed_8_update_err,
+    alert_class_shadowed_9_update_err,
+    alert_class_shadowed_10_update_err,
+    alert_class_shadowed_11_update_err,
+    alert_class_shadowed_12_update_err,
+    alert_class_shadowed_13_update_err,
+    alert_class_shadowed_14_update_err,
+    alert_class_shadowed_15_update_err,
+    alert_class_shadowed_16_update_err,
+    alert_class_shadowed_17_update_err,
+    alert_class_shadowed_18_update_err,
+    alert_class_shadowed_19_update_err,
+    alert_class_shadowed_20_update_err,
+    alert_class_shadowed_21_update_err,
+    alert_class_shadowed_22_update_err,
+    alert_class_shadowed_23_update_err,
+    alert_class_shadowed_24_update_err,
+    alert_class_shadowed_25_update_err,
+    alert_class_shadowed_26_update_err,
+    alert_class_shadowed_27_update_err,
+    alert_class_shadowed_28_update_err,
+    alert_class_shadowed_29_update_err,
+    alert_class_shadowed_30_update_err,
+    alert_class_shadowed_31_update_err,
+    alert_class_shadowed_32_update_err,
+    alert_class_shadowed_33_update_err,
+    alert_class_shadowed_34_update_err,
+    alert_class_shadowed_35_update_err,
+    alert_class_shadowed_36_update_err,
+    alert_class_shadowed_37_update_err,
+    alert_class_shadowed_38_update_err,
+    alert_class_shadowed_39_update_err,
+    alert_class_shadowed_40_update_err,
+    alert_class_shadowed_41_update_err,
+    alert_class_shadowed_42_update_err,
+    alert_class_shadowed_43_update_err,
+    alert_class_shadowed_44_update_err,
+    alert_class_shadowed_45_update_err,
+    alert_class_shadowed_46_update_err,
+    alert_class_shadowed_47_update_err,
+    alert_class_shadowed_48_update_err,
+    alert_class_shadowed_49_update_err,
+    alert_class_shadowed_50_update_err,
+    alert_class_shadowed_51_update_err,
+    alert_class_shadowed_52_update_err,
+    alert_class_shadowed_53_update_err,
+    alert_class_shadowed_54_update_err,
+    alert_class_shadowed_55_update_err,
+    alert_class_shadowed_56_update_err,
+    alert_class_shadowed_57_update_err,
+    alert_class_shadowed_58_update_err,
+    alert_class_shadowed_59_update_err,
+    alert_class_shadowed_60_update_err,
+    loc_alert_en_shadowed_0_update_err,
+    loc_alert_en_shadowed_1_update_err,
+    loc_alert_en_shadowed_2_update_err,
+    loc_alert_en_shadowed_3_update_err,
+    loc_alert_en_shadowed_4_update_err,
+    loc_alert_en_shadowed_5_update_err,
+    loc_alert_en_shadowed_6_update_err,
+    loc_alert_class_shadowed_0_update_err,
+    loc_alert_class_shadowed_1_update_err,
+    loc_alert_class_shadowed_2_update_err,
+    loc_alert_class_shadowed_3_update_err,
+    loc_alert_class_shadowed_4_update_err,
+    loc_alert_class_shadowed_5_update_err,
+    loc_alert_class_shadowed_6_update_err,
+    classa_ctrl_shadowed_en_update_err,
+    classa_ctrl_shadowed_lock_update_err,
+    classa_ctrl_shadowed_en_e0_update_err,
+    classa_ctrl_shadowed_en_e1_update_err,
+    classa_ctrl_shadowed_en_e2_update_err,
+    classa_ctrl_shadowed_en_e3_update_err,
+    classa_ctrl_shadowed_map_e0_update_err,
+    classa_ctrl_shadowed_map_e1_update_err,
+    classa_ctrl_shadowed_map_e2_update_err,
+    classa_ctrl_shadowed_map_e3_update_err,
+    classa_clr_shadowed_update_err,
+    classa_accum_thresh_shadowed_update_err,
+    classa_timeout_cyc_shadowed_update_err,
+    classa_crashdump_trigger_shadowed_update_err,
+    classa_phase0_cyc_shadowed_update_err,
+    classa_phase1_cyc_shadowed_update_err,
+    classa_phase2_cyc_shadowed_update_err,
+    classa_phase3_cyc_shadowed_update_err,
+    classb_ctrl_shadowed_en_update_err,
+    classb_ctrl_shadowed_lock_update_err,
+    classb_ctrl_shadowed_en_e0_update_err,
+    classb_ctrl_shadowed_en_e1_update_err,
+    classb_ctrl_shadowed_en_e2_update_err,
+    classb_ctrl_shadowed_en_e3_update_err,
+    classb_ctrl_shadowed_map_e0_update_err,
+    classb_ctrl_shadowed_map_e1_update_err,
+    classb_ctrl_shadowed_map_e2_update_err,
+    classb_ctrl_shadowed_map_e3_update_err,
+    classb_clr_shadowed_update_err,
+    classb_accum_thresh_shadowed_update_err,
+    classb_timeout_cyc_shadowed_update_err,
+    classb_crashdump_trigger_shadowed_update_err,
+    classb_phase0_cyc_shadowed_update_err,
+    classb_phase1_cyc_shadowed_update_err,
+    classb_phase2_cyc_shadowed_update_err,
+    classb_phase3_cyc_shadowed_update_err,
+    classc_ctrl_shadowed_en_update_err,
+    classc_ctrl_shadowed_lock_update_err,
+    classc_ctrl_shadowed_en_e0_update_err,
+    classc_ctrl_shadowed_en_e1_update_err,
+    classc_ctrl_shadowed_en_e2_update_err,
+    classc_ctrl_shadowed_en_e3_update_err,
+    classc_ctrl_shadowed_map_e0_update_err,
+    classc_ctrl_shadowed_map_e1_update_err,
+    classc_ctrl_shadowed_map_e2_update_err,
+    classc_ctrl_shadowed_map_e3_update_err,
+    classc_clr_shadowed_update_err,
+    classc_accum_thresh_shadowed_update_err,
+    classc_timeout_cyc_shadowed_update_err,
+    classc_crashdump_trigger_shadowed_update_err,
+    classc_phase0_cyc_shadowed_update_err,
+    classc_phase1_cyc_shadowed_update_err,
+    classc_phase2_cyc_shadowed_update_err,
+    classc_phase3_cyc_shadowed_update_err,
+    classd_ctrl_shadowed_en_update_err,
+    classd_ctrl_shadowed_lock_update_err,
+    classd_ctrl_shadowed_en_e0_update_err,
+    classd_ctrl_shadowed_en_e1_update_err,
+    classd_ctrl_shadowed_en_e2_update_err,
+    classd_ctrl_shadowed_en_e3_update_err,
+    classd_ctrl_shadowed_map_e0_update_err,
+    classd_ctrl_shadowed_map_e1_update_err,
+    classd_ctrl_shadowed_map_e2_update_err,
+    classd_ctrl_shadowed_map_e3_update_err,
+    classd_clr_shadowed_update_err,
+    classd_accum_thresh_shadowed_update_err,
+    classd_timeout_cyc_shadowed_update_err,
+    classd_crashdump_trigger_shadowed_update_err,
+    classd_phase0_cyc_shadowed_update_err,
+    classd_phase1_cyc_shadowed_update_err,
+    classd_phase2_cyc_shadowed_update_err,
+    classd_phase3_cyc_shadowed_update_err
+  };
 
   // register busy
   assign reg_busy = shadow_busy;

@@ -16,6 +16,9 @@ module aes_reg_top (
   output aes_reg_pkg::aes_reg2hw_t reg2hw, // Write
   input  aes_reg_pkg::aes_hw2reg_t hw2reg, // Read
 
+  output logic shadowed_storage_err_o,
+  output logic shadowed_update_err_o,
+
   // Integrity check errors
   output logic intg_err_o,
 
@@ -196,6 +199,8 @@ module aes_reg_top (
   logic ctrl_aux_shadowed_we;
   logic ctrl_aux_shadowed_qs;
   logic ctrl_aux_shadowed_wd;
+  logic ctrl_aux_shadowed_storage_err;
+  logic ctrl_aux_shadowed_update_err;
   logic ctrl_aux_regwen_we;
   logic ctrl_aux_regwen_qs;
   logic ctrl_aux_regwen_wd;
@@ -1008,8 +1013,8 @@ module aes_reg_top (
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (reg2hw.ctrl_aux_shadowed.err_update),
-    .err_storage (reg2hw.ctrl_aux_shadowed.err_storage)
+    .err_update  (ctrl_aux_shadowed_update_err),
+    .err_storage (ctrl_aux_shadowed_storage_err)
   );
 
 
@@ -1700,6 +1705,14 @@ module aes_reg_top (
 
   // both shadow and normal resets have been released
   assign shadow_busy = ~(rst_done & shadow_rst_done);
+
+  // Collect up storage and update errors
+  assign shadowed_storage_err_o = |{
+    ctrl_aux_shadowed_storage_err
+  };
+  assign shadowed_update_err_o = |{
+    ctrl_aux_shadowed_update_err
+  };
 
   // register busy
   assign reg_busy = shadow_busy;

@@ -26,6 +26,9 @@ module clkmgr_reg_top (
   output clkmgr_reg_pkg::clkmgr_reg2hw_t reg2hw, // Write
   input  clkmgr_reg_pkg::clkmgr_hw2reg_t hw2reg, // Read
 
+  output logic shadowed_storage_err_o,
+  output logic shadowed_update_err_o,
+
   // Integrity check errors
   output logic intg_err_o,
 
@@ -225,22 +228,52 @@ module clkmgr_reg_top (
   logic io_meas_ctrl_shadowed_we;
   logic [23:0] io_meas_ctrl_shadowed_qs;
   logic io_meas_ctrl_shadowed_busy;
+  logic io_meas_ctrl_shadowed_en_storage_err;
+  logic io_meas_ctrl_shadowed_en_update_err;
+  logic io_meas_ctrl_shadowed_hi_storage_err;
+  logic io_meas_ctrl_shadowed_hi_update_err;
+  logic io_meas_ctrl_shadowed_lo_storage_err;
+  logic io_meas_ctrl_shadowed_lo_update_err;
   logic io_div2_meas_ctrl_shadowed_re;
   logic io_div2_meas_ctrl_shadowed_we;
   logic [21:0] io_div2_meas_ctrl_shadowed_qs;
   logic io_div2_meas_ctrl_shadowed_busy;
+  logic io_div2_meas_ctrl_shadowed_en_storage_err;
+  logic io_div2_meas_ctrl_shadowed_en_update_err;
+  logic io_div2_meas_ctrl_shadowed_hi_storage_err;
+  logic io_div2_meas_ctrl_shadowed_hi_update_err;
+  logic io_div2_meas_ctrl_shadowed_lo_storage_err;
+  logic io_div2_meas_ctrl_shadowed_lo_update_err;
   logic io_div4_meas_ctrl_shadowed_re;
   logic io_div4_meas_ctrl_shadowed_we;
   logic [19:0] io_div4_meas_ctrl_shadowed_qs;
   logic io_div4_meas_ctrl_shadowed_busy;
+  logic io_div4_meas_ctrl_shadowed_en_storage_err;
+  logic io_div4_meas_ctrl_shadowed_en_update_err;
+  logic io_div4_meas_ctrl_shadowed_hi_storage_err;
+  logic io_div4_meas_ctrl_shadowed_hi_update_err;
+  logic io_div4_meas_ctrl_shadowed_lo_storage_err;
+  logic io_div4_meas_ctrl_shadowed_lo_update_err;
   logic main_meas_ctrl_shadowed_re;
   logic main_meas_ctrl_shadowed_we;
   logic [23:0] main_meas_ctrl_shadowed_qs;
   logic main_meas_ctrl_shadowed_busy;
+  logic main_meas_ctrl_shadowed_en_storage_err;
+  logic main_meas_ctrl_shadowed_en_update_err;
+  logic main_meas_ctrl_shadowed_hi_storage_err;
+  logic main_meas_ctrl_shadowed_hi_update_err;
+  logic main_meas_ctrl_shadowed_lo_storage_err;
+  logic main_meas_ctrl_shadowed_lo_update_err;
   logic usb_meas_ctrl_shadowed_re;
   logic usb_meas_ctrl_shadowed_we;
   logic [21:0] usb_meas_ctrl_shadowed_qs;
   logic usb_meas_ctrl_shadowed_busy;
+  logic usb_meas_ctrl_shadowed_en_storage_err;
+  logic usb_meas_ctrl_shadowed_en_update_err;
+  logic usb_meas_ctrl_shadowed_hi_storage_err;
+  logic usb_meas_ctrl_shadowed_hi_update_err;
+  logic usb_meas_ctrl_shadowed_lo_storage_err;
+  logic usb_meas_ctrl_shadowed_lo_update_err;
   logic recov_err_code_we;
   logic recov_err_code_shadow_update_err_qs;
   logic recov_err_code_shadow_update_err_wd;
@@ -992,7 +1025,7 @@ module clkmgr_reg_top (
     .rst_ni,
     .en_i(sync_io_update),
     .d_i(async_io_meas_ctrl_shadowed_en_err_storage),
-    .q_o(reg2hw.io_meas_ctrl_shadowed.en.err_storage)
+    .q_o(io_meas_ctrl_shadowed_en_storage_err)
   );
 
   // update error is transient and must be immediately captured
@@ -1002,7 +1035,7 @@ module clkmgr_reg_top (
     .src_pulse_i(async_io_meas_ctrl_shadowed_en_err_update),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(reg2hw.io_meas_ctrl_shadowed.en.err_update)
+    .dst_pulse_o(io_meas_ctrl_shadowed_en_update_err)
   );
   prim_subreg_shadow #(
     .DW      (1),
@@ -1050,7 +1083,7 @@ module clkmgr_reg_top (
     .rst_ni,
     .en_i(sync_io_update),
     .d_i(async_io_meas_ctrl_shadowed_hi_err_storage),
-    .q_o(reg2hw.io_meas_ctrl_shadowed.hi.err_storage)
+    .q_o(io_meas_ctrl_shadowed_hi_storage_err)
   );
 
   // update error is transient and must be immediately captured
@@ -1060,7 +1093,7 @@ module clkmgr_reg_top (
     .src_pulse_i(async_io_meas_ctrl_shadowed_hi_err_update),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(reg2hw.io_meas_ctrl_shadowed.hi.err_update)
+    .dst_pulse_o(io_meas_ctrl_shadowed_hi_update_err)
   );
   prim_subreg_shadow #(
     .DW      (10),
@@ -1108,7 +1141,7 @@ module clkmgr_reg_top (
     .rst_ni,
     .en_i(sync_io_update),
     .d_i(async_io_meas_ctrl_shadowed_lo_err_storage),
-    .q_o(reg2hw.io_meas_ctrl_shadowed.lo.err_storage)
+    .q_o(io_meas_ctrl_shadowed_lo_storage_err)
   );
 
   // update error is transient and must be immediately captured
@@ -1118,7 +1151,7 @@ module clkmgr_reg_top (
     .src_pulse_i(async_io_meas_ctrl_shadowed_lo_err_update),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(reg2hw.io_meas_ctrl_shadowed.lo.err_update)
+    .dst_pulse_o(io_meas_ctrl_shadowed_lo_update_err)
   );
   prim_subreg_shadow #(
     .DW      (10),
@@ -1168,7 +1201,7 @@ module clkmgr_reg_top (
     .rst_ni,
     .en_i(sync_io_div2_update),
     .d_i(async_io_div2_meas_ctrl_shadowed_en_err_storage),
-    .q_o(reg2hw.io_div2_meas_ctrl_shadowed.en.err_storage)
+    .q_o(io_div2_meas_ctrl_shadowed_en_storage_err)
   );
 
   // update error is transient and must be immediately captured
@@ -1178,7 +1211,7 @@ module clkmgr_reg_top (
     .src_pulse_i(async_io_div2_meas_ctrl_shadowed_en_err_update),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(reg2hw.io_div2_meas_ctrl_shadowed.en.err_update)
+    .dst_pulse_o(io_div2_meas_ctrl_shadowed_en_update_err)
   );
   prim_subreg_shadow #(
     .DW      (1),
@@ -1226,7 +1259,7 @@ module clkmgr_reg_top (
     .rst_ni,
     .en_i(sync_io_div2_update),
     .d_i(async_io_div2_meas_ctrl_shadowed_hi_err_storage),
-    .q_o(reg2hw.io_div2_meas_ctrl_shadowed.hi.err_storage)
+    .q_o(io_div2_meas_ctrl_shadowed_hi_storage_err)
   );
 
   // update error is transient and must be immediately captured
@@ -1236,7 +1269,7 @@ module clkmgr_reg_top (
     .src_pulse_i(async_io_div2_meas_ctrl_shadowed_hi_err_update),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(reg2hw.io_div2_meas_ctrl_shadowed.hi.err_update)
+    .dst_pulse_o(io_div2_meas_ctrl_shadowed_hi_update_err)
   );
   prim_subreg_shadow #(
     .DW      (9),
@@ -1284,7 +1317,7 @@ module clkmgr_reg_top (
     .rst_ni,
     .en_i(sync_io_div2_update),
     .d_i(async_io_div2_meas_ctrl_shadowed_lo_err_storage),
-    .q_o(reg2hw.io_div2_meas_ctrl_shadowed.lo.err_storage)
+    .q_o(io_div2_meas_ctrl_shadowed_lo_storage_err)
   );
 
   // update error is transient and must be immediately captured
@@ -1294,7 +1327,7 @@ module clkmgr_reg_top (
     .src_pulse_i(async_io_div2_meas_ctrl_shadowed_lo_err_update),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(reg2hw.io_div2_meas_ctrl_shadowed.lo.err_update)
+    .dst_pulse_o(io_div2_meas_ctrl_shadowed_lo_update_err)
   );
   prim_subreg_shadow #(
     .DW      (9),
@@ -1344,7 +1377,7 @@ module clkmgr_reg_top (
     .rst_ni,
     .en_i(sync_io_div4_update),
     .d_i(async_io_div4_meas_ctrl_shadowed_en_err_storage),
-    .q_o(reg2hw.io_div4_meas_ctrl_shadowed.en.err_storage)
+    .q_o(io_div4_meas_ctrl_shadowed_en_storage_err)
   );
 
   // update error is transient and must be immediately captured
@@ -1354,7 +1387,7 @@ module clkmgr_reg_top (
     .src_pulse_i(async_io_div4_meas_ctrl_shadowed_en_err_update),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(reg2hw.io_div4_meas_ctrl_shadowed.en.err_update)
+    .dst_pulse_o(io_div4_meas_ctrl_shadowed_en_update_err)
   );
   prim_subreg_shadow #(
     .DW      (1),
@@ -1402,7 +1435,7 @@ module clkmgr_reg_top (
     .rst_ni,
     .en_i(sync_io_div4_update),
     .d_i(async_io_div4_meas_ctrl_shadowed_hi_err_storage),
-    .q_o(reg2hw.io_div4_meas_ctrl_shadowed.hi.err_storage)
+    .q_o(io_div4_meas_ctrl_shadowed_hi_storage_err)
   );
 
   // update error is transient and must be immediately captured
@@ -1412,7 +1445,7 @@ module clkmgr_reg_top (
     .src_pulse_i(async_io_div4_meas_ctrl_shadowed_hi_err_update),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(reg2hw.io_div4_meas_ctrl_shadowed.hi.err_update)
+    .dst_pulse_o(io_div4_meas_ctrl_shadowed_hi_update_err)
   );
   prim_subreg_shadow #(
     .DW      (8),
@@ -1460,7 +1493,7 @@ module clkmgr_reg_top (
     .rst_ni,
     .en_i(sync_io_div4_update),
     .d_i(async_io_div4_meas_ctrl_shadowed_lo_err_storage),
-    .q_o(reg2hw.io_div4_meas_ctrl_shadowed.lo.err_storage)
+    .q_o(io_div4_meas_ctrl_shadowed_lo_storage_err)
   );
 
   // update error is transient and must be immediately captured
@@ -1470,7 +1503,7 @@ module clkmgr_reg_top (
     .src_pulse_i(async_io_div4_meas_ctrl_shadowed_lo_err_update),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(reg2hw.io_div4_meas_ctrl_shadowed.lo.err_update)
+    .dst_pulse_o(io_div4_meas_ctrl_shadowed_lo_update_err)
   );
   prim_subreg_shadow #(
     .DW      (8),
@@ -1520,7 +1553,7 @@ module clkmgr_reg_top (
     .rst_ni,
     .en_i(sync_main_update),
     .d_i(async_main_meas_ctrl_shadowed_en_err_storage),
-    .q_o(reg2hw.main_meas_ctrl_shadowed.en.err_storage)
+    .q_o(main_meas_ctrl_shadowed_en_storage_err)
   );
 
   // update error is transient and must be immediately captured
@@ -1530,7 +1563,7 @@ module clkmgr_reg_top (
     .src_pulse_i(async_main_meas_ctrl_shadowed_en_err_update),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(reg2hw.main_meas_ctrl_shadowed.en.err_update)
+    .dst_pulse_o(main_meas_ctrl_shadowed_en_update_err)
   );
   prim_subreg_shadow #(
     .DW      (1),
@@ -1578,7 +1611,7 @@ module clkmgr_reg_top (
     .rst_ni,
     .en_i(sync_main_update),
     .d_i(async_main_meas_ctrl_shadowed_hi_err_storage),
-    .q_o(reg2hw.main_meas_ctrl_shadowed.hi.err_storage)
+    .q_o(main_meas_ctrl_shadowed_hi_storage_err)
   );
 
   // update error is transient and must be immediately captured
@@ -1588,7 +1621,7 @@ module clkmgr_reg_top (
     .src_pulse_i(async_main_meas_ctrl_shadowed_hi_err_update),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(reg2hw.main_meas_ctrl_shadowed.hi.err_update)
+    .dst_pulse_o(main_meas_ctrl_shadowed_hi_update_err)
   );
   prim_subreg_shadow #(
     .DW      (10),
@@ -1636,7 +1669,7 @@ module clkmgr_reg_top (
     .rst_ni,
     .en_i(sync_main_update),
     .d_i(async_main_meas_ctrl_shadowed_lo_err_storage),
-    .q_o(reg2hw.main_meas_ctrl_shadowed.lo.err_storage)
+    .q_o(main_meas_ctrl_shadowed_lo_storage_err)
   );
 
   // update error is transient and must be immediately captured
@@ -1646,7 +1679,7 @@ module clkmgr_reg_top (
     .src_pulse_i(async_main_meas_ctrl_shadowed_lo_err_update),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(reg2hw.main_meas_ctrl_shadowed.lo.err_update)
+    .dst_pulse_o(main_meas_ctrl_shadowed_lo_update_err)
   );
   prim_subreg_shadow #(
     .DW      (10),
@@ -1696,7 +1729,7 @@ module clkmgr_reg_top (
     .rst_ni,
     .en_i(sync_usb_update),
     .d_i(async_usb_meas_ctrl_shadowed_en_err_storage),
-    .q_o(reg2hw.usb_meas_ctrl_shadowed.en.err_storage)
+    .q_o(usb_meas_ctrl_shadowed_en_storage_err)
   );
 
   // update error is transient and must be immediately captured
@@ -1706,7 +1739,7 @@ module clkmgr_reg_top (
     .src_pulse_i(async_usb_meas_ctrl_shadowed_en_err_update),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(reg2hw.usb_meas_ctrl_shadowed.en.err_update)
+    .dst_pulse_o(usb_meas_ctrl_shadowed_en_update_err)
   );
   prim_subreg_shadow #(
     .DW      (1),
@@ -1754,7 +1787,7 @@ module clkmgr_reg_top (
     .rst_ni,
     .en_i(sync_usb_update),
     .d_i(async_usb_meas_ctrl_shadowed_hi_err_storage),
-    .q_o(reg2hw.usb_meas_ctrl_shadowed.hi.err_storage)
+    .q_o(usb_meas_ctrl_shadowed_hi_storage_err)
   );
 
   // update error is transient and must be immediately captured
@@ -1764,7 +1797,7 @@ module clkmgr_reg_top (
     .src_pulse_i(async_usb_meas_ctrl_shadowed_hi_err_update),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(reg2hw.usb_meas_ctrl_shadowed.hi.err_update)
+    .dst_pulse_o(usb_meas_ctrl_shadowed_hi_update_err)
   );
   prim_subreg_shadow #(
     .DW      (9),
@@ -1812,7 +1845,7 @@ module clkmgr_reg_top (
     .rst_ni,
     .en_i(sync_usb_update),
     .d_i(async_usb_meas_ctrl_shadowed_lo_err_storage),
-    .q_o(reg2hw.usb_meas_ctrl_shadowed.lo.err_storage)
+    .q_o(usb_meas_ctrl_shadowed_lo_storage_err)
   );
 
   // update error is transient and must be immediately captured
@@ -1822,7 +1855,7 @@ module clkmgr_reg_top (
     .src_pulse_i(async_usb_meas_ctrl_shadowed_lo_err_update),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(reg2hw.usb_meas_ctrl_shadowed.lo.err_update)
+    .dst_pulse_o(usb_meas_ctrl_shadowed_lo_update_err)
   );
   prim_subreg_shadow #(
     .DW      (9),
@@ -2459,6 +2492,42 @@ module clkmgr_reg_top (
 
   // both shadow and normal resets have been released
   assign shadow_busy = ~(rst_done & shadow_rst_done);
+
+  // Collect up storage and update errors
+  assign shadowed_storage_err_o = |{
+    io_meas_ctrl_shadowed_en_storage_err,
+    io_meas_ctrl_shadowed_hi_storage_err,
+    io_meas_ctrl_shadowed_lo_storage_err,
+    io_div2_meas_ctrl_shadowed_en_storage_err,
+    io_div2_meas_ctrl_shadowed_hi_storage_err,
+    io_div2_meas_ctrl_shadowed_lo_storage_err,
+    io_div4_meas_ctrl_shadowed_en_storage_err,
+    io_div4_meas_ctrl_shadowed_hi_storage_err,
+    io_div4_meas_ctrl_shadowed_lo_storage_err,
+    main_meas_ctrl_shadowed_en_storage_err,
+    main_meas_ctrl_shadowed_hi_storage_err,
+    main_meas_ctrl_shadowed_lo_storage_err,
+    usb_meas_ctrl_shadowed_en_storage_err,
+    usb_meas_ctrl_shadowed_hi_storage_err,
+    usb_meas_ctrl_shadowed_lo_storage_err
+  };
+  assign shadowed_update_err_o = |{
+    io_meas_ctrl_shadowed_en_update_err,
+    io_meas_ctrl_shadowed_hi_update_err,
+    io_meas_ctrl_shadowed_lo_update_err,
+    io_div2_meas_ctrl_shadowed_en_update_err,
+    io_div2_meas_ctrl_shadowed_hi_update_err,
+    io_div2_meas_ctrl_shadowed_lo_update_err,
+    io_div4_meas_ctrl_shadowed_en_update_err,
+    io_div4_meas_ctrl_shadowed_hi_update_err,
+    io_div4_meas_ctrl_shadowed_lo_update_err,
+    main_meas_ctrl_shadowed_en_update_err,
+    main_meas_ctrl_shadowed_hi_update_err,
+    main_meas_ctrl_shadowed_lo_update_err,
+    usb_meas_ctrl_shadowed_en_update_err,
+    usb_meas_ctrl_shadowed_hi_update_err,
+    usb_meas_ctrl_shadowed_lo_update_err
+  };
 
   // register busy
   logic reg_busy_sel;

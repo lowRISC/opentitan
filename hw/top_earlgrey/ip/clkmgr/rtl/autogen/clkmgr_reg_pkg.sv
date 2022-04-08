@@ -76,90 +76,60 @@ package clkmgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en;
     struct packed {
       logic [9:0] q;
-      logic        err_update;
-      logic        err_storage;
     } hi;
     struct packed {
       logic [9:0] q;
-      logic        err_update;
-      logic        err_storage;
     } lo;
   } clkmgr_reg2hw_io_meas_ctrl_shadowed_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en;
     struct packed {
       logic [8:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } hi;
     struct packed {
       logic [8:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } lo;
   } clkmgr_reg2hw_io_div2_meas_ctrl_shadowed_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en;
     struct packed {
       logic [7:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } hi;
     struct packed {
       logic [7:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } lo;
   } clkmgr_reg2hw_io_div4_meas_ctrl_shadowed_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en;
     struct packed {
       logic [9:0] q;
-      logic        err_update;
-      logic        err_storage;
     } hi;
     struct packed {
       logic [9:0] q;
-      logic        err_update;
-      logic        err_storage;
     } lo;
   } clkmgr_reg2hw_main_meas_ctrl_shadowed_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        err_update;
-      logic        err_storage;
     } en;
     struct packed {
       logic [8:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } hi;
     struct packed {
       logic [8:0]  q;
-      logic        err_update;
-      logic        err_storage;
     } lo;
   } clkmgr_reg2hw_usb_meas_ctrl_shadowed_reg_t;
 
