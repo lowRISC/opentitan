@@ -53,26 +53,20 @@ module tlul_lc_gate
   tl_d2h_t tl_d2h_int [NumGatesPerDirection+1];
   for (genvar k = 0; k < NumGatesPerDirection; k++) begin : gen_lc_gating_muxes
     // H -> D path.
-    tl_h2d_t tl_h2d_unbuf;
-    assign tl_h2d_unbuf = (lc_tx_test_true_strict(lc_en_buf[2*k]))   ? tl_h2d_int[k]   : '0;
-    // We do not want the tool to get smart about restructuring the muxes, hence we insert an
-    // optimization barrier between them.
-    prim_buf #(
+    prim_blanker #(
       .Width($bits(tl_h2d_t))
-    ) u_prim_buf_h2d (
-      .in_i(tl_h2d_unbuf),
+    ) u_prim_blanker_h2d (
+      .in_i(tl_h2d_int[k]),
+      .en_i(lc_tx_test_true_strict(lc_en_buf[2*k])),
       .out_o(tl_h2d_int[k+1])
     );
 
     // D -> H path.
-    tl_d2h_t tl_d2h_unbuf;
-    assign tl_d2h_unbuf = (lc_tx_test_true_strict(lc_en_buf[2*k+1])) ? tl_d2h_int[k+1] : '0;
-    // We do not want the tool to get smart about restructuring the muxes, hence we insert an
-    // optimization barrier between them.
-    prim_buf #(
+    prim_blanker #(
       .Width($bits(tl_d2h_t))
-    ) u_prim_buf_d2h (
-      .in_i(tl_d2h_unbuf),
+    ) u_prim_blanker_d2h (
+      .in_i(tl_d2h_int[k+1]),
+      .en_i(lc_tx_test_true_strict(lc_en_buf[2*k+1])),
       .out_o(tl_d2h_int[k])
     );
   end
