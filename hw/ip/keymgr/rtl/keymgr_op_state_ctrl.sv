@@ -72,10 +72,10 @@ module keymgr_op_state_ctrl
       StAdv: begin
         adv_en_o = 1'b1;
 
-        if (kmac_done_i && (cnt_i == CDIs-1)) begin
+        if (kmac_done_i && (int'(cnt_i) == CDIs-1)) begin
           op_ack_o = 1'b1;
           state_d = StIdle;
-        end else if (kmac_done_i && (cnt_i < CDIs-1)) begin
+        end else if (kmac_done_i && (int'(cnt_i) < CDIs-1)) begin
           op_update_o = 1'b1;
           state_d = StAdvAck;
         end

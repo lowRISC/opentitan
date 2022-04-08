@@ -488,7 +488,7 @@ module keymgr_ctrl
         // when mask population is complete, xor the root_key into the zero share
         // if in the future the root key is updated to 2 shares, it will direclty overwrite
         // the values here
-        if (cnt == EntropyRounds-1) begin
+        if (int'(cnt) == EntropyRounds-1) begin
           random_ack = 1'b1;
           state_d = StCtrlRootKey;
         end
