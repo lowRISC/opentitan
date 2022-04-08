@@ -2,8 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "new_git_repository")
-
 def riscv_compliance_repos():
     #new_git_repository(
     #    name = "riscv-compliance",
@@ -19,7 +17,10 @@ def riscv_compliance_repos():
 
     # TODO(lowRISC/opentitan#11877)
     # For the time being, use a local repo, but it should really be replaced with
-    # the git repo defined above.
+    # the an http_archive version of the git repo defined above. Note, we avoid using
+    # git repos in order to support offline (airgapped) builds, which require building
+    # the repository cache offline (which only works with http_archive). See
+    # https://docs.bazel.build/versions/3.4.0/external.html#repository-rules
     #
     # Everything else in this directory is set up so that we can uncomment the above
     # without any other changes.
