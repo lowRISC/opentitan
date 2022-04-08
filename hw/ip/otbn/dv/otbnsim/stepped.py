@@ -12,65 +12,67 @@ The valid commands are as follows. All arguments are shown here as <argname>.
 The integer arguments are read with Python's int() function, so should be
 prefixed with "0x" if they are hexadecimal.
 
-    start                Set the PC to zero and start OTBN
+    start                   Set the PC to zero and start OTBN
 
-    configure            Enable or disable the secure wipe machinery (this is a
-                         temporary feature until everything works together)
+    configure               Enable or disable the secure wipe machinery (this is a
+                            temporary feature until everything works together)
 
-    step                 Run one instruction. Print trace information to
-                         stdout.
+    step                    Run one instruction. Print trace information to
+                            stdout.
 
-    load_elf <path>      Load the ELF file at <path>, replacing current
-                         contents of DMEM and IMEM.
+    load_elf <path>         Load the ELF file at <path>, replacing current
+                            contents of DMEM and IMEM.
 
-    add_loop_warp <addr> <from> <to>
+    add_loop_warp <addr>    <from> <to>
 
-                         Add a loop warp to the simulation. This will trigger
-                         at address <addr> and will jump from iteration <from>
-                         to iteration <to>.
+                            Add a loop warp to the simulation. This will trigger
+                            at address <addr> and will jump from iteration <from>
+                            to iteration <to>.
 
-    clear_loop_warps     Clear any loop warp rules
+    clear_loop_warps        Clear any loop warp rules
 
-    load_d <path>        Replace the current contents of DMEM with <path>
-                         (read as an array of 32-bit little-endian words)
+    load_d <path>           Replace the current contents of DMEM with <path>
+                            (read as an array of 32-bit little-endian words)
 
-    load_i <path>        Replace the current contents of IMEM with <path>
-                         (read as an array of 32-bit little-endian words)
+    load_i <path>           Replace the current contents of IMEM with <path>
+                            (read as an array of 32-bit little-endian words)
 
-    dump_d <path>        Write the current contents of DMEM to <path> (same
-                         format as for load).
+    dump_d <path>           Write the current contents of DMEM to <path> (same
+                            format as for load).
 
-    print_regs           Write the contents of all registers to stdout (in hex)
+    print_regs              Write the contents of all registers to stdout (in hex)
 
-    edn_rnd_step         Send 32b RND Data to the model.
+    edn_rnd_step            Send 32b RND Data to the model.
 
-    edn_rnd_cdc_done     Finish the RND data write process by signalling RTL
-                         is also finished processing 32b packages from EDN.
+    edn_rnd_cdc_done        Finish the RND data write process by signalling RTL
+                            is also finished processing 32b packages from EDN.
 
-    edn_urnd_step        Send 32b URND seed data to the model.
+    edn_urnd_step           Send 32b URND seed data to the model.
 
-    edn_urnd_cdc_done    Finish the URND resseding process by signalling RTL
-                         is also finished processing 32b packages from EDN and
-                         set the seed.
+    edn_urnd_cdc_done       Finish the URND resseding process by signalling RTL
+                            is also finished processing 32b packages from EDN and
+                            set the seed.
 
-    edn_flush            Flush EDN data from model because of reset signal in
-                         EDN clock domain
+    edn_flush               Flush EDN data from model because of reset signal in
+                            EDN clock domain
 
-    otp_key_cdc_done     Lowers the request flag for any external secure wipe
-                         operation. Gets called when we acknowledge incoming
-                         scrambling key in RTL.
+    otp_key_cdc_done        Lowers the request flag for any external secure wipe
+                            operation. Gets called when we acknowledge incoming
+                            scrambling key in RTL.
 
-    invalidate_imem      Mark all of IMEM as having invalid ECC checksums
+    invalidate_imem         Mark all of IMEM as having invalid ECC checksums
 
-    invalidate_dmem      Mark all of DMEM as having invalid ECC checksums
+    invalidate_dmem         Mark all of DMEM as having invalid ECC checksums
 
-    set_keymgr_value     Send keymgr data to the model.
+    set_keymgr_value        Send keymgr data to the model.
 
-    step_crc             Step CRC function with 48 bits of data. No actual
-                         change of state (this is pure, but handled in Python
-                         to simplify verification).
+    step_crc                Step CRC function with 48 bits of data. No actual
+                            change of state (this is pure, but handled in Python
+                            to simplify verification).
 
-    send_err_escalation  React to an injected error
+    send_err_escalation     React to an injected error.
+
+    set_software_errs_fatal Set software_errs_fatal bit.
 
 '''
 
@@ -380,9 +382,20 @@ def on_invalidate_dmem(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     return None
 
 
+def on_set_software_errs_fatal(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
+    if len(args) != 1:
+        raise ValueError('software_errs_fatal expects exactly 1 argument. Got {}.'
+                         .format(args))
+    new_val = read_word('error', args[0], 1)
+    assert new_val in [0, 1]
+    sim.state.software_errs_fatal = new_val != 0
+
+    return None
+
+
 def on_set_keymgr_value(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     if len(args) != 3:
-        raise ValueError('set_keymgr_value expects exactly 1 argument. Got {}.'
+        raise ValueError('set_keymgr_value expects exactly 3 arguments. Got {}.'
                          .format(args))
     key0 = read_word('key0', args[0], 384)
     key1 = read_word('key1', args[1], 384)
@@ -444,7 +457,8 @@ _HANDLERS = {
     'invalidate_dmem': on_invalidate_dmem,
     'set_keymgr_value': on_set_keymgr_value,
     'step_crc': on_step_crc,
-    'send_err_escalation': on_send_err_escalation
+    'send_err_escalation': on_send_err_escalation,
+    'set_software_errs_fatal': on_set_software_errs_fatal
 }
 
 

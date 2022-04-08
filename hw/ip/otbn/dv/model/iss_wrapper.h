@@ -127,6 +127,9 @@ struct ISSWrapper {
   // Mark all of DMEM as invalid so that any load causes an integrity error.
   void invalidate_dmem();
 
+  // Set software_errs_fatal bit in ISS model.
+  void set_software_errs_fatal(bool new_val);
+
   // Step a CRC calculation with 48 bits of data
   uint32_t step_crc(const std::array<uint8_t, 6> &item, uint32_t state) const;
 

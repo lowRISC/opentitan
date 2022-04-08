@@ -90,6 +90,9 @@ class OtbnModel {
   // error. Returns 0 on success; -1 on failure.
   int invalidate_dmem();
 
+  // Set software_errs_fatal bit in ISS model.
+  int set_software_errs_fatal(unsigned char new_val);
+
   // Step CRC by consuming 48 bits of data.
   //
   // This doesn't actually update any internal state: we're just using the
