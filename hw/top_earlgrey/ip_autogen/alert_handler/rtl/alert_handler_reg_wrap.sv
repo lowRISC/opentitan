@@ -173,7 +173,7 @@ module alert_handler_reg_wrap import alert_pkg::*; (
   for (genvar k = 0; k < NAlerts; k++) begin : gen_alert_en_class
     // we only ping enabled alerts that are locked
     assign reg2hw_wrap.alert_ping_en[k] = reg2hw.alert_en_shadowed[k].q &
-                                          reg2hw.alert_regwen[k].q;
+                                          ~reg2hw.alert_regwen[k].q;
     assign reg2hw_wrap.alert_en[k]      = reg2hw.alert_en_shadowed[k].q;
     assign reg2hw_wrap.alert_class[k]   = reg2hw.alert_class_shadowed[k].q;
   end
