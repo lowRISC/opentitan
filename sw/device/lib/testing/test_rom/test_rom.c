@@ -66,6 +66,13 @@ bool rom_test_main(void) {
 
   LOG_INFO("%s", chip_info);
 
+  // Print the FPGA version-id.
+  // This is guaranteed to be zero on all non-FPGA implementations.
+  uint32_t fpga = fpga_version();
+  if (fpga != 0) {
+    LOG_INFO("TestROM:%08x", fpga);
+  }
+
   int bootstrap_err = bootstrap();
   if (bootstrap_err != 0) {
     LOG_ERROR("Bootstrap failed with status code: %d", bootstrap_err);
