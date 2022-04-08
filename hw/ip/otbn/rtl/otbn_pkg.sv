@@ -481,7 +481,7 @@ package otbn_pkg;
     OtbnStartStopSecureWipeAccModBaseUrnd = 6'b100101,
     OtbnStartStopSecureWipeAllZero        = 6'b111110,
     OtbnStartStopSecureWipeComplete       = 6'b001011,
-    OtbnStartStopStateError               = 6'b000110
+    OtbnStartStopStateLocked              = 6'b000110
   } otbn_start_stop_state_e;
 
 // Encoding generated with:
