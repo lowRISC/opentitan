@@ -214,7 +214,7 @@ module otbn_core
   logic [ImemAddrWidth:0]   prefetch_loop_end_addr;
   logic [ImemAddrWidth-1:0] prefetch_loop_jump_addr;
 
-  mubi4_t               controller_escalate_en;
+  mubi4_t               controller_escalate_en, start_stop_escalate_en;
   controller_err_bits_t controller_err_bits;
 
   core_err_bits_t err_bits_q, err_bits_d;
@@ -232,6 +232,7 @@ module otbn_core
     .rst_ni,
 
     .start_i,
+    .escalate_en_i(start_stop_escalate_en),
 
     .controller_start_o(controller_start),
 
@@ -438,6 +439,12 @@ module otbn_core
   `ASSERT(InsnDataStableInStall, u_otbn_controller.state_q == OtbnStateStall |->
                                  insn_fetch_resp_data == $past(insn_fetch_resp_data))
 
+  // Spot the fatal error bits from the controller
+  logic controller_fatal_err;
+  assign controller_fatal_err = |{controller_err_bits.fatal_software,
+                                  controller_err_bits.bad_internal_state,
+                                  controller_err_bits.reg_intg_violation};
+
   // Generate an err_bits output by combining errors from all the blocks in otbn_core
   assign err_bits_d = '{
     fatal_software:      controller_err_bits.fatal_software,
@@ -472,12 +479,16 @@ module otbn_core
   // Pass an "escalation" signal down to the controller by ORing in error signals from the other
   // modules in otbn_core. Note that each error signal except escalate_en_i that appears here also
   // appears somewhere in err_bits_o above (checked in ErrBitsIfControllerEscalate_A)
-  assign controller_escalate_en = mubi4_or_hi(
-      escalate_en_i, mubi4_bool_to_mubi(
-          |{start_stop_state_error, urnd_all_zero, rf_base_rd_data_err, lsu_rdata_err,
-            insn_fetch_err}
-      )
-  );
+  assign controller_escalate_en =
+      mubi4_or_hi(escalate_en_i,
+                  mubi4_bool_to_mubi(|{start_stop_state_error, urnd_all_zero,
+                                       rf_base_rd_data_err, lsu_rdata_err, insn_fetch_err}));
+
+  // Similarly for the start/stop controller
+  assign start_stop_escalate_en =
+      mubi4_or_hi(escalate_en_i,
+                  mubi4_bool_to_mubi(|{urnd_all_zero, rf_base_rd_data_err,
+                                       lsu_rdata_err, insn_fetch_err, controller_fatal_err}));
 
   assign insn_cnt_o = insn_cnt;
 
@@ -732,6 +743,12 @@ module otbn_core
   // setting an error flag, unless the signal came from above.
   `ASSERT(ErrBitsIfControllerEscalate_A,
           mubi4_test_true_loose(controller_escalate_en) && mubi4_test_false_strict(escalate_en_i)
+          |=> err_bits_q)
+
+  // Similarly, if we pass an escalation signal down to the start/stop controller then we should
+  // also be setting an error flag, unless the signal came from above.
+  `ASSERT(ErrBitsIfStartStopEscalate_A,
+          mubi4_test_true_loose(start_stop_escalate_en) && mubi4_test_false_strict(escalate_en_i)
           |=> err_bits_q)
 
 endmodule
