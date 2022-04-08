@@ -150,20 +150,22 @@ def verilator_params(
 def cw310_params(
         # Base Parameters
         args = _BASE_PARAMS["args"] + [
-            "--exec=\"console -q -t0s\"",
+            "--exec=\"load-bitstream --rom-kind={rom_kind} $(location {bitstream})\"",
             "--exec=\"bootstrap $(location {flash})\"",
             "console",
             "--exit-failure=" + shell.quote(_EXIT_FAILURE),
             "--exit-success=" + shell.quote(_EXIT_SUCCESS),
             "--timeout=3600s",
         ],
-        data = _BASE_PARAMS["data"],
+        data = _BASE_PARAMS["data"] + ["{bitstream}"],
         local = _BASE_PARAMS["local"],
         otp = _BASE_PARAMS["otp"],
         rom = _BASE_PARAMS["rom"].format("fpga_cw310"),
         tags = _BASE_PARAMS["tags"] + ["cpu:4"],
         timeout = _BASE_PARAMS["timeout"],
         # CW310-specific Parameters
+        bitstream = "@bitstreams//:bitstream_test_rom",
+        rom_kind = None,
         # None
         **kwargs):
     """A macro to create CW310 parameters for OpenTitan functional tests.
@@ -202,6 +204,8 @@ def cw310_params(
         tags = required_tags + tags,
         test_runner = _BASE_PARAMS["test_runner"],
         timeout = timeout,
+        bitstream = bitstream,
+        rom_kind = rom_kind,
     )
     return kwargs
 
@@ -324,6 +328,16 @@ def opentitan_functest(
         if test_in_rom:
             rom = "{}_rom_prog_{}_scr_vmem".format(name, target)
 
+        bitstream = params.pop("bitstream", None)
+        rom_kind = params.pop("rom_kind", None)
+        if bitstream and not rom_kind:
+            if "test_rom" in bitstream:
+                rom_kind = "testrom"
+            elif "mask_rom" in bitstream:
+                rom_kind = "maskrom"
+            else:
+                fail("Unknown bitstream type. Expected the bitstream label to contain the string 'test_rom' or 'mask_rom'.")
+
         # Set OTP image.
         otp = params.pop("otp")
 
@@ -347,12 +361,15 @@ def opentitan_functest(
             name = name,
             otp = otp,
             rom = rom,
+            rom_kind = rom_kind,
+            bitstream = bitstream,
         )
         concat_data = _format_list(
             "data",
             data,
             params,
             flash = flash,
+            bitstream = bitstream,
         )
 
         native.sh_test(
