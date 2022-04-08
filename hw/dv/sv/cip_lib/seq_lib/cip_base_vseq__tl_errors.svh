@@ -157,6 +157,15 @@ virtual task tl_write_ro_mem_err(string ral_name);
   end
 endtask
 
+virtual task tl_write_w_instr_type(string ral_name);
+  bit [BUS_DW-1:0] data;
+  repeat ($urandom_range(10, 100)) begin
+    tl_access(.addr($urandom()), .write(1), .data(data),
+              .instr_type(MuBi4True), .exp_err_rsp(1),
+              .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
+  end
+endtask
+
 virtual task run_tl_errors_vseq(int num_times = 1, bit do_wait_clk = 0);
   // TODO(#6628): Target specific tlul_assert devices rather than
   //              globally enabling/disabling all of them.
@@ -234,6 +243,7 @@ virtual task run_tl_errors_vseq_sub(int num_times = 1, bit do_wait_clk = 0, stri
                 has_mem_byte_access_err: tl_write_mem_less_than_word(ral_name);
                 has_wo_mem: tl_read_wo_mem_err(ral_name);
                 has_ro_mem: tl_write_ro_mem_err(ral_name);
+                1: tl_write_w_instr_type(ral_name);
               endcase
             end
           join_none

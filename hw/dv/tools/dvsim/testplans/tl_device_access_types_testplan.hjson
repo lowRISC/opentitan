@@ -28,7 +28,8 @@
               - write a CSR less than its width, e.g. when CSR is 2 bytes wide, only write 1 byte
               - write a memory with `a_mask != '1` when it doesn't support partial accesses
               - read a WO (write-only) memory
-              - write a RO (read-only) memory'''
+              - write a RO (read-only) memory
+              - write with `instr_type = True`'''
       milestone: V2
       tests: ["{name}_tl_errors"]
     }
