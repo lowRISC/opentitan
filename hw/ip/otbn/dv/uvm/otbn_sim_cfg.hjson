@@ -251,7 +251,12 @@ name:
       en_run_modes: ["build_otbn_rig_binary_mode"]
       reseed: 5
     }
-
+    {
+      name: "otbn_sw_errs_fatal_chk"
+      uvm_test_seq: "otbn_sw_errs_fatal_chk_vseq"
+      en_run_modes: ["build_otbn_rig_binary_mode"]
+      reseed: 5
+    }
   ]
 
   // List of regressions.

@@ -290,6 +290,8 @@ class otbn_base_vseq extends cip_base_vseq #(
         csr_utils_pkg::csr_wr(ral.cmd, wdata);
       end
     end
+    csr_utils_pkg::csr_wr(ral.ctrl, 'b0);
+    cfg.model_agent_cfg.vif.set_software_errs_fatal(1'b0);
   endtask
 
   // The guts of the run_otbn task. Writes to the CMD register to start OTBN and polls the status
@@ -614,4 +616,27 @@ class otbn_base_vseq extends cip_base_vseq #(
     end
   endtask
 
+  // Task to check if otbn is in locked state. If otbn is indeed locked, then ensure fatal error is
+  // asserted and reset the dut.
+  virtual task reset_if_locked();
+    uvm_reg_data_t act_val;
+    wait (cfg.model_agent_cfg.vif.status != otbn_pkg::StatusBusyExecute);
+
+    // At this point, our status has changed. We're probably actually seeing the alert now, but make
+    // sure that it has gone out in at most 100 cycles.
+    if (cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked) begin
+      fork
+        begin
+          csr_utils_pkg::csr_rd(.ptr(ral.status), .value(act_val));
+          csr_utils_pkg::csr_rd(.ptr(ral.err_bits), .value(act_val));
+          csr_utils_pkg::csr_rd(.ptr(ral.fatal_alert_cause), .value(act_val));
+        end
+        begin
+          repeat (3) wait_alert_trigger("fatal", .wait_complete(1));
+        end
+      join
+      do_apply_reset = 1'b1;
+      dut_init("HARD");
+    end
+  endtask
 endclass : otbn_base_vseq

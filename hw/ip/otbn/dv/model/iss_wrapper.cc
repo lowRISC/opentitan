@@ -470,6 +470,14 @@ void ISSWrapper::invalidate_dmem() {
   run_command("invalidate_dmem\n", nullptr);
 }
 
+void ISSWrapper::set_software_errs_fatal(bool new_val) {
+  std::ostringstream oss;
+
+  oss << "set_software_errs_fatal " << new_val << "\n";
+
+  run_command(oss.str(), nullptr);
+}
+
 uint32_t ISSWrapper::step_crc(const std::array<uint8_t, 6> &item,
                               uint32_t state) const {
   std::vector<std::string> lines;

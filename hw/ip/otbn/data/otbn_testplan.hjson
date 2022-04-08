@@ -141,5 +141,14 @@
       milestone: V2S
       tests: ["otbn_illegal_mem_acc"]
     }
+    {
+      name: sw_errs_fatal_chk
+      desc: '''
+              Set ctrl.software_errs_fatal.
+              When set software errors produce fatal errors, rather than recoverable errors.
+            '''
+      milestone: V2
+      tests: ["otbn_sw_errs_fatal_chk"]
+    }
   ]
 }
