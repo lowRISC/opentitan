@@ -19,7 +19,6 @@ class csrng_device_seq extends csrng_base_seq;
 
       p_sequencer.req_analysis_fifo.get(req);
       `uvm_info(`gfn, $sformatf("Received item: %s", req.convert2string()), UVM_HIGH)
-      cfg.m_cmd_push_agent_cfg.zero_delays = cfg.cmd_ack_zero_delays;
       if (req.acmd == csrng_pkg::GEN) begin
         m_genbits_seq = push_pull_host_seq#(csrng_pkg::FIPS_GENBITS_BUS_WIDTH)::type_id::
            create("m_genbits_seq");

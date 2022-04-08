@@ -6,7 +6,8 @@ class csrng_device_driver extends csrng_driver;
   `uvm_component_utils(csrng_device_driver)
   `uvm_component_new
 
-  rand uint   cmd_ack_dly;
+  uint   cmd_ack_dly;
+  bit    rsp_sts;
 
   virtual task run_phase(uvm_phase phase);
     // base class forks off reset_signals() and get_and_drive() tasks
@@ -29,7 +30,8 @@ class csrng_device_driver extends csrng_driver;
           cmd_ack_dly, cmd_ack_dly inside {cfg.min_cmd_ack_dly, cfg.max_cmd_ack_dly};)
       repeat(cmd_ack_dly) @(cfg.vif.device_cb);
       cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_ack <= 1'b1;
-      cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_sts <= 1'b0;
+      `DV_CHECK_STD_RANDOMIZE_FATAL(rsp_sts)
+      cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_sts <= rsp_sts;
       @(cfg.vif.device_cb);
       cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_ack <= 1'b0;
       cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_sts <= 1'b0;

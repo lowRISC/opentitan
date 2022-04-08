@@ -60,6 +60,9 @@ class edn_env extends cip_base_env #(
         m_endpoint_agent[i].monitor.analysis_port.connect
             (scoreboard.endpoint_fifo[i].analysis_export);
       end
+
+      m_csrng_agent.monitor.rsp_sts_ap.connect
+          (scoreboard.rsp_sts_fifo.analysis_export);
     end
 
     for (int i = 0; i < cfg.num_endpoints; i++) begin

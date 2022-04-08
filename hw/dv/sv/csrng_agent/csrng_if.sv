@@ -67,7 +67,6 @@ interface csrng_if (input clk, input rst_n);
   task automatic wait_cmd_ack();
     do @(mon_cb);
     while (!mon_cb.cmd_rsp.csrng_rsp_ack);
-    `DV_CHECK_FATAL(mon_cb.cmd_rsp.csrng_rsp_sts == '0, , "csrng_if")
   endtask
 
 endinterface
