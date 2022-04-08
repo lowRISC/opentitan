@@ -84,11 +84,11 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
 
       // Wait for the slow state machine to be in low power.
       wait(cfg.pwrmgr_vif.slow_state == pwrmgr_pkg::SlowPwrStateLowPower);
-
       // This will send the wakeup and reset so they almost coincide.
+      // at low power state, do not use clk_rst_vif, cause it is off.
       fork
         begin
-          cfg.clk_rst_vif.wait_clks(cycles_before_reset);
+          cfg.aon_clk_rst_vif.wait_clks(cycles_before_reset);
           cfg.pwrmgr_vif.update_resets(resets);
           if (power_glitch_reset) begin
             `uvm_info(`gfn, "Sending power glitch", UVM_MEDIUM)
@@ -103,7 +103,7 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
                     ), UVM_MEDIUM)
         end
         begin
-          cfg.clk_rst_vif.wait_clks(cycles_before_wakeup);
+          cfg.aon_clk_rst_vif.wait_clks(cycles_before_wakeup);
           cfg.pwrmgr_vif.update_wakeups(wakeups);
           `uvm_info(`gfn, $sformatf("Sending wakeup=%b", wakeups), UVM_MEDIUM)
         end
@@ -116,9 +116,12 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
       // so we fork them to avoid conflicts.
       fork
         begin
-          cfg.slow_clk_rst_vif.wait_clks(4);
+          // At lowpower state, wait for clock comes back before check any csr
+          @cfg.clk_rst_vif.cb;
+          cfg.slow_clk_rst_vif.wait_clks(3);
           // Check wake_status prior to wakeup, or the unit requesting wakeup will have been reset.
           // This read will not work in the chip, since the processor will be asleep.
+
           check_wake_status(enabled_wakeups);
           `uvm_info(`gfn, $sformatf("Got wake_status=0x%x", enabled_wakeups), UVM_MEDIUM)
           check_reset_status(enabled_resets);

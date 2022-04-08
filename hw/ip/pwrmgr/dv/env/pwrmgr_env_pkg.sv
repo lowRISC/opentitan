@@ -28,6 +28,12 @@ package pwrmgr_env_pkg;
   // parameters
   parameter int NUM_INTERRUPTS = 1;
 
+  // clk enable disable delay
+  parameter uint MAIN_CLK_DELAY_MIN = pwrmgr_clk_ctrl_agent_pkg::MAIN_CLK_DELAY_MIN;
+  parameter uint MAIN_CLK_DELAY_MAX = pwrmgr_clk_ctrl_agent_pkg::MAIN_CLK_DELAY_MAX;
+  parameter uint ESC_CLK_DELAY_MIN = pwrmgr_clk_ctrl_agent_pkg::ESC_CLK_DELAY_MIN;
+  parameter uint ESC_CLK_DELAY_MAX = pwrmgr_clk_ctrl_agent_pkg::ESC_CLK_DELAY_MAX;
+
   // alerts
   parameter uint NUM_ALERTS = 1;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
