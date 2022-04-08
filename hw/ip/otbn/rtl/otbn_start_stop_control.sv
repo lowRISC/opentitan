@@ -24,14 +24,16 @@
 
 module otbn_start_stop_control
   import otbn_pkg::*;
-  #(
+  import prim_mubi_pkg::*;
+#(
   // Enable internal secure wipe
   parameter bit                SecWipeEn  = 1'b0
 )(
   input  logic clk_i,
   input  logic rst_ni,
 
-  input  logic start_i,
+  input  logic  start_i,
+  input mubi4_t escalate_en_i,
 
   output logic controller_start_o,
 
@@ -62,6 +64,27 @@ module otbn_start_stop_control
   logic addr_cnt_inc;
   logic [4:0] addr_cnt_q, addr_cnt_d;
 
+  // There are two ways in which the start/stop controller can be told to stop. Either
+  // start_secure_wipe_i comes from the controller (which means "I've run some instructions and I've
+  // hit an ECALL or error"). Or escalate_en_i can be asserted (which means "Someone else has told
+  // us to stop immediately"). If running, both can be true at once.
+  //
+  // An escalation signal gets latched into should_lock. If we were running some instructions, we'll
+  // go through the secure wipe process, but we'll see the should_lock_q signal when done and go
+  // into the local locked state.
+  logic esc_request, should_lock_d, should_lock_q, stop;
+  assign esc_request   = mubi4_test_true_loose(escalate_en_i);
+  assign stop          = esc_request | start_secure_wipe_i;
+  assign should_lock_d = should_lock_q | esc_request;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      should_lock_q <= 1'b0;
+    end else begin
+      should_lock_q <= should_lock_d;
+    end
+  end
+
   // SEC_CM: START_STOP_CTRL.FSM.SPARSE
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q,
       otbn_start_stop_state_e, OtbnStartStopStateHalt)
@@ -85,7 +108,9 @@ module otbn_start_stop_control
 
     unique case (state_q)
       OtbnStartStopStateHalt: begin
-        if (start_i) begin
+        if (stop) begin
+          state_d = OtbnStartStopStateLocked;
+        end else if (start_i) begin
           urnd_reseed_req_o = 1'b1;
           ispr_init_o       = 1'b1;
           state_reset_o     = 1'b1;
@@ -93,13 +118,15 @@ module otbn_start_stop_control
         end
       end
       OtbnStartStopStateUrndRefresh: begin
-        if (!urnd_reseed_busy_i) begin
+        if (stop) begin
+          state_d = OtbnStartStopStateLocked;
+        end else if (!urnd_reseed_busy_i) begin
           state_d     = OtbnStartStopStateRunning;
         end
       end
       OtbnStartStopStateRunning: begin
         urnd_advance_o = 1'b1;
-        if (start_secure_wipe_i) begin
+        if (stop) begin
           if (SecWipeEn) begin
             state_d = OtbnStartStopSecureWipeWdrUrnd;
           end
@@ -148,20 +175,21 @@ module otbn_start_stop_control
           state_d = OtbnStartStopSecureWipeComplete;
         end
       end
-       OtbnStartStopSecureWipeComplete: begin
+      OtbnStartStopSecureWipeComplete: begin
         urnd_advance_o = 1'b1;
         secure_wipe_running_o = 1'b1;
-        state_d = OtbnStartStopStateHalt;
+        state_d = should_lock_d ? OtbnStartStopStateLocked : OtbnStartStopStateHalt;
       end
-      OtbnStartStopStateError: begin
+      OtbnStartStopStateLocked: begin
         // SEC_CM: START_STOP_CTRL.FSM.LOCAL_ESC
-        // Terminal error state
-        state_error_o = 1'b1;
+        //
+        // Terminal state. This is either accessed by glitching state_q (and going through the
+        // default case below) or by getting an escalation signal
       end
       default: begin
         // We should never get here. If we do (e.g. via a malicious glitch), error out immediately.
         state_error_o = 1'b1;
-        state_d = OtbnStartStopStateError;
+        state_d = OtbnStartStopStateLocked;
       end
     endcase
   end
@@ -182,13 +210,17 @@ module otbn_start_stop_control
 
   assign sec_wipe_addr_o = addr_cnt_q;
 
-  `ASSERT(StartStopStateValid,
+  `ASSERT(StartStopStateValid_A,
       state_q inside {OtbnStartStopStateHalt,
                       OtbnStartStopStateUrndRefresh,
                       OtbnStartStopStateRunning,
                       OtbnStartStopSecureWipeWdrUrnd,
                       OtbnStartStopSecureWipeAccModBaseUrnd,
                       OtbnStartStopSecureWipeAllZero,
-                      OtbnStartStopSecureWipeComplete})
+                      OtbnStartStopSecureWipeComplete,
+                      OtbnStartStopStateLocked})
+
+  `ASSERT(StartSecureWipeImpliesRunning_A,
+          start_secure_wipe_i |-> (state_q == OtbnStartStopStateRunning))
 
 endmodule
