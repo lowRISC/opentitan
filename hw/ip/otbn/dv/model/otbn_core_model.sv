@@ -125,12 +125,12 @@ module otbn_core_model
 
   // EDN URND Seed Request Logic
   logic edn_urnd_req_q, edn_urnd_req_d, start_q, start_d;
-  bit is_locked;
+  bit is_idle;
 
   // URND Reseeding is only done when OTBN receives EXECUTE command.
-  assign start_d = (cmd == CmdExecute);
-  assign is_locked = otbn_pkg::status_e'(status_o) == StatusLocked;
-  assign edn_urnd_req_d = !is_locked & ~edn_urnd_cdc_done_i & (edn_urnd_req_q | start_q);
+  assign start_d = (cmd == CmdExecute) & is_idle;
+  assign is_idle = otbn_pkg::status_e'(status_o) == StatusIdle;
+  assign edn_urnd_req_d = ~edn_urnd_cdc_done_i & (edn_urnd_req_q | start_q);
 
   assign edn_urnd_o = edn_urnd_req_q;
 
