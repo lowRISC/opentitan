@@ -355,6 +355,11 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     bit unmapped_err, mem_access_err, bus_intg_err, byte_wr_err, csr_size_err, tl_item_err;
     bit mem_byte_access_err, mem_wo_err, mem_ro_err, custom_err;
 
+    cip_tl_seq_item cip_item;
+    tl_intg_err_e tl_intg_err_type;
+    uint num_cmd_err_bits, num_data_err_bits;
+    bit write_w_instr_type_err;
+
     unmapped_err = !is_tl_access_mapped_addr(item, ral_name);
     if (unmapped_err) begin
       // if devmode is enabled, d_error will be set
@@ -379,15 +384,15 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     byte_wr_err = is_tl_access_unsupported_byte_wr(item, ral_name);
     csr_size_err = !is_tl_csr_write_size_gte_csr_width(item, ral_name);
     tl_item_err = item.get_exp_d_error();
-    exp_d_error |= byte_wr_err | bus_intg_err | csr_size_err | tl_item_err;
+    `downcast(cip_item, item)
+    cip_item.get_a_chan_err_info(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits,
+                                 write_w_instr_type_err);
+    exp_d_error |= byte_wr_err | bus_intg_err | csr_size_err | tl_item_err | write_w_instr_type_err;
 
-    invalid_access  = unmapped_err | mem_access_err | bus_intg_err | csr_size_err | tl_item_err;
+    invalid_access = unmapped_err | mem_access_err | bus_intg_err | csr_size_err | tl_item_err |
+                     write_w_instr_type_err;
 
     if (channel == DataChannel) begin
-      cip_tl_seq_item cip_item;
-      tl_intg_err_e tl_intg_err_type;
-      uint num_cmd_err_bits, num_data_err_bits;
-
       // integrity at d_user is from DUT, which should be always correct, except data integrity for
       // passthru memory
       void'(item.is_d_chan_intg_ok(
@@ -396,8 +401,6 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
             .throw_error(1)));
 
       // sample covergroup
-      `downcast(cip_item, item)
-      cip_item.get_a_chan_err_info(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits);
       tl_intg_err_cgs_wrap[ral_name].sample(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits,
                                             is_mem_addr(item, ral_name));
 
@@ -412,9 +415,10 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     if (channel == DataChannel) begin
       `DV_CHECK_EQ(item.d_error, exp_d_error,
           $sformatf({"On interface %0s, TL item: %0s, unmapped_err: %0d, mem_access_err: %0d, ",
-                    "bus_intg_err: %0d, byte_wr_err: %0d, csr_size_err: %0d, tl_item_err: %0d"},
+                    "bus_intg_err: %0d, byte_wr_err: %0d, csr_size_err: %0d, tl_item_err: %0d, ",
+                    "write_w_instr_type_err: %0d"},
                     ral_name, item.sprint(uvm_default_line_printer), unmapped_err, mem_access_err,
-                    bus_intg_err, byte_wr_err, csr_size_err, tl_item_err))
+                    bus_intg_err, byte_wr_err, csr_size_err, tl_item_err, write_w_instr_type_err))
 
       // In data read phase, check d_data when d_error = 1.
       if (item.d_error && (item.d_opcode == tlul_pkg::AccessAckData)) begin
