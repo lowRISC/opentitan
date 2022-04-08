@@ -61,6 +61,12 @@ class otbn_escalate_vseq extends otbn_base_vseq;
   // Return immediately if we go into reset.
   task send_escalation_signal(int unsigned max_cycles);
     cfg.escalate_vif.randomize_after_n_clocks($urandom_range(max_cycles), .f_weight(0));
+    if (!(cfg.escalate_vif.enable inside {lc_ctrl_pkg::Off, lc_ctrl_pkg::On})) begin
+      $assertoff(0, "tb.dut.u_lc_escalate_en_sync.PrimLcSyncCheckTransients_A");
+      $assertoff(0, "tb.dut.u_lc_escalate_en_sync.PrimLcSyncCheckTransients0_A");
+      $assertoff(0, "tb.dut.u_lc_escalate_en_sync.PrimLcSyncCheckTransients1_A");
+    end
+
   endtask
 
   // Wait for a fatal alert to come out and retrigger at least once. Then reset the DUT. This is
@@ -73,6 +79,9 @@ class otbn_escalate_vseq extends otbn_base_vseq;
 
     do_apply_reset = 1'b1;
     dut_init("HARD");
+    $asserton(0, "tb.dut.u_lc_escalate_en_sync.PrimLcSyncCheckTransients_A");
+    $asserton(0, "tb.dut.u_lc_escalate_en_sync.PrimLcSyncCheckTransients0_A");
+    $asserton(0, "tb.dut.u_lc_escalate_en_sync.PrimLcSyncCheckTransients1_A");
   endtask
 
 endclass
