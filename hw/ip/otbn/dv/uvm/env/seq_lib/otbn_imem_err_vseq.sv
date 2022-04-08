@@ -57,24 +57,7 @@ class otbn_imem_err_vseq extends otbn_base_vseq;
 
     // Looks like the injected error should have some effect. Wait until the ISS and RTL move to a
     // locked state.
-    wait (cfg.model_agent_cfg.vif.status != otbn_pkg::StatusBusyExecute);
-    `DV_CHECK_FATAL(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked);
-
-    // The scoreboard will have seen the transition to locked state and inferred that it should see
-    // a fatal alert. However, it doesn't really have a way to ensure that we keep generating them.
-    // Wait for 3 fatal alerts and also read STATUS, ERR_BITS and FATAL_ALERT_CAUSE in parallel.
-    fork
-      begin
-        csr_utils_pkg::csr_rd(.ptr(ral.status), .value(act_val));
-        csr_utils_pkg::csr_rd(.ptr(ral.err_bits), .value(act_val));
-        csr_utils_pkg::csr_rd(.ptr(ral.fatal_alert_cause), .value(act_val));
-      end
-      begin
-        repeat (3) wait_alert_trigger("fatal", .wait_complete(1));
-      end
-    join
-    do_apply_reset = 1'b1;
-    dut_init("HARD");
+    reset_if_locked();
   endtask
 
 endclass

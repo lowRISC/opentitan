@@ -15,3 +15,4 @@
 `include "otbn_escalate_vseq.sv"
 `include "otbn_zero_state_err_urnd_vseq.sv"
 `include "otbn_illegal_mem_acc_vseq.sv"
+`include "otbn_sw_errs_fatal_chk_vseq.sv"

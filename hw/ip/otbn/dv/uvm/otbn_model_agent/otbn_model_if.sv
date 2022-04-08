@@ -92,6 +92,12 @@ interface otbn_model_if
     release u_model.wakeup_iss;
   endtask: send_err_escalation
 
+  function automatic void set_software_errs_fatal(bit new_val);
+    `uvm_info("otbn_model_if", "writing to software_errs_fatal", UVM_HIGH);
+    `DV_CHECK_FATAL(u_model.otbn_model_set_software_errs_fatal(handle, new_val) == 0,
+                    "Failed to set software_errs_fatal", "otbn_model_if")
+  endfunction
+
   // The err signal is asserted by the model if it fails to find the DUT or if it finds a mismatch
   // in results. It should never go high.
   `ASSERT(NoModelErrs, !err)

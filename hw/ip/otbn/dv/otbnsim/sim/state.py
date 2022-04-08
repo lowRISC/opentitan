@@ -143,6 +143,10 @@ class OTBNState:
         # cancelled).
         self.injected_err_bits = 0
 
+        # If this is set, all software errors should result in the model status
+        # being locked.
+        self.software_errs_fatal = False
+
     def get_next_pc(self) -> int:
         if self._pc_next_override is not None:
             return self._pc_next_override
@@ -408,8 +412,8 @@ class OTBNState:
         # set) is the 'done' flag.
         self.ext_regs.set_bits('INTR_STATE', 1 << 0)
 
-        should_lock = (self._err_bits >> 16) != 0
-
+        should_lock = (((self._err_bits >> 16) != 0) or
+                       (self._err_bits and self.software_errs_fatal))
         # Make any error bits visible
         self.ext_regs.write('ERR_BITS', self._err_bits, True)
 

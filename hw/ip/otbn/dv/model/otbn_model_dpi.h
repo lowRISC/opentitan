@@ -114,6 +114,11 @@ void otbn_take_loop_warps(OtbnModel *model, OtbnMemUtil *memutil);
 // React to an error escalation. Returns 0 on success or -1 on failure.
 int otbn_model_send_err_escalation(OtbnModel *model,
                                    svBitVecVal *err_val /* bit [31:0] */);
+
+// Tell the model to set software_errs_fatal bit in ctrl register. Once this bit
+// is set, any software error will be ellevated to fatal error from recoverable
+// error.
+int otbn_model_set_software_errs_fatal(OtbnModel *model, unsigned char new_val);
 }
 
 #endif  // OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_MODEL_DPI_H_

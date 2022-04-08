@@ -483,6 +483,22 @@ int OtbnModel::invalidate_dmem() {
   return 0;
 }
 
+int OtbnModel::set_software_errs_fatal(unsigned char new_val) {
+  ISSWrapper *iss = ensure_wrapper();
+  if (!iss)
+    return -1;
+
+  try {
+    iss->set_software_errs_fatal(new_val);
+  } catch (const std::exception &err) {
+    std::cerr << "Error when setting software_errs_fatal bit in ISS: "
+              << err.what() << "\n";
+    return -1;
+  }
+
+  return 0;
+}
+
 int OtbnModel::step_crc(const svBitVecVal *item /* bit [47:0] */,
                         svBitVecVal *state /* bit [31:0] */) {
   ISSWrapper *iss = ensure_wrapper();
@@ -888,4 +904,10 @@ int otbn_model_send_err_escalation(OtbnModel *model,
                                    svBitVecVal *err_val /* bit [31:0] */) {
   assert(model);
   return model->send_err_escalation(err_val);
+}
+
+int otbn_model_set_software_errs_fatal(OtbnModel *model,
+                                       unsigned char new_val) {
+  assert(model);
+  return model->set_software_errs_fatal(new_val);
 }
