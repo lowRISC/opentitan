@@ -18,6 +18,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
       genbits_fifo;
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(FIPS_ENDPOINT_BUS_WIDTH)))
       endpoint_fifo[MAX_NUM_ENDPOINTS];
+  uvm_tlm_analysis_fifo#(bit)   rsp_sts_fifo;
 
   // local queues to hold incoming packets pending comparison
   bit[FIPS_ENDPOINT_BUS_WIDTH - 1:0]   endpoint_data_q[$];
@@ -29,6 +30,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
 
     genbits_fifo = new("genbits_fifo", this);
     cs_cmd_fifo  = new("cs_cmd_fifo", this);
+    rsp_sts_fifo = new("cs_rsp_sts_fifo", this);
 
     for (int i = 0; i < cfg.num_endpoints; i++) begin
       endpoint_fifo[i] = new($sformatf("endpoint_fifo[%0d]", i), this);
@@ -48,6 +50,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
 
     fork
       process_genbits_fifo();
+      process_rsp_sts_fifo();
     join_none
 
     for (int i = 0; i < cfg.num_endpoints; i++) begin
@@ -147,6 +150,18 @@ class edn_scoreboard extends cip_base_scoreboard #(
       for (int i = 0; i < csrng_pkg::GENBITS_BUS_WIDTH/ENDPOINT_BUS_WIDTH; i++) begin
         endpoint_data = genbits_item.h_data >> (i * ENDPOINT_BUS_WIDTH);
         endpoint_data_q.push_back({fips, endpoint_data});
+      end
+    end
+  endtask
+
+  task process_rsp_sts_fifo();
+    bit   rsp_sts;
+
+    forever begin
+      rsp_sts_fifo.get(rsp_sts);
+      if ((cfg.boot_req_mode == MuBi4False) && (cfg.auto_req_mode == MuBi4False)) begin
+        // Check register value if not boot_req_mode/auto_req_mode
+        csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_sts), .exp_data(rsp_sts));
       end
     end
   endtask

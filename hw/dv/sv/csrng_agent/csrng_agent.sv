@@ -33,6 +33,7 @@ class csrng_agent extends dv_base_agent #(
     cfg.m_cmd_push_agent_cfg.is_active   = cfg.is_active;
     cfg.m_cmd_push_agent_cfg.agent_type  = PushAgent;
     cfg.m_cmd_push_agent_cfg.if_mode     = cfg.if_mode;
+    cfg.m_cmd_push_agent_cfg.zero_delays = cfg.cmd_ack_zero_delays;
 
     m_genbits_push_agent = push_pull_agent#(csrng_pkg::FIPS_GENBITS_BUS_WIDTH)::type_id::
                            create("m_genbits_push_agent", this);

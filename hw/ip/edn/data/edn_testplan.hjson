@@ -113,19 +113,13 @@ covergroups: [
             '''
     }
     {
-      name: cs_commands_cg
+      name: cs_cmds_cg
       desc: '''
             Covers the following:
             - csrng_commands vs clen, flags, glen
               - sw, auto_req_mode commands (boot_req_mode cmds have no additional data)
             - ready deasserts during command
             Crosses between above coverpoints
-            '''
-    }
-    {
-      name: edn_genbits_cg
-      desc: '''
-            Covers genbits requested/returned delays
             '''
     }
     {

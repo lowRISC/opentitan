@@ -14,6 +14,9 @@ class csrng_monitor extends dv_base_monitor #(
   // csrng_agent_cov: cov
   // uvm_analysis_port #(csrng_item): analysis_port
 
+  // Analysis port for the csrng_rsp_sts.
+  uvm_analysis_port #(bit) rsp_sts_ap;
+
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(csrng_pkg::CSRNG_CMD_WIDTH)))
       csrng_cmd_fifo;
 
@@ -25,6 +28,7 @@ class csrng_monitor extends dv_base_monitor #(
     super.build_phase(phase);
 
     csrng_cmd_fifo = new("csrng_cmd_fifo", this);
+    rsp_sts_ap     = new("rsp_sts_ap", this);
   endfunction
 
   task run_phase(uvm_phase phase);
@@ -125,6 +129,7 @@ class csrng_monitor extends dv_base_monitor #(
         // detecting another request, as this is not a pipelined protocol.
         `DV_SPINWAIT_EXIT(while (!cfg.vif.mon_cb.cmd_rsp.csrng_rsp_ack) @(cfg.vif.mon_cb);,
                           wait(in_reset))
+        rsp_sts_ap.write(cfg.vif.cmd_rsp.csrng_rsp_sts);
        end
     end
   endtask
