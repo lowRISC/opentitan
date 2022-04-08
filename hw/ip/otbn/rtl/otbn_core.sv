@@ -611,8 +611,6 @@ module otbn_core
     end
   end
 
-
-
   otbn_alu_bignum u_otbn_alu_bignum (
     .clk_i,
     .rst_ni,
