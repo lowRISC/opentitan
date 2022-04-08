@@ -32,7 +32,7 @@ The following keys are provisioned as part of this flow.
 ### CODE_SIGN
 
 *   **Description**: Used to verify the Silicon Owner first bootloader stage.
-*   **Key Type**: RSA-3072 public key with exponent 3 or F4.
+*   **Key Type**: RSA-3072 public key with exponent F4.
 
 ### UNLOCK
 

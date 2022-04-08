@@ -93,7 +93,7 @@ manifest_def! {
         signature: ManifestBigInt,
         usage_constraints: ManifestUsageConstraintsDef,
         modulus: ManifestBigInt,
-        exponent: ManifestSmallInt<u32>,
+        address_translation: ManifestSmallInt<u32>,
         identifier: ManifestSmallInt<u32>,
         length: ManifestSmallInt<u32>,
         version_major: ManifestSmallInt<u32>,
