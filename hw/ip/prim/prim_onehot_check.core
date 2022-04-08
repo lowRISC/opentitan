@@ -3,15 +3,14 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-name: "lowrisc:prim:onehot"
-description: "Utilities for working with one-hot encoding"
+name: "lowrisc:prim:onehot_check"
+description: "One-hot encoding checker"
 filesets:
   files_rtl:
     depend:
       - lowrisc:prim:util
     files:
-      - rtl/prim_onehot_enc.sv
-      - rtl/prim_onehot_mux.sv
+      - rtl/prim_onehot_check.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
@@ -19,7 +18,7 @@ filesets:
       # common waivers
       - lowrisc:lint:common
     #files:
-    #  - lint/prim_onehot.vlt
+    #  - lint/prim_onehot_check.vlt
     file_type: vlt
 
   files_ascentlint_waiver:
@@ -27,7 +26,7 @@ filesets:
       # common waivers
       - lowrisc:lint:common
     #files:
-    #  - lint/prim_onehot.waiver
+    #  - lint/prim_onehot_check.waiver
     file_type: waiver
 
   files_veriblelint_waiver:
@@ -42,3 +41,8 @@ targets:
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl
+
+  formal:
+    filesets:
+      - files_rtl
+    toplevel: prim_onehot_check
