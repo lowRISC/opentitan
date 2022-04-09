@@ -127,6 +127,7 @@ sw_silicon_creator_lib_driver_keymgr_functest = declare_dependency(
     ],
     dependencies: [
       sw_lib_dif_aon_timer,
+      sw_lib_dif_flash_ctrl,
       sw_lib_dif_kmac,
       sw_lib_dif_pwrmgr,
       sw_lib_dif_otp_ctrl,
