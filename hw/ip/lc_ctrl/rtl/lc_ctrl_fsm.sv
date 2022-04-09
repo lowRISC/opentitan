@@ -351,11 +351,9 @@ module lc_ctrl_fsm
           // If any of these RMA are conditions are true,
           // all of them must be true at the same time.
           if ((trans_target_i != {DecLcStateNumRep{DecLcStRma}} &&
-               lc_flash_rma_req_o == Off    &&
-               lc_flash_rma_ack[1] == Off)   ||
+               lc_flash_rma_req_o == Off && lc_flash_rma_ack[1] == Off) ||
               (trans_target_i == {DecLcStateNumRep{DecLcStRma}} &&
-               lc_flash_rma_req_o == On     &&
-               lc_flash_rma_ack[1] == On)) begin
+               lc_flash_rma_req_o == On && lc_flash_rma_ack[1] == On)) begin
             if (hashed_token_i == hashed_token_mux &&
                 !token_hash_err_i &&
                 &hashed_token_valid_mux) begin
@@ -388,11 +386,17 @@ module lc_ctrl_fsm
         // If the clock mux has been steered, double check that this is still the case.
         // Otherwise abort the transition operation.
         if (lc_clk_byp_req_o != lc_clk_byp_ack[2]) begin
-            fsm_state_d = PostTransSt;
-            otp_prog_error_o = 1'b1;
-        end
-
-        if (otp_prog_ack_i) begin
+          fsm_state_d = PostTransSt;
+          otp_prog_error_o = 1'b1;
+        // Also double check that the RMA signals remain stable.
+        // Otherwise abort the transition operation.
+        end else if ((trans_target_i != {DecLcStateNumRep{DecLcStRma}} &&
+                      (lc_flash_rma_req_o != Off || lc_flash_rma_ack[1] != Off)) ||
+                     (trans_target_i == {DecLcStateNumRep{DecLcStRma}} &&
+                      (lc_flash_rma_req_o != On || lc_flash_rma_ack[1] != On))) begin
+          fsm_state_d = PostTransSt;
+          flash_rma_error_o = 1'b1;
+        end else if (otp_prog_ack_i) begin
           fsm_state_d = PostTransSt;
           otp_prog_error_o = otp_prog_err_i;
           trans_success_o  = ~otp_prog_err_i;
