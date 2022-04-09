@@ -8,6 +8,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
@@ -101,15 +102,24 @@ const test_config_t kTestConfig;
  */
 static void write_info_page(uint32_t page_id, const uint32_t *data,
                             size_t size) {
-  mp_region_t info_region = {.num = page_id,
-                             .base = 0x0,  // only used to calculate bank id.
-                             .size = 0x1,  // unused for info pages.
-                             .part = kInfoPartition,
-                             .rd_en = true,
-                             .prog_en = true,
-                             .erase_en = true,
-                             .scramble_en = false};
-  flash_cfg_region(&info_region);
+  dif_flash_ctrl_state_t flash;
+  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+
+  // info partition has no default access, specifically setup a region
+  dif_flash_ctrl_info_region_t info_region = {
+      .bank = 0, .partition_id = 0, .page = page_id};
+
+  dif_flash_ctrl_region_properties_t region_properties = {
+      .rd_en = kMultiBitBool4True,
+      .prog_en = kMultiBitBool4True,
+      .erase_en = kMultiBitBool4True,
+      .scramble_en = kMultiBitBool4False,
+      .ecc_en = kMultiBitBool4False,
+      .high_endurance_en = kMultiBitBool4False};
+
+  CHECK_DIF_OK(dif_flash_ctrl_set_info_region_properties(&flash, info_region,
+                                                         region_properties));
 
   uint32_t address = FLASH_MEM_BASE_ADDR + page_id * flash_get_page_size();
 
@@ -122,10 +132,12 @@ static void write_info_page(uint32_t page_id, const uint32_t *data,
                           /*size=*/1, &got_data));
     CHECK(got_data == data[i]);
   }
-  info_region.rd_en = false;
-  info_region.prog_en = false;
-  info_region.erase_en = false;
-  flash_cfg_region(&info_region);
+
+  region_properties.rd_en = kMultiBitBool4False;
+  region_properties.prog_en = kMultiBitBool4False;
+  region_properties.erase_en = kMultiBitBool4False;
+  CHECK_DIF_OK(dif_flash_ctrl_set_info_region_properties(&flash, info_region,
+                                                         region_properties));
 }
 
 static void init_flash(void) {

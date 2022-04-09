@@ -41,15 +41,15 @@ struct InfoPage {
  * tests.
  */
 const std::map<flash_ctrl_info_page_t, InfoPage> &InfoPages() {
-#define INFO_PAGE_MAP_INIT(name_, value_, bank_, page_)                          \
-  {                                                                              \
-      name_,                                                                     \
-      {                                                                          \
-          bank_,                                                                 \
-          page_,                                                                 \
-          FLASH_CTRL_BANK##bank_##_INFO0_PAGE_CFG_SHADOWED_##page_##_REG_OFFSET, \
-          FLASH_CTRL_BANK##bank_##_INFO0_REGWEN_##page_##_REG_OFFSET,            \
-      },                                                                         \
+#define INFO_PAGE_MAP_INIT(name_, value_, bank_, page_)                 \
+  {                                                                     \
+      name_,                                                            \
+      {                                                                 \
+          bank_,                                                        \
+          page_,                                                        \
+          FLASH_CTRL_BANK##bank_##_INFO0_PAGE_CFG_##page_##_REG_OFFSET, \
+          FLASH_CTRL_BANK##bank_##_INFO0_REGWEN_##page_##_REG_OFFSET,   \
+      },                                                                \
   },
 
   static const std::map<flash_ctrl_info_page_t, InfoPage> *const kInfoPages =
@@ -105,6 +105,43 @@ struct InitCase {
 class InitTest : public FlashCtrlTest,
                  public testing::WithParamInterface<InitCase> {};
 
+uint32_t CfgToDefaultMp(flash_ctrl_cfg_t cfg) {
+  uint32_t val = bitfield_field32_write(
+      0, FLASH_CTRL_DEFAULT_REGION_SCRAMBLE_EN_FIELD,
+      cfg.scrambling == kMultiBitBool8True ? kMultiBitBool4True
+                                           : kMultiBitBool4False);
+
+  val = bitfield_field32_write(
+      val, FLASH_CTRL_DEFAULT_REGION_ECC_EN_FIELD,
+      cfg.ecc == kMultiBitBool8True ? kMultiBitBool4True : kMultiBitBool4False);
+
+  val = bitfield_field32_write(
+      val, FLASH_CTRL_DEFAULT_REGION_HE_EN_FIELD,
+      cfg.he == kMultiBitBool8True ? kMultiBitBool4True : kMultiBitBool4False);
+
+  return val;
+}
+
+uint32_t CfgToInfoMp(flash_ctrl_cfg_t cfg) {
+  uint32_t val = bitfield_field32_write(
+      0, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_SCRAMBLE_EN_0_FIELD,
+      cfg.scrambling == kMultiBitBool8True ? kMultiBitBool4True
+                                           : kMultiBitBool4False);
+
+  val = bitfield_field32_write(
+      val, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ECC_EN_0_FIELD,
+      cfg.ecc == kMultiBitBool8True ? kMultiBitBool4True : kMultiBitBool4False);
+
+  val = bitfield_field32_write(
+      val, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_HE_EN_0_FIELD,
+      cfg.he == kMultiBitBool8True ? kMultiBitBool4True : kMultiBitBool4False);
+
+  val = bitfield_field32_write(
+      val, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_EN_0_FIELD, kMultiBitBool4True);
+
+  return val;
+}
+
 uint32_t CfgToOtp(flash_ctrl_cfg_t cfg) {
   uint32_t val = bitfield_field32_write(0, FLASH_CTRL_OTP_FIELD_SCRAMBLING,
                                         cfg.scrambling);
@@ -118,16 +155,15 @@ TEST_P(InitTest, Initialize) {
                      {{FLASH_CTRL_INIT_VAL_BIT, true}});
 
   auto info_page = InfoPages().at(kFlashCtrlInfoPageCreatorSecret);
-  EXPECT_SEC_WRITE32_SHADOWED(base_ + info_page.cfg_offset, 0);
+  EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, 0);
   EXPECT_SEC_WRITE32(base_ + info_page.cfg_wen_offset, 0);
 
   EXPECT_CALL(
       otp_, read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET))
       .WillOnce(Return(CfgToOtp(GetParam().cfg)));
-  EXPECT_SEC_READ32(base_ + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET, 0);
-  EXPECT_SEC_WRITE32_SHADOWED(
-      base_ + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET,
-      GetParam().data_write_val);
+  EXPECT_SEC_READ32(base_ + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET, 0);
+  EXPECT_SEC_WRITE32(base_ + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET,
+                     CfgToDefaultMp(GetParam().cfg));
 
   EXPECT_CALL(
       otp_,
@@ -135,13 +171,11 @@ TEST_P(InitTest, Initialize) {
       .WillOnce(Return(CfgToOtp(GetParam().cfg)));
   info_page = InfoPages().at(kFlashCtrlInfoPageBootData0);
   EXPECT_SEC_READ32(base_ + info_page.cfg_offset, 0);
-  EXPECT_SEC_WRITE32_SHADOWED(base_ + info_page.cfg_offset,
-                              GetParam().info_write_val);
+  EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, CfgToInfoMp(GetParam().cfg));
 
   info_page = InfoPages().at(kFlashCtrlInfoPageBootData1);
   EXPECT_SEC_READ32(base_ + info_page.cfg_offset, 0);
-  EXPECT_SEC_WRITE32_SHADOWED(base_ + info_page.cfg_offset,
-                              GetParam().info_write_val);
+  EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, CfgToInfoMp(GetParam().cfg));
 
   flash_ctrl_init();
 }
@@ -367,22 +401,62 @@ class FlashCtrlPermsSetTest : public FlashCtrlTest,
                               public testing::WithParamInterface<PermsSetCase> {
 };
 
+uint32_t PermsToMp(flash_ctrl_perms_t perms) {
+  uint32_t val = bitfield_field32_write(
+      0, FLASH_CTRL_DEFAULT_REGION_RD_EN_FIELD,
+      perms.read == kHardenedBoolTrue ? kMultiBitBool4True
+                                      : kMultiBitBool4False);
+
+  val = bitfield_field32_write(val, FLASH_CTRL_DEFAULT_REGION_PROG_EN_FIELD,
+                               perms.write == kHardenedBoolTrue
+                                   ? kMultiBitBool4True
+                                   : kMultiBitBool4False);
+
+  val = bitfield_field32_write(val, FLASH_CTRL_DEFAULT_REGION_ERASE_EN_FIELD,
+                               perms.erase == kHardenedBoolTrue
+                                   ? kMultiBitBool4True
+                                   : kMultiBitBool4False);
+
+  return val;
+}
+
+uint32_t PermsToInfoMp(flash_ctrl_perms_t perms) {
+  uint32_t val = bitfield_field32_write(
+      0, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_RD_EN_0_FIELD,
+      perms.read == kHardenedBoolTrue ? kMultiBitBool4True
+                                      : kMultiBitBool4False);
+
+  val = bitfield_field32_write(
+      val, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_PROG_EN_0_FIELD,
+      perms.write == kHardenedBoolTrue ? kMultiBitBool4True
+                                       : kMultiBitBool4False);
+
+  val = bitfield_field32_write(
+      val, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ERASE_EN_0_FIELD,
+      perms.erase == kHardenedBoolTrue ? kMultiBitBool4True
+                                       : kMultiBitBool4False);
+
+  val = bitfield_field32_write(
+      val, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_EN_0_FIELD, kMultiBitBool4True);
+
+  return val;
+}
+
 TEST_P(FlashCtrlPermsSetTest, InfoPermsSet) {
   for (const auto &it : InfoPages()) {
     EXPECT_SEC_READ32(base_ + it.second.cfg_offset, GetParam().info_read_val);
-    EXPECT_SEC_WRITE32_SHADOWED(base_ + it.second.cfg_offset,
-                                GetParam().info_write_val);
+    EXPECT_SEC_WRITE32(base_ + it.second.cfg_offset,
+                       PermsToInfoMp(GetParam().perms));
 
     flash_ctrl_info_perms_set(it.first, GetParam().perms);
   }
 }
 
 TEST_P(FlashCtrlPermsSetTest, DataDefaultPermsSet) {
-  EXPECT_SEC_READ32(base_ + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET,
+  EXPECT_SEC_READ32(base_ + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET,
                     GetParam().data_read_val);
-  EXPECT_SEC_WRITE32_SHADOWED(
-      base_ + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET,
-      GetParam().data_write_val);
+  EXPECT_SEC_WRITE32(base_ + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET,
+                     PermsToMp(GetParam().perms));
 
   flash_ctrl_data_default_perms_set(GetParam().perms);
 }
@@ -495,19 +569,18 @@ class FlashCtrlCfgSetTest : public FlashCtrlTest,
 TEST_P(FlashCtrlCfgSetTest, InfoCfgSet) {
   for (const auto &it : InfoPages()) {
     EXPECT_SEC_READ32(base_ + it.second.cfg_offset, GetParam().info_read_val);
-    EXPECT_SEC_WRITE32_SHADOWED(base_ + it.second.cfg_offset,
-                                GetParam().info_write_val);
+    EXPECT_SEC_WRITE32(base_ + it.second.cfg_offset,
+                       CfgToInfoMp(GetParam().cfg));
 
     flash_ctrl_info_cfg_set(it.first, GetParam().cfg);
   }
 }
 
 TEST_P(FlashCtrlCfgSetTest, DataDefaultCfgSet) {
-  EXPECT_SEC_READ32(base_ + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET,
+  EXPECT_SEC_READ32(base_ + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET,
                     GetParam().data_read_val);
-  EXPECT_SEC_WRITE32_SHADOWED(
-      base_ + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET,
-      GetParam().data_write_val);
+  EXPECT_SEC_WRITE32(base_ + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET,
+                     CfgToDefaultMp(GetParam().cfg));
 
   flash_ctrl_data_default_cfg_set(GetParam().cfg);
 }
@@ -528,9 +601,9 @@ INSTANTIATE_TEST_SUITE_P(AllCases, FlashCtrlCfgSetTest,
                                  .cfg = {.scrambling = kMultiBitBool8True,
                                          .ecc = kMultiBitBool8False,
                                          .he = kMultiBitBool8False},
-                                 .info_read_val = 0x7f,
+                                 .info_read_val = 0x0,
                                  .info_write_val = 0x1f,
-                                 .data_read_val = 0x3f,
+                                 .data_read_val = 0x0,
                                  .data_write_val = 0xf,
                              },
                              // ECC.
@@ -547,9 +620,9 @@ INSTANTIATE_TEST_SUITE_P(AllCases, FlashCtrlCfgSetTest,
                                  .cfg = {.scrambling = kMultiBitBool8False,
                                          .ecc = kMultiBitBool8True,
                                          .he = kMultiBitBool8False},
-                                 .info_read_val = 0x7f,
+                                 .info_read_val = 0x0,
                                  .info_write_val = 0x2f,
-                                 .data_read_val = 0x3f,
+                                 .data_read_val = 0x0,
                                  .data_write_val = 0x17,
                              },
                              // High endurance.
@@ -566,9 +639,9 @@ INSTANTIATE_TEST_SUITE_P(AllCases, FlashCtrlCfgSetTest,
                                  .cfg = {.scrambling = kMultiBitBool8False,
                                          .ecc = kMultiBitBool8False,
                                          .he = kMultiBitBool8True},
-                                 .info_read_val = 0x7f,
+                                 .info_read_val = 0x0,
                                  .info_write_val = 0x4f,
-                                 .data_read_val = 0x3f,
+                                 .data_read_val = 0x0,
                                  .data_write_val = 0x27,
                              },
                              // Scrambling and ECC.
@@ -585,9 +658,9 @@ INSTANTIATE_TEST_SUITE_P(AllCases, FlashCtrlCfgSetTest,
                                  .cfg = {.scrambling = kMultiBitBool8True,
                                          .ecc = kMultiBitBool8True,
                                          .he = kMultiBitBool8False},
-                                 .info_read_val = 0x7f,
+                                 .info_read_val = 0x0,
                                  .info_write_val = 0x3f,
-                                 .data_read_val = 0x3f,
+                                 .data_read_val = 0x0,
                                  .data_write_val = 0x1f,
                              }));
 
@@ -599,7 +672,7 @@ TEST_F(FlashCtrlTest, CreatorInfoLockdown) {
   };
   for (auto page : no_owner_access) {
     auto info_page = InfoPages().at(page);
-    EXPECT_SEC_WRITE32_SHADOWED(base_ + info_page.cfg_offset, 0);
+    EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, 0);
     EXPECT_SEC_WRITE32(base_ + info_page.cfg_wen_offset, 0);
   }
 
