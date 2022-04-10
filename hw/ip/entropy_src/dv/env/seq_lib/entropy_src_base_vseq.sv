@@ -28,8 +28,6 @@ class entropy_src_base_vseq extends cip_base_vseq #(
         (null, "*.env" , "entropy_src_cov_if", cov_vif)) begin
       `uvm_fatal(`gfn, $sformatf("Failed to get entropy_src_cov_if from uvm_config_db"))
     end
-
-    cov_vif.cg_cfg_sample(.cfg(cfg));
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
