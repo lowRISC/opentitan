@@ -214,7 +214,7 @@
             - Set filter bit back to 0.
             - Check opcode and address are passing through again.'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_pass_cmd_filtering"]
     }
     {
       name: pass_addr_translation
@@ -227,7 +227,7 @@
             - Disable address translation for given command.
             - Check address is now passing unchanged.'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_pass_addr_translation"]
     }
     {
       name: pass_payload_translation
@@ -239,7 +239,7 @@
             - Disable payload translation for given command.
             - Check payload is now passing unchanged.'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_pass_data_translation"]
     }
     {
       name: cmd_info_slots
@@ -444,6 +444,84 @@
             Cover all combinations of SPI_DEVICE.CFG.CPOL and SPI_DEVICE.CFG.CPHA.
 
             Cover valid combinations for each mode.'''
+    }
+    {
+      name: spi_device_pass_addr_swap_cg
+      desc: '''
+            Cover all bits enable for address translation.
+            Cover all bits values for address translation.'''
+    }
+    {
+      name: spi_device_pass_payload_swap_cg
+      desc: '''
+            Cover all bits enable for payload translation.
+            Cover all bits values for payload translation.'''
+    }
+    {
+      name: spi_device_pass_cmd_filter_cg
+      desc: '''
+            Cover all possible bits for command filter.
+            Every opcode should be enabled and filtering checked.'''
+    }
+    {
+      name: spi_device_cmd_info_cg
+      desc: '''
+            Cover all opcode enabled in cmd info.
+            Cover all payload direction.
+            Cover all address modes.
+            Cover addr swap enable.
+            Cover payload swap enable.
+            Cover upload enable.
+            Cover busy enable.
+            Cover all dummy sizes.
+            Cover all payload enables.
+            This is not configuration coverage, cover only if we have relevant
+            transaction with opcode configured and enabled in cmd_info slot.
+
+            TODO: Consider relevant crosses between opcode and other items.'''
+    }
+    {
+      name: spi_device_payload_size_cg
+      desc: '''
+            Cover supported payload sizes for IN transactions.
+            Cover supported payload sizes for OUT transactions.
+            Cover upload transaction payload size.
+            Cover payload size of upload transaction exceeds 256B limit (wrap around).'''
+    }
+    {
+      name: spi_device_read_commands_cg
+      desc: '''
+            Cover read status commands.
+            Cover read JEDEC command.
+            Cover read SFDP command.
+            Cover all other read commands configurable in slots up to 10.
+            Cover dummy cycle for all read commands.
+            Cover INTERCEPT_EN with all applicable read commands.'''
+    }
+    {
+      name: spi_device_mailbox_cg
+      desc: '''
+            Cover commands targeting mailbox space.
+            Cover command starting in buffer overlapping with mailbox.
+            Cover command starting in mailbox comming outside mailbox space.'''
+    }
+    {
+      name: spi_device_4B_address_management_cg
+      desc: '''
+            Cover all possible combinations of EN4B and EX4B.
+            Cross with various read commands.'''
+    }
+    {
+      name: spi_device_buffer_boundary_cg
+      desc: '''
+            Cover buffer boundary crossing (buffer flip).'''
+    }
+    {
+      name: spi_device_lanes_cg
+      desc: '''
+            Cover out commands that use dual mode.
+            Cover out commands that use quad mode.
+            Cross dual and quad modes with flash/passthrough mode.'''
     }
   ]
 }
