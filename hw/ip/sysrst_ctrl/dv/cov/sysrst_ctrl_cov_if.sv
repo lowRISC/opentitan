@@ -23,7 +23,12 @@ interface sysrst_ctrl_cov_if
     bit bat_disable,
     bit interrupt,
     bit ec_rst,
-    bit rst_req
+    bit rst_req,
+    bit key0_in_sel,
+    bit key1_in_sel,
+    bit key2_in_sel,
+    bit pwrb_in_sel,
+    bit ac_present_sel
   );
     option.per_instance = 1;
     option.name = $sformatf("sysrst_ctrl_combo_detect_action_cg_%0d", index);
@@ -32,6 +37,19 @@ interface sysrst_ctrl_cov_if
     cp_interrupt:   coverpoint interrupt;
     cp_ec_rst:      coverpoint ec_rst;
     cp_rst_req:     coverpoint rst_req;
+    cp_key0_in_sel:   coverpoint key0_in_sel;
+    cp_key1_in_sel:   coverpoint key1_in_sel;
+    cp_key2_in_sel:   coverpoint key2_in_sel;
+    cp_pwrb_in_sel:   coverpoint pwrb_in_sel;
+    cp_ac_present_sel:coverpoint ac_present_sel;
+    cross_bat_disable_combo_sel: cross cp_bat_disable, cp_key0_in_sel, cp_key1_in_sel,
+         cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel;
+    cross_interrupt_combo_sel: cross cp_bat_disable, cp_key0_in_sel, cp_key1_in_sel,
+         cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel;
+    cross_ec_rst_combo_sel: cross cp_bat_disable, cp_key0_in_sel, cp_key1_in_sel,
+         cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel;
+    cross_rst_req_combo_sel: cross cp_bat_disable, cp_key0_in_sel, cp_key1_in_sel,
+         cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel;
   endgroup // sysrst_ctrl_combo_detect_action_cg
 
   ////////////////////////////////////////////////
@@ -104,7 +122,16 @@ interface sysrst_ctrl_cov_if
     bit combo0_h2l,
     bit combo1_h2l,
     bit combo2_h2l,
-    bit combo3_h2l
+    bit combo3_h2l,
+    bit key0_in_sel,
+    bit key1_in_sel,
+    bit key2_in_sel,
+    bit pwrb_in_sel,
+    bit ac_present_sel,
+    bit bat_disable,
+    bit interrupt,
+    bit ec_rst,
+    bit rst_req
   );
     option.per_instance = 1;
     option.name = "sysrst_ctrl_combo_intr_status_cg";
@@ -113,6 +140,23 @@ interface sysrst_ctrl_cov_if
     cp_combo1_h2l: coverpoint combo1_h2l;
     cp_combo2_h2l: coverpoint combo2_h2l;
     cp_combo3_h2l: coverpoint combo3_h2l;
+    cp_key0_in_sel:   coverpoint key0_in_sel;
+    cp_key1_in_sel:   coverpoint key1_in_sel;
+    cp_key2_in_sel:   coverpoint key2_in_sel;
+    cp_pwrb_in_sel:   coverpoint pwrb_in_sel;
+    cp_ac_present_sel:coverpoint ac_present_sel;
+    cp_bat_disable: coverpoint bat_disable;
+    cp_interrupt:   coverpoint interrupt;
+    cp_ec_rst:      coverpoint ec_rst;
+    cp_rst_req:     coverpoint rst_req;
+    cross_combo0: cross cp_combo0_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
+       cp_pwrb_in_sel, cp_ac_present_sel, cp_bat_disable, cp_interrupt, cp_ec_rst, cp_rst_req;
+    cross_combo1: cross cp_combo1_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
+       cp_pwrb_in_sel, cp_ac_present_sel, cp_bat_disable, cp_interrupt, cp_ec_rst, cp_rst_req;
+    cross_combo2: cross cp_combo2_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
+       cp_pwrb_in_sel, cp_ac_present_sel, cp_bat_disable, cp_interrupt, cp_ec_rst, cp_rst_req;
+    cross_combo3: cross cp_combo3_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
+       cp_pwrb_in_sel, cp_ac_present_sel, cp_bat_disable, cp_interrupt, cp_ec_rst, cp_rst_req;
 
   endgroup // sysrst_ctrl_combo_intr_status_cg
 
@@ -156,33 +200,34 @@ interface sysrst_ctrl_cov_if
 
   endgroup // sysrst_ctrl_key_intr_status_cg
 
-  //////////////////////////////////////////////////
-  // Ultra low power status register cover points //
-  //////////////////////////////////////////////////
+  ///////////////////////////////
+  // Wakeup event cover points //
+  ///////////////////////////////
 
-  covergroup sysrst_ctrl_ulp_status_cg with function sample (
-    bit ulp_wakeup
+  covergroup sysrst_ctrl_wkup_event_cg with function sample (
+    bit wakeup_sts,
+    bit h2l_pwrb,
+    bit l2h_lid_open,
+    bit h_ac_present,
+    bit interrupt_gen
   );
     option.per_instance = 1;
-    option.name = "sysrst_ctrl_ulp_status_cg";
-
-    cp_ulp_wakeup: coverpoint ulp_wakeup;
-
-  endgroup // sysrst_ctrl_ulp_status_cg
-
-  /////////////////////////////////////////
-  // Wakeup status register cover points //
-  /////////////////////////////////////////
-
-  covergroup sysrst_ctrl_wkup_status_cg with function sample (
-    bit wakeup_sts
-  );
-    option.per_instance = 1;
-    option.name = "sysrst_ctrl_wkup_status_cg";
+    option.name = "sysrst_ctrl_wkup_event_cg";
 
     cp_wakeup_sts: coverpoint wakeup_sts;
-
-  endgroup // sysrst_ctrl_wkup_status_cg
+    cp_h2l_pwrb: coverpoint h2l_pwrb;
+    cp_l2h_lid_open: coverpoint l2h_lid_open;
+    cp_h_ac_present: coverpoint h_ac_present;
+    cp_interrupt_gen: coverpoint interrupt_gen;
+    cross_wkup_sts: cross cp_wakeup_sts, cp_h2l_pwrb, cp_l2h_lid_open, cp_h_ac_present,
+      cp_interrupt_gen {
+        ignore_bins invalid = binsof(cp_h2l_pwrb) intersect {1} &&
+                            binsof(cp_l2h_lid_open) intersect {0} &&
+                            binsof(cp_h_ac_present) intersect {0} &&
+                            binsof(cp_wakeup_sts) intersect {0} &&
+                            binsof(cp_interrupt_gen) intersect {0};
+      }
+  endgroup // sysrst_ctrl_wkup_event_cg
 
   //////////////////////////////////////
   // Pin in value register cover points //
@@ -211,28 +256,7 @@ interface sysrst_ctrl_cov_if
 
   endgroup // sysrst_ctrl_pin_in_value_cg
 
-  /////////////////////////////////////
-  // Auto block out ctl cover points //
-  /////////////////////////////////////
-  covergroup sysrst_ctrl_auto_blk_out_ctl_cg with function sample (
-    bit key0_out_sel,
-    bit key1_out_sel,
-    bit key2_out_sel,
-    bit key0_out_value,
-    bit key1_out_value,
-    bit key2_out_value
-  );
-    option.per_instance = 1;
-    option.name = "sysrst_ctrl_auto_blk_out_ctl_cg";
 
-    cp_key0_out_sel: coverpoint key0_out_sel;
-    cp_key1_out_sel: coverpoint key1_out_sel;
-    cp_key2_out_sel: coverpoint key2_out_sel;
-    cp_key0_out_value: coverpoint key0_out_value;
-    cp_key1_out_value: coverpoint key1_out_value;
-    cp_key2_out_value: coverpoint key2_out_value;
-
-  endgroup // sysrst_ctrl_auto_blk_out_ctl_cg
 
   ///////////////////////////////////
   // Instantiation Macros          //
@@ -240,10 +264,8 @@ interface sysrst_ctrl_cov_if
   `DV_FCOV_INSTANTIATE_CG(sysrst_ctrl_auto_block_debounce_ctl_cg)
   `DV_FCOV_INSTANTIATE_CG(sysrst_ctrl_combo_intr_status_cg)
   `DV_FCOV_INSTANTIATE_CG(sysrst_ctrl_key_intr_status_cg)
-  `DV_FCOV_INSTANTIATE_CG(sysrst_ctrl_ulp_status_cg)
-  `DV_FCOV_INSTANTIATE_CG(sysrst_ctrl_wkup_status_cg)
+  `DV_FCOV_INSTANTIATE_CG(sysrst_ctrl_wkup_event_cg)
   `DV_FCOV_INSTANTIATE_CG(sysrst_ctrl_pin_in_value_cg)
-  `DV_FCOV_INSTANTIATE_CG(sysrst_ctrl_auto_blk_out_ctl_cg)
 
   sysrst_ctrl_combo_detect_action_cg combo_detect_action_cg_inst[4];
   initial begin
@@ -274,10 +296,16 @@ interface sysrst_ctrl_cov_if
     bit bat_disable,
     bit interrupt,
     bit ec_rst,
-    bit rst_req
+    bit rst_req,
+    bit key0_in_sel,
+    bit key1_in_sel,
+    bit key2_in_sel,
+    bit pwrb_in_sel,
+    bit ac_present_sel
   );
     foreach (combo_detect_action_cg_inst[i]) begin
-      combo_detect_action_cg_inst[index].sample(bat_disable, interrupt, ec_rst, rst_req);
+      combo_detect_action_cg_inst[index].sample(bat_disable, interrupt, ec_rst, rst_req,
+         key0_in_sel, key1_in_sel, key2_in_sel, pwrb_in_sel, ac_present_sel);
     end
   endfunction
 
@@ -315,9 +343,20 @@ interface sysrst_ctrl_cov_if
     bit combo0_h2l,
     bit combo1_h2l,
     bit combo2_h2l,
-    bit combo3_h2l
+    bit combo3_h2l,
+    bit key0_in_sel,
+    bit key1_in_sel,
+    bit key2_in_sel,
+    bit pwrb_in_sel,
+    bit ac_present_sel,
+    bit bat_disable,
+    bit interrupt,
+    bit ec_rst,
+    bit rst_req
   );
-    sysrst_ctrl_combo_intr_status_cg_inst.sample(combo0_h2l,combo1_h2l,combo2_h2l,combo3_h2l);
+    sysrst_ctrl_combo_intr_status_cg_inst.sample(combo0_h2l,combo1_h2l,combo2_h2l,combo3_h2l,
+        key0_in_sel,key1_in_sel,key2_in_sel,pwrb_in_sel,ac_present_sel,bat_disable,
+        interrupt,ec_rst,rst_req);
   endfunction
 
   function automatic void cg_key_intr_status_sample (
@@ -341,16 +380,15 @@ interface sysrst_ctrl_cov_if
            key2_in_l2h, ac_present_l2h, ec_rst_l_l2h, flash_wp_l_l2h);
   endfunction
 
-  function automatic void cg_ulp_status_sample (
-    bit ulp_wakeup
+  function automatic void cg_wkup_event_sample (
+    bit wakeup_sts,
+    bit h2l_pwrb,
+    bit l2h_lid_open,
+    bit h_ac_present,
+    bit interrupt_gen
   );
-    sysrst_ctrl_ulp_status_cg_inst.sample (ulp_wakeup);
-  endfunction
-
-  function automatic void cg_wkup_status_sample (
-    bit wakeup_sts
-  );
-    sysrst_ctrl_wkup_status_cg_inst.sample(wakeup_sts);
+    sysrst_ctrl_wkup_event_cg_inst.sample(wakeup_sts, h2l_pwrb, l2h_lid_open, h_ac_present,
+       interrupt_gen);
   endfunction
 
   function automatic void cg_pin_in_value_sample (
@@ -365,18 +403,6 @@ interface sysrst_ctrl_cov_if
   );
     sysrst_ctrl_pin_in_value_cg_inst.sample (pwrb_in, key0_in,
         key1_in, key2_in, lid_open, ac_present, ec_rst_l, flash_wp_l);
-  endfunction
-
-   function automatic void cg_auto_blk_out_ctl_sample (
-    bit key0_out_sel,
-    bit key1_out_sel,
-    bit key2_out_sel,
-    bit key0_out_value,
-    bit key1_out_value,
-    bit key2_out_value
-  );
-    sysrst_ctrl_auto_blk_out_ctl_cg_inst.sample (key0_out_sel,
-        key1_out_sel, key2_out_sel, key0_out_value, key1_out_value, key2_out_value);
   endfunction
 
 endinterface
