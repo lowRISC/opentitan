@@ -7,8 +7,6 @@
 class sysrst_ctrl_auto_blk_key_output_vseq extends sysrst_ctrl_base_vseq;
   `uvm_object_utils(sysrst_ctrl_auto_blk_key_output_vseq)
 
-  `uvm_object_new
-
    rand uvm_reg_data_t override_value;
    rand uint16_t set_timer;
    rand int cycles;
@@ -36,6 +34,40 @@ class sysrst_ctrl_auto_blk_key_output_vseq extends sysrst_ctrl_base_vseq;
     cfg.clk_aon_rst_vif.wait_clks(cycles+3);
     cfg.vif.pwrb_in = 1;
    endtask
+
+   /////////////////////////////////////
+   // Auto block out ctl cover points //
+   /////////////////////////////////////
+   covergroup sysrst_ctrl_auto_blk_out_ctl_cg with function sample (
+    bit key0_out_sel,
+    bit key1_out_sel,
+    bit key2_out_sel,
+    bit key0_out_value,
+    bit key1_out_value,
+    bit key2_out_value,
+    bit key0_out,
+    bit key1_out,
+    bit key2_out
+   );
+    option.per_instance = 1;
+    option.name = "sysrst_ctrl_auto_blk_out_ctl_cg";
+
+    cp_key0_out_sel: coverpoint key0_out_sel;
+    cp_key1_out_sel: coverpoint key1_out_sel;
+    cp_key2_out_sel: coverpoint key2_out_sel;
+    cp_key0_out_value: coverpoint key0_out_value;
+    cp_key1_out_value: coverpoint key1_out_value;
+    cp_key2_out_value: coverpoint key2_out_value;
+    cross_key0_out_sel_value: cross cp_key0_out_value, key0_out;
+    cross_key1_out_sel_value: cross cp_key1_out_value, key1_out;
+    cross_key2_out_sel_value: cross cp_key2_out_value, key2_out;
+
+   endgroup // sysrst_ctrl_auto_blk_out_ctl_cg
+
+   function new(string name = "sysrst_ctrl_auto_blk_key_output_vseq");
+    super.new(name);
+    sysrst_ctrl_auto_blk_out_ctl_cg = new();
+   endfunction : new
 
    task body();
 
@@ -98,8 +130,20 @@ class sysrst_ctrl_auto_blk_key_output_vseq extends sysrst_ctrl_base_vseq;
         `DV_CHECK_EQ(cfg.vif.key2_out, 0);
       end
       cfg.clk_aon_rst_vif.wait_clks(20);
+
+      // Sample the covergroup
+      sysrst_ctrl_auto_blk_out_ctl_cg.sample (
+            enable_key0_out_sel,
+            enable_key1_out_sel,
+            enable_key2_out_sel,
+            override_key0_out_value,
+            override_key1_out_value,
+            override_key2_out_value,
+            cfg.vif.key0_out,
+            cfg.vif.key1_out,
+            cfg.vif.key2_out
+      );
     end
    endtask : body
 
 endclass : sysrst_ctrl_auto_blk_key_output_vseq
-
