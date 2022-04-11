@@ -77,6 +77,18 @@ cc_library(
 )
 
 cc_library(
+    name = "clkmgr_testutils",
+    srcs = ["clkmgr_testutils.c"],
+    hdrs = ["clkmgr_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/dif:clkmgr",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing/test_framework",
+    ],
+)
+
+cc_library(
     name = "entropy_testutils",
     srcs = ["entropy_testutils.c"],
     hdrs = ["entropy_testutils.h"],
@@ -86,6 +98,19 @@ cc_library(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/dif:entropy_src",
+        "//sw/device/lib/testing/test_framework",
+    ],
+)
+
+cc_library(
+    name = "flash_ctrl_testutils",
+    srcs = ["flash_ctrl_testutils.c"],
+    hdrs = ["flash_ctrl_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/runtime:hart",
         "//sw/device/lib/testing/test_framework",
     ],
 )
@@ -119,6 +144,18 @@ cc_library(
 )
 
 cc_library(
+    name = "lc_ctrl_testutils",
+    srcs = ["lc_ctrl_testutils.c"],
+    hdrs = ["lc_ctrl_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework",
+    ],
+)
+
+cc_library(
     name = "otp_ctrl_testutils",
     srcs = ["otp_ctrl_testutils.c"],
     hdrs = ["otp_ctrl_testutils.h"],
@@ -143,12 +180,50 @@ cc_library(
 )
 
 cc_library(
+    name = "rand_testutils",
+    srcs = ["rand_testutils.c"],
+    hdrs = ["rand_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/testing/test_framework",
+    ],
+)
+
+cc_library(
     name = "rstmgr_testutils",
     srcs = ["rstmgr_testutils.c"],
     hdrs = ["rstmgr_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/testing/test_framework",
+    ],
+)
+
+cc_library(
+    name = "rv_plic_testutils",
+    srcs = ["rv_plic_testutils.c"],
+    hdrs = ["rv_plic_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":rand_testutils",
+        "//sw/device/lib/dif:base",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework",
+    ],
+)
+
+cc_library(
+    name = "sram_ctrl_testutils",
+    srcs = ["sram_ctrl_testutils.c"],
+    hdrs = ["sram_ctrl_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:sram_ctrl",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework",
     ],
 )
