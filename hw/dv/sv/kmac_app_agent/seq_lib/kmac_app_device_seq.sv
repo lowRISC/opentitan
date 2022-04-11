@@ -19,7 +19,7 @@ class kmac_app_device_seq extends kmac_app_base_seq;
   endtask
 
   virtual function void randomize_item(REQ item);
-    kmac_pkg::rsp_digest_t rsp_digest_h; 
+    kmac_pkg::rsp_digest_t rsp_digest_h = '0;
     bit set_share;
     if (cfg.has_user_digest_share()) begin
       set_share = 1;
