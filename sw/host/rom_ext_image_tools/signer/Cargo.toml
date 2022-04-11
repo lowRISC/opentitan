@@ -19,7 +19,7 @@ opt-level = 2
 debug = true
 
 [dependencies]
-anyhow = "1.0.40"
+anyhow = "1.0"
 object = "0.25.3"
 rom_ext_image = { path = "image" }
 thiserror = "1.0.24"
