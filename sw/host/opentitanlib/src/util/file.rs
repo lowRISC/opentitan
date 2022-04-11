@@ -7,13 +7,13 @@ use nix::libc::c_int;
 use nix::poll;
 use std::convert::TryInto;
 use std::io;
-use std::os::unix::io::AsRawFd;
+use std::os::unix::io::{AsRawFd, RawFd};
 use std::time::Duration;
 
 /// Waits for an event on `fd` or for `timeout` to expire.
-pub fn wait_timeout(fd: &impl AsRawFd, events: poll::PollFlags, timeout: Duration) -> Result<()> {
+pub fn wait_timeout(fd: RawFd, events: poll::PollFlags, timeout: Duration) -> Result<()> {
     let timeout = timeout.as_millis().try_into().unwrap_or(c_int::MAX);
-    let mut pfd = [poll::PollFd::new(fd.as_raw_fd(), events)];
+    let mut pfd = [poll::PollFd::new(fd, events)];
     match poll::poll(&mut pfd, timeout)? {
         0 => Err(io::Error::new(
             io::ErrorKind::TimedOut,
@@ -26,6 +26,11 @@ pub fn wait_timeout(fd: &impl AsRawFd, events: poll::PollFlags, timeout: Duratio
 
 /// Waits for `fd` to become ready to read or `timeout` to expire.
 pub fn wait_read_timeout(fd: &impl AsRawFd, timeout: Duration) -> Result<()> {
+    wait_timeout(fd.as_raw_fd(), poll::PollFlags::POLLIN, timeout)
+}
+
+/// Waits for `fd` to become ready to read or `timeout` to expire.
+pub fn wait_fd_read_timeout(fd: RawFd, timeout: Duration) -> Result<()> {
     wait_timeout(fd, poll::PollFlags::POLLIN, timeout)
 }
 
