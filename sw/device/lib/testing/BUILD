@@ -169,6 +169,20 @@ cc_library(
 )
 
 cc_library(
+    name = "pinmux_testutils",
+    srcs = ["pinmux_testutils.c"],
+    hdrs = ["pinmux_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:base",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/testing/test_framework",
+    ],
+)
+
+cc_library(
     name = "pwrmgr_testutils",
     srcs = ["pwrmgr_testutils.c"],
     hdrs = ["pwrmgr_testutils.h"],

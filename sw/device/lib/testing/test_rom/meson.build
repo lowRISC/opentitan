@@ -57,7 +57,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       sw_lib_runtime_print,
       sw_lib_flash_ctrl,
       sw_lib_ibex,
-      sw_lib_pinmux,
+      sw_lib_testing_pinmux_testutils,
       sw_lib_dif_gpio,
       sw_lib_dif_spi_device,
       sw_lib_dif_hmac,
