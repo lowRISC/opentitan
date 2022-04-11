@@ -111,7 +111,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
 
     `uvm_info(`gfn, $sformatf("Will run %0d rounds", num_trans), UVM_MEDIUM)
     for (int i = 0; i < num_trans; ++i) begin
-      logic [ClkMesrUsb:0] actual_recov_err = '0;
+      clkmgr_recov_err_t actual_recov_err = '{default: '0};
       logic [ClkMesrUsb:0] expected_recov_meas_err = '0;
       bit expect_alert = 0;
       `DV_CHECK_RANDOMIZE_FATAL(this)
@@ -157,11 +157,17 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       csr_rd(.ptr(ral.recov_err_code), .value(actual_recov_err));
       `uvm_info(`gfn, $sformatf("Expected recov err register=0x%x", expected_recov_meas_err),
                 UVM_MEDIUM)
-      if (actual_recov_err[ClkMesrUsb:0] != expected_recov_meas_err) begin
+      if (actual_recov_err.measures != expected_recov_meas_err) begin
         report_recov_error_mismatch("measurement", expected_recov_meas_err,
-                                    actual_recov_err[ClkMesrUsb:0]);
+                                    actual_recov_err.measures);
       end
-
+      if (actual_recov_err.timeouts != '0) begin
+        `uvm_error(`gfn, $sformatf(
+                   "Unexpected recoverable timeout error 0b%b", actual_recov_err.timeouts))
+      end
+      if (actual_recov_err.shadow_update != 0) begin
+        `uvm_error(`gfn, "Unexpected recoverable shadow update error")
+      end
       foreach (ExpectedCounts[clk]) begin
         clk_mesr_e clk_mesr = clk_mesr_e'(clk);
         disable_frequency_measurement(clk_mesr);

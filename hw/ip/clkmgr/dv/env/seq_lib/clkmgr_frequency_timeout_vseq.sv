@@ -54,7 +54,7 @@ class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
 
     `uvm_info(`gfn, $sformatf("Will run %0d rounds", num_trans), UVM_MEDIUM)
     for (int i = 0; i < num_trans; ++i) begin
-      logic [2*(ClkMesrUsb+1)-1:0] actual_recov_err = '0;
+      clkmgr_recov_err_t actual_recov_err = '{default: '0};
       logic [ClkMesrUsb:0] expected_recov_timeout_err = '0;
       bit expect_alert = 0;
       `DV_CHECK_RANDOMIZE_FATAL(this)
@@ -91,13 +91,16 @@ class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
 
       csr_rd(.ptr(ral.recov_err_code), .value(actual_recov_err));
       `uvm_info(`gfn, $sformatf("Got recov err register=0x%x", actual_recov_err), UVM_MEDIUM)
-      if (actual_recov_err[ClkMesrUsb:0]) begin
+      if (actual_recov_err.measures) begin
         report_recov_error_mismatch("measurement", recov_bits_t'(0),
-                                    actual_recov_err[ClkMesrUsb:0]);
+                                    actual_recov_err.measures);
       end
-      if (actual_recov_err[ClkMesrUsb+1+:ClkMesrUsb+1] != expected_recov_timeout_err) begin
+      if (actual_recov_err.timeouts != expected_recov_timeout_err) begin
         report_recov_error_mismatch("timeout", expected_recov_timeout_err,
-                                    actual_recov_err[ClkMesrUsb+1+:ClkMesrUsb+1]);
+                                    actual_recov_err.timeouts);
+      end
+      if (actual_recov_err.shadow_update != 0) begin
+        `uvm_error(`gfn, "Unexpected recoverable shadow update error")
       end
       // And check that the alert count increased if there was a timeout.
       current_alert_count = cfg.scoreboard.get_alert_count("recov_fault");
