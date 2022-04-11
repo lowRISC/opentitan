@@ -108,6 +108,12 @@ package clkmgr_env_pkg;
   // This is to examine separately the measurement and timeout recoverable error bits.
   typedef logic [ClkMesrUsb:0] recov_bits_t;
 
+  typedef struct packed {
+    recov_bits_t timeouts;
+    recov_bits_t measures;
+    logic        shadow_update;
+  } clkmgr_recov_err_t;
+
   // These must be after the declaration of clk_mesr_e for sizing.
   parameter int ClkInHz[ClkMesrUsb+1] = {IoClkHz, IoClkHz / 2, IoClkHz / 4, MainClkHz, UsbClkHz};
 
