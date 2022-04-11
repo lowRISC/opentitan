@@ -1034,3 +1034,36 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "rom_ctrl",
+    srcs = [
+        "autogen/dif_rom_ctrl_autogen.c",
+        "autogen/dif_rom_ctrl_autogen.h",
+        "dif_rom_ctrl.c",
+    ],
+    hdrs = [
+        "dif_rom_ctrl.h",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/rom_ctrl/data:rom_ctrl_regs",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/base:multibits",
+    ],
+)
+
+cc_test(
+    name = "rom_ctrl_unittest",
+    srcs = [
+        "autogen/dif_rom_ctrl_autogen_unittest.cc",
+    ],
+    deps = [
+        ":rom_ctrl",
+        ":test_base",
+        "@googletest//:gtest_main",
+    ],
+)
