@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/dif/dif_alert_handler.h"
-#include "sw/device/lib/dif/dif_base.c"
-#include "sw/device/lib/testing/aes_testutils.h"
+#include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/testing/check.h"
 
 #include "alert_handler_regs.h"  // Generated
