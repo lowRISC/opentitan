@@ -975,6 +975,40 @@
         } // f: opcode
       ]
     } // R: CMD_INFO_EX4B
+    { name: "CMD_INFO_WREN"
+      swaccess: "rw"
+      hwaccess: "hro"
+      desc: '''Opcode for Write Enable (WREN)
+        '''
+      fields: [
+        { bits: "31"
+          name: "valid"
+          desc: "If 1, opcode affects"
+        } // f: valid
+        { bits: "7:0"
+          name: "opcode"
+          desc: "WREN opcode"
+          // Leave default value 0 to be consistent
+        } // f: opcode
+      ]
+    } // R: CMD_INFO_WREN
+    { name: "CMD_INFO_WRDI"
+      swaccess: "rw"
+      hwaccess: "hro"
+      desc: '''Opcode for Write Disable (WRDI)
+        '''
+      fields: [
+        { bits: "31"
+          name: "valid"
+          desc: "If 1, opcode affects"
+        } // f: valid
+        { bits: "7:0"
+          name: "opcode"
+          desc: "WRDI opcode"
+          // Leave default value 0 to be consistent
+        } // f: opcode
+      ]
+    } // R: CMD_INFO_WRDI
 
     //===============================================================
     // TPM registers
