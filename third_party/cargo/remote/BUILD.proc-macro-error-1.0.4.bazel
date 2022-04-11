@@ -60,7 +60,7 @@ cargo_build_script(
     version = "1.0.4",
     visibility = ["//visibility:private"],
     deps = [
-        "@raze__version_check__0_9_3//:version_check",
+        "@raze__version_check__0_9_4//:version_check",
     ],
 )
 
@@ -90,9 +90,9 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         ":proc_macro_error_build_script",
-        "@raze__proc_macro2__1_0_32//:proc_macro2",
-        "@raze__quote__1_0_10//:quote",
-        "@raze__syn__1_0_81//:syn",
+        "@raze__proc_macro2__1_0_37//:proc_macro2",
+        "@raze__quote__1_0_18//:quote",
+        "@raze__syn__1_0_91//:syn",
     ],
 )
 

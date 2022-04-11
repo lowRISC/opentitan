@@ -58,8 +58,8 @@ rust_library(
     version = "0.15.0",
     # buildifier: leave-alone
     deps = [
-        "@raze__libc__0_2_107//:libc",
-        "@raze__once_cell__1_8_0//:once_cell",
+        "@raze__libc__0_2_124//:libc",
+        "@raze__once_cell__1_10_0//:once_cell",
         "@raze__terminal_size__0_1_17//:terminal_size",
     ],
 )

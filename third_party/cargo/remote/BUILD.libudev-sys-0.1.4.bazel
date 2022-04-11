@@ -58,7 +58,7 @@ cargo_build_script(
     version = "0.1.4",
     visibility = ["//visibility:private"],
     deps = [
-        "@raze__pkg_config__0_3_22//:pkg_config",
+        "@raze__pkg_config__0_3_25//:pkg_config",
     ],
 )
 
@@ -88,6 +88,6 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         ":libudev_sys_build_script",
-        "@raze__libc__0_2_107//:libc",
+        "@raze__libc__0_2_124//:libc",
     ],
 )

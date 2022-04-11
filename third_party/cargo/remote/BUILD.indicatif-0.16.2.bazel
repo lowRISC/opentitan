@@ -88,7 +88,7 @@ rust_library(
         "@raze__console__0_15_0//:console",
         "@raze__lazy_static__1_4_0//:lazy_static",
         "@raze__number_prefix__0_4_0//:number_prefix",
-        "@raze__regex__1_5_4//:regex",
+        "@raze__regex__1_5_5//:regex",
     ],
 )
 

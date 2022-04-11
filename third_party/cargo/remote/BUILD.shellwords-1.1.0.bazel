@@ -51,6 +51,6 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         "@raze__lazy_static__1_4_0//:lazy_static",
-        "@raze__regex__1_5_4//:regex",
+        "@raze__regex__1_5_5//:regex",
     ],
 )
