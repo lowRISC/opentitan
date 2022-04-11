@@ -355,6 +355,7 @@
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/pinmux/{sub_flow}/{tool}"
                cov: true
+               defines: "FPV_ALERT_NO_SIGINT_ERR"
              }
              {
                // Use chip_eargrey_asic parameters.
@@ -364,6 +365,7 @@
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/top_earlgrey/ip/pinmux/{sub_flow}/{tool}"
                cov: true
+               defines: "FPV_ALERT_NO_SIGINT_ERR"
                overrides: [
                  {
                    name:  design_level
