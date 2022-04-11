@@ -20,13 +20,17 @@ class kmac_app_device_seq extends kmac_app_base_seq;
 
   virtual function void randomize_item(REQ item);
     kmac_pkg::rsp_digest_t rsp_digest_h = '0;
-    bit set_share;
+    bit gen_error, set_share;
+
     if (cfg.has_user_digest_share()) begin
       set_share = 1;
       rsp_digest_h = cfg.get_user_digest_share();
     end else begin
       set_share = 0;
     end
+
+    gen_error = $urandom_range(100, 1) <= cfg.error_rsp_pct;
+
     `DV_CHECK_RANDOMIZE_WITH_FATAL(item,
       if (cfg.zero_delays) {
         rsp_delay == 0;
@@ -37,8 +41,9 @@ class kmac_app_device_seq extends kmac_app_base_seq;
         rsp_digest_share0 == rsp_digest_h.digest_share0;
         rsp_digest_share1 == rsp_digest_h.digest_share1;
       }
-      is_kmac_rsp_err dist {1 :/ cfg.error_rsp_pct,
-                            0 :/ 100 - cfg.error_rsp_pct};
+      gen_error == (rsp_error ||
+                    (cfg.constant_share_means_error &&
+                     (rsp_digest_share0 inside {'0, '1} || rsp_digest_share1 inside {'0, '1})));
     )
   endfunction
 

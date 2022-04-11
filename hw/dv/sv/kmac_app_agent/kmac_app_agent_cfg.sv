@@ -23,6 +23,10 @@ class kmac_app_agent_cfg extends dv_base_agent_cfg;
   // Knob to enable percentage of error response in auto-response sequence.
   int unsigned error_rsp_pct = 0;
 
+  // Knob to control whether an error response can be caused by all zeros or all ones in one of the
+  // shares.
+  bit constant_share_means_error = 1'b1;
+
   // Knob to allow injecting zeros in strb.
   bit inject_zero_in_host_strb = 0;
 
