@@ -31,6 +31,68 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     csr_update(.csr(ral.control));
   endtask : spi_device_flash_pass_init
 
+  // Task for basic read operation
+  virtual task do_flash_pass_read(bit [7:0] opcode);
+    bit [7:0]  pass_cmd;
+    bit [23:0] pass_addr;
+    bit [31:0] address_command;
+    bit [31:0] device_word_rsp;
+    bit [7:0]  device_byte_rsp;
+
+    // Read command
+    pass_cmd = opcode;
+
+    //Switch to passthrough mode and configure slot for read command
+    //TODO Consider randomizing other fields
+    case (opcode)
+      READ_STATUS_1 : begin
+        ral.cmd_info[0].valid.set(1'b1); // Enable this OPCODE
+        ral.cmd_info[0].opcode.set(opcode);
+        ral.cmd_info[0].payload_dir.set(PayloadOut);
+        ral.cmd_info[0].payload_en.set(4'h2);
+        csr_update(.csr(ral.cmd_info[0]));
+      end
+      READ_STATUS_2 : begin
+        ral.cmd_info[1].valid.set(1'b1); // Enable this OPCODE
+        ral.cmd_info[1].opcode.set(opcode);
+        ral.cmd_info[1].payload_dir.set(PayloadOut);
+        ral.cmd_info[1].payload_en.set(4'h2);
+        csr_update(.csr(ral.cmd_info[1]));
+      end
+      READ_STATUS_3 : begin
+        ral.cmd_info[2].valid.set(1'b1); // Enable this OPCODE
+        ral.cmd_info[2].opcode.set(opcode);
+        ral.cmd_info[2].payload_dir.set(PayloadOut);
+        ral.cmd_info[2].payload_en.set(4'h2);
+        csr_update(.csr(ral.cmd_info[2]));
+      end
+      READ_JEDEC : begin
+        ral.cmd_info[3].valid.set(1'b1); // Enable this OPCODE
+        ral.cmd_info[3].opcode.set(opcode);
+        ral.cmd_info[3].payload_dir.set(PayloadOut);
+        ral.cmd_info[3].payload_en.set(4'h2);
+        csr_update(.csr(ral.cmd_info[3]));
+      end
+      READ_SFDP : begin
+        ral.cmd_info[4].valid.set(1'b1); // Enable this OPCODE
+        ral.cmd_info[4].opcode.set(opcode);
+        ral.cmd_info[4].payload_dir.set(PayloadOut);
+        ral.cmd_info[4].payload_en.set(4'h2);
+        csr_update(.csr(ral.cmd_info[4]));
+      end
+      default : begin
+      end
+    endcase
+    // Randomize address
+    `DV_CHECK_STD_RANDOMIZE_FATAL(pass_addr)
+
+    // Prepare data for transfer
+    order_cmd_bits(pass_cmd, pass_addr, address_command);
+    spi_host_xfer_byte(address_command[7:0], device_byte_rsp);
+
+    cfg.clk_rst_vif.wait_clks(100);
+  endtask : do_flash_pass_read
+
   // Task for configuring enable/disable of command opcode
   virtual task cfg_cmd_filter(bit not_enable, bit [7:0] cmd);
     bit [7:0] cmd_position;

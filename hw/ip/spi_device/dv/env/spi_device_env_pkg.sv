@@ -93,6 +93,8 @@ package spi_device_env_pkg;
   parameter bit[7:0] READ_QUAD                   = 8'h6B;
   parameter bit[7:0] READ_DUALIO                 = 8'hBB;
   parameter bit[7:0] READ_QUADIO                 = 8'hEB;
+  parameter bit[12:0] UPLOAD_OFFSET_ADDR         = 12'h340;
+  parameter bit[12:0] MAILBOX_OFFSET_ADDR        = 12'h200;
 
   string msg_id = "spi_device_env_pkg";
 

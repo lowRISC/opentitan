@@ -28,3 +28,5 @@
 `include "spi_device_pass_data_translation_vseq.sv"
 `include "spi_device_dual_mode_vseq.sv"
 `include "spi_device_quad_mode_vseq.sv"
+`include "spi_device_cmd_upload_vseq.sv"
+`include "spi_device_cmd_mailbox_vseq.sv"
