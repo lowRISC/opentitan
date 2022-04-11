@@ -1,0 +1,10 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+`verilator_config
+
+// When running this prim through Verilator, we stub out all of its contents.
+// This, in turn, generates UNUSED warnings which we can waive here. No need to
+// be fine-grained: this is DV code anyway.
+lint_off -rule UNUSED -file "*/rtl/prim_cdc_rand_delay.sv" -match "*"
