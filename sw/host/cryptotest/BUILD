@@ -8,9 +8,11 @@ load("//third_party/cargo:crates.bzl", "all_crate_deps")
 rust_library(
     name = "cryptotest_parser",
     srcs = ["cryptotest_parser.rs"],
-    # FIXME(lowRISC/opentitan#12038): stealing opentitanlib's deps until we get rid
-    # of Cargo.
-    deps = all_crate_deps(package_name = "sw/host/opentitanlib"),
+    deps = [
+        "//third_party/cargo:thiserror",
+        "//third_party/cargo:regex",
+        "//third_party/cargo:lazy_static",
+    ],
 )
 
 rust_test(

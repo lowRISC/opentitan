@@ -10,5 +10,10 @@ package(default_visibility = ["//visibility:public"])
 rust_proc_macro(
     name = "opentitantool_derive",
     srcs = ["src/lib.rs"],
-    deps = [] + all_crate_deps(),
+    deps = [
+        "//third_party/cargo:proc_macro2",
+        "//third_party/cargo:proc_macro_error",
+        "//third_party/cargo:quote",
+        "//third_party/cargo:syn",
+    ],
 )

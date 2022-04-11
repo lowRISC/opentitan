@@ -81,7 +81,7 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         ":CoreFoundation_sys_build_script",
-        "@raze__libc__0_2_107//:libc",
+        "@raze__libc__0_2_124//:libc",
         "@raze__mach__0_1_2//:mach",
     ],
 )

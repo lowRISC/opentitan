@@ -1,0 +1,72 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "cargo_raze_deps"
+version = "0.0.0"
+publish = false
+
+[lib]
+path = "empty_file_to_appease_cargo.rs"
+
+# Keep sorted.
+# Please avoid version numbers that only have one component.
+[dependencies]
+anyhow = { version = "1.0.40", features=["backtrace"] }
+bitflags = "1.0"
+byteorder = "1.4.3"
+deser-hjson = "1.0.2"
+directories = "4.0.1"
+env_logger = "0.8.3"
+erased-serde = "0.3.12"
+hex = "0.4.3"
+humantime = "2.1.0"
+indicatif = "0.16.2"
+lazy_static = "1.4.0"
+log = "0.4"
+memoffset = "0.6.0"
+mio = { version = "0.7.0", features = ["os-poll", "net", "os-ext"] }
+mio-signals = "0.1.5" # mio-signals 0.2.0 exists, but requires mio 0.8.0
+nix = "0.17.0"
+num-bigint-dig = "0.7.0"
+num-traits = "0.2.14"
+num_enum = "0.5.2"
+object = "0.25.3"
+proc-macro-error = "1.0"
+proc-macro2 = "1.0"
+quote = "1.0"
+rand = "0.8.4"
+raw_tty = "0.1.0"
+regex = "1.5.4"
+rusb = "0.8.1"
+serde = { version="1.0.130", features=["serde_derive"] }
+serde_json = "1.0.69"
+serialport = "4.0.1"
+sha2 = "0.10.1"
+shellwords = "1.1.0"
+structopt = "0.3"
+syn = "1.0"
+thiserror = "1.0.24"
+typetag = "0.1"
+zerocopy = "0.5.0"
+
+# TODO(cfrantz): work with cr1901 to release 0.3.0.
+safe-ftdi = { git = "https://github.com/cr1901/safe-ftdi" }
+
+[workspace.metadata.raze]
+workspace_path = "//third_party/cargo"
+experimental_api = true
+package_aliases_dir = "."
+genmode = "Remote"
+
+targets = [
+    "x86_64-unknown-linux-gnu",
+]
+
+[package.metadata.raze.crates.libudev-sys.'0.1.4']
+gen_buildrs = true
+patches = [
+    "@//third_party/cargo/patches:libudev-sys-0.1.4.patch"
+]
+patch_args = ["-p1"]

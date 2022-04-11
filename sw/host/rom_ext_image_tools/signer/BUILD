@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_rust//rust:defs.bzl", "rust_binary")
-load("//third_party/cargo:crates.bzl", "all_crate_deps")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -14,6 +13,10 @@ rust_binary(
     ],
     deps = [
         "//sw/host/rom_ext_image_tools/signer/image:rom_ext_image",
-        "@mundane//:mundane",
-    ] + all_crate_deps(),
+        "//third_party/cargo:anyhow",
+        "//third_party/cargo:object",
+        "//third_party/cargo:thiserror",
+        "//third_party/cargo:zerocopy",
+        "@mundane",
+    ],
 )

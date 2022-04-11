@@ -14,7 +14,11 @@ rust_library(
         "src/lib.rs",
         "src/manifest.rs",
     ],
-    deps = all_crate_deps(),
+    deps = [
+        "//third_party/cargo:memoffset",
+        "//third_party/cargo:thiserror",
+        "//third_party/cargo:zerocopy",
+    ],
 )
 
 rust_test(

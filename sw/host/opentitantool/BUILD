@@ -26,7 +26,23 @@ rust_binary(
     ],
     deps = [
         "//sw/host/opentitanlib",
-    ] + all_crate_deps(),
+        "//third_party/cargo:anyhow",
+        "//third_party/cargo:directories",
+        "//third_party/cargo:env_logger",
+        "//third_party/cargo:erased_serde",
+        "//third_party/cargo:hex",
+        "//third_party/cargo:humantime",
+        "//third_party/cargo:indicatif",
+        "//third_party/cargo:log",
+        "//third_party/cargo:nix",
+        "//third_party/cargo:raw_tty",
+        "//third_party/cargo:regex",
+        "//third_party/cargo:serde",
+        "//third_party/cargo:serde_json",
+        "//third_party/cargo:shellwords",
+        "//third_party/cargo:structopt",
+        "//third_party/cargo:thiserror",
+    ],
 )
 
 filegroup(
