@@ -10,12 +10,13 @@
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/dif/dif_gpio.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/irq.h"
-#include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/print.h"
+#include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 
 #include "clkmgr_regs.h"  // Generated
@@ -55,6 +56,7 @@ enum {
 
 static dif_uart_t uart0;
 static dif_gpio_t gpio;
+static dif_pinmux_t pinmux;
 static dif_rv_timer_t timer;
 
 #if !OT_IS_ENGLISH_BREAKFAST
@@ -223,7 +225,9 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
 }
 
 void sca_init(sca_trigger_source_t trigger, sca_peripherals_t enable) {
-  pinmux_init();
+  OT_DISCARD(dif_pinmux_init(
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+  pinmux_testutils_init(&pinmux);
   sca_init_uart();
   sca_init_gpio(trigger);
   sca_init_timer();

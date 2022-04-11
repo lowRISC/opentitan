@@ -15,7 +15,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       ottf_start_lib,
       sw_examples_demos,
       sw_lib_runtime_hart,
-      sw_lib_pinmux,
+      sw_lib_testing_pinmux_testutils,
       sw_lib_dif_pinmux,
       sw_lib_dif_gpio,
       sw_lib_irq,

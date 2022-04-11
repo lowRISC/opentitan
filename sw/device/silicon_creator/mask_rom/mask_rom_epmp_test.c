@@ -12,10 +12,11 @@
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/stdasm.h"
-#include "sw/device/lib/pinmux.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
+#include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/test_status.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
@@ -375,7 +376,10 @@ void mask_rom_main(void) {
   mask_rom_epmp_config_debug_rom(kLcStateProd);
 
   // Initialize pinmux configuration so we can use the UART.
-  pinmux_init();
+  dif_pinmux_t pinmux;
+  OT_DISCARD(dif_pinmux_init(
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+  pinmux_testutils_init(&pinmux);
 
   // Enable execution of code in flash.
   flash_ctrl_init();

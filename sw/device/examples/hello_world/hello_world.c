@@ -5,23 +5,27 @@
 #include "sw/device/examples/demos.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_gpio.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_uart.h"
-#include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/test_status.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static dif_gpio_t gpio;
+static dif_pinmux_t pinmux;
 static dif_spi_device_t spi;
 static dif_spi_device_config_t spi_config;
 static dif_uart_t uart;
 
 int main(int argc, char **argv) {
+  CHECK_DIF_OK(dif_pinmux_init(
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart));
   CHECK_DIF_OK(
@@ -33,7 +37,7 @@ int main(int argc, char **argv) {
                                 }));
   base_uart_stdout(&uart);
 
-  pinmux_init();
+  pinmux_testutils_init(&pinmux);
 
   CHECK_DIF_OK(dif_spi_device_init(
       mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR), &spi));
