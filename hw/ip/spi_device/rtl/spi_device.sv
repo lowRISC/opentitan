@@ -783,6 +783,9 @@ module spi_device
 
   end
 
+  logic  unused_wrendi;
+  assign unused_wrendi = ^{reg2hw.cmd_info_wren, reg2hw.cmd_info_wrdi};
+
   //////////////////////////////
   // // Clock & reset control //
   //////////////////////////////
