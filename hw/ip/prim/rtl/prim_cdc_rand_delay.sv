@@ -113,8 +113,8 @@ module prim_cdc_rand_delay #(
   //
   // Empirically, using std::randomize() has been found to be slower than $urandom, since the latter
   // operates on a fixed data width of 32-bits. There may be an incredibly large number of instances
-  // of this module in the DUT, causing this preformance hit to be noticeable. This method randomizes
-  // the data piece-wise, 32-bits at a time using $urandom instead.
+  // of this module in the DUT, causing this preformance hit to be noticeable. This method
+  // randomizes the data piece-wise, 32-bits at a time using $urandom instead.
   function automatic void fast_randomize(output logic [DataWidth-1:0] data);
     for (int i = 0; i < DataWidth; i += 32) data = (data << 32) | $urandom();
   endfunction
