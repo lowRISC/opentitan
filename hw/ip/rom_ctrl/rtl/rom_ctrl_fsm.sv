@@ -271,7 +271,7 @@ module rom_ctrl_fsm
     end
   end
 
-  assign counter_data_rdy = kmac_rom_rdy_i | (state_q != ReadingLow);
+  assign counter_data_rdy = kmac_rom_rdy_i | (state_q inside {ReadingHigh, KmacAhead});
   assign kmac_rom_vld_o = kmac_rom_vld_q;
   assign kmac_rom_last_o = counter_lnt;
 
