@@ -10,6 +10,7 @@
 # DUT_TOP: string to indicate the top-level module name.
 # STOPATS: string to indicate the name of the signal to insert `stopat`.
 # TASK: string to collect and prove a subset of assertions that contains these string.
+# FPV_DEFINES: string to add additional macro defines during anaylze phase.
 
 # clear previous settings
 clear -all
@@ -29,18 +30,18 @@ if {$env(COV) == 1} {
 if {$env(TASK) == "FpvSecCm"} {
   analyze -sv09 \
     +define+FPV_ON \
-    +define+FPV_SEC_CM_ON+FPV_ALERT_NO_SIGINT_ERR \
+    +define+FPV_SEC_CM_ON+FPV_ALERT_NO_SIGINT_ERR+$env(FPV_DEFINES) \
     -bbox_m prim_count \
     -bbox_m prim_double_lfsr \
     -f [glob *.scr]
 } elseif {$env(DUT_TOP) == "pinmux_tb"} {
   analyze -sv09 \
-    +define+FPV_ON+FPV_ALERT_NO_SIGINT_ERR \
+    +define+FPV_ON+$env(FPV_DEFINES) \
     -bbox_m usbdev_aon_wake \
     -f [glob *.scr]
 } else {
   analyze -sv09 \
-    +define+FPV_ON \
+    +define+FPV_ON+$env(FPV_DEFINES) \
     -f [glob *.scr]
 }
 
