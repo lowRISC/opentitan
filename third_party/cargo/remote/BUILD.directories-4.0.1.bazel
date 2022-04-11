@@ -52,6 +52,6 @@ rust_library(
     version = "4.0.1",
     # buildifier: leave-alone
     deps = [
-        "@raze__dirs_sys__0_3_6//:dirs_sys",
+        "@raze__dirs_sys__0_3_7//:dirs_sys",
     ],
 )

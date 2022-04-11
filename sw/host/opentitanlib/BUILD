@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
-load("//third_party/cargo:crates.bzl", "all_crate_deps")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -94,8 +93,36 @@ rust_library(
         "//sw/host/opentitanlib/opentitantool_derive",
     ],
     deps = [
-        "@mundane//:mundane",
-    ] + all_crate_deps(),
+        "//third_party/cargo:anyhow",
+        "//third_party/cargo:bitflags",
+        "//third_party/cargo:byteorder",
+        "//third_party/cargo:deser_hjson",
+        "//third_party/cargo:erased_serde",
+        "//third_party/cargo:hex",
+        "//third_party/cargo:humantime",
+        "//third_party/cargo:lazy_static",
+        "//third_party/cargo:log",
+        "//third_party/cargo:memoffset",
+        "//third_party/cargo:mio",
+        "//third_party/cargo:mio_signals",
+        "//third_party/cargo:nix",
+        "//third_party/cargo:num_bigint_dig",
+        "//third_party/cargo:num_enum",
+        "//third_party/cargo:num_traits",
+        "//third_party/cargo:rand",
+        "//third_party/cargo:regex",
+        "//third_party/cargo:rusb",
+        "//third_party/cargo:safe_ftdi",
+        "//third_party/cargo:serde",
+        "//third_party/cargo:serde_json",
+        "//third_party/cargo:typetag",
+        "//third_party/cargo:serialport",
+        "//third_party/cargo:sha2",
+        "//third_party/cargo:structopt",
+        "//third_party/cargo:thiserror",
+        "//third_party/cargo:zerocopy",
+        "@mundane",
+    ],
 )
 
 rust_test(

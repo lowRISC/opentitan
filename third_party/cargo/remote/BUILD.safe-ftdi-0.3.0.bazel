@@ -53,6 +53,6 @@ rust_library(
     version = "0.3.0",
     # buildifier: leave-alone
     deps = [
-        "@raze__libftdi1_sys__1_1_1//:libftdi1_sys",
+        "@raze__libftdi1_sys__1_1_2//:libftdi1_sys",
     ],
 )

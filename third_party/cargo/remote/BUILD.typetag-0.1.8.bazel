@@ -55,10 +55,10 @@ rust_library(
     version = "0.1.8",
     # buildifier: leave-alone
     deps = [
-        "@raze__erased_serde__0_3_16//:erased_serde",
-        "@raze__inventory__0_2_2//:inventory",
-        "@raze__once_cell__1_8_0//:once_cell",
-        "@raze__serde__1_0_130//:serde",
+        "@raze__erased_serde__0_3_20//:erased_serde",
+        "@raze__inventory__0_2_3//:inventory",
+        "@raze__once_cell__1_10_0//:once_cell",
+        "@raze__serde__1_0_136//:serde",
     ],
 )
 
