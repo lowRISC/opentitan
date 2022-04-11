@@ -107,10 +107,12 @@ module spid_upload
   output logic sys_cmdfifo_full_o,
   output logic sys_addrfifo_notempty_o,
   output logic sys_addrfifo_full_o,
+  output logic sys_payload_overflow_o,
 
   output logic [CmdPtrW-1:0]     sys_cmdfifo_depth_o,
   output logic [AddrPtrW-1:0]    sys_addrfifo_depth_o,
-  output logic [PayloadPtrW-1:0] sys_payload_depth_o
+  output logic [PayloadPtrW-1:0] sys_payload_depth_o,
+  output logic [PayloadPtrW-1:0] sys_last_written_payload_idx_o
 );
 
   localparam int unsigned CmdFifoWidth  =  8;
@@ -289,6 +291,58 @@ module spid_upload
     .rst_dst_ni  (sys_rst_ni),
     .dst_pulse_o (sys_payloadptr_clr_posedge)
   );
+
+  // last_written_payloadptr: in contrast to payloadptr,
+  // `last_written_payloadptr` provides a location that the HW lastly wrote to
+  // the payload buffer.
+  //
+  // This is useful when the host system sends more than 256B of payload. The
+  // HW wraps around the payload buffer when it receives more than 256B. The
+  // SW, with last_written_payloadptr, is able to know the exact offset to
+  // start to read.
+  //
+  // TODO: Handle 257, ... , 511 case (reduce bit by 1?)
+  logic [PayloadPtrW-1:0] last_written_payloadptr;
+  always_ff @(posedge clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) last_written_payloadptr <= '0;
+    else if (payloadptr_clr) last_written_payloadptr <= '0;
+    else if (payloadptr_inc) begin
+      last_written_payloadptr <= last_written_payloadptr + PayloadPtrW'(1);
+    end
+  end
+
+  // Latch last_written_payloadptr @ CSb events
+  always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) sys_last_written_payload_idx_o <= '0;
+    else if (sys_payloadptr_clr_posedge) sys_last_written_payload_idx_o <= '0;
+    else if (sys_csb_deasserted_pulse_i) begin
+      sys_last_written_payload_idx_o <= last_written_payloadptr;
+    end
+  end
+
+  // Overflow event
+  // When the SPI host system issues more than 256B payload, HW stores the
+  // overflow event in SCK then notify to SW when CSb is deasserted
+  logic  event_payload_overflow;
+  always_ff @(posedge clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni)         event_payload_overflow <= 1'b 0;
+    else if (payloadptr_clr) event_payload_overflow <= 1'b 0;
+    else if (payloadptr_inc && (payloadptr == PayloadPtrW'(PayloadByte))) begin
+      event_payload_overflow <= 1'b 1;
+    end
+  end
+
+  // Sync to SYSCLK when CSb release. Edge detection on the spi_device top
+  logic sys_event_payload_overflow;
+  always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni)                     sys_event_payload_overflow <= 1'b 0;
+    else if (sys_payloadptr_clr_posedge) sys_event_payload_overflow <= 1'b 0;
+    else if (sys_csb_deasserted_pulse_i) begin
+      sys_event_payload_overflow <= event_payload_overflow;
+    end
+  end
+
+  assign sys_payload_overflow_o = sys_event_payload_overflow;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
