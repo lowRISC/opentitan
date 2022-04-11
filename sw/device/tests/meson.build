@@ -58,10 +58,10 @@ example_test_from_rom_lib = declare_dependency(
     dependencies: [
       sw_lib_dif_uart,
       sw_lib_mmio,
-      sw_lib_pinmux,
       sw_lib_runtime_hart,
       sw_lib_runtime_print,
       sw_lib_runtime_log,
+      sw_lib_testing_pinmux_testutils,
       sw_lib_testing_test_status,
     ],
   ),
@@ -875,8 +875,8 @@ usbdev_test_lib = declare_dependency(
     dependencies: [
       sw_lib_usb,
       sw_lib_dif_pinmux,
-      sw_lib_pinmux,
       sw_lib_runtime_log,
+      sw_lib_testing_pinmux_testutils,
     ],
   ),
 )
@@ -1220,7 +1220,7 @@ foreach sw_test_name, sw_test_info : sw_tests
           sw_lib_runtime_print,
           sw_lib_flash_ctrl,
           sw_lib_ibex,
-          sw_lib_pinmux,
+          sw_lib_dif_pinmux,
           sw_lib_dif_gpio,
           sw_lib_dif_spi_device,
           sw_lib_dif_hmac,
@@ -1231,6 +1231,7 @@ foreach sw_test_name, sw_test_info : sw_tests
           top_earlgrey,
           device_lib,
           sw_lib_testing_flash_ctrl_testutils,
+          sw_lib_testing_pinmux_testutils,
           sw_lib_testing_test_status,
           shared_test_deps,
           sw_lib_crt,

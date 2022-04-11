@@ -37,21 +37,6 @@ sw_lib_ibex = declare_dependency(
   )
 )
 
-# PINMUX library (sw_lib_pinmux)
-sw_lib_pinmux = declare_dependency(
-  link_with: static_library(
-    'pinmux_ot',
-    sources: [
-      hw_top_earlgrey_pinmux_reg_h,
-      'pinmux.c',
-    ],
-    dependencies: [
-      top_earlgrey,
-      sw_lib_dif_pinmux,
-    ]
-  )
-)
-
 # IRQ library (sw_lib_irq)
 sw_lib_irq = declare_dependency(
   link_with: static_library(

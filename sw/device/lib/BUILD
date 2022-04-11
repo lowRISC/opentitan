@@ -21,18 +21,6 @@ cc_library(
 )
 
 cc_library(
-    name = "pinmux",
-    srcs = ["pinmux.c"],
-    hdrs = ["pinmux.h"],
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:base",
-        "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/runtime:hart",
-    ],
-)
-
-cc_library(
     name = "ibex_peri",
     srcs = ["ibex_peri.c"],
     hdrs = ["ibex_peri.h"],

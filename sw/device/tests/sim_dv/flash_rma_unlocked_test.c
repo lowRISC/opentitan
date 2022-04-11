@@ -8,18 +8,19 @@
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_uart.h"
-#include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/test_status.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
 #define LC_TOKEN_SIZE 16
 
+static dif_pinmux_t pinmux;
 static dif_uart_t uart0;
 static dif_flash_ctrl_state_t flash_state;
 static dif_lc_ctrl_t lc;
@@ -244,7 +245,9 @@ bool rom_test_main(void) {
   // We need to set the test status as "in test" to indicate to the test code
   // has been reached, even though this test is also in the "boot ROM".
   test_status_set(kTestStatusInTest);
-  pinmux_init();
+  CHECK_DIF_OK(dif_pinmux_init(
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+  pinmux_testutils_init(&pinmux);
 
   // We need to initialize the UART regardless if we LOG any messages, since
   // Verilator and FPGA platforms use the UART to communicate the test results.

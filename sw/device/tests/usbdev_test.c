@@ -20,10 +20,10 @@
 #include "sw/device/lib/usbdev.h"
 
 #include "sw/device/lib/dif/dif_pinmux.h"
-#include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf.h"
 #include "sw/device/lib/usb_controlep.h"
 #include "sw/device/lib/usb_simpleserial.h"
@@ -100,7 +100,7 @@ bool test_main(void) {
 
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
-  pinmux_init();
+  pinmux_testutils_init(&pinmux);
   CHECK_DIF_OK(dif_pinmux_input_select(
       &pinmux, kTopEarlgreyPinmuxPeripheralInUsbdevSense,
       kTopEarlgreyPinmuxInselIor0));
