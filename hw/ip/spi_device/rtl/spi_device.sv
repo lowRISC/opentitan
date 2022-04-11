@@ -163,6 +163,7 @@ module spi_device
   logic        addrfifo_notempty;
 
   logic payload_notempty;
+  logic payload_overflow;
 
   localparam int unsigned CmdFifoPtrW = $clog2(SramCmdFifoDepth+1);
   localparam int unsigned AddrFifoPtrW = $clog2(SramAddrFifoDepth+1);
@@ -173,8 +174,13 @@ module spi_device
   logic [CmdFifoPtrW-1:0]    cmdfifo_depth;
   logic [AddrFifoPtrW-1:0]   addrfifo_depth;
   logic [PayloadDepthW-1:0]  payload_depth;
+  logic [PayloadDepthW-1:0]  last_written_payload_idx;
 
   assign payload_notempty = payload_depth != '0;
+
+  // TODO: Implement CSR
+  logic unused_last_written_payload_idx;
+  assign unused_last_written_payload_idx = ^last_written_payload_idx;
 
   /////////////////////
   // Control signals //
@@ -311,6 +317,7 @@ module spi_device
 
   // Interrupts in Flash mode
   logic intr_upload_cmdfifo_not_empty, intr_upload_payload_not_empty;
+  logic intr_upload_payload_overflow;
   logic intr_readbuf_watermark, intr_readbuf_flip;
   logic flash_sck_readbuf_watermark, flash_sck_readbuf_flip;
 
@@ -583,16 +590,17 @@ module spi_device
   );
 
   prim_edge_detector #(
-    .Width (2),
+    .Width (3),
     .EnSync(1'b 0)
   ) u_intr_upload_edge (
     .clk_i,
     .rst_ni,
 
-    .d_i               ({cmdfifo_notempty, payload_notempty}),
+    .d_i               ({cmdfifo_notempty, payload_notempty, payload_overflow}),
     .q_sync_o          (),
     .q_posedge_pulse_o ({intr_upload_cmdfifo_not_empty,
-                         intr_upload_payload_not_empty}),
+                         intr_upload_payload_not_empty,
+                         intr_upload_payload_overflow}),
     .q_negedge_pulse_o ()
   );
 
@@ -621,6 +629,22 @@ module spi_device
     .hw2reg_intr_state_de_o (hw2reg.intr_state.upload_payload_not_empty.de),
     .intr_o                 (intr_upload_payload_not_empty_o              )
   );
+
+  logic unused_intr_payload_overflow;
+  assign unused_intr_payload_overflow = intr_upload_payload_overflow;
+  //prim_intr_hw #(.Width(1)) u_intr_payload_overflow (
+  //  .clk_i,
+  //  .rst_ni,
+  //  .event_intr_i           (intr_upload_payload_overflow                ),
+  //  .reg2hw_intr_enable_q_i (reg2hw.intr_enable.upload_payload_overflow.q),
+  //  .reg2hw_intr_test_q_i   (reg2hw.intr_test.upload_payload_overflow.q  ),
+  //  .reg2hw_intr_test_qe_i  (reg2hw.intr_test.upload_payload_overflow.qe ),
+  //  .reg2hw_intr_state_q_i  (reg2hw.intr_state.upload_payload_overflow.q ),
+  //  .hw2reg_intr_state_d_o  (hw2reg.intr_state.upload_payload_overflow.d ),
+  //  .hw2reg_intr_state_de_o (hw2reg.intr_state.upload_payload_overflow.de),
+  //  .intr_o                 (intr_upload_payload_overflow_o              )
+  //);
+
 
   prim_pulse_sync u_flash_readbuf_watermark_pulse_sync (
     .clk_src_i   (clk_spi_in_buf             ),
@@ -1462,10 +1486,12 @@ module spi_device
     .sys_cmdfifo_full_o      (), // not used
     .sys_addrfifo_notempty_o (addrfifo_notempty),
     .sys_addrfifo_full_o     (), // not used
+    .sys_payload_overflow_o  (payload_overflow),
 
-    .sys_cmdfifo_depth_o  (cmdfifo_depth),
-    .sys_addrfifo_depth_o (addrfifo_depth),
-    .sys_payload_depth_o  (payload_depth)
+    .sys_cmdfifo_depth_o            (cmdfifo_depth),
+    .sys_addrfifo_depth_o           (addrfifo_depth),
+    .sys_payload_depth_o            (payload_depth),
+    .sys_last_written_payload_idx_o (last_written_payload_idx)
   );
   // FIFO connect
   assign cmdfifo_rready = reg2hw.upload_cmdfifo.re;
@@ -1924,6 +1950,8 @@ module spi_device
                 intr_upload_cmdfifo_not_empty_o)
   `ASSERT_KNOWN(IntrUploadPayloadNotEmptyOKnown,
                 intr_upload_payload_not_empty_o)
+  //`ASSERT_KNOWN(IntrUploadPayloadOverflowOKnown,
+  //              intr_upload_payload_overflow_o)
   `ASSERT_KNOWN(IntrReadbufWatermarkOKnown,  intr_readbuf_watermark_o)
   `ASSERT_KNOWN(IntrReadbufFlipOKnown,       intr_readbuf_flip_o)
   `ASSERT_KNOWN(IntrTpmHeaderNotEmptyOKnown, intr_tpm_header_not_empty_o)
