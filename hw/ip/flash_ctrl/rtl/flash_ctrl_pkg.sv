@@ -430,6 +430,7 @@ package flash_ctrl_pkg;
     logic                    storage_relbl_err;
     logic                    storage_intg_err;
     logic                    fsm_err;
+    logic                    spurious_ack;
   } flash_rsp_t;
 
   // default value of flash_rsp_t (for dangling ports)
@@ -448,7 +449,8 @@ package flash_ctrl_pkg;
     prog_intg_err:      '0,
     storage_relbl_err:  '0,
     storage_intg_err:   '0,
-    fsm_err:            '0
+    fsm_err:            '0,
+    spurious_ack:       '0
   };
 
   // RMA entries

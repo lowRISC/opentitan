@@ -331,7 +331,7 @@ module prim_generic_flash_bank #(
 
       StErase: begin
         // Actual erasing of the page
-        if (erase_suspend_req_i && ack_o) begin
+        if (erase_suspend_req_i) begin
           st_d = StErSuspend;
         end else if (index_cnt < index_limit_q || time_cnt < time_limit_q) begin
           mem_req = 1'b1;

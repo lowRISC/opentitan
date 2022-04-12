@@ -1343,6 +1343,12 @@
               The flash macro encountered a storage integrity ECC error.
             '''
           },
+          { bits: "10",
+            name: "spurious_ack",
+            desc: '''
+              The flash emitted an unexpected acknowledgement.
+            '''
+          },
         ]
       },
 
