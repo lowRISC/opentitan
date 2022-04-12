@@ -27,6 +27,8 @@ package otbn_env_pkg;
   import otbn_pkg::WLEN, otbn_pkg::ExtWLEN, otbn_pkg::BaseIntgWidth, otbn_pkg::BaseWordsPerWLEN;
   import otbn_pkg::flags_t;
 
+  import otbn_pkg::status_e;
+
   import bus_params_pkg::BUS_AW, bus_params_pkg::BUS_DW, bus_params_pkg::BUS_DBW;
   import top_pkg::TL_AIW;
 
@@ -104,6 +106,22 @@ package otbn_env_pkg;
     OperationalStateBusy,
     OperationalStateLocked
   } operational_state_e;
+
+  function automatic operational_state_e get_operational_state(status_e status);
+    unique case (status)
+      otbn_pkg::StatusBusyExecute,
+      otbn_pkg::StatusBusySecWipeDmem,
+      otbn_pkg::StatusBusySecWipeImem:
+        return OperationalStateBusy;
+
+      otbn_pkg::StatusLocked:
+        return OperationalStateLocked;
+
+      otbn_pkg::StatusIdle:
+        return OperationalStateIdle;
+      default: ;
+    endcase
+  endfunction
 
   typedef enum {
     AccessSoftwareRead,
