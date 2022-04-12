@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:util
+      - lowrisc:prim:assert
     files:
       - rtl/prim_onehot_check.sv
     file_type: systemVerilogSource

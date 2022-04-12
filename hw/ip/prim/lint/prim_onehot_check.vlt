@@ -10,6 +10,7 @@
 // arrays feed into themselves (with different bits for different
 // positions in the tree).
 split_var -module "prim_onehot_check" -var "or_tree"
+split_var -module "prim_onehot_check" -var "and_tree"
 split_var -module "prim_onehot_check" -var "err_tree"
 
 // The clock and reset are only used for assertions in this module.
