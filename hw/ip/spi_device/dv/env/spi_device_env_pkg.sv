@@ -29,6 +29,7 @@ package spi_device_env_pkg;
     TxFifoUnderflow,
     CmdFifoNotEmpty,
     PayloadNotEmpty,
+    PayloadOverflow,
     ReadbufWatermark,
     ReadbufFlip,
     TpmHeaderNotEmpty,

@@ -46,6 +46,9 @@ package spi_device_reg_pkg;
     } upload_payload_not_empty;
     struct packed {
       logic        q;
+    } upload_payload_overflow;
+    struct packed {
+      logic        q;
     } readbuf_watermark;
     struct packed {
       logic        q;
@@ -80,6 +83,9 @@ package spi_device_reg_pkg;
     struct packed {
       logic        q;
     } upload_payload_not_empty;
+    struct packed {
+      logic        q;
+    } upload_payload_overflow;
     struct packed {
       logic        q;
     } readbuf_watermark;
@@ -124,6 +130,10 @@ package spi_device_reg_pkg;
       logic        q;
       logic        qe;
     } upload_payload_not_empty;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } upload_payload_overflow;
     struct packed {
       logic        q;
       logic        qe;
@@ -478,6 +488,10 @@ package spi_device_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } upload_payload_overflow;
+    struct packed {
+      logic        d;
+      logic        de;
     } readbuf_watermark;
     struct packed {
       logic        d;
@@ -633,9 +647,9 @@ package spi_device_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    spi_device_reg2hw_intr_state_reg_t intr_state; // [1625:1615]
-    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [1614:1604]
-    spi_device_reg2hw_intr_test_reg_t intr_test; // [1603:1582]
+    spi_device_reg2hw_intr_state_reg_t intr_state; // [1629:1618]
+    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [1617:1606]
+    spi_device_reg2hw_intr_test_reg_t intr_test; // [1605:1582]
     spi_device_reg2hw_alert_test_reg_t alert_test; // [1581:1580]
     spi_device_reg2hw_control_reg_t control; // [1579:1574]
     spi_device_reg2hw_cfg_reg_t cfg; // [1573:1560]
@@ -676,7 +690,7 @@ package spi_device_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    spi_device_hw2reg_intr_state_reg_t intr_state; // [268:247]
+    spi_device_hw2reg_intr_state_reg_t intr_state; // [270:247]
     spi_device_hw2reg_cfg_reg_t cfg; // [246:245]
     spi_device_hw2reg_async_fifo_level_reg_t async_fifo_level; // [244:229]
     spi_device_hw2reg_status_reg_t status; // [228:223]
@@ -772,7 +786,7 @@ package spi_device_reg_pkg;
   parameter logic [BlockAw-1:0] SPI_DEVICE_TPM_WRITE_FIFO_OFFSET = 13'h 838;
 
   // Reset values for hwext registers and their fields
-  parameter logic [10:0] SPI_DEVICE_INTR_TEST_RESVAL = 11'h 0;
+  parameter logic [11:0] SPI_DEVICE_INTR_TEST_RESVAL = 12'h 0;
   parameter logic [0:0] SPI_DEVICE_INTR_TEST_GENERIC_RX_FULL_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_DEVICE_INTR_TEST_GENERIC_RX_WATERMARK_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_DEVICE_INTR_TEST_GENERIC_TX_WATERMARK_RESVAL = 1'h 0;
@@ -781,6 +795,7 @@ package spi_device_reg_pkg;
   parameter logic [0:0] SPI_DEVICE_INTR_TEST_GENERIC_TX_UNDERFLOW_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_DEVICE_INTR_TEST_UPLOAD_CMDFIFO_NOT_EMPTY_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_DEVICE_INTR_TEST_UPLOAD_PAYLOAD_NOT_EMPTY_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_UPLOAD_PAYLOAD_OVERFLOW_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_DEVICE_INTR_TEST_READBUF_WATERMARK_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_DEVICE_INTR_TEST_READBUF_FLIP_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_DEVICE_INTR_TEST_TPM_HEADER_NOT_EMPTY_RESVAL = 1'h 0;
