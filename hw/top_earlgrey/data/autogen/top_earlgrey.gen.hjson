@@ -12999,6 +12999,12 @@
       module_name: spi_device
     }
     {
+      name: spi_device_upload_payload_overflow
+      width: 1
+      type: interrupt
+      module_name: spi_device
+    }
+    {
       name: spi_device_readbuf_watermark
       width: 1
       type: interrupt

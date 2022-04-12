@@ -48,6 +48,7 @@ module spi_device
   // INTR: Flash mode
   output logic intr_upload_cmdfifo_not_empty_o,
   output logic intr_upload_payload_not_empty_o,
+  output logic intr_upload_payload_overflow_o,
   output logic intr_readbuf_watermark_o,
   output logic intr_readbuf_flip_o,
 
@@ -630,20 +631,18 @@ module spi_device
     .intr_o                 (intr_upload_payload_not_empty_o              )
   );
 
-  logic unused_intr_payload_overflow;
-  assign unused_intr_payload_overflow = intr_upload_payload_overflow;
-  //prim_intr_hw #(.Width(1)) u_intr_payload_overflow (
-  //  .clk_i,
-  //  .rst_ni,
-  //  .event_intr_i           (intr_upload_payload_overflow                ),
-  //  .reg2hw_intr_enable_q_i (reg2hw.intr_enable.upload_payload_overflow.q),
-  //  .reg2hw_intr_test_q_i   (reg2hw.intr_test.upload_payload_overflow.q  ),
-  //  .reg2hw_intr_test_qe_i  (reg2hw.intr_test.upload_payload_overflow.qe ),
-  //  .reg2hw_intr_state_q_i  (reg2hw.intr_state.upload_payload_overflow.q ),
-  //  .hw2reg_intr_state_d_o  (hw2reg.intr_state.upload_payload_overflow.d ),
-  //  .hw2reg_intr_state_de_o (hw2reg.intr_state.upload_payload_overflow.de),
-  //  .intr_o                 (intr_upload_payload_overflow_o              )
-  //);
+  prim_intr_hw #(.Width(1)) u_intr_payload_overflow (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_upload_payload_overflow                ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.upload_payload_overflow.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.upload_payload_overflow.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.upload_payload_overflow.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.upload_payload_overflow.q ),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.upload_payload_overflow.d ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.upload_payload_overflow.de),
+    .intr_o                 (intr_upload_payload_overflow_o              )
+  );
 
 
   prim_pulse_sync u_flash_readbuf_watermark_pulse_sync (
@@ -1950,8 +1949,8 @@ module spi_device
                 intr_upload_cmdfifo_not_empty_o)
   `ASSERT_KNOWN(IntrUploadPayloadNotEmptyOKnown,
                 intr_upload_payload_not_empty_o)
-  //`ASSERT_KNOWN(IntrUploadPayloadOverflowOKnown,
-  //              intr_upload_payload_overflow_o)
+  `ASSERT_KNOWN(IntrUploadPayloadOverflowOKnown,
+                intr_upload_payload_overflow_o)
   `ASSERT_KNOWN(IntrReadbufWatermarkOKnown,  intr_readbuf_watermark_o)
   `ASSERT_KNOWN(IntrReadbufFlipOKnown,       intr_readbuf_flip_o)
   `ASSERT_KNOWN(IntrTpmHeaderNotEmptyOKnown, intr_tpm_header_not_empty_o)

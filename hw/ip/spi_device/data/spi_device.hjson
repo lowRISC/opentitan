@@ -47,9 +47,18 @@
       desc: "Upload Command FIFO is not empty"
     }
     { name: "upload_payload_not_empty"
-      desc: '''Upload paylod is not empty.
+      desc: '''Upload payload is not empty.
 
         The event occurs after SPI transaction completed
+        '''
+    }
+    { name: "upload_payload_overflow"
+      desc: '''Upload payload overflow event.
+
+        When a SPI Host system issues a command with payload more than 256B,
+        this event is reported. When it happens, SW should read the last
+        written payload index CSR to figure out the starting address of the
+        last 256B.
         '''
     }
     { name: "readbuf_watermark"
