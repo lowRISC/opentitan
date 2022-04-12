@@ -22,7 +22,6 @@ filesets:
       - otbn_mac_bignum_if.sv
       - otbn_rf_base_if.sv
       - otbn_insn_cnt_if.sv
-      - otbn_controller_if.sv
       - otbn_rnd_if.sv
       - otbn_escalate_if.sv
       - otbn_trace_item.sv: {is_include_file: true}
