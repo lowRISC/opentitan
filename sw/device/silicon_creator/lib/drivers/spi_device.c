@@ -622,8 +622,9 @@ void spi_device_cmd_get(spi_device_cmd_t *cmd) {
         abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_ADDRFIFO_REG_OFFSET);
   }
 
+  // TODO: Handle the case of non-zero PAYLOAD_START_IDX.
   cmd->payload_byte_count =
-      bitfield_field32_read(reg, SPI_DEVICE_UPLOAD_STATUS_PAYLOAD_DEPTH_FIELD);
+      abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_STATUS2_REG_OFFSET);
   uint32_t src =
       kBase + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDevicePayloadAreaOffset;
   char *dest = (char *)&cmd->payload;
