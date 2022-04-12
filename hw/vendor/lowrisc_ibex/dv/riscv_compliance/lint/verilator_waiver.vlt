@@ -1,0 +1,32 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Lint waivers for processing riscv_compliance RTL with Verilator
+//
+// This should be used for rules applying to things like testbench
+// top-levels. For rules that apply to the actual design (files in the
+// 'rtl' directory), see verilator_waiver_rtl.vlt in the same
+// directory.
+//
+// See https://www.veripool.org/projects/verilator/wiki/Manual-verilator#CONFIGURATION-FILES
+// for documentation.
+//
+// Important: This file must included *before* any other Verilog file is read.
+// Otherwise, only global waivers are applied, but not file-specific waivers.
+
+`verilator_config
+
+// We have some boolean top-level parameters in e.g. simple_system.sv.
+// When building with fusesoc, these get set with defines like
+// -GRV32E=1 (rather than -GRV32E=1'b1), leading to warnings like:
+//
+//   Operator VAR '<varname>' expects 1 bits on the Initial value, but
+//   Initial value's CONST '32'h1' generates 32 bits.
+//
+// This signoff rule ignores errors like this. Note that it only
+// matches when you set a 1-bit value to a literal 1, so it won't hide
+// silly mistakes like setting it to 2.
+//
+lint_off -rule WIDTH -file "*/rtl/ibex_riscv_compliance.sv"
+         -match "*expects 1 bits*Initial value's CONST '32'h1'*"

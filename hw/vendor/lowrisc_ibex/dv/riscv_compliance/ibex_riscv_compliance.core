@@ -1,0 +1,145 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ibex:ibex_riscv_compliance:0.1"
+description: "Ibex simulation for RISC-V compliance testing (using Verilator)"
+filesets:
+  files_sim:
+    depend:
+      - lowrisc:ibex:ibex_top_tracing
+      - lowrisc:ibex:sim_shared
+    files:
+      - rtl/ibex_riscv_compliance.sv
+      - rtl/riscv_testutil.sv
+    file_type: systemVerilogSource
+
+  files_verilator:
+    depend:
+      - lowrisc:dv_verilator:memutil_verilator
+      - lowrisc:dv_verilator:simutil_verilator
+    files:
+      - ibex_riscv_compliance.cc: { file_type: cppSource }
+      - lint/verilator_waiver.vlt: {file_type: vlt}
+
+parameters:
+  RV32E:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: "Enable the E ISA extension (reduced register set) [0/1]"
+
+  RV32M:
+    datatype: str
+    default: ibex_pkg::RV32MFast
+    paramtype: vlogdefine
+    description: "RV32M implementation parameter enum. See the ibex_pkg::rv32m_e enum in ibex_pkg.sv for permitted values."
+
+  RV32B:
+    datatype: str
+    default: ibex_pkg::RV32BNone
+    paramtype: vlogdefine
+    description: "Bitmanip implementation parameter enum. See the ibex_pkg::rv32b_e enum in ibex_pkg.sv for permitted values."
+
+  RegFile:
+    datatype: str
+    default: ibex_pkg::RegFileFF
+    paramtype: vlogdefine
+    description: "Register file implementation parameter enum. See the ibex_pkg::regfile_e enum in ibex_pkg.sv for permitted values."
+
+  ICache:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enable instruction cache"
+
+  ICacheECC:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enable ECC protection in instruction cache"
+
+  BranchTargetALU:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: "Enables separate branch target ALU (increasing branch performance EXPERIMENTAL)"
+
+  WritebackStage:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: "Enables third pipeline stage (EXPERIMENTAL)"
+
+  BranchPredictor:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: "Enables static branch prediction (EXPERIMENTAL)"
+
+  PMPEnable:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enable PMP"
+
+  PMPGranularity:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Granularity of NAPOT range, 0 = 4 byte, 1 = byte, 2 = 16 byte, 3 = 32 byte etc"
+
+  PMPNumRegions:
+    datatype: int
+    default: 4
+    paramtype: vlogparam
+    description: "Number of PMP regions"
+
+  SecureIbex:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: "Enables security hardening features (EXPERIMENTAL) [0/1]"
+
+  ICacheScramble:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: "Enables ICache scrambling feature (EXPERIMENTAL) [0/1]"
+
+targets:
+  sim:
+    default_tool: verilator
+    filesets:
+      - files_sim
+      - tool_verilator ? (files_verilator)
+    parameters:
+      - RV32E
+      - RV32M
+      - RV32B
+      - RegFile
+      - ICache
+      - ICacheECC
+      - BranchTargetALU
+      - WritebackStage
+      - BranchPredictor
+      - PMPEnable
+      - PMPGranularity
+      - PMPNumRegions
+      - SecureIbex
+      - ICacheScramble
+    toplevel: ibex_riscv_compliance
+    tools:
+      verilator:
+        mode: cc
+        verilator_options:
+          # Disabling tracing reduces compile times but doesn't have a
+          # huge influence on runtime performance.
+          - '--trace'
+          - '--trace-fst' # this requires -DVM_TRACE_FMT_FST in CFLAGS below!
+          - '--trace-structs'
+          - '--trace-params'
+          - '--trace-max-array 1024'
+          - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=ibex_riscv_compliance -g"'
+          - '-LDFLAGS "-pthread -lutil -lelf"'
+          - "-Wall"
