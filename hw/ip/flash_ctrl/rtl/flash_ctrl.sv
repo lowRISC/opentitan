@@ -1020,6 +1020,7 @@ module flash_ctrl
   assign hw2reg.fault_status.seed_err.d         = 1'b1;
   assign hw2reg.fault_status.phy_relbl_err.d    = 1'b1;
   assign hw2reg.fault_status.phy_storage_err.d  = 1'b1;
+  assign hw2reg.fault_status.spurious_ack.d     = 1'b1;
   assign hw2reg.fault_status.mp_err.de          = hw_err.mp_err;
   assign hw2reg.fault_status.rd_err.de          = hw_err.rd_err;
   assign hw2reg.fault_status.prog_err.de        = hw_err.prog_err;
@@ -1029,6 +1030,7 @@ module flash_ctrl
   assign hw2reg.fault_status.seed_err.de        = seed_err;
   assign hw2reg.fault_status.phy_relbl_err.de   = flash_phy_rsp.storage_relbl_err;
   assign hw2reg.fault_status.phy_storage_err.de = flash_phy_rsp.storage_intg_err;
+  assign hw2reg.fault_status.spurious_ack.de    = flash_phy_rsp.spurious_ack;
 
   // standard faults
   assign hw2reg.std_fault_status.reg_intg_err.d    = 1'b1;

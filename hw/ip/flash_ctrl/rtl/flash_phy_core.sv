@@ -56,7 +56,8 @@ module flash_phy_core
   output logic                       fsm_err_o,
   output logic                       prog_intg_err_o,
   output logic                       relbl_ecc_err_o,
-  output logic                       intg_ecc_err_o
+  output logic                       intg_ecc_err_o,
+  output logic                       spurious_ack_o
 );
 
 
@@ -191,6 +192,20 @@ module flash_phy_core
   assign host_req_rdy_o = rd_stage_rdy & (arb_cnt < ArbCnt[CntWidth-1:0]) & ~ctrl_gnt;
   assign host_req_done_o = ~ctrl_gnt & rd_stage_data_valid;
 
+  localparam int OutStandingRdWidth = $clog2(RspOrderDepth+1);
+  logic [OutStandingRdWidth-1:0] host_outstanding;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      host_outstanding <= '0;
+    end else if (host_gnt && !host_req_done_o) begin
+      host_outstanding <= host_outstanding + 1'b1;
+    end else if (!host_gnt && host_req_done_o) begin
+      host_outstanding <= host_outstanding - 1'b1;
+    end
+  end
+  `ASSERT(RdTxnCheck_A, host_outstanding <= RspOrderDepth)
+
+
   // controller request can only win after the entire read pipeline
   // clears
   logic ctrl_req;
@@ -201,15 +216,18 @@ module flash_phy_core
   assign inc_arb_cnt = req_i & host_gnt;
 
   logic fsm_err;
+  logic ctrl_fsm_idle;
   always_comb begin
     state_d = state_q;
     reqs = '0;
     ctrl_rsp_vld = '0;
     ctrl_gnt = '0;
     fsm_err = '0;
+    ctrl_fsm_idle = '0;
 
     unique case (state_q)
       StIdle: begin
+        ctrl_fsm_idle = 1'b1;
         if (mubi4_test_true_loose(flash_disable[FsmDisableIdx])) begin
           state_d = StDisable;
         end else if (ctrl_req && rd_i) begin
@@ -268,6 +286,10 @@ module flash_phy_core
 
     endcase // unique case (state_q)
   end // always_comb
+
+  // determine spurious acks
+  assign spurious_ack_o = (ctrl_fsm_idle & ctrl_rsp_vld) |
+                          ((host_outstanding == '0) & host_req_done_o);
 
   // transactions coming from flash controller are always data type
   assign muxed_addr = host_sel ? host_addr_i : addr_i;

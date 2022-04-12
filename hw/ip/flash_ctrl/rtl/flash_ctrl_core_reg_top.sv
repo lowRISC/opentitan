@@ -965,6 +965,7 @@ module flash_ctrl_core_reg_top (
   logic fault_status_seed_err_qs;
   logic fault_status_phy_relbl_err_qs;
   logic fault_status_phy_storage_err_qs;
+  logic fault_status_spurious_ack_qs;
   logic [19:0] err_addr_qs;
   logic ecc_single_err_cnt_we;
   logic [7:0] ecc_single_err_cnt_ecc_single_err_cnt_0_qs;
@@ -10247,6 +10248,31 @@ module flash_ctrl_core_reg_top (
     .qs     (fault_status_phy_storage_err_qs)
   );
 
+  //   F[spurious_ack]: 10:10
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_fault_status_spurious_ack (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fault_status.spurious_ack.de),
+    .d      (hw2reg.fault_status.spurious_ack.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.fault_status.spurious_ack.q),
+
+    // to register interface (read)
+    .qs     (fault_status_spurious_ack_qs)
+  );
+
 
   // R[err_addr]: V(False)
   prim_subreg #(
@@ -12321,6 +12347,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[7] = fault_status_seed_err_qs;
         reg_rdata_next[8] = fault_status_phy_relbl_err_qs;
         reg_rdata_next[9] = fault_status_phy_storage_err_qs;
+        reg_rdata_next[10] = fault_status_spurious_ack_qs;
       end
 
       addr_hit[96]: begin
