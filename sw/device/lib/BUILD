@@ -16,6 +16,7 @@ cc_library(
         "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
+        "//sw/device/lib/base:multibits",
     ],
 )
 

@@ -85,6 +85,7 @@ cc_library(
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing/test_framework",
     ],
 )
