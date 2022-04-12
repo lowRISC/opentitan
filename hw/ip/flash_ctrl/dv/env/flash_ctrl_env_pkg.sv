@@ -75,13 +75,15 @@ package flash_ctrl_env_pkg;
   parameter uint FlashFullDataWidth = flash_ctrl_pkg::DataWidth + 4;
 
   // params for words
-  parameter uint NUM_PAGE_WORDS            = 512;
-  parameter uint NUM_BK_DATA_WORDS         = 131072; // 256 pages
-  parameter uint NUM_BK_INFO_WORDS         = 5120;   // 10 pages
+  parameter uint NUM_PAGE_WORDS    = FlashNumBusWordsPerPage;
+  parameter uint NUM_BK_DATA_WORDS = FlashNumBusWordsPerBank;  // 256 pages
+  parameter uint NUM_BK_INFO_WORDS = InfoTypeBusWords[0];      // 10 pages
 
   // params for num of pages
-  parameter uint NUM_PAGE_PART_DATA        = 512;
-  parameter uint NUM_PAGE_PART_INFO0       = 10;
+  parameter uint NUM_PAGE_PART_DATA  = flash_ctrl_pkg::PagesPerBank;
+  parameter uint NUM_PAGE_PART_INFO0 = flash_ctrl_pkg::InfoTypeSize[0];
+  parameter uint NUM_PAGE_PART_INFO1 = flash_ctrl_pkg::InfoTypeSize[1];
+  parameter uint NUM_PAGE_PART_INFO2 = flash_ctrl_pkg::InfoTypeSize[2];
 
   parameter otp_ctrl_pkg::flash_otp_key_rsp_t FLASH_OTP_RSP_DEFAULT = '{
       data_ack: 1'b0,
@@ -137,10 +139,10 @@ package flash_ctrl_env_pkg;
 
   // Partition select for DV
   typedef enum logic [flash_ctrl_pkg::InfoTypes:0] {  // Data partition and all info partitions
-    FlashPartData       = 0,
-    FlashPartInfo       = 1,
-    FlashPartInfo1      = 2,
-    FlashPartInfo2      = 4
+    FlashPartData  = 0,
+    FlashPartInfo  = 1,
+    FlashPartInfo1 = 2,
+    FlashPartInfo2 = 4
   } flash_dv_part_e;
 
   // Special Partitions
@@ -151,6 +153,12 @@ package flash_ctrl_env_pkg;
     FlashData0Part   = 3,
     FlashData1Part   = 4
   } flash_sec_part_e;
+
+  typedef enum {
+    AllOnes,       // All 1s
+    AllZeros,      // All 0s
+    CustomVal      // Custom Value
+  } flash_scb_wr_e;
 
   typedef struct packed {
     mubi4_t  en;           // enable this region
@@ -184,8 +192,12 @@ package flash_ctrl_env_pkg;
 
   // Data queue for flash transactions
   typedef logic [TL_DW-1:0] data_q_t[$];
+  typedef bit [TL_DW-1:0] data_b_t[$];
   typedef bit [TL_DW-1:0] data_t;
   typedef bit [TL_AW-1:0] addr_t;
+
+  parameter uint ALL_ZEROS = 32'h0000_0000;
+  parameter uint ALL_ONES  = 32'hffff_ffff;
 
   // Parameter for Probing into the DUT RMA FSM
   parameter string PRB_RMA_FSM = "tb.dut.u_flash_hw_if.state_q";
