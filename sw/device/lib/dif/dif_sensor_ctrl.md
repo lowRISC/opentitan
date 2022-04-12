@@ -2,14 +2,6 @@
 title: "Sensor Controller DIF Checklist"
 ---
 
-
-
-<!--
-NOTE: This is a template checklist document that is required to be copied over
-to `sw/device/lib/dif/dif_sensor_ctrl.md` for a new DIF that transitions
-from L0 (Specification) to L1 (Development) stage, and updated as needed.
-Once done, please remove this comment before checking it in.
--->
 This checklist is for [Development Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [Sensor Controller DIF]({{< relref "hw/ip/sensor_ctrl/doc" >}}).
 All checklist items refer to the content in the [Checklist]({{< relref "/doc/project/checklist.md" >}}).
 
@@ -19,7 +11,7 @@ All checklist items refer to the content in the [Checklist]({{< relref "/doc/pro
 
 Type           | Item                 | Resolution  | Note/Collaterals
 ---------------|----------------------|-------------|------------------
-Implementation | [DIF_EXISTS][]       | Not Started |
+Implementation | [DIF_EXISTS][]       | Done        |
 Implementation | [DIF_USED_IN_TREE][] | Not Started |
 Tests          | [DIF_TEST_SMOKE][]   | Not Started |
 
@@ -31,8 +23,8 @@ Tests          | [DIF_TEST_SMOKE][]   | Not Started |
 
 Type           | Item                        | Resolution  | Note/Collaterals
 ---------------|-----------------------------|-------------|------------------
-Coordination   | [DIF_HW_FEATURE_COMPLETE][] | Not Started | [HW Dashboard]({{< relref "hw" >}})
-Implementation | [DIF_FEATURES][]            | Not Started |
+Coordination   | [DIF_HW_FEATURE_COMPLETE][] | Done        | [HW Dashboard]({{< relref "hw" >}})
+Implementation | [DIF_FEATURES][]            | In Progress |
 Coordination   | [DIF_DV_TESTS][]            | Not Started |
 
 [DIF_HW_FEATURE_COMPLETE]: {{< relref "/doc/project/checklist.md#dif_hw_feature_complete" >}}
@@ -47,7 +39,7 @@ Coordination   | [DIF_HW_DESIGN_COMPLETE][]       | Not Started |
 Coordination   | [DIF_HW_VERIFICATION_COMPLETE][] | Not Started |
 Documentation  | [DIF_DOC_HW][]                   | Not Started |
 Code Quality   | [DIF_CODE_STYLE][]               | Not Started |
-Tests          | [DIF_TEST_UNIT][]                | Not Started |
+Tests          | [DIF_TEST_UNIT][]                | In Progress |
 Review         | [DIF_TODO_COMPLETE][]            | Not Started |
 Review         | Reviewer(s)                      | Not Started |
 Review         | Signoff date                     | Not Started |
