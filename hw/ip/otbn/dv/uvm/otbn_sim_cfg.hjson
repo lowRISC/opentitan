@@ -271,7 +271,8 @@ name:
       tests: [
         "otbn_smoke", "otbn_single", "otbn_multi", "otbn_reset",
          "otbn_multi_err", "otbn_imem_err", "otbn_dmem_err",
-         "otbn_stress_all", "otbn_escalate"
+         "otbn_stress_all", "otbn_escalate", "otbn_illegal_mem_acc",
+         "otbn_zero_state_err_urnd"
       ]
     }
   ]
