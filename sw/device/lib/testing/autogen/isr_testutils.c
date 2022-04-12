@@ -25,6 +25,7 @@
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
+#include "sw/device/lib/dif/dif_sensor_ctrl.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
@@ -630,6 +631,43 @@ void isr_testutils_rv_timer_isr(
 
   // Acknowledge the IRQ at the peripheral.
   CHECK_DIF_OK(dif_rv_timer_irq_acknowledge(rv_timer_ctx.rv_timer, irq));
+
+  // Complete the IRQ at the PLIC.
+  CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
+                                        plic_irq_id));
+}
+
+void isr_testutils_sensor_ctrl_isr(
+    plic_isr_ctx_t plic_ctx, sensor_ctrl_isr_ctx_t sensor_ctrl_ctx,
+    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    dif_sensor_ctrl_irq_t *irq_serviced) {
+  // Claim the IRQ at the PLIC.
+  dif_rv_plic_irq_id_t plic_irq_id;
+  CHECK_DIF_OK(
+      dif_rv_plic_irq_claim(plic_ctx.rv_plic, plic_ctx.hart_id, &plic_irq_id));
+
+  // Get the peripheral the IRQ belongs to.
+  *peripheral_serviced = (top_earlgrey_plic_peripheral_t)
+      top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
+
+  // Get the IRQ that was fired from the PLIC IRQ ID.
+  dif_sensor_ctrl_irq_t irq = (dif_sensor_ctrl_irq_t)(
+      plic_irq_id - sensor_ctrl_ctx.plic_sensor_ctrl_start_irq_id);
+  *irq_serviced = irq;
+
+  // Check if it is supposed to be the only IRQ fired.
+  if (sensor_ctrl_ctx.is_only_irq) {
+    dif_sensor_ctrl_irq_state_snapshot_t snapshot;
+    CHECK_DIF_OK(
+        dif_sensor_ctrl_irq_get_state(sensor_ctrl_ctx.sensor_ctrl, &snapshot));
+    CHECK(snapshot == (dif_sensor_ctrl_irq_state_snapshot_t)(1 << irq),
+          "Only sensor_ctrl IRQ %d expected to fire. Actual IRQ state = %x",
+          irq, snapshot);
+  }
+
+  // Acknowledge the IRQ at the peripheral.
+  CHECK_DIF_OK(
+      dif_sensor_ctrl_irq_acknowledge(sensor_ctrl_ctx.sensor_ctrl, irq));
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
