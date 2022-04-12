@@ -28,6 +28,7 @@ module otbn_rnd import otbn_pkg::*;
   input logic clk_i,
   input logic rst_ni,
 
+  input  logic            rnd_wipe_i,
   input  logic            rnd_req_i,
   input  logic            rnd_prefetch_req_i,
   output logic            rnd_valid_o,
@@ -64,6 +65,10 @@ module otbn_rnd import otbn_pkg::*;
 
   logic edn_rnd_req_q, edn_rnd_req_d;
 
+  logic rnd_prefetch_pending_d, rnd_prefetch_pending_q;
+  logic rnd_req_queued_d, rnd_req_queued_q;
+  logic edn_rnd_data_ignore_d, edn_rnd_data_ignore_q;
+
   ////////////////////////
   // RND Implementation //
   ////////////////////////
@@ -71,18 +76,42 @@ module otbn_rnd import otbn_pkg::*;
   assign rnd_req_complete = rnd_req_i & rnd_valid_o;
   assign edn_rnd_req_complete = edn_rnd_req_o & edn_rnd_ack_i;
 
-  assign rnd_data_en = edn_rnd_req_complete;
+  assign rnd_data_en = edn_rnd_req_complete & ~edn_rnd_data_ignore_q;
+
   // RND becomes valid when EDN request completes and provides new bits. Valid is cleared when OTBN
-  // reads RND
-  assign rnd_valid_d = (rnd_valid_q & ~rnd_req_complete) | edn_rnd_req_complete;
+  // starts a new run (rnd_wipe_i) or when OTBN reads RND (rnd_req_complete).
+  assign rnd_valid_d =
+      rnd_wipe_i || rnd_req_complete                 ? 1'b0 :
+      edn_rnd_req_complete && !edn_rnd_data_ignore_q ? 1'b1 : rnd_valid_q;
   assign rnd_data_d = edn_rnd_data_i;
 
-  // Start an EDN request when there is a prefetch or an attempt at reading RND when RND data is not
-  // available. Signalling `edn_rnd_req_start` whilst there is an outstanding request has no effect
-  // and is harmless.
-  assign edn_rnd_req_start = (rnd_prefetch_req_i | rnd_req_i) & ~rnd_valid_q;
+  // Start an EDN request when there is a prefetch or an attempt at reading RND when RND data is
+  // not available. Signalling `edn_rnd_req_start` whilst there is an outstanding request is
+  // harmless. However, a prefetch may still be outstanding from the last OTBN run which may have
+  // used a different configuration for EDN, CSRNG or the entropy source. At the start of a new
+  // OTBN run, RND data is thus always invalidated and outstanding prefetches are marked such that
+  // the RND data returned for the first prefetch is thrown away. When throwing away data, we need
+  // to keep requesting RND data from EDN if another request got queued in the meantime.
+  assign edn_rnd_req_start = (rnd_prefetch_req_i | rnd_req_i | rnd_req_queued_q) & ~rnd_valid_q;
 
-  // Assert `edn_rnd_req_o` when a request is started and keep it asserted until the request is done
+  // Is there a prefetch pending?
+  assign rnd_prefetch_pending_d = rnd_prefetch_req_i       ? 1'b1 :
+                                  rnd_req_i || rnd_valid_q ? 1'b0 : rnd_prefetch_pending_q;
+
+  // When seeing a wipe with an outstanding prefetch, we are going to ignore the RND data obtained
+  // for the first prefetch. Any RND data returned clears the ignore status.
+  assign edn_rnd_data_ignore_d =
+      rnd_wipe_i && rnd_prefetch_pending_q ? 1'b1 :
+      edn_rnd_req_complete                 ? 1'b0 : edn_rnd_data_ignore_q;
+
+  // Don't combine new RND requests with outstanding prefetches for which we are going to ingore
+  // the returned data. Cleared upon starting the request without having the ignore bit set.
+  assign rnd_req_queued_d =
+      edn_rnd_data_ignore_q ? edn_rnd_req_start :
+      edn_rnd_req_start     ? 1'b0              : rnd_req_queued_q;
+
+  // Assert `edn_rnd_req_o` when a request is started and keep it asserted until the request is
+  // done.
   assign edn_rnd_req_d = (edn_rnd_req_q | edn_rnd_req_start) & ~edn_rnd_req_complete;
 
   assign edn_rnd_req_o = edn_rnd_req_q;
@@ -95,11 +124,17 @@ module otbn_rnd import otbn_pkg::*;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      rnd_valid_q   <= 1'b0;
-      edn_rnd_req_q <= 1'b0;
+      rnd_valid_q            <= 1'b0;
+      rnd_prefetch_pending_q <= 1'b0;
+      rnd_req_queued_q       <= 1'b0;
+      edn_rnd_req_q          <= 1'b0;
+      edn_rnd_data_ignore_q  <= 1'b0;
     end else begin
-      rnd_valid_q   <= rnd_valid_d;
-      edn_rnd_req_q <= edn_rnd_req_d;
+      rnd_valid_q            <= rnd_valid_d;
+      rnd_prefetch_pending_q <= rnd_prefetch_pending_d;
+      rnd_req_queued_q       <= rnd_req_queued_d;
+      edn_rnd_req_q          <= edn_rnd_req_d;
+      edn_rnd_data_ignore_q  <= edn_rnd_data_ignore_d;
     end
   end
 
