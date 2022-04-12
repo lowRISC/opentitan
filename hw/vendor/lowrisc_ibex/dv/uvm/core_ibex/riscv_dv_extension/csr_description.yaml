@@ -1,0 +1,403 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+#
+# Base CSR template that should be followed when describing all processor supported CSRs to enable correct generation of directed test sequences
+#- csr: CSR_NAME
+#  description: >
+#    BRIEF_DESCRIPTION
+#  address: 0x###
+#  privilege_mode: MODE (D/M/S/H/U)
+#  rv32:
+#    - MSB_FIELD_NAME:
+#      - description: >
+#          BRIEF_DESCRIPTION
+#      - type: TYPE (WPRI/WLRL/WARL)
+#      - reset_val: RESET_VAL
+#      - msb: MSB_POS
+#      - lsb: LSB_POS
+#    - ...
+#    - ...
+#    - LSB_FIELD_NAME:
+#      - description: ...
+#      - type: ...
+#      - ...
+#  rv64:
+#    - MSB_FIELD_NAME:
+#      - description: >
+#          BRIEF_DESCRIPTION
+#      - type: TYPE (WPRI/WLRL/WARL)
+#      - reset_val: RESET_VAL
+#      - msb: MSB_POS
+#      - lsb: LSB_POS
+#    - ...
+#    - ...
+#    - LSB_FIELD_NAME:
+#      - description: ...
+#      - type: ...
+#      - ...
+
+
+# TODO: Enable multiple configurations for CSR test. MISA read value will depend
+# on whether B and M are available. https://github.com/lowRISC/ibex/issues/1333
+# Ibex MISA CSR
+#- csr: misa
+#  description: >
+#    Machine ISA Register
+#  address: 0x301
+#  privilege_mode: M
+#  rv32:
+#    - field_name: MXL
+#      description: >
+#        Encodes native base ISA width
+#      type: R
+#      reset_val: 1
+#      msb: 31
+#      lsb: 30
+#    - field_name: Extensions
+#      description: >
+#          Encodes all supported ISA extensions
+#      type: R
+#      reset_val: 0x101106
+#      msb: 25
+#      lsb: 0
+
+# CSR test generation cannot deal with read-only fields. Leaving these here
+# commented out so they can be used once the read-only issue is fixed.
+# https://github.com/lowRISC/ibex/issues/1337 tracks the required improvements
+#- csr: mvendorid
+#  description: >
+#    Machine Vendor ID Register providing JEDEC manufacturer ID
+#  address: 0xF11
+#  privilege_mode: M
+#  rv32:
+#    - field_name: Bank
+#      description: >
+#        Number of continuation codes in JEDEC ID
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 7
+#    - field_name: Offset
+#      description: >
+#        JEDEC ID final byte
+#      type: R
+#      reset_val: 0
+#      msb: 6
+#      lsb: 0
+#
+#- csr: marchid
+#  description: >
+#    Machine Architecture ID Register
+#  address: 0xF12
+#  privilege_mode: M
+#  rv32:
+#    - field_name: Architecture ID
+#      description: >
+#        ID indicating the base microarchitecture
+#      type: R
+#      reset_val: 22
+#      msb: 31
+#      lsb: 0
+#
+#- csr: mimpid
+#  description: >
+#    Machine Implementation ID Register
+#  address: 0xF13
+#  privilege_mode: M
+#  rv32:
+#    - field_name: Implementation
+#      description: >
+#        Unique encoding of processor implementation version
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 0
+
+# Ibex's implementation of MHARTID is read-only
+# MHARTID
+#- csr: mhartid
+#  description: >
+#    Contains integer ID of hardware thread running code
+#  address: 0xF14
+#  privilege_mode: M
+#  rv32:
+#    - field_name: cluster_id
+#      description: >
+#        ID of the cluster
+#      type: R
+#      reset_val: 0
+#      msb: 10
+#      lsb: 5
+#    - field_name: core_id
+#      description: >
+#        ID of the core within cluster
+#      type: R
+#      reset_val: 0
+#      msb: 3
+#      lsb: 0
+
+# TODO(udinator) - wait until riscv-config yaml format is ready to deal with xSTATUS CSRs, as mpp
+# fields need to be constrained such that their value after every operation is within the allowed
+# range of values - too much complexity for the current format
+# MSTATUS
+#- csr: mstatus
+#  description: >
+#    Controls hart's current operating state
+#  address: 0x300
+#  privilege_mode: M
+#  rv32:
+#    - field_name: tw
+#      description: >
+#        Timeout Wait (WFI from U-mode will trap to M-mode)
+#      type: WARL
+#      reset_val: 0
+#      msb: 21
+#      lsb: 21
+#    - field_name: mprv
+#      description: >
+#        Modify Privilege (Loads and stores use MPP for privilege checking)
+#      type: WARL
+#      reset_val: 0
+#      msb: 17
+#      lsb: 17
+#    - field_name: mpp
+#      desription : >
+#        Previous privilege mode
+#      type: R
+#      reset_val: 0
+#      msb: 12
+#      lsb: 11
+#    - field_name: mpie
+#      description: >
+#        Previous value of interrupt-enable bit
+#      type: WARL
+#      reset_val: 1
+#      msb: 7
+#      lsb: 7
+#    - field_name: mie
+#      description: >
+#        M-mode interrupt enable
+#      type: WARL
+#      reset_val: 0
+#      msb: 3
+#      lsb: 3
+
+# MIP
+- csr: mip
+  description: >
+    Contains pending interrupt information
+  address: 0x344
+  privilege_mode: M
+  rv32:
+    - field_name: fast
+      description: >
+        platform-specific interrupts
+      type: R
+      reset_val: 0
+      msb: 30
+      lsb: 16
+    - field_name: meip
+      description: >
+        M-mode external interrupts
+      type: R
+      reset_val: 0
+      msb: 11
+      lsb: 11
+    - field_name: mtip
+      description: >
+        M-mode timer interrupts
+      type: R
+      reset_val: 0
+      msb: 7
+      lsb: 7
+    - field_name: msip
+      description: >
+        M-mode software interrupts
+      type: R
+      reset_val: 0
+      msb: 3
+      lsb: 3
+
+# MIE
+- csr: mie
+  description: >
+    Contains interrupt information
+  address: 0x304
+  privilege_mode: M
+  rv32:
+    - field_name: fast
+      description: >
+        platform-specific interrupts
+      type: WARL
+      reset_val: 0
+      msb: 30
+      lsb: 16
+    - field_name: meip
+      description: >
+        M-mode external interrupts
+      type: WARL
+      reset_val: 0
+      msb: 11
+      lsb: 11
+    - field_name: mtip
+      description: >
+        M-mode timer interrupts
+      type: WARL
+      reset_val: 0
+      msb: 7
+      lsb: 7
+    - field_name: msip
+      description: >
+        M-mode software interrupts
+      type: WARL
+      reset_val: 0
+      msb: 3
+      lsb: 3
+
+# MSCRATCH
+- csr: mscratch
+  description: >
+    M-mode scratch register
+  address: 0x340
+  privilege_mode: M
+  rv32:
+    - field_name: mscratch
+      description: >
+        scratch register
+      type: WARL
+      reset_val: 0
+      msb: 31
+      lsb: 0
+
+# MEPC
+- csr: mepc
+  description: >
+    Stores the address of the instruction that was interrupted or caused exception
+  address: 0x341
+  privilege_mode: M
+  rv32:
+    - field_name: mepc
+      description: >
+        M-mode exception PC register
+      type: WARL
+      reset_val: 0
+      msb: 31
+      lsb: 1
+
+# MCAUSE
+- csr: mcause
+  description: >
+    Indicates trap cause
+  address: 0x342
+  privilege_mode: M
+  rv32:
+    - field_name: Interrupt
+      description: >
+        Indicates if trap caused by interrupt
+      type: WARL
+      reset_val: 0
+      msb: 31
+      lsb: 31
+    - field_name: Exception Code
+      type: WLRL
+      reset_val: 0
+      msb: 4
+      lsb: 0
+
+# MTVAL
+- csr: mtval
+  description: >
+    Machine Trap Value register
+  address: 0x343
+  privilege_mode: M
+  rv32:
+    - field_name: mtval
+      description: >
+        Address of faulting instruction
+      type: WARL
+      reset_val: 0
+      msb: 31
+      lsb: 0
+
+# MTVEC
+- csr: mtvec
+  description: >
+    Machine trap vector base address
+  address: 0x305
+  privilege_mode: M
+  rv32:
+    - field_name: base
+      description: >
+        trap vector base address (256 byte aligned)
+      type: WARL
+      reset_val: 0x800000
+      msb: 31
+      lsb: 8
+    - field_name: base_zero_end
+      description: >
+        bottom six bits of base always set to zero
+      type: R
+      reset_val: 0
+      msb: 7
+      lsb: 2
+    - field_name: mode
+      description: >
+        trap handling mode
+      type: R
+      reset_val: 0x1
+      msb: 1
+      lsb: 0
+
+# CPUCTRL
+#
+- csr: cpuctrl
+  description: >
+    CPU control register (custom)
+  address: 0x7C0
+  privilege_mode: M
+  rv32:
+    - field_name: dumm_instr_mask
+      description: >
+        Mask to control frequency of dummy instruction insertion
+      type: WARL
+      reset_val: 0
+      msb: 5
+      lsb: 3
+    - field_name: dummy_instr_en
+      description: >
+        Enable or disable dummy instruction insertion
+      type: WARL
+      reset_val: 0
+      msb: 2
+      lsb: 2
+    - field_name: data_ind_timing
+      description: >
+        Enable or disable data-independent timing features
+      type: WARL
+      reset_val: 0
+      msb: 1
+      lsb: 1
+    - field_name: icache_enable
+      description: >
+        Enable or disable the instruction cache
+      type: WARL
+      reset_val: 0
+      msb: 0
+      lsb: 0
+
+# SECURESEED
+- csr: secureseed
+  description: >
+    CSR for re-seeding security-related pseudo-random number generators (custom)
+  address: 0x7C1
+  privilege_mode: M
+  rv32:
+    - field_name: secureseed
+      description: >
+        New seed value (write-only), reads always return 0.
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 0

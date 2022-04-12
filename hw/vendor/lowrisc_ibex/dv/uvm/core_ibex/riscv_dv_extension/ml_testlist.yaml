@@ -1,0 +1,399 @@
+# Copyright Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# ================================================================================
+#                  Regression test list format
+# --------------------------------------------------------------------------------
+# test            : Assembly test name
+# description     : Description of this test
+# gen_opts        : Instruction generator options
+# iterations      : Number of iterations of this test
+# no_iss          : Enable/disable ISS simulator (Optional)
+# gen_test        : Test name used by the instruction generator
+# asm_tests       : Path to directed, hand-coded assembly test file or directory
+# rtl_test        : RTL simulation test name
+# cmp_opts        : Compile options passed to the instruction generator
+# sim_opts        : Simulation options passed to the instruction generator
+# no_post_compare : Enable/disable comparison of trace log and ISS log (Optional)
+# compare_opts    : Options for the RTL & ISS trace comparison
+# gcc_opts        : gcc compile options
+# --------------------------------------------------------------------------------
+
+
+# --------------------------------------------------------------------------------
+# ML Parameter Constraints - riscv_rand_test
+# --------------------------------------------------------------------------------
+# A description of each generation parameter can be found in the 'Configuration'
+# section of the RISC-DV documentation
+# (https://github.com/google/riscv-dv/blob/master/docs/source/configuration.rst)
+#
+# This section will provide some constraints that must be placed on the main
+# parameter set for the riscv_rand_test to avoid failures or unexpected results
+# These constraints apply to every test that is written or used.
+# --------------------------------------------------------------------------------
+# 1)  +no_wfi must be 1 to prevent the core from hanging during tests.
+# 2)  if +no_directed_instr is 1, any directed instruction streams specified by the
+#     +stream_name_... parameters will be ignored and will not be generated.
+# 3)  +no_data_page must be 0 (default) if there are any directed streams
+#     involving memory loads and stores.
+# 4)  The +enable_misaligned_instr parameter is only used by the riscv_jal_instr
+#     directed stream, and will have no effect if this stream is disabled.
+# 5)  The +enable_unaligned_load_store parameter is only used by load/store
+#     directed instruction streams, and will have no effect if these streams
+#     are disabled.
+
+- test: riscv_rand_test
+  description: >
+    Random test with all useful knobs
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=5
+    +enable_write_pmp_csr=1
+    +illegal_instr_ratio=5
+    +hint_instr_ratio=5
+    +no_ebreak=0
+    +no_dret=0
+    +no_wfi=1
+    +set_mstatus_tw=0
+    +no_branch_jump=0
+    +no_csr_instr=0
+    +fix_sp=0
+    +enable_illegal_csr_instruction=0
+    +enable_access_invalid_csr_level=0
+    +enable_misaligned_instr=0
+    +enable_dummy_csr_write=0
+    +no_data_page=0
+    +no_directed_instr=0
+    +no_fence=0
+    +enable_unaligned_load_store=1
+    +disable_compressed_instr=0
+    +randomize_csr=0
+    +enable_b_extension=1
+    +enable_bitmanip_groups=zbb,zb_tmp,zbt,zbs,zbp,zbf,zbe,zbc,zbr
+    +boot_mode=u
+    +stream_name_0=riscv_load_store_rand_instr_stream
+    +stream_freq_0=4
+    +stream_name_1=riscv_loop_instr
+    +stream_freq_1=4
+    +stream_name_2=riscv_hazard_instr_stream
+    +stream_freq_2=4
+    +stream_name_3=riscv_load_store_hazard_instr_stream
+    +stream_freq_3=4
+    +stream_name_4=riscv_mem_region_stress_test
+    +stream_freq_4=4
+    +stream_name_5=riscv_jal_instr
+    +stream_freq_5=4
+    +stream_name_6=riscv_int_numeric_corner_stream
+    +stream_freq_6=4
+    +stream_name_7=riscv_multi_page_load_store_instr_stream
+    +stream_freq_7=4
+    +stream_name_8=riscv_load_store_rand_addr_instr_stream
+    +stream_freq_8=4
+    +stream_name_9=riscv_single_load_store_instr_stream
+    +stream_freq_9=4
+    +stream_name_10=riscv_load_store_stress_instr_stream
+    +stream_freq_10=4
+  iterations: 1
+  no_iss: 1
+  gcc_opts: >
+    -mno-strict-align
+  gen_test: riscv_ml_test
+  rtl_test: core_ibex_reset_test
+  no_post_compare: 1
+
+
+# --------------------------------------------------------------------------------
+# ML Parameter Constraints - riscv_rand_debug_test
+# --------------------------------------------------------------------------------
+# A description of each generation parameter can be found in the 'Configuration'
+# section of the RISC-DV documentation
+# (https://github.com/google/riscv-dv/blob/master/docs/source/configuration.rst)
+#
+# This section will provide some constraints that must be placed on the set of
+# parameters relating to debug ROM generation and RTL simulation to avoid
+# failures or unexpected results.
+# --------------------------------------------------------------------------------
+# 1)  +require_signature_address must be 1.
+# 2)  If +gen_debug_section is 0, none of the values of the other debug ROM
+#     parameters will matter.
+# 3)  At most 1 of the parameters +enable_ebreak_in_debug_rom, +set_dcsr_ebreak,
+#     and +enable_debug_single_step may be enabled at once.
+# 4)  +illegal_instr_ratio must be 0.
+# 5)  +no_ebreak and +no_dret must be 1.
+# 6)  +set_mstatus_tw must be 0.
+# 7)  The RTL simulation plusarg +require_signature_addr under the sim_opts
+#     section of the test entry must be enabled.
+# 8)  The RTL simulation plusarg +enable_debug_seq must be enabled.
+# 9)  The RTL simulation plusarg +max_interval controls the maximum interval
+#     between debug request assertions.
+#     NOTE: keep this value very large for the time being.
+# 10) While not a constraint, it is recommended to keep +num_debug_sub_program
+#     fairly small, as larger values can easily cause frequent test timeouts.
+
+- test: riscv_rand_debug_test
+  description: >
+    Random debug test with all useful knobs
+  gen_opts: >
+    +require_signature_addr=1
+    +gen_debug_section=1
+    +num_debug_sub_program=1
+    +enable_ebreak_in_debug_rom=0
+    +set_dcsr_ebreak=0
+    +enable_debug_single_step=1
+    +instr_cnt=10000
+    +num_of_sub_program=5
+    +enable_write_pmp_csr=1
+    +illegal_instr_ratio=0
+    +hint_instr_ratio=5
+    +no_ebreak=1
+    +no_dret=1
+    +no_wfi=0
+    +set_mstatus_tw=0
+    +no_branch_jump=0
+    +no_load_store=0
+    +no_csr_instr=0
+    +fix_sp=0
+    +enable_illegal_csr_instruction=0
+    +enable_access_invalid_csr_level=0
+    +enable_misaligned_instr=1
+    +enable_dummy_csr_write=0
+    +no_data_page=0
+    +no_directed_instr=0
+    +no_fence=0
+    +enable_unaligned_load_store=1
+    +disable_compressed_instr=0
+    +randomize_csr=0
+    +enable_b_extension=1
+    +enable_bitmanip_groups=zbb,zb_tmp,zbt,zbs,zbp,zbf,zbe,zbc,zbr
+    +boot_mode=u
+    +stream_name_0=riscv_load_store_rand_instr_stream
+    +stream_freq_0=4
+    +stream_name_1=riscv_loop_instr
+    +stream_freq_1=4
+    +stream_name_2=riscv_hazard_instr_stream
+    +stream_freq_2=4
+    +stream_name_3=riscv_load_store_hazard_instr_stream
+    +stream_freq_3=4
+    +stream_name_4=riscv_mem_region_stress_test
+    +stream_freq_4=4
+    +stream_name_5=riscv_jal_instr
+    +stream_freq_5=4
+    +stream_name_6=riscv_int_numeric_corner_stream
+    +stream_freq_6=4
+    +stream_name_7=riscv_multi_page_load_store_instr_stream
+    +stream_freq_7=4
+    +stream_name_8=riscv_load_store_rand_addr_instr_stream
+    +stream_freq_8=4
+    +stream_name_9=riscv_single_load_store_instr_stream
+    +stream_freq_9=4
+    +stream_name_10=riscv_load_store_stress_instr_stream
+    +stream_freq_10=4
+  iterations: 1
+  no_iss: 1
+  gcc_opts: >
+    -mno-strict-align
+  gen_test: riscv_ml_test
+  sim_opts: >
+    +require_signature_addr=1
+    +max_interval=100000
+    +enable_debug_seq=1
+  rtl_test: core_ibex_debug_intr_basic_test
+  no_post_compare: 1
+
+
+# --------------------------------------------------------------------------------
+# ML Parameter Constraints - riscv_rand_irq_test
+# --------------------------------------------------------------------------------
+# A description of each generation parameter can be found in the 'Configuration'
+# section of the RISC-DV documentation
+# (https://github.com/google/riscv-dv/blob/master/docs/source/configuration.rst)
+#
+# This section will provide some constraints that must be placed on the set of
+# parameters relating to simulations with external interrupts.
+# --------------------------------------------------------------------------------
+# 1)  +enable_interrupt and +require_signature_addr must both be 1.
+# 2)  As before, +illegal_instr_ratio must be 0, +no_ebreak must be 1,
+#     and +no_dret must be 1.
+# 3)  +set_mstatus_tw must be 0.
+# 4)  One of the RTL simulation options +enable_irq_single_seq or
+#     +enable_irq_multiple_seq must be enabled.
+# 5)  The RTL simulation option +require_signature_addr must be 1.
+# 6)  Do not randomize the value of both +enable_nested_interrupt in gen_opts
+#     and +enable_nested_irq in sim_opts.
+
+- test: riscv_rand_irq_test
+  description: >
+    Random test with all useful knobs
+  gen_opts: >
+    +require_signature_addr=1
+    +enable_interrupt=1
+    +enable_timer_irq=1
+    +enable_nested_interrupt=1
+    +instr_cnt=10000
+    +enable_write_pmp_csr=1
+    +num_of_sub_program=5
+    +illegal_instr_ratio=0
+    +hint_instr_ratio=5
+    +no_ebreak=1
+    +no_dret=1
+    +no_wfi=0
+    +set_mstatus_tw=0
+    +no_branch_jump=0
+    +no_load_store=0
+    +no_csr_instr=0
+    +fix_sp=0
+    +enable_illegal_csr_instruction=0
+    +enable_access_invalid_csr_level=0
+    +enable_misaligned_instr=0
+    +enable_dummy_csr_write=0
+    +no_data_page=0
+    +no_directed_instr=0
+    +no_fence=0
+    +enable_unaligned_load_store=1
+    +disable_compressed_instr=0
+    +randomize_csr=1
+    +enable_b_extension=1
+    +enable_bitmanip_groups=zbb,zb_tmp,zbt,zbs,zbp,zbf,zbe,zbc,zbr
+    +boot_mode=u
+    +stream_name_0=riscv_load_store_rand_instr_stream
+    +stream_freq_0=4
+    +stream_name_1=riscv_loop_instr
+    +stream_freq_1=4
+    +stream_name_2=riscv_hazard_instr_stream
+    +stream_freq_2=4
+    +stream_name_3=riscv_load_store_hazard_instr_stream
+    +stream_freq_3=4
+    +stream_name_4=riscv_mem_region_stress_test
+    +stream_freq_4=4
+    +stream_name_5=riscv_jal_instr
+    +stream_freq_5=4
+    +stream_name_6=riscv_int_numeric_corner_stream
+    +stream_freq_6=4
+    +stream_name_7=riscv_multi_page_load_store_instr_stream
+    +stream_freq_7=4
+    +stream_name_8=riscv_load_store_rand_addr_instr_stream
+    +stream_freq_8=4
+    +stream_name_9=riscv_single_load_store_instr_stream
+    +stream_freq_9=4
+    +stream_name_10=riscv_load_store_stress_instr_stream
+    +stream_freq_10=4
+  iterations: 1
+  no_iss: 1
+  gcc_opts: >
+    -mno-strict-align
+  gen_test: riscv_ml_test
+  sim_opts: >
+    +require_signature_addr=1
+    +enable_irq_single_seq=1
+    +enable_irq_multiple_seq=0
+    +enable_nested_irq=1
+  rtl_test: core_ibex_nested_irq_test
+  no_post_compare: 1
+
+
+# --------------------------------------------------------------------------------
+# ML Parameter Constraints - riscv_rand_mem_error_test
+# --------------------------------------------------------------------------------
+# A description of each generation parameter can be found in the 'Configuration'
+# section of the RISC-DV documentation
+# (https://github.com/google/riscv-dv/blob/master/docs/source/configuration.rst)
+#
+# This section will provide some constraints that must be placed on the set of
+# parameters relating to simulations with memory bus errors.
+# --------------------------------------------------------------------------------
+# 1)  +require_signature_addr must be 1 in gen_opts as well as in sim_opts.
+# 2)  +illegal_instr_ratio must be 0.
+# 3)  +no_ebreak must be 1.
+# 4)  +no_dret must be 1.
+# 5)  +no_wfi must be 1.
+# 6)  +enable_illegal_csr_instruction must be 0.
+# 7)  +enable_access_invalid_csr_level must be 0.
+# 8)  +no_csr_instr must be 1.
+
+- test: riscv_rand_mem_error_test
+  description: >
+    Randomly insert memory bus errors in both IMEM and DMEM.
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=5
+    +require_signature_addr=1
+    +enable_write_pmp_csr=1
+    +illegal_instr_ratio=0
+    +hint_instr_ratio=5
+    +no_ebreak=1
+    +no_dret=1
+    +no_wfi=1
+    +set_mstatus_tw=0
+    +no_branch_jump=0
+    +no_csr_instr=0
+    +fix_sp=0
+    +enable_illegal_csr_instruction=0
+    +enable_access_invalid_csr_level=0
+    +enable_misaligned_instr=0
+    +enable_dummy_csr_write=0
+    +no_data_page=0
+    +no_directed_instr=0
+    +no_fence=0
+    +enable_unaligned_load_store=1
+    +disable_compressed_instr=0
+    +randomize_csr=0
+    +enable_b_extension=1
+    +enable_bitmanip_groups=zbb,zb_tmp,zbt,zbs,zbp,zbf,zbe,zbc,zbr
+    +boot_mode=u
+    +stream_name_0=riscv_load_store_rand_instr_stream
+    +stream_freq_0=4
+    +stream_name_1=riscv_loop_instr
+    +stream_freq_1=4
+    +stream_name_2=riscv_hazard_instr_stream
+    +stream_freq_2=4
+    +stream_name_3=riscv_load_store_hazard_instr_stream
+    +stream_freq_3=4
+    +stream_name_4=riscv_mem_region_stress_test
+    +stream_freq_4=4
+    +stream_name_5=riscv_jal_instr
+    +stream_freq_5=4
+    +stream_name_6=riscv_int_numeric_corner_stream
+    +stream_freq_6=4
+    +stream_name_7=riscv_multi_page_load_store_instr_stream
+    +stream_freq_7=4
+    +stream_name_8=riscv_load_store_rand_addr_instr_stream
+    +stream_freq_8=4
+    +stream_name_9=riscv_single_load_store_instr_stream
+    +stream_freq_9=4
+    +stream_name_10=riscv_load_store_stress_instr_stream
+    +stream_freq_10=4
+  iterations: 1
+  no_iss: 1
+  gcc_opts: >
+    -mno-strict-align
+  gen_test: riscv_ml_test
+  rtl_test: core_ibex_mem_error_test
+  sim_opts: >
+    +require_signature_addr=1
+  no_post_compare: 1
+
+
+# --------------------------------------------------------------------------------
+# ML Parameter Constraints - riscv_csr_test
+# --------------------------------------------------------------------------------
+# This test has no controllable parameters, and will just provide an increase
+# in coverage relating to control-status registers.
+
+- test: riscv_csr_test
+  description: >
+    Test all CSR instructions on all implement CSRs
+  iterations: 1
+  no_iss: 1
+  rtl_test: core_ibex_csr_test
+  no_post_compare: 1

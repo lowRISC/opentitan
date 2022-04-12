@@ -1,0 +1,25 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:tool:ibex_cosim_setup_check:0.1"
+description: "Check $IBEX_COSIM_ISS_ROOT is set"
+
+filesets:
+  files_ibex_cosim_setup_check:
+    files:
+      - ./util/ibex_cosim_setup_check.sh : { copyto: util/ibex_cosim_setup_check.sh }
+
+scripts:
+  ibex_cosim_setup_check:
+    cmd:
+      - sh
+      - util/ibex_cosim_setup_check.sh
+
+targets:
+  default:
+    filesets:
+      - files_ibex_cosim_setup_check
+    hooks:
+      pre_build:
+        - ibex_cosim_setup_check
