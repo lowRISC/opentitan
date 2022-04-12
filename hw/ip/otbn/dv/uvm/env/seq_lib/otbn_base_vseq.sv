@@ -202,6 +202,8 @@ class otbn_base_vseq extends cip_base_vseq #(
   // If the block gets reset, this task will exit early.
   protected task run_otbn(input check_end_addr = 1);
     int exp_end_addr;
+    int rd_pc;
+    int wr_pc;
 
     // Check that we haven't been called re-entrantly. This could happen if there's a bug in the
     // reset sequence, which relies on run_otbn() to exit properly when it sees a device reset.
@@ -292,6 +294,18 @@ class otbn_base_vseq extends cip_base_vseq #(
     end
     csr_utils_pkg::csr_wr(ral.ctrl, 'b0);
     cfg.model_agent_cfg.vif.set_software_errs_fatal(1'b0);
+
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(rd_pc, rd_pc inside {[0:100]};)
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wr_pc, wr_pc inside {[0:100]};)
+    if (rd_pc <= 50) begin
+      uvm_reg_data_t reg_val;
+      csr_utils_pkg::csr_rd(ral.err_bits, reg_val);
+    end
+    if (wr_pc <= 25) begin
+      bit [31:0] wdata;
+      `DV_CHECK_STD_RANDOMIZE_FATAL(wdata)
+      csr_utils_pkg::csr_wr(ral.err_bits, wdata);
+    end
   endtask
 
   // The guts of the run_otbn task. Writes to the CMD register to start OTBN and polls the status
