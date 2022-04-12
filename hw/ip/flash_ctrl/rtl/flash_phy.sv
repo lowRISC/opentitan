@@ -91,6 +91,7 @@ module flash_phy
   // common interface
   logic [BusFullWidth-1:0] rd_data [NumBanks];
   logic [NumBanks-1:0] rd_err;
+  logic [NumBanks-1:0] spurious_acks;
 
   // fsm error per bank
   logic [NumBanks-1:0] fsm_err;
@@ -124,6 +125,7 @@ module flash_phy
   assign flash_ctrl_o.storage_relbl_err = |relbl_ecc_err;
   assign flash_ctrl_o.storage_intg_err = |intg_ecc_err;
   assign flash_ctrl_o.fsm_err = |fsm_err;
+  assign flash_ctrl_o.spurious_ack = |spurious_acks;
 
   // This fifo holds the expected return order
   prim_fifo_sync #(
@@ -270,7 +272,8 @@ module flash_phy
       .fsm_err_o(fsm_err[bank]),
       .prog_intg_err_o(prog_intg_err[bank]),
       .relbl_ecc_err_o(relbl_ecc_err[bank]),
-      .intg_ecc_err_o(intg_ecc_err[bank])
+      .intg_ecc_err_o(intg_ecc_err[bank]),
+      .spurious_ack_o(spurious_acks[bank])
     );
   end // block: gen_flash_banks
 
