@@ -142,7 +142,7 @@ module spid_upload_tb;
   logic [           $clog2(SramCmdFifoDepth+1)-1:0] cmdfifo_depth;
   logic [          $clog2(SramAddrFifoDepth+1)-1:0] addrfifo_depth;
   logic [$clog2(SramPayloadDepth*(SramDw/8)+1)-1:0] payload_depth;
-  logic [$clog2(SramPayloadDepth*(SramDw/8)+1)-1:0] last_written_payload_idx;
+  logic [  $clog2(SramPayloadDepth*(SramDw/8))-1:0] payload_start_idx;
 
   // Upload module signals
   logic cfg_addr_4b_en;
@@ -404,10 +404,10 @@ module spid_upload_tb;
     .sys_addrfifo_full_o     (), // not used
     .sys_payload_overflow_o  (payload_overflow),
 
-    .sys_cmdfifo_depth_o            (cmdfifo_depth),
-    .sys_addrfifo_depth_o           (addrfifo_depth),
-    .sys_payload_depth_o            (payload_depth),
-    .sys_last_written_payload_idx_o (last_written_payload_idx),
+    .sys_cmdfifo_depth_o     (cmdfifo_depth),
+    .sys_addrfifo_depth_o    (addrfifo_depth),
+    .sys_payload_depth_o     (payload_depth),
+    .sys_payload_start_idx_o (payload_start_idx),
   );
 
   spi_cmdparse cmdparse (
