@@ -9,8 +9,7 @@ sw_lib_dif_autogen_adc_ctrl = declare_dependency(
     sources: [
       hw_ip_adc_ctrl_reg_h,
       'dif_adc_ctrl_autogen.c',
-    ],
-    dependencies: [
+    ], dependencies: [
       sw_lib_dif_base,
       sw_lib_mmio,
     ],
@@ -369,6 +368,21 @@ sw_lib_dif_autogen_rv_timer = declare_dependency(
     sources: [
       hw_ip_rv_timer_reg_h,
       'dif_rv_timer_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_dif_base,
+      sw_lib_mmio,
+    ],
+  )
+)
+
+# Autogen Sensor Controller Device DIF library
+sw_lib_dif_autogen_sensor_ctrl = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_sensor_ctrl',
+    sources: [
+      hw_ip_sensor_ctrl_reg_h,
+      'dif_sensor_ctrl_autogen.c',
     ],
     dependencies: [
       sw_lib_dif_base,
