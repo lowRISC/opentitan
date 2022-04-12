@@ -113,9 +113,6 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     // transaction, the reset will have caused them to be forgotten.
     exp_read_values.delete();
 
-    model_status = otbn_pkg::StatusIdle;
-    pending_start_tl_trans = 1'b0;
-
     // Clear the locked bit (this is modelling RTL state that should be cleared on reset)
     locked = 1'b0;
 
