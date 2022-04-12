@@ -12,6 +12,11 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 
+// FIXME(lowRISC/opentitan#12065) Eliminating this dependency from the SW build
+// for englishbreakfast is nontrivial, so we use the IS_ENGLISH_BREAKFAST hack
+// here. This should be removed once the linked bug is resolved.
+#if !OT_IS_ENGLISH_BREAKFAST
+
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "lc_ctrl_regs.h"
 
@@ -81,3 +86,5 @@ void lifecycle_device_id_get(lifecycle_device_id_t *device_id) {
         kBase + LC_CTRL_DEVICE_ID_0_REG_OFFSET + i * sizeof(uint32_t));
   }
 }
+
+#endif
