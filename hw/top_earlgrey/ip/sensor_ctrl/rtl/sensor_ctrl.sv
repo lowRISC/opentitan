@@ -291,7 +291,7 @@ module sensor_ctrl
     if (!rst_aon_ni) begin
       wkup_req_o <= '0;
     end else begin
-      wkup_req_o <= |wake_req_filter;
+      wkup_req_o <= &wake_req_filter;
     end
   end
 

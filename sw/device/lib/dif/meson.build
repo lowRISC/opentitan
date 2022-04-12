@@ -1127,6 +1127,7 @@ sw_lib_dif_sensor_ctrl = declare_dependency(
     'sw_lib_dif_sensor_ctrl',
     sources: [
       hw_ip_sensor_ctrl_reg_h,
+      'dif_sensor_ctrl.c',
     ],
     dependencies: [
       sw_lib_mmio,
@@ -1139,8 +1140,10 @@ sw_lib_dif_sensor_ctrl = declare_dependency(
 test('dif_sensor_ctrl_unittest', executable(
     'dif_sensor_ctrl_unittest',
     sources: [
+      'dif_sensor_ctrl_unittest.cc',
       'autogen/dif_sensor_ctrl_autogen_unittest.cc',
       meson.project_source_root() / 'sw/device/lib/dif/dif_base.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_sensor_ctrl.c',
       meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_sensor_ctrl_autogen.c',
       hw_ip_sensor_ctrl_reg_h,
     ],
