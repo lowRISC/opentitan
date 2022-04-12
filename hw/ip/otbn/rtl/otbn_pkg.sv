@@ -425,9 +425,8 @@ package otbn_pkg;
     logic            shift_acc;
   } mac_bignum_operation_t;
 
-  // States for controller state machine
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 5 -n 6 \
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 5 \
   //      -s 5799399942 --language=sv
   //
   // Hamming distance histogram:
@@ -435,23 +434,21 @@ package otbn_pkg;
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||||||||||||| (50.00%)
-  //  4: |||||||||||||||| (40.00%)
-  //  5: |||| (10.00%)
-  //  6: --
+  //  3: |||||||||||||||||||| (66.67%)
+  //  4: |||||||||| (33.33%)
+  //  5: --
   //
   // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 5
+  // Maximum Hamming distance: 4
   // Minimum Hamming weight: 1
   // Maximum Hamming weight: 4
-  //
-  localparam int StateControllerWidth = 6;
+
+  localparam int StateControllerWidth = 5;
   typedef enum logic [StateControllerWidth-1:0] {
-    OtbnStateHalt        = 6'b001000,
-    OtbnStateUrndRefresh = 6'b010100,
-    OtbnStateRun         = 6'b100101,
-    OtbnStateStall       = 6'b110011,
-    OtbnStateLocked      = 6'b001111
+    OtbnStateHalt        = 5'b00100,
+    OtbnStateRun         = 5'b01010,
+    OtbnStateStall       = 5'b10011,
+    OtbnStateLocked      = 5'b11101
   } otbn_state_e;
 
   // States for start_stop_controller
