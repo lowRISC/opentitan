@@ -16,7 +16,7 @@
 
 static dif_uart_t uart0;
 
-void _boot_start(void) {
+bool rom_test_main(void) {
   // We need to set the test status as "in test" to indicate to the test code
   // has been reached, even though this test is also in the "boot ROM".
   test_status_set(kTestStatusInTest);
@@ -43,14 +43,5 @@ void _boot_start(void) {
    * Place test code here.
    */
 
-  /**
-   * Set test result to true if the test succeeds. Otherwise, set to false.
-   */
-  result = true;
-
-  // Report test status.
-  test_status_set(result ? kTestStatusPassed : kTestStatusFailed);
-
-  // Unreachable.
-  abort();
+  return result;
 }
