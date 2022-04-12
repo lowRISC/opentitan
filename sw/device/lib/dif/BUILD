@@ -971,6 +971,36 @@ cc_test(
 )
 
 cc_library(
+    name = "sensor_ctrl",
+    srcs = [
+        "autogen/dif_sensor_ctrl_autogen.c",
+        "autogen/dif_sensor_ctrl_autogen.h",
+    ],
+    hdrs = [
+        "dif_sensor_ctrl.h",
+    ],
+    deps = [
+        ":base",
+        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:mmio",
+    ],
+)
+
+cc_test(
+    name = "sensor_ctrl_unittest",
+    srcs = [
+        "autogen/dif_sensor_ctrl_autogen_unittest.cc",
+    ],
+    deps = [
+        ":sensor_ctrl",
+        ":test_base",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "sysrst_ctrl",
     srcs = [
         "autogen/dif_sysrst_ctrl_autogen.c",
