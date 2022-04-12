@@ -823,6 +823,14 @@ instance, if FW sets RXFIFO depth to 128 (default value), it should not update
 the read pointer outside the range 0x000 -  0x1FF (128*4 = 512Bytes ignoring
 the phase bit, bit 11).
 
+## Dual-port SRAM Layout
+
+The figure below shows the SRAM layout in the Flash and Passthrough modes.
+In generic mode, the whole DPSRAM is used as RX/TX buffers as described in the generic mode section.
+The SRAM begins at `0x1000`, which in the figure is `0x000`.
+
+![SPI Device Dual-port SRAM Layout](spid_sram_layout.svg)
+
 ## TPM over SPI
 
 ### Initialization
