@@ -80,6 +80,25 @@ opentitan_functest(
     ],
 )
 
+cc_library(
+    name = "ast",
+    srcs = ["ast.c"],
+    hdrs = ["ast.h"],
+    deps = [
+        ":lifecycle",
+	":otp",
+	"//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+	"//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:multibits",
+        "//sw/device/silicon_creator/lib:error",
+    ],
+)
+
 dual_cc_library(
     name = "flash_ctrl",
     srcs = dual_inputs(

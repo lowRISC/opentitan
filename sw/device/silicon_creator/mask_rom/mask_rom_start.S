@@ -175,14 +175,6 @@ _mask_rom_start_boot:
             OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET)
   call crt_section_copy
 
-  // Wait for AST initialization to complete.
-  li   a0, TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR
-.L_ast_done_loop:
-  lw   t0, SENSOR_CTRL_STATUS_REG_OFFSET(a0)
-  srli t0, t0, SENSOR_CTRL_STATUS_AST_INIT_DONE_BIT // no-op as bit index is currently 0
-  andi t0, t0, 0x1
-  beqz t0, .L_ast_done_loop
-
   // Enable jittery clock if enabled in OTP.
   li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
