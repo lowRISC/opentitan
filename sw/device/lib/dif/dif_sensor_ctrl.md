@@ -2,7 +2,7 @@
 title: "Sensor Controller DIF Checklist"
 ---
 
-This checklist is for [Development Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [Sensor Controller DIF]({{< relref "hw/ip/sensor_ctrl/doc" >}}).
+This checklist is for [Development Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [Sensor Controller DIF]({{< relref "hw/top_earlgrey/ip/sensor_ctrl/doc" >}}).
 All checklist items refer to the content in the [Checklist]({{< relref "/doc/project/checklist.md" >}}).
 
 <h2>DIF Checklist</h2>
@@ -11,7 +11,7 @@ All checklist items refer to the content in the [Checklist]({{< relref "/doc/pro
 
 Type           | Item                 | Resolution  | Note/Collaterals
 ---------------|----------------------|-------------|------------------
-Implementation | [DIF_EXISTS][]       | Done        |
+Implementation | [DIF_EXISTS][]       | Not Started |
 Implementation | [DIF_USED_IN_TREE][] | Not Started |
 Tests          | [DIF_TEST_SMOKE][]   | Not Started |
 
