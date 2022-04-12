@@ -26,6 +26,7 @@
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
+#include "sw/device/lib/dif/dif_sensor_ctrl.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
@@ -423,6 +424,28 @@ typedef struct rv_timer_isr_ctx {
 } rv_timer_isr_ctx_t;
 
 /**
+ * A handle to a sensor_ctrl ISR context struct.
+ */
+typedef struct sensor_ctrl_isr_ctx {
+  /**
+   * A handle to a sensor_ctrl.
+   */
+  dif_sensor_ctrl_t *sensor_ctrl;
+  /**
+   * The PLIC IRQ ID where this sensor_ctrl instance's IRQs start.
+   */
+  dif_rv_plic_irq_id_t plic_sensor_ctrl_start_irq_id;
+  /**
+   * The sensor_ctrl IRQ that is expected to be encountered in the ISR.
+   */
+  dif_sensor_ctrl_irq_t expected_irq;
+  /**
+   * Whether or not a single IRQ is expected to be encountered in the ISR.
+   */
+  bool is_only_irq;
+} sensor_ctrl_isr_ctx_t;
+
+/**
  * A handle to a spi_device ISR context struct.
  */
 typedef struct spi_device_isr_ctx {
@@ -763,6 +786,20 @@ void isr_testutils_rv_timer_isr(
     plic_isr_ctx_t plic_ctx, rv_timer_isr_ctx_t rv_timer_ctx,
     top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_rv_timer_irq_t *irq_serviced);
+
+/**
+ * Services an sensor_ctrl IRQ.
+ *
+ * @param plic_ctx A PLIC ISR context handle.
+ * @param sensor_ctrl_ctx A(n) sensor_ctrl ISR context handle.
+ * @param[out] peripheral_serviced Out param for the peripheral that was
+ * serviced.
+ * @param[out] irq_serviced Out param for the IRQ that was serviced.
+ */
+void isr_testutils_sensor_ctrl_isr(
+    plic_isr_ctx_t plic_ctx, sensor_ctrl_isr_ctx_t sensor_ctrl_ctx,
+    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    dif_sensor_ctrl_irq_t *irq_serviced);
 
 /**
  * Services an spi_device IRQ.
