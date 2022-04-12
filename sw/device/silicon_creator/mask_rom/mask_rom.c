@@ -16,6 +16,7 @@
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/cfi.h"
+#include "sw/device/silicon_creator/lib/drivers/ast.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
@@ -112,6 +113,9 @@ static rom_error_t mask_rom_init(void) {
 
   // Initialize in-memory copy of the ePMP register configuration.
   mask_rom_epmp_state_init(&epmp, lc_state);
+
+  // Check that AST is in the expected state.
+  HARDENED_RETURN_IF_ERROR(ast_check(lc_state));
 
   // Initialize the retention RAM based on the reset reason and the OTP value.
   // Note: Retention RAM is always reset on PoR regardless of the OTP value.

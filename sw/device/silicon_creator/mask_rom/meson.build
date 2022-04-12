@@ -229,6 +229,7 @@ mask_rom_lib = declare_dependency(
     link_args: rom_link_args,
     dependencies: [
       freestanding_headers,
+      sw_silicon_creator_lib_driver_ast,
       sw_silicon_creator_lib_driver_hmac,
       sw_silicon_creator_lib_driver_flash_ctrl,
       sw_silicon_creator_lib_driver_ibex,

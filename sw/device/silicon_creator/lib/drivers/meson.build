@@ -655,3 +655,21 @@ test('sw_silicon_creator_lib_driver_spi_device_unittest', executable(
     ),
   suite: 'mask_rom',
 )
+
+# Mask ROM AST driver
+sw_silicon_creator_lib_driver_ast = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_ast',
+    sources: [
+      hw_ip_otp_ctrl_reg_h,
+      hw_ip_sensor_ctrl_reg_h,
+      'ast.c',
+    ],
+    dependencies: [
+      sw_lib_abs_mmio,
+      sw_silicon_creator_lib_base_sec_mmio,
+      sw_silicon_creator_lib_driver_otp,
+      sw_lib_bitfield,
+    ],
+  ),
+)
