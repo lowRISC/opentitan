@@ -171,9 +171,9 @@ module keccak_2share
     //          multipliers. We use the fresh randomness provided from the
     //          PRNG for remasking.
     // Cycle 2: Compute second stage of Chi and Iota for first lane halves.
-    //          Compute first stage of Chi for second lane halves. We use
-    //          intermediate results of Cycle 1 for remasking the DOM
-    //          multipliers.
+    //          Compute first stage of Chi for second lane halves. We use the
+    //          fresh randomness provided from the PRNG for remasking the
+    //          DOM multipliers.
     // Cycle 3: Compute second stage of Chi and Iota for second lane halves.
     //          Feed again first lane halves to DOM multiplier inputs (now
     //          the updated values become visible) together with intermediate
@@ -193,7 +193,7 @@ module keccak_2share
         end
         2'h2: begin
           in_data_low = 1'b0;
-          in_rand_ext = 1'b0;
+          in_rand_ext = 1'b1;
           update_dom  = 1'b1;
         end
         2'h3: begin

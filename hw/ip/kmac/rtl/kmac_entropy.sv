@@ -202,6 +202,10 @@ module kmac_entropy
   // other tasks.
   logic rand_valid_set, rand_valid_clear;
 
+  // Signal to track whether the FSM should stay in the StRandReady state or
+  // move to StRandGenerate upon getting the next rand_consumed_i.
+  logic ready_phase_d, ready_phase_q;
+
   // FSM latches the mode and stores into mode_q when the FSM is out from
   // StReset. The following states, or internal datapath uses mode_q after that.
   // If the SW wants to change the mode, it requires resetting the IP.
@@ -484,6 +488,9 @@ module kmac_entropy
     // LFSR seed can be updated by EDN or SW.
     lfsr_seed_en_red = '0;
 
+    // Signal to track whether FSM should stay in StRandReady state or move on.
+    ready_phase_d = ready_phase_q;
+
     // Error
     err_o = '{valid: 1'b 0, code: ErrNone, info: '0};
 
@@ -533,11 +540,19 @@ module kmac_entropy
           // consumed. So, the logic does not expand the entropy again.
           // If fast_process is not set, then every rand_consume signal
           // triggers rand expansion.
-          st_d = StRandGenerate;
 
+          // Allow for two reads from the Keccak core. This is what is needed
+          // per round.
           lfsr_en = 1'b 1;
+          ready_phase_d = ~ready_phase_q;
 
-          rand_valid_clear = 1'b 1;
+          if (ready_phase_q) begin
+            st_d = StRandGenerate;
+
+            rand_valid_clear = 1'b 1;
+          end else begin
+            st_d = StRandReady;
+          end
         end else if ((mode_i == EntropyModeEdn) &&
             (entropy_refresh_req_i || threshold_hit_q)) begin
           st_d = StRandEdn;
@@ -661,6 +676,14 @@ module kmac_entropy
     end
   end
   `ASSERT_KNOWN(RandStKnown_A, st)
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      ready_phase_q <= '0;
+    end else begin
+      ready_phase_q <= ready_phase_d;
+    end
+  end
 
   ////////////////
   // Assertions //

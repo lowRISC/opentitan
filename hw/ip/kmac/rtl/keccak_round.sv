@@ -273,7 +273,7 @@ module keccak_round
         phase_sel = MuBi4True;
         cycle =  2'h 1;
 
-        // Trigger randomness update for next round.
+        // Trigger randomness update for next cycle.
         keccak_rand_consumed = 1'b 1;
 
         // Unconditionally move to next phase/cycle.
@@ -285,6 +285,9 @@ module keccak_round
         // Chi Stage 2 and Iota for first lane halves.
         phase_sel = MuBi4True;
         cycle =  2'h 2;
+
+        // Trigger randomness update for next round.
+        keccak_rand_consumed = 1'b 1;
 
         // Update first lane halves.
         update_storage = 1'b 1;
