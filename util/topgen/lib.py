@@ -331,11 +331,21 @@ def get_unused_resets(top):
 
 
 def get_templated_modules(top):
+    """Returns list of all templated modules.
+    """
     return [m['type'] for m in top['module'] if is_templated(m)]
 
 
 def get_ipgen_modules(top):
+    """Returns list of all ipgen modules.
+    """
     return [m['type'] for m in top['module'] if is_ipgen(m)]
+
+
+def get_top_reggen_modules(top):
+    """Returns list of all ipgen modules.
+    """
+    return [m['type'] for m in top['module'] if is_top_reggen(m)]
 
 
 def is_templated(module):
