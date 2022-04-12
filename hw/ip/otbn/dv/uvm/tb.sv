@@ -163,8 +163,6 @@ module tb;
   bind dut.u_otbn_core otbn_tracer #(.SecWipeEn(SecWipeEn))
     u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
 
-  bind dut.u_otbn_core.u_otbn_controller otbn_controller_if i_otbn_controller_if (.*);
-
   bind dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller
     otbn_loop_if i_otbn_loop_if (
       .clk_i,
@@ -317,9 +315,6 @@ module tb;
 
     uvm_config_db#(virtual otbn_trace_if)::set(null, "*.env", "trace_vif",
                                                dut.u_otbn_core.i_otbn_trace_if);
-    uvm_config_db#(virtual otbn_controller_if)::set(
-      null, "*.env", "controller_vif",
-      dut.u_otbn_core.u_otbn_controller.i_otbn_controller_if);
     uvm_config_db#(virtual otbn_loop_if)::set(
       null, "*.env", "loop_vif",
       dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller.i_otbn_loop_if);

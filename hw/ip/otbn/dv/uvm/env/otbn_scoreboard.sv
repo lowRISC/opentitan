@@ -140,7 +140,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     operational_state_e  state;
     otbn_exp_read_data_t exp_read_data = '{upd: 1'b0, chk: 'x, val: 'x};
 
-    state = cfg.controller_vif.get_operational_state();
+    state = get_operational_state(model_status);
 
     aligned_addr = ral.get_word_aligned_addr(item.a_addr);
     masked_addr  = aligned_addr & ral.get_addr_mask();
@@ -293,7 +293,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     // Track coverage for read accesses through the bus to external CSRs.
     if (cfg.en_cov) begin
       cov.on_ext_csr_access(csr, otbn_env_pkg::AccessSoftwareRead, item.d_data,
-                            cfg.controller_vif.get_operational_state());
+                            get_operational_state(model_status));
     end
 
     // Look up the expected read data for item and then clear it (to get a quick error if something
@@ -358,7 +358,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
               UVM_HIGH);
 
     if (cfg.en_cov) begin
-      cov.on_mem_write(mem, offset, item.a_data, cfg.controller_vif.get_operational_state());
+      cov.on_mem_write(mem, offset, item.a_data, get_operational_state(model_status));
     end
 
     // Predict the resulting value of LOAD_CHECKSUM

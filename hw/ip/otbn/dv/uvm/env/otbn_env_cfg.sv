@@ -23,7 +23,6 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
   virtual otbn_alu_bignum_if alu_bignum_vif;
   virtual otbn_mac_bignum_if mac_bignum_vif;
   virtual otbn_rf_base_if    rf_base_vif;
-  virtual otbn_controller_if controller_vif;
   virtual otbn_escalate_if   escalate_vif;
 
   mem_bkdr_util imem_util;
