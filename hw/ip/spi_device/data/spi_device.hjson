@@ -656,13 +656,35 @@
           name: "addrfifo_notempty"
           desc: "Upload Address FIFO Not Empty"
         } // f: addrfifo_notempty
-        { bits: "24:16"
+      ]
+    } // R: UPLOAD_STATUS
+    { name: "UPLOAD_STATUS2"
+      desc: '''Upload module status 2 register.
+
+        This register contains payload related status. payload_depth indicates
+        the payload size (from 0 to 256 bytes).
+
+        payload_start_idx indicates the start of the 256B. This stays 0
+        usually. However, when the SPI host system issues more than 256B of
+        payload in a command, this field may not be 0. For example, if the
+        system issues 258B payload, the payload_depth is 256 (as the IP only
+        holds 256B of payload), the payload_start_idx is 2. SW should read from
+        2 to 255 then 0 and 1.
+        '''
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "8:0"
           name: "payload_depth"
           desc: '''Payload buffer depth
             '''
         } // f: payload_depth
+        { bits: "23:16"
+          name: "payload_start_idx"
+          desc: '''Payload Start Index'''
+        } // f: payload_start_idx
       ]
-    } // R: UPLOAD_STATUS
+    } // R: UPLOAD_STATUS2
     { name: "UPLOAD_CMDFIFO"
       desc: '''Command Fifo Read Port.
         '''

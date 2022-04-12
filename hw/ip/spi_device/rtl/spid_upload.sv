@@ -46,7 +46,8 @@ module spid_upload
   localparam int unsigned AddrPtrW = $clog2(AddrFifoDepth+1),
 
   localparam int unsigned PayloadByte = PayloadDepth * (SramDw/SpiByte),
-  localparam int unsigned PayloadPtrW = $clog2(PayloadByte+1)
+  localparam int unsigned PayloadPtrW = $clog2(PayloadByte+1),
+  localparam int unsigned PayloadIdxW = $clog2(PayloadByte)
 ) (
   input clk_i,
   input rst_ni,
@@ -112,7 +113,7 @@ module spid_upload
   output logic [CmdPtrW-1:0]     sys_cmdfifo_depth_o,
   output logic [AddrPtrW-1:0]    sys_addrfifo_depth_o,
   output logic [PayloadPtrW-1:0] sys_payload_depth_o,
-  output logic [PayloadPtrW-1:0] sys_last_written_payload_idx_o
+  output logic [PayloadIdxW-1:0] sys_payload_start_idx_o
 );
 
   localparam int unsigned CmdFifoWidth  =  8;
@@ -257,14 +258,30 @@ module spid_upload
   // CSb everytime. the written payload size should be visible to SW even CSb
   // is de-asserted.
   //
-  // The logic observes payload_wvalid && payload_wready and increments the
-  // payload pointer reset by sys_rst_ni not by rst_ni.
+  // payloadptr maintains the pointer inside the Payload buffer (256B
+  // currently). If the host system issues equal to or more than 256B of the
+  // size, the payload_max is set to 1 then SW will sees always PayloadByte
+  // value from the CSR. Inside the HW, SPI_DEVICE keeps storing the incoming
+  // bytes into the payload buffer as a circular FIFO manner. The payload
+  // start index CSR represents the next pointer inside the buffer IFF the
+  // payload buffer is full. If it has not been received the full payload, the
+  // start index is 0, which means SW should read from 0.
   logic payloadptr_inc, payloadptr_clr;
-  logic [PayloadPtrW-1:0] payloadptr;
+  logic [PayloadIdxW-1:0] payloadptr;
+  // Indicate the payload reached the max value (PayloadByte)
+  logic                   payload_max;
   always_ff @(posedge clk_i or negedge sys_rst_ni) begin
-    if (!sys_rst_ni)      payloadptr <= '0;
-    else if (payloadptr_clr) payloadptr <= '0;
-    else if ((payloadptr != PayloadPtrW'(PayloadByte)) && payloadptr_inc) begin
+    if (!sys_rst_ni) begin
+      payload_max <= 1'b 0;
+      payloadptr     <= '0;
+    end else if (payloadptr_clr) begin
+      payloadptr     <= '0;
+      payload_max <= 1'b 0;
+    end else if (payloadptr_inc) begin
+      if (payloadptr == PayloadIdxW'(PayloadByte-1)) begin
+        // payloadptr reached max
+        payload_max <= 1'b 1;
+      end
       payloadptr <= payloadptr + PayloadPtrW'(1);
     end
   end
@@ -277,7 +294,11 @@ module spid_upload
   always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) sys_payload_depth_o <= '0;
     else if (sys_payloadptr_clr_posedge) sys_payload_depth_o <= '0;
-    else if (sys_csb_deasserted_pulse_i) sys_payload_depth_o <= payloadptr;
+    else if (sys_csb_deasserted_pulse_i && payload_max) begin
+      sys_payload_depth_o <= PayloadPtrW'(PayloadByte);
+    end else if (sys_csb_deasserted_pulse_i && !payload_max) begin
+      sys_payload_depth_o <= PayloadPtrW'(payloadptr);
+    end
   end
 
   // payloadptr_clr --> sys domain
@@ -292,31 +313,18 @@ module spid_upload
     .dst_pulse_o (sys_payloadptr_clr_posedge)
   );
 
-  // last_written_payloadptr: in contrast to payloadptr,
-  // `last_written_payloadptr` provides a location that the HW lastly wrote to
-  // the payload buffer.
-  //
-  // This is useful when the host system sends more than 256B of payload. The
-  // HW wraps around the payload buffer when it receives more than 256B. The
-  // SW, with last_written_payloadptr, is able to know the exact offset to
-  // start to read.
-  //
-  // TODO: Handle 257, ... , 511 case (reduce bit by 1?)
-  logic [PayloadPtrW-1:0] last_written_payloadptr;
-  always_ff @(posedge clk_i or negedge sys_rst_ni) begin
-    if (!sys_rst_ni) last_written_payloadptr <= '0;
-    else if (payloadptr_clr) last_written_payloadptr <= '0;
-    else if (payloadptr_inc) begin
-      last_written_payloadptr <= last_written_payloadptr + PayloadPtrW'(1);
-    end
-  end
-
-  // Latch last_written_payloadptr @ CSb events
+  // Latch payloadptr @ CSb events
   always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
-    if (!sys_rst_ni) sys_last_written_payload_idx_o <= '0;
-    else if (sys_payloadptr_clr_posedge) sys_last_written_payload_idx_o <= '0;
-    else if (sys_csb_deasserted_pulse_i) begin
-      sys_last_written_payload_idx_o <= last_written_payloadptr;
+    if (!sys_rst_ni)                     sys_payload_start_idx_o <= '0;
+    else if (sys_payloadptr_clr_posedge) sys_payload_start_idx_o <= '0;
+    else if (sys_csb_deasserted_pulse_i && payload_max) begin
+      // Payload reached the max, need to tell SW the exact location SW shoul
+      // read
+      sys_payload_start_idx_o <= payloadptr;
+    end else if (sys_csb_deasserted_pulse_i && !payload_max) begin
+      // Payload buffer has not been reached to the max, the start index
+      // should be 0 for SW to read from the first of the buffer.
+      sys_payload_start_idx_o <= '0;
     end
   end
 
@@ -327,7 +335,7 @@ module spid_upload
   always_ff @(posedge clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni)         event_payload_overflow <= 1'b 0;
     else if (payloadptr_clr) event_payload_overflow <= 1'b 0;
-    else if (payloadptr_inc && (payloadptr == PayloadPtrW'(PayloadByte))) begin
+    else if (payloadptr_inc && payload_max) begin
       event_payload_overflow <= 1'b 1;
     end
   end

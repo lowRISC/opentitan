@@ -171,17 +171,14 @@ module spi_device
 
   localparam int unsigned PayloadByte = SramPayloadDepth * (SramDw/$bits(spi_byte_t));
   localparam int unsigned PayloadDepthW = $clog2(PayloadByte+1);
+  localparam int unsigned PayloadIdxW   = $clog2(PayloadByte);
 
   logic [CmdFifoPtrW-1:0]    cmdfifo_depth;
   logic [AddrFifoPtrW-1:0]   addrfifo_depth;
   logic [PayloadDepthW-1:0]  payload_depth;
-  logic [PayloadDepthW-1:0]  last_written_payload_idx;
+  logic [PayloadIdxW-1:0]    payload_start_idx;
 
   assign payload_notempty = payload_depth != '0;
-
-  // TODO: Implement CSR
-  logic unused_last_written_payload_idx;
-  assign unused_last_written_payload_idx = ^last_written_payload_idx;
 
   /////////////////////
   // Control signals //
@@ -1487,10 +1484,10 @@ module spi_device
     .sys_addrfifo_full_o     (), // not used
     .sys_payload_overflow_o  (payload_overflow),
 
-    .sys_cmdfifo_depth_o            (cmdfifo_depth),
-    .sys_addrfifo_depth_o           (addrfifo_depth),
-    .sys_payload_depth_o            (payload_depth),
-    .sys_last_written_payload_idx_o (last_written_payload_idx)
+    .sys_cmdfifo_depth_o     (cmdfifo_depth),
+    .sys_addrfifo_depth_o    (addrfifo_depth),
+    .sys_payload_depth_o     (payload_depth),
+    .sys_payload_start_idx_o (payload_start_idx)
   );
   // FIFO connect
   assign cmdfifo_rready = reg2hw.upload_cmdfifo.re;
@@ -1516,8 +1513,13 @@ module spi_device
   assign hw2reg.upload_status.addrfifo_notempty.de = 1'b 1;
   assign hw2reg.upload_status.addrfifo_notempty.d  = addrfifo_notempty;
 
-  assign hw2reg.upload_status.payload_depth.de = 1'b 1;
-  assign hw2reg.upload_status.payload_depth.d  = payload_depth;
+  assign hw2reg.upload_status2.payload_depth.de = 1'b 1;
+  assign hw2reg.upload_status2.payload_depth.d  = payload_depth;
+
+  assign hw2reg.upload_status2.payload_start_idx.de = 1'b 1;
+  assign hw2reg.upload_status2.payload_start_idx.d = payload_start_idx;
+  `ASSERT_INIT(PayloadStartIdxWidthMatch_A,
+    $bits(hw2reg.upload_status2.payload_start_idx.d) == PayloadIdxW)
 
   // End:   Upload ---------------------------------------------------
 
