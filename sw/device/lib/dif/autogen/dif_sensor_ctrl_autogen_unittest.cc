@@ -62,5 +62,244 @@ TEST_F(AlertForceTest, Success) {
                                             kDifSensorCtrlAlertFatalAlert));
 }
 
+class IrqGetStateTest : public SensorCtrlTest {};
+
+TEST_F(IrqGetStateTest, NullArgs) {
+  dif_sensor_ctrl_irq_state_snapshot_t irq_snapshot = 0;
+
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_get_state(nullptr, &irq_snapshot));
+
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_get_state(&sensor_ctrl_, nullptr));
+
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_get_state(nullptr, nullptr));
+}
+
+TEST_F(IrqGetStateTest, SuccessAllRaised) {
+  dif_sensor_ctrl_irq_state_snapshot_t irq_snapshot = 0;
+
+  EXPECT_READ32(SENSOR_CTRL_INTR_STATE_REG_OFFSET,
+                std::numeric_limits<uint32_t>::max());
+  EXPECT_DIF_OK(dif_sensor_ctrl_irq_get_state(&sensor_ctrl_, &irq_snapshot));
+  EXPECT_EQ(irq_snapshot, std::numeric_limits<uint32_t>::max());
+}
+
+TEST_F(IrqGetStateTest, SuccessNoneRaised) {
+  dif_sensor_ctrl_irq_state_snapshot_t irq_snapshot = 0;
+
+  EXPECT_READ32(SENSOR_CTRL_INTR_STATE_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_sensor_ctrl_irq_get_state(&sensor_ctrl_, &irq_snapshot));
+  EXPECT_EQ(irq_snapshot, 0);
+}
+
+class IrqIsPendingTest : public SensorCtrlTest {};
+
+TEST_F(IrqIsPendingTest, NullArgs) {
+  bool is_pending;
+
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_is_pending(
+      nullptr, kDifSensorCtrlIrqIoStatusChange, &is_pending));
+
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_is_pending(
+      &sensor_ctrl_, kDifSensorCtrlIrqIoStatusChange, nullptr));
+
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_is_pending(
+      nullptr, kDifSensorCtrlIrqIoStatusChange, nullptr));
+}
+
+TEST_F(IrqIsPendingTest, BadIrq) {
+  bool is_pending;
+  // All interrupt CSRs are 32 bit so interrupt 32 will be invalid.
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_is_pending(
+      &sensor_ctrl_, static_cast<dif_sensor_ctrl_irq_t>(32), &is_pending));
+}
+
+TEST_F(IrqIsPendingTest, Success) {
+  bool irq_state;
+
+  // Get the first IRQ state.
+  irq_state = false;
+  EXPECT_READ32(SENSOR_CTRL_INTR_STATE_REG_OFFSET,
+                {{SENSOR_CTRL_INTR_STATE_IO_STATUS_CHANGE_BIT, true}});
+  EXPECT_DIF_OK(dif_sensor_ctrl_irq_is_pending(
+      &sensor_ctrl_, kDifSensorCtrlIrqIoStatusChange, &irq_state));
+  EXPECT_TRUE(irq_state);
+}
+
+class AcknowledgeAllTest : public SensorCtrlTest {};
+
+TEST_F(AcknowledgeAllTest, NullArgs) {
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_acknowledge_all(nullptr));
+}
+
+TEST_F(AcknowledgeAllTest, Success) {
+  EXPECT_WRITE32(SENSOR_CTRL_INTR_STATE_REG_OFFSET,
+                 std::numeric_limits<uint32_t>::max());
+
+  EXPECT_DIF_OK(dif_sensor_ctrl_irq_acknowledge_all(&sensor_ctrl_));
+}
+
+class IrqAcknowledgeTest : public SensorCtrlTest {};
+
+TEST_F(IrqAcknowledgeTest, NullArgs) {
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_acknowledge(
+      nullptr, kDifSensorCtrlIrqIoStatusChange));
+}
+
+TEST_F(IrqAcknowledgeTest, BadIrq) {
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_acknowledge(
+      nullptr, static_cast<dif_sensor_ctrl_irq_t>(32)));
+}
+
+TEST_F(IrqAcknowledgeTest, Success) {
+  // Clear the first IRQ state.
+  EXPECT_WRITE32(SENSOR_CTRL_INTR_STATE_REG_OFFSET,
+                 {{SENSOR_CTRL_INTR_STATE_IO_STATUS_CHANGE_BIT, true}});
+  EXPECT_DIF_OK(dif_sensor_ctrl_irq_acknowledge(
+      &sensor_ctrl_, kDifSensorCtrlIrqIoStatusChange));
+}
+
+class IrqForceTest : public SensorCtrlTest {};
+
+TEST_F(IrqForceTest, NullArgs) {
+  EXPECT_DIF_BADARG(
+      dif_sensor_ctrl_irq_force(nullptr, kDifSensorCtrlIrqIoStatusChange));
+}
+
+TEST_F(IrqForceTest, BadIrq) {
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_force(
+      nullptr, static_cast<dif_sensor_ctrl_irq_t>(32)));
+}
+
+TEST_F(IrqForceTest, Success) {
+  // Force first IRQ.
+  EXPECT_WRITE32(SENSOR_CTRL_INTR_TEST_REG_OFFSET,
+                 {{SENSOR_CTRL_INTR_TEST_IO_STATUS_CHANGE_BIT, true}});
+  EXPECT_DIF_OK(dif_sensor_ctrl_irq_force(&sensor_ctrl_,
+                                          kDifSensorCtrlIrqIoStatusChange));
+}
+
+class IrqGetEnabledTest : public SensorCtrlTest {};
+
+TEST_F(IrqGetEnabledTest, NullArgs) {
+  dif_toggle_t irq_state;
+
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_get_enabled(
+      nullptr, kDifSensorCtrlIrqIoStatusChange, &irq_state));
+
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_get_enabled(
+      &sensor_ctrl_, kDifSensorCtrlIrqIoStatusChange, nullptr));
+
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_get_enabled(
+      nullptr, kDifSensorCtrlIrqIoStatusChange, nullptr));
+}
+
+TEST_F(IrqGetEnabledTest, BadIrq) {
+  dif_toggle_t irq_state;
+
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_get_enabled(
+      &sensor_ctrl_, static_cast<dif_sensor_ctrl_irq_t>(32), &irq_state));
+}
+
+TEST_F(IrqGetEnabledTest, Success) {
+  dif_toggle_t irq_state;
+
+  // First IRQ is enabled.
+  irq_state = kDifToggleDisabled;
+  EXPECT_READ32(SENSOR_CTRL_INTR_ENABLE_REG_OFFSET,
+                {{SENSOR_CTRL_INTR_ENABLE_IO_STATUS_CHANGE_BIT, true}});
+  EXPECT_DIF_OK(dif_sensor_ctrl_irq_get_enabled(
+      &sensor_ctrl_, kDifSensorCtrlIrqIoStatusChange, &irq_state));
+  EXPECT_EQ(irq_state, kDifToggleEnabled);
+}
+
+class IrqSetEnabledTest : public SensorCtrlTest {};
+
+TEST_F(IrqSetEnabledTest, NullArgs) {
+  dif_toggle_t irq_state = kDifToggleEnabled;
+
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_set_enabled(
+      nullptr, kDifSensorCtrlIrqIoStatusChange, irq_state));
+}
+
+TEST_F(IrqSetEnabledTest, BadIrq) {
+  dif_toggle_t irq_state = kDifToggleEnabled;
+
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_set_enabled(
+      &sensor_ctrl_, static_cast<dif_sensor_ctrl_irq_t>(32), irq_state));
+}
+
+TEST_F(IrqSetEnabledTest, Success) {
+  dif_toggle_t irq_state;
+
+  // Enable first IRQ.
+  irq_state = kDifToggleEnabled;
+  EXPECT_MASK32(SENSOR_CTRL_INTR_ENABLE_REG_OFFSET,
+                {{SENSOR_CTRL_INTR_ENABLE_IO_STATUS_CHANGE_BIT, 0x1, true}});
+  EXPECT_DIF_OK(dif_sensor_ctrl_irq_set_enabled(
+      &sensor_ctrl_, kDifSensorCtrlIrqIoStatusChange, irq_state));
+}
+
+class IrqDisableAllTest : public SensorCtrlTest {};
+
+TEST_F(IrqDisableAllTest, NullArgs) {
+  dif_sensor_ctrl_irq_enable_snapshot_t irq_snapshot = 0;
+
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_disable_all(nullptr, &irq_snapshot));
+
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_disable_all(nullptr, nullptr));
+}
+
+TEST_F(IrqDisableAllTest, SuccessNoSnapshot) {
+  EXPECT_WRITE32(SENSOR_CTRL_INTR_ENABLE_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_sensor_ctrl_irq_disable_all(&sensor_ctrl_, nullptr));
+}
+
+TEST_F(IrqDisableAllTest, SuccessSnapshotAllDisabled) {
+  dif_sensor_ctrl_irq_enable_snapshot_t irq_snapshot = 0;
+
+  EXPECT_READ32(SENSOR_CTRL_INTR_ENABLE_REG_OFFSET, 0);
+  EXPECT_WRITE32(SENSOR_CTRL_INTR_ENABLE_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_sensor_ctrl_irq_disable_all(&sensor_ctrl_, &irq_snapshot));
+  EXPECT_EQ(irq_snapshot, 0);
+}
+
+TEST_F(IrqDisableAllTest, SuccessSnapshotAllEnabled) {
+  dif_sensor_ctrl_irq_enable_snapshot_t irq_snapshot = 0;
+
+  EXPECT_READ32(SENSOR_CTRL_INTR_ENABLE_REG_OFFSET,
+                std::numeric_limits<uint32_t>::max());
+  EXPECT_WRITE32(SENSOR_CTRL_INTR_ENABLE_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_sensor_ctrl_irq_disable_all(&sensor_ctrl_, &irq_snapshot));
+  EXPECT_EQ(irq_snapshot, std::numeric_limits<uint32_t>::max());
+}
+
+class IrqRestoreAllTest : public SensorCtrlTest {};
+
+TEST_F(IrqRestoreAllTest, NullArgs) {
+  dif_sensor_ctrl_irq_enable_snapshot_t irq_snapshot = 0;
+
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_restore_all(nullptr, &irq_snapshot));
+
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_restore_all(&sensor_ctrl_, nullptr));
+
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_restore_all(nullptr, nullptr));
+}
+
+TEST_F(IrqRestoreAllTest, SuccessAllEnabled) {
+  dif_sensor_ctrl_irq_enable_snapshot_t irq_snapshot =
+      std::numeric_limits<uint32_t>::max();
+
+  EXPECT_WRITE32(SENSOR_CTRL_INTR_ENABLE_REG_OFFSET,
+                 std::numeric_limits<uint32_t>::max());
+  EXPECT_DIF_OK(dif_sensor_ctrl_irq_restore_all(&sensor_ctrl_, &irq_snapshot));
+}
+
+TEST_F(IrqRestoreAllTest, SuccessAllDisabled) {
+  dif_sensor_ctrl_irq_enable_snapshot_t irq_snapshot = 0;
+
+  EXPECT_WRITE32(SENSOR_CTRL_INTR_ENABLE_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_sensor_ctrl_irq_restore_all(&sensor_ctrl_, &irq_snapshot));
+}
+
 }  // namespace
 }  // namespace dif_sensor_ctrl_autogen_unittest

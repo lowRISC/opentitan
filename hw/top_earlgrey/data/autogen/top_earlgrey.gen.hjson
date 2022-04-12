@@ -12739,6 +12739,7 @@
     sysrst_ctrl_aon
     adc_ctrl_aon
     aon_timer_aon
+    sensor_ctrl
     flash_ctrl
     hmac
     kmac
@@ -13512,6 +13513,12 @@
       width: 1
       type: interrupt
       module_name: aon_timer_aon
+    }
+    {
+      name: sensor_ctrl_io_status_change
+      width: 1
+      type: interrupt
+      module_name: sensor_ctrl
     }
     {
       name: flash_ctrl_prog_empty
