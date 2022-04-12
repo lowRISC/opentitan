@@ -48,8 +48,15 @@ class otbn_base_vseq extends cip_base_vseq #(
   protected task load_elf(string path, bit backdoor);
     otbn_pkg::cmd_e wipe_cmd;
     bit [1:0] num_wipes;
+    bit bogus_write;
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bogus_write, bogus_write dist { 0 :/ 1, 1 :/ 9};)
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(num_wipes, num_wipes inside { [0:2] };)
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wipe_cmd, wipe_cmd != otbn_pkg::CmdExecute;)
+    if (bogus_write) begin
+      // Write a bogus value while we are in IDLE state for coverage.
+      `uvm_info(`gfn, "\n\t ----| Writing a bogus value to CMD register", UVM_MEDIUM)
+      csr_utils_pkg::csr_wr(ral.cmd, $urandom);
+    end
     case (num_wipes)
       1 : _run_otbn_cmd(wipe_cmd); // Run a random wipe command
       2 : begin
@@ -67,7 +74,7 @@ class otbn_base_vseq extends cip_base_vseq #(
         else
           _run_otbn_cmd(otbn_pkg::CmdSecWipeDmem);
       end
-      default : ;// Do nothing.
+      default : ;// Do nothing
     endcase
     if (backdoor) begin
       load_elf_backdoor(path);
@@ -197,6 +204,17 @@ class otbn_base_vseq extends cip_base_vseq #(
     end
   endfunction
 
+  protected task _insert_random_cmd();
+    // Write a random CMD value
+    logic [7:0] random_cmd;
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(random_cmd, random_cmd  dist {otbn_pkg::CmdExecute :/2,
+                                                                     otbn_pkg::CmdSecWipeDmem :/ 2,
+                                                                     otbn_pkg::CmdSecWipeImem :/ 2,
+                                                                     [0:$] :/ 1};)
+    `uvm_info(`gfn, "\n\t ----| Writing a random value to CMD register", UVM_MEDIUM)
+    csr_utils_pkg::csr_wr(ral.cmd, random_cmd);
+  endtask
+
   // Start OTBN and then wait until done
   //
   // If the block gets reset, this task will exit early.
@@ -278,18 +296,11 @@ class otbn_base_vseq extends cip_base_vseq #(
     running_ = 1'b0;
 
     if (cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked) begin
-      logic [7:0] wdata;
-      bit cmd_wr = $urandom_range(9,0) == 0;
+      bit cmd_wr;
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(cmd_wr, cmd_wr dist { 0 :/ 9, 1 :/ 1};)
       if (cmd_wr) begin
         `uvm_info(`gfn, "entered locked status. Writing to cmd register", UVM_LOW)
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wdata, wdata dist {otbn_pkg::CmdExecute :/2,
-                                                              otbn_pkg::CmdSecWipeDmem :/ 2,
-                                                              otbn_pkg::CmdSecWipeImem :/ 2,
-                                                              'b0 :/ 1};);
-        if (wdata == 'b0) begin
-          `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
-        end
-        csr_utils_pkg::csr_wr(ral.cmd, wdata);
+        _insert_random_cmd();
       end
     end
     csr_utils_pkg::csr_wr(ral.ctrl, 'b0);
@@ -556,7 +567,8 @@ class otbn_base_vseq extends cip_base_vseq #(
       join
       if (timed_out) break;
     end
-
+    // Insert a random CMD write while we are running for coverage
+    _insert_random_cmd();
     // If we get here and timed_out is false then something weird has happened: we've run the binary
     // 10 times and each run has taken less than 75% of the time of the previous run. This shouldn't
     // happen!
