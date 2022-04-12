@@ -27,7 +27,6 @@ opentitan_rom_binary(
     deps = [
         ":linker_script",
         ":test_rom_lib",
-        "//sw/device/lib/base:mmio",
     ],
 )
 

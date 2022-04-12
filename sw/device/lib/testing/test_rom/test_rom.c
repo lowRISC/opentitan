@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_uart.h"
@@ -40,8 +41,10 @@ typedef void ottf_entry(void);
 
 static dif_uart_t uart0;
 
-void _boot_start(void) {
-  test_status_set(kTestStatusInBootRom);
+// `test_in_rom = True` tests can override this symbol to provide their own
+// rom tests. By default, it simply jumps into the OTTF's flash.
+OT_WEAK
+bool rom_test_main(void) {
   pinmux_init();
   flash_init();
   while (flash_get_init_status())
@@ -76,5 +79,12 @@ void _boot_start(void) {
   ((ottf_entry *)manifest_entry_point)();
 
   // If the flash image returns, we should abort anyway.
+  abort();
+}
+
+void _boot_start(void) {
+  test_status_set(kTestStatusInBootRom);
+  test_status_set(rom_test_main() ? kTestStatusPassed : kTestStatusFailed);
+
   abort();
 }
