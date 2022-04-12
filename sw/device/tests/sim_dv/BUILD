@@ -2,11 +2,12 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
+load("//rules:opentitan_test.bzl", "opentitan_functest")
 
 opentitan_functest(
     name = "flash_ctrl_lc_rw_en_test",
     srcs = ["flash_ctrl_lc_rw_en_test.c"],
+    targets = ["dv"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
@@ -24,6 +25,7 @@ opentitan_functest(
 opentitan_functest(
     name = "gpio_test",
     srcs = ["gpio_test.c"],
+    targets = ["dv"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib:irq",
@@ -40,6 +42,7 @@ opentitan_functest(
 opentitan_functest(
     name = "keymgr_key_derivation",
     srcs = ["keymgr_key_derivation.c"],
+    targets = ["dv"],
     deps = [
         "//hw/ip/keymgr/data:keymgr_regs",
         "//hw/ip/kmac/data:kmac_regs",
@@ -63,6 +66,7 @@ opentitan_functest(
 opentitan_functest(
     name = "lc_ctrl_transition_test",
     srcs = ["lc_ctrl_transition_test.c"],
+    targets = ["dv"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
@@ -76,6 +80,7 @@ opentitan_functest(
 opentitan_functest(
     name = "pwrmgr_main_power_glitch_test",
     srcs = ["pwrmgr_main_power_glitch_test.c"],
+    targets = ["dv"],
     deps = [
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:rstmgr",
@@ -87,6 +92,7 @@ opentitan_functest(
 opentitan_functest(
     name = "pwrmgr_usbdev_smoketest",
     srcs = ["pwrmgr_usbdev_smoketest.c"],
+    targets = ["dv"],
     deps = [
         "//sw/device/lib:usb",
         "//sw/device/lib/base:mmio",
@@ -100,6 +106,7 @@ opentitan_functest(
 opentitan_functest(
     name = "rom_ctrl_integrity_check_test",
     srcs = ["rom_ctrl_integrity_check_test.c"],
+    targets = ["dv"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -113,6 +120,7 @@ opentitan_functest(
 opentitan_functest(
     name = "spi_tx_rx_test",
     srcs = ["spi_tx_rx_test.c"],
+    targets = ["dv"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib:irq",
@@ -128,6 +136,7 @@ opentitan_functest(
 opentitan_functest(
     name = "sram_ctrl_execution_test_main",
     srcs = ["sram_ctrl_execution_test_main.c"],
+    targets = ["dv"],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -146,6 +155,7 @@ opentitan_functest(
 opentitan_functest(
     name = "sram_ctrl_main_scrambled_access_test",
     srcs = ["sram_ctrl_main_scrambled_access_test.c"],
+    targets = ["dv"],
     deps = [
         "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
         "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
@@ -164,6 +174,7 @@ opentitan_functest(
 opentitan_functest(
     name = "sram_ctrl_ret_scrambled_access_test",
     srcs = ["sram_ctrl_ret_scrambled_access_test.c"],
+    targets = ["dv"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
