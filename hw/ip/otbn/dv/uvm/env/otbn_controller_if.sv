@@ -17,7 +17,6 @@ interface otbn_controller_if (
 
   function automatic otbn_env_pkg::operational_state_e get_operational_state();
     unique case (state_q)
-      OtbnStateUrndRefresh,
       OtbnStateRun,
       OtbnStateStall:
         return otbn_env_pkg::OperationalStateBusy;
