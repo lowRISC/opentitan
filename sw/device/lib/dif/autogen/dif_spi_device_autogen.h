@@ -106,23 +106,30 @@ typedef enum dif_spi_device_irq {
    */
   kDifSpiDeviceIrqUploadCmdfifoNotEmpty = 6,
   /**
-   * Upload paylod is not empty.  The event occurs after SPI transaction
+   * Upload payload is not empty.  The event occurs after SPI transaction
    * completed
    */
   kDifSpiDeviceIrqUploadPayloadNotEmpty = 7,
   /**
+   * Upload payload overflow event.  When a SPI Host system issues a command
+   * with payload more than 256B, this event is reported. When it happens, SW
+   * should read the last written payload index CSR to figure out the starting
+   * address of the last 256B.
+   */
+  kDifSpiDeviceIrqUploadPayloadOverflow = 8,
+  /**
    * Read Buffer Threshold event.  The host system accesses greater than or
    * equal to the threshold of a buffer.
    */
-  kDifSpiDeviceIrqReadbufWatermark = 8,
+  kDifSpiDeviceIrqReadbufWatermark = 9,
   /**
    * Read buffer flipped event.  The host system accesses other side of buffer.
    */
-  kDifSpiDeviceIrqReadbufFlip = 9,
+  kDifSpiDeviceIrqReadbufFlip = 10,
   /**
    * TPM Header(Command/Address) buffer available
    */
-  kDifSpiDeviceIrqTpmHeaderNotEmpty = 10,
+  kDifSpiDeviceIrqTpmHeaderNotEmpty = 11,
 } dif_spi_device_irq_t;
 
 /**
