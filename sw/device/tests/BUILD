@@ -26,17 +26,41 @@ opentitan_functest(
     ],
 )
 
+# FIXME(lowRISC/opentitan#12065) This is a hack to work around currently
+# only supporting one top.
+#
+# See //hw/top_englishbreakfast/util/prepare_sw.py for where this is set.
+config_setting(
+    name = "is_english_breakfast",
+    values = {"copt": "-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_"},
+    visibility = ["//visibility:private"],
+)
+
+cc_library(
+    name = "nothing",
+    visibility = ["//visibility:private"],
+)
+
+alias(
+    name = "aes_smoketest_entropy_testutils",
+    actual = select({
+        ":is_english_breakfast": ":nothing",
+        "//conditions:default": "//sw/device/lib/testing:entropy_testutils",
+    }),
+    visibility = ["//visibility:private"],
+)
+
 opentitan_functest(
     name = "aes_smoketest",
     srcs = ["aes_smoketest.c"],
     deps = [
+        ":aes_smoketest_entropy_testutils",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aes_testutils",
-        "//sw/device/lib/testing:entropy_testutils",
     ],
 )
 

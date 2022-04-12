@@ -28,6 +28,13 @@ BINARIES = [
     'sw/device/examples/hello_world/hello_world_export_sim_verilator',
 ]
 
+BAZEL_BINARIES = [
+    '//sw/device/lib/testing/test_rom',
+    '//sw/device/sca:aes_serial',
+    '//sw/device/tests:aes_smoketest',
+    '//sw/device/examples/hello_world',
+]
+
 def find_dirs(root, names):
     """
     Finds all directories under `root` with the given name and
@@ -74,6 +81,11 @@ def main():
         default='englishbreakfast',
         type=str,
         help='The alternative top to use')
+    parser.add_argument(
+        '--bazel',
+        default=False,
+        action='store_true',
+        help='Whether to build with Bazel instead')
     args = parser.parse_args()
     name = args.top
     topname = f'top_{name}'
@@ -103,10 +115,11 @@ def main():
     # 3. The build system still uses some sources from the original top level.
     #    We thus need to replace those with the new sources patched in 2.
 
-    print("Rewriting $REPO_TOP/meson.build's TOPNAME")
-    meson_build = (REPO_TOP / 'meson.build').read_text()
-    meson_build = meson_build.replace("TOPNAME='top_earlgrey'", f"TOPNAME='{topname}'")
-    (REPO_TOP / 'meson.build').write_text(meson_build)
+    if not args.bazel:
+        print("Rewriting $REPO_TOP/meson.build's TOPNAME")
+        meson_build = (REPO_TOP / 'meson.build').read_text()
+        meson_build = meson_build.replace("TOPNAME='top_earlgrey'", f"TOPNAME='{topname}'")
+        (REPO_TOP / 'meson.build').write_text(meson_build)
 
     for suffix in ['.c', '.h', '_memory.h', '_memory.ld']:
         old = REPO_TOP / 'hw' / topname / 'sw/autogen' / (topname + suffix)
@@ -127,7 +140,13 @@ def main():
         return;
 
     # Build the software including test_rom to enable the FPGA build.
-    shell_out(['ninja', '-C', REPO_TOP / 'build-out'] + BINARIES)
+    if args.bazel:
+        shell_out([
+            'bazel', 'build',
+            '--copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_',
+        ] + BAZEL_BINARIES)
+    else:
+        shell_out(['ninja', '-C', REPO_TOP / 'build-out'] + BINARIES)
 
 if __name__ == "__main__":
     main()
