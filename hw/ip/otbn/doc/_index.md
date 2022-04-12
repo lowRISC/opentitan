@@ -747,77 +747,77 @@ This way, no alert is generated without setting an error code somewhere.
   </thead>
   <tbody>
     <tr>
-      <td><code>BAD_DATA_ADDR<code></td>
+      <td><code>BAD_DATA_ADDR</code></td>
       <td>software</td>
       <td>A data memory access occurred with an out of bounds or unaligned access.</td>
     </tr>
     <tr>
-      <td><code>BAD_INSN_ADDR<code></td>
+      <td><code>BAD_INSN_ADDR</code></td>
       <td>software</td>
       <td>An instruction memory access occurred with an out of bounds or unaligned access.</td>
     </tr>
     <tr>
-      <td><code>CALL_STACK<code></td>
+      <td><code>CALL_STACK</code></td>
       <td>software</td>
       <td>An instruction tried to pop from an empty call stack or push to a full call stack.</td>
     </tr>
     <tr>
-      <td><code>ILLEGAL_INSN<code></td>
+      <td><code>ILLEGAL_INSN</code></td>
       <td>software</td>
       <td>
         An illegal instruction was about to be executed.
       </td>
     <tr>
-      <td><code>LOOP<code></td>
+      <td><code>LOOP</code></td>
       <td>software</td>
       <td>
         A loop stack-related error was detected.
       </td>
     </tr>
     <tr>
-      <td><code>KEY_INVALID<code></td>
+      <td><code>KEY_INVALID</code></td>
       <td>software</td>
       <td>
         An attempt to read a `KEY_*` WSR was detected, but no key was provided by the key manager.
       </td>
     </tr>
     <tr>
-      <td><code>IMEM_INTG_VIOLATION<code></td>
+      <td><code>IMEM_INTG_VIOLATION</code></td>
       <td>fatal</td>
       <td>Data read from the instruction memory failed the integrity checks.</td>
     </tr>
     <tr>
-      <td><code>DMEM_INTG_VIOLATION<code></td>
+      <td><code>DMEM_INTG_VIOLATION</code></td>
       <td>fatal</td>
       <td>Data read from the data memory failed the integrity checks.</td>
     </tr>
     <tr>
-      <td><code>REG_INTG_VIOLATION<code></td>
+      <td><code>REG_INTG_VIOLATION</code></td>
       <td>fatal</td>
       <td>Data read from a GPR or WDR failed the integrity checks.</td>
     </tr>
     <tr>
-      <td><code>BUS_INTG_VIOLATION<code></td>
+      <td><code>BUS_INTG_VIOLATION</code></td>
       <td>fatal</td>
       <td>An incoming bus transaction failed the integrity checks.</td>
     </tr>
     <tr>
-      <td><code>BAD_INTERNAL_STATE<code></td>
+      <td><code>BAD_INTERNAL_STATE</code></td>
       <td>fatal</td>
       <td>The internal state of OTBN has become corrupt.</td>
     </tr>
     <tr>
-      <td><code>ILLEGAL_BUS_ACCESS<code></td>
+      <td><code>ILLEGAL_BUS_ACCESS</code></td>
       <td>fatal</td>
       <td>A bus-accessible register or memory was accessed when not allowed.</td>
     </tr>
     <tr>
-      <td><code>LIFECYCLE_ESCALATION<code></td>
+      <td><code>LIFECYCLE_ESCALATION</code></td>
       <td>fatal</td>
       <td>A life cycle escalation request was received.</td>
     </tr>
     <tr>
-      <td><code>FATAL_SOFTWARE<code></td>
+      <td><code>FATAL_SOFTWARE</code></td>
       <td>fatal</td>
       <td>A software error was seen and {{< regref "CTRL.software_errs_fatal" >}} was set.</td>
     </tr>
