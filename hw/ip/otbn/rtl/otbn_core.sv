@@ -776,6 +776,7 @@ module otbn_core
     .clk_i,
     .rst_ni,
 
+    .rnd_wipe_i        (controller_start),
     .rnd_req_i         (rnd_req),
     .rnd_prefetch_req_i(rnd_prefetch_req),
     .rnd_valid_o       (rnd_valid),
