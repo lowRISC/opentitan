@@ -240,7 +240,7 @@ static void check_wipe_test_phase(void) {
                                      kRandomData[6]);
 }
 
-void _boot_start(void) {
+bool rom_test_main(void) {
   // We need to set the test status as "in test" to indicate to the test code
   // has been reached, even though this test is also in the "boot ROM".
   test_status_set(kTestStatusInTest);
@@ -302,10 +302,5 @@ void _boot_start(void) {
       break;
   }
 
-  // If this point is reached everything was successful.
-  // Report test status as passed.
-  test_status_set(kTestStatusPassed);
-
-  // Unreachable.
-  abort();
+  return true;
 }
