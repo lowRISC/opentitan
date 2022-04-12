@@ -22,7 +22,10 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   int post_reset_delay_clks = 1;
 
   // Knob for blocking host reads
-  bit block_host_rd = 1;
+  bit block_host_rd = 0;
+
+  // Knob for control direct read checking
+  bit dir_rd_in_progress = 1'b0;
 
   // Knob for scoreboard write and check on reads
   bit scb_check = 0;
@@ -34,10 +37,10 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   bit bank_erase_enable = 1;
 
   // mem for scoreboard
-  data_t                     scb_flash_data  [addr_t]  = '{default: 1};
-  data_t                     scb_flash_info  [addr_t]  = '{default: 1};
-  data_t                     scb_flash_info1 [addr_t]  = '{default: 1};
-  data_t                     scb_flash_info2 [addr_t]  = '{default: 1};
+  data_t scb_flash_data[addr_t] = '{default: 1};
+  data_t scb_flash_info[addr_t] = '{default: 1};
+  data_t scb_flash_info1[addr_t] = '{default: 1};
+  data_t scb_flash_info2[addr_t] = '{default: 1};
 
   // Max delay for alerts in clocks
   uint alert_max_delay;
@@ -202,7 +205,6 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
           (scheme == FlashMemInitRandomize) ? $urandom() : wr_data;
 
       _flash_full_write(flash_op.partition, addr_attrs.bank, addr_attrs.bank_addr, loc_data);
-
       `uvm_info(`gfn, $sformatf(
                 "flash_mem_bkdr_write: partition = %s , {%s} = 0x%0h",
                 flash_op.partition.name(),
@@ -232,6 +234,9 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     logic [7:0] intg_data;
     logic is_upper = addr[flash_ctrl_pkg::DataByteWidth-1];
     logic [TL_AW-1:0] aligned_addr = addr;
+
+    // update memory in the scoreboard
+    write_data_all_part(partition, {bank,addr}, wr_data);
 
     if (is_upper) begin
       aligned_addr = {addr[TL_AW-1:FlashDataByteWidth], {FlashDataByteWidth{1'b0}}};
@@ -374,16 +379,64 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
 
   virtual function void write_data_all_part(flash_dv_part_e part, bit [TL_AW-1:0] addr,
                                             ref bit [TL_DW-1:0] data);
-  `uvm_info(`gfn, $sformatf("WRITE SCB MEM part: %0s addr:%0h data:0x%0h",
-                            part.name, addr, data), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("WR SCB MEM part: %0s addr:%0h data:0x%0h", part.name, addr, data),
+              UVM_HIGH)
     case (part)
-      FlashPartData:  scb_flash_data[addr]   = data;
-      FlashPartInfo:  scb_flash_info[addr]   = data;
-      FlashPartInfo1: scb_flash_info1[addr]  = data;
-      FlashPartInfo2: scb_flash_info2[addr]  = data;
-      default :
-        `uvm_fatal(`gfn,"flash_ctrl_scoreboard: Partition type not supported!")
+      FlashPartData: scb_flash_data[addr] = data;
+      FlashPartInfo: scb_flash_info[addr] = data;
+      FlashPartInfo1: scb_flash_info1[addr] = data;
+      FlashPartInfo2: scb_flash_info2[addr] = data;
+      default: `uvm_fatal(`gfn, "flash_ctrl_scoreboard: Partition type not supported!")
     endcase
   endfunction
+
+  // Task for clean scb memory
+  virtual function reset_scb_mem();
+    scb_flash_data.delete();
+    scb_flash_info.delete();
+    scb_flash_info1.delete();
+    scb_flash_info2.delete();
+  endfunction : reset_scb_mem
+
+  // Task for set scb memory
+  virtual function set_scb_mem(int bkd_num_words, flash_dv_part_e bkd_partition,
+                               bit [TL_AW-1:0] write_bkd_addr,flash_scb_wr_e val_type,
+                               data_b_t custom_val = {});
+    bit [TL_AW-1:0] wr_bkd_addr;
+    bit [TL_DW-1:0] wr_value;
+
+    `uvm_info(`gfn, $sformatf(
+              "SET SCB MEM TEST part: %0s addr:%0h data:0x%0h num: %0d",
+              bkd_partition.name,
+              write_bkd_addr,
+              wr_value,
+              bkd_num_words
+              ), UVM_HIGH)
+    wr_bkd_addr = {write_bkd_addr[TL_AW-1:2], 2'b00};
+    `uvm_info(`gfn, $sformatf("SET SCB MEM ADDR:%0h", wr_bkd_addr), UVM_HIGH)
+    for (int i = 0; i < bkd_num_words; i++) begin
+      case (val_type)
+        AllOnes: begin
+          wr_value = ALL_ONES;
+        end
+        AllZeros: begin
+          wr_value = ALL_ZEROS;
+        end
+        CustomVal: begin
+          wr_value = custom_val[i];
+        end
+        default: `uvm_fatal(`gfn, "Unknown write type, allowed: AllOnes, AllZeros, CustomVal")
+      endcase
+      `uvm_info(`gfn, $sformatf(
+                "SET SCB MEM part: %0s addr:%0h data:0x%0h num: %0d",
+                bkd_partition.name,
+                wr_bkd_addr,
+                wr_value,
+                bkd_num_words
+                ), UVM_HIGH)
+      write_data_all_part(bkd_partition, wr_bkd_addr, wr_value);
+      wr_bkd_addr = wr_bkd_addr + 4;
+    end
+  endfunction : set_scb_mem
 
 endclass

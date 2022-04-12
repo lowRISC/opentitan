@@ -44,6 +44,7 @@ filesets:
       - seq_lib/flash_ctrl_host_ctrl_arb_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_mp_regions_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_fetch_code_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_full_mem_access_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

@@ -29,6 +29,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   // rand data for program
   rand data_q_t flash_program_data;
 
+  constraint flash_program_data_c {flash_program_data.size == 16;}
+
   // default region cfg
   flash_mp_region_cfg_t default_region_cfg = '{
       default: MuBi4True,
@@ -147,12 +149,12 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
                                              mubi4_t he_en       = MuBi4False);
     uvm_reg_data_t data;
     data = get_csr_val_with_updated_field(ral.default_region.rd_en, data, read_en);
-    data = data | get_csr_val_with_updated_field(ral.default_region.prog_en, data,
-                                                 program_en);
-    data = data | get_csr_val_with_updated_field(ral.default_region.erase_en, data,
-                                                 erase_en);
-    data = data | get_csr_val_with_updated_field(ral.default_region.scramble_en, data,
-                                                 scramble_en);
+    data = data |
+        get_csr_val_with_updated_field(ral.default_region.prog_en, data, program_en);
+    data = data |
+        get_csr_val_with_updated_field(ral.default_region.erase_en, data, erase_en);
+    data = data |
+        get_csr_val_with_updated_field(ral.default_region.scramble_en, data, scramble_en);
     data = data | get_csr_val_with_updated_field(ral.default_region.ecc_en, data, ecc_en);
     data = data | get_csr_val_with_updated_field(ral.default_region.he_en, data, he_en);
     csr_wr(.ptr(ral.default_region), .value(data));
@@ -175,18 +177,18 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     end
     csr = ral.get_reg_by_name(csr_name);
     data = get_csr_val_with_updated_field(csr.get_field_by_name("en"), data, page_cfg.en);
-    data = data | get_csr_val_with_updated_field(csr.get_field_by_name("rd_en"), data,
-                                                 page_cfg.read_en);
-    data = data | get_csr_val_with_updated_field(csr.get_field_by_name("prog_en"), data,
-                                                 page_cfg.program_en);
-    data = data | get_csr_val_with_updated_field(csr.get_field_by_name("erase_en"), data,
-                                                 page_cfg.erase_en);
+    data = data |
+        get_csr_val_with_updated_field(csr.get_field_by_name("rd_en"), data, page_cfg.read_en);
+    data = data |
+        get_csr_val_with_updated_field(csr.get_field_by_name("prog_en"), data, page_cfg.program_en);
+    data = data |
+        get_csr_val_with_updated_field(csr.get_field_by_name("erase_en"), data, page_cfg.erase_en);
     data = data | get_csr_val_with_updated_field(csr.get_field_by_name("scramble_en"), data,
                                                  page_cfg.scramble_en);
-    data = data | get_csr_val_with_updated_field(csr.get_field_by_name("ecc_en"), data,
-                                                 page_cfg.ecc_en);
-    data = data | get_csr_val_with_updated_field(csr.get_field_by_name("he_en"), data,
-                                                 page_cfg.he_en);
+    data = data |
+        get_csr_val_with_updated_field(csr.get_field_by_name("ecc_en"), data, page_cfg.ecc_en);
+    data = data |
+        get_csr_val_with_updated_field(csr.get_field_by_name("he_en"), data, page_cfg.he_en);
     csr_wr(.ptr(csr), .value(data));
   endtask : flash_ctrl_mp_info_page_cfg
 
@@ -338,11 +340,11 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     flash_op_t        flash_op;
 
     // Flash Operation Assignments
-    flash_op.op         = op;
-    flash_op.partition  = FlashPartInfo;
-    flash_op.erase_type = FlashErasePage;
-    flash_op.num_words  = FlashSecretPartWords;
-    poll_fifo_status    = 1;
+    flash_op.op                         = op;
+    flash_op.partition                  = FlashPartInfo;
+    flash_op.erase_type                 = FlashErasePage;
+    flash_op.num_words                  = FlashSecretPartWords;
+    poll_fifo_status                    = 1;
 
     // Disable HW Access to Secret Partition from Life Cycle Controller Interface (Write/Read/Erase)
     cfg.flash_ctrl_vif.lc_seed_hw_rd_en = lc_ctrl_pkg::Off;  // Disable Secret Partition HW Access
@@ -704,9 +706,9 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     data_q_t                 data_copy;
 
     // Calculate Number of Complete Cycles and Partial Cycle Words
-    num      = data.size();
-    num_full = num / FIFO_DEPTH;
-    num_part = num % FIFO_DEPTH;
+    num           = data.size();
+    num_full      = num / FIFO_DEPTH;
+    num_part      = num % FIFO_DEPTH;
 
     // Other
     partition_sel = |flash_op.partition;
@@ -813,7 +815,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     flash_addr    = flash_op.addr;
 
     // If num_full > 0
-    idx = 0;
+    idx           = 0;
     for (int cycle = 0; cycle < num_full; cycle++) begin
 
       `uvm_info(`gfn, $sformatf("Read Cycle : %0d, flash_addr = 0x%0x", cycle, flash_addr),
@@ -926,7 +928,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Task to Enable/Disable the 'Info' Partitions, Creator, Owner and Isolated, via the Lifetime
   // Controller Interface
-  virtual task en_sw_rw_part_info (input flash_op_t flash_op, input lc_ctrl_pkg::lc_tx_t val);
+  virtual task en_sw_rw_part_info(input flash_op_t flash_op, input lc_ctrl_pkg::lc_tx_t val);
     if (flash_op.partition == FlashPartInfo) begin
       cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = val;
       cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en   = val;
@@ -946,7 +948,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       flash_ctrl_start_op(flash_op_r);
       flash_ctrl_read(flash_op_r.num_words, flash_read_data, poll_fifo_status);
       wait_flash_op_done();
-      flash_op_r.addr = flash_op_r.addr + 64; //64B was read, 16 words
+      flash_op_r.addr = flash_op_r.addr + 64;  //64B was read, 16 words
     end
   endtask : controller_read_page
 
@@ -959,38 +961,15 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     for (int i = 0; i < 32; i++) begin
       `uvm_info(`gfn, $sformatf("PROGRAM ADDRESS: 0x%0h", flash_op_p.addr), UVM_HIGH)
       // Randomize Write Data
-      `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(flash_program_data,
-                                            flash_program_data.size == flash_op_p.num_words;)
+      for (int j = 0; j < 16; j++) begin
+        flash_program_data[j] = $urandom();
+      end
       cfg.flash_mem_bkdr_write(.flash_op(flash_op_p), .scheme(FlashMemInitSet));
       flash_ctrl_start_op(flash_op_p);
       flash_ctrl_write(flash_program_data, poll_fifo_status);
       wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
-      flash_op_p.addr = flash_op_p.addr + 64; //64B was written, 16 words
+      flash_op_p.addr = flash_op_p.addr + 64;  //64B was written, 16 words
     end
   endtask : controller_program_page
-
-  // Task for set scb memory
-  virtual task set_scb_mem(int bkd_num_words,flash_dv_part_e bkd_partition,
-                         bit [TL_AW-1:0] write_bkd_addr,bit [TL_DW-1:0] set_bkd_val);
-    bit [TL_AW-1:0] wr_bkd_addr;
-    `uvm_info(`gfn, $sformatf("SET SCB MEM TEST part: %0s addr:%0h data:0x%0h num: %0d",
-                             bkd_partition.name,write_bkd_addr,set_bkd_val,bkd_num_words),UVM_HIGH)
-    wr_bkd_addr = {write_bkd_addr[TL_AW-1:2], 2'b00};
-    `uvm_info(`gfn, $sformatf("SET SCB MEM ADDR:%0h", wr_bkd_addr), UVM_HIGH)
-    for (int i=0; i < bkd_num_words; i++) begin
-      `uvm_info(`gfn, $sformatf("SET SCB MEM part: %0s addr:%0h data:0x%0h num: %0d",
-                bkd_partition.name,wr_bkd_addr,set_bkd_val,bkd_num_words),UVM_HIGH)
-      cfg.write_data_all_part(bkd_partition, wr_bkd_addr, set_bkd_val);
-      wr_bkd_addr = wr_bkd_addr + 4;
-    end
-  endtask : set_scb_mem
-
-  // Task for clean scb memory
-  virtual task scb_del_mem();
-        cfg.scb_flash_data.delete();
-        cfg.scb_flash_info.delete();
-        cfg.scb_flash_info1.delete();
-        cfg.scb_flash_info2.delete();
-  endtask : scb_del_mem
 
 endclass : flash_ctrl_base_vseq
