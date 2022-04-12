@@ -94,11 +94,10 @@
       desc: '''
             Entire memory is accessed by Controller and directly by Host. In addition, Data
             partitions can be directly read by Software(Flash controller) and hardware hosts,
-            while Info partitions can be read only by the Flash controller. Test High Endurance
-            feature.
+            while Info partitions can be read only by the Flash controller.
             '''
       milestone: V2
-      tests: []
+      tests: ["flash_ctrl_full_mem_access"]
     }
     {
       name: rd_buff_eviction

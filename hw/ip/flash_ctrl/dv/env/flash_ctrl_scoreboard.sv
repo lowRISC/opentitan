@@ -16,20 +16,20 @@ class flash_ctrl_scoreboard #(
   uvm_reg_data_t         data;
   uvm_reg                csr;
   string                 csr_name;
-  flash_dv_part_e        part                      = FlashPartData;
+  flash_dv_part_e        part          = FlashPartData;
   addr_t                 wr_addr;
   addr_t                 rd_addr;
   addr_t                 erase_addr;
-  bit           [1:0]    erase_bank_en;
-  int                    num_wr                    = 0;
-  int                    num_rd                    = 0;
-  int                    idx_wr                    = 0;
-  int                    idx_rd                    = 0;
-  bit                    part_sel                  = 0;
-  bit              [1:0] info_sel                  = 2'b00;
-  bit                    wr_access                 = 1'b0;
-  bit                    rd_access                 = 1'b0;
-  bit                    erase_access              = 1'b0;
+  bit              [1:0] erase_bank_en;
+  int                    num_wr        = 0;
+  int                    num_rd        = 0;
+  int                    idx_wr        = 0;
+  int                    idx_rd        = 0;
+  bit                    part_sel      = 0;
+  bit              [1:0] info_sel      = 2'b00;
+  bit                    wr_access     = 1'b0;
+  bit                    rd_access     = 1'b0;
+  bit                    erase_access  = 1'b0;
   bit                    erase_sel;
   bit              [1:0] curr_op;
   tl_seq_item            eflash_addr_phase_queue[$];
@@ -84,8 +84,6 @@ class flash_ctrl_scoreboard #(
     tl_seq_item item;
     tl_seq_item addr_item;
 
-    bit addr_trans_available = 0;
-
     forever begin
       eflash_tl_d_chan_fifo.get(item);
       if (!cfg.en_scb) continue;
@@ -124,6 +122,13 @@ class flash_ctrl_scoreboard #(
     //comparing backdoor read data and direct read data
     cfg.flash_mem_bkdr_read(flash_read, exp_data);
     `DV_CHECK_EQ(exp_data[0], trans.d_data)
+    // check data with internal memory
+    if (cfg.scb_check) begin
+      `uvm_info(`gfn, $sformatf("Direct read address 0x%0h data: 0x%0h", trans.a_addr, trans.d_data
+                ), UVM_HIGH)
+      check_rd_data(flash_read.partition, trans.a_addr, trans.d_data);
+      `uvm_info(`gfn, $sformatf("Direct read successfully!!!"), UVM_HIGH)
+    end
   endfunction
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -138,8 +143,10 @@ class flash_ctrl_scoreboard #(
     bit            data_phase_write = (write && channel == DataChannel);
 
     // if access was to a valid csr, get the csr handle
-    if ((is_mem_addr(item, ral_name))
-         || (csr_addr inside {cfg.ral_models[ral_name].csr_addrs})) begin
+    if ((is_mem_addr(
+            item, ral_name
+        ) || (csr_addr inside {cfg.ral_models[ral_name].csr_addrs})) &&
+            !cfg.dir_rd_in_progress) begin
       if (cfg.scb_set_exp_alert) begin
         set_exp_alert(.alert_name("recov_err"), .is_fatal(1), .max_delay(cfg.alert_max_delay));
       end
@@ -160,8 +167,7 @@ class flash_ctrl_scoreboard #(
             wr_addr += 4;
           end
           write_allowed(part, wr_addr);
-          `uvm_info(`gfn, $sformatf("wr_access: 0x%0b wr_addr: 0x%0h", wr_access, wr_addr),
-                    UVM_LOW)
+          `uvm_info(`gfn, $sformatf("wr_access: 0x%0b wr_addr: 0x%0h", wr_access, wr_addr), UVM_LOW)
           if (wr_access) begin
             cfg.write_data_all_part(part, wr_addr, item.a_data);
           end
@@ -178,7 +184,7 @@ class flash_ctrl_scoreboard #(
           if ((csr.get_name() == "control") && cfg.scb_check) begin
             csr_rd(.ptr(ral.control), .value(data), .backdoor(1'b1));
             curr_op = get_field_val(ral.control.op, data);
-            if (curr_op == 2) begin //erase op
+            if (curr_op == 2) begin  //erase op
               erase_sel = get_field_val(ral.control.erase_sel, data);
               part_sel = get_field_val(ral.control.partition_sel, data);
               info_sel = get_field_val(ral.control.info_sel, data);
@@ -186,15 +192,23 @@ class flash_ctrl_scoreboard #(
               csr_rd(.ptr(ral.addr), .value(data), .backdoor(1'b1));
               erase_addr = word_align_addr(get_field_val(ral.addr.start, data));
               csr_rd(.ptr(ral.mp_bank_cfg_shadowed[0]), .value(data), .backdoor(1'b1));
-              `uvm_info(`gfn, $sformatf("UVM_REG_DATA: 0x%0p",data), UVM_HIGH)
+              `uvm_info(`gfn, $sformatf("UVM_REG_DATA: 0x%0p", data), UVM_HIGH)
               erase_bank_en = data;
-              `uvm_info(`gfn, $sformatf("erase_sel: 0x%0b part sel: 0x%0b info sel 0x%0d",
-                                         erase_sel, part_sel, info_sel), UVM_LOW)
-              `uvm_info(`gfn, $sformatf("part: %0s addr: 0x%0h erase_bank_en: 0x%0h",
-                                         part.name, erase_addr, erase_bank_en), UVM_LOW)
+              `uvm_info(
+                  `gfn, $sformatf(
+                  "erase_sel: 0x%0b part sel: 0x%0b info sel 0x%0d", erase_sel, part_sel, info_sel),
+                  UVM_LOW)
+              `uvm_info(
+                  `gfn, $sformatf(
+                  "part: %0s addr: 0x%0h erase_bank_en: 0x%0h", part.name, erase_addr, erase_bank_en
+                  ), UVM_LOW)
               erase_allowed(part, erase_sel, erase_addr, erase_bank_en);
-              `uvm_info(`gfn, $sformatf("erase_access: 0x%0b part:%0s erase_addr: 0x%0h",
-                                         erase_access, part.name , erase_addr), UVM_LOW)
+              `uvm_info(`gfn, $sformatf(
+                        "erase_access: 0x%0b part:%0s erase_addr: 0x%0h",
+                        erase_access,
+                        part.name,
+                        erase_addr
+                        ), UVM_LOW)
               if (erase_access) begin
                 erase_data(part, erase_addr, erase_sel);
               end
@@ -302,7 +316,7 @@ class flash_ctrl_scoreboard #(
     end
   endfunction
 
-  virtual function void check_rd_data(ref flash_dv_part_e part, bit [TL_AW-1:0] addr,
+  virtual function void check_rd_data(flash_dv_part_e part, bit [TL_AW-1:0] addr,
                                       ref bit [TL_DW-1:0] data);
     case (part)
       FlashPartData: begin
@@ -314,41 +328,39 @@ class flash_ctrl_scoreboard #(
       FlashPartInfo1: begin
         check_rd_part(cfg.scb_flash_info1, addr, data);
       end
-      FlashPartInfo2 : begin
+      FlashPartInfo2: begin
         check_rd_part(cfg.scb_flash_info2, addr, data);
       end
-      default:
-        `uvm_fatal(`gfn,"flash_ctrl_scoreboard: Partition type not supported!")
+      default: `uvm_fatal(`gfn, "flash_ctrl_scoreboard: Partition type not supported!")
     endcase
   endfunction
 
   virtual function void erase_data(flash_dv_part_e part, bit [TL_AW-1:0] addr, bit sel);
     case (part)
-      FlashPartData:  begin
-        erase_page_bank(NUM_BK_DATA_WORDS,addr,sel,cfg.scb_flash_data);
+      FlashPartData: begin
+        erase_page_bank(NUM_BK_DATA_WORDS, addr, sel, cfg.scb_flash_data);
       end
-      FlashPartInfo:  begin
+      FlashPartInfo: begin
         if (sel) begin
-          erase_page_bank(NUM_BK_DATA_WORDS,addr,sel,cfg.scb_flash_data);
+          erase_page_bank(NUM_BK_DATA_WORDS, addr, sel, cfg.scb_flash_data);
         end
-        erase_page_bank(NUM_BK_INFO_WORDS,addr,sel,cfg.scb_flash_info);
+        erase_page_bank(NUM_BK_INFO_WORDS, addr, sel, cfg.scb_flash_info);
       end
       FlashPartInfo1: begin
         if (!sel) begin
-          erase_page_bank(NUM_PAGE_WORDS,addr,sel,cfg.scb_flash_info1);
+          erase_page_bank(NUM_PAGE_WORDS, addr, sel, cfg.scb_flash_info1);
         end else begin
-          `uvm_fatal(`gfn,"flash_ctrl_scoreboard: Bank erase for INFO1 part not supported!")
+          `uvm_fatal(`gfn, "flash_ctrl_scoreboard: Bank erase for INFO1 part not supported!")
         end
       end
       FlashPartInfo2: begin
         if (!sel) begin
-          erase_page_bank(NUM_PAGE_WORDS,addr,sel,cfg.scb_flash_info2);
+          erase_page_bank(NUM_PAGE_WORDS, addr, sel, cfg.scb_flash_info2);
         end else begin
-          `uvm_fatal(`gfn,"flash_ctrl_scoreboard: Bank erase for INFO2 part not supported!")
+          `uvm_fatal(`gfn, "flash_ctrl_scoreboard: Bank erase for INFO2 part not supported!")
         end
       end
-      default :
-        `uvm_fatal(`gfn,"flash_ctrl_scoreboard: Partition type not supported!")
+      default: `uvm_fatal(`gfn, "flash_ctrl_scoreboard: Partition type not supported!")
     endcase
 
   endfunction
@@ -394,24 +406,23 @@ class flash_ctrl_scoreboard #(
         end
       end
       FlashPartInfo: begin
-        bk_idx = in_addr[19];
-        pg_idx = in_addr[18:11];
+        bk_idx   = in_addr[19];
+        pg_idx   = in_addr[18:11];
         csr_name = $sformatf("bank%0d_info0_page_cfg_%0d", bk_idx, pg_idx);
         write_access_info();
       end
       FlashPartInfo1: begin
-        bk_idx = in_addr[19];
+        bk_idx   = in_addr[19];
         csr_name = $sformatf("bank%0d_info1_page_cfg", bk_idx);
         write_access_info();
       end
       FlashPartInfo2: begin
-        bk_idx = in_addr[19];
-        pg_idx = in_addr[18:11];
+        bk_idx   = in_addr[19];
+        pg_idx   = in_addr[18:11];
         csr_name = $sformatf("bank%0d_info2_page_cfg_%0d", bk_idx, pg_idx);
         write_access_info();
       end
-      default :
-        `uvm_fatal(`gfn,"flash_ctrl_scoreboard: Partition type not supported!")
+      default: `uvm_fatal(`gfn, "flash_ctrl_scoreboard: Partition type not supported!")
     endcase
   endtask
 
@@ -455,24 +466,23 @@ class flash_ctrl_scoreboard #(
         end
       end
       FlashPartInfo: begin
-        bk_idx = in_rd_addr[19];
-        pg_idx = in_rd_addr[18:11];
+        bk_idx   = in_rd_addr[19];
+        pg_idx   = in_rd_addr[18:11];
         csr_name = $sformatf("bank%0d_info0_page_cfg_%0d", bk_idx, pg_idx);
         read_access_info();
       end
       FlashPartInfo1: begin
-        bk_idx = in_rd_addr[19];
+        bk_idx   = in_rd_addr[19];
         csr_name = $sformatf("bank%0d_info1_page_cfg", bk_idx);
         read_access_info();
       end
       FlashPartInfo2: begin
-        bk_idx = in_rd_addr[19];
-        pg_idx = in_rd_addr[18:11];
+        bk_idx   = in_rd_addr[19];
+        pg_idx   = in_rd_addr[18:11];
         csr_name = $sformatf("bank%0d_info2_page_cfg_%0d", bk_idx, pg_idx);
         read_access_info();
       end
-      default :
-        `uvm_fatal(`gfn,"flash_ctrl_scoreboard: Partition type not supported!")
+      default: `uvm_fatal(`gfn, "flash_ctrl_scoreboard: Partition type not supported!")
     endcase
   endtask
 
@@ -489,7 +499,7 @@ class flash_ctrl_scoreboard #(
 
     erase_access_found = 1'b0;
     erase_access       = 1'b0;
-    if (!erase_sel) begin // page erase
+    if (!erase_sel) begin  // page erase
       case (part)
         FlashPartData: begin
           for (int i = 0; i < cfg.seq_cfg.num_en_mp_regions; i++) begin
@@ -517,35 +527,38 @@ class flash_ctrl_scoreboard #(
           end
         end
         FlashPartInfo: begin
-          bk_idx = in_erase_addr[19];
-          pg_idx = in_erase_addr[18:11];
+          bk_idx   = in_erase_addr[19];
+          pg_idx   = in_erase_addr[18:11];
           csr_name = $sformatf("bank%0d_info0_page_cfg_%0d", bk_idx, pg_idx);
           erase_access_info();
         end
         FlashPartInfo1: begin
-          bk_idx = in_erase_addr[19];
+          bk_idx   = in_erase_addr[19];
           csr_name = $sformatf("bank%0d_info1_page_cfg", bk_idx);
           erase_access_info();
         end
         FlashPartInfo2: begin
-          bk_idx = in_erase_addr[19];
-          pg_idx = in_erase_addr[18:11];
+          bk_idx   = in_erase_addr[19];
+          pg_idx   = in_erase_addr[18:11];
           csr_name = $sformatf("bank%0d_info2_page_cfg_%0d", bk_idx, pg_idx);
           erase_access_info();
         end
-        default:
-          `uvm_fatal(`gfn,"flash_ctrl_scoreboard: Partition type not supported!")
+        default: `uvm_fatal(`gfn, "flash_ctrl_scoreboard: Partition type not supported!")
       endcase
     end else begin  // bank erase
       bk_idx = in_erase_addr[19];
       erase_access = bk_en[bk_idx];
-      `uvm_info(`gfn, $sformatf("erase_access bank: 0x%0b",erase_access), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("erase_access bank: 0x%0b", erase_access), UVM_LOW)
     end
   endtask
 
   virtual function void check_rd_part(const ref data_t exp_data_part[addr_t],
                                       bit [TL_AW-1:0] addr, ref bit [TL_DW-1:0] data);
     if (exp_data_part.exists(addr)) begin
+      `uvm_info(
+          `gfn, $sformatf(
+          "addr: 0x%0h scb data: 0x%0h data 0: 0x%0h", addr, exp_data_part[addr], exp_data_part[0]),
+          UVM_HIGH)
       `DV_CHECK_EQ(exp_data_part[addr], data, $sformatf("read addr:0x%0h data: 0x%0h", addr, data))
     end else begin
       `uvm_info(`gfn, $sformatf("addr %0h is not written!", addr), UVM_MEDIUM)
@@ -592,8 +605,10 @@ class flash_ctrl_scoreboard #(
 
     csr = ral.get_reg_by_name(csr_name);
     csr_rd(.ptr(csr), .value(data), .backdoor(1'b1));
-    en = get_field_val(csr.get_field_by_name("en"), data);
-    erase_en = get_field_val(csr.get_field_by_name("erase_en"), data);
+    en = mubi4_test_true_strict(
+             get_field_val(csr.get_field_by_name("en"), data));
+    erase_en = mubi4_test_true_strict(
+             get_field_val(csr.get_field_by_name("erase_en"),data));
     if (en) begin
       erase_access = erase_en;
     end else begin
@@ -601,26 +616,26 @@ class flash_ctrl_scoreboard #(
     end
   endtask
 
-  virtual function void erase_page_bank(int num_bk_words, bit [TL_AW-1:0] addr,
-                                        bit sel, ref data_t exp_part[addr_t]);
+  virtual function void erase_page_bank(int num_bk_words, bit [TL_AW-1:0] addr, bit sel,
+                                        ref data_t exp_part[addr_t]);
     int num_wr;
-    if (sel) begin         // bank sel
+    if (sel) begin  // bank sel
       num_wr = num_bk_words;
-       `uvm_info(`gfn, $sformatf("num_wr: %0d", num_wr), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("num_wr: %0d", num_wr), UVM_LOW)
       if (addr[19]) begin  // bank 1
         addr = BytesPerBank;
-      end else begin       // bank 0
+      end else begin  // bank 0
         addr = 0;
       end
-    end else begin         // page sel
+    end else begin  // page sel
       num_wr = NUM_PAGE_WORDS;
-      addr = {addr[19:11], {11{1'b0}}};
+      addr   = {addr[19:11], {11{1'b0}}};
     end
     for (int i = 0; i < num_wr; i++) begin
       if (exp_part.exists(addr)) begin
-        exp_part[addr]   = {TL_DW{1'b1}};
-        `uvm_info(`gfn, $sformatf("ERASE ADDR:0x%0h scb_flash_data: 0x%0h",
-                                  addr, exp_part[addr]), UVM_LOW)
+        exp_part[addr] = {TL_DW{1'b1}};
+        `uvm_info(`gfn, $sformatf("ERASE ADDR:0x%0h scb_flash_data: 0x%0h", addr, exp_part[addr]),
+                  UVM_LOW)
       end
       addr = addr + 4;
     end

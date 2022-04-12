@@ -13,7 +13,7 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
   rand uint num_flash_ops_per_cfg;
 
   constraint num_flash_ops_per_cfg_c {
-    num_flash_ops_per_cfg inside {[1:cfg.seq_cfg.max_flash_ops_per_cfg]};
+    num_flash_ops_per_cfg inside {[1 : cfg.seq_cfg.max_flash_ops_per_cfg]};
   }
 
   // A single randomized flash ctrl operation.
@@ -30,60 +30,50 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
 
   constraint flash_op_c {
 
-    flash_op.addr inside {[0:FlashSizeBytes-1]};
+    flash_op.addr inside {[0 : FlashSizeBytes - 1]};
 
-    if (!cfg.seq_cfg.op_allow_invalid) {
-      flash_op.op != flash_ctrl_pkg::FlashOpInvalid;
-    }
+    if (!cfg.seq_cfg.op_allow_invalid) {flash_op.op != flash_ctrl_pkg::FlashOpInvalid;}
 
     if (cfg.seq_cfg.flash_only_op != flash_ctrl_pkg::FlashOpInvalid) {
       flash_op.op == cfg.seq_cfg.flash_only_op;
     }
 
     (flash_op.op == flash_ctrl_pkg::FlashOpErase) ->
-        flash_op.erase_type dist {
-          flash_ctrl_pkg::FlashErasePage :/ (100 - cfg.seq_cfg.op_erase_type_bank_pc),
-          flash_ctrl_pkg::FlashEraseBank :/ cfg.seq_cfg.op_erase_type_bank_pc
-        };
+    flash_op.erase_type dist {
+      flash_ctrl_pkg::FlashErasePage :/ (100 - cfg.seq_cfg.op_erase_type_bank_pc),
+      flash_ctrl_pkg::FlashEraseBank :/ cfg.seq_cfg.op_erase_type_bank_pc
+    };
 
     flash_op.partition dist {
-      FlashPartData         :/ cfg.seq_cfg.op_on_data_partition_pc,
-      FlashPartInfo         :/ cfg.seq_cfg.op_on_info_partition_pc,
-      FlashPartInfo1        :/ cfg.seq_cfg.op_on_info1_partition_pc,
-      FlashPartInfo2        :/ cfg.seq_cfg.op_on_info2_partition_pc
+      FlashPartData  :/ cfg.seq_cfg.op_on_data_partition_pc,
+      FlashPartInfo  :/ cfg.seq_cfg.op_on_info_partition_pc,
+      FlashPartInfo1 :/ cfg.seq_cfg.op_on_info1_partition_pc,
+      FlashPartInfo2 :/ cfg.seq_cfg.op_on_info2_partition_pc
     };
 
     // Bank erase is supported only for data & 1st info partitions
     flash_op.partition != FlashPartData && flash_op.partition != FlashPartInfo ->
-        flash_op.erase_type == flash_ctrl_pkg::FlashErasePage;
+    flash_op.erase_type == flash_ctrl_pkg::FlashErasePage;
 
     if (cfg.seq_cfg.op_readonly_on_info_partition) {
-      flash_op.partition == FlashPartInfo ->
-        flash_op.op == flash_ctrl_pkg::FlashOpRead;
+      flash_op.partition == FlashPartInfo -> flash_op.op == flash_ctrl_pkg::FlashOpRead;
     }
     if (cfg.seq_cfg.op_readonly_on_info1_partition) {
-      flash_op.partition == FlashPartInfo1 ->
-        flash_op.op == flash_ctrl_pkg::FlashOpRead;
+      flash_op.partition == FlashPartInfo1 -> flash_op.op == flash_ctrl_pkg::FlashOpRead;
     }
 
     if (flash_op.op inside {flash_ctrl_pkg::FlashOpRead, flash_ctrl_pkg::FlashOpProgram}) {
-      flash_op.num_words inside {
-        [1:FlashNumBusWords - flash_op.addr[TL_AW-1:TL_SZW]]
-      };
+      flash_op.num_words inside {[1 : FlashNumBusWords - flash_op.addr[TL_AW-1:TL_SZW]]};
       flash_op.num_words <= cfg.seq_cfg.op_max_words;
       // end of transaction must be within the program resolution
       // units             words         bytes
-      flash_op.num_words < FlashPgmRes - flash_op.addr[TL_SZW +: FlashPgmResWidth];
+      flash_op.num_words < FlashPgmRes - flash_op.addr[TL_SZW+:FlashPgmResWidth];
     }
 
   }
 
   // Flash ctrl operation data queue - used for programing or reading the flash.
-  rand data_q_t    flash_op_data;
-  data_q_t         flash_op_data_rand;
-  bit  [TL_DW-1:0] set_random_val;
-  localparam bit [TL_DW-1:0] ALL_ONES = {TL_DW{1'b1}};
-
+  rand data_q_t             flash_op_data;
   constraint flash_op_data_c {
     solve flash_op before flash_op_data;
     if (flash_op.op inside {flash_ctrl_pkg::FlashOpRead, flash_ctrl_pkg::FlashOpProgram}) {
@@ -96,9 +86,7 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
   // Bit vector representing which of the mp region cfg CSRs to enable.
   rand bit [flash_ctrl_pkg::MpRegions-1:0] en_mp_regions;
 
-  constraint en_mp_regions_c {
-    $countones(en_mp_regions) == cfg.seq_cfg.num_en_mp_regions;
-  }
+  constraint en_mp_regions_c {$countones(en_mp_regions) == cfg.seq_cfg.num_en_mp_regions;}
 
   // Memory protection regions settings.
   rand flash_mp_region_cfg_t mp_regions[flash_ctrl_pkg::MpRegions];
@@ -129,8 +117,8 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
         MuBi4True  :/ cfg.seq_cfg.mp_region_he_en_pc
       };
 
-      mp_regions[i].start_page inside {[0:FlashNumPages - 1]};
-      mp_regions[i].num_pages inside {[1:FlashNumPages - mp_regions[i].start_page]};
+      mp_regions[i].start_page inside {[0 : FlashNumPages - 1]};
+      mp_regions[i].num_pages inside {[1 : FlashNumPages - mp_regions[i].start_page]};
       mp_regions[i].num_pages <= cfg.seq_cfg.mp_region_max_pages;
 
       // If overlap not allowed, then each configured region is uniquified.
@@ -176,8 +164,9 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
   }
 
   // Information partitions memory protection rpages settings.
-  rand flash_bank_mp_info_page_cfg_t
-         mp_info_pages[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes][$];
+  rand
+  flash_bank_mp_info_page_cfg_t
+  mp_info_pages[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes][$];
 
   constraint mp_info_pages_c {
 
@@ -289,10 +278,9 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
     cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en   = lc_ctrl_pkg::On;
     cfg.flash_ctrl_vif.lc_iso_part_sw_rd_en     = lc_ctrl_pkg::On;
     cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en     = lc_ctrl_pkg::On;
-    cfg.scb_check = 1;
+    cfg.scb_check                               = 1;
     for (int i = 1; i <= num_trans; i++) begin
-      `uvm_info(`gfn, $sformatf("Configuring flash_ctrl %0d/%0d", i, num_trans),
-                UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("Configuring flash_ctrl %0d/%0d", i, num_trans), UVM_MEDIUM)
 
       // If external_cfg=1 it means this sequence is being randomized by another sequence and this
       //  randomization will possibly override the upper randomization (Added specifically for
@@ -306,9 +294,9 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
         flash_ctrl_mp_region_cfg(i, mp_regions[i]);
       end
 
-      flash_ctrl_default_region_cfg(.read_en   (default_region_read_en),
+      flash_ctrl_default_region_cfg(.read_en(default_region_read_en),
                                     .program_en(default_region_program_en),
-                                    .erase_en  (default_region_erase_en));
+                                    .erase_en(default_region_erase_en));
 
       foreach (mp_info_pages[i, j, k]) begin
         flash_ctrl_mp_info_page_cfg(i, j, k, mp_info_pages[i][j][k]);
@@ -328,8 +316,9 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
           `uvm_fatal(`gfn, "Randomization failed for flash_op & flash_op_data!")
         end
 
-        `uvm_info(`gfn, $sformatf("Starting flash_ctrl op: %0d/%0d: %p",
-                                  j, num_flash_ops_per_cfg, flash_op), UVM_LOW)
+        `uvm_info(`gfn, $sformatf(
+                  "Starting flash_ctrl op: %0d/%0d: %p", j, num_flash_ops_per_cfg, flash_op),
+                  UVM_LOW)
 
         // Bkdr initialize the flash mem based on op.
         // If you wish to do the transaction without the backdoor preperation
@@ -337,9 +326,12 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
         if (cfg.seq_cfg.do_tran_prep_mem) flash_ctrl_prep_mem(flash_op);
 
         flash_ctrl_start_op(flash_op);
-        `uvm_info(`gfn, $sformatf("Wait for operation to be done, then %s (check_mem_post_tran=%0d)",
-                                  (cfg.seq_cfg.check_mem_post_tran ? "backdoor check the flash" :
-                                  "skip to next transaction"), cfg.seq_cfg.check_mem_post_tran), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf(
+                  "Wait for operation to be done, then %s (check_mem_post_tran=%0d)",
+                  (cfg.seq_cfg.check_mem_post_tran ? "backdoor check the flash" :
+                                  "skip to next transaction"),
+                  cfg.seq_cfg.check_mem_post_tran
+                  ), UVM_HIGH)
         // Calculate expected data for post-transaction checks
         exp_data = cfg.calculate_expected_data(flash_op, flash_op_data);
         case (flash_op.op)
@@ -354,13 +346,11 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
             `DV_CHECK_MEMBER_RANDOMIZE_FATAL(poll_fifo_status)
             flash_ctrl_write(flash_op_data, poll_fifo_status);
             wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
-            if (cfg.seq_cfg.check_mem_post_tran)
-              cfg.flash_mem_bkdr_read_check(flash_op, exp_data);
+            if (cfg.seq_cfg.check_mem_post_tran) cfg.flash_mem_bkdr_read_check(flash_op, exp_data);
           end
           flash_ctrl_pkg::FlashOpErase: begin
             wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
-            if (cfg.seq_cfg.check_mem_post_tran)
-              cfg.flash_mem_bkdr_erase_check(flash_op, exp_data);
+            if (cfg.seq_cfg.check_mem_post_tran) cfg.flash_mem_bkdr_erase_check(flash_op, exp_data);
           end
           default: begin
             // TODO: V2 test item.
@@ -380,21 +370,13 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
     case (flash_op.op)
       flash_ctrl_pkg::FlashOpRead: begin
         // Initialize the targeted mem region with random data.
-        flash_op_data_rand = {};
-        set_random_val = $urandom();
-        for (int i=0; i < flash_op.num_words; i++) begin
-          flash_op_data_rand[i] = set_random_val;
-        end
-        cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitCustom),
-                                 .data(flash_op_data_rand));
-        set_scb_mem(flash_op.num_words,flash_op.partition,flash_op.addr,set_random_val);
+        cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitRandomize));
         cfg.clk_rst_vif.wait_clks(1);
       end
       flash_ctrl_pkg::FlashOpProgram: begin
         // Initialize the targeted mem region with all 1s. This is required because the flash
         // needs to be erased to all 1s between each successive programming.
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));
-        set_scb_mem(flash_op.num_words,flash_op.partition,flash_op.addr,ALL_ONES);
       end
     endcase
   endtask
