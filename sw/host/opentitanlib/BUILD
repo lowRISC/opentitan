@@ -85,6 +85,7 @@ rust_library(
         "src/util/num_de.rs",
         "src/util/parse_int.rs",
         "src/util/present.rs",
+        "src/util/rom_detect.rs",
         "src/util/usb.rs",
         "src/util/voltage.rs",
     ],

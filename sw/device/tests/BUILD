@@ -370,7 +370,7 @@ opentitan_functest(
         args = [
             "--verilator-args=--trace",
             "console",
-            "--timeout=3600",
+            "--timeout=3600s",
             "--exit-failure=FAIL",
             "--exit-success=PASS",
         ],

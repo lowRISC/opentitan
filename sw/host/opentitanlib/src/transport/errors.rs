@@ -50,6 +50,8 @@ pub enum TransportError {
     ProxyCommunicationError(#[from] crate::transport::proxy::ProxyError),
     #[error("Requested capabilities {0:?}, but capabilities {1:?} are supplied")]
     MissingCapabilities(Capability, Capability),
+    #[error("ROM detection error: {0}")]
+    RomDetectError(#[from] crate::util::rom_detect::Error),
 
     // Include sub-enums for the various sub-traits of Tranport.
     #[error("GPIO error: {0}")]
@@ -71,6 +73,19 @@ pub enum TransportError {
     LegacyBootstrapError(#[from] crate::bootstrap::LegacyBootstrapError),
     #[error("Bootstrapping: {0}")]
     RescueError(#[from] crate::bootstrap::RescueError),
+
+    #[error("Unspecified: {0}")]
+    Unspecified(String),
+}
+
+// TODO(cfrantz): Reconsider how TransportErrors are handled so we can use
+// anyhow::Error everywhere and rely on the proxy implementation dealing
+// with the appropriate conversions.  For now, the From implementation
+// below can convert errors not part of the sum-type above.
+impl From<anyhow::Error> for TransportError {
+    fn from(error: anyhow::Error) -> Self {
+        TransportError::Unspecified(format!("{:#?}", error))
+    }
 }
 
 /// Enum value used by `TransportError::InvalidInstance`.
