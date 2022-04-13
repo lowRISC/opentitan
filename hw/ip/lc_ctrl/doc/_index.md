@@ -222,10 +222,12 @@ The CHECK_BYP_EN signal is only asserted when a transition command is issued.
 
 #### CLK_BYP_REQ
 
-If the life cycle state is in RAW, TEST* or RMA, and if {{< regref OTP_TEST_CTRL.EXT_CLOCK >}} is set to one, the CLK_BYP_REQ signal is asserted in order to switch the main system clock to an external clock signal.
+If the life cycle state is in RAW, TEST* or RMA, and if {{< regref TRANSITION_CTRL.EXT_CLOCK_EN >}} is set to one, the CLK_BYP_REQ signal is asserted in order to switch the main system clock to an external clock signal.
 This functionality is needed in certain life cycle states where the internal clock source may not be fully calibrated yet, since the OTP macro requires a stable clock frequency in order to reliably program the fuse array.
 The CLK_BYP_REQ signal is only asserted when a transition command is issued.
 This function is not available in production life cycle states.
+
+For details on the clock switch, please see [clkmgr]({{< relref "hw/ip/clkmgr/doc/_index.md#life-cycle-requested-external-clock" >}}).
 
 
 ### Life Cycle Access Control Signals
