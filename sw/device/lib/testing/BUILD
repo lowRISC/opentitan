@@ -31,6 +31,7 @@ cc_library(
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/dif:rv_timer",
+        "//sw/device/lib/dif:sensor_ctrl",
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/dif:spi_host",
         "//sw/device/lib/dif:sysrst_ctrl",
