@@ -494,6 +494,9 @@ package spid_common;
     8'h 11  // Write Status 3
   };
 
+  parameter int unsigned OffsetW = $clog2(SramStrbW);
+  parameter int unsigned PayloadByte = SramPayloadDepth * (SramDw/8);
+
   // spi_transaction: Send/ Receive data using data fifo.
   task automatic spi_transaction(
     virtual spi_if.tb sif,
