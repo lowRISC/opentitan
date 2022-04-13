@@ -982,9 +982,6 @@ module flash_ctrl
                            mubi4_t'(sw_flash_exec_en)
                          );
 
-  // the above statement only works if mubi true/false are fully complement
-  `ASSERT_INIT(MuBiComplCheck_A, prim_mubi_pkg::MuBi4True == ~prim_mubi_pkg::MuBi4False)
-
   //////////////////////////////////////
   // Errors and Interrupts
   //////////////////////////////////////
