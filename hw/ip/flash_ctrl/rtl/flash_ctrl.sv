@@ -110,6 +110,7 @@ module flash_ctrl
   logic storage_err;
   logic update_err;
   logic intg_err;
+  logic eflash_cmd_intg_err;
 
   // SEC_CM: BUS.INTEGRITY
   // SEC_CM: CTRL.CONFIG.REGWEN
@@ -1041,7 +1042,7 @@ module flash_ctrl
   assign hw2reg.std_fault_status.storage_err.d     = 1'b1;
   assign hw2reg.std_fault_status.phy_fsm_err.d     = 1'b1;
   assign hw2reg.std_fault_status.ctrl_cnt_err.d    = 1'b1;
-  assign hw2reg.std_fault_status.reg_intg_err.de   = intg_err;
+  assign hw2reg.std_fault_status.reg_intg_err.de   = intg_err | eflash_cmd_intg_err;
   assign hw2reg.std_fault_status.prog_intg_err.de  = flash_phy_rsp.prog_intg_err;
   assign hw2reg.std_fault_status.lcmgr_err.de      = lcmgr_err;
   assign hw2reg.std_fault_status.lcmgr_intg_err.de = lcmgr_intg_err;
@@ -1253,7 +1254,7 @@ module flash_ctrl
     .addr_o      (flash_host_addr),
     .wdata_o     (),
     .wmask_o     (),
-    .intg_error_o(),
+    .intg_error_o(eflash_cmd_intg_err),
     .rdata_i     (flash_host_rdata),
     .rvalid_i    (flash_host_req_done),
     .rerror_i    ({flash_host_rderr,1'b0})

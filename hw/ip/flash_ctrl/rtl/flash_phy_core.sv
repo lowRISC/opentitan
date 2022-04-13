@@ -192,8 +192,11 @@ module flash_phy_core
   assign host_req_rdy_o = rd_stage_rdy & (arb_cnt < ArbCnt[CntWidth-1:0]) & ~ctrl_gnt;
   assign host_req_done_o = ~ctrl_gnt & rd_stage_data_valid;
 
-  localparam int OutStandingRdWidth = $clog2(RspOrderDepth+1);
-  logic [OutStandingRdWidth-1:0] host_outstanding;
+  // oustanding width is slightly larger to ensure a faulty increment is able to reach
+  // the higher value. For example if RspOrderDepth were 3, a clog2 of 3 would still be 2
+  // and not allow the counter to increment to 4.
+  localparam int OutstandingRdWidth = $clog2(RspOrderDepth+2);
+  logic [OutstandingRdWidth-1:0] host_outstanding;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       host_outstanding <= '0;
