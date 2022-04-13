@@ -13,6 +13,7 @@ set -euo pipefail
 : "${BAZEL_AIRGAPPED_DIR:=bazel-airgapped}"
 : "${BAZEL_DISTDIR:=bazel-distdir}"
 : "${BAZEL_CACHEDIR:=bazel-cache}"
+: "${BAZEL_PYTHON_WHEEL_REPO:=ot_python_wheels}"
 
 LINE_SEP="====================================================================="
 
@@ -149,6 +150,8 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     @rust_linux_aarch64_toolchains//... \
     @rust_linux_x86_64_toolchains//... \
     @rust_windows_x86_64_toolchains//...
+  cp -R $(${BAZELISK} info output_base)/external/${BAZEL_PYTHON_WHEEL_REPO} \
+    ${BAZEL_AIRGAPPED_DIR}/
   echo "Done."
 fi
 
