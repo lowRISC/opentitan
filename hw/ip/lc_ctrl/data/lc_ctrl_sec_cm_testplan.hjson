@@ -131,7 +131,7 @@
         invalid encoding (MANUF.STATE.BKGN_CHK, TRANSITION.CTR.BKGN_CHK).
       '''
       milestone: V2S
-      tests: []
+      tests: ["lc_ctrl_sec_cm", "lc_ctrl_state_failure"]
     }
     {
       name: sec_cm_main_fsm_global_esc
@@ -142,7 +142,7 @@
       any of the two escalation channels (`esc_scrap_state0/1`) is asserted.
       '''
       milestone: V2S
-      tests: []
+      tests: ["lc_ctrl_security_escalation"]
     }
     {
       name: sec_cm_main_ctrl_flow_consistency
@@ -191,7 +191,7 @@
       this error occurs.
       '''
       milestone: V2S
-      tests: []
+      tests: ["lc_ctrl_sec_mubi"]
     }
     {
       name: sec_cm_token_valid_ctrl_mubi
@@ -204,7 +204,7 @@
       error occurs.
       '''
       milestone: V2S
-      tests: []
+      tests: ["lc_ctrl_sec_mubi"]
     }
     {
       name: sec_cm_token_digest

@@ -14,6 +14,7 @@
 `include "lc_ctrl_jtag_access_vseq.sv"
 `include "lc_ctrl_jtag_priority_vseq.sv"
 `include "lc_ctrl_regwen_during_op_vseq.sv"
+`include "lc_ctrl_sec_mubi_vseq.sv"
 `include "lc_ctrl_stress_all_vseq.sv"
 
 

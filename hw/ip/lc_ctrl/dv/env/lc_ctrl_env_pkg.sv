@@ -99,6 +99,17 @@ package lc_ctrl_env_pkg;
     bit transition_count_err;
     // Randomly assert one or more escalate inputs
     bit security_escalation_err;
+    // Use other than "Off" enum for MUBI input off values
+    // clk_byp_rsp
+    bit clk_byp_rsp_mubi_err;
+    // flash_rma_rsp
+    bit flash_rma_rsp_mubi_err;
+    // OTP secrets valid
+    bit otp_secrets_valid_mubi_err;
+    // OTP test tokens valid
+    bit otp_test_tokens_valid_mubi_err;
+    // OTP RMA token valid
+    bit otp_rma_token_valid_mubi_err;
   } lc_ctrl_err_inj_t;
 
   // Test phase - used to synchronise the scoreboard
