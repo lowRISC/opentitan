@@ -95,7 +95,7 @@ def verilator_params(
             "console",
             "--exit-failure=" + shell.quote(_EXIT_FAILURE),
             "--exit-success=" + shell.quote(_EXIT_SUCCESS),
-            "--timeout=3600",
+            "--timeout=3600s",
         ],
         data = _BASE_PARAMS["data"],
         local = _BASE_PARAMS["local"],
@@ -150,12 +150,12 @@ def verilator_params(
 def cw310_params(
         # Base Parameters
         args = _BASE_PARAMS["args"] + [
-            "--exec=\"console -q -t0\"",
+            "--exec=\"console -q -t0s\"",
             "--exec=\"bootstrap $(location {flash})\"",
             "console",
             "--exit-failure=" + shell.quote(_EXIT_FAILURE),
             "--exit-success=" + shell.quote(_EXIT_SUCCESS),
-            "--timeout=3600",
+            "--timeout=3600s",
         ],
         data = _BASE_PARAMS["data"],
         local = _BASE_PARAMS["local"],

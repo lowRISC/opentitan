@@ -10,7 +10,7 @@ use regex::Regex;
 use std::any::Any;
 use std::fs::File;
 use std::os::unix::io::AsRawFd;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
@@ -30,8 +30,12 @@ pub struct Console {
     #[structopt(short, long, help = "Log console output to a file")]
     logfile: Option<String>,
 
-    #[structopt(short, long, help = "Exit after a timeout in seconds.")]
-    timeout: Option<u64>,
+    #[structopt(
+        short,
+        long, parse(try_from_str=humantime::parse_duration),
+        help = "Duration of ROM detection timeout",
+    )]
+    timeout: Option<Duration>,
 
     #[structopt(long, help = "Print a timestamp on each line of console output.")]
     timestamp: bool,
@@ -57,7 +61,7 @@ impl CommandDispatch for Console {
         // Set up resources specified by the command line parameters.
         let mut console = UartConsole {
             logfile: self.logfile.as_ref().map(File::create).transpose()?,
-            deadline: self.timeout.map(|t| Instant::now() + Duration::new(t, 0)),
+            timeout: self.timeout,
             exit_success: self
                 .exit_success
                 .as_ref()
@@ -103,13 +107,29 @@ impl CommandDispatch for Console {
 
         match status {
             ExitStatus::None | ExitStatus::CtrlC => Ok(None),
-            ExitStatus::Timeout => Err(anyhow!("Console timeout exceeded")),
+            ExitStatus::Timeout => {
+                if console.exit_success.is_some() {
+                    // If there was a console exit success condition, then a timeout
+                    // represents an error.
+                    Err(anyhow!("Console timeout exceeded"))
+                } else {
+                    // If there was no console exit success condition, then a timeout
+                    // is not an error.
+                    Ok(None)
+                }
+            }
             ExitStatus::ExitSuccess => {
-                log::info!("ExitSuccess({:?})", console.captures(status).unwrap());
+                log::info!(
+                    "ExitSuccess({:?})",
+                    console.captures(status).unwrap().get(0).unwrap().as_str()
+                );
                 Ok(None)
             }
             ExitStatus::ExitFailure => {
-                log::info!("ExitFailure({:?})", console.captures(status).unwrap());
+                log::info!(
+                    "ExitFailure({:?})",
+                    console.captures(status).unwrap().get(0).unwrap().as_str()
+                );
                 Err(anyhow!("Matched exit_failure expression"))
             }
         }

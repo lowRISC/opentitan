@@ -9,6 +9,7 @@ use std::cell::RefCell;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::rc::Rc;
+use std::time::Duration;
 
 use crate::ensure;
 use crate::io::gpio::GpioPin;
@@ -20,6 +21,7 @@ use crate::transport::{
     WrapInTransportError,
 };
 use crate::util::parse_int::ParseInt;
+use crate::util::rom_detect::{RomDetect, RomKind};
 
 pub mod gpio;
 pub mod spi;
@@ -146,6 +148,32 @@ impl Transport for CW310 {
 
     fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Serialize>>> {
         if let Some(fpga_program) = action.downcast_ref::<FpgaProgram>() {
+            if let Some(rom_kind) = &fpga_program.rom_kind {
+                let mut rd = RomDetect::new(
+                    *rom_kind,
+                    &fpga_program.bitstream,
+                    Some(fpga_program.rom_timeout),
+                )?;
+                // Open the console UART.
+                let uart = self.uart("0")?;
+
+                // Send a reset pulse so the ROM will print the FPGA version.
+                let reset_pin = self.gpio_pin(Self::PIN_SRST)?;
+                // Reset is active low, sleep, then drive high.
+                reset_pin.write(false)?;
+                std::thread::sleep(fpga_program.rom_reset_pulse);
+                reset_pin.write(true)?;
+
+                // Now read the uart until the ROM prints it's version.
+                if rd.detect(&*uart)? {
+                    log::info!("Already running the correct bitstream.  Skip loading bitstream.");
+                    // If we're already running the right ROM+bitstream,
+                    // then we can skip bootstrap.
+                    return Ok(None);
+                }
+            }
+
+            // Program the FPGA bitstream.
             let usb = self.device.borrow();
             usb.spi1_enable(false)?;
             usb.pin_set_state(CW310::PIN_JTAG, true)?;
@@ -159,5 +187,12 @@ impl Transport for CW310 {
 
 /// Command for Transport::dispatch().
 pub struct FpgaProgram {
+    /// The bitstream content to load into the FPGA.
     pub bitstream: Vec<u8>,
+    /// What type of ROM to expect.
+    pub rom_kind: Option<RomKind>,
+    /// How long of a reset pulse to send to the device.
+    pub rom_reset_pulse: Duration,
+    /// How long to wait for the ROM to print its type and version.
+    pub rom_timeout: Duration,
 }
