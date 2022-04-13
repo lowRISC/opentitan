@@ -94,11 +94,11 @@ cc_test(
     defines = [
         "OT_OFF_TARGET_TEST",
     ],
+    tags = ["broken"],
     deps = [
         ":hardened",
         "@googletest//:gtest_main",
     ],
-    tags = ["broken"],
 )
 
 cc_library(
