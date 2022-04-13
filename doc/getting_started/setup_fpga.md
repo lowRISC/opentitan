@@ -30,22 +30,23 @@ You can either download the latest bitstream for the ChipWhisperer CW310 board o
 
 ### Download a Pre-built Bitstream
 
-If you are using the ChipWhisperer CW310 board with the Xilinx Kintex 7 XC7K410T FPGA, you can download the latest passing [pre-built bitstream](http://storage.googleapis.com/opentitan-bitstreams/master/latest/latest-bitstreams.tar.gz). 
+If you are using the ChipWhisperer CW310 board with the Xilinx Kintex 7 XC7K410T FPGA, you can download the latest passing [pre-built bitstream](http://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz). 
 
-For example, to download the bitstream, run the following:
+For example, to download and unpack the bitstream, run the following:
 
 ```console
 $ cd $REPO_TOP
 $ mkdir -p build-bin/hw/top_earlgrey
 $ cd build-bin/hw/top_earlgrey
-$ curl https://storage.googleapis.com/opentitan-bitstreams/master/latest/latest-bitstreams.tar.gz -o latest-bitstreams.tar.gz
-$ tar -xvf latest-bitstreams.tar.gz
+$ curl https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz -o bitstream-latest.tar.gz
+$ tar -xvf bitstream-latest.tar.gz
 ```
 
-By default, the bitstream contains a version of the boot ROM used for testing (pulled from `sw/device/lib/testing/test_rom`).
-The included `rom.mmi` file is a version of the production mask ROM that can be spliced into the bitstream.
-The [FPGA Reference Manual]({{< relref "ref_manual_fpga.md#boot-rom-development" >}}) contains more details and a description of the splicing process.
-The metadata for the bitstream (the approximate creation time and the associated commit hash) is also available as a text file and can be [downloaded separately](https://storage.googleapis.com/opentitan-bitstreams/master/latest/latest.txt).
+By default, the bitstream is built with a version of the boot ROM used for testing (called the _test ROM_; pulled from `sw/device/lib/testing/test_rom`).
+There is also a version of the boot ROM used in production (called the _mask ROM_; pulled from `sw/device/silicon_creator/mask_rom`).
+This can be spliced into the bitstream to overwrite the testing boot ROM as described in the [FPGA Reference Manual]({{< relref "ref_manual_fpga.md#boot-rom-development" >}}).
+However, if you do not want to do the splicing yourself, both versions of the bitstream are available in the download as `*.bit.orig` and `*.bit.splice` (containing the test ROM and the mask ROM respectively).
+The metadata for the latest bitstream (the approximate creation time and the associated commit hash) is also available as a text file and can be [downloaded separately](https://storage.googleapis.com/opentitan-bitstreams/master/latest/latest.txt).
 
 ### Create an FPGA bitstream
 
