@@ -119,14 +119,13 @@
     }
     // Sim mode that enables build randomization. See the `build_seed` mode
     // defined in `hw/dv/tools/dvsim/common_modes.hjson` for more details.
-    // TODO: enable the following pre_build_cmds once the otp init error is fixed
-    // "cd {proj_root} && ./util/design/gen-otp-mmap.py --seed {seed}"
     {
       name: build_seed
       pre_build_cmds: [
         '''cd {proj_root} && ./util/topgen.py -t {ral_spec} \
-               -o hw/top_earlgrey --rnd_cnst_seed {seed}
-        '''
+               -o hw/top_earlgrey --rnd_cnst_seed {build_seed}
+        ''',
+        "cd {proj_root} && ./util/design/gen-otp-mmap.py --seed {build_seed}"
       ]
       is_sim_mode: 1
     }
@@ -141,7 +140,7 @@
   // Setup for generating OTP images.
   gen_otp_images_cfg_dir: "{proj_root}/hw/ip/otp_ctrl/data"
   gen_otp_images_cmd: "{proj_root}/util/design/gen-otp-img.py"
-  gen_otp_images_cmd_opts: ["--quiet", "--seed {seed}"]
+  gen_otp_images_cmd_opts: ["--quiet", "--img-seed {seed}", "--otp-seed {build_seed}"]
 
   // Add run modes.
   run_modes: [
