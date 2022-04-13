@@ -358,6 +358,7 @@ opentitan_functest(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/runtime:log",
     ],
 )
