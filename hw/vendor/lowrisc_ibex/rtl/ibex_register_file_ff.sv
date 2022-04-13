@@ -14,6 +14,7 @@ module ibex_register_file_ff #(
   parameter bit                   RV32E             = 0,
   parameter int unsigned          DataWidth         = 32,
   parameter bit                   DummyInstructions = 0,
+  parameter bit                   WrenCheck         = 0,
   parameter logic [DataWidth-1:0] WordZeroVal       = '0
 ) (
   // Clock and Reset
@@ -35,8 +36,10 @@ module ibex_register_file_ff #(
   // Write port W1
   input  logic [4:0]           waddr_a_i,
   input  logic [DataWidth-1:0] wdata_a_i,
-  input  logic                 we_a_i
+  input  logic                 we_a_i,
 
+  // This indicates whether spurious WE are detected.
+  output logic                 err_o
 );
 
   localparam int unsigned ADDR_WIDTH = RV32E ? 4 : 5;
@@ -44,12 +47,43 @@ module ibex_register_file_ff #(
 
   logic [NUM_WORDS-1:0][DataWidth-1:0] rf_reg;
   logic [NUM_WORDS-1:1][DataWidth-1:0] rf_reg_q;
-  logic [NUM_WORDS-1:1]                we_a_dec;
+  logic [NUM_WORDS-1:0]                we_a_dec;
 
   always_comb begin : we_a_decoder
-    for (int unsigned i = 1; i < NUM_WORDS; i++) begin
+    for (int unsigned i = 0; i < NUM_WORDS; i++) begin
       we_a_dec[i] = (waddr_a_i == 5'(i)) ? we_a_i : 1'b0;
     end
+  end
+
+  // SEC_CM: DATA_REG_SW.GLITCH_DETECT
+  // This checks for spurious WE strobes on the regfile.
+  if (WrenCheck) begin : gen_wren_check
+    // Buffer the decoded write enable bits so that the checker
+    // is not optimized into the address decoding logic.
+    logic [NUM_WORDS-1:0] we_a_dec_buf;
+    prim_buf #(
+      .Width(NUM_WORDS)
+    ) u_prim_buf (
+      .in_i(we_a_dec),
+      .out_o(we_a_dec_buf)
+    );
+
+    prim_onehot_check #(
+      .AddrWidth(ADDR_WIDTH),
+      .AddrCheck(1),
+      .EnableCheck(1)
+    ) u_prim_onehot_check (
+      .clk_i,
+      .rst_ni,
+      .oh_i(we_a_dec_buf),
+      .addr_i(waddr_a_i),
+      .en_i(we_a_i),
+      .err_o
+    );
+  end else begin : gen_no_wren_check
+    logic unused_strobe;
+    assign unused_strobe = we_a_dec[0]; // this is never read from in this case
+    assign err_o = 1'b0;
   end
 
   // No flops for R0 as it's hard-wired to 0

@@ -1,6 +1,7 @@
 """
 Copyright 2020 Google LLC
 Copyright 2020 PerfectVIPs Inc.
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -17,6 +18,7 @@ import sys
 import vsc
 from importlib import import_module
 from pygen_src.riscv_instr_sequence import riscv_instr_sequence
+from pygen_src.riscv_callstack_gen import riscv_callstack_gen
 from pygen_src.riscv_instr_pkg import (pkg_ins, privileged_reg_t,
                                        privileged_mode_t, mtvec_mode_t,
                                        misa_ext_t, riscv_instr_group_t,
@@ -49,7 +51,7 @@ class riscv_asm_program_gen:
         self.hart = 0
         self.page_table_list = []
         self.main_program = []
-        self.sub_program = []
+        self.sub_program = [0] * rcs.NUM_HARTS
         self.data_page_gen = None
         self.spf_val = vsc.rand_bit_t(32)
         self.dpf_val = vsc.rand_bit_t(64)
@@ -64,9 +66,7 @@ class riscv_asm_program_gen:
         # Generate program header
         self.gen_program_header()
         for hart in range(cfg.num_of_harts):
-            # Commenting out for now
-            # TODO support for sub_program
-            # sub_program_name = []
+            sub_program_name = []
             self.instr_stream.append(f"h{int(hart)}_start:")
             if not cfg.bare_program_mode:
                 self.setup_misa()
@@ -93,7 +93,8 @@ class riscv_asm_program_gen:
                 if hart == 0:
                     self.gen_test_done()
             # Generate sub program
-            # TODO gen_sub_program()
+            self.gen_sub_program(hart, self.sub_program[hart],
+                                 sub_program_name, cfg.num_of_sub_program)
             # Generate main program
             gt_lbl_str = pkg_ins.get_label("main", hart)
             label_name = gt_lbl_str
@@ -110,7 +111,8 @@ class riscv_asm_program_gen:
                                                 instr_stream=self.main_program[hart].directed_instr)
             self.main_program[hart].gen_instr(is_main_program=1, no_branch=cfg.no_branch_jump)
             # Setup jump instruction among main program and sub programs
-            # TODO gen_callstack()
+            self.gen_callstack(self.main_program[hart], self.sub_program[hart],
+                               sub_program_name, cfg.num_of_sub_program)
             self.main_program[hart].post_process_instr()
             logging.info("Post-processing main program...done")
             self.main_program[hart].generate_instr_stream()
@@ -128,7 +130,7 @@ class riscv_asm_program_gen:
             if(hart == 0 and not(rcs.support_pmp)):
                 self.gen_test_done()
             # Shuffle the sub programs and insert to the instruction stream
-            # TODO inser_sub_program()
+            self.insert_sub_program(self.sub_program[hart], self.instr_stream)
             logging.info("Main/sub program generation...done")
             # program end
             self.gen_program_end(hart)
@@ -202,17 +204,57 @@ class riscv_asm_program_gen:
     def gen_sub_program(self, hart, sub_program,
                         sub_program_name, num_sub_program,
                         is_debug = 0, prefix = "sub"):
-        # TODO
-        pass
+        if num_sub_program > 0:
+            self.sub_program = [0] * num_sub_program
+            for i in range(len(self.sub_program)):
+                gt_label_str = pkg_ins.get_label("{}_{}".format(prefix, i + 1), hart)
+                label_name = gt_label_str
+                gt_label_str = riscv_instr_sequence()
+                self.sub_program[i] = gt_label_str
+                if(is_debug):
+                    self.sub_program[i].instr_cnt = cfg.debug_sub_program_instr_cnt[i]
+                else:
+                    self.sub_program[i].instr_cnt = cfg.sub_program_instr_cnt[i]
+                self.generate_directed_instr_stream(hart=hart,
+                                                    label=label_name,
+                                                    original_instr_cnt=
+                                                    self.sub_program[i].instr_cnt,
+                                                    min_insert_cnt=0,
+                                                    instr_stream=self.sub_program[i].directed_instr)
+                self.sub_program[i].label_name = label_name
+                self.sub_program[i].gen_instr(is_main_program=0, no_branch=cfg.no_branch_jump)
+                sub_program_name.append(self.sub_program[i].label_name)
 
     def gen_callstack(self, main_program, sub_program,
                       sub_program_name, num_sub_program):
-        # TODO
-        pass
+        if num_sub_program != 0:
+            callstack_gen = riscv_callstack_gen()
+            self.callstack_gen.init(num_sub_program + 1)
+            if callstack_gen.randomize():
+                idx = 0
+                # Insert the jump instruction based on the call stack
+                for i in range(len(callstack_gen.program_h)):
+                    for j in range(len(callstack_gen.program_h.sub_program_id)):
+                        idx += 1
+                        pid = callstack_gen.program_id[i].sub_program_id[j] - 1
+                        logging.info("Gen jump instr %0s -> sub[%0d] %0d", i, j, pid + 1)
+                        if(i == 0):
+                            self.main_program[i].insert_jump_instr(sub_program_name[pid], idx)
+                        else:
+                            self.sub_program[i - 1].insert_jump_instr(sub_program_name[pid], idx)
+            else:
+                logging.critical("Failed to generate callstack")
+                sys.exit(1)
+        logging.info("Randomizing call stack..done")
 
     def insert_sub_program(self, sub_program, instr_list):
-        # TODO
-        pass
+        if cfg.num_of_sub_program != 0:
+            random.shuffle(self.sub_program)
+            for i in range(len(self.sub_program)):
+                self.sub_program[i].post_process_instr()
+                self.sub_program[i].generate_instr_stream()
+                instr_list.extend((self.sub_program[i].instr_string_list))
+
     # ----------------------------------------------------------------------------------
     # Major sections - init, stack, data, test_done etc.
     # ----------------------------------------------------------------------------------
@@ -455,16 +497,20 @@ class riscv_asm_program_gen:
     def get_rng(self, val0, val1, spf_dpf, flag):
         if flag == 0 and spf_dpf == 32:
             with vsc.raw_mode():
-                with vsc.randomize_with(self.spf_val): self.spf_val[val0 : val1] > 0
+                with vsc.randomize_with(self.spf_val):
+                    self.spf_val[val0:val1] > 0
         elif flag == 0 and spf_dpf == 64:
             with vsc.raw_mode():
-                with vsc.randomize_with(self.dpf_val): self.dpf_val[val0 : val1] > 0
+                with vsc.randomize_with(self.dpf_val):
+                    self.dpf_val[val0:val1] > 0
         elif flag == 1 and spf_dpf == 32:
             with vsc.raw_mode():
-                with vsc.randomize_with(self.spf_val): self.spf_val[val0 : val1] == 0
+                with vsc.randomize_with(self.spf_val):
+                    self.spf_val[val0:val1] == 0
         else:
             with vsc.raw_mode():
-                with vsc.randomize_with(self.dpf_val): self.dpf_val[val0 : val1] == 0
+                with vsc.randomize_with(self.dpf_val):
+                    self.dpf_val[val0:val1] == 0
 
     def get_rand_spf_value(self):
         vsc.randselect([
@@ -493,7 +539,7 @@ class riscv_asm_program_gen:
             # NaN
             (1, lambda: self.get_randselect(0x7ff0_0000_0000_0001, 0x7ff8_0000_0000_0000, 1)),
             # Normal
-            (1, lambda: self.get_rng(62, pkg_ins.DOUBLE_PRECISION_FRACTION_BITS, 64 , 0)),
+            (1, lambda: self.get_rng(62, pkg_ins.DOUBLE_PRECISION_FRACTION_BITS, 64, 0)),
             # Subnormal
             (1, lambda: self.get_rng(62, pkg_ins.DOUBLE_PRECISION_FRACTION_BITS, 64, 1))])
         return self.dpf_val

@@ -77,11 +77,13 @@ steps:
         if [ $? != 0 ]; then
           echo -n "##vso[task.logissue type=error]"
           echo "Build Simple System with co-simulation failed. Run fusesoc --cores-root=. run --target=sim --setup --build lowrisc:ibex:ibex_simple_system_cosim $IBEX_CONFIG_OPTS to check and fix all errors."
+          exit 1
         fi
 
         build/lowrisc_ibex_ibex_simple_system_cosim_0/sim-verilator/Vibex_simple_system --meminit=ram,examples/sw/benchmarks/coremark/coremark.elf
         if [ $? != 0 ]; then
           echo -n "##vso[task.logissue type=error]"
           echo "Running CoreMark failed co-simulation testing"
+          exit 1
         fi
       displayName: Run CoreMark for ${{ config }}

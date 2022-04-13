@@ -4,12 +4,13 @@ RISCV-DV-PyFlow is a purely Python based open-source instruction generator for R
 verification. It uses [PyVSC](https://github.com/fvutils/pyvsc) as the main library for
 randomization and coverage collection. It currently supports the following features:
 
-- Supported instruction set: RV32IMAFDC
+- Supported instruction set: RV32IMAFDC, RV64IMAFDC
 - Supported privileged modes: For now only machine mode is supported.
 - Illegal instruction and HINT instruction generation
 - Random forward/backward branch instructions
 - Supports mixing directed instructions with random instruction stream
 - Support for direct & vectored interrupt table.
+- Sub-program generation and random program calls
 - Multi-hart support
 - Functional coverage framework (reports GUI as well as text, currently
   supports RV32IMFDC extensions)

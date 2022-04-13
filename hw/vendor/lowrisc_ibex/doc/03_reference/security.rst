@@ -71,7 +71,9 @@ Bus integrity checking
 ----------------------
 
 Extra signals are available alongside the instruction and data side memory channels to support bus integrity checking.
-When the SecureIbex parameter is set, incoming data will be checked against the supplied checkbits, and a bus major alert signalled if there is a mismatch.
+When the SecureIbex parameter is set, incoming data will be checked against the supplied checkbits.
+An :ref:`internal interrupt<internal-interrupts>` will be generated and a bus major alert signalled if there is a mismatch.
+Where load data has bad checkbits the write to the load's destination register will be suppressed.
 Write data can be checked against the supplied checkbits at its destination to confirm integrity.
 
 Register file ECC
