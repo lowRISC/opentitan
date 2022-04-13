@@ -15,6 +15,7 @@ module ibex_register_file_fpga #(
     parameter bit                   RV32E             = 0,
     parameter int unsigned          DataWidth         = 32,
     parameter bit                   DummyInstructions = 0,
+    parameter bit                   WrenCheck         = 0,
     parameter logic [DataWidth-1:0] WordZeroVal       = '0
 ) (
   // Clock and Reset
@@ -33,7 +34,10 @@ module ibex_register_file_fpga #(
   // Write port W1
   input  logic [          4:0] waddr_a_i,
   input  logic [DataWidth-1:0] wdata_a_i,
-  input  logic                 we_a_i
+  input  logic                 we_a_i,
+
+  // This indicates whether spurious WE are detected.
+  output logic                 err_o
 );
 
   localparam int ADDR_WIDTH = RV32E ? 4 : 5;
@@ -50,6 +54,15 @@ module ibex_register_file_fpga #(
 
   // we select
   assign we = (waddr_a_i == '0) ? 1'b0 : we_a_i;
+
+  // SEC_CM: DATA_REG_SW.GLITCH_DETECT
+  // This checks for spurious WE strobes on the regfile.
+  if (WrenCheck) begin : gen_wren_check
+    // Since the FPGA uses a memory macro, there is only one write-enable strobe to check.
+    assign err_o = we && !we_a_i;
+  end else begin : gen_no_wren_check
+    assign err_o = 1'b0;
+  end
 
   // Note that the SystemVerilog LRM requires variables on the LHS of assignments within
   // "always_ff" to not be written to by any other process. However, to enable the initialization

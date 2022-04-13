@@ -59,7 +59,7 @@ case "$ID-$VERSION_ID" in
         libelf-dev \
         clang-format \
         "verilator-$VERILATOR_VERSION" \
-        spike-cosim \
+        "ibex-cosim-$IBEX_COSIM_VERSION" \
         xz-utils
 
       # Python dependencies

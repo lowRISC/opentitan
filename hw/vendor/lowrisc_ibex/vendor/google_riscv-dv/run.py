@@ -147,7 +147,7 @@ def parse_iss_yaml(iss, iss_yaml, isa, setting_dir, debug_cmd):
             cmd = re.sub("\<path_var\>",
                          get_env_var(entry['path_var'], debug_cmd=debug_cmd),
                          cmd)
-            m = re.search(r"rv(?P<xlen>[0-9]+?)(?P<variant>[a-z]+?)$", isa)
+            m = re.search(r"rv(?P<xlen>[0-9]+?)(?P<variant>[a-zA-Z_]+?)$", isa)
             if m:
                 cmd = re.sub("\<xlen\>", m.group('xlen'), cmd)
             else:
@@ -303,7 +303,8 @@ def do_simulate(sim_cmd, simulator, test_list, cwd, sim_opts, seed_gen,
                                   output_dir,
                                   test['test'], i, log_suffix)) + \
                               (" --target=%s " % (target)) + \
-                              (" --gen_test=%s " % (test['gen_test']))
+                              (" --gen_test=%s " % (test['gen_test'])) + \
+                              (" --seed={} ".format(rand_seed))
                     else:
                         cmd = lsf_cmd + " " + sim_cmd.rstrip() + \
                               (" +UVM_TESTNAME={} ".format(test['gen_test'])) + \
@@ -767,7 +768,8 @@ def parse_args(cwd):
 
     parser.add_argument("--target", type=str, default="rv32imc",
                         help="Run the generator with pre-defined targets: \
-                            rv32imc, rv32i, rv32imafdc, rv64imc, rv64gc")
+                            rv32imc, rv32i, rv32imafdc, rv64imc, rv64gc, \
+                            rv64imafdc")
     parser.add_argument("-o", "--output", type=str,
                         help="Output directory name", dest="o")
     parser.add_argument("-tl", "--testlist", type=str, default="",
@@ -959,6 +961,9 @@ def load_config(args, cwd):
         elif args.target == "ml":
             args.mabi = "lp64"
             args.isa = "rv64imc"
+        elif args.target == "rv64imafdc":
+            args.mabi = "lp64"
+            args.isa = "rv64imafdc"
         else:
             sys.exit("Unsupported pre-defined target: {}".format(args.target))
     else:

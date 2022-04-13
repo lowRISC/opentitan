@@ -63,6 +63,32 @@ It is assumed that the interrupt handler signals completion of the handling rout
 
 In Debug Mode, all interrupts including the NMI are ignored independent of ``mstatus``.MIE and the content of the ``mie`` CSR.
 
+.. _internal-interrupts:
+
+Internal Interrupts
+-------------------
+
+Some events produce an 'internal interrupt'.
+An internal interrupt produces an NMI (using the same vector as the external NMI) with ``mcause`` and ``mtval`` being set to indicate the cause of the internal interrupt.
+The external NMI takes priority over all internal interrupts.
+Entering the handler for an internal interrupt automatically clears the internal interrupt.
+Internal interrupts are considered to be non-recoverable in general.
+Specific details of how an internal interrupt relates to the event that triggers it are listed below.
+Given these details it may be possible for software to recover from an internal interrupt under specific circumstances.
+
+The possible ``mcause`` values for an internal interrupt as listed below:
+
++-------------+-------------------------------------------------------------------------------------------------------------+
+| ``mcause``  | Description                                                                                                 |
++-------------+-------------------------------------------------------------------------------------------------------------+
+| 0xFFFFFFFE0 | Load integrity error internal interrupt.                                                                    |
+|             | Only generated when SecureIbex == 0.                                                                        |
+|             | ``mtval`` gives the faulting address.                                                                       |
+|             | The interrupt will be taken at most one instruction after the faulting load.                                |
+|             | In particular a load or store immediately after a faulting load may execute before the interrupt is taken.  |
++-------------+-------------------------------------------------------------------------------------------------------------+
+| 0x80000001F | External NMI                                                                                                |
++-------------+-------------------------------------------------------------------------------------------------------------+
 
 Recoverable Non-Maskable Interrupt
 ----------------------------------

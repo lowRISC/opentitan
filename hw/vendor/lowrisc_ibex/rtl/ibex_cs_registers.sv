@@ -99,7 +99,7 @@ module ibex_cs_registers #(
   input  logic                 csr_restore_mret_i,
   input  logic                 csr_restore_dret_i,
   input  logic                 csr_save_cause_i,
-  input  ibex_pkg::exc_cause_e csr_mcause_i,
+  input  ibex_pkg::exc_cause_t csr_mcause_i,
   input  logic [31:0]          csr_mtval_i,
   output logic                 illegal_csr_insn_o,     // access to non-existent CSR,
                                                         // with wrong priviledge level, or
@@ -198,7 +198,7 @@ module ibex_cs_registers #(
   logic        mscratch_en;
   logic [31:0] mepc_q, mepc_d;
   logic        mepc_en;
-  logic  [5:0] mcause_q, mcause_d;
+  exc_cause_t  mcause_q, mcause_d;
   logic        mcause_en;
   logic [31:0] mtval_q, mtval_d;
   logic        mtval_en;
@@ -219,7 +219,7 @@ module ibex_cs_registers #(
   status_stk_t mstack_q, mstack_d;
   logic        mstack_en;
   logic [31:0] mstack_epc_q, mstack_epc_d;
-  logic  [5:0] mstack_cause_q, mstack_cause_d;
+  exc_cause_t  mstack_cause_q, mstack_cause_d;
 
   // PMP Signals
   logic [31:0]                 pmp_addr_rdata  [PMP_MAX_REGIONS];
@@ -265,8 +265,10 @@ module ibex_cs_registers #(
   logic        csr_wr;
 
   // Access violation signals
+  logic        dbg_csr;
   logic        illegal_csr;
   logic        illegal_csr_priv;
+  logic        illegal_csr_dbg;
   logic        illegal_csr_write;
 
   logic [7:0]  unused_boot_addr;
@@ -283,10 +285,12 @@ module ibex_cs_registers #(
   assign unused_csr_addr    = csr_addr[7:5];
   assign mhpmcounter_idx    = csr_addr[4:0];
 
+  assign illegal_csr_dbg    = dbg_csr & ~debug_mode_i;
   // See RISC-V Privileged Specification, version 1.11, Section 2.1
   assign illegal_csr_priv   = (csr_addr[9:8] > {priv_lvl_q});
   assign illegal_csr_write  = (csr_addr[11:10] == 2'b11) && csr_wr;
-  assign illegal_csr_insn_o = csr_access_i & (illegal_csr | illegal_csr_write | illegal_csr_priv);
+  assign illegal_csr_insn_o = csr_access_i & (illegal_csr | illegal_csr_write | illegal_csr_priv |
+                                              illegal_csr_dbg);
 
   // mip CSR is purely combinational - must be able to re-enable the clock upon WFI
   assign mip.irq_software = irq_software_i;
@@ -298,6 +302,7 @@ module ibex_cs_registers #(
   always_comb begin
     csr_rdata_int = '0;
     illegal_csr   = 1'b0;
+    dbg_csr       = 1'b0;
 
     unique case (csr_addr_i)
       // mvendorid: encoding of manufacturer/provider
@@ -345,7 +350,9 @@ module ibex_cs_registers #(
       CSR_MEPC: csr_rdata_int = mepc_q;
 
       // mcause: exception cause
-      CSR_MCAUSE: csr_rdata_int = {mcause_q[5], 26'b0, mcause_q[4:0]};
+      CSR_MCAUSE: csr_rdata_int = {mcause_q.irq_ext | mcause_q.irq_int,
+                                   mcause_q.irq_int ? {26{1'b1}} : 26'b0,
+                                   mcause_q.lower_cause[4:0]};
 
       // mtval: trap value
       CSR_MTVAL: csr_rdata_int = mtval_q;
@@ -406,19 +413,19 @@ module ibex_cs_registers #(
 
       CSR_DCSR: begin
         csr_rdata_int = dcsr_q;
-        illegal_csr = ~debug_mode_i;
+        dbg_csr       = 1'b1;
       end
       CSR_DPC: begin
         csr_rdata_int = depc_q;
-        illegal_csr = ~debug_mode_i;
+        dbg_csr       = 1'b1;
       end
       CSR_DSCRATCH0: begin
         csr_rdata_int = dscratch0_q;
-        illegal_csr = ~debug_mode_i;
+        dbg_csr       = 1'b1;
       end
       CSR_DSCRATCH1: begin
         csr_rdata_int = dscratch1_q;
-        illegal_csr = ~debug_mode_i;
+        dbg_csr       = 1'b1;
       end
 
       // machine counter/timers
@@ -514,7 +521,9 @@ module ibex_cs_registers #(
     mepc_en      = 1'b0;
     mepc_d       = {csr_wdata_int[31:1], 1'b0};
     mcause_en    = 1'b0;
-    mcause_d     = {csr_wdata_int[31], csr_wdata_int[4:0]};
+    mcause_d     = '{irq_ext :    csr_wdata_int[31:30] == 2'b10,
+                     irq_int :    csr_wdata_int[31:30] == 2'b11,
+                     lower_cause: csr_wdata_int[4:0]};
     mtval_en     = 1'b0;
     mtval_d      = csr_wdata_int;
     mtvec_en     = csr_mtvec_init_i;
@@ -691,11 +700,11 @@ module ibex_cs_registers #(
           mepc_en        = 1'b1;
           mepc_d         = exception_pc;
           mcause_en      = 1'b1;
-          mcause_d       = {csr_mcause_i};
+          mcause_d       = csr_mcause_i;
           // save previous status for recoverable NMI
           mstack_en      = 1'b1;
 
-          if (!mcause_d[5]) begin
+          if (!(mcause_d.irq_ext || mcause_d.irq_int)) begin
             // SEC_CM: EXCEPTION.CTRL_FLOW.LOCAL_ESC
             // SEC_CM: EXCEPTION.CTRL_FLOW.GLOBAL_ESC
             cpuctrl_we = 1'b1;
@@ -862,13 +871,13 @@ module ibex_cs_registers #(
 
   // MCAUSE
   ibex_csr #(
-    .Width     (6),
+    .Width     ($bits(exc_cause_t)),
     .ShadowCopy(1'b0),
     .ResetValue('0)
   ) u_mcause_csr (
     .clk_i     (clk_i),
     .rst_ni    (rst_ni),
-    .wr_data_i (mcause_d),
+    .wr_data_i ({mcause_d}),
     .wr_en_i   (mcause_en),
     .rd_data_o (mcause_q),
     .rd_error_o()
@@ -995,7 +1004,7 @@ module ibex_cs_registers #(
 
   // MSTACK_CAUSE
   ibex_csr #(
-    .Width     (6),
+    .Width     ($bits(exc_cause_t)),
     .ShadowCopy(1'b0),
     .ResetValue('0)
   ) u_mstack_cause_csr (

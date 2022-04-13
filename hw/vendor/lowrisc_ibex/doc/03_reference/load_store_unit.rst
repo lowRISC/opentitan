@@ -59,7 +59,8 @@ Bus Integrity Checking
 
 The core can optionally generate and verify check bits sent alongside the data for memory accesses.
 Checkbits are generated and checked using an inverted 39/32 Hsaio code (see :file:`vendor/lowrisc_ip/ip/prim/rtl/prim_secded_inv_39_32_enc.sv`).
-When this feature is used, any mismatch in checkbits will generate a major alert.
+An :ref:`internal interrupt<internal-interrupts>` will be generated and a bus major alert signalled if there is a mismatch.
+Where load data has bad checkbits the write to the load's destination register will be suppressed.
 
 This feature is only used if the core is configured with the SecureIbex parameter set.
 For all other configurations, the integrity signals can be ignored.
