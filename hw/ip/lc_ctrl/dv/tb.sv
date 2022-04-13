@@ -177,10 +177,18 @@ module tb;
       dut.sw_claim_transition_if_q
   );
 
+  // FSM State
+  assign #1ps lc_ctrl_if.lc_ctrl_fsm_state = dut.u_lc_ctrl_fsm.fsm_state_q;
+  // Token mux control
+  assign lc_ctrl_if.token_idx0 = dut.u_lc_ctrl_fsm.token_idx0;
+  assign lc_ctrl_if.token_idx1 = dut.u_lc_ctrl_fsm.token_idx1;
 
   initial begin
-    static lc_ctrl_parameters_cfg parameters_cfg =
-        lc_ctrl_parameters_cfg::type_id::create("parameters_cfg");
+    static
+    lc_ctrl_parameters_cfg
+    parameters_cfg = lc_ctrl_parameters_cfg::type_id::create(
+        "parameters_cfg"
+    );
 
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
@@ -231,5 +239,9 @@ module tb;
   `DV_ASSERT_CTRL("KmacIfSyncReqAckAckNeedsReq",
                   kmac_app_if.req_data_if.H_DataStableWhenValidAndNotReady_A)
   `DV_ASSERT_CTRL("KmacIfSyncReqAckAckNeedsReq", kmac_app_if.req_data_if.ValidHighUntilReady_A)
+  `DV_ASSERT_CTRL("FsmClkBypAckSync", dut.u_lc_ctrl_fsm.u_prim_lc_sync_clk_byp_ack)
+  `DV_ASSERT_CTRL("FsmClkFlashRmaAckSync", dut.u_lc_ctrl_fsm.u_prim_lc_sync_flash_rma_ack)
+  `DV_ASSERT_CTRL("FsmOtpTestTokensValidSync", dut.u_lc_ctrl_fsm.u_prim_lc_sync_test_token_valid)
+  `DV_ASSERT_CTRL("FsmOtpRmaTokenValidSync", dut.u_lc_ctrl_fsm.u_prim_lc_sync_rma_token_valid)
 
 endmodule

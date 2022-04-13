@@ -226,6 +226,12 @@
     }
 
     {
+      name: "lc_ctrl_sec_mubi"
+      uvm_test_seq: lc_ctrl_sec_mubi_vseq
+      run_opts: ["+create_jtag_riscv_map=1"]
+    }
+
+    {
       name: "lc_ctrl_stress_all"
       uvm_test_seq: lc_ctrl_stress_all_vseq
       run_opts: ["+create_jtag_riscv_map=1"]

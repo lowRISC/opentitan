@@ -85,16 +85,24 @@ interface lc_ctrl_if (
   logic mutex_claim_jtag;
   logic mutex_claim_tl;
 
+  // FSM state
+  lc_ctrl_pkg::fsm_state_e lc_ctrl_fsm_state;
+  // Token mux control
+  bit [TokenIdxWidth-1:0] token_idx0;
+  bit [TokenIdxWidth-1:0] token_idx1;
+
+
   // Debug signals
   lc_ctrl_env_pkg::lc_ctrl_err_inj_t err_inj;
   lc_ctrl_env_pkg::lc_ctrl_test_phase_e test_phase;
   bit [79:0][7:0] test_sequence_typename;
 
-  task automatic init(lc_state_e lc_state = LcStRaw, lc_cnt_e lc_cnt = LcCnt0,
-                      lc_tx_t clk_byp_ack = Off, lc_tx_t flash_rma_ack = Off,
-                      logic otp_partition_err = 0, otp_device_id_t otp_device_id = 0,
-                      logic otp_lc_data_i_valid = 1, otp_device_id_t otp_manuf_state = 0,
-                      logic [OtpTestStatusWidth-1:0] otp_vendor_test_status = 0);
+  task automatic init(
+      lc_state_e lc_state = LcStRaw, lc_cnt_e lc_cnt = LcCnt0, lc_tx_t clk_byp_ack = Off,
+      lc_tx_t flash_rma_ack = Off, logic otp_partition_err = 0, otp_device_id_t otp_device_id = 0,
+      logic otp_lc_data_i_valid = 1, otp_device_id_t otp_manuf_state = 0,
+      logic [OtpTestStatusWidth-1:0] otp_vendor_test_status = 0, lc_tx_t otp_secrets_valid = Off,
+      lc_tx_t otp_test_tokens_valid = On, lc_tx_t otp_rma_token_valid = On);
     otp_i.valid             = otp_lc_data_i_valid;
     otp_i.error             = otp_partition_err;
     otp_i.state             = lc_state;
@@ -103,9 +111,9 @@ interface lc_ctrl_if (
     otp_i.test_exit_token   = lc_ctrl_env_pkg::get_random_token();
     otp_i.rma_token         = lc_ctrl_env_pkg::get_random_token();
     // TODO: need to randomize this,
-    otp_i.secrets_valid     = Off;
-    otp_i.test_tokens_valid = On;
-    otp_i.rma_token_valid   = On;
+    otp_i.secrets_valid     = otp_secrets_valid;
+    otp_i.test_tokens_valid = otp_test_tokens_valid;
+    otp_i.rma_token_valid   = otp_rma_token_valid;
 
 
     clk_byp_ack_i           = clk_byp_ack;
