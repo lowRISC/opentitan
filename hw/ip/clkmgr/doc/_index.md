@@ -242,11 +242,12 @@ The table below summarizes the frequencies in each mode.
 This table assumes that the internal clock source is 96MHz.
 This table also assumes that high speed external clock is 96MHz, while low speed external clock is 48MHz.
 
-| Mode                         | div_1_clock   | div_2_clock     | div_4_clock  |
-| -------------                | ------------- | --------------- | -------------|
-| Internal Clocks              | 96MHz         | 48MHz           | 24MHz        |
-| Software external high speed | 96MHz         | 48MHz           | 24MHz        |
-| Software external low speed  | 48MHz         | 48MHz           | 24MHz        |
+| Mode                         | External Clock Frequency | div_1_clock   | div_2_clock     | div_4_clock  |
+| -------------                | ------------------------ | ------------- | --------------- | -------------|
+| Internal Clocks              | Not applicable           | 96MHz         | 48MHz           | 24MHz        |
+| Life cycle transition        | 48MHz                    | 48MHz         | 48MHz           | 24MHz        |
+| Software external high speed | 96MHz                    | 96MHz         | 48MHz           | 24MHz        |
+| Software external low speed  | 48MHz                    | 48MHz         | 48MHz           | 24MHz        |
 
 As can be seen from the table, the external clock switch scheme prioritizes the stability of the divided clocks, while allowing the undivided clocks to slow down.
 
