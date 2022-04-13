@@ -382,6 +382,13 @@
         provided by an ECC.
       '''
     }
+    { name: "DATA_REG_SW.GLITCH_DETECT"
+      desc: '''
+        This countermeasure augments DATA_REG_SW.INTEGRITY and checks for spurious
+        write-enable signals on the register file by monitoring the one-hot0 property
+        of the individual write-enable strobes.
+      '''
+    }
     { name: "LOGIC.SHADOW"
       desc: '''
         Shadow core run in lockstep to crosscheck CPU behaviour. This provides
