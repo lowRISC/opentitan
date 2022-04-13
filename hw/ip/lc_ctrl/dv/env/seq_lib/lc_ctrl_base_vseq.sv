@@ -101,42 +101,38 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
     super.read_and_check_all_csrs_after_reset();
   endtask
 
-  virtual task run_clk_byp_rsp_nonblocking(bit has_err = 0);
-    fork
-      forever begin
-        lc_ctrl_pkg::lc_tx_t rsp;
-        wait(cfg.lc_ctrl_vif.clk_byp_req_o == lc_ctrl_pkg::On);
-        rsp = (has_err) ? ($urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off) :
-            lc_ctrl_pkg::On;
-        cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
-        cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
+  virtual task run_clk_byp_rsp(bit has_err = 0);
+    forever begin
+      lc_ctrl_pkg::lc_tx_t rsp;
+      wait(cfg.lc_ctrl_vif.clk_byp_req_o == lc_ctrl_pkg::On);
+      rsp = (has_err) ? ($urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off) :
+          lc_ctrl_pkg::On;
+      cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
+      cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
 
-        wait(cfg.lc_ctrl_vif.clk_byp_req_o != lc_ctrl_pkg::On);
-        rsp = (has_err) ? ($urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off) :
-            lc_ctrl_pkg::Off;
-        cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
-        cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
-      end
-    join_none
+      wait(cfg.lc_ctrl_vif.clk_byp_req_o != lc_ctrl_pkg::On);
+      rsp = (has_err) ? ($urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off) :
+          lc_ctrl_pkg::Off;
+      cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
+      cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
+    end
   endtask
 
-  virtual task run_flash_rma_rsp_nonblocking(bit has_err = 0);
-    fork
-      forever begin
-        lc_ctrl_pkg::lc_tx_t rsp;
-        wait(cfg.lc_ctrl_vif.flash_rma_req_o == lc_ctrl_pkg::On);
-        rsp = (has_err) ? ($urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off) :
-            lc_ctrl_pkg::On;
-        cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
-        cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
+  virtual task run_flash_rma_rsp(bit has_err = 0);
+    forever begin
+      lc_ctrl_pkg::lc_tx_t rsp;
+      wait(cfg.lc_ctrl_vif.flash_rma_req_o == lc_ctrl_pkg::On);
+      rsp = (has_err) ? ($urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off) :
+          lc_ctrl_pkg::On;
+      cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
+      cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
 
-        wait(cfg.lc_ctrl_vif.flash_rma_req_o != lc_ctrl_pkg::On);
-        rsp = (has_err) ? ($urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off) :
-            lc_ctrl_pkg::Off;
-        cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
-        cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
-      end
-    join_none
+      wait(cfg.lc_ctrl_vif.flash_rma_req_o != lc_ctrl_pkg::On);
+      rsp = (has_err) ? ($urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off) :
+          lc_ctrl_pkg::Off;
+      cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
+      cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
+    end
   endtask
 
   virtual task sw_transition_req(bit [TL_DW-1:0] next_lc_state, bit [TL_DW*4-1:0] token_val);
@@ -220,6 +216,31 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
     while (cfg.m_kmac_app_agent_cfg.has_user_digest_share()) begin
       void'(cfg.m_kmac_app_agent_cfg.get_user_digest_share());
     end
+  endfunction
+
+  // Does this transition require a test unlock or test exit token
+  virtual function bit has_test_token(input dec_lc_state_e dec_lc_state,
+                                      input dec_lc_state_e next_lc_state);
+    has_test_token = (TransTokenIdxMatrix[dec_lc_state][next_lc_state] inside {
+        TestUnlockTokenIdx, TestExitTokenIdx});
+    `uvm_info(`gfn, $sformatf(
+              "has_test_token: checking state %s -> %s result %0b",
+              dec_lc_state.name(),
+              next_lc_state.name(),
+              has_test_token
+              ), UVM_MEDIUM)
+  endfunction
+
+  // Does this transition require an RMA token
+  virtual function bit has_rma_token(input dec_lc_state_e dec_lc_state,
+                                     input dec_lc_state_e next_lc_state);
+    has_rma_token = (TransTokenIdxMatrix[dec_lc_state][next_lc_state] inside {RmaTokenIdx});
+    `uvm_info(`gfn, $sformatf(
+              "has_rma_token: checking state %s -> %s result %0b",
+              dec_lc_state.name(),
+              next_lc_state.name(),
+              has_rma_token
+              ), UVM_MEDIUM)
   endfunction
 
 endclass : lc_ctrl_base_vseq
