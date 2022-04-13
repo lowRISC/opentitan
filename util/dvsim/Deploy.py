@@ -299,6 +299,7 @@ class CompileSim(Deploy):
     def __init__(self, build_mode, sim_cfg):
         self.build_mode_obj = build_mode
         self.seed = sim_cfg.build_seed
+        self.build_seed = sim_cfg.build_seed
         super().__init__(sim_cfg)
 
     def _define_attrs(self):
@@ -405,6 +406,7 @@ class RunTest(Deploy):
         self.test_obj = test
         self.index = index
         self.seed = RunTest.get_seed()
+        self.build_seed = sim_cfg.build_seed
         super().__init__(sim_cfg)
 
         if build_job is not None:
