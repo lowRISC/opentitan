@@ -33,8 +33,8 @@ pub enum ExitStatus {
     ExitFailure,
 }
 
+// Creates a vtable for impementors of Read and AsRawFd traits.
 pub trait ReadAsRawFd: Read + AsRawFd {}
-
 impl<T: Read + AsRawFd> ReadAsRawFd for T {}
 
 impl UartConsole {
@@ -52,12 +52,9 @@ impl UartConsole {
             self.deadline = Some(Instant::now() + *timeout);
         }
         loop {
-            let status = self.interact_once(uart, &mut stdin, &mut stdout)?;
-            match status {
+            match self.interact_once(uart, &mut stdin, &mut stdout)? {
                 ExitStatus::None => {}
-                _ => {
-                    return Ok(status);
-                }
+                status => return Ok(status),
             }
         }
     }
