@@ -14,6 +14,7 @@ filesets:
       - lowrisc:prim:clock_mux2
       - lowrisc:prim:flop
       - lowrisc:prim:ram_1p_scr
+      - lowrisc:prim:onehot_check
     files:
       - rtl/ibex_register_file_ff.sv # generic FF-based
       - rtl/ibex_register_file_fpga.sv # FPGA

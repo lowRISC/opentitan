@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:ibex:ibex_simple_system_core
     files:
-      - ibex_simple_system_main.cc
+      - tool_verilator ? (ibex_simple_system_main.cc)
     file_type: cppSource
 
 parameters:

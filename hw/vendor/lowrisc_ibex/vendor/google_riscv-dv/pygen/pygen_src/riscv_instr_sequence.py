@@ -77,9 +77,11 @@ class riscv_instr_sequence:
         # The load/store instruction will be inserted as directed instruction stream
         self.instr_stream.gen_instr(no_branch = no_branch, no_load_store = 1,
                                     is_debug_program = self.is_debug_program)
-        if not is_main_program:
-            self.gen_stack_enter_instr()
-            self.gen_stack_exit_instr()
+
+        # TODO Commenting for now as it is blocking sub_program
+        # if not is_main_program:
+        #     self.gen_stack_enter_instr()
+        #     self.gen_stack_exit_instr()
         logging.info("Finishing instruction generation")
 
     # Generate the stack push operations for this program
@@ -108,6 +110,7 @@ class riscv_instr_sequence:
         self.instr_stack_exit.cfg = cfg
         self.instr_stack_exit.gen_pop_stack_instr(self.program_stack_len,
                                                   self.instr_stack_enter.saved_regs)
+        self.instr_stream.instr_list.extend((self.instr_stack_exit.instr_list))
 
     # ----------------------------------------------------------------------------------------------
     # Instruction post-process
@@ -245,7 +248,7 @@ class riscv_instr_sequence:
             if(rcs.support_pmp and not re.search("main", self.label_name)):
                 self.instr_string_list.insert(0, ".align 2")
         self.insert_illegal_hint_instr()
-        prefix = pkg_ins.format_string(str(i), pkg_ins.LABEL_STR_LEN)
+        prefix = pkg_ins.format_string("{}:".format(i), pkg_ins.LABEL_STR_LEN)
         if not self.is_main_program:
             self.generate_return_routine(prefix)
 
@@ -261,19 +264,19 @@ class riscv_instr_sequence:
         except Exception:
             logging.critical("Cannot randomize ra")
             sys.exit(1)
-        routine_str = prefix + "addi x{} x{} {}".format(ra.name, cfg.ra.name, rand_lsb)
+        routine_str = prefix + "addi x{} x{} {}".format(ra.get_val(), cfg.ra, rand_lsb)
         self.instr_string_list.append(routine_str)
         if not cfg.disable_compressed_instr:
             jump_instr.append(riscv_instr_name_t.C_JR)
             if not (riscv_reg_t.RA in cfg.reserved_regs):
                 jump_instr.append(riscv_instr_name_t.C_JALR)
         i = random.randrange(0, len(jump_instr) - 1)
-        if jump_instr[i] == riscv_instr_name_t.C_JAL:
-            routine_str = prefix + "c.jalr x{}".format(ra.name)
+        if jump_instr[i] == riscv_instr_name_t.C_JALR:
+            routine_str = prefix + "c.jalr x{}".format(ra.get_val())
         elif jump_instr[i] == riscv_instr_name_t.C_JR:
-            routine_str = prefix + "c.jr x{}".format(ra.name)
+            routine_str = prefix + "c.jr x{}".format(ra.get_val())
         elif jump_instr[i] == riscv_instr_name_t.JALR:
-            routine_str = prefix + "jalr x{} x{} 0".format(ra.name, ra.name)
+            routine_str = prefix + "jalr x{} x{} 0".format(ra.get_val(), ra.get_val())
         else:
             logging.critical("Unsupported jump_instr: {}".format(jump_instr[i]))
             sys.exit(1)

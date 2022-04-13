@@ -39,9 +39,11 @@ std::string SimpleSystem::GetIsaString() const {
 
   std::string base = top.ibex_simple_system->RV32E ? "rv32e" : "rv32i";
 
-  std::string extensions = "c";
+  std::string extensions;
   if (top.ibex_simple_system->RV32M)
     extensions += "m";
+
+  extensions += "c";
 
   // See the equivalent get_isa_string() function in core_ibex_base_test.sv for
   // an explanation of the different ISA strings
