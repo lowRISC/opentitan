@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+`include "prim_assert.sv"
+
 package lc_ctrl_pkg;
 
   import prim_util_pkg::vbits;
