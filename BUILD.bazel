@@ -80,3 +80,5 @@ filegroup(
         "topgen-reg-only.core",
     ],
 )
+
+exports_files(["python-requirements.txt"])
