@@ -6,7 +6,7 @@
 
 # Helper script that reads a file from stdin and replaces every tab character
 # with at most eight spaces (i.e. what smart tabs would render it as at an
-# eight-space tab.
+# eight-space tab).
 # 
 # This is useful for cleaning up the output of GCC tools that are excited about
 # mixing tabs and spaces.
