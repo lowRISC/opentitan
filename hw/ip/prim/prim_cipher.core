@@ -20,6 +20,9 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
+    files:
+      - lint/prim_cipher.vlt
+    file_type: vlt
 
   files_ascentlint_waiver:
     depend:
