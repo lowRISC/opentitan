@@ -209,6 +209,13 @@ class KmacTest : public testing::Test, public mock_mmio::MmioTest {
       EXPECT_WRITE32(offset, prefix_regs[i]);
     }
   }
+
+  void ExpectEntropySeed(uint64_t seed) {
+    EXPECT_WRITE32(KMAC_ENTROPY_SEED_LOWER_REG_OFFSET,
+                   static_cast<uint32_t>(seed));
+    EXPECT_WRITE32(KMAC_ENTROPY_SEED_UPPER_REG_OFFSET,
+                   static_cast<uint32_t>(seed >> 32));
+  }
 };
 
 class Kmac256Test : public KmacTest {
@@ -511,12 +518,10 @@ TEST_F(Cshake256Test, StartBadArg) {
 }
 
 TEST_F(Cshake256Test, StartError) {
-  {
-    EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_IDLE_BIT, false}});
-    EXPECT_EQ(dif_kmac_mode_cshake_start(&kmac_, &op_state_, mode_, &func_name_,
-                                         &custom_str_),
-              kDifError);
-  }
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_IDLE_BIT, false}});
+  EXPECT_EQ(dif_kmac_mode_cshake_start(&kmac_, &op_state_, mode_, &func_name_,
+                                       &custom_str_),
+            kDifError);
 }
 
 constexpr std::array<uint8_t, 17> KmacTest::kMsg_;
@@ -584,5 +589,49 @@ TEST_F(KmacEndTest, BadArg) {
 TEST_F(KmacEndTest, Error) {
   op_state_.squeezing = false;
   EXPECT_EQ(dif_kmac_end(&kmac_, &op_state_), kDifError);
+}
+
+class KmacConfigureTest : public KmacTest {
+ protected:
+  dif_kmac_config_t kmac_config_ = {
+      .entropy_mode = kDifKmacEntropyModeIdle,
+      .entropy_fast_process = false,
+      .entropy_seed = 0x45987a984f9f862d,
+      .entropy_reseed_interval = 4985,
+      .entropy_wait_timer = 9562,
+      .message_big_endian = false,
+      .output_big_endian = false,
+      .sideload = false,
+  };
+  KmacConfigureTest() {
+    config_reg_.msg_big_endian = kmac_config_.message_big_endian;
+    config_reg_.state_big_endian = kmac_config_.output_big_endian;
+    config_reg_.entropy_mode = kmac_config_.entropy_mode;
+    config_reg_.entropy_fast_process = kmac_config_.entropy_fast_process;
+    config_reg_.sideload = kmac_config_.sideload;
+    config_reg_.key_strength = 0;
+    config_reg_.mode = 0;
+  }
+};
+
+TEST_F(KmacConfigureTest, Success) {
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_IDLE_BIT, true}});
+  ExpectConfig();
+  EXPECT_WRITE32(KMAC_ENTROPY_PERIOD_REG_OFFSET,
+                 {{KMAC_ENTROPY_PERIOD_WAIT_TIMER_OFFSET,
+                   kmac_config_.entropy_wait_timer}});
+  ExpectEntropySeed(kmac_config_.entropy_seed);
+  EXPECT_DIF_OK(dif_kmac_configure(&kmac_, kmac_config_));
+}
+
+TEST_F(KmacConfigureTest, BadArg) {
+  EXPECT_DIF_BADARG(dif_kmac_configure(NULL, kmac_config_));
+  kmac_config_.entropy_mode = (dif_kmac_entropy_mode_t)0xff;
+  EXPECT_DIF_BADARG(dif_kmac_configure(&kmac_, kmac_config_));
+}
+
+TEST_F(KmacConfigureTest, Locked) {
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_IDLE_BIT, false}});
+  EXPECT_EQ(dif_kmac_configure(&kmac_, kmac_config_), kDifLocked);
 }
 }  // namespace dif_kmac_unittest
