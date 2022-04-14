@@ -642,4 +642,78 @@ TEST_F(KmacConfigureTest, Locked) {
   EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_IDLE_BIT, false}});
   EXPECT_EQ(dif_kmac_configure(&kmac_, kmac_config_), kDifLocked);
 }
+
+class KmacStatusTest : public KmacTest {
+ protected:
+  dif_kmac_status_t status_;
+};
+
+TEST_F(KmacStatusTest, IdleFifoEmptySuccess) {
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_IDLE_BIT, true},
+                                         {KMAC_STATUS_FIFO_EMPTY_BIT, true}});
+  EXPECT_DIF_OK(dif_kmac_get_status(&kmac_, &status_));
+
+  EXPECT_EQ(status_.sha3_state, kDifKmacSha3StateIdle);
+  EXPECT_EQ(status_.fifo_depth, 0);
+  EXPECT_EQ(status_.fifo_state, kDifKmacFifoStateEmpty);
+  EXPECT_EQ(status_.faults, kDifKmacAlertNone);
+}
+
+TEST_F(KmacStatusTest, AbsorbingFifoPartialSuccess) {
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET,
+                {{KMAC_STATUS_SHA3_ABSORB_BIT, true},
+                 {KMAC_STATUS_FIFO_DEPTH_OFFSET, KMAC_STATUS_FIFO_DEPTH_MASK}});
+  EXPECT_DIF_OK(dif_kmac_get_status(&kmac_, &status_));
+
+  EXPECT_EQ(status_.sha3_state, kDifKmacSha3StateAbsorbing);
+  EXPECT_EQ(status_.fifo_depth, KMAC_STATUS_FIFO_DEPTH_MASK);
+  EXPECT_EQ(status_.fifo_state, kDifKmacFifoStatePartial);
+  EXPECT_EQ(status_.faults, kDifKmacAlertNone);
+}
+
+TEST_F(KmacStatusTest, SqueezingFifoFullSuccess) {
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_SQUEEZE_BIT, true},
+                                         {KMAC_STATUS_FIFO_DEPTH_OFFSET, 15},
+                                         {KMAC_STATUS_FIFO_FULL_BIT, true}});
+  EXPECT_DIF_OK(dif_kmac_get_status(&kmac_, &status_));
+
+  EXPECT_EQ(status_.sha3_state, kDifKmacSha3StateSqueezing);
+  EXPECT_EQ(status_.fifo_depth, 15);
+  EXPECT_EQ(status_.fifo_state, kDifKmacFifoStateFull);
+  EXPECT_EQ(status_.faults, kDifKmacAlertNone);
+}
+
+TEST_F(KmacStatusTest, AbsorbingFifoFullFatalFault) {
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET,
+                {{KMAC_STATUS_SHA3_ABSORB_BIT, true},
+                 {KMAC_STATUS_FIFO_DEPTH_OFFSET, 5},
+                 {KMAC_STATUS_FIFO_FULL_BIT, true},
+                 {KMAC_STATUS_ALERT_FATAL_FAULT_BIT, true}});
+  EXPECT_DIF_OK(dif_kmac_get_status(&kmac_, &status_));
+
+  EXPECT_EQ(status_.sha3_state, kDifKmacSha3StateAbsorbing);
+  EXPECT_EQ(status_.fifo_depth, 5);
+  EXPECT_EQ(status_.fifo_state, kDifKmacFifoStateFull);
+  EXPECT_EQ(status_.faults, kDifKmacAlertFatalFault);
+}
+
+TEST_F(KmacStatusTest, AbsorbingFifoFullUpdateError) {
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET,
+                {{KMAC_STATUS_SHA3_ABSORB_BIT, true},
+                 {KMAC_STATUS_FIFO_DEPTH_OFFSET, 2},
+                 {KMAC_STATUS_FIFO_FULL_BIT, true},
+                 {KMAC_STATUS_ALERT_RECOV_CTRL_UPDATE_ERR_BIT, true}});
+  EXPECT_DIF_OK(dif_kmac_get_status(&kmac_, &status_));
+
+  EXPECT_EQ(status_.sha3_state, kDifKmacSha3StateAbsorbing);
+  EXPECT_EQ(status_.fifo_depth, 2);
+  EXPECT_EQ(status_.fifo_state, kDifKmacFifoStateFull);
+  EXPECT_EQ(status_.faults, kDifKmacAlertRecovCtrlUpdate);
+}
+
+TEST_F(KmacStatusTest, BadArg) {
+  EXPECT_DIF_BADARG(dif_kmac_get_status(nullptr, &status_));
+  EXPECT_DIF_BADARG(dif_kmac_get_status(&kmac_, nullptr));
+}
+
 }  // namespace dif_kmac_unittest

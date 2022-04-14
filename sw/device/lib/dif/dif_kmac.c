@@ -779,3 +779,29 @@ dif_result_t dif_kmac_config_is_locked(const dif_kmac_t *kmac,
   *is_locked = bitfield_bit32_read(reg, KMAC_CFG_REGWEN_EN_BIT);
   return kDifOk;
 }
+
+dif_result_t dif_kmac_get_status(const dif_kmac_t *kmac,
+                                 dif_kmac_status_t *kmac_status) {
+  if (kmac == NULL || kmac_status == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg = mmio_region_read32(kmac->base_addr, KMAC_STATUS_REG_OFFSET);
+
+  kmac_status->sha3_state = bitfield_field32_read(
+      reg,
+      (bitfield_field32_t){.mask = 0x07, .index = KMAC_STATUS_SHA3_IDLE_BIT});
+
+  kmac_status->fifo_depth =
+      bitfield_field32_read(reg, KMAC_STATUS_FIFO_DEPTH_FIELD);
+
+  kmac_status->fifo_state = bitfield_field32_read(
+      reg,
+      (bitfield_field32_t){.mask = 0x03, .index = KMAC_STATUS_FIFO_EMPTY_BIT});
+
+  kmac_status->faults = bitfield_field32_read(
+      reg, (bitfield_field32_t){.mask = 0x03,
+                                .index = KMAC_STATUS_ALERT_FATAL_FAULT_BIT});
+
+  return kDifOk;
+}
