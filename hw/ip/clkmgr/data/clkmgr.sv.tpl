@@ -484,7 +484,7 @@ from topgen.lib import Name
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ${assert_name.as_camel_case()}CountCheck_A,
     u_${clk}_trans.u_idle_cnt,
-    alert_tx_o[0])
+    alert_tx_o[1])
 % endfor
   assign hw2reg.fatal_err_code.idle_cnt.d = 1'b1;
   assign hw2reg.fatal_err_code.idle_cnt.de = |idle_cnt_err;

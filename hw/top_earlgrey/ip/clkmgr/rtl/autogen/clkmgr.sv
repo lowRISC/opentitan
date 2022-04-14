@@ -1049,7 +1049,7 @@
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ClkMainAesCountCheck_A,
     u_clk_main_aes_trans.u_idle_cnt,
-    alert_tx_o[0])
+    alert_tx_o[1])
 
   clkmgr_trans #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
@@ -1069,7 +1069,7 @@
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ClkMainHmacCountCheck_A,
     u_clk_main_hmac_trans.u_idle_cnt,
-    alert_tx_o[0])
+    alert_tx_o[1])
 
   clkmgr_trans #(
     .FpgaBufGlobal(1'b1) // KMAC is getting too big for a single clock region.
@@ -1089,7 +1089,7 @@
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ClkMainKmacCountCheck_A,
     u_clk_main_kmac_trans.u_idle_cnt,
-    alert_tx_o[0])
+    alert_tx_o[1])
 
   clkmgr_trans #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
@@ -1109,7 +1109,7 @@
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ClkMainOtbnCountCheck_A,
     u_clk_main_otbn_trans.u_idle_cnt,
-    alert_tx_o[0])
+    alert_tx_o[1])
   assign hw2reg.fatal_err_code.idle_cnt.d = 1'b1;
   assign hw2reg.fatal_err_code.idle_cnt.de = |idle_cnt_err;
 
