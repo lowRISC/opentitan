@@ -77,7 +77,7 @@ module otbn_controller
   output logic               rf_bignum_rd_en_b_o,
   input  logic [ExtWLEN-1:0] rf_bignum_rd_data_b_intg_i,
 
-  input logic rf_bignum_rd_data_err_i,
+  input logic rf_bignum_rf_err_i,
 
   output logic [NWdr-1:0] rf_bignum_rd_a_indirect_onehot_o,
   output logic [NWdr-1:0] rf_bignum_rd_b_indirect_onehot_o,
@@ -275,8 +275,8 @@ module otbn_controller
   // and we've underflowed the call stack. When this happens, we want to ignore any read data
   // integrity errors since the read from the bignum register file didn't happen architecturally
   // anyway.
-  logic ignore_bignum_rd_errs;
-  logic rf_bignum_rd_data_err;
+  logic ignore_bignum_rf_errs;
+  logic rf_bignum_rf_err;
 
   logic [31:0] insn_cnt_d, insn_cnt_q;
   logic        insn_cnt_clear;
@@ -463,7 +463,7 @@ module otbn_controller
 
   assign fatal_software_err       = software_err & software_errs_fatal_i;
   assign bad_internal_state_err   = state_error;
-  assign reg_intg_violation_err   = rf_bignum_rd_data_err;
+  assign reg_intg_violation_err   = rf_bignum_rf_err;
   assign key_invalid_err          = ispr_rd_bignum_insn & insn_valid_i & key_invalid;
   assign illegal_insn_err         = illegal_insn_static | rf_indirect_err;
   assign bad_data_addr_err        = dmem_addr_err;
@@ -966,11 +966,11 @@ module otbn_controller
   assign rf_indirect_err =
       insn_valid_i & (rf_a_indirect_err | rf_b_indirect_err | rf_d_indirect_err);
 
-  assign ignore_bignum_rd_errs = (insn_dec_bignum_i.rf_a_indirect |
+  assign ignore_bignum_rf_errs = (insn_dec_bignum_i.rf_a_indirect |
                                   insn_dec_bignum_i.rf_b_indirect) &
                                  rf_base_call_stack_err_i;
 
-  assign rf_bignum_rd_data_err = rf_bignum_rd_data_err_i & ~ignore_bignum_rd_errs;
+  assign rf_bignum_rf_err = rf_bignum_rf_err_i & ~ignore_bignum_rf_errs;
 
   // CSR/WSR/ISPR handling
   // ISPRs (Internal Special Purpose Registers) are the internal registers. CSRs and WSRs are the
