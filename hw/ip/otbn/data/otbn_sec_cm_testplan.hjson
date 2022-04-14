@@ -107,5 +107,11 @@
       milestone: V2S
       tests: []
     }
+    {
+      name: sec_cm_rf_bignum_data_reg_sw_glitch_detect
+      desc: "Verify the countermeasure(s) RF_BIGNUM.DATA_REG_SW.GLITCH_DETECT."
+      milestone: V2S
+      tests: []
+    }
   ]
 }

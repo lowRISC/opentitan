@@ -45,12 +45,13 @@ module otbn_rf_bignum
   input  logic [WdrAw-1:0]       rd_addr_b_i,
   output logic [ExtWLEN-1:0]     rd_data_b_intg_o,
 
-  output logic                   rd_data_err_o,
+  output logic                   rf_err_o,
 
   input  rf_predec_bignum_t      rf_predec_bignum_i,
   output logic                   predec_error_o
 );
 
+  logic                          spurious_we_err;
   logic [ExtWLEN-1:0]            wr_data_intg_mux_out, wr_data_intg_calc;
   logic [1:0]                    wr_en_internal;
   logic [BaseWordsPerWLEN*2-1:0] rd_data_a_err, rd_data_b_err;
@@ -77,7 +78,9 @@ module otbn_rf_bignum
       .rd_addr_b_i,
       .rd_data_b_o(rd_data_b_intg_o),
 
-      .rf_predec_bignum_i
+      .rf_predec_bignum_i,
+
+      .we_err_o(spurious_we_err)
     );
   end else if (RegFile == RegFileFPGA) begin : gen_rf_bignum_fpga
     otbn_rf_bignum_fpga #(
@@ -94,7 +97,9 @@ module otbn_rf_bignum
       .rd_data_a_o(rd_data_a_intg_o),
 
       .rd_addr_b_i,
-      .rd_data_b_o(rd_data_b_intg_o)
+      .rd_data_b_o(rd_data_b_intg_o),
+
+      .we_err_o(spurious_we_err)
     );
   end
 
@@ -155,5 +160,7 @@ module otbn_rf_bignum
     );
   end
 
-  assign rd_data_err_o = ((|rd_data_a_err) & rd_en_a_i) | ((|rd_data_b_err) & rd_en_b_i);
+  assign rf_err_o = ((|rd_data_a_err) & rd_en_a_i) |
+                    ((|rd_data_b_err) & rd_en_b_i) |
+                    spurious_we_err;
 endmodule

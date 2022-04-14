@@ -178,6 +178,12 @@
         file by monitoring the one-hot0 property of the individual write-enable strobes.
       '''
     }
+    { name: "RF_BIGNUM.DATA_REG_SW.GLITCH_DETECT"
+      desc: '''
+        This countermeasure checks for spurious write-enable signals on the register
+        file by monitoring the one-hot0 property of the individual write-enable strobes.
+      '''
+    }
   ]
 
   regwidth: "32"
