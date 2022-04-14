@@ -128,8 +128,8 @@
       tests: ["pwrmgr_sec_cm"]
     }
     {
-      name: sec_cm_fsm_local_esc
-      desc: '''Verify the countermeasure(s) FSM.LOCAL_ESC.
+      name: sec_cm_fsm_terminal
+      desc: '''Verify the countermeasure(s) FSM.TERMINAL.
 
             This is caused by any invalid (slow|fast) state.
 

@@ -100,6 +100,9 @@ When this occurs, the slow FSM sends an `invalid` indication to the fast FSM and
 The clocks are kept on however to allow the fast FSM to operate if it is able to receive the `invalid` indication.
 The slow FSM does not recover from this state until the system is reset by POR.
 
+Unlike [escalation resets](#escalation-reset-request), the system does not self reset.
+Instead the system goes into a terminal non-responsive state where a user or host must directly intervene by toggling the power or asserting an external reset input.
+
 ## Fast Clock Domain FSM
 
 The fast clock domain FSM (referred to as fast FSM from here on) resets to `Low Power` state and waits for a power-up request from the slow FSM.
