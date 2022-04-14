@@ -975,7 +975,7 @@ module otbn
   };
 
   assign non_core_err_bits_d = non_core_err_bits_q | non_core_err_bits;
-  always @(posedge clk_i or negedge rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       non_core_err_bits_q <= '0;
     end else begin

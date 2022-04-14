@@ -489,7 +489,7 @@ module otbn_controller
     bad_insn_addr:      bad_insn_addr_err
   };
 
-  always @(posedge clk_i or negedge rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       err_bits_q <= '0;
     end else begin
