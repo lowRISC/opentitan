@@ -775,16 +775,20 @@ module spi_device
       cmd_info[i] = CmdInfoInput;
     end
 
+    // Hand crafted command information slots
     cmd_info[CmdInfoEn4B].valid  = reg2hw.cmd_info_en4b.valid.q;
     cmd_info[CmdInfoEn4B].opcode = reg2hw.cmd_info_en4b.opcode.q;
 
     cmd_info[CmdInfoEx4B].valid  = reg2hw.cmd_info_ex4b.valid.q;
     cmd_info[CmdInfoEx4B].opcode = reg2hw.cmd_info_ex4b.opcode.q;
 
-  end
+    cmd_info[CmdInfoWrEn].valid  = reg2hw.cmd_info_wren.valid.q;
+    cmd_info[CmdInfoWrEn].opcode = reg2hw.cmd_info_wren.opcode.q;
 
-  logic  unused_wrendi;
-  assign unused_wrendi = ^{reg2hw.cmd_info_wren, reg2hw.cmd_info_wrdi};
+    cmd_info[CmdInfoWrDi].valid  = reg2hw.cmd_info_wrdi.valid.q;
+    cmd_info[CmdInfoWrDi].opcode = reg2hw.cmd_info_wrdi.opcode.q;
+
+  end
 
   //////////////////////////////
   // // Clock & reset control //
