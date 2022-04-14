@@ -25,19 +25,19 @@ interface ast_supply_if (
   // assertions in pwrmgr.
   localparam int CyclesBeforeReenablingAssert = 7;
 
-  function static void force_vcaon_supp_i(bit value);
-    force u_ast.vcaon_supp_i = value;
+  function static void force_vcaon_pok(bit value);
+    force u_ast.u_rglts_pdm_3p3v.vcaon_pok_h_o = value;
   endfunction
 
-  // Create glitch in vcaon_supp_i some cycles after this is invoked. Hold vcaon_supp_i low for
+  // Create glitch in vcaon_pok_h_o some cycles after this is invoked. Hold vcaon_pok_h_o low for
   // a fixed time: we cannot use clock cycles because the clock will stop.
-  task automatic glitch_vcaon_supp_i(int cycles);
+  task automatic glitch_vcaon_pok(int cycles);
     repeat (cycles) @(posedge clk);
-    `uvm_info("ast_supply_if", "forcing vcaon_supp_i=0", UVM_MEDIUM)
-    force_vcaon_supp_i(1'b0);
+    `uvm_info("ast_supply_if", "forcing vcaon_pok_h_o=0", UVM_MEDIUM)
+    force_vcaon_pok(1'b0);
     #(GlitchTimeSpan);
-    `uvm_info("ast_supply_if", "forcing vcaon_supp_i=1", UVM_MEDIUM)
-    force_vcaon_supp_i(1'b1);
+    `uvm_info("ast_supply_if", "forcing vcaon_pok_h_o=1", UVM_MEDIUM)
+    force_vcaon_pok(1'b1);
   endtask
 
   // Wait some clock cycles due to various flops in the logic.
@@ -47,23 +47,23 @@ interface ast_supply_if (
     $asserton(1, top_earlgrey.u_pwrmgr_aon.u_slow_fsm.IntRstReq_A);
   endtask
 
-  task static force_vcmain_supp_i(bit value);
-    `uvm_info("ast_supply_if", $sformatf("forcing vcmain_supp_i to %b", value), UVM_MEDIUM)
+  task static force_vcmain_pok(bit value);
+    `uvm_info("ast_supply_if", $sformatf("forcing vcmain_pok_h_o to %b", value), UVM_MEDIUM)
     if (!value) begin
       `uvm_info("ast_supply_if", "disabling vcmain_supp_i related SVA", UVM_MEDIUM)
       $assertoff(1, top_earlgrey.u_pwrmgr_aon.u_slow_fsm.IntRstReq_A);
     end
-    force u_ast.vcmain_supp_i = value;
+    force u_ast.u_rglts_pdm_3p3v.vcmain_pok_h_o = value;
     if (value) reenable_vcmain_assertion();
   endtask
 
-  // Create glitch in vcmain_supp_i some cycles after a trigger transitions high.
-  task automatic glitch_vcmain_supp_i_on_next_trigger(int cycles);
+  // Create glitch in vcmain_pok_h_o some cycles after a trigger transitions high.
+  task automatic glitch_vcmain_pok_on_next_trigger(int cycles);
     @(posedge trigger);
     repeat (cycles) @(posedge clk);
-    force_vcmain_supp_i(1'b0);
+    force_vcmain_pok(1'b0);
     repeat (GlitchCycles) @(posedge clk);
-    force_vcmain_supp_i(1'b1);
+    force_vcmain_pok(1'b1);
   endtask
 
 endinterface
