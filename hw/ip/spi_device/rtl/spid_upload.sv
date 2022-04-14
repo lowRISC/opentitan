@@ -282,7 +282,7 @@ module spid_upload
         // payloadptr reached max
         payload_max <= 1'b 1;
       end
-      payloadptr <= payloadptr + PayloadPtrW'(1);
+      payloadptr <= payloadptr + PayloadIdxW'(1);
     end
   end
 
