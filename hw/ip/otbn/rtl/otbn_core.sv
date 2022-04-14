@@ -171,7 +171,7 @@ module otbn_core
   logic [WdrAw-1:0]   rf_bignum_rd_addr_b;
   logic               rf_bignum_rd_en_b;
   logic [ExtWLEN-1:0] rf_bignum_rd_data_b_intg;
-  logic               rf_bignum_rd_data_err;
+  logic               rf_bignum_rf_err;
 
   alu_bignum_operation_t alu_bignum_operation;
   logic                  alu_bignum_operation_commit;
@@ -428,7 +428,7 @@ module otbn_core
     .rf_bignum_rd_addr_b_o       (rf_bignum_rd_addr_b),
     .rf_bignum_rd_en_b_o         (rf_bignum_rd_en_b),
     .rf_bignum_rd_data_b_intg_i  (rf_bignum_rd_data_b_intg),
-    .rf_bignum_rd_data_err_i     (rf_bignum_rd_data_err),
+    .rf_bignum_rf_err_i          (rf_bignum_rf_err),
 
     .rf_bignum_rd_a_indirect_onehot_o(rf_bignum_rd_a_indirect_onehot),
     .rf_bignum_rd_b_indirect_onehot_o(rf_bignum_rd_b_indirect_onehot),
@@ -674,7 +674,7 @@ module otbn_core
     .rd_en_b_i       (rf_bignum_rd_en_b),
     .rd_data_b_intg_o(rf_bignum_rd_data_b_intg),
 
-    .rd_data_err_o(rf_bignum_rd_data_err),
+    .rf_err_o(rf_bignum_rf_err),
 
     .rf_predec_bignum_i(rf_predec_bignum),
     .predec_error_o    (rf_bignum_predec_error)

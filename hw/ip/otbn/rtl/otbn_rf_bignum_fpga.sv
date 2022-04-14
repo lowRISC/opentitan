@@ -32,7 +32,10 @@ module otbn_rf_bignum_fpga
   output logic [ExtWLEN-1:0] rd_data_a_o,
 
   input  logic [WdrAw-1:0]   rd_addr_b_i,
-  output logic [ExtWLEN-1:0] rd_data_b_o
+  output logic [ExtWLEN-1:0] rd_data_b_o,
+
+  // Indicates whether a spurious WE has been seen in the last cycle.
+  output logic               we_err_o
 );
 
 
@@ -72,6 +75,11 @@ module otbn_rf_bignum_fpga
     // Async read
     assign rd_data_a_o[i*BaseIntgWidth+:BaseIntgWidth] = rf_local[rd_addr_a_i];
     assign rd_data_b_o[i*BaseIntgWidth+:BaseIntgWidth] = rf_local[rd_addr_b_i];
+
+    // SEC_CM: RF_BASE.DATA_REG_SW.GLITCH_DETECT
+    // There is nothing to check here since the decoding happens inside the inferred
+    // memory block.
+    assign we_err_o = 1'b0;
 
   // This is only used for backdoor access in simulations.
 `ifdef VERILATOR

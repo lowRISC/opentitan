@@ -31,7 +31,10 @@ module otbn_rf_bignum_ff
   input  logic [WdrAw-1:0]   rd_addr_b_i,
   output logic [ExtWLEN-1:0] rd_data_b_o,
 
-  input  rf_predec_bignum_t rf_predec_bignum_i
+  // Indicates whether a spurious WE has been seen in the last cycle.
+  output logic               we_err_o,
+
+  input  rf_predec_bignum_t  rf_predec_bignum_i
 );
   logic [ExtWLEN-1:0] rf [NWdr];
   logic [1:0]         we_onehot [NWdr];
@@ -91,4 +94,49 @@ module otbn_rf_bignum_ff
   );
 
   assign unused_addr = ^rd_addr_a_i ^ ^rd_addr_b_i ^ ^wr_addr_i;
+
+  logic we_err;
+  logic [1:0][NWdr-1:0] we_onehot_unbuf, we_onehot_buf;
+
+  for (genvar k = 0; k < 2; k++) begin : g_check
+    for (genvar i = 0; i < NWdr; i++) begin : g_reshape
+      assign we_onehot_unbuf[k][i] = we_onehot[i][k];
+    end
+  end
+
+  // Buffer the decoded write enable bits so that the checker
+  // is not optimized into the address decoding logic.
+  prim_buf #(
+    .Width(2*NWdr)
+  ) u_prim_buf (
+    .in_i(we_onehot_unbuf),
+    .out_o(we_onehot_buf)
+  );
+
+  // SEC_CM: RF_BIGNUM.DATA_REG_SW.GLITCH_DETECT
+  // This checks for spurious WE strobes on the regfile.
+  prim_onehot_check #(
+    .AddrWidth(WdrAw),
+    .OneHotWidth(NWdr),
+    .AddrCheck(1),
+    .EnableCheck(1)
+  ) u_prim_onehot_check (
+    .clk_i,
+    .rst_ni,
+    // OR the two register halves.
+    .oh_i(we_onehot_buf[0] | we_onehot_buf[1]),
+    .addr_i(wr_addr_i),
+    .en_i(|wr_en_i),
+    .err_o(we_err)
+  );
+
+  // We need to register this to avoid timing loops.
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_err
+    if (!rst_ni) begin
+      we_err_o <= '0;
+    end else begin
+      we_err_o <= we_err;
+    end
+  end
+
 endmodule
