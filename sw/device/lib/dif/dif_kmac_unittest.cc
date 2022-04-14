@@ -561,6 +561,12 @@ TEST_F(ConfigLock, Unlocked) {
   EXPECT_FALSE(lock);
 }
 
+TEST_F(ConfigLock, BadArg) {
+  bool locked;
+  EXPECT_DIF_BADARG(dif_kmac_config_is_locked(nullptr, &locked));
+  EXPECT_DIF_BADARG(dif_kmac_config_is_locked(&kmac_, nullptr));
+}
+
 class KmacEndTest : public KmacTest {
  protected:
   KmacEndTest() { op_state_.squeezing = true; }
