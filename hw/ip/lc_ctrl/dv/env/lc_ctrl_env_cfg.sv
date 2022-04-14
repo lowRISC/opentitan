@@ -48,6 +48,9 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
   rand logic [OtpTestStatusWidth-1:0] otp_vendor_test_status;
   lc_tx_t otp_secrets_valid;
 
+  // Token mux error inject FSM state
+  fsm_state_e token_mux_ctrl_redun_err_inj_state;
+
 
 
   `uvm_object_utils_begin(lc_ctrl_env_cfg)
