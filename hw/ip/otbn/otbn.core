@@ -21,6 +21,7 @@ filesets:
       - lowrisc:ip:keymgr_pkg
       - lowrisc:ip:edn_pkg
       - lowrisc:ip:otbn_pkg
+      - lowrisc:prim:onehot_check
     files:
       - rtl/otbn_controller.sv
       - rtl/otbn_decoder.sv

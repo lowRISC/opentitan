@@ -172,6 +172,12 @@
     { name: "RND.RNG.DIGEST",
       desc: "Checking that the random numbers received over the EDN RND interface have not been generated from entropy that failed the FIPS health checks in the entropy source."
     }
+    { name: "RF_BASE.DATA_REG_SW.GLITCH_DETECT"
+      desc: '''
+        This countermeasure checks for spurious write-enable signals on the register
+        file by monitoring the one-hot0 property of the individual write-enable strobes.
+      '''
+    }
   ]
 
   regwidth: "32"
