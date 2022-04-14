@@ -1362,6 +1362,8 @@ module spi_device
     .sys_clk_i  (clk_i),
     .sys_rst_ni (rst_ni),
 
+    .sys_csb_deasserted_pulse_i (sys_csb_deasserted_pulse),
+
     .sys_status_we_i (readstatus_qe),
     .sys_status_i    (readstatus_q),
     .sys_status_o    (readstatus_d),

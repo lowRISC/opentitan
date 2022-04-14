@@ -523,6 +523,13 @@
       hwaccess: "hrw"
       hwext: true
       hwqe: true
+      tags: [
+        // SW is not able to read back the STATUS register right after write.
+        // The read back value is committed value, which needs at least a SPI
+        // transaction.
+        // So excluded from CSR automation test.
+        "excl:CsrNonInitTests:CsrExclWrite"
+      ]
       fields: [
         { bits: "0"
           name: "busy"
@@ -530,11 +537,6 @@
             back the register to confirm the value is cleared.'''
           swaccess: "rw0c"
           hwaccess: "hrw"
-          tags: [
-            // STATUS[0] is updated by HW when CSb is de-asserted.
-            // So excluded from CSR automation test.
-            "excl:CsrNonInitTests:CsrExclWrite"
-          ]
         } // f: busy
         { bits: "23:1"
           name: "status"
