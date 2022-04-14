@@ -141,7 +141,7 @@
     { name: "FSM.SPARSE",
       desc: "Sparse encoding for slow and fast state machines."
     }
-    { name: "FSM.LOCAL_ESC",
+    { name: "FSM.TERMINAL",
       desc: "When FSMs reach a bad state, escalate directly and force user reset."
     }
     { name: "CTRL_FLOW.GLOBAL_ESC",

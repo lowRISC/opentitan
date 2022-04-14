@@ -253,7 +253,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       // Signal the fast FSM if it somehow is still running.
       // Both FSMs are now permanently out of sync and the device
       // must be rebooted.
-      // SEC_CM: FSM.LOCAL_ESC
+      // SEC_CM: FSM.TERMINAL
       default: begin
         fsm_invalid_d = 1'b1;
         pd_nd         = 1'b0;
