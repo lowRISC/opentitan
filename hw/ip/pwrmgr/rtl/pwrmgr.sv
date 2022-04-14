@@ -258,10 +258,12 @@ module pwrmgr
 
   assign hw2reg.ctrl_cfg_regwen.d = lowpwr_cfg_wen;
 
-  assign hw2reg.fault_status.reg_intg_err.de = reg_intg_err;
-  assign hw2reg.fault_status.reg_intg_err.d  = 1'b1;
-  assign hw2reg.fault_status.esc_timeout.de  = esc_timeout;
-  assign hw2reg.fault_status.esc_timeout.d   = 1'b1;
+  assign hw2reg.fault_status.reg_intg_err.de    = reg_intg_err;
+  assign hw2reg.fault_status.reg_intg_err.d     = 1'b1;
+  assign hw2reg.fault_status.esc_timeout.de     = esc_timeout;
+  assign hw2reg.fault_status.esc_timeout.d      = 1'b1;
+  assign hw2reg.fault_status.main_pd_glitch.de  = peri_reqs_masked.rstreqs[ResetMainPwrIdx];
+  assign hw2reg.fault_status.main_pd_glitch.d   = 1'b1;
 
 
   ////////////////////////////
@@ -278,7 +280,8 @@ module pwrmgr
   };
 
   assign alerts[0] = reg2hw.fault_status.reg_intg_err.q |
-                     reg2hw.fault_status.esc_timeout.q;
+                     reg2hw.fault_status.esc_timeout.q |
+                     reg2hw.fault_status.main_pd_glitch.q;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(

@@ -59,6 +59,7 @@ CM_TYPES = [
     'LOCAL_ESC',
     'GLOBAL_ESC',
     'UNPREDICTABLE',
+    'TERMINAL',
     'CM'
 ]
 
