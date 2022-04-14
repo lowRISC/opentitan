@@ -21,16 +21,17 @@ filegroup(
 def _pip_wheel_impl(rctx):
     # First, check if an existing pre-built Python wheels repo exists, and if
     # so, use it instead of building one.
-    python_wheel_repo = rctx.os.environ.get("BAZEL_PYTHON_WHEELS_REPO", None)
-    repo_top_env = rctx.os.environ.get("REPO_TOP", None)
-    if python_wheel_repo:
+    python_wheel_repo_path = rctx.os.environ.get(
+        "BAZEL_PYTHON_WHEELS_REPO",
+        None,
+    )
+    if python_wheel_repo_path:
         rctx.report_progress("Mounting existing Python wheels repo")
-        if repo_top_env == None:
-            fail("pip_wheel failed: 'REPO_TOP' environment variable unset")
-        rctx.symlink("{}/{}".format(repo_top_env, python_wheel_repo), ".")
+        rctx.symlink(python_wheel_repo_path, ".")
         return
 
     # If a pre-built Python wheels repo does not exist, we need to build it.
+    rctx.report_progress("No Python wheels repo detected, building it instead")
 
     # First, we install the Python wheel package so we can build other wheels.
     args = [
@@ -120,7 +121,7 @@ pip_wheel = repository_rule(
             cfg = "exec",
         ),
     },
-    environ = ["REPO_TOP", "BAZEL_PYTHON_WHEELS_REPO"],
+    environ = ["BAZEL_PYTHON_WHEELS_REPO"],
 )
 
 def pip_deps():
