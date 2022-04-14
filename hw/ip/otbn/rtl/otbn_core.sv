@@ -136,7 +136,7 @@ module otbn_core
   logic [BaseIntgWidth-1:0] rf_base_rd_data_b_intg;
   logic                     rf_base_rd_commit;
   logic                     rf_base_call_stack_err;
-  logic                     rf_base_rd_data_err;
+  logic                     rf_base_rf_err;
 
   alu_base_operation_t  alu_base_operation;
   alu_base_comparison_t alu_base_comparison;
@@ -523,7 +523,7 @@ module otbn_core
                            urnd_all_zero,
                            predec_error},
     reg_intg_violation:  |{controller_err_bits.reg_intg_violation,
-                           rf_base_rd_data_err},
+                           rf_base_rf_err},
     dmem_intg_violation: lsu_rdata_err,
     imem_intg_violation: insn_fetch_err,
     rnd_fips_chk_fail:   controller_err_bits.rnd_fips_chk_fail,
@@ -555,12 +555,12 @@ module otbn_core
   assign controller_escalate_en =
       mubi4_or_hi(escalate_en_i,
                   mubi4_bool_to_mubi(|{start_stop_state_error, urnd_all_zero, predec_error,
-                                       rf_base_rd_data_err, lsu_rdata_err, insn_fetch_err}));
+                                       rf_base_rf_err, lsu_rdata_err, insn_fetch_err}));
 
   // Similarly for the start/stop controller
   assign start_stop_escalate_en =
       mubi4_or_hi(escalate_en_i,
-                  mubi4_bool_to_mubi(|{urnd_all_zero, rf_base_rd_data_err, predec_error,
+                  mubi4_bool_to_mubi(|{urnd_all_zero, rf_base_rf_err, predec_error,
                                        lsu_rdata_err, insn_fetch_err, controller_fatal_err}));
 
   assign insn_cnt_o = insn_cnt;
@@ -621,7 +621,7 @@ module otbn_core
     .rd_commit_i     (rf_base_rd_commit),
 
     .call_stack_err_o(rf_base_call_stack_err),
-    .rd_data_err_o   (rf_base_rd_data_err)
+    .rf_err_o        (rf_base_rf_err)
   );
 
   assign rf_base_wr_addr         = sec_wipe_base ? sec_wipe_addr : rf_base_wr_addr_ctrl;
