@@ -110,6 +110,8 @@ package lc_ctrl_env_pkg;
     bit otp_test_tokens_valid_mubi_err;
     // OTP RMA token valid
     bit otp_rma_token_valid_mubi_err;
+    // Force bad values on token mux select lines
+    bit token_mux_ctrl_redun_err;
   } lc_ctrl_err_inj_t;
 
   // Test phase - used to synchronise the scoreboard

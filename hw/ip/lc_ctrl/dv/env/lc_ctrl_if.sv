@@ -24,16 +24,22 @@
     tb.dut.otp_lc_data_i.count
 `endif
 
+`ifndef LC_CTRL_FSM_PATH
+`define LC_CTRL_FSM_PATH tb.dut.u_lc_ctrl_fsm
+`endif
+
 interface lc_ctrl_if (
   input clk,
   input rst_n
 );
 
+  import uvm_pkg::*;
   import lc_ctrl_pkg::*;
   import lc_ctrl_state_pkg::*;
   import otp_ctrl_pkg::*;
   import otp_ctrl_part_pkg::*;
 
+  `include "uvm_macros.svh"
 
   logic tdo_oe;  // TODO: add assertions
   otp_lc_data_t otp_i;
@@ -241,7 +247,28 @@ interface lc_ctrl_if (
     test_sequence_typename = name;
   endfunction
 
+  function static void force_token_idx(input int idx, input logic [TokenIdxWidth-1:0] val);
+    case (idx)
+      0: force `LC_CTRL_FSM_PATH.token_idx0 = val;
+      1: force `LC_CTRL_FSM_PATH.token_idx1 = val;
+      default: begin
+        `uvm_fatal($sformatf("%m"), $sformatf("force_token_idx: index %0d out of range", idx))
+      end
+    endcase
+  endfunction
+
+  function static void release_token_idx(input int idx);
+    case (idx)
+      0: release `LC_CTRL_FSM_PATH.token_idx0;
+      1: release `LC_CTRL_FSM_PATH.token_idx1;
+      default: begin
+        `uvm_fatal($sformatf("%m"), $sformatf("release_token_idx: index %0d out of range", idx))
+      end
+    endcase
+  endfunction
+
 endinterface
 
 `undef LC_CTRL_FSM_STATE_REGS_PATH
 `undef LC_CTRL_COUNT_PATH
+`undef LC_CTRL_FSM_PATH
