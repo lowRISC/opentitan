@@ -24,8 +24,20 @@
 {
   testpoints: [
     {
-      name: sec_cm_bus_integrity
-      desc: "Verify the countermeasure(s) BUS.INTEGRITY."
+      name: sec_cm_reg_bus_integrity
+      desc: "Verify the countermeasure(s) REG.BUS.INTEGRITY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_host_bus_integrity
+      desc: "Verify the countermeasure(s) HOST.BUS.INTEGRITY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mem_bus_integrity
+      desc: "Verify the countermeasure(s) MEM.BUS.INTEGRITY."
       milestone: V2S
       tests: []
     }

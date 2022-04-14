@@ -198,7 +198,25 @@
 
   ],
   countermeasures: [
-    { name: "BUS.INTEGRITY",
+    { name: "REG.BUS.INTEGRITY",
+      desc: '''
+        End-to-end bus integrity scheme.
+        Since there are multiple access points for flash, please see
+        Transmission Integrity Faults in the documentation for more details.
+
+        The bus integrity scheme for flash is different from other comportable modules.
+      '''
+    }
+    { name: "HOST.BUS.INTEGRITY",
+      desc: '''
+        End-to-end bus integrity scheme.
+        Since there are multiple access points for flash, please see
+        Transmission Integrity Faults in the documentation for more details.
+
+        The bus integrity scheme for flash is different from other comportable modules.
+      '''
+    }
+    { name: "MEM.BUS.INTEGRITY",
       desc: '''
         End-to-end bus integrity scheme.
         Since there are multiple access points for flash, please see
