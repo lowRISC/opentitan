@@ -12,12 +12,14 @@ use serde::Deserialize;
 use std::convert::{TryFrom, TryInto};
 use std::iter::IntoIterator;
 
-fixed_size_bigint!(ManifestRsa, 3072);
+use zerocopy::AsBytes;
 
-#[derive(Debug, Deserialize)]
+fixed_size_bigint!(ManifestRsa, at_most 3072);
+
+#[derive(Clone, Default, Debug, Deserialize)]
 struct ManifestBigInt(Option<HexEncoded<ManifestRsa>>);
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Default, Debug, Deserialize)]
 struct ManifestSmallInt<T: ParseInt>(Option<HexEncoded<T>>);
 
 /// A macro for wrapping manifest struct definitions that parse from HJSON.
@@ -26,12 +28,18 @@ struct ManifestSmallInt<T: ParseInt>(Option<HexEncoded<T>>);
 /// present. This macro sets up the field by field conversion and provides the field names for
 /// purposes of error reporting.
 macro_rules! manifest_def {
-    (struct $name:ident {
-        $($field_name:ident: $field_type:ty,)*
+    ($access:vis struct $name:ident {
+        $(
+            $(#[$doc:meta])?
+            $field_name:ident: $field_type:ty,
+        )*
     }, $out_type:ident) => {
-        #[derive(Deserialize, Debug)]
-        struct $name {
-            $($field_name: $field_type,)*
+        #[derive(Clone, Default, Deserialize, Debug)]
+        $access struct $name {
+            $(
+                $(#[$doc])?
+                $field_name: $field_type,
+            )*
         }
 
         impl ManifestPacked<$out_type> for $name {
@@ -41,6 +49,28 @@ macro_rules! manifest_def {
                     // error messages.
                     $($field_name: self.$field_name
                         .unpack(stringify!($field_name))?.try_into()?,)*
+                })
+            }
+
+            fn overwrite(&mut self, o: $name) {
+                $(self.$field_name.overwrite(o.$field_name);)*
+            }
+        }
+
+        impl TryInto<$out_type> for $name {
+            type Error = anyhow::Error;
+
+            fn try_into(self) -> Result<$out_type> {
+                self.unpack("")
+            }
+        }
+
+        impl TryFrom<&$out_type> for $name {
+            type Error = anyhow::Error;
+
+            fn try_from(o: &$out_type) -> Result<Self> {
+                Ok($name {
+                    $($field_name: (&o.$field_name).try_into()?,)*
                 })
             }
         }
@@ -55,6 +85,9 @@ trait ManifestPacked<T> {
 
     /// Unpack optional fields in the manifest, and error if the field isn't defined.
     fn unpack(self, name: &'static str) -> Result<T>;
+
+    /// Overwrite manifest field.
+    fn overwrite(&mut self, o: Self);
 }
 
 impl ManifestPacked<ManifestRsa> for ManifestBigInt {
@@ -64,6 +97,12 @@ impl ManifestPacked<ManifestRsa> for ManifestBigInt {
             None => self.unpack_err(name),
         }
     }
+
+    fn overwrite(&mut self, o: Self) {
+        if o.0.is_some() {
+            *self = o;
+        }
+    }
 }
 
 impl<T: ParseInt> ManifestPacked<T> for ManifestSmallInt<T> {
@@ -71,6 +110,12 @@ impl<T: ParseInt> ManifestPacked<T> for ManifestSmallInt<T> {
         match self.0 {
             Some(v) => Ok(v.0),
             None => self.unpack_err(name),
+        }
+    }
+
+    fn overwrite(&mut self, o: Self) {
+        if o.0.is_some() {
+            *self = o;
         }
     }
 }
@@ -86,10 +131,17 @@ impl<T: ParseInt, const N: usize> ManifestPacked<[T; N]> for [ManifestSmallInt<T
             Ok(results.map(|x| x.unwrap()))
         }
     }
+
+    fn overwrite(&mut self, o: Self) {
+        // Only perform the overwrite if all elements of `o` are present.
+        if o.iter().fold(true, |prev, v| prev && v.0.is_some()) {
+            *self = o;
+        }
+    }
 }
 
 manifest_def! {
-    struct ManifestDef {
+    pub struct ManifestDef {
         signature: ManifestBigInt,
         usage_constraints: ManifestUsageConstraintsDef,
         modulus: ManifestBigInt,
@@ -109,7 +161,7 @@ manifest_def! {
 }
 
 manifest_def! {
-    struct ManifestUsageConstraintsDef {
+    pub struct ManifestUsageConstraintsDef {
         selector_bits: ManifestSmallInt<u32>,
         device_id: [ManifestSmallInt<u32>; 8],
         manuf_state_creator: ManifestSmallInt<u32>,
@@ -159,6 +211,44 @@ impl TryFrom<[u32; 8]> for LifecycleDeviceId {
     }
 }
 
+impl TryFrom<SigverifyRsaBuffer> for ManifestBigInt {
+    type Error = anyhow::Error;
+
+    fn try_from(o: SigverifyRsaBuffer) -> Result<ManifestBigInt> {
+        let buf: [u32; 96] = o.data.try_into()?;
+        let rsa = ManifestRsa::from_le_bytes(buf.as_bytes())?;
+        Ok(ManifestBigInt(Some(HexEncoded(rsa))))
+    }
+}
+
+impl TryFrom<&SigverifyRsaBuffer> for ManifestBigInt {
+    type Error = anyhow::Error;
+
+    fn try_from(o: &SigverifyRsaBuffer) -> Result<ManifestBigInt> {
+        let buf: [u32; 96] = o.data.try_into()?;
+        let rsa = ManifestRsa::from_le_bytes(buf.as_bytes())?;
+        Ok(ManifestBigInt(Some(HexEncoded(rsa))))
+    }
+}
+
+impl<T> From<&T> for ManifestSmallInt<T> where T: ParseInt + Copy {
+    fn from(o: &T) -> ManifestSmallInt<T> {
+        ManifestSmallInt(Some(HexEncoded(*o)))
+    }
+}
+
+impl From<&KeymgrBindingValue> for [ManifestSmallInt<u32>; 8] {
+    fn from(o: &KeymgrBindingValue) -> [ManifestSmallInt<u32>; 8] {
+        o.data.map(|v| ManifestSmallInt(Some(HexEncoded(v))))
+    }
+}
+
+impl From<&LifecycleDeviceId> for [ManifestSmallInt<u32>; 8] {
+    fn from(o: &LifecycleDeviceId) -> [ManifestSmallInt<u32>; 8] {
+        o.device_id.map(|v| ManifestSmallInt(Some(HexEncoded(v))))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -170,6 +260,40 @@ mod tests {
         let def: ManifestDef =
             from_str(&std::fs::read_to_string(testdata!("manifest.hjson")).unwrap()).unwrap();
 
-        let _: Manifest = def.unpack("").unwrap();
+        let _: Manifest = def.try_into().unwrap();
+    }
+
+    #[test]
+    fn test_manifest_overwrite() {
+        let mut base: ManifestDef =
+            from_str(&std::fs::read_to_string(testdata!("manifest.hjson")).unwrap()).unwrap();
+        let other = ManifestDef {
+            identifier: from_str("0xabcd").unwrap(),
+            binding_value: from_str(stringify!(["0", "1", "2", "3", "4", "5", "6", "7"])).unwrap(),
+            ..Default::default()
+        };
+        base.overwrite(other);
+        assert_eq!(base.identifier.0.unwrap().0, 0xabcd);
+        assert_eq!(
+            base.binding_value.map(|v| v.0.unwrap().0)[..],
+            [0, 1, 2, 3, 4, 5, 6, 7]
+        );
+
+        // Ensure unspecified fields are not overwritten.
+        assert_eq!(base.address_translation.0.unwrap().0, 0x739);
+    }
+
+    #[test]
+    fn test_manifest_convert() {
+        let def1: ManifestDef =
+            from_str(&std::fs::read_to_string(testdata!("manifest.hjson")).unwrap()).unwrap();
+        let def2 = def1.clone();
+
+        let bin1: Manifest = def1.try_into().unwrap();
+        let bin2: Manifest = def2.try_into().unwrap();
+
+        let redef: ManifestDef = (&bin1).try_into().unwrap();
+        let rebin: Manifest = redef.try_into().unwrap();
+        assert_eq!(bin2.as_bytes(), rebin.as_bytes());
     }
 }
