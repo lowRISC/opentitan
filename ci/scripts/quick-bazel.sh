@@ -24,7 +24,7 @@ run_tests() {
             bazel test \
             --keep_going \
             --nobuild_tests_only \
-            --test_tag_filters=-broken,-cw310,-verilator \
+            --test_tag_filters=-broken,-cw310,-verilator,-dv \
             -- //...
 }
 
