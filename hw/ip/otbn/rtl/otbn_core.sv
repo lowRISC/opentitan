@@ -526,7 +526,7 @@ module otbn_core
     bad_data_addr:       controller_err_bits.bad_data_addr
   };
 
-  always @(posedge clk_i or negedge rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       err_bits_q <= '0;
     end else begin
