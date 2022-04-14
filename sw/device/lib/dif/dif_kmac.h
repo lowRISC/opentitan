@@ -133,6 +133,13 @@ typedef struct dif_kmac_config {
    */
   bool sideload;
 
+  /**
+   * Message Masking with PRNG.
+   * If true, KMAC applies PRNG to the input messages to the Keccak module when
+   * KMAC mode is on.
+   */
+  bool msg_mask;
+
 } dif_kmac_config_t;
 
 /**
