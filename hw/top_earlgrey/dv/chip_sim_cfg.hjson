@@ -122,10 +122,18 @@
     {
       name: build_seed
       pre_build_cmds: [
-        '''cd {proj_root} && ./util/topgen.py -t {ral_spec} \
-               -o hw/top_earlgrey --rnd_cnst_seed {build_seed}
-        ''',
-        "cd {proj_root} && ./util/design/gen-otp-mmap.py --seed {build_seed}"
+        // TODO: find where in run phase we are using this pkg. It fails during ibex TLUL integrity
+        // check.
+        // '''cd {proj_root} && ./util/topgen.py -t {ral_spec} \
+        //        -o hw/top_earlgrey --rnd_cnst_seed {seed}
+        // ''',
+        "cd {proj_root} && ./util/design/gen-otp-mmap.py --seed {seed}",
+        // Use eval_cmd to save build_seed in a file and reuse that file during run phase.
+        // Create the build directory first because eval_cmd runs before actual build phase command
+        // execution.
+        '''{eval_cmd} mkdir -p {build_dir}; echo {seed} > {build_seed_file_path}; \
+           echo "echo create file {build_seed_file_path}"
+        '''
       ]
       is_sim_mode: 1
     }
@@ -140,8 +148,17 @@
   // Setup for generating OTP images.
   gen_otp_images_cfg_dir: "{proj_root}/hw/ip/otp_ctrl/data"
   gen_otp_images_cmd: "{proj_root}/util/design/gen-otp-img.py"
-  gen_otp_images_cmd_opts: ["--quiet", "--img-seed {seed}", "--otp-seed {build_seed}"]
-
+  gen_otp_images_cmd_opts: ["--quiet",
+                            "--img-seed {seed}",
+                            // Only provide `--otp-seed` argument if the file to store build_seed
+                            // is found. Set this option at the end of the list to avoid `eval_cmd`
+                            // take other options as eval_cmd.
+                            '''{eval_cmd} file=`echo {build_seed_file_path}`; \
+                               if [ -f $file ]; then \
+                                 while read line; do \
+                                   echo "--otp-seed $line"; \
+                                 done < $file; \
+                               fi ''']
   // Add run modes.
   run_modes: [
     // Generates OTP images with different LC states with cannonical values,
@@ -149,17 +166,20 @@
     {
       name: gen_otp_images_mode
       pre_run_cmds: [
-        '''{gen_otp_images_cmd} {gen_otp_images_cmd_opts} \
-               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_raw.hjson \
-               --out {run_dir}/otp_ctrl_img_raw.vmem
+        '''{gen_otp_images_cmd} \
+              --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_raw.hjson \
+              --out {run_dir}/otp_ctrl_img_raw.vmem \
+              {gen_otp_images_cmd_opts}
         ''',
-        '''{gen_otp_images_cmd} {gen_otp_images_cmd_opts} \
-               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_dev.hjson \
-               --out {run_dir}/otp_ctrl_img_dev.vmem
+         '''{gen_otp_images_cmd} \
+              --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_dev.hjson \
+              --out {run_dir}/otp_ctrl_img_dev.vmem \
+              {gen_otp_images_cmd_opts}
         ''',
-        '''{gen_otp_images_cmd} {gen_otp_images_cmd_opts} \
-               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_rma.hjson \
-               --out {run_dir}/otp_ctrl_img_rma.vmem
+        '''{gen_otp_images_cmd} \
+              --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_rma.hjson \
+              --out {run_dir}/otp_ctrl_img_rma.vmem \
+              {gen_otp_images_cmd_opts}
         ''',
       ]
     }
