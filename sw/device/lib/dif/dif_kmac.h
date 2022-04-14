@@ -380,15 +380,87 @@ typedef enum dif_kmac_error {
 
 /**
  * The state of the message FIFO used to buffer absorbed data.
+ *
+ * The hardware defined these status in different bit fields, however they work
+ * better in the same field. i.e the fifo can't be empty and full at the same
+ * time. That said, the values chosen for this enum allow the conversion from
+ * the register bits to this enum without branches.
  */
 typedef enum dif_kmac_fifo_state {
-  /** The message FIFO is empty. */
-  kDifKmacFifoStateEmpty,
   /** The message FIFO is not empty or full. */
-  kDifKmacFifoStatePartial,
+  kDifKmacFifoStatePartial = 0,
+  /** The message FIFO is empty. */
+  kDifKmacFifoStateEmpty = 1 << 0,
   /** The message FIFO is full. Further writes will block. */
-  kDifKmacFifoStateFull,
+  kDifKmacFifoStateFull = 1 << 1,
 } dif_kmac_fifo_state_t;
+
+typedef enum dif_kmac_sha3_state {
+  /**
+   * SHA3 hashing engine is in idle state.
+   */
+  kDifKmacSha3StateIdle = 1 << 0,
+
+  /**
+   * SHA3 is receiving message stream and processing it.
+   */
+  kDifKmacSha3StateAbsorbing = 1 << 1,
+
+  /**
+   * SHA3 completes sponge absorbing stage. In this stage, SW can manually run
+   * the hashing engine.
+   */
+  kDifKmacSha3StateSqueezing = 1 << 2,
+} dif_kmac_sha3_state_t;
+
+/**
+ * The kmac error faults.
+ *
+ * The hardware defined these status in different bit fields, however they work
+ * better in the same field. Then the values chosen for this enum allow the
+ * conversion from the register bits to this enum without branches.
+ */
+typedef enum dif_kmac_alert_faults {
+  /**
+   * Neither errors nor fault has occurred.
+   */
+  kDifKmacAlertNone = 0,
+  /**
+   * A fatal fault has occurred and the KMAC unit needs to be reset (1),
+   * Examples for such faults include i) TL-UL bus integrity fault ii)
+   * storage errors in the shadow registers iii) errors in the message,
+   * round, or key counter iv) any internal FSM entering an invalid state v)
+   * an error in the redundant lfsr.
+   */
+  kDifKmacAlertFatalFault = 1 << 0,
+  /**
+   * An update error has occurred in the shadowed Control Register. KMAC
+   * operation needs to be restarted by re-writing the Control Register.
+   */
+  kDifKmacAlertRecovCtrlUpdate = 1 << 1,
+} dif_kmac_alert_faults_t;
+
+typedef struct dif_kmac_status {
+  /**
+   * Sha3 state.
+   */
+  dif_kmac_sha3_state_t sha3_state;
+
+  /**
+   * Message FIFO entry count.
+   */
+  uint32_t fifo_depth;
+
+  /**
+   * Kmac fifo state.
+   */
+  dif_kmac_fifo_state_t fifo_state;
+
+  /**
+   * Kmac faults and errors state.
+   */
+  dif_kmac_alert_faults_t faults;
+} dif_kmac_status_t;
 
 /**
  * Configures KMAC with runtime information.
@@ -616,14 +688,12 @@ dif_result_t dif_kmac_reset(const dif_kmac_t *kmac,
  * Fetch the current status of the message FIFO used to buffer absorbed data.
  *
  * @param kmac A KMAC handle.
- * @param[out] state The state of the FIFO (empty, partially full or full).
- * @param[out] depth The current depth of the FIFO (optional).
+ * @param[out] kmac_status The kmac status struct.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_kmac_get_fifo_state(const dif_kmac_t *kmac,
-                                     dif_kmac_fifo_state_t *fifo_state,
-                                     uint32_t *depth);
+dif_result_t dif_kmac_get_status(const dif_kmac_t *kmac,
+                                 dif_kmac_status_t *kmac_status);
 
 /**
  * Reports whether or not the KMAC configuration register is locked.
