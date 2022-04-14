@@ -111,7 +111,8 @@ sw_lib_testing_flash_ctrl_testutils = declare_dependency(
   link_with: static_library(
     'sw_lib_testing_flash_ctrl_testutils',
     sources: [
-      'flash_ctrl_testutils.c'
+      'flash_ctrl_testutils.c',
+      hw_ip_flash_ctrl_reg_h,
     ],
     dependencies: [
       sw_lib_mmio,

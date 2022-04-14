@@ -9,20 +9,6 @@ subdir('dif')
 subdir('runtime')
 subdir('crypto')
 
-# Flash controller library (sw_lib_flash_ctrl)
-sw_lib_flash_ctrl = declare_dependency(
-  link_with: static_library(
-    'flash_ctrl_ot',
-    sources: [
-      hw_ip_flash_ctrl_reg_h,
-      'flash_ctrl.c',
-    ],
-    dependencies: [
-      top_earlgrey,
-    ]
-  )
-)
-
 # Temp ibex peri library (sw_lib_ibex)
 sw_lib_ibex = declare_dependency(
   link_with: static_library(

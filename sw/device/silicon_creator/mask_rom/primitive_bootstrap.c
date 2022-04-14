@@ -7,11 +7,13 @@
 #include <stddef.h>
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
-#include "sw/device/lib/flash_ctrl.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_rom/spiflash_frame.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
@@ -23,6 +25,7 @@
 
 #define GPIO_BOOTSTRAP_BIT_MASK 0x00020000u
 
+static dif_flash_ctrl_state_t flash_ctrl;
 static dif_spi_device_t spi;
 static dif_spi_device_config_t spi_config;
 
@@ -90,18 +93,48 @@ static rom_error_t bootstrap_requested(bool *result) {
 }
 
 /**
+ * Check that flash data partitions are all blank.
+ */
+static bool flash_is_empty(void) {
+  dif_flash_ctrl_device_info_t flash_info = dif_flash_ctrl_get_device_info();
+  const uint32_t flash_size_bytes =
+      flash_info.num_banks * flash_info.bytes_per_page * flash_info.data_pages;
+  uint32_t *const limit =
+      (uint32_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + flash_size_bytes);
+  uint32_t mask = -1u;
+  uint32_t *p = (uint32_t *)TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
+  for (; p < limit;) {
+    mask &= *p++;
+    mask &= *p++;
+    mask &= *p++;
+    mask &= *p++;
+    mask &= *p++;
+    mask &= *p++;
+    mask &= *p++;
+    mask &= *p++;
+    if (mask != -1u) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
  * Erase all flash, and verify blank.
  */
-static rom_error_t erase_flash(void) {
-  if (flash_bank_erase(FLASH_BANK_0) != 0) {
+static int erase_flash(void) {
+  if (flash_ctrl_testutils_bank_erase(&flash_ctrl, /*bank=*/0,
+                                      /*data_only=*/true)) {
     return kErrorBootstrapErase;
   }
-  if (flash_bank_erase(FLASH_BANK_1) != 0) {
+  if (flash_ctrl_testutils_bank_erase(&flash_ctrl, /*bank=*/1,
+                                      /*data_only=*/true)) {
     return kErrorBootstrapErase;
   }
-  if (flash_check_empty() == 0) {
+  if (!flash_is_empty()) {
     return kErrorBootstrapEraseCheck;
   }
+
   return kErrorOk;
 }
 
@@ -161,13 +194,22 @@ static rom_error_t bootstrap_flash(void) {
             spi_device_send((uint8_t *)&ack.digest, sizeof(ack.digest)));
 
         if (expected_frame_num == 0) {
-          flash_default_region_access(/*rd_en=*/true, /*prog_en=*/true,
-                                      /*erase_en=*/true);
+          flash_ctrl_testutils_default_region_access(
+              &flash_ctrl,
+              /*rd_en=*/true,
+              /*prog_en=*/true,
+              /*erase_en=*/true,
+              /*scramble_en=*/false,
+              /*ecc_en=*/false,
+              /*high_endurance_en=*/false);
+
           RETURN_IF_ERROR(erase_flash());
         }
 
-        if (flash_write(frame.header.flash_offset, kDataPartition, frame.data,
-                        SPIFLASH_FRAME_DATA_WORDS) != 0) {
+        if (flash_ctrl_testutils_write(&flash_ctrl, frame.header.flash_offset,
+                                       /*partition_id=*/0, frame.data,
+                                       kDifFlashCtrlPartitionTypeData,
+                                       SPIFLASH_FRAME_DATA_WORDS)) {
           return kErrorBootstrapWrite;
         }
 
@@ -189,7 +231,11 @@ static rom_error_t bootstrap_flash(void) {
 static rom_error_t primitive_bootstrap_impl(void) {
   rom_printf("Bootstrap: BEGIN\n\r");
 
-  flash_init_block();
+  OT_DISCARD(dif_flash_ctrl_init_state(
+      &flash_ctrl,
+      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  flash_ctrl_testutils_wait_for_init(&flash_ctrl);
+
   RETURN_IF_ERROR(spi_device_init());
 
   rom_error_t error = bootstrap_flash();
@@ -222,7 +268,8 @@ rom_error_t primitive_bootstrap(lifecycle_state_t lc_state) {
 
   // Always make sure to revert flash_ctrl access to default settings.
   // bootstrap_flash enables access to flash to perform update.
-  flash_default_region_access(/*rd_en=*/false, /*prog_en=*/false,
-                              /*erase_en=*/false);
+  flash_ctrl_testutils_default_region_access(
+      &flash_ctrl, /*rd_en=*/false, /*prog_en=*/false, /*erase_en=*/false,
+      /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false);
   return error;
 }

@@ -9,7 +9,12 @@
 
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 
-#define MAX_BEATS_PER_BURST 16
+/**
+ * Wait for the flash_ctrl to initialize.
+ *
+ * @param flash_state A flash_ctrl state handle.
+ */
+void flash_ctrl_testutils_wait_for_init(dif_flash_ctrl_state_t *flash_state);
 
 /**
  * Wait for a flash_ctrl operation to end.
@@ -19,7 +24,7 @@
  * Clears any error codes and returns the value of operation_error.
  *
  * @param flash_state A flash_ctrl state handle.
- * @return The operation error flag.
+ * @return True if the operation produced an error.
  */
 bool flash_ctrl_testutils_wait_transaction_end(
     dif_flash_ctrl_state_t *flash_state);
@@ -121,9 +126,10 @@ bool flash_ctrl_testutils_erase_page(
     uint32_t partition_id, dif_flash_ctrl_partition_type_t partition_type);
 
 /**
- * Programs the page at byte_address. The write is broken into
- * as many transactions as required for the supplied word_count such
- * that MAX_BEATS_PER_BURST is not exceded in any transaction.
+ * Programs the flash starting from byte_address.
+ * The write is broken into as many transactions as required for the supplied
+ * word_count such that the program resolution is not exceeded in any
+ * transaction.
  * Returns the result of transaction_end.
  *
  * @param flash_state A flash_ctrl state handle.
@@ -132,12 +138,13 @@ bool flash_ctrl_testutils_erase_page(
  * @param data The data to program.
  * @param partition_type The partition type, data or info.
  * @param word_count The number of words to program.
- * @return The operation error flag.
+ * @return True if the operation produced an error.
  */
-bool flash_ctrl_testutils_write_page(
-    dif_flash_ctrl_state_t *flash_state, uint32_t byte_address,
-    uint32_t partition_id, const uint32_t *data,
-    dif_flash_ctrl_partition_type_t partition_type, uint32_t word_count);
+bool flash_ctrl_testutils_write(dif_flash_ctrl_state_t *flash_state,
+                                uint32_t byte_address, uint32_t partition_id,
+                                const uint32_t *data,
+                                dif_flash_ctrl_partition_type_t partition_type,
+                                uint32_t word_count);
 
 /**
  * Erases and Programs the page at byte_address.
@@ -158,22 +165,22 @@ bool flash_ctrl_testutils_erase_and_write_page(
     dif_flash_ctrl_partition_type_t partition_type, uint32_t word_count);
 
 /**
- * Reads the page at byte_address.
+ * Reads data starting from byte_address.
  * Returns the result of transaction_end.
  *
  * @param flash_state A flash_ctrl state handle.
  * @param byte_address The byte address of the page to erase and program.
- * @param paritiion_id The partition index.
+ * @param partition_id The partition index.
  * @param data_out The data read from the page.
  * @param partition_type The partition type, data or info.
  * @param word_count The number of words to read.
  * @return The operation error flag.
  */
-bool flash_ctrl_testutils_read_page(
-    dif_flash_ctrl_state_t *flash_state, uint32_t byte_address,
-    uint32_t partition_id, uint32_t *data_out,
-    dif_flash_ctrl_partition_type_t partition_type, uint32_t word_count,
-    uint32_t delay);
+bool flash_ctrl_testutils_read(dif_flash_ctrl_state_t *flash_state,
+                               uint32_t byte_address, uint32_t partition_id,
+                               uint32_t *data_out,
+                               dif_flash_ctrl_partition_type_t partition_type,
+                               uint32_t word_count, uint32_t delay);
 
 /**
  * Sets the flash default configuration.
@@ -189,5 +196,18 @@ bool flash_ctrl_testutils_read_page(
 void flash_ctrl_testutils_default_region_access(
     dif_flash_ctrl_state_t *flash_state, bool rd_en, bool prog_en,
     bool erase_en, bool scramble_en, bool ecc_en, bool high_endurance_en);
+
+/**
+ * Enables erase for the provided bank, erases the bank, then disables bank
+ * erase.
+ *
+ * @param flash_state A flash_ctrl state handle.
+ * @param bank The bank ID.
+ * @param data_only True to only erase the data partitions. False to erase
+ *                  everything.
+ * @return if the operation failed.
+ */
+bool flash_ctrl_testutils_bank_erase(dif_flash_ctrl_state_t *flash_state,
+                                     uint32_t bank, bool data_only);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_FLASH_CTRL_TESTUTILS_H_
