@@ -16,6 +16,6 @@ class chip_sw_main_power_glitch_vseq extends chip_sw_base_vseq;
     // Wait until we reach the SW test state.
     wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest);
 
-    cfg.ast_supply_vif.glitch_vcmain_supp_i_on_next_trigger(cycles_after_trigger);
+    cfg.ast_supply_vif.glitch_vcmain_pok_on_next_trigger(cycles_after_trigger);
   endtask
 endclass
