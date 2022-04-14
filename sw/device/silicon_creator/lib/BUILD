@@ -45,6 +45,7 @@ opentitan_functest(
     srcs = ["boot_data_functest.c"],
     verilator = verilator_params(
         timeout = "eternal",
+        tags = ["verilator_in_ci"],
     ),
     deps = [
         ":boot_data",
@@ -137,6 +138,10 @@ cc_library(
 opentitan_functest(
     name = "irq_asm_functest",
     srcs = ["irq_asm_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+        tags = ["verilator_in_ci"],
+    ),
     deps = [
         ":error",
         ":irq_asm",

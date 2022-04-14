@@ -223,26 +223,6 @@ jobs:
       includePatterns:
         - "/sw/device/***"
 
-- job: chip_earlgrey_verilator
-  displayName: Build Verilator simulation of the Earl Grey toplevel design
-  dependsOn: lint
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
-  pool: ci-public
-  steps:
-  - template: ci/install-package-dependencies.yml
-  - bash: |
-      python3 --version
-      fusesoc --version
-      verilator --version
-      verible-verilog-lint --version
-    displayName: Display environment
-  - bash: ci/scripts/build-chip-verilator.sh earlgrey
-    displayName: Build simulation with Verilator
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/hw/top_earlgrey/Vchip_earlgrey_verilator"
-
 - job: chip_englishbreakfast_verilator
   displayName: Build Verilator simulation of the English Breakfast toplevel design
   dependsOn: lint
@@ -265,58 +245,74 @@ jobs:
         - "/hw/top_englishbreakfast/Vchip_englishbreakfast_verilator"
 
 - job: execute_verilated_tests
-  displayName: "Run tests on sim_verilator"
+  displayName: "Build and run tests on sim_verilator"
   dependsOn: lint
   pool: ci-public
-  timeoutInMinutes: 120
-  dependsOn:
-    - chip_earlgrey_verilator
-    - sw_build
+  timeoutInMinutes: 180
   steps:
   - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - chip_earlgrey_verilator
-        - sw_build
   - bash: |
-      # Install an additional pytest dependency for result upload.
-      pip3 install pytest-azurepipelines
-
+      # Because Verilator is incredibly slow in CI, we make two
+      # changes to make sure tests complete:
+      #
+      # --test_timeout is used to upgrade all short and medium tests time
+      # out after ten minutes.
+      ci/bazelisk.sh test \
+        --build_tests_only=true \
+        --test_timeout=600,600,-1,-1 \
+        --local_test_jobs=4 \
+        --test_tag_filters=-broken,verilator_in_ci \
+        //...
+    displayName: Build and execute tests
+  - bash: |
       . util/build_consts.sh
-      pytest --version
-      pytest test/systemtest/earlgrey/test_sim_verilator.py \
-        -m "not slow" \
-        --log-cli-level=DEBUG \
-        --test-run-title="Run system tests with Verilator simulation (excl. slow tests)" \
-        --napoleon-docstrings
-    displayName: Execute tests
+      mkdir -p "$BIN_DIR/hw/top_earlgrey/"
+      cp $(find bazel-out/* -name Vchip_sim_tb) \
+        "$BIN_DIR/hw/top_earlgrey/Vchip_earlgrey_verilator"
+    displayName: "Copy //hw:verilator to legacy $BIN_DIR location"
+  - template: ci/upload-artifacts-template.yml
+    parameters:
+      includePatterns:
+        - "/hw/top_earlgrey/Vchip_earlgrey_verilator"
 
 - job: execute_verilated_tests_englishbreakfast
   displayName: "Run tests on sim_verilator (top_englishbreakfast)"
-  dependsOn: lint
   pool: ci-public
   dependsOn:
     - chip_englishbreakfast_verilator
-    - sw_build_englishbreakfast
   steps:
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
     parameters:
       downloadPartialBuildBinFrom:
         - chip_englishbreakfast_verilator
-        - sw_build_englishbreakfast
   - bash: |
-      # Install an additional pytest dependency for result upload.
-      pip3 install pytest-azurepipelines
-
+      # Only a single test is supported on EB. Currently Bazel cannot build
+      # EB Verilator, so we only build the test with Bazel and then use ottool
+      # directly.
+      set -e
       . util/build_consts.sh
-      pytest --version
-      pytest test/systemtest/englishbreakfast/test_sim_verilator.py \
-        -m "not slow" \
-        --log-cli-level=DEBUG \
-        --test-run-title="Run English Breakfast system tests with Verilator simulation" \
-        --napoleon-docstrings
+
+      # Build the modified EB software.
+      ./hw/top_englishbreakfast/util/prepare_sw.py --bazel -b
+
+      # Build some other things we'll need.
+      ci/bazelisk.sh build //sw/host/opentitantool //hw/ip/otp_ctrl/data:rma_image_verilator
+
+      # Run the one test.
+      bazel-bin/sw/host/opentitantool/opentitantool \
+        --rcfile="" \
+        --logging=info \
+        --interface=verilator \
+        --conf=sw/host/opentitantool/config/opentitan_verilator.json \
+        --verilator-bin=$BIN_DIR/hw/top_englishbreakfast/Vchip_englishbreakfast_verilator \
+        --verilator-rom=$(find bazel-out/* -name 'test_rom_sim_verilator.scr.39.vmem') \
+        --verilator-flash=$(find bazel-out/* -name 'aes_smoketest_prog_sim_verilator.64.scr.vmem') \
+        --verilator-otp=bazel-bin/hw/ip/otp_ctrl/data/rma_image_verilator.vmem \
+        console \
+        --exit-failure="(FAIL|FAULT).*\n" \
+        --exit-success="PASS.*\n" \
+        --timeout=3600s
     displayName: Execute tests
 
 - job: otbn_standalone_tests
@@ -489,7 +485,7 @@ jobs:
   dependsOn:
     - lint
     - sw_build
-    - chip_earlgrey_verilator
+    - execute_verilated_tests
     - chip_earlgrey_cw310
   condition: and(eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
   steps:
@@ -524,7 +520,6 @@ jobs:
       assets: |
           $(Build.ArtifactStagingDirectory)/dist-final/*
 
-
 - job: build_docker_containers
   displayName: "Build Docker Containers"
   pool:
@@ -556,8 +551,7 @@ jobs:
   displayName: Bazel Software Build and Test
   timeoutInMinutes: 120
   dependsOn: lint
-  pool:
-    vmImage: ubuntu-18.04
+  pool: ci-public
   variables:
   - name: bazelCacheGcpKeyPath
     value: ''

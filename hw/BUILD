@@ -6,12 +6,8 @@ load("//rules:fusesoc.bzl", "fusesoc_build")
 
 fusesoc_build(
     name = "verilator_real",
-    srcs = [
-        ":all_files",
-    ],
-    cores = [
-        "//:cores",
-    ],
+    srcs = [":all_files"],
+    cores = ["//:cores"],
     data = ["//hw/ip/otbn:all_files"],
     systems = ["lowrisc:dv:chip_verilator_sim"],
     target = "sim",

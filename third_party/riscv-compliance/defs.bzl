@@ -29,16 +29,14 @@ def rv_compliance_test(name, arch):
         srcs = [
             test_file,
             expected_signature,
-            "compliance_main.c",
-            "compliance_main.S",
         ],
         verilator = verilator_params(
             timeout = "long",
+            tags = ["verilator_rv_compliance"],
         ),
-        linkopts = ["-Wl,--no-relax"],
         deps = [
             "//sw/device/lib/testing/test_framework:ottf_main",
-            "@riscv-compliance//:riscv-test-env",
+            "//third_party/riscv-compliance:compliance_main",
         ],
     )
 

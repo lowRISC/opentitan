@@ -63,10 +63,7 @@ opentitan_functest(
     srcs = ["mod_exp_ibex_functest.c"],
     verilator = verilator_params(
         timeout = "long",
-        tags = [
-            "cpu:4",
-            "manual",
-        ],
+        tags = ["manual"],
     ),
     deps = [
         ":mod_exp_ibex",
@@ -117,10 +114,7 @@ opentitan_functest(
     srcs = ["mod_exp_otbn_functest.c"],
     verilator = verilator_params(
         timeout = "long",
-        tags = [
-            "cpu:4",
-            "manual",
-        ],
+        tags = ["manual"],
     ),
     deps = [
         ":mod_exp_otbn",
@@ -191,8 +185,8 @@ opentitan_functest(
     verilator = verilator_params(
         timeout = "long",
         tags = [
-            "cpu:4",
             "manual",
+            "verilator_in_ci",
         ],
     ),
     deps = [
@@ -208,10 +202,7 @@ opentitan_functest(
     srcs = ["sigverify_dynamic_functest.c"],
     verilator = verilator_params(
         timeout = "long",
-        tags = [
-            "cpu:4",
-            "manual",
-        ],
+        tags = ["manual"],
     ),
     deps = [
         ":sigverify",
