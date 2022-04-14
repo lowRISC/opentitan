@@ -60,7 +60,7 @@ class SimCfg(FlowCfg):
     # TODO: Find a way to set these in sim cfg instead
     ignored_wildcards = [
         "build_mode", "index", "test", "seed", "uvm_test", "uvm_test_seq",
-        "cov_db_dirs", "sw_images", "sw_build_device", "build_seed"
+        "cov_db_dirs", "sw_images", "sw_build_device"
     ]
 
     def __init__(self, flow_cfg_file, hjson_data, args, mk_config):
@@ -108,11 +108,6 @@ class SimCfg(FlowCfg):
             self.en_build_modes.append("xprop")
         if self.build_seed:
             self.en_build_modes.append("build_seed")
-        else:
-            # TODO: when build_seed mode is not enabled, the script should not
-            # pass `--otp-seed` args. Temp support this by providing default
-            # build seed value.
-            self.build_seed = 10556718629619452145
 
         # Options built from cfg_file files
         self.project = ""
