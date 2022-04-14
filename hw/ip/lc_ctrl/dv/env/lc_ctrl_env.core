@@ -35,6 +35,7 @@ filesets:
       - seq_lib/lc_ctrl_jtag_priority_vseq.sv: {is_include_file: true}
       - seq_lib/lc_ctrl_regwen_during_op_vseq.sv: {is_include_file: true}
       - seq_lib/lc_ctrl_sec_mubi_vseq.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_sec_token_mux_vseq.sv: {is_include_file: true}
       - seq_lib/lc_ctrl_stress_all_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 

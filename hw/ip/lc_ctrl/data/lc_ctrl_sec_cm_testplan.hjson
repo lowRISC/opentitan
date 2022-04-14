@@ -243,7 +243,7 @@
       Note: the same test as for TOKEN_VALID.MUX.REDUN can be used.
       '''
       milestone: V2S
-      tests: []
+      tests: ["lc_ctrl_sec_token_mux"]
     }
     {
       name: sec_cm_token_valid_mux_redun
@@ -261,7 +261,17 @@
       Note: the same test as for TOKEN_MUX.CTRL.REDUN can be used.
       '''
       milestone: V2S
-      tests: []
+      tests: ["lc_ctrl_sec_token_mux"]
     }
   ]
+
+  covergroups: [
+    {
+      name: sec_token_mux_idx_error_cg
+      desc: '''
+        Indicates FSM states that a token mux index error is detected
+      '''
+    }
+  ]
+
 }

@@ -124,6 +124,8 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     err_inj.otp_rma_token_valid_mubi_err == 0;
   }
 
+  constraint tokem_mux_err_inj_c {err_inj.token_mux_ctrl_redun_err == 0;}
+
   virtual task post_start();
     `uvm_info(`gfn, "post_start: Task called for lc_ctrl_errors_vseq", UVM_MEDIUM)
 
@@ -308,6 +310,12 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       end
       // verilog_format: on
 
+      if (cfg.err_inj.token_mux_ctrl_redun_err) begin
+        // Allow the FSM to get to a terminal state
+        wait(cfg.lc_ctrl_vif.lc_ctrl_fsm_state inside {PostTransSt, InvalidSt, EscalateSt});
+        disable token_mux_ctrl_err_inject;
+      end
+
       // Allow volatile registers to settle
       cfg.clk_rst_vif.wait_clks($urandom_range(15, 10));
 
@@ -315,9 +323,11 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       // Check count and state before escalate is generated
       // Skip this if we are injecting clock bypass error responses as the KMAC
       // may or may not respond leaving the FSM stuck in TokenHashSt
-      if (!err_inj.clk_byp_error_rsp) rd_lc_state_and_cnt_csrs();
-      else begin
-        `uvm_info(`gfn, "Skipped read of lc state & lc_count because err_inj.clk_byp_error_rsp = 1",
+      // Also Token Mux select error injection leads to unpredicable results
+      if (!err_inj.clk_byp_error_rsp && !err_inj.token_mux_ctrl_redun_err) begin
+        rd_lc_state_and_cnt_csrs();
+      end else begin
+        `uvm_info(`gfn, "Skipped read of lc state & lc_count because of error injection",
                   UVM_MEDIUM)
         cfg.clk_rst_vif.wait_clks($urandom_range(15, 10));
       end
@@ -329,7 +339,8 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       cfg.clk_rst_vif.wait_clks($urandom_range(150, 100));
       cfg.set_test_phase(LcCtrlReadState2);
       // Check count and state after escalate is generated
-      rd_lc_state_and_cnt_csrs();
+      // Skip if token mux select line error injection
+      if (!err_inj.token_mux_ctrl_redun_err) rd_lc_state_and_cnt_csrs();
 
       cfg.set_test_phase(LcCtrlPostTransition);
 
@@ -537,6 +548,13 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     bit [TL_DW-1:0] status_val = 0;
     uvm_reg_data_t val;
 
+    // Token mux countermeasure
+    if (err_inj.token_mux_ctrl_redun_err) begin
+      fork
+        token_mux_ctrl_err_inject();
+      join_none
+    end
+
     csr_wr(ral.claim_transition_if, CLAIM_TRANS_VAL);
     while (status_val != CLAIM_TRANS_VAL) begin
       csr_rd(ral.claim_transition_if, status_val);
@@ -576,8 +594,6 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         end
       end
     join
-
-
   endtask
 
   // Wait for status done or terminal errors
@@ -588,6 +604,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     bit token_error_exp, token_error_act;
     bit flash_rma_error_exp, flash_rma_error_act;
     bit otp_error_exp, otp_error_act;
+    bit transition_error_exp, transition_error_act;
     bit transition_count_error_exp, transition_count_error_act;
     bit otp_partition_error_exp, otp_partition_error_act;
 
@@ -603,7 +620,6 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       if (get_field_val(ral.status.flash_rma_error, status_val)) break;
       if (get_field_val(ral.status.transition_error, status_val)) break;
       if (get_field_val(ral.status.transition_count_error, status_val)) break;
-      // if (get_field_val(ral.status.otp_partition_error, status_val)) break;
       if (get_field_val(ral.status.otp_error, status_val) ||
           get_field_val(ral.status.state_error, status_val) ||
           get_field_val(ral.status.bus_integ_error, status_val)) begin
@@ -635,6 +651,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         cfg.err_inj.clk_byp_rsp_mubi_err;
     transition_count_error_exp = cfg.err_inj.transition_count_err;
     otp_partition_error_exp = cfg.err_inj.otp_partition_err;
+    transition_error_exp = cfg.err_inj.transition_err || cfg.err_inj.token_mux_ctrl_redun_err;
 
     // Actual bits
     state_error_act = get_field_val(ral.status.state_error, status_val);
@@ -643,15 +660,21 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     otp_error_act = get_field_val(ral.status.otp_error, status_val);
     transition_count_error_act = get_field_val(ral.status.transition_count_error, status_val);
     otp_partition_error_act = get_field_val(ral.status.otp_partition_error, status_val);
+    transition_error_act = get_field_val(ral.status.transition_error, status_val);
 
     if (!terminate) begin
       // Check status against expected from err_inj
       `DV_CHECK_EQ(state_error_act, state_error_exp)
-      `DV_CHECK_EQ(token_error_act, token_error_exp)
+      // Don't check for token_error when we have injected token mux select errors
+      // as the results are difficult to predict
+      if (!cfg.err_inj.token_mux_ctrl_redun_err) begin
+        `DV_CHECK_EQ(token_error_act, token_error_exp)
+      end
       `DV_CHECK_EQ(flash_rma_error_act, flash_rma_error_exp)
       `DV_CHECK_EQ(otp_error_act, otp_error_exp)
       `DV_CHECK_EQ(transition_count_error_exp, transition_count_error_act)
       `DV_CHECK_EQ(otp_partition_error_exp, otp_partition_error_act)
+      `DV_CHECK_EQ(transition_error_exp, transition_error_act)
     end
 
   endtask
@@ -925,5 +948,47 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     if (err_inj.otp_rma_token_valid_mubi_err) `DV_ASSERT_CTRL_REQ("FsmOtpRmaTokenValidSync", 0)
     else `DV_ASSERT_CTRL_REQ("FsmOtpRmaTokenValidSync", 1);
   endfunction
+
+  // Force bad values on the token mux control lines
+  virtual task token_mux_ctrl_err_inject();
+    bit [TokenIdxWidth-1:0] good_idx, bad_idx;
+    bit idx_to_change = $urandom_range(0, 1);
+    lc_ctrl_pkg::fsm_state_e inj_state = ClkMuxSt;
+
+    // Select FSM state to wait for
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(inj_state,
+                                       inj_state inside {
+        ClkMuxSt, CntIncrSt, CntProgSt, TransCheckSt,
+        FlashRmaSt, TokenHashSt, TokenCheck0St, TokenCheck1St}; )
+
+    // Save in config object for scoreboard
+    cfg.token_mux_ctrl_redun_err_inj_state = inj_state;
+
+    // Wait for FSM to reach state we want to inject the error
+    wait(cfg.lc_ctrl_vif.lc_ctrl_fsm_state == inj_state);
+
+    // Read the correct token index value
+    good_idx = idx_to_change ? cfg.lc_ctrl_vif.token_idx0 : cfg.lc_ctrl_vif.token_idx1;
+    // Randomize a bad token index
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bad_idx, bad_idx != good_idx;)
+    // Force RTL
+    cfg.lc_ctrl_vif.force_token_idx(idx_to_change, bad_idx);
+    `uvm_info(`gfn, $sformatf(
+              "token_mux_ctrl_err_inject: detected FSM state %s, forcing %h to token_idx%0d",
+              cfg.lc_ctrl_vif.lc_ctrl_fsm_state.name,
+              bad_idx,
+              idx_to_change
+              ), UVM_MEDIUM)
+    // Wait for FSM to reach a terminal state
+    wait(cfg.lc_ctrl_vif.lc_ctrl_fsm_state inside {PostTransSt, InvalidSt, EscalateSt});
+
+    // Release RTL
+    cfg.lc_ctrl_vif.release_token_idx(idx_to_change);
+    `uvm_info(`gfn, $sformatf(
+              "token_mux_ctrl_err_inject: detected FSM state %s, releasing token_idx%0d",
+              cfg.lc_ctrl_vif.lc_ctrl_fsm_state.name,
+              idx_to_change
+              ), UVM_MEDIUM)
+  endtask
 
 endclass
