@@ -94,7 +94,6 @@ cc_test(
     defines = [
         "OT_OFF_TARGET_TEST",
     ],
-    tags = ["broken"],
     deps = [
         ":hardened",
         "@googletest//:gtest_main",
@@ -123,6 +122,7 @@ cc_library(
 cc_test(
     name = "hardened_memory_unittest",
     srcs = ["hardened_memory_unittest.cc"],
+    tags = ["broken"],
     deps = [
         ":hardened_memory",
         ":random_order",

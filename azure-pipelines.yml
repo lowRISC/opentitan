@@ -747,16 +747,6 @@ jobs:
       Dockerfile: ./site/redirector/Dockerfile
       buildContext: ./site/redirector
 
-- job: mask_rom_test
-  displayName: Mask ROM Build and Test
-  dependsOn: lint
-  pool:
-    vmImage: ubuntu-18.04
-  steps:
-    - template: ci/install-package-dependencies.yml
-      # The default timeout is too short to build verilator so let's skip it for the first pass
-    - bash: ci/scripts/mask-rom-tests.sh
-
 - job: bazel_test
   displayName: Bazel Software Build and Test
   dependsOn: lint
@@ -766,5 +756,4 @@ jobs:
     - template: ci/install-package-dependencies.yml
       # The default timeout is too short to build verilator so let's skip it for the first pass
     - bash: ci/scripts/quick-bazel.sh
-      displayName: bazel-test
-      continueOnError: true
+      displayName: "Build and Test Software with Bazel (except //hw:verilator)"
