@@ -358,7 +358,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     cip_tl_seq_item cip_item;
     tl_intg_err_e tl_intg_err_type;
     uint num_cmd_err_bits, num_data_err_bits;
-    bit write_w_instr_type_err;
+    bit write_w_instr_type_err, instr_type_err;
 
     unmapped_err = !is_tl_access_mapped_addr(item, ral_name);
     if (unmapped_err) begin
@@ -386,11 +386,12 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     tl_item_err = item.get_exp_d_error();
     `downcast(cip_item, item)
     cip_item.get_a_chan_err_info(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits,
-                                 write_w_instr_type_err);
-    exp_d_error |= byte_wr_err | bus_intg_err | csr_size_err | tl_item_err | write_w_instr_type_err;
+                                 write_w_instr_type_err, instr_type_err);
+    exp_d_error |= byte_wr_err | bus_intg_err | csr_size_err | tl_item_err |
+                   write_w_instr_type_err | instr_type_err;
 
     invalid_access = unmapped_err | mem_access_err | bus_intg_err | csr_size_err | tl_item_err |
-                     write_w_instr_type_err;
+                     write_w_instr_type_err | instr_type_err;
 
     if (channel == DataChannel) begin
       // integrity at d_user is from DUT, which should be always correct, except data integrity for
@@ -434,7 +435,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                                             .mem_byte_access_err(mem_byte_access_err),
                                             .mem_wo_err(mem_wo_err),
                                             .mem_ro_err(mem_ro_err),
-                                            .tl_protocol_err(tl_item_err));
+                                            .tl_protocol_err(tl_item_err),
+                                            .write_w_instr_type_err(write_w_instr_type_err),
+                                            .instr_type_err(instr_type_err));
       end
 
     end
