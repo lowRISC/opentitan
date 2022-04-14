@@ -1130,6 +1130,29 @@ sw_tests += {
   }
 }
 
+# PWRMGR sleep_disabled test
+pwrmgr_sleep_disabled_test_lib = declare_dependency(
+  link_with: static_library(
+    'pwrmgr_sleep_disabled_test_lib',
+    sources: ['pwrmgr_sleep_disabled_test.c'],
+    dependencies: [
+      sw_lib_dif_aon_timer,
+      sw_lib_dif_pwrmgr,
+      sw_lib_dif_rv_plic,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+      sw_lib_testing_aon_timer_testutils,
+      sw_lib_testing_pwrmgr_testutils,
+    ],
+  ),
+)
+sw_tests += {
+  'pwrmgr_sleep_disabled_test': {
+    'library': pwrmgr_sleep_disabled_test_lib,
+  }
+}
+
+
 ###############################################################################
 # Auto-generated tests
 ###############################################################################

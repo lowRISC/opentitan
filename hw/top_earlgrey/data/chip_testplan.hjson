@@ -988,6 +988,9 @@
     {
       name: chip_sw_pwrmgr_sleep_disabled
       desc: '''Verify that the chip does not go to sleep on WFI when low power hint is 0.
+
+            This calls WFI with low_power_hint disabled and pwrmgr interrupts enabled,
+            and fails if the pwrmgr ISR is called.
             '''
       milestone: V2
       tests: []

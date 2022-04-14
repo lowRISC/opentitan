@@ -694,6 +694,18 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "pwrmgr_sleep_disabled_test",
+    srcs = ["pwrmgr_sleep_disabled_test.c"],
+    deps = [
+        "//sw/device/lib/dif:aon_timer",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+    ],
+)
+
+opentitan_functest(
     name = "rstmgr_smoketest",
     srcs = ["rstmgr_smoketest.c"],
     deps = [
