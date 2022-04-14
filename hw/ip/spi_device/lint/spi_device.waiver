@@ -89,7 +89,7 @@ waive -rules CONST_FF -location {spi_device.sv} -msg {Flip-flop 'fwm_rxerr_q' is
       -comment "This is an unimplemented error signal which is currently tied to 0."
 
 # intentional terminal states
-waive -rules TERMINAL_STATE -location {spi_cmdparse.sv} -regexp {Terminal state 'St(Status|Jedec|Sfdp|ReadCmd|Upload|Addr4B)' is detected}
+waive -rules TERMINAL_STATE -location {spi_cmdparse.sv} -regexp {Terminal state 'St(Status|Jedec|Sfdp|ReadCmd|Upload|Addr4B|WrEn)' is detected}
 waive -rules TERMINAL_STATE -location {spi_readcmd.sv} \
       -regexp {Terminal state 'Main(Output|Error)' is detected} \
       -comment "Intentional dead-end. CSb will reset"
