@@ -44,6 +44,7 @@ jobs:
       sudo apt-get remove -y clang-6.0 libclang-common-6.0-dev libclang1-6.0 libllvm6.0
     displayName: Remove existing Clang installation
   - template: ci/install-package-dependencies.yml
+
     ## !!!
     ##
     ##   The steps below here are duplicated in ci/jobs/quick-lint.sh
@@ -52,49 +53,53 @@ jobs:
     ## !!!
   - bash: ci/scripts/show-env.sh
     displayName: Display environment information
+
   - bash: ci/scripts/lint-commits.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Check commit metadata
+
   - bash: ci/scripts/check-licence-headers.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Check Licence Headers
+
   - bash: ci/scripts/exec-check.sh
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Check executable bits
+
   - bash: ci/scripts/check-ascii.sh
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Check for non-ASCII characters in source code
+
   - bash: ci/scripts/python-lint.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Run Python lint (flake8)
     continueOnError: true
+
   - bash: ci/scripts/mypy.sh
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Run Python lint (mypy)
+
   - bash: ci/scripts/check-generated.sh
     displayName: Ensure all generated files are clean and up-to-date
+
   - bash: ci/scripts/clang-format.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Use clang-format to check C/C++ coding style
+
   - bash: ci/scripts/include-guard.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Check formatting on header guards
+
   - bash: ci/scripts/whitespace.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Check trailing whitespace
-  - bash: ci/scripts/verible-lint.sh rtl
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Style-Lint RTL Verilog source files with Verible
-  - bash: ci/scripts/verible-lint.sh dv
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Style-Lint DV Verilog source files with Verible
-  - bash: ci/scripts/verible-lint.sh fpv
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Style-Lint FPV Verilog source files with Verible
+
   - bash: ci/scripts/build-docs.sh
     displayName: Render documentation
+
   - bash: ci/scripts/build-site.sh
     displayName: Render landing site
+
   - bash: ci/scripts/get-build-type.sh "$SYSTEM_PULLREQUEST_TARGETBRANCH" "$(Build.Reason)"
     displayName: Check what kinds of changes the PR contains
     name: DetermineBuildType
@@ -108,8 +113,21 @@ jobs:
   - template: ci/install-package-dependencies.yml
   - bash: ci/bazelisk.sh run buildifier_check
     displayName: Use buildifier to check Bazel coding style
+
   - bash: ci/scripts/check-vendoring.sh
     displayName: Check vendored directories are up-to-date
+
+  - bash: ci/scripts/verible-lint.sh rtl
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Style-Lint RTL Verilog source files with Verible
+
+  - bash: ci/scripts/verible-lint.sh dv
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Style-Lint DV Verilog source files with Verible
+
+  - bash: ci/scripts/verible-lint.sh fpv
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Style-Lint FPV Verilog source files with Verible
 
 - job: sw_build
   displayName: Build Software for Earl Grey toplevel design
@@ -247,7 +265,8 @@ jobs:
         - "/hw/top_englishbreakfast/Vchip_englishbreakfast_verilator"
 
 - job: execute_verilated_tests
-  displayName: Execute tests on the Verilated system (excl. slow tests)
+  displayName: "Run tests on sim_verilator"
+  dependsOn: lint
   pool: ci-public
   timeoutInMinutes: 120
   dependsOn:
@@ -274,7 +293,8 @@ jobs:
     displayName: Execute tests
 
 - job: execute_verilated_tests_englishbreakfast
-  displayName: Execute tests on the Verilated English Breakfast toplevel design
+  displayName: "Run tests on sim_verilator (top_englishbreakfast)"
+  dependsOn: lint
   pool: ci-public
   dependsOn:
     - chip_englishbreakfast_verilator
