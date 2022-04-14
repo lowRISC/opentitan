@@ -310,6 +310,10 @@ module spi_device
   logic sck_status_busy_set;       // set by HW (upload)
   logic csb_status_busy_broadcast; // from spid_status
 
+  // WREN / WRDI HW signal
+  logic sck_status_wr_set;
+  logic sck_status_wr_clr;
+
   // Jedec ID
   jedec_cfg_t jedec_cfg;
 
@@ -1355,6 +1359,9 @@ module spi_device
   assign hw2reg.flash_status.busy.d   = readstatus_d[0];
   assign hw2reg.flash_status.status.d = readstatus_d[23:1];
 
+  assign sck_status_wr_set = (cmd_dp_sel == DpWrEn);
+  assign sck_status_wr_clr = (cmd_dp_sel == DpWrDi);
+
   spid_status u_spid_status (
     .clk_i  (clk_spi_in_buf),
     .rst_ni (rst_spi_n),
@@ -1383,6 +1390,9 @@ module spi_device
     .io_mode_o   (sub_iomode[IoModeStatus]),
 
     .inclk_busy_set_i  (sck_status_busy_set), // SCK domain
+
+    .inclk_we_set_i (sck_status_wr_set),
+    .inclk_we_clr_i (sck_status_wr_clr),
 
     .csb_busy_broadcast_o (csb_status_busy_broadcast) // SCK domain
   );
