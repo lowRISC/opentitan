@@ -1235,7 +1235,7 @@ foreach sw_test_name, sw_test_info : sw_tests
           sw_lib_testing_test_status,
           shared_test_deps,
           sw_lib_crt,
-          sw_test_info['library'],
+          sw_test_info['library'].as_link_whole(),
         ],
       )
     else
