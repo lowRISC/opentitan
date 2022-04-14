@@ -602,6 +602,7 @@ class KmacConfigureTest : public KmacTest {
       .message_big_endian = false,
       .output_big_endian = false,
       .sideload = false,
+      .msg_mask = true,
   };
   KmacConfigureTest() {
     config_reg_.msg_big_endian = kmac_config_.message_big_endian;
@@ -611,6 +612,7 @@ class KmacConfigureTest : public KmacTest {
     config_reg_.sideload = kmac_config_.sideload;
     config_reg_.key_strength = 0;
     config_reg_.mode = 0;
+    config_reg_.msg_mask = kmac_config_.msg_mask;
   }
 };
 
