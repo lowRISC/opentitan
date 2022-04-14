@@ -1471,6 +1471,16 @@ module spi_device_reg_top (
   logic [7:0] cmd_info_ex4b_opcode_wd;
   logic cmd_info_ex4b_valid_qs;
   logic cmd_info_ex4b_valid_wd;
+  logic cmd_info_wren_we;
+  logic [7:0] cmd_info_wren_opcode_qs;
+  logic [7:0] cmd_info_wren_opcode_wd;
+  logic cmd_info_wren_valid_qs;
+  logic cmd_info_wren_valid_wd;
+  logic cmd_info_wrdi_we;
+  logic [7:0] cmd_info_wrdi_opcode_qs;
+  logic [7:0] cmd_info_wrdi_opcode_wd;
+  logic cmd_info_wrdi_valid_qs;
+  logic cmd_info_wrdi_valid_wd;
   logic [7:0] tpm_cap_rev_qs;
   logic tpm_cap_locality_qs;
   logic [2:0] tpm_cap_max_xfer_size_qs;
@@ -17417,6 +17427,110 @@ module spi_device_reg_top (
   );
 
 
+  // R[cmd_info_wren]: V(False)
+  //   F[opcode]: 7:0
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0)
+  ) u_cmd_info_wren_opcode (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_wren_we),
+    .wd     (cmd_info_wren_opcode_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info_wren.opcode.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_wren_opcode_qs)
+  );
+
+  //   F[valid]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_wren_valid (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_wren_we),
+    .wd     (cmd_info_wren_valid_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info_wren.valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_wren_valid_qs)
+  );
+
+
+  // R[cmd_info_wrdi]: V(False)
+  //   F[opcode]: 7:0
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0)
+  ) u_cmd_info_wrdi_opcode (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_wrdi_we),
+    .wd     (cmd_info_wrdi_opcode_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info_wrdi.opcode.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_wrdi_opcode_qs)
+  );
+
+  //   F[valid]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_wrdi_valid (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_wrdi_we),
+    .wd     (cmd_info_wrdi_valid_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info_wrdi.valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_wrdi_valid_qs)
+  );
+
+
   // R[tpm_cap]: V(False)
   //   F[rev]: 7:0
   prim_subreg #(
@@ -18135,7 +18249,7 @@ module spi_device_reg_top (
 
 
 
-  logic [76:0] addr_hit;
+  logic [78:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == SPI_DEVICE_INTR_STATE_OFFSET);
@@ -18200,21 +18314,23 @@ module spi_device_reg_top (
     addr_hit[59] = (reg_addr == SPI_DEVICE_CMD_INFO_23_OFFSET);
     addr_hit[60] = (reg_addr == SPI_DEVICE_CMD_INFO_EN4B_OFFSET);
     addr_hit[61] = (reg_addr == SPI_DEVICE_CMD_INFO_EX4B_OFFSET);
-    addr_hit[62] = (reg_addr == SPI_DEVICE_TPM_CAP_OFFSET);
-    addr_hit[63] = (reg_addr == SPI_DEVICE_TPM_CFG_OFFSET);
-    addr_hit[64] = (reg_addr == SPI_DEVICE_TPM_STATUS_OFFSET);
-    addr_hit[65] = (reg_addr == SPI_DEVICE_TPM_ACCESS_0_OFFSET);
-    addr_hit[66] = (reg_addr == SPI_DEVICE_TPM_ACCESS_1_OFFSET);
-    addr_hit[67] = (reg_addr == SPI_DEVICE_TPM_STS_OFFSET);
-    addr_hit[68] = (reg_addr == SPI_DEVICE_TPM_INTF_CAPABILITY_OFFSET);
-    addr_hit[69] = (reg_addr == SPI_DEVICE_TPM_INT_ENABLE_OFFSET);
-    addr_hit[70] = (reg_addr == SPI_DEVICE_TPM_INT_VECTOR_OFFSET);
-    addr_hit[71] = (reg_addr == SPI_DEVICE_TPM_INT_STATUS_OFFSET);
-    addr_hit[72] = (reg_addr == SPI_DEVICE_TPM_DID_VID_OFFSET);
-    addr_hit[73] = (reg_addr == SPI_DEVICE_TPM_RID_OFFSET);
-    addr_hit[74] = (reg_addr == SPI_DEVICE_TPM_CMD_ADDR_OFFSET);
-    addr_hit[75] = (reg_addr == SPI_DEVICE_TPM_READ_FIFO_OFFSET);
-    addr_hit[76] = (reg_addr == SPI_DEVICE_TPM_WRITE_FIFO_OFFSET);
+    addr_hit[62] = (reg_addr == SPI_DEVICE_CMD_INFO_WREN_OFFSET);
+    addr_hit[63] = (reg_addr == SPI_DEVICE_CMD_INFO_WRDI_OFFSET);
+    addr_hit[64] = (reg_addr == SPI_DEVICE_TPM_CAP_OFFSET);
+    addr_hit[65] = (reg_addr == SPI_DEVICE_TPM_CFG_OFFSET);
+    addr_hit[66] = (reg_addr == SPI_DEVICE_TPM_STATUS_OFFSET);
+    addr_hit[67] = (reg_addr == SPI_DEVICE_TPM_ACCESS_0_OFFSET);
+    addr_hit[68] = (reg_addr == SPI_DEVICE_TPM_ACCESS_1_OFFSET);
+    addr_hit[69] = (reg_addr == SPI_DEVICE_TPM_STS_OFFSET);
+    addr_hit[70] = (reg_addr == SPI_DEVICE_TPM_INTF_CAPABILITY_OFFSET);
+    addr_hit[71] = (reg_addr == SPI_DEVICE_TPM_INT_ENABLE_OFFSET);
+    addr_hit[72] = (reg_addr == SPI_DEVICE_TPM_INT_VECTOR_OFFSET);
+    addr_hit[73] = (reg_addr == SPI_DEVICE_TPM_INT_STATUS_OFFSET);
+    addr_hit[74] = (reg_addr == SPI_DEVICE_TPM_DID_VID_OFFSET);
+    addr_hit[75] = (reg_addr == SPI_DEVICE_TPM_RID_OFFSET);
+    addr_hit[76] = (reg_addr == SPI_DEVICE_TPM_CMD_ADDR_OFFSET);
+    addr_hit[77] = (reg_addr == SPI_DEVICE_TPM_READ_FIFO_OFFSET);
+    addr_hit[78] = (reg_addr == SPI_DEVICE_TPM_WRITE_FIFO_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -18298,7 +18414,9 @@ module spi_device_reg_top (
                (addr_hit[73] & (|(SPI_DEVICE_PERMIT[73] & ~reg_be))) |
                (addr_hit[74] & (|(SPI_DEVICE_PERMIT[74] & ~reg_be))) |
                (addr_hit[75] & (|(SPI_DEVICE_PERMIT[75] & ~reg_be))) |
-               (addr_hit[76] & (|(SPI_DEVICE_PERMIT[76] & ~reg_be)))));
+               (addr_hit[76] & (|(SPI_DEVICE_PERMIT[76] & ~reg_be))) |
+               (addr_hit[77] & (|(SPI_DEVICE_PERMIT[77] & ~reg_be))) |
+               (addr_hit[78] & (|(SPI_DEVICE_PERMIT[78] & ~reg_be)))));
   end
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -19603,7 +19721,17 @@ module spi_device_reg_top (
   assign cmd_info_ex4b_opcode_wd = reg_wdata[7:0];
 
   assign cmd_info_ex4b_valid_wd = reg_wdata[31];
-  assign tpm_cfg_we = addr_hit[63] & reg_we & !reg_error;
+  assign cmd_info_wren_we = addr_hit[62] & reg_we & !reg_error;
+
+  assign cmd_info_wren_opcode_wd = reg_wdata[7:0];
+
+  assign cmd_info_wren_valid_wd = reg_wdata[31];
+  assign cmd_info_wrdi_we = addr_hit[63] & reg_we & !reg_error;
+
+  assign cmd_info_wrdi_opcode_wd = reg_wdata[7:0];
+
+  assign cmd_info_wrdi_valid_wd = reg_wdata[31];
+  assign tpm_cfg_we = addr_hit[65] & reg_we & !reg_error;
 
   assign tpm_cfg_en_wd = reg_wdata[0];
 
@@ -19614,7 +19742,7 @@ module spi_device_reg_top (
   assign tpm_cfg_tpm_reg_chk_dis_wd = reg_wdata[3];
 
   assign tpm_cfg_invalid_locality_wd = reg_wdata[4];
-  assign tpm_access_0_we = addr_hit[65] & reg_we & !reg_error;
+  assign tpm_access_0_we = addr_hit[67] & reg_we & !reg_error;
 
   assign tpm_access_0_access_0_wd = reg_wdata[7:0];
 
@@ -19623,37 +19751,37 @@ module spi_device_reg_top (
   assign tpm_access_0_access_2_wd = reg_wdata[23:16];
 
   assign tpm_access_0_access_3_wd = reg_wdata[31:24];
-  assign tpm_access_1_we = addr_hit[66] & reg_we & !reg_error;
+  assign tpm_access_1_we = addr_hit[68] & reg_we & !reg_error;
 
   assign tpm_access_1_wd = reg_wdata[7:0];
-  assign tpm_sts_we = addr_hit[67] & reg_we & !reg_error;
+  assign tpm_sts_we = addr_hit[69] & reg_we & !reg_error;
 
   assign tpm_sts_wd = reg_wdata[31:0];
-  assign tpm_intf_capability_we = addr_hit[68] & reg_we & !reg_error;
+  assign tpm_intf_capability_we = addr_hit[70] & reg_we & !reg_error;
 
   assign tpm_intf_capability_wd = reg_wdata[31:0];
-  assign tpm_int_enable_we = addr_hit[69] & reg_we & !reg_error;
+  assign tpm_int_enable_we = addr_hit[71] & reg_we & !reg_error;
 
   assign tpm_int_enable_wd = reg_wdata[31:0];
-  assign tpm_int_vector_we = addr_hit[70] & reg_we & !reg_error;
+  assign tpm_int_vector_we = addr_hit[72] & reg_we & !reg_error;
 
   assign tpm_int_vector_wd = reg_wdata[7:0];
-  assign tpm_int_status_we = addr_hit[71] & reg_we & !reg_error;
+  assign tpm_int_status_we = addr_hit[73] & reg_we & !reg_error;
 
   assign tpm_int_status_wd = reg_wdata[31:0];
-  assign tpm_did_vid_we = addr_hit[72] & reg_we & !reg_error;
+  assign tpm_did_vid_we = addr_hit[74] & reg_we & !reg_error;
 
   assign tpm_did_vid_vid_wd = reg_wdata[15:0];
 
   assign tpm_did_vid_did_wd = reg_wdata[31:16];
-  assign tpm_rid_we = addr_hit[73] & reg_we & !reg_error;
+  assign tpm_rid_we = addr_hit[75] & reg_we & !reg_error;
 
   assign tpm_rid_wd = reg_wdata[7:0];
-  assign tpm_cmd_addr_re = addr_hit[74] & reg_re & !reg_error;
-  assign tpm_read_fifo_we = addr_hit[75] & reg_we & !reg_error;
+  assign tpm_cmd_addr_re = addr_hit[76] & reg_re & !reg_error;
+  assign tpm_read_fifo_we = addr_hit[77] & reg_we & !reg_error;
 
   assign tpm_read_fifo_wd = reg_wdata[7:0];
-  assign tpm_write_fifo_re = addr_hit[76] & reg_re & !reg_error;
+  assign tpm_write_fifo_re = addr_hit[78] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin
@@ -20486,12 +20614,22 @@ module spi_device_reg_top (
       end
 
       addr_hit[62]: begin
+        reg_rdata_next[7:0] = cmd_info_wren_opcode_qs;
+        reg_rdata_next[31] = cmd_info_wren_valid_qs;
+      end
+
+      addr_hit[63]: begin
+        reg_rdata_next[7:0] = cmd_info_wrdi_opcode_qs;
+        reg_rdata_next[31] = cmd_info_wrdi_valid_qs;
+      end
+
+      addr_hit[64]: begin
         reg_rdata_next[7:0] = tpm_cap_rev_qs;
         reg_rdata_next[8] = tpm_cap_locality_qs;
         reg_rdata_next[18:16] = tpm_cap_max_xfer_size_qs;
       end
 
-      addr_hit[63]: begin
+      addr_hit[65]: begin
         reg_rdata_next[0] = tpm_cfg_en_qs;
         reg_rdata_next[1] = tpm_cfg_tpm_mode_qs;
         reg_rdata_next[2] = tpm_cfg_hw_reg_dis_qs;
@@ -20499,63 +20637,63 @@ module spi_device_reg_top (
         reg_rdata_next[4] = tpm_cfg_invalid_locality_qs;
       end
 
-      addr_hit[64]: begin
+      addr_hit[66]: begin
         reg_rdata_next[0] = tpm_status_cmdaddr_notempty_qs;
         reg_rdata_next[1] = tpm_status_rdfifo_notempty_qs;
         reg_rdata_next[6:4] = tpm_status_rdfifo_depth_qs;
         reg_rdata_next[10:8] = tpm_status_wrfifo_depth_qs;
       end
 
-      addr_hit[65]: begin
+      addr_hit[67]: begin
         reg_rdata_next[7:0] = tpm_access_0_access_0_qs;
         reg_rdata_next[15:8] = tpm_access_0_access_1_qs;
         reg_rdata_next[23:16] = tpm_access_0_access_2_qs;
         reg_rdata_next[31:24] = tpm_access_0_access_3_qs;
       end
 
-      addr_hit[66]: begin
+      addr_hit[68]: begin
         reg_rdata_next[7:0] = tpm_access_1_qs;
       end
 
-      addr_hit[67]: begin
+      addr_hit[69]: begin
         reg_rdata_next[31:0] = tpm_sts_qs;
       end
 
-      addr_hit[68]: begin
+      addr_hit[70]: begin
         reg_rdata_next[31:0] = tpm_intf_capability_qs;
       end
 
-      addr_hit[69]: begin
+      addr_hit[71]: begin
         reg_rdata_next[31:0] = tpm_int_enable_qs;
       end
 
-      addr_hit[70]: begin
+      addr_hit[72]: begin
         reg_rdata_next[7:0] = tpm_int_vector_qs;
       end
 
-      addr_hit[71]: begin
+      addr_hit[73]: begin
         reg_rdata_next[31:0] = tpm_int_status_qs;
       end
 
-      addr_hit[72]: begin
+      addr_hit[74]: begin
         reg_rdata_next[15:0] = tpm_did_vid_vid_qs;
         reg_rdata_next[31:16] = tpm_did_vid_did_qs;
       end
 
-      addr_hit[73]: begin
+      addr_hit[75]: begin
         reg_rdata_next[7:0] = tpm_rid_qs;
       end
 
-      addr_hit[74]: begin
+      addr_hit[76]: begin
         reg_rdata_next[23:0] = tpm_cmd_addr_addr_qs;
         reg_rdata_next[31:24] = tpm_cmd_addr_cmd_qs;
       end
 
-      addr_hit[75]: begin
+      addr_hit[77]: begin
         reg_rdata_next[7:0] = '0;
       end
 
-      addr_hit[76]: begin
+      addr_hit[78]: begin
         reg_rdata_next[7:0] = tpm_write_fifo_qs;
       end
 
