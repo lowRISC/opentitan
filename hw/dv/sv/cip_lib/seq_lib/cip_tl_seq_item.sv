@@ -230,7 +230,8 @@ class cip_tl_seq_item extends tl_seq_item;
   virtual function void get_a_chan_err_info(output tl_intg_err_e tl_intg_err_type,
                                             output uint num_cmd_err_bits,
                                             output uint num_data_err_bits,
-                                            output bit write_w_instr_type_err);
+                                            output bit write_w_instr_type_err,
+                                            output bit instr_type_err);
     tl_a_user_t exp_a_user = compute_a_user();
     tl_a_user_t act_a_user = tl_a_user_t'(a_user);
     bit         is_cmd_ok  = (act_a_user.cmd_intg == exp_a_user.cmd_intg);
@@ -243,6 +244,7 @@ class cip_tl_seq_item extends tl_seq_item;
     // d_error will be set if it's a write with instr_type=True
     write_w_instr_type_err = a_opcode inside {PutFullData, PutPartialData} &&
                              act_a_user.instr_type == MuBi4True;
+    instr_type_err = !(act_a_user.instr_type inside {MuBi4True, MuBi4False});
   endfunction : get_a_chan_err_info
 
   virtual function void get_d_chan_err_info(output tl_intg_err_e tl_intg_err_type,
