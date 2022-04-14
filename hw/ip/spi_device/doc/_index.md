@@ -534,6 +534,15 @@ The `addr_mode` is used to determine the address size in the command.
 If `busy` field in the command information entry is set, the upload module also sets *BUSY* bit in the *STATUS* register.
 SW may clear the *BUSY* bit after processing the command.
 
+The upload module provides {{<regref "UPLOAD_STATUS">}} and {{<regref "UPLOAD_STATUS2">}} CSRs for SW to parse the command, address, and payload.
+If a received command has payload, SW may read the payload from the Payload buffer starting from `payload_start_idx` address.
+In normal case, `payload_start_idx` in {{<regref "UPLOAD_STATUS2">}} shows **0**.
+In error case of the host sending more than the maximum allowed payload size (256B in the current version), the `payload_start_idx` may not be 0.
+It is expected that the `payload_depth` is maximum payload size, 256B if `payload_start_idx` is non-zero.
+In this scenario, SW should read from `payload_start_idx` to the end of the payload buffer then do a second read from the beginning of the buffer to the remained bytes.
+
+If the error case above happens, the IP reports the event through the `payload_overflow` interrupt.
+
 ### Passthrough
 
 The passthrough module controls the data between a host system and the attached downstream SPI flash device.
