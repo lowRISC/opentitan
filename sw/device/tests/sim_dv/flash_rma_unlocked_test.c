@@ -108,7 +108,7 @@ static void read_and_check_info_page_scrambled(bool is_equal,
   uint32_t address = flash_ctrl_testutils_info_region_scrambled_setup(
       &flash_state, page_index, kFlashInfoBank, kPartitionId);
 
-  CHECK(!flash_ctrl_testutils_read_page(
+  CHECK(!flash_ctrl_testutils_read(
       &flash_state, address, kPartitionId, readback_data,
       kDifFlashCtrlPartitionTypeInfo, kDataSize, 0));
   if (is_equal) {
@@ -126,7 +126,7 @@ static void read_and_check_data_page_scrambled(bool is_equal,
   uint32_t address = flash_ctrl_testutils_data_region_scrambled_setup(
       &flash_state, page_index, region, kRegionSize);
 
-  CHECK(!flash_ctrl_testutils_read_page(
+  CHECK(!flash_ctrl_testutils_read(
       &flash_state, address, kPartitionId, readback_data,
       kDifFlashCtrlPartitionTypeData, kDataSize, 0));
   if (is_equal) {
