@@ -5,14 +5,15 @@
 #include "sw/device/lib/testing/test_rom/bootstrap.h"
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
-#include "sw/device/lib/flash_ctrl.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
@@ -37,16 +38,45 @@ static bool bootstrap_requested(void) {
 }
 
 /**
+ * Check that flash data partitions are all blank.
+ */
+static bool flash_is_empty(void) {
+  dif_flash_ctrl_device_info_t flash_info = dif_flash_ctrl_get_device_info();
+  const uint32_t flash_size_bytes =
+      flash_info.num_banks * flash_info.bytes_per_page * flash_info.data_pages;
+  uint32_t *const limit =
+      (uint32_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + flash_size_bytes);
+  uint32_t mask = UINT32_MAX;
+  uint32_t *p = (uint32_t *)TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
+  for (; p < limit;) {
+    mask &= *p++;
+    mask &= *p++;
+    mask &= *p++;
+    mask &= *p++;
+    mask &= *p++;
+    mask &= *p++;
+    mask &= *p++;
+    mask &= *p++;
+    if (mask != -1u) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
  * Erase all flash, and verify blank.
  */
-static int erase_flash(void) {
-  if (flash_bank_erase(FLASH_BANK_0) != 0) {
+static int erase_flash(dif_flash_ctrl_state_t *flash_ctrl) {
+  if (flash_ctrl_testutils_bank_erase(flash_ctrl, /*bank=*/0,
+                                      /*data_only=*/true)) {
     return E_BS_ERASE;
   }
-  if (flash_bank_erase(FLASH_BANK_1) != 0) {
+  if (flash_ctrl_testutils_bank_erase(flash_ctrl, /*bank=*/1,
+                                      /*data_only=*/true)) {
     return E_BS_ERASE;
   }
-  if (flash_check_empty() == 0) {
+  if (!flash_is_empty()) {
     return E_BS_NOTEMPTY;
   }
 
@@ -118,7 +148,7 @@ static bool check_frame_hash(const dif_hmac_t *hmac,
 static int bootstrap_flash(const dif_spi_device_t *spi,
                            const dif_spi_device_config_t *spi_config,
                            const dif_hmac_t *hmac,
-                           dif_flash_ctrl_state_t *flash) {
+                           dif_flash_ctrl_state_t *flash_ctrl) {
   dif_hmac_digest_t ack = {0};
   uint32_t expected_frame_num = 0;
   while (true) {
@@ -149,24 +179,27 @@ static int bootstrap_flash(const dif_spi_device_t *spi,
             /*bytes_received=*/NULL));
 
         if (expected_frame_num == 0) {
-          // setup default access for data partition
+          // Set up default access for data partition.
           flash_ctrl_testutils_default_region_access(
-              flash, /*rd_en=*/true,
+              flash_ctrl,
+              /*rd_en=*/true,
               /*prog_en=*/true,
               /*erase_en=*/true,
               /*scramble_en=*/false,
               /*ecc_en=*/false,
               /*high_endurance_en=*/false);
 
-          int flash_error = erase_flash();
+          int flash_error = erase_flash(flash_ctrl);
           if (flash_error != 0) {
             return flash_error;
           }
           LOG_INFO("Flash erase successful");
         }
 
-        if (flash_write(frame.header.flash_offset, kDataPartition, frame.data,
-                        SPIFLASH_FRAME_DATA_WORDS) != 0) {
+        if (flash_ctrl_testutils_write(flash_ctrl, frame.header.flash_offset,
+                                       /*partition_id=*/0, frame.data,
+                                       kDifFlashCtrlPartitionTypeData,
+                                       SPIFLASH_FRAME_DATA_WORDS)) {
           return E_BS_WRITE;
         }
 
@@ -186,18 +219,14 @@ static int bootstrap_flash(const dif_spi_device_t *spi,
   }
 }
 
-int bootstrap(void) {
+int bootstrap(dif_flash_ctrl_state_t *flash_ctrl) {
   if (!bootstrap_requested()) {
     return 0;
   }
 
-  dif_flash_ctrl_state_t flash;
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-
   // SPI device is only initialized in bootstrap mode.
   LOG_INFO("Bootstrap requested, initialising HW...");
-  flash_init_block();
+  flash_ctrl_testutils_wait_for_init(flash_ctrl);
 
   dif_spi_device_t spi;
   dif_spi_device_config_t spi_config = {
@@ -218,16 +247,16 @@ int bootstrap(void) {
       dif_hmac_init(mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR), &hmac));
 
   LOG_INFO("HW initialisation completed, waiting for SPI input...");
-  int error = bootstrap_flash(&spi, &spi_config, &hmac, &flash);
+  int error = bootstrap_flash(&spi, &spi_config, &hmac, flash_ctrl);
   if (error != 0) {
-    error |= erase_flash();
+    error |= erase_flash(flash_ctrl);
     LOG_ERROR("Bootstrap error: 0x%x", error);
   }
 
   // Always make sure to revert flash_ctrl access
   // to default settings. bootstrap_flash enables
   // access to flash to perform update.
-  flash_ctrl_testutils_default_region_access(&flash, /*rd_en=*/false,
+  flash_ctrl_testutils_default_region_access(flash_ctrl, /*rd_en=*/false,
                                              /*prog_en=*/false,
                                              /*erase_en=*/false,
                                              /*scramble_en=*/false,

@@ -84,9 +84,9 @@ static bool access_partitions(bool do_write, bool do_read, int page_id,
   if (do_read == true) {
     // Read page.
     uint32_t readback_data[size];
-    retval |= flash_ctrl_testutils_read_page(
-        &flash, address, kPartitionId, readback_data,
-        kDifFlashCtrlPartitionTypeInfo, size, 0);
+    retval |=
+        flash_ctrl_testutils_read(&flash, address, kPartitionId, readback_data,
+                                  kDifFlashCtrlPartitionTypeInfo, size, 0);
     if (retval == false) {
       CHECK_BUFFER(data, readback_data, size);
     }

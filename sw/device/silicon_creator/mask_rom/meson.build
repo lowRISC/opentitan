@@ -178,9 +178,10 @@ primitive_bootstrap_lib = declare_dependency(
       'primitive_bootstrap.c'
     ],
     dependencies: [
-      sw_lib_flash_ctrl,
+      sw_lib_dif_flash_ctrl,
       sw_lib_dif_gpio,
       sw_lib_dif_spi_device,
+      sw_lib_testing_flash_ctrl_testutils,
       sw_silicon_creator_lib_driver_hmac,
       sw_silicon_creator_lib_log,
     ],

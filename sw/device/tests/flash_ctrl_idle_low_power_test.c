@@ -114,7 +114,7 @@ bool test_main(void) {
               &flash, address, kPartitionId, data,
               kDifFlashCtrlPartitionTypeData, kNumWords) == 0);
     uint32_t readback_data[kNumWords];
-    CHECK(flash_ctrl_testutils_read_page(
+    CHECK(flash_ctrl_testutils_read(
               &flash, address, kPartitionId, readback_data,
               kDifFlashCtrlPartitionTypeData, kNumWords, 0) == 0);
     CHECK_BUFFER(data, readback_data, kNumWords);
@@ -150,7 +150,7 @@ bool test_main(void) {
 
     CHECK(flash_ctrl_testutils_wait_transaction_end(&flash) == 0);
 
-    CHECK(flash_ctrl_testutils_read_page(
+    CHECK(flash_ctrl_testutils_read(
               &flash, address, kPartitionId, readback_data,
               kDifFlashCtrlPartitionTypeData, kNumWords, 0) == 0);
     uint32_t expected_data[kNumWords];
