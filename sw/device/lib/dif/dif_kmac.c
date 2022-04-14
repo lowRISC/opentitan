@@ -184,8 +184,12 @@ dif_result_t dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config) {
                                  config.sideload);
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_READY_BIT,
                                  entropy_ready);
-  mmio_region_write32(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
-  mmio_region_write32(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
+
+  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_MASK_BIT,
+                                 config.msg_mask);
+
+  mmio_region_write32_shadowed(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET,
+                               cfg_reg);
 
   // Write entropy period register.
   uint32_t entropy_period_reg = 0;
@@ -195,6 +199,7 @@ dif_result_t dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config) {
   mmio_region_write32(kmac->base_addr, KMAC_ENTROPY_PERIOD_REG_OFFSET,
                       entropy_period_reg);
 
+  // Write entropy seed registers.
   // Write entropy seed registers.
   mmio_region_write32(kmac->base_addr, KMAC_ENTROPY_SEED_LOWER_REG_OFFSET,
                       (uint32_t)config.entropy_seed);
