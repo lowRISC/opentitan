@@ -1130,6 +1130,36 @@ sw_tests += {
   }
 }
 
+# Simple address translation smoketest.
+simple_address_translation_smoketest = declare_dependency(
+  link_with: static_library(
+    'simple_address_translation_smoketest',
+    sources: [
+      hw_ip_rstmgr_reg_h,
+      'simple_address_translation_smoketest.c' , 'simple_address_translation.S'
+    ],
+    dependencies: [
+      sw_lib_dif_rstmgr,
+      sw_lib_flash_ctrl,
+      sw_lib_dif_rv_timer,
+      sw_lib_dif_pwrmgr,
+      sw_lib_dif_rv_plic,
+      sw_lib_runtime_log,
+      sw_lib_runtime_ibex,
+      sw_lib_ibex,
+      sw_lib_testing_aon_timer_testutils,
+      sw_lib_testing_rstmgr_testutils,
+      sw_lib_testing_rv_plic_testutils,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'simple_address_translation_smoketest': {
+    'library': simple_address_translation_smoketest,
+  }
+}
+
 ###############################################################################
 # Auto-generated tests
 ###############################################################################
