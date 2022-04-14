@@ -33,7 +33,7 @@ class chip_sw_full_aon_reset_vseq extends chip_sw_base_vseq;
       if (reset_cause == ResetCausePin) begin
         apply_reset();
       end else begin
-        cfg.ast_supply_vif.glitch_vcaon_supp_i(0);
+        cfg.ast_supply_vif.glitch_vcaon_pok(0);
       end
       cfg.sw_test_status_vif.sw_test_status = SwTestStatusUnderReset;
       repeat (cycles_before_trigger) @(posedge cfg.ast_supply_vif.clk);
