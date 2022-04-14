@@ -114,6 +114,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
   logic data_err;
 
   // use the tlul integrity module directly for bus integrity
+  // SEC_CM: MEM.BUS.INTEGRITY
   tlul_data_integ_dec u_data_intg_chk (
     .data_intg_i(data_i),
     .data_err_o(data_err)

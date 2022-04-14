@@ -118,7 +118,7 @@ module flash_ctrl
   logic intg_err;
   logic eflash_cmd_intg_err;
 
-  // SEC_CM: BUS.INTEGRITY
+  // SEC_CM: REG.BUS.INTEGRITY
   // SEC_CM: CTRL.CONFIG.REGWEN
   // SEC_CM: DATA_REGIONS.CONFIG.REGWEN, DATA_REGIONS.CONFIG.SHADOW
   // SEC_CM: INFO_REGIONS.CONFIG.REGWEN, INFO_REGIONS.CONFIG.SHADOW
@@ -1237,6 +1237,7 @@ module flash_ctrl
     .lc_en_i(host_enable)
   );
 
+  // SEC_CM: HOST.BUS.INTEGRITY
   tlul_adapter_sram #(
     .SramAw(BusAddrW),
     .SramDw(BusWidth),

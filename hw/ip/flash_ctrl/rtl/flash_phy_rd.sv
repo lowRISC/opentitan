@@ -588,6 +588,7 @@ module flash_phy_rd
   end
 
   // use the tlul integrity module directly for bus integrity
+  // SEC_CM: MEM.BUS.INTEGRITY
   tlul_data_integ_enc u_bus_intg (
     .data_i(data_out_pre),
     .data_intg_o(data_o)
