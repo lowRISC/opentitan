@@ -305,7 +305,7 @@
           name: "EDN_ENABLE_FIELD_ALERT",
           desc: '''
                 This bit is set when the EDN_ENABLE field is set to an illegal value,
-                something other than 0x5 or 0xA.
+                something other than kMultiBitBool4True or kMultiBitBool4False.
                 Writing a zero resets this status bit.
                 '''
         }
@@ -313,7 +313,7 @@
           name: "BOOT_REQ_MODE_FIELD_ALERT",
           desc: '''
                 This bit is set when the BOOT_REQ_MODE field is set to an illegal value,
-                something other than 0x5 or 0xA.
+                something other than kMultiBitBool4True or kMultiBitBool4False.
                 Writing a zero resets this status bit.
                 '''
         }
@@ -321,7 +321,7 @@
           name: "AUTO_REQ_MODE_FIELD_ALERT",
           desc: '''
                 This bit is set when the !!AUTO_REQ_MODE field is set to an illegal value,
-                something other than 0x5 or 0xA.
+                something other than kMultiBitBool4True or kMultiBitBool4False.
                 Writing a zero resets this status bit.
                 '''
         }
@@ -329,7 +329,7 @@
           name: "CMD_FIFO_RST_FIELD_ALERT",
           desc: '''
                 This bit is set when the CMD_FIFO_RST field is set to an illegal value,
-                something other than 0x5 or 0xA.
+                something other than kMultiBitBool4True or kMultiBitBool4False.
                 Writing a zero resets this status bit.
                 '''
         }

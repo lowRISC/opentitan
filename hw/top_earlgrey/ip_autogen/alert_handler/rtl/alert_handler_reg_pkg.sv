@@ -1723,4 +1723,3 @@ package alert_handler_reg_pkg;
   };
 
 endpackage
-

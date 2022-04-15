@@ -11,11 +11,12 @@ class chip_sw_sram_ctrl_execution_main_vseq extends chip_sw_base_vseq;
       256'hFA53B8058E157CB69F1F413E87242971B6B52A656A1CAB7FEBF21E5BF1F45EDD;
   localparam logic [255:0] MANUF_STATE =
       256'h41389646B3968A3B128F4AF0AFFC1AAC77ADEFF42376E09D523D5C06786AAC34;
-  localparam logic [7:0] EN_CSRNG_SW_APP_READ = 8'hA5;
-  localparam logic [7:0] EN_ENTROPY_SRC_FW_READ = 8'hA5;
-  localparam logic [7:0] EN_ENTROPY_SRC_FW_OVER = 8'hA5;
-  localparam logic [7:0] MUBI8TRUE = 8'h5A;
-  localparam logic [7:0] MUBI8FALSE = 8'hA5;
+  localparam logic [7:0] MUBI8TRUE = prim_mubi_pkg::MuBi8True;
+  localparam logic [7:0] MUBI8FALSE = prim_mubi_pkg::MuBi8False;
+  localparam logic [7:0] EN_CSRNG_SW_APP_READ = MUBI8FALSE;
+  localparam logic [7:0] EN_ENTROPY_SRC_FW_READ = MUBI8FALSE;
+  localparam logic [7:0] EN_ENTROPY_SRC_FW_OVER = MUBI8FALSE;
+
 
   virtual task do_test(logic [7:0] en_sram_ifetch, bit set_prod_lc);
 

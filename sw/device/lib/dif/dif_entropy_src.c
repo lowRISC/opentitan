@@ -84,12 +84,12 @@ static dif_result_t fw_override_set(
                       ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_OFFSET,
                       config->buffer_threshold);
 
-  uint32_t reg =
-      bitfield_field32_write(0, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_FIELD,
-                             config->enable ? 0xa : 0x5);
+  uint32_t reg = bitfield_field32_write(
+      0, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_FIELD,
+      config->enable ? kMultiBitBool4True : kMultiBitBool4False);
   reg = bitfield_field32_write(
       reg, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_FIELD,
-      config->entropy_insert_enable ? 0xa : 0x5);
+      config->entropy_insert_enable ? kMultiBitBool4True : kMultiBitBool4False);
   mmio_region_write32(entropy_src->base_addr,
                       ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET, reg);
   return kDifOk;
@@ -169,7 +169,7 @@ dif_result_t dif_entropy_src_fifo_read(const dif_entropy_src_t *entropy_src,
   uint32_t reg = mmio_region_read32(entropy_src->base_addr,
                                     ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET);
   if (bitfield_field32_read(reg, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_FIELD) !=
-      0xa) {
+      kMultiBitBool4True) {
     return kDifError;
   }
 
@@ -210,9 +210,10 @@ dif_result_t dif_entropy_src_fifo_write(const dif_entropy_src_t *entropy_src,
   uint32_t reg = mmio_region_read32(entropy_src->base_addr,
                                     ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET);
   if (bitfield_field32_read(reg, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_FIELD) !=
-          0xa ||
+          kMultiBitBool4True ||
       bitfield_field32_read(
-          reg, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_FIELD) != 0xa) {
+          reg, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_FIELD) !=
+          kMultiBitBool4True) {
     return kDifBadArg;
   }
 

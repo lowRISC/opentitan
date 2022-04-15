@@ -39,8 +39,8 @@ package lc_ctrl_pkg;
   parameter int TxWidth = 4;
 
   typedef enum logic [TxWidth-1:0] {
-    On  = 4'b1001,
-    Off = 4'b0110
+    On  = 4'b0101,
+    Off = 4'b1010
   } lc_tx_t;
   parameter lc_tx_t LC_TX_DEFAULT = lc_tx_t'(Off);
 

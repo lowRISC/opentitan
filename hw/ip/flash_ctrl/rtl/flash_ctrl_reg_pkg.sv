@@ -1091,4 +1091,3 @@ package flash_ctrl_reg_pkg;
   };
 
 endpackage
-

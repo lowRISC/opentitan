@@ -272,4 +272,3 @@ package pwrmgr_reg_pkg;
   };
 
 endpackage
-

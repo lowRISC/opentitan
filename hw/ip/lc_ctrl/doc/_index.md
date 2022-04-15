@@ -606,8 +606,8 @@ See diagram below.
 
 ![LC Request Interface](lc_ctrl_request_interface.svg)
 
-In order to claim the hardware mutex, the value 0x5A must be written to the claim register ({{< regref "CLAIM_TRANSITION_IF" >}}).
-If the register reads back as 0x5A, then the mutex is claimed, and the interface that won arbitration can continue operations.
+In order to claim the hardware mutex, the value kMuBi8True must be written to the claim register ({{< regref "CLAIM_TRANSITION_IF" >}}).
+If the register reads back as kMuBi8True, then the mutex is claimed, and the interface that won arbitration can continue operations.
 If the value is not read back, then the requesting interface should wait and try again later.
 
 When an agent is done with the mutex, it releases the mutex by explicitly writing a 0 to the claim register.
@@ -654,7 +654,7 @@ Hence the following programming sequence applies to both SW running on the devic
 
 2. Read the {{< regref "LC_STATE" >}} and {{< regref "LC_TRANSITION_CNT" >}} registers to determine which life cycle state the device currently is in, and how many transition attempts are still available.
 
-3. Claim exclusive access to the transition interface by writing 0x5A to the {{< regref "CLAIM_TRANSITION_IF" >}} register, and reading it back. If the value read back equals to 0x5A, the hardware mutex has successfully been claimed and SW can proceed to step 4. If the value read back equals to 0, the mutex has already been claimed by the other interface (either CSR or TAP), and SW should try claiming the mutex again.
+3. Claim exclusive access to the transition interface by writing kMuBi8True to the {{< regref "CLAIM_TRANSITION_IF" >}} register, and reading it back. If the value read back equals to kMuBi8True, the hardware mutex has successfully been claimed and SW can proceed to step 4. If the value read back equals to 0, the mutex has already been claimed by the other interface (either CSR or TAP), and SW should try claiming the mutex again.
 Note that all transition interface registers are protected by the hardware-governed {{< regref "TRANSITION_REGWEN" >}} register, which will only be set to 1 if the mutex has been claimed successfully.
 
 4. Write the desired target state to {{< regref "TRANSITION_TARGET" >}}. For conditional transitions, the corresponding token has to be written to {{< regref "TRANSITION_TOKEN_0" >}}. For all unconditional transitions, the token registers have to be set to zero.

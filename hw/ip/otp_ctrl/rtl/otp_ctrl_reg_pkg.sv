@@ -570,4 +570,3 @@ package otp_ctrl_reg_pkg;
   };
 
 endpackage
-

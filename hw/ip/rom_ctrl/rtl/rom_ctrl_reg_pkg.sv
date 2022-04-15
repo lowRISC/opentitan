@@ -138,4 +138,3 @@ package rom_ctrl_reg_pkg;
   parameter int unsigned      ROM_CTRL_ROM_SIZE   = 'h 8000;
 
 endpackage
-

@@ -381,4 +381,3 @@ ${reg_data_for_iface(iface_name, iface_desc, for_iface, rb)}\
 % endfor
 
 endpackage
-

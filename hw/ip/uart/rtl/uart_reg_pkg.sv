@@ -394,4 +394,3 @@ package uart_reg_pkg;
   };
 
 endpackage
-

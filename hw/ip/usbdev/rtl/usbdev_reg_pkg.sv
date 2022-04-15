@@ -746,4 +746,3 @@ package usbdev_reg_pkg;
   };
 
 endpackage
-
