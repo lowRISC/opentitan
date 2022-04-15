@@ -150,7 +150,7 @@ def cw310_params(
         tags = _BASE_PARAMS["tags"] + ["cpu:4"],
         timeout = _BASE_PARAMS["timeout"],
         # CW310-specific Parameters
-        bitstream = "@bitstreams//:bitstream_test_rom",
+        bitstream = "//hw/bitstream:test_rom",
         rom_kind = None,
         # None
         **kwargs):
