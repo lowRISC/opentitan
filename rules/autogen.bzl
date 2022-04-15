@@ -13,13 +13,13 @@ def _hjson_header(ctx):
     header = ctx.actions.declare_file("{}.h".format(ctx.label.name))
     ctx.actions.run(
         outputs = [header],
-        inputs = ctx.files.srcs + ctx.files._tool,
+        inputs = ctx.files.srcs + [ctx.executable._regtool],
         arguments = [
             "-D",
             "-o",
             header.path,
         ] + [src.path for src in ctx.files.srcs],
-        executable = ctx.files._tool[0],
+        executable = ctx.executable._regtool,
     )
     return [
         CcInfo(compilation_context = cc_common.create_compilation_context(
@@ -33,7 +33,11 @@ autogen_hjson_header = rule(
     implementation = _hjson_header,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
-        "_tool": attr.label(default = "//util:regtool.py", allow_files = True),
+        "_regtool": attr.label(
+            default = "//util:regtool",
+            executable = True,
+            cfg = "exec",
+        ),
     },
 )
 
