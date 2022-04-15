@@ -138,14 +138,11 @@ virtual function void rom_encrypt_write8(bit [bus_params_pkg::BUS_AW-1:0] addr,
                                          logic [SRAM_KEY_WIDTH-1:0]       key,
                                          logic [SRAM_BLOCK_WIDTH-1:0]     nonce,
                                          bit                              scramble_data = 1);
-  uint32_t byte_idx;
   bit [bus_params_pkg::BUS_AW-1:0] aligned_addr = (addr >> addr_lsb) << addr_lsb;
   int byte_offset = addr % bytes_per_word;
   bit [31:0] rw_data = 32'(rom_encrypt_read32(addr, key, nonce, scramble_data));
 
-  byte_idx = addr - aligned_addr;
-  rw_data[byte_idx * 8 +: 8] = data;
-
+  rw_data[byte_offset * 8 +: 8] = data;
   rom_encrypt_write32_integ(aligned_addr, rw_data, key, nonce, scramble_data);
 endfunction
 

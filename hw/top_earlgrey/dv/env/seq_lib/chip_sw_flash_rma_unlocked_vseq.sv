@@ -26,27 +26,7 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
   bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] sram_ret_nonce;
   bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0] sram_ret_key;
 
-  // TODO(lowRISC/opentitan:#11795): replace with SW symbol backdoor write
-  // when this is fixed for ROM.
-  // Currently a fixed unlock token which will match in software.
-  bit [7:0] rma_unlock_token[TokenWidthByte] = '{
-      8'h00,
-      8'h01,
-      8'h02,
-      8'h03,
-      8'h04,
-      8'h05,
-      8'h06,
-      8'h07,
-      8'h08,
-      8'h09,
-      8'h0a,
-      8'h0b,
-      8'h0c,
-      8'h0d,
-      8'h0e,
-      8'h0f
-  };
+  rand bit [7:0] rma_unlock_token[TokenWidthByte];
 
   rand bit [7:0] creator_root_key0[KeyWidthByte];
   rand bit [7:0] creator_root_key1[KeyWidthByte];
@@ -109,9 +89,10 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
     super.dut_init(reset_kind);
     // Override the LC partition to Dev state.
     cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStDev);
-    // TODO(lowRISC/opentitan:#11795): replace with SW symbol backdoor write
-    // when this is fixed for ROM.
-    // The following overwrite does not yet work.
+  endtask
+
+  virtual task cpu_init();
+    super.cpu_init();
     sw_symbol_backdoor_overwrite("kLcRmaUnlockToken", rma_unlock_token, Rom, SwTypeRom);
   endtask
 
