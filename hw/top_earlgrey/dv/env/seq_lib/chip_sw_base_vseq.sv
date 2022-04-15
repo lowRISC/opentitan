@@ -276,6 +276,11 @@ class chip_sw_base_vseq extends chip_base_vseq;
                                "addr_mask = 0x%0h"},
                               symbol, mem, addr, mem_addr, size, addr_mask), UVM_LOW)
     for (int i = 0; i < size; i++) mem_bkdr_write8(mem, mem_addr + i, data[i]);
+
+    if (mem == Rom) begin
+      `uvm_info(`gfn, "Regenerate ROM digest and update via backdoor", UVM_LOW)
+      cfg.mem_bkdr_util_h[mem].update_rom_digest(RndCnstRomCtrlScrKey, RndCnstRomCtrlScrNonce);
+    end
   endfunction
 
   // General-use function to backdoor write a byte of data to any selected memory type
@@ -284,8 +289,16 @@ class chip_sw_base_vseq extends chip_base_vseq;
   virtual function void mem_bkdr_write8(input chip_mem_e mem,
                                         input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                         input byte data);
-    byte prev_data = cfg.mem_bkdr_util_h[mem].read8(addr);
-    cfg.mem_bkdr_util_h[mem].write8(addr, data);
+    byte prev_data;
+    if (mem == Rom) begin
+      bit [127:0] key = RndCnstRomCtrlScrKey;
+      bit [63:0] nonce = RndCnstRomCtrlScrNonce;
+      prev_data = cfg.mem_bkdr_util_h[mem].rom_encrypt_read8(addr, key, nonce);
+      cfg.mem_bkdr_util_h[mem].rom_encrypt_write8(addr, data, key, nonce);
+    end else begin // flash
+      prev_data = cfg.mem_bkdr_util_h[mem].read8(addr);
+      cfg.mem_bkdr_util_h[mem].write8(addr, data);
+    end
     `uvm_info(`gfn, $sformatf("addr %0h = 0x%0h --> 0x%0h", addr, prev_data, data), UVM_HIGH)
   endfunction
 
