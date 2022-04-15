@@ -31,7 +31,9 @@ TEST_F(ConfigTest, NullArgs) {
 }
 
 TEST_F(ConfigTest, ConfigOk) {
-  EXPECT_WRITE32(CSRNG_CTRL_REG_OFFSET, 0xaaa);
+  constexpr uint32_t exp =
+      kMultiBitBool4True | kMultiBitBool4True << 4 | kMultiBitBool4True << 8;
+  EXPECT_WRITE32(CSRNG_CTRL_REG_OFFSET, exp);
   EXPECT_DIF_OK(dif_csrng_configure(&csrng_));
 }
 

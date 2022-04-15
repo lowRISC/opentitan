@@ -364,4 +364,3 @@ package spi_host_reg_pkg;
   };
 
 endpackage
-

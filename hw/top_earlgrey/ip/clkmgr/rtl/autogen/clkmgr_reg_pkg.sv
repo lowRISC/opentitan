@@ -276,8 +276,8 @@ package clkmgr_reg_pkg;
   parameter logic [1:0] CLKMGR_ALERT_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] CLKMGR_ALERT_TEST_RECOV_FAULT_RESVAL = 1'h 0;
   parameter logic [0:0] CLKMGR_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
-  parameter logic [3:0] CLKMGR_EXTCLK_STATUS_RESVAL = 4'h 5;
-  parameter logic [3:0] CLKMGR_EXTCLK_STATUS_ACK_RESVAL = 4'h 5;
+  parameter logic [3:0] CLKMGR_EXTCLK_STATUS_RESVAL = 4'h 9;
+  parameter logic [3:0] CLKMGR_EXTCLK_STATUS_ACK_RESVAL = 4'h 9;
 
   // Register index
   typedef enum int {
@@ -322,4 +322,3 @@ package clkmgr_reg_pkg;
   };
 
 endpackage
-

@@ -121,7 +121,14 @@ dif_result_t dif_csrng_configure(const dif_csrng_t *csrng) {
   if (csrng == NULL) {
     return kDifBadArg;
   }
-  mmio_region_write32(csrng->base_addr, CSRNG_CTRL_REG_OFFSET, 0xaaa);
+
+  uint32_t reg =
+      bitfield_field32_write(0, CSRNG_CTRL_ENABLE_FIELD, kMultiBitBool4True);
+  reg = bitfield_field32_write(reg, CSRNG_CTRL_SW_APP_ENABLE_FIELD,
+                               kMultiBitBool4True);
+  reg = bitfield_field32_write(reg, CSRNG_CTRL_READ_INT_STATE_FIELD,
+                               kMultiBitBool4True);
+  mmio_region_write32(csrng->base_addr, CSRNG_CTRL_REG_OFFSET, reg);
   return kDifOk;
 }
 

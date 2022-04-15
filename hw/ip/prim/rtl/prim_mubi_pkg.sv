@@ -20,8 +20,8 @@ package prim_mubi_pkg;
 
   parameter int MuBi4Width = 4;
   typedef enum logic [MuBi4Width-1:0] {
-    MuBi4True = 4'hA, // enabled
-    MuBi4False = 4'h5  // disabled
+    MuBi4True = 4'h6, // enabled
+    MuBi4False = 4'h9  // disabled
   } mubi4_t;
 
   // This is a prerequisite for the multibit functions below to work.
@@ -152,8 +152,8 @@ package prim_mubi_pkg;
 
   parameter int MuBi8Width = 8;
   typedef enum logic [MuBi8Width-1:0] {
-    MuBi8True = 8'h5A, // enabled
-    MuBi8False = 8'hA5  // disabled
+    MuBi8True = 8'h96, // enabled
+    MuBi8False = 8'h69  // disabled
   } mubi8_t;
 
   // This is a prerequisite for the multibit functions below to work.
@@ -284,8 +284,8 @@ package prim_mubi_pkg;
 
   parameter int MuBi12Width = 12;
   typedef enum logic [MuBi12Width-1:0] {
-    MuBi12True = 12'hA5A, // enabled
-    MuBi12False = 12'h5A5  // disabled
+    MuBi12True = 12'h696, // enabled
+    MuBi12False = 12'h969  // disabled
   } mubi12_t;
 
   // This is a prerequisite for the multibit functions below to work.
@@ -416,8 +416,8 @@ package prim_mubi_pkg;
 
   parameter int MuBi16Width = 16;
   typedef enum logic [MuBi16Width-1:0] {
-    MuBi16True = 16'h5A5A, // enabled
-    MuBi16False = 16'hA5A5  // disabled
+    MuBi16True = 16'h9696, // enabled
+    MuBi16False = 16'h6969  // disabled
   } mubi16_t;
 
   // This is a prerequisite for the multibit functions below to work.

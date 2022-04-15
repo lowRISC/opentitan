@@ -179,4 +179,3 @@ package pwm_reg_pkg;
   };
 
 endpackage
-

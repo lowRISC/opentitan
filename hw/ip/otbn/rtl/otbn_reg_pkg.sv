@@ -330,4 +330,3 @@ package otbn_reg_pkg;
   };
 
 endpackage
-

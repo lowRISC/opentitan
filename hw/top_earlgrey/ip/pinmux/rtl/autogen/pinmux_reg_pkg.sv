@@ -2619,4 +2619,3 @@ package pinmux_reg_pkg;
   };
 
 endpackage
-

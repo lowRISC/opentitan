@@ -256,7 +256,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
+    .RESVAL  (4'h9)
   ) u_reset_req (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

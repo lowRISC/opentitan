@@ -1017,4 +1017,3 @@ package spi_device_reg_pkg;
   };
 
 endpackage
-

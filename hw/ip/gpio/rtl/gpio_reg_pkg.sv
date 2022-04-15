@@ -264,4 +264,3 @@ package gpio_reg_pkg;
   };
 
 endpackage
-

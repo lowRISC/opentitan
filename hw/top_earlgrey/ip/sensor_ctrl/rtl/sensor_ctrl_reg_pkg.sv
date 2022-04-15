@@ -153,4 +153,3 @@ package sensor_ctrl_reg_pkg;
   };
 
 endpackage
-

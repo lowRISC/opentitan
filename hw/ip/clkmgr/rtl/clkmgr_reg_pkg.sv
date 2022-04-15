@@ -76,4 +76,3 @@ package clkmgr_reg_pkg;
   };
 
 endpackage
-
