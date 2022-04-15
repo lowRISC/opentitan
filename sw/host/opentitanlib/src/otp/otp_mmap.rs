@@ -13,6 +13,9 @@ use std::convert::TryInto;
 use std::fs;
 use std::path::Path;
 
+// FIXME: The OTP module is not being used yet.  When we write the OTP
+// configuration utility, remove the `dead_code`s and clean up the warnings.
+
 #[derive(Deserialize, Debug)]
 struct OtpMapConfig {
     #[serde(with = "num_de")]
@@ -52,13 +55,16 @@ struct OtpMapItem {
     #[serde(with = "num_de")]
     size: usize,
     #[serde(default)]
+    #[allow(dead_code)]
     isdigest: bool,
+    #[allow(dead_code)]
     inv_default: Option<DeferredValue>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct OtpMapPartition {
     name: String,
+    #[allow(dead_code)]
     secret: bool,
     #[serde(default, with = "num_de")]
     size: usize,
@@ -70,6 +76,7 @@ pub struct OtpMapPartition {
 
 #[derive(Deserialize, Debug)]
 pub struct OtpMap {
+    #[allow(dead_code)]
     seed: String,
     otp: OtpMapConfig,
     scrambling: OtpMapScrambling,
