@@ -53,18 +53,31 @@ module pwrmgr_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [16:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(17)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -291,6 +304,9 @@ module pwrmgr_reg_top (
 
 
   // R[control]: V(False)
+  // Create REGWEN-gated WE signal
+  logic control_gated_we;
+  assign control_gated_we = control_we & ctrl_cfg_regwen_qs;
   //   F[low_power_hint]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -301,7 +317,7 @@ module pwrmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_we & ctrl_cfg_regwen_qs),
+    .we     (control_gated_we),
     .wd     (control_low_power_hint_wd),
 
     // from internal hardware
@@ -326,7 +342,7 @@ module pwrmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_we & ctrl_cfg_regwen_qs),
+    .we     (control_gated_we),
     .wd     (control_core_clk_en_wd),
 
     // from internal hardware
@@ -351,7 +367,7 @@ module pwrmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_we & ctrl_cfg_regwen_qs),
+    .we     (control_gated_we),
     .wd     (control_io_clk_en_wd),
 
     // from internal hardware
@@ -376,7 +392,7 @@ module pwrmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_we & ctrl_cfg_regwen_qs),
+    .we     (control_gated_we),
     .wd     (control_usb_clk_en_lp_wd),
 
     // from internal hardware
@@ -401,7 +417,7 @@ module pwrmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_we & ctrl_cfg_regwen_qs),
+    .we     (control_gated_we),
     .wd     (control_usb_clk_en_active_wd),
 
     // from internal hardware
@@ -426,7 +442,7 @@ module pwrmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_we & ctrl_cfg_regwen_qs),
+    .we     (control_gated_we),
     .wd     (control_main_pd_n_wd),
 
     // from internal hardware
@@ -508,6 +524,9 @@ module pwrmgr_reg_top (
 
   // Subregister 0 of Multireg wakeup_en
   // R[wakeup_en]: V(False)
+  // Create REGWEN-gated WE signal
+  logic wakeup_en_gated_we;
+  assign wakeup_en_gated_we = wakeup_en_we & wakeup_en_regwen_qs;
   //   F[en_0]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -518,7 +537,7 @@ module pwrmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (wakeup_en_we & wakeup_en_regwen_qs),
+    .we     (wakeup_en_gated_we),
     .wd     (wakeup_en_en_0_wd),
 
     // from internal hardware
@@ -543,7 +562,7 @@ module pwrmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (wakeup_en_we & wakeup_en_regwen_qs),
+    .we     (wakeup_en_gated_we),
     .wd     (wakeup_en_en_1_wd),
 
     // from internal hardware
@@ -568,7 +587,7 @@ module pwrmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (wakeup_en_we & wakeup_en_regwen_qs),
+    .we     (wakeup_en_gated_we),
     .wd     (wakeup_en_en_2_wd),
 
     // from internal hardware
@@ -593,7 +612,7 @@ module pwrmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (wakeup_en_we & wakeup_en_regwen_qs),
+    .we     (wakeup_en_gated_we),
     .wd     (wakeup_en_en_3_wd),
 
     // from internal hardware
@@ -618,7 +637,7 @@ module pwrmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (wakeup_en_we & wakeup_en_regwen_qs),
+    .we     (wakeup_en_gated_we),
     .wd     (wakeup_en_en_4_wd),
 
     // from internal hardware
@@ -643,7 +662,7 @@ module pwrmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (wakeup_en_we & wakeup_en_regwen_qs),
+    .we     (wakeup_en_gated_we),
     .wd     (wakeup_en_en_5_wd),
 
     // from internal hardware
@@ -840,6 +859,9 @@ module pwrmgr_reg_top (
 
   // Subregister 0 of Multireg reset_en
   // R[reset_en]: V(False)
+  // Create REGWEN-gated WE signal
+  logic reset_en_gated_we;
+  assign reset_en_gated_we = reset_en_we & reset_en_regwen_qs;
   //   F[en_0]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -850,7 +872,7 @@ module pwrmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (reset_en_we & reset_en_regwen_qs),
+    .we     (reset_en_gated_we),
     .wd     (reset_en_en_0_wd),
 
     // from internal hardware
@@ -875,7 +897,7 @@ module pwrmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (reset_en_we & reset_en_regwen_qs),
+    .we     (reset_en_gated_we),
     .wd     (reset_en_en_1_wd),
 
     // from internal hardware
@@ -1169,6 +1191,8 @@ module pwrmgr_reg_top (
                (addr_hit[15] & (|(PWRMGR_PERMIT[15] & ~reg_be))) |
                (addr_hit[16] & (|(PWRMGR_PERMIT[16] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
   assign intr_state_wd = reg_wdata[0];
@@ -1233,6 +1257,28 @@ module pwrmgr_reg_top (
   assign wake_info_fall_through_wd = reg_wdata[6];
 
   assign wake_info_abort_wd = reg_wdata[7];
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = intr_state_we;
+    reg_we_check[1] = intr_enable_we;
+    reg_we_check[2] = intr_test_we;
+    reg_we_check[3] = alert_test_we;
+    reg_we_check[4] = 1'b0;
+    reg_we_check[5] = control_gated_we;
+    reg_we_check[6] = cfg_cdc_sync_we;
+    reg_we_check[7] = wakeup_en_regwen_we;
+    reg_we_check[8] = wakeup_en_gated_we;
+    reg_we_check[9] = 1'b0;
+    reg_we_check[10] = reset_en_regwen_we;
+    reg_we_check[11] = reset_en_gated_we;
+    reg_we_check[12] = 1'b0;
+    reg_we_check[13] = 1'b0;
+    reg_we_check[14] = wake_info_capture_dis_we;
+    reg_we_check[15] = wake_info_we;
+    reg_we_check[16] = 1'b0;
+  end
 
   // Read data return
   always_comb begin

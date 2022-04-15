@@ -53,18 +53,31 @@ module rv_plic_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [202:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(203)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -16006,6 +16019,8 @@ module rv_plic_reg_top (
                (addr_hit[201] & (|(RV_PLIC_PERMIT[201] & ~reg_be))) |
                (addr_hit[202] & (|(RV_PLIC_PERMIT[202] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign prio0_we = addr_hit[0] & reg_we & !reg_error;
 
   assign prio0_wd = reg_wdata[1:0];
@@ -16960,6 +16975,214 @@ module rv_plic_reg_top (
   assign alert_test_we = addr_hit[202] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = prio0_we;
+    reg_we_check[1] = prio1_we;
+    reg_we_check[2] = prio2_we;
+    reg_we_check[3] = prio3_we;
+    reg_we_check[4] = prio4_we;
+    reg_we_check[5] = prio5_we;
+    reg_we_check[6] = prio6_we;
+    reg_we_check[7] = prio7_we;
+    reg_we_check[8] = prio8_we;
+    reg_we_check[9] = prio9_we;
+    reg_we_check[10] = prio10_we;
+    reg_we_check[11] = prio11_we;
+    reg_we_check[12] = prio12_we;
+    reg_we_check[13] = prio13_we;
+    reg_we_check[14] = prio14_we;
+    reg_we_check[15] = prio15_we;
+    reg_we_check[16] = prio16_we;
+    reg_we_check[17] = prio17_we;
+    reg_we_check[18] = prio18_we;
+    reg_we_check[19] = prio19_we;
+    reg_we_check[20] = prio20_we;
+    reg_we_check[21] = prio21_we;
+    reg_we_check[22] = prio22_we;
+    reg_we_check[23] = prio23_we;
+    reg_we_check[24] = prio24_we;
+    reg_we_check[25] = prio25_we;
+    reg_we_check[26] = prio26_we;
+    reg_we_check[27] = prio27_we;
+    reg_we_check[28] = prio28_we;
+    reg_we_check[29] = prio29_we;
+    reg_we_check[30] = prio30_we;
+    reg_we_check[31] = prio31_we;
+    reg_we_check[32] = prio32_we;
+    reg_we_check[33] = prio33_we;
+    reg_we_check[34] = prio34_we;
+    reg_we_check[35] = prio35_we;
+    reg_we_check[36] = prio36_we;
+    reg_we_check[37] = prio37_we;
+    reg_we_check[38] = prio38_we;
+    reg_we_check[39] = prio39_we;
+    reg_we_check[40] = prio40_we;
+    reg_we_check[41] = prio41_we;
+    reg_we_check[42] = prio42_we;
+    reg_we_check[43] = prio43_we;
+    reg_we_check[44] = prio44_we;
+    reg_we_check[45] = prio45_we;
+    reg_we_check[46] = prio46_we;
+    reg_we_check[47] = prio47_we;
+    reg_we_check[48] = prio48_we;
+    reg_we_check[49] = prio49_we;
+    reg_we_check[50] = prio50_we;
+    reg_we_check[51] = prio51_we;
+    reg_we_check[52] = prio52_we;
+    reg_we_check[53] = prio53_we;
+    reg_we_check[54] = prio54_we;
+    reg_we_check[55] = prio55_we;
+    reg_we_check[56] = prio56_we;
+    reg_we_check[57] = prio57_we;
+    reg_we_check[58] = prio58_we;
+    reg_we_check[59] = prio59_we;
+    reg_we_check[60] = prio60_we;
+    reg_we_check[61] = prio61_we;
+    reg_we_check[62] = prio62_we;
+    reg_we_check[63] = prio63_we;
+    reg_we_check[64] = prio64_we;
+    reg_we_check[65] = prio65_we;
+    reg_we_check[66] = prio66_we;
+    reg_we_check[67] = prio67_we;
+    reg_we_check[68] = prio68_we;
+    reg_we_check[69] = prio69_we;
+    reg_we_check[70] = prio70_we;
+    reg_we_check[71] = prio71_we;
+    reg_we_check[72] = prio72_we;
+    reg_we_check[73] = prio73_we;
+    reg_we_check[74] = prio74_we;
+    reg_we_check[75] = prio75_we;
+    reg_we_check[76] = prio76_we;
+    reg_we_check[77] = prio77_we;
+    reg_we_check[78] = prio78_we;
+    reg_we_check[79] = prio79_we;
+    reg_we_check[80] = prio80_we;
+    reg_we_check[81] = prio81_we;
+    reg_we_check[82] = prio82_we;
+    reg_we_check[83] = prio83_we;
+    reg_we_check[84] = prio84_we;
+    reg_we_check[85] = prio85_we;
+    reg_we_check[86] = prio86_we;
+    reg_we_check[87] = prio87_we;
+    reg_we_check[88] = prio88_we;
+    reg_we_check[89] = prio89_we;
+    reg_we_check[90] = prio90_we;
+    reg_we_check[91] = prio91_we;
+    reg_we_check[92] = prio92_we;
+    reg_we_check[93] = prio93_we;
+    reg_we_check[94] = prio94_we;
+    reg_we_check[95] = prio95_we;
+    reg_we_check[96] = prio96_we;
+    reg_we_check[97] = prio97_we;
+    reg_we_check[98] = prio98_we;
+    reg_we_check[99] = prio99_we;
+    reg_we_check[100] = prio100_we;
+    reg_we_check[101] = prio101_we;
+    reg_we_check[102] = prio102_we;
+    reg_we_check[103] = prio103_we;
+    reg_we_check[104] = prio104_we;
+    reg_we_check[105] = prio105_we;
+    reg_we_check[106] = prio106_we;
+    reg_we_check[107] = prio107_we;
+    reg_we_check[108] = prio108_we;
+    reg_we_check[109] = prio109_we;
+    reg_we_check[110] = prio110_we;
+    reg_we_check[111] = prio111_we;
+    reg_we_check[112] = prio112_we;
+    reg_we_check[113] = prio113_we;
+    reg_we_check[114] = prio114_we;
+    reg_we_check[115] = prio115_we;
+    reg_we_check[116] = prio116_we;
+    reg_we_check[117] = prio117_we;
+    reg_we_check[118] = prio118_we;
+    reg_we_check[119] = prio119_we;
+    reg_we_check[120] = prio120_we;
+    reg_we_check[121] = prio121_we;
+    reg_we_check[122] = prio122_we;
+    reg_we_check[123] = prio123_we;
+    reg_we_check[124] = prio124_we;
+    reg_we_check[125] = prio125_we;
+    reg_we_check[126] = prio126_we;
+    reg_we_check[127] = prio127_we;
+    reg_we_check[128] = prio128_we;
+    reg_we_check[129] = prio129_we;
+    reg_we_check[130] = prio130_we;
+    reg_we_check[131] = prio131_we;
+    reg_we_check[132] = prio132_we;
+    reg_we_check[133] = prio133_we;
+    reg_we_check[134] = prio134_we;
+    reg_we_check[135] = prio135_we;
+    reg_we_check[136] = prio136_we;
+    reg_we_check[137] = prio137_we;
+    reg_we_check[138] = prio138_we;
+    reg_we_check[139] = prio139_we;
+    reg_we_check[140] = prio140_we;
+    reg_we_check[141] = prio141_we;
+    reg_we_check[142] = prio142_we;
+    reg_we_check[143] = prio143_we;
+    reg_we_check[144] = prio144_we;
+    reg_we_check[145] = prio145_we;
+    reg_we_check[146] = prio146_we;
+    reg_we_check[147] = prio147_we;
+    reg_we_check[148] = prio148_we;
+    reg_we_check[149] = prio149_we;
+    reg_we_check[150] = prio150_we;
+    reg_we_check[151] = prio151_we;
+    reg_we_check[152] = prio152_we;
+    reg_we_check[153] = prio153_we;
+    reg_we_check[154] = prio154_we;
+    reg_we_check[155] = prio155_we;
+    reg_we_check[156] = prio156_we;
+    reg_we_check[157] = prio157_we;
+    reg_we_check[158] = prio158_we;
+    reg_we_check[159] = prio159_we;
+    reg_we_check[160] = prio160_we;
+    reg_we_check[161] = prio161_we;
+    reg_we_check[162] = prio162_we;
+    reg_we_check[163] = prio163_we;
+    reg_we_check[164] = prio164_we;
+    reg_we_check[165] = prio165_we;
+    reg_we_check[166] = prio166_we;
+    reg_we_check[167] = prio167_we;
+    reg_we_check[168] = prio168_we;
+    reg_we_check[169] = prio169_we;
+    reg_we_check[170] = prio170_we;
+    reg_we_check[171] = prio171_we;
+    reg_we_check[172] = prio172_we;
+    reg_we_check[173] = prio173_we;
+    reg_we_check[174] = prio174_we;
+    reg_we_check[175] = prio175_we;
+    reg_we_check[176] = prio176_we;
+    reg_we_check[177] = prio177_we;
+    reg_we_check[178] = prio178_we;
+    reg_we_check[179] = prio179_we;
+    reg_we_check[180] = prio180_we;
+    reg_we_check[181] = prio181_we;
+    reg_we_check[182] = prio182_we;
+    reg_we_check[183] = prio183_we;
+    reg_we_check[184] = prio184_we;
+    reg_we_check[185] = prio185_we;
+    reg_we_check[186] = prio186_we;
+    reg_we_check[187] = 1'b0;
+    reg_we_check[188] = 1'b0;
+    reg_we_check[189] = 1'b0;
+    reg_we_check[190] = 1'b0;
+    reg_we_check[191] = 1'b0;
+    reg_we_check[192] = 1'b0;
+    reg_we_check[193] = ie0_0_we;
+    reg_we_check[194] = ie0_1_we;
+    reg_we_check[195] = ie0_2_we;
+    reg_we_check[196] = ie0_3_we;
+    reg_we_check[197] = ie0_4_we;
+    reg_we_check[198] = ie0_5_we;
+    reg_we_check[199] = threshold0_we;
+    reg_we_check[200] = cc0_we;
+    reg_we_check[201] = msip0_we;
+    reg_we_check[202] = alert_test_we;
+  end
 
   // Read data return
   always_comb begin
