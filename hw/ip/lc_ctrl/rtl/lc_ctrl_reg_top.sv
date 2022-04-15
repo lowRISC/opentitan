@@ -53,18 +53,31 @@ module lc_ctrl_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [32:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(33)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -434,11 +447,14 @@ module lc_ctrl_reg_top (
   logic transition_cmd_qe;
   logic [0:0] transition_cmd_flds_we;
   assign transition_cmd_qe = &transition_cmd_flds_we;
+  // Create REGWEN-gated WE signal
+  logic transition_cmd_gated_we;
+  assign transition_cmd_gated_we = transition_cmd_we & transition_regwen_qs;
   prim_subreg_ext #(
     .DW    (1)
   ) u_transition_cmd (
     .re     (1'b0),
-    .we     (transition_cmd_we & transition_regwen_qs),
+    .we     (transition_cmd_gated_we),
     .wd     (transition_cmd_wd),
     .d      ('0),
     .qre    (),
@@ -453,11 +469,14 @@ module lc_ctrl_reg_top (
   logic transition_ctrl_qe;
   logic [0:0] transition_ctrl_flds_we;
   assign transition_ctrl_qe = &transition_ctrl_flds_we;
+  // Create REGWEN-gated WE signal
+  logic transition_ctrl_gated_we;
+  assign transition_ctrl_gated_we = transition_ctrl_we & transition_regwen_qs;
   prim_subreg_ext #(
     .DW    (1)
   ) u_transition_ctrl (
     .re     (transition_ctrl_re),
-    .we     (transition_ctrl_we & transition_regwen_qs),
+    .we     (transition_ctrl_gated_we),
     .wd     (transition_ctrl_wd),
     .d      (hw2reg.transition_ctrl.d),
     .qre    (),
@@ -473,11 +492,14 @@ module lc_ctrl_reg_top (
   logic transition_token_0_qe;
   logic [0:0] transition_token_0_flds_we;
   assign transition_token_0_qe = &transition_token_0_flds_we;
+  // Create REGWEN-gated WE signal
+  logic transition_token_0_gated_we;
+  assign transition_token_0_gated_we = transition_token_0_we & transition_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_transition_token_0 (
     .re     (transition_token_0_re),
-    .we     (transition_token_0_we & transition_regwen_qs),
+    .we     (transition_token_0_gated_we),
     .wd     (transition_token_0_wd),
     .d      (hw2reg.transition_token[0].d),
     .qre    (),
@@ -493,11 +515,14 @@ module lc_ctrl_reg_top (
   logic transition_token_1_qe;
   logic [0:0] transition_token_1_flds_we;
   assign transition_token_1_qe = &transition_token_1_flds_we;
+  // Create REGWEN-gated WE signal
+  logic transition_token_1_gated_we;
+  assign transition_token_1_gated_we = transition_token_1_we & transition_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_transition_token_1 (
     .re     (transition_token_1_re),
-    .we     (transition_token_1_we & transition_regwen_qs),
+    .we     (transition_token_1_gated_we),
     .wd     (transition_token_1_wd),
     .d      (hw2reg.transition_token[1].d),
     .qre    (),
@@ -513,11 +538,14 @@ module lc_ctrl_reg_top (
   logic transition_token_2_qe;
   logic [0:0] transition_token_2_flds_we;
   assign transition_token_2_qe = &transition_token_2_flds_we;
+  // Create REGWEN-gated WE signal
+  logic transition_token_2_gated_we;
+  assign transition_token_2_gated_we = transition_token_2_we & transition_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_transition_token_2 (
     .re     (transition_token_2_re),
-    .we     (transition_token_2_we & transition_regwen_qs),
+    .we     (transition_token_2_gated_we),
     .wd     (transition_token_2_wd),
     .d      (hw2reg.transition_token[2].d),
     .qre    (),
@@ -533,11 +561,14 @@ module lc_ctrl_reg_top (
   logic transition_token_3_qe;
   logic [0:0] transition_token_3_flds_we;
   assign transition_token_3_qe = &transition_token_3_flds_we;
+  // Create REGWEN-gated WE signal
+  logic transition_token_3_gated_we;
+  assign transition_token_3_gated_we = transition_token_3_we & transition_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_transition_token_3 (
     .re     (transition_token_3_re),
-    .we     (transition_token_3_we & transition_regwen_qs),
+    .we     (transition_token_3_gated_we),
     .wd     (transition_token_3_wd),
     .d      (hw2reg.transition_token[3].d),
     .qre    (),
@@ -552,11 +583,14 @@ module lc_ctrl_reg_top (
   logic transition_target_qe;
   logic [0:0] transition_target_flds_we;
   assign transition_target_qe = &transition_target_flds_we;
+  // Create REGWEN-gated WE signal
+  logic transition_target_gated_we;
+  assign transition_target_gated_we = transition_target_we & transition_regwen_qs;
   prim_subreg_ext #(
     .DW    (30)
   ) u_transition_target (
     .re     (transition_target_re),
-    .we     (transition_target_we & transition_regwen_qs),
+    .we     (transition_target_gated_we),
     .wd     (transition_target_wd),
     .d      (hw2reg.transition_target.d),
     .qre    (),
@@ -571,11 +605,14 @@ module lc_ctrl_reg_top (
   logic otp_vendor_test_ctrl_qe;
   logic [0:0] otp_vendor_test_ctrl_flds_we;
   assign otp_vendor_test_ctrl_qe = &otp_vendor_test_ctrl_flds_we;
+  // Create REGWEN-gated WE signal
+  logic otp_vendor_test_ctrl_gated_we;
+  assign otp_vendor_test_ctrl_gated_we = otp_vendor_test_ctrl_we & transition_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_otp_vendor_test_ctrl (
     .re     (otp_vendor_test_ctrl_re),
-    .we     (otp_vendor_test_ctrl_we & transition_regwen_qs),
+    .we     (otp_vendor_test_ctrl_gated_we),
     .wd     (otp_vendor_test_ctrl_wd),
     .d      (hw2reg.otp_vendor_test_ctrl.d),
     .qre    (),
@@ -1010,6 +1047,8 @@ module lc_ctrl_reg_top (
                (addr_hit[31] & (|(LC_CTRL_PERMIT[31] & ~reg_be))) |
                (addr_hit[32] & (|(LC_CTRL_PERMIT[32] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
   assign alert_test_fatal_prog_error_wd = reg_wdata[0];
@@ -1075,6 +1114,44 @@ module lc_ctrl_reg_top (
   assign manuf_state_5_re = addr_hit[30] & reg_re & !reg_error;
   assign manuf_state_6_re = addr_hit[31] & reg_re & !reg_error;
   assign manuf_state_7_re = addr_hit[32] & reg_re & !reg_error;
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = alert_test_we;
+    reg_we_check[1] = 1'b0;
+    reg_we_check[2] = claim_transition_if_we;
+    reg_we_check[3] = 1'b0;
+    reg_we_check[4] = transition_cmd_gated_we;
+    reg_we_check[5] = transition_ctrl_gated_we;
+    reg_we_check[6] = transition_token_0_gated_we;
+    reg_we_check[7] = transition_token_1_gated_we;
+    reg_we_check[8] = transition_token_2_gated_we;
+    reg_we_check[9] = transition_token_3_gated_we;
+    reg_we_check[10] = transition_target_gated_we;
+    reg_we_check[11] = otp_vendor_test_ctrl_gated_we;
+    reg_we_check[12] = 1'b0;
+    reg_we_check[13] = 1'b0;
+    reg_we_check[14] = 1'b0;
+    reg_we_check[15] = 1'b0;
+    reg_we_check[16] = 1'b0;
+    reg_we_check[17] = 1'b0;
+    reg_we_check[18] = 1'b0;
+    reg_we_check[19] = 1'b0;
+    reg_we_check[20] = 1'b0;
+    reg_we_check[21] = 1'b0;
+    reg_we_check[22] = 1'b0;
+    reg_we_check[23] = 1'b0;
+    reg_we_check[24] = 1'b0;
+    reg_we_check[25] = 1'b0;
+    reg_we_check[26] = 1'b0;
+    reg_we_check[27] = 1'b0;
+    reg_we_check[28] = 1'b0;
+    reg_we_check[29] = 1'b0;
+    reg_we_check[30] = 1'b0;
+    reg_we_check[31] = 1'b0;
+    reg_we_check[32] = 1'b0;
+  end
 
   // Read data return
   always_comb begin

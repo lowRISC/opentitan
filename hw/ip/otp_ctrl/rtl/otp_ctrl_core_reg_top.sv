@@ -58,18 +58,31 @@ module otp_ctrl_core_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [35:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(36)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -875,12 +888,15 @@ module otp_ctrl_core_reg_top (
   logic direct_access_cmd_qe;
   logic [2:0] direct_access_cmd_flds_we;
   assign direct_access_cmd_qe = &direct_access_cmd_flds_we;
+  // Create REGWEN-gated WE signal
+  logic direct_access_cmd_gated_we;
+  assign direct_access_cmd_gated_we = direct_access_cmd_we & direct_access_regwen_qs;
   //   F[rd]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_direct_access_cmd_rd (
     .re     (1'b0),
-    .we     (direct_access_cmd_we & direct_access_regwen_qs),
+    .we     (direct_access_cmd_gated_we),
     .wd     (direct_access_cmd_rd_wd),
     .d      ('0),
     .qre    (),
@@ -895,7 +911,7 @@ module otp_ctrl_core_reg_top (
     .DW    (1)
   ) u_direct_access_cmd_wr (
     .re     (1'b0),
-    .we     (direct_access_cmd_we & direct_access_regwen_qs),
+    .we     (direct_access_cmd_gated_we),
     .wd     (direct_access_cmd_wr_wd),
     .d      ('0),
     .qre    (),
@@ -910,7 +926,7 @@ module otp_ctrl_core_reg_top (
     .DW    (1)
   ) u_direct_access_cmd_digest (
     .re     (1'b0),
-    .we     (direct_access_cmd_we & direct_access_regwen_qs),
+    .we     (direct_access_cmd_gated_we),
     .wd     (direct_access_cmd_digest_wd),
     .d      ('0),
     .qre    (),
@@ -922,6 +938,9 @@ module otp_ctrl_core_reg_top (
 
 
   // R[direct_access_address]: V(False)
+  // Create REGWEN-gated WE signal
+  logic direct_access_address_gated_we;
+  assign direct_access_address_gated_we = direct_access_address_we & direct_access_regwen_qs;
   prim_subreg #(
     .DW      (11),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -931,7 +950,7 @@ module otp_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (direct_access_address_we & direct_access_regwen_qs),
+    .we     (direct_access_address_gated_we),
     .wd     (direct_access_address_wd),
 
     // from internal hardware
@@ -949,6 +968,9 @@ module otp_ctrl_core_reg_top (
 
   // Subregister 0 of Multireg direct_access_wdata
   // R[direct_access_wdata_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic direct_access_wdata_0_gated_we;
+  assign direct_access_wdata_0_gated_we = direct_access_wdata_0_we & direct_access_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -958,7 +980,7 @@ module otp_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (direct_access_wdata_0_we & direct_access_regwen_qs),
+    .we     (direct_access_wdata_0_gated_we),
     .wd     (direct_access_wdata_0_wd),
 
     // from internal hardware
@@ -976,6 +998,9 @@ module otp_ctrl_core_reg_top (
 
   // Subregister 1 of Multireg direct_access_wdata
   // R[direct_access_wdata_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic direct_access_wdata_1_gated_we;
+  assign direct_access_wdata_1_gated_we = direct_access_wdata_1_we & direct_access_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -985,7 +1010,7 @@ module otp_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (direct_access_wdata_1_we & direct_access_regwen_qs),
+    .we     (direct_access_wdata_1_gated_we),
     .wd     (direct_access_wdata_1_wd),
 
     // from internal hardware
@@ -1063,12 +1088,15 @@ module otp_ctrl_core_reg_top (
   logic check_trigger_qe;
   logic [1:0] check_trigger_flds_we;
   assign check_trigger_qe = &check_trigger_flds_we;
+  // Create REGWEN-gated WE signal
+  logic check_trigger_gated_we;
+  assign check_trigger_gated_we = check_trigger_we & check_trigger_regwen_qs;
   //   F[integrity]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_check_trigger_integrity (
     .re     (1'b0),
-    .we     (check_trigger_we & check_trigger_regwen_qs),
+    .we     (check_trigger_gated_we),
     .wd     (check_trigger_integrity_wd),
     .d      ('0),
     .qre    (),
@@ -1083,7 +1111,7 @@ module otp_ctrl_core_reg_top (
     .DW    (1)
   ) u_check_trigger_consistency (
     .re     (1'b0),
-    .we     (check_trigger_we & check_trigger_regwen_qs),
+    .we     (check_trigger_gated_we),
     .wd     (check_trigger_consistency_wd),
     .d      ('0),
     .qre    (),
@@ -1121,6 +1149,9 @@ module otp_ctrl_core_reg_top (
 
 
   // R[check_timeout]: V(False)
+  // Create REGWEN-gated WE signal
+  logic check_timeout_gated_we;
+  assign check_timeout_gated_we = check_timeout_we & check_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1130,7 +1161,7 @@ module otp_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (check_timeout_we & check_regwen_qs),
+    .we     (check_timeout_gated_we),
     .wd     (check_timeout_wd),
 
     // from internal hardware
@@ -1147,6 +1178,9 @@ module otp_ctrl_core_reg_top (
 
 
   // R[integrity_check_period]: V(False)
+  // Create REGWEN-gated WE signal
+  logic integrity_check_period_gated_we;
+  assign integrity_check_period_gated_we = integrity_check_period_we & check_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1156,7 +1190,7 @@ module otp_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (integrity_check_period_we & check_regwen_qs),
+    .we     (integrity_check_period_gated_we),
     .wd     (integrity_check_period_wd),
 
     // from internal hardware
@@ -1173,6 +1207,9 @@ module otp_ctrl_core_reg_top (
 
 
   // R[consistency_check_period]: V(False)
+  // Create REGWEN-gated WE signal
+  logic consistency_check_period_gated_we;
+  assign consistency_check_period_gated_we = consistency_check_period_we & check_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1182,7 +1219,7 @@ module otp_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (consistency_check_period_we & check_regwen_qs),
+    .we     (consistency_check_period_gated_we),
     .wd     (consistency_check_period_wd),
 
     // from internal hardware
@@ -1199,6 +1236,9 @@ module otp_ctrl_core_reg_top (
 
 
   // R[vendor_test_read_lock]: V(False)
+  // Create REGWEN-gated WE signal
+  logic vendor_test_read_lock_gated_we;
+  assign vendor_test_read_lock_gated_we = vendor_test_read_lock_we & direct_access_regwen_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -1208,7 +1248,7 @@ module otp_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (vendor_test_read_lock_we & direct_access_regwen_qs),
+    .we     (vendor_test_read_lock_gated_we),
     .wd     (vendor_test_read_lock_wd),
 
     // from internal hardware
@@ -1225,6 +1265,9 @@ module otp_ctrl_core_reg_top (
 
 
   // R[creator_sw_cfg_read_lock]: V(False)
+  // Create REGWEN-gated WE signal
+  logic creator_sw_cfg_read_lock_gated_we;
+  assign creator_sw_cfg_read_lock_gated_we = creator_sw_cfg_read_lock_we & direct_access_regwen_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -1234,7 +1277,7 @@ module otp_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (creator_sw_cfg_read_lock_we & direct_access_regwen_qs),
+    .we     (creator_sw_cfg_read_lock_gated_we),
     .wd     (creator_sw_cfg_read_lock_wd),
 
     // from internal hardware
@@ -1251,6 +1294,9 @@ module otp_ctrl_core_reg_top (
 
 
   // R[owner_sw_cfg_read_lock]: V(False)
+  // Create REGWEN-gated WE signal
+  logic owner_sw_cfg_read_lock_gated_we;
+  assign owner_sw_cfg_read_lock_gated_we = owner_sw_cfg_read_lock_we & direct_access_regwen_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
@@ -1260,7 +1306,7 @@ module otp_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (owner_sw_cfg_read_lock_we & direct_access_regwen_qs),
+    .we     (owner_sw_cfg_read_lock_gated_we),
     .wd     (owner_sw_cfg_read_lock_wd),
 
     // from internal hardware
@@ -1584,6 +1630,8 @@ module otp_ctrl_core_reg_top (
                (addr_hit[34] & (|(OTP_CTRL_CORE_PERMIT[34] & ~reg_be))) |
                (addr_hit[35] & (|(OTP_CTRL_CORE_PERMIT[35] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
   assign intr_state_otp_operation_done_wd = reg_wdata[0];
@@ -1670,6 +1718,47 @@ module otp_ctrl_core_reg_top (
   assign secret1_digest_1_re = addr_hit[33] & reg_re & !reg_error;
   assign secret2_digest_0_re = addr_hit[34] & reg_re & !reg_error;
   assign secret2_digest_1_re = addr_hit[35] & reg_re & !reg_error;
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = intr_state_we;
+    reg_we_check[1] = intr_enable_we;
+    reg_we_check[2] = intr_test_we;
+    reg_we_check[3] = alert_test_we;
+    reg_we_check[4] = 1'b0;
+    reg_we_check[5] = 1'b0;
+    reg_we_check[6] = 1'b0;
+    reg_we_check[7] = direct_access_cmd_gated_we;
+    reg_we_check[8] = direct_access_address_gated_we;
+    reg_we_check[9] = direct_access_wdata_0_gated_we;
+    reg_we_check[10] = direct_access_wdata_1_gated_we;
+    reg_we_check[11] = 1'b0;
+    reg_we_check[12] = 1'b0;
+    reg_we_check[13] = check_trigger_regwen_we;
+    reg_we_check[14] = check_trigger_gated_we;
+    reg_we_check[15] = check_regwen_we;
+    reg_we_check[16] = check_timeout_gated_we;
+    reg_we_check[17] = integrity_check_period_gated_we;
+    reg_we_check[18] = consistency_check_period_gated_we;
+    reg_we_check[19] = vendor_test_read_lock_gated_we;
+    reg_we_check[20] = creator_sw_cfg_read_lock_gated_we;
+    reg_we_check[21] = owner_sw_cfg_read_lock_gated_we;
+    reg_we_check[22] = 1'b0;
+    reg_we_check[23] = 1'b0;
+    reg_we_check[24] = 1'b0;
+    reg_we_check[25] = 1'b0;
+    reg_we_check[26] = 1'b0;
+    reg_we_check[27] = 1'b0;
+    reg_we_check[28] = 1'b0;
+    reg_we_check[29] = 1'b0;
+    reg_we_check[30] = 1'b0;
+    reg_we_check[31] = 1'b0;
+    reg_we_check[32] = 1'b0;
+    reg_we_check[33] = 1'b0;
+    reg_we_check[34] = 1'b0;
+    reg_we_check[35] = 1'b0;
+  end
 
   // Read data return
   always_comb begin

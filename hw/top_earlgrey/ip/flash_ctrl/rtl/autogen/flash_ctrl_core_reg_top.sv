@@ -62,18 +62,31 @@ module flash_ctrl_core_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [105:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(106)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -1541,6 +1554,9 @@ module flash_ctrl_core_reg_top (
 
 
   // R[control]: V(False)
+  // Create REGWEN-gated WE signal
+  logic control_gated_we;
+  assign control_gated_we = control_we & ctrl_regwen_qs;
   //   F[start]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1551,7 +1567,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_we & ctrl_regwen_qs),
+    .we     (control_gated_we),
     .wd     (control_start_wd),
 
     // from internal hardware
@@ -1576,7 +1592,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_we & ctrl_regwen_qs),
+    .we     (control_gated_we),
     .wd     (control_op_wd),
 
     // from internal hardware
@@ -1601,7 +1617,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_we & ctrl_regwen_qs),
+    .we     (control_gated_we),
     .wd     (control_prog_sel_wd),
 
     // from internal hardware
@@ -1626,7 +1642,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_we & ctrl_regwen_qs),
+    .we     (control_gated_we),
     .wd     (control_erase_sel_wd),
 
     // from internal hardware
@@ -1651,7 +1667,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_we & ctrl_regwen_qs),
+    .we     (control_gated_we),
     .wd     (control_partition_sel_wd),
 
     // from internal hardware
@@ -1676,7 +1692,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_we & ctrl_regwen_qs),
+    .we     (control_gated_we),
     .wd     (control_info_sel_wd),
 
     // from internal hardware
@@ -1701,7 +1717,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (control_we & ctrl_regwen_qs),
+    .we     (control_gated_we),
     .wd     (control_num_wd),
 
     // from internal hardware
@@ -2039,6 +2055,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 0 of Multireg mp_region_cfg
   // R[mp_region_cfg_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mp_region_cfg_0_gated_we;
+  assign mp_region_cfg_0_gated_we = mp_region_cfg_0_we & region_cfg_regwen_0_qs;
   //   F[en_0]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -2049,7 +2068,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_0_we & region_cfg_regwen_0_qs),
+    .we     (mp_region_cfg_0_gated_we),
     .wd     (mp_region_cfg_0_en_0_wd),
 
     // from internal hardware
@@ -2074,7 +2093,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_0_we & region_cfg_regwen_0_qs),
+    .we     (mp_region_cfg_0_gated_we),
     .wd     (mp_region_cfg_0_rd_en_0_wd),
 
     // from internal hardware
@@ -2099,7 +2118,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_0_we & region_cfg_regwen_0_qs),
+    .we     (mp_region_cfg_0_gated_we),
     .wd     (mp_region_cfg_0_prog_en_0_wd),
 
     // from internal hardware
@@ -2124,7 +2143,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_0_we & region_cfg_regwen_0_qs),
+    .we     (mp_region_cfg_0_gated_we),
     .wd     (mp_region_cfg_0_erase_en_0_wd),
 
     // from internal hardware
@@ -2149,7 +2168,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_0_we & region_cfg_regwen_0_qs),
+    .we     (mp_region_cfg_0_gated_we),
     .wd     (mp_region_cfg_0_scramble_en_0_wd),
 
     // from internal hardware
@@ -2174,7 +2193,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_0_we & region_cfg_regwen_0_qs),
+    .we     (mp_region_cfg_0_gated_we),
     .wd     (mp_region_cfg_0_ecc_en_0_wd),
 
     // from internal hardware
@@ -2199,7 +2218,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_0_we & region_cfg_regwen_0_qs),
+    .we     (mp_region_cfg_0_gated_we),
     .wd     (mp_region_cfg_0_he_en_0_wd),
 
     // from internal hardware
@@ -2217,6 +2236,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 1 of Multireg mp_region_cfg
   // R[mp_region_cfg_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mp_region_cfg_1_gated_we;
+  assign mp_region_cfg_1_gated_we = mp_region_cfg_1_we & region_cfg_regwen_1_qs;
   //   F[en_1]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -2227,7 +2249,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_1_we & region_cfg_regwen_1_qs),
+    .we     (mp_region_cfg_1_gated_we),
     .wd     (mp_region_cfg_1_en_1_wd),
 
     // from internal hardware
@@ -2252,7 +2274,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_1_we & region_cfg_regwen_1_qs),
+    .we     (mp_region_cfg_1_gated_we),
     .wd     (mp_region_cfg_1_rd_en_1_wd),
 
     // from internal hardware
@@ -2277,7 +2299,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_1_we & region_cfg_regwen_1_qs),
+    .we     (mp_region_cfg_1_gated_we),
     .wd     (mp_region_cfg_1_prog_en_1_wd),
 
     // from internal hardware
@@ -2302,7 +2324,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_1_we & region_cfg_regwen_1_qs),
+    .we     (mp_region_cfg_1_gated_we),
     .wd     (mp_region_cfg_1_erase_en_1_wd),
 
     // from internal hardware
@@ -2327,7 +2349,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_1_we & region_cfg_regwen_1_qs),
+    .we     (mp_region_cfg_1_gated_we),
     .wd     (mp_region_cfg_1_scramble_en_1_wd),
 
     // from internal hardware
@@ -2352,7 +2374,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_1_we & region_cfg_regwen_1_qs),
+    .we     (mp_region_cfg_1_gated_we),
     .wd     (mp_region_cfg_1_ecc_en_1_wd),
 
     // from internal hardware
@@ -2377,7 +2399,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_1_we & region_cfg_regwen_1_qs),
+    .we     (mp_region_cfg_1_gated_we),
     .wd     (mp_region_cfg_1_he_en_1_wd),
 
     // from internal hardware
@@ -2395,6 +2417,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 2 of Multireg mp_region_cfg
   // R[mp_region_cfg_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mp_region_cfg_2_gated_we;
+  assign mp_region_cfg_2_gated_we = mp_region_cfg_2_we & region_cfg_regwen_2_qs;
   //   F[en_2]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -2405,7 +2430,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_2_we & region_cfg_regwen_2_qs),
+    .we     (mp_region_cfg_2_gated_we),
     .wd     (mp_region_cfg_2_en_2_wd),
 
     // from internal hardware
@@ -2430,7 +2455,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_2_we & region_cfg_regwen_2_qs),
+    .we     (mp_region_cfg_2_gated_we),
     .wd     (mp_region_cfg_2_rd_en_2_wd),
 
     // from internal hardware
@@ -2455,7 +2480,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_2_we & region_cfg_regwen_2_qs),
+    .we     (mp_region_cfg_2_gated_we),
     .wd     (mp_region_cfg_2_prog_en_2_wd),
 
     // from internal hardware
@@ -2480,7 +2505,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_2_we & region_cfg_regwen_2_qs),
+    .we     (mp_region_cfg_2_gated_we),
     .wd     (mp_region_cfg_2_erase_en_2_wd),
 
     // from internal hardware
@@ -2505,7 +2530,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_2_we & region_cfg_regwen_2_qs),
+    .we     (mp_region_cfg_2_gated_we),
     .wd     (mp_region_cfg_2_scramble_en_2_wd),
 
     // from internal hardware
@@ -2530,7 +2555,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_2_we & region_cfg_regwen_2_qs),
+    .we     (mp_region_cfg_2_gated_we),
     .wd     (mp_region_cfg_2_ecc_en_2_wd),
 
     // from internal hardware
@@ -2555,7 +2580,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_2_we & region_cfg_regwen_2_qs),
+    .we     (mp_region_cfg_2_gated_we),
     .wd     (mp_region_cfg_2_he_en_2_wd),
 
     // from internal hardware
@@ -2573,6 +2598,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 3 of Multireg mp_region_cfg
   // R[mp_region_cfg_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mp_region_cfg_3_gated_we;
+  assign mp_region_cfg_3_gated_we = mp_region_cfg_3_we & region_cfg_regwen_3_qs;
   //   F[en_3]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -2583,7 +2611,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_3_we & region_cfg_regwen_3_qs),
+    .we     (mp_region_cfg_3_gated_we),
     .wd     (mp_region_cfg_3_en_3_wd),
 
     // from internal hardware
@@ -2608,7 +2636,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_3_we & region_cfg_regwen_3_qs),
+    .we     (mp_region_cfg_3_gated_we),
     .wd     (mp_region_cfg_3_rd_en_3_wd),
 
     // from internal hardware
@@ -2633,7 +2661,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_3_we & region_cfg_regwen_3_qs),
+    .we     (mp_region_cfg_3_gated_we),
     .wd     (mp_region_cfg_3_prog_en_3_wd),
 
     // from internal hardware
@@ -2658,7 +2686,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_3_we & region_cfg_regwen_3_qs),
+    .we     (mp_region_cfg_3_gated_we),
     .wd     (mp_region_cfg_3_erase_en_3_wd),
 
     // from internal hardware
@@ -2683,7 +2711,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_3_we & region_cfg_regwen_3_qs),
+    .we     (mp_region_cfg_3_gated_we),
     .wd     (mp_region_cfg_3_scramble_en_3_wd),
 
     // from internal hardware
@@ -2708,7 +2736,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_3_we & region_cfg_regwen_3_qs),
+    .we     (mp_region_cfg_3_gated_we),
     .wd     (mp_region_cfg_3_ecc_en_3_wd),
 
     // from internal hardware
@@ -2733,7 +2761,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_3_we & region_cfg_regwen_3_qs),
+    .we     (mp_region_cfg_3_gated_we),
     .wd     (mp_region_cfg_3_he_en_3_wd),
 
     // from internal hardware
@@ -2751,6 +2779,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 4 of Multireg mp_region_cfg
   // R[mp_region_cfg_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mp_region_cfg_4_gated_we;
+  assign mp_region_cfg_4_gated_we = mp_region_cfg_4_we & region_cfg_regwen_4_qs;
   //   F[en_4]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -2761,7 +2792,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_4_we & region_cfg_regwen_4_qs),
+    .we     (mp_region_cfg_4_gated_we),
     .wd     (mp_region_cfg_4_en_4_wd),
 
     // from internal hardware
@@ -2786,7 +2817,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_4_we & region_cfg_regwen_4_qs),
+    .we     (mp_region_cfg_4_gated_we),
     .wd     (mp_region_cfg_4_rd_en_4_wd),
 
     // from internal hardware
@@ -2811,7 +2842,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_4_we & region_cfg_regwen_4_qs),
+    .we     (mp_region_cfg_4_gated_we),
     .wd     (mp_region_cfg_4_prog_en_4_wd),
 
     // from internal hardware
@@ -2836,7 +2867,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_4_we & region_cfg_regwen_4_qs),
+    .we     (mp_region_cfg_4_gated_we),
     .wd     (mp_region_cfg_4_erase_en_4_wd),
 
     // from internal hardware
@@ -2861,7 +2892,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_4_we & region_cfg_regwen_4_qs),
+    .we     (mp_region_cfg_4_gated_we),
     .wd     (mp_region_cfg_4_scramble_en_4_wd),
 
     // from internal hardware
@@ -2886,7 +2917,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_4_we & region_cfg_regwen_4_qs),
+    .we     (mp_region_cfg_4_gated_we),
     .wd     (mp_region_cfg_4_ecc_en_4_wd),
 
     // from internal hardware
@@ -2911,7 +2942,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_4_we & region_cfg_regwen_4_qs),
+    .we     (mp_region_cfg_4_gated_we),
     .wd     (mp_region_cfg_4_he_en_4_wd),
 
     // from internal hardware
@@ -2929,6 +2960,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 5 of Multireg mp_region_cfg
   // R[mp_region_cfg_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mp_region_cfg_5_gated_we;
+  assign mp_region_cfg_5_gated_we = mp_region_cfg_5_we & region_cfg_regwen_5_qs;
   //   F[en_5]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -2939,7 +2973,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_5_we & region_cfg_regwen_5_qs),
+    .we     (mp_region_cfg_5_gated_we),
     .wd     (mp_region_cfg_5_en_5_wd),
 
     // from internal hardware
@@ -2964,7 +2998,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_5_we & region_cfg_regwen_5_qs),
+    .we     (mp_region_cfg_5_gated_we),
     .wd     (mp_region_cfg_5_rd_en_5_wd),
 
     // from internal hardware
@@ -2989,7 +3023,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_5_we & region_cfg_regwen_5_qs),
+    .we     (mp_region_cfg_5_gated_we),
     .wd     (mp_region_cfg_5_prog_en_5_wd),
 
     // from internal hardware
@@ -3014,7 +3048,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_5_we & region_cfg_regwen_5_qs),
+    .we     (mp_region_cfg_5_gated_we),
     .wd     (mp_region_cfg_5_erase_en_5_wd),
 
     // from internal hardware
@@ -3039,7 +3073,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_5_we & region_cfg_regwen_5_qs),
+    .we     (mp_region_cfg_5_gated_we),
     .wd     (mp_region_cfg_5_scramble_en_5_wd),
 
     // from internal hardware
@@ -3064,7 +3098,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_5_we & region_cfg_regwen_5_qs),
+    .we     (mp_region_cfg_5_gated_we),
     .wd     (mp_region_cfg_5_ecc_en_5_wd),
 
     // from internal hardware
@@ -3089,7 +3123,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_5_we & region_cfg_regwen_5_qs),
+    .we     (mp_region_cfg_5_gated_we),
     .wd     (mp_region_cfg_5_he_en_5_wd),
 
     // from internal hardware
@@ -3107,6 +3141,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 6 of Multireg mp_region_cfg
   // R[mp_region_cfg_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mp_region_cfg_6_gated_we;
+  assign mp_region_cfg_6_gated_we = mp_region_cfg_6_we & region_cfg_regwen_6_qs;
   //   F[en_6]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -3117,7 +3154,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_6_we & region_cfg_regwen_6_qs),
+    .we     (mp_region_cfg_6_gated_we),
     .wd     (mp_region_cfg_6_en_6_wd),
 
     // from internal hardware
@@ -3142,7 +3179,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_6_we & region_cfg_regwen_6_qs),
+    .we     (mp_region_cfg_6_gated_we),
     .wd     (mp_region_cfg_6_rd_en_6_wd),
 
     // from internal hardware
@@ -3167,7 +3204,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_6_we & region_cfg_regwen_6_qs),
+    .we     (mp_region_cfg_6_gated_we),
     .wd     (mp_region_cfg_6_prog_en_6_wd),
 
     // from internal hardware
@@ -3192,7 +3229,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_6_we & region_cfg_regwen_6_qs),
+    .we     (mp_region_cfg_6_gated_we),
     .wd     (mp_region_cfg_6_erase_en_6_wd),
 
     // from internal hardware
@@ -3217,7 +3254,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_6_we & region_cfg_regwen_6_qs),
+    .we     (mp_region_cfg_6_gated_we),
     .wd     (mp_region_cfg_6_scramble_en_6_wd),
 
     // from internal hardware
@@ -3242,7 +3279,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_6_we & region_cfg_regwen_6_qs),
+    .we     (mp_region_cfg_6_gated_we),
     .wd     (mp_region_cfg_6_ecc_en_6_wd),
 
     // from internal hardware
@@ -3267,7 +3304,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_6_we & region_cfg_regwen_6_qs),
+    .we     (mp_region_cfg_6_gated_we),
     .wd     (mp_region_cfg_6_he_en_6_wd),
 
     // from internal hardware
@@ -3285,6 +3322,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 7 of Multireg mp_region_cfg
   // R[mp_region_cfg_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mp_region_cfg_7_gated_we;
+  assign mp_region_cfg_7_gated_we = mp_region_cfg_7_we & region_cfg_regwen_7_qs;
   //   F[en_7]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -3295,7 +3335,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_7_we & region_cfg_regwen_7_qs),
+    .we     (mp_region_cfg_7_gated_we),
     .wd     (mp_region_cfg_7_en_7_wd),
 
     // from internal hardware
@@ -3320,7 +3360,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_7_we & region_cfg_regwen_7_qs),
+    .we     (mp_region_cfg_7_gated_we),
     .wd     (mp_region_cfg_7_rd_en_7_wd),
 
     // from internal hardware
@@ -3345,7 +3385,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_7_we & region_cfg_regwen_7_qs),
+    .we     (mp_region_cfg_7_gated_we),
     .wd     (mp_region_cfg_7_prog_en_7_wd),
 
     // from internal hardware
@@ -3370,7 +3410,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_7_we & region_cfg_regwen_7_qs),
+    .we     (mp_region_cfg_7_gated_we),
     .wd     (mp_region_cfg_7_erase_en_7_wd),
 
     // from internal hardware
@@ -3395,7 +3435,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_7_we & region_cfg_regwen_7_qs),
+    .we     (mp_region_cfg_7_gated_we),
     .wd     (mp_region_cfg_7_scramble_en_7_wd),
 
     // from internal hardware
@@ -3420,7 +3460,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_7_we & region_cfg_regwen_7_qs),
+    .we     (mp_region_cfg_7_gated_we),
     .wd     (mp_region_cfg_7_ecc_en_7_wd),
 
     // from internal hardware
@@ -3445,7 +3485,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_cfg_7_we & region_cfg_regwen_7_qs),
+    .we     (mp_region_cfg_7_gated_we),
     .wd     (mp_region_cfg_7_he_en_7_wd),
 
     // from internal hardware
@@ -3463,6 +3503,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 0 of Multireg mp_region
   // R[mp_region_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mp_region_0_gated_we;
+  assign mp_region_0_gated_we = mp_region_0_we & region_cfg_regwen_0_qs;
   //   F[base_0]: 8:0
   prim_subreg #(
     .DW      (9),
@@ -3473,7 +3516,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_0_we & region_cfg_regwen_0_qs),
+    .we     (mp_region_0_gated_we),
     .wd     (mp_region_0_base_0_wd),
 
     // from internal hardware
@@ -3498,7 +3541,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_0_we & region_cfg_regwen_0_qs),
+    .we     (mp_region_0_gated_we),
     .wd     (mp_region_0_size_0_wd),
 
     // from internal hardware
@@ -3516,6 +3559,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 1 of Multireg mp_region
   // R[mp_region_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mp_region_1_gated_we;
+  assign mp_region_1_gated_we = mp_region_1_we & region_cfg_regwen_1_qs;
   //   F[base_1]: 8:0
   prim_subreg #(
     .DW      (9),
@@ -3526,7 +3572,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_1_we & region_cfg_regwen_1_qs),
+    .we     (mp_region_1_gated_we),
     .wd     (mp_region_1_base_1_wd),
 
     // from internal hardware
@@ -3551,7 +3597,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_1_we & region_cfg_regwen_1_qs),
+    .we     (mp_region_1_gated_we),
     .wd     (mp_region_1_size_1_wd),
 
     // from internal hardware
@@ -3569,6 +3615,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 2 of Multireg mp_region
   // R[mp_region_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mp_region_2_gated_we;
+  assign mp_region_2_gated_we = mp_region_2_we & region_cfg_regwen_2_qs;
   //   F[base_2]: 8:0
   prim_subreg #(
     .DW      (9),
@@ -3579,7 +3628,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_2_we & region_cfg_regwen_2_qs),
+    .we     (mp_region_2_gated_we),
     .wd     (mp_region_2_base_2_wd),
 
     // from internal hardware
@@ -3604,7 +3653,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_2_we & region_cfg_regwen_2_qs),
+    .we     (mp_region_2_gated_we),
     .wd     (mp_region_2_size_2_wd),
 
     // from internal hardware
@@ -3622,6 +3671,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 3 of Multireg mp_region
   // R[mp_region_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mp_region_3_gated_we;
+  assign mp_region_3_gated_we = mp_region_3_we & region_cfg_regwen_3_qs;
   //   F[base_3]: 8:0
   prim_subreg #(
     .DW      (9),
@@ -3632,7 +3684,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_3_we & region_cfg_regwen_3_qs),
+    .we     (mp_region_3_gated_we),
     .wd     (mp_region_3_base_3_wd),
 
     // from internal hardware
@@ -3657,7 +3709,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_3_we & region_cfg_regwen_3_qs),
+    .we     (mp_region_3_gated_we),
     .wd     (mp_region_3_size_3_wd),
 
     // from internal hardware
@@ -3675,6 +3727,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 4 of Multireg mp_region
   // R[mp_region_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mp_region_4_gated_we;
+  assign mp_region_4_gated_we = mp_region_4_we & region_cfg_regwen_4_qs;
   //   F[base_4]: 8:0
   prim_subreg #(
     .DW      (9),
@@ -3685,7 +3740,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_4_we & region_cfg_regwen_4_qs),
+    .we     (mp_region_4_gated_we),
     .wd     (mp_region_4_base_4_wd),
 
     // from internal hardware
@@ -3710,7 +3765,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_4_we & region_cfg_regwen_4_qs),
+    .we     (mp_region_4_gated_we),
     .wd     (mp_region_4_size_4_wd),
 
     // from internal hardware
@@ -3728,6 +3783,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 5 of Multireg mp_region
   // R[mp_region_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mp_region_5_gated_we;
+  assign mp_region_5_gated_we = mp_region_5_we & region_cfg_regwen_5_qs;
   //   F[base_5]: 8:0
   prim_subreg #(
     .DW      (9),
@@ -3738,7 +3796,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_5_we & region_cfg_regwen_5_qs),
+    .we     (mp_region_5_gated_we),
     .wd     (mp_region_5_base_5_wd),
 
     // from internal hardware
@@ -3763,7 +3821,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_5_we & region_cfg_regwen_5_qs),
+    .we     (mp_region_5_gated_we),
     .wd     (mp_region_5_size_5_wd),
 
     // from internal hardware
@@ -3781,6 +3839,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 6 of Multireg mp_region
   // R[mp_region_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mp_region_6_gated_we;
+  assign mp_region_6_gated_we = mp_region_6_we & region_cfg_regwen_6_qs;
   //   F[base_6]: 8:0
   prim_subreg #(
     .DW      (9),
@@ -3791,7 +3852,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_6_we & region_cfg_regwen_6_qs),
+    .we     (mp_region_6_gated_we),
     .wd     (mp_region_6_base_6_wd),
 
     // from internal hardware
@@ -3816,7 +3877,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_6_we & region_cfg_regwen_6_qs),
+    .we     (mp_region_6_gated_we),
     .wd     (mp_region_6_size_6_wd),
 
     // from internal hardware
@@ -3834,6 +3895,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 7 of Multireg mp_region
   // R[mp_region_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mp_region_7_gated_we;
+  assign mp_region_7_gated_we = mp_region_7_we & region_cfg_regwen_7_qs;
   //   F[base_7]: 8:0
   prim_subreg #(
     .DW      (9),
@@ -3844,7 +3908,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_7_we & region_cfg_regwen_7_qs),
+    .we     (mp_region_7_gated_we),
     .wd     (mp_region_7_base_7_wd),
 
     // from internal hardware
@@ -3869,7 +3933,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (mp_region_7_we & region_cfg_regwen_7_qs),
+    .we     (mp_region_7_gated_we),
     .wd     (mp_region_7_size_7_wd),
 
     // from internal hardware
@@ -4309,6 +4373,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 0 of Multireg bank0_info0_page_cfg
   // R[bank0_info0_page_cfg_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank0_info0_page_cfg_0_gated_we;
+  assign bank0_info0_page_cfg_0_gated_we = bank0_info0_page_cfg_0_we & bank0_info0_regwen_0_qs;
   //   F[en_0]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -4319,7 +4386,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_0_we & bank0_info0_regwen_0_qs),
+    .we     (bank0_info0_page_cfg_0_gated_we),
     .wd     (bank0_info0_page_cfg_0_en_0_wd),
 
     // from internal hardware
@@ -4344,7 +4411,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_0_we & bank0_info0_regwen_0_qs),
+    .we     (bank0_info0_page_cfg_0_gated_we),
     .wd     (bank0_info0_page_cfg_0_rd_en_0_wd),
 
     // from internal hardware
@@ -4369,7 +4436,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_0_we & bank0_info0_regwen_0_qs),
+    .we     (bank0_info0_page_cfg_0_gated_we),
     .wd     (bank0_info0_page_cfg_0_prog_en_0_wd),
 
     // from internal hardware
@@ -4394,7 +4461,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_0_we & bank0_info0_regwen_0_qs),
+    .we     (bank0_info0_page_cfg_0_gated_we),
     .wd     (bank0_info0_page_cfg_0_erase_en_0_wd),
 
     // from internal hardware
@@ -4419,7 +4486,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_0_we & bank0_info0_regwen_0_qs),
+    .we     (bank0_info0_page_cfg_0_gated_we),
     .wd     (bank0_info0_page_cfg_0_scramble_en_0_wd),
 
     // from internal hardware
@@ -4444,7 +4511,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_0_we & bank0_info0_regwen_0_qs),
+    .we     (bank0_info0_page_cfg_0_gated_we),
     .wd     (bank0_info0_page_cfg_0_ecc_en_0_wd),
 
     // from internal hardware
@@ -4469,7 +4536,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_0_we & bank0_info0_regwen_0_qs),
+    .we     (bank0_info0_page_cfg_0_gated_we),
     .wd     (bank0_info0_page_cfg_0_he_en_0_wd),
 
     // from internal hardware
@@ -4487,6 +4554,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 1 of Multireg bank0_info0_page_cfg
   // R[bank0_info0_page_cfg_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank0_info0_page_cfg_1_gated_we;
+  assign bank0_info0_page_cfg_1_gated_we = bank0_info0_page_cfg_1_we & bank0_info0_regwen_1_qs;
   //   F[en_1]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -4497,7 +4567,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_1_we & bank0_info0_regwen_1_qs),
+    .we     (bank0_info0_page_cfg_1_gated_we),
     .wd     (bank0_info0_page_cfg_1_en_1_wd),
 
     // from internal hardware
@@ -4522,7 +4592,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_1_we & bank0_info0_regwen_1_qs),
+    .we     (bank0_info0_page_cfg_1_gated_we),
     .wd     (bank0_info0_page_cfg_1_rd_en_1_wd),
 
     // from internal hardware
@@ -4547,7 +4617,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_1_we & bank0_info0_regwen_1_qs),
+    .we     (bank0_info0_page_cfg_1_gated_we),
     .wd     (bank0_info0_page_cfg_1_prog_en_1_wd),
 
     // from internal hardware
@@ -4572,7 +4642,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_1_we & bank0_info0_regwen_1_qs),
+    .we     (bank0_info0_page_cfg_1_gated_we),
     .wd     (bank0_info0_page_cfg_1_erase_en_1_wd),
 
     // from internal hardware
@@ -4597,7 +4667,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_1_we & bank0_info0_regwen_1_qs),
+    .we     (bank0_info0_page_cfg_1_gated_we),
     .wd     (bank0_info0_page_cfg_1_scramble_en_1_wd),
 
     // from internal hardware
@@ -4622,7 +4692,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_1_we & bank0_info0_regwen_1_qs),
+    .we     (bank0_info0_page_cfg_1_gated_we),
     .wd     (bank0_info0_page_cfg_1_ecc_en_1_wd),
 
     // from internal hardware
@@ -4647,7 +4717,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_1_we & bank0_info0_regwen_1_qs),
+    .we     (bank0_info0_page_cfg_1_gated_we),
     .wd     (bank0_info0_page_cfg_1_he_en_1_wd),
 
     // from internal hardware
@@ -4665,6 +4735,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 2 of Multireg bank0_info0_page_cfg
   // R[bank0_info0_page_cfg_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank0_info0_page_cfg_2_gated_we;
+  assign bank0_info0_page_cfg_2_gated_we = bank0_info0_page_cfg_2_we & bank0_info0_regwen_2_qs;
   //   F[en_2]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -4675,7 +4748,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_2_we & bank0_info0_regwen_2_qs),
+    .we     (bank0_info0_page_cfg_2_gated_we),
     .wd     (bank0_info0_page_cfg_2_en_2_wd),
 
     // from internal hardware
@@ -4700,7 +4773,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_2_we & bank0_info0_regwen_2_qs),
+    .we     (bank0_info0_page_cfg_2_gated_we),
     .wd     (bank0_info0_page_cfg_2_rd_en_2_wd),
 
     // from internal hardware
@@ -4725,7 +4798,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_2_we & bank0_info0_regwen_2_qs),
+    .we     (bank0_info0_page_cfg_2_gated_we),
     .wd     (bank0_info0_page_cfg_2_prog_en_2_wd),
 
     // from internal hardware
@@ -4750,7 +4823,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_2_we & bank0_info0_regwen_2_qs),
+    .we     (bank0_info0_page_cfg_2_gated_we),
     .wd     (bank0_info0_page_cfg_2_erase_en_2_wd),
 
     // from internal hardware
@@ -4775,7 +4848,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_2_we & bank0_info0_regwen_2_qs),
+    .we     (bank0_info0_page_cfg_2_gated_we),
     .wd     (bank0_info0_page_cfg_2_scramble_en_2_wd),
 
     // from internal hardware
@@ -4800,7 +4873,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_2_we & bank0_info0_regwen_2_qs),
+    .we     (bank0_info0_page_cfg_2_gated_we),
     .wd     (bank0_info0_page_cfg_2_ecc_en_2_wd),
 
     // from internal hardware
@@ -4825,7 +4898,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_2_we & bank0_info0_regwen_2_qs),
+    .we     (bank0_info0_page_cfg_2_gated_we),
     .wd     (bank0_info0_page_cfg_2_he_en_2_wd),
 
     // from internal hardware
@@ -4843,6 +4916,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 3 of Multireg bank0_info0_page_cfg
   // R[bank0_info0_page_cfg_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank0_info0_page_cfg_3_gated_we;
+  assign bank0_info0_page_cfg_3_gated_we = bank0_info0_page_cfg_3_we & bank0_info0_regwen_3_qs;
   //   F[en_3]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -4853,7 +4929,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_3_we & bank0_info0_regwen_3_qs),
+    .we     (bank0_info0_page_cfg_3_gated_we),
     .wd     (bank0_info0_page_cfg_3_en_3_wd),
 
     // from internal hardware
@@ -4878,7 +4954,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_3_we & bank0_info0_regwen_3_qs),
+    .we     (bank0_info0_page_cfg_3_gated_we),
     .wd     (bank0_info0_page_cfg_3_rd_en_3_wd),
 
     // from internal hardware
@@ -4903,7 +4979,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_3_we & bank0_info0_regwen_3_qs),
+    .we     (bank0_info0_page_cfg_3_gated_we),
     .wd     (bank0_info0_page_cfg_3_prog_en_3_wd),
 
     // from internal hardware
@@ -4928,7 +5004,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_3_we & bank0_info0_regwen_3_qs),
+    .we     (bank0_info0_page_cfg_3_gated_we),
     .wd     (bank0_info0_page_cfg_3_erase_en_3_wd),
 
     // from internal hardware
@@ -4953,7 +5029,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_3_we & bank0_info0_regwen_3_qs),
+    .we     (bank0_info0_page_cfg_3_gated_we),
     .wd     (bank0_info0_page_cfg_3_scramble_en_3_wd),
 
     // from internal hardware
@@ -4978,7 +5054,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_3_we & bank0_info0_regwen_3_qs),
+    .we     (bank0_info0_page_cfg_3_gated_we),
     .wd     (bank0_info0_page_cfg_3_ecc_en_3_wd),
 
     // from internal hardware
@@ -5003,7 +5079,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_3_we & bank0_info0_regwen_3_qs),
+    .we     (bank0_info0_page_cfg_3_gated_we),
     .wd     (bank0_info0_page_cfg_3_he_en_3_wd),
 
     // from internal hardware
@@ -5021,6 +5097,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 4 of Multireg bank0_info0_page_cfg
   // R[bank0_info0_page_cfg_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank0_info0_page_cfg_4_gated_we;
+  assign bank0_info0_page_cfg_4_gated_we = bank0_info0_page_cfg_4_we & bank0_info0_regwen_4_qs;
   //   F[en_4]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -5031,7 +5110,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_4_we & bank0_info0_regwen_4_qs),
+    .we     (bank0_info0_page_cfg_4_gated_we),
     .wd     (bank0_info0_page_cfg_4_en_4_wd),
 
     // from internal hardware
@@ -5056,7 +5135,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_4_we & bank0_info0_regwen_4_qs),
+    .we     (bank0_info0_page_cfg_4_gated_we),
     .wd     (bank0_info0_page_cfg_4_rd_en_4_wd),
 
     // from internal hardware
@@ -5081,7 +5160,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_4_we & bank0_info0_regwen_4_qs),
+    .we     (bank0_info0_page_cfg_4_gated_we),
     .wd     (bank0_info0_page_cfg_4_prog_en_4_wd),
 
     // from internal hardware
@@ -5106,7 +5185,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_4_we & bank0_info0_regwen_4_qs),
+    .we     (bank0_info0_page_cfg_4_gated_we),
     .wd     (bank0_info0_page_cfg_4_erase_en_4_wd),
 
     // from internal hardware
@@ -5131,7 +5210,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_4_we & bank0_info0_regwen_4_qs),
+    .we     (bank0_info0_page_cfg_4_gated_we),
     .wd     (bank0_info0_page_cfg_4_scramble_en_4_wd),
 
     // from internal hardware
@@ -5156,7 +5235,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_4_we & bank0_info0_regwen_4_qs),
+    .we     (bank0_info0_page_cfg_4_gated_we),
     .wd     (bank0_info0_page_cfg_4_ecc_en_4_wd),
 
     // from internal hardware
@@ -5181,7 +5260,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_4_we & bank0_info0_regwen_4_qs),
+    .we     (bank0_info0_page_cfg_4_gated_we),
     .wd     (bank0_info0_page_cfg_4_he_en_4_wd),
 
     // from internal hardware
@@ -5199,6 +5278,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 5 of Multireg bank0_info0_page_cfg
   // R[bank0_info0_page_cfg_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank0_info0_page_cfg_5_gated_we;
+  assign bank0_info0_page_cfg_5_gated_we = bank0_info0_page_cfg_5_we & bank0_info0_regwen_5_qs;
   //   F[en_5]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -5209,7 +5291,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_5_we & bank0_info0_regwen_5_qs),
+    .we     (bank0_info0_page_cfg_5_gated_we),
     .wd     (bank0_info0_page_cfg_5_en_5_wd),
 
     // from internal hardware
@@ -5234,7 +5316,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_5_we & bank0_info0_regwen_5_qs),
+    .we     (bank0_info0_page_cfg_5_gated_we),
     .wd     (bank0_info0_page_cfg_5_rd_en_5_wd),
 
     // from internal hardware
@@ -5259,7 +5341,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_5_we & bank0_info0_regwen_5_qs),
+    .we     (bank0_info0_page_cfg_5_gated_we),
     .wd     (bank0_info0_page_cfg_5_prog_en_5_wd),
 
     // from internal hardware
@@ -5284,7 +5366,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_5_we & bank0_info0_regwen_5_qs),
+    .we     (bank0_info0_page_cfg_5_gated_we),
     .wd     (bank0_info0_page_cfg_5_erase_en_5_wd),
 
     // from internal hardware
@@ -5309,7 +5391,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_5_we & bank0_info0_regwen_5_qs),
+    .we     (bank0_info0_page_cfg_5_gated_we),
     .wd     (bank0_info0_page_cfg_5_scramble_en_5_wd),
 
     // from internal hardware
@@ -5334,7 +5416,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_5_we & bank0_info0_regwen_5_qs),
+    .we     (bank0_info0_page_cfg_5_gated_we),
     .wd     (bank0_info0_page_cfg_5_ecc_en_5_wd),
 
     // from internal hardware
@@ -5359,7 +5441,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_5_we & bank0_info0_regwen_5_qs),
+    .we     (bank0_info0_page_cfg_5_gated_we),
     .wd     (bank0_info0_page_cfg_5_he_en_5_wd),
 
     // from internal hardware
@@ -5377,6 +5459,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 6 of Multireg bank0_info0_page_cfg
   // R[bank0_info0_page_cfg_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank0_info0_page_cfg_6_gated_we;
+  assign bank0_info0_page_cfg_6_gated_we = bank0_info0_page_cfg_6_we & bank0_info0_regwen_6_qs;
   //   F[en_6]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -5387,7 +5472,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_6_we & bank0_info0_regwen_6_qs),
+    .we     (bank0_info0_page_cfg_6_gated_we),
     .wd     (bank0_info0_page_cfg_6_en_6_wd),
 
     // from internal hardware
@@ -5412,7 +5497,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_6_we & bank0_info0_regwen_6_qs),
+    .we     (bank0_info0_page_cfg_6_gated_we),
     .wd     (bank0_info0_page_cfg_6_rd_en_6_wd),
 
     // from internal hardware
@@ -5437,7 +5522,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_6_we & bank0_info0_regwen_6_qs),
+    .we     (bank0_info0_page_cfg_6_gated_we),
     .wd     (bank0_info0_page_cfg_6_prog_en_6_wd),
 
     // from internal hardware
@@ -5462,7 +5547,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_6_we & bank0_info0_regwen_6_qs),
+    .we     (bank0_info0_page_cfg_6_gated_we),
     .wd     (bank0_info0_page_cfg_6_erase_en_6_wd),
 
     // from internal hardware
@@ -5487,7 +5572,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_6_we & bank0_info0_regwen_6_qs),
+    .we     (bank0_info0_page_cfg_6_gated_we),
     .wd     (bank0_info0_page_cfg_6_scramble_en_6_wd),
 
     // from internal hardware
@@ -5512,7 +5597,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_6_we & bank0_info0_regwen_6_qs),
+    .we     (bank0_info0_page_cfg_6_gated_we),
     .wd     (bank0_info0_page_cfg_6_ecc_en_6_wd),
 
     // from internal hardware
@@ -5537,7 +5622,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_6_we & bank0_info0_regwen_6_qs),
+    .we     (bank0_info0_page_cfg_6_gated_we),
     .wd     (bank0_info0_page_cfg_6_he_en_6_wd),
 
     // from internal hardware
@@ -5555,6 +5640,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 7 of Multireg bank0_info0_page_cfg
   // R[bank0_info0_page_cfg_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank0_info0_page_cfg_7_gated_we;
+  assign bank0_info0_page_cfg_7_gated_we = bank0_info0_page_cfg_7_we & bank0_info0_regwen_7_qs;
   //   F[en_7]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -5565,7 +5653,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_7_we & bank0_info0_regwen_7_qs),
+    .we     (bank0_info0_page_cfg_7_gated_we),
     .wd     (bank0_info0_page_cfg_7_en_7_wd),
 
     // from internal hardware
@@ -5590,7 +5678,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_7_we & bank0_info0_regwen_7_qs),
+    .we     (bank0_info0_page_cfg_7_gated_we),
     .wd     (bank0_info0_page_cfg_7_rd_en_7_wd),
 
     // from internal hardware
@@ -5615,7 +5703,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_7_we & bank0_info0_regwen_7_qs),
+    .we     (bank0_info0_page_cfg_7_gated_we),
     .wd     (bank0_info0_page_cfg_7_prog_en_7_wd),
 
     // from internal hardware
@@ -5640,7 +5728,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_7_we & bank0_info0_regwen_7_qs),
+    .we     (bank0_info0_page_cfg_7_gated_we),
     .wd     (bank0_info0_page_cfg_7_erase_en_7_wd),
 
     // from internal hardware
@@ -5665,7 +5753,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_7_we & bank0_info0_regwen_7_qs),
+    .we     (bank0_info0_page_cfg_7_gated_we),
     .wd     (bank0_info0_page_cfg_7_scramble_en_7_wd),
 
     // from internal hardware
@@ -5690,7 +5778,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_7_we & bank0_info0_regwen_7_qs),
+    .we     (bank0_info0_page_cfg_7_gated_we),
     .wd     (bank0_info0_page_cfg_7_ecc_en_7_wd),
 
     // from internal hardware
@@ -5715,7 +5803,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_7_we & bank0_info0_regwen_7_qs),
+    .we     (bank0_info0_page_cfg_7_gated_we),
     .wd     (bank0_info0_page_cfg_7_he_en_7_wd),
 
     // from internal hardware
@@ -5733,6 +5821,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 8 of Multireg bank0_info0_page_cfg
   // R[bank0_info0_page_cfg_8]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank0_info0_page_cfg_8_gated_we;
+  assign bank0_info0_page_cfg_8_gated_we = bank0_info0_page_cfg_8_we & bank0_info0_regwen_8_qs;
   //   F[en_8]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -5743,7 +5834,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_8_we & bank0_info0_regwen_8_qs),
+    .we     (bank0_info0_page_cfg_8_gated_we),
     .wd     (bank0_info0_page_cfg_8_en_8_wd),
 
     // from internal hardware
@@ -5768,7 +5859,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_8_we & bank0_info0_regwen_8_qs),
+    .we     (bank0_info0_page_cfg_8_gated_we),
     .wd     (bank0_info0_page_cfg_8_rd_en_8_wd),
 
     // from internal hardware
@@ -5793,7 +5884,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_8_we & bank0_info0_regwen_8_qs),
+    .we     (bank0_info0_page_cfg_8_gated_we),
     .wd     (bank0_info0_page_cfg_8_prog_en_8_wd),
 
     // from internal hardware
@@ -5818,7 +5909,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_8_we & bank0_info0_regwen_8_qs),
+    .we     (bank0_info0_page_cfg_8_gated_we),
     .wd     (bank0_info0_page_cfg_8_erase_en_8_wd),
 
     // from internal hardware
@@ -5843,7 +5934,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_8_we & bank0_info0_regwen_8_qs),
+    .we     (bank0_info0_page_cfg_8_gated_we),
     .wd     (bank0_info0_page_cfg_8_scramble_en_8_wd),
 
     // from internal hardware
@@ -5868,7 +5959,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_8_we & bank0_info0_regwen_8_qs),
+    .we     (bank0_info0_page_cfg_8_gated_we),
     .wd     (bank0_info0_page_cfg_8_ecc_en_8_wd),
 
     // from internal hardware
@@ -5893,7 +5984,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_8_we & bank0_info0_regwen_8_qs),
+    .we     (bank0_info0_page_cfg_8_gated_we),
     .wd     (bank0_info0_page_cfg_8_he_en_8_wd),
 
     // from internal hardware
@@ -5911,6 +6002,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 9 of Multireg bank0_info0_page_cfg
   // R[bank0_info0_page_cfg_9]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank0_info0_page_cfg_9_gated_we;
+  assign bank0_info0_page_cfg_9_gated_we = bank0_info0_page_cfg_9_we & bank0_info0_regwen_9_qs;
   //   F[en_9]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -5921,7 +6015,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_9_we & bank0_info0_regwen_9_qs),
+    .we     (bank0_info0_page_cfg_9_gated_we),
     .wd     (bank0_info0_page_cfg_9_en_9_wd),
 
     // from internal hardware
@@ -5946,7 +6040,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_9_we & bank0_info0_regwen_9_qs),
+    .we     (bank0_info0_page_cfg_9_gated_we),
     .wd     (bank0_info0_page_cfg_9_rd_en_9_wd),
 
     // from internal hardware
@@ -5971,7 +6065,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_9_we & bank0_info0_regwen_9_qs),
+    .we     (bank0_info0_page_cfg_9_gated_we),
     .wd     (bank0_info0_page_cfg_9_prog_en_9_wd),
 
     // from internal hardware
@@ -5996,7 +6090,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_9_we & bank0_info0_regwen_9_qs),
+    .we     (bank0_info0_page_cfg_9_gated_we),
     .wd     (bank0_info0_page_cfg_9_erase_en_9_wd),
 
     // from internal hardware
@@ -6021,7 +6115,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_9_we & bank0_info0_regwen_9_qs),
+    .we     (bank0_info0_page_cfg_9_gated_we),
     .wd     (bank0_info0_page_cfg_9_scramble_en_9_wd),
 
     // from internal hardware
@@ -6046,7 +6140,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_9_we & bank0_info0_regwen_9_qs),
+    .we     (bank0_info0_page_cfg_9_gated_we),
     .wd     (bank0_info0_page_cfg_9_ecc_en_9_wd),
 
     // from internal hardware
@@ -6071,7 +6165,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_9_we & bank0_info0_regwen_9_qs),
+    .we     (bank0_info0_page_cfg_9_gated_we),
     .wd     (bank0_info0_page_cfg_9_he_en_9_wd),
 
     // from internal hardware
@@ -6116,6 +6210,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 0 of Multireg bank0_info1_page_cfg
   // R[bank0_info1_page_cfg]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank0_info1_page_cfg_gated_we;
+  assign bank0_info1_page_cfg_gated_we = bank0_info1_page_cfg_we & bank0_info1_regwen_qs;
   //   F[en_0]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -6126,7 +6223,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info1_page_cfg_we & bank0_info1_regwen_qs),
+    .we     (bank0_info1_page_cfg_gated_we),
     .wd     (bank0_info1_page_cfg_en_0_wd),
 
     // from internal hardware
@@ -6151,7 +6248,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info1_page_cfg_we & bank0_info1_regwen_qs),
+    .we     (bank0_info1_page_cfg_gated_we),
     .wd     (bank0_info1_page_cfg_rd_en_0_wd),
 
     // from internal hardware
@@ -6176,7 +6273,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info1_page_cfg_we & bank0_info1_regwen_qs),
+    .we     (bank0_info1_page_cfg_gated_we),
     .wd     (bank0_info1_page_cfg_prog_en_0_wd),
 
     // from internal hardware
@@ -6201,7 +6298,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info1_page_cfg_we & bank0_info1_regwen_qs),
+    .we     (bank0_info1_page_cfg_gated_we),
     .wd     (bank0_info1_page_cfg_erase_en_0_wd),
 
     // from internal hardware
@@ -6226,7 +6323,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info1_page_cfg_we & bank0_info1_regwen_qs),
+    .we     (bank0_info1_page_cfg_gated_we),
     .wd     (bank0_info1_page_cfg_scramble_en_0_wd),
 
     // from internal hardware
@@ -6251,7 +6348,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info1_page_cfg_we & bank0_info1_regwen_qs),
+    .we     (bank0_info1_page_cfg_gated_we),
     .wd     (bank0_info1_page_cfg_ecc_en_0_wd),
 
     // from internal hardware
@@ -6276,7 +6373,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info1_page_cfg_we & bank0_info1_regwen_qs),
+    .we     (bank0_info1_page_cfg_gated_we),
     .wd     (bank0_info1_page_cfg_he_en_0_wd),
 
     // from internal hardware
@@ -6348,6 +6445,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 0 of Multireg bank0_info2_page_cfg
   // R[bank0_info2_page_cfg_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank0_info2_page_cfg_0_gated_we;
+  assign bank0_info2_page_cfg_0_gated_we = bank0_info2_page_cfg_0_we & bank0_info2_regwen_0_qs;
   //   F[en_0]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -6358,7 +6458,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_0_we & bank0_info2_regwen_0_qs),
+    .we     (bank0_info2_page_cfg_0_gated_we),
     .wd     (bank0_info2_page_cfg_0_en_0_wd),
 
     // from internal hardware
@@ -6383,7 +6483,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_0_we & bank0_info2_regwen_0_qs),
+    .we     (bank0_info2_page_cfg_0_gated_we),
     .wd     (bank0_info2_page_cfg_0_rd_en_0_wd),
 
     // from internal hardware
@@ -6408,7 +6508,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_0_we & bank0_info2_regwen_0_qs),
+    .we     (bank0_info2_page_cfg_0_gated_we),
     .wd     (bank0_info2_page_cfg_0_prog_en_0_wd),
 
     // from internal hardware
@@ -6433,7 +6533,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_0_we & bank0_info2_regwen_0_qs),
+    .we     (bank0_info2_page_cfg_0_gated_we),
     .wd     (bank0_info2_page_cfg_0_erase_en_0_wd),
 
     // from internal hardware
@@ -6458,7 +6558,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_0_we & bank0_info2_regwen_0_qs),
+    .we     (bank0_info2_page_cfg_0_gated_we),
     .wd     (bank0_info2_page_cfg_0_scramble_en_0_wd),
 
     // from internal hardware
@@ -6483,7 +6583,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_0_we & bank0_info2_regwen_0_qs),
+    .we     (bank0_info2_page_cfg_0_gated_we),
     .wd     (bank0_info2_page_cfg_0_ecc_en_0_wd),
 
     // from internal hardware
@@ -6508,7 +6608,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_0_we & bank0_info2_regwen_0_qs),
+    .we     (bank0_info2_page_cfg_0_gated_we),
     .wd     (bank0_info2_page_cfg_0_he_en_0_wd),
 
     // from internal hardware
@@ -6526,6 +6626,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 1 of Multireg bank0_info2_page_cfg
   // R[bank0_info2_page_cfg_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank0_info2_page_cfg_1_gated_we;
+  assign bank0_info2_page_cfg_1_gated_we = bank0_info2_page_cfg_1_we & bank0_info2_regwen_1_qs;
   //   F[en_1]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -6536,7 +6639,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_1_we & bank0_info2_regwen_1_qs),
+    .we     (bank0_info2_page_cfg_1_gated_we),
     .wd     (bank0_info2_page_cfg_1_en_1_wd),
 
     // from internal hardware
@@ -6561,7 +6664,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_1_we & bank0_info2_regwen_1_qs),
+    .we     (bank0_info2_page_cfg_1_gated_we),
     .wd     (bank0_info2_page_cfg_1_rd_en_1_wd),
 
     // from internal hardware
@@ -6586,7 +6689,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_1_we & bank0_info2_regwen_1_qs),
+    .we     (bank0_info2_page_cfg_1_gated_we),
     .wd     (bank0_info2_page_cfg_1_prog_en_1_wd),
 
     // from internal hardware
@@ -6611,7 +6714,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_1_we & bank0_info2_regwen_1_qs),
+    .we     (bank0_info2_page_cfg_1_gated_we),
     .wd     (bank0_info2_page_cfg_1_erase_en_1_wd),
 
     // from internal hardware
@@ -6636,7 +6739,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_1_we & bank0_info2_regwen_1_qs),
+    .we     (bank0_info2_page_cfg_1_gated_we),
     .wd     (bank0_info2_page_cfg_1_scramble_en_1_wd),
 
     // from internal hardware
@@ -6661,7 +6764,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_1_we & bank0_info2_regwen_1_qs),
+    .we     (bank0_info2_page_cfg_1_gated_we),
     .wd     (bank0_info2_page_cfg_1_ecc_en_1_wd),
 
     // from internal hardware
@@ -6686,7 +6789,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_1_we & bank0_info2_regwen_1_qs),
+    .we     (bank0_info2_page_cfg_1_gated_we),
     .wd     (bank0_info2_page_cfg_1_he_en_1_wd),
 
     // from internal hardware
@@ -6974,6 +7077,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 0 of Multireg bank1_info0_page_cfg
   // R[bank1_info0_page_cfg_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank1_info0_page_cfg_0_gated_we;
+  assign bank1_info0_page_cfg_0_gated_we = bank1_info0_page_cfg_0_we & bank1_info0_regwen_0_qs;
   //   F[en_0]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -6984,7 +7090,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_0_we & bank1_info0_regwen_0_qs),
+    .we     (bank1_info0_page_cfg_0_gated_we),
     .wd     (bank1_info0_page_cfg_0_en_0_wd),
 
     // from internal hardware
@@ -7009,7 +7115,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_0_we & bank1_info0_regwen_0_qs),
+    .we     (bank1_info0_page_cfg_0_gated_we),
     .wd     (bank1_info0_page_cfg_0_rd_en_0_wd),
 
     // from internal hardware
@@ -7034,7 +7140,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_0_we & bank1_info0_regwen_0_qs),
+    .we     (bank1_info0_page_cfg_0_gated_we),
     .wd     (bank1_info0_page_cfg_0_prog_en_0_wd),
 
     // from internal hardware
@@ -7059,7 +7165,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_0_we & bank1_info0_regwen_0_qs),
+    .we     (bank1_info0_page_cfg_0_gated_we),
     .wd     (bank1_info0_page_cfg_0_erase_en_0_wd),
 
     // from internal hardware
@@ -7084,7 +7190,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_0_we & bank1_info0_regwen_0_qs),
+    .we     (bank1_info0_page_cfg_0_gated_we),
     .wd     (bank1_info0_page_cfg_0_scramble_en_0_wd),
 
     // from internal hardware
@@ -7109,7 +7215,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_0_we & bank1_info0_regwen_0_qs),
+    .we     (bank1_info0_page_cfg_0_gated_we),
     .wd     (bank1_info0_page_cfg_0_ecc_en_0_wd),
 
     // from internal hardware
@@ -7134,7 +7240,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_0_we & bank1_info0_regwen_0_qs),
+    .we     (bank1_info0_page_cfg_0_gated_we),
     .wd     (bank1_info0_page_cfg_0_he_en_0_wd),
 
     // from internal hardware
@@ -7152,6 +7258,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 1 of Multireg bank1_info0_page_cfg
   // R[bank1_info0_page_cfg_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank1_info0_page_cfg_1_gated_we;
+  assign bank1_info0_page_cfg_1_gated_we = bank1_info0_page_cfg_1_we & bank1_info0_regwen_1_qs;
   //   F[en_1]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -7162,7 +7271,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_1_we & bank1_info0_regwen_1_qs),
+    .we     (bank1_info0_page_cfg_1_gated_we),
     .wd     (bank1_info0_page_cfg_1_en_1_wd),
 
     // from internal hardware
@@ -7187,7 +7296,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_1_we & bank1_info0_regwen_1_qs),
+    .we     (bank1_info0_page_cfg_1_gated_we),
     .wd     (bank1_info0_page_cfg_1_rd_en_1_wd),
 
     // from internal hardware
@@ -7212,7 +7321,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_1_we & bank1_info0_regwen_1_qs),
+    .we     (bank1_info0_page_cfg_1_gated_we),
     .wd     (bank1_info0_page_cfg_1_prog_en_1_wd),
 
     // from internal hardware
@@ -7237,7 +7346,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_1_we & bank1_info0_regwen_1_qs),
+    .we     (bank1_info0_page_cfg_1_gated_we),
     .wd     (bank1_info0_page_cfg_1_erase_en_1_wd),
 
     // from internal hardware
@@ -7262,7 +7371,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_1_we & bank1_info0_regwen_1_qs),
+    .we     (bank1_info0_page_cfg_1_gated_we),
     .wd     (bank1_info0_page_cfg_1_scramble_en_1_wd),
 
     // from internal hardware
@@ -7287,7 +7396,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_1_we & bank1_info0_regwen_1_qs),
+    .we     (bank1_info0_page_cfg_1_gated_we),
     .wd     (bank1_info0_page_cfg_1_ecc_en_1_wd),
 
     // from internal hardware
@@ -7312,7 +7421,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_1_we & bank1_info0_regwen_1_qs),
+    .we     (bank1_info0_page_cfg_1_gated_we),
     .wd     (bank1_info0_page_cfg_1_he_en_1_wd),
 
     // from internal hardware
@@ -7330,6 +7439,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 2 of Multireg bank1_info0_page_cfg
   // R[bank1_info0_page_cfg_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank1_info0_page_cfg_2_gated_we;
+  assign bank1_info0_page_cfg_2_gated_we = bank1_info0_page_cfg_2_we & bank1_info0_regwen_2_qs;
   //   F[en_2]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -7340,7 +7452,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_2_we & bank1_info0_regwen_2_qs),
+    .we     (bank1_info0_page_cfg_2_gated_we),
     .wd     (bank1_info0_page_cfg_2_en_2_wd),
 
     // from internal hardware
@@ -7365,7 +7477,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_2_we & bank1_info0_regwen_2_qs),
+    .we     (bank1_info0_page_cfg_2_gated_we),
     .wd     (bank1_info0_page_cfg_2_rd_en_2_wd),
 
     // from internal hardware
@@ -7390,7 +7502,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_2_we & bank1_info0_regwen_2_qs),
+    .we     (bank1_info0_page_cfg_2_gated_we),
     .wd     (bank1_info0_page_cfg_2_prog_en_2_wd),
 
     // from internal hardware
@@ -7415,7 +7527,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_2_we & bank1_info0_regwen_2_qs),
+    .we     (bank1_info0_page_cfg_2_gated_we),
     .wd     (bank1_info0_page_cfg_2_erase_en_2_wd),
 
     // from internal hardware
@@ -7440,7 +7552,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_2_we & bank1_info0_regwen_2_qs),
+    .we     (bank1_info0_page_cfg_2_gated_we),
     .wd     (bank1_info0_page_cfg_2_scramble_en_2_wd),
 
     // from internal hardware
@@ -7465,7 +7577,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_2_we & bank1_info0_regwen_2_qs),
+    .we     (bank1_info0_page_cfg_2_gated_we),
     .wd     (bank1_info0_page_cfg_2_ecc_en_2_wd),
 
     // from internal hardware
@@ -7490,7 +7602,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_2_we & bank1_info0_regwen_2_qs),
+    .we     (bank1_info0_page_cfg_2_gated_we),
     .wd     (bank1_info0_page_cfg_2_he_en_2_wd),
 
     // from internal hardware
@@ -7508,6 +7620,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 3 of Multireg bank1_info0_page_cfg
   // R[bank1_info0_page_cfg_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank1_info0_page_cfg_3_gated_we;
+  assign bank1_info0_page_cfg_3_gated_we = bank1_info0_page_cfg_3_we & bank1_info0_regwen_3_qs;
   //   F[en_3]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -7518,7 +7633,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_3_we & bank1_info0_regwen_3_qs),
+    .we     (bank1_info0_page_cfg_3_gated_we),
     .wd     (bank1_info0_page_cfg_3_en_3_wd),
 
     // from internal hardware
@@ -7543,7 +7658,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_3_we & bank1_info0_regwen_3_qs),
+    .we     (bank1_info0_page_cfg_3_gated_we),
     .wd     (bank1_info0_page_cfg_3_rd_en_3_wd),
 
     // from internal hardware
@@ -7568,7 +7683,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_3_we & bank1_info0_regwen_3_qs),
+    .we     (bank1_info0_page_cfg_3_gated_we),
     .wd     (bank1_info0_page_cfg_3_prog_en_3_wd),
 
     // from internal hardware
@@ -7593,7 +7708,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_3_we & bank1_info0_regwen_3_qs),
+    .we     (bank1_info0_page_cfg_3_gated_we),
     .wd     (bank1_info0_page_cfg_3_erase_en_3_wd),
 
     // from internal hardware
@@ -7618,7 +7733,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_3_we & bank1_info0_regwen_3_qs),
+    .we     (bank1_info0_page_cfg_3_gated_we),
     .wd     (bank1_info0_page_cfg_3_scramble_en_3_wd),
 
     // from internal hardware
@@ -7643,7 +7758,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_3_we & bank1_info0_regwen_3_qs),
+    .we     (bank1_info0_page_cfg_3_gated_we),
     .wd     (bank1_info0_page_cfg_3_ecc_en_3_wd),
 
     // from internal hardware
@@ -7668,7 +7783,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_3_we & bank1_info0_regwen_3_qs),
+    .we     (bank1_info0_page_cfg_3_gated_we),
     .wd     (bank1_info0_page_cfg_3_he_en_3_wd),
 
     // from internal hardware
@@ -7686,6 +7801,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 4 of Multireg bank1_info0_page_cfg
   // R[bank1_info0_page_cfg_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank1_info0_page_cfg_4_gated_we;
+  assign bank1_info0_page_cfg_4_gated_we = bank1_info0_page_cfg_4_we & bank1_info0_regwen_4_qs;
   //   F[en_4]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -7696,7 +7814,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_4_we & bank1_info0_regwen_4_qs),
+    .we     (bank1_info0_page_cfg_4_gated_we),
     .wd     (bank1_info0_page_cfg_4_en_4_wd),
 
     // from internal hardware
@@ -7721,7 +7839,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_4_we & bank1_info0_regwen_4_qs),
+    .we     (bank1_info0_page_cfg_4_gated_we),
     .wd     (bank1_info0_page_cfg_4_rd_en_4_wd),
 
     // from internal hardware
@@ -7746,7 +7864,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_4_we & bank1_info0_regwen_4_qs),
+    .we     (bank1_info0_page_cfg_4_gated_we),
     .wd     (bank1_info0_page_cfg_4_prog_en_4_wd),
 
     // from internal hardware
@@ -7771,7 +7889,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_4_we & bank1_info0_regwen_4_qs),
+    .we     (bank1_info0_page_cfg_4_gated_we),
     .wd     (bank1_info0_page_cfg_4_erase_en_4_wd),
 
     // from internal hardware
@@ -7796,7 +7914,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_4_we & bank1_info0_regwen_4_qs),
+    .we     (bank1_info0_page_cfg_4_gated_we),
     .wd     (bank1_info0_page_cfg_4_scramble_en_4_wd),
 
     // from internal hardware
@@ -7821,7 +7939,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_4_we & bank1_info0_regwen_4_qs),
+    .we     (bank1_info0_page_cfg_4_gated_we),
     .wd     (bank1_info0_page_cfg_4_ecc_en_4_wd),
 
     // from internal hardware
@@ -7846,7 +7964,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_4_we & bank1_info0_regwen_4_qs),
+    .we     (bank1_info0_page_cfg_4_gated_we),
     .wd     (bank1_info0_page_cfg_4_he_en_4_wd),
 
     // from internal hardware
@@ -7864,6 +7982,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 5 of Multireg bank1_info0_page_cfg
   // R[bank1_info0_page_cfg_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank1_info0_page_cfg_5_gated_we;
+  assign bank1_info0_page_cfg_5_gated_we = bank1_info0_page_cfg_5_we & bank1_info0_regwen_5_qs;
   //   F[en_5]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -7874,7 +7995,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_5_we & bank1_info0_regwen_5_qs),
+    .we     (bank1_info0_page_cfg_5_gated_we),
     .wd     (bank1_info0_page_cfg_5_en_5_wd),
 
     // from internal hardware
@@ -7899,7 +8020,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_5_we & bank1_info0_regwen_5_qs),
+    .we     (bank1_info0_page_cfg_5_gated_we),
     .wd     (bank1_info0_page_cfg_5_rd_en_5_wd),
 
     // from internal hardware
@@ -7924,7 +8045,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_5_we & bank1_info0_regwen_5_qs),
+    .we     (bank1_info0_page_cfg_5_gated_we),
     .wd     (bank1_info0_page_cfg_5_prog_en_5_wd),
 
     // from internal hardware
@@ -7949,7 +8070,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_5_we & bank1_info0_regwen_5_qs),
+    .we     (bank1_info0_page_cfg_5_gated_we),
     .wd     (bank1_info0_page_cfg_5_erase_en_5_wd),
 
     // from internal hardware
@@ -7974,7 +8095,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_5_we & bank1_info0_regwen_5_qs),
+    .we     (bank1_info0_page_cfg_5_gated_we),
     .wd     (bank1_info0_page_cfg_5_scramble_en_5_wd),
 
     // from internal hardware
@@ -7999,7 +8120,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_5_we & bank1_info0_regwen_5_qs),
+    .we     (bank1_info0_page_cfg_5_gated_we),
     .wd     (bank1_info0_page_cfg_5_ecc_en_5_wd),
 
     // from internal hardware
@@ -8024,7 +8145,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_5_we & bank1_info0_regwen_5_qs),
+    .we     (bank1_info0_page_cfg_5_gated_we),
     .wd     (bank1_info0_page_cfg_5_he_en_5_wd),
 
     // from internal hardware
@@ -8042,6 +8163,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 6 of Multireg bank1_info0_page_cfg
   // R[bank1_info0_page_cfg_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank1_info0_page_cfg_6_gated_we;
+  assign bank1_info0_page_cfg_6_gated_we = bank1_info0_page_cfg_6_we & bank1_info0_regwen_6_qs;
   //   F[en_6]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -8052,7 +8176,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_6_we & bank1_info0_regwen_6_qs),
+    .we     (bank1_info0_page_cfg_6_gated_we),
     .wd     (bank1_info0_page_cfg_6_en_6_wd),
 
     // from internal hardware
@@ -8077,7 +8201,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_6_we & bank1_info0_regwen_6_qs),
+    .we     (bank1_info0_page_cfg_6_gated_we),
     .wd     (bank1_info0_page_cfg_6_rd_en_6_wd),
 
     // from internal hardware
@@ -8102,7 +8226,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_6_we & bank1_info0_regwen_6_qs),
+    .we     (bank1_info0_page_cfg_6_gated_we),
     .wd     (bank1_info0_page_cfg_6_prog_en_6_wd),
 
     // from internal hardware
@@ -8127,7 +8251,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_6_we & bank1_info0_regwen_6_qs),
+    .we     (bank1_info0_page_cfg_6_gated_we),
     .wd     (bank1_info0_page_cfg_6_erase_en_6_wd),
 
     // from internal hardware
@@ -8152,7 +8276,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_6_we & bank1_info0_regwen_6_qs),
+    .we     (bank1_info0_page_cfg_6_gated_we),
     .wd     (bank1_info0_page_cfg_6_scramble_en_6_wd),
 
     // from internal hardware
@@ -8177,7 +8301,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_6_we & bank1_info0_regwen_6_qs),
+    .we     (bank1_info0_page_cfg_6_gated_we),
     .wd     (bank1_info0_page_cfg_6_ecc_en_6_wd),
 
     // from internal hardware
@@ -8202,7 +8326,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_6_we & bank1_info0_regwen_6_qs),
+    .we     (bank1_info0_page_cfg_6_gated_we),
     .wd     (bank1_info0_page_cfg_6_he_en_6_wd),
 
     // from internal hardware
@@ -8220,6 +8344,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 7 of Multireg bank1_info0_page_cfg
   // R[bank1_info0_page_cfg_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank1_info0_page_cfg_7_gated_we;
+  assign bank1_info0_page_cfg_7_gated_we = bank1_info0_page_cfg_7_we & bank1_info0_regwen_7_qs;
   //   F[en_7]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -8230,7 +8357,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_7_we & bank1_info0_regwen_7_qs),
+    .we     (bank1_info0_page_cfg_7_gated_we),
     .wd     (bank1_info0_page_cfg_7_en_7_wd),
 
     // from internal hardware
@@ -8255,7 +8382,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_7_we & bank1_info0_regwen_7_qs),
+    .we     (bank1_info0_page_cfg_7_gated_we),
     .wd     (bank1_info0_page_cfg_7_rd_en_7_wd),
 
     // from internal hardware
@@ -8280,7 +8407,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_7_we & bank1_info0_regwen_7_qs),
+    .we     (bank1_info0_page_cfg_7_gated_we),
     .wd     (bank1_info0_page_cfg_7_prog_en_7_wd),
 
     // from internal hardware
@@ -8305,7 +8432,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_7_we & bank1_info0_regwen_7_qs),
+    .we     (bank1_info0_page_cfg_7_gated_we),
     .wd     (bank1_info0_page_cfg_7_erase_en_7_wd),
 
     // from internal hardware
@@ -8330,7 +8457,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_7_we & bank1_info0_regwen_7_qs),
+    .we     (bank1_info0_page_cfg_7_gated_we),
     .wd     (bank1_info0_page_cfg_7_scramble_en_7_wd),
 
     // from internal hardware
@@ -8355,7 +8482,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_7_we & bank1_info0_regwen_7_qs),
+    .we     (bank1_info0_page_cfg_7_gated_we),
     .wd     (bank1_info0_page_cfg_7_ecc_en_7_wd),
 
     // from internal hardware
@@ -8380,7 +8507,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_7_we & bank1_info0_regwen_7_qs),
+    .we     (bank1_info0_page_cfg_7_gated_we),
     .wd     (bank1_info0_page_cfg_7_he_en_7_wd),
 
     // from internal hardware
@@ -8398,6 +8525,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 8 of Multireg bank1_info0_page_cfg
   // R[bank1_info0_page_cfg_8]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank1_info0_page_cfg_8_gated_we;
+  assign bank1_info0_page_cfg_8_gated_we = bank1_info0_page_cfg_8_we & bank1_info0_regwen_8_qs;
   //   F[en_8]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -8408,7 +8538,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_8_we & bank1_info0_regwen_8_qs),
+    .we     (bank1_info0_page_cfg_8_gated_we),
     .wd     (bank1_info0_page_cfg_8_en_8_wd),
 
     // from internal hardware
@@ -8433,7 +8563,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_8_we & bank1_info0_regwen_8_qs),
+    .we     (bank1_info0_page_cfg_8_gated_we),
     .wd     (bank1_info0_page_cfg_8_rd_en_8_wd),
 
     // from internal hardware
@@ -8458,7 +8588,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_8_we & bank1_info0_regwen_8_qs),
+    .we     (bank1_info0_page_cfg_8_gated_we),
     .wd     (bank1_info0_page_cfg_8_prog_en_8_wd),
 
     // from internal hardware
@@ -8483,7 +8613,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_8_we & bank1_info0_regwen_8_qs),
+    .we     (bank1_info0_page_cfg_8_gated_we),
     .wd     (bank1_info0_page_cfg_8_erase_en_8_wd),
 
     // from internal hardware
@@ -8508,7 +8638,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_8_we & bank1_info0_regwen_8_qs),
+    .we     (bank1_info0_page_cfg_8_gated_we),
     .wd     (bank1_info0_page_cfg_8_scramble_en_8_wd),
 
     // from internal hardware
@@ -8533,7 +8663,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_8_we & bank1_info0_regwen_8_qs),
+    .we     (bank1_info0_page_cfg_8_gated_we),
     .wd     (bank1_info0_page_cfg_8_ecc_en_8_wd),
 
     // from internal hardware
@@ -8558,7 +8688,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_8_we & bank1_info0_regwen_8_qs),
+    .we     (bank1_info0_page_cfg_8_gated_we),
     .wd     (bank1_info0_page_cfg_8_he_en_8_wd),
 
     // from internal hardware
@@ -8576,6 +8706,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 9 of Multireg bank1_info0_page_cfg
   // R[bank1_info0_page_cfg_9]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank1_info0_page_cfg_9_gated_we;
+  assign bank1_info0_page_cfg_9_gated_we = bank1_info0_page_cfg_9_we & bank1_info0_regwen_9_qs;
   //   F[en_9]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -8586,7 +8719,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_9_we & bank1_info0_regwen_9_qs),
+    .we     (bank1_info0_page_cfg_9_gated_we),
     .wd     (bank1_info0_page_cfg_9_en_9_wd),
 
     // from internal hardware
@@ -8611,7 +8744,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_9_we & bank1_info0_regwen_9_qs),
+    .we     (bank1_info0_page_cfg_9_gated_we),
     .wd     (bank1_info0_page_cfg_9_rd_en_9_wd),
 
     // from internal hardware
@@ -8636,7 +8769,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_9_we & bank1_info0_regwen_9_qs),
+    .we     (bank1_info0_page_cfg_9_gated_we),
     .wd     (bank1_info0_page_cfg_9_prog_en_9_wd),
 
     // from internal hardware
@@ -8661,7 +8794,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_9_we & bank1_info0_regwen_9_qs),
+    .we     (bank1_info0_page_cfg_9_gated_we),
     .wd     (bank1_info0_page_cfg_9_erase_en_9_wd),
 
     // from internal hardware
@@ -8686,7 +8819,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_9_we & bank1_info0_regwen_9_qs),
+    .we     (bank1_info0_page_cfg_9_gated_we),
     .wd     (bank1_info0_page_cfg_9_scramble_en_9_wd),
 
     // from internal hardware
@@ -8711,7 +8844,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_9_we & bank1_info0_regwen_9_qs),
+    .we     (bank1_info0_page_cfg_9_gated_we),
     .wd     (bank1_info0_page_cfg_9_ecc_en_9_wd),
 
     // from internal hardware
@@ -8736,7 +8869,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_9_we & bank1_info0_regwen_9_qs),
+    .we     (bank1_info0_page_cfg_9_gated_we),
     .wd     (bank1_info0_page_cfg_9_he_en_9_wd),
 
     // from internal hardware
@@ -8781,6 +8914,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 0 of Multireg bank1_info1_page_cfg
   // R[bank1_info1_page_cfg]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank1_info1_page_cfg_gated_we;
+  assign bank1_info1_page_cfg_gated_we = bank1_info1_page_cfg_we & bank1_info1_regwen_qs;
   //   F[en_0]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -8791,7 +8927,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info1_page_cfg_we & bank1_info1_regwen_qs),
+    .we     (bank1_info1_page_cfg_gated_we),
     .wd     (bank1_info1_page_cfg_en_0_wd),
 
     // from internal hardware
@@ -8816,7 +8952,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info1_page_cfg_we & bank1_info1_regwen_qs),
+    .we     (bank1_info1_page_cfg_gated_we),
     .wd     (bank1_info1_page_cfg_rd_en_0_wd),
 
     // from internal hardware
@@ -8841,7 +8977,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info1_page_cfg_we & bank1_info1_regwen_qs),
+    .we     (bank1_info1_page_cfg_gated_we),
     .wd     (bank1_info1_page_cfg_prog_en_0_wd),
 
     // from internal hardware
@@ -8866,7 +9002,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info1_page_cfg_we & bank1_info1_regwen_qs),
+    .we     (bank1_info1_page_cfg_gated_we),
     .wd     (bank1_info1_page_cfg_erase_en_0_wd),
 
     // from internal hardware
@@ -8891,7 +9027,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info1_page_cfg_we & bank1_info1_regwen_qs),
+    .we     (bank1_info1_page_cfg_gated_we),
     .wd     (bank1_info1_page_cfg_scramble_en_0_wd),
 
     // from internal hardware
@@ -8916,7 +9052,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info1_page_cfg_we & bank1_info1_regwen_qs),
+    .we     (bank1_info1_page_cfg_gated_we),
     .wd     (bank1_info1_page_cfg_ecc_en_0_wd),
 
     // from internal hardware
@@ -8941,7 +9077,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info1_page_cfg_we & bank1_info1_regwen_qs),
+    .we     (bank1_info1_page_cfg_gated_we),
     .wd     (bank1_info1_page_cfg_he_en_0_wd),
 
     // from internal hardware
@@ -9013,6 +9149,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 0 of Multireg bank1_info2_page_cfg
   // R[bank1_info2_page_cfg_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank1_info2_page_cfg_0_gated_we;
+  assign bank1_info2_page_cfg_0_gated_we = bank1_info2_page_cfg_0_we & bank1_info2_regwen_0_qs;
   //   F[en_0]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -9023,7 +9162,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_0_we & bank1_info2_regwen_0_qs),
+    .we     (bank1_info2_page_cfg_0_gated_we),
     .wd     (bank1_info2_page_cfg_0_en_0_wd),
 
     // from internal hardware
@@ -9048,7 +9187,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_0_we & bank1_info2_regwen_0_qs),
+    .we     (bank1_info2_page_cfg_0_gated_we),
     .wd     (bank1_info2_page_cfg_0_rd_en_0_wd),
 
     // from internal hardware
@@ -9073,7 +9212,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_0_we & bank1_info2_regwen_0_qs),
+    .we     (bank1_info2_page_cfg_0_gated_we),
     .wd     (bank1_info2_page_cfg_0_prog_en_0_wd),
 
     // from internal hardware
@@ -9098,7 +9237,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_0_we & bank1_info2_regwen_0_qs),
+    .we     (bank1_info2_page_cfg_0_gated_we),
     .wd     (bank1_info2_page_cfg_0_erase_en_0_wd),
 
     // from internal hardware
@@ -9123,7 +9262,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_0_we & bank1_info2_regwen_0_qs),
+    .we     (bank1_info2_page_cfg_0_gated_we),
     .wd     (bank1_info2_page_cfg_0_scramble_en_0_wd),
 
     // from internal hardware
@@ -9148,7 +9287,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_0_we & bank1_info2_regwen_0_qs),
+    .we     (bank1_info2_page_cfg_0_gated_we),
     .wd     (bank1_info2_page_cfg_0_ecc_en_0_wd),
 
     // from internal hardware
@@ -9173,7 +9312,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_0_we & bank1_info2_regwen_0_qs),
+    .we     (bank1_info2_page_cfg_0_gated_we),
     .wd     (bank1_info2_page_cfg_0_he_en_0_wd),
 
     // from internal hardware
@@ -9191,6 +9330,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 1 of Multireg bank1_info2_page_cfg
   // R[bank1_info2_page_cfg_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic bank1_info2_page_cfg_1_gated_we;
+  assign bank1_info2_page_cfg_1_gated_we = bank1_info2_page_cfg_1_we & bank1_info2_regwen_1_qs;
   //   F[en_1]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -9201,7 +9343,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_1_we & bank1_info2_regwen_1_qs),
+    .we     (bank1_info2_page_cfg_1_gated_we),
     .wd     (bank1_info2_page_cfg_1_en_1_wd),
 
     // from internal hardware
@@ -9226,7 +9368,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_1_we & bank1_info2_regwen_1_qs),
+    .we     (bank1_info2_page_cfg_1_gated_we),
     .wd     (bank1_info2_page_cfg_1_rd_en_1_wd),
 
     // from internal hardware
@@ -9251,7 +9393,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_1_we & bank1_info2_regwen_1_qs),
+    .we     (bank1_info2_page_cfg_1_gated_we),
     .wd     (bank1_info2_page_cfg_1_prog_en_1_wd),
 
     // from internal hardware
@@ -9276,7 +9418,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_1_we & bank1_info2_regwen_1_qs),
+    .we     (bank1_info2_page_cfg_1_gated_we),
     .wd     (bank1_info2_page_cfg_1_erase_en_1_wd),
 
     // from internal hardware
@@ -9301,7 +9443,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_1_we & bank1_info2_regwen_1_qs),
+    .we     (bank1_info2_page_cfg_1_gated_we),
     .wd     (bank1_info2_page_cfg_1_scramble_en_1_wd),
 
     // from internal hardware
@@ -9326,7 +9468,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_1_we & bank1_info2_regwen_1_qs),
+    .we     (bank1_info2_page_cfg_1_gated_we),
     .wd     (bank1_info2_page_cfg_1_ecc_en_1_wd),
 
     // from internal hardware
@@ -9351,7 +9493,7 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_1_we & bank1_info2_regwen_1_qs),
+    .we     (bank1_info2_page_cfg_1_gated_we),
     .wd     (bank1_info2_page_cfg_1_he_en_1_wd),
 
     // from internal hardware
@@ -9395,6 +9537,9 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 0 of Multireg mp_bank_cfg_shadowed
   // R[mp_bank_cfg_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mp_bank_cfg_shadowed_gated_we;
+  assign mp_bank_cfg_shadowed_gated_we = mp_bank_cfg_shadowed_we & bank_cfg_regwen_qs;
   //   F[erase_en_0]: 0:0
   prim_subreg_shadow #(
     .DW      (1),
@@ -9407,7 +9552,7 @@ module flash_ctrl_core_reg_top (
 
     // from register interface
     .re     (mp_bank_cfg_shadowed_re),
-    .we     (mp_bank_cfg_shadowed_we & bank_cfg_regwen_qs),
+    .we     (mp_bank_cfg_shadowed_gated_we),
     .wd     (mp_bank_cfg_shadowed_erase_en_0_wd),
 
     // from internal hardware
@@ -9441,7 +9586,7 @@ module flash_ctrl_core_reg_top (
 
     // from register interface
     .re     (mp_bank_cfg_shadowed_re),
-    .we     (mp_bank_cfg_shadowed_we & bank_cfg_regwen_qs),
+    .we     (mp_bank_cfg_shadowed_gated_we),
     .wd     (mp_bank_cfg_shadowed_erase_en_1_wd),
 
     // from internal hardware
@@ -10894,6 +11039,8 @@ module flash_ctrl_core_reg_top (
                (addr_hit[104] & (|(FLASH_CTRL_CORE_PERMIT[104] & ~reg_be))) |
                (addr_hit[105] & (|(FLASH_CTRL_CORE_PERMIT[105] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
   assign intr_state_prog_empty_wd = reg_wdata[0];
@@ -11692,6 +11839,117 @@ module flash_ctrl_core_reg_top (
 
   assign fifo_rst_wd = reg_wdata[0];
   assign curr_fifo_lvl_re = addr_hit[105] & reg_re & !reg_error;
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = intr_state_we;
+    reg_we_check[1] = intr_enable_we;
+    reg_we_check[2] = intr_test_we;
+    reg_we_check[3] = alert_test_we;
+    reg_we_check[4] = dis_we;
+    reg_we_check[5] = exec_we;
+    reg_we_check[6] = init_we;
+    reg_we_check[7] = 1'b0;
+    reg_we_check[8] = control_gated_we;
+    reg_we_check[9] = addr_we;
+    reg_we_check[10] = prog_type_en_we;
+    reg_we_check[11] = erase_suspend_we;
+    reg_we_check[12] = region_cfg_regwen_0_we;
+    reg_we_check[13] = region_cfg_regwen_1_we;
+    reg_we_check[14] = region_cfg_regwen_2_we;
+    reg_we_check[15] = region_cfg_regwen_3_we;
+    reg_we_check[16] = region_cfg_regwen_4_we;
+    reg_we_check[17] = region_cfg_regwen_5_we;
+    reg_we_check[18] = region_cfg_regwen_6_we;
+    reg_we_check[19] = region_cfg_regwen_7_we;
+    reg_we_check[20] = mp_region_cfg_0_gated_we;
+    reg_we_check[21] = mp_region_cfg_1_gated_we;
+    reg_we_check[22] = mp_region_cfg_2_gated_we;
+    reg_we_check[23] = mp_region_cfg_3_gated_we;
+    reg_we_check[24] = mp_region_cfg_4_gated_we;
+    reg_we_check[25] = mp_region_cfg_5_gated_we;
+    reg_we_check[26] = mp_region_cfg_6_gated_we;
+    reg_we_check[27] = mp_region_cfg_7_gated_we;
+    reg_we_check[28] = mp_region_0_gated_we;
+    reg_we_check[29] = mp_region_1_gated_we;
+    reg_we_check[30] = mp_region_2_gated_we;
+    reg_we_check[31] = mp_region_3_gated_we;
+    reg_we_check[32] = mp_region_4_gated_we;
+    reg_we_check[33] = mp_region_5_gated_we;
+    reg_we_check[34] = mp_region_6_gated_we;
+    reg_we_check[35] = mp_region_7_gated_we;
+    reg_we_check[36] = default_region_we;
+    reg_we_check[37] = bank0_info0_regwen_0_we;
+    reg_we_check[38] = bank0_info0_regwen_1_we;
+    reg_we_check[39] = bank0_info0_regwen_2_we;
+    reg_we_check[40] = bank0_info0_regwen_3_we;
+    reg_we_check[41] = bank0_info0_regwen_4_we;
+    reg_we_check[42] = bank0_info0_regwen_5_we;
+    reg_we_check[43] = bank0_info0_regwen_6_we;
+    reg_we_check[44] = bank0_info0_regwen_7_we;
+    reg_we_check[45] = bank0_info0_regwen_8_we;
+    reg_we_check[46] = bank0_info0_regwen_9_we;
+    reg_we_check[47] = bank0_info0_page_cfg_0_gated_we;
+    reg_we_check[48] = bank0_info0_page_cfg_1_gated_we;
+    reg_we_check[49] = bank0_info0_page_cfg_2_gated_we;
+    reg_we_check[50] = bank0_info0_page_cfg_3_gated_we;
+    reg_we_check[51] = bank0_info0_page_cfg_4_gated_we;
+    reg_we_check[52] = bank0_info0_page_cfg_5_gated_we;
+    reg_we_check[53] = bank0_info0_page_cfg_6_gated_we;
+    reg_we_check[54] = bank0_info0_page_cfg_7_gated_we;
+    reg_we_check[55] = bank0_info0_page_cfg_8_gated_we;
+    reg_we_check[56] = bank0_info0_page_cfg_9_gated_we;
+    reg_we_check[57] = bank0_info1_regwen_we;
+    reg_we_check[58] = bank0_info1_page_cfg_gated_we;
+    reg_we_check[59] = bank0_info2_regwen_0_we;
+    reg_we_check[60] = bank0_info2_regwen_1_we;
+    reg_we_check[61] = bank0_info2_page_cfg_0_gated_we;
+    reg_we_check[62] = bank0_info2_page_cfg_1_gated_we;
+    reg_we_check[63] = bank1_info0_regwen_0_we;
+    reg_we_check[64] = bank1_info0_regwen_1_we;
+    reg_we_check[65] = bank1_info0_regwen_2_we;
+    reg_we_check[66] = bank1_info0_regwen_3_we;
+    reg_we_check[67] = bank1_info0_regwen_4_we;
+    reg_we_check[68] = bank1_info0_regwen_5_we;
+    reg_we_check[69] = bank1_info0_regwen_6_we;
+    reg_we_check[70] = bank1_info0_regwen_7_we;
+    reg_we_check[71] = bank1_info0_regwen_8_we;
+    reg_we_check[72] = bank1_info0_regwen_9_we;
+    reg_we_check[73] = bank1_info0_page_cfg_0_gated_we;
+    reg_we_check[74] = bank1_info0_page_cfg_1_gated_we;
+    reg_we_check[75] = bank1_info0_page_cfg_2_gated_we;
+    reg_we_check[76] = bank1_info0_page_cfg_3_gated_we;
+    reg_we_check[77] = bank1_info0_page_cfg_4_gated_we;
+    reg_we_check[78] = bank1_info0_page_cfg_5_gated_we;
+    reg_we_check[79] = bank1_info0_page_cfg_6_gated_we;
+    reg_we_check[80] = bank1_info0_page_cfg_7_gated_we;
+    reg_we_check[81] = bank1_info0_page_cfg_8_gated_we;
+    reg_we_check[82] = bank1_info0_page_cfg_9_gated_we;
+    reg_we_check[83] = bank1_info1_regwen_we;
+    reg_we_check[84] = bank1_info1_page_cfg_gated_we;
+    reg_we_check[85] = bank1_info2_regwen_0_we;
+    reg_we_check[86] = bank1_info2_regwen_1_we;
+    reg_we_check[87] = bank1_info2_page_cfg_0_gated_we;
+    reg_we_check[88] = bank1_info2_page_cfg_1_gated_we;
+    reg_we_check[89] = bank_cfg_regwen_we;
+    reg_we_check[90] = mp_bank_cfg_shadowed_gated_we;
+    reg_we_check[91] = op_status_we;
+    reg_we_check[92] = 1'b0;
+    reg_we_check[93] = err_code_we;
+    reg_we_check[94] = 1'b0;
+    reg_we_check[95] = 1'b0;
+    reg_we_check[96] = 1'b0;
+    reg_we_check[97] = ecc_single_err_cnt_we;
+    reg_we_check[98] = 1'b0;
+    reg_we_check[99] = 1'b0;
+    reg_we_check[100] = phy_alert_cfg_we;
+    reg_we_check[101] = 1'b0;
+    reg_we_check[102] = scratch_we;
+    reg_we_check[103] = fifo_lvl_we;
+    reg_we_check[104] = fifo_rst_we;
+    reg_we_check[105] = 1'b0;
+  end
 
   // Read data return
   always_comb begin

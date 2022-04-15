@@ -67,18 +67,31 @@ module clkmgr_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [16:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(17)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -578,6 +591,9 @@ module clkmgr_reg_top (
 
 
   // R[extclk_ctrl]: V(False)
+  // Create REGWEN-gated WE signal
+  logic extclk_ctrl_gated_we;
+  assign extclk_ctrl_gated_we = extclk_ctrl_we & extclk_ctrl_regwen_qs;
   //   F[sel]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -588,7 +604,7 @@ module clkmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (extclk_ctrl_we & extclk_ctrl_regwen_qs),
+    .we     (extclk_ctrl_gated_we),
     .wd     (extclk_ctrl_sel_wd),
 
     // from internal hardware
@@ -613,7 +629,7 @@ module clkmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (extclk_ctrl_we & extclk_ctrl_regwen_qs),
+    .we     (extclk_ctrl_gated_we),
     .wd     (extclk_ctrl_hi_speed_sel_wd),
 
     // from internal hardware
@@ -1029,6 +1045,10 @@ module clkmgr_reg_top (
 
 
   // R[io_meas_ctrl_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic io_io_meas_ctrl_shadowed_gated_we;
+  assign io_io_meas_ctrl_shadowed_gated_we =
+    io_io_meas_ctrl_shadowed_we & io_io_meas_ctrl_shadowed_regwen;
   //   F[en]: 0:0
   logic async_io_meas_ctrl_shadowed_en_err_update;
   logic async_io_meas_ctrl_shadowed_en_err_storage;
@@ -1065,7 +1085,7 @@ module clkmgr_reg_top (
 
     // from register interface
     .re     (io_io_meas_ctrl_shadowed_re),
-    .we     (io_io_meas_ctrl_shadowed_we & io_io_meas_ctrl_shadowed_regwen),
+    .we     (io_io_meas_ctrl_shadowed_gated_we),
     .wd     (io_io_meas_ctrl_shadowed_wdata[0]),
 
     // from internal hardware
@@ -1123,7 +1143,7 @@ module clkmgr_reg_top (
 
     // from register interface
     .re     (io_io_meas_ctrl_shadowed_re),
-    .we     (io_io_meas_ctrl_shadowed_we & io_io_meas_ctrl_shadowed_regwen),
+    .we     (io_io_meas_ctrl_shadowed_gated_we),
     .wd     (io_io_meas_ctrl_shadowed_wdata[13:4]),
 
     // from internal hardware
@@ -1181,7 +1201,7 @@ module clkmgr_reg_top (
 
     // from register interface
     .re     (io_io_meas_ctrl_shadowed_re),
-    .we     (io_io_meas_ctrl_shadowed_we & io_io_meas_ctrl_shadowed_regwen),
+    .we     (io_io_meas_ctrl_shadowed_gated_we),
     .wd     (io_io_meas_ctrl_shadowed_wdata[23:14]),
 
     // from internal hardware
@@ -1205,6 +1225,10 @@ module clkmgr_reg_top (
 
 
   // R[io_div2_meas_ctrl_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic io_div2_io_div2_meas_ctrl_shadowed_gated_we;
+  assign io_div2_io_div2_meas_ctrl_shadowed_gated_we =
+    io_div2_io_div2_meas_ctrl_shadowed_we & io_div2_io_div2_meas_ctrl_shadowed_regwen;
   //   F[en]: 0:0
   logic async_io_div2_meas_ctrl_shadowed_en_err_update;
   logic async_io_div2_meas_ctrl_shadowed_en_err_storage;
@@ -1241,7 +1265,7 @@ module clkmgr_reg_top (
 
     // from register interface
     .re     (io_div2_io_div2_meas_ctrl_shadowed_re),
-    .we     (io_div2_io_div2_meas_ctrl_shadowed_we & io_div2_io_div2_meas_ctrl_shadowed_regwen),
+    .we     (io_div2_io_div2_meas_ctrl_shadowed_gated_we),
     .wd     (io_div2_io_div2_meas_ctrl_shadowed_wdata[0]),
 
     // from internal hardware
@@ -1299,7 +1323,7 @@ module clkmgr_reg_top (
 
     // from register interface
     .re     (io_div2_io_div2_meas_ctrl_shadowed_re),
-    .we     (io_div2_io_div2_meas_ctrl_shadowed_we & io_div2_io_div2_meas_ctrl_shadowed_regwen),
+    .we     (io_div2_io_div2_meas_ctrl_shadowed_gated_we),
     .wd     (io_div2_io_div2_meas_ctrl_shadowed_wdata[12:4]),
 
     // from internal hardware
@@ -1357,7 +1381,7 @@ module clkmgr_reg_top (
 
     // from register interface
     .re     (io_div2_io_div2_meas_ctrl_shadowed_re),
-    .we     (io_div2_io_div2_meas_ctrl_shadowed_we & io_div2_io_div2_meas_ctrl_shadowed_regwen),
+    .we     (io_div2_io_div2_meas_ctrl_shadowed_gated_we),
     .wd     (io_div2_io_div2_meas_ctrl_shadowed_wdata[21:13]),
 
     // from internal hardware
@@ -1381,6 +1405,10 @@ module clkmgr_reg_top (
 
 
   // R[io_div4_meas_ctrl_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic io_div4_io_div4_meas_ctrl_shadowed_gated_we;
+  assign io_div4_io_div4_meas_ctrl_shadowed_gated_we =
+    io_div4_io_div4_meas_ctrl_shadowed_we & io_div4_io_div4_meas_ctrl_shadowed_regwen;
   //   F[en]: 0:0
   logic async_io_div4_meas_ctrl_shadowed_en_err_update;
   logic async_io_div4_meas_ctrl_shadowed_en_err_storage;
@@ -1417,7 +1445,7 @@ module clkmgr_reg_top (
 
     // from register interface
     .re     (io_div4_io_div4_meas_ctrl_shadowed_re),
-    .we     (io_div4_io_div4_meas_ctrl_shadowed_we & io_div4_io_div4_meas_ctrl_shadowed_regwen),
+    .we     (io_div4_io_div4_meas_ctrl_shadowed_gated_we),
     .wd     (io_div4_io_div4_meas_ctrl_shadowed_wdata[0]),
 
     // from internal hardware
@@ -1475,7 +1503,7 @@ module clkmgr_reg_top (
 
     // from register interface
     .re     (io_div4_io_div4_meas_ctrl_shadowed_re),
-    .we     (io_div4_io_div4_meas_ctrl_shadowed_we & io_div4_io_div4_meas_ctrl_shadowed_regwen),
+    .we     (io_div4_io_div4_meas_ctrl_shadowed_gated_we),
     .wd     (io_div4_io_div4_meas_ctrl_shadowed_wdata[11:4]),
 
     // from internal hardware
@@ -1533,7 +1561,7 @@ module clkmgr_reg_top (
 
     // from register interface
     .re     (io_div4_io_div4_meas_ctrl_shadowed_re),
-    .we     (io_div4_io_div4_meas_ctrl_shadowed_we & io_div4_io_div4_meas_ctrl_shadowed_regwen),
+    .we     (io_div4_io_div4_meas_ctrl_shadowed_gated_we),
     .wd     (io_div4_io_div4_meas_ctrl_shadowed_wdata[19:12]),
 
     // from internal hardware
@@ -1557,6 +1585,10 @@ module clkmgr_reg_top (
 
 
   // R[main_meas_ctrl_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic main_main_meas_ctrl_shadowed_gated_we;
+  assign main_main_meas_ctrl_shadowed_gated_we =
+    main_main_meas_ctrl_shadowed_we & main_main_meas_ctrl_shadowed_regwen;
   //   F[en]: 0:0
   logic async_main_meas_ctrl_shadowed_en_err_update;
   logic async_main_meas_ctrl_shadowed_en_err_storage;
@@ -1593,7 +1625,7 @@ module clkmgr_reg_top (
 
     // from register interface
     .re     (main_main_meas_ctrl_shadowed_re),
-    .we     (main_main_meas_ctrl_shadowed_we & main_main_meas_ctrl_shadowed_regwen),
+    .we     (main_main_meas_ctrl_shadowed_gated_we),
     .wd     (main_main_meas_ctrl_shadowed_wdata[0]),
 
     // from internal hardware
@@ -1651,7 +1683,7 @@ module clkmgr_reg_top (
 
     // from register interface
     .re     (main_main_meas_ctrl_shadowed_re),
-    .we     (main_main_meas_ctrl_shadowed_we & main_main_meas_ctrl_shadowed_regwen),
+    .we     (main_main_meas_ctrl_shadowed_gated_we),
     .wd     (main_main_meas_ctrl_shadowed_wdata[13:4]),
 
     // from internal hardware
@@ -1709,7 +1741,7 @@ module clkmgr_reg_top (
 
     // from register interface
     .re     (main_main_meas_ctrl_shadowed_re),
-    .we     (main_main_meas_ctrl_shadowed_we & main_main_meas_ctrl_shadowed_regwen),
+    .we     (main_main_meas_ctrl_shadowed_gated_we),
     .wd     (main_main_meas_ctrl_shadowed_wdata[23:14]),
 
     // from internal hardware
@@ -1733,6 +1765,10 @@ module clkmgr_reg_top (
 
 
   // R[usb_meas_ctrl_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic usb_usb_meas_ctrl_shadowed_gated_we;
+  assign usb_usb_meas_ctrl_shadowed_gated_we =
+    usb_usb_meas_ctrl_shadowed_we & usb_usb_meas_ctrl_shadowed_regwen;
   //   F[en]: 0:0
   logic async_usb_meas_ctrl_shadowed_en_err_update;
   logic async_usb_meas_ctrl_shadowed_en_err_storage;
@@ -1769,7 +1805,7 @@ module clkmgr_reg_top (
 
     // from register interface
     .re     (usb_usb_meas_ctrl_shadowed_re),
-    .we     (usb_usb_meas_ctrl_shadowed_we & usb_usb_meas_ctrl_shadowed_regwen),
+    .we     (usb_usb_meas_ctrl_shadowed_gated_we),
     .wd     (usb_usb_meas_ctrl_shadowed_wdata[0]),
 
     // from internal hardware
@@ -1827,7 +1863,7 @@ module clkmgr_reg_top (
 
     // from register interface
     .re     (usb_usb_meas_ctrl_shadowed_re),
-    .we     (usb_usb_meas_ctrl_shadowed_we & usb_usb_meas_ctrl_shadowed_regwen),
+    .we     (usb_usb_meas_ctrl_shadowed_gated_we),
     .wd     (usb_usb_meas_ctrl_shadowed_wdata[12:4]),
 
     // from internal hardware
@@ -1885,7 +1921,7 @@ module clkmgr_reg_top (
 
     // from register interface
     .re     (usb_usb_meas_ctrl_shadowed_re),
-    .we     (usb_usb_meas_ctrl_shadowed_we & usb_usb_meas_ctrl_shadowed_regwen),
+    .we     (usb_usb_meas_ctrl_shadowed_gated_we),
     .wd     (usb_usb_meas_ctrl_shadowed_wdata[21:13]),
 
     // from internal hardware
@@ -2308,6 +2344,8 @@ module clkmgr_reg_top (
                (addr_hit[15] & (|(CLKMGR_PERMIT[15] & ~reg_be))) |
                (addr_hit[16] & (|(CLKMGR_PERMIT[16] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
   assign alert_test_recov_fault_wd = reg_wdata[0];
@@ -2397,6 +2435,28 @@ module clkmgr_reg_top (
   assign recov_err_code_main_timeout_err_wd = reg_wdata[9];
 
   assign recov_err_code_usb_timeout_err_wd = reg_wdata[10];
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = alert_test_we;
+    reg_we_check[1] = extclk_ctrl_regwen_we;
+    reg_we_check[2] = extclk_ctrl_gated_we;
+    reg_we_check[3] = 1'b0;
+    reg_we_check[4] = jitter_regwen_we;
+    reg_we_check[5] = jitter_enable_we;
+    reg_we_check[6] = clk_enables_we;
+    reg_we_check[7] = clk_hints_we;
+    reg_we_check[8] = 1'b0;
+    reg_we_check[9] = measure_ctrl_regwen_we;
+    reg_we_check[10] = io_meas_ctrl_shadowed_we;
+    reg_we_check[11] = io_div2_meas_ctrl_shadowed_we;
+    reg_we_check[12] = io_div4_meas_ctrl_shadowed_we;
+    reg_we_check[13] = main_meas_ctrl_shadowed_we;
+    reg_we_check[14] = usb_meas_ctrl_shadowed_we;
+    reg_we_check[15] = recov_err_code_we;
+    reg_we_check[16] = 1'b0;
+  end
 
   // Read data return
   always_comb begin

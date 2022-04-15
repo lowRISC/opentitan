@@ -53,18 +53,31 @@ module clkmgr_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [2:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(3)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -296,6 +309,8 @@ module clkmgr_reg_top (
                (addr_hit[1] & (|(CLKMGR_PERMIT[1] & ~reg_be))) |
                (addr_hit[2] & (|(CLKMGR_PERMIT[2] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign clk_enables_we = addr_hit[0] & reg_we & !reg_error;
 
   assign clk_enables_clk_fixed_peri_en_wd = reg_wdata[0];
@@ -306,6 +321,14 @@ module clkmgr_reg_top (
   assign clk_hints_clk_main_aes_hint_wd = reg_wdata[0];
 
   assign clk_hints_clk_main_hmac_hint_wd = reg_wdata[1];
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = clk_enables_we;
+    reg_we_check[1] = clk_hints_we;
+    reg_we_check[2] = 1'b0;
+  end
 
   // Read data return
   always_comb begin

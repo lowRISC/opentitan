@@ -62,18 +62,31 @@ module kmac_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [57:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(58)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -643,6 +656,9 @@ module kmac_reg_top (
     .d_i(&cfg_shadowed_flds_we),
     .q_o(cfg_shadowed_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic cfg_shadowed_gated_we;
+  assign cfg_shadowed_gated_we = cfg_shadowed_we & cfg_regwen_qs;
   //   F[kmac_en]: 0:0
   prim_subreg_shadow #(
     .DW      (1),
@@ -655,7 +671,7 @@ module kmac_reg_top (
 
     // from register interface
     .re     (cfg_shadowed_re),
-    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .we     (cfg_shadowed_gated_we),
     .wd     (cfg_shadowed_kmac_en_wd),
 
     // from internal hardware
@@ -690,7 +706,7 @@ module kmac_reg_top (
 
     // from register interface
     .re     (cfg_shadowed_re),
-    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .we     (cfg_shadowed_gated_we),
     .wd     (cfg_shadowed_kstrength_wd),
 
     // from internal hardware
@@ -725,7 +741,7 @@ module kmac_reg_top (
 
     // from register interface
     .re     (cfg_shadowed_re),
-    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .we     (cfg_shadowed_gated_we),
     .wd     (cfg_shadowed_mode_wd),
 
     // from internal hardware
@@ -760,7 +776,7 @@ module kmac_reg_top (
 
     // from register interface
     .re     (cfg_shadowed_re),
-    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .we     (cfg_shadowed_gated_we),
     .wd     (cfg_shadowed_msg_endianness_wd),
 
     // from internal hardware
@@ -795,7 +811,7 @@ module kmac_reg_top (
 
     // from register interface
     .re     (cfg_shadowed_re),
-    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .we     (cfg_shadowed_gated_we),
     .wd     (cfg_shadowed_state_endianness_wd),
 
     // from internal hardware
@@ -830,7 +846,7 @@ module kmac_reg_top (
 
     // from register interface
     .re     (cfg_shadowed_re),
-    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .we     (cfg_shadowed_gated_we),
     .wd     (cfg_shadowed_sideload_wd),
 
     // from internal hardware
@@ -865,7 +881,7 @@ module kmac_reg_top (
 
     // from register interface
     .re     (cfg_shadowed_re),
-    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .we     (cfg_shadowed_gated_we),
     .wd     (cfg_shadowed_entropy_mode_wd),
 
     // from internal hardware
@@ -900,7 +916,7 @@ module kmac_reg_top (
 
     // from register interface
     .re     (cfg_shadowed_re),
-    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .we     (cfg_shadowed_gated_we),
     .wd     (cfg_shadowed_entropy_fast_process_wd),
 
     // from internal hardware
@@ -935,7 +951,7 @@ module kmac_reg_top (
 
     // from register interface
     .re     (cfg_shadowed_re),
-    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .we     (cfg_shadowed_gated_we),
     .wd     (cfg_shadowed_msg_mask_wd),
 
     // from internal hardware
@@ -970,7 +986,7 @@ module kmac_reg_top (
 
     // from register interface
     .re     (cfg_shadowed_re),
-    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .we     (cfg_shadowed_gated_we),
     .wd     (cfg_shadowed_entropy_ready_wd),
 
     // from internal hardware
@@ -1005,7 +1021,7 @@ module kmac_reg_top (
 
     // from register interface
     .re     (cfg_shadowed_re),
-    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .we     (cfg_shadowed_gated_we),
     .wd     (cfg_shadowed_err_processed_wd),
 
     // from internal hardware
@@ -1040,7 +1056,7 @@ module kmac_reg_top (
 
     // from register interface
     .re     (cfg_shadowed_re),
-    .we     (cfg_shadowed_we & cfg_regwen_qs),
+    .we     (cfg_shadowed_gated_we),
     .wd     (cfg_shadowed_en_unsupported_modestrength_wd),
 
     // from internal hardware
@@ -1229,6 +1245,9 @@ module kmac_reg_top (
 
 
   // R[entropy_period]: V(False)
+  // Create REGWEN-gated WE signal
+  logic entropy_period_gated_we;
+  assign entropy_period_gated_we = entropy_period_we & cfg_regwen_qs;
   //   F[prescaler]: 9:0
   prim_subreg #(
     .DW      (10),
@@ -1239,7 +1258,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (entropy_period_we & cfg_regwen_qs),
+    .we     (entropy_period_gated_we),
     .wd     (entropy_period_prescaler_wd),
 
     // from internal hardware
@@ -1264,7 +1283,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (entropy_period_we & cfg_regwen_qs),
+    .we     (entropy_period_gated_we),
     .wd     (entropy_period_wait_timer_wd),
 
     // from internal hardware
@@ -1307,6 +1326,10 @@ module kmac_reg_top (
 
 
   // R[entropy_refresh_threshold_shadowed]: V(False)
+  // Create REGWEN-gated WE signal
+  logic entropy_refresh_threshold_shadowed_gated_we;
+  assign entropy_refresh_threshold_shadowed_gated_we =
+    entropy_refresh_threshold_shadowed_we & cfg_regwen_qs;
   prim_subreg_shadow #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1318,7 +1341,7 @@ module kmac_reg_top (
 
     // from register interface
     .re     (entropy_refresh_threshold_shadowed_re),
-    .we     (entropy_refresh_threshold_shadowed_we & cfg_regwen_qs),
+    .we     (entropy_refresh_threshold_shadowed_gated_we),
     .wd     (entropy_refresh_threshold_shadowed_wd),
 
     // from internal hardware
@@ -1353,6 +1376,9 @@ module kmac_reg_top (
     .d_i(&entropy_seed_lower_flds_we),
     .q_o(entropy_seed_lower_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic entropy_seed_lower_gated_we;
+  assign entropy_seed_lower_gated_we = entropy_seed_lower_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1362,7 +1388,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (entropy_seed_lower_we & cfg_regwen_qs),
+    .we     (entropy_seed_lower_gated_we),
     .wd     (entropy_seed_lower_wd),
 
     // from internal hardware
@@ -1391,6 +1417,9 @@ module kmac_reg_top (
     .d_i(&entropy_seed_upper_flds_we),
     .q_o(entropy_seed_upper_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic entropy_seed_upper_gated_we;
+  assign entropy_seed_upper_gated_we = entropy_seed_upper_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1400,7 +1429,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (entropy_seed_upper_we & cfg_regwen_qs),
+    .we     (entropy_seed_upper_gated_we),
     .wd     (entropy_seed_upper_wd),
 
     // from internal hardware
@@ -1422,11 +1451,14 @@ module kmac_reg_top (
   logic key_share0_0_qe;
   logic [0:0] key_share0_0_flds_we;
   assign key_share0_0_qe = &key_share0_0_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share0_0_gated_we;
+  assign key_share0_0_gated_we = key_share0_0_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_0 (
     .re     (1'b0),
-    .we     (key_share0_0_we & cfg_regwen_qs),
+    .we     (key_share0_0_gated_we),
     .wd     (key_share0_0_wd),
     .d      ('0),
     .qre    (),
@@ -1442,11 +1474,14 @@ module kmac_reg_top (
   logic key_share0_1_qe;
   logic [0:0] key_share0_1_flds_we;
   assign key_share0_1_qe = &key_share0_1_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share0_1_gated_we;
+  assign key_share0_1_gated_we = key_share0_1_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_1 (
     .re     (1'b0),
-    .we     (key_share0_1_we & cfg_regwen_qs),
+    .we     (key_share0_1_gated_we),
     .wd     (key_share0_1_wd),
     .d      ('0),
     .qre    (),
@@ -1462,11 +1497,14 @@ module kmac_reg_top (
   logic key_share0_2_qe;
   logic [0:0] key_share0_2_flds_we;
   assign key_share0_2_qe = &key_share0_2_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share0_2_gated_we;
+  assign key_share0_2_gated_we = key_share0_2_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_2 (
     .re     (1'b0),
-    .we     (key_share0_2_we & cfg_regwen_qs),
+    .we     (key_share0_2_gated_we),
     .wd     (key_share0_2_wd),
     .d      ('0),
     .qre    (),
@@ -1482,11 +1520,14 @@ module kmac_reg_top (
   logic key_share0_3_qe;
   logic [0:0] key_share0_3_flds_we;
   assign key_share0_3_qe = &key_share0_3_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share0_3_gated_we;
+  assign key_share0_3_gated_we = key_share0_3_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_3 (
     .re     (1'b0),
-    .we     (key_share0_3_we & cfg_regwen_qs),
+    .we     (key_share0_3_gated_we),
     .wd     (key_share0_3_wd),
     .d      ('0),
     .qre    (),
@@ -1502,11 +1543,14 @@ module kmac_reg_top (
   logic key_share0_4_qe;
   logic [0:0] key_share0_4_flds_we;
   assign key_share0_4_qe = &key_share0_4_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share0_4_gated_we;
+  assign key_share0_4_gated_we = key_share0_4_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_4 (
     .re     (1'b0),
-    .we     (key_share0_4_we & cfg_regwen_qs),
+    .we     (key_share0_4_gated_we),
     .wd     (key_share0_4_wd),
     .d      ('0),
     .qre    (),
@@ -1522,11 +1566,14 @@ module kmac_reg_top (
   logic key_share0_5_qe;
   logic [0:0] key_share0_5_flds_we;
   assign key_share0_5_qe = &key_share0_5_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share0_5_gated_we;
+  assign key_share0_5_gated_we = key_share0_5_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_5 (
     .re     (1'b0),
-    .we     (key_share0_5_we & cfg_regwen_qs),
+    .we     (key_share0_5_gated_we),
     .wd     (key_share0_5_wd),
     .d      ('0),
     .qre    (),
@@ -1542,11 +1589,14 @@ module kmac_reg_top (
   logic key_share0_6_qe;
   logic [0:0] key_share0_6_flds_we;
   assign key_share0_6_qe = &key_share0_6_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share0_6_gated_we;
+  assign key_share0_6_gated_we = key_share0_6_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_6 (
     .re     (1'b0),
-    .we     (key_share0_6_we & cfg_regwen_qs),
+    .we     (key_share0_6_gated_we),
     .wd     (key_share0_6_wd),
     .d      ('0),
     .qre    (),
@@ -1562,11 +1612,14 @@ module kmac_reg_top (
   logic key_share0_7_qe;
   logic [0:0] key_share0_7_flds_we;
   assign key_share0_7_qe = &key_share0_7_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share0_7_gated_we;
+  assign key_share0_7_gated_we = key_share0_7_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_7 (
     .re     (1'b0),
-    .we     (key_share0_7_we & cfg_regwen_qs),
+    .we     (key_share0_7_gated_we),
     .wd     (key_share0_7_wd),
     .d      ('0),
     .qre    (),
@@ -1582,11 +1635,14 @@ module kmac_reg_top (
   logic key_share0_8_qe;
   logic [0:0] key_share0_8_flds_we;
   assign key_share0_8_qe = &key_share0_8_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share0_8_gated_we;
+  assign key_share0_8_gated_we = key_share0_8_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_8 (
     .re     (1'b0),
-    .we     (key_share0_8_we & cfg_regwen_qs),
+    .we     (key_share0_8_gated_we),
     .wd     (key_share0_8_wd),
     .d      ('0),
     .qre    (),
@@ -1602,11 +1658,14 @@ module kmac_reg_top (
   logic key_share0_9_qe;
   logic [0:0] key_share0_9_flds_we;
   assign key_share0_9_qe = &key_share0_9_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share0_9_gated_we;
+  assign key_share0_9_gated_we = key_share0_9_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_9 (
     .re     (1'b0),
-    .we     (key_share0_9_we & cfg_regwen_qs),
+    .we     (key_share0_9_gated_we),
     .wd     (key_share0_9_wd),
     .d      ('0),
     .qre    (),
@@ -1622,11 +1681,14 @@ module kmac_reg_top (
   logic key_share0_10_qe;
   logic [0:0] key_share0_10_flds_we;
   assign key_share0_10_qe = &key_share0_10_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share0_10_gated_we;
+  assign key_share0_10_gated_we = key_share0_10_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_10 (
     .re     (1'b0),
-    .we     (key_share0_10_we & cfg_regwen_qs),
+    .we     (key_share0_10_gated_we),
     .wd     (key_share0_10_wd),
     .d      ('0),
     .qre    (),
@@ -1642,11 +1704,14 @@ module kmac_reg_top (
   logic key_share0_11_qe;
   logic [0:0] key_share0_11_flds_we;
   assign key_share0_11_qe = &key_share0_11_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share0_11_gated_we;
+  assign key_share0_11_gated_we = key_share0_11_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_11 (
     .re     (1'b0),
-    .we     (key_share0_11_we & cfg_regwen_qs),
+    .we     (key_share0_11_gated_we),
     .wd     (key_share0_11_wd),
     .d      ('0),
     .qre    (),
@@ -1662,11 +1727,14 @@ module kmac_reg_top (
   logic key_share0_12_qe;
   logic [0:0] key_share0_12_flds_we;
   assign key_share0_12_qe = &key_share0_12_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share0_12_gated_we;
+  assign key_share0_12_gated_we = key_share0_12_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_12 (
     .re     (1'b0),
-    .we     (key_share0_12_we & cfg_regwen_qs),
+    .we     (key_share0_12_gated_we),
     .wd     (key_share0_12_wd),
     .d      ('0),
     .qre    (),
@@ -1682,11 +1750,14 @@ module kmac_reg_top (
   logic key_share0_13_qe;
   logic [0:0] key_share0_13_flds_we;
   assign key_share0_13_qe = &key_share0_13_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share0_13_gated_we;
+  assign key_share0_13_gated_we = key_share0_13_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_13 (
     .re     (1'b0),
-    .we     (key_share0_13_we & cfg_regwen_qs),
+    .we     (key_share0_13_gated_we),
     .wd     (key_share0_13_wd),
     .d      ('0),
     .qre    (),
@@ -1702,11 +1773,14 @@ module kmac_reg_top (
   logic key_share0_14_qe;
   logic [0:0] key_share0_14_flds_we;
   assign key_share0_14_qe = &key_share0_14_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share0_14_gated_we;
+  assign key_share0_14_gated_we = key_share0_14_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_14 (
     .re     (1'b0),
-    .we     (key_share0_14_we & cfg_regwen_qs),
+    .we     (key_share0_14_gated_we),
     .wd     (key_share0_14_wd),
     .d      ('0),
     .qre    (),
@@ -1722,11 +1796,14 @@ module kmac_reg_top (
   logic key_share0_15_qe;
   logic [0:0] key_share0_15_flds_we;
   assign key_share0_15_qe = &key_share0_15_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share0_15_gated_we;
+  assign key_share0_15_gated_we = key_share0_15_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_15 (
     .re     (1'b0),
-    .we     (key_share0_15_we & cfg_regwen_qs),
+    .we     (key_share0_15_gated_we),
     .wd     (key_share0_15_wd),
     .d      ('0),
     .qre    (),
@@ -1742,11 +1819,14 @@ module kmac_reg_top (
   logic key_share1_0_qe;
   logic [0:0] key_share1_0_flds_we;
   assign key_share1_0_qe = &key_share1_0_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share1_0_gated_we;
+  assign key_share1_0_gated_we = key_share1_0_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_0 (
     .re     (1'b0),
-    .we     (key_share1_0_we & cfg_regwen_qs),
+    .we     (key_share1_0_gated_we),
     .wd     (key_share1_0_wd),
     .d      ('0),
     .qre    (),
@@ -1762,11 +1842,14 @@ module kmac_reg_top (
   logic key_share1_1_qe;
   logic [0:0] key_share1_1_flds_we;
   assign key_share1_1_qe = &key_share1_1_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share1_1_gated_we;
+  assign key_share1_1_gated_we = key_share1_1_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_1 (
     .re     (1'b0),
-    .we     (key_share1_1_we & cfg_regwen_qs),
+    .we     (key_share1_1_gated_we),
     .wd     (key_share1_1_wd),
     .d      ('0),
     .qre    (),
@@ -1782,11 +1865,14 @@ module kmac_reg_top (
   logic key_share1_2_qe;
   logic [0:0] key_share1_2_flds_we;
   assign key_share1_2_qe = &key_share1_2_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share1_2_gated_we;
+  assign key_share1_2_gated_we = key_share1_2_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_2 (
     .re     (1'b0),
-    .we     (key_share1_2_we & cfg_regwen_qs),
+    .we     (key_share1_2_gated_we),
     .wd     (key_share1_2_wd),
     .d      ('0),
     .qre    (),
@@ -1802,11 +1888,14 @@ module kmac_reg_top (
   logic key_share1_3_qe;
   logic [0:0] key_share1_3_flds_we;
   assign key_share1_3_qe = &key_share1_3_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share1_3_gated_we;
+  assign key_share1_3_gated_we = key_share1_3_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_3 (
     .re     (1'b0),
-    .we     (key_share1_3_we & cfg_regwen_qs),
+    .we     (key_share1_3_gated_we),
     .wd     (key_share1_3_wd),
     .d      ('0),
     .qre    (),
@@ -1822,11 +1911,14 @@ module kmac_reg_top (
   logic key_share1_4_qe;
   logic [0:0] key_share1_4_flds_we;
   assign key_share1_4_qe = &key_share1_4_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share1_4_gated_we;
+  assign key_share1_4_gated_we = key_share1_4_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_4 (
     .re     (1'b0),
-    .we     (key_share1_4_we & cfg_regwen_qs),
+    .we     (key_share1_4_gated_we),
     .wd     (key_share1_4_wd),
     .d      ('0),
     .qre    (),
@@ -1842,11 +1934,14 @@ module kmac_reg_top (
   logic key_share1_5_qe;
   logic [0:0] key_share1_5_flds_we;
   assign key_share1_5_qe = &key_share1_5_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share1_5_gated_we;
+  assign key_share1_5_gated_we = key_share1_5_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_5 (
     .re     (1'b0),
-    .we     (key_share1_5_we & cfg_regwen_qs),
+    .we     (key_share1_5_gated_we),
     .wd     (key_share1_5_wd),
     .d      ('0),
     .qre    (),
@@ -1862,11 +1957,14 @@ module kmac_reg_top (
   logic key_share1_6_qe;
   logic [0:0] key_share1_6_flds_we;
   assign key_share1_6_qe = &key_share1_6_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share1_6_gated_we;
+  assign key_share1_6_gated_we = key_share1_6_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_6 (
     .re     (1'b0),
-    .we     (key_share1_6_we & cfg_regwen_qs),
+    .we     (key_share1_6_gated_we),
     .wd     (key_share1_6_wd),
     .d      ('0),
     .qre    (),
@@ -1882,11 +1980,14 @@ module kmac_reg_top (
   logic key_share1_7_qe;
   logic [0:0] key_share1_7_flds_we;
   assign key_share1_7_qe = &key_share1_7_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share1_7_gated_we;
+  assign key_share1_7_gated_we = key_share1_7_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_7 (
     .re     (1'b0),
-    .we     (key_share1_7_we & cfg_regwen_qs),
+    .we     (key_share1_7_gated_we),
     .wd     (key_share1_7_wd),
     .d      ('0),
     .qre    (),
@@ -1902,11 +2003,14 @@ module kmac_reg_top (
   logic key_share1_8_qe;
   logic [0:0] key_share1_8_flds_we;
   assign key_share1_8_qe = &key_share1_8_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share1_8_gated_we;
+  assign key_share1_8_gated_we = key_share1_8_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_8 (
     .re     (1'b0),
-    .we     (key_share1_8_we & cfg_regwen_qs),
+    .we     (key_share1_8_gated_we),
     .wd     (key_share1_8_wd),
     .d      ('0),
     .qre    (),
@@ -1922,11 +2026,14 @@ module kmac_reg_top (
   logic key_share1_9_qe;
   logic [0:0] key_share1_9_flds_we;
   assign key_share1_9_qe = &key_share1_9_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share1_9_gated_we;
+  assign key_share1_9_gated_we = key_share1_9_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_9 (
     .re     (1'b0),
-    .we     (key_share1_9_we & cfg_regwen_qs),
+    .we     (key_share1_9_gated_we),
     .wd     (key_share1_9_wd),
     .d      ('0),
     .qre    (),
@@ -1942,11 +2049,14 @@ module kmac_reg_top (
   logic key_share1_10_qe;
   logic [0:0] key_share1_10_flds_we;
   assign key_share1_10_qe = &key_share1_10_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share1_10_gated_we;
+  assign key_share1_10_gated_we = key_share1_10_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_10 (
     .re     (1'b0),
-    .we     (key_share1_10_we & cfg_regwen_qs),
+    .we     (key_share1_10_gated_we),
     .wd     (key_share1_10_wd),
     .d      ('0),
     .qre    (),
@@ -1962,11 +2072,14 @@ module kmac_reg_top (
   logic key_share1_11_qe;
   logic [0:0] key_share1_11_flds_we;
   assign key_share1_11_qe = &key_share1_11_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share1_11_gated_we;
+  assign key_share1_11_gated_we = key_share1_11_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_11 (
     .re     (1'b0),
-    .we     (key_share1_11_we & cfg_regwen_qs),
+    .we     (key_share1_11_gated_we),
     .wd     (key_share1_11_wd),
     .d      ('0),
     .qre    (),
@@ -1982,11 +2095,14 @@ module kmac_reg_top (
   logic key_share1_12_qe;
   logic [0:0] key_share1_12_flds_we;
   assign key_share1_12_qe = &key_share1_12_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share1_12_gated_we;
+  assign key_share1_12_gated_we = key_share1_12_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_12 (
     .re     (1'b0),
-    .we     (key_share1_12_we & cfg_regwen_qs),
+    .we     (key_share1_12_gated_we),
     .wd     (key_share1_12_wd),
     .d      ('0),
     .qre    (),
@@ -2002,11 +2118,14 @@ module kmac_reg_top (
   logic key_share1_13_qe;
   logic [0:0] key_share1_13_flds_we;
   assign key_share1_13_qe = &key_share1_13_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share1_13_gated_we;
+  assign key_share1_13_gated_we = key_share1_13_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_13 (
     .re     (1'b0),
-    .we     (key_share1_13_we & cfg_regwen_qs),
+    .we     (key_share1_13_gated_we),
     .wd     (key_share1_13_wd),
     .d      ('0),
     .qre    (),
@@ -2022,11 +2141,14 @@ module kmac_reg_top (
   logic key_share1_14_qe;
   logic [0:0] key_share1_14_flds_we;
   assign key_share1_14_qe = &key_share1_14_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share1_14_gated_we;
+  assign key_share1_14_gated_we = key_share1_14_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_14 (
     .re     (1'b0),
-    .we     (key_share1_14_we & cfg_regwen_qs),
+    .we     (key_share1_14_gated_we),
     .wd     (key_share1_14_wd),
     .d      ('0),
     .qre    (),
@@ -2042,11 +2164,14 @@ module kmac_reg_top (
   logic key_share1_15_qe;
   logic [0:0] key_share1_15_flds_we;
   assign key_share1_15_qe = &key_share1_15_flds_we;
+  // Create REGWEN-gated WE signal
+  logic key_share1_15_gated_we;
+  assign key_share1_15_gated_we = key_share1_15_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_15 (
     .re     (1'b0),
-    .we     (key_share1_15_we & cfg_regwen_qs),
+    .we     (key_share1_15_gated_we),
     .wd     (key_share1_15_wd),
     .d      ('0),
     .qre    (),
@@ -2058,6 +2183,9 @@ module kmac_reg_top (
 
 
   // R[key_len]: V(False)
+  // Create REGWEN-gated WE signal
+  logic key_len_gated_we;
+  assign key_len_gated_we = key_len_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
@@ -2067,7 +2195,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (key_len_we & cfg_regwen_qs),
+    .we     (key_len_gated_we),
     .wd     (key_len_wd),
 
     // from internal hardware
@@ -2085,6 +2213,9 @@ module kmac_reg_top (
 
   // Subregister 0 of Multireg prefix
   // R[prefix_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic prefix_0_gated_we;
+  assign prefix_0_gated_we = prefix_0_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2094,7 +2225,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prefix_0_we & cfg_regwen_qs),
+    .we     (prefix_0_gated_we),
     .wd     (prefix_0_wd),
 
     // from internal hardware
@@ -2112,6 +2243,9 @@ module kmac_reg_top (
 
   // Subregister 1 of Multireg prefix
   // R[prefix_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic prefix_1_gated_we;
+  assign prefix_1_gated_we = prefix_1_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2121,7 +2255,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prefix_1_we & cfg_regwen_qs),
+    .we     (prefix_1_gated_we),
     .wd     (prefix_1_wd),
 
     // from internal hardware
@@ -2139,6 +2273,9 @@ module kmac_reg_top (
 
   // Subregister 2 of Multireg prefix
   // R[prefix_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic prefix_2_gated_we;
+  assign prefix_2_gated_we = prefix_2_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2148,7 +2285,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prefix_2_we & cfg_regwen_qs),
+    .we     (prefix_2_gated_we),
     .wd     (prefix_2_wd),
 
     // from internal hardware
@@ -2166,6 +2303,9 @@ module kmac_reg_top (
 
   // Subregister 3 of Multireg prefix
   // R[prefix_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic prefix_3_gated_we;
+  assign prefix_3_gated_we = prefix_3_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2175,7 +2315,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prefix_3_we & cfg_regwen_qs),
+    .we     (prefix_3_gated_we),
     .wd     (prefix_3_wd),
 
     // from internal hardware
@@ -2193,6 +2333,9 @@ module kmac_reg_top (
 
   // Subregister 4 of Multireg prefix
   // R[prefix_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic prefix_4_gated_we;
+  assign prefix_4_gated_we = prefix_4_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2202,7 +2345,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prefix_4_we & cfg_regwen_qs),
+    .we     (prefix_4_gated_we),
     .wd     (prefix_4_wd),
 
     // from internal hardware
@@ -2220,6 +2363,9 @@ module kmac_reg_top (
 
   // Subregister 5 of Multireg prefix
   // R[prefix_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic prefix_5_gated_we;
+  assign prefix_5_gated_we = prefix_5_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2229,7 +2375,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prefix_5_we & cfg_regwen_qs),
+    .we     (prefix_5_gated_we),
     .wd     (prefix_5_wd),
 
     // from internal hardware
@@ -2247,6 +2393,9 @@ module kmac_reg_top (
 
   // Subregister 6 of Multireg prefix
   // R[prefix_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic prefix_6_gated_we;
+  assign prefix_6_gated_we = prefix_6_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2256,7 +2405,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prefix_6_we & cfg_regwen_qs),
+    .we     (prefix_6_gated_we),
     .wd     (prefix_6_wd),
 
     // from internal hardware
@@ -2274,6 +2423,9 @@ module kmac_reg_top (
 
   // Subregister 7 of Multireg prefix
   // R[prefix_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic prefix_7_gated_we;
+  assign prefix_7_gated_we = prefix_7_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2283,7 +2435,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prefix_7_we & cfg_regwen_qs),
+    .we     (prefix_7_gated_we),
     .wd     (prefix_7_wd),
 
     // from internal hardware
@@ -2301,6 +2453,9 @@ module kmac_reg_top (
 
   // Subregister 8 of Multireg prefix
   // R[prefix_8]: V(False)
+  // Create REGWEN-gated WE signal
+  logic prefix_8_gated_we;
+  assign prefix_8_gated_we = prefix_8_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2310,7 +2465,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prefix_8_we & cfg_regwen_qs),
+    .we     (prefix_8_gated_we),
     .wd     (prefix_8_wd),
 
     // from internal hardware
@@ -2328,6 +2483,9 @@ module kmac_reg_top (
 
   // Subregister 9 of Multireg prefix
   // R[prefix_9]: V(False)
+  // Create REGWEN-gated WE signal
+  logic prefix_9_gated_we;
+  assign prefix_9_gated_we = prefix_9_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2337,7 +2495,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prefix_9_we & cfg_regwen_qs),
+    .we     (prefix_9_gated_we),
     .wd     (prefix_9_wd),
 
     // from internal hardware
@@ -2355,6 +2513,9 @@ module kmac_reg_top (
 
   // Subregister 10 of Multireg prefix
   // R[prefix_10]: V(False)
+  // Create REGWEN-gated WE signal
+  logic prefix_10_gated_we;
+  assign prefix_10_gated_we = prefix_10_we & cfg_regwen_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2364,7 +2525,7 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (prefix_10_we & cfg_regwen_qs),
+    .we     (prefix_10_gated_we),
     .wd     (prefix_10_wd),
 
     // from internal hardware
@@ -2534,6 +2695,8 @@ module kmac_reg_top (
                (addr_hit[56] & (|(KMAC_PERMIT[56] & ~reg_be))) |
                (addr_hit[57] & (|(KMAC_PERMIT[57] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
   assign intr_state_kmac_done_wd = reg_wdata[0];
@@ -2742,6 +2905,69 @@ module kmac_reg_top (
   assign prefix_10_we = addr_hit[56] & reg_we & !reg_error;
 
   assign prefix_10_wd = reg_wdata[31:0];
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = intr_state_we;
+    reg_we_check[1] = intr_enable_we;
+    reg_we_check[2] = intr_test_we;
+    reg_we_check[3] = alert_test_we;
+    reg_we_check[4] = 1'b0;
+    reg_we_check[5] = cfg_shadowed_gated_we;
+    reg_we_check[6] = cmd_we;
+    reg_we_check[7] = 1'b0;
+    reg_we_check[8] = entropy_period_gated_we;
+    reg_we_check[9] = 1'b0;
+    reg_we_check[10] = entropy_refresh_threshold_shadowed_gated_we;
+    reg_we_check[11] = entropy_seed_lower_gated_we;
+    reg_we_check[12] = entropy_seed_upper_gated_we;
+    reg_we_check[13] = key_share0_0_gated_we;
+    reg_we_check[14] = key_share0_1_gated_we;
+    reg_we_check[15] = key_share0_2_gated_we;
+    reg_we_check[16] = key_share0_3_gated_we;
+    reg_we_check[17] = key_share0_4_gated_we;
+    reg_we_check[18] = key_share0_5_gated_we;
+    reg_we_check[19] = key_share0_6_gated_we;
+    reg_we_check[20] = key_share0_7_gated_we;
+    reg_we_check[21] = key_share0_8_gated_we;
+    reg_we_check[22] = key_share0_9_gated_we;
+    reg_we_check[23] = key_share0_10_gated_we;
+    reg_we_check[24] = key_share0_11_gated_we;
+    reg_we_check[25] = key_share0_12_gated_we;
+    reg_we_check[26] = key_share0_13_gated_we;
+    reg_we_check[27] = key_share0_14_gated_we;
+    reg_we_check[28] = key_share0_15_gated_we;
+    reg_we_check[29] = key_share1_0_gated_we;
+    reg_we_check[30] = key_share1_1_gated_we;
+    reg_we_check[31] = key_share1_2_gated_we;
+    reg_we_check[32] = key_share1_3_gated_we;
+    reg_we_check[33] = key_share1_4_gated_we;
+    reg_we_check[34] = key_share1_5_gated_we;
+    reg_we_check[35] = key_share1_6_gated_we;
+    reg_we_check[36] = key_share1_7_gated_we;
+    reg_we_check[37] = key_share1_8_gated_we;
+    reg_we_check[38] = key_share1_9_gated_we;
+    reg_we_check[39] = key_share1_10_gated_we;
+    reg_we_check[40] = key_share1_11_gated_we;
+    reg_we_check[41] = key_share1_12_gated_we;
+    reg_we_check[42] = key_share1_13_gated_we;
+    reg_we_check[43] = key_share1_14_gated_we;
+    reg_we_check[44] = key_share1_15_gated_we;
+    reg_we_check[45] = key_len_gated_we;
+    reg_we_check[46] = prefix_0_gated_we;
+    reg_we_check[47] = prefix_1_gated_we;
+    reg_we_check[48] = prefix_2_gated_we;
+    reg_we_check[49] = prefix_3_gated_we;
+    reg_we_check[50] = prefix_4_gated_we;
+    reg_we_check[51] = prefix_5_gated_we;
+    reg_we_check[52] = prefix_6_gated_we;
+    reg_we_check[53] = prefix_7_gated_we;
+    reg_we_check[54] = prefix_8_gated_we;
+    reg_we_check[55] = prefix_9_gated_we;
+    reg_we_check[56] = prefix_10_gated_we;
+    reg_we_check[57] = 1'b0;
+  end
 
   // Read data return
   always_comb begin

@@ -58,18 +58,31 @@ module spi_device_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [78:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(79)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -18418,6 +18431,8 @@ module spi_device_reg_top (
                (addr_hit[77] & (|(SPI_DEVICE_PERMIT[77] & ~reg_be))) |
                (addr_hit[78] & (|(SPI_DEVICE_PERMIT[78] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
   assign intr_state_generic_rx_full_wd = reg_wdata[0];
@@ -19782,6 +19797,90 @@ module spi_device_reg_top (
 
   assign tpm_read_fifo_wd = reg_wdata[7:0];
   assign tpm_write_fifo_re = addr_hit[78] & reg_re & !reg_error;
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = intr_state_we;
+    reg_we_check[1] = intr_enable_we;
+    reg_we_check[2] = intr_test_we;
+    reg_we_check[3] = alert_test_we;
+    reg_we_check[4] = control_we;
+    reg_we_check[5] = cfg_we;
+    reg_we_check[6] = fifo_level_we;
+    reg_we_check[7] = 1'b0;
+    reg_we_check[8] = 1'b0;
+    reg_we_check[9] = rxf_ptr_we;
+    reg_we_check[10] = txf_ptr_we;
+    reg_we_check[11] = rxf_addr_we;
+    reg_we_check[12] = txf_addr_we;
+    reg_we_check[13] = intercept_en_we;
+    reg_we_check[14] = 1'b0;
+    reg_we_check[15] = flash_status_we;
+    reg_we_check[16] = jedec_cc_we;
+    reg_we_check[17] = jedec_id_we;
+    reg_we_check[18] = read_threshold_we;
+    reg_we_check[19] = mailbox_addr_we;
+    reg_we_check[20] = 1'b0;
+    reg_we_check[21] = 1'b0;
+    reg_we_check[22] = 1'b0;
+    reg_we_check[23] = 1'b0;
+    reg_we_check[24] = cmd_filter_0_we;
+    reg_we_check[25] = cmd_filter_1_we;
+    reg_we_check[26] = cmd_filter_2_we;
+    reg_we_check[27] = cmd_filter_3_we;
+    reg_we_check[28] = cmd_filter_4_we;
+    reg_we_check[29] = cmd_filter_5_we;
+    reg_we_check[30] = cmd_filter_6_we;
+    reg_we_check[31] = cmd_filter_7_we;
+    reg_we_check[32] = addr_swap_mask_we;
+    reg_we_check[33] = addr_swap_data_we;
+    reg_we_check[34] = payload_swap_mask_we;
+    reg_we_check[35] = payload_swap_data_we;
+    reg_we_check[36] = cmd_info_0_we;
+    reg_we_check[37] = cmd_info_1_we;
+    reg_we_check[38] = cmd_info_2_we;
+    reg_we_check[39] = cmd_info_3_we;
+    reg_we_check[40] = cmd_info_4_we;
+    reg_we_check[41] = cmd_info_5_we;
+    reg_we_check[42] = cmd_info_6_we;
+    reg_we_check[43] = cmd_info_7_we;
+    reg_we_check[44] = cmd_info_8_we;
+    reg_we_check[45] = cmd_info_9_we;
+    reg_we_check[46] = cmd_info_10_we;
+    reg_we_check[47] = cmd_info_11_we;
+    reg_we_check[48] = cmd_info_12_we;
+    reg_we_check[49] = cmd_info_13_we;
+    reg_we_check[50] = cmd_info_14_we;
+    reg_we_check[51] = cmd_info_15_we;
+    reg_we_check[52] = cmd_info_16_we;
+    reg_we_check[53] = cmd_info_17_we;
+    reg_we_check[54] = cmd_info_18_we;
+    reg_we_check[55] = cmd_info_19_we;
+    reg_we_check[56] = cmd_info_20_we;
+    reg_we_check[57] = cmd_info_21_we;
+    reg_we_check[58] = cmd_info_22_we;
+    reg_we_check[59] = cmd_info_23_we;
+    reg_we_check[60] = cmd_info_en4b_we;
+    reg_we_check[61] = cmd_info_ex4b_we;
+    reg_we_check[62] = cmd_info_wren_we;
+    reg_we_check[63] = cmd_info_wrdi_we;
+    reg_we_check[64] = 1'b0;
+    reg_we_check[65] = tpm_cfg_we;
+    reg_we_check[66] = 1'b0;
+    reg_we_check[67] = tpm_access_0_we;
+    reg_we_check[68] = tpm_access_1_we;
+    reg_we_check[69] = tpm_sts_we;
+    reg_we_check[70] = tpm_intf_capability_we;
+    reg_we_check[71] = tpm_int_enable_we;
+    reg_we_check[72] = tpm_int_vector_we;
+    reg_we_check[73] = tpm_int_status_we;
+    reg_we_check[74] = tpm_did_vid_we;
+    reg_we_check[75] = tpm_rid_we;
+    reg_we_check[76] = 1'b0;
+    reg_we_check[77] = tpm_read_fifo_we;
+    reg_we_check[78] = 1'b0;
+  end
 
   // Read data return
   always_comb begin

@@ -8,16 +8,13 @@
 `include "prim_assert.sv"
 
 module prim_reg_we_check #(
-  parameter int unsigned AddrWidth    = 5,
-  // The onehot width can be <= 2**AddrWidth and does not have to be a power of two.
-  parameter int unsigned OneHotWidth  = 2**AddrWidth
+  parameter int unsigned OneHotWidth  = 32
 ) (
   // The module is combinational - the clock and reset are only used for assertions.
   input                          clk_i,
   input                          rst_ni,
 
   input  logic [OneHotWidth-1:0] oh_i,
-  input  logic [AddrWidth-1:0]   addr_i,
   input  logic                   en_i,
 
   output logic                   err_o
@@ -36,6 +33,11 @@ module prim_reg_we_check #(
     .OneHotWidth(OneHotWidth),
     .AddrWidth  (prim_util_pkg::vbits(OneHotWidth)),
     .EnableCheck(1),
+    // Since certain peripherals may have a very large address space
+    // (e.g. > 20bit), the inverse address decoding check (which is
+    // essentially an indexing operation) does not scale well and is
+    // hence omitted.
+    .AddrCheck(0),
     // Due to REGWEN masking of write enable strobes,
     // we do not perform strict checks. I.e., we allow cases
     // where en_i is set to 1, but the oh_i vector is all-zeroes.

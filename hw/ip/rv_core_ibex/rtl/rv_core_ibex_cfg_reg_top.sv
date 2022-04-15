@@ -58,18 +58,31 @@ module rv_core_ibex_cfg_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [24:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(25)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -422,6 +435,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // Subregister 0 of Multireg ibus_addr_en
   // R[ibus_addr_en_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic ibus_addr_en_0_gated_we;
+  assign ibus_addr_en_0_gated_we = ibus_addr_en_0_we & ibus_regwen_0_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -431,7 +447,7 @@ module rv_core_ibex_cfg_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ibus_addr_en_0_we & ibus_regwen_0_qs),
+    .we     (ibus_addr_en_0_gated_we),
     .wd     (ibus_addr_en_0_wd),
 
     // from internal hardware
@@ -449,6 +465,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // Subregister 1 of Multireg ibus_addr_en
   // R[ibus_addr_en_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic ibus_addr_en_1_gated_we;
+  assign ibus_addr_en_1_gated_we = ibus_addr_en_1_we & ibus_regwen_1_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -458,7 +477,7 @@ module rv_core_ibex_cfg_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ibus_addr_en_1_we & ibus_regwen_1_qs),
+    .we     (ibus_addr_en_1_gated_we),
     .wd     (ibus_addr_en_1_wd),
 
     // from internal hardware
@@ -476,6 +495,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // Subregister 0 of Multireg ibus_addr_matching
   // R[ibus_addr_matching_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic ibus_addr_matching_0_gated_we;
+  assign ibus_addr_matching_0_gated_we = ibus_addr_matching_0_we & ibus_regwen_0_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -485,7 +507,7 @@ module rv_core_ibex_cfg_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ibus_addr_matching_0_we & ibus_regwen_0_qs),
+    .we     (ibus_addr_matching_0_gated_we),
     .wd     (ibus_addr_matching_0_wd),
 
     // from internal hardware
@@ -503,6 +525,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // Subregister 1 of Multireg ibus_addr_matching
   // R[ibus_addr_matching_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic ibus_addr_matching_1_gated_we;
+  assign ibus_addr_matching_1_gated_we = ibus_addr_matching_1_we & ibus_regwen_1_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -512,7 +537,7 @@ module rv_core_ibex_cfg_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ibus_addr_matching_1_we & ibus_regwen_1_qs),
+    .we     (ibus_addr_matching_1_gated_we),
     .wd     (ibus_addr_matching_1_wd),
 
     // from internal hardware
@@ -530,6 +555,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // Subregister 0 of Multireg ibus_remap_addr
   // R[ibus_remap_addr_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic ibus_remap_addr_0_gated_we;
+  assign ibus_remap_addr_0_gated_we = ibus_remap_addr_0_we & ibus_regwen_0_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -539,7 +567,7 @@ module rv_core_ibex_cfg_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ibus_remap_addr_0_we & ibus_regwen_0_qs),
+    .we     (ibus_remap_addr_0_gated_we),
     .wd     (ibus_remap_addr_0_wd),
 
     // from internal hardware
@@ -557,6 +585,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // Subregister 1 of Multireg ibus_remap_addr
   // R[ibus_remap_addr_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic ibus_remap_addr_1_gated_we;
+  assign ibus_remap_addr_1_gated_we = ibus_remap_addr_1_we & ibus_regwen_1_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -566,7 +597,7 @@ module rv_core_ibex_cfg_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (ibus_remap_addr_1_we & ibus_regwen_1_qs),
+    .we     (ibus_remap_addr_1_gated_we),
     .wd     (ibus_remap_addr_1_wd),
 
     // from internal hardware
@@ -638,6 +669,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // Subregister 0 of Multireg dbus_addr_en
   // R[dbus_addr_en_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dbus_addr_en_0_gated_we;
+  assign dbus_addr_en_0_gated_we = dbus_addr_en_0_we & dbus_regwen_0_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -647,7 +681,7 @@ module rv_core_ibex_cfg_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dbus_addr_en_0_we & dbus_regwen_0_qs),
+    .we     (dbus_addr_en_0_gated_we),
     .wd     (dbus_addr_en_0_wd),
 
     // from internal hardware
@@ -665,6 +699,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // Subregister 1 of Multireg dbus_addr_en
   // R[dbus_addr_en_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dbus_addr_en_1_gated_we;
+  assign dbus_addr_en_1_gated_we = dbus_addr_en_1_we & dbus_regwen_1_qs;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -674,7 +711,7 @@ module rv_core_ibex_cfg_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dbus_addr_en_1_we & dbus_regwen_1_qs),
+    .we     (dbus_addr_en_1_gated_we),
     .wd     (dbus_addr_en_1_wd),
 
     // from internal hardware
@@ -692,6 +729,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // Subregister 0 of Multireg dbus_addr_matching
   // R[dbus_addr_matching_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dbus_addr_matching_0_gated_we;
+  assign dbus_addr_matching_0_gated_we = dbus_addr_matching_0_we & dbus_regwen_0_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -701,7 +741,7 @@ module rv_core_ibex_cfg_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dbus_addr_matching_0_we & dbus_regwen_0_qs),
+    .we     (dbus_addr_matching_0_gated_we),
     .wd     (dbus_addr_matching_0_wd),
 
     // from internal hardware
@@ -719,6 +759,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // Subregister 1 of Multireg dbus_addr_matching
   // R[dbus_addr_matching_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dbus_addr_matching_1_gated_we;
+  assign dbus_addr_matching_1_gated_we = dbus_addr_matching_1_we & dbus_regwen_1_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -728,7 +771,7 @@ module rv_core_ibex_cfg_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dbus_addr_matching_1_we & dbus_regwen_1_qs),
+    .we     (dbus_addr_matching_1_gated_we),
     .wd     (dbus_addr_matching_1_wd),
 
     // from internal hardware
@@ -746,6 +789,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // Subregister 0 of Multireg dbus_remap_addr
   // R[dbus_remap_addr_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dbus_remap_addr_0_gated_we;
+  assign dbus_remap_addr_0_gated_we = dbus_remap_addr_0_we & dbus_regwen_0_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -755,7 +801,7 @@ module rv_core_ibex_cfg_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dbus_remap_addr_0_we & dbus_regwen_0_qs),
+    .we     (dbus_remap_addr_0_gated_we),
     .wd     (dbus_remap_addr_0_wd),
 
     // from internal hardware
@@ -773,6 +819,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // Subregister 1 of Multireg dbus_remap_addr
   // R[dbus_remap_addr_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dbus_remap_addr_1_gated_we;
+  assign dbus_remap_addr_1_gated_we = dbus_remap_addr_1_we & dbus_regwen_1_qs;
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -782,7 +831,7 @@ module rv_core_ibex_cfg_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dbus_remap_addr_1_we & dbus_regwen_1_qs),
+    .we     (dbus_remap_addr_1_gated_we),
     .wd     (dbus_remap_addr_1_wd),
 
     // from internal hardware
@@ -1126,6 +1175,8 @@ module rv_core_ibex_cfg_reg_top (
                (addr_hit[23] & (|(RV_CORE_IBEX_CFG_PERMIT[23] & ~reg_be))) |
                (addr_hit[24] & (|(RV_CORE_IBEX_CFG_PERMIT[24] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
   assign alert_test_fatal_sw_err_wd = reg_wdata[0];
@@ -1211,6 +1262,36 @@ module rv_core_ibex_cfg_reg_top (
   assign rnd_data_re = addr_hit[22] & reg_re & !reg_error;
   assign rnd_status_re = addr_hit[23] & reg_re & !reg_error;
   assign fpga_info_re = addr_hit[24] & reg_re & !reg_error;
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = alert_test_we;
+    reg_we_check[1] = sw_recov_err_we;
+    reg_we_check[2] = sw_fatal_err_we;
+    reg_we_check[3] = ibus_regwen_0_we;
+    reg_we_check[4] = ibus_regwen_1_we;
+    reg_we_check[5] = ibus_addr_en_0_gated_we;
+    reg_we_check[6] = ibus_addr_en_1_gated_we;
+    reg_we_check[7] = ibus_addr_matching_0_gated_we;
+    reg_we_check[8] = ibus_addr_matching_1_gated_we;
+    reg_we_check[9] = ibus_remap_addr_0_gated_we;
+    reg_we_check[10] = ibus_remap_addr_1_gated_we;
+    reg_we_check[11] = dbus_regwen_0_we;
+    reg_we_check[12] = dbus_regwen_1_we;
+    reg_we_check[13] = dbus_addr_en_0_gated_we;
+    reg_we_check[14] = dbus_addr_en_1_gated_we;
+    reg_we_check[15] = dbus_addr_matching_0_gated_we;
+    reg_we_check[16] = dbus_addr_matching_1_gated_we;
+    reg_we_check[17] = dbus_remap_addr_0_gated_we;
+    reg_we_check[18] = dbus_remap_addr_1_gated_we;
+    reg_we_check[19] = nmi_enable_we;
+    reg_we_check[20] = nmi_state_we;
+    reg_we_check[21] = err_status_we;
+    reg_we_check[22] = 1'b0;
+    reg_we_check[23] = 1'b0;
+    reg_we_check[24] = 1'b0;
+  end
 
   // Read data return
   always_comb begin
