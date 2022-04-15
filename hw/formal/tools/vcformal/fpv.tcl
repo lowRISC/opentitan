@@ -48,7 +48,7 @@ if { $lm == 0 } {
   set bind_exist -1
   set bind_module_name "err-bind-detect"
 }
-echo "${env(DUT_TOP)}, ${bind_exist} , ${bind_module_name}, -, -, -" 
+echo "${env(DUT_TOP)}, ${bind_exist} , ${bind_module_name}, -, -, -"
 
 #-------------------------------------------------------------------------
 # Set up VC Formal
@@ -79,11 +79,11 @@ if {$bind_exist == 1} {
 
 # TODO: CHECK IF ELABORATION COMPLETED SUCCESSFULLY?
 
-# TODO: DO WE KEEP THIS? 
+# TODO: DO WE KEEP THIS?
 set num_ast [ sizeof_collection [ get_props -usage assert ] ]
 set num_asm [ sizeof_collection [ get_props -usage assume ] ]
 set num_cov [ sizeof_collection [ get_props -usage cover ] ]
-echo "${env(DUT_TOP)}, ${bind_exist} , ${bind_module_name}, ${num_ast},  ${num_asm},  ${num_cov}" 
+echo "${env(DUT_TOP)}, ${bind_exist} , ${bind_module_name}, ${num_ast},  ${num_asm},  ${num_cov}"
 
 # Blackbox arrays of size 4320 and above
 set_abstractions -construct {array=4320}
@@ -171,14 +171,6 @@ if {$env(DUT_TOP) == "aes"} {
   create_clock clk_usb_48mhz_i -period 100
   create_reset rst_usb_48mhz_ni -sense low
   set_change_at -clock clk_usb_48mhz_i -posedge {cio_d_i cio_dp_i cio_dn_i cio_sense_i}
-} elseif {$env(DUT_TOP) == "usbuart"} {
-  # TO CHECK WHEN ELABORATION ISSUES ARE RESOLVED
-  create_clock clk_i -period 100
-  create_reset rst_ni -sense low
-  set_change_at -clock clk_i -posedge {usb_state_debug_i tl_i}
-  create_clock clk_48mhz_i -period 100
-  create_reset rst_usb_48mhz_ni -sense low
-  set_change_at -clock clk_usb_48mhz_i -posedge {cio_usb_dp_i cio_usb_dn_i cio_usb_sense_i}
 } elseif {$env(DUT_TOP) == "xbar_main"} {
   # TO CHECK WHEN MODULE IS ENABLED
   create_clock clk_main_i -period 100
@@ -200,12 +192,12 @@ if {$env(DUT_TOP) == "aes"} {
 # Check for potential missing clock(s) and reset(s)
 echo "$env(DUT_TOP) POST-SETUP Missing Clocks: "
 foreach_in_collection lmclk [get_fv_complexity -filter mclk] {
-  set cname [get_attribute $lmclk -name name]; 
+  set cname [get_attribute $lmclk -name name];
   echo "  Name: $cname "
 }
 echo "$env(DUT_TOP) POST-SETUP Missing Resets: "
 foreach_in_collection lmrst [get_fv_complexity -filter mrst] {
-  set rname [get_attribute $lmrst -name name]; 
+  set rname [get_attribute $lmrst -name name];
   echo "  Name: $rname "
 }
 
@@ -219,7 +211,7 @@ foreach_in_collection lmrst [get_fv_complexity -filter mrst] {
 if {$env(DUT_TOP) == "alert_handler"} {
   # alert_handler ping_timer: timer to count until reaches ping threshold
   set_abstractions -construct {count=1} -using keyvals -filter {name == i_ping_timer.cnt_q}
-} 
+}
 if {$env(DUT_TOP) == "hmac"} {
   # hmac sha2: does not check any calculation results, so 64 rounds of calculation can be abstracted
   set_abstractions -construct {count=1} -using keyvals -filter {name == u_sha2.round}
