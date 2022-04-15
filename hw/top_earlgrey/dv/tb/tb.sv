@@ -235,18 +235,17 @@ module tb;
   sim_sram u_sim_sram (
     .clk_i    (`CPU_HIER.clk_i),
     .rst_ni   (`CPU_HIER.rst_ni),
-    .tl_in_i  (`CPU_HIER.tl_d_o_int),
+    .tl_in_i  (tlul_pkg::tl_h2d_t'(`CPU_HIER.u_tlul_req_buf.out_o)),
     .tl_in_o  (),
     .tl_out_o (),
-    .tl_out_i (`CPU_HIER.cored_tl_h_i)
+    .tl_out_i ()
   );
 
   initial begin
     void'($value$plusargs("en_sim_sram=%0b", en_sim_sram));
     if (!stub_cpu && en_sim_sram) begin
       `SIM_SRAM_IF.start_addr = SW_DV_START_ADDR;
-      force `CPU_HIER.tl_d_i_int = u_sim_sram.tl_in_o;
-      force `CPU_HIER.cored_tl_h_o = u_sim_sram.tl_out_o;
+      force `CPU_HIER.u_tlul_rsp_buf.in_i = u_sim_sram.tl_in_o;
     end else begin
       force u_sim_sram.clk_i = 1'b0;
     end
