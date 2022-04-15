@@ -602,8 +602,8 @@
           resval: false,
           desc: '''
           In order to have exclusive access to the transition interface, SW must first claim the associated
-          hardware mutex by writing 0x5A to this register.
-          If the register reads back 0x5A, the mutex claim has been successful, and !!TRANSITION_REGWEN
+          hardware mutex by writing kMultiBitBool8True to this register.
+          If the register reads back kMultiBitBool8True, the mutex claim has been successful, and !!TRANSITION_REGWEN
           will be set automatically to 1 by HW.
           Write 0 to this register in order to release the HW mutex.
           '''

@@ -321,4 +321,3 @@ package ast_reg_pkg;
   };
 
 endpackage
-

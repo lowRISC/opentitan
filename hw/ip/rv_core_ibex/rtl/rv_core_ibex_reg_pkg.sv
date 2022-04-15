@@ -275,4 +275,3 @@ package rv_core_ibex_reg_pkg;
   };
 
 endpackage
-

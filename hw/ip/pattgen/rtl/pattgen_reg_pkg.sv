@@ -181,4 +181,3 @@ package pattgen_reg_pkg;
   };
 
 endpackage
-

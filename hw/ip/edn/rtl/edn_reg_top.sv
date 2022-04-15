@@ -399,7 +399,7 @@ module edn_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
+    .RESVAL  (4'h9)
   ) u_ctrl_edn_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -424,7 +424,7 @@ module edn_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
+    .RESVAL  (4'h9)
   ) u_ctrl_boot_req_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -449,7 +449,7 @@ module edn_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
+    .RESVAL  (4'h9)
   ) u_ctrl_auto_req_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -474,7 +474,7 @@ module edn_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
+    .RESVAL  (4'h9)
   ) u_ctrl_cmd_fifo_rst (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

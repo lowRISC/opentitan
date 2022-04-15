@@ -164,7 +164,7 @@
             bits: "0",
             desc: ''' This read-only write enable bit will allow write access
             to control and theshold registers that are associated with this bit,
-            but only when the MODULE_ENABLE field is set to kMuBi4False and the
+            but only when the MODULE_ENABLE field is set to kMultiBitBool4False and the
             SW_REGUPD write enable bit is set to true.
             When read as false, these registers become read-only.
             '''
@@ -206,8 +206,8 @@
           mubi: true,
           name: "MODULE_ENABLE",
           desc: '''
-                Setting this field to kMuBi4True will enable the ENTROPY_SRC module. Setting
-                this field to kMuBi4False will effectively reset the module.
+                Setting this field to kMultiBitBool4True will enable the ENTROPY_SRC module. Setting
+                this field to kMultiBitBool4False will effectively reset the module.
                 '''
           resval: false,
         },
@@ -225,7 +225,7 @@
           name: "FIPS_ENABLE",
           mubi: true,
           desc: '''
-                Setting this field to kMuBi4True will enable FIPS qualified entropy to be
+                Setting this field to kMultiBitBool4True will enable FIPS qualified entropy to be
                 generated.
                 '''
           resval: false,
@@ -234,20 +234,20 @@
           name: "ENTROPY_DATA_REG_ENABLE",
           mubi: true,
           desc: '''
-                Setting this field to kMuBi4True will enable reading entropy values from the
+                Setting this field to kMultiBitBool4True will enable reading entropy values from the
                 ENTROPY_DATA register. This function also requires that the otp_en_entropy_src_fw_read
                 input vector is set to the enable encoding.
                 '''
-          resval: "false"
+          resval: false
         },
         { bits: "15:12",
           name: "THRESHOLD_SCOPE",
           mubi: true,
           desc: '''
                 This field controls the scope (either by-line or by-sum) of the health checks.
-                If set to kMuBi4True, the Adaptive Proportion and Markov Tests will accumulate all
+                If set to kMultiBitBool4True, the Adaptive Proportion and Markov Tests will accumulate all
                 RNG input lines into a single score, and thresholds will be applied to the sum all
-                the entropy input lines.  If set to kMuBi4False, the RNG input lines are all scored
+                the entropy input lines.  If set to kMultiBitBool4False, the RNG input lines are all scored
                 individually.  A statistical deviation in any one input line, be it due to
                 coincidence or failure, will force rejection of the sample, and count toward the
                 total alert count.
@@ -258,7 +258,7 @@
           name: "RNG_BIT_ENABLE",
           mubi: true,
           desc: '''
-                Setting this field to kMuBi4True enables the single RNG bit mode, where only
+                Setting this field to kMultiBitBool4True enables the single RNG bit mode, where only
                 one bit is sampled.
                 '''
           resval: false
@@ -288,8 +288,8 @@
           name: "ES_ROUTE",
           mubi: true,
           desc: '''
-                Setting this field to kMuBi4True routes the generated entropy value to the ENTROPY_DATA
-                register to be read by firmware. When this field is kMuBi4False, the generated
+                Setting this field to kMultiBitBool4True routes the generated entropy value to the ENTROPY_DATA
+                register to be read by firmware. When this field is kMultiBitBool4False, the generated
                 entropy will be forwarded out of this module to the hardware interface.
                 '''
           resval: false
@@ -298,8 +298,8 @@
           name: "ES_TYPE",
           mubi: true,
           desc: '''
-                Setting this field to kMuBi4True will bypass the conditioning logic and bring raw entropy
-                data to the ENTROPY_DATA register. When kMuBi4False, FIPS compliant entropy
+                Setting this field to kMultiBitBool4True will bypass the conditioning logic and bring raw entropy
+                data to the ENTROPY_DATA register. When kMultiBitBool4False, FIPS compliant entropy
                 will be brought the ENTROPY_DATA register, after being conditioned.
                 '''
           resval: false
@@ -1091,24 +1091,26 @@
         { bits: "3:0",
           name: "FW_OV_MODE",
           desc: '''
-                Setting this field to 0xA will put the entropy flow in firmware override mode.
+                Setting this field to kMultiBitBool4True will put the entropy flow in firmware override mode.
                 In this mode, firmware can monitor the post-health test entropy by reading
                 the observe FIFO. This function also requires that the otp_en_entropy_src_fw_over
                 input vector is set to the enable encoding.
                 '''
-          resval: "0x5"
+          mubi: true,
+          resval: false
         },
         { bits: "7:4",
           name: "FW_OV_ENTROPY_INSERT",
           desc: '''
-                Setting this field to 0xA will switch the input into the pre-conditioner
+                Setting this field to kMultiBitBool4True will switch the input into the pre-conditioner
                 packer FIFO. Firmware can directly write into the packer FIFO, enabling
                 the ability to insert entropy bits back into the hardware flow. Firmware
                 can read data from the health check packer FIFO, then do optional health
                 checks or optional conditioning, then insert the results back into the flow.
                 Also, the !!FW_OV_CONTROL.FW_OV_MODE bit must be set.
                 '''
-          resval: "0x5"
+          mubi: true,
+          resval: false
         },
       ]
     },
@@ -1122,13 +1124,14 @@
         { bits: "3:0",
           name: "FW_OV_INSERT_START",
           desc: '''
-                Setting this field to 0xA will instruct the ENTROPY_SRC main state machine
+                Setting this field to kMultiBitBool4True will instruct the ENTROPY_SRC main state machine
                 to start the SHA3 process and be ready to accept entropy data. This field should
                 be set prior to writting the FW_OV_WR_DATA register. Once all data has been written,
-                this field should be set to 0x5. Once that happened, the SHA3 block will finish
+                this field should be set to kMultiBitBool4False. Once that happened, the SHA3 block will finish
                 processing and push the result into the ESFINAL FIFO.
                 '''
-          resval: "0x5"
+          mubi: true,
+          resval: false
         },
       ]
     },
@@ -1271,7 +1274,7 @@
           name: "FIPS_ENABLE_FIELD_ALERT",
           desc: '''
                 This bit is set when the FIPS_ENABLE field in the !!CONF register is set to
-                a value other than 0x5 or 0xA.
+                a value other than kMultiBitBool4False or kMultiBitBool4True.
                 Writing a zero resets this status bit.
                 '''
         }
@@ -1279,7 +1282,7 @@
           name: "ENTROPY_DATA_REG_EN_FIELD_ALERT",
           desc: '''
                 This bit is set when the ENTROPY_DATA_REG_ENABLE field in the !!CONF register is set to
-                a value other than 0x5 or 0xA.
+                a value other than kMultiBitBool4False or kMultiBitBool4True.
                 Writing a zero resets this status bit.
                 '''
         }
@@ -1287,7 +1290,7 @@
           name: "MODULE_ENABLE_FIELD_ALERT",
           desc: '''
                 This bit is set when the MODULE_ENABLE field in the !!MODULE_ENABLE register is set to
-                a value other than 0x5 or 0xA.
+                a value other than kMultiBitBool4False or kMultiBitBool4True.
                 Writing a zero resets this status bit.
                 '''
         }
@@ -1295,7 +1298,7 @@
           name: "THRESHOLD_SCOPE_FIELD_ALERT",
           desc: '''
                 This bit is set when the THRESHOLD_SCOPE field in the !!CONF register is set to
-                a value other than 0x5 or 0xA.
+                a value other than kMultiBitBool4False or kMultiBitBool4True.
                 Writing a zero resets this status bit.
                 '''
         }
@@ -1303,7 +1306,7 @@
           name: "RNG_BIT_ENABLE_FIELD_ALERT",
           desc: '''
                 This bit is set when the RNG_BIT_ENABLE field in the !!CONF register is set to
-                a value other than 0x5 or 0xA.
+                a value other than kMultiBitBool4False or kMultiBitBool4True.
                 Writing a zero resets this status bit.
                 '''
         }
@@ -1311,7 +1314,7 @@
           name: "FW_OV_SHA3_START_FIELD_ALERT",
           desc: '''
                 This bit is set when the FW_OV_SHA3_START field in the !!FW_OV_SHA3_START register is set to
-                a value other than 0x5 or 0xA.
+                a value other than kMultiBitBool4False or kMultiBitBool4True.
                 Writing a zero resets this status bit.
                 '''
         }
@@ -1319,7 +1322,7 @@
           name: "FW_OV_MODE_FIELD_ALERT",
           desc: '''
                 This bit is set when the FW_OV_MODE field in the !!FW_OV_CONTROL register is set to
-                a value other than 0x5 or 0xA.
+                a value other than kMultiBitBool4False or kMultiBitBool4True.
                 Writing a zero resets this status bit.
                 '''
         }
@@ -1327,7 +1330,7 @@
           name: "FW_OV_ENTROPY_INSERT_FIELD_ALERT",
           desc: '''
                 This bit is set when the FW_OV_ENTROPY_INSERT field in the !!FW_OV_CONTROL register is set to
-                a value other than 0x5 or 0xA.
+                a value other than kMultiBitBool4False or kMultiBitBool4True.
                 Writing a zero resets this status bit.
                 '''
         }
@@ -1335,7 +1338,7 @@
           name: "ES_ROUTE_FIELD_ALERT",
           desc: '''
                 This bit is set when the ES_ROUTE field in the !!ENTROPY_CONTROL register is set to
-                a value other than 0x5 or 0xA.
+                a value other than kMultiBitBool4False or kMultiBitBool4True.
                 Writing a zero resets this status bit.
                 '''
         }
@@ -1343,7 +1346,7 @@
           name: "ES_TYPE_FIELD_ALERT",
           desc: '''
                 This bit is set when the ES_TYPE field in the !!ENTROPY_CONTROL register is set to
-                a value other than 0x5 or 0xA.
+                a value other than kMultiBitBool4False or kMultiBitBool4True.
                 Writing a zero resets this status bit.
                 '''
         }

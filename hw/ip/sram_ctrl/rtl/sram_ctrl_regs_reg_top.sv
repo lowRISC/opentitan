@@ -347,7 +347,7 @@ module sram_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
+    .RESVAL  (4'h9)
   ) u_exec (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
