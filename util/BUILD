@@ -16,6 +16,11 @@ genrule(
 )
 
 py_binary(
+    name = "rom_chip_info",
+    srcs = ["rom_chip_info.py"],
+)
+
+py_binary(
     name = "regtool",
     srcs = ["regtool.py"],
     deps = [
