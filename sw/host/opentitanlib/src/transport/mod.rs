@@ -154,14 +154,14 @@ pub mod tests {
 
     #[test]
     fn test_capabilities_met() -> anyhow::Result<()> {
-        let mut cap = Capabilities::new(Capability::UART | Capability::SPI);
+        let cap = Capabilities::new(Capability::UART | Capability::SPI);
         assert!(cap.request(Capability::UART).ok().is_ok());
         Ok(())
     }
 
     #[test]
     fn test_capabilities_not_met() -> anyhow::Result<()> {
-        let mut cap = Capabilities::new(Capability::UART | Capability::SPI);
+        let cap = Capabilities::new(Capability::UART | Capability::SPI);
         assert!(cap.request(Capability::GPIO).ok().is_err());
         Ok(())
     }

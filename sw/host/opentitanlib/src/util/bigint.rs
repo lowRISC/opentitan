@@ -85,6 +85,8 @@ impl<const BIT_LEN: usize, const EXACT_LEN: bool> FixedSizeBigInt<BIT_LEN, EXACT
     }
 
     /// Returns the underlying `BigUint`.
+    // FIXME: remove this `dead_code` if this function is ever used.
+    #[allow(dead_code)]
     pub(crate) fn as_biguint(&self) -> &BigUint {
         &self.0
     }
