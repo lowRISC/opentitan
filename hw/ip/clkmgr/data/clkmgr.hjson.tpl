@@ -279,6 +279,30 @@
       tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 
+    { name: "EXTCLK_STATUS",
+      desc: '''
+        Status of requested external clock switch
+      ''',
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        {
+          bits: "3:0",
+          name: "ACK",
+          mubi: true,
+          desc: '''
+            When !!EXTCLK_CTRL.SEL is set to kMultiBitBool4True, this field reflects
+            whether the clock has been switched the external source.
+
+            kMultiBitBool4True indicates the switch is complete.
+            kMultiBitBool4False indicates the switch is either not possible or still ongoing.
+          '''
+          resval: "false"
+        },
+      ]
+    },
+
     { name: "JITTER_REGWEN",
       desc: "Jitter write enable",
       swaccess: "rw0c",
