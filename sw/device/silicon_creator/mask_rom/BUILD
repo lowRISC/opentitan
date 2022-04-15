@@ -284,7 +284,7 @@ opentitan_functest(
     name = "e2e_bootup_success",
     srcs = ["mask_rom_test.c"],
     cw310 = cw310_params(
-        bitstream = "@bitstreams//:bitstream_mask_rom",
+        bitstream = "//hw/bitstream:mask_rom",
     ),
     signed = True,
     targets = [
@@ -313,7 +313,7 @@ opentitan_functest(
             "--exit-success='{}'".format(BOOT_FAILURE_MSG),
             "--exit-failure='PASS!'",
         ],
-        bitstream = "@bitstreams//:bitstream_mask_rom",
+        bitstream = "//hw/bitstream:mask_rom",
     ),
     signed = False,
     targets = ["cw310"],
