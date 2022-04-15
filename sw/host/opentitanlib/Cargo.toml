@@ -25,11 +25,6 @@ rusb = "0.8.1"
 serialport = "4.0.1"
 zerocopy = "0.5.0"
 hex = "0.4.3"
-# We depend on mundane, but `cargo raze` can't auto generate bazel rules for it.
-# In order to not break the current meson-based build system, we'll leave
-# mundane as a dependency.  To regenerate the bazel dependency rules via
-# `cargo raze`, you'll have to temporarily comment out `mundane`.
-mundane = "0.5.0"
 memoffset = "0.6.0"
 num-bigint-dig = "0.7.0"
 num-traits = "0.2.14"
