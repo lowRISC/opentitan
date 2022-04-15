@@ -53,18 +53,31 @@ module gpio_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [15:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(16)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -634,6 +647,8 @@ module gpio_reg_top (
                (addr_hit[14] & (|(GPIO_PERMIT[14] & ~reg_be))) |
                (addr_hit[15] & (|(GPIO_PERMIT[15] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
   assign intr_state_wd = reg_wdata[31:0];
@@ -693,6 +708,27 @@ module gpio_reg_top (
   assign ctrl_en_input_filter_we = addr_hit[15] & reg_we & !reg_error;
 
   assign ctrl_en_input_filter_wd = reg_wdata[31:0];
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = intr_state_we;
+    reg_we_check[1] = intr_enable_we;
+    reg_we_check[2] = intr_test_we;
+    reg_we_check[3] = alert_test_we;
+    reg_we_check[4] = 1'b0;
+    reg_we_check[5] = direct_out_we;
+    reg_we_check[6] = masked_out_lower_we;
+    reg_we_check[7] = masked_out_upper_we;
+    reg_we_check[8] = direct_oe_we;
+    reg_we_check[9] = masked_oe_lower_we;
+    reg_we_check[10] = masked_oe_upper_we;
+    reg_we_check[11] = intr_ctrl_en_rising_we;
+    reg_we_check[12] = intr_ctrl_en_falling_we;
+    reg_we_check[13] = intr_ctrl_en_lvlhigh_we;
+    reg_we_check[14] = intr_ctrl_en_lvllow_we;
+    reg_we_check[15] = ctrl_en_input_filter_we;
+  end
 
   // Read data return
   always_comb begin

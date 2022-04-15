@@ -53,18 +53,31 @@ module sensor_ctrl_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [9:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(10)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -683,6 +696,9 @@ module sensor_ctrl_reg_top (
 
   // Subregister 0 of Multireg fatal_alert_en
   // R[fatal_alert_en]: V(False)
+  // Create REGWEN-gated WE signal
+  logic fatal_alert_en_gated_we;
+  assign fatal_alert_en_gated_we = fatal_alert_en_we & cfg_regwen_qs;
   //   F[val_0]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -693,7 +709,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (fatal_alert_en_we & cfg_regwen_qs),
+    .we     (fatal_alert_en_gated_we),
     .wd     (fatal_alert_en_val_0_wd),
 
     // from internal hardware
@@ -718,7 +734,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (fatal_alert_en_we & cfg_regwen_qs),
+    .we     (fatal_alert_en_gated_we),
     .wd     (fatal_alert_en_val_1_wd),
 
     // from internal hardware
@@ -743,7 +759,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (fatal_alert_en_we & cfg_regwen_qs),
+    .we     (fatal_alert_en_gated_we),
     .wd     (fatal_alert_en_val_2_wd),
 
     // from internal hardware
@@ -768,7 +784,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (fatal_alert_en_we & cfg_regwen_qs),
+    .we     (fatal_alert_en_gated_we),
     .wd     (fatal_alert_en_val_3_wd),
 
     // from internal hardware
@@ -793,7 +809,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (fatal_alert_en_we & cfg_regwen_qs),
+    .we     (fatal_alert_en_gated_we),
     .wd     (fatal_alert_en_val_4_wd),
 
     // from internal hardware
@@ -818,7 +834,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (fatal_alert_en_we & cfg_regwen_qs),
+    .we     (fatal_alert_en_gated_we),
     .wd     (fatal_alert_en_val_5_wd),
 
     // from internal hardware
@@ -843,7 +859,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (fatal_alert_en_we & cfg_regwen_qs),
+    .we     (fatal_alert_en_gated_we),
     .wd     (fatal_alert_en_val_6_wd),
 
     // from internal hardware
@@ -868,7 +884,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (fatal_alert_en_we & cfg_regwen_qs),
+    .we     (fatal_alert_en_gated_we),
     .wd     (fatal_alert_en_val_7_wd),
 
     // from internal hardware
@@ -893,7 +909,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (fatal_alert_en_we & cfg_regwen_qs),
+    .we     (fatal_alert_en_gated_we),
     .wd     (fatal_alert_en_val_8_wd),
 
     // from internal hardware
@@ -918,7 +934,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (fatal_alert_en_we & cfg_regwen_qs),
+    .we     (fatal_alert_en_gated_we),
     .wd     (fatal_alert_en_val_9_wd),
 
     // from internal hardware
@@ -943,7 +959,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (fatal_alert_en_we & cfg_regwen_qs),
+    .we     (fatal_alert_en_gated_we),
     .wd     (fatal_alert_en_val_10_wd),
 
     // from internal hardware
@@ -968,7 +984,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (fatal_alert_en_we & cfg_regwen_qs),
+    .we     (fatal_alert_en_gated_we),
     .wd     (fatal_alert_en_val_11_wd),
 
     // from internal hardware
@@ -993,7 +1009,7 @@ module sensor_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (fatal_alert_en_we & cfg_regwen_qs),
+    .we     (fatal_alert_en_gated_we),
     .wd     (fatal_alert_en_val_12_wd),
 
     // from internal hardware
@@ -1774,6 +1790,8 @@ module sensor_ctrl_reg_top (
                (addr_hit[8] & (|(SENSOR_CTRL_PERMIT[8] & ~reg_be))) |
                (addr_hit[9] & (|(SENSOR_CTRL_PERMIT[9] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
   assign intr_state_wd = reg_wdata[0];
@@ -1872,6 +1890,21 @@ module sensor_ctrl_reg_top (
   assign recov_alert_val_11_wd = reg_wdata[11];
 
   assign recov_alert_val_12_wd = reg_wdata[12];
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = intr_state_we;
+    reg_we_check[1] = intr_enable_we;
+    reg_we_check[2] = intr_test_we;
+    reg_we_check[3] = alert_test_we;
+    reg_we_check[4] = cfg_regwen_we;
+    reg_we_check[5] = alert_trig_we;
+    reg_we_check[6] = fatal_alert_en_gated_we;
+    reg_we_check[7] = recov_alert_we;
+    reg_we_check[8] = 1'b0;
+    reg_we_check[9] = 1'b0;
+  end
 
   // Read data return
   always_comb begin

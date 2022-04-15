@@ -54,18 +54,31 @@ module pwm_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [22:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(23)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -1099,6 +1112,9 @@ module pwm_reg_top (
     .d_i(&cfg_flds_we),
     .q_o(cfg_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic core_cfg_gated_we;
+  assign core_cfg_gated_we = core_cfg_we & core_cfg_regwen;
   //   F[clk_div]: 26:0
   prim_subreg #(
     .DW      (27),
@@ -1109,7 +1125,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_cfg_we & core_cfg_regwen),
+    .we     (core_cfg_gated_we),
     .wd     (core_cfg_wdata[26:0]),
 
     // from internal hardware
@@ -1135,7 +1151,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_cfg_we & core_cfg_regwen),
+    .we     (core_cfg_gated_we),
     .wd     (core_cfg_wdata[30:27]),
 
     // from internal hardware
@@ -1161,7 +1177,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_cfg_we & core_cfg_regwen),
+    .we     (core_cfg_gated_we),
     .wd     (core_cfg_wdata[31]),
 
     // from internal hardware
@@ -1191,6 +1207,9 @@ module pwm_reg_top (
     .d_i(&pwm_en_flds_we),
     .q_o(pwm_en_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic core_pwm_en_gated_we;
+  assign core_pwm_en_gated_we = core_pwm_en_we & core_pwm_en_regwen;
   //   F[en_0]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1201,7 +1220,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_en_we & core_pwm_en_regwen),
+    .we     (core_pwm_en_gated_we),
     .wd     (core_pwm_en_wdata[0]),
 
     // from internal hardware
@@ -1227,7 +1246,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_en_we & core_pwm_en_regwen),
+    .we     (core_pwm_en_gated_we),
     .wd     (core_pwm_en_wdata[1]),
 
     // from internal hardware
@@ -1253,7 +1272,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_en_we & core_pwm_en_regwen),
+    .we     (core_pwm_en_gated_we),
     .wd     (core_pwm_en_wdata[2]),
 
     // from internal hardware
@@ -1279,7 +1298,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_en_we & core_pwm_en_regwen),
+    .we     (core_pwm_en_gated_we),
     .wd     (core_pwm_en_wdata[3]),
 
     // from internal hardware
@@ -1305,7 +1324,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_en_we & core_pwm_en_regwen),
+    .we     (core_pwm_en_gated_we),
     .wd     (core_pwm_en_wdata[4]),
 
     // from internal hardware
@@ -1331,7 +1350,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_en_we & core_pwm_en_regwen),
+    .we     (core_pwm_en_gated_we),
     .wd     (core_pwm_en_wdata[5]),
 
     // from internal hardware
@@ -1361,6 +1380,9 @@ module pwm_reg_top (
     .d_i(&invert_flds_we),
     .q_o(invert_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic core_invert_gated_we;
+  assign core_invert_gated_we = core_invert_we & core_invert_regwen;
   //   F[invert_0]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1371,7 +1393,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_invert_we & core_invert_regwen),
+    .we     (core_invert_gated_we),
     .wd     (core_invert_wdata[0]),
 
     // from internal hardware
@@ -1397,7 +1419,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_invert_we & core_invert_regwen),
+    .we     (core_invert_gated_we),
     .wd     (core_invert_wdata[1]),
 
     // from internal hardware
@@ -1423,7 +1445,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_invert_we & core_invert_regwen),
+    .we     (core_invert_gated_we),
     .wd     (core_invert_wdata[2]),
 
     // from internal hardware
@@ -1449,7 +1471,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_invert_we & core_invert_regwen),
+    .we     (core_invert_gated_we),
     .wd     (core_invert_wdata[3]),
 
     // from internal hardware
@@ -1475,7 +1497,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_invert_we & core_invert_regwen),
+    .we     (core_invert_gated_we),
     .wd     (core_invert_wdata[4]),
 
     // from internal hardware
@@ -1501,7 +1523,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_invert_we & core_invert_regwen),
+    .we     (core_invert_gated_we),
     .wd     (core_invert_wdata[5]),
 
     // from internal hardware
@@ -1531,6 +1553,9 @@ module pwm_reg_top (
     .d_i(&pwm_param_0_flds_we),
     .q_o(pwm_param_0_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic core_pwm_param_0_gated_we;
+  assign core_pwm_param_0_gated_we = core_pwm_param_0_we & core_pwm_param_0_regwen;
   //   F[phase_delay_0]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -1541,7 +1566,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_0_we & core_pwm_param_0_regwen),
+    .we     (core_pwm_param_0_gated_we),
     .wd     (core_pwm_param_0_wdata[15:0]),
 
     // from internal hardware
@@ -1567,7 +1592,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_0_we & core_pwm_param_0_regwen),
+    .we     (core_pwm_param_0_gated_we),
     .wd     (core_pwm_param_0_wdata[30]),
 
     // from internal hardware
@@ -1593,7 +1618,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_0_we & core_pwm_param_0_regwen),
+    .we     (core_pwm_param_0_gated_we),
     .wd     (core_pwm_param_0_wdata[31]),
 
     // from internal hardware
@@ -1623,6 +1648,9 @@ module pwm_reg_top (
     .d_i(&pwm_param_1_flds_we),
     .q_o(pwm_param_1_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic core_pwm_param_1_gated_we;
+  assign core_pwm_param_1_gated_we = core_pwm_param_1_we & core_pwm_param_1_regwen;
   //   F[phase_delay_1]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -1633,7 +1661,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_1_we & core_pwm_param_1_regwen),
+    .we     (core_pwm_param_1_gated_we),
     .wd     (core_pwm_param_1_wdata[15:0]),
 
     // from internal hardware
@@ -1659,7 +1687,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_1_we & core_pwm_param_1_regwen),
+    .we     (core_pwm_param_1_gated_we),
     .wd     (core_pwm_param_1_wdata[30]),
 
     // from internal hardware
@@ -1685,7 +1713,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_1_we & core_pwm_param_1_regwen),
+    .we     (core_pwm_param_1_gated_we),
     .wd     (core_pwm_param_1_wdata[31]),
 
     // from internal hardware
@@ -1715,6 +1743,9 @@ module pwm_reg_top (
     .d_i(&pwm_param_2_flds_we),
     .q_o(pwm_param_2_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic core_pwm_param_2_gated_we;
+  assign core_pwm_param_2_gated_we = core_pwm_param_2_we & core_pwm_param_2_regwen;
   //   F[phase_delay_2]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -1725,7 +1756,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_2_we & core_pwm_param_2_regwen),
+    .we     (core_pwm_param_2_gated_we),
     .wd     (core_pwm_param_2_wdata[15:0]),
 
     // from internal hardware
@@ -1751,7 +1782,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_2_we & core_pwm_param_2_regwen),
+    .we     (core_pwm_param_2_gated_we),
     .wd     (core_pwm_param_2_wdata[30]),
 
     // from internal hardware
@@ -1777,7 +1808,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_2_we & core_pwm_param_2_regwen),
+    .we     (core_pwm_param_2_gated_we),
     .wd     (core_pwm_param_2_wdata[31]),
 
     // from internal hardware
@@ -1807,6 +1838,9 @@ module pwm_reg_top (
     .d_i(&pwm_param_3_flds_we),
     .q_o(pwm_param_3_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic core_pwm_param_3_gated_we;
+  assign core_pwm_param_3_gated_we = core_pwm_param_3_we & core_pwm_param_3_regwen;
   //   F[phase_delay_3]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -1817,7 +1851,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_3_we & core_pwm_param_3_regwen),
+    .we     (core_pwm_param_3_gated_we),
     .wd     (core_pwm_param_3_wdata[15:0]),
 
     // from internal hardware
@@ -1843,7 +1877,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_3_we & core_pwm_param_3_regwen),
+    .we     (core_pwm_param_3_gated_we),
     .wd     (core_pwm_param_3_wdata[30]),
 
     // from internal hardware
@@ -1869,7 +1903,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_3_we & core_pwm_param_3_regwen),
+    .we     (core_pwm_param_3_gated_we),
     .wd     (core_pwm_param_3_wdata[31]),
 
     // from internal hardware
@@ -1899,6 +1933,9 @@ module pwm_reg_top (
     .d_i(&pwm_param_4_flds_we),
     .q_o(pwm_param_4_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic core_pwm_param_4_gated_we;
+  assign core_pwm_param_4_gated_we = core_pwm_param_4_we & core_pwm_param_4_regwen;
   //   F[phase_delay_4]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -1909,7 +1946,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_4_we & core_pwm_param_4_regwen),
+    .we     (core_pwm_param_4_gated_we),
     .wd     (core_pwm_param_4_wdata[15:0]),
 
     // from internal hardware
@@ -1935,7 +1972,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_4_we & core_pwm_param_4_regwen),
+    .we     (core_pwm_param_4_gated_we),
     .wd     (core_pwm_param_4_wdata[30]),
 
     // from internal hardware
@@ -1961,7 +1998,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_4_we & core_pwm_param_4_regwen),
+    .we     (core_pwm_param_4_gated_we),
     .wd     (core_pwm_param_4_wdata[31]),
 
     // from internal hardware
@@ -1991,6 +2028,9 @@ module pwm_reg_top (
     .d_i(&pwm_param_5_flds_we),
     .q_o(pwm_param_5_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic core_pwm_param_5_gated_we;
+  assign core_pwm_param_5_gated_we = core_pwm_param_5_we & core_pwm_param_5_regwen;
   //   F[phase_delay_5]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2001,7 +2041,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_5_we & core_pwm_param_5_regwen),
+    .we     (core_pwm_param_5_gated_we),
     .wd     (core_pwm_param_5_wdata[15:0]),
 
     // from internal hardware
@@ -2027,7 +2067,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_5_we & core_pwm_param_5_regwen),
+    .we     (core_pwm_param_5_gated_we),
     .wd     (core_pwm_param_5_wdata[30]),
 
     // from internal hardware
@@ -2053,7 +2093,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_5_we & core_pwm_param_5_regwen),
+    .we     (core_pwm_param_5_gated_we),
     .wd     (core_pwm_param_5_wdata[31]),
 
     // from internal hardware
@@ -2083,6 +2123,9 @@ module pwm_reg_top (
     .d_i(&duty_cycle_0_flds_we),
     .q_o(duty_cycle_0_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic core_duty_cycle_0_gated_we;
+  assign core_duty_cycle_0_gated_we = core_duty_cycle_0_we & core_duty_cycle_0_regwen;
   //   F[a_0]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2093,7 +2136,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_0_we & core_duty_cycle_0_regwen),
+    .we     (core_duty_cycle_0_gated_we),
     .wd     (core_duty_cycle_0_wdata[15:0]),
 
     // from internal hardware
@@ -2119,7 +2162,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_0_we & core_duty_cycle_0_regwen),
+    .we     (core_duty_cycle_0_gated_we),
     .wd     (core_duty_cycle_0_wdata[31:16]),
 
     // from internal hardware
@@ -2149,6 +2192,9 @@ module pwm_reg_top (
     .d_i(&duty_cycle_1_flds_we),
     .q_o(duty_cycle_1_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic core_duty_cycle_1_gated_we;
+  assign core_duty_cycle_1_gated_we = core_duty_cycle_1_we & core_duty_cycle_1_regwen;
   //   F[a_1]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2159,7 +2205,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_1_we & core_duty_cycle_1_regwen),
+    .we     (core_duty_cycle_1_gated_we),
     .wd     (core_duty_cycle_1_wdata[15:0]),
 
     // from internal hardware
@@ -2185,7 +2231,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_1_we & core_duty_cycle_1_regwen),
+    .we     (core_duty_cycle_1_gated_we),
     .wd     (core_duty_cycle_1_wdata[31:16]),
 
     // from internal hardware
@@ -2215,6 +2261,9 @@ module pwm_reg_top (
     .d_i(&duty_cycle_2_flds_we),
     .q_o(duty_cycle_2_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic core_duty_cycle_2_gated_we;
+  assign core_duty_cycle_2_gated_we = core_duty_cycle_2_we & core_duty_cycle_2_regwen;
   //   F[a_2]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2225,7 +2274,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_2_we & core_duty_cycle_2_regwen),
+    .we     (core_duty_cycle_2_gated_we),
     .wd     (core_duty_cycle_2_wdata[15:0]),
 
     // from internal hardware
@@ -2251,7 +2300,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_2_we & core_duty_cycle_2_regwen),
+    .we     (core_duty_cycle_2_gated_we),
     .wd     (core_duty_cycle_2_wdata[31:16]),
 
     // from internal hardware
@@ -2281,6 +2330,9 @@ module pwm_reg_top (
     .d_i(&duty_cycle_3_flds_we),
     .q_o(duty_cycle_3_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic core_duty_cycle_3_gated_we;
+  assign core_duty_cycle_3_gated_we = core_duty_cycle_3_we & core_duty_cycle_3_regwen;
   //   F[a_3]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2291,7 +2343,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_3_we & core_duty_cycle_3_regwen),
+    .we     (core_duty_cycle_3_gated_we),
     .wd     (core_duty_cycle_3_wdata[15:0]),
 
     // from internal hardware
@@ -2317,7 +2369,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_3_we & core_duty_cycle_3_regwen),
+    .we     (core_duty_cycle_3_gated_we),
     .wd     (core_duty_cycle_3_wdata[31:16]),
 
     // from internal hardware
@@ -2347,6 +2399,9 @@ module pwm_reg_top (
     .d_i(&duty_cycle_4_flds_we),
     .q_o(duty_cycle_4_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic core_duty_cycle_4_gated_we;
+  assign core_duty_cycle_4_gated_we = core_duty_cycle_4_we & core_duty_cycle_4_regwen;
   //   F[a_4]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2357,7 +2412,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_4_we & core_duty_cycle_4_regwen),
+    .we     (core_duty_cycle_4_gated_we),
     .wd     (core_duty_cycle_4_wdata[15:0]),
 
     // from internal hardware
@@ -2383,7 +2438,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_4_we & core_duty_cycle_4_regwen),
+    .we     (core_duty_cycle_4_gated_we),
     .wd     (core_duty_cycle_4_wdata[31:16]),
 
     // from internal hardware
@@ -2413,6 +2468,9 @@ module pwm_reg_top (
     .d_i(&duty_cycle_5_flds_we),
     .q_o(duty_cycle_5_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic core_duty_cycle_5_gated_we;
+  assign core_duty_cycle_5_gated_we = core_duty_cycle_5_we & core_duty_cycle_5_regwen;
   //   F[a_5]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2423,7 +2481,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_5_we & core_duty_cycle_5_regwen),
+    .we     (core_duty_cycle_5_gated_we),
     .wd     (core_duty_cycle_5_wdata[15:0]),
 
     // from internal hardware
@@ -2449,7 +2507,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_5_we & core_duty_cycle_5_regwen),
+    .we     (core_duty_cycle_5_gated_we),
     .wd     (core_duty_cycle_5_wdata[31:16]),
 
     // from internal hardware
@@ -2479,6 +2537,9 @@ module pwm_reg_top (
     .d_i(&blink_param_0_flds_we),
     .q_o(blink_param_0_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic core_blink_param_0_gated_we;
+  assign core_blink_param_0_gated_we = core_blink_param_0_we & core_blink_param_0_regwen;
   //   F[x_0]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2489,7 +2550,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_0_we & core_blink_param_0_regwen),
+    .we     (core_blink_param_0_gated_we),
     .wd     (core_blink_param_0_wdata[15:0]),
 
     // from internal hardware
@@ -2515,7 +2576,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_0_we & core_blink_param_0_regwen),
+    .we     (core_blink_param_0_gated_we),
     .wd     (core_blink_param_0_wdata[31:16]),
 
     // from internal hardware
@@ -2545,6 +2606,9 @@ module pwm_reg_top (
     .d_i(&blink_param_1_flds_we),
     .q_o(blink_param_1_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic core_blink_param_1_gated_we;
+  assign core_blink_param_1_gated_we = core_blink_param_1_we & core_blink_param_1_regwen;
   //   F[x_1]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2555,7 +2619,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_1_we & core_blink_param_1_regwen),
+    .we     (core_blink_param_1_gated_we),
     .wd     (core_blink_param_1_wdata[15:0]),
 
     // from internal hardware
@@ -2581,7 +2645,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_1_we & core_blink_param_1_regwen),
+    .we     (core_blink_param_1_gated_we),
     .wd     (core_blink_param_1_wdata[31:16]),
 
     // from internal hardware
@@ -2611,6 +2675,9 @@ module pwm_reg_top (
     .d_i(&blink_param_2_flds_we),
     .q_o(blink_param_2_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic core_blink_param_2_gated_we;
+  assign core_blink_param_2_gated_we = core_blink_param_2_we & core_blink_param_2_regwen;
   //   F[x_2]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2621,7 +2688,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_2_we & core_blink_param_2_regwen),
+    .we     (core_blink_param_2_gated_we),
     .wd     (core_blink_param_2_wdata[15:0]),
 
     // from internal hardware
@@ -2647,7 +2714,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_2_we & core_blink_param_2_regwen),
+    .we     (core_blink_param_2_gated_we),
     .wd     (core_blink_param_2_wdata[31:16]),
 
     // from internal hardware
@@ -2677,6 +2744,9 @@ module pwm_reg_top (
     .d_i(&blink_param_3_flds_we),
     .q_o(blink_param_3_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic core_blink_param_3_gated_we;
+  assign core_blink_param_3_gated_we = core_blink_param_3_we & core_blink_param_3_regwen;
   //   F[x_3]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2687,7 +2757,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_3_we & core_blink_param_3_regwen),
+    .we     (core_blink_param_3_gated_we),
     .wd     (core_blink_param_3_wdata[15:0]),
 
     // from internal hardware
@@ -2713,7 +2783,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_3_we & core_blink_param_3_regwen),
+    .we     (core_blink_param_3_gated_we),
     .wd     (core_blink_param_3_wdata[31:16]),
 
     // from internal hardware
@@ -2743,6 +2813,9 @@ module pwm_reg_top (
     .d_i(&blink_param_4_flds_we),
     .q_o(blink_param_4_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic core_blink_param_4_gated_we;
+  assign core_blink_param_4_gated_we = core_blink_param_4_we & core_blink_param_4_regwen;
   //   F[x_4]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2753,7 +2826,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_4_we & core_blink_param_4_regwen),
+    .we     (core_blink_param_4_gated_we),
     .wd     (core_blink_param_4_wdata[15:0]),
 
     // from internal hardware
@@ -2779,7 +2852,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_4_we & core_blink_param_4_regwen),
+    .we     (core_blink_param_4_gated_we),
     .wd     (core_blink_param_4_wdata[31:16]),
 
     // from internal hardware
@@ -2809,6 +2882,9 @@ module pwm_reg_top (
     .d_i(&blink_param_5_flds_we),
     .q_o(blink_param_5_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic core_blink_param_5_gated_we;
+  assign core_blink_param_5_gated_we = core_blink_param_5_we & core_blink_param_5_regwen;
   //   F[x_5]: 15:0
   prim_subreg #(
     .DW      (16),
@@ -2819,7 +2895,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_5_we & core_blink_param_5_regwen),
+    .we     (core_blink_param_5_gated_we),
     .wd     (core_blink_param_5_wdata[15:0]),
 
     // from internal hardware
@@ -2845,7 +2921,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_5_we & core_blink_param_5_regwen),
+    .we     (core_blink_param_5_gated_we),
     .wd     (core_blink_param_5_wdata[31:16]),
 
     // from internal hardware
@@ -2920,6 +2996,8 @@ module pwm_reg_top (
                (addr_hit[21] & (|(PWM_PERMIT[21] & ~reg_be))) |
                (addr_hit[22] & (|(PWM_PERMIT[22] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
@@ -3004,6 +3082,34 @@ module pwm_reg_top (
   assign blink_param_5_we = addr_hit[22] & reg_we & !reg_error;
 
 
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = alert_test_we;
+    reg_we_check[1] = regwen_we;
+    reg_we_check[2] = cfg_we;
+    reg_we_check[3] = pwm_en_we;
+    reg_we_check[4] = invert_we;
+    reg_we_check[5] = pwm_param_0_we;
+    reg_we_check[6] = pwm_param_1_we;
+    reg_we_check[7] = pwm_param_2_we;
+    reg_we_check[8] = pwm_param_3_we;
+    reg_we_check[9] = pwm_param_4_we;
+    reg_we_check[10] = pwm_param_5_we;
+    reg_we_check[11] = duty_cycle_0_we;
+    reg_we_check[12] = duty_cycle_1_we;
+    reg_we_check[13] = duty_cycle_2_we;
+    reg_we_check[14] = duty_cycle_3_we;
+    reg_we_check[15] = duty_cycle_4_we;
+    reg_we_check[16] = duty_cycle_5_we;
+    reg_we_check[17] = blink_param_0_we;
+    reg_we_check[18] = blink_param_1_we;
+    reg_we_check[19] = blink_param_2_we;
+    reg_we_check[20] = blink_param_3_we;
+    reg_we_check[21] = blink_param_4_we;
+    reg_we_check[22] = blink_param_5_we;
+  end
 
   // Read data return
   always_comb begin

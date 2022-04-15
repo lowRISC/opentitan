@@ -53,18 +53,31 @@ module ast_reg_top (
     .err_o(intg_err)
   );
 
-  logic intg_err_q;
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [36:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(37)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
     end
   end
 
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -1260,6 +1273,8 @@ module ast_reg_top (
                (addr_hit[35] & (|(AST_PERMIT[35] & ~reg_be))) |
                (addr_hit[36] & (|(AST_PERMIT[36] & ~reg_be)))));
   end
+
+  // Generate write-enables
   assign rega2_we = addr_hit[2] & reg_we & !reg_error;
 
   assign rega2_wd = reg_wdata[31:0];
@@ -1362,6 +1377,48 @@ module ast_reg_top (
   assign regb_4_we = addr_hit[36] & reg_we & !reg_error;
 
   assign regb_4_wd = reg_wdata[31:0];
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = 1'b0;
+    reg_we_check[1] = 1'b0;
+    reg_we_check[2] = rega2_we;
+    reg_we_check[3] = rega3_we;
+    reg_we_check[4] = rega4_we;
+    reg_we_check[5] = rega5_we;
+    reg_we_check[6] = rega6_we;
+    reg_we_check[7] = rega7_we;
+    reg_we_check[8] = rega8_we;
+    reg_we_check[9] = rega9_we;
+    reg_we_check[10] = rega10_we;
+    reg_we_check[11] = rega11_we;
+    reg_we_check[12] = rega12_we;
+    reg_we_check[13] = rega13_we;
+    reg_we_check[14] = rega14_we;
+    reg_we_check[15] = rega15_we;
+    reg_we_check[16] = rega16_we;
+    reg_we_check[17] = rega17_we;
+    reg_we_check[18] = rega18_we;
+    reg_we_check[19] = rega19_we;
+    reg_we_check[20] = rega20_we;
+    reg_we_check[21] = rega21_we;
+    reg_we_check[22] = rega22_we;
+    reg_we_check[23] = rega23_we;
+    reg_we_check[24] = rega24_we;
+    reg_we_check[25] = rega25_we;
+    reg_we_check[26] = rega26_we;
+    reg_we_check[27] = rega27_we;
+    reg_we_check[28] = 1'b0;
+    reg_we_check[29] = rega29_we;
+    reg_we_check[30] = rega30_we;
+    reg_we_check[31] = regal_we;
+    reg_we_check[32] = regb_0_we;
+    reg_we_check[33] = regb_1_we;
+    reg_we_check[34] = regb_2_we;
+    reg_we_check[35] = regb_3_we;
+    reg_we_check[36] = regb_4_we;
+  end
 
   // Read data return
   always_comb begin
