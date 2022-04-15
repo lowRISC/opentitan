@@ -145,29 +145,61 @@ module pinmux
     end else begin
       // dedicated pads
       for (int kk = 0; kk < NDioPads; kk++) begin
-        if (reg2hw.dio_pad_attr[kk].invert.qe) begin // All from one CSR: Shared qe.
+        if (reg2hw.dio_pad_attr[kk].drive_strength.qe) begin
           dio_pad_attr_q[kk].drive_strength <= reg2hw.dio_pad_attr[kk].drive_strength.q;
+        end
+        if (reg2hw.dio_pad_attr[kk].slew_rate.qe) begin
           dio_pad_attr_q[kk].slew_rate      <= reg2hw.dio_pad_attr[kk].slew_rate.q;
+        end
+        if (reg2hw.dio_pad_attr[kk].od_en.qe) begin
           dio_pad_attr_q[kk].od_en          <= reg2hw.dio_pad_attr[kk].od_en.q;
+        end
+        if (reg2hw.dio_pad_attr[kk].schmitt_en.qe) begin
           dio_pad_attr_q[kk].schmitt_en     <= reg2hw.dio_pad_attr[kk].schmitt_en.q;
+        end
+        if (reg2hw.dio_pad_attr[kk].keeper_en.qe) begin
           dio_pad_attr_q[kk].keep_en        <= reg2hw.dio_pad_attr[kk].keeper_en.q;
+        end
+        if (reg2hw.dio_pad_attr[kk].pull_select.qe) begin
           dio_pad_attr_q[kk].pull_select    <= reg2hw.dio_pad_attr[kk].pull_select.q;
+        end
+        if (reg2hw.dio_pad_attr[kk].pull_en.qe) begin
           dio_pad_attr_q[kk].pull_en        <= reg2hw.dio_pad_attr[kk].pull_en.q;
+        end
+        if (reg2hw.dio_pad_attr[kk].virtual_od_en.qe) begin
           dio_pad_attr_q[kk].virt_od_en     <= reg2hw.dio_pad_attr[kk].virtual_od_en.q;
+        end
+        if (reg2hw.dio_pad_attr[kk].invert.qe) begin
           dio_pad_attr_q[kk].invert         <= reg2hw.dio_pad_attr[kk].invert.q;
         end
       end
       // muxed pads
       for (int kk = 0; kk < NMioPads; kk++) begin
-        if (reg2hw.mio_pad_attr[kk].invert.qe) begin // All from one CSR: Shared qe.
+        if (reg2hw.mio_pad_attr[kk].drive_strength.qe) begin
           mio_pad_attr_q[kk].drive_strength <= reg2hw.mio_pad_attr[kk].drive_strength.q;
+        end
+        if (reg2hw.mio_pad_attr[kk].slew_rate.qe) begin
           mio_pad_attr_q[kk].slew_rate      <= reg2hw.mio_pad_attr[kk].slew_rate.q;
+        end
+        if (reg2hw.mio_pad_attr[kk].od_en.qe) begin
           mio_pad_attr_q[kk].od_en          <= reg2hw.mio_pad_attr[kk].od_en.q;
+        end
+        if (reg2hw.mio_pad_attr[kk].schmitt_en.qe) begin
           mio_pad_attr_q[kk].schmitt_en     <= reg2hw.mio_pad_attr[kk].schmitt_en.q;
+        end
+        if (reg2hw.mio_pad_attr[kk].keeper_en.qe) begin
           mio_pad_attr_q[kk].keep_en        <= reg2hw.mio_pad_attr[kk].keeper_en.q;
+        end
+        if (reg2hw.mio_pad_attr[kk].pull_select.qe) begin
           mio_pad_attr_q[kk].pull_select    <= reg2hw.mio_pad_attr[kk].pull_select.q;
+        end
+        if (reg2hw.mio_pad_attr[kk].pull_en.qe) begin
           mio_pad_attr_q[kk].pull_en        <= reg2hw.mio_pad_attr[kk].pull_en.q;
+        end
+        if (reg2hw.mio_pad_attr[kk].virtual_od_en.qe) begin
           mio_pad_attr_q[kk].virt_od_en     <= reg2hw.mio_pad_attr[kk].virtual_od_en.q;
+        end
+        if (reg2hw.mio_pad_attr[kk].invert.qe) begin
           mio_pad_attr_q[kk].invert         <= reg2hw.mio_pad_attr[kk].invert.q;
         end
       end
