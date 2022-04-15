@@ -37,7 +37,6 @@
     # Manually checked, files contain additional copyright header lines
     'hw/ip/usb_fs_nb_pe/rtl/*',
     'hw/ip/usbdev/rtl/usbdev_iomux.sv',
-    'hw/ip/usbuart/rtl/usb_serial_*_ep.sv',
 
     ## Software Exclusions
 
