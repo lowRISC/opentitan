@@ -35,11 +35,6 @@ module sim_sram #(
 
   localparam int WidthBytes = Width >> 3;
 
-  // Socket signals.
-  tlul_pkg::tl_h2d_t tl_socket_h2d[2];
-  tlul_pkg::tl_d2h_t tl_socket_d2h[2];
-  logic dev_select;
-
   // Separate interface to set the SRAM start address (done by the testbench) & monitor the SRAM
   // access.
   sim_sram_if #(
@@ -47,39 +42,9 @@ module sim_sram #(
   ) u_sim_sram_if (
     .clk_i,
     .rst_ni,
-    .tl_h2d(tl_socket_h2d[1]),
-    .tl_d2h(tl_socket_d2h[1])
+    .tl_h2d(tl_in_i),
+    .tl_d2h(tl_in_o)
   );
-
-  // Split the incoming access into two.
-  tlul_socket_1n #(
-    .N           (2),
-    .HReqPass    (1'b1),
-    .HRspPass    (1'b1),
-    .DReqPass    ({2{1'b1}}),
-    .DRspPass    ({2{1'b1}}),
-    .HReqDepth   (4'h0),
-    .HRspDepth   (4'h0),
-    .DReqDepth   ({2{4'h0}}),
-    .DRspDepth   ({2{4'h0}}),
-    .ExplicitErrs(1'b0)
-  ) u_socket (
-    .clk_i,
-    .rst_ni,
-    .tl_h_i      (tl_in_i),
-    .tl_h_o      (tl_in_o),
-    .tl_d_o      (tl_socket_h2d),
-    .tl_d_i      (tl_socket_d2h),
-    .dev_select_i(dev_select)
-  );
-
-  // Logic to select SRAM address range.
-  assign dev_select = (tl_in_i.a_address >= u_sim_sram_if.start_addr &&
-                       tl_in_i.a_address < (u_sim_sram_if.start_addr + (Depth * WidthBytes)));
-
-  // Wire output 0 of the socket to outbound TL interface.
-  assign tl_out_o = tl_socket_h2d[0];
-  assign tl_socket_d2h[0] = tl_out_i;
 
   if (InstantiateSram) begin : gen_sram_inst
 
@@ -146,8 +111,8 @@ module sim_sram #(
     tlul_sink u_tlul_sink (
       .clk_i,
       .rst_ni,
-      .tl_i(tl_socket_h2d[1]),
-      .tl_o(tl_socket_d2h[1])
+      .tl_i(tl_in_i),
+      .tl_o(tl_in_o)
     );
 
   end : gen_no_sram

@@ -33,6 +33,8 @@ package chip_env_pkg;
   import top_earlgrey_rnd_cnst_pkg::*;
   import pwm_monitor_pkg::*;
   import pwm_reg_pkg::NOutputs;
+  import tl_main_pkg::ADDR_SPACE_RV_CORE_IBEX__CFG;
+  import rv_core_ibex_reg_pkg::RV_CORE_IBEX_DV_SIM_WINDOW_OFFSET;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -50,7 +52,9 @@ package chip_env_pkg;
   parameter uint SPI_FRAME_BYTE_SIZE = spi_device_reg_pkg::SPI_DEVICE_BUFFER_SIZE/2;
 
   // SW constants - use unmapped address space with at least 32 bytes.
-  parameter bit [TL_AW-1:0] SW_DV_START_ADDR        = 32'h3000_0000;
+
+  parameter bit [TL_AW-1:0] SW_DV_START_ADDR        = ADDR_SPACE_RV_CORE_IBEX__CFG +
+                                                      RV_CORE_IBEX_DV_SIM_WINDOW_OFFSET;
   parameter bit [TL_AW-1:0] SW_DV_TEST_STATUS_ADDR  = SW_DV_START_ADDR + 0;
   parameter bit [TL_AW-1:0] SW_DV_LOG_ADDR          = SW_DV_START_ADDR + 4;
 

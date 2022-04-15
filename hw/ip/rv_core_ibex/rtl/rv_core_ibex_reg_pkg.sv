@@ -9,10 +9,11 @@ package rv_core_ibex_reg_pkg;
   // Param list
   parameter int NumSwAlerts = 2;
   parameter int NumRegions = 2;
+  parameter int NumScratchWords = 8;
   parameter int NumAlerts = 4;
 
   // Address widths within the block
-  parameter int CfgAw = 7;
+  parameter int CfgAw = 8;
 
   //////////////////////////////////////////////
   // Typedefs for registers for cfg interface //
@@ -171,31 +172,31 @@ package rv_core_ibex_reg_pkg;
   } rv_core_ibex_cfg_hw2reg_t;
 
   // Register offsets for cfg interface
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_ALERT_TEST_OFFSET = 7'h 0;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_SW_RECOV_ERR_OFFSET = 7'h 4;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_SW_FATAL_ERR_OFFSET = 7'h 8;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_REGWEN_0_OFFSET = 7'h c;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_REGWEN_1_OFFSET = 7'h 10;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_ADDR_EN_0_OFFSET = 7'h 14;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_ADDR_EN_1_OFFSET = 7'h 18;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_ADDR_MATCHING_0_OFFSET = 7'h 1c;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_ADDR_MATCHING_1_OFFSET = 7'h 20;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_REMAP_ADDR_0_OFFSET = 7'h 24;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_REMAP_ADDR_1_OFFSET = 7'h 28;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_REGWEN_0_OFFSET = 7'h 2c;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_REGWEN_1_OFFSET = 7'h 30;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_ADDR_EN_0_OFFSET = 7'h 34;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_ADDR_EN_1_OFFSET = 7'h 38;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_ADDR_MATCHING_0_OFFSET = 7'h 3c;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_ADDR_MATCHING_1_OFFSET = 7'h 40;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_REMAP_ADDR_0_OFFSET = 7'h 44;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_REMAP_ADDR_1_OFFSET = 7'h 48;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_NMI_ENABLE_OFFSET = 7'h 4c;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_NMI_STATE_OFFSET = 7'h 50;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_ERR_STATUS_OFFSET = 7'h 54;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_RND_DATA_OFFSET = 7'h 58;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_RND_STATUS_OFFSET = 7'h 5c;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_FPGA_INFO_OFFSET = 7'h 60;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_ALERT_TEST_OFFSET = 8'h 0;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_SW_RECOV_ERR_OFFSET = 8'h 4;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_SW_FATAL_ERR_OFFSET = 8'h 8;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_REGWEN_0_OFFSET = 8'h c;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_REGWEN_1_OFFSET = 8'h 10;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_ADDR_EN_0_OFFSET = 8'h 14;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_ADDR_EN_1_OFFSET = 8'h 18;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_ADDR_MATCHING_0_OFFSET = 8'h 1c;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_ADDR_MATCHING_1_OFFSET = 8'h 20;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_REMAP_ADDR_0_OFFSET = 8'h 24;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_REMAP_ADDR_1_OFFSET = 8'h 28;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_REGWEN_0_OFFSET = 8'h 2c;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_REGWEN_1_OFFSET = 8'h 30;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_ADDR_EN_0_OFFSET = 8'h 34;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_ADDR_EN_1_OFFSET = 8'h 38;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_ADDR_MATCHING_0_OFFSET = 8'h 3c;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_ADDR_MATCHING_1_OFFSET = 8'h 40;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_REMAP_ADDR_0_OFFSET = 8'h 44;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_REMAP_ADDR_1_OFFSET = 8'h 48;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_NMI_ENABLE_OFFSET = 8'h 4c;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_NMI_STATE_OFFSET = 8'h 50;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_ERR_STATUS_OFFSET = 8'h 54;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_RND_DATA_OFFSET = 8'h 58;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_RND_STATUS_OFFSET = 8'h 5c;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_FPGA_INFO_OFFSET = 8'h 60;
 
   // Reset values for hwext registers and their fields for cfg interface
   parameter logic [3:0] RV_CORE_IBEX_ALERT_TEST_RESVAL = 4'h 0;
@@ -210,6 +211,10 @@ package rv_core_ibex_reg_pkg;
   parameter logic [0:0] RV_CORE_IBEX_RND_STATUS_RND_DATA_FIPS_RESVAL = 1'h 0;
   parameter logic [31:0] RV_CORE_IBEX_FPGA_INFO_RESVAL = 32'h 0;
   parameter logic [31:0] RV_CORE_IBEX_FPGA_INFO_VAL_RESVAL = 32'h 0;
+
+  // Window parameters for cfg interface
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DV_SIM_WINDOW_OFFSET = 8'h 80;
+  parameter int unsigned      RV_CORE_IBEX_DV_SIM_WINDOW_SIZE   = 'h 20;
 
   // Register index for cfg interface
   typedef enum int {

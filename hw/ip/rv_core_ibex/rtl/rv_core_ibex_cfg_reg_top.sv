@@ -11,6 +11,11 @@ module rv_core_ibex_cfg_reg_top (
   input rst_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
+
+  // Output port for window
+  output tlul_pkg::tl_h2d_t tl_win_o,
+  input  tlul_pkg::tl_d2h_t tl_win_i,
+
   // To HW
   output rv_core_ibex_reg_pkg::rv_core_ibex_cfg_reg2hw_t reg2hw, // Write
   input  rv_core_ibex_reg_pkg::rv_core_ibex_cfg_hw2reg_t hw2reg, // Read
@@ -24,7 +29,7 @@ module rv_core_ibex_cfg_reg_top (
 
   import rv_core_ibex_reg_pkg::* ;
 
-  localparam int AW = 7;
+  localparam int AW = 8;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -76,8 +81,57 @@ module rv_core_ibex_cfg_reg_top (
     .tl_o(tl_o)
   );
 
-  assign tl_reg_h2d = tl_i;
-  assign tl_o_pre   = tl_reg_d2h;
+  tlul_pkg::tl_h2d_t tl_socket_h2d [2];
+  tlul_pkg::tl_d2h_t tl_socket_d2h [2];
+
+  logic [0:0] reg_steer;
+
+  // socket_1n connection
+  assign tl_reg_h2d = tl_socket_h2d[1];
+  assign tl_socket_d2h[1] = tl_reg_d2h;
+
+  assign tl_win_o = tl_socket_h2d[0];
+  assign tl_socket_d2h[0] = tl_win_i;
+
+  // Create Socket_1n
+  tlul_socket_1n #(
+    .N            (2),
+    .HReqPass     (1'b1),
+    .HRspPass     (1'b1),
+    .DReqPass     ({2{1'b1}}),
+    .DRspPass     ({2{1'b1}}),
+    .HReqDepth    (4'h0),
+    .HRspDepth    (4'h0),
+    .DReqDepth    ({2{4'h0}}),
+    .DRspDepth    ({2{4'h0}}),
+    .ExplicitErrs (1'b0)
+  ) u_socket (
+    .clk_i  (clk_i),
+    .rst_ni (rst_ni),
+    .tl_h_i (tl_i),
+    .tl_h_o (tl_o_pre),
+    .tl_d_o (tl_socket_h2d),
+    .tl_d_i (tl_socket_d2h),
+    .dev_select_i (reg_steer)
+  );
+
+  // Create steering logic
+  always_comb begin
+    unique case (tl_i.a_address[AW-1:0]) inside
+      [128:159]: begin
+        reg_steer = 0;
+      end
+      default: begin
+        // Default set to register
+        reg_steer = 1;
+      end
+    endcase
+
+    // Override this in case of an integrity error
+    if (intg_err) begin
+      reg_steer = 1;
+    end
+  end
 
   tlul_adapter_reg #(
     .RegAw(AW),
