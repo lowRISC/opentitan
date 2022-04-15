@@ -275,13 +275,13 @@ def _scramble_flash_vmem_impl(ctx):
         outputs = [scrambled_vmem],
         inputs = [
             ctx.file.vmem,
-            ctx.file._tool,
+            ctx.executable._tool,
         ],
         arguments = [
             ctx.file.vmem.path,
             scrambled_vmem.path,
         ],
-        executable = ctx.file._tool.path,
+        executable = ctx.executable._tool,
     )
     return [DefaultInfo(
         files = depset(outputs),
@@ -293,8 +293,9 @@ scramble_flash_vmem = rv_rule(
     attrs = {
         "vmem": attr.label(allow_single_file = True),
         "_tool": attr.label(
-            default = "//util/design:gen-flash-img.py",
-            allow_single_file = True,
+            default = "//util/design:gen-flash-img",
+            executable = True,
+            cfg = "exec",
         ),
     },
 )
