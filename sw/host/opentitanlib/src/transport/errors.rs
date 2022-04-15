@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use super::Capability;
+use crate::impl_serializable_error;
 
 /// Contains all the errors that any method on the `Transport` trait could generate.  This
 /// struct is serializable, such that it can be transmitted across a network for instance as
@@ -46,47 +47,10 @@ pub enum TransportError {
     ProxyLookupError(String, String),
     #[error("Proxy unable to connect to `{0}`: {1}")]
     ProxyConnectError(String, String),
-    #[error("Proxy communication error: {0}")]
-    ProxyCommunicationError(#[from] crate::transport::proxy::ProxyError),
     #[error("Requested capabilities {0:?}, but capabilities {1:?} are supplied")]
     MissingCapabilities(Capability, Capability),
-    #[error("ROM detection error: {0}")]
-    RomDetectError(#[from] crate::util::rom_detect::Error),
-
-    // Include sub-enums for the various sub-traits of Tranport.
-    #[error("GPIO error: {0}")]
-    GpioError(#[from] crate::io::gpio::GpioError),
-    #[error("UART error: {0}")]
-    UartError(#[from] crate::io::uart::UartError),
-    #[error("SPI error: {0}")]
-    SpiError(#[from] crate::io::spi::SpiError),
-    #[error("SPI error: {0}")]
-    I2cError(#[from] crate::io::i2c::I2cError),
-    #[error("Emulator error: {0}")]
-    EmuError(#[from] crate::io::emu::EmuError),
-
-    // Other sub-enums used by proxy logic (that is, opentitanlib logic running in session daemon
-    // process for efficiency).
-    #[error("Bootstrapping: {0}")]
-    BootstrapError(#[from] crate::bootstrap::BootstrapError),
-    #[error("Bootstrapping: {0}")]
-    LegacyBootstrapError(#[from] crate::bootstrap::LegacyBootstrapError),
-    #[error("Bootstrapping: {0}")]
-    RescueError(#[from] crate::bootstrap::RescueError),
-
-    #[error("Unspecified: {0}")]
-    Unspecified(String),
 }
-
-// TODO(cfrantz): Reconsider how TransportErrors are handled so we can use
-// anyhow::Error everywhere and rely on the proxy implementation dealing
-// with the appropriate conversions.  For now, the From implementation
-// below can convert errors not part of the sum-type above.
-impl From<anyhow::Error> for TransportError {
-    fn from(error: anyhow::Error) -> Self {
-        TransportError::Unspecified(format!("{:#?}", error))
-    }
-}
+impl_serializable_error!(TransportError);
 
 /// Enum value used by `TransportError::InvalidInstance`.
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
@@ -97,40 +61,4 @@ pub enum TransportInterfaceType {
     I2c,
     Emulator,
     ProxyOps,
-}
-
-/// Return type to be used in `Transport` methods.
-pub type Result<T> = anyhow::Result<T, TransportError>;
-
-/// Convenience macro to be used in implementations of `Transport`.
-#[macro_export]
-macro_rules! bail {
-    ($err:expr $(,)?) => {
-        return Err($err.into())
-    };
-}
-
-/// Convenience macro to be used in implementations of `Transport`.
-#[macro_export]
-macro_rules! ensure {
-    ($cond:expr, $err:expr $(,)?) => {
-        if !$cond {
-            return Err($err.into());
-        }
-    };
-}
-
-/// Function for conveniently wrapping (the flat string representation of) an anyhow::Error in a
-/// TransportError.
-///
-/// Example usage:
-/// serialport::available_ports().wrap(UartError::EnumerationError)?;
-pub trait WrapInTransportError<T> {
-    fn wrap<S: Into<TransportError>>(self, kind: impl FnOnce(String) -> S) -> Result<T>;
-}
-
-impl<T, E: ToString> WrapInTransportError<T> for anyhow::Result<T, E> {
-    fn wrap<S: Into<TransportError>>(self, kind: impl FnOnce(String) -> S) -> Result<T> {
-        self.map_err(|e| kind(e.to_string()).into())
-    }
 }

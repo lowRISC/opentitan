@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 use std::time::Duration;
@@ -9,7 +10,7 @@ use structopt::StructOpt;
 use thiserror::Error;
 
 use crate::app::TransportWrapper;
-use crate::transport::Result;
+use crate::impl_serializable_error;
 
 #[derive(Clone, Debug, StructOpt, Serialize, Deserialize)]
 pub struct UartParams {
@@ -51,9 +52,7 @@ pub trait Uart {
     fn write(&self, buf: &[u8]) -> Result<()>;
 }
 
-/// Errors related to the UART interface.  These error messages will be printed in the context
-/// of a TransportError::UartError, that is "UART error: {}".  So including the words "error" or
-/// "serial" in texts below will probably be redundant.
+/// Errors related to the UART interface.
 #[derive(Error, Debug, Serialize, Deserialize)]
 pub enum UartError {
     #[error("Enumerating: {0}")]
@@ -71,3 +70,4 @@ pub enum UartError {
     #[error("{0}")]
     GenericError(String),
 }
+impl_serializable_error!(UartError);

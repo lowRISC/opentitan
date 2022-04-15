@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 use std::str::FromStr;
@@ -9,7 +10,7 @@ use structopt::StructOpt;
 use thiserror::Error;
 
 use crate::app::TransportWrapper;
-use crate::transport::Result;
+use crate::impl_serializable_error;
 use crate::util::voltage::Voltage;
 
 #[derive(Clone, Debug, StructOpt, Serialize, Deserialize)]
@@ -43,9 +44,7 @@ impl SpiParams {
     }
 }
 
-/// Errors related to the SPI interface and SPI transactions.  These error messages will be
-/// printed in the context of a TransportError::SpiError, that is "SPI error: {}".  So including
-/// the words "error" or "spi" in texts below will probably be redundant.
+/// Errors related to the SPI interface and SPI transactions.
 #[derive(Error, Debug, Serialize, Deserialize)]
 pub enum SpiError {
     #[error("Invalid option: {0}")]
@@ -61,6 +60,7 @@ pub enum SpiError {
     #[error("Invalid transfer mode: {0}")]
     InvalidTransferMode(String),
 }
+impl_serializable_error!(SpiError);
 
 /// Represents the SPI transfer mode.
 /// See https://en.wikipedia.org/wiki/Serial_Peripheral_Interface#Clock_polarity_and_phase

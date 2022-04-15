@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::{ensure, Context, Result};
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 use std::time::Duration;
 
 use crate::collection;
-use crate::ensure;
 use crate::io::gpio::GpioError;
 use crate::io::spi::SpiError;
-use crate::transport::{Result, TransportError, TransportInterfaceType, WrapInTransportError};
+use crate::transport::{TransportError, TransportInterfaceType};
 use crate::util::parse_int::ParseInt;
 use crate::util::usb::UsbBackend;
 
@@ -147,7 +147,7 @@ impl Backend {
         })? as u16;
         let mut buf = [0u8; 1];
         self.read_ctrl(Backend::CMD_FPGAIO_UTIL, pinnum, &mut buf)
-            .wrap(TransportError::UsbGenericError)?;
+            .context("USB error")?;
         Ok(buf[0])
     }
 

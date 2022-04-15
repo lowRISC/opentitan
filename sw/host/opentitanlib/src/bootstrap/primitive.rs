@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::Result;
 use mundane::hash::{Digest, Hasher, Sha256};
 use std::time::Duration;
 use zerocopy::AsBytes;
@@ -9,7 +10,7 @@ use zerocopy::AsBytes;
 use crate::app::TransportWrapper;
 use crate::bootstrap::{Bootstrap, BootstrapOptions, UpdateProtocol};
 use crate::io::spi::Transfer;
-use crate::transport::{Capability, Result};
+use crate::transport::Capability;
 
 #[derive(AsBytes, Debug, Default)]
 #[repr(C)]

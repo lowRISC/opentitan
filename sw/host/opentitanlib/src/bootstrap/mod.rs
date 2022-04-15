@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::Result;
 use humantime::parse_duration;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
@@ -11,10 +12,11 @@ use structopt::StructOpt;
 use thiserror::Error;
 
 use crate::app::TransportWrapper;
+use crate::impl_serializable_error;
 use crate::io::gpio::GpioPin;
 use crate::io::spi::SpiParams;
 use crate::io::uart::UartParams;
-use crate::transport::{Capability, Result};
+use crate::transport::Capability;
 
 mod legacy;
 mod primitive;
@@ -28,6 +30,7 @@ pub enum BootstrapError {
     #[error("Invalid hash length: {0}")]
     InvalidHashLength(usize),
 }
+impl_serializable_error!(BootstrapError);
 
 arg_enum! {
     /// `BootstrapProtocol` describes the supported types of bootstrap.
