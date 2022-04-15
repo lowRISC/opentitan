@@ -1072,7 +1072,7 @@
             Refer to `chip_*sys_rstmgr_reset_info`.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_rstmgr_alert_info"]
     }
     {
       name: chip_sw_rstmgr_sw_rst
