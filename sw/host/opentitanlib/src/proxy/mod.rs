@@ -11,6 +11,7 @@ use std::net::SocketAddr;
 
 use crate::app::TransportWrapper;
 
+pub mod errors;
 mod handler;
 pub mod protocol;
 mod socket_server;

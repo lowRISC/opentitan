@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::{bail, Result};
 use std::rc::Rc;
 
 use super::ProxyError;
-use crate::bail;
 use crate::io::gpio::{GpioPin, PinMode, PullMode};
 use crate::proxy::protocol::{GpioRequest, GpioResponse, Request, Response};
-use crate::transport::proxy::{Inner, Proxy, Result};
+use crate::transport::proxy::{Inner, Proxy};
 
 pub struct ProxyGpioPin {
     inner: Rc<Inner>,

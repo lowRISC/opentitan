@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::{bail, ensure, Context, Result};
 use safe_ftdi as ftdi;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -10,10 +11,8 @@ use crate::io::gpio::GpioPin;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::transport::{
-    Capabilities, Capability, Result, Transport, TransportError, TransportInterfaceType,
-    WrapInTransportError,
+    Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
-use crate::{bail, ensure};
 
 pub mod gpio;
 pub mod mpsse;
@@ -61,7 +60,7 @@ impl Ultradebug {
             None,
             self.usb_serial.clone(),
         )
-        .wrap(TransportError::FtdiError)?)
+        .context("FTDI error")?)
     }
 
     // Create an instance of an MPSSE context bound to Ultradebug interface B.
@@ -74,7 +73,7 @@ impl Ultradebug {
             device.set_timeouts(5000, 5000);
 
             // Create a new MPSSE context and configure it
-            let mut mpdev = mpsse::Context::new(device).wrap(TransportError::FtdiError)?;
+            let mut mpdev = mpsse::Context::new(device).context("FTDI error")?;
             mpdev.gpio_direction.insert(
                 mpsse::GpioDirection::OUT_0 |   // Clock out
                 mpsse::GpioDirection::OUT_1 |   // Master out
@@ -86,7 +85,7 @@ impl Ultradebug {
                 mpsse::GpioDirection::OUT_7, // TGT_RESET
             );
 
-            let _ = mpdev.gpio_get().wrap(TransportError::FtdiError)?;
+            let _ = mpdev.gpio_get().context("FTDI error")?;
             // Clear the low 3 bits as they are mapped to the SPI pins.
             // The SPI chip select is managed like a normal GPIO.
             // We don't need to change the GPIOs immediately; it is sufficient

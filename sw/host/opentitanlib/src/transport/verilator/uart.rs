@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::{Context, Result};
 use std::cell::RefCell;
 use std::fs::File;
 use std::fs::OpenOptions;
@@ -9,8 +10,8 @@ use std::io;
 use std::io::{ErrorKind, Read, Write};
 use std::time::Duration;
 
-use crate::io::uart::{Uart, UartError};
-use crate::transport::{Result, TransportError, WrapInTransportError};
+use crate::io::uart::Uart;
+use crate::transport::TransportError;
 use crate::util::file;
 
 /// Represents the verilator virtual UART.
@@ -26,7 +27,7 @@ impl VerilatorUart {
                     .read(true)
                     .write(true)
                     .open(path)
-                    .wrap(|e| TransportError::OpenError(path.to_string(), e))?,
+                    .map_err(|e| TransportError::OpenError(path.to_string(), e.to_string()))?,
             ),
         })
     }
@@ -47,16 +48,16 @@ impl Uart for VerilatorUart {
     fn read_timeout(&self, buf: &mut [u8], timeout: Duration) -> Result<usize> {
         let mut file = self.file.borrow_mut();
         match file::wait_read_timeout(&*file, timeout) {
-            Ok(()) => Ok(file.read(buf).wrap(UartError::ReadError)?),
+            Ok(()) => Ok(file.read(buf).context("UART read error")?),
             Err(e) => {
                 // If we got a timeout from the uart, return 0 as per convention.
-                // Let all other errors propagate (wrapped in TransportError).
+                // Let all other errors propagate.
                 if let Some(ioerr) = e.downcast_ref::<io::Error>() {
                     if ioerr.kind() == ErrorKind::TimedOut {
                         return Ok(0);
                     }
                 }
-                Err(e).wrap(UartError::ReadError)
+                Err(e).context("UART read error")
             }
         }
     }
@@ -66,7 +67,7 @@ impl Uart for VerilatorUart {
             .file
             .borrow_mut()
             .read(buf)
-            .wrap(UartError::ReadError)?)
+            .context("UART read error")?)
     }
 
     fn write(&self, buf: &[u8]) -> Result<()> {
@@ -74,6 +75,6 @@ impl Uart for VerilatorUart {
             .file
             .borrow_mut()
             .write_all(buf)
-            .wrap(UartError::WriteError)?)
+            .context("UART write error")?)
     }
 }
