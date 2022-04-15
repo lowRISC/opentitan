@@ -406,8 +406,8 @@ SW can configure whether a submodule should process the command while in the pas
 
 If the received command is one of the three read status commands, STATUS control module takes over the SPI interface after the opcode.
 The 3 bytes status register is not reset by CSb.
-Except BUSY bit, other bits are controlled by SW.
-HW synchronizes the STATUS bits into the SPI clock domain and returns the STATUS bits to the host system.
+Except BUSY bit and WEL bit, other bits are controlled by SW.
+
 BUSY bit is set by HW when it receives any commands that are uploaded to the FIFOs and their `busy` fields are 1 in the command information entry.
 SW may clear BUSY bit when it completes the received commands (e.g Erase/ Program).
 
@@ -418,10 +418,18 @@ It means the update happens when the next SPI transaction is received.
 The BUSY bit in the CSR is the synchronized value of the STATUS BUSY bit in the SPI clock domain.
 Due to the CDC latency, SW may see the updated value (BUSY clear) with long delay.
 
-As the HW does not limit the SW update of the STATUS register in the middle of SPI transactions, it may create a case that the old STATUS values are sent along with the new STATUS values.
-If the SW updates the STATUS while the HW is processing the Read Status commands, the SW request may arrive to the SPI clock domain while STATUS registers are being transferred.
-The register is sent from MSB to LSB.
-So, the host may see the bit 7 down to n of the old STATUS, then bit n-1 to 0 of the new STATUS.
+WEL bit can be controlled by SW and also by HW.
+HW updates WEL bit when it receives WREN(06h) or WRDI(04h) commands.
+The opcode can be configured via {{<regref "CMD_INFO_WREN">}} and {{<regref "CMD_INFO_WRDI">}}.
+
+The SW update of the STATUS register via {{<regref "FLASH_STATUS">}} is not instantaneous.
+The IP stores the SW request into the asynchronous FIFO then the request is processed in the SPI clock domain.
+The request updates the temporal status register, which is called as staged registers in the design.
+The staged registers are latched into the committed registers when CSb is released.
+SW sees the committed registers when reading the {{<regref "FLASH_STATUS">}} CSR.
+
+The attached host system also reads back the committed registers via Read Status commands.
+This scheme is to guarantee the atomicity of the STATUS register.
 
 If the host sends the Write Status commands, the commands are not processed in this module.
 SW must configure the remaining command information entries to upload the Write Status commands to the FIFOs.
