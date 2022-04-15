@@ -18,7 +18,8 @@ module spid_status
     spi_device_pkg::CmdInfoReadStatus1,
     spi_device_pkg::CmdInfoReadStatus2,
     spi_device_pkg::CmdInfoReadStatus3
-  }
+  },
+  parameter int unsigned StatusW = 24
 ) (
   input clk_i,
   input rst_ni,
@@ -33,11 +34,11 @@ module spid_status
   input sys_csb_deasserted_pulse_i, // to latch committed status
 
   // status register from CSR: sys_clk domain
-  // bit [   0]: RW0C by SW / W1S by HW
-  // bit [23:1]: RW
-  input               sys_status_we_i,
-  input  logic [23:0] sys_status_i,
-  output logic [23:0] sys_status_o, // sys_clk domain
+  // bit [          0]: RW0C by SW / W1S by HW
+  // bit [StatusW-1:1]: RW
+  input                      sys_status_we_i,
+  input  logic [StatusW-1:0] sys_status_i,
+  output logic [StatusW-1:0] sys_status_o, // sys_clk domain
 
   // from cmdparse
   input sel_datapath_e          sel_dp_i,
@@ -81,16 +82,15 @@ module spid_status
 
   typedef enum int unsigned {
     BitBusy      = 0, // BUSY bit [0]
-    BitWe        = 1, // WEL  bit [1]
-    BitStatusEnd = 24
+    BitWe        = 1  // WEL  bit [1]
   } status_bit_e;
 
   ////////////
   // Signal //
   ////////////
-  logic [23:0] sck_status_committed;
-  logic [23:0] sck_status_staged;
-  logic [23:0] sck_sw_status;
+  logic [StatusW-1:0] sck_status_committed;
+  logic [StatusW-1:0] sck_status_staged;
+  logic [StatusW-1:0] sck_sw_status;
 
   logic      p2s_valid_inclk;
   spi_byte_t p2s_byte_inclk;
@@ -162,9 +162,9 @@ module spid_status
   // Rest of Status
   always_ff @(posedge clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) begin
-      sck_status_staged[23:BitWe+1] <= '0;
+      sck_status_staged[StatusW-1:BitWe+1] <= '0;
     end else if (sck_sw_we) begin
-      sck_status_staged[23:BitWe+1] <= sck_sw_status[23:BitWe+1];
+      sck_status_staged[StatusW-1:BitWe+1] <= sck_sw_status[StatusW-1:BitWe+1];
     end
   end
 
@@ -185,7 +185,7 @@ module spid_status
   assign sck_sw_ack = 1'b 1; // always accept when clock is valid.
 
   prim_fifo_async #(
-    .Width             (BitStatusEnd),
+    .Width             (StatusW),
     .Depth             (2),
     .OutputZeroIfEmpty (1'b 1)
   ) u_sw_status_update_sync (
