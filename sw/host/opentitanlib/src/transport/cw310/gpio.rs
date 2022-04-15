@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::Result;
 use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
 use crate::transport::cw310::usb::Backend;
-use crate::transport::Result;
 
 pub struct CW310GpioPin {
     device: Rc<RefCell<Backend>>,

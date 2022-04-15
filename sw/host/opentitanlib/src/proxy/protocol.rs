@@ -9,13 +9,14 @@ use crate::bootstrap::BootstrapOptions;
 use crate::io::emu::{EmuState, EmuValue};
 use crate::io::gpio::{PinMode, PullMode};
 use crate::io::spi::TransferMode;
-use crate::transport::{Capabilities, TransportError};
+use crate::proxy::errors::SerializedError;
+use crate::transport::Capabilities;
 use crate::util::voltage::Voltage;
 
 #[derive(Serialize, Deserialize)]
 pub enum Message {
     Req(Request),
-    Res(Result<Response, TransportError>),
+    Res(Result<Response, SerializedError>),
 }
 
 #[derive(Serialize, Deserialize)]

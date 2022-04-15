@@ -42,6 +42,7 @@ rust_library(
         "src/otp/otp_img.rs",
         "src/otp/otp_mmap.rs",
         "src/otp/vmem_serialize.rs",
+        "src/proxy/errors.rs",
         "src/proxy/handler.rs",
         "src/proxy/mod.rs",
         "src/proxy/protocol.rs",

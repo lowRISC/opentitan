@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::{ensure, Result};
 use erased_serde::Serialize;
 use serialport::SerialPortType;
 use std::any::Any;
@@ -11,14 +12,12 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use std::time::Duration;
 
-use crate::ensure;
 use crate::io::gpio::GpioPin;
 use crate::io::spi::Target;
 use crate::io::uart::{Uart, UartError};
 use crate::transport::common::uart::SerialPortUart;
 use crate::transport::{
-    Capabilities, Capability, Result, Transport, TransportError, TransportInterfaceType,
-    WrapInTransportError,
+    Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
 use crate::util::parse_int::ParseInt;
 use crate::util::rom_detect::{RomDetect, RomKind};
@@ -78,7 +77,8 @@ impl CW310 {
         let usb = self.device.borrow();
         let serial_number = usb.get_serial_number();
 
-        let mut ports = serialport::available_ports().wrap(UartError::EnumerationError)?;
+        let mut ports = serialport::available_ports()
+            .map_err(|e| UartError::EnumerationError(e.to_string()))?;
         ports.retain(|port| {
             if let SerialPortType::UsbPort(info) = &port.port_type {
                 if info.serial_number.as_deref() == Some(serial_number) {

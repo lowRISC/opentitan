@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::{bail, ensure, Result};
 use std::rc::Rc;
 
 use super::ProxyError;
@@ -9,8 +10,7 @@ use crate::io::i2c::{Bus, Transfer};
 use crate::proxy::protocol::{
     I2cRequest, I2cResponse, I2cTransferRequest, I2cTransferResponse, Request, Response,
 };
-use crate::transport::proxy::{Inner, Proxy, Result};
-use crate::{bail, ensure};
+use crate::transport::proxy::{Inner, Proxy};
 
 pub struct ProxyI2c {
     inner: Rc<Inner>,

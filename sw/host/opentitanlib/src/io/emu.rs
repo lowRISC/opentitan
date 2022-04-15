@@ -2,14 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::transport::Result;
+use crate::impl_serializable_error;
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use thiserror::Error;
 
-/// Error related to the `Emulator` trait. These error messages will be printed in the context of
-/// a TransportError::EmuError, that is "Emulator error: {}".  So including the words "error" or
-/// "Emulator" in texts below will probably be redundant.
+/// Error related to the `Emulator` trait.
 #[derive(Error, Debug, Serialize, Deserialize)]
 pub enum EmuError {
     #[error("Invalid argument name {0}")]
@@ -25,6 +24,7 @@ pub enum EmuError {
     #[error("Runtime error {0}")]
     RuntimeError(String),
 }
+impl_serializable_error!(EmuError);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum EmuValue {

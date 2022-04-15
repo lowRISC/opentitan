@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::{bail, Context, Result};
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::io;
@@ -10,16 +11,14 @@ use std::net::{TcpStream, ToSocketAddrs};
 use std::rc::Rc;
 use thiserror::Error;
 
-use crate::bail;
 use crate::bootstrap::BootstrapOptions;
+use crate::impl_serializable_error;
 use crate::io::gpio::GpioPin;
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::proxy::protocol::{Message, ProxyRequest, ProxyResponse, Request, Response};
-use crate::transport::{
-    Capabilities, Capability, ProxyOps, Result, Transport, TransportError, WrapInTransportError,
-};
+use crate::transport::{Capabilities, Capability, ProxyOps, Transport, TransportError};
 
 mod gpio;
 mod i2c;
@@ -35,6 +34,7 @@ pub enum ProxyError {
     #[error("JSON decoding: {0}")]
     JsonDecoding(String),
 }
+impl_serializable_error!(ProxyError);
 
 /// Implementation of the Transport trait backed by connection to a remote OpenTitan tool
 /// session process.
@@ -44,7 +44,7 @@ pub struct Proxy {
 
 impl Proxy {
     /// Establish connection with a running session process.
-    pub fn open(host: Option<&str>, port: u16) -> anyhow::Result<Self> {
+    pub fn open(host: Option<&str>, port: u16) -> Result<Self> {
         let host = host.unwrap_or("localhost");
         let addr = ToSocketAddrs::to_socket_addrs(&(host, port))
             .map_err(|e| TransportError::ProxyLookupError(host.to_string(), e.to_string()))?
@@ -70,15 +70,18 @@ impl Inner {
     /// Helper method for sending one JSON request and receiving the response.  Called as part
     /// of the implementation of every method of the sub-traits (gpio, uart, spi, i2c).
     fn execute_command(&self, req: Request) -> Result<Response> {
-        self.send_json_request(req).wrap(ProxyError::JsonEncoding)?;
-        match self.recv_json_response().wrap(ProxyError::JsonDecoding)? {
-            Message::Res(res) => res,
+        self.send_json_request(req).context("json encoding")?;
+        match self.recv_json_response().context("json decoding")? {
+            Message::Res(res) => match res {
+                Ok(value) => Ok(value),
+                Err(e) => Err(anyhow::Error::from(e)),
+            },
             _ => bail!(ProxyError::UnexpectedReply()),
         }
     }
 
     /// Send a one-line JSON encoded requests, terminated with one newline.
-    fn send_json_request(&self, req: Request) -> anyhow::Result<()> {
+    fn send_json_request(&self, req: Request) -> Result<()> {
         let mut conn = self.writer.borrow_mut();
         serde_json::to_writer(&mut *conn, &Message::Req(req))?;
         conn.write(&[b'\n'])?;
@@ -87,7 +90,7 @@ impl Inner {
     }
 
     /// Receive until newline, and decode one JSON response.
-    fn recv_json_response(&self) -> anyhow::Result<Message> {
+    fn recv_json_response(&self) -> Result<Message> {
         let mut conn = self.reader.borrow_mut();
         let mut buf = Vec::new();
         let mut idx: usize = 0;
