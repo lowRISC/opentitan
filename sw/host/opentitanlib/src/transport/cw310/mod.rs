@@ -148,6 +148,10 @@ impl Transport for CW310 {
 
     fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Serialize>>> {
         if let Some(fpga_program) = action.downcast_ref::<FpgaProgram>() {
+            if fpga_program.bitstream.starts_with(b"__skip__") {
+                log::info!("Skip loading the __skip__ bitstream.");
+                return Ok(None);
+            }
             if let Some(rom_kind) = &fpga_program.rom_kind {
                 let mut rd = RomDetect::new(
                     *rom_kind,
