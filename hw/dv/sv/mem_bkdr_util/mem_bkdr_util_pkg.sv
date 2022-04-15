@@ -39,6 +39,8 @@ package mem_bkdr_util_pkg;
     ParityOdd
   } err_detection_e;
 
+  parameter int ROM_DIGEST_SIZE = 256;
+  parameter int ROM_DIGEST_BYTES = ROM_DIGEST_SIZE / 8;
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
