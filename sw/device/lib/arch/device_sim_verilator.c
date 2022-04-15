@@ -31,6 +31,6 @@ const uint32_t kUartTxFifoCpuCycles =
     CALCULATE_UART_TX_FIFO_CPU_CYCLES(kUartBaudrate, kClockFreqCpuHz);
 
 // Defined in `hw/top_earlgrey/chip_earlgrey_verilator.core`
-const uintptr_t kDeviceTestStatusAddress = 0x30000000;
+const uintptr_t kDeviceTestStatusAddress = 0x411f0080;
 
 const uintptr_t kDeviceLogBypassUartAddress = 0;

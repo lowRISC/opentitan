@@ -358,6 +358,13 @@
       default: "2",
       local: "true"
     },
+    { name:    "NumScratchWords",
+      type:    "int",
+      desc:    '''
+        Number of scratch words maintained.
+      '''
+      default: "8"
+    },
   ],
   countermeasures: [
     { name: "BUS.INTEGRITY",
@@ -675,7 +682,7 @@
           desc: '''
                   See !!IBUS_REMAP_ADDR_0 for a detailed description.
                   ''',
-                  count: "NumRegions",
+          count: "NumRegions",
           compact: false,
           swaccess: "rw",
           hwaccess: "hro",
@@ -840,6 +847,21 @@
           },
         ]
       },
+
+      // dv simulation window
+      { window: {
+          name: "DV_SIM_WINDOW",
+          items: "NumScratchWords",
+          validbits: "32",
+          byte-write: "true",
+          swaccess: "rw",
+          unusual: "true"
+          desc: '''
+            Exposed tlul window for DV only purposes.
+          '''
+        },
+      },
+
     ],
   },
 }
