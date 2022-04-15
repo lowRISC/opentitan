@@ -220,4 +220,3 @@ hw/ip/usbdev/dv/env/usbdev_virtual_sequencer.sv
 hw/ip/usbdev/dv/tests/usbdev_base_test.sv
 hw/ip/usbdev/dv/tests/usbdev_test_pkg.sv
 hw/ip/usbdev/rtl/usbdev_pkg.sv
-hw/ip/usbuart/rtl/rising_edge_detector.sv

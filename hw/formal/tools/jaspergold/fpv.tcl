@@ -90,13 +90,6 @@ if {$env(DUT_TOP) == "rv_dm"} {
   clock -rate {cio_ac_present_i, cio_ec_rst_l_i, cio_key0_in_i, cio_key1_in_i, cio_key2_in_i, cio_pwrb_in_i, cio_lid_open_i} clk_aon_i
   reset -expr {!rst_ni !rst_aon_ni}
 
-} elseif {$env(DUT_TOP) == "usbuart"} {
-  clock clk_i -both_edges
-  clock clk_usb_48mhz_i
-  clock -rate {tl_i, usb_state_debug_i} clk_i
-  clock -rate {cio_usb_dp_i, cio_usb_dn_i, cio_usb_sense_i} clk_usb_48mhz_i
-  reset -expr {!rst_ni !rst_usb_48mhz_ni}
-
 } elseif {$env(DUT_TOP) == "usbdev"} {
   clock clk_i -both_edges
   clock clk_aon_i

@@ -262,11 +262,6 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/usb_fs_nb_pe/lint/{tool}"
              },
-             {    name: usbuart
-                  fusesoc_core: lowrisc:ip:usbuart
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/usbuart/lint/{tool}"
-             },
              {    name: socket_1n
                   fusesoc_core: lowrisc:tlul:socket_1n
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]

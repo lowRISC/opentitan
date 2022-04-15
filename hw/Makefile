@@ -41,8 +41,7 @@ IPS ?= aes           \
        trial1        \
        otbn          \
        uart          \
-       usbdev        \
-       usbuart
+       usbdev
 
 TOPS ?= top_earlgrey
 
