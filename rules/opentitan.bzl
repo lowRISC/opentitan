@@ -176,15 +176,15 @@ def _elf_to_scrambled_rom_impl(ctx):
             outputs = [scrambled],
             inputs = [
                 src,
-                ctx.files._tool[0],
-                ctx.files._config[0],
+                ctx.executable._scramble_tool,
+                ctx.file._config,
             ],
             arguments = [
-                ctx.files._config[0].path,
+                ctx.file._config.path,
                 src.path,
                 scrambled.path,
             ],
-            executable = ctx.files._tool[0].path,
+            executable = ctx.executable._scramble_tool,
         )
     return [DefaultInfo(
         files = depset(outputs),
@@ -195,13 +195,14 @@ elf_to_scrambled_rom_vmem = rv_rule(
     implementation = _elf_to_scrambled_rom_impl,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
-        "_tool": attr.label(
-            default = "//hw/ip/rom_ctrl/util:scramble_image.py",
-            allow_files = True,
+        "_scramble_tool": attr.label(
+            default = "//hw/ip/rom_ctrl/util:scramble_image",
+            executable = True,
+            cfg = "exec",
         ),
         "_config": attr.label(
             default = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
-            allow_files = True,
+            allow_single_file = True,
         ),
     },
 )
@@ -386,7 +387,7 @@ gen_sim_dv_logs_db = rule(
         "platform": attr.string(default = OPENTITAN_PLATFORM),
         "_tool": attr.label(
             default = "//util/device_sw_utils:extract_sw_logs_db",
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
         "_allowlist_function_transition": attr.label(
