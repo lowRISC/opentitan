@@ -62,7 +62,9 @@ module prim_clock_meas #(
     if (!rst_ref_ni) begin
       ref_cnt <= '0;
       ref_valid <= '0;
-    end else if (!ref_en && |ref_cnt) begin
+    end else if (!ref_en && (ref_valid || |ref_cnt)) begin
+      // when disable is seen, if either valid is set or count
+      // is non-zero, clear.
       ref_cnt <= '0;
       ref_valid <= '0;
     end else if (ref_en && (int'(ref_cnt) == RefCnt - 1)) begin
