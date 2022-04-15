@@ -238,6 +238,7 @@ from topgen.lib import Name
     .lc_clk_byp_req_i,
     .lc_clk_byp_ack_o,
     .byp_req_i(extclk_ctrl_sel),
+    .byp_ack_o(hw2reg.extclk_status.d),
     .hi_speed_sel_i(extclk_ctrl_hi_speed_sel),
     .all_clk_byp_req_o,
     .all_clk_byp_ack_i,
