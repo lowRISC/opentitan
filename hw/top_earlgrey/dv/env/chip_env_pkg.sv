@@ -61,6 +61,15 @@ package chip_env_pkg;
 
   // Types of memories in the chip.
   //
+  typedef enum {
+    // external clock is still on, but the source of all IP clocks is the internal clock
+    UseInternalClk,
+    // 48Mhz, same for Life cycle transition mode
+    ExtClkLowSpeed,
+    // 96Mhz
+    ExtClkHighSpeed
+  } ext_clk_type_e;
+
   // RAM instances have support for up to 16 tiles. Actual number of tiles in use in the design is a
   // runtime setting in chip_env_cfg.
   typedef enum {

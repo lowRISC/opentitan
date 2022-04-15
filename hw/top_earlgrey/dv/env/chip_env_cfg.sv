@@ -99,13 +99,14 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   `uvm_object_utils_end
 
   constraint clk_freq_mhz_c {
-    clk_freq_mhz == 100;
+    clk_freq_mhz inside {48, 96};
   }
 
   `uvm_object_new
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
-    int extclk_freq_mhz;
+    int extclk_freq_mhz = UseInternalClk;
+    ext_clk_type_e ext_clk_type;
     has_devmode = 0;
     list_of_alerts = chip_env_pkg::LIST_OF_ALERTS;
 
@@ -141,12 +142,13 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     `DV_CHECK_LE_FATAL(num_ram_ret_tiles, 16)
 
     // Set external clock frequency.
-    if ($value$plusargs("extclk_freq_mhz=%d", extclk_freq_mhz)) begin
-      `DV_CHECK(extclk_freq_mhz inside {48, 100},
-                $sformatf("Unexpected extclk frequency %0d: valid numbers are 100 and 48",
-                          extclk_freq_mhz))
-        clk_freq_mhz = extclk_freq_mhz;
-    end
+    `DV_GET_ENUM_PLUSARG(ext_clk_type_e, ext_clk_type)
+    case (ext_clk_type)
+      UseInternalClk: ; // clk_freq_mhz can be a random value
+      ExtClkLowSpeed:  clk_freq_mhz = 48;
+      ExtClkHighSpeed: clk_freq_mhz = 96;
+      default: `uvm_fatal(`gfn, $sformatf("Unexpected ext_clk_type: %s", ext_clk_type.name))
+    endcase
   endfunction
 
   // Apply RAL fixes before it is locked.
