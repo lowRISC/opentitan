@@ -37,12 +37,14 @@ sha2 = "0.10.1"
 humantime = "2.1.0"
 mio = { version = "0.7.0", features = ["os-poll", "net", "os-ext"] }
 mio-signals = "0.1.5" # mio-signals 0.2.0 exists, but requires mio 0.8.0
+rand = "0.8.4"
 
 serde = { version="1", features=["serde_derive"] }
 serde_json = "1"
 deser-hjson = "1.0.2"
-rand = "0.8.4"
 erased-serde = "0.3.12"
+typetag = "0.1"
+
 opentitantool_derive = {path = "opentitantool_derive"}
 
 [package.metadata.raze.crates.libudev-sys.'0.1.4']
