@@ -238,6 +238,39 @@ sw_tests += {
   }
 }
 
+rstmgr_alert_info_test_lib = declare_dependency(
+  link_with: static_library(
+    'rstmgr_alert_info_lib',
+    sources: [
+      hw_ip_alert_handler_reg_h,
+      'rstmgr_alert_info_test.c'],
+    dependencies: [
+      sw_lib_dif_aon_timer,
+      sw_lib_dif_rstmgr,
+      sw_lib_dif_pwrmgr,
+      sw_lib_dif_alert_handler,
+      sw_lib_dif_spi_host,
+      sw_lib_dif_uart,
+      sw_lib_dif_i2c,
+      sw_lib_dif_otp_ctrl,
+      sw_lib_dif_rv_plic,
+      sw_lib_runtime_log,
+      sw_lib_runtime_ibex,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+      sw_lib_testing_aon_timer_testutils,
+      sw_lib_testing_rv_plic_testutils,
+      sw_lib_testing_alert_handler_testutils,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'rstmgr_alert_info_test': {
+    'library': rstmgr_alert_info_test_lib,
+  }
+}
+
 otbn_smoketest_lib = declare_dependency(
   link_with: static_library(
     'otbn_smoketest_lib',
