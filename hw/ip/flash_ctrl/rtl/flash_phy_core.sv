@@ -88,12 +88,12 @@ module flash_phy_core
   //
   localparam int StateWidth = 10;
   typedef enum logic [StateWidth-1:0] {
-    StIdle = 10'b1011011110,
+    StIdle     = 10'b1011011110,
     StCtrlRead = 10'b0010100110,
     StCtrlProg = 10'b1111101101,
-    StCtrl = 10'b1101000010,
-    StDisable = 10'b0000111011,
-    StInvalid = 10'b0101110100
+    StCtrl     = 10'b1101000010,
+    StDisable  = 10'b0000111011,
+    StInvalid  = 10'b0101110100
   } state_e;
 
   state_e state_q, state_d;
