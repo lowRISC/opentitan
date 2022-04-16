@@ -10,28 +10,67 @@
 
 set -e -x
 
+GCP_BAZEL_CACHE_KEY=$1
+
 mkdir -p bazel-results
 
+# Install bazel
+# TODO: this can be deleted once #12210 is merged
+./bazelisk.sh
+
+# Call bazel in all subsequent commands using bazelisk
+BAZEL=./bazelisk.sh
+
 # This queries for things that depend on //hw:verilator to exclude them
-bazel query \
+$BAZEL query \
     'rdeps(//..., //hw:verilator)' \
     | sed -e 's/^/-/' \
     > bazel-results/slow_tests.txt
 
 run_tests() {
+    local args=(
+        --keep_going
+        --nobuild_tests_only
+        --test_tag_filters=-broken,-cw310,-verilator,-dv
+        --remote_cache=https://storage.googleapis.com/opentitan-bazel-cache
+        --remote_timeout=600
+    )
+
+    if [[ -n "$GCP_BAZEL_CACHE_KEY" && -f $GCP_BAZEL_CACHE_KEY ]]; then
+        echo Applying GCP cache key
+        args+=(--google_credentials=$GCP_BAZEL_CACHE_KEY)
+    else
+        # No key, download from cache only
+        echo No key/invalid path to key. Download from cache only.
+        args+=(--remote_upload_local_results=false)
+    fi
+    
     cat bazel-results/slow_tests.txt \
         | xargs \
-            bazel test \
-            --keep_going \
-            --nobuild_tests_only \
-            --test_tag_filters=-broken,-cw310,-verilator,-dv \
+            $BAZEL test \
+            "${args[@]}" \
             -- //...
 }
 
 build_cw310_targets() {
-    bazel build \
-        --keep_going \
-        --build_tag_filters=cw310 \
+    local args=(
+        --keep_going
+        --build_tag_filters=cw310
+        --remote_cache=https://storage.googleapis.com/opentitan-bazel-cache
+        --remote_timeout=600
+    )
+
+    if [[ -n "$GCP_BAZEL_CACHE_KEY" && -f $GCP_BAZEL_CACHE_KEY ]]; then
+        echo Applying GCP cache key
+        args+=(--google_credentials=$GCP_BAZEL_CACHE_KEY)
+    else
+        # No key, download from cache only
+        echo No key/invalid path to key. Download from cache only.
+        args+=(--remote_upload_local_results=false)
+    fi
+
+    $BAZEL build \
+        "${args[@]}" \
         //...
 }
 
