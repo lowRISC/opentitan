@@ -136,8 +136,8 @@
             - which_invalid_mubi (0 to 8), 9 possible invalid mubi value fields
             - which_cntr_replicate (0 to RNG_BUS_WIDTH-1), reptcnt, adaptp, markov health tests
               have RNG_BUS_WIDTH copies of counters
-            - which_bin (0 to 2<sup>RNG_BUS_WIDTH-1</sup>), bucket health test has 2<sup>RNG_BUS_WIDTH</sup> copies
-              of counters
+            - which_bin (0 to 2<sup>RNG_BUS_WIDTH-1</sup>), bucket health test has
+              2<sup>RNG_BUS_WIDTH</sup> copies of counters
             '''
     }
     {
@@ -212,25 +212,67 @@
             '''
     }
     {
-      name: ht_threshold_cg
+      name: win_ht_cg
       desc: '''
-            Covers a range of values for all health test thresholds.  For each test we need:
-            - Test: ADAPTB, BUCKET, MARKOV, REPCNT, and REPTCNTS.
-              No cross between tests. EXT HT not used or covered for ES
-            - Mode: Bypass or FIPS
+            Covers a range of window sizes for each windowed health test.  For each test we need:
+            - Test: ADAPTB, BUCKET, MARKOV.
+              No cross between tests. EXT HT, though windowed, is not used or covered at this time
             - window_size: {384, 512, 1024, 2048, 4096, plus other non-powers of two}
-            - Range buckets:
-               - For the ADAPTP, BUCKET and MARKOV test, the configuration sets the thresholds
-                 in units the likelihood of HT failure (i.e., sigma values):
-                 covers minimum, maximum, 0-2 sigma, 1-2 sigma, 2-4 sigma, 4-6 sigma, &gt; 6 sigma
-               - For REPCNT and REPCNTS tests covers buckets of 0-32, 32-64, 64-96, &gt; 96
             - Result: HT Pass and Failure
+            - Hi or Low: Was the current sample a pass or a fail for the high threshold or the
+              low threshold?
+            Note: This covergroup covers a wide range of window sizes but does not cover a range
+            of threshold values. See win_ht_deep_threshold_cg for threshold coverpoints.
+            '''
+    }
+    {
+      name: win_ht_deep_threshold_cg
+      desc: '''
+            Covers a range of thresholds values for a focused set of window sizes.  For each test we
+            need:
+            - Test: ADAPTB, BUCKET, MARKOV, REPCNT, and REPTCNTS.
+              No cross between tests. EXT HT, though it is a windowed test, is not covered at this
+              time.
+            - Window Size: Covers only the most common window sizes of 384, 1024 and 2048
+            - Result: HT Pass and Failure.
+            - Hi or Low: Was the current sample a pass or a fail for the high threshold or the
+              low threshold?
+            - By-line: Was the test applied on a by-line basis or across all lines?
+            - Threshold Significance Buckets.  There is some sublety in choosing the range of
+              thresholds bins as the choice of thresholds depends heavily choice of window size.
+              The output of each health test will be tighly clustered near some average
+              value, and the health test threshold serves to tag outliers from this average.
+                - For instance, when averaging over all lines, the output of the ADAPTP test should
+                  on average be close to WINSIZE/2, and the high and low thresholds will be placed
+                  on either side of this midpoint.  This means however that the thresholds used for
+                  a window size of 2048 should both be somewhere close to 1024.  Such thresholds
+                  would be meaningless for a window size of 384, as there is no way the test can
+                  ever output values near 1024 for such a small window.
+                - Rather than choosing fixed threshold bins we choose bins based on <it>threshold
+                  significance</it>, or how stringent the given threshold would be in detecting
+                  deviations from the average value.  Tighter thresholds will more quickly detect
+                  statistical defects in the incoming noise stream, but will also more frequently
+                  indicate false positives for health test defects.
+                - We use the following bins for threshold significance:
+                    - 0 to 1 sigma: Greater than 1 in 3 chance of false positive. With frequent
+                      failures, this range is very good for testing the alert subsystem.
+                    - 1 to 2 sigma: 2.5% chance of a false positive.
+                    - 2 to 4.5 sigma: False positives are more frequent than 1 in 2<sup>20</sup>
+                    - 4.5 to 7 sigma: Covers the NIST recommended range for keeping the rate of
+                      false positives within the range of 1 in 2<sup>20</sup> to 1 in 2<sup>40<sup>.
+                    - Above 7 sigma: If using idealized noise sources these thresholds would yield
+                      false positive rates less than 1 part in 2<sup>40</sup> making these
+                      thresholds too relaxed for the recommendations in NIST SP 80-900B.  However
+                      for imperfect noise sources with realistic statistical defects, which are to
+                      be expected and must be compensated for, thresholds in these ranges may be
+                      needed for practical operation, and so there should be at least one bin for
+                      these threshold significance values.
             '''
     }
     {
       name: alert_cnt_cg
       desc: '''
-            Covers a range of values (1 to 16, plus &gt; 16) for ALERT_THRESHOLD
+            Covers a range of values (1, 2, 3-6, 6-10, plus &gt; 10) for ALERT_THRESHOLD.
             '''
     }
     {

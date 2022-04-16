@@ -402,11 +402,35 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   endfunction
 
+
+  // Indicates that the health test is active
+  // Also indicates whether the sigma value in the dut_cfg is being employed
+  function bit ht_is_active();
+    bit fw_insert, sigma_applied;
+
+    fw_insert = (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True) &&
+                (ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value() == MuBi4True);
+
+    // TODO (Priority 3): This use of the dut_cfg depends very much on the vseq being employed.
+    sigma_applied = !cfg.dut_cfg.default_ht_thresholds;
+
+    return !fw_insert && !sigma_applied;
+
+  endfunction
+
   function bit evaluate_adaptp_test(queue_of_rng_val_t window, bit fips_mode);
     int value, minval, maxval;
     bit fail_hi, fail_lo;
     bit total_scope;
-    total_scope = (ral.conf.threshold_scope.get_mirrored_value() == prim_mubi_pkg::MuBi4True);
+
+    int window_size = fips_mode ? ral.health_test_windows.fips_window.get_mirrored_value() :
+                                  ral.health_test_windows.bypass_window.get_mirrored_value();
+    // TODO (Priority 3): write a function to map actual thresholds to their corresponding sigma
+    // (assuming ideal noise inputs), so we can pull the sigma values from the actual
+    // register values, as opposed to the config.
+    real sigma = cfg.dut_cfg.adaptp_sigma;
+
+    total_scope = (ral.conf.threshold_scope.get_mirrored_value() == MuBi4True);
 
     value = calc_adaptp_test(window, maxval, minval);
 
@@ -416,6 +440,15 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     fail_lo = check_threshold("adaptp_lo", fips_mode, total_scope ? value : minval);
     fail_hi = check_threshold("adaptp_hi", fips_mode, total_scope ? value : maxval);
 
+    if (ht_is_active()) begin
+      cov_vif.cg_win_ht_sample(adaptp_ht, high_test, window_size, fail_hi);
+      cov_vif.cg_win_ht_sample(adaptp_ht, low_test, window_size, fail_lo);
+      cov_vif.cg_win_ht_deep_threshold_sample(adaptp_ht, high_test, window_size, !total_scope,
+                                              sigma, fail_hi);
+      cov_vif.cg_win_ht_deep_threshold_sample(adaptp_ht, low_test, window_size, !total_scope,
+                                              sigma, fail_lo);
+    end
+
     return (fail_hi || fail_lo);
   endfunction
 
@@ -423,11 +456,23 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     int value;
     bit fail;
 
+    int window_size = fips_mode ? ral.health_test_windows.fips_window.get_mirrored_value() :
+                                  ral.health_test_windows.bypass_window.get_mirrored_value();
+    // TODO (Priority 3): write a function to map actual thresholds to their corresponding sigma
+    // (assuming ideal noise inputs), so we can pull the sigma values from the actual
+    // register values, as opposed to the config.
+    real sigma = cfg.dut_cfg.adaptp_sigma;
+
     value = calc_bucket_test(window);
 
     update_watermark("bucket", fips_mode, value);
 
     fail = check_threshold("bucket", fips_mode, value);
+
+    if (ht_is_active()) begin
+      cov_vif.cg_win_ht_sample(bucket_ht, high_test, window_size, fail);
+      cov_vif.cg_win_ht_deep_threshold_sample(bucket_ht, high_test, window_size, 1'b0, sigma, fail);
+    end
 
     return fail;
   endfunction
@@ -436,6 +481,13 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     int value, minval, maxval;
     bit fail_hi, fail_lo;
     bit total_scope;
+    int window_size = fips_mode ? ral.health_test_windows.fips_window.get_mirrored_value() :
+                                  ral.health_test_windows.bypass_window.get_mirrored_value();
+    // TODO (Priority 3): write a function to map actual thresholds to their corresponding sigma
+    // (assuming ideal noise inputs), so we can pull the sigma values from the actual
+    // register values, as opposed to the config.
+    real sigma = cfg.dut_cfg.adaptp_sigma;
+
     total_scope = (ral.conf.threshold_scope.get_mirrored_value() == prim_mubi_pkg::MuBi4True);
 
     value = calc_markov_test(window, maxval, minval);
@@ -445,6 +497,15 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     fail_lo = check_threshold("markov_lo", fips_mode, total_scope ? value : minval);
     fail_hi = check_threshold("markov_hi", fips_mode, total_scope ? value : maxval);
+
+    if (ht_is_active()) begin
+      cov_vif.cg_win_ht_sample(markov_ht, high_test, window_size, fail_hi);
+      cov_vif.cg_win_ht_sample(markov_ht, low_test, window_size, fail_lo);
+      cov_vif.cg_win_ht_deep_threshold_sample(markov_ht, high_test, window_size, !total_scope,
+                                              sigma, fail_hi);
+      cov_vif.cg_win_ht_deep_threshold_sample(markov_ht, low_test, window_size, !total_scope,
+                                              sigma, fail_lo);
+    end
 
     return (fail_hi || fail_lo);
   endfunction
@@ -504,6 +565,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     string        fmt;
     int           any_fail_count_regval;
     int           alert_threshold;
+
+
 
     failcnt_fatal += evaluate_repcnt_test(fips_mode);
     failcnt_fatal += evaluate_repcnt_symbol_test(fips_mode);

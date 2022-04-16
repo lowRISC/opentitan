@@ -87,6 +87,19 @@ package entropy_src_env_pkg;
   } cntr_e;
 
   typedef enum int {
+    repcnt_ht  = 0,
+    repcnts_ht = 1,
+    adaptp_ht  = 2,
+    bucket_ht  = 3,
+    markov_ht  = 4
+  } health_test_e;
+
+  typedef enum int {
+    bypass  = 0,
+    fips    = 1
+  } health_test_mode_e;
+
+  typedef enum int {
     repcnt_ht_fail = 0,
     adaptp_ht_fail = 1,
     bucket_ht_fail = 2,
@@ -199,6 +212,107 @@ package entropy_src_env_pkg;
 
     return random_fail_time;
   endfunction // randomize_failure_time
+
+  //
+  // Helper function: ideal_threshold_recommendation
+  //
+  // Purpose:
+  // For use when choosing appropriate health test thresholds (specifically for the three
+  // windowed health tests: adaptp, markov and bucket) based on the desired failure rate.
+  //
+  // The function assumes an ideal noise input, and estimates appropriate upper or lower
+  // thresholds based on a desired sigma-level (number of standard deviations to exceed
+  // when calculating the threshold.
+  //
+  // Inputs:
+  // int    window_size: the number of bits to consider for the test (combining all RNG bus lines)
+  // health_test_e test: the test to consider (adaptp_ht, bucket_ht, or markov_ht)
+  // bit       per_line: set to 1 if the test is being evaluated on a per_line basis
+  //                     (if 0, the range applies if the results are summed over all RNG lines)
+  // which_ht_e  hi_low: which threshold to calculate, upper or lower.
+  // real desired_sigma: the number of standard deviations to provide within the range.  Assuming
+  //                     the window size is large enough to treat the test as normally distributed,
+  //                     the probability of the test within the range increases with the number of
+  //                     sigma
+  //
+  // Output:
+  // An threshold with the desired certainty of test passing, rounded up for high thresholds,
+  // rounded down for low threholds
+  //
+  // The function computes the mean and standard deviation of the test result, assuming a binomial
+  // distribution (or multinomial distribution in the case of the Bucket test).  Then the min/max
+  // range is generated assuming that the window size is large enough to apply a gaussian
+  // approximation.
+  //
+  // This base sequence generates a uniform rng sequence (when not failing), the thresholds
+  // are generated assuming all bits are equally likely, and there are no correlations of any kind.
+  // (e.g. a maximum entropy RNG stream). Derived classes which overload the randomize() method
+  // to introduce statistical defects should also overload this function to match the new
+  // distribution.
+  //
+  // This function can be used to generate high and low test thresholds with a desired likelihood
+  // of failure
+  //
+  //      No. of sigma   Approximate probability of test failure ( P(x) = 1 - erf( x / sqrt(2) ))
+  //     ------------------------------------------------
+  //                 1   31.7%
+  //               1.5   13.4%
+  //                 2    4.6%
+  //               2.5    1.2%
+  //                 3   0.27%
+  //               3.3    0.1%
+  //               3.9    1e-4
+  //              4.42    1e-5
+  //               4.9    1e-6
+  //
+  // The table above can be used to estimate the likelihood of failure for the AdaptP and Markov
+  // tests, which have both high and low thresholds.  Since the Bucket test has only a single
+  // threshold, the likelihood of chance bucket-test failure is 1/2 the above value for the same
+  // sigma value.
+  //
+  // The table above does not account for rounding error. Furthermore, since the approximation to a
+  // normal distribution ignores any skew or other higher moments, this leads additional devations
+  // from the tabled values particularly for smaller window sizes and at higher sigma values.
+
+  function automatic int ideal_threshold_recommendation(int window_size, health_test_e test,
+                                                        bit per_line, which_ht_e hi_low,
+                                                        real desired_sigma);
+    int n, minv, maxv;
+    real p, mean, stddev;
+    int result, upper_threshold, lower_threshold;
+
+    case(test)
+      adaptp_ht: begin
+        // number of trials is equal to number of bits, either in the whole window or per line
+        n = per_line ? (window_size / RNG_BUS_WIDTH) : window_size;
+        p = 0.5;
+      end
+      bucket_ht: begin
+        n = (window_size / RNG_BUS_WIDTH);
+        p = 1.0/real'(1 << RNG_BUS_WIDTH);
+      end
+      markov_ht: begin
+        n = per_line ? (window_size / RNG_BUS_WIDTH / 2) : window_size / 2;
+        p = 0.5;
+      end
+      default: begin
+        `dv_fatal("Invalid test!", "entropy_src_env_pkg::ideal_threshold_recommendation")
+      end
+    endcase
+    mean   = p * n;
+    stddev = $sqrt(p * (1 - p) * n);
+
+    lower_threshold = (test == bucket_ht) ? 0 : $floor(mean - desired_sigma * stddev);
+    upper_threshold = $ceil(mean + desired_sigma * stddev);
+    // For large values of sigma, the gaussian approximation can recommend thresholds larger than
+    // the total number of trials.   In such cases we cap the threshold at the total number of
+    // trials for the given test.
+    upper_threshold = (upper_threshold > n) ? n : upper_threshold;
+    lower_threshold = (lower_threshold < 0) ? 0 : lower_threshold;
+
+    return (hi_low == high_test) ? upper_threshold : lower_threshold;
+
+  endfunction
 
   // package sources
   `include "entropy_src_dut_cfg.sv"

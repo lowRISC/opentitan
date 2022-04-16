@@ -14,7 +14,6 @@ interface entropy_src_cov_if
 
   import uvm_pkg::*;
   import dv_utils_pkg::*;
-  import entropy_src_pkg::*;
   import entropy_src_reg_pkg::*;
   import entropy_src_env_pkg::*;
   `include "dv_fcov_macros.svh"
@@ -24,6 +23,10 @@ interface entropy_src_cov_if
 
   // If en_full_cov is set, then en_intg_cov must also be set since it is a subset.
   bit en_intg_cov_loc;
+
+  // Resolution to use when converting real sigma values to integers for binning
+  real sigma_res = 0.5;
+
   assign en_intg_cov_loc = en_full_cov | en_intg_cov;
 
   // Covergroup to confirm that the entropy_data CSR interface works
@@ -195,7 +198,7 @@ interface entropy_src_cov_if
     // CSRNG HW interface functions despite any changes to the fw_ov settings
     cr_fw_ov: cross cp_fw_ov_mode, cp_entropy_insert;
 
-  endgroup : entropy_src_csrng_hw_cg;
+  endgroup : entropy_src_csrng_hw_cg
 
   // Covergroup to confirm that the Observe FIFO interface works
   // for all configurations
@@ -284,7 +287,7 @@ interface entropy_src_cov_if
     // Entropy data interface functions despite any changes to the fw_ov settings
     cr_fw_ov: cross cp_fw_ov_mode, cp_entropy_insert;
 
-  endgroup : entropy_src_observe_fifo_cg;
+  endgroup : entropy_src_observe_fifo_cg
 
   covergroup entropy_src_sw_update_cg with function sample(uvm_reg_addr_t offset,
                                                            bit sw_regupd,
@@ -318,10 +321,133 @@ interface entropy_src_cov_if
 
   endgroup : entropy_src_sw_update_cg
 
+  // "Shallow" covergroup to validate that the windowed health checks are passing and failing for
+  // all possible window sizes
+  covergroup entropy_src_win_ht_cg with function sample(health_test_e test_type,
+                                                        which_ht_e hi_lo,
+                                                        int window_size,
+                                                        bit fail);
+
+    option.name         = "entropy_src_win_ht_cg";
+    option.per_instance = 1;
+
+    cp_winsize : coverpoint window_size {
+      bins common[] = {384, 512, 1024, 2048, 4096};
+      bins larger = {8192, 16384, 32768};
+    }
+
+    cp_type : coverpoint test_type {
+      bins types[] = {adaptp_ht, bucket_ht, markov_ht};
+    }
+
+    cp_hi_lo : coverpoint hi_lo;
+
+    cp_fail : coverpoint fail;
+
+    cr_cross : cross cp_winsize, cp_type, cp_hi_lo, cp_fail {
+      // bucket_ht does not have a low threshold
+      ignore_bins ignore = binsof(cp_type) intersect { bucket_ht } &&
+                           binsof(cp_hi_lo) intersect { low_test };
+    }
+
+  endgroup : entropy_src_win_ht_cg
+
+  // "Deep" covergroup definition to confirm that the threshold performance has been
+  // properly tested for a practical range of thresholds for all windowed tests.
+  //
+  // Covering a range of thesholds for the windowed tests is challenging as the
+  // results of the test values are generally expected to be centered around the average
+  // value.  Many threshold values will require directed tests to obtain a pass or fail value,
+  // if they are even testable at all.
+  //
+  // Rather than trying to cover all possible threshold ranges with directed tests
+  // we focus on a well defined set of bins corresponding to threshold aggressiveness.
+  //
+  // The most aggressive threshold bin (0-2 sigma) would be most likely to have frequent false
+  // positives (at least once every 20 window samples) and HT alerts even when dealing with
+  // an ideal stream of RNG inputs.
+  //
+  // The least aggressive threshold bin (> 6 sigma) more accurately corresponds to the functional
+  // mode of operation, with a low rate of false postives, which will require some directed
+  // tests to trigger a HT failure.
+  //
+  // The definition of these practical ranges depends on the size of the windows
+  // and the threshold mode (i.e. are statistics accumulated over all RNG lines, or are the
+  // thresholds applied on a per-line basis?).  Furthermore, this relationship between the
+  // window size and the threshold bins (2-sigma, 4-sigma, 6-sigma, 12-sigma) is non-trivial.
+  // That said this covergroup is parameterized in terms of the window size and mode,
+  // so unique threshold bins can be constructed for the desired window size.
+  // Several instances are then created for a targetted handful of window sizes.
+  //
+
+  function automatic unsigned sigma_to_int(real sigma);
+    return unsigned'($rtoi($floor(sigma/sigma_res)));
+  endfunction
+
+  covergroup entropy_src_win_ht_deep_threshold_cg()
+      with function sample(health_test_e test_type,
+                           which_ht_e hi_lo,
+                           int window_size,
+                           bit by_line,
+                           real sigma,
+                           bit fail);
+
+    option.name         = "entropy_src_win_ht_deep_threshold_cg";
+    option.per_instance = 1;
+
+    cp_type : coverpoint test_type {
+      bins types[] = {adaptp_ht, bucket_ht, markov_ht};
+    }
+
+    // Sharp focus on most important window sizes
+    // for this covergroup
+    cp_winsize : coverpoint window_size {
+      bins sizes[] = {384, 1024, 2048};
+    }
+
+    cp_by_line : coverpoint by_line;
+
+    cp_hi_lo : coverpoint hi_lo;
+
+    cp_fail : coverpoint fail;
+
+    // TODO CP for alert count
+    // TODO Ignore bins for thresholds when tests are not applied
+    //      (i.e. in open threshold configuration or FW Override modes)
+
+    cp_threshold : coverpoint sigma_to_int(sigma) {
+      // Very frequent false positive rates 1 in 6 for single-sided test
+      // (good for testing frequent alert scenarios)
+      bins extremely_tight = { [0 : sigma_to_int(1.0) - 1]};
+      // False positive rate > 2.5% (for testing frequent single failures)
+      bins very_tight      = { [sigma_to_int(1.0) : sigma_to_int(2.0) - 1] };
+      // False positive rate > 3ppm (almost covers up to SP 800-90B's minimum suggested 1 in 2^20)
+      bins tight           = { [sigma_to_int(2.0) : sigma_to_int(4.5) - 1] };
+      // False positive rate > 1.25 in 1e12 (covers to most of SP 800-90B range down to 1 in 2^40)
+      bins typical         = { [sigma_to_int(4.5) : sigma_to_int(7.0) - 1] };
+      // All other possible sigma values
+      bins loose           = { [sigma_to_int(7.0) : 32'hffff_ffff]};
+    }
+
+    cr_cross : cross cp_winsize, cp_by_line, cp_type, cp_hi_lo, cp_fail, cp_threshold {
+      // bucket_ht does not have a low threshold
+      ignore_bins ignore_a = binsof(cp_type) intersect { bucket_ht } &&
+                             binsof(cp_hi_lo) intersect { low_test };
+      // by_line mode does not apply to bucket_ht
+      ignore_bins ignore_b = binsof(cp_type) intersect { bucket_ht } &&
+                             binsof(cp_by_line) intersect { 1 };
+    }
+
+  endgroup : entropy_src_win_ht_deep_threshold_cg
+
+  // TODO: Covergroup for non-windowed tests.
+
   `DV_FCOV_INSTANTIATE_CG(entropy_src_seed_output_csr_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(entropy_src_csrng_hw_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(entropy_src_observe_fifo_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(entropy_src_sw_update_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(entropy_src_win_ht_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(entropy_src_win_ht_deep_threshold_cg, en_full_cov)
 
   // Sample functions needed for xcelium
   function automatic void cg_seed_output_csr_sample(mubi4_t   fips_enable,
@@ -384,6 +510,31 @@ interface entropy_src_cov_if
     entropy_src_sw_update_cg_inst.sample(offset, sw_regupd, module_enable);
 
   endfunction
+
+  function automatic void cg_win_ht_sample(health_test_e test_type,
+                                           which_ht_e hi_low,
+                                           int window_size,
+                                           bit fail);
+    entropy_src_win_ht_cg_inst.sample(test_type,
+                                      hi_low,
+                                      window_size,
+                                      fail);
+  endfunction
+
+  function automatic void cg_win_ht_deep_threshold_sample(health_test_e test_type,
+                                                         which_ht_e hi_low,
+                                                         int window_size,
+                                                         bit by_line,
+                                                         real sigma,
+                                                         bit fail);
+    entropy_src_win_ht_deep_threshold_cg_inst.sample(test_type,
+                                                     hi_low,
+                                                     window_size,
+                                                     by_line,
+                                                     sigma,
+                                                     fail);
+  endfunction
+
 
   // Sample the csrng_hw_cg whenever data is output on the csrng pins
   logic csrng_if_req, csrng_if_ack;
