@@ -54,12 +54,6 @@ class entropy_src_base_rng_seq extends push_pull_indefinite_host_seq#(
   realtime hard_fail_time, soft_fail_time;
   bit      is_hard_failed, is_soft_failed;
 
-  typedef enum bit [1:0] {
-    AdaptP,
-    Bucket,
-    Markov
-  } health_test_e;
-
   task reset_rng();
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(hard_fail_bit_ctrl);
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(hard_fail_state)
@@ -136,8 +130,8 @@ class entropy_src_base_rng_seq extends push_pull_indefinite_host_seq#(
   // Function threshold_rec
   //
   // Purpose:
-  // Estimates the typical normal statistical range for each test, to within a desired number of
-  // standard deviations (desired_sigma).
+  // For use when choosing appropriate health test thresholds (specifically for the three
+  // windowed health tests: adaptp, markov and bucket) based on the desired failure rate.
   //
   // Inputs:
   // int    window_size: the number of bits to consider for the test (combining all RNG bus lines)
@@ -153,75 +147,23 @@ class entropy_src_base_rng_seq extends push_pull_indefinite_host_seq#(
   // lower_threshold, upper_threshold: A min/max threshold pair with the desired certainty of
   // test passing.
   //
-  // The function computes the mean and standard deviation of the test result, assuming a binomial
-  // distribution (or multinomial distribution in the case of the Bucket test).  Then the min/max
-  // range is generated assuming that the window size is large enough to apply a gaussian
-  // approximation.
+  // In this particular baseclass we use the routine ideal_treshold_recommendation from the
+  // entropy_src_env_pkg to reflect that, in the absence of hard or soft failures, this baseclass
+  // generates Idealized RNG bitstreams.
   //
-  // This base sequence generates a uniform rng sequence (when not failing), the thresholds
-  // are generated assuming all bits are equally likely, and there are no correlations of any kind.
-  // (e.g. a maximum entropy RNG stream). Derived classes which overload the randomize() method
-  // to introduce statistical defects should also overload this function to match the new
-  // distribution.
-  //
-  // This function can be used to generate high and low test thresholds with a desired likelihood
-  // of failure
-  //
-  //      No. of sigma   Approximate probability of test failure ( P(x) = 1 - erf( x / sqrt(2) ))
-  //     ------------------------------------------------
-  //                 1   31.7%
-  //               1.5   13.4%
-  //                 2    4.6%
-  //               2.5    1.2%
-  //                 3   0.27%
-  //               3.3    0.1%
-  //               3.9    1e-4
-  //              4.42    1e-5
-  //               4.9    1e-6
-  //
-  // The table above can be used to estimate the likelihood of failure for the AdaptP and Markov
-  // tests, which have both high and low thresholds.  Since the Bucket test has only a single
-  // threshold, the likelihood of chance bucket-test failure is 1/2 the above value for the same
-  // sigma value.
-  //
-  // The table above does not account for rounding error. Furthermore, since the approximation to a
-  // normal distribution ignores any skew or other higher moments, this leads additional devations
-  // from the tabled values particularly for smaller window sizes and at higher sigma values.
+  // If a child class overrides the random_data_typical method to general non-ideal noise (even
+  // during normal operation) this function can be overidden to provide new thresholds which
+  // will still provide the desired failure rates even with typical non-idealities taken into
+  // account.
+
 
   virtual function void threshold_rec(int window_size, health_test_e test, bit per_line,
                                       real desired_sigma, output int lower_threshold,
                                       output int upper_threshold);
-    int n, minv, maxv;
-    real p, mean, stddev;
-    case(test)
-      AdaptP: begin
-        // number of trials is equal to number of bits, either in the whole window or per line
-        n = per_line ? (window_size / RNG_BUS_WIDTH) : window_size;
-        p = 0.5;
-      end
-      Bucket: begin
-        n = (window_size / RNG_BUS_WIDTH);
-        p = 1.0/real'(1 << RNG_BUS_WIDTH);
-      end
-      Markov: begin
-        n = per_line ? (window_size / RNG_BUS_WIDTH / 2) : window_size / 2;
-        p = 0.5;
-      end
-      default: begin
-        `dv_fatal("Invalid test!", `gfn)
-      end
-    endcase
-    mean   = p * n;
-    stddev = $sqrt(p * (1 - p) * n);
-
-    lower_threshold = (test == Bucket) ? 0 : $floor(mean - desired_sigma * stddev);
-    upper_threshold = $ceil(mean + desired_sigma * stddev);
-    // For large values of sigma, the gaussian approximation can recommend thresholds larger than
-    // the total number of trials.   In such cases we cap the threshold at the total number of
-    // trials for the given test.
-    upper_threshold = (upper_threshold > n) ? n : upper_threshold;
-    lower_threshold = (lower_threshold < 0) ? 0 : lower_threshold;
-
+    lower_threshold = ideal_threshold_recommendation(window_size, test, per_line, low_test,
+                                                     desired_sigma);
+    upper_threshold = ideal_threshold_recommendation(window_size, test, per_line, high_test,
+                                                     desired_sigma);
   endfunction
 
 endclass

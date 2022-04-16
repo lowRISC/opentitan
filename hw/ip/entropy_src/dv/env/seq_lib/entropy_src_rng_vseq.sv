@@ -108,14 +108,13 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     // TODO: Separate sigmas for bypass and FIPS operation
     // TODO: cfg for threshold_rec per_line arguments
 
-//    if (!newcfg.default_ht_thresholds) begin
-    if (0) begin
+    if (!newcfg.default_ht_thresholds) begin
       // AdaptP thresholds
-      m_rng_push_seq.threshold_rec(newcfg.fips_window_size, entropy_src_base_rng_seq::AdaptP, 0,
+      m_rng_push_seq.threshold_rec(newcfg.fips_window_size, adaptp_ht, 0,
                                    newcfg.adaptp_sigma, lo_thresh, hi_thresh);
       ral.adaptp_hi_thresholds.fips_thresh.set(hi_thresh[15:0]);
       ral.adaptp_lo_thresholds.fips_thresh.set(lo_thresh[15:0]);
-      m_rng_push_seq.threshold_rec(newcfg.bypass_window_size, entropy_src_base_rng_seq::AdaptP, 0,
+      m_rng_push_seq.threshold_rec(newcfg.bypass_window_size, adaptp_ht, 0,
                                    newcfg.adaptp_sigma, lo_thresh, hi_thresh);
       ral.adaptp_hi_thresholds.bypass_thresh.set(hi_thresh[15:0]);
       ral.adaptp_lo_thresholds.bypass_thresh.set(lo_thresh[15:0]);
@@ -123,20 +122,20 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       csr_update(.csr(ral.adaptp_lo_thresholds));
 
       // Bucket thresholds
-      m_rng_push_seq.threshold_rec(newcfg.fips_window_size, entropy_src_base_rng_seq::Bucket, 0,
+      m_rng_push_seq.threshold_rec(newcfg.fips_window_size, bucket_ht, 0,
                                    newcfg.bucket_sigma, lo_thresh, hi_thresh);
       ral.bucket_thresholds.fips_thresh.set(hi_thresh[15:0]);
-      m_rng_push_seq.threshold_rec(newcfg.bypass_window_size, entropy_src_base_rng_seq::Bucket, 0,
+      m_rng_push_seq.threshold_rec(newcfg.bypass_window_size, bucket_ht, 0,
                                    newcfg.bucket_sigma, lo_thresh, hi_thresh);
       ral.bucket_thresholds.bypass_thresh.set(hi_thresh[15:0]);
       csr_update(.csr(ral.bucket_thresholds));
 
       // TODO: Markov DUT is currently cofigured for per_line operation (see Issue #9759)
-      m_rng_push_seq.threshold_rec(newcfg.fips_window_size, entropy_src_base_rng_seq::Markov, 1,
+      m_rng_push_seq.threshold_rec(newcfg.fips_window_size, markov_ht, 1,
                                    newcfg.markov_sigma, lo_thresh, hi_thresh);
       ral.markov_hi_thresholds.fips_thresh.set(hi_thresh[15:0]);
       ral.markov_lo_thresholds.fips_thresh.set(lo_thresh[15:0]);
-      m_rng_push_seq.threshold_rec(newcfg.bypass_window_size, entropy_src_base_rng_seq::Markov, 1,
+      m_rng_push_seq.threshold_rec(newcfg.bypass_window_size, markov_ht, 1,
                                    newcfg.markov_sigma, lo_thresh, hi_thresh);
       ral.markov_hi_thresholds.bypass_thresh.set(hi_thresh[15:0]);
       ral.markov_lo_thresholds.bypass_thresh.set(lo_thresh[15:0]);
