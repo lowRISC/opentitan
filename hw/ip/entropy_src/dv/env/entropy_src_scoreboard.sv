@@ -1363,6 +1363,18 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           `DV_CHECK_FATAL(csr.predict(.value(prediction), .kind(UVM_PREDICT_READ)))
           observe_fifo_words++;
           match_found = 1;
+          cov_vif.cg_observe_fifo_sample(
+              ral.conf.fips_enable.get_mirrored_value(),
+              ral.conf.threshold_scope.get_mirrored_value(),
+              ral.conf.rng_bit_enable.get_mirrored_value(),
+              ral.conf.rng_bit_sel.get_mirrored_value(),
+              ral.entropy_control.es_route.get_mirrored_value(),
+              ral.entropy_control.es_type.get_mirrored_value(),
+              ral.conf.entropy_data_reg_enable.get_mirrored_value(),
+              cfg.otp_en_es_fw_read,
+              ral.fw_ov_control.fw_ov_mode.get_mirrored_value(),
+              ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value()
+          );
           msg = $sformatf("Match found: %d\n", observe_fifo_words);
           `uvm_info(`gfn, msg, UVM_FULL)
           break;
