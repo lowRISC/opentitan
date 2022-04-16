@@ -282,15 +282,6 @@
       tests: []
     }
     {
-      name: chip_usb_ls_tx_rx
-      desc: '''Verify the transmission of single-ended data over the USB at low speed.
-
-            - Similar to `chip_usb_fs_df_tx_rx`, except testing USB at Low-Speed (1.5 Mbps).
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
       name: chip_sw_usb_vbus
       desc: '''Verify that the USB device can detect the presence of VBUS from the USB host.
 
