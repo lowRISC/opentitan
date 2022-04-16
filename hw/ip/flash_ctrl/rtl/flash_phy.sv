@@ -172,8 +172,12 @@ module flash_phy
   assign unused_cfg = region_cfg;
 
   // only scramble/ecc attributes are looked at
-  assign host_scramble_en = prim_mubi_pkg::mubi4_test_true_loose(region_cfg.scramble_en);
-  assign host_ecc_en = prim_mubi_pkg::mubi4_test_true_loose(region_cfg.ecc_en);
+  import prim_mubi_pkg::mubi4_test_true_strict;
+  import prim_mubi_pkg::mubi4_and_hi;
+
+  assign host_scramble_en = mubi4_test_true_strict(
+                              mubi4_and_hi(region_cfg.scramble_en, region_cfg.en));
+  assign host_ecc_en = mubi4_test_true_strict(mubi4_and_hi(region_cfg.ecc_en, region_cfg.en));
 
   // Prim flash to flash_phy_core connections
   flash_phy_pkg::flash_phy_prim_flash_req_t [NumBanks-1:0] prim_flash_req;
