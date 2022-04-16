@@ -425,7 +425,7 @@ When disabled, the flash has a two layered response:
 - The flash protocol controller [memory protection]({{< relref "#memory-protection" >}}) errors back all controller initiated operations.
 - The host-facing tlul adapter errors back all host initiated operations.
 - The flash physical controller completes any existing stateful operations (program or erase) and drops all future flash transactions.
-- The flash protocol controller arbiter completes any existing software issued commands and enters an invalid state where no new transactions can be issued.
+- The flash protocol controller arbiter completes any existing software issued commands and enters a disabled state where no new transactions can be issued.
 
 
 ### Flash Physical Controller

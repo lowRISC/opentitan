@@ -75,17 +75,18 @@ module flash_phy_prog import flash_phy_pkg::*; (
   //
   localparam int StateWidth = 11;
   typedef enum logic [StateWidth-1:0] {
-    StIdle          = 11'b00101010010,
-    StPrePack       = 11'b00110101001,
-    StPackData      = 11'b00000011101,
-    StPostPack      = 11'b11111101100,
-    StCalcPlainEcc  = 11'b10110011110,
-    StReqFlash      = 11'b01111000111,
-    StWaitFlash     = 11'b11001110101,
-    StCalcMask      = 11'b01000100000,
-    StScrambleData  = 11'b11001001010,
-    StCalcEcc       = 11'b11110110011,
-    StInvalid       = 11'b10011000001
+    StIdle          = 11'b11111111110,
+    StPrePack       = 11'b00001110111,
+    StPackData      = 11'b10100100011,
+    StPostPack      = 11'b11010000101,
+    StCalcPlainEcc  = 11'b01101011011,
+    StReqFlash      = 11'b01010110010,
+    StWaitFlash     = 11'b00100111000,
+    StCalcMask      = 11'b00000001110,
+    StScrambleData  = 11'b00011101001,
+    StCalcEcc       = 11'b00111010100,
+    StDisabled      = 11'b10001000000,
+    StInvalid       = 11'b10010011011
   } state_e;
   state_e state_d, state_q;
 
@@ -190,7 +191,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
           // only disable during idle state to ensure program is able to gracefully complete
           // this is important as we do not want to accidentally disturb any electrical procedure
           // internal to the flash macro
-          state_d = StInvalid;
+          state_d = StDisabled;
         end else if (req_i && |sel_i) begin
           state_d = StPrePack;
         end else if (req_i) begin
@@ -281,7 +282,12 @@ module flash_phy_prog import flash_phy_pkg::*; (
         end
       end
 
+      StDisabled: begin
+        state_d = StDisabled;
+      end
+
       StInvalid: begin
+        state_d = StInvalid;
         fsm_err_o = 1'b1;
       end
 

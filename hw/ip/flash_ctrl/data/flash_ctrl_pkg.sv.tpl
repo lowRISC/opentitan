@@ -586,17 +586,18 @@ package flash_ctrl_pkg;
   // Minimum Hamming weight: 3
   // Maximum Hamming weight: 6
   //
-  localparam int RmaStateWidth = 10;
+  localparam int RmaStateWidth = 11;
   typedef enum logic [RmaStateWidth-1:0] {
-    StRmaIdle        = 10'b1101000011,
-    StRmaPageSel     = 10'b0010111001,
-    StRmaErase       = 10'b1111010100,
-    StRmaEraseWait   = 10'b0111010101,
-    StRmaWordSel     = 10'b0001011111,
-    StRmaProgram     = 10'b0110001110,
-    StRmaProgramWait = 10'b1000110110,
-    StRmaRdVerify    = 10'b1011101010,
-    StRmaInvalid     = 10'b1100101101
+    StRmaIdle        = 11'b11110001010,
+    StRmaPageSel     = 11'b10111100111,
+    StRmaErase       = 11'b11000010111,
+    StRmaEraseWait   = 11'b01010100110,
+    StRmaWordSel     = 11'b00010011001,
+    StRmaProgram     = 11'b11011111101,
+    StRmaProgramWait = 11'b00111110000,
+    StRmaRdVerify    = 11'b00101001100,
+    StRmaDisabled    = 11'b01001011010,
+    StRmaInvalid     = 11'b10100111011
   } rma_state_e;
 
 
