@@ -71,6 +71,15 @@ Example:
   or   a0, a0, 0x4
 ```
 
+To emit assembly that's compatible with [GNU "as": integer literals should be denoted with a '-' prefix operator](https://sourceware.org/binutils/docs/as/Integers.html) like `-1`, or `-0x01`.
+GNU "as" may flag two's complement representations of negative integers as out of range:
+```console
+error: operand must be a symbol with %lo/%pcrel_lo/%tprel_lo modifier or
+an integer in the range [-2048, 2047]
+    xori x0, x0, 0xFFFFF803
+                 ^
+```
+
 ### Loading Addresses
 
 ***Always use `la` to load the address of a symbol; always use `li` to load an address stored in a `#define`.***
