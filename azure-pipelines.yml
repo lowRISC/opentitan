@@ -103,6 +103,8 @@ jobs:
     vmImage: ubuntu-18.04
   steps:
   - template: ci/install-package-dependencies.yml
+  - bash: bazel run buildifier_check
+    displayName: Use buildifier to check Bazel coding style
   - bash: ci/scripts/check-vendoring.sh
     displayName: Check vendored directories are up-to-date
 
