@@ -35,6 +35,9 @@ class chip_sw_uart_rand_baudrate_vseq extends chip_sw_uart_tx_rx_vseq;
       uart_clk_freq_khz = cfg.clk_freq_mhz * 1000 / 4;
 
       if (extclk_low_speed_sel) uart_clk_freq_khz = uart_clk_freq_khz * 2;
+    end else begin
+      // internal uart bus clock is 24Mhz
+      uart_clk_freq_khz = 24_000;
     end
     `uvm_info(`gfn,
               $sformatf("External clock freq: %0dmhz, use_extclk: %0d, extclk_low_speed_sel: %0d",
