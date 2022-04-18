@@ -46,5 +46,5 @@ interface aes_reseed_if
           prng_reseed_rate == PER_8K) && block_ctr_expr) |-> ##[1:$] entropy_masking_req);
   // check the reseed happens after the block counter resets (when control register is updated)
   `ASSERT(MaskingPrngReseedCorrectAfter_A, (SecMasking && ctrl_we_q && !ctrl_phase_i) |->
-          strong(##[1:$] entropy_masking_req));
+          ##[1:$] entropy_masking_req);
 endinterface // aes_reseed_if
