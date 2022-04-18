@@ -8,12 +8,6 @@ load("@rules_python//python:defs.bzl", "py_binary")
 package(default_visibility = ["//visibility:public"])
 
 py_library(
-    name = "lib",
-    srcs = ["secded_gen.py"],
-    deps = [requirement("hjson")],
-)
-
-py_library(
     name = "secded_gen",
     srcs = ["secded_gen.py"],
     deps = [requirement("hjson")],
@@ -28,6 +22,7 @@ py_binary(
 py_binary(
     name = "gen-otp-img",
     srcs = ["gen-otp-img.py"],
+    imports = ["."],
     deps = [
         "//util/design/lib:common",
         "//util/design/lib:otp_mem_img",

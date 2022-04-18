@@ -13,6 +13,7 @@ import re
 from pathlib import Path
 
 import hjson
+
 from lib.common import wrapped_docstring
 from lib.OtpMemImg import OtpMemImg
 
@@ -76,6 +77,7 @@ def _permutation_string(data_perm):
 # https://stackoverflow.com/questions/41152799/argparse-flatten-the-result-of-action-append
 class ExtendAction(argparse.Action):
     '''Extend action for the argument parser'''
+
     def __call__(self, parser, namespace, values, option_string=None):
         items = getattr(namespace, self.dest) or []
         items.extend(values)
@@ -98,7 +100,9 @@ def main():
         description=wrapped_docstring(),
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.register('action', 'extend', ExtendAction)
-    parser.add_argument('--quiet', '-q', action='store_true',
+    parser.add_argument('--quiet',
+                        '-q',
+                        action='store_true',
                         help='''Don't print out progress messages.''')
     parser.add_argument('--seed',
                         type=int,
@@ -146,6 +150,20 @@ def main():
                         Custom output path for generated hex file.
                         Defaults to {}
                         '''.format(hex_file))
+    parser.add_argument('--lc-state-def',
+                        type=Path,
+                        metavar='<path>',
+                        default=lc_state_def_file,
+                        help='''
+                        Life cycle state definition file in Hjson format.
+                        ''')
+    parser.add_argument('--mmap-def',
+                        type=Path,
+                        metavar='<path>',
+                        default=mmap_def_file,
+                        help='''
+                        OTP memory map file in Hjson format.
+                        ''')
     parser.add_argument('--img-cfg',
                         type=Path,
                         metavar='<path>',
@@ -194,17 +212,17 @@ def main():
     if args.quiet:
         log.getLogger().setLevel(log.WARNING)
 
-    log.info('Loading LC state definition file {}'.format(lc_state_def_file))
-    with open(lc_state_def_file, 'r') as infile:
+    log.info('Loading LC state definition file {}'.format(args.lc_state_def))
+    with open(args.lc_state_def, 'r') as infile:
         lc_state_cfg = hjson.load(infile)
-    log.info('Loading OTP memory map definition file {}'.format(mmap_def_file))
-    with open(mmap_def_file, 'r') as infile:
+    log.info('Loading OTP memory map definition file {}'.format(args.mmap_def))
+    with open(args.mmap_def, 'r') as infile:
         otp_mmap_cfg = hjson.load(infile)
     log.info('Loading main image configuration file {}'.format(args.img_cfg))
     with open(args.img_cfg, 'r') as infile:
         img_cfg = hjson.load(infile)
-  
-    # Set the initial random seed so that the generated image is 
+
+    # Set the initial random seed so that the generated image is
     # deterministically randomized.
     random.seed(args.seed)
 
@@ -214,7 +232,8 @@ def main():
     _override_seed(args, 'img_seed', img_cfg)
 
     try:
-        otp_mem_img = OtpMemImg(lc_state_cfg, otp_mmap_cfg, img_cfg, args.data_perm)
+        otp_mem_img = OtpMemImg(lc_state_cfg, otp_mmap_cfg, img_cfg,
+                                args.data_perm)
 
         for f in args.add_cfg:
             log.info(
