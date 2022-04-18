@@ -105,8 +105,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   `uvm_object_new
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
-    int extclk_freq_mhz = UseInternalClk;
-    ext_clk_type_e ext_clk_type;
+    ext_clk_type_e ext_clk_type = UseInternalClk;
     has_devmode = 0;
     list_of_alerts = chip_env_pkg::LIST_OF_ALERTS;
 
@@ -142,7 +141,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     `DV_CHECK_LE_FATAL(num_ram_ret_tiles, 16)
 
     // Set external clock frequency.
-    `DV_GET_ENUM_PLUSARG(ext_clk_type_e, ext_clk_type)
+    `DV_GET_ENUM_PLUSARG(ext_clk_type_e, ext_clk_type, ext_clk_type)
     case (ext_clk_type)
       UseInternalClk: ; // clk_freq_mhz can be a random value
       ExtClkLowSpeed:  clk_freq_mhz = 48;
