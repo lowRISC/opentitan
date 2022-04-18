@@ -183,7 +183,8 @@ module keccak_2share
         .z_valid_i (rand_valid_i),
         .z_i       (c),
         .q0_o      (q0),
-        .q1_o      (q1)
+        .q1_o      (q1),
+        .prd_o     ()
       );
 
       // Convert q0, q1 to sheet_t
