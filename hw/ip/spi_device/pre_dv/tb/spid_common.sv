@@ -56,6 +56,38 @@ package spid_common;
   import spi_device_pkg::NumTotalCmdInfo;
 
   parameter cmd_info_t [NumTotalCmdInfo-1:0] CmdInfo = {
+    // 27: WRDI
+    '{
+      valid:            1'b 1,
+      opcode:           8'h 04,
+      addr_mode:        AddrDisabled,
+      addr_swap_en:     1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0001, // MISO
+      payload_dir:      PayloadIn,
+      payload_swap_en:  1'b 0,
+      upload:           1'b 0,
+      busy:             1'b 0
+
+    },
+    // 26: WREN
+    '{
+      valid:            1'b 1,
+      opcode:           8'h 06,
+      addr_mode:        AddrDisabled,
+      addr_swap_en:     1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0001, // MISO
+      payload_dir:      PayloadIn,
+      payload_swap_en:  1'b 0,
+      upload:           1'b 0,
+      busy:             1'b 0
+
+    },
     // 25: EX4B
     '{
       valid:            1'b 0,
@@ -701,6 +733,34 @@ package spid_common;
     $display("Status Received: %x", status);
 
   endtask : spiflash_readstatus
+
+  task automatic spiflash_wel(
+    virtual spi_if.tb sif,
+    input spi_byte_t opcode
+  );
+    automatic spi_fifo_t send_data [$];
+    automatic spi_data_t rcv_data [$];
+
+    send_data.push_back('{data: opcode, dir: DirIn,  mode: IoSingle});
+    spi_transaction(sif, send_data, rcv_data);
+
+    $display("WREN sent!");
+
+  endtask : spiflash_wel
+
+  task automatic spiflash_wren(
+    virtual spi_if.tb sif,
+    input spi_byte_t opcode
+  );
+    spiflash_wel(sif, opcode);
+  endtask : spiflash_wren
+
+  task automatic spiflash_wrdi(
+    virtual spi_if.tb sif,
+    input spi_byte_t opcode
+  );
+    spiflash_wel(sif, opcode);
+  endtask : spiflash_wrdi
 
   task automatic spiflash_readjedec(
     virtual spi_if.tb  sif,
