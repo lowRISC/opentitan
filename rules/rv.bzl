@@ -12,10 +12,10 @@ OPENTITAN_PLATFORM = "@bazel_embedded//platforms:opentitan_rv32imc"
 # simulation platforms (DV and Verilator), and two FPGA platforms (NexysVideo
 # and CW310).
 PER_DEVICE_DEPS = {
-    "sim_verilator": ["//sw/device/lib/arch:sim_verilator"],
-    "sim_dv": ["//sw/device/lib/arch:sim_dv"],
-    "fpga_nexysvideo": ["//sw/device/lib/arch:fpga_nexysvideo"],
-    "fpga_cw310": ["//sw/device/lib/arch:fpga_cw310"],
+    "sim_verilator": ["//sw/device/lib/arch:sim_verilator_impl"],
+    "sim_dv": ["//sw/device/lib/arch:sim_dv_impl"],
+    "fpga_nexysvideo": ["//sw/device/lib/arch:fpga_nexysvideo_impl"],
+    "fpga_cw310": ["//sw/device/lib/arch:fpga_cw310_impl"],
 }
 
 def _opentitan_transition_impl(settings, attr):

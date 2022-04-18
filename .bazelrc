@@ -17,6 +17,11 @@ build --incompatible_enable_cc_toolchain_resolution
 # accessed like we do in util/BUILD
 build --workspace_status_command=util/get_workspace_status.sh
 
+# In some case, Bazel seems to drop host-side flags on the ground, causing software
+# to get built incorrectly.
+build --host_copt=-fPIC
+build --host_cxxopt='-std=c++14'
+
 # Generate coverage in lcov format, which can be post-processed by lcov
 # into html-formatted reports.
 coverage --combined_report=lcov --instrument_test_targets --experimental_cc_coverage

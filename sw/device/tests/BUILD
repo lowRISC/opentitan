@@ -2,17 +2,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
+load("//rules:opentitan2.bzl", "OPENTITAN_CPU", opentitan_functest = "opentitan_test")
 
 opentitan_functest(
     name = "aes_idle_test",
     srcs = ["aes_idle_test.c"],
-    verilator = verilator_params(
-        tags = [
-            "cpu:4",
-            "failing_verilator",
-        ],
-    ),
+    per_device = {
+        "//sw/device/lib/arch:sim_verilator": {"tags": ["failing_verilator"]},
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -23,6 +20,8 @@ opentitan_functest(
         "//sw/device/lib/testing:aes_testutils",
         "//sw/device/lib/testing:clkmgr_testutils",
         "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -61,6 +60,8 @@ opentitan_functest(
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aes_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -79,6 +80,8 @@ opentitan_functest(
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -91,18 +94,17 @@ opentitan_functest(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
 opentitan_functest(
     name = "aon_timer_wdog_bite_reset_test",
     srcs = ["aon_timer_wdog_bite_reset_test.c"],
-    verilator = verilator_params(
-        tags = [
-            "cpu:4",
-            "failing_verilator",
-        ],
-    ),
+    per_device = {
+        "//sw/device/lib/arch:sim_verilator": {"tags": ["failing_verilator"]},
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
@@ -113,6 +115,8 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -134,18 +138,17 @@ opentitan_functest(
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
 opentitan_functest(
     name = "clkmgr_external_clk_src_for_sw_test",
     srcs = ["clkmgr_external_clk_src_for_sw_test.c"],
-    verilator = verilator_params(
-        tags = [
-            "cpu:4",
-            "failing_verilator",
-        ],
-    ),
+    per_device = {
+        "//sw/device/lib/arch:sim_verilator": {"tags": ["failing_verilator"]},
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -155,6 +158,8 @@ opentitan_functest(
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:clkmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -166,6 +171,8 @@ opentitan_functest(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:clkmgr",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -184,6 +191,8 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -195,6 +204,8 @@ opentitan_functest(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:clkmgr",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -207,6 +218,8 @@ opentitan_functest(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -221,76 +234,76 @@ opentitan_functest(
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
 opentitan_functest(
     name = "csrng_smoketest",
     srcs = ["csrng_smoketest.c"],
-    verilator = verilator_params(
-        tags = [
-            "cpu:4",
-            "failing_verilator",
-        ],
-    ),
+    per_device = {
+        "//sw/device/lib/arch:sim_verilator": {"tags": ["failing_verilator"]},
+    },
     deps = [
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
 opentitan_functest(
     name = "entropy_src_fw_ovr_test",
     srcs = ["entropy_src_fw_ovr_test.c"],
-    verilator = verilator_params(
-        tags = [
-            "cpu:4",
-            "failing_verilator",
-        ],
-    ),
+    per_device = {
+        "//sw/device/lib/arch:sim_verilator": {"tags": ["failing_verilator"]},
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
 opentitan_functest(
     name = "entropy_src_smoketest",
     srcs = ["entropy_src_smoketest.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    per_device = {
+        "//sw/device/lib/arch:sim_verilator": {"timeout": "long"},
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
 opentitan_functest(
     name = "example_test_from_flash",
     srcs = ["example_test_from_flash.c"],
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
+    ],
 )
 
 opentitan_functest(
     name = "example_test_from_rom",
     srcs = ["example_test_from_rom.c"],
-    # This test doesn't use the OTTF.
-    ottf = [],
-    targets = ["verilator"],  # Can only run in verilator right now.
-    # This test is designed to run and complete entirely in the ROM boot stage.
-    # Setting the `test_in_rom` flag makes the `opentitan_functest` rule aware
-    # of this, and instructs it to load the test image into ROM (rather than
-    # loading the default test ROM, or any other ROM that may be specified via
-    # Verilator or CW310 params).
-    test_in_rom = True,
+    # Can only run in verilator right now.
+    devices = ["//sw/device/lib/arch:sim_verilator"],
+    kind = "rom",
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -309,12 +322,9 @@ opentitan_functest(
 opentitan_functest(
     name = "flash_ctrl_idle_low_power_test",
     srcs = ["flash_ctrl_idle_low_power_test.c"],
-    verilator = verilator_params(
-        tags = [
-            "cpu:4",
-            "failing_verilator",
-        ],
-    ),
+    per_device = {
+        "//sw/device/lib/arch:sim_verilator": {"tags": ["failing_verilator"]},
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib:irq",
@@ -330,6 +340,8 @@ opentitan_functest(
         "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rand_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -346,6 +358,8 @@ opentitan_functest(
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -360,39 +374,39 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
 opentitan_functest(
     name = "gpio_smoketest",
     srcs = ["gpio_smoketest.c"],
-    verilator = verilator_params(
-        args = [
-            "--verilator-args=--trace",
-            "console",
-            "--timeout=3600s",
-            "--exit-failure=FAIL",
-            "--exit-success=PASS",
-        ],
-        tags = [
-            "cpu:4",
-            "failing_verilator",
-        ],
-    ),
+    per_device = {
+        "//sw/device/lib/arch:sim_verilator": {
+            "runner_args": [
+                "--verilator-args=--trace",
+                "console",
+                "--timeout=3600s",
+                "--exit-failure=FAIL",
+                "--exit-success=PASS",
+            ],
+            "tags": ["failing_verilator"],
+        },
+    },
     deps = [
         "//sw/device/lib/dif:gpio",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
 opentitan_functest(
     name = "hmac_enc_irq_test",
     srcs = ["hmac_enc_irq_test.c"],
-    verilator = verilator_params(
-        tags = [
-            "cpu:4",
-            "failing_verilator",
-        ],
-    ),
+    per_device = {
+        "//sw/device/lib/arch:sim_verilator": {"tags": ["failing_verilator"]},
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib:irq",
@@ -404,6 +418,8 @@ opentitan_functest(
         "//sw/device/lib/testing:hmac_testutils",
         "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -416,6 +432,8 @@ opentitan_functest(
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:hmac_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -430,6 +448,8 @@ opentitan_functest(
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:hmac_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -441,6 +461,8 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:rom_ctrl",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -453,6 +475,8 @@ opentitan_functest(
         "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -467,6 +491,8 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -481,6 +507,8 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -493,6 +521,8 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -508,15 +538,17 @@ opentitan_functest(
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
 opentitan_functest(
     name = "otbn_ecdsa_op_irq_test",
     srcs = ["otbn_ecdsa_op_irq_test.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    per_device = {
+        "//sw/device/lib/arch:sim_verilator": {"timeout": "long"},
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib:irq",
@@ -526,6 +558,8 @@ opentitan_functest(
         "//sw/device/lib/runtime:otbn",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
         "//sw/otbn/crypto:p256_ecdsa",
     ],
 )
@@ -542,6 +576,8 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:otbn",
         "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
         "//sw/otbn/code-snippets:err_test",
     ],
 )
@@ -555,6 +591,8 @@ opentitan_functest(
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:otbn",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
         "//sw/otbn/code-snippets:randomness",
     ],
 )
@@ -562,9 +600,9 @@ opentitan_functest(
 opentitan_functest(
     name = "otbn_rsa_test",
     srcs = ["otbn_rsa_test.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    per_device = {
+        "//sw/device/lib/arch:sim_verilator": {"timeout": "long"},
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:otbn",
@@ -572,6 +610,8 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:otbn",
         "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
         "//sw/otbn/crypto:rsa",
     ],
 )
@@ -586,6 +626,8 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:otbn",
         "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
         "//sw/otbn/code-snippets:barrett384",
         "//sw/otbn/code-snippets:err_test",
     ],
@@ -602,15 +644,17 @@ opentitan_functest(
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
 opentitan_functest(
     name = "plic_all_irqs_test",
     srcs = ["autogen/plic_all_irqs_test.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    per_device = {
+        "//sw/device/lib/arch:sim_verilator": {"timeout": "long"},
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib:irq",
@@ -641,42 +685,42 @@ opentitan_functest(
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
 opentitan_functest(
     name = "pmp_smoketest_napot",
     srcs = ["pmp_smoketest_napot.c"],
-    verilator = verilator_params(
-        tags = [
-            "cpu:4",
-            "failing_verilator",
-        ],
-    ),
+    per_device = {
+        "//sw/device/lib/arch:sim_verilator": {"tags": ["failing_verilator"]},
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib:irq",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:pmp",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
 opentitan_functest(
     name = "pmp_smoketest_tor",
     srcs = ["pmp_smoketest_tor.c"],
-    verilator = verilator_params(
-        tags = [
-            "cpu:4",
-            "failing_verilator",
-        ],
-    ),
+    per_device = {
+        "//sw/device/lib/arch:sim_verilator": {"tags": ["failing_verilator"]},
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib:irq",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:pmp",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -693,6 +737,8 @@ opentitan_functest(
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -704,6 +750,8 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -715,6 +763,8 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -737,6 +787,8 @@ opentitan_functest(
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -751,6 +803,8 @@ opentitan_functest(
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -764,13 +818,15 @@ opentitan_functest(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
 opentitan_functest(
     name = "spi_host_smoketest",
     srcs = ["spi_host_smoketest.c"],
-    targets = ["cw310"],  # Can only run on CW310 board right now.
+    devices = ["//sw/device/lib/arch:fpga_cw310"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -780,15 +836,17 @@ opentitan_functest(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
 opentitan_functest(
     name = "sleep_pwm_pulses_test",
     srcs = ["sleep_pwm_pulses_test.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    per_device = {
+        "//sw/device/lib/arch:sim_verilator": {"timeout": "long"},
+    },
     deps = [
         "//hw/ip/pwm/data:pwm_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -802,6 +860,8 @@ opentitan_functest(
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -815,6 +875,8 @@ opentitan_functest(
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:sram_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -831,6 +893,8 @@ opentitan_functest(
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -844,6 +908,8 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:sram_ctrl",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -856,6 +922,8 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -870,5 +938,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )

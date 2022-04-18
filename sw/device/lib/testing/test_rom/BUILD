@@ -6,6 +6,7 @@ load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_rom_binary")
 load("//rules:opentitan_test.bzl", "opentitan_functest")
 load("//rules:autogen.bzl", "autogen_chip_info")
 load("//rules:linker.bzl", "ld_library")
+load("//rules:opentitan2.bzl", "OPENTITAN_CPU", "opentitan_binary")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -24,6 +25,20 @@ ld_library(
 
 opentitan_rom_binary(
     name = "test_rom",
+    deps = [
+        ":linker_script",
+        ":test_rom_lib",
+    ],
+)
+
+opentitan_binary(
+    name = "test_rom2",
+    devices = [
+        "//sw/device/lib/arch:sim_verilator",
+        "//sw/device/lib/arch:sim_dv",
+        "//sw/device/lib/arch:fpga_cw310",
+    ],
+    kind = "rom",
     deps = [
         ":linker_script",
         ":test_rom_lib",

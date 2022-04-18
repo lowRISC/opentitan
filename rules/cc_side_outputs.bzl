@@ -8,7 +8,9 @@ load("@rules_cc//cc:action_names.bzl", "ACTION_NAMES", "C_COMPILE_ACTION_NAME")
 load("//rules:bugfix.bzl", "find_cc_toolchain")
 load("//rules:rv.bzl", "rv_rule")
 
-CcSideProductInfo = provider(fields = ["files"])
+PreProcSideProductInfo = provider(fields = ["files"])
+AsmSideProductInfo = provider(fields = ["files"])
+LlSideProductInfo = provider(fields = ["files"])
 
 def _is_c_or_cc(file):
     return file.extension in [
@@ -22,7 +24,7 @@ def _is_c_or_cc(file):
         "C",
     ]
 
-def _cc_compile_different_output(name, target, ctx, extension, flags, process_all_files = False):
+def _cc_compile_different_output(name, prov, target, ctx, extension, flags, process_all_files = False):
     """
     Helper macro for implementing the .s and .ll outputting libraries.
 
@@ -31,7 +33,7 @@ def _cc_compile_different_output(name, target, ctx, extension, flags, process_al
     and flags to add to the compiler arguments to get the output we want.
     """
     if ctx.rule.kind not in ["cc_library", "cc_binary", "cc_test"]:
-        return [CcSideProductInfo(files = depset([]))]
+        return [prov(files = depset([]))]
 
     # This filters out both headers and assembly source inputs, neither of which
     # make sense to generate an .s output for.
@@ -43,13 +45,13 @@ def _cc_compile_different_output(name, target, ctx, extension, flags, process_al
 
     transitive = []
     for dep in ctx.rule.attr.deps:
-        if CcSideProductInfo in dep:
-            transitive.append(dep[CcSideProductInfo].files)
+        if prov in dep:
+            transitive.append(dep[prov].files)
 
     # Libraries consisting of just headers or assembly files have nothing
     # useful to contribute to the output.
     if len(translation_units) == 0:
-        return [CcSideProductInfo(files = depset(
+        return [prov(files = depset(
             transitive = transitive,
         ))]
 
@@ -160,18 +162,18 @@ def _cc_compile_different_output(name, target, ctx, extension, flags, process_al
             """,
         )
 
-    return [CcSideProductInfo(files = depset(
+    return [prov(files = depset(
         direct = outputs,
         transitive = transitive,
     ))]
 
 def _cc_preprocess_aspect_impl(target, ctx):
-    return _cc_compile_different_output("Preprocess", target, ctx, "i", ["-E"], process_all_files = True)
+    return _cc_compile_different_output("Preprocess", PreProcSideProductInfo, target, ctx, "i", ["-E"], process_all_files = True)
 
 cc_preprocess_aspect = aspect(
     implementation = _cc_preprocess_aspect_impl,
     doc = """
-        An aspect that provides a CcSideProductInfo containing the preprocessed outputs
+        An aspect that provides a PreProcSideProductInfo containing the preprocessed outputs
         of every C/C++ translation unit in the sources of the rule it is applied to and
         all of its dependencies.
     """,
@@ -191,7 +193,7 @@ cc_preprocess_aspect = aspect(
         ),
     },
     attr_aspects = ["deps"],
-    provides = [CcSideProductInfo],
+    provides = [PreProcSideProductInfo],
     toolchains = ["@rules_cc//cc:toolchain_type"],
     incompatible_use_toolchain_transition = True,
     fragments = ["cpp"],
@@ -199,12 +201,12 @@ cc_preprocess_aspect = aspect(
 )
 
 def _cc_assembly_aspect_impl(target, ctx):
-    return _cc_compile_different_output("AsmOutput", target, ctx, "s", ["-S"])
+    return _cc_compile_different_output("AsmOutput", AsmSideProductInfo, target, ctx, "s", ["-S"])
 
 cc_asm_aspect = aspect(
     implementation = _cc_assembly_aspect_impl,
     doc = """
-        An aspect that provides a CcSideProductInfo containing the assembly file outputs
+        An aspect that provides a AsmSideProductInfo containing the assembly file outputs
         of every C/C++ translation unit in the sources of the rule it is applied to and
         all of its dependencies.
     """,
@@ -218,7 +220,7 @@ cc_asm_aspect = aspect(
         ),
     },
     attr_aspects = ["deps"],
-    provides = [CcSideProductInfo],
+    provides = [AsmSideProductInfo],
     toolchains = ["@rules_cc//cc:toolchain_type"],
     incompatible_use_toolchain_transition = True,
     fragments = ["cpp"],
@@ -228,13 +230,13 @@ cc_asm_aspect = aspect(
 def _cc_llvm_aspect_impl(target, ctx):
     cc_toolchain = find_cc_toolchain(ctx)
     if cc_toolchain.compiler.find("clang") == -1:
-        return CcSideProductInfo(files = depset())
-    return _cc_compile_different_output("LLVMOutput", target, ctx, "ll", ["-S", "-emit-llvm"])
+        return LlSideProductInfo(files = depset())
+    return _cc_compile_different_output("LLVMOutput", LlSideProductInfo, target, ctx, "ll", ["-S", "-emit-llvm"])
 
 cc_llvm_aspect = aspect(
     implementation = _cc_llvm_aspect_impl,
     doc = """
-        An aspect that provides a CcSideProductInfo containing the LLVM IR file outputs
+        An aspect that provides a LlSideProductInfo containing the LLVM IR file outputs
         of every C/C++ translation unit in the sources of the rule it is applied to and
         all of its dependencies.
 
@@ -250,7 +252,7 @@ cc_llvm_aspect = aspect(
         ),
     },
     attr_aspects = ["deps"],
-    provides = [CcSideProductInfo],
+    provides = [LlSideProductInfo],
     toolchains = ["@rules_cc//cc:toolchain_type"],
     incompatible_use_toolchain_transition = True,
     fragments = ["cpp"],
@@ -319,8 +321,8 @@ cc_relink_with_linkmap_aspect = aspect(
 
 def _rv_preprocess_impl(ctx):
     return [DefaultInfo(
-        files = ctx.attr.target[CcSideProductInfo].files,
-        data_runfiles = ctx.runfiles(transitive_files = ctx.attr.target[CcSideProductInfo].files),
+        files = ctx.attr.target[PreProcSideProductInfo].files,
+        data_runfiles = ctx.runfiles(transitive_files = ctx.attr.target[PreProcSideProductInfo].files),
     )]
 
 rv_preprocess = rv_rule(
@@ -330,8 +332,8 @@ rv_preprocess = rv_rule(
 
 def _rv_asm_impl(ctx):
     return [DefaultInfo(
-        files = ctx.attr.target[CcSideProductInfo].files,
-        data_runfiles = ctx.runfiles(transitive_files = ctx.attr.target[CcSideProductInfo].files),
+        files = ctx.attr.target[AsmSideProductInfo].files,
+        data_runfiles = ctx.runfiles(transitive_files = ctx.attr.target[AsmSideProductInfo].files),
     )]
 
 rv_asm = rv_rule(
@@ -341,8 +343,8 @@ rv_asm = rv_rule(
 
 def _llvm_ir_impl(ctx):
     return [DefaultInfo(
-        files = ctx.attr.target[CcSideProductInfo].files,
-        data_runfiles = ctx.runfiles(transitive_files = ctx.attr.target[CcSideProductInfo].files),
+        files = ctx.attr.target[LlSideProductInfo].files,
+        data_runfiles = ctx.runfiles(transitive_files = ctx.attr.target[LlSideProductInfo].files),
     )]
 
 rv_llvm_ir = rv_rule(

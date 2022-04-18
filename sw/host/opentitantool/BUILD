@@ -24,6 +24,10 @@ rust_binary(
     proc_macro_deps = [
         "//sw/host/opentitanlib/opentitantool_derive",
     ],
+    rustc_flags = [
+        "-Clink_args=-Wl,-z,notext",
+        "-Clink_args=-Wl,-error-limit=0",
+    ],
     deps = [
         "//sw/host/opentitanlib",
     ] + all_crate_deps(),

@@ -2,10 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_flash_binary")
+load("//rules:opentitan2.bzl", "OPENTITAN_CPU", "opentitan_binary")
 
-opentitan_flash_binary(
-    name = "hello_world",
+opentitan_binary(
+    name = "hello_world2",
     srcs = [
         "hello_world.c",
     ],

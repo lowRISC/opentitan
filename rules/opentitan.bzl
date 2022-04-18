@@ -37,10 +37,10 @@ _targets_compatible_with = {
 # simulation platforms (DV and Verilator), and two FPGA platforms (NexysVideo
 # and CW310).
 PER_DEVICE_DEPS = {
-    "sim_verilator": ["//sw/device/lib/arch:sim_verilator"],
-    "sim_dv": ["//sw/device/lib/arch:sim_dv"],
-    "fpga_nexysvideo": ["//sw/device/lib/arch:fpga_nexysvideo"],
-    "fpga_cw310": ["//sw/device/lib/arch:fpga_cw310"],
+    "sim_verilator": ["//sw/device/lib/arch:sim_verilator_impl"],
+    "sim_dv": ["//sw/device/lib/arch:sim_dv_impl"],
+    "fpga_nexysvideo": ["//sw/device/lib/arch:fpga_nexysvideo_impl"],
+    "fpga_cw310": ["//sw/device/lib/arch:fpga_cw310_impl"],
 }
 
 def _obj_transform_impl(ctx):
@@ -446,27 +446,6 @@ def opentitan_binary(
         copts = copts,
         linkopts = linkopts,
         **kwargs
-    )
-
-    preproc_name = "{}_{}".format(name, "preproc")
-    targets.append(preproc_name)
-    rv_preprocess(
-        name = preproc_name,
-        target = name,
-    )
-
-    asm_name = "{}_{}".format(name, "asm")
-    targets.append(asm_name)
-    rv_asm(
-        name = asm_name,
-        target = name,
-    )
-
-    ll_name = "{}_{}".format(name, "ll")
-    targets.append(ll_name)
-    rv_llvm_ir(
-        name = ll_name,
-        target = name,
     )
 
     map_name = "{}_{}".format(name, "map")
