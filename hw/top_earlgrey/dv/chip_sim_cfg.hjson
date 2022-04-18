@@ -317,7 +317,8 @@
       uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
       sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+use_otp_image=LcStRma", "+ext_clk_type=ExtClkHighSpeed", "+use_extclk=1"]
+      run_opts: ["+sw_test_timeout_ns=80000000", "+use_otp_image=LcStRma",
+                 "+ext_clk_type=ExtClkHighSpeed", "+use_extclk=1"]
       reseed: 5
     }
     {
@@ -325,8 +326,8 @@
       uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
       sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+use_otp_image=LcStRma", "+ext_clk_type=ExtClkLowSpeed",
-                 "+use_extclk=1", "+extclk_low_speed_sel=1"]
+      run_opts: ["+sw_test_timeout_ns=80000000", "+use_otp_image=LcStRma",
+                 "+ext_clk_type=ExtClkLowSpeed", "+use_extclk=1", "+extclk_low_speed_sel=1"]
       reseed: 5
     }
     // usually, uart core clock should be 24 Mhz, same as the div_4_clock, regardless using ext_clk
@@ -339,8 +340,8 @@
       uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
       sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+use_otp_image=LcStRma", "+ext_clk_type=ExtClkHighSpeed",
-                 "+use_extclk=1", "+extclk_low_speed_sel=1"]
+      run_opts: ["+sw_test_timeout_ns=80000000", "+use_otp_image=LcStRma",
+                 "+ext_clk_type=ExtClkHighSpeed", "+use_extclk=1", "+extclk_low_speed_sel=1"]
       reseed: 5
     }
     {
