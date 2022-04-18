@@ -40,7 +40,8 @@ module prim_dom_and_2share #(
   input [DW-1:0] z_i,  // random number
 
   output logic [DW-1:0] q0_o, // share0 of q
-  output logic [DW-1:0] q1_o  // share1 of q
+  output logic [DW-1:0] q1_o, // share1 of q
+  output logic [DW-1:0] prd_o // pseudo-random data for other instances
 );
 
   logic [DW-1:0] t0_d, t0_q, t1_d, t1_q;
@@ -131,6 +132,14 @@ module prim_dom_and_2share #(
     .in1_i ( {t0_q,   t1_q}   ),
     .out_o ( {q0_o,   q1_o}   )
   );
+
+  // Use intermediate results for remasking computations in another instance in the following
+  // clock cycle. Use one share only. Directly use output of flops updating with z_valid_i.
+  // t1_q is obtained by remasking t_a1b0 with z_i. Since z_i is uniformly distributed and
+  // independent of a1/b0_i, t1_q is also uniformly distributed and independent of a1/b0_i.
+  // For details, see Lemma 1 in Canright, "A very compact 'perfectly masked' S-box for AES
+  // (corrected)" available at https://eprint.iacr.org/2009/011.pdf
+  assign prd_o = t1_q;
 
   // DOM AND should be same as unmasked computation
   // The correct test sequence will be:
