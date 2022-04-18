@@ -8,6 +8,8 @@
 #
 # This doesn't install dependencies, but should otherwise behave the
 # same as what CI would do on a pull request.
+#
+# These tasks should ideally take less than a minute each
 
 set -e
 
