@@ -57,7 +57,7 @@ The fusesoc command line arguments are reasonably complicated so we have a wrapp
 
 ```console
 $ cd $REPO_TOP
-$ ci/scripts/build-chip-verilator earlgrey
+$ ci/scripts/build-chip-verilator.sh earlgrey
 ```
 
 Then we need to build software to run on the simulated system.
