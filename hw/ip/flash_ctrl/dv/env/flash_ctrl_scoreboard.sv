@@ -495,8 +495,9 @@ class flash_ctrl_scoreboard #(
           for (int i = 0; i < cfg.seq_cfg.num_en_mp_regions; i++) begin
             if (!erase_access_found) begin
               csr_rd(.ptr(ral.mp_region_cfg[i]), .value(data), .backdoor(1'b1));
-              en = get_field_val(ral.mp_region_cfg[i].en, data);
-              erase_en = get_field_val(ral.mp_region_cfg[i].erase_en, data);
+              en = mubi4_test_true_strict(get_field_val(ral.mp_region_cfg[i].en, data));
+              erase_en = mubi4_test_true_strict(get_field_val(ral.mp_region_cfg[i].erase_en, data));
+              csr_rd(.ptr(ral.mp_region[i]), .value(data), .backdoor(1'b1));
               base = get_field_val(ral.mp_region[i].base, data);
               size = get_field_val(ral.mp_region[i].size, data);
               if (in_erase_addr
@@ -510,7 +511,7 @@ class flash_ctrl_scoreboard #(
           end
           if (!erase_access_found) begin
             csr_rd(.ptr(ral.default_region), .value(data), .backdoor(1'b1));
-            erase_en_def = get_field_val(ral.default_region.erase_en, data);
+            erase_en_def = mubi4_test_true_strict(get_field_val(ral.default_region.erase_en, data));
             erase_access       = erase_en_def;
             erase_access_found = 1'b1;
           end
