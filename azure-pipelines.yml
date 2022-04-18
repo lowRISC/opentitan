@@ -749,6 +749,7 @@ jobs:
 
 - job: bazel_test
   displayName: Bazel Software Build and Test
+  timeoutInMinutes: 90
   dependsOn: lint
   pool:
     vmImage: ubuntu-18.04
