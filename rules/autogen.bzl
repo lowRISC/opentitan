@@ -84,9 +84,18 @@ def _otp_image(ctx):
     output = ctx.actions.declare_file(ctx.attr.name + ".vmem")
     ctx.actions.run(
         outputs = [output],
-        inputs = [ctx.file.src] + ctx.files.deps + [ctx.executable._tool],
+        inputs = [
+            ctx.file.src,
+            ctx.file.lc_state_def,
+            ctx.file.mmap_def,
+            ctx.executable._tool,
+        ],
         arguments = [
             "--quiet",
+            "--lc-state-def",
+            ctx.file.lc_state_def.path,
+            "--mmap-def",
+            ctx.file.mmap_def.path,
             "--img-cfg",
             ctx.file.src.path,
             "--out",
@@ -100,7 +109,16 @@ otp_image = rule(
     implementation = _otp_image,
     attrs = {
         "src": attr.label(allow_single_file = True),
-        "deps": attr.label_list(allow_files = True),
+        "lc_state_def": attr.label(
+            allow_single_file = True,
+            default = "//hw/ip/lc_ctrl/data:lc_ctrl_state.hjson",
+            doc = "Life-cycle state definition file in Hjson format.",
+        ),
+        "mmap_def": attr.label(
+            allow_single_file = True,
+            default = "//hw/ip/otp_ctrl/data:otp_ctrl_mmap.hjson",
+            doc = "OTP Controller memory map file in Hjson format.",
+        ),
         "_tool": attr.label(
             default = "//util/design:gen-otp-img",
             executable = True,
