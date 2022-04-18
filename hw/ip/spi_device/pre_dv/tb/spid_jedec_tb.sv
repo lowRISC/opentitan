@@ -52,7 +52,7 @@ module spid_jedec_tb;
   sel_datapath_e dut_sel_dp;
   // Command info for Read Status
   // CmdReadStauts1, CmdReadStatus2, CmdReadStatus3
-  cmd_info_index_e cmd_info_idx;
+  logic [CmdInfoIdxW-1:0] cmd_info_idx;
   cmd_info_t cmd_info;
 
   // Status Signals
