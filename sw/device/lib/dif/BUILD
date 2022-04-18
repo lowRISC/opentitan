@@ -973,9 +973,9 @@ cc_test(
 cc_library(
     name = "sensor_ctrl",
     srcs = [
-        "dif_sensor_ctrl.c",
         "autogen/dif_sensor_ctrl_autogen.c",
         "autogen/dif_sensor_ctrl_autogen.h",
+        "dif_sensor_ctrl.c",
     ],
     hdrs = [
         "dif_sensor_ctrl.h",
@@ -992,8 +992,8 @@ cc_library(
 cc_test(
     name = "sensor_ctrl_unittest",
     srcs = [
-        "dif_sensor_ctrl_unittest.cc",
         "autogen/dif_sensor_ctrl_autogen_unittest.cc",
+        "dif_sensor_ctrl_unittest.cc",
     ],
     deps = [
         ":sensor_ctrl",
