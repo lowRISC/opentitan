@@ -12,6 +12,7 @@ unbuildify = [
     "./WORKSPACE",  # Prevent Buildifier from inserting unnecessary newlines.
     "./**/vendor/**",
     "./util/lowrisc_misc-linters/**",
+    "./build/**",
 ]
 
 buildifier(
