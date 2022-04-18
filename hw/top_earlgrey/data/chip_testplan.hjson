@@ -2530,10 +2530,15 @@
       name: chip_sw_sensor_ctrl_ast_alerts
       desc: '''Verify the alerts from AST aggregating into the sensor_ctrl.
 
-             Details TBD.
+               Check that AST events can be triggered from sensor_ctrl and that
+               the resulting AST outputs are observed in both sensor_ctrl and
+               the alert_handler.
+
+               For the alert handler case, make sure to test each alert configured
+               as either recoverable or fatal.
              '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup"]
     }
     {
       name: chip_sw_sensor_ctrl_ast_status
@@ -2551,7 +2556,7 @@
                AST. X-ref'ed chip_sw_pwrmgr_sleep_all_wake_ups.
              '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup"]
     }
 
     //////////////////
