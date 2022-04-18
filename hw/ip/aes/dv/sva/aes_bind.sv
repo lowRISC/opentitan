@@ -54,6 +54,7 @@ module aes_bind;
   bind aes_prng_masking aes_masking_reseed_if u_aes_masking_reseed_if (
     .clk_i        (clk_i),
     .rst_ni       (rst_ni),
+    .entropy_i    (entropy_i),
     .prng_seed_en (prng_seed_en),
     .prng_seed    (prng_seed),
     .lfsr_q_0     (gen_lfsrs[0].u_lfsr_chunk.lfsr_q),
