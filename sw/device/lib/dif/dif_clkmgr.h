@@ -327,6 +327,14 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_recov_err_code_clear_codes(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_recov_err_codes_t codes);
 
+/**
+ * Wait for external clock switch to finish.
+ *
+ * @param clkmgr Clock Manager Handle.
+ * @returns The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_clkmgr_wait_for_ext_clk_switch(const dif_clkmgr_t *clkmgr);
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
