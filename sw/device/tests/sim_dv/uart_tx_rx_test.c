@@ -522,9 +522,10 @@ void config_external_clock(void) {
   CHECK(curr_state == kDifLcCtrlStateRma,
         "LC State isn't in kDifLcCtrlStateRma!");
 
-  // Enable external clock
+  // Enable external clock and wait for clk switch to finish
   LOG_INFO("Configure clkmgr to enable external clock");
   CHECK_DIF_OK(dif_clkmgr_external_clock_set_enabled(&clkmgr, kUseLowSpeedSel));
+  CHECK_DIF_OK(dif_clkmgr_wait_for_ext_clk_switch(&clkmgr));
 }
 
 const test_config_t kTestConfig;

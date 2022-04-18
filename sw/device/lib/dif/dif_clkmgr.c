@@ -296,3 +296,15 @@ dif_result_t dif_clkmgr_recov_err_code_clear_codes(
                       codes);
   return kDifOk;
 }
+
+dif_result_t dif_clkmgr_wait_for_ext_clk_switch(const dif_clkmgr_t *clkmgr) {
+  if (clkmgr == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t ext_status;
+  do {
+    ext_status =
+        mmio_region_read32(clkmgr->base_addr, CLKMGR_EXTCLK_STATUS_REG_OFFSET);
+  } while (ext_status != kMultiBitBool4True);
+  return kDifOk;
+}
