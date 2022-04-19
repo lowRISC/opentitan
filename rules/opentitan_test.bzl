@@ -30,7 +30,7 @@ _OTTF_DEPS = [
     "//sw/device/lib/runtime:print",
     "//sw/device/lib/crt",
     "//sw/device/lib/testing/test_framework:ottf_start",
-    "//sw/device/lib/testing/test_framework:ottf",
+    "//sw/device/lib/testing/test_framework:ottf_main",
     "//sw/device/lib/base:mmio",
 ]
 

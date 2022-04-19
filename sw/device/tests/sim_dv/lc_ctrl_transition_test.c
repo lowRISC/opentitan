@@ -4,7 +4,7 @@
 
 #include <stdbool.h>
 
-#include "sw/device/lib/testing/test_framework/ottf.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/sim_dv/lc_ctrl_transition_impl.h"
 
 const test_config_t kTestConfig;

@@ -7,7 +7,7 @@
 #include "sw/device/lib/crypto/rsa_3072/rsa_3072_verify.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/test_framework/ottf.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/crypto/rsa_3072_verify_testvectors.h"
 
 bool rsa_3072_verify_test(const rsa_3072_verify_test_vector_t *testvec) {

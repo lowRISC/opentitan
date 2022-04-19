@@ -306,6 +306,6 @@ cc_library(
     deps = [
         ":error",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

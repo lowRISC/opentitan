@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/test_framework/ottf.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 // These symbols are provided by the riscv-compliance libraries.
 extern uint32_t begin_signature[];

@@ -7,7 +7,7 @@
 #include "sw/device/lib/crypto/ecdsa_p256/ecdsa_p256.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/test_framework/ottf.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/crypto/ecdsa_p256_verify_testvectors.h"
 
 hmac_error_t compute_digest(size_t msg_len, const uint8_t *msg,
