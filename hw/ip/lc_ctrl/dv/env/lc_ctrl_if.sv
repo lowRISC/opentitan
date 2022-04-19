@@ -96,6 +96,10 @@ interface lc_ctrl_if (
   // Token mux control
   bit [TokenIdxWidth-1:0] token_idx0;
   bit [TokenIdxWidth-1:0] token_idx1;
+  // Token Mux data
+  lc_token_t hashed_token_i;
+  lc_token_t hashed_token_mux;
+  bit token_hash_ack_i;
 
 
   // Debug signals
@@ -263,6 +267,26 @@ interface lc_ctrl_if (
       1: release `LC_CTRL_FSM_PATH.token_idx1;
       default: begin
         `uvm_fatal($sformatf("%m"), $sformatf("release_token_idx: index %0d out of range", idx))
+      end
+    endcase
+  endfunction
+
+  function static void force_hashed_token(input int idx, input lc_token_t val);
+    case (idx)
+      0: force `LC_CTRL_FSM_PATH.hashed_token_i = val;
+      1: force `LC_CTRL_FSM_PATH.hashed_token_mux = val;
+      default: begin
+        `uvm_fatal($sformatf("%m"), $sformatf("force_hashed_token: index %0d out of range", idx))
+      end
+    endcase
+  endfunction
+
+  function static void release_hashed_token(input int idx);
+    case (idx)
+      0: release `LC_CTRL_FSM_PATH.hashed_token_i;
+      1: release `LC_CTRL_FSM_PATH.hashed_token_mux;
+      default: begin
+        `uvm_fatal($sformatf("%m"), $sformatf("release_hashed_token: index %0d out of range", idx))
       end
     endcase
   endfunction
