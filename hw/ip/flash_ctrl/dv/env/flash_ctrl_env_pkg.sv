@@ -190,7 +190,7 @@ package flash_ctrl_env_pkg;
   // Parameter for Probing into the DUT RMA FSM
   parameter string PRB_RMA_FSM = "tb.dut.u_flash_hw_if.state_q";
   // Taken from enum type lcmgr_state_e in flash_ctrl_lcmgr.sv
-  parameter uint RMA_FSM_STATE_ST_RMA_RSP = 11'b10100100001;
+  parameter uint RMA_FSM_STATE_ST_RMA_RSP = 11'b10110001010;
 
   // functions
 
