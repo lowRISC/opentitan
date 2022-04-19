@@ -147,6 +147,46 @@ def _otbn_binary(ctx):
         ),
     ]
 
+def _otbn_sim_test(ctx):
+    """This rule is for standalone OTBN unit tests, which are run on the host
+    via the OTBN simulator.
+
+    It first generates binaries using the same method as otbn_binary, then runs
+    them on the simulator. Tests are expected to count failures in the w0
+    register; the test checks that w0=0 to determine if the test passed.
+    """
+    providers = _otbn_binary(ctx)
+
+    # Extract the output .elf file from the output group.
+    elf = providers[1].elf.to_list()[0]
+
+    # Create a simple script that runs the OTBN simulator on the .elf file and
+    # checks if the w0 register is 0.
+    simulator_cmd = "{} {} --dump-regs -".format(ctx.file._simulator.path, elf.short_path)
+    expected_string = "0x" + ("0" * 64)
+    script = '''
+      echo "Running simulator: {simulator_cmd}"
+      result=$({simulator_cmd} | grep -m 1 -P "w0  = [0-9A-Fa-f]+")
+      echo "Got     : $result"
+      echo "Expected:  w0  = {expected_string}"
+      if [[ "$result" == *"{expected_string}" ]]; then
+        echo "PASS"
+        exit 0
+      fi
+      echo "FAIL"
+      exit 1
+      '''.format(simulator_cmd = simulator_cmd, expected_string = expected_string)
+    script_file = ctx.actions.declare_file("run_{}.sh".format(elf.basename))
+    ctx.actions.write(
+        output = script_file,
+        content = script,
+    )
+
+    # The simulator and .elf file must be added to runfiles in order to be
+    # visible to the test at runtime.
+    runfiles = ctx.runfiles(files = (ctx.files.srcs + [elf, ctx.file._simulator]))
+    return [DefaultInfo(runfiles = runfiles, executable = script_file)]
+
 otbn_library = rv_rule(
     implementation = _otbn_library,
     attrs = {
@@ -180,6 +220,36 @@ otbn_binary = rv_rule(
             default = "//hw/ip/otbn/data:all_files",
             allow_files = True,
         ),
+        "_wrapper": attr.label(
+            default = "//util:otbn_build",
+            executable = True,
+            cfg = "exec",
+        ),
+    },
+    fragments = ["cpp"],
+    toolchains = ["@rules_cc//cc:toolchain_type"],
+    incompatible_use_toolchain_transition = True,
+)
+
+otbn_sim_test = rv_rule(
+    implementation = _otbn_sim_test,
+    test = True,
+    attrs = {
+        "srcs": attr.label_list(allow_files = True),
+        "deps": attr.label_list(providers = [DefaultInfo]),
+        "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
+        "_otbn_as": attr.label(
+            default = "//hw/ip/otbn/util:otbn_as",
+            executable = True,
+            cfg = "exec",
+        ),
+        "_otbn_data": attr.label(
+            default = "//hw/ip/otbn/data:all_files",
+            allow_files = True,
+        ),
+        # TODO: make the simulator target an executable and update this
+        # dependency to match the others.
+        "_simulator": attr.label(default = "//hw/ip/otbn/dv/otbnsim:standalone.py", allow_single_file = True),
         "_wrapper": attr.label(
             default = "//util:otbn_build",
             executable = True,
