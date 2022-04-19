@@ -12,7 +12,7 @@
 set -e
 
 echo -e "\n### Use buiildifier to check Bazel coding style"
-bazel run buildifier_check
+./bazelisk.sh run buildifier_check
 
 echo "### Check vendored directories are up-to-date"
 ci/scripts/check-vendoring.sh
