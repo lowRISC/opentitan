@@ -131,12 +131,6 @@ jobs:
       . util/build_consts.sh
       ninja -C "$OBJ_DIR" test
     displayName: Run unit tests
-  - bash: |
-      . util/build_consts.sh
-      # Remove all Nexys Video-related build artifacts, which will be produced
-      # by the sw_build_nexysvideo job below (see comment there).
-      find "$BIN_DIR/sw/device" -name '*fpga_nexysvideo*' -type f -delete
-    displayName: Delete all Nexys Video build artifacts
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
@@ -168,47 +162,6 @@ jobs:
     parameters:
       includePatterns:
         - "/sw/***"
-
-# Software targeting the Nexys Video board is produced by patching the source
-# tree before building. This produces a full sw build tree, however only the
-# artifacts with "nexysvideo" in the name are actually the ones we're looking
-# for. Everything else will be discarded.
-# TODO: This is a rather ugly hack, which will go away once we properly support
-# building more than one top-level design with different parametrizations.
-# Work towards this goal is tracked in issue #4669.
-- job: sw_build_nexysvideo
-  displayName: Build Software for Earl Grey toplevel design targeting the Nexys Video board
-  dependsOn: lint
-  # Make the following condition always false for now, see #7814.
-  condition: and(succeeded(), False, eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
-  pool:
-    vmImage: ubuntu-18.04
-  steps:
-  - template: ci/install-package-dependencies.yml
-  - bash: |
-      set -x
-      sudo util/get-toolchain.py \
-        --install-dir="$TOOLCHAIN_PATH" \
-        --release-version="$TOOLCHAIN_VERSION" \
-        --update
-    displayName: Install toolchain
-  - bash: |
-      . util/build_consts.sh
-      ./hw/top_earlgrey/util/top_earlgrey_reduce.py
-      ./meson_init.sh -A
-      ninja -C "$OBJ_DIR" all
-
-      # Delete all build artifacts which are *not* for the Nexys Video board.
-      find "$BIN_DIR/sw/device" -not -name '*fpga_nexysvideo*' -type f -delete
-    displayName: Build embedded targets
-  - bash: |
-      . util/build_consts.sh
-      ninja -C "$OBJ_DIR" test
-    displayName: Run unit tests
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/sw/device/**/*nexysvideo*"
 
 # Software targeting the English Breakfast top level is produced by patching
 # the source tree before building. This builds a selected subset of software
@@ -515,66 +468,6 @@ jobs:
     displayName: Upload all Vivado artifacts for CW310
     condition: failed()
 
-- job: chip_earlgrey_nexysvideo
-  displayName: Build NexysVideo variant of the Earl Grey toplevel design using Vivado
-  dependsOn:
-    - lint
-    # The bootrom is built into the FPGA image at synthesis time.
-    - sw_build_nexysvideo
-    # Make the following condition always false for now, see #7814.
-  condition: and(succeeded(), False, eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
-  pool: ci-public
-  timeoutInMinutes: 120 # 2 hours
-  steps:
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - sw_build_nexysvideo
-  - bash: |
-      set -e
-      . util/build_consts.sh
-
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-
-      mkdir -p "$OBJ_DIR/hw"
-      mkdir -p "$BIN_DIR/hw/top_earlgrey"
-
-      ./hw/top_earlgrey/util/top_earlgrey_reduce.py
-
-      BOOTROM_VMEM="$BIN_DIR/sw/device/lib/testing/test_rom/test_rom_fpga_nexysvideo.scr.39.vmem"
-      test -f "$BOOTROM_VMEM"
-      OTP_VMEM="$BIN_DIR/sw/device/otp_img/otp_img_fpga_nexysvideo.vmem"
-      test -f "$OTP_VMEM"
-
-      fusesoc --verbose --cores-root=. \
-        run --flag=fileset_top --target=synth --setup --build \
-        --build-root="$OBJ_DIR/hw" \
-        lowrisc:systems:chip_earlgrey_nexysvideo \
-        --BootRomInitFile="$BOOTROM_VMEM" \
-        --OtpCtrlMemInitFile="$OTP_VMEM"
-
-      cp "$OBJ_DIR/hw/synth-vivado/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.bit" \
-        "$BIN_DIR/hw/top_earlgrey"
-    displayName: Build bitstream with Vivado
-  - bash: |
-      . util/build_consts.sh
-      echo Synthesis log
-      cat $OBJ_DIR/hw/synth-vivado/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.runs/synth_1/runme.log || true
-
-      echo Implementation log
-      cat $OBJ_DIR/hw/synth-vivado/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.runs/impl_1/runme.log || true
-    condition: always()
-    displayName: Display synthesis and implementation logs
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/hw/top_earlgrey/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.bit"
-  - publish: "$(Build.ArtifactStagingDirectory)"
-    artifact: chip_earlgrey_nexysvideo-build-out
-    displayName: Upload all Vivado artifacts for Nexys Video
-    condition: failed()
-
 - job: chip_englishbreakfast_cw305
   displayName: Build CW305 variant of the English Breakfast toplevel design using Vivado
   dependsOn:
@@ -644,38 +537,6 @@ jobs:
         --napoleon-docstrings
     displayName: Execute tests
 
-- job: execute_fpga_tests_nexysvideo
-  displayName: Execute tests on Nexys Video FPGA board
-  pool: FPGA
-  timeoutInMinutes: 30
-  dependsOn:
-    - chip_earlgrey_nexysvideo
-    - sw_build_nexysvideo
-    - sw_build
-  steps:
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - chip_earlgrey_nexysvideo
-        - sw_build_nexysvideo
-        - sw_build
-  - bash: |
-      set -e
-
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-
-      # Install an additional pytest dependency for result upload.
-      pip3 install pytest-azurepipelines
-
-      . util/build_consts.sh
-      pytest --version
-      pytest test/systemtest/earlgrey/test_fpga_nexysvideo.py \
-        --log-cli-level=DEBUG \
-        --test-run-title="Run system tests on Nexys Video FPGA board" \
-        --napoleon-docstrings
-    displayName: Execute tests
-
 - job: deploy_release_artifacts
   displayName: Package and deploy release distribution
   pool:
@@ -684,7 +545,6 @@ jobs:
     - lint
     - sw_build
     - chip_earlgrey_verilator
-    - chip_earlgrey_nexysvideo
     - chip_earlgrey_cw310
   condition: and(eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
   steps:
@@ -693,9 +553,7 @@ jobs:
     parameters:
       downloadPartialBuildBinFrom:
         - sw_build
-        #- sw_build_nexysvideo
         - chip_earlgrey_verilator
-        #- chip_earlgrey_nexysvideo
         - chip_earlgrey_cw310
         - chip_englishbreakfast_verilator
   - bash: |
