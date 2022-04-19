@@ -87,6 +87,10 @@ def main():
                         '-v',
                         action='store_true',
                         help='Verbose and run validate twice')
+    parser.add_argument('--quiet',
+                        '-q',
+                        action='store_true',
+                        help='Log only errors, not warnings')
     parser.add_argument('--param',
                         '-p',
                         type=str,
@@ -111,8 +115,10 @@ def main():
         version.show_and_exit(__file__, ["Hjson", "Mako"])
 
     verbose = args.verbose
-    if (verbose):
+    if verbose:
         log.basicConfig(format="%(levelname)s: %(message)s", level=log.DEBUG)
+    elif args.quiet:
+        log.basicConfig(format="%(levelname)s: %(message)s", level=log.ERROR)
     else:
         log.basicConfig(format="%(levelname)s: %(message)s")
 
