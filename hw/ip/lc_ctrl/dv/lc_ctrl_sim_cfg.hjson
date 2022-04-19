@@ -237,6 +237,11 @@
       run_opts: ["+create_jtag_riscv_map=1"]
     }
 
+    {
+      name: "lc_ctrl_sec_token_digest"
+      uvm_test_seq: lc_ctrl_sec_token_digest_vseq
+      run_opts: ["+create_jtag_riscv_map=1"]
+    }
 
     {
       name: "lc_ctrl_stress_all"

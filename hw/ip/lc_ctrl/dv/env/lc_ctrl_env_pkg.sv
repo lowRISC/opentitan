@@ -112,6 +112,8 @@ package lc_ctrl_env_pkg;
     bit otp_rma_token_valid_mubi_err;
     // Force bad values on token mux select lines
     bit token_mux_ctrl_redun_err;
+    // Force bit errors in the token mux inputs
+    bit token_mux_digest_err;
   } lc_ctrl_err_inj_t;
 
   // Test phase - used to synchronise the scoreboard

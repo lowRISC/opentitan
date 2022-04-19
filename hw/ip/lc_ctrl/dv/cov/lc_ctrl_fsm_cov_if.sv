@@ -16,7 +16,8 @@ interface lc_ctrl_fsm_cov_if
   input logic esc_scrap_state0_i,
   input logic esc_scrap_state1_i,
   input logic trans_invalid_error_o,
-  input logic trans_invalid_error
+  input logic trans_invalid_error,
+  input logic token_invalid_error_o
 );
   `include "dv_fcov_macros.svh"
 
@@ -69,13 +70,24 @@ interface lc_ctrl_fsm_cov_if
   logic token_mux_idx_error, token_mux_idx_error_prev;
   assign token_mux_idx_error = trans_invalid_error_o & ~trans_invalid_error;
   event token_mux_idx_error_cov_ev;
+  logic token_invalid_error_o_prev;
+  event token_digest_error_cov_ev;
 
   always @(posedge clk_i or negedge rst_ni) begin
-    if (rst_ni == 0) token_mux_idx_error_prev <= 0;
-    else token_mux_idx_error_prev <= token_mux_idx_error;
+    if (rst_ni == 0) begin
+      token_mux_idx_error_prev   <= 0;
+      token_invalid_error_o_prev <= 0;
+    end else begin
+      token_mux_idx_error_prev   <= token_mux_idx_error;
+      token_invalid_error_o_prev <= token_invalid_error_o;
+    end
 
     if (~token_mux_idx_error_prev & token_mux_idx_error) begin
       ->token_mux_idx_error_cov_ev;
+    end
+
+    if (~token_invalid_error_o_prev & token_invalid_error_o) begin
+      ->token_digest_error_cov_ev;
     end
   end
 
@@ -87,6 +99,11 @@ interface lc_ctrl_fsm_cov_if
     }
   endgroup
 
+  covergroup sec_token_digest_error_cg @(token_digest_error_cov_ev);
+    coverpoint fsm_state_q {bins fsm_states[] = {TokenHashSt, TokenCheck0St, TokenCheck1St};}
+  endgroup
+
   `DV_FCOV_INSTANTIATE_CG(lc_ctrl_fsm_cg)
   `DV_FCOV_INSTANTIATE_CG(sec_token_mux_idx_error_cg)
+  `DV_FCOV_INSTANTIATE_CG(sec_token_digest_error_cg)
 endinterface
