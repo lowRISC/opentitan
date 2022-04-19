@@ -182,6 +182,12 @@ module tb;
   // Token mux control
   assign lc_ctrl_if.token_idx0 = dut.u_lc_ctrl_fsm.token_idx0;
   assign lc_ctrl_if.token_idx1 = dut.u_lc_ctrl_fsm.token_idx1;
+  // Hashed tokens
+  assign lc_ctrl_if.hashed_token_i = dut.u_lc_ctrl_fsm.hashed_token_i;
+  assign lc_ctrl_if.hashed_token_mux = dut.u_lc_ctrl_fsm.hashed_token_mux;
+  assign lc_ctrl_if.token_hash_ack_i = dut.u_lc_ctrl_fsm.token_hash_ack_i;
+
+
 
   initial begin
     static

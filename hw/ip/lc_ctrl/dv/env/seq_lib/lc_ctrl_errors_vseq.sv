@@ -310,10 +310,11 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       end
       // verilog_format: on
 
-      if (cfg.err_inj.token_mux_ctrl_redun_err) begin
+      if (cfg.err_inj.token_mux_ctrl_redun_err || cfg.err_inj.token_mux_digest_err) begin
         // Allow the FSM to get to a terminal state
         wait(cfg.lc_ctrl_vif.lc_ctrl_fsm_state inside {PostTransSt, InvalidSt, EscalateSt});
         disable token_mux_ctrl_err_inject;
+        disable token_mux_digest_err_inject;
       end
 
       // Allow volatile registers to settle
@@ -548,10 +549,17 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     bit [TL_DW-1:0] status_val = 0;
     uvm_reg_data_t val;
 
-    // Token mux countermeasure
+    // Token mux redun countermeasure
     if (err_inj.token_mux_ctrl_redun_err) begin
       fork
         token_mux_ctrl_err_inject();
+      join_none
+    end
+
+    // Token mux digest countermeasure
+    if (err_inj.token_mux_digest_err) begin
+      fork
+        token_mux_digest_err_inject();
       join_none
     end
 
@@ -645,7 +653,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         (cfg.err_inj.otp_test_tokens_valid_mubi_err &&
             has_test_token(dec_lc_state(lc_state), next_lc_state)) ||
         (cfg.err_inj.otp_rma_token_valid_mubi_err &&
-         has_rma_token(dec_lc_state(lc_state), next_lc_state));
+         has_rma_token(dec_lc_state(lc_state), next_lc_state)) || cfg.err_inj.token_mux_digest_err;
     flash_rma_error_exp = cfg.err_inj.flash_rma_error_rsp || cfg.err_inj.flash_rma_rsp_mubi_err;
     otp_error_exp = cfg.err_inj.otp_prog_err || cfg.err_inj.clk_byp_error_rsp ||
         cfg.err_inj.clk_byp_rsp_mubi_err;
@@ -990,5 +998,53 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
               idx_to_change
               ), UVM_MEDIUM)
   endtask
+
+  // Force bad values on the token mux data busses
+  virtual task token_mux_digest_err_inject();
+    lc_token_t good_token, bad_token;
+    lc_token_t token_bit_flip;
+    bit token_to_change = $urandom_range(0, 1);
+    lc_ctrl_pkg::fsm_state_e inj_state = ClkMuxSt;
+
+    // Select FSM state to wait for
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(
+        inj_state, inj_state inside {TokenHashSt, TokenCheck0St, TokenCheck1St};)
+
+    // Save in config object for scoreboard
+    cfg.token_mux_ctrl_redun_err_inj_state = inj_state;
+
+    // Wait for FSM to reach state we want to inject the error
+    wait(cfg.lc_ctrl_vif.lc_ctrl_fsm_state == inj_state);
+    // TokenHashSt is further gated by token_hash_ack_i as that indicates
+    // valid data on the input busses
+    if (inj_state == TokenHashSt) wait(cfg.lc_ctrl_vif.token_hash_ack_i == 1);
+
+    // Read the correct token index value
+    good_token = token_to_change ? cfg.lc_ctrl_vif.hashed_token_i :
+        cfg.lc_ctrl_vif.hashed_token_mux;
+    // Randomize bit flip vector
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(token_bit_flip, $onehot(token_bit_flip);)
+    // Flip bit in bad_token
+    bad_token = good_token ^ token_bit_flip;
+    // Force RTL
+    cfg.lc_ctrl_vif.force_hashed_token(token_to_change, bad_token);
+    `uvm_info(`gfn, $sformatf(
+              "token_mux_ctrl_err_inject: detected FSM state %s, forcing %h on %s",
+              cfg.lc_ctrl_vif.lc_ctrl_fsm_state.name,
+              bad_token,
+              token_to_change ? "hashed_token_mux" : "hashed_token_i"
+              ), UVM_MEDIUM)
+    // Wait for FSM to reach a terminal state
+    wait(cfg.lc_ctrl_vif.lc_ctrl_fsm_state inside {PostTransSt, InvalidSt, EscalateSt});
+
+    // Release RTL
+    cfg.lc_ctrl_vif.release_hashed_token(token_to_change);
+    `uvm_info(`gfn, $sformatf(
+              "token_mux_ctrl_err_inject: detected FSM state %s, releasing %s",
+              cfg.lc_ctrl_vif.lc_ctrl_fsm_state.name,
+              token_to_change ? "hashed_token_mux" : "hashed_token_i"
+              ), UVM_MEDIUM)
+  endtask
+
 
 endclass

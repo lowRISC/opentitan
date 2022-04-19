@@ -226,7 +226,7 @@
         these checks will lead to a TOKEN_ERROR.
       '''
       milestone: V2S
-      tests: []
+      tests: ["lc_ctrl_sec_token_digest"]
     }
     {
       name: sec_cm_token_mux_ctrl_redun
@@ -270,6 +270,13 @@
       name: sec_token_mux_idx_error_cg
       desc: '''
         Indicates FSM states that a token mux index error is detected
+      '''
+    }
+
+    {
+      name: sec_token_digest_error_cg
+      desc: '''
+        Indicates FSM states that a token digest error is detected
       '''
     }
   ]

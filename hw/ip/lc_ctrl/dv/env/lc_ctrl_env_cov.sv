@@ -68,6 +68,13 @@ class lc_ctrl_env_cov extends cip_base_env_cov #(
     transition_count_err_cp: coverpoint cfg.err_inj.transition_count_err;
     post_trans_err_cp: coverpoint cfg.err_inj.post_trans_err;
     security_escalation_err_cp: coverpoint cfg.err_inj.security_escalation_err;
+    clk_byp_rsp_mubi_err_cp: coverpoint cfg.err_inj.clk_byp_rsp_mubi_err;
+    flash_rma_rsp_mubi_err_cp: coverpoint cfg.err_inj.flash_rma_rsp_mubi_err;
+    otp_secrets_valid_mubi_err_cp: coverpoint cfg.err_inj.otp_secrets_valid_mubi_err;
+    otp_test_tokens_valid_mubi_err_cp: coverpoint cfg.err_inj.otp_test_tokens_valid_mubi_err;
+    otp_rma_token_valid_mubi_err_cp: coverpoint cfg.err_inj.otp_rma_token_valid_mubi_err;
+    token_mux_ctrl_redun_err_cp: coverpoint cfg.err_inj.token_mux_ctrl_redun_err;
+    token_mux_digest_err_cp: coverpoint cfg.err_inj.token_mux_digest_err;
     jtag_csr_cp: coverpoint cfg.jtag_csr;
 
     // verilog_format: off - formatter doesnt like the macros here
