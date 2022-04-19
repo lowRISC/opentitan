@@ -10,16 +10,13 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_framework/ottf.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #define LC_TOKEN_SIZE 16
 
 static dif_lc_ctrl_t lc;
-
-const test_config_t kTestConfig;
 
 /**
  * Track number of iterations of this C test.

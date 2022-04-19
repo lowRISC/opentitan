@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_CHECK_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_CHECK_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_CHECK_H_
+#define OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_CHECK_H_
 
 #include <stdbool.h>
 
@@ -153,4 +153,4 @@
     }                                                                \
   } while (false)
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_CHECK_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_CHECK_H_

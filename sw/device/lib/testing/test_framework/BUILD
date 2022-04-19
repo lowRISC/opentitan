@@ -16,9 +16,9 @@ cc_library(
         "test_status.c",
     ],
     hdrs = [
+        "check.h",
         "test_coverage.h",
         "test_status.h",
-        "//sw/device/lib/testing:check",
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
@@ -37,8 +37,8 @@ cc_library(
 cc_library(
     name = "check",
     hdrs = [
+        "check.h",
         "test_status.h",
-        "//sw/device/lib/testing:check",
     ],
     visibility = ["//visibility:private"],
 )
@@ -118,8 +118,8 @@ cc_library(
         "ottf.c",
     ],
     hdrs = [
+        "check.h",
         "ottf.h",
-        "//sw/device/lib/testing:check",
     ],
     linkopts = [
         # Make the linker keep resolving references between these

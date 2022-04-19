@@ -12,7 +12,7 @@ alert_peripheral_names = sorted({p.name for p in helper.alert_peripherals})
 #include "sw/device/lib/dif/dif_${n}.h"
 % endfor
 #include "sw/device/lib/testing/alert_handler_testutils.h"
-#include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/test_status.h"
 

@@ -7,7 +7,7 @@
 
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/runtime/ibex.h"
-#include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 
 /**
  * Returns the transactional block's clock status.
