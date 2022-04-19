@@ -8,7 +8,7 @@
 
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 
 bool lc_ctrl_testutils_debug_func_enabled(const dif_lc_ctrl_t *lc_ctrl) {
   dif_lc_ctrl_state_t state;

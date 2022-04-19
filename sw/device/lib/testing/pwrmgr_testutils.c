@@ -9,7 +9,7 @@
 
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
-#include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 
 void pwrmgr_testutils_enable_low_power(
     const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_request_sources_t wakeups,

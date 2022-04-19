@@ -12,7 +12,7 @@
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 
 void demo_gpio_startup(dif_gpio_t *gpio) {
   LOG_INFO("Watch the LEDs!");

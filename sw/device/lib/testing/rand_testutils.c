@@ -5,8 +5,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/rand_testutils.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 
 /**
  * The polynomial co-efficients used in the 32-bit LFSR implementation.

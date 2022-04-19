@@ -243,11 +243,3 @@ cc_library(
         "//sw/device/lib/testing/test_framework",
     ],
 )
-
-# TODO: Fix this.  This file isn't useful without test-status.h and should be
-# considered part of the basic test_framework library.  As such, this file
-# _should_ live along side those files.
-filegroup(
-    name = "check",
-    srcs = ["check.h"],
-)
