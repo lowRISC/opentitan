@@ -427,16 +427,16 @@ module lc_ctrl_fsm
       ///////////////////////////////////////////////////////////////////
     endcase
 
+    // SEC_CM: MAIN.FSM.GLOBAL_ESC
+    if (esc_scrap_state0_i || esc_scrap_state1_i) begin
     // If at any time the life cycle state encoding or any other FSM state within this module
     // is not valid, we jump into the terminal error state right away.
     // Note that state_invalid_error is a multibit error signal
     // with different error sources - need to reduce this to one bit here.
     // SEC_CM: MAIN.FSM.LOCAL_ESC
-    if (|state_invalid_error | token_if_fsm_err_i) begin
+    end else if (|state_invalid_error | token_if_fsm_err_i) begin
       fsm_state_d = InvalidSt;
       state_invalid_error_o = 1'b1;
-    // SEC_CM: MAIN.FSM.GLOBAL_ESC
-    end else if (esc_scrap_state0_i || esc_scrap_state1_i) begin
       fsm_state_d = EscalateSt;
     end
   end
