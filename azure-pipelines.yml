@@ -202,35 +202,6 @@ jobs:
       includePatterns:
         - "/sw/device/***"
 
-# We continue building with GCC, despite defaulting to Clang. This is a copy of
-# `sw_build` with `meson_init.sh` configured with the GCC toolchain, instead of
-# the default toolchain.
-- job: sw_build_gcc
-  displayName: Build Software for Earl Grey toplevel design (with GCC)
-  dependsOn: lint
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
-  pool:
-    vmImage: ubuntu-18.04
-  steps:
-  - template: ci/install-package-dependencies.yml
-  - bash: |
-      set -x
-      sudo util/get-toolchain.py \
-        --install-dir="$TOOLCHAIN_PATH" \
-        --release-version="$TOOLCHAIN_VERSION" \
-        --update
-    displayName: Install toolchain
-  - bash: |
-      . util/build_consts.sh
-      ./meson_init.sh -A \
-        -t "$TOOLCHAIN_PATH/meson-riscv32-unknown-elf-gcc.txt"
-      ninja -C "$OBJ_DIR" all
-    displayName: Build embedded targets
-  - bash: |
-      . util/build_consts.sh
-      ninja -C "$OBJ_DIR" test
-    displayName: Run unit tests
-
 - job: chip_earlgrey_verilator
   displayName: Build Verilator simulation of the Earl Grey toplevel design
   dependsOn: lint
