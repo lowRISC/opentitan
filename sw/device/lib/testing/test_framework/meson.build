@@ -72,7 +72,7 @@ ottf_linker_args = [
 # OTTF startup library. Every OpenTitan (RISC-V) test executable
 # should depend on this target.
 #
-# The crt defines the interrupt vector, the symbols of which are defined in 
+# The crt defines the interrupt vector, the symbols of which are defined in
 # in `sw/device/lib/testing/test_framework/ottf_isrs.S`.
 ottf_start_lib = declare_dependency(
   # The following assembly files need to be included as a source, not a
@@ -111,7 +111,7 @@ ottf_lib = declare_dependency(
   link_with: static_library(
     'ottf_lib',
     sources: [
-      'ottf.c',
+      'ottf_main.c',
       'freertos_hooks.c',
       'freertos_port.S',
       'freertos_port.c',
