@@ -70,6 +70,14 @@ const test_config_t kTestConfig = {
 // void ottf_timer_isr(void) {}
 // void ottf_external_isr(void) {}
 
+/**
+ * Place data in flash that will need to persist across resets by marking with
+ * with the section ".non_volatile_scratch"). Write to this region with the
+ * flash controller DIF. Read from it with `abs_mmio_read32(...)`.
+ */
+// __attribute__((section(".non_volatile_scratch")))
+// const volatile uint32_t non_volatile_data[SIZE_OF_DATA];
+
 bool test_main(void) {
   /**
    * Place test code here.
