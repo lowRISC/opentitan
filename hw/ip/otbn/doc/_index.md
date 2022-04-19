@@ -590,8 +590,8 @@ Both the `RND` CSR and WSR take their bits from the same cache.
 `RND` CSR reads get bottom 32b and simply discard the other 192b on a read.
 When stalling on an `RND` read, OTBN will unstall on the cycle after it receives WLEN RND data from the EDN.
 
-`URND` provides bits from an local PRNG within OTBN; reads from it never stall.
-The `URND` LFSR is seeded once from the EDN connected via `edn_urnd` when OTBN starts execution.
+`URND` provides bits from a local XoShiRo256++ PRNG within OTBN; reads from it never stall.
+This PRNG is seeded once from the EDN connected via `edn_urnd` when OTBN starts execution.
 Each new execution of OTBN will reseed the `URND` PRNG.
 The PRNG state is advanced every cycle when OTBN is running.
 
