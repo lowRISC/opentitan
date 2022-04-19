@@ -10,6 +10,7 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "secded_gen",
     srcs = ["secded_gen.py"],
+    data = ["//util/design/data:secded_cfg.hjson"],
     deps = [requirement("hjson")],
 )
 

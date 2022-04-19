@@ -12,7 +12,8 @@ from typing import Dict, List
 import hjson  # type: ignore
 from Crypto.Hash import cSHAKE256
 
-from mem import MemChunk, MemFile, ecc_encode_some
+from mem import MemChunk, MemFile
+from util.design.secded_gen import ecc_encode_some # type: ignore
 
 ROM_BASE_WORD = 0x8000 // 4
 ROM_SIZE_WORDS = 8192

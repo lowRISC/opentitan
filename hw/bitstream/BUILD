@@ -4,9 +4,6 @@
 
 package(default_visibility = ["//visibility:public"])
 
-# TODO(cfrantz): Add a config setting that will choose bitstream emitted by
-# a local run of the vivado tools.
-
 # Use a bitstream from the GCP bucket (this is also the default condition).
 # You can control the GCP bitstream selection via the BITSTREAM environment
 # variable.  See //rules/bitstreams.bzl for more information.
@@ -33,10 +30,24 @@ config_setting(
     },
 )
 
+# Use a bitstream built by Vivado.  You'll need to have Xilinx Vivado
+# installed and have properly configured access to a license or license
+# server.
+#
+# Example:
+#   bazel test //sw/device/silicon_creator/lib/drivers:fpga_cw310_hmac_functest --define bitstream=vivado
+config_setting(
+    name = "bitstream_vivado",
+    define_values = {
+        "bitstream": "vivado",
+    },
+)
+
 filegroup(
     name = "test_rom",
     srcs = select({
         "bitstream_skip": ["skip.bit"],
+        "bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_test_rom"],
         "bitstream_gcp": ["@bitstreams//:bitstream_test_rom"],
         "//conditions:default": ["@bitstreams//:bitstream_test_rom"],
     }),
@@ -46,6 +57,7 @@ filegroup(
     name = "mask_rom",
     srcs = select({
         "bitstream_skip": ["skip.bit"],
+        "bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_mask_rom"],
         "bitstream_gcp": ["@bitstreams//:bitstream_mask_rom"],
         "//conditions:default": ["@bitstreams//:bitstream_mask_rom"],
     }),

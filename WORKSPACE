@@ -66,3 +66,7 @@ riscv_compliance_repos()
 # Bitstreams from https://storage.googleapis.com/opentitan-bitstreams/
 load("//rules:bitstreams.bzl", "bitstreams_repo")
 bitstreams_repo(name = "bitstreams")
+
+# The nonhermetic_repo imports environment variables needed to run vivado.
+load("//rules:nonhermetic.bzl", "nonhermetic_repo")
+nonhermetic_repo(name = "nonhermetic")
