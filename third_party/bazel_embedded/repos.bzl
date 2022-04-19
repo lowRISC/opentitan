@@ -15,7 +15,7 @@ def bazel_embedded_repos(local = None):
     else:
         http_archive(
             name = "bazel_embedded",
-            sha256 = "ef976ed293199f4c072812c951883b223867a4ef6793b3a795bddbc197b53d4f",
-            strip_prefix = "bazel-embedded-09618f3535d90f8130ffdc27df311039f62ae872",
-            url = "https://github.com/lowRISC/bazel-embedded/archive/09618f3535d90f8130ffdc27df311039f62ae872.tar.gz",
+            sha256 = "2af581b33bf7e8ce702b31fc38ae59ee846ae01d6237ad507c83991eb529826b",
+            strip_prefix = "bazel-embedded-e3e26097f3fe8775670c7031bf03a49e75873a02",
+            url = "https://github.com/lowRISC/bazel-embedded/archive/e3e26097f3fe8775670c7031bf03a49e75873a02.tar.gz",
         )
