@@ -263,7 +263,7 @@ void run_shake_test(dif_kmac_t *kmac) {
   }
 }
 
-bool test_main() {
+bool test_main(void) {
   LOG_INFO("Running KMAC DIF test...");
 
   // Intialize KMAC hardware.

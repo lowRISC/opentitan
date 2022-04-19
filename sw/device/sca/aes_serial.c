@@ -158,7 +158,7 @@ static void aes_serial_encrypt(const uint8_t *plaintext, size_t plaintext_len) {
  * Wait until AES output is valid and then get ciphertext and send it over
  * serial communication
  */
-static void aes_send_ciphertext() {
+static void aes_send_ciphertext(void) {
   bool ready = false;
   do {
     SS_CHECK_DIF_OK(dif_aes_get_status(&aes, kDifAesStatusOutputValid, &ready));

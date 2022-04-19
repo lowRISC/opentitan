@@ -188,7 +188,7 @@ const kmac_test_t kmac_tests[] = {
     },
 };
 
-bool test_main() {
+bool test_main(void) {
   LOG_INFO("Running KMAC DIF test...");
 
   // Intialize KMAC hardware.

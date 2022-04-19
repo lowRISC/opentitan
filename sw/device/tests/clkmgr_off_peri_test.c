@@ -62,7 +62,7 @@ static void test_gateable_clocks_off(const dif_clkmgr_t *clkmgr,
   uart0_csr_access();
 }
 
-bool test_main() {
+bool test_main(void) {
   dif_clkmgr_t clkmgr;
   dif_pwrmgr_t pwrmgr;
   dif_rstmgr_t rstmgr;

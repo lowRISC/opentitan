@@ -59,7 +59,7 @@ void otbn_execute(void) {
                    kOtbnCmdExecute);
 }
 
-bool otbn_is_busy() {
+bool otbn_is_busy(void) {
   uint32_t status =
       abs_mmio_read32(TOP_EARLGREY_OTBN_BASE_ADDR + OTBN_STATUS_REG_OFFSET);
   return status != kOtbnStatusIdle && status != kOtbnStatusLocked;

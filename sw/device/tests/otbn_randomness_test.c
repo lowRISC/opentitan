@@ -152,7 +152,7 @@ void initialize_clkmgr(void) {
   CLKMGR_TESTUTILS_CHECK_CLOCK_HINT(clkmgr, kOtbnClock, kDifToggleEnabled);
 }
 
-bool test_main() {
+bool test_main(void) {
   entropy_testutils_boot_mode_init();
 
   initialize_clkmgr();

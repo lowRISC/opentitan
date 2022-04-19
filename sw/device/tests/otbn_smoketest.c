@@ -159,7 +159,7 @@ static void test_sec_wipe(otbn_t *otbn_ctx) {
   CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOk);
 }
 
-bool test_main() {
+bool test_main(void) {
   entropy_testutils_boot_mode_init();
 
   otbn_t otbn_ctx;

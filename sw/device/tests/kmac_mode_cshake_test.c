@@ -87,7 +87,7 @@ const cshake_test_t cshake_tests[] = {
     },
 };
 
-bool test_main() {
+bool test_main(void) {
   LOG_INFO("Running KMAC DIF cSHAKE test...");
 
   // Intialize KMAC hardware.

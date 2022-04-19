@@ -258,11 +258,11 @@ const dif_uart_t *sca_get_uart(void) {
 #endif
 }
 
-void sca_set_trigger_high() {
+void sca_set_trigger_high(void) {
   OT_DISCARD(dif_gpio_write(&gpio, kTriggerGateBitIndex, true));
 }
 
-void sca_set_trigger_low() {
+void sca_set_trigger_low(void) {
   OT_DISCARD(dif_gpio_write(&gpio, kTriggerGateBitIndex, false));
 }
 

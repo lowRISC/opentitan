@@ -48,7 +48,7 @@ static void write_read_check(mmio_region_t base_addr_region,
   }
 }
 
-bool test_main() {
+bool test_main(void) {
   // Initialize SRAM_CTRL hardware.
   dif_sram_ctrl_t sram_ctrl_main;
   dif_sram_ctrl_t sram_ctrl_ret;

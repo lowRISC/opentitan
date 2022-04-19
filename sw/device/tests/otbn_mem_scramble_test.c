@@ -89,7 +89,7 @@ static void otbn_check_app(otbn_t *ctx, const otbn_app_t app,
                  dif_otbn_dmem_read);
 }
 
-bool test_main() {
+bool test_main(void) {
   otbn_t otbn_ctx;
   mmio_region_t addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
   CHECK(otbn_init(&otbn_ctx, addr) == kOtbnOk);
