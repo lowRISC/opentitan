@@ -8,7 +8,7 @@
 # Global configuration options.
 ARG VERILATOR_VERSION=4.210
 ARG OPENOCD_VERSION=0.11.0
-ARG VERIBLE_VERSION=v0.0-1213-g9e5c085
+ARG VERIBLE_VERSION=v0.0-2135-gb534c1fe
 # The RISCV toolchain version should match the release tag used in GitHub.
 ARG RISCV_TOOLCHAIN_TAR_VERSION=20220210-1
 ARG RUST_VERSION=1.58.0
