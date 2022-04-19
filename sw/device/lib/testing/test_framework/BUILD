@@ -7,41 +7,95 @@ load("//rules:linker.bzl", "ld_library")
 
 package(default_visibility = ["//visibility:public"])
 
-# TODO use more specific targets to avoid unnecesary dependencies
-# https://github.com/lowRISC/opentitan/issues/9098
 cc_library(
-    name = "test_framework",
-    srcs = [
-        "test_coverage_none.c",
-        "test_status.c",
-    ],
+    name = "test_coverage",
+    srcs = ["test_coverage_none.c"],
+    hdrs = ["test_coverage.h"],
+)
+
+cc_library(
+    name = "check",
+    srcs = ["test_status.c"],
     hdrs = [
         "check.h",
-        "test_coverage.h",
         "test_status.h",
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:base",
+        "//sw/device/lib/dif:uart",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+    ],
+)
+
+ld_library(
+    name = "linker_script",
+    script = "ottf.ld",
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//sw/device:info_sections",
+    ],
+)
+
+# This target provides start files without providing the full OTTF, and can be used
+# to bootstrap post-ROM execution without pulling in the full OTTF.
+#
+# The binary target must provide a `noreturn void _ottf_main(void)` function that
+# this library will call.
+cc_library(
+    name = "ottf_start",
+    srcs = [
+        "ottf_isrs.S",
+        "ottf_isrs.c",
+        "ottf_start.S",
+    ],
+    hdrs = [
+        "ottf_isrs.h",
+        "ottf_macros.h",
+    ],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":linker_script",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/crt",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/silicon_creator/lib:manifest_size",
+    ],
+)
+
+cc_library(
+    name = "ottf_main",
+    srcs = ["ottf_main.c"],
+    hdrs = ["ottf_main.h"],
+    # FIXME: Temporary hack to allow us to #include the version in //third_party.
+    # To be removed once Meson is removed.
+    # https://github.com/lowRISC/opentitan/issues/11743
+    local_defines = ["FREERTOS_IS_BAZEL"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":check",
+        ":freertos_port",
+        ":ottf_start",
+        ":test_coverage",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
+        "//third_party/freertos",
     ],
-)
-
-# TODO(lowRISC/opentitan#7972): clean up check.h after completing the
-# migration to bazel.
-cc_library(
-    name = "check",
-    hdrs = [
-        "check.h",
-        "test_status.h",
-    ],
-    visibility = ["//visibility:private"],
+    # `:ottf` depends on `:ottf_start`, but `:ottf_start` gets its main function from
+    # `:ottf`. Thus we need to include all of the objects in `:ottf` unconditionally
+    # so that the linker can find the symbol later.
+    alwayslink = True,
 )
 
 cc_library(
@@ -59,7 +113,6 @@ cc_library(
         "freertos_port.S",
         "freertos_port.c",
     ],
-    hdrs = ["ottf_macros.h"],
     # FIXME: Temporary hack to allow us to #include the version in //third_party.
     # To be removed once Meson is removed.
     # https://github.com/lowRISC/opentitan/issues/11743
@@ -67,6 +120,7 @@ cc_library(
     deps = [
         ":check",
         ":freertos_config",
+        ":ottf_start",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib:irq",
         "//sw/device/lib/dif:rv_timer",
@@ -75,75 +129,9 @@ cc_library(
         "//sw/device/lib/runtime:log",
         "//third_party/freertos",
     ],
-)
-
-ld_library(
-    name = "linker_script",
-    script = "ottf.ld",
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
-        "//sw/device:info_sections",
-    ],
-)
-
-cc_library(
-    name = "ottf_start",
-    srcs = [
-        "ottf_isrs.S",
-        "ottf_isrs.c",
-        "ottf_start.S",
-    ],
-    hdrs = [
-        "ottf_isrs.h",
-        "ottf_macros.h",
-    ],
-    copts = [
-        "-nostdlib",
-        "-ffreestanding",
-    ],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":linker_script",
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/crt",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/silicon_creator/lib:manifest_size",
-    ],
-)
-
-cc_library(
-    name = "ottf_main",
-    srcs = [
-        "ottf_main.c",
-    ],
-    hdrs = [
-        "check.h",
-        "ottf_main.h",
-    ],
-    linkopts = [
-        # Make the linker keep resolving references between these
-        # targets until satisfied.
-        "-Wl,--start-group",
-        "$(location :freertos_port)",
-        "$(location //sw/device/lib:irq)",
-        "$(location //third_party/freertos)",
-        "-Wl,--end-group",
-    ],
-    # FIXME: Temporary hack to allow us to #include the version in //third_party.
-    # To be removed once Meson is removed.
-    # https://github.com/lowRISC/opentitan/issues/11743
-    local_defines = ["FREERTOS_IS_BAZEL"],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":freertos_port",
-        ":test_framework",
-        "//sw/device/lib:irq",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/runtime:print",
-        "//third_party/freertos",
-    ],
+    # This library provides FreeRTOS hooks that are required for FreeRTOS to link,
+    # but FreeRTOS (currently) does not depend on this target. Therefore, we need
+    # to include all of the symbols from this object in the link so that they are
+    # found during linking.
+    alwayslink = True,
 )

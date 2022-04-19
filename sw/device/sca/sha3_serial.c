@@ -477,7 +477,7 @@ static void sha3_serial_single_absorb(const uint8_t *msg, size_t msg_len) {
  * Initializes peripherals and processes simple serial packets received over
  * UART.
  */
-int main(void) {
+void _ottf_main(void) {
   sca_init(kScaTriggerSourceKmac, kScaPeripheralKmac);
 
   LOG_INFO("Running sha3_serial");

@@ -37,7 +37,7 @@ cc_library(
         "//sw/device/lib/dif:sysrst_ctrl",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/dif:usbdev",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
     ],
 )
 
@@ -49,7 +49,7 @@ cc_library(
     deps = [
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
     ],
 )
 
@@ -61,7 +61,7 @@ cc_library(
     deps = [
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:base",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
     ],
 )
 
@@ -71,9 +71,10 @@ cc_library(
     hdrs = ["aon_timer_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
     ],
 )
 
@@ -85,7 +86,7 @@ cc_library(
     deps = [
         "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
     ],
 )
 
@@ -96,10 +97,11 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/edn/data:edn_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/dif:entropy_src",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
     ],
 )
 
@@ -113,7 +115,7 @@ cc_library(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
     ],
 )
 
@@ -127,7 +129,7 @@ cc_library(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
     ],
 )
 
@@ -141,7 +143,7 @@ cc_library(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
     ],
 )
 
@@ -153,7 +155,7 @@ cc_library(
     deps = [
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
     ],
 )
 
@@ -166,7 +168,7 @@ cc_library(
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
     ],
 )
 
@@ -180,7 +182,7 @@ cc_library(
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
     ],
 )
 
@@ -191,7 +193,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
     ],
 )
 
@@ -201,7 +203,7 @@ cc_library(
     hdrs = ["rand_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
     ],
 )
 
@@ -212,7 +214,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
     ],
 )
 
@@ -226,7 +228,7 @@ cc_library(
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
     ],
 )
 
@@ -240,6 +242,6 @@ cc_library(
         "//sw/device/lib/dif:sram_ctrl",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
     ],
 )

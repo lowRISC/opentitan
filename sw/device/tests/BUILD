@@ -24,6 +24,7 @@ opentitan_functest(
         "//sw/device/lib/testing:aes_testutils",
         "//sw/device/lib/testing:clkmgr_testutils",
         "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -62,6 +63,7 @@ opentitan_functest(
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aes_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -80,6 +82,7 @@ opentitan_functest(
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -92,6 +95,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -114,6 +118,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -135,6 +140,7 @@ opentitan_functest(
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -152,7 +158,7 @@ cc_library(
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:clkmgr_testutils",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
     ],
 )
 
@@ -167,6 +173,7 @@ opentitan_functest(
     ),
     deps = [
         ":clkmgr_external_clk_src_for_sw_impl",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -181,6 +188,7 @@ opentitan_functest(
     ),
     deps = [
         ":clkmgr_external_clk_src_for_sw_impl",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -192,6 +200,7 @@ opentitan_functest(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:clkmgr",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -210,6 +219,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -221,6 +231,7 @@ opentitan_functest(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:clkmgr",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -233,6 +244,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -247,6 +259,8 @@ opentitan_functest(
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
 
@@ -264,6 +278,7 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -282,6 +297,7 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -297,19 +313,21 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
 opentitan_functest(
     name = "example_test_from_flash",
     srcs = ["example_test_from_flash.c"],
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
 )
 
 opentitan_functest(
     name = "example_test_from_rom",
     srcs = ["example_test_from_rom.c"],
-    # This test doesn't use the OTTF.
-    ottf = [],
     targets = ["verilator"],  # Can only run in verilator right now.
     # This test is designed to run and complete entirely in the ROM boot stage.
     # Setting the `test_in_rom` flag makes the `opentitan_functest` rule aware
@@ -326,7 +344,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_rom:linker_script",
         "//sw/device/lib/testing/test_rom:test_rom_lib",
     ],
@@ -356,6 +374,7 @@ opentitan_functest(
         "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rand_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -372,6 +391,7 @@ opentitan_functest(
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -386,6 +406,7 @@ opentitan_functest(
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -407,6 +428,7 @@ opentitan_functest(
     ),
     deps = [
         "//sw/device/lib/dif:gpio",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -430,6 +452,7 @@ opentitan_functest(
         "//sw/device/lib/testing:hmac_testutils",
         "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -442,6 +465,7 @@ opentitan_functest(
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:hmac_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -455,6 +479,7 @@ opentitan_functest(
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:hmac_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -466,6 +491,7 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:rom_ctrl",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -478,6 +504,7 @@ opentitan_functest(
         "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -491,6 +518,7 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -504,6 +532,7 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -516,6 +545,7 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -531,6 +561,7 @@ opentitan_functest(
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -549,6 +580,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:otbn",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/otbn/crypto:p256_ecdsa",
     ],
 )
@@ -565,6 +597,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:otbn",
         "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/otbn/code-snippets:err_test",
     ],
 )
@@ -578,6 +611,7 @@ opentitan_functest(
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:otbn",
+        "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/otbn/code-snippets:randomness",
     ],
 )
@@ -595,6 +629,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:otbn",
         "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/otbn/crypto:rsa",
     ],
 )
@@ -609,6 +644,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:otbn",
         "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/otbn/code-snippets:barrett384",
         "//sw/otbn/code-snippets:err_test",
     ],
@@ -625,6 +661,7 @@ opentitan_functest(
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -643,6 +680,7 @@ opentitan_functest(
         "//sw/device/lib/base:csr",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:pmp",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -661,6 +699,7 @@ opentitan_functest(
         "//sw/device/lib/base:csr",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:pmp",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -677,6 +716,7 @@ opentitan_functest(
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -684,11 +724,13 @@ opentitan_functest(
     name = "pwrmgr_sleep_disabled_test",
     srcs = ["pwrmgr_sleep_disabled_test.c"],
     deps = [
+        "//sw/device/lib:irq",
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -700,6 +742,7 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -711,6 +754,7 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -733,6 +777,7 @@ opentitan_functest(
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -747,6 +792,7 @@ opentitan_functest(
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -760,6 +806,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -776,6 +823,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -783,6 +831,7 @@ opentitan_functest(
     name = "sensor_ctrl_alert_test",
     srcs = ["sensor_ctrl_alerts.c"],
     deps = [
+        "//sw/device/lib:irq",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -799,6 +848,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -806,6 +856,7 @@ opentitan_functest(
     name = "sensor_ctrl_wakeup_test",
     srcs = ["sensor_ctrl_wakeup.c"],
     deps = [
+        "//sw/device/lib:irq",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -820,6 +871,7 @@ opentitan_functest(
         "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -842,6 +894,7 @@ opentitan_functest(
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -855,6 +908,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:sram_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -871,6 +925,7 @@ opentitan_functest(
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -884,6 +939,7 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:sram_ctrl",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -896,6 +952,7 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -910,6 +967,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 

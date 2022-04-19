@@ -20,20 +20,6 @@ _BASE_PARAMS = {
     "timeout": "moderate",  # 5 minutes
 }
 
-_OTTF_DEPS = [
-    "//sw/device/lib/arch:device",
-    "//sw/device/lib/base:macros",
-    "//sw/device/lib/base:csr",
-    "//sw/device/lib/base:mmio",
-    "//sw/device/lib/runtime:hart",
-    "//sw/device/lib/runtime:log",
-    "//sw/device/lib/runtime:print",
-    "//sw/device/lib/crt",
-    "//sw/device/lib/testing/test_framework:ottf_start",
-    "//sw/device/lib/testing/test_framework:ottf_main",
-    "//sw/device/lib/base:mmio",
-]
-
 def dv_params(
         # Base Parameters
         args = _BASE_PARAMS["args"] + [
@@ -229,7 +215,6 @@ def opentitan_functest(
         targets = ["dv", "verilator", "cw310"],
         args = [],
         data = [],
-        ottf = _OTTF_DEPS,
         test_in_rom = False,
         signed = False,
         key = "test_key_0",
@@ -272,7 +257,7 @@ def opentitan_functest(
     """
 
     # Generate flash artifacts for test.
-    deps = depset(direct = kwargs.pop("deps", []) + ottf).to_list()
+    deps = kwargs.pop("deps", [])
     if test_in_rom:
         opentitan_rom_binary(
             name = name + "_rom_prog",

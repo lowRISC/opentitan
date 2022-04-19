@@ -20,6 +20,7 @@ opentitan_functest(
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -27,7 +28,6 @@ opentitan_functest(
     name = "flash_rma_unlocked_test",
     srcs = ["flash_rma_unlocked_test.c"],
     # This test doesn't use the OTTF.
-    ottf = [],
     targets = ["verilator"],  # Can only run in verilator right now.
     # This test is designed to run and complete entirely in the ROM boot stage.
     # Setting the `test_in_rom` flag makes the `opentitan_functest` rule aware
@@ -48,7 +48,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_rom:linker_script",
         "//sw/device/lib/testing/test_rom:test_rom_lib",
     ],
@@ -68,6 +68,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -92,6 +93,7 @@ opentitan_functest(
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -107,7 +109,7 @@ cc_library(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
     ],
 )
 
@@ -117,6 +119,7 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         ":lc_ctrl_transition_impl",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -126,6 +129,7 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         ":lc_ctrl_transition_impl",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -138,6 +142,7 @@ opentitan_functest(
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -152,6 +157,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -166,6 +172,7 @@ opentitan_functest(
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/dif:rom_ctrl",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -182,6 +189,7 @@ opentitan_functest(
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -201,6 +209,7 @@ opentitan_functest(
         "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:sram_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -220,6 +229,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:sram_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -233,5 +243,6 @@ opentitan_functest(
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:sram_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
