@@ -13,7 +13,7 @@ variables:
   VERILATOR_VERSION: 4.210
   OPENOCD_VERSION: 0.11.0
   TOOLCHAIN_PATH: /opt/buildcache/riscv
-  VERIBLE_VERSION: v0.0-1213-g9e5c085
+  VERIBLE_VERSION: v0.0-2135-gb534c1fe
   RUST_VERSION: 1.58.0
   # Release tag from https://github.com/lowRISC/lowrisc-toolchains/releases
   TOOLCHAIN_VERSION: 20220210-1
