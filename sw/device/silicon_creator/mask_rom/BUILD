@@ -152,7 +152,6 @@ opentitan_functest(
         "mask_rom_start.S",
     ],
     # This test doesn't use the OTTF.
-    ottf = [],
     targets = ["verilator"],  # Can only run in verilator right now.
     # This test is designed to run and complete entirely in the ROM boot stage.
     # Setting the `test_in_rom` flag makes the `opentitan_functest` rule aware
@@ -186,7 +185,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
         "//sw/device/silicon_creator/lib:epmp",
         "//sw/device/silicon_creator/lib:epmp_test_unlock",
         "//sw/device/silicon_creator/lib:irq_asm",
@@ -298,6 +297,9 @@ opentitan_functest(
             "failing_verilator",
         ],
     ),
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
 )
 
 # TODO: Add verilator test
@@ -317,4 +319,7 @@ opentitan_functest(
     ),
     signed = False,
     targets = ["cw310"],
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
 )

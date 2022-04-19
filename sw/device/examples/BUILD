@@ -15,6 +15,6 @@ cc_library(
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:check",
     ],
 )

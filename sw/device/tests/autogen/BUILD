@@ -46,6 +46,7 @@ opentitan_functest(
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -89,5 +90,6 @@ opentitan_functest(
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:alert_handler_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

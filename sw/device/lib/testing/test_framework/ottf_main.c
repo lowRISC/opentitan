@@ -79,7 +79,7 @@ static void test_wrapper(void *task_parameters) {
   report_test_status(result);
 }
 
-int main(int argc, char **argv) {
+void _ottf_main(void) {
   test_status_set(kTestStatusInTest);
 
   // Initialize the UART to enable logging for non-DV simulation platforms.
@@ -110,6 +110,6 @@ int main(int argc, char **argv) {
     test_wrapper(NULL);
   }
 
-  // Unreachable code.
-  return 1;
+  // Unreachable.
+  CHECK(false);
 }

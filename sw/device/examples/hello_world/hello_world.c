@@ -22,7 +22,7 @@ static dif_spi_device_t spi;
 static dif_spi_device_config_t spi_config;
 static dif_uart_t uart;
 
-int main(int argc, char **argv) {
+void _ottf_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
   CHECK_DIF_OK(dif_uart_init(
