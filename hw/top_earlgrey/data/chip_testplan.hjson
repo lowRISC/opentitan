@@ -1101,7 +1101,7 @@
               escalation paths to trigger.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_alert_test"]
     }
     {
       name: chip_sw_alert_handler_escalations
