@@ -622,10 +622,18 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
-      name: chip_sw_clkmgr_external_clk_src_for_sw
+      name: chip_sw_clkmgr_external_clk_src_for_sw_fast
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/clkmgr_external_clk_src_for_sw_test:1"]
+      sw_images: ["sw/device/tests/clkmgr_external_clk_src_for_sw_fast_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+ext_clk_type=ExtClkHighSpeed", "+calibrate_usb_clk=1"]
+    }
+    {
+      name: chip_sw_clkmgr_external_clk_src_for_sw_slow
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/clkmgr_external_clk_src_for_sw_slow_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+ext_clk_type=ExtClkLowSpeed", "+calibrate_usb_clk=1"]
     }
     {
       name: chip_sw_clkmgr_jitter

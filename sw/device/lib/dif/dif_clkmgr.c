@@ -42,6 +42,20 @@ static bool clkmgr_measure_ctrl_regwen(const dif_clkmgr_t *clkmgr) {
                              CLKMGR_MEASURE_CTRL_REGWEN_EN_BIT);
 }
 
+dif_result_t dif_clkmgr_external_clock_is_settled(const dif_clkmgr_t *clkmgr,
+                                                  bool *status) {
+  if (clkmgr == NULL || status == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t extclk_status_val =
+      mmio_region_read32(clkmgr->base_addr, CLKMGR_EXTCLK_STATUS_REG_OFFSET);
+  *status = bitfield_field32_read(extclk_status_val,
+                                  CLKMGR_EXTCLK_STATUS_ACK_FIELD) ==
+            kMultiBitBool4True;
+
+  return kDifOk;
+}
+
 dif_result_t dif_clkmgr_jitter_get_enabled(const dif_clkmgr_t *clkmgr,
                                            dif_toggle_t *state) {
   if (clkmgr == NULL || state == NULL) {

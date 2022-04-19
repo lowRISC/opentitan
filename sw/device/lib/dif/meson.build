@@ -59,8 +59,8 @@ sw_lib_dif_clkmgr = declare_dependency(
       'dif_clkmgr.c',
     ],
     dependencies: [
-      sw_lib_mmio,
       sw_lib_dif_autogen_clkmgr,
+      sw_lib_mmio,
     ],
   )
 )
