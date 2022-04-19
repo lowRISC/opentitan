@@ -139,8 +139,8 @@ module otbn
     ~(busy_execute_q | otbn_dmem_scramble_key_req_busy | otbn_imem_scramble_key_req_busy);
 
   // Add a register stage so we have an `is_not_running_r` which changes with the same timing as
-  // `status.q`. Without this `idle_o` will be asserted a cycle before `status.q` changes resulting
-  // in bad interrupt timing where the interrupt is seen the cycle after `idle_o`.
+  // `status.q`. Together with the prim_mubi4_sender below that also contains a flop, this ensures
+  // that both the `idle_o` and the `intr_done_o` signals change in the same cycle.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if(!rst_ni) begin
       is_not_running_r <= 1'b1;
@@ -153,7 +153,12 @@ module otbn
 
   // Note: This is not the same thing as STATUS == IDLE. For example, we want to allow clock gating
   // when locked.
-  assign idle_o = mubi4_bool_to_mubi(is_not_running_r);
+  prim_mubi4_sender u_prim_mubi4_sender (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi4_bool_to_mubi(is_not_running_r)),
+    .mubi_o(idle_o)
+  );
 
   // Lifecycle ==================================================================
 
@@ -174,8 +179,7 @@ module otbn
     !is_busy_status(status_e'(hw2reg_status_d));
 
   prim_intr_hw #(
-    .Width(1),
-    .FlopOutput(0)
+    .Width(1)
   ) u_intr_hw_done (
     .clk_i,
     .rst_ni                (rst_n),
