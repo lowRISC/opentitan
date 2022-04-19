@@ -385,10 +385,10 @@ sw_tests += {
   }
 }
 
-clkmgr_external_clk_src_for_sw_test_lib = declare_dependency(
+clkmgr_external_clk_src_for_sw_impl_lib = declare_dependency(
   link_with: static_library(
-    'clkmgr_external_clk_src_for_sw_test_lib',
-    sources: ['clkmgr_external_clk_src_for_sw_test.c'],
+    'clkmgr_external_clk_src_for_sw_impl_lib',
+    sources: ['clkmgr_external_clk_src_for_sw_impl.c'],
     dependencies: [
       sw_lib_dif_clkmgr,
       sw_lib_mmio,
@@ -400,9 +400,34 @@ clkmgr_external_clk_src_for_sw_test_lib = declare_dependency(
     ],
   ),
 )
+
+clkmgr_external_clk_src_for_sw_fast_test_lib = declare_dependency(
+  link_with: static_library(
+    'clkmgr_external_clk_src_for_sw_fast_test_lib',
+    sources: ['clkmgr_external_clk_src_for_sw_fast_test.c'],
+    dependencies: [
+      clkmgr_external_clk_src_for_sw_impl_lib,
+    ],
+  ),
+)
 sw_tests += {
-  'clkmgr_external_clk_src_for_sw_test': {
-    'library': clkmgr_external_clk_src_for_sw_test_lib,
+  'clkmgr_external_clk_src_for_sw_fast_test': {
+    'library': clkmgr_external_clk_src_for_sw_fast_test_lib,
+  }
+}
+
+clkmgr_external_clk_src_for_sw_slow_test_lib = declare_dependency(
+  link_with: static_library(
+    'clkmgr_external_clk_src_for_sw_slow_test_lib',
+    sources: ['clkmgr_external_clk_src_for_sw_slow_test.c'],
+    dependencies: [
+      clkmgr_external_clk_src_for_sw_impl_lib,
+    ],
+  ),
+)
+sw_tests += {
+  'clkmgr_external_clk_src_for_sw_slow_test': {
+    'library': clkmgr_external_clk_src_for_sw_slow_test_lib,
   }
 }
 

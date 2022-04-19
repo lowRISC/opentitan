@@ -819,7 +819,8 @@
             Use the clkmgr count measurement feature to verify clock division.
             '''
       milestone: V2
-      tests: ["chip_sw_clkmgr_external_clk_src_for_sw"]
+      tests: ["chip_sw_clkmgr_external_clk_src_for_sw_fast",
+              "chip_sw_clkmgr_external_clk_src_for_sw_slow"]
       tags: ["conn"]
     }
     {
@@ -843,7 +844,8 @@
             X-ref with chip_sw_uart_tx_rx_alt_clk_freq, which needs to deal with this as well.
             '''
       milestone: V2
-      tests: ["chip_sw_clkmgr_external_clk_src_for_sw"]
+      tests: ["chip_sw_clkmgr_external_clk_src_for_sw_fast",
+              "chip_sw_clkmgr_external_clk_src_for_sw_slow"]
     }
     {
       name: chip_sw_clkmgr_jitter
