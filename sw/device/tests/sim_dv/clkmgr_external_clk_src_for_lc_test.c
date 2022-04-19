@@ -8,5 +8,5 @@
 #include "sw/device/tests/sim_dv/lc_ctrl_transition_impl.h"
 
 bool test_main(void) {
-  return execute_lc_ctrl_transition_test(/*use_ext_clk=*/false);
+  return execute_lc_ctrl_transition_test(/*use_ext_clk=*/true);
 }

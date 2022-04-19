@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load("//rules:opentitan_test.bzl", "opentitan_functest")
 
 opentitan_functest(
@@ -94,10 +95,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
-    name = "lc_ctrl_transition_test",
-    srcs = ["lc_ctrl_transition_test.c"],
-    targets = ["dv"],
+cc_library(
+    name = "lc_ctrl_transition_impl",
+    srcs = ["lc_ctrl_transition_impl.c"],
+    hdrs = ["lc_ctrl_transition_impl.h"],
+    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
@@ -105,7 +107,22 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf",
     ],
+)
+
+opentitan_functest(
+    name = "lc_ctrl_transition_test",
+    srcs = ["lc_ctrl_transition_test.c"],
+    targets = ["dv"],
+    deps = ["lc_ctrl_transition_impl"],
+)
+
+opentitan_functest(
+    name = "clkmgr_external_clk_src_for_lc_test",
+    srcs = ["clkmgr_external_clk_src_for_lc_test.c"],
+    targets = ["dv"],
+    deps = ["lc_ctrl_transition_impl"],
 )
 
 opentitan_functest(
