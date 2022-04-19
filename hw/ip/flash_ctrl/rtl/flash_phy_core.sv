@@ -183,14 +183,13 @@ module flash_phy_core
     .mubi_o(flash_disable)
   );
 
+  logic ctrl_fsm_idle;
   logic host_req;
-  assign host_req = host_req_i & (arb_cnt < ArbCnt[CntWidth-1:0]) & ~ctrl_gnt &
+  assign host_req = host_req_i & (arb_cnt < ArbCnt[CntWidth-1:0]) & ctrl_fsm_idle &
                     mubi4_test_false_strict(flash_disable[HostDisableIdx]);
   assign host_sel = host_req;
   assign host_gnt = host_req & host_req_rdy_o;
-
-  assign host_req_rdy_o = rd_stage_rdy & (arb_cnt < ArbCnt[CntWidth-1:0]) & ~ctrl_gnt;
-  assign host_req_done_o = ~ctrl_gnt & rd_stage_data_valid;
+  assign host_req_done_o = ctrl_fsm_idle & rd_stage_data_valid;
 
   // oustanding width is slightly larger to ensure a faulty increment is able to reach
   // the higher value. For example if RspOrderDepth were 3, a clog2 of 3 would still be 2
@@ -200,9 +199,9 @@ module flash_phy_core
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       host_outstanding <= '0;
-    end else if (host_gnt && !host_req_done_o) begin
+    end else if (host_gnt && !host_req_done_o && (host_outstanding <= RspOrderDepth)) begin
       host_outstanding <= host_outstanding + 1'b1;
-    end else if (!host_gnt && host_req_done_o) begin
+    end else if (!host_gnt && host_req_done_o && |host_outstanding) begin
       host_outstanding <= host_outstanding - 1'b1;
     end
   end
@@ -215,16 +214,32 @@ module flash_phy_core
   assign ctrl_req = req_i & rd_stage_idle & ~host_req &
                     mubi4_test_false_strict(flash_disable[CtrlDisableIdx]);
 
+  logic phy_req;
+  prim_arbiter_tree #(
+    .N(2),
+    .DW(1),
+    .EnDataPort('0)
+  ) u_host_arb (
+    .clk_i,
+    .rst_ni,
+    .req_chk_i('0),
+    .req_i({host_req, ctrl_req}),
+    .data_i('{1'b0, 1'b0}),
+    .gnt_o({host_req_rdy_o, ctrl_gnt}),
+    .idx_o(),
+    .valid_o(phy_req),
+    .data_o(),
+    .ready_i(rd_stage_rdy)
+  );
+
   // if request happens at the same time as a host grant, increment count
   assign inc_arb_cnt = req_i & host_gnt;
 
   logic fsm_err;
-  logic ctrl_fsm_idle;
   always_comb begin
     state_d = state_q;
     reqs = '0;
     ctrl_rsp_vld = '0;
-    ctrl_gnt = '0;
     fsm_err = '0;
     ctrl_fsm_idle = '0;
 
@@ -233,19 +248,17 @@ module flash_phy_core
         ctrl_fsm_idle = 1'b1;
         if (mubi4_test_true_loose(flash_disable[FsmDisableIdx])) begin
           state_d = StDisable;
-        end else if (ctrl_req && rd_i) begin
-          reqs[PhyRead] = 1'b1;
-          state_d = rd_stage_rdy ? StCtrlRead : state_q;
-        end else if (ctrl_req && prog_i) begin
+        end else if (ctrl_gnt && rd_i) begin
+          state_d = StCtrlRead;
+        end else if (ctrl_gnt && prog_i) begin
           state_d = StCtrlProg;
-        end else if (ctrl_req) begin
+        end else if (ctrl_gnt) begin
           state_d = StCtrl;
         end
       end
 
       // Controller reads are very slow.
       StCtrlRead: begin
-        ctrl_gnt = 1'b1;
         if (rd_stage_data_valid) begin
           ctrl_rsp_vld = 1'b1;
           state_d = StIdle;
@@ -255,7 +268,6 @@ module flash_phy_core
       // Controller program data may be packed based on
       // address alignment
       StCtrlProg: begin
-        ctrl_gnt = 1'b1;
         reqs[PhyProg] = 1'b1;
         if (prog_ack) begin
           ctrl_rsp_vld = 1'b1;
@@ -265,7 +277,6 @@ module flash_phy_core
 
       // other controller operations directly interface with flash
       StCtrl: begin
-        ctrl_gnt = 1'b1;
         reqs[PhyPgErase] = pg_erase_i;
         reqs[PhyBkErase] = bk_erase_i;
         if (erase_ack) begin
@@ -319,7 +330,8 @@ module flash_phy_core
     .clk_i,
     .rst_ni,
     .buf_en_i(rd_buf_en_i),
-    .req_i(reqs[PhyRead] | host_req),
+    //.req_i(reqs[PhyRead] | host_req),
+    .req_i(phy_req & (rd_i | host_req)),
     .descramble_i(muxed_scramble_en),
     .ecc_i(muxed_ecc_en),
     .prog_i(reqs[PhyProg]),
