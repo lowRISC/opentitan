@@ -110,7 +110,7 @@ static const uint32_t kPinflipMask = 1;
 static const uint32_t kDiffXcvrMask = 2;
 static const uint32_t kUPhyMask = 4;
 
-int main(int argc, char **argv) {
+void _ottf_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
   CHECK_DIF_OK(dif_uart_init(

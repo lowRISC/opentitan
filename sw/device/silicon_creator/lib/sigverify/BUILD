@@ -71,6 +71,7 @@ opentitan_functest(
     deps = [
         ":mod_exp_ibex",
         ":testvectors",
+        "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
@@ -124,6 +125,7 @@ opentitan_functest(
     deps = [
         ":mod_exp_otbn",
         ":testvectors",
+        "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
@@ -195,6 +197,7 @@ opentitan_functest(
     ),
     deps = [
         ":sigverify",
+        "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
@@ -213,6 +216,7 @@ opentitan_functest(
     deps = [
         ":sigverify",
         ":testvectors",
+        "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],

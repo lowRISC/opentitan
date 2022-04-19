@@ -37,6 +37,7 @@ def rv_compliance_test(name, arch):
         ),
         linkopts = ["-Wl,--no-relax"],
         deps = [
+            "//sw/device/lib/testing/test_framework:ottf_main",
             "@riscv-compliance//:riscv-test-env",
         ],
     )
