@@ -691,7 +691,7 @@ static void test_rsa4096_roundtrip(void) {
                 kEncryptedExpected, out_encrypted, out_decrypted);
 }
 
-bool test_main() {
+bool test_main(void) {
   entropy_testutils_boot_mode_init();
 
   test_rsa512_roundtrip();

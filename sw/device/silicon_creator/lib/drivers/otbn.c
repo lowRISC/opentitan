@@ -130,7 +130,7 @@ rom_error_t otbn_execute(void) {
   return otbn_cmd_run(kOtbnCmdExecute, kErrorOtbnExecutionFailed);
 }
 
-bool otbn_is_busy() {
+bool otbn_is_busy(void) {
   uint32_t status = abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET);
   return status != kOtbnStatusIdle && status != kOtbnStatusLocked;
 }

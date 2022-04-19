@@ -26,7 +26,7 @@ const uint32_t kExpectedEntropyData[] = {
     0x38a9e15d, 0xc615d072, 0x15f21dc9, 0x38f06e56, 0x790a2a87, 0x8bff3d11,
     0xd56913da, 0x75dc72c3, 0xee2d38a2, 0xabfddaec, 0x3837e88b, 0x29cf1c12};
 
-bool test_main() {
+bool test_main(void) {
   dif_entropy_src_t entropy_src;
   CHECK_DIF_OK(dif_entropy_src_init(
       mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));

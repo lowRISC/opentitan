@@ -58,7 +58,7 @@ static volatile const uint8_t kOtpRmaToken[LC_TOKEN_SIZE] = {
     0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
 };
 
-static void lock_otp_secret0_partition() {
+static void lock_otp_secret0_partition(void) {
   uint64_t otp_unlock_token_0 = 0;
   uint64_t otp_unlock_token_1 = 0;
   for (int i = 0; i < LC_TOKEN_SIZE; i++) {

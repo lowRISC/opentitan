@@ -79,7 +79,7 @@ static const dif_hmac_digest_t kExpectedHmacDigest = {
         },
 };
 
-bool test_main() {
+bool test_main(void) {
   dif_hmac_t hmac;
   mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
   CHECK_DIF_OK(dif_hmac_init(base_addr, &hmac));

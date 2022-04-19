@@ -56,7 +56,7 @@ struct mon_ctx {
   unsigned char bytes[MON_BYTES_SIZE + 2];
 };
 
-void *monitor_usb_init() {
+void *monitor_usb_init(void) {
   struct mon_ctx *mon = (struct mon_ctx *)calloc(1, sizeof(struct mon_ctx));
   assert(mon);
 

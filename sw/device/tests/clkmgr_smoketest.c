@@ -79,7 +79,7 @@ void test_hintable_clocks(const dif_clkmgr_t *clkmgr) {
   }
 }
 
-bool test_main() {
+bool test_main(void) {
   dif_clkmgr_t clkmgr;
   CHECK_DIF_OK(dif_clkmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));

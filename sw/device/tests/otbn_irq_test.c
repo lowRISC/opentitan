@@ -157,7 +157,7 @@ void ottf_external_isr(void) {
   otbn_finished = true;
 }
 
-bool test_main() {
+bool test_main(void) {
   entropy_testutils_boot_mode_init();
   plic_init_with_irqs();
 

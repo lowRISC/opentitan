@@ -137,7 +137,7 @@ void test_ctr_drbg_ctr0(const dif_csrng_t *csrng) {
   fips_generate_kat(csrng);
 }
 
-bool test_main() {
+bool test_main(void) {
   dif_csrng_t csrng;
   CHECK_DIF_OK(dif_csrng_init(
       mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));

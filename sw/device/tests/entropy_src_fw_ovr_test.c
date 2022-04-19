@@ -106,7 +106,7 @@ void test_firmware_override(dif_entropy_src_t *entropy) {
   entropy_data_flush(entropy);
 }
 
-bool test_main() {
+bool test_main(void) {
   dif_entropy_src_t entropy_src;
   CHECK_DIF_OK(dif_entropy_src_init(
       mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));

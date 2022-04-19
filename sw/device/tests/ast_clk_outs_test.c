@@ -84,7 +84,7 @@ static void check_measurement_counts(const dif_clkmgr_t *clkmgr) {
   CHECK_DIF_OK(dif_clkmgr_recov_err_code_clear_codes(clkmgr, ~0u));
 }
 
-bool test_main() {
+bool test_main(void) {
   dif_sensor_ctrl_t sensor_ctrl;
   dif_aon_timer_t aon_timer;
 

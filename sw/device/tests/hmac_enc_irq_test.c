@@ -89,7 +89,7 @@ static void enable_irqs(void) {
   irq_external_ctrl(true);
 }
 
-bool test_main() {
+bool test_main(void) {
   mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
   CHECK_DIF_OK(dif_hmac_init(base_addr, &hmac));
 
