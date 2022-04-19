@@ -16,6 +16,7 @@ def _hjson_header(ctx):
         inputs = ctx.files.srcs + [ctx.executable._regtool],
         arguments = [
             "-D",
+            "-q",
             "-o",
             header.path,
         ] + [src.path for src in ctx.files.srcs],
