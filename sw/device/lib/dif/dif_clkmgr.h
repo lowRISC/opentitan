@@ -258,6 +258,17 @@ dif_result_t dif_clkmgr_external_clock_set_enabled(const dif_clkmgr_t *clkmgr,
                                                    bool is_low_speed);
 
 /**
+ * Determine if the transition to using external clock is complete.
+ *
+ * @param clkmgr Clock Manager Handle.
+ * @param[out] status Set to true if the transition is complete.
+ * @returns The result of the operation once it completes.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_clkmgr_external_clock_is_settled(const dif_clkmgr_t *clkmgr,
+                                                  bool *status);
+
+/**
  * Disable measurement control updates.
  *
  * This can only be disabled, and stays disabled until the next POR.

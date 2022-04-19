@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
 
 opentitan_functest(
@@ -137,15 +138,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
-    name = "clkmgr_external_clk_src_for_sw_test",
-    srcs = ["clkmgr_external_clk_src_for_sw_test.c"],
-    verilator = verilator_params(
-        tags = [
-            "cpu:4",
-            "failing_verilator",
-        ],
-    ),
+cc_library(
+    name = "clkmgr_external_clk_src_for_sw_impl",
+    srcs = ["clkmgr_external_clk_src_for_sw_impl.c"],
+    hdrs = ["clkmgr_external_clk_src_for_sw_impl.h"],
+    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -155,7 +152,32 @@ opentitan_functest(
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:clkmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf",
     ],
+)
+
+opentitan_functest(
+    name = "clkmgr_external_clk_src_for_sw_fast_test",
+    srcs = ["clkmgr_external_clk_src_for_sw_fast_test.c"],
+    verilator = verilator_params(
+        tags = [
+            "cpu:4",
+            "failing_verilator",
+        ],
+    ),
+    deps = ["clkmgr_external_clk_src_for_sw_impl"],
+)
+
+opentitan_functest(
+    name = "clkmgr_external_clk_src_for_sw_slow_test",
+    srcs = ["clkmgr_external_clk_src_for_sw_slow_test.c"],
+    verilator = verilator_params(
+        tags = [
+            "cpu:4",
+            "failing_verilator",
+        ],
+    ),
+    deps = ["clkmgr_external_clk_src_for_sw_impl"],
 )
 
 opentitan_functest(
