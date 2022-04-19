@@ -16,8 +16,8 @@
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_rom/spiflash_frame.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"

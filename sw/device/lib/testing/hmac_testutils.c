@@ -6,7 +6,7 @@
 
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/runtime/ibex.h"
-#include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 
 void hmac_testutils_check_message_length(const dif_hmac_t *hmac,
                                          uint64_t expected_sent_bits) {

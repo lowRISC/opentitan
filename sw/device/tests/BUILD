@@ -152,7 +152,7 @@ cc_library(
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:clkmgr_testutils",
-        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework",
     ],
 )
 
@@ -165,7 +165,9 @@ opentitan_functest(
             "failing_verilator",
         ],
     ),
-    deps = ["clkmgr_external_clk_src_for_sw_impl"],
+    deps = [
+        ":clkmgr_external_clk_src_for_sw_impl",
+    ],
 )
 
 opentitan_functest(
@@ -177,7 +179,9 @@ opentitan_functest(
             "failing_verilator",
         ],
     ),
-    deps = ["clkmgr_external_clk_src_for_sw_impl"],
+    deps = [
+        ":clkmgr_external_clk_src_for_sw_impl",
+    ],
 )
 
 opentitan_functest(

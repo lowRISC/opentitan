@@ -107,7 +107,7 @@ cc_library(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:ottf",
+        "//sw/device/lib/testing/test_framework",
     ],
 )
 
@@ -115,14 +115,18 @@ opentitan_functest(
     name = "lc_ctrl_transition_test",
     srcs = ["lc_ctrl_transition_test.c"],
     targets = ["dv"],
-    deps = ["lc_ctrl_transition_impl"],
+    deps = [
+        ":lc_ctrl_transition_impl",
+    ],
 )
 
 opentitan_functest(
     name = "clkmgr_external_clk_src_for_lc_test",
     srcs = ["clkmgr_external_clk_src_for_lc_test.c"],
     targets = ["dv"],
-    deps = ["lc_ctrl_transition_impl"],
+    deps = [
+        ":lc_ctrl_transition_impl",
+    ],
 )
 
 opentitan_functest(

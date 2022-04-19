@@ -9,7 +9,7 @@
 
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
-#include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 
 bool rstmgr_testutils_is_reset_info(const dif_rstmgr_t *rstmgr,
                                     dif_rstmgr_reset_info_bitfield_t info) {

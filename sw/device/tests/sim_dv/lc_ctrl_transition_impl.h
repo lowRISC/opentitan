@@ -8,4 +8,5 @@
 #include <stdbool.h>
 
 bool execute_lc_ctrl_transition_test(bool use_ext_clk);
+
 #endif  // OPENTITAN_SW_DEVICE_TESTS_SIM_DV_LC_CTRL_TRANSITION_IMPL_H_
