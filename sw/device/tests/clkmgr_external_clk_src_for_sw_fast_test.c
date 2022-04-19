@@ -7,7 +7,7 @@
 
 #include <stdbool.h>
 
-#include "sw/device/lib/testing/test_framework/ottf.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/clkmgr_external_clk_src_for_sw_impl.h"
 
 const test_config_t kTestConfig;

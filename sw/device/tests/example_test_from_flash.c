@@ -15,7 +15,7 @@
  */
 // #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/test_framework/ottf.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 /**
  * The OTTF expects this symbol to present, as it contains configuration

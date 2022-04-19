@@ -113,13 +113,13 @@ cc_library(
 )
 
 cc_library(
-    name = "ottf",
+    name = "ottf_main",
     srcs = [
-        "ottf.c",
+        "ottf_main.c",
     ],
     hdrs = [
         "check.h",
-        "ottf.h",
+        "ottf_main.h",
     ],
     linkopts = [
         # Make the linker keep resolving references between these
