@@ -5,6 +5,9 @@
 // Include our common coverage CCF.
 include_ccf ${dv_root}/tools/xcelium/common.ccf
 
+deselect_coverage -betfs -module tb...
+select_coverage -befs -module ${DUT_TOP}...
+
 // Black-box pre-verified IPs from coverage collection.
 deselect_coverage -betfs -module pins_if
 deselect_coverage -betfs -module clk_rst_if
