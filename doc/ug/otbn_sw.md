@@ -61,10 +61,10 @@ hw/ip/otbn/util/otbn_ld.py -o foo foo0.o foo1.o foo2.o
 
 ### Objdump
 
-To disassemble OTBN code, use `otbn-objdump`, which can be found at `hw/ip/otbn/util/otbn-objdump`.
+To disassemble OTBN code, use `otbn_objdump.py`, which can be found at `hw/ip/otbn/util/otbn_objdump.py`.
 This wraps `riscv32-unknown-elf-objdump`, but correctly disassembles OTBN instructions when run with the `-d` flag.
 
 To disassemble the ELF binary linked in the previous section, run
 ```shell
-hw/ip/otbn/util/otbn-objdump -d foo
+hw/ip/otbn/util/otbn_objdump.py -d foo
 ```
