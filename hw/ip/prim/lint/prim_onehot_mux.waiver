@@ -1,0 +1,11 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for prim_onehot_mux
+
+waive -rules {CLOCK_USE} -location {prim_onehot_mux.sv} -msg {'clk_i' is connected to 'prim_onehot_mux' port 'clk_i', and used as a clock at} \
+      -comment "clk_i and rst_ni are only used for assertions in this module."
+
+waive -rules {RESET_USE} -location {prim_onehot_mux.sv} -msg {'rst_ni' is connected to 'prim_onehot_mux' port 'rst_ni', and used as an asynchronous reset or set at } \
+      -comment "clk_i and rst_ni are only used for assertions in this module."
