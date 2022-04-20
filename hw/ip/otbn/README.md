@@ -22,12 +22,12 @@ toolchain](https://docs.opentitan.org/doc/ug/install_instructions/#software-deve
 For more details about the toolchain, see the [user
 guide](https://docs.opentitan.org/doc/ug/otbn_sw)).
 
-`otbn-as` and `otbn-ld` can be used to build .elf files for use with
+`otbn-as` and `otbn_ld.py` can be used to build .elf files for use with
 simulations. They work work similarly to binutils programs they wrap.
 
 ```
 hw/ip/otbn/util/otbn-as -o prog_bin/prog.o prog.s
-hw/ip/otbn/util/otbn-ld -o prog_bin/prog.elf prog_bin/prog.o
+hw/ip/otbn/util/otbn_ld.py -o prog_bin/prog.elf prog_bin/prog.o
 ```
 
 Will assemble and link `prog.s` resulting in `prog_bin/prog.elf` that can be run
@@ -50,7 +50,7 @@ users include:
 ### Run the Python simulator
 The quickest way to run an OTBN-only program is to use the Python simulator.
 First, generate a `.elf.` file either using the usual build process or by
-manually running `otbn-as` and `otbn-ld` as shown above. Then, from `$REPO_TOP`:
+manually running `otbn-as` and `otbn_ld.py` as shown above. Then, from `$REPO_TOP`:
 ```console
 $ hw/ip/otbn/dv/otbnsim/standalone.py -t path/to/prog.elf
 ```
@@ -112,7 +112,7 @@ and check the results are as expected.
 There are currently two versions of the ISS and they can be found in
 `dv/otbnsim`. The easiest to use is `dv/otbnsim/standalone.py`. This
 takes an OTBN binary as an ELF file (as produced by the standard
-linker script for `otbn-ld`) and can dump the resulting DMEM if given
+linker script for `otbn_ld.py`) and can dump the resulting DMEM if given
 the `--dmem-dump` argument. To see an instruction trace, pass the
 `--verbose` flag.
 

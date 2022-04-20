@@ -29,7 +29,7 @@ OTBN_UTIL=$REPO_TOP/hw/ip/otbn/util
 
 $OTBN_UTIL/otbn-as -o $SMOKE_BIN_DIR/smoke_test.o $SMOKE_SRC_DIR/smoke_test.s || \
     fail "Failed to assemble smoke_test.s"
-$OTBN_UTIL/otbn-ld -o $SMOKE_BIN_DIR/smoke.elf $SMOKE_BIN_DIR/smoke_test.o || \
+$OTBN_UTIL/otbn_ld.py -o $SMOKE_BIN_DIR/smoke.elf $SMOKE_BIN_DIR/smoke_test.o || \
     fail "Failed to link smoke_test.o"
 
 (cd $REPO_TOP;

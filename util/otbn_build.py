@@ -2,11 +2,10 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-
 """Build software running on OTBN
 
 Each assembly source file is first assembled with otbn-as. All resulting objects
-are then linked with otbn-ld. The resulting ELF file is converted into an
+are then linked with otbn_ld.py. The resulting ELF file is converted into an
 embeddable RV32 object file using objcopy.  In this object, all symbols
 are prefixed with `_otbn_app_<appname>_` (only global symbols are included).
 
@@ -17,14 +16,14 @@ environment variables:
   the $PATH).
 
   OTBN_AS            path to otbn-as, the OTBN assembler
-  OTBN_LD            path to otbn-ld, the OTBN linker
+  OTBN_LD            path to otbn_ld.py, the OTBN linker
   RV32_TOOL_LD       path to RV32 ld
   RV32_TOOL_AS       path to RV32 as
   RV32_TOOL_AR       path to RV32 ar
   RV32_TOOL_OBJCOPY  path to RV32 objcopy
 
   The RV32* environment variables are used by both this script and the OTBN
-  wrappers (otbn-as and otbn-ld) to find tools in a RV32 toolchain.
+  wrappers (otbn-as and otbn_ld.py) to find tools in a RV32 toolchain.
 
 outputs:
   The build process produces multiple files inside the output directory.
@@ -46,7 +45,6 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 from elftools.elf.elffile import ELFFile, SymbolTableSection  # type: ignore
-
 
 REPO_TOP = Path(__file__).parent.parent.resolve()
 
@@ -81,7 +79,8 @@ def run_tool(tool: str, out_file: Path, args) -> None:
 
     '''
     out_dir, out_base = os.path.split(out_file)
-    tmpfile = tempfile.NamedTemporaryFile(prefix=out_base, dir=out_dir,
+    tmpfile = tempfile.NamedTemporaryFile(prefix=out_base,
+                                          dir=out_dir,
                                           delete=False)
     try:
         run_cmd([tool, '-o', tmpfile.name] + args,
@@ -107,9 +106,10 @@ def call_otbn_as(src_file: Path, out_file: Path):
     run_tool(otbn_as_cmd, out_file, [src_file])
 
 
-def call_otbn_ld(src_files: List[Path], out_file: Path, linker_script: Optional[Path]):
+def call_otbn_ld(src_files: List[Path], out_file: Path,
+                 linker_script: Optional[Path]):
     otbn_ld_cmd = os.environ.get('OTBN_LD',
-                                 str(REPO_TOP / 'hw/ip/otbn/util/otbn-ld'))
+                                 str(REPO_TOP / 'hw/ip/otbn/util/otbn_ld.py'))
 
     args = ['-gc-sections', '-gc-keep-exported']
     if linker_script:
@@ -125,8 +125,7 @@ def call_rv32_objcopy(args: List[str]):
 
 
 def call_rv32_ar(args: List[str]):
-    rv32_tool_ar = os.environ.get('RV32_TOOL_AR',
-                                  'riscv32-unknown-elf-ar')
+    rv32_tool_ar = os.environ.get('RV32_TOOL_AR', 'riscv32-unknown-elf-ar')
     run_cmd([rv32_tool_ar] + args)
 
 
@@ -142,10 +141,10 @@ def get_otbn_syms(elf_path: str) -> List[Tuple[str, int]]:
         # section. We also use --extract-symbol since we don't care about
         # anything but the symbol data anyway.
         syms_path = os.path.join(tmpdir, 'syms.elf')
-        call_rv32_objcopy(['-O', 'elf32-littleriscv',
-                           '--remove-section=.scratchpad',
-                           '--extract-symbol'] +
-                          [elf_path, syms_path])
+        call_rv32_objcopy([
+            '-O', 'elf32-littleriscv', '--remove-section=.scratchpad',
+            '--extract-symbol'
+        ] + [elf_path, syms_path])
 
         # Load the file and use elftools to grab any symbol table
         with open(syms_path, 'rb') as syms_fd:
@@ -168,43 +167,40 @@ def get_otbn_syms(elf_path: str) -> List[Tuple[str, int]]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__,
-                                     formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument(
-        '--out-dir',
-        '-o',
-        required=False,
-        default=".",
-        help="Output directory (default: %(default)s)")
-    parser.add_argument(
-        '--archive',
-        '-a',
-        action='store_true',
-        help='Archive the rv32embed.o file into a library.')
-    parser.add_argument(
-        '--verbose',
-        '-v',
-        action='store_true',
-        help='Print commands that are executed.')
-    parser.add_argument(
-        '--script',
-        '-T',
-        dest="linker_script",
-        required=False,
-        help="Linker script")
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('--out-dir',
+                        '-o',
+                        required=False,
+                        default=".",
+                        help="Output directory (default: %(default)s)")
+    parser.add_argument('--archive',
+                        '-a',
+                        action='store_true',
+                        help='Archive the rv32embed.o file into a library.')
+    parser.add_argument('--verbose',
+                        '-v',
+                        action='store_true',
+                        help='Print commands that are executed.')
+    parser.add_argument('--script',
+                        '-T',
+                        dest="linker_script",
+                        required=False,
+                        help="Linker script")
     parser.add_argument(
         '--app-name',
         '-n',
         required=False,
         help="Name of the application, used as basename for the output. "
-             "Default: basename of the first source file.")
+        "Default: basename of the first source file.")
     parser.add_argument(
         '--no-assembler',
         '-x',
         action='store_true',
         required=False,
         help="Use when input files have already been assembled into object "
-             "files and only linking is required.")
+        "files and only linking is required.")
     parser.add_argument('src_files', nargs='+', type=str, metavar='SRC_FILE')
     args = parser.parse_args()
 
@@ -230,7 +226,7 @@ def main() -> int:
                 call_otbn_as(src_file, obj_file)
 
         out_elf = out_dir / (app_name + '.elf')
-        call_otbn_ld(obj_files, out_elf, linker_script = args.linker_script)
+        call_otbn_ld(obj_files, out_elf, linker_script=args.linker_script)
 
         # out_elf is a fully-linked OTBN binary, but we want to be able to use
         # it from Ibex, the host processor. To make this work, we generate an
@@ -258,12 +254,12 @@ def main() -> int:
         host_side_pfx = '_otbn_local_app_{}_'.format(app_name)
         otbn_side_pfx = '_otbn_remote_app_{}_'.format(app_name)
         out_embedded_obj = out_dir / (app_name + '.rv32embed.o')
-        args = ['-O', 'elf32-littleriscv',
-                '--set-section-flags=*=alloc,load,readonly',
-                '--remove-section=.scratchpad',
-                '--remove-section=.bss',
-                '--prefix-sections=.rodata.otbn',
-                '--prefix-symbols', host_side_pfx]
+        args = [
+            '-O', 'elf32-littleriscv',
+            '--set-section-flags=*=alloc,load,readonly',
+            '--remove-section=.scratchpad', '--remove-section=.bss',
+            '--prefix-sections=.rodata.otbn', '--prefix-symbols', host_side_pfx
+        ]
         for name, addr in get_otbn_syms(out_elf):
             args += ['--add-symbol', f'{otbn_side_pfx}{name}=0x{addr:x}']
 

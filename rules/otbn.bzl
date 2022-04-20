@@ -167,7 +167,7 @@ otbn_binary = rv_rule(
         "deps": attr.label_list(providers = [DefaultInfo]),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
         "_otbn_as": attr.label(default = "//hw/ip/otbn/util:otbn-as", allow_single_file = True),
-        "_otbn_ld": attr.label(default = "//hw/ip/otbn/util:otbn-ld", allow_single_file = True),
+        "_otbn_ld": attr.label(default = "//hw/ip/otbn/util:otbn_ld.py", allow_single_file = True),
         "_otbn_data": attr.label(default = "//hw/ip/otbn/data:all_files", allow_files = True),
         "_wrapper": attr.label(default = "//util:otbn_build.py", allow_single_file = True),
     },

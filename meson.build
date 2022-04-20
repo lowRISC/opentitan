@@ -210,7 +210,7 @@ prog_objdump = find_program('objdump')
 prog_objcopy = find_program('objcopy')
 
 prog_otbn_as = meson.project_source_root() / 'hw/ip/otbn/util/otbn-as'
-prog_otbn_ld = meson.project_source_root() / 'hw/ip/otbn/util/otbn-ld'
+prog_otbn_ld = meson.project_source_root() / 'hw/ip/otbn/util/otbn_ld.py'
 
 # Hardware register headers. These are generated from HJSON files, and accesible
 # in C via |#include "{IP_NAME}_regs.h"|.
