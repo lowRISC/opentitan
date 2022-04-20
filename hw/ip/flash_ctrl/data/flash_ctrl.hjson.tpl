@@ -501,10 +501,10 @@
                To disable, set this field to anything other than kMultiBitBool4False.
               '''
             resval: false,
-            tags: [// Dont touch disable, it has several side effects on the system
-                   "excl:CsrAllTests:CsrExclWrite"],
           },
         ]
+        tags: [// Dont touch disable, it has several side effects on the system
+               "excl:CsrAllTests:CsrExclWrite"],
       },
 
       { name: "EXEC",

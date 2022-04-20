@@ -566,8 +566,8 @@ module flash_ctrl_lcmgr
   end // always_comb
 
   // if disable is seen any state other than StRmaRsp, transition to invalid state
-  `ASSERT(Disable_Invalid_A, prim_mubi_pkg::mubi4_test_true_loose(disable_i) & state_q != StRmaRsp
-          |=> state_q == StInvalid)
+  `ASSERT(DisableChk_A, prim_mubi_pkg::mubi4_test_true_loose(disable_i) & state_q != StRmaRsp
+          |=> state_q == StDisabled)
 
   ///////////////////////////////
   // RMA wiping Mechanism

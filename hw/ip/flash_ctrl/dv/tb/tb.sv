@@ -72,6 +72,14 @@ module tb;
   assign flash_ctrl_if.otp_req.addr_req = otp_req.addr_req;
   assign flash_ctrl_if.otp_req.data_req = otp_req.data_req;
 
+  // TODO: The otp request/response interface for keys needs to be
+  // propertly emulated, otherwise the flash hardware fsm will get stuck
+  assign flash_ctrl_if.otp_rsp = '{
+    default: '0,
+    data_ack: otp_req.data_req,
+    addr_ack: otp_req.addr_req
+  };
+
   assign otp_rsp.addr_ack               = flash_ctrl_if.otp_rsp.addr_ack;
   assign otp_rsp.data_ack               = flash_ctrl_if.otp_rsp.data_ack;
   assign otp_rsp.key                    = flash_ctrl_if.otp_rsp.key;
