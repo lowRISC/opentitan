@@ -7,8 +7,6 @@ load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files(glob(["**"]))
-
 py_binary(
     name = "otbn_as",
     srcs = ["otbn_as.py"],
