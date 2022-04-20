@@ -13,9 +13,7 @@
  *
  * @param fast_ext_clk When true, run the test for an external clock running
  *                     at 96 MHz.
- * @returns True if the test succeeds.
  */
-
-bool execute_clkmgr_external_clk_src_for_sw_test(bool fast_ext_clk);
+void execute_clkmgr_external_clk_src_for_sw_test(bool fast_ext_clk);
 
 #endif  // OPENTITAN_SW_DEVICE_TESTS_CLKMGR_EXTERNAL_CLK_SRC_FOR_SW_IMPL_H_
