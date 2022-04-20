@@ -578,5 +578,14 @@
                cov: false
                task: "FpvSecCm"
              }
+             # Other non-standard countermeasure checks
+             {
+               name: lc_ctrl_sec_cm_fsm
+               dut: lc_ctrl_fsm
+               fusesoc_core: lowrisc:ip:lc_ctrl
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/lc_ctrl/fsm/{sub_flow}/{tool}"
+               cov: false
+             }
             ]
 }
