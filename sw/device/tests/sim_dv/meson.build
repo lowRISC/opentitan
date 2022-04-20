@@ -112,7 +112,7 @@ lc_ctrl_transition_test_lib = declare_dependency(
   link_with: static_library(
     'lc_ctrl_transition_test_lib',
     sources: [
-      'lc_ctrl_transition_test.c',
+      'lc_ctrl_transition_impl.c',
     ],
     dependencies: [
       sw_lib_dif_lc_ctrl,
