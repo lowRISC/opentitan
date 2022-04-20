@@ -1109,7 +1109,7 @@ OTBN comes with a toolchain consisting of an assembler, a linker, and helper too
 The toolchain wraps a RV32 GCC toolchain and supports many of its features.
 
 The following tools are available:
-* `otbn-as`: The OTBN assembler.
+* `otbn_as.py`: The OTBN assembler.
 * `otbn_ld.py`: The OTBN linker.
 * `otbn-objdump`: objdump for OTBN.
 
