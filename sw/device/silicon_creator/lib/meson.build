@@ -60,13 +60,13 @@ sw_silicon_creator_lib_boot_data = declare_dependency(
 )
 
 # Manifest section for boot stage images stored in flash.
-sw_silicon_creator_lib_manifest_section = declare_dependency(
+sw_silicon_creator_lib_manifest_def = declare_dependency(
   # Using link_whole so that the .manifest section is created even if a boot
   # stage doesn't use kManifest.
   link_whole: static_library(
-    'sw_silicon_creator_lib_manifest_section',
+    'sw_silicon_creator_lib_manifest_def',
     sources: [
-      'manifest_section.S',
+      'manifest_def.c',
     ],
   ),
 )
