@@ -1,0 +1,11 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for prim_mubi modules
+
+waive -rules {SAME_NAME_TYPE} -location {prim_lc_sender.sv} -regexp {'ResetValue' is used as an enumeration value here, and as a parameter at prim.*} \
+      -comment "Parameter name reuse"
+
+
+
