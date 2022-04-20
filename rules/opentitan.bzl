@@ -39,7 +39,6 @@ _targets_compatible_with = {
 PER_DEVICE_DEPS = {
     "sim_verilator": ["//sw/device/lib/arch:sim_verilator"],
     "sim_dv": ["//sw/device/lib/arch:sim_dv"],
-    "fpga_nexysvideo": ["//sw/device/lib/arch:fpga_nexysvideo"],
     "fpga_cw310": ["//sw/device/lib/arch:fpga_cw310"],
 }
 
