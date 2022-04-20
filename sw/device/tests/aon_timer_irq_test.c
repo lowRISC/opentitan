@@ -12,7 +12,7 @@
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
-#include "sw/device/lib/irq.h"
+#include "sw/device/lib/runtime/ibex_irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
@@ -124,7 +124,7 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
 
   // Disable interrupts to be certain interrupt doesn't occur between while
   // condition check and `wait_for_interrupt` (so WFI misses that interrupt).
-  irq_global_ctrl(false);
+  ibex_irq_global_ctrl(false);
 
   // Only enter WFI loop if we haven't already seen the interrupt.
   if (peripheral != kTopEarlgreyPlicPeripheralAonTimerAon) {
@@ -134,8 +134,8 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
       // immediately disable it. If there is an interrupt pending it will be
       // taken here between the enable and disable. This confines the interrupt
       // to a known place avoiding missed wakeup issues.
-      irq_global_ctrl(true);
-      irq_global_ctrl(false);
+      ibex_irq_global_ctrl(true);
+      ibex_irq_global_ctrl(false);
       time_elapsed = irq_tick - start_tick;
     } while (peripheral != kTopEarlgreyPlicPeripheralAonTimerAon &&
              time_elapsed < sleep_range_h);
@@ -190,8 +190,8 @@ void ottf_external_isr(void) {
 
 bool test_main(void) {
   // Enable global and external IRQ at Ibex.
-  irq_global_ctrl(true);
-  irq_external_ctrl(true);
+  ibex_irq_global_ctrl(true);
+  ibex_irq_external_ctrl(true);
 
   // Initialize the rv timer to compute the tick.
   tick_init();

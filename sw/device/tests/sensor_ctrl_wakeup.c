@@ -6,8 +6,8 @@
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_sensor_ctrl.h"
-#include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/ibex.h"
+#include "sw/device/lib/runtime/ibex_irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
@@ -57,8 +57,8 @@ bool test_main(void) {
   dif_sensor_ctrl_t sensor_ctrl;
 
   // Enable global and external IRQ at Ibex.
-  irq_global_ctrl(true);
-  irq_external_ctrl(true);
+  ibex_irq_global_ctrl(true);
+  ibex_irq_external_ctrl(true);
 
   // Initialize the PLIC.
   mmio_region_t plic_base_addr =

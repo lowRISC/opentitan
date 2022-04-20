@@ -34,7 +34,7 @@
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/dif/dif_usbdev.h"
-#include "sw/device/lib/irq.h"
+#include "sw/device/lib/runtime/ibex_irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
@@ -1427,8 +1427,8 @@ static void peripheral_irqs_trigger(void) {
 const test_config_t kTestConfig;
 
 bool test_main(void) {
-  irq_global_ctrl(true);
-  irq_external_ctrl(true);
+  ibex_irq_global_ctrl(true);
+  ibex_irq_external_ctrl(true);
   peripherals_init();
   rv_plic_testutils_irq_range_enable(
       &plic, kHart, kTopEarlgreyPlicIrqIdNone + 1, kTopEarlgreyPlicIrqIdLast);

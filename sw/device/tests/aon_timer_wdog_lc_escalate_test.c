@@ -15,7 +15,7 @@
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
-#include "sw/device/lib/irq.h"
+#include "sw/device/lib/runtime/ibex_irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
@@ -215,8 +215,8 @@ static void execute_test(dif_aon_timer_t *aon_timer) {
 
 bool test_main(void) {
   // Enable global and external IRQ at Ibex.
-  irq_global_ctrl(true);
-  irq_external_ctrl(true);
+  ibex_irq_global_ctrl(true);
+  ibex_irq_external_ctrl(true);
 
   init_peripherals();
 

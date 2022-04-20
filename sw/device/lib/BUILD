@@ -21,16 +21,6 @@ cc_library(
 )
 
 cc_library(
-    name = "irq",
-    srcs = ["irq.c"],
-    hdrs = ["irq.h"],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        "//sw/device/lib/base:csr",
-    ],
-)
-
-cc_library(
     name = "usb",
     srcs = [
         "usb_controlep.c",

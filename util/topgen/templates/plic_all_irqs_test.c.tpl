@@ -17,7 +17,7 @@ def args(p):
 % for n in sorted(irq_peripheral_names + ["rv_plic"]):
 #include "sw/device/lib/dif/dif_${n}.h"
 % endfor
-#include "sw/device/lib/irq.h"
+#include "sw/device/lib/runtime/ibex_irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
@@ -209,8 +209,8 @@ ${"" if loop.last else "\n"}\
 const test_config_t kTestConfig;
 
 bool test_main(void) {
-  irq_global_ctrl(true);
-  irq_external_ctrl(true);
+  ibex_irq_global_ctrl(true);
+  ibex_irq_external_ctrl(true);
   peripherals_init();
   rv_plic_testutils_irq_range_enable(
       &plic, kHart, kTop${top["name"].capitalize()}PlicIrqIdNone + 1, kTop${top["name"].capitalize()}PlicIrqIdLast);

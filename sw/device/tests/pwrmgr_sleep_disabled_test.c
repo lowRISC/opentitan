@@ -6,7 +6,7 @@
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
-#include "sw/device/lib/irq.h"
+#include "sw/device/lib/runtime/ibex_irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
@@ -132,8 +132,8 @@ bool test_main(void) {
 
     // Prepare for interrupt.
     LOG_INFO("Issue WFI without sleep");
-    irq_global_ctrl(true);
-    irq_external_ctrl(true);
+    ibex_irq_global_ctrl(true);
+    ibex_irq_external_ctrl(true);
     wait_for_interrupt();
 
     // Check that interrupt was serviced correctly.

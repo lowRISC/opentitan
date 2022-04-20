@@ -6,8 +6,8 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
-#include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/ibex_irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -350,8 +350,8 @@ bool test_main(void) {
   plic_init_with_irqs(plic_base_addr, &plic0);
 
   // Enable the external IRQ at Ibex.
-  irq_global_ctrl(true);
-  irq_external_ctrl(true);
+  ibex_irq_global_ctrl(true);
+  ibex_irq_external_ctrl(true);
 
   return execute_test(&spi_device, &spi_device_config);
 }

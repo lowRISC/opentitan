@@ -17,7 +17,7 @@ sw_lib_irq = declare_dependency(
   link_with: static_library(
     'irq_ot',
     sources: [
-      'irq.c',
+      meson.source_root() / 'sw/device/lib/runtime/ibex_irq.c',
     ],
   )
 )

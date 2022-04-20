@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/dif/dif_rv_timer.h"
-#include "sw/device/lib/irq.h"
+#include "sw/device/lib/runtime/ibex_irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -100,11 +100,11 @@ BaseType_t xPortStartScheduler(void) {
 #if configUSE_PREEMPTION
   vPortSetupTimerInterrupt();
 #endif  // configUSE_PREEMPTION
-  irq_timer_ctrl(true);
-  irq_external_ctrl(true);
-  irq_software_ctrl(true);
-  // Note: no need to call 'irq_global_ctrl(true)' since the global interrupt
-  // enable is set in the xPortStartFirstTask sub-routine in
+  ibex_irq_timer_ctrl(true);
+  ibex_irq_external_ctrl(true);
+  ibex_irq_software_ctrl(true);
+  // Note: no need to call 'ibex_irq_global_ctrl(true)' since the global
+  // interrupt enable is set in the xPortStartFirstTask sub-routine in
   // sw/device/lib/testing/test_framework/freertos_port.S.
   xPortStartFirstTask();
 

@@ -50,6 +50,16 @@ cc_library(
 )
 
 cc_library(
+    name = "ibex_irq",
+    srcs = ["ibex_irq.c"],
+    hdrs = ["ibex_irq.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/base:csr",
+    ],
+)
+
+cc_library(
     name = "log",
     srcs = ["log.c"],
     hdrs = ["log.h"],
