@@ -15,7 +15,7 @@ environment variables:
   sensible default values are provided (tools are generally expected to be in
   the $PATH).
 
-  OTBN_AS            path to otbn_as.py, the OTBN assembler
+  OTBN_TOOLS         path to the OTBN linker and assemler tools
   OTBN_LD            path to otbn_ld.py, the OTBN linker
   RV32_TOOL_LD       path to RV32 ld
   RV32_TOOL_AS       path to RV32 as
@@ -48,6 +48,17 @@ from elftools.elf.elffile import ELFFile, SymbolTableSection  # type: ignore
 
 REPO_TOP = Path(__file__).parent.parent.resolve()
 
+# yapf: disable
+
+# TODO: remove with meson; bazel will set the PYTHONPATH to locate otbn
+# tool modules
+otbn_tools_path = os.environ.get('OTBN_TOOLS', None)
+if otbn_tools_path:
+    sys.path.append(otbn_tools_path)
+import otbn_as
+
+# yapf: enable
+
 
 def cmd_to_str(cmd: List[str]) -> str:
     return ' '.join([shlex.quote(str(a)) for a in cmd])
@@ -68,7 +79,7 @@ def run_cmd(args, display_cmd=None):
     subprocess.run(str_args, check=True)
 
 
-def run_tool(tool: str, out_file: Path, args) -> None:
+def run_tool(tool, out_file: Path, args) -> None:
     '''Run tool to produce out_file (using an '-o' argument)
 
     This works by writing to a temporary file (in the same directory) and then
@@ -83,8 +94,11 @@ def run_tool(tool: str, out_file: Path, args) -> None:
                                           dir=out_dir,
                                           delete=False)
     try:
-        run_cmd([tool, '-o', tmpfile.name] + args,
-                cmd_to_str([tool, '-o', out_file] + args))
+        if type(tool) == str:
+            run_cmd([tool, '-o', tmpfile.name] + args,
+                    cmd_to_str([tool, '-o', out_file] + args))
+        else:
+            tool(['', '-o', tmpfile.name] + list(map(str, args)))
 
         # If we get here, the tool ran successfully, producing the output file.
         # Use os.replace to rename appropriately.
@@ -101,9 +115,7 @@ def run_tool(tool: str, out_file: Path, args) -> None:
 
 
 def call_otbn_as(src_file: Path, out_file: Path):
-    otbn_as_cmd = os.environ.get('OTBN_AS',
-                                 str(REPO_TOP / 'hw/ip/otbn/util/otbn_as.py'))
-    run_tool(otbn_as_cmd, out_file, [src_file])
+    run_tool(otbn_as.main, out_file, [src_file])
 
 
 def call_otbn_ld(src_files: List[Path], out_file: Path,

@@ -100,9 +100,8 @@ def _otbn_binary(ctx):
                   [ctx.executable._otbn_as] +
                   ctx.files._otbn_ld +
                   ctx.files._otbn_data +
-                  ctx.files._wrapper),
+                  [ctx.executable._wrapper]),
         env = {
-            "OTBN_AS": ctx.executable._otbn_as.path,
             "OTBN_LD": ctx.file._otbn_ld.path,
             "RV32_TOOL_AS": assembler.path,
             "RV32_TOOL_AR": cc_toolchain.ar_executable,
@@ -115,7 +114,7 @@ def _otbn_binary(ctx):
             "--no-assembler",
             "--out-dir={}".format(elf.dirname),
         ] + [obj.path for obj in (objs + deps)],
-        executable = ctx.file._wrapper,
+        executable = ctx.executable._wrapper,
     )
 
     feature_configuration = cc_common.configure_features(
@@ -189,8 +188,9 @@ otbn_binary = rv_rule(
             allow_files = True,
         ),
         "_wrapper": attr.label(
-            default = "//util:otbn_build.py",
-            allow_single_file = True,
+            default = "//util:otbn_build",
+            executable = True,
+            cfg = "exec",
         ),
     },
     fragments = ["cpp"],
