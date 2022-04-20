@@ -371,11 +371,11 @@ module spi_readcmd
     // TODO: Handle the case of IO command
     if (addr_ready_in_word) begin
       // Return word based address, but should not latch
-      addr_d = {addr_q[31:8], s2p_byte_i[5:0], 2'b00};
+      addr_d = {addr_q[23:0], s2p_byte_i[5:0], 2'b00};
     end else if (addr_ready_in_halfword) begin
       // When addr is a cycle earlier than full addr, sram req sent in
       // spid_readsram
-      addr_d = {addr_q[31:8], s2p_byte_i[6:0], 1'b 0};
+      addr_d = {addr_q[23:0], s2p_byte_i[6:0], 1'b 0};
     end else if (addr_shift_en && s2p_valid_i) begin
       // Latch
       addr_d = {addr_q[23:0], s2p_byte_i[7:0]};
