@@ -35,7 +35,7 @@ hw/ip/otbn/util/otbn-as -o foo.o foo.s
 
 ### Linker
 
-The OTBN linker is called `otbn-ld` and can be found at `hw/ip/otbn/util/otbn-ld`.
+The OTBN linker is called `otbn_ld.py` and can be found at `hw/ip/otbn/util/otbn_ld.py`.
 This is a thin wrapper around `riscv32-unknown-elf-ld`, but supplies a default linker script that matches the OTBN memory layout.
 This linker script creates `.start`, `.text` and `.data` output sections.
 The `.start` and `.text` sections go to IMEM, with `.start` coming first.
@@ -56,7 +56,7 @@ This ensure that, even if there are multiple objects being linked together, the 
 
 To link ELF object files to an OTBN ELF binary, run
 ```shell
-hw/ip/otbn/util/otbn-ld -o foo foo0.o foo1.o foo2.o
+hw/ip/otbn/util/otbn_ld.py -o foo foo0.o foo1.o foo2.o
 ```
 
 ### Objdump
