@@ -97,12 +97,9 @@ def _otbn_binary(ctx):
         inputs = (objs +
                   deps +
                   cc_toolchain.all_files.to_list() +
-                  [ctx.executable._otbn_as] +
-                  ctx.files._otbn_ld +
                   ctx.files._otbn_data +
                   [ctx.executable._wrapper]),
         env = {
-            "OTBN_LD": ctx.file._otbn_ld.path,
             "RV32_TOOL_AS": assembler.path,
             "RV32_TOOL_AR": cc_toolchain.ar_executable,
             "RV32_TOOL_LD": cc_toolchain.ld_executable,
@@ -178,10 +175,6 @@ otbn_binary = rv_rule(
             default = "//hw/ip/otbn/util:otbn_as",
             executable = True,
             cfg = "exec",
-        ),
-        "_otbn_ld": attr.label(
-            default = "//hw/ip/otbn/util:otbn_ld.py",
-            allow_single_file = True,
         ),
         "_otbn_data": attr.label(
             default = "//hw/ip/otbn/data:all_files",
