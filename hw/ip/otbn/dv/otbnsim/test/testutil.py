@@ -21,7 +21,7 @@ def asm_and_link_one_file(asm_path: str, work_dir: py.path.local) -> str:
     Returns the path to the resulting ELF
 
     '''
-    otbn_as = os.path.join(UTIL_DIR, 'otbn-as')
+    otbn_as = os.path.join(UTIL_DIR, 'otbn_as.py')
     otbn_ld = os.path.join(UTIL_DIR, 'otbn_ld.py')
     obj_path = os.path.join(work_dir, 'tst.o')
     elf_path = os.path.join(work_dir, 'tst')

@@ -23,14 +23,14 @@ For specific formatting and secure coding guidelines, see the [OTBN style guide]
 
 ### Assembler
 
-The OTBN assembler is called `otbn-as` and can be found at `hw/ip/otbn/util/otbn-as`.
+The OTBN assembler is called `otbn_as.py` and can be found at `hw/ip/otbn/util/otbn_as.py`.
 This has the same command line interface as `riscv32-unknown-elf-as` (indeed, it's a wrapper around that program).
-The only difference in default flags is that `otbn-as` passes `-mno-relax`, telling the assembler not to request linker relaxation.
+The only difference in default flags is that `otbn_as.py` passes `-mno-relax`, telling the assembler not to request linker relaxation.
 This is needed because one of these relaxations generates GP-relative loads, which assume `x3` is treated as a global pointer (not true for OTBN code).
 
 To assemble some code in `foo.s` to an ELF object called `foo.o`, run:
 ```shell
-hw/ip/otbn/util/otbn-as -o foo.o foo.s
+hw/ip/otbn/util/otbn_as.py -o foo.o foo.s
 ```
 
 ### Linker

@@ -2,7 +2,6 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-
 '''A wrapper around riscv32-unknown-elf-as for OTBN
 
 Partial support:
@@ -27,7 +26,7 @@ from typing import Dict, List, Optional, Set, TextIO, Tuple
 from shared.bit_ranges import BitRanges
 from shared.encoding import Encoding
 from shared.insn_yaml import Insn, InsnsFile, load_insns_yaml
-from shared.operand import ImmOperandType, RegOperandType, Operand
+from shared.operand import ImmOperandType, Operand, RegOperandType
 from shared.toolchain import find_tool
 
 
@@ -66,9 +65,8 @@ class RVFmt:
     suffix.
 
     '''
-    def __init__(self,
-                 name: str,
-                 bitfields: List[str],
+
+    def __init__(self, name: str, bitfields: List[str],
                  syntax: List[str]) -> None:
         self.name = name
         self.operands = syntax
@@ -134,8 +132,7 @@ class RVFmt:
 
             assert operand not in self.op_data
             assert op_fmt is not None
-            self.op_data[operand] = (op_fmt,
-                                     op_shift,
+            self.op_data[operand] = (op_fmt, op_shift,
                                      BitRanges.from_list(op_ranges))
 
         assert len(b2o_dict) == 32
@@ -174,11 +171,9 @@ class RVEncoding:
     that has the given encoding as a .insn line (with the given RVFmt).
 
     '''
-    def __init__(self,
-                 encoding: Encoding,
-                 rvfmt: RVFmt,
-                 rv_masks: Dict[str, int],
-                 rv_to_full_op: Dict[str, str],
+
+    def __init__(self, encoding: Encoding, rvfmt: RVFmt,
+                 rv_masks: Dict[str, int], rv_to_full_op: Dict[str, str],
                  part_field_to_rv: Dict[str, _PartFieldEncoding]) -> None:
         self.encoding = encoding
         self.rvfmt = rvfmt
@@ -188,23 +183,20 @@ class RVEncoding:
 
 
 RISCV_FORMATS = [
-    RVFmt('r',
-          ['func7:f7', 'rs2:r', 'rs1:r', 'func3:f3', 'rd:r', 'opcode:f7'],
+    RVFmt('r', ['func7:f7', 'rs2:r', 'rs1:r', 'func3:f3', 'rd:r', 'opcode:f7'],
           ['opcode', 'func3', 'func7', 'rd', 'rs1', 'rs2']),
-    RVFmt('r4',
-          ['rs3:r', 'func2:f2',
-           'rs2:r', 'rs1:r', 'func3:f3', 'rd:r', 'opcode:f7'],
-          ['opcode', 'func3', 'func2', 'rd', 'rs1', 'rs2', 'rs3']),
-    RVFmt('i',
-          ['simm12:i12', 'rs1:r', 'func3:f3', 'rd:r', 'opcode:f7'],
+    RVFmt('r4', [
+        'rs3:r', 'func2:f2', 'rs2:r', 'rs1:r', 'func3:f3', 'rd:r', 'opcode:f7'
+    ], ['opcode', 'func3', 'func2', 'rd', 'rs1', 'rs2', 'rs3']),
+    RVFmt('i', ['simm12:i12', 'rs1:r', 'func3:f3', 'rd:r', 'opcode:f7'],
           ['opcode', 'func3', 'rd', 'rs1', 'simm12']),
     RVFmt('s',
           ['imm0:i7', 'rs2:r', 'rs1:r', 'func3:f3', 'imm1:i5', 'opcode:f7'],
           ['opcode', 'func3', 'rs2', 'rs1', 'imm0|imm1']),
-    RVFmt('sb',
-          ['imm12:i1', 'imm105:i6', 'rs2:r', 'rs1:r', 'func3:f3',
-           'imm41:i4', 'imm11:i1', 'opcode:f7'],
-          ['opcode', 'func3', 'rs2', 'rs1', 'imm12|imm11|imm105|imm41<<1']),
+    RVFmt('sb', [
+        'imm12:i1', 'imm105:i6', 'rs2:r', 'rs1:r', 'func3:f3', 'imm41:i4',
+        'imm11:i1', 'opcode:f7'
+    ], ['opcode', 'func3', 'rs2', 'rs1', 'imm12|imm11|imm105|imm41<<1']),
 
     # The "U" format is used for LUI. The immediate operand gives imm[31:12]
     # for some imm. Confusingly, the spec implies that this is a signed
@@ -212,18 +204,14 @@ RISCV_FORMATS = [
     # architecture. For a 32-bit architecture, the top bit is the sign, so
     # there is no sign extension to be done. The binutils assembler rejects
     # things like "lui x1, -1", treating the immediate as unsigned.
-    RVFmt('u',
-          ['imm20:u20', 'rd:r', 'opcode:f7'],
-          ['opcode', 'rd', 'imm20']),
-
+    RVFmt('u', ['imm20:u20', 'rd:r', 'opcode:f7'], ['opcode', 'rd', 'imm20']),
     RVFmt('j',
           ['i20:i1', 'i101:i10', 'i11:i1', 'i1912:i8', 'rd:r', 'opcode:f7'],
           ['opcode', 'rd', 'i20|i1912|i11|i101<<1'])
 ]
 
 
-def find_rv_encoding(enc: Encoding,
-                     name_to_operand: Dict[str, Operand],
+def find_rv_encoding(enc: Encoding, name_to_operand: Dict[str, Operand],
                      rvfmt: RVFmt) -> Optional[RVEncoding]:
     '''Try to find an RVEncoding that expresses enc with rvfmt'''
 
@@ -378,8 +366,8 @@ def find_rv_encoding(enc: Encoding,
                     rv_bit = field_bit - field_lsb + rv_lsb
                     rv_masks[rv_name] |= 1 << rv_bit
 
-    return RVEncoding(enc, rvfmt,
-                      rv_masks, rv_field_to_op, part_field_to_rv_field)
+    return RVEncoding(enc, rvfmt, rv_masks, rv_field_to_op,
+                      part_field_to_rv_field)
 
 
 def find_insn_schemes(mnem_to_insn: Dict[str, Insn]) -> Dict[str, RVEncoding]:
@@ -398,7 +386,8 @@ def find_insn_schemes(mnem_to_insn: Dict[str, Insn]) -> Dict[str, RVEncoding]:
     return ret
 
 
-def parse_positionals(argv: List[str]) -> Tuple[List[str], List[str], Set[str]]:
+def parse_positionals(
+        argv: List[str]) -> Tuple[List[str], List[str], Set[str]]:
     '''A partial argument parser that extracts positional arguments'''
 
     # The only arguments we actually need to parse from as are the input files:
@@ -411,10 +400,7 @@ def parse_positionals(argv: List[str]) -> Tuple[List[str], List[str], Set[str]]:
     # The switches listed in the as manual that can be specified as "--foo bar"
     # (we need to know them so that we don't think that "bar" is a positional
     # argument).
-    space_args = ['--debug-prefix-map',
-                  '--defsym',
-                  '-I',
-                  '-o']
+    space_args = ['--debug-prefix-map', '--defsym', '-I', '-o']
 
     # OTBN-specific flags
     otbn_flags = ['--otbn-translate']
@@ -443,7 +429,7 @@ def parse_positionals(argv: List[str]) -> Tuple[List[str], List[str], Set[str]]:
         positionals.append(arg)
 
     if '-h' in others or '--help' in others:
-        print('otbn-as:\n\n'
+        print('otbn_as.py:\n\n'
               'A wrapper around riscv32-unknown-elf-as for OTBN.\n'
               'Most arguments are passed through: see "man as" '
               'for more information.\n'
@@ -455,8 +441,7 @@ def parse_positionals(argv: List[str]) -> Tuple[List[str], List[str], Set[str]]:
     return (positionals, others, flags)
 
 
-def _unpack_lx(where: str,
-               mnemonic: str,
+def _unpack_lx(where: str, mnemonic: str,
                op_to_expr: Dict[str, Optional[str]]) -> Tuple[str, str]:
     '''Unpack the arguments to li or la'''
     if set(op_to_expr.keys()) != {'grd', 'imm'}:
@@ -464,7 +449,7 @@ def _unpack_lx(where: str,
         keys_list = list(op_to_expr.keys())
         raise RuntimeError(f'When expanding {umnem}, got wrong op_to_expr '
                            f'keys ({keys_list}). This is a mismatch between '
-                           f'expand_{mnemonic} in otbn-as and the operands '
+                           f'expand_{mnemonic} in otbn_as.py and the operands '
                            f'for {umnem} in insns.yml.')
 
     grd = op_to_expr['grd']
@@ -484,8 +469,7 @@ def _unpack_lx(where: str,
         assert grd_op_val is not None
     except ValueError as err:
         raise RuntimeError('{}: When parsing LI instruction, <grd> '
-                           'operand is wrong: {}'
-                           .format(where, err))
+                           'operand is wrong: {}'.format(where, err))
 
     grd_txt = gpr_type.op_val_to_str(grd_op_val, None)
     return (grd_txt, imm)
@@ -504,15 +488,14 @@ def expand_li(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
         imm_int = int(imm, 0)
     except ValueError:
         raise RuntimeError('{}: Cannot parse {!r}, the immediate for an LI '
-                           'instruction, as an integer.'
-                           .format(where, imm))
+                           'instruction, as an integer.'.format(where, imm))
 
     # We allow immediates in the range [-2^31, 2^31-1] (the i32 range), plus
     # [2^31, 2^32-1] (to allow any u32 constant).
     if not (-(1 << 31) <= imm_int <= (1 << 32) - 1):
         raise RuntimeError('{}: The immediate for an LI instruction is {}, '
-                           'which does not fit in a 32-bit integer.'
-                           .format(where, imm))
+                           'which does not fit in a 32-bit integer.'.format(
+                               where, imm))
 
     # Convert any large positive constants to negative ones, so imm_int ends up
     # in the range [-2^31, 2^31-1].
@@ -542,13 +525,17 @@ def expand_li(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
 
     if imm_12 > 0:
         # LUI; ADDI with a positive constant
-        return ['lui {}, {:#x}'.format(grd_txt, imm_uint >> 12),
-                'addi {}, {}, {:#x}'.format(grd_txt, grd_txt, imm_12)]
+        return [
+            'lui {}, {:#x}'.format(grd_txt, imm_uint >> 12),
+            'addi {}, {}, {:#x}'.format(grd_txt, grd_txt, imm_12)
+        ]
 
     # LUI; ADDI with a negative constant. Add 1 to the upper immediate to
     # subtract from it.
-    return ['lui {}, {:#x}'.format(grd_txt, 1 + (imm_uint >> 12)),
-            'addi {}, {}, {}'.format(grd_txt, grd_txt, imm_12)]
+    return [
+        'lui {}, {:#x}'.format(grd_txt, 1 + (imm_uint >> 12)),
+        'addi {}, {}, {}'.format(grd_txt, grd_txt, imm_12)
+    ]
 
 
 def expand_la(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
@@ -568,14 +555,13 @@ def expand_la(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
     #
     # Much easier!
     grd_txt, imm = _unpack_lx(where, 'la', op_to_expr)
-    return ['lui {}, %hi({})'.format(grd_txt, imm),
-            'addi {}, {}, %lo({})'.format(grd_txt, grd_txt, imm)]
+    return [
+        'lui {}, %hi({})'.format(grd_txt, imm),
+        'addi {}, {}, %lo({})'.format(grd_txt, grd_txt, imm)
+    ]
 
 
-_PSEUDO_OP_ASSEMBLERS = {
-    'li': expand_li,
-    'la': expand_la
-}
+_PSEUDO_OP_ASSEMBLERS = {'li': expand_li, 'la': expand_la}
 
 
 class Transformer:
@@ -627,10 +613,8 @@ class Transformer:
     need to spot them in order to find the key-sym.
 
     '''
-    def __init__(self,
-                 out_handle: TextIO,
-                 in_path: str,
-                 insns_file: InsnsFile,
+
+    def __init__(self, out_handle: TextIO, in_path: str, insns_file: InsnsFile,
                  glued_insns_dec_len: List[Insn],
                  mnem_to_rve: Dict[str, RVEncoding]) -> None:
         self.out_handle = out_handle
@@ -660,9 +644,8 @@ class Transformer:
         # came from.
         out_handle.write('.file "{}"\n.line 1\n'.format(in_path))
 
-    def mk_raw_line(self,
-                    insn: Insn,
-                    op_to_expr: Dict[str, Optional[str]]) -> str:
+    def mk_raw_line(self, insn: Insn, op_to_expr: Dict[str,
+                                                       Optional[str]]) -> str:
         '''Generate a .word-style raw line
 
         insn must have an encoding and op_to_expr should map the operand names
@@ -678,48 +661,47 @@ class Transformer:
         for op_name, expr in op_to_expr.items():
             op_type = insn.name_to_operand[op_name].op_type
             try:
-                op_val = (0 if expr is None
-                          else op_type.str_to_op_val(expr.strip()))
+                op_val = (0 if expr is None else op_type.str_to_op_val(
+                    expr.strip()))
             except ValueError as err:
-                raise RuntimeError('{}:{}: {}'
-                                   .format(self.in_path,
-                                           self.line_number, err)) from None
+                raise RuntimeError('{}:{}: {}'.format(self.in_path,
+                                                      self.line_number,
+                                                      err)) from None
             if op_val is None:
                 raise RuntimeError('{}:{}: Cannot resolve operand expression '
                                    '{!r} to an index and the instruction {!r} '
                                    'has an encoding incompatible with rv32i '
-                                   '.insn lines.'
-                                   .format(self.in_path, self.line_number,
-                                           expr, insn.mnemonic)) from None
+                                   '.insn lines.'.format(
+                                       self.in_path, self.line_number, expr,
+                                       insn.mnemonic)) from None
 
             try:
                 enc_val = op_type.op_val_to_enc_val(op_val, None)
             except ValueError as err:
-                raise RuntimeError('{}:{}: {}'
-                                   .format(self.in_path,
-                                           self.line_number, err)) from None
+                raise RuntimeError('{}:{}: {}'.format(self.in_path,
+                                                      self.line_number,
+                                                      err)) from None
 
             if enc_val is None:
-                raise RuntimeError('{}:{}: Cannot encode {!r} operand for '
-                                   '{!r} instruction without a current PC '
-                                   '(which is not known to otbn-as).'
-                                   .format(self.in_path, self.line_number,
-                                           expr, insn.mnemonic)) from None
+                raise RuntimeError(
+                    '{}:{}: Cannot encode {!r} operand for '
+                    '{!r} instruction without a current PC '
+                    '(which is not known to otbn_as.py).'.format(
+                        self.in_path, self.line_number, expr,
+                        insn.mnemonic)) from None
 
             op_to_idx[op_name] = enc_val
 
         try:
             word_val = insn.encoding.assemble(op_to_idx)
         except ValueError as err:
-            raise RuntimeError('{}:{}: {}'
-                               .format(self.in_path,
-                                       self.line_number, err)) from None
+            raise RuntimeError('{}:{}: {}'.format(self.in_path,
+                                                  self.line_number,
+                                                  err)) from None
 
         return '.word {:#010x}'.format(word_val)
 
-    def mk_rve_line(self,
-                    insn: Insn,
-                    rve: RVEncoding,
+    def mk_rve_line(self, insn: Insn, rve: RVEncoding,
                     op_to_expr: Dict[str, Optional[str]]) -> str:
 
         # Take a copy of the fixed fields
@@ -742,9 +724,9 @@ class Transformer:
                 enc_val = op_type.op_val_to_enc_val(op_val, None)
                 assert enc_val is not None
             except ValueError as err:
-                raise RuntimeError('{}:{}: {}'
-                                   .format(self.in_path,
-                                           self.line_number, err)) from None
+                raise RuntimeError('{}:{}: {}'.format(self.in_path,
+                                                      self.line_number,
+                                                      err)) from None
 
             # read_index should always return a non-None result if
             # syntax_determines_value() returned false.
@@ -782,9 +764,8 @@ class Transformer:
 
         return '.insn {} {}'.format(rve.rvfmt.name, ', '.join(rv_str_list))
 
-    def gen_line(self,
-                 insn: Insn,
-                 op_to_expr: Dict[str, Optional[str]]) -> None:
+    def gen_line(self, insn: Insn, op_to_expr: Dict[str,
+                                                    Optional[str]]) -> None:
         '''Build and write out a line for this instruction'''
         assert self.key_sym is not None
 
@@ -807,26 +788,26 @@ class Transformer:
         assert '\n' not in reconstructed
 
         if expansion is not None:
-            self.out_handle.write('# pseudo-expansion for: {}\n'
-                                  .format(reconstructed))
+            self.out_handle.write(
+                '# pseudo-expansion for: {}\n'.format(reconstructed))
             for entry in expansion:
-                self.out_handle.write('.line {}\n{}\n'
-                                      .format(self.line_number - 1, entry))
+                self.out_handle.write('.line {}\n{}\n'.format(
+                    self.line_number - 1, entry))
             return
 
         # If this instruction comes from the rv32i instruction set, we can just
         # pass it straight through.
         if insn.rv32i:
-            self.out_handle.write('.line {}\n{}\n'
-                                  .format(self.line_number - 1, reconstructed))
+            self.out_handle.write('.line {}\n{}\n'.format(
+                self.line_number - 1, reconstructed))
             return
 
         # If we don't know an encoding for this instruction, we're not going to
         # have much chance.
         if insn.encoding is None:
-            raise RuntimeError('{}:{}: Instruction {!r} has no encoding.'
-                               .format(self.in_path, self.line_number,
-                                       insn.mnemonic))
+            raise RuntimeError(
+                '{}:{}: Instruction {!r} has no encoding.'.format(
+                    self.in_path, self.line_number, insn.mnemonic))
 
         # A custom instruction. We have two possible approaches.
         #
@@ -850,10 +831,8 @@ class Transformer:
         else:
             line = self.mk_raw_line(insn, op_to_expr)
 
-        self.out_handle.write('# {}\n.line {}\n{}\n'
-                              .format(reconstructed,
-                                      self.line_number - 1,
-                                      line))
+        self.out_handle.write('# {}\n.line {}\n{}\n'.format(
+            reconstructed, self.line_number - 1, line))
 
     def _continue_block_comment(self, line: str, pos: int) -> int:
         '''Continue whitespace matching in a block comment
@@ -991,9 +970,8 @@ class Transformer:
             if low_key_sym.startswith(insn.mnemonic):
                 return insn
 
-        raise RuntimeError('{}:{}: Unknown mnemonic: {!r}.'
-                           .format(self.in_path,
-                                   self.line_number, self.key_sym))
+        raise RuntimeError('{}:{}: Unknown mnemonic: {!r}.'.format(
+            self.in_path, self.line_number, self.key_sym))
 
     def _end_stmt_line(self) -> None:
         '''Called at end of a stmt line to deal with any completed statement'''
@@ -1024,9 +1002,10 @@ class Transformer:
 
         match = insn.asm_pattern.match(operands_str.rstrip())
         if match is None:
-            raise RuntimeError('{}:{}: Cannot match syntax for {!r} ({!r}).'
-                               .format(self.in_path, self.line_number,
-                                       self.key_sym, insn.syntax.render_doc()))
+            raise RuntimeError(
+                '{}:{}: Cannot match syntax for {!r} ({!r}).'.format(
+                    self.in_path, self.line_number, self.key_sym,
+                    insn.syntax.render_doc()))
 
         op_to_val = {}  # type: Dict[str, Optional[str]]
         for op, grp in insn.pattern_op_to_grp.items():
@@ -1058,9 +1037,9 @@ class Transformer:
 
         match = re.match(r'[0-9a-zA-Z_$.]+', line[pos:])
         if match is None:
-            raise RuntimeError('{}:{}:{}: Expected key symbol, but found {!r}.'
-                               .format(self.in_path, self.line_number, pos,
-                                       line[pos:]))
+            raise RuntimeError(
+                '{}:{}:{}: Expected key symbol, but found {!r}.'.format(
+                    self.in_path, self.line_number, pos, line[pos:]))
 
         self.key_sym = match.group(0)
         self.state = 1
@@ -1137,23 +1116,18 @@ class Transformer:
             raise RuntimeError('Reached EOF while still in a string.')
 
 
-def transform_input(out_handle: TextIO,
-                    in_path: str,
-                    in_handle: TextIO,
-                    insns_file: InsnsFile,
-                    glued_insns_dec_len: List[Insn],
+def transform_input(out_handle: TextIO, in_path: str, in_handle: TextIO,
+                    insns_file: InsnsFile, glued_insns_dec_len: List[Insn],
                     mnem_to_rve: Dict[str, RVEncoding]) -> None:
     '''Transform an input file to make it suitable for riscv as'''
-    transformer = Transformer(out_handle, in_path,
-                              insns_file, glued_insns_dec_len, mnem_to_rve)
+    transformer = Transformer(out_handle, in_path, insns_file,
+                              glued_insns_dec_len, mnem_to_rve)
     for line in in_handle:
         transformer.take_line(line)
     transformer.at_eof()
 
 
-def transform_inputs(out_dir: str,
-                     inputs: List[str],
-                     insns_file: InsnsFile,
+def transform_inputs(out_dir: str, inputs: List[str], insns_file: InsnsFile,
                      mnem_to_rve: Dict[str, RVEncoding],
                      glued_insns_dec_len: List[Insn],
                      just_translate: bool) -> List[str]:
@@ -1174,8 +1148,8 @@ def transform_inputs(out_dir: str,
             if not just_translate:
                 out_handle = open(out_path, 'w')
 
-            transform_input(out_handle, pretty_in_path, in_handle,
-                            insns_file, glued_insns_dec_len, mnem_to_rve)
+            transform_input(out_handle, pretty_in_path, in_handle, insns_file,
+                            glued_insns_dec_len, mnem_to_rve)
 
         finally:
             if in_handle is not sys.stdin and in_handle is not None:
@@ -1209,8 +1183,7 @@ def run_binutils_as(other_args: List[str], inputs: List[str]) -> int:
     try:
         return subprocess.run(cmd).returncode
     except FileNotFoundError:
-        sys.stderr.write('Unknown command: {!r}.\n'
-                         .format(as_name))
+        sys.stderr.write('Unknown command: {!r}.\n'.format(as_name))
         return 127
 
 
@@ -1245,10 +1218,10 @@ def main() -> int:
     for insn in insns_file.insns:
         if insn.python_pseudo_op:
             if insn.mnemonic not in _PSEUDO_OP_ASSEMBLERS:
-                sys.stderr.write("Instruction {!r} has python-pseudo-op true, "
-                                 "but otbn-as doesn't have a custom assembler "
-                                 "for it.\n"
-                                 .format(insn.mnemonic))
+                sys.stderr.write(
+                    "Instruction {!r} has python-pseudo-op true, "
+                    "but otbn_as.py doesn't have a custom assembler "
+                    "for it.\n".format(insn.mnemonic))
                 return 1
 
     # Try to match up OTBN instruction encodings with .insn schemes (as stored
@@ -1257,9 +1230,8 @@ def main() -> int:
 
     with tempfile.TemporaryDirectory(suffix='.otbn-as') as tmpdir:
         try:
-            transformed = transform_inputs(tmpdir, files,
-                                           insns_file, mnem_to_rve,
-                                           glued_insns_dec_len,
+            transformed = transform_inputs(tmpdir, files, insns_file,
+                                           mnem_to_rve, glued_insns_dec_len,
                                            just_translate)
         except RuntimeError as err:
             sys.stderr.write('{}\n'.format(err))
