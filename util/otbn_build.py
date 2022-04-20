@@ -4,9 +4,9 @@
 # SPDX-License-Identifier: Apache-2.0
 """Build software running on OTBN
 
-Each assembly source file is first assembled with otbn-as. All resulting objects
-are then linked with otbn_ld.py. The resulting ELF file is converted into an
-embeddable RV32 object file using objcopy.  In this object, all symbols
+Each assembly source file is first assembled with otbn_as.py. All resulting
+objects are then linked with otbn_ld.py. The resulting ELF file is converted
+into an embeddable RV32 object file using objcopy.  In this object, all symbols
 are prefixed with `_otbn_app_<appname>_` (only global symbols are included).
 
 environment variables:
@@ -15,7 +15,7 @@ environment variables:
   sensible default values are provided (tools are generally expected to be in
   the $PATH).
 
-  OTBN_AS            path to otbn-as, the OTBN assembler
+  OTBN_AS            path to otbn_as.py, the OTBN assembler
   OTBN_LD            path to otbn_ld.py, the OTBN linker
   RV32_TOOL_LD       path to RV32 ld
   RV32_TOOL_AS       path to RV32 as
@@ -23,7 +23,7 @@ environment variables:
   RV32_TOOL_OBJCOPY  path to RV32 objcopy
 
   The RV32* environment variables are used by both this script and the OTBN
-  wrappers (otbn-as and otbn_ld.py) to find tools in a RV32 toolchain.
+  wrappers (otbn_as.py and otbn_ld.py) to find tools in a RV32 toolchain.
 
 outputs:
   The build process produces multiple files inside the output directory.
@@ -102,7 +102,7 @@ def run_tool(tool: str, out_file: Path, args) -> None:
 
 def call_otbn_as(src_file: Path, out_file: Path):
     otbn_as_cmd = os.environ.get('OTBN_AS',
-                                 str(REPO_TOP / 'hw/ip/otbn/util/otbn-as'))
+                                 str(REPO_TOP / 'hw/ip/otbn/util/otbn_as.py'))
     run_tool(otbn_as_cmd, out_file, [src_file])
 
 

@@ -22,11 +22,11 @@ toolchain](https://docs.opentitan.org/doc/ug/install_instructions/#software-deve
 For more details about the toolchain, see the [user
 guide](https://docs.opentitan.org/doc/ug/otbn_sw)).
 
-`otbn-as` and `otbn_ld.py` can be used to build .elf files for use with
+`otbn_as.py` and `otbn_ld.py` can be used to build .elf files for use with
 simulations. They work work similarly to binutils programs they wrap.
 
 ```
-hw/ip/otbn/util/otbn-as -o prog_bin/prog.o prog.s
+hw/ip/otbn/util/otbn_as.py -o prog_bin/prog.o prog.s
 hw/ip/otbn/util/otbn_ld.py -o prog_bin/prog.elf prog_bin/prog.o
 ```
 
@@ -50,7 +50,7 @@ users include:
 ### Run the Python simulator
 The quickest way to run an OTBN-only program is to use the Python simulator.
 First, generate a `.elf.` file either using the usual build process or by
-manually running `otbn-as` and `otbn_ld.py` as shown above. Then, from `$REPO_TOP`:
+manually running `otbn_as.py` and `otbn_ld.py` as shown above. Then, from `$REPO_TOP`:
 ```console
 $ hw/ip/otbn/dv/otbnsim/standalone.py -t path/to/prog.elf
 ```
