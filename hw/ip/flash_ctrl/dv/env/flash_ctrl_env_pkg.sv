@@ -86,8 +86,8 @@ package flash_ctrl_env_pkg;
   parameter uint NUM_PAGE_PART_INFO2 = flash_ctrl_pkg::InfoTypeSize[2];
 
   parameter otp_ctrl_pkg::flash_otp_key_rsp_t FLASH_OTP_RSP_DEFAULT = '{
-      data_ack: 1'b0,
-      addr_ack: 1'b0,
+      data_ack: 1'b1,
+      addr_ack: 1'b1,
       key: '0,
       rand_key: '0,
       seed_valid: 1'b0
