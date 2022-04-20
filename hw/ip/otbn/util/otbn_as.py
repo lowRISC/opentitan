@@ -1187,10 +1187,9 @@ def run_binutils_as(other_args: List[str], inputs: List[str]) -> int:
         return 127
 
 
-def main() -> int:
-    files, other_args, flags = parse_positionals(sys.argv)
+def main(argv: List[str]) -> int:
+    files, other_args, flags = parse_positionals(argv)
     files = files or ['--']
-
     just_translate = '--otbn-translate' in flags
 
     # files is now a nonempty list of input files. Rather unusually, '--'
@@ -1246,4 +1245,4 @@ def main() -> int:
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(main(sys.argv))
