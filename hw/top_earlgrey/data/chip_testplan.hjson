@@ -68,7 +68,7 @@
             Extend from chip_sw_uart_rand_baudrate with following added settings.
             - Configure LC to RMA state, so that it allows clkmgr to use external clock.
             - Configure clkmgr to select external clock.
-            - Randomize `LOW_SPEED_SEL`, so that uart core clock frequency can be either
+            - Randomize `HI_SPEED_SEL`, so that uart core clock frequency can be either
               ext_clk_freq / 4 or ext_clk_freq / 2.
             '''
       milestone: V1
@@ -820,7 +820,8 @@
             '''
       milestone: V2
       tests: ["chip_sw_clkmgr_external_clk_src_for_sw_fast",
-              "chip_sw_clkmgr_external_clk_src_for_sw_slow"]
+              "chip_sw_clkmgr_external_clk_src_for_sw_slow",
+              "chip_sw_clkmgr_external_clk_src_for_lc"]
       tags: ["conn"]
     }
     {
@@ -832,15 +833,16 @@
             best to verify this via SVA, unless we implement clock cycle counters.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_clkmgr_external_clk_src_for_lc"]
     }
     {
       name: chip_sw_clkmgr_external_clk_src_for_sw
       desc: '''Verify SW causes the clkmgr requests ext clk src during certain LC states.
 
             In RMA and TEST_UNLOCKED lc states the external clock is enabled in response to
-            `extclk_ctrl.sel` CSR writes. In addition `extclk_ctrl.step_down` CSR causes the divided
-            clocks to step down. Verify this via SVA bound to clkmgr, and clock cycle counters.
+            `extclk_ctrl.sel` CSR writes. In addition `extclk_ctrl.hi_speed_sel` CSR causes the
+            divided clocks to step down. Verify this via SVA bound to clkmgr, and clock cycle
+            counters.
             X-ref with chip_sw_uart_tx_rx_alt_clk_freq, which needs to deal with this as well.
             '''
       milestone: V2
@@ -1258,7 +1260,7 @@
             - Ensure that there is no background or otp_init error.
             - Verify that the LC ctrl has transitioned to the programmed state after a reboot.
 
-            X-ref'ed chip_otp_ctrl_program.
+            X-ref'ed chip_sw_otp_ctrl_program.
             '''
       milestone: V2
       tests: ["chip_sw_lc_ctrl_transition"]

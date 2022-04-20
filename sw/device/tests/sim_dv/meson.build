@@ -108,17 +108,45 @@ sw_tests += {
   }
 }
 
-lc_ctrl_transition_test_lib = declare_dependency(
+lc_ctrl_transition_test_impl_lib = declare_dependency(
   link_with: static_library(
-    'lc_ctrl_transition_test_lib',
+    'lc_ctrl_transition_test_impl_lib',
     sources: [
       'lc_ctrl_transition_impl.c',
     ],
     dependencies: [
       sw_lib_dif_lc_ctrl,
-      sw_lib_runtime_log,
       sw_lib_mmio,
       sw_lib_runtime_hart,
+      sw_lib_runtime_log,
+      top_earlgrey,
+    ],
+  ),
+)
+
+clkmgr_external_clk_src_for_lc_test_lib = declare_dependency(
+  link_with: static_library(
+    'clkmgr_external_clk_src_for_lc_test_lib',
+    sources: ['clkmgr_external_clk_src_for_lc_test.c'],
+    dependencies: [
+      lc_ctrl_transition_test_impl_lib,
+    ],
+  ),
+)
+sw_tests += {
+  'clkmgr_external_clk_src_for_lc_test': {
+    'library': clkmgr_external_clk_src_for_lc_test_lib,
+  }
+}
+
+lc_ctrl_transition_test_lib = declare_dependency(
+  link_with: static_library(
+    'lc_ctrl_transition_test_lib',
+    sources: [
+      'lc_ctrl_transition_test.c',
+    ],
+    dependencies: [
+      lc_ctrl_transition_test_impl_lib,
     ],
   ),
 )
