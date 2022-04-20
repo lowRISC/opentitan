@@ -574,8 +574,14 @@ Both memories can be accessed through OTBN's register interface ({{< regref "DME
 All memory accesses through the register interface must be word-aligned 32b word accesses.
 
 When OTBN is in any state other than [idle](#design-details-operational-states), reads return zero and writes have no effect.
-Furthermore, a memory access when OTBN is neither idle nor locked will cause OTBN to generate a fatal alert with code `ILLEGAL_BUS_ACCESS`.
+Furthermore, a memory access when OTBN is neither idle nor locked will cause OTBN to generate a fatal error with code `ILLEGAL_BUS_ACCESS`.
 A host processor can check whether OTBN is busy by reading the {{< regref "STATUS">}} register.
+
+The underlying memories used to implement the IMEM and DMEM may not grant all access requests (see [Memory Scrambling](#design-details-memory-scrambling) for details).
+A request won't be granted if new scrambling keys have been requested for the memory that aren't yet available.
+Functionally it should be impossible for either OTBN or a host processor to make a memory request whilst new scrambling keys are unavailable.
+OTBN is in the busy state whilst keys are requested so OTBN will not execute any programs and a host processor access will generated an `ILLEGAL_BUS_ACCESS` fatal error.
+Should a request not be granted due to a fault, a `BAD_INTERNAL_STATE` fatal error will be raised.
 
 While DMEM is 4kiB, only the first 2kiB (at addresses `0x0` to `0x7ff`) is visible through the register interface.
 This is to allow OTBN applications to store sensitive information in the other half, making it harder for that information to leak back to Ibex.
