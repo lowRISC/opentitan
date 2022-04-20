@@ -76,7 +76,7 @@ Now the simulation can be run.
 
 ```console
 $ cd $REPO_TOP
-$ build/lowrisc_dv_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb \
+$ build-bin/hw/top_earlgrey/Vchip_earlgrey_verilator \
   --meminit=rom,build-bin/sw/device/lib/testing/test_rom/test_rom_sim_verilator.scr.39.vmem \
   --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.64.scr.vmem \
   --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem
