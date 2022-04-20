@@ -10,5 +10,6 @@
 #include "sw/device/tests/clkmgr_external_clk_src_for_sw_impl.h"
 
 bool test_main(void) {
-  return execute_clkmgr_external_clk_src_for_sw_test(/*fast_ext_clk=*/false);
+  execute_clkmgr_external_clk_src_for_sw_test(/*fast_ext_clk=*/false);
+  return true;
 }
