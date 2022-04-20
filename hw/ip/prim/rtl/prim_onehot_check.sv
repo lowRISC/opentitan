@@ -119,6 +119,8 @@ module prim_onehot_check #(
       `ASSERT(EnableCheck_A, !en_i && (|oh_i) |-> err_o)
     end
   end else begin : gen_no_enable_check
+    logic unused_or_tree;
+    assign unused_or_tree = or_tree[0];
     assign enable_err = 1'b0;
   end
 
@@ -127,6 +129,8 @@ module prim_onehot_check #(
     assign addr_err = or_tree[0] ^ and_tree[0];
     `ASSERT(AddrCheck_A, oh_i[addr_i] != (|oh_i) |-> err_o)
   end else begin : gen_no_addr_check_strict
+    logic unused_and_tree;
+    assign unused_and_tree = and_tree[0];
     assign addr_err = 1'b0;
   end
 
