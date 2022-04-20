@@ -69,7 +69,7 @@ static void check_lc_state_transition_count(uint8_t exp_lc_count) {
  * `TestUnlocked2` state.
  */
 
-bool test_main(void) {
+bool execute_lc_ctrl_transition_test(bool use_ext_clk) {
   LOG_INFO("Start LC_CTRL transition test.");
 
   mmio_region_t lc_reg = mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR);
@@ -93,7 +93,8 @@ bool test_main(void) {
     // Request lc_state transfer to Dev state.
     dif_lc_ctrl_token_t token;
     dif_lc_ctrl_settings_t settings;
-    settings.clock_select = kDifLcCtrlInternalClockEn;
+    settings.clock_select =
+        use_ext_clk ? kDifLcCtrlExternalClockEn : kDifLcCtrlInternalClockEn;
     for (int i = 0; i < LC_TOKEN_SIZE; i++) {
       token.data[i] = kLcExitToken[i];
     }
