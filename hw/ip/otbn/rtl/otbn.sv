@@ -96,6 +96,7 @@ module otbn
   logic busy_execute_d, busy_execute_q;
   logic done, done_core, locked, idle;
   logic illegal_bus_access_d, illegal_bus_access_q;
+  logic missed_gnt_error_d, missed_gnt_error_q;
   logic dmem_sec_wipe;
   logic imem_sec_wipe;
   logic mems_sec_wipe;
@@ -198,6 +199,7 @@ module otbn
   logic imem_access_core;
 
   logic imem_req;
+  logic imem_gnt;
   logic imem_write;
   logic [ImemIndexWidth-1:0] imem_index;
   logic [38:0] imem_wdata;
@@ -205,6 +207,7 @@ module otbn
   logic [38:0] imem_rdata;
   logic imem_rvalid;
   logic imem_illegal_bus_access;
+  logic imem_missed_gnt;
 
   logic imem_req_core;
   logic imem_write_core;
@@ -304,9 +307,7 @@ module otbn
     .nonce_i    (otbn_imem_scramble_nonce),
 
     .req_i       (imem_req),
-    // TODO: OTBN should always get grant when active, wire up grant and add check it occurs,
-    // trigger fatal alert if it doesn't.
-    .gnt_o       (),
+    .gnt_o       (imem_gnt),
     .write_i     (imem_write),
     .addr_i      (imem_index),
     .wdata_i     (imem_wdata),
@@ -319,6 +320,9 @@ module otbn
     .rerror_o(),
     .cfg_i   (ram_cfg_i)
   );
+
+  // We should never see a request that doesn't get granted. A fatal error is raised if this occurs.
+  assign imem_missed_gnt = imem_req & ~imem_gnt;
 
   // IMEM access from main TL-UL bus
   logic imem_gnt_bus;
@@ -407,6 +411,7 @@ module otbn
   logic dmem_access_core;
 
   logic dmem_req;
+  logic dmem_gnt;
   logic dmem_write;
   logic [DmemIndexWidth-1:0] dmem_index;
   logic [ExtWLEN-1:0] dmem_wdata;
@@ -416,6 +421,7 @@ module otbn
   logic [BaseWordsPerWLEN*2-1:0] dmem_rerror_vec;
   logic dmem_rerror;
   logic dmem_illegal_bus_access;
+  logic dmem_missed_gnt;
 
   logic dmem_req_core;
   logic dmem_write_core;
@@ -465,9 +471,7 @@ module otbn
     .nonce_i    (otbn_dmem_scramble_nonce),
 
     .req_i       (dmem_req),
-    // TODO: OTBN should always get grant when active, wire up grant and add check it occurs,
-    // trigger fatal alert if it doesn't.
-    .gnt_o       (),
+    .gnt_o       (dmem_gnt),
     .write_i     (dmem_write),
     .addr_i      (dmem_index),
     .wdata_i     (dmem_wdata),
@@ -480,6 +484,9 @@ module otbn
     .rerror_o(),
     .cfg_i   (ram_cfg_i)
   );
+
+  // We should never see a request that doesn't get granted. A fatal error is raised if this occurs.
+  assign dmem_missed_gnt = dmem_req & !dmem_gnt;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -678,15 +685,24 @@ module otbn
 
   assign illegal_bus_access_d = dmem_illegal_bus_access | imem_illegal_bus_access;
 
-  // Flop `illegal_bus_access_q` so we know an illegal bus access has happened and to break a timing
-  // path from the TL interface into the OTBN core.
+  // It should not be possible to request an imem or dmem access without it being granted. Either
+  // a scramble key is present so the request will be granted or the core is busy obtaining a new
+  // key, so no request can occur (the core won't generate one whilst awaiting a scrambling key and
+  // the bus requests get an immediate dummy response bypassing the dmem or imem). A fatal error is
+  // raised if request is seen without a grant.
+  assign missed_gnt_error_d = dmem_missed_gnt | imem_missed_gnt;
+
+  // Flop `illegal_bus_access_q` and `missed_gnt_error_q` to break timing paths from the TL
+  // interface into the OTBN core.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       start_q              <= 1'b0;
       illegal_bus_access_q <= 1'b0;
+      missed_gnt_error_q   <= 1'b0;
     end else begin
       start_q              <= start_d;
       illegal_bus_access_q <= illegal_bus_access_d;
+      missed_gnt_error_q   <= missed_gnt_error_d;
     end
   end
 
@@ -970,7 +986,7 @@ module otbn
   assign non_core_err_bits = '{
     lifecycle_escalation: lc_escalate_en[0] != lc_ctrl_pkg::Off,
     illegal_bus_access:   illegal_bus_access_q,
-    bad_internal_state:   otbn_scramble_state_error,
+    bad_internal_state:   otbn_scramble_state_error | missed_gnt_error_q,
     bus_intg_violation:   bus_intg_violation
   };
 
