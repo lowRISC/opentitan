@@ -11,6 +11,24 @@ load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
 
 # IP Integration Tests
 opentitan_functest(
+    name = "plic_all_irqs_test",
+    srcs = ["plic_all_irqs_test.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib:irq",
+        "//sw/device/lib/base:mmio",
+% for n in sorted(irq_peripheral_names + ["rv_plic"]):
+        "//sw/device/lib/dif:${n}",
+% endfor
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:rv_plic_testutils",
+    ],
+)
+
+opentitan_functest(
     name = "alert_test",
     srcs = ["alert_test.c"],
     deps = [
