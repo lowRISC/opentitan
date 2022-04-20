@@ -25,7 +25,6 @@ module flash_ctrl_info_cfg import flash_ctrl_pkg::*; # (
   import prim_mubi_pkg::MuBi4True;
   import prim_mubi_pkg::mubi4_bool_to_mubi;
 
-  localparam int CfgEntries = $bits(info_page_cfg_t) / prim_mubi_pkg::MuBi4Width;
   info_page_cfg_t creator_seed_qual, owner_seed_qual, isolate_qual;
 
   mubi4_t creator_en;
