@@ -99,7 +99,7 @@ foreach slot, slot_link_args : rom_ext_link_info
         sw_silicon_creator_lib_fake_deps,
         sw_silicon_creator_lib_log,
         sw_silicon_creator_lib_shutdown,
-        sw_silicon_creator_lib_manifest_section,
+        sw_silicon_creator_lib_manifest_def,
         sw_silicon_creator_mask_rom_sigverify,
         sw_silicon_creator_rom_ext_epmp,
         sw_silicon_creator_rom_ext_boot_policy,

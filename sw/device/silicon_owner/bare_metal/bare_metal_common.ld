@@ -26,6 +26,22 @@ ENTRY(_start_boot)
 /* DV Log offset (has to be different to other boot stages). */
 _dv_log_offset = 0x20000;
 
+/*
+ * The start of the .text section relative to the beginning of the associated
+ * slot for use in the manifest.
+ */
+_manifest_code_start = _text_start - _slot_start_address;
+/*
+ * The end of the .text section relative to the beginning of the associated slot
+ * for use in the manifest.
+ */
+_manifest_code_end = _text_end - _slot_start_address;
+/*
+ * The location of the entry point relative to the beginning of the associated
+ * slot for use in the manifest.
+ */
+_manifest_entry_point = _start_boot - _slot_start_address;
+
 /**
  * NOTE: We have to align each section to word boundaries as our current
  * s19->slm conversion scripts are not able to handle non-word aligned sections.
@@ -62,6 +78,7 @@ SECTIONS {
 
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
+    _text_end = .;
   } > eflash
 
   /**
