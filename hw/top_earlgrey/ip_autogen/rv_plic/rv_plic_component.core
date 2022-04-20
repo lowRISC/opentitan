@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:alert
       - lowrisc:prim:max_tree
       - lowrisc:prim:flop_2sync
+      - lowrisc:prim:reg_we_check
     files:
       - rtl/rv_plic_gateway.sv
       - rtl/rv_plic_target.sv
