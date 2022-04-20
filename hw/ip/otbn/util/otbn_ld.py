@@ -2,21 +2,20 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-
 '''A wrapper around riscv32-unknown-elf-ld for OTBN
 
 This just adds the OTBN linker script and calls the underlying
 linker.'''
 
-from contextlib import contextmanager
 import os
 import subprocess
 import sys
 import tempfile
+from contextlib import contextmanager
 from typing import Iterator, List, Optional
 
-from mako.template import Template  # type: ignore
 from mako import exceptions  # type: ignore
+from mako.template import Template  # type: ignore
 
 from shared.mem_layout import get_memory_layout
 from shared.toolchain import find_tool
@@ -45,21 +44,21 @@ def interpolate_linker_script(in_path: str, out_path: str) -> None:
         with open(out_path, 'w') as out_file:
             out_file.write(rendered)
     except FileNotFoundError:
-        raise RuntimeError('Failed to open output file at {!r}.'
-                           .format(out_path)) from None
+        raise RuntimeError(
+            'Failed to open output file at {!r}.'.format(out_path)) from None
 
 
 @contextmanager
 def mk_linker_script() -> Iterator[str]:
-    ld_in = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                         '..', 'data', 'otbn.ld.tpl'))
+    ld_in = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), '..', 'data', 'otbn.ld.tpl'))
     with tempfile.TemporaryDirectory(prefix='otbn-ld-') as tmpdir:
         ld_out = os.path.join(tmpdir, 'otbn.ld')
         try:
             interpolate_linker_script(ld_in, ld_out)
         except RuntimeError as err:
-            sys.stderr.write('Failed to interpolate linker script: {}\n'
-                             .format(err))
+            sys.stderr.write(
+                'Failed to interpolate linker script: {}\n'.format(err))
             return 1
 
         yield ld_out
@@ -80,29 +79,29 @@ def run_ld(ld_script: Optional[str], args: List[str]) -> int:
     try:
         return subprocess.run(cmd).returncode
     except FileNotFoundError:
-        sys.stderr.write('Unknown command: {!r}. '
-                         '(is it installed and on your PATH?)\n'
-                         .format(ld_name))
+        sys.stderr.write(
+            'Unknown command: {!r}. '
+            '(is it installed and on your PATH?)\n'.format(ld_name))
         return 127
 
 
-def main() -> int:
+def main(argv: List[str]) -> int:
     # Only add the --script argument if the caller isn't supplying one
     # themselves. This argument accumulates (so -T foo -T bar is like
     # concatenating foo and bar), so we mustn't supply our own if the user
     # has one.
     needs_script = True
-    for arg in sys.argv[1:]:
+    for arg in argv[1:]:
         if arg == '-T' or arg.startswith('--script='):
             needs_script = False
             break
 
     if needs_script:
         with mk_linker_script() as script_path:
-            return run_ld(script_path, sys.argv[1:])
+            return run_ld(script_path, argv[1:])
     else:
-        return run_ld(None, sys.argv[1:])
+        return run_ld(None, argv[1:])
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(main(sys.argv))

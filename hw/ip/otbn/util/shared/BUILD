@@ -89,6 +89,7 @@ py_library(
 py_library(
     name = "otbn_reggen",
     srcs = ["otbn_reggen.py"],
+    data = ["//hw/ip/otbn/data:all_files"],
     deps = [
         "//util/reggen:ip_block",
         "//util/reggen:reg_block",

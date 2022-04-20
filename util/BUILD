@@ -23,6 +23,7 @@ py_binary(
     deps = [
         requirement("pyelftools"),
         "//hw/ip/otbn/util:otbn_as",
+        "//hw/ip/otbn/util:otbn_ld",
     ],
 )
 

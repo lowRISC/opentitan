@@ -16,7 +16,6 @@ environment variables:
   the $PATH).
 
   OTBN_TOOLS         path to the OTBN linker and assemler tools
-  OTBN_LD            path to otbn_ld.py, the OTBN linker
   RV32_TOOL_LD       path to RV32 ld
   RV32_TOOL_AS       path to RV32 as
   RV32_TOOL_AR       path to RV32 ar
@@ -46,16 +45,14 @@ from typing import List, Optional, Tuple
 
 from elftools.elf.elffile import ELFFile, SymbolTableSection  # type: ignore
 
-REPO_TOP = Path(__file__).parent.parent.resolve()
-
 # yapf: disable
 
-# TODO: remove with meson; bazel will set the PYTHONPATH to locate otbn
-# tool modules
+# TODO: remove with meson; bazel will set the PYTHONPATH to locate otbn tools
 otbn_tools_path = os.environ.get('OTBN_TOOLS', None)
 if otbn_tools_path:
     sys.path.append(otbn_tools_path)
 import otbn_as
+import otbn_ld
 
 # yapf: enable
 
@@ -120,14 +117,12 @@ def call_otbn_as(src_file: Path, out_file: Path):
 
 def call_otbn_ld(src_files: List[Path], out_file: Path,
                  linker_script: Optional[Path]):
-    otbn_ld_cmd = os.environ.get('OTBN_LD',
-                                 str(REPO_TOP / 'hw/ip/otbn/util/otbn_ld.py'))
 
     args = ['-gc-sections', '-gc-keep-exported']
     if linker_script:
         args += ['-T', linker_script]
     args += src_files
-    run_tool(otbn_ld_cmd, out_file, args)
+    run_tool(otbn_ld.main, out_file, args)
 
 
 def call_rv32_objcopy(args: List[str]):
