@@ -105,6 +105,7 @@ cc_library(
         "//sw/device/lib/base:stdasm",
         "//sw/device/lib/runtime:hart",
         "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib:rom_print",
         "//sw/device/silicon_creator/lib:shutdown",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
@@ -127,7 +128,7 @@ opentitan_flash_binary(
         ":ld_slot_a",
         ":rom_ext",
         "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/lib:manifest_section",
+        "//sw/device/silicon_creator/lib:manifest_def",
     ],
 )
 
@@ -138,6 +139,6 @@ opentitan_flash_binary(
         ":ld_slot_b",
         ":rom_ext",
         "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/lib:manifest_section",
+        "//sw/device/silicon_creator/lib:manifest_def",
     ],
 )

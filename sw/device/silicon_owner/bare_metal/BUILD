@@ -43,6 +43,8 @@ cc_library(
         "//sw/device/lib/base:stdasm",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:print",
+        "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib/drivers:pinmux",
         "//sw/device/silicon_creator/lib/drivers:uart",
     ],
@@ -55,7 +57,7 @@ opentitan_flash_binary(
         ":bare_metal_example",
         ":ld_slot_a",
         "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/lib:manifest_section",
+        "//sw/device/silicon_creator/lib:manifest_def",
     ],
 )
 
@@ -66,6 +68,6 @@ opentitan_flash_binary(
         ":bare_metal_example",
         ":ld_slot_b",
         "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/lib:manifest_section",
+        "//sw/device/silicon_creator/lib:manifest_def",
     ],
 )
