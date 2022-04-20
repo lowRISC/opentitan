@@ -49,7 +49,7 @@ cc_library(
         "//hw/top_earlgrey/ip/ast/data:ast_regs",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib:ibex_peri",
+        "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/crt",
         "//sw/device/lib/dif:flash_ctrl",

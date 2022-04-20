@@ -39,9 +39,12 @@ cc_library(
     hdrs = ["ibex.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:math",
+        "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:stdasm",
     ],
 )

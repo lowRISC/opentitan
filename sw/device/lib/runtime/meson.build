@@ -5,7 +5,8 @@
 sw_lib_runtime_ibex = declare_dependency(
   link_with: static_library(
     'runtime_ibex_ot',
-    sources: ['ibex.c'],
+    sources: [hw_ip_ibex_reg_h, 'ibex.c'],
+    dependencies: [top_earlgrey],
   )
 )
 
