@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:alert
       - lowrisc:prim:max_tree
       - lowrisc:prim:flop_2sync
+      - lowrisc:prim:reg_we_check
     files:
       - rtl/${module_instance_name}_gateway.sv
       - rtl/${module_instance_name}_target.sv
