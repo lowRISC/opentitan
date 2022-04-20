@@ -21,11 +21,11 @@ static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 static dif_aon_timer_t aon_timer;
 static dif_rv_plic_t plic;
 
+// Volatile globals accessed from the ISR.
 static volatile dif_aon_timer_irq_t irq;
 static volatile top_earlgrey_plic_peripheral_t peripheral;
-
-bool interrupt_serviced;
-bool interrupt_failed;
+static volatile bool interrupt_serviced;
+static volatile bool interrupt_failed;
 
 bool is_pwrmgr_irq_pending(void) {
   bool status;

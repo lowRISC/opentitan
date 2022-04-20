@@ -18,9 +18,6 @@
 const test_config_t kTestConfig;
 
 bool test_main(void) {
-  dif_pwrmgr_t pwrmgr;
-  dif_rstmgr_t rstmgr;
-
   // Issue a wakeup signal in ~150us through the AON timer.
   //
   // At 200kHz, threshold of 30 is equal to 150us. There is an additional
@@ -30,16 +27,16 @@ bool test_main(void) {
   //
   // Adjust the threshold for Verilator since it runs on different clock
   // frequencies.
-  uint32_t wakeup_threshold = 30;
-  if (kDeviceType == kDeviceSimVerilator) {
-    wakeup_threshold = 300;
-  }
+  uint32_t wakeup_threshold = kDeviceType == kDeviceSimVerilator ? 300 : 30;
 
   // Initialize pwrmgr
+  dif_pwrmgr_t pwrmgr;
   CHECK_DIF_OK(dif_pwrmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
 
   // Initialize rstmgr since this will check some registers.
+
+  dif_rstmgr_t rstmgr;
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
