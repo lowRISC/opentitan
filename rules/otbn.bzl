@@ -31,12 +31,12 @@ def _otbn_assemble_sources(ctx):
             outputs = [obj],
             inputs = ([src] +
                       cc_toolchain.all_files.to_list() +
-                      ctx.files._otbn_as),
+                      [ctx.executable._otbn_as]),
             env = {
                 "RV32_TOOL_AS": assembler.path,
             },
             arguments = ["-o", obj.path, src.path],
-            executable = ctx.file._otbn_as,
+            executable = ctx.executable._otbn_as,
         )
 
     return objs
@@ -47,12 +47,15 @@ def _otbn_library(ctx):
     objs = _otbn_assemble_sources(ctx)
 
     return [
-        DefaultInfo(files = depset(objs), data_runfiles = ctx.runfiles(files = objs)),
+        DefaultInfo(
+            files = depset(objs),
+            data_runfiles = ctx.runfiles(files = objs),
+        ),
     ]
 
 def _otbn_binary(ctx):
     """The build process for otbn resources currently invokes
-    `//hw/ip/otbn/util/otbn-{as,ld,...}` to build the otbn resource.
+    `//hw/ip/otbn/util/otbn_{as,ld,...}.py` to build the otbn resource.
     These programs are python scripts which translate otbn special
     instructions into the proper opcode sequences and _then_ invoke the normal
     `rv32-{as,ld,...}` programs to produce the resource.  These "native"
@@ -71,7 +74,7 @@ def _otbn_binary(ctx):
     available at runtime, which is not how we're using the otbn resource.
     The closest analog is something like `cc_embed_data`, which is like
     a data dependency that needs to be linked into the main program.
-    We achieve by having `otbn-build` emit a conventional RV32I library
+    We achieve by having `otbn_build.py` emit a conventional RV32I library
     that other rules can depend on in their `deps`.
     """
     cc_toolchain = find_cc_toolchain(ctx)
@@ -94,12 +97,12 @@ def _otbn_binary(ctx):
         inputs = (objs +
                   deps +
                   cc_toolchain.all_files.to_list() +
-                  ctx.files._otbn_as +
+                  [ctx.executable._otbn_as] +
                   ctx.files._otbn_ld +
                   ctx.files._otbn_data +
                   ctx.files._wrapper),
         env = {
-            "OTBN_AS": ctx.file._otbn_as.path,
+            "OTBN_AS": ctx.executable._otbn_as.path,
             "OTBN_LD": ctx.file._otbn_ld.path,
             "RV32_TOOL_AS": assembler.path,
             "RV32_TOOL_AR": cc_toolchain.ar_executable,
@@ -152,8 +155,14 @@ otbn_library = rv_rule(
     implementation = _otbn_library,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
-        "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
-        "_otbn_as": attr.label(default = "//hw/ip/otbn/util:otbn_as.py", allow_single_file = True),
+        "_cc_toolchain": attr.label(
+            default = Label("@bazel_tools//tools/cpp:current_cc_toolchain"),
+        ),
+        "_otbn_as": attr.label(
+            default = "//hw/ip/otbn/util:otbn_as",
+            executable = True,
+            cfg = "exec",
+        ),
     },
     fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
@@ -166,10 +175,23 @@ otbn_binary = rv_rule(
         "srcs": attr.label_list(allow_files = True),
         "deps": attr.label_list(providers = [DefaultInfo]),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
-        "_otbn_as": attr.label(default = "//hw/ip/otbn/util:otbn_as.py", allow_single_file = True),
-        "_otbn_ld": attr.label(default = "//hw/ip/otbn/util:otbn_ld.py", allow_single_file = True),
-        "_otbn_data": attr.label(default = "//hw/ip/otbn/data:all_files", allow_files = True),
-        "_wrapper": attr.label(default = "//util:otbn_build.py", allow_single_file = True),
+        "_otbn_as": attr.label(
+            default = "//hw/ip/otbn/util:otbn_as",
+            executable = True,
+            cfg = "exec",
+        ),
+        "_otbn_ld": attr.label(
+            default = "//hw/ip/otbn/util:otbn_ld.py",
+            allow_single_file = True,
+        ),
+        "_otbn_data": attr.label(
+            default = "//hw/ip/otbn/data:all_files",
+            allow_files = True,
+        ),
+        "_wrapper": attr.label(
+            default = "//util:otbn_build.py",
+            allow_single_file = True,
+        ),
     },
     fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
