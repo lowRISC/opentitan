@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_python//python:defs.bzl", "py_binary")
+load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -13,6 +14,16 @@ genrule(
     outs = ["ot_version.txt"],
     cmd = """awk '/BUILD_GIT_VERSION/ { print $$2 }' bazel-out/volatile-status.txt > $@""",
     stamp = 1,  # this provides volatile-status.txt
+)
+
+py_binary(
+    name = "otbn_build",
+    srcs = ["otbn_build.py"],
+    imports = ["../hw/ip/otbn/util/"],
+    deps = [
+        requirement("pyelftools"),
+        "//hw/ip/otbn/util:otbn_as",
+    ],
 )
 
 py_binary(

@@ -209,6 +209,7 @@ prog_as = find_program('as')
 prog_objdump = find_program('objdump')
 prog_objcopy = find_program('objcopy')
 
+path_otbn_tools = meson.project_source_root() / 'hw/ip/otbn/util/'
 prog_otbn_as = meson.project_source_root() / 'hw/ip/otbn/util/otbn_as.py'
 prog_otbn_ld = meson.project_source_root() / 'hw/ip/otbn/util/otbn_ld.py'
 
@@ -285,6 +286,8 @@ r = run_command(
 
   'PYTHON=@0@'.format(prog_python.full_path()),
   'OTBN_AS=@0@'.format(prog_otbn_as),
+  'OTBN_LD=@0@'.format(prog_otbn_ld),
+  'OTBN_TOOLS=@0@'.format(path_otbn_tools),
   'OTBN_LD=@0@'.format(prog_otbn_ld),
   'RV32_TOOL_OBJCOPY=@0@'.format(prog_objcopy.full_path()),
   'RV32_TOOL_AS=@0@'.format(prog_as.full_path()),
