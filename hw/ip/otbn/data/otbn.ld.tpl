@@ -6,7 +6,7 @@
   OTBN has a pure Harvard architecture, with instruction and data
   memory both starting at address 0.
 
-  This linker script template is interpolated by otbn-ld after it gets
+  This linker script template is interpolated by otbn_ld.py after it gets
   the LMAs and memory sizes from otbn.hjson.
 
 */

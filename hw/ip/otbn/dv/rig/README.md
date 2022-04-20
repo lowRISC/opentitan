@@ -87,7 +87,7 @@ are an assembly listing and a linker script, respectively.
 To assemble and link, use commands like:
 ```
 hw/ip/otbn/util/otbn-as -o foo.o foo.s
-hw/ip/otbn/util/otbn-ld -o foo.elf -T foo.ld foo.o
+hw/ip/otbn/util/otbn_ld.py -o foo.elf -T foo.ld foo.o
 ```
 This is automated in the `gen-binaries.py` wrapper described above.
 

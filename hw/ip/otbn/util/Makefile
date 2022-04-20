@@ -16,7 +16,7 @@ $(build-dir) $(lint-build-dir):
 	mkdir -p $@
 
 pylibs := $(wildcard shared/*.py docs/*.py)
-pyscripts := yaml_to_doc.py otbn-as otbn-ld otbn-objdump
+pyscripts := yaml_to_doc.py otbn-as otbn_ld.py otbn-objdump
 
 lint-stamps := $(foreach s,$(pyscripts),$(lint-build-dir)/$(s).stamp)
 $(lint-build-dir)/%.stamp: % $(pylibs) | $(lint-build-dir)

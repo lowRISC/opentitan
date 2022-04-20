@@ -1110,7 +1110,7 @@ The toolchain wraps a RV32 GCC toolchain and supports many of its features.
 
 The following tools are available:
 * `otbn-as`: The OTBN assembler.
-* `otbn-ld`: The OTBN linker.
+* `otbn_ld.py`: The OTBN linker.
 * `otbn-objdump`: objdump for OTBN.
 
 Other tools from the RV32 toolchain can be used directly, such as objcopy.
