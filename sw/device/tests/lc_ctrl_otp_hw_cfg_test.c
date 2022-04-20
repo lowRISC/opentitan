@@ -21,7 +21,7 @@ static dif_otp_ctrl_t otp;
 static dif_lc_ctrl_t lc;
 
 const test_config_t kTestConfig;
-const uint8_t NUM_DEVICE_ID = 8;
+static const uint8_t kNumDeviceId = 8;
 
 /**
  * Read and return 32-bit OTP data via the DAI interface.
@@ -30,9 +30,7 @@ static void otp_ctrl_dai_read_32(const dif_otp_ctrl_t *otp,
                                  dif_otp_ctrl_partition_t partition,
                                  uint32_t address, uint32_t *buf) {
   CHECK_DIF_OK(dif_otp_ctrl_dai_read_start(otp, partition, address));
-
   otp_ctrl_testutils_wait_for_dai(otp);
-
   CHECK_DIF_OK(dif_otp_ctrl_dai_read32_end(otp, buf));
 }
 
@@ -63,7 +61,7 @@ bool test_main(void) {
   // TODO: current HW CFG value is randomly genenrated from the HJSON file,
   // plan to backdoor inject.
   uint32_t otp_device_id;
-  for (int i = 0; i < NUM_DEVICE_ID; i++) {
+  for (int i = 0; i < kNumDeviceId; i++) {
     otp_ctrl_dai_read_32(&otp, kDifOtpCtrlPartitionHwCfg, i * 4,
                          &otp_device_id);
 
