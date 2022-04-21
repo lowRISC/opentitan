@@ -979,6 +979,8 @@ module flash_ctrl_core_reg_top (
   logic fault_status_phy_relbl_err_qs;
   logic fault_status_phy_storage_err_qs;
   logic fault_status_spurious_ack_qs;
+  logic fault_status_arb_err_qs;
+  logic fault_status_host_gnt_err_qs;
   logic [19:0] err_addr_qs;
   logic ecc_single_err_cnt_we;
   logic [7:0] ecc_single_err_cnt_ecc_single_err_cnt_0_qs;
@@ -10418,6 +10420,56 @@ module flash_ctrl_core_reg_top (
     .qs     (fault_status_spurious_ack_qs)
   );
 
+  //   F[arb_err]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_fault_status_arb_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fault_status.arb_err.de),
+    .d      (hw2reg.fault_status.arb_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.fault_status.arb_err.q),
+
+    // to register interface (read)
+    .qs     (fault_status_arb_err_qs)
+  );
+
+  //   F[host_gnt_err]: 12:12
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_fault_status_host_gnt_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fault_status.host_gnt_err.de),
+    .d      (hw2reg.fault_status.host_gnt_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.fault_status.host_gnt_err.q),
+
+    // to register interface (read)
+    .qs     (fault_status_host_gnt_err_qs)
+  );
+
 
   // R[err_addr]: V(False)
   prim_subreg #(
@@ -12606,6 +12658,8 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[8] = fault_status_phy_relbl_err_qs;
         reg_rdata_next[9] = fault_status_phy_storage_err_qs;
         reg_rdata_next[10] = fault_status_spurious_ack_qs;
+        reg_rdata_next[11] = fault_status_arb_err_qs;
+        reg_rdata_next[12] = fault_status_host_gnt_err_qs;
       end
 
       addr_hit[96]: begin

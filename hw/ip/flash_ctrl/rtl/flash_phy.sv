@@ -101,6 +101,10 @@ module flash_phy
   logic [NumBanks-1:0] relbl_ecc_err;
   logic [NumBanks-1:0] intg_ecc_err;
 
+  // consistency error per bank
+  logic [NumBanks-1:0] arb_err;
+  logic [NumBanks-1:0] host_gnt_err;
+
   // select which bank each is operating on
   assign host_bank_sel = host_req_i ? host_addr_i[BusAddrW-1 -: BankW] : '0;
   assign ctrl_bank_sel = flash_ctrl_i.addr[BusAddrW-1 -: BankW];
@@ -126,6 +130,8 @@ module flash_phy
   assign flash_ctrl_o.storage_intg_err = |intg_ecc_err;
   assign flash_ctrl_o.fsm_err = |fsm_err;
   assign flash_ctrl_o.spurious_ack = |spurious_acks;
+  assign flash_ctrl_o.arb_err = |arb_err;
+  assign flash_ctrl_o.host_gnt_err = |host_gnt_err;
 
   // This fifo holds the expected return order
   prim_fifo_sync #(
@@ -277,7 +283,9 @@ module flash_phy
       .prog_intg_err_o(prog_intg_err[bank]),
       .relbl_ecc_err_o(relbl_ecc_err[bank]),
       .intg_ecc_err_o(intg_ecc_err[bank]),
-      .spurious_ack_o(spurious_acks[bank])
+      .spurious_ack_o(spurious_acks[bank]),
+      .arb_err_o(arb_err[bank]),
+      .host_gnt_err_o(host_gnt_err[bank])
     );
   end // block: gen_flash_banks
 

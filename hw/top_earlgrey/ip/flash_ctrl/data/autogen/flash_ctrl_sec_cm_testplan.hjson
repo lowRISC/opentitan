@@ -161,5 +161,23 @@
       milestone: V2S
       tests: []
     }
+    {
+      name: sec_cm_phy_arbiter_ctrl_redun
+      desc: "Verify the countermeasure(s) PHY_ARBITER.CTRL.REDUN."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_phy_host_grant_ctrl_consistency
+      desc: "Verify the countermeasure(s) PHY_HOST_GRANT.CTRL.CONSISTENCY."
+      milestone: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_phy_ack_ctrl_consistency
+      desc: "Verify the countermeasure(s) PHY_ACK.CTRL.CONSISTENCY."
+      milestone: V2S
+      tests: []
+    }
   ]
 }
