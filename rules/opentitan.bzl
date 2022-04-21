@@ -2,9 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# TODO(drewmacrae) this should be in rules_cc
-# pending resolution of https://github.com/bazelbuild/rules_cc/issues/75
-load("//rules:bugfix.bzl", "find_cc_toolchain")
+load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load(
     "//rules:cc_side_outputs.bzl",
     "rv_asm",
@@ -43,7 +41,7 @@ PER_DEVICE_DEPS = {
 }
 
 def _obj_transform_impl(ctx):
-    cc_toolchain = find_cc_toolchain(ctx)
+    cc_toolchain = find_cc_toolchain(ctx).cc
     outputs = []
     for src in ctx.files.srcs:
         binary = ctx.actions.declare_file("{}.{}".format(src.basename, ctx.attr.suffix))
@@ -125,7 +123,7 @@ sign_bin = rv_rule(
 )
 
 def _elf_to_disassembly_impl(ctx):
-    cc_toolchain = find_cc_toolchain(ctx)
+    cc_toolchain = find_cc_toolchain(ctx).cc
     outputs = []
     for src in ctx.files.srcs:
         disassembly = ctx.actions.declare_file("{}.elf.s".format(src.basename))
