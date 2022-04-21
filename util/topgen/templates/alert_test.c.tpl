@@ -99,11 +99,16 @@ static void trigger_alert_test(void) {
   // Write ${p.name}'s alert_test reg and check alert_cause.
   for (int i = 0; i < ${p.num_alerts}; ++i) {
     CHECK_DIF_OK(dif_${p.name}_alert_force(&${p.inst_name}, ${p.dif_alert_name} + i));
+
     // Verify that alert handler received it.
     exp_alert = ${p.top_alert_name} + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %0d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
   }
   % endfor
 }
