@@ -1,8 +1,7 @@
 // Copyright lowRISC contributors.
-// Copyright ETH Zurich.
-// Copyright Luke Valenty (TinyFPGA project, https://github.com/tinyfpga/TinyFPGA-Bootloader).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+// Copyright Luke Valenty (TinyFPGA project, https://github.com/tinyfpga/TinyFPGA-Bootloader).
 
 module usb_fs_tx (
   // A 48MHz clock is required to receive USB data at 12MHz
