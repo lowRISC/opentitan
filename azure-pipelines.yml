@@ -603,6 +603,7 @@ jobs:
         export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
         ci/bazelisk.sh test \
             --build_tests_only=false \
+            --define DISABLE_VERILATOR_BUILD=true \
             --test_tag_filters=-broken,-cw310,-verilator,-dv \
             //sw/...
       displayName: "Build and Unit Test Software with Bazel"
