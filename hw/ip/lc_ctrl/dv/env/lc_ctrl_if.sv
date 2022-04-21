@@ -4,26 +4,6 @@
 //
 // interface for input data from OTP
 
-`ifndef LC_CTRL_FSM_STATE_REGS_PATH
-`define LC_CTRL_FSM_STATE_REGS_PATH \
-    tb.dut.u_lc_ctrl_fsm.u_fsm_state_regs.u_state_flop.gen_generic.u_impl_generic.q_o
-`endif
-
-`ifndef LC_CTRL_KMAC_FSM_STATE_REGS_PATH
-`define LC_CTRL_KMAC_FSM_STATE_REGS_PATH \
-    tb.dut.u_lc_ctrl_kmac_if.u_state_regs.u_state_flop.gen_generic.u_impl_generic.q_o
-`endif
-
-`ifndef LC_CTRL_STATE_PATH
-`define LC_CTRL_STATE_PATH \
-    tb.dut.otp_lc_data_i.state
-`endif
-
-`ifndef LC_CTRL_COUNT_PATH
-`define LC_CTRL_COUNT_PATH \
-    tb.dut.otp_lc_data_i.count
-`endif
-
 `ifndef LC_CTRL_FSM_PATH
 `define LC_CTRL_FSM_PATH tb.dut.u_lc_ctrl_fsm
 `endif
@@ -139,8 +119,6 @@ interface lc_ctrl_if (
       end
     join_none
 
-    release `LC_CTRL_FSM_STATE_REGS_PATH;
-
   endtask
 
   task automatic set_clk_byp_ack(lc_tx_t val);
@@ -155,96 +133,6 @@ interface lc_ctrl_if (
     otp_device_id_i = 0;
     otp_manuf_state_i = 0;
     otp_vendor_test_status_i = 0;
-  endfunction
-
-  //
-  // The functions below must be static because of the force statement
-  //
-
-  // Force lc_ctrl_fsm state registers
-  function static void lc_fsm_state_backdoor_write(input logic [FsmStateWidth-1:0] val = 'hdead,
-                                                   input int delay_clocks = 0,
-                                                   input int force_clocks = 5);
-    `dv_info($sformatf("Backdoor write to state registers"))
-    fork
-      begin : force_state_proc
-        repeat (delay_clocks) @(posedge clk);
-        ->lc_fsm_state_backdoor_write_ev;
-        force `LC_CTRL_FSM_STATE_REGS_PATH = val;
-        repeat (force_clocks) @(posedge clk);
-        release `LC_CTRL_FSM_STATE_REGS_PATH;
-      end : force_state_proc
-    join_none
-  endfunction
-
-  // Read lc_ctrl_fsm state registers
-  function automatic logic [FsmStateWidth-1:0] lc_fsm_state_backdoor_read();
-    ->lc_fsm_state_backdoor_read_ev;
-    return `LC_CTRL_FSM_STATE_REGS_PATH;
-  endfunction
-
-  // Force kmac i/f fsm state registers
-  function static void kmac_fsm_state_backdoor_write(
-      input logic [lc_ctrl_env_pkg::KMAC_FSM_WIDTH-1:0] val = 'hde, input int delay_clocks = 0,
-      input int force_clocks = 5);
-    `dv_info($sformatf("Backdoor write to kmac i/f state registers = %h", val))
-    fork
-      begin : force_state_proc
-        repeat (delay_clocks) @(posedge clk);
-        ->kmac_fsm_state_backdoor_write_ev;
-        force `LC_CTRL_FSM_STATE_REGS_PATH = val;
-        repeat (force_clocks) @(posedge clk);
-        release `LC_CTRL_FSM_STATE_REGS_PATH;
-      end : force_state_proc
-    join_none
-  endfunction
-
-  // Read  kmac i/f fsm state registers
-  function automatic logic [lc_ctrl_env_pkg::KMAC_FSM_WIDTH-1:0] kmac_fsm_state_backdoor_read();
-    ->kmac_fsm_state_backdoor_read_ev;
-    return `LC_CTRL_FSM_STATE_REGS_PATH;
-  endfunction
-
-  // Force OTP state input
-  function static void state_backdoor_write(input logic [LcStateWidth-1:0] val = 'hdead,
-                                            input int delay_clocks = 0, input int force_clocks = 5);
-    `dv_info($sformatf("Backdoor write to OTP state input = %h", val))
-    fork
-      begin : force_state_proc
-        repeat (delay_clocks) @(posedge clk);
-        ->state_backdoor_write_ev;
-        force `LC_CTRL_STATE_PATH = val;
-        repeat (force_clocks) @(posedge clk);
-        release `LC_CTRL_STATE_PATH;
-      end : force_state_proc
-    join_none
-  endfunction
-
-  // Read OTP state input
-  function automatic logic [LcStateWidth-1:0] state_backdoor_read();
-    ->state_backdoor_read_ev;
-    return `LC_CTRL_STATE_PATH;
-  endfunction
-
-  // Force OTP count input
-  function static void count_backdoor_write(input logic [LcCountWidth-1:0] val = 'hdead,
-                                            input int delay_clocks = 0, input int force_clocks = 5);
-    `dv_info($sformatf("Backdoor write to OTP count input = %h", val))
-    fork
-      begin : force_count_proc
-        repeat (delay_clocks) @(posedge clk);
-        ->count_backdoor_write_ev;
-        force `LC_CTRL_COUNT_PATH = val;
-        repeat (force_clocks) @(posedge clk);
-        release `LC_CTRL_COUNT_PATH;
-      end : force_count_proc
-    join_none
-  endfunction
-
-  // Read OTP count input
-  function automatic logic [LcCountWidth-1:0] count_backdoor_read();
-    ->count_backdoor_read_ev;
-    return `LC_CTRL_COUNT_PATH;
   endfunction
 
   function automatic void set_test_sequence_typename(string name);
@@ -293,6 +181,4 @@ interface lc_ctrl_if (
 
 endinterface
 
-`undef LC_CTRL_FSM_STATE_REGS_PATH
-`undef LC_CTRL_COUNT_PATH
 `undef LC_CTRL_FSM_PATH
