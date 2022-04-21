@@ -18,6 +18,11 @@
 -module pins_if     // DV construct.
 -module clk_rst_if  // DV construct.
 
+-assert legalAOpcodeErr_A
+-assert sizeGTEMaskErr_A
+-assert sizeMatchesMaskErr_A
+-assert addrSizeAlignedErr_A
+
 // due to VCS issue (fixed at VCS/2020.12), can't move this part into begin...end (tgl) or after.
 -node tb.dut tl_*.a_param
 -node tb.dut tl_*.d_param
