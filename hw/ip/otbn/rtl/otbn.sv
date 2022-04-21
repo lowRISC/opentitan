@@ -94,7 +94,7 @@ module otbn
 
   logic start_d, start_q;
   logic busy_execute_d, busy_execute_q;
-  logic done, done_core, locking;
+  logic done, done_core, locking, locking_q;
   logic illegal_bus_access_d, illegal_bus_access_q;
   logic missed_gnt_error_d, missed_gnt_error_q;
   logic dmem_sec_wipe;
@@ -223,7 +223,8 @@ module otbn
   logic [ImemIndexWidth-1:0] imem_index_bus;
   logic [38:0] imem_wdata_bus;
   logic [38:0] imem_wmask_bus;
-  logic [38:0] imem_rdata_bus;
+  logic [38:0] imem_rdata_bus, imem_rdata_bus_raw;
+  logic imem_rdata_bus_en_q, imem_rdata_bus_en_d;
   logic [top_pkg::TL_DBW-1:0] imem_byte_mask_bus;
   logic imem_rvalid_bus;
   logic [1:0] imem_rerror_bus;
@@ -388,10 +389,43 @@ module otbn
   assign imem_wmask = imem_access_core ? '1 : imem_wmask_bus;
   `ASSERT(ImemWmaskBusIsFullWord_A, imem_req_bus && imem_write_bus |-> imem_wmask_bus == '1)
 
-  // Explicitly tie off bus interface during core operation to avoid leaking
-  // the currently executed instruction from IMEM through the bus
-  // unintentionally.
-  assign imem_rdata_bus = !imem_access_core && !illegal_bus_access_q ? imem_rdata : 39'b0;
+  // Blank bus read data interface during core operation to avoid leaking the currently executed
+  // instruction from IMEM through the bus unintentionally. Also blank when OTBN is returning
+  // a dummy response (responding to an illegal bus access) and when OTBN is locked.
+  assign imem_rdata_bus_en_d = ~(busy_execute_d | start_d) & ~imem_dummy_response_d & ~locking;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+        imem_rdata_bus_en_q <= 1'b1;
+    end else begin
+        imem_rdata_bus_en_q <= imem_rdata_bus_en_d;
+    end
+  end
+
+  prim_blanker #(.Width(39)) u_imem_rdata_bus_blanker (
+    .in_i (imem_rdata),
+    .en_i (imem_rdata_bus_en_q),
+    .out_o(imem_rdata_bus_raw)
+  );
+
+  // When OTBN is locked all imem bus reads should return 0. The blanker produces the 0s, this adds
+  // the appropriate ECC. When OTBN is not locked the output of the blanker is passed straight
+  // through. Data bits are always left un-modified. A registered version of `locking` is used for
+  // timing reasons. When a read comes in when `locking` has just been asserted, `locking_q` will be
+  // set the following cycle and the rdata will be forced to 0 with appropriate ECC. When `locking`
+  // is asserted the cycle the rdata is being returned no locking was ocurring when the request came
+  // in so it is reasonable to proceed with returning the supplied integrity.
+  assign imem_rdata_bus =
+    {locking_q ? prim_secded_pkg::SecdedInv3932ZeroEcc : imem_rdata_bus_raw[38:32],
+     imem_rdata_bus_raw[31:0]};
+
+  `ASSERT(ImemRDataBusDisabledWhenCoreAccess_A, imem_access_core |-> !imem_rdata_bus_en_q)
+  `ASSERT(ImemRDataBusEnabledWhenNoCoreAccess_A,
+    !imem_access_core && ~locking && !imem_dummy_response_q |-> imem_rdata_bus_en_q)
+  `ASSERT(ImemRDataBusDisabledWhenLocked_A, locking |=> !imem_rdata_bus_en_q)
+  `ASSERT(ImemRDataBusReadAsZeroWhenLocked_A,
+    imem_rvalid_bus & locking |-> imem_rdata_bus_raw == '0)
+
   assign imem_rdata_core = imem_rdata;
 
   // When an illegal bus access is seen, always return a dummy response the follow cycle.
@@ -441,7 +475,8 @@ module otbn
   logic [DmemIndexWidth-2:0] dmem_index_bus;
   logic [ExtWLEN-1:0] dmem_wdata_bus;
   logic [ExtWLEN-1:0] dmem_wmask_bus;
-  logic [ExtWLEN-1:0] dmem_rdata_bus;
+  logic [ExtWLEN-1:0] dmem_rdata_bus, dmem_rdata_bus_raw;
+  logic dmem_rdata_bus_en_q, dmem_rdata_bus_en_d;
   logic [DmemAddrWidth-1:0] dmem_addr_bus;
   logic unused_dmem_addr_bus;
   logic [31:0] dmem_wdata_narrow_bus;
@@ -576,10 +611,47 @@ module otbn
     end
   end
 
-  // Explicitly tie off bus interface during core operation to avoid leaking
-  // DMEM data through the bus unintentionally. Once an illegal bus access is seen always return
-  // 0 data.
-  assign dmem_rdata_bus  = !dmem_access_core && !illegal_bus_access_q ? dmem_rdata : '0;
+  // Blank bus read data interface during core operation to avoid leaking DMEM data through the bus
+  // unintentionally. Also blank when OTBN is returning a dummy response (responding to an illegal
+  // bus access) and when OTBN is locked.
+
+  assign dmem_rdata_bus_en_d = ~(busy_execute_d | start_d) & ~imem_dummy_response_d & ~locking;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+        dmem_rdata_bus_en_q <= 1'b1;
+    end else begin
+        dmem_rdata_bus_en_q <= dmem_rdata_bus_en_d;
+    end
+  end
+
+  prim_blanker #(.Width(ExtWLEN)) u_dmem_rdata_bus_blanker (
+    .in_i (dmem_rdata),
+    .en_i (dmem_rdata_bus_en_q),
+    .out_o(dmem_rdata_bus_raw)
+  );
+
+  // When OTBN is locked all dmem bus reads should return 0. The blanker produces the 0s, this adds
+  // the appropriate ECC. When OTBN is not locked the output of the blanker is passed straight
+  // through. Data bits are always left un-modified. A registered version of `locking` is used for
+  // timing reasons. When a read comes in when `locking` has just been asserted, `locking_q` will be
+  // timing reasons. When a read comes in when `locking` has just been asserted, `locking_q` will be
+  // set the following cycle and the rdata will be forced to 0 with appropriate ECC. When `locking`
+  // is asserted the cycle the rdata is being returned no locking was ocurring when the request came
+  // in so it is reasonable to proceed with returning the supplied integrity.
+  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; ++i_word) begin : g_dmem_rdata_bus
+    assign dmem_rdata_bus[i_word*39+:39] =
+      {locking_q ? prim_secded_pkg::SecdedInv3932ZeroEcc : dmem_rdata_bus_raw[i_word*39+32+:7],
+       dmem_rdata_bus_raw[i_word*39+:32]};
+  end
+
+  `ASSERT(DmemRDataBusDisabledWhenCoreAccess_A, dmem_access_core |-> !dmem_rdata_bus_en_q)
+  `ASSERT(DmemRDataBusEnabledWhenNoCoreAccess_A,
+    !dmem_access_core && ~locking && !dmem_dummy_response_q |-> dmem_rdata_bus_en_q)
+  `ASSERT(DmemRDataBusDisabledWhenLocked_A, locking |=> !dmem_rdata_bus_en_q)
+  `ASSERT(DmemRDataBusReadAsZeroWhenLocked_A,
+    dmem_rvalid_bus & locking |-> dmem_rdata_bus_raw == '0)
+
   assign dmem_rdata_core = dmem_rdata;
 
   // When an illegal bus access is seen, always return a dummy response the follow cycle.
@@ -1007,6 +1079,14 @@ module otbn
     .sideload_key_shares_i       (keymgr_key_i.key),
     .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}})
   );
+
+  always @(posedge clk_i or negedge rst_n) begin
+    if (!rst_n) begin
+      locking_q <= 1'b0;
+    end else begin
+      locking_q <= locking;
+    end
+  end
 
   // Collect up the error bits that don't come from the core itself and latch them so that they'll
   // be available when an operation finishes.
