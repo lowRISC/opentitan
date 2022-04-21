@@ -205,9 +205,6 @@ The entirety of this flow is controlled by the Makefile found at
    # Generate the assembly tests only
    make gen
 
-   # Pass addtional options to the generator
-   make GEN_OPTS="xxxx"  ...
-
    # Compile and run RTL simulation
    make TEST=xxx compile,rtl_sim
 

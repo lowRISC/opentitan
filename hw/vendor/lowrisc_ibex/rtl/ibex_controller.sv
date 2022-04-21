@@ -319,14 +319,14 @@ module ibex_controller #(
       load_intg_err_irq_clear     = 1'b0;
 
       if (load_intg_err_irq_pending_q) begin
-        // Clear ECC error interrupt when it is handled. External NMI takes a higher priority so don't
-        // clear the ECC error interrupt if an external NMI is present.
+        // Clear ECC error interrupt when it is handled. External NMI takes a higher priority so
+        // don't clear the ECC error interrupt if an external NMI is present.
         if (entering_nmi & !irq_nm_ext_i) begin
           load_intg_err_irq_clear = 1'b1;
         end
       end else if (load_intg_err_i) begin
-        // When an ECC error is seen set the ECC error interrupt and capture the address that saw the
-        // error. If there is already an ecc error IRQ pending ignore any ECC errors coming in.
+        // When an ECC error is seen set the ECC error interrupt and capture the address that saw
+        // the error. If there is already an ecc error IRQ pending ignore any ECC errors coming in.
         load_intg_err_addr_d        = lsu_addr_last_i;
         load_intg_err_irq_set       = 1'b1;
       end
