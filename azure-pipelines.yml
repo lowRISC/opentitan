@@ -103,7 +103,7 @@ jobs:
     vmImage: ubuntu-18.04
   steps:
   - template: ci/install-package-dependencies.yml
-  - bash: bazel run buildifier_check
+  - bash: ci/bazelisk.sh run buildifier_check
     displayName: Use buildifier to check Bazel coding style
   - bash: ci/scripts/check-vendoring.sh
     displayName: Check vendored directories are up-to-date
@@ -597,6 +597,12 @@ jobs:
     - bash: echo "##vso[task.setvariable variable=bazelCacheGcpKeyPath]$(bazelCacheGcpKey.secureFilePath)"
       condition: eq(variables['Build.SourceBranchName'], 'master')
       displayName: Set the remote cache GCP key path
-    - bash: ci/scripts/quick-bazel.sh $(bazelCacheGcpKeyPath)
-      # The default timeout is too short to build verilator so let's skip it for the first pass
-      displayName: "Build and Test Software with Bazel (except //hw:verilator)"
+    - bash: |
+        # This command builds all software and runs all unit tests that run on
+        # the host.
+        export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
+        ci/bazelisk.sh test \
+            --build_tests_only=false \
+            --test_tag_filters=-broken,-cw310,-verilator,-dv \
+            //sw/...
+      displayName: "Build and Unit Test Software with Bazel"

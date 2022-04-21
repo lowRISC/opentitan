@@ -1,0 +1,23 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# These options disable the Bazel progress UI, resulting in output closer
+# to ninja and similar tools.
+common --color=no --curses=yes
+
+# These options ensure that Bazel prints *everything* it is doing as aggressively
+# as possible, but only updating once every second.
+build --show_timestamps 
+build --show_progress_rate_limit=1
+
+# If something goes wrong, show the whole command line for it.
+build --verbose_failures
+
+# If one action fails, keep going, so that CI runs show as much actionable information
+# as possible.
+build --keep_going
+
+# Use the remote Bazel cache for CI.
+build --remote_cache=https://storage.googleapis.com/opentitan-bazel-cache
+build --remote_timeout=600
