@@ -6,6 +6,9 @@
 # This is a wrapper script for `bazelisk` that downloads and executes bazelisk.
 # Bazelisk is a wrapper for `bazel` that can download and execute the project's
 # required bazel version.
+# 
+# CI jobs should use ci/bazelisk.sh instead, which performs CI-friendly additional
+# setup.
 
 set -euo pipefail
 
