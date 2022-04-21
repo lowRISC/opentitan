@@ -317,7 +317,17 @@ class flash_ctrl_host_ctrl_arb_vseq extends flash_ctrl_base_vseq;
             flash_ctrl_read(flash_op.num_words, flash_op_data, poll_fifo_status);
             wait_flash_op_done();
             `uvm_info(`gfn, $sformatf("Read Data : %0p", flash_op_data), UVM_LOW)
-            cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
+            // if on the last operation before rma, only check that half the words
+            // are correct. This is because upon read completion, the hardware
+            // immediately transitions into RMA and clears the read fifos.
+            // Thus, even if the read completed correctly, the data likely cannot
+            // be read out in time.
+            if (op_cnt == apply_rma) begin
+              flash_op.num_words = flash_op.num_words / 2;
+              cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
+            end else begin
+              cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
+            end
           end else begin  // Expect Fail
             expect_flash_op_fail();
           end
