@@ -57,7 +57,9 @@ module flash_phy_core
   output logic                       prog_intg_err_o,
   output logic                       relbl_ecc_err_o,
   output logic                       intg_ecc_err_o,
-  output logic                       spurious_ack_o
+  output logic                       spurious_ack_o,
+  output logic                       arb_err_o,
+  output logic                       host_gnt_err_o
 );
 
 
@@ -207,6 +209,29 @@ module flash_phy_core
   end
   `ASSERT(RdTxnCheck_A, host_outstanding <= RspOrderDepth)
 
+  // a host transaction granted in the previous cycle
+  logic host_gnt_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      host_gnt_q <= '0;
+    end else begin
+      host_gnt_q <= host_gnt;
+    end
+  end
+
+  // SEC_CM: PHY_HOST_GRANT.CTRL.CONSISTENCY
+  // two error conditions
+  // 1. a host transaction was granted to the muxed partition, this is illegal
+  // 2. a host transaction was granted last cycle but somehow controller
+  //    operations have been kicked off, this is illegal
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      host_gnt_err_o <= '0;
+    end else if ((host_gnt && muxed_part != flash_ctrl_pkg::FlashPartData) ||
+                 (host_gnt_q && !ctrl_fsm_idle)) begin
+      host_gnt_err_o <= 1'b1;
+    end
+  end
 
   // controller request can only win after the entire read pipeline
   // clears
@@ -214,10 +239,11 @@ module flash_phy_core
   assign ctrl_req = req_i & rd_stage_idle & ~host_req &
                     mubi4_test_false_strict(flash_disable[CtrlDisableIdx]);
 
+  // SEC_CM: PHY_ARBITER.CTRL.REDUN
   logic phy_req;
-  prim_arbiter_tree #(
+  prim_arbiter_tree_dup #(
     .N(2),
-    .DW(1),
+    .DW(2),
     .EnDataPort('0)
   ) u_host_arb (
     .clk_i,
@@ -229,7 +255,8 @@ module flash_phy_core
     .idx_o(),
     .valid_o(phy_req),
     .data_o(),
-    .ready_i(rd_stage_rdy)
+    .ready_i(rd_stage_rdy),
+    .err_o(arb_err_o)
   );
 
   // if request happens at the same time as a host grant, increment count
@@ -286,10 +313,12 @@ module flash_phy_core
       end
 
       StDisable: begin
+        ctrl_fsm_idle = 1'b1;
         state_d = StDisable;
       end
 
       StInvalid: begin
+        ctrl_fsm_idle = 1'b1;
         state_d = StInvalid;
         fsm_err = 1'b1;
       end
@@ -302,6 +331,7 @@ module flash_phy_core
   end // always_comb
 
   // determine spurious acks
+  // SEC_CM: PHY_ACK.CTRL.CONSISTENCY
   assign spurious_ack_o = (ctrl_fsm_idle & ctrl_rsp_vld) |
                           ((host_outstanding == '0) & host_req_done_o);
 
