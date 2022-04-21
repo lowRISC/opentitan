@@ -149,7 +149,6 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
     ack_pwrdn_d    = ack_pwrdn_q;
     fsm_invalid_d  = fsm_invalid_q;
 
-    mon_main_pok   = '0;
     set_main_pok   = '0;
 
     clk_active     = '0;
@@ -162,9 +161,6 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       end
 
       SlowPwrStateLowPower: begin
-        // if main power was not turned off, monitor power for stability
-        mon_main_pok = main_pd_ni;
-
         // reset request behaves identically to a wakeup, other than the power-up cause being
         // different
         if (wakeup_i || reset_req_i) begin
@@ -213,7 +209,6 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
         // ack_pwrup_i should be 0 here to indicate
         // the ack from the previous round has definitively completed
         clk_active = 1'b1;
-        mon_main_pok = 1'b1;
 
         if (req_pwrdn_i && !ack_pwrup_i) begin
           state_d = SlowPwrStateAckPwrDn;
@@ -289,6 +284,16 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
     end
   end
 
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      mon_main_pok <= '0;
+    end else if (!pd_nd && mon_main_pok) begin
+      mon_main_pok <= 1'b0;       
+    end else if (set_main_pok) begin
+      mon_main_pok <= 1'b1;
+    end
+  end
+   
   // power stability reset request
   // If the main power becomes unstable for whatever reason,
   // request reset
