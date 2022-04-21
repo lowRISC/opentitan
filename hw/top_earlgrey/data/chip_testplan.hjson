@@ -1428,6 +1428,8 @@
             - After some time, set the SYSRST ctrl inputs at the chip IOs to the programmed
               combination for the duration of the detection timer.
             - The pwrmgr will power cycle the chip once it receives the GSC reset input.
+            - Check that ec_rst_l and flash_wp_l (on pads IOR8 and IOR9) are asserted right after
+              the pwrmgr has power cycled the system.
             - Read the reset cause register after boot up to confirm peripheral reset phase.
             - Read the pwrmgr reset status register to confirm GSC reset.
             - Read the com_sel_ctl_* CSR in SYSRST ctrl we programmed earlier - it should have been
