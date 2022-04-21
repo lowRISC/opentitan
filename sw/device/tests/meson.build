@@ -724,6 +724,26 @@ sw_tests += {
   }
 }
 
+flash_ctrl_clock_freqs_test_lib = declare_dependency(
+  link_with: static_library(
+    'flash_ctrl_clock_freqs_test_lib',
+    sources: ['flash_ctrl_clock_freqs_test.c'],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_dif_clkmgr,
+      sw_lib_dif_flash_ctrl,
+      sw_lib_testing_flash_ctrl_testutils,
+      sw_lib_testing_rand_testutils,
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+sw_tests += {
+  'flash_ctrl_clock_freqs_test': {
+    'library': flash_ctrl_clock_freqs_test_lib,
+  }
+}
+
 # KMAC Tests
 kmac_mode_kmac_test_lib = declare_dependency(
   link_with: static_library(

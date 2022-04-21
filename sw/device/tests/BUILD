@@ -398,6 +398,21 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "flash_ctrl_clock_freqs_test",
+    srcs = ["flash_ctrl_clock_freqs_test.c"],
+    deps = [
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:clkmgr",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:rand_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "flash_ctrl_test",
     srcs = ["flash_ctrl_test.c"],
     deps = [

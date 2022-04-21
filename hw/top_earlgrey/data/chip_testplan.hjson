@@ -2476,13 +2476,12 @@
       name: chip_sw_flash_ctrl_clock_freqs
       desc: '''Verify flash program and erase operations over the ctrl over a range of clock freqs.
 
-            - The range of clock freqs to test is TBD.
-            - Reuse chip_flash_ctrl_ops to also enable jitter on the clock as well as run with
-              randomized clock frequencies.
+            - Enable jitter on the clock while performing erase, write and read operations
+              to the flash.
             - This sets the test for closed source where the flash access timing matters.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_flash_ctrl_clock_freqs"]
     }
     {
       name: chip_conn_flash_lc_nvm_debug_en
