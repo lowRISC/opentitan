@@ -1,7 +1,7 @@
 // Copyright lowRISC contributors.
-// Copyright Luke Valenty (TinyFPGA project)
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+// Copyright Luke Valenty (TinyFPGA project, https://github.com/tinyfpga/TinyFPGA-Bootloader).
 
 // USB Full Speed Non-Buffered Protocol Engine
 //
