@@ -167,7 +167,9 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
       status = dout[0 +: DMI_OPW];
 
       // The DmiInProgress status is sticky and has to be cleared by dmireset via DTMCS.
-      if (status == DmiInProgress) begin
+      // Accessing the reserved value means there is also something wrong with the JTAG sequence,
+      // potentially IR request, so also need to reset.
+      if (status inside {DmiInProgress, DmiReserved}) begin
         if (!cfg.in_reset) send_riscv_ir_req(JtagDtmCsr);
         if (!cfg.in_reset) send_dtmcs_dr_req(DmiReset);
         if (!cfg.in_reset) send_riscv_ir_req(JtagDmiAccess);

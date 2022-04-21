@@ -15,7 +15,7 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
   rand bit [7:0] lc_unlock_token[TokenWidthByte];
 
   constraint num_trans_c {
-    num_trans inside {[2:3]};
+    num_trans inside {[1:2]};
   }
 
   // Reassign `select_jtag` variable to drive LC JTAG tap at start,
@@ -128,8 +128,9 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
     end
   endtask
 
-  virtual task wait_lc_status(lc_ctrl_status_e expect_status);
-    while(1) begin
+  virtual task wait_lc_status(lc_ctrl_status_e expect_status, int max_attemp = 5000);
+    int i;
+    for (i = 0; i < max_attemp; i++) begin
       bit [TL_DW-1:0]  status_val;
       lc_ctrl_status_e dummy;
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));
@@ -144,6 +145,10 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
         `uvm_info(`gfn, $sformatf("LC status %0s.", expect_status.name), UVM_LOW)
         break;
       end
+    end
+
+    if (i > max_attemp) begin
+      `uvm_fatal(`gfn, $sformatf("max attempt reached to get lc status %0s!", expect_status.name))
     end
   endtask
 
