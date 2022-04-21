@@ -357,4 +357,3 @@ sw_tests += {
     'library': sram_ctrl_main_scrambled_access_test_lib,
   }
 }
-
