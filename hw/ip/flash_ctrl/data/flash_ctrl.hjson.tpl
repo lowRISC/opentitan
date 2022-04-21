@@ -319,6 +319,24 @@
         as well as word count, page count and wipe index in RMA entry phase.
       '''
     }
+    { name: "PHY_ARBITER.CTRL.REDUN",
+      desc: '''
+        The phy arbiter for controller and host is redundant.
+        The arbiter has two instance underneath that are constantly compared to each other.
+      '''
+    }
+    { name: "PHY_HOST_GRANT.CTRL.CONSISTENCY",
+      desc: '''
+        The host grant is consistency checked.
+        If the host is ever granted with info partition access, it is an error.
+        If the host is ever granted at the same time as a program/erase operation, it is an error.
+      '''
+    }
+    { name: "PHY_ACK.CTRL.CONSISTENCY",
+      desc: '''
+        If the host or controller ever receive an unexpeced transaction acknowledge, it is an error.
+      '''
+    }
   ]
 
   scan: "true",       // Enable `scanmode_i` port
@@ -1365,6 +1383,18 @@
             name: "spurious_ack",
             desc: '''
               The flash emitted an unexpected acknowledgement.
+            '''
+          },
+          { bits: "11",
+            name: "arb_err",
+            desc: '''
+              The phy arbiter encountered inconsistent results.
+            '''
+          },
+          { bits: "12",
+            name: "host_gnt_err",
+            desc: '''
+              A host transaction was granted with illegal properties.
             '''
           },
         ]
