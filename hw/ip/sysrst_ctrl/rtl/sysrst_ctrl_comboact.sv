@@ -61,7 +61,6 @@ module sysrst_ctrl_comboact
   logic ec_rst_l_q, ec_rst_l_d;
   assign ec_rst_l_o = ec_rst_l_q;
   assign ec_rst_l_d = (combo_ec_rst_pulse ||
-                       combo_gsc_pulse    ||
                        ec_rst_l_det_pulse) ? 1'b0 :
                       (timer_expired)      ? 1'b1 : ec_rst_l_q;
 
