@@ -97,9 +97,13 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
 
   // ensure that clock controls are constantly re-evaluated and not just
   // in one specific state
-  assign core_clk_en_d = ~fsm_invalid_q & (clk_active | core_clk_en);
-  assign io_clk_en_d   = ~fsm_invalid_q & (clk_active | io_clk_en);
-  assign usb_clk_en_d  = ~fsm_invalid_q & (clk_active ? usb_clk_en_active_i : usb_clk_en_lp);
+  // When fsm is invalid, force the clocks to be on such that the fast fsm
+  // can forcibly reset the system.
+  // In the event the clocks cannot be turned on even when forced, the fsm
+  // invalid signal forces power to turn off.
+  assign core_clk_en_d = fsm_invalid_q | (clk_active | core_clk_en);
+  assign io_clk_en_d   = fsm_invalid_q | (clk_active | io_clk_en);
+  assign usb_clk_en_d  = fsm_invalid_q | (clk_active ? usb_clk_en_active_i : usb_clk_en_lp);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
