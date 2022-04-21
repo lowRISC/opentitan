@@ -1612,6 +1612,7 @@ module ibex_core import ibex_pkg::*; #(
   // FCOV //
   //////////
 
+`ifndef SYNTHESIS
   // fcov signals for CSR access. These are complicated by illegal accesses. Where an access is
   // legal `csr_op_en` signals the operation occurring, but this is deasserted where an access is
   // illegal. Instead `illegal_insn_id` confirms the instruction is taking an illegal instruction
@@ -1665,4 +1666,6 @@ module ibex_core import ibex_pkg::*; #(
       end
     end
   end
+`endif
+
 endmodule

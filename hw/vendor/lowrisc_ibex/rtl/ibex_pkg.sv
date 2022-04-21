@@ -648,6 +648,6 @@ package ibex_pkg;
   // for Off. This allows the use of FetchEnableOn/FetchEnableOff to work for both secure and
   // non-secure Ibex. If this assumption is broken the RTL that uses the fetch_enable signal within
   // `ibex_core` may need adjusting.
-  parameter fetch_enable_t FetchEnableOn  = 4'b1001;
-  parameter fetch_enable_t FetchEnableOff = 4'b0110;
+  parameter fetch_enable_t FetchEnableOn  = 4'b0101;
+  parameter fetch_enable_t FetchEnableOff = 4'b1010;
 endpackage

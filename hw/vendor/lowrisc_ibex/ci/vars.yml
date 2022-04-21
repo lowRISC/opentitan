@@ -11,6 +11,6 @@ variables:
   RISCV_TOOLCHAIN_TAR_VERSION: "20220210-1"
   RISCV_TOOLCHAIN_TAR_VARIANT: "lowrisc-toolchain-gcc-rv32imcb"
   RISCV_COMPLIANCE_GIT_VERSION: "844c6660ef3f0d9b96957991109dfd80cc4938e2"
-  VERIBLE_VERSION: "v0.0-1213-g9e5c085"
+  VERIBLE_VERSION: "v0.0-2135-gb534c1fe"
   # lowRISC-internal version numbers of Ibex-specific Spike builds.
   SPIKE_IBEX_VERSION: "20220308-git-20a886cba76dd80a23b548743ab3c73b19f65e41"
