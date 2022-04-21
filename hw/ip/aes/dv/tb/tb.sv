@@ -23,6 +23,7 @@ module tb;
   lc_ctrl_pkg::lc_tx_t                    lc_escalate_en;
   keymgr_pkg::hw_key_req_t                keymgr_key;
 
+
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   rst_shadowed_if rst_shadowed_if(.rst_n(rst_n), .rst_shadowed_n(rst_shadowed_n));
@@ -44,6 +45,7 @@ module tb;
                           lc_ctrl_pkg::Off;
 
   assign idle = (idle_s == prim_mubi_pkg::MuBi4True) ? 1 : 0;
+
   // dut
   aes #(
     .SecMasking  ( `EN_MASKING   ),

@@ -10,11 +10,14 @@ filesets:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
       - lowrisc:ip:aes
+      - lowrisc:dv:aes_env
     files:
       - aes_bind.sv
       - aes_idle_check.sv
       - aes_reseed_if.sv
       - aes_masking_reseed_if.sv
+      - signal_force.sv
+      - force_if.sv
     file_type: systemVerilogSource
 
   files_formal:

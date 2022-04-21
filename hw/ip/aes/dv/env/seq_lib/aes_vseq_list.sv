@@ -11,3 +11,4 @@
 `include "aes_deinit_vseq.sv"
 `include "aes_manual_config_err_vseq.sv"
 `include "aes_reseed_vseq.sv"
+`include "aes_fi_vseq.sv"
