@@ -39,6 +39,7 @@ package jtag_riscv_agent_pkg;
 
   typedef enum logic [DMI_OPW-1:0] {
     DmiNoErr      = 'h0,
+    DmiReserved   = 'h1,
     DmiFail       = 'h2,
     DmiInProgress = 'h3
   } jtag_op_status_e;
