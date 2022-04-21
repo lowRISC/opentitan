@@ -12,6 +12,12 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   virtual pins_if #(1) idle_vif;
   virtual aes_reseed_if aes_reseed_vif;
   virtual aes_masking_reseed_if aes_masking_reseed_vif;
+  virtual force_if#(.Signal("aes_ctrl_cs"),
+                    .SignalWidth(aes_env_pkg::StateWidth)
+                   ) aes_fi_vif[Sp2VWidth];
+  virtual force_if#(.Signal("aes_cipher_ctrl_cs"),
+                    .SignalWidth(aes_env_pkg::StateWidth)
+                   ) aes_cipher_fi_vif[Sp2VWidth];
 
   rand key_sideload_agent_cfg keymgr_sideload_agent_cfg;
   // test environment constraints //
@@ -85,7 +91,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   // min and max wait (clk) before an error injection
   // this is only for injection and random reset
   int                inj_min_delay              = 10;
-  int                inj_max_delay              = 500;
+  int                inj_max_delay              = 1000;
   rand int           inj_delay;
 
   rand flip_rst_lc_esc_e    flip_rst_lc_esc;
@@ -221,6 +227,22 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
       if (!uvm_config_db#(virtual aes_masking_reseed_if)::get(null, "*.env" ,
           "aes_masking_reseed_vif", aes_masking_reseed_vif)) begin
         `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO AES MASKING RESEED IF"))
+      end
+    end
+    foreach (aes_fi_vif[nn]) begin
+      if (!uvm_config_db#(virtual force_if#(.Signal("aes_ctrl_cs"),
+                                            .SignalWidth(aes_env_pkg::StateWidth))
+                                           )::get(null, "*.env", $sformatf("aes_fi_vif_%0d", nn),
+                                                  aes_fi_vif[nn])) begin
+        `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO FALT INJECT INTERFACE %d",nn))
+      end
+    end
+    foreach (aes_cipher_fi_vif[nn]) begin
+      if (!uvm_config_db#(virtual force_if#(.Signal("aes_cipher_ctrl_cs"),
+                                            .SignalWidth(aes_env_pkg::StateWidth))
+                                           )::get(null, "*.env",
+                           $sformatf("aes_cipher_fi_vif_%0d",  nn), aes_cipher_fi_vif[nn])) begin
+        `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO CIPHER FALT INJECT INTERFACE %d",nn))
       end
     end
   endfunction

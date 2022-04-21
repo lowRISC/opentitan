@@ -32,12 +32,15 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/shadow_reg_errors_tests.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"]
+                "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson"]
                 // TODO: enable stress tests later.
                 // "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
 
   // Add additional tops for simulation.
-  sim_tops: [ "aes_bind", "aes_cov_bind"]
+  sim_tops: [ "aes_bind",
+              "aes_cov_bind",
+              "sec_cm_prim_sparse_fsm_flop_bind"]
 
   // TODO remove v2s refine for v2s
   xcelium_cov_refine_files: ["{proj_root}/hw/ip/aes/dv/cov/refines/aes_remove_for_v2s.vRefine"]
@@ -153,6 +156,11 @@
       name: aes_reseed
       uvm_test: aes_reseed_test
       uvm_test_seq: aes_reseed_vseq
+    }
+    {
+      name: aes_fi
+      uvm_test: aes_alert_reset_test
+      uvm_test_seq: aes_fi_vseq
     }
   ]
 
