@@ -965,7 +965,7 @@
             test restarts and the POR bit is not set.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_pwrmgr_sleep_power_glitch_reset"]
     }
     {
       name: chip_sw_pwrmgr_b2b_sleep_reset_req

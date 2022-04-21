@@ -148,6 +148,20 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "pwrmgr_sleep_power_glitch_test",
+    srcs = ["pwrmgr_sleep_power_glitch_test.c"],
+    targets = ["dv"],
+    deps = [
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+    ],
+)
+
+opentitan_functest(
     name = "pwrmgr_usbdev_smoketest",
     srcs = ["pwrmgr_usbdev_smoketest.c"],
     targets = ["dv"],

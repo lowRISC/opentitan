@@ -447,6 +447,12 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_pwrmgr_sleep_power_glitch_reset
+      uvm_test_seq: chip_sw_main_power_glitch_vseq
+      sw_images: ["sw/device/tests/pwrmgr_sleep_power_glitch_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_pwrmgr_sleep_disabled
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/pwrmgr_sleep_disabled_test:1"]
