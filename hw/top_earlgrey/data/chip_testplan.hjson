@@ -969,6 +969,28 @@
       tests: ["chip_sw_pwrmgr_main_power_glitch_reset"]
     }
     {
+      name: chip_sw_pwrmgr_deep_sleep_power_glitch_reset
+      desc: '''Verify the effect of a glitch in main power rail in deep sleep.
+
+            The vcmain_supp_i AST input is forced to drop after putting the chip in deep sleep. This
+            triggers a MainPwr reset request, which is checked reading the reset_info CSR when the
+            test restarts and the POR bit is not set.
+            '''
+      milestone: V2
+      tests: ["chip_sw_pwrmgr_deep_sleep_power_glitch_reset"]
+    }
+    {
+      name: chip_sw_pwrmgr_sleep_power_glitch_reset
+      desc: '''Verify the effect of a glitch in main power rail in shallow sleep.
+
+            The vcmain_supp_i AST input is forced to drop after putting the chip in shallow sleep. This
+            triggers a MainPwr reset request, which is checked reading the reset_info CSR when the
+            test restarts and the POR bit is not set.
+            '''
+      milestone: V2
+      tests: ["chip_sw_pwrmgr_sleep_power_glitch_reset"]
+    }
+    {
       name: chip_sw_pwrmgr_deep_sleep_sysrst_reqs
       desc: '''Verify that this chip can be reset by All available reset sources.
 
@@ -1003,17 +1025,6 @@
             '''
       milestone: V2
       tests: ["chip_sw_pwrmgr_sysrst_ctrl_reset"]
-    }
-    {
-      name: chip_sw_pwrmgr_sleep_power_glitch_reset
-      desc: '''Verify the effect of a glitch in main power rail in deep sleep.
-
-            The vcmain_supp_i AST input is forced to drop after putting the chip to sleep. This
-            triggers a MainPwr reset request, which is checked reading the reset_info CSR when the
-            test restarts and the POR bit is not set.
-            '''
-      milestone: V2
-      tests: ["chip_sw_pwrmgr_sleep_power_glitch_reset"]
     }
     {
       name: chip_sw_pwrmgr_b2b_sleep_reset_req
