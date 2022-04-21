@@ -68,8 +68,8 @@ module sim_sram #(
     ) u_tl_adapter_sim_sram (
       .clk_i,
       .rst_ni,
-      .tl_i(tl_socket_h2d[1]),
-      .tl_o(tl_socket_d2h[1]),
+      .tl_i(tl_in_i),
+      .tl_o(tl_in_o),
 
       .req_o   (sram_req),
       .gnt_i   (1'b1),
