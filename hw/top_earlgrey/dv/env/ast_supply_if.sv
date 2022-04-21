@@ -54,7 +54,6 @@ interface ast_supply_if (
       $assertoff(1, top_earlgrey.u_pwrmgr_aon.u_slow_fsm.IntRstReq_A);
     end
     force u_ast.u_rglts_pdm_3p3v.vcmain_pok_h_o = value;
-    if (value) reenable_vcmain_assertion();
   endtask
 
   // Create glitch in vcmain_pok_h_o some cycles after a trigger transitions high.
@@ -64,6 +63,8 @@ interface ast_supply_if (
     force_vcmain_pok(1'b0);
     repeat (GlitchCycles) @(posedge clk);
     force_vcmain_pok(1'b1);
-  endtask
+  endtask // glitch_vcmain_pok_on_next_trigger
+
+
 
 endinterface

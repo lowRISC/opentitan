@@ -288,12 +288,12 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
     if (!rst_ni) begin
       mon_main_pok <= '0;
     end else if (!pd_nd && mon_main_pok) begin
-      mon_main_pok <= 1'b0;       
+      mon_main_pok <= 1'b0;
     end else if (set_main_pok) begin
       mon_main_pok <= 1'b1;
     end
   end
-   
+
   // power stability reset request
   // If the main power becomes unstable for whatever reason,
   // request reset
