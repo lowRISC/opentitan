@@ -12,6 +12,21 @@ class lc_ctrl_common_vseq extends lc_ctrl_base_vseq;
     run_common_vseq_wrapper(num_trans);
   endtask : body
 
+  virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
+    case (if_proxy.sec_cm_type)
+      SecCmPrimSparseFsmFlop: begin
+        `DV_ASSERT_CTRL_REQ("StateRegs_A", enable)
+        `DV_ASSERT_CTRL_REQ("CountRegs_A", enable)
+        `DV_ASSERT_CTRL_REQ("FsmStateRegs_A", enable)
+        `DV_ASSERT_CTRL_REQ("KmacFsmStateRegs_A", enable)
+      end
+      SecCmPrimCount: begin
+        // No need to disable any assertion
+      end
+      default: `uvm_fatal(`gfn, $sformatf("unexpected sec_cm_type %s", if_proxy.sec_cm_type.name))
+    endcase
+  endfunction : sec_cm_fi_ctrl_svas
+
   virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
     // Expected state error bit of status register
     bit exp_state_error = 0;

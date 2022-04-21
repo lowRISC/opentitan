@@ -249,5 +249,13 @@ module tb;
   `DV_ASSERT_CTRL("FsmClkFlashRmaAckSync", dut.u_lc_ctrl_fsm.u_prim_lc_sync_flash_rma_ack)
   `DV_ASSERT_CTRL("FsmOtpTestTokensValidSync", dut.u_lc_ctrl_fsm.u_prim_lc_sync_test_token_valid)
   `DV_ASSERT_CTRL("FsmOtpRmaTokenValidSync", dut.u_lc_ctrl_fsm.u_prim_lc_sync_rma_token_valid)
-
+  `DV_ASSERT_CTRL("StateRegs_A", tb.dut.u_lc_ctrl_fsm.u_state_regs_A)
+  `DV_ASSERT_CTRL("StateRegs_A", tb.dut.FpvSecCmCtrlLcStateCheck_A)
+  `DV_ASSERT_CTRL("FsmStateRegs_A", tb.dut.u_lc_ctrl_fsm.u_fsm_state_regs_A)
+  `DV_ASSERT_CTRL("FsmStateRegs_A", tb.dut.FpvSecCmCtrlLcFsmCheck_A)
+  `DV_ASSERT_CTRL("CountRegs_A", tb.dut.u_lc_ctrl_fsm.u_cnt_regs_A)
+  `DV_ASSERT_CTRL("CountRegs_A", tb.dut.FpvSecCmCtrlLcCntCheck_A)
+  `DV_ASSERT_CTRL("KmacFsmStateRegs_A", tb.dut.u_lc_ctrl_kmac_if.u_state_regs_A)
+  `DV_ASSERT_CTRL("KmacFsmStateRegs_A", tb.dut.FpvSecCmCtrlKmacIfFsmCheck_A)
+  `DV_ASSERT_CTRL("EscStaysOnOnceAsserted_A", tb.dut.u_lc_ctrl_fsm.EscStaysOnOnceAsserted_A)
 endmodule

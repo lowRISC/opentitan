@@ -43,7 +43,7 @@
       mutex).
       '''
       milestone: V2S
-      tests: []
+      tests: ["lc_ctrl_regwen_during_op"]
     }
     {
       name: sec_cm_manuf_state_sparse
@@ -53,7 +53,7 @@
       Verify this countermeasure with a standardized test.
       '''
       milestone: V2S
-      tests: []
+      tests: ["lc_ctrl_sec_cm", "lc_ctrl_state_failure"]
     }
     {
       name: sec_cm_transition_ctr_sparse
