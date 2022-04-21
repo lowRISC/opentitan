@@ -22,7 +22,9 @@ module otbn_idle_checker
 
   input logic [7:0] status_q_i,
   input logic [38:0] imem_rdata_bus,
-  input logic [ExtWLEN-1:0] dmem_rdata_bus
+  input logic [ExtWLEN-1:0] dmem_rdata_bus,
+
+  input logic locking_i
 );
 
   // Several of the internal signals that we snoop from the otbn module run "a cycle early". This
@@ -129,6 +131,14 @@ module otbn_idle_checker
   `ASSERT(NotRunningWhenLocked_A,
           !((status_q_i == otbn_pkg::StatusLocked) && running_d))
 
-  `ASSERT(NoMemRdataWhenBusy_A, running_q |-> imem_rdata_bus == 'b0 && dmem_rdata_bus == 'b0)
+  // When OTBN locks bus read data integrity is forced to the correct value for 0 data (so reads to
+  // a locked OTBN don't cause an integrity error). There is a small window where running_q is set
+  // with status_q reporting 'StatusLocked'. So expected bus read data depends upon locked status
+  // when running.
+  `ASSERT(NoMemRdataWhenBusy_A,
+    running_q |-> ((status_q_i == otbn_pkg::StatusLocked) ?
+      imem_rdata_bus == EccZeroWord && dmem_rdata_bus == EccWideZeroWord :
+      imem_rdata_bus == 'b0 && dmem_rdata_bus == 'b0))
+
 
 endmodule
