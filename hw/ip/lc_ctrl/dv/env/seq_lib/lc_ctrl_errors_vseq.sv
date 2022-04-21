@@ -126,6 +126,8 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
   constraint tokem_mux_err_inj_c {err_inj.token_mux_ctrl_redun_err == 0;}
 
+  constraint token_digest_err_inj_c {err_inj.token_mux_digest_err == 0;}
+
   virtual task post_start();
     `uvm_info(`gfn, "post_start: Task called for lc_ctrl_errors_vseq", UVM_MEDIUM)
 
@@ -150,6 +152,10 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     `DV_ASSERT_CTRL_REQ("OtpProgReqHighUntilAck_A", 1)
     `DV_ASSERT_CTRL_REQ("OtpProgAckAssertedOnlyWhenReqAsserted_A", 1)
     `DV_ASSERT_CTRL_REQ("KmacIfSyncReqAckAckNeedsReq", 1)
+    `DV_ASSERT_CTRL_REQ("StateRegs_A", 1)
+    `DV_ASSERT_CTRL_REQ("FsmStateRegs_A", 1)
+    `DV_ASSERT_CTRL_REQ("CountRegs_A", 1)
+
 
     // Kill sub processes
     disable handle_alerts;
@@ -394,15 +400,26 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       `DV_ASSERT_CTRL_REQ("OtpProgReqHighUntilAck_A", 0)
       `DV_ASSERT_CTRL_REQ("OtpProgAckAssertedOnlyWhenReqAsserted_A", 0)
       `DV_ASSERT_CTRL_REQ("KmacIfSyncReqAckAckNeedsReq", 0)
-      assertions_disabled = 1;
-    end else if (assertions_disabled) begin
-      // Reenable assertions if they had been disabled
+    end else begin
       `DV_ASSERT_CTRL_REQ("OtpProgH_DataStableWhenBidirectionalAndReq_A", 1)
       `DV_ASSERT_CTRL_REQ("OtpProgReqHighUntilAck_A", 1)
       `DV_ASSERT_CTRL_REQ("OtpProgAckAssertedOnlyWhenReqAsserted_A", 1)
       `DV_ASSERT_CTRL_REQ("KmacIfSyncReqAckAckNeedsReq", 1)
-      assertions_disabled = 0;
     end
+
+    if (err_inj.state_err || err_inj.state_illegal_err || err_inj.state_backdoor_err) begin
+      `DV_ASSERT_CTRL_REQ("StateRegs_A", 0)
+    end else `DV_ASSERT_CTRL_REQ("StateRegs_A", 1)
+
+    if (err_inj.count_err || err_inj.count_illegal_err || err_inj.count_backdoor_err) begin
+      `DV_ASSERT_CTRL_REQ("CountRegs_A", 0)
+    end else `DV_ASSERT_CTRL_REQ("CountRegs_A", 1)
+
+    if (err_inj.lc_fsm_backdoor_err) `DV_ASSERT_CTRL_REQ("FsmStateRegs_A", 0)
+    else `DV_ASSERT_CTRL_REQ("FsmStateRegs_A", 1)
+
+    if (err_inj.kmac_fsm_backdoor_err) `DV_ASSERT_CTRL_REQ("KmacFsmStateRegs_A", 0)
+    else `DV_ASSERT_CTRL_REQ("KmacFsmStateRegs_A", 1)
 
   endtask
 
@@ -716,34 +733,37 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   // Flip bits in LC FSM registers
   protected virtual task lc_fsm_backdoor_err_inj();
     logic [FsmStateWidth-1:0] state;
-    state = cfg.lc_ctrl_vif.lc_fsm_state_backdoor_read();
-    state ^= lc_fsm_state_invert_bits;
-    cfg.lc_ctrl_vif.lc_fsm_state_backdoor_write(state, 0, lc_fsm_state_err_inj_period);
+    sec_cm_base_if_proxy if_proxy = find_sec_cm_base_if_proxy(
+        "tb.dut.u_lc_ctrl_fsm.u_fsm_state_regs"
+    );
+
+    if_proxy.inject_fault();
   endtask
 
   // Flip bits in KMAC FSM registers
   protected virtual task kmac_fsm_backdoor_err_inj();
     logic [KMAC_FSM_WIDTH-1:0] state;
-    state = cfg.lc_ctrl_vif.kmac_fsm_state_backdoor_read();
-    state ^= kmac_fsm_state_invert_bits;
-    cfg.lc_ctrl_vif.kmac_fsm_state_backdoor_write(state, 0, lc_fsm_state_err_inj_period);
-  endtask
+    sec_cm_base_if_proxy if_proxy = find_sec_cm_base_if_proxy(
+        "tb.dut.u_lc_ctrl_kmac_if.u_state_regs"
+    );
 
+    if_proxy.inject_fault();
+  endtask
 
   // Flip bits in OTP State input
   protected virtual task state_backdoor_err_inj();
     logic [LcStateWidth-1:0] state;
-    state = cfg.lc_ctrl_vif.count_backdoor_read();
-    state ^= state_invert_bits;
-    cfg.lc_ctrl_vif.count_backdoor_write(state, 0, state_err_inj_period);
+    sec_cm_base_if_proxy if_proxy = find_sec_cm_base_if_proxy("tb.dut.u_lc_ctrl_fsm.u_state_regs");
+
+    if_proxy.inject_fault();
   endtask
 
   // Flip bits OTP Count input
   protected virtual task count_backdoor_err_inj();
     logic [LcCountWidth-1:0] count;
-    count = cfg.lc_ctrl_vif.count_backdoor_read();
-    count ^= count_invert_bits;
-    cfg.lc_ctrl_vif.count_backdoor_write(count, 0, count_err_inj_period);
+    sec_cm_base_if_proxy if_proxy = find_sec_cm_base_if_proxy("tb.dut.u_lc_ctrl_fsm.u_cnt_regs");
+
+    if_proxy.inject_fault();
   endtask
 
   // Send an escalate alert

@@ -21,7 +21,7 @@ class lc_ctrl_sec_token_digest_vseq extends lc_ctrl_errors_vseq;
     err_inj.otp_partition_err == 0;
   }
 
-  constraint lc_token_digest_c {
+  constraint lc_token_digest_err_inj_c {
     $onehot(
         {
           // Either wrong token for transition
