@@ -145,6 +145,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
   mask_rom_epmp_test_scrambled = custom_target(
     target_name.format('scrambled'),
     command: scramble_image_command,
+    env: {'PYTHONPATH': meson.project_source_root()},
     depend_files: scramble_image_depend_files,
     input: mask_rom_epmp_test_elf,
     output: scramble_image_outputs,
@@ -280,6 +281,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
   mask_rom_scrambled = custom_target(
     target_name.format('scrambled'),
     command: scramble_image_command,
+    env: {'PYTHONPATH': meson.project_source_root()},
     depend_files: scramble_image_depend_files,
     input: mask_rom_elf,
     output: scramble_image_outputs,

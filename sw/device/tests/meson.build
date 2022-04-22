@@ -1443,6 +1443,7 @@ foreach sw_test_name, sw_test_info : sw_tests
       sw_test_scr_vmem32 = custom_target(
         target_name.format('scr_vmem32'),
         command: scramble_image_command,
+        env: {'PYTHONPATH': meson.project_source_root()},
         depend_files: scramble_image_depend_files,
         input: sw_test_elf,
         output: scramble_image_outputs,
