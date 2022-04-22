@@ -5,6 +5,9 @@
 #include "sw/device/lib/dif/dif_kmac.h"
 
 #include <array>
+#include <cstring>
+#include <limits>
+#include <ostream>
 #include <string>
 
 #include "gmock/gmock.h"
@@ -15,9 +18,28 @@
 
 #include "kmac_regs.h"  // Generated
 
+// We define global namespace == and << to make `dif_i2c_timing_params_t` work
+// nicely with EXPECT_EQ.
+bool operator==(dif_kmac_operation_state_t a, dif_kmac_operation_state_t b) {
+  return a.squeezing == b.squeezing && a.append_d == b.append_d &&
+         a.offset == b.offset && a.r == b.r && a.d == b.d;
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const dif_kmac_operation_state_t &params) {
+  return os << "{\n"
+            << "  .squeezing = " << params.squeezing << ",\n"
+            << "  .append_d = " << params.append_d << ",\n"
+            << "  .offset = " << params.offset << ",\n"
+            << "  .r = " << params.r << ",\n"
+            << "  .d = " << params.d << ",\n"
+            << "}";
+}
+
 namespace dif_kmac_unittest {
 
 using ::testing::ElementsAre;
+using testing::ElementsAreArray;
 
 TEST(CustomizationStringTest, Encode) {
   dif_kmac_customization_string_t cs;
@@ -98,7 +120,14 @@ using testing::Test;
 class KmacTest : public testing::Test, public mock_mmio::MmioTest {
  protected:
   dif_kmac_t kmac_;
-  dif_kmac_operation_state_t op_state_;
+  dif_kmac_operation_state_t op_state_ = {
+      .squeezing = false,
+      .append_d = false,
+      .offset = 0,
+      .r = 0,
+      .d = 0,
+  };
+
   static constexpr std::array<uint8_t, 17> kMsg_ = {
       0xa7, 0x48, 0x47, 0x93, 0x0a, 0x03, 0xab, 0xee, 0xa4,
       0x73, 0xe1, 0xf3, 0xdc, 0x30, 0xb8, 0x88, 0x15};
@@ -216,6 +245,19 @@ class KmacTest : public testing::Test, public mock_mmio::MmioTest {
       EXPECT_WRITE32(offset, seed[i]);
     }
   }
+
+  uint32_t GetRateBits(uint32_t security_level) {
+    // Formula for the rate in bits is:
+    //
+    //   r = 1600 - c
+    //
+    // Where c is the capacity (the security level in bits multiplied by two).
+    return 1600 - 2 * security_level;
+  }
+
+  uint32_t GetRateWords(uint32_t security_level) {
+    return GetRateBits(security_level) / 32;
+  }
 };
 
 class Kmac256Test : public KmacTest {
@@ -273,7 +315,7 @@ TEST_F(Kmac256Test, StartSuccess) {
   EXPECT_EQ(op_state_.squeezing, false);
   EXPECT_EQ(op_state_.append_d, true);
   EXPECT_EQ(op_state_.offset, 0);
-  EXPECT_EQ(op_state_.r, (1600 - 2 * 256) / 32);
+  EXPECT_EQ(op_state_.r, GetRateWords(256));
   EXPECT_EQ(op_state_.d, 0);
 }
 
@@ -430,10 +472,7 @@ class Cshake256Test : public KmacTest {
     EXPECT_EQ(op_state_.append_d, false);
     EXPECT_EQ(op_state_.offset, 0);
     EXPECT_EQ(op_state_.d, 0);
-    // Formula for the rate in bits is:
-    //   r = 1600 - c
-    // Where c is the capacity (the security level in bits multiplied by two).
-    EXPECT_EQ(op_state_.r, (1600 - 2 * 256) / 32);
+    EXPECT_EQ(op_state_.r, GetRateWords(256));
   }
 };
 
@@ -526,7 +565,10 @@ TEST_F(Cshake256Test, StartError) {
 
 constexpr std::array<uint8_t, 17> KmacTest::kMsg_;
 
-class AbsorbalignmentMessage : public KmacTest {};
+class AbsorbalignmentMessage : public KmacTest {
+ protected:
+  AbsorbalignmentMessage() { op_state_.r = GetRateWords(256); }
+};
 
 TEST_F(AbsorbalignmentMessage, Success) {
   uint8_t buffer[kMsg_.size() + sizeof(uint32_t)];
@@ -746,4 +788,180 @@ TEST_F(KmacGetErrorTest, BadArg) {
   EXPECT_DIF_BADARG(dif_kmac_get_error(&kmac_, nullptr));
 }
 
+class KmacSqueezeTest : public KmacTest {
+ protected:
+  dif_kmac_operation_state_t expected_op_state_ = {
+      .squeezing = true,
+      .append_d = false,
+      .offset = 30,
+      .r = 34,
+      .d = 30,
+  };
+
+  uint32_t out_buffer_[8];
+  size_t processed_;
+  static constexpr std::array<std::array<uint32_t, 64>, 2> kOutShares = {
+      {{0xA55AA55A, 0xA55AA55A, 0xA55AA55A, 0xA55AA55A, 0x5AA5A55A, 0x5AA5A55A,
+        0x5AA5A55A, 0x5AA5A55A, 0xA55AA55A, 0xA55AA55A, 0xA55AA55A, 0xA55AA55A,
+        0x5AA5A55A, 0x5AA5A55A, 0x5AA5A55A, 0x5AA5A55A, 0xA55AA55A, 0xA55AA55A,
+        0xA55AA55A, 0xA55AA55A, 0x5AA5A55A, 0x5AA5A55A, 0x5AA5A55A, 0x5AA5A55A,
+        0xA55AA55A, 0xA55AA55A, 0xA55AA55A, 0xA55AA55A, 0x5AA5A55A, 0x5AA5A55A,
+        0x5AA5A55A, 0x5AA5A55A, 0xA55AA55A, 0xA55AA55A, 0xA55AA55A, 0xA55AA55A,
+        0x5AA5A55A, 0x5AA5A55A, 0x5AA5A55A, 0x5AA5A55A, 0xA55AA55A, 0xA55AA55A,
+        0xA55AA55A, 0xA55AA55A, 0x5AA5A55A, 0x5AA5A55A, 0x5AA5A55A, 0x5AA5A55A,
+        0xA55AA55A, 0xA55AA55A, 0xA55AA55A, 0xA55AA55A, 0x5AA5A55A, 0x5AA5A55A,
+        0x5AA5A55A, 0x5AA5A55A, 0xA55AA55A, 0xA55AA55A, 0xA55AA55A, 0xA55AA55A,
+        0x5AA5A55A, 0x5AA5A55A, 0x5AA5A55A, 0x5AA5A55A},
+       {0xA55AA55A, 0xA55AA55A, 0xA55AA55A, 0xA55AA55A, 0x5AA5A55A, 0x5AA5A55A,
+        0x5AA5A55A, 0x5AA5A55A, 0xA55AA55A, 0xA55AA55A, 0xA55AA55A, 0xA55AA55A,
+        0x5AA5A55A, 0x5AA5A55A, 0x5AA5A55A, 0x5AA5A55A, 0xA55AA55A, 0xA55AA55A,
+        0xA55AA55A, 0xA55AA55A, 0x5AA5A55A, 0x5AA5A55A, 0x5AA5A55A, 0x5AA5A55A,
+        0xA55AA55A, 0xA55AA55A, 0xA55AA55A, 0xA55AA55A, 0x5AA5A55A, 0x5AA5A55A,
+        0x5AA5A55A, 0x5AA5A55A, 0xA55AA55A, 0xA55AA55A, 0xA55AA55A, 0xA55AA55A,
+        0x5AA5A55A, 0x5AA5A55A, 0x5AA5A55A, 0x5AA5A55A, 0xA55AA55A, 0xA55AA55A,
+        0xA55AA55A, 0xA55AA55A, 0x5AA5A55A, 0x5AA5A55A, 0x5AA5A55A, 0x5AA5A55A,
+        0xA55AA55A, 0xA55AA55A, 0xA55AA55A, 0xA55AA55A, 0x5AA5A55A, 0x5AA5A55A,
+        0x5AA5A55A, 0x5AA5A55A, 0xA55AA55A, 0xA55AA55A, 0xA55AA55A, 0xA55AA55A,
+        0x5AA5A55A, 0x5AA5A55A, 0x5AA5A55A, 0x5AA5A55A}}};
+
+  KmacSqueezeTest() {
+    op_state_.r = GetRateWords(256);
+    op_state_.squeezing = false;
+    op_state_.append_d = false;
+  }
+
+  void ExpectAppendSize() {
+    uint32_t d = op_state_.d * sizeof(uint32_t) * 8;
+    uint8_t len = 1 + (d > 0xFF) + (d > 0xFFFF) + (d > 0xFFFFFF);
+    uint8_t shift = len * 8;
+    do {
+      shift -= 8;
+      EXPECT_WRITE8(KMAC_MSG_FIFO_REG_OFFSET, (d >> shift) & 0xFF);
+    } while (shift);
+    EXPECT_WRITE8(KMAC_MSG_FIFO_REG_OFFSET, len & 0xFF);
+  }
+
+  void ExpectReadOutput(const uint32_t *share1, const uint32_t *share2,
+                        size_t len) {
+    uint32_t offset = KMAC_STATE_REG_OFFSET;
+    for (size_t i = 0; i < len; ++i) {
+      // Read both shares from state register and combine using XOR.
+      EXPECT_READ32(offset, share1[i]);
+      EXPECT_READ32(offset + 0x100, share2[i]);
+      offset += sizeof(uint32_t);
+    }
+  }
+};
+constexpr std::array<std::array<uint32_t, 64>, 2> KmacSqueezeTest::kOutShares;
+
+TEST_F(KmacSqueezeTest, GenerateExtraStatesSuccess) {
+  uint32_t out_buffer[64];
+  op_state_.d = ARRAYSIZE(out_buffer);
+
+  EXPECT_WRITE32(KMAC_CMD_REG_OFFSET,
+                 {{KMAC_CMD_CMD_OFFSET, KMAC_CMD_CMD_VALUE_PROCESS}});
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_SQUEEZE_BIT, true}});
+  ExpectReadOutput(kOutShares[0].data(), kOutShares[1].data(), 34);
+  EXPECT_WRITE32(KMAC_CMD_REG_OFFSET,
+                 {{KMAC_CMD_CMD_OFFSET, KMAC_CMD_CMD_VALUE_RUN}});
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_SQUEEZE_BIT, true}});
+  ExpectReadOutput(&kOutShares[0].data()[34], &kOutShares[1].data()[34],
+                   kOutShares[0].size() - 34);
+
+  EXPECT_DIF_OK(dif_kmac_squeeze(&kmac_, &op_state_, out_buffer,
+                                 ARRAYSIZE(out_buffer), nullptr));
+
+  EXPECT_EQ(op_state_, expected_op_state_);
+
+  std::array<uint32_t, ARRAYSIZE(out_buffer)> out;
+  for (size_t i = 0; i < out.size(); i++) {
+    out[i] = kOutShares[0][i] ^ kOutShares[1][i];
+  }
+  EXPECT_THAT(out_buffer, ElementsAreArray(out));
+}
+
+TEST_F(KmacSqueezeTest, FillOutBufferSuccess) {
+  op_state_.d = ARRAYSIZE(out_buffer_);
+  expected_op_state_.d = ARRAYSIZE(out_buffer_);
+  expected_op_state_.offset = 8;
+
+  EXPECT_WRITE32(KMAC_CMD_REG_OFFSET,
+                 {{KMAC_CMD_CMD_OFFSET, KMAC_CMD_CMD_VALUE_PROCESS}});
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_SQUEEZE_BIT, true}});
+  ExpectReadOutput(kOutShares[0].data(), kOutShares[1].data(),
+                   ARRAYSIZE(out_buffer_));
+
+  EXPECT_DIF_OK(dif_kmac_squeeze(&kmac_, &op_state_, out_buffer_,
+                                 ARRAYSIZE(out_buffer_), nullptr));
+
+  EXPECT_EQ(op_state_, expected_op_state_);
+
+  std::array<uint32_t, ARRAYSIZE(out_buffer_)> out;
+  for (size_t i = 0; i < out.size(); i++) {
+    out[i] = kOutShares[0][i] ^ kOutShares[1][i];
+  }
+  EXPECT_THAT(out_buffer_, ElementsAreArray(out));
+}
+
+TEST_F(KmacSqueezeTest, AppendSizeSuccess) {
+  op_state_.append_d = true;
+  op_state_.d = ARRAYSIZE(out_buffer_);
+  expected_op_state_.append_d = true;
+  expected_op_state_.d = ARRAYSIZE(out_buffer_);
+  expected_op_state_.r = GetRateWords(256);
+  expected_op_state_.offset = 0;
+
+  ExpectAppendSize();
+  EXPECT_WRITE32(KMAC_CMD_REG_OFFSET,
+                 {{KMAC_CMD_CMD_OFFSET, KMAC_CMD_CMD_VALUE_PROCESS}});
+  EXPECT_DIF_OK(dif_kmac_squeeze(&kmac_, &op_state_, nullptr, 0, nullptr));
+
+  EXPECT_EQ(op_state_, expected_op_state_);
+}
+
+TEST_F(KmacSqueezeTest, JustProcessSuccess) {
+  expected_op_state_.d = 0;
+  expected_op_state_.r = GetRateWords(256);
+  expected_op_state_.offset = 0;
+  EXPECT_WRITE32(KMAC_CMD_REG_OFFSET,
+                 {{KMAC_CMD_CMD_OFFSET, KMAC_CMD_CMD_VALUE_PROCESS}});
+
+  EXPECT_DIF_OK(dif_kmac_squeeze(&kmac_, &op_state_, nullptr, 0, nullptr));
+  EXPECT_EQ(op_state_, expected_op_state_);
+  EXPECT_EQ(op_state_.d, 0);
+}
+
+TEST_F(KmacSqueezeTest, BadArg) {
+  EXPECT_DIF_BADARG(dif_kmac_squeeze(NULL, &op_state_, out_buffer_,
+                                     ARRAYSIZE(out_buffer_), nullptr));
+  EXPECT_DIF_BADARG(dif_kmac_squeeze(&kmac_, nullptr, out_buffer_,
+                                     ARRAYSIZE(out_buffer_), nullptr));
+  EXPECT_DIF_BADARG(dif_kmac_squeeze(&kmac_, &op_state_, nullptr,
+                                     ARRAYSIZE(out_buffer_), nullptr));
+}
+
+TEST_F(KmacSqueezeTest, StarteMachineError) {
+  op_state_.d = ARRAYSIZE(out_buffer_) / 2;
+  EXPECT_WRITE32(KMAC_CMD_REG_OFFSET,
+                 {{KMAC_CMD_CMD_OFFSET, KMAC_CMD_CMD_VALUE_PROCESS}});
+
+  EXPECT_EQ(dif_kmac_squeeze(&kmac_, &op_state_, out_buffer_,
+                             ARRAYSIZE(out_buffer_), nullptr),
+            kDifError);
+}
+
+TEST_F(KmacSqueezeTest, RequestLessDataThanFixedLenError) {
+  op_state_.d = ARRAYSIZE(out_buffer_);
+
+  EXPECT_WRITE32(KMAC_CMD_REG_OFFSET,
+                 {{KMAC_CMD_CMD_OFFSET, KMAC_CMD_CMD_VALUE_PROCESS}});
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET,
+                {{KMAC_STATUS_SHA3_SQUEEZE_BIT, false}});
+  EXPECT_READ32(KMAC_INTR_STATE_REG_OFFSET,
+                {{KMAC_INTR_STATE_KMAC_ERR_BIT, true}});
+
+  EXPECT_EQ(dif_kmac_squeeze(&kmac_, &op_state_, out_buffer_,
+                             ARRAYSIZE(out_buffer_), nullptr),
+            kDifError);
+}
 }  // namespace dif_kmac_unittest

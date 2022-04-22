@@ -629,7 +629,7 @@ dif_result_t dif_kmac_absorb(const dif_kmac_t *kmac,
 /**
  * Squeeze bytes into the output buffer provided.
  *
- * Requesting a squeeze operation will prevent any further absorbtion operations
+ * Requesting a squeeze operation will prevent any further absorption operations
  * from taking place.
  *
  * If `kDifKmacIncomplete` is returned then the hardware is currently
