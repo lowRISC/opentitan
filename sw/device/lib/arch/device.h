@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_ARCH_DEVICE_H_
 #define OPENTITAN_SW_DEVICE_LIB_ARCH_DEVICE_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 
 /**
@@ -145,5 +146,10 @@ extern const uintptr_t kDeviceTestStatusAddress;
  * @see #LOG
  */
 extern const uintptr_t kDeviceLogBypassUartAddress;
+
+/**
+ * A knob to set jitter_enable in clkmgr.
+ */
+extern const bool kJitterEnabled;
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_ARCH_DEVICE_H_
