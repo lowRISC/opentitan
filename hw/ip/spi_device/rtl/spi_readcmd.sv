@@ -712,12 +712,15 @@ module spi_readcmd
     .clk_i,
     .rst_ni,
 
+    .spi_mode_i,
+
     .sram_read_req_i   (sram_req),
     .addr_latched_i    (addr_latched),
     .current_address_i (addr_d), // TODO: Change it
 
     .mailbox_en_i,
-    .mailbox_hit_i (addr_in_mailbox),
+    .mailbox_addr_i,
+
     .sfdp_hit_i    (sel_dp_i == DpReadSFDP),
 
     .sram_l2m_o,

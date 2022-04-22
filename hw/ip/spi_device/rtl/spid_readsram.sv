@@ -45,6 +45,8 @@ module spid_readsram
   input clk_i,      // SCK
   input rst_ni,     // CSb
 
+  input spi_mode_e spi_mode_i,
+
   input sram_read_req_i, // from FSM
 
   // addr_latched_i
@@ -59,8 +61,9 @@ module spid_readsram
   // the latched address field.
   input [31:0] current_address_i,
 
-  input mailbox_en_i,
-  input mailbox_hit_i, // the received address field hits the mailbox
+  input        mailbox_en_i,
+  input [31:0] mailbox_addr_i,
+
   input sfdp_hit_i,    // selected DP is DpReadSFDP
 
   // SRAM request and response
@@ -99,6 +102,9 @@ module spid_readsram
   ////////////
   // Signal //
   ////////////
+
+  // mailbox_hit: it compares the next_address with mailbox space.
+  logic permitted, mailbox_hit;
 
   // State Machine output
 
@@ -145,11 +151,46 @@ module spid_readsram
   // Datapath //
   //////////////
 
+  // Permitted operation
+  // FlashMode:   all requests (sfdp, mailbox, readbuffer)
+  // PassThrough: sfdp and mailbox
+  always_comb begin : permitted_logic
+    permitted = 1'b 0;
+
+    unique case (spi_mode_i)
+      FlashMode: begin
+        permitted = 1'b 1;
+      end
+
+      PassThrough: begin
+          permitted = (sfdp_hit_i || mailbox_hit);
+      end
+
+      default: begin
+        permitted = 1'b 0;
+      end
+    endcase
+  end
+
+  // Mailbox hit detection
+  // mailbox_hit_i only checks current_address_i.
+  // SRAM logic sends request to the next address based on the condition.
+  // Need to check the mailbox hit based on the SRAM address rather than
+  // current_address.
+  localparam logic [31:0] MailboxMask = {{30-MailboxAw{1'b1}}, {2+MailboxAw{1'b0}}};
+
+  logic [31:0] mailbox_masked_addr;
+  assign mailbox_masked_addr = (next_address & MailboxMask);
+  assign mailbox_hit         = mailbox_en_i
+                             && (mailbox_masked_addr == mailbox_addr_i);
+
   logic sram_latched; // sram request sent
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) sram_latched <= 1'b 0;
     else if (sram_req) sram_latched <= 1'b 1;
   end
+  `ASSERT(NotPermitted_A, sram_req |-> permitted)
+  `ASSERT(NoLatchIfNotPermitted_A, !permitted |=> !sram_latched)
 
   logic [1:0] strb;
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -178,7 +219,7 @@ module spid_readsram
   always_comb begin
     if (sfdp_hit_i) begin
       sram_addr = SfdpBaseAddr | sram_addr_t'(next_address[2+:SfdpAw]);
-    end else if (mailbox_en_i && mailbox_hit_i) begin
+    end else if (mailbox_hit) begin
       sram_addr = MailboxBaseAddr | sram_addr_t'(next_address[2+:MailboxAw]);
     end else begin
       sram_addr = ReadBaseAddr | sram_addr_t'(next_address[2+:ReadBufAw]);
@@ -223,14 +264,22 @@ module spid_readsram
 
     unique case (st_q)
       StIdle: begin
-        if (sram_read_req_i) begin
+        addr_sel = AddrInput;
+
+        // Send request only when it is permitted. Refer the logic to check
+        // the conditions.
+        if (sram_read_req_i && permitted) begin
           sram_req = 1'b 1;
-          addr_sel = AddrInput;
         end
 
         if ((sram_read_req_i || sram_latched) && strb_set) begin
-          // Only when both are valid
-          st_d = StPush;
+          // Move to StActive if the address is not permitted.
+          // In this case, FSM waits in StActive until the address hits the
+          // permitted area.
+          // This is to cover the boundary crossing from the readbuffer to the
+          // mailbox.
+          if (permitted) st_d = StPush;
+          else           st_d = StActive;
         end else begin
           st_d = StIdle;
         end
@@ -254,11 +303,25 @@ module spid_readsram
       end
 
       StActive: begin
-        if (!sram_fifo_full) begin
+        // Assume the SRAM logic is faster than update of current_address_i.
+        // TODO: Put assertion.
+        addr_sel = AddrContinuous; // Pointing to next_address to check mailbox hit
+        if (!sram_fifo_full && permitted) begin
+          // If the address is not permitted, the logic does not send request to SRAM.
+          // Case should be considered:
+          // 1. From Readbuffer to the mailbox space
+          // 2. From mailbox space to the read buffer
+          //
+          // 1. Since, the readbuffer the logic does not send requests. The
+          //    FSM directly moves to StActive state and waits the permitted.
+          //    If the address crosses the readbuffer, it then sends the SRAM
+          //    request and push to the FIFO.
+          // 2. If it hits mailbox first, then the state waits here to push
+          //    more bytes into the FIFO. Then when the next_address points to
+          //    the readbuffer, the FSM waits here until CSb release.
           st_d = StPush;
 
           sram_req = 1'b 1;
-          addr_sel = AddrContinuous;
         end else begin
           st_d = StActive;
         end
