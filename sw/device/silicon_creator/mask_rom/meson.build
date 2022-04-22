@@ -189,6 +189,24 @@ primitive_bootstrap_lib = declare_dependency(
   ),
 )
 
+sw_silicon_creator_mask_rom_bootstrap = declare_dependency(
+  link_with: static_library (
+    'sw_silicon_creator_mask_rom_bootstrap',
+    sources: [
+      'bootstrap.c',
+      hw_ip_gpio_reg_h,
+      hw_ip_flash_ctrl_reg_h,
+      hw_ip_otp_ctrl_reg_h,
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_driver_flash_ctrl,
+      sw_silicon_creator_lib_driver_otp,
+      sw_silicon_creator_lib_driver_rstmgr,
+      sw_silicon_creator_lib_driver_spi_device,
+    ],
+  ),
+)
+
 # MaskROM library.
 mask_rom_lib = declare_dependency(
   sources: [
