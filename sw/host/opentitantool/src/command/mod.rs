@@ -12,6 +12,7 @@ pub mod image;
 pub mod load_bitstream;
 pub mod set_pll;
 pub mod spi;
+pub mod version;
 
 use anyhow::Result;
 use erased_serde::Serialize;

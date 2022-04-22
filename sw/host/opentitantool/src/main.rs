@@ -34,6 +34,7 @@ enum RootCommandHierarchy {
     LoadBitstream(command::load_bitstream::LoadBitstream),
     NoOp(command::NoOp),
     Spi(command::spi::SpiCommand),
+    Version(command::version::Version),
 
     // Flattened because `Greetings` is a subcommand hierarchy.
     #[cfg(feature = "demo_commands")]
