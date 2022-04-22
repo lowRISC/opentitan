@@ -19,11 +19,13 @@ rust_binary(
         "src/command/load_bitstream.rs",
         "src/command/mod.rs",
         "src/command/spi.rs",
+        "src/command/version.rs",
         "src/main.rs",
     ],
     proc_macro_deps = [
         "//sw/host/opentitanlib/opentitantool_derive",
     ],
+    stamp = 1,
     deps = [
         "//sw/host/opentitanlib",
         "//third_party/rust/crates:anyhow",

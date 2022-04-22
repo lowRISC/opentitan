@@ -11,6 +11,7 @@ pub mod i2c;
 pub mod image;
 pub mod load_bitstream;
 pub mod spi;
+pub mod version;
 
 use anyhow::Result;
 use erased_serde::Serialize;
