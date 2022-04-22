@@ -1647,7 +1647,7 @@
           regwen: "BANK_CFG_REGWEN",
           shadowed: "true",
           update_err_alert: "recov_err",
-          storage_err_alert: "fatal_err",
+          storage_err_alert: "fatal_std_err",
           fields: [
               { bits: "0",
                 name: "ERASE_EN",
