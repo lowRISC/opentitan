@@ -9,6 +9,8 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/dif/dif_base.h"
+#include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
@@ -83,6 +85,17 @@ int main(int argc, char **argv) {
   // Initialize the UART to enable logging for non-DV simulation platforms.
   if (kDeviceType != kDeviceSimDV) {
     init_uart();
+  }
+
+  // The kJitterEnabled symbol defaults to false across all hardware platforms.
+  // However, in DV simulation, it may be overridden via a backdoor write with
+  // the plusarg: `+en_jitter=1`.
+  if (kJitterEnabled) {
+    dif_clkmgr_t clkmgr;
+    CHECK_DIF_OK(dif_clkmgr_init(
+        mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+    CHECK_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr, kDifToggleEnabled));
+    LOG_INFO("Jitter is enabled");
   }
 
   // Run the test.

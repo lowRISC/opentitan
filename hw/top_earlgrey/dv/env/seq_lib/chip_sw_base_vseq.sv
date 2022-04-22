@@ -83,7 +83,18 @@ class chip_sw_base_vseq extends chip_base_vseq;
     end
     cfg.sw_test_status_vif.sw_test_status = SwTestStatusBooted;
 
+    config_jitter();
+
     `uvm_info(`gfn, "CPU_init done", UVM_MEDIUM)
+  endtask
+
+  task config_jitter();
+    bit en_jitter;
+    void'($value$plusargs("en_jitter=%0d", en_jitter));
+    if (en_jitter) begin
+      bit [7:0] en_jitter_arr[] = {1};
+      sw_symbol_backdoor_overwrite("kJitterEnabled", en_jitter_arr);
+    end
   endtask
 
   virtual function void main_sram_bkdr_write32(
