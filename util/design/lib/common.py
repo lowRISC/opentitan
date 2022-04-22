@@ -64,8 +64,7 @@ def get_random_data_hex_literal(width):
     """ Fetch 'width' random bits and return them as hex literal"""
     width = int(width)
     literal_str = hex(random.getrandbits(width))
-    literal_str = str(width) + "'h" + literal_str[2:]
-    return literal_str
+    return blockify(literal_str, width, 64)
 
 
 def blockify(s, size, limit):

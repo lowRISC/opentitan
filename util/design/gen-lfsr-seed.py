@@ -71,7 +71,9 @@ def main():
 parameter int {}LfsrWidth = {};
 typedef logic [{}LfsrWidth-1:0] {}lfsr_seed_t;
 typedef logic [{}LfsrWidth-1:0][$clog2({}LfsrWidth)-1:0] {}lfsr_perm_t;
-parameter {}lfsr_seed_t RndCnst{}LfsrSeedDefault = {};
+parameter {}lfsr_seed_t RndCnst{}LfsrSeedDefault = {{
+  {}
+}};
 parameter {}lfsr_perm_t RndCnst{}LfsrPermDefault = {{
   {}
 }};
