@@ -207,6 +207,27 @@ sw_silicon_creator_mask_rom_bootstrap = declare_dependency(
   ),
 )
 
+test('sw_silicon_creator_mask_rom_bootstrap_unittest', executable(
+    'sw_silicon_creator_mask_rom_bootstrap_unittest',
+    sources: [
+      'bootstrap_unittest.cc',
+      'bootstrap.c',
+      hw_ip_gpio_reg_h,
+      hw_ip_flash_ctrl_reg_h,
+      hw_ip_otp_ctrl_reg_h,
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_testing_bitfield,
+      sw_lib_testing_hardened,
+    ],
+    native: true,
+    c_args: ['-DOT_OFF_TARGET_TEST'],
+    cpp_args: ['-DOT_OFF_TARGET_TEST'],
+  ),
+  suite: 'mask_rom',
+)
+
 # MaskROM library.
 mask_rom_lib = declare_dependency(
   sources: [
