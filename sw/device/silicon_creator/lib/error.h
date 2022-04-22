@@ -119,6 +119,11 @@ enum module_ {
   X(kErrorBootstrapWrite,             ERROR_(5, kModuleBootstrap, kInternal)), \
   X(kErrorBootstrapGpio,              ERROR_(6, kModuleBootstrap, kInternal)), \
   X(kErrorBootstrapUnknown,           ERROR_(7, kModuleBootstrap, kInternal)), \
+  X(kErrorBootstrapEraseAddress,      ERROR_(8, kModuleBootstrap, kInvalidArgument)), \
+  X(kErrorBootstrapProgramAddress,    ERROR_(9, kModuleBootstrap, kInvalidArgument)), \
+  X(kErrorBootstrapInvalidOpcode,     ERROR_(10, kModuleBootstrap, kInvalidArgument)), \
+  X(kErrorBootstrapInvalidState,      ERROR_(11, kModuleBootstrap, kInvalidArgument)), \
+  X(kErrorBootstrapNotRequested,      ERROR_(12, kModuleBootstrap, kInternal)), \
   X(kErrorLogBadFormatSpecifier,      ERROR_(1, kModuleLog, kInternal)), \
   X(kErrorBootDataNotFound,           ERROR_(1, kModuleBootData, kInternal)), \
   X(kErrorBootDataWriteCheck,         ERROR_(2, kModuleBootData, kInternal)), \
