@@ -578,18 +578,33 @@ opentitan_functest(
     ],
 )
 
-cc_library(
+dual_cc_library(
     name = "spi_device",
-    srcs = ["spi_device.c"],
-    hdrs = ["spi_device.h"],
-    deps = [
-        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
-        "//hw/ip/spi_device/data:spi_device_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:memory",
-        "//sw/device/silicon_creator/lib:error",
-    ],
+    srcs = dual_inputs(
+        device = ["spi_device.c"],
+        host = ["mock_spi_device.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = ["mock_spi_device.h"],
+        shared = ["spi_device.h"],
+    ),
+    deps = dual_inputs(
+        device = [
+            "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
+            "//hw/ip/spi_device/data:spi_device_regs",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        ],
+        host = [
+            "//sw/device/lib/base/testing:global_mock",
+            "//sw/device/silicon_creator/testing:mask_rom_test",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            "//sw/device/lib/base:abs_mmio",
+            "//sw/device/lib/base:memory",
+            "//sw/device/silicon_creator/lib:error",
+        ],
+    ),
 )
 
 cc_test(
@@ -598,7 +613,7 @@ cc_test(
         "spi_device_unittest.cc",
     ],
     deps = [
-        ":spi_device",
+        dual_cc_device_library_of(":spi_device"),
         "//hw/ip/spi_device/data:spi_device_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
