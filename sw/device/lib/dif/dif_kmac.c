@@ -105,7 +105,7 @@ dif_result_t dif_kmac_function_name_init(const char *data, size_t len,
  *
  * If the hardware is not idle then the `CFG` register is locked.
  *
- * @param params Hardware parameters.
+ * @param kmac Handle.
  * @returns Whether the hardware is currently idle or not.
  */
 static bool is_state_idle(const dif_kmac_t *kmac) {
@@ -119,7 +119,7 @@ static bool is_state_idle(const dif_kmac_t *kmac) {
  *
  * Note that writes to the message FIFO may still block if it is full.
  *
- * @param params Hardware parameters.
+ * @param kmac Handle.
  * @returns Whether the hardware is currently absorbing or not.
  */
 static bool is_state_absorb(const dif_kmac_t *kmac) {
@@ -131,12 +131,44 @@ static bool is_state_absorb(const dif_kmac_t *kmac) {
  * Report whether the hardware is currently in the squeeze state which means
  * that the output state is valid and may be read by software.
  *
- * @param params Hardware parameters.
+ * @param kmac Handle.
  * @returns Whether the hardware is currently in the squeeze state or not.
  */
 static bool is_state_squeeze(const dif_kmac_t *kmac) {
   uint32_t reg = mmio_region_read32(kmac->base_addr, KMAC_STATUS_REG_OFFSET);
   return bitfield_bit32_read(reg, KMAC_STATUS_SHA3_SQUEEZE_BIT);
+}
+
+/**
+ * Report whether the hardware has indicated a error.
+ *
+ * @param kmac Handle.
+ * @returns True if an error occurred, False otherwise.
+ */
+static bool has_error_occurred(const dif_kmac_t *kmac) {
+  uint32_t reg =
+      mmio_region_read32(kmac->base_addr, KMAC_INTR_STATE_REG_OFFSET);
+  return bitfield_bit32_read(reg, KMAC_INTR_STATE_KMAC_ERR_BIT);
+}
+
+/**
+ * Poll until the status register is in the 'absorb' state or int state register
+ * has indicated an error.
+ *
+ * @param kmac
+ * @return dif_result
+ */
+static dif_result_t poll_state(const dif_kmac_t *kmac, uint32_t flag) {
+  while (true) {
+    uint32_t reg = mmio_region_read32(kmac->base_addr, KMAC_STATUS_REG_OFFSET);
+    if (bitfield_bit32_read(reg, flag)) {
+      break;
+    }
+    if (has_error_occurred(kmac)) {
+      return kDifError;
+    }
+  }
+  return kDifOk;
 }
 
 dif_result_t dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config) {
@@ -287,14 +319,7 @@ dif_result_t dif_kmac_mode_sha3_start(
   mmio_region_write32(kmac->base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
 
   // Poll until the status register is in the 'absorb' state.
-  while (true) {
-    if (is_state_absorb(kmac)) {
-      break;
-    }
-    // TODO(#6248): check for error.
-  }
-
-  return kDifOk;
+  return poll_state(kmac, KMAC_STATUS_SHA3_ABSORB_BIT);
 }
 
 dif_result_t dif_kmac_mode_shake_start(
@@ -343,15 +368,7 @@ dif_result_t dif_kmac_mode_shake_start(
       bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_START);
   mmio_region_write32(kmac->base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
 
-  // Poll until the status register is in the 'absorb' state.
-  while (true) {
-    if (is_state_absorb(kmac)) {
-      break;
-    }
-    // TODO(#6248): check for error.
-  }
-
-  return kDifOk;
+  return poll_state(kmac, KMAC_STATUS_SHA3_ABSORB_BIT);
 }
 
 dif_result_t dif_kmac_mode_cshake_start(
@@ -451,15 +468,7 @@ dif_result_t dif_kmac_mode_cshake_start(
       bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_START);
   mmio_region_write32(kmac->base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
 
-  // Poll until the status register is in the 'absorb' state.
-  while (true) {
-    if (is_state_absorb(kmac)) {
-      break;
-    }
-    // TODO(#6248): check for error.
-  }
-
-  return kDifOk;
+  return poll_state(kmac, KMAC_STATUS_SHA3_ABSORB_BIT);
 }
 
 dif_result_t dif_kmac_mode_kmac_start(
@@ -574,13 +583,7 @@ dif_result_t dif_kmac_mode_kmac_start(
       bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_START);
   mmio_region_write32(kmac->base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
 
-  // Poll until the status register is in the 'absorb' state.
-  while (true) {
-    if (is_state_absorb(kmac)) {
-      break;
-    }
-    // TODO(#6248): check for error.
-  }
+  return poll_state(kmac, KMAC_STATUS_SHA3_ABSORB_BIT);
 
   return kDifOk;
 }
@@ -803,5 +806,15 @@ dif_result_t dif_kmac_get_status(const dif_kmac_t *kmac,
       reg, (bitfield_field32_t){.mask = 0x03,
                                 .index = KMAC_STATUS_ALERT_FATAL_FAULT_BIT});
 
+  return kDifOk;
+}
+
+dif_result_t dif_kmac_get_error(const dif_kmac_t *kmac,
+                                dif_kmac_error_t *error) {
+  if (kmac == NULL || error == NULL) {
+    return kDifBadArg;
+  }
+
+  *error = mmio_region_read32(kmac->base_addr, KMAC_ERR_CODE_REG_OFFSET);
   return kDifOk;
 }
