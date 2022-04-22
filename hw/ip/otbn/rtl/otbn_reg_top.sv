@@ -413,7 +413,7 @@ module otbn_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.status.q),
+    .q      (),
 
     // to register interface (read)
     .qs     (status_qs)

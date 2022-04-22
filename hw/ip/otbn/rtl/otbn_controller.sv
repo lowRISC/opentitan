@@ -21,8 +21,8 @@ module otbn_controller
   input logic clk_i,
   input logic rst_ni,
 
-  input  logic start_i,  // start the processing at address zero
-  output logic locked_o, // OTBN in locked state and must be reset to perform any further actions
+  input  logic start_i,   // start the processing at address zero
+  output logic locking_o, // Controller is in or is entering the locked state
 
   input prim_mubi_pkg::mubi4_t escalate_en_i,
   output controller_err_bits_t err_bits_o,
@@ -308,7 +308,7 @@ module otbn_controller
   assign executing = (state_q == OtbnStateRun) ||
                      (state_q == OtbnStateStall);
 
-  assign locked_o = (state_q == OtbnStateLocked) & ~secure_wipe_running_i;
+  assign locking_o = (state_d == OtbnStateLocked) & ~secure_wipe_running_i;
   assign start_secure_wipe_o = executing & (done_complete | err) & ~secure_wipe_running_i;
 
   assign jump_or_branch = (insn_valid_i &
@@ -499,7 +499,7 @@ module otbn_controller
     if (!rst_ni) begin
       err_bits_q <= '0;
     end else begin
-      if (start_i && !locked_o) begin
+      if (start_i && !locking_o) begin
         err_bits_q <= '0;
       end else begin
         err_bits_q <= err_bits_q | err_bits_d;

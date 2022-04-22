@@ -94,7 +94,7 @@ module otbn
 
   logic start_d, start_q;
   logic busy_execute_d, busy_execute_q;
-  logic done, done_core, locked, idle;
+  logic done, done_core, locking;
   logic illegal_bus_access_d, illegal_bus_access_q;
   logic missed_gnt_error_d, missed_gnt_error_q;
   logic dmem_sec_wipe;
@@ -119,7 +119,7 @@ module otbn
 
   otbn_reg2hw_t reg2hw;
   otbn_hw2reg_t hw2reg;
-  logic [7:0]   hw2reg_status_d;
+  status_e      status_d, status_q;
 
   // Bus device windows, as specified in otbn.hjson
   typedef enum logic {
@@ -132,21 +132,18 @@ module otbn
 
   // The clock can be gated and some registers can be updated as long as OTBN isn't currently
   // running. Other registers can only be updated when OTBN is in the Idle state (which also implies
-  // !locked).
-  logic is_not_running, is_not_running_r;
+  // we are not locked).
+  logic is_not_running_d, is_not_running_q;
   logic otbn_dmem_scramble_key_req_busy, otbn_imem_scramble_key_req_busy;
 
-  assign is_not_running =
-    ~(busy_execute_q | otbn_dmem_scramble_key_req_busy | otbn_imem_scramble_key_req_busy);
+  assign is_not_running_d =
+    ~(busy_execute_d | otbn_dmem_scramble_key_req_busy | otbn_imem_scramble_key_req_busy);
 
-  // Add a register stage so we have an `is_not_running_r` which changes with the same timing as
-  // `status.q`. Without this `idle_o` will be asserted a cycle before `status.q` changes resulting
-  // in bad interrupt timing where the interrupt is seen the cycle after `idle_o`.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if(!rst_ni) begin
-      is_not_running_r <= 1'b1;
+      is_not_running_q  <= 1'b1;
     end else begin
-      is_not_running_r <= is_not_running;
+      is_not_running_q  <= is_not_running_d;
     end
   end
 
@@ -154,7 +151,14 @@ module otbn
 
   // Note: This is not the same thing as STATUS == IDLE. For example, we want to allow clock gating
   // when locked.
-  assign idle_o = mubi4_bool_to_mubi(is_not_running_r);
+  prim_mubi4_sender #(
+    .ResetValue(prim_mubi_pkg::MuBi4True)
+  ) u_prim_mubi4_sender (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi4_bool_to_mubi(is_not_running_q)),
+    .mubi_o(idle_o)
+  );
 
   // Lifecycle ==================================================================
 
@@ -171,12 +175,10 @@ module otbn
 
   // Interrupts ================================================================
 
-  assign done = is_busy_status(status_e'(reg2hw.status.q)) &
-    !is_busy_status(status_e'(hw2reg_status_d));
+  assign done = is_busy_status(status_q) & ~is_busy_status(status_d);
 
   prim_intr_hw #(
-    .Width(1),
-    .FlopOutput(0)
+    .Width(1)
   ) u_intr_hw_done (
     .clk_i,
     .rst_ni                (rst_n),
@@ -312,7 +314,7 @@ module otbn
     .addr_i      (imem_index),
     .wdata_i     (imem_wdata),
     .wmask_i     (imem_wmask),
-    .intg_error_i(locked),
+    .intg_error_i(locking),
 
     .rdata_o (imem_rdata),
     .rvalid_o(imem_rvalid),
@@ -476,7 +478,7 @@ module otbn
     .addr_i      (dmem_index),
     .wdata_i     (dmem_wdata),
     .wmask_i     (dmem_wmask),
-    .intg_error_i(locked),
+    .intg_error_i(locking),
 
     .rdata_o (dmem_rdata),
     .rvalid_o(dmem_rvalid),
@@ -662,7 +664,7 @@ module otbn
     imem_sec_wipe = 1'b0;
 
     // Can only start a new command when idle.
-    if (idle) begin
+    if (status_q == StatusIdle) begin
       if (reg2hw.cmd.qe) begin
         unique case (reg2hw.cmd.q)
           CmdExecute:     start_d       = 1'b1;
@@ -709,31 +711,41 @@ module otbn
   // STATUS register
   // imem/dmem scramble req can be busy when locked, so use a priority selection so locked status
   // always takes priority.
-  assign hw2reg_status_d = locked                          ? StatusLocked          :
-                           busy_execute_q                  ? StatusBusyExecute     :
-                           otbn_dmem_scramble_key_req_busy ? StatusBusySecWipeDmem :
-                           otbn_imem_scramble_key_req_busy ? StatusBusySecWipeImem :
-                           idle                            ? StatusIdle            :
-                                                             StatusLocked;
+  //
+  // Note that these signals are all "a cycle early". For example, the locking signal gets asserted
+  // combinatorially on the cycle that an error is injected. The STATUS register change, done
+  // interrupt and any change to the idle signal will be delayed by 2 cycles.
+  assign status_d = locking                         ? StatusLocked          :
+                    busy_execute_d                  ? StatusBusyExecute     :
+                    otbn_dmem_scramble_key_req_busy ? StatusBusySecWipeDmem :
+                    otbn_imem_scramble_key_req_busy ? StatusBusySecWipeImem :
+                                                      StatusIdle;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      status_q <= StatusIdle;
+    end else begin
+      status_q <= status_d;
+    end
+  end
 
-  assign hw2reg.status.d = hw2reg_status_d;
+  assign hw2reg.status.d = status_q;
   assign hw2reg.status.de = 1'b1;
 
-  `ASSERT(OtbnStateDefined, |{locked,
-                              busy_execute_q,
-                              otbn_dmem_scramble_key_req_busy,
-                              otbn_imem_scramble_key_req_busy,
-                              idle})
-
-  `ASSERT(OtbnOnlyIdleIfNoActivity, idle |-> ~|{locked,
-                                                busy_execute_q,
-                                                otbn_dmem_scramble_key_req_busy,
-                                                otbn_imem_scramble_key_req_busy})
+  // Only certain combinations of the state variable {locking, busy_execute_d,
+  // otbn_dmem_scramble_key_req_busy, otbn_imem_scramble_key_req_busy} are possible. Most of the
+  // time, we'd expect it to be onehot0. The only time this is relaxed is when we are in the locking
+  // state, in which case the scrambling signals may also be set.
+  `ASSERT(ValidUnlockedStateCombinations_A,
+          ((!locking) |-> $onehot0({busy_execute_d,
+                                    otbn_dmem_scramble_key_req_busy,
+                                    otbn_imem_scramble_key_req_busy})))
+  `ASSERT(ValidLockedStateCombinations_A,
+          locking |-> !busy_execute_d)
 
   // CTRL register
   assign software_errs_fatal_d =
-    reg2hw.ctrl.qe && idle ? reg2hw.ctrl.q :
-                             software_errs_fatal_q;
+    reg2hw.ctrl.qe && (status_q == StatusIdle) ? reg2hw.ctrl.q :
+                                                 software_errs_fatal_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -766,7 +778,7 @@ module otbn
   assign hw2reg.err_bits.lifecycle_escalation.d = err_bits_q.lifecycle_escalation;
   assign hw2reg.err_bits.fatal_software.d = err_bits_q.fatal_software;
 
-  assign err_bits_clear = reg2hw.err_bits.bad_data_addr.qe & is_not_running;
+  assign err_bits_clear = reg2hw.err_bits.bad_data_addr.qe & is_not_running_q;
   assign err_bits_d = err_bits_clear ? '0 : err_bits;
   assign err_bits_en = err_bits_clear | done_core;
 
@@ -833,7 +845,7 @@ module otbn
   logic        insn_cnt_clear;
   logic        unused_insn_cnt_q;
   assign hw2reg.insn_cnt.d = insn_cnt;
-  assign insn_cnt_clear = reg2hw.insn_cnt.qe & is_not_running;
+  assign insn_cnt_clear = reg2hw.insn_cnt.qe & is_not_running_q;
   // Ignore all write data to insn_cnt. All writes zero the register.
   assign unused_insn_cnt_q = ^reg2hw.insn_cnt.q;
 
@@ -942,7 +954,7 @@ module otbn
 
     .start_i                     (start_q),
     .done_o                      (done_core),
-    .locked_o                    (locked),
+    .locking_o                   (locking),
 
     .err_bits_o                  (core_err_bits),
     .recoverable_err_o           (core_recoverable_err),
@@ -1034,10 +1046,6 @@ module otbn
                            non_core_err_bits.bus_intg_violation}),
       lc_ctrl_pkg::lc_to_mubi4(lc_escalate_en[1])
   );
-
-  // We're idle if we're neither busy executing something nor locked
-  assign idle = ~(busy_execute_q | locked | otbn_dmem_scramble_key_req_busy |
-                  otbn_imem_scramble_key_req_busy);
 
   // The core can never signal a write to IMEM
   assign imem_write_core = 1'b0;
