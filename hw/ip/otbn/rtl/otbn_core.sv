@@ -31,9 +31,9 @@ module otbn_core
   input logic clk_i,
   input logic rst_ni,
 
-  input  logic start_i,  // start the operation
-  output logic done_o,   // operation done
-  output logic locked_o, // otbn locked, reset required to perform further commands
+  input  logic start_i,   // start the operation
+  output logic done_o,    // operation done
+  output logic locking_o, // The core is in or is entering the locked state
 
   output core_err_bits_t err_bits_o,  // valid when done_o is asserted
   output logic           recoverable_err_o,
@@ -378,7 +378,7 @@ module otbn_core
     .rst_ni,
 
     .start_i      (controller_start),
-    .locked_o,
+    .locking_o,
 
     .escalate_en_i(controller_escalate_en),
     .err_bits_o   (controller_err_bits),
@@ -540,7 +540,7 @@ module otbn_core
     if (!rst_ni) begin
       err_bits_q <= '0;
     end else begin
-      if (start_i && !locked_o) begin
+      if (start_i && !locking_o) begin
         err_bits_q <= '0;
       end else begin
         err_bits_q <= err_bits_q | err_bits_d;

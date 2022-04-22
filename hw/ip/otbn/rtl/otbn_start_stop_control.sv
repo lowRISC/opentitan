@@ -177,7 +177,6 @@ module otbn_start_stop_control
       end
       OtbnStartStopSecureWipeComplete: begin
         urnd_advance_o = 1'b1;
-        secure_wipe_running_o = 1'b1;
         state_d = should_lock_d ? OtbnStartStopStateLocked : OtbnStartStopStateHalt;
       end
       OtbnStartStopStateLocked: begin
