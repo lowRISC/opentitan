@@ -712,12 +712,7 @@ dif_result_t dif_kmac_squeeze(const dif_kmac_t *kmac,
     }
 
     // Poll the status register until in the 'squeeze' state.
-    while (true) {
-      if (is_state_squeeze(kmac)) {
-        break;
-      }
-      // TODO(#6248): check for error.
-    }
+    DIF_RETURN_IF_ERROR(poll_state(kmac, KMAC_STATUS_SHA3_SQUEEZE_BIT));
 
     uint32_t offset =
         KMAC_STATE_REG_OFFSET + operation_state->offset * sizeof(uint32_t);
