@@ -210,11 +210,11 @@ class KmacTest : public testing::Test, public mock_mmio::MmioTest {
     }
   }
 
-  void ExpectEntropySeed(uint64_t seed) {
-    EXPECT_WRITE32(KMAC_ENTROPY_SEED_LOWER_REG_OFFSET,
-                   static_cast<uint32_t>(seed));
-    EXPECT_WRITE32(KMAC_ENTROPY_SEED_UPPER_REG_OFFSET,
-                   static_cast<uint32_t>(seed >> 32));
+  void ExpectEntropySeed(const uint32_t *seed) {
+    for (uint32_t i = 0; i < kDifKmacEntropySeedWords; ++i) {
+      ptrdiff_t offset = KMAC_ENTROPY_SEED_0_REG_OFFSET + i * sizeof(uint32_t);
+      EXPECT_WRITE32(offset, seed[i]);
+    }
   }
 };
 
@@ -602,7 +602,8 @@ class KmacConfigureTest : public KmacTest {
   dif_kmac_config_t kmac_config_ = {
       .entropy_mode = kDifKmacEntropyModeIdle,
       .entropy_fast_process = false,
-      .entropy_seed = 0x45987a984f9f862d,
+      .entropy_seed = {0xaa25b4bf, 0x48ce8fff, 0x5a78282a, 0x48465647,
+                       0x70410fef},
       .entropy_reseed_interval = 4985,
       .entropy_wait_timer = 9562,
       .message_big_endian = false,
