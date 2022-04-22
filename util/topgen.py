@@ -1136,7 +1136,7 @@ def main():
 """.format(topname=topname, seed=completecfg["rnd_cnst_seed"])
 
     genhjson_path.write_text(genhdr + gencmd +
-                             hjson.dumps(completecfg, for_json=True))
+                             hjson.dumps(completecfg, for_json=True) + '\n')
 
     if not args.no_top or args.top_only:
 
