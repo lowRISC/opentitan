@@ -271,7 +271,7 @@
     { name: "STATUS",
       desc: "Status Register",
       swaccess: "ro",
-      hwaccess: "hrw",
+      hwaccess: "hwo",
       fields: [
         { bits: "7:0",
           name: "status",
