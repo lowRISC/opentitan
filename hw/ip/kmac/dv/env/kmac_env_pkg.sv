@@ -90,15 +90,11 @@ package kmac_env_pkg;
   // number of rounds performed by keccak logic
   parameter int KECCAK_NUM_ROUNDS = 12 + 2 * L;
 
-  parameter int ENTROPY_STORAGE_WIDTH = 320;
-  parameter int ENTROPY_LFSR_WIDTH    = 64;
+  // After seeding the LFSRs, the internal auxiliary storage is filled up in 1 clock cycle.
+  parameter int CYCLES_TO_FILL_ENTROPY = 1;
 
-  // After seeding lfsr, internal entropy_storage is filled up in 5 cycles,
-  // ENTROPY_LFSR_WIDTH bits per cycles
-  parameter int CYCLES_TO_FILL_ENTROPY = ENTROPY_STORAGE_WIDTH / ENTROPY_LFSR_WIDTH;
-
-  // 6 cycles total:                            5 cycles (only 2 cannot be overlapped) + 4 cycles (for core)
-  parameter int ENTROPY_FULL_EXPANSION_CYCLES = CYCLES_TO_FILL_ENTROPY - 3 + 4;
+  // 4 cycles total: 4 cycles (for core) - entropy generation can be fully overlapped with core.
+  parameter int ENTROPY_FULL_EXPANSION_CYCLES = 4;
 
   // 4 cycles total:                             4 cycles (for core)
   parameter int ENTROPY_FAST_PROCESSING_CYCLES = 4;

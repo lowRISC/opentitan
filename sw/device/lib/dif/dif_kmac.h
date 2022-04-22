@@ -81,6 +81,63 @@ typedef enum dif_kmac_entropy_mode {
 } dif_kmac_entropy_mode_t;
 
 /**
+ * Maximum lengths supported by the KMAC unit.
+ */
+enum {
+
+  /**
+   * The maximum length in bytes of a customization string (S) before it has
+   * been encoded.
+   */
+  kDifKmacMaxCustomizationStringLen = 32,
+
+  /**
+   * The maximum number of bytes required to encode the length of the
+   * customization string.
+   *
+   * Assumes maximum customization string length of 32 bytes (256 bits).
+   */
+  kDifKmacMaxCustomizationStringOverhead = 3,
+
+  /**
+   * The maximum length in bytes of a function name (N) before it has been
+   * encoded.
+   */
+  kDifKmacMaxFunctionNameLen = 4,
+
+  /**
+   * The maximum number of bytes required to encode the length of the function
+   * name.
+   *
+   * Assumes maximum function name length of 4 bytes (32 bits).
+   */
+  kDifKmacMaxFunctionNameOverhead = 2,
+
+  /**
+   * The maximum output length (L) that can be set when starting a KMAC
+   * operation.
+   *
+   * The length is in 32-bit words and is designed to be low enough that the
+   * length in bits can still be represented by an unsigned 32-bit integer.
+   */
+  kDifKmacMaxOutputLenWords = (UINT32_MAX - 32) / 32,
+
+  /**
+   * The maximum key length supported by the KMAC operation.
+   *
+   * The length is in 32-bit words.
+   */
+  kDifKmacMaxKeyLenWords = 512 / 32,
+
+  /**
+   * The length of the software entropy seed.
+   *
+   * The length is in 32-bit words.
+   */
+  kDifKmacEntropySeedWords = 5,
+};
+
+/**
  * Runtime configuration for KMAC.
  *
  * This struct describes runtime information for configuration of the hardware.
@@ -100,7 +157,7 @@ typedef struct dif_kmac_config {
   /**
    * Entropy seed. Only used when the source of entropy is software.
    */
-  uint64_t entropy_seed;
+  uint32_t entropy_seed[kDifKmacEntropySeedWords];
 
   /**
    * Entropy reseed interval in clock cycles. Only used when the source of
@@ -222,56 +279,6 @@ typedef enum dif_kmac_mode_kmac {
   /** KMAC with 256 bit strength. */
   kDifKmacModeKmacLen256,
 } dif_kmac_mode_kmac_t;
-
-/**
- * Maximum lengths supported by the KMAC unit.
- */
-enum {
-
-  /**
-   * The maximum length in bytes of a customization string (S) before it has
-   * been encoded.
-   */
-  kDifKmacMaxCustomizationStringLen = 32,
-
-  /**
-   * The maximum number of bytes required to encode the length of the
-   * customization string.
-   *
-   * Assumes maximum customization string length of 32 bytes (256 bits).
-   */
-  kDifKmacMaxCustomizationStringOverhead = 3,
-
-  /**
-   * The maximum length in bytes of a function name (N) before it has been
-   * encoded.
-   */
-  kDifKmacMaxFunctionNameLen = 4,
-
-  /**
-   * The maximum number of bytes required to encode the length of the function
-   * name.
-   *
-   * Assumes maximum function name length of 4 bytes (32 bits).
-   */
-  kDifKmacMaxFunctionNameOverhead = 2,
-
-  /**
-   * The maximum output length (L) that can be set when starting a KMAC
-   * operation.
-   *
-   * The length is in 32-bit words and is designed to be low enough that the
-   * length in bits can still be represented by an unsigned 32-bit integer.
-   */
-  kDifKmacMaxOutputLenWords = (UINT32_MAX - 32) / 32,
-
-  /**
-   * The maximum key length supported by the KMAC operation.
-   *
-   * The length is in 32-bit words.
-   */
-  kDifKmacMaxKeyLenWords = 512 / 32,
-};
 
 /**
  * Key length.
