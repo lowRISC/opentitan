@@ -22,18 +22,41 @@ def _hjson_header(ctx):
         ] + [src.path for src in ctx.files.srcs],
         executable = ctx.executable._regtool,
     )
+
+    tock = ctx.actions.declare_file("{}.rs".format(ctx.label.name))
+    ctx.actions.run(
+        outputs = [tock],
+        inputs = ctx.files.srcs + [ctx.executable._regtool, ctx.file.version_stamp],
+        arguments = [
+            "--tock",
+            "--version-stamp={}".format(ctx.file.version_stamp.path),
+            "-q",
+            "-o",
+            tock.path,
+        ] + [src.path for src in ctx.files.srcs],
+        executable = ctx.executable._regtool,
+    )
+
     return [
         CcInfo(compilation_context = cc_common.create_compilation_context(
             includes = depset([header.dirname]),
             headers = depset([header]),
         )),
-        DefaultInfo(files = depset([header])),
+        DefaultInfo(files = depset([header, tock])),
+        OutputGroupInfo(
+            header = depset([header]),
+            tock = depset([tock]),
+        ),
     ]
 
 autogen_hjson_header = rule(
     implementation = _hjson_header,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
+        "version_stamp": attr.label(
+            default = "//util:full_version_file",
+            allow_single_file = True,
+        ),
         "_regtool": attr.label(
             default = "//util:regtool",
             executable = True,

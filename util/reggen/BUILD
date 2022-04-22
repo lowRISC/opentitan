@@ -264,6 +264,20 @@ py_library(
 )
 
 py_library(
+    name = "gen_tock",
+    srcs = ["gen_tock.py"],
+    deps = [
+        ":field",
+        ":ip_block",
+        ":multi_register",
+        ":params",
+        ":register",
+        ":signal",
+        ":window",
+    ],
+)
+
+py_library(
     name = "gen_sec_cm_testplan",
     srcs = ["gen_sec_cm_testplan.py"],
     deps = [
