@@ -76,6 +76,9 @@ jobs:
   - bash: ci/scripts/clang-format.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Use clang-format to check C/C++ coding style
+  - bash: ci/scripts/rust-format.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Use rustfmt to check Rust coding style
   - bash: ci/scripts/include-guard.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Check formatting on header guards
