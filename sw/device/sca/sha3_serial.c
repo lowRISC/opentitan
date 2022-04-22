@@ -391,6 +391,7 @@ static void kmac_init(void) {
       .entropy_mode = kDifKmacEntropyModeSoftware,
       .entropy_seed = 0xffff,
       .entropy_fast_process = true,
+      .msg_mask = true,
   };
   CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
 
