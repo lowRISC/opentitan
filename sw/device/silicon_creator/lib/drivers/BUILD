@@ -447,27 +447,42 @@ opentitan_functest(
     ],
 )
 
-cc_library(
+dual_cc_library(
     name = "rstmgr",
-    srcs = ["rstmgr.c"],
-    hdrs = ["rstmgr.h"],
-    deps = [
-        "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:multibits",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-    ],
+    srcs = dual_inputs(
+        device = ["rstmgr.c"],
+        host = ["mock_rstmgr.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = ["mock_rstmgr.h"],
+        shared = ["rstmgr.h"],
+    ),
+    deps = dual_inputs(
+        device = [
+            "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        ],
+        host = [
+            "//sw/device/lib/base/testing:global_mock",
+            "//sw/device/silicon_creator/testing:mask_rom_test",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            "//sw/device/lib/base:bitfield",
+            "//sw/device/lib/base:macros",
+            "//sw/device/lib/base:multibits",
+            "//sw/device/lib/runtime:hart",
+            "//sw/device/silicon_creator/lib:error",
+            "//sw/device/silicon_creator/lib/base:sec_mmio",
+        ],
+    ),
 )
 
 cc_test(
     name = "rstmgr_unittest",
     srcs = ["rstmgr_unittest.cc"],
     deps = [
-        ":rstmgr",
+        dual_cc_device_library_of(":rstmgr"),
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
