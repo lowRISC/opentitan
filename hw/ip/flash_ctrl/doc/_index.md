@@ -258,7 +258,7 @@ Software then configures the access privileges for that region.
 Subsequent accesses are then allowed or denied based on the defined rule set.
 Similar to RISCV pmp, if two region overlaps, the lower region index has higher priority.
 
-For information partitions, the protection is done per indvidual page.
+For information partitions, the protection is done per individual page.
 Each page can be configured with access privileges.
 As a result, software does not need to define a start and end page for information partitions.
 See {{< regref "BANK0_INFO0_PAGE_CFG_SHADOWED_0" >}} as an example.
@@ -324,7 +324,7 @@ This is because an external power manager event (such as shutting off power) whi
 #### Flash Code Execution Handling
 
 Flash can be used to store both data and code.
-To support separate access priviledges between data and code, the flash protocol controller provides {{< regref "EXEC" >}} for software control.
+To support separate access privileges between data and code, the flash protocol controller provides {{< regref "EXEC" >}} for software control.
 
 If software programs {{< regref "EXEC" >}} to `0xa26a38f7`, code fetch from flash is allowed.
 If software programs {{< regref "EXEC" >}} to any other value, code fetch from flash results in an error.
@@ -463,7 +463,7 @@ When a bank erase command is issued and allowed, see [bank erase protection](#ba
 Flash scrambling is built using the [XEX tweakable block cipher](https://en.wikipedia.org/wiki/Disk_encryption_theory#Xor%E2%80%93encrypt%E2%80%93xor_(XEX)).
 
 When a read transaction is sent to flash, the following steps are taken:
-*  The tweak is calculated using the transaction address and a secret address key through a galois multiplier.
+*  The tweak is calculated using the transaction address and a secret address key through a Galois multiplier.
 *  The data content is read out of flash.
 *  If the data content is scrambled, the tweak is XOR'd with the scrambled text and then decrypted through the PRINCE block cipher using a secret data key.
 *  The output of the PRINCE cipher is XOR'd again with the tweak and the final results are presented.
@@ -483,7 +483,7 @@ Scramble enablement is done differently depending on the type of partitions.
 There are two types of flash ECC supported.
 
 The first type is an integrity ECC used to detect whether the de-scrambled data has been modified.
-The second type is a reliabilty ECC used for error detection and correction on the whole flash word.
+The second type is a reliability ECC used for error detection and correction on the whole flash word.
 
 The first type of ECC is required on every flash word.
 The second type of ECC is configurable based on the various page and memory property configurations.
@@ -521,7 +521,7 @@ ECC enablement is done differently depending on the type of partitions.
 ##### Scrambling Consistency
 
 The flash physical controller does not keep a history of when a particular memory location has scrambling enabled or disabled.
-This means if a memory locaiton was programmed while scrambled, disabling scrambling and then reading it back will result in garbage.
+This means if a memory location was programmed while scrambled, disabling scrambling and then reading it back will result in garbage.
 Similarly, if a location was programmed while non-scrambled, enabling scrambling and then reading it back will also result in garbage.
 
 It it thus the programmer's responsibility to maintain a consistent definition of whether a location is scrambled.
@@ -537,7 +537,7 @@ The cache behaves as a highly simplified read-only-cache and holds by default 4 
 
 When a read transaction is sent to flash, the following steps are taken:
 *  A check is performed against the local cache
-   * If there is a hit (either the entry is already in cache, or the entry is currently being processed), the transacton is immediately forwarded to the response queue.
+   * If there is a hit (either the entry is already in cache, or the entry is currently being processed), the transaction is immediately forwarded to the response queue.
    * If there is not a hit, an entry in the local cache is selected for allocation (round robin arbitration) and a flash read is issued.
 *  When the flash read completes, its descrambling attributes are checked:
    * If descrambling is required, the read data begins the descrambling phase - at this time, a new flash read can be issued for the following transaction.
@@ -562,7 +562,7 @@ The flash buffer has a round robin replacement policy when more flash words are 
 When an erase / program is issued to the flash, the entries are evicted to ensure new words are fetched.
 
 When a page erase / program is issued to a flash bank, only entries that fall into that address range are evicted.
-When a bank erase is issued, then all entires are evicted.
+When a bank erase is issued, then all entries are evicted.
 
 The flash buffer is only enabled after {{< regref "INIT" >}} is invoked.
 When an RMA entry sequence is received, the flash buffers are disabled.
@@ -662,7 +662,7 @@ Signal                     | Direction      | Description
 
 
 
-## Design Detials
+## Design Details
 
 ### Flash Protocol Controller Description
 
