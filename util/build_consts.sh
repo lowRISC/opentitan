@@ -44,3 +44,4 @@ readonly OBJ_DIR="$BUILD_ROOT/build-out"
 export OBJ_DIR
 readonly BIN_DIR="$BUILD_ROOT/build-bin"
 export BIN_DIR
+export PYTHONPATH="${REPO_TOP}"

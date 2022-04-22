@@ -100,6 +100,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
   test_rom_scrambled = custom_target(
     target_name.format('scrambled'),
     command: scramble_image_command,
+    env: {'PYTHONPATH': meson.project_source_root()},
     depend_files: scramble_image_depend_files,
     input: test_rom_elf,
     output: scramble_image_outputs,
