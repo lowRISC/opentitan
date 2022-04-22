@@ -717,4 +717,33 @@ TEST_F(KmacStatusTest, BadArg) {
   EXPECT_DIF_BADARG(dif_kmac_get_status(&kmac_, nullptr));
 }
 
+class KmacGetErrorTest : public KmacTest {
+ protected:
+  static constexpr std::array<dif_kmac_error_t, 7> kErrors = {
+      kDifErrorNone,
+      kDifErrorKeyNotValid,
+      kDifErrorSoftwarePushedMessageFifo,
+      kDifErrorSoftwarePushedWrongCommand,
+      kDifErrorEntropyWaitTimerExpired,
+      kDifErrorEntropyModeIncorrect,
+      kDifErrorUnknownError};
+  dif_kmac_error_t error_;
+  KmacGetErrorTest() { op_state_.squeezing = true; }
+};
+constexpr std::array<dif_kmac_error_t, 7> KmacGetErrorTest::kErrors;
+
+TEST_F(KmacGetErrorTest, Success) {
+  for (auto err : kErrors) {
+    EXPECT_READ32(KMAC_ERR_CODE_REG_OFFSET, err);
+    EXPECT_DIF_OK(dif_kmac_get_error(&kmac_, &error_));
+    EXPECT_EQ(error_, err);
+  }
+}
+
+TEST_F(KmacGetErrorTest, BadArg) {
+  EXPECT_DIF_BADARG(dif_kmac_get_error(nullptr, &error_));
+
+  EXPECT_DIF_BADARG(dif_kmac_get_error(&kmac_, nullptr));
+}
+
 }  // namespace dif_kmac_unittest
