@@ -569,3 +569,16 @@ size_t DpiMemUtil::GetRegionForSegment(const std::string &path, int seg_idx,
 
   return mem_area_it->second;
 }
+
+const MemArea &DpiMemUtil::GetMemoryArea(const std::string &name) {
+  // Search for corresponding registered memory based on the name
+  auto it = name_to_mem_.find(name);
+  if (it == name_to_mem_.end()) {
+    std::ostringstream oss;
+    oss << "`" << name
+        << ("' is not the name of a known memory region. "
+            "Run with --meminit=list to get a list.");
+    throw std::runtime_error(oss.str());
+  }
+  return *mem_areas_[it->second];
+}

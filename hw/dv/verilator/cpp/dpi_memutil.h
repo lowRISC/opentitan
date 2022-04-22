@@ -86,6 +86,13 @@ class DpiMemUtil {
                           const MemArea *mem_area);
 
   /**
+   * Get a Memory Area by name
+   *
+   * @see RegisterMemoryArea()
+   */
+  const MemArea &GetMemoryArea(const std::string &name);
+
+  /**
    * Guess the type of the file at |path|.
    *
    * If |type| is non-null, it is the name of an image type and will be used.
