@@ -546,8 +546,9 @@ class kmac_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task provide_sw_entropy();
-    csr_wr(.ptr(ral.entropy_seed_lower), .value($urandom()));
-    csr_wr(.ptr(ral.entropy_seed_upper), .value($urandom()));
+    for (int i = 0; i < kmac_reg_pkg::NumSeedsEntropyLfsr; i++) begin
+      csr_wr(.ptr(ral.entropy_seed[i]), .value($urandom()));
+    end
   endtask
 
   // Call this task to initiate a KMAC_APP hashing operation

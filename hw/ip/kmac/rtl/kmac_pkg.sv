@@ -90,20 +90,70 @@ package kmac_pkg;
     EntropyModeSw   = 2'h 2
   } entropy_mode_e;
 
-  // entropy lfsr related
-  parameter int unsigned EntropyLfsrW = 64;
+  // PRNG (kmac_entropy)
+  parameter int unsigned EntropyLfsrW = 800;
+  parameter int unsigned ChunkSizeEntropyLfsr = 32;
+  parameter int unsigned NumChunksEntropyLfsr = EntropyLfsrW / ChunkSizeEntropyLfsr;
+
+  // We use a single seed that is split down into chunks internally.
+  // These LFSR parameters have been generated with
+  // $ ./util/design/gen-lfsr-seed.py --width 800 --seed 3369807298 --prefix ""
   typedef logic [EntropyLfsrW-1:0] lfsr_seed_t;
   typedef logic [EntropyLfsrW-1:0][$clog2(EntropyLfsrW)-1:0] lfsr_perm_t;
-  parameter lfsr_seed_t RndCnstLfsrSeedDefault = 64'h47e808241ebaa563;
+  parameter lfsr_seed_t RndCnstLfsrSeedDefault = {
+    32'h34a19ca3,
+    256'he514d8e17a5630c287247dff3d354c022f581ace4b6c5736b5efa4160261ab0f,
+    256'h6cb2915197ab3588982bcffc9cf3b46a250cebf728c0e76f0e680420d7f428f2,
+    256'h092c1e308f7c8f9d8bacc20cd18fd586d58879654aa4851de224033bfdcbc578
+  };
   parameter lfsr_perm_t RndCnstLfsrPermDefault = {
-    128'hc4ffd50080c2bba9a263211ef56f8d4b,
-    256'h9da89ed97481a32c5d9a4650abeb9388fcedcab36df411849df5c057473812d3
+    64'hb1a3e87aeb4e69f0,
+    256'h2d8a6ee2c9ac567b2aa401a639a2a8ea2553614c0a8daf672c06546fc0d35267,
+    256'hc4572024bc116458dd0f1c10a8aef5c4ad9a788968d0d7ca7345c6b8f277a5d3,
+    256'hec5da20f261826ed3c8992724e70db897060be51b07a96902e14a42d12d320f8,
+    256'h187049b6c25f35d0e485cc4b9ef01dad2865b5e558926f380718b74394fe0f82,
+    256'hd5395a7d0aa4845af814e8681107a4c793758572c9467493bf1248a48f1b40c2,
+    256'h09319b55111d0401819685a43a06f0da441021a8c220b14f01d44e49c1683a82,
+    256'hafeb980964aa050641f4205131d9d4741eb5dd658e603b8ed438cb1096628d42,
+    256'h62c9d75ced78ed09a3ddbb60f533eef10aa5a54b478d61a06a4b326eb3402105,
+    256'hc27d562c6d91b48440d6d06e543be9871628a4aa9b3d2e51fa0ac2eb89a17f6d,
+    256'h207ad96caf25d1fcffab210c1aff12252346fe4d56a7cd9b8605c7fa638895a9,
+    256'h60158cd3a1ce4f2f6cf5d48579ac14b1e5219ca8914e0507b635dc712554f6bb,
+    256'h0ae412943a7596f4644a0c13646adc91d02c406a10d232791d3de9919eec5424,
+    256'haa2cac5f556c15c647eb29365062daf6aa848e10b3f665abccca713036d9f1cb,
+    256'h1c9bd4aaeb19c5ac01b1805e0d5479860870da49a55e8f386ca8232c728e2f61,
+    256'h3007aa420758818e5312401372eaa00d21c70c7e1158d2e08a1b6ac0b820cb67,
+    256'hf0ba4b5c0865ff04f0f9d0175817c65d81918e43e14b2f83d574bfa9c6e6deae,
+    256'h64c22c2974a1d5c55e2367004b249d5a02fc566685ea33b6f73aaa0244b34412,
+    256'hb1a12230adb1748dc1d956f9f10c8e1aa52f4702e06a16680d92226c830ec4ce,
+    256'h4c2eead21f08c387c3f1de89eb33b983c748e848f68b54f256715221177c5a4a,
+    256'h0a47d82741955626755ba1cc24e2ba40504111b9e26136be714c5bc0d330c3f7,
+    256'h75e863de763270a993890d633c6897218e151943edd8b79ae145cf564b774613,
+    256'h0b0a76c40e7e84c876640dc78260c09a85e92e5ab56c22c0e72a8669fe88ba10,
+    256'h8b99e437c776f0cea0d144f285b6ab7259e12284f380ae3410171cd6a8b04415,
+    256'he95081c8c57e3e526ad5b38019a5c1b5505540462157e7c7e68e6a6a16ac460a,
+    256'h5d5578da28092c7cc927cb9c0ed614a79b0e32b4c5b6a269a40743bef42b5e29,
+    256'hd9a75ecb5548a29e9d34ddda07c8404aabbf5479456731ece3785f6090c3f862,
+    256'h6eb1a5119e8b8e56b1455d820b46e20e15bb7d185a636b10ab8565732c59a302,
+    256'h329925186604edbd5029a9f865268e90003b5b69d3e99240c3432291a60c62a4,
+    256'hebad1ed028cd021b27260db22089e0c44481b1a4c120134ac63dc52fbc4cafb2,
+    256'he065add2665fb361665267b53024329d96587d661f724171155ee73a3f0c47a8,
+    256'h149751a5903c8bbcaf1782e415dfda531eb2af67c25e190330a12000e1fbb9cd
   };
 
   // These LFSR parameters have been generated with
+  // $ ./util/design/gen-lfsr-seed.py --width 32 --seed 2336700764 --prefix ""
+  parameter int LfsrFwdWidth = 32;
+  typedef logic [LfsrFwdWidth-1:0][$clog2(LfsrFwdWidth)-1:0] lfsr_fwd_perm_t;
+  parameter lfsr_fwd_perm_t RndCnstLfsrFwdPermDefault = {
+    160'h7f3ac6d173d78678d84908157fba482e76685704
+  };
+
+  // Message permutation
+  // These LFSR parameters have been generated with
   // $ ./util/design/gen-lfsr-seed.py --width 64 --seed 1201202158 --prefix ""
   // And changed the type name from lfsr_perm_t to msg_perm_t
-  typedef logic [EntropyLfsrW-1:0][$clog2(EntropyLfsrW)-1:0] msg_perm_t;
+  typedef logic [MsgWidth-1:0][$clog2(MsgWidth)-1:0] msg_perm_t;
   parameter msg_perm_t RndCnstMsgPermDefault = {
     128'h382af41849db4cfb9c885f72f118c102,
     256'hcb5526978defac799192f65f54148379af21d7e10d82a5a33c3f31a1eaf964b8
@@ -333,43 +383,4 @@ package kmac_pkg;
     conv_endian64 = (swap) ? conv_data : v ;
   endfunction : conv_endian64
 
-  // 2.5x 320-bit => 800-bit shuffling parameters
-  // These LFSR parameters have been generated with
-  // $ ./util/design/gen-lfsr-seed.py --width 800 --seed 2194103998 --prefix "storage"
-  parameter int StoragePermWidth = 800;
-  typedef logic [StoragePermWidth-1:0][$clog2(StoragePermWidth)-1:0] storage_perm_t;
-  parameter storage_perm_t RndCnstStoragePermDefault = {
-    64'h646210d5815905a0,
-    256'h203c3e255a2ac7a507d7a5945f82d1f22682cde71902ac0df58006b60720695a,
-    256'h9247b4f66a08cdb0f9fc4d5c13766e80d564f8a17230774d33321d61e1659c29,
-    256'h135a90859a21b875aec2a4e4d993c76bd8efb16397e6dfbd0d3b3c5755cb8159,
-    256'hb2229e398314a11c5c00149e6c01d03a456c4b38b1bc888800901196d0c94f63,
-    256'h566bb47e9ee8969248122dd26ccb89105b0d41b32d63457165e7500d7676169c,
-    256'h3ec82d526315b9072f588cab141a766a1c12a58c06e583cad1bd7276e0ca1538,
-    256'h4daabac9aa7389a8d06c999109756f686d5b467a278d02be990350a9942471e1,
-    256'h71a4daba5747109d46b098f2b74a940a75b83fa19969557d6bf061ed57a3732a,
-    256'h8f19dfd0cc380dafa6b6acb26b9a4ecbbf1ab99042a364c84e885adec36025c3,
-    256'ha5f5f5b67c8824b87a86ccfa6d9b0ae6c811af31a33015b16c10d6cc190beca3,
-    256'hc240972e15e80e6ea3093a3d4dd04916610b8b45e595620d5782a6ba0ffb8859,
-    256'had81dc6628ae893040e918c73024a69c909479179b644430683a24b48c771810,
-    256'h7266a47ae92c117589cfb51d688e14a7d9ee5158cbf8bdaaaec741ae64aa3004,
-    256'hf1a3a8b6f63184845906770b262602a873db4c203bc71a9576ea1608903d786a,
-    256'h1184c492546ff486d329d62b192b531ca4c946836e39a5672cb0a3b443b527c3,
-    256'hcdda78632154790592c0c62b7c54d60c95191596726748273625df7fa6f520ec,
-    256'hc4208a883f1ad43a1ea912f032ba4311d9d01d304750f261e5012812893b8421,
-    256'hd14e7f07a71c0a205dd422da1ec31166098a4395f151d95aa5b394205b90b67e,
-    256'hb82dd534f311be618464e69f81f488aa662d76ece34b62a868349ae80385068b,
-    256'hd7021f0da68a402e74ad7062198e6403068dd50552f35c2254096c7dcdb9e2d5,
-    256'h52066f247664a394dddbf4a8a1a597020e446dec2e5495ef03da29194bb33426,
-    256'h1c4522a528a5dea2fee4562078fadbc145b7e9f706c44009d1451447eddea54b,
-    256'ha53ad056e2c179b54485113717bc64d38a3aafa4690a3f3adb70a4ea8daf7174,
-    256'h372311f0f5f4a5ad2bb8d47ce0244dff33040a0c273c8a031108be2a0c58114a,
-    256'h71db70c25fdf0ac5cca7ef3c49e46faa72154b237150851b3031a788830e6226,
-    256'hb2da404709f4d26fd279a04f571a0200b9324dc8ee783071825d850007fbeec2,
-    256'h3e8f9b804104aa1a7211948e79dab352484679cb2ccfcb661f5ede6a6017af48,
-    256'h1941247086d02ae6a79a679e4a7e1d2894ce18a8c125617a31b5b173030e064e,
-    256'had6588b8518b2c1dcbad848542863c6a2b1a59593a3d282471c3244f52f13f2f,
-    256'h8c761c9430f1e97a051385f7262e172bca96513dc4cab9032952523a6361acd1,
-    256'h85d423eaf58c13272ef27c66804e4ad235403133b8fd826c14d1d77be0a5f152
-  };
 endpackage : kmac_pkg

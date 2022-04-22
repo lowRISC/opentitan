@@ -251,28 +251,27 @@ If the `EnMasking` parameter is not set, the second share is always zero.
 
 This section explains the entropy generator inside the KMAC HWIP.
 
+KMAC has an entropy generator to provide the design with pseudo-random numbers while processing the secret key block.
+The entropy is used for both remasking the DOM multipliers inside the Chi function of the Keccak core as well as for masking the message if {{<regref "CFG_SHADOWED.msg_mask" >}} is enabled.
+
 ![Entropy block](kmac-entropy.svg)
 
-KMAC has an entropy generator to feed the random value while KMAC is processing the secret key block.
-The entropy generator fetches initial entropy from the [Entropy Distribution Network (EDN)][edn] module.
-The `prim_lfsr` module in this entropy generator consumes the seed entropy from EDN.
+The entropy generator is made up of 25 32-bit linear feedback shift registers (LFSRs).
+This allows the module to generate 800 bits of fresh, pseudo-random numbers required by the 800 DOM multipliers for remasking in every clock cycle.
+To break linear shift patterns, each LFSR features a non-linear layer.
+In addition an 800-bit wide permutation spanning across all LFSRs is used.
+
+Depending on {{<regref "CFG_SHADOWED.entropy_mode" >}}, the entropy generator fetches initial entropy from the [Entropy Distribution Network (EDN)][edn] module or software has to provide a seed by writing the {{<regref "ENTROPY_SEED_0" >}} - {{<regref "ENTROPY_SEED_4" >}} registers in ascending order.
+The module periodically refreshes the LFSR seeds with the new entropy from EDN.
+
+To limit the entropy consumption for reseeding, a cascaded reseeding mechanism is used.
+Per reseeding operation, the entropy generator consumes five times 32 bits of entropy from [EDN][edn], one 32-bit word at a time.
+These five 32-bit words are directly fed into LFSRs 0/5/10/15/20 for reseeding.
+At the same time, the previous states of LFSRs 0/5/10/15/20 from before the reseeding operation are permuted and then forwarded to reseed LFSRs 1/6/11/16/21.
+Similarly, the previous states of LFSRs 1/6/11/16/21 from before the reseeding operation are permuted and then forwarded to reseed LFSRs 2/7/12/17/22.
+Software can still request a complete reseed of all 25 LFSRs from EDN by subsequently triggering five reseeding operations through {{<regref "CMD.entropy_req" >}}.
 
 [edn]: {{<relref "/hw/ip/edn/doc/_index.md">}}
-
-Internal entropy size used in KMAC operation is the length of Keccak state, which is 1600 bit.
-However, EDN provides the entropy in much less size.
-Requesting multiple entropy to EDN module degrades the KMAC throughput.
-This module requests the entropy to EDN then expands the entropy to 1600 bit.
-
-This module, at first, expands the generated random values to 320 bits by stacking the values in every cycle.
-Then the 320b of the entropy is duplicated into 1600bit.
-Internally, the module stores only 320bit of entropy.
-We choose 320bit to cover one plane (5x 64bit).
-No requirement of the entropy bit size exists.
-But we have decided to prepare the entropy size bigger than the security strength and also cover one plane (5x 64bit).
-
-The module periodically refreshes the LFSR with the new entropy from EDN.
-The refresh does not block the internal entropy expansion operation.
 
 ### Error Report
 
