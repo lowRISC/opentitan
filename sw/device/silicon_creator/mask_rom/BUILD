@@ -220,6 +220,26 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "bootstrap",
+    srcs = ["bootstrap.c"],
+    hdrs = ["bootstrap.h"],
+    deps = [
+        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
+        "//hw/ip/gpio/data:gpio_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/device/silicon_creator/lib/drivers:spi_device",
+    ],
+)
+
 dual_cc_library(
     name = "sigverify_keys_ptrs",
     srcs = dual_inputs(
