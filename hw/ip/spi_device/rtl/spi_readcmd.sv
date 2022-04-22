@@ -181,9 +181,6 @@ module spi_readcmd
   logic unused_p2s_sent ;
   assign unused_p2s_sent = p2s_sent_i;
 
-  spi_mode_e unused_spi_mode ; // will be used for passthrough for output enable
-  assign unused_spi_mode = spi_mode_i;
-
   sram_err_t unused_sram_rerr;
   assign unused_sram_rerr = sram_m2l_i.rerror;
 
@@ -740,6 +737,8 @@ module spi_readcmd
     .rst_ni,
 
     .sys_rst_ni,
+
+    .spi_mode_i,
 
     .current_address_i (addr_d),
     .threshold_i       (readbuf_threshold_i),
