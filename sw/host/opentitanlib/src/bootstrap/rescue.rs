@@ -47,6 +47,7 @@ impl Frame {
     const DATA_LEN: usize = 1024 - std::mem::size_of::<FrameHeader>();
     const HASH_LEN: usize = 32;
     const MAGIC_HEADER: [u8; 4] = [0xfd, 0xff, 0xff, 0xff];
+    const CRYPTOLIB_TELL: [u8; 4] = [0x53, 0x53, 0x53, 0x53];
 
     /// Computes the hash in the header.
     fn header_hash(&self) -> [u8; Frame::HASH_LEN] {
@@ -82,10 +83,11 @@ impl Frame {
             RescueError::ImageFormatError
         );
 
-        // Find second occurrence of magic value.
+        // Find second occurrence of magic value, not followed by signature of encrypted
+        // cryptolib.
         let min_addr = match payload[256..]
             .chunks(256)
-            .position(|c| &c[0..4] == &Self::MAGIC_HEADER)
+            .position(|c| &c[0..4] == &Self::MAGIC_HEADER && &c[4..8] != &Self::CRYPTOLIB_TELL)
         {
             Some(n) => (n + 1) * 256,
             None => bail!(RescueError::ImageFormatError),
