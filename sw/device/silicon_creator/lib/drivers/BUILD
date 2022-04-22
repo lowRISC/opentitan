@@ -67,30 +67,45 @@ opentitan_functest(
     ],
 )
 
-cc_library(
+dual_cc_library(
     name = "flash_ctrl",
-    srcs = ["flash_ctrl.c"],
-    hdrs = ["flash_ctrl.h"],
-    deps = [
-        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:multibits",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-    ],
+    srcs = dual_inputs(
+        device = ["flash_ctrl.c"],
+        host = ["mock_flash_ctrl.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = ["mock_flash_ctrl.h"],
+        shared = ["flash_ctrl.h"],
+    ),
+    deps = dual_inputs(
+        device = [
+            "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
+            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        ],
+        host = [
+            "//sw/device/lib/base/testing:global_mock",
+            "//sw/device/silicon_creator/testing:mask_rom_test",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            "//sw/device/lib/base:abs_mmio",
+            "//sw/device/lib/base:bitfield",
+            "//sw/device/lib/base:hardened",
+            "//sw/device/lib/base:memory",
+            "//sw/device/lib/base:multibits",
+            "//sw/device/silicon_creator/lib:error",
+            "//sw/device/silicon_creator/lib/base:sec_mmio",
+            "//sw/device/silicon_creator/lib/drivers:otp",
+        ],
+    ),
 )
 
 cc_test(
     name = "flash_ctrl_unittest",
     srcs = ["flash_ctrl_unittest.cc"],
     deps = [
-        ":flash_ctrl",
+        dual_cc_device_library_of(":flash_ctrl"),
         "@googletest//:gtest_main",
     ],
 )
