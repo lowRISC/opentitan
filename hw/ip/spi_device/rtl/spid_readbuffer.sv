@@ -50,6 +50,8 @@ module spid_readbuffer #(
 
   input sys_rst_ni, // to keep the addr, bufidx, flip signals
 
+  input spi_device_pkg::spi_mode_e spi_mode_i,
+
   input [31:0]       current_address_i,
   input [BufferAw:0] threshold_i, // A buffer size among two buffers (in bytes)
 
@@ -101,7 +103,8 @@ module spid_readbuffer #(
   // Datapath //
   //////////////
 
-  assign active = (st_q == StActive);
+  assign active = (st_q == StActive)
+                && (spi_mode_i == spi_device_pkg::FlashMode);
 
   // Flip event handling
   always_ff @(posedge clk_i or negedge sys_rst_ni) begin
@@ -153,7 +156,11 @@ module spid_readbuffer #(
   ///////////////////
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) st_q <= StIdle;
-    else         st_q <= st_d;
+    else if (spi_mode_i != spi_device_pkg::FlashMode) begin
+      st_q <= StIdle;
+    end else begin
+      st_q <= st_d;
+    end
   end
 
   always_comb begin
