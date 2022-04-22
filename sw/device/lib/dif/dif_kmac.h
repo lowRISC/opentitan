@@ -666,7 +666,11 @@ dif_result_t dif_kmac_end(const dif_kmac_t *kmac,
                           dif_kmac_operation_state_t *operation_state);
 
 /**
- * Get the current error code.
+ * Read the kmac error register to get the error code indicated the interrupt
+ * state.
+ *
+ * This function should be called in case of any of the `start` functions
+ * returns `kDifError`.
  *
  * @param kmac A KMAC handle.
  * @param[out] error The current error code.
