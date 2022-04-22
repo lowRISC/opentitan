@@ -1900,7 +1900,7 @@
             X-ref'ed with kmac test.
             '''
       milestone: V2
-      tests: ["chip_sw_keymgr_key_derivation"]
+      tests: ["chip_sw_keymgr_key_derivation", "chip_sw_keymgr_key_derivation_jitter_en"]
     }
     {
       name: chip_sw_keymgr_sideload_kmac

@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include <stdbool.h>
+
 #include "sw/device/lib/arch/device.h"
 
 /**
@@ -30,3 +32,5 @@ const uint32_t kUartTxFifoCpuCycles =
 const uintptr_t kDeviceTestStatusAddress = 0;
 
 const uintptr_t kDeviceLogBypassUartAddress = 0;
+
+const bool kJitterEnabled = false;
