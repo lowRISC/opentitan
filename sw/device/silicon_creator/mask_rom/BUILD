@@ -240,6 +240,19 @@ cc_library(
     ],
 )
 
+cc_test(
+    name = "bootstrap_unittest",
+    srcs = ["bootstrap_unittest.cc"],
+    deps = [
+        ":bootstrap",
+        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
+        "//hw/ip/gpio/data:gpio_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "@googletest//:gtest_main",
+    ],
+)
+
 dual_cc_library(
     name = "sigverify_keys_ptrs",
     srcs = dual_inputs(
