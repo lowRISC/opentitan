@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// The frequency vseq exercises the frequency measurement counters. More details
+// The frequency timeout vseq exercises the frequency measurement counters. More details
 // in the clkmgr_testplan.hjson file.
 class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
   `uvm_object_utils(clkmgr_frequency_timeout_vseq)
@@ -57,6 +57,7 @@ class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
       clkmgr_recov_err_t actual_recov_err = '{default: '0};
       logic [ClkMesrUsb:0] expected_recov_timeout_err = '0;
       bit expect_alert = 0;
+      clk_mesr_e clk_mesr_timeout;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       `uvm_info(`gfn, "New round", UVM_MEDIUM)
 
@@ -74,26 +75,30 @@ class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
       // Allow some cycles for measurements to start before turning off the clocks, since the
       // measurement control CSRs are controlled by the clocks we intend to stop.
       cfg.aon_clk_rst_vif.wait_clks(4);
+      clk_mesr_timeout = clk_mesr_e'(clk_timeout);
 
       if (cause_timeout) begin
-        clk_mesr_e clk_mesr_timeout = clk_mesr_e'(clk_timeout);
         `uvm_info(`gfn, $sformatf("Will cause a timeout for clk %0s", clk_mesr_timeout.name()),
                   UVM_MEDIUM)
         if (clk_mesr_timeout inside {ClkMesrIo, ClkMesrIoDiv2, ClkMesrIoDiv4}) begin
+          // All these clocks are derived from io so that gets disabled, and all derived
+          // clocks will get a timeout.
           expected_recov_timeout_err[ClkMesrIo] = 1;
           expected_recov_timeout_err[ClkMesrIoDiv2] = 1;
           expected_recov_timeout_err[ClkMesrIoDiv4] = 1;
-        end else expected_recov_timeout_err[clk_timeout] = 1;
+        end else begin
+          expected_recov_timeout_err[clk_mesr_timeout] = 1;
+        end
         disturb_measured_clock(.clk(clk_mesr_timeout), .enable(1'b0));
       end
       wait_before_read_recov_err_code();
-      if (cause_timeout) disturb_measured_clock(.clk(clk_mesr_e'(clk_timeout)), .enable(1'b1));
-
+      if (cause_timeout) begin
+        disturb_measured_clock(.clk(clk_mesr_e'(clk_timeout)), .enable(1'b1));
+      end
       csr_rd(.ptr(ral.recov_err_code), .value(actual_recov_err));
       `uvm_info(`gfn, $sformatf("Got recov err register=0x%x", actual_recov_err), UVM_MEDIUM)
       if (actual_recov_err.measures) begin
-        report_recov_error_mismatch("measurement", recov_bits_t'(0),
-                                    actual_recov_err.measures);
+        report_recov_error_mismatch("measurement", recov_bits_t'(0), actual_recov_err.measures);
       end
       if (actual_recov_err.timeouts != expected_recov_timeout_err) begin
         report_recov_error_mismatch("timeout", expected_recov_timeout_err,
@@ -122,6 +127,6 @@ class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
       csr_wr(.ptr(ral.recov_err_code), .value('1));
       cfg.aon_clk_rst_vif.wait_clks(2);
     end
-  endtask
+  endtask : body
 
 endclass
