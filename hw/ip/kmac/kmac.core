@@ -38,6 +38,7 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
+      - lowrisc:lint:comportable
     files:
       - lint/kmac.vlt
     file_type: vlt
@@ -46,6 +47,7 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
+      - lowrisc:lint:comportable
     files:
       - lint/kmac.waiver
     file_type: waiver
