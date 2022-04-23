@@ -71,14 +71,6 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   local function void disable_unnecessary_exclusions();
     ral.get_excl_item().enable_excl("clkmgr_reg_block.clk_enables", 0);
     ral.get_excl_item().enable_excl("clkmgr_reg_block.clk_hints", 0);
-
-    // enable these will cause RECOV_ERR_CODE failure in csr tests
-    // TODO: review with @matutem
-//    ral.get_excl_item().enable_excl("clkmgr_reg_block.io_meas_ctrl_shadowed.en", 0);
-//    ral.get_excl_item().enable_excl("clkmgr_reg_block.io_div2_meas_ctrl_shadowed.en", 0);
-//    ral.get_excl_item().enable_excl("clkmgr_reg_block.io_div4_meas_ctrl_shadowed.en", 0);
-//    ral.get_excl_item().enable_excl("clkmgr_reg_block.main_meas_ctrl_shadowed.en", 0);
-//    ral.get_excl_item().enable_excl("clkmgr_reg_block.usb_meas_ctrl_shadowed.en", 0);
     `uvm_info(`gfn, "Adjusted exclusions", UVM_MEDIUM)
     ral.get_excl_item().print_exclusions(UVM_MEDIUM);
   endfunction
@@ -264,18 +256,54 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     endcase
   endtask
 
+  local function void control_sync_pulse_assert(clk_mesr_e clk, bit enable);
+    case (clk)
+      ClkMesrIo: begin
+        if (enable) $asserton(0, "tb.dut.u_io_meas.u_sync_ref.SrcPulseCheck_M");
+        else $assertoff(0, "tb.dut.u_io_meas.u_sync_ref.SrcPulseCheck_M");
+      end
+      ClkMesrIoDiv2: begin
+        if (enable) $asserton(0, "tb.dut.u_io_div2_meas.u_sync_ref.SrcPulseCheck_M");
+        else $assertoff(0, "tb.dut.u_io_div2_meas.u_sync_ref.SrcPulseCheck_M");
+      end
+      ClkMesrIoDiv4: begin
+        if (enable) $asserton(0, "tb.dut.u_io_div4_meas.u_sync_ref.SrcPulseCheck_m");
+        else $assertoff(0, "tb.dut.u_io_div4_meas.u_sync_ref.SrcPulseCheck_M");
+      end
+      ClkMesrMain: begin
+        if (enable) $asserton(0, "tb.dut.u_main_meas.u_sync_ref.SrcPulseCheck_M");
+        else $assertoff(0, "tb.dut.u_main_meas.u_sync_ref.SrcPulseCheck_M");
+      end
+      ClkMesrUsb: begin
+        if (enable) $asserton(0, "tb.dut.u_usb_meas.u_sync_ref.SrcPulseCheck_M");
+        else $assertoff(0, "tb.dut.u_usb_meas.u_sync_ref.SrcPulseCheck_M");
+      end
+      default: `uvm_error(`gfn, $sformatf("unexpected clock index '%0d'", clk))
+    endcase
+  endfunction
+
+  // This turns off/on some clocks being measured to trigger a measurement timeout.
+  // A side-effect is that some RTL assertions will fire, so they are corresponsdingly controlled.
   task disturb_measured_clock(clk_mesr_e clk, bit enable);
     case (clk)
-      ClkMesrIo, ClkMesrIoDiv2, ClkMesrIoDiv4:
-      if (enable) cfg.io_clk_rst_vif.start_clk();
-      else cfg.io_clk_rst_vif.stop_clk();
-      ClkMesrMain:
-      if (enable) cfg.main_clk_rst_vif.start_clk();
-      else cfg.main_clk_rst_vif.stop_clk();
-      ClkMesrUsb:
-      if (enable) cfg.usb_clk_rst_vif.start_clk();
-      else cfg.usb_clk_rst_vif.stop_clk();
-      default: ;
+      ClkMesrIo, ClkMesrIoDiv2, ClkMesrIoDiv4: begin
+        if (enable) cfg.io_clk_rst_vif.start_clk();
+        else cfg.io_clk_rst_vif.stop_clk();
+        control_sync_pulse_assert(.clk(ClkMesrIo), .enable(enable));
+        control_sync_pulse_assert(.clk(ClkMesrIoDiv2), .enable(enable));
+        control_sync_pulse_assert(.clk(ClkMesrIoDiv4), .enable(enable));
+      end
+      ClkMesrMain: begin
+        if (enable) cfg.main_clk_rst_vif.start_clk();
+        else cfg.main_clk_rst_vif.stop_clk();
+        control_sync_pulse_assert(.clk(clk), .enable(enable));
+      end
+      ClkMesrUsb: begin
+        if (enable) cfg.usb_clk_rst_vif.start_clk();
+        else cfg.usb_clk_rst_vif.stop_clk();
+        control_sync_pulse_assert(.clk(clk), .enable(enable));
+      end
+      default: `uvm_fatal(`gfn, $sformatf("Unexpected clk '%0d'", clk))
     endcase
   endtask
 
