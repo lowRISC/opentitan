@@ -711,10 +711,17 @@
       run_opts: ["+en_scb=0", "+csr_rw", "+create_jtag_riscv_map=1"]
     }
     {
+
       name: chip_jtag_mem_access
       uvm_test_seq: "chip_jtag_mem_vseq"
       en_run_modes: ["stub_cpu_mode"]
       run_opts: ["+create_jtag_riscv_map=1"]
+    }
+    {
+      name: chip_sw_ast_clk_outputs
+      uvm_test_seq: chip_sw_ast_clk_outputs_vseq
+      sw_images: ["sw/device/tests/ast_clk_outs_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
     }
   ]
 
