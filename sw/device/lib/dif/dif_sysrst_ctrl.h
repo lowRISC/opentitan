@@ -253,6 +253,136 @@ typedef struct dif_sysrst_ctrl_auto_override_config {
 } dif_sysrst_ctrl_auto_override_config_t;
 
 /**
+ * System Reset Controller pins that can be inverted, read, or overridden.
+ */
+typedef enum dif_sysrst_ctrl_pin {
+  /**
+   * Key 0 input.
+   */
+  kDifSysrstCtrlPinKey0In = 1U << 0,
+  /**
+   * Key 0 output.
+   */
+  kDifSysrstCtrlPinKey0Out = 1U << 1,
+  /**
+   * Key 1 input.
+   */
+  kDifSysrstCtrlPinKey1In = 1U << 2,
+  /**
+   * Key 1 output.
+   */
+  kDifSysrstCtrlPinKey1Out = 1U << 3,
+  /**
+   * Key 2 input.
+   */
+  kDifSysrstCtrlPinKey2In = 1U << 4,
+  /**
+   * Key 2 output.
+   */
+  kDifSysrstCtrlPinKey2Out = 1U << 5,
+  /**
+   * Power button input.
+   */
+  kDifSysrstCtrlPinPowerButtonIn = 1U << 6,
+  /**
+   * Power button output.
+   */
+  kDifSysrstCtrlPinPowerButtonOut = 1U << 7,
+  /**
+   * AC power preset input.
+   */
+  kDifSysrstCtrlPinAcPowerPresentIn = 1U << 8,
+  /**
+   * Battery disable output.
+   */
+  kDifSysrstCtrlPinBatteryDisableOut = 1U << 9,
+  /**
+   * Lid open input.
+   */
+  kDifSysrstCtrlPinLidOpenIn = 1U << 10,
+  /**
+   * Z3 Wakeup output.
+   */
+  kDifSysrstCtrlPinZ3WakeupOut = 1U << 11,
+  /**
+   * Embedded controller reset inout.
+   */
+  kDifSysrstCtrlPinEcResetInOut = 1U << 12,
+  /**
+   * Flash write protect inout.
+   */
+  kDifSysrstCtrlPinFlashWriteProtectInOut = 1U << 12,
+} dif_sysrst_ctrl_pin_t;
+
+/**
+ * Runtime configuration for the System Reset Controller output pin override
+ * feature.
+ */
+typedef struct dif_sysrst_ctrl_pin_config_t {
+  /**
+   * The output pin whose override feature to configure.
+   */
+  dif_sysrst_ctrl_pin_t output_pin;
+  /**
+   * The enablement of the output pin's override feature.
+   */
+  dif_toggle_t output_override_enabled;
+  /**
+   * Whether to allow overriding the output pin with a value of 0.
+   */
+  bool allow_zero;
+  /**
+   * Whether to allow overriding the output pin with a value of 1.
+   */
+  bool allow_one;
+  /**
+   * The override value to write.
+   *
+   * Note: writing a non-allowable value will cause
+   * `dif_sysrst_ctrl_output_pin_override_configure()` to return `kDifBadArg`.
+   */
+  bool override_value;
+} dif_sysrst_ctrl_pin_config_t;
+
+/**
+ * Runtime configuration for the System Reset Controller ultra-low-power (ULP)
+ * wakeup feature.
+ *
+ * When enabled, detection of any of the following conditions:
+ *
+ * 1. HIGH level on the AC Power present signal, or
+ * 2. HIGH --> LOW transition on the Power Button signal, or
+ * 3. LOW --> HIGH transition on the Lid Open signal,
+ *
+ * will cause the System Reset Controller to assert the Z3 Wakeup output signal
+ * and trigger an interrupt, which will also issue a wakeup request to the power
+ * manager.
+ */
+typedef struct dif_sysrst_ctrl_ulp_wakeup_config_t {
+  /**
+   * The time to allow the AC Power present signal to stabilize before
+   * reevaluating its value to decide whether it was activated.
+   *
+   * Units: increments of 5us; [0, 2^16) represents [10, 200) milliseconds.
+   */
+  uint16_t ac_power_debounce_time_threshold;
+  /**
+   * The time to allow the Lid Open signal to stabilize before reevaluating its
+   * value to decide whether it was activated.
+   *
+   * Units: increments of 5us; [0, 2^16) represents [10, 200) milliseconds.
+   */
+  uint16_t lib_open_debounce_time_threshold;
+  /**
+   * The time to allow the Power Button signal to stabilize before reevaluating
+   * its value to decide whether it was pressed.
+   *
+   * Units: increments of 5us; [0, 2^16) represents [10, 200) milliseconds.
+   */
+  uint16_t power_button_debounce_time_threshold;
+} dif_sysrst_ctrl_ulp_wakeup_config_t;
+
+/**
  * Configures a System Reset Controller's key combination detection feature.
  *
  * @param sysrst_ctrl A System Reset Controller handle.
@@ -275,6 +405,217 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_sysrst_ctrl_input_change_detect_configure(
     const dif_sysrst_ctrl_t *sysrst_ctrl,
     dif_sysrst_ctrl_input_change_config_t config);
+
+/**
+ * Configures a System Reset Controller's output pin override feature.
+ *
+ * Note, only output (or inout) pins may be overriden, i.e., set to a specific
+ * value. Attempting to configure the override feature for input pins will
+ * return `kDifError`.
+ *
+ * @param sysrst_ctrl A System Reset Controller handle.
+ * @param config Output pin override configuration parameters.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sysrst_ctrl_output_pin_override_configure(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_sysrst_ctrl_pin_config_t config);
+
+/**
+ * Configures a System Reset Controller's ultra-low-power (ULP) wakeup feature.
+ *
+ * @param sysrst_ctrl A System Reset Controller handle.
+ * @param config Runtime configuration parameters.
+ * @param enabled The enablement state to configure the ULP wakeup feature in.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sysrst_ctrl_ulp_wakeup_configure(
+    const dif_sysrst_ctrl_t *sysrst_ctrl,
+    dif_sysrst_ctrl_ulp_wakeup_config_t config, dif_toggle_t enabled);
+
+/**
+ * Sets the enablement state of a System Reset Controller's ultra-low-power
+ * (ULP) wakeup feature.
+ *
+ * @param sysrst_ctrl A System Reset Controller handle.
+ * @param enabled The enablement state to configure the ULP wakeup feature in.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sysrst_ctrl_ulp_wakeup_set_enabled(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_toggle_t enabled);
+
+/**
+ * Gets the enablement state of a System Reset Controller's ultra-low-power
+ * (ULP) wakeup feature.
+ *
+ * @param sysrst_ctrl A System Reset Controller handle.
+ * @param[out] is_enabled The enablement state of the ULP wakeup feature.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sysrst_ctrl_ulp_wakeup_get_enabled(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_toggle_t *is_enabled);
+
+/**
+ * Sets the inversion state a System Reset Controller's input and output pins.
+ *
+ * Note, only input and output (NOT inout) pins may be inverted. Attempting
+ * to set the inversion state of inout pins will return `kDifBadArg`.
+ *
+ * @param sysrst_ctrl A System Reset Controller handle.
+ * @param pins The input and output pins to set the inverted state of (i.e., one
+ *             or more `dif_sysrst_ctrl_pin_t`s ORed together).
+ * @param inverted The inverted state to configure for the pins.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sysrst_ctrl_pins_set_inverted(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, uint32_t pins, bool inverted);
+
+/**
+ * Gets the inversion state a System Reset Controller's input and output pins.
+ *
+ * @param sysrst_ctrl A System Reset Controller handle.
+ * @param[out] inverted_pins The input and output pins that are inverted (i.e.,
+ *                           one or more `dif_sysrst_ctrl_pin_t`s ORed
+ *                           together).
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sysrst_ctrl_pins_get_inverted(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, uint32_t *inverted_pins);
+
+/**
+ * Sets allowable override values for a System Reset Controller's output pin.
+ *
+ * Note, only output (or inout) pins may be overriden, i.e., set to a specific
+ * value. Attempting to set the allowable override values for input pins will
+ * return `kDifBadArg`.
+ *
+ * @param sysrst_ctrl A System Reset Controller handle.
+ * @param pin The output pin whose allowable override values should be set.
+ * @param allow_zero Whether to allow overriding the pin's value to 0.
+ * @param allow_one Whether to allow overriding the pin's value to 1.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sysrst_ctrl_output_pin_override_set_allowed(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_sysrst_ctrl_pin_t pin,
+    bool allow_zero, bool allow_one);
+
+/**
+ * Gets allowable override values for a System Reset Controller's output pin.
+ *
+ * Note, only output (or inout) pins may be overriden, i.e., set to a specific
+ * value. Attempting to get the allowable override values for input pins will
+ * return `kDifBadArg`.
+ *
+ * @param sysrst_ctrl A System Reset Controller handle.
+ * @param pin The allowable override values to get for an output pin.
+ * @param[out] allow_zero Whether overriding the pin's value to 0 is allowed.
+ * @param[out] allow_one Whether overriding the pin's value to 1 is allowed.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sysrst_ctrl_output_pin_override_get_allowed(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_sysrst_ctrl_pin_t pin,
+    bool *allow_zero, bool *allow_one);
+
+/**
+ * Sets the enablement of a System Reset Controller's output pin override
+ * feature.
+ *
+ * Note, only output (or inout) pins may be overriden, i.e., set to a specific
+ * value. Attempting to set the enablement of the override feature for input
+ * pins will return `kDifBadArg`.
+ *
+ * @param sysrst_ctrl A System Reset Controller handle.
+ * @param pin The output pin whose override feature should be set.
+ * @param enabled The enablement state to configure the override feature in.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sysrst_ctrl_output_pin_override_set_enabled(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_sysrst_ctrl_pin_t pin,
+    dif_toggle_t enabled);
+
+/**
+ * Gets the enablement of a System Reset Controller's output pin override
+ * feature.
+ *
+ * Note, only output (or inout) pins may be overriden, i.e., set to a specific
+ * value. Attempting to get the enablement of the override feature for input
+ * pins will return `kDifBadArg`.
+ *
+ * @param sysrst_ctrl A System Reset Controller handle.
+ * @param pin The output pin whose override feature should be set.
+ * @param[out] is_enabled The enablement state the override feature is
+ * configured in.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sysrst_ctrl_output_pin_override_get_enabled(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_sysrst_ctrl_pin_t pin,
+    dif_toggle_t *is_enabled);
+
+/**
+ * Sets the override value of a System Reset Controller's output pin (like
+ * writing to a GPIO pin).
+ *
+ * Note, only output (or inout) pins may be overriden, i.e., set to a specific
+ * value. Attempting to set the override value of an input pin will return
+ * `kDifBadArg`.
+ *
+ * Additionally, this will return `kDifError` if an output pin's override
+ * fuction is disabled, or the override value is not allowed.
+ *
+ * @param sysrst_ctrl A System Reset Controller handle.
+ * @param pin The output pin to override.
+ * @param value The override value to set on the pin.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sysrst_ctrl_output_pin_set_override(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_sysrst_ctrl_pin_t pin,
+    bool value);
+
+/**
+ * Gets the override value of a System Reset Controller's output pin (like
+ * writing to a GPIO pin).
+ *
+ * Note, only output (or inout) pins may be overriden, i.e., set to a specific
+ * value. Attempting to get the override value of an input pin will return
+ * `kDifBadArg`.
+ *
+ * Additionally, this will return the configured override value of an output pin
+ * regardless if the override function is enabled or the override value is
+ * allowed.
+ *
+ * @param sysrst_ctrl A System Reset Controller handle.
+ * @param pin The output pin to override.
+ * @param[out] value The override value set on the pin.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sysrst_ctrl_output_pin_get_override(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_sysrst_ctrl_pin_t pin,
+    bool *value);
+
+/**
+ * Reads a System Reset Controller's input pin (like a GPIO pin).
+ *
+ * Note, only input (or inout) pins may be read. Attempting to read the value of
+ * an output pin will return `kDifError`.
+ *
+ * @param sysrst_ctrl A System Reset Controller handle.
+ * @param pin The pin to read.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sysrst_ctrl_input_pin_read(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, dif_sysrst_ctrl_pin_t pin);
 
 /**
  * Configures a System Reset Controller's key signal auto-override feature.
@@ -363,6 +704,27 @@ dif_result_t dif_sysrst_ctrl_input_change_irq_get_causes(
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_sysrst_ctrl_input_change_irq_clear_causes(
     const dif_sysrst_ctrl_t *sysrst_ctrl, uint32_t causes);
+
+/**
+ * Gets the ultra-low-power wakeup status.
+ *
+ * @param sysrst_ctrl An sysrst_ctrl handle.
+ * @param[out] wakeup_detected The ULP wakeup detection state.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sysrst_ctrl_ulp_wakeup_get_status(
+    const dif_sysrst_ctrl_t *sysrst_ctrl, bool *wakeup_detected);
+
+/**
+ * Clears the ultra-low-power wakeup status.
+ *
+ * @param sysrst_ctrl An sysrst_ctrl handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sysrst_ctrl_ulp_wakeup_clear_status(
+    const dif_sysrst_ctrl_t *sysrst_ctrl);
 
 /**
  * Locks System Reset Controller configurations.
