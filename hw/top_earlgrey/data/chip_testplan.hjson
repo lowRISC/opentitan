@@ -2508,7 +2508,7 @@
 
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_ast_clk_outputs"]
     }
     {
       name: chip_sw_ast_clk_rst_inputs

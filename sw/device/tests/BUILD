@@ -1062,3 +1062,18 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+opentitan_functest(
+    name = "ast_clk_outs_test",
+    srcs = ["ast_clk_outs_test.c"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:sensor_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:clkmgr_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+    ],
+)

@@ -56,6 +56,7 @@ filesets:
       - seq_lib/chip_sw_sram_ctrl_execution_main_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_sram_ctrl_scrambled_access_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_keymgr_key_derivation_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_ast_clk_outputs_vseq.sv: {is_include_file: true}
       - seq_lib/chip_callback_vseq.sv: {is_include_file: true}
       - autogen/chip_env_pkg__params.sv: {is_include_file: true}
       - ast_supply_if.sv
