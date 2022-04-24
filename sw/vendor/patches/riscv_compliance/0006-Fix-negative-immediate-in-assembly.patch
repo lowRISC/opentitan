@@ -1,0 +1,13 @@
+diff --git a/riscv-test-suite/rv32i/src/I-RF_x0-01.S b/riscv-test-suite/rv32i/src/I-RF_x0-01.S
+index 8f282d502..c21d9d1a8 100644
+--- a/riscv-test-suite/rv32i/src/I-RF_x0-01.S
++++ b/riscv-test-suite/rv32i/src/I-RF_x0-01.S
+@@ -54,7 +54,7 @@ RV_COMPLIANCE_CODE_BEGIN
+     addi    x0, x0, 1
+     ori     x0, x0, 0x7F0
+     andi    x0, x0, 0x53F
+-    xori    x0, x0, 0xFFFFF803
++    xori    x0, x0, -0x7FD
+     slli    x0, x0, 5
+     srai    x0, x0, 2
+     srli    x0, x0, 4

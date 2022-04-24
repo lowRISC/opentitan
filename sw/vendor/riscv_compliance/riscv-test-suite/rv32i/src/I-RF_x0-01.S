@@ -54,7 +54,7 @@ RV_COMPLIANCE_CODE_BEGIN
     addi    x0, x0, 1
     ori     x0, x0, 0x7F0
     andi    x0, x0, 0x53F
-    xori    x0, x0, 0xFFFFF803
+    xori    x0, x0, -0x7FD
     slli    x0, x0, 5
     srai    x0, x0, 2
     srli    x0, x0, 4
