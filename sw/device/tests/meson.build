@@ -1306,7 +1306,27 @@ sw_tests += {
   }
 }
 
-
+# AST test
+ast_clk_outs_test_lib = declare_dependency(
+  link_with: static_library(
+    'ast_clk_outs_test_lib',
+    sources: ['ast_clk_outs_test.c'],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_dif_sensor_ctrl,
+      sw_lib_runtime_log,
+      top_earlgrey,
+      sw_lib_testing_clkmgr_testutils,
+      sw_lib_testing_pwrmgr_testutils,
+      sw_lib_testing_aon_timer_testutils,
+    ],
+  ),
+)
+sw_tests += {
+  'ast_clk_outs_test': {
+    'library': ast_clk_outs_test_lib,
+  }
+}
 ###############################################################################
 # Auto-generated tests
 ###############################################################################

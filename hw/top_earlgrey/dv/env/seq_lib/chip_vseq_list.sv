@@ -25,3 +25,4 @@
 `include "chip_sw_sram_ctrl_scrambled_access_vseq.sv"
 `include "chip_sw_pwm_pulses_vseq.sv"
 `include "chip_sw_keymgr_key_derivation_vseq.sv"
+`include "chip_sw_ast_clk_outputs_vseq.sv"
