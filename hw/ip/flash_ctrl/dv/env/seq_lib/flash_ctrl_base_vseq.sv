@@ -279,6 +279,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     info_sel = flash_op.partition >> 1;
     data = get_csr_val_with_updated_field(ral.control.start, data, 1'b1);
     data = data | get_csr_val_with_updated_field(ral.control.op, data, flash_op.op);
+    data = data | get_csr_val_with_updated_field(ral.control.prog_sel, data, flash_op.prog_sel);
     data = data | get_csr_val_with_updated_field(ral.control.erase_sel, data, flash_op.erase_type);
     data = data | get_csr_val_with_updated_field(ral.control.partition_sel, data, partition_sel);
     data = data | get_csr_val_with_updated_field(ral.control.info_sel, data, info_sel);
@@ -992,5 +993,39 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       flash_op_p.addr = flash_op_p.addr + 64;  //64B was written, 16 words
     end
   endtask : controller_program_page
+
+  // Check Expected Alert for prog_type_err and prog_win_err
+  virtual task check_exp_alert_status(input bit exp_alert, input string alert_name,
+                                      input flash_op_t flash_op, input data_q_t flash_op_data);
+
+    // Local Variables
+    uvm_reg_data_t reg_data;
+
+    // Read Status Bits
+    case (alert_name)
+      "prog_type_err" : csr_rd_check(.ptr(ral.err_code.prog_type_err), .compare_value(exp_alert));
+      "prog_win_err"  : csr_rd_check(.ptr(ral.err_code.prog_win_err),  .compare_value(exp_alert));
+      default : `uvm_fatal(`gfn, "Unrecognized alert_name, FAIL")
+    endcase
+    csr_rd_check(.ptr(ral.op_status.err), .compare_value(exp_alert));
+
+    // Check Backdoor If Pass
+    if (exp_alert == 0) begin
+      cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
+    end
+
+    // Clear Status Bits
+    case (alert_name)
+      "prog_type_err" : reg_data = get_csr_val_with_updated_field(ral.err_code.prog_type_err,
+                                                                  reg_data, 1);
+      "prog_win_err"  : reg_data = get_csr_val_with_updated_field(ral.err_code.prog_win_err,
+                                                                  reg_data, 1);
+      default : `uvm_fatal(`gfn, "Unrecognized alert_name")
+    endcase
+    csr_wr(.ptr(ral.err_code), .value(reg_data));
+    reg_data = get_csr_val_with_updated_field(ral.op_status.err, reg_data, 0);
+    csr_wr(.ptr(ral.op_status), .value(reg_data));
+
+  endtask : check_exp_alert_status
 
 endclass : flash_ctrl_base_vseq

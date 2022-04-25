@@ -145,6 +145,12 @@ package flash_ctrl_env_pkg;
     FlashPartInfo2 = 4
   } flash_dv_part_e;
 
+  // Program Type Select Normal/Repair
+  typedef enum bit {
+    FlashProgSelNormal = 0,
+    FlashProgSelRepair = 1
+  } flash_prog_sel_e;
+
   // Special Partitions
   typedef enum logic [2:0] {
     FlashCreatorPart = 0,
@@ -197,13 +203,13 @@ package flash_ctrl_env_pkg;
   typedef data_t data_model_t[addr_t];
 
   typedef struct packed {
-    flash_dv_part_e partition;   // data or one of the info partitions
-    flash_erase_e   erase_type;  // erase page or the whole bank
-    flash_op_e      op;          // read / program or erase
-    uint            num_words;   // number of words to read or program (TL_DW)
-    addr_t addr;        // starting addr for the op
+    flash_dv_part_e  partition;   // data or one of the info partitions
+    flash_erase_e    erase_type;  // erase page or the whole bank
+    flash_op_e       op;          // read / program or erase
+    flash_prog_sel_e prog_sel;    // program select
+    uint             num_words;   // number of words to read or program (TL_DW)
+    addr_t           addr;        // starting addr for the op
   } flash_op_t;
-
 
   parameter uint ALL_ZEROS = 32'h0000_0000;
   parameter uint ALL_ONES = 32'hffff_ffff;
