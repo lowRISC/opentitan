@@ -55,7 +55,9 @@ class OtbnTraceEntry {
   bool from_rtl_trace(const std::string &trace);
 
   bool compare_rtl_iss_entries(const OtbnTraceEntry &other,
-                               bool no_sec_wipe_data_chk) const;
+                               bool no_sec_wipe_data_chk,
+                               std::string *err_desc) const;
+
   void print(const std::string &indent, std::ostream &os) const;
 
   void take_writes(const OtbnTraceEntry &other, bool other_first);
@@ -72,13 +74,13 @@ class OtbnTraceEntry {
   // True if this entry is "final" (Exec or WipeComplete)
   bool is_final() const;
 
+ protected:
   static bool check_entries_compatible(
       trace_type_t type, const std::string &key,
       const std::vector<OtbnTraceBodyLine> &rtl_lines,
       const std::vector<OtbnTraceBodyLine> &iss_lines,
-      bool no_sec_wipe_data_chk);
+      bool no_sec_wipe_data_chk, std::string *err_desc);
 
- protected:
   static trace_type_t hdr_to_trace_type(const std::string &hdr);
 
   trace_type_t trace_type_;
