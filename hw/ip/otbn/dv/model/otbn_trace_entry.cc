@@ -60,43 +60,40 @@ bool OtbnTraceEntry::from_rtl_trace(const std::string &trace) {
 }
 
 bool OtbnTraceEntry::compare_rtl_iss_entries(const OtbnTraceEntry &other,
-                                             bool no_sec_wipe_data_chk) const {
-  if (hdr_ != other.hdr_)
+                                             bool no_sec_wipe_data_chk,
+                                             std::string *err_desc) const {
+  assert(err_desc);
+
+  if (hdr_ != other.hdr_) {
+    *err_desc = "Headers don't match.";
     return false;
+  }
 
   for (const auto &rtlptr : writes_) {
     auto isskey = other.writes_.find(rtlptr.first);
-    if (isskey == other.writes_.end())
+    if (isskey == other.writes_.end()) {
+      std::ostringstream oss;
+      oss << "RTL had a write to `" << rtlptr.first
+          << "', but the ISS doesn't have a write to that location.";
+      *err_desc = oss.str();
       return false;
+    }
     // compare rtlptr.second and isskey.second
     if (!check_entries_compatible(trace_type_, rtlptr.first, rtlptr.second,
-                                  isskey->second, no_sec_wipe_data_chk))
+                                  isskey->second, no_sec_wipe_data_chk,
+                                  err_desc))
       return false;
   }
 
-  if (writes_.size() != other.writes_.size())
+  if (writes_.size() != other.writes_.size()) {
+    std::ostringstream oss;
+    oss << "RTL wrote to " << writes_.size() << " locations; the ISS wrote to "
+        << other.writes_.size() << ".";
+    *err_desc = oss.str();
     return false;
-  return true;
-}
-
-bool OtbnTraceEntry::check_entries_compatible(
-    trace_type_t type, const std::string &key,
-    const std::vector<OtbnTraceBodyLine> &rtl_lines,
-    const std::vector<OtbnTraceBodyLine> &iss_lines,
-    bool no_sec_wipe_data_chk) {
-  assert(rtl_lines.size() && iss_lines.size());
-  assert(type == WipeComplete || type == Exec);
-
-  if (type == WipeComplete && key != "FLAGS0" && key != "FLAGS1") {
-    if (rtl_lines.size() != 2)
-      return false;
-    if (!no_sec_wipe_data_chk && type == WipeComplete) {
-      if (rtl_lines.front() == rtl_lines.back())
-        return false;
-    }
   }
 
-  return rtl_lines.back() == iss_lines.back();
+  return true;
 }
 
 void OtbnTraceEntry::print(const std::string &indent, std::ostream &os) const {
@@ -192,6 +189,41 @@ bool OtbnTraceEntry::is_partial() const {
 bool OtbnTraceEntry::is_final() const {
   return ((trace_type_ == OtbnTraceEntry::Exec) ||
           (trace_type_ == OtbnTraceEntry::WipeComplete));
+}
+
+bool OtbnTraceEntry::check_entries_compatible(
+    trace_type_t type, const std::string &key,
+    const std::vector<OtbnTraceBodyLine> &rtl_lines,
+    const std::vector<OtbnTraceBodyLine> &iss_lines, bool no_sec_wipe_data_chk,
+    std::string *err_desc) {
+  assert(rtl_lines.size() && iss_lines.size());
+  assert(type == WipeComplete || type == Exec);
+  assert(err_desc);
+
+  if (type == WipeComplete && key != "FLAGS0" && key != "FLAGS1") {
+    if (rtl_lines.size() != 2) {
+      std::ostringstream oss;
+      oss << "There are " << rtl_lines.size() << "RTL lines for key `" << key
+          << "'; we expected 2.";
+      *err_desc = oss.str();
+      return false;
+    }
+    if (!no_sec_wipe_data_chk && rtl_lines.front() == rtl_lines.back()) {
+      std::ostringstream oss;
+      oss << "Repeated identical RTL lines for key `" << key << "'.";
+      *err_desc = oss.str();
+      return false;
+    }
+  }
+
+  if (!(rtl_lines.back() == iss_lines.back())) {
+    std::ostringstream oss;
+    oss << "Final values of ISS and RTL don't match for key `" << key << "'.";
+    *err_desc = oss.str();
+    return false;
+  }
+
+  return true;
 }
 
 OtbnTraceEntry::trace_type_t OtbnTraceEntry::hdr_to_trace_type(
