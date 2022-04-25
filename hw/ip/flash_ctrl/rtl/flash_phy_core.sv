@@ -239,6 +239,9 @@ module flash_phy_core
   assign ctrl_req = req_i & rd_stage_idle & ~host_req &
                     mubi4_test_false_strict(flash_disable[CtrlDisableIdx]);
 
+  logic [1:0] data_tie_off [2];
+  assign data_tie_off = '{default: '0};
+
   // SEC_CM: PHY_ARBITER.CTRL.REDUN
   logic phy_req;
   prim_arbiter_tree_dup #(
@@ -250,7 +253,7 @@ module flash_phy_core
     .rst_ni,
     .req_chk_i('0),
     .req_i({host_req, ctrl_req}),
-    .data_i('{1'b0, 1'b0}),
+    .data_i(data_tie_off),
     .gnt_o({host_req_rdy_o, ctrl_gnt}),
     .idx_o(),
     .valid_o(phy_req),
