@@ -57,7 +57,7 @@ class OtbnTraceEntry {
   bool compare_rtl_iss_entries(const OtbnTraceEntry &other) const;
   void print(const std::string &indent, std::ostream &os) const;
 
-  void take_writes(const OtbnTraceEntry &other);
+  void take_writes(const OtbnTraceEntry &other, bool other_first);
 
   trace_type_t trace_type() const { return trace_type_; }
 
