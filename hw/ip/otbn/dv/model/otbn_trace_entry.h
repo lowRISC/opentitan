@@ -54,7 +54,8 @@ class OtbnTraceEntry {
   // message to stderr and return false.
   bool from_rtl_trace(const std::string &trace);
 
-  bool compare_rtl_iss_entries(const OtbnTraceEntry &other) const;
+  bool compare_rtl_iss_entries(const OtbnTraceEntry &other,
+                               bool no_sec_wipe_data_chk) const;
   void print(const std::string &indent, std::ostream &os) const;
 
   void take_writes(const OtbnTraceEntry &other, bool other_first);
@@ -74,7 +75,8 @@ class OtbnTraceEntry {
   static bool check_entries_compatible(
       trace_type_t type, const std::string &key,
       const std::vector<OtbnTraceBodyLine> &rtl_lines,
-      const std::vector<OtbnTraceBodyLine> &iss_lines);
+      const std::vector<OtbnTraceBodyLine> &iss_lines,
+      bool no_sec_wipe_data_chk);
 
  protected:
   static trace_type_t hdr_to_trace_type(const std::string &hdr);

@@ -193,6 +193,7 @@ void OtbnTraceChecker::Flush() {
   rtl_started_ = false;
   iss_pending_ = false;
   iss_started_ = false;
+  no_sec_wipe_data_chk_ = false;
 }
 
 bool OtbnTraceChecker::Finish() {
@@ -228,6 +229,8 @@ const OtbnIssTraceEntry::IssData *OtbnTraceChecker::PopIssData() {
   return &last_data_;
 }
 
+void OtbnTraceChecker::set_no_sec_wipe_chk() { no_sec_wipe_data_chk_ = true; }
+
 bool OtbnTraceChecker::MatchPair() {
   if (!(rtl_pending_ && iss_pending_)) {
     return true;
@@ -235,7 +238,8 @@ bool OtbnTraceChecker::MatchPair() {
   rtl_pending_ = false;
   iss_pending_ = false;
   iss_started_ = false;
-  if (!(rtl_entry_.compare_rtl_iss_entries(iss_entry_))) {
+  if (!(rtl_entry_.compare_rtl_iss_entries(iss_entry_,
+                                           no_sec_wipe_data_chk_))) {
     std::cerr
         << ("ERROR: Mismatch between RTL and ISS trace entries.\n"
             "  RTL entry is:\n");
@@ -244,8 +248,10 @@ bool OtbnTraceChecker::MatchPair() {
     iss_entry_.print("    ", std::cerr);
     seen_err_ = true;
     return false;
+    if (rtl_entry_.trace_type() == OtbnTraceEntry::WipeComplete) {
+      no_sec_wipe_data_chk_ = false;
+    }
   }
-
   // We've got a matching pair of entries. Move the ISS data out of the (now
   // defunct) iss_entry_ and into last_data_.
   if (rtl_entry_.trace_type() == OtbnTraceEntry::Exec) {
