@@ -98,6 +98,13 @@ interface otbn_model_if
                     "Failed to set software_errs_fatal", "otbn_model_if")
   endfunction
 
+   function automatic void otbn_set_no_sec_wipe_chk();
+    `uvm_info("otbn_model_if", "writing to no_sec_wipe_data_chk", UVM_HIGH);
+    `DV_CHECK_FATAL(u_model.otbn_set_no_sec_wipe_chk(handle) == 0,
+                    "Failed to set no_sec_wipe_data_chk", "otbn_model_if")
+  endfunction
+
+
   // The err signal is asserted by the model if it fails to find the DUT or if it finds a mismatch
   // in results. It should never go high.
   `ASSERT(NoModelErrs, !err)

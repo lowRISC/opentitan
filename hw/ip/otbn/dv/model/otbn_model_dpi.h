@@ -119,6 +119,10 @@ int otbn_model_send_err_escalation(OtbnModel *model,
 // is set, any software error will be ellevated to fatal error from recoverable
 // error.
 int otbn_model_set_software_errs_fatal(OtbnModel *model, unsigned char new_val);
+
+// Tell the model to not execute checks to see if secure wiping has written
+// random data to all registers before wiping them with zeroes.
+int otbn_set_no_sec_wipe_chk(OtbnModel *model);
 }
 
 #endif  // OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_MODEL_DPI_H_
