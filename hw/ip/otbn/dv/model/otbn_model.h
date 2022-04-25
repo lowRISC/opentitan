@@ -93,6 +93,10 @@ class OtbnModel {
   // Set software_errs_fatal bit in ISS model.
   int set_software_errs_fatal(unsigned char new_val);
 
+  // Tell the model to not execute checks to see if secure wiping has written
+  // random data to all registers before wiping them with zeroes.
+  int set_no_sec_wipe_chk();
+
   // Step CRC by consuming 48 bits of data.
   //
   // This doesn't actually update any internal state: we're just using the

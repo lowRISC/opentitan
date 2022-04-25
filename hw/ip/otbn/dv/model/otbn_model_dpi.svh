@@ -61,4 +61,7 @@ import "DPI-C" function void otbn_take_loop_warps(chandle model, chandle memutil
 import "DPI-C" function int otbn_model_send_err_escalation(chandle model, bit [31:0] err_val);
 
 import "DPI-C" context function int otbn_model_set_software_errs_fatal(chandle model, bit new_val);
+
+import "DPI-C" context function int otbn_set_no_sec_wipe_chk(chandle model);
+
 `endif // SYNTHESIS

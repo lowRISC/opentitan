@@ -499,6 +499,11 @@ int OtbnModel::set_software_errs_fatal(unsigned char new_val) {
   return 0;
 }
 
+int OtbnModel::set_no_sec_wipe_chk() {
+  OtbnTraceChecker::get().set_no_sec_wipe_chk();
+  return 0;
+}
+
 int OtbnModel::step_crc(const svBitVecVal *item /* bit [47:0] */,
                         svBitVecVal *state /* bit [31:0] */) {
   ISSWrapper *iss = ensure_wrapper();
@@ -910,4 +915,9 @@ int otbn_model_set_software_errs_fatal(OtbnModel *model,
                                        unsigned char new_val) {
   assert(model);
   return model->set_software_errs_fatal(new_val);
+}
+
+int otbn_set_no_sec_wipe_chk(OtbnModel *model) {
+  assert(model);
+  return model->set_no_sec_wipe_chk();
 }

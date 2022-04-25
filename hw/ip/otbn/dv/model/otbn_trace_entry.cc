@@ -59,8 +59,8 @@ bool OtbnTraceEntry::from_rtl_trace(const std::string &trace) {
   return true;
 }
 
-bool OtbnTraceEntry::compare_rtl_iss_entries(
-    const OtbnTraceEntry &other) const {
+bool OtbnTraceEntry::compare_rtl_iss_entries(const OtbnTraceEntry &other,
+                                             bool no_sec_wipe_data_chk) const {
   if (hdr_ != other.hdr_)
     return false;
 
@@ -70,7 +70,7 @@ bool OtbnTraceEntry::compare_rtl_iss_entries(
       return false;
     // compare rtlptr.second and isskey.second
     if (!check_entries_compatible(trace_type_, rtlptr.first, rtlptr.second,
-                                  isskey->second))
+                                  isskey->second, no_sec_wipe_data_chk))
       return false;
   }
 
@@ -82,15 +82,18 @@ bool OtbnTraceEntry::compare_rtl_iss_entries(
 bool OtbnTraceEntry::check_entries_compatible(
     trace_type_t type, const std::string &key,
     const std::vector<OtbnTraceBodyLine> &rtl_lines,
-    const std::vector<OtbnTraceBodyLine> &iss_lines) {
+    const std::vector<OtbnTraceBodyLine> &iss_lines,
+    bool no_sec_wipe_data_chk) {
   assert(rtl_lines.size() && iss_lines.size());
   assert(type == WipeComplete || type == Exec);
 
   if (type == WipeComplete && key != "FLAGS0" && key != "FLAGS1") {
     if (rtl_lines.size() != 2)
       return false;
-    if (rtl_lines.front() == rtl_lines.back())
-      return false;
+    if (!no_sec_wipe_data_chk && type == WipeComplete) {
+      if (rtl_lines.front() == rtl_lines.back())
+        return false;
+    }
   }
 
   return rtl_lines.back() == iss_lines.back();
