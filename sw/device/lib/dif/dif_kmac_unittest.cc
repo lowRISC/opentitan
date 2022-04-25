@@ -964,4 +964,25 @@ TEST_F(KmacSqueezeTest, RequestLessDataThanFixedLenError) {
                              ARRAYSIZE(out_buffer_), nullptr),
             kDifError);
 }
+
+class KmacResetTest : public KmacTest {};
+
+TEST_F(KmacResetTest, Success) {
+  EXPECT_READ32(KMAC_CFG_SHADOWED_REG_OFFSET, 0);
+  EXPECT_WRITE32_SHADOWED(KMAC_CFG_SHADOWED_REG_OFFSET,
+                          {{KMAC_CFG_SHADOWED_ERR_PROCESSED_BIT, true}});
+  EXPECT_DIF_OK(dif_kmac_reset(&kmac_, &op_state_));
+  EXPECT_EQ(op_state_.squeezing, false);
+  EXPECT_EQ(op_state_.append_d, false);
+  EXPECT_EQ(op_state_.offset, 0);
+  EXPECT_EQ(op_state_.r, 0);
+  EXPECT_EQ(op_state_.d, 0);
+}
+
+TEST_F(KmacResetTest, BadArg) {
+  EXPECT_DIF_BADARG(dif_kmac_reset(nullptr, &op_state_));
+
+  EXPECT_DIF_BADARG(dif_kmac_reset(&kmac_, nullptr));
+}
+
 }  // namespace dif_kmac_unittest

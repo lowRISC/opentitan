@@ -813,3 +813,21 @@ dif_result_t dif_kmac_get_error(const dif_kmac_t *kmac,
   *error = mmio_region_read32(kmac->base_addr, KMAC_ERR_CODE_REG_OFFSET);
   return kDifOk;
 }
+
+dif_result_t dif_kmac_reset(const dif_kmac_t *kmac,
+                            dif_kmac_operation_state_t *operation_state) {
+  if (kmac == NULL || operation_state == NULL) {
+    return kDifBadArg;
+  }
+  operation_state->d = 0;
+  operation_state->r = 0;
+  operation_state->offset = 0;
+  operation_state->squeezing = false;
+  uint32_t reg =
+      mmio_region_read32(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET);
+  reg = bitfield_bit32_write(reg, KMAC_CFG_SHADOWED_ERR_PROCESSED_BIT, 1);
+
+  mmio_region_write32_shadowed(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET,
+                               reg);
+  return kDifOk;
+}
