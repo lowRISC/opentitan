@@ -153,9 +153,12 @@
       direction - i.e. that there are no transitions that move backwards into
       a state where the FSM has previously been (e.g. from `InvalidSt` back
       into `IdleSt`).
+
+      Note: This is expected to be formally proven by FPV test lc_ctrl_sec_cm_fsm but
+      there is currently no mechanism to include this in the testplan.
       '''
       milestone: V2S
-      tests: []
+      tests: ["lc_ctrl_state_post_trans", "lc_ctrl_jtag_state_post_trans"]
     }
     {
       name: sec_cm_intersig_mubi
