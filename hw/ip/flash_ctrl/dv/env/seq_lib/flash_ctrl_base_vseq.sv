@@ -139,8 +139,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.mp_region[index]), .value(data));
   endtask : flash_ctrl_mp_region_cfg
 
-  // Configure the protection for the "default" region (all pages that do not fall into one
-  // of the memory protection regions).
+  // Configure the protection for the "default" region (all pages that do not fall
+  //  into one of the memory protection regions).
   virtual task flash_ctrl_default_region_cfg(mubi4_t read_en     = MuBi4True,
                                              mubi4_t program_en  = MuBi4True,
                                              mubi4_t erase_en    = MuBi4True,

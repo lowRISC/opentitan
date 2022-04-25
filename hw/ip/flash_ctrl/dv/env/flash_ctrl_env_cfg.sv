@@ -220,7 +220,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
 
       _flash_full_write(flash_op.partition, addr_attrs.bank, addr_attrs.bank_addr, loc_data);
       `uvm_info(`gfn, $sformatf(
-                "flash_mem_bkdr_write: partition = %s , {%s} = 0x%0h",
+                "flash_mem_bkdr_write: partition = %s, {%s} = 0x%0h",
                 flash_op.partition.name(),
                 addr_attrs.sprint(),
                 loc_data
