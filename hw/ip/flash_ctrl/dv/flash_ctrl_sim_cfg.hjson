@@ -148,6 +148,11 @@
       uvm_test_seq: flash_ctrl_error_prog_type_vseq
       reseed: 5
     }
+    {
+      name: flash_ctrl_error_prog_win
+      uvm_test_seq: flash_ctrl_error_prog_win_vseq
+      reseed: 10
+    }
   ]
 
   // List of regressions.
