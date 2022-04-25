@@ -105,10 +105,21 @@ void OtbnTraceEntry::print(const std::string &indent, std::ostream &os) const {
   }
 }
 
-void OtbnTraceEntry::take_writes(const OtbnTraceEntry &other) {
+void OtbnTraceEntry::take_writes(const OtbnTraceEntry &other,
+                                 bool other_first) {
   for (const auto &pr : other.writes_) {
-    for (const auto &line : pr.second) {
-      writes_[pr.first].push_back(line);
+    std::vector<OtbnTraceBodyLine> &so_far = writes_[pr.first];
+    if (other_first) {
+      // If other_first is true, we should prepend the writes from other. We do
+      // so by creating a temporary vector (with a copy of the writes from
+      // other) and then appending any writes we had before.
+      std::vector<OtbnTraceBodyLine> tmp(pr.second);
+      tmp.insert(tmp.end(), so_far.begin(), so_far.end());
+      writes_[pr.first] = tmp;
+    } else {
+      // If other_first is false, we should append the writes from other. We
+      // can do that with just a call to insert.
+      so_far.insert(so_far.end(), pr.second.begin(), pr.second.end());
     }
   }
 }

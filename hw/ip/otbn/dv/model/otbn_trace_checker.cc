@@ -99,7 +99,7 @@ void OtbnTraceChecker::AcceptTraceString(const std::string &trace,
         seen_err_ = true;
         return;
       }
-      rtl_entry_.take_writes(trace_entry);
+      rtl_entry_.take_writes(trace_entry, false);
     } else {
       // This is the first partial entry. Set the rtl_started_ flag and save
       // trace_entry.
@@ -127,7 +127,7 @@ void OtbnTraceChecker::AcceptTraceString(const std::string &trace,
       return;
     }
 
-    trace_entry.take_writes(rtl_entry_);
+    trace_entry.take_writes(rtl_entry_, true);
   }
 
   rtl_pending_ = true;
@@ -174,7 +174,7 @@ bool OtbnTraceChecker::OnIssTrace(const std::vector<std::string> &lines) {
     // We have some changes associated with a stall. Merge in the changes that
     // we've just seen. We do it "backwards" so that if trace_entry is an
     // final entry then so is the result.
-    trace_entry.take_writes(iss_entry_);
+    trace_entry.take_writes(iss_entry_, true);
   }
 
   iss_started_ = true;
