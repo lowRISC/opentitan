@@ -185,11 +185,11 @@
     {
       name: error_prog_win
       desc: '''
-            Perform accesses in order to provoke program resolution error. Test both, Software
-            interface and Hardware interface. Related covergroup is error_cg.
+            Perform accesses in order to provoke the 'program resolution' error.
+            Test via the Software interface. Related covergroup is error_cg.
             '''
       milestone: V2
-      tests: []
+      tests: ["flash_ctrl_error_prog_win"]
     }
     {
       name: error_prog_type

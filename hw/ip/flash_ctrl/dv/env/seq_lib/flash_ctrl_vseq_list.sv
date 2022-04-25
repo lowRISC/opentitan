@@ -21,3 +21,4 @@
 `include "flash_ctrl_fetch_code_vseq.sv"
 `include "flash_ctrl_full_mem_access_vseq.sv"
 `include "flash_ctrl_error_prog_type_vseq.sv"
+`include "flash_ctrl_error_prog_win_vseq.sv"
