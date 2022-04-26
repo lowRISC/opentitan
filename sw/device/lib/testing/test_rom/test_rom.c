@@ -16,7 +16,7 @@
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/test_framework/test_status.h"
+#include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/lib/testing/test_rom/bootstrap.h"
 #include "sw/device/lib/testing/test_rom/chip_info.h"  // Generated.
 #include "sw/device/silicon_creator/lib/manifest.h"

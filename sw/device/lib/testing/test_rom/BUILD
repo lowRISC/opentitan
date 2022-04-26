@@ -64,6 +64,7 @@ cc_library(
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:status",
         "//sw/device/silicon_creator/lib:manifest",
     ],
 )

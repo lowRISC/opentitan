@@ -49,6 +49,7 @@ opentitan_functest(
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:status",
         "//sw/device/lib/testing/test_rom:linker_script",
         "//sw/device/lib/testing/test_rom:test_rom_lib",
     ],
@@ -173,6 +174,7 @@ opentitan_functest(
         "//sw/device/lib/dif:rom_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:status",
     ],
 )
 
@@ -190,6 +192,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:status",
     ],
 )
 
@@ -210,6 +213,7 @@ opentitan_functest(
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:sram_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:status",
     ],
 )
 
@@ -244,5 +248,6 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:sram_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:status",
     ],
 )

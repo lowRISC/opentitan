@@ -14,19 +14,27 @@ cc_library(
 )
 
 cc_library(
-    name = "check",
-    srcs = ["test_status.c"],
-    hdrs = [
-        "check.h",
-        "test_status.h",
-    ],
+    name = "status",
+    srcs = ["status.c"],
+    hdrs = ["status.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+    ],
+)
+
+cc_library(
+    name = "check",
+    hdrs = ["check.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":status",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:base",
-        "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
     ],
@@ -82,6 +90,7 @@ cc_library(
         ":check",
         ":freertos_port",
         ":ottf_start",
+        ":status",
         ":test_coverage",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",

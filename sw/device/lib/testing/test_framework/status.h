@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_TEST_STATUS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_TEST_STATUS_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_STATUS_H_
+#define OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_STATUS_H_
 
 /**
  * Indicates the status of the software running on the CPU, from a testing
@@ -76,4 +76,4 @@ typedef enum test_status {
  */
 void test_status_set(test_status_t test_status);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_TEST_STATUS_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_STATUS_H_
