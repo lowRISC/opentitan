@@ -245,6 +245,25 @@ module tb;
 
     //=========================================================================
     // Issue Read Cmd: Fast Read Cmd
+    $display("Sending Fast Read Command");
+    spiflash_read(
+      tb_sif,
+      8'h 0B,         // opcode
+      32'h 0000_03FF, // address (at the end of a buffer)
+      1'b 0,          // address mode
+      8,              // dummy beat (8 cycles)
+      3,              // Read 3 bytes, should cross the buffer 0 to 1
+      IoSingle,       // io_mode
+      read_data
+    );
+
+    expected_data = get_read_data(SramAw'('h3FF), 3);
+
+    match = check_data(read_data, expected_data);
+    if (match == 1'b 0) test_passed = 1'b 0;
+    read_data.delete();
+    expected_data.delete();
+
     //=========================================================================
     // Issue Read Cmd: Fast Read Dual Output
     //=========================================================================
